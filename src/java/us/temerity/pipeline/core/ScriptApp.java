@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.40 2005/04/04 22:06:42 jim Exp $
+// $Id: ScriptApp.java,v 1.41 2005/04/04 23:13:27 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -238,9 +238,9 @@ class ScriptApp
        "        [--no-action | --action=action-name[:major.minor.micro]]\n" +
        "        [--action-enabled=true|false] [--param=name:value ...]\n" +
        "        [--source-param=source-name,name:value ...]\n" +
-       "        [--ignore | --abort] [--serial | --parallel] [--batch-size=integer]\n" +
-       "        [--priority=integer] [--ramp-up=milliseconds] [--max-load=real]\n" +
-       "        [--min-memory=bytes[K|M|G]] [--min-disk=bytes[K|M|G]]\n" +
+       "        [--ignore | --abort] [--serial | --subdivided | --parallel]\n" + 
+       "        [--batch-size=integer] [--priority=integer] [--ramp-up=milliseconds]\n" + 
+       "        [--max-load=real] [--min-memory=bytes[K|M|G]] [--min-disk=bytes[K|M|G]]\n" +
        "        [--license-key=key-name[:true|false] ...]\n" +
        "        [--selection-key=key-name[:true|false] ...]\n" +
        "      --release=node-name\n" +
@@ -252,9 +252,9 @@ class ScriptApp
        "        [--no-action | --action=action-name[:major.minor.micro]]\n" +
        "        [--action-enabled=true|false] [--param=name:value ...]\n" + 
        "        [--no-param=source-name | --source-param=source-name,name:value ...]\n" +
-       "        [--ignore | --abort] [--serial | --parallel] [--batch-size=integer]\n" +
-       "        [--priority=integer] [--ramp-up=milliseconds] [--max-load=real]\n" +
-       "        [--min-memory=bytes[K|M|G]] [--min-disk=bytes[K|M|G]]\n" +
+       "        [--ignore | --abort] [--serial | --subdivided | --parallel]\n" + 
+       "        [--batch-size=integer] [--priority=integer] [--ramp-up=milliseconds]\n" + 
+       "        [--max-load=real] [--min-memory=bytes[K|M|G]] [--min-disk=bytes[K|M|G]]\n" +
        "        [--license-key=key-name[:true|false] ...]\n" + 
        "        [--selection-key=key-name[:true|false] ...]\n" +
        "      --link=node-name\n" +
