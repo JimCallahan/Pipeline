@@ -169,9 +169,15 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
   EXTERNAL_URLS = $(patsubst %,-link http://java.sun.com/%,$(EXTERNAL_DIRS))
 
+
+     LOCAL_DIRS = /usr/java/j2sdk1.5.0/docs/api
+
+     LOCAL_URLS = $(patsubst %,-link file://%,$(LOCAL_DIRS))
+
+
    JAVADOC_OPTS = -sourcepath $(top_srcdir)/src/java \
                   -classpath $(top_builddir)/src/java \
-                  -d javadoc -source 1.5 -use $(EXTERNAL_URLS)
+                  -d javadoc -source 1.5 -use $(LOCAL_URLS) #$(EXTERNAL_URLS)
 
 #--------------------------------------------------------------------------------------------#
 #   R U L E S                                                                                #
