@@ -1,4 +1,4 @@
-// $Id: SubProcess.java,v 1.5 2004/02/28 20:01:34 jim Exp $
+// $Id: SubProcess.java,v 1.6 2004/03/11 10:54:31 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -944,7 +944,7 @@ class SubProcess
 
 
   /** 
-   * The base classs for threads which gather output from the OS level process.
+   * The base class for threads which gather output from the OS level process.
    */ 
   private abstract 
   class OutTask
