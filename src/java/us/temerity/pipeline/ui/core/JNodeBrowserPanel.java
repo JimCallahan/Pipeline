@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.2 2005/01/07 08:41:50 jim Exp $
+// $Id: JNodeBrowserPanel.java,v 1.3 2005/01/09 23:23:09 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -764,8 +764,8 @@ class JNodeBrowserPanel
 
     /* local hotkeys */ 
     UserPrefs prefs = UserPrefs.getInstance(); 
-    if((prefs.getNodeBrowserUpdate() != null) &&
-       prefs.getNodeBrowserUpdate().wasPressed(e)) 
+    if((prefs.getUpdate() != null) &&
+       prefs.getUpdate().wasPressed(e)) 
       doUpdate();
     
     else if((prefs.getNodeBrowserNodeFilter() != null) &&

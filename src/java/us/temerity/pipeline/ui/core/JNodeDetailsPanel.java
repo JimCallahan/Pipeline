@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.2 2005/01/07 08:41:50 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.3 2005/01/09 23:23:09 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3245,33 +3245,33 @@ class JNodeDetailsPanel
 
     /* local hotkeys */ 
     UserPrefs prefs = UserPrefs.getInstance();
-    if((prefs.getNodeDetailsApplyChanges() != null) &&
-       prefs.getNodeDetailsApplyChanges().wasPressed(e) && 
+    if((prefs.getApplyChanges() != null) &&
+       prefs.getApplyChanges().wasPressed(e) && 
        pApplyButton.isEnabled())
       doApply();
 
-    else if((prefs.getNodeDetailsEdit() != null) &&
-	    prefs.getNodeDetailsEdit().wasPressed(e))
+    else if((prefs.getEdit() != null) &&
+	    prefs.getEdit().wasPressed(e))
       doEdit();
     
-    else if((prefs.getNodeDetailsQueueJobs() != null) &&
-	    prefs.getNodeDetailsQueueJobs().wasPressed(e))
+    else if((prefs.getQueueJobs() != null) &&
+	    prefs.getQueueJobs().wasPressed(e))
       doQueueJobs();
-    else if((prefs.getNodeDetailsQueueJobsSpecial() != null) &&
-	    prefs.getNodeDetailsQueueJobsSpecial().wasPressed(e))
+    else if((prefs.getQueueJobsSpecial() != null) &&
+	    prefs.getQueueJobsSpecial().wasPressed(e))
       doQueueJobsSpecial();
-    else if((prefs.getNodeDetailsPauseJobs() != null) &&
-	    prefs.getNodeDetailsPauseJobs().wasPressed(e))
+    else if((prefs.getPauseJobs() != null) &&
+	    prefs.getPauseJobs().wasPressed(e))
 	doPauseJobs();
-    else if((prefs.getNodeDetailsResumeJobs() != null) &&
-	    prefs.getNodeDetailsResumeJobs().wasPressed(e))
+    else if((prefs.getResumeJobs() != null) &&
+	    prefs.getResumeJobs().wasPressed(e))
       doResumeJobs();
-    else if((prefs.getNodeDetailsKillJobs() != null) &&
-	      prefs.getNodeDetailsKillJobs().wasPressed(e))
+    else if((prefs.getKillJobs() != null) &&
+	      prefs.getKillJobs().wasPressed(e))
       doKillJobs();
     
-    else if((prefs.getNodeDetailsRemoveFiles() != null) &&
-	    prefs.getNodeDetailsRemoveFiles().wasPressed(e))
+    else if((prefs.getRemoveFiles() != null) &&
+	    prefs.getRemoveFiles().wasPressed(e))
       doRemoveFiles();
 
     else {

@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.2 2005/01/05 09:44:31 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.3 2005/01/09 23:23:09 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -45,7 +45,7 @@ class GenUserPrefsApp
 	new HotKeyPref
 	("Change the working area view of the panel.", 
 	 "ManagerChangeOwnerView", "Change Owner|View:",
-	 false, true, false, 86),  /* ALT+V */ 
+	 false, true, false, 86), /* ALT+V */ 
 
 	new BasePref(),
 	
@@ -100,11 +100,15 @@ class GenUserPrefsApp
 
 	new HotKeyPref
 	("Manage the editor plugin menu layout.", 
-	 "ShowManageEditors", "Editors:"),    
+	 "ShowManageEditorMenus", "Editor Menus:"),    
+
+	new HotKeyPref
+	("Manage the comparator plugin menu layout.", 
+	 "ShowManageComparatorMenus", "Comparator Menus:"),    
 
 	new HotKeyPref
 	("Manage the tool plugin menu layout.", 
-	 "ShowManageTools", "Tools:"),    
+	 "ShowManageToolMenus", "Tool Menus:"),    
 
 	new BasePref(),
 
@@ -402,7 +406,7 @@ class GenUserPrefsApp
       BasePref prefs[] = {
 	new HotKeyPref
 	("Update the status of the node tree and selected nodes.", 
-	 "NodeBrowserUpdate", "Update Nodes:",
+	 "Update", "Update Nodes:",
 	 false, false, false, 32),  /* Space */ 
 
 	new BasePref(),
@@ -431,7 +435,7 @@ class GenUserPrefsApp
 
 	new BoundedDoublePref
 	("The horizontal distance between nodes.", 
-	 "NodeSpaceX", "Horizontal Space:", 2.5, 4.5, 2.75),
+	 "NodeSpaceX", "Horizontal Space:", 2.5, 4.5, 3.5),
 
 	new BoundedDoublePref
 	("The vertical distance between nodes.", 
@@ -439,7 +443,7 @@ class GenUserPrefsApp
 
 	new BoundedDoublePref
 	("The vertical offset distance for nodes with an odd depth level.",
-	 "NodeOffset", "Vertical Offset:", 0.0, 1.0, 0.45),
+	 "NodeOffset", "Vertical Offset:", 0.0, 1.0, 0.0),
 	
 	new BasePref(),
 
@@ -459,7 +463,7 @@ class GenUserPrefsApp
       BasePref prefs[] = {
 	new HotKeyPref
 	("Update connected node details panels.",
-	 "NodeViewerDetails", "Details:",
+	 "Details", "Details:",
 	 false, false, false, 68),  /* D */	
 
 	new BasePref(),
@@ -484,7 +488,7 @@ class GenUserPrefsApp
 	
 	new HotKeyPref
 	("Edit primary file sequences of the current primary selection.",
-	 "NodeViewerEdit", "Edit:", 
+	 "Edit", "Edit:", 
 	 false, false, false, 10),  /* Enter */ 
 
 	new BasePref(),
@@ -507,28 +511,28 @@ class GenUserPrefsApp
 
 	new HotKeyPref
 	("Submit jobs to the queue for the current primary selection.",
-	 "NodeViewerQueueJobs", "Queue Jobs:", 
+	 "QueueJobs", "Queue Jobs:", 
 	 false, false, false, 81),  /* Q */ 
 
 	new HotKeyPref
 	("Submit jobs to the queue for the current primary selection with special job " + 
 	 "requirements.",
-	 "NodeViewerQueueJobsSpecial", "Queue Jobs Special:", 
+	 "QueueJobsSpecial", "Queue Jobs Special:", 
 	 true, false, false, 81),  /* SHIFT-Q */ 
 
 	new HotKeyPref
 	("Pause all jobs associated with the selected nodes.",
-	 "NodeViewerPauseJobs", "Pause Jobs:",
+	 "PauseJobs", "Pause Jobs:",
 	 false, false, false, 45),  /* Minus */ 
 
 	new HotKeyPref
 	("Resume execution of all jobs associated with the selected nodes.",
-	 "NodeViewerResumeJobs", "Resume Jobs:", 
+	 "ResumeJobs", "Resume Jobs:", 
 	 false, false, false, 61),  /* Equals */ 
 
 	new HotKeyPref
 	("Kill all jobs associated with the selected nodes.",
-	 "NodeViewerKillJobs", "Kill Jobs:", 
+	 "KillJobs", "Kill Jobs:", 
 	 false, false, false, 8),  /* Backspace */ 
 
 	new BasePref(),
@@ -557,7 +561,7 @@ class GenUserPrefsApp
 
 	new HotKeyPref
 	("Remove all the primary/secondary files associated with the selected nodes.",
-	 "NodeViewerRemoveFiles", "Remove Files:"), 
+	 "RemoveFiles", "Remove Files:"), 
 
 	new BasePref(),
 
@@ -644,7 +648,7 @@ class GenUserPrefsApp
 	new HotKeyPref
 	("Remove the selected link.", 
 	 "NodeViewerLinkUnlink", "UnLink:", 
-	 false, false, false, 82),  /* Backspace */ 	
+	 false, false, false, 8),  /* Backspace */ 	
       };
 
       pPrefs.put("Panel|Node Viewer|Links|Hot Keys", prefs);
@@ -662,10 +666,9 @@ class GenUserPrefsApp
 
     {
       BasePref prefs[] = {
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Update the status of all nodes.", 
-	 "NodeViewerUpdateNodes", "Update Nodes:", 
-	 false, false, false, 32), /* Space */ 
+	 "NodeViewerUpdate", "Update Nodes:", "Update"),
 	
 	new HotKeyPref
 	("Register a new node.",
@@ -676,29 +679,29 @@ class GenUserPrefsApp
 
 	new HotKeyPref
 	("Move the camera to frame the bounds of the currently selected nodes.",
-	 "NodeViewerCameraFrameSelection", "Frame Selection:",
+	 "FrameSelection", "Frame Selection:",
 	 false, false, false, 70),  /* F */ 
 	
 	new HotKeyPref
 	("Move the camera to frame all active nodes.",
-	 "NodeViewerCameraFrameAll", "Frame All:", 
+	 "FrameAll", "Frame All:", 
 	 false, false, false, 71),  /* G */ 
 	
 	new BasePref(),
 
 	new HotKeyPref
 	("Automatically expand the first occurance of a node.",
-	 "NodeViewerAutomaticExpandNodes", "Automatic Expand:", 
+	 "AutomaticExpand", "Automatic Expand:", 
 	 false, false, false, 69),  /* E */
 
 	new HotKeyPref
 	("Expand all nodes.",
-	 "NodeViewerExpandAllNodes", "Expand All:", 
+	 "ExpandAll", "Expand All:", 
 	 false, false, false, 91),  /* Open Bracket */
 
 	new HotKeyPref
 	("Collapse all nodes.",
-	 "NodeViewerCollapseAllNodes", "Collapse All:", 
+	 "CollapseAll", "Collapse All:", 
 	 false, false, false, 93),  /* Close Bracket */
 
 	new BasePref(),
@@ -722,154 +725,134 @@ class GenUserPrefsApp
       BasePref prefs[] = {
 	new HotKeyPref
 	("Apply the changes to the working version.", 
-	 "NodeDetailsApplyChanges", "Apply Changes:",
+	 "ApplyChanges", "Apply Changes:",
 	 false, false, false, 155),   /* Insert */ 
 	
 	new BasePref(),
 	
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Edit primary file sequences of the current node.",
-	 "NodeDetailsEdit", "Edit:", 
-	 false, false, false, 10),  /* Enter */ 
+	 "NodeDetailsEdit", "Edit:", "Edit"), 
 
 	new BasePref(),
 
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Submit jobs to the queue for the current node.",
-	 "NodeDetailsQueueJobs", "Queue Jobs:", 
-	 false, false, false, 81),  /* Q */ 
+	 "NodeDetailsQueueJobs", "Queue Jobs:", "QueueJobs"), 
 
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Submit jobs to the queue for the current node with special job requirements.",
-	 "NodeDetailsQueueJobsSpecial", "Queue Jobs Special:", 
-	 true, false, false, 81),  /* SHIFT-Q */ 
+	 "NodeDetailsQueueJobsSpecial", "Queue Jobs Special:", "QueueJobsSpecial"),  
 
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Pause all jobs associated with the current node.",
-	 "NodeDetailsPauseJobs", "Pause Jobs:",
-	 false, false, false, 45),  /* Minus */ 
+	 "NodeDetailsPauseJobs", "Pause Jobs:", "PauseJobs"), 
 
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Resume execution of all jobs associated with the current node.",
-	 "NodeDetailsResumeJobs", "Resume Jobs:", 
-	 false, false, false, 61),  /* Equals */ 
+	 "NodeDetailsResumeJobs", "Resume Jobs:", "ResumeJobs"), 
 
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Kill all jobs associated with the current node.",
-	 "NodeDetailsKillJobs", "Kill Jobs:", 
-	 false, false, false, 8),  /* Backspace */ 
+	 "NodeDetailsKillJobs", "Kill Jobs:", "KillJobs"), 
 
 	new BasePref(),
 
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Remove all the primary/secondary files associated with the selected node.",
-	 "NodeDetailsRemoveFiles", "Remove Files:")
+	 "NodeDetailsRemoveFiles", "Remove Files:", "RemoveFiles"), 
       };
 
       pPrefs.put("Panel|Node Details|Hot Keys", prefs);
     }
-
+    
     {
       BasePref prefs[] = {
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Apply the changes to the working version.", 
-	 "NodeFilesApplyChanges", "Apply Changes:",
-	 false, false, false, 155),  /* Insert */ 
-
+	 "NodeFilesApplyChanges", "Apply Changes:", "ApplyChanges"), 
+	
 	new BasePref(),
-
-	new HotKeyPref
+	
+	new DuplicateHotKeyPref
 	("Edit primary file sequences of the current node.",
-	 "NodeFilesEdit", "Edit:", 
-	 false, false, false, 10),  /* Enter */ 
+	 "NodeFilesEdit", "Edit:", "Edit"), 
 
 	new BasePref(),
 
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Submit jobs to the queue for the current node.",
-	 "NodeFilesQueueJobs", "Queue Jobs:", 
-	 false, false, false, 81),  /* Q */ 
+	 "NodeFilesQueueJobs", "Queue Jobs:", "QueueJobs"), 
 
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Submit jobs to the queue for the current node with special job requirements.",
-	 "NodeFilesQueueJobsSpecial", "Queue Jobs Special:", 
-	 true, false, false, 81),  /* SHIFT-Q */ 
+	 "NodeFilesQueueJobsSpecial", "Queue Jobs Special:", "QueueJobsSpecial"),  
 
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Pause all jobs associated with the current node.",
-	 "NodeFilesPauseJobs", "Pause Jobs:",
-	 false, false, false, 45),  /* Minus */ 
+	 "NodeFilesPauseJobs", "Pause Jobs:", "PauseJobs"), 
 
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Resume execution of all jobs associated with the current node.",
-	 "NodeFilesResumeJobs", "Resume Jobs:", 
-	 false, false, false, 61),  /* Equals */ 
+	 "NodeFilesResumeJobs", "Resume Jobs:", "ResumeJobs"), 
 
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Kill all jobs associated with the current node.",
-	 "NodeFilesKillJobs", "Kill Jobs:", 
-	 false, false, false, 8),  /* Backspace */ 
+	 "NodeFilesKillJobs", "Kill Jobs:", "KillJobs"), 
 
 	new BasePref(),
 
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Remove all the primary/secondary files associated with the selected node.",
-	 "NodeFilesRemoveFiles", "Remove Files:")
+	 "NodeFilesRemoveFiles", "Remove Files:", "RemoveFiles"), 
       };
 
       pPrefs.put("Panel|Node Files|Hot Keys", prefs);
     }
 
     {
-      BasePref prefs[] = {
-	new HotKeyPref
+      BasePref prefs[] = {	
+	new DuplicateHotKeyPref
 	("Edit primary file sequences of the current node.",
-	 "NodeHistoryEdit", "Edit:", 
-	 false, false, false, 10),  /* Enter */ 
+	 "NodeHistoryEdit", "Edit:", "Edit"), 
 
 	new BasePref(),
 
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Submit jobs to the queue for the current node.",
-	 "NodeHistoryQueueJobs", "Queue Jobs:", 
-	 false, false, false, 81),  /* Q */ 
+	 "NodeHistoryQueueJobs", "Queue Jobs:", "QueueJobs"), 
 
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Submit jobs to the queue for the current node with special job requirements.",
-	 "NodeHistoryQueueJobsSpecial", "Queue Jobs Special:", 
-	 true, false, false, 81),  /* SHIFT-Q */ 
+	 "NodeHistoryQueueJobsSpecial", "Queue Jobs Special:", "QueueJobsSpecial"),  
 
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Pause all jobs associated with the current node.",
-	 "NodeHistoryPauseJobs", "Pause Jobs:",
-	 false, false, false, 45),  /* Minus */ 
+	 "NodeHistoryPauseJobs", "Pause Jobs:", "PauseJobs"), 
 
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Resume execution of all jobs associated with the current node.",
-	 "NodeHistoryResumeJobs", "Resume Jobs:", 
-	 false, false, false, 61),  /* Equals */ 
+	 "NodeHistoryResumeJobs", "Resume Jobs:", "ResumeJobs"), 
 
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Kill all jobs associated with the current node.",
-	 "NodeHistoryKillJobs", "Kill Jobs:", 
-	 false, false, false, 8),  /* Backspace */ 
+	 "NodeHistoryKillJobs", "Kill Jobs:", "KillJobs"), 
 
 	new BasePref(),
 
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Remove all the primary/secondary files associated with the selected node.",
-	 "NodeHistoryRemoveFiles", "Remove Files:")
+	 "NodeHistoryRemoveFiles", "Remove Files:", "RemoveFiles"), 
       };
 
       pPrefs.put("Panel|Node History|Hot Keys", prefs);
     }
-    
+
     {
       BasePref prefs[] = {
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Update the job servers, slots and groups.", 
-	 "JobBrowserUpdate", "Update:",
-	 false, false, false, 32),  /* Space */ 
+	 "JobBrowserUpdate", "Update:", "Update"), 
 	
 	new BasePref(),
 
@@ -877,10 +860,9 @@ class GenUserPrefsApp
 	("Show the resource usage history for the selected servers.", 
 	 "JobBrowserHostsHistory", "History:"), 
 
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Apply the changes to job server properties.", 
-	 "JobBrowserHostsApply", "Apply Changes:", 
-	 false, false, false, 155),   /* Insert */ 
+	 "JobBrowserHostsApply", "Apply Changes:", "ApplyChanges"), 
 	
 	new HotKeyPref
 	("Add a new job server.", 
@@ -903,31 +885,26 @@ class GenUserPrefsApp
 	("Toggle whether to show only the current or all views.", 
 	 "JobBrowserToggleFilterViews", "Toggle Views Filter:"), 
 	
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Resubmit aborted and failed jobs to the queue for the selected groups.",
-	 "JobBrowserGroupsQueueJobs", "Queue Jobs:", 
-	 false, false, false, 81),  /* Q */ 
+	 "JobBrowserGroupsQueueJobs", "Queue Jobs:", "QueueJobs"), 
 
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Resubmit aborted and failed jobs to the queue for the selected groups with " + 
 	 "special job requirements.",
-	 "JobBrowserGroupsQueueJobsSpecial", "Queue Jobs Special:", 
-	 true, false, false, 81),  /* SHIFT-Q */ 
+	 "JobBrowserGroupsQueueJobsSpecial", "Queue Jobs Special:", "QueueJobsSpecial"), 
 
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Pause all jobs associated with the selected groups.",
-	 "JobBrowserGroupsPauseJobs", "Pause Jobs:",
-	 false, false, false, 45),  /* Minus */ 
+	 "JobBrowserGroupsPauseJobs", "Pause Jobs:", "PauseJobs"), 
 
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Resume execution of all jobs associated with the selected groups.",
-	 "JobBrowserGroupsResumeJobs", "Resume Jobs:", 
-	 false, false, false, 61),  /* Equals */ 
+	 "JobBrowserGroupsResumeJobs", "Resume Jobs:", "ResumeJobs"), 
 
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Kill all jobs associated with the selected groups.",
-	 "JobBrowserGroupsKillJobs", "Kill Jobs:", 
-	 false, false, false, 8),  /* Backspace */ 
+	 "JobBrowserGroupsKillJobs", "Kill Jobs:", "KillJobs"), 
 
 	new HotKeyPref
 	("Delete the selected completed job groups.",
@@ -944,42 +921,61 @@ class GenUserPrefsApp
 
     {
       BasePref prefs[] = {
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Update connected job details panels.",
-	 "JobDetails", "Details:",
-	 false, false, false, 68),  /* D */
+	 "JobDetails", "Details:", "Details"), 
       
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("View the target files of the primary selected job or job group.", 
-	 "JobView", "View:",
-	 false, false, false, 10),  /* Enter */ 
+	 "JobView", "View:", "Edit"), 
 
 	new BasePref(),
 	
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Resubmit all aborted and failed selected jobs.",
-	 "JobQueueJobs", "Queue Jobs:", 
-	 false, false, false, 81),  /* Q */ 
+	 "JobQueueJobs", "Queue Jobs:", "QueueJobs"), 
 
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Resubmit all aborted and failed selected with special job requirements.",
-	 "JobQueueJobsSpecial", "Queue Jobs Special:", 
-	 true, false, false, 81),  /* SHIFT-Q */ 
+	 "JobQueueJobsSpecial", "Queue Jobs Special:", "QueueJobsSpecial"), 
 
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Pause all selected jobs.",
-	 "JobPauseJobs", "Pause Jobs:",
-	 false, false, false, 45),  /* Minus */ 
+	 "JobPauseJobs", "Pause Jobs:", "PauseJobs"), 
 
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Resume execution of all selected jobs.",
-	 "JobResumeJobs", "Resume Jobs:",
-	 false, false, false, 61),  /* Equals */ 
+	 "JobResumeJobs", "Resume Jobs:", "ResumeJobs"), 
       
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Kill all selected jobs.", 
-	 "JobKillJobs", "Kill Jobs:",
-	 false, false, false, 8),  /* Backspace */ 
+	 "JobKillJobs", "Kill Jobs:", "KillJobs"), 
+      };      
+
+      pPrefs.put("Panel|Job Viewer|Job|Hot Keys", prefs);
+    }
+
+    {
+      BasePref prefs[] = {	
+	new DuplicateHotKeyPref
+	("Resubmit all aborted and failed selected jobs.",
+	 "JobGroupQueueJobs", "Queue Jobs:", "QueueJobs"), 
+
+	new DuplicateHotKeyPref
+	("Resubmit all aborted and failed selected with special job requirements.",
+	 "JobGroupQueueJobsSpecial", "Queue Jobs Special:", "QueueJobsSpecial"), 
+
+	new DuplicateHotKeyPref
+	("Pause all selected jobs.",
+	 "JobGroupPauseJobs", "Pause Jobs:", "PauseJobs"), 
+
+	new DuplicateHotKeyPref
+	("Resume execution of all selected jobs.",
+	 "JobGroupResumeJobs", "Resume Jobs:", "ResumeJobs"), 
+      
+	new DuplicateHotKeyPref
+	("Kill all selected jobs.", 
+	 "JobGroupKillJobs", "Kill Jobs:", "KillJobs"), 
 
 	new BasePref(),
 
@@ -989,7 +985,7 @@ class GenUserPrefsApp
 	 true, false, false, 8),  /* SHIFT + Backspace */ 
       };      
 
-      pPrefs.put("Panel|Job Viewer|Job|Hot Keys", prefs);
+      pPrefs.put("Panel|Job Viewer|Job Group|Hot Keys", prefs);
     }
 
     {
@@ -1012,39 +1008,33 @@ class GenUserPrefsApp
 
     {
       BasePref prefs[] = {
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Update the status of all jobs.", 
-	 "JobViewerUpdate", "Update Jobs:", 
-	 false, false, false, 32), /* Space */ 
+	 "JobViewerUpdate", "Update Jobs:", "Update"), 
 	
 	new BasePref(),
 	
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Move the camera to frame the bounds of the currently selected jobs.",
-	 "JobViewerCameraFrameSelection", "Frame Selection:",
-	 false, false, false, 70),  /* F */ 
+	 "JobViewerFrameSelection", "Frame Selection:", "FrameSelection"), 
 	
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Move the camera to frame all active jobs.",
-	 "JobViewerCameraFrameAll", "Frame All:", 
-	 false, false, false, 71),  /* G */ 
+	 "JobViewerFrameAll", "Frame All:", "FrameAll"), 
 	
 	new BasePref(),
 
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Automatically expand the first occurance of a job.",
-	 "JobViewerAutomaticExpandJobs", "Automatic Expand:", 
-	 false, false, false, 65),  /* A */
+	 "JobViewerAutomaticExpand", "Automatic Expand:", "AutomaticExpand"), 
 
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Expand all jobs.",
-	 "JobViewerExpandAllJobs", "Expand All:", 
-	 false, false, false, 91),  /* Open Bracket */
+	 "JobViewerExpandAll", "Expand All:", "ExpandAll"), 
 
-	new HotKeyPref
+	new DuplicateHotKeyPref
 	("Collapse all jobs.",
-	 "JobViewerCollapseAllJobs", "Collapse All:", 
-	 false, false, false, 93),  /* Close Bracket */
+	 "JobViewerCollapseAll", "Collapse All:", "CollapseAll"), 
       };
 
       pPrefs.put("Panel|Job Viewer|Hot Keys", prefs);
@@ -1072,6 +1062,300 @@ class GenUserPrefsApp
 
       pPrefs.put("Panel|Job Details|Hot Keys", prefs);
     }
+
+    /* panel ordering */ 
+    {
+      pPrefPanels = new LinkedList<String>();
+      
+      pPrefPanels.add("Main Menu|Tool Tips");
+      pPrefPanels.add("Main Menu|Top Level|Hot Keys");
+      pPrefPanels.add("Main Menu|Admin|Hot Keys");
+      pPrefPanels.add("Main Menu|Help|Hot Keys");
+      pPrefPanels.add("Main Menu|Panel Group|Hot Keys");
+      pPrefPanels.add("Main Menu|Panel Window|Hot Keys");
+      pPrefPanels.add("Main Menu|Panel Type|Hot Keys");
+      pPrefPanels.add("Main Menu|Panel Layout|Hot Keys");
+
+      pPrefPanels.add("Panel|Appearance");
+      pPrefPanels.add("Panel|Node Browser|Hot Keys");
+
+      pPrefPanels.add("Panel|Node Viewer|Appearance");
+      pPrefPanels.add("Panel|Node Viewer|Hot Keys");
+      pPrefPanels.add("Panel|Node Viewer|Node|Appearance");
+      pPrefPanels.add("Panel|Node Viewer|Node|Hot Keys");
+      pPrefPanels.add("Panel|Node Viewer|Links|Appearance");
+      pPrefPanels.add("Panel|Node Viewer|Links|Hot Keys");
+
+      pPrefPanels.add("Panel|Node Details|Hot Keys");
+      pPrefPanels.add("Panel|Node Files|Hot Keys");
+      pPrefPanels.add("Panel|Node History|Hot Keys");
+
+      pPrefPanels.add("Panel|Job Browser|Hot Keys");
+      pPrefPanels.add("Panel|Job Viewer|Job|Hot Keys");
+
+      pPrefPanels.add("Panel|Job Viewer|Job Group|Hot Keys");
+      pPrefPanels.add("Panel|Job Viewer|Appearance");
+      pPrefPanels.add("Panel|Job Viewer|Hot Keys");
+      pPrefPanels.add("Panel|Job Details|Hot Keys");
+    }
+
+    /* hot key groups */ 
+    {
+      TreeSet<String> manager = new TreeSet<String>();
+      {
+	/* windows */
+	manager.add("ManagerNodeBrowserWindow");
+	manager.add("ManagerNodeViewerWindow");
+	manager.add("ManagerNodeDetailsWindow");
+	manager.add("ManagerNodeFilesWindow");
+	manager.add("ManagerNodeHistoryWindow");
+	manager.add("ManagerJobBrowserWindow");
+	manager.add("ManagerJobViewerWindow");
+	manager.add("ManagerJobDetailsWindow");
+	manager.add("ManagerEmptyWindow");
+	
+	/* panels */ 
+	manager.add("ManagerNodeBrowserPanel");
+	manager.add("ManagerNodeViewerPanel");
+	manager.add("ManagerNodeDetailsPanel");
+	manager.add("ManagerNodeFilesPanel");
+	manager.add("ManagerNodeHistoryPanel");
+	manager.add("ManagerJobBrowserPanel");
+	manager.add("ManagerJobViewerPanel");
+	manager.add("ManagerJobDetailsPanel");
+	manager.add("ManagerEmptyPanel");
+	
+	/* layout */ 
+	manager.add("ManagerAddLeft");
+	manager.add("ManagerAddRight");
+	manager.add("ManagerAddAbove");
+	manager.add("ManagerAddBelow");
+	manager.add("ManagerAddTab");
+	manager.add("ManagerClosePanel");
+	
+	/* owner|view */      
+	manager.add("ManagerChangeOwnerView");
+	
+	/* panel manager */ 
+	manager.add("ManagerGroup0");
+	manager.add("ManagerGroup1");
+	manager.add("ManagerGroup2");
+	manager.add("ManagerGroup3");
+	manager.add("ManagerGroup4");
+	manager.add("ManagerGroup5");
+	manager.add("ManagerGroup6");
+	manager.add("ManagerGroup7");
+	manager.add("ManagerGroup8");
+	manager.add("ManagerGroup9");
+	
+	/* UIMaster */ 
+	manager.add("SaveLayout");
+	manager.add("ShowManageLayouts");
+	manager.add("ShowUserPrefs");
+	manager.add("ShowDefaultEditors");
+	manager.add("ShowManageUsers");
+	manager.add("ShowManageToolsets");
+	manager.add("ShowManageEditorMenus");
+	manager.add("ShowManageComparatorMenus");
+	manager.add("ShowManageToolMenus");
+	manager.add("ShowManageLicenseKeys");
+	manager.add("ShowManageSelectionKeys");
+	manager.add("Quit");
+      
+	/* help */ 
+	manager.add("ShowAbout");
+	manager.add("ShowQuickReference");
+	manager.add("ShowHomePage");
+	manager.add("ShowSupportForums");
+	manager.add("ShowBugDatabase");
+	manager.add("ShowConfig");
+      }
+    
+      TreeSet<String> jobs = new TreeSet<String>();
+      {
+	jobs.add("QueueJobs");
+	jobs.add("QueueJobsSpecial");
+	jobs.add("PauseJobs");
+	jobs.add("ResumeJobs");
+	jobs.add("KillJobs");
+      }
+      
+      TreeSet<String> camera = new TreeSet<String>();
+      {
+	camera.add("FrameSelection");
+	camera.add("FrameAll");
+	camera.add("AutomaticExpand");
+	camera.add("CollapseAll");
+	camera.add("ExpandAll");	
+      }
+      
+      String details      = "Details";
+      String update       = "Update";
+      String edit         = "Edit";
+      String applyChanges = "ApplyChanges";
+      String removeFiles  = "RemoveFiles";
+
+      pHotKeyGroups = new TreeMap<String,TreeSet<String>>();
+
+      {
+	TreeSet<String> group = new TreeSet<String>();
+	pHotKeyGroups.put("NodeBrowser", group);
+
+	group.addAll(manager);
+	group.add(update);
+	group.add("NodeBrowserNodeFilter");
+      }
+    
+      {
+	TreeSet<String> group = new TreeSet<String>();
+	pHotKeyGroups.put("NodeViewerPanel", group);
+      
+	group.addAll(manager);
+	group.add("NodeViewerRegisterNewNode");
+	group.add(update);
+	group.addAll(camera);
+	group.add("NodeViewerShowHideDownstreamNodes");
+	group.add("NodeViewerRemoveAllRoots");
+      }
+
+      {
+	TreeSet<String> group = new TreeSet<String>();
+	pHotKeyGroups.put("NodeViewerNode", group);
+
+	group.addAll(manager);
+	group.add(details);
+	group.add("NodeViewerMakeRoot");
+	group.add("NodeViewerAddRoot");
+	group.add("NodeViewerReplaceRoot");
+	group.add("NodeViewerRemoveRoot");
+	group.add(edit);
+	group.add("NodeViewerLink");
+	group.add("NodeViewerUnlink");
+	group.add("NodeViewerAddSecondary");
+	group.addAll(jobs);
+	group.add("NodeViewerCheckIn");
+	group.add("NodeViewerCheckOut");
+	group.add("NodeViewerEvolve");
+	group.add("NodeViewerClone");
+	group.add("NodeViewerRelease");
+	group.add(removeFiles);
+	group.add("NodeViewerRename");
+	group.add("NodeViewerRenumber");
+	group.add("NodeViewerDelete");
+      }
+
+      {
+	TreeSet<String> group = new TreeSet<String>();
+	pHotKeyGroups.put("NodeViewerLink", group);
+
+	group.addAll(manager);
+	group.add("NodeViewerLinkEdit");
+	group.add("NodeViewerLinkUnlink");
+      }
+
+      {
+	TreeSet<String> group = new TreeSet<String>();
+	pHotKeyGroups.put("NodeDetails", group);
+      
+	group.addAll(manager);
+	group.add(applyChanges);
+	group.add(edit);
+	group.addAll(jobs);
+	group.add(removeFiles);
+      }
+    
+      {
+	TreeSet<String> group = new TreeSet<String>();
+	pHotKeyGroups.put("NodeFiles", group);
+      
+	group.addAll(manager);
+	group.add(applyChanges);
+	group.add(edit);
+	group.addAll(jobs);
+	group.add(removeFiles);
+      }
+    
+      {
+	TreeSet<String> group = new TreeSet<String>();
+	pHotKeyGroups.put("NodeHistory", group);
+      
+	group.addAll(manager);
+	group.add(edit);
+	group.addAll(jobs);
+	group.add(removeFiles);
+      }
+    
+      {
+	TreeSet<String> group = new TreeSet<String>();
+	pHotKeyGroups.put("JobBrowserServer", group);
+      
+	group.addAll(manager);
+	group.add(update);
+	group.add("JobBrowserHostsHistory");
+	group.add(applyChanges);
+	group.add("JobBrowserHostsAdd");
+	group.add("JobBrowserHostsRemove");
+      }
+
+      {
+	TreeSet<String> group = new TreeSet<String>();
+	pHotKeyGroups.put("JobBrowserSlot", group);
+      
+	group.addAll(manager);
+	group.add(update);
+	group.add("JobBrowserSlotsKillJobs");
+      }
+    
+      {
+	TreeSet<String> group = new TreeSet<String>();
+	pHotKeyGroups.put("JobBrowserGroup", group);
+      
+	group.addAll(manager);
+	group.add(update);
+	group.add("JobBrowserToggleFilterViews");
+	group.addAll(jobs);
+	group.add("JobBrowserGroupsDelete");
+	group.add("JobBrowserGroupsDeleteCompleted");
+      }
+    
+      {
+	TreeSet<String> group = new TreeSet<String>();
+	pHotKeyGroups.put("JobViewerPanel", group);
+      
+	group.addAll(manager);
+	group.add(update);
+	group.addAll(camera);
+      }
+    
+      {
+	TreeSet<String> group = new TreeSet<String>();
+	pHotKeyGroups.put("JobViewerJob", group);
+      
+	group.addAll(manager);
+	group.add(details);
+	group.add(edit);
+	group.addAll(jobs);
+      }
+    
+      {
+	TreeSet<String> group = new TreeSet<String>();
+	pHotKeyGroups.put("JobViewerGroup", group);
+      
+	group.addAll(manager);
+	group.addAll(jobs);
+	group.add("DeleteJobGroups");
+      }
+    
+      {
+	TreeSet<String> group = new TreeSet<String>();
+	pHotKeyGroups.put("JobDetails", group);
+      
+	group.addAll(manager);
+	group.add("ShowExecDetails");
+	group.add("ShowJobOutput");
+	group.add("ShowJobErrors");
+      }
+    }
   }
 
 
@@ -1092,6 +1376,7 @@ class GenUserPrefsApp
     GenUserPrefsApp app = new GenUserPrefsApp();
     app.generateUserPrefsClass(new File("ui/core/UserPrefs.java"));
     app.generateJUserPrefsDialogClass(new File("ui/core/JUserPrefsDialog.java"));
+    app.generateKeyExcludeClasses(new File("ui/core"));
   }
 
   
@@ -1112,7 +1397,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.2 2005/01/05 09:44:31 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.3 2005/01/09 23:23:09 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -1367,7 +1652,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.2 2005/01/05 09:44:31 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.3 2005/01/09 23:23:09 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -1416,7 +1701,7 @@ class GenUserPrefsApp
        "    super.initUI();\n" + 
        "\n");
     
-    for(String group : pPrefs.keySet()) {
+    for(String group : pPrefPanels) {
       String gtitle = group.replace("|", " - ");
 
       buf.append
@@ -1442,8 +1727,50 @@ class GenUserPrefsApp
 	 "\n");
     }
 
+    {
+      buf.append
+	("    /* hot key aliases */\n" + 
+	 "    {\n");
+
+      for(String group : pPrefs.keySet()) {
+	BasePref prefs[] = pPrefs.get(group);
+	int wk;
+	for(wk=0; wk<prefs.length; wk++) 
+	  prefs[wk].genKeyGroupDeclare(buf, 3);
+      }
+      
+      buf.append("\n");
+      
+      for(String group : pPrefs.keySet()) {
+	BasePref prefs[] = pPrefs.get(group);
+	int wk;
+	for(wk=0; wk<prefs.length; wk++) 
+	  prefs[wk].genKeyGroupAdd(buf, 3);
+      }
+      
+      buf.append
+	("    }\n\n");
+    }
+
+    {
+      buf.append
+	("    /* hot key exlusion groups */\n" + 
+	 "    {\n");
+
+      for(String group : pPrefs.keySet()) {
+	BasePref prefs[] = pPrefs.get(group);
+	int wk;
+	for(wk=0; wk<prefs.length; wk++) 
+	  prefs[wk].genKeyExcludeAdd(buf, 3);
+      }
+
+      buf.append
+	("    }\n\n");
+    }
+
     buf.append
-      ("    {\n" + 
+      ("    /* expand all tree nodes */\n" + 
+       "    {\n" + 
        "      int wk;\n" + 
        "      for(wk=0; wk<pTree.getRowCount(); wk++)\n" + 
        "        pTree.expandRow(wk);\n" + 
@@ -1463,7 +1790,7 @@ class GenUserPrefsApp
        "    UIMaster master = UIMaster.getInstance();\n" +
        "    UserPrefs prefs = UserPrefs.getInstance();\n" + 
        "\n");
-    
+  
     for(String group : pPrefs.keySet()) {
       String gtitle = group.replace("|", " - ");
 
@@ -1519,9 +1846,23 @@ class GenUserPrefsApp
 	 "\n");
     }
 
-    buf.append
-      ("  }\n" + 
-       "\n" + 
+    buf.append                                                               
+      ("  }\n" +
+       "\n" +  
+       "\n" +
+       "\n" +
+       genMinorHeader("HOT KEY FIELD ACCESSORS") +
+       "\n");
+       
+    for(String group : pPrefs.keySet()) {
+      BasePref prefs[] = pPrefs.get(group);
+      int wk;
+      for(wk=0; wk<prefs.length; wk++) 
+	prefs[wk].genKeyGetter(buf, 1);
+    }
+
+    buf.append 
+      ("\n" + 
        "\n" +
        "\n" +
        genMinorHeader("STATIC INTERNALS") +
@@ -1565,6 +1906,21 @@ class GenUserPrefsApp
     }
   }
 
+
+  private void 
+  generateKeyExcludeClasses
+  (
+   File dir 
+  )
+  {
+    for(String group : pPrefs.keySet()) {
+      BasePref prefs[] = pPrefs.get(group);
+      int wk;
+      for(wk=0; wk<prefs.length; wk++) 
+	prefs[wk].generateExcludeClass(dir, group);
+    }
+  }
+    
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -1716,6 +2072,46 @@ class GenUserPrefsApp
     } 
 
     public void 
+    genKeyGroupDeclare
+    (
+     StringBuffer buf,
+     int level
+    )
+    {}
+
+    public void 
+    genKeyGroupAdd
+    (
+     StringBuffer buf,
+     int level
+    )
+    {}
+
+    public void 
+    genKeyExcludeAdd
+    (
+     StringBuffer buf,
+     int level
+    )
+    {}
+
+    public void 
+    generateExcludeClass
+    (
+     File dir,
+     String pname
+    )
+    {} 
+
+    public void 
+    genKeyGetter
+    (
+     StringBuffer buf,
+     int level
+    )
+    {}
+
+    public void 
     genSavePrefs
     (
      StringBuffer buf,
@@ -1762,6 +2158,18 @@ class GenUserPrefsApp
       pLabel      = label;
       pAtomicType = atype;
       pGlueType   = gtype;
+    }
+
+    public String
+    getTitle()
+    {
+      return pTitle;
+    }
+
+    public String
+    getLabel()
+    {
+      return pLabel;
     }
 
     public void 
@@ -2556,6 +2964,190 @@ class GenUserPrefsApp
     } 
 
     public void 
+    genKeyGroupDeclare
+    (
+     StringBuffer buf,
+     int level
+    )
+    {
+      buf.append
+	(indent(level) + "p" + pTitle + "KeyGroup = new HotKeyGroup();\n");
+    }
+
+    public void 
+    genKeyGroupAdd
+    (
+     StringBuffer buf,
+     int level
+    )
+    {
+      buf.append
+	(indent(level) + "p" + pTitle + "KeyGroup.add(p" + pTitle + ");\n");
+    } 
+
+    public void 
+    genKeyExcludeAdd
+    (
+     StringBuffer buf,
+     int level
+    )
+    {
+      buf.append
+	(indent(level) + "p" + pTitle + ".addActionListener" + 
+	 "(new " + pTitle + "KeyExclude(this));\n");
+    } 
+
+    public void 
+    generateExcludeClass
+    (
+     File dir,
+     String pname
+    )
+    {
+      String cname = (pTitle + "KeyExclude");
+
+      StringBuffer buf = new StringBuffer();
+      buf.append
+	("// $Id: GenUserPrefsApp.java,v 1.3 2005/01/09 23:23:09 jim Exp $\n" +
+	 "\n" + 
+	 "package us.temerity.pipeline.ui.core;\n" + 
+	 "\n" + 
+	 "import us.temerity.pipeline.*;\n" + 
+	 "import us.temerity.pipeline.ui.*;\n" +
+	 "\n" + 
+	 "import java.awt.*;\n" + 
+	 "import java.awt.event.*;\n" + 
+	 "\n" + 
+	 genHeader(cname.toUpperCase()) + 
+	 "\n" +
+	 "/**\n" +
+	 " * A hot key exclusion listener.\n" + 
+	 " */\n" + 
+	 "public\n" +  				     	   
+	 "class " + cname + "\n" +
+	 "  extends BaseKeyExclude\n" +  		     		   
+	 "{\n" +  
+	 genMinorHeader("CONSTRUCTOR") +
+	 "\n" +
+	 "  public\n" +  	 			     		   
+	 "  " + cname + "\n" + 
+	 "  (\n" + 
+	 "    JUserPrefsDialog parent\n" +
+	 "  )\n" +  		     
+	 "  {\n" +
+	 "    pParent = parent;\n" + 
+	 "  }\n" +  					     		   
+	 "\n" +  
+	 "\n" + 
+	 "\n" +
+	 genMinorHeader("HELPERS") +
+	 "\n" +
+	 "  protected void\n" +  	 		     		   
+	 "  validate()\n" +  				     		   
+	 "    throws PipelineException\n" +  		     		   
+	 "  {\n" +  					     		   
+	 "    HotKey key = pParent.get" + pTitle + "HotKeyField().getHotKey();\n" + 
+	 "    if(key == null)\n" +  	 		     		   
+	 "      return;\n" +  				     	   
+	 "\n");                                              
+      
+      String label = (pname + "|" + pLabel.substring(0, pLabel.length()-1));
+
+      TreeMap<String,String> excluded = new TreeMap<String,String>();
+      for(String key : getExcludedKeys()) {
+	String path = null;
+	for(String group : pPrefs.keySet()) {
+	  BasePref prefs[] = pPrefs.get(group);
+	  int wk;
+	  for(wk=0; wk<prefs.length; wk++) {
+	    if(prefs[wk] instanceof HotKeyPref) {
+	      HotKeyPref hkp = (HotKeyPref) prefs[wk];
+	      if(hkp.getTitle().equals(key)) {
+		String elabel = hkp.getLabel();
+		path = (group + "|" + elabel.substring(0, elabel.length()-1));
+		break;
+	      }
+	    }
+	  }
+
+	  if(path != null) 
+	    break;
+	}
+
+	excluded.put(key, path);
+      }
+
+      for(String key : excluded.keySet()) {
+	buf.append
+	  ("    if(key.equals(pParent.get" + key + "HotKeyField().getHotKey()))\n" +  
+	   "      conflict(key,\n" + 
+	   "               \"" + label + "\",\n" + 
+	   "               \"" + excluded.get(key) + "\");\n\n");
+      }
+
+      buf.append
+	("  }\n" +					     		   
+	 "\n" +  
+	 "\n" + 
+	 "\n" +
+	 genMinorHeader("INTERNALS") +
+	 "\n" +
+	 "  /**\n" + 
+	 "   * The user preferences dialog.\n" + 
+	 "   */\n" + 
+	 "  private JUserPrefsDialog  pParent;\n" + 
+	 "\n" +
+	 "}\n");
+
+      /* write the file */ 
+      try {
+	File file = new File(dir, cname + ".java");
+	FileWriter out = new FileWriter(file);
+	out.write(buf.toString());
+	out.close();
+      }
+      catch(IOException ex) {
+	ex.printStackTrace();
+	System.exit(1);
+      }
+    }
+
+    protected TreeSet<String>
+    getExcludedKeys() 
+    {    
+      TreeSet<String> keys = new TreeSet<String>();
+
+      for(String gname : pHotKeyGroups.keySet()) {
+	TreeSet<String> group = pHotKeyGroups.get(gname);
+	if(group.contains(pTitle)) 
+	  keys.addAll(group);
+      }
+      
+      keys.remove(pTitle);
+
+      return keys;
+    }	
+
+    public void 
+    genKeyGetter
+    (
+     StringBuffer buf,
+     int level
+    )
+    {
+      buf.append
+	(indent(level) + "/**\n" +
+	 indent(level) + " * Get the JHotKeyField for " + pDesc + "\n" + 
+	 indent(level) + " */\n" +
+	 indent(level) + "public JHotKeyField\n" +
+	 indent(level) + "get" + pTitle + "HotKeyField()\n" +
+	 indent(level) + "{\n" + 
+	 indent(level+1) + "return p" + pTitle + ";\n" + 
+	 indent(level) + "}\n" + 
+	 "\n");
+    }
+
+    public void 
     genSavePrefs
     (
      StringBuffer buf,
@@ -2582,13 +3174,144 @@ class GenUserPrefsApp
      int level
     )
     {
-      buf.append(indent(level) + "private JHotKeyField  p" + pTitle + ";\n");
+      buf.append(indent(level) + "private JHotKeyField  p" + pTitle + ";\n" + 
+		 indent(level) + "private HotKeyGroup p" + pTitle + "KeyGroup;\n");
+		 
     } 
 
     protected Boolean  pShiftDown;
     protected Boolean  pAltDown;
     protected Boolean  pCtrlDown;
     protected Integer  pKeyCode;
+  }
+
+  /**
+   * Duplicate HotKey preference.
+   */ 
+  private 
+  class DuplicateHotKeyPref
+    extends HotKeyPref
+  {
+    public 
+    DuplicateHotKeyPref
+    (
+     String desc, 
+     String title, 
+     String label, 
+     String alias
+    ) 
+    {
+      super(desc, title, label);
+      pAlias = alias;
+    }
+
+    public void 
+    genAccessors
+    (
+     StringBuffer buf,
+     int level
+    ) 
+    {}
+
+    public void 
+    genToGlue
+    (
+     StringBuffer buf,
+     int level
+    ) 
+    {}
+
+    public void
+    genFromGlue
+    (
+     StringBuffer buf,
+     int level
+    ) 
+    {}
+
+    public void 
+    genDeclare
+    (
+     StringBuffer buf,
+     int level
+    ) 
+    {}
+
+    public void 
+    genReset
+    (
+     StringBuffer buf,
+     int level
+    )
+    {}
+
+    public void 
+    genKeyGroupDeclare
+    (
+     StringBuffer buf,
+     int level
+    )
+    {}
+
+    public void 
+    genKeyGroupAdd
+    (
+     StringBuffer buf,
+     int level
+    )
+    {
+      buf.append
+	(indent(level) + "p" + pAlias + "KeyGroup.add(p" + pTitle + ");\n");
+    } 
+
+    protected TreeSet<String>
+    getExcludedKeys() 
+    {    
+      TreeSet<String> keys = new TreeSet<String>();
+
+      for(String gname : pHotKeyGroups.keySet()) {
+	TreeSet<String> group = pHotKeyGroups.get(gname);
+	if(group.contains(pAlias)) 
+	  keys.addAll(group);
+      }
+
+      keys.remove(pAlias);
+
+      return keys;
+    }	
+
+    public void 
+    genSavePrefs
+    (
+     StringBuffer buf,
+     int level
+    )
+    {
+      buf.append(indent(level) + "prefs.set" + pAlias + "(p" + pTitle + ".getHotKey());\n");
+    } 
+    
+    public void 
+    genUpdatePrefs
+    (
+     StringBuffer buf,
+     int level
+    )
+    {
+      buf.append(indent(level) + "p" + pTitle + ".setHotKey(prefs.get" + pAlias + "());\n");
+    } 
+
+    public void 
+    genDeclareUI
+    (
+     StringBuffer buf,
+     int level
+    )
+    {
+      buf.append(indent(level) + "private JHotKeyField  p" + pTitle + ";\n");
+		 
+    } 
+
+    protected String  pAlias; 
   }
 
 
@@ -2601,6 +3324,16 @@ class GenUserPrefsApp
    * The table of user preferences indexed by grouping name.
    */ 
   private TreeMap<String,BasePref[]>  pPrefs;
+
+  /**
+   * The ordering of the preference panels.
+   */ 
+  private LinkedList<String>  pPrefPanels;
+
+  /**
+   * The names of hot keys index by hot key exclusion group name.
+   */ 
+  private TreeMap<String,TreeSet<String>>  pHotKeyGroups;
 
 }
 

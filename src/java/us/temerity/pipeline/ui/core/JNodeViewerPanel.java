@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.6 2005/01/08 15:25:54 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.7 2005/01/09 23:23:09 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -639,11 +639,13 @@ class JNodeViewerPanel
    String newName
   )
   {
-    TreeSet<String> roots = new TreeSet<String>(pRoots.keySet());
-    roots.remove(oldName);
-    roots.add(newName);
-
-    setRoots(roots);
+    if(pRoots.containsKey(oldName)) {
+      TreeSet<String> roots = new TreeSet<String>(pRoots.keySet());
+      roots.remove(oldName);
+      roots.add(newName);
+      
+      setRoots(roots);
+    }
   }
 
 
@@ -1979,8 +1981,8 @@ class JNodeViewerPanel
 	refresh();  
       }
       
-      if((prefs.getNodeViewerDetails() != null) &&
-	 prefs.getNodeViewerDetails().wasPressed(e))
+      if((prefs.getDetails() != null) &&
+	 prefs.getDetails().wasPressed(e))
 	doDetails();
       
       else if((prefs.getNodeViewerMakeRoot() != null) &&
@@ -1996,8 +1998,8 @@ class JNodeViewerPanel
 	      prefs.getNodeViewerRemoveRoot().wasPressed(e))
 	doRemoveRoot();
       
-      else if((prefs.getNodeViewerEdit() != null) &&
-	      prefs.getNodeViewerEdit().wasPressed(e))
+      else if((prefs.getEdit() != null) &&
+	      prefs.getEdit().wasPressed(e))
 	doEdit();
 
       else if((prefs.getNodeViewerLink() != null) &&
@@ -2011,20 +2013,20 @@ class JNodeViewerPanel
 	      prefs.getNodeViewerAddSecondary().wasPressed(e))
 	doAddSecondary();
 
-      else if((prefs.getNodeViewerQueueJobs() != null) &&
-	      prefs.getNodeViewerQueueJobs().wasPressed(e))
+      else if((prefs.getQueueJobs() != null) &&
+	      prefs.getQueueJobs().wasPressed(e))
 	doQueueJobs();
-      else if((prefs.getNodeViewerQueueJobsSpecial() != null) &&
-	      prefs.getNodeViewerQueueJobsSpecial().wasPressed(e))
+      else if((prefs.getQueueJobsSpecial() != null) &&
+	      prefs.getQueueJobsSpecial().wasPressed(e))
 	doQueueJobsSpecial();
-      else if((prefs.getNodeViewerPauseJobs() != null) &&
-	      prefs.getNodeViewerPauseJobs().wasPressed(e))
+      else if((prefs.getPauseJobs() != null) &&
+	      prefs.getPauseJobs().wasPressed(e))
 	doPauseJobs();
-      else if((prefs.getNodeViewerResumeJobs() != null) &&
-	      prefs.getNodeViewerResumeJobs().wasPressed(e))
+      else if((prefs.getResumeJobs() != null) &&
+	      prefs.getResumeJobs().wasPressed(e))
 	doResumeJobs();
-      else if((prefs.getNodeViewerKillJobs() != null) &&
-	      prefs.getNodeViewerKillJobs().wasPressed(e))
+      else if((prefs.getKillJobs() != null) &&
+	      prefs.getKillJobs().wasPressed(e))
 	doKillJobs();
 
       else if((prefs.getNodeViewerCheckIn() != null) &&
@@ -2043,8 +2045,8 @@ class JNodeViewerPanel
       else if((prefs.getNodeViewerRelease() != null) &&
 	      prefs.getNodeViewerRelease().wasPressed(e))
 	doRelease();
-      else if((prefs.getNodeViewerRemoveFiles() != null) &&
-	      prefs.getNodeViewerRemoveFiles().wasPressed(e))
+      else if((prefs.getRemoveFiles() != null) &&
+	      prefs.getRemoveFiles().wasPressed(e))
 	doRemoveFiles();
 
       else if((prefs.getNodeViewerRename() != null) &&
@@ -2093,28 +2095,28 @@ class JNodeViewerPanel
     
     /* panel actions */
     else {
-      if((prefs.getNodeViewerUpdateNodes() != null) &&
-	 prefs.getNodeViewerUpdateNodes().wasPressed(e))
+      if((prefs.getUpdate() != null) &&
+	 prefs.getUpdate().wasPressed(e))
 	doUpdate();
       else if((prefs.getNodeViewerRegisterNewNode() != null) &&
 	      prefs.getNodeViewerRegisterNewNode().wasPressed(e))
 	doRegister();
       
-      else if((prefs.getNodeViewerCameraFrameSelection() != null) &&
-		prefs.getNodeViewerCameraFrameSelection().wasPressed(e))
+      else if((prefs.getFrameSelection() != null) &&
+	      prefs.getFrameSelection().wasPressed(e))
 	doFrameSelection();
-      else if((prefs.getNodeViewerCameraFrameAll() != null) &&
-	      prefs.getNodeViewerCameraFrameAll().wasPressed(e))
+      else if((prefs.getFrameAll() != null) &&
+	      prefs.getFrameAll().wasPressed(e))
 	doFrameAll();
       
-      else if((prefs.getNodeViewerAutomaticExpandNodes() != null) &&
-	      prefs.getNodeViewerAutomaticExpandNodes().wasPressed(e))
+      else if((prefs.getAutomaticExpand() != null) &&
+	      prefs.getAutomaticExpand().wasPressed(e))
 	doAutomaticExpand();
-      else if((prefs.getNodeViewerCollapseAllNodes() != null) &&
-	      prefs.getNodeViewerCollapseAllNodes().wasPressed(e))
+      else if((prefs.getCollapseAll() != null) &&
+	      prefs.getCollapseAll().wasPressed(e))
 	doCollapseAll();
-      else if((prefs.getNodeViewerExpandAllNodes() != null) &&
-	      prefs.getNodeViewerExpandAllNodes().wasPressed(e))
+      else if((prefs.getExpandAll() != null) &&
+	      prefs.getExpandAll().wasPressed(e))
 	doExpandAll();
       
       else if((prefs.getNodeViewerShowHideDownstreamNodes() != null) &&

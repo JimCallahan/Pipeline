@@ -1,4 +1,4 @@
-// $Id: JNodeHistoryPanel.java,v 1.2 2005/01/07 08:41:50 jim Exp $
+// $Id: JNodeHistoryPanel.java,v 1.3 2005/01/09 23:23:09 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -797,28 +797,28 @@ class JNodeHistoryPanel
 
     /* local hotkeys */ 
     UserPrefs prefs = UserPrefs.getInstance();
-    if((prefs.getNodeHistoryEdit() != null) &&
-       prefs.getNodeHistoryEdit().wasPressed(e))
+    if((prefs.getEdit() != null) &&
+       prefs.getEdit().wasPressed(e))
       doEdit();
     
-    else if((prefs.getNodeHistoryQueueJobs() != null) &&
-	    prefs.getNodeHistoryQueueJobs().wasPressed(e))
+    else if((prefs.getQueueJobs() != null) &&
+	    prefs.getQueueJobs().wasPressed(e))
       doQueueJobs();
-    else if((prefs.getNodeHistoryQueueJobsSpecial() != null) &&
-	    prefs.getNodeHistoryQueueJobsSpecial().wasPressed(e))
+    else if((prefs.getQueueJobsSpecial() != null) &&
+	    prefs.getQueueJobsSpecial().wasPressed(e))
       doQueueJobsSpecial();
-    else if((prefs.getNodeHistoryPauseJobs() != null) &&
-	    prefs.getNodeHistoryPauseJobs().wasPressed(e))
+    else if((prefs.getPauseJobs() != null) &&
+	    prefs.getPauseJobs().wasPressed(e))
 	doPauseJobs();
-    else if((prefs.getNodeHistoryResumeJobs() != null) &&
-	    prefs.getNodeHistoryResumeJobs().wasPressed(e))
+    else if((prefs.getResumeJobs() != null) &&
+	    prefs.getResumeJobs().wasPressed(e))
       doResumeJobs();
-    else if((prefs.getNodeHistoryKillJobs() != null) &&
-	      prefs.getNodeHistoryKillJobs().wasPressed(e))
+    else if((prefs.getKillJobs() != null) &&
+	      prefs.getKillJobs().wasPressed(e))
       doKillJobs();
     
-    else if((prefs.getNodeHistoryRemoveFiles() != null) &&
-	    prefs.getNodeHistoryRemoveFiles().wasPressed(e))
+    else if((prefs.getRemoveFiles() != null) &&
+	    prefs.getRemoveFiles().wasPressed(e))
       doRemoveFiles();
 
     else {

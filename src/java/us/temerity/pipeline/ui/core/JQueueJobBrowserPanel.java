@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.3 2005/01/07 09:20:05 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.4 2005/01/09 23:23:09 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1245,8 +1245,8 @@ class JQueueJobBrowserPanel
     /* local hotkeys */ 
     boolean unsupported = false;
     UserPrefs prefs = UserPrefs.getInstance();
-    if((prefs.getJobBrowserUpdate() != null) &&
-       prefs.getJobBrowserUpdate().wasPressed(e))
+    if((prefs.getUpdate() != null) &&
+       prefs.getUpdate().wasPressed(e))
       updateAll();
     else {
       switch(pTab.getSelectedIndex()) {      
@@ -1254,8 +1254,8 @@ class JQueueJobBrowserPanel
 	if((prefs.getJobBrowserHostsHistory() != null) &&
 	   prefs.getJobBrowserHostsHistory().wasPressed(e))
 	  doHostsHistory();
-	else if((prefs.getJobBrowserHostsApply() != null) &&
-		prefs.getJobBrowserHostsApply().wasPressed(e))
+	else if((prefs.getApplyChanges() != null) &&
+		prefs.getApplyChanges().wasPressed(e))
 	  doHostsApply();
 	else if((prefs.getJobBrowserHostsAdd() != null) &&
 		prefs.getJobBrowserHostsAdd().wasPressed(e))
@@ -1279,20 +1279,20 @@ class JQueueJobBrowserPanel
 	if((prefs.getJobBrowserToggleFilterViews() != null) &&
 	   prefs.getJobBrowserToggleFilterViews().wasPressed(e))
 	  doToggleFilterViews();
-	else if((prefs.getJobBrowserGroupsQueueJobs() != null) &&
-		prefs.getJobBrowserGroupsQueueJobs().wasPressed(e))
+	else if((prefs.getQueueJobs() != null) &&
+		prefs.getQueueJobs().wasPressed(e))
 	  doGroupsQueueJobs();
-	else if((prefs.getJobBrowserGroupsQueueJobsSpecial() != null) &&
-		prefs.getJobBrowserGroupsQueueJobsSpecial().wasPressed(e))
+	else if((prefs.getQueueJobsSpecial() != null) &&
+		prefs.getQueueJobsSpecial().wasPressed(e))
 	  doGroupsQueueJobsSpecial();
-	else if((prefs.getJobBrowserGroupsPauseJobs() != null) &&
-		prefs.getJobBrowserGroupsPauseJobs().wasPressed(e))
+	else if((prefs.getPauseJobs() != null) &&
+		prefs.getPauseJobs().wasPressed(e))
 	  doGroupsPauseJobs();
-	else if((prefs.getJobBrowserGroupsResumeJobs() != null) &&
-		prefs.getJobBrowserGroupsResumeJobs().wasPressed(e))
+	else if((prefs.getResumeJobs() != null) &&
+		prefs.getResumeJobs().wasPressed(e))
 	  doGroupsResumeJobs();
-	else if((prefs.getJobBrowserGroupsKillJobs() != null) &&
-		prefs.getJobBrowserGroupsKillJobs().wasPressed(e))
+	else if((prefs.getKillJobs() != null) &&
+		prefs.getKillJobs().wasPressed(e))
 	  doGroupsKillJobs();
 	else if((prefs.getJobBrowserGroupsDelete() != null) &&
 		prefs.getJobBrowserGroupsDelete().wasPressed(e))

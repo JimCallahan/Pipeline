@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.3 2005/01/08 08:32:18 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.4 2005/01/09 23:23:09 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1426,28 +1426,28 @@ class JQueueJobViewerPanel
 	refresh();
       }
 
-      if((prefs.getJobDetails() != null) &&
-	 prefs.getJobDetails().wasPressed(e)) 
+      if((prefs.getDetails() != null) &&
+	 prefs.getDetails().wasPressed(e)) 
 	doDetails();
 
-      else if((prefs.getJobView() != null) &&
-	 prefs.getJobView().wasPressed(e)) 
+      else if((prefs.getEdit() != null) &&
+	 prefs.getEdit().wasPressed(e)) 
 	doView();
 
-      else if((prefs.getJobQueueJobs() != null) &&
-	      prefs.getJobQueueJobs().wasPressed(e))
+      else if((prefs.getQueueJobs() != null) &&
+	      prefs.getQueueJobs().wasPressed(e))
 	doQueueJobs();
-      else if((prefs.getJobQueueJobsSpecial() != null) &&
-	      prefs.getJobQueueJobsSpecial().wasPressed(e))
+      else if((prefs.getQueueJobsSpecial() != null) &&
+	      prefs.getQueueJobsSpecial().wasPressed(e))
 	doQueueJobsSpecial();
-      else if((prefs.getJobPauseJobs() != null) &&
-	      prefs.getJobPauseJobs().wasPressed(e))
+      else if((prefs.getPauseJobs() != null) &&
+	      prefs.getPauseJobs().wasPressed(e))
 	doPauseJobs();
-      else if((prefs.getJobResumeJobs() != null) &&
-	      prefs.getJobResumeJobs().wasPressed(e))
+      else if((prefs.getResumeJobs() != null) &&
+	      prefs.getResumeJobs().wasPressed(e))
 	doResumeJobs();
-      else if((prefs.getJobKillJobs() != null) &&
-	      prefs.getJobKillJobs().wasPressed(e))
+      else if((prefs.getKillJobs() != null) &&
+	      prefs.getKillJobs().wasPressed(e))
 	doKillJobs();
 
       else 
@@ -1469,20 +1469,20 @@ class JQueueJobViewerPanel
 	refresh();
       }
 
-      if((prefs.getJobQueueJobs() != null) &&
-	      prefs.getJobQueueJobs().wasPressed(e))
+      if((prefs.getQueueJobs() != null) &&
+	      prefs.getQueueJobs().wasPressed(e))
 	doQueueJobs();
-      else if((prefs.getJobQueueJobsSpecial() != null) &&
-	      prefs.getJobQueueJobsSpecial().wasPressed(e))
+      else if((prefs.getQueueJobsSpecial() != null) &&
+	      prefs.getQueueJobsSpecial().wasPressed(e))
 	doQueueJobsSpecial();
-      else if((prefs.getJobPauseJobs() != null) &&
-	 prefs.getJobPauseJobs().wasPressed(e))
+      else if((prefs.getPauseJobs() != null) &&
+	 prefs.getPauseJobs().wasPressed(e))
 	doPauseJobs();
-      else if((prefs.getJobResumeJobs() != null) &&
-	      prefs.getJobResumeJobs().wasPressed(e))
+      else if((prefs.getResumeJobs() != null) &&
+	      prefs.getResumeJobs().wasPressed(e))
 	doResumeJobs();
-      else if((prefs.getJobKillJobs() != null) &&
-	      prefs.getJobKillJobs().wasPressed(e))
+      else if((prefs.getKillJobs() != null) &&
+	      prefs.getKillJobs().wasPressed(e))
 	doKillJobs();
 
       else if((prefs.getDeleteJobGroups() != null) &&
@@ -1495,25 +1495,25 @@ class JQueueJobViewerPanel
     
     /* panel actions */
     else {
-      if((prefs.getJobViewerUpdate() != null) &&
-	 prefs.getJobViewerUpdate().wasPressed(e))
+      if((prefs.getUpdate() != null) &&
+	 prefs.getUpdate().wasPressed(e))
 	doUpdate();
 
-      else if((prefs.getJobViewerCameraFrameSelection() != null) &&
-		prefs.getJobViewerCameraFrameSelection().wasPressed(e))
+      else if((prefs.getFrameSelection() != null) &&
+	      prefs.getFrameSelection().wasPressed(e))
 	doFrameSelection();
-      else if((prefs.getJobViewerCameraFrameAll() != null) &&
-	      prefs.getJobViewerCameraFrameAll().wasPressed(e))
+      else if((prefs.getFrameAll() != null) &&
+	      prefs.getFrameAll().wasPressed(e))
 	doFrameAll();
       
-      else if((prefs.getJobViewerAutomaticExpandJobs() != null) &&
-	      prefs.getJobViewerAutomaticExpandJobs().wasPressed(e))
+      else if((prefs.getAutomaticExpand() != null) &&
+	      prefs.getAutomaticExpand().wasPressed(e))
 	doAutomaticExpand();
-      else if((prefs.getJobViewerCollapseAllJobs() != null) &&
-	      prefs.getJobViewerCollapseAllJobs().wasPressed(e))
+      else if((prefs.getCollapseAll() != null) &&
+	      prefs.getCollapseAll().wasPressed(e))
 	doCollapseAll();
-      else if((prefs.getJobViewerExpandAllJobs() != null) &&
-	      prefs.getJobViewerExpandAllJobs().wasPressed(e))
+      else if((prefs.getExpandAll() != null) &&
+	      prefs.getExpandAll().wasPressed(e))
 	doExpandAll();
 
       else
