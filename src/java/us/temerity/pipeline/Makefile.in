@@ -331,6 +331,10 @@ CharterBTRoman: laf/scripts/filter-fonts
 	$(BASH) laf/scripts/filter-fonts $@ $(srcdir)/laf/maya/synth/images
 
 
+web-icons: laf/scripts/build-web-icons textures
+	$(BASH) laf/scripts/build-web-icons
+
+
 #--------------------------------------------------------------------------------------------#
 
 install: all installdirs install-jar
@@ -428,6 +432,10 @@ clean-fonts:
 	rm -rf laf/fonts
 
 
+clean-web-icons:
+	rm -rf $(top_srcdir)/docs/images/node-icons
+
+
 #--------------------------------------------------------------------------------------------#
 
 core/PackageInfo.java: $(srcdir)/core/PackageInfo.java.in  $(top_builddir)/config.status
@@ -442,6 +450,10 @@ laf/scripts/filter-fonts: $(srcdir)/laf/scripts/filter-fonts.in \
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 
 laf/scripts/filter-textures: $(srcdir)/laf/scripts/filter-textures.in \
+                             $(top_builddir)/config.status
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
+
+laf/scripts/build-web-icons: $(srcdir)/laf/scripts/build-web-icons.in \
                              $(top_builddir)/config.status
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 
