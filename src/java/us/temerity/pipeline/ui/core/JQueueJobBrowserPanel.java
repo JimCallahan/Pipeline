@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.2 2005/01/07 08:41:50 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.3 2005/01/07 09:20:05 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -574,14 +574,13 @@ class JQueueJobBrowserPanel
 	    QueueJobGroupsTableModel model = new QueueJobGroupsTableModel();
 	    pGroupsTableModel = model;
 	    
-	    JTablePanel tpanel =
-	      new JTablePanel(model, model.getColumnWidths(), 
-			      model.getRenderers(), model.getEditors());
-	    pGroupsTablePanel = tpanel;
-	    
 	    pGroupsListSelector = new GroupsListSelector();
-	    ListSelectionModel smodel = tpanel.getTable().getSelectionModel();
-	    smodel.addListSelectionListener(pGroupsListSelector);
+
+	    JGroupsTablePanel tpanel =
+	      new JGroupsTablePanel(model, model.getColumnWidths(), 
+				    model.getRenderers(), model.getEditors(),
+				    pGroupsListSelector);
+	    pGroupsTablePanel = tpanel;
 	    
 	    {
 	      JScrollPane scroll = tpanel.getTableScroll();
@@ -1923,6 +1922,47 @@ class JQueueJobBrowserPanel
   /*----------------------------------------------------------------------------------------*/
 
   private 
+  class JGroupsTablePanel 
+    extends JTablePanel 
+  {
+    public 
+    JGroupsTablePanel
+    (
+     SortableTableModel model, 
+     int width[], 
+     TableCellRenderer renderers[], 
+     TableCellEditor editors[],
+     GroupsListSelector selector
+    ) 
+    {
+      super(model, width, renderers, editors);
+
+      pSelector = selector;
+      ListSelectionModel smodel = getTable().getSelectionModel();
+      smodel.addListSelectionListener(pSelector);
+    }
+
+    protected void 
+    doSort
+    (
+     int col
+    )
+    { 
+      ListSelectionModel smodel = getTable().getSelectionModel();
+      smodel.removeListSelectionListener(pSelector);
+      super.doSort(col);
+      smodel.addListSelectionListener(pSelector);
+    }
+
+    private static final long serialVersionUID = 6636530854965182895L;
+
+    private GroupsListSelector  pSelector; 
+  }
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
+  private 
   class GroupsListSelector
     implements ListSelectionListener
   {
@@ -2888,7 +2928,7 @@ class JQueueJobBrowserPanel
   /**
    * The job groups table panel.
    */ 
-  private JTablePanel  pGroupsTablePanel;
+  private JGroupsTablePanel  pGroupsTablePanel;
 
   /**
    * The list selection listener.
