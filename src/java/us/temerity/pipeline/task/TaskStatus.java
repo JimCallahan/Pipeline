@@ -1,4 +1,4 @@
-// $Id: TaskStatus.java,v 1.1 2004/10/12 23:21:13 jim Exp $
+// $Id: TaskStatus.java,v 1.2 2004/10/18 04:00:00 jim Exp $
 
 package us.temerity.pipeline.task;
 
@@ -27,31 +27,31 @@ class TaskStatus
    * Construct a new task status.
    * 
    * @param task
-   *   The complete task. 
+   *   The complete task event history.
+   * 
+   * @param stamp
+   *   The timestamp of when the task status should be evaluated in the history of the task.
    */ 
   public
   TaskStatus
   (
-   Task task
+   Task task,
+   Date stamp
   ) 
   {
-    pName           = task.getName();
-    pStartDate      = (Date) task.getStartDate().clone();
-    pCompletionDate = (Date) task.getCompletionDate().clone();
+    pName = task.getName();
 
-    int size = task.getEventTimeStamps().size();
-    pTimeStamps = new Date[size];
-    pEventTypes = new TaskEventType[size];
-    
-    int wk = 0;
-    for(Date stamp : task.getEventTimeStamps()) {
-      pTimeStamps[wk] = stamp;
-      pEventTypes[wk] = task.getEvent(stamp).getEventType();
-      wk++;
-    }
+    pTags = new TreeMap<String,TreeSet<String>>();
+    // pConstraints = new TreeMap<String,TaskConstraint>();
+    pNodes = new TreeMap<String,VersionID>();
 
-    pState = task.getState();
+    pCompletionHistory = new TreeMap<Date,CompletionState>();
+    pActivityHistory   = new TreeMap<Date,ActivityState>();
+
+    for(BaseEvent event : task.getEvents()) 
+      update(event);
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -67,54 +67,272 @@ class TaskStatus
     return pName;
   }
 
-
   /**
-   * Get the estimated date when work should begin.
+   * Get the user name of the current supervisor of the task.
    */ 
-  public Date
-  getStartDate() 
+  public String
+  getSupervisor() 
   {
-    return pStartDate;
+    return pSupervisor;
   }
 
   /**
-   * Get the estimated date when all work should be complete.
-   */ 
-  public Date
-  getCompletionDate() 
+   * Get the name of the current user responsible for completing the task.
+   */
+  public String
+  getOwner() 
   {
-    return pCompletionDate;
-  }
-
-
-  /**
-   * Get the timestamps of when the the task events occurred.
-   */ 
-  public Date[]
-  getEventTimeStamps() 
-  {
-    return pTimeStamps;
+    return pOwner;
   }
 
   /**
-   * Get the types of the task events.
+   * Get the estimated start/completion time interval of the task.
    */ 
-  public TaskEventType[]
-  getEventTypes() 
+  public TimeInterval
+  getTimeInterval()
   {
-    return pEventTypes; 
+    return pTimeInterval; 
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the current task state.
+   * Get the names of all tags supported by the task. 
    */ 
-  public TaskState 
-  getState() 
+  public Set<String> 
+  getTagNames() 
   {
-    return pState; 
+    return Collections.unmodifiableSet(pTags.keySet());
+  }
+  
+  /**
+   * Get the selected values for the given tag. 
+   * 
+   * @param name
+   *   The name of the tag.
+   * 
+   * @return 
+   *   The selected values or <CODE>null</CODE> if the tag is unsupported.
+   */ 
+  public SortedSet<String> 
+  getTagValues
+  (
+   String name
+  ) 
+  {
+    TreeSet<String> values = pTags.get(name);
+    if(values != null) 
+      return Collections.unmodifiableSortedSet(values);
+    return null;
   }
 
+  /**
+   * Is the value selected by this task for the given tag?
+   * 
+   * @param name
+   *   The name of the tag.
+   *    
+   * @param value
+   *   The value of the tag to test.
+   */ 
+  public boolean
+  isTagSelected
+  (
+   String name,
+   String value
+  ) 
+  {
+    TreeSet<String> values = pTags.get(name);
+    if(values != null) 
+      return values.contains(value);
+    return false;    
+  }
+
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the current constraints of this task indexed by the names of the constraining tasks.
+   */ 
+//   public TreeMap<String,TaskConstraint>
+//   getConstraints() 
+//   {
+//     return null;
+//   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the fully resolved names of the nodes currently associated with the task.
+   */ 
+  public Set<String> 
+  getNodeNames() 
+  {
+    return Collections.unmodifiableSet(pNodes.keySet());
+  }
+  
+  /**
+   * Get the revision number of the checked-in node version of the given node which is 
+   * associated with the task.
+   * 
+   * @param name
+   *   The fully resolved node name.
+   * 
+   * @return 
+   *   The revision number or <CODE>null</CODE> if the node is not associated with the task.
+   */ 
+  public VersionID
+  getNodeVersionID
+  (
+   String name
+  ) 
+  {
+    return pNodes.get(name);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the timestamps of when the {@link CompletionState CompletionState} of the task
+   * has changed.
+   */ 
+  public Set<Date>
+  getCompletionStamps() 
+  {
+    return Collections.unmodifiableSet(pCompletionHistory.keySet());
+  }
+
+  /**
+   * Get the completion state at the given point in time.
+   */ 
+  public CompletionState
+  getCompletionState
+  (
+   Date stamp
+  ) 
+  {
+    if(stamp == null) 
+      throw new IllegalArgumentException
+	("The timestamp cannot be (null)!");
+
+    CompletionState state = pCompletionHistory.get(pCompletionHistory.firstKey());
+    for(Date key : pCompletionHistory.keySet()) {
+      if(key.compareTo(stamp) > 0) 
+	break;
+      state = pCompletionHistory.get(key);
+    }
+
+    return state;
+  }
+  
+  /**
+   * Get the latest completion state.
+   */ 
+  public CompletionState
+  getLatestCompletionState()
+  {
+    return pCompletionHistory.get(pCompletionHistory.lastKey());
+  }
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the timestamps of when the {@link ActivityState ActivityState} of the task
+   * has changed.
+   */ 
+  public Set<Date>
+  getActivityStamps() 
+  {
+    return Collections.unmodifiableSet(pActivityHistory.keySet());
+  }
+
+  /**
+   * Get the activity state at the given point in time.
+   */ 
+  public ActivityState
+  getActivityState
+  (
+   Date stamp
+  ) 
+  {
+    if(stamp == null) 
+      throw new IllegalArgumentException
+	("The timestamp cannot be (null)!");
+
+    ActivityState state = pActivityHistory.get(pActivityHistory.firstKey());
+    for(Date key : pActivityHistory.keySet()) {
+      if(key.compareTo(stamp) > 0) 
+	break;
+      state = pActivityHistory.get(key);
+    }
+
+    return state;
+  }
+
+  /**
+   * Get the latest activity state.
+   */ 
+  public ActivityState
+  getLatestActivityState()
+  {
+    return pActivityHistory.get(pActivityHistory.lastKey());
+  }
+  
+  
+  
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   E V E N T S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Update the current status of the task by applying the changes caused by the given event.
+   */ 
+  public void 
+  update
+  (
+   BaseEvent event
+  ) 
+  {
+    String supervisor = event.getSupervisor();
+    if(supervisor != null) 
+      pSupervisor = supervisor;
+
+    String owner = event.getOwner();
+    if(owner != null) 
+      pOwner = owner;
+    
+    TimeInterval timeInterval = event.getTimeInterval();
+    if(timeInterval != null) 
+      pTimeInterval = timeInterval;
+    
+    TreeMap<String,TreeSet<String>> tags = event.getTags();
+    if(tags != null) 
+      pTags = tags;
+    
+//     TreeMap<String,TaskConstraint> constraints = event.getConstraints();
+//     if(constraints != null) 
+//       pConstraints = constraints;
+    
+    TreeMap<String,VersionID> nodes = event.getNodes();
+    if(nodes != null) 
+      pNodes = nodes;
+    
+    CompletionState completionState = event.getCompletionState();
+    if(completionState != null) 
+      pCompletionHistory.put(event.getTimeStamp(), completionState);
+
+    ActivityState activityState = event.getActivityState();
+    if(activityState != null) 
+      pActivityHistory.put(event.getTimeStamp(), activityState);
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -136,7 +354,7 @@ class TaskStatus
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 5695488273757747308L;
+  private static final long serialVersionUID = 8601721988465643486L;
 
   
   
@@ -149,32 +367,48 @@ class TaskStatus
    */ 
   private String  pName; 
 
+  /**
+   * The user name of the current supervisor of the task.
+   */ 
+  private String  pSupervisor; 
 
   /**
-   * The estimated date when work should begin.
+   * The name of the current user responsible for completing the task.
    */ 
-  private Date  pStartDate; 
+  private String  pOwner; 
 
   /**
-   * The estimated date when all work should be complete.
+   * The currently scheduled start/completion interval of the task.
    */ 
-  private Date  pCompletionDate; 
-
-
-  /**
-   * The timestamps of when the the task events occurred.
-   */ 
-  private Date[]  pTimeStamps;
-    
-  /**
-   * The types of the task events.
-   */ 
-  private TaskEventType[]  pEventTypes; 
-
+  private TimeInterval  pTimeInterval;
 
   /**
-   * The current task state.
+   * The currently selected tag values associated with the task indexed by tag name.
    */ 
-  private TaskState  pState; 
+  private TreeMap<String,TreeSet<String>>  pTags;
+
+  /**
+   * The current constraints of this task indexed by the name of the constraining tasks.
+   */ 
+  //private TreeMap<String,TaskConstraint>  pConstraints; 
+
+  /**
+   * The revision numbers of the nodes currently associated with the task indexed by 
+   * fully resolved node name.
+   */ 
+  private TreeMap<String,VersionID>  pNodes; 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * The history of changes to the completion state of the task. 
+   */ 
+  private TreeMap<Date,CompletionState>  pCompletionHistory; 
+
+  /**
+   * The history of changes to the activity state of the task. 
+   */ 
+  private TreeMap<Date,ActivityState>  pActivityHistory; 
 
 }
