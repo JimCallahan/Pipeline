@@ -115,13 +115,12 @@ option to <a
   </blockquote>
 </blockquote>
 <div style="margin-left: 40px;"><a href="pljobmgr.html"><span
- style="font-weight: bold;"></span></a><b style="color: rgb(255, 0, 0);"><a
+ style="font-weight: bold;"></span></a><b style="color: rgb(0, 0, 0);"><a
  name="--queue-host"></a>--queue-host</b><span
- style="color: rgb(255, 0, 0);">=</span><i
- style="color: rgb(255, 0, 0);">hostname</i><br
- style="color: rgb(255, 0, 0);">
+ style="color: rgb(0, 0, 0);">=</span><i style="color: rgb(0, 0, 0);">hostname</i><br
+ style="color: rgb(0, 0, 0);">
 </div>
-<blockquote style="color: rgb(255, 0, 0);">
+<blockquote style="color: rgb(0, 0, 0);">
   <blockquote>Communicate with the <a href="plqueuemgr.html"><span
  style="font-weight: bold;">plqueuemgr</span></a>(1) daemon running on
 the given host (<i>hostname</i>). <br>
@@ -145,29 +144,29 @@ option to <a
  href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
  style="font-weight: bold;">plconfig</span></a>(1).</blockquote>
 </blockquote>
-<br>
-<br style="color: rgb(255, 0, 0);">
-<div style="margin-left: 40px; color: rgb(255, 0, 0);"><b><a
+<br style="color: rgb(0, 0, 0);">
+<br style="color: rgb(0, 0, 0);">
+<div style="margin-left: 40px; color: rgb(0, 0, 0);"><b><a
  name="--job-port"></a>--job-port</b>=<i>num<br>
 <br>
 </i></div>
-<div style="margin-left: 80px;"><span style="color: rgb(255, 0, 0);">Contact
-</span><a style="color: rgb(255, 0, 0);" href="pljobmgr.html"><span
+<div style="margin-left: 80px;"><span style="color: rgb(0, 0, 0);">Contact
+</span><a style="color: rgb(0, 0, 0);" href="pljobmgr.html"><span
  style="font-weight: bold;">pljobmgr</span></a><span
- style="color: rgb(255, 0, 0);">(1) daemons on an
-alternative network port (</span><i style="color: rgb(255, 0, 0);">num</i><span
- style="color: rgb(255, 0, 0);">). </span><br
- style="color: rgb(255, 0, 0);">
-<br style="color: rgb(255, 0, 0);">
-<span style="color: rgb(255, 0, 0);">The
-default port is set by the </span><a style="color: rgb(255, 0, 0);"
+ style="color: rgb(0, 0, 0);">(1) daemons on an
+alternative network port (</span><i style="color: rgb(0, 0, 0);">num</i><span
+ style="color: rgb(0, 0, 0);">). </span><br
+ style="color: rgb(0, 0, 0);">
+<br style="color: rgb(0, 0, 0);">
+<span style="color: rgb(0, 0, 0);">The
+default port is set by the </span><a style="color: rgb(0, 0, 0);"
  href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--job-port"><span
  style="font-weight: bold;">--job-port</span></a><span
- style="color: rgb(255, 0, 0);">
-option to </span><a style="color: rgb(255, 0, 0);"
+ style="color: rgb(0, 0, 0);">
+option to </span><a style="color: rgb(0, 0, 0);"
  href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
  style="font-weight: bold;">plconfig</span></a><span
- style="color: rgb(255, 0, 0);">(1). </span><br
+ style="color: rgb(0, 0, 0);">(1). </span><br
  style="color: rgb(255, 0, 0);">
 <br>
 <br>
