@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.6 2004/06/14 22:31:10 jim Exp $
+// $Id: MasterRequest.java,v 1.7 2004/06/28 23:02:53 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -95,6 +95,29 @@ enum MasterRequest
    */
   SetSuffixEditors, 
   
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get all currently defined link catagory descriptions.
+   */
+  GetLinkCatagoryDesc, 
+    
+  /**
+   * Get the names of the currently active link catagories.
+   */
+  GetActiveLinkCatagoryNames, 
+
+  /**
+   * An instance of {@link MiscCreateLinkCatagoryReq MiscCreateLinkCatagoryReq} is next.
+   */
+  CreateLinkCatagory, 
+
+  /**
+   * An instance of {@link MiscSetLinkCatagoryActiveReq MiscSetLinkCatagoryActiveReq} is next.
+   */
+  SetLinkCatagoryActive, 
+
 
   /*----------------------------------------------------------------------------------------*/
 
