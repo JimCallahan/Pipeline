@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.31 2004/08/25 05:21:39 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.32 2004/08/26 05:59:39 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -4022,7 +4022,7 @@ class JNodeViewerPanel
       TreeMap<VersionID,LogMessage>                 history = null;
 
       TreeMap<Long,QueueJobGroup> jobGroups = null; 
-      TreeMap<Long,JobState>      jobStates = null; 
+      TreeMap<Long,JobStatus>     jobStatus = null; 
       
       if(pStatus != null) {
 	{
@@ -4066,18 +4066,16 @@ class JNodeViewerPanel
       }
 
       if(pUpdateJobs) {
-	PanelGroup<JQueueJobBrowserPanel> bpanels = master.getQueueJobBrowserPanels();
-	JQueueJobBrowserPanel bpanel = bpanels.getPanel(pGroupID);
+	PanelGroup<JQueueJobBrowserPanel> panels = master.getQueueJobBrowserPanels();
+	JQueueJobBrowserPanel panel = panels.getPanel(pGroupID);
 
-	//PanelGroup<JQueueJobViewerPanel> vpanels = master.getQueueJobViewerPanels();
-	//JQueueJobViewerPanel vpanel = vpnels.getPanel(pGroupID);
-	
-	if((bpanel != null) /* || (vpanel != null) */ ) {
+	if(panel != null) {
 	  if(master.beginPanelOp("Updating Jobs...")) {
 	    try {
 	      QueueMgrClient client = master.getQueueMgrClient();
 	      jobGroups = client.getJobGroups(); 
-	      jobStates = client.getAllJobStates();
+	      TreeSet<Long> groupIDs = new TreeSet<Long>(jobGroups.keySet());
+	      jobStatus = client.getJobStatus(groupIDs);
 	    }
 	    catch(PipelineException ex) {
 	      master.showErrorDialog(ex);
@@ -4092,7 +4090,7 @@ class JNodeViewerPanel
       UpdateSubPanelComponentsTask task = 
 	new UpdateSubPanelComponentsTask(pGroupID, pAuthor, pView, pStatus, 
 					 novelty, history, 
-					 jobGroups, jobStates, pUpdateJobs);
+					 jobGroups, jobStatus, pUpdateJobs);
       SwingUtilities.invokeLater(task);
     }
     
@@ -4120,7 +4118,7 @@ class JNodeViewerPanel
      TreeMap<VersionID,TreeMap<FileSeq,boolean[]>> novelty,
      TreeMap<VersionID,LogMessage> history,
      TreeMap<Long,QueueJobGroup> jobGroups, 
-     TreeMap<Long,JobState> jobStates,
+     TreeMap<Long,JobStatus> jobStatus,
      boolean updateJobs
     )
     {      
@@ -4135,7 +4133,7 @@ class JNodeViewerPanel
       pHistory = history;
 
       pJobGroups  = jobGroups; 
-      pJobStates  = jobStates;
+      pJobStatus  = jobStatus;
       pUpdateJobs = updateJobs; 
     }
 
@@ -4172,23 +4170,12 @@ class JNodeViewerPanel
       }
 
       if(pUpdateJobs) {
-	{
-	  PanelGroup<JQueueJobBrowserPanel> panels = master.getQueueJobBrowserPanels();
-	  JQueueJobBrowserPanel panel = panels.getPanel(pGroupID);
-	  if(panel != null) {
-	    panel.updateQueueJobs(pAuthor, pView, pJobGroups, pJobStates);
-	    panel.updateManagerTitlePanel();
-	  }
+	PanelGroup<JQueueJobBrowserPanel> panels = master.getQueueJobBrowserPanels();
+	JQueueJobBrowserPanel panel = panels.getPanel(pGroupID);
+	if(panel != null) {
+	  panel.updateQueueJobs(pAuthor, pView, pJobGroups, pJobStatus);
+	  panel.updateManagerTitlePanel();
 	}
-	
-//       {
-// 	PanelGroup<JQueueJobViewerPanel> panels = master.getQueueJobViewerPanels();
-// 	JQueueJobViewerPanel panel = panels.getPanel(pGroupID);
-// 	if(panel != null) {
-// 	  panel.updateQueueJobs(pAuthor, pView, pJobGroups, pJobStates);
-// 	  panel.updateManagerTitlePanel();
-// 	}
-//       }
       }
     }
     
@@ -4201,7 +4188,7 @@ class JNodeViewerPanel
     private TreeMap<VersionID,LogMessage>                  pHistory;
 
     private TreeMap<Long,QueueJobGroup>  pJobGroups;
-    private TreeMap<Long,JobState>       pJobStates;
+    private TreeMap<Long,JobStatus>      pJobStatus;
     private boolean                      pUpdateJobs; 
   }
 

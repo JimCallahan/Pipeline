@@ -1,4 +1,4 @@
-// $Id: QueueJobGroupsTableModel.java,v 1.1 2004/08/25 05:23:46 jim Exp $
+// $Id: QueueJobGroupsTableModel.java,v 1.2 2004/08/26 06:04:33 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -164,28 +164,28 @@ class QueueJobGroupsTableModel
    * @param groups
    *   The queue job groups indexe by job group ID.
    * 
-   * @param states
-   *   The job states indexed by job ID.
+   * @param status
+   *   The job status indexed by job ID.
    */ 
   public void
   setQueueJobGroups
   (
    TreeMap<Long,QueueJobGroup> groups, 
-   TreeMap<Long,JobState> states
+   TreeMap<Long,JobStatus> status
   ) 
   {
     pQueueJobGroups.clear();
     pStateCounts.clear();
-    if((groups != null) && (states != null)) {
+    if((groups != null) && (status != null)) {
       pQueueJobGroups.addAll(groups.values());
 
       int size = JobState.all().size();
       for(QueueJobGroup group : pQueueJobGroups) {
 	int[] counts = new int[size];
 	for(Long jobID : group.getJobIDs()) {
-	  JobState state = states.get(jobID);
-	  if(state != null) 
-	    counts[state.ordinal()]++;
+	  JobStatus js = status.get(jobID);
+	  if(js != null) 
+	    counts[js.getState().ordinal()]++;
 	}
 	
 	pStateCounts.put(group.getGroupID(), counts);
@@ -194,7 +194,27 @@ class QueueJobGroupsTableModel
 
     sort();
   }
+  
+  /**
+   * Get the table row index which contains the job group with the given ID or <CODE>-1</CODE>
+   * if the group cannot be found. 
+   */ 
+  public int 
+  getGroupRow
+  (
+   long groupID
+  )
+  {
+    int row; 
+    for(row=0; row<pRowToIndex.length; row++) {
+      QueueJobGroup group = pQueueJobGroups.get(pRowToIndex[row]);
+      if((group != null) && (group.getGroupID() == groupID))
+	return row;
+    }
 
+    return -1; 
+  }
+  
   
 
   /*----------------------------------------------------------------------------------------*/
