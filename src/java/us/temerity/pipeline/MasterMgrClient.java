@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.23 2004/09/03 11:00:48 jim Exp $
+// $Id: MasterMgrClient.java,v 1.24 2004/09/05 06:41:44 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -944,7 +944,7 @@ class MasterMgrClient
    * Get the working version of the node for the given user. <P> 
    * 
    * @param author 
-   *   The of the user which owns the working version.
+   *   The name of the user which owns the working version.
    * 
    * @param view 
    *   The name of the user's working area view. 
@@ -964,10 +964,28 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
+    return getWorkingVersion(new NodeID(author, view, name));
+  }  
+
+  /** 
+   * Get the working version of the node for the given user. <P> 
+   * 
+   * @param nodeID 
+   *   The unique working version identifier. 
+   *
+   * @throws PipelineException
+   *   If unable to retrieve the working version.
+   */
+  public synchronized NodeMod
+  getWorkingVersion
+  ( 
+   NodeID nodeID
+  ) 
+    throws PipelineException
+  {
     verifyConnection();
 	 
-    NodeID id = new NodeID(author, view, name);
-    NodeGetWorkingReq req = new NodeGetWorkingReq(id);
+    NodeGetWorkingReq req = new NodeGetWorkingReq(nodeID);
 
     Object obj = performTransaction(MasterRequest.GetWorking, req);
     if(obj instanceof NodeGetWorkingRsp) {
@@ -993,9 +1011,8 @@ class MasterMgrClient
    *   The toolset environment under which editors and actions are run. <BR>
    *   The name of the editor plugin used to edit the data files associated with the node.<BR>
    *   The regeneration action and its single and per-dependency parameters. <BR>
-   *   The job requirements. <BR>
-   *   The IgnoreOverflow and IsSerial flags. <BR>
-   *   The job batch size. <P> 
+   *   The overflow policy, execution method and job batch size. <BR> 
+   *   The job requirements. <P>
    * </DIV> 
    * 
    * Note that any existing upstream node link information contained in the
@@ -1166,15 +1183,38 @@ class MasterMgrClient
   )
     throws PipelineException
   {
+    addSecondary(new NodeID(author, view, name), fseq);
+  } 
+  
+  /**
+   * Add a secondary file sequence to the given working version.
+   * 
+   * @param nodeID 
+   *   The unique working version identifier. 
+   * 
+   * @param fseq
+   *   The secondary file sequence to add.
+   * 
+   * @throws PipelineException
+   *   If unable to add the file sequence.
+   */
+  public synchronized void 
+  addSecondary
+  (
+   NodeID nodeID,
+   FileSeq fseq
+  )
+    throws PipelineException
+  {
     verifyConnection();
 
-    NodeID id = new NodeID(author, view, name);
-    NodeAddSecondaryReq req = new NodeAddSecondaryReq(id, fseq);
+    NodeAddSecondaryReq req = new NodeAddSecondaryReq(nodeID, fseq);
 
     Object obj = performTransaction(MasterRequest.AddSecondary, req);
     handleSimpleResponse(obj);
   } 
-  
+
+
   /**
    * Remove a secondary file sequence from the given working version.
    * 
@@ -1203,15 +1243,36 @@ class MasterMgrClient
   )
     throws PipelineException
   {
+    removeSecondary(new NodeID(author, view, name), fseq);
+  } 
+    
+  /**
+   * Remove a secondary file sequence from the given working version.
+   * 
+   * @param nodeID 
+   *   The unique working version identifier. 
+   * 
+   * @param fseq
+   *   The secondary file sequence to remove.
+   * 
+   * @throws PipelineException
+   *   If unable to remove the file sequence.
+   */
+  public synchronized void 
+  removeSecondary
+  (
+   NodeID nodeID,
+   FileSeq fseq
+  )
+    throws PipelineException
+  {
     verifyConnection();
 
-    NodeID id = new NodeID(author, view, name);
-    NodeRemoveSecondaryReq req = new NodeRemoveSecondaryReq(id, fseq);
+    NodeRemoveSecondaryReq req = new NodeRemoveSecondaryReq(nodeID, fseq);
 
     Object obj = performTransaction(MasterRequest.RemoveSecondary, req);
     handleSimpleResponse(obj);
   } 
-  
   
 
 
@@ -1358,10 +1419,34 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
+    return status(new NodeID(author, view, name));
+  } 
+
+  /** 
+   * Get the status of the tree of nodes rooted at the given node. <P> 
+   * 
+   * In addition to providing node status information for the given node, the returned 
+   * <CODE>NodeStatus</CODE> instance can be used access the status of all nodes (both 
+   * upstream and downstream) linked to the given node.  The status information for the 
+   * upstream nodes will also include detailed state and version information which is 
+   * accessable by calling the {@link NodeStatus#getDetails NodeStatus.getDetails} method.
+   * 
+   * @param nodeID 
+   *   The unique working version identifier. 
+   * 
+   * @throws PipelineException
+   *   If unable to determine the status of the node.
+   */ 
+  public synchronized NodeStatus
+  status
+  ( 
+   NodeID nodeID
+  ) 
+    throws PipelineException
+  {
     verifyConnection();
  
-    NodeID id = new NodeID(author, view, name);
-    NodeStatusReq req = new NodeStatusReq(id);
+    NodeStatusReq req = new NodeStatusReq(nodeID);
 
     Object obj = performTransaction(MasterRequest.Status, req);
     if(obj instanceof NodeStatusRsp) {
@@ -1373,7 +1458,6 @@ class MasterMgrClient
        return null;
     }
   } 
-
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1429,6 +1513,7 @@ class MasterMgrClient
   }
 
 
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -1463,19 +1548,44 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
+    release(new NodeID(author, view, name), removeFiles);
+  } 
+
+  /**
+   * Release the working version of a node and optionally remove the associated 
+   * working area files. <P> 
+   * 
+   * If the <CODE>nodeID</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @param nodeID 
+   *   The unique working version identifier. 
+   * 
+   * @param removeFiles 
+   *   Should the files associated with the working version be deleted?
+   *
+   * @throws PipelineException 
+   *   If unable to release the given node.
+   */ 
+  public synchronized void 
+  release
+  ( 
+   NodeID nodeID,
+   boolean removeFiles
+  ) 
+    throws PipelineException
+  {
+    if(!PackageInfo.sUser.equals(nodeID.getAuthor()) && !isPrivileged(false))
       throw new PipelineException
 	("Only privileged users may release nodes owned by another user!");
 
     verifyConnection();
 
-    NodeID id = new NodeID(author, view, name);
-    NodeReleaseReq req = new NodeReleaseReq(id, removeFiles);
+    NodeReleaseReq req = new NodeReleaseReq(nodeID, removeFiles);
 
     Object obj = performTransaction(MasterRequest.Release, req);
     handleSimpleResponse(obj);
   } 
-
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1528,18 +1638,61 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
+    rename(new NodeID(author, view, oldName), newName, renameFiles);
+  } 
+
+  /**
+   * Rename a working version of a node owned by the given user which has never 
+   * been checked-in. <P> 
+   * 
+   * This operation allows a user to change the name of a previously registered node before 
+   * it is checked-in. If a working version is successfully renamed, all node connections 
+   * will be preserved. <P> 
+   * 
+   * In addition to changing the name of the working version, this operation can also 
+   * rename the files associated with the working version to match the new node name if 
+   * the <CODE>renameFiles</CODE> argument is <CODE>true</CODE>.  The primary file sequence
+   * will be renamed to have a prefix which is identical to the last component of the 
+   * <CODE>newName</CODE> argument.  The secondary file sequence prefixes will remain
+   * unchanged. Both primary and secondary file sequences will be moved into the working 
+   * directory based on the new node name. <P> 
+   * 
+   * If the <CODE>nodeID</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @param nodeID 
+   *   The unique working version identifier. 
+   * 
+   * @param newName 
+   *   The new fully resolved node name.
+   * 
+   * @param renameFiles 
+   *   Should the files associated with the working version be renamed?
+   * 
+   * @throws PipelineException 
+   *   If unable to rename the given node or its associated primary files.
+   */ 
+  public synchronized void 
+  rename
+  ( 
+   NodeID nodeID, 
+   String newName,
+   boolean renameFiles
+  ) 
+    throws PipelineException
+  {
+    if(!PackageInfo.sUser.equals(nodeID.getAuthor()) && !isPrivileged(false))
       throw new PipelineException
 	("Only privileged users may rename nodes owned by another user!");
 
     verifyConnection();
 
-    NodeID id = new NodeID(author, view, oldName);
-    NodeRenameReq req = new NodeRenameReq(id, newName, renameFiles);
+    NodeRenameReq req = new NodeRenameReq(nodeID, newName, renameFiles);
 
     Object obj = performTransaction(MasterRequest.Rename, req);
     handleSimpleResponse(obj);
   } 
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -1582,14 +1735,47 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
+    renumber(new NodeID(author, view, name), range, removeFiles);
+  } 
+
+  /**
+   * Renumber the frame ranges of the file sequences associated with the given node. <P> 
+   * 
+   * See {@link NodeMod#adjustFrameRange adjustFrameRange} for the constraints on legal 
+   * values for the given new frame range argument <CODE>range</CODE>.
+   * 
+   * If the <CODE>nodeID</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @param nodeID 
+   *   The unique working version identifier. 
+   *
+   * @param range 
+   *   The new frame range.
+   * 
+   * @param removeFiles 
+   *   Whether to remove files from the old frame range which are no longer part of the new 
+   *   frame range.
+   * 
+   * @throws PipelineException 
+   *   If unable to renumber the given node or its associated primary files.
+   */ 
+  public synchronized void 
+  renumber
+  ( 
+   NodeID nodeID,
+   FrameRange range, 
+   boolean removeFiles
+  ) 
+    throws PipelineException
+  {
+    if(!PackageInfo.sUser.equals(nodeID.getAuthor()) && !isPrivileged(false))
       throw new PipelineException
 	("Only privileged users may renumber nodes owned by another user!");
 
     verifyConnection();
 
-    NodeID id = new NodeID(author, view, name);
-    NodeRenumberReq req = new NodeRenumberReq(id, range, removeFiles);
+    NodeRenumberReq req = new NodeRenumberReq(nodeID, range, removeFiles);
 
     Object obj = performTransaction(MasterRequest.Renumber, req);
     handleSimpleResponse(obj);
@@ -1644,14 +1830,54 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
+    checkIn(new NodeID(author, view, name), msg, level);
+  } 
+
+  /** 
+   * Check-In the tree of nodes owned by the given user rooted at the given working 
+   * version. <P> 
+   * 
+   * The check-in operation proceeds in a depth-first manner checking-in the most upstream
+   * nodes first.  The check-in operation aborts at the first failure of a particular node. 
+   * It is therefore possible for the overall check-in to fail after already succeeding for 
+   * some set of upstream nodes. <P> 
+   * 
+   * The returned <CODE>NodeStatus</CODE> instance can be used access the status of all 
+   * nodes (both upstream and downstream) linked to the given node.  The status information 
+   * for the upstream nodes will also include detailed state and version information which is 
+   * accessable by calling the {@link NodeStatus#getDetails NodeStatus.getDetails} method. <P>
+   * 
+   * If the <CODE>nodeID</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @param nodeID 
+   *   The unique working version identifier. 
+   * 
+   * @param msg 
+   *   The check-in message text.
+   * 
+   * @param level  
+   *   The revision number component level to increment.
+   * 
+   * @throws PipelineException
+   *   If unable to check-in the nodes.
+   */ 
+  public synchronized void
+  checkIn
+  ( 
+   NodeID nodeID,
+   String msg, 
+   VersionID.Level level   
+  ) 
+    throws PipelineException
+  {
+    if(!PackageInfo.sUser.equals(nodeID.getAuthor()) && !isPrivileged(false))
       throw new PipelineException
 	("Only privileged users may check-in nodes owned by another user!");
 
     verifyConnection();
 
-    NodeID id = new NodeID(author, view, name);
-    NodeCheckInReq req = new NodeCheckInReq(id, msg, level);
+    NodeCheckInReq req = new NodeCheckInReq(nodeID, msg, level);
 
     Object obj = performTransaction(MasterRequest.CheckIn, req);
     handleSimpleResponse(obj);
@@ -1705,18 +1931,60 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
+    checkOut(new NodeID(author, view, name), vid, keepNewer);
+  } 
+
+  /** 
+   * Check-Out the tree of nodes owned by the given user rooted at the given working 
+   * version. <P> 
+   * 
+   * If the <CODE>vid</CODE> argument is <CODE>null</CODE> then check-out the latest 
+   * version. <P>
+   * 
+   * The returned <CODE>NodeStatus</CODE> instance can be used access the status of all 
+   * nodes (both upstream and downstream) linked to the given node.  The status information 
+   * for the upstream nodes will also include detailed state and version information which is 
+   * accessable by calling the {@link NodeStatus#getDetails NodeStatus.getDetails} method. <P>
+   * 
+   * If the <CODE>nodeID</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @param nodeID 
+   *   The unique working version identifier. 
+   * 
+   * @param vid 
+   *   The revision number of the node to check-out.
+   * 
+   * @param keepNewer
+   *   Should upstream nodes which have a newer revision number than the version to be 
+   *   checked-out be skipped? 
+   * 
+   * @throws PipelineException
+   *   If unable to check-out the nodes.
+   */ 
+  public synchronized void
+  checkOut
+  ( 
+   NodeID nodeID,
+   VersionID vid, 
+   boolean keepNewer
+  ) 
+    throws PipelineException
+  {
+    if(!PackageInfo.sUser.equals(nodeID.getAuthor()) && !isPrivileged(false))
       throw new PipelineException
 	("Only privileged users may check-in nodes owned by another user!");
 
     verifyConnection();
 
-    NodeID id = new NodeID(author, view, name);
-    NodeCheckOutReq req = new NodeCheckOutReq(id, vid, keepNewer);
+    NodeCheckOutReq req = new NodeCheckOutReq(nodeID, vid, keepNewer);
 
     Object obj = performTransaction(MasterRequest.CheckOut, req);
     handleSimpleResponse(obj);
   } 
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Revert specific working area files to an earlier checked-in version of the files. <P> 
@@ -1749,14 +2017,39 @@ class MasterMgrClient
   )
     throws PipelineException
   {
-    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
+    revertFiles(new NodeID(author, view, name), files);
+  }
+
+  /**
+   * Revert specific working area files to an earlier checked-in version of the files. <P> 
+   * 
+   * If the <CODE>nodeID</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @param nodeID 
+   *   The unique working version identifier. 
+   * 
+   * @param files
+   *   The table of checked-in file revision numbers indexed by file name.
+   * 
+   * @throws PipelineException
+   *   If unable to revert the files.
+   */ 
+  public synchronized void 
+  revertFiles  
+  ( 
+   NodeID nodeID,
+   TreeMap<String,VersionID> files
+  )
+    throws PipelineException
+  {
+    if(!PackageInfo.sUser.equals(nodeID.getAuthor()) && !isPrivileged(false))
       throw new PipelineException
 	("Only privileged users may revert files owned by another user!");
     
     verifyConnection();
 
-    NodeID id = new NodeID(author, view, name);
-    NodeRevertFilesReq req = new NodeRevertFilesReq(id, files);
+    NodeRevertFilesReq req = new NodeRevertFilesReq(nodeID, files);
     
     Object obj = performTransaction(MasterRequest.RevertFiles, req);
     handleSimpleResponse(obj);
@@ -1803,14 +2096,44 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
+    return submitJobs(new NodeID(author, view, name), indices);
+  }
+
+  /**
+   * Submit the group of jobs needed to regenerate the selected {@link QueueState#Stale Stale}
+   * files associated with the tree of nodes rooted at the given node. <P> 
+   * 
+   * If the <CODE>nodeID</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   *
+   * @param nodeID 
+   *   The unique working version identifier. 
+   *
+   * @param indices
+   *   The file sequence indices of the files to regenerate or <CODE>null</CODE> to 
+   *   regenerate all <CODE>Stale</CODE> files.
+   * 
+   * @return 
+   *   The submitted job group.
+   * 
+   * @throws PipelineException
+   *   If unable to generate or submit the jobs.
+   */ 
+  public synchronized QueueJobGroup
+  submitJobs
+  ( 
+   NodeID nodeID,
+   TreeSet<Integer> indices
+  ) 
+    throws PipelineException
+  {
+    if(!PackageInfo.sUser.equals(nodeID.getAuthor()) && !isPrivileged(false))
       throw new PipelineException
 	("Only privileged users may submit jobs for nodes owned by another user!");
 
     verifyConnection();
 
-    NodeID id = new NodeID(author, view, name);
-    NodeSubmitJobsReq req = new NodeSubmitJobsReq(id, indices);
+    NodeSubmitJobsReq req = new NodeSubmitJobsReq(nodeID, indices);
 
     Object obj = performTransaction(MasterRequest.SubmitJobs, req);
     if(obj instanceof NodeSubmitJobsRsp) {
@@ -1858,13 +2181,39 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
+    removeFiles(new NodeID(author, view, name), indices);
+  }
+
+  /**
+   * Remove the working area files associated with the given node. <P>  
+   * 
+   * If the <CODE>nodeID</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @param nodeID 
+   *   The unique working version identifier. 
+   * 
+   * @param indices
+   *   The file sequence indices of the files to remove or <CODE>null</CODE> to 
+   *   remove all files.
+   * 
+   * @throws PipelineException 
+   *   If unable to remove the files.
+   */ 
+  public synchronized void
+  removeFiles
+  (
+   NodeID nodeID,
+   TreeSet<Integer> indices
+  ) 
+    throws PipelineException
+  {
+    if(!PackageInfo.sUser.equals(nodeID.getAuthor()) && !isPrivileged(false))
       throw new PipelineException
 	("Only privileged users may remove files owned by another user!");
     
     verifyConnection();
 
-    NodeID nodeID = new NodeID(author, view, name);
     NodeRemoveFilesReq req = new NodeRemoveFilesReq(nodeID, indices);
 
     Object obj = performTransaction(MasterRequest.RemoveFiles, req);
