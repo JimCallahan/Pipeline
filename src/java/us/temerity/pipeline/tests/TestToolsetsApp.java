@@ -1,4 +1,4 @@
-// $Id: TestToolsetsApp.java,v 1.1 2004/02/23 23:50:35 jim Exp $
+// $Id: TestToolsetsApp.java,v 1.2 2004/02/28 20:04:39 jim Exp $
 
 import us.temerity.pipeline.*;
 
@@ -43,6 +43,15 @@ class TestToolsetsApp
     throws PipelineException
   {
     printToolset("sdev040211");
+
+    assert(!Toolsets.exists("bogus"));
+
+    try {
+      Toolsets.lookup("bogus");
+    }
+    catch (PipelineException ex) {
+      System.out.print(ex + "\n");
+    }
   }
 
 
