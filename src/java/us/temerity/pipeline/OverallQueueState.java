@@ -1,4 +1,4 @@
-// $Id: OverallQueueState.java,v 1.9 2004/07/22 00:07:36 jim Exp $
+// $Id: OverallQueueState.java,v 1.10 2004/08/30 01:30:27 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -51,10 +51,19 @@ enum OverallQueueState
 
   /**
    * One or more of the files associated with the node have a <CODE>QueueState<CODE> of 
-   * {@link QueueState#Running Running}. <P> 
+   * {@link QueueState#Paused Paused}. <P> 
    * 
    * This state has precedence over the <CODE>Finished</CODE>, <CODE>Stale</CODE> and 
-   * <CODE>Queued</CODE> states.
+   * <CODE>Queued</CODE> states.states.
+   */
+  Paused,
+
+  /**
+   * One or more of the files associated with the node have a <CODE>QueueState<CODE> of 
+   * {@link QueueState#Running Running}. <P> 
+   * 
+   * This state has precedence over the <CODE>Finished</CODE>, <CODE>Stale</CODE>,
+   * <CODE>Queued</CODE> and <CODE>Paused</CODE> states.
    */
   Running,
 
@@ -63,7 +72,7 @@ enum OverallQueueState
    * {@link QueueState#Aborted Aborted}. <P> 
    * 
    * This state has precedence over the <CODE>Finished</CODE>, <CODE>Stale</CODE>, 
-   * <CODE>Queued</CODE> and <CODE>Running</CODE> states.
+   * <CODE>Queued</CODE>, <CODE>Paused</CODE> and <CODE>Running</CODE> states.
    */
   Aborted, 
 
@@ -72,7 +81,8 @@ enum OverallQueueState
    * {@link QueueState#Failed Failed}. <P> 
    * 
    * This state has precedence over the <CODE>Finished</CODE>, <CODE>Stale</CODE>, 
-   * <CODE>Queued</CODE>, <CODE>Running</CODE> and <CODE>Aborted</CODE> states.
+   * <CODE>Queued</CODE>, <CODE>Paused</CODE>, <CODE>Running</CODE> and <CODE>Aborted</CODE> 
+   * states.
    */
   Failed;
 
