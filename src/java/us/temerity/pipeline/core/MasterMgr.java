@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.16 2004/07/22 03:58:39 jim Exp $
+// $Id: MasterMgr.java,v 1.17 2004/07/24 18:22:34 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -205,7 +205,7 @@ class MasterMgr
    * @param prodDir 
    *   The root production directory.
    * 
-   * @param fileHostname 
+   * @param fileHost 
    *   The name of the host running the <B>plfilemgr</B><A>(1) and <B>plnotify</B><A>(1) 
    *   daemons.
    * 
@@ -219,37 +219,46 @@ class MasterMgr
    * @param monitorPort 
    *   The network port listened to by the <B>plnotify</B><A>(1) daemon for 
    *   monitor connections.
+   * 
+   * @param queueHost
+   *   The hostname running <B>plqueuemgr</B>(1).
+   * 
+   * @param queuePort
+   *   The port number listened to by <B>plqueuemgr</B>(1) for incoming connections.
    */
   public
   MasterMgr
   (
    File nodeDir, 
    File prodDir, 
-   String fileHostname, 
+   String fileHost, 
    int filePort, 
    int controlPort, 
-   int monitorPort
+   int monitorPort, 
+   String queueHost, 
+   int queuePort
   )
   { 
     init(nodeDir, prodDir);
 
-    /* make a connection to the file manager daemon */ 
-    pFileMgrClient = new FileMgrClient(fileHostname, filePort);
+    /* make a connection to the file and queue manager daemons */ 
+    pFileMgrClient  = new FileMgrClient(fileHost, filePort);
+    pQueueMgrClient = new QueueMgrFullClient(queueHost, queuePort);
 
     /* initialize the monitored directory table */ 
     pMonitored = new HashMap<File,HashSet<NodeID>>();
 
     /* make a control connection to the directory notification daemon */ 
-    pNotifyControlClient = new NotifyControlClient(fileHostname, controlPort);
+    pNotifyControlClient = new NotifyControlClient(fileHost, controlPort);
 
     /* make a monitor connection to the directory notification daemon and 
         start a task to listen for directory change notifcations */ 
-    pDirtyDirTask = new DirtyDirTask(fileHostname, monitorPort);
+    pDirtyDirTask = new DirtyDirTask(fileHost, monitorPort);
     pDirtyDirTask.start();
   }
 
 
-  /*-- CONTRUCTION HELPERS -----------------------------------------------------------------*/
+  /*-- CONSTRUCTION HELPERS ----------------------------------------------------------------*/
 
   /**
    * Initialize a new instance.
@@ -275,7 +284,7 @@ class MasterMgr
       throw new IllegalArgumentException("The root production directory cannot be (null)!");
     pProdDir = prodDir;
 
-    /* remove the lock file */ 
+    /* create the lock file */ 
     {
       File file = new File(pNodeDir, "lock");
       if(file.exists()) 
@@ -812,7 +821,7 @@ class MasterMgr
    * Shutdown the node manager. <P> 
    * 
    * Also sends a shutdown request to the <B>plfilemgr</B>(1) and <B>plnotify</B>(1) 
-   * daemons if there are live network connectins to these daemons. <P> 
+   * daemons if there are live network connections to these daemons. <P> 
    * 
    * It is crucial that this method be called when only a single thread is able to access
    * this instance!  In other words, after all request threads have already exited or by a 
@@ -834,6 +843,16 @@ class MasterMgr
     if(pFileMgrClient != null) {
       try {
 	pFileMgrClient.shutdown();
+      }
+      catch(PipelineException ex) {
+	Logs.net.warning(ex.getMessage());
+      }
+    }
+
+    /* close the connection to the queue manager */ 
+    if(pQueueMgrClient != null) {
+      try {
+	pQueueMgrClient.shutdown();
       }
       catch(PipelineException ex) {
 	Logs.net.warning(ex.getMessage());
@@ -894,6 +913,8 @@ class MasterMgr
       pMonitored           = null;
       pNotifyControlClient = null;
       pDirtyDirTask        = null;
+
+      pQueueMgrClient      = null;
     }
   }
 
@@ -948,7 +969,7 @@ class MasterMgr
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   G E N E R A L                                                                        */
+  /*   T O O L S E T S                                                                      */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -1036,8 +1057,6 @@ class MasterMgr
 
     return new SuccessRsp(timer);
   }
-
-
 
   /**
    * Get the names of the currently active toolsets.
@@ -1142,8 +1161,6 @@ class MasterMgr
 
     return new SuccessRsp(timer);
   }
-
-
 
   /**
    * Get the names of all toolsets.
@@ -1462,11 +1479,13 @@ class MasterMgr
       return new MiscCreateToolsetPackageRsp(timer, pkg);
     }
   }
-   
 
 
-  /*----------------------------------------------------------------------------------------*/
   
+  /*----------------------------------------------------------------------------------------*/
+  /*   E D I T O R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Get default editor name for the given filename suffix and user. <P> 
    * 
@@ -1580,7 +1599,7 @@ class MasterMgr
     MiscSetSuffixEditorsReq req 
   ) 
   {
-    TaskTimer timer = new TaskTimer();
+    TaskTimer timer = new TaskTimer("MasterMgr.setSuffixEditors()");
     
     timer.aquire();
     synchronized(pSuffixEditors) {
@@ -1604,6 +1623,117 @@ class MasterMgr
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+  /*   L I C E N S E   K E Y S                                                              */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Add the given license key to the currently defined license keys. <P> 
+   * 
+   * If a license key already exists which has the same name as the given key, it will be 
+   * silently overridden by this operation. <P> 
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to add the key.
+   */ 
+  public Object
+  addLicenseKey
+  (
+   QueueAddLicenseKeyReq req
+  ) 
+  {
+    LicenseKey key = req.getLicenseKey();
+
+    TaskTimer timer = new TaskTimer("MasterMgr.addLicenseKey(): " + key.getName());
+    timer.aquire();
+    try {
+      timer.resume();
+      pQueueMgrClient.addLicenseKey(key);
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }
+  }
+
+  /**
+   * Remove the license key with the given name from currently defined license keys. <P> 
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to remove the key.
+   */ 
+  public Object
+  removeLicenseKey
+  (
+   QueueRemoveLicenseKeyReq req
+  ) 
+  {
+    String kname = req.getKeyName();
+
+    TaskTimer timer = new TaskTimer("MasterMgr.removeLicenseKey(): " + kname); 
+    timer.aquire();
+    try {
+      timer.resume();
+      pQueueMgrClient.removeLicenseKey(kname);
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }
+  }  
+  
+  /**
+   * Set the total number of licenses associated with the named license key. <P> 
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to set the total licenses.
+   */ 
+  public Object
+  setTotalLicenses
+  (
+   QueueSetTotalLicensesReq req
+  ) 
+  {
+    String kname = req.getKeyName();
+    int total = req.getTotal();
+
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.setTotalLicenses(): " + kname + "[" + total + "]"); 
+    timer.aquire();
+    try {
+      timer.resume();
+      pQueueMgrClient.setTotalLicenses(kname, total);
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }   
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S E L E C T I O N   K E Y S                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  // ...
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   P R I V I L E G E D   U S E R S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
   /**
@@ -1702,6 +1832,9 @@ class MasterMgr
   }
 
 
+ 
+  /*----------------------------------------------------------------------------------------*/
+  /*   W O R K I N G   A R E A S                                                            */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -1794,6 +1927,9 @@ class MasterMgr
   }  
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   N O D E   P A T H S                                                                  */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -3311,7 +3447,7 @@ class MasterMgr
    NodeRevertFilesReq req 
   ) 
   {
-    TaskTimer timer = new TaskTimer();
+    TaskTimer timer = new TaskTimer("MasterMgr.revertFiles(): " + req.getNodeID());
     try {
       pFileMgrClient.revert(req.getNodeID(), req.getFiles());
       return new SuccessRsp(timer);
@@ -4229,8 +4365,8 @@ class MasterMgr
 	    // "ps[]" should be computed by querying the queue here.  
 	    // 
 	    // The returned QueueState arrays will only contain: Queued, Running, Failed 
-	    // Aborted or (null).  A (null) value means either that no queue job could be 
-	    // found which generates the file or the last job has completed successfully.
+	    // Aborted, Finished or (null).  A (null) value means either that no queue job 
+	    // could be found which generates the file.
 	    // 
 	    // The following stub code therefore simple indicates that no jobs exist.
 	    
@@ -4257,6 +4393,9 @@ class MasterMgr
 		  queueStates[wk] = ps[wk];
 		  break;
 		  
+		case Finished:
+		  break;
+
 		default:
 		  assert(false);
 		}
@@ -6600,6 +6739,15 @@ class MasterMgr
    * daemon: <B>plnotify<B>(1).
    */ 
   private DirtyDirTask  pDirtyDirTask;  
+ 
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * The connection to the queue manager daemon: <B>plqueuemgr<B>(1).
+   */ 
+  private QueueMgrFullClient  pQueueMgrClient;
+  
 
 }
 
