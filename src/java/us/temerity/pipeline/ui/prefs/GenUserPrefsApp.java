@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.4 2004/06/28 23:39:20 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.5 2004/07/18 21:37:16 jim Exp $
 
 import java.io.*; 
 import java.util.*;
@@ -89,12 +89,8 @@ class GenUserPrefsApp
 	new BasePref(),
 	
 	new HotKeyPref
-	("rename the current primary selection",
-	 "NodeRename", "Rename:"), 
-
-	new HotKeyPref
-	("register a new node which is a clone of the current primary selection",
-	 "NodeClone", "Clone:"), 
+	("add a secondary file sequence to the current primary selection",
+	 "NodeAddSecondary", "Add Secondary:"), 
 
 	new BasePref(),
 	
@@ -109,8 +105,28 @@ class GenUserPrefsApp
 	new BasePref(),
 
 	new HotKeyPref
-	("revoke the current primary selection",
-	 "NodeRevoke", "Revoke:")
+	("register a new node which is a clone of the current primary selection",
+	 "NodeClone", "Clone:"), 
+
+	new HotKeyPref
+	("release the current primary selection",
+	 "NodeRelease", "Release:"),
+
+	new BasePref(),
+
+	new HotKeyPref
+	("rename the current primary selection",
+	 "NodeRename", "Rename:"), 
+
+	new HotKeyPref
+	("renumber the current primary selection",
+	 "NodeRenumber", "Renumber:"), 
+
+	new BasePref(),
+
+	new HotKeyPref
+	("destroy all working and checked-in versions of the primary selection", 
+	 "NodeDestroy", "Destroy:")
       };
 
       pPrefs.put("Panel|Node Viewer|Node|Hot Keys", prefs);
@@ -299,7 +315,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.4 2004/06/28 23:39:20 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.5 2004/07/18 21:37:16 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -552,7 +568,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.4 2004/06/28 23:39:20 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.5 2004/07/18 21:37:16 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
