@@ -1,4 +1,4 @@
-// $Id: TupleSizeMismatchException.java,v 1.1 2004/12/13 09:09:30 jim Exp $
+// $Id: TupleSizeMismatchException.java,v 1.2 2004/12/17 21:23:55 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -28,21 +28,21 @@ class TupleSizeMismatchException
    * Constructs a new TupleSizeMismatchException class with an argument indicating the 
    * sizes of the mismatches tuples.
    * 
-   * @param tsize
+   * @param sizeA
    *   The size of the first tuple.
    * 
-   * @param ssize
+   * @param sizeB
    *   The size of the second tuple/array.
    */ 
   public 
   TupleSizeMismatchException
   (
-   int tsize,
-   int ssize
+   int sizeA,
+   int sizeB
   )
   {
-    super("Size mismatch between the first tuple (" + tsize + ") and second tuple/array " + 
-	  "(" + ssize + ")!"); 
+    super("Size mismatch between the first tuple (" + sizeS + ") and second tuple " + 
+	  "(" + sizeB + ")!"); 
   }
     
   /**

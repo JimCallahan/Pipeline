@@ -1,4 +1,4 @@
-// $Id: TupleIndexOutOfBoundsException.java,v 1.1 2004/12/13 09:09:30 jim Exp $
+// $Id: TupleIndexOutOfBoundsException.java,v 1.2 2004/12/17 21:23:55 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -7,8 +7,9 @@ package us.temerity.pipeline.math;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Thrown to indicate that a tuple has been accessed with an illegal index. The index is 
- * either negative or greater than or equal to the size of the tuple.
+ * Thrown to indicate that a tuple has been accessed with an illegal index. <P> 
+ * 
+ * The index is either negative or greater than or equal to the size of the tuple.
  */
 public
 class TupleIndexOutOfBoundsException
