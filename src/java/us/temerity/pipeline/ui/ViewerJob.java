@@ -1,4 +1,4 @@
-// $Id: ViewerJob.java,v 1.4 2004/12/31 07:40:20 jim Exp $
+// $Id: ViewerJob.java,v 1.5 2004/12/31 08:56:25 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -165,6 +165,18 @@ class ViewerJob
   {
     BBox2d bbox = new BBox2d(pPos, pPos);
     bbox.bloat(new Vector2d(0.5, 0.1875 * ((double) pHeight)));
+    return bbox;
+  }
+
+  /** 
+   * Get the bounding box of all job geometry. 
+   */ 
+  public BBox2d
+  getFullBounds()
+  {
+    BBox2d bbox = getBounds();
+    if(pIsCollapsed) 
+      bbox.setMax(Point2d.add(bbox.getMax(), new Vector2d(0.6, 0.0)));
     return bbox;
   }
 

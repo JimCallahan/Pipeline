@@ -1,4 +1,4 @@
-// $Id: ViewerJobGroup.java,v 1.5 2004/12/31 07:40:20 jim Exp $
+// $Id: ViewerJobGroup.java,v 1.6 2004/12/31 08:56:25 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -146,14 +146,14 @@ class ViewerJobGroup
   }
 
   /**
-   * Get the bounding box of the job group label. 
+   * Get the bounding box of all job group geometry. 
    */
   public BBox2d
-  getLabelBounds() 
+  getFullBounds()
   {
-    BBox2d ib = getBounds();
-    Point2d bmin = new Point2d(ib.getMin().x(), ib.getMax().y());
-    BBox2d bbox = new BBox2d(bmin, Point2d.add(bmin, new Vector2d(pLabelWidth, 0.45)));
+    BBox2d bbox = getBounds();
+    Point2d bmin = new Point2d(bbox.getMin().x(), bbox.getMax().y());
+    bbox.grow(Point2d.add(bmin, new Vector2d(pLabelWidth, 0.45)));
     return bbox;
   }
 
