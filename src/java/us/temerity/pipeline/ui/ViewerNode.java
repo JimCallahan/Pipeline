@@ -1,4 +1,4 @@
-// $Id: ViewerNode.java,v 1.2 2004/05/07 18:10:50 jim Exp $
+// $Id: ViewerNode.java,v 1.3 2004/05/08 15:11:56 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -238,6 +238,15 @@ class ViewerNode
   }
 
   /**
+   * Get the text being used for the label geometry.
+   */ 
+  public String
+  getLabelText()
+  {
+    return pLabelText;
+  }
+
+  /**
    * Set the current node status and path.
    * 
    * @param status
@@ -256,12 +265,32 @@ class ViewerNode
     if(status == null) 
       throw new IllegalArgumentException("The node status cannot be (null)!");
 
-    if((pStatus == null) || (!pStatus.toString().equals(status.toString()))) 
-      pLabelTextChanged = true;
+    if(path == null) 
+      throw new IllegalArgumentException("The node path cannot be (null)!");
 
     pStatus = status;
+    pPath   = path;
 
-    System.out.print("ViewerNode.setCurrentState(): " + status + " [" + path + "]\n");
+    {
+      String text = pStatus.toString();
+
+      if(!text.equals(pLabelText))
+	pLabelTextChanged = true;
+
+      pLabelText = text;
+    }
+
+    {
+      String name = "Blank";
+      NodeDetails details = pStatus.getDetails();
+      if(details != null) 
+	name = (details.getOverallNodeState() + "-" + details.getOverallQueueState());
+      
+      if(!name.equals(pIconAprName)) 
+	pIconAprNameChanged = true;
+
+      pIconAprName = name;
+    }
   }
 
   
@@ -284,6 +313,7 @@ class ViewerNode
   ) 
   {
     pMode = mode;
+    pIconAprNameChanged = true;
   }
 
 
@@ -375,7 +405,7 @@ class ViewerNode
   {
     return pRoot;
   }
-
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -388,8 +418,6 @@ class ViewerNode
   public void 
   update() 
   {
-    NodeDetails details = pStatus.getDetails();
-
     /* move the node to the current position */ 
     {
       Transform3D xform = new Transform3D();
@@ -406,12 +434,10 @@ class ViewerNode
 	  Transform3D xform = new Transform3D();
 	  xform.setScale(0.35);
 	  
-	  String title = pStatus.toString();
-	  
-	  System.out.print("Updating Label = " + title + "\n");
+	  System.out.print("Updating Label = " + pLabelText + "\n");
 	  for(SelectionMode mode : SelectionMode.all()) {
 	    TransformGroup label = 
-	      ViewerLabels.createLabelGeometry(title, "CharterBTRoman", mode, 0.05, pos);
+	      ViewerLabels.createLabelGeometry(pLabelText, "CharterBTRoman", mode, 0.05, pos);
 	    label.setTransform(xform);
 	    
 	    BranchGroup group = new BranchGroup();
@@ -428,16 +454,14 @@ class ViewerNode
       }
       
       /* update the node icon appearance */ 
-      {
-	String aname = "Blank";
-	if(details != null) 
-	  aname = (details.getOverallNodeState() + "-" + details.getOverallQueueState());
-	
-	System.out.print("Updating Node Icon = " + aname + "\n");
+      if(pIconAprNameChanged) {
+	System.out.print("Updating Node Icon = " + pIconAprName + "\n");
 
 	AppearanceMgr mgr = AppearanceMgr.getInstance();
-	Appearance apr = mgr.getNodeAppearance(aname, pMode);
+	Appearance apr = mgr.getNodeAppearance(pIconAprName, pMode);
 	pShape.setAppearance(apr);
+
+	pIconAprNameChanged = false;
       }
     }
     catch(IOException ex) {
@@ -449,6 +473,7 @@ class ViewerNode
 
     /* move the collapsed icon to the correct side of the node icon */ 
     {
+      NodeDetails details = pStatus.getDetails();
       Transform3D xform = new Transform3D();
       xform.setTranslation(new Vector3d((details == null) ? -0.8 : 0.8, 0.0, 0.0));
       pCollapsedXform.setTransform(xform);
@@ -500,11 +525,24 @@ class ViewerNode
   private Point2d   pPos;         
 
   /**
+   * The text being used for the label geometry.
+   */ 
+  private String  pLabelText;
+
+  /**
    * Whether the text label geometry is no longer valid for the current node status.
    */ 
   private boolean  pLabelTextChanged;
 
+  /**
+   * The name of the icon appearance associated with the current node state.
+   */ 
+  private String  pIconAprName;
 
+  /**
+   * Whether the icon appearance name is no longer valid for the current node status.
+   */ 
+  private boolean  pIconAprNameChanged;
 
 
   /**
