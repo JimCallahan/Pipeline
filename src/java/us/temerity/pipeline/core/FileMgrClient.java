@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.6 2004/03/30 22:10:06 jim Exp $
+// $Id: FileMgrClient.java,v 1.7 2004/04/11 19:19:28 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -20,7 +20,7 @@ import java.util.*;
  * <A HREF="../../../../man/plfilemgr.html"><B>plfilemgr</B><A>(1) running on the file 
  * server. An instance of this class is used by the Pipeline master server daemon 
  * <A HREF="../../../../man/plmaster.html"><B>plmaster</B><A>(1) to communicate with 
- * <B>plfilemgr</B><A>(1).
+ * <B>plfilemgr</B>(1).
  * 
  * @see FileMgr
  * @see FileMgrServer
