@@ -1,4 +1,4 @@
-// $Id: NativeProcessHeavy.java,v 1.1 2004/10/28 15:55:23 jim Exp $
+// $Id: NativeProcessHeavy.java,v 1.2 2004/11/04 01:21:06 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -314,6 +314,32 @@ class NativeProcessHeavy
    
   /*----------------------------------------------------------------------------------------*/
   /*   I / O                                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write the given string data to the STDIN of the OS level process. 
+   * 
+   * @param input 
+   *   The data to write to the STDIN of the OS level process.
+   * 
+   * @return
+   *   The number of characters written. 
+   */ 
+  public native int
+  writeToStdIn
+  (
+   String input
+  ) 
+    throws IOException;
+
+  /** 
+   * Close the STDIN pipe. 
+   */ 
+  public native void  
+  closeStdIn() 
+    throws IOException;
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**

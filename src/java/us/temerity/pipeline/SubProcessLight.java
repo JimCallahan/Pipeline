@@ -1,4 +1,4 @@
-// $Id: SubProcessLight.java,v 1.1 2004/10/28 15:55:23 jim Exp $
+// $Id: SubProcessLight.java,v 1.2 2004/11/04 01:21:06 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -297,7 +297,14 @@ class SubProcessLight
       stderr.interrupt();
       pExitCode = -3;
     }
-    
+
+    try {
+      ((NativeProcessLight) pProc).closeStdIn();
+    }
+    catch(IOException ex) {
+      Logs.sub.warning(getName() + " [close STDIN]: " + ex.getMessage());
+    }
+
     assert(!stdout.isAlive());
     assert(!stderr.isAlive());
     

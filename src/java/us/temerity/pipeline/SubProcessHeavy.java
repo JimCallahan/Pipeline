@@ -1,4 +1,4 @@
-// $Id: SubProcessHeavy.java,v 1.1 2004/10/28 15:55:23 jim Exp $
+// $Id: SubProcessHeavy.java,v 1.2 2004/11/04 01:21:06 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -255,32 +255,6 @@ class SubProcessHeavy
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Write the given string data to the STDIN of the OS level process. 
-   * 
-   * @param input 
-   *   The data to write to the STDIN of the OS level process.
-   * 
-   * @return
-   *   The number of characters written. 
-   */ 
-  public native int
-  writeToStdIn
-  (
-   String input
-  ) 
-    throws IOException;
-
-  /** 
-   * Close the STDIN pipe. 
-   */ 
-  public native void  
-  closeStdIn() 
-    throws IOException;
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
    * Get the file to which all STDOUT output is redirected.
    */ 
   public File 
@@ -446,6 +420,13 @@ class SubProcessHeavy
 
       stats.interrupt();
       pExitCode = -2;
+    }
+
+    try {
+      ((NativeProcessHeavy) pProc).closeStdIn();
+    }
+    catch(IOException ex) {
+      Logs.sub.warning(getName() + " [close STDIN]: " + ex.getMessage());
     }
     
     assert(!stats.isAlive());
