@@ -1,4 +1,4 @@
-// $Id: FB.cc,v 1.3 2004/04/09 17:55:12 jim Exp $
+// $Id: FB.cc,v 1.4 2004/04/09 18:13:46 jim Exp $
 
 #include <FB.hh>
 
@@ -15,20 +15,23 @@ namespace Pipeline {
 /*     all other user messages.                                                             */
 /*------------------------------------------------------------------------------------------*/
 
-LockSet::Lock* FB::sLock = NULL;
+ostream* FB::sOut                = NULL;
+	 
+bool     FB::sExitOnError        = true;
 
-ostream* FB::sOut = NULL;
-	 
-bool   FB::sWarnings     = false;
-UInt32 FB::sWarningLevel = 1;
+bool     FB::sWarnings           = false;
+UInt32   FB::sWarningLevel       = 1;
 
-bool   FB::sStageStats = false; 
-UInt32 FB::sStatLevel  = 1;   
+bool     FB::sStageStats         = false; 
+UInt32   FB::sStatLevel          = 1;   
 	 
-Int32  FB::sNumTimers  = 50;
-Int32  FB::sTimerLevel = -1;
-Timer* FB::sTimers     = NULL;
+Int32    FB::sNumTimers          = 50;
+Int32    FB::sTimerLevel         = -1;
+Timer*   FB::sTimers             = NULL;
 	 
-Int32  FB::sIndentLevel = -2;
+Int32    FB::sIndentLevel        = -2;
+	 
+bool     FB::sProgress           = false;
+Real32   FB::sProgressPercentage = 0.0f;
 	  
 } // namespace Pipeline
