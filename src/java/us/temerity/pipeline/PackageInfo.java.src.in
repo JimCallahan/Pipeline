@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.2 2004/08/23 20:18:03 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.3 2004/08/27 23:34:40 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -267,6 +267,29 @@ class PackageInfo
   public static final String  sJavaHome = "@JAVA_HOME@";
 
   
+  /**
+   * The pipeline user name.
+   */ 
+  public static String sPipelineUser = "@PIPELINE_USER@";
+
+  /**
+   * The pipeline user ID 
+   */ 
+  public static int sPipelineUID = @PIPELINE_UID@;
+
+
+  /**
+   * The pipeline group name.
+   */ 
+  public static String sPipelineGroup = "@PIPELINE_GROUP@";
+
+  /**
+   * The pipeline group ID 
+   */ 
+  public static int sPipelineGID = @PIPELINE_GID@;
+
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**

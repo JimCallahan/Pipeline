@@ -1,4 +1,4 @@
-// $Id: PackageInfo.cc.src.in,v 1.1 2004/08/04 01:43:45 jim Exp $
+// $Id: PackageInfo.cc.src.in,v 1.2 2004/08/27 23:34:40 jim Exp $
 
 #include <PackageInfo.hh>
 
@@ -32,9 +32,20 @@ const char* PackageInfo::sBuildMode = "@BUILD_MODE@";
 
 
 /**
- * The "pipeline" user ID 
+ * The pipeline user name.
+ */ 
+const char* PackageInfo::sPipelineUser = "@PIPELINE_USER@";
+
+/**
+ * The pipeline user ID 
  */ 
 const int PackageInfo::sPipelineUID = @PIPELINE_UID@;
+
+
+/**
+ * The pipeline group name.
+ */ 
+const char* PackageInfo::sPipelineGroup = "@PIPELINE_GROUP@";
 
 /**
  * The pipeline group ID 

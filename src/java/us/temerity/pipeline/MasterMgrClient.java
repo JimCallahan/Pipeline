@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.19 2004/08/23 03:02:10 jim Exp $
+// $Id: MasterMgrClient.java,v 1.20 2004/08/27 23:34:40 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -552,7 +552,7 @@ class MasterMgrClient
   {
     verifyConnection();
     
-    MiscGetSuffixEditorsReq req = new MiscGetSuffixEditorsReq("pipeline");
+    MiscGetSuffixEditorsReq req = new MiscGetSuffixEditorsReq(PackageInfo.sPipelineUser);
     
     Object obj = performTransaction(MasterRequest.GetSuffixEditors, req); 
     if(obj instanceof MiscGetSuffixEditorsRsp) {
@@ -658,7 +658,7 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    if(author.equals("pipeline")) 
+    if(author.equals(PackageInfo.sPipelineUser)) 
       return true;
 
     if(!useCache || (pPrivilegedUsers == null)) 
@@ -772,7 +772,7 @@ class MasterMgrClient
   ) 
     throws PipelineException    
   {
-    if(!PackageInfo.sUser.equals("pipeline"))
+    if(!PackageInfo.sUser.equals(PackageInfo.sPipelineUser))
       throw new PipelineException
 	("Only the \"pipeline\" user may change a user's privileges!");
 
@@ -806,7 +806,7 @@ class MasterMgrClient
   ) 
     throws PipelineException    
   {
-    if(!PackageInfo.sUser.equals("pipeline"))
+    if(!PackageInfo.sUser.equals(PackageInfo.sPipelineUser))
       throw new PipelineException
 	("Only the \"pipeline\" user may change a user's privileges!");
 

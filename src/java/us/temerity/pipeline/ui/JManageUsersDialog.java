@@ -1,4 +1,4 @@
-// $Id: JManageUsersDialog.java,v 1.2 2004/05/29 06:38:06 jim Exp $
+// $Id: JManageUsersDialog.java,v 1.3 2004/08/27 23:34:40 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -48,7 +48,7 @@ class JManageUsersDialog
       }
 
       String extra[][] = null;
-      if(PackageInfo.sUser.equals("pipeline")) {
+      if(PackageInfo.sUser.equals(PackageInfo.sPipelineUser)) {
 	String e[][] = {
 	  { "Add User", "add-user" }, 
 	  { "Remove User", "remove-user" }

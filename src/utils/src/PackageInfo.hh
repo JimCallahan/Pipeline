@@ -1,4 +1,4 @@
-// $Id: PackageInfo.hh,v 1.13 2004/07/21 07:18:06 jim Exp $
+// $Id: PackageInfo.hh,v 1.14 2004/08/27 23:34:40 jim Exp $
 
 #ifndef PIPELINE_PACKAGE_INFO_HH
 #define PIPELINE_PACKAGE_INFO_HH
@@ -39,15 +39,25 @@ public:
 
 
   /**
-   * The "pipeline" user ID 
+   * The pipeline user name.
+   */ 
+  static const char* sPipelineUser;
+
+  /**
+   * The pipeline user ID 
    */ 
   static const int sPipelineUID;
+
+
+  /**
+   * The pipeline group name.
+   */ 
+  static const char* sPipelineGroup;
 
   /**
    * The pipeline group ID 
    */ 
   static const int sPipelineGID;
-
 
 
   /**

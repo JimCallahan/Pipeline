@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.25 2004/08/26 05:58:25 jim Exp $
+// $Id: MasterMgr.java,v 1.26 2004/08/27 23:34:40 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1598,10 +1598,10 @@ class MasterMgr
 	try {
 	  editors = readSuffixEditors(author);
 
-	  if((editors == null) && !author.equals("pipeline")) {
-	    editors = pSuffixEditors.get("pipeline");
+	  if((editors == null) && !author.equals(PackageInfo.sPipelineUser)) {
+	    editors = pSuffixEditors.get(PackageInfo.sPipelineUser);
 	    if(editors == null) 
-	      editors = readSuffixEditors("pipeline");
+	      editors = readSuffixEditors(PackageInfo.sPipelineUser);
 	  }
 
 	  if(editors == null) 

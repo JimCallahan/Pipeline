@@ -1,4 +1,4 @@
-// $Id: PlNotify.cc,v 1.9 2004/07/21 07:18:22 jim Exp $
+// $Id: PlNotify.cc,v 1.10 2004/08/27 23:34:40 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -60,10 +60,12 @@ main
 
   /* make sure that only the "pipeline" user can run this program! */ 
   {
-    uid_t uid  = getuid();
     uid_t gid  = getgid();
-    if(gid != PackageInfo::sPipelineGID) 
-      FB::error("This program can only be run by the \"pipeline\" group!");	
+    if(gid != PackageInfo::sPipelineGID) {
+      sprintf(msg, "This program can only be run by the (%) group!", 
+	      PackageInfo::sPipelineGroup);
+      FB::error(msg);	
+    }
   }
 
   /* raise the maximum number of open files */ 
@@ -82,7 +84,7 @@ main
     if(setuid(uid) != 0) {
       switch(errno) {
       case EPERM:
-	sprintf(msg, "Unable to substitute user (%s)!", uid);
+	sprintf(msg, "Unable to substitute user (%s)!", PackageInfo::sPipelineUser);
 	FB::error(msg);
 	
       default:

@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.9 2004/08/26 05:56:30 jim Exp $
+// $Id: QueueMgrClient.java,v 1.10 2004/08/27 23:34:40 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -162,7 +162,7 @@ class QueueMgrClient
   ) 
     throws PipelineException
   {
-    if(author.equals("pipeline")) 
+    if(author.equals(PackageInfo.sPipelineUser)) 
       return true;
 
     if(!useCache || (pPrivilegedUsers == null)) 

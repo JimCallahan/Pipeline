@@ -1,4 +1,4 @@
-// $Id: PlRun.cc,v 1.4 2004/01/03 18:47:41 jim Exp $
+// $Id: PlRun.cc,v 1.5 2004/08/27 23:34:40 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -62,9 +62,18 @@ main
   /* make sure that only the "pipeline" user can run this program! */ 
   {
     uid_t uid  = getuid();
+    if(uid != PackageInfo::sPipelineUID) {
+      sprintf(msg, "This program can only be run by the (%) user!", 
+	      PackageInfo::sPipelineUser);
+      FB::error(msg);	
+    }
+      
     uid_t gid  = getgid();
-    if((uid != PackageInfo::sPipelineUID) || (gid != PackageInfo::sPipelineGID)) 
-      FB::error("plrun can only be run by the \"pipeline.pipeline\" user!");	
+    if(gid != PackageInfo::sPipelineGID) {
+      sprintf(msg, "This program can only be run by the (%) group!", 
+	      PackageInfo::sPipelineGroup);
+      FB::error(msg);	
+    }
   }
 
   /* unpack arguments */ 
