@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.33 2005/04/03 06:08:09 jim Exp $
+// $Id: FileMgrClient.java,v 1.34 2005/04/03 07:04:03 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -536,5 +536,18 @@ interface FileMgrClient
   ) 
     throws PipelineException;
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*  C O N N E C T I O N                                                                   */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Order the server to refuse any further requests and then to exit as soon as all
+   * currently pending requests have be completed.
+   */
+  public void 
+  shutdown() 
+    throws PipelineException;
 }
 
