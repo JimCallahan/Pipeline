@@ -1,4 +1,4 @@
-// $Id: TestNodeMgrApp.java,v 1.12 2004/04/20 22:09:09 jim Exp $
+// $Id: TestNodeMgrApp.java,v 1.13 2004/05/03 04:31:01 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -424,6 +424,13 @@ class TestNodeMgrApp
       printStatus(client.status("default", "/animals/mammal/bat"));
       printStatus(client.status("default", frog.getName()));
 
+      printNodePath(client.updatePath("jim", "default", eagle.getName()));
+      printNodePath(client.updatePath("jim", "default", "/animals/insects"));
+      printNodePath(client.updatePath("jim", "default", "/images"));
+      printNodePath(client.updatePath("jim", "default", "/animals/fungus"));
+      printNodePath(client.updatePath("jim", "default", "/"));
+      printNodePath(client.updatePath("jim", "fooy", "/animals/insects"));
+
       client.shutdown();
 
       /* wait for everything to shutdown */ 
@@ -617,6 +624,51 @@ class TestNodeMgrApp
     for(wk=0; wk<lines.length; wk++) 
       buf.append(indent + "  " + lines[wk] + "\n");
   }
+
+
+
+  private void 
+  printNodePath
+  (
+   NodeTreeComp rootComp
+  ) 
+  {
+    StringBuffer buf = new StringBuffer();
+    buf.append("Node Components:\n"); 
+    printNodePathHelper(rootComp, 1, buf);
+    System.out.print(buf.toString());
+  }
+
+  private void 
+  printNodePathHelper
+  (
+   NodeTreeComp comp, 
+   int level, 
+   StringBuffer buf
+  ) 
+  {
+    String istr = null;
+    {
+      StringBuffer ibuf = new StringBuffer();
+      int wk;
+      for(wk=0; wk<level; wk++) 
+	ibuf.append("  ");
+      istr = ibuf.toString();
+    }
+
+    buf.append(istr + "[" + comp.getName() + "]\n");
+
+    if(comp.isLeaf()) {
+      buf.append(istr + "  CheckedIn = " + comp.isCheckedIn() + "\n" + 
+		 istr + "    Working = " + comp.isWorking() + "\n" + 
+		 istr + "      Local = " + comp.isLocal() + "\n");
+    }
+    else {
+      for(NodeTreeCommon child : comp.values()) 
+	printNodePathHelper((NodeTreeComp) child, level+1, buf);
+    }
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/

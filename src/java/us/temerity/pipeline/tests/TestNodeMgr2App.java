@@ -1,4 +1,4 @@
-// $Id: TestNodeMgr2App.java,v 1.1 2004/04/24 22:44:01 jim Exp $
+// $Id: TestNodeMgr2App.java,v 1.2 2004/05/03 04:31:01 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -278,10 +278,15 @@ class TestNodeMgr2App
 	
 	for(ClientTask2 client : clients) 
 	  client.join();
+
       }
 
       {
 	NodeMgrClient client = new NodeMgrClient("localhost", 53135);
+
+	client.checkOut("modeling", modA.getName(), null, false);
+	printStatus(client.status("modeling", modA.getName()));
+
 	client.register("default", fly);
 	client.register("default", dragonfly);
 	client.disconnect();
@@ -364,7 +369,8 @@ class TestNodeMgr2App
       printStatus(client.status("default", "/animals/mammal/bat"));
       printStatus(client.status("default", frog.getName()));
 
-      client.shutdown();
+      //client.shutdown();
+      client.disconnect();
     }
   }
 
