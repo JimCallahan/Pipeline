@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.25 2004/07/16 22:05:28 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.26 2004/07/18 21:36:23 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -158,7 +158,7 @@ class JNodeViewerPanel
       JPopupMenu menus[] = { pShortNodePopup, pMediumNodePopup, pNodePopup };
       int wk;
       for(wk=0; wk<menus.length; wk++) {
-	item = new JMenuItem("Details...");
+	item = new JMenuItem("Update Details");
 	item.setActionCommand("details");
 	item.addActionListener(this);
 	menus[wk].add(item);  
@@ -253,32 +253,7 @@ class JNodeViewerPanel
       pNodePopup.add(item);
 
       pNodePopup.addSeparator();
-      
-      item = new JMenuItem("Rename...");
-      pRenameItem = item;
-      item.setActionCommand("rename");
-      item.addActionListener(this);
-      pNodePopup.add(item);
 
-      item = new JMenuItem("Renumber...");
-      item.setActionCommand("renumber");
-      item.setEnabled(false);  // FOR NOW...
-      item.addActionListener(this);
-      pNodePopup.add(item);
-
-      item = new JMenuItem("Import...");
-      item.setActionCommand("import");
-      item.addActionListener(this);
-      item.setEnabled(false);  // FOR NOW...
-      pNodePopup.add(item);
-
-      item = new JMenuItem("Clone...");
-      item.setActionCommand("clone");
-      item.addActionListener(this);
-      pNodePopup.add(item);
-
-      pNodePopup.addSeparator();
-      
       item = new JMenuItem("Check-In...");
       pCheckInItem = item;
       item.setActionCommand("check-in");
@@ -290,26 +265,45 @@ class JNodeViewerPanel
       item.setActionCommand("check-out");
       item.addActionListener(this);
       pNodePopup.add(item);
-      
+
       pNodePopup.addSeparator();
+      
+      item = new JMenuItem("Clone...");
+      item.setActionCommand("clone");
+      item.addActionListener(this);
+      pNodePopup.add(item);
 
       item = new JMenuItem("Release");
+      pReleaseItem = item;
       item.setActionCommand("release");
-      item.addActionListener(this);
-      item.setEnabled(false);  // FOR NOW...
-      pNodePopup.add(item);
-      
-      item = new JMenuItem("Revoke");
-      pRevokeItem = item;
-      item.setActionCommand("revoke");
       item.addActionListener(this);
       pNodePopup.add(item);
 
-      item = new JMenuItem("Destroy");
-      pDestroyItem = item;
-      item.setActionCommand("destroy");
+      pNodePopup.addSeparator();
+
+      item = new JMenuItem("Import...");
+      item.setActionCommand("import");
       item.addActionListener(this);
       item.setEnabled(false);  // FOR NOW...
+      pNodePopup.add(item);
+
+      item = new JMenuItem("Export...");
+      item.setActionCommand("export");
+      item.addActionListener(this);
+      item.setEnabled(false);  // FOR NOW...
+      pNodePopup.add(item);
+
+      item = new JMenuItem("Rename...");
+      pRenameItem = item;
+      item.setActionCommand("rename");
+      item.addActionListener(this);
+      pNodePopup.add(item);
+
+      item = new JMenuItem("Renumber...");
+      pRenumberItem = item;
+      item.setActionCommand("renumber");
+      item.setEnabled(false);  
+      item.addActionListener(this);
       pNodePopup.add(item);
     }
 
@@ -428,8 +422,9 @@ class JNodeViewerPanel
       pAddSecondaryDialog = new JAddSecondaryDialog();
 
       pRenameDialog   = new JRenameDialog();
+      pRenumberDialog = new JRenumberDialog();
       pRegisterDialog = new JRegisterDialog();
-      pRevokeDialog   = new JRevokeDialog();
+      pReleaseDialog  = new JReleaseDialog();
       pCheckInDialog  = new JCheckInDialog();
       pCheckOutDialog = new JCheckOutDialog();
       
@@ -695,7 +690,9 @@ class JNodeViewerPanel
     if(pPrimary != null) 
       details = pPrimary.getNodeStatus().getDetails();
 
-    boolean hasWorking   = (details.getWorkingVersion() != null);
+    NodeMod mod = details.getWorkingVersion();
+
+    boolean hasWorking   = (mod != null);
     boolean hasCheckedIn = (details.getLatestVersion() != null);
     boolean multiple     = (getSelectedNames().size() >= 2);
 
@@ -703,55 +700,36 @@ class JNodeViewerPanel
     pUnlinkItem.setEnabled(hasWorking && multiple);
 
     pRenameItem.setEnabled(hasWorking && !hasCheckedIn);
-
+    pRenumberItem.setEnabled(hasWorking && mod.getPrimarySequence().hasFrameNumbers());
+    
     pCheckInItem.setEnabled(hasWorking);
     pCheckOutItem.setEnabled(hasCheckedIn);
     
-    pRevokeItem.setEnabled(hasWorking && !hasCheckedIn);
+    pReleaseItem.setEnabled(hasWorking);
 
     pRemoveSecondaryMenu.setEnabled(false);
-    pDestroyItem.setEnabled(false);
 
+    /* rebuild remove secondary items */ 
     if(!pIsLocked) {
-      UIMaster master = UIMaster.getInstance(); 
-      try {
-	JMenuItem item;
-	
-	/* clear existing items */ 
-	{
-	  pRemoveSecondaryMenu.removeAll();
-	  pRemoveSecondarySeqs.clear();
-	}
-	
-	/* rebuild items */ 
-	{
-	  if(details != null) {
-	    NodeMod mod = details.getWorkingVersion();
-	    if(mod != null) {
-	      for(FileSeq fseq : mod.getSecondarySequences()) {
-		String fname = fseq.toString();
-		
-		item = new JMenuItem(fname);
-		item.setActionCommand("remove-secondary:" + fname);
-		item.addActionListener(this);
-		pRemoveSecondaryMenu.add(item);
-		
-		pRemoveSecondarySeqs.put(fname, fseq);
-	      }
-	    }
-	  }
-	  pRemoveSecondaryMenu.setEnabled(pRemoveSecondaryMenu.getItemCount() > 0);
-	}
+      JMenuItem item;
 
-	/* privileged operations */ 
-	{
-	  boolean isPrivileged = master.getMasterMgrClient().isPrivileged();
-	  pDestroyItem.setEnabled(isPrivileged);
+      pRemoveSecondaryMenu.removeAll();
+      pRemoveSecondarySeqs.clear();
+
+      if(mod != null) {
+	for(FileSeq fseq : mod.getSecondarySequences()) {
+	  String fname = fseq.toString();
+	  
+	  item = new JMenuItem(fname);
+	  item.setActionCommand("remove-secondary:" + fname);
+	  item.addActionListener(this);
+	  pRemoveSecondaryMenu.add(item);
+	  
+	  pRemoveSecondarySeqs.put(fname, fseq);
 	}
       }
-      catch(PipelineException ex) {
-	master.showErrorDialog(ex);
-      }
+      
+      pRemoveSecondaryMenu.setEnabled(pRemoveSecondaryMenu.getItemCount() > 0);
     }
   }
 
@@ -1927,13 +1905,10 @@ class JNodeViewerPanel
 	      prefs.getNodeUnlink().wasPressed(e))
 	doUnlink();
       
-      else if((prefs.getNodeRename() != null) &&
-	      prefs.getNodeRename().wasPressed(e))
-	doRename();
-      else if((prefs.getNodeClone() != null) &&
-	      prefs.getNodeClone().wasPressed(e))
-	doClone();
-      
+      else if((prefs.getNodeAddSecondary() != null) &&
+	      prefs.getNodeAddSecondary().wasPressed(e))
+	doAddSecondary();
+
       else if((prefs.getNodeCheckIn() != null) &&
 	      prefs.getNodeCheckIn().wasPressed(e))
 	doCheckIn();
@@ -1941,9 +1916,19 @@ class JNodeViewerPanel
 	      prefs.getNodeCheckOut().wasPressed(e))
 	doCheckOut();
       
-      else if((prefs.getNodeRevoke() != null) &&
-	      prefs.getNodeRevoke().wasPressed(e))
-	doRevoke();
+      else if((prefs.getNodeClone() != null) &&
+	      prefs.getNodeClone().wasPressed(e))
+	doClone();
+      else if((prefs.getNodeRelease() != null) &&
+	      prefs.getNodeRelease().wasPressed(e))
+	doRelease();
+
+      else if((prefs.getNodeRename() != null) &&
+	      prefs.getNodeRename().wasPressed(e))
+	doRename();
+      else if((prefs.getNodeRenumber() != null) &&
+	      prefs.getNodeRenumber().wasPressed(e))
+	doRenumber();
       
       else 
 	undefined = true;
@@ -2108,16 +2093,18 @@ class JNodeViewerPanel
       doAddSecondary();
     else if(cmd.startsWith("remove-secondary:")) 
       doRemoveSecondary(cmd.substring(17)); 
-    else if(cmd.equals("rename"))
-      doRename();
-    else if(cmd.equals("clone"))
-      doClone();
     else if(cmd.equals("check-in"))
       doCheckIn();
     else if(cmd.equals("check-out"))
       doCheckOut();
-    else if(cmd.equals("revoke"))
-      doRevoke();
+    else if(cmd.equals("clone"))
+      doClone();
+    else if(cmd.equals("release"))
+      doRelease();
+    else if(cmd.equals("rename"))
+      doRename();
+    else if(cmd.equals("renumber"))
+      doRenumber();
 
     /* link menu events */ 
     else if(cmd.equals("link-edit")) 
@@ -2447,7 +2434,7 @@ class JNodeViewerPanel
       if(details != null) {
 
 	NodeMod mod = details.getWorkingVersion();
-	if(mod != null) {	
+	if((mod != null) && (details.getLatestVersion() == null)) { 
 	  pRenameDialog.updateNode(mod);
 	  pRenameDialog.setVisible(true);
 	
@@ -2455,6 +2442,36 @@ class JNodeViewerPanel
 	    String name = pRenameDialog.getName();
 	    RenameTask task = 
 	      new RenameTask(mod.getName(), name, pRenameDialog.renameFiles());
+	    task.start();
+	  }
+	}
+      }
+    }
+
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();
+  }
+
+  /**
+   * Renumber frame range of the primary seleted node.
+   */ 
+  private void 
+  doRenumber() 
+  {
+    if(pPrimary != null) {
+      NodeDetails details = pPrimary.getNodeStatus().getDetails();
+      if(details != null) {
+
+	NodeMod mod = details.getWorkingVersion();
+	if((mod != null) && (mod.getPrimarySequence().hasFrameNumbers())) {
+	  pRenumberDialog.updateNode(mod);
+	  pRenumberDialog.setVisible(true);
+	
+	  if(pRenumberDialog.wasConfirmed()) {
+	    FrameRange range    = pRenumberDialog.getFrameRange();
+	    boolean removeFiles = pRenumberDialog.removeFiles();
+
+	    RenumberTask task = new RenumberTask(mod.getName(), range, removeFiles); 
 	    task.start();
 	  }
 	}
@@ -2516,10 +2533,10 @@ class JNodeViewerPanel
   }
 
   /**
-   * Revoke the primary selected node.
+   * Release the primary selected node.
    */ 
   private void 
-  doRevoke() 
+  doRelease() 
   {
     if(pPrimary != null) {
       NodeDetails details = pPrimary.getNodeStatus().getDetails();
@@ -2527,11 +2544,11 @@ class JNodeViewerPanel
 
 	NodeMod mod = details.getWorkingVersion();
 	if(mod != null) {	
-	  pRevokeDialog.updateNode(mod);
-	  pRevokeDialog.setVisible(true);
+	  pReleaseDialog.updateNode(mod);
+	  pReleaseDialog.setVisible(true);
 	
-	  if(pRevokeDialog.wasConfirmed()) {
-	    RevokeTask task = new RevokeTask(mod.getName(), pRevokeDialog.removeFiles());
+	  if(pReleaseDialog.wasConfirmed()) {
+	    ReleaseTask task = new ReleaseTask(mod.getName(), pReleaseDialog.removeFiles());
 	    task.start();
 	  }
 	}
@@ -3372,6 +3389,54 @@ class JNodeViewerPanel
   }
 
   /** 
+   * Renumber a given node.
+   */ 
+  private
+  class RenumberTask
+    extends Thread
+  {
+    public 
+    RenumberTask
+    (
+     String name, 
+     FrameRange range, 
+     boolean removeFiles
+    ) 
+    {
+      super("JNodeViewerPanel:RenumberTask");
+
+      pName        = name;
+      pFrameRange  = range;
+      pRemoveFiles = removeFiles;
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Renumbering Node...")) {
+	try {
+	  master.getMasterMgrClient().renumber(pAuthor, pView, pName, 
+					       pFrameRange, pRemoveFiles);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	updateRoots();
+      }
+    }
+
+    private String      pName; 
+    private FrameRange  pFrameRange; 
+    private boolean     pRemoveFiles; 
+  }
+
+  /** 
    * Register a new node.
    */ 
   private
@@ -3414,20 +3479,20 @@ class JNodeViewerPanel
 
 
   /** 
-   * Revoke a given node.
+   * Release a given node.
    */ 
   private
-  class RevokeTask
+  class ReleaseTask
     extends Thread
   {
     public 
-    RevokeTask
+    ReleaseTask
     (
      String name, 
      boolean removeFiles
     ) 
     {
-      super("JNodeViewerPanel:RevokeTask");
+      super("JNodeViewerPanel:ReleaseTask");
 
       pName        = name; 
       pRemoveFiles = removeFiles;
@@ -3437,9 +3502,9 @@ class JNodeViewerPanel
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Revoking Node...")) {
+      if(master.beginPanelOp("Releasing Node...")) {
 	try {
-	  master.getMasterMgrClient().revoke(pAuthor, pView, pName, pRemoveFiles);
+	  master.getMasterMgrClient().release(pAuthor, pView, pName, pRemoveFiles);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -3449,7 +3514,7 @@ class JNodeViewerPanel
 	  master.endPanelOp("Done.");
 	}
 
-	removeRoot(pName);
+	updateRoots();
       }
     }
 
@@ -3895,10 +3960,10 @@ class JNodeViewerPanel
   private JMenuItem  pLinkItem;
   private JMenuItem  pUnlinkItem;
   private JMenuItem  pRenameItem;
+  private JMenuItem  pRenumberItem;
   private JMenuItem  pCheckInItem;
   private JMenuItem  pCheckOutItem;
-  private JMenuItem  pRevokeItem;
-  private JMenuItem  pDestroyItem;
+  private JMenuItem  pReleaseItem;
 
   /**
    * The remove secondary node submenu.
@@ -4002,14 +4067,19 @@ class JNodeViewerPanel
   private JRenameDialog  pRenameDialog;
 
   /**
+   * The renumber node dialog.
+   */ 
+  private JRenumberDialog  pRenumberDialog;
+
+  /**
    * The register node dialog.
    */ 
   private JRegisterDialog  pRegisterDialog;
 
   /**
-   * The revoke node dialog.
+   * The release node dialog.
    */ 
-  private JRevokeDialog  pRevokeDialog;
+  private JReleaseDialog  pReleaseDialog;
 
   /** 
    * The check-in node dialog.
