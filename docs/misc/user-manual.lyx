@@ -1,0 +1,466 @@
+#LyX 1.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 221
+\textclass article
+\language english
+\inputencoding auto
+\fontscheme default
+\graphics default
+\paperfontsize default
+\spacing single 
+\papersize Default
+\paperpackage a4
+\use_geometry 0
+\use_amsmath 0
+\use_natbib 0
+\use_numerical_citations 0
+\paperorientation portrait
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\defskip medskip
+\quotes_language english
+\quotes_times 2
+\papercolumns 2
+\papersides 1
+\paperpagestyle default
+
+\layout Title
+
+
+\noun on 
+Pipeline
+\noun default 
+: User Manual
+\layout Author
+
+
+\begin_inset ERT
+status Open
+
+\layout Standard
+Copyright 
+\backslash 
+copyright 
+\backslash 
+enspace 2004 Temerity Software, Inc.
+\end_inset 
+
+
+\layout Standard
+
+
+\begin_inset LatexCommand \tableofcontents{}
+
+\end_inset 
+
+
+\layout Section
+
+Production Model
+\layout Subsection
+
+Node Tree
+\layout Subsection
+
+Nodes
+\layout Subsubsection
+
+File Sequences
+\layout Paragraph
+
+Primary Sequence
+\layout Paragraph
+
+Secondary Sequences
+\layout Subsubsection
+
+Toolsets
+\layout Subsubsection
+
+Editors/Viewers
+\layout Subsubsection
+
+Regeneration Actions
+\layout Paragraph
+
+Action Parameters
+\layout Paragraph
+
+Overflow Policy
+\layout Subparagraph
+
+Ignore 
+\layout Subparagraph
+
+Abort
+\layout Paragraph
+
+Execution Method
+\layout Subparagraph
+
+Serial 
+\layout Subparagraph
+
+Parallel
+\layout Paragraph
+
+Batch Size
+\layout Paragraph
+
+Job Requirements
+\layout Subparagraph
+
+Priority
+\layout Subparagraph
+
+System Load
+\layout Subparagraph
+
+Free Memory
+\layout Subparagraph
+
+Free Disk Space
+\layout Subparagraph
+
+Selection Keys
+\layout Subparagraph
+
+License Keys
+\layout Subsection
+
+Links
+\layout Paragraph
+
+Link Policy
+\layout Subparagraph
+
+None
+\layout Subparagraph
+
+Node Only
+\layout Subparagraph
+
+Node & Queue
+\layout Paragraph
+
+Link Relationship
+\layout Subparagraph
+
+None
+\layout Subparagraph
+
+1:1
+\layout Subparagraph
+
+All
+\layout Paragraph
+
+Frame Offset
+\layout Section
+
+Revision Control
+\layout Subsection
+
+Repository
+\layout Subsection
+
+Working Areas
+\layout Subsection
+
+Node Versions
+\layout Section
+
+Node States
+\layout Subsection
+
+Overall Node State
+\layout Paragraph
+
+Pending
+\layout Paragraph
+
+Checked-In
+\layout Paragraph
+
+Identical 
+\layout Paragraph
+
+Modified Links
+\layout Paragraph
+
+Modified
+\layout Paragraph
+
+Needs Check-Out
+\layout Paragraph
+
+Conflicted
+\layout Paragraph
+
+Missing
+\layout Subsection
+
+Overall Queue State
+\layout Paragraph
+
+Undefined
+\layout Paragraph
+
+Finished
+\layout Paragraph
+
+Stale
+\layout Paragraph
+
+Queued
+\layout Paragraph
+
+Running
+\layout Paragraph
+
+Aborted
+\layout Paragraph
+
+Failed
+\layout Section
+
+Execution Environment
+\layout Subsection
+
+Packages
+\layout Subsection
+
+Toolsets
+\layout Section
+
+Job Queue
+\layout Subsection
+
+Job Groups
+\layout Subsection
+
+Job Servers
+\layout Subsubsection
+
+Static Resources
+\layout Subparagraph
+
+Number of CPUs
+\layout Subparagraph
+
+Total Memory
+\layout Subparagraph
+
+Total Disk Space
+\layout Subsubsection
+
+Dynamic Resources
+\layout Subparagraph
+
+System Load
+\layout Subparagraph
+
+Free Memory
+\layout Subparagraph
+
+Free Disk Space
+\layout Subsubsection
+
+Reservations
+\layout Subsubsection
+
+Job Slots
+\layout Subsubsection
+
+Selection Key Biases
+\layout Subsection
+
+Job Dispatcher
+\layout Section
+
+UI: Panels
+\layout Subsection
+
+Node Browser
+\layout Subsection
+
+Node Viewer
+\layout Subsection
+
+Node Details
+\layout Subsection
+
+Node History
+\layout Subsection
+
+Node Files
+\layout Subsection
+
+Job Browser 
+\layout Subsection
+
+Job Viewer 
+\layout Subsection
+
+Job Details 
+\layout Subsection
+
+Task Timeline
+\layout Subsection
+
+Task Details
+\layout Section
+
+UI: Panel Layout
+\layout Subsection
+
+Tabbed Panels
+\layout Subsection
+
+Split Panels
+\layout Subsection
+
+Saved Layouts
+\layout Section
+
+UI: Preferences
+\layout Subsection
+
+Preference Browser
+\layout Subsection
+
+Hot Keys
+\layout Section
+
+UI: Administration Dialogs
+\layout Subsection
+
+Default Editors
+\layout Subsection
+
+Users
+\layout Subsection
+
+Toolsets
+\layout Subsection
+
+License Keys
+\layout Subsection
+
+Selection Keys
+\layout Subsection
+
+Job Servers
+\layout Section
+
+Pipeline API
+\layout Subsection
+
+Editor Plugins
+\layout Subsection
+
+Action Plugins
+\layout Subsection
+
+Comparator Plugins
+\layout Subsection
+
+Pipeline Tools
+\layout Section
+\start_of_appendix 
+Node
+\emph on 
+ 
+\emph default 
+State Details
+\layout Subsection
+
+Version States
+\layout Paragraph
+
+Pending
+\layout Paragraph
+
+Checked-In
+\layout Paragraph
+
+Identical 
+\layout Paragraph
+
+Needs Check-Out
+\layout Subsection
+
+Property States
+\layout Paragraph
+
+Pending
+\layout Paragraph
+
+Checked-In
+\layout Paragraph
+
+Identical 
+\layout Paragraph
+
+Modified
+\layout Paragraph
+
+Needs Check-Out
+\layout Paragraph
+
+Conflicted
+\layout Subsection
+
+Individual File States
+\layout Paragraph
+
+Pending
+\layout Paragraph
+
+Checked-In
+\layout Paragraph
+
+Identical 
+\layout Paragraph
+
+Modified 
+\layout Paragraph
+
+Added 
+\layout Paragraph
+
+Obsolete
+\layout Paragraph
+
+Needs Check-Out
+\layout Paragraph
+
+Conflicted 
+\layout Paragraph
+
+Missing
+\layout Subsection
+
+Individual Queue States
+\layout Paragraph
+
+Undefined
+\layout Paragraph
+
+Finished
+\layout Paragraph
+
+Stale
+\layout Paragraph
+
+Queued
+\layout Paragraph
+
+Running
+\layout Paragraph
+
+Aborted
+\layout Paragraph
+
+Failed
+\the_end
