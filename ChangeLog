@@ -1,3 +1,447 @@
+2003-06-05  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/Makefile.in: added FileCleaner and QueueJob
+
+	* src/java/pipeline/QueueJob.java: initial revision
+
+	* src/java/pipeline/FileCleaner.java: intial revision
+
+	* src/java/pipeline/plugin/ScriptAction.java:
+	prep() implemented, but not tested
+
+	* src/java/pipeline/plugin/FcheckEditor.java:
+	now used FileCleaner to remove temporary files
+
+	* src/java/pipeline/Toolset.java: make dumpToolset() static
+
+	* src/java/pipeline/Pipeline.java, src/java/pipeline/PVersion.java, src/java/pipeline/PState.java, src/java/pipeline/PNode.java, src/java/pipeline/PMod.java:
+	improved error messages
+
+	* src/java/pipeline/PFileSeq.java:
+	added QueueJob related database methods
+
+	* src/java/pipeline/PDepend.java:
+	merged PModDepend and PDepend SQL tables
+
+	* src/java/pipeline/NoneAction.java: renamed launch() to prep()
+
+	* src/java/pipeline/LogMessage.java: improved error messages
+
+	* src/java/pipeline/GraphicalApp.java:
+	improved error messages, added FileCleaner init(), fixed bug in exit code returned from doCleanup()
+
+	* src/java/pipeline/Database.java, src/java/pipeline/BaseEditor.java:
+	improved error messages
+
+	* src/java/pipeline/BaseAction.java: renamed doAction() to prep()
+
+	* src/database/share/dbinit.sql.in:
+	reorganized file, updated Queue tables to match new runtime classes
+
+2003-06-04  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/Task.java: obsolete
+
+2003-06-03  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JFileBox.java, src/java/pipeline/JFileSeqBox.java, src/java/pipeline/SingleEditor.java, src/java/pipeline/plugin/AcroreadEditor.java, src/java/pipeline/plugin/GimpEditor.java, src/java/pipeline/plugin/GplayEditor.java, src/java/pipeline/plugin/HoudiniEditor.java, src/java/pipeline/plugin/IvviewEditor.java, src/java/pipeline/plugin/XdviEditor.java:
+	initial revision
+
+	* src/java/pipeline/Makefile.in: added JFileBox, JFileSeqBox...
+
+	* src/java/pipeline/plugin/EmacsEditor.java, src/java/pipeline/plugin/FcheckEditor.java, src/java/pipeline/plugin/GeditEditor.java, src/java/pipeline/plugin/Makefile.in, src/java/pipeline/plugin/MayaEditor.java, src/java/pipeline/plugin/MplayEditor.java:
+	added tooltips
+
+	* src/java/pipeline/Pipeline.java: added more launchEditor() methods
+
+	* src/java/pipeline/PState.java: added getPrimary()
+
+	* src/java/pipeline/PFileSeq.java: added isSingle()
+
+	* src/java/pipeline/JViewerNode.java: added the EditWith menu item
+
+	* src/java/pipeline/JRegisterDialog.java: added editor tooltips
+
+	* src/java/pipeline/JDetailsDialog.java:
+	now used JFileBox and JFileSeqBox objects
+
+	* src/java/pipeline/FrameRange.java:
+	changed pBy to zero for single frame ranges
+
+	* src/java/pipeline/BaseEditor.java: added a description string
+
+	* src/database/share/dbinit.sql.in: updated the default toolset
+
+	* src/java/pipeline/plugin/FcheckEditor.java, src/java/pipeline/plugin/GeditEditor.java, src/java/pipeline/plugin/MayaEditor.java, src/java/pipeline/plugin/MplayEditor.java:
+	initial revision
+
+	* src/java/scripts/plutils.bash: obsolete
+
+	* src/java/scripts/Makefile.am: removed shell script includes target
+
+	* src/java/pipeline/tests/TestSubProcessApp.java:
+	dumpToolset() now returns a Map instead of a HashMap
+
+	* src/java/pipeline/plugin/Makefile.in: added several new editors
+
+	* src/java/pipeline/ToolsetEnvParser.jj:
+	now hardcodes the values for USER, HOME and WORKING
+
+	* src/java/pipeline/ToolsetApp.java, src/java/pipeline/Toolset.java:
+	dumpToolset() now returns a Map instead of a HashMap
+
+	* src/java/pipeline/SubProcessMgr.java: renamed predicates
+
+	* src/java/pipeline/SubProcess.java:
+	switch order of reads from stdout and stderr
+
+	* src/java/pipeline/Pipeline.java:
+	dumpToolset() now returns a Map instead of a HashMap
+
+	* src/java/pipeline/NoneEditor.java: changed name to "-"
+
+	* src/java/pipeline/plugin/EmacsEditor.java:
+	combined pName and pProgram
+
+	* src/java/pipeline/NoneAction.java: changed name to "-"
+
+	* src/java/pipeline/JRegisterDialog.java:
+	now used editor plugins to init pEditorComboBox
+
+	* src/java/pipeline/JComboBoxCellRenderer.java: added more assertions
+
+	* src/java/pipeline/ClientOptsParser.jj:
+	added a check for registered editors for --editor options
+
+	* src/java/pipeline/BaseEditor.java: combined pName and pProgram
+
+	* src/java/docs/pipeline.html: updated Actions and Editors sections
+
+	* src/database/share/dbinit.sql.in: removed capitalization of editors
+
+2003-06-02  Jim Callahan  <jim@salamander>
+
+	* config/bootstrap.sh, src/java/pipeline/BaseEditor.java, src/java/pipeline/NoneEditor.java, src/java/pipeline/SubProcessMgr.java, src/java/pipeline/SubProcessThread.java, src/java/pipeline/plugin/EmacsEditor.java:
+	initial revision
+
+	* src/database/share/dbinit.sql.in, src/java/pipeline/ClientApp.java, src/java/pipeline/ClientOptsParser.jj, src/java/pipeline/JDetailsDialog.java, src/java/pipeline/JRegisterDialog.java, src/java/pipeline/JViewerNode.java, src/java/pipeline/Makefile.in, src/java/pipeline/PFileSeq.java, src/java/pipeline/PMod.java, src/java/pipeline/PVersion.java, src/java/pipeline/Pipeline.java, src/java/pipeline/SubProcess.java, src/java/pipeline/plugin/Makefile.in, src/java/pipeline/tests/TestSubProcessApp.java, src/java/share/logger.properties:
+	now used Editor plugin classes instead of simple strings
+
+2003-05-30  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/Database.java, src/java/pipeline/JNodeViewer.java, src/java/pipeline/Pipeline.java, src/java/share/logger.properties:
+	removed debugging prints
+
+	* src/java/pipeline/Pipeline.java: added secondary()
+
+	* src/java/pipeline/PVersion.java:
+	added removeSecondary(), fixed a bug in toGlueHelper()
+
+	* src/java/pipeline/PState.java:
+	support for primary and secondary file sequences, filenames and file/queue states
+
+	* src/java/pipeline/PMod.java: only renaming of a variable
+
+	* src/java/pipeline/PFileSeq.java:
+	added a new constructor, cleaned up equals(), fixed a bug in removeSecondaryForMod()
+
+	* src/java/pipeline/JViewerNode.java:
+	added secondary file sequence menu items and support actions
+
+	* src/java/pipeline/JDetailsDialog.java:
+	upgraded to display primary and secondary file sequences
+
+	* src/java/pipeline/FrameRange.java: made equals() more robust
+
+	* src/java/pipeline/FileSequence.java: comments
+
+	* src/java/pipeline/FilePattern.java: fixed bug in equals()
+
+	* src/database/share/dbinit.sql.in:
+	overhauled to use new PFileSeq class
+
+	* src/java/pipeline/PFileSeq.java: intial revision
+
+	* src/java/pipeline/JRegisterDialog.java, src/java/pipeline/Makefile.in, src/java/pipeline/PMod.java, src/java/pipeline/PNode.java, src/java/pipeline/PState.java, src/java/pipeline/PVersion.java, src/java/pipeline/Pipeline.java, src/java/pipeline/JDetailsDialog.java:
+	overhauled to use new PFileSeq class
+
+	* src/java/pipeline/JCollapsePanel.java: comments
+
+	* src/java/pipeline/FilePattern.java: added a copy constructor
+
+	* src/java/pipeline/ClientApp.java:
+	commented filename reporting, for now...
+
+2003-05-29  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/SubProcess.java: added SUCCESS constant
+
+	* src/java/pipeline/Pipeline.java:
+	updated spawnPlPut() to use new SubProcess class
+
+	* src/java/pipeline/Makefile.in: added SubProcessException
+
+	* src/java/pipeline/tests/Makefile.in: reactivated SubProcess test
+
+	* src/java/pipeline/tests/TestSubProcessApp.java:
+	upgraded to use new SubProcess class
+
+	* src/java/pipeline/SubProcessException.java: initial revision
+
+	* src/java/pipeline/SubProcess.java:
+	upgraded to used toolset environments and new loggers
+
+	* src/java/pipeline/Logs.java: added subprocess logger
+
+	* src/java/pipeline/ExecPath.java:
+	changed file test to exists() from isFile()
+
+2003-05-28  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JDetailsDepend.java, src/java/pipeline/JDetailsDialog.java:
+	dependency properties now work
+
+	* src/database/share/dbinit.sql.in, src/java/pipeline/BaseParameter.java, src/java/pipeline/IntegerParameter.java, src/java/pipeline/RealParameter.java, src/java/pipeline/SqlString.java, src/java/pipeline/StringParameter.java, src/java/pipeline/TextParameter.java:
+	everything except dependency offset and mode now work for the details dialog
+
+	* src/java/pipeline/SqlString.java: initial revision
+
+	* src/java/pipeline/BaseAction.java, src/java/pipeline/BaseParameter.java, src/java/pipeline/IntegerParameter.java, src/java/pipeline/JBaseDialog.java, src/java/pipeline/JDetailsDepend.java, src/java/pipeline/JDetailsDialog.java, src/java/pipeline/Makefile.in, src/java/pipeline/PMod.java, src/java/pipeline/PVersion.java, src/java/pipeline/Pipeline.java, src/java/pipeline/RealParameter.java, src/java/pipeline/StringParameter.java, src/java/pipeline/TextParameter.java, src/java/pipeline/plugin/ScriptAction.java:
+	details dialog now works, string encoding still broken
+
+	* src/database/share/dbinit.sql.in:
+	reworked Actions and Parameter format
+
+2003-05-27  Jim Callahan  <jim@salamander>
+
+	* aclocal.m4: upgraded to autoconf-2.57
+
+	* src/java/pipeline/Makefile.in: added JDetailsDepend
+
+	* src/java/pipeline/JDetailsDialog.java: now uses JDetailsDepend
+
+	* src/java/pipeline/JBaseDialog.java: added getApp()
+
+	* src/java/pipeline/JDetailsDepend.java: initial version
+
+	* src/java/pipeline/Makefile.in: added ExecPath, ToolsetEnvParser
+
+	* src/java/pipeline/ExecPath.java, src/java/pipeline/ToolsetEnvParser.jj:
+	intiial revision
+
+	* tests/add-simpleC, tests/mod-simpleD:
+	fixed referenced to obsolete toolset names
+
+	* src/java/docs/pleditor.html:
+	fixed a few referenced to obsolete "net-options"
+
+	* src/java/docs/pltoolset.html, src/java/pipeline/ToolsetApp.java, src/java/pipeline/ToolsetOptsParser.jj:
+	added "dump" command...
+
+	* src/java/pipeline/Toolset.java:
+	added isOnToolsetPath() and dumpToolset()
+
+	* src/java/pipeline/Pipeline.java:
+	added circular dependency checks to both status and modify commands
+
+	* src/java/pipeline/JViewerNode.java:
+	added dependency related popup menu items, listeners and actions
+
+	* src/java/pipeline/JNodeViewer.java:
+	added DependTarget and DependSource and associated accessors
+
+	* src/java/pipeline/JRegisterDialog.java:
+	now checks to make sure that Editor is on the PATH of the Toolset
+
+	* src/java/pipeline/JDetailsDialog.java:
+	added validateFields() and modifyNode(), actual database update is still not implemented...
+
+	* src/database/share/dbinit.sql.in:
+	changed Action entry of PVersion and PMod to HasAction, removed obsolete LatestVersion from PNode
+
+2003-05-24  Jim Callahan  <jim@salamander>
+
+	* src/java/docs/pipeline.html, src/java/pipeline/BaseAction.java, src/java/pipeline/IntegerParameter.java, src/java/pipeline/JBaseDialog.java, src/java/pipeline/JDetailsDialog.java, src/java/pipeline/JRegisterDialog.java, src/java/pipeline/Makefile.in, src/java/pipeline/PDepend.java, src/java/pipeline/PMod.java, src/java/pipeline/PNode.java, src/java/pipeline/PVersion.java, src/java/pipeline/RealParameter.java, src/java/pipeline/StringParameter.java, src/java/pipeline/TextParameter.java:
+	SQL code completed, but NOT FULLY TESTED...
+
+2003-05-23  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/FloatParameter.java: obsolete
+
+	* src/java/pipeline/RealParameter.java: initial revision
+
+	* src/database/share/dbinit.sql.in, src/java/pipeline/BaseAction.java, src/java/pipeline/Makefile.in, src/java/pipeline/PDepend.java, src/java/pipeline/PMod.java, src/java/pipeline/PVersion.java, src/java/pipeline/Pipeline.java:
+	beginnings of database support for Actions and Parameters
+
+2003-05-22  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JGreyButton.java, src/java/pipeline/JTextEditorDialog.java, src/java/pipeline/NoneAction.java, src/java/pipeline/TextParameter.java, src/java/pipeline/plugin/ScriptAction.java:
+	initial revision
+
+	* src/java/pipeline/plugin/TestFoo.java: obsolete
+
+	* src/java/share/logger.properties: added a logger for action plugins
+
+	* src/java/scripts/pipeline.in, src/java/scripts/plui.in:
+	added the plugin directory to the class path
+
+	* src/java/pipeline/tests/Makefile.in: changed active tests
+
+	* src/java/pipeline/Makefile.in:
+	added lots of new Action related classes
+
+	* src/java/pipeline/TestBase.java, src/java/pipeline/plugin/TestBar.java:
+	obsolete
+
+	* src/java/pipeline/plugin/Makefile.in:
+	cleaned up nonapplicable stuff, added ScriptAction
+
+	* src/java/pipeline/NoAction.java, src/java/pipeline/ShellAction.java:
+	obsolete
+
+	* src/java/pipeline/Pipeline.java: added action plugin loading support
+
+	* src/java/pipeline/PVersion.java: renamed NoAction to NoneAction
+
+	* src/java/pipeline/Logs.java: added a logger for action plugins
+
+	* src/java/pipeline/JRegisterDialog.java:
+	renamed NoAction to NoneAction
+
+	* src/java/pipeline/JErrorDialog.java:
+	fixed bugs in layout, now is resizable
+
+	* src/java/pipeline/JDetailsDialog.java:
+	added UI support for Action parameters
+
+	* src/java/pipeline/GraphicalApp.java:
+	changed the Update button into a JGreyButton
+
+	* src/java/pipeline/ClientOptsParser.jj: renamed NoAction to NoneAction
+
+	* src/java/pipeline/BaseAction.java:
+	added getParams(), made pParams a TreeMap was a HasMap
+
+	* src/java/pipeline/BaseAction.java, src/java/pipeline/BaseParameter.java, src/java/pipeline/FloatParameter.java, src/java/pipeline/IntegerParameter.java, src/java/pipeline/NoAction.java, src/java/pipeline/ShellAction.java, src/java/pipeline/StringParameter.java, src/java/pipeline/Task.java:
+	initial revision
+
+	* src/java/docs/pipeline.html, src/java/docs/pljob.html, src/java/pipeline/ClientApp.java, src/java/pipeline/ClientOptsParser.jj, src/java/pipeline/FileSequence.java, src/java/pipeline/JDetailsDialog.java, src/java/pipeline/JFileSeqLister.java, src/java/pipeline/JRegisterDialog.java, src/java/pipeline/Makefile.in, src/java/pipeline/PMod.java, src/java/pipeline/PState.java, src/java/pipeline/PVersion.java, src/java/pipeline/Pipeline.java, src/java/pipeline/TestBase.java, src/java/pipeline/plugin/TestFoo.java, src/database/share/dbinit.sql.in, tests/add-berry, tests/add-fly, tests/add-multiA, tests/add-multiB, tests/add-simpleA, tests/add-simpleE, tests/mod-simpleE:
+	new actions support
+
+2003-05-21  Jim Callahan  <jim@salamander>
+
+	* configure.ac: added plugin stuff
+
+	* src/java/pipeline/plugin/Makefile.in, src/java/pipeline/plugin/TestBar.java, src/java/pipeline/plugin/TestFoo.java:
+	initial revision
+
+	* src/java/pipeline/Makefile.in, src/java/pipeline/tests/Makefile.in:
+	added plugin support
+
+	* src/java/pipeline/JErrorDialog.java: relabeled comfirm button to "Ok"
+
+	* src/java/docs/pleditor.html, src/java/docs/pltoolset.html:
+	renamed Network Options to Global Options to be consistent with pipeline(1)
+
+	* src/java/docs/pljob.html, src/java/pipeline/TestBase.java, src/java/pipeline/tests/TestDynamicLoad.java:
+	initial revision
+
+2003-05-19  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/Makefile.in: added JConfirmDialog
+
+	* src/java/pipeline/Pipeline.java: added revoke()
+
+	* src/java/pipeline/PNode.java: addedLookupID()
+
+	* src/java/pipeline/PMod.java: made lookupID() public
+
+	* src/java/pipeline/JViewerNode.java: added doRevoke()
+
+	* src/java/pipeline/JNodeViewer.java: shifted layout to the right
+
+	* src/java/pipeline/JBrowseDialog.java, src/java/pipeline/JConnectDialog.java, src/java/pipeline/JDetailsDialog.java, src/java/pipeline/JErrorDialog.java, src/java/pipeline/JRegisterDialog.java:
+	remove redundant implements ActionListner
+
+	* src/java/pipeline/JBaseDialog.java:
+	improved parameter flexibility for addActionButtons()
+
+	* src/java/pipeline/GraphicalApp.java:
+	made SHORT_NAMES the default, now handles update of nodes which disappear in the database (revoke)
+
+	* src/java/pipeline/ClientOptsParser.jj: added revoke command
+
+	* src/java/pipeline/ClientApp.java: added handleRevoke()
+
+	* src/java/pipeline/JConfirmDialog.java: intial revision
+
+	* src/java/pipeline/PMod.java:
+	added check to make sure components of a node name do not exist as nodes themselves in insert()
+
+	* src/java/pipeline/JViewerNode.java: added cloning
+
+	* src/java/pipeline/JRegisterDialog.java:
+	added updateState(), finished registerNode(), added database connectivity checks
+
+	* src/java/pipeline/JNodeChooser.java:
+	added database connectivity checks
+
+	* src/java/pipeline/GraphicalApp.java:
+	added database connectivity checks, finished doRegister()
+
+	* src/java/pipeline/FilePattern.java: fixed bug in getFilename()
+
+	* ChangeLog: latest
+
+	* src/java/pipeline/Makefile.in: added FileSequence
+
+	* src/java/pipeline/VersionID.java: removed Serializable implements
+
+	* src/java/pipeline/JWorkingDirTree.java:
+	changed the name of the root directory to "working"
+
+	* src/java/pipeline/JRegisterDialog.java:
+	completed doBrowse() which fills out the fields based on the results of browsing
+
+	* src/java/pipeline/JNodeChooser.java:
+	changed the name of the root directory to "working"
+
+	* src/java/pipeline/JFileSeqLister.java:
+	fully functional, now used FileSequence objects to represent scripts, file patterns, and frame ranges
+
+	* src/java/pipeline/JBrowseDialog.java:
+	added getSelected() and error checking of selection on Confirm
+
+	* src/java/pipeline/FilePattern.java:
+	added accessors, fixed bug in toString()
+
+	* src/java/pipeline/FileSequence.java: initial revision
+
+	* tests/data/plants/berry.txt, tests/mod-bear2, tests/add-berry:
+	moved berry into the plants directory
+
+	* src/java/pipeline/JComboBoxCellRenderer.java, src/java/pipeline/JFileSeqLister.java, src/java/pipeline/JNodeChooserNode.java, src/java/pipeline/JNodeChooserNodeRenderer.java, src/java/pipeline/JWorkingDirNode.java, src/java/pipeline/JWorkingDirTree.java, src/java/pipeline/JBrowseDialog.java:
+	intial revision
+
+	* src/java/pipeline/Makefile.in: added several new classes
+
+	* src/java/pipeline/JRegisterDialog.java:
+	lots added... Now fully functional except Browse menu item and actual database operation
+
+	* src/java/pipeline/JNodeChooser.java:
+	renamed JTreeNode to JNodeChooserNode, JTreeNodeRenderer to JNodeChooserNodeRenderer
+
+	* src/java/pipeline/JDetailsDialog.java: minor layout changes in UI
+
+	* src/java/pipeline/JConnectDialog.java:
+	changed boolean pWasPressed, into an enumeration pResult
+
+	* src/java/pipeline/JBaseDialog.java:
+	added addFixedIntegerField() and addCenterLabel(), improved ComvoBox look
+
+	* src/java/pipeline/GraphicalApp.java:
+	added FormattedTextField, TextArea and List look-and-feel
+
 2003-05-19  Jim Callahan  <jim@salamander>
 
 	* src/java/pipeline/Makefile.in: added FileSequence
