@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.17 2004/08/04 01:40:16 jim Exp $
+// $Id: MasterMgrClient.java,v 1.18 2004/08/22 21:50:25 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -253,7 +253,7 @@ class MasterMgrClient
    * @param view 
    *   The name of the user's working area view.
    * 
-   * @param name
+   * @param tname
    *   The toolset name.
    * 
    * @throws PipelineException
@@ -264,13 +264,13 @@ class MasterMgrClient
   (
    String author, 
    String view,
-   String name
+   String tname
   ) 
     throws PipelineException
   {
     verifyConnection();
 
-    MiscGetToolsetEnvironmentReq req = new MiscGetToolsetEnvironmentReq(author, view, name);
+    MiscGetToolsetEnvironmentReq req = new MiscGetToolsetEnvironmentReq(author, view, tname);
 
     Object obj = performTransaction(MasterRequest.GetToolsetEnvironment, req);
     if(obj instanceof MiscGetToolsetEnvironmentRsp) {
@@ -1630,13 +1630,10 @@ class MasterMgrClient
    * @param level  
    *   The revision number component level to increment.
    * 
-   * @return 
-   *   The post check-in status of tree of nodes linked to the given node.
-   * 
    * @throws PipelineException
    *   If unable to check-in the nodes.
    */ 
-  public synchronized NodeStatus
+  public synchronized void
   checkIn
   ( 
    String author, 
@@ -1657,14 +1654,7 @@ class MasterMgrClient
     NodeCheckInReq req = new NodeCheckInReq(id, msg, level);
 
     Object obj = performTransaction(MasterRequest.CheckIn, req);
-    if(obj instanceof NodeStatusRsp) {
-      NodeStatusRsp rsp = (NodeStatusRsp) obj;
-      return rsp.getNodeStatus();
-    }
-    else {
-      handleFailure(obj);
-      return null;
-    }
+    handleSimpleResponse(obj);
   } 
 
 
@@ -1701,13 +1691,10 @@ class MasterMgrClient
    *   Should upstream nodes which have a newer revision number than the version to be 
    *   checked-out be skipped? 
    * 
-   * @return 
-   *   The post check-out status of tree of nodes linked to the given node.
-   * 
    * @throws PipelineException
    *   If unable to check-out the nodes.
    */ 
-  public synchronized NodeStatus
+  public synchronized void
   checkOut
   ( 
    String author, 
@@ -1728,14 +1715,7 @@ class MasterMgrClient
     NodeCheckOutReq req = new NodeCheckOutReq(id, vid, keepNewer);
 
     Object obj = performTransaction(MasterRequest.CheckOut, req);
-    if(obj instanceof NodeStatusRsp) {
-      NodeStatusRsp rsp = (NodeStatusRsp) obj;
-      return rsp.getNodeStatus();
-    }
-    else {
-      handleFailure(obj);
-      return null;
-    }
+    handleSimpleResponse(obj);
   } 
 
   /**
@@ -1819,7 +1799,7 @@ class MasterMgrClient
    String author, 
    String view, 
    String name, 
-   int[] indices
+   TreeSet<Integer> indices
   ) 
     throws PipelineException
   {
@@ -1877,7 +1857,7 @@ class MasterMgrClient
     
     verifyConnection();
 
-    NodeKillJobGroupReq req = new NodeKillJobGroupReq(author, groupID);
+    NodeKillJobGroupReq req = new NodeKillJobGroupReq(groupID);
 
     Object obj = performTransaction(MasterRequest.KillJobGroup, req);
     handleSimpleResponse(obj);    
@@ -1904,7 +1884,7 @@ class MasterMgrClient
   killJobs
   (
    String author, 
-   long[] jobIDs
+   TreeSet<Long> jobIDs
   ) 
     throws PipelineException
   {
@@ -1914,49 +1894,9 @@ class MasterMgrClient
 
     verifyConnection();
 
-    NodeKillJobsReq req = new NodeKillJobsReq(author, jobIDs);
+    NodeKillJobsReq req = new NodeKillJobsReq(jobIDs);
 
     Object obj = performTransaction(MasterRequest.KillJobs, req);
-    handleSimpleResponse(obj); 
-  }
-
-  /**
-   * Kill all of the jobs associated with the given working version. <P> 
-   * 
-   * The <CODE>author</CODE> argument must match the user who submitted the jobs. <P> 
-   * 
-   * If the <CODE>author</CODE> argument is different than the current user, this method 
-   * will fail unless the current user has privileged access status.
-   * 
-   * @param author 
-   *   The name of the user which owns the working version.
-   * 
-   * @param view 
-   *   The name of the user's working area view. 
-   * 
-   * @param name 
-   *   The fully resolved node name.
-   * 
-   */ 
-  public synchronized void
-  killNodeJobs
-  (
-   String author, 
-   String view, 
-   String name
-  ) 
-    throws PipelineException
-  {
-    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
-      throw new PipelineException
-	("Only privileged users may jobs owned by another user!");
-    
-    verifyConnection();
-
-    NodeID id = new NodeID(author, view, name);
-    NodeKillNodeJobsReq req = new NodeKillNodeJobsReq(id);
-
-    Object obj = performTransaction(MasterRequest.KillNodeJobs, req);
     handleSimpleResponse(obj); 
   }
 
