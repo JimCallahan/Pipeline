@@ -1,4 +1,4 @@
-// $Id: NodeVersion.java,v 1.3 2004/03/03 07:48:22 jim Exp $
+// $Id: NodeVersion.java,v 1.4 2004/03/07 02:43:10 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -48,6 +48,31 @@ class NodeVersion
 
     pVersionID = vid;
     pMessage   = new LogMessage(msg);
+
+    pSources = new TreeMap<String,DependVersion>();
+  }
+
+  /** 
+   * Copy constructor. 
+   * 
+   * @param vsn [<B>in</B>]
+   *   The <CODE>NodeVersion</CODE> to copy.
+   */ 
+  public 
+  NodeVersion
+  (
+   NodeVersion vsn
+  ) 
+  {
+    super(vsn);
+
+    pVersionID = vsn.getVersionID();
+
+    pMessage = new LogMessage(vsn.pMessage);
+
+    pSources = new TreeMap<String,DependVersion>();
+    for(DependVersion dep : vsn.getSources()) 
+      pSources.put(dep.getName(), new DependVersion(dep));
   }
 
 
@@ -99,10 +124,10 @@ class NodeVersion
   /** 
    * Get the fully resolved names of the upstream nodes.
    */
-  public ArrayList<String>
+  public Set<String>
   getSourceNames() 
   {
-    return new ArrayList<String>(pSourceVersionDepends.keySet());
+    return Collections.unmodifiableSet(pSources.keySet());
   }
 
   /** 
@@ -124,7 +149,7 @@ class NodeVersion
     if(name == null) 
       throw new IllegalArgumentException("The upstream node name cannot be (null)!");
 
-    return new DependVersion(pSourceVersionDepends.get(name));
+    return new DependVersion(pSources.get(name));
   }
 
   /** 
@@ -134,13 +159,112 @@ class NodeVersion
   getSources() 
   {
     ArrayList<DependVersion> deps = new ArrayList<DependVersion>();
-    for(DependVersion dep : pSourceVersionDepends.values()) 
+    for(DependVersion dep : pSources.values()) 
       deps.add(new DependVersion(dep));
     return deps;
   }
 
   
   
+  /*----------------------------------------------------------------------------------------*/
+  /*   O B J E C T   O V E R R I D E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Indicates whether some other object is "equal to" this one.
+   * 
+   * @param obj 
+   *   The reference object with which to compare.
+   */
+  public boolean
+  equals
+  (
+   Object obj
+  )
+  {
+    if(obj != null) {
+      if(obj instanceof NodeVersion) {
+	NodeVersion vsn = (NodeVersion) obj;
+	return (super.equals(obj) && 
+		(((pVersionID == null) && (vsn.pVersionID == null)) ||  
+ 		 pVersionID.equals(vsn.pVersionID)) &&        
+		pMessage.equals(vsn.pMessage) && 
+		pSources.equals(vsn.pSources));
+      }
+      else if(obj instanceof NodeMod) {
+	NodeMod mod = (NodeMod) obj;
+	return (super.equals(obj) &&       
+		getSources().equals(mod.getSources()));
+      }
+    }
+    return false;
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C L O N E A B L E                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Return a deep copy of this object.
+   */
+  public Object 
+  clone()
+    throws CloneNotSupportedException
+  {
+    return new NodeVersion(this);
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   G L U E A B L E                                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  public void 
+  toGlue
+  ( 
+   GlueEncoder encoder   
+  ) 
+    throws GlueException
+  {
+    super.toGlue(encoder);
+
+    if(pVersionID != null) 
+      encoder.encode("VersionID", pVersionID);
+    
+    encoder.encode("Message", pMessage);
+
+    if(!pSources.isEmpty())
+      encoder.encode("Sources", pSources);
+  }
+
+
+  public void 
+  fromGlue
+  (
+   GlueDecoder decoder 
+  ) 
+    throws GlueException
+  {
+    super.fromGlue(decoder);
+
+    VersionID vid = (VersionID) decoder.decode("VersionID");
+    if(vid == null) 
+      throw new GlueException("The \"VersionID\" was missing!");
+    pVersionID = vid;
+
+    LogMessage msg = (LogMessage) decoder.decode("Message");
+    if(msg == null) 
+      throw new GlueException("The \"Message\" was missing!");
+    
+    TreeMap<String,DependVersion> sources = 
+      (TreeMap<String,DependVersion>) decoder.decode("Sources"); 
+    if(sources != null) 
+      pSources = sources;
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -172,7 +296,7 @@ class NodeVersion
    * A table of dependency information associated with all nodes upstream of this 
    * node indexed by the fully resolved names of the upstream nodes.
    */ 
-  private TreeMap<String,DependVersion>  pSourceVersionDepends;
+  private TreeMap<String,DependVersion>  pSources;
  
 }
 
