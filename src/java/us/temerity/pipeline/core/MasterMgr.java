@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.68 2004/11/17 13:33:50 jim Exp $
+// $Id: MasterMgr.java,v 1.69 2004/11/21 03:42:04 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -4545,9 +4545,6 @@ class MasterMgr
 	("Cannot generate jobs for the checked-in node (" + status + ")!");
     
     NodeMod work = details.getWorkingVersion();
-    if(work.isFrozen()) 
-      throw new PipelineException
-	("Cannot generate jobs for the frozen node (" + nodeID + ")!");
 
     /* collect upstream jobs (nodes without an action or with a disabled action) */ 
     if(!work.isActionEnabled()) {
@@ -4703,6 +4700,10 @@ class MasterMgr
 
     /* generate jobs for each frame batch */ 
     else {
+      if(work.isFrozen()) 
+	throw new PipelineException
+	  ("Cannot generate jobs for the frozen node (" + nodeID + ")!");
+      
       for(TreeSet<Integer> batch : batches) {
 	assert(!batch.isEmpty());
 	
