@@ -1,4 +1,4 @@
-// $Id: QueueMgrApp.java,v 1.4 2004/09/19 04:50:59 jim Exp $
+// $Id: QueueMgrApp.java,v 1.5 2004/09/26 03:13:56 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -146,16 +146,10 @@ class QueueMgrApp
       return "an file system path";
       
     default: 
-      if(printLiteral) {
-	String img = QueueMgrOptsParserConstants.tokenImage[kind];
-	if(img.startsWith("<") && img.endsWith(">")) 
-	  return null;
-	else 
-	  return img;
-      }
-      else {
+      if(printLiteral) 
+	return QueueMgrOptsParserConstants.tokenImage[kind];
+      else 
 	return null;
-      }
     }      
   }
 

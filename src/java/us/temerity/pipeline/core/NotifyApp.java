@@ -1,4 +1,4 @@
-// $Id: NotifyApp.java,v 1.8 2004/09/19 04:50:59 jim Exp $
+// $Id: NotifyApp.java,v 1.9 2004/09/26 03:13:55 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -151,16 +151,10 @@ class NotifyApp
       return "an file system path";
       
     default: 
-      if(printLiteral) {
-	String img = NotifyOptsParserConstants.tokenImage[kind];
-	if(img.startsWith("<") && img.endsWith(">")) 
-	  return null;
-	else 
-	  return img;
-      }
-      else {
+      if(printLiteral) 
+	return NotifyOptsParserConstants.tokenImage[kind];
+      else 
 	return null;
-      }
     }      
   }
 

@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.11 2004/09/23 23:12:30 jim Exp $
+// $Id: ScriptApp.java,v 1.12 2004/09/26 03:13:56 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1767,17 +1767,48 @@ class ScriptApp
     case ScriptOptsParserConstants.JOB_ID:
       return "a job ID";
 
+    case ScriptOptsParserConstants.AE1:
+    case ScriptOptsParserConstants.AE2:
+    case ScriptOptsParserConstants.AE3:
+    case ScriptOptsParserConstants.AE4:
+    case ScriptOptsParserConstants.AE5:
+    case ScriptOptsParserConstants.AE6:
+    case ScriptOptsParserConstants.AE7:
+    case ScriptOptsParserConstants.AE8:
+    case ScriptOptsParserConstants.AE9:
+    case ScriptOptsParserConstants.AE10:
+    case ScriptOptsParserConstants.AE11:
+    case ScriptOptsParserConstants.AE12:
+    case ScriptOptsParserConstants.AE13:
+    case ScriptOptsParserConstants.AE14:
+    case ScriptOptsParserConstants.AE15:
+    case ScriptOptsParserConstants.AE16:
+    case ScriptOptsParserConstants.AE17:
+    case ScriptOptsParserConstants.AE18:
+    case ScriptOptsParserConstants.AE19:
+    case ScriptOptsParserConstants.AE20:
+    case ScriptOptsParserConstants.AE21:
+    case ScriptOptsParserConstants.AE22:
+    case ScriptOptsParserConstants.AE23:
+    case ScriptOptsParserConstants.AE24:
+    case ScriptOptsParserConstants.AE25:
+    case ScriptOptsParserConstants.AE26:
+    case ScriptOptsParserConstants.AE27:
+    case ScriptOptsParserConstants.AE28:
+    case ScriptOptsParserConstants.AE29:
+    case ScriptOptsParserConstants.AE30:
+    case ScriptOptsParserConstants.AE31:
+    case ScriptOptsParserConstants.AE32:
+    case ScriptOptsParserConstants.AE33:
+    case ScriptOptsParserConstants.AE34:
+    case ScriptOptsParserConstants.AE35:
+      return null;
+
     default: 
-      if(printLiteral) { 
-	String img = ScriptOptsParserConstants.tokenImage[kind];
-	if(img.startsWith("<") && img.endsWith(">")) 
-	  return null;
-	else 
-	  return img;
-      }
-      else {
+      if(printLiteral)
+	return ScriptOptsParserConstants.tokenImage[kind];
+      else 
 	return null;
-      }
     }      
   }
 

@@ -1,4 +1,4 @@
-// $Id: BaseApp.java,v 1.8 2004/09/23 20:09:06 jim Exp $
+// $Id: BaseApp.java,v 1.9 2004/09/26 03:13:55 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -275,10 +275,6 @@ class BaseApp
 	  String explain = tokenExplain(kind, true);
 	  if(explain != null) 
 	    expected.add(explain);
-	  else {
-	    String str = ex.tokenImage[kind];
-	    expected.add(ex.tokenImage[ex.expectedTokenSequences[wk][0]]);
-	  }
 	}
       }
       

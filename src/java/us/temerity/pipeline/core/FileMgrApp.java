@@ -1,4 +1,4 @@
-// $Id: FileMgrApp.java,v 1.10 2004/09/19 04:50:59 jim Exp $
+// $Id: FileMgrApp.java,v 1.11 2004/09/26 03:13:55 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -151,16 +151,10 @@ class FileMgrApp
       return "a hostname";
       
     default: 
-      if(printLiteral) { 
-	String img = FileMgrOptsParserConstants.tokenImage[kind];
-	if(img.startsWith("<") && img.endsWith(">")) 
-	  return null;
-	else 
-	  return img;
-      }
-      else {
+      if(printLiteral)
+	return FileMgrOptsParserConstants.tokenImage[kind];
+      else 
 	return null;
-      }
     }      
   }
 

@@ -1,4 +1,4 @@
-// $Id: MasterApp.java,v 1.7 2004/09/19 04:50:59 jim Exp $
+// $Id: MasterApp.java,v 1.8 2004/09/26 03:13:55 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -154,16 +154,10 @@ class MasterApp
       return "a hostname";
       
     default: 
-      if(printLiteral) {
-	String img = MasterOptsParserConstants.tokenImage[kind];
-	if(img.startsWith("<") && img.endsWith(">")) 
-	  return null;
-	else 
-	  return img;
-      }
-      else {
+      if(printLiteral) 
+	return MasterOptsParserConstants.tokenImage[kind];
+      else 
 	return null;
-      }
     }      
   }
 
