@@ -271,20 +271,24 @@ Java API</span></a><br>
 </div>
 <div style="margin-left: 40px;"><span style="font-weight: bold;">Pipeline
 Programs</span><br>
-</div>
-<div style="margin-left: 80px;"><a href="plui.html"><span
+<div style="margin-left: 40px;"><a href="plui.html"><span
  style="font-weight: bold;">plui</span></a>(1), <a href="plscript.html"><span
  style="font-weight: bold;">plscript</span></a>(1), <a
- href="plmaster.html"><span style="font-weight: bold;">plmaster</span></a>(1),
-<a href="plfilemgr.html"><span style="font-weight: bold;">plfilemgr</span></a>(1),
-<a href="plqueuemgr.html"><span style="font-weight: bold;"></span></a><a
- href="pljobmgr.html"><span style="font-weight: bold;">pljobmgr</span></a>(1),
-<a href="plplugin.html"><span style="font-weight: bold;">plplugin</span></a>(1),
-<a
+ href="plplugin.html"><span style="font-weight: bold;">plplugin</span></a>(1)<br>
+<a href="plpluginmgr.html"><span style="font-weight: bold;">plpluginmgr</span></a>(1),
+<a href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a
+ href="plfilemgr.html"><span style="font-weight: bold;">plfilemgr</span></a>(1),
+<a href="pljobmgr.html"><span style="font-weight: bold;"></span></a><a
+ href="plfilemgr.html"><span style="font-weight: bold;">plmaster</span></a>(1),
+<a href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a
+ href="plqueuemgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1),
+<a href="pljobmgr.html"><span style="font-weight: bold;">pljobmgr</span></a>(1)<br>
+<span style="font-weight: bold;"></span><a
  href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1)
-<br>
+ style="font-weight: bold;">plconfig</span></a>(1)<br>
 </div>
+</div>
+<br>
 <div style="margin-left: 40px;"><span style="font-weight: bold;">Other
 Software</span><br>
 <div style="margin-left: 40px;"><a href="http://www.mozilla.org/"><b>mozilla</b></a>(1)</div>

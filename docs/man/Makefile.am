@@ -6,6 +6,7 @@ html_DATA = \
   pljobmgr.html \
   plmaster.html \
   plplugin.html \
+  plpluginmgr.html \
   plqueuemgr.html \
   plrestore.html \
   pls.html \

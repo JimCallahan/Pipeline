@@ -47,8 +47,9 @@ class files into the installed plugin directories without using </span><span
 ranging from erratic behavior of Pipeline to outright crashes of the
 server daemons!&nbsp; </span><br>
   <br>
-Plugins can be installed only when this program is run by the
-(@PIPELINE_USER@) user.<br>
+This program must be run by the
+(@PIPELINE_USER@) user when installing plugins (see <a
+ href="#--install"><span style="font-weight: bold;">--install</span></a>).<br>
 </blockquote>
 <h3><a name="Plugin_Limitations"></a>Plugin Requirements</h3>
 <blockquote>Besides safe copying of plugin files, <span
@@ -64,9 +65,13 @@ plugin base classes: <a
  href="../javadoc/us/temerity/pipeline/BaseEditor.html"><span
  style="font-weight: bold;">BaseEditor</span></a>, <a
  href="../javadoc/us/temerity/pipeline/BaseAction.html"><span
- style="font-weight: bold;">BaseAction</span></a> or <a
+ style="font-weight: bold;">BaseAction</span></a>, <a
  href="../javadoc/us/temerity/pipeline/BaseComparator.html"><span
- style="font-weight: bold;">BaseComparator</span></a>.&nbsp; Each of
+ style="font-weight: bold;">BaseComparator</span></a>, <a
+ href="../javadoc/us/temerity/pipeline/BaseTool.html"><span
+ style="font-weight: bold;">BaseTool</span></a> or <a
+ href="../javadoc/us/temerity/pipeline/BaseArchiver.html"><span
+ style="font-weight: bold;">BaseArchiver</span></a>.&nbsp; Each of
 these classes has a protected constructor which should be called from
 your plugin's single no-arg constructor with constant values for the
 following three parameters:<br>
@@ -166,7 +171,8 @@ sites.&nbsp; <br>
 Notice that the Java class name is "EmacsEditor" and not "Emacs".&nbsp;
 There is no requirement that Editor plugins have "Editor" in their
 names or that the class name corresponds to the plugin name, but its
-probably not a bad scheme for keeping things
+probably not a bad idea to follow this convention in order to keeping
+things
 straight.&nbsp;&nbsp;&nbsp; <br>
   <br>
 Notice that a "serialVersionUID" is provided for the plugin.&nbsp; This
@@ -201,11 +207,16 @@ that both checked-in and working versions of nodes which use the older
 versions of the plugin will continue to behave in a consistent manner
 while you test the new Action. <br>
   <br>
-New plugin versions will not be visible to non-privileged users until
-they are made active using the the <span style="font-weight: bold;">Manage
-Plugins</span> dialog in <a href="plui.html"><span
- style="font-weight: bold;">plui</span></a>(1).&nbsp; This way a plugin
-can be thoroughly tested before its is used in production.<br>
+When developing new plugin versions (especially Action plugins), you
+should call the <code><a
+ href="../javadoc/us/temerity/pipeline/BasePlugin.html#underDevelopment%28%29"><span
+ style="font-weight: bold;">underDevelopment</span></a></code> method
+in the plugin's constructor.&nbsp; This lets Pipeline know that the
+plugin might change substantially and that its use should be restricted
+when changes could cause problems.&nbsp; In particular, nodes who's
+Action plugin is under development cannot be Checked-In until the
+plugin version is reinstalled which does not call the <code>underDevelopment</code>
+method from its constructor.<br>
 </blockquote>
 <h3> </h3>
 <h3><a name="Information_Options"></a>Information Options</h3>
@@ -324,7 +335,7 @@ server.<br>
 plg</span><br>
 <div style="margin-left: 40px;">Logs the loading and
 initialization of
-Action, Editor and Tool plugins.<br>
+Pipeline plugins.<br>
 <span style="font-weight: bold;"></span><br>
 <span style="font-weight: bold;"></span></div>
 <span style="font-weight: bold;">sub</span><br>
@@ -454,20 +465,26 @@ Manual</a><span style="font-weight: bold;">, </span><a
 Java API</span></a><br>
 <br>
 </div>
+<div style="margin-left: 40px;"></div>
 <div style="margin-left: 40px;"><span style="font-weight: bold;">Pipeline
 Programs</span><br>
-</div>
-<div style="margin-left: 80px;"><a href="plui.html"><span
+<div style="margin-left: 40px;"><a href="plui.html"><span
  style="font-weight: bold;">plui</span></a>(1), <a href="plscript.html"><span
  style="font-weight: bold;">plscript</span></a>(1), <a
- href="plmaster.html"><span style="font-weight: bold;">plmaster</span></a>(1),
-<a href="plfilemgr.html"><span style="font-weight: bold;">plfilemgr</span></a>(1),
-<a href="plqueuemgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1),
-<a href="pljobmgr.html"><span style="font-weight: bold;">pljobmgr</span></a>(1),&nbsp;<a
- href="plplugin.html"><span style="font-weight: bold;"></span></a><a
+ href="plplugin.html"><span style="font-weight: bold;">plplugin</span></a>(1)<br>
+<a href="plpluginmgr.html"><span style="font-weight: bold;">plpluginmgr</span></a>(1),
+<a href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a
+ href="plfilemgr.html"><span style="font-weight: bold;">plfilemgr</span></a>(1),
+<a href="pljobmgr.html"><span style="font-weight: bold;"></span></a><a
+ href="plfilemgr.html"><span style="font-weight: bold;">plmaster</span></a>(1),
+<a href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a
+ href="plqueuemgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1),
+<a href="pljobmgr.html"><span style="font-weight: bold;">pljobmgr</span></a>(1)<br>
+<span style="font-weight: bold;"></span><a
  href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1)
+ style="font-weight: bold;">plconfig</span></a>(1)<br>
 <br>
+</div>
 </div>
 <div style="margin-left: 40px;"><span style="font-weight: bold;">Other
 Software</span><br>
