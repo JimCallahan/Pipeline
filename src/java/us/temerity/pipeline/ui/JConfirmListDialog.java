@@ -1,4 +1,4 @@
-// $Id: JConfirmListDialog.java,v 1.1 2005/02/22 18:20:03 jim Exp $
+// $Id: JConfirmListDialog.java,v 1.2 2005/02/23 06:52:08 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -19,7 +19,6 @@ import javax.swing.event.*;
 public 
 class JConfirmListDialog
   extends JBaseDialog
-  implements ListSelectionListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -31,7 +30,7 @@ class JConfirmListDialog
    * @param question
    *   The question to ask the user.
    * 
-   * @param itemTitle
+   * @param title
    *   The text to display as the title of the list.
    * 
    * @param items
@@ -41,7 +40,7 @@ class JConfirmListDialog
   JConfirmListDialog
   (
    String question, 
-   String itemTitle, 
+   String title, 
    Collection<String> items
   )
   {
@@ -51,44 +50,55 @@ class JConfirmListDialog
     {
       body.add(Box.createRigidArea(new Dimension(20, 0)));
       
-      Dimension size = new Dimension(300, 200);
-      pList = UIFactory.createListComponents(body, itemTitle, size);
-      pList.addListSelectionListener(this);
-
       {
-	DefaultListModel model = (DefaultListModel) pList.getModel();
-	for(String item : items) 
-	  model.addElement(item);
+	Box vbox = new Box(BoxLayout.Y_AXIS);
+	
+	vbox.add(Box.createRigidArea(new Dimension(0, 20)));
+	
+	vbox.add(UIFactory.createPanelLabel(title));
+
+	vbox.add(Box.createRigidArea(new Dimension(0, 4)));
+
+	{
+	  String text = null;
+	  {
+	    StringBuffer buf = new StringBuffer();
+	    for(String item : items) 
+	      buf.append(item + "\n");
+	    text = buf.toString();
+	  }
+
+	  JTextArea area = new JTextArea(text);
+	  area.setName("TextArea");
+	  area.setLineWrap(false);
+	  area.setEditable(false);
+	  
+	  {
+	    JScrollPane scroll = new JScrollPane(area);
+	    
+	    scroll.setHorizontalScrollBarPolicy
+	      (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+	    scroll.setVerticalScrollBarPolicy
+	      (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+	    
+	    scroll.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE);
+	  
+	    vbox.add(scroll);
+	  }
+	}
+
+	vbox.add(Box.createRigidArea(new Dimension(0, 20)));
+
+	body.add(vbox);
       }
-      
+	
       body.add(Box.createRigidArea(new Dimension(20, 0)));
     }
 
     super.initUI(question, true, body, "Yes", null, null, "No");
     pack();
-  }
 
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   L I S T E N E R S                                                                    */
-  /*----------------------------------------------------------------------------------------*/
-
-  /*-- LIST LISTENER METHODS ---------------------------------------------------------------*/
-
-  /**
-   * Called whenever the value of the selection changes.
-   */ 
-  public void 
-  valueChanged
-  (
-   ListSelectionEvent e
-  )
-  {
-    if(e.getValueIsAdjusting()) 
-      return;
-
-    pList.clearSelection();
+    setSize(350, 500);
   }
 
 
@@ -99,15 +109,5 @@ class JConfirmListDialog
 
   private static final long serialVersionUID = 4292754650405933966L;
 
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   I N T E R N A L S                                                                    */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The list containing the items.
-   */ 
-  private JList  pList; 
 
 }
