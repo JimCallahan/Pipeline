@@ -185,6 +185,27 @@
   <bind style="RaisedCancelButton" type="name" key="RaisedCancelButton"/>
 
 
+  <!--  T I T L E   P A N E L  -->
+
+  <style id="TitlePanel">
+    <imagePainter path="TitlePanel.png" 
+                  sourceInsets="0 0 0 1"/>
+    <insets top="8" bottom="8" right="8" left="8"/>
+  </style>
+  <bind style="TitlePanel" type="name" key="TitlePanel"/>
+
+
+
+  <!--  V A L U E   P A N E L  -->
+
+  <style id="ValuePanel">
+    <imagePainter path="Grey.png" 
+                  sourceInsets="0 0 0 0"/>
+    <insets top="8" bottom="8" right="8" left="8"/>
+  </style>
+  <bind style="ValuePanel" type="name" key="ValuePanel"/>
+
+
 
   <!--  T E X T   F I E L D  -->
 
@@ -245,6 +266,15 @@
   </style>
   <bind style="Tree" type="region" key="Tree"/>
 
+
+  <!--  L I S T  -->
+
+  <style id="List">
+    <imagePainter path="DarkGrey.png"
+                  method="listBackground"
+                  sourceInsets="0 0 0 0"/>
+  </style>
+  <bind style="List" type="region" key="List"/>
 
    
   <!--  S C R O L L   P A N E  -->
@@ -498,6 +528,13 @@
 
   <!--  D I A L O G S  -->
 
+  <style id="DialogHeader">
+    <imagePainter path="DialogHeader.png"	
+                  sourceInsets="0 3 6 3"/>
+    <insets top="15" bottom="21" right="15" left="15"/>
+  </style>
+  <bind style="DialogHeader" type="name" key="DialogHeader"/>
+
   <style id="ModalDialogHeader">
     <imagePainter path="ModalDialogHeader.png"	
                   sourceInsets="0 3 6 3"/>
@@ -505,10 +542,10 @@
   </style>
   <bind style="ModalDialogHeader" type="name" key="ModalDialogHeader"/>
 
-  <style id="ModalDialogHeaderLabel">
+  <style id="DialogHeaderLabel">
     <font name="Lucida Sans Demibold" size="16"/>
   </style>
-  <bind style="ModalDialogHeaderLabel" type="name" key="ModalDialogHeaderLabel"/>
+  <bind style="DialogHeaderLabel" type="name" key="DialogHeaderLabel"/>
 
   <style id="DialogButtonPanel">
     <imagePainter path="DialogButtonPanel.png"	
