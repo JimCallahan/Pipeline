@@ -1,5 +1,5 @@
 
-instbindir = @PLROOT@/pipeline/sbin
+instbindir = @BASEDIR@/pipeline/sbin
 
 instbin_SCRIPTS =
 

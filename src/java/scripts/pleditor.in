@@ -1,6 +1,6 @@
 #!/bin/sh
 
-exec java -Djava.util.logging.config.file=@PLROOT@/pipeline/share/logger.properties \
-          -cp @PLROOT@/pipeline/share/pipeline.jar:@JDBC_JAR@ \
+exec java -Djava.util.logging.config.file=@BASEDIR@/pipeline/share/logger.properties \
+          -cp @BASEDIR@/pipeline/share/pipeline.jar:@JDBC_JAR@ \
           pipeline/EditorApp "$@"
 
