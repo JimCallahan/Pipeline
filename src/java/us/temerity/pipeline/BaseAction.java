@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.10 2004/06/14 22:38:28 jim Exp $
+// $Id: BaseAction.java,v 1.11 2004/06/22 19:35:53 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -168,9 +168,6 @@ class BaseAction
     if(name == null)
       throw new IllegalArgumentException("The parameter name cannot be (null)!");
 
-//     if(value == null)
-//       throw new IllegalArgumentException("The parameter value cannot be (null)!");
-
     BaseActionParam param = pSingleParams.get(name);
     if(param == null) 
       throw new IllegalArgumentException
@@ -237,7 +234,7 @@ class BaseAction
    * @param source  
    *   The fully resolved node name of the upstream node.
    */ 
-  protected void
+  public void
   initSourceParams
   (
    String source      
@@ -258,12 +255,14 @@ class BaseAction
    * Subclasses which support per-source parameters MUST override this method
    * to provide a means for initializing parameters for dependencies.  
    */ 
-  protected TreeMap<String,BaseActionParam>
+  public TreeMap<String,BaseActionParam>
   getInitialSourceParams()
   {
     return null;
   }
 
+  
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -394,9 +393,6 @@ class BaseAction
 
     if(name == null)
       throw new IllegalArgumentException("The parameter name cannot be (null)!");
-
-//     if(value == null)
-//       throw new IllegalArgumentException("The parameter value cannot be (null)!");
 
     TreeMap<String,BaseActionParam> table = pSourceParams.get(source);
     if(table == null) 
@@ -602,12 +598,38 @@ class BaseAction
       BaseAction action = (BaseAction) obj;
 
       if(super.equals(obj) && 
-	 pSingleParams.equals(action.pSingleParams) && 
-	 pSourceParams.equals(action.pSourceParams))
+	 equalSingleParams(action) && 
+	 equalSourceParams(action)) 
 	return true;
     }
 
     return false;
+  }
+
+  /**
+   * Indicates whether the single valued parameters of the given action equal to this actions 
+   * single valued parameters.
+   */ 
+  public boolean
+  equalSingleParams
+  (
+   BaseAction action
+  )
+  {
+    return pSingleParams.equals(action.pSingleParams);
+  }
+
+  /**
+   * Indicates whether the per-source parameters of the given action equal to this actions 
+   * per-source parameters.
+   */ 
+  public boolean
+  equalSourceParams
+  (
+   BaseAction action
+  )
+  {
+    return pSourceParams.equals(action.pSourceParams);
   }
 
   
