@@ -1,4 +1,4 @@
-// $Id: NodeVersionTableModel.java,v 1.6 2005/03/21 07:04:36 jim Exp $
+// $Id: NodeVersionTableModel.java,v 1.7 2005/03/23 20:46:24 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -29,27 +29,24 @@ class NodeVersionTableModel
    * Construct a table model.
    */
   public 
-  NodeVersionTableModel
-  (
-   int width
-  ) 
+  NodeVersionTableModel() 
   {
     super();
 
     /* initialize the columns */ 
     { 
-      pNumColumns = 3;
+      pNumColumns = 2;
 
       {
 	Class classes[] = { 
-	  String.class, String.class, String.class
+	  String.class, String.class
 	}; 
 	pColumnClasses = classes;
       }
 
       {
 	String names[] = {
-	  "Node Name", "Version", "Size"
+	  "Node Name", "Version"
 	};
 	pColumnNames = names;
       }
@@ -57,21 +54,19 @@ class NodeVersionTableModel
       {
 	String desc[] = {
 	  "The fully resolved name of the node.", 
-	  "The revision number of the checked-in version.", 
-	  "The size (in bytes) of the files associated with the checked-in version."
+	  "The revision number of the checked-in version." 
 	};
 	pColumnDescriptions = desc;
       }
 
       {
-	int widths[] = { width-160, 80, 80 };
+	int widths[] = { 540, 80 };
 	pColumnWidths = widths;
       }
 
       {
 	TableCellRenderer renderers[] = {
 	  new JSimpleTableCellRenderer(JLabel.LEFT), 
-	  new JSimpleTableCellRenderer(JLabel.CENTER),
 	  new JSimpleTableCellRenderer(JLabel.CENTER)
 	};
 	pRenderers = renderers;
@@ -79,7 +74,7 @@ class NodeVersionTableModel
 
       {
 	TableCellEditor editors[] = { 
-	  null, null, null
+	  null, null
 	};
 	pEditors = editors;
       }
@@ -87,7 +82,6 @@ class NodeVersionTableModel
 
     pNames      = new ArrayList<String>();
     pVersionIDs = new ArrayList<VersionID>();
-    pSizes      = new ArrayList<Long>();
   }
 
 
@@ -128,24 +122,6 @@ class NodeVersionTableModel
       for(VersionID vid : pVersionIDs) {
 	value = vid;
       
-	int wk;
-	for(wk=0; wk<values.size(); wk++) {
-	  if(value.compareTo(values.get(wk)) > 0) 
-	    break;
-	}
-	values.add(wk, value);
-	indices.add(wk, idx);
-
-	idx++;
-      }
-      break;
-
-    case 2:
-      for(Long size : pSizes) {
-	value = size;
-	if(value == null) 
-	  value = new Long(0L);
-	
 	int wk;
 	for(wk=0; wk<values.size(); wk++) {
 	  if(value.compareTo(values.get(wk)) > 0) 
@@ -206,59 +182,91 @@ class NodeVersionTableModel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the file sizes indexed by fully resolved node name and revision number.
+   * Get the fully resolved node names and revision numbers for all rows.
    */ 
-  public TreeMap<String,TreeMap<VersionID,Long>>
+  public TreeMap<String,TreeSet<VersionID>>
   getData()
   {
-    TreeMap<String,TreeMap<VersionID,Long>> table = 
-      new TreeMap<String,TreeMap<VersionID,Long>>();
+    TreeMap<String,TreeSet<VersionID>> versions = 
+      new TreeMap<String,TreeSet<VersionID>>();
 
     int wk;
     for(wk=0; wk<pNames.size(); wk++) {
       String name = pNames.get(wk);
-      TreeMap<VersionID,Long> versions = table.get(name);
-      if(versions == null) {
-	versions = new TreeMap<VersionID,Long>();
-	table.put(name, versions);
+      TreeSet<VersionID> vids = versions.get(name);
+      if(vids == null) {
+	vids = new TreeSet<VersionID>();
+	versions.put(name, vids);
       }
-      versions.put(pVersionIDs.get(wk), pSizes.get(wk));
+      vids.add(pVersionIDs.get(wk));
     }
 
-    return table;
+    return versions;
   }
 
   /**
-   * Get the file sizes indexed by fully resolved node name and revision number 
-   * for all rows except the given rows. 
+   * Get the fully resolved node names and revision numbers for the given rows.
    */ 
-  public TreeMap<String,TreeMap<VersionID,Long>>
+  public TreeMap<String,TreeSet<VersionID>>
+  getData
+  (
+   int[] rows
+  )
+  {
+    TreeSet<Integer> included = new TreeSet<Integer>();
+    int wk;
+    for(wk=0; wk<rows.length; wk++) 
+      included.add(pRowToIndex[rows[wk]]);
+
+    TreeMap<String,TreeSet<VersionID>> versions = 
+      new TreeMap<String,TreeSet<VersionID>>();
+
+    for(wk=0; wk<pNames.size(); wk++) {
+      if(included.contains(wk)) {
+	String name = pNames.get(wk);
+	TreeSet<VersionID> vids = versions.get(name);
+	if(vids == null) {
+	  vids = new TreeSet<VersionID>();
+	  versions.put(name, vids);
+	}
+	vids.add(pVersionIDs.get(wk));
+      }
+    }
+
+    return versions;
+  }
+
+  /**
+   * Get the fully resolved node names and revision numbers for all rows 
+   * except the given rows. 
+   */ 
+  public TreeMap<String,TreeSet<VersionID>>
   getDataExcept
   (
    int[] rows
   )
   {
-    TreeSet<Integer> exclude = new TreeSet<Integer>();
+    TreeSet<Integer> excluded = new TreeSet<Integer>();
     int wk;
     for(wk=0; wk<rows.length; wk++) 
-      exclude.add(pRowToIndex[rows[wk]]);
-      
-    TreeMap<String,TreeMap<VersionID,Long>> table = 
-      new TreeMap<String,TreeMap<VersionID,Long>>();
+      excluded.add(pRowToIndex[rows[wk]]);
+
+    TreeMap<String,TreeSet<VersionID>> versions = 
+      new TreeMap<String,TreeSet<VersionID>>();
 
     for(wk=0; wk<pNames.size(); wk++) {
-      if(!exclude.contains(wk)) {
+      if(!excluded.contains(wk)) {
 	String name = pNames.get(wk);
-	TreeMap<VersionID,Long> versions = table.get(name);
-	if(versions == null) {
-	  versions = new TreeMap<VersionID,Long>();
-	  table.put(name, versions);
+	TreeSet<VersionID> vids = versions.get(name);
+	if(vids == null) {
+	  vids = new TreeSet<VersionID>();
+	  versions.put(name, vids);
 	}
-	versions.put(pVersionIDs.get(wk), pSizes.get(wk));
+	vids.add(pVersionIDs.get(wk));
       }
     }
 
-    return table;
+    return versions;
   }
 
   /**
@@ -270,20 +278,18 @@ class NodeVersionTableModel
   public void
   setData
   (
-   TreeMap<String,TreeMap<VersionID,Long>> data
+   TreeMap<String,TreeSet<VersionID>> data 
   ) 
   {
     pNames.clear();
     pVersionIDs.clear();
-    pSizes.clear();
 
     if(data != null) {
       for(String name : data.keySet()) {
-	TreeMap<VersionID,Long> versions = data.get(name);
-	for(VersionID vid : versions.keySet()) {
+	TreeSet<VersionID> vids	= data.get(name);
+	for(VersionID vid : vids) {
 	  pNames.add(name);
 	  pVersionIDs.add(vid);
-	  pSizes.add(versions.get(vid));
 	}
       }
     }
@@ -337,41 +343,9 @@ class NodeVersionTableModel
     case 1:
       return pVersionIDs.get(irow).toString();
       
-    case 2:
-      return formatLong(pSizes.get(irow));
-      
     default:
       assert(false);
       return null;
-    }
-  }
-
-  /**
-   * Generates a formatted string representation of a large integer number.
-   */ 
-  private String
-  formatLong
-  (
-   Long value
-  ) 
-  {
-    if(value == null) 
-      return "-";
-
-    if(value < 1024) {
-      return value.toString();
-    }
-    else if(value < 1048576) {
-      double k = ((double) value) / 1024.0;
-      return String.format("%1$.1fK", k);
-    }
-    else if(value < 1073741824) {
-      double m = ((double) value) / 1048576.0;
-      return String.format("%1$.1fM", m);
-    }
-    else {
-      double g = ((double) value) / 1073741824.0;
-      return String.format("%1$.1fG", g);
     }
   }
 
@@ -398,10 +372,5 @@ class NodeVersionTableModel
    * The revision numbers.
    */ 
   private ArrayList<VersionID> pVersionIDs;
-
-  /**
-   * The total sizes of the files associated with the node version.
-   */ 
-  private ArrayList<Long> pSizes;
 
 }
