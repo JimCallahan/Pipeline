@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.1 2004/06/14 22:55:00 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.2 2004/06/19 00:34:23 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -36,7 +36,7 @@ import javax.swing.tree.*;
 public  
 class JNodeDetailsPanel
   extends JTopLevelPanel
-  implements MouseListener, KeyListener, ActionListener
+  implements MouseListener, KeyListener, ComponentListener, ActionListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -85,6 +85,9 @@ class JNodeDetailsPanel
       pLinkActionParamNodeNames = new ArrayList<String>();
 
       pTextParamValues = new TreeMap<String,String>();
+
+      pSelectionKeyComponents = new TreeMap<String,Component[]>();
+      pLicenseKeyComponents   = new TreeMap<String,Component[]>();
     }
 
     /* initialize the panel components */ 
@@ -110,6 +113,24 @@ class JNodeDetailsPanel
 	panel.add(Box.createHorizontalGlue());
 
 	{
+	  JToggleButton btn = new JToggleButton();		
+	  pFrozenButton = btn;
+	  btn.setName("FrozenButton");
+		  
+	  Dimension size = new Dimension(19, 19);
+	  btn.setMinimumSize(size);
+	  btn.setMaximumSize(size);
+	  btn.setPreferredSize(size);
+	  
+	  btn.setActionCommand("toggle-frozen");
+	  btn.addActionListener(this);
+	  
+	  panel.add(btn);
+	} 
+
+	panel.add(Box.createRigidArea(new Dimension(10, 0)));
+
+	{
 	  JButton btn = new JButton();		
 	  pApplyButton = btn;
 	  btn.setName("ApplyHeaderButton");
@@ -124,8 +145,6 @@ class JNodeDetailsPanel
 	  
 	  panel.add(btn);
 	} 
-
-	panel.add(Box.createRigidArea(new Dimension(15, 0)));
       
 	add(panel);
       }
@@ -173,7 +192,7 @@ class JNodeDetailsPanel
 					       vpanel, "-", sSSize);
 	    }
 
-	    UIMaster.addVerticalSpacer(tpanel, vpanel, 6);
+	    UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
 
 	    /* revision number */ 
 	    { 
@@ -227,7 +246,7 @@ class JNodeDetailsPanel
 					       vpanel, "-", sSSize);
 	    }
 
-	    UIMaster.addVerticalSpacer(tpanel, vpanel, 6);
+	    UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
 
 	    /* toolset */ 
 	    { 
@@ -422,18 +441,484 @@ class JNodeDetailsPanel
 
 	    abox.add(apbox);
 	  }
+
+	  {
+	    Box jrbox = new Box(BoxLayout.X_AXIS);
+	    pJobReqsBox = jrbox;
+
+	    jrbox.addComponentListener(this);
+
+	    {
+	      JPanel spanel = new JPanel();
+	      pJobReqsSpacer = spanel;
+	      spanel.setName("Spacer");
+
+	      spanel.setMinimumSize(new Dimension(7, 0));
+	      spanel.setMaximumSize(new Dimension(7, Integer.MAX_VALUE));
+	      spanel.setPreferredSize(new Dimension(7, 0));
+
+	      jrbox.add(spanel);
+	    }
+	
+	    { 
+	      Box dbox = new Box(BoxLayout.Y_AXIS);
+
+	      /* job requirements */ 
+	      {
+		Component comps[] = createCommonPanels();
+		{
+		  JPanel tpanel = (JPanel) comps[0];
+		  JPanel vpanel = (JPanel) comps[1];
+
+		  /* overflow policy */ 
+		  { 
+		    {
+		      JLabel label = 
+			UIMaster.createFixedLabel("Overflow Policy:", sTSize-7, JLabel.RIGHT);
+		      pOverflowPolicyTitle = label;
+		      tpanel.add(label);
+		    }
+
+		    {
+		      Box hbox = new Box(BoxLayout.X_AXIS);
+
+		      {	
+			ArrayList<String> values = new ArrayList<String>();
+			values.add("-");
+	
+			JCollectionField field = 
+			  UIMaster.createCollectionField(values, sVSize);
+			pWorkingOverflowPolicyField = field;
+
+			field.setActionCommand("overflow-policy-changed");
+			field.addActionListener(this);
+
+			hbox.add(field);
+		      }
+
+		      hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+
+		      {
+			JButton btn = new JButton();		 
+			pSetOverflowPolicyButton = btn;
+			btn.setName("SmallLeftArrowButton");
+
+			Dimension size = new Dimension(12, 12);
+			btn.setMinimumSize(size);
+			btn.setMaximumSize(size);
+			btn.setPreferredSize(size);
+
+			btn.setActionCommand("set-overflow-policy");
+			btn.addActionListener(this);
+
+			hbox.add(btn);
+		      } 
+
+		      hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+
+		      {
+			JTextField field = 
+			  UIMaster.createTextField("-", sVSize, JLabel.CENTER);
+			pCheckedInOverflowPolicyField = field;
+
+			hbox.add(field);
+		      }
+
+		      vpanel.add(hbox);
+		    }
+		  }
+
+		  UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
+
+		  /* execution method */ 
+		  { 
+		    {
+		      JLabel label = 
+			UIMaster.createFixedLabel("Execution Method:", 
+						  sTSize-7, JLabel.RIGHT);
+		      pExecutionMethodTitle = label;
+		      tpanel.add(label);
+		    }
+
+		    {
+		      Box hbox = new Box(BoxLayout.X_AXIS);
+
+		      {		
+			ArrayList<String> values = new ArrayList<String>();
+			values.add("-");
+
+			JCollectionField field = 
+			  UIMaster.createCollectionField(values, sVSize);
+			pWorkingExecutionMethodField = field;
+
+			field.setActionCommand("execution-method-changed");
+			field.addActionListener(this);
+
+			hbox.add(field);
+		      }
+
+		      hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+
+		      {
+			JButton btn = new JButton();		 
+			pSetExecutionMethodButton = btn;
+			btn.setName("SmallLeftArrowButton");
+
+			Dimension size = new Dimension(12, 12);
+			btn.setMinimumSize(size);
+			btn.setMaximumSize(size);
+			btn.setPreferredSize(size);
+
+			btn.setActionCommand("set-execution-method");
+			btn.addActionListener(this);
+
+			hbox.add(btn);
+		      } 
+
+		      hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+
+		      {
+			JTextField field = 
+			  UIMaster.createTextField("-", sVSize, JLabel.CENTER);
+			pCheckedInExecutionMethodField = field;
+
+			hbox.add(field);
+		      }
+
+		      vpanel.add(hbox);
+		    }
+		  }
+
+		  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+
+		  /* batch size */ 
+		  { 
+		    {
+		      JLabel label = 
+			UIMaster.createFixedLabel("Batch Size:", sTSize-7, JLabel.RIGHT);
+		      pBatchSizeTitle = label;
+		      tpanel.add(label);
+		    }
+
+		    {
+		      Box hbox = new Box(BoxLayout.X_AXIS);
+
+		      {		  
+			JIntegerField field = 
+			  UIMaster.createIntegerField(null, sVSize, JLabel.CENTER);
+			pWorkingBatchSizeField = field;
+
+			field.setActionCommand("batch-size-changed");
+			field.addActionListener(this);
+
+			hbox.add(field);
+		      }
+
+		      hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+
+		      {
+			JButton btn = new JButton();		 
+			pSetBatchSizeButton = btn;
+			btn.setName("SmallLeftArrowButton");
+
+			Dimension size = new Dimension(12, 12);
+			btn.setMinimumSize(size);
+			btn.setMaximumSize(size);
+			btn.setPreferredSize(size);
+
+			btn.setActionCommand("set-batch-size");
+			btn.addActionListener(this);
+
+			hbox.add(btn);
+		      } 
+
+		      hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+
+		      {
+			JTextField field = 
+			  UIMaster.createTextField("-", sVSize, JLabel.CENTER);
+			pCheckedInBatchSizeField = field;
+
+			hbox.add(field);
+		      }
+
+		      vpanel.add(hbox);
+		    }
+		  }
+
+		  UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
+
+		  /* priority */ 
+		  { 
+		    {
+		      JLabel label = 
+			UIMaster.createFixedLabel("Priority:", sTSize-7, JLabel.RIGHT);
+		      pPriorityTitle = label;
+		      tpanel.add(label);
+		    }
+
+		    {
+		      Box hbox = new Box(BoxLayout.X_AXIS);
+
+		      {		  
+			JIntegerField field = 
+			  UIMaster.createIntegerField(null, sVSize, JLabel.CENTER);
+			pWorkingPriorityField = field;
+
+			field.setActionCommand("priority-changed");
+			field.addActionListener(this);
+
+			hbox.add(field);
+		      }
+
+		      hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+
+		      {
+			JButton btn = new JButton();		 
+			pSetPriorityButton = btn;
+			btn.setName("SmallLeftArrowButton");
+
+			Dimension size = new Dimension(12, 12);
+			btn.setMinimumSize(size);
+			btn.setMaximumSize(size);
+			btn.setPreferredSize(size);
+
+			btn.setActionCommand("set-priority");
+			btn.addActionListener(this);
+
+			hbox.add(btn);
+		      } 
+
+		      hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+
+		      {
+			JTextField field = 
+			  UIMaster.createTextField("-", sVSize, JLabel.CENTER);
+			pCheckedInPriorityField = field;
+
+			hbox.add(field);
+		      }
+
+		      vpanel.add(hbox);
+		    }
+		  }
+
+		  UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
+
+		  /* maximum load */ 
+		  { 
+		    {
+		      JLabel label = 
+			UIMaster.createFixedLabel("Maximum Load:", sTSize-7, JLabel.RIGHT);
+		      pMaxLoadTitle = label;
+		      tpanel.add(label);
+		    }
+
+		    {
+		      Box hbox = new Box(BoxLayout.X_AXIS);
+
+		      {		  
+			JFloatField field = 
+			  UIMaster.createFloatField(null, sVSize, JLabel.CENTER);
+			pWorkingMaxLoadField = field;
+
+			field.setActionCommand("maximum-load-changed");
+			field.addActionListener(this);
+
+			hbox.add(field);
+		      }
+
+		      hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+
+		      {
+			JButton btn = new JButton();		 
+			pSetMaxLoadButton = btn;
+			btn.setName("SmallLeftArrowButton");
+
+			Dimension size = new Dimension(12, 12);
+			btn.setMinimumSize(size);
+			btn.setMaximumSize(size);
+			btn.setPreferredSize(size);
+
+			btn.setActionCommand("set-maximum-load");
+			btn.addActionListener(this);
+
+			hbox.add(btn);
+		      } 
+
+		      hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+
+		      {
+			JTextField field = 
+			  UIMaster.createTextField("-", sVSize, JLabel.CENTER);
+			pCheckedInMaxLoadField = field;
+
+			hbox.add(field);
+		      }
+
+		      vpanel.add(hbox);
+		    }
+		  }
+
+		  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+
+		  /* minimum memory */ 
+		  { 
+		    {
+		      JLabel label = 
+			UIMaster.createFixedLabel("Minimum Memory:", sTSize-7, JLabel.RIGHT);
+		      pMinMemoryTitle = label;
+		      tpanel.add(label);
+		    }
+
+		    {
+		      Box hbox = new Box(BoxLayout.X_AXIS);
+
+		      {		  
+			JByteSizeField field = 
+			  UIMaster.createByteSizeField(null, sVSize, JLabel.CENTER);
+			pWorkingMinMemoryField = field;
+
+			field.setActionCommand("minimum-memory-changed");
+			field.addActionListener(this);
+
+			hbox.add(field);
+		      }
+
+		      hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+
+		      {
+			JButton btn = new JButton();		 
+			pSetMinMemoryButton = btn;
+			btn.setName("SmallLeftArrowButton");
+
+			Dimension size = new Dimension(12, 12);
+			btn.setMinimumSize(size);
+			btn.setMaximumSize(size);
+			btn.setPreferredSize(size);
+
+			btn.setActionCommand("set-minimum-memory");
+			btn.addActionListener(this);
+
+			hbox.add(btn);
+		      } 
+
+		      hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+
+		      {
+			JTextField field = 
+			  UIMaster.createTextField("-", sVSize, JLabel.CENTER);
+			pCheckedInMinMemoryField = field;
+
+			hbox.add(field);
+		      }
+
+		      vpanel.add(hbox);
+		    }
+		  }
+		  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+
+		  /* minimum disk */ 
+		  { 
+		    {
+		      JLabel label = 
+			UIMaster.createFixedLabel("Minimum Disk:", sTSize-7, JLabel.RIGHT);
+		      pMinDiskTitle = label;
+		      tpanel.add(label);
+		    }
+
+		    {
+		      Box hbox = new Box(BoxLayout.X_AXIS);
+
+		      {		  
+			JByteSizeField field = 
+			  UIMaster.createByteSizeField(null, sVSize, JLabel.CENTER);
+			pWorkingMinDiskField = field;
+
+			field.setActionCommand("minimum-disk-changed");
+			field.addActionListener(this);
+
+			hbox.add(field);
+		      }
+
+		      hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+
+		      {
+			JButton btn = new JButton();		 
+			pSetMinDiskButton = btn;
+			btn.setName("SmallLeftArrowButton");
+
+			Dimension size = new Dimension(12, 12);
+			btn.setMinimumSize(size);
+			btn.setMaximumSize(size);
+			btn.setPreferredSize(size);
+
+			btn.setActionCommand("set-minimum-disk");
+			btn.addActionListener(this);
+
+			hbox.add(btn);
+		      } 
+
+		      hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+
+		      {
+			JTextField field = 
+			  UIMaster.createTextField("-", sVSize, JLabel.CENTER);
+			pCheckedInMinDiskField = field;
+
+			hbox.add(field);
+		      }
+
+		      vpanel.add(hbox);
+		    }
+		  }
+
+		  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+
+		}
+
+		JDrawer drawer = 
+		  new JDrawer("Job Requirements:", (JComponent) comps[2], true);
+		dbox.add(drawer);
+	      }
+
+	      /* selection keys */ 
+	      {
+		Box box = new Box(BoxLayout.Y_AXIS);
+		pSelectionKeysBox = box;
+
+		JDrawer drawer = new JDrawer("Selection Keys:", box, false);
+		dbox.add(drawer);
+	      }
+
+	      /* license keys */ 
+	      {
+		Box box = new Box(BoxLayout.Y_AXIS);
+		pLicenseKeysBox = box;
+
+		JDrawer drawer = new JDrawer("License Keys:", box, false);
+		dbox.add(drawer);
+	      }
+
+	      jrbox.add(dbox);
+	    }
+
+	    abox.add(jrbox);
+	  }
 	  
 	  JDrawer drawer = new JDrawer("Regeneration Action:", abox, true);
 	  vbox.add(drawer);
 	}
 	
-	/* job requirements */ 
 	{
-	  JDrawer drawer = new JDrawer("Job Requirements:");
+	  JPanel spanel = new JPanel();
+	  spanel.setName("Spacer");
 	  
-	  // ...
+	  spanel.setMinimumSize(new Dimension(sTSize+sSSize+30, 7));
+	  spanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+	  spanel.setPreferredSize(new Dimension(sTSize+sSSize+30, 7));
 	  
-	  vbox.add(drawer);
+	  vbox.add(spanel);
 	}
 
 	vbox.add(Box.createVerticalGlue());
@@ -445,12 +930,14 @@ class JNodeDetailsPanel
 	    (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 	  scroll.setVerticalScrollBarPolicy
 	    (ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-	  
+
+	  scroll.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE);
+
 	  add(scroll);
 	}
       }
 
-      Dimension size = new Dimension(sTSize+sSSize+40, 120);
+      Dimension size = new Dimension(sTSize+sSSize+58, 120);
       setMinimumSize(size);
       setPreferredSize(size);
 
@@ -500,10 +987,6 @@ class JNodeDetailsPanel
 	
 	panel.setName("ValuePanel");
 	panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-
-	panel.setFocusable(true);
-	panel.addKeyListener(this);
-	panel.addMouseListener(this); 
 
 	body.add(panel);
       }
@@ -805,6 +1288,17 @@ class JNodeDetailsPanel
 	Logs.flush();
 	System.exit(1);
       } 
+
+      if((work != null) && (details != null) && 
+	 ((details.getOverallNodeState() == OverallNodeState.Identical) ||
+	  (details.getOverallNodeState() == OverallNodeState.NeedsCheckOut))) {
+	pFrozenButton.setVisible(true);
+	pFrozenButton.setSelected(work.isFrozen());
+	pFrozenButton.setEnabled(!pIsLocked);
+      }
+      else {
+	pFrozenButton.setVisible(false);
+      }
     }   
 
     /* versions panel */ 
@@ -962,9 +1456,8 @@ class JNodeDetailsPanel
       doActionChanged();
     }
 
-    
-    // ...
-
+    /* job requirements panel */ 
+    updateJobRequirements(true);
 
     pApplyButton.setEnabled(false);
   }
@@ -1003,12 +1496,18 @@ class JNodeDetailsPanel
     }
     
     /* actions panel */ 
-    updateActionParams();      
+    {
+      BaseAction action = vsn.getAction();	
+      if(action != null) 
+	pCheckedInActionField.setText(action.getName());
+      else 
+	pCheckedInActionField.setText("-");
 
+      doActionChanged();    
+    }
 
-    // ...
-
-
+    /* job requirements panel */ 
+    updateJobRequirements(false); 
   }
 
 
@@ -1053,13 +1552,12 @@ class JNodeDetailsPanel
 	pTextParamValues.clear();
       }
 
-
-      UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+      UIMaster.addVerticalSpacer(tpanel, vpanel, 9);
 
       for(BaseActionParam param : action.getSingleParams()) {
 	UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
 
-	Component pcomps[] = new Component[3];
+	Component pcomps[] = new Component[4];
 	
 	{
 	  JLabel label = 
@@ -1125,7 +1623,7 @@ class JNodeDetailsPanel
 		
 		btn.setName("ValuePanelButton");
 		btn.setRolloverEnabled(false);
-		btn.setFocusPainted(false);
+		btn.setFocusable(false);
 		  
 		Dimension size = new Dimension(sVSize, 19);
 		btn.setMinimumSize(size);
@@ -1189,9 +1687,30 @@ class JNodeDetailsPanel
 	      hbox.add(field);
 	    }
 	  }
+
+	  hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+
+	  {
+	    JButton btn = new JButton();		 
+	    pcomps[2] = btn;
+	    btn.setName("SmallLeftArrowButton");
+	    
+	    Dimension size = new Dimension(12, 12);
+	    btn.setMinimumSize(size);
+	    btn.setMaximumSize(size);
+	    btn.setPreferredSize(size);
+	    
+	    btn.addActionListener(this);
+	    btn.setActionCommand("set-action-param:" + param.getName());
+	    
+	    btn.setEnabled(!pIsLocked && (waction != null) && (caction != null) && 
+			   caction.getName().equals(waction.getName()));
+	    
+	    hbox.add(btn);
+	  } 
 	  
-	  hbox.add(Box.createRigidArea(new Dimension(20, 0)));
-	  
+	  hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+
 	  {
 	    BaseActionParam aparam = null;
 	    if((caction != null) && 
@@ -1201,11 +1720,11 @@ class JNodeDetailsPanel
 	    if(aparam != null) {
 	      if(aparam instanceof TextActionParam) {
 		JButton btn = new JButton("View...");
-		pcomps[2] = btn;
+		pcomps[3] = btn;
 		
 		btn.setName("ValuePanelButton");
 		btn.setRolloverEnabled(false);
-		btn.setFocusPainted(false);
+		btn.setFocusable(false);
 		
 		Dimension size = new Dimension(sVSize, 19);
 		btn.setMinimumSize(size);
@@ -1218,16 +1737,17 @@ class JNodeDetailsPanel
 		hbox.add(btn);	      
 	      }
 	      else {
-		String value = aparam.getValue().toString();
-		JTextField field = UIMaster.createTextField(value, sVSize, JLabel.CENTER);
-		pcomps[2] = field;
+		Comparable value = aparam.getValue();
+		String str = ((value != null) ? value.toString() : "-");
+		JTextField field = UIMaster.createTextField(str, sVSize, JLabel.CENTER);
+		pcomps[3] = field;
 		
 		hbox.add(field);
 	      }
 	    }
 	    else {
 	      JTextField field = UIMaster.createTextField("-", sVSize, JLabel.CENTER);
-	      pcomps[2] = field;
+	      pcomps[3] = field;
 	      
 	      hbox.add(field);
 	    }
@@ -1238,14 +1758,497 @@ class JNodeDetailsPanel
 	
 	pActionParamComponents.put(param.getName(), pcomps);
       }
-
       
       // per-depend params...
 
-
     }
-    
     pActionParamsBox.add(comps[2]);
+
+    pActionBox.revalidate();
+    pActionBox.repaint();
+  }
+
+
+  /**
+   * Update the UI components associated with the working and checked-in job requirements.
+   * 
+   * @param refresh
+   *   Whether to reset the values of existing working components.
+   */ 
+  private void 
+  updateJobRequirements
+  (
+   boolean refresh
+  )
+  {
+    BaseAction waction = getWorkingAction();
+    BaseAction caction = getCheckedInAction();
+
+    BaseAction action = null;
+    if(waction != null) 
+      action = waction;
+    else if(caction != null) 
+      action = caction;
+
+    /* job requirements */ 
+    if(action != null) {
+      NodeMod work = getWorkingVersion();
+      JobReqs wjreq = null;
+      if(work != null)
+	wjreq = work.getJobRequirements();
+      if((wjreq == null) && (waction != null)) 
+	wjreq = JobReqs.defaultJobReqs();
+
+      NodeVersion vsn = getCheckedInVersion();
+      JobReqs cjreq = null;
+      if((vsn != null) && (caction != null))
+	cjreq = vsn.getJobRequirements();
+
+      /* overflow policy */ 
+      {
+	if(refresh) {
+	  pWorkingOverflowPolicyField.removeActionListener(this);
+	  if(waction != null) {
+	    OverflowPolicy policy = work.getOverflowPolicy();
+	    if(policy == null) 
+	      policy = OverflowPolicy.Abort;
+
+	    pWorkingOverflowPolicyField.setValues(OverflowPolicy.titles());
+	    pWorkingOverflowPolicyField.setSelectedIndex(policy.ordinal());
+	  }
+	  else {
+	    ArrayList<String> values = new ArrayList<String>();
+	    values.add("-");
+	    pWorkingOverflowPolicyField.setValues(values);
+	    pWorkingOverflowPolicyField.setSelected("-");
+	  }
+	  pWorkingOverflowPolicyField.addActionListener(this);
+	  
+	  pWorkingOverflowPolicyField.setEnabled(!pIsLocked && (waction != null));
+	}
+	
+	pSetOverflowPolicyButton.setEnabled
+	  (!pIsLocked && (waction != null) && (caction != null));
+	
+	if(caction != null)
+	  pCheckedInOverflowPolicyField.setText(vsn.getOverflowPolicy().toTitle());
+	else 
+	  pCheckedInOverflowPolicyField.setText("-");
+
+	doOverflowPolicyChanged();
+      }
+
+      /* execution method */ 
+      {
+	if(refresh) {
+	  pWorkingExecutionMethodField.removeActionListener(this);
+	  if(waction != null) {
+	    ExecutionMethod method = work.getExecutionMethod();
+	    if(method == null) 
+	      method = ExecutionMethod.Serial;
+
+	    pWorkingExecutionMethodField.setValues(ExecutionMethod.titles());
+	    pWorkingExecutionMethodField.setSelectedIndex(method.ordinal());
+	  }
+	  else {
+	    ArrayList<String> values = new ArrayList<String>();
+	    values.add("-");
+	    pWorkingExecutionMethodField.setValues(values);
+	    pWorkingExecutionMethodField.setSelected("-");
+	  }
+	  pWorkingExecutionMethodField.addActionListener(this);
+	  
+	  pWorkingExecutionMethodField.setEnabled(!pIsLocked && (waction != null));
+	}
+	
+	pSetExecutionMethodButton.setEnabled
+	  (!pIsLocked && (waction != null) && (caction != null));
+	
+	if(caction != null)
+	  pCheckedInExecutionMethodField.setText(vsn.getExecutionMethod().toTitle());
+	else 
+	  pCheckedInExecutionMethodField.setText("-");
+
+	doExecutionMethodChanged();
+      }
+
+      /* batch size */ 
+      { 
+	if(refresh) {
+	  pWorkingBatchSizeField.removeActionListener(this);
+	  {
+	    if(waction != null) 
+	      pWorkingBatchSizeField.setValue(work.getBatchSize());
+	    else 
+	      pWorkingBatchSizeField.setValue(null);	
+	  }
+	  pWorkingBatchSizeField.addActionListener(this);
+	}
+
+	pSetBatchSizeButton.setEnabled
+	  (!pIsLocked && (waction != null) && (caction != null));
+	
+	if((caction != null) && (vsn.getBatchSize() != null))
+	  pCheckedInBatchSizeField.setText(vsn.getBatchSize().toString());
+	else 
+	  pCheckedInBatchSizeField.setText("-");
+
+	doBatchSizeChanged();
+      }
+
+      /* priority */ 
+      { 
+	if(refresh) {
+	  pWorkingPriorityField.removeActionListener(this);
+	  {
+	    if(wjreq != null) 
+	      pWorkingPriorityField.setValue(wjreq.getPriority());
+	    else 
+	      pWorkingPriorityField.setValue(null);	
+	  }
+	  pWorkingPriorityField.addActionListener(this);
+	  
+	  pWorkingPriorityField.setEnabled(!pIsLocked && (wjreq != null));
+	}
+
+	pSetPriorityButton.setEnabled
+	  (!pIsLocked && (wjreq != null) && (cjreq != null));
+	
+	if(cjreq != null)
+	  pCheckedInPriorityField.setText(String.valueOf(cjreq.getPriority()));
+	else 
+	  pCheckedInPriorityField.setText("-");
+
+	doPriorityChanged();
+      }
+
+      /* maximum load */ 
+      { 
+	if(refresh) {
+	  pWorkingMaxLoadField.removeActionListener(this);
+	  {
+	    if(wjreq != null) 
+	      pWorkingMaxLoadField.setValue(wjreq.getMaxLoad());
+	    else 
+	      pWorkingMaxLoadField.setValue(null);	
+	  }
+	  pWorkingMaxLoadField.addActionListener(this);
+	  
+	  pWorkingMaxLoadField.setEnabled(!pIsLocked && (wjreq != null));
+	}
+
+	pSetMaxLoadButton.setEnabled
+	  (!pIsLocked && (wjreq != null) && (cjreq != null));
+	
+	if(cjreq != null)
+	  pCheckedInMaxLoadField.setText(String.valueOf(cjreq.getMaxLoad()));
+	else 
+	  pCheckedInMaxLoadField.setText("-");
+
+	doMaxLoadChanged();
+      }
+
+      /* minimum memory */ 
+      { 
+	if(refresh) {
+	  pWorkingMinMemoryField.removeActionListener(this);
+	  {
+	    if(wjreq != null) 
+	      pWorkingMinMemoryField.setValue(wjreq.getMinMemory());
+	    else 
+	      pWorkingMinMemoryField.setValue(null);	
+	  }
+	  pWorkingMinMemoryField.addActionListener(this);
+	  
+	  pWorkingMinMemoryField.setEnabled(!pIsLocked && (wjreq != null));
+	}
+
+	pSetMinMemoryButton.setEnabled
+	  (!pIsLocked && (wjreq != null) && (cjreq != null));
+	
+	if(cjreq != null)
+	  pCheckedInMinMemoryField.setText
+	    (JByteSizeField.longToString(cjreq.getMinMemory()));
+	else 
+	  pCheckedInMinMemoryField.setText("-");
+
+	doMinMemoryChanged();
+      }
+
+      /* minimum disk */ 
+      { 
+	if(refresh) {
+	  pWorkingMinDiskField.removeActionListener(this);
+	  {
+	    if(wjreq != null) 
+	      pWorkingMinDiskField.setValue(wjreq.getMinDisk());
+	    else 
+	      pWorkingMinDiskField.setValue(null);	
+	  }
+	  pWorkingMinDiskField.addActionListener(this);
+	  
+	  pWorkingMinDiskField.setEnabled(!pIsLocked && (wjreq != null));
+	}
+
+	pSetMinDiskButton.setEnabled
+	  (!pIsLocked && (wjreq != null) && (cjreq != null));
+	
+	if(cjreq != null)
+	  pCheckedInMinDiskField.setText
+	    (JByteSizeField.longToString(cjreq.getMinDisk()));
+	else 
+	  pCheckedInMinDiskField.setText("-");
+
+	doMinDiskChanged();
+      }
+
+      /* selection keys */ 
+      {
+	TreeSet<String> previous = new TreeSet<String>();
+	if(!refresh) {
+	  for(String kname : pSelectionKeyComponents.keySet()) {
+	    Component pcomps[] = pSelectionKeyComponents.get(kname);
+	    JBooleanField field = (JBooleanField) pcomps[1];
+	    if(field.getValue()) 
+	      previous.add(kname);
+	  }
+	}
+
+	TreeSet<String> knames = new TreeSet<String>();
+	if(refresh) {
+	  knames.clear();
+	  UIMaster master = UIMaster.getInstance();
+	  try {
+	    knames.addAll(master.getMasterMgrClient().getSelectionKeyNames());
+	  }
+	  catch(PipelineException ex) {
+	    master.showErrorDialog(ex);
+	  }
+	}
+	else {
+	  knames.addAll(pSelectionKeyComponents.keySet());
+	}
+
+	pSelectionKeysBox.removeAll();
+	pSelectionKeyComponents.clear();
+
+	Component comps[] = createCommonPanels();
+	JPanel tpanel = (JPanel) comps[0];
+	JPanel vpanel = (JPanel) comps[1];
+    
+	boolean first = true; 
+	for(String kname : knames) {
+	  boolean hasWorkingKey = false;
+	  if(refresh) 
+	    hasWorkingKey = (wjreq != null) && wjreq.getSelectionKeys().contains(kname);
+	  else 
+	    hasWorkingKey = previous.contains(kname);
+
+	  boolean hasCheckedInKey = 
+	    (cjreq != null) && cjreq.getSelectionKeys().contains(kname);
+
+	  if(!first) 
+	    UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+	  first = false;
+
+	  Component pcomps[] = new Component[4];
+	
+	  {
+	    JLabel label = 
+	      UIMaster.createFixedLabel(kname + ":", sTSize-7, JLabel.RIGHT);
+	    pcomps[0] = label;
+	    
+	    tpanel.add(label);
+	  }
+
+	  { 
+	    Box hbox = new Box(BoxLayout.X_AXIS);
+	  
+	    {
+	      JBooleanField field = UIMaster.createBooleanField(sVSize);
+	      pcomps[1] = field;
+	      
+	      if(wjreq != null)
+		field.setValue(hasWorkingKey);
+
+	      field.setActionCommand("selection-key-changed:" + kname);
+	      field.addActionListener(this);
+
+	      field.setEnabled(!pIsLocked);
+
+	      hbox.add(field);
+	    }
+	    
+	    hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+
+	    {
+	      JButton btn = new JButton();		 
+	      pcomps[2] = btn;
+	      btn.setName("SmallLeftArrowButton");
+	      
+	      Dimension size = new Dimension(12, 12);
+	      btn.setMinimumSize(size);
+	      btn.setMaximumSize(size);
+	      btn.setPreferredSize(size);
+	      
+	      btn.setActionCommand("set-selection-key:" + kname);
+	      btn.addActionListener(this);
+	      
+	      btn.setEnabled(!pIsLocked && (wjreq != null) && (cjreq != null));
+
+	      hbox.add(btn);
+	    } 
+	    
+	    hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+	    
+	    {
+	      JTextField field = 
+		UIMaster.createTextField("-", sVSize, JLabel.CENTER);
+	      pcomps[3] = field;
+	      
+	      if(cjreq != null)
+		field.setText(hasCheckedInKey ? "YES" : "no");
+
+	      hbox.add(field);
+	    }
+	    
+	    vpanel.add(hbox);
+	  }
+
+	  pSelectionKeyComponents.put(kname, pcomps);
+
+	  doSelectionKeyChanged(kname);
+	}
+
+	pSelectionKeysBox.add(comps[2]);
+      }
+
+      /* license keys */ 
+      {
+	TreeSet<String> previous = new TreeSet<String>();
+	if(!refresh) {
+	  for(String kname : pLicenseKeyComponents.keySet()) {
+	    Component pcomps[] = pLicenseKeyComponents.get(kname);
+	    JBooleanField field = (JBooleanField) pcomps[1];
+	    if(field.getValue()) 
+	      previous.add(kname);
+	  }
+	}
+
+	TreeSet<String> knames = new TreeSet<String>();
+	if(refresh) {
+	  knames.clear();
+	  UIMaster master = UIMaster.getInstance();
+	  try {
+	    knames.addAll(master.getMasterMgrClient().getLicenseKeyNames());
+	  }
+	  catch(PipelineException ex) {
+	    master.showErrorDialog(ex);
+	  }
+	}
+	else {
+	  knames.addAll(pLicenseKeyComponents.keySet());
+	}
+
+	pLicenseKeysBox.removeAll();
+	pLicenseKeyComponents.clear();
+
+	Component comps[] = createCommonPanels();
+	JPanel tpanel = (JPanel) comps[0];
+	JPanel vpanel = (JPanel) comps[1];
+    
+	boolean first = true; 
+	for(String kname : knames) {
+	  boolean hasWorkingKey = false;
+	  if(refresh) 
+	    hasWorkingKey = (wjreq != null) && wjreq.getLicenseKeys().contains(kname);
+	  else 
+	    hasWorkingKey = previous.contains(kname);
+
+	  boolean hasCheckedInKey = (cjreq != null) && cjreq.getLicenseKeys().contains(kname);
+
+	  if(!first) 
+	    UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+	  first = false;
+
+	  Component pcomps[] = new Component[4];
+	
+	  {
+	    JLabel label = 
+	      UIMaster.createFixedLabel(kname + ":", sTSize-7, JLabel.RIGHT);
+	    pcomps[0] = label;
+	    
+	    tpanel.add(label);
+	  }
+
+	  { 
+	    Box hbox = new Box(BoxLayout.X_AXIS);
+	  
+	    {
+	      JBooleanField field = UIMaster.createBooleanField(sVSize);
+	      pcomps[1] = field;
+	      
+	      if(wjreq != null)
+		field.setValue(hasWorkingKey);
+
+	      field.setActionCommand("license-key-changed:" + kname);
+	      field.addActionListener(this);
+
+	      field.setEnabled(!pIsLocked);
+
+	      hbox.add(field);
+	    }
+	    
+	    hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+
+	    {
+	      JButton btn = new JButton();		 
+	      pcomps[2] = btn;
+	      btn.setName("SmallLeftArrowButton");
+	      
+	      Dimension size = new Dimension(12, 12);
+	      btn.setMinimumSize(size);
+	      btn.setMaximumSize(size);
+	      btn.setPreferredSize(size);
+	      
+	      btn.setActionCommand("set-license-key:" + kname);
+	      btn.addActionListener(this);
+	      
+	      btn.setEnabled(!pIsLocked && (wjreq != null) && (cjreq != null));
+
+	      hbox.add(btn);
+	    } 
+	    
+	    hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+	    
+	    {
+	      JTextField field = 
+		UIMaster.createTextField("-", sVSize, JLabel.CENTER);
+	      pcomps[3] = field;
+	      
+	      if(cjreq != null)
+		field.setText(hasCheckedInKey ? "YES" : "no");
+
+	      hbox.add(field);
+	    }
+	    
+	    vpanel.add(hbox);
+	  }
+
+	  pLicenseKeyComponents.put(kname, pcomps);
+
+	  doLicenseKeyChanged(kname);
+	}
+
+	pLicenseKeysBox.add(comps[2]);
+      }
+
+      pJobReqsBox.setVisible(true);
+    }
+    else {
+      pJobReqsBox.setVisible(false);
+    }
+
     pActionBox.revalidate();
     pActionBox.repaint();
   }
@@ -1268,7 +2271,7 @@ class JNodeDetailsPanel
     Color color = Color.white;
     if(hasWorking() && hasCheckedIn()) {
       if(((waction == null) && (caction != null)) ||
-	 ((waction != null) && !waction.equals(caction)))
+	 ((waction != null) && !waction.getName().equals(caction.getName())))
 	color = Color.cyan;
       else 
 	color = null;
@@ -1347,7 +2350,7 @@ class JNodeDetailsPanel
 	   ((waction == null) || caction.getName().equals(waction.getName())))
 	  aparam = caction.getSingleParam(pname);
 	
-	if(aparam != null) 
+	if((aparam != null) && (aparam.getValue() != null))
 	  ctext = aparam.getValue().toString();
       }
 
@@ -1362,6 +2365,7 @@ class JNodeDetailsPanel
     for(wk=0; wk<pcomps.length; wk++) 
       pcomps[wk].setForeground(fg);
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1475,6 +2479,46 @@ class JNodeDetailsPanel
   keyTyped(KeyEvent e) {} 
 
 
+
+  /*-- COMPONENT LISTENER METHODS ----------------------------------------------------------*/
+
+  /**
+   * Invoked when the component has been made invisible.
+   */ 
+  public void 	
+  componentHidden(ComponentEvent e) {} 
+
+  /**
+   * Invoked when the component's position changes.
+   */ 
+  public void 
+  componentMoved(ComponentEvent e) {} 
+
+  /**
+   * Invoked when the component's size changes.
+   */ 
+  public void 
+  componentResized
+  (
+   ComponentEvent e
+  )
+  {
+    Box box = (Box) pJobReqsSpacer.getParent();
+    Dimension size = box.getComponent(1).getSize();
+
+    pJobReqsSpacer.setMaximumSize(new Dimension(7, size.height));
+    pJobReqsSpacer.revalidate();
+    pJobReqsSpacer.repaint();
+  }
+  
+  /**
+   * Invoked when the component has been made visible.
+   */
+  public void 
+  componentShown(ComponentEvent e) {}
+
+
+
   /*-- ACTION LISTENER METHODS -------------------------------------------------------------*/
 
   /** 
@@ -1489,7 +2533,9 @@ class JNodeDetailsPanel
     String cmd = e.getActionCommand();
     if(cmd.equals("apply")) 
       doApply();
-    if(cmd.equals("update-version")) 
+    else if(cmd.equals("toggle-frozen")) 
+      doToggleFrozen();
+    else if(cmd.equals("update-version")) 
       updateVersion();
     else if(cmd.equals("set-toolset")) 
       doSetToolset();
@@ -1503,12 +2549,50 @@ class JNodeDetailsPanel
       doSetAction();
     else if(cmd.equals("action-changed")) 
       doActionChanged();
+    else if(cmd.startsWith("set-action-param:")) 
+      doSetActionParam(cmd.substring(17));
     else if(cmd.startsWith("action-param-changed:")) 
       doActionParamChanged(cmd.substring(21));
     else if(cmd.startsWith("edit-text-param:"))
       doEditTextParam(cmd.substring(16));
     else if(cmd.startsWith("view-text-param:"))
       doViewTextParam(cmd.substring(16));
+    else if(cmd.equals("set-overflow-policy")) 
+      doSetOverflowPolicy();
+    else if(cmd.equals("overflow-policy-changed")) 
+      doOverflowPolicyChanged();
+    else if(cmd.equals("set-execution-method")) 
+      doSetExecutionMethod();
+    else if(cmd.equals("execution-method-changed")) 
+      doExecutionMethodChanged();
+    else if(cmd.equals("set-batch-size")) 
+      doSetBatchSize();
+    else if(cmd.equals("batch-size-changed")) 
+      doBatchSizeChanged();
+    else if(cmd.equals("set-priority")) 
+      doSetPriority();
+    else if(cmd.equals("priority-changed")) 
+      doPriorityChanged();
+    else if(cmd.equals("set-maximum-load")) 
+      doSetMaxLoad();
+    else if(cmd.equals("maximum-load-changed")) 
+      doMaxLoadChanged();
+    else if(cmd.equals("set-minimum-memory")) 
+      doSetMinMemory();
+    else if(cmd.equals("minimum-memory-changed")) 
+      doMinMemoryChanged();
+    else if(cmd.equals("set-minimum-disk")) 
+      doSetMinDisk();
+    else if(cmd.equals("minimum-disk-changed")) 
+      doMinDiskChanged();
+    else if(cmd.startsWith("selection-key-changed:")) 
+      doSelectionKeyChanged(cmd.substring(22));
+    else if(cmd.startsWith("set-selection-key:")) 
+      doSetSelectionKey(cmd.substring(18));
+    else if(cmd.startsWith("license-key-changed:")) 
+      doLicenseKeyChanged(cmd.substring(20));
+    else if(cmd.startsWith("set-license-key:")) 
+      doSetLicenseKey(cmd.substring(16));
   }
 
 
@@ -1529,6 +2613,7 @@ class JNodeDetailsPanel
       if(work != null) {
 	try { 
 	  NodeMod mod = new NodeMod(work);
+	  mod.removeAllSources();
 
 	  /* properties panel */ 
 	  {
@@ -1583,6 +2668,29 @@ class JNodeDetailsPanel
 	      }
 	      
 	      mod.setAction(waction);
+
+	      /* overflow policy */ 
+	      {
+		int idx = pWorkingOverflowPolicyField.getSelectedIndex();
+		mod.setOverflowPolicy(OverflowPolicy.values()[idx]);
+	      } 
+	      
+	      /* execution method */ 
+	      {
+		int idx = pWorkingExecutionMethodField.getSelectedIndex();
+		mod.setExecutionMethod(ExecutionMethod.values()[idx]);
+		
+		/* batch size */ 
+		if(idx == 1) {
+		  Integer size = pWorkingBatchSizeField.getValue();
+		  if((size == null) || (size < 0)) {
+		    pWorkingBatchSizeField.setValue(0);
+		    size = 0;
+		  }
+		  
+		  mod.setBatchSize(size);
+		}
+	      }
 	    }
 	    else {
 	      mod.setAction(null);
@@ -1591,9 +2699,72 @@ class JNodeDetailsPanel
 	    setWorkingAction(null);
 	  }
 
-	  
-	  // ...
-	
+	  /* job requirements */ 
+	  JobReqs jreq = mod.getJobRequirements();
+	  if(jreq != null) {
+	    
+	    /* priority */ 
+	    {
+	      Integer priority = pWorkingPriorityField.getValue();
+	      if(priority == null) 
+		pWorkingPriorityField.setValue(jreq.getPriority());
+	      else 
+		jreq.setPriority(priority);
+	    }
+	    
+	    /* maximum load */ 
+	    {
+	      Float load = pWorkingMaxLoadField.getValue();
+	      if((load == null) || (load <= 0.0) || (load > 20.0))
+		pWorkingMaxLoadField.setValue(jreq.getMaxLoad());
+	      else 	      
+		jreq.setMaxLoad(load);
+	    }
+	    
+	    /* minimum memory */ 
+	    {
+	      Long memory = pWorkingMinMemoryField.getValue();
+	      if(memory == null) 
+		pWorkingMinMemoryField.setValue(jreq.getMinMemory());
+	      else
+		jreq.setMinMemory(memory);
+	    }
+	    
+	    /* minimum disk */ 
+	    {
+	      Long disk = pWorkingMinDiskField.getValue();
+	      if(disk == null) 
+		pWorkingMinDiskField.setValue(jreq.getMinDisk());
+	      else
+		jreq.setMinDisk(disk);
+	    }
+
+	    /* selection keys */ 
+	    {
+	      jreq.removeAllSelectionKeys();
+
+	      for(String kname : pSelectionKeyComponents.keySet()) {
+		Component pcomps[] = pSelectionKeyComponents.get(kname);
+		JBooleanField field = (JBooleanField) pcomps[1];
+		if(field.getValue()) 
+		  jreq.addSelectionKey(kname);
+	      }
+	    }
+
+	    /* license keys */ 
+	    {
+	      jreq.removeAllLicenseKeys();
+
+	      for(String kname : pLicenseKeyComponents.keySet()) {
+		Component pcomps[] = pLicenseKeyComponents.get(kname);
+		JBooleanField field = (JBooleanField) pcomps[1];
+		if(field.getValue()) 
+		  jreq.addLicenseKey(kname);
+	      }
+	    }
+
+	    mod.setJobRequirements(jreq);
+	  }	
 
 	  pApplyButton.setEnabled(false);
 	  
@@ -1606,6 +2777,18 @@ class JNodeDetailsPanel
       }
     }
   }
+
+  /**
+   * Modify the frozen/unfrozen state of the working version of the node.
+   */ 
+  private void 
+  doToggleFrozen()
+  {
+    System.out.print("Frozen = " + pFrozenButton.isSelected() + "\n");
+
+
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1730,6 +2913,7 @@ class JNodeDetailsPanel
   {
     pApplyButton.setEnabled(true);
 
+    BaseAction oaction = getWorkingAction();
     {
       String aname = pWorkingActionField.getSelected();
       if(aname.equals("-")) {
@@ -1757,10 +2941,71 @@ class JNodeDetailsPanel
     }
     
     updateActionColors();
+
+    updateJobRequirements((oaction == null) && (getWorkingAction() != null));
   }
   
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Set the working action parameter field from the value of the checked-in action parameter.
+   */ 
+  private void 
+  doSetActionParam
+  (
+   String pname   
+  ) 
+  { 
+    BaseAction waction = getWorkingAction();
+    BaseAction caction = getCheckedInAction();
+
+    BaseActionParam wparam = null;
+    if(waction != null) 
+      wparam = waction.getSingleParam(pname);
+      
+    BaseActionParam cparam = null;
+    if(caction != null) 
+      cparam = caction.getSingleParam(pname);
+      
+    if((wparam != null) && (cparam != null) && waction.getName().equals(caction.getName())) {
+      Component pcomps[] = pActionParamComponents.get(pname);
+      if(pcomps != null) {
+	Comparable value = cparam.getValue();
+	if(wparam instanceof IntegerActionParam) {
+	  JIntegerField field = (JIntegerField) pcomps[1];
+	  field.setValue((Integer) value);
+	}
+	else if(wparam instanceof DoubleActionParam) {
+	  JDoubleField field = (JDoubleField) pcomps[1];
+	  field.setValue((Double) value);
+	}
+	else if(wparam instanceof StringActionParam) {
+	  JTextField field = (JTextField) pcomps[1];
+	  if(value != null) 
+	    field.setText(value.toString());
+	  else 
+	    field.setText(null);
+	}
+	else if(wparam instanceof TextActionParam) {
+	  pTextParamValues.put(pname, (String) value);
+	}
+	else if(wparam instanceof EnumActionParam) {
+	  JCollectionField field = (JCollectionField) pcomps[1];
+	  field.setSelected(value.toString());
+	}
+	else if(wparam instanceof LinkActionParam) {
+	  JCollectionField field = (JCollectionField) pcomps[1];
+	  
+	  int idx = pLinkActionParamNodeNames.indexOf(value);
+	  if(idx != -1) 
+	    field.setSelectedIndex(idx);
+	}
+
+	doActionParamChanged(pname);
+      }
+    }
+  }
 
   /**
    * Update the appearance of the action parameter fields after a change of parameter value.
@@ -1772,26 +3017,8 @@ class JNodeDetailsPanel
   ) 
   {
     pApplyButton.setEnabled(true);
-        
-    BaseAction waction = getWorkingAction();
-    BaseAction caction = getCheckedInAction();
-
-    BaseAction action = null;
-    if(waction != null) 
-      action = waction;
-    else if(caction != null) 
-      action = caction;
-
-    Color color = null;
-    if(hasWorking() && hasCheckedIn()) {
-      if(((waction == null) && (caction != null)) ||
-	 ((waction != null) && !waction.equals(caction)))
-	color = Color.cyan;
-      else 
-	color = Color.white;
-    }
-
-    updateActionParamColor(pname, color);
+  
+    updateActionParamColor(pname, null);
   }
 
 
@@ -1810,7 +3037,7 @@ class JNodeDetailsPanel
     if(waction != null) {
       BaseActionParam param = waction.getSingleParam(pname);
 
-      pEditTextDialog.updateText("Edit " + param.getNameUI() + ":", 
+      pEditTextDialog.updateText("Edit:  " + param.getNameUI(), 
 				 pTextParamValues.get(pname)); 
 
       pEditTextDialog.setVisible(true);      
@@ -1818,7 +3045,7 @@ class JNodeDetailsPanel
 	pTextParamValues.put(pname, pEditTextDialog.getText());
 	doActionParamChanged(pname);
       }
-    }
+    }	
   }
 
   /**
@@ -1834,10 +3061,394 @@ class JNodeDetailsPanel
     if(caction != null) {
       BaseActionParam param = caction.getSingleParam(pname);
 
-      pViewTextDialog.updateText("View " + param.getNameUI() + ":", 
+      pViewTextDialog.updateText("View:  " + param.getNameUI(), 
 				 (String) param.getValue());
 
       pViewTextDialog.setVisible(true);
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Set the working overflow policy field from the value of the checked-in field.
+   */ 
+  private void 
+  doSetOverflowPolicy()
+  { 
+    pWorkingOverflowPolicyField.removeActionListener(this);
+      pWorkingOverflowPolicyField.setSelected(pCheckedInOverflowPolicyField.getText());
+    pWorkingOverflowPolicyField.addActionListener(this);
+
+    doOverflowPolicyChanged();
+  }
+
+  /**
+   * Update the appearance of the overflow policy field after a change of value.
+   */ 
+  private void 
+  doOverflowPolicyChanged()
+  {
+    pApplyButton.setEnabled(true);
+    
+    Color color = Color.white;
+    if(hasWorking() && hasCheckedIn()) {
+      String wpolicy = pWorkingOverflowPolicyField.getSelected();
+      String cpolicy = pCheckedInOverflowPolicyField.getText();      
+      if(!cpolicy.equals(wpolicy))
+	color = Color.cyan;
+    }
+
+    pOverflowPolicyTitle.setForeground(color);
+    pWorkingOverflowPolicyField.setForeground(color);
+    pCheckedInOverflowPolicyField.setForeground(color);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Set the working execution method field from the value of the checked-in field.
+   */ 
+  private void 
+  doSetExecutionMethod()
+  { 
+    pWorkingExecutionMethodField.removeActionListener(this);
+      pWorkingExecutionMethodField.setSelected(pCheckedInExecutionMethodField.getText());
+    pWorkingExecutionMethodField.addActionListener(this);
+
+    doExecutionMethodChanged();
+  }
+
+  /**
+   * Update the appearance of the execution method field after a change of value.
+   */ 
+  private void 
+  doExecutionMethodChanged()
+  {
+    pApplyButton.setEnabled(true);
+
+    String cpolicy = null;
+    Color color = Color.white;
+    if(hasWorking() && hasCheckedIn()) {
+      String wpolicy = pWorkingExecutionMethodField.getSelected();
+      cpolicy = pCheckedInExecutionMethodField.getText();      
+      if(!cpolicy.equals(wpolicy))
+	color = Color.cyan;
+    }
+
+    pExecutionMethodTitle.setForeground(color);
+    pWorkingExecutionMethodField.setForeground(color);
+    pCheckedInExecutionMethodField.setForeground(color);
+
+    if((getWorkingAction() != null) && 
+       (pWorkingExecutionMethodField.getSelectedIndex() == 0)) {
+      pWorkingBatchSizeField.setValue(null);
+      pWorkingBatchSizeField.setEnabled(false);
+      pSetBatchSizeButton.setEnabled(false);
+    }
+    else {      
+      if(pWorkingBatchSizeField.getValue() == null) 
+	pWorkingBatchSizeField.setValue(0);
+      pWorkingBatchSizeField.setEnabled(!pIsLocked);
+      pSetBatchSizeButton.setEnabled
+	(!pIsLocked && (cpolicy != null) && (cpolicy.equals("Parallel")));
+    }
+
+    doBatchSizeChanged();
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Set the working batch size field from the value of the checked-in field.
+   */ 
+  private void 
+  doSetBatchSize()
+  { 
+    pWorkingBatchSizeField.removeActionListener(this);
+      pWorkingBatchSizeField.setText(pCheckedInBatchSizeField.getText());
+    pWorkingBatchSizeField.addActionListener(this);
+
+    doBatchSizeChanged();
+  }
+
+  /**
+   * Update the appearance of the batch size field after a change of value.
+   */ 
+  private void 
+  doBatchSizeChanged()
+  {
+    pApplyButton.setEnabled(true);
+    
+    Color color = Color.white;
+    if(hasWorking() && hasCheckedIn()) {
+      String wpolicy = pWorkingBatchSizeField.getText();
+      String cpolicy = pCheckedInBatchSizeField.getText();      
+      if(!cpolicy.equals(wpolicy))
+	color = Color.cyan;
+    }
+
+    pBatchSizeTitle.setForeground(color);
+    pWorkingBatchSizeField.setForeground(color);
+    pCheckedInBatchSizeField.setForeground(color);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Set the working priority field from the value of the checked-in field.
+   */ 
+  private void 
+  doSetPriority()
+  { 
+    pWorkingPriorityField.removeActionListener(this);
+      pWorkingPriorityField.setText(pCheckedInPriorityField.getText());
+    pWorkingPriorityField.addActionListener(this);
+
+    doPriorityChanged();
+  }
+
+  /**
+   * Update the appearance of the priority field after a change of value.
+   */ 
+  private void 
+  doPriorityChanged()
+  {
+    pApplyButton.setEnabled(true);
+    
+    Color color = Color.white;
+    if(hasWorking() && hasCheckedIn()) {
+      String wpolicy = pWorkingPriorityField.getText();
+      String cpolicy = pCheckedInPriorityField.getText();      
+      if(!cpolicy.equals(wpolicy))
+	color = Color.cyan;
+    }
+
+    pPriorityTitle.setForeground(color);
+    pWorkingPriorityField.setForeground(color);
+    pCheckedInPriorityField.setForeground(color);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Set the working maximum load field from the value of the checked-in field.
+   */ 
+  private void 
+  doSetMaxLoad()
+  { 
+    pWorkingMaxLoadField.removeActionListener(this);
+      pWorkingMaxLoadField.setText(pCheckedInMaxLoadField.getText());
+    pWorkingMaxLoadField.addActionListener(this);
+
+    doMaxLoadChanged();
+  }
+
+  /**
+   * Update the appearance of the maximum load field after a change of value.
+   */ 
+  private void 
+  doMaxLoadChanged()
+  {
+    pApplyButton.setEnabled(true);
+    
+    Color color = Color.white;
+    if(hasWorking() && hasCheckedIn()) {
+      String wpolicy = pWorkingMaxLoadField.getText();
+      String cpolicy = pCheckedInMaxLoadField.getText();      
+      if(!cpolicy.equals(wpolicy))
+	color = Color.cyan;
+    }
+
+    pMaxLoadTitle.setForeground(color);
+    pWorkingMaxLoadField.setForeground(color);
+    pCheckedInMaxLoadField.setForeground(color);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Set the working minimum memory field from the value of the checked-in field.
+   */ 
+  private void 
+  doSetMinMemory()
+  { 
+    pWorkingMinMemoryField.removeActionListener(this);
+      pWorkingMinMemoryField.setText(pCheckedInMinMemoryField.getText());
+    pWorkingMinMemoryField.addActionListener(this);
+
+    doMinMemoryChanged();
+  }
+
+  /**
+   * Update the appearance of the minimum memory field after a change of value.
+   */ 
+  private void 
+  doMinMemoryChanged()
+  {
+    pApplyButton.setEnabled(true);
+    
+    Color color = Color.white;
+    if(hasWorking() && hasCheckedIn()) {
+      String wpolicy = pWorkingMinMemoryField.getText();
+      String cpolicy = pCheckedInMinMemoryField.getText();      
+      if(!cpolicy.equals(wpolicy))
+	color = Color.cyan;
+    }
+
+    pMinMemoryTitle.setForeground(color);
+    pWorkingMinMemoryField.setForeground(color);
+    pCheckedInMinMemoryField.setForeground(color);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Set the working minimum disk field from the value of the checked-in field.
+   */ 
+  private void 
+  doSetMinDisk()
+  { 
+    pWorkingMinDiskField.removeActionListener(this);
+      pWorkingMinDiskField.setText(pCheckedInMinDiskField.getText());
+    pWorkingMinDiskField.addActionListener(this);
+
+    doMinDiskChanged();
+  }
+
+  /**
+   * Update the appearance of the minimum disk field after a change of value.
+   */ 
+  private void 
+  doMinDiskChanged()
+  {
+    pApplyButton.setEnabled(true);
+    
+    Color color = Color.white;
+    if(hasWorking() && hasCheckedIn()) {
+      String wpolicy = pWorkingMinDiskField.getText();
+      String cpolicy = pCheckedInMinDiskField.getText();      
+      if(!cpolicy.equals(wpolicy))
+	color = Color.cyan;
+    }
+
+    pMinDiskTitle.setForeground(color);
+    pWorkingMinDiskField.setForeground(color);
+    pCheckedInMinDiskField.setForeground(color);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Set the selection key field with the given name from the value of the checked-in field.
+   */ 
+  private void 
+  doSetSelectionKey
+  (
+   String kname
+  ) 
+  { 
+    Component pcomps[] = pSelectionKeyComponents.get(kname);
+    if(pcomps != null) {
+      JBooleanField wfield = (JBooleanField) pcomps[1];
+
+      String ckey = ((JTextField) pcomps[3]).getText();
+      if(ckey.equals("YES"))
+	wfield.setValue(true);
+      else if(ckey.equals("no"))
+	wfield.setValue(false);
+
+      doSelectionKeyChanged(kname);
+    }
+  }
+
+  /**
+   * Update the appearance of the selection key field with the given name after a 
+   * change of value.
+   */ 
+  private void 
+  doSelectionKeyChanged
+  (
+   String kname
+  ) 
+  {
+    Component pcomps[] = pSelectionKeyComponents.get(kname);
+    if(pcomps != null) {
+      pApplyButton.setEnabled(true);
+    
+      Color color = Color.white;
+      if(hasWorking() && hasCheckedIn()) {
+	String wkey = ((JBooleanField) pcomps[1]).getText();
+	String ckey = ((JTextField) pcomps[3]).getText();
+	if(!ckey.equals(wkey))
+	  color = Color.cyan;
+      }
+
+      pcomps[0].setForeground(color);
+      pcomps[1].setForeground(color);
+      pcomps[3].setForeground(color);
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Set the license key field with the given name from the value of the checked-in field.
+   */ 
+  private void 
+  doSetLicenseKey
+  (
+   String kname
+  ) 
+  { 
+    Component pcomps[] = pLicenseKeyComponents.get(kname);
+    if(pcomps != null) {
+      JBooleanField wfield = (JBooleanField) pcomps[1];
+
+      String ckey = ((JTextField) pcomps[3]).getText();
+      if(ckey.equals("YES"))
+	wfield.setValue(true);
+      else if(ckey.equals("no"))
+	wfield.setValue(false);
+
+      doLicenseKeyChanged(kname);
+    }
+  }
+
+  /**
+   * Update the appearance of the license key field with the given name after a 
+   * change of value.
+   */ 
+  private void 
+  doLicenseKeyChanged
+  (
+   String kname
+  ) 
+  {
+    Component pcomps[] = pLicenseKeyComponents.get(kname);
+    if(pcomps != null) {
+      pApplyButton.setEnabled(true);
+    
+      Color color = Color.white;
+      if(hasWorking() && hasCheckedIn()) {
+	String wkey = ((JBooleanField) pcomps[1]).getText();
+	String ckey = ((JTextField) pcomps[3]).getText();
+	if(!ckey.equals(wkey))
+	  color = Color.cyan;
+      }
+
+      pcomps[0].setForeground(color);
+      pcomps[1].setForeground(color);
+      pcomps[3].setForeground(color);
     }
   }
 
@@ -1898,9 +3509,9 @@ class JNodeDetailsPanel
   private static final long serialVersionUID = -2714804145579513176L;
 
 
-  private static final int  sTSize = 110;
-  private static final int  sVSize = 130;
-  private static final int  sSSize = 273;
+  private static final int  sTSize = 120;
+  private static final int  sVSize = 150;
+  private static final int  sSSize = 323;
 
 
 
@@ -1931,6 +3542,11 @@ class JNodeDetailsPanel
    */ 
   private JTextField pNodeNameField;
 
+  /**
+   * The button used to change the frozen/unfrozen status of the working version.
+   */ 
+  private JToggleButton  pFrozenButton;
+  
   /**
    * The button used to apply changes to the working version of the node.
    */ 
@@ -2071,5 +3687,193 @@ class JNodeDetailsPanel
    * The dialog used to view checked-in text action parameter values.
    */ 
   private JTextDialog  pViewTextDialog;
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The job requirements container.
+   */ 
+  private Box  pJobReqsBox;
+
+  /**
+   * The job requirements spacer.
+   */ 
+  private JPanel  pJobReqsSpacer;
+  
+
+  /**
+   * The overflow policy title label.
+   */ 
+  private JLabel  pOverflowPolicyTitle;
+
+  /**
+   * The working overflow policy field.
+   */ 
+  private JCollectionField pWorkingOverflowPolicyField;
+
+  /**
+   * The set overflow policy button.
+   */ 
+  private JButton  pSetOverflowPolicyButton;
+
+  /**
+   * The checked-in overflow policy field.
+   */ 
+  private JTextField pCheckedInOverflowPolicyField;
+
+
+  /**
+   * The execution method title label.
+   */ 
+  private JLabel  pExecutionMethodTitle;
+
+  /**
+   * The working execution method field.
+   */ 
+  private JCollectionField pWorkingExecutionMethodField;
+
+  /**
+   * The set execution method button.
+   */ 
+  private JButton  pSetExecutionMethodButton;
+
+  /**
+   * The checked-in execution method field.
+   */ 
+  private JTextField pCheckedInExecutionMethodField;
+
+
+  /**
+   * The batch size title label.
+   */ 
+  private JLabel  pBatchSizeTitle;
+
+  /**
+   * The working batch size field.
+   */ 
+  private JIntegerField pWorkingBatchSizeField;
+
+  /**
+   * The set batch size button.
+   */ 
+  private JButton  pSetBatchSizeButton;
+
+  /**
+   * The checked-in batch size field.
+   */ 
+  private JTextField pCheckedInBatchSizeField;
+
+
+  /**
+   * The priority title label.
+   */ 
+  private JLabel  pPriorityTitle;
+
+  /**
+   * The working priority field.
+   */ 
+  private JIntegerField pWorkingPriorityField;
+
+  /**
+   * The set priority button.
+   */ 
+  private JButton  pSetPriorityButton;
+
+  /**
+   * The checked-in priority field.
+   */ 
+  private JTextField pCheckedInPriorityField;
+
+
+  /**
+   * The maximum load title label.
+   */ 
+  private JLabel  pMaxLoadTitle;
+
+  /**
+   * The working maximum load field.
+   */ 
+  private JFloatField pWorkingMaxLoadField;
+
+  /**
+   * The set maximum load button.
+   */ 
+  private JButton  pSetMaxLoadButton;
+
+  /**
+   * The checked-in maximum load field.
+   */ 
+  private JTextField pCheckedInMaxLoadField;
+
+
+  /**
+   * The minimum load title label.
+   */ 
+  private JLabel  pMinMemoryTitle;
+
+  /**
+   * The working minimum load field.
+   */ 
+  private JByteSizeField pWorkingMinMemoryField;
+
+  /**
+   * The set minimum load button.
+   */ 
+  private JButton  pSetMinMemoryButton;
+
+  /**
+   * The checked-in minimum load field.
+   */ 
+  private JTextField pCheckedInMinMemoryField;
+
+
+  /**
+   * The minimum load title label.
+   */ 
+  private JLabel  pMinDiskTitle;
+
+  /**
+   * The working minimum load field.
+   */ 
+  private JByteSizeField pWorkingMinDiskField;
+
+  /**
+   * The set minimum load button.
+   */ 
+  private JButton  pSetMinDiskButton;
+
+  /**
+   * The checked-in minimum load field.
+   */ 
+  private JTextField pCheckedInMinDiskField;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The selection keys container.
+   */ 
+  private Box  pSelectionKeysBox;
+
+  /**
+   * The title, working and checked-in selection key components indexed by 
+   * selection key name.
+   */ 
+  private TreeMap<String,Component[]>  pSelectionKeyComponents;
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The license keys container.
+   */ 
+  private Box  pLicenseKeysBox;
+
+  /**
+   * The title, working and checked-in license key components indexed by 
+   * license key name.
+   */ 
+  private TreeMap<String,Component[]>  pLicenseKeyComponents;
   
 }
