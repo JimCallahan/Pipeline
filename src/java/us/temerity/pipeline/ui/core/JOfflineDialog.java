@@ -1,4 +1,4 @@
-// $Id: JArchiveDialog.java,v 1.5 2005/03/14 16:08:21 jim Exp $
+// $Id: JOfflineDialog.java,v 1.1 2005/03/14 16:08:34 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -12,14 +12,14 @@ import javax.swing.*;
 import javax.swing.event.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   A R C H I V E   D I A L O G                                                            */
+/*   O F F L I N E   D I A L O G                                                            */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A dialog for selecting the checked-in versions to archive.
+ * A dialog for selecting the checked-in versions to offline.
  */ 
 public 
-class JArchiveDialog
+class JOfflineDialog
   extends JBaseDialog
   implements ActionListener
 {
@@ -31,9 +31,9 @@ class JArchiveDialog
    * Construct a new dialog.
    */ 
   public 
-  JArchiveDialog() 
+  JOfflineDialog() 
   {
-    super("Archive Tool", false);
+    super("Offline Tool", false);
 
     /* create dialog body components */ 
     {
@@ -47,7 +47,7 @@ class JArchiveDialog
 	cpanel.add(Box.createRigidArea(new Dimension(0, 4)));
 
 	{
-	  ArchiveCandidateTableModel model = new ArchiveCandidateTableModel();
+	  OfflineCandidateTableModel model = new OfflineCandidateTableModel();
 	  pCandidateTableModel = model;
 	  
 	  JTablePanel tpanel = new JTablePanel(model);
@@ -112,7 +112,7 @@ class JArchiveDialog
 	  box.add(Box.createRigidArea(new Dimension(4, 0)));
 	  
 	  {    
-	    JLabel label = new JLabel("Versions to Archive:");
+	    JLabel label = new JLabel("Versions to Offline:");
 	    label.setName("PanelLabel");
 	    box.add(label);
 	  }	    
@@ -121,7 +121,7 @@ class JArchiveDialog
 	  
 	  {    
 	    JLabel label = new JLabel("Total Size: ???");
-	    pArchiveSizeLabel = label;
+	    pOfflineSizeLabel = label;
 	    label.setName("PanelLabel");
 	    box.add(label);
 	  }
@@ -134,11 +134,11 @@ class JArchiveDialog
 	apanel.add(Box.createRigidArea(new Dimension(0, 4)));
 	
 	{
-	  NodeVersionTableModel model = new NodeVersionTableModel(880);
-	  pArchiveTableModel = model;
+	  NodeVersionTableModel model = new NodeVersionTableModel(1220);
+	  pOfflineTableModel = model;
 	  
 	  JTablePanel tpanel = new JTablePanel(model);
-	  pArchiveTablePanel = tpanel;
+	  pOfflineTablePanel = tpanel;
 	  
 	  apanel.add(tpanel);
 	}	
@@ -159,7 +159,7 @@ class JArchiveDialog
 	    btn.setMinimumSize(new Dimension(108, 31));
 	    btn.setMaximumSize(new Dimension(size.width, 31));
 	    
-	    btn.setActionCommand("add-archive");
+	    btn.setActionCommand("add-offline");
 	    btn.addActionListener(this);
 	    
 	    hbox.add(btn);
@@ -175,7 +175,7 @@ class JArchiveDialog
 	    btn.setMinimumSize(new Dimension(108, 31));
 	    btn.setMaximumSize(new Dimension(size.width, 31));
 	    
-	    btn.setActionCommand("add-all-archive");
+	    btn.setActionCommand("add-all-offline");
 	    btn.addActionListener(this);
 	    
 	    hbox.add(btn);
@@ -191,7 +191,7 @@ class JArchiveDialog
 	    btn.setMinimumSize(new Dimension(108, 31));
 	    btn.setMaximumSize(new Dimension(size.width, 31));
 	    
-	    btn.setActionCommand("remove-archive");
+	    btn.setActionCommand("remove-offline");
 	    btn.addActionListener(this);
 	    
 	    hbox.add(btn);
@@ -207,7 +207,7 @@ class JArchiveDialog
 	    btn.setMinimumSize(new Dimension(108, 31));
 	    btn.setMaximumSize(new Dimension(size.width, 31));
 	    
-	    btn.setActionCommand("remove-all-archive");
+	    btn.setActionCommand("remove-all-offline");
 	    btn.addActionListener(this);
 	    
 	    hbox.add(btn);	  
@@ -223,7 +223,7 @@ class JArchiveDialog
 	    btn.setMinimumSize(new Dimension(108, 31));
 	    btn.setMaximumSize(new Dimension(size.width, 31));
 	    
-	    btn.setActionCommand("calc-archive");
+	    btn.setActionCommand("calc-offline");
 	    btn.addActionListener(this);
 	    
 	    hbox.add(btn);
@@ -240,21 +240,20 @@ class JArchiveDialog
       body.setAlignmentX(0.5f);
 
       String extra[][] = {
-	{ "Archive...", "archive" }
+	{ "Offline", "offline" }
       };
 
       JButton btns[] = 
-	super.initUI("Archive Tool:", false, body, null, null, extra, "Close");
+	super.initUI("Offline Tool:", false, body, null, null, extra, "Close");
 
-      pArchiveButton = btns[0];
-      pArchiveButton.setEnabled(false);
+      pOfflineButton = btns[0];
+      pOfflineButton.setEnabled(false);
 
       updatePanel();
       pack();
     }
 
-    pQueryDialog          = new JArchiveQueryDialog(this);
-    pArchiverParamsDialog = new JArchiverParamsDialog(this);
+    pQueryDialog = new JOfflineQueryDialog(this);
   }
 
 
@@ -285,7 +284,7 @@ class JArchiveDialog
   private void 
   updateButtons() 
   {
-    pArchiveButton.setEnabled(pIsPrivileged && !pArchiveTableModel.getData().isEmpty());
+    pOfflineButton.setEnabled(pIsPrivileged && !pOfflineTableModel.getData().isEmpty());
   }
 
 
@@ -313,19 +312,19 @@ class JArchiveDialog
     else if(cmd.equals("clear-candidate")) 
       doClearCandidate();
 
-    else if(cmd.equals("add-archive")) 
-      doAddArchive();
-    else if(cmd.equals("add-all-archive")) 
-      doAddAllArchive();
-    else if(cmd.equals("remove-archive")) 
-      doRemoveArchive();
-    else if(cmd.equals("remove-all-archive")) 
-      doRemoveAllArchive();
-    else if(cmd.equals("calc-archive")) 
-      doCalcArchive();
+    else if(cmd.equals("add-offline")) 
+      doAddOffline();
+    else if(cmd.equals("add-all-offline")) 
+      doAddAllOffline();
+    else if(cmd.equals("remove-offline")) 
+      doRemoveOffline();
+    else if(cmd.equals("remove-all-offline")) 
+      doRemoveAllOffline();
+    else if(cmd.equals("calc-offline")) 
+      doCalcOffline();
 
-    else if(cmd.equals("archive"))
-      doArchive();
+    else if(cmd.equals("offline"))
+      doOffline();
   }
 
 
@@ -343,7 +342,8 @@ class JArchiveDialog
     pQueryDialog.setVisible(true);
     if(pQueryDialog.wasConfirmed()) {
       SearchTask task = 
-	new SearchTask(pQueryDialog.getPattern(), pQueryDialog.getMaxArchives());
+	new SearchTask(pQueryDialog.getPattern(), pQueryDialog.getExcludeLatest(), 
+		       pQueryDialog.getMinArchives(), pQueryDialog.getUnusedOnly());
       task.start();
     }
   }
@@ -354,41 +354,41 @@ class JArchiveDialog
   private void 
   doClearCandidate() 
   {
-    pCandidateTableModel.setArchiveInfo(null);
+    pCandidateTableModel.setOfflineInfo(null);
   }
 
 
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Add the selected candidate versions to the archive table.
+   * Add the selected candidate versions to the offline table.
    */ 
   private void 
-  doAddArchive() 
+  doAddOffline() 
   {
     int rows[] = pCandidateTablePanel.getTable().getSelectedRows();
-    addArchiveHelper(pCandidateTableModel.getVersions(rows));
+    addOfflineHelper(pCandidateTableModel.getVersions(rows));
   }
 
   /**
-   * Add all candidate versions to the archive table.
+   * Add all candidate versions to the offline table.
    */ 
   private void 
-  doAddAllArchive() 
+  doAddAllOffline() 
   {
-    addArchiveHelper(pCandidateTableModel.getVersions());
+    addOfflineHelper(pCandidateTableModel.getVersions());
   }
 
   /**
-   * Add the given versions to the archive table.
+   * Add the given versions to the offline table.
    */
   private void 
-  addArchiveHelper
+  addOfflineHelper
   (
     TreeMap<String,TreeSet<VersionID>> selected
   ) 
   {
-    TreeMap<String,TreeMap<VersionID,Long>> data = pArchiveTableModel.getData();
+    TreeMap<String,TreeMap<VersionID,Long>> data = pOfflineTableModel.getData();
     for(String name : selected.keySet()) {
       TreeMap<VersionID,Long> versions = data.get(name);
       if(versions == null) {
@@ -402,61 +402,57 @@ class JArchiveDialog
       }
     }
 
-    pArchiveTableModel.setData(data);    
+    pOfflineTableModel.setData(data);    
     updateButtons();
   }
 
   /**
-   * Remove the selected rows from the archive versions table.
+   * Remove the selected rows from the offline versions table.
    */ 
   private void 
-  doRemoveArchive() 
+  doRemoveOffline() 
   {
-    int[] rows = pArchiveTablePanel.getTable().getSelectedRows();
+    int[] rows = pOfflineTablePanel.getTable().getSelectedRows();
     if(rows.length > 0) 
-      pArchiveTableModel.setData(pArchiveTableModel.getDataExcept(rows));
+      pOfflineTableModel.setData(pOfflineTableModel.getDataExcept(rows));
     updateButtons();
   }
 
   /**
-   * Remove all versions from the archive table.
+   * Remove all versions from the offline table.
    */ 
   private void 
-  doRemoveAllArchive() 
+  doRemoveAllOffline() 
   {
-    pArchiveTableModel.setData(null);
+    pOfflineTableModel.setData(null);
     updateButtons();
   }
 
   /**
-   * Calculate the total size of the archived files. 
+   * Calculate the total size of the offlined files. 
    */ 
   private void 
-  doCalcArchive() 
+  doCalcOffline() 
   {
-    TreeMap<String,TreeMap<VersionID,Long>> data = null; 
     TreeMap<String,TreeSet<VersionID>> versions = null;
     {
-      data = pArchiveTableModel.getData();
-      
+      TreeMap<String,TreeMap<VersionID,Long>> data = pOfflineTableModel.getData();
       versions = new TreeMap<String,TreeSet<VersionID>>();
       for(String name : data.keySet()) {
 	TreeMap<VersionID,Long> vsizes = data.get(name);
 	for(VersionID vid : vsizes.keySet()) {
-	  if(vsizes.get(vid) == null) {
-	    TreeSet<VersionID> vids = versions.get(name);
-	    if(vids == null) {
-	      vids = new TreeSet<VersionID>();
-	      versions.put(name, vids);
-	    }
-	    
-	    vids.add(vid);
+	  TreeSet<VersionID> vids = versions.get(name);
+	  if(vids == null) {
+	    vids = new TreeSet<VersionID>();
+	    versions.put(name, vids);
 	  }
+	    
+	  vids.add(vid);
 	}
       }
     }
 
-    CalcArchiveSizesTask task = new CalcArchiveSizesTask(data, versions);
+    CalcOfflineSizesTask task = new CalcOfflineSizesTask(versions);
     task.start();
   }
 
@@ -464,35 +460,19 @@ class JArchiveDialog
   /*----------------------------------------------------------------------------------------*/
  
   /**
-   * Archive the selected versions.
+   * Offline the selected versions.
    */ 
   private void 
-  doArchive() 
+  doOffline() 
   {
-    TreeMap<String,TreeMap<VersionID,Long>> data = pArchiveTableModel.getData();
+    TreeMap<String,TreeMap<VersionID,Long>> data = pOfflineTableModel.getData();
     TreeMap<String,TreeSet<VersionID>> versions = new TreeMap<String,TreeSet<VersionID>>();
     for(String name : data.keySet()) 
       versions.put(name, new TreeSet<VersionID>(data.get(name).keySet()));
 
     if(!versions.isEmpty()) {
-      pArchiverParamsDialog.updateArchiver();
-      pArchiverParamsDialog.setVisible(true);
-      if(pArchiverParamsDialog.wasConfirmed()) {
-	String prefix = pArchiverParamsDialog.getPrefix();
-	if((prefix == null) || (prefix.length() == 0)) 
-	  prefix = "Archive";
-
-	Long minSize = pArchiverParamsDialog.getMinSize();
-	if(minSize == null)
-	  minSize = 0L;
-
-	BaseArchiver archiver = pArchiverParamsDialog.getArchiver();
-	if(archiver != null) {
-	  AssignVersionsToArchivesTask task = 
-	    new AssignVersionsToArchivesTask(prefix, minSize, versions, archiver);
-	  task.start();
-	}
-      }
+      OfflineTask task = new OfflineTask(versions); 
+      task.start();
     }
   }
 
@@ -538,7 +518,7 @@ class JArchiveDialog
   /*----------------------------------------------------------------------------------------*/
  
   /** 
-   * Peform an archival candidate query.
+   * Peform an offline candidate query.
    */ 
   private
   class SearchTask
@@ -548,24 +528,28 @@ class JArchiveDialog
     SearchTask
     (
      String pattern,
-     Integer maxArchives 
+     Integer excludeLatest, 
+     Integer minArchives, 
+     boolean unusedOnly 
     )     
     {
-      super("JArchiveDialog:SearchTask");
+      super("JOfflineDialog:SearchTask");
 
       pPattern       = pattern;	        
-      pMaxArchives   = maxArchives;
+      pExcludeLatest = excludeLatest;   
+      pMinArchives   = minArchives;   
+      pUnusedOnly    = unusedOnly; 
     }
 
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      ArrayList<ArchiveInfo> info = null;
+      ArrayList<OfflineInfo> info = null;
       if(master.beginPanelOp("Searching for Candidate Versions...")) {
 	try {
 	  MasterMgrClient client = master.getMasterMgrClient();
-	  info = client.archiveQuery(pPattern, pMaxArchives);
+	  info = client.offlineQuery(pPattern, pExcludeLatest, pMinArchives, pUnusedOnly);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -580,7 +564,9 @@ class JArchiveDialog
     }
 
     private String   pPattern;
-    private Integer  pMaxArchives;
+    private Integer  pExcludeLatest;
+    private Integer  pMinArchives;
+    private boolean  pUnusedOnly; 
   }
 
   /** 
@@ -593,42 +579,40 @@ class JArchiveDialog
     public 
     UpdateTask
     (
-     ArrayList<ArchiveInfo> info
+     ArrayList<OfflineInfo> info
     ) 
     {
-      super("JArchiveDialog:UpdateTask");
+      super("JOfflineDialog:UpdateTask");
       pInfo = info;
     }
 
     public void 
     run() 
     {
-      pCandidateTableModel.setArchiveInfo(pInfo);
+      pCandidateTableModel.setOfflineInfo(pInfo);
     }
     
-    private ArrayList<ArchiveInfo> pInfo; 
+    private ArrayList<OfflineInfo> pInfo; 
   }
 
 
   /*----------------------------------------------------------------------------------------*/
   
   /** 
-   * Calculate the sizes of archive version files.
+   * Calculate the sizes of offline version files.
    */ 
   private
-  class CalcArchiveSizesTask
+  class CalcOfflineSizesTask
     extends Thread
   {
     public 
-    CalcArchiveSizesTask
+    CalcOfflineSizesTask
     (
-     TreeMap<String,TreeMap<VersionID,Long>> data,
      TreeMap<String,TreeSet<VersionID>> versions
     )     
     {
-      super("JArchiveDialog:CalcArchiveSizesTask");
+      super("JOfflineDialog:CalcOfflineSizesTask");
       
-      pData     = data;
       pVersions = versions;
     }
 
@@ -640,7 +624,7 @@ class JArchiveDialog
       TreeMap<String,TreeMap<VersionID,Long>> data = null;
       if(master.beginPanelOp("Calculating File Sizes...")) {
 	try {
-	  data = client.getArchivedSizes(pVersions);
+	  data = client.getOfflineSizes(pVersions);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -650,52 +634,51 @@ class JArchiveDialog
 	}
       }
 	
-      /* merge existing and new sizes */ 
+      /* add versions without sizes */ 
       if(data != null) {
-	for(String name : pData.keySet()) {
-	  TreeMap<VersionID,Long> oversions = pData.get(name);
-	  TreeMap<VersionID,Long> versions  = data.get(name);
+	for(String name : pVersions.keySet()) {
+	  TreeSet<VersionID> oversions = pVersions.get(name);
+	  TreeMap<VersionID,Long> versions = data.get(name);
 	  if(versions == null) {
-	    data.put(name, oversions);
+	    versions = new TreeMap<VersionID,Long>();
+	    data.put(name, versions);
 	  }
-	  else {
-	    for(VersionID vid : oversions.keySet()) {
-	      if(versions.get(vid) == null) 
-		versions.put(vid, oversions.get(vid));
-	    }
+	  
+	  for(VersionID vid : oversions) {
+	    if(!versions.containsKey(vid)) 
+	      versions.put(vid, null);
 	  }
 	}
 
-	UpdateArchiveTask task = new UpdateArchiveTask(data);
+	UpdateOfflineTask task = new UpdateOfflineTask(data);
 	SwingUtilities.invokeLater(task);
       }
     }
 
-    private TreeMap<String,TreeMap<VersionID,Long>>  pData;
-    private TreeMap<String,TreeSet<VersionID>>       pVersions;
+    private TreeMap<String,TreeSet<VersionID>>  pVersions;
   }
 
   /** 
-   * Update the archive table. 
+   * Update the offline table. 
    */ 
   private
-  class UpdateArchiveTask
+  class UpdateOfflineTask
     extends Thread
   {
     public 
-    UpdateArchiveTask
+    UpdateOfflineTask
     (
      TreeMap<String,TreeMap<VersionID,Long>> data
     ) 
     {
-      super("JArchiveDialog:UpdateArchiveTask");
+      super("JOfflineDialog:UpdateOfflineTask");
       pData = data;
     }
 
     public void 
     run() 
     {
-      pArchiveTableModel.setData(pData);  
+      pOfflineTableModel.setData(pData);  
       updateButtons();
 
       long total = 0L;
@@ -706,7 +689,7 @@ class JArchiveDialog
 	}
       }
 
-      pArchiveSizeLabel.setText("Total Size: " + formatLong(total));
+      pOfflineSizeLabel.setText("Total Size: " + formatLong(total));
     }
     
     
@@ -715,40 +698,33 @@ class JArchiveDialog
 
 
   /*----------------------------------------------------------------------------------------*/
-   
+
   /** 
-   * Calculate the sizes of files to archive and assign versions to archive volumes.
+   * Offline the versions. 
    */ 
   private
-  class AssignVersionsToArchivesTask
+  class OfflineTask
     extends Thread
   {
     public 
-    AssignVersionsToArchivesTask
+    OfflineTask
     (
-     String prefix,
-     long minSize, 
-     TreeMap<String,TreeSet<VersionID>> versions, 
-     BaseArchiver archiver
+     TreeMap<String,TreeSet<VersionID>> versions
     )     
     {
-      super("JArchiveDialog:AssignVersionsToArchivesTask");
+      super("JOfflineDialog:OfflineTask");
       
-      pPrefix   = prefix; 
-      pMinSize  = minSize; 
-      pVersions = versions;
-      pArchiver = archiver;
+      pVersions = versions; 
     }
 
     public void 
     run() 
-    {
+    {  
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient client = master.getMasterMgrClient();
-      TreeMap<String,TreeMap<VersionID,Long>> versionSizes = null;
-      if(master.beginPanelOp("Assigning Versions to Archives...")) {
+      if(master.beginPanelOp("Offlining Checked-In Versions...")) {
 	try {
-	  versionSizes = client.getArchivedSizes(pVersions);
+	  client.offline(pVersions); 
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -757,247 +733,9 @@ class JArchiveDialog
 	  master.endPanelOp("Done.");
 	}
       }
-	
-      /* assign the maximum number of versions to each archive volume without 
-	 exceeding its capacity */ 
-      TreeMap<Integer,TreeMap<String,TreeSet<VersionID>>> archives = 
-	new TreeMap<Integer,TreeMap<String,TreeSet<VersionID>>>(); 
-      if(versionSizes != null) {
-	long capacity = pArchiver.getCapacity();
-	int idx = 0;
-	long total = 0L;
-	boolean done = false;
-	TreeMap<String,TreeMap<VersionID,Long>> skippedVersionSizes = 
-	  new TreeMap<String,TreeMap<VersionID,Long>>();
-	while(!done) {
-	  for(String name : versionSizes.keySet()) {
-	    TreeMap<VersionID,Long> sizes = versionSizes.get(name);
-	    for(VersionID vid : sizes.keySet()) {
-	      Long size = sizes.get(vid);
-	      
-	      if((total+size) >= pArchiver.getCapacity()) {
-		/* the version is too big to fit by itself in a volume */ 
-		if(total == 0L) {
-		  master.showErrorDialog
-		    ("Error:", 
-		     "The version (" + vid + ") of node (" + name + ") was larger than " + 
-		     "the capacity of an entire archive volume!  The capacity of the " + 
-		     "archive volume must be increased to at least " + 
-		     "(" + formatLong(size) + ") in order to archive this version.");
-		  return;
-		}
-		
-		/* the version is too big for this volume, skip it for now... */ 
-		TreeMap<VersionID,Long> skippedSizes = skippedVersionSizes.get(name);
-		if(skippedSizes == null) {
-		  skippedSizes = new TreeMap<VersionID,Long>();
-		  skippedVersionSizes.put(name, skippedSizes);
-		}
-		skippedSizes.put(vid, size);
-	      }
-
-	      /* the version fits, add it to this volume */ 
-	      else {
-		TreeMap<String,TreeSet<VersionID>> versions = archives.get(idx);
-		if(versions == null) {
-		  versions = new TreeMap<String,TreeSet<VersionID>>();
-		  archives.put(idx, versions);
-		}
-		
-		TreeSet<VersionID> vids = versions.get(name);
-		if(vids == null) {
-		  vids = new TreeSet<VersionID>();
-		  versions.put(name, vids);
-		}
-		
-		vids.add(vid);
-		total += size;
-	      }
-	    }
-	  }
-	  
-	  /* some versions wouldn't fit in the current volume, 
-	       create a new volume and try again... */ 
-	  if(!skippedVersionSizes.isEmpty()) {
-	    idx++;
-	    total = 0L;
-	    versionSizes = skippedVersionSizes;
-	    skippedVersionSizes = new TreeMap<String,TreeMap<VersionID,Long>>();
-	  }
-	  else {
-	    if(total < pMinSize) {
-	      if(idx == 0) {
-		master.showErrorDialog
-		  ("Error:", 
-		   "The total size (" + formatLong(total) + ") of all versions selected " + 
-		   "for archiving was less than the minimum archive volume size " + 
-		   "(" + formatLong(pMinSize) + ")!  Either select enough versions to " + 
-		   "meet this minimum size or specify a smaller minimum size to create " + 
-		   "an archive volume.");
-		return;
-	      }
-	      else {
-		archives.remove(idx);
-	      }
-	    }
-
-	    break;
-	  }
-	}
-      }
-
-      /* perform the archive operations */ 
-      if(!archives.isEmpty()) {
-	if(pArchiver.isManual()) {
-	    ManualArchiveConfirmTask task = 
-	      new ManualArchiveConfirmTask(0, pPrefix, archives, pArchiver);
-	    SwingUtilities.invokeLater(task);
-	}
-	else {  
-	  if(master.beginPanelOp()) {
-	    int lastIdx = 0;
-	    try {
-	      for(Integer idx : archives.keySet()) {
-		master.updatePanelOp
-		  ("Archiving Volume (" + (idx+1) + " of " + archives.size() + ")...");
-		lastIdx = idx;
-		client.archive(pPrefix, archives.get(idx), pArchiver);
-	      }
-	    }
-	    catch(PipelineException ex) {
-	      master.showErrorDialog
-		("Error:", 
-		 ex.getMessage() + "\n\n" + 
-		 "Archive operation aborted early without creating " + 
-		 "(" + (archives.size()-lastIdx) + " of " + archives.size() + ") archive " +
-		 "volumes!");
-	    }
-	    finally {
-	      master.endPanelOp("Done.");
-	    }
-	  }
-	}
-      }
     }
 
-
-    private String                              pPrefix;
-    private long                                pMinSize; 
     private TreeMap<String,TreeSet<VersionID>>  pVersions;
-    private BaseArchiver                        pArchiver; 
-  }
-
-
-  /** 
-   * Ask the user if they are ready to write the archive.
-   */ 
-  private
-  class ManualArchiveConfirmTask
-    extends Thread
-  {
-    public 
-    ManualArchiveConfirmTask
-    (
-     int idx, 
-     String prefix,
-     TreeMap<Integer,TreeMap<String,TreeSet<VersionID>>> archives, 
-     BaseArchiver archiver
-    )     
-    {
-      super("JArchiveDialog:ManualArchiveConfirmTask");
-      
-      pIndex    = idx; 
-      pPrefix   = prefix; 
-      pArchives = archives; 
-      pArchiver = archiver;
-    }
-
-    public void 
-    run() 
-    {
-      JConfirmDialog diag = 
-	new JConfirmDialog("Are you ready to write the next archive volume " + 
-			   "(" + (pIndex+1) + " of " + pArchives.size() + ")?");
-      diag.setVisible(true);
-      if(diag.wasConfirmed()) {
-	ManualArchiveTask task = 
-	  new ManualArchiveTask(pIndex, pPrefix, pArchives, pArchiver);
-	task.start();
-      }
-      else {
-	UIMaster.getInstance().showErrorDialog
-	  ("Warning:", 
-	   "Archive operation aborted early without creating " + 
-	   "(" + (pArchives.size()-pIndex) + " of " + pArchives.size() + ") archive " +
-	   "volumes!");
-      }      
-    }
-
-    private int                                                  pIndex; 
-    private String                                               pPrefix;
-    private TreeMap<Integer,TreeMap<String,TreeSet<VersionID>>>  pArchives; 
-    private BaseArchiver                                         pArchiver; 
-  }
-
-  /** 
-   * Write one archive volume and then query the user again before writing the next volume.
-   */ 
-  private
-  class ManualArchiveTask
-    extends Thread
-  {
-    public 
-    ManualArchiveTask
-    (
-     int idx, 
-     String prefix,
-     TreeMap<Integer,TreeMap<String,TreeSet<VersionID>>> archives, 
-     BaseArchiver archiver
-    )     
-    {
-      super("JArchiveDialog:ManualArchiveTask");
-      
-      pIndex    = idx; 
-      pPrefix   = prefix; 
-      pArchives = archives; 
-      pArchiver = archiver;
-    }
-
-    public void 
-    run() 
-    {  
-      UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
-      String msg = ("Archiving Volume (" + (pIndex+1) + " of " + pArchives.size() + ")...");
-      if(master.beginPanelOp(msg)) {
-	try {
-	  client.archive(pPrefix, pArchives.get(pIndex), pArchiver);
-	}
-	catch(PipelineException ex) {
-	  master.showErrorDialog
-	    ("Error:", 
-	     ex.getMessage() + "\n\n" + 
-	     "Archive operation aborted early without creating " + 
-	     "(" + (pArchives.size()-pIndex) + " of " + pArchives.size() + ") archive " +
-	     "volumes!");
-	}
-	finally {
-	  master.endPanelOp("Done.");
-	}
-      }
-
-      int nextIdx = pIndex+1;
-      if(pArchives.get(nextIdx) != null) {
-	ManualArchiveConfirmTask task = 
-	  new ManualArchiveConfirmTask(nextIdx, pPrefix, pArchives, pArchiver);
-	SwingUtilities.invokeLater(task);
-      }	
-    }
-
-    private int                                                  pIndex; 
-    private String                                               pPrefix;
-    private TreeMap<Integer,TreeMap<String,TreeSet<VersionID>>>  pArchives; 
-    private BaseArchiver                                         pArchiver; 
   }
 
   
@@ -1006,7 +744,7 @@ class JArchiveDialog
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 5667924780004601771L;
+  private static final long serialVersionUID = -1776854816064053417L;
 
   
 
@@ -1025,7 +763,7 @@ class JArchiveDialog
   /**
    * The candidate version table model.
    */ 
-  private ArchiveCandidateTableModel  pCandidateTableModel;
+  private OfflineCandidateTableModel  pCandidateTableModel;
 
   /**
    * The candidate version table.
@@ -1036,38 +774,34 @@ class JArchiveDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The archive version table model.
+   * The offline version table model.
    */ 
-  private NodeVersionTableModel  pArchiveTableModel;
+  private NodeVersionTableModel  pOfflineTableModel;
 
   /**
-   * The archive version table.
+   * The offline version table.
    */ 
-  private JTablePanel  pArchiveTablePanel;
+  private JTablePanel  pOfflineTablePanel;
 
   /**
-   * The label which displays the total size of all files to be archived.
+   * The label which displays the total size of all files to be offlined.
    */ 
-  private JLabel  pArchiveSizeLabel; 
+  private JLabel  pOfflineSizeLabel; 
 
 
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The archive button.
+   * The offline button.
    */ 
-  private JButton  pArchiveButton;
+  private JButton  pOfflineButton;
 
 
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The archival query parameters dialog.
+   * The offline query parameters dialog.
    */
-  private JArchiveQueryDialog  pQueryDialog;
+  private JOfflineQueryDialog  pQueryDialog;
 
-  /**
-   * The archiver parameters dialog.
-   */ 
-  private JArchiverParamsDialog  pArchiverParamsDialog; 
 }

@@ -1,4 +1,4 @@
-// $Id: FileGetSizesReq.java,v 1.1 2004/11/16 03:56:36 jim Exp $
+// $Id: MiscGetOfflineSizesReq.java,v 1.1 2005/03/14 16:08:21 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -9,15 +9,15 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   F I L E   G E T   S I Z E S   R E Q                                                    */
+/*   M I S C   G E T   O F F L I N E   S I Z E S   R E Q                                    */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to Calculate the total size (in bytes) of the files associated with the given 
- * checked-in versions.
+ * A request to calculate the total size (in bytes) of the files associated with the given 
+ * checked-in versions for offlining purposes. <P> 
  */
 public
-class FileGetSizesReq
+class MiscGetOfflineSizesReq
   implements Serializable
 {
   /*----------------------------------------------------------------------------------------*/
@@ -27,25 +27,20 @@ class FileGetSizesReq
   /** 
    * Constructs a new request.
    * 
-   * @param fseqs
-   *   The files sequences indexed by fully resolved node names and revision numbers.
-   * 
-   * @param considerLinks
-   *   Whether symbolic links should be considered when computing file sizes.
+   * @param versions
+   *   The fully resolved node names and revision numbers of the checked-in versions.
    */
   public
-  FileGetSizesReq
+  MiscGetOfflineSizesReq
   (
-   TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs,
-   boolean considerLinks
+   TreeMap<String,TreeSet<VersionID>> versions
   )
   { 
-    if(fseqs == null) 
-      throw new IllegalArgumentException("The file sequences cannot be (null)!");
-    pFileSeqs = fseqs;
-
-    pConsiderLinks = considerLinks;
+    if(versions == null) 
+      throw new IllegalArgumentException("The node versions cannot be (null)!");
+    pVersions = versions;
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -53,30 +48,21 @@ class FileGetSizesReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the files sequences indexed by fully resolved node names and revision numbers.
+   * Gets the fully resolved node names and revision numbers of the checked-in versions.
    */
-  public TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>
-  getFileSequences()
+  public TreeMap<String,TreeSet<VersionID>>
+  getVersions()
   {
-    return pFileSeqs;
+    return pVersions;
   }
-    
-  /**
-   * Whether symbolic links should be considered when computing file sizes.
-   */
-  public boolean
-  considerLinks()
-  {
-    return pConsiderLinks;
-  }
-
   
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
-  private static final long serialVersionUID = -8608461216665159347L;
+  private static final long serialVersionUID = -1453259913153817961L;
 
   
 
@@ -85,13 +71,9 @@ class FileGetSizesReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The files sequences indexed by fully resolved node names and revision numbers.
+   * The fully resolved node names and revision numbers of the checked-in versions.
    */ 
-  private TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>  pFileSeqs;
+  private TreeMap<String,TreeSet<VersionID>>  pVersions;
 
-  /** 
-   * Whether symbolic links should be considered when computing file sizes.
-   */
-  private boolean  pConsiderLinks; 
 }
   

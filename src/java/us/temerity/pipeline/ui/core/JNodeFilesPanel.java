@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.10 2005/03/11 06:33:44 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.11 2005/03/14 16:08:21 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -284,7 +284,7 @@ class JNodeFilesPanel
       addMouseListener(this); 
     }
 
-    updateNodeStatus(null, null, null, null);
+    updateNodeStatus(null, null, null, null, null);
   }
 
 
@@ -371,6 +371,9 @@ class JNodeFilesPanel
    * 
    * @param novelty
    *   The per-file novelty flags.
+   * 
+   * @param offline
+   *   The revision numbers of the offline checked-in versions.
    */
   public synchronized void 
   updateNodeStatus
@@ -380,13 +383,14 @@ class JNodeFilesPanel
    NodeStatus status, 
    TreeMap<String,TreeSet<VersionID>> editorPlugins, 
    PluginMenuLayout editorLayout, 
-   TreeMap<VersionID,TreeMap<FileSeq,boolean[]>> novelty
+   TreeMap<VersionID,TreeMap<FileSeq,boolean[]>> novelty, 
+   TreeSet<VersionID> offline
   ) 
   {
     if(!pAuthor.equals(author) || !pView.equals(view)) 
       super.setAuthorView(author, view);
 
-    updateNodeStatus(status, editorPlugins, editorLayout, novelty);
+    updateNodeStatus(status, editorPlugins, editorLayout, novelty, offline);
   }
 
   /**
@@ -403,6 +407,9 @@ class JNodeFilesPanel
    * 
    * @param novelty
    *   The per-file novelty flags.
+   * 
+   * @param offline
+   *   The revision numbers of the offline checked-in versions.
    */
   public synchronized void 
   updateNodeStatus
@@ -410,11 +417,13 @@ class JNodeFilesPanel
    NodeStatus status, 
    TreeMap<String,TreeSet<VersionID>> editorPlugins, 
    PluginMenuLayout editorLayout, 
-   TreeMap<VersionID,TreeMap<FileSeq,boolean[]>> novelty
+   TreeMap<VersionID,TreeMap<FileSeq,boolean[]>> novelty,
+   TreeSet<VersionID> offline
   ) 
   {
     pStatus  = status;
     pNovelty = novelty; 
+    pOffline = offline;
 
     NodeDetails details = null;
     if(pStatus != null) 
@@ -813,11 +822,17 @@ class JNodeFilesPanel
 		  JButton btn = new JButton("v" + vid);
 		  btn.setName("TableHeaderButton");
 		    
+		  boolean isOffline = pOffline.contains(vid);
+
 		  if((bvid != null) && bvid.equals(vid)) 
 		    btn.setForeground(Color.cyan);
+		  else if(isOffline) 
+		    btn.setForeground(new Color(0.75f, 0.75f, 0.75f));
 		    
-		  btn.addActionListener(this);
-		  btn.setActionCommand("version-pressed:" + fseq + ":" + vid);
+		  if(!isOffline) {
+		    btn.addActionListener(this);
+		    btn.setActionCommand("version-pressed:" + fseq + ":" + vid);
+		  }
 		    
 		  btn.setFocusable(false);
 		    
@@ -2415,7 +2430,8 @@ class JNodeFilesPanel
 		  versionBoxes.put(vid.toString(), vboxes);
 		}
 
-		boolean isEnabled = enabled.contains(sfseq);
+		boolean isOffline = pOffline.contains(vid);
+		boolean isEnabled = enabled.contains(sfseq) && !isOffline;
 
 		if(novel[wk]) {
 		  if((wk > 0) && (novel[wk-1] != null) && novel[wk-1])
@@ -2454,7 +2470,8 @@ class JNodeFilesPanel
 		      check.setEnabled(false);
 		    }
 		    
-		    check.addMouseListener(parent);
+		    if(!isOffline) 
+		      check.addMouseListener(parent);
 
 		    hbox.add(check);
 		  }
@@ -2474,7 +2491,10 @@ class JNodeFilesPanel
 		    JFileBar bar = new JFileBar(sfseq, vid, isEnabled, isExtended);
 		    if(isEnabled) 
 		      nlist.add(bar);
-		    bar.addMouseListener(parent);
+		    
+		    if(!isOffline)
+		      bar.addMouseListener(parent);
+
 		    hbox.add(bar);	
 		  }
 		}
@@ -3197,6 +3217,11 @@ class JNodeFilesPanel
    * The per-file novelty flags.
    */ 
   private TreeMap<VersionID,TreeMap<FileSeq,boolean[]>>  pNovelty;
+
+  /**
+   * The revision numbers of the offline checked-in versions.
+   */ 
+  private TreeSet<VersionID>  pOffline; 
 
 
   /*----------------------------------------------------------------------------------------*/

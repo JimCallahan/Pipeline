@@ -1,4 +1,4 @@
-// $Id: OfflineInfo.java,v 1.1 2005/03/10 08:07:27 jim Exp $
+// $Id: OfflineInfo.java,v 1.2 2005/03/14 16:08:21 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -23,9 +23,23 @@ class OfflineInfo
   /**
    * Construct a new instance.
    * 
+   * @param name
+   *   The fully resolved node name.
+   * 
+   * @param vid
+   *   The checked-in revision number.
+   * 
    * @param checkedOut
    *   The timestamp of the latest check-out of the version or 
-   *  <CODE>null</CODE> if no checked-out versions exist.
+   *  <CODE>null</CODE> if no working versions exist.
+   * 
+   * @param author
+   *   The name of the owner of the working latest checked-out working version 
+   *   or <CODE>null</CODE> if no working versions exist.
+   * 
+   * @param view
+   *   The name of the working area view where the latest check-out of the version 
+   *   occurred or <CODE>null</CODE> if no checked-out versions exist.
    * 
    * @param numWorking
    *   The number of existing working versions based on the checked-in version.
@@ -46,6 +60,8 @@ class OfflineInfo
    String name, 
    VersionID vid, 
    Date checkedOut, 
+   String author, 
+   String view, 
    int numWorking, 
    Date archived,  
    int numArchives, 
@@ -55,6 +71,8 @@ class OfflineInfo
     super(name, vid, archived, numArchives);
 
     pCheckedOutStamp = checkedOut;
+    pAuthor          = author; 
+    pView            = view; 
     pNumWorking      = numWorking;
     pCanOffline      = canOffline; 
   }
@@ -67,7 +85,7 @@ class OfflineInfo
  
   /**
    * Gets the timestamp of the latest check-out of the version or 
-   * <CODE>null</CODE> if no checked-out versions exist.
+   * <CODE>null</CODE> if no working versions exist.
    */ 
   public Date  
   getCheckedOutStamp() 
@@ -75,6 +93,26 @@ class OfflineInfo
     return pCheckedOutStamp;
   }
  
+  /** 
+   * Get the name of the owner of the working latest checked-out working version 
+   * or <CODE>null</CODE> if no checked-out versions exist.
+   */ 
+  public String
+  getAuthor() 
+  {
+    return pAuthor;
+  }
+
+  /** 
+   * Get the name of the working area view where the latest check-out of the version 
+   * occurred or <CODE>null</CODE> if no checked-out versions exist.
+   */
+  public String
+  getView()
+  {
+    return pView;
+  }
+
   /**
    * Get the number of existing working versions based on the checked-in version.
    */ 
@@ -112,6 +150,18 @@ class OfflineInfo
    * <CODE>null</CODE> if never archived.
    */
   private Date  pCheckedOutStamp;
+
+  /** 
+   * The name of the owner of the working latest checked-out working version 
+   * or <CODE>null</CODE> if no checked-out versions exist.
+   */
+  private String  pAuthor;
+
+  /** 
+   * The name of the working area view where the latest check-out of the version 
+   * occurred or <CODE>null</CODE> if no checked-out versions exist.
+   */
+  private String  pView;
 
   /**
    * The number of existing working versions based on the checked-in version.

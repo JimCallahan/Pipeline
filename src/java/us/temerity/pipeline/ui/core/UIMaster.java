@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.18 2005/03/11 06:33:44 jim Exp $
+// $Id: UIMaster.java,v 1.19 2005/03/14 16:08:21 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -700,7 +700,7 @@ class UIMaster
   public void 
   showOfflineDialog()
   {
-    //pOfflineDialog.setVisible(true);
+    pOfflineDialog.setVisible(true);
   }
 
   /**
@@ -1456,7 +1456,7 @@ class UIMaster
 	pBackupDialog.updateTargetFile(PackageInfo.sTempDir);
 
 	pArchiveDialog = new JArchiveDialog();
-	//pOfflineDialog = new JOfflineDialog();
+	pOfflineDialog = new JOfflineDialog();
 	pRestoreDialog = new JRestoreDialog();
 
 	pResourceUsageHistoryDialog = new JResourceUsageHistoryDialog();
@@ -2802,7 +2802,7 @@ class UIMaster
   /**
    * The offline dialog.
    */
-  //private JOfflineDialog  pOfflineDialog; 
+  private JOfflineDialog  pOfflineDialog; 
 
   /**
    * The restore dialog.

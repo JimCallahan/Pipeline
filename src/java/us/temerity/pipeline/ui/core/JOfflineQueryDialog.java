@@ -1,4 +1,4 @@
-// $Id: JOfflineQueryDialog.java,v 1.1 2005/03/10 08:07:27 jim Exp $
+// $Id: JOfflineQueryDialog.java,v 1.2 2005/03/14 16:08:21 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -62,16 +62,8 @@ class JOfflineQueryDialog
 	pExcludeLatestField = 
 	  UIFactory.createTitledIntegerField
 	  (tpanel, "Exclude Latest:", sTSize, 
-	   vpanel, 2, sVSize, 
-	   "Exclude this number of newer checked-in versions from the search.");
-	
-	UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
-
-	pMaxWorkingField = 
-	  UIFactory.createTitledIntegerField
-	  (tpanel, "Max Working Versions:", sTSize, 
 	   vpanel, 0, sVSize, 
-	   "Exclude checked-in versions with more than this number of working versions.");
+	   "Exclude this number of newer checked-in versions from the search.");
 	
 	UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 
@@ -81,6 +73,15 @@ class JOfflineQueryDialog
 	   vpanel, 2, sVSize, 
 	   "Exclude checked-in versions which have not been archived at least this number " + 
 	   "of times.");
+
+	UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+
+	pUnusedOnlyField = 
+	  UIFactory.createTitledBooleanField
+	  (tpanel, "Unused Only:", sTSize, 
+	   vpanel, sVSize, 
+	   "Whether to only include checked-in versions which can be offlined.");
+	pUnusedOnlyField.setValue(true);
       }
 
       super.initUI("Checked-In Version Search Criteria:", true, body, 
@@ -102,10 +103,7 @@ class JOfflineQueryDialog
   public String
   getPattern() 
   {
-    String pattern = pPatternField.getText();
-    if(pattern.length() == 0) 
-      return null;
-    return pattern;
+    return pPatternField.getText();
   }
 
   /**
@@ -118,17 +116,6 @@ class JOfflineQueryDialog
     return pExcludeLatestField.getValue();
   }
 
-  /**
-   * Get the maximum allowable number of existing working versions based on the checked-in 
-   * version in order for checked-in version to be inclued in the returned list or 
-   * <CODE>null</CODE> for any number of working versions.
-   */ 
-  public Integer
-  getMaxWorking() 
-  {
-    return pMaxWorkingField.getValue();
-  }
-
   /** 
    * Get the minimum number of archive volumes containing the checked-in version in order for 
    * it to be inclued in the returned list or <CODE>null</CODE> for any number of archives.
@@ -139,6 +126,65 @@ class JOfflineQueryDialog
     return pMinArchivesField.getValue();
   }
   
+  /** 
+   * Whether to only include checked-in versions which can be offlined.
+   */ 
+  public boolean
+  getUnusedOnly()
+  {
+    return pUnusedOnlyField.getValue();
+  }
+  
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C T I O N S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Apply changes and close. 
+   */ 
+  public void 
+  doConfirm()
+  {
+    validateFields();
+    super.doConfirm();
+  }
+
+  /**
+   * Cancel changes and close.
+   */ 
+  public void 
+  doCancel()
+  {
+    validateFields();
+    super.doCancel();
+  }
+
+  /**
+   * Force fields to have legal values.
+   */ 
+  private void
+  validateFields() 
+  {
+    {
+      String pattern = pPatternField.getText();
+      if((pattern == null) || (pattern.length() == 0))
+	pPatternField.setText(".*");
+    }
+    
+    {
+      Integer exclude = pExcludeLatestField.getValue();
+      if((exclude == null) || (exclude < 0))
+	pExcludeLatestField.setValue(0);
+    }
+
+    {
+      Integer archives = pMinArchivesField.getValue();
+      if((archives == null) || (archives < 0)) 
+	pMinArchivesField.setValue(0);
+    }
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -161,7 +207,7 @@ class JOfflineQueryDialog
    */ 
   private JTextField     pPatternField;
   private JIntegerField  pExcludeLatestField;
-  private JIntegerField  pMaxWorkingField;
   private JIntegerField  pMinArchivesField;
+  private JBooleanField  pUnusedOnlyField; 
 
 }

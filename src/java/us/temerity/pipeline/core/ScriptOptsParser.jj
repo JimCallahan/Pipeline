@@ -192,7 +192,6 @@ ScriptOptsParser
   private boolean    pAutoStart; 
 
   private Integer    pExcludeLatest; 
-  private Integer    pMaxWorking; 
   private Integer    pMinArchives; 
   
   private TreeMap    pCheckedInVersions; 
@@ -349,7 +348,6 @@ TOKEN :
 | <ARCHIVER2:          "--archiver">        	: ARCHIVER_NAME_SEP	      
 | <AUTO_START:         "--auto-start">	        
 | <EXCLUDE_LATEST:     "--exclude-latest">  	: INTEGER_SEP
-| <MAX_WORKING:        "--max-working">     	: INTEGER_SEP
 | <MIN_ARCHIVES:       "--min-archives">    	: INTEGER_SEP
 | <CHECKED_IN_VSN:     "--vsn">                 : VSN_NAME_SEP
 | <DISABLE:            "--disable">         				      
@@ -2252,7 +2250,6 @@ AdminOffline()
 {
   pArchivePattern    = null;
   pExcludeLatest     = 10; 
-  pMaxWorking        = 0;
   pMinArchives       = 2; 
 }
 {
@@ -2262,16 +2259,11 @@ AdminOffline()
       throw new PipelineException
         ("The --exclude-latest cannot be negative!");
 
-    if(pMaxWorking < 0) 
-      throw new PipelineException
-        ("The --max-working cannot be negative!");
-
     if(pMinArchives < 0) 
       throw new PipelineException
         ("The --min-archives cannot be negative!");
 
-    pApp.offline(pArchivePattern, pExcludeLatest, pMaxWorking, pMinArchives, 
-		 pMasterMgrClient);
+    pApp.offline(pArchivePattern, pExcludeLatest, pMinArchives, pMasterMgrClient);
   }
 }
 
@@ -2280,7 +2272,7 @@ AdminOfflineOpts()
   throws PipelineException : 
 {}
 {
-  (Pattern() | ExcludeLatest() | MaxWorking() | MinArchives()) 
+  (Pattern() | ExcludeLatest() | MinArchives()) 
   {}
 }
 
@@ -2294,19 +2286,6 @@ ExcludeLatest()
   <EXCLUDE_LATEST> EQ() i=IntegerLiteral() AE()
   {
     pExcludeLatest = i;
-  }
-}
-
-void 
-MaxWorking()
-  throws PipelineException : 
-{
-  int i; 
-}
-{
-  <MAX_WORKING> EQ() i=IntegerLiteral() AE()
-  {
-    pMaxWorking = i;
   }
 }
 

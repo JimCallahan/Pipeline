@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.20 2005/03/11 06:33:44 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.21 2005/03/14 16:08:21 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3396,23 +3396,28 @@ class JNodeViewerPanel
   doCheckOut() 
   {
     UIMaster master = UIMaster.getInstance();
+    MasterMgrClient client = master.getMasterMgrClient();
 
-    TreeMap<String,ArrayList<VersionID>> versions = 
-      new TreeMap<String,ArrayList<VersionID>>();
+    TreeMap<String,TreeSet<VersionID>> versions = 
+      new TreeMap<String,TreeSet<VersionID>>();
+    
+    TreeMap<String,TreeSet<VersionID>> offline = 
+      new TreeMap<String,TreeSet<VersionID>>();
 
     for(String name : getSelectedRootNames()) {
       if(!versions.containsKey(name)) {
-	ArrayList<VersionID> vids = new ArrayList<VersionID>();
 	try {
-	  vids.addAll(master.getMasterMgrClient().getCheckedInVersionIDs(name));
-	  versions.put(name, vids);
+	  versions.put(name, client.getCheckedInVersionIDs(name));
+	  offline.put(name, client.getOfflineVersionIDs(name));
 	}
 	catch (PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
 	}
       }
     }
     
-    pCheckOutDialog.updateVersions(versions);
+    pCheckOutDialog.updateVersions(versions, offline);
     pCheckOutDialog.setVisible(true);	
     if(pCheckOutDialog.wasConfirmed()) {
       CheckOutTask task = 
@@ -3438,8 +3443,22 @@ class JNodeViewerPanel
       if(details != null) {
 	NodeMod work = details.getWorkingVersion();
 	if((work != null) && !work.isFrozen()) {
-	  pEvolveDialog.updateNameVersions("Evolve Version:  " + status, work.getWorkingID(),
-					   details.getVersionIDs());
+	  UIMaster master = UIMaster.getInstance();
+	  MasterMgrClient client = master.getMasterMgrClient();
+
+	  TreeSet<VersionID> versions = null;
+	  TreeSet<VersionID> offline  = null;
+	  try {
+	    versions = client.getCheckedInVersionIDs(status.getName());
+	    offline  = client.getOfflineVersionIDs(status.getName());
+	  }
+	  catch (PipelineException ex) {
+	    master.showErrorDialog(ex);
+	    return;
+	  }
+	  
+	  pEvolveDialog.updateNameVersions
+	    ("Evolve Version:  " + status, work.getWorkingID(), versions, offline);
 	  pEvolveDialog.setVisible(true);
 	  
 	  if(pEvolveDialog.wasConfirmed()) {
@@ -4931,6 +4950,8 @@ class JNodeViewerPanel
     {
       UIMaster master = UIMaster.getInstance();
 
+      TreeSet<VersionID> offline = null;
+
       TreeMap<VersionID,TreeMap<FileSeq,boolean[]>> novelty = null;
       TreeMap<VersionID,TreeMap<String,LinkVersion>> links = null;
       TreeMap<VersionID,LogMessage> history = null;
@@ -4950,6 +4971,7 @@ class JNodeViewerPanel
 	      try {
 		MasterMgrClient client = master.getMasterMgrClient();
 		novelty = client.getCheckedInFileNovelty(pStatus.getName());
+		offline = client.getOfflineVersionIDs(pStatus.getName());
 	      }
 	      catch(PipelineException ex) {
 		master.showErrorDialog(ex);
@@ -4989,6 +5011,8 @@ class JNodeViewerPanel
 	      try {
 		MasterMgrClient client = master.getMasterMgrClient();
 		history = client.getHistory(pStatus.getName());
+		if(offline == null) 
+		  offline = client.getOfflineVersionIDs(pStatus.getName());
 	      }
 	      catch(PipelineException ex) {
 		master.showErrorDialog(ex);
@@ -5032,7 +5056,7 @@ class JNodeViewerPanel
       UpdateSubPanelComponentsTask task = 
 	new UpdateSubPanelComponentsTask(pGroupID, pAuthor, pView, pStatus, 
 					 pEditorPlugins, pEditorMenuLayout, 
-					 novelty, links, history, 
+					 offline, novelty, links, history, 
 					 pUpdateJobs, jobGroups, jobStatus, jobInfo, 
 					 hosts, keys);
       SwingUtilities.invokeLater(task);
@@ -5061,6 +5085,7 @@ class JNodeViewerPanel
      NodeStatus status, 
      TreeMap<String,TreeSet<VersionID>> editorPlugins, 
      PluginMenuLayout editorLayout,
+     TreeSet<VersionID> offline, 
      TreeMap<VersionID,TreeMap<FileSeq,boolean[]>> novelty,
      TreeMap<VersionID,TreeMap<String,LinkVersion>> links,
      TreeMap<VersionID,LogMessage> history,
@@ -5084,6 +5109,8 @@ class JNodeViewerPanel
 	pEditorPlugins.put(name, new TreeSet<VersionID>(editorPlugins.get(name)));
 
       pEditorMenuLayout = new PluginMenuLayout(editorLayout);
+
+      pOffline = offline;
 
       pNovelty = novelty;
       pLinks   = links;
@@ -5118,7 +5145,7 @@ class JNodeViewerPanel
 	if(panel != null) {
 	  panel.updateNodeStatus(pAuthor, pView, pStatus, 
 				 pEditorPlugins, pEditorMenuLayout, 
-				 pNovelty);
+				 pNovelty, pOffline);
 	  panel.updateManagerTitlePanel();
 	}
       }
@@ -5140,7 +5167,7 @@ class JNodeViewerPanel
 	if(panel != null) {
 	  panel.updateNodeStatus(pAuthor, pView, pStatus, 
 				 pEditorPlugins, pEditorMenuLayout, 
-				 pHistory);
+				 pHistory, pOffline);
 	  panel.updateManagerTitlePanel();
 	}
       }
@@ -5167,6 +5194,8 @@ class JNodeViewerPanel
     private TreeMap<VersionID,TreeMap<FileSeq,boolean[]>>  pNovelty;
     private TreeMap<VersionID,TreeMap<String,LinkVersion>> pLinks; 
     private TreeMap<VersionID,LogMessage>                  pHistory;
+
+    private TreeSet<VersionID>  pOffline; 
 
     private boolean                      pUpdateJobs; 
     private TreeMap<Long,QueueJobGroup>  pJobGroups;

@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.40 2005/03/11 06:34:39 jim Exp $
+// $Id: MasterMgrServer.java,v 1.41 2005/03/14 16:08:21 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -762,6 +762,14 @@ class MasterMgrServer
 		objOut.flush(); 
 	      }
 	      break;  
+
+	    case GetArchiveSizes:
+	      {
+		MiscGetArchiveSizesReq req = (MiscGetArchiveSizesReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getArchiveSizes(req));
+		objOut.flush(); 
+	      }
+	      break;
 	    
 	    case Archive: 
 	      {
@@ -771,6 +779,7 @@ class MasterMgrServer
 	      }
 	      break;  
 
+
 	    case OfflineQuery: 
 	      {
 		MiscOfflineQueryReq req = (MiscOfflineQueryReq) objIn.readObject();
@@ -779,21 +788,31 @@ class MasterMgrServer
 	      }
 	      break;  
 
+	    case GetOfflineVersionIDs:
+	      {
+		NodeGetOfflineVersionIDsReq req = 
+		  (NodeGetOfflineVersionIDsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getOfflineVersionIDs(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetOfflineSizes:
+	      {
+		MiscGetOfflineSizesReq req = (MiscGetOfflineSizesReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getOfflineSizes(req));
+		objOut.flush(); 
+	      }
+	      break;
+
 	    case Offline: 
 	      {
 		MiscOfflineReq req = (MiscOfflineReq) objIn.readObject();
 		objOut.writeObject(pMasterMgr.offline(req));
 		objOut.flush(); 
 	      }
-	      break;    
-
-	    case GetSizes:
-	      {
-		MiscGetSizesReq req = (MiscGetSizesReq) objIn.readObject();
-		objOut.writeObject(pMasterMgr.getSizes(req));
-		objOut.flush(); 
-	      }
 	      break;
+
 
 	    case GetRestoreRequests:
 	      {

@@ -1,4 +1,4 @@
-// $Id: FileOfflineReq.java,v 1.1 2004/11/16 03:56:36 jim Exp $
+// $Id: FileOfflineReq.java,v 1.2 2005/03/14 16:08:21 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -27,16 +27,21 @@ class FileOfflineReq
    * Constructs a new request.
    * 
    * @param name
-   *   The fully resolved node name. 
+   *   The fully resolved node name of the version being offlined.
    * 
    * @param vid
-   *   The revision number.
+   *   The revision number of the version being offlined.
+   * 
+   * @param symlinks
+   *   The revision numbers of the symlinks from later versions which target files being 
+   *   offlined, indexed by the names of the to be offlined files.
    */
   public
   FileOfflineReq
   (
    String name, 
-   VersionID vid   
+   VersionID vid,
+   TreeMap<File,TreeSet<VersionID>> symlinks
   )
   { 
     if(name == null) 
@@ -46,6 +51,10 @@ class FileOfflineReq
     if(vid == null)
       throw new IllegalArgumentException("The revision number cannot be (null)!");
     pVersionID = vid;
+
+    if(symlinks == null)
+      throw new IllegalArgumentException("The sylminks cannot be (null)!");
+    pSymlinks = symlinks;
   }
 
 
@@ -71,6 +80,16 @@ class FileOfflineReq
   {
     return pVersionID; 
   }
+
+  /**
+   * Gets the revision numbers of the symlinks from later versions which target files being 
+   * offlined, indexed by the names of the to be offlined files.
+   */
+  public TreeMap<File,TreeSet<VersionID>>
+  getSymlinks() 
+  {
+    return pSymlinks; 
+  }
     
 
 
@@ -95,6 +114,12 @@ class FileOfflineReq
    * Gets the revision number.
    */
   private VersionID  pVersionID; 
+
+  /**
+   * The revision numbers of the symlinks from later versions which target files being 
+   * offlined, indexed by the names of the to be offlined files.
+   */
+  private TreeMap<File,TreeSet<VersionID>>  pSymlinks; 
 
 }
   

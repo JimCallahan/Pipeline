@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.26 2005/03/11 06:34:39 jim Exp $
+// $Id: FileMgrClient.java,v 1.27 2005/03/14 16:08:21 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -455,6 +455,46 @@ class FileMgrClient
     handleSimpleResponse(obj);
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Calculate the total size (in bytes) of the files associated with the given 
+   * checked-in versions for archival purposes. <P> 
+   * 
+   * File sizes are computed from the target of any symbolic links and therefore reflects the 
+   * amount of bytes that would need to be copied if the files where archived.  This may be
+   * considerably more than the actual amount of disk space used when several versions of 
+   * a node have identical files. <P> 
+   * 
+   * @param fseqs
+   *   The files sequences indexed by fully resolved node names and revision numbers.
+   * 
+   * @return
+   *   The total version file sizes indexed by fully resolved node name and revision number.
+   */ 
+  public synchronized TreeMap<String,TreeMap<VersionID,Long>>
+  getArchiveSizes
+  (
+   TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    FileGetArchiveSizesReq req = new FileGetArchiveSizesReq(fseqs);
+
+    Object obj = performTransaction(FileRequest.GetArchiveSizes, req);
+    if(obj instanceof FileGetSizesRsp) {
+      FileGetSizesRsp rsp = (FileGetSizesRsp) obj;
+      return rsp.getSizes();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
+
   /**
    * Create an archive volume by running the given archiver plugin on a set of checked-in 
    * file sequences. 
@@ -496,26 +536,68 @@ class FileMgrClient
     }
   }
 
+  /*----------------------------------------------------------------------------------------*/
+
   /**
-   * Remove the files associated with the given checked-in version of a node.
-   *
-   * @param name
-   *   The fully resolved node name. 
+   * Calculate the total size (in bytes) of specific files associated with the given 
+   * checked-in versions for offlining purposes. <P> 
    * 
-   * @param vid
-   *   The revision number.
-   */  
-  public synchronized void 
-  offline
+   * Only files which contribute to the offline size should be passed to this method
+   * as members of the <CODE>files</CODE> parameter.
+   * 
+   * @param files
+   *   The specific files indexed by fully resolved node names and revision numbers.
+   * 
+   * @return
+   *   The total version file sizes indexed by fully resolved node name and revision number.
+   */ 
+  public synchronized TreeMap<String,TreeMap<VersionID,Long>>
+  getOfflineSizes
   (
-   String name, 
-   VersionID vid
+   TreeMap<String,TreeMap<VersionID,TreeSet<File>>> files
   ) 
     throws PipelineException 
   {
     verifyConnection();
 
-    FileOfflineReq req = new FileOfflineReq(name, vid);
+    FileGetOfflineSizesReq req = new FileGetOfflineSizesReq(files);
+
+    Object obj = performTransaction(FileRequest.GetOfflineSizes, req);
+    if(obj instanceof FileGetSizesRsp) {
+      FileGetSizesRsp rsp = (FileGetSizesRsp) obj;
+      return rsp.getSizes();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
+
+  /**
+   * Remove the files associated with the given checked-in version of a node. <P> 
+   * 
+   * @param name
+   *   The fully resolved node name. 
+   * 
+   * @param vid
+   *   The revision number.
+   * 
+   * @param symlinks
+   *   The revision numbers of the symlinks from later versions which target files being 
+   *   offlined, indexed by the names of the to be offlined files.
+   */  
+  public synchronized void 
+  offline
+  (
+   String name, 
+   VersionID vid, 
+   TreeMap<File,TreeSet<VersionID>> symlinks
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    FileOfflineReq req = new FileOfflineReq(name, vid, symlinks);
 
     Object obj = performTransaction(FileRequest.Offline, req);
     handleSimpleResponse(obj);
@@ -540,80 +622,7 @@ class FileMgrClient
       return null;
     }
   }
-
-  /**
-   * Calculate the total size (in bytes) of the files associated with the given 
-   * checked-in versions for archival purposes. <P> 
-   * 
-   * File sizes are computed from the target of any symbolic links and therefore reflects the 
-   * amount of bytes that would need to be copied if the files where archived.  This may be
-   * considerably more than the actual amount of disk space used when several versions of 
-   * a node have identical files. <P> 
-   * 
-   * @param fseqs
-   *   The files sequences indexed by fully resolved node names and revision numbers.
-   * 
-   * @return
-   *   The total version file sizes indexed by fully resolved node name and revision number.
-   */ 
-  public synchronized TreeMap<String,TreeMap<VersionID,Long>>
-  getArchivedSizes
-  (
-   TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs
-  ) 
-    throws PipelineException 
-  {
-    verifyConnection();
-
-    FileGetSizesReq req = new FileGetSizesReq(fseqs, false);
-
-    Object obj = performTransaction(FileRequest.GetSizes, req);
-    if(obj instanceof FileGetSizesRsp) {
-      FileGetSizesRsp rsp = (FileGetSizesRsp) obj;
-      return rsp.getSizes();
-    }
-    else {
-      handleFailure(obj);
-      return null;
-    }
-  }
   
-  /**
-   * Calculate the total size (in bytes) of the files associated with the given 
-   * checked-in versions for offlining purposes. <P> 
-   * 
-   * File sizes reflect the actual amount of bytes that will be freed from disk if the 
-   * given checked-in versions are offlined.  A file will only be added to this freed
-   * size if it a regular file and there are no symbolic links which target it which are
-   * not included in the given file sequences. <P> 
-   * 
-   * @param fseqs
-   *   The files sequences indexed by fully resolved node names and revision numbers.
-   * 
-   * @return
-   *   The total version file sizes indexed by fully resolved node name and revision number.
-   */ 
-  public synchronized TreeMap<String,TreeMap<VersionID,Long>>
-  getOfflinedSizes
-  (
-   TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs
-  ) 
-    throws PipelineException 
-  {
-    verifyConnection();
-
-    FileGetSizesReq req = new FileGetSizesReq(fseqs, true);
-
-    Object obj = performTransaction(FileRequest.GetSizes, req);
-    if(obj instanceof FileGetSizesRsp) {
-      FileGetSizesRsp rsp = (FileGetSizesRsp) obj;
-      return rsp.getSizes();
-    }
-    else {
-      handleFailure(obj);
-      return null;
-    }
-  }
   
 
   /*----------------------------------------------------------------------------------------*/

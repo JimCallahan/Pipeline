@@ -1,4 +1,4 @@
-// $Id: OfflineCandidateTableModel.java,v 1.2 2005/03/11 06:33:44 jim Exp $
+// $Id: OfflineCandidateTableModel.java,v 1.3 2005/03/14 16:08:21 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -36,20 +36,20 @@ class OfflineCandidateTableModel
 
     /* initialize the columns */ 
     { 
-      pNumColumns = 7;
+      pNumColumns = 8;
 
       {
 	Class classes[] = { 
 	  String.class, String.class, String.class, Integer.class, 
-	  String.class, Integer.class, String.class
+	  String.class, String.class, Integer.class, String.class
 	}; 
 	pColumnClasses = classes;
       }
 
       {
 	String names[] = {
-	  "Node Name", "Version", "Checked-Out On", "Working", 
-	  "Archived On", "Archives", "Unused"
+	  "Node Name", "Version", "Archived On", "Archives", 
+	  "Checked-Out", "Owner|View", "Working", "Unused", 
 	};
 	pColumnNames = names;
       }
@@ -58,24 +58,26 @@ class OfflineCandidateTableModel
 	String desc[] = {
 	  "The fully resolved name of the node.", 
 	  "The revision number of the checked-in version.", 
-	  "When the checked-in version was last checked-out.", 
-	  "The number of working versions based on the checked-in version existing in " +
-	  "all working areas.", 
 	  "When the checked-in version was last archived.", 
 	  "The number of archive volumes which contain the checked-in version.", 
+	  "When the checked-in version was last checked-out.", 
+	  "The working area where the version was last checked-out.", 
+	  "The number of working versions based on the checked-in version existing in " +
+	  "all working areas.", 
 	  "Whether the checked-in version can be offlined."
 	};
 	pColumnDescriptions = desc;
       }
 
       {
-	int widths[] = { 360, 80, 180, 80, 180, 80, 80 };
+	int widths[] = { 360, 80, 180, 80, 180, 180, 80, 80 };
 	pColumnWidths = widths;
       }
 
       {
 	TableCellRenderer renderers[] = {
 	  new JSimpleTableCellRenderer(JLabel.LEFT), 
+	  new JSimpleTableCellRenderer(JLabel.CENTER), 
 	  new JSimpleTableCellRenderer(JLabel.CENTER), 
 	  new JSimpleTableCellRenderer(JLabel.CENTER), 
 	  new JSimpleTableCellRenderer(JLabel.CENTER), 
@@ -88,7 +90,7 @@ class OfflineCandidateTableModel
 
       {
 	TableCellEditor editors[] = { 
-	  null, null, null, null, null, null, null
+	  null, null, null, null, null, null, null, null
 	};
 	pEditors = editors;
       }
@@ -123,30 +125,37 @@ class OfflineCandidateTableModel
       case 1:
 	value = info.getVersionID();
 	break;
-	
+
       case 2:
-	if(info.getCheckedOutStamp() != null)
-	  value = info.getCheckedOutStamp();
-	else 
-	  value = new Date(0L);
-	break;
-
-      case 3:
-	value = new Integer(info.numWorking());
-	break;
-
-      case 4:
 	if(info.getArchivedStamp() != null)
 	  value = info.getArchivedStamp();
 	else 
 	  value = new Date(0L);
 	break;
 	
-      case 5:
+      case 3:
 	value = new Integer(info.numArchives());
 	break;
+	
+      case 4:
+	if(info.getCheckedOutStamp() != null)
+	  value = info.getCheckedOutStamp();
+	else 
+	  value = new Date(0L);
+	break;
 
+      case 5:
+	if((info.getAuthor() != null) && (info.getView() != null)) 
+	  value = (info.getAuthor() + "|" + info.getView());
+	else 
+	  value = "";
+	break;
+	
       case 6:
+	value = new Integer(info.numWorking());
+	break;
+
+      case 7:
 	value = (info.canOffline() ? "YES" : "no");
       }
       
@@ -182,7 +191,7 @@ class OfflineCandidateTableModel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the node names and revision numbers for the given rows. 
+   * Get the node names and revision numbers for the given offlinable rows.
    */ 
   public TreeMap<String,TreeSet<VersionID>>
   getVersions
@@ -197,20 +206,22 @@ class OfflineCandidateTableModel
       int idx = pRowToIndex[rows[wk]];
 
       OfflineInfo info = pInfos.get(idx);
-      String name = info.getName();
-      TreeSet<VersionID> versions = table.get(name);
-      if(versions == null) {
-	versions = new TreeSet<VersionID>();
-	table.put(name, versions);
+      if(info.canOffline()) {
+	String name = info.getName();
+	TreeSet<VersionID> versions = table.get(name);
+	if(versions == null) {
+	  versions = new TreeSet<VersionID>();
+	  table.put(name, versions);
+	}
+	versions.add(info.getVersionID());
       }
-      versions.add(info.getVersionID());
     }
 
     return table;
   }
   
   /**
-   * Get the node names and revision numbers for all rows. 
+   * Get the node names and revision numbers for all offlinable rows. 
    */ 
   public TreeMap<String,TreeSet<VersionID>>
   getVersions() 
@@ -218,13 +229,15 @@ class OfflineCandidateTableModel
     TreeMap<String,TreeSet<VersionID>> table = new TreeMap<String,TreeSet<VersionID>>();
 
     for(OfflineInfo info : pInfos) {
-      String name = info.getName();
-      TreeSet<VersionID> versions = table.get(name);
-      if(versions == null) {
-	versions = new TreeSet<VersionID>();
-	table.put(name, versions);
+      if(info.canOffline()) {
+	String name = info.getName();
+	TreeSet<VersionID> versions = table.get(name);
+	if(versions == null) {
+	  versions = new TreeSet<VersionID>();
+	  table.put(name, versions);
+	}
+	versions.add(info.getVersionID());
       }
-      versions.add(info.getVersionID());
     }
 
     return table;
@@ -298,18 +311,24 @@ class OfflineCandidateTableModel
       return info.getVersionID();
 
     case 2:
-      return Dates.format(info.getCheckedOutStamp());
-      
-    case 3:
-      return String.valueOf(info.numWorking());
-      
-    case 4:
       return Dates.format(info.getArchivedStamp());
 
-    case 5:
+    case 3:
       return String.valueOf(info.numArchives());
+
+    case 4:
+      return Dates.format(info.getCheckedOutStamp());
       
+    case 5:
+      if((info.getAuthor() != null) && (info.getView() != null)) 
+	return (info.getAuthor() + "|" + info.getView());
+      else 
+	return null; 
+
     case 6:
+      return String.valueOf(info.numWorking());
+      
+    case 7:
       return (info.canOffline() ? "YES" : "no");
 
     default:

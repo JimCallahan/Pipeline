@@ -1,4 +1,4 @@
-// $Id: JArchiveQueryDialog.java,v 1.1 2005/03/10 08:07:27 jim Exp $
+// $Id: JArchiveQueryDialog.java,v 1.2 2005/03/14 16:08:21 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -86,10 +86,7 @@ class JArchiveQueryDialog
   public String
   getPattern() 
   {
-    String pattern = pPatternField.getText();
-    if(pattern.length() == 0) 
-      return null;
-    return pattern;
+    return pPatternField.getText();
   }
 
   /** 
@@ -103,6 +100,51 @@ class JArchiveQueryDialog
     return pMaxArchivesField.getValue();
   }
   
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C T I O N S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Apply changes and close. 
+   */ 
+  public void 
+  doConfirm()
+  {
+    validateFields();
+    super.doConfirm();
+  }
+
+  /**
+   * Cancel changes and close.
+   */ 
+  public void 
+  doCancel()
+  {
+    validateFields();
+    super.doCancel();
+  }
+
+  /**
+   * Force fields to have legal values.
+   */ 
+  private void
+  validateFields() 
+  {
+    {
+      String pattern = pPatternField.getText();
+      if((pattern == null) || (pattern.length() == 0))
+	pPatternField.setText(".*");
+    }
+
+    {
+      Integer archives = pMaxArchivesField.getValue();
+      if((archives == null) || (archives < 1)) 
+	pMaxArchivesField.setValue(1);
+    }
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.29 2005/03/10 08:07:27 jim Exp $
+// $Id: MasterRequest.java,v 1.30 2005/03/14 16:08:21 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -351,24 +351,38 @@ enum MasterRequest
   ArchiveQuery, 
 
   /**
+   * An instance of {@link MiscGetArchiveSizesReq MiscGetArchiveSizesReq} is next.
+   */
+  GetArchiveSizes, 
+
+  /**
    * An instance of {@link MiscArchiveReq MiscArchiveReq} is next.
    */
   Archive, 
   
+
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * An instance of {@link MiscOfflineQueryReq MiscOfflineQueryReq} is next.
    */
   OfflineQuery, 
 
   /**
+   * An instance of {@link NodeGetOfflineVersionIDsReq NodeGetOfflineVersionIDsReq} is next.
+   */
+  GetOfflineVersionIDs, 
+
+  /**
+   * An instance of {@link MiscGetOfflineSizesReq MiscGetOfflineSizesReq} is next.
+   */
+  GetOfflineSizes, 
+
+  /**
    * An instance of {@link MiscOfflineReq MiscOfflineReq} is next.
    */
   Offline, 
-
-  /**
-   * An instance of {@link MiscGetSizesReq MiscGetSizesReq} is next.
-   */
-  GetSizes, 
 
 
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: MiscOfflineQueryReq.java,v 1.1 2005/03/10 08:07:27 jim Exp $
+// $Id: MiscOfflineQueryReq.java,v 1.2 2005/03/14 16:08:21 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -36,28 +36,26 @@ class MiscOfflineQueryReq
    *   The number of latest checked-in versions of the node to exclude from the returned list
    *   or <CODE>null</CODE> to include all versions.
    * 
-   * @param maxWorking
-   *   The maximum allowable number of existing working versions based on the checked-in 
-   *   version in order for checked-in version to be inclued in the returned list or 
-   *   <CODE>null</CODE> for any number of working versions.
-   * 
    * @param minArchives
    *   The minimum number of archive volumes containing the checked-in version in order for 
    *   it to be inclued in the returned list or <CODE>null</CODE> for any number of archives.
+   * 
+   * @param unusedOnly
+   *   Whether to only include checked-in versions which can be offlined.
    */
   public
   MiscOfflineQueryReq
   (
    String pattern,
    Integer excludeLatest, 
-   Integer maxWorking, 
-   Integer minArchives
+   Integer minArchives, 
+   boolean unusedOnly
   )
   {
     pPattern       = pattern;
     pExcludeLatest = excludeLatest;
-    pMaxWorking    = maxWorking;
     pMinArchives   = minArchives;
+    pUnusedOnly    = unusedOnly;
   }
 
 
@@ -86,17 +84,6 @@ class MiscOfflineQueryReq
     return pExcludeLatest;
   }
 
-  /**
-   * Get the maximum allowable number of existing working versions based on the checked-in 
-   * version in order for checked-in version to be inclued in the returned list or 
-   * <CODE>null</CODE> for any number of working versions.
-   */ 
-  public Integer
-  getMaxWorking() 
-  {
-    return pMaxWorking;
-  }
-
   /** 
    * Get minimum number of archive volumes containing the checked-in version in order for 
    * it to be inclued in the returned list or <CODE>null</CODE> for any number of archives.
@@ -107,6 +94,14 @@ class MiscOfflineQueryReq
     return pMinArchives;
   }
 
+  /** 
+   * Whether to only include checked-in versions which can be offlined.
+   */ 
+  public boolean
+  getUnusedOnly()
+  {
+    return pUnusedOnly;
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -133,18 +128,16 @@ class MiscOfflineQueryReq
    */ 
   private Integer  pExcludeLatest;
 
-  /**
-   * The maximum allowable number of existing working versions based on the checked-in 
-   * version in order for checked-in version to be inclued in the returned list or 
-   * <CODE>null</CODE> for any number of working versions.
-   */ 
-  private Integer  pMaxWorking;
-
   /** 
    * The minimum number of archive volumes containing the checked-in version in order for 
    * it to be inclued in the returned list or <CODE>null</CODE> for any number of archives.
    */ 
   private Integer  pMinArchives;
+
+  /** 
+   * Whether to only include checked-in versions which can be offlined.
+   */ 
+  private boolean  pUnusedOnly; 
 
 }
   

@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.34 2005/03/11 06:34:39 jim Exp $
+// $Id: FileMgr.java,v 1.35 2005/03/14 16:08:21 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1854,6 +1854,62 @@ class FileMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Calculate the total size (in bytes) of the files associated with the given 
+   * checked-in versions for archival purposes. <P> 
+   * 
+   * File sizes are computed from the target of any symbolic links and therefore reflects the 
+   * amount of bytes that would need to be copied if the files where archived.  This may be
+   * considerably more than the actual amount of disk space used when several versions of 
+   * a node have identical files. <P> 
+   * 
+   * @param req
+   *   The file sizes request.
+   * 
+   * @return
+   *   <CODE>FileGetSizesRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the file sizes.
+   */ 
+  public Object
+  getArchiveSizes
+  (
+   FileGetArchiveSizesReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+    try {
+      TreeMap<String,TreeMap<VersionID,Long>> sizes =
+	new TreeMap<String,TreeMap<VersionID,Long>>();
+
+      TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs = req.getFileSequences();
+      for(String name : fseqs.keySet()) {
+	TreeMap<VersionID,TreeSet<FileSeq>> versions = fseqs.get(name);
+
+	TreeMap<VersionID,Long> vsizes = new TreeMap<VersionID,Long>();
+	sizes.put(name, vsizes);
+	
+	for(VersionID vid : versions.keySet()) {
+	  File dir = new File(PackageInfo.sRepoDir, name + "/" + vid);
+	  
+	  long total = 0L;
+	  for(FileSeq fseq : versions.get(vid)) {
+	    for(File file : fseq.getFiles()) { 
+	      File target = new File(dir, file.getPath());
+	      total += target.length();
+	    }
+	  }
+	  
+	  vsizes.put(vid, total);  
+	}
+      }
+
+      return new FileGetSizesRsp(timer, sizes);
+    }
+    catch(Exception ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+  }
+
+  /**
    * Create an archive volume by running the given archiver plugin on a set of checked-in 
    * file sequences. 
    * 
@@ -2007,6 +2063,60 @@ class FileMgr
     }
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Calculate the total size (in bytes) of specific files associated with the given 
+   * checked-in versions for offlining purposes. <P> 
+   * 
+   * Only files which contribute to the offline size should be passed to this method. <P> 
+   * 
+   * @param req
+   *   The file sizes request.
+   * 
+   * @return
+   *   <CODE>FileGetSizesRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the file sizes.
+   */ 
+  public Object
+  getOfflineSizes
+  (
+   FileGetOfflineSizesReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+    try {
+      TreeMap<String,TreeMap<VersionID,Long>> sizes =
+	new TreeMap<String,TreeMap<VersionID,Long>>();
+
+      TreeMap<String,TreeMap<VersionID,TreeSet<File>>> files = req.getFiles();
+      for(String name : files.keySet()) {
+	TreeMap<VersionID,TreeSet<File>> versions = files.get(name);
+
+	TreeMap<VersionID,Long> vsizes = new TreeMap<VersionID,Long>();
+	sizes.put(name, vsizes);
+	
+	for(VersionID vid : versions.keySet()) {
+	  File dir = new File(PackageInfo.sRepoDir, name + "/" + vid);
+	  
+	  long total = 0L;
+	  for(File file : versions.get(vid)) {
+	    File target = new File(dir, file.getPath());
+	    total += target.length();
+	  }
+	  
+	  vsizes.put(vid, total);  
+	}
+      }
+
+      return new FileGetSizesRsp(timer, sizes);
+    }
+    catch(Exception ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+  }
+
   /**
    * Remove the files associated with the given checked-in version of a node.
    * 
@@ -2025,43 +2135,205 @@ class FileMgr
   {
     String name = req.getName();
     VersionID vid = req.getVersionID();
+    TreeMap<File,TreeSet<VersionID>> symlinks = req.getSymlinks();
+    Map<String,String> env = System.getenv();
+
     TaskTimer timer = new TaskTimer("FileMgr.offline(): " + name + " (" + vid + ")");
     
     timer.aquire();
     ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
     checkedInLock.writeLock().lock();
     try {
-      File rdir = new File(pProdDir, "repository" + name + "/" + vid);
-      
-      ArrayList<String> args = new ArrayList<String>();
-      args.add("--force");
+      File nodeDir = new File(pProdDir, "repository" + name);
 
+      /* all versions being modified */ 
+      TreeSet<VersionID> avids = new TreeSet<VersionID>();
       {
-	File files[] = rdir.listFiles(); 
-	int wk;
-	for(wk=0; wk<files.length; wk++) 
-	  args.add(files[wk].getName());
+	for(File file : symlinks.keySet()) 
+	  avids.addAll(symlinks.get(file));
+	avids.add(vid);
       }
-	
-      Map<String,String> env = System.getenv();
-	
-      SubProcessLight proc = 
-	new SubProcessLight("Offline", "rm", args, env, rdir);
-      try {
-	proc.start();
-	proc.join();
-	if(!proc.wasSuccessful()) 
+
+      /* add write permission to the version directories being modified */ 
+      {
+	ArrayList<String> args = new ArrayList<String>();
+	args.add("u+w");
+	for(VersionID avid : avids) 
+	  args.add(avid.toString());
+
+	SubProcessLight proc = 
+	  new SubProcessLight("Offline-SetWritable", "chmod", args, env, nodeDir);
+	try {
+	  proc.start();
+	  proc.join();
+	  if(!proc.wasSuccessful()) 
+	    throw new PipelineException
+	      ("Unable to add write access permission to the directories modified " + 
+	       "by the offline of the checked-in version (" + vid + ") of node " + 
+	       "(" + name + "):\n\n" + 
+	       proc.getStdErr());	
+	}
+	catch(InterruptedException ex) {
 	  throw new PipelineException
-	    ("Unable to offline the files associated with the checked-in version " + 
-	     "(" + vid + ") of node (" + name + ") from the repository:\n" +
-	     "  " + proc.getStdErr());
+	    ("Interrupted while adding write access permission to the directories " + 
+	     "modified by the offline of the checked-in version (" + vid + ") of node " + 
+	     "(" + name + ")");
+	}
       }
-      catch(InterruptedException ex) {
-	throw new PipelineException
-	  ("Interrupted while offline the files associated with the checked-in version " + 
-	   "(" + vid + ") of node (" + name + ") from the repository!");
+
+
+      /* remove the symlinks in later versions which reference this version */ 
+      {
+ 	ArrayList<String> args = new ArrayList<String>();
+ 	args.add("--force");
+	
+	for(File file : symlinks.keySet()) {
+	  for(VersionID lvid : symlinks.get(file)) 
+	    args.add(lvid + "/" + file);
+	}
+	
+	if(args.size() > 1) {
+	  SubProcessLight proc = 
+	    new SubProcessLight("Offline-DeleteSymlinks", "rm", args, env, nodeDir);
+	  try {
+	    proc.start();
+	    proc.join();
+	    if(!proc.wasSuccessful()) 
+	      throw new PipelineException
+		("Unable to remove the stale symlinks referencing the checked-in version " + 
+		 "(" + vid + ") of node (" + name + ") from the repository:\n" +
+		 "  " + proc.getStdErr());
+	  }
+	  catch(InterruptedException ex) {
+	    throw new PipelineException
+	      ("Interrupted while removing the stale symlinks referencing the checked-in " + 
+	       "version (" + vid + ") of node (" + name + ") from the repository.");	
+	  }
+	}
+      }
+
+      /* replace the first symlink in a later version with the regular file from 
+	 this version and redirect all subsequence symlinks to this new location */ 
+      {
+	TreeMap<VersionID,TreeSet<File>> moves = new TreeMap<VersionID,TreeSet<File>>();
+	for(File file : symlinks.keySet()) {
+	  File target = null;
+	  for(VersionID lvid : symlinks.get(file)) {
+	    if(target == null) {
+	      target = new File(nodeDir, lvid + "/" + file);
+
+	      TreeSet<File> targets = moves.get(lvid);
+	      if(targets == null) {
+		targets = new TreeSet<File>();
+		moves.put(lvid, targets);
+	      }
+	      targets.add(file);
+	    }
+	    else {
+	      File link = new File(nodeDir, lvid + "/" + file);
+	      try {
+		System.out.print("Symlink: " + link + " -> " + target + "\n"); // DEBUG
+		NativeFileSys.symlink(target, link);
+	      }
+	      catch(IOException ex) {
+		throw new PipelineException
+		  ("Unable to redirect the symlink (" + link + ") to target " + 
+		   "(" + target + ") during the offlining of the checked-in version " + 
+		   "(" + vid + ") of node (" + name + ") from the repository!");
+	      }
+	    }
+	  }	
+	}
+
+	for(VersionID lvid : moves.keySet()) {
+	  ArrayList<String> args = new ArrayList<String>();
+	  args.add("--force");
+	  args.add("--target-directory=" + nodeDir + "/" + lvid);
+	  
+	  for(File file : moves.get(lvid)) 
+	    args.add(file.toString());
+
+	  File dir = new File(nodeDir, vid.toString());
+	  
+	  SubProcessLight proc = 
+	    new SubProcessLight("Offline-MoveFiles", "mv", args, env, dir);
+	  try {
+	    proc.start();
+	    proc.join();
+	    if(!proc.wasSuccessful()) 
+	      throw new PipelineException
+		("Unable to move the files associated with the checked-in version " + 
+		 "(" + vid + ") of node (" + name + ") referenced by later version " +
+		 "(" + lvid + ") symlinks:\n\n" + 
+		 "  " + proc.getStdErr());	
+	  }
+	  catch(InterruptedException ex) {
+	    throw new PipelineException
+	      ("Interrupted while moving the files associated with the checked-in version " + 
+	       "(" + vid + ") of node (" + name + ") referenced by later version " +
+	       "(" + lvid + ") symlinks!");
+	  }
+	}
+      }
+
+      /* remove all remaining files and/or symlinks for this version */ 
+      {
+	File rdir = new File(nodeDir, vid.toString());
+
+ 	ArrayList<String> args = new ArrayList<String>();
+ 	args.add("--force");
+	
+ 	{
+ 	  File files[] = rdir.listFiles(); 
+ 	  int wk;
+ 	  for(wk=0; wk<files.length; wk++) 
+ 	    args.add(files[wk].getName());
+ 	}
+	
+ 	SubProcessLight proc = 
+ 	  new SubProcessLight("Offline-DeleteVersion", "rm", args, env, rdir);
+ 	try {
+ 	  proc.start();
+ 	  proc.join();
+ 	  if(!proc.wasSuccessful()) 
+ 	    throw new PipelineException
+ 	      ("Unable to remove the files associated with the checked-in version " + 
+ 	       "(" + vid + ") of node (" + name + ") from the repository:\n" +
+ 	       "  " + proc.getStdErr());
+ 	}
+ 	catch(InterruptedException ex) {
+ 	  throw new PipelineException
+ 	    ("Interrupted while offline the files associated with the checked-in version " + 
+ 	     "(" + vid + ") of node (" + name + ") from the repository!");
+ 	}
       }
       
+      /* make the modified version directories read-only */ 
+      {
+	ArrayList<String> args = new ArrayList<String>();
+	args.add("u-w");
+	for(VersionID avid : avids) 
+	  args.add(avid.toString());
+
+	SubProcessLight proc = 
+	  new SubProcessLight("Offline-SetReadOnly", "chmod", args, env, nodeDir);
+	try {
+	  proc.start();
+	  proc.join();
+	  if(!proc.wasSuccessful()) 
+	    throw new PipelineException
+	      ("Unable to make the modified directories read-only after the " + 
+	       "offline of the checked-in version (" + vid + ") of node " + 
+	       "(" + name + "):\n\n" + 
+	       proc.getStdErr());	
+	}
+	catch(InterruptedException ex) {
+	  throw new PipelineException
+	    ("Interrupted while making the modified directories read-only after the " + 
+	     "offline of the checked-in version (" + vid + ") of node (" + name + ")!");
+	}
+      }
+
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
@@ -2071,9 +2343,6 @@ class FileMgr
       checkedInLock.writeLock().unlock();
     }  
   }
-
-
-  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Get the fully resolved names and revision numbers of all offlined checked-in versions.
@@ -2115,10 +2384,11 @@ class FileMgr
    TreeMap<String,TreeSet<VersionID>> offlined
   ) 
   {
+    int head = (pProdDir + "/repository").length();
     File files[] = dir.listFiles(); 
     if(files != null) {
       if(files.length == 0) {
-	String name = dir.getParent().substring(pProdDir.getPath().length());
+	String name = dir.getParent().substring(head);
 	VersionID vid = new VersionID(dir.getName());
 	
 	TreeSet<VersionID> vids = offlined.get(name);
@@ -2135,143 +2405,6 @@ class FileMgr
 	  getOfflinedHelper(files[wk], offlined);
       }
     }
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Calculate the total size (in bytes) of the files associated with the given 
-   * checked-in versions.
-   * 
-   * @param req
-   *   The file sizes request.
-   * 
-   * @return
-   *   <CODE>FileGetSizesRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to determine the file sizes.
-   */ 
-  public Object
-  getSizes
-  (
-   FileGetSizesReq req
-  ) 
-  {
-    TaskTimer timer = new TaskTimer();
-    try {
-      TreeMap<String,TreeMap<VersionID,Long>> sizes = null;
-
-      TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs = req.getFileSequences();
-      if(req.considerLinks()) 
-	sizes = getOfflinedSizes(timer, fseqs);
-      else
-	sizes = getArchivedSizes(timer, fseqs);
-
-      return new FileGetSizesRsp(timer, sizes);
-    }
-    catch(Exception ex) {
-      return new FailureRsp(timer, ex.getMessage());
-    }
-  }
-  
-  /**
-   * Calculate the total size (in bytes) of the files associated with the given 
-   * checked-in versions for archival purposes. <P> 
-   * 
-   * File sizes are computed from the target of any symbolic links and therefore reflects the 
-   * amount of bytes that would need to be copied if the files where archived.  This may be
-   * considerably more than the actual amount of disk space used when several versions of 
-   * a node have identical files. <P> 
-   * 
-   * @param fseqs
-   *   The files sequences indexed by fully resolved node names and revision numbers.
-   * 
-   * @return
-   *   The total version file sizes indexed by fully resolved node name and revision number.
-   */ 
-  private TreeMap<String,TreeMap<VersionID,Long>>
-  getArchivedSizes
-  (
-   TaskTimer timer, 
-   TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs
-  ) 
-  {
-    TreeMap<String,TreeMap<VersionID,Long>> sizes =
-      new TreeMap<String,TreeMap<VersionID,Long>>();
-    
-    for(String name : fseqs.keySet()) {
-      TreeMap<VersionID,TreeSet<FileSeq>> versions = fseqs.get(name);
-
-      TreeMap<VersionID,Long> vsizes = new TreeMap<VersionID,Long>();
-      sizes.put(name, vsizes);
-
-      for(VersionID vid : versions.keySet()) {
-	File dir = new File(PackageInfo.sRepoDir, name + "/" + vid);
-
-	long total = 0L;
-	for(FileSeq fseq : versions.get(vid)) {
-	  for(File file : fseq.getFiles()) { 
-	    File target = new File(dir, file.getPath());
-	    total += target.length();
-	  }
-	}
-
-	vsizes.put(vid, total);  
-      }
-    }
-
-    return sizes;
-  }
-
-  /**
-   * Calculate the total size (in bytes) of the files associated with the given 
-   * checked-in versions for offlining purposes. <P> 
-   * 
-   * File sizes reflect the actual amount of bytes that will be freed from disk if the 
-   * given checked-in versions are offlined.  A file will only be added to this freed
-   * size if it a regular file and there are no symbolic links which target it which are
-   * not included in the given file sequences. <P> 
-   * 
-   * @param fseqs
-   *   The files sequences indexed by fully resolved node names and revision numbers.
-   * 
-   * @return
-   *   The total version file sizes indexed by fully resolved node name and revision number.
-   */ 
-  private TreeMap<String,TreeMap<VersionID,Long>>
-  getOfflinedSizes
-  (
-   TaskTimer timer, 
-   TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs
-  ) 
-  {
-    TreeMap<String,TreeMap<VersionID,Long>> sizes =
-      new TreeMap<String,TreeMap<VersionID,Long>>();
-    
-    for(String name : fseqs.keySet()) {
-      TreeMap<VersionID,TreeSet<FileSeq>> versions = fseqs.get(name);
-
-      TreeMap<VersionID,Long> vsizes = new TreeMap<VersionID,Long>();
-      sizes.put(name, vsizes);
-
-      for(VersionID vid : versions.keySet()) {
-	File dir = new File(PackageInfo.sRepoDir, name + "/" + vid);
-
-	long total = 0L;
-	for(FileSeq fseq : versions.get(vid)) {
-	  for(File file : fseq.getFiles()) { 
-	    File target = new File(dir, file.getPath());
-	  
-	    // ...
-
-	  }
-	}
-
-	vsizes.put(vid, total);  
-      }
-    }
-
-    return sizes;
   }
 
 

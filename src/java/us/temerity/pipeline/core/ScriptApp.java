@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.32 2005/03/10 08:07:27 jim Exp $
+// $Id: ScriptApp.java,v 1.33 2005/03/14 16:08:21 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -145,7 +145,7 @@ class ScriptApp
        "        [--min-size=bytes] --archiver=archiver-name[:major.minor.micro]]\n" + 
        "        [--param=name:value ...] [--auto-start]\n" + 
        "      --offline [--pattern='node-regex'] [--exclude-latest=integer]\n" + 
-       "        [--max-working=integer] [--min-archives=integer]\n" + 
+       "        [--min-archives=integer]\n" + 
        "      --restore=archive-name [--param=name:value ...]\n" + 
        "        [--vsn=node-name:major.minor.micro ...]\n" + 
        "\n" + 
@@ -521,7 +521,6 @@ class ScriptApp
   (
    String pattern, 
    Integer exludeLatest, 
-   Integer maxWorking, 
    Integer minArchives, 
    MasterMgrClient client
   ) 
@@ -530,7 +529,6 @@ class ScriptApp
     System.out.print
       ("Offline():\n" + 
        "  Exclude Latest  = " + exludeLatest + "\n" + 
-       "  Max Working     = " + maxWorking + "\n" + 
        "  Min Archives    = " + minArchives + "\n" + 
        "\n");
 

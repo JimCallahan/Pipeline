@@ -1,4 +1,4 @@
-// $Id: MiscGetSizesReq.java,v 1.1 2004/11/16 03:56:36 jim Exp $
+// $Id: FileGetArchiveSizesReq.java,v 1.1 2005/03/14 16:08:21 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -9,15 +9,15 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   M I S C   G E T   S I Z E S   R E Q                                                    */
+/*   F I L E   G E T   A R C H I V E   S I Z E S   R E Q                                    */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to calculate the total size (in bytes) of the files associated with the given 
- * checked-in versions.
+ * A request to Calculate the total size (in bytes) of the files associated with the given 
+ * checked-in versions for archival purposes.
  */
 public
-class MiscGetSizesReq
+class FileGetArchiveSizesReq
   implements Serializable
 {
   /*----------------------------------------------------------------------------------------*/
@@ -27,24 +27,18 @@ class MiscGetSizesReq
   /** 
    * Constructs a new request.
    * 
-   * @param versions
-   *   The fully resolved node names and revision numbers of the checked-in versions.
-   * 
-   * @param considerLinks
-   *   Whether symbolic links should be considered when computing file sizes.
+   * @param fseqs
+   *   The files sequences indexed by fully resolved node names and revision numbers.
    */
   public
-  MiscGetSizesReq
+  FileGetArchiveSizesReq
   (
-   TreeMap<String,TreeSet<VersionID>> versions,
-   boolean considerLinks
+   TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs
   )
   { 
-    if(versions == null) 
-      throw new IllegalArgumentException("The node versions cannot be (null)!");
-    pVersions = versions;
-
-    pConsiderLinks = considerLinks;
+    if(fseqs == null) 
+      throw new IllegalArgumentException("The file sequences cannot be (null)!");
+    pFileSeqs = fseqs;
   }
 
 
@@ -53,22 +47,14 @@ class MiscGetSizesReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the fully resolved node names and revision numbers of the checked-in versions.
+   * Gets the files sequences indexed by fully resolved node names and revision numbers.
    */
-  public TreeMap<String,TreeSet<VersionID>>
-  getVersions()
+  public TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>
+  getFileSequences()
   {
-    return pVersions;
+    return pFileSeqs;
   }
-    
-  /**
-   * Whether symbolic links should be considered when computing file sizes.
-   */
-  public boolean
-  considerLinks()
-  {
-    return pConsiderLinks;
-  }
+   
 
   
 
@@ -76,7 +62,7 @@ class MiscGetSizesReq
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
-  private static final long serialVersionUID = -1148570183852344344L;
+  private static final long serialVersionUID = -3509027925872490568L;
 
   
 
@@ -85,13 +71,9 @@ class MiscGetSizesReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The fully resolved node names and revision numbers of the checked-in versions.
+   * The files sequences indexed by fully resolved node names and revision numbers.
    */ 
-  private TreeMap<String,TreeSet<VersionID>>  pVersions;
+  private TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>  pFileSeqs;
 
-  /** 
-   * Whether symbolic links should be considered when computing file sizes.
-   */
-  private boolean  pConsiderLinks; 
 }
   

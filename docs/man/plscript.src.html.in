@@ -111,8 +111,6 @@ Users</a></li>
  style="font-weight: normal;"></span><span style="font-weight: normal;">[<span
  style="font-weight: bold;">--exclude-latest</span>=<span
  style="font-style: italic;">integer</span>] [<span
- style="font-weight: bold;">--max-working</span>=<span
- style="font-style: italic;">integer</span>] [<span
  style="font-weight: bold;">--min-archives</span>=<span
  style="font-style: italic;">integer</span>]</span></li>
         <li style="font-weight: bold;"><span
@@ -1938,9 +1936,7 @@ option is ignored.</span><br>
  style="font-weight: normal;"></span><span style="font-weight: normal;">[<span
  style="font-weight: bold;">--exclude-latest</span>=<span
  style="font-style: italic;">integer</span>] [<span
- style="font-weight: bold;">--max-working</span>=<span
- style="font-style: italic;">integer</span>] <br>
-&nbsp; [<span style="font-weight: bold;">--min-archives</span>=<span
+ style="font-weight: bold;">--min-archives</span>=<span
  style="font-style: italic;">integer</span>]<br>
 </span>
 <div style="margin-left: 40px;"><br>

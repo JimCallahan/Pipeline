@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.96 2005/03/13 04:42:59 jim Exp $
+// $Id: MasterMgr.java,v 1.97 2005/03/14 16:08:21 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -311,7 +311,7 @@ class MasterMgr
       pArchivedIn      = new TreeMap<String,TreeMap<VersionID,TreeSet<String>>>();
       pArchivedOn      = new TreeMap<String,Date>();
       pOfflined        = new TreeMap<String,TreeSet<VersionID>>();
-      pRestoreReqs     = new TreeMap<String,TreeSet<VersionID>>();
+      pRestoreReqs     = new TreeMap<String,TreeMap<VersionID,RestoreRequest>>();
 
       pDefaultToolsetLock = new Object();
       pDefaultToolset     = null;
@@ -5759,11 +5759,19 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
+    timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
+      timer.resume();	
+
       String pattern      = req.getPattern();
       Integer maxArchives = req.getMaxArchives();
       
+      if((maxArchives != null) && (maxArchives < 1)) 
+	throw new PipelineException
+	  ("The maximum number of archive volumes containing the checked-in version " +
+	   "(" + maxArchives + ") must be positive!");
+
       /* get the node names which match the pattern */ 
       TreeMap<String,TreeMap<String,TreeSet<String>>> matches = 
 	new TreeMap<String,TreeMap<String,TreeSet<String>>>();
@@ -5856,6 +5864,9 @@ class MasterMgr
 
       return new MiscArchiveQueryRsp(timer, archiveInfo);
     }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }  
     finally {
       pDatabaseLock.readLock().unlock();
     }  
@@ -5879,7 +5890,12 @@ class MasterMgr
   ) 
   {
     TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
+      timer.resume();	
+
       /* get the file sequences for the given checked-in versions */ 
       TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs = 
 	new TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>();
@@ -5911,7 +5927,10 @@ class MasterMgr
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
-    }
+    }  
+    finally {
+      pDatabaseLock.readLock().unlock();
+    } 
   }
 
   /**
@@ -6092,13 +6111,25 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
+    timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
+      timer.resume();	
+
       String pattern      = req.getPattern();
       Integer exclude     = req.getExcludeLatest();
-      Integer maxWorking  = req.getMaxWorking();
       Integer minArchives = req.getMinArchives();
       boolean unusedOnly  = req.getUnusedOnly();
+
+      if((exclude != null) && (exclude < 0)) 
+	throw new PipelineException
+	  ("The number of latest checked-in versions of the node to exclude " + 
+	   "(" + exclude + ") cannot be negative!");
+
+      if((minArchives != null) && (minArchives < 0)) 
+	throw new PipelineException
+	  ("The minimum number of archive volumes containing the checked-in version " +
+	   "(" + minArchives + ") cannot be negative!");
 
       /* get the node names which match the pattern */ 
       TreeMap<String,TreeMap<String,TreeSet<String>>> matches = 
@@ -6117,8 +6148,8 @@ class MasterMgr
 	      matchingCheckedInNodes(pat, "", entry, matches);
 	  }
 	  catch(PatternSyntaxException ex) {
-	    return new FailureRsp(timer, 
-				  "Illegal Node Name Pattern:\n\n" + ex.getMessage());
+	    throw new PipelineException 
+	      ("Illegal Node Name Pattern:\n\n" + ex.getMessage());
 	  }
 	}
       }
@@ -6130,7 +6161,7 @@ class MasterMgr
 	
 	/* get the revision numbers of the included versions */ 
 	TreeSet<VersionID> vids = new TreeSet<VersionID>();
-	{
+	{	    
 	  timer.aquire();
 	  ReentrantReadWriteLock lock = getCheckedInLock(name);
 	  lock.readLock().lock();  
@@ -6153,6 +6184,15 @@ class MasterMgr
 	  finally {
 	    lock.readLock().unlock();  
 	  }
+	}
+
+	/* remove any already offline versions */ 
+	synchronized(pOfflined)	{
+	  TreeSet<VersionID> offlined = pOfflined.get(name);
+	  if(offlined != null) {
+	    for(VersionID ovid : offlined) 
+	      vids.remove(ovid);
+	  }	  
 	}
 	
 	/* process the matching checked-in versions */ 
@@ -6237,8 +6277,7 @@ class MasterMgr
 
 	    /* only include checked-in version which do not have more than the given
 	       maximum number of working versions based on the checked-in version */ 
-	    if(((maxWorking == null) || (numWorking <= maxWorking)) && 
-	       (!unusedOnly || (unusedOnly && canOffline))) {
+	    if(!unusedOnly || (unusedOnly && canOffline)) {
 	      OfflineInfo info = 
 		new OfflineInfo(name, vid, checkedOut, lastAuthor, lastView, numWorking, 
 				archived, numArchives, canOffline);
@@ -6253,6 +6292,47 @@ class MasterMgr
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
     }    
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }  
+  }
+
+  /**
+   * Get the revision nubers of all offline checked-in versions of the given node. <P> 
+   * 
+   * @param req
+   *   The file sizes request.
+   * 
+   * @return
+   *   <CODE>NodeGetOfflineVersionIDsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the file sizes.
+   */ 
+  public Object
+  getOfflineVersionIDs
+  (
+   NodeGetOfflineVersionIDsReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();	
+
+      /* the currently offline revision numbers */ 
+      TreeSet<VersionID> offlined = new TreeSet<VersionID>();
+      timer.aquire();
+      synchronized(pOfflined) {
+	timer.resume();
+	
+	String name = req.getName();
+	if(pOfflined.get(name) != null)
+	  offlined.addAll(pOfflined.get(name));
+      }
+      
+      return new NodeGetOfflineVersionIDsRsp(timer, offlined);
+    }
     finally {
       pDatabaseLock.readLock().unlock();
     }  
@@ -6281,13 +6361,28 @@ class MasterMgr
   ) 
   {
     TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
+      timer.resume();	
+
       /* determine which file contribute the to offlines size */ 
       TreeMap<String,TreeMap<VersionID,TreeSet<File>>> contribute = 
 	new TreeMap<String,TreeMap<VersionID,TreeSet<File>>>();
       {
 	TreeMap<String,TreeSet<VersionID>> versions = req.getVersions();
 	for(String name : versions.keySet()) {
+
+	  /* the currently offline revision numbers */ 
+	  TreeSet<VersionID> offlined = new TreeSet<VersionID>();
+	  timer.aquire();
+	  synchronized(pOfflined) {
+	    timer.resume();
+
+	    if(pOfflined.get(name) != null)
+	      offlined.addAll(pOfflined.get(name));
+	  }
 
 	  timer.aquire();
 	  ReentrantReadWriteLock lock = getCheckedInLock(name);
@@ -6299,71 +6394,45 @@ class MasterMgr
 	    ArrayList<VersionID> vids = new ArrayList<VersionID>(checkedIn.keySet());
 
 	    /* process the to be offlined versions */ 
-	    TreeSet<VersionID> ovids = versions.get(name);
-	    for(VersionID vid : ovids) {
-	      CheckedInBundle bundle = checkedIn.get(vid);
-	      if(bundle == null) 
-		throw new PipelineException 
-		  ("No checked-in version (" + vid + ") of node (" + name + ") exists!");
-	      NodeVersion vsn = checkedIn.get(vid).uVersion;
+	    TreeSet<VersionID> toBeOfflined = versions.get(name);
+	    for(VersionID vid : toBeOfflined) {
+
+	      /* ignore currently offline versions */ 
+	      if(!offlined.contains(vid)) {
+		CheckedInBundle bundle = checkedIn.get(vid);
+		if(bundle == null) 
+		  throw new PipelineException 
+		    ("No checked-in version (" + vid + ") of node (" + name + ") exists!");
+		NodeVersion vsn = checkedIn.get(vid).uVersion;
+		int vidx = vids.indexOf(vid);
 		
-	      /* determine which files contributes to the offlined size */ 
-	      for(FileSeq fseq : vsn.getSequences()) {
+		/* determine which files contributes to the offlined size */ 
+		TreeMap<File,Boolean[]> novelty = noveltyByFile(checkedIn);
+		for(File file : novelty.keySet()) {
 
-		FrameRange range = fseq.getFrameRange();
-		boolean isNovel[] = vsn.isNovel(fseq);
-		int fk;
-		for(fk=0; fk<isNovel.length; fk++) {
+		  /* we are only concerned with files exist and are new */ 
+		  Boolean[] isNovel = novelty.get(file);
+		  if((isNovel[vidx] != null) && isNovel[vidx]) {
 
-		  /* we are only concerned with file which are new in the offline version */ 
-		  if(isNovel[fk]) {
-		    File file = fseq.getFile(fk);
+		    /* step through later versions to determine whether the current file
+		       should contribute to the offlined size */ 
 		    boolean selected = true;
-
-		    /* step through the versions later than the offline version */ 
-		    int vk;
-		    for(vk=vids.indexOf(vid)+1; vk<vids.size(); vk++) {
-		      VersionID nvid = vids.get(vk);
-
-		      /* determine if there is a newer version of the corresponding file 
-			 associated with this later version */ 
-		      boolean isNewer = false;
-		      {
-			NodeVersion nvsn = checkedIn.get(nvid).uVersion;
-			for(FileSeq nfseq : nvsn.getSequences()) {
-			  if(fseq.similarTo(nfseq)) {
-			    int nfk = 0;
-			    if(range != null) {
-			      int frame = range.indexToFrame(fk);
-			      
-			      FrameRange nrange = nfseq.getFrameRange();
-			      if(nrange.isValid(frame)) 
-				nfk = nrange.frameToIndex(frame);
-			      else 
-				nfk = -1;
-			    }
-
-			    if((nfk == -1) || nvsn.isNovel(nfseq)[nfk]) 
-			      isNewer = true;
-			    
-			    break;
-			  }
+		    {
+		      int vk;
+		      for(vk=vidx+1; vk<isNovel.length; vk++) {
+			VersionID nvid = vids.get(vk);
+			
+			if((isNovel[vk] == null) || isNovel[vk]) {
+			  break;
 			}
-		      }
-
-		      /* whether this later version is also being offlined */ 
-		      boolean isOffline = ovids.contains(nvid);
-
-		      if(isNewer) {
-			break;
-		      }
-		      else if(!isOffline) {
-			selected = false;
-			break;
+			else if(!toBeOfflined.contains(nvid) && !offlined.contains(nvid)) {
+			  selected = false;
+			  break;
+			}
 		      }
 		    }
 
-		    /* the current file contributes to the offlined size */ 
+		    /* add the current file to those which contribute to the offlined size */ 
 		    if(selected) {
 		      TreeMap<VersionID,TreeSet<File>> cversions = contribute.get(name);
 		      if(cversions == null) {
@@ -6395,9 +6464,11 @@ class MasterMgr
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
-    }
+    }  
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }  
   }
-
 
   /**
    * Remove the repository files associated with the given checked-in versions. <P> 
@@ -6425,110 +6496,166 @@ class MasterMgr
    MiscOfflineReq req
   ) 
   {
-    return new FailureRsp(new TaskTimer(), "Not Implemented yet...");
+    TaskTimer timer = new TaskTimer("MasterMgr.offline()");
 
-//     TaskTimer timer = new TaskTimer("MasterMgr.offline()");
-
-//     timer.aquire();
-//     pDatabaseLock.writeLock().lock();
-//     try {
-//       timer.resume();	
-
-//       TreeMap<String,TreeSet<VersionID>> versions = req.getVersions();
-//       for(String name : versions.keySet()) {
-// 	for(VersionID vid : versions.get(name)) {
+    timer.aquire();
+    pDatabaseLock.writeLock().lock();
+    try {
+      timer.resume();	
+  
+      TreeMap<String,TreeSet<VersionID>> versions = req.getVersions();
+      for(String name : versions.keySet()) {
 	  
-// 	  /* determine the revision numbers of the symlinks from later versions which 
-// 	     target files being offlined, indexed by the names of the to be offlined files */ 
-// 	  TreeMap<File,TreeSet<VersionID>> symlinks = new TreeMap<File,TreeSet<VersionID>>();
-// 	  {
-// 	    TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
-// 	    ArrayList<VersionID> vids = new ArrayList<VersionID>(checkedIn.keySet());
+	/* the currently offline revision numbers */ 
+	TreeSet<VersionID> offlined = new TreeSet<VersionID>();
+	if(pOfflined.get(name) != null)
+	  offlined.addAll(pOfflined.get(name));
+	
+	TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
+	ArrayList<VersionID> vids = new ArrayList<VersionID>(checkedIn.keySet());
+	  
+	/* process the to be offlined versions */ 
+	TreeSet<VersionID> toBeOfflined = versions.get(name);
+	for(VersionID vid : toBeOfflined) { 
 
-// 	    /* process the to be offlined versions */ 
-// 	    TreeSet<VersionID> ovids = versions.get(name);
-// 	    for(VersionID vid : ovids) {
-// 	      CheckedInBundle bundle = checkedIn.get(vid);
-// 	      if(bundle == null) 
-// 		throw new PipelineException 
-// 		  ("No checked-in version (" + vid + ") of node (" + name + ") exists!");
-// 	      NodeVersion vsn = checkedIn.get(vid).uVersion;
+	  /* ignore currently offline versions */
+	  if(!offlined.contains(vid)) {
+	    CheckedInBundle bundle = checkedIn.get(vid);
+	    if(bundle == null) 
+	      throw new PipelineException 
+		("No checked-in version (" + vid + ") of node (" + name + ") exists!");
+	    NodeVersion vsn = checkedIn.get(vid).uVersion;
+	    int vidx = vids.indexOf(vid);
+	    
+	    /* determine which symlinks target the to be offlined files */ 
+	    TreeMap<File,TreeSet<VersionID>> symlinks = 
+	      new TreeMap<File,TreeSet<VersionID>>();
+	    {
+	      TreeMap<File,Boolean[]> novelty = noveltyByFile(checkedIn);
+	      for(File file : novelty.keySet()) {
+		Boolean[] isNovel = novelty.get(file);
+
+		/* the file exists for this version */ 
+		if(isNovel[vidx] != null) {
+
+		  /* determine whether later files/symlinks needs to be relocated */ 
+		  boolean selected = false;
+		  if(isNovel[vidx])
+		    selected = true;
+		  else {
+		    int vk;
+		    for(vk=vidx-1; vk>=0; vk--) {
+		      VersionID nvid = vids.get(vk);
+		      if(offlined.contains(nvid)) {
+			selected = true;
+			break;
+		      }
+		      else if(isNovel[vk]) 
+			break;
+		    }
+		  }
+
+		  /* determine which versions need relocation */ 
+		  if(selected) {
+		    int vk;
+		    for(vk=vidx+1; vk<isNovel.length; vk++) {
+		      VersionID nvid = vids.get(vk);
+		      
+		      if((isNovel[vk] == null) || isNovel[vk]) 
+			break;
+		      else if(!offlined.contains(nvid)) {
+			TreeSet<VersionID> svids = symlinks.get(file);
+			if(svids == null) {
+			  svids = new TreeSet<VersionID>();
+			  symlinks.put(file, svids);
+			}
+			svids.add(nvid);
+		      }
+		    }
+		  }
+		}
+	      }
+	    }
 	      
-// 	       /* determine which symlinks target the to be offlined files */ 
-// 	      for(FileSeq fseq : vsn.getSequences()) {
+	    // DEBUG 
+	    {
+	      System.out.print("\nOFFLINE:  " + name + "  " + vid + "\n");
+	      for(File file : symlinks.keySet()) {
+		System.out.print("  " + file + ":  ");
+		for(VersionID nvid : symlinks.get(file)) 
+		  System.out.print("" + nvid + "  ");
+		System.out.print("\n");
+	      }
+	    }
+	    // DEBUG 
+	    
+	    /* offline the files */ 
+	    pFileMgrClient.offline(name, vid, symlinks);
 
-// 		FrameRange range = fseq.getFrameRange();
-// 		boolean isNovel[] = vsn.isNovel(fseq);
-// 		int fk;
-// 		for(fk=0; fk<isNovel.length; fk++) {
+	    /* update the currently offlined revision numbers */ 
+	    {
+	      TreeSet<VersionID> ovids = pOfflined.get(name);
+	      if(ovids == null) {
+		ovids = new TreeSet<VersionID>();
+		pOfflined.put(name, ovids);
+	      }
+	      ovids.add(vid);
+	    }
+	  }
+	}
+      }
 
-// 		  VersionID svid = null;
-// 		  if(isNovel[fk]) 
-// 		    svid = vid;
-// 		  else {
-		    
-// 		  }
-
-
-
-// 		}
-// 	      }
-// 	    }
-// 	  }
-
-// 	  pFileMgrClient.offline(name, vid, symlinks);
-// 	}
-//       }
-
-
-//       return new SuccessRsp(timer);
-//     }
-//     catch(PipelineException ex) {
-//       return new FailureRsp(timer, ex.getMessage());
-//     }  
-//     finally {
-//       pDatabaseLock.writeLock().unlock();
-//     }
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }  
+    finally {
+      pDatabaseLock.writeLock().unlock();
+    }
   }
 
-  
+
   /**
-   * Given a specific file sequence index for a checked-in version, return whether the 
-   * corresponding file from another checked-in version has the IsNovel flag set. <P> 
+   * Rearrange the per-file novelty flags to be indexed by filename and version index. <P> 
    * 
-   * @param name
-   *   The fully resolved node name.
-   * 
-   * @param vid
-   *   The checked-in revision number of the source version.
-   * 
-   * @param fseq
-   *   The file sequence in question.
-   * 
-   * @param idx
-   *   The file index within the file sequence.
-   * 
-   * @param ovid
-   *   The other checked-in version to search.
-   * 
-   * @return
-   *   Whether the IsNovel flag is set or <CODE>null</CODE> if there is no corresponding
-   *   file in the other version.
-   */
-  private Boolean
-  isNovelInOtherVersion
+   * No locking is performed!  This method should only be called from either 
+   * {@link #getOfflineSize getOfflineSize} or {@link #offline offline}!
+   */ 
+  private TreeMap<File,Boolean[]>
+  noveltyByFile 
   (
-   String name, 
-   VersionID vid, 
-   FileSeq fseq, 
-   int idx, 
-   VersionID nvid
+   TreeMap<VersionID,CheckedInBundle> checkedIn
   ) 
   {
-    
+    TreeMap<File,Boolean[]> novelty = new TreeMap<File,Boolean[]>();
 
-    return null;
+    int numVersions = checkedIn.keySet().size();
+    int vk = 0;
+    for(VersionID vid : checkedIn.keySet()) {
+      NodeVersion vsn = checkedIn.get(vid).uVersion;
+      for(FileSeq fseq : vsn.getSequences()) {
+	boolean isNovel[] = vsn.isNovel(fseq);
+	int fk = 0;
+	for(File file : fseq.getFiles()) {
+	  Boolean[] novel = novelty.get(file);
+	  if(novel == null) {
+	    novel = new Boolean[numVersions];
+	    novelty.put(file, novel);
+	  }
+	  novel[vk] = isNovel[fk];
+
+	  fk++;
+	}
+      }
+
+      vk++;
+    }
+
+    return novelty;
   }
+
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -8587,7 +8714,7 @@ class MasterMgr
     throws PipelineException
   {
     synchronized(pRestoreReqs) {
-      File file = new File(pNodeDir, "etc/restore-reqs");
+      File file = new File(pNodeDir, "archives/restore-reqs");
       if(file.exists()) {
 	if(!file.delete())
 	  throw new PipelineException
@@ -8644,17 +8771,17 @@ class MasterMgr
     synchronized(pRestoreReqs) {
       pRestoreReqs.clear();
 
-      File file = new File(pNodeDir, "etc/restore-reqs");
+      File file = new File(pNodeDir, "archives/restore-reqs");
       if(file.isFile()) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	   "Reading Restore Requests.");
 
-	TreeMap<String,TreeSet<VersionID>> requests = null;
+	TreeMap<String,TreeMap<VersionID,RestoreRequest>> requests = null;
 	try {
 	  FileReader in = new FileReader(file);
 	  GlueDecoder gd = new GlueDecoderImpl(in);
-	  requests = (TreeMap<String,TreeSet<VersionID>>) gd.getObject();
+	  requests = (TreeMap<String,TreeMap<VersionID,RestoreRequest>>) gd.getObject();
 	  in.close();
 	}
 	catch(Exception ex) {
@@ -10825,12 +10952,12 @@ class MasterMgr
   private TreeMap<String,TreeSet<VersionID>>  pOfflined;
 
   /**
-   * The fully resolved node names and revision numbers of the checked-in versions which 
-   * users have requested to be restored from a previously created archive. <P> 
+   * Thre pending restore requests indexed by the fully resolved node names and 
+   * revision numbers of the checked-in versions to restore. <P> 
    * 
    * Access to this field should be protected by a synchronized block.
    */  
-  private TreeMap<String,TreeSet<VersionID>>  pRestoreReqs;  
+  private TreeMap<String,TreeMap<VersionID,RestoreRequest>>  pRestoreReqs;  
 
 
   /*----------------------------------------------------------------------------------------*/

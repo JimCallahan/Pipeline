@@ -1,4 +1,4 @@
-// $Id: JNodeHistoryPanel.java,v 1.8 2005/03/11 06:33:44 jim Exp $
+// $Id: JNodeHistoryPanel.java,v 1.9 2005/03/14 16:08:21 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -232,7 +232,7 @@ class JNodeHistoryPanel
       addMouseListener(this); 
     }
 
-    updateNodeStatus(null, null, null, null);
+    updateNodeStatus(null, null, null, null, null);
   }
 
 
@@ -319,6 +319,9 @@ class JNodeHistoryPanel
    * 
    * @param history
    *   The check-in log messages.
+   *
+   * @param offline
+   *   The revision numbers of the offline checked-in versions.
    */
   public synchronized void 
   updateNodeStatus
@@ -328,13 +331,14 @@ class JNodeHistoryPanel
    NodeStatus status,
    TreeMap<String,TreeSet<VersionID>> editorPlugins, 
    PluginMenuLayout editorLayout, 
-   TreeMap<VersionID,LogMessage> history
+   TreeMap<VersionID,LogMessage> history,
+   TreeSet<VersionID> offline
   ) 
   {
     if(!pAuthor.equals(author) || !pView.equals(view)) 
       super.setAuthorView(author, view);
 
-    updateNodeStatus(status, editorPlugins, editorLayout, history);
+    updateNodeStatus(status, editorPlugins, editorLayout, history, offline);
   }
 
   /**
@@ -351,6 +355,9 @@ class JNodeHistoryPanel
    * 
    * @param history
    *   The check-in log messages.
+   *
+   * @param offline
+   *   The revision numbers of the offline checked-in versions.
    */
   public synchronized void 
   updateNodeStatus
@@ -358,7 +365,8 @@ class JNodeHistoryPanel
    NodeStatus status,
    TreeMap<String,TreeSet<VersionID>> editorPlugins, 
    PluginMenuLayout editorLayout, 
-   TreeMap<VersionID,LogMessage> history
+   TreeMap<VersionID,LogMessage> history,
+   TreeSet<VersionID> offline
   ) 
   {
     pStatus  = status;
@@ -584,6 +592,15 @@ class JNodeHistoryPanel
 		Box hbox2 = new Box(BoxLayout.X_AXIS);
 		
 		hbox2.add(Box.createRigidArea(new Dimension(10, 0)));
+
+		if(offline.contains(vid)) {
+		  JLabel label = new JLabel("Offline");
+		  label.setForeground(new Color(0.75f, 0.75f, 0.75f));
+		  label.setToolTipText(UIFactory.formatToolTip
+		    ("The checked-in version is currently offline."));
+		  hbox2.add(label);
+		}
+
 		hbox2.add(Box.createHorizontalGlue());
 		
 		{

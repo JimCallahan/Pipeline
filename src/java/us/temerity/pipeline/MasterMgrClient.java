@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.52 2005/03/11 06:32:08 jim Exp $
+// $Id: MasterMgrClient.java,v 1.53 2005/03/14 16:08:20 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -3042,7 +3042,7 @@ class MasterMgrClient
    * File sizes are computed from the target of any symbolic links and therefore reflects the 
    * amount of bytes that would need to be copied if the files where archived.  This may be
    * considerably more than the actual amount of disk space used when several versions of 
-   * a node have identical files. <P> 
+   * a node have some identical files. <P> 
    * 
    * @param versions
    *   The fully resolved node names and revision numbers of the checked-in versions.
@@ -3059,9 +3059,9 @@ class MasterMgrClient
   {
     verifyConnection();
 
-    MiscGetSizesReq req = new MiscGetSizesReq(versions, false);
+    MiscGetArchiveSizesReq req = new MiscGetArchiveSizesReq(versions);
 
-    Object obj = performTransaction(MasterRequest.GetSizes, req);
+    Object obj = performTransaction(MasterRequest.GetArchiveSizes, req);
     if(obj instanceof MiscGetSizesRsp) {
       MiscGetSizesRsp rsp = (MiscGetSizesRsp) obj;
       return rsp.getSizes();
@@ -3134,14 +3134,12 @@ class MasterMgrClient
    *   The number of latest checked-in versions of the node to exclude from the returned list
    *   or <CODE>null</CODE> to include all versions.
    * 
-   * @param maxWorking
-   *   The maximum allowable number of existing working versions based on the checked-in 
-   *   version in order for checked-in version to be inclued in the returned list or 
-   *   <CODE>null</CODE> for any number of working versions.
-   * 
    * @param minArchives
    *   The minimum number of archive volumes containing the checked-in version in order for 
    *   it to be inclued in the returned list or <CODE>null</CODE> for any number of archives.
+   * 
+   * @param unusedOnly
+   *   Whether to only include checked-in versions which can be offlined.
    * 
    * @return 
    *   Information about the offline state of each matching checked-in version. 
@@ -3154,15 +3152,15 @@ class MasterMgrClient
   (
    String pattern,
    Integer excludeLatest, 
-   Integer maxWorking, 
-   Integer minArchives
+   Integer minArchives, 
+   boolean unusedOnly
   )
     throws PipelineException
   {
     verifyConnection();
 
     MiscOfflineQueryReq req = 
-      new MiscOfflineQueryReq(pattern, excludeLatest, maxWorking, minArchives);
+      new MiscOfflineQueryReq(pattern, excludeLatest, minArchives, unusedOnly);
 
     Object obj = performTransaction(MasterRequest.OfflineQuery, req);
     if(obj instanceof MiscOfflineQueryRsp) {
@@ -3174,16 +3172,46 @@ class MasterMgrClient
       return null;
     }
   } 
-  
+
+  /**
+   * Get the revision nubers of all offline checked-in versions of the given node. <P>
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   *
+   * @throws PipelineException
+   *   If unable to determine the offline versions.
+   */ 
+  public synchronized TreeSet<VersionID> 
+  getOfflineVersionIDs
+  (
+   String name
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+	 
+    NodeGetOfflineVersionIDsReq req = new NodeGetOfflineVersionIDsReq(name);
+
+    Object obj = performTransaction(MasterRequest.GetOfflineVersionIDs, req);
+    if(obj instanceof NodeGetOfflineVersionIDsRsp) {
+      NodeGetOfflineVersionIDsRsp rsp = (NodeGetOfflineVersionIDsRsp) obj;
+      return rsp.getVersionIDs();      
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }  
 
   /**
    * Calculate the total size (in bytes) of the files associated with the given 
    * checked-in versions for offlining purposes. <P> 
    * 
    * File sizes reflect the actual amount of bytes that will be freed from disk if the 
-   * given checked-in versions are offlined.  A file will only be added to this freed
-   * size if it a regular file and there are no symbolic links which target it which are
-   * not included in the given file sequences. <P> 
+   * given checked-in versions are offlined.  A file will only contribute to this freed
+   * size if it a regular file and there are no symbolic links from later online versions 
+   * which target and which are not associated with the given versions. <P> 
    * 
    * @param versions
    *   The fully resolved node names and revision numbers of the checked-in versions.
@@ -3192,7 +3220,7 @@ class MasterMgrClient
    *   The total version file sizes indexed by fully resolved node name and revision number.
    */ 
   public synchronized TreeMap<String,TreeMap<VersionID,Long>>
-  getOfflinedSizes
+  getOfflineSizes
   (
    TreeMap<String,TreeSet<VersionID>> versions
   ) 
@@ -3200,9 +3228,9 @@ class MasterMgrClient
   {
     verifyConnection();
 
-    MiscGetSizesReq req = new MiscGetSizesReq(versions, true);
+    MiscGetOfflineSizesReq req = new MiscGetOfflineSizesReq(versions);
 
-    Object obj = performTransaction(MasterRequest.GetSizes, req);
+    Object obj = performTransaction(MasterRequest.GetOfflineSizes, req);
     if(obj instanceof MiscGetSizesRsp) {
       MiscGetSizesRsp rsp = (MiscGetSizesRsp) obj;
       return rsp.getSizes();

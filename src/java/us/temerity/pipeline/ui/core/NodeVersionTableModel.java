@@ -1,4 +1,4 @@
-// $Id: NodeVersionTableModel.java,v 1.4 2005/03/11 06:33:44 jim Exp $
+// $Id: NodeVersionTableModel.java,v 1.5 2005/03/14 16:08:21 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -143,7 +143,9 @@ class NodeVersionTableModel
     case 2:
       for(Long size : pSizes) {
 	value = size;
-      
+	if(value == null) 
+	  value = new Long(0L);
+	
 	int wk;
 	for(wk=0; wk<values.size(); wk++) {
 	  if(value.compareTo(values.get(wk)) > 0) 

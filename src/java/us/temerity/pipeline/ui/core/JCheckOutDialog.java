@@ -1,4 +1,4 @@
-// $Id: JCheckOutDialog.java,v 1.3 2005/02/22 05:59:15 jim Exp $
+// $Id: JCheckOutDialog.java,v 1.4 2005/03/14 16:08:21 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -219,11 +219,16 @@ class JCheckOutDialog
    * @param versions
    *   The revision numbers of the checked-in versions of the nodes indexed by fully
    *   resolved node name.
+   * 
+   * @param offline
+   *   The revision nubers of all offline checked-in versions the nodes indexed by fully
+   *   resolved node name.
    */ 
   public void 
   updateVersions
   (
-   TreeMap<String,ArrayList<VersionID>> versions
+   TreeMap<String,TreeSet<VersionID>> versions, 
+   TreeMap<String,TreeSet<VersionID>> offline
   )
   { 
     pVersionIDs.clear(); 
@@ -263,8 +268,16 @@ class JCheckOutDialog
 	  
 	  {
 	    ArrayList<String> values = new ArrayList<String>();
-	    for(VersionID vid : vids) 
-	      values.add("v" + vid);
+	    for(VersionID vid : vids) {
+	      String extra = "";
+	      {
+		TreeSet<VersionID> ovids = offline.get(name);
+		if((ovids != null) && ovids.contains(vid))
+		  extra = " - Offline";
+	      }
+		
+	      values.add("v" + vid + extra);
+	    }
 	    
 	    JCollectionField field = 
 	      UIFactory.createTitledCollectionField
@@ -304,7 +317,7 @@ class JCheckOutDialog
 
 	    pMethodFields.put(name, field);
 	  }
-
+	  
 	  JDrawer drawer = new JDrawer(name + ":", (JComponent) comps[2], true);
 	  pVersionBox.add(drawer);
 	}

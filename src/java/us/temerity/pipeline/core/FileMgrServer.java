@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.27 2005/03/11 06:34:39 jim Exp $
+// $Id: FileMgrServer.java,v 1.28 2005/03/14 16:08:21 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -338,10 +338,28 @@ class FileMgrServer
 	      }
 	      break;
 
+
+	    case GetArchiveSizes:
+	      {
+		FileGetArchiveSizesReq req = (FileGetArchiveSizesReq) objIn.readObject();
+		objOut.writeObject(pFileMgr.getArchiveSizes(req));
+		objOut.flush(); 
+	      }
+	      break;
+	    
 	    case Archive:
 	      {
 		FileArchiveReq req = (FileArchiveReq) objIn.readObject();
 		objOut.writeObject(pFileMgr.archive(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+
+	    case GetOfflineSizes:
+	      {
+		FileGetOfflineSizesReq req = (FileGetOfflineSizesReq) objIn.readObject();
+		objOut.writeObject(pFileMgr.getOfflineSizes(req));
 		objOut.flush(); 
 	      }
 	      break;
@@ -361,13 +379,6 @@ class FileMgrServer
 	      }
 	      break;
 
-	    case GetSizes:
-	      {
-		FileGetSizesReq req = (FileGetSizesReq) objIn.readObject();
-		objOut.writeObject(pFileMgr.getSizes(req));
-		objOut.flush(); 
-	      }
-	      break;
 
 	    case Disconnect:
 	      live = false;

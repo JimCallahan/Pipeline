@@ -1,4 +1,4 @@
-// $Id: JEvolveDialog.java,v 1.2 2005/02/22 06:07:02 jim Exp $
+// $Id: JEvolveDialog.java,v 1.3 2005/03/14 16:08:21 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -109,13 +109,17 @@ class JEvolveDialog
    * 
    * @param vids
    *   The revision numbers of the checked-in versions of the node.
+   * 
+   * @param offline
+   *   The revision numbers of the offline checked-in versions.
    */ 
   public void 
   updateNameVersions
   (
    String header,
    VersionID currentID, 
-   ArrayList<VersionID> vids
+   TreeSet<VersionID> vids,
+   TreeSet<VersionID> offline
   )
   { 
     pHeaderLabel.setText(header);
@@ -139,7 +143,7 @@ class JEvolveDialog
       
       ArrayList<String> values = new ArrayList<String>();
       for(VersionID vid : pVersionIDs) 
-	values.add("v" + vid.toString());
+	values.add("v" + vid.toString() + (offline.contains(vid) ? " - Offline" : ""));
       
       pVersionField.setValues(values);
       pVersionField.setSelectedIndex(0);
