@@ -2,9 +2,12 @@
 imagesdir = @ROOT_INST_DIR@/share/docs/javadoc/images
 
 images_DATA = \
-  Matrix.gif \
-  MatrixIdentity.gif \
-  MatrixMatrixMult.gif \
-  MatrixTranspose.gif \
-  MatrixVectorMult.gif
-
+  MatrixArray.gif \
+  MatrixArrayIndex.gif \
+  MatrixDiagonalScalar.gif \
+  MatrixDiagonalTuple.gif \
+  MatrixInverse.gif \
+  MatrixMathIndex.gif \
+  MatrixMultMatrix.gif \
+  MatrixMultTuple.gif \
+  MatrixTranspose.gif

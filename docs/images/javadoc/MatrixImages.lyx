@@ -162,4 +162,11 @@ a_{1} & 0 & \cdots & 0\\
 \end_inset 
 
 
+\layout Standard
+
+
+\begin_inset Formula $AA^{-1}=I$
+\end_inset 
+
+
 \the_end
