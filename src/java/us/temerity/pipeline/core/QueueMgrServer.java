@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.12 2004/10/18 02:34:06 jim Exp $
+// $Id: QueueMgrServer.java,v 1.13 2004/10/24 08:07:50 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -623,12 +623,18 @@ class QueueMgrServer
     run() 
     {
       try {
+	Logs.net.fine("Collector Started.");
+
 	while(!pShutdown.get()) {
 	  pQueueMgr.collector();
 	}
       }
       catch (Exception ex) {
-	Logs.net.severe(getFullMessage(ex));	
+	Logs.net.severe("Collector Failed: " + getFullMessage(ex));	
+	Logs.flush();	
+      }
+      finally {
+	Logs.net.fine("Collector Finished.");	
 	Logs.flush();
       }
     }
@@ -651,12 +657,18 @@ class QueueMgrServer
     run() 
     {
       try {
+	Logs.net.fine("Dispatcher Started.");
+
 	while(!pShutdown.get()) {
 	  pQueueMgr.dispatcher();
 	}
       }
       catch (Exception ex) {
-	Logs.net.severe(getFullMessage(ex));	
+	Logs.net.severe("Dispatcher Failed: " + getFullMessage(ex));	
+	Logs.flush();
+      }
+      finally {
+	Logs.net.fine("Dispatcher Finished.");	
 	Logs.flush();
       }
     }
