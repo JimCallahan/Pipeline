@@ -274,12 +274,13 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 		   core/ToolsetEnvParserTokenManager \
                    ui/JManagerPanel:GroupMenuAnchor \
                    ui/JManagerPanel:PopupMenuAnchor \
+                   ui/JNodeViewerPanel:StatusTask \
+                   ui/UIMaster:UpdateStartupProgress \
                    ui/UIMaster:MainFrameTask \
                    ui/UIMaster:SplashFrameTask \
                    ui/UIMaster:StartupTask \
-                   ui/UIMaster:UpdateStartupProgress
-
-
+                   ui/UIMaster:BeginOpsTask \
+                   ui/UIMaster:EndOpsTask
 
 
 
