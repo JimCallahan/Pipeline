@@ -408,7 +408,7 @@ AC_PATH_PROG(DIFF, diff, $PATH)
 AC_PATH_PROG(XDIFF, xdiff, $PATH)
 AC_PATH_PROG(KILL, kill, $PATH)
 AC_PATH_PROG(SSH, ssh, $PATH)
-AC_PATH_PROG(YPCAT, ypcat, $PATH)
+AC_PATH_PROG(ID, id, $PATH)
 AC_PATH_PROG(DF, df, $PATH) 
 AC_PATH_PROG(MOZILLA, mozilla, $PATH)
 
@@ -582,6 +582,7 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/PackageInfo.java
   src/java/us/temerity/pipeline/native/Makefile
   src/java/us/temerity/pipeline/tests/Makefile
+  src/java/us/temerity/pipeline/tests/TestInfo.java
 
   src/java/scripts/Makefile
   src/java/scripts/pipeline
