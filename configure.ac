@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 1.8.7)
+AM_INIT_AUTOMAKE(Pipeline, 1.8.8)
 
 AC_MSG_RESULT([ ])
 
@@ -788,10 +788,9 @@ then
   PLNOTIFY_DEBUG_OPTS=${java_debug_opts}"43003"
   PLPLUGIN_DEBUG_OPTS=${java_debug_opts}"43004"
   PLQUEUEMGR_DEBUG_OPTS=${java_debug_opts}"43005"
-  PLJOBMGR_DEBUG_OPTS=
+  PLJOBMGR_DEBUG_OPTS=${java_debug_opts}"43006"
   PLUI_DEBUG_OPTS=
   PLSCRIPT_DEBUG_OPTS=
-dnl  PLJOBMGR_DEBUG_OPTS=${java_debug_opts}"43006"
 dnl  PLUI_DEBUG_OPTS=${java_debug_opts}"43007"
 dnl  PLSCRIPT_DEBUG_OPTS=${java_debug_opts}"43008"
   AC_MSG_RESULT([yes])
