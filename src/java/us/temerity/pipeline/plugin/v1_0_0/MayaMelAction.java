@@ -1,4 +1,4 @@
-// $Id: MayaMelAction.java,v 1.5 2004/09/13 23:44:21 jim Exp $
+// $Id: MayaMelAction.java,v 1.6 2004/10/14 22:38:15 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -139,7 +139,8 @@ class MayaMelAction
    ActionAgenda agenda
   )
     throws PipelineException
-  {
+  { 
+    makeTargetDir(agenda);
     NodeID nodeID = agenda.getNodeID();
 
     /* sanity checks */ 

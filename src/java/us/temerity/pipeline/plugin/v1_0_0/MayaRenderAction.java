@@ -1,4 +1,4 @@
-// $Id: MayaRenderAction.java,v 1.4 2004/09/12 20:14:50 jim Exp $
+// $Id: MayaRenderAction.java,v 1.5 2004/10/14 22:38:15 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -75,6 +75,8 @@ class MayaRenderAction
   )
     throws PipelineException
   {
+    makeTargetDir(agenda);
+
     /* sanity checks */ 
     File scene = null;
     {

@@ -1,4 +1,4 @@
-// $Id: CompositeAction.java,v 1.1 2004/09/13 23:44:33 jim Exp $
+// $Id: CompositeAction.java,v 1.2 2004/10/14 22:38:15 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -179,6 +179,7 @@ class CompositeAction
   )
     throws PipelineException
   {
+    makeTargetDir(agenda);
     NodeID nodeID = agenda.getNodeID();
 
     /* sanity checks */ 

@@ -1,4 +1,4 @@
-// $Id: ImfDispEditor.java,v 1.1 2004/10/13 03:23:23 jim Exp $
+// $Id: ImfDispEditor.java,v 1.2 2004/10/14 22:38:15 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -80,7 +80,7 @@ class ImfDispEditor
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID = 
+  private static final long serialVersionUID = 6115291021569654950L;
 
 }
 

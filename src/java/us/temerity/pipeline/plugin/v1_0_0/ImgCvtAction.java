@@ -1,4 +1,4 @@
-// $Id: ImgCvtAction.java,v 1.2 2004/09/13 04:04:38 jim Exp $
+// $Id: ImgCvtAction.java,v 1.3 2004/10/14 22:38:15 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -76,6 +76,7 @@ class ImgCvtAction
   )
     throws PipelineException
   {
+    makeTargetDir(agenda);
     NodeID nodeID = agenda.getNodeID();
 
     /* sanity checks */ 

@@ -1,4 +1,4 @@
-// $Id: MayaReferenceAction.java,v 1.1 2004/09/13 04:04:54 jim Exp $
+// $Id: MayaReferenceAction.java,v 1.2 2004/10/14 22:38:15 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -123,7 +123,9 @@ class MayaReferenceAction
    ActionAgenda agenda
   )
     throws PipelineException
-  {
+  { 
+    makeTargetDir(agenda);
+
     /* sanity checks */ 
     File initialMel = null;
     File modelMel = null;

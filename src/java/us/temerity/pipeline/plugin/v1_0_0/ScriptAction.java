@@ -1,4 +1,4 @@
-// $Id: ScriptAction.java,v 1.4 2004/09/22 05:40:00 jim Exp $
+// $Id: ScriptAction.java,v 1.5 2004/10/14 22:38:15 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -153,6 +153,8 @@ class ScriptAction
   )
     throws PipelineException
   {
+    makeTargetDir(agenda);
+
     /* get the name of the executable script file */ 
     File script = null;
     {
