@@ -8,7 +8,7 @@
     </state>
     <state value="SELECTED">
        <color value="#ffff00" type="TEXT_FOREGROUND"/>
-       <color value="#666666" type="TEXT_BACKGROUND"/>
+       <color value="#727272" type="TEXT_BACKGROUND"/>
     </state>
   </style>
   <bind style="Default" type="region" key=".*"/>
@@ -67,6 +67,10 @@
     </state>
     <state value="SELECTED">
       <imagePainter path="TargetButtonSelected.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="DISABLED">
+      <imagePainter path="TargetButtonDisabled.png"
                     sourceInsets="0 0 0 0"/>
     </state>
   </style>
@@ -195,6 +199,28 @@
     <property key="ScrollPane.viewportBorderInsets" type="insets" value="5 5 5 5"/>
   </style>
   <bind style="ComboBoxScrollPane" type="name" key="ComboBox.scrollPane"/>
+
+
+
+  <!--  T R E E  -->
+
+  <style id="Tree">
+    <imageIcon id="TreeCellCollapsedIcon" path="TreeCellCollapsedIcon.png"/>
+    <property key="Tree.collapsedIcon" value="TreeCellCollapsedIcon"/>
+
+    <imageIcon id="TreeCellExpandedIcon" path="TreeCellExpandedIcon.png"/>
+    <property key="Tree.expandedIcon" value="TreeCellExpandedIcon"/>
+
+    <property key="Tree.drawHorizontalLegs" type="boolean" value="true"/>
+    <property key="Tree.drawVerticalLines" type="boolean" value="true"/>
+
+    <property key="Tree.leftChildIndent" type="integer" value="8"/>
+    <property key="Tree.rightChildIndent" type="integer" value="12"/>
+    <property key="Tree.rowHeight" type="integer" value="18"/>
+
+    <insets top="6" bottom="6" right="6" left="6"/>
+  </style>
+  <bind style="Tree" type="region" key="Tree"/>
 
 
    
@@ -409,6 +435,7 @@
         key="SplitPaneVerticalDivider.downOneTouchButton"/>
 
 
+
   <!--  T A B B E D   P A N E  -->
 
   <style id="TabbedPane">
@@ -442,6 +469,7 @@
     <insets top="0" bottom="0" right="40" left="0"/>
   </style>
   <bind style="TabbedPaneTab" type="region" key="TabbedPaneTab"/>
+
 
 
   <!--  D I A L O G S  -->
