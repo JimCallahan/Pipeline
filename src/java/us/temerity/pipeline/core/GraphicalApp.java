@@ -1,4 +1,4 @@
-// $Id: GraphicalApp.java,v 1.8 2005/01/08 05:31:33 jim Exp $
+// $Id: GraphicalApp.java,v 1.9 2005/01/22 01:36:35 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -69,7 +69,9 @@ class GraphicalApp
     }
     catch(InternalError ex) {
       if(ex.getMessage().startsWith("Can't connect to X11 window server")) 
-	Logs.ops.severe(ex.getMessage());
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	   ex.getMessage());
       else 
 	throw ex;
     }
@@ -87,26 +89,27 @@ class GraphicalApp
   public void
   help()
   {
-    Logs.ops.info(
-      "USAGE:\n" +
-      "  plui [options]\n" + 
-      "\n" + 
-      "  plui --help\n" +
-      "  plui --html-help\n" +
-      "  plui --version\n" + 
-      "  plui --release-date\n" + 
-      "  plui --copyright\n" + 
-      "  plui --license\n" + 
-      "\n" + 
-      "GLOBAL OPTIONS:\n" +
-      "  [--master-host=...] [--master-port=...]\n" + 
-      "  [--queue-host=...] [--queue-port=...] [--job-port=...]\n" + 
-      "  [--log-file=...] [--log-backups=...] [--log=...]\n" +
-      "  [--no-layout] [--layout=...] [--no-selections]\n" + 
-      "  [--debug-gl=...] [--trace-gl=...]\n" +
-      "\n" + 
-      "\n" +  
-      "Use \"plui --html-help\" to browse the full documentation.\n");
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "USAGE:\n" +
+       "  plui [options]\n" + 
+       "\n" + 
+       "  plui --help\n" +
+       "  plui --html-help\n" +
+       "  plui --version\n" + 
+       "  plui --release-date\n" + 
+       "  plui --copyright\n" + 
+       "  plui --license\n" + 
+       "\n" + 
+       "GLOBAL OPTIONS:\n" +
+       "  [--master-host=...] [--master-port=...]\n" + 
+       "  [--queue-host=...] [--queue-port=...] [--job-port=...]\n" + 
+       "  [--log-file=...] [--log-backups=...] [--log=...]\n" +
+       "  [--no-layout] [--layout=...] [--no-selections]\n" + 
+       "  [--debug-gl=...] [--trace-gl=...]\n" +
+       "\n" + 
+       "\n" +  
+       "Use \"plui --html-help\" to browse the full documentation.\n");
   }
 
 

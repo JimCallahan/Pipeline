@@ -1,4 +1,4 @@
-// $Id: QueueGetJobRsp.java,v 1.1 2004/08/22 22:05:43 jim Exp $
+// $Id: QueueGetJobRsp.java,v 1.2 2005/01/22 01:36:36 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -46,9 +46,11 @@ class QueueGetJobRsp
       throw new IllegalArgumentException("The job cannot be (null)!");
     pJob = job;
 
-    Logs.net.finest("QueueMgr.getJob():\n  " + getTimer());
-    if(Logs.net.isLoggable(Level.FINEST))
-      Logs.flush();
+    LogMgr.getInstance().log
+(LogMgr.Kind.Net, LogMgr.Level.Finest,
+"QueueMgr.getJob():\n  " + getTimer());
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
+      LogMgr.getInstance().flush();
   }
 
 

@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.10 2005/01/15 02:56:33 jim Exp $
+// $Id: UIMaster.java,v 1.11 2005/01/22 01:36:36 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -775,7 +775,9 @@ class UIMaster
       SwingUtilities.invokeLater(new EndOpsTask(msg)); 
     }
     catch(IllegalMonitorStateException ex) {
-      Logs.ops.severe("Internal Error:\n" + 
+      LogMgr.getInstance().log
+(LogMgr.Kind.Ops, LogMgr.Level.Severe,
+"Internal Error:\n" + 
 		      "  " + ex.getMessage());
     }
   }
@@ -1078,8 +1080,10 @@ class UIMaster
 	  LockedGlueFile.save(file, "CollapsedNodePaths", pCollapsedNodePaths); 
 	}
 	catch(Exception ex) {
-	  Logs.ops.warning("Unable to save (" + file + ")!");
-	  Logs.flush();
+	  LogMgr.getInstance().log
+(LogMgr.Kind.Ops, LogMgr.Level.Warning,
+"Unable to save (" + file + ")!");
+	  LogMgr.getInstance().flush();
 	}
       }
     }
@@ -1129,8 +1133,10 @@ class UIMaster
 	  File dir = new File(base, subdirs[wk]);
 	  if(!dir.isDirectory()) {
 	    if(!dir.mkdirs()) {
-	      Logs.ops.severe("Unable to create (" + dir + ")!");
-	      Logs.flush();
+	      LogMgr.getInstance().log
+(LogMgr.Kind.Ops, LogMgr.Level.Severe,
+"Unable to create (" + dir + ")!");
+	      LogMgr.getInstance().flush();
 	      System.exit(1);	    
 	    }
 	    NativeFileSys.chmod(0700, dir);
@@ -1153,16 +1159,20 @@ class UIMaster
 		pCollapsedNodePaths.addAll(collapsed);
 	    }
 	    catch(Exception ex) {
-	      Logs.ops.warning("Unable to load (" + file + ")!");
-	      Logs.flush();
+	      LogMgr.getInstance().log
+(LogMgr.Kind.Ops, LogMgr.Level.Warning,
+"Unable to load (" + file + ")!");
+	      LogMgr.getInstance().flush();
 	    }
 	  }
 	}
       }
       catch(Exception ex) {	
-	Logs.ops.severe("Unable to initialize the user preferences!\n" + 
+	LogMgr.getInstance().log
+(LogMgr.Kind.Ops, LogMgr.Level.Severe,
+"Unable to initialize the user preferences!\n" + 
 			"  " + ex.getMessage());
-	Logs.flush();
+	LogMgr.getInstance().flush();
 	System.exit(1);	 
       }
 
@@ -1171,9 +1181,11 @@ class UIMaster
 	pMasterMgrClient.createWorkingArea(PackageInfo.sUser, "default");
       }
       catch(PipelineException ex) {	
-	Logs.ops.severe("Unable to initialize the default working area!\n" + 
+	LogMgr.getInstance().log
+(LogMgr.Kind.Ops, LogMgr.Level.Severe,
+"Unable to initialize the default working area!\n" + 
 			"  " + ex.getMessage());
-	Logs.flush();
+	LogMgr.getInstance().flush();
 	System.exit(1);	 
       }
 
@@ -1186,12 +1198,16 @@ class UIMaster
 	  UIManager.setLookAndFeel(synth);
 	}
 	catch(java.text.ParseException ex) {
-	  Logs.ops.severe("Unable to parse the look-and-feel XML file (synth.xml):\n" + 
+	  LogMgr.getInstance().log
+(LogMgr.Kind.Ops, LogMgr.Level.Severe,
+"Unable to parse the look-and-feel XML file (synth.xml):\n" + 
 			  "  " + ex.getMessage());
 	  System.exit(1);
 	}
 	catch(UnsupportedLookAndFeelException ex) {
-	  Logs.ops.severe("Unable to load the Pipeline look-and-feel:\n" + 
+	  LogMgr.getInstance().log
+(LogMgr.Kind.Ops, LogMgr.Level.Severe,
+"Unable to load the Pipeline look-and-feel:\n" + 
 			  "  " + ex.getMessage());
 	  System.exit(1);
 	}

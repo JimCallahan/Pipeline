@@ -1,4 +1,4 @@
-// $Id: SuccessRsp.java,v 1.7 2004/06/08 20:05:11 jim Exp $
+// $Id: SuccessRsp.java,v 1.8 2005/01/22 01:36:36 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -38,9 +38,11 @@ class SuccessRsp
   {
     super(timer);
 
-    Logs.net.finest(getTimer().toString()); 
-    if(Logs.net.isLoggable(Level.FINEST))
-      Logs.flush();
+    LogMgr.getInstance().log
+(LogMgr.Kind.Net, LogMgr.Level.Finest,
+getTimer().toString()); 
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
+      LogMgr.getInstance().flush();
   }
 
   

@@ -1,4 +1,4 @@
-// $Id: JobMgrApp.java,v 1.5 2004/10/24 10:56:53 jim Exp $
+// $Id: JobMgrApp.java,v 1.6 2005/01/22 01:36:35 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -73,10 +73,12 @@ class JobMgrApp
       handleParseException(ex);
     }
     catch (Exception ex) {
-      Logs.net.severe(ex.getMessage());
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Severe,
+	 ex.getMessage());
     }
     finally {
-      Logs.cleanup();
+      LogMgr.getInstance().cleanup();
     }
 
     System.exit(success ? 0 : 1);
@@ -94,23 +96,24 @@ class JobMgrApp
   public void
   help()
   {
-    Logs.ops.info(
-      "USAGE:\n" +
-      "  pljobmgr [options]\n" + 
-      "\n" + 
-      "  pljobmgr --help\n" +
-      "  pljobmgr --html-help\n" +
-      "  pljobmgr --version\n" + 
-      "  pljobmgr --release-date\n" + 
-      "  pljobmgr --copyright\n" + 
-      "  pljobmgr --license\n" + 
-      "\n" + 
-      "GLOBAL OPTIONS:\n" +
-      "  [--job-port=...]\n" + 
-      "  [--log-file=...][--log-backups=...][--log=...]\n" +
-      "\n" + 
-      "\n" +  
-      "Use \"pljobmgr --html-help\" to browse the full documentation.\n");
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "USAGE:\n" +
+       "  pljobmgr [options]\n" + 
+       "\n" + 
+       "  pljobmgr --help\n" +
+       "  pljobmgr --html-help\n" +
+       "  pljobmgr --version\n" + 
+       "  pljobmgr --release-date\n" + 
+       "  pljobmgr --copyright\n" + 
+       "  pljobmgr --license\n" + 
+       "\n" + 
+       "GLOBAL OPTIONS:\n" +
+       "  [--job-port=...]\n" + 
+       "  [--log-file=...][--log-backups=...][--log=...]\n" +
+       "\n" + 
+       "\n" +  
+       "Use \"pljobmgr --html-help\" to browse the full documentation.\n");
   }
 
 

@@ -1,4 +1,4 @@
-// $Id: TestFileMgr2App.java,v 1.5 2004/12/29 17:30:32 jim Exp $
+// $Id: TestFileMgr2App.java,v 1.6 2005/01/22 01:36:36 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -25,7 +25,7 @@ class TestFileMgr2App
    String[] args  /* IN: command line arguments */
   )
   {
-    Logs.init();
+    
     Logs.net.setLevel(Level.FINEST);
     Logs.sub.setLevel(Level.FINER);
     //Logs.sum.setLevel(Level.FINER);
@@ -382,7 +382,9 @@ class TestFileMgr2App
 	client.disconnect();
       }
       catch(PipelineException ex) {
-	Logs.ops.severe(ex.getMessage());
+	LogMgr.getInstance().log
+(LogMgr.Kind.Ops, LogMgr.Level.Severe,
+ex.getMessage());
       }
     }
 

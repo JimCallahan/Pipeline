@@ -1,4 +1,4 @@
-// $Id: MiscGetArchiveIndexRsp.java,v 1.1 2004/11/16 03:56:36 jim Exp $
+// $Id: MiscGetArchiveIndexRsp.java,v 1.2 2005/01/22 01:36:36 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -48,9 +48,11 @@ class MiscGetArchiveIndexRsp
       throw new IllegalArgumentException("The restore index cannot be (null)!");
     pIndex = index;
 
-    Logs.net.finest("MasterMgr.getArchiveIndex()\n  " + getTimer());
-    if(Logs.net.isLoggable(Level.FINEST))
-      Logs.flush();
+    LogMgr.getInstance().log
+(LogMgr.Kind.Net, LogMgr.Level.Finest,
+"MasterMgr.getArchiveIndex()\n  " + getTimer());
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
+      LogMgr.getInstance().flush();
   }
 
   

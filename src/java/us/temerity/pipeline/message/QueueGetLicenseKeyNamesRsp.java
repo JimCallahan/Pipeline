@@ -1,4 +1,4 @@
-// $Id: QueueGetLicenseKeyNamesRsp.java,v 1.1 2004/07/24 18:28:45 jim Exp $
+// $Id: QueueGetLicenseKeyNamesRsp.java,v 1.2 2005/01/22 01:36:36 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -46,9 +46,11 @@ class QueueGetLicenseKeyNamesRsp
       throw new IllegalArgumentException("The license key names cannot be (null)!");
     pKeyNames = names;
 
-    Logs.net.finest("QueueMgr.getLicenseKeyNames():\n  " + getTimer());
-    if(Logs.net.isLoggable(Level.FINEST))
-      Logs.flush();
+    LogMgr.getInstance().log
+(LogMgr.Kind.Net, LogMgr.Level.Finest,
+"QueueMgr.getLicenseKeyNames():\n  " + getTimer());
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
+      LogMgr.getInstance().flush();
   }
 
 

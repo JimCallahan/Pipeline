@@ -1,4 +1,4 @@
-// $Id: ViewerNode.java,v 1.1 2005/01/03 06:56:25 jim Exp $
+// $Id: ViewerNode.java,v 1.2 2005/01/22 01:36:36 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -252,7 +252,9 @@ class ViewerNode
 	pCollapsedDL = mgr.getNodeIconDL(gl, "Collapsed");
     }
     catch(IOException ex) {
-      Logs.tex.severe(ex.getMessage());
+      LogMgr.getInstance().log
+(LogMgr.Kind.Tex, LogMgr.Level.Severe,
+ex.getMessage());
     }
   }
 

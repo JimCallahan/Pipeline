@@ -1,4 +1,4 @@
-// $Id: TestSubProcessApp.java,v 1.5 2004/12/29 17:30:32 jim Exp $
+// $Id: TestSubProcessApp.java,v 1.6 2005/01/22 01:36:36 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -24,7 +24,7 @@ class TestSubProcessApp
    String[] args  /* IN: command line arguments */
   )
   {
-    Logs.init();
+    
     Logs.sub.setLevel(Level.FINEST);
 
     try {
@@ -70,14 +70,18 @@ class TestSubProcessApp
 	  proc.join();
 	}
 	catch(InterruptedException ex) {
-	    Logs.sub.severe(ex.getMessage());
+	    LogMgr.getInstance().log
+(LogMgr.Kind.Sub, LogMgr.Level.Severe,
+ex.getMessage());
 	}
 
 	printAllStats(proc);
       }
     }
     catch(IOException ex) {
-      Logs.sub.severe(ex.getMessage());
+      LogMgr.getInstance().log
+(LogMgr.Kind.Sub, LogMgr.Level.Severe,
+ex.getMessage());
     }
 
     /* check resource usage statistics  */ 
@@ -101,7 +105,9 @@ class TestSubProcessApp
 	proc.join();
       }
       catch(InterruptedException ex) {
-	Logs.sub.severe(ex.getMessage());
+	LogMgr.getInstance().log
+(LogMgr.Kind.Sub, LogMgr.Level.Severe,
+ex.getMessage());
       }
       printAllStats(proc);
     }
@@ -132,7 +138,9 @@ class TestSubProcessApp
 	proc.join();
       }
       catch(InterruptedException ex) {
-	Logs.sub.severe(ex.getMessage());
+	LogMgr.getInstance().log
+(LogMgr.Kind.Sub, LogMgr.Level.Severe,
+ex.getMessage());
       }
       printAllStats(proc);
     }
@@ -159,7 +167,9 @@ class TestSubProcessApp
 	proc.join();
       }
       catch(InterruptedException ex) {
-	Logs.sub.severe(ex.getMessage());
+	LogMgr.getInstance().log
+(LogMgr.Kind.Sub, LogMgr.Level.Severe,
+ex.getMessage());
       }
       printAllStats(proc);
     }
@@ -188,7 +198,9 @@ class TestSubProcessApp
 	proc.join();
       }
       catch(InterruptedException ex) {
-	Logs.sub.severe(ex.getMessage());
+	LogMgr.getInstance().log
+(LogMgr.Kind.Sub, LogMgr.Level.Severe,
+ex.getMessage());
       }
       printAllStats(proc);
     }
@@ -213,7 +225,9 @@ class TestSubProcessApp
 	proc.join();
       }
       catch(InterruptedException ex) {
-	Logs.sub.severe(ex.getMessage());
+	LogMgr.getInstance().log
+(LogMgr.Kind.Sub, LogMgr.Level.Severe,
+ex.getMessage());
       }
       printAllStats(proc);
     }
@@ -240,7 +254,9 @@ class TestSubProcessApp
 	proc.join();
       }
       catch(InterruptedException ex) {
-	Logs.sub.severe(ex.getMessage());
+	LogMgr.getInstance().log
+(LogMgr.Kind.Sub, LogMgr.Level.Severe,
+ex.getMessage());
       }
       printAllStats(proc);
     }

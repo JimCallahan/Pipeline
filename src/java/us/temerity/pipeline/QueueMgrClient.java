@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.19 2005/01/15 15:06:24 jim Exp $
+// $Id: QueueMgrClient.java,v 1.20 2005/01/22 01:36:35 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -61,7 +61,9 @@ class QueueMgrClient
       }
     }
     catch(Exception ex) {
-      Logs.net.warning(ex.getMessage());
+      LogMgr.getInstance().log
+(LogMgr.Kind.Net, LogMgr.Level.Warning,
+ex.getMessage());
     }
   }
 

@@ -1,4 +1,4 @@
-// $Id: NodeVersion.java,v 1.19 2004/10/30 13:42:19 jim Exp $
+// $Id: NodeVersion.java,v 1.20 2005/01/22 01:36:35 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -94,8 +94,9 @@ class NodeVersion
     if(pAction != null) {
       for(String sname : pAction.getSourceNames()) {
 	if(!pSources.containsKey(sname)) {
-	  Logs.ops.warning
-	    ("While creating checked-in node (" + pName + ") version (" + pVersionID + "), " +
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Ops, LogMgr.Level.Warning, 
+	     "While creating checked-in node (" + pName + ") version (" + pVersionID + "), " +
 	     "per-source action parameters for source (" + sname + ") where found for the " + 
 	     "action associated with the working version being checked-in, but there were " + 
 	     "NO upstream links to this source node!  These extra per-source parameters " + 

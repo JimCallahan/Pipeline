@@ -1,4 +1,4 @@
-// $Id: MiscGetRestoreRequestsRsp.java,v 1.1 2004/11/16 03:56:36 jim Exp $
+// $Id: MiscGetRestoreRequestsRsp.java,v 1.2 2005/01/22 01:36:36 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -49,9 +49,11 @@ class MiscGetRestoreRequestsRsp
       throw new IllegalArgumentException("The restore requests cannot be (null)!");
     pRequests = requests;
 
-    Logs.net.finest("MasterMgr.getRestoreRequests()\n  " + getTimer());
-    if(Logs.net.isLoggable(Level.FINEST))
-      Logs.flush();
+    LogMgr.getInstance().log
+(LogMgr.Kind.Net, LogMgr.Level.Finest,
+"MasterMgr.getRestoreRequests()\n  " + getTimer());
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
+      LogMgr.getInstance().flush();
   }
 
   

@@ -1,4 +1,4 @@
-// $Id: MiscGetSuffixEditorsRsp.java,v 1.2 2004/06/08 20:05:11 jim Exp $
+// $Id: MiscGetSuffixEditorsRsp.java,v 1.3 2005/01/22 01:36:36 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -47,9 +47,11 @@ class MiscGetSuffixEditorsRsp
       throw new IllegalArgumentException("The suffix editors cannot be (null)!");
     pEditors = editors;
 
-    Logs.net.finest("MasterMgr.getSuffixEditors():\n  " + getTimer());
-    if(Logs.net.isLoggable(Level.FINEST))
-      Logs.flush();
+    LogMgr.getInstance().log
+(LogMgr.Kind.Net, LogMgr.Level.Finest,
+"MasterMgr.getSuffixEditors():\n  " + getTimer());
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
+      LogMgr.getInstance().flush();
   }
 
 

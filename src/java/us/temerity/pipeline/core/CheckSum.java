@@ -1,4 +1,4 @@
-// $Id: CheckSum.java,v 1.5 2004/07/14 20:48:14 jim Exp $
+// $Id: CheckSum.java,v 1.6 2005/01/22 01:36:35 jim Exp $
 
 package us.temerity.pipeline.core;
  
@@ -210,7 +210,9 @@ class CheckSum
     if(sfile.isFile() && (sfile.lastModified() >= file.lastModified())) 
       return;
 
-    Logs.sum.finer("Rebuilding checksum for: " + file);
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Sum, LogMgr.Level.Finer,
+       "Rebuilding checksum for: " + file);
 
     /* verify (and possibly create) checksum directory */ 
     {
@@ -288,7 +290,9 @@ class CheckSum
 
     /* write the checksum to file */ 
     try {
-      Logs.sum.finest("Writing the checksum file: " + sfile);
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Sum, LogMgr.Level.Finest,
+	 "Writing the checksum file: " + sfile);
 
       FileOutputStream out = new FileOutputStream(sfile);	
       try {
@@ -315,7 +319,7 @@ class CheckSum
       assert(false);
     }
 
-    Logs.flush();
+    LogMgr.getInstance().flush();
   }
 
   /**
@@ -345,7 +349,9 @@ class CheckSum
   ) 
     throws PipelineException
   {
-    Logs.sum.fine("Comparing (checksums of): " + pathA + " " + pathB);
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Sum, LogMgr.Level.Fine,
+       "Comparing (checksums of): " + pathA + " " + pathB);
 
     /* make sure the files are distinct */ 
     if(pathA.compareTo(pathB) == 0) 

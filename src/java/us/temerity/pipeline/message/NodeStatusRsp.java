@@ -1,4 +1,4 @@
-// $Id: NodeStatusRsp.java,v 1.6 2004/06/08 20:05:11 jim Exp $
+// $Id: NodeStatusRsp.java,v 1.7 2005/01/22 01:36:36 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -54,9 +54,11 @@ class NodeStatusRsp
       throw new IllegalArgumentException("The node status cannot be (null)!");
     pNodeStatus = status;    
 
-    Logs.net.finest("MasterMgr.status(): " + id + ":\n  " + getTimer());
-    if(Logs.net.isLoggable(Level.FINEST))
-      Logs.flush();
+    LogMgr.getInstance().log
+(LogMgr.Kind.Net, LogMgr.Level.Finest,
+"MasterMgr.status(): " + id + ":\n  " + getTimer());
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
+      LogMgr.getInstance().flush();
   }
 
 

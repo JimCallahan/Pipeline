@@ -1,4 +1,4 @@
-// $Id: QueueGetRunningJobInfoRsp.java,v 1.1 2004/10/25 18:56:46 jim Exp $
+// $Id: QueueGetRunningJobInfoRsp.java,v 1.2 2005/01/22 01:36:36 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -46,9 +46,11 @@ class QueueGetRunningJobInfoRsp
       throw new IllegalArgumentException("The job info cannot be (null)!");
     pJobInfo = jobInfo;
 
-    Logs.net.finest("QueueMgr.getRunningJobInfo():\n  " + getTimer());
-    if(Logs.net.isLoggable(Level.FINEST))
-      Logs.flush();
+    LogMgr.getInstance().log
+(LogMgr.Kind.Net, LogMgr.Level.Finest,
+"QueueMgr.getRunningJobInfo():\n  " + getTimer());
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
+      LogMgr.getInstance().flush();
   }
 
 

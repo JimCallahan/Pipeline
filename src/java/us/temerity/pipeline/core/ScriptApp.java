@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.28 2005/01/15 21:15:54 jim Exp $
+// $Id: ScriptApp.java,v 1.29 2005/01/22 01:36:35 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -74,19 +74,25 @@ class ScriptApp
 	handleParseException(ex);
       }
       catch(PipelineException ex) {
-	Logs.ops.severe(wordWrap(ex.getMessage(), 0, 80));
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	   wordWrap(ex.getMessage(), 0, 80));
       }
       catch(Exception ex) {
-	Logs.ops.severe(getFullMessage(ex));
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	   getFullMessage(ex));
       }
       finally {
 	if(parser != null)
 	  parser.disconnect();
-	Logs.cleanup();
+	LogMgr.getInstance().cleanup();
       }
     }
     catch(PipelineException ex) {
-      Logs.ops.severe(wordWrap(ex.getMessage(), 0, 80));
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	 wordWrap(ex.getMessage(), 0, 80));
     }
     finally {
       PluginMgrClient.getInstance().disconnect();
@@ -107,209 +113,210 @@ class ScriptApp
   public void
   help()
   {
-    Logs.ops.info(
-      "USAGE:\n" +
-      "  plscript [global-options] command [command-options]\n" + 
-      "  plscript [global-options] --batch=batchfile\n" + 
-      "\n" + 
-      "  plscript --help\n" +
-      "  plscript --html-help\n" +
-      "  plscript --version\n" + 
-      "  plscript --release-date\n" + 
-      "  plscript --copyright\n" + 
-      "  plscript --license\n" + 
-      "\n" + 
-      "GLOBAL OPTIONS:\n" +
-      "  [--master-host=...] [--master-port=...]\n" + 
-      "  [--queue-host=...] [--queue-port=...] [--job-port=...]\n" + 
-      "  [--log-file=...][--log-backups=...][--log=...]\n" +
-      "\n" + 
-      "COMMANDS:\n\n" +
-      "  Privileged Users:\n" +
-      "    privileged\n" + 
-      "      --get\n" + 
-      "      --grant=user-name\n" + 
-      "      --revoke=user-name\n" + 
-      "\n" + 
-      "  Administration\n" +
-      "    admin\n" + 
-      "      --shutdown [--shutdown-jobmgrs] [--shutdown-pluginmgr]\n" + 
-      "      --backup=dir\n" +
-      "\n" + 
-      "  Toolset Administration\n" + 
-      "    default-toolset\n" + 
-      "      --get\n" + 
-      "      --set=toolset-name\n" + 
-      "    active-toolset\n" + 
-      "      --get\n" + 
-      "      --add=toolset-name\n" + 
-      "      --remove=toolset-name\n" + 
-      "    toolset\n" + 
-      "      --get\n" + 
-      "      --get-info=toolset-name\n" + 
-      "      --get-info-all\n" + 
-      "      --export=toolset-name\n" + 
-      "\n" + 
-      "  Queue Administration\n" + 
-      "    license-key\n" + 
-      "      --get\n" + 
-      "      --get-info=key-name\n" +
-      "      --get-info-all\n" + 
-      "      --add=key-name\n" + 
-      "        --msg=\"key-description\" --total=integer\n" + 
-      "      --set=key-name\n" + 
-      "        --total=integer\n" +
-      "      --remove=key-name\n" +
-      "    selection-key\n" + 
-      "      --get\n" + 
-      "      --get-info=key-name\n" + 
-      "      --get-info-all\n" + 
-      "      --add=key-name\n" + 
-      "        --msg=\"key-description\"\n" + 
-      "      --remove=key-name\n" + 
-      "    job-server\n" + 
-      "      --get\n" + 
-      "      --get-info=host-name\n" + 
-      "      --get-info-all\n" + 
-      "      --add=host-name\n" + 
-      "      --set=host-name\n" + 
-      "       [--shutdown | --disable | --enable] [--reserve=user-name | --open]\n" + 
-      "       [--slots=integer] [--selection-bias=key-name:bias]\n" + 
-      "       [--remove-key=key-name]\n" + 
-      "      --remove=host-name\n" + 
-      "\n" + 
-      "  Plugins\n" + 
-      "    editor\n" + 
-      "      --get\n" + 
-      "      --get-info=editor-name[:major.minor.micro]\n" + 
-      "      --get-info-all\n" + 
-      "    action\n" + 
-      "      --get\n" + 
-      "      --get-info=action-name[:major.minor.micro]\n" + 
-      "      --get-info-all\n" + 
-      "    comparator\n" + 
-      "      --get\n" + 
-      "      --get-info=comparator-name[:major.minor.micro]\n" + 
-      "      --get-info-all\n" + 
-      "    tool\n" + 
-      "      --get\n" + 
-      "      --get-info=tool-name[:major.minor.micro]\n" + 
-      "      --get-info-all\n" + 
-      "    archiver\n" + 
-      "      --get\n" + 
-      "      --get-info=archiver-name[:major.minor.micro]\n" + 
-      "      --get-info-all\n" + 
-      "\n" + 
-      "  User Preferences\n" + 
-      "    suffix-editor\n" + 
-      "      --get\n" + 
-      "      --get-info=suffix\n" + 
-      "      --get-info-all\n" + 
-      "      --set=suffix\n" + 
-      "          --msg=\"suffix-description\" --editor=editor-name[:major.minor.micro]\n" + 
-      "      --remove=suffix\n" + 
-      "      --reset\n" + 
-      "\n" +
-      "  Working Area Views\n" + 
-      "    view\n" + 
-      "      --get\n" + 
-      "      --create=view-name\n" + 
-      "\n" + 
-      "  Working Node Versions\n" +
-      "    working\n" +
-      "      --get-info=node-name\n" +
-      "        [--author=user-name] [--view=view-name]\n" +
-      "        [--show=section[,section ...]] [--hide=section[,section ...]]\n" +
-      "      --register=node-name\n" +
-      "        [--author=user-name] [--view=view-name]\n" +
-      "        --fseq=prefix[.#|@...][.suffix][,start[-end[xby]]]\n" +
-      "        [--toolset=toolset-name] [--editor=editor-name[:major.minor.micro]]\n" +
-      "        [--no-action | --action=action-name[:major.minor.micro]]\n" +
-      "        [--action-enabled=true|false] [--param=name:value ...]\n" +
-      "        [--source-param=source-name,name:value ...]\n" +
-      "        [--ignore | --abort] [--serial | --parallel] [--batch-size=integer]\n" +
-      "        [--priority=integer] [--ramp-up=milliseconds] [--max-load=real]\n" +
-      "        [--min-memory=bytes[K|M|G]] [--min-disk=bytes[K|M|G]]\n" +
-      "        [--license-key=key-name[:true|false] ...]\n" +
-      "        [--selection-key=key-name[:true|false] ...]\n" +
-      "      --release=node-name\n" +
-      "        [--author=user-name] [--view=view-name]\n" +
-      "        [--remove-files]\n" +
-      "      --set=node-name\n" +
-      "        [--author=user-name] [--view=view-name]\n" +
-      "        [--toolset=toolset-name] [--editor=editor-name[:major.minor.micro]]\n" +
-      "        [--no-action | --action=action-name[:major.minor.micro]]\n" +
-      "        [--action-enabled=true|false] [--param=name:value ...]\n" + 
-      "        [--no-param=source-name | --source-param=source-name,name:value ...]\n" +
-      "        [--ignore | --abort] [--serial | --parallel] [--batch-size=integer]\n" +
-      "        [--priority=integer] [--ramp-up=milliseconds] [--max-load=real]\n" +
-      "        [--min-memory=bytes[K|M|G]] [--min-disk=bytes[K|M|G]]\n" +
-      "        [--license-key=key-name[:true|false] ...]\n" + 
-      "        [--selection-key=key-name[:true|false] ...]\n" +
-      "      --link=node-name\n" +
-      "        [--author=user-name] [--view=view-name]\n" +
-      "        --assoc=node-name |\n" + 
-      "        --ref=node-name[,all|offset] | \n" + 
-      "        --depend=node-name[,all|offset]\n" + 
-      "      --unlink=node-name\n" +
-      "        [--author=user-name] [--view=view-name]\n" +
-      "        --source=node-name ...\n" +
-      "      --add-secondary=node-name\n" +
-      "        [--author=user-name] [--view=view-name]\n" +
-      "        --fseq=prefix[.#|@...][.suffix],start[-end[xby]]\n" +
-      "      --remove-secondary=node-name\n" +
-      "        [--author=user-name] [--view=view-name]\n" +
-      "        --fseq=prefix[.#|@...][.suffix][,start[-end[xby]]]\n" +
-      "      --rename=node-name\n" +
-      "        [--author=user-name] [--view=view-name]\n" +
-      "        --name=new-node-name [--rename-files]\n" +
-      "      --renumber=node-name\n" +
-      "        [--author=user-name] [--view=view-name]\n" +
-      "        --range=start[-end[xby]] [--remove-files]\n" +
-      "      --edit=node-name\n" +
-      "        [--author=user-name] [--view=view-name]\n" +
-      "        [--editor=editor-name[:major.minor.micro]]\n" +
-      "        [--frame=single|start-end[,...] ...] [--index=single|start-end[,...] ...]\n" +
-      "        [--fseq=prefix[.#|@...][.suffix][,start[-end[xby]]]]\n" +
-      "        [--wait]\n" +
-      "      --submit-jobs=node-name\n" +
-      "        [--author=user-name] [--view=view-name]\n" +
-      "        [--frame=single|start-end[,...] ...] [--index=single|start-end[,...] ...]\n" +
-      "        [--wait]\n" +
-      "      --remove-files=node-name\n" +
-      "        [--author=user-name] [--view=view-name]\n" +
-      "        [--frame=single|start-end[,...] ...] [--index=single|start-end[,...] ...]\n" +
-      "\n" +
-      "  Checked-In Node Versions\n" +
-      "    checked-in\n" +
-      "      --get-info=node-name\n" +
-      "        [--version=major.minor.micro | --latest ...]\n" +
-      "        [--show=section[,section ...]] [--hide=section[,section ...]]\n" +
-      "      --history=node-name\n" +
-      "        [--version=major.minor.micro | --latest ...]\n" +
-      "      --view=node-name\n" +
-      "        [--version=major.minor.micro]\n" +
-      "        [--editor=editor-name[:major.minor.micro]]\n" +
-      "        [--frame=single|start-end[,...] ...] [--index=single|start-end[,...] ...]\n" +
-      "        [--fseq=prefix[.#|@...][.suffix][,start[-end[xby]]]]\n" +
-      "\n" + 
-      "  Node Operations\n" +
-      "    node\n" +
-      "      --status=node-name\n" +
-      "        [--author=user-name] [--view=view-name]\n" +
-      "        [--brief] [--upstream] [--link-graph]\n" +
-      "        [--show=section[,section ...]] [--hide=section[,section ...]]\n" +
-      "      --check-in=node-name\n" +
-      "        [--author=user-name] [--view=view-name]\n" +
-      "        --msg=\"log-message\" [--major | --minor | --micro]\n" +
-      "      --check-out=node-name\n" +
-      "        [--author=user-name] [--view=view-name]\n" +
-      "        [--version=major.minor.micro] [--always | --keep-newer | --keep-modified]\n" +
-      "      --evolve=node-name\n" +
-      "        [--author=user-name] [--view=view-name]\n" +
-      "        [--version=major.minor.micro]\n" +
-      "\n" +  
-      "Use \"plscript --html-help\" to browse the full documentation.\n");
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "USAGE:\n" +
+       "  plscript [global-options] command [command-options]\n" + 
+       "  plscript [global-options] --batch=batchfile\n" + 
+       "\n" + 
+       "  plscript --help\n" +
+       "  plscript --html-help\n" +
+       "  plscript --version\n" + 
+       "  plscript --release-date\n" + 
+       "  plscript --copyright\n" + 
+       "  plscript --license\n" + 
+       "\n" + 
+       "GLOBAL OPTIONS:\n" +
+       "  [--master-host=...] [--master-port=...]\n" + 
+       "  [--queue-host=...] [--queue-port=...] [--job-port=...]\n" + 
+       "  [--log-file=...][--log-backups=...][--log=...]\n" +
+       "\n" + 
+       "COMMANDS:\n\n" +
+       "  Privileged Users:\n" +
+       "    privileged\n" + 
+       "      --get\n" + 
+       "      --grant=user-name\n" + 
+       "      --revoke=user-name\n" + 
+       "\n" + 
+       "  Administration\n" +
+       "    admin\n" + 
+       "      --shutdown [--shutdown-jobmgrs] [--shutdown-pluginmgr]\n" + 
+       "      --backup=dir\n" +
+       "\n" + 
+       "  Toolset Administration\n" + 
+       "    default-toolset\n" + 
+       "      --get\n" + 
+       "      --set=toolset-name\n" + 
+       "    active-toolset\n" + 
+       "      --get\n" + 
+       "      --add=toolset-name\n" + 
+       "      --remove=toolset-name\n" + 
+       "    toolset\n" + 
+       "      --get\n" + 
+       "      --get-info=toolset-name\n" + 
+       "      --get-info-all\n" + 
+       "      --export=toolset-name\n" + 
+       "\n" + 
+       "  Queue Administration\n" + 
+       "    license-key\n" + 
+       "      --get\n" + 
+       "      --get-info=key-name\n" +
+       "      --get-info-all\n" + 
+       "      --add=key-name\n" + 
+       "        --msg=\"key-description\" --total=integer\n" + 
+       "      --set=key-name\n" + 
+       "        --total=integer\n" +
+       "      --remove=key-name\n" +
+       "    selection-key\n" + 
+       "      --get\n" + 
+       "      --get-info=key-name\n" + 
+       "      --get-info-all\n" + 
+       "      --add=key-name\n" + 
+       "        --msg=\"key-description\"\n" + 
+       "      --remove=key-name\n" + 
+       "    job-server\n" + 
+       "      --get\n" + 
+       "      --get-info=host-name\n" + 
+       "      --get-info-all\n" + 
+       "      --add=host-name\n" + 
+       "      --set=host-name\n" + 
+       "       [--shutdown | --disable | --enable] [--reserve=user-name | --open]\n" + 
+       "       [--slots=integer] [--selection-bias=key-name:bias]\n" + 
+       "       [--remove-key=key-name]\n" + 
+       "      --remove=host-name\n" + 
+       "\n" + 
+       "  Plugins\n" + 
+       "    editor\n" + 
+       "      --get\n" + 
+       "      --get-info=editor-name[:major.minor.micro]\n" + 
+       "      --get-info-all\n" + 
+       "    action\n" + 
+       "      --get\n" + 
+       "      --get-info=action-name[:major.minor.micro]\n" + 
+       "      --get-info-all\n" + 
+       "    comparator\n" + 
+       "      --get\n" + 
+       "      --get-info=comparator-name[:major.minor.micro]\n" + 
+       "      --get-info-all\n" + 
+       "    tool\n" + 
+       "      --get\n" + 
+       "      --get-info=tool-name[:major.minor.micro]\n" + 
+       "      --get-info-all\n" + 
+       "    archiver\n" + 
+       "      --get\n" + 
+       "      --get-info=archiver-name[:major.minor.micro]\n" + 
+       "      --get-info-all\n" + 
+       "\n" + 
+       "  User Preferences\n" + 
+       "    suffix-editor\n" + 
+       "      --get\n" + 
+       "      --get-info=suffix\n" + 
+       "      --get-info-all\n" + 
+       "      --set=suffix\n" + 
+       "          --msg=\"suffix-description\" --editor=editor-name[:major.minor.micro]\n" + 
+       "      --remove=suffix\n" + 
+       "      --reset\n" + 
+       "\n" +
+       "  Working Area Views\n" + 
+       "    view\n" + 
+       "      --get\n" + 
+       "      --create=view-name\n" + 
+       "\n" + 
+       "  Working Node Versions\n" +
+       "    working\n" +
+       "      --get-info=node-name\n" +
+       "        [--author=user-name] [--view=view-name]\n" +
+       "        [--show=section[,section ...]] [--hide=section[,section ...]]\n" +
+       "      --register=node-name\n" +
+       "        [--author=user-name] [--view=view-name]\n" +
+       "        --fseq=prefix[.#|@...][.suffix][,start[-end[xby]]]\n" +
+       "        [--toolset=toolset-name] [--editor=editor-name[:major.minor.micro]]\n" +
+       "        [--no-action | --action=action-name[:major.minor.micro]]\n" +
+       "        [--action-enabled=true|false] [--param=name:value ...]\n" +
+       "        [--source-param=source-name,name:value ...]\n" +
+       "        [--ignore | --abort] [--serial | --parallel] [--batch-size=integer]\n" +
+       "        [--priority=integer] [--ramp-up=milliseconds] [--max-load=real]\n" +
+       "        [--min-memory=bytes[K|M|G]] [--min-disk=bytes[K|M|G]]\n" +
+       "        [--license-key=key-name[:true|false] ...]\n" +
+       "        [--selection-key=key-name[:true|false] ...]\n" +
+       "      --release=node-name\n" +
+       "        [--author=user-name] [--view=view-name]\n" +
+       "        [--remove-files]\n" +
+       "      --set=node-name\n" +
+       "        [--author=user-name] [--view=view-name]\n" +
+       "        [--toolset=toolset-name] [--editor=editor-name[:major.minor.micro]]\n" +
+       "        [--no-action | --action=action-name[:major.minor.micro]]\n" +
+       "        [--action-enabled=true|false] [--param=name:value ...]\n" + 
+       "        [--no-param=source-name | --source-param=source-name,name:value ...]\n" +
+       "        [--ignore | --abort] [--serial | --parallel] [--batch-size=integer]\n" +
+       "        [--priority=integer] [--ramp-up=milliseconds] [--max-load=real]\n" +
+       "        [--min-memory=bytes[K|M|G]] [--min-disk=bytes[K|M|G]]\n" +
+       "        [--license-key=key-name[:true|false] ...]\n" + 
+       "        [--selection-key=key-name[:true|false] ...]\n" +
+       "      --link=node-name\n" +
+       "        [--author=user-name] [--view=view-name]\n" +
+       "        --assoc=node-name |\n" + 
+       "        --ref=node-name[,all|offset] | \n" + 
+       "        --depend=node-name[,all|offset]\n" + 
+       "      --unlink=node-name\n" +
+       "        [--author=user-name] [--view=view-name]\n" +
+       "        --source=node-name ...\n" +
+       "      --add-secondary=node-name\n" +
+       "        [--author=user-name] [--view=view-name]\n" +
+       "        --fseq=prefix[.#|@...][.suffix],start[-end[xby]]\n" +
+       "      --remove-secondary=node-name\n" +
+       "        [--author=user-name] [--view=view-name]\n" +
+       "        --fseq=prefix[.#|@...][.suffix][,start[-end[xby]]]\n" +
+       "      --rename=node-name\n" +
+       "        [--author=user-name] [--view=view-name]\n" +
+       "        --name=new-node-name [--rename-files]\n" +
+       "      --renumber=node-name\n" +
+       "        [--author=user-name] [--view=view-name]\n" +
+       "        --range=start[-end[xby]] [--remove-files]\n" +
+       "      --edit=node-name\n" +
+       "        [--author=user-name] [--view=view-name]\n" +
+       "        [--editor=editor-name[:major.minor.micro]]\n" +
+       "        [--frame=single|start-end[,...] ...] [--index=single|start-end[,...] ...]\n" +
+       "        [--fseq=prefix[.#|@...][.suffix][,start[-end[xby]]]]\n" +
+       "        [--wait]\n" +
+       "      --submit-jobs=node-name\n" +
+       "        [--author=user-name] [--view=view-name]\n" +
+       "        [--frame=single|start-end[,...] ...] [--index=single|start-end[,...] ...]\n" +
+       "        [--wait]\n" +
+       "      --remove-files=node-name\n" +
+       "        [--author=user-name] [--view=view-name]\n" +
+       "        [--frame=single|start-end[,...] ...] [--index=single|start-end[,...] ...]\n" +
+       "\n" +
+       "  Checked-In Node Versions\n" +
+       "    checked-in\n" +
+       "      --get-info=node-name\n" +
+       "        [--version=major.minor.micro | --latest ...]\n" +
+       "        [--show=section[,section ...]] [--hide=section[,section ...]]\n" +
+       "      --history=node-name\n" +
+       "        [--version=major.minor.micro | --latest ...]\n" +
+       "      --view=node-name\n" +
+       "        [--version=major.minor.micro]\n" +
+       "        [--editor=editor-name[:major.minor.micro]]\n" +
+       "        [--frame=single|start-end[,...] ...] [--index=single|start-end[,...] ...]\n" +
+       "        [--fseq=prefix[.#|@...][.suffix][,start[-end[xby]]]]\n" +
+       "\n" + 
+       "  Node Operations\n" +
+       "    node\n" +
+       "      --status=node-name\n" +
+       "        [--author=user-name] [--view=view-name]\n" +
+       "        [--brief] [--upstream] [--link-graph]\n" +
+       "        [--show=section[,section ...]] [--hide=section[,section ...]]\n" +
+       "      --check-in=node-name\n" +
+       "        [--author=user-name] [--view=view-name]\n" +
+       "        --msg=\"log-message\" [--major | --minor | --micro]\n" +
+       "      --check-out=node-name\n" +
+       "        [--author=user-name] [--view=view-name]\n" +
+       "        [--version=major.minor.micro] [--always | --keep-newer | --keep-modified]\n" +
+       "      --evolve=node-name\n" +
+       "        [--author=user-name] [--view=view-name]\n" +
+       "        [--version=major.minor.micro]\n" +
+       "\n" +  
+       "Use \"plscript --html-help\" to browse the full documentation.\n");
   }
 
 
@@ -368,7 +375,9 @@ class ScriptApp
 	     "Description : " + wordWrap(pkg.getDescription(), 14, 80));
 	}
 	catch(PipelineException ex) {
-	  Logs.ops.warning(ex.getMessage());
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+	     ex.getMessage());
 	}
 	
 	if(wk < (tset.getNumPackages()-1)) 
@@ -376,8 +385,10 @@ class ScriptApp
       }
     }
 
-    Logs.ops.info(buf.toString());
-    Logs.flush();
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       buf.toString());
+    LogMgr.getInstance().flush();
   }
 
   /**
@@ -406,8 +417,10 @@ class ScriptApp
       buf.append("\nexport " + ename + "=" + ((evalue != null) ? evalue : ""));
     }
 
-    Logs.ops.info(buf.toString());
-    Logs.flush();
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       buf.toString());
+    LogMgr.getInstance().flush();
   }
 
 
@@ -456,8 +469,10 @@ class ScriptApp
       throw new PipelineException
 	("No license key named (" + kname + ") exists!");
 
-    Logs.ops.info(buf.toString());
-    Logs.flush();
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       buf.toString());
+    LogMgr.getInstance().flush();
   }
 
   /**
@@ -498,8 +513,10 @@ class ScriptApp
       throw new PipelineException
 	("No selection key named (" + kname + ") exists!");
 
-    Logs.ops.info(buf.toString());
-    Logs.flush();    
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       buf.toString());
+    LogMgr.getInstance().flush();    
   }
 
   /**
@@ -569,8 +586,10 @@ class ScriptApp
       }
     }
 
-    Logs.ops.info(buf.toString());
-    Logs.flush();      
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       buf.toString());
+    LogMgr.getInstance().flush();      
   }
 
   /**
@@ -664,18 +683,22 @@ class ScriptApp
     PluginMgrClient client = PluginMgrClient.getInstance();
     TreeMap<String,TreeSet<VersionID>> versions = client.getEditors();
     if(!versions.isEmpty()) {
-      Logs.ops.info(tbar(80) + "\n" + 
-		    "  E D I T O R S");
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
+	 tbar(80) + "\n" + 
+	 "  E D I T O R S");
       
       for(String name : versions.keySet()) {
 	for(VersionID vid : versions.get(name)) {
 	  BaseEditor plg = client.newEditor(name, vid);
-	  Logs.ops.info(bar(80) + "\n\n" + plg + "\n");
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	     bar(80) + "\n\n" + plg + "\n");
 	}
       }
     }
 
-    Logs.flush();
+    LogMgr.getInstance().flush();
   }
 
   /**
@@ -688,18 +711,22 @@ class ScriptApp
     PluginMgrClient client = PluginMgrClient.getInstance();
     TreeMap<String,TreeSet<VersionID>> versions = client.getActions();
     if(!versions.isEmpty()) {
-      Logs.ops.info(tbar(80) + "\n" + 
-		    "  A C T I O N S");
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
+	 tbar(80) + "\n" + 
+	 "  A C T I O N S");
       
       for(String name : versions.keySet()) {
 	for(VersionID vid : versions.get(name)) {
 	  BaseAction plg = client.newAction(name, vid);
-	  Logs.ops.info(bar(80) + "\n\n" + plg + "\n");
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	     bar(80) + "\n\n" + plg + "\n");
 	}
       }
     }
 
-    Logs.flush();
+    LogMgr.getInstance().flush();
   }
 
   /**
@@ -712,18 +739,22 @@ class ScriptApp
     PluginMgrClient client = PluginMgrClient.getInstance();
     TreeMap<String,TreeSet<VersionID>> versions = client.getComparators();
     if(!versions.isEmpty()) {
-      Logs.ops.info(tbar(80) + "\n" + 
-		    "  C O M P A R A T O R S ");
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
+	 tbar(80) + "\n" + 
+	 "  C O M P A R A T O R S ");
       
       for(String name : versions.keySet()) {
 	for(VersionID vid : versions.get(name)) {
 	  BaseComparator plg = client.newComparator(name, vid);
-	  Logs.ops.info(bar(80) + "\n\n" + plg + "\n");
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	     bar(80) + "\n\n" + plg + "\n");
 	}
       }
     }
 
-    Logs.flush();
+    LogMgr.getInstance().flush();
   }
 
   /**
@@ -736,18 +767,22 @@ class ScriptApp
     PluginMgrClient client = PluginMgrClient.getInstance();
     TreeMap<String,TreeSet<VersionID>> versions = client.getTools();
     if(!versions.isEmpty()) {
-      Logs.ops.info(tbar(80) + "\n" + 
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
+	 tbar(80) + "\n" + 
 		    "  T O O L S"); 
       
       for(String name : versions.keySet()) {
 	for(VersionID vid : versions.get(name)) {
 	  BaseTool plg = client.newTool(name, vid);
-	  Logs.ops.info(bar(80) + "\n\n" + plg + "\n");
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	     bar(80) + "\n\n" + plg + "\n");
 	}
       }
     }
 
-    Logs.flush();
+    LogMgr.getInstance().flush();
   }
 
   /**
@@ -760,18 +795,22 @@ class ScriptApp
     PluginMgrClient client = PluginMgrClient.getInstance();
     TreeMap<String,TreeSet<VersionID>> versions = client.getArchivers();
     if(!versions.isEmpty()) {
-      Logs.ops.info(tbar(80) + "\n" + 
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
+	 tbar(80) + "\n" + 
 		    "  A R C H I V E R S");
       
       for(String name : versions.keySet()) {
 	for(VersionID vid : versions.get(name)) {
 	  BaseArchiver plg = client.newArchiver(name, vid);
-	  Logs.ops.info(bar(80) + "\n\n" + plg + "\n");
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	     bar(80) + "\n\n" + plg + "\n");
 	}
       }
     }
 
-    Logs.flush();
+    LogMgr.getInstance().flush();
   }
 
 
@@ -819,8 +858,10 @@ class ScriptApp
       throw new PipelineException
 	("The filename suffix (" + suffix + ") does not exist!");
 
-    Logs.ops.info(buf.toString());
-    Logs.flush();    
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       buf.toString());
+    LogMgr.getInstance().flush();    
   }
   
   /**
@@ -929,8 +970,10 @@ class ScriptApp
       }
     }
 
-    Logs.ops.info(buf.toString());
-    Logs.flush();    
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       buf.toString());
+    LogMgr.getInstance().flush();    
   }
 
   
@@ -1664,22 +1707,27 @@ class ScriptApp
     /* launch an editor for each file sequence */ 
     ArrayList<SubProcessLight> procs = new ArrayList<SubProcessLight>();
     for(FileSeq fs : editSeqs) {
-      Logs.ops.info
-	("Editing: " + fs + " with " + 
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Info, 
+	 "Editing: " + fs + " with " + 
 	 editor.getName() + " (v" + editor.getVersionID() + ")");
       procs.add(editor.launch(fs, env, dir));
     }
-    Logs.flush();
-
+    LogMgr.getInstance().flush();
+      
     /* wait around for the results? */ 
     if(wait) {
-      Logs.ops.info("\n" + 
-		    "Waiting for Editor(s) to exit...");
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
+	 "\n" + 
+	 "Waiting for Editor(s) to exit...");
       for(SubProcessLight proc : procs) {
 	try {
 	  proc.join();
-	  Logs.ops.info
-	    (tbar(80) + "\n" +
+	  
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Ops, LogMgr.Level.Info, 
+	     tbar(80) + "\n" +
 	     "Editor Process : " + wordWrap(proc.getCommand(), 17, 80) + "\n" + 
 	     "Exit Code      : " + proc.getExitCode() + " " +
 	       (proc.wasSuccessful() ? "(success)" : "(failed)") + "\n" +
@@ -1690,8 +1738,9 @@ class ScriptApp
 	     proc.getStdErr());
 	}
 	catch(InterruptedException ex) {
-	  Logs.sub.severe
-	    ("Interrupted while waiting on an Editor Process to exit!");
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Sub, LogMgr.Level.Severe, 
+	     "Interrupted while waiting on an Editor Process to exit!");
 	}
       }
     }
@@ -1718,13 +1767,16 @@ class ScriptApp
       buildFrameIndices(mod, (ArrayList<int[]>) frames, (ArrayList<int[]>) indices);
     QueueJobGroup group = mclient.submitJobs(nodeID, frameIndices);
 
-    Logs.ops.info
-      ("Submitted Job Group: [" + group.getGroupID() + "] " + group.getRootPattern());
-    Logs.flush();        
-
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info, 
+       "Submitted Job Group: [" + group.getGroupID() + "] " + group.getRootPattern());
+    LogMgr.getInstance().flush();        
+    
     if(wait) {
-      Logs.ops.info("Waiting for jobs to complete...");
-      Logs.flush();   
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
+	 "Waiting for jobs to complete...");
+      LogMgr.getInstance().flush();   
 
       TreeSet<Long> groupIDs = new TreeSet<Long>();
       groupIDs.add(group.getGroupID());
@@ -1750,16 +1802,20 @@ class ScriptApp
 
 	if(done) {
 	  for(JobStatus status : table.values()) {
-	    Logs.ops.info(pad("Job [" + status.getJobID() + "]: ", ' ', 15) + 
-			  pad(status.getState().toTitle(), ' ', 15) + 
-			  "(" + status.getTargetSequence() + ")");
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	       pad("Job [" + status.getJobID() + "]: ", ' ', 15) + 
+	       pad(status.getState().toTitle(), ' ', 15) + 
+	       "(" + status.getTargetSequence() + ")");
 	  }
 	  
 	  if(failed) 
 	    throw new PipelineException("Jobs Failed.");
 	  else {
-	    Logs.ops.info("Jobs Completed Successfully.");
-	    Logs.flush(); 
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	       "Jobs Completed Successfully.");
+	    LogMgr.getInstance().flush(); 
 	    return;
 	  }
 	}
@@ -1964,8 +2020,10 @@ class ScriptApp
       }
     }
       
-    Logs.ops.info(buf.toString());
-    Logs.flush();    
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       buf.toString());
+    LogMgr.getInstance().flush();    
   }
   
   /**
@@ -2025,8 +2083,10 @@ class ScriptApp
 	 "Check-In Message : " + wordWrap(msg.getMessage(), 20, 80));
     }
       
-    Logs.ops.info(buf.toString());
-    Logs.flush();  
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       buf.toString());
+    LogMgr.getInstance().flush();  
   }
 
   /**
@@ -2544,8 +2604,10 @@ class ScriptApp
       printGraph(buf, root, 2);
     }
 
-    Logs.ops.info(buf.toString());
-    Logs.flush();  
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       buf.toString());
+    LogMgr.getInstance().flush();  
   }
 
   private void 

@@ -1,4 +1,4 @@
-// $Id: PluginMgrApp.java,v 1.1 2005/01/15 02:56:32 jim Exp $
+// $Id: PluginMgrApp.java,v 1.2 2005/01/22 01:36:35 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -75,10 +75,12 @@ class PluginMgrApp
       handleParseException(ex);
     }
     catch(Exception ex) {
-      Logs.net.severe(getFullMessage(ex));
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Severe,
+	 getFullMessage(ex));
     }
     finally {
-      Logs.cleanup();
+      LogMgr.getInstance().cleanup();
     }
 
     System.exit(success ? 0 : 1);
@@ -96,23 +98,24 @@ class PluginMgrApp
   public void
   help()
   {
-    Logs.ops.info(
-      "USAGE:\n" +
-      "  plpluginmgr [options]\n" + 
-      "\n" + 
-      "  plpluginmgr --help\n" +
-      "  plpluginmgr --html-help\n" +
-      "  plpluginmgr --version\n" + 
-      "  plpluginmgr --release-date\n" + 
-      "  plpluginmgr --copyright\n" + 
-      "  plpluginmgr --license\n" + 
-      "\n" + 
-      "GLOBAL OPTIONS:\n" +
-      "  [--plugin-port=...]\n" + 
-      "  [--log-file=...][--log-backups=...][--log=...]\n" +
-      "\n" + 
-      "\n" +  
-      "Use \"plpluginmgr --html-help\" to browse the full documentation.\n");
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "USAGE:\n" +
+       "  plpluginmgr [options]\n" + 
+       "\n" + 
+       "  plpluginmgr --help\n" +
+       "  plpluginmgr --html-help\n" +
+       "  plpluginmgr --version\n" + 
+       "  plpluginmgr --release-date\n" + 
+       "  plpluginmgr --copyright\n" + 
+       "  plpluginmgr --license\n" + 
+       "\n" + 
+       "GLOBAL OPTIONS:\n" +
+       "  [--plugin-port=...]\n" + 
+       "  [--log-file=...][--log-backups=...][--log=...]\n" +
+       "\n" + 
+       "\n" +  
+       "Use \"plpluginmgr --html-help\" to browse the full documentation.\n");
   }
 
 

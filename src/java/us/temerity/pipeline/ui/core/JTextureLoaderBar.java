@@ -1,4 +1,4 @@
-// $Id: JTextureLoaderBar.java,v 1.3 2005/01/12 21:39:09 jim Exp $
+// $Id: JTextureLoaderBar.java,v 1.4 2005/01/22 01:36:36 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -285,9 +285,11 @@ class JTextureLoaderBar
       }
     }
     catch(IOException ex) {	
-      Logs.ops.severe("Unable to load the required textures:\n" + 
+      LogMgr.getInstance().log
+(LogMgr.Kind.Ops, LogMgr.Level.Severe,
+"Unable to load the required textures:\n" + 
 		      "  " + ex.getMessage());
-      Logs.flush();
+      LogMgr.getInstance().flush();
       System.exit(1);	 
     }
   }

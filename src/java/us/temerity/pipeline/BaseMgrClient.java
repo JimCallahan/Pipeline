@@ -1,4 +1,4 @@
-// $Id: BaseMgrClient.java,v 1.11 2005/01/15 21:15:54 jim Exp $
+// $Id: BaseMgrClient.java,v 1.12 2005/01/22 01:36:35 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -126,15 +126,19 @@ class BaseMgrClient
 	return;
       }
       catch(PipelineException ex) {
-	Logs.net.warning(ex.getMessage());
-	Logs.flush();
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Warning, 
+	   ex.getMessage());
+	LogMgr.getInstance().flush();
       }
 
       try {
 	Thread.sleep(5000);
       }
       catch(InterruptedException ex) {
-	Logs.plg.warning("Interrupted while attempting establish network connection!");
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Plg, LogMgr.Level.Warning, 
+	   "Interrupted while attempting establish network connection!");
       }
     }
 

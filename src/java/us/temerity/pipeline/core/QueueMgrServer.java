@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.19 2005/01/15 21:15:54 jim Exp $
+// $Id: QueueMgrServer.java,v 1.20 2005/01/22 01:36:35 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -104,9 +104,13 @@ class QueueMgrServer
       InetSocketAddress saddr = new InetSocketAddress(pPort);
       server.bind(saddr, 100);
 
-      Logs.net.fine("Listening on Port: " + pPort);
-      Logs.net.info("Server Ready.");
-      Logs.flush();
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Fine,
+	 "Listening on Port: " + pPort);
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Info,
+	 "Server Ready.");
+      LogMgr.getInstance().flush();
 
       CollectorTask collector = new CollectorTask();
       collector.start();
@@ -128,8 +132,10 @@ class QueueMgrServer
       }
 
       try {
-	Logs.net.finer("Shutting Down -- Waiting for tasks to complete...");
-	Logs.flush();
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Finer,
+	   "Shutting Down -- Waiting for tasks to complete...");
+	LogMgr.getInstance().flush();
 
 	collector.join();
 	dispatcher.join();
@@ -145,23 +151,31 @@ class QueueMgrServer
 	}
       }
       catch(InterruptedException ex) {
-	Logs.net.severe("Interrupted while shutting down!");
-	Logs.flush();
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	   "Interrupted while shutting down!");
+	LogMgr.getInstance().flush();
       }
     }
     catch (IOException ex) {
-      Logs.net.severe("IO problems on port (" + pPort + "):\n" + 
-		      getFullMessage(ex));
-      Logs.flush();
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Severe,
+	 "IO problems on port (" + pPort + "):\n" + 
+	 getFullMessage(ex));
+      LogMgr.getInstance().flush();
     }
     catch (SecurityException ex) {
-      Logs.net.severe("The Security Manager doesn't allow listening to sockets!\n" + 
-		      getFullMessage(ex));
-      Logs.flush();
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Severe,
+	 "The Security Manager doesn't allow listening to sockets!\n" + 
+	 getFullMessage(ex));
+      LogMgr.getInstance().flush();
     }
     catch (Exception ex) {
-      Logs.net.severe(getFullMessage(ex));
-      Logs.flush();
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Severe,
+	 getFullMessage(ex));
+      LogMgr.getInstance().flush();
     }
     finally {
       if(schannel != null) {
@@ -175,8 +189,10 @@ class QueueMgrServer
       PluginMgrClient.getInstance().disconnect();
       pQueueMgr.shutdown();
 
-      Logs.net.info("Server Shutdown."); 
-      Logs.flush();  
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Info,
+	 "Server Shutdown."); 
+      LogMgr.getInstance().flush();  
     }
   }
 
@@ -240,8 +256,10 @@ class QueueMgrServer
     {
       try {
 	pSocket = pChannel.socket();
-	Logs.net.fine("Connection Opened: " + pSocket.getInetAddress());
-	Logs.flush();
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Fine,
+	   "Connection Opened: " + pSocket.getInetAddress());
+	LogMgr.getInstance().flush();
 
 	boolean live = true;
 	while(pSocket.isConnected() && live && !pShutdown.get()) {
@@ -252,8 +270,10 @@ class QueueMgrServer
 	  OutputStream out    = pSocket.getOutputStream();
 	  ObjectOutput objOut = new ObjectOutputStream(out);
 	  
-	  Logs.net.finer("Request [" + pSocket.getInetAddress() + "]: " + kind.name());	  
-	  Logs.flush();
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Net, LogMgr.Level.Finer,
+	     "Request [" + pSocket.getInetAddress() + "]: " + kind.name());	  
+	  LogMgr.getInstance().flush();
 	  
 	  switch(kind) {
 	  /*-- PRIVILEGED USER STATUS ------------------------------------------------------*/
@@ -534,8 +554,10 @@ class QueueMgrServer
 	    }
 
 	  case Shutdown:
-	    Logs.net.warning("Shutdown Request Received: " + pSocket.getInetAddress());
-	    Logs.flush();
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Net, LogMgr.Level.Warning,
+	       "Shutdown Request Received: " + pSocket.getInetAddress());
+	    LogMgr.getInstance().flush();
 	    pShutdown.set(true);
 	    break;	    
 
@@ -552,7 +574,9 @@ class QueueMgrServer
 	if(addr != null) 
 	  host = addr.getCanonicalHostName();
 	
-	Logs.net.severe("Connection from (" + host + ":" + pPort + ") terminated abruptly!");
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	   "Connection from (" + host + ":" + pPort + ") terminated abruptly!");
       }
       catch (IOException ex) {
 	InetAddress addr = pSocket.getInetAddress(); 
@@ -560,9 +584,11 @@ class QueueMgrServer
 	if(addr != null) 
 	  host = addr.getCanonicalHostName();
 
-	Logs.net.severe("IO problems on connection from " + 
-			"(" + host + ":" + pPort + "):\n" + 
-			getFullMessage(ex));
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	   "IO problems on connection from " + 
+	   "(" + host + ":" + pPort + "):\n" + 
+	   getFullMessage(ex));
       }
       catch(ClassNotFoundException ex) {
 	InetAddress addr = pSocket.getInetAddress(); 
@@ -570,12 +596,16 @@ class QueueMgrServer
 	if(addr != null) 
 	  host = addr.getCanonicalHostName();
 
-	Logs.net.severe("Illegal object encountered on connection from " + 
-			"(" + host + ":" + pPort + "):\n" + 
-			getFullMessage(ex));
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	   "Illegal object encountered on connection from " + 
+	   "(" + host + ":" + pPort + "):\n" + 
+	   getFullMessage(ex));
       }
       catch (Exception ex) {
-	Logs.net.severe(getFullMessage(ex));
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	   getFullMessage(ex));
       }
       finally {
 	closeConnection();
@@ -600,8 +630,10 @@ class QueueMgrServer
       catch(IOException ex) {
       }
 
-      Logs.net.fine("Client Connection Closed.");
-      Logs.flush();
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Fine,
+	 "Client Connection Closed.");
+      LogMgr.getInstance().flush();
     }
     
     private SocketChannel  pChannel; 
@@ -626,20 +658,26 @@ class QueueMgrServer
     run() 
     {
       try {
-	Logs.net.fine("Collector Started.");	
-	Logs.flush();
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Fine,
+	   "Collector Started.");	
+	LogMgr.getInstance().flush();
 
 	while(!pShutdown.get()) {
 	  pQueueMgr.collector();
 	}
       }
       catch (Exception ex) {
-	Logs.net.severe("Collector Failed: " + getFullMessage(ex));	
-	Logs.flush();	
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	   "Collector Failed: " + getFullMessage(ex));	
+	LogMgr.getInstance().flush();	
       }
       finally {
-	Logs.net.fine("Collector Finished.");	
-	Logs.flush();
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Fine,
+	   "Collector Finished.");	
+	LogMgr.getInstance().flush();
       }
     }
   }
@@ -661,20 +699,26 @@ class QueueMgrServer
     run() 
     {
       try {
-	Logs.net.fine("Dispatcher Started.");	
-	Logs.flush();
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Fine,
+	   "Dispatcher Started.");	
+	LogMgr.getInstance().flush();
 
 	while(!pShutdown.get()) {
 	  pQueueMgr.dispatcher();
 	}
       }
       catch (Exception ex) {
-	Logs.net.severe("Dispatcher Failed: " + getFullMessage(ex));	
-	Logs.flush();
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	   "Dispatcher Failed: " + getFullMessage(ex));	
+	LogMgr.getInstance().flush();
       }
       finally {
-	Logs.net.fine("Dispatcher Finished.");	
-	Logs.flush();
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Fine,
+	   "Dispatcher Finished.");	
+	LogMgr.getInstance().flush();
       }
     }
   }

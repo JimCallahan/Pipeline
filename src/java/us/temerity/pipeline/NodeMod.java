@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.35 2005/01/15 02:56:32 jim Exp $
+// $Id: NodeMod.java,v 1.36 2005/01/22 01:36:35 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -956,8 +956,9 @@ class NodeMod
 	TreeSet<String> dead = new TreeSet<String>();
 	for(String sname : action.getSourceNames()) {
 	  if(!pSources.containsKey(sname)) {
-	    Logs.ops.warning
-	      ("While attempting to modify the properites of working node " + 
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Ops, LogMgr.Level.Warning, 
+	       "While attempting to modify the properites of working node " + 
 	       "(" + pName + "), per-source action parameters for source (" + sname + ") " + 
 	       "where found for the input action, but the node being modified did NOT " + 
 	       "have any upstream links to this source node!  These extra per-source " + 

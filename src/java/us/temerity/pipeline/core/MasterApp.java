@@ -1,4 +1,4 @@
-// $Id: MasterApp.java,v 1.10 2005/01/15 21:15:54 jim Exp $
+// $Id: MasterApp.java,v 1.11 2005/01/22 01:36:35 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -72,16 +72,20 @@ class MasterApp
       success = true;
     }
     catch(PipelineException ex) {
-      Logs.ops.severe(ex.getMessage());
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	 ex.getMessage());
     }
     catch(ParseException ex) {
       handleParseException(ex);
     }
     catch(Exception ex) {
-      Logs.net.severe(getFullMessage(ex));
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Severe,
+	 getFullMessage(ex));
     }
     finally {
-      Logs.cleanup();
+      LogMgr.getInstance().cleanup();
     }
 
     System.exit(success ? 0 : 1);
@@ -99,26 +103,27 @@ class MasterApp
   public void
   help()
   {
-    Logs.ops.info(
-      "USAGE:\n" +
-      "  plmaster [options]\n" + 
-      "\n" + 
-      "  plmaster --help\n" +
-      "  plmaster --html-help\n" +
-      "  plmaster --version\n" + 
-      "  plmaster --release-date\n" + 
-      "  plmaster --copyright\n" + 
-      "  plmaster --license\n" + 
-      "\n" + 
-      "GLOBAL OPTIONS:\n" +
-      "  [--node-dir=...][--master-port=...]\n" + 
-      "  [--prod-dir=...][--file-host=...][--file-port]\n" + 
-      "  [--notify-control-port=...][--notify-monitor-port=...]\n" + 
-      "  [--queue-host=...][--queue-port=...]\n" + 
-      "  [--log-file=...][--log-backups=...][--log=...]\n" +
-      "\n" + 
-      "\n" +  
-      "Use \"plmaster --html-help\" to browse the full documentation.\n");
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "USAGE:\n" +
+       "  plmaster [options]\n" + 
+       "\n" + 
+       "  plmaster --help\n" +
+       "  plmaster --html-help\n" +
+       "  plmaster --version\n" + 
+       "  plmaster --release-date\n" + 
+       "  plmaster --copyright\n" + 
+       "  plmaster --license\n" + 
+       "\n" + 
+       "GLOBAL OPTIONS:\n" +
+       "  [--node-dir=...][--master-port=...]\n" + 
+       "  [--prod-dir=...][--file-host=...][--file-port]\n" + 
+       "  [--notify-control-port=...][--notify-monitor-port=...]\n" + 
+       "  [--queue-host=...][--queue-port=...]\n" + 
+       "  [--log-file=...][--log-backups=...][--log=...]\n" +
+       "\n" + 
+       "\n" +  
+       "Use \"plmaster --html-help\" to browse the full documentation.\n");
   }
 
 

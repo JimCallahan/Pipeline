@@ -1,4 +1,4 @@
-// $Id: PluginMgrServer.java,v 1.1 2005/01/15 02:56:32 jim Exp $
+// $Id: PluginMgrServer.java,v 1.2 2005/01/22 01:36:35 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -96,9 +96,13 @@ class PluginMgrServer
       InetSocketAddress saddr = new InetSocketAddress(pPort);
       server.bind(saddr, 100);
       
-      Logs.net.fine("Listening on Port: " + pPort);
-      Logs.net.info("Server Ready.");
-      Logs.flush();
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Fine,
+	 "Listening on Port: " + pPort);
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Info,
+	 "Server Ready.");
+      LogMgr.getInstance().flush();
 
       schannel.configureBlocking(false);
       while(!pShutdown.get()) {
@@ -114,8 +118,10 @@ class PluginMgrServer
       }
 
       try {
-	Logs.net.finer("Shutting Down -- Waiting for tasks to complete...");
-	Logs.flush();
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Finer,
+	   "Shutting Down -- Waiting for tasks to complete...");
+	LogMgr.getInstance().flush();
 	synchronized(pTasks) {
 	  for(HandlerTask task : pTasks) 
 	    task.closeConnection();
@@ -127,22 +133,30 @@ class PluginMgrServer
 	}
       }
       catch(InterruptedException ex) {
-	Logs.net.severe("Interrupted while shutting down!");
-	Logs.flush();
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	   "Interrupted while shutting down!");
+	LogMgr.getInstance().flush();
       }
     }
     catch (IOException ex) {
-      Logs.net.severe("IO problems on port (" + pPort + "):\n" + 
-		      ex.getMessage());
-      Logs.flush();
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Severe,
+	 "IO problems on port (" + pPort + "):\n" + 
+	 ex.getMessage());
+      LogMgr.getInstance().flush();
     }
     catch (SecurityException ex) {
-      Logs.net.severe("The Security Manager doesn't allow listening to sockets!\n" + 
-		      ex.getMessage());
-      Logs.flush();
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Severe,
+	 "The Security Manager doesn't allow listening to sockets!\n" + 
+	 ex.getMessage());
+      LogMgr.getInstance().flush();
     }
     catch (Exception ex) {
-      Logs.net.severe(ex.getMessage());
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Severe,
+	 ex.getMessage());
     }
     finally {
       if(schannel != null) {
@@ -153,8 +167,10 @@ class PluginMgrServer
 	}
       }
 
-      Logs.net.info("Server Shutdown.");    
-      Logs.flush();  
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Info,
+	 "Server Shutdown.");    
+      LogMgr.getInstance().flush();  
     }
   }
 
@@ -185,8 +201,10 @@ class PluginMgrServer
     {
       try {
 	pSocket = pChannel.socket();
-	Logs.net.fine("Connection Opened: " + pSocket.getInetAddress());
-	Logs.flush();
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Fine,
+	   "Connection Opened: " + pSocket.getInetAddress());
+	LogMgr.getInstance().flush();
 
 	boolean live = true;
 	while(pSocket.isConnected() && live && !pShutdown.get()) {
@@ -197,8 +215,10 @@ class PluginMgrServer
 	  OutputStream out    = pSocket.getOutputStream();
 	  ObjectOutput objOut = new ObjectOutputStream(out);
 	  
-	  Logs.net.finer("Request [" + pSocket.getInetAddress() + "]: " + kind.name());	  
-	  Logs.flush();
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Net, LogMgr.Level.Finer,
+	     "Request [" + pSocket.getInetAddress() + "]: " + kind.name());	  
+	  LogMgr.getInstance().flush();
 
 	  switch(kind) {
 	  case Update:
@@ -222,8 +242,10 @@ class PluginMgrServer
 	    break;
 
 	  case Shutdown:
-	    Logs.net.warning("Shutdown Request Received: " + pSocket.getInetAddress());
-	    Logs.flush();
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Net, LogMgr.Level.Warning,
+	       "Shutdown Request Received: " + pSocket.getInetAddress());
+	    LogMgr.getInstance().flush();
 	    pShutdown.set(true);
 	    break;	    
 
@@ -235,18 +257,26 @@ class PluginMgrServer
       catch(AsynchronousCloseException ex) {
       }
       catch (EOFException ex) {
-	Logs.net.severe("Connection on port (" + pPort + ") terminated abruptly!");	
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	   "Connection on port (" + pPort + ") terminated abruptly!");	
       }
       catch (IOException ex) {
-	Logs.net.severe("IO problems on port (" + pPort + "):\n" + 
-			ex.getMessage());
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	   "IO problems on port (" + pPort + "):\n" + 
+	   ex.getMessage());
       }
       catch(ClassNotFoundException ex) {
-	Logs.net.severe("Illegal object encountered on port (" + pPort + "):\n" + 
-			ex.getMessage());	
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	   "Illegal object encountered on port (" + pPort + "):\n" + 
+	   ex.getMessage());	
       }
       catch (Exception ex) {
-	Logs.net.severe(ex.getMessage());
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	   ex.getMessage());
       }
       finally {
 	closeConnection();
@@ -271,8 +301,10 @@ class PluginMgrServer
       catch(IOException ex) {
       }
 
-      Logs.net.fine("Client Connection Closed.");
-      Logs.flush();
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Fine,
+	 "Client Connection Closed.");
+      LogMgr.getInstance().flush();
     }
     
     private SocketChannel  pChannel; 

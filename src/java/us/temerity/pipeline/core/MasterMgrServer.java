@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.32 2005/01/15 21:15:54 jim Exp $
+// $Id: MasterMgrServer.java,v 1.33 2005/01/22 01:36:35 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -150,9 +150,13 @@ class MasterMgrServer
       InetSocketAddress saddr = new InetSocketAddress(pPort);
       server.bind(saddr, 100);
 
-      Logs.net.fine("Listening on Port: " + pPort);
-      Logs.net.info("Server Ready.");
-      Logs.flush();
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Fine,
+	 "Listening on Port: " + pPort);
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Info,
+	 "Server Ready.");
+      LogMgr.getInstance().flush();
 
       schannel.configureBlocking(false);
       while(!pShutdown.get()) {
@@ -168,8 +172,10 @@ class MasterMgrServer
       }
 
       try {
-	Logs.net.finer("Shutting Down -- Waiting for tasks to complete...");
-	Logs.flush();
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Finer,
+	   "Shutting Down -- Waiting for tasks to complete...");
+	LogMgr.getInstance().flush();
 
 	synchronized(pTasks) {
 	  for(HandlerTask task : pTasks) 
@@ -182,22 +188,30 @@ class MasterMgrServer
 	}
       }
       catch(InterruptedException ex) {
-	Logs.net.severe("Interrupted while shutting down!");
-	Logs.flush();
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	   "Interrupted while shutting down!");
+	LogMgr.getInstance().flush();
       }
     }
     catch (IOException ex) {
-      Logs.net.severe("IO problems on port (" + pPort + "):\n" + 
-		      ex.getMessage());
-      Logs.flush();
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Severe,
+	 "IO problems on port (" + pPort + "):\n" + 
+	 ex.getMessage());
+      LogMgr.getInstance().flush();
     }
     catch (SecurityException ex) {
-      Logs.net.severe("The Security Manager doesn't allow listening to sockets!\n" + 
-		      ex.getMessage());
-      Logs.flush();
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Severe,
+	 "The Security Manager doesn't allow listening to sockets!\n" + 
+	 ex.getMessage());
+      LogMgr.getInstance().flush();
     }
     catch (Exception ex) {
-      Logs.net.severe(ex.getMessage());
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Severe,
+	 ex.getMessage());
     }
     finally {
       if(schannel != null) {
@@ -210,8 +224,10 @@ class MasterMgrServer
 
       pMasterMgr.shutdown();
 
-      Logs.net.info("Server Shutdown.");
-      Logs.flush();
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Info,
+	 "Server Shutdown.");
+      LogMgr.getInstance().flush();
     }
   }
 
@@ -242,8 +258,10 @@ class MasterMgrServer
     {
       try {
 	pSocket = pChannel.socket();
-	Logs.net.fine("Connection Opened: " + pSocket.getInetAddress());
-	Logs.flush();
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Fine,
+	   "Connection Opened: " + pSocket.getInetAddress());
+	LogMgr.getInstance().flush();
 
 	boolean live = true;
 	while(pSocket.isConnected() && live && !pShutdown.get()) {
@@ -254,8 +272,10 @@ class MasterMgrServer
 	  OutputStream out    = pSocket.getOutputStream();
 	  ObjectOutput objOut = new ObjectOutputStream(out);
 	  
-	  Logs.net.finer("Request [" + pSocket.getInetAddress() + "]: " + kind.name());	  
-	  Logs.flush();
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Net, LogMgr.Level.Finer,
+	     "Request [" + pSocket.getInetAddress() + "]: " + kind.name());	  
+	  LogMgr.getInstance().flush();
 
 	  switch(kind) {
 	  /*-- TOOLSETS --------------------------------------------------------------------*/
@@ -760,8 +780,10 @@ class MasterMgrServer
 	    }
 
 	  case Shutdown:
-	    Logs.net.warning("Shutdown Request Received: " + pSocket.getInetAddress());
-	    Logs.flush();
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Net, LogMgr.Level.Warning,
+	       "Shutdown Request Received: " + pSocket.getInetAddress());
+	    LogMgr.getInstance().flush();
 
 	    pShutdown.set(true);
 	    break;	    
@@ -779,7 +801,9 @@ class MasterMgrServer
 	if(addr != null) 
 	  host = addr.getCanonicalHostName();
 	
-	Logs.net.severe("Connection from (" + host + ":" + pPort + ") terminated abruptly!");
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	   "Connection from (" + host + ":" + pPort + ") terminated abruptly!");
       }
       catch (IOException ex) {
 	InetAddress addr = pSocket.getInetAddress(); 
@@ -787,9 +811,11 @@ class MasterMgrServer
 	if(addr != null) 
 	  host = addr.getCanonicalHostName();
 
-	Logs.net.severe("IO problems on connection from " + 
-			"(" + host + ":" + pPort + "):\n" + 
-			getFullMessage(ex));
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	   "IO problems on connection from " + 
+	   "(" + host + ":" + pPort + "):\n" + 
+	   getFullMessage(ex));
       }
       catch(ClassNotFoundException ex) {
 	InetAddress addr = pSocket.getInetAddress(); 
@@ -797,12 +823,16 @@ class MasterMgrServer
 	if(addr != null) 
 	  host = addr.getCanonicalHostName();
 
-	Logs.net.severe("Illegal object encountered on connection from " + 
-			"(" + host + ":" + pPort + "):\n" + 
-			getFullMessage(ex));
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	   "Illegal object encountered on connection from " + 
+	   "(" + host + ":" + pPort + "):\n" + 
+	   getFullMessage(ex));
       }
       catch (Exception ex) {
-	Logs.net.severe(ex.getMessage());
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	   ex.getMessage());
       }
       finally {
 	closeConnection();
@@ -827,8 +857,10 @@ class MasterMgrServer
       catch(IOException ex) {
       }
 
-      Logs.net.fine("Client Connection Closed.");
-      Logs.flush();
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Fine,
+	 "Client Connection Closed.");
+      LogMgr.getInstance().flush();
     }
     
     private SocketChannel  pChannel; 

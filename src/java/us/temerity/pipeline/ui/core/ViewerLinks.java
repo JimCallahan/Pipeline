@@ -1,4 +1,4 @@
-// $Id: ViewerLinks.java,v 1.2 2005/01/08 08:32:18 jim Exp $
+// $Id: ViewerLinks.java,v 1.3 2005/01/22 01:36:36 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -179,7 +179,9 @@ class ViewerLinks
 	}
       }
       catch(IOException ex) {
-	Logs.tex.severe(ex.getMessage());
+	LogMgr.getInstance().log
+(LogMgr.Kind.Tex, LogMgr.Level.Severe,
+ex.getMessage());
 	pLinkRelDLs = null;
       }
 	

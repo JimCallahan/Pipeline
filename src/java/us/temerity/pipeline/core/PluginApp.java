@@ -1,4 +1,4 @@
-// $Id: PluginApp.java,v 1.5 2005/01/15 02:46:46 jim Exp $
+// $Id: PluginApp.java,v 1.6 2005/01/22 01:36:35 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -71,13 +71,17 @@ class PluginApp
       handleParseException(ex);
     }
     catch(PipelineException ex) {
-      Logs.ops.severe(ex.getMessage()); 
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	 ex.getMessage()); 
     }
     catch(Exception ex) {
-      Logs.ops.severe(getFullMessage(ex));
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	 getFullMessage(ex));
     }
     finally {
-      Logs.cleanup();
+      LogMgr.getInstance().cleanup();
     }
 
     System.exit(success ? 0 : 1);
@@ -102,13 +106,17 @@ class PluginApp
     {
       TreeMap<String,TreeSet<VersionID>> versions = client.getEditors();
       if(!versions.isEmpty()) {
-	Logs.ops.info(tbar(80) + "\n" + 
-		      "  E D I T O R S");
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	   tbar(80) + "\n" + 
+	   "  E D I T O R S");
 	
 	for(String name : versions.keySet()) {
 	  for(VersionID vid : versions.get(name)) {
 	      BaseEditor plg = client.newEditor(name, vid);
-	      Logs.ops.info(bar(80) + "\n\n" + plg + "\n");
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Ops, LogMgr.Level.Info,
+		 bar(80) + "\n\n" + plg + "\n");
 	  }
 	}
       }
@@ -117,13 +125,17 @@ class PluginApp
     {
       TreeMap<String,TreeSet<VersionID>> versions = client.getActions();
       if(!versions.isEmpty()) {
-	Logs.ops.info(tbar(80) + "\n" + 
-		      "  A C T I O N S");
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	   tbar(80) + "\n" + 
+	   "  A C T I O N S");
 	
 	for(String name : versions.keySet()) {
 	  for(VersionID vid : versions.get(name)) {
 	      BaseAction plg = client.newAction(name, vid);
-	      Logs.ops.info(bar(80) + "\n\n" + plg + "\n");
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Ops, LogMgr.Level.Info,
+		 bar(80) + "\n\n" + plg + "\n");
 	  }
 	}
       }
@@ -132,13 +144,17 @@ class PluginApp
     {
       TreeMap<String,TreeSet<VersionID>> versions = client.getComparators();
       if(!versions.isEmpty()) {
-	Logs.ops.info(tbar(80) + "\n" + 
-		      "  C O M P A R A T O R S");
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	   tbar(80) + "\n" + 
+	   "  C O M P A R A T O R S");
 	
 	for(String name : versions.keySet()) {
 	  for(VersionID vid : versions.get(name)) {
 	      BaseComparator plg = client.newComparator(name, vid);
-	      Logs.ops.info(bar(80) + "\n\n" + plg + "\n");
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Ops, LogMgr.Level.Info,
+		 bar(80) + "\n\n" + plg + "\n");
 	  }
 	}
       }
@@ -147,13 +163,17 @@ class PluginApp
     {
       TreeMap<String,TreeSet<VersionID>> versions = client.getTools();
       if(!versions.isEmpty()) {
-	Logs.ops.info(tbar(80) + "\n" + 
-		      "  T O O L S"); 
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	   tbar(80) + "\n" + 
+	   "  T O O L S"); 
 	
 	for(String name : versions.keySet()) {
 	  for(VersionID vid : versions.get(name)) {
 	      BaseTool plg = client.newTool(name, vid);
-	      Logs.ops.info(bar(80) + "\n\n" + plg + "\n");
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Ops, LogMgr.Level.Info,
+		 bar(80) + "\n\n" + plg + "\n");
 	  }
 	}
       }
@@ -162,19 +182,23 @@ class PluginApp
     {
       TreeMap<String,TreeSet<VersionID>> versions = client.getArchivers();
       if(!versions.isEmpty()) {
-	Logs.ops.info(tbar(80) + "\n" + 
-		      "  A R C H I V E R S");
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	   tbar(80) + "\n" + 
+	   "  A R C H I V E R S");
 	
 	for(String name : versions.keySet()) {
 	  for(VersionID vid : versions.get(name)) {
 	      BaseArchiver plg = client.newArchiver(name, vid);
-	      Logs.ops.info(bar(80) + "\n\n" + plg + "\n");
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Ops, LogMgr.Level.Info,
+		 bar(80) + "\n\n" + plg + "\n");
 	  }
 	}
       }
     }
 
-    Logs.flush();
+    LogMgr.getInstance().flush();
   }
 
 
@@ -189,23 +213,24 @@ class PluginApp
   public void
   help()
   {
-    Logs.ops.info(
-      "USAGE:\n" +
-      "  plplugin [options] --list\n" +  
-      "  plplugin [options] --install class-file1 [class-file2 ..]\n" + 
-      "\n" + 
-      "  plplugin --help\n" +
-      "  plplugin --html-help\n" +
-      "  plplugin --version\n" + 
-      "  plplugin --release-date\n" + 
-      "  plplugin --copyright\n" + 
-      "  plplugin --license\n" + 
-      "\n" + 
-      "OPTIONS:\n" +
-      "  [--log-file=...][--log-backups=...][--log=...]\n" +
-      "\n" + 
-      "\n" +  
-      "Use \"plplugin --html-help\" to browse the full documentation.\n");
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "USAGE:\n" +
+       "  plplugin [options] --list\n" +  
+       "  plplugin [options] --install class-file1 [class-file2 ..]\n" + 
+       "\n" + 
+       "  plplugin --help\n" +
+       "  plplugin --html-help\n" +
+       "  plplugin --version\n" + 
+       "  plplugin --release-date\n" + 
+       "  plplugin --copyright\n" + 
+       "  plplugin --license\n" + 
+       "\n" + 
+       "OPTIONS:\n" +
+       "  [--log-file=...][--log-backups=...][--log=...]\n" +
+       "\n" + 
+       "\n" +  
+       "Use \"plplugin --html-help\" to browse the full documentation.\n");
   }
 
 

@@ -1,4 +1,4 @@
-// $Id: MiscGetPrivilegedUsersRsp.java,v 1.4 2004/07/28 19:09:28 jim Exp $
+// $Id: MiscGetPrivilegedUsersRsp.java,v 1.5 2005/01/22 01:36:36 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -46,9 +46,11 @@ class MiscGetPrivilegedUsersRsp
       throw new IllegalArgumentException("The users cannot be (null)!");
     pUsers = users;
 
-    Logs.net.finest(getTimer().toString());
-    if(Logs.net.isLoggable(Level.FINEST))
-      Logs.flush();
+    LogMgr.getInstance().log
+(LogMgr.Kind.Net, LogMgr.Level.Finest,
+getTimer().toString());
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
+      LogMgr.getInstance().flush();
   }
 
 

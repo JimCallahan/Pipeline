@@ -1,4 +1,4 @@
-// $Id: SubProcessHeavy.java,v 1.3 2004/11/09 06:01:32 jim Exp $
+// $Id: SubProcessHeavy.java,v 1.4 2005/01/22 01:36:35 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -432,9 +432,13 @@ class SubProcessHeavy
       throw new IllegalStateException("The subprocess thread was already run!");
 
     /* log it... */ 
-    if(Logs.sub.isLoggable(Level.FINEST)) {
-      Logs.sub.fine(getName() + " [command]: \"" + getCommand() + "\"");
-      Logs.sub.finer(getName() + " [working directory]: " + getWorkingDir());
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Sub, LogMgr.Level.Finest)) {
+      LogMgr.getInstance().log
+(LogMgr.Kind.Sub, LogMgr.Level.Fine,
+getName() + " [command]: \"" + getCommand() + "\"");
+      LogMgr.getInstance().log
+(LogMgr.Kind.Sub, LogMgr.Level.Finer,
+getName() + " [working directory]: " + getWorkingDir());
       
       String[] env = getEnvironment();
       StringBuffer buf = new StringBuffer();
@@ -442,9 +446,11 @@ class SubProcessHeavy
       int wk;
       for(wk=0; wk<env.length; wk++) 
 	buf.append("  " + env[wk] + "\n");
-      Logs.sub.finest(buf.toString());
+      LogMgr.getInstance().log
+(LogMgr.Kind.Sub, LogMgr.Level.Finest,
+buf.toString());
 	
-      Logs.flush();
+      LogMgr.getInstance().flush();
     }
       
     /* run the process... */ 
@@ -459,7 +465,9 @@ class SubProcessHeavy
 	pExitCode = new Integer(pProc.exec());
       }
       catch(IOException ex) {
-	Logs.sub.warning(getName() + " [exec failed]: " + ex.getMessage());	  
+	LogMgr.getInstance().log
+(LogMgr.Kind.Sub, LogMgr.Level.Warning,
+getName() + " [exec failed]: " + ex.getMessage());	  
 	
 	extraErrors = ex.getMessage();
 	pExitCode = -1;
@@ -473,7 +481,9 @@ class SubProcessHeavy
       stats.join();
     }
     catch (InterruptedException ex) {
-      Logs.sub.warning(getName() + " [interrupted]: " + ex.getMessage());
+      LogMgr.getInstance().log
+(LogMgr.Kind.Sub, LogMgr.Level.Warning,
+getName() + " [interrupted]: " + ex.getMessage());
 
       stats.interrupt();
       pExitCode = -2;
@@ -483,7 +493,9 @@ class SubProcessHeavy
       ((NativeProcessHeavy) pProc).closeStdIn();
     }
     catch(IOException ex) {
-      Logs.sub.warning(getName() + " [close STDIN]: " + ex.getMessage());
+      LogMgr.getInstance().log
+(LogMgr.Kind.Sub, LogMgr.Level.Warning,
+getName() + " [close STDIN]: " + ex.getMessage());
     }
     
     assert(!stats.isAlive());
@@ -497,12 +509,14 @@ class SubProcessHeavy
 	err.close();
       }
       catch(IOException ex) {
-	Logs.sub.severe(getName() + ": Could not append the IOException " + 
+	LogMgr.getInstance().log
+(LogMgr.Kind.Sub, LogMgr.Level.Severe,
+getName() + ": Could not append the IOException " + 
 			"message to STDERR file (" + pStdErrFile + ")!");
       }
     }
 
-    if(Logs.sub.isLoggable(Level.FINE)) {
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Sub, LogMgr.Level.Fine)) {
       StringBuffer buf = new StringBuffer();
       buf.append(getName() + " [exit]: ");
       
@@ -516,8 +530,10 @@ class SubProcessHeavy
 	buf.append("ABORTED");
       }
       
-      Logs.sub.fine(buf.toString());
-      Logs.flush();
+      LogMgr.getInstance().log
+(LogMgr.Kind.Sub, LogMgr.Level.Fine,
+buf.toString());
+      LogMgr.getInstance().flush();
     }
   }
 
@@ -553,19 +569,27 @@ class SubProcessHeavy
       if(pIsFinished == null) 
 	throw new IllegalStateException("The subprocess was never initialized!");
 
-      Logs.sub.finest(pName + " [stats]: thread started.");
+      LogMgr.getInstance().log
+(LogMgr.Kind.Sub, LogMgr.Level.Finest,
+pName + " [stats]: thread started.");
 
       try {
 	while(!pIsFinished.get() && !pProc.isRunning()) {
 	  try {
-	    Logs.sub.finest(pName + " [stats]: waiting (" + 
+	    LogMgr.getInstance().log
+(LogMgr.Kind.Sub, LogMgr.Level.Finest,
+pName + " [stats]: waiting (" + 
 			    sCollectionDelay + ") milliseconds to start collection.");
 	    sleep(sCollectionDelay);
 	  }
 	  catch(InterruptedException ex) {
-	    Logs.sub.severe(pName + " [stats]: thread was interrupted while " + 
+	    LogMgr.getInstance().log
+(LogMgr.Kind.Sub, LogMgr.Level.Severe,
+pName + " [stats]: thread was interrupted while " + 
 			    "waiting to start collection!");
-	    Logs.sub.finest(pName + " [stats]: thread finished.");
+	    LogMgr.getInstance().log
+(LogMgr.Kind.Sub, LogMgr.Level.Finest,
+pName + " [stats]: thread finished.");
 	    return;
 	  }
 	}
@@ -575,15 +599,21 @@ class SubProcessHeavy
 	  assert(pid != -1);
 	  
 	  sProcStats.monitor(pid);
-	  Logs.sub.finer(pName + " [stats]: monitoring process resource usage statistics.");
+	  LogMgr.getInstance().log
+(LogMgr.Kind.Sub, LogMgr.Level.Finer,
+pName + " [stats]: monitoring process resource usage statistics.");
 	}
       }
       catch (Exception ex) {
-	Logs.sub.severe(pName + " [stats]:\n" + 
+	LogMgr.getInstance().log
+(LogMgr.Kind.Sub, LogMgr.Level.Severe,
+pName + " [stats]:\n" + 
 			ex.getMessage());
       }
 
-      Logs.sub.finest(pName + " [stats]: thread finished.");
+      LogMgr.getInstance().log
+(LogMgr.Kind.Sub, LogMgr.Level.Finest,
+pName + " [stats]: thread finished.");
     }
     
     private String  pName;

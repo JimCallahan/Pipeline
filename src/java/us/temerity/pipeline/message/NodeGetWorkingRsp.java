@@ -1,4 +1,4 @@
-// $Id: NodeGetWorkingRsp.java,v 1.6 2004/06/14 22:31:33 jim Exp $
+// $Id: NodeGetWorkingRsp.java,v 1.7 2005/01/22 01:36:36 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -54,9 +54,11 @@ class NodeGetWorkingRsp
       throw new IllegalArgumentException("The working version cannot be (null)!");
     pNodeMod = mod;
 
-    Logs.net.finest("MasterMgr.getWorkingVersion(): " + id + ":\n  " + getTimer());
-    if(Logs.net.isLoggable(Level.FINEST))
-      Logs.flush();
+    LogMgr.getInstance().log
+(LogMgr.Kind.Net, LogMgr.Level.Finest,
+"MasterMgr.getWorkingVersion(): " + id + ":\n  " + getTimer());
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
+      LogMgr.getInstance().flush();
   }
 
 

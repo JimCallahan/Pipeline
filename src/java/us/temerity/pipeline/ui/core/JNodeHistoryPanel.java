@@ -1,4 +1,4 @@
-// $Id: JNodeHistoryPanel.java,v 1.5 2005/01/15 02:56:33 jim Exp $
+// $Id: JNodeHistoryPanel.java,v 1.6 2005/01/22 01:36:36 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -438,9 +438,11 @@ class JNodeHistoryPanel
 	  pHeaderIcon.setIcon(TextureMgr.getInstance().getIcon(name));
 	}
 	catch(IOException ex) {
-	  Logs.tex.severe("Internal Error:\n" + 
+	  LogMgr.getInstance().log
+(LogMgr.Kind.Tex, LogMgr.Level.Severe,
+"Internal Error:\n" + 
 			  "  " + ex.getMessage());
-	  Logs.flush();
+	  LogMgr.getInstance().flush();
 	  System.exit(1);
 	} 
       }

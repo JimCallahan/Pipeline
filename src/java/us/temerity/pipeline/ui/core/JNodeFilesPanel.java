@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.5 2005/01/15 02:56:32 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.6 2005/01/22 01:36:36 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -492,9 +492,11 @@ class JNodeFilesPanel
 	  pHeaderIcon.setIcon(TextureMgr.getInstance().getIcon(name));
 	}
 	catch(IOException ex) {
-	  Logs.tex.severe("Internal Error:\n" + 
+	  LogMgr.getInstance().log
+(LogMgr.Kind.Tex, LogMgr.Level.Severe,
+"Internal Error:\n" + 
 			  "  " + ex.getMessage());
-	  Logs.flush();
+	  LogMgr.getInstance().flush();
 	  System.exit(1);
 	} 
       }
@@ -785,9 +787,11 @@ class JNodeFilesPanel
 	      }
 	    }
 	    catch(IOException ex) {
-	      Logs.tex.severe("Internal Error:\n" + 
+	      LogMgr.getInstance().log
+(LogMgr.Kind.Tex, LogMgr.Level.Severe,
+"Internal Error:\n" + 
 			      "  " + ex.getMessage());
-	      Logs.flush();
+	      LogMgr.getInstance().flush();
 	      System.exit(1);
 	    }
 	  }

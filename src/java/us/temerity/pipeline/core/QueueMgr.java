@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.27 2005/01/21 21:08:02 jim Exp $
+// $Id: QueueMgr.java,v 1.28 2005/01/22 01:36:35 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -50,8 +50,10 @@ class QueueMgr
   { 
     pShutdownJobMgrs = new AtomicBoolean(false);
 
-    Logs.net.info("Initializing...");
-    Logs.flush();
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Net, LogMgr.Level.Info,
+       "Initializing...");
+    LogMgr.getInstance().flush();
 
     if(dir == null)
       throw new IllegalArgumentException("The root queue directory cannot be (null)!");
@@ -139,8 +141,11 @@ class QueueMgr
       initJobTables();
     }
     catch(Exception ex) {
-      Logs.ops.severe(ex.getMessage());
-      Logs.flush();
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	 ex.getMessage());
+      LogMgr.getInstance().flush();
+
       System.exit(1);
     }
   } 
@@ -237,10 +242,14 @@ class QueueMgr
 	    }
 	  }
 	  catch(NumberFormatException ex) {
-	    Logs.glu.severe("Illegal job file encountered (" + files[wk] + ")!");
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	       "Illegal job file encountered (" + files[wk] + ")!");
 	  }
 	  catch(PipelineException ex) {
-	    Logs.ops.severe(ex.getMessage());
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	       ex.getMessage());
 	  }
 	}
       }
@@ -262,7 +271,9 @@ class QueueMgr
 	    }
 	  }
 	  catch(NumberFormatException ex) {
-	    Logs.ops.severe("Illegal job group file encountered (" + files[wk] + ")!");
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	       "Illegal job group file encountered (" + files[wk] + ")!");
 	  }
 	}
       }
@@ -327,7 +338,9 @@ class QueueMgr
 	    client.shutdown();
 	  }
 	  catch(PipelineException ex) {
-	    Logs.net.warning(ex.getMessage());
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Net, LogMgr.Level.Warning,
+	       ex.getMessage());
 	  }
 	}
       }
@@ -372,7 +385,9 @@ class QueueMgr
 	  writeSamples(new TaskTimer(), now, dump);
 	}
 	catch(PipelineException ex) {
-	  Logs.ops.severe(ex.getMessage());
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	     ex.getMessage());
 	}
       }
     }
@@ -1385,13 +1400,16 @@ class QueueMgr
     // DEBUGGING
     try {
       GlueEncoder ge = new GlueEncoderImpl("QueueJob", req.getJob());
-      Logs.glu.finest(ge.getText());
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finest,
+	 ge.getText());
     }
     catch(GlueException ex) {
-      Logs.glu.severe
-	("Unable to generate a Glue format representation of the job!");
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Severe, 
+	 "Unable to generate a Glue format representation of the job!");
     }
-    Logs.flush();
+    LogMgr.getInstance().flush();
     // DEBUGGING
     
     QueueJob job = req.getJob();
@@ -1544,13 +1562,16 @@ class QueueMgr
     // DEBUGGING
     try {
       GlueEncoder ge = new GlueEncoderImpl("QueueJobGroup", req.getJobGroup());
-      Logs.glu.finest(ge.getText());
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finest,
+	 ge.getText());
     }
     catch(GlueException ex) {
-      Logs.glu.severe
-	("Unable to generate a Glue format representation of the job group!");
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Severe, 
+	 "Unable to generate a Glue format representation of the job group!");
     }
-    Logs.flush();
+    LogMgr.getInstance().flush();
     // DEBUGGING
 
     QueueJobGroup group = req.getJobGroup();
@@ -1840,7 +1861,9 @@ class QueueMgr
 	ResourceSample sample = client.getResources();
 	samples.put(hname, sample);
 
-	Logs.ops.finest("Collector - Jobs = " + sample.getNumJobs());
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Finest,
+	   "Collector - Jobs = " + sample.getNumJobs());
 
  	if(needsTotals.contains(hname)) {
 	  numProcs.put(hname, client.getNumProcessors());
@@ -1854,8 +1877,10 @@ class QueueMgr
 	Throwable cause = ex.getCause();
 	if(cause instanceof SocketTimeoutException) {
 	  hung.add(hname);
-	  Logs.net.severe(ex.getMessage());
-	  Logs.flush();
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	     ex.getMessage());
+	  LogMgr.getInstance().flush();
 	}
 	else 
 	  dead.add(hname);
@@ -1950,7 +1975,9 @@ class QueueMgr
 	writeSamples(timer, now, dump);
       }
       catch(PipelineException ex) {
-	Logs.ops.severe(ex.getMessage());
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	   ex.getMessage());
       }
       
       pLastSampleWrite = now;
@@ -1959,9 +1986,11 @@ class QueueMgr
     /* cleanup any out-of-date sample files */ 
     cleanupSamples(timer);
 
-    Logs.ops.finest(timer.toString()); 
-    if(Logs.ops.isLoggable(Level.FINEST))
-      Logs.flush();
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Finest,
+       timer.toString()); 
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finest))
+      LogMgr.getInstance().flush();
 
     /* if we're ahead of schedule, take a nap */ 
     {
@@ -1990,7 +2019,9 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer("QueueMgr.dispatcher()");
     
-    //Logs.ops.finest("-------------------------------------------------------------------"); 
+    //LogMgr.getInstance().log
+    //(LogMgr.Kind.Ops, LogMgr.Level.Finest,
+    // "-------------------------------------------------------------------"); 
     //logJobLists("Pre-Dispatch:");
 
     /* kill/abort the jobs in the hit list */ 
@@ -2015,8 +2046,10 @@ class QueueMgr
 	    writeJobInfo(info);
 	  }
 	  catch(PipelineException ex) {
-	    Logs.net.severe(ex.getMessage()); 
-	    Logs.flush();
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	       ex.getMessage()); 
+	    LogMgr.getInstance().flush();
 	  }
 	  break; 
 
@@ -2060,8 +2093,10 @@ class QueueMgr
 		    writeJobInfo(info);
 		  }
 		  catch(PipelineException ex) {
-		    Logs.net.severe(ex.getMessage()); 
-		    Logs.flush();
+		    LogMgr.getInstance().log
+		      (LogMgr.Kind.Net, LogMgr.Level.Severe,
+		       ex.getMessage()); 
+		    LogMgr.getInstance().flush();
 		  }
 		}
 
@@ -2135,8 +2170,10 @@ class QueueMgr
 		    writeJobInfo(info);
 		  }
 		  catch(PipelineException ex) {
-		    Logs.net.severe(ex.getMessage()); 
-		    Logs.flush();
+		    LogMgr.getInstance().log
+		      (LogMgr.Kind.Net, LogMgr.Level.Severe,
+		       ex.getMessage()); 
+		    LogMgr.getInstance().flush();
 		  }
 		}
 	      }
@@ -2193,8 +2230,10 @@ class QueueMgr
 		      writeJobInfo(info);
 		    }
 		    catch(PipelineException ex) {
-		      Logs.net.severe(ex.getMessage()); 
-		      Logs.flush();
+		      LogMgr.getInstance().log
+			(LogMgr.Kind.Net, LogMgr.Level.Severe,
+			 ex.getMessage()); 
+		      LogMgr.getInstance().flush();
 		    }
 		  }
 
@@ -2272,7 +2311,9 @@ class QueueMgr
 	      writeJobGroup(group);
 	    }
 	    catch(PipelineException ex) {
-	      Logs.ops.severe(ex.getMessage());
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Ops, LogMgr.Level.Severe,
+		 ex.getMessage());
 	    }
 	  }
 	}
@@ -2280,7 +2321,9 @@ class QueueMgr
     }
 
     //logJobLists("Post-Dispatch:");
-    //Logs.ops.finest("-------------------------------------------------------------------"); 
+    //LogMgr.getInstance().log
+    //(LogMgr.Kind.Ops, LogMgr.Level.Finest,
+    // "-------------------------------------------------------------------"); 
 
     /* perform garbage collection of jobs at regular intervals */ 
     pDispatcherCycles++;
@@ -2295,9 +2338,11 @@ class QueueMgr
       pDispatcherCycles = 0;
     }
 
-    Logs.ops.finest(timer.toString()); 
-    if(Logs.ops.isLoggable(Level.FINEST))
-      Logs.flush();
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Finest,
+       timer.toString()); 
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finest))
+      LogMgr.getInstance().flush();
 
     /* if we're ahead of schedule, take a nap */ 
     {
@@ -2440,8 +2485,10 @@ class QueueMgr
 	}
       }
       catch (Exception ex) {
-	Logs.net.severe(ex.getMessage()); 
-	Logs.flush();
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	   ex.getMessage()); 
+	LogMgr.getInstance().flush();
 
 	timer.aquire();
 	synchronized(pLicenseKeys) {
@@ -2516,8 +2563,10 @@ class QueueMgr
 	    deleteJobFile(jobID);
 	}
 	catch(PipelineException ex) {
-	  Logs.ops.severe(ex.getMessage());
-	  Logs.flush();
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	     ex.getMessage());
+	  LogMgr.getInstance().flush();
 	}
       }
 
@@ -2529,8 +2578,10 @@ class QueueMgr
 	    deleteJobInfoFile(jobID);
 	}
 	catch(PipelineException ex) {
-	  Logs.ops.severe(ex.getMessage());
-	  Logs.flush();
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	     ex.getMessage());
+	  LogMgr.getInstance().flush();
 	}
       }      
     }
@@ -2541,9 +2592,11 @@ class QueueMgr
       task.start();
     }
 
-    Logs.ops.finer(timer.toString()); 
-    if(Logs.ops.isLoggable(Level.FINER))
-      Logs.flush();
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Finer,
+       timer.toString()); 
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finer))
+      LogMgr.getInstance().flush();
   }
 
   /**
@@ -2557,7 +2610,7 @@ class QueueMgr
    String title
   ) 
   {
-    if(!Logs.ops.isLoggable(Level.FINEST))
+    if(!LogMgr.getInstance().isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finest))
       return;
 
     StringBuffer buf = new StringBuffer();
@@ -2602,8 +2655,10 @@ class QueueMgr
 
     buf.append("\n");
 
-    Logs.ops.finest(buf.toString());
-    Logs.flush();
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Finest,
+       buf.toString());
+    LogMgr.getInstance().flush();
   }
 
 
@@ -2630,7 +2685,9 @@ class QueueMgr
       }
       
       if(!pLicenseKeys.isEmpty()) {
-	Logs.glu.finer("Writing License Keys.");
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Writing License Keys.");
 
 	try {
 	  String glue = null;
@@ -2641,9 +2698,10 @@ class QueueMgr
 	    glue = ge.getText();
 	  }
 	  catch(GlueException ex) {
-	    Logs.glu.severe
-	      ("Unable to generate a Glue format representation of the license keys!");
-	    Logs.flush();
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	       "Unable to generate a Glue format representation of the license keys!");
+	       LogMgr.getInstance().flush();
 	    
 	    throw new IOException(ex.getMessage());
 	  }
@@ -2680,7 +2738,9 @@ class QueueMgr
 
       File file = new File(pQueueDir, "queue/etc/license-keys");
       if(file.isFile()) {
-	Logs.glu.finer("Reading License Keys.");
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Reading License Keys.");
 
 	ArrayList<LicenseKey> keys = null;
 	try {
@@ -2690,14 +2750,15 @@ class QueueMgr
 	  in.close();
 	}
 	catch(Exception ex) {
-	  Logs.glu.severe
-	    ("The license keys file (" + file + ") appears to be corrupted!");
-	  Logs.flush();
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	     "The license keys file (" + file + ") appears to be corrupted!");
+	  LogMgr.getInstance().flush();
 	  
 	  throw new PipelineException
 	    ("I/O ERROR: \n" + 
 	     "  While attempting to read the license keys file (" + file + ")...\n" + 
-	   "    " + ex.getMessage());
+	     "    " + ex.getMessage());
 	}
 	assert(keys != null);
 	
@@ -2729,7 +2790,9 @@ class QueueMgr
       }
       
       if(!pSelectionKeys.isEmpty()) {
-	Logs.glu.finer("Writing Selection Keys.");
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Writing Selection Keys.");
 
 	try {
 	  String glue = null;
@@ -2740,9 +2803,10 @@ class QueueMgr
 	    glue = ge.getText();
 	  }
 	  catch(GlueException ex) {
-	    Logs.glu.severe
-	      ("Unable to generate a Glue format representation of the selection keys!");
-	    Logs.flush();
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	       "Unable to generate a Glue format representation of the selection keys!");
+	    LogMgr.getInstance().flush();
 	    
 	    throw new IOException(ex.getMessage());
 	  }
@@ -2779,7 +2843,9 @@ class QueueMgr
 
       File file = new File(pQueueDir, "queue/etc/selection-keys");
       if(file.isFile()) {
-	Logs.glu.finer("Reading Selection Keys.");
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Reading Selection Keys.");
 
 	ArrayList<SelectionKey> keys = null;
 	try {
@@ -2789,14 +2855,15 @@ class QueueMgr
 	  in.close();
 	}
 	catch(Exception ex) {
-	  Logs.glu.severe
-	    ("The selection keys file (" + file + ") appears to be corrupted!");
-	  Logs.flush();
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	     "The selection keys file (" + file + ") appears to be corrupted!");
+	  LogMgr.getInstance().flush();
 	  
 	  throw new PipelineException
 	    ("I/O ERROR: \n" + 
 	     "  While attempting to read the selection keys file (" + file + ")...\n" + 
-	   "    " + ex.getMessage());
+	     "    " + ex.getMessage());
 	}
 	assert(keys != null);
 	
@@ -2828,7 +2895,9 @@ class QueueMgr
       }
       
       if(!pHosts.isEmpty()) {
-	Logs.glu.finer("Writing Hosts.");
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Writing Hosts.");
 
 	try {
 	  String glue = null;
@@ -2837,9 +2906,10 @@ class QueueMgr
 	    glue = ge.getText();
 	  }
 	  catch(GlueException ex) {
-	    Logs.glu.severe
-	      ("Unable to generate a Glue format representation of the hosts!");
-	    Logs.flush();
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	       "Unable to generate a Glue format representation of the hosts!");
+	    LogMgr.getInstance().flush();
 	    
 	    throw new IOException(ex.getMessage());
 	  }
@@ -2876,7 +2946,9 @@ class QueueMgr
 
       File file = new File(pQueueDir, "queue/job-servers/hosts");
       if(file.isFile()) {
-	Logs.glu.finer("Reading Hosts.");
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Reading Hosts.");
 
 	TreeMap<String,QueueHost> hosts = null;
 	try {
@@ -2886,14 +2958,15 @@ class QueueMgr
 	  in.close();
 	}
 	catch(Exception ex) {
-	  Logs.glu.severe
-	    ("The hosts file (" + file + ") appears to be corrupted!");
-	  Logs.flush();
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	     "The hosts file (" + file + ") appears to be corrupted!");
+	  LogMgr.getInstance().flush();
 	  
 	  throw new PipelineException
 	    ("I/O ERROR: \n" + 
 	     "  While attempting to read the hosts file (" + file + ")...\n" + 
-	   "    " + ex.getMessage());
+	     "    " + ex.getMessage());
 	}
 	assert(hosts != null);
 	
@@ -2933,7 +3006,9 @@ class QueueMgr
     synchronized(pSampleFileLock) { 
       timer.resume();
 
-      Logs.glu.finer("Writing Resource Samples: " + stamp.getTime());
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	 "Writing Resource Samples: " + stamp.getTime());
 
       File dir = new File(pQueueDir, "queue/job-servers/samples");
       timer.aquire();
@@ -2967,9 +3042,10 @@ class QueueMgr
 	    glue = ge.getText();
 	  }
 	  catch(GlueException ex) {
-	    Logs.glu.severe
-	      ("Unable to generate a Glue format representation of the resource samples!");
-	    Logs.flush();
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	       "Unable to generate a Glue format representation of the resource samples!");
+	    LogMgr.getInstance().flush();
 	    
 	    throw new IOException(ex.getMessage());
 	  }
@@ -3028,8 +3104,10 @@ class QueueMgr
       for(wk=files.length-1; wk>=0; wk--) {
 	File file = files[wk];
 	if(file.isFile()) {
-	  Logs.glu.finer("Reading Resource Samples: " + 
-			 hostname + " [" + file.getName() + "]");
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	     "Reading Resource Samples: " + 
+	     hostname + " [" + file.getName() + "]");
 	  
 	  ResourceSampleBlock block = null;
 	  try {
@@ -3039,9 +3117,10 @@ class QueueMgr
 	    in.close();
 	  }
 	  catch(Exception ex) {
-	    Logs.glu.severe
-	      ("The resource samples file (" + file + ") appears to be corrupted!");
-	    Logs.flush();
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	      "The resource samples file (" + file + ") appears to be corrupted!");
+	    LogMgr.getInstance().flush();
 	    
 	    throw new PipelineException
 	      ("I/O ERROR: \n" + 
@@ -3093,15 +3172,19 @@ class QueueMgr
 	    try {
 	      Long stamp = new Long(file.getName());
 	      if((pLastSampleWrite.getTime() - stamp) > sSampleCleanupInterval) {
-		Logs.glu.finer("Deleting Resource Sample File: " + file);
+		LogMgr.getInstance().log
+		  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+		   "Deleting Resource Sample File: " + file);
 		if(!file.delete()) 
-		  Logs.glu.severe
-		    ("Unable to delete old resource sample file (" + file + ")!");
+		  LogMgr.getInstance().log
+		    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+		     "Unable to delete old resource sample file (" + file + ")!");
 	      }
 	    }
 	    catch(NumberFormatException ex) {
-	      Logs.glu.severe
-		("Illegal resource sample file (" + file + ") encountered!");
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Glu, LogMgr.Level.Severe,
+		 "Illegal resource sample file (" + file + ") encountered!");
 	    }
 	  }
 	}
@@ -3157,7 +3240,9 @@ class QueueMgr
 	  ("Somehow the job file (" + file + ") already exists!");
       }
       
-      Logs.glu.finer("Writing Job: " + jobID);
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	 "Writing Job: " + jobID);
       
       try {
 	String glue = null;
@@ -3166,9 +3251,10 @@ class QueueMgr
 	  glue = ge.getText();
 	}
 	catch(GlueException ex) {
-	  Logs.glu.severe
-	    ("Unable to generate a Glue format representation of the job!");
-	  Logs.flush();
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	    "Unable to generate a Glue format representation of the job!");
+	  LogMgr.getInstance().flush();
 	  
 	  throw new IOException(ex.getMessage());
 	}
@@ -3212,7 +3298,9 @@ class QueueMgr
     synchronized(lock) {
       File file = new File(pQueueDir, "queue/jobs/" + jobID);
       if(file.isFile()) {
-	Logs.glu.finer("Reading Job: " + jobID);
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Reading Job: " + jobID);
 	
 	QueueJob job = null;
 	try {
@@ -3222,14 +3310,15 @@ class QueueMgr
 	  in.close();
 	}
 	catch(Exception ex) {
-	  Logs.glu.severe
-	    ("The job file (" + file + ") appears to be corrupted!");
-	  Logs.flush();
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	     "The job file (" + file + ") appears to be corrupted!");
+	  LogMgr.getInstance().flush();
 	  
 	  throw new PipelineException
 	    ("I/O ERROR: \n" + 
 	     "  While attempting to read the job file (" + file + ")...\n" + 
-	   "    " + ex.getMessage());
+	     "    " + ex.getMessage());
 	}
 	
 	return job;
@@ -3256,7 +3345,9 @@ class QueueMgr
     synchronized(lock) {
       File file = new File(pQueueDir, "queue/jobs/" + jobID); 
 
-      Logs.glu.finer("Deleting Job: " + jobID);
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	 "Deleting Job: " + jobID);
 
       if(!file.isFile()) 
 	throw new PipelineException
@@ -3318,7 +3409,9 @@ class QueueMgr
 	    ("Unable to remove the old job information file (" + file + ")!");
       }
       
-      Logs.glu.finer("Writing Job Information: " + jobID);
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	 "Writing Job Information: " + jobID);
       
       try {
 	String glue = null;
@@ -3327,9 +3420,10 @@ class QueueMgr
 	  glue = ge.getText();
 	}
 	catch(GlueException ex) {
-	  Logs.glu.severe
-	    ("Unable to generate a Glue format representation of the job information!");
-	  Logs.flush();
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	     "Unable to generate a Glue format representation of the job information!");
+	  LogMgr.getInstance().flush();
 	  
 	  throw new IOException(ex.getMessage());
 	}
@@ -3373,7 +3467,9 @@ class QueueMgr
     synchronized(lock) {
       File file = new File(pQueueDir, "queue/job-info/" + jobID);
       if(file.isFile()) {
-	Logs.glu.finer("Reading Job Information: " + jobID);
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Reading Job Information: " + jobID);
 	
 	QueueJobInfo info = null;
 	try {
@@ -3383,9 +3479,10 @@ class QueueMgr
 	  in.close();
 	}
 	catch(Exception ex) {
-	  Logs.glu.severe
-	    ("The job information file (" + file + ") appears to be corrupted!");
-	  Logs.flush();
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	     "The job information file (" + file + ") appears to be corrupted!");
+	  LogMgr.getInstance().flush();
 	  
 	  throw new PipelineException
 	    ("I/O ERROR: \n" + 
@@ -3417,7 +3514,9 @@ class QueueMgr
     synchronized(lock) {
       File file = new File(pQueueDir, "queue/job-info/" + jobID); 
 
-      Logs.glu.finer("Deleting Job Information: " + jobID);
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	 "Deleting Job Information: " + jobID);
 
       if(!file.isFile()) 
 	throw new PipelineException
@@ -3477,7 +3576,9 @@ class QueueMgr
 	    ("Unable to remove the old job group file (" + file + ")!");
       }
       
-      Logs.glu.finer("Writing Job Group: " + groupID);
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	 "Writing Job Group: " + groupID);
       
       try {
 	String glue = null;
@@ -3486,9 +3587,10 @@ class QueueMgr
 	  glue = ge.getText();
 	}
 	catch(GlueException ex) {
-	  Logs.glu.severe
-	    ("Unable to generate a Glue format representation of the job group!");
-	  Logs.flush();
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	     "Unable to generate a Glue format representation of the job group!");
+	  LogMgr.getInstance().flush();
 	  
 	  throw new IOException(ex.getMessage());
 	}
@@ -3529,7 +3631,9 @@ class QueueMgr
     synchronized(lock) {
       File file = new File(pQueueDir, "queue/job-groups/" + groupID);
       if(file.isFile()) {
-	Logs.glu.finer("Reading Job Group: " + groupID);
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Reading Job Group: " + groupID);
 	
 	QueueJobGroup group = null; 
 	try {
@@ -3539,9 +3643,10 @@ class QueueMgr
 	  in.close();
 	}
 	catch(Exception ex) {
-	  Logs.glu.severe
-	    ("The job group file (" + file + ") appears to be corrupted!");
-	  Logs.flush();
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	     "The job group file (" + file + ") appears to be corrupted!");
+	  LogMgr.getInstance().flush();
 	  
 	  throw new PipelineException
 	    ("I/O ERROR: \n" + 
@@ -3573,7 +3678,9 @@ class QueueMgr
     synchronized(lock) {
       File file = new File(pQueueDir, "queue/job-groups/" + groupID);
 
-      Logs.glu.finer("Deleting Job Group: " + groupID);
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	 "Deleting Job Group: " + groupID);
 
       if(!file.isFile()) 
 	throw new PipelineException
@@ -3622,8 +3729,10 @@ class QueueMgr
 	results = client.jobWait(pJobID);
       }
       catch (Exception ex) {
-	Logs.net.severe(ex.getMessage()); 
-	Logs.flush();
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	   ex.getMessage()); 
+	LogMgr.getInstance().flush();
       }
       finally {
 	if(client != null)
@@ -3638,8 +3747,10 @@ class QueueMgr
 	  writeJobInfo(info);
 	}
 	catch (PipelineException ex) {
-	  Logs.net.severe(ex.getMessage()); 
-	  Logs.flush();
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	     ex.getMessage()); 
+	  LogMgr.getInstance().flush();
 	}	
       }
       
@@ -3701,8 +3812,10 @@ class QueueMgr
 	client.jobKill(pJobID);
       }
       catch (Exception ex) {
-	Logs.net.severe(ex.getMessage()); 
-	Logs.flush();
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	   ex.getMessage()); 
+	LogMgr.getInstance().flush();
       }
       finally {
 	if(client != null)
@@ -3754,8 +3867,10 @@ class QueueMgr
 	  client.cleanupResources(pJobIDs);
 	}
 	catch(Exception ex) {
-	  Logs.net.severe(ex.getMessage()); 
-	  Logs.flush();
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	     ex.getMessage()); 
+	  LogMgr.getInstance().flush();
 	}
 	finally {
 	  if(client != null)

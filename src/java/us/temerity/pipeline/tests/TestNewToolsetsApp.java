@@ -1,4 +1,4 @@
-// $Id: TestNewToolsetsApp.java,v 1.4 2004/07/14 20:47:16 jim Exp $
+// $Id: TestNewToolsetsApp.java,v 1.5 2005/01/22 01:36:36 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -26,7 +26,7 @@ class TestNewToolsetsApp
    String[] args  /* IN: command line arguments */
   )
   {
-    Logs.init();
+    
     //Logs.sub.setLevel(Level.FINEST);
 
     try {

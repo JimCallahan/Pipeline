@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.2 2005/01/15 16:16:52 jim Exp $
+// $Id: PluginMgr.java,v 1.3 2005/01/22 01:36:35 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -34,8 +34,10 @@ class PluginMgr
   public
   PluginMgr() 
   {
-    Logs.net.info("Initializing...");
-    Logs.flush();
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Net, LogMgr.Level.Info,
+       "Initializing...");
+    LogMgr.getInstance().flush();
 
     pMakeDirLock = new Object();
 
@@ -306,7 +308,9 @@ class PluginMgr
 	  loadPlugin(root, file);
 	}
 	catch(PipelineException ex) {
-	  Logs.plg.warning(ex.getMessage());
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Plg, LogMgr.Level.Warning,
+	     ex.getMessage());
 	}	
       }
       else if(fs[wk].isDirectory()) {
@@ -452,14 +456,18 @@ class PluginMgr
   {
     ClassLoader loader = new PluginClassLoader(bytes);
     try {
-      Logs.plg.finer("Loading: " + cname);
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Plg, LogMgr.Level.Finer,
+	 "Loading: " + cname);
       Class cls = loader.loadClass(cname);
       
       if(!BasePlugin.class.isAssignableFrom(cls)) 
 	throw new PipelineException
 	  ("The loaded class (" + cname + ") was not a Pipeline plugin!");
       
-      Logs.plg.finest("Instantiating Plugin: " + cname);
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Plg, LogMgr.Level.Finest,
+	 "Instantiating Plugin: " + cname);
       BasePlugin plg = null; 
       try {
 	plg = (BasePlugin) cls.newInstance();
@@ -512,7 +520,7 @@ class PluginMgr
 	 ex.getMessage());
     }	  
     finally {
-      Logs.flush();
+      LogMgr.getInstance().flush();
     }
   }
 

@@ -1,4 +1,4 @@
-// $Id: BasePluginMgrClient.java,v 1.2 2005/01/15 15:06:24 jim Exp $
+// $Id: BasePluginMgrClient.java,v 1.3 2005/01/22 01:36:35 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -109,7 +109,9 @@ class BasePluginMgrClient
 	
 	ClassLoader loader = new PluginClassLoader(bytes);
 	try {
-	  Logs.plg.finer("Updating: " + cname);
+	  LogMgr.getInstance().log
+(LogMgr.Kind.Plg, LogMgr.Level.Finer,
+"Updating: " + cname);
 	  Class cls = loader.loadClass(cname);
 	  tversions.put(vid, cls);
 	}
@@ -124,7 +126,7 @@ class BasePluginMgrClient
 	     ex.getMessage());
 	}	  
 	finally {
-	  Logs.flush();
+	  LogMgr.getInstance().flush();
 	}
       }
     }

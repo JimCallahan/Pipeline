@@ -1,4 +1,4 @@
-// $Id: PluginUpdateRsp.java,v 1.1 2005/01/15 02:56:32 jim Exp $
+// $Id: PluginUpdateRsp.java,v 1.2 2005/01/22 01:36:36 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -91,9 +91,11 @@ class PluginUpdateRsp
       throw new IllegalArgumentException("The Archiver plugins cannot be (null)!");
     pArchivers = archivers;
 
-    if(Logs.net.isLoggable(Level.FINEST)) {
-      Logs.net.finest("PluginMgr.update(): cycle " + cycleID + ":\n  " + getTimer());
-      Logs.flush();
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest)) {
+      LogMgr.getInstance().log
+(LogMgr.Kind.Net, LogMgr.Level.Finest,
+"PluginMgr.update(): cycle " + cycleID + ":\n  " + getTimer());
+      LogMgr.getInstance().flush();
     }
   }
 

@@ -1,4 +1,4 @@
-// $Id: NodeGetCheckedInRsp.java,v 1.1 2004/06/14 22:32:16 jim Exp $
+// $Id: NodeGetCheckedInRsp.java,v 1.2 2005/01/22 01:36:36 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -46,11 +46,13 @@ class NodeGetCheckedInRsp
       throw new IllegalArgumentException("The checked-in version cannot be (null)!");
     pNodeVersion = vsn;
 
-    Logs.net.finest("MasterMgr.getCheckedInVersion(): " + 
+    LogMgr.getInstance().log
+(LogMgr.Kind.Net, LogMgr.Level.Finest,
+"MasterMgr.getCheckedInVersion(): " + 
 		    vsn.getName() + "(v" + vsn.getVersionID() + "):\n" + 
 		    "  " + getTimer());
-    if(Logs.net.isLoggable(Level.FINEST))
-      Logs.flush();
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
+      LogMgr.getInstance().flush();
   }
 
 

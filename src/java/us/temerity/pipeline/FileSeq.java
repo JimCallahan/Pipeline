@@ -1,4 +1,4 @@
-// $Id: FileSeq.java,v 1.15 2004/10/09 16:55:21 jim Exp $
+// $Id: FileSeq.java,v 1.16 2005/01/22 01:36:35 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -356,7 +356,9 @@ class FileSeq
       for(File file : getFiles()) {
 	full = new File(dir, file.getPath());
 	if(full.isFile()) {
-	  Logs.sub.finest("Deleting file: " + full);
+	  LogMgr.getInstance().log
+(LogMgr.Kind.Sub, LogMgr.Level.Finest,
+"Deleting file: " + full);
 	  full.delete();
 	}
       }
@@ -391,7 +393,9 @@ class FileSeq
       for(File file : getFiles()) {
 	full = new File(dir, file.getPath());
 	if(full.isFile()) {
-	  Logs.sub.finest("Making file read-only: " + full);
+	  LogMgr.getInstance().log
+(LogMgr.Kind.Sub, LogMgr.Level.Finest,
+"Making file read-only: " + full);
 	  full.setReadOnly();
 	}
       }

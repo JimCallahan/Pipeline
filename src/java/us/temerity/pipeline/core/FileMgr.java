@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.29 2005/01/15 16:16:51 jim Exp $
+// $Id: FileMgr.java,v 1.30 2005/01/22 01:36:35 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -169,8 +169,10 @@ class FileMgr
    File dir
   ) 
   {
-    Logs.net.info("Initializing...");
-    Logs.flush();
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Net, LogMgr.Level.Info,
+       "Initializing...");
+    LogMgr.getInstance().flush();
 
     pCheckedInLocks = new HashMap<String,ReentrantReadWriteLock>();
     pWorkingLocks   = new HashMap<NodeID,Object>();
@@ -2265,8 +2267,10 @@ class FileMgr
 	
 	File parent = tmp.getParentFile();
 
-	Logs.ops.finest("Deleting Empty Directory: " + tmp);
-	Logs.flush();
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Finest,
+	   "Deleting Empty Directory: " + tmp);
+	LogMgr.getInstance().flush();
 
 	if(!tmp.delete()) 
 	  throw new PipelineException

@@ -1,4 +1,4 @@
-// $Id: MiscCreateToolsetRsp.java,v 1.2 2004/06/08 20:05:10 jim Exp $
+// $Id: MiscCreateToolsetRsp.java,v 1.3 2005/01/22 01:36:36 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -47,10 +47,12 @@ class MiscCreateToolsetRsp
       throw new IllegalArgumentException("The toolset cannot be (null)!");
     pToolset = tset;
 
-    Logs.net.finest("MasterMgr.createToolset(): " + pToolset.getName() + "\n" + 
+    LogMgr.getInstance().log
+(LogMgr.Kind.Net, LogMgr.Level.Finest,
+"MasterMgr.createToolset(): " + pToolset.getName() + "\n" + 
 		    "  " + getTimer());
-    if(Logs.net.isLoggable(Level.FINEST))
-      Logs.flush();    
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
+      LogMgr.getInstance().flush();    
   }
 
 

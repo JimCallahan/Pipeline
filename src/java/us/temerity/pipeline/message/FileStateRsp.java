@@ -1,4 +1,4 @@
-// $Id: FileStateRsp.java,v 1.11 2004/11/16 03:56:36 jim Exp $
+// $Id: FileStateRsp.java,v 1.12 2005/01/22 01:36:36 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -67,13 +67,15 @@ class FileStateRsp
       throw new IllegalArgumentException("The working file timestamps cannot (null)!");
     pTimeStamps = timestamps;
 
-    if(Logs.net.isLoggable(Level.FINEST)) {
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest)) {
       StringBuffer buf = new StringBuffer();
       buf.append("FileMgr.computeFileStates(): " + id + " ");
       for(FileSeq fseq : states.keySet()) 
 	buf.append("[" + fseq + "]");
-      Logs.net.finest(buf.toString() + ":\n  " + getTimer());
-      Logs.flush();
+      LogMgr.getInstance().log
+(LogMgr.Kind.Net, LogMgr.Level.Finest,
+buf.toString() + ":\n  " + getTimer());
+      LogMgr.getInstance().flush();
     }
   }
 

@@ -357,7 +357,7 @@ Commands() :
     /* setup the log files */ 
     if(pLogFile != null) {
       try {
-	Logs.fileHandler(pLogFile, pLogBackups);
+	LogMgr.getInstance().logToFile(pLogFile, pLogBackups, 10485760L);
       }
       catch(Exception ex) {
 	System.out.print("Unable to setup log file: " + ex.getMessage());
@@ -370,7 +370,9 @@ Commands() :
       PluginMgrClient.init();
     }
     catch(PipelineException ex) {
-      Logs.plg.severe(ex.getMessage());
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Plg, LogMgr.Level.Severe,
+	 ex.getMessage());
       System.exit(1);
     }
 
@@ -582,104 +584,100 @@ void LoggerArg() :
   {}
 }
 
+
 void LoggerAll() : 
 {
-  Level v;
+  LogMgr.Level v;
 }
 {
   (<LOG_ALL> <COLON> v=LogLevel())
   {
-    Logs.arg.setLevel(v); 
-    Logs.ops.setLevel(v);
-    Logs.net.setLevel(v);
-    Logs.plg.setLevel(v);
-    Logs.sub.setLevel(v);
-    Logs.tex.setLevel(v);
+    LogMgr.getInstance().setLevels(v);
   }
 }
 
 void LoggerPair() : 
 {
-  Logger g; 
-  Level v;
+  LogMgr.Kind k;
+  LogMgr.Level v;
 }
 {
-  (g=Logger() <COLON> v=LogLevel())
+  (k=LogKind() <COLON> v=LogLevel())
   {
-    g.setLevel(v);
+    LogMgr.getInstance().setLevel(k, v);
   }
 }
 
-Logger Logger() :
+LogMgr.Kind LogKind() : 
 {
-  Logger g;
+  LogMgr.Kind g;
 }
 {
-  (g=ArgLogger() | g=OpsLogger() | g=NetLogger() | 
-   g=PlgLogger() | g=SubLogger() | g=TexLogger())
+  (g=ArgKind() | g=OpsKind() | g=NetKind() | g=SubKind() | g=PlgKind() | g=TexKind())
   {
     return g;
   }
 }
 
-Logger ArgLogger() : 
+LogMgr.Kind ArgKind() : 
 {}
 {
   <LOG_ARG>
   {
-    return Logs.arg;
+    return LogMgr.Kind.Arg;
   }
 }
 
-Logger OpsLogger() : 
+LogMgr.Kind OpsKind() : 
 {}
 {
   <LOG_OPS>
   {
-    return Logs.ops;
+    return LogMgr.Kind.Ops;
   }
 }
 
-Logger NetLogger() : 
+LogMgr.Kind NetKind() : 
 {}
 {
   <LOG_NET>
   {
-    return Logs.net;
+    return LogMgr.Kind.Net;
   }
 }
 
-Logger PlgLogger() : 
-{}
-{
-  <LOG_PLG>
-  {
-    return Logs.plg;
-  }
-}
-
-Logger SubLogger() : 
+LogMgr.Kind SubKind() : 
 {}
 {
   <LOG_SUB>
   {
-    return Logs.sub;
+    return LogMgr.Kind.Sub;
   }
 }
 
-Logger TexLogger() : 
+LogMgr.Kind PlgKind() : 
+{}
+{
+  <LOG_PLG>
+  {
+    return LogMgr.Kind.Plg;
+  }
+}
+
+LogMgr.Kind TexKind() : 
 {}
 {
   <LOG_TEX>
   {
-    return Logs.tex;
+    return LogMgr.Kind.Tex;
   }
 }
 
 
-Level LogLevel() : 
+
+LogMgr.Level LogLevel() : 
 {
-  Level v;
+  LogMgr.Level v;
 }
 {
   (v=SevereLevel() | v=WarningLevel() | v=InfoLevel() | 
@@ -689,71 +687,72 @@ Level LogLevel() :
   }
 }
 
-Level SevereLevel() :
+LogMgr.Level SevereLevel() :
 {
   Level v;
 }
 {
   <SEVERE> 
   {
-    return Level.SEVERE;
+    return LogMgr.Level.Severe;
   }
 }
 
-Level WarningLevel() :
+LogMgr.Level WarningLevel() :
 {
   Level v;
 }
 {
   <WARNING> 
   {
-    return Level.WARNING;
+    return LogMgr.Level.Warning;
   }
 }
 
-Level InfoLevel() :
+LogMgr.Level InfoLevel() :
 {
   Level v;
 }
 {
   <INFO> 
   {
-    return Level.INFO;
+    return LogMgr.Level.Info;
   }
 }
 
-Level FineLevel() :
+LogMgr.Level FineLevel() :
 {
   Level v;
 }
 {
   <FINE> 
   {
-    return Level.FINE;
+    return LogMgr.Level.Fine;
   }
 }
 
-Level FinerLevel() :
+LogMgr.Level FinerLevel() :
 {
   Level v;
 }
 {
   <FINER> 
   {
-    return Level.FINER;
+    return LogMgr.Level.Finer;
   }
 }
 
-Level FinestLevel() :
+LogMgr.Level FinestLevel() :
 {
   Level v;
 }
 {
   <FINEST> 
   {
-    return Level.FINEST;
+    return LogMgr.Level.Finest;
   }
 }
+
 
 
 void Layout() : 

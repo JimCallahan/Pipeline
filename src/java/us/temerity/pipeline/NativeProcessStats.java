@@ -1,4 +1,4 @@
-// $Id: NativeProcessStats.java,v 1.1 2004/11/09 06:01:32 jim Exp $
+// $Id: NativeProcessStats.java,v 1.2 2005/01/22 01:36:35 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -278,8 +278,9 @@ class NativeProcessStats
 	  }
 	}
 	catch(IOException ex) {
-	  Logs.ops.warning
-	    ("Unable to collection statistics for process (" + pid + "): \n" + 
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Ops, LogMgr.Level.Warning, 
+	     "Unable to collection statistics for process (" + pid + "): \n" + 
 	     ex.getMessage());
 	}
       }

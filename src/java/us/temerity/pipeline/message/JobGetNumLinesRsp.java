@@ -1,4 +1,4 @@
-// $Id: JobGetNumLinesRsp.java,v 1.1 2004/10/28 15:55:24 jim Exp $
+// $Id: JobGetNumLinesRsp.java,v 1.2 2005/01/22 01:36:36 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -50,9 +50,11 @@ class JobGetNumLinesRsp
 
     pNumLines = numLines;
 
-    Logs.net.finest(title + "\n  " + getTimer());
-    if(Logs.net.isLoggable(Level.FINEST))
-      Logs.flush();
+    LogMgr.getInstance().log
+(LogMgr.Kind.Net, LogMgr.Level.Finest,
+title + "\n  " + getTimer());
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
+      LogMgr.getInstance().flush();
   }
 
 

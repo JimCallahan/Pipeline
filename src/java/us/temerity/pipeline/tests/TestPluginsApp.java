@@ -1,4 +1,4 @@
-// $Id: TestPluginsApp.java,v 1.12 2004/12/29 17:30:32 jim Exp $
+// $Id: TestPluginsApp.java,v 1.13 2005/01/22 01:36:36 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
@@ -25,7 +25,7 @@ class TestPluginsApp
    String[] args  /* IN: command line arguments */
   )
   {
-    Logs.init();
+    
     Logs.sub.setLevel(Level.FINEST);
     Logs.plg.setLevel(Level.FINE);
 

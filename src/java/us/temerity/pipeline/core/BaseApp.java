@@ -1,4 +1,4 @@
-// $Id: BaseApp.java,v 1.11 2005/01/11 12:52:55 jim Exp $
+// $Id: BaseApp.java,v 1.12 2005/01/22 01:36:35 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -42,7 +42,7 @@ class BaseApp
 
 
     /* init common support classes */ 
-    Logs.init();
+    
     FileCleaner.init();
   }
 
@@ -72,7 +72,9 @@ class BaseApp
   public void
   version()
   {
-    Logs.ops.info(PackageInfo.sVersion);
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       PackageInfo.sVersion);
   }
 
   /**
@@ -81,7 +83,9 @@ class BaseApp
   public void
   releaseDate()
   {
-    Logs.ops.info(PackageInfo.sRelease);
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       PackageInfo.sRelease);
   }
     
   /**
@@ -90,7 +94,9 @@ class BaseApp
   public void
   copyright()
   {
-    Logs.ops.info(PackageInfo.sCopyright);
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       PackageInfo.sCopyright);
   }
 
   /**
@@ -99,7 +105,9 @@ class BaseApp
   public void
   license()
   {
-    Logs.ops.info(PackageInfo.sLicense);
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       PackageInfo.sLicense);
   }
     
 
@@ -132,7 +140,9 @@ class BaseApp
 	proc.join();
       }
       catch(InterruptedException ex) {
-	Logs.sub.severe(ex.getMessage());
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Sub, LogMgr.Level.Severe,
+	   ex.getMessage());
       }
       
       isRunning = proc.wasSuccessful();
@@ -150,7 +160,9 @@ class BaseApp
 	proc.join();
       }
       catch(InterruptedException ex) {
-	Logs.sub.severe(ex.getMessage());
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Sub, LogMgr.Level.Severe,
+	   ex.getMessage());
       }
     }
     else {
@@ -326,7 +338,9 @@ class BaseApp
     }
 
     /* log the message */ 
-    Logs.arg.severe(buf.toString());
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Arg, LogMgr.Level.Severe,
+       buf.toString());
   }
 
   /**

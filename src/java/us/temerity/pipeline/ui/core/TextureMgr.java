@@ -1,4 +1,4 @@
-// $Id: TextureMgr.java,v 1.1 2005/01/03 06:56:25 jim Exp $
+// $Id: TextureMgr.java,v 1.2 2005/01/22 01:36:36 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -141,7 +141,9 @@ class TextureMgr
 	int icode = (int) code;
 
 	if(geom.isPrintable(code)) {
-	  Logs.tex.fine("Loading Font Texture: " + name + " \"" + code + "\"");
+	  LogMgr.getInstance().log
+(LogMgr.Kind.Tex, LogMgr.Level.Fine,
+"Loading Font Texture: " + name + " \"" + code + "\"");
 
 	  int handle[] = new int[1];
 	  gl.glGenTextures(1, handle); 
@@ -151,8 +153,10 @@ class TextureMgr
 	  
 	  int level, size; 
 	  for(level=0, size=sMaxFontRes; size>=1; level++, size/=2) {
-	    Logs.tex.finer("Loading MipMap: " + size + "x" + size);
-	    Logs.flush();
+	    LogMgr.getInstance().log
+(LogMgr.Kind.Tex, LogMgr.Level.Finer,
+"Loading MipMap: " + size + "x" + size);
+	    LogMgr.getInstance().flush();
 	    
 	    String path = ("fonts/" + name + "/" + icode + "/texture." + size + ".png");
 	    URL url = LookAndFeelLoader.class.getResource(path);
@@ -285,7 +289,9 @@ class TextureMgr
     }
 
     /* build the texture and icon */ 
-    Logs.tex.fine("Loading Texture: " + name);
+    LogMgr.getInstance().log
+(LogMgr.Kind.Tex, LogMgr.Level.Fine,
+"Loading Texture: " + name);
     {
       int handle[] = new int[1];
       gl.glGenTextures(1, handle); 
@@ -294,8 +300,10 @@ class TextureMgr
 
       int level, size; 
       for(level=0, size=sMaxTexRes; size>=1; level++, size/=2) {
-	Logs.tex.finer("Loading MipMap: " + size + "x" + size);
-	Logs.flush();
+	LogMgr.getInstance().log
+(LogMgr.Kind.Tex, LogMgr.Level.Finer,
+"Loading MipMap: " + size + "x" + size);
+	LogMgr.getInstance().flush();
 
 	String path = ("textures/" + name + "/texture." + size + ".png");
 	URL url = LookAndFeelLoader.class.getResource(path);
@@ -419,8 +427,10 @@ class TextureMgr
 
     int size = sIconRes[idx];
 	  
-    Logs.tex.fine("Loading Icon: " + name + " " + size + "x" + size);
-    Logs.flush();
+    LogMgr.getInstance().log
+(LogMgr.Kind.Tex, LogMgr.Level.Fine,
+"Loading Icon: " + name + " " + size + "x" + size);
+    LogMgr.getInstance().flush();
     
     String path = ("textures/" + name + "/texture." + size + ".png");
     URL url = LookAndFeelLoader.class.getResource(path);

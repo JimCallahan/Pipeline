@@ -1,4 +1,4 @@
-// $Id: JobGetTotalMemoryRsp.java,v 1.1 2004/07/28 19:10:23 jim Exp $
+// $Id: JobGetTotalMemoryRsp.java,v 1.2 2005/01/22 01:36:36 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -46,9 +46,11 @@ class JobGetTotalMemoryRsp
       throw new IllegalArgumentException("The total memory cannot be negative!");
     pMemory = memory;
 
-    Logs.net.finest("JobMgr.getTotalMemory():\n  " + getTimer());
-    if(Logs.net.isLoggable(Level.FINEST))
-      Logs.flush();
+    LogMgr.getInstance().log
+(LogMgr.Kind.Net, LogMgr.Level.Finest,
+"JobMgr.getTotalMemory():\n  " + getTimer());
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
+      LogMgr.getInstance().flush();
   }
 
 

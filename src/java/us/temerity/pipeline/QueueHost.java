@@ -1,4 +1,4 @@
-// $Id: QueueHost.java,v 1.9 2005/01/21 21:08:02 jim Exp $
+// $Id: QueueHost.java,v 1.10 2005/01/22 01:36:35 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -433,7 +433,9 @@ class QueueHost
   jobStarted() 
   {
     pNumJobsDelta++;
-    Logs.ops.finest("Job Started - Delta = " + pNumJobsDelta);
+    LogMgr.getInstance().log
+(LogMgr.Kind.Ops, LogMgr.Level.Finest,
+"Job Started - Delta = " + pNumJobsDelta);
   }
 
   /**
@@ -456,7 +458,9 @@ class QueueHost
     if((sample != null) && (results.getTimeStamp().compareTo(sample.getTimeStamp()) > 0)) 
       pNumJobsDelta--;
 
-    Logs.ops.finest("Job Finished - Delta = " + pNumJobsDelta);
+    LogMgr.getInstance().log
+(LogMgr.Kind.Ops, LogMgr.Level.Finest,
+"Job Finished - Delta = " + pNumJobsDelta);
   }
 
   
@@ -589,7 +593,9 @@ class QueueHost
        (sample.getDisk() < jreqs.getMinDisk()))
       return null;
 
-    Logs.ops.finest("Dispatcher - " + 
+    LogMgr.getInstance().log
+(LogMgr.Kind.Ops, LogMgr.Level.Finest,
+"Dispatcher - " + 
 		    "Jobs = " + sample.getNumJobs() + "  " + 
 		    "Delta = " + pNumJobsDelta + "  " + 
 		    "Total = " + (sample.getNumJobs() + pNumJobsDelta) + "  " +

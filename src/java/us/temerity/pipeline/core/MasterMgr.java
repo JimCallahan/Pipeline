@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.84 2005/01/15 21:15:54 jim Exp $
+// $Id: MasterMgr.java,v 1.85 2005/01/22 01:36:35 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -236,8 +236,10 @@ class MasterMgr
     pShutdownJobMgrs   = new AtomicBoolean(false);
     pShutdownPluginMgr = new AtomicBoolean(false);
 
-    Logs.net.info("Establishing Network Connections...");
-    Logs.flush();
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Net, LogMgr.Level.Info,
+       "Establishing Network Connections...");
+    LogMgr.getInstance().flush();
 
     {
       /* initialize the plugins */ 
@@ -252,8 +254,10 @@ class MasterMgr
       pQueueMgrClient.waitForConnection(1000, 5000);
     }
 
-    Logs.net.info("Initializing...");
-    Logs.flush();
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Net, LogMgr.Level.Info,
+       "Initializing...");
+    LogMgr.getInstance().flush();
 
     /* create the lock file */ 
     {
@@ -357,8 +361,11 @@ class MasterMgr
       readNextIDs();
     }
     catch(Exception ex) {
-      Logs.ops.severe(ex.getMessage());
-      Logs.flush();
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	 ex.getMessage());
+      LogMgr.getInstance().flush();
+
       System.exit(1);
     }
   }
@@ -682,7 +689,9 @@ class MasterMgr
 	  ("Unable to create the directory (" + dir + ")!");
     }
 
-    Logs.ops.fine("Rebuilding Downstream Links Cache...");   
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Fine,
+       "Rebuilding Downstream Links Cache...");   
 
     /* process checked-in versions */ 
     {
@@ -709,12 +718,15 @@ class MasterMgr
       }
     }
 
-    if(!pDownstream.isEmpty() && Logs.ops.isLoggable(Level.FINER)) { 
+    if(!pDownstream.isEmpty() && 
+       LogMgr.getInstance().isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finer)) { 
       StringBuffer buf = new StringBuffer(); 
       buf.append("Rebuilt Links:\n");
       for(String name : pDownstream.keySet()) 
 	buf.append("  " + name + "\n");
-      Logs.ops.finer(buf.toString());
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Finer,
+	 buf.toString());
     }
 
     /* shutdown and restart the server */ 
@@ -960,7 +972,9 @@ class MasterMgr
 	pFileMgrClient.shutdown();
       }
       catch(PipelineException ex) {
-	Logs.net.warning(ex.getMessage());
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Warning,
+	   ex.getMessage());
       }
     }
 
@@ -973,7 +987,9 @@ class MasterMgr
 	  pQueueMgrClient.shutdown();
       }
       catch(PipelineException ex) {
-	Logs.net.warning(ex.getMessage());
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Warning,
+	   ex.getMessage());
       }
     }
     
@@ -985,7 +1001,9 @@ class MasterMgr
 	PluginMgrClient.getInstance().disconnect();
     }
     catch(PipelineException ex) {
-      Logs.net.warning(ex.getMessage());
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Warning,
+	 ex.getMessage());
     }
 
     /* give the sockets time to disconnect cleanly */ 
@@ -1004,10 +1022,12 @@ class MasterMgr
       writeNextIDs();
     }
     catch(PipelineException ex) {
-      Logs.net.warning(ex.getMessage());
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Warning,
+	 ex.getMessage());
     }
 
-    Logs.flush();
+    LogMgr.getInstance().flush();
   }
 
   /**
@@ -1027,7 +1047,9 @@ class MasterMgr
 	writeDownstreamLinks(links);
     }
     catch(PipelineException ex) {
-      Logs.ops.severe(ex.getMessage());
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	 ex.getMessage());
       
       /* remove the entire downstream directory */ 
       {
@@ -1045,13 +1067,17 @@ class MasterMgr
 	  proc.join();
 	}
 	catch(InterruptedException ex2) {
-	  Logs.ops.severe("Interrupted while removing the downstream directory " + 
-			  "(" + pNodeDir + "/downstream)!");
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	     "Interrupted while removing the downstream directory " + 
+	     "(" + pNodeDir + "/downstream)!");
 	}
 	
 	if(!proc.wasSuccessful()) {
-	  Logs.ops.severe("Unable to removing the downstream directory " + 
-			  "(" + pNodeDir + "/downstream)!");
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	     "Unable to removing the downstream directory " + 
+	     "(" + pNodeDir + "/downstream)!");
 	}
       }
     }
@@ -6219,11 +6245,14 @@ class MasterMgr
   logNodeTree() 
   {
     synchronized(pNodeTreeRoot) {
-      if(!pNodeTreeRoot.isEmpty() && Logs.ops.isLoggable(Level.FINER)) {
+      if(!pNodeTreeRoot.isEmpty() && 
+	 LogMgr.getInstance().isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finer)) {
 	StringBuffer buf = new StringBuffer(); 
 	buf.append("Node Tree:\n");
 	logNodeTreeHelper(pNodeTreeRoot, 1, buf);
-	Logs.ops.finer(buf.toString());
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Finer,
+	   buf.toString());
       }
     }
   }
@@ -7760,8 +7789,10 @@ class MasterMgr
 	
 	File parent = tmp.getParentFile();
 
-	Logs.ops.finest("Deleting Empty Directory: " + tmp);
-	Logs.flush();
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Finest,
+	   "Deleting Empty Directory: " + tmp);
+	LogMgr.getInstance().flush();
 
 	if(!tmp.delete()) 
 	  throw new PipelineException
@@ -7798,7 +7829,9 @@ class MasterMgr
 	  ("Unable to overrite the existing archive file(" + file + ")!");
       }
       
-      Logs.glu.finer("Writing Archive: " + archive.getName());
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	 "Writing Archive: " + archive.getName());
       
       try {
 	String glue = null;
@@ -7807,10 +7840,11 @@ class MasterMgr
 	  glue = ge.getText();
 	}
 	catch(GlueException ex) {
-	  Logs.glu.severe
-	    ("Unable to generate a Glue format representation of the archive " + 
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	     "Unable to generate a Glue format representation of the archive " + 
 	     "(" + archive.getName() + ")!");
-	  Logs.flush();
+	  LogMgr.getInstance().flush();
 	  
 	  throw new IOException(ex.getMessage());
 	}
@@ -7853,7 +7887,9 @@ class MasterMgr
 	throw new PipelineException
 	  ("No file exists for archive (" + name + ")!");
 
-      Logs.glu.finer("Reading Archive: " + name);
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	 "Reading Archive: " + name);
 
       Archive archive = null;
       try {
@@ -7863,9 +7899,10 @@ class MasterMgr
 	in.close();
       }
       catch(Exception ex) {
-	Logs.glu.severe
-	  ("The archive file (" + file + ") appears to be corrupted!");
-	Logs.flush();
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	   "The archive file (" + file + ") appears to be corrupted!");
+	LogMgr.getInstance().flush();
 	
 	throw new PipelineException
 	  ("I/O ERROR: \n" + 
@@ -7901,7 +7938,9 @@ class MasterMgr
       }
 
       if(!pRestoreReqs.isEmpty()) {
-	Logs.glu.finer("Writing Restore Requests.");
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Writing Restore Requests.");
 
 	try {
 	  String glue = null;
@@ -7910,9 +7949,10 @@ class MasterMgr
 	    glue = ge.getText();
 	  }
 	  catch(GlueException ex) {
-	    Logs.glu.severe
-	      ("Unable to generate a Glue format representation of the restore requests!");
-	    Logs.flush();
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	       "Unable to generate a Glue format representation of the restore requests!");
+	    LogMgr.getInstance().flush();
 	    
 	    throw new IOException(ex.getMessage());
 	  }
@@ -7949,7 +7989,9 @@ class MasterMgr
 
       File file = new File(pNodeDir, "etc/restore-reqs");
       if(file.isFile()) {
-	Logs.glu.finer("Reading Restore Requests.");
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Reading Restore Requests.");
 
 	TreeMap<String,TreeSet<VersionID>> requests = null;
 	try {
@@ -7959,14 +8001,15 @@ class MasterMgr
 	  in.close();
 	}
 	catch(Exception ex) {
-	  Logs.glu.severe
-	    ("The restore requests file (" + file + ") appears to be corrupted!");
-	  Logs.flush();
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	     "The restore requests file (" + file + ") appears to be corrupted!");
+	  LogMgr.getInstance().flush();
 	  
 	  throw new PipelineException
 	    ("I/O ERROR: \n" + 
 	     "  While attempting to read the restore requests file (" + file + ")...\n" + 
-	   "    " + ex.getMessage());
+	     "    " + ex.getMessage());
 	}
 
 	pRestoreReqs.putAll(requests);
@@ -7996,7 +8039,9 @@ class MasterMgr
       }
 
       if(pDefaultToolset != null) {
-	Logs.glu.finer("Writing Default Toolset.");
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Writing Default Toolset.");
 
 	try {
 	  String glue = null;
@@ -8005,9 +8050,10 @@ class MasterMgr
 	    glue = ge.getText();
 	  }
 	  catch(GlueException ex) {
-	    Logs.glu.severe
-	      ("Unable to generate a Glue format representation of the default toolset!");
-	    Logs.flush();
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	       "Unable to generate a Glue format representation of the default toolset!");
+	    LogMgr.getInstance().flush();
 	    
 	    throw new IOException(ex.getMessage());
 	  }
@@ -8044,7 +8090,9 @@ class MasterMgr
 
       File file = new File(pNodeDir, "toolsets/default-toolset");
       if(file.isFile()) {
-	Logs.glu.finer("Reading Default Toolset.");
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Reading Default Toolset.");
 
 	try {
 	  FileReader in = new FileReader(file);
@@ -8053,14 +8101,15 @@ class MasterMgr
 	  in.close();
 	}
 	catch(Exception ex) {
-	  Logs.glu.severe
-	    ("The default toolset file (" + file + ") appears to be corrupted!");
-	  Logs.flush();
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	     "The default toolset file (" + file + ") appears to be corrupted!");
+	  LogMgr.getInstance().flush();
 	  
 	  throw new PipelineException
 	    ("I/O ERROR: \n" + 
 	     "  While attempting to read the default toolset file (" + file + ")...\n" + 
-	   "    " + ex.getMessage());
+	     "    " + ex.getMessage());
 	}
       }
     }
@@ -8088,7 +8137,9 @@ class MasterMgr
       }
 
       if(!pActiveToolsets.isEmpty()) {
-	Logs.glu.finer("Writing Active Toolsets.");
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Writing Active Toolsets.");
 
 	try {
 	  String glue = null;
@@ -8097,9 +8148,10 @@ class MasterMgr
 	    glue = ge.getText();
 	  }
 	  catch(GlueException ex) {
-	    Logs.glu.severe
-	      ("Unable to generate a Glue format representation of the active toolsets!");
-	    Logs.flush();
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	       "Unable to generate a Glue format representation of the active toolsets!");
+	    LogMgr.getInstance().flush();
 	    
 	    throw new IOException(ex.getMessage());
 	  }
@@ -8136,7 +8188,9 @@ class MasterMgr
 
       File file = new File(pNodeDir, "toolsets/active-toolsets");
       if(file.isFile()) {
-	Logs.glu.finer("Reading Active Toolsets.");
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Reading Active Toolsets.");
 
 	TreeSet<String> tsets = null;
 	try {
@@ -8146,14 +8200,15 @@ class MasterMgr
 	  in.close();
 	}
 	catch(Exception ex) {
-	  Logs.glu.severe
-	    ("The active toolsets file (" + file + ") appears to be corrupted!");
-	  Logs.flush();
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	     "The active toolsets file (" + file + ") appears to be corrupted!");
+	  LogMgr.getInstance().flush();
 	  
 	  throw new PipelineException
 	    ("I/O ERROR: \n" + 
 	     "  While attempting to read the active toolsets file (" + file + ")...\n" + 
-	   "    " + ex.getMessage());
+	     "    " + ex.getMessage());
 	}
 
 	pActiveToolsets.addAll(tsets);
@@ -8187,7 +8242,9 @@ class MasterMgr
 	  ("Unable to overrite the existing toolset file(" + file + ")!");
       }
 
-      Logs.glu.finer("Writing Toolset: " + tset.getName());
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	 "Writing Toolset: " + tset.getName());
 
       try {
 	String glue = null;
@@ -8196,10 +8253,11 @@ class MasterMgr
 	  glue = ge.getText();
 	}
 	catch(GlueException ex) {
-	  Logs.glu.severe
-	    ("Unable to generate a Glue format representation of the toolset " + 
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	     "Unable to generate a Glue format representation of the toolset " + 
 	     "(" + tset.getName() + ")!");
-	  Logs.flush();
+	  LogMgr.getInstance().flush();
 	  
 	  throw new IOException(ex.getMessage());
 	}
@@ -8242,7 +8300,9 @@ class MasterMgr
 	throw new PipelineException
 	  ("No toolset file exists for toolset (" + name + ")!");
 
-      Logs.glu.finer("Reading Toolset: " + name);
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	 "Reading Toolset: " + name);
 
       Toolset tset = null;
       try {
@@ -8252,9 +8312,10 @@ class MasterMgr
 	in.close();
       }
       catch(Exception ex) {
-	Logs.glu.severe
-	  ("The toolset file (" + file + ") appears to be corrupted!");
-	Logs.flush();
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	   "The toolset file (" + file + ") appears to be corrupted!");
+	LogMgr.getInstance().flush();
 	
 	throw new PipelineException
 	  ("I/O ERROR: \n" + 
@@ -8303,7 +8364,9 @@ class MasterMgr
 	  ("Unable to overrite the existing toolset package file(" + file + ")!");
       }
 
-      Logs.glu.finer("Writing Toolset Package: " + pkg.getName() + " v" + pkg.getVersionID());
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	 "Writing Toolset Package: " + pkg.getName() + " v" + pkg.getVersionID());
 
       try {
 	String glue = null;
@@ -8312,10 +8375,11 @@ class MasterMgr
 	  glue = ge.getText();
 	}
 	catch(GlueException ex) {
-	  Logs.glu.severe
-	    ("Unable to generate a Glue format representation of the toolset package " + 
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	     "Unable to generate a Glue format representation of the toolset package " + 
 	     "(" + pkg.getName() + " v" + pkg.getVersionID() + ")!");
-	  Logs.flush();
+	  LogMgr.getInstance().flush();
 	  
 	  throw new IOException(ex.getMessage());
 	}
@@ -8362,7 +8426,9 @@ class MasterMgr
 	throw new PipelineException
 	  ("No toolset package file exists for package (" + name + " v" + vid + ")!");
 
-      Logs.glu.finer("Reading Toolset Package: " + name + " v" + vid);
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	 "Reading Toolset Package: " + name + " v" + vid);
 
       PackageVersion pkg = null;
       try {
@@ -8372,9 +8438,10 @@ class MasterMgr
 	in.close();
       }
       catch(Exception ex) {
-	Logs.glu.severe
-	  ("The toolset package file (" + file + ") appears to be corrupted!");
-	Logs.flush();
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	   "The toolset package file (" + file + ") appears to be corrupted!");
+	LogMgr.getInstance().flush();
 	
 	throw new PipelineException
 	  ("I/O ERROR: \n" + 
@@ -8428,7 +8495,9 @@ class MasterMgr
 	    ("Unable to remove the old suffix editors file (" + file + ")!");
       }
 
-      Logs.glu.finer("Writing Suffix Editors: " + author);
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	 "Writing Suffix Editors: " + author);
 
       try {
 	String glue = null;
@@ -8437,10 +8506,11 @@ class MasterMgr
 	  glue = ge.getText();
 	}
 	catch(GlueException ex) {
-	  Logs.glu.severe
-	    ("Unable to generate a Glue format representation of the suffix editors " + 
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	     "Unable to generate a Glue format representation of the suffix editors " + 
 	     "for user (" + author + ")!");
-	  Logs.flush();
+	  LogMgr.getInstance().flush();
 	  
 	  throw new IOException(ex.getMessage());
 	}
@@ -8482,7 +8552,9 @@ class MasterMgr
       if(!file.isFile()) 
 	return null;
 
-      Logs.glu.finer("Reading Suffix Editors: " + author);
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	 "Reading Suffix Editors: " + author);
 
       TreeSet<SuffixEditor> editors = null;
       try {
@@ -8492,9 +8564,10 @@ class MasterMgr
 	in.close();
       }
       catch(Exception ex) {
-	Logs.glu.severe
-	  ("The suffix editors file (" + file + ") appears to be corrupted!");
-	Logs.flush();
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	   "The suffix editors file (" + file + ") appears to be corrupted!");
+	LogMgr.getInstance().flush();
 	
 	throw new PipelineException
 	  ("I/O ERROR: \n" + 
@@ -8535,7 +8608,9 @@ class MasterMgr
 	    ("Unable to remove the old editor menu layout file (" + file + ")!");
       }
       
-      Logs.glu.finer("Writing Editor Menu Layout.");
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	 "Writing Editor Menu Layout.");
 
       try {
 	String glue = null;
@@ -8544,9 +8619,10 @@ class MasterMgr
 	  glue = ge.getText();
 	}
 	catch(GlueException ex) {
-	  Logs.glu.severe
-	    ("Unable to generate a Glue format representation of the editor menu layout!");
-	  Logs.flush();
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	     "Unable to generate a Glue format representation of the editor menu layout!");
+	  LogMgr.getInstance().flush();
 	  
 	  throw new IOException(ex.getMessage());
 	}
@@ -8580,7 +8656,9 @@ class MasterMgr
     synchronized(pPluginMenuLayoutLock) {
       File file = new File(pNodeDir, "etc/editor-menu-layout");
       if(file.isFile()) {
-	Logs.glu.finer("Reading Editor Menu Layout.");
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Reading Editor Menu Layout.");
 
 	PluginMenuLayout layout = null;
 	try {
@@ -8590,9 +8668,10 @@ class MasterMgr
 	  in.close();
 	}
 	catch(Exception ex) {
-	  Logs.glu.severe
-	    ("The editor menu layout file (" + file + ") appears to be corrupted!");
-	  Logs.flush();
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	     "The editor menu layout file (" + file + ") appears to be corrupted!");
+	  LogMgr.getInstance().flush();
 	  
 	  throw new PipelineException
 	    ("I/O ERROR: \n" + 
@@ -8631,7 +8710,9 @@ class MasterMgr
 	    ("Unable to remove the old comparator menu layout file (" + file + ")!");
       }
       
-      Logs.glu.finer("Writing Comparator Menu Layout.");
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	 "Writing Comparator Menu Layout.");
 
       try {
 	String glue = null;
@@ -8640,10 +8721,11 @@ class MasterMgr
 	  glue = ge.getText();
 	}
 	catch(GlueException ex) {
-	  Logs.glu.severe
-	    ("Unable to generate a Glue format representation of the comparator " + 
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	     "Unable to generate a Glue format representation of the comparator " + 
 	     "menu layout!");
-	  Logs.flush();
+	  LogMgr.getInstance().flush();
 	  
 	  throw new IOException(ex.getMessage());
 	}
@@ -8678,7 +8760,9 @@ class MasterMgr
     synchronized(pPluginMenuLayoutLock) {
       File file = new File(pNodeDir, "etc/comparator-menu-layout");
       if(file.isFile()) {
-	Logs.glu.finer("Reading Comparator Menu Layout.");
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Reading Comparator Menu Layout.");
 
 	PluginMenuLayout layout = null;
 	try {
@@ -8688,9 +8772,10 @@ class MasterMgr
 	  in.close();
 	}
 	catch(Exception ex) {
-	  Logs.glu.severe
-	    ("The comparator menu layout file (" + file + ") appears to be corrupted!");
-	  Logs.flush();
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	     "The comparator menu layout file (" + file + ") appears to be corrupted!");
+	  LogMgr.getInstance().flush();
 	  
 	  throw new PipelineException
 	    ("I/O ERROR: \n" + 
@@ -8730,7 +8815,9 @@ class MasterMgr
 	    ("Unable to remove the old tool menu layout file (" + file + ")!");
       }
       
-      Logs.glu.finer("Writing Tool Menu Layout.");
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	 "Writing Tool Menu Layout.");
 
       try {
 	String glue = null;
@@ -8739,9 +8826,10 @@ class MasterMgr
 	  glue = ge.getText();
 	}
 	catch(GlueException ex) {
-	  Logs.glu.severe
-	    ("Unable to generate a Glue format representation of the tool menu layout!");
-	  Logs.flush();
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	     "Unable to generate a Glue format representation of the tool menu layout!");
+	  LogMgr.getInstance().flush();
 	  
 	  throw new IOException(ex.getMessage());
 	}
@@ -8775,7 +8863,9 @@ class MasterMgr
     synchronized(pPluginMenuLayoutLock) {
       File file = new File(pNodeDir, "etc/tool-menu-layout");
       if(file.isFile()) {
-	Logs.glu.finer("Reading Tool Menu Layout.");
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Reading Tool Menu Layout.");
 
 	PluginMenuLayout layout = null;
 	try {
@@ -8785,9 +8875,10 @@ class MasterMgr
 	  in.close();
 	}
 	catch(Exception ex) {
-	  Logs.glu.severe
-	    ("The tool menu layout file (" + file + ") appears to be corrupted!");
-	  Logs.flush();
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	     "The tool menu layout file (" + file + ") appears to be corrupted!");
+	  LogMgr.getInstance().flush();
 	  
 	  throw new PipelineException
 	    ("I/O ERROR: \n" + 
@@ -8826,7 +8917,9 @@ class MasterMgr
       }
       
       if(!pPrivilegedUsers.isEmpty()) {
-	Logs.glu.finer("Writing Privileged Users.");
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Writing Privileged Users.");
 
 	try {
 	  String glue = null;
@@ -8835,9 +8928,10 @@ class MasterMgr
 	    glue = ge.getText();
 	  }
 	  catch(GlueException ex) {
-	    Logs.glu.severe
-	      ("Unable to generate a Glue format representation of the privileged users!");
-	    Logs.flush();
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	       "Unable to generate a Glue format representation of the privileged users!");
+	    LogMgr.getInstance().flush();
 	    
 	    throw new IOException(ex.getMessage());
 	  }
@@ -8874,7 +8968,9 @@ class MasterMgr
 
       File file = new File(pNodeDir, "etc/privileged-users");
       if(file.isFile()) {
-	Logs.glu.finer("Reading Privileged Users.");
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Reading Privileged Users.");
 
 	TreeSet<String> users = null;
 	try {
@@ -8884,9 +8980,10 @@ class MasterMgr
 	  in.close();
 	}
 	catch(Exception ex) {
-	  Logs.glu.severe
-	    ("The privileged users file (" + file + ") appears to be corrupted!");
-	  Logs.flush();
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	     "The privileged users file (" + file + ") appears to be corrupted!");
+	  LogMgr.getInstance().flush();
 	  
 	  throw new PipelineException
 	    ("I/O ERROR: \n" + 
@@ -8920,7 +9017,9 @@ class MasterMgr
 	  ("Unable to remove the old job/group IDs file (" + file + ")!");
     }
     
-    Logs.glu.finer("Writing Next IDs.");
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+       "Writing Next IDs.");
 
     try {
       String glue = null;
@@ -8935,9 +9034,10 @@ class MasterMgr
 	glue = ge.getText();
       }
       catch(GlueException ex) {
-	Logs.glu.severe
-	  ("Unable to generate a Glue format representation of the job/group IDs!");
-	Logs.flush();
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	   "Unable to generate a Glue format representation of the job/group IDs!");
+	LogMgr.getInstance().flush();
 	
 	throw new IOException(ex.getMessage());
       }
@@ -8969,7 +9069,9 @@ class MasterMgr
   {
     File file = new File(pNodeDir, "etc/next-ids");
     if(file.exists()) {
-      Logs.glu.finer("Reading Next IDs.");
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	 "Reading Next IDs.");
       
       try {
 	FileReader in = new FileReader(file);
@@ -8985,9 +9087,10 @@ class MasterMgr
 	return;
       }
       catch(Exception ex) {
-	Logs.glu.severe
-	    ("The job/group IDs file (" + file + ") appears to be corrupted!");
-	Logs.flush();
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	   "The job/group IDs file (" + file + ") appears to be corrupted!");
+	LogMgr.getInstance().flush();
 	
 	throw new PipelineException
 	  ("I/O ERROR: \n" + 
@@ -9025,8 +9128,10 @@ class MasterMgr
   ) 
     throws PipelineException
   {
-    Logs.glu.finer("Writing Checked-In Version: " + 
-		   vsn.getName() + " (" + vsn.getVersionID() + ")");
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+       "Writing Checked-In Version: " + 
+       vsn.getName() + " (" + vsn.getVersionID() + ")");
 
     File file = new File(pNodeDir, "repository/" + vsn.getName() + "/" + vsn.getVersionID());
     File dir  = file.getParentFile();
@@ -9049,10 +9154,11 @@ class MasterMgr
 	glue = ge.getText();
       }
       catch(GlueException ex) {
-	Logs.glu.severe
-	  ("Unable to generate a Glue format representation of checked-in " + 
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	   "Unable to generate a Glue format representation of checked-in " + 
 	   "version (" + vsn.getVersionID() + ") of node (" + vsn.getName() + ")!");
-	Logs.flush();
+	LogMgr.getInstance().flush();
 	
 	throw new IOException(ex.getMessage());
       }
@@ -9103,7 +9209,9 @@ class MasterMgr
     if(!dir.isDirectory()) 
       return null;
 
-    Logs.glu.finer("Reading Checked-In Versions: " + name);
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+       "Reading Checked-In Versions: " + name);
 
     TreeMap<VersionID,CheckedInBundle> table = new TreeMap<VersionID,CheckedInBundle>();
     File files[] = dir.listFiles();
@@ -9121,9 +9229,10 @@ class MasterMgr
 	in.close();
       }
       catch(Exception ex) {
-	Logs.glu.severe
-	  ("The checked-in version file (" + files[wk] + ") appears to be corrupted!");
-	Logs.flush();
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	   "The checked-in version file (" + files[wk] + ") appears to be corrupted!");
+	LogMgr.getInstance().flush();
 	
 	throw new PipelineException
 	  ("I/O ERROR: \n" + 
@@ -9169,7 +9278,9 @@ class MasterMgr
   ) 
     throws PipelineException
   {
-    Logs.glu.finer("Writing Working Version: " + id);
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+       "Writing Working Version: " + id);
 
     File file   = new File(pNodeDir, id.getWorkingPath().getPath());
     File backup = new File(file + ".backup");
@@ -9200,10 +9311,11 @@ class MasterMgr
 	glue = ge.getText();
       }
       catch(GlueException ex) {
-	Logs.glu.severe
-	  ("Unable to generate a Glue format representation of working " + 
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	   "Unable to generate a Glue format representation of working " + 
 	   "version (" + id + ")!");
-	Logs.flush();
+	LogMgr.getInstance().flush();
 	
 	throw new IOException(ex.getMessage());
       }
@@ -9251,7 +9363,9 @@ class MasterMgr
     
     try {
       if(file.exists()) {
-	Logs.glu.finer("Reading Working Version: " + id);
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Reading Working Version: " + id);
 
 	try {
 	  FileReader in = new FileReader(file);
@@ -9262,12 +9376,15 @@ class MasterMgr
 	  return mod;
 	}
 	catch(Exception ex) {
-	  Logs.glu.severe
-	    ("The working version file (" + file + ") appears to be corrupted!");
-	  Logs.flush();
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	    "The working version file (" + file + ") appears to be corrupted!");
+	  LogMgr.getInstance().flush();
 	  
 	  if(backup.exists()) {
-	    Logs.glu.finer("Reading Working Version (Backup): " + id);
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	       "Reading Working Version (Backup): " + id);
 
 	    NodeMod mod = null;
 	    try {
@@ -9277,18 +9394,20 @@ class MasterMgr
 	      in.close();
 	    }
 	    catch(Exception ex2) {
-	      Logs.glu.severe
-		("The backup working version file (" + backup + ") appears to be corrupted!");
-	      Logs.flush();
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Glu, LogMgr.Level.Severe,
+		"The backup working version file (" + backup + ") appears to be corrupted!");
+	      LogMgr.getInstance().flush();
 	      
 	      throw ex;
 	    }
 	    
-	    Logs.glu.severe
-	      ("Successfully recovered the working version from the backup file " + 
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	       "Successfully recovered the working version from the backup file " + 
 	       "(" + backup + ")\n" + 
 	       "Renaming the backup to (" + file + ")!");
-	    Logs.flush();
+	    LogMgr.getInstance().flush();
 	    
 	    if(!file.delete()) 
 	      throw new IOException
@@ -9302,9 +9421,10 @@ class MasterMgr
 	    return mod;
 	  }
 	  else {
-	    Logs.glu.severe
-	      ("The backup working version file (" + backup + ") does not exist!");
-	    Logs.flush();
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	      "The backup working version file (" + backup + ") does not exist!");
+	    LogMgr.getInstance().flush();
 	
 	    throw ex;
 	  }
@@ -9352,7 +9472,9 @@ class MasterMgr
 
     if(!links.hasLinks()) {
       if(file.isFile()) {
-	Logs.glu.finer("Removing Obsolete Downstream Links: " + links.getName());
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Removing Obsolete Downstream Links: " + links.getName());
 
 	if(!file.delete()) 
 	  throw new PipelineException
@@ -9363,7 +9485,9 @@ class MasterMgr
     }
     
     try {
-      Logs.glu.finer("Writing Downstream Links: " + links.getName());
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	 "Writing Downstream Links: " + links.getName());
 
       synchronized(pMakeDirLock) {
 	if(!dir.isDirectory()) 
@@ -9378,10 +9502,11 @@ class MasterMgr
 	glue = ge.getText();
       }
       catch(GlueException ex) {
-	Logs.glu.severe
-	  ("Unable to generate a Glue format representation of the downstream links " + 
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	   "Unable to generate a Glue format representation of the downstream links " + 
 	   "for (" + links.getName() + ")!");
-	Logs.flush();
+	LogMgr.getInstance().flush();
 	
 	throw new IOException(ex.getMessage());
       }
@@ -9427,7 +9552,9 @@ class MasterMgr
     
     try {
       if(file.exists()) {
-	Logs.glu.finer("Reading Downstream Links: " + name);
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Reading Downstream Links: " + name);
 
 	try {
 	  FileReader in = new FileReader(file);
@@ -9438,9 +9565,10 @@ class MasterMgr
 	  return links;
 	}
 	catch(Exception ex) {
-	  Logs.glu.severe
-	    ("The downstream links file (" + file + ") appears to be corrupted!");
-	  Logs.flush();
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,  
+	    "The downstream links file (" + file + ") appears to be corrupted!");
+	  LogMgr.getInstance().flush();
 	
 	  throw ex;
 	}

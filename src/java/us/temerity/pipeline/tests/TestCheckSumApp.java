@@ -1,4 +1,4 @@
-// $Id: TestCheckSumApp.java,v 1.5 2004/03/22 03:11:08 jim Exp $
+// $Id: TestCheckSumApp.java,v 1.6 2005/01/22 01:36:36 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -24,7 +24,7 @@ class TestCheckSumApp
   )
   {
     /* init loggers */ 
-    Logs.init();
+    
     Logs.sum.setLevel(Level.INFO);
 
     try {

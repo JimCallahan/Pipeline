@@ -1,4 +1,4 @@
-// $Id: NodeGetWorkingAreasRsp.java,v 1.5 2004/07/24 18:26:02 jim Exp $
+// $Id: NodeGetWorkingAreasRsp.java,v 1.6 2005/01/22 01:36:36 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -46,9 +46,11 @@ class NodeGetWorkingAreasRsp
       throw new IllegalArgumentException("The table cannot be (null)!");
     pTable = table;
 
-    Logs.net.finest("MasterMgr.getWorkingAreas():\n  " + getTimer());
-    if(Logs.net.isLoggable(Level.FINEST))
-      Logs.flush();
+    LogMgr.getInstance().log
+(LogMgr.Kind.Net, LogMgr.Level.Finest,
+"MasterMgr.getWorkingAreas():\n  " + getTimer());
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
+      LogMgr.getInstance().flush();
   }
 
 

@@ -1,4 +1,4 @@
-// $Id: TestNodeModVersionApp.java,v 1.9 2004/12/29 17:30:32 jim Exp $
+// $Id: TestNodeModVersionApp.java,v 1.10 2005/01/22 01:36:36 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
@@ -26,7 +26,7 @@ class TestNodeModVersionApp
    String[] args  /* IN: command line arguments */
   )
   {
-    Logs.init();
+    
     //Logs.sub.setLevel(Level.FINEST);
 
     try {

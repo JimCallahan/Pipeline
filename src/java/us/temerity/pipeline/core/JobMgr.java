@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.21 2005/01/21 21:08:02 jim Exp $
+// $Id: JobMgr.java,v 1.22 2005/01/22 01:36:35 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -35,8 +35,10 @@ class JobMgr
   public
   JobMgr()
   {
-    Logs.net.info("Initializing...");
-    Logs.flush();
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Net, LogMgr.Level.Info,
+       "Initializing...");
+    LogMgr.getInstance().flush();
 
     /* initialize the fields */ 
     {
@@ -53,8 +55,10 @@ class JobMgr
 	    ("Unable to create the temporary directory (" + pJobDir + ")!");
     }
     catch(Exception ex) {
-      Logs.ops.severe(ex.getMessage());
-      Logs.flush();
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	 ex.getMessage());
+      LogMgr.getInstance().flush();
       System.exit(1);
     }
   }
@@ -384,7 +388,9 @@ class JobMgr
   {
     synchronized(pExecuteTasks) {
       for(Long jobID : pExecuteTasks.keySet()) {
-	Logs.net.finest("Shutting Down -- Killing Job: " + jobID);
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Finest,
+	   "Shutting Down -- Killing Job: " + jobID);
 	ExecuteTask task = pExecuteTasks.get(jobID);
 	task.kill();
       }
@@ -429,14 +435,16 @@ class JobMgr
 	  catch(InterruptedException ex) {
 	    throw new PipelineException(ex);
 	  }
-	  
-	  Logs.ops.finest
-	    ("Job (" + req.getJobID() + "): " + 
+
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Ops, LogMgr.Level.Finest,
+	     "Job (" + req.getJobID() + "): " + 
 	     "WAITING for (" + cycles + ") loops...");
 	}
-      
-	Logs.ops.finest
-	  ("Job (" + req.getJobID() + "): " + 
+	
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
+	   "Job (" + req.getJobID() + "): " + 
 	   "COMPLETED after (" + cycles + ") loops...");
 	
 	results = task.getResults();
@@ -452,7 +460,9 @@ class JobMgr
       else {
 	File file = new File(pJobDir, req.getJobID() + "/results");
 	if(file.isFile()) {
-	  Logs.ops.finer("Reading Job Results: " + req.getJobID());
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Ops, LogMgr.Level.Finer,
+	     "Reading Job Results: " + req.getJobID());
 	  
 	  try {
 	    FileReader in = new FileReader(file);
@@ -461,9 +471,10 @@ class JobMgr
 	    in.close();
 	  }
 	  catch(Exception ex) {
-	    Logs.glu.severe
-	      ("The job results file (" + file + ") appears to be corrupted!");
-	    Logs.flush();
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	       "The job results file (" + file + ") appears to be corrupted!");
+	    LogMgr.getInstance().flush();
 	  
 	    throw new PipelineException
 	      ("I/O ERROR: \n" + 
@@ -539,19 +550,24 @@ class JobMgr
 	      }
 	      
 	      if(!executing) {
-		Logs.glu.finer("Cleaning Job: " + jobID);
+		LogMgr.getInstance().log
+		  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+		   "Cleaning Job: " + jobID);
 		args.add(dir.getName());
 		removeFiles = true;
 	      }
 	    }
 	  }
 	  else {
-	    Logs.glu.severe
-	      ("Illegal file encountered in the job output directory (" + dir + ")!");
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Glu, LogMgr.Level.Severe, 
+	       "Illegal file encountered in the job output directory (" + dir + ")!");
 	  }
 	}
 	catch(NumberFormatException ex) {
-	  Logs.glu.severe("Illegal job output directory encountered (" + dir + ")!");
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	     "Illegal job output directory encountered (" + dir + ")!");
 	}
       }
     }
@@ -574,7 +590,9 @@ class JobMgr
 	}
       }
       catch(PipelineException ex) {
-	Logs.ops.severe(ex.getMessage());
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	   ex.getMessage());
 	return new FailureRsp(timer, ex.getMessage());
       }
     }
@@ -857,9 +875,11 @@ class JobMgr
 
     SubProcessHeavy.collectStats();
 
-    Logs.ops.finest(timer.toString()); 
-    if(Logs.ops.isLoggable(Level.FINEST))
-      Logs.flush();
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Finest,
+       timer.toString()); 
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finest))
+      LogMgr.getInstance().flush();
     
     /* if we're ahead of schedule, take a nap */ 
     {
@@ -907,7 +927,10 @@ class JobMgr
     public void 
     kill() 
     {
-      Logs.ops.finer("Killing Job: " + pJob.getJobID());
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Finer,
+	 "Killing Job: " + pJob.getJobID());
+
       SubProcessHeavy proc = pProc;
       if(proc != null) 
 	proc.kill();
@@ -928,7 +951,9 @@ class JobMgr
 	File outFile = new File(dir, "stdout");
 	File errFile = new File(dir, "stderr");
 	try {
-	  Logs.ops.finer("Preparing Job: " + jobID);
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Ops, LogMgr.Level.Finer,
+	     "Preparing Job: " + jobID);
 
 	  /* make sure the target directory exists */ 
 	  if(!wdir.isDirectory()) {
@@ -996,11 +1021,15 @@ class JobMgr
 	  pProc = pJob.getAction().prep(pJob.getActionAgenda(), outFile, errFile);
 	}
 	catch(Exception ex) {
-	  Logs.ops.severe("Job Prep Failed: " + jobID);
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	     "Job Prep Failed: " + jobID);
+
 	  pResults = new QueueJobResults(ex);
-	  
-	  Logs.ops.finest
-	    ("Appending the exception stack to the STDERR file (" + outFile + ") of " + 
+
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
+	     "Appending the exception stack to the STDERR file (" + outFile + ") of " + 
 	     "job (" + jobID + ")...");
 
 	  try {
@@ -1010,15 +1039,18 @@ class JobMgr
 	    out.close();
 	  }
 	  catch(IOException ex2) {
-	    Logs.ops.severe
-	      ("Could not append the Exception message to STDERR file (" + errFile + ")!");
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Ops, LogMgr.Level.Severe, 
+	       "Could not append the Exception message to STDERR file (" + errFile + ")!");
 	  }
-	  
+	    
 	  return;
 	}
 
 	/* run the job */ 
-	Logs.ops.finer("Started Job: " + jobID);
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Finer,
+	   "Started Job: " + jobID);
         {
 	  pProc.start();
 	  
@@ -1032,17 +1064,21 @@ class JobMgr
 	      throw new PipelineException(ex);
 	    }
 
-	    Logs.ops.finest
-	      ("Process for Job (" + jobID + "): " + 
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
+	       "Process for Job (" + jobID + "): " + 
 	       "WAITING for (" + cycles + ") loops...");
 	  }
-
-	  Logs.ops.finest
-	    ("Process for Job (" + jobID + "): " + 
+	    
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
+	     "Process for Job (" + jobID + "): " + 
 	     "COMPLETED after (" + cycles + ") loops...");
 	}
 
-	Logs.ops.finer("Finished Job: " + jobID);
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Finer,
+	   "Finished Job: " + jobID);
 
 	/* make any existing target primary and secondary files read-only */ 
 	{
@@ -1099,9 +1135,10 @@ class JobMgr
 	      glue = ge.getText();
 	    }
 	    catch(GlueException ex) {
-	      Logs.glu.severe
-		("Unable to generate a Glue format representation of the job results!");
-	      Logs.flush();
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Glu, LogMgr.Level.Severe, 
+		 "Unable to generate a Glue format representation of the job results!");
+	      LogMgr.getInstance().flush();
 	      
 	      throw new IOException(ex.getMessage());
 	    }
@@ -1124,7 +1161,9 @@ class JobMgr
 	}
       }
       catch(Exception ex2) {
-	Logs.ops.severe(getFullMessage(ex2));
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	   getFullMessage(ex2));
       }
     }
 
