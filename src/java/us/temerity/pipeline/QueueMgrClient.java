@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.15 2004/09/28 14:31:29 jim Exp $
+// $Id: QueueMgrClient.java,v 1.16 2004/10/18 02:34:06 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1126,6 +1126,21 @@ class QueueMgrClient
 
     Object obj = performTransaction(QueueRequest.DeleteAllJobGroups, null);
     handleSimpleResponse(obj);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the error message to be shown when the server cannot be contacted.
+   */ 
+  protected String
+  getServerDownMessage()
+  {
+    return ("Unable to contact the the plqueuemgr(1) server daemon running on " +
+	    "(" + pHostname + ") using port (" + pPort + ")!");
   }
 
 

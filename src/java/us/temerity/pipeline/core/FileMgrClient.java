@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.16 2004/08/23 07:12:16 jim Exp $
+// $Id: FileMgrClient.java,v 1.17 2004/10/18 02:34:06 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -355,6 +355,21 @@ class FileMgrClient
 
     Object obj = performTransaction(FileRequest.Rename, req);
     handleSimpleResponse(obj);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the error message to be shown when the server cannot be contacted.
+   */ 
+  protected String
+  getServerDownMessage()
+  {
+    return ("Unable to contact the the plfilemgr(1) server daemon running on " +
+	    "(" + pHostname + ") using port (" + pPort + ")!");
   }
 }
 

@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.30 2004/10/09 16:55:41 jim Exp $
+// $Id: MasterMgrClient.java,v 1.31 2004/10/18 02:34:06 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -2385,6 +2385,21 @@ class MasterMgrClient
     handleSimpleResponse(obj);    
   }
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the error message to be shown when the server cannot be contacted.
+   */ 
+  protected String
+  getServerDownMessage()
+  {
+    return ("Unable to contact the the plmaster(1) server daemon running on " +
+	    "(" + pHostname + ") using port (" + pPort + ")!");
+  }
 
 
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: JobMgrControlClient.java,v 1.4 2004/09/03 01:52:31 jim Exp $
+// $Id: JobMgrControlClient.java,v 1.5 2004/10/18 02:34:06 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -295,6 +295,22 @@ class JobMgrControlClient
     
     Object obj = performTransaction(JobRequest.CleanupResources, req); 
     handleSimpleResponse(obj);    
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the error message to be shown when the server cannot be contacted.
+   */ 
+  protected String
+  getServerDownMessage()
+  {
+    return ("Unable to contact the the pljobmgr(1) server daemon running on " +
+	    "(" + pHostname + ") using port (" + pPort + ")!");
   }
 
 }

@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.11 2004/09/03 01:57:25 jim Exp $
+// $Id: QueueMgrServer.java,v 1.12 2004/10/18 02:34:06 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6,6 +6,8 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.message.*;
 
 import java.io.*;
+import java.nio.*;
+import java.nio.channels.*;
 import java.net.*;
 import java.util.*;
 import java.util.concurrent.atomic.*;
@@ -121,14 +123,16 @@ class QueueMgrServer
   public void 
   run() 
   {
-    ServerSocket server = null;
+    ServerSocketChannel schannel = null;
     try {
-      server = new ServerSocket(pPort, 100);
+      schannel = ServerSocketChannel.open();
+      ServerSocket server = schannel.socket();
+      InetSocketAddress saddr = new InetSocketAddress(pPort);
+      server.bind(saddr, 100);
+
       Logs.net.fine("Listening on Port: " + pPort);
       Logs.net.info("Server Ready.");
       Logs.flush();
-
-      server.setSoTimeout(PackageInfo.sServerTimeOut);
 
       CollectorTask collector = new CollectorTask();
       collector.start();
@@ -136,16 +140,16 @@ class QueueMgrServer
       DispatcherTask dispatcher = new DispatcherTask();
       dispatcher.start();
 
+      schannel.configureBlocking(false);
       while(!pShutdown.get()) {
-	try {
-	  Socket socket = server.accept();
-	  
-	  HandlerTask task = new HandlerTask(socket);
+	SocketChannel channel = schannel.accept();
+	if(channel != null) {
+	  HandlerTask task = new HandlerTask(channel);
 	  pTasks.add(task);
 	  task.start();	
 	}
-	catch(SocketTimeoutException ex) {
-	  //Logs.net.finest("Timeout: accept()");
+	else {
+	  Thread.sleep(PackageInfo.sServerSleep);	
 	}
       }
 
@@ -156,8 +160,14 @@ class QueueMgrServer
 	collector.join();
 	dispatcher.join();
 
-	for(HandlerTask task : pTasks) {
-	  task.join();
+	synchronized(pTasks) {
+	  for(HandlerTask task : pTasks) 
+	    task.closeConnection();
+	}	
+	
+	synchronized(pTasks) {
+	  for(HandlerTask task : pTasks) 
+	    task.join();
 	}
       }
       catch(InterruptedException ex) {
@@ -168,19 +178,21 @@ class QueueMgrServer
     catch (IOException ex) {
       Logs.net.severe("IO problems on port (" + pPort + "):\n" + 
 		      getFullMessage(ex));
+      Logs.flush();
     }
     catch (SecurityException ex) {
       Logs.net.severe("The Security Manager doesn't allow listening to sockets!\n" + 
 		      getFullMessage(ex));
+      Logs.flush();
     }
     catch (Exception ex) {
       Logs.net.severe(getFullMessage(ex));
       Logs.flush();
     }
     finally {
-      if(server != null) {
+      if(schannel != null) {
 	try {
-	  server.close();
+	  schannel.close();
 	}
 	catch (IOException ex) {
 	}
@@ -188,10 +200,9 @@ class QueueMgrServer
 
       pQueueMgr.shutdown();
 
-      Logs.net.info("Server Shutdown.");
+      Logs.net.info("Server Shutdown."); 
+      Logs.flush();  
     }
-
-    Logs.flush();
   }
 
 
@@ -242,17 +253,18 @@ class QueueMgrServer
     public 
     HandlerTask
     (
-     Socket socket
+     SocketChannel channel
     ) 
     {
       super("QueueMgrServer:HandlerTask");
-      pSocket = socket;
+      pChannel = channel;
     }
 
     public void 
     run() 
     {
       try {
+	pSocket = pChannel.socket();
 	Logs.net.fine("Connection Opened: " + pSocket.getInetAddress());
 	Logs.flush();
 
@@ -537,6 +549,8 @@ class QueueMgrServer
 	  }
 	}
       }
+      catch(AsynchronousCloseException ex) {
+      }
       catch (IOException ex) {
 	InetAddress addr = pSocket.getInetAddress(); 
 	String host = "?";
@@ -561,14 +575,7 @@ class QueueMgrServer
 	Logs.net.severe(getFullMessage(ex));
       }
       finally {
-	try {
-	  pSocket.close();
-	}
-	catch(IOException ex) {
-	}
-
-	Logs.net.fine("Connection Closed: " + pSocket.getInetAddress());
-	Logs.flush();
+	closeConnection();
 	
 	if(!pShutdown.get()) {
 	  synchronized(pTasks) {
@@ -577,8 +584,25 @@ class QueueMgrServer
 	}
       }
     }
+
+    public void 
+    closeConnection() 
+    {
+      if(!pChannel.isOpen()) 
+	return;
+
+      try {
+	pChannel.close();
+      }
+      catch(IOException ex) {
+      }
+
+      Logs.net.fine("Client Connection Closed.");
+      Logs.flush();
+    }
     
-    private Socket pSocket;
+    private SocketChannel  pChannel; 
+    private Socket         pSocket;
   }
   
 

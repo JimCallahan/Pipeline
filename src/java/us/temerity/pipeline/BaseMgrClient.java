@@ -1,4 +1,4 @@
-// $Id: BaseMgrClient.java,v 1.6 2004/09/05 06:38:32 jim Exp $
+// $Id: BaseMgrClient.java,v 1.7 2004/10/18 02:34:06 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -86,7 +86,7 @@ class BaseMgrClient
     }
     catch (IOException ex) {
       throw new PipelineException
-	("IO problems on port (" + pPort + "):\n" + 
+	(getServerDownMessage() + "\n\n" + 
 	 ex.getMessage());
     }
     catch (SecurityException ex) {
@@ -247,6 +247,15 @@ class BaseMgrClient
     }
   }
 
+  /**
+   * Get the error message to be shown when the server cannot be contacted.
+   */ 
+  protected String
+  getServerDownMessage()
+  {
+    return ("Unable to contact the server!");
+  }
+  
 
 
 
@@ -257,12 +266,12 @@ class BaseMgrClient
   /**
    * The name of the host running the server.
    */
-  private String  pHostname;
+  protected String  pHostname;
 
   /**
    * The network port listened to by the server.
    */
-  private int  pPort;
+  protected int  pPort;
 
   /**
    * The network socket connection.

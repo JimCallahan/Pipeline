@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.15 2004/08/30 01:39:23 jim Exp $
+// $Id: FileMgrServer.java,v 1.16 2004/10/18 02:34:06 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6,6 +6,8 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.message.*;
 
 import java.io.*;
+import java.nio.*;
+import java.nio.channels.*;
 import java.net.*;
 import java.util.*;
 import java.util.concurrent.atomic.*;
@@ -104,42 +106,47 @@ class FileMgrServer
   public void 
   run() 
   {
-    ServerSocket server = null;
+    ServerSocketChannel schannel = null;
     try {
-      server = new ServerSocket(pPort, 100);
+      schannel = ServerSocketChannel.open();
+      ServerSocket server = schannel.socket();
+      InetSocketAddress saddr = new InetSocketAddress(pPort);
+      server.bind(saddr, 100);
+      
       Logs.net.fine("Listening on Port: " + pPort);
       Logs.net.info("Server Ready.");
       Logs.flush();
 
-      server.setSoTimeout(PackageInfo.sServerTimeOut);
-
+      schannel.configureBlocking(false);
       while(!pShutdown.get()) {
-	try {
-	  Socket socket = server.accept();
-	  
-	  HandlerTask task = new HandlerTask(socket);
+	SocketChannel channel = schannel.accept();
+	if(channel != null) {
+	  HandlerTask task = new HandlerTask(channel);
 	  pTasks.add(task);
 	  task.start();	
 	}
-	catch(SocketTimeoutException ex) {
-	  //Logs.net.finest("Timeout: accept()");
+	else {
+	  Thread.sleep(PackageInfo.sServerSleep);
 	}
       }
 
       try {
 	Logs.net.finer("Shutting Down -- Waiting for tasks to complete...");
 	Logs.flush();
-	for(HandlerTask task : pTasks) {
-	  task.join();
+	synchronized(pTasks) {
+	  for(HandlerTask task : pTasks) 
+	    task.closeConnection();
+	}
+
+	synchronized(pTasks) {
+	  for(HandlerTask task : pTasks) 
+	    task.join();
 	}
       }
       catch(InterruptedException ex) {
 	Logs.net.severe("Interrupted while shutting down!");
 	Logs.flush();
       }
-
-      Logs.net.info("Server Shutdown.");    
-      Logs.flush();  
     }
     catch (IOException ex) {
       Logs.net.severe("IO problems on port (" + pPort + "):\n" + 
@@ -155,13 +162,16 @@ class FileMgrServer
       Logs.net.severe(ex.getMessage());
     }
     finally {
-      if(server != null) {
+      if(schannel != null) {
 	try {
-	  server.close();
+	  schannel.close();
 	}
 	catch (IOException ex) {
 	}
       }
+
+      Logs.net.info("Server Shutdown.");    
+      Logs.flush();  
     }
   }
 
@@ -180,17 +190,18 @@ class FileMgrServer
     public 
     HandlerTask
     (
-     Socket socket
+     SocketChannel channel
     ) 
     {
       super("FileMgrServer:HandlerTask");
-      pSocket = socket;
+      pChannel = channel;
     }
 
     public void 
     run() 
     {
       try {
+	pSocket = pChannel.socket();
 	Logs.net.fine("Connection Opened: " + pSocket.getInetAddress());
 	Logs.flush();
 
@@ -302,6 +313,8 @@ class FileMgrServer
 	  }
 	}
       }
+      catch(AsynchronousCloseException ex) {
+      }
       catch (IOException ex) {
 	Logs.net.severe("IO problems on port (" + pPort + "):\n" + 
 			ex.getMessage());
@@ -314,15 +327,8 @@ class FileMgrServer
 	Logs.net.severe(ex.getMessage());
       }
       finally {
-	try {
-	  pSocket.close();
-	}
-	catch(IOException ex) {
-	}
+	closeConnection();
 
-	Logs.net.fine("Connection Closed: " + pSocket.getInetAddress());
-	Logs.flush();
-	
 	if(!pShutdown.get()) {
 	  synchronized(pTasks) {
 	    pTasks.remove(this);
@@ -330,8 +336,25 @@ class FileMgrServer
 	}
       }
     }
+
+    public void 
+    closeConnection() 
+    {
+      if(!pChannel.isOpen()) 
+	return;
+
+      try {
+	pChannel.close();
+      }
+      catch(IOException ex) {
+      }
+
+      Logs.net.fine("Client Connection Closed.");
+      Logs.flush();
+    }
     
-    private Socket pSocket;
+    private SocketChannel  pChannel; 
+    private Socket         pSocket;     
   }
   
 

@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.20 2004/10/09 16:54:40 jim Exp $
+// $Id: MasterMgrServer.java,v 1.21 2004/10/18 02:34:06 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6,12 +6,14 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.message.*;
 
 import java.io.*;
+import java.nio.*;
+import java.nio.channels.*;
 import java.net.*;
 import java.util.*;
 import java.util.concurrent.atomic.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   N O D E   M G R   S E R V E R                                                          */
+/*   M A S T E R   M G R   S E R V E R                                                      */
 /*------------------------------------------------------------------------------------------*/
 
 /**
@@ -204,33 +206,42 @@ class MasterMgrServer
   public void 
   run() 
   {
-    ServerSocket server = null;
+    ServerSocketChannel schannel = null;
     try {
-      server = new ServerSocket(pPort, 100);
+      schannel = ServerSocketChannel.open();
+      ServerSocket server = schannel.socket();
+      InetSocketAddress saddr = new InetSocketAddress(pPort);
+      server.bind(saddr, 100);
+
       Logs.net.fine("Listening on Port: " + pPort);
       Logs.net.info("Server Ready.");
       Logs.flush();
 
-      server.setSoTimeout(PackageInfo.sServerTimeOut);
-
+      schannel.configureBlocking(false);
       while(!pShutdown.get()) {
-	try {
-	  Socket socket = server.accept();
-	  
-	  HandlerTask task = new HandlerTask(socket);
+	SocketChannel channel = schannel.accept();
+	if(channel != null) {
+	  HandlerTask task = new HandlerTask(channel);
 	  pTasks.add(task);
 	  task.start();	
 	}
-	catch(SocketTimeoutException ex) {
-	  //Logs.net.finest("Timeout: accept()");
+	else {
+	  Thread.sleep(PackageInfo.sServerSleep);
 	}
       }
 
       try {
 	Logs.net.finer("Shutting Down -- Waiting for tasks to complete...");
 	Logs.flush();
-	for(HandlerTask task : pTasks) {
-	  task.join();
+
+	synchronized(pTasks) {
+	  for(HandlerTask task : pTasks) 
+	    task.closeConnection();
+	}	
+	
+	synchronized(pTasks) {
+	  for(HandlerTask task : pTasks) 
+	    task.join();
 	}
       }
       catch(InterruptedException ex) {
@@ -252,9 +263,9 @@ class MasterMgrServer
       Logs.net.severe(ex.getMessage());
     }
     finally {
-      if(server != null) {
+      if(schannel != null) {
 	try {
-	  server.close();
+	  schannel.close();
 	}
 	catch (IOException ex) {
 	}
@@ -282,17 +293,18 @@ class MasterMgrServer
     public 
     HandlerTask
     (
-     Socket socket
+     SocketChannel channel
     ) 
     {
       super("MasterMgrServer:HandlerTask");
-      pSocket = socket;
+      pChannel = channel;
     }
 
     public void 
     run() 
     {
       try {
+	pSocket = pChannel.socket();
 	Logs.net.fine("Connection Opened: " + pSocket.getInetAddress());
 	Logs.flush();
 
@@ -682,6 +694,8 @@ class MasterMgrServer
 	  }
 	}
       }
+      catch(AsynchronousCloseException ex) {
+      }
       catch (IOException ex) {
 	Logs.net.severe("IO problems on port (" + pPort + "):\n" + 
 			ex.getMessage());
@@ -695,14 +709,7 @@ class MasterMgrServer
 	Logs.net.severe(ex.getMessage());
       }
       finally {
-	try {
-	  pSocket.close();
-	}
-	catch(IOException ex) {
-	}
-
-	Logs.net.fine("Connection Closed: " + pSocket.getInetAddress());
-	Logs.flush();
+	closeConnection();
 
 	if(!pShutdown.get()) {
 	  synchronized(pTasks) {
@@ -711,8 +718,25 @@ class MasterMgrServer
 	}
       }
     }
+
+    public void 
+    closeConnection() 
+    {
+      if(!pChannel.isOpen()) 
+	return;
+
+      try {
+	pChannel.close();
+      }
+      catch(IOException ex) {
+      }
+
+      Logs.net.fine("Client Connection Closed.");
+      Logs.flush();
+    }
     
-    private Socket pSocket;
+    private SocketChannel  pChannel; 
+    private Socket         pSocket;
   }
   
 

@@ -1,4 +1,4 @@
-// $Id: JobMgrServer.java,v 1.7 2004/09/03 01:52:31 jim Exp $
+// $Id: JobMgrServer.java,v 1.8 2004/10/18 02:34:06 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6,6 +6,8 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.message.*;
 
 import java.io.*;
+import java.nio.*;
+import java.nio.channels.*;
 import java.net.*;
 import java.util.*;
 import java.util.concurrent.atomic.*;
@@ -104,25 +106,27 @@ class JobMgrServer
   public void 
   run() 
   {
-    ServerSocket server = null;
+    ServerSocketChannel schannel = null;
     try {
-      server = new ServerSocket(pPort, 100);
+      schannel = ServerSocketChannel.open();
+      ServerSocket server = schannel.socket();
+      InetSocketAddress saddr = new InetSocketAddress(pPort);
+      server.bind(saddr, 100);
+
       Logs.net.fine("Listening on Port: " + pPort);
       Logs.net.info("Server Ready.");
       Logs.flush();
 
-      server.setSoTimeout(PackageInfo.sServerTimeOut);
-
+      schannel.configureBlocking(false);
       while(!pShutdown.get()) {
-	try {
-	  Socket socket = server.accept();
-	  
-	  HandlerTask task = new HandlerTask(socket);
+	SocketChannel channel = schannel.accept();
+	if(channel != null) {
+	  HandlerTask task = new HandlerTask(channel);
 	  pTasks.add(task);
 	  task.start();	
 	}
-	catch(SocketTimeoutException ex) {
-	  //Logs.net.finest("Timeout: accept()");
+	else {
+	  Thread.sleep(PackageInfo.sServerSleep);
 	}
       }
 
@@ -131,8 +135,15 @@ class JobMgrServer
       try {
 	Logs.net.finer("Shutting Down -- Waiting for tasks to complete...");
 	Logs.flush();
-	for(HandlerTask task : pTasks) {
-	  task.join();
+
+	synchronized(pTasks) {
+	  for(HandlerTask task : pTasks) 
+	    task.closeConnection();
+	}	
+	
+	synchronized(pTasks) {
+	  for(HandlerTask task : pTasks) 
+	    task.join();
 	}
       }
       catch(InterruptedException ex) {
@@ -143,27 +154,29 @@ class JobMgrServer
     catch (IOException ex) {
       Logs.net.severe("IO problems on port (" + pPort + "):\n" + 
 		      getFullMessage(ex));
+      Logs.flush();  
     }
     catch (SecurityException ex) {
       Logs.net.severe("The Security Manager doesn't allow listening to sockets!\n" + 
 		      getFullMessage(ex));
+      Logs.flush();  
     }
     catch (Exception ex) {
       Logs.net.severe(getFullMessage(ex));
+      Logs.flush();  
     }
     finally {
-      if(server != null) {
+      if(schannel != null) {
 	try {
-	  server.close();
+	  schannel.close();
 	}
 	catch (IOException ex) {
 	}
       }
-
+      
       Logs.net.info("Server Shutdown.");  
+      Logs.flush();  
     }  
-
-    Logs.flush();  
   }
 
 
@@ -216,17 +229,18 @@ class JobMgrServer
     public 
     HandlerTask
     (
-     Socket socket
+     SocketChannel channel
     ) 
     {
       super("JobMgrServer:HandlerTask");
-      pSocket = socket;
+      pChannel = channel;
     }
 
     public void 
     run() 
     {
       try {
+	pSocket = pChannel.socket();
 	Logs.net.fine("Connection Opened: " + pSocket.getInetAddress());
 	Logs.flush();
 
@@ -343,6 +357,8 @@ class JobMgrServer
 	  }
 	}
       }
+      catch(AsynchronousCloseException ex) {
+      }
       catch (IOException ex) {
 	Logs.net.severe("IO problems on port (" + pPort + "):\n" + 
 			getFullMessage(ex));
@@ -355,15 +371,8 @@ class JobMgrServer
 	Logs.net.severe(getFullMessage(ex));	
       }
       finally {
-	try {
-	  pSocket.close();
-	}
-	catch(IOException ex) {
-	}
+	closeConnection();
 
-	Logs.net.fine("Connection Closed: " + pSocket.getInetAddress());
-	Logs.flush();
-	
 	if(!pShutdown.get()) {
 	  synchronized(pTasks) {
 	    pTasks.remove(this);
@@ -374,7 +383,24 @@ class JobMgrServer
       Logs.flush();
     }
     
-    private Socket pSocket;
+    public void 
+    closeConnection() 
+    {
+      if(!pChannel.isOpen()) 
+	return;
+
+      try {
+	pChannel.close();
+      }
+      catch(IOException ex) {
+      }
+
+      Logs.net.fine("Client Connection Closed.");
+      Logs.flush();
+    }
+
+    private SocketChannel  pChannel; 
+    private Socket         pSocket;
   }
   
 
