@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.3 2004/08/30 04:00:56 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.4 2004/08/31 08:16:09 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -91,6 +91,26 @@ class JQueueJobBrowserPanel
 	
 	panel.add(Box.createHorizontalGlue());
 	
+	{
+	  JButton btn = new JButton();		
+	  pDeleteCompletedButton = btn;
+	  btn.setName("DeleteCompletedButton");
+
+	  btn.setSelected(true);
+		  
+	  Dimension size = new Dimension(19, 19);
+	  btn.setMinimumSize(size);
+	  btn.setMaximumSize(size);
+	  btn.setPreferredSize(size);
+	  
+	  btn.setActionCommand("delete-completed");
+	  btn.addActionListener(this);
+	  
+	  panel.add(btn);
+	} 
+
+	panel.add(Box.createRigidArea(new Dimension(10, 0)));
+
 	{
 	  JToggleButton btn = new JToggleButton();		
 	  pFilterViewsButton = btn;
@@ -462,6 +482,8 @@ class JQueueJobBrowserPanel
     String cmd = e.getActionCommand();
     if(cmd.equals("filter-views")) 
       doUpdate();
+    else if(cmd.equals("delete-completed")) 
+      doDeleteCompleted();
   }
 
 
@@ -478,6 +500,17 @@ class JQueueJobBrowserPanel
   { 
     GetJobsTask task = new GetJobsTask();
     task.start();
+  }
+
+  /**
+   * Delete all completed job groups.
+   */ 
+  public void
+  doDeleteCompleted()
+  { 
+
+    // ...
+
   }
 
 
@@ -635,6 +668,11 @@ class JQueueJobBrowserPanel
    * Used to select whether job groups should be filtered by the current owner|view. 
    */ 
   private JToggleButton  pFilterViewsButton;
+
+  /**
+   * Deletes completed job groups when pressed.
+   */ 
+  private JButton  pDeleteCompletedButton;
 
   /**
    * The job groups table model.
