@@ -1,4 +1,4 @@
-// $Id: QueueHostsTableModel.java,v 1.3 2004/08/23 04:29:11 jim Exp $
+// $Id: QueueHostsTableModel.java,v 1.4 2004/08/30 02:54:30 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -129,11 +129,11 @@ class QueueHostsTableModel
   protected void 
   sort()
   {
-    ArrayList<String> values = new ArrayList<String>();
+    ArrayList<Comparable> values = new ArrayList<Comparable>();
     ArrayList<Integer> indices = new ArrayList<Integer>();
     int idx = 0;
     for(QueueHost host : pQueueHosts) {
-      String value = null;
+      Comparable value = null;
       switch(pSortColumn) {
       case 0:
 	value = host.getName();
@@ -160,26 +160,26 @@ class QueueHostsTableModel
 	  else {
 	    switch(pSortColumn) {
 	    case 3:
-	      value = String.format("%1$.1f", sample.getLoad());
+	      value = new Float(sample.getLoad());
 	      break;
 
 	    case 4:
-	      value = String.format("%1$.1f", ((double) sample.getMemory()) / 1073741824.0);
+	      value = new Long(sample.getMemory());
 	      break;
 
 	    case 5:
-	      value = String.format("%1$.1f", ((double) sample.getDisk()) / 1073741824.0);
+	      value = new Long(sample.getDisk());
 	      break;
 	      
 	    case 6:
-	      value = String.valueOf(sample.getNumJobs());
+	      value = new Integer(sample.getNumJobs());
 	    }
 	  }
 	}
 	break;
 
       case 7:
-	value = String.valueOf(host.getJobSlots());
+	value = new Integer(host.getJobSlots());
 	break;
 	
       default:

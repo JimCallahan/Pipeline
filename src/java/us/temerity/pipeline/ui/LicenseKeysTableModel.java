@@ -1,4 +1,4 @@
-// $Id: LicenseKeysTableModel.java,v 1.2 2004/07/25 03:09:43 jim Exp $
+// $Id: LicenseKeysTableModel.java,v 1.3 2004/08/30 02:54:30 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -96,11 +96,11 @@ class LicenseKeysTableModel
   protected void 
   sort()
   {
-    ArrayList<String> values = new ArrayList<String>();
+    ArrayList<Comparable> values = new ArrayList<Comparable>();
     ArrayList<Integer> indices = new ArrayList<Integer>();
     int idx = 0;
     for(LicenseKey key : pLicenseKeys) {
-      String value = null;
+      Comparable value = null;
       switch(pSortColumn) {
       case 0:
 	value = key.getName();
@@ -113,11 +113,11 @@ class LicenseKeysTableModel
 	break;
 
       case 2:
-	value = String.valueOf(key.getAvailable());
+	value = new Integer(key.getAvailable());
 	break;
 
       case 3:
-	value = String.valueOf(key.getTotal());
+	value = new Integer(key.getTotal());
       }
       
       int wk;
