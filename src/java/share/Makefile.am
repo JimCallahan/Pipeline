@@ -12,5 +12,11 @@ editor_DATA = \
 
 
 install-data-hook:
-	mv -f $(DESTDIR)@NODEDIR@/etc/suffix-editors/pipeline \
-              $(DESTDIR)@NODEDIR@/etc/suffix-editors/@PIPELINE_USER@
+	@if [ "@PIPELINE_USER@" != "pipeline" ]; \
+        then \
+          echo mv -f $(DESTDIR)@NODEDIR@/etc/suffix-editors/pipeline \
+                     $(DESTDIR)@NODEDIR@/etc/suffix-editors/@PIPELINE_USER@; \
+          mv -f $(DESTDIR)@NODEDIR@/etc/suffix-editors/pipeline \
+                $(DESTDIR)@NODEDIR@/etc/suffix-editors/@PIPELINE_USER@; \
+        fi
+
