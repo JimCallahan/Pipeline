@@ -1,4 +1,4 @@
-// $Id: NodeDetails.java,v 1.12 2004/08/22 21:51:08 jim Exp $
+// $Id: NodeDetails.java,v 1.13 2004/12/04 21:11:32 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -37,7 +37,22 @@ class NodeDetails
    * version. <P> 
    * 
    * The <CODE>jobIDs</CODE> and <CODE>queueStates</CODE> arguments may contain 
-   * <CODE>null</CODE> members if no queue job exists which generates that particular file.
+   * <CODE>null</CODE> members if no queue job exists which generates that particular 
+   * file. <P> 
+   * 
+   * The <CODE>fileTimeStamps</CODE> argument contains the timestamp which is most relevant
+   * (newest) for determining when each file index was last modified.  This timestamp may be
+   * the last modification date for the primary/secondary file sequence, the timestamp of 
+   * when the last critical modification of node properties occurred or when the node state
+   * was computed in the case of missing files. <P> 
+   * 
+   * If the <CODE>ignoreTimeStamps</CODE> argument is <CODE>true</CODE> for a file index, 
+   * then the timestamp stored in <CODE>fileTimeStamps</CODE> should usually be ignored when 
+   * computing whether downstream nodes are {@link OverallQueueState#Stale Stale} due to this
+   * node being newer.  However, if the working revision number of this node does not match
+   * the revision number of the link from the downstream node who's 
+   * {@link OverallQueueState OverallQueueState} is being computed, the timestamp should 
+   * be considered regardless of the value of <CODE>ignoreTimeStamps</CODE>. <P> 
    * 
    * @param name 
    *   The fully resolved node name.
@@ -73,7 +88,12 @@ class NodeDetails
    *   The files states associated with each file sequence. 
    * 
    * @param fileTimeStamps
-   *   The oldest last modification timestamps associated with all file sequences. 
+   *   The newest timestamp which needs to be considered when computing whether each file 
+   *   index is {@link QueueState#Stale Stale}.
+   * 
+   * @param ignoreTimeStamps
+   *   Whether the timestamp stored in <CODE>fileTimeStamps</CODE> should be ignored
+   *   when computing whether each file index is {@link QueueState#Stale Stale}.
    * 
    * @param jobIDs
    *   The unique job identifiers associated with all file sequences. 
@@ -96,6 +116,7 @@ class NodeDetails
    LinkState linkState, 
    TreeMap<FileSeq,FileState[]> fileStates, 
    Date[] fileTimeStamps, 
+   boolean[] ignoreTimeStamps, 
    Long[] jobIDs, 
    QueueState[] queueStates
   ) 
@@ -104,9 +125,7 @@ class NodeDetails
       throw new IllegalArgumentException("The node name cannot be (null)!");
     pName = name;
 
-
     pTimeStamp = Dates.now();
-
 
     if((work != null) && !work.getName().equals(pName))
       throw new IllegalArgumentException
@@ -138,9 +157,11 @@ class NodeDetails
     for(FileSeq fseq : fileStates.keySet())
       pFileStates.put(fseq, fileStates.get(fseq).clone());
 
-    pFileTimeStamps = fileTimeStamps.clone();
-    pJobIDs         = jobIDs.clone();
-    pQueueStates    = queueStates.clone();
+    pFileTimeStamps   = fileTimeStamps.clone();
+    pIgnoreTimeStamps = ignoreTimeStamps.clone();
+
+    pJobIDs      = jobIDs.clone();
+    pQueueStates = queueStates.clone();
   }
 
 
@@ -303,12 +324,23 @@ class NodeDetails
   }
 
   /**
-   * Get the oldest last modification timestamps associated with the file sequences.
+   * Get the newest timestamp which needs to be considered when computing wheter each file 
+   * index is {@link QueueState#Stale Stale}. 
    */ 
   public Date[] 
   getFileTimeStamps() 
   {
     return pFileTimeStamps;
+  }
+
+  /**
+   * Whether the timestamps returned by {@link #getFileTimeStamps getFileTimeStamps} should 
+   * be ignored when computing whether each file index is {@link QueueState#Stale Stale}.
+   */ 
+  public boolean[] 
+  ignoreTimeStamps() 
+  {
+    return pIgnoreTimeStamps;
   }
 
   /**
@@ -432,9 +464,16 @@ class NodeDetails
   private TreeMap<FileSeq,FileState[]> pFileStates;
   
   /**
-   * The oldest last modification timestamp of each primary/secondary file index.
+   * The newest timestamp which needs to be considered when computing wheter each file 
+   * index is {@link QueueState#Stale Stale}. <P> 
    */
   private Date[] pFileTimeStamps;
+
+  /**
+   * Whether the timestamps returned by {@link #getFileTimeStamps getFileTimeStamps} should 
+   * be ignored when computing whether each file index is {@link QueueState#Stale Stale}.
+   */
+  private boolean[] pIgnoreTimeStamps;
 
   /** 
    * The unique job identifiers of the job which generates individual files associated with 
