@@ -1,4 +1,4 @@
-// $Id: ResourceSample.java,v 1.3 2004/08/23 03:04:21 jim Exp $
+// $Id: ResourceSample.java,v 1.4 2005/01/21 17:26:21 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -83,21 +83,6 @@ class ResourceSample
   getNumJobs() 
   {
     return pNumJobs; 
-  }
-
-  /**
-   * Set the number of jobs running on the host. <P> 
-   * 
-   * This is used by the queue manager to update the number of running jobs as new jobs
-   * are submitted and previously running jobs finish.
-   */ 
-  public void 
-  setNumJobs
-  (
-   int jobs
-  ) 
-  {
-    pNumJobs = jobs;
   }
 
 
