@@ -1,4 +1,4 @@
-// $Id: QueueHost.java,v 1.7 2005/01/16 00:38:31 jim Exp $
+// $Id: QueueHost.java,v 1.8 2005/01/21 17:26:05 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -432,8 +432,9 @@ class QueueHost
   public void 
   jobStarted() 
   {
-    if(!pSamples.isEmpty()) 
-      pNumJobsDelta++;
+    pNumJobsDelta++;
+    Logs.ops.finest("Num Jobs Delta++");
+    Logs.ops.finest("Job Started - Num Jobs Delta = " + pNumJobsDelta);
   }
 
   /**
@@ -453,8 +454,12 @@ class QueueHost
       return;
 
     ResourceSample sample = getLatestSample();
-    if((sample != null) && (results.getTimeStamp().compareTo(sample.getTimeStamp()) > 0))
+    if((sample != null) && (results.getTimeStamp().compareTo(sample.getTimeStamp()) > 0)) {
       pNumJobsDelta--;
+      Logs.ops.finest("Num Jobs Delta--");
+    }
+
+    Logs.ops.finest("Job Finished - Num Jobs Delta = " + pNumJobsDelta);
   }
 
   
@@ -586,6 +591,10 @@ class QueueHost
        (sample.getMemory() < jreqs.getMinMemory()) || 
        (sample.getDisk() < jreqs.getMinDisk()))
       return null;
+
+    Logs.ops.finest("Num Jobs = " + sample.getNumJobs() + "  " + 
+		    "Num Jobs Delta = " + pNumJobsDelta + "  " + 
+		    "Job Slots = " + pJobSlots);
 
     int total = 0;
     for(String key : jreqs.getSelectionKeys()) {
