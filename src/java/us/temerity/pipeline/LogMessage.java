@@ -1,4 +1,4 @@
-// $Id: LogMessage.java,v 1.5 2004/05/29 06:38:06 jim Exp $
+// $Id: LogMessage.java,v 1.6 2004/07/14 20:59:20 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -42,7 +42,7 @@ class LogMessage
    String msg  
   ) 
   {
-    pTimeStamp = new Date();
+    pTimeStamp = Dates.now();
 
     if(author == null) 
       throw new IllegalArgumentException("The author cannot be (null)!");
@@ -63,7 +63,7 @@ class LogMessage
    String msg  
   ) 
   {
-    pTimeStamp = new Date();
+    pTimeStamp = Dates.now();
     pAuthor    = PackageInfo.sUser;
     pMessage   = msg;
   }

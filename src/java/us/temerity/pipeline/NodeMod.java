@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.22 2004/07/07 13:18:35 jim Exp $
+// $Id: NodeMod.java,v 1.23 2004/07/14 20:59:20 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -107,7 +107,7 @@ class NodeMod
   }
 
   /**
-   * Construct an inital working version of a new node without a regeneration action.. <P> 
+   * Construct an inital working version of a new node without a regeneration action. <P> 
    *  
    * The <CODE>secondary</CODE> argument may be <CODE>null</CODE> if there are no 
    * secondary file sequences associated with the node. <P> 
@@ -155,11 +155,15 @@ class NodeMod
    * 
    * @param vsn 
    *   The checked-in version of the node.
+   * 
+   * @param timestamp
+   *   The intial last modification timestamp.
    */ 
   public 
   NodeMod
   (
-   NodeVersion vsn
+   NodeVersion vsn, 
+   Date timestamp
   ) 
   {
     super(vsn);
@@ -170,7 +174,8 @@ class NodeMod
     for(LinkVersion link : vsn.getSources()) 
       pSources.put(link.getName(), new LinkMod(link));
 
-    updateLastCriticalMod();
+    pLastMod         = timestamp;
+    pLastCriticalMod = timestamp;
   }
 
 
@@ -272,7 +277,7 @@ class NodeMod
   private void 
   updateLastMod()
   {
-    pLastMod = new Date();
+    pLastMod = Dates.now();
   }
 
 
@@ -293,7 +298,7 @@ class NodeMod
   private void 
   updateLastCriticalMod()
   {
-    pLastMod = new Date();
+    pLastMod         = Dates.now();
     pLastCriticalMod = pLastMod;
   }
 
