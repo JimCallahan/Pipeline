@@ -1,4 +1,4 @@
-// $Id: JResourceUsageHistoryDialog.java,v 1.2 2005/01/30 03:08:57 jim Exp $
+// $Id: JResourceUsageHistoryDialog.java,v 1.3 2005/01/30 04:27:21 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -59,8 +59,10 @@ class JResourceUsageHistoryDialog
       pLoadSpans = new TreeMap<String,Vector2d>();
 
       pTranslate = new Point2d();
-      pMinScale  = new Vector2d(0.1, 25.0);
-      pScale     = new Vector2d(pMinScale);
+
+      pMinScale = new Vector2d(0.1, 20.0);
+      pMaxScale = new Vector2d(15.0, 200.0);
+      pScale    = Vector2d.lerp(pMinScale, pMaxScale, 0.25);
 
       pBorder = new Vector2d(200.0, 56.0);
     }
@@ -127,7 +129,20 @@ class JResourceUsageHistoryDialog
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
-
+  
+  /**
+   * Set the graph scale factor.
+   */ 
+  private void 
+  setScale
+  (
+   Vector2d scale
+  ) 
+  {
+    pScale = scale;
+    pScale.clamp(pMinScale, pMaxScale);
+    pRefreshTimeScale = true;
+  }
 
   
 
@@ -1013,7 +1028,13 @@ class JResourceUsageHistoryDialog
    * Invoked when a mouse button has been released on a component. 
    */ 
   public void 
-  mouseReleased(MouseEvent e) {}
+  mouseReleased
+  (
+   MouseEvent e
+  ) 
+  {
+    pCanvas.setCursor(Cursor.getDefaultCursor());
+  }
 
 
   /*-- MOUSE MOTION LISTNER METHODS --------------------------------------------------------*/
@@ -1076,12 +1097,11 @@ class JResourceUsageHistoryDialog
 	n.div(400.0);
 	n.add(new Vector2d(1.0, 1.0)); 
 
-	Vector2d scale = Vector2d.max(pMinScale, Vector2d.mult(pScale, n));
-	Vector2d factor = Vector2d.div(scale, pScale);
-	pTranslate.mult(factor);
+	Vector2d oscale = pScale;
+	setScale(Vector2d.mult(pScale, n));
 
-	pScale = scale;
-	pRefreshTimeScale = true;
+	Vector2d factor = Vector2d.div(pScale, oscale);
+	pTranslate.mult(factor);
 
 	pDragStart = pos;
       } 
@@ -1199,9 +1219,8 @@ class JResourceUsageHistoryDialog
     if(pBBox != null) {
       Vector2d area = Vector2d.mult(pGraphArea, new Vector2d(2.0, 2.0));
       area.sub(new Vector2d(20.0, 20.0));
-      pScale = Vector2d.max(pMinScale,  Vector2d.div(area, pBBox.getRange()));
-      pRefreshTimeScale = true;
-      
+      setScale(Vector2d.div(area, pBBox.getRange()));
+
       pTranslate.set(0.0, 0.0);
 
       pCanvas.repaint();   
@@ -1395,9 +1414,10 @@ class JResourceUsageHistoryDialog
   private Vector2d  pScale; 
 
   /**
-   * The minimum world space scale of the graph geometry.
+   * The minimum/maximum world space scale of the graph geometry.
    */ 
   private Vector2d  pMinScale; 
+  private Vector2d  pMaxScale; 
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1411,7 +1431,6 @@ class JResourceUsageHistoryDialog
    * The world space size of half the graph area.
    */ 
   private Vector2d  pGraphArea; 
-
   
 
   /*----------------------------------------------------------------------------------------*/
@@ -1425,7 +1444,5 @@ class JResourceUsageHistoryDialog
    * The location of the start of a mouse drag in canvas coordinates.
    */ 
   private Point2d  pDragStart;  
-
-
 
 }
