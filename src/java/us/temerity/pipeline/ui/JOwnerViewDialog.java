@@ -1,4 +1,4 @@
-// $Id: JOwnerViewDialog.java,v 1.2 2004/05/03 04:28:25 jim Exp $
+// $Id: JOwnerViewDialog.java,v 1.3 2004/05/08 15:07:59 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -12,7 +12,8 @@ import javax.swing.event.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Base class of all application dialogs.
+ * A dialog to change author and/or name of the current the working area view for a 
+ * {@link JManagerPanel JManagerPanel}.
  */ 
 public 
 class JOwnerViewDialog
@@ -148,7 +149,7 @@ class JOwnerViewDialog
     {
       lst = new JList(new DefaultListModel());
       lst.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-      lst.setCellRenderer(new JComboBoxCellRenderer());
+      lst.setCellRenderer(new JListCellRenderer());
 
       JScrollPane scroll = new JScrollPane(lst);
 
