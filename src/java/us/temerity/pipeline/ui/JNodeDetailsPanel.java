@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.26 2004/11/19 11:55:27 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.27 2004/11/19 12:54:47 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1922,7 +1922,7 @@ class JNodeDetailsPanel
 
       for(String pname : group.getEntries()) {
 	if(pname == null) {
-	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+	  UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
 	}
 	else {
 	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
@@ -2085,6 +2085,13 @@ class JNodeDetailsPanel
 		      int idx = pLinkActionParamNodeNames.indexOf(source);
 		      if(idx != -1) 
 			text = pLinkActionParamValues.get(idx);
+		    }
+		    else if(aparam instanceof BooleanActionParam) {
+		      Boolean value = (Boolean) aparam.getValue();
+		      if(value != null) 
+			text = (value ? "YES" : "no");
+		      else 
+			text = "-";
 		    }
 		    else {
 		      Comparable value = aparam.getValue();
@@ -4899,7 +4906,7 @@ class JNodeDetailsPanel
   private static final long serialVersionUID = -2714804145579513176L;
 
 
-  private static final int  sTSize = 160;
+  private static final int  sTSize = 180;
   private static final int  sVSize = 150;
   private static final int  sSSize = 323;
 
