@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.39 2004/09/27 04:54:35 jim Exp $
+// $Id: JManagerPanel.java,v 1.40 2004/09/28 09:26:34 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -232,8 +232,6 @@ class JManagerPanel
       {
 	JMenu sub = new JMenu("Admin");   
 	pPopup.add(sub);  
-
-	sub.addSeparator();
 
 	item = new JMenuItem("Users...");
 	item.setActionCommand("manage-users");
