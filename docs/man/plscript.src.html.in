@@ -3506,16 +3506,24 @@ given checked-in version (<span style="font-weight: normal;"><span
 latest version will be checked-out.&nbsp; Also checks-out the versions
 of all upstream nodes of the checked-in version.&nbsp; <br>
 <br>
-If the <span style="font-weight: bold;">--keep-newer</span> option is
-specified,
-newer versions of these upstream nodes will not be checked-out.&nbsp;
-If the <span style="font-weight: bold;">--keep-modified</span> option
-is specified, the check-out will be skipped if there exists a modified
+By default, the </span><span style="font-weight: normal;">check-out
+will be skipped if there exists a modified
 working
 version which is based on the version being checked-out or on a version
-which is newer than the version being checked-out.&nbsp; Otherwise, all
-upstream nodes will be checked-out overwriting all existing working
-versions.<br>
+which is newer than the version being checked-out.&nbsp; </span><span
+ style="font-weight: normal;">If the <span style="font-weight: bold;">--keep-newer</span>
+option is
+specified,
+nodes which are based on a newer version than the version being
+checked-out will be skipped, but modified nodes based on the version
+being checked out or older versions will be overwritten.&nbsp; If the <span
+ style="font-weight: bold;"></span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--overwrite-all</span></span><span
+ style="font-weight: normal;"> option
+is specified, all
+upstream nodes will be checked-out regardless of the version they are
+based upon causing all existing upstream working
+versions to be overwritten.<br>
 <br>
 If the <span style="font-weight: bold;">--frozen-upstream</span>
 option is specified, the files associated with the root node of the

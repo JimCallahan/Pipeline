@@ -4221,7 +4221,7 @@ NodeCheckOut()
   pAuthor         = PackageInfo.sUser;
   pView           = "default";
   pVersionIDs     = new TreeSet();
-  pCheckOutMode   = CheckOutMode.OverwriteAll; 
+  pCheckOutMode   = CheckOutMode.KeepModified; 
   pCheckOutMethod = CheckOutMethod.Modifiable;
 }
 {
