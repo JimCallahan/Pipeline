@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.39 2005/04/03 06:10:12 jim Exp $
+// $Id: ScriptApp.java,v 1.40 2005/04/04 22:06:42 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2943,7 +2943,7 @@ class ScriptApp
 	  if(vsn != null) 
 	    snames.addAll(vsn.getSourceNames());
 
-	  int wk = vsn.getSourceNames().size();
+	  int wk = snames.size();
 	  for(String sname : snames) {
 	    String mname = "-";
 	    String mp = "-";
