@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.29 2004/07/18 21:34:08 jim Exp $
+// $Id: JManagerPanel.java,v 1.30 2004/07/24 18:27:07 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -78,19 +78,17 @@ class JManagerPanel
 	item.setActionCommand("node-viewer");
 	item.addActionListener(this);
 	sub.add(item);  
-	
-	sub.addSeparator();
 
 	item = new JMenuItem("Node Details");
 	item.setActionCommand("node-details");
 	item.addActionListener(this);
 	sub.add(item);  
 
-	item = new JMenuItem("Node Links");
-	item.setActionCommand("node-links");
-	item.addActionListener(this);
-	item.setEnabled(false); // FOR NOW 
-	sub.add(item);  
+// 	item = new JMenuItem("Node Links");
+// 	item.setActionCommand("node-links");
+// 	item.addActionListener(this);
+// 	item.setEnabled(false); // FOR NOW 
+// 	sub.add(item);  
 
 	item = new JMenuItem("Node Files");
 	item.setActionCommand("node-files");
@@ -104,8 +102,20 @@ class JManagerPanel
 	
 	sub.addSeparator();
 
-	item = new JMenuItem("Queue Manager");
-	item.setActionCommand("queue-manager");
+	item = new JMenuItem("Queue Servers");
+	item.setActionCommand("queue-servers");
+	item.addActionListener(this);
+	item.setEnabled(false); // FOR NOW 
+	sub.add(item);  
+
+	item = new JMenuItem("Job Browser");
+	item.setActionCommand("job-browser");
+	item.addActionListener(this);
+	item.setEnabled(false); // FOR NOW 
+	sub.add(item);  
+
+	item = new JMenuItem("Job Viewer");
+	item.setActionCommand("job-viewer");
 	item.addActionListener(this);
 	item.setEnabled(false); // FOR NOW 
 	sub.add(item);  
@@ -226,14 +236,25 @@ class JManagerPanel
 
 	sub.addSeparator();
 
-	item = new JMenuItem("Manage Users...");
+	item = new JMenuItem("Users...");
 	item.setActionCommand("manage-users");
 	item.addActionListener(this);
 	sub.add(item);  
 
-	item = new JMenuItem("Manage Toolsets...");
+	item = new JMenuItem("Toolsets...");
 	item.setActionCommand("manage-toolsets");
 	item.addActionListener(this);
+	sub.add(item);  
+
+	item = new JMenuItem("License Keys...");
+	item.setActionCommand("manage-license-keys");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	item = new JMenuItem("Selection Keys...");
+	item.setActionCommand("manage-selection-keys");
+	item.addActionListener(this);
+	item.setEnabled(false); // FOR NOW    
 	sub.add(item);  
 
 	sub.addSeparator();
@@ -660,12 +681,14 @@ class JManagerPanel
       UIMaster.getInstance().doRestoreSavedLayout(cmd.substring(15));
     else if(cmd.equals("manage-layouts"))
       UIMaster.getInstance().showManageLayoutsDialog();
+    else if(cmd.equals("default-editors"))
+      UIMaster.getInstance().showDefaultEditorsDialog();
     else if(cmd.equals("manage-users"))
       UIMaster.getInstance().showManageUsersDialog();
     else if(cmd.equals("manage-toolsets"))
       UIMaster.getInstance().showManageToolsetsDialog();
-    else if(cmd.equals("default-editors"))
-      UIMaster.getInstance().showDefaultEditorsDialog();
+    else if(cmd.equals("manage-license-keys"))
+      UIMaster.getInstance().showManageLicenseKeysDialog();
     else if(cmd.equals("shutdown"))
       doShutdownServer();
     else if(cmd.equals("preferences"))
