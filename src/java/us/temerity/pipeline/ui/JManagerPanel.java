@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.18 2004/05/13 21:26:40 jim Exp $
+// $Id: JManagerPanel.java,v 1.19 2004/05/21 00:15:49 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -231,6 +231,7 @@ class JManagerPanel
 	sub.add(item);  
 
 	item = new JMenuItem("User Manual...");
+	item.setEnabled(false);
 	item.setActionCommand("user-anual");
 	item.addActionListener(this);
 	sub.add(item);  
@@ -243,24 +244,27 @@ class JManagerPanel
 	sub.add(item);  
 
 	item = new JMenuItem("Support Forums...");
+	item.setEnabled(false);
 	item.setActionCommand("support-forums");
 	item.addActionListener(this);
 	sub.add(item);  
 	  
 	item = new JMenuItem("Bug Database...");
+	item.setEnabled(false);
 	item.setActionCommand("bug-database");
 	item.addActionListener(this);
 	sub.add(item);  
 
 	sub.addSeparator();
 	
-	item = new JMenuItem("Configuration...");
-	item.setActionCommand("configuration");
+	item = new JMenuItem("Site Configuration...");
+	item.setActionCommand("site-configuration");
 	item.addActionListener(this);
 	sub.add(item);  
 
-	item = new JMenuItem("License...");
-	item.setActionCommand("license");
+	item = new JMenuItem("License Agreement...");
+	item.setEnabled(false);
+	item.setActionCommand("license-agreement");
 	item.addActionListener(this);
 	sub.add(item);  
       }
@@ -634,6 +638,8 @@ class JManagerPanel
       BaseApp.showURL("http://www.temerity.us");  // FOR NOW...
     else if(cmd.equals("bug-database"))
       BaseApp.showURL("http://www.temerity.us");  // FOR NOW...
+    else if(cmd.equals("site-configuration"))
+      UIMaster.getInstance().showConfigDialog();
 
     //...
 
