@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.2 2004/07/16 22:05:01 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.3 2004/07/18 21:35:06 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -98,19 +98,38 @@ class JNodeFilesPanel
 	}
       }
       
-      pWorkingPopup.addSeparator();
-
-      item = new JMenuItem("Make");
-      item.setActionCommand("make");
-      item.addActionListener(this);
-      item.setEnabled(false);  // FOR NOW...
-      pWorkingPopup.add(item);
+      {
+	pWorkingPopup.addSeparator();
+	
+	item = new JMenuItem("Make");
+	item.setActionCommand("make");
+	item.addActionListener(this);
+	item.setEnabled(false);  // FOR NOW...
+	pWorkingPopup.add(item);
+	
+	item = new JMenuItem("Queue");
+	item.setActionCommand("queue");
+	item.addActionListener(this);
+	item.setEnabled(false);  // FOR NOW...
+	pWorkingPopup.add(item);
+      }
       
-      item = new JMenuItem("Queue");
-      item.setActionCommand("queue");
-      item.addActionListener(this);
-      item.setEnabled(false);  // FOR NOW...
-      pWorkingPopup.add(item);
+      {
+	pCheckedInPopup.addSeparator();
+	
+	{
+	  sub = new JMenu("Compare With");
+	  pCompareWithMenu = sub;
+	  pCheckedInPopup.add(sub);
+	  
+	  for(String comparator : Plugins.getComparatorNames()) {
+	    item = new JMenuItem(comparator);
+	    item.setActionCommand("compare-with:" + comparator);
+	    item.addActionListener(this);
+	    sub.add(item);
+	  }
+	}
+      }	
     }
 
 
@@ -395,11 +414,8 @@ class JNodeFilesPanel
 	else
 	  assert(false);
 
-	/* add the primary file sequence UI components */ 
+	/* get the primary and unique secondary file sequences */ 
 	FileSeq primary = com.getPrimarySequence();
-	addFileSeqComponents(primary, false);
-
-	/* build a list of unique secondary file sequences */ 
 	TreeSet<FileSeq> secondary = new TreeSet<FileSeq>();
 	{
 	  secondary.addAll(com.getSecondarySequences());
@@ -427,7 +443,8 @@ class JNodeFilesPanel
 	  }
 	}
 
-	/* add the secondary sequence UI components */ 
+	/* add the file sequence UI components */ 
+	addFileSeqComponents(primary, secondary.isEmpty());
 	if(!secondary.isEmpty()) {
 	  FileSeq last = secondary.last();
 	  for(FileSeq fseq : secondary) 
@@ -509,7 +526,7 @@ class JNodeFilesPanel
 		
 		int wk;
 		for(wk=0; wk<flags.length; wk++) {
-		  FileSeq sfseq = new FileSeq(fseq, wk);
+		  FileSeq sfseq = new FileSeq(nfseq, wk);
 		  singles.add(sfseq);
 
 		  Boolean[] rflags = novel.get(sfseq);
@@ -797,7 +814,9 @@ class JNodeFilesPanel
     else if(cmd.equals("edit"))
       doEdit();
     else if(cmd.startsWith("edit-with:"))
-      doEditWith(cmd.substring(10));    
+      doEditWith(cmd.substring(10)); 
+    else if(cmd.startsWith("compare-with:"))
+      doCompareWith(cmd.substring(13)); 
   }
 
 
@@ -845,19 +864,24 @@ class JNodeFilesPanel
 	/* BUTTON3: popup menu */ 
 	if((mods & (on1 | off1)) == on1) {
 	  Object source = e.getSource();
+	  boolean hasWorking = false;
 	  if(source instanceof JFileLabel) {
-	    JFileLabel label = (JFileLabel) source;
-	    pTargetFileSeq   = label.getFileSeq();
-	    pTargetVersionID = label.getVersionID();
+	    JFileLabel label  = (JFileLabel) source;
+	    pTargetFileSeq    = label.getFileSeq();
+	    pTargetVersionID  = label.getVersionID();
+	    hasWorking        = label.hasWorking();
 	  }
 	  else if(source instanceof JFileCheckBox) {
 	    JFileCheckBox check = (JFileCheckBox) source;
 	    pTargetFileSeq      = check.getFileSeq();
 	    pTargetVersionID    = check.getVersionID();
+	    hasWorking          = check.hasWorking();
 	  }
 
-	  if(pTargetVersionID != null) 
+	  if(pTargetVersionID != null) {
+	    pCompareWithMenu.setEnabled(hasWorking);
 	    pCheckedInPopup.show(e.getComponent(), e.getX(), e.getY());
+	  }
 	  else 
 	    pWorkingPopup.show(e.getComponent(), e.getX(), e.getY());
 	}
@@ -1031,6 +1055,23 @@ class JNodeFilesPanel
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Compare the target checked-in file with the corresponding working file using the given
+   * comparator.
+   */ 
+  private void 
+  doCompareWith
+  (
+   String comparator
+  ) 
+  {
+    CompareTask task = new CompareTask(comparator);
+    task.start();
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L    C L A S S E S                                                     */
@@ -1047,12 +1088,14 @@ class JNodeFilesPanel
     JFileLabel
     (
      FileSeq fseq, 
-     VersionID vid
+     VersionID vid, 
+     boolean hasWorking
     ) 
     {
       super();
-      pFileSeq      = fseq;
-      pVersionID = vid;
+      pFileSeq    = fseq;
+      pVersionID  = vid;
+      pHasWorking = hasWorking;
     }
 
     public 
@@ -1079,11 +1122,18 @@ class JNodeFilesPanel
       return pVersionID;
     }
 
+    public boolean
+    hasWorking() 
+    {
+      return pHasWorking;
+    }
+
 
     private static final long serialVersionUID = 1637624990297368379L;
 
-    private FileSeq       pFileSeq;
+    private FileSeq    pFileSeq;
     private VersionID  pVersionID;
+    private boolean    pHasWorking;
   }
 
 
@@ -1100,12 +1150,14 @@ class JNodeFilesPanel
     JFileCheckBox
     (
      FileSeq fseq, 
-     VersionID vid
+     VersionID vid, 
+     boolean hasWorking
     ) 
     {
       super();
       pFileSeq   = fseq;
       pVersionID = vid;
+      pHasWorking = hasWorking;
     }
 
 
@@ -1121,11 +1173,18 @@ class JNodeFilesPanel
       return pVersionID;
     }
 
+    public boolean
+    hasWorking() 
+    {
+      return pHasWorking;
+    }
+
 
     private static final long serialVersionUID = 2303900581105425334L;
 
     private FileSeq    pFileSeq;
     private VersionID  pVersionID;
+    private boolean    pHasWorking;
   }
 
 
@@ -1212,7 +1271,11 @@ class JNodeFilesPanel
 	      VersionID vid = vids.get(wk);
 
 	      if(novel[wk] == null) {
-		hbox.add(Box.createRigidArea(new Dimension(70, 0)));
+		int width = 70;
+		if((wk > 0) && (novel[wk-1] != null) && (novel[wk-1])) 
+		  width += 2; 
+
+		hbox.add(Box.createRigidArea(new Dimension(width, 0)));
 	      }
 	      else {
 		ArrayList<JComponent> nlist = nameComps.get(fname);
@@ -1237,7 +1300,7 @@ class JNodeFilesPanel
 		    hbox.add(Box.createRigidArea(new Dimension(2, 0)));		  
 		  
 		  {
-		    JFileCheckBox check = new JFileCheckBox(pfseq, vid);
+		    JFileCheckBox check = new JFileCheckBox(pfseq, vid, isEnabled);
 		    check.setName("FileCheck");
 
 		    check.setSelected(false);
@@ -1294,7 +1357,7 @@ class JNodeFilesPanel
 		  }
 		  
 		  {
-		    JFileLabel label = new JFileLabel(pfseq, vid);
+		    JFileLabel label = new JFileLabel(pfseq, vid, isEnabled);
 		    label.setName(extend ? "FileBarExtend" : "FileBar");
 		    label.setIcon(extend ? sFileBarExtendIcon : sFileBarIcon);
 
@@ -1583,6 +1646,119 @@ class JNodeFilesPanel
   /*----------------------------------------------------------------------------------------*/
 
   /** 
+   * Compare the target checked-in file with the corresponding working file using the given
+   * comparator.
+   */ 
+  private
+  class CompareTask
+    extends Thread
+  {
+    public 
+    CompareTask
+    (
+     String ename
+    ) 
+    {
+      super("JNodeFilesPanel:CompareTask");
+
+      pComparatorName = ename;
+    }
+
+    public void 
+    run() 
+    {
+      SubProcess proc = null;
+      {
+	UIMaster master = UIMaster.getInstance();
+	if(master.beginPanelOp("Launching Node Comparator...")) {
+	  try {
+	    MasterMgrClient client = master.getMasterMgrClient();
+
+	    String name = pStatus.getName();
+
+	    NodeDetails details = pStatus.getDetails();
+	    assert(details != null);
+
+	    NodeMod mod = details.getWorkingVersion();
+
+	    NodeVersion vsn = null;
+	    if(pTargetVersionID != null) 
+	      vsn = client.getCheckedInVersion(name, pTargetVersionID);
+	    else 
+	      vsn = details.getLatestVersion();
+
+	    NodeCommon com = null;
+	    if(mod != null) 
+	      com = mod;
+	    else 
+	      com = vsn;
+
+	    /* create an comparator plugin instance */ 
+	    BaseComparator comparator = Plugins.newComparator(pComparatorName);
+
+	    /* the checked-in file */ 
+	    File fileB = new File(pTargetFileSeq.toString());
+
+	    /* the working file */ 
+	    File fileA = null;
+	    {
+	      File path = new File(pStatus.getName());
+	      fileA = new File(PackageInfo.sWorkDir, 
+			       pAuthor + "/" + pView + path.getParent() + "/" + 
+			       fileB.getName());
+	    }
+
+	    /* lookup the toolset environment */ 
+	    TreeMap<String,String> env = null;
+	    {
+	      String tname = com.getToolset();
+	      if(tname == null) 
+		throw new PipelineException
+		  ("No toolset was specified for node (" + name + ")!");
+	      
+	      String view = null;
+	      if(mod != null)
+		view = pView; 
+
+	      /* passes pAuthor so that WORKING will correspond to the current view */ 
+	      env = client.getToolsetEnvironment(pAuthor, view, tname);
+
+	      /* override these since the comparator will be run as the current user */ 
+	      env.put("HOME", PackageInfo.sHomeDir + "/" + PackageInfo.sUser);
+	      env.put("USER", PackageInfo.sUser);
+	    }
+	    
+	    /* start the comparator */ 
+	    proc = comparator.launch(fileA, fileB, env, PackageInfo.sTempDir);	   
+	  }
+	  catch(PipelineException ex) {
+	    master.showErrorDialog(ex);
+	    return;
+	  }
+	  finally {
+	    master.endPanelOp("Done.");
+	  }
+	}
+
+	/* wait for the comparator to exit */ 
+	try {
+	  proc.join();
+	  if(!proc.wasSuccessful()) 
+	    master.showSubprocessFailureDialog("Comparator Failure:", proc);
+	}
+	catch(InterruptedException ex) {
+	  master.showErrorDialog(ex);
+	}
+      }
+    }
+
+    private String  pComparatorName;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
    * Replace working area files with the given repository versions.
    */ 
   private
@@ -1684,6 +1860,11 @@ class JNodeFilesPanel
    * The checked-in file popup menu.
    */ 
   private JPopupMenu  pCheckedInPopup; 
+  
+  /**
+   * The compare with submenu.
+   */ 
+  private JMenu  pCompareWithMenu;
 
   
   /**
