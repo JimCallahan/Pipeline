@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.1 2004/03/23 16:57:59 jim Exp $
+// $Id: FileMgrClient.java,v 1.2 2004/03/26 04:39:05 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -18,11 +18,9 @@ import java.util.*;
  * 
  * This class handles network communication with the Pipeline file management daemon 
  * <A HREF="../../../../man/plfilemgr.html"><B>plfilemgr</B><A>(1) running on the file 
- * server.  This daemon contains an instance of the {@link FileMgrServer FileMgrServer} 
- * class which dispatches the requests sent by this class to an underlying instance 
- * of the {@link FileMgr FileMgr} class which performs the actual operations.  The methods 
- * of this class correspond directly to the methods with the same name of the 
- * <CODE>FileMgr</CODE> class.  See that class for more details.
+ * server. An instance of this class is used by the Pipeline master server daemon 
+ * <A HREF="../../../../man/plmaster.html"><B>plmaster</B><A>(1) to communicate with 
+ * <B>plfilemgr</B><A>(1).
  * 
  * @see FileMgr
  * @see FileMgrServer
@@ -38,10 +36,10 @@ class FileMgrClient
    * Construct a new file manager client.
    * 
    * @param hostname 
-   *   The name of the host running the <CODE>FileMgrServer</CODE> instance.
+   *   The name of the host running the <B>plfilemgr</B><A>(1).
    * 
    * @param port 
-   *   The network port listened to by the <CODE>FileMgrServer</CODE> instance.
+   *   The network port listened to by <B>plfilemgr</B><A>(1).
    */
   public
   FileMgrClient
@@ -54,10 +52,9 @@ class FileMgrClient
   }
 
   /** 
-   * Construct a new file manager client.
+   * Construct a new file manager client using the default hostname and port.
    * 
-   * The hostname and port are set by the <CODE>--with-file-server=DIR</CODE> and 
-   * <CODE>--with-file-port=DIR</CODE> options to <I>configure(1)</I>.
+   * The hostname and port used are those specified by <B>plconfig(1)</B>.
    */
   public
   FileMgrClient() 
@@ -312,7 +309,7 @@ class FileMgrClient
     verifyConnection();
 
     FileUnfreezeReq req = 
-      new FileUnfreezeReq(id, mod.getWorkingID(), mod.getSequences());
+      new FileUnfreezeReq(id, mod.getWorkingID(), mod.getSequences(), !mod.hasAction());
 
     Object obj = performTransaction(FileRequest.Unfreeze, req);
 
@@ -445,12 +442,12 @@ class FileMgrClient
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * The name of the host running the <CODE>FileMgrServer</CODE> instance.
+   * The name of the host running <B>plfilemgr</B>(1).
    */
   private String  pHostname;
 
   /**
-   * The network port listened to by the <CODE>FileMgrServer</CODE> instance.
+   * The network port listened to by <B>plfilemgr</B>(1).
    */
   private int  pPort;
 

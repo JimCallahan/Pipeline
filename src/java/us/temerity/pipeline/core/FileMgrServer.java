@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.2 2004/03/23 07:40:37 jim Exp $
+// $Id: FileMgrServer.java,v 1.3 2004/03/26 04:39:22 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -54,13 +54,11 @@ class FileMgrServer
   }
   
   /** 
-   * Construct a new file manager.
+   * Construct a new file manager using the default root production directory and 
+   * network port.
    * 
-   * The root production directory is set by the <CODE>--with-prod=DIR</CODE> 
-   * option to <I>configure(1)</I>.
-   * 
-   * The network port is set by the <CODE>--with-file-port=DIR</CODE> 
-   * option to <I>configure(1)</I>.
+   * The root production directory and network port used are those specified by 
+   * <B>plconfig(1)</B>.
    */
   public
   FileMgrServer() 

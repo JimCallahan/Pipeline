@@ -1,4 +1,4 @@
-// $Id: FileCheckOutReq.java,v 1.4 2004/03/23 07:40:37 jim Exp $
+// $Id: FileCheckOutReq.java,v 1.5 2004/03/26 04:40:57 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -104,7 +104,7 @@ class FileCheckOutReq
   }
 
   /**
-   * 
+   * Should the working files have write permissions after being checked-out?
    */
   public boolean 
   isEditable() 
@@ -143,7 +143,7 @@ class FileCheckOutReq
   private TreeSet<FileSeq>  pFileSeqs;
 
   /**
-   * Should the working files have write permissions after being checked-out.
+   * Should the working files have write permissions after being checked-out?
    */
   private boolean  pIsEditable;
 
