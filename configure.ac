@@ -46,6 +46,7 @@ case "$with_compiler" in
      DLOPEN_LIB="-ldl";
      AR="ar ";
      CXX_VERSION=`${CXX} --version | head -1 | awk '{print $3}'`;
+     if test -z "$CXX_VERSION"; then CXX_VERSION=`${CXX} --version`; fi;
      AC_DEFINE(USING_GNU_CXX, 1, 
                [Define if using GNU's C++ compiler (g++).]);;
 
@@ -110,7 +111,6 @@ fi
 AC_MSG_RESULT([$BASEDIR])
 
 
-dnl -------------------------------------------------------------------------------------------
 
 AC_MSG_CHECKING([Pipeline Server Hostname])
 
@@ -145,13 +145,13 @@ fi
 AC_MSG_RESULT([$PLPORT])
 
 
-dnl -------------------------------------------------------------------------------------------
+AC_MSG_CHECKING([toolset])
+AC_MSG_RESULT([$TOOLSET])
 
-AC_MSG_CHECKING([PATH])
+
+AC_MSG_CHECKING([path])
 AC_MSG_RESULT([$PATH])
 
-AC_MSG_CHECKING([TOOLSET])
-AC_MSG_RESULT([$TOOLSET])
 
 AC_MSG_RESULT([ ])
 
@@ -352,9 +352,6 @@ AC_MSG_RESULT([Locating the SML development tools:])
 
 AC_PATH_PROG(SML, sml, $PATH)
 
-AC_SUBST(HEAP_SUFFIX)
-HEAP_SUFFIX=""
-
 AC_SUBST(CM_CONTROL)
 CM_CONTROL=""
 
@@ -370,8 +367,10 @@ CM_UNIX_LIB=""
 AC_SUBST(CM_ML_YACC_LIB)
 CM_ML_YACC_LIB=""
 
-sml_version=`$SML @SMLversion | awk '{print $2}'`
-case "$sml_version" in 
+AC_SUBST(SML_VERSION)
+SML_VERSION=`$SML @SMLversion | awk '{print $2}'`
+
+case "$SML_VERSION" in 
   (110.10) \
     eval `.arch-n-opsys | awk '{print $4}'`
     CM_CONTROL="";
@@ -390,6 +389,21 @@ case "$sml_version" in
   (*) \
     AC_MSG_ERROR([don't know how to handle this version of SML-NJ]);;
 esac
+
+AC_MSG_CHECKING([SML version])
+AC_MSG_RESULT([$SML_VERSION])
+
+AC_MSG_CHECKING([CM control])
+AC_MSG_RESULT([$CM_CONTROL])
+
+AC_MSG_CHECKING([smlnj lib])
+AC_MSG_RESULT([$CM_SML_NJ_LIB])
+
+AC_MSG_CHECKING([unix lib])
+AC_MSG_RESULT([$CM_UNIX_LIB])
+
+AC_MSG_CHECKING([yacc lib])
+AC_MSG_RESULT([$CM_ML_YACC_LIB])
 
 AC_MSG_RESULT([ ])
 
@@ -412,38 +426,35 @@ dnl -- DATABASE TOOLS ----------------------------------------------------------
 AC_MSG_RESULT([Locating the Database tools:])
 
 AC_PATH_PROG(SQL,       psql,      $PATH)
-AC_PATH_PROG(INITDB,    initdb,    $PATH)
-AC_PATH_PROG(CREATEDB,  createdb,  $PATH)
-AC_PATH_PROG(DROPDB,    dropdb,    $PATH)
-
-AC_PATH_PROG(POSTMASTER,  postmaster,  $PATH)
-AC_PATH_PROG(PG_CTL,      pg_ctl,      $PATH)
-
-AC_SUBST(SQL_VERSION)
-SQL_VERSION=""
 
 AC_SUBST(JDBC_JAR)
 JDBC_JAR=""
 
-AC_MSG_CHECKING([PostgreSQL version])
-sql_version=`postmaster --version | awk '{print $3}'`
-case "$sql_version" in 
+AC_SUBST(SQL_VERSION)
+SQL_VERSION=`postmaster --version | awk '{print $3}'`
+
+case "$SQL_VERSION" in 
   (7.2.3) \
-    SQL_VERSION=$sql_version;
-    JDBC_JAR=/usr/share/pgsql/jdbc7.2dev-1.2.jar;
-    AC_MSG_RESULT([$SQL_VERSION]);;
+    JDBC_JAR=/usr/share/pgsql/jdbc7.2dev-1.2.jar;;
 
   (7.2.3-RH) \
-    SQL_VERSION=$sql_version;
-    JDBC_JAR=/usr/share/pgsql/java/rh-pgsql-jdbc2.jar;
-    AC_MSG_RESULT([$SQL_VERSION]);;
+    JDBC_JAR=/usr/share/pgsql/java/rh-pgsql-jdbc2.jar;;
 
   (*) \
      AC_MSG_ERROR([don't know how to handle this version of PostgreSQL]);;
 esac
 
-AC_MSG_CHECKING([JDBC jarfile location])
+AC_MSG_CHECKING([SQL version])
+AC_MSG_RESULT([$SQL_VERSION])	
+
+AC_MSG_CHECKING([JDBC jarfile])
 AC_MSG_RESULT([$JDBC_JAR])
+
+AC_PATH_PROG(INITDB,      initdb,    $PATH)
+AC_PATH_PROG(CREATEDB,    createdb,  $PATH)
+AC_PATH_PROG(DROPDB,      dropdb,    $PATH)
+AC_PATH_PROG(POSTMASTER,  postmaster,  $PATH)
+AC_PATH_PROG(PG_CTL,      pg_ctl,      $PATH)
 
 AC_MSG_RESULT([ ])
 
