@@ -1,4 +1,4 @@
-// $Id: NodeVersion.java,v 1.14 2004/04/17 19:49:01 jim Exp $
+// $Id: NodeVersion.java,v 1.15 2004/04/20 21:59:58 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -37,6 +37,9 @@ class NodeVersion
    * @param vid 
    *   The revision number of the new checked-in node version.
    * 
+   * @param lvids
+   *   The revision numbers of the checked-in upstream node versions.
+   * 
    * @param msg 
    *   The check-in log message.
    */
@@ -45,15 +48,23 @@ class NodeVersion
   (
    NodeMod mod, 
    VersionID vid, 
+   TreeMap<String,VersionID> lvids,
    String msg
   ) 
   {
     super(mod);
 
+    if(vid == null) 
+      throw new IllegalArgumentException("The revision number cannot be (null)!");
     pVersionID = vid;
-    pMessage   = new LogMessage(msg);
+
+    if(msg == null) 
+      throw new IllegalArgumentException("The check-in message cannot be (null)!");
+    pMessage = new LogMessage(msg);
 
     pSources = new TreeMap<String,LinkVersion>();
+    for(LinkMod link : mod.getSources()) 
+      pSources.put(link.getName(), new LinkVersion(link, lvids.get(link.getName())));
   }
 
   /** 
@@ -195,7 +206,7 @@ class NodeVersion
    NodeMod mod
   ) 
   {
-    return pSources.equals(mod.getSources());
+    return getSources().equals(mod.getSources());
   }
 
   /**
@@ -207,7 +218,7 @@ class NodeVersion
    NodeVersion vsn
   ) 
   {
-    return pSources.equals(vsn.getSources());
+    return getSources().equals(vsn.getSources());
   }
 
 
@@ -277,9 +288,7 @@ class NodeVersion
   {
     super.toGlue(encoder);
 
-    if(pVersionID != null) 
-      encoder.encode("VersionID", pVersionID);
-    
+    encoder.encode("VersionID", pVersionID);
     encoder.encode("Message", pMessage);
 
     if(!pSources.isEmpty())
