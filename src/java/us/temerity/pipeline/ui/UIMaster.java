@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.15 2004/05/18 00:33:58 jim Exp $
+// $Id: UIMaster.java,v 1.16 2004/05/19 19:03:36 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -199,6 +199,22 @@ class UIMaster
   {
     assert((groupID > 0) && (groupID < 10));
     return (pNodeBrowsers[groupID] == null);      
+  }
+
+  /**
+   * Get the node browser belonging to the given group.
+   * 
+   * @return 
+   *   The node browser or <CODE>null</CODE> if no browser exists for the group.
+   */ 
+  public JNodeBrowserPanel
+  getNodeBrowser
+  (
+   int groupID
+  ) 
+  {
+    assert((groupID > 0) && (groupID < 10));
+    return pNodeBrowsers[groupID];
   }
 
 
