@@ -1,4 +1,4 @@
-// $Id: PanelGroup.java,v 1.1 2004/07/07 13:25:34 jim Exp $
+// $Id: PanelGroup.java,v 1.2 2004/08/25 05:22:45 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -69,6 +69,23 @@ class PanelGroup<T>
 	("The group ID (" + groupID + ") must be in the range: [1,9]!");
 
     return pPanels.get(groupID);
+  }
+
+  /**
+   * Get all panels assigned to a group.
+   */ 
+  public synchronized LinkedList<T>
+  getPanels() 
+  {
+    LinkedList<T> panels = new LinkedList<T>();
+    int wk;
+    for(wk=1; wk<10; wk++) {
+      T panel = getPanel(wk);
+      if(panel != null) 
+	panels.add(panel);
+    }
+
+    return panels;
   }
 
   /**
