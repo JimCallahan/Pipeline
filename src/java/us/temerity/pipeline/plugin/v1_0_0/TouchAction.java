@@ -1,4 +1,4 @@
-// $Id: TouchAction.java,v 1.1 2004/11/04 21:31:00 jim Exp $
+// $Id: TouchAction.java,v 1.2 2004/11/05 20:13:48 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -97,7 +97,7 @@ class TouchAction
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID =
+  private static final long serialVersionUID = -2725025461140265090L;
 
 }
 
