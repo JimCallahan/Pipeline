@@ -1,4 +1,4 @@
-// $Id: JSubProcessFailureDialog.java,v 1.2 2004/10/28 15:55:24 jim Exp $
+// $Id: JSubProcessFailureDialog.java,v 1.3 2005/01/03 06:56:23 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -43,7 +43,7 @@ class JSubProcessFailureDialog
 	cpanel.setName("MainDialogPanel");
 	cpanel.setLayout(new BoxLayout(cpanel, BoxLayout.Y_AXIS));
 
-	cpanel.add(UIMaster.createPanelLabel("Command:"));
+	cpanel.add(UIFactory.createPanelLabel("Command:"));
 	
 	cpanel.add(Box.createRigidArea(new Dimension(0, 4)));
 
@@ -77,7 +77,7 @@ class JSubProcessFailureDialog
 	  opanel.setName("MainDialogPanel");
 	  opanel.setLayout(new BoxLayout(opanel, BoxLayout.Y_AXIS));
 
-	  opanel.add(UIMaster.createPanelLabel("Editor Output:"));
+	  opanel.add(UIFactory.createPanelLabel("Editor Output:"));
 	  
 	  opanel.add(Box.createRigidArea(new Dimension(0, 4)));
 	  
@@ -109,7 +109,7 @@ class JSubProcessFailureDialog
 	  epanel.setName("MainDialogPanel");
 	  epanel.setLayout(new BoxLayout(epanel, BoxLayout.Y_AXIS));
 	  
-	  epanel.add(UIMaster.createPanelLabel("Editor Errors:"));
+	  epanel.add(UIFactory.createPanelLabel("Editor Errors:"));
 	  
 	  epanel.add(Box.createRigidArea(new Dimension(0, 4)));
 	  

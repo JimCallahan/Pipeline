@@ -1,4 +1,4 @@
-// $Id: JFileSeqSelectDialog.java,v 1.3 2004/10/22 19:41:20 jim Exp $
+// $Id: JFileSeqSelectDialog.java,v 1.4 2005/01/03 06:56:23 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -53,7 +53,7 @@ class JFileSeqSelectDialog
   initUI() 
   {
     pRenderer = new JFileSeqListCellRenderer();
-    JTextField field = UIMaster.createTextField(null, 60, JLabel.LEFT);
+    JTextField field = UIFactory.createTextField(null, 60, JLabel.LEFT);
     super.initUI("Select File Sequence:", pRenderer, 
 		 "File Sequence:", 90, field, "Select");
   }
@@ -380,7 +380,7 @@ class JFileSeqSelectDialog
       if(diag.wasConfirmed()) {
 	File ndir = new File(dir, diag.getName());
 	if(!ndir.mkdirs()) {
-	  UIMaster.getInstance().showErrorDialog
+	  UIFactory.showErrorDialog
 	    ("I/O Error:", 
 	     "Unable to create directory (" + ndir + ")!");
 	}

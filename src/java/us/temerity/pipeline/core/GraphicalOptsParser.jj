@@ -7,7 +7,7 @@ PARSER_BEGIN(GraphicalOptsParser)
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.ui.*;
+import us.temerity.pipeline.ui.core.*;
 
 import java.util.*;
 import java.text.*;

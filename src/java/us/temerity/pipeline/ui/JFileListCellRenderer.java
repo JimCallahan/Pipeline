@@ -1,4 +1,4 @@
-// $Id: JFileListCellRenderer.java,v 1.3 2004/07/14 21:05:28 jim Exp $
+// $Id: JFileListCellRenderer.java,v 1.4 2005/01/03 06:56:23 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -18,7 +18,8 @@ import javax.swing.border.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The renderer used for the {@link JList JList} cells.
+ * The renderer used for {@link JList JList} cells containing {@link File File} data
+ * which displays the file name, last modified date and file size.
  */ 
 public
 class JFileListCellRenderer

@@ -1,4 +1,4 @@
-// $Id: JDoubleTableCellEditor.java,v 1.2 2004/07/28 19:20:42 jim Exp $
+// $Id: JDoubleTableCellEditor.java,v 1.3 2005/01/03 06:56:23 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -39,7 +39,7 @@ class JDoubleTableCellEditor
    int align
   ) 
   {
-    pField = UIMaster.createDoubleField(null, width, align);
+    pField = UIFactory.createDoubleField(null, width, align);
     pField.addActionListener(this);
   }
 

@@ -1,4 +1,4 @@
-// $Id: JBooleanTableCellEditor.java,v 1.1 2004/09/12 19:04:04 jim Exp $
+// $Id: JBooleanTableCellEditor.java,v 1.2 2005/01/03 06:56:23 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -45,7 +45,7 @@ class JBooleanTableCellEditor
     values.add("no");
     values.add("-");
 
-    pField = UIMaster.createCollectionField(values, width);
+    pField = UIFactory.createCollectionField(values, width);
     pField.addActionListener(this);
   }
 

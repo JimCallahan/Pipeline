@@ -1,4 +1,4 @@
-// $Id: JColorField.java,v 1.3 2004/12/29 17:32:38 jim Exp $
+// $Id: JColorField.java,v 1.4 2005/01/03 06:56:23 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -217,9 +217,9 @@ class JColorField
   private void 
   doEditColor() 
   {
-    JColorEditorDialog diag = UIMaster.getInstance().showColorEditorDialog(pTitle, pValue);
-    if(diag.wasConfirmed()) 
-      setValue(diag.getColor());
+    Color3d color = UIFactory.showColorEditorDialog(pTitle, pValue);
+    if(color != null) 
+      setValue(color);
   }
    
  

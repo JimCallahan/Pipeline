@@ -1,4 +1,4 @@
-// $Id: JBaseFileSelectDialog.java,v 1.6 2004/11/21 18:39:56 jim Exp $
+// $Id: JBaseFileSelectDialog.java,v 1.7 2005/01/03 06:56:23 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -115,7 +115,7 @@ implements ListSelectionListener, DocumentListener, MouseListener
 	hbox.add(Box.createRigidArea(new Dimension(4, 0)));
 	
 	{
-	  JLabel label = UIMaster.createLabel("Directory:", 60, JLabel.LEFT);
+	  JLabel label = UIFactory.createLabel("Directory:", 60, JLabel.LEFT);
 	  
 	  Dimension size = label.getPreferredSize();
 	  label.setMaximumSize(new Dimension(60, size.height));
@@ -124,7 +124,7 @@ implements ListSelectionListener, DocumentListener, MouseListener
 	}
 	  
 	{
-	  JTextField field = UIMaster.createEditableTextField(null, 60, JLabel.LEFT);
+	  JTextField field = UIFactory.createEditableTextField(null, 60, JLabel.LEFT);
 	  pDirField = field;
 
 	  field.addActionListener(this);
@@ -149,7 +149,7 @@ implements ListSelectionListener, DocumentListener, MouseListener
 	  btn.setActionCommand("new-folder");
 	  btn.addActionListener(this);
 
-	  btn.setToolTipText(UIMaster.formatToolTip("Creates a new folder."));
+	  btn.setToolTipText(UIFactory.formatToolTip("Creates a new folder."));
 
 	  hbox.add(btn);
 	} 
@@ -211,7 +211,7 @@ implements ListSelectionListener, DocumentListener, MouseListener
 	  hbox.add(Box.createRigidArea(new Dimension(4, 0)));
 	  
 	  {
-	    JLabel label = UIMaster.createLabel(fieldTitle, fieldTitleSize, JLabel.LEFT);
+	    JLabel label = UIFactory.createLabel(fieldTitle, fieldTitleSize, JLabel.LEFT);
 	    
 	    Dimension size = label.getPreferredSize();
 	    label.setMaximumSize(new Dimension(fieldTitleSize, size.height));

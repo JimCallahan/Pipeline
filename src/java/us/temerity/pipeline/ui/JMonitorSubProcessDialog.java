@@ -1,4 +1,4 @@
-// $Id: JMonitorSubProcessDialog.java,v 1.1 2004/10/28 15:55:24 jim Exp $
+// $Id: JMonitorSubProcessDialog.java,v 1.2 2005/01/03 06:56:23 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -61,7 +61,7 @@ class JMonitorSubProcessDialog
 	cpanel.setName("MainDialogPanel");
 	cpanel.setLayout(new BoxLayout(cpanel, BoxLayout.Y_AXIS));
 
-	cpanel.add(UIMaster.createPanelLabel("Command:"));
+	cpanel.add(UIFactory.createPanelLabel("Command:"));
 	
 	cpanel.add(Box.createRigidArea(new Dimension(0, 4)));
 
@@ -94,7 +94,7 @@ class JMonitorSubProcessDialog
 	  opanel.setName("MainDialogPanel");
 	  opanel.setLayout(new BoxLayout(opanel, BoxLayout.Y_AXIS));
 
-	  opanel.add(UIMaster.createPanelLabel("Output:"));
+	  opanel.add(UIFactory.createPanelLabel("Output:"));
 	  
 	  opanel.add(Box.createRigidArea(new Dimension(0, 4)));
 	  
@@ -113,7 +113,7 @@ class JMonitorSubProcessDialog
 	  epanel.setName("MainDialogPanel");
 	  epanel.setLayout(new BoxLayout(epanel, BoxLayout.Y_AXIS));
 	  
-	  epanel.add(UIMaster.createPanelLabel("Errors:"));
+	  epanel.add(UIFactory.createPanelLabel("Errors:"));
 	  
 	  epanel.add(Box.createRigidArea(new Dimension(0, 4)));
 	  

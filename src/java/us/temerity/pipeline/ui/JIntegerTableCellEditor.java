@@ -1,4 +1,4 @@
-// $Id: JIntegerTableCellEditor.java,v 1.1 2004/06/22 19:44:54 jim Exp $
+// $Id: JIntegerTableCellEditor.java,v 1.2 2005/01/03 06:56:23 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -39,7 +39,7 @@ class JIntegerTableCellEditor
    int align
   ) 
   {
-    pField = UIMaster.createIntegerField(null, width, align);
+    pField = UIFactory.createIntegerField(null, width, align);
     pField.addActionListener(this);
   }
 

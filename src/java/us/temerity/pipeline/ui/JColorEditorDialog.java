@@ -1,4 +1,4 @@
-// $Id: JColorEditorDialog.java,v 1.5 2004/12/30 00:38:48 jim Exp $
+// $Id: JColorEditorDialog.java,v 1.6 2005/01/03 06:56:23 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -60,7 +60,9 @@ class JColorEditorDialog
       JPanel body = new JPanel();
 
       {
-	pCanvas = UIMaster.getInstance().createGLCanvas(); 
+	GLCapabilities glc = new GLCapabilities();  
+	glc.setDoubleBuffered(true);
+	pCanvas = GLDrawableFactory.getFactory().createGLCanvas(glc);
 	pCanvas.setSize(520, 250);
 	
 	pCanvas.addGLEventListener(this);
@@ -174,13 +176,13 @@ class JColorEditorDialog
 
     /* build the color circle display lists */ 
     if((pWhiteDL == null) || (pBlackDL == null)) {
-      Integer texID = null;
-      try {
-	texID = TextureMgr.getInstance().getTexture(gl, "ColorCircle");
-      }
-      catch(IOException ex) {
-	Logs.tex.severe(ex.getMessage());
-      }
+    //   Integer texID = null;
+//       try {
+// 	texID = TextureMgr.getInstance().getTexture(gl, "ColorCircle");
+//       }
+//       catch(IOException ex) {
+// 	Logs.tex.severe(ex.getMessage());
+//       }
 	
       /* the white color circle */ 
       if(pWhiteDL == null) {
@@ -189,7 +191,7 @@ class JColorEditorDialog
 	gl.glNewList(pWhiteDL, GL.GL_COMPILE);
 	{
 	  gl.glEnable(GL.GL_TEXTURE_2D);
-	  gl.glBindTexture(GL.GL_TEXTURE_2D, texID);
+// 	  gl.glBindTexture(GL.GL_TEXTURE_2D, texID);
 	  
 	  gl.glColor3d(1.0, 1.0, 1.0);
 	  gl.glBegin(GL.GL_QUADS);
@@ -220,7 +222,7 @@ class JColorEditorDialog
 	gl.glNewList(pBlackDL, GL.GL_COMPILE);
 	{
 	  gl.glEnable(GL.GL_TEXTURE_2D);
-	  gl.glBindTexture(GL.GL_TEXTURE_2D, texID);
+// 	  gl.glBindTexture(GL.GL_TEXTURE_2D, texID);
 
 	  gl.glColor3d(0.0, 0.0, 0.0);
 	  gl.glBegin(GL.GL_QUADS);

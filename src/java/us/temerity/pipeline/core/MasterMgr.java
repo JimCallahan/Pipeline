@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.74 2005/01/03 01:16:50 jim Exp $
+// $Id: MasterMgr.java,v 1.75 2005/01/03 06:57:12 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6,7 +6,7 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.message.*;
 import us.temerity.pipeline.toolset.*;
-import us.temerity.pipeline.ui.NodeStyles;
+import us.temerity.pipeline.ui.core.NodeStyles;
 
 import java.io.*;
 import java.util.*;

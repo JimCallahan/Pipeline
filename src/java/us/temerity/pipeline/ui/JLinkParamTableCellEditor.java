@@ -1,4 +1,4 @@
-// $Id: JLinkParamTableCellEditor.java,v 1.2 2004/12/10 10:26:21 jim Exp $
+// $Id: JLinkParamTableCellEditor.java,v 1.3 2005/01/03 06:56:23 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -82,7 +82,7 @@ class JLinkParamTableCellEditor
       ArrayList<String> values = new ArrayList<String>(stitles);
       values.add("-");
     
-      pField = UIMaster.createCollectionField(values, parent, width);
+      pField = UIFactory.createCollectionField(values, parent, width);
       pField.addActionListener(this);
     }
   }

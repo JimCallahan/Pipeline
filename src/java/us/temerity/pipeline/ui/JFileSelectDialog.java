@@ -1,4 +1,4 @@
-// $Id: JFileSelectDialog.java,v 1.6 2004/10/31 20:02:39 jim Exp $
+// $Id: JFileSelectDialog.java,v 1.7 2005/01/03 06:56:23 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -161,7 +161,7 @@ class JFileSelectDialog
   ) 
   {    
     JFileListCellRenderer renderer = new JFileListCellRenderer();
-    JIdentifierField field = UIMaster.createIdentifierField(null, 60, JLabel.LEFT);
+    JIdentifierField field = UIFactory.createIdentifierField(null, 60, JLabel.LEFT);
     super.initUI(header, renderer, fieldTitle, fieldTitleSize, field, confirm);
   }
 
@@ -408,7 +408,7 @@ class JFileSelectDialog
       if(diag.wasConfirmed()) {
 	File ndir = new File(dir, diag.getName());
 	if(!ndir.mkdirs()) {
-	  UIMaster.getInstance().showErrorDialog
+	  UIFactory.showErrorDialog
 	    ("I/O Error:", 
 	     "Unable to create directory (" + ndir + ")!");
 	}

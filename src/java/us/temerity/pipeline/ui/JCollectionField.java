@@ -1,4 +1,4 @@
-// $Id: JCollectionField.java,v 1.7 2004/12/10 10:26:21 jim Exp $
+// $Id: JCollectionField.java,v 1.8 2005/01/03 06:56:23 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -89,7 +89,6 @@ class JCollectionField
       else 
 	pDialog = new JDialog();
     
-      //pDialog.setModal(true);
       pDialog.setUndecorated(true);
       pDialog.setResizable(false);
       pDialog.setAlwaysOnTop(true);

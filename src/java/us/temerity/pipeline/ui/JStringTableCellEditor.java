@@ -1,4 +1,4 @@
-// $Id: JStringTableCellEditor.java,v 1.1 2004/06/22 19:44:54 jim Exp $
+// $Id: JStringTableCellEditor.java,v 1.2 2005/01/03 06:56:23 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -40,7 +40,7 @@ class JStringTableCellEditor
    int align
   ) 
   {
-    pField = UIMaster.createEditableTextField(null, width, align);
+    pField = UIFactory.createEditableTextField(null, width, align);
     pField.addActionListener(this);
   }
 

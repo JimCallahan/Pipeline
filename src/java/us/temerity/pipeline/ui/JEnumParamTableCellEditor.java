@@ -1,4 +1,4 @@
-// $Id: JEnumParamTableCellEditor.java,v 1.3 2004/12/10 10:26:21 jim Exp $
+// $Id: JEnumParamTableCellEditor.java,v 1.4 2005/01/03 06:56:23 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -62,7 +62,7 @@ class JEnumParamTableCellEditor
     ArrayList<String> values = new ArrayList<String>();
     values.add("-");
 
-    pField = UIMaster.createCollectionField(values, parent, width);
+    pField = UIFactory.createCollectionField(values, parent, width);
     pField.addActionListener(this);
   }
 

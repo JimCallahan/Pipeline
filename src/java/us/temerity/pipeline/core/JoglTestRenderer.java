@@ -1,10 +1,9 @@
-// $Id: JoglTestRenderer.java,v 1.2 2004/12/17 08:15:11 jim Exp $
+// $Id: JoglTestRenderer.java,v 1.3 2005/01/03 06:57:12 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.ui.*;
-import us.temerity.pipeline.ui.TextureMgr;
+import us.temerity.pipeline.ui.core.*;
 import us.temerity.pipeline.laf.LookAndFeelLoader;
 
 import java.awt.*;

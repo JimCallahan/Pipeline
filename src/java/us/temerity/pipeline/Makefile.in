@@ -218,7 +218,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
                    PosixSignal \
                    message/FileRequest \
                    message/MasterRequest \
-                   ui/SelectionMode \
+                   ui/core/SelectionMode \
                    toolset/MergePolicy
 
 
@@ -241,12 +241,14 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
       UI_SOURCES = $(shell ls $(srcdir)/ui/*.java) 
 
+ UI_CORE_SOURCES = $(shell ls $(srcdir)/ui/core/*.java) 
+
     MATH_SOURCES = $(shell ls $(srcdir)/math/*.java) 
 
 
      ALL_SOURCES = $(API_SOURCES) $(GLUE_SOURCES) $(LAF_SOURCES) $(CORE_SOURCES) \
                    $(MSG_SOURCES) $(TS_SOURCES) $(TASK_SOURCES) $(UI_SOURCES) \
-                   $(MATH_SOURCES)
+                   $(UI_CORE_SOURCES) $(MATH_SOURCES)
 
 
     CORE_PARSERS = BatchParser \
@@ -263,13 +265,13 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
     JAVA_SOURCES = $(ENUM_SOURCES) $(filter-out $(ENUM_SOURCES),$(ALL_SOURCES)) \
                    $(patsubst %,core/%.java,$(CORE_PARSERS)) \
-                   PackageInfo.java ui/UserPrefs.java ui/JUserPrefsDialog.java
+                   PackageInfo.java ui/core/UserPrefs.java ui/core/JUserPrefsDialog.java
 
       BS_SOURCES = $(shell ls $(srcdir)/bootstrap/*.java) \
                    bootstrap/BootStrapLoader.java
 
           LOCKED = $(shell ls core/*.class) \
-                   $(shell ls ui/*.class)
+                   $(shell ls ui/core/*.class)
 
 
 
@@ -295,6 +297,7 @@ $(ALL_JAR): java-all textures fonts
                     us/temerity/pipeline/toolset/*.class \
                     us/temerity/pipeline/task/*.class \
                     us/temerity/pipeline/ui/*.class \
+                    us/temerity/pipeline/ui/core/*.class \
                     us/temerity/pipeline/math/*.class)
 	(bdir=`pwd`; cd $(srcdir)/../../..; \
          $(JAR) uvf $$bdir/$(ALL_JAR) \
@@ -311,6 +314,7 @@ $(API_JAR): java-all textures fonts
                     us/temerity/pipeline/message/*.class \
                     us/temerity/pipeline/toolset/*.class \
                     us/temerity/pipeline/task/*.class \
+                    us/temerity/pipeline/ui/*.class \
                     us/temerity/pipeline/math/*.class)
 	(bdir=`pwd`; cd $(srcdir)/../../..; \
          $(JAR) uvf $$bdir/$(API_JAR) \
@@ -337,12 +341,12 @@ BootStrapFields $(VAULT): java-all
          $(JAVA) -classpath $(CRYPTO_APP_DIR) CryptoApp $(CUSTOMER_PROFILE) \
                  --build-vault $$f $(VAULT) > BootStrapFields);
 
-ui/UserPrefs.java ui/JUserPrefsDialog.java: ui/prefs/GenUserPrefsApp.class
-	$(JAVA) -cp ui/prefs $(JAVA_RUNTIME_FLAGS) GenUserPrefsApp
+ui/core/UserPrefs.java ui/core/JUserPrefsDialog.java: ui/core/prefs/GenUserPrefsApp.class
+	$(JAVA) -cp ui/core/prefs $(JAVA_RUNTIME_FLAGS) GenUserPrefsApp
 
-ui/prefs/GenUserPrefsApp.class: ui/prefs/GenUserPrefsApp.java
-	@mkdir -p ui/prefs
-	$(JAVA_C) $(JAVA_C_FLAGS) -d ui/prefs -classpath $(srcdir)/ui/prefs $<
+ui/core/prefs/GenUserPrefsApp.class: ui/core/prefs/GenUserPrefsApp.java
+	@mkdir -p ui/core/prefs
+	$(JAVA_C) $(JAVA_C_FLAGS) -d ui/core/prefs -classpath $(srcdir)/ui/core/prefs $<
 
 java-all: $(JAVA_SOURCES)
 	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(JAVA_SOURCES)
@@ -433,7 +437,8 @@ clean-class:
 	rm -f message/*.class
 	rm -f core/*.class
 	rm -f ui/*.class
-	rm -f ui/prefs/*.class
+	rm -f ui/core/*.class
+	rm -f ui/core/prefs/*.class
 	rm -f math/*.class
 	rm -f java-all bootstrap-all
 
@@ -443,7 +448,7 @@ clean-aux:
 	rm -f core/ParseException.java core/SimpleCharStream.java 
 	rm -f core/Token.java core/TokenMgrError.java
 	rm -f core/PackageInfo.java
-	rm -f ui/JUserPrefsDialog.java ui/UserPrefs.java
+	rm -f ui/core/JUserPrefsDialog.java ui/core/UserPrefs.java
 
 clean-parser: clean-core-parser 
 

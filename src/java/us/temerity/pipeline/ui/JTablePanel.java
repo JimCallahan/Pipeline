@@ -1,4 +1,4 @@
-// $Id: JTablePanel.java,v 1.9 2004/12/06 07:39:16 jim Exp $
+// $Id: JTablePanel.java,v 1.10 2005/01/03 06:56:23 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -143,7 +143,7 @@ class JTablePanel
 		btn.setFocusable(false);
 
 		btn.setToolTipText
-		  (UIMaster.formatToolTip(pTableModel.getColumnDescription(wk)));
+		  (UIFactory.formatToolTip(pTableModel.getColumnDescription(wk)));
 
 		hbox.add(btn);
 	      }

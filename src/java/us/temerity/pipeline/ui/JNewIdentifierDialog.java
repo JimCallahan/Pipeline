@@ -1,4 +1,4 @@
-// $Id: JNewIdentifierDialog.java,v 1.5 2004/10/25 18:56:46 jim Exp $
+// $Id: JNewIdentifierDialog.java,v 1.6 2005/01/03 06:56:23 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -118,12 +118,12 @@ class JNewIdentifierDialog
 
       body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));
 
-      body.add(UIMaster.createPanelLabel(fieldTitle));
+      body.add(UIFactory.createPanelLabel(fieldTitle));
       
       body.add(Box.createRigidArea(new Dimension(0, 4)));
       
       {
-	JIdentifierField field = UIMaster.createIdentifierField(name, 60, JLabel.LEFT);
+	JIdentifierField field = UIFactory.createIdentifierField(name, 60, JLabel.LEFT);
 	pNameField = field;
 	
 	field.getDocument().addDocumentListener(this);
