@@ -1,6 +1,6 @@
-// $Id: Glueable.java,v 1.5 2004/03/23 07:40:37 jim Exp $
+// $Id: Glueable.java,v 1.1 2004/03/23 20:40:30 jim Exp $
 
-package us.temerity.pipeline;
+package us.temerity.pipeline.glue;
 
 import java.util.*;
 

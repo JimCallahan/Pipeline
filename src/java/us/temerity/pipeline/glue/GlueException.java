@@ -1,6 +1,6 @@
-// $Id: GlueException.java,v 1.3 2004/03/23 07:40:37 jim Exp $
+// $Id: GlueException.java,v 1.1 2004/03/23 20:40:30 jim Exp $
 
-package us.temerity.pipeline;
+package us.temerity.pipeline.glue;
 
 /*------------------------------------------------------------------------------------------*/
 /*   G L U E   E X C E P T I O N                                                            */

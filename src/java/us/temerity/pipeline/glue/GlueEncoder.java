@@ -1,6 +1,6 @@
-// $Id: GlueEncoder.java,v 1.8 2004/03/23 07:40:37 jim Exp $
+// $Id: GlueEncoder.java,v 1.1 2004/03/23 20:40:30 jim Exp $
 
-package us.temerity.pipeline;
+package us.temerity.pipeline.glue;
 
 import java.lang.reflect.*;
 import java.util.*;
@@ -485,7 +485,7 @@ class GlueEncoder
 
   static {
     try {
-      sGlueable       = Class.forName("us.temerity.pipeline.Glueable");
+      sGlueable       = Class.forName("us.temerity.pipeline.glue.Glueable");
       sCollection     = Class.forName("java.util.Collection");
       sMap            = Class.forName("java.util.Map");
 

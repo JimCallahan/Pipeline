@@ -4,7 +4,7 @@ options {
 
 PARSER_BEGIN(GlueParser)
 
-package us.temerity.pipeline.core;
+package us.temerity.pipeline.glue;
 
 import us.temerity.pipeline.*;
 
@@ -29,7 +29,7 @@ GlueParser
    */
   static {
     try {
-      sGlueable       = Class.forName("us.temerity.pipeline.Glueable");
+      sGlueable       = Class.forName("us.temerity.pipeline.glue.Glueable");
       sCollection     = Class.forName("java.util.Collection");
       sMap            = Class.forName("java.util.Map");
 

@@ -1,6 +1,6 @@
-// $Id: GlueParserState.java,v 1.3 2004/03/23 07:40:37 jim Exp $
+// $Id: GlueParserState.java,v 1.1 2004/03/23 20:40:30 jim Exp $
 
-package us.temerity.pipeline.core;
+package us.temerity.pipeline.glue;
 
 import java.lang.reflect.*;
 import java.util.*;
