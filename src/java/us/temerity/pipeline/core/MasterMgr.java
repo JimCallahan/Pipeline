@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.104 2005/03/24 04:29:56 jim Exp $
+// $Id: MasterMgr.java,v 1.105 2005/03/28 04:17:33 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2558,6 +2558,93 @@ class MasterMgr
     }
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the name of the node associated with the given file. <P> 
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>NodeGetNodeOwningRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the owning node.
+   */
+  public Object
+  getNodeOwning
+  (
+   NodeGetNodeOwningReq req
+  ) 
+  {
+    assert(req != null);
+
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pNodeTreeRoot) {
+	timer.resume();	
+	
+	String nodeName = null;
+	{
+	  String path = req.getPath();
+	  String comps[] = path.split("/"); 
+	  
+	  NodeTreeEntry parentEntry = pNodeTreeRoot;
+	  int wk;
+	  for(wk=1; wk<(comps.length-1); wk++) {
+	    NodeTreeEntry entry = (NodeTreeEntry) parentEntry.get(comps[wk]); 
+	    if(entry == null) {
+	      parentEntry = null;
+	      break;
+	    }
+	    
+	    parentEntry = entry;
+	  }
+	  
+	  if((parentEntry != null) && !parentEntry.isLeaf())  {
+	    String parts[] = comps[comps.length-1].split("\\.");
+
+	    String prefix = null; 
+	    String suffix = null; 
+	    switch(parts.length) {
+	    case 1:
+	      prefix = parts[0];
+	      break;
+
+	    case 2: 
+	      prefix = parts[0];
+	      suffix = parts[1];
+	      break;
+
+	    case 3:
+	      prefix = parts[0];
+	      suffix = parts[2];
+	    }	      
+
+	    if(prefix != null) {
+	      String key = (prefix + "|" + suffix);
+	      for(String name : parentEntry.keySet()) {
+		NodeTreeEntry entry = parentEntry.get(name);
+		if(entry.isLeaf() && entry.getSequences().contains(key)) {
+		  File file = new File(path);
+		  nodeName = (file.getParent() + "/" + name);
+		  break;
+		}
+	      }
+	    }
+	  }
+	}
+
+	return new NodeGetNodeOwningRsp(timer, nodeName);
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
 
 
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.44 2005/03/23 20:45:01 jim Exp $
+// $Id: MasterMgrServer.java,v 1.45 2005/03/28 04:17:33 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -537,6 +537,14 @@ class MasterMgrServer
 	      {
 		NodeUpdatePathsReq req = (NodeUpdatePathsReq) objIn.readObject();
 		objOut.writeObject(pMasterMgr.updatePaths(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetNodeOwning:
+	      {
+		NodeGetNodeOwningReq req = (NodeGetNodeOwningReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getNodeOwning(req));
 		objOut.flush(); 
 	      }
 	      break;

@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.56 2005/03/23 20:45:01 jim Exp $
+// $Id: MasterMgrClient.java,v 1.57 2005/03/28 04:17:33 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1253,6 +1253,41 @@ class MasterMgrClient
     if(obj instanceof NodeUpdatePathsRsp) {
       NodeUpdatePathsRsp rsp = (NodeUpdatePathsRsp) obj;
       return rsp.getRootComp();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the name of the node associated with the given file. <P> 
+   * 
+   * @param path
+   *   The fully resolved file path relative to the root working directory.
+   * 
+   * @return 
+   *   The fully resolved node name or <CODE>null</CODE> if the file is not associated with
+   *   any node.
+   */ 
+  public synchronized String
+  getNodeOwning
+  (
+   String path
+  ) 
+    throws PipelineException    
+  {
+    verifyConnection();
+	 
+    NodeGetNodeOwningReq req = new NodeGetNodeOwningReq(path);
+
+    Object obj = performTransaction(MasterRequest.GetNodeOwning, req);
+    if(obj instanceof NodeGetNodeOwningRsp) {
+      NodeGetNodeOwningRsp rsp = (NodeGetNodeOwningRsp) obj;
+      return rsp.getName();
     }
     else {
       handleFailure(obj);

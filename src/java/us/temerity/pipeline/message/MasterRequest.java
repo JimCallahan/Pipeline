@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.33 2005/03/23 20:45:01 jim Exp $
+// $Id: MasterRequest.java,v 1.34 2005/03/28 04:17:33 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -197,6 +197,11 @@ enum MasterRequest
    */
   UpdatePaths, 
 
+  /**
+   * An instance of {@link NodeGetNodeOwningReq NodeGetNodeOwningReq} is next.
+   */
+  GetNodeOwning, 
+  
 
   /*----------------------------------------------------------------------------------------*/
 
