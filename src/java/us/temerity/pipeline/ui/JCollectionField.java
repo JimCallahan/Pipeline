@@ -1,4 +1,4 @@
-// $Id: JCollectionField.java,v 1.5 2004/06/14 22:46:26 jim Exp $
+// $Id: JCollectionField.java,v 1.6 2004/06/19 00:32:43 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -255,6 +255,7 @@ class JCollectionField
    Color fg
   )
   {
+    pFieldForegroundColor = fg;
     if(pTextField != null) 
       pTextField.setForeground(fg);
   }
@@ -276,7 +277,7 @@ class JCollectionField
    ActionEvent e
   ) 
   {
-    pTextField.setForeground(Color.white);
+    pTextField.setForeground(pFieldForegroundColor);
     setSelected(e.getActionCommand());
   }
 
@@ -337,7 +338,7 @@ class JCollectionField
    PopupMenuEvent e
   )
   { 
-    pTextField.setForeground(Color.white);
+    pTextField.setForeground(pFieldForegroundColor);
   }
    
   /**
@@ -423,6 +424,11 @@ class JCollectionField
    * The icon.
    */ 
   private JLabel  pIconLabel; 
+
+  /**
+   * The foreground color of the text field.
+   */ 
+  private Color  pFieldForegroundColor;
 
 
   /**
