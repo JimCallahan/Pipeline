@@ -551,8 +551,8 @@ dnl ----------------------------------------------------------------------------
 
 AC_MSG_RESULT([Locating C system headers:])
 
-AC_CHECK_HEADERS([math.h errno.h pwd.h dlfcn.h libgen.h])         
-AC_CHECK_HEADERS([time.h sys/time.h sys/param.h sys/utsname.h])  
+AC_CHECK_HEADERS([math.h errno.h pwd.h dlfcn.h libgen.h time.h])         
+AC_CHECK_HEADERS([sys/time.h sys/param.h sys/utsname.h])  
 
 AC_MSG_RESULT([ ])
 
