@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.12 2004/05/13 21:26:40 jim Exp $
+// $Id: UIMaster.java,v 1.13 2004/05/14 02:40:09 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -604,6 +604,49 @@ class UIMaster
 
 
   /**
+   * Create a new hot key field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the hot key field.
+   */ 
+  public static JHotKeyField
+  createTitledHotKeyField
+  (
+   JPanel tpanel, 
+   String title, 
+   int twidth,
+   JPanel vpanel, 
+   int vwidth
+  )
+  {
+    tpanel.add(UIMaster.createLabel(title, twidth, JLabel.RIGHT));
+
+    JHotKeyField field = new JHotKeyField();
+    field.setName("HotKeyField"); 
+
+    Dimension size = new Dimension(vwidth, 19);
+    field.setMinimumSize(size);
+    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+    field.setPreferredSize(size);
+    
+    field.setHorizontalAlignment(JLabel.CENTER);
+    
+    vpanel.add(field);
+
+    return field;
+  }
+
+
+  /**
    * Create a slider with a title and add them to the given panels.
    * 
    * @param tpanel
@@ -626,6 +669,9 @@ class UIMaster
    * 
    * @param value
    *   The intial slider value.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the value field.
    */ 
   public static JSlider 
   createTitledSlider
