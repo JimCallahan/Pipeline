@@ -1,4 +1,4 @@
-// $Id: NotifyApp.java,v 1.1 2004/04/11 19:25:29 jim Exp $
+// $Id: NotifyApp.java,v 1.2 2004/04/14 18:41:40 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -98,7 +98,7 @@ class NotifyApp
       "  plnotify --license\n" + 
       "\n" + 
       "GLOBAL OPTIONS:\n" +
-      "  [--control-port=...][--monitor-port=...]\n" + 
+      "  [--prod=...][--control-port=...][--monitor-port=...]\n" + 
       "  [--log=...]\n" +
       "\n" + 
       "\n" +  

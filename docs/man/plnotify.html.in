@@ -64,6 +64,19 @@ agreement</a> for this software and exits. <br>
 <h3><a name="Global_Options"></a>Global Options<br>
 </h3>
 <div style="margin-left: 40px;">
+<b><a name="--prod"></a>--prod</b>=<span style="font-style: italic;">dir<br>
+</span>
+<div style="margin-left: 40px;"><br>
+Use an alternative root production directory (<span
+ style="font-style: italic;">dir</span>).&nbsp; <br>
+<br>
+The
+default root production directory is set by the <span
+ style="font-weight: bold;">--prod-dir</span> <code
+ style="font-weight: bold;"></code>option to <span
+ style="font-weight: bold;">plconfig</span>(1).
+</div>
+<br>
 <b><a name="--control-port"></a>--control-port</b>=<i>num<br>
 <br>
 </i></div>

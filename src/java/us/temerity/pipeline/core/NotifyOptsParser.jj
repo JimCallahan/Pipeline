@@ -65,6 +65,11 @@ NotifyOptsParser
 
 
   /**
+   * The root directory of the file repository. 
+   */ 
+  private File pProdDir;
+
+  /**
    * The network port number the server listens to for incoming control connections.
    */
   private int  pControlPort;
@@ -90,6 +95,7 @@ TOKEN :
 | <LICENSE:      "--license">    
 
   /* global options */	
+| <PROD:         "--prod">          : PATH_SEP
 | <CONTROL_PORT: "--control-port">  : INTEGER_SEP
 | <MONITOR_PORT: "--monitor-port">  : INTEGER_SEP
 | <LOG:          "--log">           : LOG_SEP
@@ -128,12 +134,30 @@ TOKEN :
 }
 
 
+/* filesystem path arguments */ 
+<PATH_SEP> 
+TOKEN :
+{
+  <EQ2:                "=">   : PATH_STATE
+| <MISSING_PATH_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<PATH_STATE> 
+TOKEN :
+{
+  <PATH_ARG:       ("/")* ("../")* <PATH_ARG_COMP> 
+		     ("/" (".." | (<PATH_ARG_COMP>)+)?)*>      : DEFAULT
+| <#PATH_ARG_COMP: (["a"-"z","A"-"Z","0"-"9","_","-","."])*>
+| <MISSING_PATH:   [" ","\t"]>                                 : IGNORE_STATE
+| <ILLEGAL_PATH:   (~[" ","\t"])+>                             : IGNORE_STATE
+}
+
 
 /* --log arguments */ 
 <LOG_SEP> 
 TOKEN :
 {
-  <EQ2:               "=">   : LOG_STATE
+  <EQ3:               "=">   : LOG_STATE
 | <MISSING_LOG_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -180,7 +204,7 @@ Commands() :
   (GlobalOpts() WS())*
   { 
     try {
-      NotifyServer server = new NotifyServer(pControlPort, pMonitorPort);
+      NotifyServer server = new NotifyServer(pProdDir, pControlPort, pMonitorPort);
       server.start();
       server.join();
     }
@@ -274,8 +298,21 @@ void
 GlobalOpts() :
 {}
 {
-  (ControlPort() | MonitorPort() | Log())
+  (Prod() | ControlPort() | MonitorPort() | Log())
   {}
+}
+
+
+void
+Prod() :
+{
+  Token t;
+}
+{
+  <PROD> EQ() t=<PATH_ARG>
+  { 
+    pProdDir = new File(t.image);
+  }
 }
 
 
@@ -486,7 +523,7 @@ EQ() :
   Token t;
 }
 {
-  (t=<EQ1> | t=<EQ2>)
+  (t=<EQ1> | t=<EQ2> | t=<EQ3>)
   { 
     return t; 
   }

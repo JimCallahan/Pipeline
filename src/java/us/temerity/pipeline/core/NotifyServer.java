@@ -1,4 +1,4 @@
-// $Id: NotifyServer.java,v 1.4 2004/04/13 20:44:39 jim Exp $
+// $Id: NotifyServer.java,v 1.5 2004/04/14 18:41:40 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -41,6 +41,9 @@ class NotifyServer
   /** 
    * Construct a new directory change notification server.
    * 
+   * @param dir     
+   *   The root production directory.
+   * 
    * @param controlPort 
    *   The network port to monitor for incoming <CODE>NotifyControlClient</CODE> connections.
    * 
@@ -50,16 +53,20 @@ class NotifyServer
   public
   NotifyServer
   (
+   File dir, 
    int controlPort, 
    int monitorPort
   )
   { 
     super("NotifyServer");
-    init(controlPort, monitorPort);
+    init(dir, controlPort, monitorPort);
   }
   
   /** 
    * Construct a new directory change notification server using the default network ports.
+   * 
+   * The root node directory is specified by the <B>--node-dir</B>=<I>dir</I>
+   * option to <B>plconfig</B>(1). <P> 
    * 
    * The network ports used are those specified by the 
    * <B>--notify-control-port</B>=<I>num</I> and 
@@ -69,7 +76,8 @@ class NotifyServer
   NotifyServer() 
   { 
     super("NotifyServer");
-    init(PackageInfo.sNotifyControlPort, PackageInfo.sNotifyMonitorPort);
+    init(PackageInfo.sProdDir, 
+	 PackageInfo.sNotifyControlPort, PackageInfo.sNotifyMonitorPort);
   }
 
 
@@ -77,6 +85,9 @@ class NotifyServer
 
   /**
    * Initialize a new instance.
+   * 
+   * @param dir     
+   *   The root production directory.
    * 
    * @param controlPort 
    *   The network port to monitor for incoming <CODE>NotifyControlClient</CODE> connections.
@@ -87,10 +98,15 @@ class NotifyServer
   private synchronized void 
   init
   (
+   File dir, 
    int controlPort, 
    int monitorPort 
   )
   { 
+    if(dir == null)
+      throw new IllegalArgumentException("The root production directory cannot be (null)!");
+    pProdDir = dir;
+
     if(controlPort < 0) 
       throw new IllegalArgumentException
 	("Illegal control port number (" + controlPort + ")!");
@@ -198,15 +214,17 @@ class NotifyServer
       monitor.start();
 
       try {
-	pDNotify = new DNotify(); 
+	pDNotify = new DNotify(pProdDir); 
 	pInitLatch.countDown();
 	
 	while(!pShutdown.get()) {
-	  File dir = pDNotify.watch(10);
-	  if(dir != null) {
+	  TreeSet<File> dirs = pDNotify.watch(10);
+	  if(!dirs.isEmpty()) {
 	    synchronized(pMonitorTasks) {
-	      for(MonitorHandlerTask task : pMonitorTasks) 
-		task.addDir(dir);
+	      for(MonitorHandlerTask task : pMonitorTasks) {
+		for(File dir : dirs) 
+		  task.addDir(dir);
+	      }
 	    }
 	  }
 	}
@@ -668,6 +686,11 @@ class NotifyServer
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * The root production directory.
+   */ 
+  private File  pProdDir;
+
+  /**
    * The network port number the server listens to for incoming control connections.
    */
   private int  pControlPort;
@@ -676,6 +699,7 @@ class NotifyServer
    * The network port number the server listens to for incoming monitor connections.
    */
   private int  pMonitorPort;
+
 
   /**
    * Has the server been ordered to shutdown?
