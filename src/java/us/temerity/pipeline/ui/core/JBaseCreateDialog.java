@@ -1,4 +1,4 @@
-// $Id: JBaseCreateDialog.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JBaseCreateDialog.java,v 1.2 2005/02/20 20:51:45 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -99,103 +99,90 @@ class JBaseCreateDialog
 
     /* create dialog body components */ 
     {
-      Box body = new Box(BoxLayout.X_AXIS);
+      Box body = null;
       {
-	JPanel tpanel = null;
-	{
-	  tpanel = new JPanel();
-	  tpanel.setName("TitlePanel");
-	  tpanel.setLayout(new BoxLayout(tpanel, BoxLayout.Y_AXIS));
-
-	  body.add(tpanel);
-	}
-
-	JPanel vpanel = null;
-	{
-	  vpanel = new JPanel();
-	  vpanel.setName("ValuePanel");
-	  vpanel.setLayout(new BoxLayout(vpanel, BoxLayout.Y_AXIS));
-
-	  body.add(vpanel);
-	}
-	
+	Component comps[] = UIFactory.createTitledPanels();
+	JPanel tpanel = (JPanel) comps[0];
+	JPanel vpanel = (JPanel) comps[1];
+	body = (Box) comps[2];
+      
 	pLatestVersionField = 
 	  UIFactory.createTitledTextField(tpanel, "Latest Version:", sTSize, 
-					 vpanel, "-", sVSize);
-	
+					  vpanel, "-", sVSize);
+      
 	UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
-
+      
 	ArrayList<String> versions = new ArrayList<String>();
 	versions.add("v1.0.0 (Initial)");
 	pNewVersionField = 
 	  UIFactory.createTitledCollectionField(tpanel, "New Version:", sTSize, 
-					       vpanel, versions, sVSize);
-	
+						vpanel, versions, sVSize);
+      
 	UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
-
+      
 	{
 	  JTextArea area = 
 	    UIFactory.createTitledEditableTextArea(tpanel, "Description:", sTSize, 
-						  vpanel, "", sVSize, 5, isScrolled);
+						   vpanel, "", sVSize, 5, isScrolled);
 	  pDescriptionArea = area;
 	  area.getDocument().addDocumentListener(this);
 	}
-
+      
 	UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
-
+      
 	{
 	  Box hbox = new Box(BoxLayout.X_AXIS);
-	  
+	
 	  hbox.add(Box.createVerticalGlue());
-	  
+	
 	  {
 	    JButton btn = new JButton();
 	    pPrevButton = btn;
 	    btn.setName("LeftArrowButton");
-	    
+	  
 	    Dimension size = new Dimension(16, 16);
 	    btn.setMinimumSize(size);
 	    btn.setMaximumSize(size);
 	    btn.setPreferredSize(size);
-
+	  
 	    btn.setActionCommand("prev-desc");
 	    btn.addActionListener(this);
-	    
+	  
 	    hbox.add(btn);
 	  } 
-
+	
 	  hbox.add(Box.createRigidArea(new Dimension(0, 16)));
 	  hbox.add(Box.createHorizontalGlue());
 	  hbox.add(Box.createRigidArea(new Dimension(0, 16)));
-
+	
 	  {
 	    JButton btn = new JButton();
 	    pNextButton = btn;
 	    btn.setName("RightArrowButton");
-	    
+	  
 	    Dimension size = new Dimension(16, 16);
 	    btn.setMinimumSize(size);
 	    btn.setMaximumSize(size);
 	    btn.setPreferredSize(size);
-
+	  
 	    btn.setActionCommand("next-desc");
 	    btn.addActionListener(this);
-	    
+	  
 	    hbox.add(btn);
 	  } 
-
+	
 	  hbox.setMinimumSize(new Dimension(64, 16));
 	  hbox.setMaximumSize(new Dimension(Integer.MAX_VALUE, 16));
-
+	
 	  vpanel.add(hbox);
 	}	
-
+      
 	tpanel.add(Box.createVerticalGlue());
       }
 
       super.initUI("X", true, body, confirm, null, null, "Cancel");
       pack();
-    }  
+    }
 
     pConfirmButton.setEnabled(false);
   }

@@ -1,4 +1,4 @@
-// $Id: JRegisterDialog.java,v 1.2 2005/01/15 02:56:33 jim Exp $
+// $Id: JRegisterDialog.java,v 1.3 2005/02/20 20:51:45 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -41,25 +41,12 @@ class JRegisterDialog
 
     /* create dialog body components */ 
     {
-      Box body = new Box(BoxLayout.X_AXIS);
+      Box body = null;
       {
-	JPanel tpanel = null;
-	{
-	  tpanel = new JPanel();
-	  tpanel.setName("TitlePanel");
-	  tpanel.setLayout(new BoxLayout(tpanel, BoxLayout.Y_AXIS));
-
-	  body.add(tpanel);
-	}
-
-	JPanel vpanel = null;
-	{
-	  vpanel = new JPanel();
-	  vpanel.setName("ValuePanel");
-	  vpanel.setLayout(new BoxLayout(vpanel, BoxLayout.Y_AXIS));
-
-	  body.add(vpanel);
-	}
+	Component comps[] = UIFactory.createTitledPanels();
+	JPanel tpanel = (JPanel) comps[0];
+	JPanel vpanel = (JPanel) comps[1];
+	body = (Box) comps[2];
 	
 	pPrefixField =
 	  UIFactory.createTitledPathField(tpanel, "Filename Prefix:", sTSize, 
