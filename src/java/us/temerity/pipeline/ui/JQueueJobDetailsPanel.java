@@ -1,4 +1,4 @@
-// $Id: JQueueJobDetailsPanel.java,v 1.5 2004/09/22 05:40:24 jim Exp $
+// $Id: JQueueJobDetailsPanel.java,v 1.6 2004/09/27 04:54:35 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1151,8 +1151,14 @@ class JQueueJobDetailsPanel
    * Invoked when a mouse button has been pressed on a component. 
    */
   public void 
-  mousePressed(MouseEvent e) {}
-  
+  mousePressed
+  (
+   MouseEvent e
+  )
+  {
+    pManagerPanel.handleManagerMouseEvent(e);
+  }
+    
   /**
    * Invoked when a mouse button has been released on a component. 
    */ 
@@ -1171,19 +1177,32 @@ class JQueueJobDetailsPanel
    KeyEvent e
   )
   {
-    UserPrefs prefs = UserPrefs.getInstance();
+    /* manager panel hotkeys */ 
+    if(pManagerPanel.handleManagerKeyEvent(e)) 
+      return;
 
+    /* local hotkeys */ 
+    UserPrefs prefs = UserPrefs.getInstance();
     if((prefs.getShowExecDetails() != null) &&
        prefs.getShowExecDetails().wasPressed(e)) 
       doShowExecDetails();
-
     else if((prefs.getShowJobOutput() != null) &&
        prefs.getShowJobOutput().wasPressed(e)) 
       doShowOutput();
-
     else if((prefs.getShowJobErrors() != null) &&
        prefs.getShowJobErrors().wasPressed(e)) 
       doShowErrors();
+    else {
+      switch(e.getKeyCode()) {
+      case KeyEvent.VK_SHIFT:
+      case KeyEvent.VK_ALT:
+      case KeyEvent.VK_CONTROL:
+	break;
+      
+      default:
+	Toolkit.getDefaultToolkit().beep();
+      }
+    }
   }
 
   /**

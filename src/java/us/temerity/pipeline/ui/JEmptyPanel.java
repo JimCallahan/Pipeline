@@ -1,9 +1,11 @@
-// $Id: JEmptyPanel.java,v 1.4 2004/08/25 05:18:21 jim Exp $
+// $Id: JEmptyPanel.java,v 1.5 2004/09/27 04:54:35 jim Exp $
 
 package us.temerity.pipeline.ui;
 
 import java.awt.*;
+import java.awt.event.*;
 import javax.swing.*;
+import javax.swing.event.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   E M P T Y   P A N E L                                                                  */
@@ -16,6 +18,7 @@ import javax.swing.*;
 public 
 class JEmptyPanel
   extends JTopLevelPanel
+  implements MouseListener, KeyListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -56,7 +59,98 @@ class JEmptyPanel
     setLayout(new BorderLayout());
     setName("DarkPanel");
     setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+
+    addMouseListener(this);
+    setFocusable(true);
+    addKeyListener(this);
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   L I S T E N E R S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /*-- MOUSE LISTNER METHODS -------------------------------------------------------------*/
+  
+  /**
+   * Invoked when the mouse button has been clicked (pressed and released) on a component. 
+   */ 
+  public void 
+  mouseClicked(MouseEvent e) {}
+   
+  /**
+   * Invoked when the mouse enters a component. 
+   */
+  public void 
+  mouseEntered
+  (
+   MouseEvent e
+  ) 
+  {
+    requestFocusInWindow();
+  }
+  
+  /**
+   * Invoked when the mouse exits a component. 
+   */ 
+  public void 
+  mouseExited
+  (
+   MouseEvent e
+  ) 
+  {
+    KeyboardFocusManager.getCurrentKeyboardFocusManager().clearGlobalFocusOwner();
+  }
+  
+  /**
+   * Invoked when a mouse button has been pressed on a component. 
+   */
+  public void 
+  mousePressed
+  (
+   MouseEvent e
+  ) 
+  {
+    /* manager panel popups */ 
+    if(pManagerPanel.handleManagerMouseEvent(e));
+      return;
+  }
+
+  /**
+   * Invoked when a mouse button has been released on a component. 
+   */ 
+  public void 
+  mouseReleased(MouseEvent e) {}
+
+
+  /*-- KEY LISTENER METHODS ----------------------------------------------------------------*/
+
+  /**
+   * invoked when a key has been pressed.
+   */   
+  public void 
+  keyPressed
+  (
+   KeyEvent e
+  )
+  {
+    /* manager panel hotkeys */ 
+    if(pManagerPanel.handleManagerKeyEvent(e)) 
+      return;
+  }
+  
+  /**
+   * Invoked when a key has been released.
+   */ 
+  public void 	
+  keyReleased(KeyEvent e) {}
+
+  /**
+   * Invoked when a key has been typed.
+   */ 
+  public void 	
+  keyTyped(KeyEvent e) {} 
 
 
 

@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.5 2004/09/03 02:01:02 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.6 2004/09/27 04:54:35 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -346,6 +346,26 @@ class JQueueJobBrowserPanel
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Refocus keyboard events on this panel if it contains the mouse.
+   * 
+   * @return
+   *   Whether the panel has received the focus.
+   */ 
+  public boolean 
+  refocusOnPanel() 
+  {
+    if(pHeaderPanel.getMousePosition(true) != null) {
+      pHeaderPanel.requestFocusInWindow();
+      return true;
+    }
+
+    return false;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   L I S T E N E R S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
@@ -385,7 +405,13 @@ class JQueueJobBrowserPanel
    * Invoked when a mouse button has been pressed on a component. 
    */
   public void 
-  mousePressed(MouseEvent e) {}
+  mousePressed
+  (
+   MouseEvent e
+  ) 
+  {
+    pManagerPanel.handleManagerMouseEvent(e);
+  }
 
   /**
    * Invoked when a mouse button has been released on a component. 
@@ -406,12 +432,15 @@ class JQueueJobBrowserPanel
    KeyEvent e
   )
   {
-    UserPrefs prefs = UserPrefs.getInstance();
+    /* manager panel hotkeys */ 
+    if(pManagerPanel.handleManagerKeyEvent(e)) 
+      return;
 
+    /* local hotkeys */ 
+    UserPrefs prefs = UserPrefs.getInstance();
     if((prefs.getJobBrowserUpdate() != null) &&
        prefs.getJobBrowserUpdate().wasPressed(e))
       doUpdate();
-
     else {
       switch(e.getKeyCode()) {
       case KeyEvent.VK_SHIFT:

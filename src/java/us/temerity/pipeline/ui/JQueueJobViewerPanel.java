@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.13 2004/09/23 23:12:46 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.14 2004/09/27 04:54:35 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1165,12 +1165,16 @@ class JQueueJobViewerPanel
    MouseEvent e
   )
   {
-    int mods = e.getModifiersEx();
+    /* manager panel popups */ 
+    if(pManagerPanel.handleManagerMouseEvent(e)) 
+      return;
 
+    /* local mouse events */ 
     pMousePos = e.getPoint();
     Object under = objectAtMousePos(pMousePos);
 
     /* mouse press is over a pickable object viewer job */ 
+    int mods = e.getModifiersEx();
     if(under != null) {
       switch(e.getButton()) {
       case MouseEvent.BUTTON1:
@@ -1618,6 +1622,11 @@ class JQueueJobViewerPanel
    KeyEvent e
   )
   {
+    /* manager panel hotkeys */ 
+    if(pManagerPanel.handleManagerKeyEvent(e)) 
+      return;
+
+    /* local hotkeys */ 
     UserPrefs prefs = UserPrefs.getInstance();
     Object under = objectAtMousePos(pMousePos);
 

@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.11 2004/09/13 04:03:38 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.12 2004/09/27 04:54:35 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -936,6 +936,11 @@ class JNodeFilesPanel
    MouseEvent e
   )
   {
+    /* manager panel popups */ 
+    if(pManagerPanel.handleManagerMouseEvent(e)) 
+      return;
+
+    /* local mouse events */ 
     int mods = e.getModifiersEx();
     switch(e.getButton()) {
     case MouseEvent.BUTTON3:
@@ -1000,12 +1005,27 @@ class JNodeFilesPanel
    KeyEvent e
   )
   {
-    UserPrefs prefs = UserPrefs.getInstance();
+    /* manager panel hotkeys */ 
+    if(pManagerPanel.handleManagerKeyEvent(e)) 
+      return;
 
+    /* local hotkeys */ 
+    UserPrefs prefs = UserPrefs.getInstance();
     if((prefs.getNodeDetailsApplyChanges() != null) &&
        prefs.getNodeDetailsApplyChanges().wasPressed(e) && 
        pApplyButton.isEnabled())
       doApply();
+    else {
+      switch(e.getKeyCode()) {
+      case KeyEvent.VK_SHIFT:
+      case KeyEvent.VK_ALT:
+      case KeyEvent.VK_CONTROL:
+	break;
+      
+      default:
+	Toolkit.getDefaultToolkit().beep();
+      }
+    }
   }
 
   /**

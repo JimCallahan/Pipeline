@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.17 2004/09/26 06:23:08 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.18 2004/09/27 04:54:35 jim Exp $
 
 import java.io.*; 
 import java.util.*;
@@ -27,7 +27,238 @@ class GenUserPrefsApp
     {
       BasePref prefs[] = {
 	new HotKeyPref
-	("update the status of the node tree and selected nodes.", 
+	("Create a new top-level window.", 
+	 "ManagerNewWindow", "New Window:"),
+
+	new BasePref(),
+	
+	new HotKeyPref
+	("Change the working area view of the panel.", 
+	 "ManagerChangeOwnerView", "Change Owner|View:"),
+
+	new BasePref(),
+	
+	new HotKeyPref
+	("Save the current panel layout.",
+	 "SaveLayout", "Save Layout:"),
+	
+	new HotKeyPref
+	("Manage the saved panel layouts.",
+	 "ShowManageLayouts", "Manage Layouts:"), 
+
+	new BasePref(),
+
+	new HotKeyPref
+	("Edit the user preferences.",
+	 "ShowUserPrefs", "Preferences:"),
+
+	new HotKeyPref
+	("Manage the default editor for filename suffix.", 
+	 "ShowDefaultEditors", "Default Editors:"),
+
+	new HotKeyPref
+	("Manage the job servers.", 
+	 "ShowManageJobServers", "Job Servers:"),
+
+	new BasePref(),
+	new BasePref(),
+	
+	new HotKeyPref
+	("Quit.", 
+	 "Quit", "Quit:")
+      };
+
+      pPrefs.put("Panel|Universal|Main|Hot Keys", prefs);
+    }
+
+    {
+      BasePref prefs[] = {
+	new HotKeyPref
+	("Manage the privileged users.", 
+	 "ShowManageUsers", "Users:"),    
+
+	new HotKeyPref
+	("Manage the toolset environments.", 
+	 "ShowManageToolsets", "Toolsets:"),    
+
+	new BasePref(),
+
+	new HotKeyPref
+	("Manage the license keys.", 
+	 "ShowManageLicenseKeys", "License Keys:"),    
+
+	new HotKeyPref
+	("Manage the selection keys.", 
+	 "ShowManageSelectionKeys", "Selection Keys:")
+      };
+
+      pPrefs.put("Panel|Universal|Admin|Hot Keys", prefs);
+    }
+
+    {
+      BasePref prefs[] = {
+	new HotKeyPref
+	("Information about Pipeline.", 
+	 "ShowAbout", "About:"),   
+
+	new BasePref(),
+	
+	new HotKeyPref
+	("Display the Pipeline Home Page.", 
+	 "ShowHomePage", "Home Page:"),   
+
+	new HotKeyPref
+	("Display the Support Forums page.", 
+	 "ShowSupportForums", "Support Forums:"),   
+	
+	new HotKeyPref
+	("Display the Bug Database page.", 
+	 "ShowBugDatabase", "Bug Database:"), 
+
+	new BasePref(),
+
+	new HotKeyPref
+	("The local site configuration information.", 
+	 "ShowConfig", "Site Configuration:")
+      };
+
+      pPrefs.put("Panel|Universal|Help|Hot Keys", prefs);
+    }
+
+    {
+      BasePref prefs[] = {
+	new HotKeyPref
+	("No panel group.", 
+	 "ManagerGroup0", "No Group:"), 
+
+	new BasePref(),
+
+	new HotKeyPref
+	("Set the panel group to (1).", 
+	 "ManagerGroup1", "Group 1:"), 
+
+	new HotKeyPref
+	("Set the panel group to (2).", 
+	 "ManagerGroup2", "Group 2:"), 
+
+	new HotKeyPref
+	("Set the panel group to (3).", 
+	 "ManagerGroup3", "Group 3:"), 
+
+	new HotKeyPref
+	("Set the panel group to (4).", 
+	 "ManagerGroup4", "Group 4:"), 
+
+	new HotKeyPref
+	("Set the panel group to (5).", 
+	 "ManagerGroup5", "Group 5:"), 
+
+	new HotKeyPref
+	("Set the panel group to (6).", 
+	 "ManagerGroup6", "Group 6:"), 
+
+	new HotKeyPref
+	("Set the panel group to (7).", 
+	 "ManagerGroup7", "Group 7:"), 
+
+	new HotKeyPref
+	("Set the panel group to (8).", 
+	 "ManagerGroup8", "Group 8:"), 
+
+	new HotKeyPref
+	("Set the panel group to (9).", 
+	 "ManagerGroup9", "Group 9:")
+      };
+
+      pPrefs.put("Panel|Universal|Panel Group|Hot Keys", prefs);
+    }
+
+    {
+      BasePref prefs[] = {
+	new HotKeyPref
+	("Change to a Node Browser panel.", 
+	 "ManagerNodeBrowserPanel", "Node Browser:"),
+
+	new HotKeyPref
+	("Change to a Node Viewer panel.", 
+	 "ManagerNodeViewerPanel", "Node Viewer:"),
+
+	new HotKeyPref
+	("Change to a Node Details panel.", 
+	 "ManagerNodeDetailsPanel", "Node Details:"),
+
+	new HotKeyPref
+	("Change to a Node Files panel.", 
+	 "ManagerNodeFilesPanel", "Node Files:"),
+
+	new HotKeyPref
+	("Change to a Node History panel.", 
+	 "ManagerNodeHistoryPanel", "Node History:"),
+
+	new BasePref(),
+
+	new HotKeyPref
+	("Change to a Job Browser panel.", 
+	 "ManagerJobBrowserPanel", "Job Browser:"),
+	
+	new HotKeyPref
+	("Change to a Job Viewer panel.", 
+	 "ManagerJobViewerPanel", "Job Viewer:"),
+	
+	new HotKeyPref
+	("Change to a Job Details panel.", 
+	 "ManagerJobDetailsPanel", "Job Details:"),
+	
+	new BasePref(),
+
+	new HotKeyPref
+	("Change to an empty panel.", 
+	 "ManagerEmptyPanel", "None:")
+      };
+
+      pPrefs.put("Panel|Universal|Panel Type|Hot Keys", prefs);
+    }
+
+    {
+      BasePref prefs[] = {
+	new HotKeyPref
+	("Add a tabbed panel.", 
+	 "ManagerAddTab", "Add Tab:"),
+
+	new BasePref(),
+
+	new HotKeyPref
+	("Split the panel horizontally adding a new panel left.", 
+	 "ManagerAddLeft", "Add Left:"),
+
+	new HotKeyPref
+	("Split the panel horizontally adding a new panel right.", 
+	 "ManagerAddRight", "Add Right:"), 
+
+	new BasePref(),
+
+	new HotKeyPref
+	("Split the panel vertically adding a new panel above.", 
+	 "ManagerAddAbove", "Add Above:"),
+
+	new HotKeyPref
+	("Split the panel vertically adding a new panel below.", 
+	 "ManagerAddBelow", "Add Below:"),
+
+	new BasePref(),
+
+	new HotKeyPref
+	("Close the current panel.", 
+	 "ManagerClosePanel", "Close Panel:"),
+      };
+
+      pPrefs.put("Panel|Universal|Panel Layout|Hot Keys", prefs);
+    }
+
+    {
+      BasePref prefs[] = {
+	new HotKeyPref
+	("Update the status of the node tree and selected nodes.", 
 	 "NodeBrowserUpdate", "Update Nodes:",
 	 false, false, false, 32)  /* Space */ 
       };
@@ -38,25 +269,25 @@ class GenUserPrefsApp
     {
       BasePref prefs[] = {
 	new BoundedDoublePref
-	("the horizontal distance between nodes", 
+	("The horizontal distance between nodes.", 
 	 "NodeSpaceX", "Horizontal Space:", 2.5, 4.5, 2.75),
 
 	new BoundedDoublePref
-	("the vertical distance between nodes", 
+	("The vertical distance between nodes.", 
 	 "NodeSpaceY", "Vertical Space:", 1.5, 3.0, 2.0),
 
 	new BoundedDoublePref
-	("the vertical offset distance for nodes with an odd depth level",
+	("The vertical offset distance for nodes with an odd depth level.",
 	 "NodeOffset", "Vertical Offset:", 0.0, 1.0, 0.45),
 	
 	new BasePref(),
 
 	new BooleanPref
-	("whether to draw graphics representating disabled actions",
+	("Whether to draw graphics representating disabled actions.",
 	 "DrawDisabledAction", "Draw Disabled Action:", true), 
 
 	new BoundedDoublePref
-	("the size of disabled action graphics", 
+	("The size of disabled action graphics.", 
 	 "DisabledActionSize", "Disabled Action Size:", 0.05, 0.2, 0.15)
       };
 
@@ -66,109 +297,109 @@ class GenUserPrefsApp
     {
       BasePref prefs[] = {
 	new HotKeyPref
-	("update connected node details panels",
+	("Update connected node details panels.",
 	 "NodeDetails", "Details:",
 	 false, false, false, 68),  /* D */	
 
 	new BasePref(),
 
 	new HotKeyPref
-	("make the current primary selection the only root node", 
+	("Make the current primary selection the only root node.", 
 	 "NodeMakeRoot", "Make Root:"),
 
 	new HotKeyPref
-	("add the current primary selection to the set of root nodes",
+	("Add the current primary selection to the set of root nodes.",
 	 "NodeAddRoot", "Add Root:"),
 
 	new HotKeyPref
-	("replace the root node of the current primary selection with the primary selection",
+	("Replace the root node of the current primary selection with the primary selection.",
 	 "NodeReplaceRoot", "Replace Root:"),
 
 	new HotKeyPref
-	("remove the root node of the current primary selection from the set of roots nodes",
+	("Remove the root node of the current primary selection from the set of roots nodes.",
 	 "NodeRemoveRoot", "Remove Root:"),
 
 	new HotKeyPref
-	("remove all of the roots nodes",
+	("Remove all of the roots nodes.",
 	 "NodeRemoveAllRoots", "Remove All Roots:"), 
 
 	new BasePref(),
 	
 	new HotKeyPref
-	("edit primary file sequences of the current primary selection",
+	("Edit primary file sequences of the current primary selection.",
 	 "NodeEdit", "Edit:", 
 	 false, false, false, 10),  /* Enter */ 
 
 	new BasePref(),
 	
 	new HotKeyPref
-	("link the secondary selected nodes to the current primary selection",
+	("Link the secondary selected nodes to the current primary selection.",
 	 "NodeLink", "Link:"), 
 
 	new HotKeyPref
-	("unlink the secondary selected nodes from the current primary selection",
+	("Unlink the secondary selected nodes from the current primary selection.",
 	 "NodeUnlink", "Unlink:"), 
 
 	new BasePref(),
 	
 	new HotKeyPref
-	("add a secondary file sequence to the current primary selection",
+	("Add a secondary file sequence to the current primary selection.",
 	 "NodeAddSecondary", "Add Secondary:"), 
 
 	new BasePref(),
 
 	new HotKeyPref
-	("submit jobs to the queue for the current primary selection",
+	("Submit jobs to the queue for the current primary selection.",
 	 "NodeQueueJobs", "Queue Jobs:", 
 	 false, false, false, 81),  /* Q */ 
 
 	new HotKeyPref
-	("pause all jobs associated with the selected nodes",
+	("Pause all jobs associated with the selected nodes.",
 	 "NodePauseJobs", "Pause Jobs:",
 	 false, false, false, 45),  /* Minus */ 
 
 	new HotKeyPref
-	("resume execution of all jobs associated with the selected nodes",
+	("Resume execution of all jobs associated with the selected nodes.",
 	 "NodeResumeJobs", "Resume Jobs:", 
 	 false, false, false, 61),  /* Equals */ 
 
 	new HotKeyPref
-	("kill all jobs associated with the selected nodes",
+	("Kill all jobs associated with the selected nodes.",
 	 "NodeKillJobs", "Kill Jobs:", 
 	 false, false, false, 8),  /* Backspace */ 
 
 	new BasePref(),
 	
 	new HotKeyPref
-	("check-in the current primary selection",
+	("Check-in the current primary selection.",
 	 "NodeCheckIn", "Check-In:"), 
 
 	new HotKeyPref
-	("check-out the current primary selection",
+	("Check-out the current primary selection.",
 	 "NodeCheckOut", "Check-Out:"), 
 
 	new BasePref(),
 
 	new HotKeyPref
-	("register a new node which is a clone of the current primary selection",
+	("Register a new node which is a clone of the current primary selection.",
 	 "NodeClone", "Clone:"), 
 
 	new HotKeyPref
-	("release the current primary selection",
+	("Release the current primary selection.",
 	 "NodeRelease", "Release:"),
 
 	new HotKeyPref
-	("remove all the primary/secondary files associated with the selected nodes",
+	("Remove all the primary/secondary files associated with the selected nodes.",
 	 "NodeRemoveFiles", "Remove Files:"), 
 
 	new BasePref(),
 
 	new HotKeyPref
-	("rename the current primary selection",
+	("Rename the current primary selection.",
 	 "NodeRename", "Rename:"), 
 
 	new HotKeyPref
-	("renumber the current primary selection",
+	("Renumber the current primary selection.",
 	 "NodeRenumber", "Renumber:"), 
       };
 
@@ -184,53 +415,53 @@ class GenUserPrefsApp
 
       BasePref prefs[] = {
 	new ChoicePref
-	("the name of the simple color texture to use for link lines", 
+	("The name of the simple color texture to use for link lines.", 
 	 "LinkColorName", "Line Color:", colors, "LightGrey"),
 
 	new BooleanPref
-	("whether to anti-alias link lines", 
+	("Whether to anti-alias link lines.", 
 	 "LinkAntiAlias", "Antialiased:", true), 
 	
 	new BoundedDoublePref
-	("the thickness of link lines", 
+	("The thickness of link lines.", 
 	 "LinkThickness", "Line Thickness:", 0.25, 3.0, 1.0),
 
 	new BasePref(),
 
 	new BoundedDoublePref
-	("the distance between node and the start/end of link", 
+	("The distance between node and the start/end of link.", 
 	 "LinkGap", "Node/Link Gap:", 0.0, 0.2, 0.05),
 
 	new BoundedDoublePref
-	("the position of the vertical crossbar as a percentage of the horizontal space", 
+	("The position of the vertical crossbar as a percentage of the horizontal space.", 
 	 "LinkVerticalCrossbar", "Vertical Crossbar:", 0.35, 0.55, 0.45), 
 
 	new BasePref(),
 	
 	new BooleanPref
-	("whether to draw arrow heads showing the direction of the link",
+	("Whether to draw arrow heads showing the direction of the link.",
 	 "DrawArrowHeads", "Draw Arrowheads:", true), 
 	
 	new BoundedDoublePref
-	("the length of the link arrow head", 
+	("The length of the link arrow head.", 
 	 "ArrowHeadLength", "Arrowhead Length:", 0.08, 0.4, 0.2),
 	
 	new BoundedDoublePref
-	("the width of the link arrow head", 
+	("The width of the link arrow head.", 
 	 "ArrowHeadWidth", "Arrowhead Width:", 0.04, 0.2, 0.08),
 
 	new BasePref(),
 	
 	new BooleanPref
-	("whether to draw graphics representating LinkRelationship",
+	("Whether to draw graphics representating LinkRelationship.",
 	 "DrawLinkRelationship", "Draw Link Relationship:", true), 
 	 
 	new BooleanPref
-	("whether to draw graphics representating LinkPolicy",
+	("Whether to draw graphics representating LinkPolicy.",
 	 "DrawLinkPolicy", "Draw Link Policy:", true), 
 
 	new BoundedDoublePref
-	("the size of LinkPolicy graphics", 
+	("The size of LinkPolicy graphics", 
 	 "LinkPolicySize", "Link Policy Size:", 0.05, 0.2, 0.15)
       };
 
@@ -241,12 +472,12 @@ class GenUserPrefsApp
     {
       BasePref prefs[] = {
 	new HotKeyPref
-	("edit the properties of the selected link", 
+	("Edit the properties of the selected link.", 
 	 "LinkEdit", "Edit Link:",	
 	 false, false, false, 10),  /* Enter */ 
 
 	new HotKeyPref
-	("remove the selected link", 
+	("Remove the selected link.", 
 	 "LinkUnlink", "UnLink:", 
 	 false, false, false, 82),  /* Backspace */ 	
       };
@@ -257,54 +488,54 @@ class GenUserPrefsApp
     {
       BasePref prefs[] = {
 	new HotKeyPref
-	("update the status of all nodes", 
+	("Update the status of all nodes.", 
 	 "UpdateNodes", "Update Nodes:", 
 	 false, false, false, 32), /* Space */ 
 	
 	new HotKeyPref
-	("register a new node",
+	("Register a new node.",
 	 "RegisterNewNode", "Register New Node:",
 	 false, false, false, 82), /* R */ 	
 
 	new BasePref(),
 
 	new HotKeyPref
-	("move the camera so that it is centered on current mouse position",
+	("Move the camera so that it is centered on current mouse position.",
 	 "CameraCenter", "Center:", 
 	 false, false, false, 67),  /* C */ 
 	 
 	
 	new HotKeyPref
-	("move the camera to frame the bounds of the currently selected nodes",
+	("Move the camera to frame the bounds of the currently selected nodes.",
 	 "CameraFrameSelection", "Frame Selection:",
 	 false, false, false, 70),  /* F */ 
 	
 	new HotKeyPref
-	("move the camera to frame all active nodes",
+	("Move the camera to frame all active nodes.",
 	 "CameraFrameAll", "Frame All:", 
 	 false, false, false, 71),  /* G */ 
 	
 	new BasePref(),
 
 	new HotKeyPref
-	("automatically expand the first occurance of a node",
+	("Automatically expand the first occurance of a node.",
 	 "AutomaticExpandNodes", "Automatic Expand:", 
 	 false, false, false, 65),  /* A */
 
 	new HotKeyPref
-	("expand all nodes",
+	("Expand all nodes.",
 	 "ExpandAllNodes", "Expand All:", 
 	 false, false, false, 69),  /* E */
 
 	new HotKeyPref
-	("collapse all nodes",
+	("Collapse all nodes.",
 	 "CollapseAllNodes", "Collapse All:", 
 	 false, false, false, 67),  /* C */
 
 	new BasePref(),
 
 	new HotKeyPref
-	("show/hide nodes downstream of the focus node",
+	("Show/hide nodes downstream of the focus node.",
 	 "ShowHideDownstreamNodes", "Show/Hide Downstream:", 
 	 false, false, false, 68),  /* D */
       };
@@ -315,7 +546,7 @@ class GenUserPrefsApp
     {
       BasePref prefs[] = {
 	new HotKeyPref
-	("apply the changes to the working version", 
+	("Apply the changes to the working version.", 
 	 "NodeDetailsApplyChanges", "Apply Changes:",
 	 false, false, false, 155)   /* Insert */ 
       };
@@ -338,31 +569,31 @@ class GenUserPrefsApp
     {
       BasePref prefs[] = {
 	new BoundedDoublePref
-	("the job group label size",
+	("The job group label size.",
 	 "JobLabelSize", "Label Size:", 0.1, 2.0, 0.65),
 
 	new BasePref(),
 
 	new BoundedDoublePref
-	("the width of a job", 
+	("The width of a job.", 
 	 "JobSizeX", "Width:", 1.0, 4.0, 2.0),
 
 	new BoundedDoublePref
-	("the height of a job", 
+	("The height of a job.", 
 	 "JobSizeY", "Height:", 0.5, 2.0, 0.7),
 
 	new BoundedDoublePref
-	("the distance between jobs",
+	("The distance between jobs.",
 	 "JobSpace", "Job Space:", 0.0, 0.3, 0.1), 	
 	
 	new BasePref(),
 
 	new BooleanPref
-	("whether to anti-alias lines", 
+	("Whether to anti-alias lines.", 
 	 "JobViewerLineAntiAlias", "Antialiased Lines:", true), 
 	
 	new BoundedDoublePref
-	("the thickness of lines", 
+	("The thickness of lines.", 
 	 "JobViewerLineThickness", "Line Thickness:", 0.25, 2.0, 1.0)
       };
 
@@ -372,37 +603,37 @@ class GenUserPrefsApp
     {
       BasePref prefs[] = {
 	new HotKeyPref
-	("update connected job details panels",
+	("Update connected job details panels.",
 	 "JobDetails", "Details:",
 	 false, false, false, 68),  /* D */
       
 	new HotKeyPref
-	("view the target files of the primary selected job", 
+	("View the target files of the primary selected job.", 
 	 "JobView", "View:",
 	 false, false, false, 10),  /* Enter */ 
 
 	new BasePref(),
 	
 	new HotKeyPref
-	("pause all selected jobs",
+	("Pause all selected jobs.",
 	 "JobPauseJobs", "Pause Jobs:",
 	 false, false, false, 45),  /* Minus */ 
 
 
 	new HotKeyPref
-	("resume execution of all selected jobs",
+	("Resume execution of all selected jobs.",
 	 "JobResumeJobs", "Resume Jobs:",
 	 false, false, false, 61),  /* Equals */ 
       
 	new HotKeyPref
-	("kill all selected jobs", 
+	("Kill all selected jobs.", 
 	 "JobKillJobs", "Kill Jobs:",
 	 false, false, false, 8),  /* Backspace */ 
 
 	new BasePref(),
 
 	new HotKeyPref
-	("delete the completed job groups",
+	("Delete the completed job groups.",
 	 "DeleteJobGroups", "Delete Groups:",
 	 true, false, false, 8),  /* SHIFT + Backspace */ 
       };      
@@ -417,11 +648,11 @@ class GenUserPrefsApp
 
       BasePref prefs[] = {
 	new ChoicePref
-	("the orientation of job group layuot", 
+	("The orientation of job group layout.", 
 	 "JobViewerOrientation", "Orientation:", orient, "Horizontal"),
 	
 	new BoundedDoublePref
-	("the distance between job groups",
+	("The distance between job groups.",
 	 "JobGroupSpace", "Group Space:", 2.25, 5.0, 2.75)
       };
 
@@ -431,42 +662,42 @@ class GenUserPrefsApp
     {
       BasePref prefs[] = {
 	new HotKeyPref
-	("update the status of all jobs", 
+	("Update the status of all jobs.", 
 	 "JobViewerUpdate", "Update Jobs:", 
 	 false, false, false, 32), /* Space */ 
 	
 	new BasePref(),
 
 	new HotKeyPref
-	("move the camera so that it is centered on current mouse position",
+	("Move the camera so that it is centered on current mouse position.",
 	 "JobViewerCameraCenter", "Center:", 
 	 false, false, false, 67),  /* C */ 
 	 
 	
 	new HotKeyPref
-	("move the camera to frame the bounds of the currently selected jobs",
+	("Move the camera to frame the bounds of the currently selected jobs.",
 	 "JobViewerCameraFrameSelection", "Frame Selection:",
 	 false, false, false, 70),  /* F */ 
 	
 	new HotKeyPref
-	("move the camera to frame all active jobs",
+	("Move the camera to frame all active jobs.",
 	 "JobViewerCameraFrameAll", "Frame All:", 
 	 false, false, false, 71),  /* G */ 
 	
 	new BasePref(),
 
 	new HotKeyPref
-	("automatically expand the first occurance of a job",
+	("Automatically expand the first occurance of a job.",
 	 "JobViewerAutomaticExpandJobs", "Automatic Expand:", 
 	 false, false, false, 65),  /* A */
 
 	new HotKeyPref
-	("expand all jobs",
+	("Expand all jobs.",
 	 "JobViewerExpandAllJobs", "Expand All:", 
 	 false, false, false, 69),  /* E */
 
 	new HotKeyPref
-	("collapse all jobs",
+	("Collapse all jobs.",
 	 "JobViewerCollapseAllJobs", "Collapse All:", 
 	 false, false, false, 67),  /* C */
       };
@@ -477,19 +708,19 @@ class GenUserPrefsApp
     {
       BasePref prefs[] = {
 	new HotKeyPref
-	("show the execution details dialog", 
+	("Show the execution details dialog.", 
 	 "ShowExecDetails", "Show Execution Details:",
 	 false, false, false, 68),  /* D */
 	
 	new BasePref(),
 
 	new HotKeyPref
-	("show the job output dialog", 
+	("Show the job output dialog.", 
 	 "ShowJobOutput", "Show Job Output",
 	 false, false, false, 79),  /* O */
 	
 	new HotKeyPref
-	("show the job errors dialog",
+	("Show the job errors dialog.",
 	 "ShowJobErrors", "Show Job Errors",
 	 false, false, false, 69)  /* E */
       };
@@ -536,7 +767,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.17 2004/09/26 06:23:08 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.18 2004/09/27 04:54:35 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -789,7 +1020,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.17 2004/09/26 06:23:08 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.18 2004/09/27 04:54:35 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 

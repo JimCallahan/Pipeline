@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.21 2004/09/26 06:21:29 jim Exp $
+// $Id: JNodeBrowserPanel.java,v 1.22 2004/09/27 04:54:35 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -411,6 +411,26 @@ class JNodeBrowserPanel
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Refocus keyboard events on this panel if it contains the mouse.
+   * 
+   * @return
+   *   Whether the panel has received the focus.
+   */ 
+  public boolean 
+  refocusOnPanel() 
+  {
+    if(pTree.getMousePosition(true) != null) {
+      pTree.requestFocusInWindow();
+      return true;
+    }
+
+    return false;
+  }
+
+
   
   /*----------------------------------------------------------------------------------------*/
   /*   L I S T E N E R S                                                                    */
@@ -482,35 +502,39 @@ class JNodeBrowserPanel
    MouseEvent e
   ) 
   {
+    /* manager panel popups */ 
+    if(pManagerPanel.handleManagerMouseEvent(e)) 
+      return;
+
+    /* local mouse events */ 
     int mods = e.getModifiersEx();
     TreePath tpath = pTree.getPathForLocation(e.getX(), e.getY());
     if(tpath != null) {
       DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) tpath.getLastPathComponent();
       NodeTreeComp comp = (NodeTreeComp) tnode.getUserObject();
-
-      int on1  = (MouseEvent.BUTTON1_DOWN_MASK);
-      
-      int off1 = (MouseEvent.BUTTON2_DOWN_MASK | 
-		  MouseEvent.BUTTON3_DOWN_MASK | 
-		  MouseEvent.SHIFT_DOWN_MASK |
-		  MouseEvent.ALT_DOWN_MASK |
-		  MouseEvent.CTRL_DOWN_MASK);
-      
-      
-      int on2  = (MouseEvent.BUTTON1_DOWN_MASK |
-		  MouseEvent.SHIFT_DOWN_MASK);
-      
-      int off2 = (MouseEvent.BUTTON2_DOWN_MASK | 
-		  MouseEvent.BUTTON3_DOWN_MASK | 
-		  MouseEvent.SHIFT_DOWN_MASK |
-		  MouseEvent.CTRL_DOWN_MASK);
-
       switch(comp.getState()) {
       case Branch:
 	{
+	  int on1  = (MouseEvent.BUTTON1_DOWN_MASK);
+	  
+	  int off1 = (MouseEvent.BUTTON2_DOWN_MASK | 
+		      MouseEvent.BUTTON3_DOWN_MASK | 
+		      MouseEvent.SHIFT_DOWN_MASK |
+		      MouseEvent.ALT_DOWN_MASK |
+		      MouseEvent.CTRL_DOWN_MASK);
+	  
+	  
+	  int on2  = (MouseEvent.BUTTON1_DOWN_MASK |
+		      MouseEvent.SHIFT_DOWN_MASK);
+	  
+	  int off2 = (MouseEvent.BUTTON2_DOWN_MASK | 
+		      MouseEvent.BUTTON3_DOWN_MASK | 
+		      MouseEvent.SHIFT_DOWN_MASK |
+		      MouseEvent.CTRL_DOWN_MASK);
+
+
 	  /* BUTTON1: expand/collapse */ 
 	  if((mods & (on1 | off1)) == on1) {
-	    // nothing needed...
 	  }
 	  
 	  /* BUTTON1+SHIFT: deep expand/collapse */ 
@@ -529,6 +553,24 @@ class JNodeBrowserPanel
       case Working:
       case CheckedIn: 
 	{
+	  int on1  = (MouseEvent.BUTTON1_DOWN_MASK);
+	  
+	  int off1 = (MouseEvent.BUTTON2_DOWN_MASK | 
+		      MouseEvent.BUTTON3_DOWN_MASK | 
+		      MouseEvent.SHIFT_DOWN_MASK |
+		      MouseEvent.ALT_DOWN_MASK |
+		      MouseEvent.CTRL_DOWN_MASK);
+	  
+	  
+	  int on2  = (MouseEvent.BUTTON1_DOWN_MASK |
+		      MouseEvent.SHIFT_DOWN_MASK);
+	  
+	  int off2 = (MouseEvent.BUTTON2_DOWN_MASK | 
+		      MouseEvent.BUTTON3_DOWN_MASK | 
+		      MouseEvent.SHIFT_DOWN_MASK |
+		      MouseEvent.CTRL_DOWN_MASK);
+
+
 	  int on3  = (MouseEvent.BUTTON1_DOWN_MASK |
 		      MouseEvent.SHIFT_DOWN_MASK |
 		      MouseEvent.CTRL_DOWN_MASK);
@@ -539,12 +581,14 @@ class JNodeBrowserPanel
 
 	  
 	  String sname = treePathToNodeName(tpath);
+	  boolean update = false;
 
 	  /* BUTTON1: replace selection */ 
 	  if((mods & (on1 | off1)) == on1) {
 	    pSelected.clear();
 	    pSelected.add(sname);
 	    repaint();
+	    update = true;
 	  }
 	  
 	  /* BUTTON1+SHIFT: toggle selection */ 
@@ -554,16 +598,18 @@ class JNodeBrowserPanel
 	    else 
 	      pSelected.add(sname);
 	    repaint();
+	    update = true;
 	  }
 	    
 	  /* BUTTON1+SHIFT+CTRL: add to the selection */ 
 	  else if((mods & (on3 | off3)) == on3) {
 	    pSelected.add(sname);
 	    repaint();
+	    update = true;
 	  }
 
 	  /* update any associated node viewer */ 
-	  {
+	  if(update) {
 	    UIMaster master = UIMaster.getInstance();
 	    if(pGroupID > 0) {
 	      PanelGroup<JNodeViewerPanel> panels = master.getNodeViewerPanels();
@@ -577,9 +623,9 @@ class JNodeBrowserPanel
 	    
 	    clearSelection();
 	    repaint();
-
-	    Toolkit.getDefaultToolkit().beep();
 	  }
+
+	  Toolkit.getDefaultToolkit().beep();
 	}
       }
     }
@@ -603,7 +649,12 @@ class JNodeBrowserPanel
    KeyEvent e
   )
   {
-    UserPrefs prefs = UserPrefs.getInstance();
+    /* manager panel hotkeys */ 
+    if(pManagerPanel.handleManagerKeyEvent(e)) 
+      return;
+
+    /* local hotkeys */ 
+    UserPrefs prefs = UserPrefs.getInstance(); 
     if((prefs.getNodeBrowserUpdate() != null) &&
        prefs.getNodeBrowserUpdate().wasPressed(e)) 
       doUpdate();

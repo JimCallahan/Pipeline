@@ -1,4 +1,4 @@
-// $Id: JTopLevelPanel.java,v 1.8 2004/07/28 19:21:47 jim Exp $
+// $Id: JTopLevelPanel.java,v 1.9 2004/09/27 04:54:35 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -213,6 +213,26 @@ class JTopLevelPanel
   public void 
   updateUserPrefs() 
   {}
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Refocus keyboard events on this panel if it contains the mouse.
+   * 
+   * @return
+   *   Whether the panel has received the focus.
+   */ 
+  public boolean 
+  refocusOnPanel() 
+  {
+    if(getMousePosition(true) != null) {
+      requestFocusInWindow();
+      return true;
+    }
+
+    return false;
+  }
 
 
 

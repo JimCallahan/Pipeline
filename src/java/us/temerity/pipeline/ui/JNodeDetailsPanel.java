@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.16 2004/09/21 23:51:43 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.17 2004/09/27 04:54:35 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -122,7 +122,7 @@ class JNodeDetailsPanel
 	  
 	  btn.setActionCommand("apply");
 	  btn.addActionListener(this);
-	  
+
 	  panel.add(btn);
 	} 
       
@@ -2639,7 +2639,6 @@ class JNodeDetailsPanel
   }
 
 
-
   /*----------------------------------------------------------------------------------------*/
   /*   G L U E A B L E                                                                      */
   /*----------------------------------------------------------------------------------------*/
@@ -2749,7 +2748,13 @@ class JNodeDetailsPanel
    * Invoked when a mouse button has been pressed on a component. 
    */
   public void 
-  mousePressed(MouseEvent e) {}
+  mousePressed
+  (
+   MouseEvent e
+  )
+  {
+    pManagerPanel.handleManagerMouseEvent(e);
+  }
   
   /**
    * Invoked when a mouse button has been released on a component. 
@@ -2770,12 +2775,27 @@ class JNodeDetailsPanel
    KeyEvent e
   )
   {
-    UserPrefs prefs = UserPrefs.getInstance();
+    /* manager panel hotkeys */ 
+    if(pManagerPanel.handleManagerKeyEvent(e)) 
+      return;
 
+    /* local hotkeys */ 
+    UserPrefs prefs = UserPrefs.getInstance();
     if((prefs.getNodeDetailsApplyChanges() != null) &&
        prefs.getNodeDetailsApplyChanges().wasPressed(e) && 
        pApplyButton.isEnabled())
       doApply();
+    else {
+      switch(e.getKeyCode()) {
+      case KeyEvent.VK_SHIFT:
+      case KeyEvent.VK_ALT:
+      case KeyEvent.VK_CONTROL:
+	break;
+      
+      default:
+	Toolkit.getDefaultToolkit().beep();
+      }
+    }
   }
 
   /**

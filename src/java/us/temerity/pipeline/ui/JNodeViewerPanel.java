@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.42 2004/09/26 05:11:56 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.43 2004/09/27 04:54:35 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1520,12 +1520,16 @@ class JNodeViewerPanel
    MouseEvent e
   )
   {
-    int mods = e.getModifiersEx();
+    /* manager panel popups */ 
+    if(pManagerPanel.handleManagerMouseEvent(e)) 
+      return;
 
+    /* local mouse events */ 
     pMousePos = e.getPoint();
     Object under = objectAtMousePos(pMousePos);
 
     /* mouse press is over a pickable object viewer node */ 
+    int mods = e.getModifiersEx();
     if(under != null) {
       switch(e.getButton()) {
       case MouseEvent.BUTTON1:
@@ -1932,6 +1936,11 @@ class JNodeViewerPanel
    KeyEvent e
   )
   {
+    /* manager panel hotkeys */ 
+    if(pManagerPanel.handleManagerKeyEvent(e)) 
+      return;
+
+    /* local hotkeys */ 
     UserPrefs prefs = UserPrefs.getInstance();
     Object under = objectAtMousePos(pMousePos);
 

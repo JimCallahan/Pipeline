@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.38 2004/09/26 05:11:16 jim Exp $
+// $Id: JManagerPanel.java,v 1.39 2004/09/27 04:54:35 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -32,7 +32,7 @@ import javax.swing.event.*;
 public 
 class JManagerPanel
   extends JPanel
-  implements Glueable, ComponentListener, ActionListener
+  implements Glueable, ComponentListener, ActionListener, MouseListener, KeyListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -90,12 +90,6 @@ class JManagerPanel
 	item.setActionCommand("node-details");
 	item.addActionListener(this);
 	sub.add(item);  
-
-// 	item = new JMenuItem("Node Links");
-// 	item.setActionCommand("node-links");
-// 	item.addActionListener(this);
-// 	item.setEnabled(false); // FOR NOW 
-// 	sub.add(item);  
 
 	item = new JMenuItem("Node Files");
 	item.setActionCommand("node-files");
@@ -223,19 +217,21 @@ class JManagerPanel
       item.addActionListener(this);
       pPopup.add(item);  
 
+      item = new JMenuItem("Default Editors...");
+      item.setActionCommand("default-editors");
+      item.addActionListener(this);
+      pPopup.add(item);  
+
       item = new JMenuItem("Job Servers");
       item.setActionCommand("manage-job-servers");
       item.addActionListener(this);
       pPopup.add(item);  
 
+      pPopup.addSeparator();
+
       {
 	JMenu sub = new JMenu("Admin");   
 	pPopup.add(sub);  
-
-	item = new JMenuItem("Default Editors...");
-	item.setActionCommand("default-editors");
-	item.addActionListener(this);
-	sub.add(item);  
 
 	sub.addSeparator();
 
@@ -294,13 +290,11 @@ class JManagerPanel
 	sub.add(item);  
 
 	item = new JMenuItem("Support Forums...");
-	item.setEnabled(false);
 	item.setActionCommand("support-forums");
 	item.addActionListener(this);
 	sub.add(item);  
 	  
 	item = new JMenuItem("Bug Database...");
-	item.setEnabled(false);
 	item.setActionCommand("bug-database");
 	item.addActionListener(this);
 	sub.add(item);  
@@ -362,9 +356,17 @@ class JManagerPanel
       panel.setMinimumSize(new Dimension(222, 29));
       panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 29));
       panel.setPreferredSize(new Dimension(222, 29));
+      
+      panel.addMouseListener(this);
+      panel.setFocusable(true);
+      panel.addKeyListener(this);
+      panel.addMouseListener(new KeyFocuser());
 
       {
 	PopupMenuAnchor anchor = new PopupMenuAnchor(this);
+	pPopupMenuAnchor = anchor; 
+	
+	anchor.addMouseListener(this);
 	panel.add(anchor);
       }
 
@@ -373,14 +375,19 @@ class JManagerPanel
       {
 	GroupMenuAnchor anchor = new GroupMenuAnchor();
 	pGroupMenuAnchor = anchor;
+
+	anchor.addMouseListener(this);
 	panel.add(anchor);	
       }
 
       panel.add(Box.createRigidArea(new Dimension(4, 0)));
 
       {
-	pOwnerViewField = UIMaster.createTextField(null, 120, JLabel.CENTER);
-	panel.add(pOwnerViewField);
+	JTextField field = UIMaster.createTextField(null, 120, JLabel.CENTER);
+	pOwnerViewField = field;
+
+	field.addMouseListener(this);
+	panel.add(field);
       }
 
       panel.add(Box.createRigidArea(new Dimension(4, 0)));
@@ -393,6 +400,8 @@ class JManagerPanel
 	label.setMinimumSize(size);
 	label.setMaximumSize(size);
 	label.setPreferredSize(size);
+
+	label.addMouseListener(this);
 
 	panel.add(label);
       }
@@ -411,6 +420,8 @@ class JManagerPanel
 	btn.setActionCommand("close-panel");
         btn.addActionListener(this);
 
+	btn.addMouseListener(this);
+
 	panel.add(btn);
       } 
     }
@@ -423,7 +434,7 @@ class JManagerPanel
   /*----------------------------------------------------------------------------------------*/
   /*   U S E R   I N T E R F A C E                                                          */
   /*----------------------------------------------------------------------------------------*/
-
+  
   /**
    * Get body component of the panel.
    */ 
@@ -490,6 +501,7 @@ class JManagerPanel
   }
 
 
+
   /*----------------------------------------------------------------------------------------*/
   
   /**
@@ -539,6 +551,69 @@ class JManagerPanel
 	}
       }
     }
+  }
+  
+  /**
+   * Refocus keyboard events on the child panel which contains the mouse.
+   * 
+   * @return
+   *   Whether a panel has received the focus.
+   */ 
+  public boolean 
+  refocusOnChildPanel() 
+  {
+    if(pTitlePanel.getMousePosition(true) != null) {
+      pTitlePanel.requestFocusInWindow();
+      return true;
+    }
+    else if(pTopLevelPanel != null) {
+      return pTopLevelPanel.refocusOnPanel();
+    }
+    else {
+      Component contents = getContents();
+      if(contents instanceof JHorzSplitPanel) {
+	JHorzSplitPanel split = (JHorzSplitPanel) contents;
+	
+	{
+	  JManagerPanel mpanel = (JManagerPanel) split.getLeftComponent();
+	  if(mpanel.refocusOnChildPanel()) 
+	    return true;
+	}
+	
+	{
+	  JManagerPanel mpanel = (JManagerPanel) split.getRightComponent();
+	  if(mpanel.refocusOnChildPanel()) 
+	    return true;
+	}
+      }
+      else if(contents instanceof JVertSplitPanel) { 
+	JVertSplitPanel split = (JVertSplitPanel) contents;
+	
+	{
+	  JManagerPanel mpanel = (JManagerPanel) split.getBottomComponent();
+	  if(mpanel.refocusOnChildPanel()) 
+	    return true;
+	}
+	
+	{
+	  JManagerPanel mpanel = (JManagerPanel) split.getTopComponent();
+	  if(mpanel.refocusOnChildPanel()) 
+	    return true;
+	}
+      }
+      else if(contents instanceof JTabbedPanel) {
+	JTabbedPanel tab = (JTabbedPanel) contents;
+	
+	int wk;
+	for(wk=0; wk<tab.getTabCount(); wk++) {
+	  JManagerPanel mpanel = (JManagerPanel) tab.getComponentAt(wk);
+	  if(mpanel.refocusOnChildPanel()) 
+	    return true;
+	}
+      }
+    }
+
+    return false;
   }
 
 
@@ -672,6 +747,365 @@ class JManagerPanel
   {}
 
 
+  /*-- MOUSE LISTNER METHODS -------------------------------------------------------------*/
+  
+  /**
+   * Invoked when the mouse button has been clicked (pressed and released) on a component. 
+   */ 
+  public void 
+  mouseClicked(MouseEvent e) {}
+   
+  /**
+   * Invoked when the mouse enters a component. 
+   */
+  public void 
+  mouseEntered(MouseEvent e) {}
+  
+  /**
+   * Invoked when the mouse exits a component. 
+   */ 
+  public void 
+  mouseExited(MouseEvent e) {}
+  
+  /**
+   * Invoked when a mouse button has been pressed on a component. 
+   */
+  public void 
+  mousePressed
+  (
+   MouseEvent e
+  ) 
+  {
+    handleManagerMouseEvent(e);
+  }
+
+  /**
+   * Invoked when a mouse button has been released on a component. 
+   */ 
+  public void 
+  mouseReleased(MouseEvent e) {}
+
+  /**
+   * Handle manager panel related mouse events.
+   * 
+   * @return 
+   *   Whether the event was handled.
+   */ 
+  public boolean
+  handleManagerMouseEvent
+  (
+   MouseEvent e 
+  ) 
+  {
+    int mods = e.getModifiersEx();
+
+    int on1  = (MouseEvent.BUTTON3_DOWN_MASK |
+		MouseEvent.ALT_DOWN_MASK);		  
+    
+    int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
+		MouseEvent.BUTTON2_DOWN_MASK | 
+		MouseEvent.SHIFT_DOWN_MASK |
+		MouseEvent.CTRL_DOWN_MASK);
+
+    int on2  = (MouseEvent.BUTTON3_DOWN_MASK |
+		MouseEvent.CTRL_DOWN_MASK);	  
+    
+    int off2 = (MouseEvent.BUTTON1_DOWN_MASK | 
+		MouseEvent.BUTTON2_DOWN_MASK | 
+		MouseEvent.SHIFT_DOWN_MASK |
+		MouseEvent.ALT_DOWN_MASK);
+    
+    /* BUTTON3+ALT: main manager popup menu */ 
+    if((mods & (on1 | off1)) == on1) {
+      pPopupMenuAnchor.handleAnchorMouseEvent(e);
+      return true;
+    }
+
+    /* BUTTON3+CTRL: panel group popup menu */ 
+    else if((mods & (on2 | off2)) == on2) {
+      pGroupMenuAnchor.handleAnchorMouseEvent(e);
+      return true;
+    }
+
+    return false;
+  }
+
+
+  /*-- KEY LISTENER METHODS ----------------------------------------------------------------*/
+
+  /**
+   * invoked when a key has been pressed.
+   */   
+  public void 
+  keyPressed
+  (
+   KeyEvent e
+  )
+  {
+    handleManagerKeyEvent(e);
+  }
+  
+  /**
+   * Invoked when a key has been released.
+   */ 
+  public void 	
+  keyReleased(KeyEvent e) {}
+
+  /**
+   * Invoked when a key has been typed.
+   */ 
+  public void 	
+  keyTyped(KeyEvent e) {} 
+
+  /**
+   * Handle manager panel related keyboard events.
+   * 
+   * @return 
+   *   Whether the event was handled.
+   */ 
+  public boolean
+  handleManagerKeyEvent
+  (
+   KeyEvent e 
+  ) 
+  {
+    UserPrefs prefs = UserPrefs.getInstance(); 
+
+    /* windows */ 
+    if((prefs.getManagerNewWindow() != null) &&
+       prefs.getManagerNewWindow().wasPressed(e)) {
+      doNewWindow();
+      return true;
+    }
+
+    /* panels */ 
+    else if((prefs.getManagerNodeBrowserPanel() != null) &&
+	    prefs.getManagerNodeBrowserPanel().wasPressed(e)) {
+      doNodeBrowserPanel();
+      return true;
+    }
+    else if((prefs.getManagerNodeViewerPanel() != null) &&
+	    prefs.getManagerNodeViewerPanel().wasPressed(e)) {
+      doNodeViewerPanel();
+      return true;
+    }
+    else if((prefs.getManagerNodeDetailsPanel() != null) &&
+	    prefs.getManagerNodeDetailsPanel().wasPressed(e)) {
+      doNodeDetailsPanel();
+      return true;
+    }
+    else if((prefs.getManagerNodeFilesPanel() != null) &&
+	    prefs.getManagerNodeFilesPanel().wasPressed(e)) {
+      doNodeFilesPanel();
+      return true;
+    }
+    else if((prefs.getManagerNodeHistoryPanel() != null) &&
+	    prefs.getManagerNodeHistoryPanel().wasPressed(e)) {
+      doNodeHistoryPanel();
+      return true;
+    }
+
+    else if((prefs.getManagerJobBrowserPanel() != null) &&
+	    prefs.getManagerJobBrowserPanel().wasPressed(e)) {
+      doJobBrowserPanel();
+      return true;
+    }
+    else if((prefs.getManagerJobViewerPanel() != null) &&
+	    prefs.getManagerJobViewerPanel().wasPressed(e)) {
+      doJobViewerPanel();
+      return true;
+    }
+    else if((prefs.getManagerJobDetailsPanel() != null) &&
+	    prefs.getManagerJobDetailsPanel().wasPressed(e)) {
+      doJobDetailsPanel();
+      return true;
+    }
+
+    else if((prefs.getManagerEmptyPanel() != null) &&
+	    prefs.getManagerEmptyPanel().wasPressed(e)) {
+      doEmptyPanel();
+      return true;
+    }
+
+    /* layout */ 
+    else if((prefs.getManagerAddLeft() != null) &&
+	    prefs.getManagerAddLeft().wasPressed(e)) {
+      doAddLeft();
+      return true;
+    }
+    else if((prefs.getManagerAddRight() != null) &&
+	    prefs.getManagerAddRight().wasPressed(e)) {
+      doAddRight();
+      return true;
+    }
+    else if((prefs.getManagerAddAbove() != null) &&
+	    prefs.getManagerAddAbove().wasPressed(e)) {
+      doAddAbove();
+      return true;
+    }
+    else if((prefs.getManagerAddBelow() != null) &&
+	    prefs.getManagerAddBelow().wasPressed(e)) {
+      doAddBelow();
+      return true;
+    }
+    else if((prefs.getManagerAddTab() != null) &&
+	    prefs.getManagerAddTab().wasPressed(e)) {
+      doAddTab();
+      return true;
+    }
+    else if((prefs.getManagerClosePanel() != null) &&
+	    prefs.getManagerClosePanel().wasPressed(e)) {
+      doClosePanel();
+      return true;
+    }
+
+    /* owner|view */
+    else if((prefs.getManagerChangeOwnerView() != null) &&
+	    prefs.getManagerChangeOwnerView().wasPressed(e)) {
+      doChangeOwnerView();
+      return true;
+    }
+
+    /* panel group */ 
+    else if((prefs.getManagerGroup0() != null) &&
+	    prefs.getManagerGroup0().wasPressed(e)) {
+      doGroup(0);
+      return true;
+    }
+    else if((prefs.getManagerGroup1() != null) &&
+	    prefs.getManagerGroup1().wasPressed(e)) {
+      doGroup(1);
+      return true;
+    }
+    else if((prefs.getManagerGroup2() != null) &&
+	    prefs.getManagerGroup2().wasPressed(e)) {
+      doGroup(2);
+      return true;
+    }
+    else if((prefs.getManagerGroup3() != null) &&
+	    prefs.getManagerGroup3().wasPressed(e)) {
+      doGroup(3);
+      return true;
+    }
+    else if((prefs.getManagerGroup4() != null) &&
+	    prefs.getManagerGroup4().wasPressed(e)) {
+      doGroup(4);
+      return true;
+    }
+    else if((prefs.getManagerGroup5() != null) &&
+	    prefs.getManagerGroup5().wasPressed(e)) {
+      doGroup(5);
+      return true;
+    }
+    else if((prefs.getManagerGroup6() != null) &&
+	    prefs.getManagerGroup6().wasPressed(e)) {
+      doGroup(6);
+      return true;
+    }
+    else if((prefs.getManagerGroup7() != null) &&
+	    prefs.getManagerGroup7().wasPressed(e)) {
+      doGroup(7);
+      return true;
+    }
+    else if((prefs.getManagerGroup8() != null) &&
+	    prefs.getManagerGroup8().wasPressed(e)) {
+      doGroup(8);
+      return true;
+    }
+    else if((prefs.getManagerGroup9() != null) &&
+	    prefs.getManagerGroup9().wasPressed(e)) {
+      doGroup(9);
+      return true;
+    }
+
+    /* UIMaster */ 
+    else if((prefs.getSaveLayout() != null) &&
+	    prefs.getSaveLayout().wasPressed(e)) {
+      UIMaster.getInstance().doSaveLayout();
+      return true;
+    }
+    else if((prefs.getShowManageLayouts() != null) &&
+	    prefs.getShowManageLayouts().wasPressed(e)) {
+      UIMaster.getInstance().showManageLayoutsDialog();
+      return true;
+    }
+
+    else if((prefs.getShowUserPrefs() != null) &&
+	    prefs.getShowUserPrefs().wasPressed(e)) {
+      UIMaster.getInstance().showUserPrefsDialog();
+      return true;
+    }
+    else if((prefs.getShowDefaultEditors() != null) &&
+	    prefs.getShowDefaultEditors().wasPressed(e)) {
+      UIMaster.getInstance().showDefaultEditorsDialog();
+      return true;
+    }
+    else if((prefs.getShowManageJobServers() != null) &&
+	    prefs.getShowManageJobServers().wasPressed(e)) {
+      UIMaster.getInstance().showManageJobServersDialog();
+      return true;
+    }
+
+    else if((prefs.getShowManageUsers() != null) &&
+	    prefs.getShowManageUsers().wasPressed(e)) {
+      UIMaster.getInstance().showManageUsersDialog();
+      return true;
+    }
+    else if((prefs.getShowManageToolsets() != null) &&
+	    prefs.getShowManageToolsets().wasPressed(e)) {
+      UIMaster.getInstance().showManageToolsetsDialog();
+      return true;
+    }
+    else if((prefs.getShowManageLicenseKeys() != null) &&
+	    prefs.getShowManageLicenseKeys().wasPressed(e)) {
+      UIMaster.getInstance().showManageLicenseKeysDialog();
+      return true;
+    }
+    else if((prefs.getShowManageSelectionKeys() != null) &&
+	    prefs.getShowManageSelectionKeys().wasPressed(e)) {
+      UIMaster.getInstance().showManageSelectionKeysDialog();
+      return true;
+    }
+
+    else if((prefs.getQuit() != null) &&
+	    prefs.getQuit().wasPressed(e)) {
+      UIMaster.getInstance().doQuit();    
+      return true;
+    }
+
+    /* help */ 
+    else if((prefs.getShowAbout() != null) &&
+	    prefs.getShowAbout().wasPressed(e)) {
+      UIMaster.getInstance().showAboutDialog();
+      return true;
+    }
+
+    else if((prefs.getShowHomePage() != null) &&
+	    prefs.getShowHomePage().wasPressed(e)) {
+      BaseApp.showURL("http://www.temerity.us");
+      return true;
+    }
+    else if((prefs.getShowSupportForums() != null) &&
+	    prefs.getShowSupportForums().wasPressed(e)) {
+      BaseApp.showURL("http://www.temerity.us/forums");
+      return true;
+    }
+    else if((prefs.getShowBugDatabase() != null) &&
+	    prefs.getShowBugDatabase().wasPressed(e)) {
+      BaseApp.showURL("http://www.temerity.us/bugs");  
+      return true;
+    }
+    
+    else if((prefs.getShowConfig() != null) &&
+	    prefs.getShowConfig().wasPressed(e)) {
+      UIMaster.getInstance().showConfigDialog();
+      return true;
+    }
+
+    return false;
+  }
+
+
   /*-- ACTION LISTENER METHODS -------------------------------------------------------------*/
 
   /** 
@@ -683,11 +1117,12 @@ class JManagerPanel
    ActionEvent e
   ) 
   {
-    /* dispatch event */ 
+    /* windows */ 
     String cmd = e.getActionCommand();
     if(cmd.equals("new-window")) 
       doNewWindow();
 
+    /* panels */ 
     else if(cmd.equals("node-browser"))
       doNodeBrowserPanel();
     else if(cmd.equals("node-viewer"))
@@ -727,7 +1162,7 @@ class JManagerPanel
     else if(cmd.equals("change-owner-view"))
       doChangeOwnerView();
     
-    /* group */ 
+    /* panel group */ 
     else if(cmd.startsWith("group:")) 
       doGroup(Integer.valueOf(cmd.substring(6)));
     
@@ -740,8 +1175,14 @@ class JManagerPanel
       UIMaster.getInstance().doRestoreSavedLayout(cmd.substring(15));
     else if(cmd.equals("manage-layouts"))
       UIMaster.getInstance().showManageLayoutsDialog();
+
+    else if(cmd.equals("preferences"))
+      UIMaster.getInstance().showUserPrefsDialog();
     else if(cmd.equals("default-editors"))
       UIMaster.getInstance().showDefaultEditorsDialog();
+    else if(cmd.equals("manage-job-servers"))
+      UIMaster.getInstance().showManageJobServersDialog();
+
     else if(cmd.equals("manage-users"))
       UIMaster.getInstance().showManageUsersDialog();
     else if(cmd.equals("manage-toolsets"))
@@ -750,27 +1191,21 @@ class JManagerPanel
       UIMaster.getInstance().showManageLicenseKeysDialog();
     else if(cmd.equals("manage-selection-keys"))
       UIMaster.getInstance().showManageSelectionKeysDialog();
-    else if(cmd.equals("manage-job-servers"))
-      UIMaster.getInstance().showManageJobServersDialog();
     else if(cmd.equals("shutdown"))
       doShutdownServer();
-    else if(cmd.equals("preferences"))
-      UIMaster.getInstance().showUserPrefsDialog();
+
     else if(cmd.equals("about"))
       UIMaster.getInstance().showAboutDialog();
-
-    //...
 
     else if(cmd.equals("home-page"))
       BaseApp.showURL("http://www.temerity.us");
     else if(cmd.equals("support-forums"))
-      BaseApp.showURL("http://www.temerity.us");  // FOR NOW...
+      BaseApp.showURL("http://www.temerity.us/forums");
     else if(cmd.equals("bug-database"))
-      BaseApp.showURL("http://www.temerity.us");  // FOR NOW...
+      BaseApp.showURL("http://www.temerity.us/bugs");  
+
     else if(cmd.equals("site-configuration"))
       UIMaster.getInstance().showConfigDialog();
-
-    //...
 
     else if(cmd.equals("quit"))
       UIMaster.getInstance().doQuit();    
@@ -803,6 +1238,7 @@ class JManagerPanel
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     setContents(new JNodeBrowserPanel(dead));
     dead.setGroupID(0);
+    refocusOnChildPanel();
   }
 
   /**
@@ -814,6 +1250,7 @@ class JManagerPanel
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     setContents(new JNodeViewerPanel(dead));
     dead.setGroupID(0);
+    refocusOnChildPanel();
   }
 
   /**
@@ -825,6 +1262,7 @@ class JManagerPanel
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     setContents(new JNodeDetailsPanel(dead));
     dead.setGroupID(0);
+    refocusOnChildPanel();
   }
 
   /**
@@ -836,6 +1274,7 @@ class JManagerPanel
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     setContents(new JNodeFilesPanel(dead));
     dead.setGroupID(0);
+    refocusOnChildPanel();
   }
 
   /**
@@ -847,6 +1286,7 @@ class JManagerPanel
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     setContents(new JNodeHistoryPanel(dead));
     dead.setGroupID(0);
+    refocusOnChildPanel();
   }
 
 
@@ -861,6 +1301,7 @@ class JManagerPanel
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     setContents(new JQueueJobBrowserPanel(dead));
     dead.setGroupID(0);
+    refocusOnChildPanel();
   }
 
   /**
@@ -872,6 +1313,7 @@ class JManagerPanel
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     setContents(new JQueueJobViewerPanel(dead));
     dead.setGroupID(0);
+    refocusOnChildPanel();
   }
 
   /**
@@ -883,6 +1325,7 @@ class JManagerPanel
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     setContents(new JQueueJobDetailsPanel(dead));
     dead.setGroupID(0);
+    refocusOnChildPanel();
   }
 
 
@@ -896,7 +1339,8 @@ class JManagerPanel
   {
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     setContents(new JEmptyPanel(dead));
-    dead.setGroupID(0);    
+    dead.setGroupID(0);  
+    refocusOnChildPanel();  
   }
 
 
@@ -921,6 +1365,7 @@ class JManagerPanel
     }
 
     setContents(new JHorzSplitPanel(left, right));
+    refocusOnChildPanel();
   }
 
   /**
@@ -942,6 +1387,7 @@ class JManagerPanel
     }
 
     setContents(new JHorzSplitPanel(left, right));
+    refocusOnChildPanel();
   }
 
   /**
@@ -963,6 +1409,7 @@ class JManagerPanel
     }
 
     setContents(new JVertSplitPanel(above, below));
+    refocusOnChildPanel();
   }
 
   /**
@@ -984,6 +1431,7 @@ class JManagerPanel
     }
 
     setContents(new JVertSplitPanel(above, below));
+    refocusOnChildPanel();
   }
 
   /**
@@ -1022,6 +1470,8 @@ class JManagerPanel
 	setContents(tab);
       }
     }
+
+    refocusOnChildPanel();
   }
 
   /**
@@ -1073,6 +1523,7 @@ class JManagerPanel
       JManagerPanel liveMgr = (JManagerPanel) live;
       JManagerPanel grandpa = (JManagerPanel) sparent;
       grandpa.setContents(liveMgr.removeContents());
+      grandpa.refocusOnChildPanel();
 
       pTopLevelPanel.setGroupID(0);
     }
@@ -1086,6 +1537,10 @@ class JManagerPanel
       if(tab.getTabCount() == 0) {
 	JManagerPanel grandpa = (JManagerPanel) tab.getParent();
 	grandpa.setContents(new JEmptyPanel(pTopLevelPanel));
+	grandpa.refocusOnChildPanel();
+      } 
+      else {
+	refocusOnChildPanel();
       }
 
       pTopLevelPanel.setGroupID(0);
@@ -1229,6 +1684,46 @@ class JManagerPanel
      MouseEvent e
     )
     {
+      int mods = e.getModifiersEx();
+      
+      int on1  = (MouseEvent.BUTTON1_DOWN_MASK);		  
+      
+      int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
+		  MouseEvent.BUTTON2_DOWN_MASK | 
+		  MouseEvent.SHIFT_DOWN_MASK | 
+		  MouseEvent.ALT_DOWN_MASK |
+		  MouseEvent.CTRL_DOWN_MASK);
+
+      int on2  = (MouseEvent.BUTTON3_DOWN_MASK);		  
+      
+      int off2 = (MouseEvent.BUTTON1_DOWN_MASK | 
+		  MouseEvent.BUTTON2_DOWN_MASK | 
+		  MouseEvent.SHIFT_DOWN_MASK | 
+		  MouseEvent.ALT_DOWN_MASK |
+		  MouseEvent.CTRL_DOWN_MASK);
+      
+      /* BUTTON3: popup menu */ 
+      if(((mods & (on1 | off1)) == on1) ||
+	 ((mods & (on2 | off2)) == on2)) {
+	handleAnchorMouseEvent(e);
+      }
+    }
+
+    /**
+     * Invoked when a mouse button has been released on a component. 
+     */ 
+    public void 
+    mouseReleased(MouseEvent e) {}
+    
+    /**
+     * Handle popup anchor mouse events.
+     */ 
+    public void
+    handleAnchorMouseEvent
+    (
+     MouseEvent e 
+    ) 
+    {
       setIcon(sMenuAnchorPressedIcon);
 
       /* only enable layout changes if there is enough space */ 
@@ -1274,12 +1769,6 @@ class JManagerPanel
       
       pPopup.show(e.getComponent(), e.getX(), e.getY()); 
     }
-
-    /**
-     * Invoked when a mouse button has been released on a component. 
-     */ 
-    public void 
-    mouseReleased(MouseEvent e) {}
 
     
     /*-- POPUP MENU LISTENER METHODS -------------------------------------------------------*/
@@ -1366,10 +1855,11 @@ class JManagerPanel
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * A anchor icon which shows the group popup menu when pressed.
    */ 
-  //private 
   public
   class GroupMenuAnchor
     extends JLabel
@@ -1419,11 +1909,29 @@ class JManagerPanel
      MouseEvent e
     )
     {
-      int wk;
-      for(wk=1; wk<10; wk++) 
-	pGroupItems[wk].setEnabled(pTopLevelPanel.isGroupUnused(wk));
+      int mods = e.getModifiersEx();
       
-      pGroupPopup.show(e.getComponent(), e.getX(), e.getY()); 
+      int on1  = (MouseEvent.BUTTON1_DOWN_MASK);		  
+      
+      int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
+		  MouseEvent.BUTTON2_DOWN_MASK | 
+		  MouseEvent.SHIFT_DOWN_MASK | 
+		  MouseEvent.ALT_DOWN_MASK |
+		  MouseEvent.CTRL_DOWN_MASK);
+
+      int on2  = (MouseEvent.BUTTON3_DOWN_MASK);		  
+      
+      int off2 = (MouseEvent.BUTTON1_DOWN_MASK | 
+		  MouseEvent.BUTTON2_DOWN_MASK | 
+		  MouseEvent.SHIFT_DOWN_MASK | 
+		  MouseEvent.ALT_DOWN_MASK |
+		  MouseEvent.CTRL_DOWN_MASK);
+      
+      /* BUTTON3: popup menu */ 
+      if(((mods & (on1 | off1)) == on1) ||
+	 ((mods & (on2 | off2)) == on2)) {
+	handleAnchorMouseEvent(e);
+      }
     }
 
     /**
@@ -1432,10 +1940,65 @@ class JManagerPanel
     public void 
     mouseReleased(MouseEvent e) {}
 
+    /**
+     * Handle popup anchor mouse events.
+     */ 
+    public void
+    handleAnchorMouseEvent
+    (
+     MouseEvent e 
+    ) 
+    {
+      int wk;
+      for(wk=1; wk<10; wk++) 
+	pGroupItems[wk].setEnabled(pTopLevelPanel.isGroupUnused(wk));
+      
+      pGroupPopup.show(e.getComponent(), e.getX(), e.getY()); 
+    }
+
 
     /*-- INTERNALS -------------------------------------------------------------------------*/
 
     private static final long serialVersionUID = -4700928181653009212L; 
+  }
+
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Manages keyboard focus.                                           
+   */ 
+  public
+  class KeyFocuser
+    extends MouseAdapter
+  {
+    KeyFocuser() 
+    {} 
+
+    /**
+     * Invoked when the mouse enters a component. 
+     */
+    public void 
+    mouseEntered
+    (
+     MouseEvent e
+    ) 
+    {
+      pTitlePanel.requestFocusInWindow();
+    }
+  
+    /**
+     * Invoked when the mouse exits a component. 
+     */ 
+    public void 
+    mouseExited
+    (
+     MouseEvent e
+    ) 
+    {
+      if(pTitlePanel.getMousePosition(true) == null) 
+	KeyboardFocusManager.getCurrentKeyboardFocusManager().clearGlobalFocusOwner();
+    }
   }
 
 
@@ -1539,6 +2102,11 @@ class JManagerPanel
    */ 
   private JPanel  pTitlePanel;
 
+
+  /** 
+   * The anchor label for the popup menu.
+   */
+  private PopupMenuAnchor  pPopupMenuAnchor;
 
   /**
    * The panel layout popup menu.
