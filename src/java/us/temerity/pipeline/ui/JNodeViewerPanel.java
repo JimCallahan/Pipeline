@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.36 2004/09/03 02:00:25 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.37 2004/09/03 11:03:23 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -3782,7 +3782,7 @@ class JNodeViewerPanel
       for(String name : pNames) {
 	if(master.beginPanelOp("Removing Files: " + name)) {
 	  try {
-	    master.getMasterMgrClient().removeFiles(pAuthor, pView, name);
+	    master.getMasterMgrClient().removeFiles(pAuthor, pView, name, null);
 	  }
 	  catch(PipelineException ex) {
 	    master.showErrorDialog(ex);
@@ -3799,6 +3799,9 @@ class JNodeViewerPanel
 
     private TreeSet<String>  pNames; 
   }
+
+  
+  /*----------------------------------------------------------------------------------------*/
 
   /** 
    * Queue jobs to the queue for the given node.
@@ -3966,6 +3969,9 @@ class JNodeViewerPanel
 
     private TreeSet<Long>  pJobIDs; 
   }
+
+  
+  /*----------------------------------------------------------------------------------------*/
 
   /** 
    * Check-in a given node.

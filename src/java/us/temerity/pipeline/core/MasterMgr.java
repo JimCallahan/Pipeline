@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.30 2004/09/03 01:53:44 jim Exp $
+// $Id: MasterMgr.java,v 1.31 2004/09/03 11:01:42 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2789,14 +2789,22 @@ class MasterMgr
     NodeID nodeID = req.getNodeID();
     TaskTimer timer = new TaskTimer("MasterMgr.removeFiles(): " + nodeID);
 
-    TreeSet<FileSeq> fseqs = null;
+    TreeSet<FileSeq> fseqs = new TreeSet<FileSeq>();
     timer.aquire();
     ReentrantReadWriteLock lock = getWorkingLock(nodeID);
     lock.readLock().lock();
     try {
       timer.resume();
       WorkingBundle bundle = getWorkingBundle(nodeID);
-      fseqs = bundle.uVersion.getSequences();
+      TreeSet<Integer> indices = req.getIndices();
+      if(indices == null) 
+	fseqs.addAll(bundle.uVersion.getSequences());
+      else {
+	for(FileSeq fseq : bundle.uVersion.getSequences()) {
+	  for(Integer idx : indices) 
+	    fseqs.add(new FileSeq(fseq, idx));
+	}
+      }
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());

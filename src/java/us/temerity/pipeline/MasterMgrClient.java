@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.22 2004/09/03 01:50:43 jim Exp $
+// $Id: MasterMgrClient.java,v 1.23 2004/09/03 11:00:48 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1785,7 +1785,7 @@ class MasterMgrClient
    * 
    * @param indices
    *   The file sequence indices of the files to regenerate or <CODE>null</CODE> to 
-   *   regenerate all <CODE>Stale</CODE> or <CODE>Missing</CODE> files.
+   *   regenerate all <CODE>Stale</CODE> files.
    * 
    * @return 
    *   The submitted job group.
@@ -1841,6 +1841,10 @@ class MasterMgrClient
    * @param name 
    *   The fully resolved node name.
    * 
+   * @param indices
+   *   The file sequence indices of the files to remove or <CODE>null</CODE> to 
+   *   remove all files.
+   * 
    * @throws PipelineException 
    *   If unable to remove the files.
    */ 
@@ -1849,7 +1853,8 @@ class MasterMgrClient
   (
    String author,  
    String view, 
-   String name
+   String name,
+   TreeSet<Integer> indices
   ) 
     throws PipelineException
   {
@@ -1860,7 +1865,7 @@ class MasterMgrClient
     verifyConnection();
 
     NodeID nodeID = new NodeID(author, view, name);
-    NodeRemoveFilesReq req = new NodeRemoveFilesReq(nodeID);
+    NodeRemoveFilesReq req = new NodeRemoveFilesReq(nodeID, indices);
 
     Object obj = performTransaction(MasterRequest.RemoveFiles, req);
     handleSimpleResponse(obj);    

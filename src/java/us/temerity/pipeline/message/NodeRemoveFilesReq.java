@@ -1,4 +1,4 @@
-// $Id: NodeRemoveFilesReq.java,v 1.1 2004/08/23 03:07:33 jim Exp $
+// $Id: NodeRemoveFilesReq.java,v 1.2 2004/09/03 11:00:48 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -30,17 +30,24 @@ class NodeRemoveFilesReq
    * 
    * @param id 
    *   The unique working version identifier.
+   * 
+   * @param indices
+   *   The file sequence indices of the files to remove or <CODE>null</CODE> to 
+   *   remove all files.
    */
   public
   NodeRemoveFilesReq
   (
-   NodeID id
+   NodeID id,
+   TreeSet<Integer> indices
   )
   { 
     if(id == null) 
       throw new IllegalArgumentException
 	("The working version ID cannot be (null)!");
     pNodeID = id;
+
+    pIndices = indices; 
   }
 
 
@@ -58,7 +65,16 @@ class NodeRemoveFilesReq
     return pNodeID;
   }
 
-    
+  /**
+   * Get the file sequence indices to remove or <CODE>null</CODE> to remove all files.
+   */ 
+  public TreeSet<Integer>
+  getIndices()
+  {
+    return pIndices;
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -77,5 +93,9 @@ class NodeRemoveFilesReq
    */ 
   private NodeID  pNodeID;
 
+  /**
+   * The file sequence indices to remove or <CODE>null</CODE> to remove all files.
+   */ 
+  private TreeSet<Integer>  pIndices; 
 }
   
