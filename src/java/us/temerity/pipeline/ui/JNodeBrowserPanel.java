@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.11 2004/05/07 21:12:32 jim Exp $
+// $Id: JNodeBrowserPanel.java,v 1.12 2004/05/11 19:16:33 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -68,14 +68,11 @@ class JNodeBrowserPanel
 	DefaultMutableTreeNode root = new DefaultMutableTreeNode("root", true);
 	DefaultTreeModel model = new DefaultTreeModel(root, true);
 
-	JTree tree = new JTree(model); 
+	JTree tree = new JFancyTree(model); 
 	pTree = tree;
 
-	tree.setShowsRootHandles(true);
-	tree.setRootVisible(false);
-	tree.setCellRenderer(new JTreeCellRenderer());
+	tree.setCellRenderer(new JNodeBrowserTreeCellRenderer());
 	tree.setSelectionModel(null);
-
 	tree.addTreeExpansionListener(this);
 	tree.addMouseListener(this);
       }

@@ -1,13 +1,15 @@
-// $Id: JManagerPanel.java,v 1.14 2004/05/08 23:39:23 jim Exp $
+// $Id: JManagerPanel.java,v 1.15 2004/05/11 19:16:33 jim Exp $
 
 package us.temerity.pipeline.ui;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.core.BaseApp;
 import us.temerity.pipeline.laf.LookAndFeelLoader;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.event.*;
@@ -21,15 +23,16 @@ import javax.swing.event.*;
  * 
  * The contents of the panel may be changed by the user to one of a number of predefined 
  * Pipeline panel types.  The panel may be divided into two or more child 
- * <CODE>JManagerPanel</CODE>s using either a {@link JSplitPane JSplitPane} or a 
- * {@link JTabbedPane JTabbedPane}.  Unless this panel is the root panel of the main frame,
- * the user may also destroy the panel possibly causing the parent <CODE>JSplitPane</CODE> 
- * or <CODE>JTabedPane</CODE> to be destroyed as well.
+ * <CODE>JManagerPanel</CODE>s using either a {@link JHorzSplitPanel JHorzSplitPanel},
+ * {@link JVertSplitPanel JVertSplitPanel} or a {@link JTabbedPanel JTabbedPanel}.  Unless 
+ * this panel is the root panel of the main frame, the user may also destroy the panel 
+ * possibly causing the parent <CODE>JHorzSplitPanel</CODE>, <CODE>JVertSplitPanel</CODE> or 
+ * <CODE>JTabedPanel</CODE> to be destroyed as well.
  */ 
 public 
 class JManagerPanel
   extends JPanel
-  implements ComponentListener, ActionListener
+  implements Glueable, ComponentListener, ActionListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -38,6 +41,7 @@ class JManagerPanel
   /**
    * Construct a manager panel. 
    */
+  public 
   JManagerPanel()
   {
     super();
@@ -187,8 +191,14 @@ class JManagerPanel
 	
       pPopup.addSeparator();
 
-      item = new JMenuItem("Save Layout...");
+      item = new JMenuItem("Save Layout");
+      pSaveLayoutItem = item;
       item.setActionCommand("save-layout");
+      item.addActionListener(this);
+      pPopup.add(item);  
+      
+      item = new JMenuItem("Save Layout As...");
+      item.setActionCommand("save-layout-as");
       item.addActionListener(this);
       pPopup.add(item);  
       
@@ -388,7 +398,9 @@ class JManagerPanel
 
     removeContents();
 
-    if((child instanceof JSplitPanel) || (child instanceof JTabbedPane)) {
+    if((child instanceof JHorzSplitPanel) || 
+       (child instanceof JVertSplitPanel) || 
+       (child instanceof JTabbedPanel)) {
       pTopLevelPanel = null;
     }
     else if(child instanceof JTopLevelPanel) {
@@ -470,9 +482,9 @@ class JManagerPanel
    * Invoked when the component's size changes. <P> 
    * 
    * This method is used to hide the body component when the panel collapsed by a parent
-   * {@link JSplitPanel JSplitPanel}.  This is required to get around a rendering problem 
-   * where heavyweight body components of this panel are incorrectly rendered over
-   * lightweight components still visible.  
+   * {@link JHorzSplitPanel JHorzSplitPanel} or {@link JVertSplitPanel JVertSplitPanel}.  
+   * This is required to get around a rendering problem where heavyweight body components 
+   * of this panel are incorrectly rendered over lightweight components still visible.  
    */ 
   public void 	
   componentResized
@@ -557,9 +569,11 @@ class JManagerPanel
     
     /* UIMaster */ 
     else if(cmd.equals("save-layout"))
+      UIMaster.getInstance().doSaveLayout();
+    else if(cmd.equals("save-layout-as"))
       UIMaster.getInstance().showSaveLayoutDialog();
-//     else if(cmd.startsWith("restore-layout:")) 
-//       UIMaster.getInstance().doRestoreLayout(cmd.substring(15));
+    else if(cmd.startsWith("restore-layout:")) 
+      UIMaster.getInstance().doRestoreSavedLayout(cmd.substring(15));
     else if(cmd.equals("manage-layouts"))
       UIMaster.getInstance().showManageLayoutsDialog();
     else if(cmd.equals("about"))
@@ -640,7 +654,7 @@ class JManagerPanel
       right.setContents(removeContents());
     }
 
-    setContents(new JSplitPanel(JSplitPane.HORIZONTAL_SPLIT, left, right));
+    setContents(new JHorzSplitPanel(left, right));
   }
 
   /**
@@ -661,7 +675,7 @@ class JManagerPanel
       right.setContents(new JEmptyPanel(pTopLevelPanel));
     }
 
-    setContents(new JSplitPanel(JSplitPane.HORIZONTAL_SPLIT, left, right));
+    setContents(new JHorzSplitPanel(left, right));
   }
 
   /**
@@ -682,7 +696,7 @@ class JManagerPanel
       below.setContents(removeContents());
     }
 
-    setContents(new JSplitPanel(JSplitPane.VERTICAL_SPLIT, above, below));
+    setContents(new JVertSplitPanel(above, below));
   }
 
   /**
@@ -703,7 +717,7 @@ class JManagerPanel
       below.setContents(new JEmptyPanel(pTopLevelPanel));
     }
 
-    setContents(new JSplitPanel(JSplitPane.VERTICAL_SPLIT, above, below));
+    setContents(new JVertSplitPanel(above, below));
   }
 
   /**
@@ -719,14 +733,14 @@ class JManagerPanel
     assert(parent != null);
 
     /* if the parent is already a tabbed pane, simply add another tab */ 
-    if(parent instanceof JTabbedPane) {
-      JTabbedPane tab = (JTabbedPane) parent;
+    if(parent instanceof JTabbedPanel) {
+      JTabbedPanel tab = (JTabbedPanel) parent;
       JManagerPanel select = (JManagerPanel) tab.getSelectedComponent();
 
       JManagerPanel mgr = new JManagerPanel();
       mgr.setContents(new JEmptyPanel(pTopLevelPanel));
 
-      tab.addTab(null, sTabIcon, mgr);
+      tab.addTab(mgr);
     }
     
     /* create a new tabbed panel with the contents of this panel as its only tab */ 
@@ -736,8 +750,8 @@ class JManagerPanel
 	JManagerPanel mgr = new JManagerPanel();
 	mgr.setContents(comp);
 
-	JTabbedPane tab = new JTabbedPane();
-	tab.addTab(null, sTabIcon, mgr);
+	JTabbedPanel tab = new JTabbedPanel();
+	tab.addTab(mgr);
 
 	setContents(tab);
       }
@@ -754,39 +768,41 @@ class JManagerPanel
     assert(parent != null);
 
     /* replace the parent split pane with the other child */ 
-    if(parent instanceof JSplitPanel) {
-      JSplitPanel split = (JSplitPanel) parent;
-
-      Container sparent = split.getParent();
-      if(!(sparent instanceof JManagerPanel))
-	return;
-
+    if((parent instanceof JHorzSplitPanel) || (parent instanceof JVertSplitPanel)) {
+      Container sparent = null;
       Component live = null;
-      switch(split.getOrientation()) {
-      case JSplitPane.HORIZONTAL_SPLIT:
+      if(parent instanceof JHorzSplitPanel) {
+	JHorzSplitPanel split = (JHorzSplitPanel) parent;
+	
+	sparent = split.getParent();
+	if(!(sparent instanceof JManagerPanel))
+	  return;
+	
 	if(split.getLeftComponent() == this) 
 	  live = split.getRightComponent();
 	else if(split.getRightComponent() == this) 
 	  live = split.getLeftComponent();
 	else 
 	  assert(false);
-	break;
-
-      case JSplitPane.VERTICAL_SPLIT:
+	
+	split.removeAll();
+      }
+      else {
+	JVertSplitPanel split = (JVertSplitPanel) parent;
+	
+	sparent = split.getParent();
+	if(!(sparent instanceof JManagerPanel))
+	  return;
+	
 	if(split.getTopComponent() == this) 
 	  live = split.getBottomComponent();
 	else if(split.getBottomComponent() == this) 
 	  live = split.getTopComponent();
 	else 
 	  assert(false);	
-	break;
-
-      default:
-	assert(false);
+	
+	split.removeAll();
       }
-      assert(live != null);
-      
-      split.removeAll();
       
       JManagerPanel liveMgr = (JManagerPanel) live;
       JManagerPanel grandpa = (JManagerPanel) sparent;
@@ -796,8 +812,8 @@ class JManagerPanel
     }
 
     /* remove this tab from the parent tabbed pane */ 
-    else if(parent instanceof JTabbedPane) {
-      JTabbedPane tab = (JTabbedPane) parent;
+    else if(parent instanceof JTabbedPanel) {
+      JTabbedPanel tab = (JTabbedPanel) parent;
       tab.remove(this);
 
       /* if empty, remove the tabbed pane as well */ 
@@ -885,14 +901,15 @@ class JManagerPanel
   /**
    * A anchor icon which shows the title bar popup menu when pressed.
    */ 
-  private 
+  //private 
+  public
   class PopupMenuAnchor
     extends JLabel
     implements MouseListener, PopupMenuListener
   {
     PopupMenuAnchor
     (
-     JPanel panel
+     JManagerPanel panel
     )
     {
       super();
@@ -943,11 +960,21 @@ class JManagerPanel
 	pAddBelowItem.setEnabled(vert);
       }
 
+      /* panel layout items */ 
       {
+	UIMaster master = UIMaster.getInstance();
+	pSaveLayoutItem.setEnabled(master.getLayoutName() != null);
 
-	// update from UIManager...
-
-	pRestoreLayoutMenu.setEnabled(pRestoreLayoutMenu.getItemCount() > 0);
+	pRestoreLayoutMenu.removeAll();
+	File dir = new File(PackageInfo.sHomeDir, PackageInfo.sUser + "/.pipeline/layouts");  
+	if(!dir.isDirectory()) {
+	  UIMaster.getInstance().showErrorDialog
+	    ("Error:", "The saved layout directory (" + dir + ") was missing!");
+	  pRestoreLayoutMenu.setEnabled(false);
+	} 
+	else {
+	  rebuildRestoreMenu(dir, dir, pRestoreLayoutMenu);
+	}
       }
       
       pPopup.show(e.getComponent(), e.getX(), e.getY()); 
@@ -974,19 +1001,78 @@ class JManagerPanel
     public void
     popupMenuWillBecomeVisible(PopupMenuEvent e) {} 
 
+    
+    
+    /*-- HELPERS ---------------------------------------------------------------------------*/
+
+    /**
+     * Recursively rebuild the restore layout menu.
+     * 
+     * @param root
+     *   The root saved layout directory.
+     * 
+     * @param dir 
+     *   The current directory.
+     * 
+     * @param menu
+     *   The current parent menu.
+     */ 
+    private void 
+    rebuildRestoreMenu
+    (
+     File root, 
+     File dir,
+     JMenu menu
+    ) 
+    {
+      TreeMap<String,File> table = new TreeMap<String,File>();
+      {
+	File files[] = dir.listFiles();
+	int wk;
+	for(wk=0; wk<files.length; wk++) 
+	  if(files[wk].isFile() || files[wk].isDirectory()) 
+	    table.put(files[wk].getName(), files[wk]);
+      }
+
+      int rlen = root.getPath().length();
+      for(String name : table.keySet()) {
+	File file = table.get(name);
+	if(file.isDirectory()) {
+	  JMenu sub = new JMenu(name);
+	  menu.add(sub);
+
+	  rebuildRestoreMenu(root, file, sub);
+	}
+      }
+
+      for(String name : table.keySet()) {
+	File file = table.get(name);
+	if(file.isFile()) {
+	  JMenuItem item = new JMenuItem(name);
+	  item.setActionCommand("restore-layout:" + file.getPath().substring(rlen));
+	  item.addActionListener(pPanel);
+
+	  menu.add(item);
+	}
+      }
+
+      menu.setEnabled(menu.getItemCount() > 0);
+    }
+
 
     /*-- INTERNALS -------------------------------------------------------------------------*/
 
     private static final long serialVersionUID = 2138270471079189817L;;
 
-    private JPanel  pPanel;
+    private JManagerPanel  pPanel;
   }
 
 
   /**
    * A anchor icon which shows the group popup menu when pressed.
    */ 
-  private 
+  //private 
+  public
   class GroupMenuAnchor
     extends JLabel
     implements MouseListener
@@ -1040,16 +1126,40 @@ class JManagerPanel
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+  /*   G L U E A B L E                                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  public void 
+  toGlue
+  ( 
+   GlueEncoder encoder   
+  ) 
+    throws GlueException
+  {
+    encoder.encode("Contents", (Glueable) getContents());
+  }
+
+  public void 
+  fromGlue
+  (
+   GlueDecoder decoder 
+  ) 
+    throws GlueException
+  {
+    Component contents = (Component) decoder.decode("Contents");
+    if(contents == null) 
+      throw new GlueException("The \"Contents\" was missing or (null)!");
+    setContents(contents);
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
   private static final long serialVersionUID = -3791561567661137439L;
-
-
-  private static Icon sTabIcon = 
-    new ImageIcon(LookAndFeelLoader.class.getResource("TabIcon.png"));
 
 
   private static Icon sMenuAnchorIcon = 
@@ -1148,7 +1258,8 @@ class JManagerPanel
   /**
    * The load layout submenu.
    */ 
-  private JMenu pRestoreLayoutMenu;
+  private JMenuItem  pSaveLayoutItem;
+  private JMenu      pRestoreLayoutMenu;
 
 
   /**

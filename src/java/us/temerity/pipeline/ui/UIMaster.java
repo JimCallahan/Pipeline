@@ -1,8 +1,10 @@
-// $Id: UIMaster.java,v 1.8 2004/05/08 23:40:16 jim Exp $
+// $Id: UIMaster.java,v 1.9 2004/05/11 19:16:33 jim Exp $
 
 package us.temerity.pipeline.ui;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.core.*;
+import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.laf.LookAndFeelLoader;
 
 import java.awt.*;
@@ -122,6 +124,37 @@ class UIMaster
   {
     return pFrame;
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the name of the current panel layout.
+   * 
+   * @return 
+   *   The name or <CODE>null</CODE> if unset.
+   */ 
+  public String 
+  getLayoutName() 
+  {
+    return pLayoutName;
+  }
+
+  /**
+   * Set the name of the current panel layout.
+   */ 
+  private void 
+  setLayoutName
+  (
+   String name
+  ) 
+  {
+    pLayoutName = name;
+
+    File path = new File(pLayoutName);
+    pFrame.setTitle("plui [" + path.getName() + "]");
+  }
+
   
 
   /*----------------------------------------------------------------------------------------*/
@@ -373,7 +406,8 @@ class UIMaster
   {
     endPanelOp("");
   }
-  
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   C O M P O N E N T   C R E A T I O N                                                  */
@@ -432,6 +466,7 @@ class UIMaster
   )
   {
     JTextField field = new JTextField(text);
+    field.setName("TextField");
 
     Dimension size = new Dimension(width, 19);
     field.setMinimumSize(size);
@@ -474,6 +509,42 @@ class UIMaster
     
     field.setHorizontalAlignment(align);
     field.setEditable(true);
+    
+    return field;
+  }
+
+  /**
+   * Create a new editable text field which can only contain identifiers.
+   * 
+   * See {@link JLabel#setHorizontalAlignment JLabel.setHorizontalAlignment} for valid
+   * values for the <CODE>align</CODE> argument.
+   * 
+   * @param width
+   *   The minimum and preferred width.
+   * 
+   * @param align
+   *   The horizontal alignment.
+   */ 
+  public static JIdentifierField
+  createIdentifierField
+  (
+   String text, 
+   int width,
+   int align
+  )
+  {
+    JIdentifierField field = new JIdentifierField();
+    field.setName("EditableTextField");
+
+    Dimension size = new Dimension(width, 19);
+    field.setMinimumSize(size);
+    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+    field.setPreferredSize(size);
+    
+    field.setHorizontalAlignment(align);
+    field.setEditable(true);
+    
+    field.setText(text);
     
     return field;
   }
@@ -521,6 +592,31 @@ class UIMaster
   /*----------------------------------------------------------------------------------------*/
   /*   A C T I O N S                                                                        */
   /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Save the current panel layout.
+   */
+  public void 
+  doSaveLayout()
+  {
+    if(pLayoutName != null) 
+      SwingUtilities.invokeLater(new SaveLayoutTask());
+    else 
+      showSaveLayoutDialog();
+  }
+
+  /**
+   * Replace the current panels with those stored in the stored layout with the given name.
+   */
+  public void 
+  doRestoreSavedLayout
+  (
+   String name
+  ) 
+  {
+    SwingUtilities.invokeLater(new RestoreSavedLayoutTask(name));
+  }
+
 
   /**
    * Close the network connection and exit.
@@ -535,6 +631,7 @@ class UIMaster
   }
   
   
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L   C L A S S E S                                                      */
@@ -566,7 +663,7 @@ class UIMaster
 		     LookAndFeelLoader.class);
 	  UIManager.setLookAndFeel(synth);
 	}
-	catch(ParseException ex) {
+	catch(java.text.ParseException ex) {
 	  Logs.ops.severe("Unable to parse the look-and-feel XML file (synth.xml):\n" + 
 			  "  " + ex.getMessage());
 	  System.exit(1);
@@ -663,6 +760,40 @@ class UIMaster
     run() 
     {  
       int i;
+
+      /* make sure user preference exist */ 
+      try {
+	File base = new File(PackageInfo.sHomeDir, PackageInfo.sUser + "/.pipeline");
+	{
+	  File dir = new File(base, "preferences");
+	  if(!dir.isDirectory()) {
+	    if(!dir.mkdirs()) {
+	      Logs.ops.severe("Unable to create (" + dir + ")!");
+	      Logs.flush();
+	      System.exit(1);	    
+	    }
+	    NativeFileSys.chmod(0700, dir);
+	  }	  
+	}
+
+	{
+	  File dir = new File(base, "layouts");
+	  if(!dir.isDirectory()) {
+	    if(!dir.mkdirs()) {
+	      Logs.ops.severe("Unable to create (" + dir + ")!");
+	      Logs.flush();
+	      System.exit(1);	    
+	    }
+	    NativeFileSys.chmod(0700, dir);
+	  }	  
+	}
+      }
+      catch(Exception ex) {	
+	Logs.ops.severe("Unable to initialize the user preferences!\n" + 
+			"  " + ex.getMessage());
+	Logs.flush();
+	System.exit(1);	 
+      }
       
       /* load textures */ 
       try {
@@ -700,6 +831,7 @@ class UIMaster
       catch(IOException ex) {
 	Logs.tex.severe("Unable to load textures!\n" + 
 			"  " + ex.getMessage());
+	Logs.flush();
 	System.exit(1);
       }
       
@@ -777,11 +909,12 @@ class UIMaster
 	  
 	  {
 	    JPanel panel = new JPanel(new BorderLayout());
+	    pRootPanel = panel;
 	    panel.setName("RootPanel");
 	    
 	    {
 	      JManagerPanel mgr = new JManagerPanel();
-	      pManagerPanel = mgr;
+	      pRootManagerPanel = mgr;
 	      mgr.setContents(new JEmptyPanel());
 	      
 	      panel.add(mgr);
@@ -811,15 +944,9 @@ class UIMaster
 	    }
 	    
 	    {
-	      JTextField field = new JTextField();
+	      JTextField field = createTextField(null, 200, JLabel.LEFT);
 	      pProgressField = field;
 	      
-	      field.setMinimumSize(new Dimension(200, 19));
-	      field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
-	      field.setPreferredSize(new Dimension(200, 19));
-	      
-	      field.setEditable(false);
-
 	      panel.add(field);
 	    }
 	    
@@ -918,8 +1045,107 @@ class UIMaster
     public void 
     run() 
     {
-      pSaveLayoutDialog.setVisible(true);
+      try {
+	pSaveLayoutDialog.update(pLayoutName);
+	pSaveLayoutDialog.setVisible(true);
+	if(pSaveLayoutDialog.wasConfirmed()) {
+	  String name = pSaveLayoutDialog.getSelectedName();
+	  if((name != null) && (name.length() > 0)) {
+	    setLayoutName(name);	    
+	    SwingUtilities.invokeLater(new SaveLayoutTask());
+	  }
+	}
+      }  
+      catch(Exception ex) {
+	showErrorDialog(ex);
+      }
     }
+  }
+
+  /**
+   * Save the current panel layout.
+   */
+  private 
+  class SaveLayoutTask
+    extends Thread
+  {
+    public void 
+    run() 
+    {
+      try {
+	File file = new File(PackageInfo.sHomeDir, 
+			     PackageInfo.sUser + "/.pipeline/layouts/" + pLayoutName);
+
+	System.out.print("SaveLayout = " + pLayoutName + "\n");
+
+	File dir = file.getParentFile();
+	if(!dir.isDirectory()) 
+	  dir.mkdirs();
+
+	PanelLayout layout = new PanelLayout(pRootManagerPanel, pFrame.getSize());
+	LockedGlueFile.save(file, "PanelLayout", layout);
+      }
+      catch(Exception ex) {
+	showErrorDialog(ex);
+      }
+    }
+  }
+
+  /**
+   * Replace the current panels with those stored in the stored layout with the given name.
+   */
+  private 
+  class RestoreSavedLayoutTask
+    extends Thread
+  {
+    public 
+    RestoreSavedLayoutTask
+    (
+     String name
+    ) 
+    {
+      pName = name;
+    }
+
+    public void 
+    run() 
+    {
+      /* clean up existing panels */ 
+      {
+	pRootManagerPanel = null;
+	pRootPanel.removeAll();
+	
+	int wk;
+	for(wk=1; wk<10; wk++) {
+	  pNodeBrowsers[wk] = null;
+	  pNodeViewers[wk] = null;
+	}
+      }
+
+      /* restore saved panels */ 
+      PanelLayout layout = null;
+      try {      
+	File file = new File(PackageInfo.sHomeDir, 
+			     PackageInfo.sUser + "/.pipeline/layouts" + pName);
+	layout = (PanelLayout) LockedGlueFile.load(file);
+
+	setLayoutName(pName);
+	pFrame.setSize(layout.getSize());
+	pRootManagerPanel = layout.getRoot();
+      }
+      catch(Exception ex) {
+	pRootManagerPanel = new JManagerPanel();
+	pRootManagerPanel.setContents(new JEmptyPanel());
+	showErrorDialog(ex);
+      }
+
+      /* replace the root panel */ 
+      pRootPanel.add(pRootManagerPanel);
+      pRootPanel.validate();
+      pRootPanel.repaint();
+    }
+
+    private String  pName;
   }
 
   /**
@@ -938,6 +1164,9 @@ class UIMaster
       pManageLayoutsDialog.setVisible(true);
     }
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Show the error dialog. <P> 
@@ -967,9 +1196,9 @@ class UIMaster
    */ 
   private static UIMaster  sMaster;
 
-
-  //private static final long serialVersionUID = 584004318062788314L;
-
+  /**
+   * Icon images.
+   */ 
   private static Icon sSplashIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("Splash.png"));
 
@@ -1023,11 +1252,22 @@ class UIMaster
    */ 
   private JTextField  pProgressField;
 
+
+  /**
+   * The name of the last saved/loaded layout.
+   */ 
+  private String  pLayoutName;
  
+  /**
+   * The parent of the root manager panel.
+   */ 
+  private JPanel  pRootPanel; 
+
   /**
    * The root manager panel.
    */ 
-  private JManagerPanel  pManagerPanel; 
+  private JManagerPanel  pRootManagerPanel; 
+
 
   /**
    * The table of active node browsers indexed by assigned group: [1-9]. <P> 

@@ -1,8 +1,9 @@
-// $Id: JNodeViewerPanel.java,v 1.5 2004/05/08 15:07:31 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.6 2004/05/11 19:16:33 jim Exp $
 
 package us.temerity.pipeline.ui;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.glue.*; // DEBUG
 
 import java.awt.*;
 import java.awt.event.*;
@@ -246,6 +247,16 @@ class JNodeViewerPanel
   private synchronized void 
   updateUniverse()
   {  
+    
+//     try {
+//       StringBuffer buf = new StringBuffer();
+//       printStatusShortHelper(pStatus, 2, buf);
+//       System.out.print("Node Status: \n" + buf.toString() + "\n");
+//     }
+//     catch(Exception ex) {
+//     }
+
+
     pNodePool.updatePrep();
       
     if(pStatus != null) {
@@ -271,6 +282,9 @@ class JNodeViewerPanel
     pNodePool.update();
   }
   
+  /**
+   * Recursively layout the upstream nodes.
+   */ 
   private double
   layoutUpstreamNodes
   (
@@ -302,6 +316,75 @@ class JNodeViewerPanel
   }
 
 
+
+
+
+
+
+
+
+
+
+
+  // DEBUG
+  private void 
+  printStatusShortHelper
+  (
+   NodeStatus status,
+   int level, 
+   StringBuffer buf
+  ) 
+    throws GlueException
+  {
+    printStatusShortDownstreamHelper(status, level, buf);
+
+    buf.append("->");
+    int wk;
+    for(wk=0; wk<level; wk++) 
+      buf.append("  ");
+    buf.append("---\n");
+
+    printStatusShortUpstreamHelper(status, level, buf);
+  }
+
+  private void 
+  printStatusShortDownstreamHelper
+  (
+   NodeStatus status,
+   int level, 
+   StringBuffer buf
+  ) 
+    throws GlueException
+  {
+    for(NodeStatus tstatus : status.getTargets()) 
+      printStatusShortDownstreamHelper(tstatus, level+1, buf);
+
+    buf.append("->");
+    int wk;
+    for(wk=0; wk<level; wk++) 
+      buf.append("  ");
+    buf.append(status.getNodeID().getName() + "\n");
+  }
+  
+  private void 
+  printStatusShortUpstreamHelper
+  (
+   NodeStatus status,
+   int level, 
+   StringBuffer buf
+  ) 
+    throws GlueException
+  {
+    buf.append("->");
+    int wk;
+    for(wk=0; wk<level; wk++) 
+      buf.append("  ");
+    buf.append(status.getNodeID().getName() + "\n");
+    
+    for(NodeStatus sstatus : status.getSources()) 
+      printStatusShortUpstreamHelper(sstatus, level+1, buf);
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/

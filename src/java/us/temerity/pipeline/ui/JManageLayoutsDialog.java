@@ -1,4 +1,4 @@
-// $Id: JManageLayoutsDialog.java,v 1.1 2004/05/08 23:40:57 jim Exp $
+// $Id: JManageLayoutsDialog.java,v 1.2 2004/05/11 19:16:33 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -38,9 +38,14 @@ class JManageLayoutsDialog
       JPanel body = new JPanel(new BorderLayout());
       body.setName("ManageLayoutsPanel");
 
-      body.setMinimumSize(new Dimension(300, 200));
+      
 
-      // ...
+
+
+
+
+
+
 
       String extra[][] = {
 	{ "Rename", "rename-layout", },

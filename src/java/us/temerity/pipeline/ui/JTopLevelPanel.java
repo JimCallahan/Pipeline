@@ -1,8 +1,9 @@
-// $Id: JTopLevelPanel.java,v 1.3 2004/05/07 21:05:47 jim Exp $
+// $Id: JTopLevelPanel.java,v 1.4 2004/05/11 19:16:33 jim Exp $
 
 package us.temerity.pipeline.ui;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.glue.*;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -19,6 +20,7 @@ import javax.swing.plaf.basic.*;
 public  
 class JTopLevelPanel
   extends JPanel
+  implements Glueable
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -188,6 +190,46 @@ class JTopLevelPanel
   }
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   G L U E A B L E                                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  public void 
+  toGlue
+  ( 
+   GlueEncoder encoder   
+  ) 
+    throws GlueException
+  {
+    encoder.encode("GroupID", pGroupID);
+    encoder.encode("Author", pAuthor);
+    encoder.encode("View", pView);
+  }
+
+  public void 
+  fromGlue
+  (
+   GlueDecoder decoder 
+  ) 
+    throws GlueException
+  {
+    Integer groupID = (Integer) decoder.decode("GroupID");
+    if(groupID == null) 
+      throw new GlueException("The \"GroupID\" was missing or (null)!");
+    setGroupID(groupID);
+
+    String author = (String) decoder.decode("Author");
+    if(author == null) 
+      throw new GlueException("The \"GroupID\" was missing or (null)!");
+
+    String view = (String) decoder.decode("View");
+    if(view == null) 
+      throw new GlueException("The \"View\" was missing or (null)!");
+
+    setAuthorView(author, view);
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: ViewerLabels.java,v 1.1 2004/05/07 15:08:29 jim Exp $
+// $Id: ViewerLabels.java,v 1.2 2004/05/11 19:16:33 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -15,7 +15,7 @@ import com.sun.j3d.utils.geometry.*;
 
 /** 
  * Static helper methods for creating textured Java3D labels for use with 
- * @{link JNodeViewerPanel JNodeViewerPanel}.
+ * {@link JNodeViewerPanel JNodeViewerPanel}.
  */ 
 public
 class ViewerLabels

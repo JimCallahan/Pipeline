@@ -1,4 +1,4 @@
-// $Id: JOwnerViewDialog.java,v 1.4 2004/05/08 23:38:38 jim Exp $
+// $Id: JOwnerViewDialog.java,v 1.5 2004/05/11 19:16:33 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -133,7 +133,7 @@ class JOwnerViewDialog
 
       {
 	JLabel label = new JLabel(title);
-	label.setName("ScrollPaneTitle");
+	label.setName("PanelLabel");
 
 	hbox.add(label);
       }
@@ -151,17 +151,19 @@ class JOwnerViewDialog
       lst.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
       lst.setCellRenderer(new JListCellRenderer());
 
-      JScrollPane scroll = new JScrollPane(lst);
-
-      scroll.setMinimumSize(new Dimension(120, 120));
-      scroll.setPreferredSize(new Dimension(200, 200));
-
-      scroll.setHorizontalScrollBarPolicy
-	(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-      scroll.setVerticalScrollBarPolicy
-	(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-      
-      vbox.add(scroll);
+      {
+	JScrollPane scroll = new JScrollPane(lst);
+	
+	scroll.setMinimumSize(new Dimension(120, 120));
+	scroll.setPreferredSize(new Dimension(200, 200));
+	
+	scroll.setHorizontalScrollBarPolicy
+	  (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+	scroll.setVerticalScrollBarPolicy
+	  (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+	
+	vbox.add(scroll);
+      }
     }
 
     vbox.add(Box.createRigidArea(new Dimension(0, 20)));
