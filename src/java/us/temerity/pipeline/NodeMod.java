@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.5 2004/03/09 05:05:57 jim Exp $
+// $Id: NodeMod.java,v 1.6 2004/03/11 10:57:09 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -169,7 +169,9 @@ class NodeMod
   public VersionID
   getWorkingID()
   {
-    return new VersionID(pWorkingID);
+    if(pWorkingID != null)
+      return new VersionID(pWorkingID);
+    return null;
   }
   
 
@@ -216,6 +218,7 @@ class NodeMod
   public Date
   getLastModification() 
   {
+    assert(pLastMod != null);
     return pLastMod;
   }
 
@@ -236,6 +239,7 @@ class NodeMod
   public Date
   getLastCriticalModification() 
   {
+    assert(pLastCriticalMod != null);
     return pLastCriticalMod;
   }
 
@@ -273,8 +277,7 @@ class NodeMod
       throw new IllegalArgumentException
 	("Frozen working versions cannot be renamed!");
 
-    if(name == null) 
-      throw new IllegalArgumentException("The new name cannot be (null)!");
+    validateName(name);
     pName = name;
     
     {
@@ -511,6 +514,11 @@ class NodeMod
     if(toolset == null) 
       throw new IllegalArgumentException
 	("The toolset argument cannot be (null)!");
+
+    if(!Toolsets.exists(toolset)) 
+      throw new IllegalArgumentException
+	("No toolset named (" + toolset + ") exists!");
+
     pToolset = toolset;
 
     updateLastMod();    
