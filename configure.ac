@@ -370,70 +370,6 @@ AC_PATH_PROG(GIMP, gimp, $PATH)
 AC_MSG_RESULT([ ])
 
 
-
-dnl -- SML COMPILER TOOLS ---------------------------------------------------------------------
-
-AC_MSG_RESULT([Locating the SML development tools:])
-
-AC_PATH_PROG(SML, sml, $PATH)
-
-AC_SUBST(CM_CONTROL)
-CM_CONTROL=""
-
-AC_SUBST(CM_BASIS)
-CM_BASIS=""
-
-AC_SUBST(CM_SML_NJ_LIB)
-CM_SML_NJ_LIB=""
-
-AC_SUBST(CM_UNIX_LIB)
-CM_UNIX_LIB=""
-
-AC_SUBST(CM_ML_YACC_LIB)
-CM_ML_YACC_LIB=""
-
-AC_SUBST(SML_VERSION)
-SML_VERSION=`$SML @SMLversion | awk '{print $2}'`
-
-case "$SML_VERSION" in 
-  (110.10) \
-    eval `.arch-n-opsys | awk '{print $4}'`
-    CM_CONTROL="";
-    CM_SML_NJ_LIB="smlnj-lib.cm";
-    CM_UNIX_LIB="unix-lib.cm";
-    CM_ML_YACC_LIB="ml-yacc-lib.cm";;
-
-  (110.32 | 110.36 | 110.40) \
-    eval `.arch-n-opsys | awk '{print $3}'`
-    CM_CONTROL="\"sources.cm\"";
-    CM_BASIS="\$/basis.cm";
-    CM_SML_NJ_LIB="\$/smlnj-lib.cm";
-    CM_UNIX_LIB="\$/unix-lib.cm";
-    CM_ML_YACC_LIB="\$/ml-yacc-lib.cm";;
-
-  (*) \
-    AC_MSG_ERROR([don't know how to handle this version of SML-NJ]);;
-esac
-
-AC_MSG_CHECKING([SML version])
-AC_MSG_RESULT([$SML_VERSION])
-
-AC_MSG_CHECKING([CM control])
-AC_MSG_RESULT([$CM_CONTROL])
-
-AC_MSG_CHECKING([smlnj lib])
-AC_MSG_RESULT([$CM_SML_NJ_LIB])
-
-AC_MSG_CHECKING([unix lib])
-AC_MSG_RESULT([$CM_UNIX_LIB])
-
-AC_MSG_CHECKING([yacc lib])
-AC_MSG_RESULT([$CM_ML_YACC_LIB])
-
-AC_MSG_RESULT([ ])
-
-
-
 dnl -- JAVA TOOLS -----------------------------------------------------------------------------
 
 AC_MSG_RESULT([Locating the Java development tools:])
@@ -781,6 +717,9 @@ AC_CONFIG_FILES([
   src/utils/src/PackageInfo.cc
 
   src/utils/docs/Makefile
+
+  tests/Makefile
+  
 ])
 
 AC_OUTPUT
