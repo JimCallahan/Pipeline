@@ -1,4 +1,4 @@
-// $Id: NodeMgr.java,v 1.1 2004/03/01 21:45:04 jim Exp $
+// $Id: NodeMgr.java,v 1.2 2004/03/03 07:48:47 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -105,7 +105,7 @@ class NodeMgr
   ) 
     throws PipelineException
   {
-    // search all views for the node...  
+    
 
     throw new PipelineException("Not implemented yet.");
   }
@@ -227,7 +227,7 @@ class NodeMgr
    * In addition, this operation also deletes any files associated with the nodes. 
    * Unless the <CODE>override</CODE> argument is set to <CODE>true</CODE>, this operation 
    * will throw an exception if the working version of the node does not have an 
-   * <CODE>OverallNodeState</CODE> of {@link NodeState#Identical Identical}.  This is 
+   * <CODE>OverallNodeState</CODE> of {@link OverallNodeState#Identical Identical}.  This is 
    * behavior is designed to prevent accidental loss of node information and associated data 
    * files. Therefore, setting the <CODE>override</CODE> argument to <CODE>false</CODE> is 
    * strongly recommended. <P> 
