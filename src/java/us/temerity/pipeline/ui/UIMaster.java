@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.26 2004/06/28 00:21:10 jim Exp $
+// $Id: UIMaster.java,v 1.27 2004/06/28 23:39:01 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -430,7 +430,6 @@ class UIMaster
     pManageUsersDialog.setVisible(true);
   }
 
-
   /**
    * Show the manage toolsets dialog.
    */ 
@@ -439,6 +438,16 @@ class UIMaster
   {
     pManageToolsetsDialog.updateAll();
     pManageToolsetsDialog.setVisible(true);
+  }
+
+  /**
+   * Show the manage link catagories dialog.
+   */ 
+  public void 
+  showManageLinkCatagoriesDialog()
+  {
+    pManageLinkCatagoriesDialog.updateAll();
+    pManageLinkCatagoriesDialog.setVisible(true);
   }
 
   /**
@@ -1204,7 +1213,7 @@ class UIMaster
    * @param vwidth
    *   The minimum and preferred width of the identifier field.
    */ 
-  public static JTextField
+  public static JIdentifierField
   createTitledIdentifierField
   (
    JPanel tpanel, 
@@ -2158,7 +2167,7 @@ class UIMaster
 
       /* make sure that the default working area exists */ 
       try {
-	pMasterMgrClient.createWorkingArea("default");
+	pMasterMgrClient.createWorkingArea(PackageInfo.sUser, "default");
       }
       catch(PipelineException ex) {	
 	Logs.ops.severe("Unable to initialize the default working area!\n" + 
@@ -2351,9 +2360,11 @@ class UIMaster
 	pAboutDialog     = new JAboutDialog();
 	pConfigDialog    = new JConfigDialog();
 
+	pDefaultEditorsDialog = new JDefaultEditorsDialog(); 
+
 	pManageUsersDialog    = new JManageUsersDialog();
 	pManageToolsetsDialog = new JManageToolsetsDialog();
-	pDefaultEditorsDialog = new JDefaultEditorsDialog(); 
+	pManageLinkCatagoriesDialog = new JManageLinkCatagoriesDialog();
 
 	pSubProcessFailureDialog = new JSubProcessFailureDialog();
       }
@@ -2773,6 +2784,11 @@ class UIMaster
   private JConfigDialog  pConfigDialog;
 
   /**
+   * The manage editors dialog.
+   */ 
+  private JDefaultEditorsDialog  pDefaultEditorsDialog;
+
+  /**
    * The manage users dialog.
    */ 
   private JManageUsersDialog  pManageUsersDialog;
@@ -2783,9 +2799,9 @@ class UIMaster
   private JManageToolsetsDialog  pManageToolsetsDialog;
 
   /**
-   * The manage editors dialog.
+   * The manage linkCatagories dialog.
    */ 
-  private JDefaultEditorsDialog  pDefaultEditorsDialog;
+  private JManageLinkCatagoriesDialog  pManageLinkCatagoriesDialog;
 
   /**
    * The dialog giving details of the failure of a subprocess.
