@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.31 2004/07/24 18:28:11 jim Exp $
+// $Id: UIMaster.java,v 1.32 2004/07/25 03:10:05 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -353,6 +353,16 @@ class UIMaster
   {
     pManageLicenseKeysDialog.updateLicenseKeys();
     pManageLicenseKeysDialog.setVisible(true);
+  }
+
+  /**
+   * Show the manage selection keys dialog.
+   */ 
+  public void 
+  showManageSelectionKeysDialog()
+  {
+    pManageSelectionKeysDialog.updateSelectionKeys();
+    pManageSelectionKeysDialog.setVisible(true);
   }
 
   /**
@@ -2330,9 +2340,10 @@ class UIMaster
 
 	pDefaultEditorsDialog = new JDefaultEditorsDialog(); 
 
-	pManageUsersDialog       = new JManageUsersDialog();
-	pManageToolsetsDialog    = new JManageToolsetsDialog();
-	pManageLicenseKeysDialog = new JManageLicenseKeysDialog();
+	pManageUsersDialog         = new JManageUsersDialog();
+	pManageToolsetsDialog      = new JManageToolsetsDialog();
+	pManageLicenseKeysDialog   = new JManageLicenseKeysDialog();
+	pManageSelectionKeysDialog = new JManageSelectionKeysDialog();
 
 	pSubProcessFailureDialog = new JSubProcessFailureDialog();
       }
@@ -2813,6 +2824,11 @@ class UIMaster
    * The manage license keys dialog.
    */ 
   private JManageLicenseKeysDialog  pManageLicenseKeysDialog;
+
+  /**
+   * The manage selection keys dialog.
+   */ 
+  private JManageSelectionKeysDialog  pManageSelectionKeysDialog;
 
   /**
    * The dialog giving details of the failure of a subprocess.
