@@ -1,4 +1,4 @@
-// $Id: Dates.java,v 1.2 2004/10/25 17:46:19 jim Exp $
+// $Id: Dates.java,v 1.3 2004/11/14 02:02:40 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -39,6 +39,8 @@ class Dates
    Date date
   ) 
   {
+    if(date == null) 
+      return "-";
     return sFormat.format(date);
   }
 
