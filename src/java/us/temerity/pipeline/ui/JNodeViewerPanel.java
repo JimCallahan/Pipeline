@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.16 2004/06/08 03:03:45 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.17 2004/06/08 20:12:50 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -136,58 +136,70 @@ class JNodeViewerPanel
       pPanelPopup.add(item);  
     }
 
-    /* node popup menu */ 
+    /* node popup menus */ 
     {
       JMenuItem item;
       JMenu sub;
       
+      pShortNodePopup = new JPopupMenu();  
+      pShortNodePopup.addPopupMenuListener(this);
+
+      pMediumNodePopup = new JPopupMenu();  
+      pMediumNodePopup.addPopupMenuListener(this);
+
       pNodePopup = new JPopupMenu();  
       pNodePopup.addPopupMenuListener(this);
        
-      item = new JMenuItem("Make Root");
-      item.setActionCommand("make-root");
-      item.addActionListener(this);
-      pNodePopup.add(item);  
-
-      item = new JMenuItem("Add Root");
-      item.setActionCommand("add-root");
-      item.addActionListener(this);
-      pNodePopup.add(item);  
-
-      item = new JMenuItem("Replace Root");
-      item.setActionCommand("replace-root");
-      item.addActionListener(this);
-      pNodePopup.add(item);  
-
-      item = new JMenuItem("Remove Root");
-      item.setActionCommand("remove-root");
-      item.addActionListener(this);
-      pNodePopup.add(item);  
-
-      item = new JMenuItem("Remove All Roots");
-      item.setActionCommand("remove-all-roots");
-      item.addActionListener(this);
-      pNodePopup.add(item);  
-      
-      pNodePopup.addSeparator();
-
-      item = new JMenuItem("Edit");
-      item.setActionCommand("edit");
-      item.addActionListener(this);
-      pNodePopup.add(item);
-
-      {
-	sub = new JMenu("Edit With");
-	pNodePopup.add(sub);
+      JPopupMenu menus[] = { pShortNodePopup, pMediumNodePopup, pNodePopup };
+      int wk;
+      for(wk=0; wk<menus.length; wk++) {
+	item = new JMenuItem("Make Root");
+	item.setActionCommand("make-root");
+	item.addActionListener(this);
+	menus[wk].add(item);  
 	
-	for(String editor : Plugins.getEditorNames()) {
-	  item = new JMenuItem(editor);
-	  item.setActionCommand("edit-with:" + editor);
+	item = new JMenuItem("Add Root");
+	item.setActionCommand("add-root");
+	item.addActionListener(this);
+	menus[wk].add(item);  
+	
+	item = new JMenuItem("Replace Root");
+	item.setActionCommand("replace-root");
+	item.addActionListener(this);
+	menus[wk].add(item);  
+	
+	item = new JMenuItem("Remove Root");
+	item.setActionCommand("remove-root");
+	item.addActionListener(this);
+	menus[wk].add(item);  
+	
+	item = new JMenuItem("Remove All Roots");
+	item.setActionCommand("remove-all-roots");
+	item.addActionListener(this);
+	menus[wk].add(item);  
+	
+	if(wk > 0) {
+	  menus[wk].addSeparator();
+	  
+	  item = new JMenuItem((wk == 1) ? "View" : "Edit");
+	  item.setActionCommand("edit");
 	  item.addActionListener(this);
-	  sub.add(item);
+	  menus[wk].add(item);
+	  
+	  {
+	    sub = new JMenu((wk == 1) ? "View With" : "Edit With");
+	    menus[wk].add(sub);
+	    
+	    for(String editor : Plugins.getEditorNames()) {
+	      item = new JMenuItem(editor);
+	      item.setActionCommand("edit-with:" + editor);
+	      item.addActionListener(this);
+	      sub.add(item);
+	    }
+	  }
 	}
       }
-      
+
       pNodePopup.addSeparator();
 
       sub = new JMenu("Link");
@@ -196,17 +208,17 @@ class JNodeViewerPanel
       pNodePopup.add(sub);
 
       item = new JMenuItem("Unlink");
-      pUnlinkItem = item;
       item.setActionCommand("unlink");
       item.addActionListener(this);
+      item.setEnabled(false);  // FOR NOW...
       pNodePopup.add(item);
       
       pNodePopup.addSeparator();
       
       item = new JMenuItem("Add Secondary...");
-      pAddSecondaryItem = item;
       item.setActionCommand("add-secondary");
       item.addActionListener(this);
+      item.setEnabled(false);  // FOR NOW...
       pNodePopup.add(item);
       
       sub = new JMenu("Remove Secondary");
@@ -217,33 +229,31 @@ class JNodeViewerPanel
       pNodePopup.addSeparator();
       
       item = new JMenuItem("Make");
-      pMakeItem = item;
       item.setActionCommand("make");
       item.addActionListener(this);
+      item.setEnabled(false);  // FOR NOW...
       pNodePopup.add(item);
       
       item = new JMenuItem("Make Local");
-      pMakeLocalItem = item;
       item.setActionCommand("make-local");
       item.addActionListener(this);
+      item.setEnabled(false);  // FOR NOW...
       pNodePopup.add(item);
 
       pNodePopup.addSeparator();
       
       item = new JMenuItem("Rename...");
-      pRenameItem = item;
       item.setActionCommand("rename");
       item.addActionListener(this);
       pNodePopup.add(item);
 
       item = new JMenuItem("Import...");
-      pImportItem = item;
       item.setActionCommand("import");
       item.addActionListener(this);
+      item.setEnabled(false);  // FOR NOW...
       pNodePopup.add(item);
 
       item = new JMenuItem("Clone...");
-      pCloneItem = item;
       item.setActionCommand("clone");
       item.addActionListener(this);
       pNodePopup.add(item);
@@ -251,27 +261,26 @@ class JNodeViewerPanel
       pNodePopup.addSeparator();
       
       item = new JMenuItem("Check-In...");
-      pCheckInItem = item;
       item.setActionCommand("check-in");
       item.addActionListener(this);
+      item.setEnabled(false);  // FOR NOW...
       pNodePopup.add(item);
   
       item = new JMenuItem("Check-Out...");
-      pCheckOutItem = item;
       item.setActionCommand("check-out");
       item.addActionListener(this);
+      item.setEnabled(false);  // FOR NOW...
       pNodePopup.add(item);
       
       pNodePopup.addSeparator();
 
       item = new JMenuItem("Release");
-      pReleaseItem = item;
       item.setActionCommand("release");
       item.addActionListener(this);
+      item.setEnabled(false);  // FOR NOW...
       pNodePopup.add(item);
       
       item = new JMenuItem("Revoke");
-      pRevokeItem = item;
       item.setActionCommand("revoke");
       item.addActionListener(this);
       pNodePopup.add(item);
@@ -280,6 +289,7 @@ class JNodeViewerPanel
       pDestroyItem = item;
       item.setActionCommand("destroy");
       item.addActionListener(this);
+      item.setEnabled(false);  // FOR NOW...
       pNodePopup.add(item);
     }
 
@@ -418,7 +428,9 @@ class JNodeViewerPanel
 
     /* initialize child dialogs */ 
     {
+      pRenameDialog   = new JRenameDialog();
       pRegisterDialog = new JRegisterDialog();
+      pRevokeDialog   = new JRevokeDialog();
     }
   }
 
@@ -585,6 +597,48 @@ class JNodeViewerPanel
     setRoots(roots);
   }
 
+  /**
+   * Remove the given node name from the root nodes displayed by the viewer. <P> 
+   * 
+   * @param name
+   *   The fully resolved node name.
+   */
+  private synchronized void
+  removeRoot
+  (
+   String name
+  )
+  {
+    TreeSet<String> roots = new TreeSet<String>(pRoots.keySet());
+    roots.remove(name);
+
+    setRoots(roots);
+  }
+
+  /**
+   * Rename the given root node displayed by the viewer. <P> 
+   * 
+   * @param oldName
+   *   The old fully resolved node name.
+   * 
+   * @param newName
+   *   The new fully resolved node name.
+   */
+  private synchronized void
+  renameRoot
+  (
+   String oldName,
+   String newName
+  )
+  {
+    TreeSet<String> roots = new TreeSet<String>(pRoots.keySet());
+    roots.remove(oldName);
+    roots.add(newName);
+
+    setRoots(roots);
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   U S E R   I N T E R F A C E                                                          */
@@ -619,18 +673,7 @@ class JNodeViewerPanel
   updateNodeMenu() 
   {
     pLinkMenu.setEnabled(false);
-    pUnlinkItem.setEnabled(!pIsLocked);
-    pAddSecondaryItem.setEnabled(!pIsLocked);
     pRemoveSecondaryMenu.setEnabled(false);
-    pMakeItem.setEnabled(!pIsLocked);
-    pMakeLocalItem.setEnabled(!pIsLocked);
-    pRenameItem.setEnabled(!pIsLocked);
-    pImportItem.setEnabled(!pIsLocked);
-    pCloneItem.setEnabled(!pIsLocked);
-    pCheckInItem.setEnabled(!pIsLocked);
-    pCheckOutItem.setEnabled(!pIsLocked);
-    pReleaseItem.setEnabled(!pIsLocked);
-    pRevokeItem.setEnabled(!pIsLocked);
     pDestroyItem.setEnabled(false);
 
     if(!pIsLocked) {
@@ -680,7 +723,6 @@ class JNodeViewerPanel
 	/* privileged operations */ 
 	{
 	  boolean isPrivileged = master.getMasterMgrClient().isPrivileged();
-
 	  pDestroyItem.setEnabled(isPrivileged);
 	}
       }
@@ -1466,8 +1508,18 @@ class JNodeViewerPanel
 	      for(ViewerNode vnode : primarySelect(vunder)) 
 		vnode.update();
 	    
-	      updateNodeMenu();
-	      pNodePopup.show(e.getComponent(), e.getX(), e.getY());
+	      if(pPrimary.getNodeStatus().getDetails() != null) {
+		if(pIsLocked) {
+		  pMediumNodePopup.show(e.getComponent(), e.getX(), e.getY());
+		}
+		else {
+		  updateNodeMenu();
+		  pNodePopup.show(e.getComponent(), e.getX(), e.getY());
+		}
+	      }
+	      else {
+		pShortNodePopup.show(e.getComponent(), e.getX(), e.getY());
+	      }
 	    }
 	    else if(under instanceof ViewerLinkRelationship) {
 	      ViewerLinkRelationship lunder = (ViewerLinkRelationship) under;
@@ -1900,9 +1952,12 @@ class JNodeViewerPanel
       doRemoveRoot();
     else if(cmd.equals("remove-all-roots"))
       doRemoveAllRoots();
-
+    else if(cmd.equals("rename"))
+      doRename();
     else if(cmd.equals("clone"))
       doClone();
+    else if(cmd.equals("revoke"))
+      doRevoke();
 
 
     // ...
@@ -1987,11 +2042,7 @@ class JNodeViewerPanel
   doRemoveRoot()
   {
     String root = getPrimarySelectionRootName();
-
-    TreeSet<String> roots = new TreeSet<String>(pRoots.keySet());
-    roots.remove(root);
-
-    setRoots(roots);
+    removeRoot(root);
   }
 
   /**
@@ -2006,6 +2057,35 @@ class JNodeViewerPanel
   
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Rename the primary seleted node.
+   */ 
+  public void 
+  doRename() 
+  {
+    if(pPrimary != null) {
+      NodeDetails details = pPrimary.getNodeStatus().getDetails();
+      if(details != null) {
+
+	NodeMod mod = details.getWorkingVersion();
+	if(mod != null) {	
+	  pRenameDialog.updateNode(mod);
+	  pRenameDialog.setVisible(true);
+	
+	  if(pRenameDialog.wasConfirmed()) {
+	    String name = pRenameDialog.getName();
+	    RenameTask task = 
+	      new RenameTask(mod.getName(), name, pRenameDialog.renameFiles());
+	    task.start();
+	  }
+	}
+      }
+    }
+
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();
+  }
   
   /**
    * Register a new node based on the primary selected node.
@@ -2013,28 +2093,30 @@ class JNodeViewerPanel
   public void 
   doClone() 
   {
-    if(pPrimary == null) 
-      return;
+    if(pPrimary != null) {
+      NodeDetails details = pPrimary.getNodeStatus().getDetails();
+      if(details != null) {
 
-    NodeDetails details = pPrimary.getNodeStatus().getDetails();
-    if(details == null) 
-      return;
-
-    NodeCommon com = details.getWorkingVersion();
-    if(com == null) 
-      com = details.getLatestVersion();
-    assert(com != null);
-
-    pRegisterDialog.updateNode(pAuthor, pView, com);
-    pRegisterDialog.setVisible(true);
-    
-    if(pRegisterDialog.wasConfirmed()) {
-      NodeMod mod = pRegisterDialog.getWorkingVersion();
-      if(mod != null) {
-	RegisterTask task = new RegisterTask(mod);
-	task.start();
+	NodeCommon com = details.getWorkingVersion();
+	if(com == null) 
+	  com = details.getLatestVersion();
+	assert(com != null);
+	
+	pRegisterDialog.updateNode(pAuthor, pView, com);
+	pRegisterDialog.setVisible(true);
+	
+	if(pRegisterDialog.wasConfirmed()) {
+	  NodeMod mod = pRegisterDialog.getWorkingVersion();
+	  if(mod != null) {
+	    RegisterTask task = new RegisterTask(mod);
+	    task.start();
+	  }
+	}
       }
     }
+
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();
   }
 
   /**
@@ -2053,6 +2135,33 @@ class JNodeViewerPanel
 	task.start();
       }
     }
+  }
+
+  /**
+   * Revoke the primary selected node.
+   */ 
+  public void 
+  doRevoke() 
+  {
+    if(pPrimary != null) {
+      NodeDetails details = pPrimary.getNodeStatus().getDetails();
+      if(details != null) {
+
+	NodeMod mod = details.getWorkingVersion();
+	if(mod != null) {	
+	  pRevokeDialog.updateNode(mod);
+	  pRevokeDialog.setVisible(true);
+	
+	  if(pRevokeDialog.wasConfirmed()) {
+	    RevokeTask task = new RevokeTask(mod.getName(), pRevokeDialog.removeFiles());
+	    task.start();
+	  }
+	}
+      }
+    }
+
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();
   }
 
 
@@ -2385,6 +2494,52 @@ class JNodeViewerPanel
   /*----------------------------------------------------------------------------------------*/
 
   /** 
+   * Rename a given node.
+   */ 
+  private
+  class RenameTask
+    extends Thread
+  {
+    public 
+    RenameTask
+    (
+     String oldName, 
+     String newName,
+     boolean renameFiles
+    ) 
+    {
+      pOldName     = oldName; 
+      pNewName     = newName; 
+      pRenameFiles = renameFiles;
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Renaming Node...")) {
+	try {
+	  master.getMasterMgrClient().rename(pAuthor, pView, 
+					     pOldName, pNewName, pRenameFiles);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	renameRoot(pOldName, pNewName);
+      }
+    }
+
+    private String   pOldName; 
+    private String   pNewName; 
+    private boolean  pRenameFiles; 
+  }
+
+  /** 
    * Register a new node.
    */ 
   private
@@ -2421,6 +2576,49 @@ class JNodeViewerPanel
     }
 
     private NodeMod  pNodeMod;
+  }
+
+
+  /** 
+   * Revoke a given node.
+   */ 
+  private
+  class RevokeTask
+    extends Thread
+  {
+    public 
+    RevokeTask
+    (
+     String name, 
+     boolean removeFiles
+    ) 
+    {
+      pName        = name; 
+      pRemoveFiles = removeFiles;
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Revoking Node...")) {
+	try {
+	  master.getMasterMgrClient().revoke(pAuthor, pView, pName, pRemoveFiles);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	removeRoot(pName);
+      }
+    }
+
+    private String  pName; 
+    private boolean pRemoveFiles; 
   }
 
 
@@ -2591,24 +2789,15 @@ class JNodeViewerPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The node popup menu.
+   * The node popup menus.
    */ 
+  private JPopupMenu  pShortNodePopup; 
+  private JPopupMenu  pMediumNodePopup; 
   private JPopupMenu  pNodePopup; 
   
   /**
    * The node popup menu items.
    */ 
-  private JMenuItem  pUnlinkItem;
-  private JMenuItem  pAddSecondaryItem;
-  private JMenuItem  pMakeItem;
-  private JMenuItem  pMakeLocalItem;
-  private JMenuItem  pRenameItem;
-  private JMenuItem  pImportItem;
-  private JMenuItem  pCloneItem;
-  private JMenuItem  pCheckInItem;
-  private JMenuItem  pCheckOutItem;
-  private JMenuItem  pReleaseItem;
-  private JMenuItem  pRevokeItem;
   private JMenuItem  pDestroyItem;
 
   /**
@@ -2712,8 +2901,18 @@ class JNodeViewerPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * The rename node dialog.
+   */ 
+  private JRenameDialog  pRenameDialog;
+
+  /**
    * The register node dialog.
    */ 
   private JRegisterDialog  pRegisterDialog;
+
+  /**
+   * The revoke node dialog.
+   */ 
+  private JRevokeDialog  pRevokeDialog;
 
 }
