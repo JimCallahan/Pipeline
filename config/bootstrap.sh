@@ -14,7 +14,7 @@ pushd i686-pc-linux-gnu-dbg
     --with-javamake=/usr/java/javamake/lib/javamake.jar \
     --prefix=/base/apps/i686-pc-linux-gnu-dbg/pipeline-040102/pipeline \
     --datadir=/base/apps/i686-pc-linux-gnu-dbg/pipeline-040102/pipeline/share \
-    --with-prod=/fxrhino1/ATTO2/prod2 \
+    --with-prod=/fxrhino1/ATTO2/prod \
     --with-toolset=/base/toolset \
     --with-sql-server=fxlinux101 \
     --with-sql-port=53139 \
@@ -28,7 +28,7 @@ pushd i686-pc-linux-gnu-opt
     --with-javamake=/usr/java/javamake/lib/javamake.jar \
     --prefix=/base/apps/i686-pc-linux-gnu-opt/pipeline-040102/pipeline \
     --datadir=/base/apps/i686-pc-linux-gnu-opt/pipeline-040102/pipeline/share \
-    --with-prod=/fxrhino1/ATTO2/prod2 \
+    --with-prod=/fxrhino1/ATTO2/prod \
     --with-toolset=/base/toolset \
     --with-sql-server=fxlinux101 \
     --with-sql-port=53139 \
