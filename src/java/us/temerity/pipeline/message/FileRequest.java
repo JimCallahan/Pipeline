@@ -1,4 +1,4 @@
-// $Id: FileRequest.java,v 1.4 2004/03/15 19:11:33 jim Exp $
+// $Id: FileRequest.java,v 1.5 2004/03/16 17:27:24 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -22,7 +22,6 @@ import us.temerity.pipeline.FileMgrServer;
  * 
  * @see FileCheckInReq
  * @see FileCheckOutReq
- * @see FileCheckSumReq
  * @see FileFreezeReq
  * @see FileUnfreezeReq
  * @see FileStateReq
@@ -39,11 +38,6 @@ enum FileRequest
    * An instance of {@link FileCheckOutReq FileCheckOutReq} is next.
    */
   CheckOut, 
-  
-  /**
-   * An instance of {@link FileCheckSumReq FileCheckSumReq} is next.
-   */
-  CheckSum, 
   
   /**
    * An instance of {@link FileFreezeReq FileFreezeReq} is next.
