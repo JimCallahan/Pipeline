@@ -1,4 +1,4 @@
-// $Id: BaseEditor.java,v 1.2 2004/02/25 01:26:34 jim Exp $
+// $Id: BaseEditor.java,v 1.3 2004/02/28 19:56:34 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -16,7 +16,6 @@ import java.io.*;
 public
 class BaseEditor
   extends Described
-  implements Glueable
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -117,6 +116,40 @@ class BaseEditor
   }
 
   
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   O B J E C T   O V E R R I D E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Indicates whether some other object is "equal to" this one.
+   * 
+   * @param obj 
+   *   The reference object with which to compare.
+   */
+  public boolean
+  equals
+  (
+   Object obj   
+  )
+  {
+    if((obj != null) && (obj instanceof BaseEditor)) {
+      BaseEditor desc = (BaseEditor) obj;
+      return (super.equals(obj) && 
+	      pProgram.equals(desc.pProgram));
+    }
+    return false;
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static final long serialVersionUID = 5038577659347876974L;
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
