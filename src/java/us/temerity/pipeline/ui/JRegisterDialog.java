@@ -1,4 +1,4 @@
-// $Id: JRegisterDialog.java,v 1.4 2004/07/14 21:10:12 jim Exp $
+// $Id: JRegisterDialog.java,v 1.5 2004/09/03 11:03:51 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -255,15 +255,21 @@ class JRegisterDialog
       String toolset = pToolsetField.getSelected();
 
       UIMaster master = UIMaster.getInstance();
+      TreeSet<String> tsets = new TreeSet<String>();
       try {
-	pToolsetField.setValues(master.getMasterMgrClient().getActiveToolsetNames());
+	tsets.addAll(master.getMasterMgrClient().getActiveToolsetNames());
 	defaultToolset = master.getMasterMgrClient().getDefaultToolsetName();
       }
       catch(PipelineException ex) {
-	ArrayList<String> values = new ArrayList<String>();
-	values.add("-");
-	pToolsetField.setValues(values);
+	master.showErrorDialog(ex);
       }
+      
+      if(tsets.isEmpty())
+	tsets.add("-");
+
+      pToolsetField.setValues(tsets);
+      if(defaultToolset == null)
+	defaultToolset = tsets.last();
 
       if((toolset != null) && pToolsetField.getValues().contains(toolset))
 	pToolsetField.setSelected(toolset);
@@ -630,7 +636,7 @@ class JRegisterDialog
       FileSeq primary = new FileSeq(fpat, frange);
 
       String toolset = pToolsetField.getSelected();
-      if(toolset == null) 
+      if((toolset == null) || toolset.equals("-")) 			      
 	throw new PipelineException
 	  ("Unable to register node (" + name + ") with an unspecified toolset!");
 
