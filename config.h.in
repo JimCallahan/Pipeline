@@ -7,9 +7,6 @@
 /* Define if you have the ANSI C header files.  */
 #undef STDC_HEADERS
 
-/* Define the unique host architecture string. */ 
-#undef ARCHINFO_STRING
-
 /* Define if using the KAI C++ compiler (KCC). */ 
 #undef USING_KAI_CXX 
 
