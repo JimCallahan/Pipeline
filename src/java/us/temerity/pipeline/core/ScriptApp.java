@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.36 2005/03/24 03:49:01 jim Exp $
+// $Id: ScriptApp.java,v 1.37 2005/03/29 03:48:55 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -275,7 +275,7 @@ class ScriptApp
        "        --fseq=prefix[.#|@...][.suffix][,start[-end[xby]]]\n" +
        "      --rename=node-name\n" +
        "        [--author=user-name] [--view=view-name]\n" +
-       "        --name=new-node-name [--rename-files]\n" +
+       "        --file-pattern=new-node-name[.#|@...][.suffix] [--rename-files]\n" +
        "      --renumber=node-name\n" +
        "        [--author=user-name] [--view=view-name]\n" +
        "        --range=start[-end[xby]] [--remove-files]\n" +
@@ -3381,8 +3381,14 @@ class ScriptApp
     case ScriptOptsParserConstants.PREFIX: 
       return "a file sequence prefix";
 
-    case ScriptOptsParserConstants.SUFFIX2: 
+    case ScriptOptsParserConstants.SUFFIX2:
       return "a file sequence suffix";
+
+    case ScriptOptsParserConstants.FILE_PAT_PREFIX: 
+      return "a file pattern prefix";
+
+    case ScriptOptsParserConstants.FILE_PAT_SUFFIX: 
+      return "a file pattern suffix";
 
     case ScriptOptsParserConstants.FRAME_NUMBER:
       return "a frame number";
@@ -3438,6 +3444,11 @@ class ScriptApp
     case ScriptOptsParserConstants.AE41:
     case ScriptOptsParserConstants.AE42:
     case ScriptOptsParserConstants.AE43:
+    case ScriptOptsParserConstants.AE44:
+    case ScriptOptsParserConstants.AE45:
+    case ScriptOptsParserConstants.AE46:
+    case ScriptOptsParserConstants.AE47:
+    case ScriptOptsParserConstants.AE48:
       return null;
 
     default: 

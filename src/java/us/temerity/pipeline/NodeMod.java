@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.36 2005/01/22 01:36:35 jim Exp $
+// $Id: NodeMod.java,v 1.37 2005/03/29 03:48:55 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -334,13 +334,13 @@ class NodeMod
   /**
    * Rename an initial working version of the node and its associated primary file sequence.
    * 
-   * @param name 
-   *   The new fully resolved node name.
+   * @param pattern
+   *   The new fully resolved file pattern.
    */
   public void 
   rename
   ( 
-   String name
+   FilePattern pattern
   ) 
     throws PipelineException
   {
@@ -353,15 +353,26 @@ class NodeMod
 	("Only initial working versions can be renamed.\n" +
 	 "The working version (" + pName + ") is not an initial working version!");
 
-    validateName(name);
-    pName = name;
+    String nname = pattern.getPrefix();
+
+    validateName(nname);
+    pName = nname;
     
     {
       FilePattern opat = pPrimarySeq.getFilePattern();
-      FrameRange range = pPrimarySeq.getFrameRange();
+      if(opat.hasFrameNumbers() != pattern.hasFrameNumbers()) 
+	throw new PipelineException
+	  ("Unable to rename the node (" + pName + "), because the new file pattern " + 
+	   "(" + pattern + ") " + (pattern.hasFrameNumbers() ? "has" : "does NOT have") + 
+	   " frame numbers and the old file pattern (" + opat + ") " +
+	   (opat.hasFrameNumbers() ? "has" : "does NOT have") + " frame numbers!");
 
-      File path = new File(name);      
-      FilePattern pat = new FilePattern(path.getName(), opat.getPadding(), opat.getSuffix());
+      FrameRange range = pPrimarySeq.getFrameRange();
+      
+      File path = new File(nname);    
+      FilePattern pat = 
+	new FilePattern(path.getName(), pattern.getPadding(), pattern.getSuffix());
+  
       pPrimarySeq = new FileSeq(pat, range);
     }
     

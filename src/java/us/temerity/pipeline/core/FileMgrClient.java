@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.28 2005/03/23 00:35:23 jim Exp $
+// $Id: FileMgrClient.java,v 1.29 2005/03/29 03:48:55 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -383,20 +383,23 @@ class FileMgrClient
    * 
    * @param mod 
    *   The working version of the node.
+   * 
+   * @param pattern
+   *   The new fully resolved file pattern.
    */  
   public synchronized void 
   rename 
   (
    NodeID id, 
-   NodeMod mod, 
-   String newName
+   NodeMod mod,
+   FilePattern pattern   
   ) 
     throws PipelineException 
   {
     verifyConnection();
 
     FileRenameReq req = 
-      new FileRenameReq(id, mod.getSequences(), newName);
+      new FileRenameReq(id, mod.getSequences(), pattern);
 
     Object obj = performTransaction(FileRequest.Rename, req);
     handleSimpleResponse(obj);

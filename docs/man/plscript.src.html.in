@@ -650,9 +650,12 @@ Node Versions</a></li>
  style="font-style: italic;">user-name</span>]</span> <span
  style="font-weight: normal;">[</span><a href="#--view">--view</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]</span><span
- style="font-weight: normal;"> <span style="font-weight: bold;">--name</span>=<span
- style="font-style: italic;">new-node-name</span> [<span
- style="font-weight: bold;">--rename-files</span>]<span
+ style="font-weight: normal;"> <span style="font-weight: bold;">--file-pattern</span>=<span
+ style="font-style: italic;">new-node-name</span></span><span
+ style="font-weight: normal;">[.#|@...][.<span
+ style="font-style: italic;">suffix</span>]</span><span
+ style="font-weight: normal;"><span style="font-style: italic;"></span>
+[<span style="font-weight: bold;">--rename-files</span>]<span
  style="font-style: italic;"><br>
           </span></span></li>
         <li style="font-weight: bold;"><a href="#working_--renumber"><span
@@ -3317,7 +3320,14 @@ owned by the user (<span style="font-style: italic;">user-name</span>).<br>
  href="#--view">--view</a><span style="font-weight: normal;">=<span
  style="font-style: italic;">view-name</span>]</span><span
  style="font-weight: normal;"><span style="font-weight: bold;"><br>
-&nbsp;&nbsp;&nbsp; --name</span>=<span style="font-style: italic;">new-node-name</span>
+&nbsp;&nbsp;&nbsp; </span></span><span style="font-weight: normal;"> <span
+ style="font-weight: bold;">--file-pattern</span>=<span
+ style="font-style: italic;">new-node-name</span></span><span
+ style="font-weight: normal;">[.#|@...][.<span
+ style="font-style: italic;">suffix</span>]</span><span
+ style="font-weight: normal;"><span style="font-style: italic;"></span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span><span
+ style="font-style: italic;"></span>
 [<span style="font-weight: bold;">--rename-files</span>]<br>
 <br>
 </span>

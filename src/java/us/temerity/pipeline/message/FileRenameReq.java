@@ -1,4 +1,4 @@
-// $Id: FileRenameReq.java,v 1.2 2004/03/31 08:34:56 jim Exp $
+// $Id: FileRenameReq.java,v 1.3 2005/03/29 03:48:56 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -32,15 +32,15 @@ class FileRenameReq
    * @param fseqs
    *   The file sequences associated with the working version.
    * 
-   * @param newName
-   *   The new name for the node.
+   * @param pattern
+   *   The new fully resolved file pattern.
    */
   public
   FileRenameReq
   (
    NodeID id, 
    TreeSet<FileSeq> fseqs, 
-   String newName
+   FilePattern pattern
   )
   { 
     if(id == null) 
@@ -51,9 +51,10 @@ class FileRenameReq
       throw new IllegalArgumentException("The working file sequences cannot (null)!");
     pFileSeqs = fseqs;
 
-    if(newName == null) 
-      throw new IllegalArgumentException("The new node name cannot be (null)!");
-    pNewName = newName;
+    if(pattern == null) 
+      throw new IllegalArgumentException
+	("The new file pattern cannot be (null)!");
+    pPattern = pattern;
   }
 
 
@@ -79,14 +80,16 @@ class FileRenameReq
   {
     return pFileSeqs;
   }
+
   /**
-   * Gets the new fully resolved node name.
+   * Gets the new fully resolved file pattern.
    */
-  public String
-  getNewName() 
+  public FilePattern
+  getFilePattern() 
   {
-    return pNewName;
+    return pPattern; 
   }
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -112,9 +115,9 @@ class FileRenameReq
   private TreeSet<FileSeq>  pFileSeqs;
 
   /**
-   * The new fully resolved node name.
+   * The new fully resolved file pattern.
    */
-  private String  pNewName;
+  private FilePattern  pPattern;
 
 }
   

@@ -247,7 +247,7 @@ ScriptOptsParser
 
   private Boolean     pRemoveFiles;
   private Boolean     pRenameFiles;
-  private String      pNewName; 
+  private FilePattern pNewFilePattern; 
   private FrameRange  pFrameRange; 
 
   private String            pLinkSourceName;  
@@ -389,7 +389,7 @@ TOKEN :
 | <DEPEND:             "--depend">          	: LINK_PARAM_SEP	      
 | <SOURCE:             "--source">          	: LINK_PARAM_SEP	      
 | <FSEQ:               "--fseq">            	: FILE_SEQ_SEP	      
-| <NAME:               "--name">            	: NODE_NAME_SEP  	      
+| <FILE_PATTERN:       "--file-pattern">    	: FILE_PAT_SEP  	      
 | <RENAME_FILES:       "--rename-files">    				      
 | <REMOVE_FILES:       "--remove-files">    				      
 | <RANGE:              "--range">           	: FRAME_RANGE_SEP	      
@@ -1014,13 +1014,43 @@ TOKEN :
 {
   <SUFFIX2:           (["a"-"z","A"-"Z","0"-"9"])+>  
 | <DOT2:              ".">                                       
-| <AT:                "@"> 
-| <POUND:             "#"> 
+| <AT1:               "@"> 
+| <POUND1:            "#"> 
 | <COMMA4:            ",">                          : FRAME_RANGE_STATE
 | <AE18:              "\0">                         : OPTIONS
 | <ILLEGAL_FILE_SEQ2: (~[".","@","#",",","\0"])+>   : IGNORE_STATE
 }
 
+
+/* file pattern arguments */ 
+<FILE_PAT_SEP> 
+TOKEN :
+{
+  <EQ39:                   "=">   : FILE_PAT_STATE
+| <MISSING_FILE_PAT_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<FILE_PAT_STATE> 
+TOKEN :
+{
+  <FILE_PAT_PREFIX:   ("/" (["a"-"z","A"-"Z","0"-"9","-","_"])+)* 
+			("/" ["a"-"z","A"-"Z"] 
+		          (["a"-"z","A"-"Z","0"-"9","_","-"])*)+>  
+| <DOT3:              ".">                                       : FILE_PAT_STATE2
+| <AE47:              "\0">                                      : OPTIONS
+| <ILLEGAL_FILE_PAT:  (~[".",",","\0"])+>                        : IGNORE_STATE
+}
+
+<FILE_PAT_STATE2> 
+TOKEN :
+{
+  <FILE_PAT_SUFFIX:   (["a"-"z","A"-"Z","0"-"9"])+>  
+| <DOT4:              ".">                                       
+| <AT2:               "@"> 
+| <POUND2:            "#"> 
+| <AE48:              "\0">                         : OPTIONS
+| <ILLEGAL_FILE_PAT2: (~[".","@","#",",","\0"])+>   : IGNORE_STATE
+}
 
 /* frame range arguments */ 
 <FRAME_RANGE_SEP> 
@@ -4165,23 +4195,23 @@ WorkingRename()
 {
   String name = null;
   
-  pAuthor      = PackageInfo.sUser;
-  pView        = "default";
-  pNewName     = null;
-  pRenameFiles = false;
+  pAuthor         = PackageInfo.sUser;
+  pView           = "default";
+  pNewFilePattern = null; 
+  pRenameFiles    = false;
 }
 {
   <WORKING_RENAME> EQ() name=NodeName() AE() (WorkingRenameOpts())* 
   {
-    if(pNewName == null) 
+    if(pNewFilePattern == null) 
       throw new PipelineException
-        ("The --name option is required!");
+        ("The --file-pattern option is required!");
 
-    pMasterMgrClient.rename(new NodeID(pAuthor, pView, name), pNewName, pRenameFiles);
+    pMasterMgrClient.rename(new NodeID(pAuthor, pView, name), pNewFilePattern, pRenameFiles);
 
     LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
-       "Renamed: " + name + " to " + pNewName);
+       "Renamed: " + name + " to " + pNewFilePattern);
     LogMgr.getInstance().flush();    
   }
 }
@@ -4191,19 +4221,24 @@ WorkingRenameOpts()
   throws PipelineException : 
 {}
 {
-  (Author() | View() | NewName() | RenameFiles())
+  (Author() | View() | FilePattern() | RenameFiles())
   {}
 }
 
 void 
-NewName() : 
+FilePattern() : 
 {
-  String name;
+  String prefix = null;
+  String suffix = null;
 }
 {
-  <NAME> EQ() name=NodeName() AE()
+  <FILE_PATTERN> EQ() prefix=FilePatPrefix() 
+     (DOT() ((Padding() (DOT() suffix=FilePatSuffix())?) | suffix=FilePatSuffix()))? AE()
   {
-    pNewName = name;
+    if(pPadding == null) 
+      pNewFilePattern = new FilePattern(prefix, suffix);
+    else 
+      pNewFilePattern = new FilePattern(prefix, pPadding, suffix);
   }
 }
 
@@ -5325,8 +5360,8 @@ FSeq()
   Integer by    = 1;
 }
 {
-  <FSEQ> EQ() 
-    prefix=Prefix() (DOT() ((Padding() (DOT() suffix=Suffix())?) | suffix=Suffix()))? 
+  <FSEQ> EQ() prefix=Prefix() 
+     (DOT() ((Padding() (DOT() suffix=FileSeqSuffix())?) | suffix=FileSeqSuffix()))? 
     (COMMA() start=FrameNumber() (DASH() end=FrameNumber() (<BY> by=FrameNumber())?)?)? AE()
   {
     try {
@@ -5366,7 +5401,7 @@ void
 PaddingSingle() : 
 {}
 {
-  <AT>
+  AT()
   {
     pPadding++;
   }
@@ -5376,7 +5411,7 @@ void
 PaddingFour() : 
 {}
 {
-  <POUND>
+  POUND()
   {
     pPadding = 4;
   }
@@ -5919,7 +5954,7 @@ Prefix() :
   Token t;
 }
 {
-  t=<PREFIX> 
+  t=<PREFIX>
   {
     return t.image;
   }
@@ -5931,7 +5966,43 @@ Suffix() :
   Token t;
 }
 {
-  (t=<SUFFIX1> | t=<SUFFIX2>)
+  t=<SUFFIX1>
+  {
+    return t.image;
+  }
+}
+
+String
+FileSeqSuffix() : 
+{
+  Token t;
+}
+{
+  t=<SUFFIX2>
+  {
+    return t.image;
+  }
+}
+
+String
+FilePatPrefix() : 
+{
+  Token t;
+}
+{
+  t=<FILE_PAT_PREFIX>
+  {
+    return t.image;
+  }
+}
+
+String
+FilePatSuffix() : 
+{
+  Token t;
+}
+{
+  t=<FILE_PAT_SUFFIX>
   {
     return t.image;
   }
@@ -6279,7 +6350,7 @@ AE() :
    t=<AE31> | t=<AE32> | t=<AE33> | t=<AE34> | t=<AE35> |
    t=<AE36> | t=<AE37> | t=<AE38> | t=<AE39> | t=<AE40> | 
    t=<AE41> | t=<AE42> | t=<AE43> | t=<AE44> | t=<AE45> | 
-   t=<AE46>)
+   t=<AE46> | t=<AE47> | t=<AE48>)
   { 
     return t; 
   }
@@ -6291,7 +6362,31 @@ DOT() :
   Token t;
 }
 {
-  (t=<DOT1> | t=<DOT2>)
+  (t=<DOT1> | t=<DOT2> | t=<DOT3> | t=<DOT4>)
+  { 
+    return t; 
+  }
+}
+
+Token
+AT() :
+{
+  Token t;
+}
+{
+  (t=<AT1> | t=<AT2>)
+  { 
+    return t; 
+  }
+}
+
+Token
+POUND() :
+{
+  Token t;
+}
+{
+  (t=<POUND1> | t=<POUND2>)
   { 
     return t; 
   }
@@ -6348,7 +6443,7 @@ EQ() :
    t=<EQ21> | t=<EQ22> | t=<EQ23> | t=<EQ24> | t=<EQ25> |
    t=<EQ26> | t=<EQ27> | t=<EQ28> | t=<EQ29> | t=<EQ30> | 
    t=<EQ31> | t=<EQ32> | t=<EQ33> | t=<EQ34> | t=<EQ35> | 
-   t=<EQ36> | t=<EQ37> | t=<EQ38>)
+   t=<EQ36> | t=<EQ37> | t=<EQ38> | t=<EQ39>)
   { 
     return t; 
   }

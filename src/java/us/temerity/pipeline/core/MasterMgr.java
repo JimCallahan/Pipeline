@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.105 2005/03/28 04:17:33 jim Exp $
+// $Id: MasterMgr.java,v 1.106 2005/03/29 03:48:55 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3967,10 +3967,11 @@ class MasterMgr
     NodeID id   = req.getNodeID();
     String name = id.getName();
 
-    String nname = req.getNewName();
-    NodeID nid   = new NodeID(id, nname);
+    FilePattern npat = req.getFilePattern();
+    String nname     = npat.getPrefix();
+    NodeID nid       = new NodeID(id, nname);
 
-    TaskTimer timer = new TaskTimer("MasterMgr.rename(): " + id + " to " + nid);
+    TaskTimer timer = new TaskTimer("MasterMgr.rename(): " + id + " to " + npat);
 
     timer.aquire();
     pDatabaseLock.readLock().lock();
@@ -3983,10 +3984,6 @@ class MasterMgr
       catch(IllegalArgumentException ex) {
 	return new FailureRsp(timer, ex.getMessage());
       }
-
-      if(name.equals(nname)) 
-	return new FailureRsp
-	  (timer, "Cannot rename node (" + name + ") to the same name!");
 
       /* determine the new file sequences */ 
       FileSeq primary = null;
@@ -4020,13 +4017,19 @@ class MasterMgr
 
 	  {
 	    FileSeq fseq = mod.getPrimarySequence();
-
 	    FilePattern opat = fseq.getFilePattern();
+	    if(opat.hasFrameNumbers() != npat.hasFrameNumbers()) 
+	      throw new PipelineException
+		("Unable to rename the node (" + id + "), because the new file pattern " + 
+		 "(" + npat + ") " + (npat.hasFrameNumbers() ? "has" : "does NOT have") + 
+		 " frame numbers and the old file pattern (" + opat + ") " +
+		 (opat.hasFrameNumbers() ? "has" : "does NOT have") + " frame numbers!");
+
 	    FrameRange range = fseq.getFrameRange();
 
 	    File path = new File(nname);      
 	    FilePattern pat = 
-	      new FilePattern(path.getName(), opat.getPadding(), opat.getSuffix());
+	      new FilePattern(path.getName(), npat.getPadding(), npat.getSuffix());
 
 	    primary = new FileSeq(pat, range);
 	  }
@@ -4041,48 +4044,53 @@ class MasterMgr
 	}
       }
 
-      /* reserve the new node name, 
-	   after verifying that it doesn't conflict with existing nodes */ 
-      timer.aquire();
-      synchronized(pNodeTreeRoot) {
-	timer.resume();
+      /* if the prefix is different, 
+	   reserve the new node name after verifying that it doesn't conflict with 
+	   existing nodes */ 
+      if(!name.equals(nname)) {
+	timer.aquire();
+	synchronized(pNodeTreeRoot) {
+	  timer.resume();
+	  
+	  if(!isNodePathUnused(nname, primary, false)) 
+	    return new FailureRsp
+	      (timer, "Cannot rename node (" + name + ") to (" + nname + ") because the  " + 
+	       "new name conflicts with an existing node or one of its associated file " +
+	       "sequences!");
 
-	if(!isNodePathUnused(nname, primary, false)) 
-	  return new FailureRsp
-	    (timer, "Cannot rename node (" + name + ") to (" + nname + ") because the new " + 
-	     "name conflicts with an existing node or one of its associated file sequences!");
-
-	TreeSet<FileSeq> fseqs = new TreeSet<FileSeq>();
-	fseqs.add(primary);
-	fseqs.addAll(secondary);
-
-	addWorkingNodeTreePath(nid, fseqs);
+	  TreeSet<FileSeq> fseqs = new TreeSet<FileSeq>();
+	  fseqs.add(primary);
+	  fseqs.addAll(secondary);
+	  
+	  addWorkingNodeTreePath(nid, fseqs);
+	}
       }
 
-      /* unlink the downstream working versions from the to be renamed working version 
+      /* if the prefix is different, 
+	   unlink the downstream working versions from the to be renamed working version 
 	   while collecting the existing downstream links */ 
       TreeMap<String,LinkMod> dlinks = null;
-      {
+      if(!name.equals(nname)) {
 	dlinks = new TreeMap<String,LinkMod>();
-
+	
 	timer.aquire();
 	ReentrantReadWriteLock downstreamLock = getDownstreamLock(id.getName());
 	downstreamLock.writeLock().lock();
 	try {
 	  timer.resume();
-
+	  
 	  DownstreamLinks links = getDownstreamLinks(id.getName()); 
 	  assert(links != null); 
-
+	  
 	  for(String target : links.getWorking(id)) {
 	    NodeID targetID = new NodeID(id, target);
-
+	    
 	    timer.aquire();
 	    ReentrantReadWriteLock lock = getWorkingLock(targetID);
 	    lock.readLock().lock();
 	    try {
 	      timer.resume();
-
+	      
 	      LinkMod dlink = getWorkingBundle(targetID).uVersion.getSource(name);
 	      if(dlink != null) 
 		dlinks.put(target,dlink);
@@ -4090,7 +4098,7 @@ class MasterMgr
 	    finally {
 	      lock.readLock().unlock();
 	    }  
-
+	    
 	    timer.suspend();
 	    Object obj = unlink(new NodeUnlinkReq(targetID, id.getName()));
 	    timer.accum(((TimedRsp) obj).getTimer());
@@ -4113,44 +4121,56 @@ class MasterMgr
 	timer.resume();
 
 	WorkingBundle bundle = getWorkingBundle(id);
-	NodeMod mod = new NodeMod(bundle.uVersion);
-	mod.rename(nname);
-	mod.removeAllSources();
+	NodeMod omod = bundle.uVersion;
+	NodeMod nmod = new NodeMod(omod);
+	
+	nmod.rename(npat);
 
-	/* register the new named node */ 
-	{
-	  Object obj = register(new NodeRegisterReq(nid, mod), false);
-	  if(obj instanceof FailureRsp) {
-	    FailureRsp rsp = (FailureRsp) obj;
-	    throw new PipelineException(rsp.getMessage());	
+	if(name.equals(nname)) {
+	  /* write the new working version to disk */ 
+	  writeWorkingVersion(id, nmod);
+	  
+	  /* update the bundle */ 
+	  bundle.uVersion = nmod;
+	}	
+	else {
+	  nmod.removeAllSources();
+
+	  /* register the new named node */ 
+	  {
+	    Object obj = register(new NodeRegisterReq(nid, nmod), false);
+	    if(obj instanceof FailureRsp) {
+	      FailureRsp rsp = (FailureRsp) obj;
+	      throw new PipelineException(rsp.getMessage());	
+	    }
 	  }
-	}
 
-	/* reconnect the upstream nodes to the new named node */ 
-	for(LinkMod ulink : bundle.uVersion.getSources()) {
-	  timer.suspend();
-	  Object obj = link(new NodeLinkReq(nid, ulink));
-	  timer.accum(((TimedRsp) obj).getTimer());
-	  if(obj instanceof FailureRsp) {
-	    FailureRsp rsp = (FailureRsp) obj;
-	    return new FailureRsp(timer, rsp.getMessage());
+	  /* reconnect the upstream nodes to the new named node */ 
+	  for(LinkMod ulink : bundle.uVersion.getSources()) {
+	    timer.suspend();
+	    Object obj = link(new NodeLinkReq(nid, ulink));
+	    timer.accum(((TimedRsp) obj).getTimer());
+	    if(obj instanceof FailureRsp) {
+	      FailureRsp rsp = (FailureRsp) obj;
+	      return new FailureRsp(timer, rsp.getMessage());
+	    }
 	  }
-	}
-
-	/* release the old named node */ 
-	{
-	  timer.suspend();
-	  Object obj = release(new NodeReleaseReq(id, false));
-	  timer.accum(((TimedRsp) obj).getTimer());
-	  if(obj instanceof FailureRsp) {
-	    FailureRsp rsp = (FailureRsp) obj;
-	    throw new PipelineException(rsp.getMessage());	
+	  
+	  /* release the old named node */ 
+	  {
+	    timer.suspend();
+	    Object obj = release(new NodeReleaseReq(id, false));
+	    timer.accum(((TimedRsp) obj).getTimer());
+	    if(obj instanceof FailureRsp) {
+	      FailureRsp rsp = (FailureRsp) obj;
+	      throw new PipelineException(rsp.getMessage());	
+	    }
 	  }
 	}
 
 	/* rename the files */ 
 	if(req.renameFiles()) 
-	  pFileMgrClient.rename(id, bundle.uVersion, nname);	
+	  pFileMgrClient.rename(id, omod, npat);
       }
       catch(PipelineException ex) {
 	return new FailureRsp(timer, ex.getMessage());
@@ -4160,20 +4180,23 @@ class MasterMgr
 	lock.writeLock().unlock();
       }  
 
-      /* reconnect the downstream nodes to the new named node */ 
-      for(String target : dlinks.keySet()) {
-	LinkMod dlink = dlinks.get(target);
-
-	NodeID tid = new NodeID(id, target);
-	LinkMod ndlink = new LinkMod(nname, dlink.getPolicy(), 
-				     dlink.getRelationship(), dlink.getFrameOffset());
-
-	timer.suspend();
-	Object obj = link(new NodeLinkReq(tid, ndlink));
-	timer.accum(((TimedRsp) obj).getTimer());
-	if(obj instanceof FailureRsp) {
-	  FailureRsp rsp = (FailureRsp) obj;
-	  return new FailureRsp(timer, rsp.getMessage());
+      /* if the prefix is different, 
+	   reconnect the downstream nodes to the new named node */ 
+      if(!name.equals(nname)) {
+	for(String target : dlinks.keySet()) {
+	  LinkMod dlink = dlinks.get(target);
+	  
+	  NodeID tid = new NodeID(id, target);
+	  LinkMod ndlink = new LinkMod(nname, dlink.getPolicy(), 
+				       dlink.getRelationship(), dlink.getFrameOffset());
+	  
+	  timer.suspend();
+	  Object obj = link(new NodeLinkReq(tid, ndlink));
+	  timer.accum(((TimedRsp) obj).getTimer());
+	  if(obj instanceof FailureRsp) {
+	    FailureRsp rsp = (FailureRsp) obj;
+	    return new FailureRsp(timer, rsp.getMessage());
+	  }
 	}
       }
 

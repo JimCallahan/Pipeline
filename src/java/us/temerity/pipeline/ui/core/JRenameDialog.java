@@ -1,4 +1,4 @@
-// $Id: JRenameDialog.java,v 1.4 2005/03/11 06:33:44 jim Exp $
+// $Id: JRenameDialog.java,v 1.5 2005/03/29 03:48:56 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -45,22 +45,22 @@ class JRenameDialog
         JPanel vpanel = (JPanel) comps[1];
 	body = (Box) comps[2];
 	
-	{
-	  JPathField field = 
-	    UIFactory.createTitledPathField(tpanel, "Old Filename Prefix:", sTSize, 
-					   vpanel, "", sVSize);
-	  pOldPrefixField = field;
+	pPrefixField =
+	  UIFactory.createTitledPathField(tpanel, "Filename Prefix:", sTSize, 
+					  vpanel, "", sVSize);
+	
+	UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 
-	  field.setEditable(false);
-	  field.setEnabled(false);
-	}
+	pFramePaddingField = 
+	  UIFactory.createTitledIntegerField(tpanel, "Frame Padding:", sTSize, 
+					    vpanel, null, sVSize);
 
 	UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
-	
-	pNewPrefixField =
-	  UIFactory.createTitledPathField(tpanel, "New Filename Prefix:", sTSize, 
-					 vpanel, "", sVSize);
-	
+
+	pSuffixField = 
+	  UIFactory.createTitledAlphaNumField(tpanel, "Filename Suffix:", sTSize, 
+					      vpanel, null, sVSize);
+
 	UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
 
 	{
@@ -85,18 +85,39 @@ class JRenameDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the new node name.
+   * Get the new file pattern. 
    */ 
-  public String
-  getNewName() 
+  public FilePattern
+  getNewFilePattern()
     throws PipelineException
   {
-    String name = pNewPrefixField.getText();
-    if((name != null) && (name.length() > 0)) {
-      if(!pNewPrefixField.isPathValid()) 
+    String prefix = pPrefixField.getText();
+    if((prefix != null) && (prefix.length() > 0)) {
+      if(!pPrefixField.isPathValid()) 
 	throw new PipelineException
-	  ("The new node name (" + name + ") is not valid!");
-      return name;
+	  ("The new node name (" + prefix + ") is not valid!");
+
+      String suffix = pSuffixField.getText();
+      if((suffix != null) && (suffix.length() == 0)) 
+	suffix = null;
+
+      if(pPattern.hasFrameNumbers()) {
+	Integer padding = pFramePaddingField.getValue();
+	if(padding == null) 
+	  throw new PipelineException
+	    ("Unable to rename node (" + prefix + ") which has frame numbers but an " + 
+	     "unspecified new frame padding!");
+	
+	if(padding < 0) 
+	  throw new PipelineException
+	    ("Unable to rename node (" + prefix + ") with a negative (" + padding + ") " + 
+	     "frame padding!");
+	
+	return new FilePattern(prefix, padding, suffix);
+      }
+      else {
+	return new FilePattern(prefix, suffix);
+      }
     }
     else {
       throw new PipelineException
@@ -131,9 +152,23 @@ class JRenameDialog
    NodeMod mod
   )
   {  
-    pHeaderLabel.setText("Rename Node:  " + mod.getPrimarySequence());
-    pOldPrefixField.setText(mod.getName());
-    pNewPrefixField.setText(mod.getName());
+    FileSeq fseq = mod.getPrimarySequence();
+    pPattern = fseq.getFilePattern();
+
+    pHeaderLabel.setText("Rename Node:  " + fseq);
+    pPrefixField.setText(mod.getName());
+    
+    if(pPattern.hasFrameNumbers()) {
+      pFramePaddingField.setEnabled(true);
+      pFramePaddingField.setValue(pPattern.getPadding());
+    }
+    else {
+      pFramePaddingField.setValue(null);
+      pFramePaddingField.setEnabled(false);
+    }
+
+    pSuffixField.setText(pPattern.getSuffix());
+
     pRenameFilesField.setValue(true);
   }
 
@@ -153,16 +188,29 @@ class JRenameDialog
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
-  
+
   /**
-   * The old filename prefix.
-   */ 
-  private JPathField  pOldPrefixField;
+   * The original file pattern.
+   */
+  private FilePattern  pPattern;
+
+
+  /*----------------------------------------------------------------------------------------*/
   
   /**
    * The new filename prefix.
    */ 
-  private JPathField  pNewPrefixField;
+  private JPathField  pPrefixField;
+
+  /**
+   * The new frame number padding.
+   */ 
+  private JIntegerField  pFramePaddingField;
+
+  /**
+   * The new filename suffix.
+   */ 
+  private JAlphaNumField  pSuffixField;
 
   /**
    * Whether to rename the files associated with the node.

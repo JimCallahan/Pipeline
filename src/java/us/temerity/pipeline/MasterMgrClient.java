@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.57 2005/03/28 04:17:33 jim Exp $
+// $Id: MasterMgrClient.java,v 1.58 2005/03/29 03:48:55 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1639,17 +1639,21 @@ class MasterMgrClient
    * Rename a working version of a node owned by the given user which has never 
    * been checked-in. <P> 
    * 
-   * This operation allows a user to change the name of a previously registered node before 
-   * it is checked-in. If a working version is successfully renamed, all node connections 
-   * will be preserved. <P> 
+   * This operation allows a user to change the name, frame number padding and suffix of a 
+   * previously registered node before it is checked-in. If a working version is successfully 
+   * renamed, all node connections will be preserved. <P> 
+   * 
+   * The new primary file sequence pattern passed as the <CODE>pattern</CODE> parameter
+   * must have a fully resolved prefix which is used to determine the new name of the 
+   * node.  If the original node had a frame number component, the new file pattern must
+   * also include a frame number component. <P> 
    * 
    * In addition to changing the name of the working version, this operation can also 
-   * rename the files associated with the working version to match the new node name if 
-   * the <CODE>renameFiles</CODE> argument is <CODE>true</CODE>.  The primary file sequence
-   * will be renamed to have a prefix which is identical to the last component of the 
-   * <CODE>newName</CODE> argument.  The secondary file sequence prefixes will remain
-   * unchanged. Both primary and secondary file sequences will be moved into the working 
-   * directory based on the new node name. <P> 
+   * rename the files associated with the working version to match the new node's file 
+   * pattern if the <CODE>renameFiles</CODE> argument is <CODE>true</CODE>.  The primary 
+   * file sequence will be renamed to match tne new file pattern.  The secondary file 
+   * sequence prefixes will remain unchanged.  Both primary and secondary file sequences 
+   * will be moved into the working directory which matches the new file pattern prefix. <P> 
    * 
    * If the <CODE>author</CODE> argument is different than the current user, this method 
    * will fail unless the current user has privileged access status.
@@ -1660,11 +1664,11 @@ class MasterMgrClient
    * @param view 
    *   The name of the user's working area view. 
    * 
-   * @param oldName 
+   * @param name
    *   The current fully resolved node name.
    * 
-   * @param newName 
-   *   The new fully resolved node name.
+   * @param pattern
+   *   The new fully resolved file pattern.
    * 
    * @param renameFiles 
    *   Should the files associated with the working version be renamed?
@@ -1677,30 +1681,34 @@ class MasterMgrClient
   ( 
    String author, 
    String view, 
-   String oldName, 
-   String newName,
+   String name, 
+   FilePattern pattern,
    boolean renameFiles
   ) 
     throws PipelineException
   {
-    rename(new NodeID(author, view, oldName), newName, renameFiles);
+    rename(new NodeID(author, view, name), pattern, renameFiles);
   } 
 
   /**
    * Rename a working version of a node owned by the given user which has never 
    * been checked-in. <P> 
    * 
-   * This operation allows a user to change the name of a previously registered node before 
-   * it is checked-in. If a working version is successfully renamed, all node connections 
-   * will be preserved. <P> 
+   * This operation allows a user to change the name, frame number padding and suffix of a 
+   * previously registered node before it is checked-in. If a working version is successfully 
+   * renamed, all node connections will be preserved. <P> 
+   * 
+   * The new primary file sequence pattern passed as the <CODE>pattern</CODE> parameter
+   * must have a fully resolved prefix which is used to determine the new name of the 
+   * node.  If the original node had a frame number component, the new file pattern must
+   * also include a frame number component. <P> 
    * 
    * In addition to changing the name of the working version, this operation can also 
-   * rename the files associated with the working version to match the new node name if 
-   * the <CODE>renameFiles</CODE> argument is <CODE>true</CODE>.  The primary file sequence
-   * will be renamed to have a prefix which is identical to the last component of the 
-   * <CODE>newName</CODE> argument.  The secondary file sequence prefixes will remain
-   * unchanged. Both primary and secondary file sequences will be moved into the working 
-   * directory based on the new node name. <P> 
+   * rename the files associated with the working version to match the new node's file 
+   * pattern if the <CODE>renameFiles</CODE> argument is <CODE>true</CODE>.  The primary 
+   * file sequence will be renamed to match tne new file pattern.  The secondary file 
+   * sequence prefixes will remain unchanged.  Both primary and secondary file sequences 
+   * will be moved into the working directory which matches the new file pattern prefix. <P> 
    * 
    * If the <CODE>nodeID</CODE> argument is different than the current user, this method 
    * will fail unless the current user has privileged access status.
@@ -1708,8 +1716,8 @@ class MasterMgrClient
    * @param nodeID 
    *   The unique working version identifier. 
    * 
-   * @param newName 
-   *   The new fully resolved node name.
+   * @param pattern
+   *   The new fully resolved file pattern.
    * 
    * @param renameFiles 
    *   Should the files associated with the working version be renamed?
@@ -1721,7 +1729,7 @@ class MasterMgrClient
   rename
   ( 
    NodeID nodeID, 
-   String newName,
+   FilePattern pattern, 
    boolean renameFiles
   ) 
     throws PipelineException
@@ -1732,7 +1740,7 @@ class MasterMgrClient
 
     verifyConnection();
 
-    NodeRenameReq req = new NodeRenameReq(nodeID, newName, renameFiles);
+    NodeRenameReq req = new NodeRenameReq(nodeID, pattern, renameFiles);
 
     Object obj = performTransaction(MasterRequest.Rename, req);
     handleSimpleResponse(obj);

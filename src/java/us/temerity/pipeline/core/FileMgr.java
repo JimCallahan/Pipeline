@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.39 2005/03/23 22:42:53 jim Exp $
+// $Id: FileMgr.java,v 1.40 2005/03/29 03:48:55 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1414,10 +1414,7 @@ class FileMgr
     TaskTimer timer = null;
     {
       StringBuffer buf = new StringBuffer();
-      buf.append("FileMgr.rename(): " + req.getNodeID() + " ");
-      for(FileSeq fseq : req.getFileSequences()) 
-	buf.append("[" + fseq + "]");
-      buf.append(" to " + req.getNewName());
+      buf.append("FileMgr.rename(): " + req.getNodeID() + " to " + req.getFilePattern());
       timer = new TaskTimer(buf.toString());
     }
 
@@ -1430,7 +1427,8 @@ class FileMgr
 	Map<String,String> env = System.getenv();
 	
 	/* the new named node identifier */ 
-	NodeID id = new NodeID(req.getNodeID(), req.getNewName());
+	FilePattern npat = req.getFilePattern();
+	NodeID id = new NodeID(req.getNodeID(), npat.getPrefix());
 
 	/* the old working area file and checksum directories */ 
 	File owdir  = null;
@@ -1513,11 +1511,10 @@ class FileMgr
 	    if(primary) {
 	      opfiles.addAll(fseq.getFiles());
 	      
-	      File path = new File(req.getNewName());
-	      FilePattern pat = fseq.getFilePattern();
-	      FileSeq nfseq = new FileSeq(new FilePattern(path.getName(), pat.getPadding(), 
-							  pat.getSuffix()),
-					  fseq.getFrameRange());	  
+	      File path = new File(npat.getPrefix());
+	      FilePattern pat =
+		new FilePattern(path.getName(), npat.getPadding(), npat.getSuffix());
+	      FileSeq nfseq = new FileSeq(pat, fseq.getFrameRange());	  
 	      pfiles.addAll(nfseq.getFiles());
 	      
 	      primary = false;

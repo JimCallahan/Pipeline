@@ -1,4 +1,4 @@
-// $Id: NodeRenameReq.java,v 1.4 2004/07/18 21:32:30 jim Exp $
+// $Id: NodeRenameReq.java,v 1.5 2005/03/29 03:48:56 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -31,8 +31,8 @@ class NodeRenameReq
    * @param id 
    *   The unique working version identifier.
    * 
-   * @param newName 
-   *   The new fully resolved node name.
+   * @param pattern
+   *   The new fully resolved file pattern.
    * 
    * @param renameFiles
    *   Should the primary files associated with the working version be renamed?
@@ -41,7 +41,7 @@ class NodeRenameReq
   NodeRenameReq
   (
    NodeID id,
-   String newName, 
+   FilePattern pattern, 
    boolean renameFiles
   )
   { 
@@ -50,10 +50,10 @@ class NodeRenameReq
 	("The working version ID cannot be (null)!");
     pNodeID = id;
 
-    if(newName == null) 
+    if(pattern == null) 
       throw new IllegalArgumentException
-	("The new working version name cannot be (null)!");
-    pNewName = newName;
+	("The new file pattern cannot be (null)!");
+    pPattern = pattern;
     
     pRenameFiles = renameFiles;
   }
@@ -74,12 +74,12 @@ class NodeRenameReq
   }
 
   /**
-   * Gets the new fully resolved node name.
+   * Gets the new fully resolved file pattern.
    */
-  public String
-  getNewName() 
+  public FilePattern
+  getFilePattern() 
   {
-    return pNewName;
+    return pPattern; 
   }
   
   /**
@@ -111,9 +111,9 @@ class NodeRenameReq
   private NodeID  pNodeID;
 
   /**
-   * The new fully resolved node name.
+   * The new fully resolved file pattern.
    */
-  private String pNewName;
+  private FilePattern  pPattern;
 
   /**
    * Should the primary files associated with the working version be renamed?

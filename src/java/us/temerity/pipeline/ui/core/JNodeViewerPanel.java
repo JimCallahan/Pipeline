@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.26 2005/03/23 21:07:10 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.27 2005/03/29 03:48:56 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -729,13 +729,12 @@ class JNodeViewerPanel
    String newName
   )
   {
+    TreeSet<String> roots = new TreeSet<String>(pRoots.keySet());
     if(pRoots.containsKey(oldName)) {
-      TreeSet<String> roots = new TreeSet<String>(pRoots.keySet());
       roots.remove(oldName);
       roots.add(newName);
-      
-      setRoots(roots);
     }
+    setRoots(roots);
   }
 
 
@@ -2927,10 +2926,10 @@ class JNodeViewerPanel
 	
 	  if(pRenameDialog.wasConfirmed()) {
 	    try {
-	      String name = pRenameDialog.getNewName();
+	      FilePattern fpat = pRenameDialog.getNewFilePattern();
 
 	      RenameTask task = 
-		new RenameTask(mod.getName(), name, pRenameDialog.renameFiles());
+		new RenameTask(mod.getName(), fpat, pRenameDialog.renameFiles());
 	      task.start();
 	    }
 	    catch(PipelineException ex) {
@@ -4220,14 +4219,14 @@ class JNodeViewerPanel
     RenameTask
     (
      String oldName, 
-     String newName,
+     FilePattern pattern, 
      boolean renameFiles
     ) 
     {
       super("JNodeViewerPanel:RenameTask");
-
+      
       pOldName     = oldName; 
-      pNewName     = newName; 
+      pPattern     = pattern; 
       pRenameFiles = renameFiles;
     }
 
@@ -4237,8 +4236,8 @@ class JNodeViewerPanel
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp("Renaming Node...")) {
 	try {
-	  master.getMasterMgrClient().rename(pAuthor, pView, 
-					     pOldName, pNewName, pRenameFiles);
+	  master.getMasterMgrClient().rename(pAuthor, pView, pOldName, 
+					     pPattern, pRenameFiles);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -4248,13 +4247,17 @@ class JNodeViewerPanel
 	  master.endPanelOp("Done.");
 	}
 
-	renameRoot(pOldName, pNewName);
+	String nname = pPattern.getPrefix();
+	if(!pOldName.equals(nname)) 
+	  renameRoot(pOldName, nname);
+	else 
+	  updateRoots();
       }
     }
 
-    private String   pOldName; 
-    private String   pNewName; 
-    private boolean  pRenameFiles; 
+    private String       pOldName; 
+    private FilePattern  pPattern; 
+    private boolean      pRenameFiles; 
   }
 
   /** 
