@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.5 2004/05/06 11:21:57 jim Exp $
+// $Id: UIMaster.java,v 1.6 2004/05/07 21:07:13 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -8,6 +8,7 @@ import us.temerity.pipeline.laf.LookAndFeelLoader;
 import java.awt.*;
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.locks.*;
 import java.text.*;
 import javax.swing.*;
 import javax.swing.plaf.basic.*;
@@ -46,7 +47,9 @@ class UIMaster
   {
     pNodeMgrClient = new NodeMgrClient(hostname, port);
 
-    pManagerPanels = new LinkedList<JManagerPanel>();
+    pOpsLock = new ReentrantLock();
+
+    pManagerPanels = new LinkedList<JManagerPanel>(); // IS THIS NEEDED?
     pNodeBrowsers  = new JNodeBrowserPanel[10];
     pNodeViewers   = new JNodeViewerPanel[10];
 
@@ -120,6 +123,8 @@ class UIMaster
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  // IS THIS NEEDED?
 
   /**
    * Add a new manager panel.
@@ -241,6 +246,23 @@ class UIMaster
     return (pNodeViewers[groupID] == null);      
   }
 
+  /**
+   * Get the node viewer belonging to the given group.
+   * 
+   * @return 
+   *   The node viewer or <CODE>null</CODE> if no viewer exists for the group.
+   */ 
+  public JNodeViewerPanel
+  getNodeViewer
+  (
+   int groupID
+  ) 
+  {
+    assert((groupID > 0) && (groupID < 10));
+    return pNodeViewers[groupID];
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   D I A L O G S                                                                        */
@@ -255,7 +277,19 @@ class UIMaster
    Exception ex
   ) 
   {
-    System.out.print("UIMaster.showErrorDialog(): " + ex.getMessage() + "\n");
+    showErrorDialog(ex.getMessage());
+  }
+
+  /**
+   * Show an error message dialog containing the given message.
+   */ 
+  public void 
+  showErrorDialog
+  (
+   String msg
+  ) 
+  {
+    System.out.print("UIMaster.showErrorDialog(): " + msg + "\n");
 
     // ... 
 
@@ -267,62 +301,81 @@ class UIMaster
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Disable new client/server operations until the current operation is complete.
-   */ 
-  public void 
-  disableOps()
-  {
-    disableOps("");
-  }
-
-  /**
-   * Disable new client/server operations until the current operation is complete.
+   * Try to aquire a panel operation lock and if successfull notify the user that 
+   * an operation is in progress. <P> 
+   * 
+   * If this method returns <CODE>true</CODE> then the lock was aquired and the operation 
+   * can proceed.  Otherwise, the caller should abort the operation immediately. <P> 
+   * 
+   * Once the operation is complete or if it is aborted early, the caller
+   * of this methods must call {@link #endPanelOp endPanelOp} to release the lock.
    * 
    * @param msg
-   *   The progress message.
+   *   A short message describing the operation.
+   * 
+   * @return
+   *   Whether the panel operation should proceed.
    */ 
-  public void 
-  disableOps
+  public boolean
+  beginPanelOp
   (
    String msg
-  ) 
+  )
   {
-    pProgressLight.setIcon(sProgressLightOnIcon);
-    pProgressField.setText(msg);
+    boolean aquired = pOpsLock.tryLock();
 
-    for(JManagerPanel mgr : pManagerPanels) 
-      mgr.disableOps();
+    if(aquired) 
+      SwingUtilities.invokeLater(new BeginOpsTask(msg));
+    else 
+      Toolkit.getDefaultToolkit().beep();
+
+    return aquired;
   }
-
-
+  
   /**
-   * Reenable client/server operations.
+   * Try to aquire a panel operation lock. <P> 
+   * 
+   * @return
+   *   Whether the panel operation should proceed.
    */ 
-  public void 
-  enableOps()
+  public boolean
+  beginPanelOp() 
   {
-    enableOps("");
+    return beginPanelOp("");
   }
 
+
   /**
-   * Reenable client/server operations.
+   * Release the panel operation lock and notify the user that the operation has 
+   * completed. <P>
    * 
    * @param msg
-   *   The completion message.
+   *   A short completion message.
    */ 
   public void 
-  enableOps
+  endPanelOp
   (
    String msg
-  ) 
+  )
   {
-    for(JManagerPanel mgr : pManagerPanels) 
-      mgr.enableOps();
-    
-    pProgressField.setText(msg);
-    pProgressLight.setIcon(sProgressLightIcon);
+    try {
+      pOpsLock.unlock();  
+      SwingUtilities.invokeLater(new EndOpsTask(msg)); 
+    }
+    catch(IllegalMonitorStateException ex) {
+      Logs.ops.severe("Internal Error:\n" + 
+		      "  " + ex.getMessage());
+    }
   }
 
+  /**
+   * Release the panel operation lock. <P>
+   */ 
+  public void 
+  endPanelOp()
+  {
+    endPanelOp("");
+  }
   
 
 
@@ -607,6 +660,57 @@ class UIMaster
       }
     }
   }
+  
+  /**
+   * Notify the user that a panel operation is underway.
+   */ 
+  private
+  class BeginOpsTask
+    extends Thread
+  { 
+    BeginOpsTask
+    ( 
+     String msg
+    ) 
+    {
+      pMsg = msg;
+    }
+
+    public void 
+    run() 
+    {
+      pProgressLight.setIcon(sProgressLightOnIcon);
+      pProgressField.setText(pMsg);
+    }
+
+    private String  pMsg;
+  }
+
+  /**
+   *  Notify the user that a panel operation is finished.
+   */ 
+  private
+  class EndOpsTask
+    extends Thread
+  { 
+    EndOpsTask
+    ( 
+     String msg
+    ) 
+    {
+      pMsg = msg;
+    }
+
+    public void 
+    run() 
+    {
+      pProgressField.setText(pMsg);
+      pProgressLight.setIcon(sProgressLightIcon);
+    }
+
+    private String  pMsg;
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -660,7 +764,12 @@ class UIMaster
 
 
   /**
-   * The light which warns users that a network operation is in progress.
+   * A lock used to serialize panel operations.
+   */ 
+  private ReentrantLock pOpsLock;
+
+  /**
+   * The light which warns users that a panel operation is in progress.
    */ 
   private JLabel  pProgressLight;
 
@@ -673,7 +782,7 @@ class UIMaster
   /**
    * The current set of manager panels.
    */ 
-  private LinkedList<JManagerPanel>  pManagerPanels;
+  private LinkedList<JManagerPanel>  pManagerPanels;  // IS THIS NEEDED?
 
   /**
    * The table of active node browsers indexed by assigned group: [1-9]. <P> 
