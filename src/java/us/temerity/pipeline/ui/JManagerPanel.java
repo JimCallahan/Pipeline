@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.2 2004/04/27 02:20:57 jim Exp $
+// $Id: JManagerPanel.java,v 1.3 2004/04/28 00:43:23 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -143,8 +143,8 @@ class JManagerPanel
 	
 	layout.addSeparator();
 	
-	item = new JMenuItem("Add Tabs");
-	item.setActionCommand("add-tabs");
+	item = new JMenuItem("Add Tab");
+	item.setActionCommand("add-tab");
 	item.addActionListener(this);
 	layout.add(item);  
       }
@@ -301,6 +301,8 @@ class JManagerPanel
       doAddAbove();
     else if(e.getActionCommand().equals("add-below"))
       doAddBelow();
+    else if(e.getActionCommand().equals("add-tab"))
+      doAddTab();
 
     // ...
 
@@ -405,6 +407,38 @@ class JManagerPanel
     setContents(new JSplitPanel(JSplitPane.VERTICAL_SPLIT, above, below));
   }
 
+  /**
+   * Add a new empty tab to the child tabbed pane. <P> 
+   * 
+   * If the current child isn't already a tabbed pane, a new tabbed pane is created and
+   * the current child is moved to the first tab of the new tabbed pane.
+   */ 
+  private void 
+  doAddTab()
+  {
+
+    JTabbedPane tabbed = null;
+    {
+      Component child = getComponent(0);
+      if(child instanceof JTabbedPane) {
+	tabbed = (JTabbedPane) child;
+      }
+      else {
+	tabbed = new JTabbedPane();
+	tabbed.addTab("Previous", removeContents());
+
+	setContents(tabbed);
+      }
+    }
+    assert(tabbed != null);
+
+    {    
+      JPanel panel = new JPanel();
+      panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+
+      tabbed.addTab("Empty", new JManagerPanel(panel));
+    }
+  }
 
   // ...
 
