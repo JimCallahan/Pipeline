@@ -17,7 +17,7 @@ ACTIONS:
   percentage field.
 
 
-OPERATIONS: 
+OPERATIONS/BACKEND: 
 
 - Implement Import/Export ops in NodeViewer
 
@@ -53,6 +53,14 @@ OPERATIONS:
   have a disk file and visa versa.  When a table entry is removed, the associated disk file 
   should be deleted.
 
+- Automated cleanup of Job Server sample files older than a given interval.
+
+- Task/Scheduling System
+
+- Automated Backup of Node/Queue database and production working areas.
+
+- Node and File Online/Offline System
+
 
 
 USER INTERFACE: 
@@ -60,8 +68,6 @@ USER INTERFACE:
 - Thumbnail display options in the NodeViewer
 
 - NodeLinks Panel?
-
-- JobDetails Panels
 
 - Task/Scheduling Panels
 
@@ -81,6 +87,11 @@ USER INTERFACE:
 
 - Sorting the JobBrowser clears the current selection - it should be preserved.
 
+- Add Tooltips in JobViewer that display the "[123] PrimaryTarget.#.gif" title. 
+
+- Add "Edit" and "Edit With..." items to the JobMenu in the JobViewer.  
+  Use MastMgrClient.getWorkingVersion(job.getNodID()) determing the default editor.
+
 
 
 RPMS:
@@ -93,19 +104,6 @@ RPMS:
   needs to be located somewhere Pipeline knows about and not under the generate release
   subdirectory since the user cannot know this location at the time of running plconfig(1).
 
-
-
-
-
-BACKEND: 
-
-- Automated cleanup of Job Server sample files older than a given interval.
-
-- Task/Scheduling System
-
-- Automated Backup of Node/Queue database and production working areas.
-
-- Node and File Online/Offline System
 
 
 IMPORTANT UNIMPLEMENTED JOB RELATED ISSUES:

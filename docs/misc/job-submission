@@ -164,16 +164,16 @@ SOURCE-NODE-NAME2
 ...
 
 PROCESS DETAILS
-- Commandline
-- Working Directory
-- ENVIRONMENT
-+ name/value pairs... 
-
-EXECUTION RESULTS
 - Hostname
 - Exit Code
 
-- User Time
+- Commandline
+- Working Directory
+- ENVIRONMENT
+  - name/value pairs... 
+
+EXECUTION STATISTICS 
+- User Time 
 - System Time
 
 - Average/Max Resident Memory
