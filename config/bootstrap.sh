@@ -3,25 +3,28 @@
 rm -rf i686-pc-linux-gnu-dbg
 mkdir  i686-pc-linux-gnu-dbg
 
-pushd $HOME/code2/src/pipeline
+plsrcdir=$HOME/code/src/pipeline
+
+pushd $plsrcdir
   sh autogen.sh
 popd
 
-plprofile=/base/apps/i686-pc-linux-gnu-dbg/Pipeline-1.6.0/config/customer-profile
+plprofile=$plsrcdir/plconfig/customers/testing/040817
 
 pushd i686-pc-linux-gnu-dbg
-  $HOME/code2/src/pipeline/configure \
+  $plsrcdir/configure \
     --disable-opt \
     --with-compiler=GNU \
-    --with-crypto-app=$HOME/code2/src/pipeline/plconfig \
+    --with-crypto-app=$plsrcdir/plconfig \
     --with-customer=testing \
     --with-customer-profile=$plprofile
 popd
 
 # pushd i686-pc-linux-gnu-opt
-#   $HOME/code2/src/pipeline/configure \
+#  $plsrcdir/configure \
 #     --ensable-opt \
 #     --with-compiler=GNU \
-#     --with-crypto-app=$HOME/code2/src/pipeline/plconfig \
+#     --with-crypto-app=$plsrcdir/plconfig \
+#     --with-customer=testing \
 #     --with-customer-profile=$plprofile
 # popd
