@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.14 2004/07/18 21:28:11 jim Exp $
+// $Id: MasterMgrClient.java,v 1.15 2004/07/24 18:15:57 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -23,6 +23,7 @@ import java.util.*;
  */
 public
 class MasterMgrClient
+  extends BaseMgrClient
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -44,13 +45,8 @@ class MasterMgrClient
    int port
   ) 
   {
-    if(hostname == null) 
-      throw new IllegalArgumentException("The hostname argument cannot be (null)!");
-    pHostname = hostname;
-
-    if(port < 0) 
-      throw new IllegalArgumentException("Illegal port number (" + port + ")!");
-    pPort = port;
+    super(hostname, port, 
+	  MasterRequest.Disconnect, MasterRequest.Shutdown);
   }
 
   /** 
@@ -63,77 +59,14 @@ class MasterMgrClient
   public
   MasterMgrClient() 
   {
-    pHostname = PackageInfo.sMasterServer;
-    pPort     = PackageInfo.sMasterPort;
+    super(PackageInfo.sMasterServer, PackageInfo.sMasterPort, 
+	  MasterRequest.Disconnect, MasterRequest.Shutdown);
   }
 
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*  C O N N E C T I O N                                                                   */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Close the network connection if its is still connected.
-   */
-  public synchronized void 
-  disconnect() 
-  {
-    if(pSocket == null)
-      return;
-
-    try {
-      if(pSocket.isConnected()) {
-	OutputStream out = pSocket.getOutputStream();
-	ObjectOutput objOut = new ObjectOutputStream(out);
-	objOut.writeObject(MasterRequest.Disconnect);
-	objOut.flush(); 
-
-	pSocket.close();
-      }
-    }
-    catch (IOException ex) {
-    }
-    finally {
-      pSocket = null;
-    }
-  }
-
-  /**
-   * Order the <B>plmaster</B>(1) daemon to refuse any further requests and then to exit 
-   * as soon as all currently pending requests have be completed. <P> 
-   * 
-   * If successfull, <B>plmaster</B>(1) will also shutdown both the <B>plfilemgr</B>(1) and 
-   * <B>plnotify</B>(1) daemons as part of its shutdown procedure.
-   */
-  public synchronized void 
-  shutdown() 
-    throws PipelineException 
-  {
-    verifyConnection();
-
-    try {
-      OutputStream out = pSocket.getOutputStream();
-      ObjectOutput objOut = new ObjectOutputStream(out);
-      objOut.writeObject(MasterRequest.Shutdown);
-      objOut.flush(); 
-
-      pSocket.close();
-    }
-    catch(IOException ex) {
-      disconnect();
-      throw new PipelineException
-	("IO problems on port (" + pPort + "):\n" + 
-	 ex.getMessage());
-    }
-    finally {
-      pSocket = null;
-    }
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   G E N E R A L                                                                        */
+  /*   T O O L S E T S                                                                      */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -538,6 +471,8 @@ class MasterMgrClient
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   E D I T O R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Get default editor name for the given filename suffix and current user. <P> 
@@ -656,47 +591,10 @@ class MasterMgrClient
   }
   
 
+
   /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * Get the names of the currently defined license keys. <P>  
-   * 
-   * @throws PipelineException
-   *   If unable to retrieve the license keys.
-   */
-  public synchronized TreeSet<String>
-  getLicenseKeyNames() 
-    throws PipelineException  
-  {
-    // TEMPORARY
-
-    TreeSet<String> names = new TreeSet<String>();
-    names.add("Maya");
-    names.add("Houdini");
-    names.add("RenderMan");
-
-    return names;
-  }
-
-  /**
-   * Get the set of currently defined license keys. <P>  
-   * 
-   * @throws PipelineException
-   *   If unable to retrieve the license keys.
-   */
-  public synchronized TreeSet<LicenseKey>
-  getLicenseKeys() 
-    throws PipelineException  
-  {
-    // TEMPORARY
-
-    TreeSet<LicenseKey> keys = new TreeSet<LicenseKey>();
-    keys.add(new LicenseKey("Maya", "Maya"));
-    keys.add(new LicenseKey("Houdini", "Houdini"));
-    keys.add(new LicenseKey("RenderMan", "RenderMan"));
-    
-    return keys;
-  }
+  /*   L I C E N S E   K E Y S                                                              */
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Add the given license key to the currently defined license keys. <P> 
@@ -723,9 +621,9 @@ class MasterMgrClient
       throw new PipelineException
 	("Only privileged users may add license keys!");
     
-
-    throw new PipelineException("Not implemented yet...");
-
+    QueueAddLicenseKeyReq req = new QueueAddLicenseKeyReq(key);
+    Object obj = performTransaction(MasterRequest.AddLicenseKey, req); 
+    handleSimpleResponse(obj);
   }
 
   /**
@@ -733,7 +631,7 @@ class MasterMgrClient
    * 
    * This method will fail if the current user does not have privileged access status.
    * 
-   * @param name
+   * @param kname
    *   The name of the license key to remove.
    * 
    * @throws PipelineException
@@ -742,7 +640,7 @@ class MasterMgrClient
   public synchronized void
   removeLicenseKey
   (
-   String name
+   String kname
   ) 
     throws PipelineException  
   {
@@ -750,35 +648,21 @@ class MasterMgrClient
       throw new PipelineException
 	("Only privileged users may remove license keys!");
     
-    
-    throw new PipelineException("Not implemented yet...");
-
+    QueueRemoveLicenseKeyReq req = new QueueRemoveLicenseKeyReq(kname);
+    Object obj = performTransaction(MasterRequest.RemoveLicenseKey, req); 
+    handleSimpleResponse(obj);
   }  
-
-  /**
-   * Get the count of available/total licenses for all currently defined license keys. <P> 
-   * 
-   * @return 
-   *   The [available, total] number of licenses indexed by license key name.
-   * 
-   * @throws PipelineException
-   *   If unable to get the license counts.
-   */ 
-  public synchronized TreeMap<String,int[]>
-  getLicenseCounts() 
-    throws PipelineException  
-  {
-
-    throw new PipelineException("Not implemented yet...");
-  }
   
   /**
    * Set the total number of licenses associated with the named license key. <P> 
    * 
    * This method will fail if the current user does not have privileged access status.
    * 
-   * @param name
+   * @param kname
    *   The name of the license key.
+   * 
+   * @param total 
+   *   The total number of licenses.
    * 
    * @throws PipelineException
    *   If unable to set the license total for the given license key.
@@ -786,86 +670,26 @@ class MasterMgrClient
   public synchronized void
   setTotalLicenses
   (
-   String name
+   String kname, 
+   int total   
   ) 
     throws PipelineException  
   {
     if(!isPrivileged(false)) 
       throw new PipelineException
-	("Only privileged users may set the total number of licenses for a license key!");
+	("Only privileged users may set the total number of licenses!");
     
-    
-    throw new PipelineException("Not implemented yet...");
-
+    QueueSetTotalLicensesReq req = new QueueSetTotalLicensesReq(kname, total);
+    Object obj = performTransaction(MasterRequest.SetTotalLicenses, req); 
+    handleSimpleResponse(obj);    
   }
 
-  /**
-   * Set the number of available licenses associated with the named license key. <P> 
-   * 
-   * This method will fail if the current user does not have privileged access status.
-   * 
-   * @param name
-   *   The name of the license key.
-   * 
-   * @throws PipelineException
-   *   If unable to set the available licenses for the given license key.
-   */ 
-  public synchronized void
-  setAvailableLicenses
-  (
-   String name
-  ) 
-    throws PipelineException  
-  {
-    if(!isPrivileged(false)) 
-      throw new PipelineException
-	("Only privileged users may set the number of available licenses for a license key!");
-    
-    
-    throw new PipelineException("Not implemented yet...");
 
-  }
 
   
   /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * Get the names of the currently defined selection keys. <P>  
-   * 
-   * @throws PipelineException
-   *   If unable to retrieve the selection keys.
-   */
-  public synchronized TreeSet<String>
-  getSelectionKeyNames() 
-    throws PipelineException  
-  {
-    // TEMPORARY
-
-    TreeSet<String> names = new TreeSet<String>();
-    names.add("Rush");
-    names.add("Fast");
-
-    return names;
-  }
-
-  /**
-   * Get the set of currently defined selection keys. <P>  
-   * 
-   * @throws PipelineException
-   *   If unable to retrieve the selection keys.
-   */
-  public synchronized TreeSet<SelectionKey>
-  getSelectionKeys() 
-    throws PipelineException  
-  {
-    // TEMPORARY
-
-    TreeSet<SelectionKey> keys = new TreeSet<SelectionKey>();
-    keys.add(new SelectionKey("Rush", "High priority jobs."));
-    keys.add(new SelectionKey("Fast", "Fastest available CPU speed."));
-
-    return keys;
-  }
+  /*   S E L E C T I O N   K E Y S                                                          */
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Add the given selection key to the currently defined selection keys. <P> 
@@ -926,6 +750,8 @@ class MasterMgrClient
 
 
 
+  /*----------------------------------------------------------------------------------------*/
+  /*   P R I V I L E G E D   U S E R S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -1154,6 +980,9 @@ class MasterMgrClient
   }
 
    
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   W O R K I N G   A R E A S                                                            */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -1218,6 +1047,9 @@ class MasterMgrClient
   }
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   N O D E   P A T H S                                                                  */
   /*----------------------------------------------------------------------------------------*/
 
   /** 
@@ -2111,150 +1943,8 @@ class MasterMgrClient
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   H E L P E R S                                                                        */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Make sure the network connection to the server instance has been established.  If the 
-   * connection is down, try to reconnect.
-   * 
-   * @throws PipelineException
-   *   If the connection is down and cannot be reestablished. 
-   */
-  protected synchronized void 
-  verifyConnection() 
-    throws PipelineException 
-  {
-    if((pSocket != null) && pSocket.isConnected())
-      return;
-
-    try {
-      pSocket = new Socket(pHostname, pPort);
-    }
-    catch (IOException ex) {
-      throw new PipelineException
-	("IO problems on port (" + pPort + "):\n" + 
-	 ex.getMessage());
-    }
-    catch (SecurityException ex) {
-      throw new PipelineException
-	("The Security Manager doesn't allow socket connections!\n" + 
-	 ex.getMessage());
-    }
-  }
-
-  /**
-   * Send the given request to the server instance and wait for the response.
-   * 
-   * @param kind 
-   *   The kind of request being sent.
-   * 
-   * @param req 
-   *   The request data or <CODE>null</CODE> if there is no request.
-   * 
-   * @return
-   *   The response from the server instance.
-   * 
-   * @throws PipelineException
-   *   If unable to complete the transaction.
-   */
-  protected synchronized Object
-  performTransaction
-  (
-   Object kind, 
-   Object req
-  ) 
-    throws PipelineException 
-  {
-    try {
-      OutputStream out = pSocket.getOutputStream();
-      ObjectOutput objOut = new ObjectOutputStream(out);
-      objOut.writeObject(kind);
-      if(req != null) 
-	objOut.writeObject(req);
-      objOut.flush(); 
-
-      InputStream in  = pSocket.getInputStream();
-      ObjectInput objIn  = new ObjectInputStream(in);
-      return (objIn.readObject());
-    }
-    catch(IOException ex) {
-      shutdown();
-      throw new PipelineException
-	("IO problems on port (" + pPort + "):\n" + 
-	 ex.getMessage());
-    }
-    catch(ClassNotFoundException ex) {
-      shutdown();
-      throw new PipelineException
-	("Illegal object encountered on port (" + pPort + "):\n" + 
-	 ex.getMessage());  
-    }
-  }
-
-  /**
-   * Handle the simple Success/Failure response.
-   * 
-   * @param obj
-   *   The response from the server.
-   */ 
-  protected void 
-  handleSimpleResponse
-  ( 
-   Object obj
-  )
-    throws PipelineException
-  {
-    if(!(obj instanceof SuccessRsp))
-      handleFailure(obj);
-  }
-
-  /**
-   * Handle non-successful responses.
-   * 
-   * @param obj
-   *   The response from the server.
-   */ 
-  protected void 
-  handleFailure
-  ( 
-   Object obj
-  )
-    throws PipelineException
-  {
-    if(obj instanceof FailureRsp) {
-      FailureRsp rsp = (FailureRsp) obj;
-      throw new PipelineException(rsp.getMessage());	
-    }
-    else {
-      disconnect();
-      throw new PipelineException
-	("Illegal response received from the server instance!");
-    }
-  }
-
-
-
-
-  /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * The name of the host running <B>plfilemgr</B>(1).
-   */
-  private String  pHostname;
-
-  /**
-   * The network port listened to by <B>plfilemgr</B>(1).
-   */
-  private int  pPort;
-
-  /**
-   * The network socket connection.
-   */
-  private Socket  pSocket;
-
 
   /**
    * The cached names of the privileged users. <P> 
