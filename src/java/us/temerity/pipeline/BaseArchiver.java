@@ -1,4 +1,4 @@
-// $Id: BaseArchiver.java,v 1.4 2005/01/22 06:10:09 jim Exp $
+// $Id: BaseArchiver.java,v 1.5 2005/02/07 14:49:36 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -97,13 +97,15 @@ class BaseArchiver
    * Whether the archiver requires manual confirmation before initiating an archive or 
    * restore operation. <P> 
    * 
-   * Subclasses should override this method specify whether the archiver plugin is manual
-   * or automatic. <P> 
+   * Subclasses should override this method. <P> 
    * 
    * This method should return <CODE>true</CODE> when human interaction is required to 
    * change tapes or other removable media before attempting to archive or restore files.  
    * Archivers which are capable of performing archive and restore operation without human 
    * intervention are considered automatic and should return <CODE>false</CODE>. <P> 
+   * 
+   * If this method returns <CODE>true</CODE>, Pipeline will query the user for confirmation
+   * before executing the {@link #archive archive} or {@link #restore restore} methods. <P> 
    * 
    * By default, this method returns <CODE>true</CODE>.
    */ 
@@ -114,12 +116,70 @@ class BaseArchiver
   }
 
   /**
-   * Get the capacity of the media (in bytes). <P> 
+   * Whether the archiver requires manual confirmation to signal that the archive operation 
+   * has been completed. 
+   * 
+   * Subclasses should override this method to return <CODE>true</CODE> when human 
+   * interaction is required to complete the archive operation and cannot be directly 
+   * performed by the plugin.  <P> 
+   * 
+   * For example, the <CODE>ListArchiver</CODE> plugin's {@link #archive archive} method 
+   * simply generates a text file listing the files to be archived but does not perform the 
+   * archive operation directly.  The user must be queried to insure that the files listed 
+   * have actually been backed-up by the user before proceeding.  For this reason, the 
+   * <CODE>ListArchiver</CODE> overrides this method to return <CODE>true</CODE>.
+   * 
+   * If this method returns <CODE>true</CODE>, Pipeline will query the user for confirmation
+   * after executing the {@link #archive archive} method, but before registering that the 
+   * operation has completed. <P> 
+   * 
+   * By default, this method returns <CODE>false</CODE>.
+   */ 
+  public boolean
+  manualArchiveComplete()
+  {
+    return false;
+  }
+  
+  /**
+   * Whether the archiver requires manual confirmation to signal that the restore operation 
+   * has been completed. 
+   * 
+   * Subclasses should override this method to return <CODE>true</CODE> when human 
+   * interaction is required to complete the restore operation and cannot be directly 
+   * performed by the plugin.  <P> 
+   * 
+   * For example, the <CODE>ListArchiver</CODE> plugin's {@link #archive archive} method 
+   * simply generates a text file listing the files to be restored but does not perform the 
+   * restore operation directly.  The user must be queried to insure that the files listed 
+   * have actually been restored by the user before proceeding.  For this reason, the 
+   * <CODE>ListArchiver</CODE> overrides this method to return <CODE>true</CODE>.
+   * 
+   * If this method returns <CODE>true</CODE>, Pipeline will query the user for confirmation
+   * after executing the {@link #restore restore} method, but before registering that the 
+   * operation has completed. <P> 
+   * 
+   * By default, this method returns <CODE>false</CODE>.
+   */ 
+  public boolean
+  manualRestoreComplete()
+  {
+    return false;
+  }
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the capacity of the media volume (in bytes). <P> 
    * 
    * Subclasses should override this methods to return the size of the archive media used 
    * by the archiver plugin. <P> 
    * 
-   * By default this method returns (0L).
+   * This size is used assign the versions to be archived to one or more archive volumes 
+   * which do not exceed this capacity.  <P> 
+   * 
+   * By default this method returns (0L). 
    */ 
   public long
   getCapacity()
@@ -371,7 +431,7 @@ class BaseArchiver
    * administration user.  
    * 
    * @param name 
-   *   The name of the backup.
+   *   The name of the archive volume to create.
    * 
    * @param files
    *   The names of the files to archive relative to the base production directory.
@@ -405,7 +465,7 @@ class BaseArchiver
    * administration user.  
    * 
    * @param name 
-   *   The name of the backup.
+   *   The name of the archive volume to restore.
    * 
    * @param files
    *   The names of the files to restore relative to the base production directory.
