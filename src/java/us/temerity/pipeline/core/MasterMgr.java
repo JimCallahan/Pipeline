@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.89 2005/02/09 18:23:44 jim Exp $
+// $Id: MasterMgr.java,v 1.90 2005/02/17 20:15:04 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -974,6 +974,7 @@ class MasterMgr
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Warning,
 	   ex.getMessage());
+	LogMgr.getInstance().flush();
       }
     }
 
@@ -989,6 +990,7 @@ class MasterMgr
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Warning,
 	   ex.getMessage());
+	LogMgr.getInstance().flush();
       }
     }
     
@@ -1003,6 +1005,7 @@ class MasterMgr
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Warning,
 	 ex.getMessage());
+      LogMgr.getInstance().flush();
     }
 
     /* give the sockets time to disconnect cleanly */ 
@@ -1024,9 +1027,8 @@ class MasterMgr
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Warning,
 	 ex.getMessage());
+      LogMgr.getInstance().flush();
     }
-
-    LogMgr.getInstance().flush();
   }
 
   /**
