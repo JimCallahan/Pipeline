@@ -295,6 +295,86 @@
 
 
 
+  <!--  C P U   B U T T O N  -->
+
+  <style id="CpuButton"> 
+    <state>
+      <imagePainter path="CpuButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="CpuButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="SELECTED">
+      <imagePainter path="CpuButtonSelected.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="CpuButton" type="name" key="CpuButton"/>
+
+
+
+  <!--  M E M   B U T T O N  -->
+
+  <style id="MemButton"> 
+    <state>
+      <imagePainter path="MemButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="MemButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="SELECTED">
+      <imagePainter path="MemButtonSelected.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="MemButton" type="name" key="MemButton"/>
+
+
+
+  <!--  D I S K   B U T T O N  -->
+
+  <style id="DiskButton"> 
+    <state>
+      <imagePainter path="DiskButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="DiskButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="SELECTED">
+      <imagePainter path="DiskButtonSelected.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="DiskButton" type="name" key="DiskButton"/>
+
+
+
+  <!--  J O B   B U T T O N  -->
+
+  <style id="JobButton"> 
+    <state>
+      <imagePainter path="JobButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="JobButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="SELECTED">
+      <imagePainter path="JobButtonSelected.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="JobButton" type="name" key="JobButton"/>
+
+
+
   <!--  R A I S E D    B U T T O N  -->
 
   <style id="RaisedButton">
@@ -1258,6 +1338,8 @@
     <insets top="0" bottom="0" right="0" left="0"/>
   </style>
   <bind style="ScrollBarArrowEast" type="name" key="ScrollBar.button"/>
+
+
 
   <!--  M E N U S  -->
 
