@@ -1,4 +1,4 @@
-// $Id: TestNodeMgrApp.java,v 1.10 2004/04/18 04:08:48 jim Exp $
+// $Id: TestNodeMgrApp.java,v 1.11 2004/04/19 21:07:24 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -270,7 +270,10 @@ class TestNodeMgrApp
       }
 
       printStatus(client.status("default", modA.getName()));
+      printStatus(client.status("default", modB.getName()));
+
       printStatus(client.status("default", modA.getName()));
+      printStatus(client.status("default", modB.getName()));
 
       client.shutdown();
 
@@ -360,11 +363,11 @@ class TestNodeMgrApp
 	client.link("default", eagle.getName(), snake.getName(), 
 		    new LinkCatagory("Eats", LinkPolicy.Both), LinkRelationship.All, null);
 
-	client.revoke("default", dragonfly.getName(), true);
+	//client.revoke("default", dragonfly.getName(), true);
 	
 	client.rename("default", sparrow.getName(), "/animals/mammal/bat", true);
 
-	client.revoke("default", fly.getName(), true);
+	//client.revoke("default", fly.getName(), true);
 
 	client.disconnect();
       }
@@ -411,6 +414,9 @@ class TestNodeMgrApp
       }
 
       printStatus(client.status("default", eagle.getName()));
+      printStatus(client.status("default", fly.getName()));
+      printStatus(client.status("default", "/animals/mammal/bat"));
+      printStatus(client.status("default", frog.getName()));
       client.shutdown();
 
       /* wait for everything to shutdown */ 
@@ -430,9 +436,11 @@ class TestNodeMgrApp
   {
     StringBuffer buf = new StringBuffer();
     printStatusHelper(status, 1, buf);
-    System.out.print("NODE STATUS: \n" + 
+    System.out.print("NODE STATUS: " + status.getNodeID() + "\n" +
 		     buf.toString());
   }
+
+  
 
   private void 
   printStatusShortHelper
@@ -443,15 +451,53 @@ class TestNodeMgrApp
   ) 
     throws GlueException
   {
+    printStatusShortDownstreamHelper(status, level, buf);
+    
     int wk;
     for(wk=0; wk<level; wk++) 
       buf.append("  ");
-    buf.append(status.getNodeID() + "\n");
-    
-    for(NodeStatus sstatus : status.getSources()) 
-      printStatusShortHelper(sstatus, level+1, buf);
+    buf.append("---\n");
+
+    printStatusShortUpstreamHelper(status, level, buf);
+  }
+
+  private void 
+  printStatusShortDownstreamHelper
+  (
+   NodeStatus status,
+   int level, 
+   StringBuffer buf
+  ) 
+    throws GlueException
+  {
+    for(NodeStatus tstatus : status.getTargets()) 
+      printStatusShortDownstreamHelper(tstatus, level+1, buf);
+
+    int wk;
+    for(wk=0; wk<level; wk++) 
+      buf.append("  ");
+    buf.append(status.getNodeID().getName() + "\n");
   }
   
+  private void 
+  printStatusShortUpstreamHelper
+  (
+   NodeStatus status,
+   int level, 
+   StringBuffer buf
+  ) 
+    throws GlueException
+  {
+    int wk;
+    for(wk=0; wk<level; wk++) 
+      buf.append("  ");
+    buf.append(status.getNodeID().getName() + "\n");
+    
+    for(NodeStatus sstatus : status.getSources()) 
+      printStatusShortUpstreamHelper(sstatus, level+1, buf);
+  }
+  
+
   private void 
   printStatusHelper
   (
@@ -471,45 +517,48 @@ class TestNodeMgrApp
     }
     String indent2 = (indent + "  ");
 
-    NodeDetails details = status.getDetails();
     
     buf.append(indent + "NodeStatus {\n" +
- 	       indent2 + "NodeID = " + status.getNodeID() + "\n" + 
- 	       indent2 + "TimeStamp = " + details.getTimeStamp() + "\n");
+ 	       indent2 + "NodeID = " + status.getNodeID() + "\n");
+
+    NodeDetails details = status.getDetails();
+    if(details != null) {
+      buf.append(indent2 + "TimeStamp = " + details.getTimeStamp() + "\n");
     
-    printGlue("WorkingVersion", details.getWorkingVersion(), indent, buf);
-    printGlue("BaseVersion", details.getBaseVersion(), indent, buf);
-    printGlue("LatestVersion", details.getLatestVersion(), indent, buf);
-    
-    buf.append(indent2 + "OverallNodeState = " + details.getOverallNodeState() + "\n" +
- 	       indent2 + "OverallQueueState = " + details.getOverallQueueState() + "\n" +
- 	       indent2 + "VersionState = " + details.getVersionState() + "\n" +
-  	       indent2 + "PropertyState = " + details.getPropertyState() + "\n" +
- 	       indent2 + "LinkState = " + details.getLinkState() + "\n");
-    
-    {
-      buf.append(indent2 + "FileStates = {\n");
-      for(FileSeq fseq : details.getFileStateSequences()) {
- 	buf.append(indent2 + "  " + fseq + " = {\n");
- 	FileState fs[] = details.getFileState(fseq);
- 	Date ts[] = details.getFileTimeStamps(fseq);
-	
- 	int wk = 0;
- 	for(File file : fseq.getFiles()) {
- 	  buf.append(indent2 + "    [" + wk + "]: " + file + " = " + 
- 		     fs[wk] + "  (" + (ts[wk].getTime()) + ")\n");
- 	  wk++;
- 	} 
-	
- 	buf.append(indent2 + "  }\n");
+      printGlue("WorkingVersion", details.getWorkingVersion(), indent, buf);
+      printGlue("BaseVersion", details.getBaseVersion(), indent, buf);
+      printGlue("LatestVersion", details.getLatestVersion(), indent, buf);
+      
+      buf.append(indent2 + "OverallNodeState = " + details.getOverallNodeState() + "\n" +
+		 indent2 + "OverallQueueState = " + details.getOverallQueueState() + "\n" +
+		 indent2 + "VersionState = " + details.getVersionState() + "\n" +
+		 indent2 + "PropertyState = " + details.getPropertyState() + "\n" +
+		 indent2 + "LinkState = " + details.getLinkState() + "\n");
+      
+      {
+	buf.append(indent2 + "FileStates = {\n");
+	for(FileSeq fseq : details.getFileStateSequences()) {
+	  buf.append(indent2 + "  " + fseq + " = {\n");
+	  FileState fs[] = details.getFileState(fseq);
+	  Date ts[] = details.getFileTimeStamps(fseq);
+	  
+	  int wk = 0;
+	  for(File file : fseq.getFiles()) {
+	    buf.append(indent2 + "    [" + wk + "]: " + file + " = " + 
+		       fs[wk] + "  (" + (ts[wk].getTime()) + ")\n");
+	    wk++;
+	  } 
+	  
+	  buf.append(indent2 + "  }\n");
+	}
+	buf.append(indent2 + "}\n");
       }
-      buf.append(indent2 + "}\n");
+      
+      {
+	buf.append(indent2 + "QueueStates = Not yet...\n");
+      }
     }
-    
-    {
-      buf.append(indent2 + "QueueStates = Not yet...\n");
-    }
-    
+      
     buf.append(indent2 + "Targets = {\n");
     for(NodeStatus tstatus : status.getTargets()) 
       buf.append(indent2 + "  " + tstatus.getNodeID() + "\n");
