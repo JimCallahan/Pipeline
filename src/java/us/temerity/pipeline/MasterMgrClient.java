@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.26 2004/09/16 21:58:52 jim Exp $
+// $Id: MasterMgrClient.java,v 1.27 2004/09/20 05:34:29 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -63,6 +63,26 @@ class MasterMgrClient
 	  MasterRequest.Disconnect, MasterRequest.Shutdown);
   }
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*  C O N N E C T I O N                                                                   */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Order the server to refuse any further requests and then to exit as soon as all
+   * currently pending requests have be completed.
+   */
+  public synchronized void 
+  shutdown() 
+    throws PipelineException 
+  {
+    if(!isPrivileged(false)) 
+      throw new PipelineException
+	("Only privileged users may shutdown the servers!");
+    
+    super.shutdown();
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
