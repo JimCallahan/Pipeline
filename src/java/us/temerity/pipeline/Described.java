@@ -1,4 +1,4 @@
-// $Id: Described.java,v 1.1 2004/02/25 01:25:17 jim Exp $
+// $Id: Described.java,v 1.2 2004/02/28 19:56:51 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -15,7 +15,6 @@ import java.io.*;
 public
 class Described
   extends Named
-  implements Glueable
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -65,6 +64,37 @@ class Described
     return pDescription;
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   O B J E C T   O V E R R I D E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Indicates whether some other object is "equal to" this one.
+   * 
+   * @param obj 
+   *   The reference object with which to compare.
+   */
+  public boolean
+  equals
+  (
+   Object obj   
+  )
+  {
+    if((obj != null) && (obj instanceof Described)) {
+      Described desc = (Described) obj;
+      return (super.equals(obj) && 
+	      pDescription.equals(desc.pDescription));
+    }
+    return false;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static final long serialVersionUID = -4356479666627868487L;
 
 
   
