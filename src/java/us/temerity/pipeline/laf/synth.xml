@@ -15,6 +15,7 @@
   <bind style="DefaultFont" type="name" key=".*"/>
 
 
+
   <!--  S P L A S H  -->
 
   <style id="Splash">
@@ -24,6 +25,7 @@
     <insets top="7" bottom="5" right="7" left="7"/>
   </style>
   <bind style="Splash" type="name" key="Splash"/>
+
 
 
   <!--  P R O G R E S S   B A R  -->
@@ -112,6 +114,26 @@
     </state>
   </style>
   <bind style="CloseButton" type="name" key="CloseButton"/>
+
+
+
+  <!--  A P P L Y   H E A D E R  B U T T O N  -->
+
+  <style id="ApplyHeaderButton"> 
+    <state>
+      <imagePainter path="ApplyHeaderButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="ApplyHeaderButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="DISABLED">
+      <imagePainter path="ApplyHeaderButtonDisabled.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="ApplyHeaderButton" type="name" key="ApplyHeaderButton"/>
 
 
 
@@ -232,6 +254,47 @@
   <bind style="RaisedCancelButton" type="name" key="RaisedCancelButton"/>
 
 
+
+  <!--  V A L U E   P A N E L   B U T T O N  -->
+
+  <style id="ValuePanelButton">
+    <state>
+      <imagePainter path="ValuePanelButton.png"
+                    method="buttonBackground"
+                    sourceInsets="5 5 5 5"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="ValuePanelButtonPressed.png"
+                    method="buttonBackground"	
+                    sourceInsets="5 5 5 5"/>
+    </state>
+    <insets top="2" bottom="2" right="8" left="8"/>
+    <property key="Button.textShiftOffset" type="integer" value="1"/>  
+  </style>
+  <bind style="ValuePanelButton" type="name" key="ValuePanelButton"/>
+
+
+
+  <!--  S M A L L   L E F T   A R R O W   B U T T O N  -->
+
+  <style id="SmallLeftArrowButton"> 
+    <state>
+      <imagePainter path="SmallLeftArrowButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="SmallLeftArrowButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="DISABLED">
+      <imagePainter path="SmallLeftArrowButtonDisabled.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="SmallLeftArrowButton" type="name" key="SmallLeftArrowButton"/>
+
+
+
   <!--  L E F T   A R R O W   B U T T O N  -->
 
   <style id="LeftArrowButton"> 
@@ -272,6 +335,26 @@
 
 
 
+  <!--  D R A W E R  -->
+
+  <style id="DrawerHeader">
+    <state>
+      <imageIcon id="UncheckedIcon" path="TreeCellCollapsedIcon.png"/>
+      <property key="CheckBox.icon" value="UncheckedIcon"/>   	
+    </state>
+    <state value="SELECTED">
+      <imageIcon id="CheckedIcon" path="TreeCellExpandedIcon.png"/>
+      <property key="CheckBox.icon" value="CheckedIcon"/>   	
+    </state>
+    <imagePainter path="DrawerHeader.png"
+                  method="checkBoxBackground"
+                  sourceInsets=" 4 4 4 4"/>
+    <insets top="4" bottom="4" right="0" left="0"/>
+  </style>
+  <bind style="DrawerHeader" type="name" key="DrawerHeader"/>
+
+
+
   <!--  T I T L E   P A N E L  -->
 
   <style id="TitlePanel">
@@ -280,6 +363,20 @@
     <insets top="8" bottom="8" right="8" left="8"/>
   </style>
   <bind style="TitlePanel" type="name" key="TitlePanel"/>
+
+  <style id="TopTitlePanel">
+    <imagePainter path="TitlePanel.png" 
+                  sourceInsets="0 0 0 1"/>
+    <insets top="8" bottom="0" right="8" left="8"/>
+  </style>
+  <bind style="TopTitlePanel" type="name" key="TopTitlePanel"/>
+
+  <style id="BottomTitlePanel">
+    <imagePainter path="TitlePanel.png" 
+                  sourceInsets="0 0 0 1"/>
+    <insets top="0" bottom="8" right="8" left="8"/>
+  </style>
+  <bind style="BottomTitlePanel" type="name" key="BottomTitlePanel"/>
 
 
 
@@ -292,6 +389,20 @@
   </style>
   <bind style="ValuePanel" type="name" key="ValuePanel"/>
 
+  <style id="TopValuePanel">
+    <imagePainter path="Grey.png" 
+                  sourceInsets="0 0 0 0"/>
+    <insets top="8" bottom="0" right="8" left="8"/>
+  </style>
+  <bind style="TopValuePanel" type="name" key="TopValuePanel"/>
+
+  <style id="BottomValuePanel">
+    <imagePainter path="Grey.png" 
+                  sourceInsets="0 0 0 0"/>
+    <insets top="0" bottom="8" right="8" left="8"/>
+  </style>
+  <bind style="BottomValuePanel" type="name" key="BottomValuePanel"/>
+
 
 
   <!--  P A N E L   L A B E L  -->
@@ -300,6 +411,7 @@
     <font name="Lucida Sans Bold" size="14"/>
   </style>
   <bind style="PanelLabel" type="name" key="PanelLabel"/>
+
 
 
   <!--  D I S A B L E   L A B E L  -->
@@ -313,6 +425,7 @@
     </state>
   </style>
   <bind style="DisableLabel" type="name" key="DisableLabel"/>
+
 
 
   <!--  T E X T   F I E L D  -->
