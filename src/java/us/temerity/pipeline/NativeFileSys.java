@@ -1,4 +1,4 @@
-// $Id: NativeFileSys.java,v 1.4 2004/05/23 19:49:22 jim Exp $
+// $Id: NativeFileSys.java,v 1.5 2004/07/28 19:12:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -136,6 +136,55 @@ class NativeFileSys
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Determine amount of free disk space available on the file system which contains the 
+   * given path. 
+   * 
+   * @param path 
+   *   The file/directory used to determine the file system.
+   * 
+   * @return
+   *   The free disk space (in bytes). 
+   * 
+   * @throws IOException 
+   *   If the given path is illegal or some other I/O problem was encountered.
+   */
+  public static long
+  freeDiskSpace
+  (
+   File path
+  ) 
+    throws IOException
+  {
+    return freeDiskSpaceNative(path.getPath());
+  }
+
+  /** 
+   * Determine the total amount of disk space on the file system which contains the 
+   * given path. 
+   * 
+   * @param path 
+   *   The file/directory used to determine the file system.
+   * 
+   * @return
+   *   The total disk space (in bytes). 
+   * 
+   * @throws IOException 
+   *   If the given path is illegal or some other I/O problem was encountered.
+   */
+  public static long
+  totalDiskSpace
+  (
+   File path
+  ) 
+    throws IOException
+  {
+    return totalDiskSpaceNative(path.getPath());
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   N A T I V E    H E L P E R S                                                         */
   /*----------------------------------------------------------------------------------------*/
 
@@ -201,6 +250,43 @@ class NativeFileSys
    */
   private static native String
   realpathNative
+  (
+   String path
+  ) 
+    throws IOException;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Determine amount of free disk space available on the file system which contains the 
+   * given path. 
+   * 
+   * @param path 
+   *   The file/directory used to determine the file system.
+   * 
+   * @return
+   *   The free disk space (in bytes). 
+   */
+  public static native long
+  freeDiskSpaceNative
+  (
+   String path
+  ) 
+    throws IOException;
+
+  /** 
+   * Determine the total amount of disk space on the file system which contains the 
+   * given path. 
+   * 
+   * @param path 
+   *   The file/directory used to determine the file system.
+   * 
+   * @return
+   *   The total disk space (in bytes).
+   */
+  public static native long
+  totalDiskSpaceNative
   (
    String path
   ) 

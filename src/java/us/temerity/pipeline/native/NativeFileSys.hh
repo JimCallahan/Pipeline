@@ -39,6 +39,22 @@ JNIEXPORT void JNICALL Java_us_temerity_pipeline_NativeFileSys_symlinkNative
 JNIEXPORT jstring JNICALL Java_us_temerity_pipeline_NativeFileSys_realpathNative
   (JNIEnv *, jclass, jstring);
 
+/*
+ * Class:     us_temerity_pipeline_NativeFileSys
+ * Method:    freeDiskSpaceNative
+ * Signature: (Ljava/lang/String;)J
+ */
+JNIEXPORT jlong JNICALL Java_us_temerity_pipeline_NativeFileSys_freeDiskSpaceNative
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * Class:     us_temerity_pipeline_NativeFileSys
+ * Method:    totalDiskSpaceNative
+ * Signature: (Ljava/lang/String;)J
+ */
+JNIEXPORT jlong JNICALL Java_us_temerity_pipeline_NativeFileSys_totalDiskSpaceNative
+  (JNIEnv *, jclass, jstring);
+
 #ifdef __cplusplus
 }
 #endif

@@ -1,4 +1,4 @@
-// $Id: NativeFileSys.cc,v 1.4 2004/05/23 19:49:22 jim Exp $
+// $Id: NativeFileSys.cc,v 1.5 2004/07/28 19:12:14 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -46,6 +46,10 @@
 
 #ifdef HAVE_SYS_PARAM_H
 #  include <sys/param.h>
+#endif
+
+#ifdef HAVE_SYS_STATFS_H
+#  include <sys/statfs.h>
 #endif
 
 #include "NativeFileSys.hh"
@@ -175,4 +179,78 @@ JNICALL Java_us_temerity_pipeline_NativeFileSys_realpathNative
   }
 
   return env->NewStringUTF(resolved);
+}
+
+/* Determine amount of free disk space available on the file system which contains the 
+   given path. */  
+extern "C" 
+JNIEXPORT jlong
+JNICALL Java_us_temerity_pipeline_NativeFileSys_freeDiskSpaceNative
+(
+ JNIEnv *env, 
+ jclass cls, 
+ jstring jpath  /* IN: the file/directory used to determine the file system */ 
+)
+{
+  /* exception initialization */ 
+  char msg[1024];
+  jclass IOException = env->FindClass("java/io/IOException");
+  if(IOException == 0) {
+    errno = ECANCELED;
+    perror("NativeFileSys.freeDiskSpaceNative(), unable to lookup \"java/lang/IOException\"");
+    return -1;
+  }
+
+  /* repackage the arguments */ 
+  const char* path = env->GetStringUTFChars(jpath, 0);
+  if((path == NULL) || (strlen(path) == 0)) {
+    env->ThrowNew(IOException,"empty path argument");
+    return -1;
+  }
+
+  /* get the file system statistics */ 
+  struct statfs fs;
+  if(statfs(path, &fs) != 0) {
+    sprintf(msg, "cannot determine free disk space for (%s): %s\n", path, strerror(errno));
+    env->ThrowNew(IOException, msg);  
+  }
+
+  return ((jlong) fs.f_bavail * 4096L);
+}
+
+/* Determine total amount of disk space available on the file system which contains the 
+   given path. */  
+extern "C" 
+JNIEXPORT jlong
+JNICALL Java_us_temerity_pipeline_NativeFileSys_totalDiskSpaceNative
+(
+ JNIEnv *env, 
+ jclass cls, 
+ jstring jpath  /* IN: the file/directory used to determine the file system */ 
+)
+{
+  /* exception initialization */ 
+  char msg[1024];
+  jclass IOException = env->FindClass("java/io/IOException");
+  if(IOException == 0) {
+    errno = ECANCELED;
+    perror("NativeFileSys.freeDiskSpaceNative(), unable to lookup \"java/lang/IOException\"");
+    return -1;
+  }
+
+  /* repackage the arguments */ 
+  const char* path = env->GetStringUTFChars(jpath, 0);
+  if((path == NULL) || (strlen(path) == 0)) {
+    env->ThrowNew(IOException,"empty path argument");
+    return -1;
+  }
+
+  /* get the file system statistics */ 
+  struct statfs fs;
+  if(statfs(path, &fs) != 0) {
+    sprintf(msg, "cannot determine total disk space for (%s): %s\n", path, strerror(errno));
+    env->ThrowNew(IOException, msg);  
+  }
+
+  return ((jlong) fs.f_blocks * 4096L);
 }
