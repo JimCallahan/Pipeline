@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.43 2004/10/09 19:02:28 jim Exp $
+// $Id: JManagerPanel.java,v 1.44 2004/10/09 19:17:47 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1469,6 +1469,11 @@ class JManagerPanel
   private void 
   doNodeBrowserPanel()
   {
+    if(getContents() instanceof JNodeBrowserPanel) {
+      Toolkit.getDefaultToolkit().beep();
+      return; 
+    }
+
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     setContents(new JNodeBrowserPanel(dead));
     dead.setGroupID(0);
@@ -1481,6 +1486,11 @@ class JManagerPanel
   private void 
   doNodeViewerPanel()
   {
+    if(getContents() instanceof JNodeViewerPanel) {
+      Toolkit.getDefaultToolkit().beep();
+      return; 
+    }
+
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     setContents(new JNodeViewerPanel(dead));
     dead.setGroupID(0);
@@ -1493,6 +1503,11 @@ class JManagerPanel
   private void 
   doNodeDetailsPanel()
   {
+    if(getContents() instanceof JNodeDetailsPanel) {
+      Toolkit.getDefaultToolkit().beep();
+      return; 
+    }
+
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     setContents(new JNodeDetailsPanel(dead));
     dead.setGroupID(0);
@@ -1505,6 +1520,11 @@ class JManagerPanel
   private void 
   doNodeFilesPanel()
   {
+    if(getContents() instanceof JNodeFilesPanel) {
+      Toolkit.getDefaultToolkit().beep();
+      return; 
+    }
+
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     setContents(new JNodeFilesPanel(dead));
     dead.setGroupID(0);
@@ -1517,6 +1537,11 @@ class JManagerPanel
   private void 
   doNodeHistoryPanel()
   {
+    if(getContents() instanceof JNodeHistoryPanel) {
+      Toolkit.getDefaultToolkit().beep();
+      return; 
+    }
+
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     setContents(new JNodeHistoryPanel(dead));
     dead.setGroupID(0);
@@ -1532,6 +1557,11 @@ class JManagerPanel
   private void 
   doJobBrowserPanel()
   {
+    if(getContents() instanceof JQueueJobBrowserPanel) {
+      Toolkit.getDefaultToolkit().beep();
+      return; 
+    }
+
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     setContents(new JQueueJobBrowserPanel(dead));
     dead.setGroupID(0);
@@ -1544,6 +1574,11 @@ class JManagerPanel
   private void 
   doJobViewerPanel()
   {
+    if(getContents() instanceof JQueueJobViewerPanel) {
+      Toolkit.getDefaultToolkit().beep();
+      return; 
+    }
+
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     setContents(new JQueueJobViewerPanel(dead));
     dead.setGroupID(0);
@@ -1556,6 +1591,11 @@ class JManagerPanel
   private void 
   doJobDetailsPanel()
   {
+    if(getContents() instanceof JQueueJobDetailsPanel) {
+      Toolkit.getDefaultToolkit().beep();
+      return; 
+    }
+
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     setContents(new JQueueJobDetailsPanel(dead));
     dead.setGroupID(0);
@@ -1571,6 +1611,11 @@ class JManagerPanel
   private void 
   doEmptyPanel()
   {
+    if(getContents() instanceof JEmptyPanel) {
+      Toolkit.getDefaultToolkit().beep();
+      return; 
+    }
+
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     setContents(new JEmptyPanel(dead));
     dead.setGroupID(0);  
