@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.74 2004/12/30 01:54:48 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.75 2004/12/31 07:39:48 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1339,9 +1339,6 @@ class JNodeViewerPanel
 
   /**
    * Clear the current selection.
-   * 
-   * @return 
-   *   The previously selected nodes.
    */ 
   public void
   clearSelection()
@@ -1425,6 +1422,8 @@ class JNodeViewerPanel
     }    
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Get the ViewerNode or ViewerLinkRelationship under the current mouse position. <P> 
@@ -1797,7 +1796,7 @@ class JNodeViewerPanel
 	  else if((mods & (on3 | off3)) == on3) {
 	    for(ViewerNode vnode : pViewerNodes.values()) {
 	      if(vnode.isInsideOf(bbox)) {
-	      addSelect(vnode);
+		addSelect(vnode);
 	      }
 	    }
 	  }
@@ -1810,7 +1809,6 @@ class JNodeViewerPanel
 	  clearSelection();
 	}
       }
-      break;
     }
    
     /* reinitialize for the next rubberband drag */ 
@@ -2180,8 +2178,6 @@ class JNodeViewerPanel
     else if(cmd.equals("show-hide-associations"))
       doShowHideAssociations();
 
-    // ...
-
     else {
       clearSelection();
       refresh();
@@ -2276,8 +2272,6 @@ class JNodeViewerPanel
   private synchronized void
   doRemoveRoot()
   {
-    // find a nearby node to pin...
-
     removeRoot(getPrimarySelectionRootName());
 
     clearSelection();
@@ -3164,7 +3158,7 @@ class JNodeViewerPanel
   private void 
   doFrameSelection() 
   {
-    frameNodes(pSelected.values());
+    doFrameNodes(pSelected.values());
   }
 
   /**
@@ -3173,46 +3167,20 @@ class JNodeViewerPanel
   private void 
   doFrameAll() 
   {
-    frameNodes(pViewerNodes.values());
+    doFrameNodes(pViewerNodes.values());
   }
 
   /**
    * Move the camera to frame the given set of nodes.
    */ 
   private void 
-  frameNodes
+  doFrameNodes
   (
    Collection<ViewerNode> vnodes
   ) 
   {
-    frameBounds(getNodeBounds(vnodes));
+    doFrameBounds(getNodeBounds(vnodes));
   }  
-
-  /**
-   * Move the camera to frame the given bounding box.
-   */ 
-  private void 
-  frameBounds
-  (
-   BBox2d bbox
-  ) 
-  {
-    if(bbox == null) 
-      return; 
-
-    Vector2d hrange = bbox.getRange();
-    hrange.mult(0.5);
-    
-    double distX = hrange.x() / Math.tan(Math.toRadians(pFOV)*pAspect*0.5);
-    double distY = hrange.y() / Math.tan(Math.toRadians(pFOV)*0.5);
-    double z = Math.max(((double) pCanvas.getWidth()) / pMaxFactor, Math.max(distX, distY));
-
-    Point2d center = bbox.getCenter();
-    pCameraPos.set(center.x(), center.y(), z);
-    pCameraPos.negate();
-
-    pCanvas.repaint();
-  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -3292,22 +3260,6 @@ class JNodeViewerPanel
     /* root nodes */ 
     if(!pRoots.isEmpty()) 
       encoder.encode("Roots", new TreeSet<String>(pRoots.keySet()));
-    
-    /* camera position */ 
-   //  {
-//       Viewer viewer = pUniverse.getViewer();
-//       TransformGroup tg = viewer.getViewingPlatform().getViewPlatformTransform();
-    
-//       Transform3D xform = new Transform3D();
-//       tg.getTransform(xform);
-      
-//       Vector3d trans = new Vector3d();
-//       xform.get(trans);
-
-//       encoder.encode("CameraX", trans.x);
-//       encoder.encode("CameraY", trans.y);
-//       encoder.encode("CameraZ", trans.z);
-//     }
   }
 
   public synchronized void 
@@ -3324,26 +3276,6 @@ class JNodeViewerPanel
       for(String name : roots) 
 	pRoots.put(name, null);
     }
-
-    /* camera position */ 
-   //  {
-//       Viewer viewer = pUniverse.getViewer();
-//       TransformGroup tg = viewer.getViewingPlatform().getViewPlatformTransform();
-    
-//       Transform3D xform = new Transform3D();
-//       tg.getTransform(xform);
-      
-//       Double cx = (Double) decoder.decode("CameraX");
-//       Double cy = (Double) decoder.decode("CameraY");
-//       Double cz = (Double) decoder.decode("CameraZ");
-
-//       if((cx == null) || (cy == null) || (cz == null)) 
-// 	throw new GlueException("The camera position was incomplete!");
-//       Vector3d trans = new Vector3d(cx, cy, cz);
-
-//       xform.setTranslation(trans);	    
-//       tg.setTransform(xform);
-//     }
 
     super.fromGlue(decoder);
   }
