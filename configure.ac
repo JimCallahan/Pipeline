@@ -786,6 +786,10 @@ AC_CONFIG_FILES([
   docs/images/Makefile
   docs/javadoc/Makefile
   docs/man/Makefile
+  docs/man/plfilemgr.html.src
+  docs/man/plmaster.html.src
+  docs/man/plnotify.html.src
+  docs/man/plui.html.src
   docs/manuals/Makefile
 
   src/Makefile
@@ -802,7 +806,9 @@ AC_CONFIG_FILES([
 
   src/java/scripts/Makefile
   src/java/scripts/plfilemgr
-  src/java/scripts/pltest
+  src/java/scripts/plmaster
+  src/java/scripts/plservers
+  src/java/scripts/plui
 
   src/java/share/Makefile
 
