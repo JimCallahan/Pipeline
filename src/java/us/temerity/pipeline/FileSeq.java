@@ -1,9 +1,8 @@
-// $Id: FileSeq.java,v 1.9 2004/03/23 20:41:25 jim Exp $
+// $Id: FileSeq.java,v 1.10 2004/04/11 19:30:00 jim Exp $
 
 package us.temerity.pipeline;
 
 import us.temerity.pipeline.glue.*;
-import us.temerity.pipeline.core.*;
 
 import java.util.*;
 import java.util.logging.*;

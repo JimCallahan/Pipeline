@@ -1,9 +1,8 @@
-// $Id: BaseAction.java,v 1.7 2004/03/23 20:41:25 jim Exp $
+// $Id: BaseAction.java,v 1.8 2004/04/11 19:26:11 jim Exp $
 
 package us.temerity.pipeline;
 
 import  us.temerity.pipeline.glue.*;
-import  us.temerity.pipeline.core.*;
 
 import java.util.*;
 import java.io.*;
