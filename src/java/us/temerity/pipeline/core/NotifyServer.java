@@ -1,4 +1,4 @@
-// $Id: NotifyServer.java,v 1.6 2004/04/15 18:31:57 jim Exp $
+// $Id: NotifyServer.java,v 1.7 2004/04/24 22:42:19 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -601,12 +601,12 @@ class NotifyServer
   
 	  switch(kind) {
 	  case Monitor:
-	    Logs.net.severe("A Monitor request was sent to the Monitor Server!");
+	    Logs.net.severe("A Monitor (control) request was sent to the Monitor Server!");
 	    live = false;
 	    break;
 	  
 	  case Unmonitor:
-	    Logs.net.severe("A Unmonitor request was sent to the Monitor Server!");
+	    Logs.net.severe("A Unmonitor (control) request was sent to the Monitor Server!");
 	    live = false;
 	    break;
 	  
