@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.32 2005/03/31 17:01:50 jim Exp $
+// $Id: FileMgrClient.java,v 1.33 2005/04/03 06:08:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -16,57 +16,11 @@ import java.util.*;
 /**
  * The client-side manager of file system queries and operations. <P> 
  * 
- * This class handles network communication with the Pipeline file management daemon 
- * <A HREF="../../../../man/plfilemgr.html"><B>plfilemgr</B><A>(1) running on the file 
- * server. An instance of this class is used by the Pipeline master server daemon 
- * <A HREF="../../../../man/plmaster.html"><B>plmaster</B><A>(1) to communicate with 
- * <B>plfilemgr</B>(1).
- * 
  * @see FileMgr
  * @see FileMgrServer
  */
-class FileMgrClient
-  extends BaseMgrClient
+interface FileMgrClient
 {  
-  /*----------------------------------------------------------------------------------------*/
-  /*   C O N S T R U C T O R                                                                */
-  /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * Construct a new file manager client.
-   * 
-   * @param hostname 
-   *   The name of the host running the <B>plfilemgr</B><A>(1).
-   * 
-   * @param port 
-   *   The network port listened to by <B>plfilemgr</B><A>(1).
-   */
-  public
-  FileMgrClient
-  ( 
-   String hostname, 
-   int port
-  ) 
-  {
-    super(hostname, port, 
-	  FileRequest.Disconnect, FileRequest.Shutdown);
-  }
-
-  /** 
-   * Construct a new file manager client using the default hostname and port. <P> 
-   * 
-   * The hostname and port used are those specified by the 
-   * <CODE><B>--file-host</B>=<I>host</I></CODE> and 
-   * <CODE><B>--file-port</B>=<I>num</I></CODE> options to <B>plconfig</B>(1).
-   */
-  public
-  FileMgrClient() 
-  {
-    this(PackageInfo.sFileServer, PackageInfo.sFilePort);
-  }
-
-
-
   /*----------------------------------------------------------------------------------------*/
   /*   O P S                                                                                */
   /*----------------------------------------------------------------------------------------*/
@@ -86,21 +40,13 @@ class FileMgrClient
    * @throws PipelineException
    *   If unable to create the working area directory.
    */
-  public synchronized void  
+  public void  
   createWorkingArea
   ( 
    String author, 
    String view   
   ) 
-    throws PipelineException 
-  {
-    verifyConnection();
-
-    FileCreateWorkingAreaReq req = new FileCreateWorkingAreaReq(author, view);
-
-    Object obj = performTransaction(FileRequest.CreateWorkingArea, req);
-    handleSimpleResponse(obj);
-  }
+    throws PipelineException;
 
   /**
    * Remove an entire working area directory for the given user and view. <P> 
@@ -117,21 +63,13 @@ class FileMgrClient
    * @throws PipelineException
    *   If unable to remove the working area directory.
    */
-  public synchronized void  
+  public void  
   removeWorkingArea
   ( 
    String author, 
    String view   
   ) 
-    throws PipelineException 
-  {
-    verifyConnection();
-
-    FileRemoveWorkingAreaReq req = new FileRemoveWorkingAreaReq(author, view);
-
-    Object obj = performTransaction(FileRequest.RemoveWorkingArea, req);
-    handleSimpleResponse(obj);
-  }
+    throws PipelineException;
 
   /**
    * Compute the {@link FileState FileState} for each file associated with the working 
@@ -176,7 +114,7 @@ class FileMgrClient
    * @throws PipelineException
    *   If unable to compute the file states.
    */ 
-  public synchronized void
+  public void
   states
   (
    NodeID id, 
@@ -187,25 +125,7 @@ class FileMgrClient
    TreeMap<FileSeq, FileState[]> states, 
    TreeMap<FileSeq, Date[]> timestamps
   ) 
-    throws PipelineException 
-  {
-    verifyConnection();
-
-    FileStateReq req = 
-      new FileStateReq(id, vstate, isFrozen, mod.getWorkingID(), latest, mod.getSequences());
-
-    Object obj = performTransaction(FileRequest.State, req);
-
-    if(obj instanceof FileStateRsp) {
-      FileStateRsp rsp = (FileStateRsp) obj;
-      states.putAll(rsp.getFileStates());
-      if(rsp.getTimeStamps() != null) 
-	timestamps.putAll(rsp.getTimeStamps());
-    }
-    else {
-      handleFailure(obj);
-    }
-  }
+    throws PipelineException;
 
   /**
    * Perform the file system operations needed to create a new checked-in version of the 
@@ -233,7 +153,7 @@ class FileMgrClient
    * @throws PipelineException
    *   If unable to check-in the files.
    */
-  public synchronized void 
+  public void 
   checkIn
   (
    NodeID id, 
@@ -242,16 +162,7 @@ class FileMgrClient
    VersionID latest, 
    TreeMap<FileSeq,boolean[]> isNovel
   ) 
-    throws PipelineException 
-  {
-    verifyConnection();
-
-    FileCheckInReq req = 
-      new FileCheckInReq(id, vid, latest, mod.getSequences(), isNovel); 
-
-    Object obj = performLongTransaction(FileRequest.CheckIn, req, 15000, 60000);  
-    handleSimpleResponse(obj);
-  }
+    throws PipelineException;
 
   /**
    * Overwrite the files associated with the given working version of the node with the 
@@ -270,24 +181,14 @@ class FileMgrClient
    * @throws PipelineException
    *   If unable to check-out the files.
    */ 
-  public synchronized void 
+  public void 
   checkOut
   (
    NodeID id, 
    NodeVersion vsn, 
    boolean isFrozen
   ) 
-    throws PipelineException 
-  {
-    verifyConnection();
-
-    FileCheckOutReq req = 
-      new FileCheckOutReq(id, vsn.getVersionID(), vsn.getSequences(), 
-			  isFrozen, !vsn.isActionEnabled());
-
-    Object obj = performLongTransaction(FileRequest.CheckOut, req, 15000, 60000);  
-    handleSimpleResponse(obj);
-  }
+    throws PipelineException;
 
   /**
    * Revert specific working area files to an earlier checked-in version of the files. <P> 
@@ -307,22 +208,14 @@ class FileMgrClient
    * @throws PipelineException
    *   If unable to revert the files.
    */ 
-  public synchronized void 
+  public void 
   revert
   (
    NodeID id, 
    TreeMap<String,VersionID> files, 
    boolean writeable   
   )
-    throws PipelineException
-  {
-    verifyConnection();
-
-    FileRevertReq req = new FileRevertReq(id, files, writeable);
-    
-    Object obj = performTransaction(FileRequest.Revert, req);
-    handleSimpleResponse(obj);
-  }
+    throws PipelineException;
 
   /**
    * Replace the primary files associated one node with the primary files of another node. <P>
@@ -345,7 +238,7 @@ class FileMgrClient
    * @throws PipelineException
    *   If unable to clone the files.
    */ 
-  public synchronized void 
+  public void 
   clone
   (
    NodeID sourceID,
@@ -353,15 +246,7 @@ class FileMgrClient
    TreeMap<File,File> files, 
    boolean writeable   
   )
-    throws PipelineException
-  {
-    verifyConnection();
-
-    FileCloneReq req = new FileCloneReq(sourceID, targetID, files, writeable);
-    
-    Object obj = performTransaction(FileRequest.Clone, req);
-    handleSimpleResponse(obj);
-  }
+    throws PipelineException;
 
   /**
    * Remove specific files associated with the given working version.
@@ -372,22 +257,13 @@ class FileMgrClient
    * @param files
    *   The specific files to remove.
    */  
-  public synchronized void 
+  public void 
   remove 
   (
    NodeID id, 
    ArrayList<File> files
   ) 
-    throws PipelineException 
-  {
-    verifyConnection();
-
-    FileRemoveReq req = 
-      new FileRemoveReq(id, files);
-
-    Object obj = performTransaction(FileRequest.Remove, req);
-    handleSimpleResponse(obj);
-  }
+    throws PipelineException;
 
   /**
    * Remove the all of the files associated with the given working version.
@@ -398,21 +274,13 @@ class FileMgrClient
    * @param fseqs
    *   The primary/secondary file sequences. 
    */  
-  public synchronized void 
+  public void 
   removeAll
   (
    NodeID id, 
    TreeSet<FileSeq> fseqs
   ) 
-    throws PipelineException 
-  {
-    verifyConnection();
-
-    FileRemoveAllReq req = new FileRemoveAllReq(id, fseqs);
-
-    Object obj = performTransaction(FileRequest.RemoveAll, req);
-    handleSimpleResponse(obj);
-  }
+    throws PipelineException;
 
   /**
    * Rename the files associated with the given working version.
@@ -426,23 +294,14 @@ class FileMgrClient
    * @param pattern
    *   The new fully resolved file pattern.
    */  
-  public synchronized void 
+  public void 
   rename 
   (
    NodeID id, 
    NodeMod mod,
    FilePattern pattern   
   ) 
-    throws PipelineException 
-  {
-    verifyConnection();
-
-    FileRenameReq req = 
-      new FileRenameReq(id, mod.getSequences(), pattern);
-
-    Object obj = performTransaction(FileRequest.Rename, req);
-    handleSimpleResponse(obj);
-  }
+    throws PipelineException;
 
   /**
    * Change the user write permission of all existing files associated with the given 
@@ -457,23 +316,14 @@ class FileMgrClient
    * @param writeable
    *   Whether the working area files should be made writable by the owning user.
    */ 
-  public synchronized void 
+  public void 
   changeMode 
   (
    NodeID id, 
    NodeMod mod, 
    boolean writeable
   ) 
-    throws PipelineException 
-  {
-    verifyConnection();
-
-    FileChangeModeReq req = 
-      new FileChangeModeReq(id, mod.getSequences(), writeable);
-
-    Object obj = performTransaction(FileRequest.ChangeMode, req);
-    handleSimpleResponse(obj);
-  }
+    throws PipelineException;
 
   /**
    * Remove the entire repository directory structure for the given node including all
@@ -482,20 +332,12 @@ class FileMgrClient
    * @param name
    *   The fully resolved node name. 
    */  
-  public synchronized void 
+  public void 
   deleteCheckedIn
   (
    String name
   ) 
-    throws PipelineException 
-  {
-    verifyConnection();
-
-    FileDeleteCheckedInReq req = new FileDeleteCheckedInReq(name);
-
-    Object obj = performTransaction(FileRequest.DeleteCheckedIn, req);
-    handleSimpleResponse(obj);
-  }
+    throws PipelineException;
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -515,27 +357,12 @@ class FileMgrClient
    * @return
    *   The total version file sizes indexed by fully resolved node name and revision number.
    */ 
-  public synchronized TreeMap<String,TreeMap<VersionID,Long>>
+  public TreeMap<String,TreeMap<VersionID,Long>>
   getArchiveSizes
   (
    TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs
   ) 
-    throws PipelineException 
-  {
-    verifyConnection();
-
-    FileGetArchiveSizesReq req = new FileGetArchiveSizesReq(fseqs);
-
-    Object obj = performTransaction(FileRequest.GetArchiveSizes, req);
-    if(obj instanceof FileGetSizesRsp) {
-      FileGetSizesRsp rsp = (FileGetSizesRsp) obj;
-      return rsp.getSizes();
-    }
-    else {
-      handleFailure(obj);
-      return null;
-    }
-  }
+    throws PipelineException;
 
   /**
    * Create an archive volume by running the given archiver plugin on a set of checked-in 
@@ -554,29 +381,14 @@ class FileMgrClient
    * @return
    *   The STDOUT output of the archiver process.
    */ 
-  public synchronized String
+  public String
   archive
   (
    String name, 
    TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs, 
    BaseArchiver archiver
   ) 
-    throws PipelineException 
-  {
-    verifyConnection();
-
-    FileArchiveReq req = new FileArchiveReq(name, fseqs, archiver);
-
-    Object obj = performLongTransaction(FileRequest.Archive, req, 15000, 60000);  
-    if(obj instanceof FileArchiverRsp) {
-      FileArchiverRsp rsp = (FileArchiverRsp) obj;
-      return rsp.getOutput();
-    }
-    else {
-      handleFailure(obj);
-      return null;
-    }
-  }
+    throws PipelineException;
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -593,27 +405,12 @@ class FileMgrClient
    * @return
    *   The total version file sizes indexed by fully resolved node name and revision number.
    */ 
-  public synchronized TreeMap<String,TreeMap<VersionID,Long>>
+  public TreeMap<String,TreeMap<VersionID,Long>>
   getOfflineSizes
   (
    TreeMap<String,TreeMap<VersionID,TreeSet<File>>> files
   ) 
-    throws PipelineException 
-  {
-    verifyConnection();
-
-    FileGetOfflineSizesReq req = new FileGetOfflineSizesReq(files);
-
-    Object obj = performTransaction(FileRequest.GetOfflineSizes, req);
-    if(obj instanceof FileGetSizesRsp) {
-      FileGetSizesRsp rsp = (FileGetSizesRsp) obj;
-      return rsp.getSizes();
-    }
-    else {
-      handleFailure(obj);
-      return null;
-    }
-  }
+    throws PipelineException;
 
   /**
    * Remove the files associated with the given checked-in version of a node. <P> 
@@ -628,42 +425,21 @@ class FileMgrClient
    *   The revision numbers of the symlinks from later versions which target files being 
    *   offlined, indexed by the names of the to be offlined files.
    */  
-  public synchronized void 
+  public void 
   offline
   (
    String name, 
    VersionID vid, 
    TreeMap<File,TreeSet<VersionID>> symlinks
   ) 
-    throws PipelineException 
-  {
-    verifyConnection();
-
-    FileOfflineReq req = new FileOfflineReq(name, vid, symlinks);
-
-    Object obj = performLongTransaction(FileRequest.Offline, req, 15000, 60000);  
-    handleSimpleResponse(obj);
-  }
+    throws PipelineException;
 
   /**
    * Get the fully resolved names and revision numbers of all offlined checked-in versions.
    */
-  public synchronized TreeMap<String,TreeSet<VersionID>>
+  public TreeMap<String,TreeSet<VersionID>>
   getOfflined() 
-    throws PipelineException 
-  {
-    verifyConnection();
-
-    Object obj = performTransaction(FileRequest.GetOfflined, null);
-    if(obj instanceof FileGetOfflinedRsp) {
-      FileGetOfflinedRsp rsp = (FileGetOfflinedRsp) obj;
-      return rsp.getVersions();
-    }
-    else {
-      handleFailure(obj);
-      return null;
-    }
-  }
+    throws PipelineException;
   
 
   /*----------------------------------------------------------------------------------------*/
@@ -691,7 +467,7 @@ class FileMgrClient
    * @return
    *   The STDOUT output of the archiver process.
    */ 
-  public synchronized String
+  public String
   extract
   (
    String archiveName, 
@@ -700,22 +476,7 @@ class FileMgrClient
    BaseArchiver archiver, 
    long size
   ) 
-    throws PipelineException 
-  {
-    verifyConnection();
-
-    FileExtractReq req = new FileExtractReq(archiveName, stamp, fseqs, archiver, size);
-
-    Object obj = performTransaction(FileRequest.Extract, req);
-    if(obj instanceof FileArchiverRsp) {
-      FileArchiverRsp rsp = (FileArchiverRsp) obj;
-      return rsp.getOutput();
-    }
-    else {
-      handleFailure(obj);
-      return null;
-    }
-  }
+    throws PipelineException;
 
   /**
    * Move the files extracted from the archive volume into the repository. <P> 
@@ -746,7 +507,7 @@ class FileMgrClient
    *   The revision number of the targets of the restored symlinks indexed by restored 
    *   symlink filename.
    */ 
-  public synchronized void 
+  public void 
   restore
   (
    String archiveName, 
@@ -756,15 +517,7 @@ class FileMgrClient
    TreeMap<File,TreeSet<VersionID>> symlinks, 
    TreeMap<File,VersionID> targets
   ) 
-    throws PipelineException 
-  {
-    verifyConnection();
-
-    FileRestoreReq req = new FileRestoreReq(archiveName, stamp, name, vid, symlinks, targets);
-
-    Object obj = performLongTransaction(FileRequest.Restore, req, 15000, 60000);  
-    handleSimpleResponse(obj);
-  }
+    throws PipelineException;
   
   /**
    * Remove the temporary directory use to extract the files from an archive volume.
@@ -775,36 +528,13 @@ class FileMgrClient
    * @param stamp
    *   The timestamp of the start of the restore operation.
    */
-  public synchronized void 
+  public void 
   extractCleanup
   (
    String archiveName, 
    Date stamp
   ) 
-    throws PipelineException 
-  {
-    verifyConnection();
+    throws PipelineException;
 
-    FileExtractCleanupReq req = new FileExtractCleanupReq(archiveName, stamp); 
-
-    Object obj = performTransaction(FileRequest.ExtractCleanup, req);
-    handleSimpleResponse(obj);    
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   H E L P E R S                                                                        */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Get the error message to be shown when the server cannot be contacted.
-   */ 
-  protected String
-  getServerDownMessage()
-  {
-    return ("Unable to contact the the plfilemgr(1) daemon running on " +
-	    "(" + pHostname + ") using port (" + pPort + ")!");
-  }
 }
 
