@@ -1,4 +1,4 @@
-// $Id: TestNodeMgrApp.java,v 1.8 2004/04/14 20:12:27 jim Exp $
+// $Id: TestNodeMgrApp.java,v 1.9 2004/04/15 18:32:39 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -347,6 +347,8 @@ class TestNodeMgrApp
 	client.revoke("default", dragonfly.getName(), true);
 	
 	client.rename("default", sparrow.getName(), "/animals/mammal/bat", true);
+
+	client.revoke("default", fly.getName(), true);
 
 	client.disconnect();
       }
