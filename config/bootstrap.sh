@@ -7,7 +7,7 @@ pushd $HOME/code2/src/pipeline
   sh autogen.sh
 popd
 
-plprofile=/base/apps/i686-pc-linux-gnu-dbg/pipeline-040319/config/pipeline.profile
+plprofile=/base/apps/i686-pc-linux-gnu-dbg/pipeline-040402/config/pipeline.profile
 
 pushd i686-pc-linux-gnu-dbg
   $HOME/code2/src/pipeline/configure \
@@ -16,3 +16,11 @@ pushd i686-pc-linux-gnu-dbg
     --with-crypto-app=$HOME/code2/src/pipeline/plconfig \
     --with-customer-profile=$plprofile
 popd
+
+# pushd i686-pc-linux-gnu-opt
+#   $HOME/code2/src/pipeline/configure \
+#     --ensable-opt \
+#     --with-compiler=GNU \
+#     --with-crypto-app=$HOME/code2/src/pipeline/plconfig \
+#     --with-customer-profile=$plprofile
+# popd
