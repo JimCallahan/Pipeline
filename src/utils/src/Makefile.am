@@ -11,11 +11,12 @@ instsbindir  = @sbindir@
 
 instsbin_PROGRAMS = \
   plget \
-  plput
+  plput \
+  plrun
 
 plget_SOURCES = FB.cc PackageInfo.cc PlGet.cc
 plput_SOURCES = FB.cc PackageInfo.cc PlPut.cc 
-
+plrun_SOURCES = FB.cc PackageInfo.cc PlRun.cc 
 
 
 EXTRA_DIST = \
@@ -32,3 +33,5 @@ INCLUDES =
 install-data-hook:
 	@CHMOD@ 6555 $(instsbindir)/plput
 	@CHOWN@ pipeline.pipeline $(instsbindir)/plput
+	@CHMOD@ 6550 $(instsbindir)/plrun
+	@CHOWN@ root.pipeline $(instsbindir)/plrun
