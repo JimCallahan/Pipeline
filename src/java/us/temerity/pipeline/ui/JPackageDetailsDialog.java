@@ -1,4 +1,4 @@
-// $Id: JPackageDetailsDialog.java,v 1.2 2004/06/03 09:28:45 jim Exp $
+// $Id: JPackageDetailsDialog.java,v 1.3 2004/06/08 03:04:16 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -160,17 +160,17 @@ class JPackageDetailsDialog
       }
 
       String extra[][] = {
+	{ "Load Script", "load-script" },
 	{ "Add Entry",   "add-entry" },
 	{ "Clear",       "clear-entries" },
 	null,
-	{ "Load Script", "load-script" },
 	{ "Test",        "test-package" }
       };
 
       JButton btns[] = super.initUI("", false, body, null, null, extra, "Close");
-      pAddEntryButton     = btns[0];
-      pClearEntriesButton = btns[1];
-      pLoadScriptButton   = btns[3];
+      pLoadScriptButton   = btns[0];
+      pAddEntryButton     = btns[1];
+      pClearEntriesButton = btns[2];
 
       updatePackage(null, null, -1);
       pack();
