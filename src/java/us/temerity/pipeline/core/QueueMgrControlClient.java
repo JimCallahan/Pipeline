@@ -1,6 +1,6 @@
-// $Id: QueueMgrControlClient.java,v 1.1 2004/08/04 01:43:45 jim Exp $
+// $Id: QueueMgrControlClient.java,v 1.2 2004/08/22 22:02:45 jim Exp $
 
-package us.temerity.pipeline;
+package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.message.*;
@@ -65,28 +65,128 @@ class QueueMgrControlClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the IDs of the latest jobs associated with the given node and file sequence.
+   * Get the jobs IDs and states for each primary file of the given working version. <P> 
    * 
+   * The <CODE>fseq</CODE> argument is required because the frame range of the primary file
+   * sequence may have been adjusted after the jobs where submitted. <P> 
    * 
+   * If any of the members of the output <CODE>jobIDs</CODE> argument are <CODE>null</CODE>, 
+   * then no job exists which regenerates that specific file.  Note that it is possible for 
+   * one job to generate multiple files and therefore have its job ID repeated in the returned
+   * <CODE>jobIDs</CODE> list. <P> 
+   * 
+   * Similarly, if any of the members of the output <CODE>states</CODE> argument are 
+   * <CODE>null</CODE>, then no job exists which regenerates that specific file. <P> 
+   * 
+   * @param id
+   *   The unique working version identifier.
+   *
+   * @param fseq
+   *   The primary file sequence.
+   * 
+   * @param jobIDs
+   *   An empty list which will be filled with the unique job identifiers of the latest 
+   *   job which regenerates each file of the primary file sequence.
+   * 
+   * @param states
+   *   An empty list which will be filled with the JobState of each file of the primary file 
+   *   sequence.
    * 
    * @throws PipelineException
    *   If unable to determine the job IDs. 
    */
-  public synchronized Long[] 
-  getJobIDs
+  public synchronized void 
+  getJobStates
   (
-   NodeID nodeID, 
-   FileSeq fseq
+   NodeID id, 
+   FileSeq fseq, 
+   ArrayList<Long> jobIDs, 
+   ArrayList<JobState> states 
   ) 
     throws PipelineException  
   {
+    verifyConnection();
     
+    QueueGetJobStatesReq req = new QueueGetJobStatesReq(id, fseq);
     
-   throw new PipelineException("Not Implemented");
-
-
+    Object obj = performTransaction(QueueRequest.GetJobStates, req);
+    if(obj instanceof QueueGetJobStatesRsp) {
+      QueueGetJobStatesRsp rsp = (QueueGetJobStatesRsp) obj;
+      jobIDs.addAll(rsp.getJobIDs());
+      states.addAll(rsp.getStates());
+    }
+    else {
+      handleFailure(obj);
+    }        
   }
-  
 
+  /**
+   * Submit a job to be executed by the queue. <P> 
+   * 
+   * @param job
+   *   The queue job.
+   * 
+   * @throws PipelineException
+   *   If unable to submit the job.
+   */ 
+  public synchronized void 
+  submitJob
+  (
+   QueueJob job
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    QueueSubmitJobReq req = new QueueSubmitJobReq(job);
+    Object obj = performTransaction(QueueRequest.SubmitJob, req); 
+    handleSimpleResponse(obj);
+  }
+
+  /**
+   * Notify the queue that a set of previously submitted jobs make up a job group.
+   * 
+   * @param group
+   *   The queue job group.
+   * 
+   * @throws PipelineException
+   *   If unable to group the jobs.
+   */ 
+  public synchronized void 
+  groupJobs
+  (
+   QueueJobGroup group
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    QueueGroupJobsReq req = new QueueGroupJobsReq(group);
+    Object obj = performTransaction(QueueRequest.GroupJobs, req); 
+    handleSimpleResponse(obj);
+  }
+
+  /**
+   * Kill the jobs with the given IDs. <P> 
+   * 
+   * @param jobIDs
+   *   The unique job identifiers.
+   * 
+   * @throws PipelineException 
+   *   If unable to kill the jobs.
+   */  
+  public synchronized void
+  killJobs
+  (
+   TreeSet<Long> jobIDs
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    QueueKillJobsReq req = new QueueKillJobsReq(jobIDs);
+    Object obj = performTransaction(QueueRequest.KillJobs, req); 
+    handleSimpleResponse(obj);
+  }
 }
 
