@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.11 2004/07/07 13:19:59 jim Exp $
+// $Id: MasterMgr.java,v 1.12 2004/07/14 20:53:13 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -514,8 +514,16 @@ class MasterMgr
     if(allFiles) {
       String full = dir.getPath();
       String path = full.substring(prefix.length());
-      if(path.length() > 0) 
-	addCheckedInNodeTreePath(path);
+      if(path.length() > 0) {
+	try {
+	  TreeMap<VersionID,CheckedInBundle> table = readCheckedInVersions(path);
+	  for(CheckedInBundle bundle : table.values()) 
+	    addCheckedInNodeTreePath(bundle.uVersion);
+	}
+	catch(PipelineException ex) {
+	  throw new IllegalStateException(ex.getMessage());
+	}
+      }
     }
     else if(allDirs) {
       int wk;
@@ -560,8 +568,16 @@ class MasterMgr
 	initWorkingNodeTree(prefix, author, view, files[wk]);
       else {
 	String path = files[wk].getPath();
-	if(!path.endsWith(".backup"))
-	  addWorkingNodeTreePath(path.substring(prefix.length()), author, view);
+	if(!path.endsWith(".backup")) {
+	  try {
+	    NodeID nodeID = new NodeID(author, view, path.substring(prefix.length()));
+	    NodeMod mod = readWorkingVersion(nodeID);
+	    addWorkingNodeTreePath(nodeID, mod.getSequences());
+	  }
+	  catch(PipelineException ex) {
+	    throw new IllegalStateException(ex.getMessage());
+	  }
+	}
       }
     }
   }
@@ -1942,10 +1958,6 @@ class MasterMgr
 
 	/* update the bundle */ 
 	bundle.uVersion = mod;
-
-	/* invalidate states */ 
-	if(critical.compareTo(mod.getLastCriticalModification()) < 0) 
-	  bundle.uQueueStates = null;
       }
 
       return new SuccessRsp(timer);
@@ -2084,6 +2096,91 @@ class MasterMgr
     finally {
       downstreamLock.writeLock().unlock();
       targetLock.writeLock().unlock();
+    }    
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Add a secondary file sequence to the given working version. <P> 
+   * 
+   * @param req 
+   *   The add secondary request.
+   *
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to add the secondary file sequence.
+   */
+  public Object
+  addSecondary
+  (
+   NodeAddSecondaryReq req 
+  ) 
+  {
+    assert(req != null);
+    
+    NodeID nodeID = req.getNodeID();
+    FileSeq fseq  = req.getFileSequence();
+
+    TaskTimer timer = new TaskTimer("MasterMgr.addSecondary(): " + nodeID);
+
+    /* reserve the node name, 
+         after verifying that it doesn't conflict with existing nodes */ 
+    timer.aquire();
+    synchronized(pNodeTreeRoot) {
+      timer.resume();
+      
+      if(!isNodePathUnused(nodeID.getName(), fseq, true))
+	return new FailureRsp
+	  (timer, "Cannot add secondary file sequence (" + fseq + ") " + 
+	   "to node (" + nodeID.getName() + ") because its name conflicts with " + 
+	   "an existing node or one of its associated file sequences!");
+      
+      TreeSet<FileSeq> secondary = new TreeSet<FileSeq>();
+      secondary.add(fseq);
+      
+      addWorkingNodeTreePath(nodeID, secondary);
+      
+      logNodeTree(); //DEBUG
+    }
+
+    timer.aquire();
+    ReentrantReadWriteLock lock = getWorkingLock(nodeID);
+    lock.writeLock().lock();
+    try {
+      timer.resume();	
+
+      WorkingBundle bundle = getWorkingBundle(nodeID);
+      if(bundle == null) 
+	throw new PipelineException
+	  ("Secondary file sequences can only be added to working versions of nodes!\n" + 
+	   "No working version (" + nodeID + ") exists.");
+
+      /* remove the link */ 
+      NodeMod mod = new NodeMod(bundle.uVersion);
+      mod.addSecondarySequence(fseq);
+      
+      /* write the new working version to disk */ 
+      writeWorkingVersion(nodeID, mod);
+      
+      /* update the bundle */ 
+      bundle.uVersion = mod;
+
+      /* invalidate the cached per-file states */ 
+      bundle.uFileStates      = null;
+      bundle.uFileTimeStamps  = null;
+
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      
+      // needs to remove the secondary file sequence from the NodeTreePath on failure...
+
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      lock.writeLock().unlock();
     }    
   }
 
@@ -2319,10 +2416,10 @@ class MasterMgr
     assert(req != null);
 
     /* node identifiers */ 
-    String name = req.getNodeMod().getName();
-    NodeID id   = req.getNodeID();
+    String name   = req.getNodeMod().getName();
+    NodeID nodeID = req.getNodeID();
 
-    TaskTimer timer = new TaskTimer("MasterMgr.register(): " + id);
+    TaskTimer timer = new TaskTimer("MasterMgr.register(): " + nodeID);
 
     /* reserve the node name, 
          after verifying that it doesn't conflict with existing nodes */ 
@@ -2331,38 +2428,40 @@ class MasterMgr
       synchronized(pNodeTreeRoot) {
 	timer.resume();
 	
-	if(!isNodePathUnused(name)) 
+	if(!isNodePathUnused(name, req.getNodeMod().getPrimarySequence(), false)) 
 	  return new FailureRsp
 	    (timer, "Cannot register node (" + name + ") because its name conflicts with " + 
-	     "an existing node!");
+	     "an existing node or one of its associated file sequences!");
 	
-	addWorkingNodeTreePath(name, id.getAuthor(), id.getView());
+	addWorkingNodeTreePath(nodeID, req.getNodeMod().getSequences());
       }
+
+      logNodeTree(); //DEBUG
     }
 
     timer.aquire();
-    ReentrantReadWriteLock lock = getWorkingLock(id);
+    ReentrantReadWriteLock lock = getWorkingLock(nodeID);
     lock.writeLock().lock();
     try {
       timer.resume();
 
       /* write the new working version to disk */
-      writeWorkingVersion(id, req.getNodeMod());	
+      writeWorkingVersion(nodeID, req.getNodeMod());	
 
       /* create a working bundle for the new working version */ 
       synchronized(pWorkingBundles) {
-	pWorkingBundles.put(id, new WorkingBundle(req.getNodeMod()));
+	pWorkingBundles.put(nodeID, new WorkingBundle(req.getNodeMod()));
       }
 
       /* initialize the working downstream links */ 
       timer.aquire();
-      ReentrantReadWriteLock downstreamLock = getDownstreamLock(id.getName());
+      ReentrantReadWriteLock downstreamLock = getDownstreamLock(nodeID.getName());
       downstreamLock.writeLock().lock();
       try {
 	timer.resume();
 
-	DownstreamLinks links = getDownstreamLinks(id.getName()); 
-	links.createWorking(id);
+	DownstreamLinks links = getDownstreamLinks(nodeID.getName()); 
+	links.createWorking(nodeID);
       }
       finally {
 	downstreamLock.writeLock().unlock();
@@ -2371,6 +2470,9 @@ class MasterMgr
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
+
+      // needs to remove the NodeTreePath on failure...
+
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
@@ -2518,7 +2620,7 @@ class MasterMgr
       }
 
       /* remove the node tree path */ 
-      removeWorkingNodeTreePath(id.getName(), id.getAuthor(), id.getView());
+      removeWorkingNodeTreePath(id);
 
       /* remove the associated files */ 
       if(req.removeFiles()) {
@@ -2573,18 +2675,60 @@ class MasterMgr
       return new FailureRsp
 	(timer, "Cannot rename node (" + name + ") to the same name!");
 
+    /* determine the new file sequences */ 
+    FileSeq primary = null;
+    SortedSet<FileSeq> secondary = null;
+    {
+      timer.aquire();
+      ReentrantReadWriteLock lock = getWorkingLock(id);
+      lock.readLock().lock();
+      try {
+	timer.resume();
+	
+	WorkingBundle bundle = getWorkingBundle(id);
+	NodeMod mod = bundle.uVersion;
+
+	{
+	  FileSeq fseq = mod.getPrimarySequence();
+	  
+	  FilePattern opat = fseq.getFilePattern();
+	  FrameRange range = fseq.getFrameRange();
+	  
+	  File path = new File(nname);      
+	  FilePattern pat = 
+	    new FilePattern(path.getName(), opat.getPadding(), opat.getSuffix());
+
+	  primary = new FileSeq(pat, range);
+	}
+	
+	secondary = mod.getSecondarySequences();
+      }
+      catch(PipelineException ex) {
+	return new FailureRsp(timer, ex.getMessage());
+      }
+      finally {
+	lock.readLock().unlock();
+      }
+    }
+
     /* reserve the new node name, 
          after verifying that it doesn't conflict with existing nodes */ 
     timer.aquire();
     synchronized(pNodeTreeRoot) {
       timer.resume();
-      
-      if(!isNodePathUnused(nname)) 
+
+      if(!isNodePathUnused(nname, primary, false)) 
 	return new FailureRsp
 	  (timer, "Cannot rename node (" + name + ") to (" + nname + ") because the new " + 
-	   "name conflicts with an existing node!");
+	   "name conflicts with an existing node or one of its associated file sequences!");
       
-      addWorkingNodeTreePath(nname, nid.getAuthor(), nid.getView());
+      TreeSet<FileSeq> fseqs = new TreeSet<FileSeq>();
+      fseqs.add(primary);
+      fseqs.addAll(secondary);
+
+      addWorkingNodeTreePath(nid, fseqs);
+
+      logNodeTree(); //DEBUG
     }
 
     /* unlink the downstream working versions from the to be renamed working version 
@@ -2677,9 +2821,8 @@ class MasterMgr
       }
 
       /* rename the files */ 
-      if(req.renameFiles()) {
+      if(req.renameFiles()) 
 	pFileMgrClient.rename(id, bundle.uVersion, nname);	
-      }
 
       unmonitor(id);
     }
@@ -2772,14 +2915,14 @@ class MasterMgr
       // Add a check for running queue jobs related to the nodes to be checked-out and put 
       // hold on the submission of jobs for these nodes until the check-out is complete.
       //
-    
+      
       performCheckOut(true, nodeID, req.getVersionID(), req.keepNewer(), 
 		      new LinkedList<String>(), new HashSet<String>(), timer);
-
+      
       //
       // Release the queue job submission holds.
       // 
-
+      
       NodeStatus root = performNodeOperation(new NodeOp(), nodeID, timer);
       return new NodeStatusRsp(timer, nodeID, root);
     }
@@ -2917,11 +3060,14 @@ class MasterMgr
 	performCheckOut(false, lnodeID, link.getVersionID(), keepNewer, branch, seen, timer);
       }
 
-      /* check-in the files */
+      /* get the current timestamp */ 
+      Date timestamp = Dates.now(); 
+
+      /* check-out the files */
       pFileMgrClient.checkOut(nodeID, vsn);
            
       /* create a new working version and write it to disk */ 
-      NodeMod nwork = new NodeMod(vsn);
+      NodeMod nwork = new NodeMod(vsn, timestamp);
       writeWorkingVersion(nodeID, nwork);
 
       /* initialize new working version */ 
@@ -2930,7 +3076,7 @@ class MasterMgr
 	timer.aquire();
 	synchronized(pNodeTreeRoot) {
 	  timer.resume();
-	  addWorkingNodeTreePath(name, nodeID.getAuthor(), nodeID.getView());
+	  addWorkingNodeTreePath(nodeID, nwork.getSequences());
 	}
 
 	/* create a new working bundle */ 
@@ -3017,21 +3163,21 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Add the given fully resolved checked-in node path to the node path tree. <P> 
+   * Add the given checked-in version to the node path tree. <P> 
    * 
    * Creates any branch components which do not already exist.
    * 
-   * @param path
-   *   The fully resolved node name path.
+   * @param vsn
+   *   The checked-in version of the node.
    */ 
   private void 
   addCheckedInNodeTreePath
   (
-   String path
+   NodeVersion vsn
   )
   {
     synchronized(pNodeTreeRoot) {
-      String comps[] = path.split("/"); 
+      String comps[] = vsn.getName().split("/"); 
       
       NodeTreeEntry parent = pNodeTreeRoot;
       int wk;
@@ -3053,42 +3199,41 @@ class MasterMgr
       else {
 	entry.setCheckedIn(true);
       }
+
+      for(FileSeq fseq : vsn.getSequences())
+	entry.addSequence(fseq);
     }
   }
 
   /**
-   * Add the given fully resolved working node name to the node path tree. <P> 
+   * Add the given working version to the node path tree. <P> 
    * 
    * Creates any branch components which do not already exist.
    * 
-   * @param path
-   *   The fully resolved node name path.
+   * @param nodeID
+   *   The unique working version identifier.
    * 
-   * @param author 
-   *   The name of the user which owns the working version.
-   * 
-   * @param view 
-   *   The name of the user's working area view. 
+   * @param fseqs
+   *   The file sequences associated with the working version.
    */ 
   private void 
   addWorkingNodeTreePath
   (
-   String path,
-   String author, 
-   String view 
+   NodeID nodeID, 
+   SortedSet<FileSeq> fseqs
   )
   {
     synchronized(pWorkingAreaViews) {
-      TreeSet<String> views = pWorkingAreaViews.get(author);
+      TreeSet<String> views = pWorkingAreaViews.get(nodeID.getAuthor());
       if(views == null) {
 	views = new TreeSet<String>();
-	pWorkingAreaViews.put(author, views);
+	pWorkingAreaViews.put(nodeID.getAuthor(), views);
       }
-      views.add(view);
+      views.add(nodeID.getView());
     }
 
     synchronized(pNodeTreeRoot) {
-      String comps[] = path.split("/"); 
+      String comps[] = nodeID.getName().split("/"); 
       
       NodeTreeEntry parent = pNodeTreeRoot;
       int wk;
@@ -3108,34 +3253,31 @@ class MasterMgr
 	parent.put(entry.getName(), entry);
       }
       
-      entry.addWorking(author, view);
+      entry.addWorking(nodeID.getAuthor(), nodeID.getView());
+      
+      if(fseqs != null) {
+	for(FileSeq fseq : fseqs)
+	  entry.addSequence(fseq);
+      }
     }
   }
 
   /**
-   * Remove the given fully resolved working node name from the node path tree. <P> 
+   * Remove the given working version from the node path tree. <P> 
    * 
    * Removes any branch components which become empty due to the working version removal.
    * 
-   * @param path
-   *   The fully resolved node name path.
-   * 
-   * @param author 
-   *   The name of the user which owns the working version.
-   * 
-   * @param view 
-   *   The name of the user's working area view. 
+   * @param nodeID
+   *   The unique working version identifier.
    */ 
   private void 
   removeWorkingNodeTreePath
   (
-   String path,
-   String author, 
-   String view 
+   NodeID nodeID
   )
   {
     synchronized(pNodeTreeRoot) {
-      String comps[] = path.split("/"); 
+      String comps[] = nodeID.getName().split("/"); 
       
       Stack<NodeTreeEntry> stack = new Stack<NodeTreeEntry>();
       stack.push(pNodeTreeRoot);
@@ -3151,7 +3293,7 @@ class MasterMgr
       assert(entry != null); 
       assert(entry.isLeaf());
 
-      entry.removeWorking(author, view);
+      entry.removeWorking(nodeID.getAuthor(), nodeID.getView());
       if(!entry.hasWorking() && !entry.isCheckedIn()) {
 	while(!stack.isEmpty()) {
 	  NodeTreeEntry parent = stack.pop();
@@ -3170,28 +3312,50 @@ class MasterMgr
   /** 
    * Is the given fully resolved node name unused?
    * 
-   * @param path
-   *   The fully resolved node name path.
+   * @param name
+   *   The fully resolved node name.
+   * 
+   * @param fseq
+   *   The file sequence to test.
+   * 
+   * @param seqsOnly
+   *   Only check the file sequences and ignore existing node name conflicts.
    */ 
   private boolean
   isNodePathUnused
   (
-   String path
+   String name, 
+   FileSeq fseq, 
+   boolean seqsOnly 
   ) 
   {
     synchronized(pNodeTreeRoot) {
-      String comps[] = path.split("/"); 
+      String comps[] = name.split("/"); 
       
       NodeTreeEntry parent = pNodeTreeRoot;
       int wk;
       for(wk=1; wk<comps.length; wk++) {
 	NodeTreeEntry entry = (NodeTreeEntry) parent.get(comps[wk]);
-	if(entry == null) 
+	if(wk < (comps.length-1)) {
+	  if(entry == null) 
+	    return true;
+	}
+	else {
+	  if(!seqsOnly && (entry != null)) 
+	    return false;
+
+	  for(NodeTreeEntry leaf : parent.values()) {
+	    if(!leaf.isSequenceUnused(fseq)) 
+	      return false;	      
+	  }
+
 	  return true;
+	}
 
 	parent = entry;
       }
-
+      
+      assert(false);
       return false;
     }
   }
@@ -3242,6 +3406,16 @@ class MasterMgr
 	  buf.append("\n");
 	}
       }
+
+      {
+	Set<String> keys = entry.getSequences();
+	if(!keys.isEmpty()) {
+	  buf.append(istr + "  Sequences =\n");
+	  for(String key : keys)   
+	    buf.append(istr + "    " + key + "\n");
+	  buf.append("\n");
+	}
+      }	
     }
     else {
       for(NodeTreeEntry child : entry.values()) 
@@ -3648,9 +3822,10 @@ class MasterMgr
 	}
       }
 
-      /* get per-file FileStates and last modification timestamps */ 
+      /* get per-file FileStates and oldest last modification timestamps */ 
       TreeMap<FileSeq, FileState[]> fileStates = new TreeMap<FileSeq, FileState[]>(); 
-      TreeMap<FileSeq, Date[]> fileTimeStamps = new TreeMap<FileSeq, Date[]>();
+      boolean[] anyMissing = null;
+      Date[] fileTimeStamps = null;
       switch(versionState) {
       case CheckedIn:
 	for(FileSeq fseq : latest.getSequences()) {
@@ -3661,6 +3836,12 @@ class MasterMgr
 	    fs[wk] = FileState.CheckedIn;
 
 	  fileStates.put(fseq, fs);
+
+	  if(anyMissing == null) 
+	    anyMissing = new boolean[fs.length];
+
+	  if(fileTimeStamps == null) 
+	    fileTimeStamps = new Date[fs.length];
 	}
 	break;
 
@@ -3671,8 +3852,23 @@ class MasterMgr
 	    if(latest != null) 
 	      vid = latest.getVersionID();
 
-	    pFileMgrClient.states(nodeID, work, versionState, vid, 
-				  fileStates, fileTimeStamps);
+	    TreeMap<FileSeq, Date[]> stamps = new TreeMap<FileSeq, Date[]>();
+
+	    pFileMgrClient.states(nodeID, work, versionState, vid, fileStates, stamps);
+
+	    for(FileSeq fseq : stamps.keySet()) {
+	      Date[] ts = stamps.get(fseq);
+
+	      if(fileTimeStamps == null) 
+		fileTimeStamps = new Date[ts.length];
+
+	      int wk;
+	      for(wk=0; wk<ts.length; wk++) {
+		if((fileTimeStamps[wk] == null) || 
+		   ((ts[wk] != null) && (fileTimeStamps[wk].compareTo(ts[wk]) < 0)))
+		  fileTimeStamps[wk] = ts[wk];
+	      }
+	    }	      
 
 	    working.uFileStates     = fileStates;
 	    working.uFileTimeStamps = fileTimeStamps;
@@ -3681,6 +3877,20 @@ class MasterMgr
 	    fileStates     = working.uFileStates;
 	    fileTimeStamps = working.uFileTimeStamps;
 	  }
+
+	  /* precompute whether any files are missing */ 
+	  for(FileSeq fseq : fileStates.keySet()) {
+	    FileState fs[] = fileStates.get(fseq);
+	    
+	    if(anyMissing == null) 
+	      anyMissing = new boolean[fs.length];
+
+	    int wk;
+	    for(wk=0; wk<anyMissing.length; wk++) {
+	      if(fs[wk] == FileState.Missing) 
+		anyMissing[wk] = true;
+	    }
+	  }
 	}
       }
 
@@ -3688,7 +3898,20 @@ class MasterMgr
       OverallNodeState overallNodeState = null;
       switch(versionState) {
       case Pending:
-	overallNodeState = OverallNodeState.Pending;
+	{
+	  overallNodeState = OverallNodeState.Pending;
+
+	  /* check for missing files */ 
+	  for(FileState fs[] : fileStates.values()) {
+	    int wk;
+	    for(wk=0; wk<fs.length; wk++) {
+	      if(fs[wk] == FileState.Missing) {
+		overallNodeState = OverallNodeState.Missing;
+		break;
+	      }
+	    }
+	  }
+	}	      
 	break;
 
       case CheckedIn:
@@ -3701,6 +3924,7 @@ class MasterMgr
 	  boolean anyNeedsCheckOutFs = false;
 	  boolean anyModifiedFs      = false;
 	  boolean anyConflictedFs    = false;
+	  boolean anyMissingFs       = false;
 	  for(FileState fs[] : fileStates.values()) {
 	    int wk;
 	    for(wk=0; wk<fs.length; wk++) {
@@ -3717,6 +3941,10 @@ class MasterMgr
 
 	      case Conflicted:
 		anyConflictedFs = true;	
+		break;
+
+	      case Missing: 
+		anyMissingFs = true;
 	      }
 	    }
 	  }
@@ -3738,7 +3966,9 @@ class MasterMgr
 	     (linkState == LinkState.Conflicted) || 
 	     anyConflictedFs);
 
-	  if(anyConflicted || (anyNeedsCheckOut && anyModified))
+	  if(anyMissingFs) 
+	    overallNodeState = OverallNodeState.Missing;
+	  else if(anyConflicted || (anyNeedsCheckOut && anyModified))
 	    overallNodeState = OverallNodeState.Conflicted;
 	  else if(anyModified) 
 	    overallNodeState = OverallNodeState.Modified;
@@ -3760,21 +3990,22 @@ class MasterMgr
 	      switch(ldetails.getOverallNodeState()) {
 	      case Modified:
 	      case ModifiedLinks:
-	      case Conflicted:
-		overallNodeState = OverallNodeState.ModifiedLinks;
+	      case Conflicted:	
+		if(link.getPolicy() != LinkPolicy.None) 
+		  overallNodeState = OverallNodeState.ModifiedLinks;
 		break;
-
+		
 	      case Identical:
 	      case NeedsCheckOut:
 		if(!link.getVersionID().equals(ldetails.getWorkingVersion().getWorkingID()))
 		  overallNodeState = OverallNodeState.ModifiedLinks;
 		break;
-
+		
 	      default:
 		assert(false) : 
 		  ("Upstream Node Overall State = " + ldetails.getOverallNodeState());
 	      }
-
+	      
 	      if(overallNodeState != null)
 		break;
 	    }
@@ -3785,59 +4016,157 @@ class MasterMgr
 	}
       }
 
-
-      /* get per-file QueueStates */  
-      TreeMap<FileSeq,QueueState[]> queueStates = new TreeMap<FileSeq,QueueState[]>();
+      /* determine per-file QueueStates */  
+      QueueState queueStates[] = null;
       switch(versionState) {
       case CheckedIn:
-	for(FileSeq fseq : latest.getSequences()) {
-	  QueueState qs[] = new QueueState[fseq.numFrames()];
-
+	{
+	  queueStates = new QueueState[latest.getPrimarySequence().numFrames()];
 	  int wk;
-	  for(wk=0; wk<qs.length; wk++) 
-	    qs[wk] = QueueState.Undefined;
-
-	  queueStates.put(fseq, qs);
+	  for(wk=0; wk<queueStates.length; wk++) 
+	    queueStates[wk] = QueueState.Undefined;
 	}
 	break;
 
       default:
-	{
-	  if(working.uQueueStates == null) {
+	{	    
+	  int numFrames = work.getPrimarySequence().numFrames();
+	  queueStates = new QueueState[numFrames];
+
+	  QueueState ps[] = null;
+	  {
+	    // "ps[]" should be computed by querying the queue here.  
+	    // 
+	    // The returned QueueState arrays will only contain: Queued, Running, Failed 
+	    // or (null).  A (null) value means either that no queue job could be found
+	    // which generates the file or the last job has completed successfully.
+	    // 
+	    // The following stub code therefore simple indicates that no jobs exist.
 	    
-	    // PLACEHOLDER 
-	    for(FileSeq fseq : fileStates.keySet()) {
-	      QueueState qs[] = new QueueState[fseq.numFrames()];
-	      int wk;
-	      for(wk=0; wk<qs.length; wk++) 
-		qs[wk] = QueueState.Finished;
- 	      
-	      queueStates.put(fseq, qs);
-	    }	    
-	    // PLACEHOLDER 
-	    
-	    
-	    // should check the queue here instead... 
-	    
-	    
-	    working.uQueueStates = queueStates;
+	    ps = new QueueState[numFrames];
 	  }
-	  else {
-	    queueStates = working.uQueueStates;
+	  
+	  int wk;
+	  for(wk=0; wk<queueStates.length; wk++) {
+	    /* no regeneration action, 
+	         therefore QueueState is always Finished */ 
+	    if(!work.hasAction()) {
+	      queueStates[wk] = QueueState.Finished;
+	    }
+
+	    /* there IS a regeneration action */ 
+	    else {
+	      /* check for active jobs */ 
+	      if(ps[wk] != null) {
+		switch(ps[wk]) {
+		case Queued:
+		case Running:
+		case Failed:
+		  queueStates[wk] = ps[wk];
+		  break;
+		  
+		default:
+		  assert(false);
+		}
+	      }
+	      
+	      if(queueStates[wk] == null) {
+		/* check for missing files or if the working version has been modified since 
+		   any of the primary/secondary files were created */ 
+		if(anyMissing[wk] ||
+		   (fileTimeStamps[wk].compareTo(work.getLastCriticalModification()) < 0)) {
+		  queueStates[wk] = QueueState.Stale;
+		}
+		
+		/* check upstream per-file dependencies */ 
+		else {
+		  for(LinkMod link : work.getSources()) {
+		    if(link.getPolicy() == LinkPolicy.Both) {
+		      NodeStatus lstatus = status.getSource(link.getName());
+		      NodeDetails ldetails = lstatus.getDetails();
+		      
+		      QueueState lqs[] = ldetails.getQueueState();
+		      Date lstamps[] = ldetails.getFileTimeStamps();
+		      
+		      switch(link.getRelationship()) {
+		      case OneToOne:
+			{
+			  Integer offset = link.getFrameOffset();
+			  int idx = wk+offset;
+			  if(((idx >= 0) || (idx < lqs.length)) &&
+			     ((lqs[idx] != QueueState.Finished) ||
+			      (lstamps[idx] == null) || 
+			      (fileTimeStamps[wk].compareTo(lstamps[idx]) < 0))) 
+			    queueStates[wk] = QueueState.Stale;
+			}
+			break;
+			
+		      case All:
+			{
+			  int fk;
+			  for(fk=0; fk<lqs.length; fk++) {
+			    if((lqs[fk] != QueueState.Finished) ||
+			       (lstamps[fk] == null) || 
+			       (fileTimeStamps[wk].compareTo(lstamps[fk]) < 0)) {
+			      queueStates[wk] = QueueState.Stale;
+			      break;
+			    }
+			  }
+			}
+		      }		    
+		    }
+		    
+		    if(queueStates[wk] != null) 
+		      break;
+		  }
+		  
+		  if(queueStates[wk] == null) 
+		    queueStates[wk] = QueueState.Finished;
+		}
+	      }
+	    }
 	  }
 	}
       }
 
       /* compute overall queue state */ 
       OverallQueueState overallQueueState = OverallQueueState.Undefined; 
-      {
-	if(working != null) 
-	  overallQueueState = OverallQueueState.Finished; // FOR NOW 
-
-	// ...
-
-	// should combined per-file queue states here... 
-
+      if(versionState != VersionState.CheckedIn) {
+	boolean anyStale = false;
+	boolean anyQueued = false;
+	boolean anyRunning = false; 
+	boolean anyFailed = false;
+	
+	int wk;
+	for(wk=0; wk<queueStates.length; wk++) {
+	  switch(queueStates[wk]) {
+	  case Stale:
+	    anyStale = true;
+	    break;
+	    
+	  case Queued:
+	    anyQueued = true;
+	    break;
+	    
+	  case Running:
+	    anyRunning = true;
+	    break;
+	    
+	  case Failed:
+	    anyFailed = true;
+	  }
+	}
+	
+	if(anyFailed) 
+	  overallQueueState = OverallQueueState.Failed;
+	else if(anyRunning) 
+	  overallQueueState = OverallQueueState.Running;
+	else if(anyQueued) 
+	  overallQueueState = OverallQueueState.Queued;
+	else if(anyStale) 
+	  overallQueueState = OverallQueueState.Stale;
+	else 
+	  overallQueueState = OverallQueueState.Finished;
       }
 
       /* create the node details */
@@ -5508,7 +5837,7 @@ class MasterMgr
 	  /* check-in the files */ 
 	  pFileMgrClient.checkIn(nodeID, work, vid, latestID, isNovel);
 
-	  /* create a new checked-in version annd write it to disk */ 
+	  /* create a new checked-in version and write it disk */ 
 	  NodeVersion vsn = 
 	    new NodeVersion(work, vid, lvids, isNovel, 
 			    pRequest.getNodeID().getAuthor(), pRequest.getMessage());
@@ -5523,20 +5852,33 @@ class MasterMgr
 	  }
 	  checkedIn.put(vid, new CheckedInBundle(vsn));
 	  
-	  /* generate new file states */ 
+	  /* generate new file/queue states */ 
 	  TreeMap<FileSeq,FileState[]> fileStates = new TreeMap<FileSeq,FileState[]>();
-	  for(FileSeq fseq : working.uFileStates.keySet()) {
-	    FileState fs[] = new FileState[fseq.numFrames()];
+	  QueueState[] queueStates = null;
+	  {
+	    for(FileSeq fseq : working.uFileStates.keySet()) {
+	      FileState fs[] = new FileState[fseq.numFrames()];
+	      Date stamps[] = new Date[fseq.numFrames()];
 
-	    int wk;
-	    for(wk=0; wk<fs.length; wk++) 
-	      fs[wk] = FileState.Identical;
+	      if(queueStates == null) 
+		queueStates = new QueueState[fs.length];
+	      
+	      int wk;
+	      for(wk=0; wk<fs.length; wk++) 
+		fs[wk] = FileState.Identical;
+	      
+	      fileStates.put(fseq, fs);
+	    }
 
-	    fileStates.put(fseq, fs);
+	    {
+	      int wk;
+	      for(wk=0; wk<queueStates.length; wk++) 
+		queueStates[wk] = QueueState.Finished;
+	    }
 	  }
 	  
 	  /* create a new working version and write it to disk */ 
-	  NodeMod nwork = new NodeMod(vsn);
+	  NodeMod nwork = new NodeMod(vsn, work.getLastCriticalModification());
 	  writeWorkingVersion(nodeID, nwork);
 
 	  /* update the working bundle */ 
@@ -5551,12 +5893,12 @@ class MasterMgr
 			    OverallNodeState.Identical, OverallQueueState.Finished, 
 			    VersionState.Identical, PropertyState.Identical, 
 			    LinkState.Identical, 
-			    fileStates, working.uFileTimeStamps, working.uQueueStates);
+			    fileStates, working.uFileTimeStamps, queueStates);
 
 	  status.setDetails(ndetails);
 
 	  /* update the node tree entry */ 
-	  addCheckedInNodeTreePath(name);
+	  addCheckedInNodeTreePath(vsn);
 
 	  /* initialize the downstream links for the new checked-in version of this node */ 
 	  {
@@ -5653,25 +5995,14 @@ class MasterMgr
     public TreeMap<FileSeq,FileState[]>  uFileStates;
 
     /**
-     * A table containing the last modification timestamp of individual files associated 
-     * with the working version of this node indexed by working file sequence. <P> 
+     * A table containing the oldest last modification timestamp for each primary/secondary
+     * file index. 
      * 
-     * May be <CODE>null</CODE> if invalidated.  If the entry for a file sequence is missing
-     * from this table, then the <CODE>VersionState</CODE> was <CODE>CheckedIn</CODE> and 
-     * no working files existed.  If an individual file timestamp is <CODE>null</CODE>, then 
-     * the <CODE>FileState</CODE> was when the timestamp was being collected.
+     * May be <CODE>null</CODE> if invalidated.  If an individual file timestamp is 
+     * <CODE>null</CODE>, then the <CODE>FileState</CODE> for all of the primary/secondary 
+     * files were <CODE>Missing</CODE> when the timestamp was being collected.
      */
-    public TreeMap<FileSeq,Date[]>  uFileTimeStamps;
-
-    /**
-     * The status of individual files associated with the working version of the node 
-     * with respect to the queue jobs which generate them. <P> 
-     * 
-     * May be <CODE>null</CODE> if invalidated. If the entry for a file sequence is missing
-     * from this table, then the <CODE>VersionState</CODE> was <CODE>CheckedIn</CODE> and 
-     * no working files existed.
-     */
-    public TreeMap<FileSeq,QueueState[]>  uQueueStates;
+    public Date[]  uFileTimeStamps;
   }
 
 
@@ -5756,17 +6087,16 @@ class MasterMgr
 	  }
 	  
 	  for(NodeID id : dirty) {
-	    TaskTimer timer = new TaskTimer("DirtyTask -- Node State Invalidated: " + id);
+	    TaskTimer timer = new TaskTimer("File State Invalidated: " + id);
 	    timer.aquire();
 	    ReentrantReadWriteLock lock = getWorkingLock(id);
 	    lock.writeLock().lock();
 	    try {
 	      timer.resume();	
-
+	      
 	      WorkingBundle bundle = getWorkingBundle(id);
 	      bundle.uFileStates      = null;
 	      bundle.uFileTimeStamps  = null;
-	      bundle.uQueueStates     = null;
 	    }
 	    catch(PipelineException ex) {
 	      Logs.net.warning("DirtyTask: " + ex.getMessage());	      
