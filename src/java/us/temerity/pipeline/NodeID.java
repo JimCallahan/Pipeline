@@ -1,4 +1,4 @@
-// $Id: NodeID.java,v 1.2 2004/03/10 11:47:00 jim Exp $
+// $Id: NodeID.java,v 1.3 2004/03/15 19:09:37 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -136,7 +136,10 @@ class NodeID
    VersionID vid
   ) 
   {
-    File path = new File("/repository" + pStringRep + "/" + vid);
+    if(vid == null) 
+      throw new IllegalArgumentException("The revision number cannot be (null)!");
+
+    File path = new File("/repository/" + pName + "/" + vid);
     return path;
   }
 
