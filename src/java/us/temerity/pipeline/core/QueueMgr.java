@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.11 2004/08/30 01:41:15 jim Exp $
+// $Id: QueueMgr.java,v 1.12 2004/08/31 08:13:26 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1964,6 +1964,70 @@ class QueueMgr
 	pReady.remove(priority);
     }
 
+    /* check for newly completed job groups */ 
+    timer.aquire();
+    synchronized(pJobGroups) {
+      timer.resume();
+      for(Long groupID : pJobGroups.keySet()) {
+	QueueJobGroup group = null;
+	try {
+	  group = lookupJobGroup(groupID);
+	}
+	catch(PipelineException ex) {
+	  Logs.ops.severe(ex.getMessage());
+	}
+	
+	/* the job is not yet completed */ 
+	if((group != null) && (group.getCompletedStamp() == null)) {
+	  boolean done = true; 
+	  Date latest = null;
+	  for(Long jobID : group.getAllJobIDs()) {
+	    QueueJobInfo info = null;
+	    try {
+	      timer.aquire();
+	      synchronized(pJobInfo) {
+		timer.resume();
+		info = lookupJobInfo(jobID);
+	      }
+	    }
+	    catch(PipelineException ex) {
+	      Logs.ops.severe(ex.getMessage());
+	    }
+
+	    if(info != null) {
+	      switch(info.getState()) {
+	      case Queued:
+	      case Paused:
+	      case Running:
+		done = false;
+		break;
+
+	      default: 
+		{
+		  Date stamp = info.getCompletedStamp(); 
+		  if(latest == null) 
+		    latest = stamp; 
+		  else if(latest.compareTo(stamp) < 0)
+		    latest = stamp;
+		}
+	      }
+	    }
+	  }
+
+	  /* update the completed group */ 
+	  if(done && (latest != null)) {
+	    group.completed(latest);
+	    try {
+	      writeJobGroup(group);
+	    }
+	    catch(PipelineException ex) {
+	      Logs.ops.severe(ex.getMessage());
+	    }
+	  }
+	}
+      }
+    }
+
     logJobLists("Post-Dispatch:");
     //Logs.ops.finest("-------------------------------------------------------------------"); 
 
@@ -2080,8 +2144,15 @@ class QueueMgr
 	}
       }
 
-      if(bestHost == null) 
+      if(bestHost == null) {
+	timer.aquire();
+	synchronized(pLicenseKeys) {
+	  timer.resume();
+	  for(String kname : aquiredLicenseKeys) 
+	    pLicenseKeys.get(kname).release();
+	}
 	return false;
+      }
     }
 
     /* start the job on the selected server */ 
@@ -2111,9 +2182,12 @@ class QueueMgr
 	Logs.net.severe(ex.getMessage()); 
 	Logs.flush();
 
-	for(String kname : aquiredLicenseKeys) 
-	  pLicenseKeys.get(kname).release();
-
+	timer.aquire();
+	synchronized(pLicenseKeys) {
+	  timer.resume();
+	  for(String kname : aquiredLicenseKeys) 
+	    pLicenseKeys.get(kname).release();
+	}
 	return false;
       }
       finally {
@@ -3027,8 +3101,9 @@ class QueueMgr
     synchronized(lock) {
       File file = new File(pQueueDir, "queue/job-groups/" + groupID);
       if(file.exists()) {
-	throw new PipelineException
-	  ("Somehow the job group file (" + file + ") already exists!");
+	if(!file.delete())
+	  throw new PipelineException
+	    ("Unable to remove the old job group file (" + file + ")!");
       }
       
       Logs.ops.finer("Writing Job Group: " + groupID);
@@ -3176,6 +3251,7 @@ class QueueMgr
     public void 
     run() 
     {
+      /* wait for the job to finish and collect the results */ 
       JobMgrControlClient client = null;
       QueueJobResults results = null;
       int[] numJobs = new int[1];
@@ -3192,6 +3268,7 @@ class QueueMgr
 	  client.disconnect();
       }
 
+      /* update job information */ 
       synchronized(pJobInfo) {
 	try {
 	  QueueJobInfo info = lookupJobInfo(pJobID);
@@ -3203,7 +3280,28 @@ class QueueMgr
 	  Logs.flush();
 	}	
       }
+      
+      /* release any help license keys */ 
+      {
+	TreeSet<String> aquiredLicenseKeys = new TreeSet<String>();
+	synchronized(pJobs) {
+	  try {
+	    QueueJob job = lookupJob(pJobID);
+	    aquiredLicenseKeys.addAll(job.getJobRequirements().getLicenseKeys());
+	  }
+	  catch(PipelineException ex) {
+	    Logs.net.severe(ex.getMessage()); 
+	    Logs.flush();
+	  }
+	}
+	
+	synchronized(pLicenseKeys) {
+	  for(String kname : aquiredLicenseKeys) 
+	    pLicenseKeys.get(kname).release();
+	}
+      }
 
+      /* update the number of currently running jobs */ 
       synchronized(pHosts) {
 	QueueHost host = pHosts.get(pHostname);
 	if(host != null) {
@@ -3212,8 +3310,6 @@ class QueueMgr
 	    sample.setNumJobs(numJobs[0]);
 	}
       }      
-
-      // release the license keys held by the job...
     }
 
     private String  pHostname; 
