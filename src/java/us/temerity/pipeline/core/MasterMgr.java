@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.97 2005/03/14 16:08:21 jim Exp $
+// $Id: MasterMgr.java,v 1.98 2005/03/15 19:12:17 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6527,6 +6527,46 @@ class MasterMgr
 	    NodeVersion vsn = checkedIn.get(vid).uVersion;
 	    int vidx = vids.indexOf(vid);
 	    
+	    /* make sure at lease one archive volume contains the version */ 
+	    {
+	      boolean hasBeenArchived = false;
+	      TreeMap<VersionID,TreeSet<String>> aversions = pArchivedIn.get(name);
+	      if(aversions != null) {
+		TreeSet<String> archives = aversions.get(vid);
+		if((archives != null) && !archives.isEmpty()) 
+		  hasBeenArchived = true;
+	      }
+
+	      if(!hasBeenArchived) 
+		throw new PipelineException
+		  ("The checked-in version (" + vid + ") of node (" + name + ") cannot be " + 
+		   "offlined until it has been archived at least once!");
+	    }	    
+
+	    /* make sure it is not being referenced by an existing working version */ 
+	    {
+	      TreeMap<String,TreeSet<String>> views = getViewsContaining(name);
+	      for(String author : views.keySet()) {
+		for(String view : views.get(author)) {
+		  NodeID nodeID = new NodeID(author, view, name);
+		  NodeMod mod = getWorkingBundle(nodeID).uVersion;
+		  if(vid.equals(mod.getWorkingID())) 
+		    throw new PipelineException
+		      ("The checked-in version (" + vid + ") of node (" + name + ") " + 
+		       "cannot be offlined because a working version currently exists " + 
+		       "which references the checked-in version in the working area " + 
+		       "(" + view + ") owned by user (" + author + ")!");
+		  
+		  if(vid.equals(checkedIn.lastKey())) 
+		    throw new PipelineException
+		      ("The latest checked-in version (" + vid + ") of node " + 
+		       "(" + name + ") cannot be offlined because a working version " + 
+		       "currently exists in the working area (" + view + ") owned by " + 
+		       "user (" + author + ")!");
+		}
+	      }
+	    }
+
 	    /* determine which symlinks target the to be offlined files */ 
 	    TreeMap<File,TreeSet<VersionID>> symlinks = 
 	      new TreeMap<File,TreeSet<VersionID>>();
@@ -6614,7 +6654,6 @@ class MasterMgr
       pDatabaseLock.writeLock().unlock();
     }
   }
-
 
   /**
    * Rearrange the per-file novelty flags to be indexed by filename and version index. <P> 
@@ -7017,6 +7056,42 @@ class MasterMgr
       assert(false);
       return false;
     }
+  }
+
+  /**
+   * Get the names of the working area views containing the given node.
+   * 
+   * @param name
+   *   The fully resolved node name.
+   * 
+   * @return
+   *   The named of the working area views indexed by owning user name.
+   */ 
+  private TreeMap<String,TreeSet<String>> 
+  getViewsContaining
+  (
+   String name
+  ) 
+  {
+    TreeMap<String,TreeSet<String>> views = new TreeMap<String,TreeSet<String>>();
+    
+    synchronized(pNodeTreeRoot) {
+      String comps[] = name.split("/"); 
+      
+      NodeTreeEntry parent = pNodeTreeRoot;
+      int wk;
+      for(wk=1; wk<comps.length; wk++) {
+	NodeTreeEntry entry = (NodeTreeEntry) parent.get(comps[wk]);
+	if(entry == null) 
+	  return views;
+	parent = entry;
+      }
+      
+      for(String author : parent.getWorkingAuthors()) 
+	views.put(author, new TreeSet<String>(parent.getWorkingViews(author)));
+    }
+
+    return views;
   }
 
   /**
