@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.24 2005/01/15 21:15:54 jim Exp $
+// $Id: QueueMgr.java,v 1.25 2005/01/16 00:38:31 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1804,7 +1804,7 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer("QueueMgr.collector()");
 
-    /* get the named of the currently enabled hosts 
+    /* get the names of the currently enabled hosts 
          and the names of those enabled hosts for which total memory/disk isn't known */ 
     TreeSet<String> enabled = new TreeSet<String>();
     TreeSet<String> needsTotals = new TreeSet<String>();
@@ -2434,8 +2434,9 @@ class QueueMgr
 	  timer.resume();
 	  QueueHost host = pHosts.get(bestHost);
 	  host.setHold(job.getJobID(), jreqs.getRampUp());
-	  ResourceSample sample = host.getLatestSample();
-	  sample.setNumJobs(numJobs);
+	  host.jobStarted();
+	  //ResourceSample sample = host.getLatestSample();
+	  //sample.setNumJobs(numJobs);
 	}
       }
       catch (Exception ex) {
@@ -3616,10 +3617,9 @@ class QueueMgr
       /* wait for the job to finish and collect the results */ 
       JobMgrControlClient client = null;
       QueueJobResults results = null;
-      int[] numJobs = new int[1];
       try {
 	client = new JobMgrControlClient(pHostname, pJobPort);	
-	results = client.jobWait(pJobID, numJobs);
+	results = client.jobWait(pJobID);
       }
       catch (Exception ex) {
 	Logs.net.severe(ex.getMessage()); 
@@ -3661,10 +3661,7 @@ class QueueMgr
       synchronized(pHosts) {
 	QueueHost host = pHosts.get(pHostname);
 	if(host != null) {
-	  ResourceSample sample = host.getLatestSample();
-	  if(sample != null)
-	    sample.setNumJobs(numJobs[0]);
-
+	  host.jobFinished(results);
 	  host.cancelHold(pJobID);
 	}
       }      

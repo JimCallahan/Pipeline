@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.18 2005/01/15 16:16:51 jim Exp $
+// $Id: JobMgr.java,v 1.19 2005/01/16 00:38:31 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -487,21 +487,8 @@ class JobMgr
 	}
       }
       
-
-      /* count the number of running jobs */ 
-      int numJobs = 0;
-      timer.aquire();
-      synchronized(pExecuteTasks) {
-	timer.resume();
-	for(ExecuteTask etask : pExecuteTasks.values()) 
-	  if(etask.isAlive())
-	    numJobs++;
-      }
-
-      Logs.ops.finest("JobWait - Num Jobs: " + numJobs);
-
       assert(results != null);
-      return new JobWaitRsp(req.getJobID(), timer, results, numJobs);
+      return new JobWaitRsp(req.getJobID(), timer, results);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  

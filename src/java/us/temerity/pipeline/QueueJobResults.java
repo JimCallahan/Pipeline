@@ -1,4 +1,4 @@
-// $Id: QueueJobResults.java,v 1.3 2004/11/09 06:01:32 jim Exp $
+// $Id: QueueJobResults.java,v 1.4 2005/01/16 00:38:31 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -36,8 +36,9 @@ class QueueJobResults
    Exception ex
   )
   {
-    pCommand  = ("Job Prep Failed: " + ex);
-    pExitCode = 666;
+    pTimeStamp = new Date(); 
+    pCommand   = ("Job Prep Failed: " + ex);
+    pExitCode  = 666;
   }
 
   /**
@@ -83,6 +84,7 @@ class QueueJobResults
    Long pageFaults   
   )
   {
+    pTimeStamp    = new Date(); 
     pCommand      = command; 
     pExitCode     = exitCode;
     pUserTime     = userTime;
@@ -99,6 +101,18 @@ class QueueJobResults
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Get the time stamp of when the results where recorded.
+   */ 
+  public Date 
+  getTimeStamp() 
+  {
+    return pTimeStamp;
+  } 
+
+
+  /*----------------------------------------------------------------------------------------*/
+ 
   /**
    * The literal command line used to execute the job's regeneration action.
    * 
@@ -214,6 +228,8 @@ class QueueJobResults
   ) 
     throws GlueException
   {
+    encoder.encode("TimeStamp", pTimeStamp.getTime());
+
     if(pCommand != null) 
       encoder.encode("Command", pCommand);
     
@@ -246,6 +262,14 @@ class QueueJobResults
   ) 
     throws GlueException
   {
+    {
+      Long stamp = (Long) decoder.decode("TimeStamp"); 
+      if(stamp == null) 
+	throw new GlueException
+	  ("The \"TimeStamp\" was missing!");
+      pTimeStamp = new Date(stamp);
+    }
+
     {
       String cmd = (String) decoder.decode("Command"); 
       if(cmd != null) 
@@ -308,6 +332,11 @@ class QueueJobResults
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The timestamp of when the results where recorded.
+   */ 
+  private Date  pTimeStamp;
 
   /**
    * The literal command line used to execute the job's regeneration action or 

@@ -1,4 +1,4 @@
-// $Id: JobMgrControlClient.java,v 1.8 2005/01/15 15:06:24 jim Exp $
+// $Id: JobMgrControlClient.java,v 1.9 2005/01/16 00:38:31 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -231,18 +231,13 @@ class JobMgrControlClient
    * @param jobID
    *   The unique job identifier.
    * 
-   * @param numJobs
-   *   An array containing a single element which is updated by this method to contain
-   *   the number of currently running jobs.
-   * 
    * @throws PipelineException 
    *   If unable to determine the results.
    */ 
   public synchronized QueueJobResults
   jobWait
   (
-   long jobID, 
-   int[] numJobs
+   long jobID
   ) 
     throws PipelineException 
   {
@@ -253,7 +248,6 @@ class JobMgrControlClient
     Object obj = performTransaction(JobRequest.Wait, req); 
     if(obj instanceof JobWaitRsp) {
       JobWaitRsp rsp = (JobWaitRsp) obj;
-      numJobs[0] = rsp.getNumJobs();
       return rsp.getResults();
     }
     else {

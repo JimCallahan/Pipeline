@@ -1,4 +1,4 @@
-// $Id: QueueHost.java,v 1.6 2004/12/07 04:55:16 jim Exp $
+// $Id: QueueHost.java,v 1.7 2005/01/16 00:38:31 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -384,6 +384,7 @@ class QueueHost
 	   (pSamples.getFirst().getTimeStamp().compareTo(sample.getTimeStamp()) < 0));
 
     pSamples.addFirst(sample);
+    pNumJobsDelta = 0;
   }
 
   /**
@@ -412,6 +413,49 @@ class QueueHost
     }
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the change to the number of running jobs since the last resource sample.
+   */ 
+  public int 
+  getNumJobsDelta() 
+  {
+    return pNumJobsDelta;
+  }
+
+  /**
+   * Increment the number of running jobs since the last resource sample due to a new 
+   * job being started.
+   */ 
+  public void 
+  jobStarted() 
+  {
+    if(!pSamples.isEmpty()) 
+      pNumJobsDelta++;
+  }
+
+  /**
+   * Decrement the number of running jobs since the last resource sample due to a 
+   * previously running job finishing.
+   * 
+   * @param results
+   *   The results of the job execution.
+   */ 
+  public void 
+  jobFinished
+  (
+   QueueJobResults results
+  ) 
+  {
+    if(results == null) 
+      return;
+
+    ResourceSample sample = getLatestSample();
+    if((sample != null) && (results.getTimeStamp().compareTo(sample.getTimeStamp()) > 0))
+      pNumJobsDelta--;
+  }
 
   
   /*----------------------------------------------------------------------------------------*/
@@ -537,7 +581,7 @@ class QueueHost
     Date now = Dates.now();
     if((getHold().compareTo(now) > 0) ||
        ((now.getTime() - sample.getTimeStamp().getTime()) > sSampleInterval) ||
-       (sample.getNumJobs() >= pJobSlots) ||
+       ((sample.getNumJobs() + pNumJobsDelta) >= pJobSlots) ||
        (sample.getLoad() > jreqs.getMaxLoad()) ||
        (sample.getMemory() < jreqs.getMinMemory()) || 
        (sample.getDisk() < jreqs.getMinDisk()))
@@ -741,6 +785,11 @@ class QueueHost
    * The system resource usage samples (newest to oldest).
    */ 
   private LinkedList<ResourceSample>  pSamples;
+
+  /**
+   * The change to the number of running jobs since the last resource sample.
+   */ 
+  private int  pNumJobsDelta;
 
 
   /*----------------------------------------------------------------------------------------*/

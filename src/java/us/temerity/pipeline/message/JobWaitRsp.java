@@ -1,4 +1,4 @@
-// $Id: JobWaitRsp.java,v 1.2 2004/08/23 03:07:10 jim Exp $
+// $Id: JobWaitRsp.java,v 1.3 2005/01/16 00:38:31 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -35,24 +35,22 @@ class JobWaitRsp
    *   The timing statistics for a task.
    * 
    * @param results
-   *   The execution results or <CODE>null</CODE> if the job was never executed.
-   * 
-   * @param jobs
-   *   The number of currently running jobs.
+   *   The execution results.
    */ 
   public
   JobWaitRsp
   (
    long jobID,
    TaskTimer timer, 
-   QueueJobResults results, 
-   int jobs
+   QueueJobResults results
   )
   { 
     super(timer);
 
+    if(results == null) 
+      throw new IllegalArgumentException
+	("The job results cannot be (null)!");
     pResults = results; 
-    pNumJobs = jobs;
 
     Logs.net.finest("JobMgr.wait(): " + jobID + "\n  " + getTimer());
     if(Logs.net.isLoggable(Level.FINEST))
@@ -74,14 +72,6 @@ class JobWaitRsp
     return pResults;
   }
   
-  /**
-   * Get the number of jobs running on the host.
-   */ 
-  public int
-  getNumJobs() 
-  {
-    return pNumJobs; 
-  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -101,9 +91,5 @@ class JobWaitRsp
    */ 
   private QueueJobResults  pResults; 
 
-  /**
-   * The number of currently running jobs.
-   */ 
-  private int  pNumJobs; 
 }
   
