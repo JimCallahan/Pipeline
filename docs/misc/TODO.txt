@@ -27,6 +27,8 @@ ACTIONS:
 
 OPERATIONS/BACKEND: 
 
+- NativeProcess/SubProcess statistics apear to be incorrect.
+
 - Command-line client program similar to the old pipeline(1).
 
 - Task/Scheduling System
@@ -39,7 +41,7 @@ OPERATIONS/BACKEND:
   If any nodes cannot be released, then the operation is aborted early and the offending
   nodes are reported.
 
-- NativeProcess/SubProcess statistics apear to be incorrect.
+- Would caching of checksums improve the performance of the FileMgr?
 
 
 ADMINISTRATION: 
