@@ -1,0 +1,34 @@
+Summary: The config files used by the plqueuemgr(1) Pipeline daemon.
+Name: plqueuemgr-@CUSTOMER@
+Version: @VERSION@
+Release: @PROFILE_STAMP@
+URL: http://www.temerity.us/pipeline
+License: Commercial
+Vendor: Temerity Software, Inc
+Group: Applications/Productivity
+BuildRoot: @RPM_ROOT@/DEST/plqueuemgr
+
+%description
+
+This RPM should only be installed on the Pipeline queue manager server:
+
+  @PL_QUEUE_SERVER@
+
+It provides the directory structure and configuration files needed by 
+plqueuemgr(1).  
+
+The plqueuemgr(1) program is distributed in the main Pipeline RPM:
+
+  pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.rpm
+
+%files
+
+%defattr(755,@PIPELINE_USER@,@PIPELINE_GROUP@)
+%dir @QUEUEDIR@
+
+%changelog
+* @RPM_DATE@ Jim Callahan <jim@salamander>
+Latest build.
+
+
+

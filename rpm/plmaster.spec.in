@@ -1,0 +1,37 @@
+Summary: The config files used by the plmaster(1) Pipeline daemon.
+Name: plmaster-@CUSTOMER@
+Version: @VERSION@
+Release: @PROFILE_STAMP@
+URL: http://www.temerity.us/pipeline
+License: Commercial
+Vendor: Temerity Software, Inc
+Group: Applications/Productivity
+BuildRoot: @RPM_ROOT@/DEST/plmaster 
+
+%description
+
+This RPM should only be installed on the Pipeline master manager server: 
+
+  @PL_MASTER_SERVER@
+
+It provides the directory structure and configuration files needed by 
+plmaster(1).  
+
+The plmaster(1) program is distributed in the main Pipeline RPM:
+
+  pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.rpm
+
+%files
+
+%defattr(755,@PIPELINE_USER@,@PIPELINE_GROUP@)
+%dir @NODEDIR@
+
+%defattr(644,@PIPELINE_USER@,@PIPELINE_GROUP@)
+%config @NODEDIR@/etc/suffix-editors/@PIPELINE_USER@
+
+%changelog
+* @RPM_DATE@ Jim Callahan <jim@salamander>
+Latest build.
+
+
+

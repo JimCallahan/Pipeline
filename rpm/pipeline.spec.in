@@ -6,22 +6,24 @@ URL: http://www.temerity.us/pipeline
 License: Commercial
 Vendor: Temerity Software, Inc
 Group: Applications/Productivity
-BuildRoot: @RPM_ROOT@/BUILD
+BuildRoot: @RPM_ROOT@/DEST/pipeline
 
 %description
-Pipeline consists of a suite of programs which use a high-level node based representation of 
-the production process to peform a wide range of visualization, automation and administrative
-services.
+Pipeline consists of a suite of programs which use a high-level node 
+based representation of the production process to peform a wide range of 
+visualization, automation and administrative services.
 
 The core features of Pipeline include: 
   + Graphical tools to visualize and control the production process.
-  + Advanced revision control of production data files, processes and dependencies.
-  + Modeling of arbitrarily complex production pipeline's.
+  + Advanced revision control of production data files, processes and 
+     dependencies.
+  + Modeling of arbitrarily complex production pipelines.
   + Automatic generation of jobs needed to complete a production process.
   + Execution of jobs both locally and by a distributed execution queue.
   + Automation of data archiving and restoration.
   + Command-line based scripting of all functionality.
-  + Rich Java based plugin API allowing almost unlimited customization and extension.
+  + Rich Java based plugin API allowing almost unlimited customization 
+     and extension.
 
 %files
 
@@ -46,10 +48,6 @@ The core features of Pipeline include:
 %defattr(755,@PIPELINE_USER@,@PIPELINE_GROUP@)
 %dir @PRODDIR@/repository
 %dir @PRODDIR@/checksum
-%dir @NODEDIR@
-
-%defattr(644,@PIPELINE_USER@,@PIPELINE_GROUP@)
-%config @NODEDIR@/etc/suffix-editors/@PIPELINE_USER@
 
 %defattr(-,root,root)
 @ROOT_INST_DIR@/lib
@@ -59,7 +57,8 @@ The core features of Pipeline include:
 
 
 %changelog
-* Thu Mar 18 2004 Jim Callahan <jim@salamander>
-- Initial build.
+* @RPM_DATE@ Jim Callahan <jim@salamander>
+Latest build.
+
 
 

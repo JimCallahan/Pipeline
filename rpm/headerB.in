@@ -33,12 +33,12 @@ then
     exit 1
 fi
 
-rpm=pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm
+tarball=pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.tgz
 
 if [ -x /usr/bin/md5sum ]
 then
-  echo "Unpacking..."
-  tail +@HEADER_LENGTH@ $0 > $rpm
+  echo "Extracting..."
+  tail +@HEADER_LENGTH@ $0 > $tarball
 
   echo -n "Verifying Software Integrity... "
   if echo "@CHECKSUM@" | /usr/bin/md5sum --check --status - 
@@ -57,10 +57,9 @@ else
   exit 1
 fi
 
-echo "Install the RPM now? [yes/no]"
-read reply leftover
-case "$reply" in
-  ("yes" | "Yes" | "YES")
-    rpm -Uvh $rpm;;
-esac
+echo "Unpacking the RPMs: "
+rm -rf pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@
+tar -zxvf $tarball
+rm -f $tarball
+
 exit 0
