@@ -1,4 +1,4 @@
-// $Id: QueueJobGroupsTableModel.java,v 1.3 2004/08/30 02:54:30 jim Exp $
+// $Id: QueueJobGroupsTableModel.java,v 1.4 2004/08/31 08:17:24 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -36,11 +36,11 @@ class QueueJobGroupsTableModel
 
     /* initialize the columns */ 
     { 
-      pNumColumns = 5;
+      pNumColumns = 7;
 
       {
 	Class classes[] = { 
-	  Long.class, int[].class, String.class, 
+	  Long.class, int[].class, String.class, String.class, String.class, 
 	  String.class, String.class
 	}; 
 	pColumnClasses = classes;
@@ -48,13 +48,14 @@ class QueueJobGroupsTableModel
 
       {
 	String names[] = {
-	  "ID", "Status", "Target Files", "Target Node", "Owner|View"
+	  "ID", "Status", "Target Files", "Submitted", "Completed", 
+	  "Target Node", "Owner|View", 
 	};
 	pColumnNames = names;
       }
 
       {
-	int widths[] = { 60, 120, 180, 360, 180 };
+	int widths[] = { 60, 120, 180, 180, 180, 360, 180 };
 	pColumnWidths = widths;
       }
 
@@ -62,6 +63,8 @@ class QueueJobGroupsTableModel
 	TableCellRenderer renderers[] = {
 	  new JSimpleTableCellRenderer(JLabel.CENTER), 
 	  new JJobStatesTableCellRenderer(), 
+	  new JSimpleTableCellRenderer(JLabel.CENTER), 
+	  new JSimpleTableCellRenderer(JLabel.CENTER), 
 	  new JSimpleTableCellRenderer(JLabel.CENTER), 
 	  new JSimpleTableCellRenderer(JLabel.LEFT), 
 	  new JSimpleTableCellRenderer(JLabel.CENTER)
@@ -71,7 +74,7 @@ class QueueJobGroupsTableModel
 
       {
 	TableCellEditor editors[] = { 
-	  null, null, null, null, null
+	  null, null, null, null, null, null, null
 	};
 	pEditors = editors;
       }
@@ -119,11 +122,22 @@ class QueueJobGroupsTableModel
 	value = group.getRootPattern();
 	break;
 
-      case 3:
-	value = group.getNodeID().getName();
+      case 3: 
+	value = group.getSubmittedStamp();
 	break;
 
       case 4:
+	if(group.getCompletedStamp() != null)
+	  value = group.getCompletedStamp();
+	else 
+	  value = new Date(0L);
+	break;
+
+      case 5:
+	value = group.getNodeID().getName();
+	break;
+
+      case 6:
 	value = (group.getNodeID().getAuthor() + "|" + group.getNodeID().getView());
       }
       
@@ -265,9 +279,18 @@ class QueueJobGroupsTableModel
       return group.getRootPattern();
       
     case 3:
-      return group.getNodeID().getName();
+      return Dates.format(group.getSubmittedStamp());
 
     case 4:
+      if(group.getCompletedStamp() != null)
+	return Dates.format(group.getCompletedStamp());
+      else 
+	return "-";
+
+    case 5:
+      return group.getNodeID().getName();
+
+    case 6:
       return (group.getNodeID().getAuthor() + "|" + group.getNodeID().getView());
       
     default:
