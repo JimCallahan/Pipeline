@@ -1,4 +1,4 @@
-// $Id: JBaseViewerPanel.java,v 1.6 2004/12/31 22:28:24 jim Exp $
+// $Id: JBaseViewerPanel.java,v 1.7 2004/12/31 22:38:20 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -264,6 +264,10 @@ implements MouseListener, MouseMotionListener, GLEventListener
     gl.glMatrixMode(GL.GL_PROJECTION);
     gl.glLoadIdentity();
     glu.gluPerspective(pFOV, pAspect, pNear, pFar);
+    
+    double dist = -pCameraPos.z();
+    dist = Math.max(((double) pCanvas.getHeight()) / pMaxFactor, dist); 
+    pCameraPos.z(-dist);
   }
  
   /** 
@@ -545,7 +549,7 @@ implements MouseListener, MouseMotionListener, GLEventListener
 	
 	double dist = -pCameraPos.z();
 	dist += pZoomSpeed*zm;
-	dist = Math.max(((double) pCanvas.getWidth()) / pMaxFactor, dist); 
+	dist = Math.max(((double) pCanvas.getHeight()) / pMaxFactor, dist); 
 	pCameraPos.z(-dist);
 
 	pDragStart = pos;
@@ -594,7 +598,7 @@ implements MouseListener, MouseMotionListener, GLEventListener
     double ftan = Math.tan(Math.toRadians(pFOV)*0.5);
     double distX = hrange.x() / (pAspect * ftan);
     double distY = hrange.y() / ftan;
-    double z = Math.max(((double) pCanvas.getWidth()) / pMaxFactor, Math.max(distX, distY));
+    double z = Math.max(((double) pCanvas.getHeight()) / pMaxFactor, Math.max(distX, distY));
 
     Point2d center = bbox.getCenter();
     pCameraPos.set(center.x(), center.y(), z);
