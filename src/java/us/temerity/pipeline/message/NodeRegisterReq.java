@@ -1,4 +1,4 @@
-// $Id: NodeRegisterReq.java,v 1.3 2004/03/28 00:49:15 jim Exp $
+// $Id: NodeRegisterReq.java,v 1.4 2004/03/30 22:18:51 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -40,6 +40,7 @@ class NodeRegisterReq
    NodeID id, 
    NodeMod mod   
   )
+    throws PipelineException
   { 
     if(id == null) 
       throw new IllegalArgumentException
@@ -52,11 +53,11 @@ class NodeRegisterReq
     pNodeMod = mod;
 
     if(mod.getWorkingID() != null) 
-      throw new IllegalArgumentException
+      throw new PipelineException
 	("The working version was not an initial working version!");
     
     if(mod.hasSources()) 
-      throw new IllegalArgumentException
+      throw new PipelineException
 	("The working version already has links to upstream nodes!");
   }
 
