@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.103 2005/03/23 22:42:53 jim Exp $
+// $Id: MasterMgr.java,v 1.104 2005/03/24 04:29:56 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -7253,9 +7253,45 @@ class MasterMgr
       synchronized(pRestoreReqs) {
 	timer.resume();
 
+	TreeMap<String,TreeSet<VersionID>> dead = new TreeMap<String,TreeSet<VersionID>>();
+	long now = System.currentTimeMillis(); 
+	for(String name : pRestoreReqs.keySet()) {
+	  for(VersionID vid : pRestoreReqs.get(name).keySet()) {
+	    RestoreRequest rr = pRestoreReqs.get(name).get(vid);
+	    switch(rr.getState()) {
+	    case Restored:
+	    case Denied:
+	      if((rr.getResolvedStamp().getTime()+sRestoreCleanupInterval) < now) {
+		TreeSet<VersionID> vids = dead.get(name);
+		if(vids == null) {
+		  vids = new TreeSet<VersionID>();
+		  dead.put(name, vids);
+		}
+		vids.add(vid);
+	      }
+	    }
+	  }
+	}
+	
+	if(!dead.isEmpty()) {
+	  for(String name : dead.keySet()) {
+	    TreeMap<VersionID,RestoreRequest> reqs = pRestoreReqs.get(name);
+	    for(VersionID vid : dead.get(name)) 
+	      reqs.remove(vid);
+
+	    if(reqs.isEmpty()) 
+	      pRestoreReqs.remove(name);
+	  }
+
+	  writeRestoreReqs();
+	}
+	
 	return new MiscGetRestoreRequestsRsp(timer, pRestoreReqs);
       }
     }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }  
     finally {
       pDatabaseLock.readLock().unlock();
     }
@@ -11894,6 +11930,18 @@ class MasterMgr
   }
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The maximum age of a resolved (Restored or Denied) restore request before it 
+   * is deleted (in milliseconds).
+   */ 
+  private static final long  sRestoreCleanupInterval = 172800000L;  /* 48-hours */ 
+  
+ 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
