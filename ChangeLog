@@ -1,3 +1,463 @@
+2004-05-05  Jim Callahan  <jim@salamander>
+
+	* Makefile.am, configure.ac, rpm/Makefile.am, rpm/pipeline.spec.in:
+	moved data into JAR file
+
+	* src/java/us/temerity/pipeline/Makefile.in: texture support
+
+	* src/java/us/temerity/pipeline/ui/TextAreaLogHandler.java: comments
+
+	* src/java/us/temerity/pipeline/ui/UIMaster.java:
+	splash screen, JNodeViewerPanel support
+
+	* src/java/us/temerity/pipeline/ui/JTreeCellRenderer.java:
+	added serialVersionUID
+
+	* src/java/us/temerity/pipeline/ui/JTopLevelPanel.java, src/java/us/temerity/pipeline/ui/JNodeBrowserPanel.java:
+	comments
+
+	* src/java/us/temerity/pipeline/ui/JManagerPanel.java:
+	added ComponentListener methods to handle hiding of panel contents when it is collapsed by JSplitPanel
+
+	* src/java/us/temerity/pipeline/tests/TestNodeMgrApp.java:
+	new NodeTreeComp methods
+
+	* src/java/us/temerity/pipeline/message/NodeUpdatePathsRsp.java:
+	comments
+
+	* src/java/us/temerity/pipeline/ui/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/SelectionMode.java, src/java/us/temerity/pipeline/ui/TextureMgr.java, src/java/us/temerity/pipeline/ui/ZoomPanBehavior.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/OverallNodeState.java, src/java/us/temerity/pipeline/OverallQueueState.java:
+	added all() method
+
+	* src/java/us/temerity/pipeline/laf/Grey.png, src/java/us/temerity/pipeline/laf/ProgressBar.png, src/java/us/temerity/pipeline/laf/ProgressBarMeter.png, src/java/us/temerity/pipeline/laf/Splash.png, src/java/us/temerity/pipeline/laf/SplashBorder.png, src/java/us/temerity/pipeline/laf/White.png, src/java/us/temerity/pipeline/laf/Yellow.png, src/java/us/temerity/pipeline/laf/scripts/filter-textures.in:
+	initial revision
+
+	* src/java/us/temerity/pipeline/laf/synth.xml: added splash screen
+
+	* src/java/us/temerity/pipeline/laf/maya/synth/data/CharterBTRoman.txt, src/java/us/temerity/pipeline/laf/maya/synth/data/UtopiaBold.txt, src/java/us/temerity/pipeline/laf/maya/synth/mel/CharterBTRoman.mel, src/java/us/temerity/pipeline/laf/maya/synth/mel/UtopiaBold.mel, src/java/us/temerity/pipeline/laf/maya/synth/mel/UtopiaRegular.mel, src/java/us/temerity/pipeline/laf/maya/synth/mel/renderFont.mel, src/java/us/temerity/pipeline/laf/maya/synth/scenes/.cvsignore, src/java/us/temerity/pipeline/laf/maya/synth/scenes/CharterBTRoman.ma, src/java/us/temerity/pipeline/laf/maya/synth/scenes/Normal.ma, src/java/us/temerity/pipeline/laf/maya/synth/scenes/Primary.ma, src/java/us/temerity/pipeline/laf/maya/synth/scenes/Selected.ma:
+	initial revision
+
+	* src/java/us/temerity/pipeline/laf/maya/synth/scenes/flat.ma, src/java/us/temerity/pipeline/laf/maya/synth/scenes/flat.mb:
+	changed to ASCII scene
+
+	* src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0008.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0009.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0010.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0011.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0012.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0013.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0014.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0015.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0016.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0017.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0018.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0019.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0020.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0021.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0022.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0023.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0024.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0025.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0026.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0027.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0028.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0029.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0030.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0031.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0032.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0033.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0034.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0035.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0036.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0037.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0038.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0039.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0040.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0041.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0042.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0043.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0000.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0001.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0002.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0003.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0004.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0005.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0006.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0007.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0008.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0009.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0010.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0011.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0012.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0013.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0014.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0015.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0016.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0017.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0018.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0019.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0020.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0021.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0022.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0023.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0024.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0025.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0026.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0027.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0028.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0029.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0030.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0031.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0032.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0033.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0034.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0035.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0036.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0037.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0038.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0039.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0040.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0041.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0042.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Selected.0043.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/flat.1.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/flat.2.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/flat.3.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/flat.4.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/flat.5.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/flat.6.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0017.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0018.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0019.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0020.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0021.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0022.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0023.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0024.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0025.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0026.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0027.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0028.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0029.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0030.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0031.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0032.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0033.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0034.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0035.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0036.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0037.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0038.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0039.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0040.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0041.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0042.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0043.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0044.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0045.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0046.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0047.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0048.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0049.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0050.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0051.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0052.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0053.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0054.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0055.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0056.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0057.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0058.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0059.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0060.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0061.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0062.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0063.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0064.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0065.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0066.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0067.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0068.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0069.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0070.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0071.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0072.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0073.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0074.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0075.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0076.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0077.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0078.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0079.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0080.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0081.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0082.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0083.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0084.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0085.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0086.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0087.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0088.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0089.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0090.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0091.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0092.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0093.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0094.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0095.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0096.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0097.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0098.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0099.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0100.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0101.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0102.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0103.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0104.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0105.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0106.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0107.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0108.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0109.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0110.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0111.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0112.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0113.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0114.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0115.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0116.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0117.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0118.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0119.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0120.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0121.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0122.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0123.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0124.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0125.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0126.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0127.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0000.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0001.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0002.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0003.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0004.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0005.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0006.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0007.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0008.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0009.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0010.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0011.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0012.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0013.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0014.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0015.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0016.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0017.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0018.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0019.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0020.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0021.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0022.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0023.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0024.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0025.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0026.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0027.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0028.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0029.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0030.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0031.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0032.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0033.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0034.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0035.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0036.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0037.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0038.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0039.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0040.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0041.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0042.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Normal.0043.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0000.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0001.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0002.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0003.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0004.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0005.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0006.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/Primary.0007.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0000.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0001.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0002.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0003.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0004.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0005.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0006.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0007.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0008.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0009.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0010.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0011.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0012.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0013.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0014.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0015.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/CharterBTRoman.0016.tif, src/java/us/temerity/pipeline/laf/maya/synth/images/.cvsignore, src/java/us/temerity/pipeline/laf/maya/synth/images/flat-painted.1.png, src/java/us/temerity/pipeline/laf/maya/synth/images/flat-painted.4.png, src/java/us/temerity/pipeline/laf/maya/synth/images/flat-painted.4a.png, src/java/us/temerity/pipeline/laf/maya/synth/scenes/flat.mb, src/java/us/temerity/pipeline/laf/maya/synth/workspace.mel:
+	initial revision
+
+2004-05-04  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/ui/JTreeCellRenderer.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/ui/JNodeBrowserPanel.java:
+	tree selection and new NodeTreeComp states
+
+	* src/java/us/temerity/pipeline/ui/JComboBoxCellRenderer.java:
+	replaced common colors with static instances
+
+	* src/java/us/temerity/pipeline/laf/TreeCellCollapsedIcon.png, src/java/us/temerity/pipeline/laf/TreeCellExpandedIcon.png, src/java/us/temerity/pipeline/laf/TreeCheckedInIcon.png, src/java/us/temerity/pipeline/laf/TreeOtherPendingIcon.png, src/java/us/temerity/pipeline/laf/TreeOtherWorkingIcon.png, src/java/us/temerity/pipeline/laf/TreePendingIcon.png, src/java/us/temerity/pipeline/laf/TreeWorkingIcon.png, src/java/us/temerity/pipeline/laf/synth.xml:
+	new tree icons
+
+	* src/java/us/temerity/pipeline/core/NodeMgr.java:
+	new NodeTreeComp states
+
+	* src/java/us/temerity/pipeline/NodeTreeCommon.java, src/java/us/temerity/pipeline/NodeTreeComp.java, src/java/us/temerity/pipeline/NodeTreeEntry.java:
+	removed common base class NodeTreeCommon
+
+	* src/java/us/temerity/pipeline/tests/TestNodeMgrApp.java:
+	updatePaths now accepts multiple input paths
+
+	* src/java/us/temerity/pipeline/Makefile.in:
+	added JManagerPanel internal classes
+
+	* src/java/us/temerity/pipeline/ui/JTopLevelPanel.java: intial revision
+
+	* src/java/us/temerity/pipeline/ui/JEmptyPanel.java, src/java/us/temerity/pipeline/ui/JManagerPanel.java, src/java/us/temerity/pipeline/ui/JMenuAnchor.java, src/java/us/temerity/pipeline/ui/JNodeBrowserPanel.java, src/java/us/temerity/pipeline/ui/UIMaster.java:
+	converted node panel targeting to a grouping scheme
+
+	* src/java/us/temerity/pipeline/NodeTreeCommon.java:
+	added toString() to support use of as the UserData of a TreeNode
+
+	* src/java/us/temerity/pipeline/message/NodeUpdatePathReq.java, src/java/us/temerity/pipeline/message/NodeUpdatePathRsp.java, src/java/us/temerity/pipeline/message/NodeUpdatePathsReq.java, src/java/us/temerity/pipeline/message/NodeUpdatePathsRsp.java, src/java/us/temerity/pipeline/NodeMgrClient.java, src/java/us/temerity/pipeline/core/NodeMgr.java, src/java/us/temerity/pipeline/core/NodeMgrServer.java, src/java/us/temerity/pipeline/message/NodeRequest.java:
+	updatePath now accepts multiple paths as input
+
+	* src/java/us/temerity/pipeline/laf/Group.xcf, src/java/us/temerity/pipeline/laf/Group0.png, src/java/us/temerity/pipeline/laf/Group0Disabled.png, src/java/us/temerity/pipeline/laf/Group0Selected.png, src/java/us/temerity/pipeline/laf/Group1.png, src/java/us/temerity/pipeline/laf/Group1Disabled.png, src/java/us/temerity/pipeline/laf/Group1Selected.png, src/java/us/temerity/pipeline/laf/Group2.png, src/java/us/temerity/pipeline/laf/Group2Disabled.png, src/java/us/temerity/pipeline/laf/Group2Selected.png, src/java/us/temerity/pipeline/laf/Group3.png, src/java/us/temerity/pipeline/laf/Group3Disabled.png, src/java/us/temerity/pipeline/laf/Group3Selected.png, src/java/us/temerity/pipeline/laf/Group4.png, src/java/us/temerity/pipeline/laf/Group4Disabled.png, src/java/us/temerity/pipeline/laf/Group4Selected.png, src/java/us/temerity/pipeline/laf/Group5.png, src/java/us/temerity/pipeline/laf/Group5Disabled.png, src/java/us/temerity/pipeline/laf/Group5Selected.png, src/java/us/temerity/pipeline/laf/Group6.png, src/java/us/temerity/pipeline/laf/Group6Disabled.png, src/java/us/temerity/pipeline/laf/Group6Selected.png, src/java/us/temerity/pipeline/laf/Group7.png, src/java/us/temerity/pipeline/laf/Group7Disabled.png, src/java/us/temerity/pipeline/laf/Group7Selected.png, src/java/us/temerity/pipeline/laf/Group8.png, src/java/us/temerity/pipeline/laf/Group8Disabled.png, src/java/us/temerity/pipeline/laf/Group8Selected.png, src/java/us/temerity/pipeline/laf/Group9.png, src/java/us/temerity/pipeline/laf/Group9Disabled.png, src/java/us/temerity/pipeline/laf/Group9Selected.png, src/java/us/temerity/pipeline/laf/GroupDisabled.xcf, src/java/us/temerity/pipeline/laf/GroupSelected.xcf, src/java/us/temerity/pipeline/laf/LockedLightIcon.png, src/java/us/temerity/pipeline/laf/LockedLightOnIcon.png, src/java/us/temerity/pipeline/laf/TargetButtonDisabled.png, src/java/us/temerity/pipeline/laf/TreeCellCollapsedIcon.png, src/java/us/temerity/pipeline/laf/TreeCellExpandedIcon.png, src/java/us/temerity/pipeline/laf/synth.xml:
+	new lock and group components of the JManagerPanel title bar
+
+2004-05-04  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/ui/JTreeCellRenderer.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/ui/JNodeBrowserPanel.java:
+	tree selection and new NodeTreeComp states
+
+	* src/java/us/temerity/pipeline/ui/JComboBoxCellRenderer.java:
+	replaced common colors with static instances
+
+	* src/java/us/temerity/pipeline/laf/TreeCellCollapsedIcon.png, src/java/us/temerity/pipeline/laf/TreeCellExpandedIcon.png, src/java/us/temerity/pipeline/laf/TreeCheckedInIcon.png, src/java/us/temerity/pipeline/laf/TreeOtherPendingIcon.png, src/java/us/temerity/pipeline/laf/TreeOtherWorkingIcon.png, src/java/us/temerity/pipeline/laf/TreePendingIcon.png, src/java/us/temerity/pipeline/laf/TreeWorkingIcon.png, src/java/us/temerity/pipeline/laf/synth.xml:
+	new tree icons
+
+	* src/java/us/temerity/pipeline/core/NodeMgr.java:
+	new NodeTreeComp states
+
+	* src/java/us/temerity/pipeline/NodeTreeCommon.java, src/java/us/temerity/pipeline/NodeTreeComp.java, src/java/us/temerity/pipeline/NodeTreeEntry.java:
+	removed common base class NodeTreeCommon
+
+	* src/java/us/temerity/pipeline/tests/TestNodeMgrApp.java:
+	updatePaths now accepts multiple input paths
+
+	* src/java/us/temerity/pipeline/Makefile.in:
+	added JManagerPanel internal classes
+
+	* src/java/us/temerity/pipeline/ui/JTopLevelPanel.java: intial revision
+
+	* src/java/us/temerity/pipeline/ui/JEmptyPanel.java, src/java/us/temerity/pipeline/ui/JManagerPanel.java, src/java/us/temerity/pipeline/ui/JMenuAnchor.java, src/java/us/temerity/pipeline/ui/JNodeBrowserPanel.java, src/java/us/temerity/pipeline/ui/UIMaster.java:
+	converted node panel targeting to a grouping scheme
+
+	* src/java/us/temerity/pipeline/NodeTreeCommon.java:
+	added toString() to support use of as the UserData of a TreeNode
+
+	* src/java/us/temerity/pipeline/message/NodeUpdatePathReq.java, src/java/us/temerity/pipeline/message/NodeUpdatePathRsp.java, src/java/us/temerity/pipeline/message/NodeUpdatePathsReq.java, src/java/us/temerity/pipeline/message/NodeUpdatePathsRsp.java, src/java/us/temerity/pipeline/NodeMgrClient.java, src/java/us/temerity/pipeline/core/NodeMgr.java, src/java/us/temerity/pipeline/core/NodeMgrServer.java, src/java/us/temerity/pipeline/message/NodeRequest.java:
+	updatePath now accepts multiple paths as input
+
+	* src/java/us/temerity/pipeline/laf/Group.xcf, src/java/us/temerity/pipeline/laf/Group0.png, src/java/us/temerity/pipeline/laf/Group0Disabled.png, src/java/us/temerity/pipeline/laf/Group0Selected.png, src/java/us/temerity/pipeline/laf/Group1.png, src/java/us/temerity/pipeline/laf/Group1Disabled.png, src/java/us/temerity/pipeline/laf/Group1Selected.png, src/java/us/temerity/pipeline/laf/Group2.png, src/java/us/temerity/pipeline/laf/Group2Disabled.png, src/java/us/temerity/pipeline/laf/Group2Selected.png, src/java/us/temerity/pipeline/laf/Group3.png, src/java/us/temerity/pipeline/laf/Group3Disabled.png, src/java/us/temerity/pipeline/laf/Group3Selected.png, src/java/us/temerity/pipeline/laf/Group4.png, src/java/us/temerity/pipeline/laf/Group4Disabled.png, src/java/us/temerity/pipeline/laf/Group4Selected.png, src/java/us/temerity/pipeline/laf/Group5.png, src/java/us/temerity/pipeline/laf/Group5Disabled.png, src/java/us/temerity/pipeline/laf/Group5Selected.png, src/java/us/temerity/pipeline/laf/Group6.png, src/java/us/temerity/pipeline/laf/Group6Disabled.png, src/java/us/temerity/pipeline/laf/Group6Selected.png, src/java/us/temerity/pipeline/laf/Group7.png, src/java/us/temerity/pipeline/laf/Group7Disabled.png, src/java/us/temerity/pipeline/laf/Group7Selected.png, src/java/us/temerity/pipeline/laf/Group8.png, src/java/us/temerity/pipeline/laf/Group8Disabled.png, src/java/us/temerity/pipeline/laf/Group8Selected.png, src/java/us/temerity/pipeline/laf/Group9.png, src/java/us/temerity/pipeline/laf/Group9Disabled.png, src/java/us/temerity/pipeline/laf/Group9Selected.png, src/java/us/temerity/pipeline/laf/GroupDisabled.xcf, src/java/us/temerity/pipeline/laf/GroupSelected.xcf, src/java/us/temerity/pipeline/laf/LockedLightIcon.png, src/java/us/temerity/pipeline/laf/LockedLightOnIcon.png, src/java/us/temerity/pipeline/laf/TargetButtonDisabled.png, src/java/us/temerity/pipeline/laf/TreeCellCollapsedIcon.png, src/java/us/temerity/pipeline/laf/TreeCellExpandedIcon.png, src/java/us/temerity/pipeline/laf/synth.xml:
+	new lock and group components of the JManagerPanel title bar
+
+2004-05-04  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/ui/JTreeCellRenderer.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/ui/JNodeBrowserPanel.java:
+	tree selection and new NodeTreeComp states
+
+	* src/java/us/temerity/pipeline/ui/JComboBoxCellRenderer.java:
+	replaced common colors with static instances
+
+	* src/java/us/temerity/pipeline/laf/TreeCellCollapsedIcon.png, src/java/us/temerity/pipeline/laf/TreeCellExpandedIcon.png, src/java/us/temerity/pipeline/laf/TreeCheckedInIcon.png, src/java/us/temerity/pipeline/laf/TreeOtherPendingIcon.png, src/java/us/temerity/pipeline/laf/TreeOtherWorkingIcon.png, src/java/us/temerity/pipeline/laf/TreePendingIcon.png, src/java/us/temerity/pipeline/laf/TreeWorkingIcon.png, src/java/us/temerity/pipeline/laf/synth.xml:
+	new tree icons
+
+	* src/java/us/temerity/pipeline/core/NodeMgr.java:
+	new NodeTreeComp states
+
+	* src/java/us/temerity/pipeline/NodeTreeCommon.java, src/java/us/temerity/pipeline/NodeTreeComp.java, src/java/us/temerity/pipeline/NodeTreeEntry.java:
+	removed common base class NodeTreeCommon
+
+	* src/java/us/temerity/pipeline/tests/TestNodeMgrApp.java:
+	updatePaths now accepts multiple input paths
+
+	* src/java/us/temerity/pipeline/Makefile.in:
+	added JManagerPanel internal classes
+
+	* src/java/us/temerity/pipeline/ui/JTopLevelPanel.java: intial revision
+
+	* src/java/us/temerity/pipeline/ui/JEmptyPanel.java, src/java/us/temerity/pipeline/ui/JManagerPanel.java, src/java/us/temerity/pipeline/ui/JMenuAnchor.java, src/java/us/temerity/pipeline/ui/JNodeBrowserPanel.java, src/java/us/temerity/pipeline/ui/UIMaster.java:
+	converted node panel targeting to a grouping scheme
+
+	* src/java/us/temerity/pipeline/NodeTreeCommon.java:
+	added toString() to support use of as the UserData of a TreeNode
+
+	* src/java/us/temerity/pipeline/message/NodeUpdatePathReq.java, src/java/us/temerity/pipeline/message/NodeUpdatePathRsp.java, src/java/us/temerity/pipeline/message/NodeUpdatePathsReq.java, src/java/us/temerity/pipeline/message/NodeUpdatePathsRsp.java, src/java/us/temerity/pipeline/NodeMgrClient.java, src/java/us/temerity/pipeline/core/NodeMgr.java, src/java/us/temerity/pipeline/core/NodeMgrServer.java, src/java/us/temerity/pipeline/message/NodeRequest.java:
+	updatePath now accepts multiple paths as input
+
+	* src/java/us/temerity/pipeline/laf/Group.xcf, src/java/us/temerity/pipeline/laf/Group0.png, src/java/us/temerity/pipeline/laf/Group0Disabled.png, src/java/us/temerity/pipeline/laf/Group0Selected.png, src/java/us/temerity/pipeline/laf/Group1.png, src/java/us/temerity/pipeline/laf/Group1Disabled.png, src/java/us/temerity/pipeline/laf/Group1Selected.png, src/java/us/temerity/pipeline/laf/Group2.png, src/java/us/temerity/pipeline/laf/Group2Disabled.png, src/java/us/temerity/pipeline/laf/Group2Selected.png, src/java/us/temerity/pipeline/laf/Group3.png, src/java/us/temerity/pipeline/laf/Group3Disabled.png, src/java/us/temerity/pipeline/laf/Group3Selected.png, src/java/us/temerity/pipeline/laf/Group4.png, src/java/us/temerity/pipeline/laf/Group4Disabled.png, src/java/us/temerity/pipeline/laf/Group4Selected.png, src/java/us/temerity/pipeline/laf/Group5.png, src/java/us/temerity/pipeline/laf/Group5Disabled.png, src/java/us/temerity/pipeline/laf/Group5Selected.png, src/java/us/temerity/pipeline/laf/Group6.png, src/java/us/temerity/pipeline/laf/Group6Disabled.png, src/java/us/temerity/pipeline/laf/Group6Selected.png, src/java/us/temerity/pipeline/laf/Group7.png, src/java/us/temerity/pipeline/laf/Group7Disabled.png, src/java/us/temerity/pipeline/laf/Group7Selected.png, src/java/us/temerity/pipeline/laf/Group8.png, src/java/us/temerity/pipeline/laf/Group8Disabled.png, src/java/us/temerity/pipeline/laf/Group8Selected.png, src/java/us/temerity/pipeline/laf/Group9.png, src/java/us/temerity/pipeline/laf/Group9Disabled.png, src/java/us/temerity/pipeline/laf/Group9Selected.png, src/java/us/temerity/pipeline/laf/GroupDisabled.xcf, src/java/us/temerity/pipeline/laf/GroupSelected.xcf, src/java/us/temerity/pipeline/laf/LockedLightIcon.png, src/java/us/temerity/pipeline/laf/LockedLightOnIcon.png, src/java/us/temerity/pipeline/laf/TargetButtonDisabled.png, src/java/us/temerity/pipeline/laf/TreeCellCollapsedIcon.png, src/java/us/temerity/pipeline/laf/TreeCellExpandedIcon.png, src/java/us/temerity/pipeline/laf/synth.xml:
+	new lock and group components of the JManagerPanel title bar
+
+2004-05-03  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/tests/TestBigInteger.java, src/java/us/temerity/pipeline/tests/TestNodeMgr2App.java, src/java/us/temerity/pipeline/tests/TestNodeMgrApp.java:
+	latest
+
+	* src/java/us/temerity/pipeline/core/NodeMgr.java:
+	added missing initialization of working bundle, names and downstream links when a node is checked-out and didn't already have an existing working version
+
+	* src/java/us/temerity/pipeline/core/FileMgr.java:
+	changed owner of mkdirs for working checksum directories to pipeline from author
+
+	* src/java/us/temerity/pipeline/laf/FrameIn.png, src/java/us/temerity/pipeline/laf/LockedLight.png, src/java/us/temerity/pipeline/laf/LockedLightIcon.png, src/java/us/temerity/pipeline/laf/LockedLightOn.png, src/java/us/temerity/pipeline/laf/LockedLightOnIcon.png, src/java/us/temerity/pipeline/laf/RaisedButton.png, src/java/us/temerity/pipeline/laf/RaisedButtonDisabled.png, src/java/us/temerity/pipeline/laf/RaisedButtonPressed.png, src/java/us/temerity/pipeline/laf/synth.xml, src/java/us/temerity/pipeline/ui/JBaseDialog.java, src/java/us/temerity/pipeline/ui/JManagerPanel.java, src/java/us/temerity/pipeline/ui/JOwnerViewDialog.java:
+	owner-view panel fully functional
+
+2004-05-02  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/TaskTimer.java: moved from core package
+
+	* src/java/us/temerity/pipeline/NodeTreeCommon.java, src/java/us/temerity/pipeline/NodeTreeComp.java, src/java/us/temerity/pipeline/NodeTreeEntry.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/ui/JManagerPanel.java:
+	moved panel selection into popup menu, now uses the title bar to display the working area author and view names instead
+
+	* src/java/us/temerity/pipeline/ui/UIMaster.java:
+	progress light and field now functional
+
+	* src/java/us/temerity/pipeline/laf/DialogButtonPanel.png, src/java/us/temerity/pipeline/laf/LockedLight.png, src/java/us/temerity/pipeline/laf/LockedLightOn.png, src/java/us/temerity/pipeline/laf/ModalDialogHeader.png, src/java/us/temerity/pipeline/laf/ProgressLightIcon.png, src/java/us/temerity/pipeline/laf/ProgressLightOnIcon.png, src/java/us/temerity/pipeline/laf/RaisedCancelButton.png, src/java/us/temerity/pipeline/laf/RaisedCancelButtonDisabled.png, src/java/us/temerity/pipeline/laf/RaisedCancelButtonPressed.png, src/java/us/temerity/pipeline/laf/RaisedConfirmButton.png, src/java/us/temerity/pipeline/laf/RaisedConfirmButtonDisabled.png, src/java/us/temerity/pipeline/laf/RaisedConfirmButtonPressed.png, src/java/us/temerity/pipeline/message/NodeGetWorkingAreasReq.java, src/java/us/temerity/pipeline/message/NodeGetWorkingAreasRsp.java, src/java/us/temerity/pipeline/message/NodeUpdatePathReq.java, src/java/us/temerity/pipeline/message/NodeUpdatePathRsp.java, src/java/us/temerity/pipeline/ui/JBaseDialog.java, src/java/us/temerity/pipeline/ui/JOwnerViewDialog.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/message/NodeRequest.java:
+	added GetWorkingAreas and UpdatePath
+
+	* src/java/us/temerity/pipeline/ui/JComboBoxCellRenderer.java:
+	changed highlight color of chooser items to yellow
+
+	* src/java/us/temerity/pipeline/laf/synth.xml:
+	added raised buttons and dialogs, changed highlight color of menu items to yellow
+
+	* src/java/us/temerity/pipeline/core/TaskTimer.java, src/java/us/temerity/pipeline/laf/StopLight.png, src/java/us/temerity/pipeline/laf/StopLightOn.png:
+	obsolete
+
+	* src/java/us/temerity/pipeline/laf/ValueBox.png, src/java/us/temerity/pipeline/laf/ValuePanel.png:
+	changed to interior color to a lighter shade of gray - 0.45
+
+	* src/java/us/temerity/pipeline/core/NodeMgrServer.java:
+	added GetWorkingAreas and UpdatePath
+
+	* src/java/us/temerity/pipeline/Makefile.in:
+	moved messages package into api.jar from the vault
+
+	* src/java/us/temerity/pipeline/core/NodeMgr.java:
+	now used a tree datastructure to store the used node name heirarchy to support the new updatePath() and getWorkingArea() methods
+
+	* src/java/us/temerity/pipeline/NodeMgrClient.java:
+	added getWorkingAreas() and updatePath()
+
+	* src/java/us/temerity/pipeline/NodeID.java: comments
+
+2004-04-30  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/Makefile.in:
+	more laf and ui subdir fixes
+
+	* src/java/us/temerity/pipeline/ui/JComboBoxCellRenderer.java, src/java/us/temerity/pipeline/ui/JEmptyPanel.java, src/java/us/temerity/pipeline/ui/JLogPanel.java, src/java/us/temerity/pipeline/ui/JNodeBrowserPanel.java, src/java/us/temerity/pipeline/ui/JSplitPanel.java:
+	added serialVersionUID
+
+	* src/java/us/temerity/pipeline/ui/JMenuAnchor.java:
+	simplified the relationship with JManagerPanel
+
+	* src/java/us/temerity/pipeline/laf/synth.xml:
+	text color, disabled menu item looks
+
+	* src/java/us/temerity/pipeline/core/GraphicalOptsParser.jj:
+	now uses UIMaster to create and manage the user interface
+
+	* src/java/us/temerity/pipeline/laf/MenuItemDisabled.png, src/java/us/temerity/pipeline/ui/UIMaster.java:
+	intial revision
+
+	* src/java/us/temerity/pipeline/ui/JManagerPanel.java:
+	menu items disabled when there isn't enough room to perform the layout change, UIMaster
+
+	* src/java/us/temerity/pipeline/ui/JRootPanel.java, src/java/us/temerity/pipeline/ui/UIMain.java:
+	obsolete
+
+	* src/java/us/temerity/pipeline/Logs.java, src/java/us/temerity/pipeline/Makefile.in, src/java/us/temerity/pipeline/laf/MaximizeButton.png, src/java/us/temerity/pipeline/laf/MaximizeButtonPressed.png, src/java/us/temerity/pipeline/laf/MinimizeButton.png, src/java/us/temerity/pipeline/laf/MinimizeButtonPressed.png, src/java/us/temerity/pipeline/laf/ScrollArrowNorthPressed.png, src/java/us/temerity/pipeline/laf/ScrollArrowSouthPressed.png, src/java/us/temerity/pipeline/laf/ScrollBarThumb.png, src/java/us/temerity/pipeline/laf/ScrollBarTrack.png, src/java/us/temerity/pipeline/laf/StopLight.png, src/java/us/temerity/pipeline/laf/StopLightOn.png, src/java/us/temerity/pipeline/laf/TargetButton.png, src/java/us/temerity/pipeline/laf/TargetButtonSelected.png, src/java/us/temerity/pipeline/laf/ValueBox.png, src/java/us/temerity/pipeline/laf/ValuePanel.png, src/java/us/temerity/pipeline/laf/synth.xml, src/java/us/temerity/pipeline/ui/JLogPanel.java, src/java/us/temerity/pipeline/ui/JManagerPanel.java, src/java/us/temerity/pipeline/ui/JRootPanel.java, src/java/us/temerity/pipeline/ui/TextAreaLogHandler.java, src/java/us/temerity/pipeline/ui/UIMain.java:
+	target button, stop light and progress messages field
+
+2004-04-29  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/ui/UIMain.java, src/java/us/temerity/pipeline/laf/TabIcon.png, src/java/us/temerity/pipeline/laf/TabbedPaneContentBorder.png, src/java/us/temerity/pipeline/laf/TabbedPaneTab.png, src/java/us/temerity/pipeline/laf/TabbedPaneTabArea.png, src/java/us/temerity/pipeline/laf/TabbedPaneTabSelected.png, src/java/us/temerity/pipeline/laf/Test2.png, src/java/us/temerity/pipeline/laf/synth.xml, src/java/us/temerity/pipeline/ui/JEmptyPanel.java, src/java/us/temerity/pipeline/ui/JManagerPanel.java, src/java/us/temerity/pipeline/ui/JMenuAnchor.java, src/java/us/temerity/pipeline/ui/JNodeBrowserPanel.java, src/java/us/temerity/pipeline/ui/JSplitPanel.java:
+	tabbed panels mostly work
+
+2004-04-28  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/laf/MenuAnchorIcon.png, src/java/us/temerity/pipeline/laf/MenuAnchorPressedIcon.png, src/java/us/temerity/pipeline/laf/PanelMenuButton.png, src/java/us/temerity/pipeline/laf/PanelMenuButtonPressed.png, src/java/us/temerity/pipeline/laf/synth.xml, src/java/us/temerity/pipeline/ui/JManagerPanel.java, src/java/us/temerity/pipeline/ui/JMenuAnchor.java, src/java/us/temerity/pipeline/ui/JNodeBrowserPanel.java, src/java/us/temerity/pipeline/ui/UIMain.java:
+	reorganized to use manager title bars and moved all split/tab functionality to this bar
+
+	* src/java/us/temerity/pipeline/laf/ListCellNormalIcon.png, src/java/us/temerity/pipeline/laf/ListCellSelectedIcon.png, src/java/us/temerity/pipeline/laf/LookAndFeelLoader.java, src/java/us/temerity/pipeline/laf/MenuItem.png, src/java/us/temerity/pipeline/laf/MenuItemSelected.png, src/java/us/temerity/pipeline/laf/PanelMenuButton.png, src/java/us/temerity/pipeline/laf/PanelMenuButtonPressed.png, src/java/us/temerity/pipeline/laf/PipelineLookAndFeelLoader.java, src/java/us/temerity/pipeline/laf/synth.xml, src/java/us/temerity/pipeline/ui/JComboBoxCellRenderer.java, src/java/us/temerity/pipeline/ui/JNodeBrowserPanel.java, src/java/us/temerity/pipeline/ui/UIMain.java:
+	menu and combo box standardized
+
+	* src/java/us/temerity/pipeline/ui/JComboBoxCellRenderer.java, src/java/us/temerity/pipeline/ui/JManagerPanel.java, src/java/us/temerity/pipeline/ui/JNodeBrowserPanel.java:
+	combo box and panel title bar working
+
+	* src/java/us/temerity/pipeline/laf/maya/borders/images/flat.5.tif, src/java/us/temerity/pipeline/laf/maya/borders/images/flat.6.tif:
+	initial revision
+
+	* src/java/us/temerity/pipeline/laf/CloseButton.png, src/java/us/temerity/pipeline/laf/CloseButtonPressed.png, src/java/us/temerity/pipeline/laf/ComboBoxArrowButton.png, src/java/us/temerity/pipeline/laf/ListCellNormalIcon.png, src/java/us/temerity/pipeline/laf/ListCellSelectedIcon.png, src/java/us/temerity/pipeline/laf/Panel.png, src/java/us/temerity/pipeline/laf/PopupMenu.png, src/java/us/temerity/pipeline/laf/ScrollArrowNorth.png, src/java/us/temerity/pipeline/laf/ScrollArrowSouth.png, src/java/us/temerity/pipeline/laf/ScrollBarThumb.png, src/java/us/temerity/pipeline/laf/ScrollBarThumbPressed.png, src/java/us/temerity/pipeline/laf/ScrollBarTrack.png, src/java/us/temerity/pipeline/laf/ValueBox.png, src/java/us/temerity/pipeline/laf/maya/borders/scenes/flat.mb, src/java/us/temerity/pipeline/laf/synth.xml:
+	combo box and panel title bar working
+
+2004-04-27  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/ui/JManagerPanel.java, src/java/us/temerity/pipeline/ui/UIMain.java:
+	splitting and closing works
+
+	* src/java/us/temerity/pipeline/laf/MenuIcon.png, src/java/us/temerity/pipeline/laf/SplitPaneHorizontalDividerLeftButton.png, src/java/us/temerity/pipeline/laf/SplitPaneHorizontalDividerLeftButtonPressed.png, src/java/us/temerity/pipeline/laf/SplitPaneHorizontalDividerRightButton.png, src/java/us/temerity/pipeline/laf/SplitPaneHorizontalDividerRightButtonPressed.png, src/java/us/temerity/pipeline/laf/SplitPaneVerticalDividerDownButton.png, src/java/us/temerity/pipeline/laf/SplitPaneVerticalDividerDownButtonPressed.png, src/java/us/temerity/pipeline/laf/SplitPaneVerticalDividerUpButton.png, src/java/us/temerity/pipeline/laf/SplitPaneVerticalDividerUpButtonPressed.png:
+	more transparent/glowy looking bar buttons
+
+	* src/java/us/temerity/pipeline/tests/TestDNotify2App.java, src/java/us/temerity/pipeline/tests/TestFileMgr2App.java:
+	standalone tests
+
+2004-04-26  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/Makefile.in: added look-and-feel
+
+	* src/java/us/temerity/pipeline/laf/maya/borders/images/.cvsignore:
+	initial revision
+
+	* src/java/us/temerity/pipeline/laf/maya/borders/images/flat.2.tif, src/java/us/temerity/pipeline/laf/maya/borders/images/flat.3.tif, src/java/us/temerity/pipeline/laf/maya/borders/images/flat.4.tif, src/java/us/temerity/pipeline/laf/maya/borders/scenes/.cvsignore, src/java/us/temerity/pipeline/laf/maya/borders/scenes/flat.mb, src/java/us/temerity/pipeline/ui/JManagerPanel.java, src/java/us/temerity/pipeline/ui/JNodeBrowserPanel.java, src/java/us/temerity/pipeline/ui/JSplitPanel.java, src/java/us/temerity/pipeline/ui/UIMain.java, src/java/us/temerity/pipeline/laf/.cvsignore, src/java/us/temerity/pipeline/laf/MenuIcon.png, src/java/us/temerity/pipeline/laf/MenuItem.png, src/java/us/temerity/pipeline/laf/MenuItemSelected.png, src/java/us/temerity/pipeline/laf/PopupMenu.png, src/java/us/temerity/pipeline/laf/Separator.png, src/java/us/temerity/pipeline/laf/maya/borders/images/flat-painted.4.png, src/java/us/temerity/pipeline/laf/maya/borders/images/flat-painted.4a.png, src/java/us/temerity/pipeline/laf/maya/borders/images/flat.1.tif, src/java/us/temerity/pipeline/laf/synth.xml:
+	popup menus work
+
+	* src/java/us/temerity/pipeline/laf/SplitPaneHorizontalDividerLeftButtonPressed.png, src/java/us/temerity/pipeline/laf/SplitPaneHorizontalDividerRightButtonPressed.png, src/java/us/temerity/pipeline/laf/SplitPaneVerticalDividerDownButtonPressed.png, src/java/us/temerity/pipeline/laf/SplitPaneVerticalDividerUpButtonPressed.png, src/java/us/temerity/pipeline/laf/synth.xml:
+	added lite one press buttons for the split pane dividers
+
+2004-04-25  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/laf/HBar.png, src/java/us/temerity/pipeline/laf/HBarDownButton.png, src/java/us/temerity/pipeline/laf/HBarUpButton.png, src/java/us/temerity/pipeline/laf/SplitPaneHorizontalDivider.png, src/java/us/temerity/pipeline/laf/SplitPaneHorizontalDividerLeftButton.png, src/java/us/temerity/pipeline/laf/SplitPaneHorizontalDividerRightButton.png, src/java/us/temerity/pipeline/laf/SplitPaneVerticalDivider.png, src/java/us/temerity/pipeline/laf/SplitPaneVerticalDividerDownButton.png, src/java/us/temerity/pipeline/laf/SplitPaneVerticalDividerUpButton.png, src/java/us/temerity/pipeline/laf/VBar.png, src/java/us/temerity/pipeline/laf/VBarLeftButton.png, src/java/us/temerity/pipeline/laf/VBarRightButton.png, src/java/us/temerity/pipeline/laf/synth.xml:
+	split panes fully functional
+
+	* src/java/us/temerity/pipeline/laf/synth.xml:
+	support horizontal and vertical split pane bars
+
+	* src/java/us/temerity/pipeline/laf/HBar.png, src/java/us/temerity/pipeline/laf/HBarDownButton.png, src/java/us/temerity/pipeline/laf/HBarUpButton.png, src/java/us/temerity/pipeline/laf/maya/borders/workspace.mel, src/java/us/temerity/pipeline/laf/BorderIn.png, src/java/us/temerity/pipeline/laf/PipelineLookAndFeelLoader.java, src/java/us/temerity/pipeline/laf/Test.png, src/java/us/temerity/pipeline/laf/VBar.png, src/java/us/temerity/pipeline/laf/VBarLeftButton.png, src/java/us/temerity/pipeline/laf/VBarRightButton.png, src/java/us/temerity/pipeline/laf/maya/borders/images/flat-painted.1.png, src/java/us/temerity/pipeline/laf/maya/borders/images/flat.1.tif, src/java/us/temerity/pipeline/laf/maya/borders/images/flat.2.tif, src/java/us/temerity/pipeline/laf/maya/borders/scenes/flat.mb, src/java/us/temerity/pipeline/laf/synth.xml:
+	initial revision
+
+2004-04-24  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/tests/Makefile.in, src/java/us/temerity/pipeline/tests/TestDNotify2App.java, src/java/us/temerity/pipeline/tests/TestFileMgr2App.java:
+	standalone versions
+
+	* src/java/scripts/pltest.in: obsolete
+
+	* src/java/scripts/Makefile.am: added plui and plmaster
+
+	* src/java/scripts/plmaster.in, src/java/us/temerity/pipeline/core/GraphicalApp.java, src/java/us/temerity/pipeline/core/GraphicalOptsParser.jj, src/java/us/temerity/pipeline/core/MasterApp.java, src/java/us/temerity/pipeline/core/MasterOptsParser.jj, src/java/us/temerity/pipeline/message/NodeCheckOutReq.java:
+	intial revision
+
+	* src/java/us/temerity/pipeline/tests/TestNodeMgr2App.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/core/BaseMgrClient.java:
+	moved from us.temerity.pipeline package
+
+	* src/java/us/temerity/pipeline/core/NotifyServer.java: error messages
+
+	* src/java/us/temerity/pipeline/core/NotifyApp.java:
+	comments, help message
+
+	* src/java/us/temerity/pipeline/core/NodeMgrServer.java, src/java/us/temerity/pipeline/message/NodeRequest.java:
+	added check-out
+
+	* src/java/us/temerity/pipeline/core/NodeMgr.java:
+	added checkOut() and checkBranchForCircularity(), moved log messages for reading working and checked-in version so that they will only be printed if the versions exist
+
+	* src/java/us/temerity/pipeline/core/FileMgrOptsParser.jj, src/java/us/temerity/pipeline/core/NotifyOptsParser.jj:
+	standardized Global Options with plconfig
+
+	* src/java/us/temerity/pipeline/core/FileMgrApp.java:
+	fixed help message
+
+	* src/java/us/temerity/pipeline/core/FileMgr.java:
+	removed unnecessary chmod's of checksum files
+
+	* src/java/us/temerity/pipeline/bootstrap/Main.java:
+	moved exit(1) call into catch body so that plui won't exit immediately
+
+	* src/java/us/temerity/pipeline/VersionID.java: fixed error message
+
+	* src/java/us/temerity/pipeline/SubProcess.java:
+	fixed bug in lookupUserID() where the newline returned by id(1) was breaking the constructor for the Integer uid
+
+	* src/java/us/temerity/pipeline/NodeMgrClient.java:
+	added checkOut(), incorperated BaseMgrClient into this class
+
+	* src/java/us/temerity/pipeline/Makefile.in:
+	added plui and plmaster classes, added creation of NODEDIR
+
+	* src/java/scripts/plui.in: updated to use new package structure
+
+	* rpm/pipeline.spec.in: added plui, plmaster and NODEDIR
+
+	* configure.ac: removed plservers
+
+	* configure.ac: manpage renaming, added plui and plmaster
+
+	* src/java/us/temerity/pipeline/BaseMgrClient.java:
+	incorperated into NodeMgrClient and moved into core
+
+	* docs/man/plfilemgr.html.src.in, docs/man/plmaster.html.src.in, docs/man/plnotify.html.in, docs/man/plnotify.html.src.in, docs/man/pls.html.in, docs/man/pls.html.src, docs/man/plui.html.in, docs/man/plui.html.src.in, docs/man/realpath.html.in, docs/man/realpath.html.src, docs/man/Makefile.am, docs/man/pipeline.html.in, docs/man/plfilemgr.html.in:
+	renamed manpages to allow both Copyright/License substitution and normal configure substitution
+
+	* docs/legal/signature.html: added FEIN for Temerity
+
+2004-04-20  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/tests/TestNodeMgrApp.java:
+	improved node staus printing, replaced assertions in threads with exceptions and added better exception handling
+
+	* src/java/us/temerity/pipeline/core/NodeMgr.java:
+	removed change comments, replaced readCheckedInVersion() with readCheckedInVersions(), generalized the status() helper functions to handle check-in as well as status() -- replaced upstreamStatusHelper() and downstreamStatusHelper() with performNodeOperation(), performUpstreamNodeOp(), getDownstreamNodeStatus() and the NodeOp and NodeCheckInOp internal classes
+
+	* src/java/us/temerity/pipeline/tests/TestFileMgrApp.java, src/java/us/temerity/pipeline/tests/TestNodeModVersionApp.java:
+	added revision numbers for upstream links to NodeVersion constructor from a NodeMod
+
+	* src/java/us/temerity/pipeline/message/NodeCheckInReq.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/message/NodeStatusReq.java: comments
+
+	* src/java/us/temerity/pipeline/message/NodeRequest.java: added CheckIn
+
+	* src/java/us/temerity/pipeline/Makefile.in:
+	added us.temerity.pipeline.ui
+
+	* src/java/us/temerity/pipeline/ui/NodeStyles.java, src/java/us/temerity/pipeline/ui/package.html:
+	initial revision
+
+	* src/java/us/temerity/pipeline/VersionID.java: comments
+
+	* src/java/us/temerity/pipeline/NodeVersion.java:
+	added revision numbers for upstream links to constructor from a NodeMod, fixed bug in identicalLinks(NodeMod), added missing write of pVersionID in toGlue()
+
+	* src/java/us/temerity/pipeline/NodeMod.java:
+	fixed a bug in equals() and setProperties() related to fields which may be null, getSources() now returns an ArrayList like NodeVersion.getSources(), fixed a bug in identicalLinks(NodeVersion)
+
+	* src/java/us/temerity/pipeline/NodeMgrClient.java, src/java/us/temerity/pipeline/core/NodeMgrServer.java:
+	added check-in
+
+	* src/java/us/temerity/pipeline/NodeCommon.java:
+	fixed a bug in equals() related to fields which may be null
+
+	* src/java/us/temerity/pipeline/LinkVersion.java:
+	added equals(), toGlue() and fromGlue()
+
+	* src/java/us/temerity/pipeline/LinkCommon.java:
+	fixed a bug in equals related to pFrameOffset
+
+	* docs/javadoc/Makefile.in: added us.temerity.pipeline.ui
+
+2004-04-19  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/tests/Makefile.in:
+	added garbage collection options to the JavaVM
+
+	* src/java/us/temerity/pipeline/tests/TestNodeMgrApp.java:
+	support for printing upstream links
+
+	* src/java/us/temerity/pipeline/core/NodeMgr.java:
+	working and checked-in versions which no dowstream links are now represented by empty Sets/Maps, downstreamStatusHelper() now implemented
+
+	* src/java/us/temerity/pipeline/core/DownstreamLinks.java:
+	working and checked-in versions which no dowstream links are now represented by empty Sets/Maps
+
+2004-04-18  Jim Callahan  <jim@salamander>
+
+	* docs/misc/roadmap.dvi, docs/misc/roadmap.html, docs/misc/roadmap.pdf:
+	generated files
+
+	* ChangeLog: latest
+
+	* src/java/us/temerity/pipeline/tests/TestNodeMgrApp.java, src/java/us/temerity/pipeline/core/NodeMgr.java:
+	odeMgr.status() appears to work
+
+	* src/java/us/temerity/pipeline/OverallNodeState.java: comments
+
+	* src/java/us/temerity/pipeline/NodeDetails.java:
+	added file time stamps
+
+2004-04-17  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/core/FileMgrClient.java, src/java/us/temerity/pipeline/core/NodeMgr.java, src/java/us/temerity/pipeline/message/FileStateRsp.java, src/java/us/temerity/pipeline/tests/Makefile.in, src/java/us/temerity/pipeline/tests/TestFileMgrApp.java, ChangeLog, docs/misc/scheduling.lyx, src/java/us/temerity/pipeline/LinkState.java, src/java/us/temerity/pipeline/NodeCommon.java, src/java/us/temerity/pipeline/NodeDetails.java, src/java/us/temerity/pipeline/NodeMod.java, src/java/us/temerity/pipeline/NodeStatus.java, src/java/us/temerity/pipeline/NodeVersion.java, src/java/us/temerity/pipeline/OverallNodeState.java, src/java/us/temerity/pipeline/QueueState.java, src/java/us/temerity/pipeline/core/FileMgr.java:
+	initial revision
+
 2004-04-17  Jim Callahan  <jim@salamander>
 
 	* src/java/us/temerity/pipeline/core/FileMgrClient.java, src/java/us/temerity/pipeline/core/NodeMgr.java, src/java/us/temerity/pipeline/message/FileStateRsp.java, src/java/us/temerity/pipeline/tests/Makefile.in, src/java/us/temerity/pipeline/tests/TestFileMgrApp.java, ChangeLog, docs/misc/scheduling.lyx, src/java/us/temerity/pipeline/LinkState.java, src/java/us/temerity/pipeline/NodeCommon.java, src/java/us/temerity/pipeline/NodeDetails.java, src/java/us/temerity/pipeline/NodeMod.java, src/java/us/temerity/pipeline/NodeStatus.java, src/java/us/temerity/pipeline/NodeVersion.java, src/java/us/temerity/pipeline/OverallNodeState.java, src/java/us/temerity/pipeline/QueueState.java, src/java/us/temerity/pipeline/core/FileMgr.java:
