@@ -4,8 +4,8 @@ instbindir = @BASEDIR@/pipeline/sbin
 instbin_SCRIPTS =
 
 instbin_PROGRAMS = \
-  plput \
-  super-pipeline
+  plput 
+#  super-pipeline
 
 EXTRA_DIST = \
   PackageInfo.hh
@@ -28,5 +28,5 @@ INCLUDES = \
 install-data-hook:
 	@CHMOD@ 6550 $(instbindir)/plput
 	@CHOWN@ pipeline.pipeline $(instbindir)/plput
-	@CHMOD@ 6550 $(instbindir)/super-pipeline
-	@CHOWN@ root.@HTTPD_GROUP@ $(instbindir)/super-pipeline
+# 	@CHMOD@ 6550 $(instbindir)/super-pipeline
+# 	@CHOWN@ root.@HTTPD_GROUP@ $(instbindir)/super-pipeline
