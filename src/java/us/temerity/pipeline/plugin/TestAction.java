@@ -1,4 +1,4 @@
-// $Id: TestAction.java,v 1.1 2004/06/14 22:30:25 jim Exp $
+// $Id: TestAction.java,v 1.2 2004/06/22 19:36:44 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -80,6 +80,82 @@ class TestAction
 
     // add per-link parameters
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   B A S E   A C T I O N   O V E R R I D E S                                            */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Does this action support per-source parameters?  
+   */ 
+  public boolean 
+  supportsSourceParams()
+  {
+    return true;
+  }
+  
+  /**
+   * Get an initial set of action parameters associated with an upstream node. 
+   */ 
+  public TreeMap<String,BaseActionParam>
+  getInitialSourceParams()
+  {
+    TreeMap<String,BaseActionParam> params = new TreeMap<String,BaseActionParam>();
+    
+    {
+      BaseActionParam param = 
+	new IntegerActionParam("AnotherInteger", 
+			       "An integer parameter.",
+			       123);
+      params.put(param.getName(), param);
+    }
+
+    {
+      BaseActionParam param = 
+	new DoubleActionParam("AnotherDouble", 
+			      "An double parameter.",
+			      123.456);
+      params.put(param.getName(), param);
+    }
+
+    {
+      BaseActionParam param = 
+	new StringActionParam("AnotherString",
+			      "A short string parameter.",
+			      "test");
+      params.put(param.getName(), param);
+    }
+
+    {
+      BaseActionParam param = 
+	new TextActionParam("AnotherText",
+			    "An long string parameter.",
+			    "Some testing text...");
+      params.put(param.getName(), param);
+    }
+
+    {
+      BaseActionParam param = 
+	new EnumActionParam("AnotherEnum",
+			    "An enum parameter.",
+			    TestColor.Red, 
+			    TestColor.all(),
+			    TestColor.titles());
+      params.put(param.getName(), param);
+    }
+    
+    {
+      BaseActionParam param = 
+	new LinkActionParam("AnotherLink",
+			    "An upstream link parameter.",
+			    null);
+      params.put(param.getName(), param);
+    }
+
+    return params;
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
