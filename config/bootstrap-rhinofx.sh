@@ -25,5 +25,6 @@ popd
 #     --ensable-opt \
 #     --with-compiler=GNU \
 #     --with-crypto-app=$plsrcdir/plconfig \
+#     --with-customer=rhinofx \
 #     --with-customer-profile=$plprofile
 # popd
