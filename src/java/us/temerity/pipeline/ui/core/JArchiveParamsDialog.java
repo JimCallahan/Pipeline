@@ -1,4 +1,4 @@
-// $Id: JArchiveParamsDialog.java,v 1.2 2005/03/23 00:35:23 jim Exp $
+// $Id: JArchiveParamsDialog.java,v 1.3 2005/04/02 00:32:55 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -336,7 +336,7 @@ class JArchiveParamsDialog
 	      pArchiverParamComponents.put(pname, field);
 	    }
 	    else if(aparam instanceof EnumArchiverParam) {
-	      EnumActionParam eparam = (EnumActionParam) aparam;
+	      EnumArchiverParam eparam = (EnumArchiverParam) aparam;
 	      
 	      JCollectionField field = 
 		UIFactory.createTitledCollectionField

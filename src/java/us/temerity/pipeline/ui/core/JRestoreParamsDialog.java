@@ -1,4 +1,4 @@
-// $Id: JRestoreParamsDialog.java,v 1.1 2005/03/21 07:04:56 jim Exp $
+// $Id: JRestoreParamsDialog.java,v 1.2 2005/04/02 00:32:55 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -274,7 +274,7 @@ class JRestoreParamsDialog
 	      pArchiverParamComponents.put(pname, field);
 	    }
 	    else if(aparam instanceof EnumArchiverParam) {
-	      EnumActionParam eparam = (EnumActionParam) aparam;
+	      EnumArchiverParam eparam = (EnumArchiverParam) aparam;
 	      
 	      JCollectionField field = 
 		UIFactory.createTitledCollectionField
