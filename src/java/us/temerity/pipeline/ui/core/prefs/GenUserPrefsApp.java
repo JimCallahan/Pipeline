@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.10 2005/01/30 08:40:55 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.11 2005/01/31 23:02:33 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -1142,6 +1142,8 @@ class GenUserPrefsApp
 	("Update the resource usage history graphs.", 
 	 "ResourceUsageHistoryUpdate", "Update History:", "Update"), 
 	
+	new BasePref(),
+
 	new DuplicateHotKeyPref
 	("Move the camera to frame all resource usage history graphs.",
 	 "ResourceUsageFrameAll", "Frame All:", "FrameAll")
@@ -1175,10 +1177,46 @@ class GenUserPrefsApp
 	
 	new BasePref(),
 
+	new ColorPref
+	("The color used to render the free memory background.", 
+	 "FreeMemoryBgColor", "Free Memory Background:", new Color(0.0f, 0.27f, 0.45f)), 
 	
-	// ...
+	new ColorPref
+	("The color used to render free memory sample values.", 
+	 "FreeMemoryFgColor", "Free Memory Foreground:", new Color(0.0f, 0.59f, 1.0f)),
+	
+	new BasePref(),
+	
+	new ColorPref
+	("The color used to render the free disk background.", 
+	 "FreeDiskBgColor", "Free Disk Background:", new Color(0.0f, 0.27f, 0.45f)), 
+	
+	new ColorPref
+	("The color used to render free disk sample values.", 
+	 "FreeDiskFgColor", "Free Disk Foreground:", new Color(0.0f, 0.59f, 1.0f)),
+	
+	new BasePref(),
+	
+	new ColorPref
+	("The color used to render the job count background.", 
+	 "JobCountBgColor", "Job Count Background:", new Color(0.0f, 0.43f, 0.0f)), 
+	
+	new ColorPref
+	("The color used to render job count sample values.", 
+	 "JobCountFgColor", "Job Count Foreground:", new Color(0.0f, 1.0f, 0.0f)),
+	
+	new ColorPref
+	("The color used to render job count sample values which are larger than the " + 
+	 "maximum value which can be shown.", 
+	 "JobCountOverflowColor", "Job Count Overflow:", new Color(0.5f, 1.0f, 0.5f)), 
+	
+	new BoundedIntegerPref
+	("The range of job count values displayed.", 
+	 "JobCountRange", "Job Count Range:", 1, 10, 3), 
 
-
+	new ColorPref
+	("The color used to mark the current number of job slots.", 
+	 "JobSlotsColor", "Job Slots Color:", Color.yellow)
       };
 
       pPrefs.put("Dialogs|Resource Usage History|Appearance", prefs);
@@ -1547,7 +1585,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.10 2005/01/30 08:40:55 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.11 2005/01/31 23:02:33 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -1802,7 +1840,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.10 2005/01/30 08:40:55 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.11 2005/01/31 23:02:33 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3158,7 +3196,7 @@ class GenUserPrefsApp
 
       StringBuffer buf = new StringBuffer();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.10 2005/01/30 08:40:55 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.11 2005/01/31 23:02:33 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 
