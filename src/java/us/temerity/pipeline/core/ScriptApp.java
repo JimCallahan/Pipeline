@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.37 2005/03/29 03:48:55 jim Exp $
+// $Id: ScriptApp.java,v 1.38 2005/04/03 01:54:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -653,7 +653,7 @@ class ScriptApp
   ) 
     throws PipelineException 
   {
-    TreeMap<String,Date> archives = client.getArchiveIndex();
+    TreeMap<String,Date> archives = client.getArchivedOn();
 
     StringBuffer buf = new StringBuffer();
     for(String name : archives.keySet()) 

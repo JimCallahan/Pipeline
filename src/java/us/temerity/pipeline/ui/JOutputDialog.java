@@ -1,4 +1,4 @@
-// $Id: JErrorDialog.java,v 1.8 2005/04/03 01:54:23 jim Exp $
+// $Id: JOutputDialog.java,v 1.1 2005/04/03 01:54:23 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -12,14 +12,14 @@ import javax.swing.*;
 import javax.swing.event.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   E R R O R     D I A L O G                                                              */
+/*   O U T P U T   D I A L O G                                                              */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Displays Pipeline error messages.
+ * Displays a large text message. 
  */ 
 public 
-class JErrorDialog
+class JOutputDialog
   extends JBaseDialog
 {
   /*----------------------------------------------------------------------------------------*/
@@ -27,43 +27,64 @@ class JErrorDialog
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Construct a new dialog.
+   * Construct a new dialog owned by the main application frame. 
    */ 
   public 
-  JErrorDialog()
+  JOutputDialog() 
   {
-    super("Error", true);
+    super("Output", false);
 
-    /* create dialog body components */ 
-    {
-      JPanel body = new JPanel(new BorderLayout());
+    JPanel body = new JPanel();
+    {    
+      body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));
       body.setName("MainDialogPanel");
-
       body.setMinimumSize(new Dimension(300, 180));
-
+      
       {
-	JTextArea area = new JTextArea(8, 35); 
+	Box lbox = new Box(BoxLayout.X_AXIS);
+      
+	lbox.add(Box.createRigidArea(new Dimension(4, 0)));
+	
+	{
+	  JLabel label = new JLabel("X");
+	  pTitleLabel = label;
+	  label.setName("PanelLabel");
+	
+	  lbox.add(label);
+	}
+	
+	lbox.add(Box.createHorizontalGlue());
+	
+	body.add(lbox);
+      }
+      
+      body.add(Box.createRigidArea(new Dimension(0, 4)));
+      
+      {
+	JTextArea area = new JTextArea(20, 80); 
 	pMessageArea = area;
+	
+	area.setName("CodeTextArea");
 
-	area.setLineWrap(true);
-	area.setWrapStyleWord(true);
+	area.setLineWrap(false);
 	area.setEditable(false);
-
+	
 	area.setFocusable(true);
       }
       
       {
 	JScrollPane scroll = new JScrollPane(pMessageArea);
-	scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-	scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+	scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+	scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 	
 	body.add(scroll);
       }
-
-      super.initUI("Error:", true, body, null, null, null, "Close");
-      pack();
-    }  
+    }
+      
+    super.initUI(":", false, body, null, null, null, "Close");
+    pack();
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -76,61 +97,14 @@ class JErrorDialog
   public void 
   setMessage
   (
+   String header, 
    String title, 
    String msg
   ) 
   {
-    pHeaderLabel.setText(title);
+    pHeaderLabel.setText(header);
+    pTitleLabel.setText(title);
     pMessageArea.setText(msg);
-  }
-
-  /**
-   * Set the title and text of the error message based on an exception.
-   */ 
-  public void 
-  setMessage
-  (
-   Exception ex
-  ) 
-  {
-    if(ex instanceof PipelineException) {
-      pHeaderLabel.setText("Error:");
-      pMessageArea.setText(ex.getMessage());
-    }
-    else if(ex instanceof GlueException) {
-      pHeaderLabel.setText("Glue Error:");
-      pMessageArea.setText(getStackTrace(ex));
-    }
-    else if(ex instanceof IOException) {
-      pHeaderLabel.setText("I/O Error:");
-      pMessageArea.setText(ex.getMessage());
-    }
-    else {
-      pHeaderLabel.setText("Internal Error:");
-      pMessageArea.setText(getStackTrace(ex));
-    }
-  }
-
-  private String
-  getStackTrace
-  (
-   Exception ex
-  ) 
-  {
-    StringBuffer buf = new StringBuffer();
-
-    if(ex.getMessage() != null) 
-      buf.append(ex.getMessage() + "\n\n"); 	
-    else if(ex.toString() != null) 
-      buf.append(ex.toString() + "\n\n"); 	
-    
-    buf.append("Stack Trace:\n");
-    StackTraceElement stack[] = ex.getStackTrace();
-    int wk;
-    for(wk=0; wk<stack.length; wk++) 
-      buf.append("  " + stack[wk].toString() + "\n");
-
-    return buf.toString();
   }
 
 
@@ -139,13 +113,18 @@ class JErrorDialog
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 6715827604298406774L;
+  private static final long serialVersionUID = -2835849889423148288L;
 
 
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * The message area title.
+   */ 
+  private JLabel  pTitleLabel; 
   
   /**
    * The error message text.

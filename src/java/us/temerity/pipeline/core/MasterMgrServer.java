@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.46 2005/03/30 20:37:29 jim Exp $
+// $Id: MasterMgrServer.java,v 1.47 2005/04/03 01:54:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -881,13 +881,36 @@ class MasterMgrServer
 
 
 	    /*-- ARCHIVE VOLUMES -----------------------------------------------------------*/
-	    case GetArchiveIndex:
+	    case GetArchivedOn:
 	      {
-		objOut.writeObject(pMasterMgr.getArchiveIndex());
+		objOut.writeObject(pMasterMgr.getArchivedOn());
 		objOut.flush(); 
 	      }
 	      break;
-	    
+
+	    case GetRestoredOn:
+	      {
+		objOut.writeObject(pMasterMgr.getRestoredOn());
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetArchivedOutput:
+	      {
+		MiscGetArchivedOutputReq req = (MiscGetArchivedOutputReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getArchivedOutput(req));
+		objOut.flush(); 
+	      }
+	      break;
+	      
+	    case GetRestoredOutput:
+	      {
+		MiscGetRestoredOutputReq req = (MiscGetRestoredOutputReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getRestoredOutput(req));
+		objOut.flush(); 
+	      }
+	      break;
+	      
 	    case GetArchivesContaining: 
 	      {
 		MiscGetArchivesContainingReq req = 

@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.35 2005/03/30 20:37:29 jim Exp $
+// $Id: MasterRequest.java,v 1.36 2005/04/03 01:54:23 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -433,7 +433,24 @@ enum MasterRequest
   /**
    * Get the names and creation timestamps of all existing archives.
    */
-  GetArchiveIndex, 
+  GetArchivedOn, 
+
+  /**
+   * Get the names and restoration timestamps of all existing archives.
+   */
+  GetRestoredOn, 
+
+  /**
+   * Get the STDOUT output from running the Archiver plugin during the creation of the 
+   * given archive volume.
+   */
+  GetArchivedOutput, 
+
+  /**
+   * Get the STDOUT output from running the Archiver plugin during the restoration of the 
+   * given archive volume at the given time.
+   */
+  GetRestoredOutput, 
 
   /**
    * An instance of {@link MiscGetArchivesContainingReq MiscGetArchivesContainingReq} is next.

@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.59 2005/03/30 20:37:29 jim Exp $
+// $Id: MasterMgrClient.java,v 1.60 2005/04/03 01:54:23 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -3554,20 +3554,20 @@ class MasterMgrClient
    * Get the names and creation timestamps of all existing archives. <P> 
    *
    * @return 
-   *   The timestamps of when each archive was created indexed by unique archive name.
+   *   The timestamps of when each archive was created indexed by unique archive volume name.
    * 
    * @throws PipelineException
-   *   If unable to determine the archives.
+   *   If unable to determine when the archive volumes where created.
    */ 
   public synchronized TreeMap<String,Date> 
-  getArchiveIndex() 
+  getArchivedOn() 
     throws PipelineException
   {
     verifyConnection();
 
-    Object obj = performTransaction(MasterRequest.GetArchiveIndex, null);
-    if(obj instanceof MiscGetArchiveIndexRsp) {
-      MiscGetArchiveIndexRsp rsp = (MiscGetArchiveIndexRsp) obj;
+    Object obj = performTransaction(MasterRequest.GetArchivedOn, null);
+    if(obj instanceof MiscGetArchivedOnRsp) {
+      MiscGetArchivedOnRsp rsp = (MiscGetArchivedOnRsp) obj;
       return rsp.getIndex();
     }
     else {
@@ -3575,6 +3575,106 @@ class MasterMgrClient
       return null;
     }
   }
+
+  /**
+   * Get the names and restoration timestamps of all existing archives. <P> 
+   *
+   * @return 
+   *   The timestamps of when each archive was restored indexed by unique archive volume name.
+   * 
+   * @throws PipelineException
+   *   If unable to determine when the archive volumes where restored.
+   */ 
+  public synchronized TreeMap<String,TreeSet<Date>>
+  getRestoredOn() 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    Object obj = performTransaction(MasterRequest.GetRestoredOn, null);
+    if(obj instanceof MiscGetRestoredOnRsp) {
+      MiscGetRestoredOnRsp rsp = (MiscGetRestoredOnRsp) obj;
+      return rsp.getIndex();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
+
+  /**
+   * Get the STDOUT output from running the Archiver plugin during the creation of the 
+   * given archive volume.
+   *
+   * @param aname
+   *   The name of the archive volume.
+   * 
+   * @return 
+   *   The STDOUT output.
+   * 
+   * @throws PipelineException
+   *   If unable to find an archive volume with the given name.
+   */ 
+  public synchronized String
+  getArchivedOutput
+  (
+   String aname
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    MiscGetArchivedOutputReq req = new MiscGetArchivedOutputReq(aname);
+
+    Object obj = performTransaction(MasterRequest.GetArchivedOutput, req);
+    if(obj instanceof MiscGetArchiverOutputRsp) {
+      MiscGetArchiverOutputRsp rsp = (MiscGetArchiverOutputRsp) obj;
+      return rsp.getOutput();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }  
+
+  /**
+   * Get the STDOUT output from running the Archiver plugin during the restoration of the 
+   * given archive volume at the given time.
+   *
+   * @param aname
+   *   The name of the archive volume.
+   * 
+   * @param stamp
+   *   The timestamp of when the archive volume was restored.
+   * 
+   * @return 
+   *   The STDOUT output.
+   * 
+   * @throws PipelineException
+   *   If unable to find an archive volume with the given name.
+   */ 
+  public synchronized String
+  getRestoredOutput
+  (
+   String aname, 
+   Date stamp
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    MiscGetRestoredOutputReq req = new MiscGetRestoredOutputReq(aname, stamp);
+
+    Object obj = performTransaction(MasterRequest.GetRestoredOutput, req);
+    if(obj instanceof MiscGetArchiverOutputRsp) {
+      MiscGetArchiverOutputRsp rsp = (MiscGetArchiverOutputRsp) obj;
+      return rsp.getOutput();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }  
 
   /**
    * Get the names of the archive volumes containing the given checked-in versions. <P> 

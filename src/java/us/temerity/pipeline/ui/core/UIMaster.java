@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.19 2005/03/14 16:08:21 jim Exp $
+// $Id: UIMaster.java,v 1.20 2005/04/03 01:54:23 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -711,6 +711,15 @@ class UIMaster
   {
     pRestoreDialog.setVisible(true);
   } 
+
+  /**
+   * Show a dialog for browsing the contents of existing archive volumnes.
+   */ 
+  public void 
+  showArchiveVolumesDialog()
+  {
+    pArchiveVolumesDialog.setVisible(true);
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1455,9 +1464,10 @@ class UIMaster
 				"Backup As:", 64, "Backup"); 
 	pBackupDialog.updateTargetFile(PackageInfo.sTempDir);
 
-	pArchiveDialog = new JArchiveDialog();
-	pOfflineDialog = new JOfflineDialog();
-	pRestoreDialog = new JRestoreDialog();
+	pArchiveDialog        = new JArchiveDialog();
+	pOfflineDialog        = new JOfflineDialog();
+	pRestoreDialog        = new JRestoreDialog();
+	pArchiveVolumesDialog = new JArchiveVolumesDialog();
 
 	pResourceUsageHistoryDialog = new JResourceUsageHistoryDialog();
       }
@@ -2809,6 +2819,11 @@ class UIMaster
    */
   private JRestoreDialog  pRestoreDialog; 
   
+  /**
+   * The archive volumes dialog.
+   */
+  private JArchiveVolumesDialog  pArchiveVolumesDialog; 
+
   /**
    * The server resource usage history dialog.
    */

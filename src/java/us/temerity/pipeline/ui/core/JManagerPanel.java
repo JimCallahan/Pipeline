@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.15 2005/03/21 07:04:36 jim Exp $
+// $Id: JManagerPanel.java,v 1.16 2005/04/03 01:54:23 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -394,6 +394,12 @@ class JManagerPanel
 	item = new JMenuItem("Restore Tool...");
 	pRestoreItem = item;
 	item.setActionCommand("restore");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	item = new JMenuItem("Archive Volumes...");
+	pArchiveVolumesItem = item;
+	item.setActionCommand("archive-volumes");
 	item.addActionListener(this);
 	sub.add(item);  
 
@@ -1051,6 +1057,9 @@ class JManagerPanel
     updateMenuToolTip
       (pRestoreItem, null, 
        "Restore nodes from previously created archive volumes.");
+    updateMenuToolTip
+      (pArchiveVolumesItem, null, 
+       "Browse the contents of previously created archive volumes.");
     updateMenuToolTip
       (pShutdownServerItem, null, 
        "Shutdown the Pipeline server daemons.");
@@ -1875,7 +1884,9 @@ class JManagerPanel
       UIMaster.getInstance().showOfflineDialog();
     else if(cmd.equals("restore"))
       UIMaster.getInstance().showRestoreDialog();
-    else if(cmd.equals("shutdown"))
+    else if(cmd.equals("archive-volumes"))
+      UIMaster.getInstance().showArchiveVolumesDialog();
+    else if(cmd.equals("shutdown"))  
       doShutdownServer();
 
     else if(cmd.equals("about"))
@@ -2838,7 +2849,6 @@ class JManagerPanel
 	  pBackupDatabaseItem.setEnabled(isPrivileged);
 	  pArchiveItem.setEnabled(isPrivileged);
 	  pOfflineItem.setEnabled(isPrivileged);
-	  pRestoreItem.setEnabled(isPrivileged);
 	  pShutdownServerItem.setEnabled(isPrivileged);
 	}
 	catch(PipelineException ex) {
@@ -3261,6 +3271,7 @@ class JManagerPanel
   private JMenuItem  pArchiveItem;
   private JMenuItem  pOfflineItem;
   private JMenuItem  pRestoreItem;
+  private JMenuItem  pArchiveVolumesItem;
   private JMenuItem  pShutdownServerItem;
 
   private JMenuItem  pAboutPipelineItem;

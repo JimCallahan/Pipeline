@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.108 2005/03/30 22:42:10 jim Exp $
+// $Id: MasterMgr.java,v 1.109 2005/04/03 01:54:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -310,6 +310,7 @@ class MasterMgr
       pArchiveFileLock = new Object();
       pArchivedIn      = new TreeMap<String,TreeMap<VersionID,TreeSet<String>>>();
       pArchivedOn      = new TreeMap<String,Date>();
+      pRestoredOn      = new TreeMap<String,TreeSet<Date>>();
       pOfflined        = new TreeMap<String,TreeSet<VersionID>>();
       pRestoreReqs     = new TreeMap<String,TreeMap<VersionID,RestoreRequest>>();
 
@@ -409,31 +410,60 @@ class MasterMgr
   initArchives()
     throws PipelineException
   {
-    File dir = new File(pNodeDir, "archives/manifests");
-    File files[] = dir.listFiles(); 
-    int wk;
-    for(wk=0; wk<files.length; wk++) {
-      ArchiveVolume archive = readArchive(files[wk].getName());
-      
-      for(String name : archive.getNames()) {
-	TreeMap<VersionID,TreeSet<String>> versions = pArchivedIn.get(name);
-	if(versions == null) {
-	  versions = new TreeMap<VersionID,TreeSet<String>>();
-	  pArchivedIn.put(name, versions);
-	}
-
-	for(VersionID vid : archive.getVersionIDs(name)) { 
-	  TreeSet<String> anames = versions.get(vid);
-	  if(anames == null) {
-	    anames = new TreeSet<String>();
-	    versions.put(vid, anames);
+    /* scan archive volume GLUE files */ 
+    {
+      File dir = new File(pNodeDir, "archives/manifests");
+      File files[] = dir.listFiles(); 
+      int wk;
+      for(wk=0; wk<files.length; wk++) {
+	ArchiveVolume archive = readArchive(files[wk].getName());
+	
+	for(String name : archive.getNames()) {
+	  TreeMap<VersionID,TreeSet<String>> versions = pArchivedIn.get(name);
+	  if(versions == null) {
+	    versions = new TreeMap<VersionID,TreeSet<String>>();
+	    pArchivedIn.put(name, versions);
 	  }
-
-	  anames.add(archive.getName());
+	  
+	  for(VersionID vid : archive.getVersionIDs(name)) { 
+	    TreeSet<String> anames = versions.get(vid);
+	    if(anames == null) {
+	      anames = new TreeSet<String>();
+	      versions.put(vid, anames);
+	    }
+	    
+	    anames.add(archive.getName());
+	  }
 	}
+	
+	pArchivedOn.put(archive.getName(), archive.getTimeStamp());
       }
-      
-      pArchivedOn.put(archive.getName(), archive.getTimeStamp());
+    }
+
+    /* scan restore output files */ 
+    {
+      File dir = new File(pNodeDir, "archives/output/restore");
+      File files[] = dir.listFiles(); 
+      int wk;
+      for(wk=0; wk<files.length; wk++) {
+	String fname = files[wk].getName();
+	for(String aname : pArchivedOn.keySet()) {
+	  if(fname.startsWith(aname)) {
+	    try {
+	      Date stamp = new Date(Long.parseLong(fname.substring(aname.length()+1)));
+	      TreeSet<Date> stamps = pRestoredOn.get(aname);
+	      if(stamps == null) {
+		stamps = new TreeSet<Date>();
+		pRestoredOn.put(aname, stamps);
+	      }
+	      stamps.add(stamp);
+	    }
+	    catch(NumberFormatException ex) {
+	    }
+	    break;
+	  }
+	}
+      }    
     }
 
     pOfflined = pFileMgrClient.getOfflined();
@@ -7738,23 +7768,32 @@ class MasterMgr
       {
 	String output = 
 	  pFileMgrClient.extract(archiveName, stamp, fseqs, archiver, total);
-	if(output != null) {
-	  Date now = new Date();
-	  File file = new File(pNodeDir, "archives/output/restore/" + 
-			       archiveName + "-" + now.getTime());
-	  try {
-	    FileWriter out = new FileWriter(file);
+
+	Date now = new Date();
+	File file = new File(pNodeDir, "archives/output/restore/" + 
+			     archiveName + "-" + now.getTime());
+	try {
+	  FileWriter out = new FileWriter(file);
+	  
+	  if(output != null) 
 	    out.write(output);
-	    out.flush();
-	    out.close();
-	  }
-	  catch(IOException ex) {
-	    throw new PipelineException
-	      ("I/O ERROR: \n" + 
-	       "  While attempting to write the archive STDOUT file (" + file + ")...\n" + 
-	       "    " + ex.getMessage());
-	  }
+	  
+	  out.flush();
+	  out.close();
 	}
+	catch(IOException ex) {
+	  throw new PipelineException
+	    ("I/O ERROR: \n" + 
+	     "  While attempting to write the archive STDOUT file (" + file + ")...\n" + 
+	     "    " + ex.getMessage());
+	}
+	
+	TreeSet<Date> stamps = pRestoredOn.get(archiveName);
+	if(stamps == null) {
+	  stamps = new TreeSet<Date>();
+	  pRestoredOn.put(archiveName, stamps);
+	}
+	stamps.add(now);
       }
       
       /* move the extracted files into the respository */ 
@@ -7877,11 +7916,11 @@ class MasterMgr
    * Get the names and creation timestamps of all existing archives. <P> 
    * 
    * @return 
-   *   <CODE>MiscGetArchiveIndexRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to determine the archives.
+   *   <CODE>MiscGetArchivedOnRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> on failure.
    */
   public Object
-  getArchiveIndex() 
+  getArchivedOn() 
   {
     TaskTimer timer = new TaskTimer();
 
@@ -7891,11 +7930,133 @@ class MasterMgr
       synchronized(pArchivedOn) {
 	timer.resume();
 
-	return new MiscGetArchiveIndexRsp(timer, pArchivedOn);
+	return new MiscGetArchivedOnRsp(timer, pArchivedOn);
       }
     }
     finally {
       pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Get the names and restore timestamps of all existing archives. <P> 
+   * 
+   * @return 
+   *   <CODE>MiscGetRestoredOnRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> on failure.
+   */
+  public Object
+  getRestoredOn() 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pRestoredOn) {
+	timer.resume();
+
+	return new MiscGetRestoredOnRsp(timer, pRestoredOn);
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Get the STDOUT output from running the Archiver plugin during the creation of the 
+   * given archive volume.
+   *
+   * @param req
+   *   The request.
+   * 
+   * @return 
+   *   <CODE>MiscGetArchiverOutputRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> on failure.
+   */ 
+  public Object
+  getArchivedOutput
+  ( 
+   MiscGetArchivedOutputReq req
+  ) 
+  {
+    String aname = req.getName();
+    TaskTimer timer = new TaskTimer("MasterMgr.getArchivedOutput(): " + aname);
+
+    try {
+      File file = new File(pNodeDir, 
+			   "archives/output/archive/" + aname);
+      String output = null;
+      if(file.length() > 0) {
+	FileReader in = new FileReader(file);
+	  
+	StringBuffer buf = new StringBuffer();
+	char[] cs = new char[4096];
+	while(true) {
+	  int cnt = in.read(cs);
+	  if(cnt == -1) 
+	    break;
+	  
+	  buf.append(cs, 0, cnt);
+	}
+	
+	output = buf.toString();
+      }
+      
+      return new MiscGetArchiverOutputRsp(timer, output);
+    }
+    catch(IOException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+  }
+
+  /**
+   * Get the STDOUT output from running the Archiver plugin during the restoration of the 
+   * given archive volume at the given time.
+   *
+   * @param req
+   *   The request.
+   * 
+   * @return 
+   *   <CODE>MiscGetArchiverOutputRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> on failure.
+   */ 
+  public Object
+  getRestoredOutput
+  ( 
+   MiscGetRestoredOutputReq req
+  ) 
+  {
+    String aname = req.getName();
+    Date stamp = req.getTimeStamp();
+
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.getRestoredOutput(): " + aname + "-" + stamp.getTime());
+    try {
+      File file = new File(pNodeDir, 
+			   "archives/output/restore/" + aname + "-" + stamp.getTime());
+      String output = null;
+      if(file.length() > 0) {
+	FileReader in = new FileReader(file);
+	  
+	StringBuffer buf = new StringBuffer();
+	char[] cs = new char[4096];
+	while(true) {
+	  int cnt = in.read(cs);
+	  if(cnt == -1) 
+	    break;
+	  
+	  buf.append(cs, 0, cnt);
+	}
+	
+	output = buf.toString();
+      }
+      
+      return new MiscGetArchiverOutputRsp(timer, output);
+    }
+    catch(IOException ex) {
+      return new FailureRsp(timer, ex.getMessage());
     }
   }
 
@@ -12219,8 +12380,8 @@ class MasterMgr
   private Object pArchiveFileLock; 
 
   /**	
-   * The cached names of the archives indexed by the fully resolved node names and revision
-   * numbers of the checked-in versions contained in the archive. <P> 
+   * The cached names of the archive volumes indexed by the fully resolved node names and 
+   * revision numbers of the checked-in versions contained in the archive. <P> 
    * 
    * This table is rebuilt by scanning the archive GLUE files upon startup but is not itself
    * written to disk. <P> 
@@ -12230,12 +12391,22 @@ class MasterMgr
   private TreeMap<String,TreeMap<VersionID,TreeSet<String>>>  pArchivedIn;
 
   /**
-   * The timestamps of when each archive was created indexed by unique archive name.
+   * The timestamps of when each archive volume was created indexed by unique archive 
+   * volume name.
    *	 
    * This table is rebuilt by scanning the archive GLUE files upon startup but is not itself
    * written to disk. <P> 
    */
   private TreeMap<String,Date>  pArchivedOn;
+
+  /**
+   * The timestamps of when versions from each archive volume was was created indexed by 
+   * unique archive volume name.
+   *	 
+   * This table is rebuilt by scanning the restore output filenames upon startup but is 
+   * not itself written to disk. <P> 
+   */
+  private TreeMap<String,TreeSet<Date>>  pRestoredOn;
 
   /**
    * The fully resolved node names and revision numbers of the checked-in versions which
