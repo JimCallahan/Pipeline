@@ -1,4 +1,4 @@
-// $Id: MayaCollateAction.java,v 1.2 2004/10/28 15:55:24 jim Exp $
+// $Id: MayaCollateAction.java,v 1.3 2004/11/04 21:29:56 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_1_0;
 
@@ -724,7 +724,7 @@ class MayaCollateAction
 	   "setAttr \"PipelineMayaCollate.numberOfElements\" " + 
 	   nodeNames.size() + ";\n");
 
-	{
+	if(nodeNames.size() > 0) {
 	  out.write
 	    ("setAttr -size " + nodeNames.size() + " " + 
 	     "\"PipelineMayaCollate.nodeName[0:" + (nodeNames.size()-1) + "]\" " +
@@ -735,7 +735,7 @@ class MayaCollateAction
 	  out.write(";\n");
 	}
 	  
-	{
+	if(rootDAGNodes.size() > 0) {
 	  out.write
 	    ("setAttr -size " + rootDAGNodes.size() + " " + 
 	     "\"PipelineMayaCollate.rootDAGNode[0:" + (rootDAGNodes.size()-1) + "]\" " +
@@ -746,7 +746,7 @@ class MayaCollateAction
 	  out.write(";\n");
 	}
 
-	{
+	if(shotIndices.size() > 0) {
 	  out.write
 	    ("setAttr -size " + shotIndices.size() + " " + 
 	     "\"PipelineMayaCollate.shotIndex[0:" + (shotIndices.size()-1) + "]\"");
@@ -761,7 +761,8 @@ class MayaCollateAction
 
 	{
 	  DecimalFormat fmt = new DecimalFormat("######0.0000");
-	  {
+
+	  if(shotStarts.size() > 0) {	  
 	    out.write
 	      ("setAttr -size " + shotStarts.size() + " " +
 	       "\"PipelineMayaCollate.shotStart[0:" + (shotStarts.size()-1) + "]\"");
@@ -771,7 +772,7 @@ class MayaCollateAction
 	    out.write(";\n");
 	  }
 
-	  {
+	  if(shotEnds.size() > 0) {
 	    out.write
 	      ("setAttr -size " + shotEnds.size() + " " +
 	       "\"PipelineMayaCollate.shotEnd[0:" + (shotEnds.size()-1) + "]\"");
@@ -782,7 +783,7 @@ class MayaCollateAction
 	  }
 	}
 
-	{
+	if(shotOrders.size() > 0) {
 	  out.write
 	    ("setAttr -size " + shotOrders.size() + " " + 
 	     "\"PipelineMayaCollate.shotOrder[0:" + (shotOrders.size()-1) + "]\"");
