@@ -1,4 +1,4 @@
-// $Id: Point2d.java,v 1.3 2004/12/14 14:08:43 jim Exp $
+// $Id: Point2d.java,v 1.4 2004/12/16 21:34:49 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -194,7 +194,7 @@ class Point2d
    * Compute the distance squared between this point and the given point.
    */ 
   public double
-  distanceSqaured
+  distanceSquared
   (
    Point2d p
   ) 

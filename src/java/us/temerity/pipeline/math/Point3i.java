@@ -1,4 +1,4 @@
-// $Id: Point3i.java,v 1.3 2004/12/14 14:08:43 jim Exp $
+// $Id: Point3i.java,v 1.4 2004/12/16 21:34:49 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -167,7 +167,7 @@ class Point3i
    * Compute the distance squared between this point and the given point.
    */ 
   public int
-  distanceSqaured
+  distanceSquared
   (
    Point3i p
   ) 
