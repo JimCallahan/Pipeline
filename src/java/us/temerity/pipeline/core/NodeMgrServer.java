@@ -1,4 +1,4 @@
-// $Id: NodeMgrServer.java,v 1.5 2004/03/30 22:16:50 jim Exp $
+// $Id: NodeMgrServer.java,v 1.6 2004/04/11 19:24:45 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -145,7 +145,7 @@ class NodeMgrServer
 	  task.start();	
 	}
 	catch(SocketTimeoutException ex) {
-	  Logs.net.finest("Timeout: accept()");
+	  //Logs.net.finest("Timeout: accept()");
 	}
       }
 
@@ -263,6 +263,14 @@ class NodeMgrServer
 	  // ...
 
 	    
+
+	  case Status:
+	    {
+	      NodeStatusReq req = (NodeStatusReq) objIn.readObject();
+	      objOut.writeObject(pNodeMgr.status(req));
+	      objOut.flush(); 
+	    }
+	    break;
 
 	  case Register:
 	    {
