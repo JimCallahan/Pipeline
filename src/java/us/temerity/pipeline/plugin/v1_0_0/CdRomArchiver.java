@@ -1,4 +1,4 @@
-// $Id: CdRomArchiver.java,v 1.3 2005/03/23 22:43:11 jim Exp $
+// $Id: CdRomArchiver.java,v 1.4 2005/04/02 01:01:13 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -71,8 +71,6 @@ class CdRomArchiver
 
       setLayout(layout);      
     }
-
-    underDevelopment();
   }
 
 
@@ -80,16 +78,6 @@ class CdRomArchiver
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Whether the archiver requires manual confirmation before initiating an archive or 
-   * restore operation. 
-   */ 
-  public boolean
-  isManual()
-  {
-    return true;
-  }
 
   /**
    * Get the capacity of the media (in bytes). <P> 
@@ -102,6 +90,19 @@ class CdRomArchiver
     return 737148928L;
   }
   
+  /**
+   * Whether the archiver requires manual confirmation before initiating an archive or 
+   * restore operation. <P> 
+   * 
+   * @return
+   *   This method always returns <CODE>true</CODE>.
+   */ 
+  public boolean
+  isManual()
+  {
+    return true;
+  }
+
 
   
   /*----------------------------------------------------------------------------------------*/
