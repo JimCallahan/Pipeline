@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.6 2004/03/11 10:57:09 jim Exp $
+// $Id: NodeMod.java,v 1.7 2004/03/11 14:11:13 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -317,11 +317,12 @@ class NodeMod
    *   18-33x3 (2nd secondary) <BR>
    * </DIV> <P>
    * 
-   * The new <CODE>range</CODE> argument must define a set of frames that is aligned with 
-   * the original primary frame range. For frame ranges to be aligned they must have 
-   * identical frame step increments.  In addition, all frames defined by the one range must 
-   * be different from all frames of the other range by an exact multiple of this frame 
-   * step increment. <P>
+   * If secondary file sequences exists for this working version, there are some restrictions
+   * on the allowable new frame ranges.  In these cases, the new <CODE>range</CODE> argument 
+   * must define a set of frames that is aligned with the original primary frame range. For 
+   * frame ranges to be aligned they must have identical frame step increments.  In addition, 
+   * all frames defined by the one range must be different from all frames of the other 
+   * range by an exact multiple of this frame step increment. <P>
    * 
    * For example, if the original primary frame range was: <P> 
    * 
@@ -351,6 +352,9 @@ class NodeMod
    *   2-10x1 <BR> 
    *   13-17x2 <BR> 
    * </DIV> <P>
+   * 
+   * If there are no secondary sequences, then then any legal frame range may be given 
+   * for the <CODE>range</CODE> argument.
    *
    * @param range [<B>in</B>]
    *   The new frame range of the primary file sequence.  
@@ -379,47 +383,58 @@ class NodeMod
       throw new IllegalArgumentException
 	("The new frame range cannot be (null)!");
 
-    if(orange.getBy() != range.getBy())
-      throw new IllegalArgumentException
-	("The new frame range (" + range + ") had a different frame step increment than " +
-	 "the original primary frame range (" + orange + ")!");
+    if(pSecondarySeqs.isEmpty()) {
+      TreeSet<File> dead = new TreeSet<File>(pPrimarySeq.getFiles());
+      pPrimarySeq = new FileSeq(pPrimarySeq.getFilePattern(), range);
+      dead.removeAll(pPrimarySeq.getFiles());
 
-    if(((range.getStart() - orange.getStart()) % orange.getBy()) != 0) 
-      throw new IllegalArgumentException
-	("The new frame range (" + range + ") was not aligned with the original " + 
-	 "primary frame range (" + orange + ")!");
-    
-    int deltaS = (range.getStart() - orange.getStart()) / orange.getBy();
-    int deltaE = (range.getEnd() - orange.getEnd()) / orange.getBy();
+      updateLastMod();
 
-    TreeSet<File> dead = new TreeSet<File>(pPrimarySeq.getFiles());
-    for(FileSeq fseq : pSecondarySeqs) 
-      dead.addAll(fseq.getFiles());
-
-    {
-      FileSeq primary = new FileSeq(pPrimarySeq.getFilePattern(), range);
+      return new ArrayList(dead);      
+    }
+    else {
+      if(orange.getBy() != range.getBy())
+	throw new IllegalArgumentException
+	  ("The new frame range (" + range + ") had a different frame step increment than " +
+	   "the original primary frame range (" + orange + ")!");
       
-      TreeSet<FileSeq> secondary = new TreeSet<FileSeq>();
-      for(FileSeq fseq : pSecondarySeqs) {
-	FrameRange fr = fseq.getFrameRange();
-	int start = fr.getStart() + fr.getBy()*deltaS;
-	int end   = fr.getEnd() + fr.getBy()*deltaE;
-
-	secondary.add(new FileSeq(fseq.getFilePattern(), 
-				  new FrameRange(start, end, fr.getBy())));
+      if(((range.getStart() - orange.getStart()) % orange.getBy()) != 0) 
+	throw new IllegalArgumentException
+	  ("The new frame range (" + range + ") was not aligned with the original " + 
+	   "primary frame range (" + orange + ")!");
+      
+      int deltaS = (range.getStart() - orange.getStart()) / orange.getBy();
+      int deltaE = (range.getEnd() - orange.getEnd()) / orange.getBy();
+      
+      TreeSet<File> dead = new TreeSet<File>(pPrimarySeq.getFiles());
+      for(FileSeq fseq : pSecondarySeqs) 
+	dead.addAll(fseq.getFiles());
+      
+      {
+	FileSeq primary = new FileSeq(pPrimarySeq.getFilePattern(), range);
+	
+	TreeSet<FileSeq> secondary = new TreeSet<FileSeq>();
+	for(FileSeq fseq : pSecondarySeqs) {
+	  FrameRange fr = fseq.getFrameRange();
+	  int start = fr.getStart() + fr.getBy()*deltaS;
+	  int end   = fr.getEnd() + fr.getBy()*deltaE;
+	  
+	  secondary.add(new FileSeq(fseq.getFilePattern(), 
+				    new FrameRange(start, end, fr.getBy())));
+	}
+	
+	pPrimarySeq    = primary;
+	pSecondarySeqs = secondary;
       }
       
-      pPrimarySeq    = primary;
-      pSecondarySeqs = secondary;
-    }
+      dead.removeAll(pPrimarySeq.getFiles());
+      for(FileSeq fseq : pSecondarySeqs) 
+	dead.removeAll(fseq.getFiles());
       
-    dead.removeAll(pPrimarySeq.getFiles());
-    for(FileSeq fseq : pSecondarySeqs) 
-      dead.removeAll(fseq.getFiles());
-    
-    updateLastMod();
+      updateLastMod();
 
-    return new ArrayList(dead);
+      return new ArrayList(dead);
+    }
   }
   
 
@@ -490,6 +505,19 @@ class NodeMod
     updateLastMod();
   }
 
+  /**
+   * Remove all existing secondary file sequences from this working version.
+   */ 
+  public void 
+  removeAllSecondarySequences()
+  {
+    if(pSecondarySeqs.isEmpty()) 
+      return;
+
+    pSecondarySeqs.clear();
+
+    updateLastMod();
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -702,6 +730,9 @@ class NodeMod
    * Set the node properties of this working version by copying them from the given
    * working version. <P> 
    * 
+   * The <CODE>mod</CODE> argument must be working versions of the same node as this node.
+   * In other words, their node names must be identical. <P> 
+   * 
    * Node properties include: <BR>
    * 
    * <DIV style="margin-left: 40px;">
@@ -730,9 +761,18 @@ class NodeMod
    NodeMod mod
   ) 
   {
+    if(mod == null) 
+      throw new IllegalArgumentException
+	("The working version cannot be (null)!");
+
     if(pIsFrozen) 
       throw new IllegalArgumentException
 	("Frozen working versions cannot have their node properties modified!");
+
+    if(!pName.equals(mod.getName())) 
+      throw new IllegalArgumentException
+	("The given working version (" + mod.getName() + ") must be associated with the " +
+	 "same node as this working version (" + pName + ")!");
 
     boolean modified = false;
     boolean critical = false;
