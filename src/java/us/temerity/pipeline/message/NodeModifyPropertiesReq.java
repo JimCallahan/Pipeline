@@ -1,4 +1,4 @@
-// $Id: NodeModifyPropertiesReq.java,v 1.3 2004/05/21 21:17:51 jim Exp $
+// $Id: NodeModifyPropertiesReq.java,v 1.4 2004/06/14 22:32:00 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -48,12 +48,8 @@ class NodeModifyPropertiesReq
 
     if(mod == null) 
       throw new IllegalArgumentException
-	("The intial working version cannot be (null)!");
+	("The working version cannot be (null)!");
     pNodeMod = mod;
-
-    if(mod.getWorkingID() != null) 
-      throw new IllegalArgumentException
-	("The working version was not an initial working version!");
     
     if(mod.hasSources()) 
       throw new IllegalArgumentException
