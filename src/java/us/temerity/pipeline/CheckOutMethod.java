@@ -1,4 +1,4 @@
-// $Id: CheckOutMethod.java,v 1.1 2004/11/17 13:34:08 jim Exp $
+// $Id: CheckOutMethod.java,v 1.2 2005/03/07 01:29:09 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -19,6 +19,14 @@ enum CheckOutMethod
    */
   Modifiable, 
   
+  /**
+   * Determine whether a node should be checked-out frozen based on the frozen state of 
+   * existing working versions.  When a frozn existing working version is encountered, the 
+   * node and all nodes upstream of the frozen node will be checked-out frozen.  Otherwise, 
+   * nodes are checked-out modifiable.
+   */ 
+  PreserveFrozen, 
+
   /**
    * Copy the checked-in files associated with the root node of the check-out to the 
    * working area, but create symlinks from the working area to the checked-in files for 
@@ -85,6 +93,7 @@ enum CheckOutMethod
 
   private static String sTitles[] = {
     "Modifiable",
+    "Preserve Frozen", 
     "Frozen Upstream", 
     "All Frozen" 
   };

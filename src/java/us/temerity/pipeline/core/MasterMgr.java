@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.92 2005/02/23 06:49:31 jim Exp $
+// $Id: MasterMgr.java,v 1.93 2005/03/07 01:29:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -4447,7 +4447,15 @@ class MasterMgr
  
       /* determine whether working files or links should be created */ 
       boolean isFrozen = false;
+      CheckOutMethod checkOutMethod = method;      
       switch(method) {
+      case PreserveFrozen:
+	if((work != null) && work.isFrozen()) {
+	  checkOutMethod = CheckOutMethod.AllFrozen;
+	  isFrozen = true;
+	}
+	break;
+
       case FrozenUpstream:
 	isFrozen = !isRoot;
 	break;
@@ -4491,7 +4499,7 @@ class MasterMgr
       /* process the upstream nodes */
       for(LinkVersion link : vsn.getSources()) {
 	NodeID lnodeID = new NodeID(nodeID, link.getName());
-	performCheckOut(false, lnodeID, link.getVersionID(), mode, method, stable, 
+	performCheckOut(false, lnodeID, link.getVersionID(), mode, checkOutMethod, stable, 
 			branch, seen, dirty, timer);
 
 	/* if any of the upstream nodes are dirty, 
