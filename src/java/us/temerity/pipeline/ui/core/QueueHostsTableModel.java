@@ -1,4 +1,4 @@
-// $Id: QueueHostsTableModel.java,v 1.1 2005/01/03 06:56:25 jim Exp $
+// $Id: QueueHostsTableModel.java,v 1.2 2005/01/10 18:33:17 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -516,7 +516,7 @@ class QueueHostsTableModel
       return true;
 
     default:
-      return (!localOnly && (col > 7));
+      return (!localOnly && (col >= 7));
     }
   }
 
@@ -630,7 +630,7 @@ class QueueHostsTableModel
       }
       
     default:
-      if(col > 7) {
+      if(col >= 7) {
 	String kname = pSelectionKeys.get(col-7);
 	if(kname != null) {
 	  Integer bias = (Integer) value;
