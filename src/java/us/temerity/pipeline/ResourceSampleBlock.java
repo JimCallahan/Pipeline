@@ -1,4 +1,4 @@
-// $Id: ResourceSampleBlock.java,v 1.7 2005/01/30 02:05:22 jim Exp $
+// $Id: ResourceSampleBlock.java,v 1.8 2005/02/01 14:51:47 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -138,9 +138,9 @@ class ResourceSampleBlock
       throw new IllegalArgumentException
 	("There must be at least one initial resource usage block!");
 
-    /* use the totals from the first block */ 
+    /* use the totals from the latest block */ 
     {
-      ResourceSampleBlock block = blocks.get(0);
+      ResourceSampleBlock block = blocks.get(blocks.size()-1);
       pJobSlots      = block.getJobSlots();
       pNumProcessors = block.getNumProcessors();
       pTotalMemory   = block.getTotalMemory();
