@@ -1,11 +1,12 @@
 
-mandir = @datadir@/docs/man
+htmldir = @datadir@/docs/man
 
-man_DATA = \
+html_DATA = \
   pipeline.html \
   pldispatcher.html \
+  plget.html \
+  plput.html \
+  pls.html \
   plserver.html \
-  plui.html
-
-
-
+  plui.html \
+  realpath.html
