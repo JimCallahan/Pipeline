@@ -68,72 +68,6 @@ Administration</a><br>
         <li style="font-weight: bold;"><a href="#active-toolsets_--set">--set</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">toolset-name</span>[:true|false]</span></li>
       </ul>
-      <li style="font-weight: bold;">toolset</li>
-      <ul>
-        <li style="font-weight: bold;"><a href="#toolset_--get">--get</a></li>
-        <li style="font-weight: bold;"><a href="#toolset_--get-info">--get-info</a><span
- style="font-weight: normal;">=<span style="font-style: italic;">toolset-name</span></span></li>
-        <li style="font-weight: bold;"><a href="#toolset_--get-env">--get-env</a><span
- style="font-weight: normal;">=<span style="font-style: italic;">toolset-name</span></span></li>
-        <li style="font-weight: bold;"><a href="#toolset_--create">--create</a><span
- style="font-weight: normal;">=<span style="font-style: italic;">toolset-name
-          </span><span style="font-weight: bold;">--msg</span>="<span
- style="font-style: italic;">log-message</span>"</span><span
- style="font-weight: normal;"> </span><span
- style="font-weight: normal;"><span style="font-weight: bold;">--package</span>=</span><span
- style="font-weight: normal;"><span style="font-style: italic;">package-name</span>[:<span
- style="font-style: italic;"></span></span><span
- style="font-weight: normal;"><span style="font-style: italic;">major</span>.<span
- style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span>]</span><span
- style="font-weight: normal;"><span style="font-style: italic;"> ...</span></span></li>
-      </ul>
-      <li style="font-weight: bold;">package</li>
-      <ul>
-        <li style="font-weight: bold;"><a href="#package_--get">--get</a></li>
-        <li style="font-weight: bold;"><a href="#package_--get-info">--get-info</a><span
- style="font-weight: normal;">=<span style="font-style: italic;">package-name
-          </span></span><span style="font-weight: normal;"><span
- style="font-style: italic;"></span></span><span
- style="font-weight: normal;">[<a href="#--version"><span
- style="font-weight: bold;">--version</span></a>=<span
- style="font-style: italic;">major</span>.<span
- style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span></span><span
- style="font-weight: normal;"><span style="font-style: italic;"></span>
-| <a href="#--latest"><span style="font-weight: bold;">--latest</span></a></span><span
- style="font-weight: normal;">]</span></li>
-        <li style="font-weight: bold;"><a href="#package_--get-env">--get-env</a><span
- style="font-weight: normal;">=<span style="font-style: italic;">package-name</span></span><span
- style="font-weight: normal;"><span style="font-style: italic;"></span></span><span
- style="font-weight: normal;"> [<a href="#--version"><span
- style="font-weight: bold;">--version</span></a>=<span
- style="font-style: italic;">major</span>.<span
- style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span></span><span
- style="font-weight: normal;"><span style="font-style: italic;"></span>
-| <a href="#--latest"><span style="font-weight: bold;">--latest</span></a></span><span
- style="font-weight: normal;">]</span></li>
-        <li style="font-weight: bold;"><a href="#package_--create">--create</a><span
- style="font-weight: normal;">=<span style="font-style: italic;">package-name
-          </span></span><span style="font-weight: normal;"></span><span
- style="font-weight: bold;">--msg</span><span
- style="font-weight: normal;"><span style="font-style: italic;"></span><span
- style="font-weight: bold;"></span>="<span style="font-style: italic;">log-message</span>"
-          </span><span style="font-weight: normal;"> </span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;">[<a
- href="#--major"><span style="font-weight: bold;">--major</span></a>
-| <a href="#--minor"><span style="font-weight: bold;">--minor</span></a>
-| <a href="#--micro"><span style="font-weight: bold;">--micro</span></a>]
-          </span><span style="font-weight: normal;">[<span
- style="font-weight: bold;">--load-script</span>=<span
- style="font-style: italic;">filename</span> | <span
- style="font-weight: bold;">--entry</span>=<span
- style="font-style: italic;">name</span>,<span
- style="font-weight: bold;"></span><span style="font-style: italic;">value</span>[,<span
- style="font-style: italic;">policy</span>] ...]</span><span
- style="font-weight: normal;"></span></li>
-      </ul>
     </ul>
     <li style="font-weight: bold;"><a href="#Queue_Administration"><span
  style="font-weight: normal;"><span style="font-weight: bold;">Queue
@@ -205,7 +139,7 @@ Administration</span></span></a><br>
         <li style="font-weight: bold;"><span
  style="font-weight: normal;"><a href="#job-server_--set"><span
  style="font-weight: bold;">--set</span></a>=<span
- style="font-style: italic;">hostname</span> [<span
+ style="font-style: italic;">host-name</span> [<span
  style="font-weight: bold;">--shutdown</span> |<span
  style="font-weight: bold;"> --disable</span> | <span
  style="font-weight: bold;">--enable</span>] [<span
@@ -216,10 +150,12 @@ Administration</span></span></a><br>
  style="font-style: italic;">integer</span>] [<span
  style="font-weight: bold;">--selection-bias</span>=<span
  style="font-style: italic;">key-name</span>:<span
- style="font-style: italic;">bias</span>]<br>
-          </span></li>
+ style="font-style: italic;">bias</span>]</span><span
+ style="font-weight: normal;"> [</span><span style="font-weight: bold;">--remove-selection-key</span><span
+ style="font-weight: normal;">=<span style="font-style: italic;">key-name</span>]</span></li>
         <li style="font-weight: bold;"><span
- style="font-weight: normal;"><span style="font-weight: bold;">--remove</span>=<span
+ style="font-weight: normal;"><a href="#job-server_--remove"><span
+ style="font-weight: bold;">--remove</span></a>=<span
  style="font-style: italic;">host-name</span></span></li>
       </ul>
     </ul>
@@ -251,13 +187,15 @@ Preferences</a><br>
  style="font-style: italic;">micro</span>]</span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;"></span></li>
         <li style="font-weight: bold;"><span
- style="font-weight: normal;"><span style="font-weight: bold;">--remove</span>=<span
+ style="font-weight: normal;"><a href="#suffix-editor_--remove"><span
+ style="font-weight: bold;">--remove</span></a>=<span
  style="font-style: italic;">suffix</span></span></li>
-        <li style="font-weight: bold;"><span
- style="font-weight: normal;"><span style="font-weight: bold;">--reset</span></span></li>
+        <li style="font-weight: bold;"><a href="#suffix-editor_--reset"><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--reset</span></span></a></li>
       </ul>
     </ul>
-    <li style="font-weight: bold;">Working Area Views<br>
+    <li style="font-weight: bold;"><a href="#Working_Area_Views">Working
+Area Views</a><br>
     </li>
   </ul>
   <ul>
@@ -265,31 +203,38 @@ Preferences</a><br>
       <li style="font-weight: bold;">view<br>
       </li>
       <ul>
-        <li style="font-weight: bold;">--get</li>
+        <li style="font-weight: bold;"><a href="#view_--get">--get</a></li>
         <li style="font-weight: bold;"><span
  style="font-weight: normal;"><span style="font-style: italic;"><span
  style="font-weight: bold;"><span style="font-style: italic;"><span
- style="font-style: italic;"></span></span></span></span><span
- style="font-weight: bold;">--create</span>=<span
+ style="font-style: italic;"></span></span></span></span><a
+ href="#view_--create"><span style="font-weight: bold;">--create</span></a>=<span
  style="font-style: italic;">view-name</span></span></li>
       </ul>
     </ul>
   </ul>
   <ul>
-    <li style="font-weight: bold;">Working Node Versions</li>
+    <li style="font-weight: bold;"><a href="#Working_Node_Versions">Working
+Node Versions</a></li>
     <ul>
       <li style="font-weight: bold;">working</li>
       <ul>
-        <li style="font-weight: bold;">--get-info<span
+        <li style="font-weight: bold;"><a href="#working_--get-info">--get-info</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">node-name</span></span>
           <span style="font-weight: normal;">[</span><a href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
           <span style="font-weight: normal;">[</span><a href="#--view">--view</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]
-          <br>
-          </span></li>
+          </span><span style="font-weight: normal;"></span><span
+ style="font-weight: normal;">[<span style="font-weight: bold;">--show</span>=<span
+ style="font-style: italic;">section</span>[,<span
+ style="font-style: italic;">section</span> ...]] [</span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--hide</span>=<span
+ style="font-style: italic;">section</span>[,<span
+ style="font-style: italic;">section</span> ...]]</span></li>
         <li style="font-weight: bold;"><span
- style="font-weight: normal;"><span style="font-weight: bold;">--set</span>=<span
+ style="font-weight: normal;"><a href="#working_--set"><span
+ style="font-weight: bold;">--set</span></a>=<span
  style="font-style: italic;">node-name </span></span><span
  style="font-weight: normal;">[</span><a href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
@@ -345,7 +290,8 @@ Preferences</a><br>
  href="#--selection-key"><span style="font-weight: bold;">--selection-key</span></a>=<span
  style="font-style: italic;">key-name</span>[:true|false] ...]</span></li>
         <li style="font-weight: bold;"><span
- style="font-weight: normal;"><span style="font-weight: bold;">--link</span>=<span
+ style="font-weight: normal;"><a href="#working_--link"><span
+ style="font-weight: bold;">--link</span></a>=<span
  style="font-style: italic;">node-name</span> </span><span
  style="font-weight: normal;">[</span><a href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
@@ -361,15 +307,20 @@ Preferences</a><br>
  style="font-style: italic;">node-name</span>[,all|<span
  style="font-style: italic;">offset</span>]</span></li>
         <li style="font-weight: bold;"><span
- style="font-weight: normal;"><span style="font-weight: bold;">--unlink</span>=<span
+ style="font-weight: normal;"><a href="#working_--unlink"><span
+ style="font-weight: bold;">--unlink</span></a>=<span
  style="font-style: italic;">node-name </span></span><span
  style="font-weight: normal;">[</span><a href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
           <span style="font-weight: normal;">[</span><a href="#--view">--view</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]</span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"> --source</span>=<span
+ style="font-style: italic;">node-name</span></span><span
+ style="font-weight: normal;"><span style="font-style: italic;"> ...</span></span><span
  style="font-weight: normal;"></span></li>
         <li style="font-weight: bold;"><span
- style="font-weight: normal;"><span style="font-weight: bold;">--add-secondary</span>=<span
+ style="font-weight: normal;"><a href="#working_--add-secondary"><span
+ style="font-weight: bold;">--add-secondary</span></a>=<span
  style="font-style: italic;">node-name</span> </span><span
  style="font-weight: normal;">[</span><a href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
@@ -382,9 +333,11 @@ Preferences</a><br>
  style="font-style: italic;">start</span>[-<span
  style="font-style: italic;">end</span>[x<span
  style="font-style: italic;">by</span>]]</span></li>
-        <li style="font-weight: bold;"><span
- style="font-weight: normal;"><span style="font-weight: bold;">--remove-secondary</span></span><span
- style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
+        <li style="font-weight: bold;"><a
+ href="#working_--remove-secondary"><span style="font-weight: normal;"><span
+ style="font-weight: bold;">--remove-secondary</span></span></a><span
+ style="font-weight: normal;"><a href="#working_--remove-secondary"><span
+ style="font-weight: bold;"></span></a>=<span
  style="font-style: italic;">node-name</span> </span><span
  style="font-weight: normal;">[</span><a href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
@@ -401,7 +354,8 @@ Preferences</a><br>
  style="font-style: italic;">end</span>[x<span
  style="font-style: italic;">by</span>]]]</span></li>
         <li style="font-weight: bold;"><span
- style="font-weight: normal;"><span style="font-weight: bold;">--rename</span>=</span><span
+ style="font-weight: normal;"><a href="#working_--rename"><span
+ style="font-weight: bold;">--rename</span></a>=</span><span
  style="font-weight: normal;"><span style="font-style: italic;">node-name</span>
           </span><span style="font-weight: normal;">[</span><a
  href="#--author">--author</a><span style="font-weight: normal;">=<span
@@ -413,8 +367,8 @@ Preferences</a><br>
  style="font-weight: bold;">--rename-files</span>]<span
  style="font-style: italic;"><br>
           </span></span></li>
-        <li style="font-weight: bold;"><span
- style="font-weight: normal;"><span style="font-weight: bold;">--renumber</span></span><span
+        <li style="font-weight: bold;"><a href="#working_--renumber"><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--renumber</span></span></a><span
  style="font-weight: normal;">=</span><span style="font-weight: normal;"><span
  style="font-style: italic;">node-name</span> </span><span
  style="font-weight: normal;">[</span><a href="#--author">--author</a><span
@@ -427,8 +381,8 @@ Preferences</a><br>
  style="font-style: italic;">by</span>]]</span><span
  style="font-weight: normal;"><span style="font-style: italic;"></span>
 [<span style="font-weight: bold;">--remove-files</span>]</span></li>
-        <li style="font-weight: bold;"><span
- style="font-weight: normal;"><span style="font-weight: bold;">--edit</span></span><span
+        <li style="font-weight: bold;"><a href="#working_--edit"><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--edit</span></span></a><span
  style="font-weight: normal;"><span style="font-weight: bold;"></span></span><span
  style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
  style="font-style: italic;">node-name</span> </span><span
@@ -465,7 +419,8 @@ Preferences</a><br>
           </span></li>
       </ul>
     </ul>
-    <li style="font-weight: bold;">Checked-In Node Versions</li>
+    <li style="font-weight: bold;"><a href="#Checked-In_Node_Versions">Checked-In
+Node Versions</a></li>
     <ul>
       <li style="font-weight: bold;">checked-in<br>
       </li>
@@ -474,7 +429,7 @@ Preferences</a><br>
   <ul>
     <ul>
       <ul>
-        <li style="font-weight: bold;">--get-info<span
+        <li style="font-weight: bold;"><a href="#checked-in_--get-info">--get-info</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">node-name</span>
 [<a href="#--version"><span style="font-weight: bold;">--version</span></a>=<span
  style="font-style: italic;">major</span>.<span
@@ -482,8 +437,17 @@ Preferences</a><br>
  style="font-style: italic;">micro</span></span><span
  style="font-weight: normal;"><span style="font-style: italic;"></span>
 | <a href="#--latest"><span style="font-weight: bold;">--latest</span></a></span><span
- style="font-weight: normal;">]</span></li>
-        <li style="font-weight: bold;"><span style="font-weight: bold;">--history</span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;">
+...]</span><span style="font-weight: normal;"> </span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;">[<span
+ style="font-weight: bold;">--show</span>=<span
+ style="font-style: italic;">section</span>[,<span
+ style="font-style: italic;">section</span> ...]] [</span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--hide</span>=<span
+ style="font-style: italic;">section</span>[,<span
+ style="font-style: italic;">section</span> ...]]</span></li>
+        <li style="font-weight: bold;"><a href="#checked-in_--history"><span
+ style="font-weight: bold;">--history</span></a><span
  style="font-weight: normal;">=<span style="font-style: italic;">node-name</span>
 [</span><span style="font-weight: normal;"></span><a href="#--version"><span
  style="font-weight: bold;">--version</span></a><span
@@ -495,9 +459,11 @@ Preferences</a><br>
  style="font-weight: normal;"><a href="#--latest"><span
  style="font-weight: bold;">--latest</span></a></span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;"><span
- style="font-weight: bold;"></span>]</span></li>
+ style="font-weight: bold;"></span></span><span
+ style="font-weight: normal;"> ...]</span></li>
         <li style="font-weight: bold;"><span
- style="font-weight: normal;"><span style="font-weight: bold;">--novelty</span>=</span><span
+ style="font-weight: normal;"><a href="#checked-in_--novelty"><span
+ style="font-weight: bold;">--novelty</span></a>=</span><span
  style="font-weight: normal;"><span style="font-style: italic;">node-name
           </span></span><span style="font-weight: normal;">[<span
  style="font-weight: bold;"></span></span><span
@@ -509,11 +475,13 @@ Preferences</a><br>
  style="font-style: italic;">micro</span> | </span><span
  style="font-weight: normal;"><a href="#--latest"><span
  style="font-weight: bold;">--latest</span></a></span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;">]</span></li>
+ style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
+ style="font-weight: normal;"> ...]</span></li>
       </ul>
     </ul>
-    <li style="font-weight: bold;"><span style="font-weight: normal;"><span
- style="font-weight: bold;">Node Operations</span></span></li>
+    <li style="font-weight: bold;"><a href="#Node_Operations"><span
+ style="font-weight: normal;"><span style="font-weight: bold;">Node
+Operations</span></span></a></li>
     <ul>
       <li style="font-weight: bold;"><span style="font-weight: normal;"><span
  style="font-weight: bold;">node<br>
@@ -522,7 +490,8 @@ Preferences</a><br>
     <ul>
       <ul>
         <li style="font-weight: bold;"><span
- style="font-weight: normal;"><span style="font-weight: bold;">--status</span>=<span
+ style="font-weight: normal;"><a href="#node_--status"><span
+ style="font-weight: bold;">--status</span></a>=<span
  style="font-style: italic;">node-name</span> </span><span
  style="font-weight: normal;">[</span><a href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
@@ -530,23 +499,23 @@ Preferences</a><br>
  style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]
           </span><span style="font-weight: normal;">[<span
  style="font-weight: bold;">--single | --tree</span>] [<span
- style="font-weight: bold;">--links</span>] [<span
- style="font-weight: bold;">--details</span> [<span
+ style="font-weight: bold;">--link-graph</span>] [<span
  style="font-weight: bold;">--show</span>=<span
  style="font-style: italic;">section</span>[,<span
  style="font-style: italic;">section</span> ...]] [</span><span
  style="font-weight: normal;"><span style="font-weight: bold;">--hide</span>=<span
  style="font-style: italic;">section</span>[,<span
- style="font-style: italic;">section</span> ...]]]</span></li>
+ style="font-style: italic;">section</span> ...]]</span></li>
       </ul>
     </ul>
     <ul>
       <span style="font-weight: normal;"><span
  style="font-weight: bold;"></span></span>
       <ul>
-        <li style="font-weight: bold;"><span
- style="font-weight: normal;"><span style="font-weight: bold;">--</span></span>register<span
- style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
+        <li style="font-weight: bold;"><a href="#node_--register"><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--</span></span>register</a><span
+ style="font-weight: normal;"><a href="#node_--register"><span
+ style="font-weight: bold;"></span></a>=<span
  style="font-style: italic;">node-name</span>&nbsp;</span><span
  style="font-weight: normal;"><span style="font-weight: bold;"></span> </span><span
  style="font-weight: normal;">[</span><a href="#--author">--author</a><span
@@ -610,9 +579,9 @@ Preferences</a><br>
  style="font-style: italic;">key-name</span>[:true|false] ...]</span></li>
       </ul>
       <ul>
-        <li style="font-weight: bold;"><span
+        <li style="font-weight: bold;"><a href="#node_--release"><span
  style="font-weight: normal;"><span style="font-weight: bold;">--</span></span><span
- style="font-weight: normal;"><span style="font-weight: bold;">release</span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">release</span></span></a><span
  style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
  style="font-style: italic;">node-name</span> </span><span
  style="font-weight: normal;">[</span><a href="#--author">--author</a><span
@@ -622,7 +591,8 @@ Preferences</a><br>
  style="font-weight: normal;">
 [<span style="font-weight: bold;">--remove-files</span>]</span></li>
         <li style="font-weight: bold;"><span
- style="font-weight: normal;"><span style="font-weight: bold;">--check-in</span>=<span
+ style="font-weight: normal;"><a href="#node_--check-in"><span
+ style="font-weight: bold;">--check-in</span></a>=<span
  style="font-style: italic;">node-name</span> </span><span
  style="font-weight: normal;">[</span><a href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
@@ -639,7 +609,8 @@ Preferences</a><br>
 | <a href="#--minor"><span style="font-weight: bold;">--minor</span></a>
 | <a href="#--micro"><span style="font-weight: bold;">--micro</span></a>]</span></li>
         <li style="font-weight: bold;"><span
- style="font-weight: normal;"><span style="font-weight: bold;">--check-out</span>=<span
+ style="font-weight: normal;"><a href="#node_--check-out"><span
+ style="font-weight: bold;">--check-out</span></a>=<span
  style="font-style: italic;">node-name </span></span><span
  style="font-weight: normal;">[</span><a href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
@@ -650,13 +621,14 @@ Preferences</a><br>
  style="font-weight: bold;">--version</span></a>=<span
  style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span>]</span></li>
+ style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;"> [<span style="font-weight: bold;">--keep-newer</span>]</span></li>
         <li style="font-weight: bold;"><span
- style="font-weight: normal;"><span style="font-weight: bold;">--submit-jobs</span>=node-name
-          </span><span style="font-weight: normal;">[</span><a
- href="#--author">--author</a><span style="font-weight: normal;">=<span
- style="font-style: italic;">user-name</span>]</span> <span
- style="font-weight: normal;">[</span><a href="#--view">--view</a><span
+ style="font-weight: normal;"><a href="#node_--submit-jobs"><span
+ style="font-weight: bold;">--submit-jobs</span></a>=node-name </span><span
+ style="font-weight: normal;">[</span><a href="#--author">--author</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
+          <span style="font-weight: normal;">[</span><a href="#--view">--view</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]
           </span><span style="font-weight: normal;">[<span
  style="font-weight: bold;"></span></span><span
@@ -674,7 +646,8 @@ Preferences</a><br>
  style="font-style: italic;">start</span>-<span
  style="font-style: italic;">end</span>[,...] ...]</span></li>
         <li style="font-weight: bold;"><span
- style="font-weight: normal;"><span style="font-weight: bold;">--remove-files</span>=<span
+ style="font-weight: normal;"><a href="#node_--remove-files"><span
+ style="font-weight: bold;">--remove-files</span></a>=<span
  style="font-style: italic;">node-name</span> </span><span
  style="font-weight: normal;">[</span><a href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
@@ -696,38 +669,72 @@ Preferences</a><br>
  style="font-style: italic;">end</span>[,...] ...]</span></li>
       </ul>
     </ul>
-    <li style="font-weight: bold;"><span style="font-weight: normal;"><span
- style="font-weight: bold;">Queue Operations</span></span></li>
+    <li style="font-weight: bold;"><a href="#Queue_Operations"><span
+ style="font-weight: normal;"><span style="font-weight: bold;">Queue
+Operations</span></span></a></li>
     <ul>
       <li style="font-weight: bold;"><span style="font-weight: normal;"><span
  style="font-weight: bold;">job-group</span></span><br>
       </li>
       <ul>
         <li style="font-weight: bold;"><span
- style="font-weight: normal;"><span style="font-weight: bold;">--status</span>=<span
+ style="font-weight: normal;"><a href="#job-group_--status"><span
+ style="font-weight: bold;">--status</span></a>=<span
  style="font-style: italic;">group-id</span>[,</span><span
  style="font-weight: normal;"><span style="font-style: italic;">group-id</span>
-...] </span><span style="font-weight: normal;">[<span
- style="font-weight: bold;">--details</span> [<span
+...]</span><span style="font-weight: normal;"> [<span
  style="font-weight: bold;">--show</span>=<span
  style="font-style: italic;">section</span>[,<span
  style="font-style: italic;">section</span> ...]] [</span><span
  style="font-weight: normal;"><span style="font-weight: bold;">--hide</span>=<span
  style="font-style: italic;">section</span>[,<span
- style="font-style: italic;">section</span> ...]]]</span></li>
+ style="font-style: italic;">section</span> ...]]</span></li>
         <li style="font-weight: bold;"><span
- style="font-weight: normal;"><span style="font-weight: bold;">--remove</span>=group-id</span><span
+ style="font-weight: normal;"><a
+ href="plscript.src.html.in#job-group_--kill"><span
+ style="font-weight: bold;">--kill</span></a>=<span
+ style="font-style: italic;">group-id</span>[,<span
+ style="font-style: italic;">group-id</span> ...]</span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;">
+[</span><a style="font-weight: bold;"
+ href="plscript.src.html.in#--author">--author</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span></li>
+        <li style="font-weight: bold;"><span
+ style="font-weight: normal;"><a
+ href="plscript.src.html.in#job-group_--pause"><span
+ style="font-weight: bold;">--pause</span></a>=<span
+ style="font-style: italic;">group-id</span>[,<span
+ style="font-style: italic;">group-id</span> ...] </span><span
+ style="font-weight: normal;">[</span><a style="font-weight: bold;"
+ href="plscript.src.html.in#--author">--author</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span></span></li>
+        <li style="font-weight: bold;"><span
+ style="font-weight: normal;"><a
+ href="plscript.src.html.in#job-group_--resume"><span
+ style="font-weight: bold;">--resume</span></a>=<span
+ style="font-style: italic;">group-id</span>[,<span
+ style="font-style: italic;">group-id</span> ...]</span><span
+ style="font-weight: normal;"> </span><span
+ style="font-weight: normal;">[</span><a style="font-weight: bold;"
+ href="plscript.src.html.in#--author">--author</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span></li>
+        <li style="font-weight: bold;"><span
+ style="font-weight: normal;"><a href="#job-group_--remove"><span
+ style="font-weight: bold;">--remove</span></a>=group-id</span><span
  style="font-weight: normal;">[,</span><span
  style="font-weight: normal;"><span style="font-style: italic;">group-id</span>
-...]</span><span style="font-weight: normal;"> <a href="#--author"><span
- style="font-weight: bold;">--author</span></a>=<span
- style="font-style: italic;">user-name</span></span></li>
+...]</span><span style="font-weight: normal;"> </span><span
+ style="font-weight: normal;">[</span><a style="font-weight: bold;"
+ href="plscript.src.html.in#--author">--author</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span><span
+ style="font-weight: normal;"><span style="font-style: italic;"></span></span></li>
         <li style="font-weight: bold;"><span
- style="font-weight: normal;"><span style="font-weight: bold;">--remove-all</span>
-          </span><span style="font-weight: normal;">[</span><a
- href="#--author">--author</a><span style="font-weight: normal;">=<span
- style="font-style: italic;">user-name</span>]</span> <span
- style="font-weight: normal;">[</span><a href="#--view">--view</a><span
+ style="font-weight: normal;"><a href="#job-group_--remove-all"><span
+ style="font-weight: bold;">--remove-all</span></a> </span><span
+ style="font-weight: normal;">[</span><a href="#--author">--author</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
+          <span style="font-weight: normal;">[</span><a href="#--view">--view</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]</span><span
  style="font-weight: normal;"></span></li>
       </ul>
@@ -736,30 +743,42 @@ Preferences</a><br>
         </span></li>
       <ul>
         <li style="font-weight: bold;"><span
- style="font-weight: normal;"><span style="font-weight: bold;">--status</span>=<span
+ style="font-weight: normal;"><a href="#job_--status"><span
+ style="font-weight: bold;">--status</span></a>=<span
  style="font-style: italic;">job-id</span>[,<span
  style="font-style: italic;">job-id</span> ...] </span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;">[<span
- style="font-weight: bold;">--details</span> [<span
- style="font-weight: bold;">--show</span>=<span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"><span
+ style="font-weight: bold;"></span>[<span style="font-weight: bold;">--show</span>=<span
  style="font-style: italic;">section</span>[,<span
  style="font-style: italic;">section</span> ...]] [</span><span
  style="font-weight: normal;"><span style="font-weight: bold;">--hide</span>=<span
  style="font-style: italic;">section</span>[,<span
- style="font-style: italic;">section</span> ...]]]</span></li>
+ style="font-style: italic;">section</span> ...]]</span></li>
         <li style="font-weight: bold;"><span
- style="font-weight: normal;"><span style="font-weight: bold;">--kill</span>=<span
- style="font-style: italic;">job-id</span>[,<span
- style="font-style: italic;">job-id</span> ...]</span></li>
-        <li style="font-weight: bold;"><span
- style="font-weight: normal;"><span style="font-weight: bold;">--pause</span>=<span
+ style="font-weight: normal;"><a href="#job_--kill"><span
+ style="font-weight: bold;">--kill</span></a>=<span
  style="font-style: italic;">job-id</span>[,<span
  style="font-style: italic;">job-id</span> ...]</span><span
+ style="font-weight: normal;"> [</span><a style="font-weight: bold;"
+ href="plscript.src.html.in#--author">--author</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span></li>
+        <li style="font-weight: bold;"><span
+ style="font-weight: normal;"><a href="#job_--pause"><span
+ style="font-weight: bold;">--pause</span></a>=<span
+ style="font-style: italic;">job-id</span>[,<span
+ style="font-style: italic;">job-id</span> ...]</span><span
+ style="font-weight: normal;"> [</span><a style="font-weight: bold;"
+ href="plscript.src.html.in#--author">--author</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span><span
  style="font-weight: normal;"><span style="font-weight: bold;"></span></span></li>
         <li style="font-weight: bold;"><span
- style="font-weight: normal;"><span style="font-weight: bold;">--resume</span>=<span
+ style="font-weight: normal;"><a href="#job_--resume"><span
+ style="font-weight: bold;">--resume</span></a>=<span
  style="font-style: italic;">job-id</span>[,<span
- style="font-style: italic;">job-id</span> ...]</span></li>
+ style="font-style: italic;">job-id</span> ...]</span><span
+ style="font-weight: normal;"> [</span><a style="font-weight: bold;"
+ href="plscript.src.html.in#--author">--author</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span></li>
       </ul>
     </ul>
   </ul>
@@ -1545,213 +1564,32 @@ toolsets.&nbsp; The given toolset must have been previously created
 --create</span></a>).<span style="font-weight: normal;"><br>
 <br>
 This command requires privileged user status.</span><br>
-<br>
 </div>
-<span style="font-weight: normal;"><span style="font-style: italic;"></span></span><br>
-<span style="font-weight: bold;"><a name="toolset_--get"></a>toolset
---get<br>
-<br>
-</span>
-<div style="margin-left: 40px;">Prints the names of all existing
-toolsets.<br>
-</div>
-<span style="font-weight: bold;"><br>
-<a name="toolset_--get-info"></a>toolset --get-info</span><span
- style="font-weight: normal;">=<span style="font-style: italic;">toolset-name<br>
-<br>
-</span></span>
-<div style="margin-left: 40px;">Prints a summary of information about
-the given toolset environment (toolset-name).&nbsp; The information
-includes the user name of the creator of the toolset, when the toolset
-was created and a short description of the purpose of the toolset.<br>
-</div>
-<span style="font-weight: bold;"><br>
-<a name="toolset_--get-env"></a>toolset</span> <span
- style="font-weight: bold;">--get-env</span><span
- style="font-weight: normal;">=<span style="font-style: italic;">toolset-name<br>
-<br>
-</span></span>
-<div style="margin-left: 40px;">Prints a borne shell <span
- style="font-weight: bold;">sh</span>(1) script containing the
-environmental variables which make up the given toolset environment (<span
- style="font-style: italic;">toolset-name</span>).&nbsp; This generated
-script is in a suitable format to be sourced from user's startup shell
-scripts.<br>
-</div>
-<span style="font-weight: bold;"><br>
-<a name="toolset_--create"></a>toolset --create</span><span
- style="font-weight: normal;">=<span style="font-style: italic;">toolset-name
-<br>
-</span><span style="font-weight: bold;">&nbsp;&nbsp;&nbsp; --msg</span>="<span
- style="font-style: italic;">log-message</span>" </span><span
- style="font-weight: normal;"><span style="font-weight: bold;">--package</span>=</span><span
- style="font-weight: normal;"><span style="font-style: italic;">package-name</span></span><span
- style="font-weight: normal;"><span style="font-style: italic;"></span>[:<span
- style="font-style: italic;"></span></span><span
- style="font-weight: normal;"><span style="font-style: italic;">major</span>.<span
- style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span>]</span><span
- style="font-weight: normal;"><span style="font-style: italic;"></span></span><span
- style="font-weight: normal;"><span style="font-style: italic;">
-...</span></span><br>
-<span style="font-weight: bold;"><br>
-</span>
-<div style="margin-left: 40px;">Creates a new toolset environment
-(toolset-name) composed the given toolset packages.&nbsp; The
-description of the toolset (log-message) is required.&nbsp; The order
-of the <span style="font-weight: bold;">--package</span> options is
-significant in determining the values of the environmental variable
-which make up the toolset.&nbsp; If the package revision number (<span
- style="font-weight: normal;"><span style="font-style: italic;">major</span>.<span
- style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span>) is not specified, the latest
-package version will be selected.<br>
-<br>
-This command requires privileged user status.<br>
-</span></div>
 <span style="font-weight: bold;"></span></div>
-<br>
-<div style="margin-left: 40px;"><br>
-<span style="font-weight: bold;"><a name="package_--get"></a>package
---get<br>
-</span>
-<div style="margin-left: 40px;"><br>
-Prints the names and version numbers of all toolset packages.<br>
-</div>
-<br style="font-weight: bold;">
-<span style="font-weight: bold;"><a name="package_--get-info"></a>package</span>
-<span style="font-weight: bold;">--get-info</span><span
- style="font-weight: normal;">=<span style="font-style: italic;">package-name</span></span><span
- style="font-weight: normal;"><span style="font-style: italic;"></span></span><span
- style="font-weight: normal;"><span style="font-style: italic;"></span></span><span
- style="font-weight: normal;"> <br>
-&nbsp;&nbsp;&nbsp; [<a href="#--version"><span
- style="font-weight: bold;">--version</span></a>=<span
- style="font-style: italic;">major</span>.<span
- style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span></span><span
- style="font-weight: normal;"><span style="font-style: italic;"></span>
-| <a href="#--latest"><span style="font-weight: bold;">--latest</span></a></span><span
- style="font-weight: normal;">]<br>
-<br>
-</span>
-<div style="margin-left: 40px;">Prints a summary of information about
-the given version (<span style="font-weight: normal;"><span
- style="font-style: italic;">major</span>.<span
- style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span></span>) of the toolset
-package (package-name).&nbsp; The information
-includes the user name of the creator of the package, when the package
-was created and a short description of the purpose of the package. <br>
-</div>
-<br style="font-weight: bold;">
-<span style="font-weight: bold;"><a name="package_--get-env"></a>package</span>
-<span style="font-weight: bold;">--get-env</span><span
- style="font-weight: normal;">=<span style="font-style: italic;">package-name</span></span><span
- style="font-weight: normal;"><span style="font-style: italic;"></span></span><span
- style="font-weight: normal;"><span style="font-style: italic;"></span></span><span
- style="font-weight: normal;"> <br>
-&nbsp;&nbsp;&nbsp; [<a href="#--version"><span
- style="font-weight: bold;">--version</span></a>=<span
- style="font-style: italic;">major</span>.<span
- style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span></span><span
- style="font-weight: normal;"><span style="font-style: italic;"></span>
-| <a href="#--latest"><span style="font-weight: bold;">--latest</span></a></span><span
- style="font-weight: normal;">]<br>
-<br>
-</span>
-<div style="margin-left: 40px;">Prints a borne shell <span
- style="font-weight: bold;">sh</span>(1) script containing the
-environmental variables which make up the given version (<span
- style="font-weight: normal;"><span style="font-style: italic;">major</span>.<span
- style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span></span>) of the toolset
-package (<span style="font-style: italic;">package-name</span>).&nbsp; <br
- style="font-weight: bold;">
-</div>
-<br style="font-weight: bold;">
-<span style="font-weight: bold;"><a name="package_--create"></a>package
---create</span><span style="font-weight: normal;">=<span
- style="font-style: italic;">package-name </span></span><span
- style="font-weight: normal;"></span><span style="font-weight: bold;"><br>
-&nbsp;&nbsp;&nbsp; --msg</span><span style="font-weight: normal;"><span
- style="font-style: italic;"></span><span style="font-weight: bold;"></span>="<span
- style="font-style: italic;">log-message</span>"
-</span><span style="font-weight: normal;">[<a href="#--major"><span
- style="font-weight: bold;">--major</span></a>
-| <a href="#--minor"><span style="font-weight: bold;">--minor</span></a>
-| <a href="#--micro"><span style="font-weight: bold;">--micro</span></a>]
-<br>
-&nbsp;&nbsp;&nbsp; </span><span style="font-weight: normal;">[<span
- style="font-weight: bold;">--load-script</span>=<span
- style="font-style: italic;">filename</span> | <span
- style="font-weight: bold;">--entry</span>=<span
- style="font-style: italic;">name</span>,<span
- style="font-weight: bold;"></span><span style="font-style: italic;">value</span>[,<span
- style="font-style: italic;">policy</span>] ...]</span><br>
-<br>
-<div style="margin-left: 40px;">Creates a new toolset package or a new
-version of an existing toolset package.&nbsp; The environmental
-variables which make up the package can be initialized either by
-evaluating an arbitrary shell script (filename) which sets
-environmental variables or by explicitly using <span
- style="font-weight: bold;">--entry</span> options.&nbsp; <br>
-<br>
-If the <span style="font-weight: bold;">--load-script</span> option is
-specified, the merging policy for each environmental variable will be
-determined automaticly.&nbsp; When providing explicit definitions of
-environmental variables with the <span style="font-weight: bold;">--entry</span>
-option, the merging policy (policy) can be set manually.&nbsp; <br>
-<br>
-The legal environmental variable merging policy values are:<br>
-<br>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">Exclusive</span><br>
-<span style="font-weight: bold;"></span><br>
-<span style="font-weight: bold;"></span></div>
-<div style="margin-left: 80px;">The environmental variable must not be
-defined by any previous package.<br>
-</div>
-<div style="margin-left: 40px;"><br>
-<span style="font-weight: bold;">Override</span><br>
-<br>
-</div>
-<div style="margin-left: 80px;">The new value of the environmental
-variable will replace any existing value defined by any previous
-package.<br>
-<br>
-</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">Ignore</span><br>
-</div>
-<div style="margin-left: 80px;"><br>
-The new value of the environmental variable will be ignored if already
-defined by a previous package.<br>
-<br>
-</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">AppendPath</span><br>
-</div>
-<div style="margin-left: 80px;"><br>
-The new value is a colon seperated path who's value is appended to any
-previously defined value for the environmental variable.<br>
-</div>
-</div>
-</div>
-<h4 style="margin-left: 120px;"><span style="font-weight: bold;">PrependPath</span><br>
-</h4>
-<div style="margin-left: 160px;">The new value is a colon seperated
-path who's value is prepended to any previously defined value for the
-environmental variable.<br>
-</div>
 <h3><a name="Queue_Administration"></a>Queue Administration</h3>
 <div style="margin-left: 40px;"><span style="font-weight: normal;"><span
  style="font-weight: bold;"><a name="license-key_--get"></a>license-key</span></span>
 <span style="font-weight: bold;">--get<br>
-<br>
+</span>
+<div style="margin-left: 40px;"><br>
+Prints the names of the existing license keys.<br>
+</div>
+<span style="font-weight: bold;"><br>
 </span><span style="font-weight: normal;"><span
  style="font-weight: bold;"><a name="license-key_--get-info"></a>license-key</span></span>
 <span style="font-weight: bold;">--get-info</span><span
- style="font-weight: normal;">=<span style="font-style: italic;">key-name<br>
-<br>
+ style="font-weight: normal;">=<span style="font-style: italic;">key-name<span
+ style="font-style: italic;"><br>
+</span></span></span>
+<div style="margin-left: 40px;"><br>
+Prints a summary of information about
+the given license key (<span style="font-style: italic;">key-name</span>).&nbsp;
+The information
+includes the total and available number of licenses as well as a short
+description of the license key.<br>
+</div>
+<span style="font-weight: normal;"><span style="font-style: italic;"><span
+ style="font-style: italic;"></span><br>
 </span></span><span style="font-weight: normal;"><span
  style="font-weight: bold;"><a name="license-key_--add"></a>license-key</span></span><span
  style="font-weight: normal;"><span style="font-weight: bold;"> --add</span>=<span
@@ -1762,36 +1600,73 @@ environmental variable.<br>
  style="font-style: italic;">key-description</span>" <span
  style="font-weight: bold;">--total</span>=<span
  style="font-style: italic;">integer<br>
+</span></span>
+<div style="margin-left: 40px;"><br>
+Adds a new license key (<span style="font-style: italic;">key-name</span>)
+to the set of existing license keys. The
+description of the license key (<span style="font-style: italic;">log-message</span>)
+and the initial total number of licenses (<span
+ style="font-style: italic;">total</span>) are required. <br>
 <br>
+<span style="font-weight: normal;">This command requires privileged
+user status.</span><br>
+</div>
+<span style="font-weight: normal;"><span style="font-style: italic;"><br>
 </span></span><span style="font-weight: normal;"><span
  style="font-weight: bold;"><a name="license-key_--set"></a>license-key</span></span><span
  style="font-weight: normal;"><span style="font-weight: bold;"> --set</span>=</span><span
  style="font-weight: normal;"><span style="font-style: italic;">key-name</span>
 <span style="font-weight: bold;"><br>
 &nbsp;&nbsp;&nbsp; --total</span>=<span style="font-style: italic;">integer<br>
+</span></span>
+<div style="margin-left: 40px;"><br>
+Sets the total number of licenses (<span style="font-style: italic;">total</span>)
+for an existing license key (<span style="font-style: italic;">key-name</span>).<br>
 <br>
+<span style="font-weight: normal;">This command requires privileged
+user status.</span><br>
+</div>
+<span style="font-weight: normal;"><span style="font-style: italic;"><br>
 </span></span><span style="font-weight: normal;"><span
  style="font-weight: bold;"><a name="license-key_--remove"></a>license-key
 </span></span><span style="font-weight: normal;"><span
  style="font-weight: bold;">--remove</span>=<span
- style="font-style: italic;">key-name</span></span><br>
+ style="font-style: italic;">key-name<br>
+<br>
+</span></span>
+<div style="margin-left: 40px;">Removes the given license key (<span
+ style="font-style: italic;">key-name</span>) from the set of existing
+license keys.<span style="font-weight: normal;">
+<br>
+<br>
+This command requires privileged user status.</span></div>
 <span style="font-weight: normal;"><span style="font-style: italic;"></span></span></div>
-<span style="font-weight: normal;"><span style="font-style: italic;"><br>
+<span style="font-weight: normal;"><span style="font-style: italic;">
 </span></span><br>
-<div style="margin-left: 40px;"><span style="font-weight: normal;"><span
- style="font-weight: bold;"><a name="selection-key"></a>selection-key<br>
-<br>
-</span></span><span style="font-weight: normal;"><span
- style="font-weight: bold;"><a name="selection-key_--get"></a>selection-key</span></span>
+<div style="margin-left: 40px;"><br>
+<span style="font-weight: normal;"><span style="font-weight: bold;"><a
+ name="selection-key_--get"></a>selection-key</span></span>
 <span style="font-weight: bold;">--get<br>
+</span>
+<div style="margin-left: 40px;"><br>
+Prints the names of the existing selection keys.<br>
 <br>
-</span><span style="font-weight: normal;"><span
- style="font-weight: bold;"><a name="selection-key_--get-info"></a>selection-key</span></span>
+</div>
+<span style="font-weight: normal;"><span style="font-weight: bold;"><a
+ name="selection-key_--get-info"></a>selection-key</span></span>
 <span style="font-weight: bold;">--get-info</span><span
  style="font-weight: normal;">=<span style="font-style: italic;">key-name<br>
 <br>
-</span></span><span style="font-weight: normal;"><span
- style="font-weight: bold;"><a name="selection-key_--add"></a>selection-key
+</span></span>
+<div style="margin-left: 40px;">Prints a summary of information about
+the given selection key (<span style="font-style: italic;">key-name</span>).&nbsp;
+The information
+includes a short
+description of the selection key.<br>
+<br>
+</div>
+<span style="font-weight: normal;"><span style="font-weight: bold;"><a
+ name="selection-key_--add"></a>selection-key
 </span></span><span style="font-weight: normal;"><span
  style="font-weight: bold;">--add</span>=<span
  style="font-style: italic;">key-name</span><span
@@ -1801,32 +1676,82 @@ environmental variable.<br>
  style="font-weight: normal;">="<span style="font-style: italic;">key-description</span>"
 <br>
 <br>
-</span><span style="font-weight: normal;"><span
- style="font-weight: bold;"><a name="selection-key_--remove"></a>selection-key
+</span>
+<div style="margin-left: 40px;">Adds a new selection key (<span
+ style="font-style: italic;">key-name</span>)
+to the set of existing selection keys. The
+description of the selection key (<span style="font-style: italic;">log-message</span>)
+is required. <br>
+</div>
+<br>
+<div style="margin-left: 40px;"><span style="font-weight: normal;">This
+command requires privileged
+user status.<br>
+<br>
+</span></div>
+<span style="font-weight: normal;"><span style="font-weight: bold;"><a
+ name="selection-key_--remove"></a>selection-key
 </span></span><span style="font-weight: normal;"><span
  style="font-weight: bold;">--remove</span>=<span
- style="font-style: italic;">key-name</span></span><br>
-<span style="font-weight: normal;"><span style="font-style: italic;"></span></span><span
- style="font-weight: normal;"><span style="font-weight: bold;"></span></span><br>
+ style="font-style: italic;">key-name<br>
+<br>
+</span></span>
+<div style="margin-left: 40px;"><span style="font-weight: normal;"><span
+ style="font-style: italic;"></span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span></span>Removes
+the given selection key (<span style="font-style: italic;">key-name</span>)
+from the set of existing selection keys.<span
+ style="font-weight: normal;">
+</span><br>
+<span style="font-weight: normal;"></span><br>
+<span style="font-weight: normal;">This command requires privileged
+user status.<br>
+<br>
+</span></div>
 <br>
 <span style="font-weight: normal;"><span style="font-weight: bold;"><a
  name="job-server_--get"></a>job-server</span></span>
 <span style="font-weight: bold;">--get<br>
-<br>
+</span>
+<div style="margin-left: 40px;"><br>
+Prints the fully resolved hostnames of the machines capable of
+executing jobs on behalf of the Pipeline queue.&nbsp; Each of these
+machines should be running the <a href="pljobmgr.html"><span
+ style="font-weight: bold;">pljobmgr</span></a>(1) job execution daemon.<br>
+</div>
+<span style="font-weight: bold;"><br>
 </span><span style="font-weight: normal;"><span
  style="font-weight: bold;"><a name="job-server_--get-info"></a>job-server</span></span>
 <span style="font-weight: bold;">--get-info</span><span
  style="font-weight: normal;">=<span style="font-style: italic;">host-name<br>
-<br>
+</span></span>
+<div style="margin-left: 40px;"><br>
+Prints a summary of information about
+the given job server (<span style="font-style: italic;">host-name</span>).&nbsp;
+The information
+includes user reservation, the number of job slots, the latest dynamic
+resource statistics and the biases for all supported selection keys.<br>
+</div>
+<span style="font-weight: normal;"><span style="font-style: italic;"><br>
 </span></span><span style="font-weight: normal;"><span
  style="font-weight: bold;"><a name="job-server_--add"></a>job-server</span></span><span
  style="font-weight: normal;"><span style="font-weight: bold;"> --add</span>=<span
  style="font-style: italic;">host-name<br>
+</span></span>
+<div style="margin-left: 40px;"><br>
+Adds a new server machine (host-name) to the Pipeline queue.&nbsp; The <a
+ href="pljobmgr.html"><span style="font-weight: bold;">pljobmgr</span></a>(1)
+job execution daemon must also be started on the machine and enabled
+before jobs will be executed by the new server.<span
+ style="font-weight: normal;">
 <br>
+<br>
+This command requires privileged user status.</span></div>
+<span style="font-weight: normal;"><span style="font-style: italic;"><br>
 </span></span><span style="font-weight: normal;"><span
  style="font-weight: bold;"><a name="job-server_--set"></a>job-server </span></span><span
  style="font-weight: normal;"><span style="font-weight: bold;">--set</span>=<span
- style="font-style: italic;">hostname</span> <br>
+ style="font-style: italic;">host-name</span> <br>
 &nbsp;&nbsp;&nbsp; [<span style="font-weight: bold;">--shutdown</span> |<span
  style="font-weight: bold;"> --disable</span> | <span
  style="font-weight: bold;">--enable</span>] [<span
@@ -1837,25 +1762,137 @@ environmental variable.<br>
  style="font-style: italic;">integer</span>] [<span
  style="font-weight: bold;">--selection-bias</span>=<span
  style="font-style: italic;">key-name</span>:<span
- style="font-style: italic;">bias</span>]<br>
+ style="font-style: italic;">bias</span>] [</span><span
+ style="font-weight: bold;">--remove-selection-key</span><span
+ style="font-weight: normal;">=<span style="font-style: italic;">key-name</span>]</span><br>
+<span style="font-weight: normal;"><br>
+</span>
+<div style="margin-left: 40px;">Sets various properties of a job server
+(host-name) which is part of the Pipeline queue.<br>
 <br>
+The options are:<br>
+<br>
+<span style="font-weight: bold;">--shutdown</span><span
+ style="font-weight: bold;"><br>
+--disable</span><span style="font-weight: bold;"></span><br>
+<span style="font-weight: bold;">--enable<br>
+<br>
+</span>
+<div style="margin-left: 40px;">The <span style="font-weight: bold;">--shutdown</span>
+option will cause any <a href="pljobmgr.html"><span
+ style="font-weight: bold;">pljobmgr</span></a>(1) job execution daemon
+running on the server to exit as soon as possible.&nbsp; Any currently
+running jobs will continue execution until complete.<br>
+<br>
+The <span style="font-weight: bold;">--disable</span> option causes
+the Pipeline
+queue to ignore the job server when
+dispatching jobs.&nbsp; Jobs currently running on the server will
+continue
+execution until complete.<br>
+<br>
+The <span style="font-weight: bold;">--enable</span> option cause to
+Pipeline queue to begin dispatching waiting jobs to a previously
+shutdown or disabled job server.&nbsp; If there is no <a
+ href="pljobmgr.html"><span style="font-weight: bold;">pljobmgr</span></a>(1)
+job execution daemon running on the server, the state of the server
+will immediately be reset to shutdown.<br>
+</div>
+<span style="font-weight: bold;"><br>
+</span> </div>
+<span style="font-weight: normal;"></span>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">--reserve</span>=<span
+ style="font-style: italic;">user-name</span><br>
+<span style="font-weight: bold;">--open<br>
+<br>
+</span>
+<div style="margin-left: 40px;">The <span style="font-weight: bold;">--reserve</span>
+option causes the Pipeline queue to only dispatch jobs to the server
+which where submitted by the given user (user-name).&nbsp; In effect,
+the job server is reserved for the exclusive use of the given
+user.&nbsp; The <span style="font-weight: bold;">--open</span> option
+removes any previous reservation so that all jobs may be potentially
+dispatched to the job server.<br>
+</div>
+<span style="font-weight: bold;"><br>
 </span><span style="font-weight: normal;"><span
- style="font-weight: bold;"><a name="job-server_--remove"></a>job-server
+ style="font-weight: bold;">--slots</span>=<span
+ style="font-style: italic;">integer<br>
+<br>
+</span></span>
+<div style="margin-left: 40px;">The maximum number of jobs (<span
+ style="font-style: italic;">integer</span>) the job server will
+execute at any one time.&nbsp; The number of jobs a server actually
+runs is in practice also limited by the available resources and job
+requirements.<br>
+</div>
+<span style="font-weight: normal;"><br>
+<span style="font-weight: bold;">--selection-bias</span>=<span
+ style="font-style: italic;">key-name</span>:<span
+ style="font-style: italic;">bias</span></span><br>
+<span style="font-weight: bold;"><br>
+</span>
+<div style="margin-left: 40px;">Sets the selection bias (bias) on the
+job server for the given selection key (key-name).&nbsp; Jobs which
+require the selection key will only run on servers which set the
+selection bias for that key.&nbsp; The Pipeline queue uses the total
+selection bias for the set of selection keys required by a job to
+determine which server runs the job.&nbsp; Selection biases may be
+positive or negative integers.<br>
+<br>
+</div>
+<span style="font-weight: bold;">--remove-selection-key</span><span
+ style="font-weight: normal;">=<span style="font-style: italic;">key-name</span></span><br>
+<span style="font-weight: bold;"><br>
+</span>
+<div style="margin-left: 40px;">Removes any previously existing
+selection bias for the given selection key (<span
+ style="font-style: italic;">key-name</span>) on the job server.&nbsp;
+Future jobs which require this key will not be assigned to this server
+by the Pipeline queue.<br>
+</div>
+<span style="font-weight: normal;"><br>
+This command requires privileged user status.</span></div>
+<span style="font-weight: normal;"></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"><br>
+<a name="job-server_--remove"></a>job-server
 </span></span><span style="font-weight: normal;"><span
  style="font-weight: bold;">--remove</span>=<span
  style="font-style: italic;">host-name</span></span><br>
 <br>
+<div style="margin-left: 40px;">Removes the given server machine
+(host-name) from the Pipeline queue.&nbsp;&nbsp; If the server is
+currently running a <a href="pljobmgr.html"><span
+ style="font-weight: bold;">pljobmgr</span></a>(1) job execution
+daemon, it will be shutdown immeadiately.<span
+ style="font-weight: normal;"><br>
+<br>
+This command requires privileged user status.</span></div>
 </div>
 <h3><a name="User_Preferences"></a>User Preferences</h3>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
  name="suffix-editor_--get"></a>suffix-editor</span>
 <span style="font-weight: bold;">--get<br>
-</span><span style="font-weight: normal;"><span
- style="font-style: italic;"></span></span><br>
+</span><br>
+<div style="margin-left: 40px;">Prints the names and versions of the
+default Editor plugins for each filename suffix for the current user.<br>
+</div>
+<span style="font-weight: bold;"></span><span
+ style="font-weight: normal;"><span style="font-style: italic;"></span></span><br>
 <span style="font-weight: bold;"><a name="suffix-editor_--get-info"></a>suffix-editor</span>
 <span style="font-weight: bold;">--get-info</span><span
  style="font-weight: normal;">=</span><span style="font-weight: normal;"><span
- style="font-style: italic;">suffix</span></span><br>
+ style="font-style: italic;">suffix<br>
+<br>
+</span></span>
+<div style="margin-left: 40px;">Prints a summary of information about
+the given filename suffix (<span style="font-style: italic;">suffix</span>)
+for the current user.&nbsp;
+The information
+includes a description of the file type using the suffix and the name
+and version of the default Editor plugin used to edit files of that
+type.<br>
+</div>
 <span style="font-weight: normal;"></span><br>
 <span style="font-weight: bold;"><a name="suffix-editor_--set"></a>suffix-editor
 </span><span style="font-weight: normal;"><span
@@ -1871,24 +1908,49 @@ environmental variable.<br>
  style="font-weight: normal;">[:<span style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
  style="font-style: italic;">micro</span>]<br>
-</span><span style="font-weight: normal;"></span><span
- style="font-weight: normal;"></span><br>
+<br>
+</span>
+<div style="margin-left: 40px;">Set (or replace) the name (<span
+ style="font-style: italic;">editor-name</span>) and version (<span
+ style="font-weight: normal;"><span style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>) of the default Editor plugin
+used to edit files with the given filename suffix (<span
+ style="font-style: italic;">suffix</span>) for the current user.&nbsp;
+A short description of the file type using the suffix (<span
+ style="font-style: italic;">suffix-description</span>) is required.<br>
+</span></div>
+<span style="font-weight: normal;"></span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"></span><br>
 <span style="font-weight: bold;"><a name="suffix-editor_--remove"></a>suffix-editor
 </span><span style="font-weight: normal;"><span
  style="font-weight: bold;">--remove</span>=<span
  style="font-style: italic;">suffix<br>
 <br>
+</span></span>
+<div style="margin-left: 40px;">Remove the default Editor plugin used
+to edit files with the given filename suffix (<span
+ style="font-style: italic;">suffix</span>) for the current user.<br>
+</div>
+<span style="font-weight: normal;"><span style="font-style: italic;"><br>
 </span></span><span style="font-weight: bold;"><a
  name="suffix-editor_--reset"></a>suffix-editor</span><span
  style="font-weight: normal;"><span style="font-weight: bold;"> --reset</span></span><br>
 <span style="font-weight: normal;"><span style="font-weight: bold;"></span></span></div>
-<span style="font-weight: normal;"><span style="font-weight: bold;"><br>
-</span></span>
+<div style="margin-left: 80px;"><br>
+Reset the default Editor plugins for all filename suffixes to the site
+default values for the current user.<br>
+</div>
 <h3><a name="Working_Area_Views"></a>Working Area Views</h3>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
  name="view_--get"></a>view
 --get<br>
 <br>
+</span>
+<div style="margin-left: 40px;">Print the names of the working areas
+for the current user.<br>
+</div>
+<span style="font-weight: bold;"><br>
 </span><span style="font-weight: bold;"><a name="view_--create"></a>view
 </span><span style="font-weight: normal;"><span
  style="font-weight: bold;">--create</span>=<span
@@ -1896,6 +1958,10 @@ environmental variable.<br>
 <span style="font-weight: normal;"><span style="font-style: italic;"></span></span></div>
 <span style="font-weight: normal;"><span style="font-style: italic;"><br>
 </span></span>
+<div style="margin-left: 80px;">Create a new working area for the
+current user named (<span style="font-style: italic;">view-name</span>).<br>
+</div>
+<span style="font-weight: normal;"><span style="font-style: italic;"></span></span>
 <h3><a name="Working_Node_Versions"></a>Working Node Versions</h3>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
  name="working_--get-info"></a>working
@@ -1907,8 +1973,63 @@ environmental variable.<br>
  style="font-style: italic;">user-name</span>]</span>
 <span style="font-weight: normal;">[</span><a style="font-weight: bold;"
  href="#--view">--view</a><span style="font-weight: normal;">=<span
- style="font-style: italic;">view-name</span>]
-</span><br>
+ style="font-style: italic;">view-name</span>]<br>
+</span><span style="font-weight: normal;">&nbsp;&nbsp;&nbsp; [<span
+ style="font-weight: bold;">--show</span>=<span
+ style="font-style: italic;">section</span>[,<span
+ style="font-style: italic;">section</span> ...]] [</span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--hide</span>=<span
+ style="font-style: italic;">section</span>[,<span
+ style="font-style: italic;">section</span> ...]]</span><br>
+<span style="font-weight: normal;"><br>
+</span>
+<div style="margin-left: 40px;">Print information about the target
+working node version (<span style="font-style: italic;">node-name</span>)
+in the working area (<span style="font-style: italic;">view-name</span>)
+owned by the user (<span style="font-style: italic;">user-name</span>).&nbsp;
+The <span style="font-weight: bold;">--show</span> and <span
+ style="font-weight: bold;">--hide</span> options control the kinds of
+information (<span style="font-style: italic;">section</span>)
+printed.&nbsp; The following sections are supported by these options: <br>
+<br>
+<span style="font-weight: bold;">all<br>
+<br>
+</span>
+<div style="margin-left: 40px;">A shortcut for speciying all of the
+sections at once.</div>
+<span style="font-weight: bold;"></span><br>
+<span style="font-weight: bold;">props</span><br>
+<br>
+<div style="margin-left: 40px;">Prints the name of the toolset
+environment and default editor for the working version.<br>
+</div>
+<br>
+<span style="font-weight: bold;">action</span><br>
+<br>
+<div style="margin-left: 40px;">Prints the name, version, single and
+per-source parameters of the Action plugin associated with the working
+version. <br>
+</div>
+<br>
+<span style="font-weight: bold;">jobreqs</span><br>
+<br>
+<div style="margin-left: 40px;">Prints the job requirements and job
+execution related properties of the working version.<br>
+<br>
+</div>
+<span style="font-weight: bold;">keys</span> <br>
+<br>
+<div style="margin-left: 40px;">Prints the names of the license and
+selection keys required by jobs associated with the working version.<br>
+</div>
+<br>
+<span style="font-weight: bold;">links</span><br>
+<span style="font-weight: bold;"><br>
+</span>
+<div style="margin-left: 40px;">Prints the names of the upstream nodes
+linked to the working version and the properties of these links.<br>
+</div>
+</div>
 <span style="font-weight: normal;"> </span><br>
 <span style="font-weight: bold;"><a name="working_--set"></a>working </span><span
  style="font-weight: normal;"><span style="font-weight: bold;">--set</span>=<span
@@ -1978,6 +2099,12 @@ environmental variable.<br>
  style="font-weight: bold;">--selection-key</span></a>=<span
  style="font-style: italic;">key-name</span>[:true|false] ...]</span><br>
 <span style="font-weight: normal;"></span><br>
+<div style="margin-left: 40px;">Sets one or more properties of the target
+working node version (<span style="font-style: italic;">node-name</span>)
+in the working area (<span style="font-style: italic;">view-name</span>)
+owned by the user (<span style="font-style: italic;">user-name</span>).<br>
+</div>
+<br>
 <span style="font-weight: normal;"></span><span
  style="font-weight: bold;"><a name="working_--link"></a>working</span>
 <span style="font-weight: normal;"><span style="font-weight: bold;">--link</span>=<span
@@ -1996,8 +2123,79 @@ environmental variable.<br>
  style="font-style: italic;">offset</span>] | </span><span
  style="font-weight: normal;"><span style="font-weight: bold;">--depend</span>=<span
  style="font-style: italic;">node-name</span>[,all|<span
+ style="font-style: italic;">offset</span>]<br>
+<br>
+</span>
+<div style="margin-left: 40px;">Creates or modifies a link from one or
+more upstream nodes to the target working node version (<span
+ style="font-style: italic;">node-name</span>) in the working area (<span
+ style="font-style: italic;">view-name</span>) owned by the user (<span
+ style="font-style: italic;">user-name</span>).&nbsp; There are three
+types of links which can be created with the following options:<br>
+<br>
+<span style="font-weight: normal;"><span style="font-weight: bold;">
+--assoc</span>=<span style="font-style: italic;">node-name<br>
+<br>
+</span></span>
+<div style="margin-left: 40px;">Creates an Association link from the
+given source node (node-name) to the target node. <br>
+<br>
+This kind of link represents a loose association of the source node
+with the targe node. The link has no affect on the target node in terms
+of its overall node or queue state. In other words, changes to the
+source node will not require regeneration of the target node or cause
+the target node to become modified.<br>
+<br>
+If the target node has an Action plugin the source node and its
+associated files will be omitted from list of sources passed to the
+action during job preparation. <br>
+</div>
+<span style="font-weight: normal;"><span style="font-style: italic;"><br>
+</span><span style="font-weight: bold;">--ref</span>=<span
+ style="font-style: italic;">node-name</span>[,all|<span
+ style="font-style: italic;">offset</span>]<br>
+<br>
+</span>
+<div style="margin-left: 40px;">Creates a Reference link from the given
+source node (node-name) to the target node.&nbsp; The relationship
+between the files associated with the target and source nodes can
+either be all-to-all (<span style="font-style: italic;">all</span>) or
+one-to-one with the given frame offset (<span
+ style="font-style: italic;">offset</span>).<br>
+<br>
+The link has no affect on the target node's overall queue state, but
+can affect the target node's overall node state. Changes to the source
+node will not require the target node to be regnerated, but may cause
+it to become modified.<br>
+<br>
+References are often to describe externally referenced assets by
+nodes.&nbsp; For example, a rendering scene file might reference
+textures that it assigns to objects.&nbsp; A change to the texture
+doesn't actually change the scene file but the images produced by
+rendering the scene file would be different.&nbsp; A change to the
+texture would not require that the the scene file is regenerated, but
+nodes downstream of the scene file which depend on the scene would
+require regeneration.&nbsp; In essence, a Reference link communicates
+staleness downstream without causing the target node to become stale
+itself.&nbsp; Changes to the source node will cause the target node to
+become modified since the target node will need to record the correct
+version of the target node used when it is checked-in.<br>
+</div>
+<span style="font-weight: normal;"><br>
+</span><span style="font-weight: normal;"><span
+ style="font-weight: bold;">--depend</span>=<span
+ style="font-style: italic;">node-name</span>[,all|<span
  style="font-style: italic;">offset</span>]</span><br>
+</div>
 <span style="font-weight: normal;"></span><br>
+<div style="margin-left: 80px;">Creates a Dependency link from the
+given source node (node-name) to the target node. <br>
+<br>
+This kind of link represents the standard concept of a
+dependency.&nbsp; Changes to the source node will require regeneration
+of the target node and the target node will become modified.<br>
+</div>
+<br>
 <span style="font-weight: normal;"></span><span
  style="font-weight: bold;"><a name="working_--unlink"></a>working </span><span
  style="font-weight: normal;"><span style="font-weight: bold;">--unlink</span>=<span
@@ -2008,7 +2206,17 @@ environmental variable.<br>
  style="font-style: italic;">user-name</span>]</span>
 <span style="font-weight: normal;">[</span><a style="font-weight: bold;"
  href="#--view">--view</a><span style="font-weight: normal;">=<span
- style="font-style: italic;">view-name</span>]</span><br>
+ style="font-style: italic;">view-name</span>]<br>
+&nbsp;&nbsp;&nbsp;<span style="font-weight: bold;"> --source</span>=<span
+ style="font-style: italic;">snode-name ...</span><br>
+<br>
+</span>
+<div style="margin-left: 40px;">Removes one or more existing
+Association, Reference or Dependency links from the given upstream
+nodes (<span style="font-style: italic;">snode-name</span>) to the
+target working node version (<span style="font-style: italic;">node-name</span>)
+in the working area (<span style="font-style: italic;">view-name</span>)
+owned by the user (<span style="font-style: italic;">user-name</span>).</div>
 <span style="font-weight: normal;"></span><br>
 <span style="font-weight: bold;"><a name="working_--add-secondary"></a>working
 </span><span style="font-weight: normal;"><span
@@ -2027,9 +2235,20 @@ environmental variable.<br>
  style="font-style: italic;">suffix]</span>,<span
  style="font-style: italic;">start</span>[-<span
  style="font-style: italic;">end</span>[x<span
- style="font-style: italic;">by</span>]]</span><span
+ style="font-style: italic;">by</span>]]<br>
+<br>
+</span>
+<div style="margin-left: 40px;">Adds a secondary file sequence (<span
+ style="font-weight: normal;"><span style="font-style: italic;">prefix</span>[.#|@...][.<span
+ style="font-style: italic;">suffix]</span>,<span
+ style="font-style: italic;">start</span>[-<span
+ style="font-style: italic;">end</span>[x<span
+ style="font-style: italic;">by</span>]]) </span>to the target working
+node version (<span style="font-style: italic;">node-name</span>) in
+the working area (<span style="font-style: italic;">view-name</span>)
+owned by the user (<span style="font-style: italic;">user-name</span>).</div>
+<span style="font-weight: normal;"></span><span
  style="font-weight: normal;"></span><br>
-<span style="font-weight: normal;"></span><br>
 <span style="font-weight: normal;"></span><span
  style="font-weight: bold;"><a name="working_--remove-secondary"></a>working
 </span><span style="font-weight: normal;"><span
@@ -2052,6 +2271,17 @@ environmental variable.<br>
  style="font-style: italic;">by</span>]]</span><span
  style="font-weight: normal;"></span><br>
 <span style="font-weight: normal;"></span><br>
+<div style="margin-left: 40px;">Removes a secondary file sequence (<span
+ style="font-weight: normal;"><span style="font-style: italic;">prefix</span>[.#|@...][.<span
+ style="font-style: italic;">suffix]</span>,<span
+ style="font-style: italic;">start</span>[-<span
+ style="font-style: italic;">end</span>[x<span
+ style="font-style: italic;">by</span>]]) </span>from the target
+working node version (<span style="font-style: italic;">node-name</span>)
+in the working area (<span style="font-style: italic;">view-name</span>)
+owned by the user (<span style="font-style: italic;">user-name</span>).<br>
+</div>
+<br>
 <span style="font-weight: normal;"></span><span
  style="font-weight: bold;"><a name="working_--rename"></a>working </span><span
  style="font-weight: normal;"><span style="font-weight: bold;">--rename</span>=</span><span
@@ -2066,15 +2296,26 @@ environmental variable.<br>
  style="font-style: italic;">view-name</span>]</span><span
  style="font-weight: normal;"><span style="font-weight: bold;"><br>
 &nbsp;&nbsp;&nbsp; --name</span>=<span style="font-style: italic;">new-node-name</span>
-[<span style="font-weight: bold;">--rename-files</span>]<span
- style="font-style: italic;"></span></span><br>
-<span style="font-weight: normal;"><span style="font-style: italic;"> </span></span><br>
-<span style="font-weight: bold;"><a name="working--renumber"></a>working</span><span
- style="font-weight: normal;"><span style="font-weight: bold;">--renumber</span></span><span
- style="font-weight: normal;">=</span><span style="font-weight: normal;"><span
- style="font-style: italic;">node-name</span> </span><span
+[<span style="font-weight: bold;">--rename-files</span>]<br>
+<br>
+</span>
+<div style="margin-left: 40px;">Renames the target working node version
+(<span style="font-style: italic;">node-name</span>) in the working
+area (<span style="font-style: italic;">view-name</span>) owned by the
+user (<span style="font-style: italic;">user-name</span>) to the given
+new node name (new-node-name).&nbsp; If the <span
+ style="font-weight: bold;">--rename-files</span> options is specified,
+the primary files associated with the node will also be renamed.<br>
+</div>
+<span style="font-weight: normal;"></span><span
+ style="font-weight: normal;"><span style="font-style: italic;"> </span></span><br>
+<span style="font-weight: bold;"><a name="working_--renumber"></a>working</span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">
+--renumber</span></span><span style="font-weight: normal;">=</span><span
+ style="font-weight: normal;"><span style="font-style: italic;">node-name</span>
+</span><span style="font-weight: normal;"></span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;"><br>
+ style="font-weight: normal;"><br>
 &nbsp;&nbsp;&nbsp; </span><span style="font-weight: normal;">[</span><a
  style="font-weight: bold;" href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
@@ -2089,6 +2330,19 @@ environmental variable.<br>
  style="font-weight: normal;"><span style="font-style: italic;"></span>
 [<span style="font-weight: bold;">--remove-files</span>]</span><br>
 <span style="font-weight: normal;"></span><br>
+<div style="margin-left: 40px;">Alters the frame range <span
+ style="font-weight: normal;"><span style="font-style: italic;">(start</span>[-<span
+ style="font-style: italic;">end</span>[x<span
+ style="font-style: italic;">by</span>]]) </span>of the primary and
+secondary files associated with the target working node version (<span
+ style="font-style: italic;">node-name</span>) in the working area (<span
+ style="font-style: italic;">view-name</span>) owned by the user (<span
+ style="font-style: italic;">user-name</span>).&nbsp; If the <span
+ style="font-weight: normal;"><span style="font-weight: bold;">--remove-files</span>
+option is specified, the files from the old frame range which are no
+longer included in the new frame range will be deleted.<br>
+</span></div>
+<br>
 <span style="font-weight: normal;"></span><span
  style="font-weight: bold;"><a name="working_--edit"></a>working </span><span
  style="font-weight: normal;"><span style="font-weight: bold;">--edit</span></span><span
@@ -2133,6 +2387,17 @@ environmental variable.<br>
  style="font-weight: normal;"><span style="font-weight: bold;"></span></span><br>
 <span style="font-weight: normal;"></span></div>
 <span style="font-weight: normal;"> </span><br>
+<div style="margin-left: 80px;">Launch the Editor plugin associated
+with the target working node version (<span style="font-style: italic;">node-name</span>)
+in the working area (<span style="font-style: italic;">view-name</span>)
+owned by the user (<span style="font-style: italic;">user-name</span>).&nbsp;&nbsp;
+The <span style="font-weight: bold;">--frame</span>, <span
+ style="font-weight: bold;">--index</span> and <span
+ style="font-weight: bold;">--fseq</span> options can be used to select
+which of the files associated with the target node should be
+edited.&nbsp; If none of these options are specified, the editor will
+edit all of the primary files associated with the target node.<br>
+</div>
 <h3><a name="Checked-In_Node_Versions"></a>Checked-In Node Versions</h3>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
  name="checked-in_--get-info"></a>checked-in</span>
@@ -2146,8 +2411,72 @@ environmental variable.<br>
  style="font-style: italic;">micro</span></span><span
  style="font-weight: normal;"><span style="font-style: italic;"></span>
 | <a href="#--latest"><span style="font-weight: bold;">--latest</span></a></span><span
- style="font-weight: normal;">]<br>
+ style="font-weight: normal;"> ...]</span><span
+ style="font-weight: normal;"><br>
+</span><span style="font-weight: normal;">&nbsp;&nbsp;&nbsp; [<span
+ style="font-weight: bold;">--show</span>=<span
+ style="font-style: italic;">section</span>[,<span
+ style="font-style: italic;">section</span> ...]] [</span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--hide</span>=<span
+ style="font-style: italic;">section</span>[,<span
+ style="font-style: italic;">section</span> ...]]<br>
 <br>
+</span>
+<div style="margin-left: 40px;">Print information about each given
+version (<span style="font-weight: normal;"><span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span></span><span
+ style="font-weight: normal;"><span style="font-style: italic;"></span></span>)
+of the target checked-in node (<span style="font-style: italic;">node-name</span>).&nbsp;
+If no <span style="font-weight: bold;">--version</span> or <span
+ style="font-weight: bold;">--latest</span> options are specified,
+information about all checked-in versions will be printed.&nbsp; The <span
+ style="font-weight: bold;">--show</span> and <span
+ style="font-weight: bold;">--hide</span> options control the kinds of
+information (<span style="font-style: italic;">section</span>)
+printed.&nbsp; The following sections are supported by these options: <br>
+<br>
+<span style="font-weight: bold;">all<br>
+<br>
+</span>
+<div style="margin-left: 40px;">A shortcut for speciying all of the
+sections at once.</div>
+<span style="font-weight: bold;"></span><br>
+<span style="font-weight: bold;">props</span><br>
+<br>
+<div style="margin-left: 40px;">Prints the name of the toolset
+environment and default editor for the checked-in version.<br>
+</div>
+<br>
+<span style="font-weight: bold;">action</span><br>
+<br>
+<div style="margin-left: 40px;">Prints the name, version, single and
+per-source parameters of the Action plugin associated with the
+checked-in version. <br>
+</div>
+<br>
+<span style="font-weight: bold;">jobreqs</span><br>
+<br>
+<div style="margin-left: 40px;">Prints the job requirements and job
+execution related properties of the checked-in version.<br>
+<br>
+</div>
+<span style="font-weight: bold;">keys</span> <br>
+<br>
+<div style="margin-left: 40px;">Prints the names of the license and
+selection keys required by jobs associated with the checked-in version.<br>
+</div>
+<br>
+<span style="font-weight: bold;">links</span><br>
+<span style="font-weight: bold;"><br>
+</span>
+<div style="margin-left: 40px;">Prints the names and versions of the
+upstream nodes linked to the checked-in version and the properties of
+these links.<br>
+</div>
+</div>
+<span style="font-weight: normal;"><br>
 </span><span style="font-weight: bold;"><a name="checked-in_--history"></a>checked-in</span><span
  style="font-weight: bold;"> --history</span><span
  style="font-weight: normal;">=<span style="font-style: italic;">node-name</span>
@@ -2162,8 +2491,21 @@ environmental variable.<br>
  style="font-weight: normal;"><a href="#--latest"><span
  style="font-weight: bold;">--latest</span></a></span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;"><span
- style="font-weight: bold;"></span>]<br>
+ style="font-weight: bold;"></span> ...]<br>
 <br>
+</span>
+<div style="margin-left: 40px;">Print the check-in log messages of each
+given version (<span style="font-weight: normal;"><span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span></span><span
+ style="font-weight: normal;"><span style="font-style: italic;"></span></span>)
+of the target checked-in node (<span style="font-style: italic;">node-name</span>).&nbsp;
+If no <span style="font-weight: bold;">--version</span> or <span
+ style="font-weight: bold;">--latest</span> options are specified, the
+log messages of all checked-in versions will be printed.<br>
+</div>
+<span style="font-weight: normal;"><br>
 </span><span style="font-weight: bold;"><a name="checked-in_--novelty"></a>checked-in
 </span><span style="font-weight: normal;"><span
  style="font-weight: bold;">--novelty</span>=</span><span
@@ -2178,10 +2520,23 @@ environmental variable.<br>
  style="font-style: italic;">micro</span> | </span><span
  style="font-weight: normal;"><a href="#--latest"><span
  style="font-weight: bold;">--latest</span></a></span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;">]</span><span
- style="font-weight: normal;"><br>
-</span></div>
-<span style="font-weight: normal;"><br>
+ style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
+ style="font-weight: normal;"> ...]<br>
+<br>
+</span>
+<div style="margin-left: 40px;">Prints a table containing information
+about when each file associated with the given versions (<span
+ style="font-weight: normal;"><span style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span></span><span
+ style="font-weight: normal;"><span style="font-style: italic;"></span></span>)
+of the target checked-in node (<span style="font-style: italic;">node-name</span>)
+was modified with respect the the previous version.&nbsp; If no <span
+ style="font-weight: bold;">--version</span> or <span
+ style="font-weight: bold;">--latest</span> options are specified, file
+novelty information for all checked-in versions will be printed.</div>
+<span style="font-weight: normal;"></span></div>
+<span style="font-weight: normal;">
 </span>
 <h3><span style="font-weight: normal;"><span style="font-weight: bold;"><a
  name="Node_Operations"></a>Node
@@ -2203,14 +2558,70 @@ Operations</span></span></h3>
  style="font-weight: normal;"><br>
 &nbsp;&nbsp;&nbsp; </span><span style="font-weight: normal;">[<span
  style="font-weight: bold;">--single | --tree</span>] [<span
- style="font-weight: bold;">--links</span>] <br>
-&nbsp;&nbsp;&nbsp; [<span style="font-weight: bold;">--details</span> [<span
+ style="font-weight: bold;">--link-graph</span>] <br>
+&nbsp;&nbsp;&nbsp; <span style="font-weight: bold;"></span>[<span
  style="font-weight: bold;">--show</span>=<span
  style="font-style: italic;">section</span>[,<span
  style="font-style: italic;">section</span> ...]] [</span><span
  style="font-weight: normal;"><span style="font-weight: bold;">--hide</span>=<span
  style="font-style: italic;">section</span>[,<span
- style="font-style: italic;">section</span> ...]]]</span></div>
+ style="font-style: italic;">section</span> ...]]<br>
+<br>
+</span>
+<div style="margin-left: 40px;">Print information about the current
+status of the target working node version (<span
+ style="font-style: italic;">node-name</span>) in the working area (<span
+ style="font-style: italic;">view-name</span>) owned by the user (<span
+ style="font-style: italic;">user-name</span>).&nbsp; The <span
+ style="font-weight: bold;">--show</span> and <span
+ style="font-weight: bold;">--hide</span> options control the kinds of
+information (<span style="font-style: italic;">section</span>)
+printed.&nbsp; The following sections are supported by these options: <br>
+<br>
+<span style="font-weight: bold;">all<br>
+<br>
+</span>
+<div style="margin-left: 40px;">A shortcut for speciying all of the
+sections at once.</div>
+<span style="font-weight: bold;"></span><br>
+<span style="font-weight: bold;">props</span><br>
+<br>
+<div style="margin-left: 40px;">Prints the name of the toolset
+environment and default editor for the working version and the
+checked-in version upon which the working version is based.<br>
+</div>
+<br>
+<span style="font-weight: bold;">action</span><br>
+<br>
+<div style="margin-left: 40px;">Prints the name, version, single and
+per-source parameters of the Action plugin associated with the working
+version and the checked-in version upon which the working version is
+based.
+</div>
+<br>
+<span style="font-weight: bold;">jobreqs</span><br>
+<br>
+<div style="margin-left: 40px;">Prints the job requirements and job
+execution related properties of the working version and the checked-in
+version upon which the working version is based.<br>
+<br>
+</div>
+<span style="font-weight: bold;">keys</span> <br>
+<br>
+<div style="margin-left: 40px;">Prints the names of the license and
+selection keys required by jobs associated with the working version and
+the checked-in version upon which the working version is based.
+</div>
+<br>
+<span style="font-weight: bold;">links</span><br>
+<span style="font-weight: bold;"><br>
+</span>
+<div style="margin-left: 40px;">Prints the names and versions of the
+upstream nodes linked to the checked-in version and the properties of
+these links.
+</div>
+</div>
+<span style="font-weight: normal;"> </span></div>
 <ul style="margin-left: 40px;">
   <span style="font-weight: normal;"><span style="font-weight: bold;"></span></span>
 </ul>
@@ -2294,6 +2705,12 @@ Operations</span></span></h3>
  style="font-weight: bold;">--selection-key</span></a>=<span
  style="font-style: italic;">key-name</span>[:true|false] ...]</span><br>
 <span style="font-weight: normal;"></span><br>
+<div style="margin-left: 40px;">Register a new working node version
+version (<span style="font-style: italic;">node-name</span>) in the
+working area (<span style="font-style: italic;">view-name</span>) owned
+by the user (<span style="font-style: italic;">user-name</span>). <br>
+</div>
+<br>
 <span style="font-weight: normal;"></span><span
  style="font-weight: normal;"><span style="font-weight: bold;"><a
  name="node_--release"></a>node</span></span><span
@@ -2313,7 +2730,17 @@ Operations</span></span></h3>
  href="plscript.src.html.in#--view">--view</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]</span><span
  style="font-weight: normal;"><br>
-&nbsp;&nbsp;&nbsp; [<span style="font-weight: bold;">--remove-files</span>]</span><br>
+&nbsp;&nbsp;&nbsp; [<span style="font-weight: bold;">--remove-files</span>]<br>
+<br>
+</span>
+<div style="margin-left: 40px;">Release the target working node version
+version (<span style="font-style: italic;">node-name</span>) in the
+working area (<span style="font-style: italic;">view-name</span>) owned
+by the user (<span style="font-style: italic;">user-name</span>).&nbsp;
+If the <span style="font-weight: bold;">--remove-files</span> option
+is specified, also delete the primary and secondary files associated
+with the working version.<br>
+</div>
 <span style="font-weight: normal;"></span><br>
 <span style="font-weight: normal;"></span><span
  style="font-weight: normal;"><span style="font-weight: bold;"><a
@@ -2341,7 +2768,17 @@ Operations</span></span></h3>
  style="font-weight: normal;">[<a href="#--major"><span
  style="font-weight: bold;">--major</span></a>
 | <a href="#--minor"><span style="font-weight: bold;">--minor</span></a>
-| <a href="#--micro"><span style="font-weight: bold;">--micro</span></a>]</span><br>
+| <a href="#--micro"><span style="font-weight: bold;">--micro</span></a>]<br>
+<br>
+</span>
+<div style="margin-left: 40px;">Create a new checked-in version of the
+target working node version (<span style="font-style: italic;">node-name</span>)
+in the working area (<span style="font-style: italic;">view-name</span>)
+owned by the user (<span style="font-style: italic;">user-name</span>).&nbsp;
+The check-in message (<span style="font-style: italic;">log-message</span>)
+is required.&nbsp; Also checks in all modified nodes upstream of the
+target node prior to checking-in the target node.<br>
+</div>
 <span style="font-weight: normal;"></span><br>
 <span style="font-weight: normal;"></span><span
  style="font-weight: normal;"><span style="font-weight: bold;"><a
@@ -2364,7 +2801,24 @@ Operations</span></span></h3>
  href="#--version"><span style="font-weight: bold;">--version</span></a>=<span
  style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span>]</span><br>
+ style="font-style: italic;">micro</span>] [<span
+ style="font-weight: bold;">--keep-newer</span>]<br>
+<br>
+</span>
+<div style="margin-left: 40px;">Replace the target working node version
+(<span style="font-style: italic;">node-name</span>) in the working
+area (<span style="font-style: italic;">view-name</span>) owned by the
+user (<span style="font-style: italic;">user-name</span>) with the
+given checked-in version (<span style="font-weight: normal;"><span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>).&nbsp; If no <span
+ style="font-weight: bold;">--version</span> option is specified, the
+latest version will be checked-out.&nbsp; Also checks-out the versions
+of all upstream nodes of the checked-in version.&nbsp; If the <span
+ style="font-weight: bold;">--keep-newer</span> option is specified,
+newer versions of these upstream nodes will not be replaced.<br>
+</span></div>
 <span style="font-weight: normal;"></span><br>
 <span style="font-weight: normal;"></span><span
  style="font-weight: normal;"><span style="font-weight: bold;"><a
@@ -2397,7 +2851,27 @@ Operations</span></span></h3>
  style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
  style="font-style: italic;">single</span>|<span
  style="font-style: italic;">start</span>-<span
- style="font-style: italic;">end</span>[,...] ...]</span><br>
+ style="font-style: italic;">end</span>[,...] ...]<br>
+<br>
+</span>
+<div style="margin-left: 40px;">Submit jobs to the Pipeline queue for
+execution which are required to regenerate the stale files associated
+with the target working node version (<span style="font-style: italic;">node-name</span>)
+in the working area (<span style="font-style: italic;">view-name</span>)
+owned by the user (<span style="font-style: italic;">user-name</span>).&nbsp;
+Jobs required to regenerate any upstream nodes connected through
+Dependency links to the target will also be submitted.&nbsp; The <span
+ style="font-weight: bold;">--frame</span> and <span
+ style="font-weight: bold;">--index</span>
+options can be used to select which of the files associated with the
+target node should be regenerated.&nbsp; If none of these options are
+specified, all stale files associated with the
+target node will be regenerated.<br>
+<br>
+If successful, the ID of the job group for all of the submitted jobs
+will be printed.&nbsp; This ID can be used with the job-group
+operations below to <br>
+</div>
 <span style="font-weight: normal;"></span><br>
 <span style="font-weight: normal;"></span><span
  style="font-weight: normal;"><span style="font-weight: bold;"><a
@@ -2433,6 +2907,18 @@ Operations</span></span></h3>
 <span style="font-weight: normal;"></span></div>
 <span style="font-weight: normal;"><br>
 </span>
+<div style="margin-left: 80px;">Deletes the primary and secondary files
+assciated with the target working node version (<span
+ style="font-style: italic;">node-name</span>) in the working area (<span
+ style="font-style: italic;">view-name</span>) owned by the user (<span
+ style="font-style: italic;">user-name</span>).&nbsp; The <span
+ style="font-weight: bold;">--frame</span> and <span
+ style="font-weight: bold;">--index</span>
+options can be used to select which of the files associated with the
+target node should be deleted.&nbsp; If none of these options are
+specified, all files associated with the
+target node will be regenerated.</div>
+<span style="font-weight: normal;"></span>
 <ul>
   <ul>
   </ul>
@@ -2446,23 +2932,137 @@ Operations</span></span></h3>
  style="font-style: italic;">group-id</span>[,</span><span
  style="font-weight: normal;"><span style="font-style: italic;">group-id</span>
 ...] </span><span style="font-weight: normal;"><br>
-&nbsp;&nbsp;&nbsp; [<span style="font-weight: bold;">--details</span> [<span
+&nbsp;&nbsp;&nbsp; <span style="font-weight: bold;"></span>[<span
  style="font-weight: bold;">--show</span>=<span
  style="font-style: italic;">section</span>[,<span
  style="font-style: italic;">section</span> ...]] [</span><span
  style="font-weight: normal;"><span style="font-weight: bold;">--hide</span>=<span
  style="font-style: italic;">section</span>[,<span
- style="font-style: italic;">section</span> ...]]]</span><br>
+ style="font-style: italic;">section</span> ...]]</span><br>
 <span style="font-weight: normal;"></span><br>
+<div style="margin-left: 40px;">Print information about the status of
+the given job groups (<span style="font-style: italic;">group-id</span>).
+The <span style="font-weight: bold;">--show</span> and <span
+ style="font-weight: bold;">--hide</span> options control the kinds of
+information (<span style="font-style: italic;">section</span>)
+printed.&nbsp; The following sections are supported by these options: <br>
+<br>
+<span style="font-weight: bold;">all<br>
+<br>
+</span>
+<div style="margin-left: 40px;">A shortcut for speciying all of the
+sections at once.</div>
+<span style="font-weight: bold;"></span><br>
+<span style="font-weight: bold;">timing</span><br>
+<br>
+<div style="margin-left: 40px;">Prints submitted, started and completed
+time stamps for the job group.<br>
+</div>
+<br>
+<span style="font-weight: bold;">states<br>
+</span>
+<div style="margin-left: 40px;"><br>
+The breakdown of the number of jobs which are members of the job group
+in each of the possible job states.<br>
+</div>
+<span style="font-weight: bold;"><br>
+roots</span><br>
+<br>
+<div style="margin-left: 40px;">The IDs of the root jobs of the job
+group.&nbsp; The root jobs have no downstream job dependencies within
+the job group.<br>
+</div>
+<br>
+<span style="font-weight: bold;">jobs<br>
+<br>
+</span>
+<div style="margin-left: 40px;">The IDs of all jobs which are members
+of the job group.<br>
+</div>
+<span style="font-weight: bold;"><br>
+</span></div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">external</span><br>
+<br>
+<div style="margin-left: 40px;">The IDs of the external jobs which are
+upstream dependencies of the one or more jobs within the job group.<br>
+<br>
+</div>
+</div>
 <span style="font-weight: normal;"></span><span
  style="font-weight: normal;"><span style="font-weight: bold;"><a
- name="job-group_--remove"></a>job-group </span></span><span
+ name="job-group_--kill"></a>job-group</span></span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"><span
+ style="font-weight: bold;"> </span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--kill</span>=<span
+ style="font-style: italic;">group-id</span>[,<span
+ style="font-style: italic;">group-id</span> ...]</span><span
+ style="font-weight: normal;"><br>
+&nbsp;&nbsp;&nbsp; [</span><a style="font-weight: bold;"
+ href="plscript.src.html.in#--author">--author</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span><br>
+<span style="font-weight: normal;"><br>
+</span>
+<div style="margin-left: 40px;">Kills all Running jobs and aborts all
+Queued jobs which are members of the given job groups (<span
+ style="font-style: italic;">group-id</span>) owned by the given user (<span
+ style="font-style: italic;">user-name</span>).<br>
+</div>
+<span style="font-weight: normal;"><br>
+</span><span style="font-weight: normal;"><span
+ style="font-weight: bold;"><a name="job-group_--pause"></a>job</span></span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"><span
+ style="font-weight: bold;">-group </span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--pause</span>=</span><span
+ style="font-weight: normal;"><span style="font-style: italic;">group-id</span>[,<span
+ style="font-style: italic;">group-id</span> ...]</span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"><br>
+&nbsp;&nbsp;&nbsp; [</span><a style="font-weight: bold;"
+ href="plscript.src.html.in#--author">--author</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]<br>
+<br>
+</span>
+<div style="margin-left: 40px;">Pause all Queued jobs which are members
+of the given job groups (<span style="font-style: italic;">group-id</span>)
+owned by the given user (<span style="font-style: italic;">user-name</span>).</div>
+<span style="font-weight: normal;"></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span></span><br>
+<span style="font-weight: normal;"><span style="font-weight: bold;"><a
+ name="job-group_--resume"></a>job</span></span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"><span
+ style="font-weight: bold;">-group </span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--resume</span>=</span><span
+ style="font-weight: normal;"><span style="font-style: italic;">group-id</span>[,<span
+ style="font-style: italic;">group-id</span> ...]</span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"><br>
+&nbsp;&nbsp;&nbsp; [</span><a style="font-weight: bold;"
+ href="plscript.src.html.in#--author">--author</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span><br>
+<span style="font-weight: normal;"></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"><br>
+</span></span>
+<div style="margin-left: 40px;">Resume execution of all Paused jobs
+which are members of the given job groups (<span
+ style="font-style: italic;">group-id</span>) owned by the given user (<span
+ style="font-style: italic;">user-name</span>).</div>
+<div style="margin-left: 40px;"><span style="font-weight: normal;">
+</span><span style="font-weight: normal;"><span
+ style="font-weight: bold;"></span></span></div>
+<span style="font-weight: normal;"><span style="font-weight: bold;"><br>
+<a name="job-group_--remove"></a>job-group </span></span><span
  style="font-weight: normal;"><span style="font-weight: bold;">--remove</span>=group-id</span><span
  style="font-weight: normal;">[,</span><span
  style="font-weight: normal;"><span style="font-style: italic;">group-id</span>
 ...]</span><span style="font-weight: normal;"> <br>
-&nbsp;&nbsp;&nbsp; <a href="#--author"><span style="font-weight: bold;">--author</span></a>=<span
- style="font-style: italic;">user-name</span></span><br>
+&nbsp;&nbsp;&nbsp; [<a href="#--author"><span style="font-weight: bold;">--author</span></a>=<span
+ style="font-style: italic;">user-name</span>]<br>
+<br>
+</span>
+<div style="margin-left: 40px;">Remove the given job groups (group-id)
+and their member jobs owned by the given user (<span
+ style="font-style: italic;">user-name</span>).&nbsp;&nbsp; All member
+jobs of the job groups must have completed (Aborted, Failed or Finished
+state) before the groups may be removed.<br>
+</div>
 <span style="font-weight: normal;"><span style="font-style: italic;"></span></span><br>
 <span style="font-weight: normal;"><span style="font-style: italic;"></span></span><span
  style="font-weight: normal;"><span style="font-weight: bold;"><a
@@ -2477,10 +3077,23 @@ Operations</span></span></h3>
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
 <span style="font-weight: normal;">[</span><a style="font-weight: bold;"
  href="plscript.src.html.in#--view">--view</a><span
- style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]</span><span
- style="font-weight: normal;"></span><br>
+ style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]<br>
+<br>
+</span>
+<div style="margin-left: 40px;"><span style="font-weight: normal;"></span>Remove
+all job groups (group-id) and their member jobs associated with the
+given working area (<span style="font-style: italic;">view-name</span>)
+owned by the given
+user (<span style="font-style: italic;">user-name</span>).&nbsp;&nbsp;
+If <span style="font-weight: bold;">--view</span> option is not
+specified, all completed job groups will be removed.&nbsp; All member
+jobs of the job groups must have
+completed (Aborted, Failed or Finished state) before the groups may
+be removed.<br>
+</div>
 <span style="font-weight: normal;"></span><span
  style="font-weight: normal;"></span><br>
+<br>
 <span style="font-weight: normal;"><span style="font-weight: bold;"><a
  name="job_--status"></a>job</span></span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;"><span
@@ -2488,14 +3101,95 @@ Operations</span></span></h3>
  style="font-style: italic;">job-id</span>[,<span
  style="font-style: italic;">job-id</span> ...] <br>
 &nbsp;&nbsp;&nbsp; </span><span style="font-weight: normal;"></span><span
- style="font-weight: normal;">[<span style="font-weight: bold;">--details</span>
-[<span style="font-weight: bold;">--show</span>=<span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span>[<span
+ style="font-weight: bold;">--show</span>=<span
  style="font-style: italic;">section</span>[,<span
  style="font-style: italic;">section</span> ...]] [</span><span
  style="font-weight: normal;"><span style="font-weight: bold;">--hide</span>=<span
  style="font-style: italic;">section</span>[,<span
- style="font-style: italic;">section</span> ...]]]</span><br>
-<span style="font-weight: normal;"></span><br>
+ style="font-style: italic;">section</span> ...]]<br>
+<br>
+</span>
+<div style="margin-left: 40px;">Print information about the status of
+the given jobs (<span style="font-style: italic;">job-id</span>). The <span
+ style="font-weight: bold;">--show</span> and <span
+ style="font-weight: bold;">--hide</span> options control the kinds of
+information (<span style="font-style: italic;">section</span>)
+printed.&nbsp; The following sections are supported by these options: <br>
+<br>
+<span style="font-weight: bold;">all</span><br>
+<span style="font-weight: bold;"></span><br>
+<span style="font-weight: bold;"></span></div>
+<div style="margin-left: 80px;">A shortcut for speciying all of the
+sections at once.</div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"></span><br>
+<span style="font-weight: bold;">timing</span><br>
+<br>
+<div style="margin-left: 40px;">Prints submitted, started and completed
+time stamps for the job.<br>
+</div>
+</div>
+<div style="margin-left: 40px;"><br>
+<span style="font-weight: bold;">process</span><br>
+<br>
+<div style="margin-left: 40px;">Prints the hostname, exit code and
+execution statistics of the job process.<br>
+</div>
+<br>
+<span style="font-weight: bold;">workdir<br>
+<br>
+</span>
+<div style="margin-left: 40px;">Prints the working directory of the job
+process.<br>
+</div>
+<br>
+<span style="font-weight: bold;">command</span><br>
+<br>
+<div style="margin-left: 40px;">Prints the job process command and its
+command-line arguments.<br>
+</div>
+<br>
+<span style="font-weight: bold;">env<br>
+<br>
+</span>
+<div style="margin-left: 40px;">Prints the environmental variables of
+the toolset environment used to execute the job process.<br>
+</div>
+<br>
+<span style="font-weight: bold;">output<br>
+<br>
+</span>
+<div style="margin-left: 40px;">Prints the output (stdout) of the job
+process.<br>
+</div>
+<br>
+<span style="font-weight: bold;">errors<br>
+<br>
+</span>
+<div style="margin-left: 40px;">Prints the error messages (stderr) of
+the job process.<br>
+</div>
+<br>
+<span style="font-weight: bold;">jobreqs<br>
+<br>
+</span>
+<div style="margin-left: 40px;">Prints the job requirements.<br>
+<br>
+</div>
+<span style="font-weight: bold;">keys</span> <br>
+<br>
+<div style="margin-left: 40px;">Prints the names of the license and
+selection keys required by the job.
+</div>
+<span style="font-weight: bold;"></span><br>
+<span style="font-weight: bold;">files<br>
+</span>
+<div style="margin-left: 40px;"><br>
+Prints the primary and secondary target file sequences of the
+job.&nbsp; The names of the source nodes and the primary and secondary
+source file sequences of the job are also printed.<br>
+</div>
+</div>
 <br>
 <span style="font-weight: normal;"></span><span
  style="font-weight: normal;"><span style="font-weight: bold;"><a
@@ -2504,30 +3198,145 @@ Operations</span></span></h3>
  style="font-weight: bold;"> </span></span><span
  style="font-weight: normal;"><span style="font-weight: bold;">--kill</span>=<span
  style="font-style: italic;">job-id</span>[,<span
- style="font-style: italic;">job-id</span> ...]<br>
+ style="font-style: italic;">job-id</span> ...]</span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"><br>
+&nbsp;&nbsp;&nbsp; [</span><a style="font-weight: bold;"
+ href="plscript.src.html.in#--author">--author</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]<br>
 <br>
+</span>
+<div style="margin-left: 40px;">Kills the given Running jobs (<span
+ style="font-style: italic;">job-id</span>) and aborts the Queued jobs
+owned by the given user (<span style="font-style: italic;">user-name</span>).</div>
+<span style="font-weight: normal;"><br>
 </span><span style="font-weight: normal;"><span
  style="font-weight: bold;"><a name="job_--pause"></a>job</span></span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;"><span
  style="font-weight: bold;"> </span></span><span
  style="font-weight: normal;"><span style="font-weight: bold;">--pause</span>=<span
  style="font-style: italic;">job-id</span>[,<span
- style="font-style: italic;">job-id</span> ...]<br>
-</span><span style="font-weight: normal;"><span
- style="font-weight: bold;"></span></span><br>
+ style="font-style: italic;">job-id</span> ...]</span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"><br>
+&nbsp;&nbsp;&nbsp; [</span><a style="font-weight: bold;"
+ href="plscript.src.html.in#--author">--author</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]<br>
+<br>
+</span>
+<div style="margin-left: 40px;">Pause the given Queued jobs (<span
+ style="font-style: italic;">job-id</span>) owned by the given user (<span
+ style="font-style: italic;">user-name</span>).</div>
+<span style="font-weight: normal;"><span style="font-weight: bold;"></span></span><br>
 <span style="font-weight: normal;"><span style="font-weight: bold;"><a
  name="job_--resume"></a>job</span></span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;"><span
  style="font-weight: bold;"> </span></span><span
  style="font-weight: normal;"><span style="font-weight: bold;">--resume</span>=<span
  style="font-style: italic;">job-id</span>[,<span
- style="font-style: italic;">job-id</span> ...]<br>
+ style="font-style: italic;">job-id</span> ...]</span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"><br>
+&nbsp;&nbsp;&nbsp; [</span><a style="font-weight: bold;"
+ href="plscript.src.html.in#--author">--author</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]<br>
 <br>
-</span></div>
+</span>
+<div style="margin-left: 40px;">Resume execution of the given Paused
+jobs (<span style="font-style: italic;">job-id</span>) owned by the
+given user (<span style="font-style: italic;">user-name</span>).<br>
+</div>
+</div>
 <ul>
   <ul>
   </ul>
 </ul>
+<h3><a name="Node_Names_and_File_System_Paths"></a>Node Names and File
+System Paths</h3>
+<div style="margin-left: 40px;">The fully resolved names of Pipeline
+nodes resemble absolute file system paths in that they must begin with
+a (/) character followed by one or more names containing only
+alphanumeric characters (a-z,A-Z,0-9) separated by (/)
+characters.&nbsp; Node names must be unique in that a fully resolved
+node name cannot be a prefix of any other fully resolved node name.<br>
+<br>
+Each user of Pipeline maintains at least one working area named
+(default) and optionally several others each with a unique name.&nbsp;
+All files associated with a working version of a node are located in a
+separate area of the file system created for the working area to which
+the node belongs.&nbsp; There is a straightforward mapping of working
+node names to the file system path of the files make up the file
+sequences associated with the node.<br>
+<br>
+The path to the files which make up the primary file sequence for a
+node is constructed as follows:<br>
+<div style="margin-left: 40px;"><br>
+<span style="font-style: italic;">root-production-dir</span>/working<span
+ style="font-style: italic;">/user-name</span>/<span
+ style="font-style: italic;">view-name</span>/<span
+ style="font-style: italic;">node-name</span>[.<span
+ style="font-style: italic;">frame-number</span>][.<span
+ style="font-style: italic;">suffix</span>]<br>
+</div>
+</div>
+<br>
+<div style="margin-left: 40px;">Where (<span style="font-style: italic;">root-production-dir</span>)
+is the root directory of all production file for the site set by the
+the <a
+ href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--prod-dir"><span
+ style="font-weight: bold;">--prod-dir</span></a>
+option to <a
+ href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
+ style="font-weight: bold;">plconfig</span></a>(1).&nbsp; The (<span
+ style="font-style: italic;">user-name</span>) is the name of the user
+owning the working area.&nbsp; The (<span style="font-style: italic;">view-name</span>)
+is the name of the owning working area.&nbsp; The (<span
+ style="font-style: italic;">node-name</span>) is fully resolved node
+name described above.&nbsp; If the primary file sequence for the node
+has multiple frames the padded or unpadded frame number follows (<span
+ style="font-style: italic;">frame-number</span>).&nbsp; The last
+component is the the optional filename suffix (<span
+ style="font-style: italic;">suffix</span>). There may also be
+secondary file sequences associated with a node in addition to primary
+file sequence.&nbsp; The file which make up the secondary file
+sequences must reside in the same file system directory as the files
+from the primary file sequence.&nbsp; <br>
+<br>
+When a node is checked-in, its associated files are copied into the
+file repository.&nbsp; The files in the repository are read-only for
+all users and cannot be modified once they are created.&nbsp; Users
+should never manually change the contents of the repository, however is
+it perfectly acceptable to access files in the repository for read-only
+purposes.<br>
+<br>
+The file system path of the files associated with a checked-in version
+of a node is constructed as follows:<br>
+<br>
+<div style="margin-left: 40px;"><span style="font-style: italic;">root-production-dir</span>/repository<span
+ style="font-style: italic;"><span style="font-style: italic;">/</span></span><span
+ style="font-style: italic;">node-name</span>/<span
+ style="font-style: italic;">major.minor.micro</span>/<span
+ style="font-style: italic;">prefix</span>[.<span
+ style="font-style: italic;">frame-number</span>][.<span
+ style="font-style: italic;">suffix</span>]<br>
+<br>
+</div>
+</div>
+<div style="margin-left: 40px;">Where (<span style="font-style: italic;">root-production-dir</span>),
+(<span style="font-style: italic;">node-name</span>), (<span
+ style="font-style: italic;">frame-number</span>) and (<span
+ style="font-style: italic;">suffix</span>) have the same meaning as in
+working area paths.&nbsp; The (<span style="font-style: italic;">major.minor.micro</span><span
+ style="font-style: italic;"></span>) component is the revision number
+of the node version.&nbsp; The (<span style="font-style: italic;">prefix</span>)
+is the same as the last component of the fully resolved node name for
+files which make up the primary file sequence of the node and may be
+different for files which make up secondary file sequences of the node.<br>
+<br>
+In the repository, if a file is identical to the corresponding file
+from a previous version of the same node, a symbolic link will be
+created to the earlier version of the file rather than duplicating the
+file.&nbsp; Therefore, the repository only maintains one copy of a file
+regardless of how many versions of the node are associated with a file
+which is identical in each of the versions. <br>
+</div>
 <h3><a name="See_Also"></a>See Also</h3>
 <div style="margin-left: 40px;"><span style="font-weight: bold;">Documentation</span>
 <br>
