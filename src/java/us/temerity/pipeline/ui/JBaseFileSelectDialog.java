@@ -1,4 +1,4 @@
-// $Id: JBaseFileSelectDialog.java,v 1.4 2004/10/22 19:41:20 jim Exp $
+// $Id: JBaseFileSelectDialog.java,v 1.5 2004/10/31 20:02:39 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -28,6 +28,22 @@ implements ListSelectionListener, DocumentListener, MouseListener
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Construct a new dialog for selecting files.
+   * 
+   * @param title
+   *   The title of the dialog.
+   */ 
+  public 
+  JBaseFileSelectDialog
+  (
+   String title
+  ) 
+  {
+    super(title, true);
+    pRootDir = new File("/");
+  }
+
   /**
    * Construct a new dialog for selecting files.
    * 

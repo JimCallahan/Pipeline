@@ -1,4 +1,4 @@
-// $Id: JFileSelectDialog.java,v 1.5 2004/10/22 19:18:22 jim Exp $
+// $Id: JFileSelectDialog.java,v 1.6 2004/10/31 20:02:39 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -27,6 +27,38 @@ class JFileSelectDialog
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Construct a new dialog for selecting files.
+   * 
+   * @param title
+   *   The title of the dialog.
+   * 
+   * @param header
+   *   The header label.
+   * 
+   * @param fieldTitle
+   *   The title of the filename field.
+   * 
+   * @param fieldTitleSize
+   *   The width of the filename field title.
+   * 
+   * @param confirm
+   *   The name of the confirm button.
+   */ 
+  public 
+  JFileSelectDialog
+  (
+   String title,
+   String header,
+   String fieldTitle, 
+   int fieldTitleSize, 
+   String confirm
+  ) 
+  {
+    super(title);
+    initUI(title, header, fieldTitle, fieldTitleSize, confirm);
+  }
+
   /**
    * Construct a new dialog for selecting files.
    * 
