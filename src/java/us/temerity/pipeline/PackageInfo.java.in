@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.in,v 1.9 2004/03/10 11:44:39 jim Exp $
+// $Id: PackageInfo.java.in,v 1.10 2004/03/12 13:52:48 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -51,26 +51,26 @@ class PackageInfo
 
 
   /**
-   * The hostname which runs the Pipeline master server. <P> 
+   * The hostname which runs the Pipeline master server <I>plmaster(1)</I>. <P> 
    * Set by the <CODE>--master-server=HOST</CODE> option to <I>configure(1)</I>.
    */
   public static final String sMasterServer = "@PL_MASTER_SERVER@";
 
   /**
-   * The port number listened to by the Pipeline master server. <P> 
+   * The port number listened to by the Pipeline master server <I>plmaster(1)</I>. <P> 
    * Set by the <CODE>--master-port=NUM</CODE> option to <I>configure(1)</I>.   
    */
   public static final int sMasterPort = @PL_MASTER_PORT@;
 
 
   /**
-   * The hostname which runs the Pipeline file server. <P> 
+   * The hostname which runs the Pipeline file server <I>plfilemgr(1)</I>. <P> 
    * Set by the <CODE>--file-server=HOST</CODE> option to <I>configure(1)</I>.
    */
   public static final String sFileServer = "@PL_FILE_SERVER@";
 
   /**
-   * The port number listened to by the Pipeline file server. <P> 
+   * The port number listened to by the Pipeline file server <I>plfilemgr(1)</I>. <P> 
    * Set by the <CODE>--file-port=NUM</CODE> option to <I>configure(1)</I>.   
    */
   public static final int sFilePort = @PL_FILE_PORT@;
@@ -190,7 +190,7 @@ class PackageInfo
    */
   public static final String sCopyright = 
     ("-------------------------------------------------------------------------\n" +
-     " Copyright (c) 2001, 2002, 2003, 2004 James M. Callahan.\n" +
+     " Copyright (c) 2002, 2003, 2004 James M. Callahan.\n" +
      "\n" +
      " Permission to use, copy and distribute this software and its\n" +
      " documentation for any purpose is STRICTLY PROHIBITED without prior\n" +
