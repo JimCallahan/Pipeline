@@ -1,4 +1,4 @@
-// $Id: MayaTextureSyncTool.java,v 1.7 2005/03/28 04:18:03 jim Exp $
+// $Id: MayaTextureSyncTool.java,v 1.8 2005/04/06 20:08:41 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -1361,14 +1361,6 @@ class MayaTextureSyncTool
     {
       String workRoot = (PackageInfo.sWorkDir + "/" + PackageInfo.sUser + "/" + pView);
 
-      System.out.print("Copy Textures:\n");
-      for(File canon: pTextureFiles.keySet()) {
-	File texture = new File(workRoot + pTextureFiles.get(canon).getPath());
-	if(!canon.equals(texture)) 
-	  System.out.print("  " + canon + " -> " + texture + "\n");
-      }
-      System.out.print("\n");
-
       Map<String,String> env = System.getenv();
       for(File canon: pTextureFiles.keySet()) {
 	File texture = new File(workRoot + pTextureFiles.get(canon).getPath());
@@ -1399,15 +1391,6 @@ class MayaTextureSyncTool
 
     /* fix texture paths in the Maya scene */  
     {
-      System.out.print("Maya Shader Attributes:\n");
-      for(File canon : pFileShaders.keySet()) {
-	String value = ("$WORKING" + pTextureFiles.get(canon));
-	for(String shader : pFileShaders.get(canon)) {
-	  System.out.print("  setAttr " + shader + ".fileTextureName \"" + value + "\";\n");
-	}
-      }
-      System.out.print("\n");
-      
       File script = null;
       try {
 	script = File.createTempFile("MayaTextureSyncTool-FixPaths.", ".mel", 
