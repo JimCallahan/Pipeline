@@ -1,4 +1,4 @@
-// $Id: MiscGetToolsetEnvironmentReq.java,v 1.2 2004/06/28 00:12:36 jim Exp $
+// $Id: MiscGetToolsetEnvironmentReq.java,v 1.3 2004/06/28 23:03:22 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -45,12 +45,7 @@ class MiscGetToolsetEnvironmentReq
    String name
   )
   {
-    if(author == null) 
-      throw new IllegalArgumentException("The author cannot be (null)!");
     pAuthor = author;
-
-    if(view == null) 
-      throw new IllegalArgumentException("The view cannot be (null)!");
     pView = view;
 
     if(name == null) 
