@@ -278,13 +278,13 @@ TOKEN :
 | <QUEUE_PORT:   "--queue-port">    : PORT_NUMBER_SEP
 | <JOB_PORT:     "--job-port">      : PORT_NUMBER_SEP
 
-| <LOG_FILE:          "--log-file">           : PATH_SEP
+| <LOG_FILE:          "--log-file">           : PATH_SEP2
 | <STANDARD_LOG_FILE: "--standard-log-file"> 
 | <LOG_BACKUPS:       "--log-backups">        : INTEGER_SEP2
 | <LOG:               "--log">                : LOG_SEP
 
   /* batch */ 
-| <BATCH:        "--batch">         : PATH_SEP
+| <BATCH:        "--batch">               : PATH_SEP2
 		   
   /* commands */ 
 | <PRIVILEGED:        "privileged">       : PRIVILEGED_OPTS 
@@ -303,8 +303,6 @@ TOKEN :
 | <WORKING:           "working">          : WORKING_OPTS
 | <CHECKED_IN:        "checked-in">       : CHECKED_IN_OPTS
 | <NODE:              "node">             : NODE_OPTS
-| <JOB_GROUP:         "job-group">        : JOB_GROUP_OPTS
-| <JOB:               "job">              : JOB_OPTS
 
   /* argument end separator */ 
 | <AE1: ("\0")+>
@@ -322,6 +320,7 @@ TOKEN :
   <MSG:            "--msg">             : STRING_SEP  
 | <TOTAL:          "--total">           : INTEGER_SEP  
 | <SHUTDOWN:       "--shutdown">       
+| <BACKUP:         "--backup">          : PATH_SEP
 | <DISABLE:        "--disable">       
 | <ENABLE:         "--enable">  
 | <RESERVE:        "--reserve">         : USER_NAME_SEP            
@@ -526,10 +525,27 @@ TOKEN :
 TOKEN :
 {
   <PATH_ARG:       ("/")* ("../")* <PATH_ARG_COMP> 
-		     ("/" (".." | (<PATH_ARG_COMP>)+)?)*>      : DEFAULT
+		     ("/" (".." | (<PATH_ARG_COMP>)+)?)*>      : OPTIONS
 | <#PATH_ARG_COMP: (["a"-"z","A"-"Z","0"-"9","_","-","."])+>
 | <MISSING_PATH:   ["\0"]>                                     : IGNORE_STATE
 | <ILLEGAL_PATH:   (~["\0"])+>                                 : IGNORE_STATE
+}
+
+<PATH_SEP2>
+TOKEN :
+{
+  <EQ34:                 "=">   : PATH_STATE2
+| <MISSING_PATH_ARG2:  ~["="]>  : IGNORE_STATE
+}
+
+<PATH_STATE2> 
+TOKEN :
+{
+  <PATH_ARG2:       ("/")* ("../")* <PATH_ARG_COMP2> 
+		      ("/" (".." | (<PATH_ARG_COMP2>)+)?)*>     : DEFAULT
+| <#PATH_ARG_COMP2: (["a"-"z","A"-"Z","0"-"9","_","-","."])+>
+| <MISSING_PATH2:   ["\0"]>                                     : IGNORE_STATE
+| <ILLEGAL_PATH2:   (~["\0"])+>                                 : IGNORE_STATE
 }
 
 
@@ -1368,7 +1384,7 @@ BatchOpt()
   Token t;
 }
 {
-  <BATCH> EQ() t=<PATH_ARG> AE()
+  <BATCH> EQ() t=<PATH_ARG2> AE()
   {
     /* process the batch file */ 
     File canon = null;
@@ -1599,7 +1615,7 @@ void LogFile() :
   Token t;
 }
 {
-  <LOG_FILE> EQ() t=<PATH_ARG>
+  <LOG_FILE> EQ() t=<PATH_ARG2>
   { 
     pLogFile = t.image;
   }
@@ -1873,7 +1889,7 @@ AdminCmds()
   throws PipelineException : 
 {}
 {
-  <ADMIN> AE() AdminShutdown()
+  <ADMIN> AE() (AdminShutdown() | AdminBackup())
   {}
 }
 
@@ -1886,6 +1902,29 @@ AdminShutdown()
   {
     pMasterMgrClient.shutdown();
     Logs.ops.info("Shutting Down...");
+    Logs.flush();
+  }
+}
+
+void 
+AdminBackup() 
+  throws PipelineException : 
+{
+  Token t;
+}
+{
+  <BACKUP> EQ() t=<PATH_ARG> AE()
+  {
+    File dir = new File(t.image);
+    if(!dir.isDirectory()) 
+    throw new PipelineException
+      ("The backup directory (" + t.image + ") is not valid!");
+
+    SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd.HHmmss");
+    File file = new File(dir, "pipeline-db." + format.format(new Date()) + ".tgz");
+    
+    pMasterMgrClient.backupDatabase(file);
+    Logs.ops.info("Database Saved: " + file);
     Logs.flush();
   }
 }
@@ -3504,10 +3543,11 @@ WorkingSubmitJobs()
 {
   String name = null;
   
-  pAuthor          = PackageInfo.sUser;
-  pView            = "default";
-  pFrames          = new ArrayList();
-  pIndices         = new ArrayList();
+  pAuthor   = PackageInfo.sUser;
+  pView     = "default";
+  pFrames   = new ArrayList();
+  pIndices  = new ArrayList();
+  pWait     = false;
 }
 {
   <WORKING_SUBMIT_JOBS> EQ() name=NodeName() AE() (WorkingSubmitJobsOpts())* 
@@ -3517,7 +3557,8 @@ WorkingSubmitJobs()
         ("The --frame and --index options are mutually exclusive!");
 
     pApp.workingSubmitJobs(new NodeID(pAuthor, pView, name), 
-			   pFrames, pIndices, pMasterMgrClient);
+			   pFrames, pIndices, pWait, 
+			   pMasterMgrClient, pQueueMgrClient);
   }
 }
 
@@ -3526,7 +3567,7 @@ WorkingSubmitJobsOpts()
   throws PipelineException : 
 {}
 {
-  (Author() | View() | Frame() | Index())
+  (Author() | View() | Frame() | Index() | Wait())
   {}
 }
 
@@ -5410,7 +5451,7 @@ EQ() :
    t=<EQ16> | t=<EQ17> | t=<EQ18> | t=<EQ19> | t=<EQ20> | 
    t=<EQ21> | t=<EQ22> | t=<EQ23> | t=<EQ24> | t=<EQ25> |
    t=<EQ26> | t=<EQ27> | t=<EQ28> | t=<EQ29> | t=<EQ30> | 
-   t=<EQ31> | t=<EQ32> | t=<EQ33>)
+   t=<EQ31> | t=<EQ32> | t=<EQ33> | t=<EQ34>)
   { 
     return t; 
   }

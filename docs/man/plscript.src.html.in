@@ -97,7 +97,8 @@ Administration</a><br>
         <li style="font-weight: bold;"><a href="#toolset_--get-info">--get-info</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">toolset-name</span></span></li>
         <li style="font-weight: bold;"><span
- style="font-weight: normal;"><span style="font-weight: bold;">--get-info-all</span><span
+ style="font-weight: normal;"><a href="#toolset_--get-info-all"><span
+ style="font-weight: bold;">--get-info-all</span></a><span
  style="font-style: italic;"><br>
           </span></span></li>
       </ul>
@@ -123,8 +124,9 @@ Administration</span></span></a><br>
         <li style="font-weight: bold;"><a href="#license-key_--get">--get</a></li>
         <li style="font-weight: bold;"><a href="#license-key_--get-info">--get-info</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">key-name</span></span></li>
-        <li style="font-weight: bold;"><span
- style="font-weight: normal;"><span style="font-weight: bold;">--get-info-all</span></span></li>
+        <li style="font-weight: bold;"><a
+ href="#license-key_--get-info-all"><span style="font-weight: normal;"><span
+ style="font-weight: bold;">--get-info-all</span></span></a></li>
         <li style="font-weight: bold;"><span
  style="font-weight: normal;"><a href="#license-key_--add"><span
  style="font-weight: bold;">--add</span></a>=<span
@@ -155,8 +157,9 @@ Administration</span></span></a><br>
         <li style="font-weight: bold;"><a
  href="#selection-key_--get-info">--get-info</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">key-name</span></span></li>
-        <li style="font-weight: bold;"><span
- style="font-weight: normal;"><span style="font-weight: bold;">--get-info-all</span></span></li>
+        <li style="font-weight: bold;"><a
+ href="#selection-key_--get-info-all"><span style="font-weight: normal;"><span
+ style="font-weight: bold;">--get-info-all</span></span></a></li>
         <li style="font-weight: bold;"><span
  style="font-weight: normal;"><a href="#selection-key_--add"><span
  style="font-weight: bold;">--add</span></a>=<span
@@ -178,8 +181,9 @@ Administration</span></span></a><br>
         <li style="font-weight: bold;"><a href="#job-server_--get">--get</a></li>
         <li style="font-weight: bold;"><a href="#job-server_--get-info">--get-info</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">host-name</span></span></li>
-        <li style="font-weight: bold;"><span
- style="font-weight: normal;"><span style="font-weight: bold;">--get-info-all</span></span></li>
+        <li style="font-weight: bold;"><a
+ href="#job-server_--get-info-all"><span style="font-weight: normal;"><span
+ style="font-weight: bold;">--get-info-all</span></span></a></li>
         <li style="font-weight: bold;"><span
  style="font-weight: normal;"><a href="#job-server_--add"><span
  style="font-weight: bold;">--add</span></a>=<span
@@ -617,7 +621,9 @@ Node Versions</a></li>
  style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
  style="font-style: italic;">single</span>|<span
  style="font-style: italic;">start</span>-<span
- style="font-style: italic;">end</span>[,...] ...]</span></li>
+ style="font-style: italic;">end</span>[,...] ...] [<span
+ style="font-weight: bold;">--wait</span>]<br>
+          </span></li>
         <li style="font-weight: bold;"><a href="#working_--remove-files"><span
  style="font-weight: normal;"><span
  style="font-weight: bold; color: rgb(153, 0, 0);"></span></span></a><span
@@ -824,115 +830,6 @@ Operations</span></span></a></li>
  style="font-style: italic;">minor</span>.<span
  style="font-style: italic;">micro</span>]</span><span
  style="font-weight: normal;"></span></li>
-      </ul>
-    </ul>
-    <li style="font-weight: bold;"><a href="#Queue_Operations"><span
- style="font-weight: normal;"><span style="font-weight: bold;">Queue
-Operations</span></span></a></li>
-    <ul>
-      <li style="font-weight: bold;"><span
- style="font-weight: normal; color: rgb(153, 0, 0);"><span
- style="font-weight: bold;">job-group</span></span><br>
-      </li>
-      <ul>
-        <li style="font-weight: bold;"><span
- style="font-weight: normal;"><a href="#job-group_--status"><span
- style="font-weight: bold;">--status</span></a>=<span
- style="font-style: italic;">group-id</span>[,</span><span
- style="font-weight: normal;"><span style="font-style: italic;">group-id</span>
-...]</span><span style="font-weight: normal;"> [<span
- style="font-weight: bold;">--show</span>=<span
- style="font-style: italic;">section</span>[,<span
- style="font-style: italic;">section</span> ...]] [</span><span
- style="font-weight: normal;"><span style="font-weight: bold;">--hide</span>=<span
- style="font-style: italic;">section</span>[,<span
- style="font-style: italic;">section</span> ...]]</span></li>
-        <li style="font-weight: bold;"><span
- style="font-weight: normal;"><a href="#job-group_--kill"><span
- style="font-weight: bold;">--kill</span></a>=<span
- style="font-style: italic;">group-id</span>[,<span
- style="font-style: italic;">group-id</span> ...]</span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;">
-[</span><a style="font-weight: bold;" href="#--author">--author</a><span
- style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span></li>
-        <li style="font-weight: bold;"><span
- style="font-weight: normal;"><a href="#job-group_--pause"><span
- style="font-weight: bold;">--pause</span></a>=<span
- style="font-style: italic;">group-id</span>[,<span
- style="font-style: italic;">group-id</span> ...] </span><span
- style="font-weight: normal;">[</span><a style="font-weight: bold;"
- href="#--author">--author</a><span style="font-weight: normal;">=<span
- style="font-style: italic;">user-name</span>]</span><span
- style="font-weight: normal;"><span style="font-weight: bold;"></span></span></li>
-        <li style="font-weight: bold;"><span
- style="font-weight: normal;"><a href="#job-group_--resume"><span
- style="font-weight: bold;">--resume</span></a>=<span
- style="font-style: italic;">group-id</span>[,<span
- style="font-style: italic;">group-id</span> ...]</span><span
- style="font-weight: normal;"> </span><span
- style="font-weight: normal;">[</span><a style="font-weight: bold;"
- href="#--author">--author</a><span style="font-weight: normal;">=<span
- style="font-style: italic;">user-name</span>]</span></li>
-        <li style="font-weight: bold;"><span
- style="font-weight: normal;"><a href="#job-group_--remove"><span
- style="font-weight: bold;">--remove</span></a>=group-id</span><span
- style="font-weight: normal;">[,</span><span
- style="font-weight: normal;"><span style="font-style: italic;">group-id</span>
-...]</span><span style="font-weight: normal;"> </span><span
- style="font-weight: normal;">[</span><a style="font-weight: bold;"
- href="#--author">--author</a><span style="font-weight: normal;">=<span
- style="font-style: italic;">user-name</span>]</span><span
- style="font-weight: normal;"><span style="font-style: italic;"></span></span></li>
-        <li style="font-weight: bold;"><span
- style="font-weight: normal;"><a href="#job-group_--remove-all"><span
- style="font-weight: bold;">--remove-all</span></a> </span><span
- style="font-weight: normal;">[</span><a href="#--author">--author</a><span
- style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
-          <span style="font-weight: normal;">[</span><a href="#--view">--view</a><span
- style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]</span><span
- style="font-weight: normal;"></span></li>
-      </ul>
-      <li style="font-weight: bold;"><span style="font-weight: normal;"><span
- style="font-weight: bold; color: rgb(153, 0, 0);">job</span><br>
-        </span></li>
-      <ul>
-        <li style="font-weight: bold;"><span
- style="font-weight: normal;"><a href="#job_--status"><span
- style="font-weight: bold;">--status</span></a>=<span
- style="font-style: italic;">job-id</span>[,<span
- style="font-style: italic;">job-id</span> ...] </span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;"><span
- style="font-weight: bold;"></span>[<span style="font-weight: bold;">--show</span>=<span
- style="font-style: italic;">section</span>[,<span
- style="font-style: italic;">section</span> ...]] [</span><span
- style="font-weight: normal;"><span style="font-weight: bold;">--hide</span>=<span
- style="font-style: italic;">section</span>[,<span
- style="font-style: italic;">section</span> ...]]</span></li>
-        <li style="font-weight: bold;"><span
- style="font-weight: normal;"><a href="#job_--kill"><span
- style="font-weight: bold;">--kill</span></a>=<span
- style="font-style: italic;">job-id</span>[,<span
- style="font-style: italic;">job-id</span> ...]</span><span
- style="font-weight: normal;"> [</span><a style="font-weight: bold;"
- href="#--author">--author</a><span style="font-weight: normal;">=<span
- style="font-style: italic;">user-name</span>]</span></li>
-        <li style="font-weight: bold;"><span
- style="font-weight: normal;"><a href="#job_--pause"><span
- style="font-weight: bold;">--pause</span></a>=<span
- style="font-style: italic;">job-id</span>[,<span
- style="font-style: italic;">job-id</span> ...]</span><span
- style="font-weight: normal;"> [</span><a style="font-weight: bold;"
- href="#--author">--author</a><span style="font-weight: normal;">=<span
- style="font-style: italic;">user-name</span>]</span><span
- style="font-weight: normal;"><span style="font-weight: bold;"></span></span></li>
-        <li style="font-weight: bold;"><span
- style="font-weight: normal;"><a href="#job_--resume"><span
- style="font-weight: bold;">--resume</span></a>=<span
- style="font-style: italic;">job-id</span>[,<span
- style="font-style: italic;">job-id</span> ...]</span><span
- style="font-weight: normal;"> [</span><a style="font-weight: bold;"
- href="#--author">--author</a><span style="font-weight: normal;">=<span
- style="font-style: italic;">user-name</span>]</span></li>
       </ul>
     </ul>
   </ul>
@@ -1733,13 +1630,16 @@ daemons are not affected by this command.<br>
  style="font-style: italic;">dir<br>
 <br>
 </span>
-<div style="margin-left: 40px;">&lt;&gt;Creates a tarball in the given
+<div style="margin-left: 40px;">Creates a tarball in the given
 directory (dir) which contains a backup of the current state of the
-Pipeline database.&nbsp; All database operations are blocked while the
+Pipeline database.&nbsp; Note that backup directory path is local to
+the host running <a href="plmaster.html"><span
+ style="font-weight: bold;">plmaster</span></a>(1).&nbsp; All database
+operations are blocked while the
 backup is in progress to insure a that the backup is complete and in a
 consistent state.&nbsp; The name of the generated backup file is
 printed when the backup is complete.<br>
-&lt;&gt;</div>
+</div>
 </div>
 <h3><a name="Toolset_Administration"></a>Toolset Administration</h3>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
@@ -3014,7 +2914,10 @@ exit immediately after launching the Editor(s).
  style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
  style="font-style: italic;">single</span>|<span
  style="font-style: italic;">start</span>-<span
- style="font-style: italic;">end</span>[,...] ...]</span><br>
+ style="font-style: italic;">end</span>[,...] ...]</span><span
+ style="font-weight: normal;"> <br>
+&nbsp;&nbsp;&nbsp; [<span style="font-weight: bold;">--wait</span>]</span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span></span><br>
 <span style="font-weight: normal;"></span><br>
 <span style="font-weight: normal;"></span></div>
 <div style="margin-left: 80px;">Submit jobs to the Pipeline queue for
@@ -3031,9 +2934,11 @@ target node should be regenerated.&nbsp; If none of these options are
 specified, all stale files associated with the
 target node will be regenerated.<br>
 <br>
-If successful, the ID of the job group for all of the submitted jobs
-will be printed.&nbsp; This ID can be used with the job-group
-operations below to <br>
+If the <span style="font-weight: bold;">--wait</span> option is
+specified <span style="font-weight: bold;">plscript</span>(1) will
+wait for submitted jobs to complete before returning.&nbsp; Otherwise,<span
+ style="font-weight: bold;"> plscript</span>(1) will
+exit immediately after submitting the jobs.
 </div>
 <div style="margin-left: 40px;"><span style="font-weight: normal;"></span><br>
 <span style="font-weight: normal;"></span><span
@@ -3326,7 +3231,7 @@ status for all nodes upstream of the given node will also be
 displayed.&nbsp; The nodes will be printed in alphabetical order.&nbsp;
 <br>
 <br>
-The <span style="font-weight: bold;">--link-graph</span> option cause
+The <span style="font-weight: bold;">--link-graph</span> option causes
 a heirarchical nested list of node names which describes the link
 relationships for all nodes upstream of the given node to be printed in
 addition to any status information.<br>
@@ -3548,327 +3453,6 @@ latest version will be used.&nbsp; <br>
 <span style="font-weight: normal;"></span><span
  style="font-weight: normal;"><span style="font-weight: bold;"></span></span></div>
 <span style="font-weight: normal;"></span>
-<h3><span style="font-weight: normal;"><span style="font-weight: bold;"><a
- name="Queue_Operations"></a>Queue
-Operations</span></span></h3>
-<div style="margin-left: 40px;"><span style="font-weight: normal;"><span
- style="font-weight: bold;"><a name="job-group_--status"></a>job-group</span></span><span
- style="font-weight: normal;"><span style="font-weight: bold;"> --status</span>=<span
- style="font-style: italic;">group-id</span>[,</span><span
- style="font-weight: normal;"><span style="font-style: italic;">group-id</span>
-...] </span><span style="font-weight: normal;"><br>
-&nbsp;&nbsp;&nbsp; <span style="font-weight: bold;"></span>[<span
- style="font-weight: bold;">--show</span>=<span
- style="font-style: italic;">section</span>[,<span
- style="font-style: italic;">section</span> ...]] [</span><span
- style="font-weight: normal;"><span style="font-weight: bold;">--hide</span>=<span
- style="font-style: italic;">section</span>[,<span
- style="font-style: italic;">section</span> ...]]</span><br>
-<span style="font-weight: normal;"></span><br>
-<div style="margin-left: 40px;">Print information about the status of
-the given job groups (<span style="font-style: italic;">group-id</span>).
-The <span style="font-weight: bold;">--show</span> and <span
- style="font-weight: bold;">--hide</span> options control the kinds of
-information (<span style="font-style: italic;">section</span>)
-printed.&nbsp; The following sections are supported by these options: <br>
-<br>
-<span style="font-weight: bold;">all<br>
-<br>
-</span>
-<div style="margin-left: 40px;">A shortcut for speciying all of the
-sections at once.</div>
-<span style="font-weight: bold;"></span><br>
-<span style="font-weight: bold;">timing</span><br>
-<br>
-<div style="margin-left: 40px;">Prints submitted, started and completed
-time stamps for the job group.<br>
-</div>
-<br>
-<span style="font-weight: bold;">states<br>
-</span>
-<div style="margin-left: 40px;"><br>
-The breakdown of the number of jobs which are members of the job group
-in each of the possible job states.<br>
-</div>
-<span style="font-weight: bold;"><br>
-roots</span><br>
-<br>
-<div style="margin-left: 40px;">The IDs of the root jobs of the job
-group.&nbsp; The root jobs have no downstream job dependencies within
-the job group.<br>
-</div>
-<br>
-<span style="font-weight: bold;">jobs<br>
-<br>
-</span>
-<div style="margin-left: 40px;">The IDs of all jobs which are members
-of the job group.<br>
-</div>
-<span style="font-weight: bold;"><br>
-</span></div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">external</span><br>
-<br>
-<div style="margin-left: 40px;">The IDs of the external jobs which are
-upstream dependencies of the one or more jobs within the job group.<br>
-<br>
-</div>
-</div>
-<span style="font-weight: normal;"></span><span
- style="font-weight: normal;"><span style="font-weight: bold;"><a
- name="job-group_--kill"></a>job-group</span></span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;"><span
- style="font-weight: bold;"> </span></span><span
- style="font-weight: normal;"><span style="font-weight: bold;">--kill</span>=<span
- style="font-style: italic;">group-id</span>[,<span
- style="font-style: italic;">group-id</span> ...]</span><span
- style="font-weight: normal;"><br>
-&nbsp;&nbsp;&nbsp; [</span><a style="font-weight: bold;"
- href="#--author">--author</a><span style="font-weight: normal;">=<span
- style="font-style: italic;">user-name</span>]</span><br>
-<span style="font-weight: normal;"><br>
-</span>
-<div style="margin-left: 40px;">Kills all Running jobs and aborts all
-Queued jobs which are members of the given job groups (<span
- style="font-style: italic;">group-id</span>) owned by the given user (<span
- style="font-style: italic;">user-name</span>).<br>
-</div>
-<span style="font-weight: normal;"><br>
-</span><span style="font-weight: normal;"><span
- style="font-weight: bold;"><a name="job-group_--pause"></a>job</span></span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;"><span
- style="font-weight: bold;">-group </span></span><span
- style="font-weight: normal;"><span style="font-weight: bold;">--pause</span>=</span><span
- style="font-weight: normal;"><span style="font-style: italic;">group-id</span>[,<span
- style="font-style: italic;">group-id</span> ...]</span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;"><br>
-&nbsp;&nbsp;&nbsp; [</span><a style="font-weight: bold;"
- href="#--author">--author</a><span style="font-weight: normal;">=<span
- style="font-style: italic;">user-name</span>]<br>
-<br>
-</span>
-<div style="margin-left: 40px;">Pause all Queued jobs which are members
-of the given job groups (<span style="font-style: italic;">group-id</span>)
-owned by the given user (<span style="font-style: italic;">user-name</span>).</div>
-<span style="font-weight: normal;"></span><span
- style="font-weight: normal;"><span style="font-weight: bold;"></span></span><br>
-<span style="font-weight: normal;"><span style="font-weight: bold;"><a
- name="job-group_--resume"></a>job</span></span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;"><span
- style="font-weight: bold;">-group </span></span><span
- style="font-weight: normal;"><span style="font-weight: bold;">--resume</span>=</span><span
- style="font-weight: normal;"><span style="font-style: italic;">group-id</span>[,<span
- style="font-style: italic;">group-id</span> ...]</span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;"><br>
-&nbsp;&nbsp;&nbsp; [</span><a style="font-weight: bold;"
- href="#--author">--author</a><span style="font-weight: normal;">=<span
- style="font-style: italic;">user-name</span>]</span><br>
-<span style="font-weight: normal;"></span><span
- style="font-weight: normal;"><span style="font-weight: bold;"><br>
-</span></span>
-<div style="margin-left: 40px;">Resume execution of all Paused jobs
-which are members of the given job groups (<span
- style="font-style: italic;">group-id</span>) owned by the given user (<span
- style="font-style: italic;">user-name</span>).</div>
-<div style="margin-left: 40px;"><span style="font-weight: normal;">
-</span><span style="font-weight: normal;"><span
- style="font-weight: bold;"></span></span></div>
-<span style="font-weight: normal;"><span style="font-weight: bold;"><br>
-<a name="job-group_--remove"></a>job-group </span></span><span
- style="font-weight: normal;"><span style="font-weight: bold;">--remove</span>=group-id</span><span
- style="font-weight: normal;">[,</span><span
- style="font-weight: normal;"><span style="font-style: italic;">group-id</span>
-...]</span><span style="font-weight: normal;"> <br>
-&nbsp;&nbsp;&nbsp; [<a href="#--author"><span style="font-weight: bold;">--author</span></a>=<span
- style="font-style: italic;">user-name</span>]<br>
-<br>
-</span>
-<div style="margin-left: 40px;">Remove the given job groups (group-id)
-and their member jobs owned by the given user (<span
- style="font-style: italic;">user-name</span>).&nbsp;&nbsp; All member
-jobs of the job groups must have completed (Aborted, Failed or Finished
-state) before the groups may be removed.<br>
-</div>
-<span style="font-weight: normal;"><span style="font-style: italic;"></span></span><br>
-<span style="font-weight: normal;"><span style="font-style: italic;"></span></span><span
- style="font-weight: normal;"><span style="font-weight: bold;"><a
- name="job-group_--remove-all"></a>job-group </span></span><span
- style="font-weight: normal;"><span style="font-weight: bold;">--remove-all</span>
-</span><span style="font-weight: normal;"></span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;"><br>
-&nbsp;&nbsp;&nbsp; </span><span style="font-weight: normal;">[</span><a
- style="font-weight: bold;" href="#--author">--author</a><span
- style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
-<span style="font-weight: normal;">[</span><a style="font-weight: bold;"
- href="#--view">--view</a><span style="font-weight: normal;">=<span
- style="font-style: italic;">view-name</span>]<br>
-<br>
-</span>
-<div style="margin-left: 40px;"><span style="font-weight: normal;"></span>Remove
-all job groups (group-id) and their member jobs associated with the
-given working area (<span style="font-style: italic;">view-name</span>)
-owned by the given
-user (<span style="font-style: italic;">user-name</span>).&nbsp;&nbsp;
-If <span style="font-weight: bold;">--view</span> option is not
-specified, all completed job groups will be removed.&nbsp; All member
-jobs of the job groups must have
-completed (Aborted, Failed or Finished state) before the groups may
-be removed.<br>
-</div>
-<span style="font-weight: normal;"></span><span
- style="font-weight: normal;"></span><br>
-<br>
-<span style="font-weight: normal;"><span style="font-weight: bold;"><a
- name="job_--status"></a>job</span></span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;"><span
- style="font-weight: bold;"> --status</span>=<span
- style="font-style: italic;">job-id</span>[,<span
- style="font-style: italic;">job-id</span> ...] <br>
-&nbsp;&nbsp;&nbsp; </span><span style="font-weight: normal;"></span><span
- style="font-weight: normal;"><span style="font-weight: bold;"></span>[<span
- style="font-weight: bold;">--show</span>=<span
- style="font-style: italic;">section</span>[,<span
- style="font-style: italic;">section</span> ...]] [</span><span
- style="font-weight: normal;"><span style="font-weight: bold;">--hide</span>=<span
- style="font-style: italic;">section</span>[,<span
- style="font-style: italic;">section</span> ...]]<br>
-<br>
-</span>
-<div style="margin-left: 40px;">Print information about the status of
-the given jobs (<span style="font-style: italic;">job-id</span>). The <span
- style="font-weight: bold;">--show</span> and <span
- style="font-weight: bold;">--hide</span> options control the kinds of
-information (<span style="font-style: italic;">section</span>)
-printed.&nbsp; The following sections are supported by these options: <br>
-<br>
-<span style="font-weight: bold;">all</span><br>
-<span style="font-weight: bold;"></span><br>
-<span style="font-weight: bold;"></span></div>
-<div style="margin-left: 80px;">A shortcut for speciying all of the
-sections at once.</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"></span><br>
-<span style="font-weight: bold;">time</span><br>
-<br>
-<div style="margin-left: 40px;">Prints submitted, started and completed
-time stamps for the job.<br>
-</div>
-</div>
-<div style="margin-left: 40px;"><br>
-<span style="font-weight: bold;">proc</span><br>
-<br>
-<div style="margin-left: 40px;">Prints the hostname, exit code and
-execution statistics of the job process.<br>
-</div>
-<br>
-<span style="font-weight: bold;">wkdir<br>
-<br>
-</span>
-<div style="margin-left: 40px;">Prints the working directory of the job
-process.<br>
-</div>
-<br>
-<span style="font-weight: bold;">cmd</span><br>
-<br>
-<div style="margin-left: 40px;">Prints the job process command and its
-command-line arguments.<br>
-</div>
-<br>
-<span style="font-weight: bold;">env<br>
-<br>
-</span>
-<div style="margin-left: 40px;">Prints the environmental variables of
-the toolset environment used to execute the job process.<br>
-</div>
-<br>
-<span style="font-weight: bold;">out<br>
-<br>
-</span>
-<div style="margin-left: 40px;">Prints the output (stdout) of the job
-process.<br>
-</div>
-<br>
-<span style="font-weight: bold;">err<br>
-<br>
-</span>
-<div style="margin-left: 40px;">Prints the error messages (stderr) of
-the job process.<br>
-</div>
-<br>
-<span style="font-weight: bold;">jreq<br>
-<br>
-</span>
-<div style="margin-left: 40px;">Prints the job requirements.<br>
-<br>
-</div>
-<span style="font-weight: bold;">key</span><br>
-<br>
-<div style="margin-left: 40px;">Prints the names of the license and
-selection keys required by the job.
-</div>
-<span style="font-weight: bold;"></span><br>
-<span style="font-weight: bold;">file<br>
-</span>
-<div style="margin-left: 40px;"><br>
-Prints the primary and secondary target file sequences of the
-job.&nbsp; The names of the source nodes and the primary and secondary
-source file sequences of the job are also printed.<br>
-</div>
-</div>
-<br>
-<span style="font-weight: normal;"></span><span
- style="font-weight: normal;"><span style="font-weight: bold;"><a
- name="job_--kill"></a>job</span></span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;"><span
- style="font-weight: bold;"> </span></span><span
- style="font-weight: normal;"><span style="font-weight: bold;">--kill</span>=<span
- style="font-style: italic;">job-id</span>[,<span
- style="font-style: italic;">job-id</span> ...]</span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;"><br>
-&nbsp;&nbsp;&nbsp; [</span><a style="font-weight: bold;"
- href="#--author">--author</a><span style="font-weight: normal;">=<span
- style="font-style: italic;">user-name</span>]<br>
-<br>
-</span>
-<div style="margin-left: 40px;">Kills the given Running jobs (<span
- style="font-style: italic;">job-id</span>) and aborts the Queued jobs
-owned by the given user (<span style="font-style: italic;">user-name</span>).</div>
-<span style="font-weight: normal;"><br>
-</span><span style="font-weight: normal;"><span
- style="font-weight: bold;"><a name="job_--pause"></a>job</span></span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;"><span
- style="font-weight: bold;"> </span></span><span
- style="font-weight: normal;"><span style="font-weight: bold;">--pause</span>=<span
- style="font-style: italic;">job-id</span>[,<span
- style="font-style: italic;">job-id</span> ...]</span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;"><br>
-&nbsp;&nbsp;&nbsp; [</span><a style="font-weight: bold;"
- href="#--author">--author</a><span style="font-weight: normal;">=<span
- style="font-style: italic;">user-name</span>]<br>
-<br>
-</span>
-<div style="margin-left: 40px;">Pause the given Queued jobs (<span
- style="font-style: italic;">job-id</span>) owned by the given user (<span
- style="font-style: italic;">user-name</span>).</div>
-<span style="font-weight: normal;"><span style="font-weight: bold;"></span></span><br>
-<span style="font-weight: normal;"><span style="font-weight: bold;"><a
- name="job_--resume"></a>job</span></span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;"><span
- style="font-weight: bold;"> </span></span><span
- style="font-weight: normal;"><span style="font-weight: bold;">--resume</span>=<span
- style="font-style: italic;">job-id</span>[,<span
- style="font-style: italic;">job-id</span> ...]</span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;"><br>
-&nbsp;&nbsp;&nbsp; [</span><a style="font-weight: bold;"
- href="#--author">--author</a><span style="font-weight: normal;">=<span
- style="font-style: italic;">user-name</span>]<br>
-<br>
-</span>
-<div style="margin-left: 40px;">Resume execution of the given Paused
-jobs (<span style="font-style: italic;">job-id</span>) owned by the
-given user (<span style="font-style: italic;">user-name</span>).<br>
-</div>
-</div>
 <ul>
   <ul>
   </ul>

@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.19 2004/11/03 23:41:12 jim Exp $
+// $Id: ScriptApp.java,v 1.20 2004/11/07 20:14:30 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -122,6 +122,7 @@ class ScriptApp
       "  Administration\n" +
       "    admin\n" + 
       "      --shutdown\n" + 
+      "      --backup=dir\n" +
       "\n" + 
       "  Toolset Administration\n" + 
       "    default-toolset\n" + 
@@ -250,9 +251,11 @@ class ScriptApp
       "        [--editor=editor-name[:major.minor.micro]]\n" +
       "        [--frame=single|start-end[,...] ...] [--index=single|start-end[,...] ...]\n" +
       "        [--fseq=prefix[.#|@...][.suffix][,start[-end[xby]]]]\n" +
+      "        [--wait]\n" +
       "      --submit-jobs=node-name\n" +
       "        [--author=user-name] [--view=view-name]\n" +
       "        [--frame=single|start-end[,...] ...] [--index=single|start-end[,...] ...]\n" +
+      "        [--wait]\n" +
       "      --remove-files=node-name\n" +
       "        [--author=user-name] [--view=view-name]\n" +
       "        [--frame=single|start-end[,...] ...] [--index=single|start-end[,...] ...]\n" +
@@ -285,30 +288,6 @@ class ScriptApp
       "      --evolve=node-name\n" +
       "        [--author=user-name] [--view=view-name]\n" +
       "        [--version=major.minor.micro]\n" +
-      "\n" +
-      "  Queue Operations\n" +
-      "    job-group\n" +
-      "      --status=group-id[,group-id ...]\n" +
-      "        [--show=section[,section ...]] [--hide=section[,section ...]]\n" +
-      "      --kill=group-id[,group-id ...]\n" +
-      "        [--author=user-name]\n" +
-      "      --pause=group-id[,group-id ...]\n" +
-      "        [--author=user-name]\n" +
-      "      --resume=group-id[,group-id ...]\n" +
-      "        [--author=user-name]\n" +
-      "      --remove=group-id[,group-id ...]\n" +
-      "        [--author=user-name]\n" +
-      "      --remove-all\n" +
-      "        [--author=user-name] [--view=view-name]\n" +
-      "    job\n" +
-      "      --status=job-id[,job-id ...]\n" +
-      "        [--show=section[,section ...]] [--hide=section[,section ...]]\n" +
-      "      --kill=job-id[,job-id ...]\n" +
-      "        [--author=user-name]\n" +
-      "      --pause=job-id[,job-id ...]\n" +
-      "        [--author=user-name]\n" +
-      "      --resume=job-id[,job-id ...]\n" +
-      "        [--author=user-name]\n" +
       "\n" +  
       "Use \"plscript --html-help\" to browse the full documentation.\n");
   }
@@ -1555,18 +1534,72 @@ class ScriptApp
    NodeID nodeID, 
    ArrayList frames, 
    ArrayList indices, 
-   MasterMgrClient client
+   boolean wait, 
+   MasterMgrClient mclient,
+   QueueMgrClient qclient
   ) 
     throws PipelineException
   { 
-    NodeMod mod = client.getWorkingVersion(nodeID);
+    NodeMod mod = mclient.getWorkingVersion(nodeID);
     TreeSet<Integer> frameIndices = 
       buildFrameIndices(mod, (ArrayList<int[]>) frames, (ArrayList<int[]>) indices);
-    QueueJobGroup group = client.submitJobs(nodeID, frameIndices);
+    QueueJobGroup group = mclient.submitJobs(nodeID, frameIndices);
 
     Logs.ops.info
       ("Submitted Job Group: [" + group.getGroupID() + "] " + group.getRootPattern());
     Logs.flush();        
+
+    if(wait) {
+      Logs.ops.info("Waiting for jobs to complete...");
+      Logs.flush();   
+
+      TreeSet<Long> groupIDs = new TreeSet<Long>();
+      groupIDs.add(group.getGroupID());
+
+      while(true) {
+	TreeMap<Long,JobStatus> table = qclient.getJobStatus(groupIDs);
+
+	boolean done = true; 
+	boolean failed = false;
+	for(JobStatus status : table.values()) {
+	  switch(status.getState()) {
+	  case Queued: 
+	  case Paused:
+	  case Running:
+	    done = false;
+	    break;
+
+	  case Aborted:
+	  case Failed:
+	    failed = true;
+	  }
+	}
+
+	if(done) {
+	  for(JobStatus status : table.values()) {
+	    Logs.ops.info(pad("Job [" + status.getJobID() + "]: ", ' ', 15) + 
+			  pad(status.getState().toTitle(), ' ', 15) + 
+			  "(" + status.getTargetSequence() + ")");
+	  }
+	  
+	  if(failed) 
+	    throw new PipelineException("Jobs Failed.");
+	  else {
+	    Logs.ops.info("Jobs Completed Successfully.");
+	    Logs.flush(); 
+	    return;
+	  }
+	}
+	
+	try {
+	  Thread.sleep(5000);
+	}
+	catch(InterruptedException ex) {
+	  throw new PipelineException
+	    ("Interrupted while waiting for jobs to complete!");
+	}
+      }
+    }
   }  
   
   /**
