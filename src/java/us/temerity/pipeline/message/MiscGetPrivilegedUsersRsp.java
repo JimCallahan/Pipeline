@@ -1,4 +1,4 @@
-// $Id: MiscGetPrivilegedUsersRsp.java,v 1.3 2004/06/08 20:05:11 jim Exp $
+// $Id: MiscGetPrivilegedUsersRsp.java,v 1.4 2004/07/28 19:09:28 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -35,7 +35,7 @@ class MiscGetPrivilegedUsersRsp
    */ 
   public
   MiscGetPrivilegedUsersRsp
-  (
+  ( 
    TaskTimer timer, 
    TreeSet<String> users
   )
@@ -46,7 +46,7 @@ class MiscGetPrivilegedUsersRsp
       throw new IllegalArgumentException("The users cannot be (null)!");
     pUsers = users;
 
-    Logs.net.finest("MasterMgr.getPrivilegedUsers():\n  " + getTimer());
+    Logs.net.finest(getTimer().toString());
     if(Logs.net.isLoggable(Level.FINEST))
       Logs.flush();
   }
