@@ -1,4 +1,4 @@
-// $Id: JobMgrServer.java,v 1.11 2004/12/08 10:26:48 jim Exp $
+// $Id: JobMgrServer.java,v 1.12 2005/01/12 13:07:59 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -51,7 +51,15 @@ class JobMgrServer
   )
   { 
     super("JobMgrServer");
-    init(port);
+
+    pJobMgr = new JobMgr();
+
+    if(port < 0) 
+      throw new IllegalArgumentException("Illegal port number (" + port + ")!");
+    pPort = port;
+
+    pShutdown = new AtomicBoolean(false);
+    pTasks    = new HashSet<HandlerTask>();
   }
   
   /** 
@@ -62,33 +70,7 @@ class JobMgrServer
   public
   JobMgrServer() 
   { 
-    super("JobMgrServer");
-    init(PackageInfo.sJobPort);
-  }
-
-
-  /*-- CONSTRUCTION HELPERS ----------------------------------------------------------------*/
-
-  /**
-   * Initialize a new instance.
-   * 
-   * @param port 
-   *   The network port to monitor for incoming connections.
-   */ 
-  private synchronized void 
-  init
-  (
-   int port
-  )
-  { 
-    pJobMgr = new JobMgr();
-
-    if(port < 0) 
-      throw new IllegalArgumentException("Illegal port number (" + port + ")!");
-    pPort = port;
-
-    pShutdown = new AtomicBoolean(false);
-    pTasks    = new HashSet<HandlerTask>();
+    this(PackageInfo.sJobPort);
   }
 
  
