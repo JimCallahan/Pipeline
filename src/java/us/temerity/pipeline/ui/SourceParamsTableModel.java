@@ -1,4 +1,4 @@
-// $Id: SourceParamsTableModel.java,v 1.2 2004/06/28 00:19:40 jim Exp $
+// $Id: SourceParamsTableModel.java,v 1.3 2004/06/28 23:38:38 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -41,9 +41,6 @@ class SourceParamsTableModel
    * 
    * @param action
    *   The parent action of the per-source parameters.
-   * 
-   * @param status
-   *   The current node status.
    */
   public 
   SourceParamsTableModel

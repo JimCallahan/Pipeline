@@ -1,4 +1,4 @@
-// $Id: SuffixEditorTableModel.java,v 1.3 2004/06/28 00:19:40 jim Exp $
+// $Id: SuffixEditorTableModel.java,v 1.4 2004/06/28 23:38:38 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -174,9 +174,6 @@ class SuffixEditorTableModel
   }
 
 
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   T A B L E   M O D E L   O V E R R I D E S                                            */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -198,7 +195,6 @@ class SuffixEditorTableModel
 
     return -1;
   }
-
 
   /**
    * Remove the rows with the given indices.

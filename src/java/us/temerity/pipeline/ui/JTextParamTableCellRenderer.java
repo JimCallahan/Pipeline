@@ -1,6 +1,8 @@
-// $Id: JTextParamTableCellRenderer.java,v 1.1 2004/06/22 19:44:54 jim Exp $
+// $Id: JTextParamTableCellRenderer.java,v 1.2 2004/06/28 23:38:38 jim Exp $
 
 package us.temerity.pipeline.ui;
+
+import us.temerity.pipeline.*;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -27,8 +29,8 @@ class JTextParamTableCellRenderer
   /**
    * Construct a new renderer.
    * 
-   * @param align
-   *   The horizontal alignment.
+   * @param isEditable
+   *   Whether the text value is editable.
    */
   public 
   JTextParamTableCellRenderer

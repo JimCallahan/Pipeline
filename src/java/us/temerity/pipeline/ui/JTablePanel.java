@@ -1,4 +1,4 @@
-// $Id: JTablePanel.java,v 1.2 2004/06/22 19:43:28 jim Exp $
+// $Id: JTablePanel.java,v 1.3 2004/06/28 23:38:05 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -38,9 +38,6 @@ class JTablePanel
    * 
    * @param width
    *   The horizontal size of each table column.
-   * 
-   * @param resize
-   *   Whether each table column is resizeable.
    * 
    * @param renderers
    *   The cell renderer for each column.

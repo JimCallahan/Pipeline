@@ -1,4 +1,4 @@
-// $Id: JSourceParamsDialog.java,v 1.1 2004/06/22 19:44:54 jim Exp $
+// $Id: JSourceParamsDialog.java,v 1.2 2004/06/28 23:37:49 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -46,9 +46,6 @@ class JSourceParamsDialog
    * 
    * @param action
    *   The parent action of the per-source parameters.
-   * 
-   * @param status
-   *   The current node status.
    */ 
   public 
   JSourceParamsDialog
