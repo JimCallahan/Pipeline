@@ -228,15 +228,15 @@ install: installdirs install-jar
 	$(MAKE) -C plugin $@
 
 install-jar: $(TARGET)
-	$(INSTALL) -m 444 $< $(prefix)/jar/$<
+	$(INSTALL) -m 444 $< $(DESTDIR)$(prefix)/jar/$(TARGET)
 
 PHONY: installdirs
 installdirs:
-	$(mkinstalldirs) $(prefix)/jar
-	$(mkinstalldirs) $(PRODDIR)/working
-	$(mkinstalldirs) $(PRODDIR)/repository
-	chmod 0755 $(PRODDIR)/repository $(PRODDIR)/checksum
-	chown pipeline.pipeline $(PRODDIR)/repository $(PRODDIR)/checksum
+	$(mkinstalldirs) $(DESTDIR)$(prefix)/jar
+	$(mkinstalldirs) $(DESTDIR)$(PRODDIR)/working
+	$(mkinstalldirs) $(DESTDIR)$(PRODDIR)/repository
+	chmod 0755 $(DESTDIR)$(PRODDIR)/repository $(DESTDIR)$(PRODDIR)/checksum
+	chown pipeline.pipeline $(DESTDIR)$(PRODDIR)/repository $(DESTDIR)$(PRODDIR)/checksum
 
 
 #--------------------------------------------------------------------------------------------#
@@ -244,7 +244,7 @@ installdirs:
 uninstall: uninstall-jar
 
 uninstall-jar: 
-	rm -f $(prefix)/jar/$(TARGET)
+	rm -f $(DESTDIR)$(prefix)/jar/$(TARGET)
 
 
 #--------------------------------------------------------------------------------------------#

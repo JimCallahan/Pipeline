@@ -200,11 +200,11 @@ docs-all:
 #--------------------------------------------------------------------------------------------#
 
 install: installdirs
-	(docdir=`pwd`; cd $(datadir)/docs; tar -xvf $$docdir/javadoc.tar)
+	(docdir=`pwd`; cd $(DESTDIR)$(datadir)/docs; tar -xvf $$docdir/javadoc.tar)
 
 PHONY: installdirs
 installdirs:
-	$(mkinstalldirs) $(datadir)/docs
+	$(mkinstalldirs) $(DESTDIR)$(datadir)/docs
 
 
 #--------------------------------------------------------------------------------------------#
@@ -212,7 +212,7 @@ installdirs:
 uninstall: 
 
 uninstall-jar: 
-	rm -f $(datadir)/docs/javadoc
+	rm -f $(DESTDIR)$(datadir)/docs/javadoc
 
 
 #--------------------------------------------------------------------------------------------#

@@ -173,6 +173,10 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
     JAVA_SOURCES = $(shell ls $(srcdir)/*.java) $(patsubst %,%.java,$(PARSERS))
     JAVA_CLASSES = $(patsubst $(srcdir)/%.java,%.class,$(JAVA_SOURCES))
 
+
+      PLUGIN_DIR = $(prefix)/jar/us/temerity/pipeline/plugin
+
+
 #--------------------------------------------------------------------------------------------#
 #   R U L E S                                                                                #
 #--------------------------------------------------------------------------------------------#
@@ -200,14 +204,14 @@ install-classes: $(JAVA_CLASSES)
 	@list='$^'; for p in $$list; do \
           f=`basename $$p`; \
 	  if test -f $$p; then \
-            echo $(INSTALL) -m 444 $$p $(prefix)/jar/us/temerity/pipeline/plugin/$$f; \
-            $(INSTALL) -m 444 $$p $(prefix)/jar/us/temerity/pipeline/plugin/$$f; \
+            echo $(INSTALL) -m 444 $$p $(DESTDIR)$(PLUGIN_DIR)/$$f; \
+            $(INSTALL) -m 444 $$p $(DESTDIR)$(PLUGIN_DIR)/$$f; \
           fi; \
          done
 
 
 installdirs:
-	$(mkinstalldirs) $(prefix)/jar/us/temerity/pipeline/plugin
+	$(mkinstalldirs) $(DESTDIR)$(PLUGIN_DIR)
 
 
 #--------------------------------------------------------------------------------------------#
@@ -218,8 +222,8 @@ uninstall-classes: $(JAVA_CLASSES)
 	@list='$^'; for p in $$list; do \
           f=`basename $$p`; \
 	  if test -f $$p; then \
-            echo rm -f $(prefix)/jar/us/temerity/pipeline/plugin/$$f; \
-            rm -f $(prefix)/jar/us/temerity/pipeline/plugin/$$f; \
+            echo rm -f $(DESTDIR)$(PLUGIN_DIR)/$$f; \
+            rm -f $(DESTDIR)$(PLUGIN_DIR)/$$f; \
           fi; \
          done
 
