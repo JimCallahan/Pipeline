@@ -1,4 +1,4 @@
-// $Id: JBaseCreateDialog.java,v 1.1 2004/05/29 06:38:43 jim Exp $
+// $Id: JBaseCreateDialog.java,v 1.2 2004/06/02 21:52:09 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -22,6 +22,7 @@ import javax.swing.tree.*;
 public 
 class JBaseCreateDialog
   extends JBaseDialog
+  implements DocumentListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -85,9 +86,13 @@ class JBaseCreateDialog
 	
 	UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
 
-	pDescriptionArea = 
-	  UIMaster.createTitledEditableTextArea(tpanel, "Description:", sTSize, 
-						vpanel, "", sVSize, 5);
+	{
+	  JTextArea area = 
+	    UIMaster.createTitledEditableTextArea(tpanel, "Description:", sTSize, 
+						  vpanel, "", sVSize, 5);
+	  pDescriptionArea = area;
+	  area.getDocument().addDocumentListener(this);
+	}
 
 	UIMaster.addVerticalGlue(tpanel, vpanel);
       }
@@ -95,8 +100,9 @@ class JBaseCreateDialog
       super.initUI("X", true, body, confirm, null, null, "Close");
       pack();
     }  
-  }
 
+    pConfirmButton.setEnabled(false);
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -172,6 +178,45 @@ class JBaseCreateDialog
     }
 
     pDescriptionArea.setText(null);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   L I S T E N E R S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /*-- DOCUMENT LISTENER METHODS -----------------------------------------------------------*/
+
+  /**
+   * Gives notification that an attribute or set of attributes changed.
+   */ 
+  public void 
+  changedUpdate(DocumentEvent e) {}
+
+  /**
+   * Gives notification that there was an insert into the document.
+   */
+  public void
+  insertUpdate
+  (
+   DocumentEvent e
+  )
+  {
+    String desc = pDescriptionArea.getText();
+    pConfirmButton.setEnabled((desc != null) && (desc.length() > 0));
+  }
+  
+  /**
+   * Gives notification that a portion of the document has been removed.
+   */
+  public void 
+  removeUpdate
+  (
+   DocumentEvent e
+  )
+  {
+    String desc = pDescriptionArea.getText();
+    pConfirmButton.setEnabled((desc != null) && (desc.length() > 0));    
   }
 
 
