@@ -748,7 +748,8 @@ Operations</span></span></a></li>
           <span style="font-weight: normal;">[</span><a href="#--view">--view</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]
           </span><span style="font-weight: normal;">[<span
- style="font-weight: bold;">--single | --tree</span>] [<span
+ style="font-weight: bold;">--brief</span>] [<span
+ style="font-weight: bold;">--upstream</span>] [<span
  style="font-weight: bold;">--link-graph</span>] [<span
  style="font-weight: bold;">--show</span>=<span
  style="font-style: italic;">section</span>[,<span
@@ -3235,7 +3236,8 @@ Operations</span></span></h3>
  style="font-style: italic;">view-name</span>]</span><span
  style="font-weight: normal;"><br>
 &nbsp;&nbsp;&nbsp; </span><span style="font-weight: normal;">[<span
- style="font-weight: bold;">--tree</span>] [<span
+ style="font-weight: bold;">--brief</span>] [<span
+ style="font-weight: bold;">--upstream</span>] [<span
  style="font-weight: bold;">--link-graph</span>] <br>
 &nbsp;&nbsp;&nbsp; <span style="font-weight: bold;"></span>[<span
  style="font-weight: bold;">--show</span>=<span
@@ -3250,9 +3252,13 @@ Operations</span></span></h3>
 status of the target working node version (<span
  style="font-style: italic;">node-name</span>) in the working area (<span
  style="font-style: italic;">view-name</span>) owned by the user (<span
- style="font-style: italic;">user-name</span>).&nbsp; By default, only
-the status of the given node is printed&nbsp; If the <span
- style="font-weight: bold;">--tree</span> option is specified, the
+ style="font-style: italic;">user-name</span>).&nbsp; The <span
+ style="font-weight: bold;">--brief</span> option specifies that an
+abreviated one line status should be printed instead of the default
+multiple line report for each node.<br>
+<br>
+By default, only the status of the given node is printed.&nbsp; If the <span
+ style="font-weight: bold;">--upstream</span> option is specified, the
 status for all nodes upstream of the given node will also be
 displayed.&nbsp; The nodes will be printed in alphabetical order.&nbsp;
 <br>
@@ -3335,8 +3341,8 @@ checked-in versions have upstream links.<br>
 </ul>
 <div style="margin-left: 40px;">
 <div style="margin-left: 40px;"><span style="font-weight: bold;">file</span><br>
-<div style="margin-left: 40px;">Prints the file state, queue state,
-generating job ID and last modified timestamp for each file associated
+<div style="margin-left: 40px;">Prints the file state and queue state
+for each file associated
 with the working version.<br>
 <br>
 </div>
