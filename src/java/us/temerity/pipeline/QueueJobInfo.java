@@ -1,4 +1,4 @@
-// $Id: QueueJobInfo.java,v 1.3 2004/08/22 21:53:33 jim Exp $
+// $Id: QueueJobInfo.java,v 1.4 2004/08/30 01:31:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -140,6 +140,24 @@ class QueueJobInfo
   /*----------------------------------------------------------------------------------------*/
   /*   S T A G E S                                                                          */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Records that the job has been paused.
+   */ 
+  public synchronized void 
+  paused()
+  {
+    pState = JobState.Paused;
+  }
+
+  /**
+   * Records that the job has resumed waiting. 
+   */ 
+  public synchronized void 
+  resumed() 
+  {
+    pState = JobState.Queued;
+  }
   
   /**
    * Records the job has started execution. 
