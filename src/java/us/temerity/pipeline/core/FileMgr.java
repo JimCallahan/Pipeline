@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.31 2005/02/22 18:18:30 jim Exp $
+// $Id: FileMgr.java,v 1.32 2005/02/23 06:49:01 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -296,7 +296,6 @@ class FileMgr
 	File wdir = new File(pProdDir, "working/" + author + "/" + view);
 	if(wdir.exists()) {
 	  ArrayList<String> args = new ArrayList<String>();
-	  args.add("rm"); //debug
 	  args.add("--recursive");
 	  args.add("--force");
 	  args.add(wdir.getPath());
@@ -304,7 +303,7 @@ class FileMgr
 	  Map<String,String> env = System.getenv();
 
 	  SubProcessLight proc = 
-	    new SubProcessLight(author, "RemoveWorkingArea", "echo", args, env, pProdDir);
+	    new SubProcessLight(author, "RemoveWorkingArea", "rm", args, env, pProdDir);
 	  try {
 	    proc.start();
 	    proc.join();
