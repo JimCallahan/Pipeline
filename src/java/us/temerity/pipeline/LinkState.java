@@ -1,4 +1,4 @@
-// $Id: LinkState.java,v 1.1 2004/04/14 20:58:51 jim Exp $
+// $Id: LinkState.java,v 1.2 2004/04/15 00:12:14 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -14,7 +14,7 @@ package us.temerity.pipeline;
  * is linked in form of {@link LinkMod LinkMod} and {@link LinkVersion LinkVersion} instances.
  * For the purposes of this state, two versions of a node will be considered idential only
  * if they are linked to exactly the same set of upstream nodes and the information associated
- * with this links are identical. <P> 
+ * with these links are identical. <P> 
  * 
  * The <CODE>LinkState</CODE> is computed within the context of a previously determined
  * {@link VersionState VersionState} for the node.  The following state descriptions will 

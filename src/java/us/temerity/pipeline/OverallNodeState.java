@@ -1,4 +1,4 @@
-// $Id: OverallNodeState.java,v 1.2 2004/04/14 20:59:33 jim Exp $
+// $Id: OverallNodeState.java,v 1.3 2004/04/15 00:12:28 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -7,7 +7,7 @@ package us.temerity.pipeline;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A single state computed from the combination of {@link VersionState VersioState}, 
+ * A single state computed from the combination of {@link VersionState VersionState}, 
  * {@link PropertyState PropertyState}, {@link LinkState LinkState} and the individual
  * {@link FileState FileState} of each file associated with the node.
  *
@@ -67,7 +67,7 @@ enum OverallNodeState
    * <CODE>ModifiedDepends</CODE> or <CODE>Conflicted</CODE>. <P> 
 
    * Alternatively, the working revision numbers of the upstream nodes are different than 
-   * the revision numbers of the dependencies associated with the checked-in version upon 
+   * the revision numbers of the upstream nodes associated with the checked-in version upon 
    * which this working version is based.
    */
   ModifiedDepends, 
