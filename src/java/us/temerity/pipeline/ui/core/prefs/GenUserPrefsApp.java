@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.16 2005/02/20 21:05:34 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.17 2005/02/22 18:19:53 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -612,16 +612,6 @@ class GenUserPrefsApp
 	 "NodeViewerClone", "Clone:"), 
 
 	new HotKeyPref
-	("Release the current primary selection.",
-	 "NodeViewerRelease", "Release:"),
-
-	new HotKeyPref
-	("Remove all the primary/secondary files associated with the selected nodes.",
-	 "RemoveFiles", "Remove Files:"), 
-
-	new BasePref(),
-
-	new HotKeyPref
 	("Export the node properties from the primary selection to the selected nodes.",
 	 "NodeViewerExport", "Export:"), 
 
@@ -633,6 +623,20 @@ class GenUserPrefsApp
 	("Renumber the current primary selection.",
 	 "NodeViewerRenumber", "Renumber:"), 
 	
+	new HotKeyPref
+	("Remove all the primary/secondary files associated with the selected nodes.",
+	 "RemoveFiles", "Remove Files:"), 
+
+	new BasePref(),
+
+	new HotKeyPref
+	("Release the current primary selection.",
+	 "NodeViewerRelease", "Release:"),
+
+	new HotKeyPref
+	("Release nodes from the current working area view.",
+	 "NodeViewerReleaseView", "Release View:"),
+
 	new HotKeyPref
 	("Delete the current primary selection.",
 	 "NodeViewerDelete", "Delete:")
@@ -1513,6 +1517,7 @@ class GenUserPrefsApp
 	group.add("NodeViewerEvolve");
 	group.add("NodeViewerClone");
 	group.add("NodeViewerRelease");
+	group.add("NodeViewerReleaseView");
 	group.add(removeFiles);
 	group.add("NodeViewerExport");
 	group.add("NodeViewerRename");
@@ -1698,7 +1703,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.16 2005/02/20 21:05:34 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.17 2005/02/22 18:19:53 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -1953,7 +1958,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.16 2005/02/20 21:05:34 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.17 2005/02/22 18:19:53 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3309,7 +3314,7 @@ class GenUserPrefsApp
 
       StringBuffer buf = new StringBuffer();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.16 2005/02/20 21:05:34 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.17 2005/02/22 18:19:53 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 
