@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 1.9.14)
+AM_INIT_AUTOMAKE(Pipeline, 1.9.15)
 
 AC_MSG_RESULT([ ])
 
@@ -207,6 +207,52 @@ then
 else 
   AC_MSG_ERROR([customer profile was incomplete.])
 fi 
+
+
+
+AC_MSG_CHECKING([License Type])
+
+AC_SUBST(LICENSE_TYPE)
+LICENSE_TYPE=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
+                   --lookup LicenseType`
+
+if test "$LICENSE_TYPE" == "null"
+then
+  AC_MSG_ERROR([customer profile was incomplete.])
+fi 
+
+AC_MSG_RESULT([$LICENSE_TYPE])
+
+
+
+AC_MSG_CHECKING([License Start Stamp])
+
+AC_SUBST(LICENSE_START_STAMP)
+LICENSE_START_STAMP=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
+                          --lookup LicenseStartStamp`
+
+if test "$LICENSE_START_STAMP" == "null"
+then
+  AC_MSG_ERROR([customer profile was incomplete.])
+fi 
+
+AC_MSG_RESULT([$LICENSE_START_STAMP])
+
+
+
+AC_MSG_CHECKING([License End Stamp])
+
+AC_SUBST(LICENSE_END_STAMP)
+LICENSE_END_STAMP=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
+                        --lookup LicenseEndStamp`
+
+if test "$LICENSE_END_STAMP" == "null"
+then
+  AC_MSG_ERROR([customer profile was incomplete.])
+fi 
+
+AC_MSG_RESULT([$LICENSE_END_STAMP])
+
 
 
 AC_MSG_CHECKING([License Valid Until])
