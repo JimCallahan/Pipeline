@@ -1,4 +1,4 @@
-// $Id: MayaTextureSyncTool.java,v 1.1 2005/02/20 20:49:29 jim Exp $
+// $Id: MayaTextureSyncTool.java,v 1.2 2005/02/21 00:12:19 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -37,15 +37,20 @@ class MayaTextureSyncTool
 
     pFirstPhase = true; 
 
-    pTextureInfo = new TreeMap<String,String[]>();
+    pTextureInfo    = new TreeMap<String,String[]>();
+    pTextureNodes   = new TreeSet<String>();
+    pTextureToNode  = new TreeMap<File,NodeMod>();
+    pShaderToNode   = new TreeMap<String,String>();
 
-    pRegisterNodes = new TreeSet<String>();
-    pCheckOutNodes = new TreeSet<String>();  
-    pLinkNodes 	   = new TreeSet<String>();  
+    pRegisterNodes = new TreeMap<String,Boolean>();
+    pCheckOutNodes = new TreeMap<String,Boolean>();  
+    pLinkNodes 	   = new TreeMap<String,Boolean>();  
     
-    pCopyTextures    = new TreeSet<String>();  
-    pFixTexturePaths = new TreeSet<String>();  
-      
+    pCopyTextures    = new TreeMap<String,Boolean>();  
+    pFixTexturePaths = new TreeMap<String,Boolean>();  
+
+    pSkippedReason = new TreeMap<String,String>();
+
     pTextureFormats = new ArrayList<String>(); 
     pTextureFormats.add("iff");
     pTextureFormats.add("gif");
@@ -213,10 +218,16 @@ class MayaTextureSyncTool
       if((pTargetLink == null) || (pTargetLink.length() == 0))
 	throw new PipelineException("Illegal Target Link Node name!");
       
-      pRelocatePath = pRelocatePathField.getText();
-      if((pRelocatePath == null) || (pRelocatePath.length() == 0))
-	throw new PipelineException("Illegal Relocate Path name!");
-      
+      pRelocate = pRelocateField.getValue();
+      if(pRelocate) {
+	pRelocatePath = pRelocatePathField.getText();
+	if((pRelocatePath == null) || (pRelocatePath.length() == 0))
+	  throw new PipelineException("Illegal Relocate Path name!");
+      }
+      else {
+	pRelocatePath = null;
+      }
+	
       return ": Collecting Texture Information...";
     }
     else {
@@ -512,51 +523,271 @@ class MayaTextureSyncTool
 
     /* determine the names of the texture nodes and the mapping from texture filename to 
          node name for the nodes directly upstream of the Target Link Node */ 
-    TreeSet<String> textureNodes = new TreeSet<String>();
-    TreeMap<File,NodeMod> textureToNode = new TreeMap<File,NodeMod>();
-    for(String name : pTargetLinkMod.getSourceNames()) {
-      NodeStatus status = pTargetLinkStatus.getSource(name);
-      NodeDetails details = status.getDetails();
-      NodeMod mod = details.getWorkingVersion();
+    {
+      pTextureNodes.clear();
+      pTextureToNode.clear();
 
-      FileSeq fseq = mod.getPrimarySequence();
-      String suffix = fseq.getFilePattern().getSuffix();
-      if((suffix != null) && pTextureFormats.contains(suffix)) {
-	textureNodes.add(name);
-
-	for(File file : mod.getPrimarySequence().getFiles()) 
-	  textureToNode.put(file, mod);
+      for(String name : pTargetLinkMod.getSourceNames()) {
+	NodeStatus status = pTargetLinkStatus.getSource(name);
+	NodeDetails details = status.getDetails();
+	NodeMod mod = details.getWorkingVersion();
+	
+	FileSeq fseq = mod.getPrimarySequence();
+	String suffix = fseq.getFilePattern().getSuffix();
+	if((suffix != null) && pTextureFormats.contains(suffix)) {
+	  pTextureNodes.add(name);
+	  
+	  for(File file : mod.getPrimarySequence().getFiles()) 
+	    pTextureToNode.put(file, mod);
+	}
       }
     }
     
     /* initialize per-texture operation flags */ 
-    for(String fileNode : pTextureInfo.keySet()) {
-      String names[] = pTextureInfo.get(fileNode);
+    {
+      pShaderToNode.clear();
+      pRegisterNodes.clear();
+      pCheckOutNodes.clear();
+      pLinkNodes.clear();
+      pCopyTextures.clear();
+      pFixTexturePaths.clear();
+      pSkippedReason.clear();
 
-      System.out.print("     File Node = " + fileNode + "\n" + 
-		       "      Old Path = " + names[0] + "\n" +
-		       " New Directory = " + names[1] + "\n" +
-		       "      Filename = " + names[2] + "\n\n");
-      
-      
+      for(String fileShader : pTextureInfo.keySet()) {
+	String names[] = pTextureInfo.get(fileShader);
+	String oldPath = names[0];
+	String wdir    = names[1];
+	String wfile   = names[2];
 
-      // ...
+	/* construct the node name from the texture file location */ 
+	String nodeName = null;
+	if((wdir != null) && (wfile != null)) {
+	  String parts[] = wfile.split("\\.");
+	  nodeName = wdir + "/" + parts[0];
+	}
 
+	System.out.print("     File Node = " + fileShader + "\n" + 
+			 "      Old Path = " + names[0] + "\n" +
+			 " New Directory = " + names[1] + "\n" +
+			 "      Filename = " + names[2] + "\n" + 
+			 "     Node Name = " + nodeName + "\n\n");
+	
+	if(wfile == null) {
+	  pSkippedReason.put
+	    (fileShader, 
+	     "The texture filename was missing in the Maya scene for this shader.");
+	}
+	else {
+	  File tex = new File(wfile);
+
+	  /* the texture had a valid working area location */ 
+	  if(nodeName != null) {
+	    pShaderToNode.put(fileShader, nodeName);
+	    
+	    /* the node for the shader is not already linked */ 
+	    if(!pTextureNodes.contains(nodeName)) {
+	      NodeID nodeID = new NodeID(PackageInfo.sUser, pView, nodeName);
+	      NodeStatus status = findNodeStatus(nodeID, pTargetSceneStatus);
+	      if(status == null) {
+		try {
+		  status = mclient.status(nodeID);
+		}
+		catch(PipelineException ex) {
+		}
+	      }
+	      
+	      /* a node exists which matches the prefix of the texture */ 
+	      if(status != null) {
+		FileSeq fseq = null;
+		NodeDetails details = status.getDetails();
+// 		switch(details.getOverallNodeState()) {
+// 		case NeedsCheckOut: 
+// 		  {
+// 		    pCheckOutNodes.put(fileShader, true);
+// 		    fseq = details.getLatestVersion().getPrimarySequence();
+// 		  }
+// 		  break;
+
+// 		default:
+// 		  fseq = details.getWorkingVersion().getPrimarySequence();
+// 		}
+
+		if(details.getWorkingVersion() != null) {
+		  fseq = details.getWorkingVersion().getPrimarySequence();
+		}
+		else {
+		  pCheckOutNodes.put(fileShader, true);
+		  fseq = details.getLatestVersion().getPrimarySequence();
+		}
+
+		boolean match = false;
+		for(File file : fseq.getFiles()) {
+		  if(wfile.equals(file.getPath())) {
+		    match = true;
+		    break;
+		  }
+		}
+		    
+		if(!match) {
+		  pSkippedReason.put
+		    (fileShader, 
+		     "A node exists (" + nodeName + ") which matches the prefix of " + 
+		     "the texture file (" + oldPath + ") associated with shader, but " + 
+		     "no file associated with this node exactly matches the texture " + 
+		     "filename.");		      
+		}
+	      }
+
+	      /* a new node needs to be registered for the texture */ 
+	      else {
+		pRegisterNodes.put(fileShader, true);
+	      }
+
+	      pLinkNodes.put(fileShader, true);
+	    }
+	    
+	    if(!oldPath.startsWith("$WORKING")) 
+	      pFixTexturePaths.put(fileShader, true);
+	  }
+
+	  /* the texture was outside the working area */ 
+	  else {
+
+	    /* one of the nodes already linked has a texture with the same name, 
+	         its reasonable to assume that this node should be used for the texture */ 
+	    NodeMod mod = pTextureToNode.get(tex);
+	    if(mod != null) {
+	      pShaderToNode.put(fileShader, mod.getName());
+	      pCopyTextures.put(fileShader, true);
+	      pFixTexturePaths.put(fileShader, true);
+	    }
+
+	    else if(pRelocate) {
+	      String parts[] = wfile.split("\\.");
+	      nodeName = pRelocatePath + "/" + parts[0];
+	      pShaderToNode.put(fileShader, nodeName);
+
+	      NodeID nodeID = new NodeID(PackageInfo.sUser, pView, nodeName);
+	      NodeStatus status = findNodeStatus(nodeID, pTargetSceneStatus);
+	      if(status == null) {
+		try {
+		  status = mclient.status(nodeID);
+		}
+		catch(PipelineException ex) {
+		}
+	      }
+	      
+	      /* a node exists which matches the relocation prefix for the texture */  
+	      if(status != null) {
+		FileSeq fseq = null;
+		NodeDetails details = status.getDetails();		
+// 		switch(details.getOverallNodeState()) {
+// 		case NeedsCheckOut: 
+// 		  {
+// 		    pCheckOutNodes.put(fileShader, true);
+// 		    fseq = details.getLatestVersion().getPrimarySequence();
+// 		  }
+// 		  break;
+
+// 		default:
+// 		  fseq = details.getWorkingVersion().getPrimarySequence();
+// 		}
+
+		if(details.getWorkingVersion() != null) {
+		  fseq = details.getWorkingVersion().getPrimarySequence();
+		}
+		else {
+		  pCheckOutNodes.put(fileShader, true);
+		  fseq = details.getLatestVersion().getPrimarySequence();
+		}
+
+		boolean match = false;
+		for(File file : fseq.getFiles()) {
+		  if(wfile.equals(file.getPath())) {
+		    match = true;
+		    break;
+		  }
+		}
+		    
+		if(!match) {
+		  pSkippedReason.put
+		    (fileShader, 
+		     "A node exists (" + nodeName + ") which matches the prefix of " + 
+		     "the relocated location of the texture file (" + oldPath + ") " + 
+		     "associated with shader, but no file associated with this node " + 
+		     "exactly matches the texture filename.");		      
+		}
+	      }
+
+	      /* a new node needs to be registered for the texture */ 
+	      else {
+		pRegisterNodes.put(fileShader, true);
+	      }
+
+	      pLinkNodes.put(fileShader, true);
+	      pCopyTextures.put(fileShader, true);
+	      pFixTexturePaths.put(fileShader, true);
+	    }
+
+	    else {
+	      pSkippedReason.put
+		(fileShader, 
+		 "The texture file (" + oldPath + ") for the shader was outside the " + 
+		 "working area, but texture relocation was disabled.");
+	    }
+	  }
+	}
+      }
+
+      for(String fileShader : pSkippedReason.keySet()) {
+	pShaderToNode.remove(fileShader);
+	pRegisterNodes.remove(fileShader);
+	pCheckOutNodes.remove(fileShader);
+	pLinkNodes.remove(fileShader);
+	pCopyTextures.remove(fileShader);
+	pFixTexturePaths.remove(fileShader);
+      }
     }
-
-    
 
 
     // DEBUG 
     System.out.print("Texture Nodes:\n");
-    for(String name : textureNodes) 
+    for(String name : pTextureNodes) 
       System.out.print("  " + name + "\n");
     System.out.print("\n");
     
     System.out.print("Textures:\n");
-    for(File file : textureToNode.keySet()) 
-      System.out.print("  " + file + " -> " + textureToNode.get(file).getName() + "\n");
+    for(File file : pTextureToNode.keySet()) 
+      System.out.print("  " + file + " -> " + pTextureToNode.get(file).getName() + "\n");
     System.out.print("\n");
+
+    for(String fileShader : pTextureInfo.keySet()) {
+      System.out.print("SHADER: " + fileShader + "\n"); 
+
+      String reason = pSkippedReason.get(fileShader);
+      if(reason != null) {
+	System.out.print("Skipped = " + reason + "\n");
+      }
+      else {
+	System.out.print("Node = " + pShaderToNode.get(fileShader) + "\n");
+	
+	if(pRegisterNodes.containsKey(fileShader)) 
+	  System.out.print("+ Register\n");
+
+	if(pCheckOutNodes.containsKey(fileShader)) 
+	  System.out.print("+ Check-Out\n");
+
+	if(pLinkNodes.containsKey(fileShader)) 
+	  System.out.print("+ Link\n");
+
+	if(pCopyTextures.containsKey(fileShader)) 
+	  System.out.print("+ Copy Textures\n");
+
+	if(pFixTexturePaths.containsKey(fileShader)) 
+	  System.out.print("+ Fix Texture Paths\n");
+      }
+      System.out.print("\n");
+    }
     // DEBUG 
     
     
@@ -786,8 +1017,6 @@ class MayaTextureSyncTool
   private NodeStatus  pTargetLinkStatus;
   private NodeMod     pTargetLinkMod;
   
-
-
   /**
    * The filesystem names associated with each Maya File shader indexed by the name of 
    * the shader.  The three values stored in the String array value for each shader are: 
@@ -799,53 +1028,46 @@ class MayaTextureSyncTool
   private TreeMap<String,String[]> pTextureInfo;
 
   /**
-   * The names of the Maya File shaders for which nodes should be registered, 
-   * checked-out and/or linked to the Target Link Node.
+   * The names of the texture nodes already linked to the Target Link node.
    */ 
-  private TreeSet<String>  pRegisterNodes;
-  private TreeSet<String>  pCheckOutNodes;
-  private TreeSet<String>  pLinkNodes;
+  private TreeSet<String> pTextureNodes;
 
   /**
-   * The names of the Maya File shaders who's associated textures should be copied into the 
+   * The working versions of the texture nodes already linked to the Target Link node
+   * indexed by the names of the texture files associated with the nodes.
+   */ 
+  private TreeMap<File,NodeMod> pTextureToNode;
+
+  /**
+   * The names of the nodes associated with Maya shaders.
+   */ 
+  private TreeMap<String,String> pShaderToNode; 
+
+  /**
+   * Whether to register, check-out and/or link the node associated with each Maya File
+   * shader.
+   */ 
+  private TreeMap<String,Boolean>  pRegisterNodes;
+  private TreeMap<String,Boolean>  pCheckOutNodes;
+  private TreeMap<String,Boolean>  pLinkNodes;
+
+  /**
+   * Whether to copy the texture file associated with each Maya File shader into the 
    * current working area.
    */ 
-  private TreeSet<String>  pCopyTextures; 
+  private TreeMap<String,Boolean>  pCopyTextures; 
 
   /**
-   * The names of the Maya File shaders which should have their "fileTextureName" attribute
-   * replaced with a path that begins with "$WORKING".
+   * Whether to replace the "fileTextureName" attributes of each Maya File shader with a 
+   * path that begins with "$WORKING".
    */ 
-  private TreeSet<String>  pFixTexturePaths; 
-	
+  private TreeMap<String,Boolean>  pFixTexturePaths; 
 
-
-
-
-
-
-//   /**
-//    * Whether to check-out the latest version of any referenced texture nodes which have a 
-//    * current version state of Needs Check-Out.
-//    */ 
-//   private JBooleanField pCheckOutTexturesField; 
-//   private boolean pCheckOutTextures; 
-
-//   /**
-//    * Whether to create any non-existing Dependency links from checked-out nodes 
-//    * associated with referenced textures to the Target Link Node.
-//    */ 
-//   private JBooleanField pLinkReferencedField; 
-//   private boolean pLinkReferenced; 
-
-//   /**
-//    * Whether to unlink any nodes associated with unreferenced textures from the 
-//    * TargetLink Node.
-//    */ 
-//   private JBooleanField pUnlinkUnreferencedField; 
-//   private boolean pUnlinkUnreferenced; 
-
-
+  /**
+   * Messages about why Maya File shaders where skipped during the process indexed by the
+   * name of the Maya file shader.
+   */ 
+  private TreeMap<String,String>  pSkippedReason; 
+  
 }
-
 
