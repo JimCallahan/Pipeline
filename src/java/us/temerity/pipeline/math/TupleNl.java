@@ -1,4 +1,4 @@
-// $Id: TupleNl.java,v 1.1 2004/12/13 12:56:48 jim Exp $
+// $Id: TupleNl.java,v 1.2 2004/12/14 12:24:55 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -180,6 +180,15 @@ class TupleNl
   }
 
   /**
+   * Returns the mutable underlying array representation of the components.
+   */
+  public long[]
+  getRaw()
+  {
+    return pComps;
+  }
+
+  /**
    * Returns an array containing a copy of the component values.
    */
   public long[]
@@ -328,7 +337,7 @@ class TupleNl
       pComps[i] = Math.max(pComps[i], t.pComps[i]);
   }
 
-
+      
 
   /*----------------------------------------------------------------------------------------*/
   /*   C O M P O N E N T   C O M P A R I S O N                                              */

@@ -1,4 +1,4 @@
-// $Id: TupleNd.java,v 1.1 2004/12/13 12:56:48 jim Exp $
+// $Id: TupleNd.java,v 1.2 2004/12/14 12:24:55 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -177,6 +177,15 @@ class TupleNd
     if(pComps.length != values.length) 
       throw new TupleSizeMismatchException(pComps.length, values.length);
     pComps = (double[]) values.clone();
+  }
+
+  /**
+   * Returns the mutable underlying array representation of the components.
+   */
+  public double[]
+  getRaw()
+  {
+    return pComps;
   }
 
   /**
