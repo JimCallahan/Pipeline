@@ -1,4 +1,4 @@
-// $Id: JPluginMenuLayoutTreeCellRenderer.java,v 1.1 2005/01/07 07:11:05 jim Exp $
+// $Id: JPluginMenuLayoutTreeCellRenderer.java,v 1.2 2005/01/07 16:18:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -33,10 +33,15 @@ class JPluginMenuLayoutTreeCellRenderer
    * Construct a new renderer.
    */
   public 
-  JPluginMenuLayoutTreeCellRenderer() 
+  JPluginMenuLayoutTreeCellRenderer
+  (
+   JBaseManagePluginsDialog parent
+  ) 
   {
     super();
     
+    pParent = parent;
+
     setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
     
     pLabel = new JLabel();
@@ -79,20 +84,16 @@ class JPluginMenuLayoutTreeCellRenderer
 
     pLabel.setText(pml.getTitle()); 
 
+    if(tnode == pParent.getDragMenuLayoutNode())
+      pLabel.setForeground(Color.cyan);
+    else 
+      pLabel.setForeground(isSelected ? Color.yellow : Color.white);
+
     if(pml.isMenuItem()) {
-      if(isSelected) {
-	pLabel.setForeground(Color.yellow);
-	pLabel.setIcon(sSelectedIcon);
-      }
-      else {
-	pLabel.setForeground(Color.white);
-	pLabel.setIcon(sNormalIcon);
-      }	
-      
+      pLabel.setIcon(isSelected ? sSelectedIcon : sNormalIcon);
       pPluginLabel.setText(pml.getName() + " (v" + pml.getVersionID() + ")");      
     }
     else {
-      pLabel.setForeground(isSelected ? Color.yellow : Color.white);
       pLabel.setIcon(sSpacerIcon);
       pPluginLabel.setText(null);
     }
@@ -139,5 +140,10 @@ class JPluginMenuLayoutTreeCellRenderer
    * The plugin version label.
    */
   private JLabel  pPluginLabel;
+
+  /**
+   * The parent dialog.
+   */ 
+  private JBaseManagePluginsDialog  pParent;
 
 }

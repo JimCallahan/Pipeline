@@ -1,4 +1,4 @@
-// $Id: JManageComparatorsDialog.java,v 1.1 2005/01/07 07:11:05 jim Exp $
+// $Id: JManageComparatorsDialog.java,v 1.2 2005/01/07 16:18:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -29,7 +29,7 @@ class JManageComparatorsDialog
   public 
   JManageComparatorsDialog() 
   {
-    super("Manage Comparators"); 
+    super("Manage Comparator Menus"); 
   }
 
 

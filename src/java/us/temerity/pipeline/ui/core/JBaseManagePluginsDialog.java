@@ -1,9 +1,10 @@
-// $Id: JBaseManagePluginsDialog.java,v 1.3 2005/01/07 07:09:49 jim Exp $
+// $Id: JBaseManagePluginsDialog.java,v 1.4 2005/01/07 16:18:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.ui.*; 
+import us.temerity.pipeline.math.*; 
 
 import java.awt.*;
 import java.awt.event.*;
@@ -23,7 +24,7 @@ import javax.swing.tree.*;
 public abstract
 class JBaseManagePluginsDialog
   extends JBaseDialog
-  implements MouseListener, ActionListener, TreeSelectionListener
+  implements MouseListener, MouseMotionListener, ActionListener, TreeSelectionListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -102,12 +103,13 @@ class JBaseManagePluginsDialog
 	  tree.setName("DarkTree");
 	  
 	  tree.setRootVisible(true);
-	  tree.setCellRenderer(new JPluginMenuLayoutTreeCellRenderer());
+	  tree.setCellRenderer(new JPluginMenuLayoutTreeCellRenderer(this));
 	  tree.getSelectionModel().setSelectionMode
 	    (TreeSelectionModel.SINGLE_TREE_SELECTION);
 	  tree.setExpandsSelectedPaths(true);
 	  
 	  tree.addMouseListener(this);
+	  tree.addMouseMotionListener(this);
 	  tree.addTreeSelectionListener(this);
 	  
 	  {
@@ -232,6 +234,21 @@ class JBaseManagePluginsDialog
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the menu layout tree node under the given mouse position.
+   */ 
+  public DefaultMutableTreeNode
+  getDragMenuLayoutNode() 
+  {
+    return pDragMenuLayoutNode;
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   U S E R   I N T E R F A C E                                                          */
   /*----------------------------------------------------------------------------------------*/
 
@@ -260,7 +277,10 @@ class JBaseManagePluginsDialog
     pIsPrivileged   = isPrivileged;
 
     rebuildMenuLayout();
+    expandAllTreeNodes(pMenuLayoutTree);
+
     rebuildPluginVersions();
+    expandAllTreeNodes(pPluginVersionTree);
 
     pSetPluginButton.setEnabled(false);
     pClearPluginButton.setEnabled(false);
@@ -293,11 +313,6 @@ class JBaseManagePluginsDialog
    TreePath tpath
   ) 
   {    
-    if(tpath != null) {
-      pMenuLayoutTree.clearSelection();
-      pMenuLayoutTree.addSelectionPath(tpath);
-    }
-
     PluginMenuLayout pml = getSelectedPluginMenuLayout();
     if(pml != null) {
       pNewMenu.setEnabled(pml.isSubmenu());
@@ -390,26 +405,32 @@ class JBaseManagePluginsDialog
 
     int mods = e.getModifiersEx();
     switch(e.getButton()) {
+    case MouseEvent.BUTTON2:
     case MouseEvent.BUTTON3:
       {
-	int on1  = (MouseEvent.BUTTON3_DOWN_MASK);
+	int on1  = (MouseEvent.BUTTON2_DOWN_MASK);
 	
 	int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
+		    MouseEvent.BUTTON3_DOWN_MASK);
+	
+	int on2  = (MouseEvent.BUTTON3_DOWN_MASK);
+	
+	int off2 = (MouseEvent.BUTTON1_DOWN_MASK | 
 		    MouseEvent.BUTTON2_DOWN_MASK | 
 		    MouseEvent.SHIFT_DOWN_MASK |
 		    MouseEvent.ALT_DOWN_MASK |
 		    MouseEvent.CTRL_DOWN_MASK);
-	
-	/* BUTTON3: popup menu */ 
-	if((mods & (on1 | off1)) == on1) {
-	  TreePath tpath = pMenuLayoutTree.getClosestPathForLocation(e.getX(), e.getY());
-	  if(tpath != null) {
-	    Rectangle bounds = pMenuLayoutTree.getPathBounds(tpath);
-	    if(!bounds.contains(e.getX(), e.getY()))
-	      tpath = null;
-	  }
 
-	  updatePopupMenu(tpath);
+	Point2i pos = new Point2i(e.getX(), e.getY());
+
+	/* BUTTON2: menu drag */ 
+	if((mods & (on1 | off1)) == on1) {
+	  selectMenuLayoutNode(pos);
+	}
+
+	/* BUTTON3: popup menu */ 
+	else if((mods & (on2 | off2)) == on2) {
+	  updatePopupMenu(selectMenuLayoutNode(pos));
 	  pPopup.show(e.getComponent(), e.getX(), e.getY());
 	}
       }
@@ -420,8 +441,120 @@ class JBaseManagePluginsDialog
    * Invoked when a mouse button has been released on a component. 
    */ 
   public void 
-  mouseReleased(MouseEvent e) {} 
+  mouseReleased
+  (
+   MouseEvent e
+  )
+  {
+    if(!pIsPrivileged) 
+      return;
 
+    /* BUTTON2: menu drop */ 
+    switch(e.getButton()) {
+    case MouseEvent.BUTTON2:
+      {
+	PluginMenuLayout pslayout = null;
+	PluginMenuLayout slayout = null;
+	{
+	  TreePath path = pMenuLayoutTree.getSelectionPath();
+	  if(path != null) {
+	    DefaultMutableTreeNode node = 
+	      (DefaultMutableTreeNode) path.getLastPathComponent();
+	    if(node != null) {
+	      slayout = (PluginMenuLayout) node.getUserObject();
+	      
+	      DefaultMutableTreeNode pnode = (DefaultMutableTreeNode) node.getParent();
+	      if(pnode != null) 
+		pslayout = (PluginMenuLayout) pnode.getUserObject();
+	    }
+	  }
+	}
+	
+	PluginMenuLayout ptlayout = null;
+	PluginMenuLayout tlayout = null;
+	{
+	  TreePath path = pickMenuLayoutNode(new Point2i(e.getX(), e.getY()));
+	  if(path != null) {
+	    DefaultMutableTreeNode node = 
+	      (DefaultMutableTreeNode) path.getLastPathComponent();
+	    if(node != null)  {
+	      tlayout = (PluginMenuLayout) node.getUserObject();
+	      
+	      DefaultMutableTreeNode pnode = (DefaultMutableTreeNode) node.getParent();
+	      if(pnode != null) 
+		ptlayout = (PluginMenuLayout) pnode.getUserObject();
+	    }
+	  }
+	}
+	
+	if((pslayout != null) && 
+	   (slayout != null) && (tlayout != null) && (slayout != tlayout)) {
+	  if(tlayout.isMenuItem()) {
+	    if(ptlayout != null) {
+	      int idx = ptlayout.indexOf(tlayout);
+	      if(idx > -1) {
+		pslayout.remove(slayout);
+		ptlayout.add(idx, slayout); 
+		rebuildMenuLayout();
+	      }
+	    }
+	  }
+	  else {
+	    pslayout.remove(slayout);
+	    tlayout.add(0, slayout);  
+	    rebuildMenuLayout();
+	  }
+	}
+      }
+    }
+
+    pDragMenuLayoutNode = null;    
+  }
+
+  /*-- MOUSE MOTION LISTNER METHODS --------------------------------------------------------*/
+  
+  /**
+   * Invoked when a mouse button is pressed on a component and then dragged. 
+   */ 
+  public void 	
+  mouseDragged
+  (
+   MouseEvent e
+  )
+  {
+    if(!pIsPrivileged) 
+      return;
+
+    int mods = e.getModifiersEx();
+
+    int on1  = (MouseEvent.BUTTON2_DOWN_MASK);
+	
+    int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
+		MouseEvent.BUTTON3_DOWN_MASK | 
+		MouseEvent.SHIFT_DOWN_MASK |
+		MouseEvent.ALT_DOWN_MASK |
+		MouseEvent.CTRL_DOWN_MASK);
+
+    pDragMenuLayoutNode = null;
+    if((mods & (on1 | off1)) == on1) {
+      TreePath spath = pMenuLayoutTree.getSelectionPath();
+      TreePath tpath = pickMenuLayoutNode(new Point2i(e.getX(), e.getY()));
+      if((tpath != null) && (spath != tpath)) 
+	pDragMenuLayoutNode = (DefaultMutableTreeNode) tpath.getLastPathComponent();
+    }
+
+    pMenuLayoutTree.repaint();
+  }
+
+  /**
+   * Invoked when the mouse cursor has been moved onto a component but no buttons have 
+   * been pushed. 
+   */ 
+  public void 	
+  mouseMoved(MouseEvent e) {} 
+
+
+  
 
   /*-- ACTION LISTENER METHODS -------------------------------------------------------------*/
 
@@ -626,6 +759,27 @@ class JBaseManagePluginsDialog
   }
 
   /**
+   * Expand all tree nodes.
+   */ 
+  private void 
+  expandAllTreeNodes
+  (
+   JTree tree
+  )
+  {   
+    DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
+    DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();   
+    Enumeration e = root.depthFirstEnumeration();
+    if(e != null) {
+      while(e.hasMoreElements()) {
+	DefaultMutableTreeNode mnode = (DefaultMutableTreeNode) e.nextElement(); 
+	TreePath tpath = new TreePath(mnode.getPath());
+	tree.expandPath(tpath);
+      }
+    }  
+  }
+
+  /**
    * Convert a tree path into a string.
    */ 
   private String
@@ -699,6 +853,49 @@ class JBaseManagePluginsDialog
     }
 
     return vnode;
+  }
+
+  /**
+   * Get path to the menu layout tree node under the given mouse position.
+   * 
+   * @return 
+   *   The path to the tree node.
+   */ 
+  private TreePath
+  pickMenuLayoutNode
+  (
+   Point2i pos
+  ) 
+  {
+    TreePath tpath = pMenuLayoutTree.getClosestPathForLocation(pos.x(), pos.y());
+    if(tpath != null) {
+      Rectangle bounds = pMenuLayoutTree.getPathBounds(tpath);
+      if(!bounds.contains(pos.x(), pos.y()))
+	tpath = null;
+    }
+
+    return tpath;
+  }
+
+  /**
+   * Select the menu layout tree node under the given mouse position.
+   * 
+   * @return 
+   *   The path to the selected tree node.
+   */ 
+  private TreePath
+  selectMenuLayoutNode
+  (
+   Point2i pos
+  ) 
+  {
+    TreePath tpath = pickMenuLayoutNode(pos);    
+    if(tpath != null) {
+      pMenuLayoutTree.clearSelection();
+      pMenuLayoutTree.addSelectionPath(tpath);
+    }
+    
+    return tpath;
   }
 
   /**
@@ -936,6 +1133,11 @@ class JBaseManagePluginsDialog
    */ 
   private JTree  pMenuLayoutTree;
   
+  /**
+   * The menu layout tree node under the given mouse position.
+   */ 
+  private DefaultMutableTreeNode  pDragMenuLayoutNode;
+
   /**
    * Plugin buttons.
    */ 

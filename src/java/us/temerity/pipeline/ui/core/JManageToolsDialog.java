@@ -1,4 +1,4 @@
-// $Id: JManageToolsDialog.java,v 1.1 2005/01/05 09:44:31 jim Exp $
+// $Id: JManageToolsDialog.java,v 1.2 2005/01/07 16:18:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -29,7 +29,7 @@ class JManageToolsDialog
   public 
   JManageToolsDialog() 
   {
-    super("Manage Tools");
+    super("Manage Tool Menus");
   }
 
 
