@@ -1,4 +1,4 @@
-// $Id: PackageVersion.java,v 1.2 2004/05/23 19:56:48 jim Exp $
+// $Id: PackageVersion.java,v 1.3 2004/05/29 06:37:41 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -31,21 +31,25 @@ class PackageVersion
   /**
    * Construct a read-only package version from a modifiable package.
    * 
+   * @param author
+   *   The name of the user creating the package.
+   * 
    * @param mod
    *   The modifiable package.
    * 
    * @param vid 
    *   The revision number of the new read-only package.
    * 
-   * @param msg 
-   *   The creation log message.
+   * @param desc
+   *   The package description.
    */ 
   public
   PackageVersion
   (
+   String author, 
    PackageMod mod, 
    VersionID vid,
-   String msg
+   String desc
   ) 
   {
     super(mod);
@@ -54,9 +58,9 @@ class PackageVersion
       throw new IllegalArgumentException("The revision number cannot be (null)!");
     pVersionID = vid;
 
-    if(msg == null) 
-      throw new IllegalArgumentException("The creation message cannot be (null)!");
-    pMessage = new LogMessage(msg);
+    if(desc == null) 
+      throw new IllegalArgumentException("The package description cannot be (null)!");
+    pMessage = new LogMessage(author, desc);
   }
   
   /** 
@@ -112,10 +116,10 @@ class PackageVersion
   }
 
   /**
-   * Get the creation log message text. 
+   * Get the package description.
    */ 
   public String
-  getMessage() 
+  getDescription() 
   {
     return pMessage.getMessage();
   }
@@ -194,7 +198,8 @@ class PackageVersion
   private VersionID  pVersionID;       
 
   /**
-   * The descriptive message given at the time this version of the package was created.
+   * The descriptive message given at the time this version of the package was created. <P> 
+   * 
    * The timestamp and author of the message are also the timestamp and author of the 
    * package version. <P> 
    */

@@ -1,4 +1,4 @@
-// $Id: PackageCommon.java,v 1.2 2004/05/23 19:56:48 jim Exp $
+// $Id: PackageCommon.java,v 1.3 2004/05/29 06:37:41 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -6,6 +6,7 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
 
 import java.util.*;
+import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   P A C K A G E   C O M M O N                                                            */
@@ -26,14 +27,14 @@ class PackageCommon
   protected 
   PackageCommon() 
   {
-    pEntries = new TreeMap<String,Entry>();
+    pEntries = new TreeMap<String,PackageEntry>();
   }
 
   /**
-   * Internal constructor used by subclasses to create an empty Package.
+   * Internal constructor used by subclasses to create an empty package.
    * 
    * @param name 
-   *   The name of the Package.
+   *   The name of the package.
    */ 
   protected
   PackageCommon
@@ -42,7 +43,7 @@ class PackageCommon
   ) 
   {
     super(name);
-    pEntries = new TreeMap<String,Entry>();
+    pEntries = new TreeMap<String,PackageEntry>();
   }
   
   /** 
@@ -57,7 +58,7 @@ class PackageCommon
   ) 
   {
     super(com.getName());
-    pEntries = (TreeMap<String,Entry>) com.pEntries.clone();
+    pEntries = (TreeMap<String,PackageEntry>) com.pEntries.clone();
   }
 
 
@@ -67,10 +68,10 @@ class PackageCommon
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the names of the environmental variables defined for this Package.
+   * Get the names of the environmental variables defined for this package.
    */ 
   public Set<String>
-  getNames() 
+  getEnvNames() 
   {
     return Collections.unmodifiableSet(pEntries.keySet());
   }
@@ -82,35 +83,104 @@ class PackageCommon
    *   The value or <CODE>null</CODE> if the variable is undefined or has no value.
    */ 
   public String
-  getValue
+  getEnvValue
   (
    String name
   ) 
   {
-    Entry e = pEntries.get(name);
+    PackageEntry e = pEntries.get(name);
     if(e != null)
       return e.getValue();
     return null;
   }
   
   /**
-   * Get the Package combine policy for the environmental variable with the given name.
+   * Get the package combine policy for the environmental variable with the given name.
    * 
    * @return 
    *   The policy or <CODE>null</CODE> if the variable is undefined.
    */ 
-  public Policy
-  getPolicy
+  public MergePolicy
+  getMergePolicy
   (
    String name
   ) 
   {
-    Entry e = pEntries.get(name);
+    PackageEntry e = pEntries.get(name);
     if(e != null)
-      return e.getPolicy();
+      return e.getMergePolicy();
     return null;
   }
+
   
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the package environment.
+   */ 
+  public TreeMap<String,String>
+  getEnvironment()
+  {
+    TreeMap<String,String> env = new TreeMap<String,String>();
+    
+    for(String name : pEntries.keySet())
+      env.put(name, pEntries.get(name).getValue());
+
+    return env;
+  }
+
+  /**
+   * Get the package environment specific to the given user.
+   * 
+   * @param author
+   *   The user owning the generated environment.
+   */ 
+  public TreeMap<String,String>
+  getEnvironment
+  (
+   String author
+  )
+  {
+    if(author == null) 
+      throw new IllegalArgumentException("The author cannot be (null)!");
+
+    TreeMap<String,String> env = getEnvironment();
+    
+    env.put("HOME", PackageInfo.sHomeDir + "/" + author);
+    env.put("USER", author);
+
+    return env;
+  }
+
+  /**
+   * Get the package environment specific ro the given user and working area.
+   * 
+   * @param author
+   *   The user owning the generated environment.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   */ 
+  public TreeMap<String,String>
+  getEnvironment
+  (
+   String author, 
+   String view
+  )
+  {
+    if(author == null) 
+      throw new IllegalArgumentException("The author cannot be (null)!");
+
+    if(view == null) 
+      throw new IllegalArgumentException("The view cannot be (null)!");
+
+    TreeMap<String,String> env = getEnvironment(author);
+
+    env.put("WORKING", PackageInfo.sWorkDir + "/" + author + "/" + view);
+
+    return env;
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -178,180 +248,14 @@ class PackageCommon
   {
     super.fromGlue(decoder);
 
-    TreeMap<String,Entry> entries = (TreeMap<String,Entry>) decoder.decode("Entries"); 
+    TreeMap<String,PackageEntry> entries = 
+      (TreeMap<String,PackageEntry>) decoder.decode("Entries"); 
     if(entries == null) 
       throw new GlueException("The \"Entries\" was missing!");
     pEntries = entries;
   }
  
 
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   P U B L I C   C L A S S E S                                                          */
-  /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * The policy on how entries with the same name are resolved when Packages are combined.
-   */ 
-  public 
-  enum Policy
-  {
-    /**
-     * The entry must not be defined by any previous Package.
-     */ 
-    Exclusive, 
-
-    /**
-     * The entry will replace any existing entry with the same name defined by any 
-     * previous Package.
-     */ 
-    Override, 
-
-    /**
-     * The entry is a colon seperated path who's value is appended to the value of any 
-     * previously defined entry with the same name.
-     */ 
-    AppendPath,
-    
-    /**
-     * The entry is a colon seperated path who's value is prepended to the value of any 
-     * previously defined entry with the same name.
-     */ 
-    PrependPath;
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * An environmental variable Package entry.
-   */ 
-  public 
-  class Entry
-    implements Glueable
-  {
-    /**
-     * Construct an entry.
-     * 
-     * @param name
-     *   The name of the environmental variable.
-     * 
-     * @param value
-     *   The value of the environmental variable or <CODE>null</CODE>.
-     * 
-     * @param policy
-     *   The Package combine policy for this entry.
-     */ 
-    public 
-    Entry
-    (
-     String name, 
-     String value, 
-     Policy policy
-    ) 
-    {
-      pName   = name;
-      pValue  = value; 
-      pPolicy = policy;
-    }
-
-
-    /*-- ACCESS ----------------------------------------------------------------------------*/
-
-    /**
-     * Get the name of the environmental variable.
-     */ 
-    public String 
-    getName()
-    {
-      return pName;
-    }
-
-    /**
-     * Get the value of the environmental variable.
-     */ 
-    public String 
-    getValue()
-    {
-      return pValue;
-    }
-
-    /**
-     * Get the Package combine policy for this entry.
-     */ 
-    public Policy
-    getPolicy() 
-    {
-      return pPolicy;
-    }
-
-
-    /*-- OBJECT OVERRIDES ------------------------------------------------------------------*/
-
-    /** 
-     * Indicates whether some other object is "equal to" this one.
-     * 
-     * @param obj 
-     *   The reference object with which to compare.
-     */
-    public boolean
-    equals
-    (
-     Object obj   
-     )
-    {
-      if((obj != null) && (obj instanceof Entry)) {
-	Entry e = (Entry) obj;
-	return (pName.equals(e.pName) && pValue.equals(e.pValue) && (pPolicy == e.pPolicy));
-      }
-      return false;
-    }
-
-
-    /*-- GLUEBALE --------------------------------------------------------------------------*/
-
-    public void 
-    toGlue
-    ( 
-     GlueEncoder encoder   
-    ) 
-      throws GlueException
-    {
-      encoder.encode("Name", pName);
-      encoder.encode("Value", pValue);
-      encoder.encode("Policy", pPolicy);
-    }
-
-    public void 
-    fromGlue
-    (
-     GlueDecoder decoder 
-    ) 
-      throws GlueException
-    {
-      String name = (String) decoder.decode("Name");
-      if(name == null) 
-	throw new GlueException("The \"Name\" was missing or (null)!");
-      pName = name;
-
-      String value = (String) decoder.decode("Value");
-      pValue = value;
-
-      Policy policy = (Policy) decoder.decode("Policy");
-      if(policy == null) 
-	throw new GlueException("The \"Policy\" was missing or (null)!");
-      pPolicy = policy;
-    }
-
-
-    /*-- INTERNALS -------------------------------------------------------------------------*/
-
-    private String  pName;
-    private String  pValue;
-    private Policy  pPolicy;
-  }
-
-  
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -368,6 +272,6 @@ class PackageCommon
   /**
    * The table of environmental variable entries.
    */
-  protected TreeMap<String,Entry>  pEntries; 
+  protected TreeMap<String,PackageEntry>  pEntries; 
 
 }

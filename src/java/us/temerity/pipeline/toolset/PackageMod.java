@@ -1,4 +1,4 @@
-// $Id: PackageMod.java,v 1.2 2004/05/23 19:56:48 jim Exp $
+// $Id: PackageMod.java,v 1.3 2004/05/29 06:37:41 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -81,7 +81,28 @@ class PackageMod
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Set the value and policy of the environmental variable entry with the given name.
+   * Create anenvironmental variable entry with the given name. <P> 
+   * 
+   * The value of the created environmental variable will be <CODE>null</CODE> and the 
+   * policy will be the default policy for the given variable name (see 
+   * {@link MergePolicy#getDefaultPolicy getDefaultPolicy} for details).
+   * 
+   * @param name
+   *   The name of the environmental variable.
+   */ 
+  public void 
+  createEntry
+  (
+   String name
+  ) 
+  {
+    setEntry(name, null, MergePolicy.getDefaultPolicy(name));
+  }
+
+  /**
+   * Set the value and policy of the environmental variable entry with the given name. <P>
+   * 
+   * If no entry exists for the given name, a new entry will be created.
    * 
    * @param name
    *   The name of the environmental variable.
@@ -97,10 +118,34 @@ class PackageMod
   (
    String name, 
    String value, 
-   Policy policy
+   MergePolicy policy
   ) 
   {
-    pEntries.put(name, new Entry(name, value, policy));
+    pEntries.put(name, new PackageEntry(name, value, policy));
+  }
+
+  /**
+   * Set the value of an existing environmental variable entry with the given name.
+   * 
+   * @param name
+   *   The name of the environmental variable.
+   * 
+   * @param value
+   *   The value of the environmental variable.
+   */ 
+  public void 
+  setValue
+  (
+   String name, 
+   String value
+  ) 
+  {
+    PackageEntry e = pEntries.get(name);
+    if(e == null) 
+      throw new IllegalArgumentException
+	("No environmental variable entry exist with the name (" + name + ")!");
+
+    pEntries.put(name, new PackageEntry(name, value, e.getMergePolicy()));
   }
 
   /**
@@ -113,20 +158,45 @@ class PackageMod
    *   The new Package combine policy for this entry.
    */ 
   public void 
-  setPolicy
+  setMergePolicy
   (
    String name, 
-   Policy policy
+   MergePolicy policy
   ) 
   {
-    Entry e = pEntries.get(name);
+    PackageEntry e = pEntries.get(name);
     if(e == null) 
       throw new IllegalArgumentException
 	("No environmental variable entry exist with the name (" + name + ")!");
     
-    pEntries.put(name, new Entry(name, e.getValue(), policy));
+    pEntries.put(name, new PackageEntry(name, e.getValue(), policy));
   }
-  
+
+
+  /**
+   * Remove the environmental variable entry with the given name.
+   * 
+   * @param name
+   *   The name of the environmental variable.
+   */ 
+  public void 
+  removeEntry
+  (
+   String name
+  ) 
+  {
+    pEntries.remove(name);
+  }
+
+
+  /**
+   * Remove all of the environmental variable entries.
+   */ 
+  public void 
+  removeAllEntries()
+  {
+    pEntries.clear();
+  }
 
 
 
@@ -136,7 +206,11 @@ class PackageMod
 
   /**
    * Evaluate the given <B>bash</B>(1) shell script and use the results to set the 
-   * environmental variable entries of the Package.
+   * environmental variable entries of the Package. <P> 
+   * 
+   * The policies of the created variables will be set to the default policy for each 
+   * variable name (see {@lin MergePolicy#getDefaultPolicy getDefaultPolicy} for 
+   * details).
    * 
    * @param script
    *   The <B>bash</B>(1) shell script to evaluate.
@@ -163,14 +237,14 @@ class PackageMod
     String output[] = null;
     {
       ArrayList<String> args = new ArrayList<String>();
-      args.add("--ignore-environment");
-      args.add(PackageInfo.sBash);
       args.add("--noprofile");
       args.add("-c");
-      args.add("source " + path + "; /bin/env");
+      args.add("if source " + path + "; then /bin/env; else exit 1; fi");
       
+      TreeMap<String,String> env = new TreeMap<String,String>();
+
       SubProcess proc = 
-	new SubProcess("EvalPackage", new File("/bin/env"), args);
+	new SubProcess("EvalPackage", PackageInfo.sBash, args, env, PackageInfo.sTempDir);
       proc.start();
     
       try {
@@ -209,14 +283,7 @@ class PackageMod
 	  if(idx < (output[wk].length()-1)) 
 	    value = output[wk].substring(idx+1);
 
-	  Policy policy = Policy.Exclusive;
-	  if(name.equals("PATH") || 
-	     name.equals("LD_LIBRARY_PATH") || 
-	     name.equals("MANPATH") || 
-	     name.equals("INFOPATH")) 
-	    policy = Policy.AppendPath;
-
-	  pEntries.put(name, new Entry(name, value, policy));
+	  setEntry(name, value, MergePolicy.getDefaultPolicy(name));
 	}
       }
     }
