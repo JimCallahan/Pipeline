@@ -1,4 +1,4 @@
-// $Id: NodeStatus.java,v 1.1 2004/03/01 21:45:04 jim Exp $
+// $Id: NodeStatus.java,v 1.2 2004/03/03 07:49:10 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -188,6 +188,14 @@ class NodeStatus
   {
     pTargets.put(state.getName(), state);
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static final long serialVersionUID = 5489205652602559487L;
 
 
 
