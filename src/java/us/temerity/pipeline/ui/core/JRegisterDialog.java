@@ -1,4 +1,4 @@
-// $Id: JRegisterDialog.java,v 1.6 2005/03/18 16:33:53 jim Exp $
+// $Id: JRegisterDialog.java,v 1.7 2005/03/30 22:42:53 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -894,6 +894,8 @@ class JRegisterDialog
    */ 
   private JCollectionField  pEditorField;
 
+  
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * The file sequences dialog.
