@@ -1,4 +1,4 @@
-// $Id: DownstreamLinks.java,v 1.6 2004/09/08 18:34:39 jim Exp $
+// $Id: DownstreamLinks.java,v 1.7 2004/09/11 14:13:27 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -215,8 +215,11 @@ class DownstreamLinks
 	("The downstream node name cannot be (null)!");
   
     TreeSet<String> links = pWorkingLinks.get(id);
-    if(links != null) 
+    if(links != null) {
       links.remove(name);
+      if(links.isEmpty()) 
+	pWorkingLinks.put(id, null);
+    }
   }
 
   /**
