@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.14 2004/08/22 22:04:34 jim Exp $
+// $Id: MasterRequest.java,v 1.15 2004/08/23 03:07:26 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -268,6 +268,11 @@ enum MasterRequest
    * An instance of {@link NodeKillJobsReq NodeKillJobsReq} is next.
    */
   KillJobs, 
+
+  /**
+   * An instance of {@link NodeRemoveFilesReq NodeRemoveFilesReq} is next.
+   */
+  RemoveFiles, 
 
 
   /*----------------------------------------------------------------------------------------*/
