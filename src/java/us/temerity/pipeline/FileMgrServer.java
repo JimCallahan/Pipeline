@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.2 2004/03/12 13:51:18 jim Exp $
+// $Id: FileMgrServer.java,v 1.3 2004/03/12 23:10:54 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -148,7 +148,8 @@ class FileMgrServer
 	Logs.net.fine("Connection Opened: " + pSocket.getInetAddress());
 	Logs.flush();
 
-	while(pSocket.isConnected()) {
+	boolean live = true;
+	while(pSocket.isConnected() && live) {
 	  InputStream in    = pSocket.getInputStream();
 	  ObjectInput objIn = new ObjectInputStream(in);
 	  FileRequest kind  = (FileRequest) objIn.readObject();
@@ -182,6 +183,10 @@ class FileMgrServer
 	      objOut.writeObject(pFileMgr.computeFileStates(req));
 	      objOut.flush(); 
 	    }
+	    break;
+	    
+	  case Shutdown:
+	    live = false;
 	  }
 	}
       }
