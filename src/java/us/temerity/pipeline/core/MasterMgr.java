@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.19 2004/07/28 19:16:26 jim Exp $
+// $Id: MasterMgr.java,v 1.20 2004/08/01 15:45:43 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -4046,7 +4046,7 @@ class MasterMgr
 	}
       }
 
-      /* get per-file FileStates and oldest last modification timestamps */ 
+      /* get per-file FileStates and newest last modification timestamps */ 
       TreeMap<FileSeq, FileState[]> fileStates = new TreeMap<FileSeq, FileState[]>(); 
       boolean[] anyMissing = null;
       Date[] fileTimeStamps = null;
@@ -4089,7 +4089,7 @@ class MasterMgr
 	      int wk;
 	      for(wk=0; wk<ts.length; wk++) {
 		if((fileTimeStamps[wk] == null) || 
-		   ((ts[wk] != null) && (ts[wk].compareTo(fileTimeStamps[wk]) < 0)))
+		   ((ts[wk] != null) && (ts[wk].compareTo(fileTimeStamps[wk]) > 0)))
 		  fileTimeStamps[wk] = ts[wk];
 	      }
 	    }	      
@@ -4268,13 +4268,13 @@ class MasterMgr
 	  
 	  int wk;
 	  for(wk=0; wk<queueStates.length; wk++) {
-	    /* no regeneration action, 
+	    /* the regeneration action is disabled or does not exist, 
 	         therefore QueueState is always Finished */ 
-	    if(!work.hasAction()) {
+	    if(!work.isActionEnabled()) {
 	      queueStates[wk] = QueueState.Finished;
 	    }
 
-	    /* there IS a regeneration action */ 
+	    /* there IS an enabled regeneration action */ 
 	    else {
 	      /* check for active jobs */ 
 	      if(ps[wk] != null) {
@@ -6259,7 +6259,7 @@ class MasterMgr
     public TreeMap<FileSeq,FileState[]>  uFileStates;
 
     /**
-     * A table containing the oldest last modification timestamp for each primary/secondary
+     * A table containing the newest last modification timestamp for each primary/secondary
      * file index. 
      * 
      * May be <CODE>null</CODE> if invalidated.  If an individual file timestamp is 
