@@ -1,4 +1,4 @@
-// $Id: ViewerJob.java,v 1.1 2004/08/26 06:05:15 jim Exp $
+// $Id: ViewerJob.java,v 1.2 2004/08/30 02:55:55 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -362,6 +362,24 @@ class ViewerJob
   {
     return new Point2d(pMaxBounds);
   }
+
+  /** 
+   * Get the maximum bounds of (2D position) of the job including collapsed geometry.
+   */ 
+  public Point2d
+  getMaxCollapsedBounds()
+  {
+    if(!pIsCollapsed) 
+      return getMaxBounds();
+
+    double scale  = pMaxBounds.x - pMinBounds.x;
+    double center = (pMinBounds.x + pMaxBounds.x) * 0.5;
+
+    Point2d bounds = new Point2d(pMaxBounds);
+    bounds.x = center + 0.9*scale;
+
+    return bounds;
+  }  
 
   /**
    * Set the 2D position of the job (center of icon). 
