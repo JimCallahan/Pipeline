@@ -1,4 +1,4 @@
-// $Id: JBaseFileSelectDialog.java,v 1.1 2004/06/08 03:06:36 jim Exp $
+// $Id: JBaseFileSelectDialog.java,v 1.2 2004/07/14 21:04:07 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -268,9 +268,11 @@ class JBaseFileSelectDialog
     if(root == null) 
       throw new IllegalArgumentException
 	("The root directory cannot be (null)!");
+
     if(!root.isDirectory()) 
       throw new IllegalArgumentException
 	("The root directory must exist!");
+
     pRootDir = root;
   }
 
