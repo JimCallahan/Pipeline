@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.15 2004/05/11 19:16:33 jim Exp $
+// $Id: JManagerPanel.java,v 1.16 2004/05/12 04:00:36 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -456,7 +456,7 @@ class JManagerPanel
   /*   L I S T E N E R S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
-  /*-- COMPONENT LISTNER METHODS -----------------------------------------------------------*/
+  /*-- COMPONENT LISTENER METHODS ----------------------------------------------------------*/
 
   /**
    * Invoked when the component has been made invisible. 
@@ -901,7 +901,6 @@ class JManagerPanel
   /**
    * A anchor icon which shows the title bar popup menu when pressed.
    */ 
-  //private 
   public
   class PopupMenuAnchor
     extends JLabel
@@ -928,7 +927,7 @@ class JManagerPanel
     }
 
 
-    /*-- MOUSE LISTNER METHODS -------------------------------------------------------------*/
+    /*-- MOUSE LISTENER METHODS ------------------------------------------------------------*/
 
     public void 
     mouseClicked(MouseEvent e) {}
@@ -1092,7 +1091,7 @@ class JManagerPanel
     }
 
 
-    /*-- MOUSE LISTNER METHODS -------------------------------------------------------------*/
+    /*-- MOUSE LISTENER METHODS ------------------------------------------------------------*/
 
     public void 
     mouseClicked(MouseEvent e) {}

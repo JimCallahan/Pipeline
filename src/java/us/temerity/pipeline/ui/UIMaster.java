@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.9 2004/05/11 19:16:33 jim Exp $
+// $Id: UIMaster.java,v 1.10 2004/05/12 04:00:36 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -764,20 +764,10 @@ class UIMaster
       /* make sure user preference exist */ 
       try {
 	File base = new File(PackageInfo.sHomeDir, PackageInfo.sUser + "/.pipeline");
-	{
-	  File dir = new File(base, "preferences");
-	  if(!dir.isDirectory()) {
-	    if(!dir.mkdirs()) {
-	      Logs.ops.severe("Unable to create (" + dir + ")!");
-	      Logs.flush();
-	      System.exit(1);	    
-	    }
-	    NativeFileSys.chmod(0700, dir);
-	  }	  
-	}
-
-	{
-	  File dir = new File(base, "layouts");
+	String subdirs[] = { "preferences", "layouts" };
+	int wk;
+	for(wk=0; wk<subdirs.length; wk++) {
+	  File dir = new File(base, subdirs[wk]);
 	  if(!dir.isDirectory()) {
 	    if(!dir.mkdirs()) {
 	      Logs.ops.severe("Unable to create (" + dir + ")!");
@@ -1046,7 +1036,7 @@ class UIMaster
     run() 
     {
       try {
-	pSaveLayoutDialog.update(pLayoutName);
+	pSaveLayoutDialog.updateLayouts(pLayoutName);
 	pSaveLayoutDialog.setVisible(true);
 	if(pSaveLayoutDialog.wasConfirmed()) {
 	  String name = pSaveLayoutDialog.getSelectedName();
@@ -1161,7 +1151,13 @@ class UIMaster
     public void 
     run() 
     {
-      pManageLayoutsDialog.setVisible(true);
+      try {
+	pManageLayoutsDialog.updateLayouts(pLayoutName);
+	pManageLayoutsDialog.setVisible(true);
+      }
+      catch(Exception ex) {
+	showErrorDialog(ex);
+      }
     }
   }
 
