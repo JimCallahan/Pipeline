@@ -1,0 +1,47 @@
+#!/bin/bash
+
+src=$1
+dest=laf/radial-menu
+
+if [ ! -d $dest ]
+then 
+  mkdir -p $dest
+fi
+
+tmpfile="radial-menu.scm"
+
+rm -f $tmpfile
+echo '(load "'$src/../../../scripts/crop-convert.scm'")' > $tmpfile
+
+offsetX=(250 335 292 207 164 207 292 413 382 300 199 117 86 117 199 300 382 491 472 420 \
+         342 250 157 79 27 9 27 79 157 249 342 420 472)
+
+offsetY=(185 185 240 240 185 129 129 185 256 301 301 256 185 113 68 68 113 185 254 312 \
+         351 365 351 312 254 185 115 57 18 4 18 57 115)
+
+anynewer=0
+frame=0
+while [ $frame -lt 33 ] 
+do
+  simg=`printf "%s.%04d.sgi" $src/RadialMenu $frame`
+  dimg=`printf "%s/item.%d.png" $dest $frame`
+
+  if [ $simg -nt $dimg ] 
+  then
+    printf '(crop-convert "%s" "%s" %d %d 140 110)\n' \
+           $simg $dimg ${offsetX[$frame]} ${offsetY[$frame]} >> $tmpfile
+    anynewer=1
+  fi
+
+  frame=$(($frame + 1))	
+done
+
+if [ $anynewer -eq 1 ]
+then 
+  echo '(gimp-quit 1)' >> $tmpfile
+
+  cat $tmpfile
+  time @GIMP@ -i -d -b '(load "'$tmpfile'")'
+fi
+
+rm -f $tmpfile
