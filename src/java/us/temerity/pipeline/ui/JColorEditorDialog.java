@@ -1,13 +1,20 @@
-// $Id: JColorEditorDialog.java,v 1.6 2005/01/03 06:56:23 jim Exp $
+// $Id: JColorEditorDialog.java,v 1.7 2005/01/08 08:52:15 jim Exp $
 
 package us.temerity.pipeline.ui;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.math.*;
+import us.temerity.pipeline.laf.LookAndFeelLoader;
 
+import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.*;
 import java.io.*;
+import java.nio.*;
+import java.net.*;
+
+import javax.imageio.*;
 import javax.swing.*;
 import javax.swing.event.*;
 
@@ -176,13 +183,7 @@ class JColorEditorDialog
 
     /* build the color circle display lists */ 
     if((pWhiteDL == null) || (pBlackDL == null)) {
-    //   Integer texID = null;
-//       try {
-// 	texID = TextureMgr.getInstance().getTexture(gl, "ColorCircle");
-//       }
-//       catch(IOException ex) {
-// 	Logs.tex.severe(ex.getMessage());
-//       }
+      loadColorCircleTexture(gl);
 	
       /* the white color circle */ 
       if(pWhiteDL == null) {
@@ -191,7 +192,8 @@ class JColorEditorDialog
 	gl.glNewList(pWhiteDL, GL.GL_COMPILE);
 	{
 	  gl.glEnable(GL.GL_TEXTURE_2D);
-// 	  gl.glBindTexture(GL.GL_TEXTURE_2D, texID);
+ 	  if(pTexID != null) 
+	    gl.glBindTexture(GL.GL_TEXTURE_2D, pTexID);
 	  
 	  gl.glColor3d(1.0, 1.0, 1.0);
 	  gl.glBegin(GL.GL_QUADS);
@@ -222,7 +224,8 @@ class JColorEditorDialog
 	gl.glNewList(pBlackDL, GL.GL_COMPILE);
 	{
 	  gl.glEnable(GL.GL_TEXTURE_2D);
-// 	  gl.glBindTexture(GL.GL_TEXTURE_2D, texID);
+ 	  if(pTexID != null) 
+	    gl.glBindTexture(GL.GL_TEXTURE_2D, pTexID);
 
 	  gl.glColor3d(0.0, 0.0, 0.0);
 	  gl.glBegin(GL.GL_QUADS);
@@ -621,10 +624,6 @@ class JColorEditorDialog
   }
 
 
-  /*----------------------------------------------------------------------------------------*/
-  /*   A C T I O N S                                                                        */
-  /*----------------------------------------------------------------------------------------*/
-
 
   /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S                                                                        */
@@ -720,6 +719,80 @@ class JColorEditorDialog
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+  
+  /** 
+   * Make sure the OpenGL texture for the color circle is loaded.
+   * 
+   * @param gl
+   *   The OpenGL interface.
+   */ 
+  public void 
+  loadColorCircleTexture
+  (
+   GL gl
+  ) 
+  {
+    /* make sure they haven't already been loaded */ 
+    if(pTexID != null) 
+      return; 
+
+    /* build the texture object */    
+    String name = "ColorCircle";
+    Logs.tex.fine("Loading Texture: " + name);
+    try {
+      int handle[] = new int[1];
+      gl.glGenTextures(1, handle); 
+
+      gl.glBindTexture(GL.GL_TEXTURE_2D, handle[0]);
+
+      int level, size; 
+      for(level=0, size=sMaxTexRes; size>=1; level++, size/=2) {
+	Logs.tex.finer("Loading MipMap: " + size + "x" + size);
+	Logs.flush();
+
+	String path = ("textures/" + name + "/texture." + size + ".png");
+	URL url = LookAndFeelLoader.class.getResource(path);
+	if(url == null) 
+	  throw new IOException("Unable to find: " + path);
+	BufferedImage bi = ImageIO.read(url);
+	
+	if((bi.getWidth() != size) || (bi.getHeight() != size)) 
+	  throw new IOException
+	    ("The image size (" + bi.getWidth() + "x" + bi.getHeight() + ") of " + 
+	     "texture (" + path + ") does not match the expected size " + 
+	     "(" + size + "x" + size + ")!");
+	
+	if(bi.getType() != BufferedImage.TYPE_CUSTOM) 
+	  throw new IOException
+	    ("The image format (" + bi.getType() + ") of texture (" + path + ") is " +
+	     "not supported!");	    
+	
+	byte[] data = ((DataBufferByte) bi.getRaster().getDataBuffer()).getData();
+	ByteBuffer buf = ByteBuffer.allocateDirect(data.length);
+	buf.order(ByteOrder.nativeOrder());
+	buf.put(data, 0, data.length);
+	buf.rewind();
+	
+	gl.glTexImage2D(GL.GL_TEXTURE_2D, level, GL.GL_RGBA, size, size, 
+			0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, buf);
+      }
+	    
+      gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP);
+      gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP);
+      
+      gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, 
+			 GL.GL_LINEAR_MIPMAP_LINEAR);
+      gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
+      
+      pTexID = handle[0];
+    }
+    catch(Exception ex) {
+      Logs.tex.severe(ex.getMessage());
+    }
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -736,8 +809,13 @@ class JColorEditorDialog
    * The outer radius of the hue ring.
    */ 
   private static final  double  sOuterRadius = 0.55; 
-
   
+  /**
+   * The resolution of the largest Mip-Map level texture image.
+   */ 
+  private static final int  sMaxTexRes = 64;
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
@@ -771,6 +849,11 @@ class JColorEditorDialog
    */ 
   private Integer  pBlackDL; 
 
+  /**
+   * The OpenGL texture object handle for the color circle.
+   */ 
+  private Integer  pTexID; 
+  
 
   /*----------------------------------------------------------------------------------------*/
 
