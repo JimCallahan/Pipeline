@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.1 2004/04/30 11:21:54 jim Exp $
+// $Id: UIMaster.java,v 1.2 2004/05/02 12:14:17 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -92,6 +92,19 @@ class UIMaster
     return sMaster;
   }
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the main application frame.
+   */
+  public JFrame
+  getFrame()
+  {
+    return pFrame;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Add a new manager panel.
@@ -127,7 +140,111 @@ class UIMaster
     }
   }
   
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S E R V E R    C O M M U N I C A T I O N                                             */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the table of current working areas.
+   */ 
+  public TreeMap<String,TreeSet<String>>
+  getWorkingAreas() 
+    throws PipelineException
+  {
+    disableOps();
+    try {
+      return pNodeMgrClient.getWorkingAreas();
+    }
+    finally {
+      enableOps();
+    }
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   D I A L O G S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Show an error message dialog for the given exception.
+   */ 
+  public void 
+  showErrorDialog
+  (
+   Exception ex
+  ) 
+  {
+    System.out.print("UIMaster.showErrorDialog(): " + ex.getMessage() + "\n");
+
+    // ... 
+
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   U S E R   I N T E R F A C E   H E L P E R S                                          */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Disable new client/server operations until the current operation is complete.
+   */ 
+  private void 
+  disableOps()
+  {
+    disableOps("");
+  }
+
+  /**
+   * Disable new client/server operations until the current operation is complete.
+   * 
+   * @param msg
+   *   The progress message.
+   */ 
+  private void 
+  disableOps
+  (
+   String msg
+  ) 
+  {
+    pProgressLight.setIcon(sProgressLightOnIcon);
+    pProgressField.setText(msg);
+
+    for(JManagerPanel mgr : pManagerPanels) 
+      mgr.disableOps();
+  }
+
+
+  /**
+   * Reenable client/server operations.
+   */ 
+  private void 
+  enableOps()
+  {
+    enableOps("");
+  }
+
+  /**
+   * Reenable client/server operations.
+   * 
+   * @param msg
+   *   The completion message.
+   */ 
+  private void 
+  enableOps
+  (
+   String msg
+  ) 
+  {
+    for(JManagerPanel mgr : pManagerPanels) 
+      mgr.enableOps();
+    
+    pProgressField.setText(msg);
+    pProgressLight.setIcon(sProgressLightIcon);
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -174,7 +291,8 @@ class UIMaster
 	JFrame frame = null;
 	{
 	  frame = new JFrame("plui");
-	  
+	  pFrame = frame;
+
 	  frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	  
 	  frame.setLocationRelativeTo(null);
@@ -211,15 +329,15 @@ class UIMaster
 	    panel.add(Box.createRigidArea(new Dimension(2, 0)));
 	    
 	    {
-	      JToggleButton btn = new JToggleButton();
-	      btn.setName("StopLight");
+	      JLabel label = new JLabel(sProgressLightIcon);
+	      pProgressLight = label;
 	      
 	      Dimension size = new Dimension(15, 19);
-	      btn.setMinimumSize(size);
-	      btn.setMaximumSize(size);
-	      btn.setPreferredSize(size);
+	      label.setMinimumSize(size);
+	      label.setMaximumSize(size);
+	      label.setPreferredSize(size);
 	      
-	      panel.add(btn);
+	      panel.add(label);
 	    }
 	    
 	    {
@@ -230,6 +348,8 @@ class UIMaster
 	      field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
 	      field.setPreferredSize(new Dimension(200, 19));
 	      
+	      field.setEditable(false);
+
 	      panel.add(field);
 	    }
 	    
@@ -261,6 +381,16 @@ class UIMaster
   private static UIMaster  sMaster;
 
 
+  //private static final long serialVersionUID = 584004318062788314L;
+
+
+  private static Icon sProgressLightIcon = 
+    new ImageIcon(LookAndFeelLoader.class.getResource("ProgressLightIcon.png"));
+
+  private static Icon sProgressLightOnIcon = 
+    new ImageIcon(LookAndFeelLoader.class.getResource("ProgressLightOnIcon.png"));
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
@@ -270,6 +400,13 @@ class UIMaster
    * The network interface to the <B>plmaster</B>(1) daemon.
    */ 
   private NodeMgrClient  pNodeMgrClient;
+
+
+
+  /**
+   * The main application frame.
+   */ 
+  private JFrame  pFrame;
 
 
   /**
