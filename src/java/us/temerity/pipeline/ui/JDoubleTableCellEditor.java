@@ -1,4 +1,4 @@
-// $Id: JDoubleTableCellEditor.java,v 1.1 2004/06/22 19:44:54 jim Exp $
+// $Id: JDoubleTableCellEditor.java,v 1.2 2004/07/28 19:20:42 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -111,7 +111,7 @@ class JDoubleTableCellEditor
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The integer field editor.
+   * The double field.
    */ 
   protected JDoubleField  pField;
 
