@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.10 2004/05/12 04:00:36 jim Exp $
+// $Id: UIMaster.java,v 1.11 2004/05/13 02:37:41 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -315,6 +315,15 @@ class UIMaster
 
 
   /**
+   * Show the user preferences dialog.
+   */ 
+  public void 
+  showUserPrefsDialog()
+  {
+    pUserPrefsDialog.setVisible(true);
+  }
+
+  /**
    * Show the information dialog.
    */ 
   public void 
@@ -419,6 +428,9 @@ class UIMaster
    * See {@link JLabel#setHorizontalAlignment JLabel.setHorizontalAlignment} for valid
    * values for the <CODE>align</CODE> argument.
    * 
+   * @param text
+   *   The label text.
+   * 
    * @param width
    *   The minimum and preferred width.
    * 
@@ -444,6 +456,35 @@ class UIMaster
     
     return label;
   }
+  
+  /**
+   * Create a new panel title label. <P> 
+   * 
+   * @param text
+   *   The label text.
+   */ 
+  public static Component
+  createPanelLabel
+  (
+   String text
+  )
+  {
+    Box hbox = new Box(BoxLayout.X_AXIS);
+	
+    hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+    
+    {
+      JLabel label = new JLabel(text);
+      label.setName("PanelLabel");
+      
+      hbox.add(label);
+    }
+    
+    hbox.add(Box.createHorizontalGlue());
+    
+    return hbox;
+  }
+
   
   /**
    * Create a new non-editable text field.
@@ -547,6 +588,121 @@ class UIMaster
     field.setText(text);
     
     return field;
+  }
+
+
+  /**
+   * Create a slider with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param title
+   *   The title text.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param vmin
+   *   The minimum slider value.
+   * 
+   * @param vmax
+   *   The maximum slider value.
+   * 
+   * @param value
+   *   The intial slider value.
+   */ 
+  public static JSlider 
+  createTitledSlider
+  (
+   JPanel tpanel, 
+   String title, 
+   int twidth,
+   JPanel vpanel, 
+   int vmin, 
+   int vmax,
+   int value,
+   int vwidth
+  ) 
+  {
+    tpanel.add(UIMaster.createLabel(title, twidth, JLabel.RIGHT));
+
+    JSlider slider = new JSlider(vmin, vmax, value);
+      
+    Dimension size = new Dimension(vwidth, 19);
+    slider.setMinimumSize(size);
+    slider.setMaximumSize(size);
+    slider.setPreferredSize(size);
+
+    slider.setPaintLabels(false);
+    slider.setPaintTicks(false);
+    slider.setPaintTrack(true);
+
+    vpanel.add(slider);
+
+    return slider;
+  }
+
+
+  /**
+   * Create a floating-point slider with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param title
+   *   The title text.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param vmin
+   *   The minimum slider value.
+   * 
+   * @param vmax
+   *   The maximum slider value.
+   * 
+   * @param value
+   *   The intial slider value.
+   */ 
+  public static JSlider 
+  createTitledSlider
+  (
+   JPanel tpanel, 
+   String title, 
+   int twidth,
+   JPanel vpanel, 
+   double vmin, 
+   double vmax,
+   double value,
+   int vwidth
+  ) 
+  {
+    return createTitledSlider(tpanel, title, twidth, 
+			      vpanel, (int)(vmin*1000.0), (int)(vmax*1000.0), 
+			      (int)(value*1000), vwidth);
+  }
+
+
+  /**
+   * Add vertical space into the given panels.
+   */ 
+  public static void 
+  addVerticalSpacer
+  (
+   JPanel tpanel, 
+   JPanel vpanel, 
+   int height
+  ) 
+  {
+    tpanel.add(Box.createRigidArea(new Dimension(0, height)));
+    vpanel.add(Box.createRigidArea(new Dimension(0, height)));
   }
 
 
@@ -764,7 +920,7 @@ class UIMaster
       /* make sure user preference exist */ 
       try {
 	File base = new File(PackageInfo.sHomeDir, PackageInfo.sUser + "/.pipeline");
-	String subdirs[] = { "preferences", "layouts" };
+	String subdirs[] = { "layouts" };
 	int wk;
 	for(wk=0; wk<subdirs.length; wk++) {
 	  File dir = new File(base, subdirs[wk]);
@@ -776,6 +932,12 @@ class UIMaster
 	    }
 	    NativeFileSys.chmod(0700, dir);
 	  }	  
+	}
+
+	{
+	  File file = new File("base", "preferences");
+	  if(file.isFile()) 	  
+	    UserPrefs.load();
 	}
       }
       catch(Exception ex) {	
@@ -960,6 +1122,7 @@ class UIMaster
 	pSaveLayoutDialog    = new JSaveLayoutDialog();
 	pManageLayoutsDialog = new JManageLayoutsDialog();
 	pErrorDialog         = new JErrorDialog();
+	pUserPrefsDialog     = new JUserPrefsDialog();
 	pAboutDialog         = new JAboutDialog();
       }
       
@@ -1296,6 +1459,11 @@ class UIMaster
    * The error message dialog.
    */ 
   private JErrorDialog  pErrorDialog;
+
+  /**
+   * The user preferences dialog.
+   */ 
+  private JUserPrefsDialog  pUserPrefsDialog;
 
   /**
    * The information dialog.

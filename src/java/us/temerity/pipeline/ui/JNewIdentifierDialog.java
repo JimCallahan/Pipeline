@@ -1,4 +1,4 @@
-// $Id: JNewIdentifierDialog.java,v 1.1 2004/05/12 04:00:36 jim Exp $
+// $Id: JNewIdentifierDialog.java,v 1.2 2004/05/13 02:37:41 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -58,23 +58,8 @@ class JNewIdentifierDialog
       body.setName("MainDialogPanel");
 
       body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));
-      
-      {
-	Box hbox = new Box(BoxLayout.X_AXIS);
-	
-	hbox.add(Box.createRigidArea(new Dimension(4, 0)));
-	
-	{
-	  JLabel label = new JLabel(fieldTitle);
-	  label.setName("PanelLabel");
-	  
-	  hbox.add(label);
-	}
-	
-	hbox.add(Box.createHorizontalGlue());
-	
-	body.add(hbox);
-      }
+
+      body.add(UIMaster.createPanelLabel(fieldTitle));
       
       body.add(Box.createRigidArea(new Dimension(0, 4)));
       

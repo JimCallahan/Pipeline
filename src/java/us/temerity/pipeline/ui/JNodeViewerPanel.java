@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.7 2004/05/12 16:50:19 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.8 2004/05/13 02:37:41 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -294,6 +294,8 @@ class JNodeViewerPanel
    HashMap<NodePath,ViewerNode> table
   ) 
   {
+    UserPrefs prefs = UserPrefs.getInstance();
+
     assert(!table.containsKey(path));
     ViewerNode vnode = pNodePool.getViewerNode(status, path);
     table.put(path, vnode);
@@ -302,12 +304,12 @@ class JNodeViewerPanel
     if(status.hasSources()) {
       for(NodeStatus ustatus : status.getSources()) {
 	NodePath upath = new NodePath(path, ustatus.getName());
-	Point2d uanchor = new Point2d(anchor.x + 2.0, anchor.y + height);
+	Point2d uanchor = new Point2d(anchor.x + prefs.getNodeSpaceX(), anchor.y + height);
 	height += layoutUpstreamNodes(ustatus, upath, uanchor, table);
       }      
     }
     else {
-      height = 2.0;
+      height = prefs.getNodeSpaceY();
     }
 
     vnode.setPosition(new Point2d(anchor.x, anchor.y + 0.5*height));

@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.16 2004/05/12 04:00:36 jim Exp $
+// $Id: JManagerPanel.java,v 1.17 2004/05/13 02:37:41 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -576,6 +576,8 @@ class JManagerPanel
       UIMaster.getInstance().doRestoreSavedLayout(cmd.substring(15));
     else if(cmd.equals("manage-layouts"))
       UIMaster.getInstance().showManageLayoutsDialog();
+    else if(cmd.equals("preferences"))
+      UIMaster.getInstance().showUserPrefsDialog();
     else if(cmd.equals("about"))
       UIMaster.getInstance().showAboutDialog();
 

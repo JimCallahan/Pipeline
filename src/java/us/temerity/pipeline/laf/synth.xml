@@ -298,6 +298,30 @@
   <bind style="ComboBoxScrollPane" type="name" key="ComboBox.scrollPane"/>
 
 
+  <!--  S L I D E R  --> 
+
+  <style id="Slider">
+
+    <property key="Slider.thumbWidth" type="integer" value="9"/>
+    <property key="Slider.thumbHeight" type="integer" value="19"/>
+    <property key="Slider.trackBorder" type="integer" value="0"/>
+    <property key="Slider.paintValue" type="boolean" value="false"/>
+  </style>
+  <bind style="Slider" type="region" key="Slider"/>
+
+  <style id="SliderTrack">
+      <imagePainter path="SliderTrack.png"
+    	            method="sliderTrackBackground"
+                    sourceInsets="10 2 8 2"/>
+  </style>
+  <bind style="SliderTrack" type="region" key="SliderTrack"/>
+
+  <style id="SliderThumb">
+      <imagePainter path="SliderThumb.png"
+                    sourceInsets="0 0 0 0"/>
+  </style>
+  <bind style="SliderThumb" type="region" key="SliderThumb"/>
+
 
   <!--  T R E E  -->
 
@@ -315,6 +339,14 @@
     <insets top="3" bottom="3" right="3" left="-15"/>
   </style>
   <bind style="Tree" type="region" key="Tree"/>
+
+  <style id="DarkTree"> 
+    <imagePainter path="DarkGrey.png"
+                  method="treeBackground"
+                  sourceInsets="0 0 0 0"/>
+  </style>
+  <bind style="DarkTree" type="name" key="DarkTree"/>
+  
 
 
   <!--  L I S T  -->
@@ -608,10 +640,22 @@
 
 
   <!--  M A I N   D I A L O G   P A N E L  -->
+
   <style id="MainDialogPanel">
     <insets top="20" bottom="20" right="20" left="20"/>
   </style>
   <bind style="MainDialogPanel" type="name" key="MainDialogPanel"/>
 
+
+
+  <!--  D A R K   P A N E L  -->
+
+  <style id="DarkPanel"> 
+    <imagePainter path="FrameInDark.png"
+                  sourceInsets="3 3 3 3"/>
+    <insets top="3" bottom="3" right="3" left="3"/>
+  </style>
+  <bind style="DarkPanel" type="name" key="DarkPanel"/>
+  
 
 </synth>

@@ -1,4 +1,4 @@
-// $Id: JSaveLayoutTreeCellRenderer.java,v 1.1 2004/05/11 19:17:03 jim Exp $
+// $Id: JLayoutTreeCellRenderer.java,v 1.1 2004/05/13 02:37:41 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -13,16 +13,17 @@ import javax.swing.border.*;
 import javax.swing.tree.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   T R E E   C E L L   R E N D E R E R                                                    */
+/*   L A Y O U T   T R E E   C E L L   R E N D E R E R                                      */
 /*------------------------------------------------------------------------------------------*/
 
 /**
  * The renderer used for {@link JTree JTree} cells for 
- * {@link JSaveLayoutDialog JSaveLayoutDialog}.
+ * {@link JBaseLayoutDialog JBaseLayoutDialog}.
  */ 
 public
-class JSaveLayoutTreeCellRenderer
-  extends DefaultTreeCellRenderer
+class JLayoutTreeCellRenderer
+  extends JLabel 
+  implements TreeCellRenderer 
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -32,9 +33,10 @@ class JSaveLayoutTreeCellRenderer
    * Construct a new renderer.
    */
   public 
-  JSaveLayoutTreeCellRenderer() 
+  JLayoutTreeCellRenderer() 
   {
-    super();
+    setOpaque(true);    
+    setBackground(new Color(0.45f, 0.45f, 0.45f));
   }
 
 
@@ -57,12 +59,11 @@ class JSaveLayoutTreeCellRenderer
    int row, 
    boolean hasFocus
   ) 
-  { 
-    super.getTreeCellRendererComponent(tree, value, 
-				       isSelected, isExpanded, isLeaf, row, hasFocus);
-    
+  {     
     DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) value;
     JSaveLayoutDialog.TreeData data = (JSaveLayoutDialog.TreeData) tnode.getUserObject();
+
+    setText(data.toString());
 
     if(data.getName() != null) {
       if(isSelected) {

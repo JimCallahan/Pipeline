@@ -1,4 +1,4 @@
-// $Id: JOwnerViewDialog.java,v 1.5 2004/05/11 19:16:33 jim Exp $
+// $Id: JOwnerViewDialog.java,v 1.6 2004/05/13 02:37:41 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -125,23 +125,8 @@ class JOwnerViewDialog
     Box vbox = new Box(BoxLayout.Y_AXIS);	
 
     vbox.add(Box.createRigidArea(new Dimension(0, 20)));
-
-    {
-      Box hbox = new Box(BoxLayout.X_AXIS);
-      
-      hbox.add(Box.createRigidArea(new Dimension(4, 0)));
-
-      {
-	JLabel label = new JLabel(title);
-	label.setName("PanelLabel");
-
-	hbox.add(label);
-      }
-
-      hbox.add(Box.createHorizontalGlue());
-      
-      vbox.add(hbox);
-    }
+    
+    vbox.add(UIMaster.createPanelLabel(title));
     
     vbox.add(Box.createRigidArea(new Dimension(0, 4)));
 

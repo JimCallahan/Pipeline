@@ -1,4 +1,4 @@
-// $Id: JBaseLayoutDialog.java,v 1.1 2004/05/12 04:00:36 jim Exp $
+// $Id: JBaseLayoutDialog.java,v 1.2 2004/05/13 02:37:41 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -83,23 +83,8 @@ class JBaseLayoutDialog
 
       body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));
       
-      {
-	Box hbox = new Box(BoxLayout.X_AXIS);
-	
-	hbox.add(Box.createRigidArea(new Dimension(4, 0)));
-	
-	{
-	  JLabel label = new JLabel("Existing Layouts:");
-	  label.setName("PanelLabel");
-	  
-	  hbox.add(label);
-	}
-	
-	hbox.add(Box.createHorizontalGlue());
-	
-	body.add(hbox);
-      }
-      
+      body.add(UIMaster.createPanelLabel("Existing Layouts:"));
+
       body.add(Box.createRigidArea(new Dimension(0, 4)));
       
       {
@@ -108,8 +93,9 @@ class JBaseLayoutDialog
 
 	JTree tree = new JFancyTree(model); 
 	pTree = tree;
+	tree.setName("DarkTree");
 
-	tree.setCellRenderer(new JSaveLayoutTreeCellRenderer());
+	tree.setCellRenderer(new JLayoutTreeCellRenderer());
 	tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 	tree.setExpandsSelectedPaths(true);
 
