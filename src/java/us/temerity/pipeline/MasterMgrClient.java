@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.5 2004/06/08 02:37:46 jim Exp $
+// $Id: MasterMgrClient.java,v 1.6 2004/06/08 20:06:18 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -906,8 +906,7 @@ class MasterMgrClient
   {
     if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
       throw new PipelineException
-	("Working areas can only be created which are owned by you if you are not a " + 
-	 "privileged user!");
+	("Only privileged users may create working areas owned by another user!");
 
     verifyConnection();
 
@@ -1327,7 +1326,10 @@ class MasterMgrClient
    * The working version must be an inital version.  In other words, the 
    * {@link NodeMod#getWorkingID() NodeMod.getWorkingID} method must return 
    * <CODE>null</CODE>.  As an intial working version, the <CODE>mod</CODE> argument should
-   * not contain any upstream node link information.
+   * not contain any upstream node link information. <P> 
+   * 
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
    *  
    * @param author 
    *   The name of the user which owns the new working version.
@@ -1352,7 +1354,7 @@ class MasterMgrClient
   {
     if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
       throw new PipelineException
-	("New nodes can only be registered for yourself if you are not a privileged user!");
+	("Only privileged users may register nodes owned by another user!");
 
     verifyConnection();
 
@@ -1364,8 +1366,11 @@ class MasterMgrClient
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
   /**
-   * Revoke a working version of a node which has never checked-in. <P> 
+   * Revoke a working version of a node owned by the current user which has never 
+   * been checked-in  <P> 
    * 
    * This operation is provided to allow users to remove nodes which they have previously 
    * registered, but which they no longer want to keep or share with other users. If a 
@@ -1407,7 +1412,65 @@ class MasterMgrClient
   } 
 
   /**
-   * Rename a working version of a node which has never checked-in. <P> 
+   * Revoke a working version of a node owned by the given user which has never 
+   * been checked-in  <P> 
+   * 
+   * This operation is provided to allow users to remove nodes which they have previously 
+   * registered, but which they no longer want to keep or share with other users. If a 
+   * working version is successfully revoked, all node connections to the revoked node 
+   * will be also be removed. <P> 
+   * 
+   * In addition to removing the working version of the node, this operation can also 
+   * delete the files associated with the working version if the <CODE>removeFiles</CODE>
+   * argument is <CODE>true</CODE>. <P> 
+   * 
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   *
+   * @param removeFiles 
+   *   Should the files associated with the working version be deleted?
+   *
+   * @throws PipelineException 
+   *   If unable to revoke the given node.
+   */ 
+  public void 
+  revoke
+  ( 
+   String author, 
+   String view, 
+   String name, 
+   boolean removeFiles
+  ) 
+    throws PipelineException
+  {
+    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
+      throw new PipelineException
+	("Only privileged users may revoke nodes owned by another user!");
+
+    verifyConnection();
+
+    NodeID id = new NodeID(author, view, name);
+    NodeRevokeReq req = new NodeRevokeReq(id, removeFiles);
+
+    Object obj = performTransaction(MasterRequest.Revoke, req);
+    handleSimpleResponse(obj);
+  } 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Rename a working version of a node owned by the current user which has never 
+   * been checked-in. <P> 
    * 
    * This operation allows a user to change the name of a previously registered node before 
    * it is checked-in. If a working version is successfully renamed, all node connections 
@@ -1454,6 +1517,70 @@ class MasterMgrClient
     Object obj = performTransaction(MasterRequest.Rename, req);
     handleSimpleResponse(obj);
   } 
+
+  /**
+   * Rename a working version of a node owned by the given user which has never 
+   * been checked-in. <P> 
+   * 
+   * This operation allows a user to change the name of a previously registered node before 
+   * it is checked-in. If a working version is successfully renamed, all node connections 
+   * will be preserved. <P> 
+   * 
+   * In addition to changing the name of the working version, this operation can also 
+   * rename the files associated with the working version to match the new node name if 
+   * the <CODE>renameFiles</CODE> argument is <CODE>true</CODE>.  The primary file sequence
+   * will be renamed to have a prefix which is identical to the last component of the 
+   * <CODE>newName</CODE> argument.  The secondary file sequence prefixes will remain
+   * unchanged. Both primary and secondary file sequences will be moved into the working 
+   * directory based on the new node name. <P> 
+   * 
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param oldName 
+   *   The current fully resolved node name.
+   * 
+   * @param newName 
+   *   The new fully resolved node name.
+   * 
+   * @param renameFiles 
+   *   Should the files associated with the working version be renamed?
+   * 
+   * @throws PipelineException 
+   *   If unable to rename the given node or its associated primary files.
+   */ 
+  public void 
+  rename
+  ( 
+   String author, 
+   String view, 
+   String oldName, 
+   String newName,
+   boolean renameFiles
+  ) 
+    throws PipelineException
+  {
+    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
+      throw new PipelineException
+	("Only privileged users may rename nodes owned by another user!");
+
+    verifyConnection();
+
+    NodeID id = new NodeID(author, view, oldName);
+    NodeRenameReq req = new NodeRenameReq(id, newName, renameFiles);
+
+    Object obj = performTransaction(MasterRequest.Rename, req);
+    handleSimpleResponse(obj);
+  } 
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /** 
    * Check-In the tree of nodes rooted at the given working version. <P> 
