@@ -3,6 +3,18 @@ noinst_DATA = \
   pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.bin
 
 
+if ENABLE_CACHING_COND
+PLNOTIFY_RPM = SRPMS/plnotify-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.src.rpm
+endif ENABLE_CACHING_COND
+
+RPMS = \
+  RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+  RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+  RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+  $(PLNOTIFY_RPM)
+
+
+
 pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.bin: header
 	@echo "Building Shell Archive: " $@
 	@rm -f $@
@@ -25,18 +37,10 @@ header: pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.tgz \
 
 
 
-pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.tgz: pipeline-install \
-  RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
-  RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
-  RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
-  SRPMS/plnotify-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.src.rpm
+pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.tgz: pipeline-install $(RPMS) 
 	rm -rf pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@
 	mkdir pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@
-	cp RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
-           RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
-           RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
-           SRPMS/plnotify-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.src.rpm \
-           pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@
+	cp $(RPMS) pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@
 	tar -zcvf $@ pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@
 	rm -rf pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@
 
@@ -45,7 +49,9 @@ pipeline-install: clean-rpms rpm-mkdirs
 	DESTDIR=`pwd`/DEST/pipeline $(MAKE) -C .. install
 	mkdir -p DEST/plmaster DEST/plqueuemgr/usr/share/pipeline
 	mv DEST/pipeline/usr DEST/plmaster
+if ENABLE_CACHING_COND
 	DESTDIR=`pwd`/SOURCES $(MAKE) -C ../src/standalone install
+endif ENABLE_CACHING_COND
 
 rpm-mkdirs: 
 	mkdir -p BUILD DEST RPMS SPECS SOURCES SRPMS 
@@ -98,8 +104,5 @@ clean: clean-rpms
 	$(MAKE) -C ../ clean
 
 clean-rpms: 
-	rm -f RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm
-	rm -f RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm
-	rm -f RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm
-	rm -f SRPMS/plnotify-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.src.rpm
+	rm -f $(RPMS)
 

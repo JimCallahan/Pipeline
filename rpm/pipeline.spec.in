@@ -34,7 +34,7 @@ The core features of Pipeline include:
 
 %defattr(4550,root,@PIPELINE_GROUP@)
 @ROOT_INST_DIR@/sbin/plrun
-@ROOT_INST_DIR@/sbin/plnotify
+@PLNOTIFY_RPM_PATH@
 
 %defattr(500,@PIPELINE_USER@,@PIPELINE_GROUP@)
 @ROOT_INST_DIR@/sbin/plfilemgr
@@ -55,6 +55,7 @@ The core features of Pipeline include:
 @ROOT_INST_DIR@/share/docs
 @ROOT_INST_DIR@/share/logger.properties
 
+%dir @ROOT_INST_DIR@/plconfig
 
 %changelog
 * @RPM_DATE@ Jim Callahan <jim@salamander>
