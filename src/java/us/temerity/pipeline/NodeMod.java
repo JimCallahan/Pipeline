@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.4 2004/03/07 02:41:26 jim Exp $
+// $Id: NodeMod.java,v 1.5 2004/03/09 05:05:57 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -260,7 +260,7 @@ class NodeMod
    *   The new fully resolved node name.
    */
   public void 
-  setName
+  rename
   ( 
    String name
   ) 
@@ -492,6 +492,31 @@ class NodeMod
   /*----------------------------------------------------------------------------------------*/
 
   /** 
+   * Set the name of the execution environment under which to execute the editor program and 
+   * the regeneration action. 
+   * 
+   * @param toolset [<B>in</B>]
+   *   The name of the toolset environment.
+   */
+  public void
+  setToolset
+  (
+   String toolset
+  ) 
+  {
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("Frozen working versions cannot have their editor modified!");
+    
+    if(toolset == null) 
+      throw new IllegalArgumentException
+	("The toolset argument cannot be (null)!");
+    pToolset = toolset;
+
+    updateLastMod();    
+  }
+
+  /** 
    * Set name of the editor plugin used to editing/viewing the files associated with this 
    * working version of the node.
    * 
@@ -661,8 +686,130 @@ class NodeMod
 
     updateLastMod();
   }
+ 
 
+  /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Set the node properties of this working version by copying them from the given
+   * working version. <P> 
+   * 
+   * Node properties include: <BR>
+   * 
+   * <DIV style="margin-left: 40px;">
+   *   The file patterns and frame ranges of primary and secondary file sequences. <BR>
+   *   The toolset environment under which editors and actions are run. <BR>
+   *   The name of the editor plugin used to edit the data files associated with the node.<BR>
+   *   The regeneration action and its single and per-dependency parameters. <BR>
+   *   The job requirements. <BR>
+   *   The IgnoreOverflow and IsSerial flags. <BR>
+   *   The job batch size. <P> 
+   * </DIV> 
+   * 
+   * Note that if the node properties of the given working version are identical to this
+   * working version, than this working version will not changed in any way by calling 
+   * this method. 
+   * 
+   * @param mod [<B>in</B>] 
+   *   The working version from which to copy node properties. 
+   * 
+   * @return
+   *   Whether any node properties where modified.
+   */
+  public boolean
+  setProperties
+  ( 
+   NodeMod mod
+  ) 
+  {
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("Frozen working versions cannot have their node properties modified!");
+
+    boolean modified = false;
+    boolean critical = false;
+
+    {
+      FileSeq fseq = mod.getPrimarySequence();
+      if(!pPrimarySeq.equals(fseq)) {
+	pPrimarySeq = fseq;
+	critical = true;
+      }
+    }
+
+    {
+      SortedSet<FileSeq> secondary = mod.getSecondarySequences();
+      if(!pSecondarySeqs.equals(secondary)) {
+	pSecondarySeqs = new TreeSet(secondary);
+	critical = true;
+      }
+    }
+
+    {
+      String toolset = mod.getToolset();
+      if(!pToolset.equals(toolset)) {
+	pToolset = toolset;
+	modified = true;
+      }
+    }
+
+    {
+      String editor = mod.getEditor(); 
+      if(!(((pEditor == null) && (editor == null)) || pEditor.equals(editor))) {
+	pEditor = editor;
+	modified = true;
+      }
+    }
+    
+    {
+      BaseAction action = mod.getAction(); 
+      if(!(((pAction == null) && (action == null)) || pAction.equals(action))) {
+	pAction = action;
+	critical = true;
+      }
+    }
+
+    {
+      JobReqs jobReqs = mod.getJobRequirements();
+      if(!(((pJobReqs == null) && (jobReqs == null)) || pJobReqs.equals(jobReqs))) {
+	pJobReqs = jobReqs;
+	modified = true;
+      }
+    }
+
+    {
+      boolean tf = mod.ignoreOverflow();
+      if(pIgnoreOverflow != tf) {
+	pIgnoreOverflow = tf;
+	modified = true;
+      }
+    }
+
+    {
+      boolean tf = mod.isSerial();
+      if(pIsSerial != tf) {
+	pIsSerial = tf;
+	modified = true;
+      }
+    }
+
+    {
+      int size = mod.getBatchSize();
+      if(pBatchSize != size) {
+	pBatchSize = size;
+	modified = true;
+      }
+    }
+
+    if(critical) 
+      updateLastCriticalMod();
+    else if(modified) 
+      updateLastMod();
+
+    return (critical || modified);
+  }
+   
+  
   
   /*----------------------------------------------------------------------------------------*/
 
