@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.9 2005/03/04 09:20:30 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.10 2005/03/04 10:55:12 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -971,6 +971,8 @@ class JQueueJobBrowserPanel
 
       TreeSet<String> obsolete = pHostsTableModel.setQueueHosts(hosts, keys, pIsPrivileged);
       pHostsTablePanel.refilterColumns(obsolete); 
+
+      updateHostsHeaderButtons();
 
       pHostsApplyItem.setEnabled(false);
       pHostsApplyButton.setEnabled(false);
