@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.23 2004/07/07 13:25:34 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.24 2004/07/14 21:09:39 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -231,7 +231,6 @@ class JNodeViewerPanel
       item = new JMenuItem("Add Secondary...");
       item.setActionCommand("add-secondary");
       item.addActionListener(this);
-      item.setEnabled(false);  // FOR NOW...
       pNodePopup.add(item);
       
       sub = new JMenu("Remove Secondary");
@@ -426,6 +425,8 @@ class JNodeViewerPanel
 
     /* initialize child dialogs */ 
     {
+      pAddSecondaryDialog = new JAddSecondaryDialog();
+
       pRenameDialog   = new JRenameDialog();
       pRegisterDialog = new JRegisterDialog();
       pRevokeDialog   = new JRevokeDialog();
@@ -790,8 +791,10 @@ class JNodeViewerPanel
    NodeStatus status
   ) 
   {
-    if(pGroupID > 0) 
-      SwingUtilities.invokeLater(new UpdateSubPanelsTask(pGroupID, pAuthor, pView, status));
+    if(pGroupID > 0) {
+      UpdateSubPanelsTask task = new UpdateSubPanelsTask(pGroupID, pAuthor, pView, status);
+      task.start();
+    }
     
     if(status != null) 
       pLastDetailsName = status.getName();
@@ -2101,6 +2104,8 @@ class JNodeViewerPanel
       doLink();    
     else if(cmd.equals("unlink")) 
       doUnlink(); 
+    else if(cmd.equals("add-secondary")) 
+      doAddSecondary(); 
     else if(cmd.equals("rename"))
       doRename();
     else if(cmd.equals("clone"))
@@ -2366,6 +2371,40 @@ class JNodeViewerPanel
       vnode.update();    
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Add a secondary file sequence.
+   */ 
+  private void 
+  doAddSecondary() 
+  {
+    if(pPrimary != null) {
+      NodeDetails details = pPrimary.getNodeStatus().getDetails();
+      if(details != null) {
+	NodeMod mod = details.getWorkingVersion();
+	
+	if(mod != null) {
+	  pAddSecondaryDialog.updateNode(pAuthor, pView, mod);
+	  pAddSecondaryDialog.setVisible(true);
+	  
+	  if(pAddSecondaryDialog.wasConfirmed()) {
+	    FileSeq fseq = pAddSecondaryDialog.getFileSequence();
+	    if(fseq != null) {
+	      AddSecondaryTask task = new AddSecondaryTask(mod.getName(), fseq);
+	      task.start();
+	    }
+	  }
+	}
+      }
+    }
+
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();    
+  }
+
+  
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -2948,6 +2987,8 @@ class JNodeViewerPanel
      String ename
     ) 
     {
+      super("JNodeViewerPanel:EditTask");
+
       pNodeCommon = com;
       pEditorName = ename;
     }
@@ -3071,6 +3112,8 @@ class JNodeViewerPanel
      Integer offset
     ) 
     {
+      super("JNodeViewerPanel:LinkTask");
+
       pTarget = target;
       pSources = sources;
       pPolicy = policy; 
@@ -3122,6 +3165,8 @@ class JNodeViewerPanel
      TreeSet<String> sources
     ) 
     {
+      super("JNodeViewerPanel:UnlinkTask");
+
       pTarget = target;
       pSources = sources;
     }
@@ -3148,10 +3193,58 @@ class JNodeViewerPanel
       }
     }
     
-    private String pTarget;
-    private TreeSet<String> pSources;
+    private String           pTarget;
+    private TreeSet<String>  pSources;
   }
   
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /** 
+   * Add a secondary file sequence to the given node.
+   */ 
+  private
+  class AddSecondaryTask
+    extends Thread
+  {
+    public 
+    AddSecondaryTask
+    (
+     String target, 
+     FileSeq fseq
+    ) 
+    {
+      super("JNodeViewerPanel:AddSecondaryTask");
+
+      pTarget = target;
+      pFileSeq = fseq; 
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Adding Secondary File Sequence...")) {
+	try {
+	  master.getMasterMgrClient().addSecondary(pAuthor, pView, pTarget, pFileSeq);
+	}
+ 	catch(PipelineException ex) {
+ 	  master.showErrorDialog(ex);
+ 	  return;
+ 	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	updateRoots();
+      }
+    }
+    
+    private String   pTarget;
+    private FileSeq  pFileSeq; 
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -3170,6 +3263,8 @@ class JNodeViewerPanel
      boolean renameFiles
     ) 
     {
+      super("JNodeViewerPanel:RenameTask");
+
       pOldName     = oldName; 
       pNewName     = newName; 
       pRenameFiles = renameFiles;
@@ -3214,6 +3309,8 @@ class JNodeViewerPanel
      NodeMod mod 
     ) 
     {
+      super("JNodeViewerPanel:RegisterTask");
+
       pNodeMod = mod;
     }
 
@@ -3255,6 +3352,8 @@ class JNodeViewerPanel
      boolean removeFiles
     ) 
     {
+      super("JNodeViewerPanel:RevokeTask");
+
       pName        = name; 
       pRemoveFiles = removeFiles;
     }
@@ -3298,6 +3397,8 @@ class JNodeViewerPanel
      VersionID.Level level
     ) 
     {
+      super("JNodeViewerPanel:CheckInTask");
+
       pName        = name; 
       pDescription = desc;
       pLevel       = level;
@@ -3343,6 +3444,8 @@ class JNodeViewerPanel
      boolean keepNewer
     ) 
     {
+      super("JNodeViewerPanel:CheckOutTask");
+
       pName      = name; 
       pVersionID = vid; 
       pKeepNewer = keepNewer;
@@ -3387,6 +3490,8 @@ class JNodeViewerPanel
      JNodeViewerPanel viewer
     ) 
     {
+      super("JNodeViewerPanel:StatusTask");
+
       pViewer = viewer;
     }
  
@@ -3418,12 +3523,12 @@ class JNodeViewerPanel
 	    
 	    for(String name : dead) 
 	      pRoots.remove(name);
-	    
-	    updateUniverse();
 	  }
 	  finally {
 	    master.endPanelOp("Done.");
 	  }
+	  
+	  updateUniverse();
 	}
       }
     }
@@ -3495,7 +3600,7 @@ class JNodeViewerPanel
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Update the node status being displayed by the connected node subpanels.
+   * Update the subpanels.
    */
   private 
   class UpdateSubPanelsTask
@@ -3510,10 +3615,106 @@ class JNodeViewerPanel
      NodeStatus status
     )
     {      
+      super("JNodeViewerPanel:UpdateSubPanelsTask");
+
       pGroupID = groupID;
       pAuthor  = author;
       pView    = view;
       pStatus  = status;
+      pNovelty = null;
+      pHistory = null;
+    }
+
+    public void 
+    run()
+    {
+      UIMaster master = UIMaster.getInstance();
+
+      if(pStatus != null) {
+	NodeDetails details = pStatus.getDetails();
+
+	{
+	  PanelGroup<JNodeFilesPanel> panels = 
+	    UIMaster.getInstance().getNodeFilesPanels();
+	  JNodeFilesPanel panel = panels.getPanel(pGroupID);
+	  if(panel != null) {
+	    if(master.beginPanelOp("Updating Node Files...")) {
+	      try {
+		MasterMgrClient client = master.getMasterMgrClient();
+		pNovelty = client.getCheckedInFileNovelty(pStatus.getName());
+	      }
+	      catch(PipelineException ex) {
+		master.showErrorDialog(ex);
+	      }
+	      finally {
+		master.endPanelOp("Done.");
+	      }
+	    }
+	  }
+	}
+      
+	if(details.getLatestVersion() != null) {
+	  PanelGroup<JNodeHistoryPanel> panels = 
+	    UIMaster.getInstance().getNodeHistoryPanels();
+	  JNodeHistoryPanel panel = panels.getPanel(pGroupID);
+	  if(panel != null) {
+	    if(master.beginPanelOp("Updating Node History...")) {
+	      try {
+		MasterMgrClient client = master.getMasterMgrClient();
+		pHistory = client.getHistory(pStatus.getName());
+	      }
+	      catch(PipelineException ex) {
+		master.showErrorDialog(ex);
+	      }
+	      finally {
+		master.endPanelOp("Done.");
+	      }
+	    }
+	  }
+	}
+      }
+
+      UpdateSubPanelComponentsTask task = 
+	new UpdateSubPanelComponentsTask(pGroupID, pAuthor, pView, pStatus, 
+					 pNovelty, pHistory);
+      SwingUtilities.invokeLater(task);
+    }
+    
+    private int         pGroupID;
+    private String      pAuthor;
+    private String      pView; 
+    private NodeStatus  pStatus;
+
+    private TreeMap<VersionID,TreeMap<FileSeq,boolean[]>> pNovelty;
+    private TreeMap<VersionID,LogMessage> pHistory;
+  }
+  
+  /**
+   * Update the subpanels UI components.
+   */
+  private 
+  class UpdateSubPanelComponentsTask
+    extends Thread
+  {
+    public 
+    UpdateSubPanelComponentsTask
+    (
+     int groupID, 
+     String author, 
+     String view, 
+     NodeStatus status, 
+     TreeMap<VersionID,TreeMap<FileSeq,boolean[]>> novelty,
+     TreeMap<VersionID,LogMessage> history
+    )
+    {      
+      super("JNodeViewerPanel:UpdateSubPanelComponentsTask");
+
+      pGroupID = groupID;
+      pAuthor  = author;
+      pView    = view;
+      pStatus  = status;
+      pNovelty = novelty;
+      pHistory = history;
     }
 
     public void 
@@ -3521,19 +3722,28 @@ class JNodeViewerPanel
     {
       {
 	PanelGroup<JNodeDetailsPanel> panels = UIMaster.getInstance().getNodeDetailsPanels();
-	JNodeDetailsPanel details = panels.getPanel(pGroupID);
-	if(details != null) {
-	  details.updateNodeStatus(pAuthor, pView, pStatus);
-	  details.updateManagerTitlePanel();
+	JNodeDetailsPanel panel = panels.getPanel(pGroupID);
+	if(panel != null) {
+	  panel.updateNodeStatus(pAuthor, pView, pStatus);
+	  panel.updateManagerTitlePanel();
 	}
       }
 
       {
+	PanelGroup<JNodeFilesPanel> panels = UIMaster.getInstance().getNodeFilesPanels();
+	JNodeFilesPanel panel = panels.getPanel(pGroupID);
+	if(panel != null) {
+	  panel.updateNodeStatus(pAuthor, pView, pStatus, pNovelty);
+	  panel.updateManagerTitlePanel();
+	}
+      }
+      
+      {
 	PanelGroup<JNodeHistoryPanel> panels = UIMaster.getInstance().getNodeHistoryPanels();
-	JNodeHistoryPanel history = panels.getPanel(pGroupID);
-	if(history != null) {
-	  history.updateNodeStatus(pAuthor, pView, pStatus);
-	  history.updateManagerTitlePanel();
+	JNodeHistoryPanel panel = panels.getPanel(pGroupID);
+	if(panel != null) {
+	  panel.updateNodeStatus(pAuthor, pView, pStatus, pHistory);
+	  panel.updateManagerTitlePanel();
 	}
       }
     }
@@ -3542,6 +3752,9 @@ class JNodeViewerPanel
     private String      pAuthor;
     private String      pView; 
     private NodeStatus  pStatus;
+
+    private TreeMap<VersionID,TreeMap<FileSeq,boolean[]>> pNovelty;
+    private TreeMap<VersionID,LogMessage> pHistory;
   }
 
 
@@ -3702,6 +3915,11 @@ class JNodeViewerPanel
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The add secondary dialog;
+   */ 
+  private JAddSecondaryDialog  pAddSecondaryDialog;
 
   /**
    * The rename node dialog.
