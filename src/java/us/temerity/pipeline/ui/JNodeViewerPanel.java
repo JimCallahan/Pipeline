@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.3 2004/05/07 18:11:12 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.4 2004/05/07 21:11:18 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -138,54 +138,6 @@ class JNodeViewerPanel
 	pNodePool = new ViewerNodePool();
 	pUniverse.addBranchGraph(pNodePool.getBranchGroup());
       }
-      
-
-      // DEBUG 
-      {
-	try {
-	  pNodePool.updatePrep();
-
-	  {
-	    NodeStatus status = 
-	      UIMaster.getInstance().getNodeMgrClient().status
-	        ("default", "/images/normal");
-	    NodePath path = new NodePath(status.getName());
-
-	    ViewerNode vnode = pNodePool.getViewerNode(status, path);
-	    vnode.setPosition(new Point2d(0.0, -2.0));
-	  }
-
-	  {
-	    NodeStatus status = 
-	      UIMaster.getInstance().getNodeMgrClient().status
-	      ("default", "/animals/birds/eagle");
-
-	    NodePath path = new NodePath(status.getName());
-	    
-	    ViewerNode vnode = pNodePool.getViewerNode(status, path);
-	    vnode.setPosition(new Point2d(0.0, 0.0));
-
-	    double y = 2.0;
-	    for(String sname : status.getSourceNames()) {
-	      NodeStatus sstatus = status.getSource(sname);
-	      NodePath spath = new NodePath(path, sstatus.getName());
-	    
-	      ViewerNode svnode = pNodePool.getViewerNode(sstatus, spath);
-	      svnode.setPosition(new Point2d(3.0, y));
-	      svnode.setCollapsed(true);
-
-	      y -= 2.0;
-	    }
-	  }
-
-	  pNodePool.update();
-	}
- 	catch(Exception ex) {
-	  ex.printStackTrace();
- 	}
-      }
-      // DEBUG 
-
     }
   }
 
@@ -247,7 +199,27 @@ class JNodeViewerPanel
   ) 
   {
     super.setAuthorView(author, view);
-    updateUniverse();
+    updateNodeStatus();
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Set the focus of the viewer to the given node in the working area view owned by 
+   * the given author.
+   */ 
+  public void 
+  setFocus
+  (
+   String author, 
+   String view,
+   String name
+  )  
+  {
+    super.setAuthorView(author, view);
+    pFocus = name;
+    updateNodeStatus();
   }
 
 
@@ -259,15 +231,41 @@ class JNodeViewerPanel
    * Update the nodes being viewed.
    */ 
   private void 
-  updateUniverse()
+  updateNodeStatus()
   {
+    if(pNodePool == null) 
+      return;
+    
+    StatusTask task = new StatusTask();
+    task.start();
+  }
 
-    // ...
-
+  /**
+   * Update the visualization graphics.
+   */
+  private synchronized void 
+  updateUniverse()
+  {  
+    pNodePool.updatePrep();
+      
+    if(pStatus != null) {
+      
+      // DEBUG 
+      NodePath path = new NodePath(pStatus.getName());
+      ViewerNode vnode = pNodePool.getViewerNode(pStatus, path);
+      vnode.setPosition(new Point2d(0.0, 0.0));
+      // DEBUG 
+      
+      
+      // do layout of nodes...
+      
+    }
+    
+    pNodePool.update();
   }
 
 
-  
+
   /*----------------------------------------------------------------------------------------*/
   /*   L I S T E N E R S                                                                    */
   /*----------------------------------------------------------------------------------------*/
@@ -337,6 +335,45 @@ class JNodeViewerPanel
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L   C L A S S E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /** 
+   * Get the status of the focused node.
+   */ 
+  private
+  class StatusTask
+    extends Thread
+  { 
+    public void 
+    run() 
+    {  
+      pStatus = null;
+      if(pFocus != null) {
+	UIMaster master = UIMaster.getInstance();
+
+	if(master.beginPanelOp("Updating Node Status...")) {
+	  String msg = "Failed!";
+	  try {
+	    pStatus = master.getNodeMgrClient().status(pAuthor, pView, pFocus);
+	    msg = "Done.";
+	  }
+	  catch(PipelineException ex) {
+	    master.showErrorDialog(ex);
+	  }
+	  finally {
+	    master.endPanelOp(msg);
+	  }
+	}
+      }
+
+      updateUniverse();
+    }
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
@@ -347,6 +384,17 @@ class JNodeViewerPanel
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The fully resolved name of the focus node.
+   */ 
+  private String  pFocus;
+  
+  /**
+   * The status of the focus node and all of its upstream/downstream connections.
+   */ 
+  private NodeStatus pStatus;
+
   
   /**
    * The Java3D scene graph.
