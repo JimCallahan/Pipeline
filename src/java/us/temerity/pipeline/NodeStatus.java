@@ -1,4 +1,4 @@
-// $Id: NodeStatus.java,v 1.2 2004/03/03 07:49:10 jim Exp $
+// $Id: NodeStatus.java,v 1.3 2004/03/07 02:42:14 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -44,6 +44,8 @@ class NodeStatus
   {
     super(name);
 
+    pTimeStamp = new Date();
+
     pOverallNodeState  = nodeState;
     pOverallQueueState = queueState;
   }
@@ -61,12 +63,27 @@ class NodeStatus
   ) 
   {
     super(name);
+
+    pTimeStamp = new Date();
   }
 
 
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get when the node status was determined.
+   */ 
+  public Date
+  getTimeStamp() 
+  {
+    assert(pTimeStamp != null);
+    return (Date) pTimeStamp.clone();
+  }
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -99,10 +116,10 @@ class NodeStatus
   /** 
    * Get the fully resolved names names of the upstream nodes.
    */ 
-  public ArrayList<String>
+  public Set<String>
   getSourceNames() 
   {
-    return new ArrayList<String>(pSources.keySet());
+    return Collections.unmodifiableSet(pSources.keySet());
   }
 
   /** 
@@ -121,6 +138,15 @@ class NodeStatus
   ) 
   {
     return pSources.get(name);
+  }
+  
+  /** 
+   * Get the node status of all of the upstream nodes.
+   */ 
+  public Collection<NodeStatus>
+  getSources()
+  {
+    return Collections.unmodifiableCollection(pSources.values());
   }
   
   /** 
@@ -147,10 +173,10 @@ class NodeStatus
   /** 
    * Get the fully resolved names names of the downstream nodes.
    */ 
-  public ArrayList<String>
+  public Set<String>
   getTargetNames() 
   {
-    return new ArrayList<String>(pTargets.keySet());
+    return Collections.unmodifiableSet(pTargets.keySet());
   }
 
   /** 
@@ -171,6 +197,15 @@ class NodeStatus
     return pTargets.get(name);
   }
   
+  /** 
+   * Get the node status of all of the downstream nodes.
+   */ 
+  public Collection<NodeStatus>
+  getTargets()
+  {
+    return Collections.unmodifiableCollection(pTargets.values());
+  }
+
   /** 
    * Add a node status to the set of downstream nodes. <P> 
    * 
@@ -202,6 +237,12 @@ class NodeStatus
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * When the message node status was determined.
+   */ 
+  private Date  pTimeStamp; 
+
 
   /** 
    * The overall revision control state of the node.
