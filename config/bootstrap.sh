@@ -7,7 +7,7 @@ pushd $HOME/code2/src/pipeline
   sh autogen.sh
 popd
 
-plprofile=/base/apps/i686-pc-linux-gnu-dbg/Pipeline-1.4.1/config/customer-profile
+plprofile=/base/apps/i686-pc-linux-gnu-dbg/Pipeline-1.5.0/config/customer-profile
 
 pushd i686-pc-linux-gnu-dbg
   $HOME/code2/src/pipeline/configure \
