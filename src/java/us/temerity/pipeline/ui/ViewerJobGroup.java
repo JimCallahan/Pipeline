@@ -1,4 +1,4 @@
-// $Id: ViewerJobGroup.java,v 1.3 2004/09/05 06:54:07 jim Exp $
+// $Id: ViewerJobGroup.java,v 1.4 2004/09/11 14:19:14 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -352,9 +352,11 @@ class ViewerJobGroup
     {
       Transform3D xform = new Transform3D();
 
-      Vector3d center = new Vector3d(0.0, pMaxBounds.y+0.5, 0.0);
+      xform.setScale(prefs.getJobLabelSize());
+
+      Vector3d center = new Vector3d(pMinBounds.x, pMaxBounds.y+0.5, 0.0);
       xform.setTranslation(center);
-      
+
       pLabelXform.setTransform(xform);
     }
 
