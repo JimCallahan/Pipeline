@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.3 2004/04/28 03:59:57 jim Exp $
+// $Id: JNodeBrowserPanel.java,v 1.4 2004/04/28 23:23:51 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -30,70 +30,6 @@ class JNodeBrowserPanel
   {
     super();
     
-    setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));   
-
-    {
-      JPanel panel = new JPanel();
-      panel.setName("PanelBar");
-      panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS)); 
-      panel.setMinimumSize(new Dimension(200, 29));
-      panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 29));
-      panel.setPreferredSize(new Dimension(200, 29));
-
-      {
-	JButton btn = new JButton();
-	btn.setName("PanelMenuButton");
-
-	Dimension size = new Dimension(14, 19);
-	btn.setMinimumSize(size);
-	btn.setMaximumSize(size);
-	btn.setPreferredSize(size);
-	
-	panel.add(btn);
-      }
-
-      panel.add(Box.createHorizontalGlue());
-
-      {
-	JComboBox combo = new JComboBox();
-	combo.setRenderer(new JComboBoxCellRenderer());
-
-	Dimension size = new Dimension(155, 19);
-	combo.setMinimumSize(size);
-	combo.setMaximumSize(size);
-	combo.setPreferredSize(size);
-
-	combo.addItem("Node Browser");
-	combo.addItem("Node Viewer");
-	combo.addItem("Node Properties");
-	combo.addItem("Node Links");
-	combo.addItem("Node Files");
-	combo.addItem("Node History");
-	combo.addItem("Queue Manager");
-	combo.addItem("Job Details");
-	combo.addItem("Task Timeline");
-	combo.addItem("Task Details");
-	
-	panel.add(combo);
-      }
-
-      panel.add(Box.createHorizontalGlue());
-
-      {
-	JButton btn = new JButton();
-	btn.setName("CloseButton");
-
-	Dimension size = new Dimension(15, 19);
-	btn.setMinimumSize(size);
-	btn.setMaximumSize(size);
-	btn.setPreferredSize(size);
-	
-	panel.add(btn);
-      }
-
-      add(panel);
-    }
-
     add(Box.createVerticalGlue());
     add(Box.createRigidArea(new Dimension(0,20)));
 

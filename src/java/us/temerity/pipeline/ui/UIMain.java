@@ -1,4 +1,4 @@
-// $Id: UIMain.java,v 1.3 2004/04/28 03:59:57 jim Exp $
+// $Id: UIMain.java,v 1.4 2004/04/28 23:23:51 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -100,47 +100,32 @@ class UIMain
 	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
       }
 
+      JPanel content = null;
+      {
+	content = new JPanel(new BorderLayout());
+	content.setName("RootPanel");
+
+	frame.setContentPane(content);
+      }
       
-      JNodeBrowserPanel panel = new JNodeBrowserPanel();
-      panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+      JManagerPanel root = null;
+      {
+	root = new JManagerPanel();
+	content.add(root, BorderLayout.CENTER);
+      }
 
-      JManagerPanel rootPanel = new JManagerPanel(panel);
-      rootPanel.setName("RootPanel");
-
-      frame.add(rootPanel);
-      
-      
-//       JPanel rootPanel = null;
-//       {
-// 	rootPanel = new JPanel();
-// 	rootPanel.setName("RootPanel");
-// 	rootPanel.setLayout(new BorderLayout());
-
-// 	frame.add(rootPanel);
-//       }      
-
-//       JSplitPanePL splitLR = null;
-//       { 
-// 	JLabel left  = new JLabel("Left");
-// 	JLabel right = new JLabel("Right");
-
-// 	splitLR = new JSplitPanePL(JSplitPane.HORIZONTAL_SPLIT, left, right);
-//       }
-      
-//       JSplitPanePL splitUD = null;
-//       {
-//  	JLabel top = new JLabel("Top");
-	
-//   	splitUD = new JSplitPanePL(JSplitPane.VERTICAL_SPLIT, top, splitLR);
-//  	splitUD.setOneTouchExpandable(true);
-//  	splitUD.setResizeWeight(0.5);
-//  	splitUD.setDividerSize(10);
-
-//  	rootPanel.add(splitUD);
-//       }
+      {
+	JNodeBrowserPanel panel = new JNodeBrowserPanel();
+	panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+	root.setContents(panel);
+      }
 
       frame.pack();
       frame.setVisible(true);
+
+
+      RepaintManager rmgr = RepaintManager.currentManager(frame);
+      System.out.print("Dubble Buffered = " + rmgr.isDoubleBufferingEnabled() + "\n");
     }
   }
 

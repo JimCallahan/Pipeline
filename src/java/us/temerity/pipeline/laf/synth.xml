@@ -20,6 +20,7 @@
   <bind style="RootPanel" type="name" key="RootPanel"/>
 
 
+
   <!--  P A N E L   B A R  -->
 
   <style id="PanelBar">
@@ -30,22 +31,6 @@
   </style>
   <bind style="PanelBar" type="name" key="PanelBar"/>
 
-
-  <!--  P A N E L   M E N U   B U T T O N  --> 
-
-  <style id="PanelMenuButton"> 
-    <state>
-      <imagePainter path="PanelMenuButton.png"
-                    sourceInsets="0 0 0 0"/>
-      <insets top="0" bottom="0" right="0" left="0"/> 
-    </state>
-    <state value="PRESSED">
-      <imagePainter path="PanelMenuButtonPressed.png"
-                    sourceInsets="0 0 0 0"/>
-      <insets top="0" bottom="0" right="0" left="0"/> 
-    </state>
-  </style>
-  <bind style="PanelMenuButton" type="name" key="PanelMenuButton"/>
 
 
   <!--  C L O S E   B U T T O N  -->
@@ -63,6 +48,7 @@
     </state>
   </style>
   <bind style="CloseButton" type="name" key="CloseButton"/>
+
 
 
   <!--  C O M B O   B O X  -->
@@ -89,6 +75,7 @@
     <property key="ScrollPane.viewportBorderInsets" type="insets" value="5 5 5 5"/>
   </style>
   <bind style="ComboBoxScrollPane" type="name" key="ComboBox.scrollPane"/>
+
 
    
   <!--  S C R O L L   B A R  -->
@@ -141,6 +128,7 @@
   <bind style="ScrollBarArrowSouth" type="name" key="ScrollBar.button"/>
 
 
+
   <!--  M E N U S  -->
 
   <style id="Menu">
@@ -187,6 +175,7 @@
     <insets top="2" bottom="2" right="4" left="4"/>
   </style>
   <bind style="PopupMenuSeparator" type="region" key="PopupMenuSeparator"/>
+
 
 
   <!--  S P L I T   P A N E  -->

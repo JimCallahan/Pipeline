@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.3 2004/04/28 00:43:23 jim Exp $
+// $Id: JManagerPanel.java,v 1.4 2004/04/28 23:23:51 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -23,25 +23,19 @@ import javax.swing.*;
 public 
 class JManagerPanel
   extends JPanel
-  implements MouseListener, ActionListener
+  implements ActionListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Construct the root manager panel. <P> 
-   * 
-   * @param child
-   *   The iniitial child component.
+   * Construct a manager panel. 
    */
-  JManagerPanel
-  (
-   Component child
-  )
+  JManagerPanel()
   {
-    super(new BorderLayout());
-    setContents(child); 
+    super();
+    setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));   
 
     /* panel layout popup menu */ 
     {
@@ -49,112 +43,117 @@ class JManagerPanel
       
       pPopup = new JPopupMenu();    
       
-      item = new JMenuItem("Node Browser");
-      item.setActionCommand("node-browser");
+      item = new JMenuItem("Add Left");
+      item.setActionCommand("add-left");
       item.addActionListener(this);
       pPopup.add(item);  
       
-      item = new JMenuItem("Node Viewer");
-      item.setActionCommand("node-viewer");
+      item = new JMenuItem("Add Right");
+      item.setActionCommand("add-right");
       item.addActionListener(this);
       pPopup.add(item);  
-      
-      pPopup.addSeparator();
-
-      item = new JMenuItem("Node Properties");
-      item.setActionCommand("node-properties");
-      item.addActionListener(this);
-      pPopup.add(item);  
-
-      item = new JMenuItem("Node Links");
-      item.setActionCommand("node-links");
-      item.addActionListener(this);
-      pPopup.add(item);  
-      
-      item = new JMenuItem("Node Files");
-      item.setActionCommand("node-files");
-      item.addActionListener(this);
-      pPopup.add(item);  
-      
-      item = new JMenuItem("Node History");
-      item.setActionCommand("node-history");
-      item.addActionListener(this);
-      pPopup.add(item);  
-      
-      pPopup.addSeparator();
-
-      item = new JMenuItem("Queue Manager");
-      item.setActionCommand("queue-manager");
-      item.addActionListener(this);
-      pPopup.add(item);  
-      
-      item = new JMenuItem("Job Details");
-      item.setActionCommand("job-details");
-      item.addActionListener(this);
-      pPopup.add(item);  
-
-      pPopup.addSeparator();
-      
-      item = new JMenuItem("Task Timeline");
-      item.setActionCommand("task-timeline");
-      item.addActionListener(this);
-      pPopup.add(item);  
-      
-      item = new JMenuItem("Task Details");
-      item.setActionCommand("task-details");
-      item.addActionListener(this);
-      pPopup.add(item);  
-      
-      pPopup.addSeparator();
-
-      {	
-	JMenu layout = new JMenu("Panel Layout");
-	pPopup.add(layout); 
-	
-	{	
-	  JMenu horz = new JMenu("Horizontal Split");
-	  layout.add(horz); 
 	  
-	  item = new JMenuItem("Add Left");
-	  item.setActionCommand("add-left");
-	  item.addActionListener(this);
-	  horz.add(item);  
-	
-	  item = new JMenuItem("Add Right");
-	  item.setActionCommand("add-right");
-	  item.addActionListener(this);
-	  horz.add(item);  
-	}
-
-	{	
-	  JMenu vert = new JMenu("Vertical Split");
-	  layout.add(vert); 
+      pPopup.addSeparator();
+      
+      item = new JMenuItem("Add Above");
+      item.setActionCommand("add-above");
+      item.addActionListener(this);
+      pPopup.add(item);  
 	  
-	  item = new JMenuItem("Add Above");
-	  item.setActionCommand("add-above");
-	  item.addActionListener(this);
-	  vert.add(item);  
+      item = new JMenuItem("Add Below");
+      item.setActionCommand("add-below");
+      item.addActionListener(this);
+      pPopup.add(item);  
+      
+      pPopup.addSeparator();
+      
+      item = new JMenuItem("Add Tab");
+      item.setActionCommand("add-tab");
+      item.addActionListener(this);
+      pPopup.add(item);  
+    }
+
+    /* panel title bar */ 
+    {
+      JPanel panel = new JPanel();
+      pTitlePanel = panel;
+
+      panel.setName("PanelBar");
+      panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS)); 
+
+      panel.setMinimumSize(new Dimension(200, 29));
+      panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 29));
+      panel.setPreferredSize(new Dimension(200, 29));
+
+    //   {
+// 	JButton btn = new JButton();
+// 	pMenuButton = btn;
+
+// 	btn.setName("PanelMenuButton");
+
+// 	Dimension size = new Dimension(14, 19);
+// 	btn.setMinimumSize(size);
+// 	btn.setMaximumSize(size);
+// 	btn.setPreferredSize(size);
 	
-	  item = new JMenuItem("Add Below");
-	  item.setActionCommand("add-below");
-	  item.addActionListener(this);
-	  vert.add(item);  
-	}
-	
-	layout.addSeparator();
-	
-	item = new JMenuItem("Add Tab");
-	item.setActionCommand("add-tab");
-	item.addActionListener(this);
-	layout.add(item);  
+// 	btn.setActionCommand("show-panel-menu");
+//         btn.addActionListener(this);
+
+// 	panel.add(btn);
+//       }
+
+      {
+	JMenuAnchor anchor = new JMenuAnchor(pPopup);
+	panel.add(anchor);
       }
 
-      pPopup.addSeparator();
+      panel.add(Box.createHorizontalGlue());
+
+      {
+	JComboBox combo = new JComboBox();
+	pSelectorCombo = combo;
+
+	combo.setRenderer(new JComboBoxCellRenderer());
+
+	Dimension size = new Dimension(155, 19);
+	combo.setMinimumSize(size);
+	combo.setMaximumSize(size);
+	combo.setPreferredSize(size);
+
+	combo.setActionCommand("select-panel-type");
+        combo.addActionListener(this);
+
+	combo.addItem("Node Browser");
+	combo.addItem("Node Viewer");
+	combo.addItem("Node Properties");
+	combo.addItem("Node Links");
+	combo.addItem("Node Files");
+	combo.addItem("Node History");
+	combo.addItem("Queue Manager");
+	combo.addItem("Job Details");
+	combo.addItem("Task Timeline");
+	combo.addItem("Task Details");
+	combo.addItem("- None -");
 	
-      item = new JMenuItem("Close Panel");
-      item.setActionCommand("close-panel");
-      item.addActionListener(this);
-      pPopup.add(item);  
+	panel.add(combo);
+      }
+
+      panel.add(Box.createHorizontalGlue());
+
+      {
+	JButton btn = new JButton();
+	btn.setName("CloseButton");
+
+	Dimension size = new Dimension(15, 19);
+	btn.setMinimumSize(size);
+	btn.setMaximumSize(size);
+	btn.setPreferredSize(size);
+	
+	btn.setActionCommand("close-panel");
+        btn.addActionListener(this);
+
+	panel.add(btn);
+      }
     }
   }
 
@@ -181,10 +180,16 @@ class JManagerPanel
 
     removeContents();
 
-    add(child, 0);
+    if(!(child instanceof JSplitPanel)) {
+      add(pTitlePanel);
+    }
+    
+    // .. set pSelectorCombo
+    
+    add(child);
+    
     validate();
-
-    addMouseListener(this);
+    repaint();
   }
     
   /**
@@ -196,94 +201,26 @@ class JManagerPanel
   public Component
   removeContents() 
   { 
-    if(getComponentCount() == 1) {
-      Component old = getComponent(0);
-      old.removeMouseListener(this);
-      remove(0);
-      
-      return old;
-    }
-
-    assert(getComponentCount() == 0);
-    return null;
+    int idx = getComponentCount()-1;
+    if(idx == -1) 
+      return null;
+    
+    Component old = getComponent(idx);
+    removeAll();
+    return old;
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
   /*   L I S T E N E R S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
-  /*-- MOUSE LISTNER METHODS ---------------------------------------------------------------*/
-
-  /**
-   * Invoked when the mouse button has been clicked (pressed and released) on a component. 
-   */ 
-  public void 
-  mouseClicked
-  (
-   MouseEvent e
-  )
-  {}
-   
-  /**
-   * Invoked when the mouse enters a component. 
-   */
-  public void 
-  mouseEntered
-  (
-   MouseEvent e
-  )
-  {}
-  
-  /**
-   * Invoked when the mouse exits a component. 
-   */ 
-  public void 
-  mouseExited
-  (
-   MouseEvent e
-  )
-  {}
-  
-  /**
-   * Invoked when a mouse button has been pressed on a component. 
-   */
-  public void 
-  mousePressed
-  (
-   MouseEvent e
-  )
-  {
-    int mods = e.getModifiersEx();
-    if(e.getButton() == MouseEvent.BUTTON3) {
-      int on  = (MouseEvent.BUTTON3_DOWN_MASK);
-      
-      int off = (MouseEvent.BUTTON1_DOWN_MASK | 
-		 MouseEvent.BUTTON2_DOWN_MASK | 
-		 MouseEvent.SHIFT_DOWN_MASK |
-		 MouseEvent.ALT_DOWN_MASK |
-		 MouseEvent.CTRL_DOWN_MASK);
-
-      if((mods & (on | off)) == on) 
-	pPopup.show(e.getComponent(), e.getX(), e.getY());
-    }
-  }
-  
-  /**
-   * Invoked when a mouse button has been released on a component. 
-   */ 
-  public void 
-  mouseReleased
-  (
-   MouseEvent e
-  )
-  {}
-
-
-
   /*-- ACTION LISTNER METHODS --------------------------------------------------------------*/
 
-  /* Invoked when an action occurs. */ 
+  /** 
+   * Invoked when an action occurs. 
+   */ 
   public void 
   actionPerformed
   (
@@ -293,7 +230,13 @@ class JManagerPanel
     System.out.print("Action: " + e.getActionCommand() + "\n");
 
     /* dispatch event */ 
-    if(e.getActionCommand().equals("add-left"))
+    if(e.getActionCommand().equals("show-panel-menu")) {
+      Component comp = (Component) e.getSource();
+      pPopup.show(comp, 0, 0);
+    }
+    else if(e.getActionCommand().equals("select-panel-type")) 
+      System.out.print("Select Panel: " + pSelectorCombo.getSelectedItem() + "\n");
+    else if(e.getActionCommand().equals("add-left"))
       doAddLeft();
     else if(e.getActionCommand().equals("add-right"))
       doAddRight();
@@ -311,6 +254,7 @@ class JManagerPanel
   }
 
 
+
   /*----------------------------------------------------------------------------------------*/
   /*   A C T I O N S                                                                        */
   /*----------------------------------------------------------------------------------------*/
@@ -326,13 +270,14 @@ class JManagerPanel
       JPanel panel = new JPanel();
       panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
 
-      left = new JManagerPanel(panel);
+      left = new JManagerPanel();
+      left.setContents(panel);
     }
 
     JManagerPanel right = null;
     {    
-      Component old = removeContents();
-      right = new JManagerPanel(old);
+      right = new JManagerPanel();
+      right.setContents(removeContents());
     }
 
     setContents(new JSplitPanel(JSplitPane.HORIZONTAL_SPLIT, left, right));
@@ -346,8 +291,8 @@ class JManagerPanel
   {
     JManagerPanel left = null;
     {
-      Component old = removeContents();
-      left = new JManagerPanel(old);
+      left = new JManagerPanel();
+      left.setContents(removeContents());
     }
 
     JManagerPanel right = null;
@@ -355,7 +300,8 @@ class JManagerPanel
       JPanel panel = new JPanel();
       panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
 
-      right = new JManagerPanel(panel);
+      right = new JManagerPanel();
+      right.setContents(panel);
     }
 
     setContents(new JSplitPanel(JSplitPane.HORIZONTAL_SPLIT, left, right));
@@ -372,13 +318,14 @@ class JManagerPanel
       JPanel panel = new JPanel();
       panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
 
-      above = new JManagerPanel(panel);
+      above = new JManagerPanel();
+      above.setContents(panel);
     }
 
     JManagerPanel below = null;
     {    
-      Component old = removeContents();
-      below = new JManagerPanel(old);
+      below = new JManagerPanel();
+      below.setContents(removeContents());
     }
 
     setContents(new JSplitPanel(JSplitPane.VERTICAL_SPLIT, above, below));
@@ -392,8 +339,8 @@ class JManagerPanel
   {
     JManagerPanel above = null;
     {
-      Component old = removeContents();
-      above  = new JManagerPanel(old);
+      above = new JManagerPanel();
+      above.setContents(removeContents());
     }
 
     JManagerPanel below = null;
@@ -401,7 +348,8 @@ class JManagerPanel
       JPanel panel = new JPanel();
       panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
 
-      below = new JManagerPanel(panel);
+      below = new JManagerPanel();
+      below.setContents(panel);
     }
 
     setContents(new JSplitPanel(JSplitPane.VERTICAL_SPLIT, above, below));
@@ -436,7 +384,10 @@ class JManagerPanel
       JPanel panel = new JPanel();
       panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
 
-      tabbed.addTab("Empty", new JManagerPanel(panel));
+      JManagerPanel mgr = new JManagerPanel();
+      mgr.setContents(panel);
+
+      tabbed.addTab("Empty", mgr);
     }
   }
 
@@ -450,7 +401,6 @@ class JManagerPanel
   doClosePanel()
   {
     Container parent = getParent();
-
 
     if(parent == null) {
       System.out.print("Parent: (null)\n");
@@ -513,6 +463,21 @@ class JManagerPanel
   /*----------------------------------------------------------------------------------------*/
   /*  I N T E R N A L S                                                                     */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The title bar. 
+   */ 
+  private JPanel  pTitlePanel;
+
+  /**
+   * The panel menu button.
+   */ 
+  private JButton  pMenuButton;
+
+  /**
+   * The combo box used to select the panel type.
+   */ 
+  private JComboBox  pSelectorCombo;
 
   /**
    * The panel layout popup menu.
