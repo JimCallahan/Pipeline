@@ -191,6 +191,11 @@ ScriptOptsParser
   private Long             pMinDisk;
   private TreeMap          pLicenseKeys;
   private TreeMap          pSelectionKeys;
+
+  private String            pLinkSourceName;  
+  private LinkPolicy        pLinkPolicy;      
+  private LinkRelationship  pLinkRelationship;
+  private Integer           pLinkFrameOffset; 
 }
 
 
@@ -232,6 +237,10 @@ TOKEN :
 | <SUFFIX_EDITOR:     "suffix-editor">    : SUFFIX_EDITOR_OPTS
 | <VIEW1:             "view">             : VIEW_OPTS
 | <WORKING:           "working">          : WORKING_OPTS
+| <CHECKED_IN:        "checked-in">       : CHECKED_IN_OPTS
+| <NODE:              "node">             : NODE_OPTS
+| <JOB_GROUP:         "job-group">        : JOB_GROUP_OPTS
+| <JOB:               "job">              : JOB_OPTS
 
   /* argument end separator */ 
 | <AE1: ("\0")+>
@@ -267,7 +276,7 @@ TOKEN :
 | <ACTION1:        "--action">          : ACTION_NAME_SEP
 | <ACTION_ENABLED: "--action-enabled">  : BOOLEAN_SEP
 | <PARAM:          "--param">           : PARAM_SEP 
-| <NO_PARAM:       "--no-param">        : PARAM_SEP 
+| <NO_PARAM:       "--no-param">        : LINK_PARAM_SEP 
 | <SOURCE_PARAM:   "--source-param">    : SOURCE_PARAM_SEP 
 | <IGNORE:         "--ignore">           
 | <ABORT:          "--abort">           
@@ -283,7 +292,7 @@ TOKEN :
 | <ASSOC:          "--assoc">           : LINK_PARAM_SEP
 | <REF:            "--ref">             : LINK_PARAM_SEP
 | <DEPEND:         "--depend">          : LINK_PARAM_SEP
-| <SOURCE:         "--source">          : NODE_NAME_SEP
+| <SOURCE:         "--source">          : LINK_PARAM_SEP
 | <FSEQ:           "--fseq">            : FILE_SEQ_SEP
 | <NAME:           "--name">            : NODE_NAME_SEP      
 | <RENAME_FILES:   "--rename-files">   
@@ -828,15 +837,58 @@ TOKEN :
 TOKEN :
 {
   <ALL:              "all"> 
-| <VERSION3:         "version"> 
+| <VSN:              "vsn"> 
 | <PROP:             "prop"> 
-| <ACTION2:          "action"> 
+| <ACT:              "act"> 
 | <JREQ:             "jreq"> 
 | <KEY:              "key"> 
 | <LINK:             "link"> 
+| <TIME:             "time"> 
+| <PROC:             "proc"> 
+| <WKDIR:            "wkdir"> 
+| <CMD:              "cmd"> 
+| <ENV:              "env"> 
+| <OUT:              "out"> 
+| <ERR:              "err"> 
+| <FILE:             "file"> 
 | <COMMA7:           ","> 
 | <AE21:             "\0">               : OPTIONS
 | <ILLEGAL_SECTION:  (~[",","\0"])+>     : IGNORE_STATE
+}
+
+
+/* job group arguments */ 
+<JOB_GROUP_ID_SEP>  
+TOKEN :
+{
+  <EQ28:                       "=">   : JOB_GROUP_ID_STATE
+| <MISSING_JOB_GROUP_ID_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<JOB_GROUP_ID_STATE> 
+TOKEN :
+{
+  <JOB_GROUP_ID:          (["0"-"9"])+> 
+| <COMMA8:                ","> 
+| <AE22:                  "\0">             : OPTIONS
+| <ILLEGAL_JOB_GROUP_ID:  (~[",","\0"])+>   : IGNORE_STATE
+}
+
+/* job arguments */ 
+<JOB_ID_SEP>  
+TOKEN :
+{
+  <EQ29:                       "=">   : JOB_ID_STATE
+| <MISSING_JOB_ID_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<JOB_ID_STATE> 
+TOKEN :
+{
+  <JOB_ID:          (["0"-"9"])+> 
+| <COMMA9:          ","> 
+| <AE23:            "\0">             : OPTIONS
+| <ILLEGAL_JOB_ID:  (~[",","\0"])+>   : IGNORE_STATE
 }
 
 
@@ -848,7 +900,7 @@ TOKEN :
 <LOG_SEP> 
 TOKEN :
 {
-  <EQ28:              "=">   : LOG_STATE
+  <EQ30:              "=">   : LOG_STATE
 | <MISSING_LOG_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -868,8 +920,8 @@ TOKEN :
 | <FINE:    	    "fine">    
 | <FINER :  	    "finer">   
 | <FINEST:    	    "finest">  
-| <COMMA8: 	    ",">       
-| <AE22:            (["\0"])+>                   : OPTIONS
+| <COMMA10: 	    ",">       
+| <AE24:            (["\0"])+>                   : OPTIONS
 | <ILLEGAL_LOG_ARG: (~["\0","a"-"z",":",","])+>  : IGNORE_STATE
 }
 
@@ -883,7 +935,7 @@ TOKEN :
   <PRIVILEGED_GET:    "--get">                   : OPTIONS
 | <PRIVILEGED_GRANT:  "--grant">                 : USER_NAME_SEP 
 | <PRIVILEGED_REVOKE: "--revoke">                : USER_NAME_SEP 
-| <AE23:              ["\0"]>  
+| <AE25:              ["\0"]>  
 | <UNKNOWN_OPTION3:   "-" ("-")? (~["\0","="])*> : IGNORE_STATE
 | <UNKNOWN3:          ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
 }
@@ -900,7 +952,7 @@ TOKEN :
 | <TOOLSET_ADD:           "--add">                   : TOOLSET_NAME_SEP 
 | <TOOLSET_REMOVE:        "--remove">                : TOOLSET_NAME_SEP 
 | <TOOLSET_EXPORT:        "--export">                : TOOLSET_NAME_SEP
-| <AE24:                  ["\0"]>            
+| <AE26:                  ["\0"]>            
 | <UNKNOWN_OPTION4:       "-" ("-")? (~["\0","="])*> : IGNORE_STATE
 | <UNKNOWN4:              ~["-","\0"] (~["\0"])*>    : IGNORE_STATE          
 }
@@ -916,7 +968,7 @@ TOKEN :
 | <KEY_ADD:            "--add">                   : KEY_NAME_SEP 
 | <KEY_SET:            "--set">                   : KEY_NAME_SEP 
 | <KEY_REMOVE:         "--remove">                : KEY_NAME_SEP 
-| <AE25:               ["\0"]>    
+| <AE27:               ["\0"]>    
 | <UNKNOWN_OPTION5:    "-" ("-")? (~["\0","="])*> : IGNORE_STATE
 | <UNKNOWN5:           ~["-","\0"] (~["\0"])*>    : IGNORE_STATE           
 }
@@ -932,7 +984,7 @@ TOKEN :
 | <JOB_SET:            "--set">                   : HOST_NAME_SEP 
 | <JOB_ADD:            "--add">                   : HOST_NAME_SEP 
 | <JOB_REMOVE:         "--remove">                : HOST_NAME_SEP
-| <AE26:               ["\0"]>   
+| <AE28:               ["\0"]>   
 | <UNKNOWN_OPTION6:    "-" ("-")? (~["\0","="])*> : IGNORE_STATE
 | <UNKNOWN6:           ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
 }
@@ -948,7 +1000,7 @@ TOKEN :
 | <SUFFIX_EDITOR_SET:            "--set">                   : SUFFIX_SEP 
 | <SUFFIX_EDITOR_REMOVE:         "--remove">                : SUFFIX_SEP
 | <SUFFIX_EDITOR_RESET:          "--reset">                 : OPTIONS
-| <AE27:                         ["\0"]>   
+| <AE29:                         ["\0"]>   
 | <UNKNOWN_OPTION7:              "-" ("-")? (~["\0","="])*> : IGNORE_STATE
 | <UNKNOWN7:                     ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
 }
@@ -960,7 +1012,7 @@ TOKEN :
 {
   <VIEW_GET:            "--get">                   : OPTIONS
 | <VIEW_CREATE:         "--create">                : VIEW_NAME_SEP
-| <AE28:                ["\0"]>   
+| <AE30:                ["\0"]>   
 | <UNKNOWN_OPTION8:     "-" ("-")? (~["\0","="])*> : IGNORE_STATE
 | <UNKNOWN8:            ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
 }
@@ -971,6 +1023,8 @@ TOKEN :
 TOKEN :
 {
   <WORKING_GET_INFO:          "--get-info">              : NODE_NAME_SEP
+| <WORKING_REGISTER:          "--register">              : NODE_NAME_SEP
+| <WORKING_RELEASE:           "--release">               : NODE_NAME_SEP
 | <WORKING_SET:               "--set">                   : NODE_NAME_SEP
 | <WORKING_LINK:              "--link">                  : NODE_NAME_SEP
 | <WORKING_UNLINK:            "--unlink">                : NODE_NAME_SEP
@@ -979,9 +1033,63 @@ TOKEN :
 | <WORKING_RENAME:            "--rename">                : NODE_NAME_SEP
 | <WORKING_RENUMBER:          "--renumber">              : NODE_NAME_SEP
 | <WORKING_EDIT:              "--edit">                  : NODE_NAME_SEP
-| <AE29:                      ["\0"]>   
+| <WORKING_SUBMIT_JOBS:       "--submit-jobs">           : NODE_NAME_SEP
+| <WORKING_REMOVE_FILES:      "--remove-files">          : NODE_NAME_SEP
+| <AE31:                      ["\0"]>   
 | <UNKNOWN_OPTION9:           "-" ("-")? (~["\0","="])*> : IGNORE_STATE
 | <UNKNOWN9:                  ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+}
+
+/* checked-in command options */ 
+<CHECKED_IN_OPTS> 
+TOKEN :
+{
+  <CHECKED_IN_GET_INFO:       "--get-info">              : NODE_NAME_SEP
+| <CHECKED_IN_HISTORY:        "--history">               : NODE_NAME_SEP
+| <CHECKED_IN_NOVELTY:        "--novelty">               : NODE_NAME_SEP
+| <AE32:                      ["\0"]>   
+| <UNKNOWN_OPTION10:          "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN10:                 ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+}
+
+/* node command options */ 
+<NODE_OPTS> 
+TOKEN :
+{
+  <NODE_STATUS:            "--status">                : NODE_NAME_SEP
+| <NODE_CHECK_IN:          "--check-in">              : NODE_NAME_SEP
+| <NODE_CHECK_OUT:         "--check-out">             : NODE_NAME_SEP
+| <AE33:                   ["\0"]>   
+| <UNKNOWN_OPTION11:       "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN11:              ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+}
+
+/* job group command options */ 
+<JOB_GROUP_OPTS> 
+TOKEN :
+{
+  <JOB_GROUP_STATUS:       "--status">                : JOB_GROUP_ID_SEP
+| <JOB_GROUP_KILL:         "--kill">                  : JOB_GROUP_ID_SEP
+| <JOB_GROUP_PAUSE:        "--pause">                 : JOB_GROUP_ID_SEP
+| <JOB_GROUP_RESUME:       "--resume">                : JOB_GROUP_ID_SEP
+| <JOB_GROUP_REMOVE:       "--remove">                : JOB_GROUP_ID_SEP
+| <JOB_GROUP_REMOVE_ALL:   "--remove-all">            : OPTIONS
+| <AE34:                   ["\0"]>   
+| <UNKNOWN_OPTION12:       "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN12:              ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+}
+
+/* job command options */ 
+<JOB_OPTS> 
+TOKEN :
+{
+  <JOB_STATUS:         "--status">                : JOB_ID_SEP
+| <JOB_KILL:           "--kill">                  : JOB_ID_SEP
+| <JOB_PAUSE:          "--pause">                 : JOB_ID_SEP
+| <JOB_RESUME:         "--resume">                : JOB_ID_SEP
+| <AE35:               ["\0"]>   
+| <UNKNOWN_OPTION13:   "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN13:          ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
 }
 
 
@@ -2314,9 +2422,11 @@ WorkingCmds()
 {}
 {
   <WORKING> AE() 
-     (WorkingGetInfo() | WorkingSet())
+     (WorkingGetInfo() | WorkingRegister() | WorkingSet() | WorkingLink() | WorkingUnlink())
   {}
 }
+
+/*------------------------------------------------------------------------------------------*/
 
 void 
 WorkingGetInfo() 
@@ -2357,7 +2467,7 @@ WorkingGetInfoShowSections() :
 {}
 {
   (WorkingGetInfoShowAll() | 
-   ShowVersion() | ShowProp() |  ShowAction() | ShowJReq() | ShowKey() | ShowLink()) 
+   ShowVsn() | ShowProp() |  ShowAct() | ShowJReq() | ShowKey() | ShowLink()) 
   {}
 }
 
@@ -2367,9 +2477,9 @@ WorkingGetInfoShowAll() :
 {
   <ALL>
   {
-    pSections.add("version");
+    pSections.add("vsn");
     pSections.add("prop");
-    pSections.add("action");
+    pSections.add("act");
     pSections.add("jreq");
     pSections.add("key");
     pSections.add("link");
@@ -2389,7 +2499,7 @@ WorkingGetInfoHideSections() :
 {}
 {
   (WorkingGetInfoHideAll() | 
-   HideVersion() | HideProp() | HideAction() | HideJReq() | HideKey() | HideLink()) 
+   HideVsn() | HideProp() | HideAct() | HideJReq() | HideKey() | HideLink()) 
   {}
 }
 
@@ -2403,6 +2513,69 @@ WorkingGetInfoHideAll() :
   }
 }
 
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
+WorkingRegister() 
+  throws PipelineException : 
+{
+  String name = null;
+
+  pAuthor  = PackageInfo.sUser;
+  pView    = "default";
+  pFileSeq = null;
+  pToolset = null;
+  pEditor  = null;
+
+  pNoAction        = null;
+  pActionName      = null;
+  pActionVersionID = null; 
+  pActionEnabled   = null;
+  pParams          = new TreeMap();
+  pSourceParams    = new TreeMap();
+  pOverflowPolicy  = null;
+  pExecutionMethod = null;
+  pBatchSize       = null;
+  pPriority        = null;
+  pMaxLoad         = null;
+  pMinMemory       = null;
+  pMinDisk         = null;
+  pLicenseKeys     = new TreeMap();
+  pSelectionKeys   = new TreeMap();
+}
+{
+  <WORKING_REGISTER> EQ() name=NodeName() AE() (WorkingRegisterOpts())*
+  {
+    if(pFileSeq == null) 
+      throw new PipelineException
+        ("The --fseq option is required!");
+
+    pApp.workingVersionRegister
+      (new NodeID(pAuthor, pView, name), pFileSeq, pToolset, pEditor, pNoAction, 
+       pActionName, pActionVersionID, pActionEnabled, pParams, pSourceParams, 
+       pOverflowPolicy, pExecutionMethod, pBatchSize, 
+       pPriority, pMaxLoad, pMinMemory, pMinDisk, 
+       pLicenseKeys, pSelectionKeys,
+       pMasterMgrClient);
+  }
+}
+
+void
+WorkingRegisterOpts()
+  throws PipelineException : 
+{}
+{
+  (Author() | View() | FSeq() | Toolset() | Editor() | 
+   Action() | ActionEnabled() | Param() | SourceParam() | 
+   Ignore() | Abort() | Serial() | Parallel() | BatchSize() | 
+   Priority() | MaxLoad() | MinMemory() | MinDisk() | 
+   LicenseKey() | SelectionKey()) 
+  {}
+}
+
+
+/*------------------------------------------------------------------------------------------*/
 
 void 
 WorkingSet() 
@@ -2435,12 +2608,12 @@ WorkingSet()
   <WORKING_SET> EQ() name=NodeName() AE() (WorkingSetOpts())*
   {
     pApp.workingVersionSet
-    (new NodeID(pAuthor, pView, name), pToolset, pEditor, pNoAction, 
-     pActionName, pActionVersionID, pActionEnabled, pParams, pSourceParams, 
-     pOverflowPolicy, pExecutionMethod, pBatchSize, 
-     pPriority, pMaxLoad, pMinMemory, pMinDisk, 
-     pLicenseKeys, pSelectionKeys,
-     pMasterMgrClient);
+      (new NodeID(pAuthor, pView, name), pToolset, pEditor, pNoAction, 
+       pActionName, pActionVersionID, pActionEnabled, pParams, pSourceParams, 
+       pOverflowPolicy, pExecutionMethod, pBatchSize, 
+       pPriority, pMaxLoad, pMinMemory, pMinDisk, 
+       pLicenseKeys, pSelectionKeys,
+       pMasterMgrClient);
   }
 }
 
@@ -2449,14 +2622,203 @@ WorkingSetOpts()
   throws PipelineException : 
 {}
 {
-  (Author() | View() | Toolset() | Editor() | NoAction() | 
-   Action() | ActionEnabled() | Param() | NoParam() | SourceParam() | 
+  (Author() | View() | Toolset() | Editor() | 
+   NoAction() | Action() | ActionEnabled() | Param() | NoParam() | SourceParam() | 
    Ignore() | Abort() | Serial() | Parallel() | BatchSize() | 
    Priority() | MaxLoad() | MinMemory() | MinDisk() | 
    LicenseKey() | SelectionKey()) 
   {}
 }
 
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
+WorkingLink() 
+  throws PipelineException : 
+{
+  String name = null;
+  
+  pAuthor  = PackageInfo.sUser;
+  pView    = "default";
+
+  pLinkSourceName = null;
+}
+{
+  <WORKING_LINK> EQ() name=NodeName() AE() (WorkingLinkOpts())* 
+  {
+    if(pLinkSourceName == null) 
+      throw new PipelineException
+        ("No link source node was specified with a --assoc, --ref or --depend option!");
+
+    pMasterMgrClient.link(pAuthor, pView, name, 
+			  pLinkSourceName, pLinkPolicy, pLinkRelationship, pLinkFrameOffset);
+  }
+}
+
+void
+WorkingLinkOpts()
+  throws PipelineException : 
+{}
+{
+  (Author() | View() | Assoc() | Ref() | Depend()) 
+  {}
+}
+
+void
+Assoc()
+  throws PipelineException : 
+{
+  String sname = null;
+}
+{
+  <ASSOC> EQ() sname=LinkName() AE() 
+  {
+    if(pLinkSourceName != null) 
+      throw new PipelineException
+        ("The --assoc, --ref and --depend options are mutually exclusive!");
+
+    pLinkSourceName   = sname;
+    pLinkPolicy       = LinkPolicy.Association; 
+    pLinkRelationship = LinkRelationship.None;
+    pLinkFrameOffset  = null;
+  }
+}
+
+void
+Ref()
+  throws PipelineException : 
+{
+  String sname = null;
+
+  pLinkRelationship = LinkRelationship.All;
+  pLinkFrameOffset  = null;
+}
+{
+  <REF> EQ() sname=LinkName() (COMMA() (LinkAll() | LinkFrameOffset()))? AE()
+  {
+    if(pLinkSourceName != null) 
+      throw new PipelineException
+        ("The --assoc, --ref and --depend options are mutually exclusive!");
+
+    pLinkSourceName = sname;
+    pLinkPolicy     = LinkPolicy.Reference; 
+  }
+}
+
+void
+Depend()
+  throws PipelineException : 
+{
+  String sname = null;
+
+  pLinkRelationship = LinkRelationship.All;
+  pLinkFrameOffset  = null;
+}
+{
+  <DEPEND> EQ() sname=LinkName() (COMMA() (LinkAll() | LinkFrameOffset()))? AE() 
+  {
+    if(pLinkSourceName != null) 
+      throw new PipelineException
+        ("The --assoc, --ref and --depend options are mutually exclusive!");
+
+    pLinkSourceName = sname;
+    pLinkPolicy     = LinkPolicy.Dependency;
+  }
+}
+
+void 
+LinkAll() : 
+{}
+{
+  <LINK_ALL>
+  {
+    pLinkRelationship = LinkRelationship.All;
+  }
+}
+
+void 
+LinkFrameOffset()
+  throws PipelineException :  
+{
+  Token t;
+}
+{
+  t=<OFFSET> 
+  {
+    try {
+      pLinkFrameOffset = new Integer(t.image);
+      pLinkRelationship = LinkRelationship.OneToOne;
+    }
+    catch(NumberFormatException ex) {
+      throw new PipelineException(ex.getMessage());
+    }
+  }
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
+WorkingUnlink() 
+  throws PipelineException : 
+{
+  String name = null;
+  
+  pAuthor  = PackageInfo.sUser;
+  pView    = "default";
+
+  pLinkSourceName = null;
+}
+{
+  <WORKING_UNLINK> EQ() name=NodeName() AE() (WorkingUnlinkOpts())* 
+  {
+    if(pLinkSourceName == null) 
+      throw new PipelineException
+        ("No link source node was specified with the --source option!");
+
+    pMasterMgrClient.unlink(pAuthor, pView, name, pLinkSourceName);
+  }
+}
+
+void
+WorkingUnlinkOpts()
+  throws PipelineException : 
+{}
+{
+  (Author() | View() | LinkSource()) 
+  {}
+}
+
+void
+LinkSource() : 
+{
+  String sname = null;
+}
+{
+  <SOURCE> EQ() sname=LinkName() AE()
+  {
+    pLinkSourceName = sname;
+  }
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   C H E C K E D - I N   N O D E   V E R S I O N   C O M M A N D S                        */
+/*------------------------------------------------------------------------------------------*/
+
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   N O D E   O P E R A T I O N   C O M M A N D S                                          */
+/*------------------------------------------------------------------------------------------*/
+
+
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   Q U E U E   O P E R A T I O N   C O M M A N D S                                        */
+/*------------------------------------------------------------------------------------------*/
 
 
 
@@ -2466,12 +2828,12 @@ WorkingSetOpts()
 /*------------------------------------------------------------------------------------------*/
 
 void
-ShowVersion() : 
+ShowVsn() : 
 {}
 {
-  <VERSION3> 
+  <VSN> 
   {
-    pSections.add("version");    
+    pSections.add("vsn");    
   }
 }
 
@@ -2486,12 +2848,12 @@ ShowProp() :
 }
 
 void
-ShowAction() : 
+ShowAct() : 
 {}
 {
-  <ACTION2>  
+  <ACT>  
   {
-    pSections.add("action");    
+    pSections.add("act");    
   }
 }
 
@@ -2525,14 +2887,95 @@ ShowLink() :
   }
 }
 
-
 void
-HideVersion() : 
+ShowTime() : 
 {}
 {
-  <VERSION3> 
+  <TIME> 
   {
-    pSections.add("version");    
+    pSections.add("time");    
+  }
+}
+
+void
+ShowProc() : 
+{}
+{
+  <PROC> 
+  {
+    pSections.add("proc");    
+  }
+}
+
+void
+ShowWkdir() : 
+{}
+{
+  <WKDIR> 
+  {
+    pSections.add("wkdir");    
+  }
+}
+
+void
+ShowCmd() : 
+{}
+{
+  <CMD> 
+  {
+    pSections.add("cmd");    
+  }
+}
+
+void
+ShowEnv() : 
+{}
+{
+  <ENV> 
+  {
+    pSections.add("env");    
+  }
+}
+
+void
+ShowOut() : 
+{}
+{
+  <OUT> 
+  {
+    pSections.add("out");    
+  }
+}
+
+void
+ShowErr() : 
+{}
+{
+  <ERR> 
+  {
+    pSections.add("err");    
+  }
+}
+
+void
+ShowFile() : 
+{}
+{
+  <FILE> 
+  {
+    pSections.add("file");    
+  }
+}
+
+
+
+void
+HideVsn() : 
+{}
+{
+  <VSN> 
+  {
+    pSections.add("vsn");    
   }
 }
 
@@ -2547,12 +2990,12 @@ HideProp() :
 }
 
 void
-HideAction() : 
+HideAct() : 
 {}
 {
-  <ACTION2>  
+  <ACT>  
   {
-    pSections.add("action");    
+    pSections.add("act");    
   }
 }
 
@@ -2583,6 +3026,86 @@ HideLink() :
   <LINK> 
   {
     pSections.add("link");    
+  }
+}
+
+void
+HideTime() : 
+{}
+{
+  <TIME> 
+  {
+    pSections.add("time");    
+  }
+}
+
+void
+HideProc() : 
+{}
+{
+  <PROC> 
+  {
+    pSections.add("proc");    
+  }
+}
+
+void
+HideWkdir() : 
+{}
+{
+  <WKDIR> 
+  {
+    pSections.add("wkdir");    
+  }
+}
+
+void
+HideCmd() : 
+{}
+{
+  <CMD> 
+  {
+    pSections.add("cmd");    
+  }
+}
+
+void
+HideEnv() : 
+{}
+{
+  <ENV> 
+  {
+    pSections.add("env");    
+  }
+}
+
+void
+HideOut() : 
+{}
+{
+  <OUT> 
+  {
+    pSections.add("out");    
+  }
+}
+
+void
+HideErr() : 
+{}
+{
+  <ERR> 
+  {
+    pSections.add("err");    
+  }
+}
+
+void
+HideFile() : 
+{}
+{
+  <FILE> 
+  {
+    pSections.add("file");    
   }
 }
 
@@ -2628,7 +3151,7 @@ View() :
 }
 
 void
-FileSeq()
+FSeq()
   throws PipelineException : 
 {
   String prefix = null;
@@ -2638,9 +3161,9 @@ FileSeq()
   Integer by    = 1;
 }
 {
-  prefix=Prefix() 
-    (DOT() ((Padding() (DOT() suffix=Suffix())?) | suffix=Suffix()))? 
-    (COMMA() start=FrameNumber() (DASH() end=FrameNumber() (<BY> by=FrameNumber())?)?)?
+  <FSEQ> EQ() 
+    prefix=Prefix() (DOT() ((Padding() (DOT() suffix=Suffix())?) | suffix=Suffix()))? 
+    (COMMA() start=FrameNumber() (DASH() end=FrameNumber() (<BY> by=FrameNumber())?)?)? AE()
   {
     try {
       FrameRange range = null;
@@ -2793,7 +3316,7 @@ NoParam() :
   String sname  = null;
 }
 {
-  <NO_PARAM> EQ() sname=SourceName() AE() 
+  <NO_PARAM> EQ() sname=LinkName() AE() 
   {
     pSourceParams.put(sname, null);
   }
@@ -3133,6 +3656,18 @@ NodeName() :
 }
 
 String
+LinkName() : 
+{
+  Token t;
+}
+{
+  t=<LINK_NAME> 
+  {
+    return t.image;
+  }
+}
+
+String
 ParamName() : 
 {
   Token t;
@@ -3356,7 +3891,8 @@ AE() :
    t=<AE11> | t=<AE12> | t=<AE13> | t=<AE14> | t=<AE15> | 
    t=<AE16> | t=<AE17> | t=<AE18> | t=<AE19> | t=<AE20> | 
    t=<AE21> | t=<AE22> | t=<AE23> | t=<AE24> | t=<AE25> | 
-   t=<AE26> | t=<AE27> | t=<AE28> | t=<AE29>)
+   t=<AE26> | t=<AE27> | t=<AE28> | t=<AE29> | t=<AE30> |
+   t=<AE31> | t=<AE32> | t=<AE33> | t=<AE34> | t=<AE35>)
   { 
     return t; 
   }
@@ -3406,7 +3942,7 @@ COMMA() :
 }
 {
   (t=<COMMA1> | t=<COMMA2> | t=<COMMA3> | t=<COMMA4> | t=<COMMA5> | 
-   t=<COMMA6> | t=<COMMA7> | t=<COMMA8>)
+   t=<COMMA6> | t=<COMMA7> | t=<COMMA8> | t=<COMMA9> | t=<COMMA10>)
   { 
     return t; 
   }
@@ -3423,7 +3959,7 @@ EQ() :
    t=<EQ11> | t=<EQ12> | t=<EQ13> | t=<EQ14> | t=<EQ15> |
    t=<EQ16> | t=<EQ17> | t=<EQ18> | t=<EQ19> | t=<EQ20> | 
    t=<EQ21> | t=<EQ22> | t=<EQ23> | t=<EQ24> | t=<EQ25> |
-   t=<EQ26> | t=<EQ27> | t=<EQ28>)
+   t=<EQ26> | t=<EQ27> | t=<EQ28> | t=<EQ29> | t=<EQ30>)
   { 
     return t; 
   }
