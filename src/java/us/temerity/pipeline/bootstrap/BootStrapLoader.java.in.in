@@ -1,0 +1,374 @@
+// $Id: BootStrapLoader.java.in.in,v 1.1 2004/03/22 03:12:45 jim Exp $
+
+package us.temerity.pipeline.bootstrap;
+
+import java.io.*;
+import java.net.*;
+import java.util.*;
+import java.math.*;
+import java.security.*;
+import java.security.spec.*;
+import java.security.interfaces.*;
+import javax.crypto.*;
+import javax.crypto.spec.*;
+import javax.crypto.interfaces.*;
+import com.sun.crypto.provider.SunJCE;
+
+/*------------------------------------------------------------------------------------------*/
+/*   B O O T   S T R A P   L O A D E R                                                      */
+/*------------------------------------------------------------------------------------------*/
+
+/**
+ * A class loader which can load classes from the vault.
+ */
+class BootStrapLoader
+  extends ClassLoader
+{   
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O N S T R U C T O R                                                                */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Decrypts and unpacks classes stored in the vault.
+   */
+  public 
+  BootStrapLoader() 
+    throws LicenseException
+  {
+    super();
+    
+    File license = new File("@ROOT_INST_DIR@", "pipeline-license.key");
+    if(!license.isFile()) 
+      throw new LicenseException("The license file (" + license + ") was missing!");
+
+    File vault = new File("@ROOT_INST_DIR@", "lib/vault");
+    if(!vault.isFile()) 
+      throw new LicenseException("The code vault (" + vault + ") was missing!");
+    
+    /* retrieve the customers private key 
+         and the encrypted profile data attached to the key */ 
+    PrivateKey privateKey = null;
+    String encrypted = null;
+    try {
+      FileReader in = new FileReader(license);
+      
+      int keySize = 0;
+      {
+	char cs[] = new char[4];
+	in.read(cs, 0, cs.length);
+	keySize = Integer.valueOf(new String(cs));
+      }
+      
+      if(keySize <= 0) 
+	throw new IOException();
+      
+      try {
+	char cs[] = new char[keySize];
+	in.read(cs, 0, cs.length);
+	
+	byte bytes[] = decodeBytes(new String(cs));
+	
+	KeyFactory factory = KeyFactory.getInstance("DH");
+	PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(bytes);
+	privateKey = factory.generatePrivate(spec);
+      }
+      catch(Exception ex) {
+	throw new IOException();
+      }
+      
+      {
+	StringBuffer buf = new StringBuffer();
+	char cs[] = new char[1024];
+	while(true) {
+	  int size = in.read(cs);
+	  if(size == -1)
+	    break;
+	  
+	  buf.append(cs, 0, size);
+	}
+	
+	encrypted = buf.toString();
+      }
+      
+      in.close();
+    }
+    catch(IOException ex) {
+      throw new LicenseException
+	("The license file (" + license + ") has been corrupted!");
+    }
+    
+    /* get the companies public key */ 
+    PublicKey publicKey = null;
+    try {
+      BigInteger big = new BigInteger(sData);
+      KeyFactory factory = KeyFactory.getInstance("DH");
+      X509EncodedKeySpec spec = new X509EncodedKeySpec(big.toByteArray());
+      publicKey = factory.generatePublic(spec);
+    }
+    catch(Exception ex) {
+      throw new LicenseException
+	("INTERNAL ERROR: Unable to authorize access to Pipeline...");
+    }
+    
+    /* use the customers private key and the companies public key to create a DES key */ 
+    SecretKey key = null;
+    try {
+      KeyAgreement keyAgree = KeyAgreement.getInstance("DH");
+      keyAgree.init(privateKey);
+      keyAgree.doPhase(publicKey, true);
+      key = keyAgree.generateSecret("DES");
+    }
+    catch(Exception ex) {
+      throw new LicenseException
+	("The license file (" + license + ") has been corrupted!");
+    }
+    
+    /* decrypt the profile data attached to the customer's private key 
+         and use it to validate the site */ 
+    {
+      TreeMap<String,Object> profile = null;
+      try {
+	Cipher decipher = Cipher.getInstance("DES/ECB/PKCS5Padding");
+	decipher.init(Cipher.DECRYPT_MODE, key);
+	byte raw[] = decipher.doFinal(decodeBytes(encrypted));
+	
+	ByteArrayInputStream bin = new ByteArrayInputStream(raw);
+	
+	ObjectInputStream in = new ObjectInputStream(bin);
+	profile = (TreeMap<String,Object>) in.readObject();
+	in.close();
+      }
+      catch(Exception ex) {
+	throw new LicenseException
+	  ("INTERNAL ERROR: Unable to authorize access to Pipeline...");
+      }
+      
+      /* check the license time window */ 
+      try {
+	Date start = (Date) profile.get("LicenseStart");
+	Date end   = (Date) profile.get("LicenseEnd");
+	if((start == null) || (end == null)) 
+	  throw new LicenseException
+	    ("The license file (" + license + ") has been corrupted!");
+
+	long now = TimeService.getTime();
+
+	if((now < start.getTime()) || (now > end.getTime())) 
+	  throw new LicenseException
+	    ("The license has expired!\n" + 
+	     "  Start Date: " + start + "\n" + 
+	     "    End Date: " + end + "\n");
+      }
+      catch(IOException ex) {
+	throw new LicenseException
+	  ("Unable to reliably determine the time!");
+      }
+      
+      /* check the domain name */ 
+      {
+	String ldomain = (String) profile.get("DomainName");
+	if(ldomain == null)
+	  throw new LicenseException
+	    ("The license file (" + license + ") has been corrupted!");
+	
+	TreeSet<String> domains = new TreeSet<String>();
+	try {	    
+	  Enumeration nets = NetworkInterface.getNetworkInterfaces();  
+	  while(nets.hasMoreElements()) {
+	    NetworkInterface net = (NetworkInterface) nets.nextElement();
+	    Enumeration addrs = net.getInetAddresses();
+	    while(addrs.hasMoreElements()) {
+	      InetAddress addr = (InetAddress) addrs.nextElement();
+	      String ip = addr.getHostAddress();
+	      if(!ip.equals("127.0.0.1")) {
+		String host = addr.getCanonicalHostName();
+		int idx = host.indexOf('.');
+		domains.add(host.substring(idx+1));
+	      }
+	    }
+	  }
+	}
+	catch(SocketException ex) {
+	  throw new LicenseException
+	    ("Unable to reliably determine the name of the site!");	  
+	}
+	
+	boolean valid = false;
+	for(String domain : domains) {
+	  if(ldomain.equals(domain)) {
+	    valid = true;
+	    break;
+	  }
+	}
+	
+	if(!valid) 
+	  throw new LicenseException
+	    ("The license is not valid for this site!");
+      }
+    }
+
+    /* shared I/O byte buffer */ 
+    byte buf[] = new byte[65536];
+
+    /* verify the vault's integrity */ 
+    {
+      byte checksum[] = null;
+      try {
+	FileInputStream in = new FileInputStream(vault);
+	MessageDigest digest = MessageDigest.getInstance("MD5");
+	
+	while(true) {
+	  int num = in.read(buf);
+	  if(num == -1) 
+	    break;
+	  digest.update(buf, 0, num);
+	}
+	
+	checksum = digest.digest();
+      }
+      catch(Exception ex) {
+	throw new LicenseException
+	  ("The code vault (" + vault + ") has been corrupted!");
+      }
+      
+      if(!Arrays.equals(checksum, (new BigInteger(sCheckSum)).toByteArray())) {
+	throw new LicenseException
+	  ("The code vault (" + vault + ") has been corrupted!");
+      }
+    }
+    
+    /* decrypt the class entries */ 
+    try {
+      byte raw[] = null;
+      {
+	Cipher decipher = Cipher.getInstance("DES/ECB/PKCS5Padding");
+	decipher.init(Cipher.DECRYPT_MODE, key);
+	CipherInputStream in =  
+	  new CipherInputStream(new FileInputStream(vault), decipher);
+	
+	ByteArrayOutputStream bout = new ByteArrayOutputStream();
+	
+	while(true) {
+	  int num = in.read(buf);
+	  if(num == -1) 
+	    break;
+	  
+	  bout.write(buf, 0, num);
+	}
+	
+	in.close();
+	
+	raw = bout.toByteArray();
+      }
+
+      pClasses = new HashMap<String,byte[]>();
+
+      int idx = 0;
+      while(idx < raw.length) {
+	String cname = null;
+	{
+	  int size = new Integer(new String(raw, idx, 9));
+	  if(size <= 0) 
+	    throw new IOException("A = " + size);
+	  idx+=9;
+	  
+	  cname = new String(raw, idx, size);
+	  idx+=size;
+	}
+	
+	System.out.print("cname = " + cname + "\n");
+
+	byte cbytes[] = null;
+	{
+	  int size = new Integer(new String(raw, idx, 9));
+	  if(size <= 0) 
+	    throw new IOException("B = " + size);
+	  idx+=9;
+	
+	  cbytes = new byte[size];
+	  int wk;
+	  for(wk=0; wk<cbytes.length; wk++, idx++) 
+	    cbytes[wk] = raw[idx];
+	}
+
+	System.out.print("cbytes = " + cbytes.length + "\n");
+		
+	pClasses.put(cname, cbytes);
+      }
+    }
+    catch(Exception ex) {
+      ex.printStackTrace(System.out);
+      throw new LicenseException
+	("The code vault (" + vault + ") has been corrupted!", ex);
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C L A S S   L O A D E R   O V E R R I D E S                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Decrypts the 
+   */
+  protected Class 
+  findClass
+  (
+   String cname
+  ) 
+    throws ClassNotFoundException
+  {
+    byte cbytes[] = pClasses.get(cname);
+    if(cbytes == null) 
+      throw new ClassNotFoundException(cname);
+    
+    return defineClass(cname, cbytes, 0, cbytes.length);
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Convert a packed hexidecimal string into an array of bytes.
+   */
+  private byte[]
+  decodeBytes
+  (
+   String text
+  ) 
+  {
+    if((text.length() % 2) != 0) 
+      throw new IllegalArgumentException("Encoded text length was not a mulitple of two!");
+
+    char cs[]    = text.toCharArray();
+    byte bytes[] = new byte[cs.length / 2];
+   
+    int wk;
+    for(wk=0; wk<bytes.length; wk++) {
+      int v = Integer.valueOf(new String(cs, wk*2, 2), 16) - 128;
+      bytes[wk] = Integer.valueOf(v).byteValue();
+    }
+
+    return bytes;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  @BOOTSTRAP_FIELDS@
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The decrypted raw class bytes indexed by class name. 
+   */ 
+  private HashMap<String,byte[]>  pClasses;
+}
