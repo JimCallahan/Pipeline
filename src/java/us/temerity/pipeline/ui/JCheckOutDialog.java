@@ -1,4 +1,4 @@
-// $Id: JCheckOutDialog.java,v 1.1 2004/06/28 00:22:06 jim Exp $
+// $Id: JCheckOutDialog.java,v 1.2 2004/06/28 23:03:38 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -29,9 +29,6 @@ class JCheckOutDialog
   
   /**
    * Construct a new dialog.
-   * 
-   * @param owner
-   *   The parent dialog.
    */ 
   public 
   JCheckOutDialog() 

@@ -1,4 +1,4 @@
-// $Id: Described.java,v 1.4 2004/06/19 00:23:28 jim Exp $
+// $Id: Described.java,v 1.5 2004/06/28 22:59:18 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -55,7 +55,7 @@ class Described
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
   
-  /* 
+  /**
    * Gets the description text. 
    */ 
   public String

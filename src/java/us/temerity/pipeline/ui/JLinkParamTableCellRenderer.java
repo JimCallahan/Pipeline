@@ -1,4 +1,4 @@
-// $Id: JLinkParamTableCellRenderer.java,v 1.1 2004/06/22 19:44:54 jim Exp $
+// $Id: JLinkParamTableCellRenderer.java,v 1.2 2004/06/28 23:03:47 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -30,9 +30,6 @@ class JLinkParamTableCellRenderer
 
   /**
    * Construct a new renderer.
-   * 
-   * @param align
-   *   The horizontal alignment.
    * 
    * @param stitles
    *   The short names of the upstream nodes.

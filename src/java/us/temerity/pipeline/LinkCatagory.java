@@ -1,4 +1,4 @@
-// $Id: LinkCatagory.java,v 1.4 2004/03/29 08:14:11 jim Exp $
+// $Id: LinkCatagory.java,v 1.5 2004/06/28 23:00:38 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -55,12 +55,12 @@ class LinkCatagory
   public
   LinkCatagory
   (
-   LinkCatagory link
+   LinkCatagory lcat
   ) 
   {
-    super(link.getName());
+    super(lcat.getName());
 
-    pPolicy = link.getPolicy();
+    pPolicy = lcat.getPolicy();
   }
 
 
@@ -71,7 +71,7 @@ class LinkCatagory
 
   /**
    * Get the link's {@link OverallNodeState OverallNodeState} and
-   * {@link OverallQueueState OverallQueueState} propogation policy.
+   * {@link OverallQueueState OverallQueueState} propagation policy.
    */ 
   public LinkPolicy
   getPolicy() 
@@ -154,7 +154,7 @@ class LinkCatagory
 
   /** 
    * The link's {@link OverallNodeState OverallNodeState} and 
-   * {@link OverallQueueState OverallQueueState} propogation policy.
+   * {@link OverallQueueState OverallQueueState} propagation policy.
    */
   private LinkPolicy  pPolicy; 
 
