@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.18 2004/11/01 00:49:44 jim Exp $
+// $Id: FileMgrClient.java,v 1.19 2004/11/03 18:16:31 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -242,7 +242,7 @@ class FileMgrClient
     verifyConnection();
 
     FileCheckOutReq req = 
-      new FileCheckOutReq(id, vsn.getVersionID(), vsn.getSequences());
+      new FileCheckOutReq(id, vsn.getVersionID(), vsn.getSequences(), !vsn.isActionEnabled());
 
     Object obj = performTransaction(FileRequest.CheckOut, req);
     handleSimpleResponse(obj);
@@ -260,6 +260,9 @@ class FileMgrClient
    * @param files
    *   The table of checked-in file revision numbers indexed by file name.
    * 
+   * @param writeable
+   *   Whether the reverted working area files should be made writable.
+   * 
    * @throws PipelineException
    *   If unable to revert the files.
    */ 
@@ -267,13 +270,14 @@ class FileMgrClient
   revert
   (
    NodeID id, 
-   TreeMap<String,VersionID> files
+   TreeMap<String,VersionID> files, 
+   boolean writeable   
   )
     throws PipelineException
   {
     verifyConnection();
 
-    FileRevertReq req = new FileRevertReq(id, files);
+    FileRevertReq req = new FileRevertReq(id, files, writeable);
     
     Object obj = performTransaction(FileRequest.Revert, req);
     handleSimpleResponse(obj);
@@ -375,6 +379,37 @@ class FileMgrClient
     FileDeleteCheckedInReq req = new FileDeleteCheckedInReq(name);
 
     Object obj = performTransaction(FileRequest.DeleteCheckedIn, req);
+    handleSimpleResponse(obj);
+  }
+
+  /**
+   * Change the user write permission of all existing files associated with the given 
+   * working version.
+   * 
+   * @param id 
+   *   The unique working version identifier.
+   * 
+   * @param mod 
+   *   The working version of the node.
+   * 
+   * @param writeable
+   *   Whether the working area files should be made writable by the owning user.
+   */ 
+  public synchronized void 
+  changeMode 
+  (
+   NodeID id, 
+   NodeMod mod, 
+   boolean writeable
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    FileChangeModeReq req = 
+      new FileChangeModeReq(id, mod.getSequences(), writeable);
+
+    Object obj = performTransaction(FileRequest.ChangeMode, req);
     handleSimpleResponse(obj);
   }
 

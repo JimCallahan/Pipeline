@@ -1,4 +1,4 @@
-// $Id: FileCheckOutReq.java,v 1.7 2004/07/14 20:50:00 jim Exp $
+// $Id: FileCheckOutReq.java,v 1.8 2004/11/03 18:16:31 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -39,13 +39,17 @@ class FileCheckOutReq
    * @param fseqs 
    *   The primary and secondary file sequences associated with the checked-in version to 
    *   check-out.
+   * 
+   * @param writeable
+   *   Whether the working area files should be made writable after being checked-out.
    */
   public
   FileCheckOutReq
   (
    NodeID id, 
    VersionID vid, 
-   TreeSet<FileSeq> fseqs
+   TreeSet<FileSeq> fseqs, 
+   boolean writeable   
   )
   { 
     if(id == null) 
@@ -59,6 +63,8 @@ class FileCheckOutReq
     if(fseqs == null) 
       throw new IllegalArgumentException("The check-out file sequences cannot (null)!");
     pFileSeqs = fseqs;
+
+    pWritable = writeable;
   }
 
 
@@ -94,6 +100,15 @@ class FileCheckOutReq
     return pFileSeqs;
   }
 
+  /**
+   * Get whether the working area files should be made writable after being checked-out.
+   */ 
+  public boolean 
+  getWritable() 
+  {
+    return pWritable;
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -123,6 +138,11 @@ class FileCheckOutReq
    * check-out.
    */
   private TreeSet<FileSeq>  pFileSeqs;
+
+  /**
+   * Whether the working area files should be made writable after being checked-out.
+   */ 
+  private boolean  pWritable; 
 
 }
   

@@ -1,4 +1,4 @@
-// $Id: FileRequest.java,v 1.13 2004/11/01 00:49:44 jim Exp $
+// $Id: FileRequest.java,v 1.14 2004/11/03 18:16:31 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -73,6 +73,12 @@ enum FileRequest
    * An instance of {@link FileDeleteCheckedInReq FileDeleteCheckedInReq} is next.
    */
   DeleteCheckedIn, 
+
+  /**
+   * An instance of {@link FileChangeModeReq FileChangeModeReq} is next.
+   */
+  ChangeMode,
+
 
   /**
    * No more requests will be send over this connection.

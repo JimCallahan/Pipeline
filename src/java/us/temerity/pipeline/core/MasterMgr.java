@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.59 2004/11/03 15:03:32 jim Exp $
+// $Id: MasterMgr.java,v 1.60 2004/11/03 18:16:31 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2176,6 +2176,7 @@ class MasterMgr
       WorkingBundle bundle = getWorkingBundle(nodeID);
       NodeMod mod = new NodeMod(bundle.uVersion);
       Date critical = mod.getLastCriticalModification();
+      boolean wasActionEnabled = mod.isActionEnabled();
       if(mod.setProperties(req.getNodeMod())) {
 
 	/* make sure there are no active jobs, if this is a critical modification */ 
@@ -2190,6 +2191,10 @@ class MasterMgr
 
 	/* update the bundle */ 
 	bundle.uVersion = mod;
+
+	/* change working file write permissions? */ 
+	if(wasActionEnabled != mod.isActionEnabled()) 
+	  pFileMgrClient.changeMode(nodeID, mod, !mod.isActionEnabled());
       }
 
       return new SuccessRsp(timer);
@@ -4070,14 +4075,35 @@ class MasterMgr
    NodeRevertFilesReq req 
   ) 
   {
-    TaskTimer timer = new TaskTimer("MasterMgr.revertFiles(): " + req.getNodeID());
+    NodeID nodeID = req.getNodeID();
+    TaskTimer timer = new TaskTimer("MasterMgr.revertFiles(): " + nodeID);
 
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
       timer.resume();	      
 
-      pFileMgrClient.revert(req.getNodeID(), req.getFiles());
+      boolean writeable = false;
+      {
+	timer.aquire(); 
+	ReentrantReadWriteLock lock = getWorkingLock(nodeID);
+	lock.readLock().lock();
+	try {
+	  timer.resume();
+
+	  WorkingBundle bundle = getWorkingBundle(nodeID);
+	  if(bundle == null) 
+	    throw new PipelineException
+	      ("Only nodes with working versions can have their files reverted!");
+
+	  writeable = bundle.uVersion.isActionEnabled();
+	}
+	finally {
+	  lock.readLock().unlock();
+	}
+      }
+
+      pFileMgrClient.revert(nodeID, req.getFiles(), writeable);
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {

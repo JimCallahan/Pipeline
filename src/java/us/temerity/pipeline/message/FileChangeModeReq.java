@@ -1,4 +1,4 @@
-// $Id: FileRevertReq.java,v 1.2 2004/11/03 18:16:31 jim Exp $
+// $Id: FileChangeModeReq.java,v 1.1 2004/11/03 18:16:31 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -9,17 +9,15 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   F I L E   R E V E R T   R E Q                                                          */
+/*   F I L E   C H A N G E   M O D E   R E Q                                                */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to revert specific working area files to an earlier checked-in version of 
- * the files.
- * 
- * @see MasterMgr
+ * A request to change the user write permission of all existing files associated with 
+ * the given working version.
  */
 public
-class FileRevertReq
+class FileChangeModeReq
   implements Serializable
 {
   /*----------------------------------------------------------------------------------------*/
@@ -27,34 +25,32 @@ class FileRevertReq
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Constructs a new request. <P> 
+   * Constructs a new request.
    * 
    * @param id 
    *   The unique working version identifier.
    * 
-   * @param files
-   *   The table of checked-in file revision numbers indexed by file name.
+   * @param fseqs
+   *   The file sequences associated with the working version.
    * 
    * @param writeable
-   *   Whether the reverted working area files should be made writable.
+   *   Whether the working area files should be made writable by the owning user.
    */
   public
-  FileRevertReq
+  FileChangeModeReq
   (
    NodeID id, 
-   TreeMap<String,VersionID> files, 
-   boolean writeable   
+   TreeSet<FileSeq> fseqs, 
+   boolean writeable
   )
   { 
     if(id == null) 
-      throw new IllegalArgumentException
-	("The working version ID cannot be (null)!");
+      throw new IllegalArgumentException("The working version ID cannot be (null)!");
     pNodeID = id;
 
-    if(files == null) 
-      throw new IllegalArgumentException
-	("The files to revert cannot be (null)!");
-    pFiles = files;
+    if(fseqs == null) 
+      throw new IllegalArgumentException("The working file sequences cannot (null)!");
+    pFileSeqs = fseqs;
 
     pWritable = writeable;
   }
@@ -73,18 +69,18 @@ class FileRevertReq
   {
     return pNodeID;
   }
-
+    
   /**
-   * Get the table of checked-in file revision numbers indexed by file name.
-   */ 
-  public TreeMap<String,VersionID>
-  getFiles() 
+   * Gets the primary and secondary file sequences associated with the working version.
+   */
+  public TreeSet<FileSeq>
+  getFileSequences() 
   {
-    return pFiles;
+    return pFileSeqs;
   }
 
   /**
-   * Get whether the reverted working area files should be made writable.
+   * Get whether the working area files should be made writable by the owning user.
    */ 
   public boolean 
   getWritable() 
@@ -97,8 +93,8 @@ class FileRevertReq
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
-
-  private static final long serialVersionUID = -7064549770272479550L;
+  
+  private static final long serialVersionUID = -1450653270538077223L;
 
   
 
@@ -111,15 +107,14 @@ class FileRevertReq
    */ 
   private NodeID  pNodeID;
 
-  /**
-   * The table of checked-in file revision numbers indexed by file name.
-   */ 
-  private TreeMap<String,VersionID>  pFiles;
+  /** 
+   * The primary and secondary file sequences associated with the working version. 
+   */
+  private TreeSet<FileSeq>  pFileSeqs;
 
   /**
-   * Whether the reverted working area files should be made writable.
+   * Whether the working area files should be made writable by the owning user.
    */ 
   private boolean  pWritable; 
-
 }
   

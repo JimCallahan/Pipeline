@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.17 2004/11/01 00:49:44 jim Exp $
+// $Id: FileMgrServer.java,v 1.18 2004/11/03 18:16:31 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -250,22 +250,6 @@ class FileMgrServer
 	    }
 	    break;
 	    
-	  case Freeze:
-	    {
-	      FileFreezeReq req = (FileFreezeReq) objIn.readObject();
-	      objOut.writeObject(pFileMgr.freeze(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case Unfreeze:
-	    {
-	      FileUnfreezeReq req = (FileUnfreezeReq) objIn.readObject();
-	      objOut.writeObject(pFileMgr.unfreeze(req));
-	      objOut.flush(); 
-	    }
-	    break;
-	    
 	  case State:
 	    {
 	      FileStateReq req = (FileStateReq) objIn.readObject();
@@ -302,6 +286,14 @@ class FileMgrServer
 	    {
 	      FileDeleteCheckedInReq req = (FileDeleteCheckedInReq) objIn.readObject();
 	      objOut.writeObject(pFileMgr.deleteCheckedIn(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case ChangeMode:
+	    {
+	      FileChangeModeReq req = (FileChangeModeReq) objIn.readObject();
+	      objOut.writeObject(pFileMgr.changeMode(req));
 	      objOut.flush(); 
 	    }
 	    break;

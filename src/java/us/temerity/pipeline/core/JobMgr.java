@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.11 2004/10/28 15:55:23 jim Exp $
+// $Id: JobMgr.java,v 1.12 2004/11/03 18:16:31 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -901,6 +901,7 @@ class JobMgr
 	try {
 	  Logs.ops.finer("Preparing Job: " + jobID);
 	  
+	  /* create the job scratch directory */ 
 	  File scratch = new File(dir, "scratch");
 	  synchronized(pMakeDirLock) {
 	    if(dir.exists() || scratch.exists())
@@ -913,7 +914,48 @@ class JobMgr
 	    
 	    NativeFileSys.chmod(0777, scratch);	      
 	  }
+
+	  /* remove the target primary and secondary files */ 
+	  {
+	    ArrayList<String> args = new ArrayList<String>();
+	    args.add("--force");
+
+	    ActionAgenda agenda = pJob.getActionAgenda();
+	    SortedMap<String,String> env = agenda.getEnvironment();
+	    File wdir = agenda.getWorkingDir();
+
+	    for(File file : agenda.getPrimaryTarget().getFiles()) {
+	      File path = new File(wdir, file.getPath());
+	      if(path.isFile()) 
+		args.add(file.getPath());
+	    }
+
+	    for(FileSeq fseq : agenda.getSecondaryTargets()) {
+	      for(File file : fseq.getFiles()) {
+		File path = new File(wdir, file.getPath());
+		if(path.isFile()) 
+		  args.add(file.getPath());
+	      }
+	    }
+
+	    SubProcessLight proc = 
+	      new SubProcessLight(agenda.getNodeID().getAuthor(), 
+				  "RemoveTargets", "rm", args, env, wdir);
+	    try {
+	      proc.start();
+	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to remove the target files of job (" + jobID + "):\n\n" + 
+		   "  " + proc.getStdErr());	
+	    }
+	    catch(InterruptedException ex) {
+	      throw new PipelineException
+		("Interrupted while removing the target files of job (" + jobID + ")!");
+	    }
+	  }
 	  
+	  /* create the job execution process */ 
 	  synchronized(pLock) {
 	    pProc = pJob.getAction().prep(pJob.getActionAgenda(), outFile, errFile);
 	  }
@@ -940,6 +982,7 @@ class JobMgr
 	  return;
 	}
 
+	/* run the job */ 
 	Logs.ops.finer("Started Job: " + jobID);
 	{
 	  pProc.start();
@@ -947,6 +990,47 @@ class JobMgr
 	}
 	Logs.ops.finer("Finished Job: " + jobID);
 
+	/* make any existing target primary and secondary files read-only */ 
+	{
+	  ArrayList<String> args = new ArrayList<String>();
+	  args.add("uga-w");
+
+	  ActionAgenda agenda = pJob.getActionAgenda();
+	  SortedMap<String,String> env = agenda.getEnvironment();
+	  File wdir = agenda.getWorkingDir();
+	  
+	  for(File file : agenda.getPrimaryTarget().getFiles()) {
+	    File path = new File(wdir, file.getPath());
+	    if(path.isFile()) 
+	      args.add(file.getPath());
+	  }
+	  
+	  for(FileSeq fseq : agenda.getSecondaryTargets()) {
+	    for(File file : fseq.getFiles()) {
+	      File path = new File(wdir, file.getPath());
+	      if(path.isFile()) 
+		args.add(file.getPath());
+	    }
+	  }
+	  
+	  SubProcessLight proc = 
+	    new SubProcessLight(agenda.getNodeID().getAuthor(), 
+				"ReadOnlyTargets", "chmod", args, env, wdir);
+	  try {
+	    proc.start();
+	    proc.join();
+	    if(!proc.wasSuccessful()) 
+	      throw new PipelineException
+		("Unable to make the target files of job (" + jobID + ") read-only:\n\n" + 
+		 "  " + proc.getStdErr());	
+	  }
+	  catch(InterruptedException ex) {
+	    throw new PipelineException
+	      ("Interrupted while making the target files of job (" + jobID + ") read-only!");
+	  }
+	}
+
+	/* record the results */ 
 	synchronized(pLock) {
 	  pResults = 
 	    new QueueJobResults(pProc.getCommand(), pProc.getExitCode(), 

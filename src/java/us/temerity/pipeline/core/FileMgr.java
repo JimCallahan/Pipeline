@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.23 2004/11/01 00:49:44 jim Exp $
+// $Id: FileMgr.java,v 1.24 2004/11/03 18:16:31 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -988,7 +988,7 @@ class FileMgr
 	  for(File file : files) 
 	    args.add(file.getName());
 
-	  {
+	  if(req.getWritable()) {
 	    SubProcessLight proc = 
 	      new SubProcessLight(req.getNodeID().getAuthor(), 
 				  "CheckOut-SetWritable", "chmod", args, env, wdir);
@@ -1253,7 +1253,7 @@ class FileMgr
 	  args.add("u+w");
 	  args.addAll(req.getFiles().keySet());
 
-	  {
+	  if(req.getWritable()) {
 	    SubProcessLight proc = 
 	      new SubProcessLight(req.getNodeID().getAuthor(), 
 				  "Revert-SetWritable", "chmod", args, env, wdir);
@@ -1295,295 +1295,6 @@ class FileMgr
 	  }
 	}
 	
-	return new SuccessRsp(timer);
-      }
-    }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());
-    }
-    finally {
-      checkedInLock.readLock().unlock();
-    }  
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Replaces the files associated with a working version of a node with symlinks to  
-   * the respective files associated with the checked-in version upon which the working 
-   * version is based.
-   * 
-   * @param req 
-   *   The freeze request.
-   * 
-   * @return
-   *   <CODE>SuccessRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to freeze the files.
-   */
-  public Object
-  freeze
-  (
-   FileFreezeReq req
-  ) 
-  {
-    assert(req != null);
-    TaskTimer timer = null;
-    {
-      StringBuffer buf = new StringBuffer();
-      buf.append("FileMgr.freeze(): " + req.getNodeID() + " ");
-      for(FileSeq fseq : req.getFileSequences()) 
-	buf.append("[" + fseq + "]");
-      timer = new TaskTimer(buf.toString());
-    }
-
-    timer.aquire();
-    ReentrantReadWriteLock checkedInLock = getCheckedInLock(req.getNodeID().getName());
-    checkedInLock.readLock().lock();
-    try {
-      Object workingLock = getWorkingLock(req.getNodeID());
-      synchronized(workingLock) {
-	timer.resume();	
-
-	Map<String,String> env = System.getenv();
-
-	/* verify (or create) the working area file, backup and checksum directories */ 
-	File wdir  = null;
-	File cwdir = null;
-	{
-	  File wpath = req.getNodeID().getWorkingParent();
-	  wdir  = new File(pProdDir, wpath.getPath());
-	  cwdir = new File(pProdDir, "checksum/" + wpath);
-	}
-
-	/* the repository file and checksum directories */ 
-	VersionID rvid = req.getVersionID();
-	File rdir  = null;
-	File crdir = null;
-	{
-	  File rpath = req.getNodeID().getCheckedInPath(rvid);
-	  rdir  = new File(pProdDir, rpath.getPath());
-	  crdir = new File(pProdDir, "checksum/" + rpath);
-	}
-
-	/* build the list of files to freeze */ 
-	ArrayList<File> files = new ArrayList<File>();
-	for(FileSeq fseq : req.getFileSequences()) 
-	  files.addAll(fseq.getFiles());
-	
-	/* replace working files with links to the repository files */ 
-	{ 
-	  ArrayList<String> args = new ArrayList<String>();
-	  args.add("--symbolic-link");
-	  args.add("--remove-destination");
-	  args.add("--target-directory=" + wdir);
-	  for(File file : files) 
-	    args.add(rdir + "/" + file);
-	  
-	  SubProcessLight proc = 
-	    new SubProcessLight(req.getNodeID().getAuthor(), 
-				"Freeze-Link", "cp", args, env, pProdDir);
-	  proc.start();
-	  
-	  try {
-	    proc.join();
-	    if(!proc.wasSuccessful()) 
-	      throw new PipelineException
-		("Unable to freeze the working files for version (" + 
-		 req.getNodeID() + "):\n\n" + 
-		 "  " + proc.getStdErr());	
-	  }
-	  catch(InterruptedException ex) {
-	    throw new PipelineException
-	      ("Interrupted while freezing the working files for version (" + 
-	       req.getNodeID() + ")!");
-	  }
-	}
-
-	/* overwrite working checksums with the repository checksums */ 
-	{ 
-	  ArrayList<String> args = new ArrayList<String>();
-	  args.add("--remove-destination");
-	  args.add("--target-directory=" + cwdir);
-	  for(File file : files) 
-	    args.add(file.getName());
-	  
-	  SubProcessLight proc = 
-	    new SubProcessLight("Freeze-CopyCheckSums", "cp", args, env, crdir);
-	  proc.start();
-	  
-	  try {
-	    proc.join();
-	    if(!proc.wasSuccessful()) 
-	      throw new PipelineException
-		("Unable to freeze the working checksums for version (" + 
-		 req.getNodeID() + "):\n\n" + 
-		 "  " + proc.getStdErr());	
-	  }
-	  catch(InterruptedException ex) {
-	    throw new PipelineException
-	      ("Interrupted while freezing the working checksums for version (" + 
-	       req.getNodeID() + ")!");
-	  }
-	}
-
-	return new SuccessRsp(timer);
-      }
-    }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());
-    }
-    finally {
-      checkedInLock.readLock().unlock();
-    }  
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Replace the symlinks associated with the a working version of a node with copies 
-   * of the respective checked-in files which are the current targets of the symlinks. 
-   * 
-   * @param req 
-   *   The unfreeze request.
-   * 
-   * @return
-   *   <CODE>SuccessRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to unfreeze the files.
-   */
-  public Object
-  unfreeze
-  (
-   FileUnfreezeReq req
-  ) 
-  {
-    assert(req != null);
-    TaskTimer timer = null;
-    {
-      StringBuffer buf = new StringBuffer();
-      buf.append("FileMgr.unfreeze(): " + req.getNodeID() + " ");
-      for(FileSeq fseq : req.getFileSequences()) 
-	buf.append("[" + fseq + "]");
-      timer = new TaskTimer(buf.toString());
-    }
-
-    timer.aquire();
-    ReentrantReadWriteLock checkedInLock = getCheckedInLock(req.getNodeID().getName());
-    checkedInLock.readLock().lock();
-    try {
-      Object workingLock = getWorkingLock(req.getNodeID());
-      synchronized(workingLock) {
-	timer.resume();	
-
-	Map<String,String> env = System.getenv();
-
-	/* verify (or create) the working area file, backup and checksum directories */ 
-	File wdir  = null;
-	File cwdir = null;
-	{
-	  File wpath = req.getNodeID().getWorkingParent();
-	  wdir  = new File(pProdDir, wpath.getPath());
-	  cwdir = new File(pProdDir, "checksum/" + wpath);
-	}
-
-	/* the repository file and checksum directories */ 
-	VersionID rvid = req.getVersionID();
-	File rdir  = null;
-	File crdir = null;
-	{
-	  File rpath = req.getNodeID().getCheckedInPath(rvid);
-	  rdir  = new File(pProdDir, rpath.getPath());
-	  crdir = new File(pProdDir, "checksum/" + rpath);
-	}
-
-	/* build the list of files to unfreeze */ 
-	ArrayList<File> files = new ArrayList<File>();
-	for(FileSeq fseq : req.getFileSequences()) 
-	  files.addAll(fseq.getFiles());
-	
-	/* replace working links with copies of repository files */ 
-	{ 
-	  ArrayList<String> args = new ArrayList<String>();
-	  args.add("--remove-destination");
-	  args.add("--target-directory=" + wdir);
-	  for(File file : files) 
-	    args.add(file.getName());
-	  
-	  SubProcessLight proc = 
-	    new SubProcessLight(req.getNodeID().getAuthor(), 
-				"UnFreeze-Copy", "cp", args, env, rdir);
-	  proc.start();
-	  
-	  try {
-	    proc.join();
-	    if(!proc.wasSuccessful()) 
-	      throw new PipelineException
-		("Unable to unfreeze the working files for version (" + 
-		 req.getNodeID() + "):\n\n" + 
-		 "  " + proc.getStdErr());	
-	  }
-	  catch(InterruptedException ex) {
-	    throw new PipelineException
-	      ("Interrupted while unfreezing the working files for version (" + 
-	       req.getNodeID() + ")!");
-	  }
-	}
-
-	/* add write permission to the working files */ 
-	{
-	  ArrayList<String> args = new ArrayList<String>();
-	  args.add("u+w");
-	  for(File file : files) 
-	    args.add(file.getName());
-
-	  SubProcessLight proc = 
-	    new SubProcessLight(req.getNodeID().getAuthor(), 
-				"Unfreeze-SetWritable", "chmod", args, env, wdir);
-	  proc.start();
-	  
-	  try {
-	    proc.join();
-	    if(!proc.wasSuccessful()) 
-	      throw new PipelineException
-		("Unable to add write access permission to the files for the " + 
-		 "working version (" + req.getNodeID() + "):\n\n" + 
-		 "  " + proc.getStdErr());	
-	  }
-	  catch(InterruptedException ex) {
-	    throw new PipelineException
-	      ("Interrupted while adding write access permission to the files for the " + 
-	       "working version (" + req.getNodeID() + ")!");
-	  }
-	}
-
-	/* overwrite working checksums with the repository checksums */ 
-	{ 
-	  ArrayList<String> args = new ArrayList<String>();
-	  args.add("--remove-destination");
-	  args.add("--target-directory=" + cwdir);
-	  for(File file : files) 
-	    args.add(file.getName());
-	  
-	  SubProcessLight proc = 
-	    new SubProcessLight("UnFreeze-CopyCheckSums", "cp", args, env, crdir);
-	  proc.start();
-	  
-	  try {
-	    proc.join();
-	    if(!proc.wasSuccessful()) 
-	      throw new PipelineException
-		("Unable to unfreeze the working checksums for version (" + 
-		 req.getNodeID() + "):\n\n" + 
-		 "  " + proc.getStdErr());	
-	  }
-	  catch(InterruptedException ex) {
-	    throw new PipelineException
-	      ("Interrupted while unfreezing the working checksums for version (" + 
-	       req.getNodeID() + ")!");
-	  }
-	}
-
 	return new SuccessRsp(timer);
       }
     }
@@ -2091,6 +1802,80 @@ class FileMgr
     }  
   }  
 
+
+  /**
+   * Change the user write permission of all existing files associated with the given 
+   * working version.
+   * 
+   * @param req 
+   *   The change mode request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to change the permissions of the files.
+   */
+  public Object
+  changeMode
+  (
+   FileChangeModeReq req
+  ) 
+  {
+    assert(req != null);
+    TaskTimer timer = null;
+    {
+      StringBuffer buf = new StringBuffer();
+      buf.append("FileMgr.changeMode(): " + req.getNodeID() + " ");
+      for(FileSeq fseq : req.getFileSequences()) 
+	buf.append("[" + fseq + "]");
+      timer = new TaskTimer(buf.toString());
+    }
+
+    timer.aquire(); 
+    Object workingLock = getWorkingLock(req.getNodeID());
+    try {
+      synchronized(workingLock) {
+	timer.resume();	
+
+	Map<String,String> env = System.getenv();
+	File wdir = new File(pProdDir, req.getNodeID().getWorkingParent().getPath());
+
+	ArrayList<String> args = new ArrayList<String>();
+	args.add(req.getWritable() ? "u+w" : "u-w");
+	for(FileSeq fseq : req.getFileSequences()) {
+	  for(File file : fseq.getFiles()) {
+	    File path = new File(wdir, file.getPath());
+	    if(path.isFile()) 
+	      args.add(file.getPath());
+	  }
+	}
+      
+	{
+	  SubProcessLight proc = 
+	    new SubProcessLight(req.getNodeID().getAuthor(), 
+				"ChangeMode", "chmod", args, env, wdir);
+	  try { 
+	    proc.start();
+	    proc.join();
+	    if(!proc.wasSuccessful()) 
+	      throw new PipelineException
+		("Unable to change the write access permission of the files for " + 
+		 "the working version (" + req.getNodeID() + "):\n\n" + 
+		 "  " + proc.getStdErr());	
+	  }
+	  catch(InterruptedException ex) {
+	    throw new PipelineException
+	      ("Interrupted while changing the write access permission of  the files for " + 
+	       "the working version (" + req.getNodeID() + ")!");
+	  }
+	}
+      }
+
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
