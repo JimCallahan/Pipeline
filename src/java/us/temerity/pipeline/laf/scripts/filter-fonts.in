@@ -1,0 +1,37 @@
+#!/bin/bash
+
+font=$1
+src=$2
+
+dest=laf/fonts/$font
+
+function mipmap {
+  frame=$1
+
+  if [ ! -d $dest/$frame ]
+  then
+    mkdir -p $dest/$frame
+  fi
+
+  echo "Generating MipMaps for: $font [$frame]"
+
+  fr=`printf "%04d" $frame`
+
+  size=32
+  while [ $size -ge 1 ]
+  do
+    if [ $src/$font.$fr.tif -nt $dest/$frame/texture.$size.png ]
+    then 
+      echo "  Filtering ${size}x${size} MipMap"
+      @CONVERT@ -filter Sinc -resize ${size}x${size} \
+        $src/$font.$fr.tif -type TrueColor $dest/$frame/texture.$size.png
+    fi
+
+    size=$(($size/2))
+  done
+}
+
+for frame in `cat $src/../data/$font.txt`
+do
+  mipmap $frame
+done
