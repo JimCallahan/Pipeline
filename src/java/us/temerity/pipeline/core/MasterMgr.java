@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.15 2004/07/22 00:08:07 jim Exp $
+// $Id: MasterMgr.java,v 1.16 2004/07/22 03:58:39 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -244,8 +244,8 @@ class MasterMgr
 
     /* make a monitor connection to the directory notification daemon and 
         start a task to listen for directory change notifcations */ 
-    pDirtyTask = new DirtyTask(fileHostname, monitorPort);
-    pDirtyTask.start();
+    pDirtyDirTask = new DirtyDirTask(fileHostname, monitorPort);
+    pDirtyDirTask.start();
   }
 
 
@@ -314,7 +314,7 @@ class MasterMgr
       pCheckedInBundles = new HashMap<String,TreeMap<VersionID,CheckedInBundle>>();
 
       pWorkingLocks   = new HashMap<NodeID,ReentrantReadWriteLock>();
-      pWorkingBundles = new HashMap<NodeID,WorkingBundle>();       
+      pWorkingBundles = new HashMap<String,HashMap<NodeID,WorkingBundle>>();       
 
       pDownstreamLocks = new HashMap<String,ReentrantReadWriteLock>();
       pDownstream      = new HashMap<String,DownstreamLinks>();
@@ -852,14 +852,14 @@ class MasterMgr
       
     /* shutdown task listening to the monitor connection to the directory change 
         notification daemon */ 
-    if(pDirtyTask != null) {
-      pDirtyTask.shutdown();
+    if(pDirtyDirTask != null) {
+      pDirtyDirTask.shutdown();
 
       try {
-	pDirtyTask.join();
+	pDirtyDirTask.join();
       }
       catch(InterruptedException ex) {
-	Logs.net.severe("Interrupted while waiting on the DirtyTask to complete!");
+	Logs.net.severe("Interrupted while waiting on the DirtyDirTask to complete!");
       }
     }
 
@@ -893,7 +893,7 @@ class MasterMgr
       pFileMgrClient       = null;
       pMonitored           = null;
       pNotifyControlClient = null;
-      pDirtyTask           = null;
+      pDirtyDirTask        = null;
     }
   }
 
@@ -2513,7 +2513,12 @@ class MasterMgr
 
       /* create a working bundle for the new working version */ 
       synchronized(pWorkingBundles) {
-	pWorkingBundles.put(nodeID, new WorkingBundle(req.getNodeMod()));
+	HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
+	if(table == null) {
+	  table = new HashMap<NodeID,WorkingBundle>();
+	  pWorkingBundles.put(name, table);
+	}
+	table.put(nodeID, new WorkingBundle(req.getNodeMod()));
       }
 
       /* initialize the working downstream links */ 
@@ -2562,25 +2567,26 @@ class MasterMgr
   {
     assert(req != null);
     NodeID id = req.getNodeID();
+    String name = id.getName();
 
     TaskTimer timer = new TaskTimer("MasterMgr.release(): " + id);
 
     /* unlink the downstream working versions from the to be released working version */ 
     {
       timer.aquire();
-      ReentrantReadWriteLock downstreamLock = getDownstreamLock(id.getName());
+      ReentrantReadWriteLock downstreamLock = getDownstreamLock(name);
       downstreamLock.writeLock().lock();
       try {
 	timer.resume();
 
-	DownstreamLinks links = getDownstreamLinks(id.getName()); 
+	DownstreamLinks links = getDownstreamLinks(name); 
 	assert(links != null);
 
 	for(String target : links.getWorking(id)) {
 	  NodeID targetID = new NodeID(id, target);
 
 	  timer.suspend();
-	  Object obj = unlink(new NodeUnlinkReq(targetID, id.getName()));
+	  Object obj = unlink(new NodeUnlinkReq(targetID, name));
 	  timer.accum(((TimedRsp) obj).getTimer());
 
 	  if(obj instanceof FailureRsp)  {
@@ -2612,7 +2618,8 @@ class MasterMgr
 
       /* remove the bundle */ 
       synchronized(pWorkingBundles) {
-	pWorkingBundles.remove(id);
+	HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
+	table.remove(id);
       }
 
       /* remove the working version file(s) */ 
@@ -2642,12 +2649,12 @@ class MasterMgr
 	boolean isRevoked = false;
 
 	timer.aquire();	
-	ReentrantReadWriteLock downstreamLock = getDownstreamLock(id.getName());
+	ReentrantReadWriteLock downstreamLock = getDownstreamLock(name);
 	downstreamLock.writeLock().lock();
 	try {
 	  timer.resume();
 	  
-	  DownstreamLinks links = getDownstreamLinks(id.getName()); 
+	  DownstreamLinks links = getDownstreamLinks(name); 
 	  links.releaseWorking(id);
 	}  
 	finally {
@@ -2667,7 +2674,7 @@ class MasterMgr
 
 	  NodeID sourceID = new NodeID(id, source);
 	  DownstreamLinks links = getDownstreamLinks(source); 
-	  links.removeWorking(sourceID, id.getName());
+	  links.removeWorking(sourceID, name);
  	}  
 	finally {
 	  downstreamLock.writeLock().unlock();
@@ -3206,7 +3213,12 @@ class MasterMgr
 
 	/* create a new working bundle */ 
 	synchronized(pWorkingBundles) {
-	  pWorkingBundles.put(nodeID, new WorkingBundle(nwork));
+	  HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
+	  if(table == null) {
+	    table = new HashMap<NodeID,WorkingBundle>();
+	    pWorkingBundles.put(name, table);
+	  }
+	  table.put(nodeID, new WorkingBundle(nwork));
 	}
 
 	/* initialize the working downstream links */ 
@@ -4635,10 +4647,19 @@ class MasterMgr
     if(id == null) 
       throw new IllegalArgumentException("The working version ID cannot be (null)!");
 
+    String name = id.getName();
+
     /* lookup the bundle */ 
     WorkingBundle bundle = null;
     synchronized(pWorkingBundles) {
-      bundle = pWorkingBundles.get(id);
+      HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
+      if(table == null) {
+	table = new HashMap<NodeID,WorkingBundle>();
+	pWorkingBundles.put(name, table);
+      }
+      else {
+	bundle = table.get(id);
+      }
     }
 
     if(bundle != null) {
@@ -4650,13 +4671,13 @@ class MasterMgr
     NodeMod mod = readWorkingVersion(id);
     if(mod == null) 
       throw new PipelineException
-	("No working version of node (" + id.getName() + ") exists under the view (" + 
+	("No working version of node (" + name + ") exists under the view (" + 
 	 id.getView() + ") owned by user (" + id.getAuthor() + ")!");
     
     bundle = new WorkingBundle(mod);
 
     synchronized(pWorkingBundles) {
-      pWorkingBundles.put(id, bundle);
+      pWorkingBundles.get(name).put(id, bundle);
     }
     
     monitor(id);
@@ -6091,6 +6112,12 @@ class MasterMgr
 	  working.uVersion    = nwork;
 	  working.uFileStates = fileStates;
 
+	  /* invalidate the cached node state for all other working versions */ 
+	  {
+	    DirtyNodeTask task = new DirtyNodeTask(name, nodeID);
+	    task.start();
+	  }
+
 	  /* update the node status details */ 
 	  NodeDetails ndetails = 
 	    new NodeDetails(name, 
@@ -6251,16 +6278,16 @@ class MasterMgr
    * in the directories which have been modified.
    */ 
   private
-  class DirtyTask
+  class DirtyDirTask
     extends Thread
   {
-    DirtyTask
+    DirtyDirTask
     (
      String hostname, 
      int port
     ) 
     {
-      super("MasterMgr:DirtyTask");
+      super("MasterMgr:DirtyDirTask");
       pClient = new NotifyMonitorClient(hostname, port);
       pShutdown = new AtomicBoolean(false);
     }
@@ -6274,7 +6301,7 @@ class MasterMgr
     public void 
     run() 
     { 
-      Logs.net.fine("DirtyTask Started.");
+      Logs.net.fine("DirtyDirTask Started.");
       Logs.flush();
 
       while(!pShutdown.get()) {
@@ -6305,7 +6332,7 @@ class MasterMgr
 	      bundle.uFileTimeStamps  = null;
 	    }
 	    catch(PipelineException ex) {
-	      Logs.net.warning("DirtyTask: " + ex.getMessage());	      
+	      Logs.net.warning("DirtyDirTask: " + ex.getMessage());	      
 	    }	    
 	    finally {
 	      lock.writeLock().unlock();
@@ -6316,16 +6343,82 @@ class MasterMgr
 	  }
 	}
 	catch(PipelineException ex) {
-	  Logs.net.warning("DirtyTask: " + ex.getMessage());
+	  Logs.net.warning("DirtyDirTask: " + ex.getMessage());
 	}
       }
 
-      Logs.net.fine("DirtyTask Shutdown.");
+      Logs.net.fine("DirtyDirTask Shutdown.");
       Logs.flush();
     }
 
     private NotifyMonitorClient pClient;
     private AtomicBoolean       pShutdown;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Invalidate the cached node state information for all working versions of a node except 
+   * the given version. <P> 
+   * 
+   * When a new checked-in version is created for a node, all working versions except the 
+   * version used to create the new revision need to be invalidated.  The check-in operation
+   * will spawn instances of this class for each new checked-in version created.
+   */ 
+  private
+  class DirtyNodeTask
+    extends Thread
+  {
+    DirtyNodeTask
+    (
+     String name,
+     NodeID id
+    ) 
+    {
+      super("MasterMgr:DirtyNodeTask");
+
+      pName   = name;
+      pNodeID = id;
+    }
+
+    public void 
+    run() 
+    { 
+      TreeSet<NodeID> nodeIDs = new TreeSet<NodeID>();
+      synchronized(pWorkingBundles) {
+	HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(pName);
+	if(table != null) 
+	  nodeIDs.addAll(table.keySet());
+	nodeIDs.remove(pNodeID);
+      }
+
+      for(NodeID id : nodeIDs) {
+	TaskTimer timer = new TaskTimer("File State Invalidated: " + id);
+	timer.aquire();
+	ReentrantReadWriteLock lock = getWorkingLock(id);
+	lock.writeLock().lock();
+	try {
+	  timer.resume();	
+	  
+	  WorkingBundle bundle = getWorkingBundle(id);
+	  bundle.uFileStates     = null;
+	  bundle.uFileTimeStamps = null;
+	}
+	catch(PipelineException ex) {
+	  Logs.net.warning("DirtyNodeTask: " + ex.getMessage());	      
+	}	    
+	finally {
+	  lock.writeLock().unlock();
+	} 
+	  
+	timer.suspend();
+	Logs.net.finest(timer.toString());   	  
+      }
+    }
+
+    private String  pName;
+    private NodeID  pNodeID; 
   }
 
 
@@ -6454,9 +6547,10 @@ class MasterMgr
   private HashMap<NodeID,ReentrantReadWriteLock>  pWorkingLocks;
 
   /**
-   * The working version related information of nodes indexed by working version node ID.
+   * The working version related information of nodes indexed by fully resolved node 
+   * name and working version node ID.
    */ 
-  private HashMap<NodeID,WorkingBundle>  pWorkingBundles;
+  private HashMap<String,HashMap<NodeID,WorkingBundle>>  pWorkingBundles;
  
 
   /**
@@ -6505,7 +6599,7 @@ class MasterMgr
    * The task which listens to the monitor connection to the directory notification 
    * daemon: <B>plnotify<B>(1).
    */ 
-  private DirtyTask  pDirtyTask;  
+  private DirtyDirTask  pDirtyDirTask;  
 
 }
 
