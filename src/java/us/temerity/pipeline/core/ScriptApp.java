@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.8 2004/09/22 20:58:26 jim Exp $
+// $Id: ScriptApp.java,v 1.9 2004/09/22 23:14:56 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -756,6 +756,12 @@ class ScriptApp
       (tbar(80) + "\n" +
        "Working Node      : " + mod.getName() + "\n" + 
        "Primary Files     : " + mod.getPrimarySequence());
+
+    for(FileSeq fseq : mod.getSecondarySequences()) {
+      buf.append
+	("\n" + 
+	 "Secondary Files   : " + fseq);
+    }
     
     if(sections.contains("version")) {
       String vstr = "(pending)";
@@ -830,12 +836,10 @@ class ScriptApp
 	("\n\n" +
 	 pad("-- Job Requirements ", '-', 80) + "\n" +
 	 "Overflow Policy   : " + mod.getOverflowPolicy() + "\n" + 
-	 "\n" +
 	 "Execution Method  : " + mod.getExecutionMethod() + "\n" + 
 	 "Batch Size        : " + batchSize + "\n" + 
 	 "\n" + 
 	 "Priority          : " + jreqs.getPriority() + "\n" + 
-	 "\n" + 
 	 "Maximum Load      : " + String.format("%1$.2f", jreqs.getMaxLoad()) + "\n" +
 	 "Minimum Memory    : " + formatLong(jreqs.getMinMemory()) + "\n" +
 	 "Minimum Disk      : " + formatLong(jreqs.getMinDisk()));
