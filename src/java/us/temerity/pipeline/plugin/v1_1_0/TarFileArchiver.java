@@ -1,4 +1,4 @@
-// $Id: TarFileArchiver.java,v 1.1 2005/04/02 00:30:52 jim Exp $
+// $Id: TarFileArchiver.java,v 1.2 2005/04/03 01:29:52 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_1_0;
 
@@ -245,8 +245,9 @@ class TarFileArchiver
 	 "echo \"  tar --verbose --create --dereference --files-from=" + filelist + 
 	 compress + "\"\n" +
 	 "echo \"----------------------------------------------------------------------\"\n" +
-	 "tar --verbose --create --dereference --files-from=" + filelist + compress + "\n");
-      
+	 "(tar --verbose --create --dereference --files-from=" + filelist + 
+	 compress + ") 2>&1\n");
+
       out.close();
     }
     catch(IOException ex) {
@@ -360,8 +361,8 @@ class TarFileArchiver
 	 "echo \"  " + compress1 + "tar --verbose --extract --files-from=" + filelist + 
 	 compress2 + "\"\n" +
 	 "echo \"----------------------------------------------------------------------\"\n" +
-	 compress1 + "tar --verbose --extract --files-from=" + filelist + 
-	 compress2 + "\n");
+	 "(" + compress1 + "tar --verbose --extract --files-from=" + filelist + 
+	 compress2 + ") 2>&1\n");
       
       out.close();
     }
