@@ -130,6 +130,24 @@ fi
 AC_MSG_RESULT([$TOOLSETDIR])
 
 
+
+AC_MSG_CHECKING([User Home Directory])
+
+AC_ARG_WITH([home], 
+            [  --with-home=PATH        User home directory.])
+
+AC_SUBST(HOMEDIR)
+HOMEDIR=/home
+
+if test "$with_home" 
+then
+  HOMEDIR=$with_home
+fi
+
+AC_MSG_RESULT([$HOMEDIR])
+
+
+
 dnl ------------------------------------------------------------------------------------------
 
 AC_MSG_CHECKING([Pipeline Server Hostname])
@@ -581,6 +599,7 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/Makefile
   src/java/us/temerity/pipeline/PackageInfo.java
   src/java/us/temerity/pipeline/native/Makefile
+  src/java/us/temerity/pipeline/plugin/Makefile
   src/java/us/temerity/pipeline/tests/Makefile
   src/java/us/temerity/pipeline/tests/TestInfo.java
 
