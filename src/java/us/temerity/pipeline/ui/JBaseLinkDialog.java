@@ -1,4 +1,4 @@
-// $Id: JBaseLinkDialog.java,v 1.1 2004/06/28 23:39:45 jim Exp $
+// $Id: JBaseLinkDialog.java,v 1.2 2004/07/07 13:24:15 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -40,8 +40,6 @@ class JBaseLinkDialog
   {
     super(title, true);
 
-    pLinkCatagories = new TreeMap<String,LinkCatagory>();
-
     /* create dialog body components */ 
     {
       Box body = new Box(BoxLayout.X_AXIS);
@@ -65,30 +63,18 @@ class JBaseLinkDialog
 	}
 	
 	{
-	  ArrayList<String> values = new ArrayList<String>();
-	  values.add("-");
-
 	  JCollectionField field = 
-	    UIMaster.createTitledCollectionField(tpanel, "Link Catagory:", sTSize, 
-						 vpanel, values, sVSize);
-	  pCatagoryField = field;
-
-	  field.addActionListener(this);
-	  field.setActionCommand("catagory-changed");
+	    UIMaster.createTitledCollectionField(tpanel, "Link Policy:", sTSize, 
+						 vpanel, LinkPolicy.titles(), sVSize);
+	  pPolicyField = field;
 	}
 	
 	UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
-
-	pPolicyField =
-	  UIMaster.createTitledTextField(tpanel, "Link Policy:", sTSize, 
-					 vpanel, null, sVSize);
-	
-	UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
 	
 	{
 	  JCollectionField field = 
 	    UIMaster.createTitledCollectionField(tpanel, "Link Relationship:", sTSize, 
-					       vpanel, LinkRelationship.titles(), sVSize);
+						 vpanel, LinkRelationship.titles(), sVSize);
 	
 	  pRelationshipField = field;
 
@@ -120,17 +106,17 @@ class JBaseLinkDialog
   /**
    * Get the link catagory.
    */
-  public LinkCatagory
-  getLinkCatagory() 
+  public LinkPolicy
+  getPolicy() 
   {
-    return pLinkCatagories.get(pCatagoryField.getSelected());
+    return LinkPolicy.values()[pPolicyField.getSelectedIndex()];
   }
     
   /**
    * Get the link relationship
    */ 
   public LinkRelationship
-  getLinkRelationship() 
+  getRelationship() 
   {
     return LinkRelationship.values()[pRelationshipField.getSelectedIndex()];
   }
@@ -156,7 +142,7 @@ class JBaseLinkDialog
   protected void
   updateLink
   (
-   LinkCatagory lcat, 
+   LinkPolicy policy, 
    LinkRelationship rel, 
    Integer offset
   ) 
@@ -164,30 +150,7 @@ class JBaseLinkDialog
     assert(((rel == LinkRelationship.OneToOne) && (offset != null)) || 
 	   ((rel != LinkRelationship.OneToOne) && (offset == null)));
 
-    UIMaster master = UIMaster.getInstance();
-    try {      
-      MasterMgrClient client = master.getMasterMgrClient();
-
-      TreeMap<String,LinkCatagoryDesc> table = client.getLinkCatagoryDesc();
-      TreeSet<String> active = client.getActiveLinkCatagoryNames();
-
-      pLinkCatagories.clear();
-      for(String cname : active) 
-	pLinkCatagories.put(cname, new LinkCatagory(table.get(cname)));
-      pLinkCatagories.put(lcat.getName(), lcat);      
-
-      pCatagoryField.setValues(pLinkCatagories.keySet());
-    }
-    catch(PipelineException ex) {
-      master.showErrorDialog(ex);
-    }
-
-    pCatagoryField.removeActionListener(this);
-    {
-      pCatagoryField.setSelected(lcat.getName());
-      pPolicyField.setText(lcat.getPolicy().toTitle());
-    }
-    pCatagoryField.addActionListener(this);
+    pPolicyField.setSelectedIndex(policy.ordinal());
 
     pRelationshipField.removeActionListener(this);
     {
@@ -217,9 +180,7 @@ class JBaseLinkDialog
     super.actionPerformed(e);
 
     String cmd = e.getActionCommand();
-    if(cmd.equals("catagory-changed")) 
-      doCatagoryChanged();
-    else if(cmd.equals("relationship-changed")) 
+    if(cmd.equals("relationship-changed")) 
       doRelationshipChanged();
   }
 
@@ -233,18 +194,9 @@ class JBaseLinkDialog
    * The link catagory has been changed.
    */ 
   public void 
-  doCatagoryChanged()
-  {
-    pPolicyField.setText(getLinkCatagory().getPolicy().toTitle());
-  }
-
-  /**
-   * The link catagory has been changed.
-   */ 
-  public void 
   doRelationshipChanged()
   {
-    LinkRelationship rel = getLinkRelationship();
+    LinkRelationship rel = getRelationship();
     if(rel == LinkRelationship.OneToOne) {
       Integer offset = pOffsetField.getValue();
       if(offset == null) 
@@ -272,20 +224,9 @@ class JBaseLinkDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The active link catagories indexed by catagory name.
+   * The link policy field.
    */ 
-  private TreeMap<String,LinkCatagory>  pLinkCatagories; 
-
-  /**
-   * The link catagory.
-   */ 
-  private JCollectionField pCatagoryField; 
-  
-  /**
-   * The link policy.
-   */ 
-  private JTextField  pPolicyField; 
-
+  private JCollectionField  pPolicyField; 
 
   /**
    * The link relationship field.

@@ -1,4 +1,4 @@
-// $Id: JEditLinkDialog.java,v 1.1 2004/06/28 23:39:45 jim Exp $
+// $Id: JEditLinkDialog.java,v 1.2 2004/07/07 13:24:15 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -45,7 +45,7 @@ class JEditLinkDialog
    LinkMod link 
   ) 
   {
-    super.updateLink(link.getCatagory(), link.getRelationship(), link.getFrameOffset());
+    super.updateLink(link.getPolicy(), link.getRelationship(), link.getFrameOffset());
   }
 
 

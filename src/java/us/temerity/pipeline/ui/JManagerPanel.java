@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.26 2004/06/28 23:05:08 jim Exp $
+// $Id: JManagerPanel.java,v 1.27 2004/07/07 13:24:36 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -70,13 +70,11 @@ class JManagerPanel
 	pPopup.add(sub);  
    
 	item = new JMenuItem("Node Browser");
-	pNodeBrowserItem = item;
 	item.setActionCommand("node-browser");
 	item.addActionListener(this);
 	sub.add(item);  
 	
 	item = new JMenuItem("Node Viewer");
-	pNodeViewerItem = item;
 	item.setActionCommand("node-viewer");
 	item.addActionListener(this);
 	sub.add(item);  
@@ -84,25 +82,23 @@ class JManagerPanel
 	sub.addSeparator();
 
 	item = new JMenuItem("Node Details");
-	pNodeDetailsItem = item;
 	item.setActionCommand("node-details");
 	item.addActionListener(this);
 	sub.add(item);  
 
 	item = new JMenuItem("Node Links");
-	pNodeLinksItem = item;
 	item.setActionCommand("node-links");
 	item.addActionListener(this);
+	item.setEnabled(false); // FOR NOW 
 	sub.add(item);  
 
 	item = new JMenuItem("Node Files");
-	pNodeFilesItem = item;
 	item.setActionCommand("node-files");
 	item.addActionListener(this);
+	item.setEnabled(false); // FOR NOW 
 	sub.add(item);  
 
 	item = new JMenuItem("Node History");
-	pNodeHistoryItem = item;
 	item.setActionCommand("node-history");
 	item.addActionListener(this);
 	sub.add(item);  
@@ -110,35 +106,34 @@ class JManagerPanel
 	sub.addSeparator();
 
 	item = new JMenuItem("Queue Manager");
-	pQueueManagerItem = item;
 	item.setActionCommand("queue-manager");
 	item.addActionListener(this);
+	item.setEnabled(false); // FOR NOW 
 	sub.add(item);  
 
 	item = new JMenuItem("Job Details");
-	pJobDetailsItem = item;
 	item.setActionCommand("job-details");
 	item.addActionListener(this);
+	item.setEnabled(false); // FOR NOW 
 	sub.add(item);  
 
 	sub.addSeparator();
 
 	item = new JMenuItem("Task Timeline");
-	pTaskTimelineItem = item;
 	item.setActionCommand("task-timeline");
 	item.addActionListener(this);
+	item.setEnabled(false); // FOR NOW 
 	sub.add(item);  
 
 	item = new JMenuItem("Task Details");
-	pTaskDetailsItem = item;
 	item.setActionCommand("task-details");
 	item.addActionListener(this);
+	item.setEnabled(false); // FOR NOW    
 	sub.add(item);  
 
 	sub.addSeparator();
 
 	item = new JMenuItem("None");
-	pNoneItem = item;
 	item.setActionCommand("none");
 	item.addActionListener(this);
 	sub.add(item);
@@ -239,11 +234,6 @@ class JManagerPanel
 
 	item = new JMenuItem("Manage Toolsets...");
 	item.setActionCommand("manage-toolsets");
-	item.addActionListener(this);
-	sub.add(item);  
-
-	item = new JMenuItem("Manage Link Catagories...");
-	item.setActionCommand("manage-link-catagories");
 	item.addActionListener(this);
 	sub.add(item);  
 
@@ -627,6 +617,11 @@ class JManagerPanel
 
     // ...
 
+    else if(cmd.equals("node-history"))
+      doNodeHistoryPanel();
+
+    // ...
+
     else if(cmd.equals("none"))
       doEmptyPanel();
 
@@ -666,8 +661,6 @@ class JManagerPanel
       UIMaster.getInstance().showManageUsersDialog();
     else if(cmd.equals("manage-toolsets"))
       UIMaster.getInstance().showManageToolsetsDialog();
-    else if(cmd.equals("manage-link-catagories"))
-      UIMaster.getInstance().showManageLinkCatagoriesDialog();
     else if(cmd.equals("default-editors"))
       UIMaster.getInstance().showDefaultEditorsDialog();
     else if(cmd.equals("shutdown"))
@@ -730,6 +723,17 @@ class JManagerPanel
   {
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     setContents(new JNodeDetailsPanel(dead));
+    dead.setGroupID(0);
+  }
+
+  /**
+   * Change the contents of this panel to a JNodeHistoryPanel. 
+   */ 
+  private void 
+  doNodeHistoryPanel()
+  {
+    JTopLevelPanel dead = (JTopLevelPanel) removeContents();
+    setContents(new JNodeHistoryPanel(dead));
     dead.setGroupID(0);
   }
 
@@ -1388,18 +1392,6 @@ class JManagerPanel
   /**
    * The panel layout popup menu items.
    */ 
-  private JMenuItem  pNodeBrowserItem;
-  private JMenuItem  pNodeViewerItem;
-  private JMenuItem  pNodeDetailsItem;
-  private JMenuItem  pNodeLinksItem;
-  private JMenuItem  pNodeFilesItem;
-  private JMenuItem  pNodeHistoryItem;
-  private JMenuItem  pQueueManagerItem;
-  private JMenuItem  pJobDetailsItem;
-  private JMenuItem  pTaskTimelineItem;
-  private JMenuItem  pTaskDetailsItem;
-  private JMenuItem  pNoneItem;
-
   private JMenuItem  pAddTabItem; 
 
   private JMenuItem  pAddLeftItem; 
