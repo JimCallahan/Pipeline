@@ -1,4 +1,4 @@
-// $Id: NodeVersion.java,v 1.2 2004/03/01 21:44:08 jim Exp $
+// $Id: NodeVersion.java,v 1.3 2004/03/03 07:48:22 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -66,7 +66,32 @@ class NodeVersion
   }
 
 
-  // Get log message info... 
+  /**
+   * Get when the version was checked-in.
+   */ 
+  public Date
+  getTimeStamp() 
+  {
+    return pMessage.getTimeStamp();
+  }
+
+  /**
+   * Get the name of the user who checked-in the version.
+   */ 
+  public String
+  getAuthor() 
+  {
+    return pMessage.getAuthor();
+  }
+
+  /**
+   * Get the check-in log message text. 
+   */ 
+  public String
+  getMessage() 
+  {
+    return pMessage.getMessage();
+  }
 
   
   /*----------------------------------------------------------------------------------------*/

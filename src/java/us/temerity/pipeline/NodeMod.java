@@ -1,7 +1,8 @@
-// $Id: NodeMod.java,v 1.2 2004/03/01 21:44:08 jim Exp $
+// $Id: NodeMod.java,v 1.3 2004/03/03 07:48:22 jim Exp $
 
 package us.temerity.pipeline;
 
+import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -99,11 +100,11 @@ class NodeMod
 	  toolset, editor, 
 	  action, jobReqs, ignoreOverflow, isSerial, batchSize);
     
-    pLastMod = new Date();
-
     pSourceModDepends = new TreeMap<String,DependMod>();
 
     pTargetNames = new TreeSet<String>();
+
+    updateLastCriticalMod();
   }
 
   /** 
@@ -122,13 +123,13 @@ class NodeMod
 
     pWorkingID = vsn.getVersionID();
 
-    pLastMod = new Date();
-
     pSourceModDepends = new TreeMap<String,DependMod>();
     for(DependVersion dep : vsn.getSources()) 
       pSourceModDepends.put(dep.getName(), new DependMod(dep));
 
     pTargetNames = new TreeSet<String>();
+
+    updateLastCriticalMod();
   }
 
 
@@ -160,20 +161,408 @@ class NodeMod
     return pLastMod;
   }
 
+  /**
+   * Update the last modification timestamp.
+   */
+  private void 
+  updateLastMod()
+  {
+    pLastMod = new Date();
+  }
+
+
+  /** 
+   * Get the timestamp of the last modification of this working version which invalidates
+   * the up-to-date status of the files associated with the node.
+   */
+  public Date
+  getLastCriticalModification() 
+  {
+    return pLastCriticalMod;
+  }
+
+  /**
+   * Update the last critical modification timestamp.
+   */
+  private void 
+  updateLastCriticalMod()
+  {
+    pLastMod = new Date();
+    pLastCriticalMod = pLastMod;
+  }
+
+
   
   /*----------------------------------------------------------------------------------------*/
 
-  // rename primary file sequence
+  /**
+   * Rename an initial working version of the node and its associated primary file sequence.
+   * 
+   * @param name [<B>in</B>]
+   *   The new fully resolved node name.
+   */
+  public void 
+  setName
+  ( 
+   String name
+  ) 
+  {
+    if(pWorkingID != null) 
+      throw new IllegalArgumentException
+	("Only initial working versions can be renamed!");
 
-  // add and remove secondary file sequences
+    if(name == null) 
+      throw new IllegalArgumentException("The new name cannot be (null)!");
+    pName = name;
+    
+    {
+      FilePattern opat = pPrimarySeq.getFilePattern();
+      FrameRange range = pPrimarySeq.getFrameRange();
 
-  // change frame range across all file sequences
+      File path = new File(name);      
+      FilePattern pat = new FilePattern(path.getName(), opat.getPadding(), opat.getSuffix());
+      pPrimarySeq = new FileSeq(pat, range);
+    }
+    
+    updateLastCriticalMod();
+  }
+
+  /** 
+   * Adjust the frame range bounds of the primary file sequence associated with this working 
+   * version of the node. <P> 
+   * 
+   * If the working version has secondary file sequences, they will also have their 
+   * frame ranges altered so that all file sequences maintain a consistent number 
+   * of files per sequence.  The one-to-one relationship of primary to secondary files
+   * will be preserved by this operation. <P>
+   * 
+   * For example, if the original frame ranges where: <P> 
+   * 
+   * <DIV style="margin-left: 40px;">
+   *   1-7x2 (primary) <BR> 
+   *   25-40x5 (1st secondary) <BR>
+   *   12-21x3 (2nd secondary) <BR>
+   * </DIV> <P>
+   * 
+   * A <CODE>range</CODE> argument of 5-15x2 would change the frame ranges to: <P>
+   * 
+   * <DIV style="margin-left: 40px;">
+   *   5-15x2 (primary) <BR> 
+   *   35-60x5 (1st secondary) <BR>
+   *   18-33x3 (2nd secondary) <BR>
+   * </DIV> <P>
+   * 
+   * The new <CODE>range</CODE> argument must define a set of frames that is aligned with 
+   * the original primary frame range. For frame ranges to be aligned they must have 
+   * identical frame step increments.  In addition, all frames defined by the one range must 
+   * be different from all frames of the other range by an exact multiple of this frame 
+   * step increment. <P>
+   * 
+   * For example, if the original primary frame range was: <P> 
+   * 
+   * <DIV style="margin-left: 40px;">
+   *   2-10x2 <BR> 
+   * </DIV> <P>
+   * 
+   * The following new frame ranges would be legal: <P> 
+   * 
+   * <DIV style="margin-left: 40px;">
+   *   4-8x2 <BR> 
+   *   6-20x2 <BR> 
+   *   0-2x2 <BR> 
+   *   4-16x2 <BR> 
+   *   100-120x2 <BR> 
+   * </DIV> <P>
+   * 
+   * Notice that the new frame range need not have the same numbers of frames or even 
+   * any frames in common with the original primary frame range.  <P> 
+   * 
+   * To further illustrate the meaning of alignment, the following new frame ranges 
+   * would not be legal and would cause this method to throw an exception: <P> 
+   *
+   * <DIV style="margin-left: 40px;">
+   *   5-9x2 <BR> 
+   *   6-20x4 <BR> 
+   *   2-10x1 <BR> 
+   *   13-17x2 <BR> 
+   * </DIV> <P>
+   *
+   * @param range [<B>in</B>]
+   *   The new frame range of the primary file sequence.  
+   * 
+   * @return
+   *   The list of files which where members of the original file sequences, but which 
+   *   are no longer members of the resulting file sequences.
+   */
+  public ArrayList<File>
+  adjustFrameRange
+  (
+   FrameRange range
+  ) 
+  {
+    FrameRange orange = pPrimarySeq.getFrameRange();
+    if(orange == null) 
+      throw new IllegalArgumentException
+	("The file sequences associated with this working version did not have a " +
+	 "frame number component and therefore has no frame range to be modified!");
+
+    if(range == null)
+      throw new IllegalArgumentException
+	("The new frame range cannot be (null)!");
+
+    if(orange.getBy() != range.getBy())
+      throw new IllegalArgumentException
+	("The new frame range (" + range + ") had a different frame step increment than " +
+	 "the original primary frame range (" + orange + ")!");
+
+    if(((range.getStart() - orange.getStart()) % orange.getBy()) != 0) 
+      throw new IllegalArgumentException
+	("The new frame range (" + range + ") was not aligned with the original " + 
+	 "primary frame range (" + orange + ")!");
+    
+    int deltaS = (range.getStart() - orange.getStart()) / orange.getBy();
+    int deltaE = (range.getEnd() - orange.getEnd()) / orange.getBy();
+
+    TreeSet<File> dead = new TreeSet<File>(pPrimarySeq.getFiles());
+    for(FileSeq fseq : pSecondarySeqs) 
+      dead.addAll(fseq.getFiles());
+
+    {
+      FileSeq primary = new FileSeq(pPrimarySeq.getFilePattern(), range);
+      
+      TreeSet<FileSeq> secondary = new TreeSet<FileSeq>();
+      for(FileSeq fseq : pSecondarySeqs) {
+	FrameRange fr = fseq.getFrameRange();
+	int start = fr.getStart() + fr.getBy()*deltaS;
+	int end   = fr.getEnd() + fr.getBy()*deltaE;
+
+	secondary.add(new FileSeq(fseq.getFilePattern(), 
+				  new FrameRange(start, end, fr.getBy())));
+      }
+      
+      pPrimarySeq    = primary;
+      pSecondarySeqs = secondary;
+    }
+      
+    dead.removeAll(pPrimarySeq.getFiles());
+    for(FileSeq fseq : pSecondarySeqs) 
+      dead.removeAll(fseq.getFiles());
+    
+    updateLastMod();
+
+    return new ArrayList(dead);
+  }
+  
+
+  /**
+   * Add a secondary file sequences to this working version. 
+   * 
+   * @param fseq [<B>in</B>]
+   *   The secondary file sequence to add.
+   */
+  public void
+  addSecondarySequence
+  (
+   FileSeq fseq
+  ) 
+  {
+    if(fseq == null)
+      throw new IllegalArgumentException
+	("The new secondary file sequence cannot be (null)!");
+    
+    if(fseq.numFrames() != pPrimarySeq.numFrames()) 
+      throw new IllegalArgumentException
+	("The new secondary file sequence (" + fseq + ") does not contain the same number " +
+	 "of files as the primary file sequence (" + pPrimarySeq + ")!");
+    
+    if(pSecondarySeqs.contains(fseq)) 
+      throw new IllegalArgumentException
+	("The secondary file sequence (" + fseq + ") is already exists for this " + 
+	 "working version!");
+
+    for(FileSeq sfseq : pSecondarySeqs) 
+      if(fseq.getFilePattern().getPrefix().equals(sfseq.getFilePattern().getPrefix())) 
+	throw new IllegalArgumentException
+	  ("The new secondary file sequence (" + fseq + ") conflicts with the existing " + 
+	   "secondary file sequence (" + sfseq + ")!");
+    
+    pSecondarySeqs.add(fseq);
+
+    updateLastCriticalMod();
+  }
+
+  /** 
+   * Remove an existing secondary file sequence from this working version.
+   * 
+   * @param fseq [<B>in</B>]
+   *   The secondary file sequence to remove.
+   */ 
+  public void
+  removeSecondarySequence
+  (
+   FileSeq fseq
+  ) 
+  {
+    if(!pSecondarySeqs.contains(fseq)) 
+      throw new IllegalArgumentException
+	("The secondary file sequence (" + fseq + ") does not exist for this " + 
+	 "working version!");
+
+    pSecondarySeqs.remove(fseq);
+
+    updateLastMod();
+  }
 
 
-  // setEditor()
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Set name of the editor plugin used to editing/viewing the files associated with this 
+   * working version of the node.
+   * 
+   * @param name [<B>in</B>]
+   *   The name of the editor or <CODE>null</CODE> for no editor.
+   */
+  public void 
+  setEditor
+  (
+   String name
+  ) 
+  {
+    pEditor = name;
+    updateLastMod();
+  }
 
 
-  // setAction(), setJobReqs(), setIgnoreOverflow(), setIsSerial(), setBatchSize()
+  /** 
+   * Set the action plugin instance used to regeneration the files associated with this 
+   * working version of the node. <P> 
+   * 
+   * If the <CODE>action</CODE> argument is <CODE>null</CODE>, the job requirements will
+   * be removed and all action related flags and parameters will be reset to default 
+   * values.
+   * 
+   * @param action [<B>in</B>]
+   *   The regeneration action or <CODE>null</CODE> for no action.
+   */
+  public void 
+  setAction
+  (
+   BaseAction action 
+  ) 
+  {
+    if(action != null) {
+      try {
+	pAction = (BaseAction) action.clone();
+      }
+      catch(CloneNotSupportedException ex) {
+	assert(false);
+      }
+    }
+    else {
+      pAction  = null;
+      pJobReqs = null;
+
+      pIgnoreOverflow = false;
+      pIsSerial       = false;
+      pBatchSize      = 0;
+    }
+    
+    updateLastCriticalMod();
+  }
+
+  /** 
+   * Set the requirements that a server must meet in order to be eligable to run jobs 
+   * for this working version of the node. 
+   * 
+   * @param jobReqs [<B>in</B>]
+   *   The requirements that a server must meet in order to be eligable to run jobs 
+   *   the node.
+   */
+  public void 
+  setJobRequirements
+  ( 
+   JobReqs jobReqs
+  ) 
+  {
+    if(pAction == null) 
+      throw new IllegalArgumentException
+	("Job requirements cannot be set for nodes without regeneration actions!");
+
+    if(jobReqs == null)
+      throw new IllegalArgumentException
+	("The job requirements cannot be (null)!");
+    
+    try {
+      pJobReqs = (JobReqs) jobReqs.clone();
+    }
+    catch(CloneNotSupportedException ex) {
+      assert(false);
+    }
+
+    updateLastMod();
+  }
+
+  /** 
+   * Set whether dependencies which overflow their frame ranges should be ignored when 
+   * generating jobs for this working version of the node.
+   */
+  public void 
+  setIgnoreOverflow
+  ( 
+   boolean tf
+  ) 
+  {
+    if(pAction == null) 
+      throw new IllegalArgumentException
+	("IgnoreOverflow flag cannot be set for nodes without regeneration actions!");
+
+    pIgnoreOverflow = tf;
+
+    updateLastMod();
+  }
+
+  /**
+   * Set whether are all of the files associated with this working version of the node are
+   * regenerated by a single job invocation?
+   */
+  public void
+  setIsSerial
+  ( 
+   boolean tf
+  ) 
+  {
+    if(pAction == null) 
+      throw new IllegalArgumentException
+	("IsSerial flag cannot be set for nodes without regeneration actions!");
+
+    pIsSerial = tf;
+
+    updateLastMod();
+  }
+  
+  /**
+   * Set the maximum number of frames assigned to each parallel job.
+   */ 
+  public void
+  setBatchSize
+  (
+   int size
+  ) 
+  {
+    if(pAction == null) 
+      throw new IllegalArgumentException
+	("The batch size cannot be set for nodes without regeneration actions!");
+
+    if(pIsSerial) 
+      throw new IllegalArgumentException
+	("The batch size cannot be set for nodes with serial execution!");
+
+    pBatchSize = size;
+
+    updateLastMod();
+  }
 
 
   
@@ -235,7 +624,8 @@ class NodeMod
   ) 
   {
     pSourceModDepends.put(dep.getName(), new DependMod(dep));
-    pLastMod = new Date();
+
+    updateLastCriticalMod();
   }
 
   /** 
@@ -257,7 +647,8 @@ class NodeMod
       throw new IllegalArgumentException("No upstream node named (" + name + ") exists!");
 
     pSourceModDepends.remove(name);
-    pLastMod = new Date();
+
+    updateLastCriticalMod();
   }
   
   /** 
@@ -267,7 +658,8 @@ class NodeMod
   removeAllSources() 
   {
     pSourceModDepends.clear();
-    pLastMod = new Date();
+
+    updateLastCriticalMod();
   }
 
 
@@ -295,7 +687,8 @@ class NodeMod
   ) 
   {
     pTargetNames.add(name);
-    pLastMod = new Date();
+
+    updateLastCriticalMod();
   }
 
   /** 
@@ -317,7 +710,8 @@ class NodeMod
       throw new IllegalArgumentException("No downstream node named (" + name + ") exists!");
 
     pTargetNames.remove(name);
-    pLastMod = new Date();
+
+    updateLastCriticalMod();
   }
   
   /** 
@@ -327,7 +721,8 @@ class NodeMod
   removeAllTargets()
   {
     pTargetNames.clear();
-    pLastMod = new Date();
+    
+    updateLastCriticalMod();
   }
   
 
@@ -351,10 +746,17 @@ class NodeMod
    */ 
   private VersionID  pWorkingID;       
 
+
   /** 
    * The timestamp of the last modification of any field of this instance.  
    */
   private Date  pLastMod;
+
+  /** 
+   * The timestamp of the last modification of this working version which invalidates
+   * the up-to-date status of the files associated with the node.
+   */
+  private Date  pLastCriticalMod;
 
 
   /**
