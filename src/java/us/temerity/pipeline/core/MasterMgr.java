@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.29 2004/09/01 12:22:02 jim Exp $
+// $Id: MasterMgr.java,v 1.30 2004/09/03 01:53:44 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3894,116 +3894,6 @@ class MasterMgr
     }
   }
 
-  
-  /*----------------------------------------------------------------------------------------*/
-  
-  
-  /**
-   * Kill all jobs which belong to the job group with the given ID. <P> 
-   * 
-   * @param req 
-   *   The submit jobs request.
-   * 
-   * @return 
-   *   <CODE>SuccessRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to kill the jobs.
-   */ 
-  public Object
-  killJobGroup
-  (
-   NodeKillJobGroupReq req
-  ) 
-  {
-    TaskTimer timer = new TaskTimer("MasterMgr.killJobGroup()");
-    try {
-      QueueJobGroup group = pQueueMgrClient.getJobGroup(req.getGroupID());
-      TreeSet<Long> jobIDs = new TreeSet<Long>(group.getJobIDs());
-      pQueueMgrClient.killJobs(jobIDs);
-      return new SuccessRsp(timer);
-    }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());
-    }    
-  }
-
-  /**
-   * Kill the jobs with the given IDs. <P> 
-   * 
-   * @param req 
-   *   The submit jobs request.
-   * 
-   * @return 
-   *   <CODE>SuccessRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to kill the jobs.
-   */ 
-  public Object
-  killJobs
-  (
-   NodeKillJobsReq req
-  ) 
-  {
-    TaskTimer timer = new TaskTimer("MasterMgr.killJobs()");
-    try {
-      pQueueMgrClient.killJobs(req.getJobIDs());
-      return new SuccessRsp(timer);
-    }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());
-    }    
-  }
-
-  /**
-   * Pause the jobs with the given IDs. <P> 
-   * 
-   * @param req 
-   *   The submit jobs request.
-   * 
-   * @return 
-   *   <CODE>SuccessRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to pause the jobs.
-   */ 
-  public Object
-  pauseJobs
-  (
-   NodePauseJobsReq req
-  ) 
-  {
-    TaskTimer timer = new TaskTimer("MasterMgr.pauseJobs()");
-    try {
-      pQueueMgrClient.pauseJobs(req.getJobIDs());
-      return new SuccessRsp(timer);
-    }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());
-    }    
-  }
-
-  /**
-   * Resume execution of the paused jobs with the given IDs. <P> 
-   * 
-   * @param req 
-   *   The submit jobs request.
-   * 
-   * @return 
-   *   <CODE>SuccessRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to resume the jobs.
-   */ 
-  public Object
-  resumeJobs
-  (
-   NodeResumeJobsReq req
-  ) 
-  {
-    TaskTimer timer = new TaskTimer("MasterMgr.resumeJobs()");
-    try {
-      pQueueMgrClient.resumeJobs(req.getJobIDs());
-      return new SuccessRsp(timer);
-    }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());
-    }    
-  }
-
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -5521,7 +5411,7 @@ class MasterMgr
       }
 
       if(pDefaultToolset != null) {
-	Logs.ops.finer("Writing Default Toolset.");
+	Logs.glu.finer("Writing Default Toolset.");
 
 	try {
 	  String glue = null;
@@ -5569,7 +5459,7 @@ class MasterMgr
 
       File file = new File(pNodeDir, "toolsets/default-toolset");
       if(file.isFile()) {
-	Logs.ops.finer("Reading Default Toolset.");
+	Logs.glu.finer("Reading Default Toolset.");
 
 	try {
 	  FileReader in = new FileReader(file);
@@ -5613,7 +5503,7 @@ class MasterMgr
       }
 
       if(!pActiveToolsets.isEmpty()) {
-	Logs.ops.finer("Writing Active Toolsets.");
+	Logs.glu.finer("Writing Active Toolsets.");
 
 	try {
 	  String glue = null;
@@ -5661,7 +5551,7 @@ class MasterMgr
 
       File file = new File(pNodeDir, "toolsets/active-toolsets");
       if(file.isFile()) {
-	Logs.ops.finer("Reading Active Toolsets.");
+	Logs.glu.finer("Reading Active Toolsets.");
 
 	TreeSet<String> tsets = null;
 	try {
@@ -5712,7 +5602,7 @@ class MasterMgr
 	  ("Unable to overrite the existing toolset file(" + file + ")!");
       }
 
-      Logs.ops.finer("Writing Toolset: " + tset.getName());
+      Logs.glu.finer("Writing Toolset: " + tset.getName());
 
       try {
 	String glue = null;
@@ -5767,7 +5657,7 @@ class MasterMgr
 	throw new PipelineException
 	  ("No toolset file exists for toolset (" + name + ")!");
 
-      Logs.ops.finer("Reading Toolset: " + name);
+      Logs.glu.finer("Reading Toolset: " + name);
 
       Toolset tset = null;
       try {
@@ -5828,7 +5718,7 @@ class MasterMgr
 	  ("Unable to overrite the existing toolset package file(" + file + ")!");
       }
 
-      Logs.ops.finer("Writing Toolset Package: " + pkg.getName() + " v" + pkg.getVersionID());
+      Logs.glu.finer("Writing Toolset Package: " + pkg.getName() + " v" + pkg.getVersionID());
 
       try {
 	String glue = null;
@@ -5887,7 +5777,7 @@ class MasterMgr
 	throw new PipelineException
 	  ("No toolset package file exists for package (" + name + " v" + vid + ")!");
 
-      Logs.ops.finer("Reading Toolset Package: " + name + " v" + vid);
+      Logs.glu.finer("Reading Toolset Package: " + name + " v" + vid);
 
       PackageVersion pkg = null;
       try {
@@ -5953,7 +5843,7 @@ class MasterMgr
 	    ("Unable to remove the old suffix editors file (" + file + ")!");
       }
 
-      Logs.ops.finer("Writing Suffix Editors: " + author);
+      Logs.glu.finer("Writing Suffix Editors: " + author);
 
       try {
 	String glue = null;
@@ -6007,7 +5897,7 @@ class MasterMgr
       if(!file.isFile()) 
 	return null;
 
-      Logs.ops.finer("Reading Suffix Editors: " + author);
+      Logs.glu.finer("Reading Suffix Editors: " + author);
 
       TreeSet<SuffixEditor> editors = null;
       try {
@@ -6061,7 +5951,7 @@ class MasterMgr
       }
       
       if(!pPrivilegedUsers.isEmpty()) {
-	Logs.ops.finer("Writing Privileged Users.");
+	Logs.glu.finer("Writing Privileged Users.");
 
 	try {
 	  String glue = null;
@@ -6109,7 +5999,7 @@ class MasterMgr
 
       File file = new File(pNodeDir, "etc/privileged-users");
       if(file.isFile()) {
-	Logs.ops.finer("Reading Privileged Users.");
+	Logs.glu.finer("Reading Privileged Users.");
 
 	TreeSet<String> users = null;
 	try {
@@ -6155,7 +6045,7 @@ class MasterMgr
 	  ("Unable to remove the old job/group IDs file (" + file + ")!");
     }
     
-    Logs.ops.finer("Writing Next IDs.");
+    Logs.glu.finer("Writing Next IDs.");
 
     try {
       String glue = null;
@@ -6204,7 +6094,7 @@ class MasterMgr
   {
     File file = new File(pNodeDir, "etc/next-ids");
     if(file.exists()) {
-      Logs.ops.finer("Reading Next IDs.");
+      Logs.glu.finer("Reading Next IDs.");
       
       try {
 	FileReader in = new FileReader(file);
@@ -6260,7 +6150,7 @@ class MasterMgr
   ) 
     throws PipelineException
   {
-    Logs.ops.finer("Writing Checked-In Version: " + 
+    Logs.glu.finer("Writing Checked-In Version: " + 
 		   vsn.getName() + " (" + vsn.getVersionID() + ")");
 
     File file = new File(pNodeDir, "repository/" + vsn.getName() + "/" + vsn.getVersionID());
@@ -6338,7 +6228,7 @@ class MasterMgr
     if(!dir.isDirectory()) 
       return null;
 
-    Logs.ops.finer("Reading Checked-In Versions: " + name);
+    Logs.glu.finer("Reading Checked-In Versions: " + name);
 
     TreeMap<VersionID,CheckedInBundle> table = new TreeMap<VersionID,CheckedInBundle>();
     File files[] = dir.listFiles();
@@ -6404,7 +6294,7 @@ class MasterMgr
   ) 
     throws PipelineException
   {
-    Logs.ops.finer("Writing Working Version: " + id);
+    Logs.glu.finer("Writing Working Version: " + id);
 
     File file   = new File(pNodeDir, id.getWorkingPath().getPath());
     File backup = new File(file + ".backup");
@@ -6486,7 +6376,7 @@ class MasterMgr
     
     try {
       if(file.exists()) {
-	Logs.ops.finer("Reading Working Version: " + id);
+	Logs.glu.finer("Reading Working Version: " + id);
 
 	try {
 	  FileReader in = new FileReader(file);
@@ -6502,7 +6392,7 @@ class MasterMgr
 	  Logs.flush();
 	  
 	  if(backup.exists()) {
-	    Logs.ops.finer("Reading Working Version (Backup): " + id);
+	    Logs.glu.finer("Reading Working Version (Backup): " + id);
 
 	    NodeMod mod = null;
 	    try {
@@ -6583,7 +6473,7 @@ class MasterMgr
 
     if(!links.hasLinks()) {
       if(file.isFile()) {
-	Logs.ops.finer("Removing Obsolete Downstream Links: " + links.getName());
+	Logs.glu.finer("Removing Obsolete Downstream Links: " + links.getName());
 
 	if(!file.delete()) 
 	  throw new PipelineException
@@ -6594,7 +6484,7 @@ class MasterMgr
     }
     
     try {
-      Logs.ops.finer("Writing Downstream Links: " + links.getName());
+      Logs.glu.finer("Writing Downstream Links: " + links.getName());
 
       synchronized(pMakeDirLock) {
 	if(!dir.isDirectory()) 
@@ -6658,7 +6548,7 @@ class MasterMgr
     
     try {
       if(file.exists()) {
-	Logs.ops.finer("Reading Downstream Links: " + name);
+	Logs.glu.finer("Reading Downstream Links: " + name);
 
 	try {
 	  FileReader in = new FileReader(file);
