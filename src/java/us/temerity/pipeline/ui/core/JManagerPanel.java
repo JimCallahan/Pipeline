@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.6 2005/01/09 23:14:41 jim Exp $
+// $Id: JManagerPanel.java,v 1.7 2005/01/10 10:27:59 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1397,6 +1397,18 @@ class JManagerPanel
       return true;
     }
 
+    /* misc */ 
+    else if((prefs.getNextTab() != null) &&
+	    prefs.getNextTab().wasPressed(e)) {
+      doNextTab();
+      return true;
+    }
+    else if((prefs.getPrevTab() != null) &&
+	    prefs.getPrevTab().wasPressed(e)) {
+      doPrevTab();
+      return true;
+    }
+
     return false;
   }
 
@@ -2153,6 +2165,57 @@ class JManagerPanel
   {
     pTopLevelPanel.setGroupID(groupID);
     pGroupMenuAnchor.setIcon(sGroupIcons[groupID]);
+  }
+
+ 
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Switch to the next tabbed panel.
+   */ 
+  private void 
+  doNextTab() 
+  {
+    JTabbedPanel tab = null;
+    {
+      Container parent = getParent();
+      while(parent != null) {
+	if(parent instanceof JTabbedPanel) {
+	  tab = (JTabbedPanel) parent;
+	  break;
+	}
+	parent = parent.getParent();
+      }
+    }
+
+    if(tab != null) {
+      int idx = tab.getSelectedIndex();      
+      tab.setSelectedIndex((idx == (tab.getTabCount()-1)) ? 0 : idx+1);
+    }
+  }
+
+  /**
+   * Switch to the prev tabbed panel.
+   */ 
+  private void 
+  doPrevTab() 
+  {
+    JTabbedPanel tab = null;
+    {
+      Container parent = getParent();
+      while(parent != null) {
+	if(parent instanceof JTabbedPanel) {
+	  tab = (JTabbedPanel) parent;
+	  break;
+	}
+	parent = parent.getParent();
+      }
+    }
+
+    if(tab != null) {
+      int idx = tab.getSelectedIndex();      
+      tab.setSelectedIndex((idx == 0) ? (tab.getTabCount()-1) : idx-1);
+    } 
   }
 
 

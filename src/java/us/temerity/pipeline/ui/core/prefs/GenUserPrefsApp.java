@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.3 2005/01/09 23:23:09 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.4 2005/01/10 10:27:59 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -400,6 +400,20 @@ class GenUserPrefsApp
       };
 
       pPrefs.put("Panel|Appearance", prefs);
+    }
+
+    {
+      BasePref prefs[] = {
+	new HotKeyPref
+	("Switch to the next tabbed panel.", 
+	 "NextTab", "Next Tab:"),
+
+	new HotKeyPref
+	("Switch to the previous tabbed panel.", 
+	 "PrevTab", "Previous Tab:"),
+      };
+
+      pPrefs.put("Panel|Hot Keys", prefs);
     }
 
     {
@@ -1077,6 +1091,7 @@ class GenUserPrefsApp
       pPrefPanels.add("Main Menu|Panel Layout|Hot Keys");
 
       pPrefPanels.add("Panel|Appearance");
+      pPrefPanels.add("Panel|Hot Keys");
       pPrefPanels.add("Panel|Node Browser|Hot Keys");
 
       pPrefPanels.add("Panel|Node Viewer|Appearance");
@@ -1169,6 +1184,10 @@ class GenUserPrefsApp
 	manager.add("ShowSupportForums");
 	manager.add("ShowBugDatabase");
 	manager.add("ShowConfig");
+
+	/* misc */ 
+	manager.add("NextTab");
+	manager.add("PrevTab");	
       }
     
       TreeSet<String> jobs = new TreeSet<String>();
@@ -1397,7 +1416,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.3 2005/01/09 23:23:09 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.4 2005/01/10 10:27:59 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -1652,7 +1671,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.3 2005/01/09 23:23:09 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.4 2005/01/10 10:27:59 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3008,7 +3027,7 @@ class GenUserPrefsApp
 
       StringBuffer buf = new StringBuffer();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.3 2005/01/09 23:23:09 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.4 2005/01/10 10:27:59 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 
