@@ -1,4 +1,4 @@
-// $Id: JCollectionField.java,v 1.8 2005/01/03 06:56:23 jim Exp $
+// $Id: JCollectionField.java,v 1.9 2005/01/09 16:01:11 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -488,7 +488,7 @@ class JCollectionField
     }    
 
     public JCollectionField
-    getParent()
+    getCollectionField() 
     {
       return pParent;
     }
