@@ -212,7 +212,7 @@ javadoc.tar: docs-all
 
 docs-all: $(PACKAGE_HTML)
 	$(JAVADOC) $(JAVADOC_OPTS) $(PACKAGES) \
-           $(top_builddir)/src/java/us/temerity/pipeline/core/PackageInfo.java
+           $(top_builddir)/src/java/us/temerity/pipeline/PackageInfo.java
 	touch $@
 
 

@@ -7,8 +7,7 @@
 </head>
 <body>
 <h3><a name="Name"></a>Name</h3>
-<blockquote><b>plnotify</b> - the Pipeline directory change
-notification server<br>
+<blockquote><b>plnotify</b> - the Pipeline Directory Notification daemon<br>
 </blockquote>
 <h3><a name="Synopsis"></a>Synopsis</h3>
 <blockquote><b>plnotify</b> [<a href="#Global_Options"><i>options</i></a>]<i><br>
@@ -25,9 +24,7 @@ notification server<br>
 <blockquote>A daemon process which runs on the file server and notifies
   <a href="plmaster.html"><span style="font-weight: bold;">plmaster</span></a>(1)
 when files are created, modified, removed or renamed within a watched
-set of directories.&nbsp; The set of directories watched must be
-subdirectories of the root production directory (see <a href="#--prod"><span
- style="font-weight: bold;">--prod</span></a>).&nbsp; <br>
+set of directories.&nbsp; <br>
 </blockquote>
 <h3> </h3>
 <h3><a name="Information_Options"></a>Information Options</h3>
@@ -66,20 +63,7 @@ agreement</a> for this software and exits. <br>
 </blockquote>
 <h3><a name="Global_Options"></a>Global Options<br>
 </h3>
-<div style="margin-left: 40px;"><b><a name="--prod"></a>--prod</b>=<span
- style="font-style: italic;">dir<br>
-</span>
-<div style="margin-left: 40px;"><br>
-Use an alternative root production directory (<span
- style="font-style: italic;">dir</span>).&nbsp; <br>
-<br>
-The
-default root production directory is set by the <span
- style="font-weight: bold;">--prod-dir</span> <code
- style="font-weight: bold;"></code>option to <span
- style="font-weight: bold;">plconfig</span>(1).
-</div>
-<br>
+<div style="margin-left: 40px;">
 <b><a name="--control-port"></a>--control-port</b>=<i>num<br>
 <br>
 </i></div>
@@ -102,30 +86,96 @@ alternative network port (<i>num</i>). <br>
 The
 default port is set by the <span style="font-weight: bold;">--notify-monitor-port</span>
 option to <span style="font-weight: bold;">plconfig</span>(1).<br>
+  <br>
   <span style="font-weight: bold;"><a
  href="http://www.gnu.org/software/autoconf/"><span
  style="font-weight: bold;"></span></a></span><span
  style="font-weight: bold;"> </span></blockquote>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="--log"></a>--stats</span>=<span style="font-style: italic;">level&nbsp;</span></div>
+ name="--log"></a>--log</span>=<span style="font-style: italic;">logger:level</span>[<span
+ style="font-style: italic;">,logger:level</span>[...]]</div>
 <div style="margin-left: 40px;"><br>
-<div style="margin-left: 40px;">Print stage statistics with the given
-level of vebosity (<span style="font-style: italic;">level</span>).&nbsp;
+<div style="margin-left: 40px;">In addition to the normal output, <b>plfilemgr</b>(1)
+can
+generate
+detailed output tracing the various stages of internal execution.&nbsp;
+The arguments control the several different types
+of logging information (<span style="font-style: italic;">logger</span>)
+and different amounts of information (<span style="font-style: italic;">level</span>)
+of each type to generate.&nbsp; Several loggers can be modified in one
+option.<br>
 <br>
-<br>
-By default, stage statistics are disabled.<br>
-<br>
+The (<span style="font-style: italic;">logger</span>) portion of the
+option's argument can be:<br>
+<span style="font-weight: bold;"><br>
+</span>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">all</span><br
+ style="font-weight: bold;">
 </div>
+<div style="margin-left: 80px;">A shortcut for specifying all loggers
+at once.<br>
 </div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="--warnings"></a>--warnings</span>=<span
- style="font-style: italic;">level</span><br>
 <div style="margin-left: 40px;"><br>
-Print warning messages with the given level of vebosity (<span
- style="font-style: italic;">level</span>). <br>
+<span style="font-weight: bold;">arg</span><br>
+<span style="font-weight: bold;"></span></div>
+<div style="margin-left: 80px;">Logs errors related to parsing the
+command-line options.<br>
 <br>
-By default, warning messages are disabled.<br>
 </div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">ops</span><br>
+<span style="font-weight: bold;"></span></div>
+<div style="margin-left: 80px;">Logs directory monitoring related
+events.<br>
+<br>
+</div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">net</span><br>
+<span style="font-weight: bold;"></span></div>
+<div style="margin-left: 80px;">Logs network connections and activity. <br>
+</div>
+<div style="margin-left: 80px;"><br>
+<br>
+</div>
+<span style="font-weight: bold;"></span>The (<span
+ style="font-style: italic;">level</span>) portion of
+the option's argument can be:<br>
+<br>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">severe</span><br>
+<span style="font-weight: bold;"></span></div>
+<div style="margin-left: 80px;">This level is used for error messages
+and other catastrophic events.<br>
+</div>
+<div style="margin-left: 40px;"><br style="font-weight: bold;">
+<span style="font-weight: bold;">warning</span><br>
+</div>
+<div style="margin-left: 80px;">This level is used for non-fatal error
+messages and advisory information.<br>
+</div>
+<div style="margin-left: 40px;"><br style="font-weight: bold;">
+<span style="font-weight: bold;">info</span><br>
+</div>
+<div style="margin-left: 80px;">This is the default output level for
+all loggers and is used for normal output from <b>plfilemgr</b>(1). <br>
+</div>
+<div style="margin-left: 40px;"><br style="font-weight: bold;">
+<span style="font-weight: bold;">fine</span><br>
+<span style="font-weight: bold;"></span><span style="font-weight: bold;">finer</span><br>
+<span style="font-weight: bold;"></span><span style="font-weight: bold;">finest</span><br>
+</div>
+<div style="margin-left: 80px;">These three levels are used for
+increasingly more detailed command tracing messages. <br>
+</div>
+<br>
+Logging can also be controlled on a system-wide basis by modifying the <a
+ href="plfilemgr.html.in#logger_properties"><span
+ style="font-weight: bold;">logger.properties</span></a>
+file installed as part of the Pipeline distributuion. <span
+ style="font-weight: bold;"></span>See the Java
+API documention for the class<span style="font-weight: bold;">
+java.util.logging.Logger</span> for more information about the format
+of this file.&nbsp; Settings from the <a href="#--log"><span
+ style="font-weight: bold;">--log</span></a> option will override
+settings from the <span style="font-weight: bold;">logger.properties</span>
+file.</div>
 </div>
 <h3><a name="See_Also"></a>See Also<br>
 </h3>
@@ -144,125 +194,29 @@ Programs</span><br>
  style="font-weight: bold;"></span><br>
 </div>
 </div>
+<h3><a name="Files"></a>Files</h3>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
+ name="logger_properties"></a><a href="../../logger.properties">logger.properties</a></span><br>
+<div style="margin-left: 40px;"><br>
+The site configuration for output loggers used by Pipeline
+programs.&nbsp;
+See the <a href="#--log"><span style="font-weight: bold;">--log </span></a>option
+for details about the individual loggers.</div>
+</div>
 <h3><a name="Author"></a>Author</h3>
 <div style="margin-left: 40px;">Created by <span
  style="font-weight: bold;">Jim Callahan</span> of <a
  href="http://temerity.us/"><span style="font-weight: bold;">Temerity
-Software, Inc</span></a>.</div>
+Software, Inc</span></a>.<br>
+</div>
 <h3><a name="Copyright"></a>Copyright</h3>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">Copyright
-(c) 2002, 2003, 2004 Temerity Software, Inc.</span><br
- style="font-weight: bold;">
-</div>
-<p>
-</p>
-<div style="margin-left: 40px;"> THE SOFTWARE IS PROVIDED "AS-IS" AND
-WITHOUT WARRANTY OF ANY KIND, EXPRESS, IMPLIED OR OTHERWISE, INCLUDING
-WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY OR FITNESS FOR A
-PARTICULAR PURPOSE.
-<p> </p>
-</div>
-<div style="margin-left: 40px;"> IN NO EVENT SHALL TEMERITY SOFTWARE,
-INC. BE
-LIABLE FOR ANY SPECIAL, INCIDENTAL, INDIRECT OR CONSEQUENTIAL DAMAGES
-OF ANY KIND, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA
-OR
-PROFITS, WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON
-ANY THEORY OF LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE
-OR
-PERFORMANCE OF THIS SOFTWARE.</div>
-<h3><a name="License_Agreement"></a>License Agreement<br>
-</h3>
 <div style="margin-left: 40px;">
-<div style="text-align: center;"><span style="font-weight: bold;">Temerity
-Software, Inc.</span><br style="font-weight: bold;">
-<span style="font-weight: bold;">License Agreement</span><br
- style="font-weight: bold;">
-<span style="font-weight: bold;">PIPELINE, VERSION @VERSION@</span><br>
-</div>
+@COPYRIGHT@
 <br>
 </div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">1.
-DEFINITIONS. </span>"Temerity" means Temerity Software, Inc.&nbsp;
-"Software" means Pipeline, Version @VERSION@, software
-in binary and/or source code forms, any other machine readable
-materials (including, but not limited to, libraries, source files,
-header files, and data files), any user manuals, programming guides and
-other documentation provided to Licensee by Temerity under this
-Agreement.<br>
-<br>
-<span style="font-weight: bold;">2. LICENSE TO USE.</span> Temerity
-grants you a non-exclusive and non-transferable license only for the
-internal use of Software, by the number of users and the class of
-computer hardware for which the corresponding fee has been paid.<br>
-<br>
-<span style="font-weight: bold;">3. RESTRICTIONS.</span> Software is
-confidential and copyrighted. Title to Software and all associated
-intellectual property rights is retained by Temerity. You may not make
-copies of Software, other than a single copy of Software for archival
-purposes. Unless enforcement is prohibited by applicable law, you may
-not modify, decompile, or reverse engineer Software. You acknowledge
-that Software is not designed, licensed or intended for use in the
-design, construction, operation or maintenance of any nuclear facility.
-Temerity disclaims any express or implied warranty of fitness for such
-uses. No right, title or interest in or to any trademark, service mark,
-logo or trade name of Temerity or its
-licensors is granted under this Agreement.<br>
-<br>
-<span style="font-weight: bold;">4. LIMITED WARRANTY.</span> Temerity
-warrants to you that for a period of ninety (90) days from the date of
-purchase, as evidenced by a copy of the receipt, the media on which
-Software is furnished (if any) will be free of defects in materials and
-workmanship under normal use. Except for the foregoing, Software is
-provided "AS IS". Your exclusive remedy and Temerity's entire liability
-under this limited warranty will be at Temerity's option to replace
-Software media or refund the fee paid for Software.<br>
-<br>
-<span style="font-weight: bold;">5. DISCLAIMER OF WARRANTY.</span>
-UNLESS SPECIFIED IN THIS AGREEMENT, ALL EXPRESS OR IMPLIED CONDITIONS,
-REPRESENTATIONS AND WARRANTIES, INCLUDING ANY IMPLIED WARRANTY OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE OR NON-INFRINGEMENT,
-ARE DISCLAIMED, EXCEPT TO THE EXTENT THAT THESE DISCLAIMERS ARE HELD TO
-BE LEGALLY INVALID.<br>
-<br>
-<span style="font-weight: bold;">6. LIMITATION OF LIABILITY.</span> TO
-THE EXTENT NOT PROHIBITED BY LAW, IN NO EVENTWILL TEMERITY BE LIABLE
-FOR ANY LOST REVENUE, PROFIT OR DATA, OR FOR SPECIAL, INDIRECT,
-CONSEQUENTIAL, INCIDENTAL OR PUNITIVE DAMAGES, HOWEVER CAUSED
-REGARDLESS OF THE THEORY OF LIABILITY, ARISING OUT OF OR RELATED TO THE
-USE OF OR INABILITY TO USE SOFTWARE, EVEN IF TEMERITY HAS BEEN ADVISED
-OF THE POSSIBILITY OF SUCH DAMAGES. In no event will Temerity's
-liability to you, whether in contract, tort (including negligence), or
-otherwise, exceed the amount paid by you for Software under this
-Agreement. The foregoing limitations will apply even if the above
-stated warranty fails of its essential purpose.<br>
-<br>
-<span style="font-weight: bold;">7. SEVERABILITY.</span> If any
-provision of this Agreement is held to be unenforceable, this Agreement
-will remain in effect with the provision omitted, unless omission would
-frustrate the intent of the parties. In which event, the parties'
-obligations under the remaining terms of the Agreement will be
-conformed to accomplish the parties' original intent from the overall
-Agreement.<br>
-<br>
-<span style="font-weight: bold;">8. INTEGRATION.</span> This Agreement
-is the entire agreement between you and Temerity relating to its
-subject matter. It supersedes all prior or contemporaneous oral or
-written communications, proposals, representations and warranties and
-prevails over any conflicting or additional terms of any quote, order,
-acknowledgment, or other communication between the parties relating to
-its subject matter during the term of this Agreement. No modification
-of this Agreement will be binding, unless in writing and signed by an
-authorized representative of each party.<br>
-<br>
-For inquiries please contact: <br>
-<br>
-<div style="margin-left: 40px;">Temerity Software, Inc.<br>
-<font color="#000000">
-<div>475 Central Avenue, Suite 300</div>
-<div>St. Petersburg, Florida&nbsp; 33701</div>
-</font></div>
+<h3><a name="License_Agreement"></a>License Agreement</h3>
+<div style="margin-left: 40px;">
+@LICENSE@
 </div>
-<br>
 </body>
 </html>
