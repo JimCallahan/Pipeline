@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.42 2005/03/21 07:04:36 jim Exp $
+// $Id: MasterMgrServer.java,v 1.43 2005/03/23 00:35:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -820,6 +820,14 @@ class MasterMgrServer
 	      {
 		MiscRequestRestoreReq req = (MiscRequestRestoreReq) objIn.readObject();
 		objOut.writeObject(pMasterMgr.requestRestore(req));
+		objOut.flush(); 
+	      }
+	      break;   
+
+	    case DenyRestore:
+	      {
+		MiscDenyRestoreReq req = (MiscDenyRestoreReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.denyRestore(req));
 		objOut.flush(); 
 	      }
 	      break;   

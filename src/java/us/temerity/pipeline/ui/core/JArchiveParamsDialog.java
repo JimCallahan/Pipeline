@@ -1,4 +1,4 @@
-// $Id: JArchiveParamsDialog.java,v 1.1 2005/03/21 07:04:56 jim Exp $
+// $Id: JArchiveParamsDialog.java,v 1.2 2005/03/23 00:35:23 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -506,8 +506,8 @@ class JArchiveParamsDialog
 
   private static final long serialVersionUID = -236439332236952251L;
   
-  private static final int sTSize = 150;
-  private static final int sVSize = 200;
+  private static final int sTSize = 180;
+  private static final int sVSize = 300;
 
 
 

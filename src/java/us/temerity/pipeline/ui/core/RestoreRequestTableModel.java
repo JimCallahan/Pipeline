@@ -1,4 +1,4 @@
-// $Id: RestoreRequestTableModel.java,v 1.1 2005/03/21 07:04:36 jim Exp $
+// $Id: RestoreRequestTableModel.java,v 1.2 2005/03/23 00:35:23 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -47,7 +47,7 @@ class RestoreRequestTableModel
 
       {
 	String names[] = {
-	  "Node Name", "Version", "State", "Sumbitted", "Resolved", "Archive Volume"
+	  "Node Name", "Version", "State", "Submitted", "Completed", "Archive Volume"
 	};
 	pColumnNames = names;
       }
@@ -58,8 +58,7 @@ class RestoreRequestTableModel
 	  "The revision number of the checked-in version.", 
 	  "The current state of the request.",
 	  "When the request to restore the checked-in version was submitted.",
-	  "When the request was resolved with the checked-in version being restored or " + 
-	  "the request was denied.", 
+	  "When the either the checked-in version was restored or the request was denied.", 
 	  "The name of the archive volume from which the checked-in version was restored."
 	};
 	pColumnDescriptions = desc;

@@ -1,4 +1,4 @@
-// $Id: JRestoreNodeDialog.java,v 1.1 2005/03/21 07:04:36 jim Exp $
+// $Id: JRestoreNodeDialog.java,v 1.2 2005/03/23 00:35:23 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -35,7 +35,7 @@ class JRestoreNodeDialog
   public 
   JRestoreNodeDialog() 
   {
-    super("Restore Versions", true);
+    super("Request Restore", true);
 
     pVersionIDs = new ArrayList<VersionID>();
 

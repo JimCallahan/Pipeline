@@ -1,4 +1,4 @@
-// $Id: FileArchiveReq.java,v 1.2 2005/03/23 00:35:23 jim Exp $
+// $Id: FileExtractReq.java,v 1.1 2005/03/23 00:35:23 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -10,14 +10,15 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   F I L E   A R C H I V E   R E Q                                                        */
+/*   F I L E   E X T R A C T   R E Q                                                        */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to archive the given checked-in versions. <P>
- */
+ * A request to extract the files associated with the given checked-in versions from 
+ * the given archive volume and place them into a temporary directory.
+ */ 
 public
-class FileArchiveReq
+class FileExtractReq
   implements Serializable
 {
   /*----------------------------------------------------------------------------------------*/
@@ -30,25 +31,38 @@ class FileArchiveReq
    * @param archiveName 
    *   The name of the archive volume to create.
    * 
+   * @param stamp
+   *   The timestamp of the start of the restore operation.
+   * 
    * @param fseqs
-   *   The file sequences to archive indexed by fully resolved node name and checked-in 
+   *   The file sequences to extract indexed by fully resolved node name and checked-in 
    *   revision number.
    * 
    * @param archiver
    *   The archiver plugin instance used to perform the archive operation.
+   * 
+   * @param size
+   *   The required temporary disk space needed for the restore operation.
    */
   public
-  FileArchiveReq
+  FileExtractReq
   (
    String archiveName, 
+   Date stamp, 
    TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs, 
-   BaseArchiver archiver
+   BaseArchiver archiver, 
+   Long size
   )
   {
     if(archiveName == null) 
       throw new IllegalArgumentException
 	("The volume name cannot be (null)!");
     pArchiveName = archiveName; 
+
+    if(stamp == null) 
+      throw new IllegalArgumentException
+	("The timestamp cannot be (null)!");
+    pTimeStamp = stamp;
 
     if(fseqs == null) 
       throw new IllegalArgumentException
@@ -59,6 +73,8 @@ class FileArchiveReq
       throw new IllegalArgumentException
 	("The archiver cannot be (null)!");
     pArchiver = archiver;
+
+    pSize = size;
   }
 
 
@@ -68,12 +84,21 @@ class FileArchiveReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the name of the archive volume to create.
+   * Get the name of the archive volume to restore.
    */ 
   public String
   getArchiveName()
   {
     return pArchiveName; 
+  }
+
+  /**
+   * Get the timestamp of the start of the restore operation.
+   */ 
+  public Date
+  getTimeStamp() 
+  {
+    return pTimeStamp; 
   }
 
   /**
@@ -87,12 +112,21 @@ class FileArchiveReq
   }
 
   /**
-   * Get the archiver plugin instance used to perform the archive operation.
+   * Get the archiver plugin instance used to perform the restore operation.
    */ 
   public BaseArchiver
   getArchiver()
   {
     return pArchiver;
+  }
+
+  /**
+   * Get the archiver plugin instance used to perform the restore operation.
+   */ 
+  public Long
+  getSize()
+  {
+    return pSize; 
   }
 
 
@@ -115,7 +149,9 @@ class FileArchiveReq
     throws IOException
   {
     out.writeObject(pArchiveName);
+    out.writeObject(pTimeStamp);
     out.writeObject(pFileSeqs);
+    out.writeObject(pSize);
     out.writeObject(new BaseArchiver(pArchiver));
   }  
 
@@ -134,7 +170,9 @@ class FileArchiveReq
     throws IOException, ClassNotFoundException
   {
     pArchiveName = (String) in.readObject();
+    pTimeStamp = (Date) in.readObject();
     pFileSeqs = (TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>) in.readObject();
+    pSize = (Long) in.readObject();
     
     BaseArchiver archiver = (BaseArchiver) in.readObject();
     try {
@@ -153,8 +191,7 @@ class FileArchiveReq
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 21428909044013021L;
-
+  private static final long serialVersionUID = 9182816569367732240L;
   
 
   /*----------------------------------------------------------------------------------------*/
@@ -162,12 +199,17 @@ class FileArchiveReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The name of the archive volume to create.
+   * The name of the archive volume.
    */ 
   private String pArchiveName; 
 
   /**
-   * The file sequences to archive indexed by fully resolved node name and checked-in 
+   * The timestamp of the start of the restore operation.
+   */ 
+  private Date  pTimeStamp; 
+
+  /**
+   * The file sequences to extract indexed by fully resolved node name and checked-in 
    * revision number.
    */ 
   private TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>  pFileSeqs; 
@@ -176,6 +218,11 @@ class FileArchiveReq
    * The archiver plugin instance used to perform the archive operation.
    */ 
   private BaseArchiver  pArchiver;
+
+  /**
+   * The archiver plugin instance used to perform the restore operation.
+   */ 
+  private Long  pSize; 
 
 }
   

@@ -416,6 +416,7 @@ installdirs:
 	$(mkinstalldirs) $(DESTDIR)$(PRODDIR)/working
 	$(mkinstalldirs) $(DESTDIR)$(PRODDIR)/repository
 	$(mkinstalldirs) $(DESTDIR)$(PRODDIR)/checksum
+	$(mkinstalldirs) $(DESTDIR)$(PRODDIR)/restore
 	$(mkinstalldirs) $(DESTDIR)$(NODEDIR)
 
 

@@ -1,4 +1,4 @@
-// $Id: JRestoreDialog.java,v 1.2 2005/03/21 07:04:36 jim Exp $
+// $Id: JRestoreDialog.java,v 1.3 2005/03/23 00:35:23 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -525,7 +525,11 @@ class JRestoreDialog
   private void 
   doDeny() 
   {
-
+    int rows[] = pRequestTablePanel.getTable().getSelectedRows();
+    TreeMap<String,TreeSet<VersionID>> selected = pRequestTableModel.getVersions(rows);
+    
+    DenyTask task = new DenyTask(selected);
+    task.start();
   }
 
   /**
@@ -773,6 +777,50 @@ class JRestoreDialog
   /*----------------------------------------------------------------------------------------*/
 
   /** 
+   * Deny the restore of the selected versions.
+   */ 
+  private
+  class DenyTask
+    extends Thread
+  {
+    public 
+    DenyTask
+    (
+     TreeMap<String,TreeSet<VersionID>> versions
+    ) 
+    {
+      super("JRestoreDialog:DenyTask");
+      pVersions = versions;
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      MasterMgrClient client = master.getMasterMgrClient();
+      if(master.beginPanelOp("Denying Requests...")) {
+	try {
+	  client.denyRestore(pVersions);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+      }
+
+      GetRequestsTask task = new GetRequestsTask();
+      task.start();
+    }
+
+    private TreeMap<String,TreeSet<VersionID>>  pVersions; 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
    * Update the archive volumes table. 
    */ 
   private
@@ -998,8 +1046,10 @@ class JRestoreDialog
 
       String aname = pNames.get(pIndex);
       if(master.beginPanelOp("Restoring from: " + aname)) { 
+	TreeMap<String,TreeSet<VersionID>> versions = pVersions.get(aname);
+
 	try {
-	  client.restore(aname, pVersions.get(aname), pArchiver);
+	  client.restore(aname, versions, pArchiver);
 	}
 	catch(PipelineException ex) {
 	  StringBuffer buf = new StringBuffer();
@@ -1017,6 +1067,9 @@ class JRestoreDialog
 	finally {
 	  master.endPanelOp("Done.");
 	}
+
+	RemoveTask task = new RemoveTask(versions);
+	SwingUtilities.invokeLater(task);      
       }
 
       int next = pIndex+1;
@@ -1024,12 +1077,56 @@ class JRestoreDialog
 	RestoreParamsTask task = new RestoreParamsTask(next, pNames, pVersions); 
 	SwingUtilities.invokeLater(task);     
       }
+      else {
+	GetRequestsTask task = new GetRequestsTask();
+	task.start();
+      }
     }
 
     private int                                                 pIndex; 
     private ArrayList<String>                                   pNames; 
     private TreeMap<String,TreeMap<String,TreeSet<VersionID>>>  pVersions;
     private BaseArchiver                                        pArchiver; 
+  }
+
+
+  /** 
+   * Remove the given entries from the restore table.
+   */ 
+  private
+  class RemoveTask
+    extends Thread
+  {
+    public 
+    RemoveTask
+    (
+     TreeMap<String,TreeSet<VersionID>> versions
+    ) 
+    {
+      super("JRestoreDialog:RemoveTask");
+      pVersions = versions;
+    }
+
+    public void 
+    run() 
+    {
+      TreeMap<String,TreeMap<VersionID,Long>> data = pRestoreTableModel.getData();
+
+      for(String name : pVersions.keySet()) {
+	TreeMap<VersionID,Long> vsizes = data.get(name);
+	if(vsizes != null) {
+	  for(VersionID vid : pVersions.get(name)) 
+	    vsizes.remove(vid);
+
+	  if(vsizes.isEmpty()) 
+	    data.remove(name);
+	}
+      }
+
+      pRestoreTableModel.setData(data);
+    }
+
+    private TreeMap<String,TreeSet<VersionID>> pVersions; 
   }
 
 

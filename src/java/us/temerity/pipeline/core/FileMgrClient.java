@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.27 2005/03/14 16:08:21 jim Exp $
+// $Id: FileMgrClient.java,v 1.28 2005/03/23 00:35:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -526,8 +526,8 @@ class FileMgrClient
     FileArchiveReq req = new FileArchiveReq(name, fseqs, archiver);
 
     Object obj = performTransaction(FileRequest.Archive, req);
-    if(obj instanceof FileArchiveRsp) {
-      FileArchiveRsp rsp = (FileArchiveRsp) obj;
+    if(obj instanceof FileArchiverRsp) {
+      FileArchiverRsp rsp = (FileArchiverRsp) obj;
       return rsp.getOutput();
     }
     else {
@@ -623,7 +623,133 @@ class FileMgrClient
     }
   }
   
+
+  /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Extract the files associated with the given checked-in versions from the given archive 
+   * volume and place them into a temporary directory.
+   * 
+   * @param archiveName 
+   *   The name of the archive volume.
+   * 
+   * @param stamp
+   *   The timestamp of the start of the restore operation.
+   * 
+   * @param fseqs
+   *   The file sequences to archive indexed by fully resolved node name and checked-in 
+   *   revision number.
+   * 
+   * @param archiver
+   *   The archiver plugin to use to restore the versions from the archive volume.
+   * 
+   * @param size
+   *   The required temporary disk space needed for the restore operation.
+   * 
+   * @return
+   *   The STDOUT output of the archiver process.
+   */ 
+  public synchronized String
+  extract
+  (
+   String archiveName, 
+   Date stamp, 
+   TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs, 
+   BaseArchiver archiver, 
+   long size
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    FileExtractReq req = new FileExtractReq(archiveName, stamp, fseqs, archiver, size);
+
+    Object obj = performTransaction(FileRequest.Extract, req);
+    if(obj instanceof FileArchiverRsp) {
+      FileArchiverRsp rsp = (FileArchiverRsp) obj;
+      return rsp.getOutput();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
+
+  /**
+   * Move the files extracted from the archive volume into the repository. <P> 
+   * 
+   * Depending on the current state of files in the repository and whether files are 
+   * identical across multiple revision of a node, the extracted files will either be 
+   * moved into the repository or symlinks will be created in the repository for the files.
+   * In addition, symlinks for later versions may be changed to target the newly restored
+   * files.
+   * 
+   * @param archiveName
+   *   The name of the archive volume.
+   * 
+   * @param stamp
+   *   The timestamp of the start of the restore operation.
+   * 
+   * @param name
+   *   The fully resolved node name. 
+   * 
+   * @param vid
+   *   The revision number.
+   * 
+   * @param symlinks
+   *   The revision numbers of the existing checked-in symlinks which should target the 
+   *   restored file indexed by restored filename.
+   * 
+   * @param targets
+   *   The revision number of the targets of the restored symlinks indexed by restored 
+   *   symlink filename.
+   */ 
+  public synchronized void 
+  restore
+  (
+   String archiveName, 
+   Date stamp,  
+   String name, 
+   VersionID vid, 
+   TreeMap<File,TreeSet<VersionID>> symlinks, 
+   TreeMap<File,VersionID> targets
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    FileRestoreReq req = new FileRestoreReq(archiveName, stamp, name, vid, symlinks, targets);
+
+    Object obj = performTransaction(FileRequest.Restore, req);
+    handleSimpleResponse(obj);
+  }
+  
+  /**
+   * Remove the temporary directory use to extract the files from an archive volume.
+   * 
+   * @param archiveName
+   *   The name of the archive volume.
+   * 
+   * @param stamp
+   *   The timestamp of the start of the restore operation.
+   */
+  public synchronized void 
+  extractCleanup
+  (
+   String archiveName, 
+   Date stamp
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    FileExtractCleanupReq req = new FileExtractCleanupReq(archiveName, stamp); 
+
+    Object obj = performTransaction(FileRequest.ExtractCleanup, req);
+    handleSimpleResponse(obj);    
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S                                                                        */

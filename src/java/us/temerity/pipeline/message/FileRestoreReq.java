@@ -1,4 +1,4 @@
-// $Id: FileRestoreReq.java,v 1.1 2005/03/21 08:52:39 jim Exp $
+// $Id: FileRestoreReq.java,v 1.2 2005/03/23 00:35:23 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -14,7 +14,7 @@ import java.util.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to restore the given checked-in versions from the given archive volume.
+ * A request to move the files extracted from the archive volume into the repository.
  */ 
 public
 class FileRestoreReq
@@ -27,44 +27,66 @@ class FileRestoreReq
   /** 
    * Constructs a new request. <P> 
    * 
-   * @param name 
+   * @param archiveName 
    *   The name of the archive volume to create.
    * 
-   * @param fseqs
-   *   The file sequences to archive indexed by fully resolved node name and checked-in 
-   *   revision number.
+   * @param stamp
+   *   The timestamp of the start of the restore operation.
    * 
-   * @param archiver
-   *   The archiver plugin instance used to perform the archive operation.
+   * @param name
+   *   The fully resolved node name. 
    * 
-   * @param size
-   *   The required temporary disk space needed for the restore operation.
+   * @param vid
+   *   The revision number.
+   * 
+   * @param symlinks
+   *   The revision numbers of the existing checked-in symlinks which should target the 
+   *   restored file indexed by restored filename.
+   * 
+   * @param targets
+   *   The revision number of the targets of the restored symlinks indexed by restored 
+   *   symlink filename.
    */
   public
   FileRestoreReq
   (
+   String archiveName, 
+   Date stamp, 
    String name, 
-   TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs, 
-   BaseArchiver archiver, 
-   Long size
+   VersionID vid, 
+   TreeMap<File,TreeSet<VersionID>> symlinks, 
+   TreeMap<File,VersionID> targets
   )
   {
-    if(name == null) 
+    if(archiveName == null) 
       throw new IllegalArgumentException
 	("The volume name cannot be (null)!");
-    pName = name; 
+    pArchiveName = archiveName; 
 
-    if(fseqs == null) 
+    if(stamp == null) 
       throw new IllegalArgumentException
-	("The checked-in file sequences cannot be (null)!");
-    pFileSeqs = fseqs;
+	("The timestamp cannot be (null)!");
+    pTimeStamp = stamp;
 
-    if(archiver == null) 
+    if(name == null) 
       throw new IllegalArgumentException
-	("The archiver cannot be (null)!");
-    pArchiver = archiver;
+	("The node name cannot be (null)!");
+    pName = name;
 
-    pSize = size;
+    if(vid == null) 
+      throw new IllegalArgumentException
+	("The revision number cannot be (null)!");
+    pVersionID = vid;
+
+    if(symlinks == null) 
+      throw new IllegalArgumentException
+	("The symlinks cannot be (null)!");
+    pSymlinks = symlinks;
+
+    if(targets == null) 
+      throw new IllegalArgumentException
+	("The targets cannot be (null)!");
+    pTargets = targets;
   }
 
 
@@ -77,91 +99,56 @@ class FileRestoreReq
    * Get the name of the archive volume to restore.
    */ 
   public String
-  getName()
+  getArchiveName()
+  {
+    return pArchiveName; 
+  }
+
+  /**
+   * Get the timestamp of the start of the restore operation.
+   */ 
+  public Date
+  getTimeStamp() 
+  {
+    return pTimeStamp; 
+  }
+
+  /**
+   * Gets the fully resolved node name.
+   */
+  public String
+  getName() 
   {
     return pName; 
   }
-
+  
   /**
-   * Get the file sequences to archive indexed by fully resolved node name and checked-in 
-   * revision number.
-   */ 
-  public TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>
-  getSequences()
+   * Gets the revision number.
+   */
+  public VersionID
+  getVersionID() 
   {
-    return pFileSeqs; 
+    return pVersionID;
+  }
+  
+  /**
+   * Get the revision numbers of the existing checked-in symlinks which should target 
+   * the restored file indexed by restored filename.
+   */ 
+  public TreeMap<File,TreeSet<VersionID>>
+  getSymlinks()
+  {
+    return pSymlinks;
   }
 
   /**
-   * Get the archiver plugin instance used to perform the restore operation.
+   * Get the revision number of the targets of the restored symlinks indexed by  
+   * restored symlink filename.
    */ 
-  public BaseArchiver
-  getArchiver()
+  public TreeMap<File,VersionID>
+  getTargets()
   {
-    return pArchiver;
-  }
-
-  /**
-   * Get the archiver plugin instance used to perform the restore operation.
-   */ 
-  public Long
-  getSize()
-  {
-    return pSize; 
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   S E R I A L I Z A B L E                                                              */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Write the serializable fields to the object stream. <P> 
-   * 
-   * This enables the node to convert a dynamically loaded action plugin instance into a 
-   * generic staticly loaded BaseAction instance before serialization.
-   */ 
-  private void 
-  writeObject
-  (
-   java.io.ObjectOutputStream out
-  )
-    throws IOException
-  {
-    out.writeObject(pName);
-    out.writeObject(pFileSeqs);
-    out.writeObject(pSize);
-    out.writeObject(new BaseArchiver(pArchiver));
-  }  
-
-  /**
-   * Read the serializable fields from the object stream. <P> 
-   * 
-   * This enables the node to dynamically instantiate an action plugin instance and copy
-   * its parameters from the generic staticly loaded BaseAction instance in the object 
-   * stream. 
-   */ 
-  private void 
-  readObject
-  (
-    java.io.ObjectInputStream in
-  )
-    throws IOException, ClassNotFoundException
-  {
-    pName = (String) in.readObject();
-    pFileSeqs = (TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>) in.readObject();
-    pSize = (Long) in.readObject();
-    
-    BaseArchiver archiver = (BaseArchiver) in.readObject();
-    try {
-      PluginMgrClient client = PluginMgrClient.getInstance();
-      pArchiver = client.newArchiver(archiver.getName(), archiver.getVersionID());
-      pArchiver.setParamValues(archiver);
-    }
-    catch(PipelineException ex) {
-      throw new IOException(ex.getMessage());
-    }
+    return pTargets;
   }
 
 
@@ -170,7 +157,7 @@ class FileRestoreReq
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 1486160454587889688L;
+  private static final long serialVersionUID = -1711204453036517212L;
   
 
   /*----------------------------------------------------------------------------------------*/
@@ -180,23 +167,34 @@ class FileRestoreReq
   /**
    * The name of the archive volume to create.
    */ 
+  private String pArchiveName; 
+
+  /**
+   * The timestamp of the start of the restore operation.
+   */ 
+  private Date  pTimeStamp; 
+
+  /**
+   * The fully resolved node name. 
+   */ 
   private String pName; 
 
   /**
-   * The file sequences to archive indexed by fully resolved node name and checked-in 
-   * revision number.
+   * The revision number.
    */ 
-  private TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>  pFileSeqs; 
+  private VersionID  pVersionID; 
 
   /**
-   * The archiver plugin instance used to perform the archive operation.
+   * The revision numbers of the existing checked-in symlinks which should target 
+   * the restored file indexed by restored filename.
    */ 
-  private BaseArchiver  pArchiver;
+  private TreeMap<File,TreeSet<VersionID>>  pSymlinks; 
 
   /**
-   * The archiver plugin instance used to perform the restore operation.
+   * The revision number of the targets of the restored symlinks indexed by 
+   * restored symlink filename.
    */ 
-  private Long  pSize; 
+  private TreeMap<File,VersionID>  pTargets; 
 
 }
   

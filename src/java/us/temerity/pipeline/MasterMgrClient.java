@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.54 2005/03/21 07:04:35 jim Exp $
+// $Id: MasterMgrClient.java,v 1.55 2005/03/23 00:35:23 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -2307,7 +2307,7 @@ class MasterMgrClient
 
     NodeCheckInReq req = new NodeCheckInReq(nodeID, msg, level);
 
-    Object obj = performTransaction(MasterRequest.CheckIn, req);
+    Object obj = performLongTransaction(MasterRequest.CheckIn, req, 15000, 60000);  
     handleSimpleResponse(obj);
   } 
 
@@ -2415,7 +2415,7 @@ class MasterMgrClient
 
     NodeCheckOutReq req = new NodeCheckOutReq(nodeID, vid, mode, method);
 
-    Object obj = performTransaction(MasterRequest.CheckOut, req);
+    Object obj = performLongTransaction(MasterRequest.CheckOut, req, 15000, 60000);  
     handleSimpleResponse(obj);
   } 
 
@@ -3299,6 +3299,30 @@ class MasterMgrClient
   }
 
   /**
+   * Deny the request to restore the given set of checked-in versions.
+   *
+   * @param versions
+   *   The fully resolved names and revision numbers of the checked-in versions.
+   */ 
+  public synchronized void
+  denyRestore
+  (
+   TreeMap<String,TreeSet<VersionID>> versions
+  ) 
+    throws PipelineException 
+  {
+    if(!isPrivileged(false))
+      throw new PipelineException
+	("Only privileged users may deny restore requests!");
+
+    verifyConnection();
+
+    MiscDenyRestoreReq req = new MiscDenyRestoreReq(versions);
+    Object obj = performTransaction(MasterRequest.DenyRestore, req);
+    handleSimpleResponse(obj);    
+  }
+
+  /**
    * Get the requests for restoration of checked-in versions.
    * 
    * @return 
@@ -3361,7 +3385,7 @@ class MasterMgrClient
   }
 
   /**
-   * Restore the given checked-in versions from the given archive. <P> 
+   * Restore the given checked-in versions from the given archive volume. <P> 
    * 
    * Only privileged users may restore checked-in versions. <P> 
    * 
@@ -3517,6 +3541,7 @@ class MasterMgrClient
     return ("Unable to contact the the plmaster(1) daemon running on " +
 	    "(" + pHostname + ") using port (" + pPort + ")!");
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/

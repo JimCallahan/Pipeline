@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.28 2005/03/14 16:08:21 jim Exp $
+// $Id: FileMgrServer.java,v 1.29 2005/03/23 00:35:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -250,6 +250,7 @@ class FileMgrServer
 	    LogMgr.getInstance().flush();
 
 	    switch(kind) {
+	    /*-- WORKING VERSIONS ----------------------------------------------------------*/
 	    case CreateWorkingArea:
 	      {
 		FileCreateWorkingAreaReq req = (FileCreateWorkingAreaReq) objIn.readObject();
@@ -257,6 +258,7 @@ class FileMgrServer
 		objOut.flush(); 
 	      }
 	      break;
+
 
 	    case RemoveWorkingArea:
 	      {
@@ -266,6 +268,7 @@ class FileMgrServer
 	      }
 	      break;
 
+            /*-- REVISION CONTROL ----------------------------------------------------------*/
 	    case CheckIn:
 	      {
 		FileCheckInReq req = (FileCheckInReq) objIn.readObject();
@@ -338,7 +341,7 @@ class FileMgrServer
 	      }
 	      break;
 
-
+	    /*-- ARCHIVE -------------------------------------------------------------------*/
 	    case GetArchiveSizes:
 	      {
 		FileGetArchiveSizesReq req = (FileGetArchiveSizesReq) objIn.readObject();
@@ -355,7 +358,7 @@ class FileMgrServer
 	      }
 	      break;
 
-
+	    /*-- OFFLINE -------------------------------------------------------------------*/
 	    case GetOfflineSizes:
 	      {
 		FileGetOfflineSizesReq req = (FileGetOfflineSizesReq) objIn.readObject();
@@ -379,7 +382,32 @@ class FileMgrServer
 	      }
 	      break;
 
+            /*-- RESTORE -------------------------------------------------------------------*/
+	    case Extract:
+	      {
+		FileExtractReq req = (FileExtractReq) objIn.readObject();
+		objOut.writeObject(pFileMgr.extract(req));
+		objOut.flush(); 
+	      }
+	      break;
 
+	    case Restore:
+	      {
+		FileRestoreReq req = (FileRestoreReq) objIn.readObject();
+		objOut.writeObject(pFileMgr.restore(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case ExtractCleanup:
+	      {
+		FileExtractCleanupReq req = (FileExtractCleanupReq) objIn.readObject();
+		objOut.writeObject(pFileMgr.extractCleanup(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+            /*-- NETWORK CONNECTION --------------------------------------------------------*/
 	    case Disconnect:
 	      live = false;
 	      break;

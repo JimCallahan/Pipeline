@@ -1,4 +1,4 @@
-// $Id: CheckSum.java,v 1.8 2005/03/11 06:34:39 jim Exp $
+// $Id: CheckSum.java,v 1.9 2005/03/23 00:35:23 jim Exp $
 
 package us.temerity.pipeline.core;
  
@@ -421,6 +421,108 @@ class CheckSum
     /* compare checksums */ 
     return Arrays.equals(sumA, sumB);
   } 
+
+  /**
+   * Validate a restored file associated with a checked-in node using the previously 
+   * generated repository checksum and the checksum of the restored file.
+   * 
+   * @parm restoreDir
+   *    The temporary restore root directory.
+   * 
+   * @param path
+   *    The fully resolved node file path relative to the repository/restore root directory.
+   * 
+   * @throws PipelineException
+   *   If unable to compare the associated checksums.
+   */
+  public boolean
+  validateRestore
+  (
+   File restoreDir, 
+   File path
+  ) 
+    throws PipelineException
+  {
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Sum, LogMgr.Level.Fine,
+       "Validating Restored File: " + path);
+
+    /* read the original checksum */ 
+    byte[] sumA = new byte[pDigest.getDigestLength()];
+    {
+      File file = new File(pCheckSumDir, "repository" + path);
+      try {
+	FileInputStream in = new FileInputStream(file);	
+	try {
+	  in.read(sumA);
+	}
+	catch(IOException ex) {
+	  throw new PipelineException
+	    ("Unable to read the checksum file (" + file + ")!");
+	}
+	finally {
+	  in.close();
+	}
+      } 
+      catch(FileNotFoundException ex) {
+	throw new PipelineException
+	  ("The checksum file (" + file + ") did not exist!");
+      }
+      catch(SecurityException ex) {
+	throw new PipelineException
+	("No permission to read the checksum file (" + file + ")!");
+      }   
+      catch (IOException ex) {   
+	assert(false);
+      } 
+    }
+
+    /* generate a checksum for the restored file */ 
+    byte[] sumB = null;
+    {
+      File file = new File(restoreDir, path.getPath());
+      try {    
+	FileInputStream in = new FileInputStream(file);      
+	try {
+	  MessageDigest digest = (MessageDigest) pDigest.clone();
+	  
+	  while(true) {
+	    int num = in.read(pBuf);
+	    if(num == -1) 
+	      break;
+	    digest.update(pBuf, 0, num);
+	  }
+	  
+	  sumB = digest.digest();
+	}
+	catch(IOException ex) {
+	  throw new PipelineException
+	    ("Unable to read the restored file (" + file + ")!");
+      }
+	catch(CloneNotSupportedException ex) {
+	  throw new PipelineException
+	    ("Unable to clone the MessageDigest!");
+	}
+	finally {
+	  in.close();
+	}
+      }
+      catch(FileNotFoundException ex) {
+	throw new PipelineException
+	  ("The restored file (" + file + ") did not exist!");
+      }
+      catch(SecurityException ex) {
+	throw new PipelineException
+	  ("No permission to read the restored file (" + file + ")!");
+      }   
+      catch (IOException ex) {   
+	assert(false);
+      } 
+    }
+    
+    /* compare checksums */ 
+    return Arrays.equals(sumA, sumB);
+  }
 
 
 

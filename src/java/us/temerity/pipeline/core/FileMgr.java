@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.37 2005/03/21 07:04:35 jim Exp $
+// $Id: FileMgr.java,v 1.38 2005/03/23 00:35:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -242,7 +242,7 @@ class FileMgr
 	    if(!proc.wasSuccessful()) 
 	      throw new PipelineException
 		("Unable to create the working area directory (" + wdir + "):\n\n" + 
-		 "  " + proc.getStdErr());
+		 proc.getStdErr());
 	  }
 	  catch(InterruptedException ex) {
 	    throw new PipelineException
@@ -304,7 +304,7 @@ class FileMgr
 	    if(!proc.wasSuccessful()) 
 	      throw new PipelineException
 		("Unable to remove the working area directory (" + wdir + "):\n\n" + 
-		 "  " + proc.getStdErr());
+		 proc.getStdErr());
 	  }
 	  catch(InterruptedException ex) {
 	    throw new PipelineException
@@ -714,7 +714,7 @@ class FileMgr
 		throw new PipelineException
 		  ("Unable to copying files for working version (" + req.getNodeID() + 
 		   ") into the file repository:\n" +
-		   "  " + proc.getStdErr());
+		   proc.getStdErr());
 	    }
 	    catch(InterruptedException ex) {
 	      throw new PipelineException
@@ -760,7 +760,7 @@ class FileMgr
 		throw new PipelineException
 		  ("Unable to copying checksums for working version (" + 
 		   req.getNodeID() + ") into the checksum repository:\n" + 
-		   "  " + proc.getStdErr());		   
+		   proc.getStdErr());		   
 	    }
 	    catch(InterruptedException ex) {
 	      throw new PipelineException
@@ -915,7 +915,7 @@ class FileMgr
 		  throw new PipelineException
 		    ("Unable to create directories for working version (" + 
 		     req.getNodeID() + "):\n\n" + 
-		     "  " + proc.getStdErr());	
+		     proc.getStdErr());	
 	      }
 	      catch(InterruptedException ex) {
 		throw new PipelineException
@@ -973,7 +973,7 @@ class FileMgr
 	      throw new PipelineException
 		("Unable to create symbolic links to the repository for the " +
 		 "working version (" + req.getNodeID() + "):\n\n" + 
-		 "  " + proc.getStdErr());	
+		 proc.getStdErr());	
 	  }
 	  catch(InterruptedException ex) {
 	    throw new PipelineException
@@ -1000,7 +1000,7 @@ class FileMgr
 	      throw new PipelineException
 		("Unable to copy files from the repository for the " +
 		 "working version (" + req.getNodeID() + "):\n\n" + 
-		 "  " + proc.getStdErr());	
+		 proc.getStdErr());	
 	  }
 	  catch(InterruptedException ex) {
 	    throw new PipelineException
@@ -1025,7 +1025,7 @@ class FileMgr
 	      throw new PipelineException
 		("Unable to remove the working checksums for version (" + 
 		 req.getNodeID() + "):\n\n" + 
-		 "  " + proc.getStdErr());	
+		 proc.getStdErr());	
 	  }
 	  catch(InterruptedException ex) {
 	    throw new PipelineException
@@ -1051,7 +1051,7 @@ class FileMgr
 	      throw new PipelineException
 		("Unable to copy checksums from the repository for the " +
 		 "working version (" + req.getNodeID() + "):\n\n" + 
-		 "  " + proc.getStdErr());	
+		 proc.getStdErr());	
 	  }
 	  catch(InterruptedException ex) {
 	    throw new PipelineException
@@ -1078,7 +1078,7 @@ class FileMgr
 		throw new PipelineException
 		  ("Unable to add write access permission to the files for " + 
 		   "the working version (" + req.getNodeID() + "):\n\n" + 
-		   "  " + proc.getStdErr());	
+		   proc.getStdErr());	
 	    }
 	    catch(InterruptedException ex) {
 	      throw new PipelineException
@@ -1097,7 +1097,7 @@ class FileMgr
 		throw new PipelineException
 		  ("Unable to add write access permission to the checksums for " + 
 		   "the working version (" + req.getNodeID() + "):\n\n" + 
-		   "  " + proc.getStdErr());	
+		   proc.getStdErr());	
 	    }
 	    catch(InterruptedException ex) {
 	      throw new PipelineException
@@ -1203,7 +1203,7 @@ class FileMgr
 		  throw new PipelineException
 		    ("Unable to create directories for working version (" + 
 		     req.getNodeID() + "):\n\n" + 
-		     "  " + proc.getStdErr());	
+		     proc.getStdErr());	
 	      }
 	      catch(InterruptedException ex) {
 		throw new PipelineException
@@ -1237,7 +1237,7 @@ class FileMgr
 	      throw new PipelineException
 		("Unable to copy files from the repository for the " +
 		 "working version (" + req.getNodeID() + "):\n\n" + 
-		 "  " + proc.getStdErr());	
+		 proc.getStdErr());	
 	  }
 	  catch(InterruptedException ex) {
 	    throw new PipelineException
@@ -1264,7 +1264,7 @@ class FileMgr
 	      throw new PipelineException
 		("Unable to copy checksums from the repository for the " +
 		 "working version (" + req.getNodeID() + "):\n\n" + 
-		 "  " + proc.getStdErr());	
+		 proc.getStdErr());	
 	  }
 	  catch(InterruptedException ex) {
 	    throw new PipelineException
@@ -1290,7 +1290,7 @@ class FileMgr
 		throw new PipelineException
 		  ("Unable to add write access permission to the files for " + 
 		   "the working version (" + req.getNodeID() + "):\n\n" + 
-		   "  " + proc.getStdErr());	
+		   proc.getStdErr());	
 	    }
 	    catch(InterruptedException ex) {
 	      throw new PipelineException
@@ -1309,7 +1309,7 @@ class FileMgr
 		throw new PipelineException
 		  ("Unable to add write access permission to the checksums for " + 
 		   "the working version (" + req.getNodeID() + "):\n\n" + 
-		   "  " + proc.getStdErr());	
+		   proc.getStdErr());	
 	    }
 	    catch(InterruptedException ex) {
 	      throw new PipelineException
@@ -1489,7 +1489,7 @@ class FileMgr
 		if(!proc.wasSuccessful()) 
 		  throw new PipelineException
 		    ("Unable to create directories for working version (" + id + "):\n\n" + 
-		     "  " + proc.getStdErr());	
+		     proc.getStdErr());	
 	      }
 	      catch(InterruptedException ex) {
 		throw new PipelineException
@@ -1553,7 +1553,7 @@ class FileMgr
 		if(!proc.wasSuccessful()) 
 		  throw new PipelineException
 		    ("Unable to rename a primary file for version (" + id + "):\n\n" + 
-		     "  " + proc.getStdErr());	
+		     proc.getStdErr());	
 	      }
 	      catch(InterruptedException ex) {
 		throw new PipelineException
@@ -1587,7 +1587,7 @@ class FileMgr
 	      if(!proc.wasSuccessful()) 
 		throw new PipelineException
 		  ("Unable to rename the secondary files for version (" + id + "):\n\n" + 
-		   "  " + proc.getStdErr());	
+		   proc.getStdErr());	
 	    }
 	    catch(InterruptedException ex) {
 	      throw new PipelineException
@@ -1621,7 +1621,7 @@ class FileMgr
 		if(!proc.wasSuccessful()) 
 		  throw new PipelineException
 		    ("Unable to rename a primary checksum for version (" + id + "):\n\n" + 
-		     "  " + proc.getStdErr());	
+		     proc.getStdErr());	
 	      }
 	      catch(InterruptedException ex) {
 		throw new PipelineException
@@ -1655,7 +1655,7 @@ class FileMgr
 	      if(!proc.wasSuccessful()) 
 		throw new PipelineException
 		  ("Unable to rename the secondary checksums for version (" + id + "):\n\n" + 
-		   "  " + proc.getStdErr());	
+		   proc.getStdErr());	
 	    }
 	    catch(InterruptedException ex) {
 	      throw new PipelineException
@@ -1721,7 +1721,7 @@ class FileMgr
 	    throw new PipelineException
 	      ("Unable to make the files associated with the checked-in versions of " + 
 	       "node (" + name + ") writeable:\n" +
-	       "  " + proc.getStdErr());
+	       proc.getStdErr());
 	}
 	catch(InterruptedException ex) {
 	  throw new PipelineException
@@ -1751,7 +1751,7 @@ class FileMgr
 	    throw new PipelineException
 	      ("Unable to remove all files associated with the checked-in versions of " + 
 	       "node (" + name + ") from the repository:\n" +
-	       "  " + proc.getStdErr());
+	       proc.getStdErr());
 	}
 	catch(InterruptedException ex) {
 	  throw new PipelineException
@@ -1833,7 +1833,7 @@ class FileMgr
 	      throw new PipelineException
 		("Unable to change the write access permission of the files for " + 
 		 "the working version (" + req.getNodeID() + "):\n\n" + 
-		 "  " + proc.getStdErr());	
+		 proc.getStdErr());	
 	  }
 	  catch(InterruptedException ex) {
 	    throw new PipelineException
@@ -1926,18 +1926,25 @@ class FileMgr
    FileArchiveReq req
   ) 
   { 
-    TaskTimer timer = new TaskTimer();
-    
+    String archiveName = req.getArchiveName();	
+    TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs = req.getSequences();
+    BaseArchiver archiver = req.getArchiver();
+
+    TaskTimer timer = new TaskTimer("FileMgr.archive: " + archiveName);
+
+    timer.aquire();
     Stack<ReentrantReadWriteLock> locks = new Stack<ReentrantReadWriteLock>();
     try {
-      TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs = req.getSequences();
-
-      TreeSet<File> files = new TreeSet<File>();
       for(String name : fseqs.keySet()) {
 	ReentrantReadWriteLock lock = getCheckedInLock(name);
 	lock.readLock().lock();
 	locks.push(lock);
+      }
+      timer.resume();
 
+      /* determine the names of the files to archive */ 
+      TreeSet<File> files = new TreeSet<File>();
+      for(String name : fseqs.keySet()) {
 	TreeMap<VersionID,TreeSet<FileSeq>> vsnSeqs = fseqs.get(name);
 	for(VersionID vid : vsnSeqs.keySet()) {
 	  for(FileSeq fseq : vsnSeqs.get(vid)) {
@@ -1948,7 +1955,8 @@ class FileMgr
 	}
       }
 
-      File dir = new File(PackageInfo.sTempDir, "plfilemgr/archive/" + req.getName());
+      /* create temporary directories and files */ 
+      File dir = new File(PackageInfo.sTempDir, "plfilemgr/archive/" + archiveName);
       File scratch = new File(dir, "scratch");
       File outFile = new File(dir, "stdout");
       File errFile = new File(dir, "stderr"); 
@@ -1956,12 +1964,11 @@ class FileMgr
 	if(!scratch.mkdirs()) 
 	  throw new IOException
 	    ("Unable to create output directory (" + dir + ") for the archive of " + 
-	     "(" + req.getName() + ")!");
+	     "(" + archiveName + ")!");
       }	  
 
-      BaseArchiver archiver = req.getArchiver();
       SubProcessHeavy proc = 
-	archiver.archive(req.getName(), files, PackageInfo.sRepoDir, outFile, errFile);
+	archiver.archive(archiveName, files, PackageInfo.sRepoDir, outFile, errFile);
 
       FileCleaner.add(outFile);
       FileCleaner.add(errFile);
@@ -1969,7 +1976,8 @@ class FileMgr
       /* run the archiver */ 
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Finer,
-	 "Started Archiver (" + archiver.getName() + ") for volume (" + req.getName() + ").");
+	 "Creating archive volume (" + archiveName + ") using archiver plugin " + 
+	 "(" + archiver.getName() + ")."); 
       {
 	proc.start();
 
@@ -1985,13 +1993,13 @@ class FileMgr
 	  
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
-	     "Process for archive volume (" + req.getName() + "): " + 
+	     "Process for archive volume (" + archiveName + "): " + 
 	     "WAITING for (" + cycles + ") loops...");
 	}
 	
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
-	   "Process for archive volume (" + req.getName() + "): " + 
+	   "Process for archive volume (" + archiveName + "): " + 
 	   "COMPLETED after (" + cycles + ") loops...");
       }
 
@@ -2019,7 +2027,7 @@ class FileMgr
 	}
 
 	throw new PipelineException
-	  ("The process creating archive volume (" + req.getName() + ") failed with " +
+	  ("The process creating archive volume (" + archiveName + ") failed with " +
 	   "exit code (" + proc.getExitCode() + ")!\n\n" + 
 	   "The STDERR output of the process:\n" + 
 	   errors);
@@ -2047,7 +2055,7 @@ class FileMgr
       catch(IOException ex) {
       }
       
-      return new FileArchiveRsp(timer, req.getName(), output);
+      return new FileArchiverRsp(timer, output);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
@@ -2144,6 +2152,8 @@ class FileMgr
     ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
     checkedInLock.writeLock().lock();
     try {
+      timer.resume();
+
       File nodeDir = new File(pProdDir, "repository" + name);
 
       /* all versions being modified */ 
@@ -2181,7 +2191,6 @@ class FileMgr
 	}
       }
 
-
       /* remove the symlinks in later versions which reference this version */ 
       {
  	ArrayList<String> args = new ArrayList<String>();
@@ -2201,8 +2210,8 @@ class FileMgr
 	    if(!proc.wasSuccessful()) 
 	      throw new PipelineException
 		("Unable to remove the stale symlinks referencing the checked-in version " + 
-		 "(" + vid + ") of node (" + name + ") from the repository:\n" +
-		 "  " + proc.getStdErr());
+		 "(" + vid + ") of node (" + name + ") from the repository:\n\n" +
+		 proc.getStdErr());
 	  }
 	  catch(InterruptedException ex) {
 	    throw new PipelineException
@@ -2264,7 +2273,7 @@ class FileMgr
 		("Unable to move the files associated with the checked-in version " + 
 		 "(" + vid + ") of node (" + name + ") referenced by later version " +
 		 "(" + lvid + ") symlinks:\n\n" + 
-		 "  " + proc.getStdErr());	
+		 proc.getStdErr());	
 	  }
 	  catch(InterruptedException ex) {
 	    throw new PipelineException
@@ -2297,8 +2306,8 @@ class FileMgr
  	  if(!proc.wasSuccessful()) 
  	    throw new PipelineException
  	      ("Unable to remove the files associated with the checked-in version " + 
- 	       "(" + vid + ") of node (" + name + ") from the repository:\n" +
- 	       "  " + proc.getStdErr());
+ 	       "(" + vid + ") of node (" + name + ") from the repository:\n\n" +
+ 	       proc.getStdErr());
  	}
  	catch(InterruptedException ex) {
  	  throw new PipelineException
@@ -2403,6 +2412,451 @@ class FileMgr
 	for(wk=0; wk<files.length; wk++) 
 	  getOfflinedHelper(files[wk], offlined);
       }
+    }
+  }
+
+
+  /**
+   * Extract the files associated with the given checked-in versions from the given archive 
+   * volume and place them into a temporary directory.
+   * 
+   * @param req 
+   *   The extract request.
+   * 
+   * @return
+   *   <CODE>FileArchiverRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable extract the files.
+   */
+  public Object
+  extract
+  (
+   FileExtractReq req
+  ) 
+  {
+    String archiveName = req.getArchiveName();	
+    Date stamp = req.getTimeStamp(); 
+    BaseArchiver archiver = req.getArchiver();
+    TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs = req.getSequences();
+    
+    File restoreDir = new File(pProdDir, "restore/" + archiveName + "-" + stamp.getTime());
+
+    TaskTimer timer = new TaskTimer("FileMgr.extract: " + archiveName);
+    try {
+      /* verify that enough disk space exists to perform the restore operation */ 
+      {
+	Long size = req.getSize() + 134217728L;  
+	long freeDisk = NativeFileSys.freeDiskSpace(pProdDir);
+	if(size > freeDisk)
+	  throw new PipelineException
+	    ("There is not enough free disk space (" + formatLong(size) + ") in " +
+	     "the production directory (" + pProdDir + ") to restore the archive " + 
+	     "volume (" + archiveName + ")!");
+      }
+      
+      /* determine the names of the files to extract */ 
+      TreeSet<File> files = new TreeSet<File>();
+      for(String name : fseqs.keySet()) {
+	TreeMap<VersionID,TreeSet<FileSeq>> vsnSeqs = fseqs.get(name);
+	for(VersionID vid : vsnSeqs.keySet()) {
+	  for(FileSeq fseq : vsnSeqs.get(vid)) {
+	    for(File file : fseq.getFiles()) {
+	      files.add(new File(name + "/" + vid + "/" + file));	  
+	    }
+	  }
+	}
+      }
+
+      /* create temporary directories and files */ 
+      File tmpdir = new File(PackageInfo.sTempDir, 
+			     "plfilemgr/restore/" + archiveName + "-" + stamp.getTime());
+      File scratch = new File(tmpdir, "scratch");
+      File outFile = new File(tmpdir, "stdout");
+      File errFile = new File(tmpdir, "stderr"); 
+      {
+	timer.aquire();
+	synchronized(pMakeDirLock) {
+	  timer.resume();
+
+	  if(!restoreDir.mkdirs()) 
+	    throw new IOException
+	      ("Unable to create temporary directory (" + restoreDir + ") for the " + 
+	       "restore of (" + archiveName + ")!");
+	  
+	  if(!scratch.mkdirs()) 
+	    throw new IOException
+	      ("Unable to create output directory (" + tmpdir + ") for the restore of " + 
+	       "(" + archiveName + ")!");
+	}	  
+      }
+
+      /* run the archiver */ 
+      {
+	SubProcessHeavy proc = 
+	  archiver.restore(archiveName, files, restoreDir, outFile, errFile);
+	
+	FileCleaner.add(outFile);
+	FileCleaner.add(errFile);
+	
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Finer,
+	   "Restoring archive volume (" + archiveName + ") using archiver plugin " + 
+	   "(" + archiver.getName() + ").");
+	
+	proc.start();
+	
+	int cycles = 0; 
+	while(proc.isAlive()) {
+	  try {
+	    proc.join(15000);
+	    cycles++;
+	  }
+	  catch(InterruptedException ex) {
+	    throw new PipelineException(ex);
+	  }
+	  
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
+	     "Process for archive volume (" + archiveName + "): " + 
+	       "WAITING for (" + cycles + ") loops...");
+	}
+	
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
+	   "Process for archive volume (" + archiveName + "): " + 
+	   "COMPLETED after (" + cycles + ") loops...");
+     
+	
+	/* report the contents of the generated STDERR file as the failure message */ 
+	if(!proc.wasSuccessful()) {
+	  String errors = null;
+	  try {
+	    if(errFile.length() > 0) {
+	      FileReader in = new FileReader(errFile);
+	      
+	      StringBuffer buf = new StringBuffer();
+	      char[] cs = new char[4096];
+	      while(true) {
+		int cnt = in.read(cs);
+		if(cnt == -1) 
+		  break;
+		
+		buf.append(cs, 0, cnt);
+	      }
+	      
+	      errors = buf.toString();
+	    }
+	  }
+	  catch(IOException ex) {
+	  }
+	  
+	  throw new PipelineException
+	    ("The process restoring archive volume (" + archiveName + ") failed with " +
+	     "exit code (" + proc.getExitCode() + ")!\n\n" + 
+	     "The STDERR output of the process:\n" + 
+	     errors);
+	}
+      }
+	
+      /* read the generated STDOUT file */ 
+      String output = null;
+      try {
+	if(outFile.length() > 0) {
+	  FileReader in = new FileReader(outFile);
+	  
+	  StringBuffer buf = new StringBuffer();
+	  char[] cs = new char[4096];
+	  while(true) {
+	    int cnt = in.read(cs);
+	    if(cnt == -1) 
+	      break;
+	    
+	    buf.append(cs, 0, cnt);
+	  }
+	  
+	  output = buf.toString();
+	}
+      }
+      catch(IOException ex) {
+      }
+      
+      /* verify that all files where restored and that their checksums are correct */ 
+      for(File file : files) {
+	if(!pCheckSum.validateRestore(restoreDir, file))
+	  throw new PipelineException
+	    ("The restored file (" + file + ") has been corrupted!");
+      }
+      
+      return new FileArchiverRsp(timer, output);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    catch(Exception ex) {
+      return new FailureRsp(timer, getFullMessage(ex));
+    }
+  }
+
+  /**
+   * Move the files extracted from the archive volume into the repository. <P> 
+   * 
+   * Depending on the current state of files in the repository and whether files are 
+   * identical across multiple revision of a node, the extracted files will either be 
+   * moved into the repository or symlinks will be created in the repository for the files.
+   * In addition, symlinks for later versions may be changed to target the newly restored
+   * files.
+   * 
+   * @param req 
+   *   The restore request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to remove the checked-in version files.
+   */
+  public Object
+  restore
+  (
+   FileRestoreReq req
+  ) 
+  {
+    String archiveName = req.getArchiveName();	
+    Date stamp = req.getTimeStamp(); 
+    String name = req.getName();
+    VersionID vid = req.getVersionID();
+    TreeMap<File,TreeSet<VersionID>> symlinks = req.getSymlinks();
+    TreeMap<File,VersionID> targets = req.getTargets();
+    
+    File restoreDir = new File(pProdDir, "restore/" + archiveName + "-" + stamp.getTime());
+    Map<String,String> env = System.getenv();
+
+    TaskTimer timer = new TaskTimer("FileMgr.restore: " + archiveName);
+
+    timer.aquire();
+    ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
+    checkedInLock.writeLock().lock();
+    try {
+      timer.resume();
+
+      File nodeDir = new File(pProdDir, "repository" + name);
+
+      /* all versions being modified */ 
+      TreeSet<VersionID> avids = new TreeSet<VersionID>();
+      {
+	for(File file : symlinks.keySet()) 
+	  avids.addAll(symlinks.get(file));
+	avids.add(vid);
+      }
+
+      /* add write permission to the respository and extract temporary directories 
+	 being modified */ 
+      {
+	ArrayList<String> args = new ArrayList<String>();
+	args.add("u+w");
+	
+	for(VersionID avid : avids) {
+	  args.add(nodeDir + "/" + avid);
+	  if(avid.equals(vid)) 
+	    args.add(restoreDir + name + "/" + avid);
+	}
+
+	SubProcessLight proc = 
+	  new SubProcessLight("Restore-SetWritable", "chmod", args, env, 
+			      PackageInfo.sTempDir);
+	try {
+	  proc.start();
+	  proc.join();
+	  if(!proc.wasSuccessful()) 
+	    throw new PipelineException
+	      ("Unable to add write access permission to the directories modified " + 
+	       "by the restore of the checked-in version (" + vid + ") of node " + 
+	       "(" + name + "):\n\n" + 
+	       proc.getStdErr());	
+	}
+	catch(InterruptedException ex) {
+	  throw new PipelineException
+	    ("Interrupted while adding write access permission to the directories " + 
+	     "modified by the restore of the checked-in version (" + vid + ") of node " + 
+	     "(" + name + ")");
+	}
+      }
+      
+      /* move restored files into the repository */ 
+      if(!symlinks.isEmpty()) {
+	{
+	  ArrayList<String> args = new ArrayList<String>();
+	  args.add("--force");
+	  args.add("--target-directory=" + nodeDir + "/" + vid);
+	
+	  for(File file : symlinks.keySet()) 
+	    args.add(file.getPath()); 
+	
+	  File sdir = new File(restoreDir, name + "/" + vid);
+	
+	  SubProcessLight proc = 
+	    new SubProcessLight("Restore-MoveFiles", "mv", args, env, sdir);
+	  try {
+	    proc.start();
+	    proc.join();
+	    if(!proc.wasSuccessful()) 
+	      throw new PipelineException
+		("Unable to move the restored files associated with the checked-in " + 
+		 "version (" + vid + ") of node (" + name + ") into the repository:\n\n" + 
+		 proc.getStdErr());	
+	  }
+	  catch(InterruptedException ex) {
+	    throw new PipelineException
+	      ("Interrupted while moving the restored files associated with the " + 
+	       "checked-in version (" + vid + ") of node (" + name + ") into the " + 
+	       "repository!");
+	  }
+	}
+
+	/* remove the symlinks in later versions which reference this version */ 
+	{
+	  ArrayList<String> args = new ArrayList<String>();
+	  args.add("--force");
+	  
+	  for(File file : symlinks.keySet()) {
+	    for(VersionID lvid : symlinks.get(file))
+	      args.add(lvid + "/" + file);
+	  }
+	  
+	  if(args.size() > 1) {
+	    SubProcessLight proc = 
+	      new SubProcessLight("Restore-DeleteSymlinks", "rm", args, env, nodeDir);
+	    try {
+	      proc.start();
+	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to remove the stale symlinks referencing the checked-in " + 
+		   "version (" + vid + ") of node (" + name + ") from the repository:\n\n" +
+		   proc.getStdErr());
+	    }
+	    catch(InterruptedException ex) {
+	      throw new PipelineException
+		("Interrupted while removing the stale symlinks referencing the " + 
+		 "checked-in version (" + vid + ") of node (" + name + ") from the " + 
+		 "repository.");	
+	    }
+	  }
+	}
+	
+	/* redirect the symlinks from later versions to point to the restored files */ 
+	for(File file : symlinks.keySet()) {
+	  File target = new File("../" + vid + "/" + file);
+	  for(VersionID svid : symlinks.get(file)) {
+	    File link = new File(pProdDir, "repository" + name + "/" + svid + "/" + file);
+	    System.out.print("Symlink: " + target + " -> " + link + "\n");
+	    NativeFileSys.symlink(target, link);
+	  }
+	}
+      }
+
+      /* create symlinks for restored files which are identical to an existing 
+	 repository file instead of moving them into the respository */ 
+      for(File file : targets.keySet()) {
+	VersionID tvid = targets.get(file);
+	File target = new File("../" + tvid + "/" + file);
+	File link = new File(pProdDir, "repository" + name + "/" + vid + "/" + file);
+	System.out.print("Symlink: " + target + " -> " + link + "\n");
+	NativeFileSys.symlink(target, link);
+      }
+
+      /* make the modified version directories read-only */ 
+      {
+	ArrayList<String> args = new ArrayList<String>();
+	args.add("u-w");
+	for(VersionID avid : avids) 
+	  args.add(avid.toString());
+
+	SubProcessLight proc = 
+	  new SubProcessLight("Restore-SetReadOnly", "chmod", args, env, nodeDir);
+	try {
+	  proc.start();
+	  proc.join();
+	  if(!proc.wasSuccessful()) 
+	    throw new PipelineException
+	      ("Unable to make the modified directories read-only after the " + 
+	       "restore of the checked-in version (" + vid + ") of node " + 
+	       "(" + name + "):\n\n" + 
+	       proc.getStdErr());	
+	}
+	catch(InterruptedException ex) {
+	  throw new PipelineException
+	    ("Interrupted while making the modified directories read-only after the " + 
+	     "restore of the checked-in version (" + vid + ") of node (" + name + ")!");
+	}
+      }	
+      
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    catch(Exception ex) {
+      return new FailureRsp(timer, getFullMessage(ex));
+    }
+    finally {
+      checkedInLock.writeLock().unlock();
+    }
+  }
+
+  /**
+   * Remove the temporary directory use to extract the files from an archive volume.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable extract remove the directory. 
+   */
+  public Object
+  extractCleanup
+  (
+   FileExtractCleanupReq req
+  ) 
+  {
+    String archiveName = req.getArchiveName();	
+    Date stamp = req.getTimeStamp();     
+    File dir = new File(pProdDir, "restore/" + archiveName + "-" + stamp.getTime());
+
+    TaskTimer timer = new TaskTimer("FileMgr.removeExtractDir: " + archiveName);
+
+    timer.aquire();
+    try {
+      synchronized(pMakeDirLock) {
+	timer.resume();
+
+	ArrayList<String> args = new ArrayList<String>();
+	args.add("--force");
+	args.add("--recursive");
+	args.add(dir.getPath());
+	
+	Map<String,String> env = System.getenv();
+	
+	SubProcessLight proc = 
+	  new SubProcessLight("Remove-TempDir", "rm", args, env, PackageInfo.sTempDir);
+	try {
+	  proc.start();
+	  proc.join();
+	  if(!proc.wasSuccessful()) 
+	    return new FailureRsp
+	      (timer, 
+	     "Unable to remove the temporary directory (" + dir + "):\n\n" + 
+	       proc.getStdErr());	
+	}
+	catch(InterruptedException ex) {
+	  return new FailureRsp
+	    (timer, 
+	     "Interrupted while removing the temporary directory (" + dir + ")!");
+	}
+      }
+
+      return new SuccessRsp(timer);      
+    }
+    catch(Exception ex) {
+      return new FailureRsp(timer, getFullMessage(ex));
     }
   }
 
@@ -2556,7 +3010,7 @@ class FileMgr
 		throw new PipelineException
 		  ("Unable to remove the working files for version (" + 
 		   id + "):\n\n" + 
-		   "  " + proc.getStdErr());	
+		   proc.getStdErr());	
 	    }
 	    catch(InterruptedException ex) {
 	      throw new PipelineException
@@ -2589,7 +3043,7 @@ class FileMgr
 		throw new PipelineException
 		  ("Unable to remove the working checksums for version (" + 
 		   id + "):\n\n" + 
-		   "  " + proc.getStdErr());	
+		   proc.getStdErr());	
 	    }
 	    catch(InterruptedException ex) {
 	      throw new PipelineException
@@ -2620,7 +3074,7 @@ class FileMgr
    * @param parent
    *   The start directory of the delete operation.
    */ 
-  public void 
+  private void 
   deleteEmptyParentDirs
   (
    File root, 
@@ -2654,6 +3108,40 @@ class FileMgr
     }
   }
  
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Generates a formatted string representation of a large integer number.
+   */ 
+  private String
+  formatLong
+  (
+   Long value
+  ) 
+  {
+    if(value == null) 
+      return "-";
+    
+    if(value < 1024) {
+      return value.toString();
+    }
+    else if(value < 1048576) {
+      double k = ((double) value) / 1024.0;
+      return String.format("%1$.1fK", k);
+    }
+    else if(value < 1073741824) {
+      double m = ((double) value) / 1048576.0;
+      return String.format("%1$.1fM", m);
+    }
+    else {
+      double g = ((double) value) / 1073741824.0;
+      return String.format("%1$.1fG", g);
+    }
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */

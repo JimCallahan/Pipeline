@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.23 2005/03/21 07:04:36 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.24 2005/03/23 00:35:23 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -259,7 +259,7 @@ class JNodeViewerPanel
 	  item.addActionListener(this);
 	  menus[wk].add(item);
 
-	  item = new JMenuItem("Restore...");
+	  item = new JMenuItem("Request Restore...");
 	  pRestoreItems[wk-2] = item;
 	  item.setActionCommand("restore");
 	  item.addActionListener(this);
@@ -358,7 +358,7 @@ class JNodeViewerPanel
 	item.addActionListener(this);
 	pNodePopup.add(item);
 
-	item = new JMenuItem("Restore...");
+	item = new JMenuItem("Request Restore...");
 	pRestoreItems[2] = item;
 	item.setActionCommand("restore");
 	item.addActionListener(this);

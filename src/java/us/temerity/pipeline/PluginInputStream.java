@@ -1,4 +1,4 @@
-// $Id: PluginInputStream.java,v 1.6 2005/03/21 07:04:35 jim Exp $
+// $Id: PluginInputStream.java,v 1.7 2005/03/23 00:35:23 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -62,7 +62,8 @@ class PluginInputStream
        desc.getName().equals("us.temerity.pipeline.Archive") ||
        desc.getName().equals("us.temerity.pipeline.message.MiscArchiveReq") ||
        desc.getName().equals("us.temerity.pipeline.message.FileArchiveReq") ||
-       desc.getName().equals("us.temerity.pipeline.message.MiscRestoreReq")) {
+       desc.getName().equals("us.temerity.pipeline.message.MiscRestoreReq") ||
+       desc.getName().equals("us.temerity.pipeline.message.FileExtractReq")) {
       try {
 	PluginMgrClient.getInstance().update();
       }
