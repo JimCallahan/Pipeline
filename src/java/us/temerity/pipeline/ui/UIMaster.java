@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.63 2004/12/08 07:37:15 jim Exp $
+// $Id: UIMaster.java,v 1.64 2004/12/10 10:26:21 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1245,7 +1245,30 @@ class UIMaster
    int width
   ) 
   {
-    JCollectionField field = new JCollectionField(values);
+    return createCollectionField(values, null, width);
+  }
+
+  /**
+   * Create a collection field.
+   * 
+   * @param values
+   *   The initial collection values.
+   * 
+   * @param parent
+   *   The parent dialog or <CODE>null</CODE> the field is not a child of a dialog.
+   * 
+   * @param width
+   *   The minimum and preferred width of the field.
+   */ 
+  public static JCollectionField
+  createCollectionField
+  (
+   Collection<String> values,
+   JDialog parent, 
+   int width
+  ) 
+  {
+    JCollectionField field = new JCollectionField(values, parent);
 
     Dimension size = new Dimension(width, 19);
     field.setMinimumSize(size);
@@ -2576,9 +2599,54 @@ class UIMaster
    String tooltip
   ) 
   {
+    return createTitledCollectionField(tpanel, title, twidth, 
+				       vpanel, values, null, vwidth, 
+				       tooltip);
+  }
+
+  /**
+   * Create a tree set field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param title
+   *   The title text.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param values
+   *   The initial collection values.
+   * 
+   * @param parent
+   *   The parent dialog or <CODE>null</CODE> the field is not a child of a dialog.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the value field.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   */ 
+  public static JCollectionField
+  createTitledCollectionField
+  (
+   JPanel tpanel, 
+   String title, 
+   int twidth,
+   JPanel vpanel,
+   Collection<String> values,
+   JDialog parent, 
+   int vwidth, 
+   String tooltip
+  ) 
+  {
     tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
     
-    JCollectionField field = createCollectionField(values, vwidth);
+    JCollectionField field = createCollectionField(values, parent, vwidth);
     vpanel.add(field);
 
     return field;

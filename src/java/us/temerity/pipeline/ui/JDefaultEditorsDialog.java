@@ -1,4 +1,4 @@
-// $Id: JDefaultEditorsDialog.java,v 1.2 2004/11/21 18:39:56 jim Exp $
+// $Id: JDefaultEditorsDialog.java,v 1.3 2004/12/10 10:26:21 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -45,7 +45,7 @@ class JDefaultEditorsDialog
       body.setLayout(new BorderLayout());
 
       {
-	SuffixEditorTableModel model = new SuffixEditorTableModel();
+	SuffixEditorTableModel model = new SuffixEditorTableModel(this);
 	pTableModel = model;
 
 	JTablePanel tpanel =

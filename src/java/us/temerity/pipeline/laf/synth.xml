@@ -496,6 +496,16 @@
 
 
 
+  <!--  I T E M   L I S T   P A N E L  -->
+
+  <style id="ItemListPanel">
+    <imagePainter path="DrawerHeader.png"
+                  sourceInsets="4 4 4 4"/>
+    <insets top="4" bottom="4" right="4" left="4"/>
+  </style>
+  <bind style="ItemListPanel" type="name" key="ItemListPanel"/>
+
+
   <!--  T I T L E   P A N E L  -->
 
   <style id="TitlePanel">

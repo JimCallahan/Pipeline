@@ -1,4 +1,4 @@
-// $Id: JRegisterDialog.java,v 1.10 2004/10/22 19:41:20 jim Exp $
+// $Id: JRegisterDialog.java,v 1.11 2004/12/10 10:26:21 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -188,7 +188,7 @@ class JRegisterDialog
 	  values.add("-");
 	  pToolsetField = 
 	    UIMaster.createTitledCollectionField(tpanel, "Toolset:", sTSize, 
-						 vpanel, values, sVSize);
+						 vpanel, values, this, sVSize, null);
 	}
 	
 	UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
@@ -198,7 +198,7 @@ class JRegisterDialog
 	  values.add("-");
 	  pEditorField = 
 	    UIMaster.createTitledCollectionField(tpanel, "Editor:", sTSize, 
-						 vpanel, values, sVSize);
+						 vpanel, values, this, sVSize, null);
 	}
 
 	UIMaster.addVerticalGlue(tpanel, vpanel);

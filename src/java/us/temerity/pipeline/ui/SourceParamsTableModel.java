@@ -1,4 +1,4 @@
-// $Id: SourceParamsTableModel.java,v 1.9 2004/11/21 18:39:56 jim Exp $
+// $Id: SourceParamsTableModel.java,v 1.10 2004/12/10 10:26:21 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -30,6 +30,9 @@ class SourceParamsTableModel
   /**
    * Construct a table model.
    * 
+   * @param parent
+   *   The parent dialog.
+   * 
    * @param isEditable
    *   Should the table allow editing of parameter values?
    * 
@@ -45,6 +48,7 @@ class SourceParamsTableModel
   public 
   SourceParamsTableModel
   (
+   JDialog parent, 
    boolean isEditable, 
    ArrayList<String> stitles, 
    ArrayList<String> snames, 
@@ -118,12 +122,12 @@ class SourceParamsTableModel
 	else if(aparam instanceof EnumActionParam) {
 	  pColumnWidths[col]  = 160;
 	  pRenderers[col]     = new JSimpleTableCellRenderer(JLabel.CENTER);
-	  pEditors[col]       = new JEnumParamTableCellEditor(160);
+	  pEditors[col]       = new JEnumParamTableCellEditor(parent, 160);
 	}
 	else if(aparam instanceof LinkActionParam) {
 	  pColumnWidths[col]  = 240;
 	  pRenderers[col]     = new JLinkParamTableCellRenderer(stitles, snames);
-	  pEditors[col]       = new JLinkParamTableCellEditor(240, stitles, snames);
+	  pEditors[col]       = new JLinkParamTableCellEditor(parent, 240, stitles, snames);
 	}
 
 	col++;

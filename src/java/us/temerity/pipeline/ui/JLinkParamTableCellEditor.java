@@ -1,4 +1,4 @@
-// $Id: JLinkParamTableCellEditor.java,v 1.1 2004/06/22 19:44:54 jim Exp $
+// $Id: JLinkParamTableCellEditor.java,v 1.2 2004/12/10 10:26:21 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -48,6 +48,33 @@ class JLinkParamTableCellEditor
    ArrayList<String> snames
   ) 
   {
+    this(null, width, stitles, snames);
+  }
+
+  /**
+   * Construct a new editor.
+   * 
+   * @param parent
+   *   The parent dialog or <CODE>null</CODE> the field is not a child of a dialog.
+   * 
+   * @param width
+   *   The minimum and preferred width of the field.
+   * 
+   * @param stitles
+   *   The short names of the upstream nodes.
+   * 
+   * @param snames
+   *   The fully resolved node names of the upstream nodes.
+   */
+  public 
+  JLinkParamTableCellEditor
+  (
+   JDialog parent, 
+   int width,
+   ArrayList<String> stitles, 
+   ArrayList<String> snames
+  ) 
+  {
     pNames = new ArrayList<String>(snames);
     pNames.add(null);
 
@@ -55,7 +82,7 @@ class JLinkParamTableCellEditor
       ArrayList<String> values = new ArrayList<String>(stitles);
       values.add("-");
     
-      pField = UIMaster.createCollectionField(values, width);
+      pField = UIMaster.createCollectionField(values, parent, width);
       pField.addActionListener(this);
     }
   }

@@ -1,4 +1,4 @@
-// $Id: JCheckOutDialog.java,v 1.5 2004/12/10 00:10:52 jim Exp $
+// $Id: JCheckOutDialog.java,v 1.6 2004/12/10 10:26:21 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -61,7 +61,8 @@ class JCheckOutDialog
 	
 	pLatestVersionField = 
 	  UIMaster.createTitledTextField(tpanel, "Latest Version:", sTSize, 
-					 vpanel, "-", sVSize);
+					 vpanel, "-", sVSize, 
+					 "The revision number of the latest version.");
 	
 	UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
 
@@ -71,20 +72,25 @@ class JCheckOutDialog
 
 	  pVersionField = 
 	    UIMaster.createTitledCollectionField(tpanel, "Check-Out Version:", sTSize, 
-						 vpanel, values, sVSize);
+						 vpanel, values, this, sVSize, 
+						 "The revision number of the version to " +
+						 "check-out.");
 	}
 
 	UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
 
 	pModeField = 
 	  UIMaster.createTitledCollectionField(tpanel, "Check-Out Mode:", sTSize, 
-					       vpanel, CheckOutMode.titles(), sVSize);
+					       vpanel, CheckOutMode.titles(), sVSize, 
+					       "The criteria used to determine whether " + 
+					       "working versions should be replaced.");
 
 	UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
 
 	pMethodField = 
 	  UIMaster.createTitledCollectionField(tpanel, "Check-Out Method:", sTSize, 
-					       vpanel, CheckOutMethod.titles(), sVSize);
+					       vpanel, CheckOutMethod.titles(), sVSize,
+					       "The method for replacing working files.");
 
 	UIMaster.addVerticalGlue(tpanel, vpanel);
       }

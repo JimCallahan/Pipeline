@@ -1,4 +1,4 @@
-// $Id: JCollectionField.java,v 1.6 2004/06/19 00:32:43 jim Exp $
+// $Id: JCollectionField.java,v 1.7 2004/12/10 10:26:21 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -20,7 +20,7 @@ import javax.swing.event.*;
 public 
 class JCollectionField
   extends JPanel
-  implements MouseListener, PopupMenuListener, ActionListener
+  implements MouseListener, PopupMenuListener, ActionListener, ListSelectionListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -33,6 +33,19 @@ class JCollectionField
   JCollectionField
   (
    Collection<String> values
+  )
+  {
+    this(values, null);
+  }
+
+  /**
+   * Construct a new field.
+   */ 
+  public 
+  JCollectionField
+  (
+   Collection<String> values, 
+   JDialog parent
   )
   {
     super();  
@@ -69,6 +82,49 @@ class JCollectionField
 
     pPopup = new JPopupMenu(); 
     pPopup.addPopupMenuListener(this);
+
+    {
+      if(parent != null) 
+	pDialog = new JDialog(parent);
+      else 
+	pDialog = new JDialog();
+    
+      //pDialog.setModal(true);
+      pDialog.setUndecorated(true);
+      pDialog.setResizable(false);
+      pDialog.setAlwaysOnTop(true);
+
+      pDialog.addWindowListener(new CloseDialogListener());
+
+      {
+	JPanel panel = new JPanel();
+	panel.setName("ItemListPanel");
+	panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));   
+
+	{
+	  JList lst = new JList(new DefaultListModel());
+	  pItemList = lst;
+	  
+	  lst.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+	  lst.setCellRenderer(new JListCellRenderer());
+
+	  lst.addListSelectionListener(this);
+
+	  {
+	    JScrollPane scroll = new JScrollPane(lst);
+	    
+	    scroll.setHorizontalScrollBarPolicy
+	      (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+	    scroll.setVerticalScrollBarPolicy
+	      (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+	  
+	    panel.add(scroll);
+	  }
+	}
+
+	pDialog.setContentPane(panel);
+      }
+    }
 
     setValues(values);
     setSelectedIndex(0);
@@ -313,10 +369,47 @@ class JCollectionField
   {
     if((pValues.size() > 0) && (pSelectedIdx >= 0)) {
       pTextField.setForeground(Color.yellow);
-
       Dimension size = getSize();
-      pPopup.setPopupSize(new Dimension(size.width, 23*pValues.size() + 10));
-      pPopup.show(this, 0, size.height);
+
+      if(pValues.size() < sItemLimit) {
+	pPopup.setPopupSize(new Dimension(size.width, 23*pValues.size() + 10));
+	pPopup.show(this, 0, size.height);
+      }
+      else {
+	pItemList.removeListSelectionListener(this);
+	{
+	  DefaultListModel model = (DefaultListModel) pItemList.getModel();
+	  model.clear();
+	  
+	  for(String value : pValues) 
+	    model.addElement(value);	  
+	  
+	  pItemList.setSelectedIndex(getSelectedIndex());
+	}
+	pItemList.addListSelectionListener(this);
+
+	{
+	  Point pos = new Point(0, size.height);
+	  SwingUtilities.convertPointToScreen(pos, this);
+
+	  Dimension dsize = new Dimension(size.width, 23*sItemLimit + 14);
+	  pDialog.setSize(dsize);
+
+	  Rectangle bounds = pDialog.getGraphicsConfiguration().getBounds();
+
+	  if(pos.x < bounds.x) 
+	    pos.x += bounds.x - pos.x;
+	  else if((pos.x + dsize.width) > (bounds.x + bounds.width)) 
+	    pos.x += (bounds.x + bounds.width) - (pos.x + dsize.width);
+	  
+	  if((pos.y + dsize.height) > (bounds.y + bounds.height)) 
+	    pos.y += (bounds.y + bounds.height) - (pos.y + dsize.height);
+
+	  pDialog.setLocation(pos);
+	}
+
+	pDialog.setVisible(true);
+      }
     }
   } 
 
@@ -355,6 +448,28 @@ class JCollectionField
 
 
 
+  /*-- LIST SELECTION LISTENER METHODS -----------------------------------------------------*/
+
+  /**
+   * Called whenever the value of the selection changes.
+   */ 
+  public void 	
+  valueChanged
+  (
+   ListSelectionEvent e
+  )
+  {
+    if(e.getValueIsAdjusting()) 
+      return;
+
+    int idx = pItemList.getSelectedIndex();
+    if(idx != -1) {
+      setSelectedIndex(idx);
+      pDialog.setVisible(false);
+    }
+  }
+
+
   
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L   C L A S S E S                                                      */
@@ -390,10 +505,30 @@ class JCollectionField
     private JCollectionField  pParent;
   }
 
+  public 
+  class CloseDialogListener
+    extends WindowAdapter
+  {
+    public 
+    CloseDialogListener() 
+    {}
+
+    public void 
+    windowDeactivated
+    (
+     WindowEvent e
+    ) 
+    {
+      pDialog.setVisible(false);
+    }
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
+
+  private static final int sItemLimit = 10;
 
   private static final long serialVersionUID = -3098195836855262214L;
 
@@ -414,6 +549,22 @@ class JCollectionField
    * The popup menu.
    */ 
   private JPopupMenu  pPopup; 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The item selection dialog used for long lists.
+   */ 
+  private JDialog  pDialog;
+
+  /** 
+   * The item selection list.
+   */ 
+  private JList  pItemList;
+  
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * The value text field.

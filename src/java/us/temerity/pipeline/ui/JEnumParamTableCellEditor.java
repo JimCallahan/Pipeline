@@ -1,4 +1,4 @@
-// $Id: JEnumParamTableCellEditor.java,v 1.2 2004/09/08 18:38:20 jim Exp $
+// $Id: JEnumParamTableCellEditor.java,v 1.3 2004/12/10 10:26:21 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -40,10 +40,29 @@ class JEnumParamTableCellEditor
    int width
   ) 
   {
+    this(null, width);
+  }
+  
+  /**
+   * Construct a new editor.
+   * 
+   * @param parent
+   *   The parent dialog or <CODE>null</CODE> the field is not a child of a dialog.
+   * 
+   * @param width
+   *   The minimum and preferred width of the field.
+   */
+  public 
+  JEnumParamTableCellEditor
+  (
+   JDialog parent, 
+   int width
+  ) 
+  {
     ArrayList<String> values = new ArrayList<String>();
     values.add("-");
 
-    pField = UIMaster.createCollectionField(values, width);
+    pField = UIMaster.createCollectionField(values, parent, width);
     pField.addActionListener(this);
   }
 

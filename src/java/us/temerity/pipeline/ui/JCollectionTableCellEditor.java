@@ -1,4 +1,4 @@
-// $Id: JCollectionTableCellEditor.java,v 1.2 2004/06/22 19:39:55 jim Exp $
+// $Id: JCollectionTableCellEditor.java,v 1.3 2004/12/10 10:26:21 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -42,7 +42,30 @@ class JCollectionTableCellEditor
    int width
   ) 
   {
-    pField = new JCollectionField(values);
+    this(values, null, width);
+  }
+
+  /**
+   * Construct a new renderer.
+   * 
+   * @param values
+   *   The choice values.
+   * 
+   * @param parent
+   *   The parent dialog or <CODE>null</CODE> the field is not a child of a dialog.
+   * 
+   * @param width
+   *   The horizontal size.
+   */
+  public 
+  JCollectionTableCellEditor
+  (
+   Collection<String> values,
+   JDialog parent, 
+   int width
+  ) 
+  {
+    pField = new JCollectionField(values, parent);
     
     Dimension size = new Dimension(width, 19);
     pField.setMinimumSize(size);

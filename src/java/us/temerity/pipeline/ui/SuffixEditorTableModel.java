@@ -1,4 +1,4 @@
-// $Id: SuffixEditorTableModel.java,v 1.8 2004/11/21 18:39:56 jim Exp $
+// $Id: SuffixEditorTableModel.java,v 1.9 2004/12/10 10:26:21 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -32,7 +32,10 @@ class SuffixEditorTableModel
    * Construct a table model.
    */
   public 
-  SuffixEditorTableModel()
+  SuffixEditorTableModel
+  (
+   JDialog parent
+  )
   {
     super();
     
@@ -79,7 +82,7 @@ class SuffixEditorTableModel
 	  PluginMgr mgr = PluginMgr.getInstance();
 	  ArrayList<String> values = new ArrayList<String>(mgr.getEditors().keySet());
 	  values.add("-");
-	  editor = new JCollectionTableCellEditor(values, 130);
+	  editor = new JCollectionTableCellEditor(values, parent, 130);
 	}
 	
 	TableCellEditor editors[] = {

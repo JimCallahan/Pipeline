@@ -1,4 +1,4 @@
-// $Id: JEvolveDialog.java,v 1.1 2004/10/03 19:42:18 jim Exp $
+// $Id: JEvolveDialog.java,v 1.2 2004/12/10 10:26:21 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -72,7 +72,7 @@ class JEvolveDialog
 
 	  pVersionField = 
 	    UIMaster.createTitledCollectionField(tpanel, "Evolve To Version:", sTSize, 
-						 vpanel, values, sVSize);
+						 vpanel, values, this, sVSize, null);
 	}
 
 	UIMaster.addVerticalGlue(tpanel, vpanel);

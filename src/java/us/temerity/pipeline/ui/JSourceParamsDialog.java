@@ -1,4 +1,4 @@
-// $Id: JSourceParamsDialog.java,v 1.4 2004/11/19 05:26:15 jim Exp $
+// $Id: JSourceParamsDialog.java,v 1.5 2004/12/10 10:26:21 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -68,7 +68,7 @@ class JSourceParamsDialog
 
       {
 	SourceParamsTableModel model = 
-	  new SourceParamsTableModel(isEditable, stitles, snames, action);
+	  new SourceParamsTableModel(this, isEditable, stitles, snames, action);
 	pTableModel = model;
 
 	JTablePanel tpanel = 
