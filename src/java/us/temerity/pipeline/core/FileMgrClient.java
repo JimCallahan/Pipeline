@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.31 2005/03/30 22:42:10 jim Exp $
+// $Id: FileMgrClient.java,v 1.32 2005/03/31 17:01:50 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -249,7 +249,7 @@ class FileMgrClient
     FileCheckInReq req = 
       new FileCheckInReq(id, vid, latest, mod.getSequences(), isNovel); 
 
-    Object obj = performTransaction(FileRequest.CheckIn, req);
+    Object obj = performLongTransaction(FileRequest.CheckIn, req, 15000, 60000);  
     handleSimpleResponse(obj);
   }
 
@@ -285,7 +285,7 @@ class FileMgrClient
       new FileCheckOutReq(id, vsn.getVersionID(), vsn.getSequences(), 
 			  isFrozen, !vsn.isActionEnabled());
 
-    Object obj = performTransaction(FileRequest.CheckOut, req);
+    Object obj = performLongTransaction(FileRequest.CheckOut, req, 15000, 60000);  
     handleSimpleResponse(obj);
   }
 
@@ -567,7 +567,7 @@ class FileMgrClient
 
     FileArchiveReq req = new FileArchiveReq(name, fseqs, archiver);
 
-    Object obj = performTransaction(FileRequest.Archive, req);
+    Object obj = performLongTransaction(FileRequest.Archive, req, 15000, 60000);  
     if(obj instanceof FileArchiverRsp) {
       FileArchiverRsp rsp = (FileArchiverRsp) obj;
       return rsp.getOutput();
@@ -641,7 +641,7 @@ class FileMgrClient
 
     FileOfflineReq req = new FileOfflineReq(name, vid, symlinks);
 
-    Object obj = performTransaction(FileRequest.Offline, req);
+    Object obj = performLongTransaction(FileRequest.Offline, req, 15000, 60000);  
     handleSimpleResponse(obj);
   }
 
@@ -762,7 +762,7 @@ class FileMgrClient
 
     FileRestoreReq req = new FileRestoreReq(archiveName, stamp, name, vid, symlinks, targets);
 
-    Object obj = performTransaction(FileRequest.Restore, req);
+    Object obj = performLongTransaction(FileRequest.Restore, req, 15000, 60000);  
     handleSimpleResponse(obj);
   }
   
