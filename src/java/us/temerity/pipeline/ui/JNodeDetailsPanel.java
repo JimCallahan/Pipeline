@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.13 2004/09/05 06:47:50 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.14 2004/09/08 18:39:25 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -408,6 +408,46 @@ class JNodeDetailsPanel
 		{
 		  JTextField field = UIMaster.createTextField("-", sVSize, JLabel.CENTER);
 		  pCheckedInActionField = field;
+
+		  hbox.add(field);
+		}
+		
+		vpanel.add(hbox);
+	      }
+	    }
+
+	    UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+
+	    /* action version */ 
+	    { 
+	      {
+		JLabel label = 
+		  UIMaster.createFixedLabel("Version:", sTSize, JLabel.RIGHT);
+		pActionVersionTitle = label;
+		tpanel.add(label);
+	      }
+	      
+	      {
+		Box hbox = new Box(BoxLayout.X_AXIS);
+		
+		{
+		  ArrayList<String> values = new ArrayList<String>();
+		  values.add("-");
+
+		  JCollectionField field = UIMaster.createCollectionField(values, sVSize);
+		  pWorkingActionVersionField = field;
+
+		  field.setActionCommand("action-changed");
+		  field.addActionListener(this);
+
+		  hbox.add(field);
+		}
+		
+		hbox.add(Box.createRigidArea(new Dimension(20, 0)));
+
+		{
+		  JTextField field = UIMaster.createTextField("-", sVSize, JLabel.CENTER);
+		  pCheckedInActionVersionField = field;
 
 		  hbox.add(field);
 		}
@@ -977,7 +1017,6 @@ class JNodeDetailsPanel
     pViewTextDialog = new JTextDialog(false);
   }
 
-
   /**
    * Create the title/value panels.
    * 
@@ -1407,7 +1446,7 @@ class JNodeDetailsPanel
 	{
 	  TreeSet<String> editors = new TreeSet<String>();
 	  if(work != null) 
-	    editors.addAll(Plugins.getEditorNames());
+	    editors.addAll(PluginMgr.getInstance().getEditors().keySet());
 	  editors.add("-");
 	  pWorkingEditorField.setValues(editors);
 	  
@@ -1442,12 +1481,12 @@ class JNodeDetailsPanel
       {
 	TreeSet<String> actions = new TreeSet<String>();
 	if(work != null) 
-	  actions.addAll(Plugins.getActionNames());
+	  actions.addAll(PluginMgr.getInstance().getActions().keySet());
 	actions.add("-");
 	pWorkingActionField.setValues(actions);
 	
 	BaseAction waction = initWorkingAction();
-	if((waction != null) && (actions.contains(waction.getName()))) 
+	if((waction != null) && (actions.contains(waction.getName())))
 	  pWorkingActionField.setSelected(waction.getName());
 	else 
 	  pWorkingActionField.setSelected("-");
@@ -1465,7 +1504,6 @@ class JNodeDetailsPanel
 	else 
 	  pCheckedInActionField.setText("-");
       }
-
 
       if((work != null) && (getWorkingAction() != null)) {
 	pWorkingActionEnabledField.setValue(work.isActionEnabled()); 
@@ -1548,6 +1586,43 @@ class JNodeDetailsPanel
     pApplyButton.setEnabled(isEnabled);
   }
 
+  /**
+   * Update the action versions fields.
+   */ 
+  private void 
+  updateActionVersionFields()
+  {
+    pWorkingActionVersionField.removeActionListener(this);
+    {
+      TreeMap<String,TreeSet<VersionID>> plgs = PluginMgr.getInstance().getActions();
+
+      BaseAction waction = getWorkingAction();
+      if(waction != null) {
+	TreeSet<String> vstr = new TreeSet<String>();
+	TreeSet<VersionID> vids = plgs.get(waction.getName());
+	for(VersionID vid : vids)
+	  vstr.add("v" + vid.toString());
+	pWorkingActionVersionField.setValues(vstr);
+	
+	pWorkingActionVersionField.setSelected("v" + waction.getVersionID().toString());
+	pWorkingActionVersionField.setEnabled(true);
+      }
+      else {
+	TreeSet<String> vstr = new TreeSet<String>();
+	vstr.add("-");
+	pWorkingActionVersionField.setValues(vstr);
+	pWorkingActionVersionField.setSelected("-");
+	pWorkingActionVersionField.setEnabled(false);
+      }
+    }
+    pWorkingActionVersionField.addActionListener(this);
+
+    BaseAction caction = getCheckedInAction();	
+    if(caction != null) 
+      pCheckedInActionVersionField.setText("v" + caction.getVersionID());
+    else 
+      pCheckedInActionVersionField.setText("-");    
+  }
 
   /**
    * Update the UI components associated with the working and checked-in actions.
@@ -1676,10 +1751,10 @@ class JNodeDetailsPanel
 	      else if(aparam instanceof EnumActionParam) {
 		EnumActionParam eparam = (EnumActionParam) aparam;
 		JCollectionField field = 
-		  UIMaster.createCollectionField(eparam.getTitles(), sVSize);
+		  UIMaster.createCollectionField(eparam.getValues(), sVSize);
 		pcomps[1] = field;
 	      
-		field.setSelectedIndex(((Enum) eparam.getValue()).ordinal());
+		field.setSelected((String) eparam.getValue());
 		
 		field.addActionListener(this);
 		field.setActionCommand("action-param-changed:" + aparam.getName());
@@ -2457,7 +2532,8 @@ class JNodeDetailsPanel
     if(hasWorking() && hasCheckedIn()) {
       if(!(((waction == null) && (caction == null)) ||
 	   ((waction != null) && (caction != null) && 
-	    waction.getName().equals(caction.getName())))) 
+	    waction.getName().equals(caction.getName()) && 
+	    waction.getVersionID().equals(caction.getVersionID()))))
 	color = Color.cyan;
       else 
 	color = null;
@@ -2470,6 +2546,10 @@ class JNodeDetailsPanel
     pActionTitle.setForeground(fg);
     pWorkingActionField.setForeground(fg);
     pCheckedInActionField.setForeground(fg);
+
+    pActionVersionTitle.setForeground(fg);
+    pWorkingActionVersionField.setForeground(fg);
+    pCheckedInActionVersionField.setForeground(fg);
 
     updateActionEnabledColors();
 
@@ -2486,7 +2566,8 @@ class JNodeDetailsPanel
   updateActionEnabledColors()
   {
     Color color = Color.white;
-    if(!pWorkingActionEnabledField.getText().equals(pCheckedInActionEnabledField.getText()))
+    if(hasWorking() && hasCheckedIn() && 
+       !pWorkingActionEnabledField.getText().equals(pCheckedInActionEnabledField.getText()))
       color = Color.cyan;
 
     pActionEnabledTitle.setForeground(color);
@@ -3173,6 +3254,8 @@ class JNodeDetailsPanel
     }
     pWorkingActionField.addActionListener(this);
 
+    updateActionVersionFields();
+
     pActionParamComponents.clear();
     updateActionParams();
     updateActionColors();
@@ -3199,30 +3282,54 @@ class JNodeDetailsPanel
 
 	pActionParamComponents.clear();
       }
-      else if((pWorkingAction == null) || !pWorkingAction.getName().equals(aname)) {
-	try {
-	  setWorkingAction(Plugins.newAction(aname));
-
-	  if(pWorkingActionEnabledField.getValue() == null) 
-	    pWorkingActionEnabledField.setValue(true);
-	  pWorkingActionEnabledField.setEnabled(true);	  
+      else {
+	VersionID vid = null;
+	boolean rebuild = false;
+	if((oaction == null) || !oaction.getName().equals(aname)) 
+	  rebuild = true;
+	else {
+	  String vstr = pWorkingActionVersionField.getSelected();
+	  if(vstr.equals("-")) 
+	    rebuild = true;
+	  else {
+	    vid = new VersionID(vstr.substring(1));
+	    if(!vid.equals(oaction.getVersionID()))
+	      rebuild = true;
+	  }
 	}
-	catch(PipelineException ex) {
-	  UIMaster.getInstance().showErrorDialog(ex);
 
-	  setWorkingAction(null);
+	if(rebuild) {
+	  try {
+	    setWorkingAction(PluginMgr.getInstance().newAction(aname, vid));
+	    
+	    BaseAction waction = getWorkingAction();
+	    if((oaction != null) && oaction.getName().equals(waction.getName())) {
+	      waction.setSingleParamValues(oaction);
+	      waction.setSourceParamValues(oaction);
+	    }
 
-	  pWorkingActionEnabledField.setValue(null);
-	  pWorkingActionEnabledField.setEnabled(false);
-
-	  pWorkingActionField.removeActionListener(this);
+	    if(pWorkingActionEnabledField.getValue() == null) 
+	      pWorkingActionEnabledField.setValue(true);
+	    pWorkingActionEnabledField.setEnabled(true);	  
+	  }
+	  catch(PipelineException ex) {
+	    UIMaster.getInstance().showErrorDialog(ex);
+	    
+	    setWorkingAction(null);
+	    
+	    pWorkingActionEnabledField.setValue(null);
+	    pWorkingActionEnabledField.setEnabled(false);
+	    
+	    pWorkingActionField.removeActionListener(this);
   	    pWorkingActionField.setSelected("-");
-	  pWorkingActionField.addActionListener(this);
-	}
+	    pWorkingActionField.addActionListener(this);
+	  }
 
-	pActionParamComponents.clear();
+	  pActionParamComponents.clear();
+	}
       }
 
+      updateActionVersionFields();
       updateActionParams();
       updateActionColors();
     }
@@ -4049,6 +4156,23 @@ class JNodeDetailsPanel
    * The checked-in action field.
    */ 
   private JTextField pCheckedInActionField;
+
+
+  /**
+   * The action version title label.
+   */ 
+  private JLabel  pActionVersionTitle;
+
+  /**
+   * The working action version field.
+   */ 
+  private JCollectionField pWorkingActionVersionField;
+
+  /**
+   * The checked-in action version field.
+   */ 
+  private JTextField pCheckedInActionVersionField;
+
 
 
   /**
