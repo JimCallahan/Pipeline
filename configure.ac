@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 1.9.4)
+AM_INIT_AUTOMAKE(Pipeline, 1.9.5)
 
 AC_MSG_RESULT([ ])
 
@@ -1086,6 +1086,7 @@ AC_CONFIG_FILES([
   src/java/scripts/plqueuemgr
   src/java/scripts/plscript
   src/java/scripts/plui
+  src/java/scripts/plcleandirs
   src/java/scripts/plrestoreA
   src/java/scripts/plrestoreB
   src/java/scripts/jogltest
