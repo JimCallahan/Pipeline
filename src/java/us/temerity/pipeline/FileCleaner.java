@@ -1,4 +1,4 @@
-// $Id: FileCleaner.java,v 1.6 2005/01/22 06:10:09 jim Exp $
+// $Id: FileCleaner.java,v 1.7 2005/03/10 08:07:27 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -99,12 +99,8 @@ class FileCleaner
     {
       synchronized(sFiles) {
 	for(File file : sFiles) {
-	  if(file.exists()) {
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Sub, LogMgr.Level.Finer,
-	       "Cleaning: " + file);
+	  if(file.exists()) 
 	    file.delete();
-	  }
 	}
       }
     }
@@ -118,6 +114,6 @@ class FileCleaner
   /**
    * The set of temporary files to cleanup.
    */ 
-  private static HashSet<File> sFiles = new HashSet<File>();
+  private static TreeSet<File> sFiles = new TreeSet<File>();
 
 }

@@ -1,4 +1,4 @@
-// $Id: Archive.java,v 1.4 2005/02/07 14:48:56 jim Exp $
+// $Id: ArchiveVolume.java,v 1.1 2005/03/10 08:07:27 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -8,15 +8,14 @@ import java.util.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   A R C H I V E                                                                          */
+/*   A R C H I V E   V O L U M E                                                            */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Information about the contents of an archive of files associated with checked-in node 
- * versions. 
+ * Information about an archive volume containing files associated with checked-in versions.
  */
 public
-class Archive
+class ArchiveVolume
   extends Named
 {  
   /*----------------------------------------------------------------------------------------*/
@@ -24,7 +23,7 @@ class Archive
   /*----------------------------------------------------------------------------------------*/
 
   public 
-  Archive() 
+  ArchiveVolume() 
   {}
 
   /**
@@ -33,45 +32,66 @@ class Archive
    * @param name
    *   The unique name of the archive.
    * 
-   * @param files 
+   * @param stamp
+   *   The creation timestamp. 
+   * 
+   * @param fseqs 
    *   The file sequences of the checked-in versions contained in the archive indexed by
+   *   fully resolved node name and revision number.
+   * 
+   * @param sizes
+   *   The total size of the files associated with each checked-in version indexed by
    *   fully resolved node name and revision number.
    * 
    * @param archiver 
    *   The archiver plugin instance used to create the archive.
-   * 
-   * @param output
-   *   The output produced by OS level subprocesses executed by the 
-   *   {@link BaseArchiver#archive archive} method during creation of the archive or 
-   *   <CODE>null</CODE> if no output was produced.
    */
   public 
-  Archive
+  ArchiveVolume
   (
    String name, 
-   TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> files, 
-   BaseArchiver archiver, 
-   String output
+   Date stamp, 
+   TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs,
+   TreeMap<String,TreeMap<VersionID,Long>> sizes,
+   BaseArchiver archiver
   ) 
   {
     super(name);
     
-    pTimeStamp = new Date();
+    pTimeStamp = stamp;
 
-    if(files == null) 
+    if(fseqs == null) 
       throw new IllegalArgumentException
-	("The files cannot be (null)!");    
-    if(files.isEmpty()) 
+	("The file sequences cannot be (null)!");    
+    if(fseqs.isEmpty()) 
       throw new IllegalArgumentException
-	("The files cannot be empty!");    
-    pFiles = files;
+	("The file sequences cannot be empty!");    
+    pFileSeqs = fseqs;
+
+    if(sizes == null) 
+      throw new IllegalArgumentException
+	("The sizes cannot be (null)!");    
+    if(sizes.isEmpty()) 
+      throw new IllegalArgumentException
+	("The sizes cannot be empty!");    
+    pSizes = sizes;
+
+    if(!fseqs.keySet().equals(sizes.keySet())) 
+      throw new IllegalArgumentException
+	("The checked-in version indices of the file sequences and sizes " +
+	 "tables inconsistent!");
+
+    for(String vname : fseqs.keySet()) {
+      if(!fseqs.get(vname).keySet().equals(sizes.get(vname).keySet()))
+	throw new IllegalArgumentException
+	  ("The checked-in version indices of the file sequences and sizes " +
+	   "tables inconsistent!");
+    }
 
     if(archiver == null) 
       throw new IllegalArgumentException
 	("The archiver plugin instance cannot be (null)!");
     pArchiver = archiver;
-
-    pOutput = output;
   }
 
 
@@ -97,7 +117,7 @@ class Archive
   public Set<String>
   getNames()
   {
-    return Collections.unmodifiableSet(pFiles.keySet());
+    return Collections.unmodifiableSet(pFileSeqs.keySet());
   }
 
   /**
@@ -113,7 +133,7 @@ class Archive
    String name
   ) 
   {
-    TreeMap<VersionID,TreeSet<FileSeq>> versions = pFiles.get(name);
+    TreeMap<VersionID,TreeSet<FileSeq>> versions = pFileSeqs.get(name);
     if(versions != null) 
       return Collections.unmodifiableSet(versions.keySet());
     return new TreeSet<VersionID>();
@@ -136,7 +156,7 @@ class Archive
    VersionID vid
   )
   {
-    TreeMap<VersionID,TreeSet<FileSeq>> versions = pFiles.get(name);
+    TreeMap<VersionID,TreeSet<FileSeq>> versions = pFileSeqs.get(name);
     if(versions != null) {
       TreeSet<FileSeq> fseqs = versions.get(vid);
       if(fseqs != null)
@@ -162,7 +182,7 @@ class Archive
    VersionID vid
   )
   {
-    TreeMap<VersionID,TreeSet<FileSeq>> versions = pFiles.get(name);
+    TreeMap<VersionID,TreeSet<FileSeq>> versions = pFileSeqs.get(name);
     if(versions != null) {
       TreeSet<FileSeq> fseqs = versions.get(vid);
       if(fseqs != null) {
@@ -188,8 +208,8 @@ class Archive
   getFiles() 
   {
     int cnt = 0;
-    for(String name : pFiles.keySet()) {
-      TreeMap<VersionID,TreeSet<FileSeq>> versions = pFiles.get(name);
+    for(String name : pFileSeqs.keySet()) {
+      TreeMap<VersionID,TreeSet<FileSeq>> versions = pFileSeqs.get(name);
       for(VersionID vid : versions.keySet()) {
 	for(FileSeq fseq : versions.get(vid)) 
 	  cnt += fseq.numFrames();
@@ -197,8 +217,8 @@ class Archive
     }
 	
     ArrayList<File> files = new ArrayList<File>(cnt);
-    for(String name : pFiles.keySet()) {
-      TreeMap<VersionID,TreeSet<FileSeq>> versions = pFiles.get(name);
+    for(String name : pFileSeqs.keySet()) {
+      TreeMap<VersionID,TreeSet<FileSeq>> versions = pFileSeqs.get(name);
       for(VersionID vid : versions.keySet()) {
 	for(FileSeq fseq : versions.get(vid)) 
 	 files.addAll(fseq.getFiles());
@@ -208,6 +228,44 @@ class Archive
     return files;
   }
   
+  /**
+   * Get the total size of the files associated with the given checked-in version contained
+   * in the archive.
+   * 
+   * @param name
+   *   The fully resolved node name.    
+   * 
+   * @param vid
+   *   The revision number of the checked-in version.
+   */
+  public long
+  getSize
+  (
+   String name, 
+   VersionID vid
+  )
+  {
+    TreeMap<VersionID,Long> sizes = pSizes.get(name);
+    if((sizes != null) && sizes.containsKey(vid))
+      return sizes.get(vid);
+    return 0L;
+  }
+
+  /**
+   * Get the total size of all files contained in the archive.
+   */
+  public Long
+  getTotalSize() 
+  {
+    long total = 0L;
+    for(String name : pSizes.keySet()) {
+      for(Long size : pSizes.get(name).values()) 
+	total += size;
+    }
+    
+    return total;
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -220,17 +278,6 @@ class Archive
     if(pArchiver != null)
       return (BaseArchiver) pArchiver.clone();
     return null;
-  }
-  
-  /**
-   * Get the output produced by OS level subprocesses executed by the 
-   * {@link BaseArchiver#archive archive} method during creation of the archive or 
-   * <CODE>null</CODE> if no output was produced.
-   */
-  public String
-  getOutput() 
-  {
-    return pOutput;
   }
   
 
@@ -253,9 +300,8 @@ class Archive
     throws IOException
   {
     out.writeObject(pTimeStamp);
-    out.writeObject(pFiles);
+    out.writeObject(pFileSeqs);
     out.writeObject(new BaseArchiver(pArchiver));
-    out.writeObject(pOutput);
   }
 
   /**
@@ -273,7 +319,7 @@ class Archive
     throws IOException, ClassNotFoundException
   {
     pTimeStamp = (Date) in.readObject();
-    pFiles = (TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>) in.readObject();
+    pFileSeqs = (TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>) in.readObject();
 
     {
       BaseArchiver archiver = (BaseArchiver) in.readObject();
@@ -286,8 +332,6 @@ class Archive
 	throw new IOException(ex.getMessage());
       }
     }
-
-    pOutput = (String) in.readObject();
   }
  
 
@@ -306,11 +350,9 @@ class Archive
     super.toGlue(encoder);
 
     encoder.encode("TimeStamp", pTimeStamp.getTime());
-    encoder.encode("Files", pFiles);
+    encoder.encode("FileSeqs", pFileSeqs);
+    encoder.encode("Sizes", pSizes);
     encoder.encode("Archiver", new BaseArchiver(pArchiver));
-
-    if(pOutput != null)
-      encoder.encode("Output", pOutput);
   }
 
   public void 
@@ -331,10 +373,18 @@ class Archive
 
     {
       TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> files = 
-	(TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>) decoder.decode("Files");
+	(TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>) decoder.decode("FileSeqs");
       if(files == null) 
- 	throw new GlueException("The \"Files\" was missing!");
-      pFiles = files;      
+ 	throw new GlueException("The \"FileSeqs\" was missing!");
+      pFileSeqs = files;      
+    }
+    
+    {
+      TreeMap<String,TreeMap<VersionID,Long>> sizes = 
+	(TreeMap<String,TreeMap<VersionID,Long>>) decoder.decode("Sizes");
+      if(sizes == null) 
+ 	throw new GlueException("The \"Sizes\" was missing!");
+      pSizes = sizes; 
     }
     
     {
@@ -351,8 +401,6 @@ class Archive
 	throw new GlueException(ex.getMessage());
       }
     }
-      
-    pOutput = (String) decoder.decode("Output");
   }
 
 
@@ -393,19 +441,18 @@ class Archive
    * The file sequences of the checked-in versions contained in the archive indexed by
    * fully resolved node name and revision number.
    */
-  private TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>  pFiles;
+  private TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>  pFileSeqs;
+
+  /**
+   * The total size of the files associated with each checked-in version indexed by
+   * fully resolved node name and revision number.
+   */ 
+  private TreeMap<String,TreeMap<VersionID,Long>>  pSizes; 
 
   /** 
    * The archiver plugin instance used to create the archive.
    */
   private BaseArchiver  pArchiver;
-
-  /** 
-   * The output produced by OS level subprocesses executed by the 
-   * {@link BaseArchiver#archive archive} method during creation of the archive or 
-   * <CODE>null</CODE> if no output was produced.
-   */
-  private String  pOutput;
 
 }
 

@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.24 2005/02/22 18:18:30 jim Exp $
+// $Id: FileMgrClient.java,v 1.25 2005/03/10 08:07:27 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -454,6 +454,47 @@ class FileMgrClient
 
     Object obj = performTransaction(FileRequest.DeleteCheckedIn, req);
     handleSimpleResponse(obj);
+  }
+
+  /**
+   * Create an archive volume by running the given archiver plugin on a set of checked-in 
+   * file sequences. 
+   * 
+   * @param name 
+   *   The name of the archive volume to create.
+   * 
+   * @param fseqs
+   *   The file sequences to archive indexed by fully resolved node name and checked-in 
+   *   revision number.
+   * 
+   * @param archiver
+   *   The archiver plugin to use to create the archive volume.
+   * 
+   * @return
+   *   The STDOUT output of the archiver process.
+   */ 
+  public synchronized String
+  archive
+  (
+   String name, 
+   TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs, 
+   BaseArchiver archiver
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    FileArchiveReq req = new FileArchiveReq(name, fseqs, archiver);
+
+    Object obj = performTransaction(FileRequest.Archive, req);
+    if(obj instanceof FileArchiveRsp) {
+      FileArchiveRsp rsp = (FileArchiveRsp) obj;
+      return rsp.getOutput();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
   }
 
   /**

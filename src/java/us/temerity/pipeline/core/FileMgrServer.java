@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.25 2005/02/22 18:18:30 jim Exp $
+// $Id: FileMgrServer.java,v 1.26 2005/03/10 08:07:27 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -338,6 +338,14 @@ class FileMgrServer
 	      {
 		FileDeleteCheckedInReq req = (FileDeleteCheckedInReq) objIn.readObject();
 		objOut.writeObject(pFileMgr.deleteCheckedIn(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case Archive:
+	      {
+		FileArchiveReq req = (FileArchiveReq) objIn.readObject();
+		objOut.writeObject(pFileMgr.archive(req));
 		objOut.flush(); 
 	      }
 	      break;

@@ -1,4 +1,4 @@
-// $Id: DirectoryArchiverParam.java,v 1.1 2004/11/11 00:40:09 jim Exp $
+// $Id: DirectoryArchiverParam.java,v 1.2 2005/03/10 08:07:27 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -10,11 +10,11 @@ import java.io.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * An Archiver parameter with a File value which names a directory.
+ * An Archiver parameter with a String value which names a directory.
  */
 public 
 class DirectoryArchiverParam
-  extends FileParam
+  extends StringParam
   implements ArchiverParam
 {  
   /*----------------------------------------------------------------------------------------*/
@@ -44,7 +44,7 @@ class DirectoryArchiverParam
   (
    String name,  
    String desc, 
-   File value
+   String value
   ) 
   {
     super(name, desc, value);

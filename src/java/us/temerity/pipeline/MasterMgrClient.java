@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.50 2005/02/23 06:49:52 jim Exp $
+// $Id: MasterMgrClient.java,v 1.51 2005/03/10 08:07:27 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -2993,52 +2993,40 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get information about the checked-in versions which match the given archival 
-   * criteria. <P> 
+   * Get archive related information about the checked-in versions which match the 
+   * given criteria. <P> 
    * 
    * @param pattern
    *   A regular expression {@link Pattern pattern} used to match the fully resolved 
-   *   names of nodes to restore.
-   * 
-   * @param excludeLatest
-   *   The number of newer checked-in versions of the node to exclude from the returned list
-   *   or <CODE>null</CODE> to include all versions.
-   * 
-   * @param maxWorking
-   *   The maximum allowable number of existing working versions based on the checked-in 
-   *   version in order for checked-in version to be inclued in the returned list or 
-   *   <CODE>null</CODE> for any number of working versions.
+   *   names of nodes or <CODE>null</CODE> for all nodes.
    * 
    * @param maxArchives
-   *   The maximum allowable number of archives which already contain the checked-in version
+   *   The maximum allowable number of archive volumes which contain the checked-in version
    *   in order for it to be inclued in the returned list or <CODE>null</CODE> for any number 
    *   of archives.
    * 
    * @return 
-   *   Archival information for each matching checked-in version indexed by fully resolved 
-   *   node name and revision number.
+   *   Information about the archival state of each matching checked-in version. 
    * 
    * @throws PipelineException 
-   *   If determine which checked-in versions match the criteria.
+   *   If unable to determine which checked-in versions match the criteria.
    */ 
-  public synchronized TreeMap<String,TreeMap<VersionID,ArchivalInfo>>
-  archivalQuery
+  public synchronized ArrayList<ArchiveInfo>
+  archiveQuery
   (
-    String pattern,
-    Integer excludeLatest, 
-    Integer maxWorking, 
-    Integer maxArchives
+   String pattern,
+   Integer maxArchives
   )
     throws PipelineException
   {
     verifyConnection();
 
-    MiscArchivalQueryReq req = 
-      new MiscArchivalQueryReq(pattern, excludeLatest, maxWorking, maxArchives);
+    MiscArchiveQueryReq req = 
+      new MiscArchiveQueryReq(pattern, maxArchives);
 
-    Object obj = performTransaction(MasterRequest.ArchivalQuery, req);
-    if(obj instanceof MiscArchivalQueryRsp) {
-      MiscArchivalQueryRsp rsp = (MiscArchivalQueryRsp) obj;
+    Object obj = performTransaction(MasterRequest.ArchiveQuery, req);
+    if(obj instanceof MiscArchiveQueryRsp) {
+      MiscArchiveQueryRsp rsp = (MiscArchiveQueryRsp) obj;
       return rsp.getInfo();
     }
     else {
@@ -3089,6 +3077,9 @@ class MasterMgrClient
    * 
    * Only privileged users may create archives. <P> 
    * 
+   * @param prefix
+   *   A prefix to prepend to the created archive volume name.
+   * 
    * @param versions
    *   The fully resolved names and revision numbers of the checked-in versions to archive.
    * 
@@ -3104,6 +3095,7 @@ class MasterMgrClient
   public synchronized String
   archive
   (
+   String prefix, 
    TreeMap<String,TreeSet<VersionID>> versions, 
    BaseArchiver archiver
   ) 
@@ -3115,7 +3107,7 @@ class MasterMgrClient
 
     verifyConnection();
 
-    MiscArchiveReq req = new MiscArchiveReq(versions, archiver);
+    MiscArchiveReq req = new MiscArchiveReq(prefix, versions, archiver);
     Object obj = performTransaction(MasterRequest.Archive, req);
     if(obj instanceof MiscArchiveRsp) {
       MiscArchiveRsp rsp = (MiscArchiveRsp) obj;
@@ -3126,6 +3118,63 @@ class MasterMgrClient
       return null;
     }
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get offline related information about the checked-in versions which match the 
+   * given criteria. <P> 
+   * 
+   * @param pattern
+   *   A regular expression {@link Pattern pattern} used to match the fully resolved 
+   *   names of nodes or <CODE>null</CODE> for all nodes.
+   * 
+   * @param excludeLatest
+   *   The number of latest checked-in versions of the node to exclude from the returned list
+   *   or <CODE>null</CODE> to include all versions.
+   * 
+   * @param maxWorking
+   *   The maximum allowable number of existing working versions based on the checked-in 
+   *   version in order for checked-in version to be inclued in the returned list or 
+   *   <CODE>null</CODE> for any number of working versions.
+   * 
+   * @param minArchives
+   *   The minimum number of archive volumes containing the checked-in version in order for 
+   *   it to be inclued in the returned list or <CODE>null</CODE> for any number of archives.
+   * 
+   * @return 
+   *   Information about the offline state of each matching checked-in version. 
+   * 
+   * @throws PipelineException 
+   *   If unable to determine which checked-in versions match the criteria.
+   */ 
+  public synchronized ArrayList<OfflineInfo>
+  offlineQuery
+  (
+   String pattern,
+   Integer excludeLatest, 
+   Integer maxWorking, 
+   Integer minArchives
+  )
+    throws PipelineException
+  {
+    verifyConnection();
+
+    MiscOfflineQueryReq req = 
+      new MiscOfflineQueryReq(pattern, excludeLatest, maxWorking, minArchives);
+
+    Object obj = performTransaction(MasterRequest.OfflineQuery, req);
+    if(obj instanceof MiscOfflineQueryRsp) {
+      MiscOfflineQueryRsp rsp = (MiscOfflineQueryRsp) obj;
+      return rsp.getInfo();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  } 
+  
 
   /**
    * Calculate the total size (in bytes) of the files associated with the given 
@@ -3267,7 +3316,7 @@ class MasterMgrClient
    * @throws PipelineException
    *   If unable to find the archive.
    */ 
-  public synchronized Archive
+  public synchronized ArchiveVolume
   getArchive
   (
    String name

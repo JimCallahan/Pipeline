@@ -184,6 +184,19 @@ ScriptOptsParser
   private boolean  pShutdownJobMgrs;
   private boolean  pShutdownPluginMgr;
 
+  private String     pArchivePattern; 
+  private Integer    pMaxArchives; 
+  private Long       pMinSize; 
+  private String     pArchiverName;
+  private VersionID  pArchiverVersionID;
+  private boolean    pAutoStart; 
+
+  private Integer    pExcludeLatest; 
+  private Integer    pMaxWorking; 
+  private Integer    pMinArchives; 
+  
+  private TreeMap    pCheckedInVersions; 
+
   /**
    * job-server command option temporaries
    */ 
@@ -295,7 +308,7 @@ TOKEN :
 		   
   /* commands */ 
 | <PRIVILEGED:        "privileged">       : PRIVILEGED_OPTS 
-| <ADMIN:             "admin">            : OPTIONS
+| <ADMIN:             "admin">            : ADMIN_OPTS
 | <DEFAULT_TOOLSET:   "default-toolset">  : TOOLSET_OPTS 
 | <ACTIVE_TOOLSET:    "active-toolset">   : TOOLSET_OPTS 
 | <TOOLSET1:          "toolset">          : TOOLSET_OPTS 
@@ -326,78 +339,83 @@ TOKEN :
 TOKEN :
 {
   /* command options */ 
-  <MSG:             "--msg">             : STRING_SEP  
-| <TOTAL:           "--total">           : INTEGER_SEP  
-
-| <SHUTDOWN:           "--shutdown">       
+  <MSG:                "--msg">                 : STRING_SEP  
+| <TOTAL:              "--total">               : INTEGER_SEP  
 | <SHUTDOWN_JOBMGRS:   "--shutdown-jobmgrs">       
-| <SHUTDOWN_PLUGINMGR: "--shutdown-pluginmgr">       
-
-| <BACKUP:          "--backup">          : PATH_SEP
-| <DISABLE:         "--disable">       
-| <ENABLE:          "--enable">  
-| <RESERVE:         "--reserve">         : USER_NAME_SEP            
-| <OPEN:            "--open">  
-| <SLOTS:           "--slots">           : INTEGER_SEP  
-| <ORDER:           "--order">           : INTEGER_SEP  
-| <SELECTION_BIAS:  "--selection-bias">  : KEY_BIAS_SEP  
-| <REMOVE_KEY:      "--remove-key">      : KEY_NAME_SEP   
-| <EDITOR2:         "--editor">          : EDITOR_NAME_SEP 
-| <VERSION2:        "--version">         : REVISION_NUMBER_SEP
-| <LATEST:          "--latest"> 		    
-| <AUTHOR:          "--author">          : USER_NAME_SEP 
-| <VIEW2:           "--view">            : VIEW_NAME_SEP 
-| <SHOW:            "--show">            : SECTION_SEP   
-| <HIDE:            "--hide">            : SECTION_SEP   
-| <TOOLSET2:        "--toolset">         : TOOLSET_NAME_SEP
-| <NO_ACTION:       "--no-action">       
-| <ACTION2:         "--action">          : ACTION_NAME_SEP
-| <ACTION_ENABLED:  "--action-enabled">  : BOOLEAN_SEP
-| <PARAM:           "--param">           : PARAM_SEP 
-| <NO_PARAM:        "--no-param">        : LINK_PARAM_SEP 
-| <SOURCE_PARAM:    "--source-param">    : SOURCE_PARAM_SEP 
-| <IGNORE:          "--ignore">           
-| <ABORT:           "--abort">           
-| <SERIAL:          "--serial">           
-| <PARALLEL:        "--parallel">           
-| <BATCH_SIZE:      "--batch-size">      : INTEGER_SEP
-| <PRIORITY:        "--priority">        : INTEGER_SEP
-| <RAMP_UP:         "--ramp-up">         : INTEGER_SEP
-| <MAX_LOAD:        "--max-load">        : REAL_SEP     
-| <MIN_MEMORY:      "--min-memory">      : BYTE_SIZE_SEP
-| <MIN_DISK:        "--min-disk">        : BYTE_SIZE_SEP
-| <LICENSE_KEY2:    "--license-key">     : KEY_TOGGLE_SEP
-| <SELECTION_KEY2:  "--selection-key">   : KEY_TOGGLE_SEP
-| <REF:             "--ref">             : LINK_PARAM_SEP
-| <DEPEND:          "--depend">          : LINK_PARAM_SEP
-| <SOURCE:          "--source">          : LINK_PARAM_SEP
-| <FSEQ:            "--fseq">            : FILE_SEQ_SEP
-| <NAME:            "--name">            : NODE_NAME_SEP  
-| <RENAME_FILES:    "--rename-files">   
-| <REMOVE_FILES:    "--remove-files">    
-| <RANGE:           "--range">           : FRAME_RANGE_SEP
-| <FRAME:           "--frame">           : FRAME_NUMBERS_SEP
-| <INDEX:           "--index">           : FRAME_INDICES_SEP
-| <WAIT:            "--wait">
-| <MAJOR:           "--major">
-| <MINOR:           "--minor">
-| <MICRO:           "--micro">
-| <OVERWRITE_ALL:   "--overwrite-all">
-| <KEEP_NEWER:      "--keep-newer">
-| <KEEP_MODIFIED:   "--keep-modified">
-| <MODIFIABLE:      "--modifiable">
-| <FROZEN_UPSTREAM: "--frozen-upstream">
-| <ALL_FROZEN:      "--all-frozen">
-| <BRIEF:           "--brief">
-| <UPSTREAM:        "--upstream">
-| <LINK_GRAPH:      "--link-graph">
+| <SHUTDOWN_PLUGINMGR: "--shutdown-pluginmgr">   
+| <PATTERN:            "--pattern">         	: STRING_SEP	      
+| <MAX_ARCHIVES:       "--max-archives">    	: INTEGER_SEP	      
+| <MIN_SIZE:           "--min-size">        	: BYTE_SIZE_SEP	      
+| <ARCHIVER2:          "--archiver">        	: ARCHIVER_NAME_SEP	      
+| <AUTO_START:         "--auto-start">	        
+| <EXCLUDE_LATEST:     "--exclude-latest">  	: INTEGER_SEP
+| <MAX_WORKING:        "--max-working">     	: INTEGER_SEP
+| <MIN_ARCHIVES:       "--min-archives">    	: INTEGER_SEP
+| <CHECKED_IN_VSN:     "--vsn">                 : VSN_NAME_SEP
+| <DISABLE:            "--disable">         				      
+| <ENABLE:             "--enable">  	    				      
+| <RESERVE:            "--reserve">         	: USER_NAME_SEP           
+| <OPEN:               "--open">  	    				      
+| <SLOTS:              "--slots">           	: INTEGER_SEP  	      
+| <ORDER:              "--order">           	: INTEGER_SEP  	      
+| <SELECTION_BIAS:     "--selection-bias">  	: KEY_BIAS_SEP  	      
+| <REMOVE_KEY:         "--remove-key">      	: KEY_NAME_SEP   	      
+| <EDITOR2:            "--editor">          	: EDITOR_NAME_SEP 	      
+| <VERSION2:           "--version">         	: REVISION_NUMBER_SEP     
+| <LATEST:             "--latest"> 	    		    		      
+| <AUTHOR:             "--author">          	: USER_NAME_SEP 	      
+| <VIEW2:              "--view">            	: VIEW_NAME_SEP 	      
+| <SHOW:               "--show">            	: SECTION_SEP   	      
+| <HIDE:               "--hide">            	: SECTION_SEP   	      
+| <TOOLSET2:           "--toolset">         	: TOOLSET_NAME_SEP	      
+| <NO_ACTION:          "--no-action">       				      
+| <ACTION2:            "--action">          	: ACTION_NAME_SEP	      
+| <ACTION_ENABLED:     "--action-enabled">  	: BOOLEAN_SEP	      
+| <PARAM:              "--param">           	: PARAM_SEP 	      
+| <NO_PARAM:           "--no-param">        	: LINK_PARAM_SEP 	      
+| <SOURCE_PARAM:       "--source-param">    	: SOURCE_PARAM_SEP 	      
+| <IGNORE:             "--ignore">          	 			      
+| <ABORT:              "--abort">           				      
+| <SERIAL:             "--serial">          	 			      
+| <PARALLEL:           "--parallel">        	   			      
+| <BATCH_SIZE:         "--batch-size">      	: INTEGER_SEP	      
+| <PRIORITY:           "--priority">        	: INTEGER_SEP	      
+| <RAMP_UP:            "--ramp-up">         	: INTEGER_SEP	      
+| <MAX_LOAD:           "--max-load">        	: REAL_SEP     	      
+| <MIN_MEMORY:         "--min-memory">      	: BYTE_SIZE_SEP	      
+| <MIN_DISK:           "--min-disk">        	: BYTE_SIZE_SEP	      
+| <LICENSE_KEY2:       "--license-key">     	: KEY_TOGGLE_SEP	      
+| <SELECTION_KEY2:     "--selection-key">   	: KEY_TOGGLE_SEP	      
+| <REF:                "--ref">             	: LINK_PARAM_SEP	      
+| <DEPEND:             "--depend">          	: LINK_PARAM_SEP	      
+| <SOURCE:             "--source">          	: LINK_PARAM_SEP	      
+| <FSEQ:               "--fseq">            	: FILE_SEQ_SEP	      
+| <NAME:               "--name">            	: NODE_NAME_SEP  	      
+| <RENAME_FILES:       "--rename-files">    				      
+| <REMOVE_FILES:       "--remove-files">    				      
+| <RANGE:              "--range">           	: FRAME_RANGE_SEP	      
+| <FRAME:              "--frame">           	: FRAME_NUMBERS_SEP	      
+| <INDEX:              "--index">           	: FRAME_INDICES_SEP	      
+| <WAIT:               "--wait">					
+| <MAJOR:              "--major">					
+| <MINOR:              "--minor">					
+| <MICRO:              "--micro">					
+| <OVERWRITE_ALL:      "--overwrite-all">				
+| <KEEP_NEWER:         "--keep-newer">				
+| <KEEP_MODIFIED:      "--keep-modified">				
+| <MODIFIABLE:         "--modifiable">				
+| <FROZEN_UPSTREAM:    "--frozen-upstream">			
+| <ALL_FROZEN:         "--all-frozen">				
+| <BRIEF:              "--brief">					
+| <UPSTREAM:           "--upstream">				
+| <LINK_GRAPH:         "--link-graph">                             
 
   /* argument end separator */ 
-| <AE2: ("\0")+>
+| <AE2:               (["\0"])+>   
 
   /* errors */ 
-| <UNKNOWN_OPTION2:  "-" ("-")? (~["\0","="])*>  : IGNORE_STATE
-| <UNKNOWN_COMMAND2: ~["-","\0"] (~["\0"])*>     : IGNORE_STATE
+| <UNKNOWN_OPTION2:   "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN_COMMAND2:  ~["-","\0"] (~["\0"])*>    : IGNORE_STATE   
 }
 
 
@@ -457,6 +475,7 @@ TOKEN :
 | <MISSING_INTEGER2: ["\0"]>          : IGNORE_STATE
 | <ILLEGAL_INTEGER2: (~["\0"])+>      : IGNORE_STATE
 }
+
 
 
 /* port number arguments */ 
@@ -824,6 +843,45 @@ TOKEN :
 }
 
 
+/* archive prefix arguments */ 
+<ARCHIVE_PREFIX_SEP> 
+TOKEN :
+{
+  <EQ38:                         "=">   : ARCHIVE_PREFIX_STATE
+| <MISSING_ARCHIVE_PREFIX_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<ARCHIVE_PREFIX_STATE> 
+TOKEN :
+{
+  <ARCHIVE_PREFIX:          (["a"-"z","A"-"Z"]) 
+	                      (["a"-"z","A"-"Z","0"-"9","_","-"])+>   
+| <COLON11:                 ":">                                     : REVISION_NUMBER_STATE 
+| <AE46:                    ["\0"]>                                  : OPTIONS
+| <ILLEGAL_ARCHIVE_PREFIX:  (~[":","\0"])+>                          : IGNORE_STATE
+}
+
+
+/* checked-in version arguments */  
+<VSN_NAME_SEP> 
+TOKEN :
+{
+  <EQ37:              "=">     : VSN_NAME_STATE
+| <MISSING_VSN_ARG: ~["="]>    : IGNORE_STATE
+}
+
+<VSN_NAME_STATE> 
+TOKEN :
+{
+  <VSN_NAME:      ("/" (["a"-"z","A"-"Z","0"-"9","-","_"])+)* 
+		    ("/" ["a"-"z","A"-"Z"] 
+		     (["a"-"z","A"-"Z","0"-"9","_","-"])*)+>  
+| <COLON10:       ":">                                        : REVISION_NUMBER_STATE
+| <AE44:          ["\0"]>                                     : OPTIONS
+| <ILLEGAL_VSN:   (~[":","\0"])+>                             : IGNORE_STATE
+}
+
+
 /* revision number arguments */ 
 <REVISION_NUMBER_SEP> 
 TOKEN :
@@ -1146,6 +1204,22 @@ TOKEN :
 }
 
 
+/* admin command options */ 
+<ADMIN_OPTS>
+TOKEN :
+{
+  <SHUTDOWN:  "--shutdown">  : OPTIONS    
+| <BACKUP:    "--backup">    : PATH_SEP
+| <ARCHIVE:   "--archive">   : ARCHIVE_PREFIX_SEP
+| <OFFLINE:   "--offline">   : OPTIONS
+| <RESTORE:   "--restore">   : ARCHIVE_PREFIX_SEP
+
+| <AE45:               ["\0"]>   
+| <UNKNOWN_OPTION19:   "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN19:          ~["-","\0"] (~["\0"])*>    : IGNORE_STATE   
+}
+
+
 /* toolset command options */ 
 <TOOLSET_OPTS> 
 TOKEN :
@@ -1362,6 +1436,7 @@ TOKEN :
 | <UNKNOWN_OPTION18:   "-" ("-")? (~["\0","="])*> : IGNORE_STATE
 | <UNKNOWN18:          ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
 }
+
 
 
 
@@ -1972,7 +2047,8 @@ AdminCmds()
   throws PipelineException : 
 {}
 {
-  <ADMIN> AE() (AdminShutdown() | AdminBackup())
+  <ADMIN> AE() (AdminShutdown() | AdminBackup() | 
+		AdminArchive() | AdminOffline() | AdminRestore())
   {}
 }
 
@@ -2026,6 +2102,9 @@ ShutdownPluginMgr() :
   }
 }
 
+
+/*------------------------------------------------------------------------------------------*/
+
 void 
 AdminBackup() 
   throws PipelineException : 
@@ -2048,6 +2127,260 @@ AdminBackup()
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        "Database Saved: " + file);
     LogMgr.getInstance().flush();
+  }
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
+AdminArchive() 
+  throws PipelineException : 
+{
+  Token t;
+
+  pArchivePattern    = null;
+  pMaxArchives       = 2;
+  pMinSize           = 1073741824L;
+  pArchiverName      = null; 
+  pArchiverVersionID = null; 
+  pParams            = new TreeMap();
+  pAutoStart         = false;
+}
+{
+  <ARCHIVE> EQ() t=<ARCHIVE_PREFIX> AE() (AdminArchiveOpts())*
+  {
+    String prefix = t.image;
+
+    if(pArchiverName == null) 
+      throw new PipelineException
+        ("The --archiver option is required!");
+    
+    if(pMaxArchives < 1) 
+      throw new PipelineException
+        ("The --max-archives must be at least (1)!"); 
+    
+    if(pMinSize < 0L) 
+      throw new PipelineException
+        ("The --min-size cannot be negative!"); 
+    
+    pApp.archive(prefix, pArchivePattern, pMaxArchives, pMinSize, 
+		 pArchiverName, pArchiverVersionID, pParams, pAutoStart, 
+		 pMasterMgrClient);
+  }
+}
+
+void
+AdminArchiveOpts() 
+  throws PipelineException : 
+{}
+{
+  (Pattern() | MaxArchives() | MinSize() | Archiver() | Param() | AutoStart()) 
+  {}
+}
+
+void 
+Pattern() : 
+{
+  String p;
+}
+{
+  <PATTERN> EQ() p=StringLiteral() AE()
+  {
+    if((p != null) && (p.length() > 0))
+      pArchivePattern = p;
+  }
+}
+
+void 
+MaxArchives()
+  throws PipelineException : 
+{
+  int i; 
+}
+{
+  <MAX_ARCHIVES> EQ() i=IntegerLiteral() AE()
+  {
+    pMaxArchives = i;
+  }
+}
+
+void 
+MinSize()
+  throws PipelineException : 
+{
+  long size;
+}
+{
+  <MIN_SIZE> EQ() size=ByteSize() AE()
+  {
+    pMinSize = size;
+  }
+}
+
+void
+Archiver()
+  throws PipelineException : 
+{
+  String aname  = null;
+  VersionID vid = null;
+}
+{
+  <ARCHIVER2> EQ() aname=ArchiverName() (COLON() vid=RevisionNumber())? AE()
+  {
+    pArchiverName      = aname; 
+    pArchiverVersionID = vid; 
+  }
+}
+
+void 
+AutoStart() : 
+{}
+{
+  <AUTO_START> AE()
+  {
+    pAutoStart = true;
+  }
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
+AdminOffline() 
+  throws PipelineException : 
+{
+  pArchivePattern    = null;
+  pExcludeLatest     = 10; 
+  pMaxWorking        = 0;
+  pMinArchives       = 2; 
+}
+{
+  <OFFLINE> AE() (AdminOfflineOpts())*
+  {
+    if(pExcludeLatest < 0) 
+      throw new PipelineException
+        ("The --exclude-latest cannot be negative!");
+
+    if(pMaxWorking < 0) 
+      throw new PipelineException
+        ("The --max-working cannot be negative!");
+
+    if(pMinArchives < 0) 
+      throw new PipelineException
+        ("The --min-archives cannot be negative!");
+
+    pApp.offline(pArchivePattern, pExcludeLatest, pMaxWorking, pMinArchives, 
+		 pMasterMgrClient);
+  }
+}
+
+void
+AdminOfflineOpts() 
+  throws PipelineException : 
+{}
+{
+  (Pattern() | ExcludeLatest() | MaxWorking() | MinArchives()) 
+  {}
+}
+
+void 
+ExcludeLatest()
+  throws PipelineException : 
+{
+  int i; 
+}
+{
+  <EXCLUDE_LATEST> EQ() i=IntegerLiteral() AE()
+  {
+    pExcludeLatest = i;
+  }
+}
+
+void 
+MaxWorking()
+  throws PipelineException : 
+{
+  int i; 
+}
+{
+  <MAX_WORKING> EQ() i=IntegerLiteral() AE()
+  {
+    pMaxWorking = i;
+  }
+}
+
+void 
+MinArchives()
+  throws PipelineException : 
+{
+  int i; 
+}
+{
+  <MIN_ARCHIVES> EQ() i=IntegerLiteral() AE()
+  {
+    pMinArchives = i;
+  }
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
+AdminRestore() 
+  throws PipelineException : 
+{
+  Token t;
+
+  pParams            = new TreeMap();
+  pCheckedInVersions = new TreeMap(); 
+}
+{
+  <RESTORE> EQ() t=<ARCHIVE_PREFIX> AE() (AdminRestoreOpts())*
+  {
+    String prefix = t.image;
+    pApp.restore(prefix, pParams, pCheckedInVersions, 
+		 pMasterMgrClient);
+  }
+}
+
+void
+AdminRestoreOpts() 
+  throws PipelineException : 
+{}
+{
+  (Param() | CheckedInVersion()) 
+  {}
+}
+
+void
+CheckedInVersion() 
+  throws PipelineException : 
+{
+  String vname; 
+  VersionID vid; 
+}
+{
+  <CHECKED_IN_VSN> EQ() vname=VersionName() COLON() vid=RevisionNumber() AE()
+  {
+    TreeSet versions = (TreeSet) pCheckedInVersions.get(vname);
+    if(versions == null) {
+      versions = new TreeSet();
+      pCheckedInVersions.put(vname, versions);
+    }
+    versions.add(vid);
+  }
+}
+
+String
+VersionName() : 
+{
+  Token t; 
+}
+{
+  t=<VSN_NAME> 
+  {
+    return t.image;
   }
 }
 
@@ -5627,6 +5960,24 @@ IntegerLiteral()
   }
 }
 
+long
+LongLiteral()
+  throws PipelineException :
+{
+  Token t;
+}
+{
+  t=<INTEGER> 
+  { 
+    try {
+      return Long.parseLong(t.image);
+    }
+    catch(NumberFormatException ex) {
+      throw new PipelineException(ex.getMessage());
+    }
+  }
+}
+
 int
 FrameNumber()
   throws PipelineException :
@@ -5800,7 +6151,8 @@ AE() :
    t=<AE26> | t=<AE27> | t=<AE28> | t=<AE29> | t=<AE30> |
    t=<AE31> | t=<AE32> | t=<AE33> | t=<AE34> | t=<AE35> |
    t=<AE36> | t=<AE37> | t=<AE38> | t=<AE39> | t=<AE40> | 
-   t=<AE41> | t=<AE42> | t=<AE43>)
+   t=<AE41> | t=<AE42> | t=<AE43> | t=<AE44> | t=<AE45> | 
+   t=<AE46>)
   { 
     return t; 
   }
@@ -5836,8 +6188,9 @@ COLON() :
   Token t;
 }
 {
-  (t=<COLON1> | t=<COLON2> | t=<COLON3> | t=<COLON4> | t=<COLON5> | 
-   t=<COLON6> | t=<COLON7> | t=<COLON8> | t=<COLON9>)
+  (t=<COLON1>  | t=<COLON2>  | t=<COLON3>  | t=<COLON4>  | t=<COLON5>  | 
+   t=<COLON6>  | t=<COLON7>  | t=<COLON8>  | t=<COLON9>  | t=<COLON10> |
+   t=<COLON11>)
   { 
     return t; 
   }
@@ -5869,7 +6222,7 @@ EQ() :
    t=<EQ21> | t=<EQ22> | t=<EQ23> | t=<EQ24> | t=<EQ25> |
    t=<EQ26> | t=<EQ27> | t=<EQ28> | t=<EQ29> | t=<EQ30> | 
    t=<EQ31> | t=<EQ32> | t=<EQ33> | t=<EQ34> | t=<EQ35> | 
-   t=<EQ36>)
+   t=<EQ36> | t=<EQ37> | t=<EQ38>)
   { 
     return t; 
   }

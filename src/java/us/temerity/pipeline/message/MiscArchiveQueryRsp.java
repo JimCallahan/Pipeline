@@ -1,4 +1,4 @@
-// $Id: MiscArchivalQueryRsp.java,v 1.3 2005/01/22 06:10:09 jim Exp $
+// $Id: MiscArchiveQueryRsp.java,v 1.1 2005/03/10 08:07:27 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -10,15 +10,14 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   M I S C   A R C H I V A L   Q U E R Y   R S P                                          */
+/*   M I S C   A R C H I V E   Q U E R Y   R S P                                            */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A successful response to a {@link MiscArchivalQueryReq MiscArchivalQueryReq} 
- * request.
+ * A successful response to a {@link MiscArchiveQueryReq MiscArchiveQueryReq} request.
  */
 public
-class MiscArchivalQueryRsp
+class MiscArchiveQueryRsp
   extends TimedRsp
 {
   /*----------------------------------------------------------------------------------------*/
@@ -32,25 +31,24 @@ class MiscArchivalQueryRsp
    *   The timing statistics for a task.
    * 
    * @param info
-   *   Archival information for each matching checked-in version indexed by fully resolved 
-   *   node name and revision number.
+   *   Information about the archival state of each matching checked-in version. 
    */ 
   public
-  MiscArchivalQueryRsp
+  MiscArchiveQueryRsp
   (
    TaskTimer timer, 
-   TreeMap<String,TreeMap<VersionID,ArchivalInfo>> info
+   ArrayList<ArchiveInfo> info
   )
   { 
     super(timer);
 
     if(info == null) 
-      throw new IllegalArgumentException("The archival information cannot be (null)!");
+      throw new IllegalArgumentException("The information cannot be (null)!");
     pInfo = info;
 
     LogMgr.getInstance().log
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
-       "MasterMgr.archivalQuery()\n  " + getTimer());
+       "MasterMgr.archiveQuery()\n  " + getTimer());
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
       LogMgr.getInstance().flush();
   }
@@ -62,9 +60,9 @@ class MiscArchivalQueryRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the archival info.
+   * Gets the information about the archival state of each matching checked-in version. 
    */
-  public TreeMap<String,TreeMap<VersionID,ArchivalInfo>> 
+  public ArrayList<ArchiveInfo>
   getInfo()
   {
     return pInfo;
@@ -76,7 +74,7 @@ class MiscArchivalQueryRsp
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -8111998008065857229L;
+  private static final long serialVersionUID = 6545767021166195285L;
 
   
 
@@ -85,9 +83,9 @@ class MiscArchivalQueryRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The archival info.
+   * The information about the archival state of each matching checked-in version. 
    */ 
-  private TreeMap<String,TreeMap<VersionID,ArchivalInfo>>  pInfo;
+  private ArrayList<ArchiveInfo>  pInfo; 
 
 }
   

@@ -1,4 +1,4 @@
-// $Id: MiscGetArchiveRsp.java,v 1.4 2005/03/10 08:07:27 jim Exp $
+// $Id: MiscOfflineQueryRsp.java,v 1.1 2005/03/10 08:07:27 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -10,14 +10,14 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   M I S C   G E T   A R C H I V E   R S P                                                */
+/*   M I S C   A R C H I V E   Q U E R Y   R S P                                            */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A successful response to a {@link MiscGetArchiveReq MiscGetArchiveReq} request.
+ * A successful response to a {@link MiscOfflineQueryReq MiscOfflineQueryReq} request.
  */
 public
-class MiscGetArchiveRsp
+class MiscOfflineQueryRsp
   extends TimedRsp
 {
   /*----------------------------------------------------------------------------------------*/
@@ -30,25 +30,25 @@ class MiscGetArchiveRsp
    * @param timer 
    *   The timing statistics for a task.
    * 
-   * @param archive
-   *   The archive.
+   * @param info
+   *   Information about the offline state of each matching checked-in version. 
    */ 
   public
-  MiscGetArchiveRsp
+  MiscOfflineQueryRsp
   (
    TaskTimer timer, 
-   ArchiveVolume archive
+   ArrayList<OfflineInfo> info
   )
   { 
     super(timer);
 
-    if(archive == null) 
-      throw new IllegalArgumentException("The archive cannot be (null)!");
-    pArchive = archive;
+    if(info == null) 
+      throw new IllegalArgumentException("The information cannot be (null)!");
+    pInfo = info;
 
     LogMgr.getInstance().log
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
-       "MasterMgr.getArchive(): " + pArchive.getName() + "\n  " + getTimer());
+       "MasterMgr.offlineQuery()\n  " + getTimer());
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
       LogMgr.getInstance().flush();
   }
@@ -60,12 +60,12 @@ class MiscGetArchiveRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the archive.
+   * Gets the information about the offline state of each matching checked-in version. 
    */
-  public ArchiveVolume
-  getArchive() 
+  public ArrayList<OfflineInfo>
+  getInfo()
   {
-    return pArchive;
+    return pInfo;
   }
   
 
@@ -74,7 +74,7 @@ class MiscGetArchiveRsp
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 2560564056383317219L;
+  private static final long serialVersionUID = 6170755369251855096L;
 
   
 
@@ -83,9 +83,9 @@ class MiscGetArchiveRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The archive information.
+   * The information about the offline state of each matching checked-in version. 
    */ 
-  private ArchiveVolume  pArchive;
+  private ArrayList<OfflineInfo>  pInfo; 
 
 }
   

@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.27 2005/01/22 06:10:09 jim Exp $
+// $Id: BaseAction.java,v 1.28 2005/03/10 08:07:27 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -37,6 +37,10 @@ class BaseAction
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * This constructor is only used during GLUE decoding and should not be 
+   * used in user plugin code.
+   */ 
   public 
   BaseAction() 
   {

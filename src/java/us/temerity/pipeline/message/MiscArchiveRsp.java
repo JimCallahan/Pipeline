@@ -1,4 +1,4 @@
-// $Id: MiscArchiveRsp.java,v 1.1 2005/02/07 14:52:01 jim Exp $
+// $Id: MiscArchiveRsp.java,v 1.2 2005/03/10 08:07:27 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -49,7 +49,7 @@ class MiscArchiveRsp
 
     LogMgr.getInstance().log
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
-       "MasterMgr.archive()\n  " + getTimer());
+       "MasterMgr.archive(): " + name + "\n  " + getTimer());
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
       LogMgr.getInstance().flush();
   }

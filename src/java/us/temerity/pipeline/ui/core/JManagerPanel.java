@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.11 2005/02/19 01:06:02 jim Exp $
+// $Id: JManagerPanel.java,v 1.12 2005/03/10 08:07:27 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -380,6 +380,12 @@ class JManagerPanel
 	item = new JMenuItem("Archive...");
 	pArchiveItem = item;
 	item.setActionCommand("archive");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	item = new JMenuItem("Offline...");
+	pOfflineItem = item;
+	item.setActionCommand("offline");
 	item.addActionListener(this);
 	sub.add(item);  
 
@@ -1036,10 +1042,13 @@ class JManagerPanel
        "Backup the node database.");
     updateMenuToolTip
       (pArchiveItem, null, 
-       "Create a new node archive.");
+       "Create new node archive volumes.");
+    updateMenuToolTip
+      (pOfflineItem, null, 
+       "Delete files associated with previously archived nodes.");
     updateMenuToolTip
       (pRestoreItem, null, 
-       "Restore nodes from a previously created archive.");
+       "Restore nodes from previously created archive volumes.");
     updateMenuToolTip
       (pShutdownServerItem, null, 
        "Shutdown the Pipeline server daemons.");
@@ -1860,6 +1869,8 @@ class JManagerPanel
       UIMaster.getInstance().showBackupDialog();
     else if(cmd.equals("archive"))
       UIMaster.getInstance().showArchiveDialog();
+    else if(cmd.equals("offline"))
+      UIMaster.getInstance().showOfflineDialog();
     else if(cmd.equals("restore"))
       UIMaster.getInstance().showRestoreDialog();
     else if(cmd.equals("shutdown"))
@@ -2824,6 +2835,7 @@ class JManagerPanel
 	  boolean isPrivileged = master.getMasterMgrClient().isPrivileged(true);
 	  pBackupDatabaseItem.setEnabled(isPrivileged);
 	  pArchiveItem.setEnabled(isPrivileged);
+	  pOfflineItem.setEnabled(isPrivileged);
 	  pRestoreItem.setEnabled(isPrivileged);
 	  pShutdownServerItem.setEnabled(isPrivileged);
 	}
@@ -3245,6 +3257,7 @@ class JManagerPanel
 
   private JMenuItem  pBackupDatabaseItem;
   private JMenuItem  pArchiveItem;
+  private JMenuItem  pOfflineItem;
   private JMenuItem  pRestoreItem;
   private JMenuItem  pShutdownServerItem;
 

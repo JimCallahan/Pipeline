@@ -1,4 +1,4 @@
-// $Id: JArchiverParamsDialog.java,v 1.1 2005/02/07 14:52:15 jim Exp $
+// $Id: JArchiverParamsDialog.java,v 1.2 2005/03/10 08:07:27 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -58,6 +58,28 @@ class JArchiverParamsDialog
 	JPanel vpanel = (JPanel) comps[1];
 	  
 	{
+	  JIdentifierField field = 
+	    UIFactory.createTitledIdentifierField
+	    (tpanel, "Volume Prefix:", sTSize, 
+	     vpanel, "Archive", sVSize, 
+	     "The prefix to prepend to the names of created archive volumes.");
+	  pPrefixField = field;
+	}
+	  
+	UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+	
+	{
+	  JByteSizeField field = 
+	    UIFactory.createTitledByteSizeField
+	    (tpanel, "Minimum Size:", sTSize, 
+	     vpanel, 1073741824L, sVSize, 
+	     "The mimimum archive volume size (in bytes).");
+	  pMinSizeField = field;
+	}
+
+	UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
+
+	{
 	  ArrayList<String> values = new ArrayList<String>();
 	  values.add("-");
 	    
@@ -99,7 +121,7 @@ class JArchiverParamsDialog
 	
 	UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 
-	JDrawer drawer = new JDrawer("Archiver Parameters:", (JComponent) comps[2], false);
+	JDrawer drawer = new JDrawer("Archiver Parameters:", (JComponent) comps[2], true);
 	drawer.setToolTipText(UIFactory.formatToolTip("Archiver plugin parameters."));
 	pArchiverParamsDrawer = drawer;
 	body.add(drawer);
@@ -142,6 +164,24 @@ class JArchiverParamsDialog
   /*----------------------------------------------------------------------------------------*/
   
   /**
+   * Get the prefix to prepend to the names of created archive volumes.
+   */ 
+  public String
+  getPrefix()
+  {
+    return pPrefixField.getText();
+  }
+
+  /**
+   * The The mimimum archive volume size (in bytes).
+   */ 
+  public Long
+  getMinSize() 
+  {
+    return pMinSizeField.getValue();
+  }
+
+  /**
    * Get the archiver plugin instance to use to archive the nodes.
    */
   public BaseArchiver
@@ -161,7 +201,7 @@ class JArchiverParamsDialog
 	}
 	else if(aparam instanceof DirectoryArchiverParam) {
 	  JPathField field = (JPathField) comp;
-	  value = new File(field.getText());
+	  value = field.getText();
 	}
 	else if(aparam instanceof DoubleArchiverParam) {
 	  JDoubleField field = (JDoubleField) comp;
@@ -274,11 +314,11 @@ class JArchiverParamsDialog
 	      pArchiverParamComponents.put(pname, field);
 	    }
 	    else if(aparam instanceof DirectoryArchiverParam) {
-	      File value = (File) aparam.getValue();
+	      String value = (String) aparam.getValue();
 	      JPathField field = 
 		UIFactory.createTitledPathField
 		(tpanel, aparam.getNameUI() + ":", sTSize, 
-		 vpanel, value.toString(), sVSize, 
+		 vpanel, value, sVSize, 
 		 aparam.getDescription());
 
 	      // add file browser dialog button here...
@@ -487,6 +527,16 @@ class JArchiverParamsDialog
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The prefix to prepend to the names of created archive volumes.
+   */ 
+  private JIdentifierField  pPrefixField; 
+
+  /**
+   * The The mimimum archive volume size (in bytes).
+   */ 
+  private JByteSizeField  pMinSizeField; 
 
   /**
    * The name of the archiver plugin. 

@@ -1,4 +1,4 @@
-// $Id: NodeVersionTableModel.java,v 1.2 2005/03/04 09:20:30 jim Exp $
+// $Id: NodeVersionTableModel.java,v 1.3 2005/03/10 08:07:27 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -30,7 +30,10 @@ class NodeVersionTableModel
    * Construct a table model.
    */
   public 
-  NodeVersionTableModel() 
+  NodeVersionTableModel
+  (
+   int width
+  ) 
   {
     super();
 
@@ -62,7 +65,7 @@ class NodeVersionTableModel
       }
 
       {
-	int widths[] = { 416, 80, 80 };
+	int widths[] = { width-160, 80, 80 };
 	pColumnWidths = widths;
       }
 

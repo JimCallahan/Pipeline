@@ -1,23 +1,22 @@
-// $Id: MiscGetArchiveRsp.java,v 1.4 2005/03/10 08:07:27 jim Exp $
+// $Id: FileArchiveRsp.java,v 1.1 2005/03/10 08:07:27 jim Exp $
 
 package us.temerity.pipeline.message;
 
 import us.temerity.pipeline.*; 
 import us.temerity.pipeline.core.*; 
-import us.temerity.pipeline.toolset.*; 
 
 import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   M I S C   G E T   A R C H I V E   R S P                                                */
+/*   F I L E   S T A T E   R S P                                                            */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A successful response to a {@link MiscGetArchiveReq MiscGetArchiveReq} request.
+ * A successful response to a {@link FileArchiveReq FileArchiveReq} request.
  */
 public
-class MiscGetArchiveRsp
+class FileArchiveRsp
   extends TimedRsp
 {
   /*----------------------------------------------------------------------------------------*/
@@ -25,30 +24,32 @@ class MiscGetArchiveRsp
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Constructs a new response.
+   * Constructs a new response. <P> 
    * 
    * @param timer 
    *   The timing statistics for a task.
    * 
-   * @param archive
-   *   The archive.
-   */ 
+   * @param name
+   *   The name of the create archive.
+   * 
+   * @param output
+   *   The STDOUT output of the archiver process or <CODE>null</CODE> if none exists.
+   */
   public
-  MiscGetArchiveRsp
+  FileArchiveRsp
   (
    TaskTimer timer, 
-   ArchiveVolume archive
+   String name, 
+   String output
   )
   { 
     super(timer);
 
-    if(archive == null) 
-      throw new IllegalArgumentException("The archive cannot be (null)!");
-    pArchive = archive;
+    pOutput = output;
 
     LogMgr.getInstance().log
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
-       "MasterMgr.getArchive(): " + pArchive.getName() + "\n  " + getTimer());
+       "FileMgr.archive(): " + name + "\n  " + getTimer());
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
       LogMgr.getInstance().flush();
   }
@@ -60,21 +61,21 @@ class MiscGetArchiveRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the archive.
+   * Get the STDOUT output of the archiver process or <CODE>null</CODE> if none exists.
    */
-  public ArchiveVolume
-  getArchive() 
+  public String
+  getOutput() 
   {
-    return pArchive;
+    return pOutput; 
   }
   
 
-
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 2560564056383317219L;
+  private static final long serialVersionUID = 7262758143788564436L;
 
   
 
@@ -83,9 +84,9 @@ class MiscGetArchiveRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The archive information.
+   * The STDOUT output of the archiver process or <CODE>null</CODE> if none exists.
    */ 
-  private ArchiveVolume  pArchive;
+  private String   pOutput; 
 
 }
   

@@ -1,4 +1,4 @@
-// $Id: JArchivalQueryDialog.java,v 1.3 2005/02/22 06:07:02 jim Exp $
+// $Id: JOfflineQueryDialog.java,v 1.1 2005/03/10 08:07:27 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -14,14 +14,14 @@ import javax.swing.event.*;
 import javax.swing.tree.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   A R C H I C A L   Q U E R Y   D I A L O G                                              */
+/*   O F F L I N E   Q U E R Y   D I A L O G                                                */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The dialog for setting the archival query parameters.
+ * The dialog for setting the offline query parameters.
  */ 
 public 
-class JArchivalQueryDialog
+class JOfflineQueryDialog
   extends JBaseDialog
 {
   /*----------------------------------------------------------------------------------------*/
@@ -35,7 +35,7 @@ class JArchivalQueryDialog
    *   The parent dialog.
    */ 
   public 
-  JArchivalQueryDialog
+  JOfflineQueryDialog
   (
    Dialog owner
   ) 
@@ -75,11 +75,11 @@ class JArchivalQueryDialog
 	
 	UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 
-	pMaxArchivesField = 
+	pMinArchivesField = 
 	  UIFactory.createTitledIntegerField
-	  (tpanel, "Max Archives:", sTSize, 
+	  (tpanel, "Min Archives:", sTSize, 
 	   vpanel, 2, sVSize, 
-	   "Exclude checked-in versions which have been archived more than this number " + 
+	   "Exclude checked-in versions which have not been archived at least this number " + 
 	   "of times.");
       }
 
@@ -88,6 +88,7 @@ class JArchivalQueryDialog
       pack();
     }  
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -129,25 +130,26 @@ class JArchivalQueryDialog
   }
 
   /** 
-   * Get the maximum allowable number of archives which already contain the checked-in 
-   * version in order for it to be inclued in the returned list or <CODE>null</CODE> for 
-   * any number of archives.
+   * Get the minimum number of archive volumes containing the checked-in version in order for 
+   * it to be inclued in the returned list or <CODE>null</CODE> for any number of archives.
    */ 
   public Integer
-  getMaxArchives() 
+  getMinArchives() 
   {
-    return pMaxArchivesField.getValue();
+    return pMinArchivesField.getValue();
   }
   
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -8913768893916841700L;
-  
+  private static final long serialVersionUID = -5905925038891039759L;
+
   private static final int sTSize = 150;
   private static final int sVSize = 250;
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -160,6 +162,6 @@ class JArchivalQueryDialog
   private JTextField     pPatternField;
   private JIntegerField  pExcludeLatestField;
   private JIntegerField  pMaxWorkingField;
-  private JIntegerField  pMaxArchivesField;
+  private JIntegerField  pMinArchivesField;
 
 }

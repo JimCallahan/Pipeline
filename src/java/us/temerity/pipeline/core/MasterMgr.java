@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.93 2005/03/07 01:29:09 jim Exp $
+// $Id: MasterMgr.java,v 1.94 2005/03/10 08:07:27 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -13,6 +13,7 @@ import java.util.*;
 import java.util.regex.*;
 import java.util.concurrent.locks.*;
 import java.util.concurrent.atomic.*;
+import java.text.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   N O D E   M G R                                                                        */
@@ -390,7 +391,9 @@ class MasterMgr
     dirs.add(new File(pNodeDir, "toolsets/toolsets"));
     dirs.add(new File(pNodeDir, "etc"));
     dirs.add(new File(pNodeDir, "etc/suffix-editors"));
-    dirs.add(new File(pNodeDir, "etc/archives"));
+    dirs.add(new File(pNodeDir, "archives/manifests"));
+    dirs.add(new File(pNodeDir, "archives/output/archive"));
+    dirs.add(new File(pNodeDir, "archives/output/restore"));
 
     synchronized(pMakeDirLock) {
       for(File dir : dirs) {
@@ -412,11 +415,11 @@ class MasterMgr
   initArchives()
     throws PipelineException
   {
-    File dir = new File(pNodeDir, "etc/archives");
+    File dir = new File(pNodeDir, "archives/manifests");
     File files[] = dir.listFiles(); 
     int wk;
     for(wk=0; wk<files.length; wk++) {
-      Archive archive = readArchive(files[wk].getName());
+      ArchiveVolume archive = readArchive(files[wk].getName());
       
       for(String name : archive.getNames()) {
 	TreeMap<VersionID,TreeSet<String>> versions = pArchivedIn.get(name);
@@ -5744,20 +5747,20 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get information about the checked-in versions which match the given archival 
-   * criteria. <P> 
+   * Get archive related information about the checked-in versions which match the 
+   * given criteria. 
    * 
    * @param req 
    *   The query request.
    * 
    * @return 
-   *   <CODE>MiscArchivalQueryRsp</CODE> if successful or 
+   *   <CODE>MiscArchiveQueryRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to perform the query.
    */
   public Object
-  archivalQuery
+  archiveQuery
   (
-   MiscArchivalQueryReq req
+   MiscArchiveQueryReq req
   ) 
   {
     TaskTimer timer = new TaskTimer();
@@ -5765,8 +5768,6 @@ class MasterMgr
     pDatabaseLock.readLock().lock();
     try {
       String pattern      = req.getPattern();
-      Integer exclude     = req.getExcludeLatest();
-      Integer maxWorking  = req.getMaxWorking();
       Integer maxArchives = req.getMaxArchives();
       
       /* get the node names which match the pattern */ 
@@ -5793,9 +5794,7 @@ class MasterMgr
       }
       
       /* process the matching nodes */ 
-      TreeMap<String,TreeMap<VersionID,ArchivalInfo>> table = 
-	new TreeMap<String,TreeMap<VersionID,ArchivalInfo>>();
-      VersionID latestID = null;
+      ArrayList<ArchiveInfo> archiveInfo = new ArrayList<ArchiveInfo>();
       for(String name : matches.keySet()) {
 	
 	/* get the revision numbers and creation timestamps of the included versions */ 
@@ -5807,15 +5806,8 @@ class MasterMgr
 	  try {
 	    timer.resume();	
 	    TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
-	    int wk = 0;
-	    for(VersionID vid : checkedIn.keySet()) {
-	      if((exclude != null) && (wk >= (checkedIn.size() - exclude)))
-		break;
+	    for(VersionID vid : checkedIn.keySet()) 
 	      stamps.put(vid, checkedIn.get(vid).uVersion.getTimeStamp());
-	      wk++;
-	    }
-
-	    latestID = checkedIn.lastKey();
 	  }
 	  catch(PipelineException ex) {
 	    return new FailureRsp(timer, "Internal Error: " + ex.getMessage());
@@ -5848,8 +5840,142 @@ class MasterMgr
 	  }
 
 	  /* only include the checked-in versions which aren't already members of the 
-	     given maximum number of archives  */ 
+	     given maximum number of archive volumes */ 
 	  if((maxArchives == null) || (numArchives <= maxArchives)) {
+
+	    /* get the timestamp of the latest archive containing the checked-in version */ 
+	    Date archived = null;
+	    if(lastArchive != null) {
+	      timer.aquire();
+	      synchronized(pArchivedOn) {
+		timer.resume();
+		archived = pArchivedOn.get(lastArchive);
+	      }
+	    }
+
+	    Date checkedIn = stamps.get(vid);
+	    ArchiveInfo info = new ArchiveInfo(name, vid, checkedIn, archived, numArchives);
+	    archiveInfo.add(info);
+	  }
+	}	
+      }
+
+      return new MiscArchiveQueryRsp(timer, archiveInfo);
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }  
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get offline related information about the checked-in versions which match the 
+   * given criteria. <P> 
+   * 
+   * @param req 
+   *   The query request.
+   * 
+   * @return 
+   *   <CODE>MiscOfflineQueryRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to perform the query.
+   */
+  public Object
+  offlineQuery
+  (
+   MiscOfflineQueryReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    pDatabaseLock.readLock().lock();
+    try {
+      String pattern      = req.getPattern();
+      Integer exclude     = req.getExcludeLatest();
+      Integer maxWorking  = req.getMaxWorking();
+      Integer minArchives = req.getMinArchives();
+      
+      /* get the node names which match the pattern */ 
+      TreeMap<String,TreeMap<String,TreeSet<String>>> matches = 
+	new TreeMap<String,TreeMap<String,TreeSet<String>>>();
+      {
+	timer.aquire();
+	synchronized(pNodeTreeRoot) {
+	  try {
+	    timer.resume();
+	    
+	    Pattern pat = null;
+	    if(pattern != null) 
+	      pat = Pattern.compile(pattern);
+	    
+	    for(NodeTreeEntry entry : pNodeTreeRoot.values())
+	      matchingCheckedInNodes(pat, "", entry, matches);
+	  }
+	  catch(PatternSyntaxException ex) {
+	    return new FailureRsp(timer, 
+				  "Illegal Node Name Pattern:\n\n" + ex.getMessage());
+	  }
+	}
+      }
+      
+      /* process the matching nodes */ 
+      ArrayList<OfflineInfo> offlineInfo = new ArrayList<OfflineInfo>();
+      VersionID latestID = null;
+      for(String name : matches.keySet()) {
+	
+	/* get the revision numbers of the included versions */ 
+	TreeSet<VersionID> vids = new TreeSet<VersionID>();
+	{
+	  timer.aquire();
+	  ReentrantReadWriteLock lock = getCheckedInLock(name);
+	  lock.readLock().lock();  
+	  try {
+	    timer.resume();	
+	    TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
+	    int wk = 0;
+	    for(VersionID vid : checkedIn.keySet()) {
+	      if((exclude != null) && (wk >= (checkedIn.size() - exclude)))
+		break;
+	      vids.add(vid);
+	      wk++;
+	    }
+
+	    latestID = checkedIn.lastKey();
+	  }
+	  catch(PipelineException ex) {
+	    return new FailureRsp(timer, "Internal Error: " + ex.getMessage());
+	  }
+	  finally {
+	    lock.readLock().unlock();  
+	  }
+	}
+	
+	/* process the matching checked-in versions */ 
+	for(VersionID vid : vids) {
+
+	  /* get the number of archives which already contain the checked-in version */ 
+	  int numArchives = 0;
+	  String lastArchive = null;
+	  {
+	    timer.aquire();
+	    synchronized(pArchivedIn) {
+	      timer.resume();
+	      
+	      TreeMap<VersionID,TreeSet<String>> versions = pArchivedIn.get(name);
+	      if(versions != null) {
+		TreeSet<String> archives = versions.get(vid);
+		if(archives != null) {
+		  numArchives = archives.size();
+		  lastArchive = archives.last();
+		}
+	      }
+	    }
+	  }
+
+	  /* only include the checked-in versions are members of at least the given 
+	     minimum number of archives  */ 
+	  if((minArchives == null) || (numArchives >= minArchives)) {
 
 	    /* get the timestamp of the latest archive containing the checked-in version */ 
 	    Date archived = null;
@@ -5902,25 +6028,16 @@ class MasterMgr
 	    /* only include checked-in version which do not have more than the given
 	       maximum number of working versions based on the checked-in version */ 
 	    if((maxWorking == null) || (numWorking <= maxWorking)) {
-	      Date checkedIn = stamps.get(vid);
-
-	      ArchivalInfo info = 
-		new ArchivalInfo(checkedIn, checkedOut, archived, 
-				 numWorking, numArchives, canOffline);
-	      
-	      TreeMap<VersionID,ArchivalInfo> versions = table.get(name);
-	      if(versions == null) {
-		versions = new TreeMap<VersionID,ArchivalInfo>();
-		table.put(name, versions);
-	      }
-
-	      versions.put(vid, info);
+	      OfflineInfo info = 
+		new OfflineInfo(name, vid, checkedOut, numWorking, 
+				archived, numArchives, canOffline);
+	      offlineInfo.add(info);
 	    }
 	  }
 	}	
       }
 
-      return new MiscArchivalQueryRsp(timer, table);
+      return new MiscOfflineQueryRsp(timer, offlineInfo);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
@@ -6013,41 +6130,142 @@ class MasterMgr
    MiscArchiveReq req
   ) 
   {
-//     TaskTimer timer = new TaskTimer();
+    TaskTimer timer = new TaskTimer();
 
-//     Long total = null;
-//     try {
-//       Object obj = getSizes(new MiscGetSizesReq(req.getVersions(), false));
-//       if(obj instanceof MiscGetSizesRsp) {
-// 	MiscGetSizesRsp rsp = (MiscGetSizesRsp) obj;
+    timer.aquire();
+    pDatabaseLock.writeLock().lock();
+    try {
+      timer.resume();	
 
-// 	TreeMap<String,TreeMap<VersionID,Long>> sizes = rsp.getSizes();
-// 	for(TreeMap<VersionID,Long> vsizes : sizes.values()) {
-// 	  for(Long size : vsizes.values()) 
-// 	    total += size;
-// 	}
-//       }
-//       else {
-// 	throw new PipelineException();
-//       }
-//     }
-//     catch(PipelineException ex) {
-//       return new FailureRsp
-// 	(timer, "Unable to determine the total size of files to be archived!");
-//     }
-    
-//     BaseArchiver archiver = req.getArchiver();
-//     if(total > archiver.getCapacity()) {
-//       return new FailureRsp
-// 	(timer, 
-// 	 "The total size of the files to be archived (" + total + ") exceeds the " + 
-// 	 "capacity of the archiver (" + archiver.getCapacity() + ")!");
-//     }
-    
-    
-    
+      /* the archiver plugin to use */ 
+      BaseArchiver archiver = req.getArchiver();
 
-    return new FailureRsp(new TaskTimer(), "Not implemented yet.");
+      /* validate the file sequences to be archived */ 
+      TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs = 
+	new TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>();
+      TreeMap<String,TreeMap<VersionID,Long>> sizes = null;
+      {
+	TreeMap<String,TreeSet<VersionID>> versions = req.getVersions();
+
+	/* recheck the sizes of the versions */ 
+	{
+	  Object obj = getSizes(new MiscGetSizesReq(versions, false));
+	  if(obj instanceof FailureRsp) {
+	    FailureRsp rsp = (FailureRsp) obj;
+	    throw new PipelineException(rsp.getMessage());	
+	  }
+	  else {
+	    MiscGetSizesRsp rsp = (MiscGetSizesRsp) obj;
+	    sizes = rsp.getSizes();
+	  }
+	}
+
+	/* make sure the versions exist and are not offline */ 
+	long total = 0L;
+	for(String name : versions.keySet()) {
+	  TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
+	  TreeSet<VersionID> offline = pOfflined.get(name);
+	  TreeMap<VersionID,Long> vsizes = sizes.get(name);
+	  for(VersionID vid : versions.get(name)) {
+	    if((offline != null) && offline.contains(vid)) 
+	      throw new PipelineException 
+		("The checked-in version (" + vid + ") of node (" + name + ") cannot " + 
+		 "be archived because it is currently offline!");
+	    
+	    CheckedInBundle bundle = checkedIn.get(vid);
+	    if(bundle == null) 
+	      throw new PipelineException 
+		("No checked-in version (" + vid + ") of node (" + name + ") exists " + 
+		 "to be archived!");
+
+	    Long size = null;	    
+	    if(vsizes != null) 
+	      size = vsizes.get(vid);
+	    if(size == null) 
+	      throw new PipelineException
+		("Unable to determine the size of the files associated with the " + 
+		 "checked-in version (" + vid + ") of node (" + name + ")!");
+	    total += size;
+	    
+	    TreeMap<VersionID,TreeSet<FileSeq>> fileVersions = fseqs.get(name);
+	    if(fileVersions == null) {
+	      fileVersions = new TreeMap<VersionID,TreeSet<FileSeq>>();
+	      fseqs.put(name, fileVersions);
+	    }
+	    
+	    fileVersions.put(vid, bundle.uVersion.getSequences());
+	  }
+	}
+
+	if(total > archiver.getCapacity()) 
+	  throw new PipelineException
+	    ("The total size of the files (" + total + " bytes) associated with the " +
+	     "checked-in versions to be archived exceeded the capacity of the archiver " + 
+	     "(" + archiver.getCapacity() + " bytes)!");
+      }
+
+      /* the archive name and time stamp */ 
+      Date stamp = new Date();
+      SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmssSSSS"); 
+      String archiveName = (req.getPrefix() + "-" + format.format(stamp));
+      if(pArchivedOn.containsKey(archiveName)) 
+	throw new PipelineException 
+	  ("Somehow an archive named (" + archiveName + ") already exists!");
+
+      /* create the archive volume by runing the archiver plugin and save any STDOUT output */
+      {
+	String output = pFileMgrClient.archive(archiveName, fseqs, archiver);
+	if(output != null) {
+	  File file = new File(pNodeDir, "archives/output/archive/" + archiveName);
+	  try {
+	    FileWriter out = new FileWriter(file);
+	    out.write(output);
+	    out.flush();
+	    out.close();
+	  }
+	  catch(IOException ex) {
+	    throw new PipelineException
+	      ("I/O ERROR: \n" + 
+	       "  While attempting to write the archive STDOUT file (" + file + ")...\n" + 
+	       "    " + ex.getMessage());
+	  }
+	}
+      }
+
+      /* register the newly created archive */ 
+      {
+	ArchiveVolume archive = new ArchiveVolume(archiveName, stamp, fseqs, sizes, archiver);
+	writeArchive(archive);
+	pArchivedOn.put(archiveName, stamp);
+      }
+
+      /* update the cached archive named for each checked-in version */ 
+      for(String name : fseqs.keySet()) {
+	TreeMap<VersionID,TreeSet<String>> aversions = pArchivedIn.get(name);
+	if(aversions == null) {
+	  aversions = new TreeMap<VersionID,TreeSet<String>>();
+	  pArchivedIn.put(name, aversions);
+	}
+	
+	for(VersionID vid : fseqs.get(name).keySet()) {
+	  TreeSet<String> anames = aversions.get(vid);
+	  if(anames == null) {
+	    anames = new TreeSet<String>();
+	    aversions.put(vid, anames);
+	  }
+
+	  anames.add(archiveName);
+	}
+      }
+
+      return new MiscArchiveRsp(timer, archiveName);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }  
+    finally {
+      pDatabaseLock.writeLock().unlock();
+    }
   }
   
   /**
@@ -8027,12 +8245,12 @@ class MasterMgr
   private void 
   writeArchive
   (
-   Archive archive
+   ArchiveVolume archive
   ) 
     throws PipelineException
   {
     synchronized(pArchiveFileLock) {
-      File file = new File(pNodeDir, "etc/archives/" + archive.getName());
+      File file = new File(pNodeDir, "archives/manifests/" + archive.getName());
       if(file.exists()) {
 	throw new PipelineException
 	  ("Unable to overrite the existing archive file(" + file + ")!");
@@ -8083,7 +8301,7 @@ class MasterMgr
    * @throws PipelineException
    *   If unable to read the archive file.
    */ 
-  private Archive
+  private ArchiveVolume
   readArchive
   (
    String name
@@ -8091,7 +8309,7 @@ class MasterMgr
     throws PipelineException
   {
     synchronized(pArchiveFileLock) {
-      File file = new File(pNodeDir, "etc/archives/" + name);
+      File file = new File(pNodeDir, "archives/manifests/" + name);
       if(!file.isFile()) 
 	throw new PipelineException
 	  ("No file exists for archive (" + name + ")!");
@@ -8100,11 +8318,11 @@ class MasterMgr
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	 "Reading Archive: " + name);
 
-      Archive archive = null;
+      ArchiveVolume archive = null;
       try {
 	FileReader in = new FileReader(file);
 	GlueDecoder gd = new GlueDecoderImpl(in);
-	archive = (Archive) gd.getObject();
+	archive = (ArchiveVolume) gd.getObject();
 	in.close();
       }
       catch(Exception ex) {

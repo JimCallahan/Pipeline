@@ -1,4 +1,4 @@
-// $Id: BaseArchiver.java,v 1.5 2005/02/07 14:49:36 jim Exp $
+// $Id: BaseArchiver.java,v 1.6 2005/03/10 08:07:27 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -25,7 +25,11 @@ class BaseArchiver
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
  
-  protected
+  /**
+   * This constructor is only used during GLUE decoding and should not be 
+   * used in user plugin code.
+   */ 
+  public
   BaseArchiver() 
   {
     super();
@@ -97,89 +101,33 @@ class BaseArchiver
    * Whether the archiver requires manual confirmation before initiating an archive or 
    * restore operation. <P> 
    * 
-   * Subclasses should override this method. <P> 
-   * 
-   * This method should return <CODE>true</CODE> when human interaction is required to 
-   * change tapes or other removable media before attempting to archive or restore files.  
-   * Archivers which are capable of performing archive and restore operation without human 
-   * intervention are considered automatic and should return <CODE>false</CODE>. <P> 
+   * Subclasses should override this method to return <CODE>true</CODE> when human 
+   * interaction is required to change tapes or other removable media before attempting to 
+   * archive or restore files.  Archivers which are capable of performing archive and 
+   * restore operation without human intervention are considered automatic and may use the
+   * default implementation which returns <CODE>false</CODE>.
    * 
    * If this method returns <CODE>true</CODE>, Pipeline will query the user for confirmation
    * before executing the {@link #archive archive} or {@link #restore restore} methods. <P> 
    * 
-   * By default, this method returns <CODE>true</CODE>.
+   * By default, this method returns <CODE>false</CODE>.
    */ 
   public boolean
   isManual()
   {
-    return true;
-  }
-
-  /**
-   * Whether the archiver requires manual confirmation to signal that the archive operation 
-   * has been completed. 
-   * 
-   * Subclasses should override this method to return <CODE>true</CODE> when human 
-   * interaction is required to complete the archive operation and cannot be directly 
-   * performed by the plugin.  <P> 
-   * 
-   * For example, the <CODE>ListArchiver</CODE> plugin's {@link #archive archive} method 
-   * simply generates a text file listing the files to be archived but does not perform the 
-   * archive operation directly.  The user must be queried to insure that the files listed 
-   * have actually been backed-up by the user before proceeding.  For this reason, the 
-   * <CODE>ListArchiver</CODE> overrides this method to return <CODE>true</CODE>.
-   * 
-   * If this method returns <CODE>true</CODE>, Pipeline will query the user for confirmation
-   * after executing the {@link #archive archive} method, but before registering that the 
-   * operation has completed. <P> 
-   * 
-   * By default, this method returns <CODE>false</CODE>.
-   */ 
-  public boolean
-  manualArchiveComplete()
-  {
     return false;
   }
-  
-  /**
-   * Whether the archiver requires manual confirmation to signal that the restore operation 
-   * has been completed. 
-   * 
-   * Subclasses should override this method to return <CODE>true</CODE> when human 
-   * interaction is required to complete the restore operation and cannot be directly 
-   * performed by the plugin.  <P> 
-   * 
-   * For example, the <CODE>ListArchiver</CODE> plugin's {@link #archive archive} method 
-   * simply generates a text file listing the files to be restored but does not perform the 
-   * restore operation directly.  The user must be queried to insure that the files listed 
-   * have actually been restored by the user before proceeding.  For this reason, the 
-   * <CODE>ListArchiver</CODE> overrides this method to return <CODE>true</CODE>.
-   * 
-   * If this method returns <CODE>true</CODE>, Pipeline will query the user for confirmation
-   * after executing the {@link #restore restore} method, but before registering that the 
-   * operation has completed. <P> 
-   * 
-   * By default, this method returns <CODE>false</CODE>.
-   */ 
-  public boolean
-  manualRestoreComplete()
-  {
-    return false;
-  }
-  
-
-  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Get the capacity of the media volume (in bytes). <P> 
    * 
-   * Subclasses should override this methods to return the size of the archive media used 
+   * Subclasses must override this methods to return the size of the archive media used 
    * by the archiver plugin. <P> 
    * 
    * This size is used assign the versions to be archived to one or more archive volumes 
    * which do not exceed this capacity.  <P> 
    * 
-   * By default this method returns (0L). 
+   * By default this method returns (OL). 
    */ 
   public long
   getCapacity()
@@ -422,7 +370,7 @@ class BaseArchiver
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Archives the given set of files.  <P> 
+   * Creates a new archive volume containing the given set of files.  <P> 
    * 
    * Subclasses are responsible for overriding this method to execute the whatever system
    * commands are neccessary to archive the given files. <P> 
@@ -437,17 +385,28 @@ class BaseArchiver
    *   The names of the files to archive relative to the base production directory.
    * 
    * @param dir
-   *   The base production directory.
+   *   The base repository directory.
+   * 
+   * @param outFile 
+   *   The file to which all STDOUT output is redirected.
+   * 
+   * @param errFile 
+   *   The file to which all STDERR output is redirected.
+   * 
+   * @return 
+   *   The SubProcess which will create the archive volume containing the given files.
    * 
    * @throws PipelineException
    *   If unable to successfully archive all of the given files.
    */  
-  public void 
+  public SubProcessHeavy
   archive
   (
    String name, 
    Collection<File> files, 
-   File dir
+   File dir, 
+   File outFile, 
+   File errFile 
   ) 
     throws PipelineException
   {
@@ -456,7 +415,7 @@ class BaseArchiver
   }
 
   /** 
-   * Restores the given set of files. <P> 
+   * Restores the given set of files from an archive volume. <P> 
    * 
    * Subclasses are responsible for overriding this method to execute the whatever system
    * commands are neccessary to restore the given files. <P> 
@@ -471,23 +430,210 @@ class BaseArchiver
    *   The names of the files to restore relative to the base production directory.
    * 
    * @param dir
-   *   The base production directory.
+   *   The base repository directory.
+   * 
+   * @param outFile 
+   *   The file to which all STDOUT output is redirected.
+   * 
+   * @param errFile 
+   *   The file to which all STDERR output is redirected.
+   * 
+   * @return 
+   *   The SubProcess which will restore the given file from the archive volume.
    * 
    * @throws PipelineException
-   *   If unable to successfully restore all of the given files.
+   *   If unable to prepare a SubProcess due to illegal archiver pararameters.
    */  
-  public void 
+  public SubProcessHeavy
   restore
   (
    String name, 
    Collection<File> files, 
-   File dir   
+   File dir,
+   File outFile, 
+   File errFile  
   ) 
     throws PipelineException
   {
     throw new PipelineException
       ("The restore() method was not implemented by the Archiver (" + pName + ")!");
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   M I S C   F I L E   U T I L S                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Add the given file to the set of files which will be removed upon termination of the
+   * Java runtime.
+   * 
+   * @param file 
+   *   The temporary file to cleanup.
+   */
+  protected void 
+  cleanupLater
+  (
+   File file
+  ) 
+  {
+    FileCleaner.add(file);
+  }
+
+  /**
+   * Change file access permissions. <P> 
+   * 
+   * See the manpage for chmod(2) for details about the legal values for <CODE>mode</CODE>.
+   *
+   * @param mode 
+   *   The access mode bitmask.
+   *
+   * @param file 
+   *   The fully resolved path to the file to change.
+   * 
+   * @throws IOException 
+   *   If unable to change the mode of the given file.
+   */
+  public static void 
+  chmod
+  (
+   int mode, 
+   File file
+  ) 
+    throws IOException
+  {
+    NativeFileSys.chmod(mode, file);
+  }
+
+  /**
+   * Get the root directory used to store temporary files created by the the 
+   * archive process. <P> 
+   * 
+   * @param name 
+   *   The name of the archive volume.
+   */
+  public File
+  getArchiveTempDir
+  (
+   String name
+  )
+  {
+    return new File(PackageInfo.sTempDir, "plfilemgr/archive/" + name + "/scratch");
+  }
+
+  /**
+   * Get the root directory used to store temporary files created by the the 
+   * restore process. <P> 
+   * 
+   * @param name 
+   *   The name of the archive volume.
+   */
+  public File
+  getRestoreTempDir
+  (
+   String name
+  )
+  {
+    return new File(PackageInfo.sTempDir, "plfilemgr/restore/" + name + "/scratch");
+  }
+
+  /** 
+   * Create a unique temporary file for the archive process with the given suffix and access 
+   * permissions. <P> 
+   * 
+   * If successful, the temporary file will be added to the set of files which will be 
+   * removed upon termination of the Java runtime (see @{link #cleanupLater cleanupLater}).
+   * 
+   * @param name 
+   *   The name of the archive volume.
+   * 
+   * @param mode 
+   *   The access mode bitmask.
+   * 
+   * @param suffix
+   *   The filename suffix of the temporary file.
+   * 
+   * @return 
+   *   The temporary file.
+   * 
+   * @throws IOException 
+   *   If unable to create the temporary file.
+   */ 
+  public File
+  createArchiveTemp
+  (
+   String name, 
+   int mode, 
+   String suffix
+  ) 
+    throws PipelineException 
+  {
+    File tmp = null;
+    try {
+      tmp = File.createTempFile(pName + "-" + name, "." + suffix, 
+				getArchiveTempDir(name));
+      chmod(mode, tmp);
+    }
+    catch(Exception ex) {
+      throw new PipelineException
+	("Unable to create temporary file for the archive of (" + name + "):\n\n" + 
+	 ex.getMessage());
+    }
+    
+    cleanupLater(tmp);
+    
+    return tmp;
+  }
+
+  /** 
+   * Create a unique temporary file for the restore process with the given suffix and access 
+   * permissions. <P> 
+   * 
+   * If successful, the temporary file will be added to the set of files which will be 
+   * removed upon termination of the Java runtime (see @{link #cleanupLater cleanupLater}).
+   * 
+   * @param name 
+   *   The name of the archive volume.
+   * 
+   * @param mode 
+   *   The access mode bitmask.
+   * 
+   * @param suffix
+   *   The filename suffix of the temporary file.
+   * 
+   * @return 
+   *   The temporary file.
+   * 
+   * @throws IOException 
+   *   If unable to create the temporary file.
+   */ 
+  public File
+  createRestoreTemp
+  (
+   String name, 
+   int mode, 
+   String suffix
+  ) 
+    throws PipelineException 
+  {
+    File tmp = null;
+    try {
+      tmp = File.createTempFile(pName + "-" + name, "." + suffix, 
+				getRestoreTempDir(name));
+      chmod(mode, tmp);
+    }
+    catch(Exception ex) {
+      throw new PipelineException
+	("Unable to create temporary file for the restore of (" + name + "):\n\n" + 
+	 ex.getMessage());
+    }
+
+    cleanupLater(tmp);
+
+    return tmp;
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/

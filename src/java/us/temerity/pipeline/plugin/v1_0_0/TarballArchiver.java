@@ -1,4 +1,4 @@
-// $Id: TarballArchiver.java,v 1.2 2005/02/07 14:52:39 jim Exp $
+// $Id: TarballArchiver.java,v 1.3 2005/03/10 08:07:27 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -12,19 +12,24 @@ import java.io.*;
 /*------------------------------------------------------------------------------------------*/
 
 /** 
- * Archives files as a gzip(1) compressed tar(1) archive. <P> 
+ * Archive to tar(1) file. <P> 
  * 
  * This archiver defines the following parameters: <BR>
  * 
  * <DIV style="margin-left: 40px;">
+ *   Archive Directory <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The location where archive tarballs are stored.
+ *   </DIV> <BR>
+ * 
  *   Capacity <BR>
  *   <DIV style="margin-left: 40px;">
  *     The maximum uncompressed size (in bytes) to make an archive tarball. <BR>
  *   </DIV> <BR>
  * 
- *   Archive Directory <BR>
+ *   Compress <BR>
  *   <DIV style="margin-left: 40px;">
- *     The location where archive tarballs are stored.
+ *     Whether the TAR archive should be compressed with gzip(1).
  *   </DIV> 
  * </DIV> <P> 
  */
@@ -40,7 +45,16 @@ class TarballArchiver
   TarballArchiver()
   {
     super("Tarball", new VersionID("1.0.0"),
-	  "Archives files as a gzip(1) compressed tar(1) archive.");
+	  "Archive to tar(1) file.");
+
+    {
+      ArchiverParam param = 
+	new DirectoryArchiverParam
+	("ArchiveDirectory", 
+	 "The location where archive tarballs are stored.",
+	 PackageInfo.sTempDir.getPath());
+      addParam(param);
+    }
 
     {
       ArchiverParam param = 
@@ -53,12 +67,24 @@ class TarballArchiver
 
     {
       ArchiverParam param = 
-	new DirectoryArchiverParam
-	("ArchiveDirectory", 
-	 "The location where archive tarballs are stored.",
-	 PackageInfo.sTempDir);
+	new BooleanArchiverParam
+	("Compress", 
+	 "Whether the TAR archive should be compressed with gzip(1).",
+	 true);
       addParam(param);
     }
+
+    {
+      ArrayList<String> layout = new ArrayList<String>();
+      layout.add("ArchiveDirectory");
+      layout.add(null);
+      layout.add("Capacity");
+      layout.add("Compress");
+
+      setLayout(layout);      
+    }
+
+    underDevelopment();
   }
 
 
@@ -66,16 +92,6 @@ class TarballArchiver
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Whether the archiver requires manual confirmation before initiating an archive or 
-   * restore operation. <P> 
-   */ 
-  public boolean
-  isManual()
-  {
-    return false;
-  }
 
   /**
    * Get the capacity of the media (in bytes).
@@ -101,7 +117,7 @@ class TarballArchiver
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Archives the given set of files.  <P> 
+   * Creates a new archive volume containing the given set of files.  <P> 
    *  
    * @param name 
    *   The name of the backup.
@@ -110,52 +126,66 @@ class TarballArchiver
    *   The names of the files to archive relative to the base production directory.
    * 
    * @param dir
-   *   The base production directory.
+   *   The base repository directory.
+   * 
+   * @param outFile 
+   *   The file to which all STDOUT output is redirected.
+   * 
+   * @param errFile 
+   *   The file to which all STDERR output is redirected.
+   * 
+   * @return 
+   *   The SubProcess which will create the archive volume containing the given files.
    * 
    * @throws PipelineException
-   *   If unable to successfully archive all of the given files.
+   *   If unable to prepare a SubProcess due to illegal archiver pararameters.
    */  
-  public void 
+  public SubProcessHeavy
   archive
   (
    String name, 
    Collection<File> files, 
-   File dir
+   File dir, 
+   File outFile, 
+   File errFile 
   ) 
     throws PipelineException
   {
-    File adir = (File) getParamValue("ArchiveDirectory");
-    File tarball = new File(adir, name + ".tgz");
+    File adir = null;
+    {
+      String path = (String) getParamValue("ArchiveDirectory");
+      if(path == null) 
+	throw new PipelineException
+	  ("The archive directory cannot be (null)");
+      adir = new File(path);
+    }
+
+    Boolean compress = (Boolean) getParamValue("Compress");
+    if(compress == null) 
+      throw new PipelineException
+	("The compression flag cannot be (null)");
+
+    File tarball = new File(adir, name + (compress ? ".tgz" : ".tar"));
 
     Map<String,String> env = System.getenv();
 
     ArrayList<String> args = new ArrayList<String>();
+    args.add("--verbose");
     args.add("--create");
-    args.add("--gzip");
+    if(compress) 
+      args.add("--gzip");
+    args.add("--dereference");
     args.add("--file=" + tarball);
-    args.add(tarball.getPath());
 
     for(File file : files) 
-      args.add(file.getPath());
+      args.add(file.getPath().substring(1));
 
-    SubProcessLight proc = 
-      new SubProcessLight("TarballArchive", "tar", args, env, dir);
-    try {
-      proc.start();
-      proc.join();
-      if(!proc.wasSuccessful()) 
-	throw new PipelineException
-	  ("Unable to create the archive (" + tarball  + "):\n\n" + 
-	   "  " + proc.getStdErr());
-    }
-    catch(InterruptedException ex) {
-      throw new PipelineException
-	("Interrupted while creating the archive (" + tarball  + ")!");
-    }
+    return new SubProcessHeavy
+      ("TarballArchive", "tar", args, env, dir, outFile, errFile);
   }
 
   /** 
-   * Restores the given set of files. <P> 
+   * Restores the given set of files from an archive volume. <P> 
    * 
    * @param name 
    *   The name of the backup.
@@ -164,47 +194,62 @@ class TarballArchiver
    *   The names of the files to restore relative to the base production directory.
    * 
    * @param dir
-   *   The base production directory.
+   *   The base repository directory.
+   * 
+   * @param outFile 
+   *   The file to which all STDOUT output is redirected.
+   * 
+   * @param errFile 
+   *   The file to which all STDERR output is redirected.
+   * 
+   * @return 
+   *   The SubProcess which will restore the given file from the archive volume.
    * 
    * @throws PipelineException
-   *   If unable to successfully restore all of the given files.
+   *   If unable to prepare a SubProcess due to illegal archiver pararameters.
    */  
-  public void 
+  public SubProcessHeavy 
   restore
   (
    String name, 
    Collection<File> files, 
-   File dir   
+   File dir,
+   File outFile, 
+   File errFile  
   ) 
     throws PipelineException
   {
-    File adir = (File) getParamValue("ArchiveDirectory");
-    File tarball = new File(adir, name + ".tgz");
+    File adir = null;
+    {
+      String path = (String) getParamValue("ArchiveDirectory");
+      if(path == null) 
+	throw new PipelineException
+	  ("The archive directory cannot be (null)");
+      adir = new File(path);
+    }
+
+    Boolean compress = (Boolean) getParamValue("Compress");
+    if(compress == null) 
+      throw new PipelineException
+	("The compression flag cannot be (null)");
+
+    File tarball = new File(adir, name + (compress ? ".tgz" : ".tar"));
 
     Map<String,String> env = System.getenv();
 
-    ArrayList<String> args = new ArrayList<String>();
+    ArrayList<String> args = new ArrayList<String>();   
+    args.add("--verbose");
     args.add("--extract");
-    args.add("--ungzip");
+    if(compress) 
+      args.add("--ungzip");
+    args.add("--dereference");
     args.add("--file=" + tarball);
 
     for(File file : files) 
-      args.add(file.getPath());
+      args.add(file.getPath().substring(1));
 
-    SubProcessLight proc = 
-      new SubProcessLight("TarballRestore", "tar", args, env, dir);
-    try {
-      proc.start();
-      proc.join();
-      if(!proc.wasSuccessful()) 
-	throw new PipelineException
-	  ("Unable to restore the archive (" + tarball  + "):\n\n" + 
-	   "  " + proc.getStdErr());
-    }
-    catch(InterruptedException ex) {
-      throw new PipelineException
-	("Interrupted while restoring the archive (" + tarball  + ")!");
-    }
+    return new SubProcessHeavy
+      ("TarballArchive", "tar", args, env, dir, outFile, errFile);
   }
 
 

@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.32 2005/02/23 06:49:01 jim Exp $
+// $Id: FileMgr.java,v 1.33 2005/03/10 08:07:27 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1860,6 +1860,160 @@ class FileMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Create an archive volume by running the given archiver plugin on a set of checked-in 
+   * file sequences. 
+   * 
+   * @param req 
+   *   The archive request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to remove the checked-in version files.
+   */
+  public Object
+  archive
+  (
+   FileArchiveReq req
+  ) 
+  { 
+    TaskTimer timer = new TaskTimer();
+    
+    Stack<ReentrantReadWriteLock> locks = new Stack<ReentrantReadWriteLock>();
+    try {
+      TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs = req.getSequences();
+
+      TreeSet<File> files = new TreeSet<File>();
+      for(String name : fseqs.keySet()) {
+	ReentrantReadWriteLock lock = getCheckedInLock(name);
+	lock.readLock().lock();
+	locks.push(lock);
+
+	TreeMap<VersionID,TreeSet<FileSeq>> vsnSeqs = fseqs.get(name);
+	for(VersionID vid : vsnSeqs.keySet()) {
+	  for(FileSeq fseq : vsnSeqs.get(vid)) {
+	    for(File file : fseq.getFiles()) {
+	      files.add(new File(name + "/" + vid + "/" + file));	  
+	    }
+	  }
+	}
+      }
+
+      File dir = new File(PackageInfo.sTempDir, "plfilemgr/archive/" + req.getName());
+      File scratch = new File(dir, "scratch");
+      File outFile = new File(dir, "stdout");
+      File errFile = new File(dir, "stderr"); 
+      synchronized(pMakeDirLock) {
+	if(!scratch.mkdirs()) 
+	  throw new IOException
+	    ("Unable to create output directory (" + dir + ") for the archive of " + 
+	     "(" + req.getName() + ")!");
+      }	  
+
+      BaseArchiver archiver = req.getArchiver();
+      SubProcessHeavy proc = 
+	archiver.archive(req.getName(), files, PackageInfo.sRepoDir, outFile, errFile);
+
+      FileCleaner.add(outFile);
+      FileCleaner.add(errFile);
+      
+      /* run the archiver */ 
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Finer,
+	 "Started Archiver (" + archiver.getName() + ") for volume (" + req.getName() + ").");
+      {
+	proc.start();
+
+	int cycles = 0; 
+	while(proc.isAlive()) {
+	  try {
+	    proc.join(15000);
+	    cycles++;
+	  }
+	  catch(InterruptedException ex) {
+	    throw new PipelineException(ex);
+	  }
+	  
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
+	     "Process for archive volume (" + req.getName() + "): " + 
+	     "WAITING for (" + cycles + ") loops...");
+	}
+	
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
+	   "Process for archive volume (" + req.getName() + "): " + 
+	   "COMPLETED after (" + cycles + ") loops...");
+      }
+
+      /* report the contents of the generated STDERR file as the failure message */ 
+      if(!proc.wasSuccessful()) {
+	String errors = null;
+	try {
+	  if(errFile.length() > 0) {
+	    FileReader in = new FileReader(errFile);
+	    
+	    StringBuffer buf = new StringBuffer();
+	    char[] cs = new char[4096];
+	    while(true) {
+	      int cnt = in.read(cs);
+	      if(cnt == -1) 
+		break;
+	      
+	      buf.append(cs, 0, cnt);
+	    }
+	    
+	    errors = buf.toString();
+	  }
+	}
+	catch(IOException ex) {
+	}
+
+	throw new PipelineException
+	  ("The process creating archive volume (" + req.getName() + ") failed with " +
+	   "exit code (" + proc.getExitCode() + ")!\n\n" + 
+	   "The STDERR output of the process:\n" + 
+	   errors);
+      }
+
+      /* read the generated STDOUT file */ 
+      String output = null;
+      try {
+	if(outFile.length() > 0) {
+	  FileReader in = new FileReader(outFile);
+
+	  StringBuffer buf = new StringBuffer();
+	  char[] cs = new char[4096];
+	  while(true) {
+	    int cnt = in.read(cs);
+	    if(cnt == -1) 
+	      break;
+
+	    buf.append(cs, 0, cnt);
+	  }
+	   
+	  output = buf.toString();
+	}
+      }
+      catch(IOException ex) {
+      }
+      
+      return new FileArchiveRsp(timer, req.getName(), output);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    catch(Exception ex) {
+      return new FailureRsp(timer, getFullMessage(ex));
+    }
+    finally {
+      while(!locks.isEmpty()) {
+	ReentrantReadWriteLock lock = locks.pop();
+	lock.readLock().unlock();
+      }
+    }
+  }
+
+  /**
    * Remove the files associated with the given checked-in version of a node.
    * 
    * @param req 
@@ -2130,6 +2284,37 @@ class FileMgr
 
   /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Generate a string containing both the exception message and stack trace. 
+   * 
+   * @param ex 
+   *   The thrown exception.   
+   */ 
+  private String 
+  getFullMessage
+  (
+   Throwable ex
+  ) 
+  {
+    StringBuffer buf = new StringBuffer();
+     
+    if(ex.getMessage() != null) 
+      buf.append(ex.getMessage() + "\n\n"); 	
+    else if(ex.toString() != null) 
+      buf.append(ex.toString() + "\n\n"); 	
+      
+    buf.append("Stack Trace:\n");
+    StackTraceElement stack[] = ex.getStackTrace();
+    int wk;
+    for(wk=0; wk<stack.length; wk++) 
+      buf.append("  " + stack[wk].toString() + "\n");
+   
+    return (buf.toString());
+  }
+  
+
   /*----------------------------------------------------------------------------------------*/
 
   /** 

@@ -1,4 +1,4 @@
-// $Id: ArchiveCandidateTableModel.java,v 1.4 2005/03/10 08:07:27 jim Exp $
+// $Id: OfflineCandidateTableModel.java,v 1.1 2005/03/10 08:07:27 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -17,10 +17,10 @@ import javax.swing.table.*;
 
 /**
  * A {@link SortableTableModel SortableTableModel} which contains 
- * {@link ArchiveInfo ArchiveInfo} instances which are candidates for archiving.
+ * {@link OfflineInfo OfflineInfo} instances which are candidates for offlining.
  */ 
 public
-class ArchiveCandidateTableModel
+class OfflineCandidateTableModel
   extends AbstractSortableTableModel
 {
   /*----------------------------------------------------------------------------------------*/
@@ -31,24 +31,26 @@ class ArchiveCandidateTableModel
    * Construct a table model.
    */
   public 
-  ArchiveCandidateTableModel() 
+  OfflineCandidateTableModel() 
   {
     super();
 
     /* initialize the columns */ 
     { 
-      pNumColumns = 5;
+      pNumColumns = 7;
 
       {
 	Class classes[] = { 
-	  String.class, String.class, String.class, Integer.class, String.class
+	  String.class, String.class, String.class, Integer.class, 
+	  String.class, Integer.class, String.class
 	}; 
 	pColumnClasses = classes;
       }
 
       {
 	String names[] = {
-	  "Node Name", "Version", "Archived On", "Archives", "Checked-In"
+	  "Node Name", "Version", "Checked-Out On", "Working", 
+	  "Archived On", "Archives", "Unused"
 	};
 	pColumnNames = names;
       }
@@ -57,21 +59,26 @@ class ArchiveCandidateTableModel
 	String desc[] = {
 	  "The fully resolved name of the node.", 
 	  "The revision number of the checked-in version.", 
+	  "When the checked-in version was last checked-out.", 
+	  "The number of working versions based on the checked-in version existing in " +
+	  "all working areas.", 
 	  "When the checked-in version was last archived.", 
 	  "The number of archive volumes which contain the checked-in version.", 
-	  "When the checked-in version was created."
+	  "Whether the checked-in version can be offlined."
 	};
 	pColumnDescriptions = desc;
       }
 
       {
-	int widths[] = { 360, 80, 180, 80, 180 };
+	int widths[] = { 360, 80, 180, 80, 180, 80, 80 };
 	pColumnWidths = widths;
       }
 
       {
 	TableCellRenderer renderers[] = {
 	  new JSimpleTableCellRenderer(JLabel.LEFT), 
+	  new JSimpleTableCellRenderer(JLabel.CENTER), 
+	  new JSimpleTableCellRenderer(JLabel.CENTER), 
 	  new JSimpleTableCellRenderer(JLabel.CENTER), 
 	  new JSimpleTableCellRenderer(JLabel.CENTER), 
 	  new JSimpleTableCellRenderer(JLabel.CENTER), 
@@ -82,13 +89,13 @@ class ArchiveCandidateTableModel
 
       {
 	TableCellEditor editors[] = { 
-	  null, null, null, null, null
+	  null, null, null, null, null, null, null
 	};
 	pEditors = editors;
       }
     }
     
-    pInfos = new ArrayList<ArchiveInfo>();
+    pInfos = new ArrayList<OfflineInfo>();
   }
 
 
@@ -108,7 +115,7 @@ class ArchiveCandidateTableModel
     Comparable value = null;
 
     int idx = 0;
-    for(ArchiveInfo info : pInfos) {
+    for(OfflineInfo info : pInfos) {
       switch(pSortColumn) {
       case 0:
 	value = info.getName();
@@ -119,18 +126,29 @@ class ArchiveCandidateTableModel
 	break;
 	
       case 2:
+	if(info.getCheckedOutStamp() != null)
+	  value = info.getCheckedOutStamp();
+	else 
+	  value = new Date(0L);
+	break;
+
+      case 3:
+	value = new Integer(info.numWorking());
+	break;
+
+      case 4:
 	if(info.getArchivedStamp() != null)
 	  value = info.getArchivedStamp();
 	else 
 	  value = new Date(0L);
 	break;
 	
-      case 3:
+      case 5:
 	value = new Integer(info.numArchives());
 	break;
-	
-      case 4:
-	value = info.getCheckedInStamp(); 
+
+      case 6:
+	value = (info.canOffline() ? "YES" : "no");
       }
       
       int wk;
@@ -179,7 +197,7 @@ class ArchiveCandidateTableModel
     for(wk=0; wk<rows.length; wk++) {
       int idx = pRowToIndex[rows[wk]];
 
-      ArchiveInfo info = pInfos.get(idx);
+      OfflineInfo info = pInfos.get(idx);
       String name = info.getName();
       TreeSet<VersionID> versions = table.get(name);
       if(versions == null) {
@@ -200,7 +218,7 @@ class ArchiveCandidateTableModel
   {
     TreeMap<String,TreeSet<VersionID>> table = new TreeMap<String,TreeSet<VersionID>>();
 
-    for(ArchiveInfo info : pInfos) {
+    for(OfflineInfo info : pInfos) {
       String name = info.getName();
       TreeSet<VersionID> versions = table.get(name);
       if(versions == null) {
@@ -220,9 +238,9 @@ class ArchiveCandidateTableModel
    *   The archive information. 
    */ 
   public void
-  setArchiveInfo
+  setOfflineInfo
   (
-   ArrayList<ArchiveInfo> infos
+   ArrayList<OfflineInfo> infos
   ) 
   {
     pInfos.clear();
@@ -272,7 +290,7 @@ class ArchiveCandidateTableModel
   )
   {
     int irow = pRowToIndex[row];
-    ArchiveInfo info = pInfos.get(irow);
+    OfflineInfo info = pInfos.get(irow);
     switch(col) {
     case 0:
       return info.getName();
@@ -281,14 +299,20 @@ class ArchiveCandidateTableModel
       return info.getVersionID();
 
     case 2:
+      return Dates.format(info.getCheckedOutStamp());
+      
+    case 3:
+      return String.valueOf(info.numWorking());
+      
+    case 4:
       return Dates.format(info.getArchivedStamp());
 
-    case 3:
+    case 5:
       return String.valueOf(info.numArchives());
-
-    case 4:
-      return Dates.format(info.getCheckedInStamp());
       
+    case 6:
+      return (info.canOffline() ? "YES" : "no");
+
     default:
       assert(false);
       return null;
@@ -301,7 +325,7 @@ class ArchiveCandidateTableModel
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 2762435484914009742L;
+  private static final long serialVersionUID = 2070602647052424009L;
 
 
 
@@ -312,6 +336,6 @@ class ArchiveCandidateTableModel
   /**
    * The archive information.
    */ 
-  private ArrayList<ArchiveInfo> pInfos;
+  private ArrayList<OfflineInfo> pInfos;
 
 }

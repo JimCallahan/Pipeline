@@ -1,4 +1,4 @@
-// $Id: MiscArchivalQueryReq.java,v 1.1 2004/11/16 03:56:36 jim Exp $
+// $Id: MiscOfflineQueryReq.java,v 1.1 2005/03/10 08:07:27 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -10,17 +10,15 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   M I S C   A R C H I V A L   Q U E R Y   R E Q                                          */
+/*   M I S C   O F F L I N E   Q U E R Y   R E Q                                            */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to get information about the checked-in versions which match the given archival 
- * criteria. <P> 
- * 
- * @see MasterMgr
+ * A request get offline related information about the checked-in versions which match the 
+ * given criteria. <P> 
  */
 public
-class MiscArchivalQueryReq
+class MiscOfflineQueryReq
   implements Serializable
 {
   /*----------------------------------------------------------------------------------------*/
@@ -32,10 +30,10 @@ class MiscArchivalQueryReq
    * 
    * @param pattern
    *   A regular expression {@link Pattern pattern} used to match the fully resolved 
-   *   names of nodes to restore or <CODE>null</CODE> for all nodes.
+   *   names of nodes or <CODE>null</CODE> for all nodes.
    * 
    * @param excludeLatest
-   *   The number of newer checked-in versions of the node to exclude from the returned list
+   *   The number of latest checked-in versions of the node to exclude from the returned list
    *   or <CODE>null</CODE> to include all versions.
    * 
    * @param maxWorking
@@ -43,24 +41,23 @@ class MiscArchivalQueryReq
    *   version in order for checked-in version to be inclued in the returned list or 
    *   <CODE>null</CODE> for any number of working versions.
    * 
-   * @param maxArchives
-   *   The maximum allowable number of archives which already contain the checked-in version
-   *   in order for it to be inclued in the returned list or <CODE>null</CODE> for any number 
-   *   of archives.
+   * @param minArchives
+   *   The minimum number of archive volumes containing the checked-in version in order for 
+   *   it to be inclued in the returned list or <CODE>null</CODE> for any number of archives.
    */
   public
-  MiscArchivalQueryReq
+  MiscOfflineQueryReq
   (
-    String pattern,
-    Integer excludeLatest, 
-    Integer maxWorking, 
-    Integer maxArchives
+   String pattern,
+   Integer excludeLatest, 
+   Integer maxWorking, 
+   Integer minArchives
   )
   {
     pPattern       = pattern;
     pExcludeLatest = excludeLatest;
     pMaxWorking    = maxWorking;
-    pMaxArchives   = maxArchives;
+    pMinArchives   = minArchives;
   }
 
 
@@ -71,7 +68,7 @@ class MiscArchivalQueryReq
 
   /**
    * Get the regular expression {@link Pattern pattern} used to match the fully resolved 
-   * names of nodes to restore or <CODE>null</CODE> for all nodes.
+   * names of nodes or <CODE>null</CODE> for all nodes.
    */ 
   public String
   getPattern() 
@@ -101,14 +98,13 @@ class MiscArchivalQueryReq
   }
 
   /** 
-   * Get the maximum allowable number of archives which already contain the checked-in 
-   * version in order for it to be inclued in the returned list or <CODE>null</CODE> for 
-   * any number of archives.
+   * Get minimum number of archive volumes containing the checked-in version in order for 
+   * it to be inclued in the returned list or <CODE>null</CODE> for any number of archives.
    */ 
   public Integer
-  getMaxArchives() 
+  getMinArchives() 
   {
-    return pMaxArchives;
+    return pMinArchives;
   }
 
 
@@ -117,7 +113,7 @@ class MiscArchivalQueryReq
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 8824342792939661602L;
+  private static final long serialVersionUID = -1197626254420117310L;
 
   
 
@@ -145,11 +141,10 @@ class MiscArchivalQueryReq
   private Integer  pMaxWorking;
 
   /** 
-   * The maximum allowable number of archives which already contain the checked-in 
-   * version in order for it to be inclued in the returned list or <CODE>null</CODE> for 
-   * any number of archives.
+   * The minimum number of archive volumes containing the checked-in version in order for 
+   * it to be inclued in the returned list or <CODE>null</CODE> for any number of archives.
    */ 
-  private Integer  pMaxArchives;
+  private Integer  pMinArchives;
 
 }
   

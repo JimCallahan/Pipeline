@@ -274,6 +274,22 @@ Commands() :
       }
     }
 
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Net, LogMgr.Level.Info,
+       "Establishing Network Connections...");
+    LogMgr.getInstance().flush();
+
+    /* initialize the plugins */ 
+    try {
+      PluginMgrClient.init();
+    }
+    catch(PipelineException ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Plg, LogMgr.Level.Severe,
+	 ex.getMessage());
+      System.exit(1);
+    }
+
     /* create the server */ 
     return (new FileMgrServer(pProdDir, pFilePort));
   }

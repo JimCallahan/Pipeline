@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.31 2005/03/04 09:05:26 jim Exp $
+// $Id: ScriptApp.java,v 1.32 2005/03/10 08:07:27 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -128,7 +128,7 @@ class ScriptApp
        "GLOBAL OPTIONS:\n" +
        "  [--master-host=...] [--master-port=...]\n" + 
        "  [--queue-host=...] [--queue-port=...] [--job-port=...]\n" + 
-       "  [--log-file=...][--log-backups=...][--log=...]\n" +
+       "  [--log-file=...] [--log-backups=...] [--log=...]\n" +
        "\n" + 
        "COMMANDS:\n\n" +
        "  Privileged Users:\n" +
@@ -141,6 +141,13 @@ class ScriptApp
        "    admin\n" + 
        "      --shutdown [--shutdown-jobmgrs] [--shutdown-pluginmgr]\n" + 
        "      --backup=dir\n" +
+       "      --archive=archive-prefix [--pattern='node-regex'] [--max-archives=integer]\n" +
+       "        [--min-size=bytes] --archiver=archiver-name[:major.minor.micro]]\n" + 
+       "        [--param=name:value ...] [--auto-start]\n" + 
+       "      --offline [--pattern='node-regex'] [--exclude-latest=integer]\n" + 
+       "        [--max-working=integer] [--min-archives=integer]\n" + 
+       "      --restore=archive-name [--param=name:value ...]\n" + 
+       "        [--vsn=node-name:major.minor.micro ...]\n" + 
        "\n" + 
        "  Toolset Administration\n" + 
        "    default-toolset\n" + 
@@ -317,6 +324,257 @@ class ScriptApp
        "\n" +  
        "Use \"plscript --html-help\" to browse the full documentation.\n");
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A D M I N                                                                            */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Create a new archive volume containing the matching checked-in versions.
+   */ 
+  public void 
+  archive
+  (
+   String prefix, 
+   String pattern, 
+   Integer maxArchives, 
+   Long minSize, 
+   String archiverName, 
+   VersionID archiverVersion,
+   TreeMap params, 
+   boolean autoStart, 
+   MasterMgrClient client
+  ) 
+    throws PipelineException
+  {
+    /* perform an archival candidate query */ 
+    ArrayList<ArchiveInfo> infos = client.archiveQuery(pattern, maxArchives);
+    if(infos.isEmpty()) 
+      throw new PipelineException
+	("No checked-in versions match the archive selection criteria!");
+
+    /* instantiate the Archiver plugin and set its parameters */ 
+    BaseArchiver archiver = 
+      PluginMgrClient.getInstance().newArchiver(archiverName, archiverVersion);
+    {
+      TreeMap<String,String> aparams = (TreeMap<String,String>) params;
+      for(String pname : aparams.keySet()) {
+	String value = aparams.get(pname);
+	try {
+	  ArchiverParam aparam = archiver.getParam(pname);
+	  if(aparam == null)
+	    throw new PipelineException 
+	      ("No parameter named (" + pname + ") exists for Archiver " + 
+	       "(" + archiver.getName() + ")!");
+	  
+	  if(aparam instanceof BooleanArchiverParam) {
+	    archiver.setParamValue(pname, new Boolean(value));
+	  }
+	  else if(aparam instanceof ByteSizeArchiverParam) {
+	    archiver.setParamValue(pname, parseLong(value));
+	  }
+	  else if(aparam instanceof IntegerArchiverParam) {
+	    archiver.setParamValue(pname, new Integer(value));
+	  }
+	  else if(aparam instanceof DoubleArchiverParam) {
+	    archiver.setParamValue(pname, new Double(value));
+	  }
+	  else if((aparam instanceof StringArchiverParam) || 
+		  (aparam instanceof DirectoryArchiverParam)) {
+	    archiver.setParamValue(pname, value);
+	  }
+	  else if(aparam instanceof EnumArchiverParam) {
+	    EnumArchiverParam eparam = (EnumArchiverParam) aparam;
+	    if(!eparam.getValues().contains(value))
+	      throw new PipelineException
+		("The value (" + value + ") is not one of the enumerations of " +
+		 "parameter (" + pname + ")!");
+	    
+	    archiver.setParamValue(pname, value);
+	  }
+	}
+	catch(NumberFormatException ex) {
+	  throw new PipelineException
+	    ("The value (" + value + ") is not legal for parameter (" + pname + ")!");
+	}
+      }
+    }
+
+    /* determine the total size of files associated with each selected version */ 
+    TreeMap<String,TreeMap<VersionID,Long>> versionSizes = null;
+    {
+      TreeMap<String,TreeSet<VersionID>> versions = new TreeMap<String,TreeSet<VersionID>>();
+      for(ArchiveInfo info : infos) {
+	TreeSet<VersionID> vids = versions.get(info.getName());
+	if(vids == null) {
+	  vids = new TreeSet<VersionID>();
+	  versions.put(info.getName(), vids);
+	}
+	vids.add(info.getVersionID());
+      }
+      
+      versionSizes = client.getArchivedSizes(versions);
+    }
+
+    /* assign enough versions to fill one archive volume */ 
+    TreeMap<String,TreeSet<VersionID>> selected = new TreeMap<String,TreeSet<VersionID>>();
+    long total = 0L;
+    if(versionSizes != null) {
+      long capacity = archiver.getCapacity();
+      for(String name : versionSizes.keySet()) {
+	TreeMap<VersionID,Long> sizes = versionSizes.get(name);
+	for(VersionID vid : sizes.keySet()) {
+	  Long size = sizes.get(vid);
+
+	  if((total+size) >= archiver.getCapacity()) {
+	    /* the version is too big to fit by itself in a volume */ 
+	    if(total == 0L) {
+	      throw new PipelineException 
+		("The version (" + vid + ") of node (" + name + ") was larger than " + 
+		 "the capacity of an entire archive volume!  The capacity of the " + 
+		 "archive volume must be increased to at least (" + formatLong(size) + ") " + 
+		 "in order to archive this version.");
+	    }
+	  }
+	  else {
+	    TreeSet<VersionID> vids = selected.get(name);
+	    if(vids == null) {
+	      vids = new TreeSet<VersionID>();
+	      selected.put(name, vids);
+	    }
+	    
+	    vids.add(vid);
+	    total += size;
+	  }
+	}
+      }
+
+      if(total < minSize) 
+	throw new PipelineException
+	  ("The total size (" + formatLong(total) + ") of all versions selected for " + 
+	   "archiving was less than the minimum archive volume size " + 
+	   "(" + formatLong(minSize) + ")!  Either select enough versions to meet this " + 
+	   "minimum size or specify a smaller minimum size using the --min-size option " + 
+	   "to create an archive volume.");
+    }
+
+    /* ask the user if they are ready */
+    if(archiver.isManual() && !autoStart) {
+      while(true) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	   "Are you ready to write the archive volume?\n" + 
+	   "[y/n]: ");
+	LogMgr.getInstance().flush();      
+	
+	try {
+	  InputStreamReader in = new InputStreamReader(System.in);
+	  switch(in.read()) {
+	  case 'y':
+	  case 'Y':
+	    break;
+
+	  case 'n':
+	  case 'N':
+	    throw new PipelineException("Archive operation aborted.");
+	  }
+	}
+	catch(IOException ex) {
+	  throw new PipelineException(ex);
+	}
+      }
+    }
+
+    /* create the archive volume */ 
+    {
+      StringBuffer buf = new StringBuffer();
+      buf.append("Archiving Checked-In Versions:\n");
+      for(String name : selected.keySet()) {
+	for(VersionID vid : selected.get(name)) {
+	  Long size = versionSizes.get(name).get(vid);
+	  buf.append
+	    ("  " + pad(name, ' ', 75) + "  v" + pad(vid.toString(), ' ', 10) + "  (" + 
+	     formatLong(size) + ")\n");
+	}
+      }
+      
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
+	 buf.toString());
+      LogMgr.getInstance().flush();   
+
+      String archiveName = client.archive(prefix, selected, archiver);
+
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
+	 "Created Archive Volume: " + archiveName + "  (" + formatLong(total) + ")");
+      LogMgr.getInstance().flush();      
+    }
+  }
+
+  /**
+   * Offline the matching checked-in versions.
+   */ 
+  public void 
+  offline
+  (
+   String pattern, 
+   Integer exludeLatest, 
+   Integer maxWorking, 
+   Integer minArchives, 
+   MasterMgrClient client
+  ) 
+    throws PipelineException
+  {
+    System.out.print
+      ("Offline():\n" + 
+       "  Exclude Latest  = " + exludeLatest + "\n" + 
+       "  Max Working     = " + maxWorking + "\n" + 
+       "  Min Archives    = " + minArchives + "\n" + 
+       "\n");
+
+  
+    //throw new PipelineException("Not implemented yet...");
+
+  }
+
+  /**
+   * Restore the given checked-in versions from an archive volume.
+   */ 
+  public void 
+  restore
+  (
+   String prefix, 
+   TreeMap params,
+   TreeMap versions, 
+   MasterMgrClient client
+  ) 
+    throws PipelineException
+  {
+    TreeMap<String,String> aparams = (TreeMap<String,String>) params;
+    TreeMap<String,TreeSet<VersionID>> aversions = 
+      (TreeMap<String,TreeSet<VersionID>>) versions; 
+
+    System.out.print
+      ("Restore():\n" + 
+       "       Prefix = " + prefix + "\n" + 
+       "   Parameters =\n");
+    for(String name : aparams.keySet()) 
+      System.out.print("    " + name + " = " + aparams.get(name) + "\n");
+    System.out.print
+      ("     Versions =\n");
+    for(String name : aversions.keySet()) 
+      for(VersionID vid : aversions.get(name)) 
+	System.out.print("    " + name + " (" + vid + ")\n");
+    System.out.print("\n");
+
+
+    //throw new PipelineException("Not implemented yet...");
+
+  }
+
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -2724,6 +2982,51 @@ class ScriptApp
   /*----------------------------------------------------------------------------------------*/
   
   /**
+   * Convert the given byte size String to a Long value.
+   * 
+   * @param text
+   *   The byte size string.
+   * 
+   * @return 
+   *   The value or <CODE>null</CODE> if the given string is <CODE>null</CODE> or empty.
+   * 
+   * @throws NumberFormatException
+   *   If the given string is invalid.
+   */ 
+  private Long
+  parseLong
+  (
+   String text
+  )
+    throws NumberFormatException
+  {
+    if((text != null) && (text.length() > 0) && !text.equals("-")) {
+      String istr = text;
+      long scale = 1;
+      if(text.endsWith("K")) {
+	istr = text.substring(0, text.length()-1);
+	scale = 1024L;
+      }
+      else if(text.endsWith("M")) {
+	istr = text.substring(0, text.length()-1);
+	scale = 1048576L;
+      }
+      else if(text.endsWith("G")) {
+	istr = text.substring(0, text.length()-1);
+	scale = 1073741824L;
+      }
+
+      Long value = new Long(istr);
+      if(value < 0) 
+	throw new NumberFormatException();
+
+      return (value * scale);
+    }
+
+    return null;
+  }
+
+  /**
    * Generates a formatted string representation of a large integer number.
    */ 
   private String
@@ -2740,13 +3043,16 @@ class ScriptApp
     }
     else if(value < 1073741824) {
       double m = ((double) value) / 1048576.0;
-      return String.format("%1$.2fM", m);
+      return String.format("%1$.1fM", m);
     }
     else {
       double g = ((double) value) / 1073741824.0;
-      return String.format("%1$.2fG", g);
+      return String.format("%1$.1fG", g);
     }
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Generate an explanitory message for the non-literal token.

@@ -11,8 +11,7 @@
 </blockquote>
 <h3><a name="Synopsis"></a>Synopsis</h3>
 <blockquote><b>plscript</b> [<a href="#Global_Options"><i>global-options</i></a>]
-  <a href="#Commands"><i>command</i></a> [<a href="#Shared_Options"><i>command-options</i></a>]<i><a
- href="#Node_Names_and_File_System_Paths_"></a></i><i><br>
+  <a href="#Commands"><i>command</i></a> [<a href="#Shared_Options"><i>command-options</i></a>]<i><br>
   </i><b>plscript</b> [<a href="#Global_Options"><i>global-options</i></a>]
   <a href="#--batch"><span style="font-weight: bold;">--batch</span></a>=<span
  style="font-style: italic;">batchfile</span><a href="#--batch"><span
@@ -24,7 +23,7 @@
   <b>plscript</b> <a style="font-weight: bold;" href="#--release-date">--release-date</a><br>
   <b>plscript</b> <a style="font-weight: bold;" href="#--copyright">--copyright</a><br>
   <span style="font-weight: bold;">plscript <a href="#--license">--license</a></span><br>
-  <a style="font-weight: bold;" href="#--working"></a></blockquote>
+</blockquote>
 <h3><a name="Contents"></a>Contents</h3>
 <ul>
   <li style="font-weight: bold;"><a href="#Description">Description</a></li>
@@ -67,6 +66,69 @@ Users</a></li>
         <li style="font-weight: bold;"><a href="#admin_--backup">--backup</a><span
  style="font-weight: normal;">=</span><span
  style="font-style: italic; font-weight: normal;">dir</span></li>
+      </ul>
+      <ul>
+        <li style="font-weight: bold;"><a href="#admin_--archive">--archive</a><span
+ style="font-weight: normal;">=</span><span style="font-weight: normal;"><span
+ style="font-style: italic;">archive-prefix</span></span><span
+ style="font-weight: normal;"> [<span style="font-weight: bold;">--pattern</span>=<span
+ style="font-style: italic;"></span></span><span
+ style="font-weight: normal;"><span style="font-style: italic;">'node-regex</span>'</span><span
+ style="font-style: italic;"></span><span style="font-weight: normal;">]</span><span
+ style="font-weight: normal;"> </span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;">[<span
+ style="font-weight: bold;">--max-archives</span>=<span
+ style="font-style: italic;">integer</span>] </span><span
+ style="font-weight: normal;">[<span style="font-weight: bold;">--min-size</span>=<span
+ style="font-style: italic;">bytes</span></span><span
+ style="font-weight: normal;">[K|M|G]</span><span
+ style="font-weight: normal;">]<span style="font-weight: bold;"></span></span><span
+ style="font-weight: normal;"><span style="font-style: italic;"></span></span><span
+ style="font-weight: normal; font-style: italic;"></span><span
+ style="font-weight: normal;"> </span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"><span
+ style="font-weight: bold;"></span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--archiver</span>=<span
+ style="font-style: italic;">archiver-name</span></span><span
+ style="font-weight: normal;">[:<span style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;">] [<a href="#--param"><span
+ style="font-weight: bold;">--param</span></a>=<span
+ style="font-style: italic;">name</span>:<span
+ style="font-style: italic;">value</span> ...] [<span
+ style="font-weight: bold;">--auto-start</span>]<br>
+          </span></li>
+        <li style="font-weight: bold;"><span
+ style="font-weight: normal;"><a style="color: rgb(153, 0, 0);"
+ href="#admin_--offline"><span style="font-weight: bold;">--offline</span></a>
+          </span><span style="font-weight: normal;"> [<span
+ style="font-weight: bold;">--pattern</span>=<span
+ style="font-style: italic;"></span></span><span
+ style="font-weight: normal;"><span style="font-style: italic;">'node-regex</span>'</span><span
+ style="font-style: italic;"></span><span style="font-weight: normal;">]</span><span
+ style="font-weight: normal;"> </span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;">[<span
+ style="font-weight: bold;">--exclude-latest</span>=<span
+ style="font-style: italic;">integer</span>] [<span
+ style="font-weight: bold;">--max-working</span>=<span
+ style="font-style: italic;">integer</span>] [<span
+ style="font-weight: bold;">--min-archives</span>=<span
+ style="font-style: italic;">integer</span>]</span></li>
+        <li style="font-weight: bold;"><span
+ style="font-weight: normal;"><a href="#admin_--restore"><span
+ style="font-weight: bold;">--restore</span></a>=<span
+ style="font-style: italic;">archive-name</span> </span><span
+ style="font-weight: normal;">[<a href="#--param"><span
+ style="font-weight: bold;">--param</span></a>=<span
+ style="font-style: italic;">name</span>:<span
+ style="font-style: italic;">value</span> ...] </span><span
+ style="font-weight: normal;">[<span style="font-weight: bold;">--vsn</span>=<span
+ style="font-style: italic;">node-name:</span></span><span
+ style="font-weight: normal;"><span style="font-style: italic;">major.minor.micro<span
+ style="font-style: italic;"></span></span><span
+ style="font-style: italic;"> ...</span>]<br>
+          </span></li>
       </ul>
     </ul>
   </ul>
@@ -1366,6 +1428,12 @@ for the currently Action plugin associated with the target node and the
 value must be legal for the parameter type. String values should be
 quoted.<br>
   <br>
+This option can also be used to set the value of Archiver parameters in
+conjunction with the <a href="#admin_--archive"><span
+ style="font-weight: bold;">admin --archive</span></a> and <a
+ href="#admin_--restore"><span style="font-weight: bold;">admin
+--restore</span></a> commands.<br>
+  <br>
   </div>
   <span style="font-weight: normal;"><span style="font-weight: bold;"><a
  name="--no-param"></a>--no-param</span></span><span
@@ -1711,6 +1779,190 @@ operations are blocked while the
 backup is in progress to insure a that the backup is complete and in a
 consistent state.&nbsp; The name of the generated backup file is
 printed when the backup is complete.<br>
+<br>
+</div>
+</div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
+ name="admin_--archive"></a>admin --archive</span><span
+ style="font-weight: normal;">=</span><span style="font-weight: normal;"><span
+ style="font-style: italic;">archive-prefix</span></span><span
+ style="font-weight: normal;"> [<span style="font-weight: bold;">--pattern</span>=<span
+ style="font-style: italic;"></span></span><span
+ style="font-weight: normal;"><span style="font-style: italic;">'node-regex</span>'</span><span
+ style="font-style: italic;"></span><span style="font-weight: normal;">]</span><span
+ style="font-weight: normal;"> </span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;">[<span
+ style="font-weight: bold;">--max-archives</span>=<span
+ style="font-style: italic;">integer</span>] </span><span
+ style="font-weight: normal;"><br>
+&nbsp; </span><span style="font-weight: normal;">[<span
+ style="font-weight: bold;">--min-size</span>=<span
+ style="font-style: italic;">bytes</span>] </span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--archiver</span>=<span
+ style="font-style: italic;">archiver-name</span></span><span
+ style="font-weight: normal;">[:<span style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;">] [<a href="#--param"><span
+ style="font-weight: bold;">--param</span></a>=<span
+ style="font-style: italic;">name</span>:<span
+ style="font-style: italic;">value</span> ...] </span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"><br>
+&nbsp; </span>[<span style="font-weight: bold;">--auto-start</span>]</span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"><span
+ style="font-weight: bold;">
+</span></span>
+<div style="margin-left: 40px;"><br>
+Create an archive volume containing the files associated with the
+checked-in versions which match the a search criteria using the given
+Archiver plugin.&nbsp; The name of the archive volume is constructed
+from a prefix (archive-prefix) and a serial number based on the
+creation time stamp.&nbsp; <br>
+<br>
+The selection of the checked-in versions to be archived is based on the
+follow options:<br>
+<span style="font-weight: normal;"><span style="font-weight: bold;"><br>
+--pattern</span>=<span style="font-style: italic;"></span></span><span
+ style="font-weight: normal;"><span style="font-style: italic;">'node-regex</span>'<br>
+<br>
+</span>
+<div style="margin-left: 40px;">A <a
+ href="file://@JAVA_HOME@/docs/api/java/util/regex/Pattern.html#sum">regular
+expression</a> (<span style="font-style: italic;">node-regex</span>)
+used to select the checked-in versions based on fully resolved node
+name.&nbsp; If this option is not specified, all node versions will be
+selected.<br>
+</div>
+<span style="font-weight: normal;"><br>
+</span><span style="font-style: italic;"></span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--max-archives</span>=<span
+ style="font-style: italic;">integer</span><br>
+</span>
+<div style="margin-left: 40px;"><span style="font-weight: normal;"><span
+ style="font-weight: bold;"></span></span><br>
+The maximum allowable number of archive volumes (<span
+ style="font-style: italic;">integer</span>) containing a checked-in
+version<br>
+</div>
+<div style="margin-left: 40px;">in order for it to be selected.&nbsp;
+By default, the maximum number of archive volumes is (2).&nbsp; Any
+checked-in versions which have already been archived more than this
+number of times will be excluded from the selected versions specified
+by the node name pattern.<br>
+</div>
+<br>
+<span style="font-weight: normal;"><span style="font-weight: bold;">--min-size</span>=<span
+ style="font-style: italic;">bytes</span>[K|M|G]<br>
+<span style="font-style: italic;"><br>
+</span></span>
+<div style="margin-left: 40px;">Specifies a minimum archive volume size
+(in bytes).&nbsp; If the total size of the files associated with all
+selected checked-in versions does not exceed the specified minimum
+size, no archive operation will be aborted without creating an archive
+volume.&nbsp; If this option is not specified, an archive volume will
+be created as long as at least one checked-in version is selected.<br>
+<br>
+</div>
+Once a set of checked-in versions has been selected for archiving, the
+following options control how the archive volume is created.<br>
+<br>
+<span style="font-weight: normal;"></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--archiver</span>=<span
+ style="font-style: italic;">archiver-name</span></span><span
+ style="font-weight: normal;">[:<span style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;">]<br>
+<span style="font-weight: bold;">--param</span>=<span
+ style="font-style: italic;">name:value</span><br>
+<br>
+</span>
+<div style="margin-left: 40px;">Specifies the name (archiver-name) and
+optionally the specific version number (<span
+ style="font-weight: normal;"><span style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>) of the Archiver plugin used
+to create the archive volume.&nbsp; Archiver parameters can be
+specified using <span style="font-weight: bold;">--param</span>
+options.&nbsp; <br>
+</span><br>
+</div>
+<span style="font-weight: normal;"><span style="font-weight: bold;"></span><span
+ style="font-style: italic;"></span></span><span
+ style="font-weight: normal;">Each Archiver plugin specifies the
+maximum size of archive volumes.&nbsp; If the total
+size of the files associated with the selected checked-in versions
+exceeds this maximum size, as many versions as possible will be
+included in the archive volume and the remaining versions will be
+ignored.&nbsp; Multiple archive volumes can be created by running </span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">plscript</span>(1)
+with</span><span style="font-weight: normal;"> the same command line
+options in a loop.&nbsp; As long as there exist checked-in versions
+which match the selection criteria, new archive volumes will be
+created.&nbsp; Once the maximum number of archives (<span
+ style="font-weight: bold;">--max-archives</span>) for each version has
+been reached or the total file size falls below the minimum total
+archive size, no archive volume will be created and <span
+ style="font-weight: bold;">plscript</span>(1) will exit with a failure
+exit code.</span><span style="font-weight: normal;"><br>
+<br>
+If the Archiver plugin is manual, the user will be queried for approval
+before the archive operation begins.&nbsp; The <span
+ style="font-weight: bold;">--auto-start</span> option can be used to
+override this behavior and start the archive operation without manual
+approval.&nbsp; If this option is used, whatever manual preparations
+are required by the Archiver plugin must have been performed before
+running <span style="font-weight: bold;">plscript</span>(1).&nbsp; For
+example, the Archiver plugin might write to a magnetic tape which has
+to be loaded manually.&nbsp; By using the <span
+ style="font-weight: bold;">--auto-start</span> option, a system
+administrator might load a blank tape and then rely on a <span
+ style="font-weight: bold;">cron</span>(1) job or some other form of
+delayed execution to later run <span style="font-weight: bold;">plscript</span>(1)
+to perform the archive later.&nbsp; If the Archiver plugin is
+automatic, the <span style="font-weight: bold;">--auto-start</span>
+option is ignored.</span><br>
+<span style="font-weight: normal;"></span></div>
+<span style="font-weight: normal;"><br>
+</span></div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
+ name="admin_--offline"></a>admin </span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--offline</span>
+</span><span style="font-weight: normal;"> [<span
+ style="font-weight: bold;">--pattern</span>=<span
+ style="font-style: italic;"></span></span><span
+ style="font-weight: normal;"><span style="font-style: italic;">'node-regex</span>'</span><span
+ style="font-style: italic;"></span><span style="font-weight: normal;">]</span><span
+ style="font-weight: normal;"> </span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;">[<span
+ style="font-weight: bold;">--exclude-latest</span>=<span
+ style="font-style: italic;">integer</span>] [<span
+ style="font-weight: bold;">--max-working</span>=<span
+ style="font-style: italic;">integer</span>] <br>
+&nbsp; [<span style="font-weight: bold;">--min-archives</span>=<span
+ style="font-style: italic;">integer</span>]<br>
+</span>
+<div style="margin-left: 40px;"><br>
+<span style="font-style: italic;">Not yet implemented...</span><br>
+</div>
+<span style="font-weight: normal;"></span><br>
+<span style="font-weight: normal;"></span><span
+ style="font-weight: bold;"><a name="admin_--restore"></a>admin </span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--restore</span>=archive-name
+</span><span style="font-weight: normal;">[<a
+ href="plscript.src.html.in#--param"><span style="font-weight: bold;">--param</span></a>=<span
+ style="font-style: italic;">name</span>:<span
+ style="font-style: italic;">value</span> ...] </span><span
+ style="font-weight: normal;"><br>
+&nbsp; [<span style="font-weight: bold;">--node</span>=<span
+ style="font-style: italic;">node-name:</span></span><span
+ style="font-weight: normal;"><span style="font-style: italic;">major.minor.micro<span
+ style="font-style: italic;"></span></span><span
+ style="font-style: italic;"> ...</span>]<br>
+</span>
+<div style="margin-left: 40px;"><br>
+<span style="font-style: italic;">Not yet implemented...</span><br>
 </div>
 </div>
 <h3><a name="Toolset_Administration"></a>Toolset Administration</h3>
@@ -2316,10 +2568,12 @@ installed.<br>
 <span style="font-weight: bold;"><a name="tool_--get-info-all"></a>tool</span><span
  style="font-weight: bold;"> --get-info-all</span><br>
 <br>
-Prints a summary of information for all Tool plugins.&nbsp; Equivalent
+<div style="margin-left: 40px;">Prints a summary of information for all
+Tool plugins.&nbsp; Equivalent
 to performing a <a href="#tool_--get-info"><span
  style="font-weight: bold;">tool
 --get-info</span></a> for each Tool plugin.<br>
+</div>
 <br>
 <br>
 <span style="font-weight: bold;"><a name="archiver_--get"></a>archiver
@@ -2352,10 +2606,12 @@ installed.<br>
 <span style="font-weight: bold;"><a name="archiver_--get-info-all"></a>archiver</span><span
  style="font-weight: bold;"> --get-info-all</span><br>
 <br>
-Prints a summary of information for all Archiver plugins.&nbsp;
+<div style="margin-left: 40px;">Prints a summary of information for all
+Archiver plugins.&nbsp;
 Equivalent to performing a <a href="#archiver_--get-info"><span
  style="font-weight: bold;">archiver
---get-info</span></a> for each Archiver plugin.<br>
+--get-info</span></a> for each Archiver plugin.
+</div>
 </div>
 <h3><a name="User_Preferences"></a><span style="font-weight: bold;"></span>User
 Preferences</h3>

@@ -1,4 +1,4 @@
-// $Id: MiscArchiveReq.java,v 1.3 2005/03/10 08:07:27 jim Exp $
+// $Id: FileArchiveReq.java,v 1.1 2005/03/10 08:07:27 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -10,16 +10,14 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   M I S C   A R C H I V E   R E Q                                                        */
+/*   F I L E   A R C H I V E   R E Q                                                        */
 /*------------------------------------------------------------------------------------------*/
 
 /**
  * A request to archive the given checked-in versions. <P>
- * 
- * @see MasterMgr
  */
 public
-class MiscArchiveReq
+class FileArchiveReq
   implements Serializable
 {
   /*----------------------------------------------------------------------------------------*/
@@ -29,32 +27,33 @@ class MiscArchiveReq
   /** 
    * Constructs a new request. <P> 
    * 
-   * @param prefix
-   *   A prefix to prepend to the created archive volume name.
+   * @param name 
+   *   The name of the archive volume to create.
    * 
-   * @param versions
-   *   The fully resolved names and revision numbers of the checked-in versions to archive.
+   * @param fseqs
+   *   The file sequences to archive indexed by fully resolved node name and checked-in 
+   *   revision number.
    * 
    * @param archiver
    *   The archiver plugin instance used to perform the archive operation.
    */
   public
-  MiscArchiveReq
+  FileArchiveReq
   (
-   String prefix, 
-   TreeMap<String,TreeSet<VersionID>> versions, 
+   String name, 
+   TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs, 
    BaseArchiver archiver
   )
   {
-    if(prefix == null) 
+    if(name == null) 
       throw new IllegalArgumentException
-	("The volume prefix cannot be (null)!");
-    pPrefix = prefix; 
+	("The volume name cannot be (null)!");
+    pName = name; 
 
-    if(versions == null) 
+    if(fseqs == null) 
       throw new IllegalArgumentException
-	("The checked-in versions cannot be (null)!");
-    pVersions = versions;
+	("The checked-in file sequences cannot be (null)!");
+    pFileSeqs = fseqs;
 
     if(archiver == null) 
       throw new IllegalArgumentException
@@ -69,21 +68,22 @@ class MiscArchiveReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the prefix to prepend to the created archive volume name.
+   * Get the name of the archive volume to create.
    */ 
   public String
-  getPrefix()
+  getName()
   {
-    return pPrefix; 
+    return pName; 
   }
 
   /**
-   * Get the fully resolved names and revision numbers of the checked-in versions to archive.
+   * Get the file sequences to archive indexed by fully resolved node name and checked-in 
+   * revision number.
    */ 
-  public TreeMap<String,TreeSet<VersionID>>
-  getVersions()
+  public TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>
+  getSequences()
   {
-    return pVersions; 
+    return pFileSeqs; 
   }
 
   /**
@@ -114,8 +114,8 @@ class MiscArchiveReq
   )
     throws IOException
   {
-    out.writeObject(pPrefix);
-    out.writeObject(pVersions);
+    out.writeObject(pName);
+    out.writeObject(pFileSeqs);
     out.writeObject(new BaseArchiver(pArchiver));
   }  
 
@@ -133,8 +133,8 @@ class MiscArchiveReq
   )
     throws IOException, ClassNotFoundException
   {
-    pPrefix = (String) in.readObject();
-    pVersions = (TreeMap<String,TreeSet<VersionID>>) in.readObject();
+    pName = (String) in.readObject();
+    pFileSeqs = (TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>) in.readObject();
     
     BaseArchiver archiver = (BaseArchiver) in.readObject();
     try {
@@ -153,7 +153,7 @@ class MiscArchiveReq
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 2750373201787269766L;
+  private static final long serialVersionUID = 21428909044013021L;
 
   
 
@@ -162,14 +162,15 @@ class MiscArchiveReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The prefix to prepend to the created archive volume name.
+   * The name of the archive volume to create.
    */ 
-  private String pPrefix; 
+  private String pName; 
 
   /**
-   * The fully resolved names and revision numbers of the checked-in versions to archive.
+   * The file sequences to archive indexed by fully resolved node name and checked-in 
+   * revision number.
    */ 
-  private TreeMap<String,TreeSet<VersionID>>  pVersions; 
+  private TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>  pFileSeqs; 
 
   /**
    * The archiver plugin instance used to perform the archive operation.
