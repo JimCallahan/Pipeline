@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.11 2004/07/18 21:32:13 jim Exp $
+// $Id: MasterRequest.java,v 1.12 2004/07/24 18:25:44 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -94,6 +94,24 @@ enum MasterRequest
    * An instance of {@link MiscSetSuffixEditorsReq MiscSetSuffixEditorsReq} is next.
    */
   SetSuffixEditors, 
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * An instance {@link QueueAddLicenseKeyReq QueueAddLicenseKeyReq} is next.
+   */
+  AddLicenseKey, 
+  
+  /**
+   * An instance {@link QueueRemoveLicenseKeyReq QueueRemoveLicenseKeyReq} is next.
+   */
+  RemoveLicenseKey, 
+
+  /**
+   * An instance {@link QueueSetTotalLicensesReq QueueSetTotalLicensesReq} is next.
+   */
+  SetTotalLicenses, 
   
 
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: QueueRequest.java,v 1.1 2004/07/21 07:16:18 jim Exp $
+// $Id: QueueRequest.java,v 1.2 2004/07/24 18:25:44 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -20,8 +20,33 @@ package us.temerity.pipeline.message;
 public
 enum QueueRequest
 {
+  /**
+   * Get the names of the license keys.
+   */ 
+  GetLicenseKeyNames,
+
+  /**
+   * Get the license keys.
+   */ 
+  GetLicenseKeys,
+
+  /**
+   * An instance {@link QueueAddLicenseKeyReq QueueAddLicenseKeyReq} is next.
+   */
+  AddLicenseKey, 
   
-  // ...
+  /**
+   * An instance {@link QueueRemoveLicenseKeyReq QueueRemoveLicenseKeyReq} is next.
+   */
+  RemoveLicenseKey, 
+
+  /**
+   * An instance {@link QueueSetTotalLicensesReq QueueSetTotalLicensesReq} is next.
+   */
+  SetTotalLicenses, 
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * No more requests will be send over this connection.

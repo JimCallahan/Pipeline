@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.1 2004/07/21 07:15:01 jim Exp $
+// $Id: QueueMgrServer.java,v 1.2 2004/07/24 18:25:21 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -154,9 +154,6 @@ class QueueMgrServer
 	Logs.net.severe("Interrupted while shutting down!");
 	Logs.flush();
       }
-
-      Logs.net.fine("Server Shutdown.");    
-      Logs.flush();  
     }
     catch (IOException ex) {
       Logs.net.severe("IO problems on port (" + pPort + "):\n" + 
@@ -176,6 +173,11 @@ class QueueMgrServer
 	catch (IOException ex) {
 	}
       }
+
+      pQueueMgr.shutdown();
+
+      Logs.net.fine("Server Shutdown.");
+      Logs.flush();
     }
   }
 
@@ -219,11 +221,52 @@ class QueueMgrServer
 	  
 	  Logs.net.finer("Request [" + pSocket.getInetAddress() + "]: " + kind.name());	  
 	  Logs.flush();
-
+	  
 	  switch(kind) {
+	  /*-- LICENSE KEYS ----------------------------------------------------------------*/
+	  case GetLicenseKeyNames:
+	    {
+	      objOut.writeObject(pQueueMgr.getLicenseKeyNames());
+	      objOut.flush(); 
+	    }
+	    break;
 
-	    // ...
+	  case GetLicenseKeys:
+	    {
+	      objOut.writeObject(pQueueMgr.getLicenseKeys());
+	      objOut.flush(); 
+	    }
+	    break;
 
+	  case AddLicenseKey:
+	    {
+	      QueueAddLicenseKeyReq req = 
+		(QueueAddLicenseKeyReq) objIn.readObject();
+	      objOut.writeObject(pQueueMgr.addLicenseKey(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case RemoveLicenseKey:
+	    {
+	      QueueRemoveLicenseKeyReq req = 
+		(QueueRemoveLicenseKeyReq) objIn.readObject();
+	      objOut.writeObject(pQueueMgr.removeLicenseKey(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case SetTotalLicenses:
+	    {
+	      QueueSetTotalLicensesReq req = 
+		(QueueSetTotalLicensesReq) objIn.readObject();
+	      objOut.writeObject(pQueueMgr.setTotalLicenses(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+
+	  /*-- NETWORK CONNECTION ----------------------------------------------------------*/
 	  case Disconnect:
 	    live = false;
 	    break;
