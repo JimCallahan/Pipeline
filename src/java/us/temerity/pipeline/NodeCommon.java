@@ -1,4 +1,4 @@
-// $Id: NodeCommon.java,v 1.2 2004/03/07 02:46:07 jim Exp $
+// $Id: NodeCommon.java,v 1.3 2004/03/09 09:43:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -190,6 +190,17 @@ class NodeCommon
   /*----------------------------------------------------------------------------------------*/
   
   /** 
+   * Get the primary and secondary file sequences associated with the node.
+   */
+  public TreeSet<FileSeq>
+  getSequences() 
+  {
+    TreeSet<FileSeq> fseqs = new TreeSet<FileSeq>(pSecondarySeqs);
+    fseqs.add(pPrimarySeq);
+    return fseqs;
+  }
+
+  /** 
    * Get the primary file sequence associated with the node. 
    */ 
   public FileSeq
@@ -206,7 +217,8 @@ class NodeCommon
   {
     return Collections.unmodifiableSortedSet(pSecondarySeqs);
   }
-
+  
+  
   
   /** 
    * Get the name of the execution environment under which to execute the editor program and 
