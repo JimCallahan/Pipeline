@@ -1,4 +1,4 @@
-// $Id: DNotify.cc,v 1.2 2004/04/11 19:30:20 jim Exp $
+// $Id: DNotify.cc,v 1.3 2004/04/14 18:42:13 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -192,12 +192,19 @@ JNICALL Java_us_temerity_pipeline_core_DNotify_unmonitorNative
 
   /* cancel monitoring */ 
   if(fcntl(fd, F_NOTIFY, 0) == -1) {
-    sprintf(msg, "Unable to cancel directory notification: %s", strerror(errno));
+    sprintf(msg, "Unable cancel directory notification for (%d): %s", 
+	    fd, strerror(errno));
     env->ThrowNew(IOException, msg);
     return;
   }
 
-  return;
+  /* release the file descriptor */ 
+  if(close(fd) == -1) {
+    sprintf(msg, "Unable close directory (%d): %s", 
+	    fd, strerror(errno));
+    env->ThrowNew(IOException, msg);
+    return;
+  }
 }
 
 
