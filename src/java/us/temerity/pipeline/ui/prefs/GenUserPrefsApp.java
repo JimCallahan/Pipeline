@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.8 2004/08/23 07:12:27 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.9 2004/08/25 05:23:28 jim Exp $
 
 import java.io.*; 
 import java.util.*;
@@ -231,7 +231,8 @@ class GenUserPrefsApp
       BasePref prefs[] = {
 	new HotKeyPref
 	("update the status of all nodes", 
-	 "UpdateNodes", "Update Nodes:"),	
+	 "UpdateNodes", "Update Nodes:", 
+	 false, false, false, 32), /* Space */ 
 	
 	new HotKeyPref
 	("register a new node",
@@ -241,15 +242,19 @@ class GenUserPrefsApp
 
 	new HotKeyPref
 	("move the camera so that it is centered on current mouse position",
-	 "CameraCenter", "Center:"),
+	 "CameraCenter", "Center:", 
+	 false, false, false, 67),  /* C */ 
+	 
 	
 	new HotKeyPref
 	("move the camera to frame the bounds of the currently selected nodes",
-	 "CameraFrameSelection", "Frame Selection:"),
+	 "CameraFrameSelection", "Frame Selection:",
+	 false, false, false, 70),  /* F */ 
 	
 	new HotKeyPref
 	("move the camera to frame all active nodes",
-	 "CameraFrameAll", "Frame All:"),
+	 "CameraFrameAll", "Frame All:", 
+	 false, false, false, 71),  /* G */ 
 	
 	new BasePref(),
 
@@ -288,6 +293,18 @@ class GenUserPrefsApp
       };
 
       pPrefs.put("Panel|Node Details|Hot Keys", prefs);
+    }
+
+    
+    {
+      BasePref prefs[] = {
+	new HotKeyPref
+	("update the status of all jobs and job groups.", 
+	 "JobBrowserUpdate", "Update Jobs:",
+	 false, false, false, 32)  /* Space */ 
+      };
+
+      pPrefs.put("Panel|Job Browser|Hot Keys", prefs);
     }
   }
 
@@ -329,7 +346,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.8 2004/08/23 07:12:27 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.9 2004/08/25 05:23:28 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -582,7 +599,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.8 2004/08/23 07:12:27 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.9 2004/08/25 05:23:28 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
