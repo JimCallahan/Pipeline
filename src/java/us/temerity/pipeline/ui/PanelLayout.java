@@ -1,4 +1,4 @@
-// $Id: PanelLayout.java,v 1.1 2004/05/11 19:17:03 jim Exp $
+// $Id: PanelLayout.java,v 1.2 2004/08/23 06:43:37 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -33,18 +33,18 @@ class PanelLayout
    * @param root
    *   The root manager panel.
    * 
-   * @param size
-   *   The size of the parent <CODE>JFrame</CODE>.
+   * @param bounds
+   *   The bounds of the parent window.
    */
   public 
   PanelLayout
   (
    JManagerPanel root, 
-   Dimension size
+   Rectangle bounds
   )
   {
-    pRoot = root;
-    pSize = size;
+    pRoot   = root;
+    pBounds = bounds; 
   }
 
 
@@ -63,12 +63,12 @@ class PanelLayout
   }
   
   /**
-   * Get the dimensions of the parent <CODE>JFrame</CODE>.
+   * Get the bounds of the parent window.
    */ 
-  public Dimension
-  getSize() 
+  public Rectangle
+  getBounds() 
   {
-    return pSize;
+    return pBounds;
   }
 
 
@@ -86,8 +86,10 @@ class PanelLayout
   {
     encoder.encode("RootPanel", pRoot);
 
-    encoder.encode("FrameWidth",  pSize.width);
-    encoder.encode("FrameHeight", pSize.height);
+    encoder.encode("FramePosX",   pBounds.x);
+    encoder.encode("FramePosY",   pBounds.y);
+    encoder.encode("FrameWidth",  pBounds.width);
+    encoder.encode("FrameHeight", pBounds.height);
   }
 
   public void 
@@ -103,6 +105,14 @@ class PanelLayout
     pRoot = root;
 
 
+    Integer posX = (Integer) decoder.decode("FramePosX");
+    if(posX == null) 
+      throw new GlueException("The \"FramePosX\" was missing or (null)!");
+
+    Integer posY = (Integer) decoder.decode("FramePosY");
+    if(posY == null) 
+      throw new GlueException("The \"FramePosY\" was missing or (null)!");
+
     Integer width = (Integer) decoder.decode("FrameWidth");
     if(width == null) 
       throw new GlueException("The \"FrameWidth\" was missing or (null)!");
@@ -111,7 +121,7 @@ class PanelLayout
     if(height == null) 
       throw new GlueException("The \"FrameHeight\" was missing or (null)!");
 
-    pSize = new Dimension(width, height);
+    pBounds = new Rectangle(posX, posY, width, height);
   }
   
 
@@ -125,8 +135,8 @@ class PanelLayout
   private JManagerPanel  pRoot; 
 
   /**
-   * The dimensions of the parent <CODE>JFrame</CODE>.
+   * The bounds of the parent window. 
    */ 
-  private Dimension  pSize;
+  private Rectangle  pBounds; 
 
 }

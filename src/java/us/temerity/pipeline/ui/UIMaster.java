@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.34 2004/08/01 15:40:56 jim Exp $
+// $Id: UIMaster.java,v 1.35 2004/08/23 06:43:37 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -167,6 +167,31 @@ class UIMaster
     return pFrame;
   }
 
+  
+  /**
+   * Create and show a new secondary panel frame.
+   */ 
+  public void
+  createWindow() 
+  {
+    JPanelFrame frame = new JPanelFrame(); 
+    pPanelFrames.add(frame);
+
+    frame.setVisible(true);
+  }
+  
+  /**
+   * Destroy an existing secondary panel frame.
+   */ 
+  public void 
+  destroyWindow
+  (
+   JPanelFrame frame
+  ) 
+  {
+    pPanelFrames.remove(frame);
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -194,7 +219,11 @@ class UIMaster
     pLayoutName = name;
 
     File path = new File(pLayoutName);
-    pFrame.setTitle("plui [" + path.getName() + "]");
+    String title = ("plui [" + path.getName() + "]");
+
+    pFrame.setTitle(title);    
+    for(JPanelFrame frame : pPanelFrames) 
+      frame.setTitle(title);
   }
 
   
@@ -2295,11 +2324,10 @@ class UIMaster
 	    panel.setName("RootPanel");
 	    
 	    {
-	      JManagerPanel mgr = new JManagerPanel();
-	      pRootManagerPanel = mgr;
-	      mgr.setContents(new JEmptyPanel());
+	      JManagerPanel mpanel = new JManagerPanel();
+	      mpanel.setContents(new JEmptyPanel());
 	      
-	      panel.add(mgr);
+	      panel.add(mpanel);
 	    }
 	    
 	    root.add(panel);
@@ -2348,6 +2376,8 @@ class UIMaster
       }
 
       {
+	pPanelFrames = new LinkedList<JPanelFrame>();
+
 	pSaveLayoutDialog     = new JSaveLayoutDialog();
 	pManageLayoutsDialog  = new JManageLayoutsDialog();
 
@@ -2489,8 +2519,20 @@ class UIMaster
 	if(!dir.isDirectory()) 
 	  dir.mkdirs();
 
-	PanelLayout layout = new PanelLayout(pRootManagerPanel, pFrame.getSize());
-	LockedGlueFile.save(file, "PanelLayout", layout);
+	LinkedList<PanelLayout> layouts = new LinkedList<PanelLayout>();
+	{
+	  JManagerPanel mpanel = (JManagerPanel) pRootPanel.getComponent(0);
+	  PanelLayout layout = new PanelLayout(mpanel, pFrame.getBounds());
+	  layouts.add(layout);
+	}
+	  
+	for(JPanelFrame frame : pPanelFrames) {
+	  JManagerPanel mpanel = frame.getManagerPanel();
+	  PanelLayout layout = new PanelLayout(mpanel, frame.getBounds());
+	  layouts.add(layout);
+	}
+
+	LockedGlueFile.save(file, "PanelLayout", layouts);
       }
       catch(Exception ex) {
 	showErrorDialog(ex);
@@ -2521,9 +2563,14 @@ class UIMaster
     {
       /* clean up existing panels */ 
       {
-	pRootManagerPanel = null;
 	pRootPanel.removeAll();
-	
+
+	for(JPanelFrame frame : pPanelFrames) {
+	  frame.removePanels();
+	  frame.setVisible(false);
+	}
+	pPanelFrames.clear();
+
 	pNodeBrowserPanels.clear();
 	pNodeViewerPanels.clear();
 	pNodeDetailsPanels.clear();
@@ -2531,27 +2578,53 @@ class UIMaster
 	pNodeFilesPanels.clear();
       }
 
-      /* restore saved panels */ 
-      PanelLayout layout = null;
+      /* restore saved panels */
+      LinkedList<PanelLayout> layouts = null;
       try {      
 	File file = new File(PackageInfo.sHomeDir, 
 			     PackageInfo.sUser + "/.pipeline/layouts" + pName);
-	layout = (PanelLayout) LockedGlueFile.load(file);
 
-	setLayoutName(pName);
-	pFrame.setSize(layout.getSize());
-	pRootManagerPanel = layout.getRoot();
+	layouts = (LinkedList<PanelLayout>) LockedGlueFile.load(file);
       }
       catch(Exception ex) {
-	pRootManagerPanel = new JManagerPanel();
-	pRootManagerPanel.setContents(new JEmptyPanel());
 	showErrorDialog(ex);
       }
 
-      /* replace the root panel */ 
-      pRootPanel.add(pRootManagerPanel);
-      pRootPanel.validate();
-      pRootPanel.repaint();
+      if((layouts != null) && !layouts.isEmpty()) {
+	boolean first = true;
+	for(PanelLayout layout : layouts) {
+	  JManagerPanel mpanel = layout.getRoot();
+
+	  if(first) {
+	    pFrame.setBounds(layout.getBounds());
+
+	    pRootPanel.add(mpanel);
+	    pRootPanel.validate();
+	    pRootPanel.repaint();
+
+	    first = false;
+	  }
+	  else {
+	    JPanelFrame frame = new JPanelFrame(); 
+	    
+	    frame.setBounds(layout.getBounds());
+	    frame.setManagerPanel(mpanel);
+	    frame.setVisible(true);
+
+	    pPanelFrames.add(frame);
+	  }
+	}
+
+	setLayoutName(pName);
+      }
+      else {
+	JManagerPanel mpanel = new JManagerPanel();
+	mpanel.setContents(new JEmptyPanel()); 
+
+	pRootPanel.add(mpanel);
+	pRootPanel.validate();
+	pRootPanel.repaint();
+      }
     }
 
     private String  pName;
@@ -2603,8 +2676,11 @@ class UIMaster
     run() 
     {
       try {
-	if(pRootManagerPanel != null) 
-	  pRootManagerPanel.updateUserPrefs();
+	if(pRootPanel != null) {
+	  JManagerPanel mpanel = (JManagerPanel) pRootPanel.getComponent(0);
+	  if(mpanel != null) 
+	    mpanel.updateUserPrefs();
+	}
       }
       catch(Exception ex) {
 	showErrorDialog(ex);
@@ -2727,6 +2803,11 @@ class UIMaster
    */ 
   private JFrame  pFrame;
 
+  /**
+   * The secondary panel frames.
+   */ 
+  private LinkedList<JPanelFrame>  pPanelFrames;
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -2757,11 +2838,6 @@ class UIMaster
    * The parent of the root manager panel.
    */ 
   private JPanel  pRootPanel; 
-
-  /**
-   * The root manager panel.
-   */ 
-  private JManagerPanel  pRootManagerPanel; 
 
 
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: LockedGlueFile.java,v 1.2 2004/05/16 19:05:28 jim Exp $
+// $Id: LockedGlueFile.java,v 1.3 2004/08/23 06:43:37 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -89,7 +89,7 @@ class LockedGlueFile
   (
     File file, 
     String title,  
-    Glueable obj 
+    Object obj 
   ) 
     throws GlueException, GlueLockException 
   {

@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.32 2004/07/28 19:21:24 jim Exp $
+// $Id: JManagerPanel.java,v 1.33 2004/08/23 06:43:37 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -65,6 +65,13 @@ class JManagerPanel
       
       pPopup = new JPopupMenu();  
  
+      item = new JMenuItem("New Window");
+      item.setActionCommand("new-window");
+      item.addActionListener(this);
+      pPopup.add(item);
+      
+      pPopup.addSeparator();
+      
       {
 	JMenu sub = new JMenu("Panel Type");   
 	pPopup.add(sub);  
@@ -486,6 +493,60 @@ class JManagerPanel
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Recursively remove the existing panels from their panel groups.
+   */ 
+  public void 
+  releasePanelGroups()
+  {
+    if(pTopLevelPanel != null) {
+      pTopLevelPanel.setGroupID(0);
+    }
+    else {
+      Component contents = getContents();
+      if(contents instanceof JHorzSplitPanel) {
+	JHorzSplitPanel split = (JHorzSplitPanel) contents;
+	
+	{
+	  JManagerPanel mpanel = (JManagerPanel) split.getLeftComponent();
+	  mpanel.releasePanelGroups();
+	}
+	
+	{
+	  JManagerPanel mpanel = (JManagerPanel) split.getRightComponent();
+	  mpanel.releasePanelGroups();
+	}
+      }
+      else if(contents instanceof JVertSplitPanel) { 
+	JVertSplitPanel split = (JVertSplitPanel) contents;
+	
+	{
+	  JManagerPanel mpanel = (JManagerPanel) split.getBottomComponent();
+	  mpanel.releasePanelGroups();
+	}
+	
+	{
+	  JManagerPanel mpanel = (JManagerPanel) split.getTopComponent();
+	  mpanel.releasePanelGroups();
+	}
+      }
+      else if(contents instanceof JTabbedPanel) {
+	JTabbedPanel tab = (JTabbedPanel) contents;
+	
+	int wk;
+	for(wk=0; wk<tab.getTabCount(); wk++) {
+	  JManagerPanel mpanel = (JManagerPanel) tab.getComponentAt(wk);
+	  mpanel.releasePanelGroups();
+	}
+      }
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Update the components which make up the title panel to reflect the current state of 
    * the top level panel contents.
@@ -500,7 +561,6 @@ class JManagerPanel
     pOwnerViewField.setText(pTopLevelPanel.getTitle());
     pLockedLight.setIcon(pTopLevelPanel.isLocked() ? sLockedLightOnIcon : sLockedLightIcon);
   }
-
 
   /**
    * Recursively update all child panels to reflect new user preferences.
@@ -630,7 +690,10 @@ class JManagerPanel
 
     /* dispatch event */ 
     String cmd = e.getActionCommand();
-    if(cmd.equals("node-browser"))
+    if(cmd.equals("new-window")) 
+      doNewWindow();
+
+    else if(cmd.equals("node-browser"))
       doNodeBrowserPanel();
     else if(cmd.equals("node-viewer"))
       doNodeViewerPanel();
@@ -643,7 +706,6 @@ class JManagerPanel
 
     else if(cmd.equals("none"))
       doEmptyPanel();
-
     
     /* layout */ 
     else if(cmd.equals("add-left"))
@@ -716,6 +778,18 @@ class JManagerPanel
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C T I O N S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Create a new secondary panel frame.
+   */ 
+  private void 
+  doNewWindow() 
+  {
+    UIMaster.getInstance().createWindow();
+  }
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -974,11 +1048,6 @@ class JManagerPanel
       }
 
       pTopLevelPanel.setGroupID(0);
-    }
-
-    // DEBUG
-    else {
-      System.out.print("Ignoring...\n");      
     }
   }
 
