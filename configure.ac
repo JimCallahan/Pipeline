@@ -1070,8 +1070,6 @@ AC_CONFIG_FILES([
   rpm/headerB
   rpm/rpmrc
   rpm/rpmmacros
-
-  tests/Makefile  
 ])
 
 AC_OUTPUT
