@@ -225,34 +225,6 @@ AC_MSG_RESULT([$ROOT_INST_DIR])
 
 
 
-AC_MSG_CHECKING([Root Production Directory])
-
-AC_SUBST(PRODDIR)
-PRODDIR=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-              --lookup ProductionDirectory`
-
-if test "$PRODDIR" == "null"
-then
-  AC_MSG_ERROR([customer profile was incomplete.])
-fi 
-
-AC_MSG_RESULT([$PRODDIR])
-
-
-AC_MSG_CHECKING([Root Node Storage Directory])
-
-AC_SUBST(NODEDIR)
-NODEDIR=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-              --lookup NodeDirectory`
-
-if test "$NODEDIR" == "null"
-then
-  AC_MSG_ERROR([customer profile was incomplete.])
-fi 
-
-AC_MSG_RESULT([$NODEDIR])
-
-
 
 AC_MSG_CHECKING([Installed Toolsets Directory])
 
@@ -331,6 +303,21 @@ AC_MSG_RESULT([$PL_MASTER_PORT])
 
 
 
+AC_MSG_CHECKING([Root Node Storage Directory])
+
+AC_SUBST(NODEDIR)
+NODEDIR=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
+              --lookup NodeDirectory`
+
+if test "$NODEDIR" == "null"
+then
+  AC_MSG_ERROR([customer profile was incomplete.])
+fi 
+
+AC_MSG_RESULT([$NODEDIR])
+
+
+
 dnl ------------------------------------------------------------------------------------------
 
 AC_MSG_CHECKING([Pipeline File Server Hostname])
@@ -390,6 +377,83 @@ then
 fi 
 
 AC_MSG_RESULT([$NOTIFY_MONITOR_PORT])
+
+
+
+AC_MSG_CHECKING([Root Production Directory])
+
+AC_SUBST(PRODDIR)
+PRODDIR=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
+              --lookup ProductionDirectory`
+
+if test "$PRODDIR" == "null"
+then
+  AC_MSG_ERROR([customer profile was incomplete.])
+fi 
+
+AC_MSG_RESULT([$PRODDIR])
+
+
+
+dnl ------------------------------------------------------------------------------------------
+
+AC_MSG_CHECKING([Pipeline Queue Server Hostname])
+
+AC_SUBST(PL_QUEUE_SERVER)
+PL_QUEUE_SERVER=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
+                      --lookup QueueHostname`
+
+if test "$PL_QUEUE_SERVER" == "null"
+then
+  AC_MSG_ERROR([customer profile was incomplete.])
+fi 
+
+AC_MSG_RESULT([$PL_QUEUE_SERVER])
+
+
+
+AC_MSG_CHECKING([Pipeline Queue Server Port])
+
+AC_SUBST(PL_QUEUE_PORT)
+PL_QUEUE_PORT=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
+                    --lookup QueuePort`
+
+if test "$PL_QUEUE_PORT" == "null"
+then
+  AC_MSG_ERROR([customer profile was incomplete.])
+fi 
+
+AC_MSG_RESULT([$PL_QUEUE_PORT])
+
+
+
+AC_MSG_CHECKING([Pipeline Job Server Port])
+
+AC_SUBST(PL_JOB_PORT)
+PL_JOB_PORT=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
+                  --lookup JobPort`
+
+if test "$PL_JOB_PORT" == "null"
+then
+  AC_MSG_ERROR([customer profile was incomplete.])
+fi 
+
+AC_MSG_RESULT([$PL_JOB_PORT])
+
+
+
+AC_MSG_CHECKING([Root Queue Storage Directory])
+
+AC_SUBST(QUEUEDIR)
+QUEUEDIR=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
+               --lookup QueueDirectory`
+
+if test "$QUEUEDIR" == "null"
+then
+  AC_MSG_ERROR([customer profile was incomplete.])
+fi 
+
+AC_MSG_RESULT([$QUEUEDIR])
 
 
 
@@ -627,6 +691,35 @@ else
   EXTRA_DEBUG_SUBDIRS="tests"
   BUILD_MODE="dbg"
 fi
+
+
+dnl ------------------------------------------------------------------------------------------
+
+AC_SUBST(PLMASTERMGR_DEBUG_OPTS)
+PLMASTERMGR_DEBUG_OPTS=""
+
+AC_SUBST(PLFILEMGR_DEBUG_OPTS)
+PLFILEMGR_DEBUG_OPTS=""
+
+AC_SUBST(PLNOTIFY_DEBUG_OPTS)
+PLNOTIFY_DEBUG_OPTS=""
+
+AC_SUBST(PLQUEUEMGR_DEBUG_OPTS)
+PLQUEUEMGR_DEBUG_OPTS=""
+
+AC_SUBST(PLJOBMGR_DEBUG_OPTS)
+PLJOBMGR_DEBUG_OPTS=""
+
+if test "$BUILD_MODE" = "dbg" 
+then 
+  java_debug_opts="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address="
+  PLMASTERMGR_DEBUG_OPTS=${java_debug_opts}"43001"
+  PLFILEMGR_DEBUG_OPTS=${java_debug_opts}"43002"
+  PLNOTIFY_DEBUG_OPTS=${java_debug_opts}"43003"
+  PLQUEUEMGR_DEBUG_OPTS=${java_debug_opts}"43004"
+  PLJOBMGR_DEBUG_OPTS=${java_debug_opts}"43005"
+fi
+
 
 
 dnl ------------------------------------------------------------------------------------------
@@ -880,8 +973,10 @@ AC_CONFIG_FILES([
   docs/javadoc/Makefile
   docs/man/Makefile
   docs/man/plfilemgr.src.html
+  docs/man/pljobmgr.src.html
   docs/man/plmaster.src.html
   docs/man/plnotify.src.html
+  docs/man/plqueuemgr.src.html
   docs/man/plui.src.html
   docs/manuals/Makefile
 
@@ -903,7 +998,9 @@ AC_CONFIG_FILES([
 
   src/java/scripts/Makefile
   src/java/scripts/plfilemgr
+  src/java/scripts/pljobmgr
   src/java/scripts/plmaster
+  src/java/scripts/plqueuemgr
   src/java/scripts/plui
 
   src/java/share/Makefile
