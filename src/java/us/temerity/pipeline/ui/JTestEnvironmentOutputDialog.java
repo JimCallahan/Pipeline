@@ -1,4 +1,4 @@
-// $Id: JTestEnvironmentOutputDialog.java,v 1.1 2004/06/03 09:30:32 jim Exp $
+// $Id: JTestEnvironmentOutputDialog.java,v 1.2 2004/06/14 22:51:28 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -61,7 +61,7 @@ class JTestEnvironmentOutputDialog
 	area.setName("CodeTextArea");
 	area.setLineWrap(true);
 	area.setWrapStyleWord(true);
-	area.setEditable(true);
+	area.setEditable(false);
       }
 
       {
