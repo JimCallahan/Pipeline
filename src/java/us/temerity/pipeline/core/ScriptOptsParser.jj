@@ -227,7 +227,7 @@ TOKEN :
 		   
   /* commands */ 
 | <PRIVILEGED:        "privileged">       : PRIVILEGED_OPTS 
-| <ADMIN:             "admin">  
+| <ADMIN:             "admin">            : OPTIONS
 | <DEFAULT_TOOLSET:   "default-toolset">  : TOOLSET_OPTS 
 | <ACTIVE_TOOLSET:    "active-toolset">   : TOOLSET_OPTS 
 | <TOOLSET1:          "toolset">          : TOOLSET_OPTS 
