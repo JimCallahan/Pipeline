@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.6 2004/06/08 20:08:01 jim Exp $
+// $Id: MasterMgr.java,v 1.7 2004/06/14 22:42:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1846,7 +1846,7 @@ class MasterMgr
    * 
    * @return
    *   <CODE>NodeGetWorkingRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to register the inital working version.
+   *   <CODE>FailureRsp</CODE> if unable to retrieve the working version.
    */
   public Object
   getWorkingVersion
@@ -2071,6 +2071,56 @@ class MasterMgr
       targetLock.writeLock().unlock();
     }    
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C H E C K E D - I N   V E R S I O N S                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the checked-in version of the node with the given revision number. <P> 
+   * 
+   * @param req 
+   *   The get checked-in version request.
+   * 
+   * @return
+   *   <CODE>NodeGetCheckedInRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to retrieve the checked-in version.
+   */
+  public Object
+  getCheckedInVersion
+  ( 
+   NodeGetCheckedInReq req
+  ) 
+  {	 
+    assert(req != null);
+    TaskTimer timer = new TaskTimer();
+
+    String name = req.getName();
+    VersionID vid = req.getVersionID();
+
+    timer.aquire();
+    ReentrantReadWriteLock lock = getCheckedInLock(name);
+    lock.readLock().lock();
+    try {
+      timer.resume();	
+
+      TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
+      CheckedInBundle bundle = checkedIn.get(vid);
+      if(bundle == null) 
+	throw new PipelineException 
+	  ("Somehow no checked-in version (" + vid + ") of node (" + name + ") exists!"); 
+
+      return new NodeGetCheckedInRsp(timer, new NodeVersion(bundle.uVersion));
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      lock.readLock().unlock();
+    }  
+  }  
 
 
 
@@ -3325,6 +3375,7 @@ class MasterMgr
       NodeMod work       = null;
       NodeVersion base   = null;
       NodeVersion latest = null;
+      ArrayList<VersionID> versionIDs = new ArrayList<VersionID>();
       VersionState versionState = null;
       {
 	if(checkedIn != null) {
@@ -3333,6 +3384,8 @@ class MasterMgr
 	      ("Somehow no checked-in versions of node (" + name + ") exist!"); 
 	  CheckedInBundle bundle = checkedIn.get(checkedIn.lastKey());
 	  latest = new NodeVersion(bundle.uVersion);
+
+	  versionIDs.addAll(checkedIn.keySet());
 	}
 
 	if(working != null) {
@@ -3643,7 +3696,7 @@ class MasterMgr
       /* create the node details */
       NodeDetails details = 
 	new NodeDetails(name, 
-			work, base, latest, 
+			work, base, latest, versionIDs, 
 			overallNodeState, overallQueueState, 
 			versionState, propertyState, linkState, 
 			fileStates, fileTimeStamps, queueStates);
@@ -5085,12 +5138,12 @@ class MasterMgr
   ) 
     throws PipelineException
   {
-    Logs.ops.finer("Reading Downstream Links: " + name);
-
     File file = new File(pNodeDir, "downstream/" + name);
     
     try {
       if(file.exists()) {
+	Logs.ops.finer("Reading Downstream Links: " + name);
+
 	try {
 	  FileReader in = new FileReader(file);
 	  GlueDecoder gd = new GlueDecoderImpl(in);
@@ -5280,7 +5333,7 @@ class MasterMgr
 	    }
 	  }
 	  checkedIn.put(vid, new CheckedInBundle(vsn));
-
+	  
 	  /* generate new file states */ 
 	  TreeMap<FileSeq,FileState[]> fileStates = new TreeMap<FileSeq,FileState[]>();
 	  for(FileSeq fseq : working.uFileStates.keySet()) {
@@ -5305,6 +5358,7 @@ class MasterMgr
 	  NodeDetails ndetails = 
 	    new NodeDetails(name, 
 			    work, vsn, checkedIn.get(checkedIn.lastKey()).uVersion,
+			    checkedIn.keySet(), 
 			    OverallNodeState.Identical, OverallQueueState.Finished, 
 			    VersionState.Identical, PropertyState.Identical, 
 			    LinkState.Identical, 
