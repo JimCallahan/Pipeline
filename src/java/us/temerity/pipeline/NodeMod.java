@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.18 2004/04/17 19:49:01 jim Exp $
+// $Id: NodeMod.java,v 1.19 2004/04/20 21:58:31 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -886,7 +886,8 @@ class NodeMod
 
     {
       String editor = mod.getEditor(); 
-      if(!(((pEditor == null) && (editor == null)) || pEditor.equals(editor))) {
+      if(!(((pEditor == null) && (editor == null)) || 
+	   ((pEditor != null) && pEditor.equals(editor)))) {
 	pEditor = editor;
 	modified = true;
       }
@@ -894,7 +895,8 @@ class NodeMod
     
     {
       BaseAction action = mod.getAction(); 
-      if(!(((pAction == null) && (action == null)) || pAction.equals(action))) {
+      if(!(((pAction == null) && (action == null)) || 
+	   ((pAction != null) && pAction.equals(action)))) {
 	pAction = action;
 	critical = true;
       }
@@ -902,7 +904,8 @@ class NodeMod
 
     {
       JobReqs jobReqs = mod.getJobRequirements();
-      if(!(((pJobReqs == null) && (jobReqs == null)) || pJobReqs.equals(jobReqs))) {
+      if(!(((pJobReqs == null) && (jobReqs == null)) || 
+	   ((pJobReqs != null) && pJobReqs.equals(jobReqs)))) {
 	pJobReqs = jobReqs;
 	modified = true;
       }
@@ -910,7 +913,8 @@ class NodeMod
 
     {
       OverflowPolicy overflow = mod.getOverflowPolicy();
-      if(!(((pOverflow == null) && (overflow == null)) || pOverflow.equals(overflow))) {
+      if(!(((pOverflow == null) && (overflow == null)) || 
+	   ((pOverflow != null) && pOverflow.equals(overflow)))) {
 	pOverflow = overflow;
 	modified = true;
       }
@@ -918,16 +922,18 @@ class NodeMod
 
     {
       ExecutionMethod execution = mod.getExecutionMethod();
-      if(!(((pExecution == null) && (execution == null)) || pExecution.equals(execution))) {
+      if(!(((pExecution == null) && (execution == null)) || 
+	   ((pExecution != null) && pExecution.equals(execution)))) {
 	pExecution = execution;
 	modified = true;
       }
     }
 
     {
-      Integer size = mod.getBatchSize();
-      if(!(((pBatchSize == null) && (size == null)) || pBatchSize.equals(size))) {
-	pBatchSize = size;
+      Integer batchSize = mod.getBatchSize();
+      if(!(((pBatchSize == null) && (batchSize == null)) || 
+	   ((pBatchSize != null) && pBatchSize.equals(batchSize)))) {
+	pBatchSize = batchSize;
 	modified = true;
       }
     }
@@ -991,10 +997,13 @@ class NodeMod
   /** 
    * Get the link relationship information for all of the upstream nodes.
    */
-  public Collection<LinkMod>
+  public ArrayList<LinkMod>
   getSources() 
   {
-    return Collections.unmodifiableCollection(pSources.values());
+    ArrayList<LinkMod> links = new ArrayList<LinkMod>();
+    for(LinkMod link : pSources.values()) 
+      links.add(new LinkMod(link));
+    return links;
   }
 
   /** 
@@ -1083,7 +1092,7 @@ class NodeMod
    NodeMod mod
   ) 
   {
-    return pSources.equals(mod.pSources);
+    return getSources().equals(mod.getSources());
   }
 
   /**
@@ -1095,7 +1104,7 @@ class NodeMod
    NodeVersion vsn
   ) 
   {
-    return pSources.equals(vsn.getSources());
+    return getSources().equals(vsn.getSources());
   }
 
 
@@ -1122,7 +1131,7 @@ class NodeMod
 	return (identicalProperties(mod) && 
 		identicalLinks(mod) &&
 		(((pWorkingID == null) && (mod.pWorkingID == null)) ||  
-		 pWorkingID.equals(mod.pWorkingID)));
+		 ((pWorkingID != null) && pWorkingID.equals(mod.pWorkingID))));
       }
       else if(obj instanceof NodeVersion) {
 	NodeVersion vsn = (NodeVersion) obj;
