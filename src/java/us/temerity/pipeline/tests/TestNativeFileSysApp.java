@@ -1,4 +1,4 @@
-// $Id: TestNativeFileSysApp.java,v 1.2 2004/03/22 03:11:08 jim Exp $
+// $Id: TestNativeFileSysApp.java,v 1.3 2004/07/28 19:18:39 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -71,6 +71,25 @@ class TestNativeFileSysApp
       }
     }
 
+    /* get the total and free disk space for the filesystem containing /usr/tmp */ 
+    {
+      System.out.print("-----------------------------------\n" + 
+		       "Disk Usage (/usr/tmp):\n");
+
+      long total = 0; 
+      long free = 0;
+      try {
+	File tmp = new File("/usr/tmp");
+	total = NativeFileSys.totalDiskSpace(tmp);
+	free = NativeFileSys.freeDiskSpace(tmp);
+      }
+      catch(Exception ex) {
+	System.out.print(ex.getMessage() + "\n");
+      }
+      
+      System.out.print(" Total = " + total + " (bytes)\n" + 
+		       "  Free = " + free + " (bytes)\n\n");
+    }
 
     /* try some illegal calls to test the exception handling */ 
     {
