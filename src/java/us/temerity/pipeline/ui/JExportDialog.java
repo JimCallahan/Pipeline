@@ -1,4 +1,4 @@
-// $Id: JExportDialog.java,v 1.2 2004/10/29 14:03:52 jim Exp $
+// $Id: JExportDialog.java,v 1.3 2004/11/11 00:39:00 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -489,7 +489,7 @@ class JExportDialog
       else {
 	UIMaster.addVerticalSpacer(tpanel, vpanel, 9);
 	
-	for(BaseActionParam param : action.getSingleParams()) {
+	for(ActionParam param : action.getSingleParams()) {
 	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
 	  
 	  JBooleanField field = 

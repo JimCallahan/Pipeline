@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.21 2004/11/02 20:03:29 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.22 2004/11/11 00:39:00 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1732,7 +1732,7 @@ class JNodeDetailsPanel
 	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
 	}
 	else {
-	  BaseActionParam param = action.getSingleParam(pname);
+	  ActionParam param = action.getSingleParam(pname);
 
 	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
 
@@ -1750,7 +1750,7 @@ class JNodeDetailsPanel
 	    Box hbox = new Box(BoxLayout.X_AXIS);
 	    
 	    {
-	      BaseActionParam aparam = null;
+	      ActionParam aparam = null;
 	      if(waction != null) 
 		aparam = waction.getSingleParam(param.getName());
 	      
@@ -1876,7 +1876,7 @@ class JNodeDetailsPanel
 	    hbox.add(Box.createRigidArea(new Dimension(4, 0)));
 	    
 	    {
-	      BaseActionParam aparam = null;
+	      ActionParam aparam = null;
 	      if((caction != null) && 
 		 ((waction == null) || caction.getName().equals(waction.getName())))
 		aparam = caction.getSingleParam(param.getName());
@@ -2594,7 +2594,7 @@ class JNodeDetailsPanel
     updateActionEnabledColors();
 
     if(action != null) {
-      for(BaseActionParam param : action.getSingleParams()) 
+      for(ActionParam param : action.getSingleParams()) 
 	updateActionParamColor(param.getName(), color);
     }
   }
@@ -2636,7 +2636,7 @@ class JNodeDetailsPanel
 
       String wtext = null;
       {
-	BaseActionParam aparam = null;
+	ActionParam aparam = null;
 	if(waction != null) 
 	  aparam = waction.getSingleParam(pname);
       
@@ -2673,7 +2673,7 @@ class JNodeDetailsPanel
       
       String ctext = null;
       {
-	BaseActionParam aparam = null;
+	ActionParam aparam = null;
 	if((caction != null) && 
 	   ((waction == null) || caction.getName().equals(waction.getName())))
 	  aparam = caction.getSingleParam(pname);
@@ -3164,7 +3164,7 @@ class JNodeDetailsPanel
 	    if(waction != null) {
 
 	      /* single valued parameters */ 
-	      for(BaseActionParam aparam : waction.getSingleParams()) {
+	      for(ActionParam aparam : waction.getSingleParams()) {
 		Component pcomps[] = pActionParamComponents.get(aparam.getName());
 		Comparable value = null;
 		if(aparam instanceof BooleanActionParam) {   
@@ -3559,11 +3559,11 @@ class JNodeDetailsPanel
     BaseAction waction = getWorkingAction();
     BaseAction caction = getCheckedInAction();
 
-    BaseActionParam wparam = null;
+    ActionParam wparam = null;
     if(waction != null) 
       wparam = waction.getSingleParam(pname);
       
-    BaseActionParam cparam = null;
+    ActionParam cparam = null;
     if(caction != null) 
       cparam = caction.getSingleParam(pname);
       

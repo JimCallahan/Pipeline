@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.65 2004/11/03 23:41:12 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.66 2004/11/11 00:39:00 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -4021,7 +4021,7 @@ class JNodeViewerPanel
 		    if((taction == null) || !taction.getName().equals(saction.getName())) 
 		      taction = mgr.newAction(saction.getName(), saction.getVersionID()); 
 		    
-		    for(BaseActionParam param : saction.getSingleParams()) {
+		    for(ActionParam param : saction.getSingleParams()) {
 		      if(pExportDialog.exportActionSingleParam(param.getName())) 
 			taction.setSingleParamValue(param.getName(), param.getValue());
 		    }
@@ -4031,7 +4031,7 @@ class JNodeViewerPanel
 			if(tmod.getSource(source) != null) {
 			  taction.removeSourceParams(source);
 			  taction.initSourceParams(source);
-			  for(BaseActionParam param : saction.getSourceParams(source)) {
+			  for(ActionParam param : saction.getSourceParams(source)) {
 			    taction.setSourceParamValue(source, 
 							param.getName(), param.getValue());
 			  }

@@ -1,4 +1,4 @@
-// $Id: SourceParamsTableModel.java,v 1.5 2004/09/14 02:22:28 jim Exp $
+// $Id: SourceParamsTableModel.java,v 1.6 2004/11/11 00:39:00 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -64,7 +64,7 @@ class SourceParamsTableModel
 
     /* initialize the columns */ 
     { 
-      TreeMap<String,BaseActionParam> params = pAction.getInitialSourceParams();
+      TreeMap<String,ActionParam> params = pAction.getInitialSourceParams();
 
       {
 	pNumColumns = params.size() + 1;
@@ -87,7 +87,7 @@ class SourceParamsTableModel
       /* parameters */ 
       int col = 1;
       for(String pname : pAction.getSourceLayout()) {
-	BaseActionParam aparam = params.get(pname);
+	ActionParam aparam = params.get(pname);
 
 	pColumnClasses[col] = aparam.getClass();
 	pColumnNames[col]   = aparam.getNameUI();
@@ -133,7 +133,7 @@ class SourceParamsTableModel
       assert(snames.size() == stitles.size());
       int numRows = snames.size();
 
-      pParams = new BaseActionParam[numRows][];
+      pParams = new ActionParam[numRows][];
 
       pSourceNames  = new String[numRows];
       snames.toArray(pSourceNames);
@@ -148,12 +148,12 @@ class SourceParamsTableModel
 	String sname = pSourceNames[row];
 
 	if(sources.contains(sname)) {
-	  pParams[row] = new BaseActionParam[pNumColumns-1];
+	  pParams[row] = new ActionParam[pNumColumns-1];
 
 	  int col = 0;
 	  for(String pname : pAction.getSourceLayout()) {
-	    BaseActionParam aparam = pAction.getSourceParam(sname, pname);
-	    pParams[row][col] = (BaseActionParam) aparam.clone();
+	    ActionParam aparam = pAction.getSourceParam(sname, pname);
+	    pParams[row][col] = (ActionParam) aparam.clone();
 	    col++;
 	  }
 	}
@@ -185,7 +185,7 @@ class SourceParamsTableModel
 	value = pSourceTitles[row];
       }
       else {
-	BaseActionParam params[] = pParams[row];
+	ActionParam params[] = pParams[row];
 	if(params != null) 
 	  value = params[pSortColumn-1].getValue();
       }
@@ -239,12 +239,12 @@ class SourceParamsTableModel
     int row;
     for(row=0; row<pParams.length; row++) {
       String sname = pSourceNames[row];
-      BaseActionParam params[] = pParams[row];
+      ActionParam params[] = pParams[row];
       if(params != null) {
 	action.initSourceParams(sname);
 	int col;
 	for(col=1; col<pNumColumns; col++) {
-	  BaseActionParam param = params[col-1];
+	  ActionParam param = params[col-1];
 	  action.setSourceParamValue(sname, param.getName(), param.getValue());
 	}
       }
@@ -267,8 +267,8 @@ class SourceParamsTableModel
     for(wk=0; wk<rows.length; wk++) {
       int srow = pRowToIndex[rows[wk]];
 
-      TreeMap<String,BaseActionParam> params = pAction.getInitialSourceParams();
-      pParams[srow] = new BaseActionParam[params.size()];
+      TreeMap<String,ActionParam> params = pAction.getInitialSourceParams();
+      pParams[srow] = new ActionParam[params.size()];
 
       int col = 0;
       for(String pname : pAction.getSourceLayout()) {
@@ -420,7 +420,7 @@ class SourceParamsTableModel
    * 
    * The entire row may be <CODE>null</CODE> the source node for the row has no parameters.
    */ 
-  private BaseActionParam[][]  pParams;
+  private ActionParam[][]  pParams;
 
   /**
    * The parameter names of the columns.

@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.20 2004/11/07 20:14:30 jim Exp $
+// $Id: ScriptApp.java,v 1.21 2004/11/11 00:37:58 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1138,7 +1138,7 @@ class ScriptApp
 	for(String pname : params.keySet()) {
 	  String value = params.get(pname);
 	  try {
-	    BaseActionParam aparam = action.getSingleParam(pname);
+	    ActionParam aparam = action.getSingleParam(pname);
 	    if(aparam == null)
 	      throw new PipelineException 
 		("No parameter named (" + pname + ") exists for Action " + 
@@ -1199,7 +1199,7 @@ class ScriptApp
 	      
 	      String value = sparams.get(pname);
 	      try {
-		BaseActionParam aparam = action.getSourceParam(sname, pname);
+		ActionParam aparam = action.getSourceParam(sname, pname);
 		if(aparam == null)
 		  throw new PipelineException 
 		    ("No per-source parameter named (" + pname + ") exists for Action " + 
