@@ -1,8 +1,8 @@
 
 The haiku instructions:
 
-  $ tar -zxvf Freedom-0.1.tgz
-  $ cd Freedom-0.1
+  $ tar -zxvf Phoenix-0.1.tgz
+  $ cd Phoenix-0.1
   $ ./configure --enable-threads --disable-opt
   $ make all
   $ make check

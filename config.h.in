@@ -28,6 +28,24 @@
 /* Name of HTML documentation directory. */ 
 #undef HTML_DOCS_DIR
 
+/* The number of bytes in a char.  */
+#undef SIZEOF_CHAR
+
+/* The number of bytes in a double.  */
+#undef SIZEOF_DOUBLE
+
+/* The number of bytes in a float.  */
+#undef SIZEOF_FLOAT
+
+/* The number of bytes in a int.  */
+#undef SIZEOF_INT
+
+/* The number of bytes in a int *.  */
+#undef SIZEOF_INT_P
+
+/* The number of bytes in a long.  */
+#undef SIZEOF_LONG
+
 /* Define if you have the <algobase> header file.  */
 #undef HAVE_ALGOBASE
 
