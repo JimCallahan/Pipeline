@@ -1,4 +1,4 @@
-// $Id: NodeCommon.java,v 1.14 2004/06/19 00:26:55 jim Exp $
+// $Id: NodeCommon.java,v 1.15 2004/08/01 15:42:55 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -48,6 +48,9 @@ class NodeCommon
    * <CODE>batchSize</CODE> arguments must all be <CODE>null</CODE>.  If there is a 
    * regeneration action, then all of these arguments must not be <CODE>null</CODE>. <P>
    * 
+   * The <CODE>isActionEnabled</CODE> argument must be <CODE>false</CODE> if the 
+   * <CODE>action</CODE> parameter is <CODE>null</CODE>. <P> 
+   * 
    * If the <CODE>batchSize</CODE> argument is zero, then the maximum number of frames
    * which may be assigned to a single job is equal to the number of frames in the 
    * primary file sequence.  The <CODE>batchSize</CODE> argument cannot be negative. <P> 
@@ -71,6 +74,9 @@ class NodeCommon
    * @param action 
    *   The action plugin instance used to regeneration the files associated the node. 
    * 
+   * @param isActionEnabled
+   *   Whether the regeneration action is currently enabled.
+   *    
    * @param jobReqs 
    *   The requirements that a server must meet in order to be eligable to run jobs 
    *   the node.
@@ -94,6 +100,7 @@ class NodeCommon
    String toolset, 
    String editor, 
    BaseAction action, 
+   boolean isActionEnabled, 
    JobReqs jobReqs,     
    OverflowPolicy overflow, 
    ExecutionMethod execution, 
@@ -104,7 +111,7 @@ class NodeCommon
 
     init(primary, secondary, 
 	 toolset, editor, 
-	 action, jobReqs, overflow, execution, batchSize);
+	 action, isActionEnabled, jobReqs, overflow, execution, batchSize);
   }
 
   /**
@@ -147,7 +154,7 @@ class NodeCommon
 
     init(primary, secondary, 
 	 toolset, editor, 
-	 null, null, null, null, null);
+	 null, false, null, null, null, null);
   }
 
 
@@ -169,11 +176,12 @@ class NodeCommon
     pToolset = com.getToolset();
     pEditor  = com.getEditor();
     
-    pAction         = com.getAction();
-    pJobReqs        = com.getJobRequirements();
-    pOverflow       = com.getOverflowPolicy();
-    pExecution      = com.getExecutionMethod();
-    pBatchSize      = com.getBatchSize();
+    pAction          = com.getAction();
+    pIsActionEnabled = com.isActionEnabled();
+    pJobReqs         = com.getJobRequirements();
+    pOverflow        = com.getOverflowPolicy();
+    pExecution       = com.getExecutionMethod();
+    pBatchSize       = com.getBatchSize();
   }
 
 
@@ -187,6 +195,7 @@ class NodeCommon
    String toolset, 
    String editor, 
    BaseAction action, 
+   boolean isActionEnabled, 
    JobReqs jobReqs,     
    OverflowPolicy overflow, 
    ExecutionMethod execution, 
@@ -232,7 +241,7 @@ class NodeCommon
     if((action != null) && (jobReqs != null) && 
        (overflow != null) && (execution != null) && (batchSize != null)) {
       pAction    = (BaseAction) action.clone();
-      pJobReqs   = (JobReqs)    jobReqs.clone();
+      pJobReqs   = (JobReqs) jobReqs.clone();
       pOverflow  = overflow;
       pExecution = execution; 
       
@@ -246,7 +255,12 @@ class NodeCommon
 	("If any of the action, job requirement, overflow policy, execution mode or batch " + 
 	 "size arguments are (null) then all of them must be (null)!");
     }
-    
+
+    if(action != null) 
+      pIsActionEnabled = isActionEnabled;
+    else if(isActionEnabled) 
+      throw new IllegalArgumentException
+	("The action cannot be enabled if it does not exist!");    
   }
 
 
@@ -312,12 +326,12 @@ class NodeCommon
 
 
   /**
-   * Does this node have a regeneration action?
+   * Whether this node has a regeneration action which his currently active?
    */ 
   public boolean 
-  hasAction() 
+  isActionEnabled() 
   {
-    return (pAction != null);
+    return ((pAction != null) && pIsActionEnabled); 
   }
 
   /** 
@@ -416,6 +430,7 @@ class NodeCommon
 	     ((pEditor != null) && pEditor.equals(com.pEditor))) &&
 	    (((pAction == null) && (com.pAction == null)) || 
 	     ((pAction != null) && pAction.equals(com.pAction))) &&
+	    (pIsActionEnabled == com.pIsActionEnabled) && 
 	    (((pJobReqs == null) && (com.pJobReqs == null)) || 
 	     ((pJobReqs != null) && pJobReqs.equals(com.pJobReqs))) &&
 	    (((pOverflow == null) && (com.pOverflow == null)) || 
@@ -491,7 +506,8 @@ class NodeCommon
     
     if(pAction != null) {
       encoder.encode("Action", pAction);
-      
+      encoder.encode("IsActionEnabled", pIsActionEnabled);
+
       assert(pJobReqs != null);
       encoder.encode("JobRequirements", pJobReqs);
    
@@ -536,6 +552,11 @@ class NodeCommon
     BaseAction action = (BaseAction) decoder.decode("Action");
     if(action != null) {
       pAction = action;
+      
+      Boolean enabled = (Boolean) decoder.decode("IsActionEnabled");
+      if(enabled == null) 
+	throw new GlueException("The \"IsActionEnabled\" was missing or (null)!");
+      pIsActionEnabled = enabled;
 
       JobReqs jreqs = (JobReqs) decoder.decode("JobRequirements");
       if(jreqs == null) 
@@ -721,6 +742,18 @@ class NodeCommon
    * regeneration action.
    */
   protected BaseAction  pAction;          
+
+  /** 
+   * Is the regeneration action enabled?   <P> 
+   * 
+   * If disabled, the node behaves as if it did not have a regeneration action.  This is 
+   * used to preserve the action parameters and execution details while temporarily treating
+   * the node as if it did not have an action.  <P> 
+   * 
+   * If the <CODE>pAction</CODE> field is <CODE>null</CODE>, this field must be 
+   * <CODE>false</CODE>.
+   */
+  protected boolean  pIsActionEnabled;          
 
   /**
    * The requirements that a server must meet in order to be eligable to run jobs 

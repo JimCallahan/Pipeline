@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.23 2004/07/14 20:59:20 jim Exp $
+// $Id: NodeMod.java,v 1.24 2004/08/01 15:42:55 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -67,6 +67,9 @@ class NodeMod
    * @param action 
    *   The action plugin instance used to regeneration the files associated the node. 
    * 
+   * @param isActionEnabled
+   *   Whether the regeneration action is currently enabled.
+   * 
    * @param jobReqs 
    *   The requirements that a server must meet in order to be eligable to run jobs 
    *   the node.
@@ -90,6 +93,7 @@ class NodeMod
    String toolset, 
    String editor, 
    BaseAction action, 
+   boolean isActionEnabled, 
    JobReqs jobReqs,  
    OverflowPolicy overflow, 
    ExecutionMethod execution,    
@@ -99,7 +103,7 @@ class NodeMod
     super(name, 
 	  primary, secondary, 
 	  toolset, editor, 
-	  action, jobReqs, overflow, execution, batchSize);
+	  action, isActionEnabled, jobReqs, overflow, execution, batchSize);
     
     pSources = new TreeMap<String,LinkMod>();
 
@@ -605,10 +609,6 @@ class NodeMod
       throw new IllegalArgumentException
 	("The toolset argument cannot be (null)!");
 
-//     if(!Toolsets.exists(toolset)) 
-//       throw new PipelineException
-// 	("No valid toolset named (" + toolset + ") exists!");
-
     pToolset = toolset;
 
     updateLastMod();    
@@ -662,21 +662,45 @@ class NodeMod
 	 "modified while frozen!");
 
     if(action != null) {
-      pAction    = (BaseAction) action.clone();
-      pJobReqs   = JobReqs.defaultJobReqs();
-      pOverflow  = OverflowPolicy.Abort;
-      pExecution = ExecutionMethod.Serial;
-      pBatchSize = null;
+      pAction          = (BaseAction) action.clone();
+      pIsActionEnabled = true;
+      pJobReqs         = JobReqs.defaultJobReqs();
+      pOverflow        = OverflowPolicy.Abort;
+      pExecution       = ExecutionMethod.Serial;
+      pBatchSize       = null;
     }
     else {
-      pAction    = null;
-      pJobReqs   = null;
-      pOverflow  = null;
-      pExecution = null; 
-      pBatchSize = null;
+      pAction          = null;
+      pIsActionEnabled = false;
+      pJobReqs         = null;
+      pOverflow        = null;
+      pExecution       = null; 
+      pBatchSize       = null;
     }
     
     updateLastCriticalMod();
+  }
+
+  /**
+   * Set whether the regeneration action his currently enabled? <P> 
+   */ 
+  public void 
+  setActionEnabled
+  (
+   boolean enabled
+  ) 
+    throws PipelineException 
+  {
+    if(enabled && (pAction == null)) 
+      throw new PipelineException
+	("No action exists to enable!");
+
+    pIsActionEnabled = enabled; 
+
+    if(pIsActionEnabled) 
+      updateLastCriticalMod();
+    else 
+      updateLastMod();
   }
 
   /** 
@@ -897,6 +921,17 @@ class NodeMod
 	   ((pAction != null) && pAction.equals(action)))) {
 	pAction = action;
 	critical = true;
+      }
+
+      if(pAction != null) {
+	boolean enabled = mod.isActionEnabled();
+	if(pIsActionEnabled != enabled) {
+	  pIsActionEnabled = enabled;
+	  if(pIsActionEnabled) 
+	    critical = true;
+	  else 
+	    modified = true;
+	}
       }
     }
 
