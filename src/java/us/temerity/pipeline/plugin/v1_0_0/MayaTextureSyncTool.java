@@ -1,4 +1,4 @@
-// $Id: MayaTextureSyncTool.java,v 1.4 2005/02/22 02:30:36 jim Exp $
+// $Id: MayaTextureSyncTool.java,v 1.5 2005/02/23 06:50:25 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -144,7 +144,7 @@ class MayaTextureSyncTool
       
       pRelocateField = 
 	UIFactory.createTitledBooleanField
-	(tpanel, "Relocate Path:", sTSize, 
+	(tpanel, "Copy Textures:", sTSize, 
 	 vpanel, sVSize, 
 	 "Whether to copy texture image files outside of the working area to a " +
 	 "directory specified by the Relocate Path.");
@@ -160,7 +160,7 @@ class MayaTextureSyncTool
 	  (tpanel, "Relocate Path:", sTSize, 
 	   vpanel, null, sVSize, 
 	   this, "relocate-browse", 
-	   "The fully resolved working area destination to copy relocated " + 
+	   "The fully resolved working area destination directory to copy relocated " + 
 	   "texture files.");
 	
 	pRelocatePathField  = (JPathField) rcomps[0];	   
