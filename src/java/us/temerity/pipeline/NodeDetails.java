@@ -1,4 +1,4 @@
-// $Id: NodeDetails.java,v 1.10 2004/06/19 00:27:24 jim Exp $
+// $Id: NodeDetails.java,v 1.11 2004/07/14 21:00:47 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -70,10 +70,10 @@ class NodeDetails
    *   The files states associated with each file sequence. 
    * 
    * @param fileTimeStamps
-   *   The last modification timestamps associated with each file sequence. 
+   *   The oldest last modification timestamps associated with all file sequences. 
    * 
    * @param queueStates
-   *   The queue states associated with each file sequence. 
+   *   The queue states associated with all file sequences. 
    */
   public 
   NodeDetails
@@ -89,8 +89,8 @@ class NodeDetails
    PropertyState propertyState, 
    LinkState linkState, 
    TreeMap<FileSeq,FileState[]> fileStates, 
-   TreeMap<FileSeq, Date[]> fileTimeStamps, 
-   TreeMap<FileSeq,QueueState[]> queueStates
+   Date[] fileTimeStamps, 
+   QueueState[] queueStates
   ) 
   {
     if(name == null) 
@@ -98,7 +98,7 @@ class NodeDetails
     pName = name;
 
 
-    pTimeStamp = new Date();
+    pTimeStamp = Dates.now();
 
 
     if((work != null) && !work.getName().equals(pName))
@@ -128,16 +128,11 @@ class NodeDetails
     pLinkState         = linkState;
 
     pFileStates = new TreeMap<FileSeq,FileState[]>(); 
-    for(FileSeq fseq : fileStates.keySet()) 
+    for(FileSeq fseq : fileStates.keySet())
       pFileStates.put(fseq, fileStates.get(fseq).clone());
-    
-    pFileTimeStamps = new TreeMap<FileSeq, Date[]>();
-    for(FileSeq fseq : fileTimeStamps.keySet()) 
-      pFileTimeStamps.put(fseq, fileTimeStamps.get(fseq).clone());
 
-    pQueueStates = new TreeMap<FileSeq,QueueState[]>(); 
-    for(FileSeq fseq : queueStates.keySet()) 
-      pQueueStates.put(fseq, queueStates.get(fseq).clone());
+    pFileTimeStamps = fileTimeStamps.clone();
+    pQueueStates    = queueStates.clone();
   }
 
 
@@ -300,43 +295,21 @@ class NodeDetails
   }
 
   /**
-   * Get the last modification timestamps associated with each file sequence. 
-   */
-  public Date[] 
-  getFileTimeStamps
-  ( 
-   FileSeq fseq
-  ) 
-  {
-    return pFileTimeStamps.get(fseq);
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Get the set of file sequences for which queue state information is defined.
+   * Get the oldest last modification timestamps associated with the file sequences.
    */ 
-  public Set<FileSeq>
-  getQueueStateSequences() 
+  public Date[] 
+  getFileTimeStamps() 
   {
-    return Collections.unmodifiableSet(pQueueStates.keySet());
+    return pFileTimeStamps;
   }
-  
+
   /**
-   * Get the queue states associated with the given file sequence. 
-   *
-   * @param fseq
-   *   The file sequences to lookup.
+   * Get the queue states associated with the file sequences.
    */ 
   public QueueState[]
-  getQueueState
-  (
-   FileSeq fseq
-  ) 
+  getQueueState() 
   {
-    return pQueueStates.get(fseq);
+    return pQueueStates;
   }
 
 
@@ -440,18 +413,17 @@ class NodeDetails
    * versions of a node.
    */   
   private TreeMap<FileSeq,FileState[]> pFileStates;
-
+  
   /**
-   * The last modification timestamps associated with each file sequence. 
+   * The oldest last modification timestamp of each primary/secondary file index.
    */
-  private TreeMap<FileSeq,Date[]> pFileTimeStamps;
+  private Date[] pFileTimeStamps;
 
   /** 
    * The status of individual files associated with a node with respect to the queue jobs
    * which generate them. 
    */   
-  private TreeMap<FileSeq,QueueState[]>  pQueueStates;
-  
+  private QueueState pQueueStates[];
   
 }
 
