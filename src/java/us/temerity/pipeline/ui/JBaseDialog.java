@@ -1,4 +1,4 @@
-// $Id: JBaseDialog.java,v 1.11 2004/12/17 15:07:29 jim Exp $
+// $Id: JBaseDialog.java,v 1.12 2005/01/04 12:11:54 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -23,13 +23,10 @@ class JBaseDialog
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Construct a new dialog owned by the main application frame. <P> 
-   * 
-   * The button title arguments <CODE>confirm</CODE>, <CODE>apply</CODE> and 
-   * <CODE>cancel</CODE> may be <CODE>null</CODE> to omit the button(s) from the dialog. 
+   * Construct a new dialog owned by the main application frame. 
    * 
    * @param title
-   *   The title of the dialog.
+   *   The title of the dialog window.
    * 
    * @param modal
    *   Is the dialog modal?
@@ -45,13 +42,10 @@ class JBaseDialog
   }
 
   /**
-   * Construct a new dialog owned by another dialog. <P> 
-   * 
-   * The button title arguments <CODE>confirm</CODE>, <CODE>apply</CODE> and 
-   * <CODE>cancel</CODE> may be <CODE>null</CODE> to omit the button(s) from the dialog. 
+   * Construct a new dialog owned by another dialog.
    * 
    * @param owner
-   *   The parent dialog.
+   *   The parent dialog window.
    * 
    * @param title
    *   The title of the dialog.
@@ -79,8 +73,8 @@ class JBaseDialog
    * The button title arguments <CODE>confirm</CODE>, <CODE>apply</CODE> and 
    * <CODE>cancel</CODE> may be <CODE>null</CODE> to omit the button(s) from the dialog. 
    * 
-   * @param title
-   *   The title of the dialog.
+   * @param header
+   *   The text displayed in the dialog header. 
    * 
    * @param modal
    *   Is the dialog modal?
@@ -106,7 +100,7 @@ class JBaseDialog
   protected JButton[]
   initUI
   (
-   String title,  
+   String header, 
    boolean modal, 
    JComponent body, 
    String confirm, 
@@ -118,13 +112,13 @@ class JBaseDialog
     JPanel root = new JPanel();
     root.setLayout(new BoxLayout(root, BoxLayout.Y_AXIS));  
 
-    if(title != null) {
+    if(header != null) {
       JPanel panel = new JPanel();
       panel.setName(modal ? "ModalDialogHeader" : "DialogHeader");	
       panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
       
       {
-	JLabel label = new JLabel(title);
+	JLabel label = new JLabel(header);
 	pHeaderLabel = label;
 
 	label.setName("DialogHeaderLabel");	
