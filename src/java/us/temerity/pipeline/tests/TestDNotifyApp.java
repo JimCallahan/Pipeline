@@ -1,4 +1,4 @@
-// $Id: TestDNotifyApp.java,v 1.3 2004/04/12 22:39:31 jim Exp $
+// $Id: TestDNotifyApp.java,v 1.4 2004/04/14 18:46:08 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -66,8 +66,10 @@ class TestDNotifyApp
   run() 
     throws Exception 
   {
-    //    NotifyServer server = new NotifyServer(53148, 53149);
-    //   server.start();
+    File prodDir = new File(System.getProperty("user.dir"));
+
+    NotifyServer server = new NotifyServer(prodDir, 53148, 53149);
+    server.start();
 
     Thread.currentThread().sleep(2000);
 
@@ -75,18 +77,32 @@ class TestDNotifyApp
     monitor.start();
 
     NotifyControlClient control = new NotifyControlClient("localhost", 53148);
-    control.monitor(new File("/usr/tmp"));
-//     control.monitor(new File("/home/jim"));
+
+    try {
+      File dir = new File("/data/dnotify/joe/blow");
+      File path = new File(prodDir + dir.getPath());
+      path.mkdirs();
+      control.monitor(dir);
+    }
+    catch(PipelineException ex) {
+      System.out.print(ex.getMessage() + "\n");
+    }
 
     HashSet<File> dirs = new HashSet<File>();
     {
       Random random = new Random((new Date()).getTime());
 
-      File root = new File("/usr/tmp/data/notify");
       int wk;
-      for(wk=0; wk<30; wk++) {
-	File dir = new File(root, String.valueOf(random.nextInt(1000000)));
-	dir.mkdirs();
+      for(wk=0; wk<8; wk++) {
+	File dir = new File("/data/dnotify/foo/bar/" + 
+			    String.valueOf(random.nextInt(1000000)));
+
+	{
+	  File path = new File(prodDir + dir.getPath());
+	  
+	  if(random.nextBoolean())
+	    path.mkdirs();
+	}
 
 	dirs.add(dir);
 
@@ -97,11 +113,30 @@ class TestDNotifyApp
 	  System.out.print(ex.getMessage() + "\n");
 	  break;
 	}
+
+	int sk;
+	for(sk=0; sk<3; sk++) {
+	  File sdir = new File(dir, String.valueOf(random.nextInt(1000000)));
+
+	  {
+	    File path = new File(prodDir + sdir.getPath());
+	    
+	    if(random.nextBoolean())
+	      path.mkdirs();
+	  }
+	  
+	  dirs.add(sdir);
+	  
+	  try {
+	    control.monitor(sdir);
+	  }
+	  catch(PipelineException ex) {
+	    System.out.print(ex.getMessage() + "\n");
+	    break;
+	  }
+	}
       }
     }
-
-    //control.disconnect();
-    control.shutdown();
 
     for(File dir : dirs) {
       try {
@@ -113,8 +148,13 @@ class TestDNotifyApp
       }
     }
 
+    
+    Thread.currentThread().sleep(2000);
+
+    control.shutdown();
+
     monitor.join();
-//     server.join();
+    server.join();
   }
 
   public 
