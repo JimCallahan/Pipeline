@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.73 2004/12/16 21:42:50 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.74 2004/12/30 01:54:48 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -78,6 +78,7 @@ class JNodeViewerPanel
       pShowAssociations = UserPrefs.getInstance().getShowAssociations();
 
       pViewerNodes = new HashMap<NodePath,ViewerNode>();
+      pViewerLinks = new ViewerLinks();
       pSelected = new HashMap<NodePath,ViewerNode>();
 
       pRemoveSecondarySeqs = new TreeMap<String,FileSeq>();
@@ -936,8 +937,9 @@ class JNodeViewerPanel
 	wasCollapsed.add(vnode.getNodePath());
     }
 
-    /* remove all previous nodes */ 
+    /* remove all previous nodes and links */ 
     pViewerNodes.clear();
+    pViewerLinks.clear();
 
     /* rebuild the viewer nodes and links */ 
     if(!pRoots.isEmpty()) {
@@ -1110,25 +1112,26 @@ class JNodeViewerPanel
  	  }
 
  	  /* add a link between this node and the child node */ 
- // 	  {
-//  	    ViewerNode cvnode = pViewerNodes.get(cpath);
-//  	    if(upstream) {
-//  	      LinkCommon link = null;
-//  	      {
-//  		NodeDetails details = status.getDetails();
-//  		if(details.getWorkingVersion() != null) 
-//  		  link = details.getWorkingVersion().getSource(cstatus.getName());
-//  		else if(details.getLatestVersion() != null)
-//  		link = details.getLatestVersion().getSource(cstatus.getName());
-//  	      }
-//  	      assert(link != null);	    
+ 	  {
+  	    ViewerNode cvnode = pViewerNodes.get(cpath);
+  	    if(upstream) {
+  	      LinkCommon link = null;
+  	      {
+  		NodeDetails details = status.getDetails();
+  		if(details.getWorkingVersion() != null) 
+  		  link = details.getWorkingVersion().getSource(cstatus.getName());
+  		else if(details.getLatestVersion() != null)
+		  link = details.getLatestVersion().getSource(cstatus.getName());
+  	      }
+  	      assert(link != null);	    
 	      
-//  	      pLinks.addUpstreamLink(vnode, cvnode, link, status.isStaleLink(link.getName()));
-//  	    }
-//  	    else {
-//  	      pLinks.addDownstreamLink(cvnode, vnode);
-//  	    }				   
-//  	  }  
+  	      pViewerLinks.addUpstreamLink(vnode, cvnode, link, 
+					   status.isStaleLink(link.getName()));
+  	    }
+  	    else {
+  	      pViewerLinks.addDownstreamLink(cvnode, vnode);
+  	    }				   
+  	  }  
  	}
        }
        else {
@@ -1424,8 +1427,8 @@ class JNodeViewerPanel
 
 
   /**
-   * Get the user-data of the Java3D object under the current mouse position. <P> 
-    */ 
+   * Get the ViewerNode or ViewerLinkRelationship under the current mouse position. <P> 
+   */ 
   private Object
   objectAtMousePos() 
   {
@@ -1450,9 +1453,7 @@ class JNodeViewerPanel
     }
 
     /* check link relationship icons */ 
-    // ...
-
-    return null;
+    return pViewerLinks.pickLinkRelationship(pos);
   }
 
 
@@ -1473,43 +1474,7 @@ class JNodeViewerPanel
   )
   {
     super.display(drawable); 
-
-    GL  gl  = drawable.getGL();
-    GLU glu = drawable.getGLU();
-
-
-  //   // TEST GEOMETRY... 
-//     if(pTestDL == null) {
-//       int nodeDL = -1;
-//       int textDL = -1;
-//       try {
-// 	GeometryMgr mgr = GeometryMgr.getInstance();
-// 	nodeDL = mgr.getNodeIconDL(gl, "ModifiedLinks-Aborted-Normal");
-// 	textDL = mgr.getTextDL(gl, "CharterBTRoman", "SomeTestNode.#.tif, 1-100x2", 
-// 			       GeometryMgr.TextAlignment.Center, 0.05);
-//       }
-//       catch(IOException ex) {
-// 	Logs.tex.severe(ex.getMessage());
-//       }
-
-//       pTestDL = gl.glGenLists(1);
-//       gl.glNewList(pTestDL, GL.GL_COMPILE);
-//       {
-// 	gl.glPushMatrix();
-
-// 	gl.glCallList(nodeDL);
-
-// 	gl.glScaled(0.35, 0.35, 0.35);
-//  	gl.glTranslated(0.0, 1.5, 0.0);
-// 	gl.glCallList(textDL);
-
-// 	gl.glPopMatrix();
-//       }
-//       gl.glEndList();
-//     }
- 
-//     gl.glCallList(pTestDL);
-
+    GL gl = drawable.getGL();
 
     /* render the scene geometry */ 
     {
@@ -1519,14 +1484,13 @@ class JNodeViewerPanel
       if(pRefreshScene) {
 	for(ViewerNode vnode : pViewerNodes.values()) 
 	  vnode.rebuild(gl);
-	
+	pViewerLinks.rebuild(gl);
+
 	gl.glNewList(pSceneDL, GL.GL_COMPILE_AND_EXECUTE);
 	{
 	  for(ViewerNode vnode : pViewerNodes.values()) 
 	    vnode.render(gl);
-
-	  // add links here... 
-
+	  pViewerLinks.render(gl);
 	}
 	gl.glEndList();
 
@@ -4678,18 +4642,21 @@ class JNodeViewerPanel
 
   /*----------------------------------------------------------------------------------------*/
 
-  private Integer pTestDL; 
-
   /**
    * The currently displayed nodes indexed by <CODE>NodePath</CODE>.
    */ 
   private HashMap<NodePath,ViewerNode>  pViewerNodes; 
 
   /**
+   * The currently displayed node links. 
+   */ 
+  private ViewerLinks  pViewerLinks; 
+
+
+  /**
    * The currently selected nodes indexed by <CODE>NodePath</CODE>.
    */ 
   private HashMap<NodePath,ViewerNode>  pSelected;
-
 
   /**
    * The primary selection.
