@@ -327,6 +327,7 @@ TOKEN :
 | <IGNORE:             "--ignore">          	 			      
 | <ABORT:              "--abort">           				      
 | <SERIAL:             "--serial">          	 			      
+| <SUBDIVIDED:         "--subdivided">          	 			      
 | <PARALLEL:           "--parallel">        	   			      
 | <BATCH_SIZE:         "--batch-size">      	: INTEGER_SEP	      
 | <PRIORITY:           "--priority">        	: INTEGER_SEP	      
@@ -3741,7 +3742,7 @@ WorkingRegisterOpts()
 {
   (Author() | View() | FSeq() | Toolset() | Editor() | 
    Action() | ActionEnabled() | Param() | SourceParam() | 
-   Ignore() | Abort() | Serial() | Parallel() | BatchSize() | 
+   Ignore() | Abort() | Serial() | Subdivided() | Parallel() | BatchSize() | 
    Priority() | RampUp() | MaxLoad() | MinMemory() | MinDisk() | 
    LicenseKey() | SelectionKey()) 
   {}
@@ -3837,7 +3838,7 @@ WorkingSetOpts()
 {
   (Author() | View() | Toolset() | Editor() | 
    NoAction() | Action() | ActionEnabled() | Param() | NoParam() | SourceParam() | 
-   Ignore() | Abort() | Serial() | Parallel() | BatchSize() | 
+   Ignore() | Abort() | Serial() | Subdivided() | Parallel() | BatchSize() | 
    Priority() | RampUp() | MaxLoad() | MinMemory() | MinDisk() | 
    LicenseKey() | SelectionKey()) 
   {}
@@ -5562,6 +5563,16 @@ Serial() :
   <SERIAL> AE() 
   {
     pExecutionMethod = pExecutionMethod.Serial;
+  }
+}
+
+void 
+Subdivided() :
+{}
+{
+  <SUBDIVIDED> AE() 
+  {
+    pExecutionMethod = pExecutionMethod.Subdivided;
   }
 }
 
