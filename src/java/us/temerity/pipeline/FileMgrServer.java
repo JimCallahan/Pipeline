@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.3 2004/03/12 23:10:54 jim Exp $
+// $Id: FileMgrServer.java,v 1.4 2004/03/15 19:07:59 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -162,6 +162,13 @@ class FileMgrServer
 
 	  switch(kind) {
 	  case CheckIn:
+	    {
+	      FileCheckInReq req = (FileCheckInReq) objIn.readObject();
+	      objOut.writeObject(pFileMgr.checkIn(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
 	  case CheckOut:
 	    break;
 	    

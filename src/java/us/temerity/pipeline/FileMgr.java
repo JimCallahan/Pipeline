@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.2 2004/03/12 23:09:16 jim Exp $
+// $Id: FileMgr.java,v 1.3 2004/03/15 19:07:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -197,8 +197,9 @@ class FileMgr
    File dir
   )
   { 
-    pNodeLocks = new HashMap<String,ReentrantReadWriteLock>();
-    pWorkLocks = new HashMap<NodeID,Object>();
+    pNodeLocks   = new HashMap<String,ReentrantReadWriteLock>();
+    pWorkLocks   = new HashMap<NodeID,Object>();
+    pMakeDirLock = new Object();
 
     if(dir == null)
       throw new IllegalArgumentException("The root production directory cannot be (null)!");
@@ -252,7 +253,7 @@ class FileMgr
 	for(FileSeq fseq : req.getFileSequences()) {
 	  for(File file : fseq.getFiles()) {
 	    File work = new File(req.getNodeID().getWorkingDir(), file.getPath());
-	    pCheckSum.refresh(work, 1024);
+	    pCheckSum.refresh(work);
 	  }
 	}
 
@@ -311,6 +312,9 @@ class FileMgr
 
 	switch(req.getVersionState()) {
 	case Pending:
+	  if((req.getWorkingVersionID() != null) || (req.getLatestVersionID() != null))
+	    return new FailureRsp(task, "Internal Error", wait, start);
+
 	  for(FileSeq fseq : req.getFileSequences()) {
 	    FileState fs[] = new FileState[fseq.numFrames()];
 	    
@@ -331,14 +335,12 @@ class FileMgr
 	  break;
 	  
 	case CheckedIn:
-	  assert(false);
-	  return new FailureRsp
-	    (task, 
-	     "INTERNAL ERROR: No attempt to compute file states should ever be made when " + 
-	     "the VersionState for a working version is CheckedIn!", 
-	     wait, start);
+	  return new FailureRsp(task, "Internal Error", wait, start);
 	  
 	case Identical:
+	  if((req.getWorkingVersionID() == null) || (req.getLatestVersionID() == null))
+	    return new FailureRsp(task, "Internal Error", wait, start);
+
 	  for(FileSeq fseq : req.getFileSequences()) {
 	    FileState fs[] = new FileState[fseq.numFrames()];
 	    
@@ -359,7 +361,7 @@ class FileMgr
 		else if(work.length() != latest.length()) 
 		  fs[wk] = FileState.Modified;
 		else {
-		  pCheckSum.refresh(wpath, 1024);
+		  pCheckSum.refresh(wpath);
 		  if(pCheckSum.compare(wpath, lpath))
 		    fs[wk] = FileState.Identical;
 		  else 
@@ -375,6 +377,9 @@ class FileMgr
 	  break;
 	  
 	case NeedsCheckOut:
+	  if((req.getWorkingVersionID() == null) || (req.getLatestVersionID() == null))
+	    return new FailureRsp(task, "Internal Error", wait, start);
+
 	  for(FileSeq fseq : req.getFileSequences()) {
 	    FileState fs[] = new FileState[fseq.numFrames()];
 	    
@@ -404,7 +409,7 @@ class FileMgr
 		  boolean workRefreshed = false;
 		  boolean workEqLatest = false;
 		  if(work.length() == latest.length()) {
-		    pCheckSum.refresh(wpath, 1024);
+		    pCheckSum.refresh(wpath);
 		    workRefreshed = true;
 		    workEqLatest = pCheckSum.compare(wpath, lpath);
 		  }
@@ -419,7 +424,7 @@ class FileMgr
 		      boolean workEqBase = false;
 		      if(work.length() == base.length()) {
 			if(!workRefreshed) 
-			  pCheckSum.refresh(wpath, 1024);
+			  pCheckSum.refresh(wpath);
 			workEqBase = pCheckSum.compare(wpath, lpath);
 		      }
 
@@ -460,6 +465,307 @@ class FileMgr
     }  
   }
 
+  /**
+   * Perform the file system operations needed to create a new checked-in version of the 
+   * node in the file repository based on the given working version. <P> 
+   * 
+   * @param req [<B>in</B>]
+   *   The check-in request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to check-in the files.
+   */
+  public Object
+  checkIn
+  (
+   FileCheckInReq req
+  ) 
+  {
+    if(req == null) 
+      return new FailureRsp("The check-in request cannot be (null)!");
+    
+    String task = null;
+    {
+      StringBuffer buf = new StringBuffer();
+      buf.append("FileMgr.checkIn(): " + req.getNodeID() + " (" + req.getVersionID() + ") ");
+      for(FileSeq fseq : req.getFileSequences()) 
+	buf.append("[" + fseq + "]");
+      task = buf.toString();
+    }
+
+    Date start = new Date();
+    long wait = 0;
+    ReentrantReadWriteLock nodeLock = getNodeLock(req.getNodeID().getName());
+    nodeLock.writeLock().lock();
+    try {
+      Object workLock = getWorkLock(req.getNodeID());
+      synchronized(workLock) {
+	wait  = (new Date()).getTime() - start.getTime();
+	start = new Date();
+
+	/* create the repository file and checksum directories
+	     as well any missing subdirectories */ 
+	VersionID rvid = req.getVersionID();
+	File rdir  = null;
+	File crdir = null;
+	{
+	  File rpath = req.getNodeID().getCheckedInDir(rvid);
+	  rdir  = new File(pProdDir, rpath.getPath());
+	  crdir = new File(pProdDir, "checksum/" + rpath);
+
+	  synchronized(pMakeDirLock) { 
+	    if(rdir.exists()) {
+	      if(rdir.isDirectory()) 
+		throw new PipelineException
+		  ("Somehow the repository directory (" + rdir + 
+		   ") already exists!");
+	      else 
+		throw new PipelineException
+		  ("Somehow there exists a non-directory (" + rdir + 
+		   ") in the location of the repository directory!");
+	    }
+	    
+	    try {
+	      if(!rdir.mkdirs())
+		throw new PipelineException
+		  ("Unable to create the repository directory (" + rdir + ")!");
+	    }
+	    catch (SecurityException ex) {
+	      throw new PipelineException
+		("Unable to create the repository directory (" + rdir + ")!");
+	    }
+
+	    if(crdir.exists()) {
+	      if(crdir.isDirectory()) 
+		throw new PipelineException
+		  ("Somehow the repository checksum directory (" + crdir + 
+		   ") already exists!");
+	      else 
+		throw new PipelineException
+		  ("Somehow there exists a non-directory (" + crdir + 
+		   ") in the location of the repository checksum directory!");
+	    }
+	    
+	    try {
+	      if(!crdir.mkdirs())
+		throw new PipelineException
+		  ("Unable to create the repository checksum directory (" + crdir + ")!");
+	    }
+	    catch (SecurityException ex) {
+	      throw new PipelineException
+		("Unable to create the repository checksum directory (" + crdir + ")!");
+	    }
+	  }
+	}
+	  
+	/* the latest repository directory */ 
+	VersionID lvid = req.getLatestVersionID();
+	File ldir = null;
+	if(lvid != null) {
+	  ldir = new File(pProdDir, req.getNodeID().getCheckedInDir(lvid).getPath());
+	  if(!ldir.isDirectory()) {
+	    throw new PipelineException
+	      ("Somehow the latest repository directory (" + ldir + ") was missing!");
+	  }
+	}
+	
+	/* the base repository directory */ 
+	String rbase = rdir.getParent();
+
+	/* the working file and checksum directories */ 
+	File wdir  = null;
+	File cwdir = null;
+	{
+	  File wpath = req.getNodeID().getWorkingDir();
+	  wdir  = new File(pProdDir, wpath.getPath());
+	  cwdir = new File(pProdDir, "checksum/" + wpath);
+	}
+	
+
+	/* process the files */ 
+	ArrayList<File> copies = new ArrayList<File>();
+	ArrayList<File> links  = new ArrayList<File>();
+	{
+	  TreeMap<FileSeq, FileState[]> stable = req.getFileStates();
+	  for(FileSeq fseq : req.getFileSequences()) {
+	    FileState[] states = stable.get(fseq);
+	    int wk = 0;
+	    for(File file : fseq.getFiles()) {
+	      File work = new File(wdir, file.getPath());
+
+	      switch(states[wk]) {
+	      case Pending:
+	      case Modified:
+	      case Added:
+		copies.add(file);	
+		break;
+
+	      case Identical:
+		{
+		  assert(ldir != null);
+		  File latest = new File(ldir, file.getPath());
+		  try {
+		    assert(ldir != null);
+		    String source = NativeFileSys.realpath(latest).getPath();
+		    assert(source.startsWith(rbase));
+		    links.add(new File(".." + source.substring(rbase.length())));
+		  }
+		  catch(IOException ex) {
+		    throw new PipelineException
+		      ("Unable to resolve the real path to the repository " + 
+		       "file (" + latest + ")!");
+		  }
+		}
+		break;
+		  
+	      case Obsolete:
+		break;
+
+	      default:
+		//assert(false);
+		throw new PipelineException
+		  ("Somehow the working file (" + work + ") with a file state of (" + 
+		   states[wk].name() + ") was erroneously submitted for check-in!");
+	      }
+
+	      wk++;
+	    }
+	  }
+	}
+
+	boolean success = false;
+	try {
+	  Map<String,String> env = System.getenv();
+
+	  /* copy the files */ 
+	  if(!copies.isEmpty()) {	    
+	    ArrayList<String> args = new ArrayList<String>();
+	    for(File file : copies) 
+	      args.add(file.getPath());
+	    args.add(rdir.getPath());
+	    
+	    SubProcess proc = 
+	      new SubProcess("CheckIn-Copy", "cp", args, env, wdir);
+	    proc.start();
+	    
+	    try {
+	      proc.join();
+	    }
+	    catch(InterruptedException ex) {
+	      throw new PipelineException
+		("Interrupted while copying files for working version (" + req.getNodeID() + 
+		 ") into the file repository!");
+	    }
+	    
+	    if(!proc.wasSuccessful()) {
+	      throw new PipelineException
+		("Unable to copy files for working version (" + req.getNodeID() + 
+		 ") into the file repository!");
+	    }
+	    
+	    for(File file : copies) {
+	      File repo = new File(rdir, file.getPath());
+	      repo.setReadOnly();
+	    }
+	  }
+
+	  /* create the symbolic links */ 
+	  if(!links.isEmpty()) {
+	    for(File source : links) {
+	      try {
+		File target = new File(rdir, source.getName());
+		NativeFileSys.symlink(source, target);
+	      }
+	      catch(IOException ex) {
+		throw new PipelineException
+		 ("Unable to create symbolic links for working version (" + req.getNodeID() + 
+		 ") in the file repository:\n" +  
+		  ex.getMessage());
+	      }
+	    }
+	  }
+
+	  /* copy the checksums */ 
+	  {
+	    ArrayList<String> args = new ArrayList<String>();
+
+	    for(FileSeq fseq : req.getFileSequences()) 
+	      for(File file : fseq.getFiles()) 
+		args.add(file.getPath());
+	    args.add(crdir.getPath());
+
+	    SubProcess proc = 
+	      new SubProcess("CheckIn-CopyCheckSums", "cp", args, env, cwdir);
+	    proc.start();
+	    
+	    try {
+	      proc.join();
+	    }
+	    catch(InterruptedException ex) {
+	      throw new PipelineException
+		("Interrupted while copying checksums for working version (" + 
+		 req.getNodeID() + ") into the checksum repository!");
+	    }
+
+	    for(FileSeq fseq : req.getFileSequences()) {
+	      for(File file : fseq.getFiles()) {
+		File repo = new File(crdir, file.getPath());
+		repo.setReadOnly();
+	      }
+	    }
+	  }
+
+	  success = true;
+	}
+	finally {
+	  /* make the repository directories read-only */ 
+	  if(success) {
+	    rdir.setReadOnly();
+	    crdir.setReadOnly();
+	  }
+
+	  /* cleanup any partial results */ 
+	  else {
+	    for(File file : copies) {
+	      File rfile = new File(rdir, file.getPath());
+	      if(rfile.exists()) 
+		rfile.delete();
+	    }
+	    
+	    for(File link : links) {
+	      File rlink = new File(rdir, link.getName());
+	      if(rlink.exists()) 
+		rlink.delete();
+	    }
+
+	    rdir.delete();
+	    
+	    for(FileSeq fseq : req.getFileSequences()) {
+	      for(File file : fseq.getFiles()) {
+		File cfile = new File(crdir, file.getPath());
+		if(cfile.exists()) 
+		  cfile.delete();		
+	      }
+	    }
+
+	    crdir.delete();
+	  }
+	}
+
+	return new SuccessRsp(task, wait, start);
+      }
+    }
+    catch(PipelineException ex) {
+      if(wait > 0) 
+	return new FailureRsp(task, ex.getMessage(), wait, start);
+      else 
+	return new FailureRsp(task, ex.getMessage(), start);
+    }
+    finally {
+      nodeLock.writeLock().unlock();
+    }  
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -545,7 +851,11 @@ class FileMgr
    * The per-working version locks indexed by NodeID.
    */
   private HashMap<NodeID,Object>  pWorkLocks;
-  
+
+  /**
+   * The file system directory creation lock.
+   */
+  private Object pMakeDirLock;
  
   /**
    * The root production directory.

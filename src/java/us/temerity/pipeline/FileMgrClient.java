@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.3 2004/03/12 23:10:08 jim Exp $
+// $Id: FileMgrClient.java,v 1.4 2004/03/15 19:07:46 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -128,6 +128,9 @@ class FileMgrClient
    * Compute the {@link FileState FileState} for each file associated with the working 
    * version of a node. <P> 
    * 
+   * The <CODE>latest</CODE> argument may be <CODE>null</CODE> if this is an initial 
+   * working version. 
+   * 
    * @param id [<B>in</B>]
    *   The unique working version identifier.
    * 
@@ -180,6 +183,65 @@ class FileMgrClient
     }
   }
 
+  /**
+   * Perform the file system operations needed to create a new checked-in version of the 
+   * node in the file repository based on the given working version. <P> 
+   * 
+   * The <CODE>latest</CODE> argument may be <CODE>null</CODE> if this is an initial 
+   * working version. 
+   * 
+   * @param id [<B>in</B>]
+   *   The unique working version identifier.
+   * 
+   * @param mod [<B>in</B>]
+   *   The working version of the node.
+   * 
+   * @param vid [<B>in</B>]
+   *   The revision number of the new checked-in version being created.
+   * 
+   * @param latest [<B>in</B>]
+   *   The revision number of the latest checked-in version.
+   * 
+   * @throws PipelineException
+   *   If unable to check-in the working files.
+   * 
+   * @param states [<B>in</B>]
+   *   The <CODE>FileState</CODE> of each the primary and secondary file associated with 
+   *   the working version indexed by file sequence.
+   */
+  public synchronized void 
+  checkIn
+  (
+   NodeID id, 
+   NodeMod mod, 
+   VersionID vid,
+   VersionID latest, 
+   TreeMap<FileSeq,FileState[]> states
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    TreeSet<FileSeq> fseqs = mod.getSequences();
+    refreshCheckSums(id, fseqs);
+
+    FileCheckInReq req = 
+      new FileCheckInReq(id, vid, latest, fseqs, states); 
+
+    Object obj = performTransaction(FileRequest.CheckIn, req);
+
+    if(obj instanceof SuccessRsp) {
+    }
+    else if(obj instanceof FailureRsp) {
+      FailureRsp rsp = (FailureRsp) obj;
+      throw new PipelineException(rsp.getMessage());	
+    }
+    else {
+      shutdown();
+      throw new PipelineException
+	("Illegal response received from the FileMgrServer instance!");
+    }
+  }
 
   /**
    * Close the network connection if its is still connected.
