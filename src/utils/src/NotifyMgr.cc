@@ -1,4 +1,4 @@
-// $Id: NotifyMgr.cc,v 1.2 2004/04/06 08:58:52 jim Exp $
+// $Id: NotifyMgr.cc,v 1.3 2004/04/06 15:42:57 jim Exp $
 
 #include <NotifyMgr.hh>
 
@@ -52,6 +52,8 @@ NotifyMgr::addDir
       pTasks.push_back(task);
       
       task->spawn();
+
+      FB::threadMsg("Started", 2, task->getName(), task->getPID());
       
       if(!task->addDir(dir)) 
 	FB::error("Unable to add a directory to freshly created NotifyTask!");
@@ -96,22 +98,18 @@ NotifyMgr::removeDir
 void
 NotifyMgr::wait()
 {
-  printf("Waiting for Shutdown...\n");
+  FB::threadMsg("Waiting for Shutdown...", 1);
   pLockSet.lock(pShutdownID);
 
-  printf("Waiting for NotifyMgr lock...\n");
   pLockSet.lock(pLockID);
   {    
-
-    printf("Waiting for NotifyTasks to exit...\n");
-
     TaskList::iterator iter;
     for(iter = pTasks.begin(); iter != pTasks.end(); iter++) {
       int code = (*iter)->wait();
-      
-      // DEBUG 
-      printf("NotifyTask[%d]: Exit Code = %d\n", (*iter)->getPID(), code);
-      // DEBUG 
+
+      char msg[1024];
+      sprintf(msg, "NotifyTask[%d] Exited = %d", (*iter)->getPID(), code);
+      FB::threadMsg(msg, 2);
       
       delete (*iter);
     }
@@ -138,11 +136,15 @@ NotifyMgr::modified
     return;
 
   pLockSet.lock(pLockID);    
-  {    
+  { 
+    // DEBUG 
+    char msg[1024];
+    sprintf(msg, "MODIFIED: %s/%s", pRootDir, dir);
+    FB::threadMsg(msg, 4);
+    // DEBUG 
 
-    // DEBUG
-    printf("MODIFIED: %s/%s\n", pRootDir, dir);
-    // DEBUG
+    
+    // distribute the diretory to the NotifyMonitorTask(s)... 
 
   }
   pLockSet.unlock(pLockID);  

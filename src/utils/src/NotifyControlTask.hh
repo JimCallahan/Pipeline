@@ -1,4 +1,4 @@
-// $Id: NotifyControlTask.hh,v 1.1 2004/04/06 08:58:09 jim Exp $
+// $Id: NotifyControlTask.hh,v 1.2 2004/04/06 15:42:57 jim Exp $
 
 #ifndef PIPELINE_NOTIFY_CONTROL_TASK_HH
 #define PIPELINE_NOTIFY_CONTROL_TASK_HH
@@ -107,46 +107,44 @@ public:
   virtual int
   run()
   {
-    FB::stageBegin("Control - Connection Opened.", 2);
-
     char msg[1024];
     char data[1033];
     data[1033] = '\0';
     while(!pMgr.isShutdown()) {
       int num = Network::read(pSocket, data, 1032);
       if((num == -1) || (num < 1032)) {
-	printf("Illegible message recieved!\n");
+	FB::warn("Illegible message recieved!");
 	return EXIT_FAILURE;
       }
 
       if(strncmp(data, "ADD_____", 8) == 0) {
-	sprintf(msg, "Control - Add Directory: %s", data+8);
-	FB::stageMsg(msg, 2);
+	sprintf(msg, "Add Directory: %s", data+8);
+	FB::threadMsg(msg, 4, pName, pPID);
 
 	pMgr.addDir(data+8); 
       }
       else if(strncmp(data, "REMOVE__", 8) == 0) {
-	sprintf(msg, "Control - Remove Directory: %s", data+8);
-	FB::stageMsg(msg, 2);
+	sprintf(msg, "Remove Directory: %s", data+8);
+	FB::threadMsg(msg, 4, pName, pPID);
 
 	pMgr.removeDir(data+8); 
       }
       else if(strncmp(data, "CLOSE___", 8) == 0) {
-	FB::stageMsg("Control - Close", 2);
+	FB::threadMsg("Close", 4, pName, pPID);
 	break;
       }
       else if(strncmp(data, "SHUTDOWN", 8) == 0) {
-	FB::stageMsg("Control - Shutdown", 2);
+	FB::threadMsg("Shutdown", 4, pName, pPID);
 
 	pMgr.shutdown();
       }
       else {
-	FB::error("Illegal message recieved!");
+	FB::warn("Illegal message recieved!");
+	return EXIT_FAILURE;
       }
     }
 
-    FB::stageMsg("Control - Connection Closed.", 2);
-    FB::stageEnd(2);
+    FB::threadMsg("Connection Closed.", 3, pName, pPID);
 
     return EXIT_SUCCESS;
   }
@@ -183,8 +181,6 @@ public:
       sprintf(msg, "Unable to spawn task thread: %s", strerror(errno));
       FB::error(msg);
     }      
-
-    printf("Spawned Thread: %s [%d]\n", pName, pPID);
   }
 
 

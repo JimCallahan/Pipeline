@@ -1,4 +1,4 @@
-// $Id: NotifyTask.cc,v 1.2 2004/04/06 08:58:52 jim Exp $
+// $Id: NotifyTask.cc,v 1.3 2004/04/06 15:42:57 jim Exp $
 
 #include <NotifyTask.hh>
 
@@ -86,14 +86,13 @@ NotifyTask::run()
     /* check for added or removed directories */ 
     pLockSet.lock(pLockID);
     {
-      bool debugPrint = false; // DEBUG
+      bool dumpTable = false;
       
       /* start monitoring the added directories */ 
       if(pNumAdd > 0) {
 	int wk; 
 	for(wk=0; wk<pNumAdd; wk++) {   
 	  if(!containsDir(pDirs, 1024, pAdd[wk])) {
-	    
 	    char path[1024];
 	    sprintf(path, "%s/%s", pRootDir, pAdd[wk]);
 	    
@@ -121,17 +120,13 @@ NotifyTask::run()
 	    /* add it to the tables */ 
 	    pDirs[fd] = pAdd[wk];
 	    pNumDirs++;
-	    
-	    // DEBUG
-	    printf("%s[%d] Added Directory: %s/%s (%d)\n", 
-		   pName, pPID, pRootDir, pAdd[wk], fd);
-	    // DEBUG
+
+	    sprintf(msg, "Added Directory: %s/%s (%d)", pRootDir, pAdd[wk], fd);
+	    FB::threadMsg(msg, 3, pName, pPID);
 	  }
 	  else {
-	    // DEBUG
-	    printf("[%d] Existing Directory: %s/%s\n", 
-		   pPID, pRootDir, pAdd[wk]);
-	    // DEBUG
+	    sprintf(msg, "Existing Directory: %s/%s", pRootDir, pAdd[wk]);
+	    FB::threadMsg(msg, 3, pName, pPID);
 	    
 	    delete[] (pAdd[wk]);
 	  }
@@ -141,7 +136,7 @@ NotifyTask::run()
 	
 	pNumAdd = 0;
 	
-	debugPrint = true;  // DEBUG
+	dumpTable = true; 
       }
       
       /* stop monitoring the removed directories */ 
@@ -170,10 +165,8 @@ NotifyTask::run()
 	    pDirs[fd] = NULL;
 	    pNumDirs--;
 	    
-	    // DEBUG
-	    printf("[%d] Removed Directory: %s/%s (%d)\n", 
-		   pPID, pRootDir, pRemove[wk], fd);
-	    // DEBUG
+	    sprintf(msg, "Added Directory: %s/%s (%d)", pRootDir, pRemove[wk], fd);
+	    FB::threadMsg(msg, 3, pName, pPID);
 	  }
 	  
 	  delete[] (pRemove[wk]);
@@ -182,23 +175,29 @@ NotifyTask::run()
 	
 	pNumRemove = 0;
 	
-	debugPrint = true;  // DEBUG
+	dumpTable = true; 
       }
       
-      // DEBUG
-      if(debugPrint) {
-	printf("MONITORED DIRS: %d\n", pNumDirs);
-	int wk; 
-	for(wk=0; wk<1024; wk++) {  
-	  if(pDirs[wk] != NULL) {
-	    printf("[%d]  %s/%s (%d)\n", 
-		   pPID, pRootDir, pDirs[wk], wk);
+      /* dump the table of monitored directories */ 
+      if(dumpTable && FB::hasStageStats(4)) {
+	FB::lock();
+	{
+	  FB::getStream() 
+	    << "        " 
+	    << pName << "[" << pPID << "] - Monitored Directories: " << pNumDirs << "\n";
+
+	  int wk; 
+	  for(wk=0; wk<1024; wk++) {  
+	    if(pDirs[wk] != NULL) {
+	      FB::getStream() 
+		<< "          " << pRootDir << "/" << pDirs[wk] << " (" << wk << ")\n";
+	    }
 	  }
+	  
+	  FB::getStream() << "\n";
 	}
-	printf("-------------------------------------------------------------------\n");
+	FB::unlock();
       }
-      // DEBUG
-      
     }
     pLockSet.unlock(pLockID);
 
@@ -226,17 +225,15 @@ NotifyTask::run()
 	}
       }
       else {
-	// DEBUG
-	printf("%s[%d]: Modified: %s/%s\n", 
-	        pName, pPID, pRootDir, pDirs[sinfo.si_fd]);
-	// DEBUG
-    
-	// ... push onto the queue to be sent over the network...
-    
+	sprintf(msg, "Modified: %s/%s", pRootDir, pDirs[sinfo.si_fd]);
+	FB::threadMsg(msg, 3, pName, pPID);
+	
 	pMgr.modified(pDirs[sinfo.si_fd]);
       }
     }
   }
+
+  FB::threadMsg("Finished", 2, pName, pPID);
 
   return EXIT_SUCCESS;
 }

@@ -1,4 +1,4 @@
-// $Id: Task.hh,v 1.2 2004/04/06 08:58:52 jim Exp $
+// $Id: Task.hh,v 1.3 2004/04/06 15:42:57 jim Exp $
 
 #ifndef PIPELINE_TASK_HH
 #define PIPELINE_TASK_HH
@@ -123,11 +123,9 @@ public:
     pStack = new char[stackSize];
     pPID = clone(TaskLauncher, (void*) (pStack+stackSize-1), CLONE_VM, (void*) this);
     if(pPID == -1) {
-      sprintf(msg, "Unable to spawn %s: %s", pName, strerror(errno));
+      sprintf(msg, "Unable to spawn task thread %s: %s", pName, strerror(errno));
       FB::error(msg);
     }      
-
-    printf("Spawned Thread: %s[%d]\n", pName, pPID);
   }
 
   /**

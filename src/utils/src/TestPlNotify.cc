@@ -1,4 +1,4 @@
-// $Id: TestPlNotify.cc,v 1.1 2004/04/06 08:58:09 jim Exp $
+// $Id: TestPlNotify.cc,v 1.2 2004/04/06 15:42:57 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -106,7 +106,7 @@ main
 
   /* monitor some directories */ 
   int wk; 
-  for(wk=0; wk<3000; wk++) {
+  for(wk=0; wk<30; wk++) {
     char dir[1024];
     sprintf(dir, "clone/%d", wk);
     addDir(sd, dir);
@@ -130,7 +130,7 @@ main
 //     addDir(sd, dir);
 //   }
 
-  sleep(30);
+  sleep(60);
 
   //closeConnect(sd);
   shutdown(sd);

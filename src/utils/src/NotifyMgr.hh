@@ -1,4 +1,4 @@
-// $Id: NotifyMgr.hh,v 1.3 2004/04/06 08:58:52 jim Exp $
+// $Id: NotifyMgr.hh,v 1.4 2004/04/06 15:42:57 jim Exp $
 
 #ifndef PIPELINE_NOTIFY_MGR_HH
 #define PIPELINE_NOTIFY_MGR_HH
@@ -140,8 +140,6 @@ public:
   void
   shutdown()
   {
-    printf("NotifyMgr::shutdown()!\n");
-    
     pShutdown = true;
     pLockSet.unlock(pShutdownID);
   }

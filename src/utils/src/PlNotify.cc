@@ -1,4 +1,4 @@
-// $Id: PlNotify.cc,v 1.3 2004/04/06 08:58:52 jim Exp $
+// $Id: PlNotify.cc,v 1.4 2004/04/06 15:42:57 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -160,7 +160,7 @@ main
   
 
   /* startup the notify, control and monitory threads */ 
-  FB::stageBegin("Working...", 1);
+  FB::threadMsg("Started Daemon", 0);
   {
     NotifyMgr mgr(prodDir);
 
@@ -172,7 +172,7 @@ main
  
     mgr.wait();
   }
-  FB::stageEnd(1);
+  FB::threadMsg("All Finished", 0);
 
   return EXIT_SUCCESS;
 }

@@ -1,4 +1,4 @@
-// $Id: NotifyControlServer.hh,v 1.1 2004/04/06 08:58:09 jim Exp $
+// $Id: NotifyControlServer.hh,v 1.2 2004/04/06 15:42:57 jim Exp $
 
 #ifndef PIPELINE_NOTIFY_CONTROL_SERVER_HH
 #define PIPELINE_NOTIFY_CONTROL_SERVER_HH
@@ -109,7 +109,7 @@ public:
   {
     char msg[1024];
 
-    FB::stageBegin("Starting Control Server...");
+    FB::threadMsg("Started", 1, pName, pPID);
     {
       /* initialize the network socket */ 
       int sd = Network::socket();    
@@ -118,9 +118,8 @@ public:
       Network::listen(sd);
 
       {
-	char msg[1024];
 	sprintf(msg, "Listening on Port: %d", pPort);
-	FB::stageMsg(msg);
+	FB::threadMsg(msg, 2, pName, pPID);
       }
 
       /* listen for incoming connections */ 
@@ -136,6 +135,8 @@ public:
 	 pTasks.push_back(task);
 	  
 	 task->spawn();
+
+	 FB::threadMsg("Connection Opened", 3, task->getName(), task->getPID());
 	}
 	pLockSet.unlock(pLockID);
       }
@@ -146,10 +147,10 @@ public:
 	TaskList::iterator iter;
 	for(iter = pTasks.begin(); iter != pTasks.end(); iter++) {
 	  int code = (*iter)->wait();
-
-	  // DEBUG 
-	  printf("NotifyControlTask[%d]: Exit Code = %d\n", (*iter)->getPID(), code);
-	  // DEBUG 
+	  
+	  char msg[1024];
+	  sprintf(msg, "NotifyControlTask[%d] Exited = %d", (*iter)->getPID(), code);
+	  FB::threadMsg(msg, 3, pName, pPID);
 	  
 	  delete (*iter);
 	}
@@ -157,7 +158,7 @@ public:
       }   
       pLockSet.unlock(pLockID);
     }
-    FB::stageEnd();
+    FB::threadMsg("Finished", 1, pName, pPID);
 
     return EXIT_SUCCESS;
   }

@@ -1,4 +1,4 @@
-// $Id: FB.hh,v 1.2 2004/04/06 08:57:10 jim Exp $
+// $Id: FB.hh,v 1.3 2004/04/06 15:42:57 jim Exp $
 
 #ifndef PIPELINE_FB_HH
 #define PIPELINE_FB_HH
@@ -26,6 +26,7 @@
 #endif
 
 #include <Timer.hh>
+#include <LockSet.hh>
 
 namespace Pipeline {
 
@@ -43,376 +44,519 @@ public:
   /*   I N I T I A L I Z A T I O N                                                          */
   /*----------------------------------------------------------------------------------------*/
 
-  /* initialize the output stream */ 
+  /**
+   * Initialize the output stream.
+   * 
+   * param out
+   *   The output stream to use for messages.
+   * 
+   * param interactive
+   *   Should the messages have low latency (at a small cost)?
+   */ 
   static void 
   init
   (
-   ostream& out,             /* the output stream to use for messages */ 
-   bool interactive = true   /* should the messages have low latency (at a small cost) */ 
+   ostream& out,            
+   bool interactive = true   
   ) 
   {
-    /* reset to initial state */
-    reset();
+    /* initialize the locks */ 
+    assert(sLockSet == NULL);
+    assert(sLockID == -1);
+    sLockSet = new LockSet();
+    sLockID = sLockSet->initLock();
+    assert(sLockID != -1);
 
-    /* this causes output to be flushed after each insertion,
-       for better interactive monitoring at medium performance cost */ 
-    assert(&out);
-    assert(sOut == NULL);
-    sOut = &out;
-    assert(sOut);
-    if(interactive) 
-      (*sOut) << setiosflags(std::ios::unitbuf);
-
-    /* create timers */ 
-    assert(sTimers == NULL);
-    sTimers = new Timer[sNumTimers];
-    assert(sTimers);
+    sLockSet->lock(sLockID);
+    {
+      /* this causes output to be flushed after each insertion,
+	 for better interactive monitoring at medium performance cost */ 
+      assert(&out);
+      assert(sOut == NULL);
+      sOut = &out;
+      assert(sOut);
+      if(interactive) 
+	(*sOut) << setiosflags(std::ios::unitbuf);
+      
+      /* create timers */ 
+      assert(sTimers == NULL);
+      sTimers = new Timer[sNumTimers];
+      assert(sTimers);
+    }
+    sLockSet->unlock(sLockID);
   }
 
 
-  /* has the output stream and timers been initialized? */ 
+  /**
+   * Has the output stream and its associated locks and timers been initialized? 
+   */ 
   static bool
   isInitialized() 
   {
-    return ((sOut != NULL) && (sTimers != NULL));
+    if(sLockSet == NULL) {
+      assert(sOut == NULL);
+      assert(sTimers == NULL);
+      return false;
+    }
+    else {
+      assert(sOut != NULL);
+      assert(sTimers != NULL);
+      return true;
+    }
   }
 
 
 
-public:
+public:	
   /*----------------------------------------------------------------------------------------*/
-  /*   A C C E S S                                                                          */
+  /*   E X T E R N A L   L O C K I N G                                                      */
   /*----------------------------------------------------------------------------------------*/
-  											    
-  /* get the output stream */ 								    
-  static ostream&									    
-  getOutput() 										    
-  { 											    
-    assert(sOut);									    
-    return (*sOut);									    
+	
+  /**
+   * Lock the output stream.
+   */ 
+  static void
+  lock()
+  {
+    sLockSet->lock(sLockID);
+  }
+  	
+  /**
+   * Get the output stream 
+   */ 
+  static ostream&
+  getStream()
+  {
+    return (*sOut);
+  }
+
+  /**
+   * Unlock the output stream.
+   */ 
+  static void
+  unlock()
+  {
+    sLockSet->unlock(sLockID);
+  }
+  
+  
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   E R R O R   M E S S A G E S                                                          */
+  /*----------------------------------------------------------------------------------------*/
+											    
+  /**
+   * Report the occurrence of an error.
+   * 
+   * param msg
+   *  The message text.
+   */ 
+  static void 										    
+  error											    
+  (											    
+   const char* msg = NULL 
+  ) 											    
+  {
+    sLockSet->lock(sLockID);						    
+    {
+      assert(sOut);
+      (*sOut) << std::flush;
+      
+      std::cerr << "FATAL ERROR: " << (msg ? msg : "Abort!") << "\n" << std::flush;
+    }
+    sLockSet->unlock(sLockID);
+    
+    sleep(5);
+
+    assert(false);									    
+    exit(EXIT_FAILURE);								    
   }											    
 											    
+
+										    
+  /*----------------------------------------------------------------------------------------*/
+  /*   W A R N I N G   M E S S A G E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Will warning messages of the given verbosity level be reported?
+   * 
+   * param level
+   *   The verbosity level.
+   */ 
+  static bool 										    
+  hasWarnings
+  (											    
+   UInt32 level = 1       
+  ) 											    
+  {		
+    bool tf = false;
+    sLockSet->lock(sLockID);						    
+    {
+      tf = (sWarnings && (level <= sWarningLevel));
+    }
+    sLockSet->unlock(sLockID);	
+    return tf;		
+  }											    
+
+	
+  /** 
+   * Get the current warning verbosity level.
+   */ 
   static UInt32 									    
   getWarningLevel() 									    
   {											    
     return sWarningLevel;								    
   }											    
 											    
-  static UInt32 									    
-  getStatLevel() 									    
-  {											    
-    return sStatLevel;									    
-  }											    
-											    
-											    
-  /*----------------------------------------------------------------------------------------*/
-  /*   P R E D I C A T E S                                                                  */
-  /*----------------------------------------------------------------------------------------*/
- 											    
-  static bool 										    
-  hasStageStats										    
-  (											    
-   UInt32 level = 1         /* IN: verbosity level of message */ 			    
-  ) 											    
-  {											    
-    return (sStageStats && (level <= sStatLevel));					    
-  }											    
-											    
-											    
-											    
-  /*----------------------------------------------------------------------------------------*/
-  /*   V E R B O S I T Y                                                                    */
-  /*----------------------------------------------------------------------------------------*/
- 											    
-  /* generate runtime warning messages? */ 						    
+  /**
+   * Set the warning message verbosity level.
+   * 
+   * param tf
+   *   Whether to generate any warning messages.
+   * 
+   * paral level
+   *   The verbosity level.
+   */ 						    
   static void 										    
   setWarnings										    
   (											    
-   bool tf = true,          /* IN: whether to generate messages */ 			    
-   UInt32 level = 1         /* IN: verbosity level of messages */ 			    
+   bool tf = true,       		    
+   UInt32 level = 1     			    
   ) 											    
-  {											    
-    sWarnings = tf;									    
-    sWarningLevel = level;								    
-  }											    
+  {	
+    assert(level > 0);
+
+    sLockSet->lock(sLockID);						    
+    {									    
+      sWarnings     = tf; 
+      sWarningLevel = level;
+    }
+    sLockSet->unlock(sLockID);
+  }	
+
 											    
-  /* generate stage timing stats? */ 							    
-  static void 										    
-  setStageStats										    
-  (											    
-   bool tf = true,          /* IN: whether to generate stats */ 			    
-   UInt32 level = 1         /* IN: verbosity level of stats */ 				    
-  ) 											    
-  {											    
-    sStageStats = tf;									    
-    sStatLevel = level;									    
-  }											    
-											    
-											    
-											    
-  /* generate progress percentage messages? */ 						    
-  static void 										    
-  setProgress										    
-  (											    
-   bool tf = true									    
-  ) 											    
-  {											    
-    sProgress = tf;									    
-  }											    
-											    
-  											    
-  /*----------------------------------------------------------------------------------------*/
-  /*   W A R N I N G   M E S S A G E S                                                      */
-  /*----------------------------------------------------------------------------------------*/
- 											    
-  /* simple string warning message */ 							    
+  /**
+   * Report a warning message.
+   * 
+   * param msg
+   *  The message text.
+   * 
+   * paral level
+   *   The verbosity level.
+   */ 
   static void 										    
   warn											    
   (											    
-   const char* msg,     /* IN: warning message */  					    
-   UInt32 level = 1     /* IN: verbosity level of warning */ 				    
+   const char* msg,    					    
+   UInt32 level = 1    		    
   ) 											    
   {											    
     assert(msg);									    
-											    
-    if((!sWarnings) || (level > sWarningLevel) || (sOut == NULL))			    
-      return; 										    
-											    
-    assert(sOut);									    
-    (*sOut) << "\nWARNING: " << msg << "\n\n";						    
+
+    sLockSet->lock(sLockID);						    
+    {									    
+      if(sWarnings && (level <= sWarningLevel)) {	
+	assert(sOut);									    
+	(*sOut) << "\nWARNING: " << msg << "\n\n";	
+      }
+    }
+    sLockSet->unlock(sLockID);					    
   }											    
 											    
-											    
-  /*----------------------------------------------------------------------------------------*/
-  /*   E R R O R   M E S S A G E S                                                          */
-  /*----------------------------------------------------------------------------------------*/
-											    
-  /* exit program on error? */ 								    
-  static void										    
-  exitOnError										    
-  (											    
-   bool tf = true									    
-  ) 											    
-  {											    
-    sExitOnError = tf;									    
-  }											    
-  											    
-											    
-  /* simple string error message (always goes to stderr) */ 				    
-  static void 										    
-  error											    
-  (											    
-   const char* msg = NULL   /* IN: error message */  					    
-  ) 											    
-  {											    
-    if(sOut) 										    
-      (*sOut) << std::flush;
-											    
-    std::cerr << "FATAL ERROR: " << (msg ? msg : "Abort!") << "\n" << std::flush;
-											    
-    if(sExitOnError) {									    
-      sleep(5);
-      assert(false);									    
-      exit(EXIT_FAILURE);								    
-    }											    
-    else {										    
-      recover();									    
-    }											    
-  }											    
-											    
-											    
+										    
   											    
   /*----------------------------------------------------------------------------------------*/
   /*   S T A G E   S T A T S                                                                */
   /*----------------------------------------------------------------------------------------*/
- 											    
-  /* start a new stage */ 								    
+ 
+  /**
+   * Will stage messages of the given verbosity level be reported?
+   * 
+   * param level
+   *   The verbosity level.
+   */ 										    
+  static bool 										    
+  hasStageStats										    
+  (											    
+   UInt32 level = 1      			    
+  ) 											    
+  {		
+    bool tf = false;
+    sLockSet->lock(sLockID);						    
+    {
+      tf = (sStageStats && (level <= sStatLevel));
+    }
+    sLockSet->unlock(sLockID);
+    return tf;
+  }											    
+		
+  /** 
+   * Get the current stage verbosity level.
+   */ 										    
+  static UInt32 									    
+  getStatLevel() 									    
+  {											    
+    return sStatLevel;									    
+  }				
+											    
+  /**
+   * Set the stage message verbosity level.
+   * 
+   * param tf
+   *   Whether to generate any stage messages.
+   * 
+   * paral level
+   *   The verbosity level.
+   */ 								    
+  static void 										    
+  setStageStats										    
+  (											    
+   bool tf = true,        			    
+   UInt32 level = 1      		    
+  ) 											    
+  {		
+    sLockSet->lock(sLockID);						    
+    {
+      sStageStats = tf;									    
+      sStatLevel = level;	
+    }
+    sLockSet->unlock(sLockID);								    
+  }											    
+			    
+  /**
+   * Start a new nested stage.
+   * 
+   * This is should not be used with threaded programs as the stage nesting level
+   * will get mangled by multiple asynchronous threads.
+   * 
+   * param title
+   *   The name of the stage.
+   * 
+   * param level 
+   *   The verbosity level.
+   */
   static void 										    
   stageBegin										    
   (											    
-   const char* title,       /* IN: stage title */  					    
-   UInt32 level = 1         /* IN: verbosity level of stage */ 				    
+   const char* title, 
+   UInt32 level = 1   
   ) 											    
   {											    
     assert(title);									    
     assert(sTimers);									    
+	
+    sLockSet->lock(sLockID);						    
+    {				
+      if(sStageStats && (level <= sStatLevel)) {
+	sIndentLevel += 2;
+	sTimerLevel++;	
+								    
+	if(sTimerLevel < 0) {							 
+	  sLockSet->unlock(sLockID);
+	  error("Somehow the stage nesting level has become negative!");	 
+	}
+
+	if(sTimerLevel >= sNumTimers) {
+	  sLockSet->unlock(sLockID);							    
+	  error("Somehow the maximum stage nesting level has been exceeded!");		 
+	}
+
+	sTimers[sTimerLevel].reset();							    
 											    
-    if((!sStageStats) || (level > sStatLevel) || (sOut == NULL))			    
-      return;										    
+	indent();							      
+	assert(sOut);									    
+	(*sOut) << title << "\n";
+      }
+    }
+    sLockSet->unlock(sLockID);
+  }
 											    
-    sIndentLevel += 2;    								    
-											    
-    sTimerLevel++;									    
-    if(sTimerLevel < 0)									    
-      error("Somehow the stage nesting level has become negative!");			    
-    if(sTimerLevel >= sNumTimers) 							    
-      error("Somehow the maximum stage nesting level has been exceeded!");		    
-    sTimers[sTimerLevel].reset();							    
-											    
-    indent();										    
-    assert(sOut);									    
-    (*sOut) << title << "\n";								    
-  }											    
-											    
-											    
-  /* additional sub-stage progress messages */ 						    
+  /**
+   * Additional sub-stage progress messages.
+   * 
+   * param msg
+   *  The message text.
+   * 
+   * param level
+   *   The verbosity level.
+   */ 						    
   static void										    
   stageMsg										    
   (											    
-   const char* msg,         /* IN: progress message */  				    
-   UInt32 level = 1         /* IN: verbosity level of message */ 			    
+   const char* msg,     			    
+   UInt32 level = 1    			    
   ) 											    
   {											    
     assert(msg);									    
-											    
-    if((!sStageStats) || (level > sStatLevel) || (sOut == NULL))			    
-      return;										    
-											    
-    indent(1);										    
-    assert(sOut);									    
-    (*sOut) << msg << "\n";								    
+	
+    sLockSet->lock(sLockID);						    
+    {
+      if(sStageStats && (level <= sStatLevel)) {
+	indent(1);
+	assert(sOut);									    
+	(*sOut) << msg << "\n";
+      }
+    }
+    sLockSet->unlock(sLockID);		
   }											    
 											    
-  /* just a blank line */ 								    
+  /**
+   * Just a blank line.
+   * 
+   * param level
+   *   The verbosity level.
+   */ 								    
   static void										    
   stageMsg										    
   (											    
-   UInt32 level = 1       /* IN: verbosity level of message */ 			    
+   UInt32 level = 1     		    
   )											    
-  {											    
-    if((!sStageStats) || (level > sStatLevel) || (sOut == NULL))			    
-      return;										    
+  {	
+    sLockSet->lock(sLockID);						    
+    {
+      if(sStageStats && (level <= sStatLevel)) {
+	assert(sOut);									    
+	(*sOut) << "\n";
+      }
+    }
+    sLockSet->unlock(sLockID);
+  }
 											    
-    (*sOut) << "\n";    								    
-  }											    
-											    
-  /* indent and return the stream stage stats are reported on,				    
-     WARNING: this should be protected by a conditional call to FB::hasStateStats()! */     
-  static ostream& 									    
-  stageStream										    
-  (											    
-   bool indentFirst = true,   /* IN: whether to indent */  				    
-   UInt32 level = 1           /* IN: verbosity level of message */ 			    
-  ) 											    
-  {											    
-    assert(sStageStats);								    
-    assert(sStatLevel >= level);							    
-    assert(sOut);									    
-    if(indentFirst)									    
-      indent(1);									    
-    return (*sOut);									    
-  }											    
-											    
-  /* get the time (in seconds) since the start of the stage */ 				    
+  /**
+   * Get the time (in seconds) since the start of the stage.
+   * 
+   * This is should not be used with threaded programs as the stage nesting level
+   * will get mangled by multiple asynchronous threads.
+   */ 				    
   static double										    
   stageTime() 										    
-  {											    
-    if(sTimerLevel < 0)									    
-      error("Somehow the stage nesting level has become negative!");			    
-    if(sTimerLevel >= sNumTimers) 							    
-      error("Somehow the maximum stage nesting level has been exceeded!");		    
+  {
+    double time;
+
+    sLockSet->lock(sLockID);						    
+    {    
+      if(sTimerLevel < 0) {
+	sLockSet->unlock(sLockID);
+	error("Somehow the stage nesting level has become negative!");	 
+      }
+
+      if(sTimerLevel >= sNumTimers) {
+	sLockSet->unlock(sLockID);
+	error("Somehow the maximum stage nesting level has been exceeded!"); 
+      }
     											    
-    assert(sTimers);									    
-    return sTimers[sTimerLevel].seconds();						    
+      assert(sTimers);									    
+      time = sTimers[sTimerLevel].seconds();
+    }
+    sLockSet->unlock(sLockID);
+    
+    return time;
   }											    
 											    
-  /* end of the current stage */ 							    
+  /**
+   * End of the current nested stage.
+   * 
+   * This is should not be used with threaded programs as the stage nesting level
+   * will get mangled by multiple asynchronous threads.
+   * 
+   * param level 
+   *   The verbosity level.
+   */ 							    
   static void 										    
   stageEnd										    
   (											    
-   UInt32 level = 1       /* IN: verbosity level of message */ 			    
+   UInt32 level = 1      		    
   )											    
-  {											    
-    if((!sStageStats) || (level > sStatLevel) || (sOut == NULL))			    
-      return;										    
+  {
+    sLockSet->lock(sLockID);						    
+    {				
+      if(sStageStats && (level <= sStatLevel)) {
+	if(sTimerLevel < 0) {							 
+	  sLockSet->unlock(sLockID);
+	  error("Somehow the stage nesting level has become negative!");	 
+	}
+
+	if(sTimerLevel >= sNumTimers) {
+	  sLockSet->unlock(sLockID);							    
+	  error("Somehow the maximum stage nesting level has been exceeded!");		 
+	}
+	
+	indent();
+	assert(sOut);									    
+	assert(sTimers);
+	(*sOut) << (sTimers[sTimerLevel]) << "\n\n" << std::flush;
 											    
-    if(sTimerLevel < 0)									    
-      error("Somehow the stage nesting level has become negative!");			    
-    if(sTimerLevel >= sNumTimers) 							    
-      error("Somehow the maximum stage nesting level has been exceeded!");		    
-    											    
-    indent();										    
-    assert(sOut);									    
-    assert(sTimers);									    
-    (*sOut) << (sTimers[sTimerLevel]) << "\n\n" << std::flush;				    
+	sIndentLevel -= 2;   								    
 											    
-    sIndentLevel -= 2;   								    
-											    
-    if(sTimerLevel >= 0) 								    
-      sTimerLevel--;									    
-    else 										    
-      error("Attempted to end a non-existent stage!");					    
+	if(sTimerLevel >= 0) 								    
+	  sTimerLevel--;
+	else {
+	  sLockSet->unlock(sLockID);
+	  error("Attempted to end a non-existent stage!");
+	}
+      }
+    }
+    sLockSet->unlock(sLockID);
   }  											    
 											    
 
-  /*----------------------------------------------------------------------------------------*/
-  /*   M E S S A G E S                                                                      */
-  /*----------------------------------------------------------------------------------------*/
- 											    
-  /* start a new indented message block */ 						       
-  static void 										    
-  msgBegin										    
+  /**
+   * Non-stage related message with level based indentation.
+   * 
+   * Should be used for messages from threaded programs.
+   * 
+   * param msg
+   *  The message text.
+   * 
+   * param level
+   *   The verbosity level.
+   * 
+   * param name
+   *   The title of the calling thread.
+   * 
+   * param pid
+   *   The process ID of the calling thread.
+   */ 						    
+  static void										    
+  threadMsg
   (											    
-   const char* message,       /* IN: message */  					    
-   UInt32 level = 1           /* IN: verbosity level of message */   
+   const char* msg,
+   UInt32 level = 1,
+   const char* name = NULL,  
+   Int32 pid = -1
   ) 											    
   {											    
-    assert(message);									    
-											    
-    if((!sStageStats) || (level > sStatLevel) || (sOut == NULL))    
-      return;										    
+    assert(msg);									    
+	
+    sLockSet->lock(sLockID);						    
+    {
+      if(sStageStats && (level <= sStatLevel)) {
+	assert(sOut);
+
+	Int32 wk;						   
+	for(wk=0; wk<level; wk++) 			 
+	  (*sOut) << "  ";	
+
+	if(name != NULL) 
+	  (*sOut) << name;
+
+	if(pid != -1) 
+	  (*sOut) << "[" << pid << "]";
+	
+	if((name != NULL) || (pid != -1)) 
+	  (*sOut) << " - ";
+
+	(*sOut) << msg << "\n";
+      }
+    }
+    sLockSet->unlock(sLockID);		
+  }								    
+
+
 			
-    sIndentLevel += 1;
-
-    indent();										    
-    assert(sOut);									    
-    (*sOut) << message << "\n";								    
-  }											    
-											    
-  /* end of the current message block */ 			    
-  static void 										    
-  msgEnd										    
-  (											    
-   UInt32 level = 1          /* IN: verbosity level of message */ 			    
-  )											    
-  {											    
-    if((!sStageStats) || (level > sStatLevel) || (sOut == NULL))			    
-      return;										    
-    											    
-    indent();										    
-    assert(sOut);									    
-    (*sOut) << std::endl;			    
-											    
-    sIndentLevel -= 1;   								    
-  }  											    
-											    
-										    
-										    
-  /*----------------------------------------------------------------------------------------*/
-  /*   P R O G R E S S   P E R C E N T A G E                                                */
-  /*----------------------------------------------------------------------------------------*/
- 											    
-  /* update percentage of task completed (always goes to stderr) */ 			    
-  static void 										    
-  progress										    
-  (											    
-   Real32 percent   /* percentage done: [0,1] range */ 					    
-  ) 											    
-  {											    
-    if(!sProgress) 									    
-      return; 										    
-											    
-    sProgressPercentage = percent;							    
-    std::cerr << "ALF_PROGRESS " << ((Int32) (sProgressPercentage * 100.0f)) << "%\n";
-											    
-    /* keep the logs up-to-date with the progress percentage */ 			    
-    if(sOut)										    
-      (*sOut) << std::flush;	    
-  }											    
-											    
-											    
- 											    
-protected:										    
+private:										    
   /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S                                                                        */
   /*----------------------------------------------------------------------------------------*/
@@ -428,71 +572,73 @@ protected:
     for(wk=0; wk<(sIndentLevel+extra); wk++) 						    
       (*sOut) << " ";									    
   }											    
-											    
-  /* reset to initial state */								    
-  static void										    
-  reset() 										    
-  {											    
-    if(sOut)										    
-      sOut->flush();									    
-    sOut = NULL;									    
-											    
-    sExitOnError  = true;								    
-											    
-    sWarnings     = false;								    
-    sWarningLevel = 1;									    
-    		 									    
-    sStageStats   = false; 								    
-    sStatLevel    = 1;   								    
-    											    
-    sNumTimers  = 50;									    
-    sTimerLevel = -1;									    
-    if(sTimers) 									    
-      delete[] sTimers;									    
-    sTimers = NULL;									    
-    		  									    
-    sIndentLevel  = -2;									    
-    											    
-    sProgress           = false;							    
-    sProgressPercentage = 0.0f;								    
-  }											    
-											    
-   											    
-  /* recover from an error, when sExitOnError is false */ 				    
-  static void										    
-  recover() 										    
-  {											    
-    if(sTimers) 									    
-      delete[] sTimers;									    
-    sTimers = new Timer[sNumTimers];							    
-											    
-    sIndentLevel = -2;									    
-  }											    
+							    
   											    
 											    
-protected:										    
+private:										    
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
-  static ostream* sOut;                 /* the output stream (cerr by default) */ 
+  /**
+   * The shared set of locks.
+   */
+  static LockSet*  sLockSet;
 
-  static bool     sExitOnError;         /* exit program on error? */ 
-		  
-  static bool     sWarnings;            /* generate runtime warning messages? */ 
-  static UInt32   sWarningLevel;        /* amount of verbosity in warning messages */ 
-		  
-  static bool     sStageStats;          /* generate stage timing stats? */ 
-  static UInt32   sStatLevel;           /* amount of verbosity in stage timing stats */ 
+  /**
+   * The ID of the lock which protects access to the following internal variables.
+   */  
+  static int  sLockID;
 
-  static Int32    sNumTimers;           /* total numer of nested stages allowed */ 
-  static Int32    sTimerLevel;          /* current stage nesting level */ 
-  static Timer*   sTimers;              /* the stage timers */  
 
-  static Int32    sIndentLevel;         /* current nesting indentation */    
+  /**
+   * The output stream (cerr by default).
+   */ 
+  static ostream*  sOut;                 
 
-  static bool     sProgress;            /* generate progress percentage messages? */ 
-  static Real32   sProgressPercentage;  /* percentage of task completed:  [0,1] range */ 
+
+  /** 
+   * Should runtime warning messages be reported?
+   */ 
+  static bool  sWarnings;        
+  
+  /**
+   * The level of verbosity of warning messages.
+   */ 
+  static UInt32  sWarningLevel;       
+
+			
+  /** 
+   * Should stage timing statistics and messages be reported?
+   */   
+  static bool  sStageStats; 
+
+  /**
+   * The level of verbosity of stage timing statistics and messages.
+   */      
+  static UInt32  sStatLevel;     
+
+
+  /**
+   * The total numer of nested stages allowed.
+   */ 
+  static Int32  sNumTimers; 
+
+  /**
+   * The current stage nesting level.
+   */
+  static Int32  sTimerLevel;          
+
+  /**
+   * The stage timers.
+   */  
+  static Timer*  sTimers;            
+
+
+  /**
+   * The current nesting indentation.
+   */    
+  static Int32  sIndentLevel;         
 
 };
 
