@@ -1,4 +1,4 @@
-// $Id: Color3d.java,v 1.2 2004/12/14 12:25:59 jim Exp $
+// $Id: Color3d.java,v 1.3 2004/12/14 14:08:43 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -267,10 +267,12 @@ class Color3d
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
+  static final long serialVersionUID = -861801977306311811L;
+
+
   /**
    * The number of color components.
    */ 
   private static final int  sSize = 3; 
-
 
 }

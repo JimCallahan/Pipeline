@@ -1,4 +1,4 @@
-// $Id: Point4i.java,v 1.2 2004/12/14 12:25:59 jim Exp $
+// $Id: Point4i.java,v 1.3 2004/12/14 14:08:43 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -143,7 +143,7 @@ class Point4i
     rtn.max(b);
     return rtn;
   }
-
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -288,4 +288,13 @@ class Point4i
     Point4i rtn = new Point4i(p);
     return rtn.mult(v);
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static final long serialVersionUID = 7172362841064866784L;
+
 }

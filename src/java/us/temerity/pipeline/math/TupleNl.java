@@ -1,7 +1,10 @@
-// $Id: TupleNl.java,v 1.2 2004/12/14 12:24:55 jim Exp $
+// $Id: TupleNl.java,v 1.3 2004/12/14 14:08:43 jim Exp $
 
 package us.temerity.pipeline.math;
 
+import us.temerity.pipeline.glue.*;
+
+import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -13,6 +16,7 @@ import java.util.*;
  */
 public 
 class TupleNl
+  implements Glueable, Serializable
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -825,6 +829,25 @@ class TupleNl
   /*   O B J E C T   O V E R R I D E S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
+  /** 
+   * Indicates whether some other object is "equal to" this one.
+   * 
+   * @param obj 
+   *   The reference object with which to compare.
+   */
+  public boolean
+  equals
+  (
+   Object obj   
+  )
+  {
+    if((obj != null) && (obj instanceof TupleNl)) {
+      TupleNl t = (TupleNl) obj;
+      return Arrays.equals(pComps, t.pComps);
+    }
+    return false;
+  }
+
   /**
    * Generate a string representation of this tuple.
    */ 
@@ -841,6 +864,42 @@ class TupleNl
 	
     return buf.toString();
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   G L U E A B L E                                                                      */
+  /*----------------------------------------------------------------------------------------*/
+  
+  public void 
+  toGlue
+  ( 
+   GlueEncoder encoder  
+  ) 
+    throws GlueException
+  {
+    encoder.encode("Comps", pComps);
+  }
+  
+  public void 
+  fromGlue
+  (
+   GlueDecoder decoder  
+  ) 
+    throws GlueException
+  {
+    long[] comps = (long[]) decoder.decode("Comps"); 
+    if(comps == null) 
+      throw new GlueException("The \"Comps\" entry was missing!");
+    pComps = comps;
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static final long serialVersionUID = 5567729237636881756L;
 
 
 		

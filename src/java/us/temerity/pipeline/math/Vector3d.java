@@ -1,4 +1,4 @@
-// $Id: Vector3d.java,v 1.2 2004/12/14 12:25:59 jim Exp $
+// $Id: Vector3d.java,v 1.3 2004/12/14 14:08:43 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -366,4 +366,12 @@ class Vector3d
     Vector3d rtn = new Vector3d(a);
     return rtn.div(b);
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static final long serialVersionUID = 8807802067885508329L;
+
 }

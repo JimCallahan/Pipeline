@@ -1,4 +1,4 @@
-// $Id: Tuple4f.java,v 1.1 2004/12/13 09:09:30 jim Exp $
+// $Id: Tuple4f.java,v 1.2 2004/12/14 14:08:43 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -213,6 +213,9 @@ class Tuple4f
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
+
+  private static final long serialVersionUID = -289659481288029971L;
+
 
   /**
    * The number of tuple components.

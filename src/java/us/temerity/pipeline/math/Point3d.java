@@ -1,4 +1,4 @@
-// $Id: Point3d.java,v 1.2 2004/12/14 12:25:59 jim Exp $
+// $Id: Point3d.java,v 1.3 2004/12/14 14:08:43 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -315,4 +315,13 @@ class Point3d
     Point3d rtn = new Point3d(p);
     return rtn.mult(v);
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static final long serialVersionUID = -8165016325308320148L;
+
 }

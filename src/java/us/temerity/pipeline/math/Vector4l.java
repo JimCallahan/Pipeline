@@ -1,4 +1,4 @@
-// $Id: Vector4l.java,v 1.2 2004/12/14 12:25:59 jim Exp $
+// $Id: Vector4l.java,v 1.3 2004/12/14 14:08:43 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -305,5 +305,13 @@ class Vector4l
     Vector4l rtn = new Vector4l(a);
     return rtn.div(b);
   }
-  
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static final long serialVersionUID = -5240383941138044679L;
+
 }

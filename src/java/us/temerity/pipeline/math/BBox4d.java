@@ -1,7 +1,10 @@
-// $Id: BBox4d.java,v 1.1 2004/12/14 12:26:25 jim Exp $
+// $Id: BBox4d.java,v 1.2 2004/12/14 14:08:43 jim Exp $
 
 package us.temerity.pipeline.math;
 
+import us.temerity.pipeline.glue.*;
+
+import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -13,6 +16,7 @@ import java.util.*;
  */
 public 
 class BBox4d 
+  implements Glueable, Serializable  
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -44,8 +48,8 @@ class BBox4d
   /**
    * Copy constructor.
    * 
-   * @param t
-   *   The tuple to copy.
+   * @param bbox
+   *   The bounding box to copy.
    */ 
   public 
   BBox4d
@@ -192,8 +196,84 @@ class BBox4d
     pMin = Point4d.min(pMin, bbox.pMin);
     pMax = Point4d.max(pMax, bbox.pMax);
   }
+
+
   
+  /*----------------------------------------------------------------------------------------*/
+  /*   O B J E C T   O V E R R I D E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Indicates whether some other object is "equal to" this one.
+   * 
+   * @param obj 
+   *   The reference object with which to compare.
+   */
+  public boolean
+  equals
+  (
+   Object obj   
+  )
+  {
+    if((obj != null) && (obj instanceof BBox4d)) {
+      BBox4d t = (BBox4d) obj;
+      return (pMin.equals(t.pMin) && pMax.equals(t.pMax));
+    }
+    return false;
+  }
+
+  /**
+   * Generate a string representation of this tuple.
+   */ 
+  public String
+  toString() 
+  {
+    return ("[" + pMin + ", " + pMax + "]");
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   G L U E A B L E                                                                      */
+  /*----------------------------------------------------------------------------------------*/
   
+  public void 
+  toGlue
+  ( 
+   GlueEncoder encoder  
+  ) 
+    throws GlueException
+  {
+    encoder.encode("Min", pMin);
+    encoder.encode("Max", pMax);
+  }
+  
+  public void 
+  fromGlue
+  (
+   GlueDecoder decoder  
+  ) 
+    throws GlueException
+  {
+    Point4d min = (Point4d) decoder.decode("Min"); 
+    if(min == null) 
+      throw new GlueException("The \"Min\" entry was missing!");
+    pMin = min;
+
+    Point4d max = (Point4d) decoder.decode("Max"); 
+    if(max == null) 
+      throw new GlueException("The \"Max\" entry was missing!");
+    pMax = max;
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static final long serialVersionUID = -4550250439234661489L;
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */

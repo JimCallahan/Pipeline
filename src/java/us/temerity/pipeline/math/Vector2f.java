@@ -1,4 +1,4 @@
-// $Id: Vector2f.java,v 1.3 2004/12/14 12:25:59 jim Exp $
+// $Id: Vector2f.java,v 1.4 2004/12/14 14:08:43 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -332,4 +332,13 @@ class Vector2f
     Vector2f rtn = new Vector2f(a);
     return rtn.div(b);
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static final long serialVersionUID = 6377427288913163382L;
+
 }

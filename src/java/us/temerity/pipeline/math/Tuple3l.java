@@ -1,4 +1,4 @@
-// $Id: Tuple3l.java,v 1.2 2004/12/14 12:26:12 jim Exp $
+// $Id: Tuple3l.java,v 1.3 2004/12/14 14:08:43 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -185,6 +185,9 @@ class Tuple3l
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
+
+  private static final long serialVersionUID = 9166499938994702097L;
+
 
   /**
    * The number of tuple components.

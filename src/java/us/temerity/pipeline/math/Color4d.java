@@ -1,4 +1,4 @@
-// $Id: Color4d.java,v 1.2 2004/12/14 12:25:59 jim Exp $
+// $Id: Color4d.java,v 1.3 2004/12/14 14:08:43 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -295,6 +295,8 @@ class Color4d
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
+
+  static final long serialVersionUID = -6362156338845482665L;
 
   /**
    * The number of color components.

@@ -1,4 +1,4 @@
-// $Id: Point2f.java,v 1.2 2004/12/13 11:57:20 jim Exp $
+// $Id: Point2f.java,v 1.3 2004/12/14 14:08:43 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -314,4 +314,13 @@ class Point2f
     Point2f rtn = new Point2f(p);
     return rtn.mult(v);
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static final long serialVersionUID = -2418939175965276598L;
+
 }

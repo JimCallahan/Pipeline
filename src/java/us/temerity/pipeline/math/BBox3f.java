@@ -1,7 +1,10 @@
-// $Id: BBox3f.java,v 1.1 2004/12/14 12:26:25 jim Exp $
+// $Id: BBox3f.java,v 1.2 2004/12/14 14:08:43 jim Exp $
 
 package us.temerity.pipeline.math;
 
+import us.temerity.pipeline.glue.*;
+
+import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -13,6 +16,7 @@ import java.util.*;
  */
 public 
 class BBox3f 
+  implements Glueable, Serializable  
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -44,8 +48,8 @@ class BBox3f
   /**
    * Copy constructor.
    * 
-   * @param t
-   *   The tuple to copy.
+   * @param bbox
+   *   The bounding box to copy.
    */ 
   public 
   BBox3f
@@ -192,8 +196,84 @@ class BBox3f
     pMin = Point3f.min(pMin, bbox.pMin);
     pMax = Point3f.max(pMax, bbox.pMax);
   }
+
+
   
+  /*----------------------------------------------------------------------------------------*/
+  /*   O B J E C T   O V E R R I D E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Indicates whether some other object is "equal to" this one.
+   * 
+   * @param obj 
+   *   The reference object with which to compare.
+   */
+  public boolean
+  equals
+  (
+   Object obj   
+  )
+  {
+    if((obj != null) && (obj instanceof BBox3f)) {
+      BBox3f t = (BBox3f) obj;
+      return (pMin.equals(t.pMin) && pMax.equals(t.pMax));
+    }
+    return false;
+  }
+
+  /**
+   * Generate a string representation of this tuple.
+   */ 
+  public String
+  toString() 
+  {
+    return ("[" + pMin + ", " + pMax + "]");
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   G L U E A B L E                                                                      */
+  /*----------------------------------------------------------------------------------------*/
   
+  public void 
+  toGlue
+  ( 
+   GlueEncoder encoder  
+  ) 
+    throws GlueException
+  {
+    encoder.encode("Min", pMin);
+    encoder.encode("Max", pMax);
+  }
+  
+  public void 
+  fromGlue
+  (
+   GlueDecoder decoder  
+  ) 
+    throws GlueException
+  {
+    Point3f min = (Point3f) decoder.decode("Min"); 
+    if(min == null) 
+      throw new GlueException("The \"Min\" entry was missing!");
+    pMin = min;
+
+    Point3f max = (Point3f) decoder.decode("Max"); 
+    if(max == null) 
+      throw new GlueException("The \"Max\" entry was missing!");
+    pMax = max;
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static final long serialVersionUID = 3684913278002275578L;
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */

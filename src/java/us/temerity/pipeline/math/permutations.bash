@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# CREATE THE (double, int, long) VECTOR CLASSES FROM THE (float) VERSIONS
+
 for f in Tuple*f.java Vector*f.java Point*f.java
 do 
   d=`echo $f | sed -e 's/f.java/d.java/g'`
@@ -28,6 +30,34 @@ do
 done
 
 
+# REMOVE THE lerp() METHODS FROM (int, long) VERSIONS
+
+for x in Point*[il].java
+do
+  mv $x ORIG
+  head -145 ORIG > $x
+  tail +174 ORIG >> $x
+  rm -f ORIG
+done
+
+for x in Vector*[il].java
+do
+  mv $x ORIG
+  head -163 ORIG > $x
+  tail +192 ORIG >> $x
+  rm -f ORIG
+done
+
+for x in TupleN[il].java
+do
+  mv $x ORIG
+  head -344 ORIG > $x
+  tail +388 ORIG >> $x
+  rm -f ORIG
+done
+
+
+# CREATE THE (double) VERSIONS OF THE COLOR CLASSES FROM THE (float) VERSIONS
 
 for f in Color*f.java
 do 
@@ -41,6 +71,7 @@ do
 done
 
 
+# CREATE THE (double) VERSIONS OF THE BOUNDING BOX CLASSES FROM THE (float) VERSIONS
 
 cat BBox2f.java | sed -e 's/2f/3f/g' | sed -e 's/2 F/3 F/g' > BBox3f.java
 cat BBox2f.java | sed -e 's/2f/4f/g' | sed -e 's/2 F/4 F/g' > BBox4f.java
@@ -54,3 +85,64 @@ do
          | sed -e 's/3f/3d/g' | sed -e 's/3 F/3 D/g' \
          | sed -e 's/4f/4d/g' | sed -e 's/4 F/4 D/g' > $d
 done
+
+
+# FIX THE SERIALIZATION IDS 
+
+function replaceUID
+{
+  mv $1.java ORIG
+  cat ORIG | sed -e 's/serialVersionUID = -*[0-9]*/serialVersionUID = '$2'/g' > $1.java
+  rm -f ORIG
+}
+
+replaceUID Tuple2d   -2835770189069865341
+#replaceUID Tuple2f   4287878958595610861
+replaceUID Tuple2i   -3460530107208894367
+replaceUID Tuple2l   -6624925205908032618
+replaceUID Tuple3d   -143283502929447629
+#replaceUID Tuple3f   3183566835872070149
+replaceUID Tuple3i   -2338526748637687923
+replaceUID Tuple3l   9166499938994702097
+replaceUID Tuple4d   -873205338876336747
+#replaceUID Tuple4f   -289659481288029971
+replaceUID Tuple4i   7216628186865091035
+replaceUID Tuple4l   8255563940826933134
+replaceUID TupleNd   6895562152531916143
+#replaceUID TupleNf   -681761072062846262
+replaceUID TupleNi   7619482928737424566
+replaceUID TupleNl   5567729237636881756
+replaceUID Color3d   -861801977306311811
+#replaceUID Color3f   -4390780477392240248
+replaceUID Color4d   -6362156338845482665
+#replaceUID Color4f   6294025356510313475
+replaceUID Vector2d  4316416129453850294
+#replaceUID Vector2f  6377427288913163382
+replaceUID Vector2i  5560542871610101750
+replaceUID Vector2l  4680854728302037518
+replaceUID Vector3d  8807802067885508329
+#replaceUID Vector3f  -4074371289412725210
+replaceUID Vector3i  -3646303620663151552
+replaceUID Vector3l  -3580766957858993018
+replaceUID Vector4d  5158241118831329402
+#replaceUID Vector4f  6905631586098765133
+replaceUID Vector4i  -3938063223525408318
+replaceUID Vector4l  -5240383941138044679
+replaceUID Point2d   -806363389015108966
+#replaceUID Point2f   -2418939175965276598
+replaceUID Point2i   1737829702409090627
+replaceUID Point2l   -1420525176872561294
+replaceUID Point3d   -8165016325308320148
+#replaceUID Point3f   6002120110155982131
+replaceUID Point3i   6997682793454754689
+replaceUID Point3l   5342940559792883146
+replaceUID Point4d   3807928269275895806
+#replaceUID Point4f   -2040548296340441756
+replaceUID Point4i   7172362841064866784
+replaceUID Point4l   -4359804890711701264
+replaceUID BBox2d    -1429174433364053287
+#replaceUID BBox2f    4684427252547347
+replaceUID BBox3d    -2626818321975206766
+replaceUID BBox3f    3684913278002275578
+replaceUID BBox4d    -4550250439234661489
+replaceUID BBox4f    -4768699580945478563
