@@ -1,4 +1,4 @@
-// $Id: ViewerNode.java,v 1.7 2004/08/30 14:30:43 jim Exp $
+// $Id: ViewerNode.java,v 1.8 2004/09/28 11:06:35 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -216,8 +216,6 @@ class ViewerNode
   reset() 
   {
     pIsReset = true;
-
-//     System.out.print("ViewerNode.reset(): " + pStatus + " [" + pPath + "]\n");
   }
 
 

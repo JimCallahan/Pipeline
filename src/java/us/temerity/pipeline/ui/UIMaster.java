@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.43 2004/09/28 10:20:14 jim Exp $
+// $Id: UIMaster.java,v 1.44 2004/09/28 11:06:19 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -2368,7 +2368,6 @@ class UIMaster
     private void
     update()
     {
-      //System.out.print("Update = " + pCnt + "\n");
       SwingUtilities.invokeLater(new UpdateStartupProgress(pCnt++));
     }
 
@@ -2398,7 +2397,6 @@ class UIMaster
     run() 
     {  
       pSplashProgress.setValue(pValue);
-      // System.out.print("Progress: " + pValue + "\n");
     }
 
     private int pValue;
@@ -2660,8 +2658,6 @@ class UIMaster
       try {
 	File file = new File(PackageInfo.sHomeDir, 
 			     PackageInfo.sUser + "/.pipeline/layouts/" + pLayoutName);
-
-	System.out.print("SaveLayout = " + pLayoutName + "\n");
 
 	File dir = file.getParentFile();
 	if(!dir.isDirectory()) 
