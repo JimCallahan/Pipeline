@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.4 2005/01/10 16:02:01 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.5 2005/01/12 18:47:27 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1837,6 +1837,11 @@ class JNodeDetailsPanel
 	pCheckedInActionField.setText(action.getName());
       else 
 	pCheckedInActionField.setText("-");
+
+      if(action != null) 
+	pCheckedInActionEnabledField.setText(vsn.isActionEnabled() ? "YES" : "no");
+      else 
+	pCheckedInActionEnabledField.setText("-");
 
       doActionChanged();    
     }
