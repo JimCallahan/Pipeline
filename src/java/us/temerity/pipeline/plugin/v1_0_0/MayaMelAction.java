@@ -1,4 +1,4 @@
-// $Id: MayaMelAction.java,v 1.4 2004/09/12 20:14:50 jim Exp $
+// $Id: MayaMelAction.java,v 1.5 2004/09/13 23:44:21 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -41,8 +41,8 @@ import java.io.*;
  *   <DIV style="margin-left: 40px;">
  *     Each source node which sets this parameter should have a MEL script as its primary
  *     file sequence which will be evaluated after the Maya scene file is loaded.  This 
- *     parameter determines the order of evaluation if more than one MEL script is specified.
- *     If this parameter is not set for a source node, it will be ignored.
+ *     parameter determines the order of evaluation of the MEL scripts. If this parameter 
+ *     is not set for a source node, it will be ignored.
  *   </DIV> 
  * </DIV> <P> 
  */
