@@ -1,4 +1,4 @@
-// $Id: MatrixMNf.java,v 1.3 2004/12/21 16:23:44 jim Exp $
+// $Id: MatrixMNf.java,v 1.4 2004/12/29 17:26:15 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -617,7 +617,7 @@ class MatrixMNf
       for(j=0; j<cols(); j++) {
 	float v = pCols[j].getComp(i1);
 	pCols[j].setComp(i1, pCols[j].getComp(i2));
-	pCols[j].setComp(i1, v);
+	pCols[j].setComp(i2, v);
       }
     }
     catch(TupleIndexOutOfBoundsException ex) {
@@ -626,13 +626,13 @@ class MatrixMNf
   }
     											    
   /**
-   * Scale the values of a row of this matrix by multiplying it by the given scalar.
+   * Scale the values of a row of this matrix by dividing it by the given scalar.
    * 
    * @param i
    *   The index of the row to scale: [0, m-1]
    * 
    * @param s
-   *   The scaling factor.
+   *   The row divisor. 
    * 
    * @throws MatrixIndexOutOfBoundsException
    *   If the row index is not valid.
@@ -647,7 +647,7 @@ class MatrixMNf
     try {
       int j; 
       for(j=0; j<cols(); j++) 
-	pCols[j].setComp(i, pCols[j].getComp(i) * s);
+	pCols[j].setComp(i, pCols[j].getComp(i) / s);
     }
     catch(TupleIndexOutOfBoundsException ex) {
       throw new MatrixIndexOutOfBoundsException(ex);
@@ -941,7 +941,7 @@ class MatrixMNf
     int i, j;									    
     for(j=0; j<rows(); j++) 
       for(i=0; i<cols(); i++)
-	pCols[j].setComp(i, (i == j) ? 1.0f : 0.0f);
+	pCols[j].setComp(i, (i == j) ? v.getComp(i) : 0.0f);
   }
 		
   
@@ -1030,8 +1030,8 @@ class MatrixMNf
       }
       
       /* normalize the active row by multiplying it by 1/pivot */ 
-      re.rowOpII(active, 1.0f / pivot);
-      rtn.rowOpII(active, 1.0f / pivot);
+      re.rowOpII(active, pivot);
+      rtn.rowOpII(active, pivot);
       
       /* subtract the proper multiple of the active row from each of the other rows
 	 so that they have zero's in the pivot column */ 
@@ -1134,8 +1134,8 @@ class MatrixMNf
       buf.append("[");
       int j;
       for(j=0; j<(cols()-1); j++) 
-	buf.append(String.format("%1$.4f", pCols[j].getComp(i)) + " ");
-      buf.append(String.format("%1$.4f", pCols[j].getComp(i)) + "]\n");
+	buf.append(String.format("%1$+.4f", pCols[j].getComp(i)) + " ");
+      buf.append(String.format("%1$+.4f", pCols[j].getComp(i)) + "]\n");
     }
 	
     return buf.toString();

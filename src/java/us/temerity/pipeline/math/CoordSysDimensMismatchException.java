@@ -1,4 +1,4 @@
-// $Id: CoordSysDimensMismatchException.java,v 1.1 2004/12/22 00:44:57 jim Exp $
+// $Id: CoordSysDimensMismatchException.java,v 1.2 2004/12/29 17:26:15 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -64,7 +64,7 @@ class CoordSysDimensMismatchException
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID = 
+  private static final long serialVersionUID = 7558823623011127879L;
 
 }
   

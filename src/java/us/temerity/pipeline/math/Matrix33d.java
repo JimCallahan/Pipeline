@@ -380,7 +380,7 @@ class Matrix33d
     
     identity();
     pCols[0].setComp(0, c); pCols[0].setComp(1, -s);
-    pCols[0].setComp(0, s); pCols[0].setComp(1, c);
+    pCols[1].setComp(0, s); pCols[1].setComp(1, c);
   }
 
   /**
