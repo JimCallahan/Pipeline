@@ -1,4 +1,4 @@
-// $Id: NodeMgr.java,v 1.12 2004/04/13 20:45:19 jim Exp $
+// $Id: NodeMgr.java,v 1.13 2004/04/14 20:12:27 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1669,7 +1669,7 @@ class NodeMgr
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   I / O   H E L P E R S                                                                */
+  /*   D I R E C T O R Y   N O T I F I C A T I O N S                                        */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -1684,7 +1684,7 @@ class NodeMgr
     throws PipelineException 
   { 
     synchronized(pMonitored) {
-      File dir = new File(pProdDir, id.getWorkingParent().getPath());
+      File dir = id.getWorkingParent();
 
       HashSet<NodeID> ids = pMonitored.get(dir);
       if(ids == null) {
@@ -2434,7 +2434,7 @@ class NodeMgr
 
   /**
    * The set of working versions who's associated files are being monitored indexed 
-   * by the parent directory of these files relative to the root node directory. <P> 
+   * by the parent directory of these files relative to the root production directory. <P> 
    * 
    * Access to this table should be protected by a synchronized block.
    */

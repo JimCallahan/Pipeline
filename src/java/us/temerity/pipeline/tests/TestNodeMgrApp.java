@@ -1,4 +1,4 @@
-// $Id: TestNodeMgrApp.java,v 1.7 2004/04/13 20:45:36 jim Exp $
+// $Id: TestNodeMgrApp.java,v 1.8 2004/04/14 20:12:27 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -209,7 +209,7 @@ class TestNodeMgrApp
       fileServer.start();
      
       /* start the directory notification daemon */ 
-      NotifyServer notifyServer = new NotifyServer(53147, 53148);
+      NotifyServer notifyServer = new NotifyServer(prodDir, 53147, 53148);
       notifyServer.start();
       
       /* give the servers a chance to start */ 
@@ -288,7 +288,7 @@ class TestNodeMgrApp
       fileServer.start();
       
       /* start the directory notification daemon */ 
-      NotifyServer notifyServer = new NotifyServer(53147, 53148);
+      NotifyServer notifyServer = new NotifyServer(prodDir, 53147, 53148);
       notifyServer.start();
       
       /* give the servers a chance to start */ 
