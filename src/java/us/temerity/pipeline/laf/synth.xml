@@ -29,16 +29,28 @@
   <bind style="SplitPaneHorizontalDivider" type="region" key="SplitPaneDivider"/>
 
   <style id="SplitPaneHorizontalDividerLeftButton">
-    <imagePainter path="SplitPaneHorizontalDividerLeftButton.png"
-                  sourceInsets="2 2 2 2"/>
+    <state value="">
+      <imagePainter path="SplitPaneHorizontalDividerLeftButton.png"
+                    sourceInsets="2 2 2 2"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="SplitPaneHorizontalDividerLeftButtonPressed.png"
+                    sourceInsets="2 2 2 2"/>
+    </state>
     <insets top="2" bottom="2" right="2" left="2"/>
   </style>
   <bind style="SplitPaneHorizontalDividerLeftButton" type="name" 
         key="SplitPaneHorizontalDivider.leftOneTouchButton"/>
 
   <style id="SplitPaneHorizontalDividerRightButton">
-    <imagePainter path="SplitPaneHorizontalDividerRightButton.png"
-                  sourceInsets="2 2 2 2"/>
+    <state value="">
+      <imagePainter path="SplitPaneHorizontalDividerRightButton.png"
+                    sourceInsets="2 2 2 2"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="SplitPaneHorizontalDividerRightButtonPressed.png"
+                    sourceInsets="2 2 2 2"/>
+    </state>
     <insets top="2" bottom="2" right="2" left="2"/>
   </style>
   <bind style="SplitPaneHorizontalDividerRightButton" type="name" 
@@ -55,16 +67,28 @@
   <bind style="SplitPaneVerticalDivider" type="region" key="SplitPaneDivider"/>
 
   <style id="SplitPaneVerticalDividerUpButton">
-    <imagePainter path="SplitPaneVerticalDividerUpButton.png"
-                  sourceInsets="2 2 2 2"/>
+    <state value="">
+      <imagePainter path="SplitPaneVerticalDividerUpButton.png"
+                    sourceInsets="2 2 2 2"/> 
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="SplitPaneVerticalDividerUpButtonPressed.png"
+                    sourceInsets="2 2 2 2"/>
+    </state>
     <insets top="2" bottom="2" right="2" left="2"/>
   </style>
   <bind style="SplitPaneVerticalDividerUpButton" type="name" 
         key="SplitPaneVerticalDivider.upOneTouchButton"/>
 
   <style id="SplitPaneVerticalDividerDownButton">
-    <imagePainter path="SplitPaneVerticalDividerDownButton.png"
-                  sourceInsets="2 2 2 2"/>
+    <state value="">
+      <imagePainter path="SplitPaneVerticalDividerDownButton.png"
+                    sourceInsets="2 2 2 2"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="SplitPaneVerticalDividerDownButtonPressed.png"
+                    sourceInsets="2 2 2 2"/>
+    </state>
     <insets top="2" bottom="2" right="2" left="2"/>
   </style>
   <bind style="SplitPaneVerticalDividerDownButton" type="name" 
