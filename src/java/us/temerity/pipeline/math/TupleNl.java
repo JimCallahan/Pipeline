@@ -216,7 +216,45 @@ class TupleNl
   }
 
 
-  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Set all components to a scalar value. 
+   * 
+   * @param s
+   *   The value to set all components. 
+   */ 
+  public void 
+  set
+  (
+   long s 
+  ) 
+  {
+    int i;
+    for(i=0; i<size(); i++) 
+      pComps[i] = s;
+  }
+
+  /**
+   * Set all components to zero.
+   */ 
+  public void
+  zero()
+  {
+    set(0L);
+  }
+
+  /**
+   * Set all components to one.
+   */ 
+  public void
+  one()
+  {
+    set(1L);
+  }
+
+
+
   /*----------------------------------------------------------------------------------------*/
   /*   M I S C E L L A N E O U S    M A T H                                                 */
   /*----------------------------------------------------------------------------------------*/

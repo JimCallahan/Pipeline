@@ -216,7 +216,45 @@ class TupleNd
   }
 
 
-  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Set all components to a scalar value. 
+   * 
+   * @param s
+   *   The value to set all components. 
+   */ 
+  public void 
+  set
+  (
+   double s 
+  ) 
+  {
+    int i;
+    for(i=0; i<size(); i++) 
+      pComps[i] = s;
+  }
+
+  /**
+   * Set all components to zero.
+   */ 
+  public void
+  zero()
+  {
+    set(0.0);
+  }
+
+  /**
+   * Set all components to one.
+   */ 
+  public void
+  one()
+  {
+    set(1.0);
+  }
+
+
+
   /*----------------------------------------------------------------------------------------*/
   /*   M I S C E L L A N E O U S    M A T H                                                 */
   /*----------------------------------------------------------------------------------------*/
@@ -956,7 +994,7 @@ class TupleNd
     buf.append("[");
     int i; 
     for(i=0; i<pComps.length; i++) {
-      buf.append(String.format("%1$.6f", pComps[i]));
+      buf.append(String.format("%1$+.6f", pComps[i]));
       if(i<(pComps.length-1))
 	buf.append(" ");
     }
