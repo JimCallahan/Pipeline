@@ -1,0 +1,2 @@
+This software is licensed by Temerity Software for use by Rhinofx only
+under the terms of the Aug-3-2004 agreement between these companies.

@@ -1,0 +1,307 @@
+// $Id: PackageInfo.java.src.in,v 1.1 2004/08/04 01:43:45 jim Exp $
+
+package us.temerity.pipeline;
+
+import java.io.File;
+
+/*------------------------------------------------------------------------------------------*/
+/*   P A C K A G E   I N F O                                                                */
+/*------------------------------------------------------------------------------------------*/
+
+/**
+ * Shared configuration information specific to this release of the Pipeline tools. <P>
+ * 
+ * The static fields of this class are initialized by <I>autoconf(1)</I> during the 
+ * build of this release to contain site specific information.
+ */
+public
+class PackageInfo
+{ 
+  /*----------------------------------------------------------------------------------------*/
+  /*   P U B L I C   F I E L D S                                                            */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * The name of the user running this program.
+   */ 
+  public static final String sUser = System.getProperty("user.name");
+
+  /**
+   * The version identifier of this Pipeline release.
+   */ 
+  public static final String sVersion = "@VERSION@";        
+
+  /**
+   * The date and time when this version of Pipeline was released.
+   */ 
+  public static final String sRelease = "@RELEASE_STAMP@";  
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The site domain name.
+   */
+  public static final String  sDomain = "@DOMAIN@";
+  
+  /**
+   * The site IP addresses.
+   */
+  public static final String  sIPAddrs = "@IP_ADDRS@";
+
+  /**
+   * The date and time the license expires.
+   */ 
+  public static final String sLicenseEnd = "@LICENSE_END@";  
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * The root installation directory. <P>
+   *
+   * Set by the RootInstallDirectory customer profile entry.
+   */ 
+  public static final File sInstDir = new File("@ROOT_INST_DIR@");
+
+  /**
+   * The installed read-only architecture-independent data directory. <P>
+   *
+   * Set by appending "/share" to value of the RootInstallDirectory customer profile entry.
+   */ 
+  public static final File sDataDir = new File("@ROOT_INST_DIR@", "share"); 
+
+  /**
+   * The root installed documentation directory. <P>
+   *
+   * Set by appending "/share/docs" to the value of RootInstallDirectory customer profile 
+   * entry.
+   */ 
+  public static final File sDocsDir = new File("@ROOT_INST_DIR@", "share/docs"); 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The number milliseconds Pipeline server programs wait for new connections before 
+   * checking to see if the server should be shutdown. <P> 
+   */
+  public static final int sServerTimeOut = 5000;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The hostname which runs the Pipeline master server <I>plmaster(1)</I>. <P> 
+   *
+   * Set by the MasterHostname customer profile entry.
+   */
+  public static final String sMasterServer = "@PL_MASTER_SERVER@";
+
+  /**
+   * The port number listened to by the Pipeline master server <I>plmaster(1)</I>. <P> 
+   *
+   * Set by the MasterPort customer profile entry.
+   */
+  public static final int sMasterPort = @PL_MASTER_PORT@;
+
+  /** 
+   * The root directory of the persistent node storage area. <P>
+   *
+   * Set by the NodeDirectory customer profile entry.
+   */
+  public static final File sNodeDir = new File("@NODEDIR@");
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The hostname which runs the Pipeline file server <I>plfilemgr(1)</I>. <P> 
+   *
+   * Set by the FileHostname customer profile entry.
+   */
+  public static final String sFileServer = "@PL_FILE_SERVER@";
+
+  /**
+   * The port number listened to by the Pipeline file server <I>plfilemgr(1)</I>. <P> 
+   *
+   * Set by the FilePort customer profile entry.
+   */
+  public static final int sFilePort = @PL_FILE_PORT@;
+
+  /**
+   * The port number listened to by the Pipeline directory change notification daemon 
+   * <I>plnotify(1)</I> for control requests. <P> 
+   *
+   * Set by the NotifyControlPort customer profile entry.
+   */
+  public static final int sNotifyControlPort = @NOTIFY_CONTROL_PORT@;
+
+  /**
+   * The port number listened to by the Pipeline directory change notification daemon 
+   * <I>plnotify(1)</I> for monitor requests. <P> 
+   *
+   * Set by the NotifyMonitorPort customer profile entry.
+   */
+  public static final int sNotifyMonitorPort = @NOTIFY_MONITOR_PORT@;
+
+  /** 
+   * The root directory of the file repository. <P>
+   *
+   * Set by the ProductionDirectory customer profile entry.
+   */
+  public static final File sProdDir = new File("@PRODDIR@");
+
+  /** 
+   * The root directory of the file repository. <P>
+   *
+   * Set by appending "/repository" to value of the ProductionDirectory customer profile 
+   * entry.
+   */
+  public static final File sRepoDir = new File("@PRODDIR@", "repository");
+
+  /** 
+   * The root directory of user working areas. <P>
+   *
+   * Set by appending "/working" to value of the ProductionDirectory customer profile 
+   * entry.
+   */
+  public static final File sWorkDir = new File("@PRODDIR@", "working");
+
+  /** 
+   * The root directory of the checksum file area. <P>
+   *
+   * Set by appending "/checksum" to value of the ProductionDirectory customer profile 
+   * entry.
+   */
+  public static final File sCheckSumDir = new File("@PRODDIR@", "working");
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The hostname which runs the Pipeline queue server <I>plqueuemgr(1)</I>. <P> 
+   *
+   * Set by the QueueHostname customer profile entry.
+   */
+  public static final String sQueueServer = "@PL_QUEUE_SERVER@";
+  
+  /**
+   * The port number listened to by the Pipeline queue server <I>plqueuemgr(1)</I>. <P> 
+   *
+   * Set by the QueuePort customer profile entry.
+   */
+  public static final int sQueuePort = @PL_QUEUE_PORT@;
+
+  /**
+   * The port number listened to by the Pipeline job execution daemons 
+   * <I>pljobmgr(1)</I>. <P> 
+   *
+   * Set by the JobPort customer profile entry.
+   */
+  public static final int sJobPort = @PL_JOB_PORT@;
+
+  /** 
+   * The root queue directory. <P>
+   *
+   * Set by the QueueDirectory customer profile entry.
+   */
+  public static final File sQueueDir = new File("@QUEUEDIR@");
+
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * The directory which contains the installed toolsets for this site. <P> 
+   *
+   * Set by appending "/toolsets" to value of the ToolsetDirectory customer profile entry.
+   */ 
+  public static final File sToolsetDir = new File("@TOOLSETDIR@", "toolsets");
+
+  /** 
+   * The directory which contains the home directories for users for this site. <P> 
+   *
+   * Set by the HomeDirectory customer profile entry.
+   */ 
+  public static final File sHomeDir = new File("@HOMEDIR@");
+
+  /** 
+   * The directory used to store temporary files generated by Pipeline. <P> 
+   *
+   * Set by the TemporaryDirectory customer profile entry.
+   */ 
+  public static final File sTempDir = new File("@TEMPDIR@");
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * The name of operating system.
+   */
+  public static final String  sOsName = "@OS_NAME@";
+  
+  /**
+   * The operating system version.
+   */
+  public static final String  sOsVersion = "@OS_VERSION@";
+
+  /**
+   * The operating system architecture.
+   */
+  public static final String  sOsArch = "@OS_ARCH@";
+
+
+  /**
+   * The name of the vendor of the java runtime.
+   */
+  public static final String  sJavaVendor = "@JAVA_VENDOR@";
+  
+  /**
+   * The name of the java runtime.
+   */
+  public static final String  sJavaName = "@JAVA_NAME@";
+  
+  /**
+   * The java runtime version.
+   */
+  public static final String  sJavaVersion = "@JAVA_VERSION@";
+    
+  /**
+   * The java runtime class version.
+   */
+  public static final String  sJavaClassVersion = "@JAVA_CLASS_VERSION@";
+  
+  /**
+   * The directory where the java runtime is installed.
+   */
+  public static final String  sJavaHome = "@JAVA_HOME@";
+
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The location of the <B>bash</B>(1) program.
+   */ 
+  public static final String   sBash = "@BASH@";
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The copyright notice for Pipeline. 
+   */
+  public static final String sCopyright = 
+    ("Copyright (c) 2002, 2003, 2004 Temerity Software, Inc.");
+  
+  
+  /**
+   * The license agreement for Pipeline. 
+   */
+  public static final String sLicense = 
+@JAVA_LICENSE_STRING@
+
+
+}
+
+
+

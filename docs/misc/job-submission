@@ -1,0 +1,27 @@
+
+------------------------------------------------------------------------------------
+  A                   B
+------------------------------------------------------------------------------------
+Serial   --ALL--> Serial
+Serial   --ALL--> Parallel
+Parallel --ALL--> Serial
+Parallel --ALL--> Parallel
+
+  + Source Jobs: all jobs of B 
+  + Source FileSeqs: all FileSeqs of B
+
+
+Serial   --1:1--> Serial
+Serial   --1:1--> Parallel
+
+  + Source Jobs: those jobs of B within the A+offset range
+  + Source FileSeqs: the FileSeqs of B trimmed to A+offset range 
+
+
+Parallel --1:1--> Parallel
+Parallel --1:1--> Serial
+
+  + Source Jobs: the A+offset job of B 
+  + Source FileSeqs: the single frame FileSeqs containing A+offset frame
+
+

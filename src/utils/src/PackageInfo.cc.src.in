@@ -1,0 +1,90 @@
+// $Id: PackageInfo.cc.src.in,v 1.1 2004/08/04 01:43:45 jim Exp $
+
+#include <PackageInfo.hh>
+
+namespace Pipeline {
+
+/*------------------------------------------------------------------------------------------*/
+/*   P A C K A G E   I N F O                                                                */
+/*                                                                                          */
+/*    Information about this release of the pipeline tools.                                 */
+/*------------------------------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------------------------*/
+/*   P U B L I C   F I E L D S                                                            */
+/*----------------------------------------------------------------------------------------*/
+  
+/**
+ * The version identifier of this Pipeline release.
+ */ 
+const char* PackageInfo::sVersion = "@VERSION@";        
+
+/**
+ * The date and time when this version of Pipeline was released.
+ */ 
+const char* PackageInfo::sRelease = "@RELEASE_STAMP@";  
+
+
+/**
+ * The build mode: "opt" or "dbg".
+ */ 
+const char* PackageInfo::sBuildMode = "@BUILD_MODE@";
+
+
+/**
+ * The "pipeline" user ID 
+ */ 
+const int PackageInfo::sPipelineUID = @PIPELINE_UID@;
+
+/**
+ * The pipeline group ID 
+ */ 
+const int PackageInfo::sPipelineGID = @PIPELINE_GID@;
+
+
+/**
+ * The installed location of Java.
+ */ 
+const char* PackageInfo::sJavaHome = "@JAVA_HOME@";
+
+/**
+ * The runtime options to be passed to Java.
+ */ 
+const char* PackageInfo::sJavaRuntimeFlags = "@JAVA_RUNTIME_FLAGS@";
+
+/**
+ * The extra runtime options if in debugging mode.
+ */ 
+const char* PackageInfo::sPlNotifyDebugOpts = "@PLNOTIFY_DEBUG_OPTS@";
+
+ 
+/** 	
+ * The root installation directory. <P>
+ *
+ * Set by the RootInstallDirectory customer profile entry.
+ */ 
+const char* PackageInfo::sInstDir = "@ROOT_INST_DIR@";
+
+/**
+ * The root installed documentation directory. 
+ * 
+ * Set by appending "/share/docs" to the value of RootInstallDirectory customer profile 
+ * entry.
+ */ 
+const char* PackageInfo::sDocsDir = "@ROOT_INST_DIR@/share/docs"; 
+
+
+/**
+ * The copyright notice for Pipeline. 
+ */
+const char* PackageInfo::sCopyright = 
+"Copyright (c) 2002, 2003, 2004 Temerity Software, Inc.\n";
+
+
+/**
+ * The license agreement for Pipeline. 
+ */
+const char*  PackageInfo::sLicense = 
+@CPP_LICENSE_STRING@
+
+} // namespace Pipeline
