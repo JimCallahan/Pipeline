@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.17 2005/01/15 02:54:55 jim Exp $
+// $Id: QueueMgrServer.java,v 1.18 2005/01/15 15:06:24 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -143,8 +143,6 @@ class QueueMgrServer
 	  for(HandlerTask task : pTasks) 
 	    task.join();
 	}
-
-	PluginMgrClient.getInstance().disconnect();
       }
       catch(InterruptedException ex) {
 	Logs.net.severe("Interrupted while shutting down!");
@@ -174,6 +172,7 @@ class QueueMgrServer
 	}
       }
 
+      PluginMgrClient.getInstance().disconnect();
       pQueueMgr.shutdown();
 
       Logs.net.info("Server Shutdown."); 

@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.81 2005/01/15 02:47:56 jim Exp $
+// $Id: MasterMgr.java,v 1.82 2005/01/15 15:06:24 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -217,6 +217,9 @@ class MasterMgr
    * 
    * @param queuePort
    *   The port number listened to by <B>plqueuemgr</B>(1) for incoming connections.
+   * 
+   * @throws PipelineException 
+   *   If unable to properly initialize the manager.
    */
   public
   MasterMgr
@@ -228,16 +231,22 @@ class MasterMgr
    String queueHost, 
    int queuePort
   )
+    throws PipelineException 
   { 
     /* make a connection to the file and queue manager daemons */ 
-    pFileMgrClient  = new FileMgrClient(fileHost, filePort);
-    pQueueMgrClient = new QueueMgrControlClient(queueHost, queuePort);
+    {
+      pFileMgrClient = new FileMgrClient(fileHost, filePort);
+      pFileMgrClient.waitForConnection(1000, 5000);
+      
+      pQueueMgrClient = new QueueMgrControlClient(queueHost, queuePort);
+      pQueueMgrClient.waitForConnection(1000, 5000);
+    }
 
     /* create the lock file */ 
     {
       File file = new File(nodeDir, "lock");
       if(file.exists()) 
-	throw new IllegalStateException
+	throw new PipelineException 
 	  ("Another node manager is already running!\n" + 
 	   "If you are certain this is not the case, remove the lock file (" + file + ")!");
 
@@ -246,7 +255,7 @@ class MasterMgr
 	out.close();
       }
       catch(IOException ex) {
-	throw new IllegalStateException
+	throw new PipelineException 
 	  ("Unable to create lock file (" + file + ")!");
       }
     }

@@ -1,4 +1,4 @@
-// $Id: PluginMgrClient.java,v 1.1 2005/01/15 02:56:32 jim Exp $
+// $Id: PluginMgrClient.java,v 1.2 2005/01/15 15:06:24 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -54,6 +54,8 @@ class PluginMgrClient
   {
     assert(sPluginMgrClient == null);
     sPluginMgrClient = new PluginMgrClient();
+    
+    sPluginMgrClient.waitForConnection(100, 5000);
     sPluginMgrClient.update();
   }
 

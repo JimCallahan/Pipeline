@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.44 2005/01/15 02:53:20 jim Exp $
+// $Id: MasterMgrClient.java,v 1.45 2005/01/15 15:06:24 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -3186,7 +3186,7 @@ class MasterMgrClient
   protected String
   getServerDownMessage()
   {
-    return ("Unable to contact the the plmaster(1) server daemon running on " +
+    return ("Unable to contact the the plmaster(1) daemon running on " +
 	    "(" + pHostname + ") using port (" + pPort + ")!");
   }
 

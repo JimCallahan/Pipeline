@@ -307,19 +307,19 @@ Commands() :
       }
     }
 
-    /* initialize the plugins */ 
     try {
+      /* initialize the plugins */ 
       PluginMgrClient.init();
+
+      /* create the server */ 
+      return (new MasterMgrServer(pNodeDir, pMasterPort, 
+				pProdDir, pFileServer, pFilePort, 
+				  pQueueServer, pQueuePort));
     }
     catch(PipelineException ex) {
-      Logs.plg.severe("Unable to load plugins: " + ex);
+      Logs.plg.severe(ex.getMessage());
       System.exit(1);
     }
-
-    /* create the server */ 
-    return (new MasterMgrServer(pNodeDir, pMasterPort, 
-				pProdDir, pFileServer, pFilePort, 
-				pQueueServer, pQueuePort));
   }
 }
     

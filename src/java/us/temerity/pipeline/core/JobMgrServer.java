@@ -1,4 +1,4 @@
-// $Id: JobMgrServer.java,v 1.13 2005/01/15 02:54:03 jim Exp $
+// $Id: JobMgrServer.java,v 1.14 2005/01/15 15:06:24 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -132,8 +132,6 @@ class JobMgrServer
 	  for(HandlerTask task : pTasks) 
 	    task.join();
 	}
-
-	PluginMgrClient.getInstance().disconnect();
       }
       catch(InterruptedException ex) {
 	Logs.net.severe("Interrupted while shutting down!");
@@ -163,6 +161,8 @@ class JobMgrServer
 	}
       }
       
+      PluginMgrClient.getInstance().disconnect();
+
       Logs.net.info("Server Shutdown.");  
       Logs.flush();  
     }  

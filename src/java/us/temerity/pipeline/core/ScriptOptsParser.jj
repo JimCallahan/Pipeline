@@ -1391,7 +1391,7 @@ Commands()
     PluginMgrClient.init();
   }
   catch(PipelineException ex) {
-    Logs.plg.severe("Unable to load plugins: " + ex);
+    Logs.plg.severe(ex.getMessage());
     System.exit(1);
   }
 
@@ -1439,7 +1439,7 @@ Batch()
     PluginMgrClient.init();
   }
   catch(PipelineException ex) {
-    Logs.plg.severe("Unable to load plugins: " + ex);
+    Logs.plg.severe(ex.getMessage());
     System.exit(1);
   }
 

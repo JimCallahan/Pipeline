@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.18 2005/01/15 02:53:20 jim Exp $
+// $Id: QueueMgrClient.java,v 1.19 2005/01/15 15:06:24 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1176,7 +1176,7 @@ class QueueMgrClient
   protected String
   getServerDownMessage()
   {
-    return ("Unable to contact the the plqueuemgr(1) server daemon running on " +
+    return ("Unable to contact the the plqueuemgr(1) daemon running on " +
 	    "(" + pHostname + ") using port (" + pPort + ")!");
   }
 

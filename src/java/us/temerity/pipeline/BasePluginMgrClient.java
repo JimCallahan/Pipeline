@@ -1,4 +1,4 @@
-// $Id: BasePluginMgrClient.java,v 1.1 2005/01/15 02:56:32 jim Exp $
+// $Id: BasePluginMgrClient.java,v 1.2 2005/01/15 15:06:24 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -397,6 +397,22 @@ class BasePluginMgrClient
 	 ex.getMessage());
     }
   }  
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the error message to be shown when the server cannot be contacted.
+   */ 
+  protected String
+  getServerDownMessage()
+  {
+    return ("Unable to contact the the plpluginmgr(1) daemon running on " +
+	    "(" + pHostname + ") using port (" + pPort + ")!");
+  }
 
 
 

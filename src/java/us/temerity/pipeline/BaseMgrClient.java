@@ -1,4 +1,4 @@
-// $Id: BaseMgrClient.java,v 1.9 2005/01/15 02:52:14 jim Exp $
+// $Id: BaseMgrClient.java,v 1.10 2005/01/15 15:06:24 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -89,7 +89,7 @@ class BaseMgrClient
     }
     catch(IOException ex) {
       throw new PipelineException
-	(getServerDownMessage() + "\n\n" + 
+	(getServerDownMessage() + "\n  " + 
 	 ex.getMessage(), ex);
     }
     catch(SecurityException ex) {
@@ -97,6 +97,49 @@ class BaseMgrClient
 	("The Security Manager doesn't allow socket connections!\n" + 
 	 ex.getMessage());
     }
+  }
+
+  /**
+   * Attempt to establish the the network connection to the server instance.
+   * 
+   * @param tries
+   *   The number of attempts to make before giving up.
+   * 
+   * @param delay
+   *   The number of milliseconds to wait between tries.
+   * 
+   * @throws PipelineException 
+   *   In unable to establish the connection.
+   */ 
+  public synchronized void 
+  waitForConnection
+  (
+   long tries, 
+   long delay
+  ) 
+    throws PipelineException 
+  {
+    long wk; 
+    for(wk=0L; wk<tries; wk++) {
+      try {
+	verifyConnection();
+	return;
+      }
+      catch(PipelineException ex) {
+	Logs.net.warning(ex.getMessage());
+	Logs.flush();
+      }
+
+      try {
+	Thread.sleep(5000);
+      }
+      catch(InterruptedException ex) {
+	Logs.plg.warning("Interrupted while attempting establish network connection!");
+      }
+    }
+
+    throw new PipelineException 
+      ("Giving up after (" + tries + ") attempts!");
   }
 
   /**

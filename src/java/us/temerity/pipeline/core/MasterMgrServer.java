@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.29 2005/01/15 02:56:32 jim Exp $
+// $Id: MasterMgrServer.java,v 1.30 2005/01/15 15:06:24 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -60,6 +60,9 @@ class MasterMgrServer
    * 
    * @param queuePort
    *   The port number listened to by <B>plqueuemgr</B>(1) for incoming connections.
+   * 
+   * @throws PipelineException 
+   *   If unable to properly initialize the server.
    */
   public
   MasterMgrServer
@@ -72,6 +75,7 @@ class MasterMgrServer
    String queueHost, 
    int queuePort
   )
+    throws PipelineException 
   { 
     super("MasterMgrServer");
 
@@ -111,9 +115,13 @@ class MasterMgrServer
    * 
    * The port number listened to by <B>plqueuemgr</B>(1) for incoming connections is 
    * specified by the <B>--queue-port</B>=<I>num</I> option to <B>plconfig</B>(1). 
+   * 
+   * @throws PipelineException 
+   *   If unable to properly initialize the server.
    */
   public
   MasterMgrServer() 
+    throws PipelineException 
   { 
     this(PackageInfo.sNodeDir, PackageInfo.sMasterPort, 
 	 PackageInfo.sProdDir, PackageInfo.sFileServer, PackageInfo.sFilePort, 
@@ -172,8 +180,6 @@ class MasterMgrServer
 	  for(HandlerTask task : pTasks) 
 	    task.join();
 	}
-
-	PluginMgrClient.getInstance().disconnect();
       }
       catch(InterruptedException ex) {
 	Logs.net.severe("Interrupted while shutting down!");
@@ -202,6 +208,7 @@ class MasterMgrServer
 	}
       }
 
+      PluginMgrClient.getInstance().disconnect();
       pMasterMgr.shutdown();
 
       Logs.net.info("Server Shutdown.");
