@@ -1,4 +1,4 @@
-// $Id: JConfigDialog.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JConfigDialog.java,v 1.2 2005/02/22 06:07:02 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -35,25 +35,12 @@ class JConfigDialog
 
     /* create dialog body components */ 
     {
-      Box body = new Box(BoxLayout.X_AXIS);
+      Box body = null;
       {
-	JPanel tpanel = null;
-	{
-	  tpanel = new JPanel();
-	  tpanel.setName("TitlePanel");
-	  tpanel.setLayout(new BoxLayout(tpanel, BoxLayout.Y_AXIS));
-
-	  body.add(tpanel);
-	}
-
-	JPanel vpanel = null;
-	{
-	  vpanel = new JPanel();
-	  vpanel.setName("ValuePanel");
-	  vpanel.setLayout(new BoxLayout(vpanel, BoxLayout.Y_AXIS));
-
-	  body.add(vpanel);
-	}
+	Component comps[] = UIFactory.createTitledPanels();
+	JPanel tpanel = (JPanel) comps[0];
+        JPanel vpanel = (JPanel) comps[1];
+	body = (Box) comps[2];
 
 	{
 	  UIFactory.createTitledTextField(tpanel, "License Valid Until:", sTSize, 
@@ -169,11 +156,6 @@ class JConfigDialog
 	{
 	  UIFactory.createTitledTextField(tpanel, "Install Directory:", sTSize, 
 					 vpanel, PackageInfo.sInstDir.toString(), sVSize);
-	  
-	  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
-	  
-	  UIFactory.createTitledTextField(tpanel, "Toolset Directory:", sTSize, 
-					 vpanel, PackageInfo.sToolsetDir.toString(), sVSize);
 	  
 	  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 
