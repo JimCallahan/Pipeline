@@ -1,0 +1,188 @@
+// $Id: VerifiedApp.java.in,v 1.1 2004/08/29 09:19:03 jim Exp $
+
+package us.temerity.pipeline.core;
+
+import us.temerity.pipeline.*;
+
+import java.io.*; 
+import java.net.*; 
+import java.util.*;
+import java.util.logging.*;
+import java.text.*;
+import java.math.*;
+import java.security.*;
+
+/*------------------------------------------------------------------------------------------*/
+/*   V E R I F I E D   A P P                                                                */
+/*------------------------------------------------------------------------------------------*/
+
+/**
+ * The common base class for application which must verify the host ID of the machine
+ * running the class.
+ */
+public abstract
+class VerifiedApp
+  extends BaseApp
+{  
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O N S T R U C T O R                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Construct and the application with the given command-line arguments.
+   * 
+   * @param name 
+   *   The name of the application executable.
+   */
+  public
+  VerifiedApp
+  (
+   String name
+  ) 
+  {
+    super(name);
+
+    /* verify the hardware ID */ 
+    BigInteger hostID = null;
+    try {
+      MessageDigest md = MessageDigest.getInstance("MD5");
+      
+      /* get the network card MAC addresses */ 
+      {
+	FileReader reader = new FileReader("/proc/net/arp");
+	boolean done = false;
+	while(true) {
+	  /* read a line */ 
+	  StringBuffer buf = new StringBuffer();
+	  while(true) {
+	    int next = reader.read();
+	    if(next == -1) {
+	      done = true;
+	      break;
+	    }
+	    
+	    char c = (char) next;
+	    if(c == '\n') 
+	      break;
+	    
+	    buf.append(c);
+	  }
+
+	  if(done) 
+	    break;
+	  
+	  String addr = null;
+
+	  String[] fields = buf.toString().split(" ");
+	  int wk, cnt;
+	  for(wk=0, cnt=0; wk<fields.length; wk++) {
+	    if(fields[wk].length() > 0) {
+	      if((cnt == 3) && (!fields[wk].equals("00:00:00:00:00:00"))) {
+		addr = fields[wk];
+	      }
+	      else if((cnt == 5) && (fields[wk].equals("eth0")) && (addr != null)) {
+		md.update(addr.getBytes());
+		break;
+	      }
+
+	      cnt++;
+	    }
+	  }
+	}
+
+	reader.close();
+      }
+      
+      /* get the CPU, PCI amd SCSCI info */ 
+      {
+	String[] files = {
+	  "/proc/cpuinfo"
+	};
+	  
+	byte[] buf = new byte[4096];
+	int wk;
+	for(wk=0; wk<files.length; wk++) {
+	  FileInputStream in = new FileInputStream(files[wk]);
+	    
+	  while(true) {
+	    int cnt = in.read(buf);
+	    if(cnt == -1) 
+	      break;
+	    
+	    md.update(buf, 0, cnt);
+	  }
+	  
+	  in.close();
+	}
+      }  
+
+      hostID = new BigInteger(md.digest());
+    }
+    catch(Exception ex) {
+      Logs.net.severe("Unable to determine the hardware ID for this machine!");
+      System.exit(1);
+    }
+    
+    /* lookup the names this machine is known by */ 
+    TreeSet<String> hosts = new TreeSet<String>(); 
+    try {
+      Enumeration nets = NetworkInterface.getNetworkInterfaces();  
+      while(nets.hasMoreElements()) {
+	NetworkInterface net = (NetworkInterface) nets.nextElement();
+	Enumeration addrs = net.getInetAddresses();
+	while(addrs.hasMoreElements()) {
+	  InetAddress addr = (InetAddress) addrs.nextElement();
+	  String ip = addr.getHostAddress();
+	  if(!ip.equals("127.0.0.1")) {
+	    hosts.add(addr.getCanonicalHostName());
+	  }	    
+	}
+      }
+
+      if(hosts.isEmpty())
+	throw new IOException();
+    }
+    catch(Exception ex) {
+      Logs.net.severe("Could not determine the name of this machine!");
+      System.exit(1);
+    }
+
+    /* verify the hostID for this machine */ 
+    {
+      assert(hostID != null);
+      assert(!hosts.isEmpty());
+      assert(sHostNames.length == sHostIDs.length);
+
+      boolean verified = false;
+      int wk;
+      for(wk=0; wk<sHostNames.length; wk++) {
+	if(hosts.contains(sHostNames[wk])) {
+	  BigInteger big = new BigInteger(sHostIDs[wk]);
+	  if(big.equals(hostID)) {
+	    verified = true; 
+	    break;
+	  }
+	}
+      }
+
+      if(!verified) {
+	Logs.net.severe("Pipeline is not licensed for this machine!");
+	System.exit(1);
+      }
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static final String[] sHostNames = {
+    @PIPELINE_HOST_NAMES@
+  };
+
+  private static final String[] sHostIDs = {
+    @PIPELINE_HOST_IDS@
+  };
+  
+}
