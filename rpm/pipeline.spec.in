@@ -34,18 +34,22 @@ The core features of Pipeline include:
 @ROOT_INST_DIR@/bin/plplugin
 @ROOT_INST_DIR@/bin/plscript
 @ROOT_INST_DIR@/bin/plui
+@ROOT_INST_DIR@/bin/jogltest
 
 @ROOT_INST_DIR@/bin/debug/plplugin
 @ROOT_INST_DIR@/bin/debug/plscript
 @ROOT_INST_DIR@/bin/debug/plui
+@ROOT_INST_DIR@/bin/debug/jogltest
 
 @ROOT_INST_DIR@/bin/profile/plplugin
 @ROOT_INST_DIR@/bin/profile/plscript
 @ROOT_INST_DIR@/bin/profile/plui
+@ROOT_INST_DIR@/bin/profile/jogltest
 
 @ROOT_INST_DIR@/bin/debug-profile/plplugin
 @ROOT_INST_DIR@/bin/debug-profile/plscript
 @ROOT_INST_DIR@/bin/debug-profile/plui
+@ROOT_INST_DIR@/bin/debug-profile/jogltest
 
 %defattr(4550,root,@PIPELINE_GROUP@)
 @ROOT_INST_DIR@/sbin/plrun
