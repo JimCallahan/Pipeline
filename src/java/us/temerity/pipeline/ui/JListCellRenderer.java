@@ -1,4 +1,4 @@
-// $Id: JListCellRenderer.java,v 1.1 2004/05/08 15:13:09 jim Exp $
+// $Id: JListCellRenderer.java,v 1.2 2004/05/11 19:15:24 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -64,8 +64,8 @@ class JListCellRenderer
       setIcon(sSelectedIcon);
     }
     else {
-      setIcon(sNormalIcon);
       setForeground(Color.white);
+      setIcon(sNormalIcon);
     }
     
     return this;
