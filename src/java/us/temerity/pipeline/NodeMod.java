@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.28 2004/09/22 23:13:41 jim Exp $
+// $Id: NodeMod.java,v 1.29 2004/10/01 17:07:47 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -551,7 +551,10 @@ class NodeMod
 
     pToolset = toolset;
 
-    updateLastCriticalMod();
+    if(isActionEnabled()) 
+      updateLastCriticalMod();
+    else 
+      updateLastMod();
   }
 
   /** 
@@ -608,7 +611,10 @@ class NodeMod
       pBatchSize       = null;
     }
     
-    updateLastCriticalMod();
+    if(pAction != null) 
+      updateLastCriticalMod();
+    else 
+      updateLastMod();
   }
 
   /**
@@ -803,14 +809,6 @@ class NodeMod
     }
 
     {
-      String toolset = mod.getToolset();
-      if(!pToolset.equals(toolset)) {
-	pToolset = toolset;
-	critical = true;
-      }
-    }
-
-    {
       String editor = mod.getEditor(); 
       if(!(((pEditor == null) && (editor == null)) || 
 	   ((pEditor != null) && pEditor.equals(editor)))) {
@@ -838,7 +836,11 @@ class NodeMod
       if(!(((pAction == null) && (action == null)) || 
 	   ((pAction != null) && pAction.equals(action)))) {
 	pAction = action;
-	critical = true;
+
+	if(pAction != null) 
+	  critical = true;
+	else 
+	  modified = true;
       }
 
       if(pAction != null) {
@@ -886,6 +888,18 @@ class NodeMod
 	   ((pBatchSize != null) && pBatchSize.equals(batchSize)))) {
 	pBatchSize = batchSize;
 	modified = true;
+      }
+    }
+
+    {
+      String toolset = mod.getToolset();
+      if(!pToolset.equals(toolset)) {
+	pToolset = toolset;
+
+	if(pAction != null) 
+	  critical = true;
+	else 
+	  modified = true;
       }
     }
 
