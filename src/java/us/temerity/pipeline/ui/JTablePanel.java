@@ -1,4 +1,4 @@
-// $Id: JTablePanel.java,v 1.4 2004/08/01 15:37:33 jim Exp $
+// $Id: JTablePanel.java,v 1.5 2004/08/25 05:19:59 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -102,7 +102,9 @@ class JTablePanel
 		
 		btn.addActionListener(this);
 		btn.setActionCommand("sort-column:" + wk);	  
-		
+
+		btn.setFocusable(false);
+
 		hbox.add(btn);
 	      }
 	    }

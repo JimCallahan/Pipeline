@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.5 2004/08/01 15:35:42 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.6 2004/08/25 05:19:59 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -727,6 +727,8 @@ class JNodeFilesPanel
 		btn.setActionCommand
 		  ("version-pressed:" + fseq.toString() + ":" + vid.toString());
 		  
+		btn.setFocusable(false);
+
 		Dimension size = new Dimension(70, 23);
 		btn.setMinimumSize(size);
 		btn.setMaximumSize(size);

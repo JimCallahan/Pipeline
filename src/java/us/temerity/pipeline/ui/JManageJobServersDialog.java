@@ -1,4 +1,4 @@
-// $Id: JManageJobServersDialog.java,v 1.3 2004/08/01 19:31:46 jim Exp $
+// $Id: JManageJobServersDialog.java,v 1.4 2004/08/25 05:19:59 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -91,6 +91,8 @@ class JManageJobServersDialog
 	      btn.addActionListener(tpanel);
 	      btn.setActionCommand("sort-column:" + wk);	  
 	      
+	      btn.setFocusable(false);
+
 	      hbox.add(btn);
 	    }
 	    
@@ -546,6 +548,8 @@ class JManageJobServersDialog
 	  btn.addActionListener(pTablePanel);
 	  btn.setActionCommand("sort-column:" + wk);	  
 	  
+	  btn.setFocusable(false);
+
 	  pSelectionKeyHeaderBox.add(btn);
 
 	  wk++;
