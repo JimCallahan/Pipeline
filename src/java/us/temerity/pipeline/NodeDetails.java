@@ -1,4 +1,4 @@
-// $Id: NodeDetails.java,v 1.9 2004/06/14 22:43:02 jim Exp $
+// $Id: NodeDetails.java,v 1.10 2004/06/19 00:27:24 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -212,7 +212,7 @@ class NodeDetails
   public ArrayList<VersionID> 
   getVersionIDs() 
   {
-    return pVersionIDs;
+    return new ArrayList<VersionID>(pVersionIDs);
   }
 
 
