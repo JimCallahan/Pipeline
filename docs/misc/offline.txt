@@ -1,0 +1,256 @@
+----------------------------------------------------------------------------------------------
+
+Archive Tool: 
+
+   + The search criteria or node version filter (modal sub-dialog):
+
+      - Name Pattern
+          A regular expression used to match fully resolved node names.  If (null), all 
+          node names match.
+
+      - Exclude Latest
+          The number of checked-in versions of the node to exclude from the list.  Versions
+          are excluded in latest to oldest order.  A value of 0 or (null) means that all 
+          versions are included.  A value of (2) would exclude the two most recent versions.
+       
+      - Maximum Working
+          The maximum number of existing working versions based on the checked-in version
+          in order for the checked-in version to be included in the list.  A value of 0 or 
+          (null) means that no working versions may exist in order for the checked-in 
+          version to be included.  
+
+      - Maximum Backups
+          The maximum number of copies of the checked-in version which have already been
+          backed up in order for the version to be included.
+	  
+
+   + Candidate Versions Table (left):
+
+      Table containing the checked-in versions which match the search criteria.  Each 
+      checked-in version is listed as a row in the table with the following columns:
+
+      - Name
+          Fully resolved node name.
+
+      - Version
+	  Revision number of the checked-in version.
+
+      - Checked-In 
+	  The timestamp of when the checked-in version was created.
+
+      - Checked-Out
+	  The timestamp of the last check-out of the version.
+
+      - Working 
+	  The number of working versions in existence based on the checked-in version.
+
+      - Archive
+           The timestamp of when the last archive which contained the version was created.
+
+      - Copies
+          The number of previously created archives which contain this checked-in version.
+
+ 
+    + Left/Right Arrow Buttons: 
+
+        - Left button removes all selected checked-in versions from the Selected Version
+	  Table.
+
+        - Right button adds the checked-in versions selected in the Candidate Version Table
+          to the Selected Version Table.
+
+    + Selected Versions Table (right);
+
+        Contains the versions selected for archiving.  Each checked-in version is 
+	listed as a row in the table with the following columns:
+
+        - Name
+            The fully resolved node name.
+
+        - Version
+            The revision number of the checked-in version.
+ 
+        - Archive
+            An editable boolean field which indicates that the checked-in verison's files
+            should be archived.  This field is set to TRUE by default.
+
+        - Offline
+            An editable boolean field which indicates that the checked-in version's files 
+            should be deleted from the repository after the archive has been successfully 
+	    created. This field is set to FALSE by default.
+
+            This field will be set to (null) and disabled for editing if:
+
+              + A working version exists in any working area which is based on the 
+                checked-in version.
+
+              + This is the latest checked-in version and any working version of the 
+	        node exists in any working area.
+
+              + There are no existing archives which contain the files associated with 
+                this checked-in version and the Archive flag is set to FALSE.
+
+        
+     + Buttons: 
+
+        - Archive
+            Shows a dialog which contains: 
+
+            + "Archiver" Drawer 
+
+                - Archive Prefix
+                    The prefix of the archive name.  A timestamp string will be appended 
+                    to this prefix to generate the archive name(s).
+
+
+                - Archiver
+                    The name of the Archiver plugin to use. 
+ 
+                - Version
+                    The version of the Archiver plugin to use.
+
+                - Archiver Params ... 
+
+            + "Stats" Drawer
+
+                - Total Size
+                    The total size of all files being archived
+
+                - Archive Capacity
+                    The maximum size of an individual archive (based on Archiver).
+
+                - Archive Count
+                    The total number of archives which will be created.
+
+            If this dialog is confirmed, the selected Archiver plugin is run for each archive,
+
+            If the plugin runs successfully, the archive name will be added to the cached
+            pArchiveNames field of the MasterMgr and a GLUE representation of the archive
+            will be written to disk.  If there is an archive failure, a dialog will be shown
+            which notified the user of the failure and queries whether to attempt the 
+            remaining archives.
+
+            Once all archives have been processed, the versions marked for offlining will
+            be processed.  Any versions which were marked for archive but whos archive
+            failed will be skipped.  For each file to be offlined:
+
+            - Check to see there exist any later versions of the file are symbolic links
+              which point to the file being offlined.  If links are found, move the file
+              to be offlined to the location of the link with the lowest version number
+              and change the remaining links to point to this new location.  
+
+            - Otherwise, simply remove the file to be offlined.
+
+            Add the checked-in verision name and revision number to the cached table of 
+            offlined versions.  Write this table to disk after all versions have been 
+            processed.
+
+
+----------------------------------------------------------------------------------------------
+
+Restore Tool:
+
+   + Requested Versions Table (left):
+
+        Table containing the checked-in versions which users have requested to be restored.
+        Each requested checked-in version is listed as a row in the table with the following 
+        columns:
+
+        - Name
+            Fully resolved node name.
+
+        - Version
+	    Revision number of the checked-in version.
+
+ 
+    + Left/Right Arrow Buttons: 
+
+        - Left button removes all selected checked-in versions from the Selected Version
+	  Table.
+
+        - Right button adds the checked-in versions selected in the Requested Versions Table
+          to the Selected Version Table.
+
+    + Selected Versions Table (right);
+
+        Contains the versions selected for restoration.  Each checked-in version is 
+	listed as a row in the table with the following columns:
+
+        - Name
+            The fully resolved node name.
+
+        - Version
+            The revision number of the checked-in version.
+ 
+        - Archives...
+            A column for each archive which contains one of the checked-in versions.  The
+	    value will be NULL and disabled for versions not contained in the archive.  Only
+            one of the enabled columns may be set to TRUE will all other columns being FALSE
+            or NULL.  The editors for these cells act like a set of radio buttons.  
+ 
+            Initial TRUE value is set to the newest archive which contains the checked-in
+            version.  The columns are listed from newest to oldest (left to right).
+              
+
+
+----------------------------------------------------------------------------------------------
+
+
+class Archive {
+  Date pTimeStamp;
+  TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>>  pFiles;
+  BaseArchiver  pArchiver;
+  String  pArchiverOutput;
+}
+
+
+MasterMgr {
+  ...
+
+  /**	
+   * The cached names of the archives indexed by the fully resolved node names and revision
+   * numbers of the checked-in versions contained in the archive. <P> 
+   * 
+   * This table is rebuilt by scanning the archive GLUE files upon startup but is not itself
+   * written to disk. <P> 
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */
+  TreeMap<String,TreeMap<VersionID,TreeSet<String>>>  pArchivedIn;
+
+  /**
+   * The timestamps of when each archive was created indexed by unique archive name.
+   *	 
+   * This table is rebuilt by scanning the archive GLUE files upon startup but is not itself
+   * written to disk. <P> 
+   */
+  TreeMap<String,Date>  pArchivedOn;
+
+  /**
+   * The fully resolved node names and revision numbers of the checked-in versions which
+   * are currently offline. <P> 
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */ 
+  TreeMap<String,TreeSet<VersionID>>  pOffline;
+
+  /**
+   * The fully resolved node names and revision numbers of the checked-in versions which 
+   * users have requested to be restored from a previously created archive. <P> 
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */  
+  TreeMap<String,TreeSet<VersionID>>  pRestoreRequested;
+}
+
+
+
+class ArchiveQueryInfo {
+  Date pCheckedInStamp;
+  Date pCheckedOutStamp;
+  Date pArchiveStamp;
+  int pNumWorking;
+  int pNumArchives;
+}
+
+
