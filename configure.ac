@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 1.6.0)
+AM_INIT_AUTOMAKE(Pipeline, 1.7.0)
 
 AC_MSG_RESULT([ ])
 
@@ -184,26 +184,17 @@ AC_MSG_RESULT([$PLCONFIG_VERSION (OK)])
 
 dnl ------------------------------------------------------------------------------------------
 
-AC_MSG_CHECKING([Customer Site Specification])
+AC_MSG_CHECKING([Customer Host IDs])
 
-AC_SUBST(DOMAIN)
-DOMAIN=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-             --lookup DomainName`
+host_ids=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
+               --lookup HostIDs`
 
-AC_SUBST(IP_ADDRS)
-IP_ADDRS=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-               --lookup IPAddrs`
-
-if test "$DOMAIN" != "null" 
+if test "$host_ids" != "null" 
 then
-  AC_MSG_RESULT([$DOMAIN])
-else
-  if test "$IP_ADDRS" != "null"
-  then 
-    AC_MSG_RESULT([$IP_ADDRS])
-  else 
-    AC_MSG_ERROR([customer profile was incomplete.])
-  fi
+  AC_MSG_RESULT([])
+  AC_MSG_RESULT([$host_ids])
+else 
+  AC_MSG_ERROR([customer profile was incomplete.])
 fi 
 
 
