@@ -1,4 +1,4 @@
-// $Id: JManageToolsetsDialog.java,v 1.4 2004/06/03 10:21:53 jim Exp $
+// $Id: JManageToolsetsDialog.java,v 1.5 2004/06/08 03:01:51 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -195,6 +195,12 @@ class JManageToolsetsDialog
       item = new JMenuItem("New Version...");
       pNewPackageVersionItem = item;
       item.setActionCommand("new-package-version");
+      item.addActionListener(this);
+      pPackagesPopup.add(item);  
+      
+      item = new JMenuItem("Clone Version...");
+      pClonePackageVersionItem = item;
+      item.setActionCommand("clone-package-version");
       item.addActionListener(this);
       pPackagesPopup.add(item);  
       
@@ -988,11 +994,13 @@ class JManageToolsetsDialog
     pTestPackageItem.setEnabled(false);
     pNewPackageItem.setEnabled(pIsPrivileged);
     pNewPackageVersionItem.setEnabled(false);
+    pClonePackageVersionItem.setEnabled(false);
     pFreezePackageItem.setEnabled(false);
     pDeletePackageItem.setEnabled(false);
 
     if(tpath != null) {
       pNewPackageVersionItem.setEnabled(pIsPrivileged);
+      pClonePackageVersionItem.setEnabled(pIsPrivileged);
 
       pPackagesTree.addSelectionPath(tpath);
 
@@ -1388,6 +1396,8 @@ class JManageToolsetsDialog
       doNewPackage();
     else if(e.getActionCommand().equals("new-package-version")) 
       doNewPackageVersion();
+    else if(e.getActionCommand().equals("clone-package-version")) 
+      doClonePackageVersion();
     else if(e.getActionCommand().equals("freeze-package")) 
       doFreezePackage();
     else if(e.getActionCommand().equals("delete-package")) 
@@ -1912,7 +1922,7 @@ class JManageToolsetsDialog
   }
   
   /**
-   * Create a new modifiable version of an existing package. 
+   * Create a new empty modifiable version of an existing package. 
    */ 
   public void 
   doNewPackageVersion()
@@ -1931,6 +1941,18 @@ class JManageToolsetsDialog
     
     if((pname != null) && (pname.length() > 0))
       createPackage(pname);
+  }
+
+  /**
+   * Create a new modifiable version of an existing package which is a clone of the selected
+   * package.
+   */ 
+  public void 
+  doClonePackageVersion()
+  {
+    PackageCommon com = getSelectedPackage(); 
+    if(com != null) 
+      createPackage(com.getName(), com);
   }
 
   /**
@@ -2477,7 +2499,7 @@ class JManageToolsetsDialog
 
 
   /**
-   * Create a new modifiable package.
+   * Create a new empty modifiable package.
    */ 
   private void 
   createPackage
@@ -2485,9 +2507,39 @@ class JManageToolsetsDialog
    String pname
   ) 
   {
+    createPackage(pname, null);
+  }
+
+  /**
+   * Create a new modifiable package which is a clone of the given package.
+   * 
+   * @param pname
+   *   The name of the new package.
+   * 
+   * @param com 
+   *   The package to clone or <CODE>null</CODE> to create an empty package.
+   */ 
+  private void 
+  createPackage
+  (
+   String pname, 
+   PackageCommon com
+  ) 
+  {
     assert(pname != null);
     if(!pPackageMods.containsKey(pname)) {
-      PackageMod pkg = new PackageMod(pname);
+
+      PackageMod pkg = null;
+      {
+	if(com != null) {
+	  assert(com.getName().equals(pname));
+	  pkg = new PackageMod(com);
+	}
+	else {
+	  pkg = new PackageMod(pname);
+	}
+      }
+
       pPackageMods.put(pname, pkg);
       
       DefaultMutableTreeNode pnode = null;
@@ -2763,6 +2815,7 @@ class JManageToolsetsDialog
   private JMenuItem  pTestPackageItem;
   private JMenuItem  pNewPackageItem;
   private JMenuItem  pNewPackageVersionItem;
+  private JMenuItem  pClonePackageVersionItem;
   private JMenuItem  pFreezePackageItem;
   private JMenuItem  pDeletePackageItem;
 
