@@ -1,4 +1,4 @@
-// $Id: JCollectionField.java,v 1.3 2004/06/02 21:53:33 jim Exp $
+// $Id: JCollectionField.java,v 1.4 2004/06/08 02:51:57 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -8,6 +8,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
+import javax.swing.event.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   C O L L E C T I O N   F I E L D                                                        */
@@ -19,7 +20,7 @@ import javax.swing.*;
 public 
 class JCollectionField
   extends JPanel
-  implements MouseListener, ActionListener
+  implements MouseListener, PopupMenuListener, ActionListener
 {
   public 
   JCollectionField
@@ -39,9 +40,10 @@ class JCollectionField
 	JValueField field = new JValueField(this);
 	pTextField = field;
 
-	field.setName("CollectionTextField");
+	field.setName("CollectionValueTextField");
 	field.setHorizontalAlignment(JLabel.CENTER);
 	field.setEditable(false);
+	field.setHighlighter(null);
 	field.addMouseListener(this);
 
 	add(field);
@@ -52,6 +54,7 @@ class JCollectionField
     }
 
     pPopup = new JPopupMenu(); 
+    pPopup.addPopupMenuListener(this);
 
     setValues(values);
     setSelectedIndex(0);
@@ -219,6 +222,7 @@ class JCollectionField
   }
           
 
+
   /*----------------------------------------------------------------------------------------*/
   /*   L I S T E N E R S                                                                    */
   /*----------------------------------------------------------------------------------------*/
@@ -234,6 +238,7 @@ class JCollectionField
    ActionEvent e
   ) 
   {
+    pTextField.setForeground(Color.white);
     setSelected(e.getActionCommand());
   }
 
@@ -268,6 +273,8 @@ class JCollectionField
   ) 
   {
     if((pValues.size() > 0) && (pSelectedIdx >= 0)) {
+      pTextField.setForeground(Color.yellow);
+
       Dimension size = getSize();
       pPopup.setPopupSize(new Dimension(size.width, 23*pValues.size() + 10));
       pPopup.show(e.getComponent(), 0, size.height);
@@ -280,6 +287,34 @@ class JCollectionField
   public void 
   mouseReleased(MouseEvent e) {}
   
+
+  /*-- POPUP MENU LISTNER METHODS ----------------------------------------------------------*/
+
+  /**
+   * This method is called when the popup menu is canceled. 
+   */ 
+  public void 
+  popupMenuCanceled
+  (
+   PopupMenuEvent e
+  )
+  { 
+    pTextField.setForeground(Color.white);
+  }
+   
+  /**
+   * This method is called before the popup menu becomes invisible. 
+   */ 
+  public void
+  popupMenuWillBecomeInvisible(PopupMenuEvent e) {} 
+  
+  /**
+   * This method is called before the popup menu becomes visible. 
+   */ 
+  public void 	
+  popupMenuWillBecomeVisible(PopupMenuEvent e) {} 
+
+
 
   
   /*----------------------------------------------------------------------------------------*/
