@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.67 2004/12/17 08:17:11 jim Exp $
+// $Id: UIMaster.java,v 1.68 2004/12/30 01:55:17 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -554,6 +554,22 @@ class UIMaster
     pRestoreDialog.setVisible(true);
   }
 
+  /**
+   * Show a dialog for editing colors.
+   */ 
+  public JColorEditorDialog
+  showColorEditorDialog
+  (
+   String title, 
+   Color3d color
+  )
+  {
+    pColorEditorDialog.setHeaderTitle(title);
+    pColorEditorDialog.setColor(color);
+    pColorEditorDialog.setVisible(true);
+
+    return pColorEditorDialog;
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -3502,6 +3518,8 @@ class UIMaster
 
 	pArchiveDialog = new JArchiveDialog();
 	pRestoreDialog = new JRestoreDialog();
+
+	pColorEditorDialog = new JColorEditorDialog();
       }
 
       ArrayList<JFrame> frames = new ArrayList<JFrame>();
@@ -4694,4 +4712,9 @@ class UIMaster
    * The restore dialog.
    */
   private JRestoreDialog  pRestoreDialog; 
+
+  /**
+   * The color editor dialog.
+   */ 
+  private JColorEditorDialog  pColorEditorDialog; 
 }
