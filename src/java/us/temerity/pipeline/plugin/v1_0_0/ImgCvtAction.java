@@ -1,4 +1,4 @@
-// $Id: ImgCvtAction.java,v 1.1 2004/09/12 20:15:02 jim Exp $
+// $Id: ImgCvtAction.java,v 1.2 2004/09/13 04:04:38 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -188,7 +188,7 @@ class ImgCvtAction
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //  private static final long serialVersionUID = 
+  private static final long serialVersionUID = -4878519637730498842L;
 
 }
 
