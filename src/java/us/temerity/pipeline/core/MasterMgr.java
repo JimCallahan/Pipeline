@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.78 2005/01/07 07:08:16 jim Exp $
+// $Id: MasterMgr.java,v 1.79 2005/01/07 17:24:39 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -7106,8 +7106,8 @@ class MasterMgr
 	      case Running:
 		break;
 
-	      default:
-		{
+	      default:	
+		if((link.getPolicy() == LinkPolicy.Reference) || work.isActionEnabled()) {
 		  NodeStatus lstatus = status.getSource(link.getName());
 		  NodeDetails ldetails = lstatus.getDetails();
 		  switch(ldetails.getOverallQueueState()) {
@@ -7203,9 +7203,10 @@ class MasterMgr
        *   + The last critical modification timestamp of the current node.
        * 
        *   + The time stamp of any upstream file upon which the file depends through a 
-       *     Reference/Dependency link.  These upstream time stamp have been previously
-       *     modified to propogate staleness of those nodes further upstream.  Upstream 
-       *     per-file time stamps which are (null) should be ignored.
+       *     Reference link or a Dependency link if the current node does not have a disabled
+       *     action.  These upstream time stamp have been previously modified to propogate 
+       *     staleness of those nodes further upstream.  Upstream per-file time stamps which 
+       *     are (null) should be ignored.
        */
       Date[] fileStamps = new Date[oldestStamps.length];
       boolean[] ignoreStamps = new boolean[oldestStamps.length];
@@ -7233,39 +7234,41 @@ class MasterMgr
 	    }
 
 	    for(LinkMod link : work.getSources()) { 
-	      NodeStatus lstatus = status.getSource(link.getName());
-	      NodeDetails ldetails = lstatus.getDetails();
-	      
-	      QueueState lqs[]   = ldetails.getQueueState();
-	      Date lstamps[]     = ldetails.getFileTimeStamps();
-	      boolean lignored[] = ldetails.ignoreTimeStamps();
-	      
-	      boolean nonIgnored = nonIgnoredSources.contains(link.getName());
-	      
-	      switch(link.getRelationship()) {
-	      case OneToOne:
-		{
-		  Integer offset = link.getFrameOffset();
-		  int idx = wk+offset;
-		  
-		  if((idx >= 0) && (idx < lqs.length)) {
-		    if(!lignored[idx] || nonIgnored) {
-		      ignoreStamps[wk] = false;
-		      if(lstamps[idx].compareTo(fileStamps[wk]) > 0)
-			fileStamps[wk] = lstamps[idx];
+	      if((link.getPolicy() == LinkPolicy.Reference) || work.isActionEnabled()) {
+		NodeStatus lstatus = status.getSource(link.getName());
+		NodeDetails ldetails = lstatus.getDetails();
+		
+		QueueState lqs[]   = ldetails.getQueueState();
+		Date lstamps[]     = ldetails.getFileTimeStamps();
+		boolean lignored[] = ldetails.ignoreTimeStamps();
+		
+		boolean nonIgnored = nonIgnoredSources.contains(link.getName());
+		
+		switch(link.getRelationship()) {
+		case OneToOne:
+		  {
+		    Integer offset = link.getFrameOffset();
+		    int idx = wk+offset;
+		    
+		    if((idx >= 0) && (idx < lqs.length)) {
+		      if(!lignored[idx] || nonIgnored) {
+			ignoreStamps[wk] = false;
+			if(lstamps[idx].compareTo(fileStamps[wk]) > 0)
+			  fileStamps[wk] = lstamps[idx];
+		      }
 		    }
 		  }
-		}
-		break;
-		
-	      case All:
-		{
-		  int fk;
-		  for(fk=0; fk<lqs.length; fk++) {
-		    if(!lignored[fk] || nonIgnored) {
-		      ignoreStamps[wk] = false;
-		      if(lstamps[fk].compareTo(fileStamps[wk]) > 0) 
-			fileStamps[wk] = lstamps[fk];
+		  break;
+		  
+		case All:
+		  {
+		    int fk;
+		    for(fk=0; fk<lqs.length; fk++) {
+		      if(!lignored[fk] || nonIgnored) {
+			ignoreStamps[wk] = false;
+			if(lstamps[fk].compareTo(fileStamps[wk]) > 0) 
+			  fileStamps[wk] = lstamps[fk];
+		      }
 		    }
 		  }
 		}
