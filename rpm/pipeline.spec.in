@@ -30,26 +30,26 @@ The core features of Pipeline include:
 @ROOT_INST_DIR@/bin/realpath
 @ROOT_INST_DIR@/bin/plui
 
-%defattr(4550,root,pipeline)
+%defattr(4550,root,@PIPELINE_GROUP@)
 @ROOT_INST_DIR@/sbin/plrun
 @ROOT_INST_DIR@/sbin/plnotify
 
-%defattr(500,pipeline,pipeline)
+%defattr(500,@PIPELINE_USER@,@PIPELINE_GROUP@)
 @ROOT_INST_DIR@/sbin/plfilemgr
 @ROOT_INST_DIR@/sbin/pljobmgr
 @ROOT_INST_DIR@/sbin/plmaster
 @ROOT_INST_DIR@/sbin/plqueuemgr
 
-%defattr(775,pipeline,pipeline)
+%defattr(775,@PIPELINE_USER@,@PIPELINE_GROUP@)
 %dir @PRODDIR@/working
 
-%defattr(755,pipeline,pipeline)
+%defattr(755,@PIPELINE_USER@,@PIPELINE_GROUP@)
 %dir @PRODDIR@/repository
 %dir @PRODDIR@/checksum
 %dir @NODEDIR@
 
-%defattr(644,pipeline,pipeline)
-@NODEDIR@/etc/suffix-editors/pipeline
+%defattr(644,@PIPELINE_USER@,@PIPELINE_GROUP@)
+@NODEDIR@/etc/suffix-editors/@PIPELINE_USER@
 
 %defattr(-,root,root)
 @ROOT_INST_DIR@/lib
