@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.7 2004/06/28 23:02:53 jim Exp $
+// $Id: MasterRequest.java,v 1.8 2004/07/07 13:22:22 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -99,29 +99,6 @@ enum MasterRequest
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get all currently defined link catagory descriptions.
-   */
-  GetLinkCatagoryDesc, 
-    
-  /**
-   * Get the names of the currently active link catagories.
-   */
-  GetActiveLinkCatagoryNames, 
-
-  /**
-   * An instance of {@link MiscCreateLinkCatagoryReq MiscCreateLinkCatagoryReq} is next.
-   */
-  CreateLinkCatagory, 
-
-  /**
-   * An instance of {@link MiscSetLinkCatagoryActiveReq MiscSetLinkCatagoryActiveReq} is next.
-   */
-  SetLinkCatagoryActive, 
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
    * Get the names of the privileged users.
    */
   GetPrivilegedUsers, 
@@ -188,6 +165,17 @@ enum MasterRequest
    * An instance of {@link NodeGetCheckedInReq NodeGetCheckedInReq} is next.
    */
   GetCheckedIn, 
+
+  /**
+   * An instance of {@link NodeGetHistoryReq NodeGetHistoryReq} is next.
+   */
+  GetHistory, 
+
+  /**
+   * An instance of {@link NodeGetCheckedInFileNoveltyReq NodeGetCheckedInFileNoveltyReq} 
+   * is next.
+   */
+  GetCheckedInFileNovelty, 
 
 
   /*----------------------------------------------------------------------------------------*/
