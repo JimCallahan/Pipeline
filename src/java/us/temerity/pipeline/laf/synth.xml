@@ -607,26 +607,11 @@
 
 
 
-  <!--  E R R O R   P A N E L  -->
-  <style id="ErrorPanel">
+  <!--  M A I N   D I A L O G   P A N E L  -->
+  <style id="MainDialogPanel">
     <insets top="20" bottom="20" right="20" left="20"/>
   </style>
-  <bind style="ErrorPanel" type="name" key="ErrorPanel"/>
-
-
-  <!--  S A V E D   L A Y O U T   P A N E L  -->
-  <style id="SaveLayoutPanel">
-    <insets top="20" bottom="20" right="20" left="20"/>
-  </style>
-  <bind style="SaveLayoutPanel" type="name" key="SaveLayoutPanel"/>
-
-
-  <!--  N E W   F O L D E R   P A N E L  -->
-  <style id="NewFolderPanel">
-    <insets top="20" bottom="20" right="20" left="20"/>
-  </style>
-  <bind style="NewFolderPanel" type="name" key="NewFolderPanel"/>
-
+  <bind style="MainDialogPanel" type="name" key="MainDialogPanel"/>
 
 
 </synth>
