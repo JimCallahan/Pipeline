@@ -1,0 +1,30 @@
+Summary: The Pipeline Utilities
+Name: plutils-@CUSTOMER@
+Version: @VERSION@
+Release: @PROFILE_STAMP@
+URL: http://www.temerity.us/pipeline
+License: Commercial
+Vendor: Temerity Software, Inc
+Group: Applications/Productivity
+BuildRoot: @RPM_ROOT@/DEST/plutils
+
+%description
+A collection of command-line utilities which Pipeline users may find useful. 
+
+These utilities are provided in a seperate RPM so that they may be installed 
+and updated independently of the main Pipeline RPMs.
+
+%files
+
+%defattr(555,root,root)
+@ROOT_INST_DIR@/bin/pls
+
+%defattr(-,root,root)
+@ROOT_INST_DIR@/share/docs/man/pls.html
+
+%changelog
+* @RPM_DATE@ Jim Callahan <jim@salamander>
+Latest build.
+
+
+

@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 1.9.11)
+AM_INIT_AUTOMAKE(Pipeline, 1.9.12)
 
 AC_MSG_RESULT([ ])
 
@@ -1166,6 +1166,7 @@ AC_CONFIG_FILES([
   rpm/Makefile
   rpm/pipeline.spec
   rpm/plqueuemgr.spec
+  rpm/plutils.spec
   rpm/plmaster.spec
   rpm/headerB
   rpm/rpmrc

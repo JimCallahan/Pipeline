@@ -28,7 +28,6 @@ The core features of Pipeline include:
 %files
 
 %defattr(555,root,root)
-@ROOT_INST_DIR@/bin/pls
 @ROOT_INST_DIR@/bin/realpath
 
 @ROOT_INST_DIR@/bin/plplugin
@@ -90,8 +89,21 @@ The core features of Pipeline include:
 %defattr(-,root,root)
 @ROOT_INST_DIR@/lib
 @ROOT_INST_DIR@/examples
-@ROOT_INST_DIR@/share/docs
-@ROOT_INST_DIR@/share/logger.properties
+
+@ROOT_INST_DIR@/share/docs/images
+@ROOT_INST_DIR@/share/docs/javadoc
+@ROOT_INST_DIR@/share/docs/manuals
+
+@ROOT_INST_DIR@/share/docs/man/plfilemgr.html 
+@ROOT_INST_DIR@/share/docs/man/pljobmgr.html 
+@ROOT_INST_DIR@/share/docs/man/plmaster.html 
+@ROOT_INST_DIR@/share/docs/man/plplugin.html 
+@ROOT_INST_DIR@/share/docs/man/plpluginmgr.html 
+@ROOT_INST_DIR@/share/docs/man/plqueuemgr.html 
+@ROOT_INST_DIR@/share/docs/man/plrestore.html 
+@ROOT_INST_DIR@/share/docs/man/plscript.html 
+@ROOT_INST_DIR@/share/docs/man/plui.html 
+@ROOT_INST_DIR@/share/docs/man/realpath.html
 
 %dir @ROOT_INST_DIR@/plconfig
 

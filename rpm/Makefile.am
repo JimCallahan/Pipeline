@@ -6,6 +6,7 @@ noinst_DATA = \
 RPMS = \
   RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
   RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+  RPMS/i686/plutils-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
   RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm 
 
 
@@ -42,8 +43,13 @@ pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.tgz: pipeline-install $(RPMS)
 pipeline-install: clean-rpms rpm-mkdirs
 	rm -rf DEST/pipeline DEST/plmaster DEST/plqueuemgr
 	DESTDIR=`pwd`/DEST/pipeline $(MAKE) -C .. install
-	mkdir -p DEST/plmaster DEST/plqueuemgr/usr/share/pipeline
+	mkdir -p DEST/plmaster
 	mv DEST/pipeline/usr DEST/plmaster
+	mkdir -p DEST/plqueuemgr/usr/share/pipeline
+	mkdir -p DEST/plutils/@ROOT_INST_DIR@/bin DEST/plutils/@ROOT_INST_DIR@/share/docs/man
+	mv DEST/pipeline/@ROOT_INST_DIR@/bin/pls DEST/plutils/@ROOT_INST_DIR@/bin
+	mv DEST/pipeline/@ROOT_INST_DIR@/share/docs/man/pls.html \
+           DEST/plutils/@ROOT_INST_DIR@/share/docs/man
 
 rpm-mkdirs: 
 	mkdir -p BUILD DEST RPMS SPECS SOURCES SRPMS 
@@ -63,6 +69,14 @@ RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
 
 SPECS/plqueuemgr-@CUSTOMER@-@VERSION@.spec: plqueuemgr.spec
 	cp -f plqueuemgr.spec $@
+
+
+RPMS/i686/plutils-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
+  SPECS/plutils-@CUSTOMER@-@VERSION@.spec
+	rpmbuild --rcfile rpmrc -bb SPECS/plutils-@CUSTOMER@-@VERSION@.spec
+
+SPECS/plutils-@CUSTOMER@-@VERSION@.spec: plutils.spec
+	cp -f plutils.spec $@
 
 
 RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
