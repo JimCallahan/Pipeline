@@ -1,4 +1,4 @@
-// $Id: VersionID.java,v 1.8 2004/04/20 22:00:18 jim Exp $
+// $Id: VersionID.java,v 1.9 2004/04/24 22:33:02 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -385,7 +385,7 @@ class VersionID
     String[] parts = str.split("\\.");
     if(parts.length != 4)
       throw new IllegalArgumentException
-	("Found the wrong number (" + parts.length + ") of revision number compoents " + 
+	("Found the wrong number (" + parts.length + ") of revision number components " + 
 	 "in (" + str + "), should have been (4)!");
 
     int ids[] = new int[4];
