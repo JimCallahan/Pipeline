@@ -1,4 +1,4 @@
-// $Id: Plugins.java,v 1.4 2004/05/16 19:05:50 jim Exp $
+// $Id: Plugins.java,v 1.5 2004/06/14 22:44:26 jim Exp $
   
 package us.temerity.pipeline.core;
 
@@ -82,11 +82,6 @@ class Plugins
 	    // 	    sTools.put(tool.getName(), cls);
 	    // 	    Logs.plg.fine("Loaded Tool Plugin: " + tool.getName());
 	    // 	  }
-	    else {
-	      throw new PipelineException
-		("Unknown type of plugin class (" + cname + ") found in the plugin " +
-		 "directory: " + dir + "!");
-	    }
 	  } 
 	  catch(LinkageError ex) {
 	    throw new PipelineException("Unable to link plugin: " + cname + "\n\n" + 
