@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.4 2004/03/26 04:38:45 jim Exp $
+// $Id: FileMgr.java,v 1.5 2004/03/26 19:11:56 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -939,6 +939,28 @@ class FileMgr
 	  }
 	}
 
+	/* add write permission to the working checksums */ 
+	if(req.isEditable()) {
+	  ArrayList<String> args = new ArrayList<String>();
+	  args.add("u+w");
+	  for(File file : files) 
+	    args.add(file.getName());
+
+	  SubProcess proc = 
+	    new SubProcess(req.getNodeID().getAuthor(), 
+			   "CheckOut-SetWritableCheckSums", "chmod", args, env, cwdir);
+	  proc.start();
+	  
+	  try {
+	    proc.join();
+	  }
+	  catch(InterruptedException ex) {
+	    throw new PipelineException
+	      ("Interrupted while adding write access permission to the files for the " + 
+	       "working version (" + req.getNodeID() + ")!");
+	  }
+	}
+
 	return new SuccessRsp(task, wait, start);
       }
     }
@@ -1208,6 +1230,28 @@ class FileMgr
 	    throw new PipelineException
 	      ("Interrupted while unfreezing the working checksums for version (" + 
 	       req.getNodeID() + ")!");
+	  }
+	}
+
+	/* add write permission to the working checksums */ 
+	if(req.isEditable()) {
+	  ArrayList<String> args = new ArrayList<String>();
+	  args.add("u+w");
+	  for(File file : files) 
+	    args.add(file.getName());
+
+	  SubProcess proc = 
+	    new SubProcess(req.getNodeID().getAuthor(), 
+			   "UnFreeze-SetWritableCheckSums", "chmod", args, env, cwdir);
+	  proc.start();
+	  
+	  try {
+	    proc.join();
+	  }
+	  catch(InterruptedException ex) {
+	    throw new PipelineException
+	      ("Interrupted while adding write access permission to the files for the " + 
+	       "working version (" + req.getNodeID() + ")!");
 	  }
 	}
 
