@@ -1,4 +1,4 @@
-// $Id: BaseArchiver.java,v 1.7 2005/03/15 19:10:24 jim Exp $
+// $Id: BaseArchiver.java,v 1.8 2005/03/15 20:08:23 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -15,7 +15,13 @@ import java.io.*;
  * The superclass of all Pipeline archiver plugins. <P>
  * 
  * Archivers are responsible to copying the files associated with checked-in versions to and
- * from some form of offline storage such as tapes, DVDs, worm drives, etc.
+ * from some form of offline storage such as tapes, DVDs, worm drives, etc.  See the 
+ * {@link #archive archive} and {@link #restore restore} method for details on how this 
+ * is accomplished. <P> 
+ * 
+ * While new plugin subclass versions are being modified and tested the 
+ * {@link #underDevelopment underDevelopment} method should be called in the subclasses
+ * constructor to enable the plugin to be dynamically reloaded.
  */
 public 
 class BaseArchiver
@@ -374,7 +380,12 @@ class BaseArchiver
    * 
    * Subclasses are responsible for overriding this method to execute the whatever system
    * commands are neccessary to archive the given files. <P> 
-   * 
+   *
+   * The archive volume should store the paths of archived files relative to the base 
+   * repository directory.  In other words, exactly as given in the <CODE>files</CODE>
+   * parameter.  The full path to the repsitory files can be constructed by prepending the 
+   * path to the repository directory given by the <CODE>dir</CODE> parameter. <P>
+   *
    * This method will be run by the <B>plfilemgr</B>(1) daemon as the Pipeline 
    * administration user.  
    * 
@@ -419,6 +430,17 @@ class BaseArchiver
    * 
    * Subclasses are responsible for overriding this method to execute the whatever system
    * commands are neccessary to restore the given files. <P> 
+   * 
+   * It is very important that the files are restored relative to the directory given 
+   * by the <CODE>dir</CODE> parameter.  Nothing should be assumed about the location of 
+   * this directory which is created by Pipeline in a temporary location for each restore 
+   * operation.  Once all files have been restores to this temporary location Pipeline 
+   * checks the restored files for consistency with their pre-offlined contents using 
+   * checksums.  Pipeline also verifies that all files which should have been restored 
+   * be the Archiver plugin actually where restored.  Finally, each file is either moved
+   * into the repository or symbolic links are created in the repository for the file 
+   * depending on the current contents of the repository and the novelty of the file 
+   * contents. <P> 
    * 
    * This method will be run by the <B>plfilemgr</B>(1) daemon as the Pipeline 
    * administration user.  
