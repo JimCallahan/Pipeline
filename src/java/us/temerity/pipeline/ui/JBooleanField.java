@@ -1,4 +1,4 @@
-// $Id: JBooleanField.java,v 1.2 2004/06/08 02:47:00 jim Exp $
+// $Id: JBooleanField.java,v 1.3 2004/06/14 22:45:35 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -20,6 +20,13 @@ class JBooleanField
   extends JPanel
   implements MouseListener
 {
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O N S T R U C T O R                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Construct a new field.
+   */ 
   public 
   JBooleanField()
   {
@@ -45,7 +52,13 @@ class JBooleanField
       }
       
       add(Box.createHorizontalGlue());
-      add(new JLabel(sBooleanIcon));
+
+      {
+	JLabel label = new JLabel(sEnabledIcon);
+	pIconLabel = label;
+	add(label);
+      }
+
       add(Box.createRigidArea(new Dimension(8, 0)));
     }
       
@@ -86,6 +99,30 @@ class JBooleanField
   /*----------------------------------------------------------------------------------------*/
   /*   E V E N T S                                                                          */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Sets whether or not this component is enabled.
+   */ 
+  public void 
+  setEnabled
+  (
+   boolean enabled
+  )
+  {
+    if(enabled && !isEnabled()) {
+      addMouseListener(this);
+      pTextField.addMouseListener(this);
+      pIconLabel.setIcon(sEnabledIcon);
+    }
+    else if(!enabled && isEnabled()) {
+      removeMouseListener(this);
+      pTextField.removeMouseListener(this);
+      pIconLabel.setIcon(sDisabledIcon);
+    }
+
+    super.setEnabled(enabled);
+  }
+
 
   /**
    * Adds the specified action listener to receive action events from this collection field.
@@ -227,8 +264,11 @@ class JBooleanField
   private static final long serialVersionUID = -2376760029398653726L;
 
 
-  private static Icon sBooleanIcon = 
+  private static Icon sEnabledIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("BooleanIcon.png"));
+
+  private static Icon sDisabledIcon = 
+    new ImageIcon(LookAndFeelLoader.class.getResource("BooleanIconDisabled.png"));
 
 
   
@@ -237,13 +277,21 @@ class JBooleanField
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * The underlying boolean value.
+   */ 
+  private boolean  pValue;
+
+
+  /**
    * The value text field.
    */ 
   private JValueField  pTextField;
 
   /**
-   * The underlying boolean value.
+   * The icon.
    */ 
-  private boolean  pValue;
+  private JLabel  pIconLabel; 
+
+
 
 }
