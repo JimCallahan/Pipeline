@@ -1,12 +1,13 @@
 
 The haiku instructions:
 
-    > tar -zxvf Freedom-0.1.tgz
-    > cd Freedom-0.1
-    > source=`pwd`
-    > ./autogen.sh
-    > cd <<build directory>>
-    > $source/configure --enable-opt
-    > make all
-    > make install
+  $ tar -zxvf Freedom-0.1.tgz
+  $ cd Freedom-0.1
+  $ ./configure --enable-threads --disable-opt
+  $ make all
+  $ make check
 
+
+See "configure --help" for a full list of options.  If you mess around
+with the "configure.in", you should run the "./autogen.sh" just to be
+safe.
