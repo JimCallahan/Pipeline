@@ -1,4 +1,4 @@
-// $Id: JUserPrefsTreeCellRenderer.java,v 1.2 2004/05/13 21:28:20 jim Exp $
+// $Id: JUserPrefsTreeCellRenderer.java,v 1.3 2004/05/14 02:38:53 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -18,7 +18,7 @@ import javax.swing.tree.*;
 
 /**
  * The renderer used for {@link JTree JTree} cells in the 
- * {@link UserPrefsDialog UserPrefsDialog}.
+ * {@link JUserPrefsDialog JUserPrefsDialog}.
  */ 
 public
 class JUserPrefsTreeCellRenderer

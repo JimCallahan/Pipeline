@@ -1,4 +1,4 @@
-// $Id: CheckSum.java,v 1.2 2004/03/23 07:40:37 jim Exp $
+// $Id: CheckSum.java,v 1.3 2004/05/14 02:36:37 jim Exp $
 
 package us.temerity.pipeline.core;
  
@@ -347,7 +347,7 @@ class CheckSum
   {
     Logs.sum.fine("Comparing (checksums of): " + pathA + " " + pathB);
 
-    /* make sure they are actually distint */ 
+    /* make sure the files are distinct */ 
     if(pathA.compareTo(pathB) == 0) 
       throw new PipelineException
 	("Attempted to compare the node path (" + pathA + ") with itself!");
