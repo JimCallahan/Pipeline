@@ -1,4 +1,4 @@
-// $Id: HotKey.java,v 1.1 2004/05/14 02:36:26 jim Exp $
+// $Id: HotKey.java,v 1.2 2004/05/21 00:13:37 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -50,7 +50,7 @@ class HotKey
    * Construct a hot key from a key event. <P> 
    * 
    * @param e
-   *   The key event passed as the parameter of the {@link KeyEvent#keyPressed keyPressed}
+   *   The key event passed as the parameter of the {@link KeyListener#keyPressed keyPressed}
    *   method.
    */ 
   public 
@@ -128,7 +128,7 @@ class HotKey
    * Does the given key event correspond to the hot key? <P> 
    * 
    * The <CODE>e</CODE> argument must be the parameter of the 
-   * {@link KeyEvent#keyPressed keyPressed} method.
+   * {@link KeyListener#keyPressed keyPressed} method.
    */ 
   public boolean 
   wasPressed
