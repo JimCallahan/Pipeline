@@ -1,8 +1,9 @@
-// $Id: Logs.java,v 1.3 2004/03/23 07:40:37 jim Exp $
+// $Id: Logs.java,v 1.4 2004/03/29 08:15:46 jim Exp $
   
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.glue.*;
 
 import java.io.*; 
 import java.util.*;
