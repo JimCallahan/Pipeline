@@ -270,7 +270,9 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 		   core/ToolsetEnvParserConstants \
 		   core/ToolsetEnvParser \
 		   core/ToolsetEnvParserTokenManager \
-                   ui/UIMaster:InitUITask
+                   ui/UIMaster:InitUITask \
+                   ui/JManagerPanel:GroupMenuAnchor \
+                   ui/JManagerPanel:PopupMenuAnchor
 
 
 
