@@ -191,6 +191,7 @@ ScriptOptsParser
 
   private String   pJobReserve;
   private boolean  pSetJobReserve;
+  private Integer  pJobOrder;
   private Integer  pJobSlots;
   private TreeMap  pJobSelectionBiases;
   private TreeSet  pJobSelectionRemoves;
@@ -338,6 +339,7 @@ TOKEN :
 | <RESERVE:         "--reserve">         : USER_NAME_SEP            
 | <OPEN:            "--open">  
 | <SLOTS:           "--slots">           : INTEGER_SEP  
+| <ORDER:           "--order">           : INTEGER_SEP  
 | <SELECTION_BIAS:  "--selection-bias">  : KEY_BIAS_SEP  
 | <REMOVE_KEY:      "--remove-key">      : KEY_NAME_SEP   
 | <EDITOR2:         "--editor">          : EDITOR_NAME_SEP 
@@ -575,11 +577,11 @@ TOKEN :
 <HOST_NAME_STATE> 
 TOKEN :
 {
-  <HOST_NAME:         ((["a"-"z","A"-"Z","0"-"9"])+ 
-		      ("." (["a"-"z","A"-"Z","0"-"9"])+)*)>    : OPTIONS
-| <MISSING_HOST_NAME: ["\0"]>                                  : IGNORE_STATE
-| <ILLEGAL_HOST_NAME: (~["\0"])+>                              : IGNORE_STATE
-}
+  <HOST_NAME:         ((["a"-"z","A"-"Z","0"-"9","-"])+ 
+		      ("." (["a"-"z","A"-"Z","0"-"9","-"])+)*)>    : OPTIONS
+| <MISSING_HOST_NAME: ["\0"]>                                      : IGNORE_STATE
+| <ILLEGAL_HOST_NAME: (~["\0"])+>                                  : IGNORE_STATE
+}  
 
 <HOST_NAME_SEP2> 
 TOKEN :
@@ -591,10 +593,10 @@ TOKEN :
 <HOST_NAME_STATE2> 
 TOKEN :
 {
-  <HOST_NAME2:          ((["a"-"z","A"-"Z","0"-"9"])+ 
-		        ("." (["a"-"z","A"-"Z","0"-"9"])+)*)>    : DEFAULT
-| <MISSING_HOST_NAME2:  ["\0"]>                                  : IGNORE_STATE
-| <ILLEGAL_HOST_NAME2:  (~["\0"])+>                              : IGNORE_STATE
+  <HOST_NAME2:          ((["a"-"z","A"-"Z","0"-"9","-"])+ 
+		        ("." (["a"-"z","A"-"Z","0"-"9","-"])+)*)>    : DEFAULT
+| <MISSING_HOST_NAME2:  ["\0"]>                                      : IGNORE_STATE
+| <ILLEGAL_HOST_NAME2:  (~["\0"])+>                                  : IGNORE_STATE
 }
 
 
@@ -2544,6 +2546,7 @@ JobServerSet()
   pJobStatus           = null;
   pJobReserve          = null;
   pSetJobReserve       = false;
+  pJobOrder            = null;
   pJobSlots            = null;
   pJobSelectionBiases  = new TreeMap();
   pJobSelectionRemoves = new TreeSet();
@@ -2552,7 +2555,7 @@ JobServerSet()
   <JOB_SET> EQ() hname=HostName() AE() (JobServerSetOption())+
   {
     pApp.editHost(hname, 
-		  pJobStatus, pJobReserve, pSetJobReserve, pJobSlots, 
+		  pJobStatus, pJobReserve, pSetJobReserve, pJobOrder, pJobSlots,
 		  pJobSelectionBiases, pJobSelectionRemoves, 
 		  pQueueMgrClient);
 
@@ -2569,7 +2572,7 @@ JobServerSetOption()
 {}
 {
   (JobServerShutdown() | JobServerEnable() | JobServerDisable() | 
-   JobServerReserve() | JobServerSlots() | 
+   JobServerReserve() | JobServerOrder() | JobServerSlots() | 
    JobServerSelectionBias() | JobServerSelectionRemoveKey())
   {}
 }
@@ -2623,6 +2626,19 @@ JobServerReserve() :
   ((<RESERVE> EQ() name=UserName()) | <OPEN>) AE()
   {
     pJobReserve = name;
+  }
+}
+
+void
+JobServerOrder()
+  throws PipelineException : 
+{
+  Integer order = null;
+}
+{
+  <ORDER> EQ() order=IntegerLiteral() AE()
+  {
+    pJobOrder = order;
   }
 }
 

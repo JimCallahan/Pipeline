@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.35 2005/03/03 03:56:33 jim Exp $
+// $Id: QueueMgr.java,v 1.36 2005/03/04 09:05:26 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -981,6 +981,20 @@ class QueueMgr
 	    }
 	  }
 	}
+
+	/* job orders */ 
+	{
+	  TreeMap<String,Integer> table = req.getJobOrders();
+	  if(table != null) {
+	    for(String hname : table.keySet()) {
+	      QueueHost host = pHosts.get(hname);
+	      if(host != null) {
+		host.setOrder(table.get(hname));
+		modified = true;
+	      }
+	    }
+	  }
+	}	
 
 	/* job slots */ 
 	{
@@ -2187,7 +2201,7 @@ class QueueMgr
       pWaiting.addAll(waiting);      
     }
 
-    /* process the available job server slots from highest to lowest order */ 
+    /* process the available job server slots in dispatch order */ 
     {
       TreeSet<String> keys = new TreeSet<String>();
       timer.aquire();
@@ -2199,7 +2213,27 @@ class QueueMgr
       timer.aquire();
       synchronized(pHosts) {
 	timer.resume();
-	for(String hostname : pHosts.keySet()) {
+	
+	/* sort hosts by dispatch order */ 
+	ArrayList<String> hostsInOrder = new ArrayList<String>();
+	{
+	  TreeMap<Integer,TreeSet<String>> inOrder = 
+	    new TreeMap<Integer,TreeSet<String>>();
+	  for(String hostname : pHosts.keySet()) {
+	    QueueHost host = pHosts.get(hostname);
+	    TreeSet<String> names = inOrder.get(host.getOrder());
+	    if(names == null) {
+	      names = new TreeSet<String>();
+	      inOrder.put(host.getOrder(), names);
+	    }
+	    names.add(hostname);
+	  }
+	  
+	  for(TreeSet<String> names : inOrder.values()) 
+	    hostsInOrder.addAll(names);
+	}
+
+	for(String hostname : hostsInOrder) {
 	  QueueHost host = pHosts.get(hostname);
 	  switch(host.getStatus()) {
 	  case Enabled:

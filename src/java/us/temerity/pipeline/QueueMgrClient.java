@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.21 2005/01/22 06:10:09 jim Exp $
+// $Id: QueueMgrClient.java,v 1.22 2005/03/04 09:05:26 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -666,6 +666,9 @@ class QueueMgrClient
    * @param reservations
    *   The names of reserving users indexed by fully resolved names of the hosts.
    * 
+   * @param orders
+   *   The server dispatch order indexed by fully resolved names of the hosts.
+   * 
    * @param slots 
    *   The number of job slots indexed by fully resolved names of the hosts.
    * 
@@ -680,6 +683,7 @@ class QueueMgrClient
   (
    TreeMap<String,QueueHost.Status> status, 
    TreeMap<String,String> reservations, 
+   TreeMap<String,Integer> orders, 
    TreeMap<String,Integer> slots, 
    TreeMap<String,TreeMap<String,Integer>> biases
   ) 
@@ -705,6 +709,8 @@ class QueueMgrClient
 	hostnames.addAll(reservations.keySet());
       if(slots != null) 
 	hostnames.addAll(slots.keySet());
+      if(orders != null) 
+	hostnames.addAll(orders.keySet());
       if(biases != null) 
 	hostnames.addAll(biases.keySet());
 
@@ -718,7 +724,8 @@ class QueueMgrClient
 
     verifyConnection();
 
-    QueueEditHostsReq req = new QueueEditHostsReq(status, reservations, slots, biases);
+    QueueEditHostsReq req = 
+      new QueueEditHostsReq(status, reservations, orders, slots, biases);
     Object obj = performTransaction(QueueRequest.EditHosts, req); 
     handleSimpleResponse(obj);
   }

@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.30 2005/01/22 06:10:09 jim Exp $
+// $Id: ScriptApp.java,v 1.31 2005/03/04 09:05:26 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -180,7 +180,7 @@ class ScriptApp
        "      --add=host-name\n" + 
        "      --set=host-name\n" + 
        "       [--shutdown | --disable | --enable] [--reserve=user-name | --open]\n" + 
-       "       [--slots=integer] [--selection-bias=key-name:bias]\n" + 
+       "       [--order=integer] [--slots=integer] [--selection-bias=key-name:bias]\n" + 
        "       [--remove-key=key-name]\n" + 
        "      --remove=host-name\n" + 
        "\n" + 
@@ -601,6 +601,7 @@ class ScriptApp
    QueueHost.Status status, 
    String reserve, 
    boolean setReserve, 
+   Integer order, 
    Integer slots, 
    TreeMap biases, 
    TreeSet removes, 
@@ -615,6 +616,8 @@ class ScriptApp
 	new TreeMap<String,QueueHost.Status>();
       TreeMap<String,String> reserveTable = 
 	new TreeMap<String,String>();
+      TreeMap<String,Integer> orderTable = 
+	new TreeMap<String,Integer>();
       TreeMap<String,Integer> slotsTable = 
 	new TreeMap<String,Integer>();
       TreeMap<String,TreeMap<String,Integer>> biasesTable = 
@@ -625,6 +628,9 @@ class ScriptApp
 
       if(setReserve) 
 	reserveTable.put(hname, reserve);
+
+      if(order != null) 
+	orderTable.put(hname, order);
 
       if(slots != null) 
 	slotsTable.put(hname, slots);
@@ -645,7 +651,7 @@ class ScriptApp
 	biasesTable.put(hname, table);
       }
       
-      client.editHosts(statusTable, reserveTable, slotsTable, biasesTable);
+      client.editHosts(statusTable, reserveTable, orderTable, slotsTable, biasesTable);
     }
   }
   
@@ -2832,6 +2838,7 @@ class ScriptApp
       return "an file system path";
       
     case ScriptOptsParserConstants.HOST_NAME:
+    case ScriptOptsParserConstants.HOST_NAME2:
       return "a hostname";
       
     case ScriptOptsParserConstants.NODE_NAME:
