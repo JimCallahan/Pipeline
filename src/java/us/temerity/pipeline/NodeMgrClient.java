@@ -1,4 +1,4 @@
-// $Id: NodeMgrClient.java,v 1.15 2004/05/11 19:10:25 jim Exp $
+// $Id: NodeMgrClient.java,v 1.16 2004/05/16 19:04:05 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -291,6 +291,43 @@ class NodeMgrClient
     Object obj = performTransaction(NodeRequest.ModifyProperties, req);
     handleSimpleResponse(obj);
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the table of currently defined link catagories indexed by catagory name.
+   * 
+   * @throws PipelineException
+   *   If unable to lookup the link catagories.
+   */ 
+  public synchronized TreeMap<String,LinkCatagory>
+  getLinkCatagories() 
+    throws PipelineException
+  {
+    // PLACEHOLDER ... 
+
+    TreeMap<String,LinkCatagory> table = new TreeMap<String,LinkCatagory>();
+
+    {
+      LinkCatagory lcat = new LinkCatagory("Dependency", LinkPolicy.Both);
+      table.put(lcat.getName(), lcat);
+    }
+
+    {
+      LinkCatagory lcat = new LinkCatagory("Simulation", LinkPolicy.NodeStateOnly);
+      table.put(lcat.getName(), lcat);
+    }
+
+    {
+      LinkCatagory lcat = new LinkCatagory("Reference", LinkPolicy.None);
+      table.put(lcat.getName(), lcat);
+    }
+
+    return table;
+  }
+
+  // addLinkCatagory(LinkCatagory lcat)
 
   /**
    * Create or modify an existing link between the working versions. <P> 
