@@ -1,4 +1,4 @@
-// $Id: BBox3d.java,v 1.2 2004/12/14 14:08:43 jim Exp $
+// $Id: BBox3d.java,v 1.3 2004/12/16 21:34:26 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -68,7 +68,7 @@ class BBox3d
   /*----------------------------------------------------------------------------------------*/
   											 
   /**
-   * Is given position inside the bounding box?
+   * Whether the given position is inside the bounding box.
    */ 					 
   public boolean
   isInside										 
@@ -78,7 +78,7 @@ class BBox3d
   {
     return (p.allGe(pMin) && p.allLt(pMax));
   }									 
-
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -198,6 +198,35 @@ class BBox3d
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Make the entire bounding box larger by the given amount in all dimensionns.
+   */
+  public void
+  bloat
+  (
+   double extra
+  )
+  {
+    pMin.sub(extra);
+    pMax.add(extra);
+  }
+
+  /** 
+   * Make the entire bounding box larger by the given amount.
+   */
+  public void
+  bloat
+  (
+   Vector3d extra
+  )
+  {
+    pMin.sub(extra);
+    pMax.add(extra);
+  }
+ 
+
   
   /*----------------------------------------------------------------------------------------*/
   /*   O B J E C T   O V E R R I D E S                                                      */
@@ -230,6 +259,7 @@ class BBox3d
   {
     return ("[" + pMin + ", " + pMax + "]");
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
