@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.6 2004/06/14 22:42:23 jim Exp $
+// $Id: MasterMgrServer.java,v 1.7 2004/06/28 23:02:01 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -386,6 +386,39 @@ class MasterMgrServer
 	    {
 	      MiscSetSuffixEditorsReq req = (MiscSetSuffixEditorsReq) objIn.readObject();
 	      objOut.writeObject(pMasterMgr.setSuffixEditors(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+
+	  /*-- LINK CATAGORIES -------------------------------------------------------------*/
+	  case GetLinkCatagoryDesc:
+	    {
+	      objOut.writeObject(pMasterMgr.getLinkCatagoryDesc());
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case GetActiveLinkCatagoryNames :
+	    {
+	      objOut.writeObject(pMasterMgr.getActiveLinkCatagoryNames());
+	      objOut.flush(); 
+	    }
+	    break;
+	    
+	  case CreateLinkCatagory: 
+	    {
+	      MiscCreateLinkCatagoryReq req = (MiscCreateLinkCatagoryReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.createLinkCatagory(req));
+	      objOut.flush(); 
+	    }
+	    break;
+	    
+	  case SetLinkCatagoryActive: 
+	    {
+	      MiscSetLinkCatagoryActiveReq req = 
+		(MiscSetLinkCatagoryActiveReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.setLinkCatagoryActive(req));
 	      objOut.flush(); 
 	    }
 	    break;

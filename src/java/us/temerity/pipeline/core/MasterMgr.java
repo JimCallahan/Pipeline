@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.9 2004/06/28 00:09:12 jim Exp $
+// $Id: MasterMgr.java,v 1.10 2004/06/28 23:02:01 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -305,6 +305,9 @@ class MasterMgr
 
       pSuffixEditors = new TreeMap<String,TreeMap<String,SuffixEditor>>();
 
+      pLinkCatagoryDesc     = new TreeMap<String,LinkCatagoryDesc>();
+      pActiveLinkCatagories = new TreeSet<String>();
+
       pPrivilegedUsers = new TreeSet<String>();
 
       pWorkingAreaViews = new TreeMap<String,TreeSet<String>>();
@@ -324,6 +327,7 @@ class MasterMgr
     {
       makeRootDirs();
       initToolsets();
+      initLinkCatagories();
       initPrivilegedUsers();
       rebuildDownstreamLinks();
       initNodeTree();
@@ -350,6 +354,7 @@ class MasterMgr
     dirs.add(new File(pNodeDir, "toolsets/toolsets"));
     dirs.add(new File(pNodeDir, "etc"));
     dirs.add(new File(pNodeDir, "etc/suffix-editors"));
+    dirs.add(new File(pNodeDir, "etc/link-catagories"));
 
     synchronized(pMakeDirLock) {
       for(File dir : dirs) {
@@ -406,6 +411,24 @@ class MasterMgr
 	  }
 	}
       }
+    }
+    catch(PipelineException ex) {
+      throw new IllegalArgumentException(ex.getMessage());
+    }
+  }
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Load the link catagories.
+   */ 
+  private void 
+  initLinkCatagories()
+  {
+    try {
+      readLinkCatagoryDesc();
+      readActiveLinkCatagories();
     }
     catch(PipelineException ex) {
       throw new IllegalArgumentException(ex.getMessage());
@@ -859,6 +882,9 @@ class MasterMgr
       pToolsetPackages     = null;
       
       pSuffixEditors       = null;
+      
+      pLinkCatagoryDesc     = null;
+      pActiveLinkCatagories = null;
 
       pPrivilegedUsers     = null;
 
@@ -1219,7 +1245,14 @@ class MasterMgr
       }
       assert(tset != null);
       
-      TreeMap<String,String> env = tset.getEnvironment(req.getAuthor(), req.getView());
+      TreeMap<String,String> env = null;
+      if((req.getAuthor() != null) && (req.getView() != null)) 
+	env = tset.getEnvironment(req.getAuthor(), req.getView());
+      else if(req.getAuthor() != null)
+	env = tset.getEnvironment(req.getAuthor());
+      else 
+	env = tset.getEnvironment();
+	
       assert(env != null);
 
       return new MiscGetToolsetEnvironmentRsp(timer, req.getName(), env);
@@ -1247,6 +1280,12 @@ class MasterMgr
     timer.aquire();
     synchronized(pToolsets) {
       timer.resume();
+
+      if(pToolsets.containsKey(req.getName())) 
+	return new FailureRsp
+	  (timer, 
+	   "Unable to create the toolset (" + req.getName() + ") because a toolset " + 
+	   "already exists with that name!");
 
       /* lookup the packages */  
       ArrayList<PackageCommon> packages = new ArrayList<PackageCommon>();
@@ -1574,6 +1613,161 @@ class MasterMgr
     }
   }
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  
+  /**
+   * Get the table of all currently defined link catagories.
+   * 
+   * @return
+   *   <CODE>GetLinkCatagoryDescRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the link catagories.
+   */ 
+  public Object
+  getLinkCatagoryDesc() 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    synchronized(pLinkCatagoryDesc) {
+      timer.resume();
+
+      return new MiscGetLinkCatagoryDescRsp
+	(timer, new TreeMap<String,LinkCatagoryDesc>(pLinkCatagoryDesc));
+    }
+  }
+
+  /**
+   * Get the names of the currently active link catagories.
+   * 
+   * @return
+   *   <CODE>GetActiveLinkCatagoryNamesRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the link catagory names.
+   */ 
+  public Object
+  getActiveLinkCatagoryNames() 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    synchronized(pActiveLinkCatagories) {
+      timer.resume();
+
+      return new MiscGetActiveLinkCatagoryNamesRsp
+	(timer, new TreeSet<String>(pActiveLinkCatagories));
+    }
+  }
+  
+  /**
+   * Create a new link catagory.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to create the link catagory.
+   */ 
+  public Object
+  createLinkCatagory
+  ( 
+   MiscCreateLinkCatagoryReq req 
+  )
+  {
+    String name = req.getName();
+
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.createLinkCatagory(): " + name);
+
+    timer.aquire();
+    synchronized(pLinkCatagoryDesc) {
+      timer.resume();
+      
+      if(pLinkCatagoryDesc.containsKey(name)) 
+	return new FailureRsp
+	  (timer, 
+	   "Unable to create the link catagory (" + name + ") because a link catagory " + 
+	   "already exists with that name!");
+
+      LinkCatagoryDesc lcd =  
+	new LinkCatagoryDesc(name, req.getPolicy(), req.getDescription());     
+      pLinkCatagoryDesc.put(name, lcd);			    
+
+      try {
+	writeLinkCatagoryDesc();
+      }
+      catch(PipelineException ex) {
+	return new FailureRsp(timer, ex.getMessage());	  
+      }           
+    }
+
+    return new SuccessRsp(timer);
+  }
+  
+  /**
+   * Set the active/inactive state of a link catagory. 
+   *
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to create the link catagory.
+   */ 
+  public Object
+  setLinkCatagoryActive
+  ( 
+   MiscSetLinkCatagoryActiveReq req 
+  )
+  {
+    String name = req.getName();
+
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.setLinkCatagoryActive(): " + 
+		    name + " [" + req.isActive() + "]");
+
+    timer.aquire();
+    synchronized(pLinkCatagoryDesc) {
+      timer.resume();
+
+      if(!pLinkCatagoryDesc.containsKey(name)) 
+	return new FailureRsp
+	  (timer, 
+	   "No link catagory named (" + name + ") exists to be made the active!");
+    }
+
+    timer.aquire();
+    synchronized(pActiveLinkCatagories) {
+      timer.resume();
+    
+      boolean changed = false;
+      if(req.isActive()) {
+	if(!pActiveLinkCatagories.contains(name)) {
+	  pActiveLinkCatagories.add(name);
+	  changed = true;
+	}
+      }
+      else {
+	if(pActiveLinkCatagories.contains(name)) {
+	  pActiveLinkCatagories.remove(name);
+	  changed = true;
+	}
+      }
+
+      if(changed) {
+	try {
+	  writeActiveLinkCatagories();
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
+	}
+      }
+    }
+
+    return new SuccessRsp(timer);
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -4682,6 +4876,201 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Write the active link to disk. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to write the link catagories file.
+   */ 
+  private void 
+  writeLinkCatagoryDesc() 
+    throws PipelineException
+  {
+    synchronized(pLinkCatagoryDesc) {
+      File file = new File(pNodeDir, "etc/link-catagories/all");
+      if(file.exists()) {
+	if(!file.delete())
+	  throw new PipelineException
+	    ("Unable to remove the old link catagories file (" + file + ")!");
+      }
+
+      if(!pLinkCatagoryDesc.isEmpty()) {
+	Logs.ops.finer("Writing Link Catagories.");
+
+	try {
+	  String glue = null;
+	  try {
+	    GlueEncoder ge = 
+	      new GlueEncoderImpl("LinkCatagoryDesc", pLinkCatagoryDesc);
+	    glue = ge.getText();
+	  }
+	  catch(GlueException ex) {
+	    Logs.glu.severe
+	      ("Unable to generate a Glue format representation of the link catagories!");
+	    Logs.flush();
+	    
+	    throw new IOException(ex.getMessage());
+	  }
+	  
+	  {
+	    FileWriter out = new FileWriter(file);
+	    out.write(glue);
+	    out.flush();
+	    out.close();
+	  }
+	}
+	catch(IOException ex) {
+	  throw new PipelineException
+	    ("I/O ERROR: \n" + 
+	     "  While attempting to write the link catagories file (" + file + ")...\n" + 
+	     "    " + ex.getMessage());
+	}
+      }
+    }
+  }
+  
+  /**
+   * Read the active link catagories from disk.
+   * 
+   * @throws PipelineException
+   *   If unable to read the link catagories file.
+   */ 
+  private void 
+  readLinkCatagoryDesc()
+    throws PipelineException
+  {
+    synchronized(pLinkCatagoryDesc) {
+      pLinkCatagoryDesc.clear();
+
+      File file = new File(pNodeDir, "etc/link-catagories/all");
+      if(file.isFile()) {
+	Logs.ops.finer("Reading Link Catagories.");
+
+	TreeMap<String,LinkCatagoryDesc> table = null;
+	try {
+	  FileReader in = new FileReader(file);
+	  GlueDecoder gd = new GlueDecoderImpl(in);
+	  table = (TreeMap<String,LinkCatagoryDesc>) gd.getObject();
+	  in.close();
+	}
+	catch(Exception ex) {
+	  Logs.glu.severe
+	    ("The link catagories file (" + file + ") appears to be corrupted!");
+	  Logs.flush();
+	  
+	  throw new PipelineException
+	    ("I/O ERROR: \n" + 
+	     "  While attempting to read the link catagories file (" + file + ")...\n" + 
+	   "    " + ex.getMessage());
+	}
+
+	pLinkCatagoryDesc.putAll(table);
+      }
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write the active link to disk. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to write the active link catagories file.
+   */ 
+  private void 
+  writeActiveLinkCatagories() 
+    throws PipelineException
+  {
+    synchronized(pActiveLinkCatagories) {
+      File file = new File(pNodeDir, "etc/link-catagories/active");
+      if(file.exists()) {
+	if(!file.delete())
+	  throw new PipelineException
+	    ("Unable to remove the old active link catagories file (" + file + ")!");
+      }
+
+      if(!pActiveLinkCatagories.isEmpty()) {
+	Logs.ops.finer("Writing Active Link Catagories.");
+
+	try {
+	  String glue = null;
+	  try {
+	    GlueEncoder ge = 
+	      new GlueEncoderImpl("ActiveLinkCatagories", pActiveLinkCatagories);
+	    glue = ge.getText();
+	  }
+	  catch(GlueException ex) {
+	    Logs.glu.severe
+	      ("Unable to generate a Glue format representation of the active " + 
+	       "link catagories!");
+	    Logs.flush();
+	    
+	    throw new IOException(ex.getMessage());
+	  }
+	  
+	  {
+	    FileWriter out = new FileWriter(file);
+	    out.write(glue);
+	    out.flush();
+	    out.close();
+	  }
+	}
+	catch(IOException ex) {
+	  throw new PipelineException
+	    ("I/O ERROR: \n" + 
+	     "  While attempting to write the active link catagories " + 
+	     "file (" + file + ")...\n" + 
+	     "    " + ex.getMessage());
+	}
+      }
+    }
+  }
+  
+  /**
+   * Read the active link catagories from disk.
+   * 
+   * @throws PipelineException
+   *   If unable to read the active link catagories file.
+   */ 
+  private void 
+  readActiveLinkCatagories()
+    throws PipelineException
+  {
+    synchronized(pActiveLinkCatagories) {
+      pActiveLinkCatagories.clear();
+
+      File file = new File(pNodeDir, "etc/link-catagories/active");
+      if(file.isFile()) {
+	Logs.ops.finer("Reading Active Link Catagories.");
+
+	TreeSet<String> names = null;
+	try {
+	  FileReader in = new FileReader(file);
+	  GlueDecoder gd = new GlueDecoderImpl(in);
+	  names = (TreeSet<String>) gd.getObject();
+	  in.close();
+	}
+	catch(Exception ex) {
+	  Logs.glu.severe
+	    ("The active link catagories file (" + file + ") appears to be corrupted!");
+	  Logs.flush();
+	  
+	  throw new PipelineException
+	    ("I/O ERROR: \n" + 
+	     "  While attempting to read the active link catagories " + 
+	     "file (" + file + ")...\n" + 
+	   "    " + ex.getMessage());
+	}
+
+	pActiveLinkCatagories.addAll(names);
+      }
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Write the privileged users to disk. <P> 
    * 
    * @throws PipelineException
@@ -5713,6 +6102,23 @@ class MasterMgr
    * Access to this field should be protected by a synchronized block.
    */ 
   private TreeMap<String,TreeMap<String,SuffixEditor>>  pSuffixEditors;
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * The caches table of link catagory descriptions indexed by catagory name.
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */ 
+  private TreeMap<String,LinkCatagoryDesc> pLinkCatagoryDesc;
+
+  /**
+   * The names of the active link catagories. <P> 
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */ 
+  private TreeSet<String> pActiveLinkCatagories;
 
 
   /*----------------------------------------------------------------------------------------*/
