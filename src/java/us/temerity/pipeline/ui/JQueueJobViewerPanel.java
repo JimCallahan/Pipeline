@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.9 2004/09/05 06:51:50 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.10 2004/09/08 19:34:45 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -129,7 +129,6 @@ class JQueueJobViewerPanel
     /* job popup menu */ 
     {
       JMenuItem item;
-      JMenu sub;
       
       pJobPopup = new JPopupMenu();  
       pJobPopup.addPopupMenuListener(this);
@@ -146,17 +145,8 @@ class JQueueJobViewerPanel
       item.addActionListener(this);
       pJobPopup.add(item);
       
-      {
-	sub = new JMenu("View With");
-	pJobPopup.add(sub);
-	
-	for(String editor : Plugins.getEditorNames()) {
-	  item = new JMenuItem(editor);
-	  item.setActionCommand("view-with:" + editor);
-	  item.addActionListener(this);
-	  sub.add(item);
-	}
-      }
+      pViewWithMenu = new JMenu("View With");
+      pJobPopup.add(pViewWithMenu);
 
       pJobPopup.addSeparator();
 
@@ -179,7 +169,6 @@ class JQueueJobViewerPanel
     /* job group popup menu */ 
     {
       JMenuItem item;
-      JMenu sub;
       
       pGroupPopup = new JPopupMenu();  
       pGroupPopup.addPopupMenuListener(this);
@@ -201,7 +190,7 @@ class JQueueJobViewerPanel
       
       pGroupPopup.addSeparator();
       
-      item = new JMenuItem("Delete Group");
+      item = new JMenuItem("Delete Groups");
       item.setActionCommand("delete-group");
       item.addActionListener(this);
       pGroupPopup.add(item);
@@ -459,6 +448,44 @@ class JQueueJobViewerPanel
   updateJobDetails() 
   {
     updateJobDetails(pLastJobID);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Update the jobs menu.
+   */ 
+  private void 
+  updateJobsMenu() 
+  {
+    TreeMap<String,TreeSet<VersionID>> editors = PluginMgr.getInstance().getEditors();
+    
+    pViewWithMenu.removeAll();
+    
+    for(String editor : editors.keySet()) {
+      JMenuItem item = new JMenuItem(editor);
+      item.setActionCommand("view-with:" + editor);
+      item.addActionListener(this);
+      pViewWithMenu.add(item);
+    }
+    
+    pViewWithMenu.addSeparator();
+    
+    JMenu sub = new JMenu("All Versions");
+    pViewWithMenu.add(sub);
+
+    for(String editor : editors.keySet()) {
+      JMenu esub = new JMenu(editor);
+      sub.add(esub);
+      
+      for(VersionID vid : editors.get(editor)) {
+	JMenuItem item = new JMenuItem(editor + " (v" + vid + ")");
+	item.setActionCommand("view-with:" + editor + ":" + vid);
+	item.addActionListener(this);
+	esub.add(item);
+      }
+    }
   }
 
 
@@ -1280,6 +1307,7 @@ class JQueueJobViewerPanel
 	      for(ViewerJob vjob : primarySelect(vunder)) 
 		changed.put(vjob.getJobPath(), vjob);
 
+	      updateJobsMenu();
 	      pJobPopup.show(e.getComponent(), e.getX(), e.getY());
 	    }
 	    else if(under instanceof ViewerJobGroup) {
@@ -1602,6 +1630,10 @@ class JQueueJobViewerPanel
 	 prefs.getJobDetails().wasPressed(e)) 
 	doDetails();
 
+      else if((prefs.getJobView() != null) &&
+	 prefs.getJobView().wasPressed(e)) 
+	doView();
+
       else if((prefs.getJobPauseJobs() != null) &&
 	      prefs.getJobPauseJobs().wasPressed(e))
 	doPauseJobs();
@@ -1640,6 +1672,10 @@ class JQueueJobViewerPanel
       else if((prefs.getJobKillJobs() != null) &&
 	      prefs.getJobKillJobs().wasPressed(e))
 	doKillJobs();
+
+      else if((prefs.getDeleteJobGroups() != null) &&
+	      prefs.getDeleteJobGroups().wasPressed(e))
+	doDeleteJobGroups();
 
       else 
 	undefined = true;
@@ -2046,7 +2082,7 @@ class JQueueJobViewerPanel
   doView() 
   {
     if(pPrimary != null) {
-      ViewTask task = new ViewTask(pPrimary.getJobStatus(), null);
+      ViewTask task = new ViewTask(pPrimary.getJobStatus());
       task.start();
     }
 
@@ -2063,8 +2099,25 @@ class JQueueJobViewerPanel
    String editor
   ) 
   {
+    String ename = null;
+    VersionID evid = null;
+    String parts[] = editor.split(":");
+    switch(parts.length) {
+    case 1:
+      ename = editor;
+      break;
+
+    case 2:
+      ename = parts[0];
+      evid = new VersionID(parts[1]);
+      break;
+
+    default:
+      assert(false);
+    }
+
     if(pPrimary != null) {
-      ViewTask task = new ViewTask(pPrimary.getJobStatus(), editor);
+      ViewTask task = new ViewTask(pPrimary.getJobStatus(), ename, evid);
       task.start();
     }
 
@@ -2379,14 +2432,27 @@ class JQueueJobViewerPanel
     public 
     ViewTask
     (
-     JobStatus jstatus,
-     String ename
+     JobStatus jstatus
     ) 
     {
       super("JQueueJobViewerPanel:ViewTask");
 
       pJobStatus  = jstatus;
-      pEditorName = ename;
+    }
+
+    public 
+    ViewTask
+    (
+     JobStatus jstatus,
+     String ename,
+     VersionID evid
+    ) 
+    {
+      super("JQueueJobViewerPanel:ViewTask");
+
+      pJobStatus     = jstatus;
+      pEditorName    = ename;
+      pEditorVersion = evid; 
     }
 
     public void 
@@ -2412,7 +2478,7 @@ class JQueueJobViewerPanel
 		throw new PipelineException
 		  ("No editor was specified for node (" + mod.getName() + ")!");
 	      
-	      editor = Plugins.newEditor(ename);
+	      editor = PluginMgr.getInstance().newEditor(ename, pEditorVersion);
 	    }
 
 	    /* lookup the toolset environment */ 
@@ -2471,6 +2537,7 @@ class JQueueJobViewerPanel
  
     private JobStatus  pJobStatus; 
     private String     pEditorName;
+    private VersionID  pEditorVersion; 
   }
 
 
@@ -2729,6 +2796,11 @@ class JQueueJobViewerPanel
    * The job popup menu.
    */ 
   private JPopupMenu  pJobPopup; 
+
+  /**
+   * The view with submenu.
+   */ 
+  private JMenu  pViewWithMenu; 
 
   /**
    * The job group popup menu.
