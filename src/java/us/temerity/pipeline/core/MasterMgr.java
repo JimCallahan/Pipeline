@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.110 2005/04/03 06:10:12 jim Exp $
+// $Id: MasterMgr.java,v 1.111 2005/04/03 07:04:36 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -215,9 +215,10 @@ class MasterMgr
 
       /* make a connection to the file manager */ 
       {
+	pFileMgrClients = new Stack<FileMgrClient>();
 	FileMgrNetClient client = new FileMgrNetClient();
-	pFileMgrClient = client;
 	client.waitForConnection(1000, 5000);
+	freeFileMgrClient(client);
       }
       
       /* make a connection to the queue manager */ 
@@ -431,7 +432,15 @@ class MasterMgr
       }    
     }
 
-    pOfflined = pFileMgrClient.getOfflined();
+    {
+      FileMgrClient fclient = getFileMgrClient();
+      try {
+	pOfflined = fclient.getOfflined();
+      }
+      finally {
+	freeFileMgrClient(fclient);
+      }
+    }
 
     readRestoreReqs();
   }
@@ -955,9 +964,9 @@ class MasterMgr
     }
 
     /* close the connection to the file manager */ 
-    if(pFileMgrClient != null) {
-      if(pFileMgrClient instanceof FileMgrNetClient) {
-	FileMgrNetClient client = (FileMgrNetClient) pFileMgrClient;
+    if(pFileMgrClients != null) {
+      while(!pFileMgrClients.isEmpty()) {
+	FileMgrClient client = pFileMgrClients.pop();
 	try {
 	  client.shutdown();
 	}
@@ -2296,7 +2305,13 @@ class MasterMgr
 
 	/* create the working area files directory */ 
 	try {
-	  pFileMgrClient.createWorkingArea(author, view);
+	  FileMgrClient fclient = getFileMgrClient();
+	  try {
+	    fclient.createWorkingArea(author, view);
+	  }
+	  finally {
+	    freeFileMgrClient(fclient);
+	  }
 	}
 	catch(PipelineException ex) {
 	  return new FailureRsp(timer, ex.getMessage());
@@ -2381,7 +2396,13 @@ class MasterMgr
 
       /* remove the working area files directory */ 
       try {
-	pFileMgrClient.removeWorkingArea(author, view);
+	FileMgrClient fclient = getFileMgrClient();
+	try {
+	  fclient.removeWorkingArea(author, view);
+	}
+	finally {
+	  freeFileMgrClient(fclient);
+	}
       }
       catch(PipelineException ex) {
 	return new FailureRsp(timer, ex.getMessage());
@@ -2750,8 +2771,15 @@ class MasterMgr
 	bundle.uVersion = mod;
 
 	/* change working file write permissions? */ 
-	if(wasActionEnabled != mod.isActionEnabled()) 
-	  pFileMgrClient.changeMode(nodeID, mod, !mod.isActionEnabled());
+	if(wasActionEnabled != mod.isActionEnabled()) {
+	  FileMgrClient fclient = getFileMgrClient();
+	  try {
+	    fclient.changeMode(nodeID, mod, !mod.isActionEnabled());
+	  }
+	  finally {
+	    freeFileMgrClient(fclient);
+	  }
+	}
       }
 
       return new SuccessRsp(timer);
@@ -3659,8 +3687,15 @@ class MasterMgr
 	removeWorkingNodeTreePath(id);
 
 	/* remove the associated files */ 
-	if(req.removeFiles()) 
-	  pFileMgrClient.removeAll(id, mod.getSequences());	
+	if(req.removeFiles()) {
+	  FileMgrClient fclient = getFileMgrClient();
+	  try {
+	    fclient.removeAll(id, mod.getSequences());
+	  }
+	  finally {
+	    freeFileMgrClient(fclient);
+	  }	
+	}
 	
 	return new SuccessRsp(timer);
       }
@@ -3776,7 +3811,15 @@ class MasterMgr
 	}
 
 	/* delete files associated with all checked-in versions of the node */ 
-	pFileMgrClient.deleteCheckedIn(name);
+	{
+	  FileMgrClient fclient = getFileMgrClient();
+	  try {
+	    fclient.deleteCheckedIn(name);
+	  }
+	  finally {
+	    freeFileMgrClient(fclient);
+	  }
+	}
 	
 	/* remove the checked-in version files */ 
 	for(VersionID vid : checkedIn.keySet()) {
@@ -3924,8 +3967,17 @@ class MasterMgr
       try {
 	if(!activeIDs.isEmpty()) 
 	  pQueueMgrClient.killJobs(nodeID.getAuthor(), activeIDs);
-	
-	pFileMgrClient.removeAll(nodeID, fseqs);
+
+	{
+	  FileMgrClient fclient = getFileMgrClient();
+	  try {
+	    fclient.removeAll(nodeID, fseqs);
+	  }
+	  finally {
+	    freeFileMgrClient(fclient);
+	  }
+	}
+
 	return new SuccessRsp(timer);  
       }
       catch(PipelineException ex) {
@@ -4167,8 +4219,15 @@ class MasterMgr
 	}
 
 	/* rename the files */ 
-	if(req.renameFiles()) 
-	  pFileMgrClient.rename(id, omod, npat);
+	if(req.renameFiles()) {
+	  FileMgrClient fclient = getFileMgrClient();
+	  try {
+	    fclient.rename(id, omod, npat);
+	  }
+	  finally {
+	    freeFileMgrClient(fclient);
+	  }
+	}
       }
       catch(PipelineException ex) {
 	return new FailureRsp(timer, ex.getMessage());
@@ -4260,8 +4319,15 @@ class MasterMgr
       bundle.uVersion = mod;
 
       /* remove obsolete files... */ 
-      if(req.removeFiles()) 
-	pFileMgrClient.remove(nodeID, obsolete);
+      if(req.removeFiles()) {
+	FileMgrClient fclient = getFileMgrClient();
+	try {
+	  fclient.remove(nodeID, obsolete);
+	}
+	finally {
+	  freeFileMgrClient(fclient);
+	}
+      }
       
       return new SuccessRsp(timer);
     }
@@ -4866,18 +4932,24 @@ class MasterMgr
       Date timestamp = Dates.now(); 
 
       {
-	/* remove the existing working area files before the check-out */ 
-	if(work != null) 
-	  pFileMgrClient.removeAll(nodeID, work.getSequences());	
-
-	/* remove the to be checked-out working files,
+	FileMgrClient fclient = getFileMgrClient();
+	try {
+	  /* remove the existing working area files before the check-out */ 
+	  if(work != null) 
+	    fclient.removeAll(nodeID, work.getSequences());	
+	  
+	  /* remove the to be checked-out working files,
 	     if this is a dirty node with an enabled action */ 
-	if(dirty.contains(name) && vsn.isActionEnabled()) {
-	  pFileMgrClient.removeAll(nodeID, vsn.getSequences());
+	  if(dirty.contains(name) && vsn.isActionEnabled()) {
+	    fclient.removeAll(nodeID, vsn.getSequences());
+	  }
+	  /* otherwise, check-out the files */
+	  else {
+	    fclient.checkOut(nodeID, vsn, isFrozen);
+	  }
 	}
-	/* otherwise, check-out the files */
-	else {
-	  pFileMgrClient.checkOut(nodeID, vsn, isFrozen);
+	finally {
+	  freeFileMgrClient(fclient);
 	}
       }
 
@@ -5080,7 +5152,15 @@ class MasterMgr
       }
 
       /* revert the files */ 
-      pFileMgrClient.revert(nodeID, files, writeable);
+      {
+	FileMgrClient fclient = getFileMgrClient();
+	try {
+	  fclient.revert(nodeID, files, writeable);
+	}
+	finally {
+	  freeFileMgrClient(fclient);
+	}
+      }
 
       return new SuccessRsp(timer);
     }
@@ -5199,8 +5279,16 @@ class MasterMgr
       }
       
       /* clone the files */ 
-      pFileMgrClient.clone(sourceID, targetID, files, writeable);
-
+      {
+	FileMgrClient fclient = getFileMgrClient();
+	try {
+	  fclient.clone(sourceID, targetID, files, writeable);
+	}
+	finally {
+	  freeFileMgrClient(fclient);
+	}
+      }
+	
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
@@ -6498,10 +6586,21 @@ class MasterMgr
 	    lock.readLock().unlock();
 	  }
 	}
-      }
+      } 
 
       /* compute the sizes of the files */ 
-      return new MiscGetSizesRsp(timer, pFileMgrClient.getArchiveSizes(fseqs));
+      TreeMap<String,TreeMap<VersionID,Long>> sizes = null;
+      {
+	FileMgrClient fclient = getFileMgrClient();
+	try {
+	  sizes = fclient.getArchiveSizes(fseqs);
+	}
+	finally {
+	  freeFileMgrClient(fclient);
+	}
+      }
+
+      return new MiscGetSizesRsp(timer, sizes);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
@@ -6612,7 +6711,17 @@ class MasterMgr
 
       /* create the archive volume by runing the archiver plugin and save any STDOUT output */
       {
-	String output = pFileMgrClient.archive(archiveName, fseqs, archiver);
+	String output = null;
+	{
+	  FileMgrClient fclient = getFileMgrClient();
+	  try {
+	    output = fclient.archive(archiveName, fseqs, archiver);
+	  }
+	  finally {
+	    freeFileMgrClient(fclient);
+	  }
+	}
+
 	if(output != null) {
 	  File file = new File(PackageInfo.sNodeDir, 
 			       "archives/output/archive/" + archiveName);
@@ -7037,8 +7146,19 @@ class MasterMgr
 	}
       }
 
-      /* compute the sizes of the files */ 
-      return new MiscGetSizesRsp(timer, pFileMgrClient.getOfflineSizes(contribute));
+      /* compute the sizes of the files */
+      TreeMap<String,TreeMap<VersionID,Long>> sizes = null;
+      {
+	FileMgrClient fclient = getFileMgrClient();
+	try {
+	  sizes = fclient.getOfflineSizes(contribute);
+	}
+	finally {
+	  freeFileMgrClient(fclient);
+	}
+      }
+ 
+      return new MiscGetSizesRsp(timer, sizes);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
@@ -7190,8 +7310,16 @@ class MasterMgr
 	      }
 	    }
 	      	    
-	    /* offline the files */ 
-	    pFileMgrClient.offline(name, vid, symlinks);
+	    /* offline the files */ 	
+	    {
+	      FileMgrClient fclient = getFileMgrClient();
+	      try {
+		fclient.offline(name, vid, symlinks);
+	      }
+	      finally {
+		freeFileMgrClient(fclient);
+	      }
+	    }
 
 	    /* update the currently offlined revision numbers */ 
 	    {
@@ -7735,8 +7863,16 @@ class MasterMgr
       /* extract the versions from the archive volume by running the archiver plugin and 
 	 save any STDOUT output */
       {
-	String output = 
-	  pFileMgrClient.extract(archiveName, stamp, fseqs, archiver, total);
+	String output = null;
+	{
+	  FileMgrClient fclient = getFileMgrClient();
+	  try {
+	    output = fclient.extract(archiveName, stamp, fseqs, archiver, total);
+	  }
+	  finally {
+	    freeFileMgrClient(fclient);
+	  }
+	}
 
 	Date now = new Date();
 	File file = new File(PackageInfo.sNodeDir, "archives/output/restore/" + 
@@ -7825,7 +7961,15 @@ class MasterMgr
 	  }
  
 	  /* restore the files */ 
-	  pFileMgrClient.restore(archiveName, stamp, name, vid, symlinks, targets);
+	  {
+	    FileMgrClient fclient = getFileMgrClient();
+	    try {
+	      fclient.restore(archiveName, stamp, name, vid, symlinks, targets);
+	    }
+	    finally {
+	      freeFileMgrClient(fclient);
+	    }
+	  }
 
 	  /* update the currently offlined revision numbers */ 
 	  {
@@ -7865,7 +8009,13 @@ class MasterMgr
       }
 
       try {
-	pFileMgrClient.extractCleanup(archiveName, stamp);
+	FileMgrClient fclient = getFileMgrClient();
+	try {
+	  fclient.extractCleanup(archiveName, stamp);
+	}
+	finally {
+	  freeFileMgrClient(fclient);
+	}
       }
       catch(PipelineException ex) {
 	LogMgr.getInstance().log
@@ -8954,8 +9104,16 @@ class MasterMgr
 	  
 	  TreeMap<FileSeq, Date[]> stamps = new TreeMap<FileSeq, Date[]>();
 	  
-	  pFileMgrClient.states(nodeID, work, versionState, work.isFrozen(), 
-				vid, fileStates, stamps);
+	  {
+	    FileMgrClient fclient = getFileMgrClient();
+	    try {
+	      fclient.states(nodeID, work, versionState, work.isFrozen(), 
+			     vid, fileStates, stamps);
+	    }
+	    finally {
+	      freeFileMgrClient(fclient);
+	    }
+	  }
 
 	  /* get the newest/oldest of the timestamp for each file sequence index */ 
 	  {
@@ -9736,7 +9894,58 @@ class MasterMgr
   } 
 
 
-    
+        
+  /*----------------------------------------------------------------------------------------*/
+  /*   F I L E   M G R   H E L P E R S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get a connection to the file manager.
+   */ 
+  private FileMgrClient
+  getFileMgrClient()
+  {
+    synchronized(pFileMgrClients) {
+      if(pFileMgrClients.isEmpty()) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Finest,
+	   "Creating New File Manager Client.");
+	LogMgr.getInstance().flush();
+
+	return new FileMgrNetClient();
+      }
+      else {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Finest,
+	   "Reusing File Manager Client: " + (pFileMgrClients.size()-1) + " inactive");
+	LogMgr.getInstance().flush();
+
+	return pFileMgrClients.pop();
+      }
+    }
+  }
+
+  /**
+   * Return an inactive connection to the file manager for reuse.
+   */ 
+  private void
+  freeFileMgrClient
+  (
+   FileMgrClient client
+  )
+  {
+    synchronized(pFileMgrClients) {
+      pFileMgrClients.push(client);
+      
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Finest,
+	 "Freed File Manager Client: " + pFileMgrClients.size() + " inactive");
+      LogMgr.getInstance().flush();
+    }
+  }
+
+
+
   /*----------------------------------------------------------------------------------------*/
   /*   L O C K   H E L P E R S                                                              */
   /*----------------------------------------------------------------------------------------*/
@@ -12092,7 +12301,15 @@ class MasterMgr
 	  }
 
 	  /* check-in the files */ 
-	  pFileMgrClient.checkIn(nodeID, work, vid, latestID, isNovel);
+	  {
+	    FileMgrClient fclient = getFileMgrClient();
+	    try {
+	      fclient.checkIn(nodeID, work, vid, latestID, isNovel);
+	    }
+	    finally {
+	      freeFileMgrClient(fclient);
+	    }
+	  }
 
 	  /* create a new checked-in version and write it disk */ 
 	  NodeVersion vsn = 
@@ -12553,9 +12770,13 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The connection to the file manager daemon: <B>plfilemgr<B>(1).
+   * A pool of inactive connections to the file manager daemon: <B>plfilemgr<B>(1). <P> 
+   * 
+   * This field should not be access directly.  Instead a file manager connection should 
+   * be obtained with the {@link #getFileMgrClient getFileMgrClient} method and returned
+   * to the inactive pool with {@link #freeFileMgrClient freeFileMgrClient}.
    */ 
-  private FileMgrClient  pFileMgrClient;
+  private Stack<FileMgrClient>  pFileMgrClients;
  
 
   /*----------------------------------------------------------------------------------------*/
