@@ -1,31 +1,37 @@
 
 ACTIONS:
 
-+ Port the old Pipeline actions to work with the new Pipeline.
+- Add output parsing method which can trigger a kill of the job and updates a completion 
+  percentage field.
 
-+ Get Jesse's fix to the old MayaCollate.
+- Add a job server resourecs method similar to the output parsing methods above.
 
-+ Write Action classes for the remaining common CG tasks...  Finish Output OP support 
+- Port the old Pipeline actions to work with the new Pipeline.
+
+- Get Jesse's fix to the old MayaCollate.
+
+- Write Action classes for the remaining common CG tasks...  Finish Output OP support 
   in Houdini.  Add all supported Maya renderer related actions: MentalRay and Maya Renderers.
   Maya simulation actions: particle systems, dynamics, cloth, fluid dynamics.  Generic MEL
   action.  Add 3Delight rendering.  XSI supprt?  Simple compositing actions?
 
-+ Add thumbnail generation method. 
-
-+ Add output parsing method which can trigger a kill of the job and updates a completion 
-  percentage field.
+- Add thumbnail generation method?
 
 
 OPERATIONS/BACKEND: 
 
 - Task/Scheduling System
 
-- Check whether per-source parameters are being trimmed when the source node is unlinked.
+- The commandline should be updated in QueueJobInfo as soon as the job is launched 
+  so that the user doesn't have to wait for the QueueJobResults (at the end of the job).
 
-ADMIN: 
+- Add a "Release View" operation which performs "Release" on all nodes in the view and 
+  then deletes the view and optionally the entire production subdirectory for the view.
+  If any nodes cannot be released, then the operation is aborted early and the offending
+  nodes are reported.
 
-- Should there be an automatic delete of finished QueueJobGroups older than a certain number
-  of days?
+
+ADMINISTRATION: 
 
 - Automated cleanup of Job Server sample files older than a given interval.
 
@@ -37,8 +43,6 @@ ADMIN:
 
 
 USER INTERFACE: 
-
-- Exporting of Selection/license keys always happens!
 
 - User preference for layout of job groups: horizontally or vertically.
 
@@ -72,7 +76,11 @@ USER INTERFACE:
 
 - Add Tooltips for title labels in ALL panels!
 
+- The Action Enabled field in the NodeDetails panel is always cyan!  
 
+- Command-line client program similar to the old pipeline(1)?
+
+- Add optional hot key reminders in menu item names.
 
 
 IMPORTANT UNIMPLEMENTED JOB RELATED ISSUES:
