@@ -1,9 +1,10 @@
-// $Id: JPackageDetailsDialog.java,v 1.1 2004/05/29 06:38:43 jim Exp $
+// $Id: JPackageDetailsDialog.java,v 1.2 2004/06/03 09:28:45 jim Exp $
 
 package us.temerity.pipeline.ui;
 
 import us.temerity.pipeline.*; 
 import us.temerity.pipeline.toolset.*; 
+import us.temerity.pipeline.laf.LookAndFeelLoader;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -25,7 +26,6 @@ import javax.swing.tree.*;
 public 
 class JPackageDetailsDialog
   extends JBaseDialog
-  implements CaretListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -172,7 +172,7 @@ class JPackageDetailsDialog
       pClearEntriesButton = btns[1];
       pLoadScriptButton   = btns[3];
 
-      updatePackage(null);
+      updatePackage(null, null, -1);
       pack();
     }
 
@@ -204,7 +204,37 @@ class JPackageDetailsDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Update the underlying package and UI components.
+   * Update the underlying package, toolset, package index and the UI components which 
+   * depend upon them.
+   * 
+   * @param com
+   *   The package.
+   * 
+   * @param tset
+   *   The selected toolset or <CODE>null</CODE> if none is selected.
+   * 
+   * @param packageIndex
+   *   The index of this package within the toolset or <CODE>-1</CODE> if undefined.
+   */ 
+  public void 
+  updatePackage
+  (
+   PackageCommon com, 
+   Toolset tset, 
+   int packageIndex
+  )
+  { 
+    pToolset      = tset;
+    pPackageIndex = packageIndex;
+
+    updatePackage(com);
+  }
+
+  /**
+   * Update the underlying package and the UI components which depend upon it.
+   * 
+   * @param com
+   *   The package.
    */ 
   public void 
   updatePackage
@@ -223,7 +253,7 @@ class JPackageDetailsDialog
       if(pPackage instanceof PackageVersion) 
 	vsn = (PackageVersion) pPackage;
     }
-
+    
     pAddEntryButton.setEnabled(mod != null);
     pClearEntriesButton.setEnabled(mod != null);
     pLoadScriptButton.setEnabled(mod != null);
@@ -233,7 +263,7 @@ class JPackageDetailsDialog
 
     if(pPackage != null) {
       if(mod != null) {
-	pHeaderLabel.setText("Package:  " + pPackage.getName());
+	pHeaderLabel.setText("Package:  " + pPackage.getName() + " (working)");
 	pHistoryPanel.setVisible(false);
       }
       else if(vsn != null) {
@@ -251,20 +281,45 @@ class JPackageDetailsDialog
       for(MergePolicy p : MergePolicy.all())
 	pnames.add(p.toString());
       
+      boolean showConflicts = 
+	((pToolset != null) && !pToolset.isFrozen() && (pPackageIndex != -1));
+
+
       for(String ename : com.getEnvNames()) {
 	String evalue = com.getEnvValue(ename);
 	MergePolicy policy = com.getMergePolicy(ename);
 	
-	pTitlePanel.add(UIMaster.createLabel(ename + ":", sTSize, JLabel.RIGHT));
+	boolean conflict = 
+	  (showConflicts && pToolset.isPackageEnvConflicted(pPackageIndex, ename));
+	Color fg = (conflict ? Color.cyan : Color.white);
+
+	{
+	  JLabel label = UIMaster.createLabel(ename + ":", sTSize, JLabel.RIGHT);
+	  label.setForeground(fg);
+
+	  pTitlePanel.add(label);
+	}
 	
 	{
 	  Box hbox = new Box(BoxLayout.X_AXIS);
 	  
+	  if(showConflicts) {
+	    {
+	      JLabel label = new JLabel();
+	      label.setIcon(conflict ? sConflictIcon : sCheckIcon);
+
+	      hbox.add(label);
+	    }	
+
+	    hbox.add(Box.createRigidArea(new Dimension(8, 0)));
+	  }
+
 	  if(mod != null) {
 	    {
 	      JVariableTextField field = new JVariableTextField(ename, evalue);
 	      field.setName("EditableTextField");
-	      
+	      field.setForeground(fg);
+
 	      Dimension size = new Dimension(sVSize, 19);
 	      field.setMinimumSize(size);
 	      field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
@@ -272,8 +327,6 @@ class JPackageDetailsDialog
 	      
 	      field.setHorizontalAlignment(JLabel.LEFT);
 	      field.setEditable(true);
-	      
-	      field.addCaretListener(this);
 	      
 	      field.addActionListener(this);
 	      field.setActionCommand("set-value");
@@ -286,7 +339,8 @@ class JPackageDetailsDialog
 	    {
 	      JCollectionField field = new JCollectionField(pnames);
 	      field.setSelectedIndex(policy.ordinal());
-	      
+	      field.setForeground(fg);
+
 	      Dimension size = new Dimension(sPSize, 19);
 	      field.setMinimumSize(size);
 	      field.setMaximumSize(size);
@@ -323,6 +377,7 @@ class JPackageDetailsDialog
 	    {
 	      JTextField field = 
 		UIMaster.createTextField(evalue, sVSize, JLabel.LEFT);
+	      field.setForeground(fg);
 
 	      hbox.add(field);
 	    }
@@ -332,6 +387,7 @@ class JPackageDetailsDialog
 	    {
 	      JTextField field = 
 		UIMaster.createTextField(policy.toString(), sPSize, JLabel.CENTER);
+	      field.setForeground(fg);
 	      field.setMaximumSize(new Dimension(sPSize, 19));
 
 	      hbox.add(field);
@@ -396,22 +452,6 @@ class JPackageDetailsDialog
   }
 
 
-  /*-- CARET LISTENER METHODS --------------------------------------------------------------*/
-
-  /**
-   * Called when the caret position is updated.
-   */ 
-  public void 
-  caretUpdate
-  (
-   CaretEvent e
-  ) 
-  {
-    JVariableTextField field = (JVariableTextField) e.getSource(); 
-    doSetValue(field.getVariableName(), field.getText());
-  }
-  
-
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C T I O N S                                                                        */
@@ -432,7 +472,7 @@ class JPackageDetailsDialog
 	String name = diag.getName();
 	if(!pkg.getEnvNames().contains(name)) {
 	  pkg.createEntry(name);
-	  updatePackage(pkg);
+	  pParent.refreshPackage(pkg);
 	}
       }
     }
@@ -451,6 +491,7 @@ class JPackageDetailsDialog
     if(pPackage instanceof PackageMod) {
       PackageMod pkg = (PackageMod) pPackage;
       pkg.setValue(name, value);
+      pParent.refreshPackage(pkg);
     }
   }
 
@@ -467,6 +508,7 @@ class JPackageDetailsDialog
     if(pPackage instanceof PackageMod) {
       PackageMod pkg = (PackageMod) pPackage;
       pkg.setMergePolicy(name, policy);
+      pParent.refreshPackage(pkg);
     }
   }
 
@@ -482,7 +524,7 @@ class JPackageDetailsDialog
     if(pPackage instanceof PackageMod) {
       PackageMod pkg = (PackageMod) pPackage;
       pkg.removeEntry(name);
-      updatePackage(pkg);
+      pParent.refreshPackage(pkg);
     }
   }
 
@@ -495,7 +537,7 @@ class JPackageDetailsDialog
     if(pPackage instanceof PackageMod) {
       PackageMod pkg = (PackageMod) pPackage;
       pkg.removeAllEntries();
-      updatePackage(pkg);
+      pParent.refreshPackage(pkg);
     }
   }
 
@@ -507,15 +549,15 @@ class JPackageDetailsDialog
   {
     if(pPackage instanceof PackageMod) {
       PackageMod pkg = (PackageMod) pPackage;
-
+      
       pShellScriptDialog.setVisible(true);
-    
+      
       if(pShellScriptDialog.wasConfirmed()) {
 	File script = pShellScriptDialog.getSelectedFile();
 	if(script != null) {
 	  try {
 	    pkg.loadShellScript(script);
-	    updatePackage(pkg);
+	    pParent.refreshPackage(pkg);
 	  }
 	  catch(PipelineException ex) {
 	    UIMaster.getInstance().showErrorDialog(ex);
@@ -582,6 +624,13 @@ class JPackageDetailsDialog
   protected static final int  sPSize = 120;
 
 
+  protected static Icon sConflictIcon = 
+    new ImageIcon(LookAndFeelLoader.class.getResource("ConflictIcon.png"));
+  
+  protected static Icon sCheckIcon = 
+    new ImageIcon(LookAndFeelLoader.class.getResource("CheckIcon.png"));
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
@@ -591,6 +640,17 @@ class JPackageDetailsDialog
    * The package.
    */ 
   private PackageCommon  pPackage;
+
+  /**
+   * The selected toolset.
+   */ 
+  private Toolset  pToolset;
+
+  /**
+   * The index of this package within the selected toolset.
+   */ 
+  private int  pPackageIndex;
+
 
 
   /*----------------------------------------------------------------------------------------*/
