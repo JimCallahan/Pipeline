@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.13 2004/08/22 21:46:51 jim Exp $
+// $Id: BaseAction.java,v 1.14 2004/09/05 06:37:25 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -29,7 +29,7 @@ class BaseAction
    * Construct with a name and description. 
    * 
    * @param name 
-   *   The short name of the editor.  
+   *   The short name of the action.  
    * 
    * @param desc 
    *   A short description used in tooltips.
