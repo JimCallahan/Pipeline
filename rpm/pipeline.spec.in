@@ -82,6 +82,7 @@ The core features of Pipeline include:
 %defattr(755,@PIPELINE_USER@,@PIPELINE_GROUP@)
 %dir @PRODDIR@/repository
 %dir @PRODDIR@/checksum
+%dir @PRODDIR@/restore
 
 %defattr(-,@PIPELINE_USER@,@PIPELINE_GROUP@)
 @ROOT_INST_DIR@/plugins
