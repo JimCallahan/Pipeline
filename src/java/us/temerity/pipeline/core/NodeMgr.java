@@ -1,4 +1,4 @@
-// $Id: NodeMgr.java,v 1.4 2004/03/26 04:40:27 jim Exp $
+// $Id: NodeMgr.java,v 1.5 2004/03/26 19:12:15 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -302,6 +302,58 @@ class NodeMgr
       }
     }
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   W O R K I N G   V E R S I O N S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the working version of the node.
+   * 
+   * @param req 
+   *   The get working version request.
+   * 
+   * @return
+   *   <CODE>NodeGetWorkingRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to register the inital working version.
+   */
+  public Object
+  getWorkingVersion
+  ( 
+   NodeGetWorkingReq req
+  ) 
+  {	 
+    if(req == null) 
+      return new FailureRsp("The get working version request cannot be (null)!");
+
+    String task = ("NodeMgr.getWorkingVersion(): " + req.getNodeID());
+
+    Date start = new Date();
+    long wait = 0;
+    ReentrantReadWriteLock lock = getWorkingLock(req.getNodeID());
+    lock.readLock().lock();
+    try {
+      wait  = (new Date()).getTime() - start.getTime();
+      start = new Date();
+      
+      NodeMod mod = new NodeMod(getWorkingBundle(req.getNodeID()).uVersion);
+      return new NodeGetWorkingRsp(req.getNodeID(), mod, wait, start);
+    }
+    catch(PipelineException ex) {
+      if(wait > 0) 
+	return new FailureRsp(task, ex.getMessage(), wait, start);
+      else 
+	return new FailureRsp(task, ex.getMessage(), start);
+    }
+    finally {
+      lock.readLock().unlock();
+    }  
+  }  
+
+  
+  // ...
 
 
   /*----------------------------------------------------------------------------------------*/
