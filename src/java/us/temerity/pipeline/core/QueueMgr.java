@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.12 2004/08/31 08:13:26 jim Exp $
+// $Id: QueueMgr.java,v 1.13 2004/09/03 01:55:35 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -187,51 +187,51 @@ class QueueMgr
 	    Long jobID = new Long(files[wk].getName());
 	    QueueJob job = readJob(jobID);
 	    QueueJobInfo info = readJobInfo(jobID);
-	    if((job != null) && (info != null)) {
-	      /* initialize the table of which jobs create the files associated with nodes */ 
-	      {
-		ActionAgenda agenda = job.getActionAgenda();
-		NodeID nodeID = agenda.getNodeID();
-		FileSeq fseq = agenda.getPrimaryTarget();
-		
-		synchronized(pNodeJobIDs) {
-		  TreeMap<File,Long> table = pNodeJobIDs.get(nodeID);
-		  if(table == null) {
-		    table = new TreeMap<File,Long>();
-		    pNodeJobIDs.put(nodeID, table);
-		  }
-		  
-		  for(File file : fseq.getFiles()) 
-		    table.put(file, jobID);
+	    assert((job != null) && (info != null));
+
+	    /* initialize the table of working area files to the jobs which create them */ 
+	    {
+	      ActionAgenda agenda = job.getActionAgenda();
+	      NodeID nodeID = agenda.getNodeID();
+	      FileSeq fseq = agenda.getPrimaryTarget();
+	      
+	      synchronized(pNodeJobIDs) {
+		TreeMap<File,Long> table = pNodeJobIDs.get(nodeID);
+		if(table == null) {
+		  table = new TreeMap<File,Long>();
+		  pNodeJobIDs.put(nodeID, table);
 		}
+		
+		for(File file : fseq.getFiles()) 
+		  table.put(file, jobID);
 	      }
+	    }
+	    
+	    /* determine if the job is still active */ 
+	    switch(info.getState()) {
+	    case Queued:
+	      pWaiting.add(jobID);
+	      break;
 	      
-	      /* determine if the job is still active */ 
-	      switch(info.getState()) {
-	      case Queued:
-		pWaiting.add(jobID);
-		break;
-
-	      case Paused:
-		pPaused.add(jobID);
-		pWaiting.add(jobID);
-		break;
-
-	      case Running:
-		running.put(jobID, info.getHostname());
-	      }
-
-	      synchronized(pJobs) {
-		pJobs.put(jobID, job);
-	      }
+	    case Paused:
+	      pPaused.add(jobID);
+	      pWaiting.add(jobID);
+	      break;
 	      
-	      synchronized(pJobInfo) {
-		pJobInfo.put(jobID, info);
-	      }
+	    case Running:
+	      running.put(jobID, info.getHostname());
+	    }
+	    
+	    synchronized(pJobs) {
+	      pJobs.put(jobID, job);
+	    }
+	    
+	    synchronized(pJobInfo) {
+	      pJobInfo.put(jobID, info);
 	    }
 	  }
 	  catch(NumberFormatException ex) {
-	    Logs.ops.severe("Illegal job file encountered (" + files[wk] + ")!");
+	    Logs.glu.severe("Illegal job file encountered (" + files[wk] + ")!");
 	  }
 	  catch(PipelineException ex) {
 	    Logs.ops.severe(ex.getMessage());
@@ -249,8 +249,10 @@ class QueueMgr
 	if(files[wk].isFile()) {
 	  try {
 	    Long groupID = new Long(files[wk].getName());
+	    QueueJobGroup group = readJobGroup(groupID);
+	    assert(group != null);
 	    synchronized(pJobGroups) {
-	      pJobGroups.put(groupID, null);
+	      pJobGroups.put(groupID, group);
 	    }
 	  }
 	  catch(NumberFormatException ex) {
@@ -259,13 +261,23 @@ class QueueMgr
 	}
       }
     }
+    
+    /* garbage collect all jobs no longer referenced by a job group */ 
+    garbageCollectJobs(new TaskTimer());
 
     /* start tasks to record the results of the already running jobs */ 
     for(Long jobID : running.keySet()) {
-      String hostname = running.get(jobID);
+      boolean stillExists = false;
+      synchronized(pJobs) {
+	stillExists = pJobs.containsKey(jobID);
+      }
 
-      WaitTask task = new WaitTask(hostname, jobID);
-      task.start();
+      if(stillExists) {
+	String hostname = running.get(jobID);
+	
+	WaitTask task = new WaitTask(hostname, jobID);
+	task.start();
+      }
     }
   }
 
@@ -1080,36 +1092,31 @@ class QueueMgr
     timer.aquire();  
     synchronized(pJobInfo) {
       timer.resume();
-      try {
-	FileSeq fseq = req.getFileSeq();
-	int frames = fseq.numFrames();
 
-	ArrayList<Long>     jobIDs = new ArrayList<Long>(frames);
-	ArrayList<JobState> states = new ArrayList<JobState>(frames);
-	
-	for(File file : fseq.getFiles()) {
-	  Long jobID = nodeJobIDs.get(file);	    
-	  if(jobID != null) {
-	    QueueJobInfo info = lookupJobInfo(jobID);	    
-	    if(info == null) 
-	      throw new PipelineException
-		("Somehow no job information exists for job (" + jobID + ") which does " + 
-		 "have a key in the JobInfo table!");
-
-	    jobIDs.add(jobID);
-	    states.add(info.getState());
-	  }
-	  else {
-	    jobIDs.add(null);
-	    states.add(null);
-	  }
+      FileSeq fseq = req.getFileSeq();
+      int frames = fseq.numFrames();
+      
+      ArrayList<Long>     jobIDs = new ArrayList<Long>(frames);
+      ArrayList<JobState> states = new ArrayList<JobState>(frames);
+      
+      for(File file : fseq.getFiles()) {
+	Long jobID = nodeJobIDs.get(file);	  
+	JobState jstate = null;
+	{
+	  QueueJobInfo info = null;
+	  if(jobID != null) 
+	    info = pJobInfo.get(jobID);	   
+	  
+	  if(info != null) 
+	    jstate = info.getState();
+	  else 
+	    jobID = null;
 	}
-	
-	return new QueueGetJobStatesRsp(timer, nodeID, jobIDs, states);
+	jobIDs.add(jobID);
+	states.add(jstate);
       }
-      catch(PipelineException ex) {
-	return new FailureRsp(timer, ex.getMessage());	  
-      }  
+      
+      return new QueueGetJobStatesRsp(timer, nodeID, jobIDs, states);
     }
   }
 
@@ -1135,55 +1142,40 @@ class QueueMgr
     timer.aquire();
     synchronized(pJobGroups) {
       timer.resume();
-      try {
-	for(Long groupID : req.getGroupIDs()) {
-	  QueueJobGroup group = lookupJobGroup(groupID);
-	  if(group != null) 
-	    jobIDs.addAll(group.getAllJobIDs());
-	}
+      for(Long groupID : req.getGroupIDs()) {
+	QueueJobGroup group = pJobGroups.get(groupID);
+	if(group != null) 
+	  jobIDs.addAll(group.getAllJobIDs());
       }
-      catch(PipelineException ex) {
-	return new FailureRsp(timer, ex.getMessage());	  
-      }   
     }
 
     TreeMap<Long,JobState> states = new TreeMap<Long,JobState>();
     timer.aquire();  
     synchronized(pJobInfo) {
       timer.resume();
-      try {
-	for(Long jobID : jobIDs) {
-	  QueueJobInfo info = lookupJobInfo(jobID);
-	  if(info != null) 
-	    states.put(jobID, info.getState());
-	}
+      for(Long jobID : jobIDs) {
+	QueueJobInfo info = pJobInfo.get(jobID);
+	if(info != null) 
+	  states.put(jobID, info.getState());
       }
-      catch(PipelineException ex) {
-	return new FailureRsp(timer, ex.getMessage());	  
-      }  
     }
 	
     timer.aquire();  
     synchronized(pJobs) {
       timer.resume();
-      try {
-	TreeMap<Long,JobStatus> status = new TreeMap<Long,JobStatus>();
-	for(Long jobID : jobIDs) {
-	  QueueJob job = lookupJob(jobID);	
-	  JobState state = states.get(jobID);
-	  if((job != null) && (state != null)) {
-	    JobStatus js = 
-	      new JobStatus(jobID, job.getNodeID(), state, 
-			    job.getActionAgenda().getPrimaryTarget(), job.getSourceJobIDs());
-	    status.put(jobID, js);
-	  }
+      TreeMap<Long,JobStatus> status = new TreeMap<Long,JobStatus>();
+      for(Long jobID : jobIDs) {
+	QueueJob job = pJobs.get(jobID);	
+	JobState state = states.get(jobID);
+	if((job != null) && (state != null)) {
+	  JobStatus js = 
+	    new JobStatus(jobID, job.getNodeID(), state, 
+			  job.getActionAgenda().getPrimaryTarget(), job.getSourceJobIDs());
+	  status.put(jobID, js);
 	}
-	
-	return new QueueGetJobStatusRsp(timer, status);
       }
-      catch(PipelineException ex) {
-	return new FailureRsp(timer, ex.getMessage());	  
-      }  
+      
+      return new QueueGetJobStatusRsp(timer, status);
     }
   }
 
@@ -1209,7 +1201,7 @@ class QueueMgr
       timer.resume();
       try {
 	Long jobID = req.getJobID();
-	QueueJob job = lookupJob(jobID);	
+	QueueJob job = pJobs.get(jobID);	
 	if(job == null) 
 	  throw new PipelineException
 	    ("No job (" + jobID + ") exists!");
@@ -1244,77 +1236,12 @@ class QueueMgr
       timer.resume();
       try {
 	Long jobID = req.getJobID();
-	QueueJobInfo info = lookupJobInfo(jobID);
+	QueueJobInfo info = pJobInfo.get(jobID);
 	if(info == null) 
 	  throw new PipelineException
 	    ("No information is available for job (" + jobID + ")!");
 
 	return new QueueGetJobInfoRsp(timer, info);
-      }
-      catch(PipelineException ex) {
-	return new FailureRsp(timer, ex.getMessage());	  
-      }   
-    }
-  }
-
-  /**
-   * Get the job group with the given ID.
-   * 
-   * @param req 
-   *   The job group request.
-   *    
-   * @return 
-   *   <CODE>QueueGetJobGroupRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to lookup the job info.
-   */ 
-  public Object
-  getJobGroup
-  (
-   QueueGetJobGroupReq req
-  )
-  {
-    TaskTimer timer = new TaskTimer();
-    timer.aquire();
-    synchronized(pJobGroups) {
-      timer.resume();
-      try {
-	Long groupID = req.getGroupID();
-	QueueJobGroup group = lookupJobGroup(groupID);
-	if(group == null) 
-	  throw new PipelineException
-	    ("No job group (" + groupID + ") exists!");
-
-	return new QueueGetJobGroupRsp(timer, group);
-      }
-      catch(PipelineException ex) {
-	return new FailureRsp(timer, ex.getMessage());	  
-      }   
-    }
-  }
-
-  /**
-   * Get all of the existing job groups.
-   * 
-   * @return 
-   *   <CODE>QueueGetJobGroupsRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to lookup the job info.
-   */ 
-  public Object
-  getJobGroups() 
-  {
-    TaskTimer timer = new TaskTimer();
-    timer.aquire();
-    synchronized(pJobGroups) {
-      timer.resume();
-      try {
-	TreeMap<Long,QueueJobGroup> groups = new TreeMap<Long,QueueJobGroup>();
-	for(Long groupID : pJobGroups.keySet()) {
-	  QueueJobGroup group = lookupJobGroup(groupID);
-	  if(group != null) 
-	    groups.put(groupID, group);
-	}
-
-	return new QueueGetJobGroupsRsp(timer, groups);
       }
       catch(PipelineException ex) {
 	return new FailureRsp(timer, ex.getMessage());	  
@@ -1402,56 +1329,6 @@ class QueueMgr
   }
 
   /**
-   * Notify the queue that a set of previously submitted jobs make up a job group.
-   * 
-   * @param req 
-   *   The group jobs equest.
-   *    
-   * @return 
-   *   <CODE>SuccessRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable group the jobs. 
-   */ 
-  public Object
-  groupJobs
-  (
-   QueueGroupJobsReq req
-  )
-  {
-    // DEBUGGING
-    try {
-      GlueEncoder ge = new GlueEncoderImpl("QueueJobGroup", req.getJobGroup());
-      Logs.glu.finest(ge.getText());
-    }
-    catch(GlueException ex) {
-      Logs.glu.severe
-	("Unable to generate a Glue format representation of the job group!");
-    }
-    Logs.flush();
-    // DEBUGGING
-
-    QueueJobGroup group = req.getJobGroup();
-    long groupID = group.getGroupID();
-    
-    TaskTimer timer = new TaskTimer("QueueMgr.groupJobs(): " + groupID);
-    try {
-      timer.aquire();
-      synchronized(pJobGroups) {
-	timer.resume();
-	writeJobGroup(group);
-	pJobGroups.put(groupID, group);
-      }
-    }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());	  
-    }   
-
-    return new SuccessRsp(timer);
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
    * Kill the jobs with the given IDs. <P> 
    * 
    * @param req 
@@ -1474,9 +1351,6 @@ class QueueMgr
 
     return new SuccessRsp(timer);
   }
-
-
-  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Pause the jobs with the given IDs. <P> 
@@ -1534,6 +1408,274 @@ class QueueMgr
     return new SuccessRsp(timer);
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Notify the queue that a set of previously submitted jobs make up a job group.
+   * 
+   * @param req 
+   *   The group jobs equest.
+   *    
+   * @return 
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable group the jobs. 
+   */ 
+  public Object
+  groupJobs
+  (
+   QueueGroupJobsReq req
+  )
+  {
+    // DEBUGGING
+    try {
+      GlueEncoder ge = new GlueEncoderImpl("QueueJobGroup", req.getJobGroup());
+      Logs.glu.finest(ge.getText());
+    }
+    catch(GlueException ex) {
+      Logs.glu.severe
+	("Unable to generate a Glue format representation of the job group!");
+    }
+    Logs.flush();
+    // DEBUGGING
+
+    QueueJobGroup group = req.getJobGroup();
+    long groupID = group.getGroupID();
+    
+    TaskTimer timer = new TaskTimer("QueueMgr.groupJobs(): " + groupID);
+    try {
+      timer.aquire();
+      synchronized(pJobGroups) {
+	timer.resume();
+	writeJobGroup(group);
+	pJobGroups.put(groupID, group);
+      }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }   
+
+    return new SuccessRsp(timer);
+  }
+
+  /**
+   * Get the job group with the given ID.
+   * 
+   * @param req 
+   *   The job group request.
+   *    
+   * @return 
+   *   <CODE>QueueGetJobGroupRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the job group.
+   */ 
+  public Object
+  getJobGroup
+  (
+   QueueGetJobGroupReq req
+  )
+  {
+    TaskTimer timer = new TaskTimer();
+    timer.aquire();
+    synchronized(pJobGroups) {
+      timer.resume();
+      try {
+	Long groupID = req.getGroupID();
+	QueueJobGroup group = pJobGroups.get(groupID);
+	if(group == null) 
+	  throw new PipelineException
+	    ("No job group (" + groupID + ") exists!");
+
+	return new QueueGetJobGroupRsp(timer, group);
+      }
+      catch(PipelineException ex) {
+	return new FailureRsp(timer, ex.getMessage());	  
+      }   
+    }
+  }
+
+  /**
+   * Get all of the existing job groups.
+   * 
+   * @return 
+   *   <CODE>QueueGetJobGroupsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the job groups.
+   */ 
+  public Object
+  getJobGroups() 
+  {
+    TaskTimer timer = new TaskTimer();
+    timer.aquire();
+    synchronized(pJobGroups) {
+      timer.resume();
+      TreeMap<Long,QueueJobGroup> groups = new TreeMap<Long,QueueJobGroup>();
+      for(Long groupID : pJobGroups.keySet()) {
+	QueueJobGroup group = pJobGroups.get(groupID);
+	if(group != null) 
+	  groups.put(groupID, group);
+	}
+      
+      return new QueueGetJobGroupsRsp(timer, groups);
+    }
+  }
+
+  /**
+   * Delete the completed job groups. <P> 
+   * 
+   * @param req 
+   *   The delete group request.
+   *    
+   * @return 
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to delete the job groups.
+   */ 
+  public Object
+  deleteJobGroups
+  (
+   QueueDeleteJobGroupsReq req
+  )
+  {
+    TaskTimer timer = new TaskTimer("QueueMgr.deleteJobGroups()");
+    timer.aquire();
+    synchronized(pJobGroups) {
+      timer.resume();
+      try {
+	TreeMap<Long,String> groupAuthors = req.getGroupAuthors();
+	for(Long groupID : groupAuthors.keySet()) {
+	  QueueJobGroup group = pJobGroups.get(groupID);
+	  if(group == null) 
+	    throw new PipelineException
+	      ("No job group (" + groupID + ") exists!");
+
+	  String author = groupAuthors.get(groupID);
+	  if(!group.getNodeID().getAuthor().equals(author)) 
+	    throw new PipelineException
+	      ("The author (" + group.getNodeID().getAuthor() + ") of group " + 
+	       "(" + groupID + ") did not match the specified author (" + author + ")!");
+
+	  deleteCompletedJobGroup(timer, group);
+	}
+
+	return new SuccessRsp(timer);
+      }
+      catch(PipelineException ex) {
+	return new FailureRsp(timer, ex.getMessage());	  
+      }   
+    }
+  }
+
+  /**
+   * Delete all of the completed job groups created in the given working area. <P> 
+   * 
+   * @param req 
+   *   The delete group request.
+   * 
+   * @return 
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to delete the job groups.
+   */ 
+  public Object
+  deleteViewJobGroups
+  (
+   QueueDeleteViewJobGroupsReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer("QueueMgr.deleteViewJobGroups()");
+    timer.aquire();
+    synchronized(pJobGroups) {
+      timer.resume();
+      
+      ArrayList<QueueJobGroup> dead = new ArrayList<QueueJobGroup>();
+      {
+	String author = req.getAuthor();
+	String view   = req.getView();
+	for(Long groupID : pJobGroups.keySet()) {
+	  QueueJobGroup group = pJobGroups.get(groupID);
+	  NodeID nodeID = group.getNodeID();
+	  if(nodeID.getAuthor().equals(author) && nodeID.getView().equals(view)) 
+	    dead.add(group);
+	}
+      }
+
+      for(QueueJobGroup group : dead) {
+	try {
+	  deleteCompletedJobGroup(timer, group);
+	  }
+	catch(PipelineException ex) {
+	}
+      }
+      
+      return new SuccessRsp(timer);
+    }
+  }
+
+  /**
+   * Delete all of the completed job groups in all working areas. <P> 
+   * 
+   * @return 
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to delete the job groups.
+   */ 
+  public Object
+  deleteAllJobGroups() 
+  {
+    TaskTimer timer = new TaskTimer("QueueMgr.deleteAllJobGroups()");
+    timer.aquire();
+    synchronized(pJobGroups) {
+      timer.resume();
+
+      ArrayList<QueueJobGroup> dead = new ArrayList<QueueJobGroup>();
+      for(Long groupID : pJobGroups.keySet()) 
+	dead.add(pJobGroups.get(groupID));
+
+      for(QueueJobGroup group : dead) {      
+	try {
+	  deleteCompletedJobGroup(timer, group);
+	}
+	catch(PipelineException ex) {
+	}
+      }
+
+      return new SuccessRsp(timer);
+    } 
+  }
+
+  /**
+   * Delete the completed job group with the given ID.
+   * 
+   * @throws PipelineExceptio
+   *   If the job group is not completed.
+   */ 
+  private void 
+  deleteCompletedJobGroup
+  (    
+   TaskTimer timer,
+   QueueJobGroup group
+  ) 
+    throws PipelineException 
+  {
+    Long groupID = group.getGroupID();
+
+    timer.aquire();  
+    synchronized(pJobInfo) {
+      timer.resume();
+      for(Long jobID : group.getAllJobIDs()) {
+	QueueJobInfo info = pJobInfo.get(jobID);
+	if(info != null) {
+	  switch(info.getState()) {
+	  case Queued:
+	  case Paused:
+	  case Running:
+	    throw new PipelineException
+	      ("Cannot delete job group (" + groupID + ") until all of its jobs " + 
+	       "have completed!");
+	  }
+	}
+      }
+    }
+    
+    deleteJobGroupFile(groupID);
+    pJobGroups.remove(groupID);
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1715,15 +1857,10 @@ class QueueMgr
 	break;
 
       QueueJobInfo info = null;
-      try {
-	timer.aquire();
-	synchronized(pJobInfo) {
-	  timer.resume();
-	  info = lookupJobInfo(jobID);
-	}
-      }
-      catch(PipelineException ex) {
-	Logs.ops.severe(ex.getMessage());
+      timer.aquire();
+      synchronized(pJobInfo) {
+	timer.resume();
+	info = pJobInfo.get(jobID);
       }
 
       if(info != null) {
@@ -1753,15 +1890,10 @@ class QueueMgr
 	  break;
 	
 	QueueJobInfo info = null;
-	try {
-	  timer.aquire();
-	  synchronized(pJobInfo) {
-	    timer.resume();
-	    info = lookupJobInfo(jobID);
-	  }
-	}
-	catch(PipelineException ex) {
-	  Logs.ops.severe(ex.getMessage());
+	timer.aquire();
+	synchronized(pJobInfo) {
+	  timer.resume();
+	  info = pJobInfo.get(jobID);
 	}
 	
 	if(info != null) {
@@ -1788,15 +1920,10 @@ class QueueMgr
 	      }
 
 	      QueueJob job = null;
-	      try {
-		timer.aquire();
-		synchronized(pJobs) {
-		  timer.resume();
-		  job = lookupJob(jobID);
-		}
-	      }
-	      catch(PipelineException ex) {
-		Logs.ops.severe(ex.getMessage());
+	      timer.aquire();
+	      synchronized(pJobs) {
+		timer.resume();
+		job = pJobs.get(jobID);
 	      }
 
 	      if(job != null) {
@@ -1804,15 +1931,10 @@ class QueueMgr
 		boolean done = false;
 		for(Long sjobID : job.getSourceJobIDs()) {
 		  QueueJobInfo sinfo = null;
-		  try {
-		    timer.aquire();
-		    synchronized(pJobInfo) {
-		      timer.resume();
-		      sinfo = lookupJobInfo(sjobID);
-		    }
-		  }
-		  catch(PipelineException ex) {
-		    Logs.ops.severe(ex.getMessage());
+		  timer.aquire();
+		  synchronized(pJobInfo) {
+		    timer.resume();
+		    sinfo = pJobInfo.get(sjobID);
 		  }
 		  
 		  if(sinfo != null) {
@@ -1892,27 +2014,17 @@ class QueueMgr
 	  TreeSet<Long> processed = new TreeSet<Long>();
 	  for(Long jobID : jobIDs) {
 	    QueueJob job = null;
-	    try {
-	      timer.aquire();
-	      synchronized(pJobs) {
-		timer.resume();
-		job = lookupJob(jobID);
-	      }
-	    }
-	    catch(PipelineException ex) {
-	      Logs.ops.severe(ex.getMessage());
+	    timer.aquire();
+	    synchronized(pJobs) {
+	      timer.resume();
+	      job = pJobs.get(jobID);
 	    }
 
 	    QueueJobInfo info = null;
-	    try {
-	      timer.aquire();
-	      synchronized(pJobInfo) {
-		timer.resume();
-		info = lookupJobInfo(jobID);
-	      }
-	    }
-	    catch(PipelineException ex) {
-	      Logs.ops.severe(ex.getMessage());
+	    timer.aquire();
+	    synchronized(pJobInfo) {
+	      timer.resume();
+	      info = pJobInfo.get(jobID);
 	    }
 
 	    if((job == null) || (info == null)) {
@@ -1969,13 +2081,7 @@ class QueueMgr
     synchronized(pJobGroups) {
       timer.resume();
       for(Long groupID : pJobGroups.keySet()) {
-	QueueJobGroup group = null;
-	try {
-	  group = lookupJobGroup(groupID);
-	}
-	catch(PipelineException ex) {
-	  Logs.ops.severe(ex.getMessage());
-	}
+	QueueJobGroup group = pJobGroups.get(groupID);
 	
 	/* the job is not yet completed */ 
 	if((group != null) && (group.getCompletedStamp() == null)) {
@@ -1983,15 +2089,10 @@ class QueueMgr
 	  Date latest = null;
 	  for(Long jobID : group.getAllJobIDs()) {
 	    QueueJobInfo info = null;
-	    try {
-	      timer.aquire();
-	      synchronized(pJobInfo) {
-		timer.resume();
-		info = lookupJobInfo(jobID);
-	      }
-	    }
-	    catch(PipelineException ex) {
-	      Logs.ops.severe(ex.getMessage());
+	    timer.aquire();
+	    synchronized(pJobInfo) {
+	      timer.resume();
+	      info = pJobInfo.get(jobID);
 	    }
 
 	    if(info != null) {
@@ -2028,8 +2129,21 @@ class QueueMgr
       }
     }
 
-    logJobLists("Post-Dispatch:");
+    //logJobLists("Post-Dispatch:");
     //Logs.ops.finest("-------------------------------------------------------------------"); 
+
+    /* perform garbage collection of jobs at regular intervals */ 
+    pDispatcherCycles++;
+    if(pDispatcherCycles > sGarbageCollectAfter) {
+      timer.suspend();
+
+      TaskTimer gtimer = new TaskTimer("QueueMgr.garbageCollectJobs()");
+      garbageCollectJobs(gtimer);
+
+      timer.accum(gtimer);
+
+      pDispatcherCycles = 0;
+    }
 
     Logs.ops.finest(timer.toString()); 
     if(Logs.ops.isLoggable(Level.FINEST))
@@ -2167,7 +2281,6 @@ class QueueMgr
 	  timer.resume();
 	  info.started(bestHost);
 	  writeJobInfo(info);
-	  //pJobInfo.put(job.getJobID(), info);  ??? not needed since info is from pJobInfo
 	}
 	
 	timer.aquire();
@@ -2205,7 +2318,85 @@ class QueueMgr
     return true;
   }
 
+  /**
+   * Garbage collect all jobs no longer referenced by a job group.
+   */ 
+  private void 
+  garbageCollectJobs
+  (
+   TaskTimer timer
+  ) 
+  {
+    /* get the IDs of all jobs still referenced by a job group */ 
+    TreeSet<Long> live = new TreeSet<Long>();
+    {
+      timer.aquire();
+      synchronized(pJobGroups) {
+	timer.resume();
+	for(QueueJobGroup group : pJobGroups.values()) 
+	  live.addAll(group.getAllJobIDs());
+      }
+    }
 
+    /* get the IDs of the jobs which should be deleted */ 
+    TreeSet<Long> dead = new TreeSet<Long>();
+    {
+      timer.aquire();
+      synchronized(pJobs) {
+	timer.resume();
+	for(Long jobID : pJobs.keySet()) 
+	  if(!live.contains(jobID))
+	    dead.add(jobID);
+      }
+
+      timer.aquire();
+      synchronized(pJobInfo) {
+	timer.resume();
+	for(Long jobID : pJobInfo.keySet()) 
+	  if(!live.contains(jobID))
+	    dead.add(jobID);
+      }
+    }
+      
+    /* delete the dead jobs */ 
+    for(Long jobID : dead) {
+      timer.aquire();
+      synchronized(pJobs) {
+	timer.resume();
+	try {
+	  if(pJobs.remove(jobID) != null) 
+	    deleteJobFile(jobID);
+	}
+	catch(PipelineException ex) {
+	  Logs.ops.severe(ex.getMessage());
+	  Logs.flush();
+	}
+      }
+
+      timer.aquire();
+      synchronized(pJobInfo) {
+	timer.resume();
+	try {
+	  if(pJobInfo.remove(jobID) != null) 
+	    deleteJobInfoFile(jobID);
+	}
+	catch(PipelineException ex) {
+	  Logs.ops.severe(ex.getMessage());
+	  Logs.flush();
+	}
+      }      
+    }
+
+    /* tell the job servers to cleanup any resources associated with the dead jobs */ 
+    {
+      CleanupJobResourcesTask task = new CleanupJobResourcesTask(live);
+      task.start();
+    }
+
+    Logs.ops.finer(timer.toString()); 
+    if(Logs.ops.isLoggable(Level.FINER))
+      Logs.flush();
+  }
 
   /**
    * Dump the current state of the jobs. <P> 
@@ -2250,14 +2441,7 @@ class QueueMgr
       for(Long jobID : pJobInfo.keySet()) {
 	buf.append("    " + jobID + ": ");
 
-	QueueJobInfo info = null; 
-	try {
-	  info = lookupJobInfo(jobID);
-	}
-	catch(PipelineException ex) {
-	  Logs.ops.severe(ex.getMessage());
-	}
-
+	QueueJobInfo info = pJobInfo.get(jobID);
 	if(info != null) {
 	  buf.append(info.getState());
 	  String host = info.getHostname();
@@ -2298,7 +2482,7 @@ class QueueMgr
       }
       
       if(!pLicenseKeys.isEmpty()) {
-	Logs.ops.finer("Writing License Keys.");
+	Logs.glu.finer("Writing License Keys.");
 
 	try {
 	  String glue = null;
@@ -2348,7 +2532,7 @@ class QueueMgr
 
       File file = new File(pQueueDir, "queue/etc/license-keys");
       if(file.isFile()) {
-	Logs.ops.finer("Reading License Keys.");
+	Logs.glu.finer("Reading License Keys.");
 
 	ArrayList<LicenseKey> keys = null;
 	try {
@@ -2397,7 +2581,7 @@ class QueueMgr
       }
       
       if(!pSelectionKeys.isEmpty()) {
-	Logs.ops.finer("Writing Selection Keys.");
+	Logs.glu.finer("Writing Selection Keys.");
 
 	try {
 	  String glue = null;
@@ -2447,7 +2631,7 @@ class QueueMgr
 
       File file = new File(pQueueDir, "queue/etc/selection-keys");
       if(file.isFile()) {
-	Logs.ops.finer("Reading Selection Keys.");
+	Logs.glu.finer("Reading Selection Keys.");
 
 	ArrayList<SelectionKey> keys = null;
 	try {
@@ -2496,7 +2680,7 @@ class QueueMgr
       }
       
       if(!pHosts.isEmpty()) {
-	Logs.ops.finer("Writing Hosts.");
+	Logs.glu.finer("Writing Hosts.");
 
 	try {
 	  String glue = null;
@@ -2544,7 +2728,7 @@ class QueueMgr
 
       File file = new File(pQueueDir, "queue/job-servers/hosts");
       if(file.isFile()) {
-	Logs.ops.finer("Reading Hosts.");
+	Logs.glu.finer("Reading Hosts.");
 
 	TreeMap<String,QueueHost> hosts = null;
 	try {
@@ -2601,7 +2785,7 @@ class QueueMgr
     synchronized(pSampleFileLock) { 
       timer.resume();
 
-      Logs.ops.finer("Writing Resource Samples: " + stamp.getTime());
+      Logs.glu.finer("Writing Resource Samples: " + stamp.getTime());
 
       File dir = new File(pQueueDir, "queue/job-servers/samples");
       timer.aquire();
@@ -2693,7 +2877,7 @@ class QueueMgr
       for(wk=files.length-1; wk>=0; wk--) {
 	File file = files[wk];
 	if(file.isFile()) {
-	  Logs.ops.finer("Reading Resource Samples: " + 
+	  Logs.glu.finer("Reading Resource Samples: " + 
 			 hostname + " [" + file.getName() + "]");
 	  
 	  ResourceSampleBlock block = null;
@@ -2771,7 +2955,7 @@ class QueueMgr
 	  ("Somehow the job file (" + file + ") already exists!");
       }
       
-      Logs.ops.finer("Writing Job: " + jobID);
+      Logs.glu.finer("Writing Job: " + jobID);
       
       try {
 	String glue = null;
@@ -2804,43 +2988,6 @@ class QueueMgr
   }
   
   /**
-   * Lookup the job with the given ID. <P> 
-   * 
-   * If the job is not currently loaded, read it from disk and update the jobs table.
-   * 
-   * @param jobID
-   *   The unique job identifier
-   * 
-   * @return 
-   *   The job or <CODE>null</CODE> if none exists.
-   * 
-   * @throws PipelineException
-   *   If unable to read the job file.
-   */
-  private QueueJob
-  lookupJob
-  (
-   Long jobID
-  ) 
-    throws PipelineException
-  {
-    assert(jobID != null);
-   
-    synchronized(pJobs) {
-      QueueJob job = pJobs.get(jobID);
-      if(job == null) {
-	if(pJobs.containsKey(jobID)) {
-	  job = readJob(jobID);
-	  if(job != null) 
-	    pJobs.put(jobID, job);
-	}
-      }
-
-      return job;
-    }
-  }
-
-  /**
    * Read the job from disk. <P> 
    * 
    * @param jobID
@@ -2863,7 +3010,7 @@ class QueueMgr
     synchronized(lock) {
       File file = new File(pQueueDir, "queue/jobs/" + jobID);
       if(file.isFile()) {
-	Logs.ops.finer("Reading Job: " + jobID);
+	Logs.glu.finer("Reading Job: " + jobID);
 	
 	QueueJob job = null;
 	try {
@@ -2889,6 +3036,36 @@ class QueueMgr
 
     return null;
   }
+
+  /**
+   * Delete the job file.
+   * 
+   * @throws PipelineException
+   *   If unable to delete the file.
+   */  
+  private void
+  deleteJobFile
+  (
+   Long jobID
+  ) 
+    throws PipelineException
+  {
+    Object lock = getJobFileLock(jobID);
+    synchronized(lock) {
+      File file = new File(pQueueDir, "queue/jobs/" + jobID); 
+
+      Logs.glu.finer("Deleting Job: " + jobID);
+
+      if(!file.isFile()) 
+	throw new PipelineException
+	  ("The job file (" + file + ") was missing!");
+      
+      if(!file.delete()) 
+	throw new PipelineException
+	  ("Unable to delete the job file (" + file + ")!");
+    }
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -2939,7 +3116,7 @@ class QueueMgr
 	    ("Unable to remove the old job information file (" + file + ")!");
       }
       
-      Logs.ops.finer("Writing Job Information: " + jobID);
+      Logs.glu.finer("Writing Job Information: " + jobID);
       
       try {
 	String glue = null;
@@ -2972,43 +3149,6 @@ class QueueMgr
   }
 
   /**
-   * Lookup the job information for the given ID. <P> 
-   * 
-   * If the info is not currently loaded, read it from disk and update the info table.
-   * 
-   * @param jobID
-   *   The unique job identifier
-   * 
-   * @return 
-   *   The job information or <CODE>null</CODE> if none exists.
-   * 
-   * @throws PipelineException
-   *   If unable to read the job info file.
-   */
-  private QueueJobInfo
-  lookupJobInfo
-  (
-   Long jobID
-  ) 
-    throws PipelineException
-  {
-    assert(jobID != null);
-   
-    synchronized(pJobInfo) {
-      QueueJobInfo info = pJobInfo.get(jobID);
-      if(info == null) {
-	if(pJobInfo.containsKey(jobID)) {
-	  info = readJobInfo(jobID);
-	  if(info != null) 
-	    pJobInfo.put(jobID, info);
-	}
-      }
-
-      return info;
-    }
-  }
-
-  /**
    * Read the job information from disk. <P> 
    * 
    * @param jobID
@@ -3031,7 +3171,7 @@ class QueueMgr
     synchronized(lock) {
       File file = new File(pQueueDir, "queue/job-info/" + jobID);
       if(file.isFile()) {
-	Logs.ops.finer("Reading Job Information: " + jobID);
+	Logs.glu.finer("Reading Job Information: " + jobID);
 	
 	QueueJobInfo info = null;
 	try {
@@ -3056,6 +3196,35 @@ class QueueMgr
     }
 
     return null;
+  }
+
+  /**
+   * Delete the job information file.
+   * 
+   * @throws PipelineException
+   *   If unable to delete the file.
+   */  
+  private void
+  deleteJobInfoFile
+  (
+   Long jobID
+  ) 
+    throws PipelineException
+  {
+    Object lock = getJobInfoFileLock(jobID);
+    synchronized(lock) {
+      File file = new File(pQueueDir, "queue/job-info/" + jobID); 
+
+      Logs.glu.finer("Deleting Job Information: " + jobID);
+
+      if(!file.isFile()) 
+	throw new PipelineException
+	  ("The job information file (" + file + ") was missing!");
+      
+      if(!file.delete()) 
+	throw new PipelineException
+	  ("Unable to delete the job information file (" + file + ")!");
+    }
   }
 
 
@@ -3106,7 +3275,7 @@ class QueueMgr
 	    ("Unable to remove the old job group file (" + file + ")!");
       }
       
-      Logs.ops.finer("Writing Job Group: " + groupID);
+      Logs.glu.finer("Writing Job Group: " + groupID);
       
       try {
 	String glue = null;
@@ -3139,43 +3308,6 @@ class QueueMgr
   }
   
   /**
-   * Lookup the job group for the given ID. <P> 
-   * 
-   * If the group is not currently loaded, read it from disk and update the job groups table.
-   * 
-   * @param groupID
-   *   The unique job group identifier
-   * 
-   * @return 
-   *   The job group or <CODE>null</CODE> if none exists.
-   * 
-   * @throws PipelineException
-   *   If unable to read the job group file.
-   */
-  private QueueJobGroup
-  lookupJobGroup
-  (
-   Long groupID
-  ) 
-    throws PipelineException
-  {
-    assert(groupID != null);
-   
-    synchronized(pJobGroups) {
-      QueueJobGroup group = pJobGroups.get(groupID);
-      if(group == null) {
-	if(pJobGroups.containsKey(groupID)) {
-	  group = readJobGroup(groupID);
-	  if(group != null) 
-	    pJobGroups.put(groupID, group);
-	}
-      }
-
-      return group;
-    }
-  }
-
-  /**
    * Read the job group from disk. <P> 
    * 
    * @return 
@@ -3195,7 +3327,7 @@ class QueueMgr
     synchronized(lock) {
       File file = new File(pQueueDir, "queue/job-groups/" + groupID);
       if(file.isFile()) {
-	Logs.ops.finer("Reading Job Group: " + groupID);
+	Logs.glu.finer("Reading Job Group: " + groupID);
 	
 	QueueJobGroup group = null; 
 	try {
@@ -3220,6 +3352,35 @@ class QueueMgr
     }
 
     return null;
+  }
+
+  /**
+   * Delete the job group file.
+   * 
+   * @throws PipelineException
+   *   If unable to delete the file.
+   */  
+  private void
+  deleteJobGroupFile
+  (
+   Long groupID
+  ) 
+    throws PipelineException
+  {
+    Object lock = getJobGroupFileLock(groupID);
+    synchronized(lock) {
+      File file = new File(pQueueDir, "queue/job-groups/" + groupID);
+
+      Logs.glu.finer("Deleting Job Group: " + groupID);
+
+      if(!file.isFile()) 
+	throw new PipelineException
+	  ("The job group file (" + file + ") was missing!");
+      
+      if(!file.delete()) 
+	throw new PipelineException
+	  ("Unable to delete the job group file (" + file + ")!");
+    }
   }
 
 
@@ -3271,7 +3432,7 @@ class QueueMgr
       /* update job information */ 
       synchronized(pJobInfo) {
 	try {
-	  QueueJobInfo info = lookupJobInfo(pJobID);
+	  QueueJobInfo info = pJobInfo.get(pJobID);
 	  info.exited(results);
 	  writeJobInfo(info);
 	}
@@ -3285,14 +3446,8 @@ class QueueMgr
       {
 	TreeSet<String> aquiredLicenseKeys = new TreeSet<String>();
 	synchronized(pJobs) {
-	  try {
-	    QueueJob job = lookupJob(pJobID);
-	    aquiredLicenseKeys.addAll(job.getJobRequirements().getLicenseKeys());
-	  }
-	  catch(PipelineException ex) {
-	    Logs.net.severe(ex.getMessage()); 
-	    Logs.flush();
-	  }
+	  QueueJob job = pJobs.get(pJobID);
+	  aquiredLicenseKeys.addAll(job.getJobRequirements().getLicenseKeys());
 	}
 	
 	synchronized(pLicenseKeys) {
@@ -3359,6 +3514,59 @@ class QueueMgr
     private long    pJobID; 
   }
 
+  /**
+   * Tell the job servers to cleanup any resources associated with dead jobs.
+   */
+  private 
+  class CleanupJobResourcesTask
+    extends Thread
+  {
+    public 
+    CleanupJobResourcesTask
+    (
+     TreeSet<Long> live
+    ) 
+    {      
+      super("QueueMgr:CleanupJobResourcesTask");
+
+      pJobIDs = live;
+    }
+
+    public void 
+    run() 
+    {
+      TreeSet<String> hnames = new TreeSet<String>();
+      synchronized(pHosts) {
+	for(String hname : pHosts.keySet()) {
+	  QueueHost host = pHosts.get(hname);
+	  switch(host.getStatus()) {
+	  case Disabled:
+	  case Enabled:
+	    hnames.add(hname);
+	  }
+	}
+      }
+
+      for(String hname : hnames) {	  
+	JobMgrControlClient client = null;
+	try {
+	  client = new JobMgrControlClient(hname, pJobPort);	
+	  client.cleanupResources(pJobIDs);
+	}
+	catch(Exception ex) {
+	  Logs.net.severe(ex.getMessage()); 
+	  Logs.flush();
+	}
+	finally {
+	  if(client != null)
+	    client.disconnect();
+	}
+      }
+    }
+
+    private TreeSet<Long>  pJobIDs; 
+  }
+
 
      
 
@@ -3376,6 +3584,11 @@ class QueueMgr
    * The minimum time a cycle of the dispatcher loop should take (in milliseconds).
    */ 
   private static final long  sDispatcherInterval = 1000;  /* 1-second */ 
+
+  /**
+   * The number of dispatcher cycles between garbage collection of jobs.
+   */ 
+  private static final int  sGarbageCollectAfter = 100;   // MAKE THIS MUCH BIGGER!!!
 
 
 
@@ -3468,7 +3681,6 @@ class QueueMgr
    */
   private TreeSet<Long>  pPaused;
 
-
   /**
    * The IDs of jobs waiting on one or more source (upstream) jobs to complete before they 
    * can be added to the ready queue.  This list also contains the IDs of jobs newly 
@@ -3487,6 +3699,13 @@ class QueueMgr
    */ 
   private TreeMap<Integer,TreeSet<Long>>  pReady;
 
+  /**
+   * The number of dispatcher cycles since the last garbage collection of jobs.
+   */ 
+  private int  pDispatcherCycles; 
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * The locks for reading/writing individual QueueJob files. 
@@ -3494,15 +3713,17 @@ class QueueMgr
   private TreeMap<Long,Object>  pJobFileLocks; 
 
   /**
-   * The table of all existing QueueJob's indexed by job ID.  If a job exists, its job ID
-   * will be a member of the key set of this table.  If the value for a valid key is 
-   * <CODE>null</CODE>, then the QueueJob is currently stored on disk only and needs to 
-   * be reloaded.  <P> 
+   * The table of all existing QueueJob's indexed by job ID. <P> 
+   * 
+   * This table is initialized from the job files on startup and all changes to the table
+   * are immediately written to disk. <P> 
    * 
    * Access to this field should be protected by a synchronized block.
    */ 
   private TreeMap<Long,QueueJob>  pJobs; 
 
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * The locks for reading/writing individual QueueJobInfo files. 
@@ -3510,15 +3731,17 @@ class QueueMgr
   private TreeMap<Long,Object>  pJobInfoFileLocks;
 
   /**
-   * The table of status information for all existing QueueJob's indexed by job ID.  
-   * If job information exists, its job ID will be a member of the key set of this table.  
-   * If the value for a valid key is <CODE>null</CODE>, then the QueueJobInfo is currently 
-   * stored on disk only and needs to be reloaded. <P> 
+   * The table of status information for all existing QueueJob's indexed by job ID.  <P> 
+   * 
+   * This table is initialized from the job info files on startup and all changes to the 
+   * table are immediately written to disk. <P> 
    * 
    * Access to this field should be protected by a synchronized block.
    */ 
   private TreeMap<Long,QueueJobInfo>  pJobInfo; 
 
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * The IDs of the latest jobs associated with each working version indexed by node ID and 
@@ -3532,24 +3755,23 @@ class QueueMgr
    * of a node.  Also, only the newest job for a particular file is stored in this table
    * and the association with older jobs is not retained. <P> 
    * 
-   * This table is always populated regardless of whether the QueueJob and/or QueueJobInfo
-   * are currently loaded for a particular job. <P> 
-   * 
    * Access to this field should be protected by a synchronized block.
    */ 
   private TreeMap<NodeID,TreeMap<File,Long>>  pNodeJobIDs;
 
-  
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * The locks for reading/writing individual QueueJobGroup files. 
    */ 
   private TreeMap<Long,Object>  pJobGroupFileLocks;
   
   /**
-   * The groups of jobs indexed by job group ID. If the job group exists, its group ID
-   * will be a member of the key set of this table.  If the value for a valid key is
-   * <CODE>null</CODE>, the the QueueJobGroup is currently stored on disk and needs to be
-   * reloaded.
+   * The groups of jobs indexed by job group ID. <P> 
+   *
+   * This table is initialized from the job group files on startup and all changes to the 
+   * table are immediately written to disk. <P> 
    * 
    * Access to this field should be protected by a synchronized block.
    */
