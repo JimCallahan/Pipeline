@@ -1,4 +1,4 @@
-// $Id: PackageInfo.cc.in,v 1.14 2004/04/06 08:58:52 jim Exp $
+// $Id: PackageInfo.cc.in,v 1.15 2004/04/09 18:03:24 jim Exp $
 
 #include <PackageInfo.hh>
 
@@ -34,30 +34,6 @@ const int PackageInfo::sPipelineUID = @PIPELINE_UID@;
  * The pipeline group ID 
  */ 
 const int PackageInfo::sPipelineGID = @PIPELINE_GID@;
-
-
-/** 
- * The root directory of the file repository. 
- * 
- * Set by the ProductionDirectory customer profile entry.
- */
-const char* PackageInfo::sProdDir = "@PRODDIR@"; 
-
-/**
- * The port number listened to by the Pipeline directory change notification daemon 
- * plnotify(1) for control requests. 
- * 
- * Set by the NotifyControlPort customer profile entry.
- */
-int PackageInfo::sNotifyControlPort = @NOTIFY_CONTROL_PORT@;
-
-/**
- * The port number listened to by the Pipeline directory change notification daemon 
- * plnotify(1) for monitor requests.
- * 
- * Set by the NotifyMonitorPort customer profile entry.
- */
-int PackageInfo::sNotifyMonitorPort = @NOTIFY_MONITOR_PORT@;
 
 
 /**

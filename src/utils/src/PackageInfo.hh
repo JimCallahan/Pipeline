@@ -1,4 +1,4 @@
-// $Id: PackageInfo.hh,v 1.9 2004/04/06 08:58:52 jim Exp $
+// $Id: PackageInfo.hh,v 1.10 2004/04/09 18:03:24 jim Exp $
 
 #ifndef PIPELINE_PACKAGE_INFO_HH
 #define PIPELINE_PACKAGE_INFO_HH
@@ -41,30 +41,6 @@ public:
    * The pipeline group ID 
    */ 
   static const int sPipelineGID;
-
-
-  /** 
-   * The root directory of the file repository. 
-   * 
-   * Set by the ProductionDirectory customer profile entry.
-   */
-  static const char* sProdDir;
-
-  /**
-   * The port number listened to by the Pipeline directory change notification daemon 
-   * plnotify(1) for control requests. 
-   * 
-   * Set by the NotifyControlPort customer profile entry.
-   */
-  static int sNotifyControlPort;
-
-  /**
-   * The port number listened to by the Pipeline directory change notification daemon 
-   * plnotify(1) for monitor requests.
-   * 
-   * Set by the NotifyMonitorPort customer profile entry.
-   */
-  static int sNotifyMonitorPort;
 
 
   /**
