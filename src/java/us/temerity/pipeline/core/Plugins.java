@@ -1,4 +1,4 @@
-// $Id: Plugins.java,v 1.5 2004/06/14 22:44:26 jim Exp $
+// $Id: Plugins.java,v 1.6 2004/07/18 21:31:56 jim Exp $
   
 package us.temerity.pipeline.core;
 
@@ -31,20 +31,21 @@ class Plugins
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Load all {@link BaseEditor BaseEditor}, {@link BaseAction BaseAction} and 
-   * {@link BaseTool BaseTool} classes found in the installed Pipeline plugin directory.  <P> 
+   * Load all {@link BaseEditor BaseEditor}, {@link BaseComparator BaseComparator} and 
+   * {@link BaseAction BaseAction} classes found in the installed Pipeline plugin 
+   * directory. <P> 
    * 
    * This method must be called before any of the plugin instantiation methods
-   * ({@link #newEditor(String) newEditor}, {@link #newAction(String) newAction} or 
-   * {@link #newTool(String) newTool}) can be used.
+   * ({@link #newEditor(String) newEditor}, {@link #newComparator(String) newComparator} or 
+   * {@link #newAction(String) newAction} can be used.
    */
   public static synchronized void 
   init() 
     throws PipelineException
   {
-    sEditors = new TreeMap<String,Class>();
-    sActions = new TreeMap<String,Class>();
-    sTools   = new TreeMap<String,Class>();
+    sEditors     = new TreeMap<String,Class>();
+    sComparators = new TreeMap<String,Class>();
+    sActions     = new TreeMap<String,Class>();
     
     File dir = new File(PackageInfo.sInstDir + "/plugins/us/temerity/pipeline/plugin");
     File[] files = dir.listFiles();
@@ -68,6 +69,13 @@ class Plugins
 	      sEditors.put(editor.getName(), cls);
 	      Logs.plg.fine("Loaded Editor Plugin: " + editor.getName());
 	    }
+	    else if(BaseComparator.class.isAssignableFrom(cls)) {
+	      Logs.plg.finest("Instantiating Comparator: " + cname);
+	      BaseComparator editor = (BaseComparator) cls.newInstance();
+	      
+	      sComparators.put(editor.getName(), cls);
+	      Logs.plg.fine("Loaded Comparator Plugin: " + editor.getName());
+	    }
  	    else if(BaseAction.class.isAssignableFrom(cls)) {
  	      Logs.plg.finest("Instantiating Action: " + cname);
  	      BaseAction action = (BaseAction) cls.newInstance();
@@ -75,13 +83,6 @@ class Plugins
  	      sActions.put(action.getName(), cls);
  	      Logs.plg.fine("Loaded Action Plugin: " + action.getName());
  	    }
-	    // 	  else if(BaseTool.class.isAssignableFrom(cls)) {
-	    // 	    Logs.plg.finest("Instantiating Tool: " + cname);
-	    // 	    BaseTool tool = (BaseTool) cls.newInstance();
-	    
-	    // 	    sTools.put(tool.getName(), cls);
-	    // 	    Logs.plg.fine("Loaded Tool Plugin: " + tool.getName());
-	    // 	  }
 	  } 
 	  catch(LinkageError ex) {
 	    throw new PipelineException("Unable to link plugin: " + cname + "\n\n" + 
@@ -116,6 +117,15 @@ class Plugins
   getEditorNames() 
   {
     return new TreeSet<String>(sEditors.keySet());
+  }
+  
+  /**
+   * Get the names of the loaded comparator plugins.
+   */ 
+  public static synchronized TreeSet<String>
+  getComparatorNames() 
+  {
+    return new TreeSet<String>(sComparators.keySet());
   }
   
   /**
@@ -157,6 +167,29 @@ class Plugins
   }
   
   /**
+   * Create a new file comparator instance based on the given name. <P> 
+   * 
+   * Note that <CODE>name</CODE> is not the name of the class, but rather the name obtained
+   * by calling {@link BaseComparator#getName BaseComparator.getName} for the returned editor.
+   * 
+   * @param name 
+   *   The name of the editor to instantiate.  
+   * 
+   * @throws  PipelineException
+   *   If no node editor class can be found for the given <CODE>name</CODE> or instantiation 
+   *   fails for the found class.
+   */
+  public static synchronized BaseComparator
+  newComparator
+  (
+   String name
+  ) 
+    throws PipelineException
+  {
+    return (BaseComparator) newPlugin("Comparator", sComparators, name);
+  }
+  
+  /**
    * Create a new node action instance based on the given name. <P> 
    * 
    * Note that <CODE>name</CODE> is not the name of the class, but rather the name obtained
@@ -180,29 +213,6 @@ class Plugins
   }
   
 
-  /**
-   * Create a new tool instance based on the given name. <P> 
-   * 
-   * Note that <CODE>name</CODE> is not the name of the class, but rather the name obtained
-   * by calling {@link BaseTool#getName BaseTool.getName} for the returned tool.
-   * 
-   * @param name 
-   *   The name of the tool to instantiate.  
-   * 
-   * @throws  PipelineException
-   *   If no tool class can be found for the given <CODE>name</CODE> or instantiation 
-   *   fails for the found class.
-   */
- //  public static synchronized BaseTool
-//   newTool
-//   (
-//    String name
-//   ) 
-//     throws PipelineException
-//   {
-//     return (BaseTool) newPlugin("Tool", sTools, name);
-//   }
-  
 
   /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S                                                                        */
@@ -213,7 +223,7 @@ class Plugins
    * given name.
    * 
    * @param ptype 
-   *   The kind of plugin being instantiated: Editor, Action or Tool.
+   *   The kind of plugin being instantiated: Editor, Comparator or Action.
    * 
    * @param table 
    *   The table of plugin classes to search for <CODE>name</CODE>.
@@ -269,14 +279,14 @@ class Plugins
   private static TreeMap<String,Class>  sEditors;
   
   /** 
+   * The table of loaded comparator plugin classes.
+   */
+  private static TreeMap<String,Class>  sComparators;
+  
+  /** 
    * The table of loaded actions plugin classes.
    */
   private static TreeMap<String,Class>  sActions;
-  
-  /** 
-   * The table of loaded tools plugin classes.
-   */
-  private static TreeMap<String,Class>  sTools;
   
 }
 
