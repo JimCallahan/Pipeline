@@ -1,4 +1,4 @@
-// $Id: JSourceParamsDialog.java,v 1.3 2004/09/21 23:55:36 jim Exp $
+// $Id: JSourceParamsDialog.java,v 1.4 2004/11/19 05:26:15 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -90,12 +90,12 @@ class JSourceParamsDialog
 	body.add(tpanel);
       }
     
-      String header = ("View Source Parameters:" + "  " + title);
+      String header = ("View Source Parameters:  " + title);
       String confirm = null;
       String extra[][] = null;
       String cancel = "Close";
       if(isEditable) {
-	header = ("Edit Source Parameters:" + title);
+	header = ("Edit Source Parameters:  " + title);
 
 	confirm = "Confirm";
 
