@@ -635,17 +635,10 @@ AC_PATH_PROG(SSH, ssh, $PATH)
 AC_PATH_PROG(ID, id, $PATH)
 AC_PATH_PROG(DF, df, $PATH) 
 AC_PATH_PROG(MOZILLA, mozilla, $PATH)
+AC_PATH_PROG(GIMP, gimp, $PATH)
 
 AC_MSG_RESULT([ ])
 
-
-
-dnl -- IMAGE MAJICK --------------------------------------------------------------------------
-
-AC_MSG_RESULT([Locating Image tools:])
-AC_PATH_PROG(CONVERT, convert, $PATH)
-
-AC_MSG_RESULT([ ])
 
 
 
