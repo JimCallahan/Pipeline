@@ -1,4 +1,4 @@
-// $Id: PlPut.cc,v 1.5 2003/01/26 00:21:01 jim Exp $
+// $Id: PlPut.cc,v 1.6 2003/01/30 01:59:08 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -67,9 +67,6 @@ public:
   {
     assert(uWork);
     assert(uRepo);
-
-    uWorkMd5 = md5path(uWork);
-    uRepoMd5 = md5path(uRepo);
   }
 
   ~PathPair()
@@ -79,42 +76,11 @@ public:
 
     assert(uRepo);
     delete[] uRepo;
-
-    assert(uWorkMd5);
-    delete[] uWorkMd5;
-
-    assert(uRepoMd5);
-    delete[] uRepoMd5;
-  }
-
-protected:
-  /* generate paths to the MD5 checksum file from the file path */ 
-  char* 
-  md5path
-  (
-   const char* path
-  ) 
-  {
-    char* tmp1 = strdup(path);
-    char* tmp2 = strdup(path);
-    char* dir  = dirname(tmp1);
-    char* file = basename(tmp2);
-
-    char md5[1024];
-    sprintf(md5, "%s/.md5sum/%s", dir, file);
-
-    delete[] tmp1;
-    delete[] tmp2;
-
-    return strdup(md5);
   }
 
 public:
   const char* uWork;          /* absolute path to working area file */ 
   const char* uRepo;          /* absolute path to repository file */ 
-
-  const char* uWorkMd5;       /* absolute path to working area MD5 checksum file */ 
-  const char* uRepoMd5;       /* absolute path to repository MD5 checksum file */
 };
 
 
@@ -136,7 +102,7 @@ struct StringCmp
 void
 usage()
 {
-  std::cerr << "usage: plput [--verbose] [--md5] listfile\n"
+  std::cerr << "usage: plput [--verbose] listfile\n"
 	    << "       plput --help\n"
 	    << "       plput --html-help\n"
 	    << "       plput --version\n"
@@ -145,49 +111,6 @@ usage()
 	    << std::flush;
 }
 
-
-/* make sure repository file does not exist (as a file or directory) */ 
-void
-checkRepoFiles
-(
- std::list<PathPair*>& pairs,    /* IN: list of work/repo pairs */ 
- bool md5                        /* IN: check MD5 checksums as well? */ 
-)
-{
-  char msg[1024];
-
-  std::list<PathPair*>::iterator iter;
-  for(iter=pairs.begin(); iter != pairs.end(); iter++) {
-    const char* repo = (*iter)->uRepo;
-    FB::stageMsg(repo);
-    
-    struct stat buf;
-    if(stat(repo, &buf) == 0) {
-      if(S_ISDIR(buf.st_mode)) {
-	sprintf(msg, "bad path, directory exists with the name: %s", repo);
-	FB::error(msg);	    
-      }
-      else {
-	sprintf(msg, "attempted to overwrite repository file: %s", repo);
-	FB::error(msg);
-      }
-    }
-    
-    if(md5) {
-      const char* md5 = (*iter)->uRepoMd5;
-      if(stat(md5, &buf) == 0) {
-	if(S_ISDIR(buf.st_mode)) {
-	  sprintf(msg, "bad path, directory exists with the name: %s", md5);
-	  FB::error(msg);	    
-	}
-	else {
-	  sprintf(msg, "attempted to overwrite repository MD5 file: %s", md5);
-	  FB::error(msg);
-	}
-      }
-    }
-  }
-}
 
 
 /* copy a single file to the repository, 
@@ -253,7 +176,6 @@ main
   FB::setWarnings(false);
   FB::setStageStats(false);
 
-  bool md5 = false;
   if(argc == 2) {
     if(strcmp(argv[1], "--help") == 0) {
       usage();
@@ -290,9 +212,6 @@ main
       if(strcmp(argv[wk], "--verbose") == 0) {
 	FB::setWarnings(true);
 	FB::setStageStats(true);
-      }
-      else if(strcmp(argv[wk], "--md5") == 0) {
-	md5 = true;
       }
     }
   }
@@ -347,15 +266,6 @@ main
 	sprintf(msg, "missing working area file: %s", work);
 	FB::error(msg);
       }
-
-      if(md5) {
-	const char* md5 = (*iter)->uWorkMd5;
-	FB::stageMsg(md5);
-	if(access(md5, F_OK) != 0) {
-	  sprintf(msg, "missing working area MD5 checksum file: %s", md5);
-	  FB::error(msg);
-	}
-      }
     }
   }
   FB::stageEnd();
@@ -364,7 +274,23 @@ main
   /* make sure the repository files DO NOT already exist */ 
   FB::stageBegin("Checking Repository Files:");
   {
-    checkRepoFiles(pairs, md5);
+    std::list<PathPair*>::iterator iter;
+    for(iter=pairs.begin(); iter != pairs.end(); iter++) {
+      const char* repo = (*iter)->uRepo;
+      FB::stageMsg(repo);
+      
+      struct stat buf;
+      if(stat(repo, &buf) == 0) {
+	if(S_ISDIR(buf.st_mode)) {
+	  sprintf(msg, "bad path, directory exists with the name: %s", repo);
+	  FB::error(msg);	    
+	}
+	else {
+	  sprintf(msg, "attempted to overwrite repository file: %s", repo);
+	  FB::error(msg);
+	}
+      }
+    }
   }
   FB::stageEnd();
 
@@ -378,12 +304,7 @@ main
     {
       Pairs::iterator iter;
       for(iter=pairs.begin(); iter != pairs.end(); iter++) {
-	char* repo = NULL;
-	if(md5) 
-	  repo = strdup((*iter)->uRepoMd5);
-	else 
-	  repo = strdup((*iter)->uRepo);
-
+	char* repo = strdup((*iter)->uRepo);
 	char* p = repo;
 	p += strlen(repo)-1;
 
@@ -459,14 +380,6 @@ main
   FB::stageEnd();
 
 
-  /* make sure the repository files DO NOT already exist (just to be absolutely safe!) */ 
-  FB::stageBegin("Rechecking Repository Files:");
-  {
-    checkRepoFiles(pairs, md5);
-  }
-  FB::stageEnd();
-
-
   /* copy the files... */ 
   FB::stageBegin("Copying Files:");
   bool aborted = false;
@@ -478,11 +391,6 @@ main
 	aborted = true;
 	break;
       }     
-
-      if(!copyFileToRepo((*iter)->uWorkMd5, (*iter)->uRepoMd5, copied)) {
-	aborted = true;
-	break;
-      }
     }
 
     /* a failure occured while copying, 
