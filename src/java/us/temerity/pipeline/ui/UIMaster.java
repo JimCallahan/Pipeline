@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.58 2004/10/31 20:03:03 jim Exp $
+// $Id: UIMaster.java,v 1.59 2004/11/11 00:39:25 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -530,6 +530,24 @@ class UIMaster
 	task.start();	
       }
     }
+  }
+
+  /**
+   * Show a dialog for archiving files associated with checked-in versions.
+   */ 
+  public void 
+  showArchiveDialog()
+  {
+    pArchiveDialog.setVisible(true);
+  }
+
+  /**
+   * Show a dialog for restoring files associated with checked-in versions.
+   */ 
+  public void 
+  showRestoreDialog()
+  {
+    pRestoreDialog.setVisible(true);
   }
 
 
@@ -2652,6 +2670,9 @@ class UIMaster
 	  new JFileSelectDialog("Backup Database", "Backup Database File:",
 				"Backup As:", 64, "Backup"); 
 	pBackupDialog.updateTargetFile(PackageInfo.sTempDir);
+
+	pArchiveDialog = new JArchiveDialog();
+	pRestoreDialog = new JRestoreDialog();
       }
 
       ArrayList<JFrame> frames = new ArrayList<JFrame>();
@@ -3799,4 +3820,14 @@ class UIMaster
    * The database backup dialog.
    */
   private JFileSelectDialog  pBackupDialog; 
+
+  /**
+   * The archive dialog.
+   */
+  private JArchiveDialog  pArchiveDialog; 
+
+  /**
+   * The restore dialog.
+   */
+  private JRestoreDialog  pRestoreDialog; 
 }

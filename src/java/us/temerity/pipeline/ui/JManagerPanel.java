@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.51 2004/11/01 00:49:44 jim Exp $
+// $Id: JManagerPanel.java,v 1.52 2004/11/11 00:39:25 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -291,11 +291,6 @@ class JManagerPanel
       item.addActionListener(this);
       pPopup.add(item);  
 
-//       item = new JMenuItem("Job Servers");
-//       item.setActionCommand("manage-job-servers");
-//       item.addActionListener(this);
-//       pPopup.add(item);  
-
       pPopup.addSeparator();
 
       {
@@ -329,6 +324,20 @@ class JManagerPanel
 	item = new JMenuItem("Backup Database...");
 	pBackupDatabaseItem = item;
 	item.setActionCommand("backup-database");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	sub.addSeparator();
+
+	item = new JMenuItem("Archive...");
+	pArchiveItem = item;
+	item.setActionCommand("archive");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	item = new JMenuItem("Restore...");
+	pRestoreItem = item;
+	item.setActionCommand("restore");
 	item.addActionListener(this);
 	sub.add(item);  
 
@@ -1429,6 +1438,10 @@ class JManagerPanel
       UIMaster.getInstance().showManageSelectionKeysDialog();
     else if(cmd.equals("backup-database"))
       UIMaster.getInstance().showBackupDialog();
+    else if(cmd.equals("archive"))
+      UIMaster.getInstance().showArchiveDialog();
+    else if(cmd.equals("restore"))
+      UIMaster.getInstance().showRestoreDialog();
     else if(cmd.equals("shutdown"))
       doShutdownServer();
 
@@ -2231,6 +2244,8 @@ class JManagerPanel
 	try {
 	  boolean isPrivileged = master.getMasterMgrClient().isPrivileged(true);
 	  pBackupDatabaseItem.setEnabled(isPrivileged);
+	  pArchiveItem.setEnabled(isPrivileged);
+	  pRestoreItem.setEnabled(isPrivileged);
 	  pShutdownServerItem.setEnabled(isPrivileged);
 	}
 	catch(PipelineException ex) {
@@ -2599,6 +2614,8 @@ class JManagerPanel
   private JMenuItem  pOwnerViewItem;
 
   private JMenuItem  pBackupDatabaseItem;
+  private JMenuItem  pArchiveItem;
+  private JMenuItem  pRestoreItem;
   private JMenuItem  pShutdownServerItem;
 
   /**
