@@ -1,4 +1,4 @@
-// $Id: FilePattern.java,v 1.1 2004/02/12 15:50:12 jim Exp $
+// $Id: FilePattern.java,v 1.2 2004/02/14 17:41:57 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -7,74 +7,223 @@ import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   F I L E   P A T T E R N                                                                */
-/*                                                                                          */
-/*    Generates literal filename from prefix, frame and suffix components.                  */
 /*------------------------------------------------------------------------------------------*/
 
+/**
+ * A standardized representation of filenames associated with Pipeline nodes. <P>
+ * 
+ * All files associated with nodes have filenames which consist of the following 
+ * components: <BR>
+ * <DIV style="margin-left: 40px;"><I>prefix</I>[.<I>frame</I>][.<I>suffix</I>]</DIV><P>
+ * 
+ * The <I>prefix</I> component is required and must start with one of the characters 
+ * ['<CODE>a</CODE>'-'<CODE>z</CODE>', '<CODE>A</CODE>'-'<CODE>Z</CODE>', '<CODE>/</CODE>'] 
+ * followed by zero or more of the characters ['<CODE>a</CODE>'-'<CODE>z</CODE>', 
+ * '<CODE>A</CODE>'-'<CODE>Z</CODE>', '<CODE>0</CODE>'-'<CODE>9</CODE>', '<CODE>_</CODE>', 
+ * '<CODE>-</CODE>', '<CODE>/</CODE>']. <P>
+ * 
+ * The <I>frame</I> component is optional and represents a frame number consisting of the 
+ * characters ['<CODE>0</CODE>'-'<CODE>9</CODE>'] which may be or may not be zero padded. <P>
+
+ * Finally, the <I>suffix</I> component is optional and may only contain the characters 
+ * ['<CODE>a</CODE>'-'<CODE>z</CODE>', '<CODE>A</CODE>'-'<CODE>Z</CODE>', 
+ * '<CODE>0</CODE>'-'<CODE>9</CODE>', '<CODE>_</CODE>', '<CODE>-</CODE>']. <P>
+ * 
+ * This class is used by the {@link FileSeq FileSeq} class in combination with the 
+ * {@link FrameRange FrameRange} class to represent the file sequences associated with 
+ * nodes.
+ * 
+ * @see FrameRange
+ * @see FileSeq
+ */
 public
 class FilePattern
-  implements Glueable
+implements Glueable
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
 
-  /* Default constructor. */ 
   public 
   FilePattern()
-  {}
+  {
+    pPadding = -1;
+  }
 
-  /* Construct from components. */ 
+
+  /**
+   * Construct a <CODE>FilePattern</CODE> without frame number or suffix components. 
+   * 
+   * @param prefix  [<B>in</B>]
+   *   The required filename prefix component. This argument cannot be <CODE>null</CODE>.
+   * 
+   * @throws IllegalArgumentException
+   *   If the <CODE>prefix</CODE> is <CODE>null</CODE>.
+   */
   public 
   FilePattern
   (
-   String prefix,  /* IN: filename prefix */ 
-   int padding,    /* IN: zero padding of frame number (-1 for none) */ 
-   String suffix   /* IN: filename extension (null for none) */ 
+   String prefix
   ) 
   {
-    assert(prefix != null);
+    if(prefix == null)
+      throw new IllegalArgumentException("The prefix cannot be (null)!");
+    pPrefix = prefix;
+    
+    pPadding = -1;
+  }
+
+  /**
+   * Construct a <CODE>FilePattern</CODE> without a frame number component.
+   * 
+   * @param prefix  [<B>in</B>]
+   *   The required filename prefix component. This argument cannot be <CODE>null</CODE>.
+   * 
+   * @param suffix  [<B>in</B>]
+   *   The filename extension (or suffix) component.  If <CODE>null</CODE> is passed for this 
+   *   argument, then the filename will have no suffix component.
+   * 
+   * @throws IllegalArgumentException
+   *   If the <CODE>prefix</CODE> is <CODE>null</CODE>. If the <CODE>suffix</CODE> is an 
+   *   empty <CODE>String</CODE>.
+   */
+  public 
+  FilePattern
+  (
+   String prefix,  
+   String suffix   
+  ) 
+  {
+    if(prefix == null)
+      throw new IllegalArgumentException("The prefix cannot be (null)!");
     pPrefix = prefix;
 
-    if(suffix != null) 
-      assert((padding == -1) || (padding >= 0));
-    else 
-      assert(padding == -1);
+    pPadding = -1;
 
+    if((suffix != null) && (suffix.length() == 0)) 
+      throw new IllegalArgumentException("The suffix was an empty string!");
+    pSuffix = suffix;
+  }
+
+  /**
+   * Construct a <CODE>FilePattern</CODE> from general components. 
+   * 
+   * @param prefix  [<B>in</B>]
+   *   The required filename prefix component. This argument cannot be <CODE>null</CODE>.
+   * 
+   * @param padding [<B>in</B>]
+   *   The number of digits of zero padding of the frame number component of the filename.
+   *   If <CODE>0</CODE> is passed for this argument, then frame numbers will be unpadded.
+   *   If <CODE>-1</CODE> is passed for this argument, then the constructed 
+   *   <CODE>FilePattern</CODE> will have <I>no</I> frame number component.
+   * 
+   * @param suffix  [<B>in</B>]
+   *   The filename extension (or suffix) component.  If <CODE>null</CODE> is passed for this 
+   *   argument, then the filename will have <I>no</I> suffix component.
+   * 
+   * @throws IllegalArgumentException
+   *   If the <CODE>prefix</CODE> is <CODE>null</CODE>. If the <CODE>padding</CODE> is
+   *   less-than <CODE>-2</CODE>.  If the <CODE>suffix</CODE> is an empty <CODE>String</CODE>.
+   */ 
+  public 
+  FilePattern
+  (
+   String prefix,  
+   int padding,    
+   String suffix   
+  ) 
+  {
+    if(prefix == null)
+      throw new IllegalArgumentException("The prefix cannot be (null)!");
+    pPrefix = prefix;
+
+    if(padding < -1)
+      throw new IllegalArgumentException(
+	"The frame number padding (" + padding + ") must (-1), (0) or a positive value!");
     pPadding = padding;
+
+    if((suffix != null) && (suffix.length() == 0)) 
+      throw new IllegalArgumentException("The suffix was an empty string!");
     pSuffix  = suffix;
   }
 
-  /* Copy constructor. */ 
+  /**
+   * Copy constructor. 
+   * 
+   * @param pattern  [<B>in</B>]
+   *    The <CODE>FilePattern</CODE> to copy. 
+   */ 
   public 
   FilePattern
   (
-   FilePattern pat   /* IN: pattern to copy */ 
-  ) 
+   FilePattern pattern 
+  )  
   {
-    pPrefix  = pat.getPrefix();
-    pPadding = pat.getPadding();
-    pSuffix  = pat.getSuffix();
+    pPrefix  = pattern.getPrefix();
+    pPadding = pattern.getPadding();
+    pSuffix  = pattern.getSuffix();
   }
 
 
-  
+   
+  /*----------------------------------------------------------------------------------------*/
+  /*   P R E D I C A T E S                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Does this <CODE>FilePattern</CODE> have a frame number component.
+   */
+  public boolean 
+  hasFrameNumbers() 
+  {
+    return (pPadding >= 0);
+  }
+
+  /** 
+   * Does this <CODE>FilePattern</CODE> have a suffix component.
+   */
+  public boolean 
+  hasSuffix() 
+  {
+    return (pSuffix != null);
+  }
+
+
+
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
  
+  /** 
+   * Gets the prefix component.
+   */ 
   public String
   getPrefix()
   {
+    assert(pPrefix != null);
     return pPrefix;
   }
 
+  /** 
+   * Gets the number of digits of of zero padding of the frame number component.
+   * 
+   * @return  
+   *   The number of zero padded digits or <CODE>-1</CODE> if this <CODE>FilePattern</CODE>
+   *   does not have a frame number component. 
+   */ 
   public int 
   getPadding() 
   {
     return pPadding;
   }
 
+  /** 
+   * Gets the optional filename extension (or suffix) component.
+   * 
+   * @return  
+   *   The suffix string or <CODE>null</CODE> if this <CODE>FilePattern</CODE> has no 
+   *   suffix component.
+   */
   public String
   getSuffix()
   {
@@ -87,139 +236,176 @@ class FilePattern
   /*   F I L E N A M E   G E N E R A T I O N                                                */
   /*----------------------------------------------------------------------------------------*/
 
-  /* The literal filename for the given frame number. */ 
-  public String
-  getFilename
+  /**
+   * Generated a literal filename for the given frame number. <P>
+   * 
+   * This method is only valid for <CODE>FilePattern</CODE> objects which have a frame 
+   * number component.
+   * 
+   * @param frame  [<B>in</B>]
+   *   The frame number used to generate the filename.
+   */ 
+  public File
+  getFile
   (
-   int frame  /* IN: frame number */ 
+   int frame  
   ) 
   {
+    assert(hasFrameNumbers());
+
     StringBuffer buf = new StringBuffer();
-    buf.append(pPrefix);  
+    buf.append(pPrefix);
 
-    if(pSuffix != null) {
+    String fstr = String.valueOf(frame);
+    if(pPadding >= 0) {
       buf.append(".");
-
-      String fstr = String.valueOf(frame);
-      if(pPadding > 0) {
-	int pad = pPadding - fstr.length();
-	int wk; 
-	for(wk=0; wk<pad; wk++) 
-	  buf.append("0");
-	buf.append(fstr + ".");
-      }
-      else if(pPadding == 0) {
-	buf.append(fstr + ".");
-      }
+      int wk; 
+      for(wk=0; wk < (pPadding - fstr.length()); wk++) 
+	buf.append("0");
+    }
+    buf.append(fstr);
       
-      buf.append(pSuffix);
-    }
-    else {
-      assert(pPadding == -1);
-    }
+    if(pSuffix != null) 
+      buf.append("." + pSuffix);
 
-    /* 
-       THIS LOOKS WRONG! 
+    return new File(buf.toString());
+  }
+  
+  /**
+   * Generated a literal filename. <P>
+   * 
+   * This method is only valid for <CODE>FilePattern</CODE> objects which have 
+   * <I>no</I> frame number component.
+   */
+  public File
+  getFile() 
+  {
+    assert(!hasFrameNumbers());
 
-       If (pSuffix == null), the frame number is completely ignored... 
-    */ 
+    if(pSuffix != null) 
+      return new File(pPrefix + "." + pSuffix);
 
-    return (buf.toString());
+    return new File(pPrefix);
   }
   
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   C O M P A R I S O N                                                                  */
+  /*   O B J E C T   O V E R R I D E S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  /* Are the frame patterns equivalent? */ 
+  /** 
+   * Indicates whether some other object is "equal to" this one.
+   * 
+   * @param obj 
+   *   The reference object with which to compare.
+   */
   public boolean
   equals
   (
    Object obj
   )
   {
-    FilePattern pat = (FilePattern) obj;
+    if((obj != null) && (obj instanceof FilePattern)) {
+      FilePattern pat = (FilePattern) obj;
+      return toString().equals(pat.toString());
+    }
 
-    return ((pat != null) && 
-	    pPrefix.equals(pat.pPrefix) && 
-	    (pPadding == pat.pPadding) && 
-	    (((pSuffix == null) && (pat.getSuffix() == null)) || 
-	     pSuffix.equals(pat.pSuffix)));
+    return false;
   }
 
+  /**
+   * Returns a hash code value for the object.
+   */
+  public int 
+  hashCode() 
+  {
+    return toString().hashCode();
+  }
 
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   C O N V E R S I O N                                                                  */
-  /*----------------------------------------------------------------------------------------*/
-  
-  /* Convert to a string representation. */ 
+  /**
+   * Returns a string representation of the object. 
+   */
   public String
   toString() 
   {
     StringBuffer buf = new StringBuffer();
     buf.append(pPrefix);
-    
-    if(pSuffix != null) {
-      buf.append(".");
 
-      if(pPadding == 4) 
-	buf.append("#.");
-      else if(pPadding > 0) {
+    switch(pPadding) {
+    case -1:
+      break;
+
+    case 0:
+      buf.append(".@");
+      break;
+
+    case 4:
+      buf.append(".#");
+      break;
+
+    default:
+      {
+	buf.append(".");
 	int wk; 
 	for(wk=0; wk<pPadding; wk++) 
 	  buf.append("@");
-	buf.append(".");
       }
-      else if(pPadding == 0) {
-	buf.append("@.");
-      }
-
-      buf.append(pSuffix);
     }
-    else {
-      assert(pPadding == -1);
-    }
-	
-    /* 
-       THIS LOOKS WRONG! 
-
-       If (pSuffix == null), the frame number is completely ignored... 
-    */ 
+      
+    if(pSuffix != null) 
+      buf.append("." + pSuffix);
 	     
     return (buf.toString());
   }
 
 
-
+    
   /*----------------------------------------------------------------------------------------*/
   /*   G L U E A B L E                                                                      */
   /*----------------------------------------------------------------------------------------*/
 
   public void 
-  writeGlue
+  toGlue
   ( 
-   GlueEncoder ge   /* IN: the current GLUE encoder */ 
+   GlueEncoder encoder   
   ) 
-    throws GlueError
+    throws GlueException
   {
-    ge.writeEntity("Prefix", pPrefix);
-    ge.writeEntity("Padding", new Integer(pPadding));
-    ge.writeEntity("Suffix", pSuffix);
+    encoder.encode("Prefix",  pPrefix);
+
+    if(pPadding > -1)
+      encoder.encode("Padding", pPadding);
+
+    if(pSuffix != null)
+      encoder.encode("Suffix",  pSuffix);
   }
 
   public void 
-  readGlue
+  fromGlue
   (
-   GlueDecoder gd  /* IN: the current GLUE decoder */ 
+   GlueDecoder decoder 
   ) 
-    throws GlueError
+    throws GlueException
   {
-    pPrefix  = (String) gd.readEntity("Prefix");
-    pPadding = ((Integer) gd.readEntity("Padding")).intValue();
-    pSuffix  = (String) gd.readEntity("Suffix");
+    String prefix = (String) decoder.decode("Prefix");
+    if(prefix == null) 
+      throw new GlueException("The \"Prefix\" was missing or (null)!");
+    pPrefix = prefix;
+
+    Integer padding = (Integer) decoder.decode("Padding");
+    if(padding != null) {
+      if(padding < -1)
+	throw new GlueException(
+	  "The frame number \"Padding\" (" + padding + ") must (-1), (0) " + 
+	  "or a positive value!");
+      pPadding = padding;
+    }
+
+    String suffix = (String) decoder.decode("Suffix"); 
+    if((suffix != null) && (suffix.length() == 0)) 
+      throw new GlueException("The \"Suffix\" was an empty string!");
+    pSuffix = suffix;
   }
 
 
@@ -228,9 +414,22 @@ class FilePattern
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
-  protected String  pPrefix;   /* Filename prefix. */ 				   
-  protected int     pPadding;  /* Zero padding of frame number (-1 for none). */    
-  protected String  pSuffix;   /* Filename extension (null for none). */          
+  /** 
+   * The required filename prefix component. This component cannot be <CODE>null</CODE>.
+   */
+  private String pPrefix;  
 
+  /** 
+   * The number of digits of zero padding of the frame number component of the filename.
+   * If <CODE>0</CODE>, then the frame numbers will be unpadded.  If <CODE>-1</CODE>, then 
+   * the <CODE>FilePattern</CODE> will have <I>no</I> frame number component.
+   */
+  private int pPadding;  
+
+  /**
+   * The filename extension (or suffix) component.  If <CODE>null</CODE>, then the filename 
+   * will have <I>no</I> suffix component.
+   */ 
+  private String pSuffix;  
 }
 

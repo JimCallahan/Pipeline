@@ -1,4 +1,4 @@
-// $Id: FrameRange.java,v 1.1 2004/02/12 15:50:12 jim Exp $
+// $Id: FrameRange.java,v 1.2 2004/02/14 17:41:57 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -7,10 +7,21 @@ import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   F R A M E   R A N G E                                                                  */
-/*                                                                                          */
-/*    Information about the range of frame numbers which make up a file sequence.           */
 /*------------------------------------------------------------------------------------------*/
 
+/**
+ * The set of frame numbers for the sequence of files associated with a Pipeline node. <P>
+ * 
+ * The <CODE>FrameRange</CODE> class can represent both single and multiple file 
+ * sequences. All frame numbers must be non-negative. <P> 
+ * 
+ * This class is used by the {@link FileSeq FileSeq} class in combination with the 
+ * {@link FilePattern FilePattern} class to represent the file sequences associated with 
+ * nodes.
+ * 
+ * @see FilePattern
+ * @see FileSeq
+ */
 public
 class FrameRange
   implements Glueable
@@ -19,52 +30,104 @@ class FrameRange
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
 
-  /* Default constructor. */ 
   public 
   FrameRange()
   {
     pStart = 0;
     pEnd   = 0;
     pBy    = 1;
+
+    pNumFrames = 1;
   }
 
-  /* Construct for a single frame. */ 
+  /**
+   * Construct for a single frame. 
+   * 
+   * @param single  [<B>in</B>]
+   *   The sole frame number of the single frame file sequence. 
+   * 
+   * @throws IllegalArgumentException
+   *   If the frame number argument <CODE>single</CODE> is negative.
+   */ 
   public 
   FrameRange
   (
-   int single  /* IN: frame number */ 
+   int single
   ) 
   {
+    if(single < 0)
+      throw new IllegalArgumentException(
+        "The frame number (" + single + ") cannot be negative!");
+
     pStart = single;
     pEnd   = single;
     pBy    = 1;
+
+    pNumFrames = 1;
   }
 
-  /* Construct for a sequence of frames. */ 
+  /**
+   * Construct for a sequence of frames. 
+   * 
+   * @param start  [<B>in</B>]
+   *   The first frame number in the file sequence.
+   * 
+   * @param end  [<B>in</B>]
+   *   The last frame number in the file sequence.
+   * 
+   * @param by  [<B>in</B>]
+   *   The frame step increment. 
+   * 
+   * @throws IllegalArgumentException
+   *   If the <CODE>start</CODE> or <CODE>end</CODE> frame are negative.  If the frame 
+   *   increment <CODE>by</CODE> is not positive.  If the <CODE>start</CODE> frame is 
+   *   not greater-than the <CODE>end</CODE> frame.
+   */ 
   public 
   FrameRange
   (
-   int start,   /* IN: start frame */ 
-   int end,     /* IN: start frame */ 
-   int by       /* IN: frame increment */ 
+   int start,  
+   int end,    
+   int by      
   ) 
   {
+    if(start < 0)
+      throw new IllegalArgumentException(
+        "The start frame (" + start + ") cannot be negative!");
+
+    if(start > end) 
+      throw new IllegalArgumentException(
+        "The start frame (" + start + ") cannot be greater-than " + 
+	"the end frame (" + end + ")!");
+
+    if(by <= 0) 
+      throw new IllegalArgumentException(
+        "The frame increment (" + by + ") must be positive!");
+
     pStart = start;
     pEnd   = end;
     pBy    = by;
+
+    pNumFrames = (int) Math.floor(((double) (pEnd - pStart)) / ((double) pBy)) + 1;
   }
 
-  /* Copy constructor. */ 
+  /**
+   * Copy constructor. 
+   *
+   * @param range  [<B>in</B>]
+   *    The <CODE>FrameRange</CODE> to copy. 
+   */ 
   public 
   FrameRange
   (
-   FrameRange range   /* IN: frame range to copy */ 
+   FrameRange range
   ) 
   {
-    assert(range != null);
     pStart = range.getStart();
     pEnd   = range.getEnd();
     pBy    = range.getBy();
+
+    pNumFrames = range.numFrames();
   }
   
 
@@ -73,18 +136,26 @@ class FrameRange
   /*   P R E D I C A T E S                                                                  */
   /*----------------------------------------------------------------------------------------*/
 
-  /* is this a single frame? (as opposed to a sequence) */ 
+  /**
+   * Does this <CODE>FraneRange</CODE> contain only a single frame? 
+   */
   public boolean
   isSingle() 
   {
     return (pStart == pEnd);
   }
 
-  /* is the given frame number valid? (within the range) */ 
+  /**
+   * Is the given frame number valid? In other words, is the given frame number a member 
+   * of the set of frames for this <CODE>FrameRange</CODE>.
+   * 
+   * @param frame [<B>in</B>]
+   *   The frame number to test for validity.
+   */
   public boolean
   isValid
   (
-   int frame   /* IN: frame number */ 
+   int frame  
   ) 
   {
     if(isSingle())
@@ -100,29 +171,45 @@ class FrameRange
   }
   
 
+
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
-  /* start frame */
+  /**
+   * Get the first frame number in the file sequence.
+   */
   public int
   getStart() 
   {
     return pStart;
   }
 
-  /* end frame */
+  /**
+   * Get the last frame number in the file sequence.
+   */
   public int
   getEnd() 
   {
     return pEnd;
   }
 
-  /* frame increment */ 
+  /**
+   * Get the frame step increment. 
+   */
   public int
   getBy()
   {
     return pBy;
+  }
+
+  /**
+   * The total number of frames in the file sequence.
+   */ 
+  public int
+  numFrames()
+  {
+    return pNumFrames;
   }
 
 
@@ -130,75 +217,119 @@ class FrameRange
   /*   F R A M E   N U M B E R I N G                                                        */
   /*----------------------------------------------------------------------------------------*/
 
-  /* total number of frames in range */ 
-  public int
-  getNumFrames()
+  /** 
+   * Get the an array of valid frame numbers.
+   */
+  public int[]
+  getFrameNumbers() 
   {
-    return (int) Math.floor(((double) (pEnd - pStart)) / ((double) pBy)) + 1;
+    int frames[] = new int[pNumFrames];
+    int frame, wk;
+    for(wk=0, frame=pStart; wk<pNumFrames; wk++, frame+=pBy) 
+      frames[wk] = frame;
+
+    return frames;
   }
 
-  /* convert an index into a frame number */ 
+  /**
+   * Convert a frame index into a frame number.
+   * 
+   * @param idx [<B>in</B>]
+   *   The frame index to convert.  Valid frame indices are in the range: 
+   *   [0,{@link numFrames() numFrames()}).
+   * 
+   * @return 
+   *   The frame number corresponding to the given frame index.
+   * 
+   * @throws IllegalArgumentException
+   *   If the given frame index is invalid.
+   */ 
   public int 
   indexToFrame
   (
-   int idx    /* IN: frame index */ 
+   int idx  
   )
   {
-    assert (isValid(pStart + pBy*idx)) : ("Index: " + idx + "  Frame: " + (pStart + pBy*idx));
+    if((idx < 0) || (idx >= pNumFrames)) 
+      throw new IllegalArgumentException(
+	"The given frame index (" + idx + ") was not valid for the range: " + 
+	"[0," + pNumFrames + ")."); 
+      
     return (pStart + pBy*idx);
   }
   
-  /* Convert a frame number into an index. */ 
+  /**
+   * Convert a frame number into a frame index.
+   * 
+   * @param frame [<B>in</B>]
+   *   The frame number to convert.  
+   * 
+   * @return 
+   *   The frame index corresponding to the given frame number.
+   *
+   * @throws IllegalArgumentException
+   *   If the given frame number is invalid.
+   */ 
   public int 
   frameToIndex
   (
    int frame  /* IN: frame number */ 
   ) 
-    throws IllegalArgumentException
   {
     if(!isValid(frame))
       throw new IllegalArgumentException(
-	"The given frame (" + frame + ") was not valid for the range: " + range + "."); 
+	"The given frame (" + frame + ") was not valid for the range: " + this + "."); 
     
     return ((frame - pStart) / pBy);
   }
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   C O M P A R I S O N                                                                  */
+  /*   O B J E C T   O V E R R I D E S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  /* are the frame ranges equivalent? */ 
+  /** 
+   * Indicates whether some other object is "equal to" this one.
+   * 
+   * @param obj 
+   *   The reference object with which to compare.
+   */
   public boolean
   equals
   (
    Object obj
   )
   {
-    FrameRange range = (FrameRange) obj;
+    if((obj != null) && (obj instanceof FrameRange)) {
+      FrameRange range = (FrameRange) obj;
     
-    return ((range != null) && 
-	    (pStart == range.pStart) && 
-	    (pEnd == range.pEnd) && 
-	    (pBy == range.pBy));
+      return ((pStart == range.pStart) && 
+	      (pEnd == range.pEnd) && 
+	      (pBy == range.pBy));
+    }
+
+    return false;
   }
 
+  /**
+   * Returns a hash code value for the object.
+   */
+  public int 
+  hashCode() 
+  {
+    return toString().hashCode();
+  }
 
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   C O N V E R S I O N                                                                  */
-  /*----------------------------------------------------------------------------------------*/
-  
-  /* convert to a string representation */ 
+  /**
+   * Returns a string representation of the object. 
+   */
   public String
   toString() 
   {
     if(isSingle())
       return String.valueOf(pStart);
     else
-      return (String.valueOf(pStart) + "-" + 
-	      String.valueOf(pEnd) + "x" + 
-	      String.valueOf(pBy));
+      return (pStart + "-" + pEnd + "x" + pBy);
   }
 
 
@@ -208,27 +339,57 @@ class FrameRange
   /*----------------------------------------------------------------------------------------*/
   
   public void 
-  writeGlue
+  toGlue
   ( 
-   GlueEncoder ge   /* IN: the current GLUE encoder */ 
+   GlueEncoder encoder  
   ) 
-    throws GlueError
+    throws GlueException
   {
-    ge.writeEntity("Start", new Integer(pStart));
-    ge.writeEntity("End",   new Integer(pEnd));
-    ge.writeEntity("By",    new Integer(pBy));
+    encoder.encode("Start", pStart);
+    
+    if(pStart != pEnd) {
+      encoder.encode("End", pEnd);
+      encoder.encode("By",pBy);
+    }
   }
     
   public void 
-  readGlue
+  fromGlue
   (
-   GlueDecoder gd  /* IN: the current GLUE decoder */ 
+   GlueDecoder decoder  
   ) 
-    throws GlueError
+    throws GlueException
   {
-    pStart = ((Integer) gd.readEntity("Start")).intValue();
-    pEnd   = ((Integer) gd.readEntity("End")).intValue();
-    pBy    = ((Integer) gd.readEntity("By")).intValue();
+    Integer start = (Integer) decoder.decode("Start"); 
+    if(start == null) 
+      throw new GlueException("The \"Start\" frame was missing!");
+    if(start < 0)
+      throw new GlueException("The \"Start\" frame (" + start + ") cannot be negative!");
+    pStart = start;
+
+    Integer end = (Integer) decoder.decode("End");   
+    if(end != null) {
+      Integer by  = (Integer) decoder.decode("By");    
+      if(by == null) 
+	throw new GlueException("Found an \"End\" frame without a \"By\" frame increment!");
+
+      if(start > end) 
+	throw new GlueException(
+	  "The \"Start\" frame (" + start + ") cannot be greater-than " + 
+	  "the \"End\" frame (" + end + ")!");
+
+      if(by <= 0) 
+        throw new GlueException(
+          "The \"By\" frame increment (" + by + ") must be positive!");
+
+      pEnd = end;
+      pBy  = by;
+
+      pNumFrames = (int) Math.floor(((double) (pEnd - pStart)) / ((double) pBy)) + 1;
+    }
+    else {
+      pEnd = pStart;
+    }
   }
 
 
@@ -237,9 +398,26 @@ class FrameRange
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
-  protected int  pStart;   /* The start frame of the sequence. */ 
-  protected int  pEnd;     /* The end frame of the sequence. */ 
-  protected int  pBy;      /* The frame increment. */ 
+  /** 
+   * The first frame number in the file sequence.  If this is a single frame file sequence,
+   * then this is the single frame number.
+   */
+  private int pStart; 
+
+  /** 
+   * The last frame number in the file sequence. 
+   */  
+  private int pEnd;  
+
+  /** 
+   * The frame step increment. 
+   */   
+  private int pBy;      
+
+  /** 
+   * The number of frames in the file sequence.
+   */ 
+  private int pNumFrames;  
 
 }
 
