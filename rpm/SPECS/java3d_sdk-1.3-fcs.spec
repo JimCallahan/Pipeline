@@ -1,14 +1,25 @@
 Summary: Java3D 
-Name: java3d
+Name: java3d_sdk
 Version: 1.1.1
 Release: 01
 Copyright: public domain
 Group: Development/Libraries
+Requires: libc.so.6 
+Requires: libc.so.6(GLIBC_2.0) 
+Requires: libdl.so.2 
+Requires: libGL.so.1 
+Requires: libm.so.6 
+Requires: libnsl.so.1 
+Requires: libpthread.so.0 
+Requires: libpthread.so.0(GLIBC_2.0) 
+Requires: libX11.so.6 
+Requires: libXext.so.6
 Source0: java3d-sdk-1.3-fcs-linux-i386.bin
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 URL: http://java.sun.com/products/java-media/3D/download.html
 Packager: Jim Callahan <jim@polaris.net>
 
+%define __find_requires %{null}
 
 %description
 
