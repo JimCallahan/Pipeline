@@ -1,4 +1,4 @@
-// $Id: JTopLevelPanel.java,v 1.6 2004/06/08 03:04:49 jim Exp $
+// $Id: JTopLevelPanel.java,v 1.7 2004/06/23 22:33:06 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -170,7 +170,16 @@ class JTopLevelPanel
       throw new IllegalArgumentException("The view cannot be (null)!");
     pView = view;
 
-    pIsLocked = !pAuthor.equals(PackageInfo.sUser);
+    pIsLocked = !PackageInfo.sUser.equals(pAuthor);
+    if(pIsLocked) {
+      UIMaster master = UIMaster.getInstance();
+      try {
+	pIsLocked = !master.getMasterMgrClient().isPrivileged(false);
+      }
+      catch(PipelineException ex) {
+	master.showErrorDialog(ex);
+      }
+    }
   }
 
 
