@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.22 2004/06/08 20:11:17 jim Exp $
+// $Id: UIMaster.java,v 1.23 2004/06/14 22:53:24 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -57,6 +57,7 @@ class UIMaster
 
     pNodeBrowsers  = new JNodeBrowserPanel[10];
     pNodeViewers   = new JNodeViewerPanel[10];
+    pNodeDetails   = new JNodeDetailsPanel[10];
 
     SwingUtilities.invokeLater(new SplashFrameTask(this));
   }
@@ -163,7 +164,7 @@ class UIMaster
   /**
    * Assign the given node browser to the given group.
    */ 
-  public void 
+  public synchronized void 
   assignNodeBrowserGroup
   (
    JNodeBrowserPanel panel, 
@@ -178,7 +179,7 @@ class UIMaster
   /**
    * Make the given node browser group available.
    */ 
-  public void 
+  public synchronized void 
   releaseNodeBrowserGroup 
   (
    int groupID
@@ -192,7 +193,7 @@ class UIMaster
   /**
    * Is the given node browser group currently unused.
    */ 
-  public boolean
+  public synchronized boolean
   isNodeBrowserGroupUnused
   (
    int groupID
@@ -208,7 +209,7 @@ class UIMaster
    * @return 
    *   The node browser or <CODE>null</CODE> if no browser exists for the group.
    */ 
-  public JNodeBrowserPanel
+  public synchronized JNodeBrowserPanel
   getNodeBrowser
   (
    int groupID
@@ -224,7 +225,7 @@ class UIMaster
   /**
    * Assign the given node viewer to the given group.
    */ 
-  public void 
+  public synchronized void 
   assignNodeViewerGroup
   (
    JNodeViewerPanel panel, 
@@ -239,7 +240,7 @@ class UIMaster
   /**
    * Make the given node viewer group available.
    */ 
-  public void 
+  public synchronized void 
   releaseNodeViewerGroup 
   (
    int groupID
@@ -253,7 +254,7 @@ class UIMaster
   /**
    * Is the given node viewer group currently unused.
    */ 
-  public boolean
+  public synchronized boolean
   isNodeViewerGroupUnused
   (
    int groupID
@@ -269,7 +270,7 @@ class UIMaster
    * @return 
    *   The node viewer or <CODE>null</CODE> if no viewer exists for the group.
    */ 
-  public JNodeViewerPanel
+  public synchronized JNodeViewerPanel
   getNodeViewer
   (
    int groupID
@@ -277,6 +278,67 @@ class UIMaster
   {
     assert((groupID > 0) && (groupID < 10));
     return pNodeViewers[groupID];
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Assign the given node details panel to the given group.
+   */ 
+  public synchronized void 
+  assignNodeDetailsGroup
+  (
+   JNodeDetailsPanel panel, 
+   int groupID
+  ) 
+  {
+    assert((groupID > 0) && (groupID < 10));
+    assert(pNodeDetails[groupID] == null);
+    pNodeDetails[groupID] = panel;
+  }
+
+  /**
+   * Make the given node details panel group available.
+   */ 
+  public synchronized void 
+  releaseNodeDetailsGroup 
+  (
+   int groupID
+  ) 
+  {
+    assert((groupID > 0) && (groupID < 10));
+    assert(pNodeDetails[groupID] != null);
+    pNodeDetails[groupID] = null;
+  }
+
+  /**
+   * Is the given node details panel group currently unused.
+   */ 
+  public synchronized boolean
+  isNodeDetailsGroupUnused
+  (
+   int groupID
+  ) 
+  {
+    assert((groupID > 0) && (groupID < 10));
+    return (pNodeDetails[groupID] == null);      
+  }
+
+  /**
+   * Get the node details panel belonging to the given group.
+   * 
+   * @return 
+   *   The node details panel or <CODE>null</CODE> if no details panel exists for the group.
+   */ 
+  public synchronized JNodeDetailsPanel
+  getNodeDetails
+  (
+   int groupID
+  ) 
+  {
+    assert((groupID > 0) && (groupID < 10));
+    return pNodeDetails[groupID];
   }
 
 
@@ -810,7 +872,7 @@ class UIMaster
   }
 
   /**
-   * Create a new editable text field which can only contain real numbers. <P> 
+   * Create a new editable text field which can only contain double values. <P> 
    * 
    * See {@link JLabel#setHorizontalAlignment JLabel.setHorizontalAlignment} for valid
    * values for the <CODE>align</CODE> argument.
@@ -824,24 +886,15 @@ class UIMaster
    * @param align
    *   The horizontal alignment.
    */ 
-  public static JFormattedTextField
-  createRealField
+  public static JDoubleField
+  createDoubleField
   (
    double value,  
    int width,
    int align
   )
   {
-    DecimalFormat format = new DecimalFormat("#0.0#");
-    format.setMinimumIntegerDigits(1);
-    format.setMaximumIntegerDigits(6);
-    format.setMinimumFractionDigits(1);
-    format.setMaximumFractionDigits(6);
-
-    NumberFormatter formatter = new NumberFormatter(format);
-    formatter.setAllowsInvalid(false);
-
-    JFormattedTextField field = new JFormattedTextField(formatter);
+    JDoubleField field = new JDoubleField();
     field.setName("EditableTextField");
 
     Dimension size = new Dimension(width, 19);
@@ -851,9 +904,9 @@ class UIMaster
     
     field.setHorizontalAlignment(align);
     field.setEditable(true);
-
-    field.setValue(new Double(value));
     
+    field.setValue(value);
+
     return field;
   }
 
@@ -920,6 +973,57 @@ class UIMaster
     
     return area;
   }
+
+  /**
+   * Create a collection field.
+   * 
+   * @param values
+   *   The initial collection values.
+   * 
+   * @param width
+   *   The minimum and preferred width of the field.
+   */ 
+  public static JCollectionField
+  createCollectionField
+  (
+   Collection<String> values,
+   int width
+  ) 
+  {
+    JCollectionField field = new JCollectionField(values);
+
+    Dimension size = new Dimension(width, 19);
+    field.setMinimumSize(size);
+    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+    //field.setMaximumSize(size);
+    field.setPreferredSize(size);
+
+    return field;
+  }
+
+  /**
+   * Create a boolean field.
+   * 
+   * @param width
+   *   The minimum and preferred width of the field.
+   */ 
+  public static JBooleanField
+  createBooleanField
+  (
+   int width
+  ) 
+  {
+    JBooleanField field = new JBooleanField();
+
+    Dimension size = new Dimension(width, 19);
+    field.setMinimumSize(size);
+    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+    //field.setMaximumSize(size);
+    field.setPreferredSize(size);
+
+    return field;
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1147,7 +1251,7 @@ class UIMaster
   }
 
   /**
-   * Create a new real number text field with a title and add them to the given panels.
+   * Create a new double text field with a title and add them to the given panels.
    * 
    * @param tpanel
    *   The titles panel.
@@ -1164,8 +1268,8 @@ class UIMaster
    * @param vwidth
    *   The minimum and preferred width of the identifier field.
    */ 
-  public static JFormattedTextField
-  createTitledRealField
+  public static JDoubleField
+  createTitledDoubleField
   (
    JPanel tpanel, 
    String title,  
@@ -1177,7 +1281,7 @@ class UIMaster
   {
     tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT));
 
-    JFormattedTextField field = createRealField(value, vwidth, JLabel.CENTER);
+    JDoubleField field = createDoubleField(value, vwidth, JLabel.CENTER);
     vpanel.add(field);
 
     return field;
@@ -1440,14 +1544,8 @@ class UIMaster
   ) 
   {
     tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT));
-
-    JCollectionField field = new JCollectionField(values);
-
-    Dimension size = new Dimension(vwidth, 19);
-    field.setMinimumSize(size);
-    field.setMaximumSize(size);
-    field.setPreferredSize(size);
-
+    
+    JCollectionField field = createCollectionField(values, vwidth);
     vpanel.add(field);
 
     return field;
@@ -1483,13 +1581,7 @@ class UIMaster
   {
     tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT));
 
-    JBooleanField field = new JBooleanField();
-
-    Dimension size = new Dimension(vwidth, 19);
-    field.setMinimumSize(size);
-    field.setMaximumSize(size);
-    field.setPreferredSize(size);
-
+    JBooleanField field = createBooleanField(vwidth);
     vpanel.add(field);
 
     return field;
@@ -2374,6 +2466,8 @@ class UIMaster
   private MasterMgrClient  pMasterMgrClient;
 
 
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * The splash screen frame.
    */ 
@@ -2391,6 +2485,8 @@ class UIMaster
   private JFrame  pFrame;
 
 
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * A lock used to serialize panel operations.
    */ 
@@ -2406,6 +2502,8 @@ class UIMaster
    */ 
   private JTextField  pProgressField;
 
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * The name of the last saved/loaded layout.
@@ -2423,6 +2521,8 @@ class UIMaster
   private JManagerPanel  pRootManagerPanel; 
 
 
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * The table of active node browsers indexed by assigned group: [1-9]. <P> 
    * 
@@ -2439,6 +2539,17 @@ class UIMaster
    */ 
   private JNodeViewerPanel[]  pNodeViewers;
 
+  /**
+   * The table of active node details panels indexed by assigned group: [1-9]. <P> 
+   * 
+   * If no node details panel is assigned to the group, the element will be 
+   * <CODE>null</CODE>.  The (0) element is always <CODE>null</CODE>, because the (0) 
+   * group ID means unassinged.
+   */ 
+  private JNodeDetailsPanel[]  pNodeDetails;
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * The save layouts dialog.
