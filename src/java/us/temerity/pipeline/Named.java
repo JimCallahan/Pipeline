@@ -1,4 +1,4 @@
-// $Id: Named.java,v 1.4 2004/02/28 20:00:27 jim Exp $
+// $Id: Named.java,v 1.5 2004/03/08 04:36:33 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -123,7 +123,9 @@ implements Cloneable, Glueable, Serializable
     String name = (String) decoder.decode("Name"); 
     if(name == null) 
       throw new GlueException("The \"Name\" was missing!");
+    pName = name;
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
