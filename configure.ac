@@ -718,6 +718,9 @@ PLQUEUEMGR_DEBUG_OPTS=""
 AC_SUBST(PLJOBMGR_DEBUG_OPTS)
 PLJOBMGR_DEBUG_OPTS=""
 
+AC_SUBST(PLUI_DEBUG_OPTS)
+PLUI_DEBUG_OPTS=""
+
 if test "$BUILD_MODE" = "dbg" 
 then 
   java_debug_opts="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address="
@@ -726,6 +729,7 @@ then
   PLNOTIFY_DEBUG_OPTS=${java_debug_opts}"43003"
   PLQUEUEMGR_DEBUG_OPTS=${java_debug_opts}"43004"
   PLJOBMGR_DEBUG_OPTS=${java_debug_opts}"43005"
+  PLUI_DEBUG_OPTS=${java_debug_opts}"43006"
 fi
 
 
