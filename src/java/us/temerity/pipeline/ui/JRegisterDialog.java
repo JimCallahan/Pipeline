@@ -1,4 +1,4 @@
-// $Id: JRegisterDialog.java,v 1.2 2004/06/08 20:10:37 jim Exp $
+// $Id: JRegisterDialog.java,v 1.3 2004/07/07 13:28:21 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -317,28 +317,37 @@ class JRegisterDialog
     FilePattern fpat = fseq.getFilePattern();
     FrameRange frange = fseq.getFrameRange();
     
-    if(fseq.isSingle()) {
-      pFileModeField.setSelectedIndex(0);
-      
-      if(frange != null) 
-	pStartFrameField.setValue(frange.getStart());
-      else
-	pStartFrameField.setValue(null);
-    }
-    else {
-      pFileModeField.setSelectedIndex(1);
-      
-      if(frange != null) {
-	pStartFrameField.setValue(frange.getStart());
-	pEndFrameField.setValue(frange.getEnd());
-	pByFrameField.setValue(frange.getBy());
+    if(fpat.hasFrameNumbers()) {
+      pFrameNumbersField.setValue(true);
+
+      if(fseq.isSingle()) {
+	pFileModeField.setSelectedIndex(0);
+	
+	if(frange != null) 
+	  pStartFrameField.setValue(frange.getStart());
+	else
+	  pStartFrameField.setValue(null);
       }
       else {
-	pStartFrameField.setValue(null);
-      } 
+	pFileModeField.setSelectedIndex(1);
+	
+	if(frange != null) {
+	  pStartFrameField.setValue(frange.getStart());
+	  pEndFrameField.setValue(frange.getEnd());
+	  pByFrameField.setValue(frange.getBy());
+	}
+	else {
+	  pStartFrameField.setValue(null);
+	} 
+      }
+
+      pFramePaddingField.setValue(fpat.getPadding());
     }
-    
-    pFramePaddingField.setValue(fpat.hasFrameNumbers() ? fpat.getPadding() : null);
+    else {    
+      pFrameNumbersField.setValue(false);
+      pFramePaddingField.setValue(null);
+    }
+
     pSuffixField.setText(fpat.getSuffix());
   }
 
@@ -624,7 +633,7 @@ class JRegisterDialog
 	  ("Unable to register node (" + name + ") with an unspecified toolset!");
 
       String editor = pEditorField.getSelected();
-      if((editor != null) || editor.equals("-"))
+      if((editor != null) && editor.equals("-"))
 	editor = null;
 
       pNodeMod = new NodeMod(name, primary, new TreeSet<FileSeq>(), toolset, editor);
