@@ -1,4 +1,4 @@
-// $Id: ScriptAction.java,v 1.1 2004/02/25 01:24:20 jim Exp $
+// $Id: ScriptAction.java,v 1.2 2004/03/07 02:35:53 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -262,7 +262,7 @@ class ScriptAction
       FileCleaner.add(script);
       
       /* make script executable */ 
-      NativeProcess.chmod(0777, script);
+      NativeFileSys.chmod(0777, script);
     }
     catch (Exception ex) {
       throw new PipelineException
@@ -344,6 +344,14 @@ class ScriptAction
       buf.append(file + ":");
     return buf.substring(0, buf.length()-1);
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static final long serialVersionUID = 4585135812320237957L;
 
 }
 

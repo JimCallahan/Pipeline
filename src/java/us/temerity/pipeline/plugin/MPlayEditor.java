@@ -1,4 +1,4 @@
-// $Id: MPlayEditor.java,v 1.1 2004/02/25 01:24:44 jim Exp $
+// $Id: MPlayEditor.java,v 1.2 2004/03/07 02:35:53 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -27,6 +27,15 @@ class MPlayEditor
 	  "The Houdini image viewer.", 
 	  "mplay");              
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static final long serialVersionUID = 5745249168281577899L;
+
 }
 
 
