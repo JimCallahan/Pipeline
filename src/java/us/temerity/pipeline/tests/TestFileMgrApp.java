@@ -1,4 +1,4 @@
-// $Id: TestFileMgrApp.java,v 1.13 2004/07/14 20:47:16 jim Exp $
+// $Id: TestFileMgrApp.java,v 1.14 2004/08/28 19:43:13 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -316,16 +316,12 @@ class TestFileMgrApp
 	      printStates(states, timestamps);
 	    }
 
-	    client.freeze(pNodeID, pNodeMod); 
-
 	    try {
 	      sleep(2000);
 	    }
 	    catch(InterruptedException ex) {
 	      assert(false);
 	    }
-
-	    client.unfreeze(pNodeID, pNodeMod);
 
 	    if(!vsn.getVersionID().equals(latest)) {
 	      for(File file : pNodeMod.getPrimarySequence().getFiles()) {

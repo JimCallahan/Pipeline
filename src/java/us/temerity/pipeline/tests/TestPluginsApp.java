@@ -1,4 +1,4 @@
-// $Id: TestPluginsApp.java,v 1.10 2004/07/28 19:20:24 jim Exp $
+// $Id: TestPluginsApp.java,v 1.11 2004/08/28 19:43:13 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
@@ -50,7 +50,7 @@ class TestPluginsApp
   run() 
     throws CloneNotSupportedException, GlueException, PipelineException, InterruptedException
   {
-    SortedMap<String,String> env = Toolsets.lookup(TestInfo.sBuildToolset);
+    SortedMap<String,String> env = new TreeMap<String,String>(System.getenv());
 
     File dir = new File(System.getProperty("user.dir") + "/data");
 

@@ -1,4 +1,4 @@
-// $Id: TestMasterMgr2App.java,v 1.4 2004/08/22 22:06:22 jim Exp $
+// $Id: TestMasterMgr2App.java,v 1.5 2004/08/28 19:43:13 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -254,8 +254,8 @@ class TestMasterMgr2App
       printStatus(client.status(author, "default", modA.getName()));
       printStatus(client.status(author, "default", modB.getName()));
 
-      printStatus(client.checkIn(author, "default", modA.getName(), 
-				 "Initial revision.", null));    
+      client.checkIn(author, "default", modA.getName(), 
+		     "Initial revision.", null);    
 
       printStatus(client.status(author, "default", modA.getName()));
 
