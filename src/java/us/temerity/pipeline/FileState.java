@@ -1,4 +1,4 @@
-// $Id: FileState.java,v 1.1 2004/03/01 21:45:04 jim Exp $
+// $Id: FileState.java,v 1.2 2004/03/09 09:42:28 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -25,7 +25,7 @@ public
 enum FileState
 {  
   /**
-   * The only possible state if the <CODE>VersionState</CODE> is 
+   * The only possible state if the working file exists and the <CODE>VersionState</CODE> is 
    * {@link VersionState#Pending Pending}, since there is no checked-in file to 
    * compare the working file against.
    */
