@@ -494,6 +494,26 @@
 
 
 
+  <!--  F I L E   C H E C K  -->
+
+  <style id="FileCheck">
+    <state>
+      <imageIcon id="FileUncheckedIcon" path="FileCheckIcon.png"/>
+      <property key="CheckBox.icon" value="FileUncheckedIcon"/>   	
+    </state>
+    <state value="SELECTED">
+      <imageIcon id="FileCheckedIcon" path="FileCheckIconSelected.png"/>
+      <property key="CheckBox.icon" value="FileCheckedIcon"/>   	
+    </state>
+    <imagePainter path="Grey.png"
+                  method="checkBoxBackground"
+                  sourceInsets="0 0 0 0"/>
+    <insets top="0" bottom="0" right="0" left="0"/>
+  </style>
+  <bind style="FileCheck" type="name" key="FileCheck"/>
+
+
+
   <!--  T E X T   F I E L D  -->
 
   <style id="TextField">
