@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.6 2004/05/11 19:16:33 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.7 2004/05/12 16:50:19 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -453,6 +453,77 @@ class JNodeViewerPanel
   )
   {}
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   G L U E A B L E                                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  public void 
+  toGlue
+  ( 
+   GlueEncoder encoder   
+  ) 
+    throws GlueException
+  {
+    super.toGlue(encoder);
+
+    /* focus node */ 
+    if(pFocus != null) 
+      encoder.encode("Focus", pFocus);
+    
+    /* camera position */ 
+    {
+      Viewer viewer = pUniverse.getViewer();
+      TransformGroup tg = viewer.getViewingPlatform().getViewPlatformTransform();
+    
+      Transform3D xform = new Transform3D();
+      tg.getTransform(xform);
+      
+      Vector3d trans = new Vector3d();
+      xform.get(trans);
+
+      encoder.encode("CameraX", trans.x);
+      encoder.encode("CameraY", trans.y);
+      encoder.encode("CameraZ", trans.z);
+    }
+  }
+
+  public void 
+  fromGlue
+  (
+   GlueDecoder decoder 
+  ) 
+    throws GlueException
+  {
+    /* focus node */     
+    String focus = (String) decoder.decode("Focus");
+    if(focus != null) 
+      pFocus = focus;
+
+    /* camera position */ 
+    {
+      Viewer viewer = pUniverse.getViewer();
+      TransformGroup tg = viewer.getViewingPlatform().getViewPlatformTransform();
+    
+      Transform3D xform = new Transform3D();
+      tg.getTransform(xform);
+      
+      Double cx = (Double) decoder.decode("CameraX");
+      Double cy = (Double) decoder.decode("CameraY");
+      Double cz = (Double) decoder.decode("CameraZ");
+
+      if((cx == null) || (cy == null) || (cz == null)) 
+	throw new GlueException("The camera position was incomplete!");
+      Vector3d trans = new Vector3d(cx, cy, cz);
+
+      xform.setTranslation(trans);	    
+      tg.setTransform(xform);
+    }
+
+    super.fromGlue(decoder);
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/

@@ -1,8 +1,9 @@
-// $Id: JNodeBrowserPanel.java,v 1.12 2004/05/11 19:16:33 jim Exp $
+// $Id: JNodeBrowserPanel.java,v 1.13 2004/05/12 16:50:19 jim Exp $
 
 package us.temerity.pipeline.ui;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.glue.*;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -164,31 +165,27 @@ class JNodeBrowserPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Update the node tree componenents.
+   * Update the node tree componenents based on the currently expanded paths.
    */ 
   private void 
   updateNodeTree()
+  {
+    updateNodeTree(getExpandedPaths());
+  }
+
+  /**
+   * Update the node tree componenents based on the given set of paths.
+   */ 
+  private void 
+  updateNodeTree
+  (
+   TreeSet<String> paths
+  )
   {
     if(pTree == null) 
       return;
 
     UIMaster master = UIMaster.getInstance();
- 
-    /* the paths of the currently expanded branch nodes */ 
-    TreeSet<String> paths = new TreeSet<String>();
-    {
-      DefaultMutableTreeNode root = (DefaultMutableTreeNode) pTree.getModel().getRoot();
-      Enumeration e = pTree.getExpandedDescendants(new TreePath(root.getPath()));
-      if(e != null) {
-	while(e.hasMoreElements()) {
-	  TreePath tpath = (TreePath) e.nextElement(); 
-	  paths.add(treePathToNodeName(tpath));
-	}
-      }
-      
-      if(paths.isEmpty()) 
-	paths.add("/");
-    }
 
     /* get the updated node tree */ 
     NodeTreeComp comp = null;
@@ -219,6 +216,33 @@ class JNodeBrowserPanel
       rexpandPaths(root);
       pTree.addTreeExpansionListener(this);
     }
+  }
+
+  /**
+   * Get the Pipeline node paths of the currently expanded branch nodes 
+   */ 
+  private TreeSet<String>
+  getExpandedPaths() 
+  {
+    TreeSet<String> paths = new TreeSet<String>();
+
+    if(pTree != null) {
+      DefaultMutableTreeNode root = (DefaultMutableTreeNode) pTree.getModel().getRoot();
+      Enumeration e = pTree.getExpandedDescendants(new TreePath(root.getPath()));
+      if(e != null) {
+	while(e.hasMoreElements()) {
+	  TreePath tpath = (TreePath) e.nextElement(); 
+	  String name = treePathToNodeName(tpath);
+	  if(name.length() > 0) 
+	    paths.add(name);
+	}
+      }
+      
+      if(paths.isEmpty()) 
+	paths.add("/");
+    }
+
+    return paths;
   }
 
   /** 
@@ -365,6 +389,39 @@ class JNodeBrowserPanel
   mouseReleased(MouseEvent e) {}
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   G L U E A B L E                                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  public void 
+  toGlue
+  ( 
+   GlueEncoder encoder   
+  ) 
+    throws GlueException
+  {
+    super.toGlue(encoder);
+    
+    TreeSet<String> paths = getExpandedPaths();
+    if(!paths.isEmpty()) 
+      encoder.encode("ExpandedPaths", paths);
+  }
+
+  public void 
+  fromGlue
+  (
+   GlueDecoder decoder 
+  ) 
+    throws GlueException
+  {
+    super.fromGlue(decoder);
+
+    TreeSet<String> paths = (TreeSet<String>) decoder.decode("ExpandedPaths");
+    if(paths != null) 
+      updateNodeTree(paths);
+  }
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
