@@ -1,4 +1,4 @@
-// $Id: JArchivalQueryDialog.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JArchivalQueryDialog.java,v 1.2 2005/02/07 14:53:24 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -65,29 +65,39 @@ class JArchivalQueryDialog
 	}
 	
 	pPatternField = 
-	  UIFactory.createTitledEditableTextField(tpanel, "Node Name Pattern:", sTSize, 
-						 vpanel, ".*", sVSize);
+	  UIFactory.createTitledEditableTextField
+	  (tpanel, "Node Name Pattern:", sTSize, 
+	   vpanel, ".*", sVSize, 
+	   "A regular expression used to select checked-in version names.");
 	
 	UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 
 	pExcludeLatestField = 
-	  UIFactory.createTitledIntegerField(tpanel, "Exclude Latest:", sTSize, 
-					    vpanel, 2, sVSize);
+	  UIFactory.createTitledIntegerField
+	  (tpanel, "Exclude Latest:", sTSize, 
+	   vpanel, 2, sVSize, 
+	   "Exclude this number of newer checked-in versions from the search.");
 	
 	UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 
 	pMaxWorkingField = 
-	  UIFactory.createTitledIntegerField(tpanel, "Max Working Versions:", sTSize, 
-					    vpanel, 0, sVSize);
+	  UIFactory.createTitledIntegerField
+	  (tpanel, "Max Working Versions:", sTSize, 
+	   vpanel, 0, sVSize, 
+	   "Exclude checked-in versions with more than this number of working versions.");
 	
 	UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 
 	pMaxArchivesField = 
-	  UIFactory.createTitledIntegerField(tpanel, "Max Archives:", sTSize, 
-					    vpanel, 2, sVSize);
+	  UIFactory.createTitledIntegerField
+	  (tpanel, "Max Archives:", sTSize, 
+	   vpanel, 2, sVSize, 
+	   "Exclude checked-in versions which have been archived more than this number " + 
+	   "of times.");
       }
 
-      super.initUI("Search Criteria:", true, body, "Search", null, null, "Cancel");
+      super.initUI("Checked-In Version Search Criteria:", true, body, 
+		   "Search", null, null, "Cancel");
       pack();
     }  
   }
@@ -150,7 +160,7 @@ class JArchivalQueryDialog
   private static final long serialVersionUID = -8913768893916841700L;
   
   private static final int sTSize = 150;
-  private static final int sVSize = 360;
+  private static final int sVSize = 250;
 
 
   /*----------------------------------------------------------------------------------------*/
