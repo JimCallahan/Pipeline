@@ -3,15 +3,14 @@ htmldir = @ROOT_INST_DIR@/share/docs/man
 
 html_DATA = \
   plfilemgr.html \
+  pljobmgr.html \
   plmaster.html \
   plnotify.html \
+  plqueuemgr.html \
   pls.html \
   plui.html \
   realpath.html
 
-
-noinst_DATA = \
-  checkbot.html
 
 
 $(html_DATA): %.html: %.src.html copyright @LICENSE_DOC@
@@ -26,9 +25,9 @@ $(html_DATA): %.html: %.src.html copyright @LICENSE_DOC@
          tail --lines=+9 $< | head --lines=$$(($$cnt-10)) > $@)
 
 
-checkbot.html: $(html_DATA)
-	rm -f checkbot.html checkbot-localhost.html
-	@CHECKBOT@ `pwd`/*.html
+# install-data-hook: 
+# 	rm -f checkbot.html checkbot-localhost.html
+# 	@CHECKBOT@ $(DESTDIR)@ROOT_INST_DIR@/share/docs/man/*.html
 
 clean:
 	rm -f $(html_DATA) 
