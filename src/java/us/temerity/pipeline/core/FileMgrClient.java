@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.10 2004/07/07 13:19:59 jim Exp $
+// $Id: FileMgrClient.java,v 1.11 2004/07/14 20:50:00 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -239,7 +239,7 @@ class FileMgrClient
     verifyConnection();
 
     FileCheckOutReq req = 
-      new FileCheckOutReq(id, vsn.getVersionID(), vsn.getSequences(), !vsn.hasAction());
+      new FileCheckOutReq(id, vsn.getVersionID(), vsn.getSequences());
 
     Object obj = performTransaction(FileRequest.CheckOut, req);
     handleSimpleResponse(obj);

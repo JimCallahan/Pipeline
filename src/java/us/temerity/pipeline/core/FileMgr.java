@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.15 2004/07/07 13:19:59 jim Exp $
+// $Id: FileMgr.java,v 1.16 2004/07/14 20:50:00 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -609,6 +609,7 @@ class FileMgr
 	}
 	
 	/* process the files */ 
+	ArrayList<File> files  = new ArrayList<File>();
 	ArrayList<File> copies = new ArrayList<File>();
 	ArrayList<File> links  = new ArrayList<File>();
 	{
@@ -617,6 +618,8 @@ class FileMgr
 	    boolean flags[] = isNovel.get(fseq);
 	    int wk = 0;
 	    for(File file : fseq.getFiles()) {
+	      files.add(file);
+
 	      File work = new File(wdir, file.getPath());
 
 	      if(flags[wk]) {
@@ -640,52 +643,6 @@ class FileMgr
 
 	      wk++;
 	    }
-
-
-// 	  TreeMap<FileSeq, FileState[]> stable = req.getFileStates();
-// 	  for(FileSeq fseq : req.getFileSequences()) {
-// 	    FileState[] states = stable.get(fseq);
-// 	    int wk = 0;
-// 	    for(File file : fseq.getFiles()) {
-// 	      File work = new File(wdir, file.getPath());
-
-// 	      switch(states[wk]) {
-// 	      case Pending:
-// 	      case Modified:
-// 	      case Added:
-// 		copies.add(file);	
-// 		break;
-
-// 	      case Identical:
-// 		{
-// 		  assert(ldir != null);
-// 		  File latest = new File(ldir, file.getPath());
-// 		  try {
-// 		    assert(ldir != null);
-// 		    String source = NativeFileSys.realpath(latest).getPath();
-// 		    assert(source.startsWith(rbase));
-// 		    links.add(new File(".." + source.substring(rbase.length())));
-// 		  }
-// 		  catch(IOException ex) {
-// 		    throw new PipelineException
-// 		      ("Unable to resolve the real path to the repository " + 
-// 		       "file (" + latest + ")!");
-// 		  }
-// 		}
-// 		break;
-		  
-// 	      case Obsolete:
-// 		break;
-
-// 	      default:
-// 		throw new PipelineException
-// 		  ("Somehow the working file (" + work + ") with a file state of (" + 
-// 		   states[wk].name() + ") was erroneously submitted for check-in!");
-// 	      }
-
-// 	      wk++;
-// 	    }
-
 	  }
 	}
 
@@ -745,9 +702,8 @@ class FileMgr
 	  {
 	    ArrayList<String> args = new ArrayList<String>();
 	    args.add("--target-directory=" + crdir);
-	    for(FileSeq fseq : req.getFileSequences()) 
-	      for(File file : fseq.getFiles()) 
-		args.add(file.getPath());
+	    for(File file : files) 
+	      args.add(file.getPath());
 
 	    SubProcess proc = 
 	      new SubProcess("CheckIn-CopyCheckSums", "cp", args, env, cwdir);
@@ -762,11 +718,9 @@ class FileMgr
 		 req.getNodeID() + ") into the checksum repository!");
 	    }
 
-	    for(FileSeq fseq : req.getFileSequences()) {
-	      for(File file : fseq.getFiles()) {
-		File repo = new File(crdir, file.getPath());
-		repo.setReadOnly();
-	      }
+	    for(File file : files) {
+	      File repo = new File(crdir, file.getPath());
+	      repo.setReadOnly();
 	    }
 	  }
 
@@ -1025,7 +979,7 @@ class FileMgr
 	  for(File file : files) 
 	    args.add(file.getName());
 
-	  if(req.isEditable()) {
+	  {
 	    SubProcess proc = 
 	      new SubProcess(req.getNodeID().getAuthor(), 
 			     "CheckOut-SetWritable", "chmod", args, env, wdir);
