@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.73 2005/01/03 00:04:43 jim Exp $
+// $Id: MasterMgr.java,v 1.74 2005/01/03 01:16:50 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3970,8 +3970,12 @@ class MasterMgr
 	performCheckOut(false, lnodeID, link.getVersionID(), mode, method, stable, 
 			branch, seen, dirty, timer);
 
-	if(dirty.contains(link.getName())) 
+	/* if any of the upstream nodes are dirty, 
+  	     mark this node as dirty and make sure it isn't frozen */ 
+	if(dirty.contains(link.getName())) {
 	  dirty.add(name);
+	  isFrozen = false;
+	}
       }
 
       /* get the current timestamp */ 
