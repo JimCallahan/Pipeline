@@ -9,6 +9,7 @@ html_DATA = \
   plqueuemgr.html \
   plplugin.html \
   pls.html \
+  plscript.html \
   plui.html \
   realpath.html
 
@@ -26,9 +27,10 @@ $(html_DATA): %.html: %.src.html copyright @LICENSE_DOC@
          tail --lines=+9 $< | head --lines=$$(($$cnt-10)) > $@)
 
 
-# install-data-hook: 
-# 	rm -f checkbot.html checkbot-localhost.html
-# 	@CHECKBOT@ $(DESTDIR)@ROOT_INST_DIR@/share/docs/man/*.html
+install-data-hook: checkbot.html checkbot-localhost.html
+
+checkbot.html checkbot-localhost.html: $(DESTDIR)@ROOT_INST_DIR@/share/docs/man/*.html
+	@CHECKBOT@ $^
 
 clean:
 	rm -f $(html_DATA) 
