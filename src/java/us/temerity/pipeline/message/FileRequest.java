@@ -1,6 +1,9 @@
-// $Id: FileRequest.java,v 1.2 2004/03/12 23:08:23 jim Exp $
+// $Id: FileRequest.java,v 1.3 2004/03/13 17:19:13 jim Exp $
 
-package us.temerity.pipeline;
+package us.temerity.pipeline.message;
+
+import us.temerity.pipeline.FileMgrClient;
+import us.temerity.pipeline.FileMgrServer;
 
 /*------------------------------------------------------------------------------------------*/
 /*   F I L E   R E Q U E S T                                                                */
@@ -22,7 +25,7 @@ package us.temerity.pipeline;
  * @see FileCheckSumReq
  * @see FileFreezeReq
  * @see FileUnfreezeReq
- * @see FileStateRsp
+ * @see FileStateReq
  */
 public
 enum FileRequest
