@@ -1,4 +1,4 @@
-// $Id: QueueMgrControlClient.java,v 1.3 2004/08/30 01:40:02 jim Exp $
+// $Id: QueueMgrControlClient.java,v 1.4 2004/09/03 01:56:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -140,98 +140,6 @@ class QueueMgrControlClient
 
     QueueSubmitJobReq req = new QueueSubmitJobReq(job);
     Object obj = performTransaction(QueueRequest.SubmitJob, req); 
-    handleSimpleResponse(obj);
-  }
-
-  /**
-   * Notify the queue that a set of previously submitted jobs make up a job group.
-   * 
-   * @param group
-   *   The queue job group.
-   * 
-   * @throws PipelineException
-   *   If unable to group the jobs.
-   */ 
-  public synchronized void 
-  groupJobs
-  (
-   QueueJobGroup group
-  ) 
-    throws PipelineException  
-  {
-    verifyConnection();
-
-    QueueGroupJobsReq req = new QueueGroupJobsReq(group);
-    Object obj = performTransaction(QueueRequest.GroupJobs, req); 
-    handleSimpleResponse(obj);
-  }
-
-  /**
-   * Kill the jobs with the given IDs. <P> 
-   * 
-   * @param jobIDs
-   *   The unique job identifiers.
-   * 
-   * @throws PipelineException 
-   *   If unable to kill the jobs.
-   */  
-  public synchronized void
-  killJobs
-  (
-   TreeSet<Long> jobIDs
-  ) 
-    throws PipelineException
-  {
-    verifyConnection();
-
-    QueueKillJobsReq req = new QueueKillJobsReq(jobIDs);
-    Object obj = performTransaction(QueueRequest.KillJobs, req); 
-    handleSimpleResponse(obj);
-  }
-
-  /**
-   * Pause the jobs with the given IDs. <P> 
-   * 
-   * @param jobIDs
-   *   The unique job identifiers.
-   * 
-   * @throws PipelineException 
-   *   If unable to pause the jobs.
-   */  
-  public synchronized void
-  pauseJobs
-  (
-   TreeSet<Long> jobIDs
-  ) 
-    throws PipelineException
-  {
-    verifyConnection();
-
-    QueuePauseJobsReq req = new QueuePauseJobsReq(jobIDs);
-    Object obj = performTransaction(QueueRequest.PauseJobs, req); 
-    handleSimpleResponse(obj);
-  }
-
-  /**
-   * Resume execution of the paused jobs with the given IDs. <P> 
-   * 
-   * @param jobIDs
-   *   The unique job identifiers.
-   * 
-   * @throws PipelineException 
-   *   If unable to resume the jobs.
-   */  
-  public synchronized void
-  resumeJobs
-  (
-   TreeSet<Long> jobIDs
-  ) 
-    throws PipelineException
-  {
-    verifyConnection();
-
-    QueueResumeJobsReq req = new QueueResumeJobsReq(jobIDs);
-    Object obj = performTransaction(QueueRequest.ResumeJobs, req); 
     handleSimpleResponse(obj);
   }
 

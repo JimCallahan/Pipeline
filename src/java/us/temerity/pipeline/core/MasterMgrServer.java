@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.17 2004/08/30 01:30:58 jim Exp $
+// $Id: MasterMgrServer.java,v 1.18 2004/09/03 01:56:08 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -642,39 +642,6 @@ class MasterMgrServer
 	      objOut.flush(); 
 	    }
 	    break;  
-
-	  case KillJobGroup: 
-	    {
-	      NodeKillJobGroupReq req = (NodeKillJobGroupReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.killJobGroup(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case KillJobs: 
-	    {
-	      NodeKillJobsReq req = (NodeKillJobsReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.killJobs(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case PauseJobs: 
-	    {
-	      NodePauseJobsReq req = (NodePauseJobsReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.pauseJobs(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case ResumeJobs: 
-	    {
-	      NodeResumeJobsReq req = (NodeResumeJobsReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.resumeJobs(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
 
 
 	  /*-- NETWORK CONNECTION ----------------------------------------------------------*/
