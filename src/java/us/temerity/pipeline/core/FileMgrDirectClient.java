@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.35 2005/04/03 21:54:41 jim Exp $
+// $Id: FileMgrDirectClient.java,v 1.1 2005/04/03 21:54:41 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -10,17 +10,35 @@ import java.net.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   F I L E   M G R   C L I E N T                                                          */
+/*   F I L E   M G R   D I R E C T   C L I E N T                                            */
 /*------------------------------------------------------------------------------------------*/
 
 /**
  * The client-side manager of file system queries and operations. <P> 
  * 
+ * This class contains file manager instance so that all operations are direct method calls
+ * do NOT involve any network communication. <P> 
+ * 
  * @see FileMgr
- * @see FileMgrServer
  */
-interface FileMgrClient
+class FileMgrDirectClient
+  implements FileMgrClient
 {  
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O N S T R U C T O R                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Construct a new file manager client.
+   */
+  public
+  FileMgrDirectClient()
+  {
+    pFileMgr = new FileMgr();
+  }
+
+
+
   /*----------------------------------------------------------------------------------------*/
   /*   O P S                                                                                */
   /*----------------------------------------------------------------------------------------*/
@@ -46,7 +64,13 @@ interface FileMgrClient
    String author, 
    String view   
   ) 
-    throws PipelineException;
+    throws PipelineException 
+  {
+    FileCreateWorkingAreaReq req = new FileCreateWorkingAreaReq(author, view);
+
+    Object obj = pFileMgr.createWorkingArea(req);
+    handleSimpleResponse(obj);
+  }
 
   /**
    * Remove an entire working area directory for the given user and view. <P> 
@@ -69,7 +93,13 @@ interface FileMgrClient
    String author, 
    String view   
   ) 
-    throws PipelineException;
+    throws PipelineException 
+  {
+    FileRemoveWorkingAreaReq req = new FileRemoveWorkingAreaReq(author, view);
+
+    Object obj = pFileMgr.removeWorkingArea(req);
+    handleSimpleResponse(obj);
+  }
 
   /**
    * Compute the {@link FileState FileState} for each file associated with the working 
@@ -125,7 +155,22 @@ interface FileMgrClient
    TreeMap<FileSeq, FileState[]> states, 
    TreeMap<FileSeq, Date[]> timestamps
   ) 
-    throws PipelineException;
+    throws PipelineException 
+  {
+    FileStateReq req = 
+      new FileStateReq(id, vstate, isFrozen, mod.getWorkingID(), latest, mod.getSequences());
+
+    Object obj = pFileMgr.states(req); 
+    if(obj instanceof FileStateRsp) {
+      FileStateRsp rsp = (FileStateRsp) obj;
+      states.putAll(rsp.getFileStates());
+      if(rsp.getTimeStamps() != null) 
+	timestamps.putAll(rsp.getTimeStamps());
+    }
+    else {
+      handleFailure(obj);
+    }
+  }
 
   /**
    * Perform the file system operations needed to create a new checked-in version of the 
@@ -162,7 +207,14 @@ interface FileMgrClient
    VersionID latest, 
    TreeMap<FileSeq,boolean[]> isNovel
   ) 
-    throws PipelineException;
+    throws PipelineException 
+  {
+    FileCheckInReq req = 
+      new FileCheckInReq(id, vid, latest, mod.getSequences(), isNovel); 
+
+    Object obj = pFileMgr.checkIn(req);
+    handleSimpleResponse(obj);
+  }
 
   /**
    * Overwrite the files associated with the given working version of the node with the 
@@ -188,7 +240,15 @@ interface FileMgrClient
    NodeVersion vsn, 
    boolean isFrozen
   ) 
-    throws PipelineException;
+    throws PipelineException 
+  {
+    FileCheckOutReq req = 
+      new FileCheckOutReq(id, vsn.getVersionID(), vsn.getSequences(), 
+			  isFrozen, !vsn.isActionEnabled());
+
+    Object obj = pFileMgr.checkOut(req); 
+    handleSimpleResponse(obj);
+  }
 
   /**
    * Revert specific working area files to an earlier checked-in version of the files. <P> 
@@ -215,7 +275,13 @@ interface FileMgrClient
    TreeMap<String,VersionID> files, 
    boolean writeable   
   )
-    throws PipelineException;
+    throws PipelineException
+  {
+    FileRevertReq req = new FileRevertReq(id, files, writeable);
+    
+    Object obj = pFileMgr.revert(req);
+    handleSimpleResponse(obj);
+  }
 
   /**
    * Replace the primary files associated one node with the primary files of another node. <P>
@@ -246,7 +312,13 @@ interface FileMgrClient
    TreeMap<File,File> files, 
    boolean writeable   
   )
-    throws PipelineException;
+    throws PipelineException
+  {
+    FileCloneReq req = new FileCloneReq(sourceID, targetID, files, writeable);
+    
+    Object obj = pFileMgr.clone(req);
+    handleSimpleResponse(obj);
+  }
 
   /**
    * Remove specific files associated with the given working version.
@@ -263,7 +335,14 @@ interface FileMgrClient
    NodeID id, 
    ArrayList<File> files
   ) 
-    throws PipelineException;
+    throws PipelineException 
+  {
+    FileRemoveReq req = 
+      new FileRemoveReq(id, files);
+
+    Object obj = pFileMgr.remove(req);
+    handleSimpleResponse(obj);
+  }
 
   /**
    * Remove the all of the files associated with the given working version.
@@ -280,7 +359,13 @@ interface FileMgrClient
    NodeID id, 
    TreeSet<FileSeq> fseqs
   ) 
-    throws PipelineException;
+    throws PipelineException 
+  {
+    FileRemoveAllReq req = new FileRemoveAllReq(id, fseqs);
+
+    Object obj = pFileMgr.removeAll(req);
+    handleSimpleResponse(obj);
+  }
 
   /**
    * Rename the files associated with the given working version.
@@ -301,7 +386,14 @@ interface FileMgrClient
    NodeMod mod,
    FilePattern pattern   
   ) 
-    throws PipelineException;
+    throws PipelineException 
+  {
+    FileRenameReq req = 
+      new FileRenameReq(id, mod.getSequences(), pattern);
+
+    Object obj = pFileMgr.rename(req);
+    handleSimpleResponse(obj);
+  }
 
   /**
    * Change the user write permission of all existing files associated with the given 
@@ -323,7 +415,14 @@ interface FileMgrClient
    NodeMod mod, 
    boolean writeable
   ) 
-    throws PipelineException;
+    throws PipelineException 
+  {
+    FileChangeModeReq req = 
+      new FileChangeModeReq(id, mod.getSequences(), writeable);
+
+    Object obj = pFileMgr.changeMode(req);
+    handleSimpleResponse(obj);
+  }
 
   /**
    * Remove the entire repository directory structure for the given node including all
@@ -337,7 +436,13 @@ interface FileMgrClient
   (
    String name
   ) 
-    throws PipelineException;
+    throws PipelineException 
+  {
+    FileDeleteCheckedInReq req = new FileDeleteCheckedInReq(name);
+
+    Object obj = pFileMgr.deleteCheckedIn(req);
+    handleSimpleResponse(obj);
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -362,7 +467,20 @@ interface FileMgrClient
   (
    TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs
   ) 
-    throws PipelineException;
+    throws PipelineException 
+  {
+    FileGetArchiveSizesReq req = new FileGetArchiveSizesReq(fseqs);
+
+    Object obj = pFileMgr.getArchiveSizes(req);
+    if(obj instanceof FileGetSizesRsp) {
+      FileGetSizesRsp rsp = (FileGetSizesRsp) obj;
+      return rsp.getSizes();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
 
   /**
    * Create an archive volume by running the given archiver plugin on a set of checked-in 
@@ -388,7 +506,20 @@ interface FileMgrClient
    TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs, 
    BaseArchiver archiver
   ) 
-    throws PipelineException;
+    throws PipelineException 
+  {
+    FileArchiveReq req = new FileArchiveReq(name, fseqs, archiver);
+
+    Object obj = pFileMgr.archive(req);
+    if(obj instanceof FileArchiverRsp) {
+      FileArchiverRsp rsp = (FileArchiverRsp) obj;
+      return rsp.getOutput();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -410,7 +541,20 @@ interface FileMgrClient
   (
    TreeMap<String,TreeMap<VersionID,TreeSet<File>>> files
   ) 
-    throws PipelineException;
+    throws PipelineException 
+  {
+    FileGetOfflineSizesReq req = new FileGetOfflineSizesReq(files);
+
+    Object obj = pFileMgr.getOfflineSizes(req);
+    if(obj instanceof FileGetSizesRsp) {
+      FileGetSizesRsp rsp = (FileGetSizesRsp) obj;
+      return rsp.getSizes();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
 
   /**
    * Remove the files associated with the given checked-in version of a node. <P> 
@@ -432,14 +576,31 @@ interface FileMgrClient
    VersionID vid, 
    TreeMap<File,TreeSet<VersionID>> symlinks
   ) 
-    throws PipelineException;
+    throws PipelineException 
+  {
+    FileOfflineReq req = new FileOfflineReq(name, vid, symlinks);
+
+    Object obj = pFileMgr.offline(req);
+    handleSimpleResponse(obj);
+  }
 
   /**
    * Get the fully resolved names and revision numbers of all offlined checked-in versions.
    */
   public TreeMap<String,TreeSet<VersionID>>
   getOfflined() 
-    throws PipelineException;
+    throws PipelineException 
+  {
+    Object obj = pFileMgr.getOfflined();
+    if(obj instanceof FileGetOfflinedRsp) {
+      FileGetOfflinedRsp rsp = (FileGetOfflinedRsp) obj;
+      return rsp.getVersions();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
   
 
   /*----------------------------------------------------------------------------------------*/
@@ -476,7 +637,20 @@ interface FileMgrClient
    BaseArchiver archiver, 
    long size
   ) 
-    throws PipelineException;
+    throws PipelineException 
+  {
+    FileExtractReq req = new FileExtractReq(archiveName, stamp, fseqs, archiver, size);
+
+    Object obj = pFileMgr.extract(req);
+    if(obj instanceof FileArchiverRsp) {
+      FileArchiverRsp rsp = (FileArchiverRsp) obj;
+      return rsp.getOutput();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
 
   /**
    * Move the files extracted from the archive volume into the repository. <P> 
@@ -517,7 +691,13 @@ interface FileMgrClient
    TreeMap<File,TreeSet<VersionID>> symlinks, 
    TreeMap<File,VersionID> targets
   ) 
-    throws PipelineException;
+    throws PipelineException 
+  {
+    FileRestoreReq req = new FileRestoreReq(archiveName, stamp, name, vid, symlinks, targets);
+
+    Object obj = pFileMgr.restore(req);
+    handleSimpleResponse(obj);
+  }
   
   /**
    * Remove the temporary directory use to extract the files from an archive volume.
@@ -534,7 +714,70 @@ interface FileMgrClient
    String archiveName, 
    Date stamp
   ) 
-    throws PipelineException;
+    throws PipelineException 
+  {
+    FileExtractCleanupReq req = new FileExtractCleanupReq(archiveName, stamp); 
+
+    Object obj = pFileMgr.extractCleanup(req);
+    handleSimpleResponse(obj);    
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Handle the simple Success/Failure response.
+   * 
+   * @param obj
+   *   The response from the server.
+   */ 
+  private void 
+  handleSimpleResponse
+  ( 
+   Object obj
+  )
+    throws PipelineException
+  {
+    if(!(obj instanceof SuccessRsp))
+      handleFailure(obj);
+  }
+
+  /**
+   * Handle non-successful responses.
+   * 
+   * @param obj
+   *   The response from the server.
+   */ 
+  private void 
+  handleFailure
+  ( 
+   Object obj
+  )
+    throws PipelineException
+  {
+    if(obj instanceof FailureRsp) {
+      FailureRsp rsp = (FailureRsp) obj;
+      throw new PipelineException(rsp.getMessage());	
+    }
+    else {
+      throw new PipelineException
+	("Illegal response received from the server instance!");
+    }
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The file manager instance.
+   */ 
+  private FileMgr  pFileMgr;   
 
 }
 

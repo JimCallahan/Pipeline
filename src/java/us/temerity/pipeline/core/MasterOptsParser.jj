@@ -61,6 +61,11 @@ MasterOptsParser
    */
   private MasterApp  pApp;
 
+  /**
+   * Whether the file manager should be run as a thread of plmaster(1).
+   */ 
+  private boolean  pInternalFileMgr; 
+
   
   /*----------------------------------------------------------------------------------------*/
 
@@ -91,6 +96,7 @@ TOKEN :
 | <LICENSE:      "--license">    
 
   /* global options */	
+| <FILE_MGR:          "--file-mgr">   
 | <LOG_FILE:          "--log-file">                : PATH_SEP
 | <STANDARD_LOG_FILE: "--standard-log-file"> 
 | <LOG_BACKUPS:       "--log-backups">             : INTEGER_SEP
@@ -246,7 +252,7 @@ Commands()
     }
 
     /* create the server */ 
-    return (new MasterMgrServer());
+    return (new MasterMgrServer(pInternalFileMgr));
   }
 }
     
@@ -334,8 +340,17 @@ void
 GlobalOpts() :
 {}
 {
-  (Log() | LogFile() | StandardLogFile() | LogBackups())
+  (FileMgr() | Log() | LogFile() | StandardLogFile() | LogBackups())
   {}
+}
+
+void FileMgr() : 
+{}
+{
+  <FILE_MGR>
+  { 
+    pInternalFileMgr = true; 
+  }
 }
 
 void LogFile() : 

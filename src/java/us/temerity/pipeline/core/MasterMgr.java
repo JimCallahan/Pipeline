@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.111 2005/04/03 07:04:36 jim Exp $
+// $Id: MasterMgr.java,v 1.112 2005/04/03 21:54:41 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -194,13 +194,20 @@ class MasterMgr
   /** 
    * Construct a new node manager.
    * 
+   * @param internalFileMgr
+   *   Whether the file manager should be run as a thread of plmaster(1).
+   * 
    * @throws PipelineException 
    *   If unable to properly initialize the manager.
    */
   public
-  MasterMgr()
+  MasterMgr
+  (
+   boolean internalFileMgr
+  )
     throws PipelineException 
-  { 
+  {
+    pInternalFileMgr   = internalFileMgr;
     pShutdownJobMgrs   = new AtomicBoolean(false);
     pShutdownPluginMgr = new AtomicBoolean(false);
 
@@ -213,12 +220,21 @@ class MasterMgr
       /* initialize the plugins */ 
       PluginMgrClient.init();
 
-      /* make a connection to the file manager */ 
-      {
-	pFileMgrClients = new Stack<FileMgrClient>();
-	FileMgrNetClient client = new FileMgrNetClient();
-	client.waitForConnection(1000, 5000);
-	freeFileMgrClient(client);
+      /* initialize the internal file manager instance */ 
+      if(pInternalFileMgr) {
+	pFileMgrDirectClient = new FileMgrDirectClient();
+      }
+      /* make a connection to the remote file manager */ 
+      else {
+	pFileMgrNetClients = new Stack<FileMgrNetClient>();
+	
+	FileMgrNetClient fclient = (FileMgrNetClient) getFileMgrClient();
+	try {
+	  fclient.waitForConnection(1000, 5000);
+	}
+	finally {
+	  freeFileMgrClient(fclient);
+	}
       }
       
       /* make a connection to the queue manager */ 
@@ -964,9 +980,9 @@ class MasterMgr
     }
 
     /* close the connection to the file manager */ 
-    if(pFileMgrClients != null) {
-      while(!pFileMgrClients.isEmpty()) {
-	FileMgrClient client = pFileMgrClients.pop();
+    if(!pInternalFileMgr && (pFileMgrNetClients != null)) {
+      while(!pFileMgrNetClients.isEmpty()) {
+	FileMgrNetClient client = pFileMgrNetClients.pop();
 	try {
 	  client.shutdown();
 	}
@@ -9905,8 +9921,11 @@ class MasterMgr
   private FileMgrClient
   getFileMgrClient()
   {
-    synchronized(pFileMgrClients) {
-      if(pFileMgrClients.isEmpty()) {
+    if(pInternalFileMgr)
+      return pFileMgrDirectClient;
+
+    synchronized(pFileMgrNetClients) {
+      if(pFileMgrNetClients.isEmpty()) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Finest,
 	   "Creating New File Manager Client.");
@@ -9917,10 +9936,10 @@ class MasterMgr
       else {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Finest,
-	   "Reusing File Manager Client: " + (pFileMgrClients.size()-1) + " inactive");
+	   "Reusing File Manager Client: " + (pFileMgrNetClients.size()-1) + " inactive");
 	LogMgr.getInstance().flush();
 
-	return pFileMgrClients.pop();
+	return pFileMgrNetClients.pop();
       }
     }
   }
@@ -9934,12 +9953,15 @@ class MasterMgr
    FileMgrClient client
   )
   {
-    synchronized(pFileMgrClients) {
-      pFileMgrClients.push(client);
+    if(pInternalFileMgr)
+      return;
+
+    synchronized(pFileMgrNetClients) {
+      pFileMgrNetClients.push((FileMgrNetClient) client);
       
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Finest,
-	 "Freed File Manager Client: " + pFileMgrClients.size() + " inactive");
+	 "Freed File Manager Client: " + pFileMgrNetClients.size() + " inactive");
       LogMgr.getInstance().flush();
     }
   }
@@ -12770,13 +12792,27 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Whether the file manager should be run as a thread of plmaster(1).
+   */ 
+  private boolean  pInternalFileMgr; 
+  
+  /**
+   * An internal instance of the file manager.
+   * 
+   * This field should not be access directly.  Instead a file manager connection should 
+   * be obtained with the {@link #getFileMgrClient getFileMgrClient} method and returned
+   * to the inactive pool with {@link #freeFileMgrClient freeFileMgrClient}.
+   */
+  private FileMgrDirectClient  pFileMgrDirectClient; 
+
+  /**
    * A pool of inactive connections to the file manager daemon: <B>plfilemgr<B>(1). <P> 
    * 
    * This field should not be access directly.  Instead a file manager connection should 
    * be obtained with the {@link #getFileMgrClient getFileMgrClient} method and returned
    * to the inactive pool with {@link #freeFileMgrClient freeFileMgrClient}.
    */ 
-  private Stack<FileMgrClient>  pFileMgrClients;
+  private Stack<FileMgrNetClient>  pFileMgrNetClients;
  
 
   /*----------------------------------------------------------------------------------------*/

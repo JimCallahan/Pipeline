@@ -1,4 +1,4 @@
-// $Id: MasterApp.java,v 1.14 2005/04/03 06:10:12 jim Exp $
+// $Id: MasterApp.java,v 1.15 2005/04/03 21:54:41 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -29,7 +29,7 @@ class MasterApp
    * Construct and run the application with the given command-line arguments.
    */
   public
-  MasterApp() 
+  MasterApp()
   {
     super("plmaster");
 

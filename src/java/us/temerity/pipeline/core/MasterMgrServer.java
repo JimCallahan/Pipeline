@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.48 2005/04/03 06:10:12 jim Exp $
+// $Id: MasterMgrServer.java,v 1.49 2005/04/03 21:54:41 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -36,16 +36,22 @@ class MasterMgrServer
   /** 
    * Construct a new master manager server.
    * 
+   * @param internalFileMgr
+   *   Whether the file manager should be run as a thread of plmaster(1).
+   * 
    * @throws PipelineException 
    *   If unable to properly initialize the server.
    */
   public
-  MasterMgrServer()
+  MasterMgrServer
+  (
+   boolean internalFileMgr
+  )
     throws PipelineException 
   { 
     super("MasterMgrServer");
 
-    pMasterMgr = new MasterMgr();
+    pMasterMgr = new MasterMgr(internalFileMgr);
 
     pShutdown = new AtomicBoolean(false);
     pTasks    = new HashSet<HandlerTask>();
