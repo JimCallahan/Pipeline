@@ -1,4 +1,4 @@
-// $Id: NodeTreeCommon.java,v 1.1 2004/05/02 12:15:34 jim Exp $
+// $Id: NodeTreeCommon.java,v 1.2 2004/05/04 11:01:04 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -114,6 +114,19 @@ class NodeTreeCommon
     return pIsCheckedIn;
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O N V E R S I O N                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Convert to a string representation.
+   */ 
+  public String
+  toString() 
+  {
+    return pName;
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
