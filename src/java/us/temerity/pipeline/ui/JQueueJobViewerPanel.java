@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.7 2004/09/01 12:23:35 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.8 2004/09/03 02:01:41 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -185,7 +185,6 @@ class JQueueJobViewerPanel
       item = new JMenuItem("Delete Group");
       item.setActionCommand("delete-group");
       item.addActionListener(this);
-      item.setEnabled(false);  // FOR NOW!!
       pGroupPopup.add(item);
     }
 
@@ -430,18 +429,20 @@ class JQueueJobViewerPanel
 	ArrayList<ViewerJob> created = new ArrayList<ViewerJob>();
 	for(Long jobID : group.getRootIDs()) {
 	  JobStatus status = pJobStatus.get(jobID);
-	  JobPath path = new JobPath(jobID);
-	  Point2d anchor = 
-	    new Point2d(prefs.getJobSizeX() + prefs.getJobSpace(), anchorHeight);
-	
-	  double height = 0.0;
-	  {
-	    TreeSet<Long> seen = new TreeSet<Long>();
-	    height = layoutJobs(true, status, path, anchor, 
-				group.getExternalIDs(), created, seen);
+	  if(status != null) {
+	    JobPath path = new JobPath(jobID);
+	    Point2d anchor = 
+	      new Point2d(prefs.getJobSizeX() + prefs.getJobSpace(), anchorHeight);
+	    
+	    double height = 0.0;
+	    {
+	      TreeSet<Long> seen = new TreeSet<Long>();
+	      height = layoutJobs(true, status, path, anchor, 
+				  group.getExternalIDs(), created, seen);
+	    }
+	    
+	    anchorHeight += height;
 	  }
-
-	  anchorHeight += height;
 	}
 
 	ViewerJobGroup vgroup = pJobGroupPool.lookupOrCreateViewerJobGroup(group, created);
@@ -1677,8 +1678,8 @@ class JQueueJobViewerPanel
       doResumeJobs();
     else if(cmd.equals("kill-jobs"))
       doKillJobs();
-//     else if(cmd.equals("delete-group"))
-//       doDeleteGroup();
+     else if(cmd.equals("delete-group"))
+       doDeleteJobGroups();
 
     else {
       for(ViewerJob vjob : clearSelection()) 
@@ -2016,6 +2017,33 @@ class JQueueJobViewerPanel
 
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Delete the primary selected job group.
+   */ 
+  private void 
+  doDeleteJobGroups() 
+  {
+    if(pPrimaryGroup != null) {
+      TreeMap<Long,String> groupAuthors = new TreeMap<Long,String>();
+      for(Long groupID : pSelectedGroups.keySet()) {
+	QueueJobGroup group = pSelectedGroups.get(groupID).getGroup();
+	groupAuthors.put(groupID, group.getNodeID().getAuthor());
+      }
+
+      if(!groupAuthors.isEmpty()) {
+	DeleteJobGroupsTask task = new DeleteJobGroupsTask(groupAuthors);
+	task.start();
+      }
+    }
+
+    for(ViewerJob vjob : clearSelection()) 
+      vjob.update();
+  }
+
+
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -2279,7 +2307,7 @@ class JQueueJobViewerPanel
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp("Pausing Jobs...")) {
 	try {
-	  master.getMasterMgrClient().pauseJobs(pAuthor, pJobIDs);
+	  master.getQueueMgrClient().pauseJobs(pAuthor, pJobIDs);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -2320,7 +2348,7 @@ class JQueueJobViewerPanel
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp("Resuming Paused Jobs...")) {
 	try {
-	  master.getMasterMgrClient().resumeJobs(pAuthor, pJobIDs);
+	  master.getQueueMgrClient().resumeJobs(pAuthor, pJobIDs);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -2361,7 +2389,7 @@ class JQueueJobViewerPanel
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp("Killing Jobs...")) {
 	try {
-	  master.getMasterMgrClient().killJobs(pAuthor, pJobIDs);
+	  master.getQueueMgrClient().killJobs(pAuthor, pJobIDs);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -2376,6 +2404,47 @@ class JQueueJobViewerPanel
     }
 
     private TreeSet<Long>  pJobIDs; 
+  }
+
+  /** 
+   * Delete the completed job group.
+   */ 
+  private
+  class DeleteJobGroupsTask
+    extends Thread
+  {
+    public 
+    DeleteJobGroupsTask
+    (
+     TreeMap<Long,String> groupAuthors
+    ) 
+    {
+      super("JQueueJobsViewerPanel:DeleteJobGroupsTask");
+
+      pGroupAuthors = groupAuthors;
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Deleting Job Groups...")) {
+	try {
+	  master.getQueueMgrClient().deleteJobGroups(pGroupAuthors);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	doUpdate();
+      }
+    }
+
+    private TreeMap<Long,String>  pGroupAuthors; 
   }
 
 
