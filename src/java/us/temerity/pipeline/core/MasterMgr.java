@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.45 2004/10/21 01:23:26 jim Exp $
+// $Id: MasterMgr.java,v 1.46 2004/10/21 07:08:15 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3232,7 +3232,15 @@ class MasterMgr
 
     TaskTimer timer = new TaskTimer("MasterMgr.checkOut(): " + nodeID);
     try {
-      performCheckOut(true, nodeID, req.getVersionID(), req.getMode(), 
+      /* get the current status of the nodes */ 
+      HashMap<NodeID,NodeStatus> table = new HashMap<NodeID,NodeStatus>();
+      {
+	NodeStatus status = performNodeOperation(new NodeOp(), req.getNodeID(), timer);
+	buildStatusTable(status, table);
+      }
+
+      /* check-out the nodes */ 
+      performCheckOut(true, nodeID, req.getVersionID(), req.getMode(), table, 
 		      new LinkedList<String>(), new HashSet<String>(), new HashSet<String>(), 
 		      timer);
       return new SuccessRsp(timer);
@@ -3242,6 +3250,31 @@ class MasterMgr
 			    "Check-Out operation aborted!\n\n" +
 			    ex.getMessage());
     }    
+  }
+
+  /**
+   * Build a node status table indexed by node ID by traversing the status tree.
+   * 
+   * @param status
+   *   The current node status.
+   * 
+   * @param table
+   *   The current node status indexed by node ID.
+   */ 
+  private void 
+  buildStatusTable
+  (
+   NodeStatus status, 
+   HashMap<NodeID,NodeStatus> table
+  ) 
+  {
+    if(table.containsKey(status.getNodeID())) 
+      return;
+
+    table.put(status.getNodeID(), status);
+
+    for(NodeStatus lstatus : status.getSources()) 
+      buildStatusTable(lstatus, table);
   }
 
   /**
@@ -3262,6 +3295,9 @@ class MasterMgr
    * @param mode
    *   The criteria used to determine whether nodes upstream of the root node of the check-out
    *   should also be checked-out.
+   *
+   * @param table
+   *   The current node status indexed by node ID.
    * 
    * @param branch
    *   The names of the nodes from the root to this node.
@@ -3285,6 +3321,7 @@ class MasterMgr
    NodeID nodeID, 
    VersionID vid, 
    CheckOutMode mode,
+   HashMap<NodeID,NodeStatus> stable,
    LinkedList<String> branch, 
    HashSet<String> seen, 
    HashSet<String> skipped, 
@@ -3303,6 +3340,24 @@ class MasterMgr
 
     /* push the current node onto the end of the branch */ 
     branch.addLast(name);
+
+    /* make sure the node does have any active jobs */ 
+    {
+      NodeStatus status = stable.get(nodeID);
+      if(status != null) {
+	NodeDetails details = status.getDetails();
+	if(details != null) {
+	  switch(details.getOverallQueueState()) {
+	  case Queued:
+	  case Paused:
+	  case Running:
+	    throw new PipelineException
+	      ("The node (" + name + ") cannot be checked-out while there are active " + 
+	       "jobs associated with the node!");	      
+	  }
+	}
+      }
+    }
 
     timer.aquire();
     ReentrantReadWriteLock workingLock = getWorkingLock(nodeID);
@@ -3391,7 +3446,7 @@ class MasterMgr
       for(LinkVersion link : vsn.getSources()) {
 	NodeID lnodeID = new NodeID(nodeID, link.getName());
 
-	performCheckOut(false, lnodeID, link.getVersionID(), mode, 
+	performCheckOut(false, lnodeID, link.getVersionID(), mode, stable, 
 			branch, seen, skipped, timer);
 
 	if(skipped.contains(link.getName())) 
@@ -5139,7 +5194,8 @@ class MasterMgr
 	    ArrayList<Long> jIDs          = new ArrayList<Long>();
 	    ArrayList<JobState> jobStates = new ArrayList<JobState>();
 
-	    pQueueMgrClient.getJobStates(nodeID, work.getPrimarySequence(), jIDs, jobStates);
+	    pQueueMgrClient.getJobStates(nodeID, work.getTimeStamp(), 
+					 work.getPrimarySequence(), jIDs, jobStates);
 
 	    assert(jobIDs.length == jIDs.size());
 	    jobIDs = (Long[]) jIDs.toArray(jobIDs);
@@ -7758,6 +7814,6 @@ class MasterMgr
    * Access to this field should be protected by a synchronized(pQueueSubmitLock) block.
    */ 
   private long  pNextJobGroupID; 
-  
+
 }
 

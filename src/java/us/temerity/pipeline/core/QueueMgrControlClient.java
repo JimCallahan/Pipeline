@@ -1,4 +1,4 @@
-// $Id: QueueMgrControlClient.java,v 1.5 2004/09/13 23:42:09 jim Exp $
+// $Id: QueueMgrControlClient.java,v 1.6 2004/10/21 07:08:15 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -81,6 +81,9 @@ class QueueMgrControlClient
    * @param id
    *   The unique working version identifier.
    *
+   * @param stamp
+   *   The timestamp of when the working version was created.
+   * 
    * @param fseq
    *   The primary file sequence.
    * 
@@ -99,6 +102,7 @@ class QueueMgrControlClient
   getJobStates
   (
    NodeID id, 
+   Date stamp, 
    FileSeq fseq, 
    ArrayList<Long> jobIDs, 
    ArrayList<JobState> states 
@@ -107,7 +111,7 @@ class QueueMgrControlClient
   {
     verifyConnection();
     
-    QueueGetJobStatesReq req = new QueueGetJobStatesReq(id, fseq);
+    QueueGetJobStatesReq req = new QueueGetJobStatesReq(id, stamp, fseq);
     
     Object obj = performTransaction(QueueRequest.GetJobStates, req);
     if(obj instanceof QueueGetJobStatesRsp) {

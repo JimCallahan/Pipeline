@@ -1,4 +1,4 @@
-// $Id: QueueGetJobStatesReq.java,v 1.1 2004/08/22 22:05:43 jim Exp $
+// $Id: QueueGetJobStatesReq.java,v 1.2 2004/10/21 07:08:15 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -30,6 +30,9 @@ class QueueGetJobStatesReq
    * @param id
    *   The unique working version identifier.
    *
+   * @param stamp
+   *   The timestamp of when the working version was created.
+   * 
    * @param fseq
    *   The primary file sequence.
    */
@@ -37,12 +40,17 @@ class QueueGetJobStatesReq
   QueueGetJobStatesReq
   (
    NodeID id, 
+   Date stamp, 
    FileSeq fseq
   )
   { 
     if(id == null) 
       throw new IllegalArgumentException("The node ID cannot be (null)!");
     pNodeID = id;
+
+    if(stamp == null) 
+      throw new IllegalArgumentException("The creation timestamp cannot be (null)!");
+    pTimeStamp = stamp;
 
     if(id == null) 
       throw new IllegalArgumentException("The primary file sequence cannot be (null)!");    
@@ -62,6 +70,15 @@ class QueueGetJobStatesReq
   getNodeID() 
   {
     return pNodeID; 
+  }
+
+  /**
+   * Get when the working version was created.
+   */ 
+  public Date
+  getTimeStamp() 
+  {
+    return pTimeStamp;
   }
 
   /**
@@ -91,6 +108,11 @@ class QueueGetJobStatesReq
    * The unique working version identifier.
    */ 
   private NodeID  pNodeID; 
+
+  /** 
+   * The timestamp of when the version was created.
+   */
+  private Date  pTimeStamp;
 
   /**
    * The primary file sequence.

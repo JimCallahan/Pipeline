@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.17 2004/10/16 23:32:31 jim Exp $
+// $Id: QueueMgr.java,v 1.18 2004/10/21 07:08:15 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1064,6 +1064,9 @@ class QueueMgr
    * Get the per-file JobState of each file associated with the given working version and 
    * primary file sequence. <P> 
    * 
+   * Any jobs which were submitted before the working version was created will be treated 
+   * as if they didn't exist.  
+   * 
    * @param req 
    *   The job states request.
    *    
@@ -1080,6 +1083,7 @@ class QueueMgr
     TaskTimer timer = new TaskTimer();
 
     NodeID nodeID = req.getNodeID();
+    Date stamp = req.getTimeStamp();
 
     TreeMap<File,Long> nodeJobIDs = new TreeMap<File,Long>();
     timer.aquire();
@@ -1108,7 +1112,7 @@ class QueueMgr
 	  if(jobID != null) 
 	    info = pJobInfo.get(jobID);	   
 	  
-	  if(info != null) 
+	  if((info != null) && (info.getSubmittedStamp().compareTo(stamp) > 0))
 	    jstate = info.getState();
 	  else 
 	    jobID = null;
