@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.50 2004/10/02 17:40:24 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.51 2004/10/03 17:06:56 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1688,7 +1688,6 @@ class JNodeViewerPanel
 	  /* update the appearance of all nodes who's selection state changed */ 
 	  for(ViewerNode vnode : changed.values()) 
 	    vnode.update();
-
 	}
 	break;
 
@@ -1854,36 +1853,37 @@ class JNodeViewerPanel
     switch(e.getButton()) {
     case MouseEvent.BUTTON1:
       if(pRubberBand.isDragging()) {
+	int on1  = 0;
+	
+	int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
+		    MouseEvent.BUTTON2_DOWN_MASK | 
+		    MouseEvent.BUTTON3_DOWN_MASK | 
+		    MouseEvent.SHIFT_DOWN_MASK |
+		    MouseEvent.ALT_DOWN_MASK |
+		    MouseEvent.CTRL_DOWN_MASK);
+	
+	
+	int on2  = (MouseEvent.SHIFT_DOWN_MASK);
+	
+	int off2 = (MouseEvent.BUTTON1_DOWN_MASK |
+		    MouseEvent.BUTTON2_DOWN_MASK | 
+		    MouseEvent.BUTTON3_DOWN_MASK | 
+		    MouseEvent.SHIFT_DOWN_MASK |
+		    MouseEvent.CTRL_DOWN_MASK);
+	
+	
+	int on3  = (MouseEvent.SHIFT_DOWN_MASK |
+		    MouseEvent.CTRL_DOWN_MASK);
+	
+	int off3 = (MouseEvent.BUTTON1_DOWN_MASK |
+		    MouseEvent.BUTTON2_DOWN_MASK | 
+		    MouseEvent.BUTTON3_DOWN_MASK | 
+		    MouseEvent.ALT_DOWN_MASK);
+
+
 	BoundingBox bbox = pRubberBand.endDrag();
 	if(bbox != null) {
 	  SceneGraphPath gpaths[] = pGeomBranch.pickAll(new PickBounds(bbox));
-
-	  int on1  = 0;
-	  
-	  int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
-		      MouseEvent.BUTTON2_DOWN_MASK | 
-		      MouseEvent.BUTTON3_DOWN_MASK | 
-		      MouseEvent.SHIFT_DOWN_MASK |
-		      MouseEvent.ALT_DOWN_MASK |
-		      MouseEvent.CTRL_DOWN_MASK);
-	  
-	  
-	  int on2  = (MouseEvent.SHIFT_DOWN_MASK);
-	  
-	  int off2 = (MouseEvent.BUTTON1_DOWN_MASK |
-		      MouseEvent.BUTTON2_DOWN_MASK | 
-		      MouseEvent.BUTTON3_DOWN_MASK | 
-		      MouseEvent.SHIFT_DOWN_MASK |
-		      MouseEvent.CTRL_DOWN_MASK);
-	  
-	  
-	  int on3  = (MouseEvent.SHIFT_DOWN_MASK |
-		      MouseEvent.CTRL_DOWN_MASK);
-	  
-	  int off3 = (MouseEvent.BUTTON1_DOWN_MASK |
-		      MouseEvent.BUTTON2_DOWN_MASK | 
-		      MouseEvent.BUTTON3_DOWN_MASK | 
-		      MouseEvent.ALT_DOWN_MASK);
 	  
 	  HashMap<NodePath,ViewerNode> changed = new HashMap<NodePath,ViewerNode>();
 	  
@@ -1942,8 +1942,11 @@ class JNodeViewerPanel
 
 	/* drag started but never updated: clear the selection */ 
 	else {
-	  for(ViewerNode vnode : clearSelection()) 
-	    vnode.update();
+	  /* ignore if SHIFT or SHIFT+CTRL are down */ 
+	  if(!(((mods & (on2 | off2)) == on2) || 
+	       ((mods & (on3 | off3)) == on3))) 
+	    for(ViewerNode vnode : clearSelection()) 
+	      vnode.update();
 	}
       }
       break;
