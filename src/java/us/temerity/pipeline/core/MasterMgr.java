@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.5 2004/06/08 02:37:46 jim Exp $
+// $Id: MasterMgr.java,v 1.6 2004/06/08 20:08:01 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -795,7 +795,7 @@ class MasterMgr
   /**
    * Shutdown the node manager. <P> 
    * 
-   * Also sends a shutdown request to the <B>plfilemgr</B>(1) and <B>plnotify<B>(1) 
+   * Also sends a shutdown request to the <B>plfilemgr</B>(1) and <B>plnotify</B>(1) 
    * daemons if there are live network connectins to these daemons. <P> 
    * 
    * It is crucial that this method be called when only a single thread is able to access
@@ -2135,6 +2135,29 @@ class MasterMgr
    NodeRegisterReq req
   ) 
   {
+    return register(req, true);
+  }
+
+  /**
+   * Register an initial working version of a node. <P> 
+   * 
+   * @param req 
+   *   The node register request.
+   *
+   * @param checkName
+   *   Whether to verify that the name of the new node is not already in use.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to register the inital working version.
+   */
+  private Object
+  register
+  (
+   NodeRegisterReq req, 
+   boolean checkName
+  ) 
+  {
     assert(req != null);
 
     /* node identifiers */ 
@@ -2145,16 +2168,18 @@ class MasterMgr
 
     /* reserve the node name, 
          after verifying that it doesn't conflict with existing nodes */ 
-    timer.aquire();
-    synchronized(pNodeTreeRoot) {
-      timer.resume();
-      
-      if(!isNodePathUnused(name)) 
-	return new FailureRsp
-	  (timer, "Cannot register node (" + name + ") because its name conflicts with " + 
-	   "an existing node!");
-      
-      addWorkingNodeTreePath(name, id.getAuthor(), id.getView());
+    if(checkName) {
+      timer.aquire();
+      synchronized(pNodeTreeRoot) {
+	timer.resume();
+	
+	if(!isNodePathUnused(name)) 
+	  return new FailureRsp
+	    (timer, "Cannot register node (" + name + ") because its name conflicts with " + 
+	     "an existing node!");
+	
+	addWorkingNodeTreePath(name, id.getAuthor(), id.getView());
+      }
     }
 
     timer.aquire();
@@ -2386,6 +2411,10 @@ class MasterMgr
 
     TaskTimer timer = new TaskTimer("MasterMgr.rename(): " + id + " to " + nid);
 
+    if(name.equals(nname)) 
+      return new FailureRsp
+	(timer, "Cannot rename node (" + name + ") to the same name!");
+
     /* reserve the new node name, 
          after verifying that it doesn't conflict with existing nodes */ 
     timer.aquire();
@@ -2460,7 +2489,7 @@ class MasterMgr
 
       /* register the new named node */ 
       {
-	Object obj = register(new NodeRegisterReq(nid, mod));
+	Object obj = register(new NodeRegisterReq(nid, mod), false);
 	if(obj instanceof FailureRsp) {
 	  FailureRsp rsp = (FailureRsp) obj;
 	  throw new PipelineException(rsp.getMessage());	
@@ -2982,6 +3011,8 @@ class MasterMgr
 	NodeTreeEntry entry = (NodeTreeEntry) parent.get(comps[wk]);
 	if(entry == null) 
 	  return true;
+
+	parent = entry;
       }
 
       return false;
