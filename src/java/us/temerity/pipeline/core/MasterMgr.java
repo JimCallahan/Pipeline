@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.87 2005/02/07 14:50:26 jim Exp $
+// $Id: MasterMgr.java,v 1.88 2005/02/08 13:13:38 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6918,8 +6918,9 @@ class MasterMgr
 	     (linkState == LinkState.Conflicted) || 
 	     anyConflictedFs);
 	  
-	  if(anyMissingFs) 
-	    overallNodeState = OverallNodeState.Missing;
+	  if(anyMissingFs) 	    
+	    overallNodeState = 
+	      (anyNeedsCheckOut ? OverallNodeState.MissingNewer : OverallNodeState.Missing);
 	  else if(anyConflicted || (anyNeedsCheckOut && anyModified))
 	    overallNodeState = OverallNodeState.Conflicted;
 	  else if(anyModified) 
@@ -6934,6 +6935,7 @@ class MasterMgr
 	      case ModifiedLinks:
 	      case Conflicted:	
 	      case Missing:
+	      case MissingNewer:
 		overallNodeState = OverallNodeState.Conflicted;
 
  	      case Identical:
@@ -6968,6 +6970,7 @@ class MasterMgr
 	      case ModifiedLinks:
 	      case Conflicted:	
 	      case Missing:
+	      case MissingNewer:
 		overallNodeState = OverallNodeState.ModifiedLinks;
 		break;
 		
@@ -9741,8 +9744,10 @@ class MasterMgr
 	   "which this node is linked can be checked-in.");
 
       case Missing:
+      case MissingNewer:
 	throw new PipelineException
-	  ("The working version of node (" + name + ") was in a Missing state!\n\n" + 
+	  ("The working version of node (" + name + ") was in a " + 
+	   details.getOverallNodeState() + " state!\n\n" + 
 	   "The missing files must be created or regenerated before the node can be " +
 	   "checked-in.");
 

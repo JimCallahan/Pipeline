@@ -1,6 +1,6 @@
 //Maya ASCII 6.0 scene
 //Name: Primary.ma
-//Last modified: Tue, Dec 07, 2004 05:23:02 PM
+//Last modified: Tue, Feb 08, 2005 07:39:44 AM
 file -rdi 1 -rpr "Normal" -rfn "NormalRN" "/home/jim/code/src/pipeline/src/java/us/temerity/pipeline/laf/maya/synth//scenes/Normal.ma";
 file -r -rpr "Normal" -rfn "NormalRN" "/home/jim/code/src/pipeline/src/java/us/temerity/pipeline/laf/maya/synth//scenes/Normal.ma";
 requires maya "6.0";
@@ -826,9 +826,6 @@ createNode script -n "uiConfigurationScriptNode";
 		+ "\t\t\tpanel -e -l $label $panelName;\n"
 		+ "\t\t}\n"
 		+ "\t}\n"
-		+ "\tif ($useSceneConfig) {\n"
-		+ "\t\toutlinerPanel -e -to $panelName;\n"
-		+ "\t}\n"
 		+ "\t$panelName = `sceneUIReplacement -getNextScriptedPanel \"graphEditor\" \"Graph Editor\"`;\n"
 		+ "\tif (\"\" == $panelName) {\n"
 		+ "\t\tif ($useSceneConfig) {\n"
@@ -1181,9 +1178,6 @@ createNode script -n "uiConfigurationScriptNode";
 		+ "\t\t\tpanel -e -l $label $panelName;\n"
 		+ "\t\t}\n"
 		+ "\t}\n"
-		+ "\tif ($useSceneConfig) {\n"
-		+ "\t\tscriptedPanel -e -to $panelName;\n"
-		+ "\t}\n"
 		+ "\t$panelName = `sceneUIReplacement -getNextScriptedPanel \"visorPanel\" \"Visor\"`;\n"
 		+ "\tif (\"\" == $panelName) {\n"
 		+ "\t\tif ($useSceneConfig) {\n"
@@ -1394,12 +1388,12 @@ createNode brush -n "brush3";
 	setAttr ".rro[0]"  0 1 1;
 createNode reference -n "NormalRN";
 select -ne :time1;
-	setAttr ".o" 94;
+	setAttr ".o" 104;
 select -ne :renderPartition;
-	setAttr -s 6 ".st";
+	setAttr -s 7 ".st";
 select -ne :renderGlobalsList1;
 select -ne :defaultShaderList1;
-	setAttr -s 6 ".s";
+	setAttr -s 7 ".s";
 select -ne :postProcessList1;
 	setAttr -s 2 ".p";
 select -ne :lightList1;
@@ -1418,7 +1412,7 @@ select -ne :defaultRenderGlobals;
 	setAttr ".rght" 124;
 	setAttr ".an" yes;
 	setAttr ".fs" 0;
-	setAttr ".ef" 97;
+	setAttr ".ef" 105;
 	setAttr ".ep" 4;
 	setAttr ".pff" yes;
 select -ne :defaultRenderQuality;
@@ -1448,6 +1442,7 @@ select -ne Normal_grey;
 select -ne Normal_select;
 	setAttr ".c" -type "float3" 0 1 1 ;
 select -ne Normal_surface;
+select -ne Normal_pasted__white;
 connectAttr ":defaultLightSet.msg" "lightLinker1.lnk[0].llnk";
 connectAttr ":initialShadingGroup.msg" "lightLinker1.lnk[0].olnk";
 connectAttr ":defaultLightSet.msg" "lightLinker1.lnk[1].llnk";

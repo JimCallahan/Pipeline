@@ -5,7 +5,6 @@ images_DATA = \
   Added-Aborted.gif \
   Added-Failed.gif \
   Added-Finished.gif \
-  Added-Missing.gif \
   Added-Paused.gif \
   Added-Queued.gif \
   Added-Running.gif \
@@ -15,7 +14,6 @@ images_DATA = \
   CheckedIn-Aborted.gif \
   CheckedIn-Failed.gif \
   CheckedIn-Finished.gif \
-  CheckedIn-Missing.gif \
   CheckedIn-Paused.gif \
   CheckedIn-Queued.gif \
   CheckedIn-Running.gif \
@@ -25,7 +23,6 @@ images_DATA = \
   Conflicted-Aborted.gif \
   Conflicted-Failed.gif \
   Conflicted-Finished.gif \
-  Conflicted-Missing.gif \
   Conflicted-Paused.gif \
   Conflicted-Queued.gif \
   Conflicted-Running.gif \
@@ -34,7 +31,6 @@ images_DATA = \
   Identical-Aborted.gif \
   Identical-Failed.gif \
   Identical-Finished.gif \
-  Identical-Missing.gif \
   Identical-Paused.gif \
   Identical-Queued.gif \
   Identical-Running.gif \
@@ -43,25 +39,30 @@ images_DATA = \
   Missing-Aborted.gif \
   Missing-Failed.gif \
   Missing-Finished.gif \
-  Missing-Missing.gif \
   Missing-Paused.gif \
   Missing-Queued.gif \
   Missing-Running.gif \
   Missing-Stale.gif \
   Missing-Undefined.gif \
+  MissingNewer-Aborted.gif \
+  MissingNewer-Failed.gif \
+  MissingNewer-Finished.gif \
+  MissingNewer-Paused.gif \
+  MissingNewer-Queued.gif \
+  MissingNewer-Running.gif \
+  MissingNewer-Stale.gif \
+  MissingNewer-Undefined.gif \
   Modified-Aborted.gif \
   Modified-Failed.gif \
   Modified-Finished.gif \
   ModifiedLinks-Aborted.gif \
   ModifiedLinks-Failed.gif \
   ModifiedLinks-Finished.gif \
-  ModifiedLinks-Missing.gif \
   ModifiedLinks-Paused.gif \
   ModifiedLinks-Queued.gif \
   ModifiedLinks-Running.gif \
   ModifiedLinks-Stale.gif \
   ModifiedLinks-Undefined.gif \
-  Modified-Missing.gif \
   Modified-Paused.gif \
   Modified-Queued.gif \
   Modified-Running.gif \
@@ -86,7 +87,6 @@ images_DATA = \
   NeedsCheckOutMicro-Running.gif \
   NeedsCheckOutMicro-Stale.gif \
   NeedsCheckOutMicro-Undefined.gif \
-  NeedsCheckOut-Missing.gif \
   NeedsCheckOut-Paused.gif \
   NeedsCheckOut-Queued.gif \
   NeedsCheckOut-Running.gif \
@@ -95,7 +95,6 @@ images_DATA = \
   Obsolete-Aborted.gif \
   Obsolete-Failed.gif \
   Obsolete-Finished.gif \
-  Obsolete-Missing.gif \
   Obsolete-Paused.gif \
   Obsolete-Queued.gif \
   Obsolete-Running.gif \
@@ -104,7 +103,6 @@ images_DATA = \
   Pending-Aborted.gif \
   Pending-Failed.gif \
   Pending-Finished.gif \
-  Pending-Missing.gif \
   Pending-Paused.gif \
   Pending-Queued.gif \
   Pending-Running.gif \

@@ -1,4 +1,4 @@
-// $Id: OverallNodeState.java,v 1.11 2004/10/09 16:56:21 jim Exp $
+// $Id: OverallNodeState.java,v 1.12 2005/02/08 13:13:38 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -118,11 +118,21 @@ enum OverallNodeState
    * This implies that one or more of the individual <CODE>FileState</CODE> of each file 
    * associated with the node are <CODE>Missing</CODE>. <P> 
    * 
-   * This state has precedence over all other states except <CODE>CheckedIn</CODE> which 
-   * can never occur at the same time as <CODE>Missing</CODE> since there are no working 
-   * files to check for existence.
+   * This state has precedence over all other states except <CODE>MissingNewer</CODE> and 
+   * <CODE>CheckedIn</CODE>.  The <CODE>CheckedIn</CODE> state can never occur at the same 
+   * time as <CODE>Missing</CODE> since there are no working files to check for existence.
    */
-  Missing;
+  Missing, 
+
+  /**
+   * Identical to the Missing state except that the working version is based on an older 
+   * checked-in version than the latest checked-in version. <P> 
+   * 
+   * This state precedence over all other states except <CODE>CheckedIn</CODE>.
+   */
+  MissingNewer;
+
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -181,7 +191,8 @@ enum OverallNodeState
     "Modified", 
     "Needs Check-Out", 
     "Conflicted", 
-    "Missing"
+    "Missing", 
+    "Missing Newer"
   };
 
   private static String sSymbols[] = {
@@ -192,6 +203,7 @@ enum OverallNodeState
     "M", 
     "O",
     "C",
-    "?"
+    "?",
+    "X"
   };
 }

@@ -1,8 +1,8 @@
 //Maya ASCII 6.0 scene
 //Name: PrimaryFrozen.ma
-//Last modified: Tue, Dec 07, 2004 05:34:34 PM
-file -rdi 1 -rpr "Normal" -rfn "NormalRN" "/home/jim/code/src/pipeline/src/java/us/temerity/pipeline/laf/maya/synth//scenes/NormalFrozen.ma";
-file -r -rpr "Normal" -rfn "NormalRN" "/home/jim/code/src/pipeline/src/java/us/temerity/pipeline/laf/maya/synth//scenes/NormalFrozen.ma";
+//Last modified: Tue, Feb 08, 2005 07:34:07 AM
+file -rdi 1 -rpr "Normal" -rfn "NormalRN" "/home/jim/code/src/pipeline/src/java/us/temerity/pipeline/laf/maya/synth//scenes/Normal.ma";
+file -r -rpr "Normal" -rfn "NormalRN" "/home/jim/code/src/pipeline/src/java/us/temerity/pipeline/laf/maya/synth//scenes/Normal.ma";
 requires maya "6.0";
 currentUnit -l centimeter -a degree -t film;
 fileInfo "application" "maya";
@@ -86,7 +86,7 @@ createNode camera -s -n "sideShape" -p "side";
 	setAttr ".o" yes;
 createNode renderLayer -s -n "globalRender";
 createNode lightLinker -n "lightLinker1";
-	setAttr -s 2 ".lnk";
+	setAttr -s 3 ".lnk";
 createNode brush -n "brush1";
 	setAttr ".lcl[0]"  0 0.5 1;
 	setAttr ".pcl[0]"  0 0.5 1;
@@ -826,9 +826,6 @@ createNode script -n "uiConfigurationScriptNode";
 		+ "\t\t\tpanel -e -l $label $panelName;\n"
 		+ "\t\t}\n"
 		+ "\t}\n"
-		+ "\tif ($useSceneConfig) {\n"
-		+ "\t\toutlinerPanel -e -to $panelName;\n"
-		+ "\t}\n"
 		+ "\t$panelName = `sceneUIReplacement -getNextScriptedPanel \"graphEditor\" \"Graph Editor\"`;\n"
 		+ "\tif (\"\" == $panelName) {\n"
 		+ "\t\tif ($useSceneConfig) {\n"
@@ -1181,9 +1178,6 @@ createNode script -n "uiConfigurationScriptNode";
 		+ "\t\t\tpanel -e -l $label $panelName;\n"
 		+ "\t\t}\n"
 		+ "\t}\n"
-		+ "\tif ($useSceneConfig) {\n"
-		+ "\t\tscriptedPanel -e -to $panelName;\n"
-		+ "\t}\n"
 		+ "\t$panelName = `sceneUIReplacement -getNextScriptedPanel \"visorPanel\" \"Visor\"`;\n"
 		+ "\tif (\"\" == $panelName) {\n"
 		+ "\t\tif ($useSceneConfig) {\n"
@@ -1393,48 +1387,39 @@ createNode brush -n "brush3";
 	setAttr ".env[2].envi" 2;
 	setAttr ".rro[0]"  0 1 1;
 createNode reference -n "NormalRN";
-	setAttr ".fn[0]" -type "string" (
-		"/home/jim/code/src/pipeline/src/java/us/temerity/pipeline/laf/maya/synth//scenes/Normal.ma");
-	setAttr -s 16 ".al";
-	setAttr ".al[0]" -type "string" (
-		"select Normal_origShape; addAttr -ci true -sn \"nts\" -ln \"notes\" -dt \"string\";");
-	setAttr ".al[1]" -type "string" (
-		"select |Normal_PENDING|Normal_button|Normal_buttonShape; addAttr -ci true -sn \"nts\" -ln \"notes\" -dt \"string\";");
-	setAttr ".al[2]" -type "string" (
-		"select |Normal_PENDING|Normal_inset|Normal_insetShape; addAttr -ci true -sn \"nts\" -ln \"notes\" -dt \"string\";");
-	setAttr ".al[3]" -type "string" (
-		"select |Normal_CHECKED_IN|Normal_button|Normal_buttonShape; addAttr -ci true -sn \"nts\" -ln \"notes\" -dt \"string\";");
-	setAttr ".al[4]" -type "string" (
-		"select |Normal_CHECKED_IN|Normal_inset|Normal_insetShape; addAttr -ci true -sn \"nts\" -ln \"notes\" -dt \"string\";");
-	setAttr ".al[5]" -type "string" (
-		"select |Normal_IDENTICAL|Normal_button|Normal_buttonShape; addAttr -ci true -sn \"nts\" -ln \"notes\" -dt \"string\";");
-	setAttr ".al[6]" -type "string" (
-		"select |Normal_NEEDSCO_MODIFIED|Normal_inset|Normal_insetShape; addAttr -ci true -sn \"nts\" -ln \"notes\" -dt \"string\";");
-	setAttr ".al[7]" -type "string" (
-		"select |Normal_CONFLICTS|Normal_sides; addAttr -ci true -sn \"nts\" -ln \"notes\" -dt \"string\";");
-	setAttr ".al[8]" -type "string" (
-		"select Normal_repoShape; addAttr -ci true -sn \"nts\" -ln \"notes\" -dt \"string\";");
-	setAttr ".al[9]" -type "string" (
-		"select |Normal_MODIFIED_DEPEND|Normal_button|Normal_buttonShape; addAttr -ci true -sn \"nts\" -ln \"notes\" -dt \"string\";");
-	setAttr ".al[10]" -type "string" (
-		"select |Normal_MODIFIED_DEPEND|Normal_inset|Normal_insetShape; addAttr -ci true -sn \"nts\" -ln \"notes\" -dt \"string\";");
-	setAttr ".al[11]" -type "string" (
-		"select |Normal_MISSING|Normal_button|Normal_buttonShape; addAttr -ci true -sn \"nts\" -ln \"notes\" -dt \"string\";");
-	setAttr ".al[12]" -type "string" (
-		"select |Normal_ADDED|Normal_inset|Normal_insetShape; addAttr -ci true -sn \"nts\" -ln \"notes\" -dt \"string\";");
-	setAttr ".al[13]" -type "string" (
-		"select |Normal_OBSOLETE|Normal_button|Normal_buttonShape; addAttr -ci true -sn \"nts\" -ln \"notes\" -dt \"string\";");
-	setAttr ".al[14]" -type "string" (
-		"select |Normal_NEEDSCO_MEGA|Normal_inset|Normal_insetShape; addAttr -ci true -sn \"nts\" -ln \"notes\" -dt \"string\";");
-	setAttr ".al[15]" -type "string" (
-		"select |Normal_NEEDSCO_MINOR|Normal_inset|Normal_insetShape; addAttr -ci true -sn \"nts\" -ln \"notes\" -dt \"string\";");
+createNode animCurveTU -n "white_incandescenceR";
+	setAttr ".tan" 5;
+	setAttr ".wgt" no;
+	setAttr -s 3 ".ktv[0:2]"  0 1 5 0.5 8 1;
+	setAttr -s 3 ".kit[0:2]"  3 3 9;
+	setAttr ".pst" 3;
+createNode animCurveTU -n "white_incandescenceG";
+	setAttr ".tan" 5;
+	setAttr ".wgt" no;
+	setAttr -s 3 ".ktv[0:2]"  0 0.25 5 0.5 8 0.25;
+	setAttr -s 3 ".kit[0:2]"  3 3 9;
+	setAttr ".pst" 3;
+createNode animCurveTU -n "white_incandescenceB";
+	setAttr ".tan" 5;
+	setAttr ".wgt" no;
+	setAttr -s 3 ".ktv[0:2]"  0 1 5 1 8 1;
+	setAttr -s 3 ".kit[0:2]"  3 3 9;
+	setAttr ".pst" 3;
+createNode lambert -n "white";
+	setAttr ".c" -type "float3" 0 0 0 ;
+	setAttr ".miic" -type "float3" 3.1415927 3.1415927 3.1415927 ;
+createNode shadingEngine -n "whiteSG";
+	setAttr ".ihi" 0;
+	setAttr -s 15 ".dsm";
+	setAttr ".ro" yes;
+createNode materialInfo -n "materialInfo1";
 select -ne :time1;
-	setAttr ".o" 94;
+	setAttr ".o" 100;
 select -ne :renderPartition;
-	setAttr -s 6 ".st";
+	setAttr -s 8 ".st";
 select -ne :renderGlobalsList1;
 select -ne :defaultShaderList1;
-	setAttr -s 6 ".s";
+	setAttr -s 8 ".s";
 select -ne :postProcessList1;
 	setAttr -s 2 ".p";
 select -ne :lightList1;
@@ -1453,7 +1438,7 @@ select -ne :defaultRenderGlobals;
 	setAttr ".rght" 124;
 	setAttr ".an" yes;
 	setAttr ".fs" 0;
-	setAttr ".ef" 97;
+	setAttr ".ef" 105;
 	setAttr ".ep" 4;
 	setAttr ".pff" yes;
 select -ne :defaultRenderQuality;
@@ -1483,11 +1468,82 @@ select -ne Normal_grey;
 select -ne Normal_select;
 	setAttr ".c" -type "float3" 0 1 1 ;
 select -ne Normal_surface;
+select -ne Normal_pasted__white;
+disconnectAttr "|Normal_MISSING_NEWER|Normal_inset|Normal_insettrimmedSurfaceShape.iog" "Normal_lambert3SG.dsm"
+		 -na;
+disconnectAttr "|Normal_NEEDSCO_MINOR|Normal_inset|Normal_insetShape.iog" "Normal_lambert3SG.dsm"
+		 -na;
+disconnectAttr "|Normal_NEEDSCO_MEGA|Normal_inset|Normal_insetShape.iog" "Normal_lambert3SG.dsm"
+		 -na;
+disconnectAttr "|Normal_OBSOLETE|Normal_inset|Normal_insettrimmedSurfaceShape.iog" "Normal_lambert3SG.dsm"
+		 -na;
+disconnectAttr "|Normal_ADDED|Normal_inset|Normal_insetShape.iog" "Normal_lambert3SG.dsm"
+		 -na;
+disconnectAttr "Normal_insettrimmedSurfaceShape1.iog" "Normal_lambert3SG.dsm"
+		 -na;
+disconnectAttr "|Normal_MODIFIED_DEPEND|Normal_inset|Normal_insetShape.iog" "Normal_lambert3SG.dsm"
+		 -na;
+disconnectAttr "Normal_nurbsSphereShape3.iog" "Normal_lambert3SG.dsm" -na
+		;
+disconnectAttr "Normal_nurbsSphereShape2.iog" "Normal_lambert3SG.dsm" -na
+		;
+disconnectAttr "Normal_nurbsSphereShape1.iog" "Normal_lambert3SG.dsm" -na
+		;
+disconnectAttr "|Normal_CONFLICTS|Normal_inset|Normal_insetShape.iog" "Normal_lambert3SG.dsm"
+		 -na;
+disconnectAttr "|Normal_NEEDSCO_MODIFIED|Normal_inset|Normal_insetShape.iog" "Normal_lambert3SG.dsm"
+		 -na;
+disconnectAttr "|Normal_IDENTICAL|Normal_inset|Normal_insettrimmedSurfaceShape.iog" "Normal_lambert3SG.dsm"
+		 -na;
+disconnectAttr "|Normal_CHECKED_IN|Normal_inset|Normal_insetShape.iog" "Normal_lambert3SG.dsm"
+		 -na;
+disconnectAttr "|Normal_PENDING|Normal_inset|Normal_insetShape.iog" "Normal_lambert3SG.dsm"
+		 -na;
 connectAttr ":defaultLightSet.msg" "lightLinker1.lnk[0].llnk";
 connectAttr ":initialShadingGroup.msg" "lightLinker1.lnk[0].olnk";
 connectAttr ":defaultLightSet.msg" "lightLinker1.lnk[1].llnk";
 connectAttr ":initialParticleSE.msg" "lightLinker1.lnk[1].olnk";
+connectAttr ":defaultLightSet.msg" "lightLinker1.lnk[2].llnk";
+connectAttr "whiteSG.msg" "lightLinker1.lnk[2].olnk";
 connectAttr "layerManager.dli[0]" "defaultLayer.id";
 connectAttr "renderLayerManager.rlmi[0]" "defaultRenderLayer.rlid";
+connectAttr "white_incandescenceR.o" "white.ir";
+connectAttr "white_incandescenceG.o" "white.ig";
+connectAttr "white_incandescenceB.o" "white.ib";
+connectAttr "white.oc" "whiteSG.ss";
+connectAttr "|Normal_MISSING_NEWER|Normal_inset|Normal_insettrimmedSurfaceShape.iog" "whiteSG.dsm"
+		 -rd "Normal_lambert3SG.dsm" -na;
+connectAttr "|Normal_NEEDSCO_MINOR|Normal_inset|Normal_insetShape.iog" "whiteSG.dsm"
+		 -rd "Normal_lambert3SG.dsm" -na;
+connectAttr "|Normal_NEEDSCO_MEGA|Normal_inset|Normal_insetShape.iog" "whiteSG.dsm"
+		 -rd "Normal_lambert3SG.dsm" -na;
+connectAttr "|Normal_OBSOLETE|Normal_inset|Normal_insettrimmedSurfaceShape.iog" "whiteSG.dsm"
+		 -rd "Normal_lambert3SG.dsm" -na;
+connectAttr "|Normal_ADDED|Normal_inset|Normal_insetShape.iog" "whiteSG.dsm"
+		 -rd "Normal_lambert3SG.dsm" -na;
+connectAttr "Normal_insettrimmedSurfaceShape1.iog" "whiteSG.dsm" -rd "Normal_lambert3SG.dsm"
+		 -na;
+connectAttr "|Normal_MODIFIED_DEPEND|Normal_inset|Normal_insetShape.iog" "whiteSG.dsm"
+		 -rd "Normal_lambert3SG.dsm" -na;
+connectAttr "Normal_nurbsSphereShape3.iog" "whiteSG.dsm" -rd "Normal_lambert3SG.dsm"
+		 -na;
+connectAttr "Normal_nurbsSphereShape2.iog" "whiteSG.dsm" -rd "Normal_lambert3SG.dsm"
+		 -na;
+connectAttr "Normal_nurbsSphereShape1.iog" "whiteSG.dsm" -rd "Normal_lambert3SG.dsm"
+		 -na;
+connectAttr "|Normal_CONFLICTS|Normal_inset|Normal_insetShape.iog" "whiteSG.dsm"
+		 -rd "Normal_lambert3SG.dsm" -na;
+connectAttr "|Normal_NEEDSCO_MODIFIED|Normal_inset|Normal_insetShape.iog" "whiteSG.dsm"
+		 -rd "Normal_lambert3SG.dsm" -na;
+connectAttr "|Normal_IDENTICAL|Normal_inset|Normal_insettrimmedSurfaceShape.iog" "whiteSG.dsm"
+		 -rd "Normal_lambert3SG.dsm" -na;
+connectAttr "|Normal_CHECKED_IN|Normal_inset|Normal_insetShape.iog" "whiteSG.dsm"
+		 -rd "Normal_lambert3SG.dsm" -na;
+connectAttr "|Normal_PENDING|Normal_inset|Normal_insetShape.iog" "whiteSG.dsm"
+		 -rd "Normal_lambert3SG.dsm" -na;
+connectAttr "whiteSG.msg" "materialInfo1.sg";
+connectAttr "white.msg" "materialInfo1.m";
+connectAttr "whiteSG.pa" ":renderPartition.st" -na;
+connectAttr "white.msg" ":defaultShaderList1.s" -na;
 connectAttr "lightLinker1.msg" ":lightList1.ln" -na;
 // End of PrimaryFrozen.ma

@@ -86,7 +86,7 @@ do
   frame=0
   for nstate in Pending CheckedIn Identical NeedsCheckOut Modified \
                 Conflicted ModifiedLinks Missing Added Obsolete \
-                NeedsCheckOutMicro NeedsCheckOutMajor 
+                NeedsCheckOutMicro NeedsCheckOutMajor MissingNewer
   do
     for qstate in Stale Queued Running Aborted Failed Finished Paused Undefined
     do
@@ -99,7 +99,7 @@ do
     done
   done
 
-  frame=96
+  frame=104
   for extra in Blank Collapsed
   do 
     simg=`printf "%s.%04d.sgi" $src/$mode $frame`
@@ -139,7 +139,7 @@ do
     frame=$(($frame + 1))
   done
 
-  frame=96
+  frame=104
   for extra in Blank Collapsed
   do 
     simg=`printf "%s.%04d.sgi" $src/$mode $frame`
