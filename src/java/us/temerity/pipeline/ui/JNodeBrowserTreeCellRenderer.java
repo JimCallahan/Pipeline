@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserTreeCellRenderer.java,v 1.3 2004/05/29 06:38:06 jim Exp $
+// $Id: JNodeBrowserTreeCellRenderer.java,v 1.4 2004/06/23 22:32:13 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -62,9 +62,6 @@ class JNodeBrowserTreeCellRenderer
    boolean hasFocus
   ) 
   { 
-    //super.getTreeCellRendererComponent(tree, value, 
-    //isSelected, isExpanded, isLeaf, row, hasFocus);
-
     DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) value;
     TreePath tpath = new TreePath(tnode.getPath());
     NodeTreeComp comp = (NodeTreeComp) tnode.getUserObject();
@@ -93,9 +90,6 @@ class JNodeBrowserTreeCellRenderer
     case Working:
       setIcon(sTreeWorkingIcon);
       break;
-
-    case OtherWorking:
-      setIcon(sTreeOtherWorkingIcon);
     }
 
     switch(comp.getState()) {
@@ -104,7 +98,6 @@ class JNodeBrowserTreeCellRenderer
       break;
 
     case OtherPending:
-    case OtherWorking:
       setForeground(new Color(0.75f, 0.75f, 0.75f));
       break;
       
@@ -133,14 +126,11 @@ class JNodeBrowserTreeCellRenderer
   private static Icon sTreeOtherPendingIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("TreeOtherPendingIcon.png"));
 
-  private static Icon sTreeCheckedInIcon = 
-    new ImageIcon(LookAndFeelLoader.class.getResource("TreeCheckedInIcon.png"));
-
   private static Icon sTreeWorkingIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("TreeWorkingIcon.png"));
 
-  private static Icon sTreeOtherWorkingIcon = 
-    new ImageIcon(LookAndFeelLoader.class.getResource("TreeOtherWorkingIcon.png"));
+  private static Icon sTreeCheckedInIcon = 
+    new ImageIcon(LookAndFeelLoader.class.getResource("TreeCheckedInIcon.png"));
 
 
 

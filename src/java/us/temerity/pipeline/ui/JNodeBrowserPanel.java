@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.18 2004/06/14 22:48:37 jim Exp $
+// $Id: JNodeBrowserPanel.java,v 1.19 2004/06/23 22:31:38 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -352,7 +352,6 @@ class JNodeBrowserPanel
       String cpath = (path + "/" + comp);
       switch(comp.getState()) {
       case OtherPending:
-      case OtherWorking:
 	pSelected.remove(cpath);
       }
 
