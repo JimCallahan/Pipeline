@@ -1,4 +1,4 @@
-// $Id: JCheckOutDialog.java,v 1.2 2005/02/22 02:31:04 jim Exp $
+// $Id: JCheckOutDialog.java,v 1.3 2005/02/22 05:59:15 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -322,7 +322,7 @@ class JCheckOutDialog
       }
 
       boolean isSingle = (pVersionIDs.size() == 1);
-      pHeaderLabel.setText("Check-Out:  " + (isSingle ? "Single Node" : "Multiple Nodes"));
+      pHeaderLabel.setText("Check-Out " + (isSingle ? ":" : "Multiple Nodes:"));
       pMasterBox.setVisible(!isSingle);
 
       pConfirmButton.setEnabled(true);
