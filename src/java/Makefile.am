@@ -1,7 +1,6 @@
 
 SUBDIRS = \
-  docs \
-  pipeline \
   testbed \
   scripts \
-  share
+  share \
+  us
