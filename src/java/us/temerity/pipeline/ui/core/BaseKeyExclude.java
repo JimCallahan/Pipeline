@@ -1,4 +1,4 @@
-// $Id: BaseKeyExclude.java,v 1.1 2005/01/09 23:12:51 jim Exp $
+// $Id: BaseKeyExclude.java,v 1.2 2005/01/09 23:23:06 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -54,9 +54,9 @@ class BaseKeyExclude
   {
     throw new PipelineException
       ("The hot key (" + key + ") cannot be used for the preference:\n" + 
-       "  " + pref.replaceAll("|", " - ") + "\n\n" + 
+       "  " + pref.replaceAll("\\|", " - ") + "\n\n" + 
        "The hot key is already being used by the preference:\n" +
-       "  " + cpref.replaceAll("|", " - "));
+       "  " + cpref.replaceAll("\\|", " - "));
   }
 
 
