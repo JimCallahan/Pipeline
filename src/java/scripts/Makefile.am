@@ -6,5 +6,6 @@ instbin_SCRIPTS = \
   pleditor \
   pljob \
   pltoolset \
-  plui
+  plui \
+  texture-tester
 
