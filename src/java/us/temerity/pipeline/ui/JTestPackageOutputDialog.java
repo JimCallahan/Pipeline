@@ -1,4 +1,4 @@
-// $Id: JTestPackageOutputDialog.java,v 1.1 2004/05/29 06:38:43 jim Exp $
+// $Id: JTestPackageOutputDialog.java,v 1.2 2004/05/29 07:23:34 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -23,6 +23,7 @@ import javax.swing.tree.*;
 public 
 class JTestPackageOutputDialog
   extends JBaseDialog
+  implements WindowListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -82,8 +83,10 @@ class JTestPackageOutputDialog
 	header = ("Test Package:  " + pkg.getName() + 
 		  " (v" + ((PackageVersion) pkg).getVersionID() + ")");
 
-      JButton btns[] = super.initUI(header, false, body, "Kill", null, null, "Close");
+      super.initUI(header, false, body, null, null, null, "Kill");
     }
+
+    addWindowListener(this);
 
     pRunTask = new RunTask();
     pRunTask.start();
@@ -92,16 +95,82 @@ class JTestPackageOutputDialog
   
 
   /*----------------------------------------------------------------------------------------*/
+  /*   L I S T E N E R S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /*-- WINDOW LISTENER METHODS -------------------------------------------------------------*/
+
+  /**
+   * Invoked when the Window is set to be the active Window.
+   */
+  public void 
+  windowActivated(WindowEvent e) {} 
+
+  /**
+   * Invoked when a window has been closed as the result of calling dispose on the window.
+   */ 
+  public void 	
+  windowClosed(WindowEvent e) {} 
+
+  /**
+   * Invoked when the user attempts to close the window from the window's system menu.
+   */ 
+  public void 	
+  windowClosing
+  (
+   WindowEvent e
+  ) 
+  {
+    cleanupTestProcess();
+  }
+
+  /**
+   * Invoked when a Window is no longer the active Window.
+   */ 
+  public void 	
+  windowDeactivated(WindowEvent e) {}
+
+  /**
+   * Invoked when a window is changed from a minimized to a normal state.
+   */ 
+  public void 	
+  windowDeiconified(WindowEvent e) {}
+
+  /**
+   * Invoked when a window is changed from a normal to a minimized state.
+   */ 
+  public void 	
+  windowIconified(WindowEvent e) {}
+
+  /**
+   * Invoked the first time a window is made visible.	
+   */ 
+  public void     
+  windowOpened(WindowEvent e) {}
+
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   A C T I O N S                                                                        */
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Kill the running command and close.
+   * Kill the command if its still running and close.
    */ 
   public void 
-  doConfirm()
+  doCancel()
   {
-    if(pProc != null)
+    cleanupTestProcess();
+    super.doCancel();    
+  }
+
+  /**
+   * Kill the command if its still running.
+   */ 
+  private void 
+  cleanupTestProcess()
+  {
+    if((pProc != null) && (pRunTask != null) && pRunTask.isAlive())
       pProc.kill();
 
     try {
@@ -109,10 +178,8 @@ class JTestPackageOutputDialog
     }
     catch (InterruptedException ex) {
     }
-
-    super.doConfirm();
   }
-  
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -149,6 +216,8 @@ class JTestPackageOutputDialog
 	  pOutputArea.append("\nSUCCESS.\n");
 	else 
 	  pOutputArea.append("\nFAILED: Exit Code = " + pProc.getExitCode() + "\n");
+
+	SwingUtilities.invokeLater(new DoneTask());
       }
       catch (InterruptedException ex) {
 	outTask.interrupt();
@@ -239,13 +308,27 @@ class JTestPackageOutputDialog
     }
   }
 
+  /** 
+   * Update UI once the test has exited.
+   */
+  private 
+  class DoneTask
+    extends Thread
+  {
+    public void 
+    run()
+    {
+      pCancelButton.setText("Close");
+    }
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID = 3273738289299034425L;
+  private static final long serialVersionUID = -7362522614371871492L;
   
 
 
