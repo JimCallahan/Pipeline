@@ -1,8 +1,7 @@
-// $Id: SingleEditor.java,v 1.1 2004/02/23 23:50:55 jim Exp $
+// $Id: SingleEditor.java,v 1.2 2004/02/25 01:28:15 jim Exp $
 
 package us.temerity.pipeline;
 
-import java.lang.*;
 import java.util.*;
 import java.io.*;
 
@@ -35,15 +34,19 @@ class SingleEditor
    * 
    * @param desc [<B>in</B>]
    *   A short description used in tooltips.
+   * 
+   * @param program [<B>in</B>]
+   *   A name of the editor executable. 
    */ 
   protected
   SingleEditor
   (
    String name,  
-   String desc   
+   String desc,
+   String program 
   ) 
   {
-    super(name, desc);
+    super(name, desc, program);
   }
 
 

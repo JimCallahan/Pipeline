@@ -1,8 +1,7 @@
-// $Id: BaseEditor.java,v 1.1 2004/02/23 23:50:55 jim Exp $
+// $Id: BaseEditor.java,v 1.2 2004/02/25 01:26:34 jim Exp $
 
 package us.temerity.pipeline;
 
-import java.lang.*;
 import java.util.*;
 import java.io.*;
 
@@ -11,12 +10,12 @@ import java.io.*;
 /*------------------------------------------------------------------------------------------*/
 
 /** 
- * Superclass of all Pipeline node editor plugins. <P>
+ * The superclass of all Pipeline node editor plugins. <P>
  * 
  */
 public
 class BaseEditor
-  extends Named
+  extends Described
   implements Glueable
 {  
   /*----------------------------------------------------------------------------------------*/
@@ -33,48 +32,41 @@ class BaseEditor
    * Construct with a name and description. 
    * 
    * @param name [<B>in</B>]
-   *   The short name of the editor.  
+   *   The short name of the editor.
    * 
    * @param desc [<B>in</B>]
    *   A short description used in tooltips.
+   *
+   * @param program [<B>in</B>]
+   *   A name of the editor executable. 
    */ 
   protected
   BaseEditor
   (
    String name,  
-   String desc  
+   String desc, 
+   String program
   ) 
   {
-    super(name);
+    super(name, desc);
     
-    if(desc == null) 
-      throw new IllegalArgumentException("The editor description cannot be (null)!");
-    pDescription = desc;
+    if(program == null)
+      throw new IllegalArgumentException("The program cannot be (null)!");
+    pProgram = program;
   }
-
 
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
-  
-  /** 
-   * Gets the short name of the editor class without any package prefix.
-   */ 
-  public String
-  getClassName()
-  {
-    String pname = getClass().getPackage().getName();
-    return getClass().getName().substring(pname.length()+1);
-  }
 
-  /* 
-   * Gets the tooltip description text. 
-   */ 
+  /** 
+   * Gets the name of the editor executable.
+   */
   public String
-  getDescription()
+  getProgram() 
   {
-    return pDescription;
+    return pProgram;
   }
 
    
@@ -119,53 +111,21 @@ class BaseEditor
     for(File file : fseq.getFiles()) 
       args.add(file.getPath());
 
-    SubProcess proc = new SubProcess(getClassName(), getName(), args, env, dir);
+    SubProcess proc = new SubProcess(getName(), getProgram(), args, env, dir);
     proc.start();
     return proc;
   }
 
-   
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   G L U E A B L E                                                                      */
-  /*----------------------------------------------------------------------------------------*/
   
-  public void 
-  toGlue
-  ( 
-   GlueEncoder encoder  
-  ) 
-    throws GlueException
-  {
-    super.toGlue(encoder);
-    encoder.encode("Description", pDescription);
-  }
-  
-  public void 
-  fromGlue
-  (
-   GlueDecoder decoder  
-  ) 
-    throws GlueException
-  {
-    super.fromGlue(decoder);
-    
-    String description = (String) decoder.decode("Description"); 
-    if(description == null) 
-      throw new GlueException("The \"Description\" was missing!");
-  }
 
-
-  
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * A short message which describes the editor.  This messages is used in UI tooltips 
-   * where editors are selected.
+   *  The name of the editor executable.
    */     
-  protected String  pDescription;  
+  private String  pProgram;
   
 }
 
