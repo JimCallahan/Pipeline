@@ -1,10 +1,11 @@
-// $Id: NodeMgr.java,v 1.20 2004/04/19 21:06:44 jim Exp $
+// $Id: NodeMgr.java,v 1.21 2004/04/20 22:08:17 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.message.*;
+import us.temerity.pipeline.ui.NodeStyles;
 
 import java.io.*;
 import java.util.*;
@@ -20,8 +21,8 @@ import java.util.logging.Level;
  * The complete set of high-level node operations supported by Pipeline. <P> 
  * 
  * This class is responsible for managing both working and checked-in versions of a nodes as
- * well as auxiliary node information such as change comments and upstream/downstream node 
- * connections. All methods of this class are thread-safe. <P> 
+ * well as auxiliary node information such as downstream node connections. All methods of 
+ * this class are thread-safe. <P> 
  * 
  * In addition to providing the runtime representation of nodes, this class also provides 
  * the I/O operations necessary to maintain a persistent file system representation for the
@@ -50,20 +51,6 @@ import java.util.logging.Level;
  *       <DIV style="margin-left: 20px;">
  *         <I>revision-number</I> <BR>
  *         ... <BR>
- *       </DIV> 
- *       ... <P> 
- *     </DIV> 
- *
- *     comments/ <BR>
- *     <DIV style="margin-left: 20px;">
- *       <I>fully-resolved-node-name</I>/ <BR>
- *       <DIV style="margin-left: 20px;">
- *         <I>revision-number</I>/ <BR>
- *         <DIV style="margin-left: 20px;">
- *           <I>time-stamp</I> <BR>
- *           ... <BR>
- *         </DIV>
- *         ... <BR> 
  *       </DIV> 
  *       ... <P> 
  *     </DIV> 
@@ -100,10 +87,6 @@ import java.util.logging.Level;
  *   The (<CODE>repository</CODE>) subdirectory contains Glue translations of 
  *   {@link NodeVersion NodeVersion} instances saved in files (<I>revision-number</I>) 
  *   named after the revision numbers of the respective checked-in versions. <P> 
- * 
- *   The (<CODE>comments</CODE>) subdirectory contains Glue translations of 
- *   {@link LogMessage LogMessage} instances saved in files (<I>time-stamp</I>) named for the 
- *   time stamp of when the respective change comment was written. <P> 
  *  
  *   The (<CODE>downstream</CODE>) subdirectory contains Glue translations of 
  *   {@link DownstreamLinks DownstreamLinks} instances saved in files (<I>node-name</I>)
@@ -268,7 +251,6 @@ class NodeMgr
     ArrayList<File> dirs = new ArrayList<File>();
     dirs.add(new File(pNodeDir, "repository"));
     dirs.add(new File(pNodeDir, "working"));
-    dirs.add(new File(pNodeDir, "comments"));
 
     synchronized(pMakeDirLock) {
       for(File dir : dirs) {
@@ -504,45 +486,41 @@ class NodeMgr
     }
 
     if(allFiles) {
-      int wk;
-      for(wk=0; wk<files.length; wk++) {
-	File path = new File(files[wk].getPath().substring(prefix.length()));
-	String name = path.getParent();
-	VersionID vid = new VersionID(path.getName());
-      
-	try {
-	  NodeVersion vsn = readCheckedInVersion(name, vid);
-	  if(vsn == null) 
-	    throw new PipelineException
-	      ("I/O ERROR:\n" + 
-	       "  Somehow the checked-in version (" + vid + ") of node (" + name + ") " + 
-	       "was missing!");
-	  
-	  {
-	    DownstreamLinks dsl = pDownstream.get(name); 
-	    if(dsl == null) {
-	      dsl = new DownstreamLinks(name);
-	      pDownstream.put(dsl.getName(), dsl);
-	    }
-	    
-	    dsl.createCheckedIn(vid);
-	  }
+      String name = dir.getPath().substring(prefix.length());
 
-	  for(LinkVersion link : vsn.getSources()) {
-	    DownstreamLinks dsl = pDownstream.get(link.getName());
-	    if(dsl == null) {
-	      dsl = new DownstreamLinks(link.getName());
-	      pDownstream.put(dsl.getName(), dsl);
-	    }
-	    
-	    dsl.addCheckedIn(link.getVersionID(), vsn.getName(), vsn.getVersionID());
+      
+      TreeMap<VersionID,CheckedInBundle> table = null;
+      try {
+	table = readCheckedInVersions(name);
+      }
+      catch(PipelineException ex) {
+	Logs.ops.severe(ex.getMessage());
+	Logs.flush();
+	System.exit(1);
+      }   
+
+      for(VersionID vid : table.keySet()) {
+	NodeVersion vsn = table.get(vid).uVersion;
+	  
+	{
+	  DownstreamLinks dsl = pDownstream.get(name); 
+	  if(dsl == null) {
+	    dsl = new DownstreamLinks(name);
+	    pDownstream.put(dsl.getName(), dsl);
 	  }
+	  
+	  dsl.createCheckedIn(vid);
 	}
-	catch(PipelineException ex) {
-	  Logs.ops.severe(ex.getMessage());
-	  Logs.flush();
-	  System.exit(1);
-	}      
+	
+	for(LinkVersion link : vsn.getSources()) {
+	  DownstreamLinks dsl = pDownstream.get(link.getName());
+	  if(dsl == null) {
+	    dsl = new DownstreamLinks(link.getName());
+	    pDownstream.put(dsl.getName(), dsl);
+	  }
+	  
+	  dsl.addCheckedIn(link.getVersionID(), vsn.getName(), vsn.getVersionID());
+	}
       }
     }
     else if(allDirs) {
@@ -1022,554 +1000,18 @@ class NodeMgr
   ) 
   {
     assert(req != null);
-
     NodeID nodeID = req.getNodeID();
 
     TaskTimer timer = new TaskTimer();
     try {
-      NodeStatus root = null;
-      {
-	HashMap<String,NodeStatus> table = new HashMap<String,NodeStatus>();
-	upstreamStatusHelper(nodeID, new LinkedList<String>(), table, timer);
-	root = table.get(nodeID.getName());
-	assert(root != null);
-      }
-
-      {
-	VersionID vid = null;
-	if(root.getDetails().getWorkingVersion() == null) 
-	  vid = root.getDetails().getLatestVersion().getVersionID();
-
-	HashMap<String,NodeStatus> table = new HashMap<String,NodeStatus>();
-	downstreamStatusHelper(root, nodeID, vid, new LinkedList<String>(), table, timer);
-      }
-
+      NodeStatus root = performNodeOperation(new NodeOp(), nodeID, timer);
       return new NodeStatusRsp(timer, nodeID, root);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
     }    
   }
-
-  /**
-   * Recursively compute the state of all nodes upstream of the given node.
-   * 
-   * @param nodeID
-   *   The unique working version identifier.
-   * 
-   * @param branch
-   *   The names of the nodes from the root to this node.
-   * 
-   * @param table
-   *   The previously computed states indexed by node name.
-   * 
-   * @param timer
-   *   The shared task timer for this operation.
-   */ 
-  private void 
-  upstreamStatusHelper
-  (
-   NodeID nodeID, 
-   LinkedList<String> branch, 
-   HashMap<String,NodeStatus> table, 
-   TaskTimer timer
-  ) 
-    throws PipelineException
-  {
-    String name = nodeID.getName();
-
-    /* check for circularity */ 
-    if(branch.contains(name)) {
-      StringBuffer buf = new StringBuffer();
-      buf.append("Link circularity detected: \n" + 
-		 "  ");
-      boolean found = false;
-      for(String bname : branch) {
-	if(bname.equals(name)) 
-	  found = true;
-	if(found) 
-	  buf.append(bname + " -> ");
-      }
-      buf.append(name);
-      throw new PipelineException(buf.toString());
-    }
-
-    /* make sure it hasn't already been processed */ 
-    if(table.containsKey(name)) 
-      return;
-
-    /* push the current node onto the end of the branch */ 
-    branch.addLast(name);
-    
-    /* lookup working and checked-in versions */ 
-    {
-      timer.aquire();
-      ReentrantReadWriteLock workingLock = getWorkingLock(nodeID);
-      workingLock.writeLock().lock();
-      ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
-      checkedInLock.readLock().lock();
-      try {
-	timer.resume();	
-
-	/* lookup versions */ 
-	WorkingBundle working = null;
-	TreeMap<VersionID,CheckedInBundle> checkedIn = null;
-	{
-	  try {
-	    working = getWorkingBundle(nodeID);
-	  }
-	  catch(PipelineException ex) {
-	  }
-	  
-	  try {
-	    checkedIn = getCheckedInBundles(name);
-	  }
-	  catch(PipelineException ex) {
-	  }
-	}
-
-	/* extract the working, base checked-in version and latest checked-in versions 
-	     while computing the version state */ 
-	NodeMod work       = null;
-	NodeVersion base   = null;
-	NodeVersion latest = null;
-	VersionState versionState = null;
-	{
-	  if(checkedIn != null) {
-	    if(checkedIn.isEmpty())
-	      throw new PipelineException
-		("Somehow no checked-in versions of node (" + name + ") exist!"); 
-	    CheckedInBundle bundle = checkedIn.get(checkedIn.lastKey());
-	    latest = new NodeVersion(bundle.uVersion);
-	  }
-
-	  if(working != null) {
-	    work = new NodeMod(working.uVersion);
-
-	    VersionID workID = work.getWorkingID();
-	    if(workID != null) {
-	      assert(checkedIn != null);
-	      CheckedInBundle bundle = checkedIn.get(workID);
-	      if(bundle == null) 
-		throw new PipelineException
-		  ("Somehow the checked-in version (" + workID + ") of node (" + name + 
-		   ") used as the basis for working version (" + nodeID + ") did " + 
-		   "not exist!");
-	      base = new NodeVersion(bundle.uVersion);
-
-	      if(base.getVersionID().equals(latest.getVersionID())) 
-		versionState = VersionState.Identical;
-	      else 
-		versionState = VersionState.NeedsCheckOut;
-	    }
-	    else {
-	      assert(checkedIn == null);
-	      versionState = VersionState.Pending;
-	    }
-	  }
-	  else {
-	    assert(checkedIn != null);
-	    versionState = VersionState.CheckedIn;
-	  }
-	}
-	assert(versionState != null);
-
-	/* compute property state */ 
-	PropertyState propertyState = null;
-	switch(versionState) {
-	case Pending:
-	  propertyState = PropertyState.Pending;
-	  break;
-
-	case CheckedIn:
-	  propertyState = PropertyState.CheckedIn;
-	  break;
-
-	case Identical:
-	case NeedsCheckOut:
-	  if(work.identicalProperties(latest)) {
-	    propertyState = PropertyState.Identical;
-	  }
-	  else {
-	    switch(versionState) {
-	    case Identical:
-	      propertyState = PropertyState.Modified;
-	      break;
-
-	    case NeedsCheckOut:
-	      if(work.identicalProperties(base)) 
-		propertyState = PropertyState.NeedsCheckOut;
-	      else 
-		propertyState = PropertyState.Conflicted;
-	      break;
-
-	    default:
-	      assert(false);
-	    }
-	  }
-	}	
-	
-	/* compute link state */
-	LinkState linkState = null;
-	switch(versionState) {
-	case Pending:
-	  linkState = LinkState.Pending;
-	  break;
-
-	case CheckedIn:
-	  linkState = LinkState.CheckedIn;
-	  break;
-
-	case Identical:
-	case NeedsCheckOut:
-	  if(work.identicalLinks(latest)) {
-	    linkState = LinkState.Identical;
-	  }
-	  else {
-	    switch(versionState) {
-	    case Identical:
-	      linkState = LinkState.Modified;
-	      break;
-
-	    case NeedsCheckOut:
-	      if(work.identicalLinks(base)) 
-		linkState = LinkState.NeedsCheckOut;
-	      else 
-		linkState = LinkState.Conflicted;
-	      break;
-
-	    default:
-	      assert(false);
-	    }
-	  }
-	}	
-
-	/* add the status stub */ 
-	NodeStatus status = new NodeStatus(nodeID);
-	table.put(name, status);
-
-	/* process upstream nodes */ 
-	switch(versionState) {
-	case CheckedIn:
-	  for(LinkVersion link : latest.getSources()) {
-	    upstreamStatusHelper(new NodeID(nodeID, link.getName()), branch, table, timer);
-	    
-	    NodeStatus lstatus = table.get(link.getName());
-	    assert(lstatus != null);
-
-	    status.addSource(lstatus);
-	    lstatus.addTarget(status);
-	  }
-	  break;
- 
-	default:
-	  for(LinkMod link : work.getSources()) {
-	    upstreamStatusHelper(new NodeID(nodeID, link.getName()), branch, table, timer);
-
-	    NodeStatus lstatus = table.get(link.getName());
-	    assert(lstatus != null);
-
-	    status.addSource(lstatus);
-	    lstatus.addTarget(status);
-	  }
-	}
-	  
-	/* get per-file FileStates and last modification timestamps */ 
-	TreeMap<FileSeq, FileState[]> fileStates = new TreeMap<FileSeq, FileState[]>(); 
-	TreeMap<FileSeq, Date[]> fileTimeStamps = new TreeMap<FileSeq, Date[]>();
-	switch(versionState) {
-	case CheckedIn:
-	  for(FileSeq fseq : latest.getSequences()) {
-	    FileState fs[] = new FileState[fseq.numFrames()];
-
-	    int wk;
-	    for(wk=0; wk<fs.length; wk++) 
-	      fs[wk] = FileState.CheckedIn;
-
-	    fileStates.put(fseq, fs);
-	  }
-	  break;
-
-	default:
-	  {
-	    if((working.uFileStates == null) || (working.uFileTimeStamps == null)) {
-	      VersionID vid = null;
-	      if(latest != null) 
-		vid = latest.getVersionID();
-
-	      pFileMgrClient.states(nodeID, work, versionState, vid, 
-				    fileStates, fileTimeStamps);
-
-	      working.uFileStates     = fileStates;
-	      working.uFileTimeStamps = fileTimeStamps;
-	    }
-	    else {
-	      fileStates     = working.uFileStates;
-	      fileTimeStamps = working.uFileTimeStamps;
-	    }
-	  }
-	}
-
-	/* compute overall node state */ 
-	OverallNodeState overallNodeState = null;
-	switch(versionState) {
-	case Pending:
-	  overallNodeState = OverallNodeState.Pending;
-	  break;
-	  
-	case CheckedIn:
-	  overallNodeState = OverallNodeState.CheckedIn;
-	  break;
-	  
-	default:
-	  {
-	    /* check file states */ 
-	    boolean anyNeedsCheckOutFs = false;
-	    boolean anyModifiedFs      = false;
-	    boolean anyConflictedFs    = false;
-	    for(FileState fs[] : fileStates.values()) {
-	      int wk;
-	      for(wk=0; wk<fs.length; wk++) {
-		switch(fs[wk]) {
-		case NeedsCheckOut:
-		case Obsolete:
-		  anyNeedsCheckOutFs = true;
-		  break;
-		  
-		case Modified:
-		case Added:
-		  anyModifiedFs = true;
-		  break; 
-		  
-		case Conflicted:
-		  anyConflictedFs = true;	
-		}
-	      }
-	    }
-	    
-	    /* combine states */ 
-	    boolean anyNeedsCheckOut = 
-	      ((versionState == VersionState.NeedsCheckOut) || 
-	       (propertyState == PropertyState.NeedsCheckOut) || 
-	       (linkState == LinkState.NeedsCheckOut) || 
-	       anyNeedsCheckOutFs);
-	    
-	    boolean anyModified = 
-	      ((propertyState == PropertyState.Modified) || 
-	       (linkState == LinkState.Modified) || 
-	       anyModifiedFs);
-	    
-	    boolean anyConflicted = 
-	      ((propertyState == PropertyState.Conflicted) || 
-	       (linkState == LinkState.Conflicted) || 
-	       anyConflictedFs);
-
-	    if(anyConflicted || (anyNeedsCheckOut && anyModified))
-	      overallNodeState = OverallNodeState.Conflicted;
-	    else if(anyModified) 
-	      overallNodeState = OverallNodeState.Modified;
-	    else if(anyNeedsCheckOut) 
-	      overallNodeState = OverallNodeState.NeedsCheckOut;
-	    else {
-	      assert(versionState == VersionState.Identical);
-	      assert(propertyState == PropertyState.Identical);
-	      assert(linkState == LinkState.Identical);
-	      assert(!anyNeedsCheckOutFs);
-	      assert(!anyModifiedFs);
-	      assert(!anyConflictedFs);
-
-	      /* the work and base version have the same set of links 
-		   because (linkState == Identical) */
-	      for(LinkVersion link : base.getSources()) {
-		NodeDetails ldetails = table.get(link.getName()).getDetails();
-		
-		switch(ldetails.getOverallNodeState()) {
-		case Modified:
-		case ModifiedLinks:
-		case Conflicted:
-		  overallNodeState = OverallNodeState.ModifiedLinks;
-		  break;
-
-		case Identical:
-		case NeedsCheckOut:
-		  if(!link.getVersionID().equals(ldetails.getWorkingVersion().getWorkingID()))
-		    overallNodeState = OverallNodeState.ModifiedLinks;
-		  break;
-
-		default:
-		  assert(false) : 
-		    ("Upstream Node Overall State = " + ldetails.getOverallNodeState());
-		}
-		
-		if(overallNodeState != null)
-		  break;
-	      }
-	      
-	      if(overallNodeState == null)
-		overallNodeState = OverallNodeState.Identical;
-	    }
-	  }
-	}
-
-
-	// TALK TO QUEUEMGR TO GET PER-FILE QUEUESTATES  (NOT YET) 
-	TreeMap<FileSeq,QueueState[]> queueStates = new TreeMap<FileSeq,QueueState[]>();
-	{
-	  // SHOULD FIRST CHECK THE WorkingBundle: if not invalidated... 
-
-	  // ...
-
-	  // SHOULD UPDATE THE WorkingBundle... 
-	}
-
-	// COMPUTE OVERALL QUEUE STATE (NOT YET)
-	OverallQueueState overallQueueState = OverallQueueState.Finished; 
-	{
-	  // ...
-	}
-	
-
-	/* create the node details */
-	NodeDetails details = 
-	  new NodeDetails(name, 
-			  work, base, latest, 
-			  overallNodeState, overallQueueState, 
-			  versionState, propertyState, linkState, 
-			  fileStates, fileTimeStamps, queueStates);
-
-	/* add the details to the node's status */ 
-	status.setDetails(details);
-      }
-      finally {
-	checkedInLock.readLock().unlock();  
-	workingLock.writeLock().unlock();
-      }
-    }
-
-    /* pop the current node off of the end of the branch */ 
-    branch.removeLast();
-  } 
   
-  /**
-   * Recursively compute the state of all nodes downstream of the given node. <P> 
-   * 
-   * If the <CODE>vid</CODE> argument is not <CODE>null</CODE>, then follow the downstream
-   * links associated with the checked-in version with this revision number.
-   * 
-   * @param root
-   *   The status of the root node of the tree.
-   * 
-   * @param nodeID
-   *   The unique working version identifier.
-   * 
-   * @param vid 
-   *   The revision number of the checked-in node version.
-   * 
-   * @param branch
-   *   The names of the nodes from the root to this node.
-   * 
-   * @param table
-   *   The previously computed states indexed by node name.
-   * 
-   * @param timer
-   *   The shared task timer for this operation.
-   */ 
-  private void 
-  downstreamStatusHelper
-  (
-   NodeStatus root, 
-   NodeID nodeID, 
-   VersionID vid, 
-   LinkedList<String> branch, 
-   HashMap<String,NodeStatus> table, 
-   TaskTimer timer
-  ) 
-    throws PipelineException
-  {
-    String name = nodeID.getName();
-
-    /* check for circularity */ 
-    if(branch.contains(name)) {
-      StringBuffer buf = new StringBuffer();
-      buf.append("Link circularity detected: \n" + 
-		 "  ");
-      boolean found = false;
-      for(String bname : branch) {
-	if(bname.equals(name)) 
-	  found = true;
-	if(found) 
-	  buf.append(bname + " -> ");
-      }
-      buf.append(name);
-      throw new PipelineException(buf.toString());
-    }
-
-    /* make sure it hasn't already been processed */ 
-    if(table.containsKey(name)) 
-      return;
-
-    /* push the current node onto the end of the branch */ 
-    branch.addLast(name);
-
-
-    timer.aquire();
-    ReentrantReadWriteLock lock = getDownstreamLock(nodeID.getName());
-    lock.readLock().lock();
-    try {
-      timer.resume();
-
-      /* add the status stub */ 
-      NodeStatus status = root; 
-      if(!root.getNodeID().equals(nodeID)) {
-	status = new NodeStatus(nodeID);
-	table.put(name, status);
-      }
-
-      /* process downstream nodes */ 
-      DownstreamLinks dsl = getDownstreamLinks(nodeID.getName()); 
-      assert(dsl != null);
-
-      TreeSet<String> wlinks = dsl.getWorking(nodeID);
-      if(wlinks != null) {	
-	for(String lname : wlinks) {
-	  downstreamStatusHelper(root, new NodeID(nodeID, lname), null, branch, table, timer);
-
-	  NodeStatus lstatus = table.get(lname);
-	  assert(lstatus != null);
-
-	  status.addTarget(lstatus);
-	  lstatus.addSource(status);
-	}
-      }
-      else {
-	TreeMap<String,VersionID> clinks = null;
-	if(vid != null)
-	  clinks = dsl.getCheckedIn(vid);
-	else 
-	  clinks = dsl.getLatestCheckedIn();
-	assert(clinks != null);
-	
-	for(String lname : clinks.keySet()) {
-	  VersionID lvid = clinks.get(lname);
-
-	  downstreamStatusHelper(root, new NodeID(nodeID, lname), lvid, branch, table, timer);
-
-	  NodeStatus lstatus = table.get(lname);
-	  assert(lstatus != null);
-
-	  status.addTarget(lstatus);
-	  lstatus.addSource(status);
-	}
-      }
-    }
-    finally {
-      lock.readLock().unlock();
-    }
-
-    /* pop the current node off of the end of the branch */ 
-    branch.removeLast();
-  } 
-    
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1977,6 +1419,36 @@ class NodeMgr
     return new SuccessRsp(timer);
   }
 
+  /** 
+   * Check-In the given working version and all upstream working versions. <P> 
+   * 
+   * @param req 
+   *   The node check-in request.
+   *
+   * @return
+   *   <CODE>NodeStatusRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to the check-in the node.
+   */ 
+  public Object
+  checkIn
+  ( 
+   NodeCheckInReq req 
+  ) 
+  {
+    assert(req != null);
+    NodeID nodeID = req.getNodeID();
+
+    TaskTimer timer = new TaskTimer();
+    try {
+      NodeStatus root = performNodeOperation(new NodeCheckInOp(req), nodeID, timer);
+      return new NodeStatusRsp(timer, nodeID, root);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, 
+			    "Check-In operation aborted!\n\n" +
+			    ex.getMessage());
+    }    
+  }
 
 
 
@@ -2050,8 +1522,615 @@ class NodeMgr
     }   
   }
 
+  /**
+   * Recursively perfrorm a node status based operation on the tree of nodes rooted at the 
+   * given working version. <P> 
+   * 
+   * The <CODE>nodeOp</CODE> argument is performed on all upstream nodes and detailed
+   * post-operation status information is generated for these nodes.  Only undetailed 
+   * status information is computed for the downstream nodes.
+   * 
+   * @param nodeOp
+   *   The node operation.
+   * 
+   * @param nodeID
+   *   The unique working version identifier.
+   * 
+   * @param timer
+   *   The shared task timer for this operation.
+   * 
+   * @return 
+   *   The root of the node status tree corresponding to the given working version.
+   * 
+   * @throws PipelineException 
+   *   If unable to perform the node operation.
+   */ 
+  private NodeStatus 
+  performNodeOperation
+  (
+   NodeOp nodeOp, 
+   NodeID nodeID,
+   TaskTimer timer
+  ) 
+    throws PipelineException
+  {
+    NodeStatus root = null;
+    {
+      HashMap<String,NodeStatus> table = new HashMap<String,NodeStatus>();
+      performUpstreamNodeOp(nodeOp, nodeID, new LinkedList<String>(), table, timer);
+      root = table.get(nodeID.getName());
+      assert(root != null);
+    }
+
+    {
+      VersionID vid = null;
+      if(root.getDetails().getWorkingVersion() == null) 
+	vid = root.getDetails().getLatestVersion().getVersionID();
+      
+      HashMap<String,NodeStatus> table = new HashMap<String,NodeStatus>();
+      getDownstremNodeStatus(root, nodeID, vid, new LinkedList<String>(), table, timer);
+    }
+
+    return root;
+  }
+
+  /**
+   * Recursively perfrorm a node state based operation on the upstream tree of nodes 
+   * rooted at the given working version.
+   * 
+   * The node state is computed before applying the operation and may also be modified by 
+   * the operation.  The <CODE>table</CODE> argument will contain the state of the nodes
+   * after application of the operation when this method returns.  If a 
+   * <CODE>PipelineException</CODE> is thrown, the contents of <CODE>table</CODE> should 
+   * be ignored.
+   * 
+   * @param nodeOp
+   *   The node operation.
+   * 
+   * @param nodeID
+   *   The unique working version identifier.
+   * 
+   * @param branch
+   *   The names of the nodes from the root to this node.
+   * 
+   * @param table
+   *   The previously computed states indexed by node name.
+   * 
+   * @param timer
+   *   The shared task timer for this operation.
+   * 
+   * @throws PipelineException 
+   *   If unable to perform the node operation.
+   */ 
+  private void 
+  performUpstreamNodeOp
+  (
+   NodeOp nodeOp,
+   NodeID nodeID, 
+   LinkedList<String> branch, 
+   HashMap<String,NodeStatus> table, 
+   TaskTimer timer
+  ) 
+    throws PipelineException
+  {
+    String name = nodeID.getName();
+
+    /* check for circularity */ 
+    if(branch.contains(name)) {
+      StringBuffer buf = new StringBuffer();
+      buf.append("Link circularity detected: \n" + 
+		 "  ");
+      boolean found = false;
+      for(String bname : branch) {
+	if(bname.equals(name)) 
+	  found = true;
+	if(found) 
+	  buf.append(bname + " -> ");
+      }
+      buf.append(name);
+      throw new PipelineException(buf.toString());
+    }
+
+    /* make sure it hasn't already been processed */ 
+    if(table.containsKey(name)) 
+      return;
+
+    /* push the current node onto the end of the branch */ 
+    branch.addLast(name);
+    
+    /* lookup working and checked-in versions */ 
+    {
+      timer.aquire();
+      ReentrantReadWriteLock workingLock = getWorkingLock(nodeID);
+      workingLock.writeLock().lock();
+      ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
+      checkedInLock.readLock().lock();
+      try {
+	timer.resume();	
+
+	/* lookup versions */ 
+	WorkingBundle working = null;
+	TreeMap<VersionID,CheckedInBundle> checkedIn = null;
+	{
+	  try {
+	    working = getWorkingBundle(nodeID);
+	  }
+	  catch(PipelineException ex) {
+	  }
+	  
+	  try {
+	    checkedIn = getCheckedInBundles(name);
+	  }
+	  catch(PipelineException ex) {
+	  }
+	}
+
+	/* extract the working, base checked-in version and latest checked-in versions 
+	     while computing the version state */ 
+	NodeMod work       = null;
+	NodeVersion base   = null;
+	NodeVersion latest = null;
+	VersionState versionState = null;
+	{
+	  if(checkedIn != null) {
+	    if(checkedIn.isEmpty())
+	      throw new PipelineException
+		("Somehow no checked-in versions of node (" + name + ") exist!"); 
+	    CheckedInBundle bundle = checkedIn.get(checkedIn.lastKey());
+	    latest = new NodeVersion(bundle.uVersion);
+	  }
+
+	  if(working != null) {
+	    work = new NodeMod(working.uVersion);
+
+	    VersionID workID = work.getWorkingID();
+	    if(workID != null) {
+	      assert(checkedIn != null);
+	      CheckedInBundle bundle = checkedIn.get(workID);
+	      if(bundle == null) 
+		throw new PipelineException
+		  ("Somehow the checked-in version (" + workID + ") of node (" + name + 
+		   ") used as the basis for working version (" + nodeID + ") did " + 
+		   "not exist!");
+	      base = new NodeVersion(bundle.uVersion);
+
+	      if(base.getVersionID().equals(latest.getVersionID())) 
+		versionState = VersionState.Identical;
+	      else 
+		versionState = VersionState.NeedsCheckOut;
+	    }
+	    else {
+	      assert(checkedIn == null);
+	      versionState = VersionState.Pending;
+	    }
+	  }
+	  else {
+	    assert(checkedIn != null);
+	    versionState = VersionState.CheckedIn;
+	  }
+	}
+	assert(versionState != null);
+
+	/* compute property state */ 
+	PropertyState propertyState = null;
+	switch(versionState) {
+	case Pending:
+	  propertyState = PropertyState.Pending;
+	  break;
+
+	case CheckedIn:
+	  propertyState = PropertyState.CheckedIn;
+	  break;
+
+	case Identical:
+	case NeedsCheckOut:
+	  if(work.identicalProperties(latest)) {
+	    propertyState = PropertyState.Identical;
+	  }
+	  else {
+	    switch(versionState) {
+	    case Identical:
+	      propertyState = PropertyState.Modified;
+	      break;
+
+	    case NeedsCheckOut:
+	      if(work.identicalProperties(base)) 
+		propertyState = PropertyState.NeedsCheckOut;
+	      else 
+		propertyState = PropertyState.Conflicted;
+	      break;
+
+	    default:
+	      assert(false);
+	    }
+	  }
+	}	
+	
+	/* compute link state */
+	LinkState linkState = null;
+	switch(versionState) {
+	case Pending:
+	  linkState = LinkState.Pending;
+	  break;
+
+	case CheckedIn:
+	  linkState = LinkState.CheckedIn;
+	  break;
+
+	case Identical:
+	case NeedsCheckOut:
+	  if(work.identicalLinks(latest)) {
+	    linkState = LinkState.Identical;
+	  }
+	  else {
+	    switch(versionState) {
+	    case Identical:
+	      linkState = LinkState.Modified;
+	      break;
+
+	    case NeedsCheckOut:
+	      if(work.identicalLinks(base)) 
+		linkState = LinkState.NeedsCheckOut;
+	      else 
+		linkState = LinkState.Conflicted;
+	      break;
+
+	    default:
+	      assert(false);
+	    }
+	  }
+	}	
+
+	/* add the status stub */ 
+	NodeStatus status = new NodeStatus(nodeID);
+	table.put(name, status);
+
+	/* process upstream nodes */ 
+	switch(versionState) {
+	case CheckedIn:
+	  for(LinkVersion link : latest.getSources()) {
+	    NodeID lnodeID = new NodeID(nodeID, link.getName());
+	    performUpstreamNodeOp(nodeOp, lnodeID, branch, table, timer);
+	    
+	    NodeStatus lstatus = table.get(link.getName());
+	    assert(lstatus != null);
+
+	    status.addSource(lstatus);
+	    lstatus.addTarget(status);
+	  }
+	  break;
+ 
+	default:
+	  for(LinkMod link : work.getSources()) {
+	    NodeID lnodeID = new NodeID(nodeID, link.getName());
+	    performUpstreamNodeOp(nodeOp, lnodeID, branch, table, timer);
+
+	    NodeStatus lstatus = table.get(link.getName());
+	    assert(lstatus != null);
+
+	    status.addSource(lstatus);
+	    lstatus.addTarget(status);
+	  }
+	}
+	  
+	/* get per-file FileStates and last modification timestamps */ 
+	TreeMap<FileSeq, FileState[]> fileStates = new TreeMap<FileSeq, FileState[]>(); 
+	TreeMap<FileSeq, Date[]> fileTimeStamps = new TreeMap<FileSeq, Date[]>();
+	switch(versionState) {
+	case CheckedIn:
+	  for(FileSeq fseq : latest.getSequences()) {
+	    FileState fs[] = new FileState[fseq.numFrames()];
+
+	    int wk;
+	    for(wk=0; wk<fs.length; wk++) 
+	      fs[wk] = FileState.CheckedIn;
+
+	    fileStates.put(fseq, fs);
+	  }
+	  break;
+
+	default:
+	  {
+	    if((working.uFileStates == null) || (working.uFileTimeStamps == null)) {
+	      VersionID vid = null;
+	      if(latest != null) 
+		vid = latest.getVersionID();
+
+	      pFileMgrClient.states(nodeID, work, versionState, vid, 
+				    fileStates, fileTimeStamps);
+
+	      working.uFileStates     = fileStates;
+	      working.uFileTimeStamps = fileTimeStamps;
+	    }
+	    else {
+	      fileStates     = working.uFileStates;
+	      fileTimeStamps = working.uFileTimeStamps;
+	    }
+	  }
+	}
+
+	/* compute overall node state */ 
+	OverallNodeState overallNodeState = null;
+	switch(versionState) {
+	case Pending:
+	  overallNodeState = OverallNodeState.Pending;
+	  break;
+	  
+	case CheckedIn:
+	  overallNodeState = OverallNodeState.CheckedIn;
+	  break;
+	  
+	default:
+	  {
+	    /* check file states */ 
+	    boolean anyNeedsCheckOutFs = false;
+	    boolean anyModifiedFs      = false;
+	    boolean anyConflictedFs    = false;
+	    for(FileState fs[] : fileStates.values()) {
+	      int wk;
+	      for(wk=0; wk<fs.length; wk++) {
+		switch(fs[wk]) {
+		case NeedsCheckOut:
+		case Obsolete:
+		  anyNeedsCheckOutFs = true;
+		  break;
+		  
+		case Modified:
+		case Added:
+		  anyModifiedFs = true;
+		  break; 
+		  
+		case Conflicted:
+		  anyConflictedFs = true;	
+		}
+	      }
+	    }
+	    
+	    /* combine states */ 
+	    boolean anyNeedsCheckOut = 
+	      ((versionState == VersionState.NeedsCheckOut) || 
+	       (propertyState == PropertyState.NeedsCheckOut) || 
+	       (linkState == LinkState.NeedsCheckOut) || 
+	       anyNeedsCheckOutFs);
+	    
+	    boolean anyModified = 
+	      ((propertyState == PropertyState.Modified) || 
+	       (linkState == LinkState.Modified) || 
+	       anyModifiedFs);
+	    
+	    boolean anyConflicted = 
+	      ((propertyState == PropertyState.Conflicted) || 
+	       (linkState == LinkState.Conflicted) || 
+	       anyConflictedFs);
+
+	    if(anyConflicted || (anyNeedsCheckOut && anyModified))
+	      overallNodeState = OverallNodeState.Conflicted;
+	    else if(anyModified) 
+	      overallNodeState = OverallNodeState.Modified;
+	    else if(anyNeedsCheckOut) 
+	      overallNodeState = OverallNodeState.NeedsCheckOut;
+	    else {
+	      assert(versionState == VersionState.Identical);
+	      assert(propertyState == PropertyState.Identical);
+	      assert(linkState == LinkState.Identical);
+	      assert(!anyNeedsCheckOutFs);
+	      assert(!anyModifiedFs);
+	      assert(!anyConflictedFs);
+
+	      /* the work and base version have the same set of links 
+		   because (linkState == Identical) */
+	      for(LinkVersion link : base.getSources()) {
+		NodeDetails ldetails = table.get(link.getName()).getDetails();
+		
+		switch(ldetails.getOverallNodeState()) {
+		case Modified:
+		case ModifiedLinks:
+		case Conflicted:
+		  overallNodeState = OverallNodeState.ModifiedLinks;
+		  break;
+
+		case Identical:
+		case NeedsCheckOut:
+		  if(!link.getVersionID().equals(ldetails.getWorkingVersion().getWorkingID()))
+		    overallNodeState = OverallNodeState.ModifiedLinks;
+		  break;
+
+		default:
+		  assert(false) : 
+		    ("Upstream Node Overall State = " + ldetails.getOverallNodeState());
+		}
+		
+		if(overallNodeState != null)
+		  break;
+	      }
+	      
+	      if(overallNodeState == null)
+		overallNodeState = OverallNodeState.Identical;
+	    }
+	  }
+	}
 
 
+	/* get per-file QueueStates */ 
+	TreeMap<FileSeq,QueueState[]> queueStates = new TreeMap<FileSeq,QueueState[]>();
+	if(working.uQueueStates == null) {
+
+	  // PLACEHOLDER 
+	  for(FileSeq fseq : fileStates.keySet()) {
+	    QueueState qs[] = new QueueState[fseq.numFrames()];
+	    int wk;
+	    for(wk=0; wk<qs.length; wk++) 
+	      qs[wk] = QueueState.Finished;
+	    
+	    queueStates.put(fseq, qs);
+	  }	    
+	  // PLACEHOLDER 
+	  
+	  
+	  // should check the queue here instead... 
+	  
+	  
+	  working.uQueueStates = queueStates;
+	}
+	else {
+	  queueStates = working.uQueueStates;
+	}
+
+
+	/* compute overall queue state */ 
+	OverallQueueState overallQueueState = OverallQueueState.Finished; 
+	{
+
+	  // ...
+
+	}
+
+	/* create the node details */
+	NodeDetails details = 
+	  new NodeDetails(name, 
+			  work, base, latest, 
+			  overallNodeState, overallQueueState, 
+			  versionState, propertyState, linkState, 
+			  fileStates, fileTimeStamps, queueStates);
+
+	/* add the details to the node's status */ 
+	status.setDetails(details);
+
+	/* peform the node operation -- may alter the status and/or status details */ 
+	nodeOp.perform(status);
+      }
+      finally {
+	checkedInLock.readLock().unlock();  
+	workingLock.writeLock().unlock();
+      }
+    }
+
+    /* pop the current node off of the end of the branch */ 
+    branch.removeLast();
+  } 
+
+  /**
+   * Recursively compute the state of all nodes downstream of the given node. <P> 
+   * 
+   * If the <CODE>vid</CODE> argument is not <CODE>null</CODE>, then follow the downstream
+   * links associated with the checked-in version with this revision number.
+   * 
+   * @param root
+   *   The status of the root node of the tree.
+   * 
+   * @param nodeID
+   *   The unique working version identifier.
+   * 
+   * @param vid 
+   *   The revision number of the checked-in node version.
+   * 
+   * @param branch
+   *   The names of the nodes from the root to this node.
+   * 
+   * @param table
+   *   The previously computed states indexed by node name.
+   * 
+   * @param timer
+   *   The shared task timer for this operation.
+   */ 
+  private void 
+  getDownstremNodeStatus
+  (
+   NodeStatus root, 
+   NodeID nodeID, 
+   VersionID vid, 
+   LinkedList<String> branch, 
+   HashMap<String,NodeStatus> table, 
+   TaskTimer timer
+  ) 
+    throws PipelineException
+  {
+    String name = nodeID.getName();
+
+    /* check for circularity */ 
+    if(branch.contains(name)) {
+      StringBuffer buf = new StringBuffer();
+      buf.append("Link circularity detected: \n" + 
+		 "  ");
+      boolean found = false;
+      for(String bname : branch) {
+	if(bname.equals(name)) 
+	  found = true;
+	if(found) 
+	  buf.append(bname + " -> ");
+      }
+      buf.append(name);
+      throw new PipelineException(buf.toString());
+    }
+
+    /* make sure it hasn't already been processed */ 
+    if(table.containsKey(name)) 
+      return;
+
+    /* push the current node onto the end of the branch */ 
+    branch.addLast(name);
+
+
+    timer.aquire();
+    ReentrantReadWriteLock lock = getDownstreamLock(nodeID.getName());
+    lock.readLock().lock();
+    try {
+      timer.resume();
+
+      /* add the status stub */ 
+      NodeStatus status = root; 
+      if(!root.getNodeID().equals(nodeID)) {
+	status = new NodeStatus(nodeID);
+	table.put(name, status);
+      }
+
+      /* process downstream nodes */ 
+      DownstreamLinks dsl = getDownstreamLinks(nodeID.getName()); 
+      assert(dsl != null);
+
+      TreeSet<String> wlinks = dsl.getWorking(nodeID);
+      if(wlinks != null) {	
+	for(String lname : wlinks) {
+	  getDownstremNodeStatus(root, new NodeID(nodeID, lname), null, branch, table, timer);
+
+	  NodeStatus lstatus = table.get(lname);
+	  assert(lstatus != null);
+
+	  status.addTarget(lstatus);
+	  lstatus.addSource(status);
+	}
+      }
+      else {
+	TreeMap<String,VersionID> clinks = null;
+	if(vid != null)
+	  clinks = dsl.getCheckedIn(vid);
+	else 
+	  clinks = dsl.getLatestCheckedIn();
+	assert(clinks != null);
+	
+	for(String lname : clinks.keySet()) {
+	  VersionID lvid = clinks.get(lname);
+
+	  getDownstremNodeStatus(root, new NodeID(nodeID, lname), lvid, branch, table, timer);
+
+	  NodeStatus lstatus = table.get(lname);
+	  assert(lstatus != null);
+
+	  status.addTarget(lstatus);
+	  lstatus.addSource(status);
+	}
+      }
+    }
+    finally {
+      lock.readLock().unlock();
+    }
+
+    /* pop the current node off of the end of the branch */ 
+    branch.removeLast();
+  } 
+
+
+    
   /*----------------------------------------------------------------------------------------*/
   /*   L O C K   H E L P E R S                                                              */
   /*----------------------------------------------------------------------------------------*/
@@ -2151,14 +2230,26 @@ class NodeMgr
   ) 
     throws PipelineException
   {
+    /* lookup the bundles */ 
     TreeMap<VersionID,CheckedInBundle> table = null;
     synchronized(pCheckedInBundles) {
       table = pCheckedInBundles.get(name);
-      if(table == null) 
-	throw new PipelineException("No checked-in versions exist for node: " + name);
-
-      return table;
     }
+
+    if(table != null) 
+      return table;
+
+    /* read in the bundles from disk */ 
+    table = readCheckedInVersions(name);
+    if(table == null) 
+      throw new PipelineException
+	("No checked-in versions exist for node (" + name + ")!");
+
+    synchronized(pCheckedInBundles) {
+      pCheckedInBundles.put(name, table);
+    }    
+
+    return table;
   }
 
   /** 
@@ -2313,8 +2404,8 @@ class NodeMgr
   /**
    * Write the checked-in version to disk. <P> 
    * 
-   * This method assumes that the write lock for the checked-in version has already been 
-   * aquired.
+   * This method assumes that the write lock for the table of checked-in versions for
+   * the node already been aquired.
    * 
    * @param vsn
    *   The checked-in version to write.
@@ -2380,7 +2471,7 @@ class NodeMgr
 
 
   /**
-   * Read the checked-in version from disk. <P> 
+   * Read all of the checked-in versions of a node from disk. <P> 
    * 
    * This method assumes that the write lock for the checked-in version has already been 
    * aquired.
@@ -2392,51 +2483,61 @@ class NodeMgr
    *   The revision number of the checked-in version.
    * 
    * @return 
-   *   The checked-in version or <CODE>null</CODE> if no file exists.
+   *   The checked-in versions or <CODE>null</CODE> if no files exists.
    * 
    * @throws PipelineException
    *   If the checked-in version files are corrupted in some manner.
    */ 
-  private NodeVersion
-  readCheckedInVersion
+  private TreeMap<VersionID,CheckedInBundle>
+  readCheckedInVersions
   (
-   String name, 
-   VersionID vid
+   String name
   ) 
     throws PipelineException
   {
-    Logs.ops.finer("Reading Checked-In Version: " + name + " (" + vid + ")");
+    Logs.ops.finer("Reading Checked-In Versions: " + name);
 
-    File file = new File(pNodeDir, "repository/" + name + "/" + vid);
-    
-    try {
-      if(file.exists()) {
-	try {
-	  FileReader in = new FileReader(file);
-	  GlueDecoder gd = new GlueDecoder(in);
-	  NodeVersion vsn = (NodeVersion) gd.getObject();
-	  in.close();
-	  
-	  return vsn;
-	}
-	catch(Exception ex) {
-	  Logs.glu.severe
-	    ("The checked-in version file (" + file + ") appears to be corrupted!");
-	  Logs.flush();
-	  
-	  throw ex;
-	}
+    TreeMap<VersionID,CheckedInBundle> table = new TreeMap<VersionID,CheckedInBundle>();
+
+    File dir = new File(pNodeDir, "repository" + name + "/");
+    if(!dir.isDirectory()) 
+      return null;
+
+    File files[] = dir.listFiles();
+    int wk;
+    for(wk=0; wk<files.length; wk++) {
+      if(!files[wk].isFile()) 
+	throw new PipelineException
+	  ("Somehow the node version file (" + files[wk] + ") was not a regular file!");
+
+      NodeVersion vsn = null;
+      try {
+	FileReader in = new FileReader(files[wk]);
+	GlueDecoder gd = new GlueDecoder(in);
+	vsn = (NodeVersion) gd.getObject();
+	in.close();
+      }
+      catch(Exception ex) {
+	Logs.glu.severe
+	  ("The checked-in version file (" + files[wk] + ") appears to be corrupted!");
+	Logs.flush();
+	
+	throw new PipelineException
+	  ("I/O ERROR: \n" + 
+	   "  While attempting to read checked-in version (" + files[wk].getName() + ") of " +
+	   "node (" + name + ") from file...\n" +
+	   "    " + ex.getMessage());
       }
 
-      return null;
+      if(table.containsKey(vsn.getVersionID()))
+	throw new PipelineException
+	  ("Somehow the version (" + vsn.getVersionID() + ") of node (" + name + ") " + 
+	   "was represented by more than one file!");
+      
+      table.put(vsn.getVersionID(), new CheckedInBundle(vsn));
     }
-    catch(Exception ex) {
-      throw new PipelineException
-	("I/O ERROR: \n" + 
-	 "  While attempting to read checked-in version (" + vid + ") of node " + 
-	 "(" + name + ") from file...\n" +
-	 "    " + ex.getMessage());
-    }
+
+    return table;
   }
       
 
@@ -2735,6 +2836,202 @@ class NodeMgr
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+  /*   N O D E   O P   C L A S S E S                                                        */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * The no-op base class of all node operations.
+   */
+  private
+  class NodeOp
+  {  
+    /** 
+     * Construct a new operation.
+     */
+    public
+    NodeOp()
+    {}
+    
+    /**
+     * Perform the status operation on the given node.
+     * 
+     * @param status 
+     *   The pre-operation status of the node. 
+     * 
+     * @throws PipelineException 
+     *   If unable to perform the operation.
+     */ 
+    public void 
+    perform
+    (
+     NodeStatus status
+    )
+      throws PipelineException
+    {}
+  }
+
+
+  /**
+   * The node check-in operation. <P>
+   * 
+   * 
+   */
+  public 
+  class NodeCheckInOp
+    extends NodeOp
+  {  
+    /** 
+     * Construct a new check-in operation.
+     */
+    public
+    NodeCheckInOp
+    ( 
+     NodeCheckInReq req
+    ) 
+    {
+      super();
+      
+      pRequest = req;
+    }
+
+
+    /**
+     * Perform the check-in operation on the given node.
+     * 
+     * @param status 
+     *   The pre-operation status of the node. 
+     * 
+     * @throws PipelineException 
+     *   If unable to perform the operation.
+     */ 
+    public void 
+    perform
+    (
+     NodeStatus status
+    )
+      throws PipelineException
+    {
+      String name = status.getName();
+      NodeDetails details = status.getDetails();
+      assert(details != null);
+
+      /* make sure node is in a Finished state */ 
+      if(details.getOverallQueueState() != OverallQueueState.Finished) {
+	throw new PipelineException
+	  ("The node (" + name + ") was in a " + details.getOverallQueueState() + 
+	   " (" + NodeStyles.getQueueColorString(details.getOverallQueueState()) + ") " + 
+	   "state.\n\n" +
+	   "All nodes being Checked-In must be in a Finished (" + 
+	   NodeStyles.getQueueColorString(OverallQueueState.Finished) + ") state.");
+      }
+
+      /* process the node */ 
+      switch(details.getOverallNodeState()) {
+      case Identical:
+      case NeedsCheckOut:
+	break;
+
+      case CheckedIn:
+	throw new PipelineException
+	  ("No working version of node (" + name + ") exists to be checked-in.");
+
+      case Conflicted:
+	throw new PipelineException
+	  ("The working version of node (" + name + ") was in a Conflicted state!\n\n" + 
+	   "The conflicts must be resolved before this node or any downstream nodes with " + 
+	   "which this node is linked can be checked-in.");
+
+      case Pending:
+      case Modified:
+      case ModifiedLinks:
+	{	
+	  NodeID nodeID = status.getNodeID();
+
+	  /* lookup bundles and determine the new revision number */ 
+	  VersionID vid = null;
+	  VersionID latestID = null;
+	  TreeMap<VersionID,CheckedInBundle> checkedIn = null;
+	  if(details.getOverallNodeState() == OverallNodeState.Pending) {
+	    checkedIn = new TreeMap<VersionID,CheckedInBundle>();
+	    vid = new VersionID();
+	  }
+	  else {
+	    checkedIn = getCheckedInBundles(name);
+	    latestID = checkedIn.lastKey();
+	    vid = new VersionID(latestID, pRequest.getLevel());
+	  }
+
+	  WorkingBundle working = getWorkingBundle(nodeID);
+	  NodeMod work = working.uVersion;
+
+	  /* determine the checked-in revision numbers of the upstream nodes */ 
+	  TreeMap<String,VersionID> lvids = new TreeMap<String,VersionID>();
+	  for(NodeStatus lstatus : status.getSources()) {
+	    VersionID lvid = lstatus.getDetails().getBaseVersion().getVersionID();
+	    lvids.put(lstatus.getName(), lvid);
+	  }
+
+	  /* create the new checked-in version */ 
+	  NodeVersion vsn = new NodeVersion(work, vid, lvids, pRequest.getMessage());
+
+	  /* check-in the files */ 
+	  pFileMgrClient.checkIn(nodeID, work, vid, latestID, working.uFileStates);
+
+	  /* write the new checked-in version to disk */ 
+	  writeCheckedInVersion(vsn);
+
+	  /* add the new version to the checked-in bundles */ 
+	  if(details.getOverallNodeState() == OverallNodeState.Pending) {
+	    synchronized(pCheckedInBundles) {
+	      pCheckedInBundles.put(name, checkedIn);
+	    }
+	  }
+	  checkedIn.put(vid, new CheckedInBundle(vsn));
+
+	  /* generate new file states */ 
+	  TreeMap<FileSeq,FileState[]> fileStates = new TreeMap<FileSeq,FileState[]>();
+	  for(FileSeq fseq : working.uFileStates.keySet()) {
+	    FileState fs[] = new FileState[fseq.numFrames()];
+
+	    int wk;
+	    for(wk=0; wk<fs.length; wk++) 
+	      fs[wk] = FileState.Identical;
+
+	    fileStates.put(fseq, fs);
+	  }
+	  
+	  /* create a new working version based on the new checked-in version */ 
+	  NodeMod nwork = new NodeMod(vsn);
+
+	  /* write the new working version to disk */ 
+	  writeWorkingVersion(nodeID, nwork);
+
+	  /* update the working bundle */ 
+	  working.uVersion    = nwork;
+	  working.uFileStates = fileStates;
+
+	  /* update the node status details */ 
+	  NodeDetails ndetails = 
+	    new NodeDetails(name, 
+			    work, vsn, checkedIn.get(checkedIn.lastKey()).uVersion,
+			    OverallNodeState.Identical, OverallQueueState.Finished, 
+			    VersionState.Identical, PropertyState.Identical, 
+			    LinkState.Identical, 
+			    fileStates, working.uFileTimeStamps, working.uQueueStates);
+
+	  status.setDetails(ndetails);
+	}      
+      }
+    }
+
+
+    /**
+     * The node check-in request.
+     */ 
+    private NodeCheckInReq  pRequest;
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L   C L A S S E S                                                      */
@@ -2817,8 +3114,7 @@ class NodeMgr
      NodeVersion vsn
     ) 
     {
-      uVersion  = vsn;
-      uComments = new TreeMap<Date,LogMessage>();
+      uVersion = vsn;
     }
 
     /**
@@ -2826,11 +3122,9 @@ class NodeMgr
      */ 
     public NodeVersion  uVersion;
 
-    /**
-     * The change comments associated with the checked-in version indexed by 
-     * the timestamp of the comment.
-     */ 
-    public TreeMap<Date,LogMessage>  uComments;
+    
+    // Add Task related stuff here later... 
+
   }
 
 
