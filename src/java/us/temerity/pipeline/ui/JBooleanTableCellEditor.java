@@ -1,4 +1,4 @@
-// $Id: JBooleanTableCellEditor.java,v 1.2 2005/01/03 06:56:23 jim Exp $
+// $Id: JBooleanTableCellEditor.java,v 1.3 2005/03/20 22:49:23 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -40,15 +40,40 @@ class JBooleanTableCellEditor
    int align
   ) 
   {
+    this(width, align, true);
+  }
+
+  /**
+   * Construct a new editor.
+   * 
+   * @param width
+   *   The minimum and preferred width of the field.
+   * 
+   * @param align
+   *   The horizontal alignment.
+   * 
+   * @param allowNull
+   *   Whether null values are permissable.
+   */
+  public 
+  JBooleanTableCellEditor
+  (
+   int width, 
+   int align, 
+   boolean allowNull
+  ) 
+  {
+    pAllowNull = allowNull;
+
     ArrayList<String> values = new ArrayList<String>();
     values.add("YES");
     values.add("no");
-    values.add("-");
+    if(pAllowNull) 
+      values.add("-");
 
     pField = UIFactory.createCollectionField(values, width);
     pField.addActionListener(this);
   }
-
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -69,7 +94,7 @@ class JBooleanTableCellEditor
       return new Boolean(false);
 
     default: 
-      return null;
+      return (pAllowNull ? null : new Boolean(false));
     }
   }
 
@@ -90,7 +115,7 @@ class JBooleanTableCellEditor
     if(tf != null) 
       pField.setSelectedIndex(tf ? 0 : 1);
     else 
-      pField.setSelectedIndex(2);
+      pField.setSelectedIndex(pAllowNull ? 2 : 1);
 
     return pField;
   }
@@ -133,5 +158,10 @@ class JBooleanTableCellEditor
    * The boolean values editor.
    */ 
   protected JCollectionField  pField;
+
+  /**
+   * Whether <CODE>null</CODE> values are permissable.
+   */ 
+  private boolean  pAllowNull;
 
 }
