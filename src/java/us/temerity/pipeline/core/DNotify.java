@@ -1,4 +1,4 @@
-// $Id: DNotify.java,v 1.5 2004/04/15 18:31:57 jim Exp $
+// $Id: DNotify.java,v 1.6 2004/07/14 20:48:29 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -338,7 +338,7 @@ class DNotify
 	  if(de.uNotify) {
 	    modified.add(de.uDir);
 
-	    Logs.ops.fine("Directory Modified: " + de.uDir);
+	    Logs.ops.finest("Directory Modified (native): " + de.uDir);
 	    Logs.flush();
 	  }
 	  
