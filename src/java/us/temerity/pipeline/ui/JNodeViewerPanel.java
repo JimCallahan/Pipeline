@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.24 2004/07/14 21:09:39 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.25 2004/07/16 22:05:28 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -246,8 +246,8 @@ class JNodeViewerPanel
       item.setEnabled(false);  // FOR NOW...
       pNodePopup.add(item);
       
-      item = new JMenuItem("Make Local");
-      item.setActionCommand("make-local");
+      item = new JMenuItem("Queue");
+      item.setActionCommand("queue");
       item.addActionListener(this);
       item.setEnabled(false);  // FOR NOW...
       pNodePopup.add(item);
@@ -2105,7 +2105,9 @@ class JNodeViewerPanel
     else if(cmd.equals("unlink")) 
       doUnlink(); 
     else if(cmd.equals("add-secondary")) 
-      doAddSecondary(); 
+      doAddSecondary();
+    else if(cmd.startsWith("remove-secondary:")) 
+      doRemoveSecondary(cmd.substring(17)); 
     else if(cmd.equals("rename"))
       doRename();
     else if(cmd.equals("clone"))
@@ -2403,6 +2405,32 @@ class JNodeViewerPanel
     for(ViewerNode vnode : clearSelection()) 
       vnode.update();    
   }
+
+  /**
+   * Remove a secondary file sequence.
+   */ 
+  private void 
+  doRemoveSecondary
+  (
+   String name
+  ) 
+  {
+    if(pPrimary != null) {
+      NodeDetails details = pPrimary.getNodeStatus().getDetails();
+      if(details != null) {
+	FileSeq fseq = pRemoveSecondarySeqs.get(name);
+	if(fseq != null) {
+	  RemoveSecondaryTask task = new RemoveSecondaryTask(details.getName(), fseq);
+	  task.start();
+	}
+      }
+    }
+
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();    
+  }
+
+  
 
   
 
@@ -3227,6 +3255,53 @@ class JNodeViewerPanel
       if(master.beginPanelOp("Adding Secondary File Sequence...")) {
 	try {
 	  master.getMasterMgrClient().addSecondary(pAuthor, pView, pTarget, pFileSeq);
+	}
+ 	catch(PipelineException ex) {
+ 	  master.showErrorDialog(ex);
+ 	  return;
+ 	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	updateRoots();
+      }
+    }
+    
+    private String   pTarget;
+    private FileSeq  pFileSeq; 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Remove a secondary file sequence to the given node.
+   */ 
+  private
+  class RemoveSecondaryTask
+    extends Thread
+  {
+    public 
+    RemoveSecondaryTask
+    (
+     String target, 
+     FileSeq fseq
+    ) 
+    {
+      super("JNodeViewerPanel:RemoveSecondaryTask");
+
+      pTarget = target;
+      pFileSeq = fseq; 
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Removing Secondary File Sequence...")) {
+	try {
+	  master.getMasterMgrClient().removeSecondary(pAuthor, pView, pTarget, pFileSeq);
 	}
  	catch(PipelineException ex) {
  	  master.showErrorDialog(ex);
