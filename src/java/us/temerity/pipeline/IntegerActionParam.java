@@ -1,4 +1,4 @@
-// $Id: IntegerActionParam.java,v 1.3 2004/09/10 15:39:32 jim Exp $
+// $Id: IntegerActionParam.java,v 1.4 2004/11/11 00:37:06 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -14,7 +14,8 @@ import java.io.*;
  */
 public 
 class IntegerActionParam
-  extends BaseActionParam
+  extends IntegerParam
+  implements ActionParam
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -49,37 +50,6 @@ class IntegerActionParam
     super(name, desc, value);
   }
 
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   A C C E S S                                                                          */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Gets the value of the parameter. 
-   */ 
-  public Integer
-  getIntegerValue() 
-  {
-    return ((Integer) getValue());
-  }
-
-  /**
-   * Sets the value of the parameter. 
-   */
-  public void 
-  setValue
-  (
-   Comparable value  
-  ) 
-  {
-    if((value != null) && !(value instanceof Integer))
-      throw new IllegalArgumentException
-	("The action parameter (" + pName + ") only accepts (Integer) values!");
-
-    pValue = value;
-  }
-  
 
 
   /*----------------------------------------------------------------------------------------*/

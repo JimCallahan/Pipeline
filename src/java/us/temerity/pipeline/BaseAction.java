@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.19 2004/11/03 18:15:16 jim Exp $
+// $Id: BaseAction.java,v 1.20 2004/11/11 00:37:05 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -36,8 +36,8 @@ class BaseAction
   {
     super();
 
-    pSingleParams = new TreeMap<String,BaseActionParam>();
-    pSourceParams = new TreeMap<String,TreeMap<String,BaseActionParam>>();
+    pSingleParams = new TreeMap<String,ActionParam>();
+    pSourceParams = new TreeMap<String,TreeMap<String,ActionParam>>();
   }
 
   /** 
@@ -62,8 +62,8 @@ class BaseAction
   {
     super(name, vid, desc);
 
-    pSingleParams = new TreeMap<String,BaseActionParam>();
-    pSourceParams = new TreeMap<String,TreeMap<String,BaseActionParam>>();
+    pSingleParams = new TreeMap<String,ActionParam>();
+    pSourceParams = new TreeMap<String,TreeMap<String,ActionParam>>();
   }
 
   /**
@@ -80,7 +80,7 @@ class BaseAction
   {
     super(action.pName, action.pVersionID, action.pDescription);
 
-    pVersionID    = action.pVersionID; 
+//     pVersionID    = action.pVersionID; //???
     pSingleParams = action.pSingleParams;
     pSourceParams = action.pSourceParams; 
   }
@@ -114,7 +114,7 @@ class BaseAction
   protected void 
   addSingleParam
   (
-    BaseActionParam param 
+    ActionParam param 
   ) 
   {
     if(pSingleParams.containsKey(param.getName())) 
@@ -144,7 +144,7 @@ class BaseAction
   ) 
     throws PipelineException
   {
-    BaseActionParam param = getSingleParam(name); 
+    ActionParam param = getSingleParam(name); 
     if(param == null)
       throw new PipelineException
 	("Unable to determine the value of the (" + name + ") parameter!");
@@ -160,7 +160,7 @@ class BaseAction
    * @return 
    *   The action parameter or <CODE>null</CODE> if no parameter with the given name exists.
    */ 
-  public BaseActionParam
+  public ActionParam
   getSingleParam
   (
    String name   
@@ -180,7 +180,7 @@ class BaseAction
    * @return 
    *   The set of single valued parameters for this action.  
    */ 
-  public Collection<BaseActionParam>
+  public Collection<ActionParam>
   getSingleParams()
   {
     return Collections.unmodifiableCollection(pSingleParams.values());
@@ -206,7 +206,7 @@ class BaseAction
     if(name == null)
       throw new IllegalArgumentException("The parameter name cannot be (null)!");
 
-    BaseActionParam param = pSingleParams.get(name);
+    ActionParam param = pSingleParams.get(name);
     if(param == null) 
       throw new IllegalArgumentException
 	("No parameter named (" + param.getName() + ") exists for this action!");
@@ -230,9 +230,9 @@ class BaseAction
   ) 
   {
     for(String name : pSingleParams.keySet()) {
-      BaseActionParam aparam = action.getSingleParam(name);
+      ActionParam aparam = action.getSingleParam(name);
       if(aparam != null) {
-	BaseActionParam param = pSingleParams.get(name);
+	ActionParam param = pSingleParams.get(name);
 	try {
 	  param.setValue(aparam.getValue());
 	}
@@ -289,7 +289,7 @@ class BaseAction
     if(source == null)
       throw new IllegalArgumentException("The upstream node name cannot be (null)!");
 
-    TreeMap<String,BaseActionParam> params = getInitialSourceParams();
+    TreeMap<String,ActionParam> params = getInitialSourceParams();
     assert(params != null);
     
     pSourceParams.put(source, params);
@@ -301,7 +301,7 @@ class BaseAction
    * Subclasses which support per-source parameters MUST override this method
    * to provide a means for initializing parameters for dependencies.  
    */ 
-  public TreeMap<String,BaseActionParam>
+  public TreeMap<String,ActionParam>
   getInitialSourceParams()
   {
     return null;
@@ -344,7 +344,7 @@ class BaseAction
   ) 
     throws PipelineException	
   {
-    BaseActionParam param = getSourceParam(source, name);
+    ActionParam param = getSourceParam(source, name);
     if(param == null)
       throw new PipelineException
 	("Unable to determine the value of the (" + name + ") parameter for the upstream " + 
@@ -366,7 +366,7 @@ class BaseAction
    *   The action parameter or <CODE>null</CODE> if no parameter with the given name exists
    *   for the given source.
    */ 
-  public BaseActionParam
+  public ActionParam
   getSourceParam
   (
    String source,
@@ -376,7 +376,7 @@ class BaseAction
     if(source == null)
       throw new IllegalArgumentException("The upstream node name cannot be (null)!");
 
-    TreeMap<String,BaseActionParam> table = pSourceParams.get(source);
+    TreeMap<String,ActionParam> table = pSourceParams.get(source);
     if(table == null) 
       return null;
 
@@ -395,7 +395,7 @@ class BaseAction
    * @return 
    *   The set of parameters for the given upstream node.  
    */ 
-  public Collection<BaseActionParam>
+  public Collection<ActionParam>
   getSourceParams
   (
    String source  
@@ -404,11 +404,11 @@ class BaseAction
     if(source == null)
       throw new IllegalArgumentException("The upstream node name cannot be (null)!");
 
-    TreeMap<String,BaseActionParam> table = pSourceParams.get(source);
+    TreeMap<String,ActionParam> table = pSourceParams.get(source);
     if(table != null) 
       return Collections.unmodifiableCollection(table.values());
     else 
-      return new ArrayList<BaseActionParam>();
+      return new ArrayList<ActionParam>();
   }
 
 
@@ -438,11 +438,11 @@ class BaseAction
     if(name == null)
       throw new IllegalArgumentException("The parameter name cannot be (null)!");
 
-    TreeMap<String,BaseActionParam> table = pSourceParams.get(source);
+    TreeMap<String,ActionParam> table = pSourceParams.get(source);
     if(table == null) 
       throw new IllegalArgumentException("The upstream node does not have parameters!");
 
-    BaseActionParam param = table.get(name);
+    ActionParam param = table.get(name);
     if(param == null) 
       throw new IllegalArgumentException
 	("No parameter named (" + param.getName() + ") exists for the upstream node (" +
@@ -477,10 +477,10 @@ class BaseAction
       removeSourceParams(source);
       initSourceParams(source);
 
-      TreeMap<String,BaseActionParam> params = pSourceParams.get(source);
+      TreeMap<String,ActionParam> params = pSourceParams.get(source);
       if(params != null) {
-	for(BaseActionParam aparam : action.getSourceParams(source)) {
-	  BaseActionParam param = params.get(aparam.getName()); 
+	for(ActionParam aparam : action.getSourceParams(source)) {
+	  ActionParam param = params.get(aparam.getName()); 
 	  if(param != null) {
 	    try {
 	      param.setValue(aparam.getValue());
@@ -626,7 +626,7 @@ class BaseAction
       throw new IllegalArgumentException
 	("This action does not have per-source parameters!");
     
-    TreeMap<String,BaseActionParam> params = getInitialSourceParams();
+    TreeMap<String,ActionParam> params = getInitialSourceParams();
     if(params == null) 
       throw new IllegalArgumentException
 	("This action does not have per-source parameters!");
@@ -677,7 +677,7 @@ class BaseAction
 	("This action does not have per-source parameters!");
 
     if(pSourceLayout == null) {
-      TreeMap<String,BaseActionParam> params = getInitialSourceParams();
+      TreeMap<String,ActionParam> params = getInitialSourceParams();
       if(params == null) 
 	throw new IllegalArgumentException
 	  ("This action does not have per-source parameters!");
@@ -836,43 +836,6 @@ class BaseAction
     return tmp;
   }
 
-  /**
-   * Make sure the target working directory exists. <P> 
-   */ 
-  public void
-  makeTargetDir
-  (
-    ActionAgenda agenda
-  )
-    throws PipelineException
-  {
-    File dir = agenda.getWorkingDir();
-    if(dir.isDirectory()) 
-      return;
-
-    ArrayList<String> args = new ArrayList<String>();
-    args.add("--parents");
-    args.add("--mode=755");
-    args.add(dir.getPath());
-
-    SubProcessLight proc = 
-      new SubProcessLight(agenda.getNodeID().getAuthor(), 
-			  "MakeWorkingDir-" + agenda.getJobID(), 
-			  "mkdir", args, agenda.getEnvironment(), PackageInfo.sTempDir);
-    try {
-      proc.start();
-      proc.join();
-      if(!proc.wasSuccessful()) 
-	throw new PipelineException
-	  ("Unable to create the working area directory (" + dir + "):\n\n" + 
-	   "  " + proc.getStdErr());
-    }
-    catch(InterruptedException ex) {
-      throw new PipelineException
-	("Interrupted while creating working area directory (" + dir + ")!");
-    }
-  }
-
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -942,18 +905,18 @@ class BaseAction
   {
     BaseAction clone = (BaseAction) super.clone();
     
-    clone.pSingleParams = new TreeMap<String,BaseActionParam>();
-    for(BaseActionParam param : pSingleParams.values()) {
-      BaseActionParam pclone = (BaseActionParam) param.clone();
+    clone.pSingleParams = new TreeMap<String,ActionParam>();
+    for(ActionParam param : pSingleParams.values()) {
+      ActionParam pclone = (ActionParam) param.clone();
       clone.pSingleParams.put(pclone.getName(), pclone);
     }
 
-    clone.pSourceParams = new TreeMap<String,TreeMap<String,BaseActionParam>>();
+    clone.pSourceParams = new TreeMap<String,TreeMap<String,ActionParam>>();
     for(String source : pSourceParams.keySet()) {
-      TreeMap<String,BaseActionParam> params = new TreeMap<String,BaseActionParam>();
+      TreeMap<String,ActionParam> params = new TreeMap<String,ActionParam>();
 
-      for(BaseActionParam param : pSourceParams.get(source).values()) {
-	BaseActionParam pclone = (BaseActionParam) param.clone();
+      for(ActionParam param : pSourceParams.get(source).values()) {
+	ActionParam pclone = (ActionParam) param.clone();
 	params.put(pclone.getName(), pclone);
       }
 
@@ -994,13 +957,13 @@ class BaseAction
   {
     super.fromGlue(decoder);
 
-    TreeMap<String,BaseActionParam> single = 
-      (TreeMap<String,BaseActionParam>) decoder.decode("SingleParams");   
+    TreeMap<String,ActionParam> single = 
+      (TreeMap<String,ActionParam>) decoder.decode("SingleParams");   
     if(single != null) 
       pSingleParams.putAll(single);
 
-    TreeMap<String,TreeMap<String,BaseActionParam>> source = 
-      (TreeMap<String,TreeMap<String,BaseActionParam>>) decoder.decode("SourceParams");   
+    TreeMap<String,TreeMap<String,ActionParam>> source = 
+      (TreeMap<String,TreeMap<String,ActionParam>>) decoder.decode("SourceParams");   
     if(source != null) 
       pSourceParams.putAll(source);
   }
@@ -1021,12 +984,12 @@ class BaseAction
   /** 
    * The table of single valued action parameters.
    */
-  private TreeMap<String,BaseActionParam>  pSingleParams;    
+  private TreeMap<String,ActionParam>  pSingleParams;    
 
   /** 
    * The table of action parameters associated with each linked upstream node.
    */
-  private TreeMap<String,TreeMap<String,BaseActionParam>>  pSourceParams;    
+  private TreeMap<String,TreeMap<String,ActionParam>>  pSourceParams;    
 
 
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: StringActionParam.java,v 1.2 2004/09/08 18:33:09 jim Exp $
+// $Id: StringActionParam.java,v 1.3 2004/11/11 00:37:06 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -14,7 +14,8 @@ import java.io.*;
  */
 public 
 class StringActionParam
-  extends BaseActionParam
+  extends StringParam
+  implements ActionParam
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -47,37 +48,6 @@ class StringActionParam
   ) 
   {
     super(name, desc, value);
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   A C C E S S                                                                          */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Gets the value of the parameter. 
-   */ 
-  public String
-  getStringValue() 
-  {
-    return ((String) getValue());
-  }
-
-  /**
-   * Sets the value of the parameter. 
-   */
-  public void 
-  setValue
-  (
-   Comparable value  
-  ) 
-  {
-    if((value != null) && !(value instanceof String))
-      throw new IllegalArgumentException
-	("The action parameter (" + pName + ") only accepts (String) values!");
-
-    pValue = value;
   }
 
 

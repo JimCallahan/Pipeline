@@ -1,4 +1,4 @@
-// $Id: BooleanActionParam.java,v 1.1 2004/09/10 15:40:24 jim Exp $
+// $Id: BooleanActionParam.java,v 1.2 2004/11/11 00:37:06 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -14,7 +14,8 @@ import java.io.*;
  */
 public 
 class BooleanActionParam
-  extends BaseActionParam
+  extends BooleanParam
+  implements ActionParam
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -47,42 +48,7 @@ class BooleanActionParam
   ) 
   {
     super(name, desc, value);
-
-    if(value == null)
-      throw new IllegalArgumentException("The value cannot be (null)!");
   }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   A C C E S S                                                                          */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Gets the value of the parameter. 
-   */ 
-  public Boolean
-  getBooleanValue() 
-  {
-    return ((Boolean) getValue());
-  }
-
-  /**
-   * Sets the value of the parameter. 
-   */
-  public void 
-  setValue
-  (
-   Comparable value  
-  ) 
-  {
-    if((value != null) && !(value instanceof Boolean))
-      throw new IllegalArgumentException
-	("The action parameter (" + pName + ") only accepts (Boolean) values!");
-
-    pValue = value;
-  }
-  
 
 
   /*----------------------------------------------------------------------------------------*/

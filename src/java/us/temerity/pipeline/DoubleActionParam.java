@@ -1,4 +1,4 @@
-// $Id: DoubleActionParam.java,v 1.3 2004/09/10 15:39:32 jim Exp $
+// $Id: DoubleActionParam.java,v 1.4 2004/11/11 00:37:06 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -6,7 +6,7 @@ import java.util.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   D O U B L E    A C T I O N   P A R A M                                                 */
+/*   D O U B L E   A C T I O N   P A R A M                                                  */
 /*------------------------------------------------------------------------------------------*/
 
 /**
@@ -14,7 +14,8 @@ import java.io.*;
  */
 public 
 class DoubleActionParam
-  extends BaseActionParam
+  extends DoubleParam
+  implements ActionParam
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -47,37 +48,6 @@ class DoubleActionParam
   ) 
   {
     super(name, desc, value);
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   A C C E S S                                                                          */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Gets the value of the parameter. 
-   */ 
-  public Double
-  getDoubleValue() 
-  {
-    return ((Double) getValue());
-  }
-
-  /**
-   * Sets the value of the parameter. 
-   */
-  public void 
-  setValue
-  (
-   Comparable value  
-  ) 
-  {
-    if((value != null) && !(value instanceof Double))
-      throw new IllegalArgumentException
-	("The action parameter (" + pName + ") only accepts (Double) values!");
-
-    pValue = value;
   }
 
 

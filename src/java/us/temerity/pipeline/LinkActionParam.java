@@ -1,4 +1,4 @@
-// $Id: LinkActionParam.java,v 1.2 2004/09/08 18:33:09 jim Exp $
+// $Id: LinkActionParam.java,v 1.3 2004/11/11 00:37:06 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -14,7 +14,8 @@ import java.io.*;
  */
 public 
 class LinkActionParam
-  extends BaseActionParam
+  extends BaseParam
+  implements ActionParam
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -74,7 +75,7 @@ class LinkActionParam
   {
     if((value != null) && !(value instanceof String))
       throw new IllegalArgumentException
-	("The action parameter (" + pName + ") only accepts (String) values!");
+	("The parameter (" + pName + ") only accepts (String) values!");
 
     pValue = value;
   }
