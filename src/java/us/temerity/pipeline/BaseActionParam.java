@@ -1,4 +1,4 @@
-// $Id: BaseActionParam.java,v 1.1 2004/06/14 22:43:27 jim Exp $
+// $Id: BaseActionParam.java,v 1.2 2004/06/19 00:23:06 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -119,7 +119,8 @@ class BaseActionParam
       BaseActionParam param = (BaseActionParam) obj;
     
       return (super.equals(obj) && 
-	      pValue.equals(param.pValue));
+	      (((pValue == null) && (param.pValue == null)) ||  
+	       ((pValue != null) && pValue.equals(param.pValue))));
     }
 
     return false;
