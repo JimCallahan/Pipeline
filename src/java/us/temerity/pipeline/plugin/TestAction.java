@@ -1,4 +1,4 @@
-// $Id: TestAction.java,v 1.3 2004/07/18 21:33:07 jim Exp $
+// $Id: TestAction.java,v 1.4 2004/07/24 18:14:11 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -163,55 +163,23 @@ class TestAction
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Construct a {@link SubProcess SubProcess} instance which when executed will 
-   * regenerate the given file sequences for the target node. <P>
+   * Construct a {@link SubProcess SubProcess} instance which when executed will fulfill
+   * the given action agenda. <P> 
    * 
-   * @param jobID  
-   *   A unique job identifier.
-   * 
-   * @param name  
-   *   The fully resolved name of the target node. 
-   * 
-   * @param author  
-   *   The name of the user which submitted the job.
-   * 
-   * @param primaryTarget  
-   *   The primary file sequence to generate.
-   *
-   * @param secondaryTargets  
-   *   The secondary file sequences to generate.
-   *
-   * @param primarySources  
-   *   A table of primary file sequences associated with each dependency.
-   *
-   * @param secondarySources  
-   *   The table of secondary file sequences associated with each dependency.
-   *
-   * @param env  
-   *   The environment under which the action is run.  
-   * 
-   * @param dir  
-   *   The working directory where the action is run.
+   * @param agenda
+   *   The agenda to be accomplished by the action.
    * 
    * @return 
-   *   The SubProcess which will regenerate the target file sequences.
+   *   The SubProcess which will fulfill the agenda.
    * 
    * @throws PipelineException 
    *   If unable to prepare a SubProcess due to illegal, missing or imcompatable 
-   *   file sequence arguments.
+   *   information in the action agenda.
    */
   public SubProcess
   prep
   (
-   int jobID,                
-   String name,              
-   String author,            
-   FileSeq primaryTarget,    
-   ArrayList<FileSeq> secondaryTargets,
-   Map<String,FileSeq> primarySources,    
-   Map<String,ArrayList> secondarySources,   // should be: Map<String,ArrayList<FileSeq>>  
-   Map<String,String> env, 
-   File dir                 
+   ActionAgenda agenda
   )
     throws PipelineException
   {

@@ -1,4 +1,4 @@
-// $Id: ScriptAction.java,v 1.5 2004/06/14 22:30:09 jim Exp $
+// $Id: ScriptAction.java,v 1.6 2004/07/24 18:14:11 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -42,14 +42,19 @@ import java.io.*;
  *     The unique job identifier of the job running this action.
  *   </DIV> <BR>
  *
- *   PIPELINE_NODE <BR>
+ *   PIPELINE_NODE_NAME <BR>
  *   <DIV style="margin-left: 40px;">
  *     The fully resolved name of the target node. 
  *   </DIV> <BR>
  *
- *   PIPELINE_AUTHOR <BR>
+ *   PIPELINE_NODE_AUTHOR <BR>
  *   <DIV style="margin-left: 40px;">
- *     The name of the user which submitted the job.
+ *     The name of the user which owns the target node.
+ *   </DIV> <BR>
+ * 
+ *   PIPELINE_NODE_VIEW <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The name of the user's working area view which contains the target node.
  *   </DIV> <BR>
  *
  *   PIPELINE_PRIMARY_TARGET <BR>
@@ -69,36 +74,36 @@ import java.io.*;
  *     will be in the range [0,$PIPELINE_NUM_SECONDARY_TARGETS). 
  *   </DIV> <BR>
  *
- *   PIPELINE_NUM_DEPENDENCIES <BR>
+ *   PIPELINE_NUM_SOURCES <BR>
  *   <DIV style="margin-left: 40px;">
- *     The number of dependencies of the target node.
+ *     The number of upstream source nodes.
  *   </DIV> <BR>
  *
- *   PIPELINE_DEPEND_# <BR>
+ *   PIPELINE_SOURCE_# <BR>
  *   <DIV style="margin-left: 40px;">
- *     The fully resolved node name of a dependency, where (#) is replaced by the index 
- *     of the dependency. The index will be in the range [0,$PIPELINE_NUM_DEPENDENCIES).
+ *     The fully resolved node name of a source node, where (#) is replaced by the index 
+ *     of the source. The index will be in the range [0,$PIPELINE_NUM_SOURCES).
  *   </DIV> <BR>
  *
  *   PIPELINE_PRIMARY_SOURCE_# <BR>
  *   <DIV style="margin-left: 40px;">
- *     A colon seperated list of files which make up the primary file sequence of a node 
- *     dependency, where (#) is replaced by the index of the dependency. The index will be 
- *     in the range [0,$PIPELINE_NUM_DEPENDENCIES).
+ *     A colon seperated list of files which make up the primary file sequence of a source
+ *     node, where (#) is replaced by the index of the source. The index will be 
+ *     in the range [0,$PIPELINE_NUM_SOURCES).
  *   </DIV> <BR>
  *
  *   PIPELINE_NUM_SECONDARY_SOURCES_# <BR>
  *   <DIV style="margin-left: 40px;">
- *     The number of secondary file sequences associated with each node dependency, where 
- *     (#) is replaced by the index of the dependency.
+ *     The number of secondary file sequences associated with each source node, where 
+ *     (#) is replaced by the index of the source.
  *   </DIV> <BR>
  * 
  *   PIPELINE_SECONDARY_SOURCE_#_# <BR>
  *   <DIV style="margin-left: 40px;">
  *     A colon seperated list of files which make up the secondary file sequence of a 
- *     dependency, where the first (#) is replaced by the index of the dependency and the 
+ *     source node, where the first (#) is replaced by the index of the source and the 
  *     second (#) is replaced by the index of the secondary file sequence.  The first index 
- *     will be in the range [0,$PIPELINE_NUM_DEPENDENCIES).  The second index will be in the 
+ *     will be in the range [0,$PIPELINE_NUM_SOURCES).  The second index will be in the 
  *     range [0,$PIPELINE_NUM_SECONDARY_SOURCES_#). 
  *   </DIV> 
  * </DIV> <P> 
@@ -143,55 +148,23 @@ class ScriptAction
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Construct a {@link SubProcess SubProcess} instance which when executed will 
-   * regenerate the given file sequences for the target node. <P>
+   * Construct a {@link SubProcess SubProcess} instance which when executed will fulfill
+   * the given action agenda. <P> 
    * 
-   * @param jobID  
-   *   A unique job identifier.
-   * 
-   * @param name  
-   *   The fully resolved name of the target node. 
-   * 
-   * @param author  
-   *   The name of the user which submitted the job.
-   * 
-   * @param primaryTarget  
-   *   The primary file sequence to generate.
-   *
-   * @param secondaryTargets  
-   *   The secondary file sequences to generate.
-   *
-   * @param primarySources  
-   *   A table of primary file sequences associated with each dependency.
-   *
-   * @param secondarySources  
-   *   The table of secondary file sequences associated with each dependency.
-   *
-   * @param env  
-   *   The environment under which the action is run.  
-   * 
-   * @param dir  
-   *   The working directory where the action is run.
+   * @param agenda
+   *   The agenda to be accomplished by the action.
    * 
    * @return 
-   *   The SubProcess which will regenerate the target file sequences.
+   *   The SubProcess which will fulfill the agenda.
    * 
    * @throws PipelineException 
    *   If unable to prepare a SubProcess due to illegal, missing or imcompatable 
-   *   file sequence arguments.
+   *   information in the action agenda.
    */
   public SubProcess
   prep
   (
-   int jobID,                
-   String name,              
-   String author,            
-   FileSeq primaryTarget,    
-   ArrayList<FileSeq> secondaryTargets,
-   Map<String,FileSeq> primarySources,    
-   Map<String,ArrayList> secondarySources,   // should be: Map<String,ArrayList<FileSeq>>  
-   Map<String,String> env, 
-   File dir                 
+   ActionAgenda agenda
   )
     throws PipelineException
   {
@@ -207,7 +180,7 @@ class ScriptAction
 	    ("The interpreter program (" + prog + ") does not exist!");
       }
       else {
-	String path = (String) env.get("PATH");
+	String path = agenda.getEnvironment().get("PATH");
 	if(path == null) 
 	  throw new PipelineException
 	    ("The interpreter program (" + prog + ") was not absolute and no PATH was " +
@@ -241,8 +214,8 @@ class ScriptAction
       sdir.mkdir();
       
       /* generate script filename */ 
-      File node = new File(name);
-      script = File.createTempFile("ScriptAction-" + jobID, ".script", sdir);
+      File node = new File(agenda.getNodeID().getName());
+      script = File.createTempFile("ScriptAction-" + agenda.getJobID(), ".script", sdir);
 
       /* write script contents */ 
       {
@@ -266,55 +239,66 @@ class ScriptAction
     catch (Exception ex) {
       throw new PipelineException
 	("Unable to create temporary script file (" + script.getPath() + ") for Job (" + 
-	 jobID + ")!\n" +
+	 agenda.getJobID() + ")!\n" +
 	 ex.getMessage());
     }
 
     /* add the extra environmental variables */ 
-    TreeMap<String,String> senv = new TreeMap<String,String>(env);
+    TreeMap<String,String> senv = new TreeMap<String,String>(agenda.getEnvironment());
     {
-      senv.put("PIPELINE_JOB_ID", String.valueOf(jobID));
-      senv.put("PIPELINE_NODE", name);
-      senv.put("PIPELINE_AUTHOR", author);
-      senv.put("PIPELINE_PRIMARY_TARGET", fileList(primaryTarget));
+      senv.put("PIPELINE_JOB_ID", String.valueOf(agenda.getJobID()));
 
-      senv.put("PIPELINE_NUM_SECONDARY_TARGETS", String.valueOf(secondaryTargets.size()));
+      NodeID nodeID = agenda.getNodeID();
+      senv.put("PIPELINE_NODE_NAME", nodeID.getName());
+      senv.put("PIPELINE_NODE_AUTHOR", nodeID.getAuthor());
+      senv.put("PIPELINE_NODE_VIEW", nodeID.getAuthor());
+
+      senv.put("PIPELINE_PRIMARY_TARGET", fileList(agenda.getPrimaryTarget()));
+
       {
+	SortedSet<FileSeq> fseqs = agenda.getSecondaryTargets();
+	senv.put("PIPELINE_NUM_SECONDARY_TARGETS", String.valueOf(fseqs.size()));
+
 	int wk = 0;
-	for(FileSeq fseq : secondaryTargets) {
+	for(FileSeq fseq : fseqs) {
 	  senv.put("PIPELINE_SECONDARY_TARGET_" + wk, fileList(fseq));
 	  wk++;
 	}
       }
 
-      senv.put("PIPELINE_NUM_DEPENDENCIES", String.valueOf(primarySources.keySet().size()));
       {
-	int dk = 0;
-	for(String depend : primarySources.keySet()) {
-	  senv.put("PIPELINE_DEPEND_" + dk, depend);
-	  senv.put("PIPELINE_PRIMARY_SOURCE_" + dk, fileList(primarySources.get(depend)));
+	Set<String> sources = agenda.getSourceNames();
+	senv.put("PIPELINE_NUM_SOURCES", String.valueOf(sources.size()));
+	{
+	  int dk = 0;
+	  for(String sname : sources) {
+	    senv.put("PIPELINE_SOURCE_" + dk, sname);
+	    senv.put("PIPELINE_PRIMARY_SOURCE_" + dk, 
+		     fileList(agenda.getPrimarySource(sname)));
 
-	  ArrayList fseqs = secondarySources.get(depend);
-	  if(fseqs != null) {
-	    senv.put("PIPELINE_NUM_SECONDARY_SOURCES_" + dk, String.valueOf(fseqs.size()));
+	    SortedSet<FileSeq> fseqs = agenda.getSecondarySource(sname);
+	    if(!fseqs.isEmpty()) {
+	      senv.put("PIPELINE_NUM_SECONDARY_SOURCES_" + dk, String.valueOf(fseqs.size()));
 
-	    int wk = 0;
-	    for(Object obj : fseqs) {
-	      FileSeq fseq = (FileSeq) obj;
-	      senv.put("PIPELINE_SECONDARY_SOURCE_" + dk + "_" + wk, fileList(fseq));
-	      wk++;
+	      int wk = 0;
+	      for(FileSeq fseq : fseqs) {
+		senv.put("PIPELINE_SECONDARY_SOURCE_" + dk + "_" + wk, fileList(fseq));
+		wk++;
+	      }
 	    }
-	  }
 
-	  dk++;
+	    dk++;
+	  }
 	}
       }
     }
 
     /* create the process to run the action */ 
     try {
-      return new SubProcess(author, getName() + "-" + jobID, 
-			    script.getPath(), new ArrayList<String>(), senv, dir);
+      ArrayList<String> args = new ArrayList<String>();
+      return new SubProcess(agenda.getNodeID().getAuthor(), 
+			    getName() + "-" + agenda.getJobID(), 
+			    script.getPath(), args, senv, agenda.getWorkingDir());
     }
     catch(Exception ex) {
       throw new PipelineException
