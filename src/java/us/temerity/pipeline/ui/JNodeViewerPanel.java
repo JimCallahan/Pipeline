@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.29 2004/08/23 04:29:40 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.30 2004/08/23 07:12:16 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1911,6 +1911,16 @@ class JNodeViewerPanel
       else if((prefs.getNodeAddSecondary() != null) &&
 	      prefs.getNodeAddSecondary().wasPressed(e))
 	doAddSecondary();
+
+      else if((prefs.getNodeQueueJobs() != null) &&
+	      prefs.getNodeQueueJobs().wasPressed(e))
+	doQueueJobs();
+      else if((prefs.getNodeKillJobs() != null) &&
+	      prefs.getNodeKillJobs().wasPressed(e))
+	doKillJobs();
+      else if((prefs.getNodeRemoveFiles() != null) &&
+	      prefs.getNodeRemoveFiles().wasPressed(e))
+	doRemoveFiles();
 
       else if((prefs.getNodeCheckIn() != null) &&
 	      prefs.getNodeCheckIn().wasPressed(e))

@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.15 2004/08/23 03:02:33 jim Exp $
+// $Id: FileMgrClient.java,v 1.16 2004/08/23 07:12:16 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -276,69 +276,6 @@ class FileMgrClient
     FileRevertReq req = new FileRevertReq(id, files);
     
     Object obj = performTransaction(FileRequest.Revert, req);
-    handleSimpleResponse(obj);
-  }
-
-  /**
-   * Replaces the files associated with the given working version with symlinks to the 
-   * respective files associated with the checked-in version upon which the working 
-   * version is based.
-   * 
-   * @param id 
-   *   The unique working version identifier.
-   * 
-   * @param mod 
-   *   The working version of the node.
-   */
-  public synchronized void 
-  freeze
-  (
-   NodeID id, 
-   NodeMod mod
-  ) 
-    throws PipelineException 
-  {
-    if(mod.isFrozen()) 
-      throw new IllegalArgumentException
-	("Cannot freeze an already frozen working version!");
-
-    verifyConnection();
-
-    FileFreezeReq req = 
-      new FileFreezeReq(id, mod.getWorkingID(), mod.getSequences());
-
-    Object obj = performTransaction(FileRequest.Freeze, req);
-    handleSimpleResponse(obj);
-  }
-
-  /**
-   * Replace the symlinks associated with the given working version with copies of the 
-   * respective checked-in files which are the current targets of the symlinks. 
-   * 
-   * @param id 
-   *   The unique working version identifier.
-   * 
-   * @param mod 
-   *   The working version of the node.
-   */  
-  public synchronized void 
-  unfreeze
-  (
-   NodeID id, 
-   NodeMod mod
-  ) 
-    throws PipelineException 
-  {
-    if(mod.isFrozen()) 
-      throw new IllegalArgumentException
-	("Cannot unfreeze a working version which is not currently frozen!");
-
-    verifyConnection();
-
-    FileUnfreezeReq req = 
-      new FileUnfreezeReq(id, mod.getWorkingID(), mod.getSequences());
-
-    Object obj = performTransaction(FileRequest.Unfreeze, req);
     handleSimpleResponse(obj);
   }
 

@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.10 2004/08/01 15:35:02 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.11 2004/08/23 07:12:16 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -111,24 +111,6 @@ class JNodeDetailsPanel
 	}
 
 	panel.add(Box.createHorizontalGlue());
-
-	{
-	  JToggleButton btn = new JToggleButton();		
-	  pFrozenButton = btn;
-	  btn.setName("FrozenButton");
-		  
-	  Dimension size = new Dimension(19, 19);
-	  btn.setMinimumSize(size);
-	  btn.setMaximumSize(size);
-	  btn.setPreferredSize(size);
-	  
-	  btn.setActionCommand("toggle-frozen");
-	  btn.addActionListener(this);
-	  
-	  panel.add(btn);
-	} 
-
-	panel.add(Box.createRigidArea(new Dimension(10, 0)));
 
 	{
 	  JButton btn = new JButton();		
@@ -1356,17 +1338,6 @@ class JNodeDetailsPanel
 	Logs.flush();
 	System.exit(1);
       } 
-
-      if((work != null) && (details != null) && 
-	 ((details.getOverallNodeState() == OverallNodeState.Identical) ||
-	  (details.getOverallNodeState() == OverallNodeState.NeedsCheckOut))) {
-	pFrozenButton.setVisible(true);
-	pFrozenButton.setSelected(work.isFrozen());
-	pFrozenButton.setEnabled(!pIsLocked);
-      }
-      else {
-	pFrozenButton.setVisible(false);
-      }
     }   
 
     /* versions panel */ 
@@ -2771,11 +2742,7 @@ class JNodeDetailsPanel
     if((prefs.getNodeDetailsApplyChanges() != null) &&
        prefs.getNodeDetailsApplyChanges().wasPressed(e) && 
        pApplyButton.isEnabled())
-      doApply();    
-    else if((prefs.getNodeDetailsToggleFrozen() != null) &&
-       prefs.getNodeDetailsToggleFrozen().wasPressed(e) && 
-       pFrozenButton.isEnabled())
-      doToggleFrozen();    
+      doApply();
   }
 
   /**
@@ -2845,8 +2812,6 @@ class JNodeDetailsPanel
     String cmd = e.getActionCommand();
     if(cmd.equals("apply")) 
       doApply();
-    else if(cmd.equals("toggle-frozen")) 
-      doToggleFrozen();
     else if(cmd.equals("update-version")) 
       updateVersion();
     else if(cmd.equals("set-toolset")) 
@@ -3104,18 +3069,6 @@ class JNodeDetailsPanel
       }
     }
   }
-
-  /**
-   * Modify the frozen/unfrozen state of the working version of the node.
-   */ 
-  private void 
-  doToggleFrozen()
-  {
-    System.out.print("Frozen = " + pFrozenButton.isSelected() + "\n");
-
-
-  }
-
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -4007,11 +3960,6 @@ class JNodeDetailsPanel
    * The fully resolved node name field.
    */ 
   private JTextField pNodeNameField;
-
-  /**
-   * The button used to change the frozen/unfrozen status of the working version.
-   */ 
-  private JToggleButton  pFrozenButton;
   
   /**
    * The button used to apply changes to the working version of the node.

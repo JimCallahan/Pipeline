@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.20 2004/08/01 15:44:18 jim Exp $
+// $Id: FileMgr.java,v 1.21 2004/08/23 07:12:16 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -62,12 +62,7 @@ import java.util.concurrent.locks.*;
  *   resolved name of the node.  The last component of this name is the prefix of the files 
  *   which make up the primary file sequence of the node.  The (<I>node-name)</I> files are 
  *   one or more files which make up the primary and secondary file sequences associated 
- *   with the node. <P> 
- * 
- *   If the working version of a node has been frozen (see {@link #freeze freeze}), the 
- *   (<I>node-name)</I> files will not be regular files. Instead, they will be symbolic 
- *   links to the respective read-only file associated with the checked-in version upon 
- *   which the working version is based.
+ *   with the node. 
  * </DIV> <P> 
  * 
  * The location of files associated with checked-in versions: <P> 
