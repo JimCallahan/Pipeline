@@ -1,4 +1,4 @@
-// $Id: Plugins.java,v 1.3 2004/03/09 05:06:30 jim Exp $
+// $Id: Plugins.java,v 1.4 2004/03/11 10:54:15 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -213,6 +213,9 @@ class Plugins
   ) 
     throws PipelineException
   {
+    if(table == null) 
+      throw new PipelineException("The plugins have not been intialized!");
+
     Class cls = table.get(name);
     if(cls == null) {
       throw new PipelineException
