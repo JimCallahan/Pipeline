@@ -1,4 +1,4 @@
-// $Id: QueueJobGroup.java,v 1.6 2004/08/26 06:44:08 jim Exp $
+// $Id: QueueJobGroup.java,v 1.7 2004/08/31 08:08:56 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -196,12 +196,16 @@ class QueueJobGroup
   /*----------------------------------------------------------------------------------------*/
   
   /** 
-   * Records that all jobs of the group have completed.
+   * Records that all jobs of the group have completed and the last to complete was at the 
+   * given timestamp.
    */ 
   public void 
-  completed() 
+  completed
+  (
+   Date stamp
+  ) 
   {
-    pCompletedStamp = Dates.now();
+    pCompletedStamp = stamp;
   }
 
 
@@ -219,6 +223,11 @@ class QueueJobGroup
   {
     encoder.encode("GroupID", pGroupID);
     encoder.encode("NodeID", pNodeID);
+
+    encoder.encode("SubmittedStamp", pSubmittedStamp.getTime());
+    if(pCompletedStamp != null)
+      encoder.encode("CompletedStamp", pCompletedStamp.getTime());
+
     encoder.encode("RootPattern", pRootPattern);
     encoder.encode("RootIDs", pRootIDs);
 
@@ -244,6 +253,19 @@ class QueueJobGroup
     if(nodeID == null) 
       throw new GlueException("The \"NodeID\" was missing!");
     pNodeID = nodeID;    
+
+    {
+      Long stamp = (Long) decoder.decode("SubmittedStamp");
+      if(stamp == null) 
+	throw new GlueException("The \"SubmittedStamp\" was missing!");
+      pSubmittedStamp = new Date(stamp);
+    }
+
+    {
+      Long stamp = (Long) decoder.decode("CompletedStamp");
+      if(stamp != null) 
+	pCompletedStamp = new Date(stamp);
+    }
 
     String rpat = (String) decoder.decode("RootPattern");
     if(rpat == null) 
