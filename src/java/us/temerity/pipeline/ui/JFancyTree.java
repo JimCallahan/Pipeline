@@ -1,4 +1,4 @@
-// $Id: JFancyTree.java,v 1.2 2004/05/29 06:38:06 jim Exp $
+// $Id: JFancyTree.java,v 1.3 2004/06/08 20:09:20 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -83,6 +83,8 @@ class JFancyTree
       return null;
 
     Rectangle r = getPathBounds(tpath);
+    if(r == null) 
+      return null;
 
     int y = r.y + (r.height / 2);
     if(px != null) {
