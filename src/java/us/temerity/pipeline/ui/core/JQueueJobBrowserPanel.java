@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.6 2005/01/10 22:01:05 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.7 2005/01/16 01:30:20 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -315,11 +315,18 @@ class JQueueJobBrowserPanel
 	      
 	      {
 		JScrollPane scroll = tpanel.getTableScroll();
-
 		scroll.addMouseListener(this); 
 		scroll.setFocusable(true);
 		scroll.addKeyListener(this);
 		scroll.addMouseListener(new KeyFocuser(scroll));
+	      }
+
+	      {
+		JTable table = tpanel.getTable();
+		table.addMouseListener(this); 
+		table.setFocusable(true);
+		table.addKeyListener(this);
+		table.addMouseListener(new KeyFocuser(table));
 	      }
 
 	      vbox.add(tpanel);
@@ -358,6 +365,14 @@ class JQueueJobBrowserPanel
 	      scroll.addMouseListener(new KeyFocuser(scroll));
 	    }
 	    
+	    {
+	      JTable table = tpanel.getTable();
+	      table.addMouseListener(this); 
+	      table.setFocusable(true);
+	      table.addKeyListener(this);
+	      table.addMouseListener(new KeyFocuser(table));
+	    }
+
 	    panel.add(tpanel);
 	    
 	    int width[] = model.getColumnWidths(); 
