@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.5 2004/04/29 04:53:29 jim Exp $
+// $Id: JNodeBrowserPanel.java,v 1.6 2004/04/30 11:24:29 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -57,7 +57,7 @@ class JNodeBrowserPanel
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
-  //private static final long serialVersionUID = -3122417485809218152L;
+  private static final long serialVersionUID = -6904393553836010999L;
 
 
 }

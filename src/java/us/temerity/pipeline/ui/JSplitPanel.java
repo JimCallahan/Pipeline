@@ -1,4 +1,4 @@
-// $Id: JSplitPanel.java,v 1.2 2004/04/29 04:53:29 jim Exp $
+// $Id: JSplitPanel.java,v 1.3 2004/04/30 11:24:29 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -71,6 +71,7 @@ class JSplitPanel
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
-  //private static final long serialVersionUID = -3122417485809218152L;
+  private static final long serialVersionUID = 7336580649412749232L;
+
 
 }

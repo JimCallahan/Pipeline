@@ -1,4 +1,4 @@
-// $Id: JLogPanel.java,v 1.1 2004/04/30 08:40:52 jim Exp $
+// $Id: JLogPanel.java,v 1.2 2004/04/30 11:24:29 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -67,7 +67,7 @@ class JLogPanel
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
-  //private static final long serialVersionUID = -3122417485809218152L;
+  private static final long serialVersionUID = -8315838729409670369L;
 
 
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: JComboBoxCellRenderer.java,v 1.2 2004/04/28 03:59:57 jim Exp $
+// $Id: JComboBoxCellRenderer.java,v 1.3 2004/04/30 11:24:29 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -79,10 +79,13 @@ class JComboBoxCellRenderer
   /*   S T A T I C    I N T E R N A L S                                                     */
   /*----------------------------------------------------------------------------------------*/
 
-  static private Icon sNormalIcon = 
+  private static final long serialVersionUID = 584004318062788314L;
+
+
+  private static Icon sNormalIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("ListCellNormalIcon.png"));
 
-  static private Icon sSelectedIcon = 
+  private static Icon sSelectedIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("ListCellSelectedIcon.png"));
 
 }
