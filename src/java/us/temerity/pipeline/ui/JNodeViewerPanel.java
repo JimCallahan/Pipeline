@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.41 2004/09/13 04:03:39 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.42 2004/09/26 05:11:56 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -547,12 +547,14 @@ class JNodeViewerPanel
     for(ViewerNode vnode : clearSelection()) 
       vnode.update();
 
-    if(!pAuthor.equals(author) || !pView.equals(view)) {
-      super.setAuthorView(author, view);
-      pRoots.clear();   
-    }
+    super.setAuthorView(author, view);
     
-    setRoots(names);
+    pRoots.clear();
+    for(String name : names) 
+      pRoots.put(name, null);
+    
+    updateNodeBrowserSelection();
+    updateNodeStatus(); 
   }
 
   /**
