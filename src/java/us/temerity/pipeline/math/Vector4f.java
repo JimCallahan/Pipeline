@@ -1,4 +1,4 @@
-// $Id: Vector4f.java,v 1.1 2004/12/13 09:09:30 jim Exp $
+// $Id: Vector4f.java,v 1.2 2004/12/13 11:57:20 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -111,8 +111,103 @@ class Vector4f
       pComps[i] = b.pComps[i] - a.pComps[i];
   }	
 
+
+   
+  /*----------------------------------------------------------------------------------------*/
+  /*   M I S C E L L A N E O U S    M A T H                                                 */
+  /*----------------------------------------------------------------------------------------*/
+    		
+  /**
+   * Create a new vector which is the componentwise absolute value of this vector.
+   */ 
+  public Vector4f
+  abs() 
+  {
+    Vector4f rtn = new Vector4f(this);
+    rtn.absolute();
+    return rtn;
+  }
+
   
-    											    
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Create a new vector which is the componentwise minimum of the given vectors.
+   */ 
+  public static Vector4f
+  min
+  (
+   Vector4f a, 
+   Vector4f b 
+  ) 
+  {
+    Vector4f rtn = new Vector4f(a);
+    rtn.min(b);
+    return rtn;
+  }
+
+  /**
+   * Create a new vector which is the componentwise maximum of the given vectors.
+   */ 
+  public static Vector4f
+  max
+  (
+   Vector4f a, 
+   Vector4f b 
+  ) 
+  {
+    Vector4f rtn = new Vector4f(a);
+    rtn.max(b);
+    return rtn;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Create a new vector which is the linear interpolation of the given vectors.
+   * 
+   * @param a
+   *   The first vector.
+   *
+   * @param b
+   *   The second vector.
+   * 
+   * @param t
+   *   The interpolation factor: 0.0=a, 0.5=(a+b)/2, 1.0=b
+   */ 
+  public static Vector4f
+  lerp
+  (
+   Vector4f a, 
+   Vector4f b, 
+   float t
+  ) 
+  {
+    Vector4f rtn = new Vector4f();
+    lerp(a, b, t, rtn);
+    return rtn;
+  }
+ 
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   U N A R Y   O P S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Create a new vector which is the normalized form of this vector.
+   */ 
+  public Vector4f
+  normalized() 
+  {
+    Vector4f rtn = new Vector4f(this);
+    rtn.normalize();
+    return rtn;
+  }
+
+
+									    
   /*----------------------------------------------------------------------------------------*/
   /*   C O M P O N E N T W I S E   O P S                                                    */
   /*----------------------------------------------------------------------------------------*/

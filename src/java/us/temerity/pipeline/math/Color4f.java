@@ -1,4 +1,4 @@
-// $Id: Color4f.java,v 1.1 2004/12/13 09:09:30 jim Exp $
+// $Id: Color4f.java,v 1.2 2004/12/13 11:57:20 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -207,6 +207,87 @@ class Color4f
     pComps[1] = g;
     pComps[2] = b;
     pComps[3] = a;
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   M I S C E L L A N E O U S    M A T H                                                 */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Create a new vector which is the componentwise minimum of the given vectors.
+   */ 
+  public static Color4f
+  min
+  (
+   Color4f a, 
+   Color4f b 
+  ) 
+  {
+    Color4f rtn = new Color4f(a);
+    rtn.min(b);
+    return rtn;
+  }
+
+  /**
+   * Create a new vector which is the componentwise maximum of the given vectors.
+   */ 
+  public static Color4f
+  max
+  (
+   Color4f a, 
+   Color4f b 
+  ) 
+  {
+    Color4f rtn = new Color4f(a);
+    rtn.max(b);
+    return rtn;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Create a new vector which is the linear interpolation of the given vectors.
+   * 
+   * @param a
+   *   The first vector.
+   *
+   * @param b
+   *   The second vector.
+   * 
+   * @param t
+   *   The interpolation factor: 0.0=a, 0.5=(a+b)/2, 1.0=b
+   */ 
+  public static Color4f
+  lerp
+  (
+   Color4f a, 
+   Color4f b, 
+   float t
+  ) 
+  {
+    Color4f rtn = new Color4f();
+    lerp(a, b, t, rtn);
+    return rtn;
+  }
+  
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   U N A R Y   O P S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Create a new vector which is the normalized form of this vector.
+   */ 
+  public Color4f
+  normalized() 
+  {
+    Color4f rtn = new Color4f(this);
+    rtn.normalize();
+    return rtn;
   }
 
 

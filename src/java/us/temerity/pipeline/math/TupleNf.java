@@ -1,4 +1,4 @@
-// $Id: TupleNf.java,v 1.1 2004/12/13 09:09:30 jim Exp $
+// $Id: TupleNf.java,v 1.2 2004/12/13 11:57:20 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -228,16 +228,6 @@ class TupleNf
       pComps[i] = Math.abs(pComps[i]);
   }
 
-  /**
-   * Create a new tuple which is the componentwise absolute value of this tuple.
-   */ 
-  public TupleNf
-  abs() 
-  {
-    TupleNf rtn = new TupleNf(this);
-    rtn.absolute();
-    return rtn;
-  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -318,27 +308,6 @@ class TupleNf
   }
 
   /**
-   * Create a new tuple which is the componentwise minimum of the given tuples.
-   * 
-   * @throws TupleSizeMismatchException
-   *   If the given tuples are not the same size.
-   */ 
-  public static TupleNf
-  min
-  (
-   TupleNf a, 
-   TupleNf b 
-  ) 
-  {
-    TupleNf rtn = new TupleNf(a);
-    rtn.min(b);
-    return rtn;
-  }
-
-    
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
    * Replace the components of this tuple with the componentwise maximum of this and the
    * given tuple.
    * 
@@ -359,29 +328,11 @@ class TupleNf
       pComps[i] = Math.max(pComps[i], t.pComps[i]);
   }
 
-  /**
-   * Create a new tuple which is the componentwise maximum of the given tuples.
-   * 
-   * @throws TupleSizeMismatchException
-   *   If the given tuples are not the same size.
-   */ 
-  public static TupleNf
-  max
-  (
-   TupleNf a, 
-   TupleNf b 
-  ) 
-  {
-    TupleNf rtn = new TupleNf(a);
-    rtn.max(b);
-    return rtn;
-  }
-
       
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Create a new tuple which is the linear interpolation of the given tuples.
+   * Set the components of a tuple to a linear interpolation of two tuples.
    * 
    * @param a
    *   The first tuple.
@@ -392,21 +343,26 @@ class TupleNf
    * @param t
    *   The interpolation factor: 0.0=a, 0.5=(a+b)/2, 1.0=b
    * 
+   * @param rtn
+   *   The interpolated tuple.
+   * 
    * @throws TupleSizeMismatchException
    *   If the given tuples are not the same size.
    */ 
-  public static TupleNf
+  protected static TupleNf
   lerp
   (
    TupleNf a, 
    TupleNf b, 
-   float t
+   float t, 
+   TupleNf rtn
   ) 
   {
     if(a.size() != b.size()) 
       throw new TupleSizeMismatchException(a.size(), b.size());
     
-    TupleNf rtn = new TupleNf(a.size());
+    if(a.size() != rtn.size()) 
+      throw new TupleSizeMismatchException(a.size(), rtn.size());
     
     int i;
     for(i=0; i<a.size(); i++) 
@@ -684,7 +640,6 @@ class TupleNf
   }
 
 
-
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -706,17 +661,6 @@ class TupleNf
     return len;
   }
   
-  /**
-   * Create a new tuple which is the normalized form of this tuple.
-   */ 
-  public TupleNf
-  normalized() 
-  {
-    TupleNf rtn = new TupleNf(this);
-    rtn.normalize();
-    return rtn;
-  }
-
   					    
   /*----------------------------------------------------------------------------------------*/
   /*   V E C T O R   O P S                                                                  */

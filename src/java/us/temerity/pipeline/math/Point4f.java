@@ -1,4 +1,4 @@
-// $Id: Point4f.java,v 1.1 2004/12/13 09:09:30 jim Exp $
+// $Id: Point4f.java,v 1.2 2004/12/13 11:57:20 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -94,12 +94,104 @@ class Point4f
     this(t.pComps);
   }
 	
-	
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   M I S C E L L A N E O U S    M A T H                                                 */
+  /*----------------------------------------------------------------------------------------*/
+    		
+  /**
+   * Create a new vector which is the componentwise absolute value of this vector.
+   */ 
+  public Point4f
+  abs() 
+  {
+    Point4f rtn = new Point4f(this);
+    rtn.absolute();
+    return rtn;
+  }
+
   
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Create a new vector which is the componentwise minimum of the given vectors.
+   */ 
+  public static Point4f
+  min
+  (
+   Point4f a, 
+   Point4f b 
+  ) 
+  {
+    Point4f rtn = new Point4f(a);
+    rtn.min(b);
+    return rtn;
+  }
+
+  /**
+   * Create a new vector which is the componentwise maximum of the given vectors.
+   */ 
+  public static Point4f
+  max
+  (
+   Point4f a, 
+   Point4f b 
+  ) 
+  {
+    Point4f rtn = new Point4f(a);
+    rtn.max(b);
+    return rtn;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Create a new vector which is the linear interpolation of the given vectors.
+   * 
+   * @param a
+   *   The first vector.
+   *
+   * @param b
+   *   The second vector.
+   * 
+   * @param t
+   *   The interpolation factor: 0.0=a, 0.5=(a+b)/2, 1.0=b
+   */ 
+  public static Point4f
+  lerp
+  (
+   Point4f a, 
+   Point4f b, 
+   float t
+  ) 
+  {
+    Point4f rtn = new Point4f();
+    lerp(a, b, t, rtn);
+    return rtn;
+  }
+  
+
+
   /*----------------------------------------------------------------------------------------*/
   /*   U N A R Y   O P S                                                                    */
   /*----------------------------------------------------------------------------------------*/
-  
+ 
+  /**
+   * Create a new vector which is the normalized form of this vector.
+   */ 
+  public Point4f
+  normalized() 
+  {
+    Point4f rtn = new Point4f(this);
+    rtn.normalize();
+    return rtn;
+  }
+
+	
+  /*----------------------------------------------------------------------------------------*/
+  	
   /**
    * Compute the distance squared between this point and the given point.
    */ 
