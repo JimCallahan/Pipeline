@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.27 2004/09/08 18:33:09 jim Exp $
+// $Id: NodeMod.java,v 1.28 2004/09/22 23:13:41 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -506,7 +506,7 @@ class NodeMod
   {
     if(!pSecondarySeqs.contains(fseq)) 
       throw new PipelineException
-	("The secondary file sequence (" + fseq + ") was not associated with the working " + 
+	("The secondary file sequence (" + fseq + ") was not associated with the " + 
 	 "working version (" + pName + ")!");
 
     pSecondarySeqs.remove(fseq);
