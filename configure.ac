@@ -388,7 +388,19 @@ AC_PATH_PROG(DIFF, diff, $PATH)
 AC_PATH_PROG(KILL, kill, $PATH)
 AC_PATH_PROG(SSH, ssh, $PATH)
 AC_PATH_PROG(MOZILLA, mozilla, $PATH)
-AC_PATH_PROG(GIMP, gimp, $PATH)
+
+AC_MSG_RESULT([ ])
+
+
+dnl -- COMMON SUPPORT TOOLS ------------------------------------------------------------------
+
+AC_MSG_RESULT([Locating PPM Image tools:])
+AC_PATH_PROG(PNMCOMP, pnmcomp, $PATH)
+AC_PATH_PROG(PNMSCALE, pnmscale, $PATH)
+AC_PATH_PROG(PPMMAKE, ppmmake, $PATH)
+AC_PATH_PROG(PPMQUANT, ppmquant, $PATH)
+AC_PATH_PROG(PPMTOGIF, ppmtogif, $PATH)
+AC_PATH_PROG(SGITOPNM, sgitopnm, $PATH)
 
 AC_MSG_RESULT([ ])
 
@@ -721,8 +733,7 @@ AC_CONFIG_FILES([
   data/Makefile
 
   data/icons/Makefile
-  data/icons/gen-scm.bash
-  data/icons/gen-list.bash
+  data/icons/gen-icons.bash
 
   src/Makefile
 
