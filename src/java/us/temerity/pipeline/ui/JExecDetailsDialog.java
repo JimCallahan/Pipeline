@@ -1,4 +1,4 @@
-// $Id: JExecDetailsDialog.java,v 1.1 2004/09/05 06:54:56 jim Exp $
+// $Id: JExecDetailsDialog.java,v 1.2 2004/09/08 18:38:55 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -44,7 +44,26 @@ class JExecDetailsDialog
 
       /* command line */ 
       {
-	body.add(UIMaster.createPanelLabel("Command Line:"));
+	{
+	  Box hbox = new Box(BoxLayout.X_AXIS);
+	  
+	  hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+	  
+	  {
+	    JLabel label = new JLabel("X");
+	    pCommandLineLabel = label;
+
+	    label.setName("PanelLabel");
+
+	    hbox.add(label);
+	  }
+	  
+	  hbox.add(Box.createHorizontalGlue());
+	  
+	  body.add(hbox);
+	}
+
+	body.add(Box.createRigidArea(new Dimension(0, 4)));
 
 	{
 	  JTextArea area = new JTextArea(null, 4, 70);
@@ -90,8 +109,25 @@ class JExecDetailsDialog
 
       /* environment */ 
       {      
-	body.add(UIMaster.createPanelLabel("Environment:"));
-	
+	{
+	  Box hbox = new Box(BoxLayout.X_AXIS);
+	  
+	  hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+	  
+	  {
+	    JLabel label = new JLabel("X");
+	    pEnvLabel = label;
+
+	    label.setName("PanelLabel");
+
+	    hbox.add(label);
+	  }
+	  
+	  hbox.add(Box.createHorizontalGlue());
+	  
+	  body.add(hbox);
+	}
+
 	body.add(Box.createRigidArea(new Dimension(0, 4)));
 
 	Component comps[] = UIMaster.createTitledPanels();
@@ -132,29 +168,47 @@ class JExecDetailsDialog
   /**
    * Update the dialog contents.
    * 
-   * @param header
-   *   The dialog header text.
+   * @param jheader
+   *   The job portion of the dialog header.
    * 
-   * @param command
-   *   The OS level process command line arguments or <CODE>null</CODE> if not known.
+   * @param job
+   *   The queue job.
    * 
-   * @param dir
-   *   The working directory of the OS level process.   
-   * 
-   * @param env
-   *   The environment under which the OS level process is run.  
+   * @param info
+   *   The current job status information. 
    */ 
   public void 
   updateContents
   (
-   String header, 
-   String command,
-   String dir, 
-   SortedMap<String,String> env
+   String jheader,
+   QueueJob job,
+   QueueJobInfo info
   ) 
   {
-    pHeaderLabel.setText(header);
+    ActionAgenda agenda = job.getActionAgenda();
+    QueueJobResults results = info.getResults();
+    
+    String command = "(none yet)";
+    if(results != null)
+      command = results.getCommand();
+    
+    String dir = "-";
+    if(agenda != null) 
+      dir = agenda.getWorkingDir().toString();
+    
+    SortedMap<String,String> env = new TreeMap<String,String>();
+    if(agenda != null) 
+      env = agenda.getEnvironment();
+    
+    String hostname = "";
+    if(info.getHostname() != null)
+      hostname = ("    [" + info.getHostname() + "]");
+
+    pHeaderLabel.setText("Execution Details -" + jheader + hostname);
       
+    BaseAction action = job.getAction();
+    pCommandLineLabel.setText("Action Command:  " + 
+			      action.getName() + " (v" + action.getVersionID() + ")");
     pCommandLineArea.setText(command);
       
     pWorkingDirField.setText(dir);
@@ -185,6 +239,7 @@ class JExecDetailsDialog
 	}
       }
 
+      pEnvLabel.setText("Toolset Environment:  " + agenda.getToolset());
       pEnvScroll.setViewportView(comps[2]);
     }
   }
@@ -205,15 +260,27 @@ class JExecDetailsDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * The command line header.
+   */ 
+  private JLabel pCommandLineLabel; 
+  
+  /**
    * The command line text area.
    */ 
   private JTextArea pCommandLineArea; 
   
+
   /**
    * The working directory field.
    */ 
   private JTextField pWorkingDirField; 
 
+
+  /**
+   * The environment header.
+   */ 
+  private JLabel pEnvLabel; 
+  
   /**
    * The environment scroll pane. 
    */ 
