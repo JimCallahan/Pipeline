@@ -768,20 +768,6 @@ AC_MSG_RESULT([Cooking configurable files:])
 AC_CONFIG_FILES([
   Makefile
 
-  data/Makefile
-  data/icons/Makefile
-  data/icons/gen-icons.bash
-  data/icons/install-icons.bash 
-
-  data/splash/Makefile
-
-  data/fonts/Makefile
-  data/fonts/clean-fonts.bash
-  data/fonts/gen-fonts.bash
-  data/fonts/install-fonts.bash 
-  data/fonts/CharterBTRoman/Makefile
-  data/fonts/UtopiaBold/Makefile
-
   docs/Makefile 
   docs/images/Makefile
   docs/javadoc/Makefile
@@ -799,6 +785,7 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/Makefile
   src/java/us/temerity/pipeline/PackageInfo.java
   src/java/us/temerity/pipeline/bootstrap/BootStrapLoader.java.in
+  src/java/us/temerity/pipeline/laf/scripts/filter-textures
   src/java/us/temerity/pipeline/native/Makefile
   src/java/us/temerity/pipeline/plugin/Makefile
   src/java/us/temerity/pipeline/tests/Makefile

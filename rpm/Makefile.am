@@ -36,8 +36,7 @@ rpm-mkdirs:
 
 rpm-install:
 	DESTDIR=`pwd`/BUILD $(MAKE) -C ../src install
-	DESTDIR=`pwd`/BUILD $(MAKE) -C ../data install
-	DESTDIR=`pwd`/BUILD $(MAKE) -C ../docs install
+#	DESTDIR=`pwd`/BUILD $(MAKE) -C ../docs install
 
 clean:
 	rm -rf BUILD RPMS SPECS

@@ -2,7 +2,6 @@
 SUBDIRS = \
   src \
   tests \
-  data \
   docs
 
 
