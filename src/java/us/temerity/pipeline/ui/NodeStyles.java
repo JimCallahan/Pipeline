@@ -1,4 +1,4 @@
-// $Id: NodeStyles.java,v 1.3 2004/07/22 00:08:19 jim Exp $
+// $Id: NodeStyles.java,v 1.4 2004/08/25 05:21:53 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -11,7 +11,8 @@ import java.awt.Color;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A collection of static methods related to the graphic representation of node state.
+ * A collection of static methods related to the graphic representation of node and queue
+ * states. <P> 
  */
 public
 class NodeStyles
@@ -49,6 +50,31 @@ class NodeStyles
   }
  
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Gets the color associated with the given job state.
+   */ 
+  public static Color
+  getJobColor
+  (
+   JobState state
+  ) 
+  {
+    if(state == null) 
+      return sJobStateColors[0];
+    return sJobStateColors[state.ordinal()];
+  }
+ 
+  /**
+   * Gets all of the color associated with job states.
+   */ 
+  public static Color[]
+  getJobColors()
+  {
+    return sJobStateColors;
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -81,5 +107,16 @@ class NodeStyles
   };
 
   
+  /**
+   * The colors corresponding to specific JobState values.
+   */ 
+  private static final Color[] sJobStateColors = {
+    new Color(0.00f, 0.49f, 0.49f),  /* Queued */ 
+    new Color(0.75f, 0.49f, 0.00f),  /* Aborted */ 
+    new Color(0.00f, 0.49f, 0.00f),  /* Running */ 
+    new Color(0.00f, 0.00f, 0.65f),  /* Finished */ 
+    new Color(0.65f, 0.00f, 0.00f)   /* Failed */ 
+  };
+
  
 }
