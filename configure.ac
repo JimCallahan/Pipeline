@@ -552,12 +552,10 @@ dnl ----------------------------------------------------------------------------
 
 AC_MSG_RESULT([Locating C system headers:])
 
-AC_CHECK_HEADER([math.h])         
-AC_CHECK_HEADER([sys/time.h])     
-AC_CHECK_HEADER([sys/param.h])    
-AC_CHECK_HEADER([sys/utsname.h])  
-AC_CHECK_HEADER([pwd.h])          
-AC_CHECK_HEADER([dlfcn.h])        
+AC_CHECK_HEADERS([math.h])         
+AC_CHECK_HEADERS([time.h sys/time.h sys/param.h sys/utsname.h])  
+AC_CHECK_HEADERS([pwd.h])          
+AC_CHECK_HEADERS([dlfcn.h])        
 
 AC_MSG_RESULT([ ])
 

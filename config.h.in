@@ -108,6 +108,9 @@
 /* Define to 1 if you have the <deque> header file. */
 #undef HAVE_DEQUE
 
+/* Define to 1 if you have the <dlfcn.h> header file. */
+#undef HAVE_DLFCN_H
+
 /* Define to 1 if you have the `drem' function. */
 #undef HAVE_DREM
 
@@ -285,6 +288,9 @@
 /* Define to 1 if you have the `logl' function. */
 #undef HAVE_LOGL
 
+/* Define to 1 if you have the <math.h> header file. */
+#undef HAVE_MATH_H
+
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
@@ -302,6 +308,9 @@
 
 /* Define to 1 if you have the `powl' function. */
 #undef HAVE_POWL
+
+/* Define to 1 if you have the <pwd.h> header file. */
+#undef HAVE_PWD_H
 
 /* Define to 1 if you have the `rint' function. */
 #undef HAVE_RINT
@@ -366,11 +375,20 @@
 /* Define to 1 if you have the <strstream.h> header file. */
 #undef HAVE_STRSTREAM_H
 
+/* Define to 1 if you have the <sys/param.h> header file. */
+#undef HAVE_SYS_PARAM_H
+
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #undef HAVE_SYS_STAT_H
 
+/* Define to 1 if you have the <sys/time.h> header file. */
+#undef HAVE_SYS_TIME_H
+
 /* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
+
+/* Define to 1 if you have the <sys/utsname.h> header file. */
+#undef HAVE_SYS_UTSNAME_H
 
 /* Define to 1 if you have the `tan' function. */
 #undef HAVE_TAN
