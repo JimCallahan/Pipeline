@@ -1,4 +1,4 @@
-// $Id: FileSeq.java,v 1.4 2004/02/25 02:59:28 jim Exp $
+// $Id: FileSeq.java,v 1.5 2004/02/28 19:58:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -21,7 +21,7 @@ import java.io.*;
  */
 public
 class FileSeq
-  implements Glueable
+  implements Comparable, Cloneable, Glueable, Serializable
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -51,9 +51,9 @@ class FileSeq
   {
     assert(prefix != null);
     if((suffix != null) && (suffix.length() >= 0))
-      pPattern = new FilePattern(prefix, -1, suffix);
+      pFilePattern = new FilePattern(prefix, -1, suffix);
     else 
-      pPattern = new FilePattern(prefix);
+      pFilePattern = new FilePattern(prefix);
 
     pFrameRange = null;
   }
@@ -82,16 +82,16 @@ class FileSeq
   ) 
   {
     assert(pattern != null);      
-    pPattern = new FilePattern(pattern);
+    pFilePattern = new FilePattern(pattern);
 
     if(range != null) {
-      if(!pPattern.hasFrameNumbers())
+      if(!pFilePattern.hasFrameNumbers())
 	throw new IllegalArgumentException
 	  ("The FilePattern has NO frame number component, but FrameRange was NOT (null)!");
 
       pFrameRange = new FrameRange(range);
     }      
-    else if(pPattern.hasFrameNumbers()) 
+    else if(pFilePattern.hasFrameNumbers()) 
       throw new IllegalArgumentException
 	("The FilePattern HAS a frame number component, but FrameRange was (null)!");
   }
@@ -114,7 +114,7 @@ class FileSeq
    int idx       
   ) 
   {
-    pPattern = fseq.getFilePattern();
+    pFilePattern = fseq.getFilePattern();
     if(fseq.getFrameRange() != null) 
       pFrameRange = new FrameRange(fseq.getFrameRange().indexToFrame(idx));
     else 
@@ -131,8 +131,8 @@ class FileSeq
    FileSeq fseq   
   ) 
   {
-    pPattern    = fseq.getFilePattern();
-    pFrameRange = fseq.getFrameRange();
+    pFilePattern = fseq.getFilePattern();
+    pFrameRange  = fseq.getFrameRange();
   }
 
 
@@ -171,8 +171,8 @@ class FileSeq
   public FilePattern
   getFilePattern()
   {
-    assert(pPattern != null);
-    return new FilePattern(pPattern);
+    assert(pFilePattern != null);
+    return new FilePattern(pFilePattern);
   }
 
   /** 
@@ -214,11 +214,11 @@ class FileSeq
    int idx  
   )  
   {
-    assert(pPattern != null);
+    assert(pFilePattern != null);
     if(pFrameRange != null) 
-      return pPattern.getFile(pFrameRange.indexToFrame(idx));
+      return pFilePattern.getFile(pFrameRange.indexToFrame(idx));
     else 
-      return pPattern.getFile();
+      return pFilePattern.getFile();
   }
  
 
@@ -233,10 +233,10 @@ class FileSeq
       int frames[] = pFrameRange.getFrameNumbers();
       int wk;
       for(wk=0; wk<frames.length; wk++)
-	files.add(pPattern.getFile(frames[wk]));
+	files.add(pFilePattern.getFile(frames[wk]));
     }
     else {
-      files.add(pPattern.getFile());
+      files.add(pFilePattern.getFile());
     }
 
     return files;
@@ -337,12 +337,12 @@ class FileSeq
     if((obj != null) && (obj instanceof FileSeq)) {
       FileSeq fseq = (FileSeq) obj;
 
-      if(!pPattern.equals(fseq.getFilePattern()))
+      if(!pFilePattern.equals(fseq.pFilePattern))
 	return false;
 
-      if(((pFrameRange == null) && (fseq.getFrameRange() == null)) || 
-	 ((pFrameRange != null) && (fseq.getFrameRange() != null) &&
-	  pFrameRange.equals(fseq.getFrameRange())))
+      if(((pFrameRange == null) && (fseq.pFrameRange == null)) || 
+	 ((pFrameRange != null) && (fseq.pFrameRange != null) &&
+	  pFrameRange.equals(fseq.pFrameRange)))
 	return true;
     }
     return false;
@@ -365,13 +365,71 @@ class FileSeq
   {
     if(pFrameRange != null) {
       if(pFrameRange.isSingle())
-	return pPattern.getFile(pFrameRange.getStart()).getPath();
+	return pFilePattern.getFile(pFrameRange.getStart()).getPath();
       else 
-	return (pPattern.toString() + ", " + pFrameRange.toString());
+	return (pFilePattern.toString() + ", " + pFrameRange.toString());
     }
     else {
-      return pPattern.toString();
+      return pFilePattern.toString();
     }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O M P A R A B L E                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Compares this object with the specified object for order.
+   * 
+   * @param obj [<B>in</B>]
+   *   The <CODE>Object</CODE> to be compared.
+   */
+  public int
+  compareTo
+  (
+   Object obj
+  )
+  {
+    if(obj == null) 
+      throw new NullPointerException();
+    
+    if(!(obj instanceof FileSeq))
+      throw new IllegalArgumentException("The object to compare was NOT a FileSeq!");
+
+    return compareTo((FileSeq) obj);
+  }
+
+
+  /**
+   * Compares this <CODE>FileSeq</CODE> with the given <CODE>FileSeq</CODE> for order.
+   * 
+   * @param fseq [<B>in</B>]
+   *   The <CODE>VersionID</CODE> to be compared.
+   */
+  public int
+  compareTo
+  (
+   FileSeq fseq
+  )
+  {
+    return toString().compareTo(fseq.toString());
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C L O N E A B L E                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Return a deep copy of this object.
+   */
+  public Object 
+  clone()
+    throws CloneNotSupportedException
+  {
+    return new FileSeq(this);
   }
 
 
@@ -387,7 +445,7 @@ class FileSeq
   ) 
     throws GlueException
   {
-    encoder.encode("FilePattern", pPattern);
+    encoder.encode("FilePattern", pFilePattern);
     if(pFrameRange != null) 
       encoder.encode("FrameRange",  pFrameRange);
   }
@@ -399,9 +457,21 @@ class FileSeq
   ) 
     throws GlueException
   {
-    pPattern    = (FilePattern) decoder.decode("FilePattern");
-    pFrameRange = (FrameRange)  decoder.decode("FrameRange");
+    FilePattern pat = (FilePattern) decoder.decode("FilePattern");
+    if(pat == null) 
+      throw new GlueException("The \"FilePattern\" was missing!");
+    pFilePattern = pat;
+
+    pFrameRange = (FrameRange) decoder.decode("FrameRange");
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static final long serialVersionUID = 3252483522938496643L;
 
 
 
@@ -412,7 +482,7 @@ class FileSeq
   /** 
    * The filename pattern. 
    */
-  private FilePattern pPattern;    
+  private FilePattern pFilePattern;    
 
   /**
    * The file sequence frame range.  If <CODE>null</CODE>, then this is a single frame 
