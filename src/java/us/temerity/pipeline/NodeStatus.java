@@ -1,4 +1,4 @@
-// $Id: NodeStatus.java,v 1.10 2004/05/07 15:02:49 jim Exp $
+// $Id: NodeStatus.java,v 1.11 2004/05/08 15:11:02 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -106,6 +106,15 @@ class NodeStatus
 
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Are there any nodes upstream of this node?
+   */ 
+  public boolean
+  hasSources()
+  {
+    return (!pSources.isEmpty());
+  }
+
   /** 
    * Get the fully resolved names names of the upstream nodes.
    */ 
@@ -162,6 +171,15 @@ class NodeStatus
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Are there any nodes downstream of this node?
+   */ 
+  public boolean
+  hasTargets()
+  {
+    return (!pTargets.isEmpty());
+  }
 
   /** 
    * Get the fully resolved names names of the downstream nodes.
