@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.13 2005/03/11 06:33:44 jim Exp $
+// $Id: JManagerPanel.java,v 1.14 2005/03/15 19:12:47 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2679,7 +2679,7 @@ class JManagerPanel
 
       /* give the sockets time to disconnect cleanly */ 
       try {
-	Thread.sleep(500);
+	Thread.sleep(1000);
       }
       catch(InterruptedException ex) {
       }
