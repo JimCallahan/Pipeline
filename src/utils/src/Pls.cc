@@ -1,4 +1,4 @@
-// $Id: Pls.cc,v 1.5 2004/03/21 01:20:26 jim Exp $
+// $Id: Pls.cc,v 1.6 2004/04/05 05:53:20 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -56,9 +56,11 @@ usage()
 	    << "  pls --version\n"
 	    << "  pls --release-date\n"
 	    << "  pls --copyright\n" 
+	    << "  pls --license\n" 
 	    << "\n" 
 	    << "OPTIONS:\n" 
 	    << "  [--fcheck][--fcheck-exec][--zero][--size=bytes]\n" 
+	    << "  [--stats=LEVEL][--warnings=LEVEL]\n" 
 	    << "\n"
 	    << "\n"
 	    << "Use \"pls --html-help\" to browse the full documentation.\n" 
@@ -72,85 +74,85 @@ main
  char **argv
 )
 {
-  char msg[2048];
-
   /* parse command line args */ 
-  FB::init(std::cout);
-  FB::setWarnings(false);
-  FB::setStageStats(false);
-
+  char msg[2048];
   bool fcheck = false;
   bool exec = false;
   long int minSize = -1;
+  int statsLevel = -1;
+  int warningsLevel = -1;
   char* dir = NULL;
   switch(argc) {
   case 1:
     break;
 
   case 2:
-    {
-      if(strcmp(argv[1], "--help") == 0) {
-	usage();
-	exit(EXIT_SUCCESS);
-      }
-      else if(strcmp(argv[1], "--html-help") == 0) {
-	HtmlHelp::launch("pls");
-      }
-      else if(strcmp(argv[1], "--version") == 0) {
-	std::cerr << PackageInfo::sVersion << "\n";
-	exit(EXIT_SUCCESS);
-      }
-      else if(strcmp(argv[1], "--release-date") == 0) {
-	std::cerr << PackageInfo::sRelease << "\n";
-	exit(EXIT_SUCCESS);
-      }
-      else if(strcmp(argv[1], "--copyright") == 0) {
-	std::cerr << PackageInfo::sCopyright << "\n";
-	exit(EXIT_SUCCESS);
-      }
-      else if(strcmp(argv[1], "--fcheck") == 0) 
+    if(strcmp(argv[1], "--help") == 0) {
+      usage();
+      exit(EXIT_SUCCESS);
+    }
+    else if(strcmp(argv[1], "--html-help") == 0) {
+      HtmlHelp::launch("pls");
+    }
+    else if(strcmp(argv[1], "--version") == 0) {
+      std::cerr << PackageInfo::sVersion << "\n";
+      exit(EXIT_SUCCESS);
+    }
+    else if(strcmp(argv[1], "--release-date") == 0) {
+      std::cerr << PackageInfo::sRelease << "\n";
+      exit(EXIT_SUCCESS);
+    }
+    else if(strcmp(argv[1], "--copyright") == 0) {
+      std::cerr << PackageInfo::sCopyright << "\n";
+      exit(EXIT_SUCCESS);
+    }
+    else if(strcmp(argv[1], "--license") == 0) {
+      std::cerr << PackageInfo::sLicense << "\n";
+      exit(EXIT_SUCCESS);
+    }
+  }
+
+  {
+    int i = 1;
+    for(i=1; i<argc; i++) {
+      if(strcmp(argv[i], "--fcheck") == 0) 
 	fcheck = true;
-      else if(strcmp(argv[1], "--fcheck-exec") == 0) {
+      else if(strcmp(argv[i], "--fcheck-exec") == 0) {
 	fcheck = true;
 	exec = true;
       }
-      else if(strcmp(argv[1], "--zero") == 0) 
+      else if(strcmp(argv[i], "--zero") == 0) 
 	minSize = 0;
-      else if(strncmp(argv[1], "--size=", 7) == 0) 
-	minSize = atol(argv[1]+7);
-      else if(strncmp(argv[1], "--", 2) == 0) {
-	sprintf(msg, "Illegal option: %s", argv[1]);
+      else if(strncmp(argv[i], "--size=", 7) == 0) 
+	minSize = atol(argv[i]+7);
+      else if(strncmp(argv[i], "--stats=", 8) == 0) 
+	statsLevel = atoi(argv[i]+8);
+      else if(strncmp(argv[i], "--warnings=", 11) == 0) 
+	warningsLevel = atoi(argv[i]+11);
+      else if(strncmp(argv[i], "--", 2) == 0) {
+	sprintf(msg, "Illegal option: %s", argv[i]);
 	FB::error(msg);
       }
-      else 
-	dir = argv[1];
-    }
-    break;
-
-  case 3:
-    {
-      if(strcmp(argv[1], "--fcheck") == 0)
-	fcheck = true;
-      else if(strcmp(argv[1], "--fcheck-exec") == 0) {
-	fcheck = true;
-	exec = true;
+      else {
+	dir = argv[i];
       }
-      else if(strcmp(argv[1], "--zero") == 0) 
-	minSize = 0;
-      else if(strncmp(argv[1], "--size=", 7) == 0) 
-	minSize = atol(argv[1]+7);
-      else if(strncmp(argv[1], "--", 2) == 0) {
-	sprintf(msg, "Illegal option: %s", argv[1]);
-	FB::error(msg);
-      }
-      
-      dir = argv[2];
     }
-    break;
+  }
 
-  default:
-    usage();
-    exit(EXIT_FAILURE);
+
+  /* initialize the loggers */ 
+  {
+    FB::init(std::cout);
+    
+    if(statsLevel > 0) 
+      FB::setStageStats(true, statsLevel);
+    else 
+      FB::setStageStats(false);
+    
+    if(warningsLevel > 0) 
+      FB::setWarnings(true, warningsLevel);
+    else
+      FB::setWarnings(false);
   }
 
 
@@ -176,8 +178,10 @@ main
   }
   assert(dir != NULL);
 
+  FB::stageBegin("Working...", 1);
 	
-  /* build a list of filenames the current diretory */ 
+  /* build a list of filenames the target diretory */ 
+  FB::stageBegin("Collecting Files...", 2);
   typedef std::list<string*> FileList;
   FileList files;
   FileList bad;
@@ -210,9 +214,11 @@ main
     }
     free(namelist);
   }
+  FB::stageEnd(2);
 
 
   /* sort found files into file sequences and single files */ 
+  FB::stageBegin("Sorting into File Sequences...", 2);
   typedef std::set<FileSeq*, ltFileSeq>  FileSeqSet;
   FileSeqSet fseqs;
   {
@@ -284,6 +290,9 @@ main
       }
     }
   }
+  FB::stageEnd(2);
+
+  FB::stageEnd(1);
   
   { 
     FileSeqSet::iterator iter;

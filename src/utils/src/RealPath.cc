@@ -1,4 +1,4 @@
-/* $Id: RealPath.cc,v 1.3 2004/03/21 01:20:26 jim Exp $ */
+/* $Id: RealPath.cc,v 1.4 2004/04/05 05:53:20 jim Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -51,6 +51,7 @@ usage()
 	    << "  realpath --version\n"
 	    << "  realpath --release-date\n"
 	    << "  realpath --copyright\n"   
+	    << "  realpath --license\n"   
 	    << "\n"
 	    << "\n"
 	    << "Use \"realpath --html-help\" to browse the full documentation.\n" 
@@ -90,6 +91,14 @@ main
     else if(strcmp(argv[1], "--copyright") == 0) {
       std::cerr << PackageInfo::sCopyright << "\n";
       exit(EXIT_SUCCESS);
+    }
+    else if(strcmp(argv[1], "--license") == 0) {
+      std::cerr << PackageInfo::sLicense << "\n";
+      exit(EXIT_SUCCESS);
+    }
+    else if(strncmp(argv[1], "--", 2) == 0) {
+      sprintf(msg, "Illegal option: %s", argv[1]);
+      FB::error(msg);
     }
   }
 
