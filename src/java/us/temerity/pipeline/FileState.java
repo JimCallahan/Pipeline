@@ -1,6 +1,8 @@
-// $Id: FileState.java,v 1.6 2004/06/14 22:39:17 jim Exp $
+// $Id: FileState.java,v 1.7 2004/07/07 13:15:41 jim Exp $
 
 package us.temerity.pipeline;
+
+import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   F I L E   S T A T E                                                                    */
@@ -104,6 +106,25 @@ enum FileState
    * the working version has not been checked-out.
    */
   Missing;
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the list of all possible states.
+   */ 
+  public static ArrayList<FileState>
+  all() 
+  {
+    FileState values[] = values();
+    ArrayList<FileState> all = new ArrayList<FileState>(values.length);
+    int wk;
+    for(wk=0; wk<values.length; wk++)
+      all.add(values[wk]);
+    return all;
+  }
 
 
 

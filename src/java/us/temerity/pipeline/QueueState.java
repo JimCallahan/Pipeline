@@ -1,6 +1,8 @@
-// $Id: QueueState.java,v 1.5 2004/06/23 22:27:29 jim Exp $
+// $Id: QueueState.java,v 1.6 2004/07/07 13:20:31 jim Exp $
 
 package us.temerity.pipeline;
+
+import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E    S T A T E                                                                 */
@@ -90,6 +92,26 @@ enum QueueState
   Failed;
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the list of all possible states.
+   */ 
+  public static ArrayList<QueueState>
+  all() 
+  {
+    QueueState values[] = values();
+    ArrayList<QueueState> all = new ArrayList<QueueState>(values.length);
+    int wk;
+    for(wk=0; wk<values.length; wk++)
+      all.add(values[wk]);
+    return all;
+  }
+
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   C O N V E R S I O N                                                                  */
