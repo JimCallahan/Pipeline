@@ -1,4 +1,4 @@
-// $Id: QueueJobGroup.java,v 1.4 2004/08/25 05:15:46 jim Exp $
+// $Id: QueueJobGroup.java,v 1.5 2004/08/26 05:55:41 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -57,6 +57,7 @@ class QueueJobGroup
    NodeID nodeID, 
    String rootPattern, 
    TreeSet<Long> rootIDs,
+   TreeSet<Long> externalIDs,
    TreeSet<Long> jobIDs
   ) 
   {
@@ -76,6 +77,10 @@ class QueueJobGroup
     pRootIDs = new TreeSet<Long>();
     if(rootIDs != null) 
       pRootIDs.addAll(rootIDs);
+
+    pExternalIDs = new TreeSet<Long>();
+    if(rootIDs != null) 
+      pExternalIDs.addAll(externalIDs);
 
     pJobIDs = new TreeSet<Long>();
     if(jobIDs != null) 
@@ -153,12 +158,35 @@ class QueueJobGroup
   }
 
   /**
-   * Get the unique identifiers of all jobs associated with the group.
+   * Get the unique identifiers of the external jobs used as sources by jobs associated
+   * with the group.
+   */ 
+  public SortedSet<Long>
+  getExternalIDs()
+  {
+    return Collections.unmodifiableSortedSet(pExternalIDs);
+  }
+
+  /**
+   * Get the unique identifiers of all member jobs associated with the group.
    */ 
   public SortedSet<Long>
   getJobIDs()
   {
     return Collections.unmodifiableSortedSet(pJobIDs);
+  }
+
+  /**
+   * Get the unique identifiers of all member and external jobs associated with the group.
+   */ 
+  public TreeSet<Long> 
+  getAllJobIDs()
+  {
+    TreeSet<Long> jobIDs = new TreeSet<Long>();
+    jobIDs.addAll(pJobIDs);
+    jobIDs.addAll(pExternalIDs);
+
+    return jobIDs;
   }
 
 
@@ -193,6 +221,7 @@ class QueueJobGroup
     encoder.encode("NodeID", pNodeID);
     encoder.encode("RootPattern", pRootPattern);
     encoder.encode("RootIDs", pRootIDs);
+    encoder.encode("ExternalIDs", pExternalIDs);
     encoder.encode("JobIDs", pJobIDs);
   }
 
@@ -224,6 +253,14 @@ class QueueJobGroup
 	pRootIDs = ids;
       else 
 	pRootIDs = new TreeSet<Long>();
+    }
+
+    {
+      TreeSet<Long> ids = (TreeSet<Long>) decoder.decode("ExternalIDs");
+      if(ids != null) 
+	pExternalIDs = ids;
+      else 
+	pExternalIDs = new TreeSet<Long>();
     }
 
     {
@@ -287,7 +324,13 @@ class QueueJobGroup
   private TreeSet<Long>  pRootIDs; 
 
   /**
-   * The unique identifiers of all jobs associated with the group.
+   * The unique identifiers of the jobs which are not members of the group, but which 
+   * are used as source jobs for jobs which are members of the group.
+   */
+  private TreeSet<Long>  pExternalIDs; 
+
+  /**
+   * The unique identifiers of all jobs which are memebers of the group. 
    */
   private TreeSet<Long>  pJobIDs; 
 
