@@ -1,4 +1,4 @@
-// $Id: JBaseViewerPanel.java,v 1.3 2004/12/16 21:42:50 jim Exp $
+// $Id: JBaseViewerPanel.java,v 1.4 2004/12/17 15:09:23 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -171,8 +171,7 @@ implements MouseListener, MouseMotionListener, GLEventListener
     drawable.setGL(new DebugGL(drawable.getGL()));
     //drawable.setGL(new TraceGL(drawable.getGL(), System.err));
 
-    GL  gl  = drawable.getGL();
-    GLU glu = drawable.getGLU();
+    GL gl = drawable.getGL();
 
     /* global OpenGL state */ 
     {
@@ -191,8 +190,7 @@ implements MouseListener, MouseMotionListener, GLEventListener
    GLDrawable drawable
   )
   {
-    GL  gl  = drawable.getGL();
-    GLU glu = drawable.getGLU();
+    GL gl = drawable.getGL();
 
     gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 
@@ -676,7 +674,7 @@ implements MouseListener, MouseMotionListener, GLEventListener
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The associated OpenGL rendering canvas.
+   * The OpenGL rendering canvas.
    */ 
   protected GLCanvas  pCanvas;
 
