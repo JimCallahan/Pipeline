@@ -1,4 +1,4 @@
-// $Id: NodeUpdatePathsRsp.java,v 1.1 2004/05/04 11:00:16 jim Exp $
+// $Id: NodeUpdatePathsRsp.java,v 1.2 2004/05/05 20:57:50 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -13,7 +13,7 @@ import java.util.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A successful response to a {@link NodeUpdatePathReq NodeUpdatePathReq} request.
+ * A successful response to a {@link NodeUpdatePathsReq NodeUpdatePathsReq} request.
  */
 public
 class NodeUpdatePathsRsp

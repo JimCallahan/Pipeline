@@ -1,4 +1,4 @@
-// $Id: TextAreaLogHandler.java,v 1.1 2004/04/30 08:40:52 jim Exp $
+// $Id: TextAreaLogHandler.java,v 1.2 2004/05/05 21:01:10 jim Exp $
   
 package us.temerity.pipeline.ui;
 
@@ -29,8 +29,8 @@ class TextAreaLogHandler
   /**
    * Construct a new handler.
    * 
-   * @param doc
-   *   The target document model.
+   * @param area
+   *   The target text area.
    */ 
   public 
   TextAreaLogHandler

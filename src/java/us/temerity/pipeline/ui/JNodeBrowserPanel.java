@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.8 2004/05/04 17:50:33 jim Exp $
+// $Id: JNodeBrowserPanel.java,v 1.9 2004/05/05 20:59:36 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -109,7 +109,7 @@ class JNodeBrowserPanel
    * 
    * Group ID values must be in the range: [1-9]
    * 
-   * @param id
+   * @param groupID
    *   The new group ID or (0) for no group assignment.
    */ 
   public void

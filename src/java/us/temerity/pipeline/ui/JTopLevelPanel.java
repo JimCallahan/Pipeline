@@ -1,4 +1,4 @@
-// $Id: JTopLevelPanel.java,v 1.1 2004/05/04 11:02:05 jim Exp $
+// $Id: JTopLevelPanel.java,v 1.2 2004/05/05 21:00:06 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -95,7 +95,7 @@ class JTopLevelPanel
    * 
    * Group ID values must be in the range: [1-9]
    * 
-   * @param id
+   * @param groupID
    *   The new group ID or (0) for no group assignment.
    */ 
   public void
