@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.45 2004/09/28 10:23:35 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.46 2004/09/28 11:09:07 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -2734,20 +2734,33 @@ class JNodeViewerPanel
   private void 
   doRelease() 
   {
-    if(pPrimary != null) {
-      NodeDetails details = pPrimary.getNodeStatus().getDetails();
+    String text = null;
+    TreeSet<String> names = new TreeSet<String>();
+    for(ViewerNode vnode : pSelected.values()) {
+      NodeStatus status = vnode.getNodeStatus();
+      NodeDetails details = status.getDetails();
       if(details != null) {
-
 	NodeMod mod = details.getWorkingVersion();
-	if(mod != null) {	
-	  pReleaseDialog.updateNode(mod);
-	  pReleaseDialog.setVisible(true);
-	
-	  if(pReleaseDialog.wasConfirmed()) {
-	    ReleaseTask task = new ReleaseTask(mod.getName(), pReleaseDialog.removeFiles());
-	    task.start();
-	  }
+	if(mod != null) {
+	  names.add(mod.getName());
+	  text = mod.getPrimarySequence().toString();
 	}
+      }
+    }
+
+    if(!names.isEmpty()) {
+      String header = null;
+      if(names.size() == 1) 
+	header = ("Release Node:  " + text);
+      else 
+	header = ("Release Multiple Nodes:");
+
+      pReleaseDialog.updateHeader(header);
+      pReleaseDialog.setVisible(true);
+      
+      if(pReleaseDialog.wasConfirmed()) {
+	ReleaseTask task = new ReleaseTask(names, pReleaseDialog.removeFiles());
+	task.start();
       }
     }
 
@@ -2767,10 +2780,10 @@ class JNodeViewerPanel
       NodeStatus status = vnode.getNodeStatus();
       NodeDetails details = status.getDetails();
       if(details != null) {
-	NodeMod work = details.getWorkingVersion();
-	if(work != null) {
-	  if(confirmed || work.isActionEnabled()) 
-	    names.add(work.getName());
+	NodeMod mod = details.getWorkingVersion();
+	if(mod != null) {
+	  if(confirmed || mod.isActionEnabled()) 
+	    names.add(mod.getName());
 	  else {
 	    JConfirmDialog confirm = 
 	      new JConfirmDialog("Remove from Nodes without enabled Actions?");
@@ -2778,7 +2791,7 @@ class JNodeViewerPanel
 	    confirmed = confirm.wasConfirmed(); 
 
 	    if(confirmed) 
-	      names.add(work.getName());
+	      names.add(mod.getName());
 	  }
 	}
       }
@@ -2802,13 +2815,21 @@ class JNodeViewerPanel
   private void 
   doQueueJobs() 
   {
-    if(pPrimary != null) {
-      NodeStatus status = pPrimary.getNodeStatus();
-      NodeDetails details = status.getDetails();
-      if(details != null) {
-	QueueJobsTask task = new QueueJobsTask(status.getName(), null);
-	task.start();
+    TreeSet<String> roots = new TreeSet<String>();
+    for(String name : getSelectedRootNames()) {
+      for(ViewerNode vnode : pSelected.values()) {
+	NodeStatus status = vnode.getNodeStatus();
+	if((status != null) && status.getName().equals(name)) {
+	  if(status.getDetails() != null) 
+	    roots.add(name);
+	  break;
+	}
       }
+    }
+    
+    if(!roots.isEmpty()) {
+      QueueJobsTask task = new QueueJobsTask(roots);
+      task.start();
     }
 
     for(ViewerNode vnode : clearSelection()) 
@@ -2931,47 +2952,55 @@ class JNodeViewerPanel
   private void 
   doCheckIn() 
   {
-    TreeSet<String> roots = getSelectedRootNames();
-    if(!roots.isEmpty()) {
-      String header    = null;
-      VersionID latest = null;
-      boolean multiple = false; 
-
-      if(roots.size() > 1) {
-	header = "Check-In:  Multiple Nodes";
-	multiple = true;
-      }
-      else {
-	NodeStatus status = pRoots.get(roots.first());
-	NodeDetails details = status.getDetails();
-	if(details == null) {
-	  for(ViewerNode vnode : clearSelection()) 
-	    vnode.update();
-	  return;
+    try {
+      TreeSet<String> roots = getSelectedRootNames();
+      if(!roots.isEmpty()) {
+	String header    = null;
+	VersionID latest = null;
+	boolean multiple = false; 
+	
+	if(roots.size() > 1) {
+	  header = "Check-In:  Multiple Nodes";
+	  multiple = true;
+	}
+	else {
+	  NodeStatus status   = null;
+	  NodeDetails details = null;
+	  for(ViewerNode vnode : pSelected.values()) {
+	    status = vnode.getNodeStatus();
+	    if((status != null) && status.getName().equals(roots.first())) {
+	      details = status.getDetails();
+	      break;
+	    }
+	  }
+	  
+	  if(details == null) 
+	    return; 
+	  
+	  header = ("Check-In:  " + status);
+	  
+	  if(details.getLatestVersion() != null) 
+	    latest = details.getLatestVersion().getVersionID();
 	}
 	
-	header = ("Check-In:  " + status);
+	pCheckInDialog.updateNameVersion(header, latest, multiple);
+	pCheckInDialog.setVisible(true);
 	
-	if(details.getLatestVersion() != null) 
-	  latest = details.getLatestVersion().getVersionID();
-      }
-      
-      pCheckInDialog.updateNameVersion(header, latest, multiple);
-      pCheckInDialog.setVisible(true);
-      
-      if(pCheckInDialog.wasConfirmed()) {
-	String desc = pCheckInDialog.getDescription();
-	assert((desc != null) && (desc.length() > 0));
-	
-	VersionID.Level level = pCheckInDialog.getLevel();
-	
-	CheckInTask task = new CheckInTask(roots, desc, level);
-	task.start();
+	if(pCheckInDialog.wasConfirmed()) {
+	  String desc = pCheckInDialog.getDescription();
+	  assert((desc != null) && (desc.length() > 0));
+	  
+	  VersionID.Level level = pCheckInDialog.getLevel();
+	  
+	  CheckInTask task = new CheckInTask(roots, desc, level);
+	  task.start();
+	}
       }
     }
-
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();
+    finally {
+      for(ViewerNode vnode : clearSelection()) 
+	vnode.update();
+    }
   }
       
 
@@ -4025,13 +4054,13 @@ class JNodeViewerPanel
     public 
     ReleaseTask
     (
-     String name, 
+     TreeSet<String> names, 
      boolean removeFiles
     ) 
     {
       super("JNodeViewerPanel:ReleaseTask");
 
-      pName        = name; 
+      pNames       = names; 
       pRemoveFiles = removeFiles;
     }
 
@@ -4039,9 +4068,12 @@ class JNodeViewerPanel
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Releasing Node...")) {
+      if(master.beginPanelOp()) {
 	try {
-	  master.getMasterMgrClient().release(pAuthor, pView, pName, pRemoveFiles);
+	  for(String name : pNames) {
+	    master.updatePanelOp("Releasing Node: " + name);	
+	    master.getMasterMgrClient().release(pAuthor, pView, name, pRemoveFiles);
+	  }
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -4055,8 +4087,8 @@ class JNodeViewerPanel
       }
     }
 
-    private String  pName; 
-    private boolean pRemoveFiles; 
+    private TreeSet<String>  pNames; 
+    private boolean          pRemoveFiles; 
   }
 
   /** 
@@ -4081,18 +4113,19 @@ class JNodeViewerPanel
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      for(String name : pNames) {
-	if(master.beginPanelOp("Removing Files: " + name)) {
-	  try {
+      if(master.beginPanelOp()) {
+	try {
+	  for(String name : pNames) {
+	    master.updatePanelOp("Removing Files: " + name);
 	    master.getMasterMgrClient().removeFiles(pAuthor, pView, name, null);
 	  }
-	  catch(PipelineException ex) {
-	    master.showErrorDialog(ex);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
 	    return;
-	  }
-	  finally {
-	    master.endPanelOp("Done.");
-	  }
+	}
+	finally {
+	  master.endPanelOp("Done.");
 	}
       }
 	
@@ -4115,23 +4148,24 @@ class JNodeViewerPanel
     public 
     QueueJobsTask
     (
-     String name, 
-     TreeSet<Integer> indices
+     TreeSet<String> names
     ) 
     {
       super("JNodeViewerPanel:QueueJobsTask");
 
-      pName    = name; 
-      pIndices = indices; 
+      pNames = names; 
     }
 
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Submitting Jobs to the Queue...")) {
+      if(master.beginPanelOp()) {
 	try {
-	  master.getMasterMgrClient().submitJobs(pAuthor, pView, pName, pIndices);
+	  for(String name : pNames) {
+	    master.updatePanelOp("Submitting Jobs to the Queue: " + name);
+	    master.getMasterMgrClient().submitJobs(pAuthor, pView, name, null);
+	  }
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -4145,8 +4179,7 @@ class JNodeViewerPanel
       }
     }
 
-    private String           pName; 
-    private TreeSet<Integer> pIndices; 
+    private TreeSet<String>  pNames; 
   }
 
   /** 
