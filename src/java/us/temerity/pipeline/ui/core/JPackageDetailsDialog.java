@@ -1,4 +1,4 @@
-// $Id: JPackageDetailsDialog.java,v 1.2 2005/01/09 17:32:07 jim Exp $
+// $Id: JPackageDetailsDialog.java,v 1.3 2005/02/22 05:56:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -88,19 +88,19 @@ class JPackageDetailsDialog
 	  
 	  pAuthorField = 
 	    UIFactory.createTitledTextField(tpanel, "Author:", sTSize, 
-					   vpanel, "-", sVSize);
+					    vpanel, "-", sVSize);
 
 	  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 
 	  pTimeStampField = 
 	    UIFactory.createTitledTextField(tpanel, "Time Stamp:", sTSize, 
-					   vpanel, "-", sVSize);
+					    vpanel, "-", sVSize);
 
 	  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 
 	  pDescriptionArea = 
 	    UIFactory.createTitledTextArea(tpanel, "Description:", sTSize, 
-					  vpanel, "", sVSize, 3, false);
+					   vpanel, "", sVSize, 3, false);
 	  
 	  tpanel.setMaximumSize(new Dimension(sTSize, Integer.MAX_VALUE));
 
