@@ -1,6 +1,6 @@
 //Maya ASCII 6.0 scene
 //Name: Selected.ma
-//Last modified: Tue, Feb 08, 2005 07:45:53 AM
+//Last modified: Fri, Feb 18, 2005 08:49:35 PM
 file -rdi 1 -rpr "Normal" -rfn "NormalRN" "/home/jim/code/src/pipeline/src/java/us/temerity/pipeline/laf/maya/synth//scenes/Normal.ma";
 file -r -rpr "Normal" -rfn "NormalRN" "/home/jim/code/src/pipeline/src/java/us/temerity/pipeline/laf/maya/synth//scenes/Normal.ma";
 requires maya "6.0";
@@ -1388,7 +1388,7 @@ createNode brush -n "brush3";
 	setAttr ".rro[0]"  0 1 1;
 createNode reference -n "NormalRN";
 select -ne :time1;
-	setAttr ".o" 97;
+	setAttr ".o" 11;
 select -ne :renderPartition;
 	setAttr -s 7 ".st";
 select -ne :renderGlobalsList1;

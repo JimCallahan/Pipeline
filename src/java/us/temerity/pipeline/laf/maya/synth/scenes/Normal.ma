@@ -1,6 +1,6 @@
 //Maya ASCII 6.0 scene
 //Name: Normal.ma
-//Last modified: Tue, Feb 08, 2005 07:11:55 AM
+//Last modified: Fri, Feb 18, 2005 08:20:56 PM
 requires maya "6.0";
 currentUnit -l centimeter -a degree -t film;
 fileInfo "application" "maya";
@@ -1795,6 +1795,7 @@ createNode transform -n "PENDING";
 	setAttr -k off ".tx";
 	setAttr -k off ".ty";
 	setAttr -k off ".tz";
+	setAttr ".r" -type "double3" 0 180 0 ;
 	setAttr -k off ".rx";
 	setAttr -k off ".ry";
 	setAttr -k off ".rz";
@@ -5532,6 +5533,16 @@ createNode nurbsSurface -n "loftedSurfaceShape101" -p "loftedSurface101";
 		
 		;
 createNode transform -n "CHECKED_IN";
+	setAttr -k off ".tx";
+	setAttr -k off ".ty";
+	setAttr -k off ".tz";
+	setAttr ".r" -type "double3" 0 180 0 ;
+	setAttr -k off ".rx";
+	setAttr -k off ".ry";
+	setAttr -k off ".rz";
+	setAttr -k off ".sx";
+	setAttr -k off ".sy";
+	setAttr -k off ".sz";
 createNode transform -n "button" -p "CHECKED_IN";
 	setAttr -k off ".tx";
 	setAttr -k off ".ty";
@@ -35924,9 +35935,6 @@ createNode script -n "uiConfigurationScriptNode";
 		+ "\t\t\tpanel -e -l $label $panelName;\n"
 		+ "\t\t}\n"
 		+ "\t}\n"
-		+ "\tif ($useSceneConfig) {\n"
-		+ "\t\toutlinerPanel -e -to $panelName;\n"
-		+ "\t}\n"
 		+ "\t$panelName = `sceneUIReplacement -getNextScriptedPanel \"graphEditor\" \"Graph Editor\"`;\n"
 		+ "\tif (\"\" == $panelName) {\n"
 		+ "\t\tif ($useSceneConfig) {\n"
@@ -36753,47 +36761,11 @@ createNode animCurveTU -n "sides_visibility5";
 	setAttr ".wgt" no;
 	setAttr -s 4 ".ktv[0:3]"  7 0 8 1 15 1 16 0;
 	setAttr -s 4 ".kot[0:3]"  5 5 5 5;
-createNode animCurveTU -n "CHECKED_IN_scaleX";
-	setAttr ".tan" 9;
-	setAttr ".wgt" no;
-	setAttr -s 2 ".ktv[0:1]"  7 1 16 1;
-createNode animCurveTU -n "CHECKED_IN_scaleY";
-	setAttr ".tan" 9;
-	setAttr ".wgt" no;
-	setAttr -s 2 ".ktv[0:1]"  7 1 16 1;
-createNode animCurveTU -n "CHECKED_IN_scaleZ";
-	setAttr ".tan" 9;
-	setAttr ".wgt" no;
-	setAttr -s 2 ".ktv[0:1]"  7 1 16 1;
 createNode animCurveTU -n "CHECKED_IN_visibility";
 	setAttr ".tan" 9;
 	setAttr ".wgt" no;
 	setAttr -s 2 ".ktv[0:1]"  7 1 16 0;
 	setAttr -s 2 ".kot[0:1]"  5 5;
-createNode animCurveTL -n "CHECKED_IN_translateX";
-	setAttr ".tan" 9;
-	setAttr ".wgt" no;
-	setAttr -s 2 ".ktv[0:1]"  7 0 16 0;
-createNode animCurveTL -n "CHECKED_IN_translateY";
-	setAttr ".tan" 9;
-	setAttr ".wgt" no;
-	setAttr -s 2 ".ktv[0:1]"  7 0 16 0;
-createNode animCurveTL -n "CHECKED_IN_translateZ";
-	setAttr ".tan" 9;
-	setAttr ".wgt" no;
-	setAttr -s 2 ".ktv[0:1]"  7 0 16 0;
-createNode animCurveTA -n "CHECKED_IN_rotateX";
-	setAttr ".tan" 9;
-	setAttr ".wgt" no;
-	setAttr -s 2 ".ktv[0:1]"  7 0 16 0;
-createNode animCurveTA -n "CHECKED_IN_rotateY";
-	setAttr ".tan" 9;
-	setAttr ".wgt" no;
-	setAttr -s 2 ".ktv[0:1]"  7 0 16 0;
-createNode animCurveTA -n "CHECKED_IN_rotateZ";
-	setAttr ".tan" 9;
-	setAttr ".wgt" no;
-	setAttr -s 2 ".ktv[0:1]"  7 0 16 0;
 createNode animCurveTU -n "MODIFIED_DEPEND_visibility";
 	setAttr ".tan" 9;
 	setAttr ".wgt" no;
@@ -36859,7 +36831,7 @@ createNode animCurveTU -n "MISSING_NEWER_visibility";
 	setAttr -s 3 ".ktv[0:2]"  95 0 96 1 104 0;
 	setAttr -s 3 ".kot[0:2]"  5 5 5;
 select -ne :time1;
-	setAttr ".o" 105;
+	setAttr ".o" 8;
 select -ne :renderPartition;
 	setAttr -s 7 ".st";
 select -ne :renderGlobalsList1;
@@ -36912,16 +36884,7 @@ connectAttr "PENDING_visibility.o" "PENDING.v";
 connectAttr "button_visibility4.o" "|PENDING|button.v";
 connectAttr "inset_visibility4.o" "|PENDING|inset.v";
 connectAttr "sides_visibility4.o" "|PENDING|sides.v";
-connectAttr "CHECKED_IN_scaleX.o" "CHECKED_IN.sx";
-connectAttr "CHECKED_IN_scaleY.o" "CHECKED_IN.sy";
-connectAttr "CHECKED_IN_scaleZ.o" "CHECKED_IN.sz";
 connectAttr "CHECKED_IN_visibility.o" "CHECKED_IN.v";
-connectAttr "CHECKED_IN_translateX.o" "CHECKED_IN.tx";
-connectAttr "CHECKED_IN_translateY.o" "CHECKED_IN.ty";
-connectAttr "CHECKED_IN_translateZ.o" "CHECKED_IN.tz";
-connectAttr "CHECKED_IN_rotateX.o" "CHECKED_IN.rx";
-connectAttr "CHECKED_IN_rotateY.o" "CHECKED_IN.ry";
-connectAttr "CHECKED_IN_rotateZ.o" "CHECKED_IN.rz";
 connectAttr "button_visibility5.o" "|CHECKED_IN|button.v";
 connectAttr "inset_visibility5.o" "|CHECKED_IN|inset.v";
 connectAttr "sides_visibility5.o" "|CHECKED_IN|sides.v";

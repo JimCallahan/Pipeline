@@ -1,6 +1,6 @@
 //Maya ASCII 6.0 scene
 //Name: PrimaryFrozen.ma
-//Last modified: Tue, Feb 08, 2005 07:34:07 AM
+//Last modified: Fri, Feb 18, 2005 08:45:57 PM
 file -rdi 1 -rpr "Normal" -rfn "NormalRN" "/home/jim/code/src/pipeline/src/java/us/temerity/pipeline/laf/maya/synth//scenes/Normal.ma";
 file -r -rpr "Normal" -rfn "NormalRN" "/home/jim/code/src/pipeline/src/java/us/temerity/pipeline/laf/maya/synth//scenes/Normal.ma";
 requires maya "6.0";
@@ -1414,7 +1414,7 @@ createNode shadingEngine -n "whiteSG";
 	setAttr ".ro" yes;
 createNode materialInfo -n "materialInfo1";
 select -ne :time1;
-	setAttr ".o" 100;
+	setAttr ".o" 6;
 select -ne :renderPartition;
 	setAttr -s 8 ".st";
 select -ne :renderGlobalsList1;
@@ -1463,12 +1463,8 @@ select -ne :hardwareRenderGlobals;
 select -ne :defaultHardwareRenderGlobals;
 	setAttr ".fn" -type "string" "im";
 	setAttr ".res" -type "string" "ntsc_4d 646 485 1.333";
-select -ne Normal_white;
-select -ne Normal_grey;
 select -ne Normal_select;
 	setAttr ".c" -type "float3" 0 1 1 ;
-select -ne Normal_surface;
-select -ne Normal_pasted__white;
 disconnectAttr "|Normal_MISSING_NEWER|Normal_inset|Normal_insettrimmedSurfaceShape.iog" "Normal_lambert3SG.dsm"
 		 -na;
 disconnectAttr "|Normal_NEEDSCO_MINOR|Normal_inset|Normal_insetShape.iog" "Normal_lambert3SG.dsm"

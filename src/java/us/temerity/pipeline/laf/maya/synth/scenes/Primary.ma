@@ -1,6 +1,6 @@
 //Maya ASCII 6.0 scene
 //Name: Primary.ma
-//Last modified: Tue, Feb 08, 2005 07:39:44 AM
+//Last modified: Fri, Feb 18, 2005 08:35:44 PM
 file -rdi 1 -rpr "Normal" -rfn "NormalRN" "/home/jim/code/src/pipeline/src/java/us/temerity/pipeline/laf/maya/synth//scenes/Normal.ma";
 file -r -rpr "Normal" -rfn "NormalRN" "/home/jim/code/src/pipeline/src/java/us/temerity/pipeline/laf/maya/synth//scenes/Normal.ma";
 requires maya "6.0";
@@ -1388,7 +1388,7 @@ createNode brush -n "brush3";
 	setAttr ".rro[0]"  0 1 1;
 createNode reference -n "NormalRN";
 select -ne :time1;
-	setAttr ".o" 104;
+	setAttr ".o" 15;
 select -ne :renderPartition;
 	setAttr -s 7 ".st";
 select -ne :renderGlobalsList1;
@@ -1437,12 +1437,8 @@ select -ne :hardwareRenderGlobals;
 select -ne :defaultHardwareRenderGlobals;
 	setAttr ".fn" -type "string" "im";
 	setAttr ".res" -type "string" "ntsc_4d 646 485 1.333";
-select -ne Normal_white;
-select -ne Normal_grey;
 select -ne Normal_select;
 	setAttr ".c" -type "float3" 0 1 1 ;
-select -ne Normal_surface;
-select -ne Normal_pasted__white;
 connectAttr ":defaultLightSet.msg" "lightLinker1.lnk[0].llnk";
 connectAttr ":initialShadingGroup.msg" "lightLinker1.lnk[0].olnk";
 connectAttr ":defaultLightSet.msg" "lightLinker1.lnk[1].llnk";
