@@ -1,4 +1,4 @@
-// $Id: NodeMgrClient.java,v 1.5 2004/03/30 07:11:55 jim Exp $
+// $Id: NodeMgrClient.java,v 1.6 2004/03/30 22:10:06 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -23,6 +23,7 @@ import java.util.*;
  */
 public
 class NodeMgrClient
+  extends BaseMgrClient
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -44,7 +45,8 @@ class NodeMgrClient
    int port
   ) 
   {
-    init(hostname, port);
+    super(hostname, port, 
+	  NodeRequest.Disconnect, NodeRequest.Shutdown);
   }
 
   /** 
@@ -57,26 +59,8 @@ class NodeMgrClient
   public
   NodeMgrClient() 
   {
-    init(PackageInfo.sMasterServer, PackageInfo.sMasterPort);
-  }
-
-
-  /*-- CONSTRUCTION HELPERS ----------------------------------------------------------------*/
-
-  private void 
-  init
-  ( 
-   String hostname, 
-   int port
-  ) 
-  {
-    if(hostname == null) 
-      throw new IllegalArgumentException("The hostname argument cannot be (null)!");
-    pHostname = hostname;
-
-    if(port < 0) 
-      throw new IllegalArgumentException("Illegal port number (" + port + ")!");
-    pPort = port;
+    super(PackageInfo.sMasterServer, PackageInfo.sMasterPort, 
+	  NodeRequest.Disconnect, NodeRequest.Shutdown);
   }
 
 
@@ -344,9 +328,12 @@ class NodeMgrClient
    * will be preserved. <P> 
    * 
    * In addition to changing the name of the working version, this operation can also 
-   * rename the files which make up the primary file sequence associated with the working
-   * version to match the new node name if the <CODE>renameFiles</CODE> argument is 
-   * <CODE>true</CODE>.
+   * rename the files associated with the working version to match the new node name if 
+   * the <CODE>renameFiles</CODE> argument is <CODE>true</CODE>.  The primary file sequence
+   * will be renamed to have a prefix which is identical to the last component of the 
+   * <CODE>newName</CODE> argument.  The secondary file sequence prefixes will remain
+   * unchanged. Both primary and secondary file sequences will be moved into the working 
+   * directory based on the new node name.
    * 
    * @param view 
    *   The name of the user's working area view. 
@@ -357,8 +344,8 @@ class NodeMgrClient
    * @param newName 
    *   The new fully resolved node name.
    * 
-   * @param removeFiles 
-   *   Should the primary files associated with the working version be renamed?
+   * @param renameFiles 
+   *   Should the files associated with the working version be renamed?
    * 
    * @throws PipelineException 
    *   If unable to rename the given node or its associated primary files.
@@ -384,215 +371,9 @@ class NodeMgrClient
 
 
 
-
   // ...
 
 
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   M I S C   O P S                                                                      */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Close the network connection if its is still connected.
-   */
-  public synchronized void 
-  disconnect() 
-  {
-    if(pSocket == null)
-      return;
-
-    try {
-      if(pSocket.isConnected()) {
-	OutputStream out = pSocket.getOutputStream();
-	ObjectOutput objOut = new ObjectOutputStream(out);
-	objOut.writeObject(NodeRequest.Disconnect);
-	objOut.flush(); 
-
-	pSocket.close();
-      }
-    }
-    catch (IOException ex) {
-    }
-    finally {
-      pSocket = null;
-    }
-  }
-
-  /**
-   * Order the server to refuse any further requests and then to exit as soon as all
-   * currently pending requests have be completed.
-   */
-  public synchronized void 
-  shutdown() 
-    throws PipelineException 
-  {
-    verifyConnection();
-
-    try {
-      OutputStream out = pSocket.getOutputStream();
-      ObjectOutput objOut = new ObjectOutputStream(out);
-      objOut.writeObject(NodeRequest.Shutdown);
-      objOut.flush(); 
-
-      pSocket.close();
-    }
-    catch(IOException ex) {
-      disconnect();
-      throw new PipelineException
-	("IO problems on port (" + pPort + "):\n" + 
-	 ex.getMessage());
-    }
-    finally {
-      pSocket = null;
-    }
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   H E L P E R S                                                                        */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Make sure the network connection to <B>plmaster</B>(1) has 
-   * been established.  If the connection is down, try to reconnect.
-   * 
-   * @throws PipelineException
-   *   If the connection is down and cannot be reestablished. 
-   */
-  private synchronized void 
-  verifyConnection() 
-    throws PipelineException 
-  {
-    if((pSocket != null) && pSocket.isConnected())
-      return;
-
-    try {
-      pSocket = new Socket(pHostname, pPort);
-    }
-    catch (IOException ex) {
-      throw new PipelineException
-	("IO problems on port (" + pPort + "):\n" + 
-	 ex.getMessage());
-    }
-    catch (SecurityException ex) {
-      throw new PipelineException
-	("The Security Manager doesn't allow socket connections!\n" + 
-	 ex.getMessage());
-    }
-  }
-
-  /**
-   * Send the given node request to <B>plmaster</B>(1) and 
-   * wait for the response.
-   * 
-   * @param kind 
-   *   The kind of request being sent.
-   * 
-   * @param req 
-   *   The request data.
-   * 
-   * @return
-   *   The response from <B>plmaster</B>(1).
-   * 
-   * @throws PipelineException
-   *   If unable to complete the transaction.
-   */
-  private synchronized Object
-  performTransaction
-  (
-   NodeRequest kind, 
-   Object req
-  ) 
-    throws PipelineException 
-  {
-    try {
-      OutputStream out = pSocket.getOutputStream();
-      ObjectOutput objOut = new ObjectOutputStream(out);
-      objOut.writeObject(kind);
-      objOut.writeObject(req);
-      objOut.flush(); 
-
-      InputStream in  = pSocket.getInputStream();
-      ObjectInput objIn  = new ObjectInputStream(in);
-      return (objIn.readObject());
-    }
-    catch(IOException ex) {
-      disconnect();
-      throw new PipelineException
-	("IO problems on port (" + pPort + "):\n" + 
-	 ex.getMessage());
-    }
-    catch(ClassNotFoundException ex) {
-      disconnect();
-      throw new PipelineException
-	("Illegal object encountered on port (" + pPort + "):\n" + 
-	 ex.getMessage());  
-    }
-  }
-
-  /**
-   * Handle the simple Success/Failure response.
-   * 
-   * @param obj
-   *   The response from the server.
-   */ 
-  private void 
-  handleSimpleResponse
-  ( 
-   Object obj
-  )
-    throws PipelineException
-  {
-    if(!(obj instanceof SuccessRsp))
-      handleFailure(obj);
-  }
-
-  /**
-   * Handle non-successful responses.
-   * 
-   * @param obj
-   *   The response from the server.
-   */ 
-  private void 
-  handleFailure
-  ( 
-   Object obj
-  )
-    throws PipelineException
-  {
-    if(obj instanceof FailureRsp) {
-      FailureRsp rsp = (FailureRsp) obj;
-      throw new PipelineException(rsp.getMessage());	
-    }
-    else {
-      disconnect();
-      throw new PipelineException
-	("Illegal response received from the NodeMgrServer instance!");
-    }
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   I N T E R N A L S                                                                    */
-  /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * The name of the host running <B>plmaster</B>(1).
-   */
-  private String  pHostname;
-
-  /**
-   * The network port listened to by <B>plmaster</B>(1).
-   */
-  private int  pPort;
-
-  /**
-   * The network socket connection.
-   */
-  private Socket  pSocket;
 
 }
 

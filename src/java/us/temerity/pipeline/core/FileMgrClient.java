@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.5 2004/03/30 07:13:09 jim Exp $
+// $Id: FileMgrClient.java,v 1.6 2004/03/30 22:10:06 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -27,6 +27,7 @@ import java.util.*;
  */
 public
 class FileMgrClient
+  extends BaseMgrClient
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -48,7 +49,8 @@ class FileMgrClient
    int port
   ) 
   {
-    init(hostname, port);
+    super(hostname, port, 
+	  FileRequest.Disconnect, FileRequest.Shutdown);
   }
 
   /** 
@@ -61,26 +63,8 @@ class FileMgrClient
   public
   FileMgrClient() 
   {
-    init(PackageInfo.sFileServer, PackageInfo.sFilePort);
-  }
-
-
-  /*-- CONSTRUCTION HELPERS ----------------------------------------------------------------*/
-
-  private void 
-  init
-  ( 
-   String hostname, 
-   int port
-  ) 
-  {
-    if(hostname == null) 
-      throw new IllegalArgumentException("The hostname argument cannot be (null)!");
-    pHostname = hostname;
-
-    if(port < 0) 
-      throw new IllegalArgumentException("Illegal port number (" + port + ")!");
-    pPort = port;
+    super(PackageInfo.sFileServer, PackageInfo.sFilePort, 
+	  FileRequest.Disconnect, FileRequest.Shutdown);
   }
 
 
@@ -301,213 +285,35 @@ class FileMgrClient
     FileRemoveReq req = 
       new FileRemoveReq(id, mod.getSequences());
 
-    Object obj = performTransaction(FileRequest.Unfreeze, req);
+    Object obj = performTransaction(FileRequest.Remove, req);
     handleSimpleResponse(obj);
   }
 
-
-  /*----------------------------------------------------------------------------------------*/
-
   /**
-   * Close the network connection if its is still connected.
-   */
+   * Rename the files associated with the given working version.
+   *
+   * @param id 
+   *   The unique working version identifier.
+   * 
+   * @param mod 
+   *   The working version of the node.
+   */  
   public synchronized void 
-  disconnect() 
-  {
-    if(pSocket == null)
-      return;
-
-    try {
-      if(pSocket.isConnected()) {
-	OutputStream out = pSocket.getOutputStream();
-	ObjectOutput objOut = new ObjectOutputStream(out);
-	objOut.writeObject(FileRequest.Disconnect);
-	objOut.flush(); 
-
-	pSocket.close();
-      }
-    }
-    catch (IOException ex) {
-    }
-    finally {
-      pSocket = null;
-    }
-  }
-
-  /**
-   * Order the server to refuse any further requests and then to exit as soon as all
-   * currently pending requests have be completed.
-   */
-  public synchronized void 
-  shutdown() 
+  rename 
+  (
+   NodeID id, 
+   NodeMod mod, 
+   String newName
+  ) 
     throws PipelineException 
   {
     verifyConnection();
 
-    try {
-      OutputStream out = pSocket.getOutputStream();
-      ObjectOutput objOut = new ObjectOutputStream(out);
-      objOut.writeObject(FileRequest.Shutdown);
-      objOut.flush(); 
+    FileRenameReq req = 
+      new FileRenameReq(id, mod.getSequences(), newName);
 
-      pSocket.close();
-    }
-    catch(IOException ex) {
-      disconnect();
-      throw new PipelineException
-	("IO problems on port (" + pPort + "):\n" + 
-	 ex.getMessage());
-    }
-    finally {
-      pSocket = null;
-    }
+    Object obj = performTransaction(FileRequest.Rename, req);
+    handleSimpleResponse(obj);
   }
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   H E L P E R S                                                                        */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Make sure the network connection to the <CODE>FileMgrServer</CODE> instance has 
-   * been established.  If the connection is down, try to reconnect.
-   * 
-   * @throws PipelineException
-   *   If the connection is down and cannot be reestablished. 
-   */
-  private synchronized void 
-  verifyConnection() 
-    throws PipelineException 
-  {
-    if((pSocket != null) && pSocket.isConnected())
-      return;
-
-    try {
-      pSocket = new Socket(pHostname, pPort);
-    }
-    catch (IOException ex) {
-      throw new PipelineException
-	("IO problems on port (" + pPort + "):\n" + 
-	 ex.getMessage());
-    }
-    catch (SecurityException ex) {
-      throw new PipelineException
-	("The Security Manager doesn't allow socket connections!\n" + 
-	 ex.getMessage());
-    }
-  }
-
-  /**
-   * Send the given file request to the <CODE>FileMgrServer</CODE> instance and 
-   * wait for the response.
-   * 
-   * @param kind 
-   *   The kind of request being sent.
-   * 
-   * @param req 
-   *   The request data.
-   * 
-   * @return
-   *   The response from the <CODE>FileMgrServer</CODE> instance.
-   * 
-   * @throws PipelineException
-   *   If unable to complete the transaction.
-   */
-  private synchronized Object
-  performTransaction
-  (
-   FileRequest kind, 
-   Object req
-  ) 
-    throws PipelineException 
-  {
-    try {
-      OutputStream out = pSocket.getOutputStream();
-      ObjectOutput objOut = new ObjectOutputStream(out);
-      objOut.writeObject(kind);
-      objOut.writeObject(req);
-      objOut.flush(); 
-
-      InputStream in  = pSocket.getInputStream();
-      ObjectInput objIn  = new ObjectInputStream(in);
-      return (objIn.readObject());
-    }
-    catch(IOException ex) {
-      shutdown();
-      throw new PipelineException
-	("IO problems on port (" + pPort + "):\n" + 
-	 ex.getMessage());
-    }
-    catch(ClassNotFoundException ex) {
-      shutdown();
-      throw new PipelineException
-	("Illegal object encountered on port (" + pPort + "):\n" + 
-	 ex.getMessage());  
-    }
-  }
-
-  /**
-   * Handle the simple Success/Failure response.
-   * 
-   * @param obj
-   *   The response from the server.
-   */ 
-  private void 
-  handleSimpleResponse
-  ( 
-   Object obj
-  )
-    throws PipelineException
-  {
-    if(!(obj instanceof SuccessRsp))
-      handleFailure(obj);
-  }
-
-  /**
-   * Handle non-successful responses.
-   * 
-   * @param obj
-   *   The response from the server.
-   */ 
-  private void 
-  handleFailure
-  ( 
-   Object obj
-  )
-    throws PipelineException
-  {
-    if(obj instanceof FailureRsp) {
-      FailureRsp rsp = (FailureRsp) obj;
-      throw new PipelineException(rsp.getMessage());	
-    }
-    else {
-      disconnect();
-      throw new PipelineException
-	("Illegal response received from the FileMgrServer instance!");
-    }
-  }
-
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   I N T E R N A L S                                                                    */
-  /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * The name of the host running <B>plfilemgr</B>(1).
-   */
-  private String  pHostname;
-
-  /**
-   * The network port listened to by <B>plfilemgr</B>(1).
-   */
-  private int  pPort;
-
-  /**
-   * The network socket connection.
-   */
-  private Socket  pSocket;
-
 }
 
