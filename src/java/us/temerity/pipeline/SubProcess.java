@@ -1,4 +1,4 @@
-// $Id: SubProcess.java,v 1.11 2004/04/15 18:31:57 jim Exp $
+// $Id: SubProcess.java,v 1.12 2004/04/24 22:32:29 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -306,7 +306,7 @@ class SubProcess
       if((exitCode != null) && (exitCode == SUCCESS)) {
 	String out = proc.getStdOut();
 	try {
-	  Integer uid = new Integer(out);
+	  Integer uid = new Integer(out.trim());
 	  sUserIDs.put(user, uid);
 	  return uid;
 	}
