@@ -773,6 +773,7 @@ AC_CONFIG_FILES([
 
   data/icons/Makefile
   data/icons/gen-scm.bash
+  data/icons/gen-list.bash
 
   src/Makefile
 
@@ -805,14 +806,6 @@ AC_CONFIG_FILES([
   src/java/scripts/plui
 
   src/java/share/Makefile
-
-  src/php/Makefile
-
-  src/php/html/Makefile
-  src/php/html/config.php
-
-  src/php/themes/Makefile
-  src/php/themes/default/Makefile
 
   src/utils/Makefile
 
