@@ -1,4 +1,4 @@
-// $Id: SubProcess.java,v 1.1 2004/02/20 22:49:34 jim Exp $
+// $Id: SubProcess.java,v 1.2 2004/02/21 18:55:18 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -388,28 +388,40 @@ class SubProcess
   }
 
   
-  /** 
-   * Gets the number of milliseconds between resource usage statistics queries. 
-   */ 
-  public long
-  getStatsInterval() 
+  /**
+   * Gets the number of seconds the OS level process was running in user space. <P>
+   * 
+   * This method should only be called after the this thread has finished.
+   */
+  public double
+  getUserSecs() 
   {
-    return pStatsInterval.get();
+    return pProc.getUserSecs();
   }
 
-  /** 
-   * Sets the number of milliseconds between resource usage statistics queries. 
-   */ 
-  public void 
-  setStatsInterval
-  (
-   long millis
-  ) 
+  /**
+   * Gets the number of seconds the OS level process was running in system 
+   * (kernel) space. <P>
+   * 
+   * This method should only be called after the this thread has finished.
+   */
+  public double
+  getSystemSecs() 
   {
-    if(millis <= 0)
-      throw new IllegalArgumentException(
-	"Resource statistics collection interval (" + millis + ") must be positive!");
-    pStatsInterval.set(millis);
+    return pProc.getSystemSecs();
+  }
+
+
+  /**
+   * Gets the number of hard page faults during execution of the OS level process.  
+   * A hard page fault is a memory fault that required I/O operations. <P>
+   * 
+   * This method should only be called after the this thread has finished.
+   */
+  public long
+  getPageFaults() 
+  {
+    return pProc.getPageFaults(); 
   }
 
 
@@ -522,58 +534,29 @@ class SubProcess
   /*   R U N   S T A T I S T I C S                                                          */
   /*----------------------------------------------------------------------------------------*/
   
-  /**
-   * Gets the number of seconds the OS level process was running in user space. <P>
-   * 
-   * This method should only be called after the this thread has finished.
-   */
+
+  /** 
+   * Gets the number of milliseconds between resource usage statistics queries. 
+   */ 
   public long
-  getUserSecs() 
+  getStatsInterval() 
   {
-    if(isAlive())
-      throw new IllegalStateException("The subprocess still running!");
-    return pProc.getUserSecs();
+    return pStatsInterval.get();
   }
 
-  /**
-   * Gets the number of milliseconds the OS level process was running in user space. <P>
-   * 
-   * This method should only be called after the this thread has finished.
-   */
-  public long
-  getUserMSecs() 
+  /** 
+   * Sets the number of milliseconds between resource usage statistics queries. 
+   */ 
+  public void 
+  setStatsInterval
+  (
+   long millis
+  ) 
   {
-    if(isAlive())
-      throw new IllegalStateException("The subprocess still running!");
-    return pProc.getUserMSecs();
-  }
-
-  /**
-   * Gets the number of seconds the OS level process was running in system 
-   * (kernel) space. <P>
-   * 
-   * This method should only be called after the this thread has finished.
-   */
-  public long
-  getSystemSecs() 
-  {
-    if(isAlive())
-      throw new IllegalStateException("The subprocess still running!");
-    return pProc.getSystemSecs();
-  }
-
-  /**
-   * Gets the number of milliseconds the OS level process was running in system 
-   * (kernel) space. <P>
-   * 
-   * This method should only be called after the this thread has finished.
-   */
-  public long
-  getSystemMSecs() 
-  {
-    if(isAlive())
-      throw new IllegalStateException("The subprocess still running!");
-    return pProc.getSystemMSecs();
+    if(millis <= 0)
+      throw new IllegalArgumentException(
+	"Resource statistics collection interval (" + millis + ") must be positive!");
+    pStatsInterval.set(millis);
   }
 
 
@@ -585,8 +568,6 @@ class SubProcess
   public long
   getAverageVirtualSize() 
   {
-    if(isAlive())
-      throw new IllegalStateException("The subprocess still running!");
     return pProc.getAverageVirtualSize();
   }
 
@@ -598,8 +579,6 @@ class SubProcess
   public long
   getMaxVirtualSize() 
   {
-    if(isAlive())
-      throw new IllegalStateException("The subprocess still running!");
     return pProc.getMaxVirtualSize();
   }
 
@@ -612,8 +591,6 @@ class SubProcess
   public long
   getAverageResidentSize() 
   {
-    if(isAlive())
-      throw new IllegalStateException("The subprocess still running!");
     return pProc.getAverageResidentSize();
   }
 
@@ -625,25 +602,9 @@ class SubProcess
   public long
   getMaxResidentSize() 
   {
-    if(isAlive())
-      throw new IllegalStateException("The subprocess still running!");
     return pProc.getMaxResidentSize();
   }
   
-
-  /**
-   * Gets the number of hard page faults during execution of the OS level process.  
-   * A hard page fault is a memory fault that required I/O operations. <P>
-   * 
-   * This method should only be called after the this thread has finished.
-   */
-  public long
-  getPageFaults() 
-  {
-    if(isAlive())
-      throw new IllegalStateException("The subprocess still running!");
-    return pProc.getPageFaults(); 
-  }
 
 
 
