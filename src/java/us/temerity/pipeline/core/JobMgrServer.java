@@ -1,4 +1,4 @@
-// $Id: JobMgrServer.java,v 1.12 2005/01/12 13:07:59 jim Exp $
+// $Id: JobMgrServer.java,v 1.13 2005/01/15 02:54:03 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -132,6 +132,8 @@ class JobMgrServer
 	  for(HandlerTask task : pTasks) 
 	    task.join();
 	}
+
+	PluginMgrClient.getInstance().disconnect();
       }
       catch(InterruptedException ex) {
 	Logs.net.severe("Interrupted while shutting down!");
@@ -234,8 +236,8 @@ class JobMgrServer
 	boolean live = true;
 	while(pSocket.isConnected() && live && !pShutdown.get()) {
 	  InputStream in    = pSocket.getInputStream();
-	  ObjectInput objIn = new ObjectInputStream(in);
-	  JobRequest kind  = (JobRequest) objIn.readObject();
+	  ObjectInput objIn = new PluginInputStream(in);
+	  JobRequest kind   = (JobRequest) objIn.readObject();
 	  
 	  OutputStream out    = pSocket.getOutputStream();
 	  ObjectOutput objOut = new ObjectOutputStream(out);

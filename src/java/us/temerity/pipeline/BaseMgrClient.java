@@ -1,4 +1,4 @@
-// $Id: BaseMgrClient.java,v 1.8 2004/10/28 17:04:43 jim Exp $
+// $Id: BaseMgrClient.java,v 1.9 2005/01/15 02:52:14 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -233,7 +233,7 @@ class BaseMgrClient
       objOut.flush(); 
 
       InputStream in  = pSocket.getInputStream();
-      ObjectInput objIn  = new ObjectInputStream(in);
+      ObjectInput objIn  = new PluginInputStream(in);
       return (objIn.readObject());
     }
     catch(IOException ex) {
