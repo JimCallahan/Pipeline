@@ -1,4 +1,4 @@
-// $Id: NodeMgrServer.java,v 1.11 2004/04/24 22:41:22 jim Exp $
+// $Id: NodeMgrServer.java,v 1.12 2004/05/02 12:09:18 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -271,6 +271,26 @@ class NodeMgrServer
 	  Logs.flush();
 
 	  switch(kind) {
+	  case GetWorkingAreas:
+	    {
+	      NodeGetWorkingAreasReq req = (NodeGetWorkingAreasReq) objIn.readObject();
+	      objOut.writeObject(pNodeMgr.getWorkingAreas(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case UpdatePath:
+	    {
+	      NodeUpdatePathReq req = (NodeUpdatePathReq) objIn.readObject();
+	      objOut.writeObject(pNodeMgr.updatePath(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  // ...
+
+	    
+
 	  case GetWorking:
 	    {
 	      NodeGetWorkingReq req = (NodeGetWorkingReq) objIn.readObject();
@@ -364,6 +384,11 @@ class NodeMgrServer
 
 	  case Shutdown:
 	    Logs.net.warning("Shutdown Request Received: " + pSocket.getInetAddress());
+
+	    // DEBUG 
+	    pNodeMgr.logNodeTree();
+	    // DEBUG
+      
 	    Logs.flush();
 	    pShutdown.set(true);
 	    break;	    
