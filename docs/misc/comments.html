@@ -1,0 +1,241 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>comments</title>
+</head>
+<body>
+[Copyright 2004 James M. Callahan]<br>
+<br>
+<b>2.1 Speed</b><br>
+<br>
+I think we are all in agreement here.&nbsp; I think node tree updates
+need
+to be under 5 seconds at all<br>
+times and preferably so fast that no one even notices that they are
+happening.&nbsp; I think this is doable with a good file server and the
+changes I've proposed to the back end.<br>
+<br>
+<b>2.2 Stability</b><br>
+<br>
+I am unaware that <i>plserver(1)</i> ever consumed all the machines
+processor power.&nbsp; Are we talking about the same program
+here?&nbsp; The
+PostgreSQL server did have some severe load problems but this is
+entirely unrelated to <i>plserver(1) </i>which is the daemon program
+which runs on each host which is enabled in the queue.&nbsp; <br>
+<br>
+The issue with the PostgreSQL server was related both the slowness of
+some of the non-indexed queries and the huge number of these queries
+that where being performed.&nbsp; For instance, for a typical ATI
+render
+node tree I was counting something like 500-600 queries for a single
+status update.&nbsp; All of this will be addressed by the new back end
+which
+will not use SQL at all and which will be able to perform a tree update
+with a single network transaction.<br>
+<br>
+I think there is a similar misunderstanding about how <i>pldispacher(1)</i>
+and <i>plserver(1)</i> inter operate. Both programs talked to the
+PostgreSQL server and I think any performance issues there are all
+relate the PostgreSQL server being overloaded.&nbsp; The performance
+will be
+vastly improved by the new back end for the reasons mentioned above and
+in my Roadmap document.&nbsp; <br>
+<br>
+Also, as I've been working on the new back end, I've done some
+redesigning (independent of the SQL issues) of how jobs are dispatched
+which should be much more efficient and involve less searching in
+deciding how to assign a job to a host.&nbsp; <br>
+<br>
+<b>3.1 Forked Nodes<br>
+5 Addendum to 3.1</b><br>
+<br>
+Although I found this idea interesting, I think it has some major
+problems.&nbsp; I'm not opposed to radical ideas about how Pipeline
+treats
+node's, but I think the forked node approach both introduces much more
+complexity and imposes more limitations on the user.<br>
+<br>
+Let's get back to the problem that both multiple working areas and
+forked nodes are trying to solve.&nbsp; Users need to be able to have
+more
+than one copy of a file (and hence a node) at one time.&nbsp; These
+differing versions of the same file need to be able to live on the file
+system at the same time and therefore either need to have different
+names or live in different directories.&nbsp; The problem is that the
+path
+to one of these files may be stored inside other data files such as
+Maya scenes.&nbsp; In order for automatic node regeneration (i.e.
+actions/jobs) to work, the path to a file needs to have some
+flexibility so that both versions of the file can be accessed without
+changing the data file (the Maya scene) which stores the path.&nbsp;
+The
+problem with forked nodes is that they would require the referencing
+data file to be changed in order for it to change which of the versions
+of a file it accesses.&nbsp; Even if you did change the data file, you
+now
+would need two copies of it and every file which references it would
+have to be changed and duplicated, etc.. This is a very serious
+problem.&nbsp; Regardless of whether you make one of the two files
+"active",
+you still need two versions and all the accompanying changes and
+duplications.<br>
+<br>
+In essence, the conflict between two users modifying the same file is
+exactly the same as the conflict between two version of the file for
+the same user.&nbsp; This is why I think multiple working areas are a
+nice
+fit to the problem and don't require any additional concepts on the
+part of the user to absorb.&nbsp; All of the tools that Pipeline
+currently
+supplies can be used to solve the issues of job insulation, versioning
+and propagation of changes.&nbsp; I really don't think that it would
+seem
+confusing to users to have multiple working areas once they have gotten
+comfortable with the core ideas of Pipeline in the first place.&nbsp;
+With
+suitable visual cues in the interface, like a different background
+color for each of the user's working areas, I think it can be as easy
+as comparing two different user's <i>plui(1)</i> views currently.<br>
+<br>
+Basically, I think that multiple working areas provide all of the
+features in the forked node design.&nbsp; For instance, changing a
+upstream
+node in a separate working area would not make downstream nodes in the
+original working area stale.&nbsp; <br>
+<br>
+As to the concern with accidental deletion.&nbsp; There is no
+possibility of
+destroying a secondary area without the changes being checked-in
+because Pipeline understands the state of the nodes.&nbsp; Currently,
+if you
+try to do a "Release" operation on a node with local modifications
+Pipeline will generate an error and refuse to destroy the files.&nbsp;
+This
+would also be true of multiple working areas.<br>
+<br>
+I think if you reexamine the suggestions for forked node's you'll see
+that you are defining a set of operations that closely parallel what
+Pipeline already provides but which have a different set of
+semantics.&nbsp;
+I can't see how this is less of a burden on the artist or a cleaner
+implementation.<br>
+<br>
+Lets see if I can address all of the concerns you have over multiple
+working areas rather than going down the forked node path... <br>
+<br>
+<b>3.2 Referencing</b><br>
+<br>
+Concerning the hair simulation case -- I agree that we need some
+additional mechanism to handle this and related other leaf/branch
+duality issues.&nbsp; <br>
+<br>
+It occurred to me that one way to handle this would be add a "lock"
+flag to nodes.&nbsp;&nbsp; Normally, nodes are unlocked and behave as
+they
+currently do.&nbsp; When a node is locked, its action (if any) will be
+disabled and its file state will be changed to "Finished" (blue).&nbsp;
+Any
+changes to upstream nodes will have no effect on its node state.&nbsp;
+In
+essence, Pipeline will start treating the node as if it was a leaf
+node.&nbsp; If and when the node is later unlocked, its state will then
+reflect any changes that have occurred since the time it was
+locked.&nbsp;
+If it is later regenerated (with Make) then hand tweaks will be
+lost.&nbsp;
+There will also be serious warning when unlocking a node advising the
+user to the consequences of unlocking.&nbsp; <br>
+<br>
+Note that locking would be just another node property like Toolset or
+Editor, therefore the locked state of a node would be preserved in the
+node version when a node is checked-in or out.&nbsp; In other words, a
+locked node can be modified, checked-in or checked-out.&nbsp; A
+check-out
+may change the locked state of a node.<br>
+<br>
+I really like the idea of having these non-stale causing dependency
+links for handling issues like Maya file references.&nbsp; Maybe this
+could
+be achieved by adding a flag to the dependency link which tells
+Pipeline whether to propagate staleness across the dependency. This is
+somewhat similar to locking but allows finer control.&nbsp; This way
+you
+could have some dependencies which don't affect staleness (like
+referenced Maya models) and some that do affect staleness (like MEL
+scripts used to modify the scene) on the same node.<br>
+<br>
+Maybe this second idea is actually general enough to handle the node
+lock as well.&nbsp; Locking a node would be equivalent to blocking
+staleness
+for all of its dependencies...&nbsp; Maybe a node lock is simply a
+shortcut
+to locking all of the dependency links at once.<br>
+<br>
+<b>3.3 Deep Clone</b><br>
+<br>
+I think this is a good candidate for a custom Pipeline Tool plugin or
+maybe more than one.&nbsp; One problem with deep copy cloning is that
+you
+have to come up with new names for all of the nodes in the tree.&nbsp;
+This
+is kind of a pain in the ass and would require some kind of spreadsheet
+like dialog to name all these nodes at once.&nbsp; If the goal of deep
+cloning is to create templates of common node structures, then maybe a
+better idea would be some tree setup Tool plugins designed to create
+specific kinds of structures and generate appropriate names.&nbsp; The
+general clone tool is more flexible but also more complex in terms of
+user input.&nbsp; Maybe both are needed.&nbsp; I think this is a
+perfect test
+case for the Tool plugin API though.<br>
+<br>
+<b>4 Job Queue</b><br>
+<br>
+I agree with all the suggestions for cleaning up the interface by
+reducing how much information the user is exposed to at one time.&nbsp;
+I
+see no great difficulty in implementing them and I'm very flexible and
+interested in improving the ergonomics of the jobs panel in general.<br>
+<br>
+The issue of requeability is somewhat problematic though.&nbsp; Keep in
+mind
+that unlike Rush, Pipeline is dealing with trees of dependent files not
+a flat job queue.&nbsp; The job trees are even more complex than the
+node
+trees which are used to generate them.&nbsp; With Rush, requing a job
+is
+simply rerunning the same process.&nbsp; Pipeline has to consider that
+upstream dependencies may have changed as well.&nbsp; These changes may
+have
+caused radical changes to the structure of the tree of jobs generated
+by doing a "Make" operation.&nbsp; For instance, dependencies may have
+been
+added or removed.&nbsp; Even if the structure is the same, changes to a
+leaf
+node can have far reaching changes to the set of jobs involved
+depending on which nodes (and which frames for each node) are
+stale.&nbsp;
+In short, Pipeline really cannot avoid performing Make operations on
+trees of nodes in order to requeue jobs.<br>
+<br>
+I think what you are trying to achieve is a simpler way of retrying
+jobs or tweaking the batching details without having to find the nodes
+which generated them (back in the node layout view) in the first
+place.&nbsp; What if I simply gave you shortcuts to remove the existing
+job
+and perform a new "Make" as a single operation from within the Jobs
+panel? For instance, double clicking on the job itself.&nbsp; The job
+requirements and batching could be temporarily overridden during this
+operation as well with some kind pop up menu and accompanying dialog.<br>
+<br>
+I think your Batch ideas could be implemented by grouping jobs under
+the name of the root node on which the Make operation was
+performed.&nbsp;&nbsp;
+The above shortcut would put the "requed" jobs under the same node
+group (Batch) as the original job.&nbsp;&nbsp; I like your overall
+Batch status
+ideas as well... <br>
+</body>
+</html>

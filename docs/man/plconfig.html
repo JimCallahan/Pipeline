@@ -1,0 +1,303 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>plkeygen(1)</title>
+</head>
+<body>
+<h3><a name="Name"></a>Name</h3>
+<blockquote><b>plconfig</b> - the Pipeline configuration and license
+generator program<br>
+</blockquote>
+<h3><a name="Synopsis"></a>Synopsis</h3>
+<blockquote><b>plconfig</b> [<a href="#Global_Options"><span
+ style="font-style: italic;">options</span></a>]<i><br>
+  </i><br>
+  <b>plconfig</b> <a style="font-weight: bold;" href="#--help">--help</a><br>
+  <b>plconfig</b> <a style="font-weight: bold;" href="#--html-help">--html-help</a><br>
+  <b>plconfig</b> <a style="font-weight: bold;" href="#--version_">--version</a><br>
+  <b>plconfig</b> <a style="font-weight: bold;" href="#--release-date">--release-date</a><br>
+  <b>plconfig</b> <a style="font-weight: bold;" href="#--copyright">--copyright</a><br>
+</blockquote>
+<h3><a name="Description"></a>Description<br>
+</h3>
+<blockquote>This program is used by system adminstrators to generate a
+Pipeline configuration profile and license key for their site.&nbsp;
+See the <a href="#Global_Options"><span style="font-weight: bold;">Global
+Options</span></a> section for details about the site specific
+parameters which can be configured.<br>
+  <h4>Before You Start<br>
+  </h4>
+Before running this program, a new user called "pipeline" who's user
+group is also called "pipeline" needs to be created at your site.&nbsp;
+The <span style="font-weight: bold;">plcofig</span>(1) program must be
+run as this new user.&nbsp; The "pipeline" user will eventually be used
+to run various daemon processes and other priviledged programs which
+make up the Pipeline system.&nbsp; This user should be able to login to
+all hosts which will run Pipeline programs with an idential user and
+group ID.&nbsp; Once a site configuration profile has been generated
+using <span style="font-weight: bold;">plcofig</span>(1), this user
+and group ID should not be modified.<br>
+  <br>
+In addition, the root installation directory (see <a href="#--root-dir"><span
+ style="font-weight: bold;">--root</span></a>) for Pipeline needs to be
+created and have its file access permissions and ownership set before
+running <span style="font-weight: bold;">plcofig</span>(1) exactly as
+follows:<br>
+  <div style="margin-left: 40px;"><br>
+  <code>&gt; mkdir <span style="font-style: italic;">root-install-directory<span
+ style="font-style: italic;"><br>
+  </span></span>&gt; chown root.pipeline <span
+ style="font-style: italic;">root-install-directory<br>
+  </span>&gt; chmod 775<span style="font-style: italic;"> </span><span
+ style="font-style: italic;"><span style="font-style: italic;">root-install-directory</span></span><span
+ style="font-style: italic;"><span style="font-style: italic;"></span></span></code></div>
+  <br>
+Where the (<span style="font-style: italic;">root-install-directory</span>)
+is replaced with the location chosen for the Pipeline installation for
+your site.&nbsp; Once these steps have been taken, you are ready to
+configure PIpeline for your site.<code><span style="font-style: italic;"></span></code><br>
+  <h4>Configuring Pipeline</h4>
+Once the steps described above, its a relatively simple matter to
+generate the Pipeline configuration and license key.&nbsp; There are a
+small number of required options to <span style="font-weight: bold;">plconfig</span>(1)
+which are marked as such in the <a
+ href="file:///home/jim/code2/src/pipeline/docs/man/plkeygen.html#Global_Options"><span
+ style="font-weight: bold;">Global
+Options</span></a> section.&nbsp; The non-required options are either
+auto-detected by <span style="font-weight: bold;">plconfig</span>(1)
+or given reasonable default values.&nbsp; The choices for all
+configuration parameters will be printed when <span
+ style="font-weight: bold;">plconfig</span>(1) is run.&nbsp; You may
+run <span style="font-weight: bold;">plconfig</span>(1) any number of
+times until your are satisfied with the settings.&nbsp; <br>
+  <br>
+Each time <span style="font-weight: bold;">plconfig</span>(1) is run
+writes (or overwrites) the following three files under the root
+installation directory set with the <a href="#-root-dir"><span
+ style="font-weight: bold;">--root-dir</span></a> option:<br>
+  <span style="font-style: italic;"><br>
+  <a name="pipeline-license.key"></a>root-install-directory</span>/pipeline-license.key<br>
+  <div style="margin-left: 40px;"><br>
+This file contains the your license key for Pipeline.&nbsp; This file
+is created with file access permissions which make it readable only by
+the "pipeline" user. This file should be zealously protected as it
+represents confidential information covered by the <span
+ style="font-weight: bold;">Pipeline License Agreement</span>. Once
+Pipeline is installed, this file will be required in order to run the
+programs which make up the Pipeline.<br>
+  </div>
+  <br>
+  <span style="font-style: italic;"><a name="pipeline.profile"></a>root-install-directory</span>/pipeline.profile<br>
+  <br>
+  <div style="margin-left: 40px;">This file contains some encrypted
+text related the configuration options you gave to <span
+ style="font-weight: bold;">plconfig</span>(1).&nbsp; The contents of
+this file will need to be pasted into the profile section of the online
+  <span style="font-weight: bold;">Pipeline License Application Form</span>.
+  <br>
+  <br>
+  </div>
+  <span style="font-style: italic;"><a name="pipeline.config"></a>root-install-directory</span>/pipeline.config<br>
+  <br>
+  <div style="margin-left: 40px;">This is a plain text file similar to
+the configuration parameters printed by<span style="font-weight: bold;">
+plconfig</span>(1).&nbsp; This file is not required either to run
+Pipeline or as part of the license application process.&nbsp; Its
+provided soley for your future reference of the configuration settings
+you chose when generating the other two files.<br>
+  <br>
+  </div>
+Once you've decided on a configuration, you should run <span
+ style="font-weight: bold;">plconfig</span>(1) one last time adding the
+  <a href="--lock"><span style="font-weight: bold;">--lock</span></a>
+option the rest of your option choices. This option make the above
+three file read-only to prevent any accidental destruction at a later
+date by running <span style="font-weight: bold;">plconfig</span>(1)
+again.<br>
+</blockquote>
+<h3> </h3>
+<h3><a name="Information_Options"></a>Information Options</h3>
+<blockquote>The following options provide information about <b>plconfig</b>(1)
+and then immediately exit:</blockquote>
+<blockquote><b><a name="--help"></a>--help</b><br>
+  <blockquote>Prints a brief usage message and exits.<br>
+  </blockquote>
+  <b><a name="--html-help"></a>--html-help</b><br>
+  <blockquote>Opens this page using the <a
+ href="http://www.mozilla.org"><b>mozilla</b></a>(1) web browser.&nbsp;
+  </blockquote>
+  <b><a name="--version"></a>--version</b><br>
+  <blockquote>Prints the version number of this software and exits.<br>
+  </blockquote>
+  <b><a name="--release-date"></a>--release-date</b><br>
+  <blockquote> Prints date that this software was released and exits.<br>
+  </blockquote>
+  <b><a name="--copyright"></a>--copyright<br>
+  </b><br>
+  <div style="margin-left: 40px;"> Prints copyright notice for this
+software and exits.</div>
+  <blockquote> </blockquote>
+</blockquote>
+<h3><a name="Global_Options"></a>Global Options</h3>
+<div style="margin-left: 40px;">This options are used to set the
+configuration parameters of Pipeline for your site.&nbsp; All of the <a
+ href="#Required_Options"><span style="font-weight: bold;">Required
+Options</span></a> must be supplied each time <span
+ style="font-weight: bold;">plconfig</span>(1) is run.&nbsp; For any of
+the <a href="#Non-Required_Options"><span style="font-weight: bold;">Non-Required
+Options</span></a> which are omitted, the values of the configuration
+parameters controlled by the option will either be auto-detected or
+default values will be used.<br>
+</div>
+<h4 style="margin-left: 40px;"><a name="Required_Options"></a>Required
+Options
+</h4>
+<div style="margin-left: 40px;"><b><a name="--root-dir"></a>--root-dir</b>=<span
+ style="font-style: italic;">dir</span><br>
+<div style="margin-left: 40px;"><br>
+The absolute path to the root installation directory (<span
+ style="font-style: italic;">dir</span>) of Pipeline.&nbsp; All
+programs and data files which make up Pipeline will live under this
+directory when Pipeline is installed.&nbsp; This directory should
+reside on a network accessable file system such that all machines which
+will run Pipeline related programs can access the directory as (dir).<br>
+</div>
+<br>
+<b><a name="--node-dir"></a>--node-dir</b>=<span
+ style="font-style: italic;">dir</span><span style="font-style: italic;"><span
+ style="font-style: italic;"></span><br>
+</span><span style="font-style: italic;"><br>
+</span><b><a name="--prod-dir"></a>--prod-dir</b>=<span
+ style="font-style: italic;">dir<br>
+<br>
+</span>
+<div style="margin-left: 40px;">The absolute path to the root directory
+under which all production data files will reside.&nbsp; In other
+words, the location where artists will save their work.&nbsp; This root
+production directory should reside on a network accessable
+file system such
+that all machines which will run Pipeline related programs can access
+the directory as (dir). PIpeline
+will create a standard set of subdirectories under this directory with
+the following structure:<br>
+<br>
+<div style="margin-left: 40px;"><span style="font-style: italic;">dir</span><code>/</code><code><br>
+&nbsp; working/<br>
+&nbsp;&nbsp;&nbsp; </code><span style="font-style: italic;">user-name</span><code>/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ...<br>
+&nbsp;&nbsp;&nbsp; ...</code><br>
+<code>&nbsp; repository/<br>
+&nbsp;&nbsp;&nbsp; ... <br>
+&nbsp; checksum/<br>
+&nbsp;&nbsp;&nbsp; ...<br>
+</code></div>
+<br>
+Where (<span style="font-style: italic;">dir</span>) is the root
+production directory and (<span style="font-style: italic;">user-name</span>)
+is the login name of an artist.&nbsp; The "working" subdirectory
+contains working copies of files an artist is actively using.&nbsp; The
+"repository" subdirectory contains read-only copies of the versions of
+files which have been checked-in using Pipeline's revision control
+features. The "checksums" directory contains checksum of the files in
+the other two subdirectories used to optimize some of Pipeline's file
+comparison features.&nbsp; <br>
+<br>
+It is possible to later move these subdirectories to other file systems
+using techiques such as symbolic links and mount points, but for
+optimal performance all of these subdirectories should reside on the
+same host which runs the file management daemon <span
+ style="font-weight: bold;">plfilemgr</span>(1) (see <a
+ href="#--file-host"><span style="font-weight: bold;">--file-host</span></a>).&nbsp;
+<br>
+</div>
+<br>
+<b><a name="--home-dir"></a>--home-dir</b>=<span
+ style="font-style: italic;">dir<br>
+</span><b><br>
+<br>
+<a name="--toolset-dir"></a>--toolset-dir</b>=<span
+ style="font-style: italic;"><span style="font-style: italic;">dir<br>
+<br>
+<br>
+</span></span><b><a name="--master-host"></a>--master-host</b>=<span
+ style="font-style: italic;"><span style="font-style: italic;">host<br>
+<br>
+</span></span><b><a name="--file-host"></a>--file-host</b>=<span
+ style="font-style: italic;">host<br>
+<br>
+</span>
+<div style="margin-left: 40px;">The hostname of the machine (host)
+which will run the <span style="font-weight: bold;">plfilemgr</span>(1)
+daemon.&nbsp; This daemon should be run on the same host which acts as
+the
+network file server where production data files will reside on your
+site for optimal
+performance (see <a href="#--prod-dir"><span style="font-weight: bold;">--prod-dir</span></a>).<span
+ style="font-style: italic;"></span><br>
+<span style="font-style: italic;"></span></div>
+</div>
+<h4 style="margin-left: 40px;"><a name="Non-Required_Options"></a>Non-Required
+Options</h4>
+<h4 style="margin-left: 40px;"><b><a name="--master-port"></a>--master-port</b><span
+ style="font-weight: normal;">=</span><i style="font-weight: normal;">num</i></h4>
+<h4 style="margin-left: 40px;"><b><a name="--file-port"></a>--file-port</b><span
+ style="font-weight: normal;">=</span><i style="font-weight: normal;">num</i></h4>
+<h4 style="margin-left: 40px;"><b><br>
+</b><i style="font-weight: normal;"></i></h4>
+<br>
+<blockquote style="margin-left: 80px;"><span style="font-weight: bold;"><a
+ href="http://www.gnu.org/software/autoconf/"><span
+ style="font-weight: bold;"></span></a></span><span
+ style="font-weight: bold;"> </span></blockquote>
+<h3><a name="See_Also"></a>See Also<br>
+</h3>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">Other
+Software</span><br>
+<div style="margin-left: 40px;"><a href="http://www.mozilla.org"><b>mozilla</b></a>(1)<span
+ style="font-weight: bold;"></span><br>
+</div>
+</div>
+<h3><a name="Files"></a>Files</h3>
+<div style="margin-left: 40px; font-weight: bold;"><a
+ href="#pipeline-license.key">pipeline-license.key</a><br>
+<a href="#pipeline.profile">pipeline.profile</a><br>
+<a href="#pipeline.config">pipeline.config</a><br>
+</div>
+<h3>Author </h3>
+<blockquote><span style="font-weight: bold;"> Jim Callahan &lt;</span><a
+ style="font-weight: bold;" href="mailto:jim@polaris.net">jim@polaris.net</a><span
+ style="font-weight: bold;">&gt;</span>
+  <blockquote>Sole designer and author of <b>plconfig</b>(1).<br>
+  </blockquote>
+</blockquote>
+<h3><a name="Copyright"></a>Copyright<br>
+</h3>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">Copyright
+(c) 2002, 2003, 2004 James M. Callahan.</span><br
+ style="font-weight: bold;">
+</div>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<br>
+<div style="margin-left: 40px;"> THE SOFTWARE IS PROVIDED "AS-IS" AND
+WITHOUT WARRANTY OF ANY KIND, EXPRESS, IMPLIED OR OTHERWISE, INCLUDING
+WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY OR FITNESS FOR A
+PARTICULAR PURPOSE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<br>
+</div>
+<div style="margin-left: 40px;"> IN NO EVENT SHALL JAMES M. CALLAHAN BE
+LIABLE FOR ANY SPECIAL, INCIDENTAL, INDIRECT OR CONSEQUENTIAL DAMAGES
+OF
+ANY KIND, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+PROFITS, WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON
+ANY
+THEORY OF LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.</div>
+<blockquote> </blockquote>
+<blockquote> </blockquote>
+<br>
+<br>
+</body>
+</html>
