@@ -1,4 +1,4 @@
-// $Id: FileMgrApp.java,v 1.14 2005/01/22 06:10:09 jim Exp $
+// $Id: FileMgrApp.java,v 1.15 2005/02/12 15:30:52 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -58,6 +58,11 @@ class FileMgrApp
 
     boolean success = false;
     try {
+      if(!PackageInfo.sUser.equals(PackageInfo.sPipelineUser))
+	throw new PipelineException
+	  ("The plfilemgr(1) daemon may only be run by the " +
+	   "(" + PackageInfo.sPipelineUser + ") user!");
+
       FileMgrOptsParser parser = 
 	new FileMgrOptsParser(new StringReader(pPackedArgs));
       
@@ -73,9 +78,14 @@ class FileMgrApp
     catch(ParseException ex) {
       handleParseException(ex);
     }
+    catch (PipelineException ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	 ex.getMessage());
+    }
     catch(Exception ex) {
       LogMgr.getInstance().log
-	(LogMgr.Kind.Net, LogMgr.Level.Severe,
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	 getFullMessage(ex));
     }
     finally {

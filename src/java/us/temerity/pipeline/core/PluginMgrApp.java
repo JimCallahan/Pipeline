@@ -1,4 +1,4 @@
-// $Id: PluginMgrApp.java,v 1.3 2005/01/22 06:10:09 jim Exp $
+// $Id: PluginMgrApp.java,v 1.4 2005/02/12 15:30:52 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -58,6 +58,11 @@ class PluginMgrApp
 
     boolean success = false;
     try {
+      if(!PackageInfo.sUser.equals(PackageInfo.sPipelineUser))
+	throw new PipelineException
+	  ("The plpluginmgr(1) daemon may only be run by the " +
+	   "(" + PackageInfo.sPipelineUser + ") user!");
+
       PluginMgrOptsParser parser = 
 	new PluginMgrOptsParser(new StringReader(pPackedArgs));
       
@@ -72,6 +77,11 @@ class PluginMgrApp
     }
     catch(ParseException ex) {
       handleParseException(ex);
+    }
+    catch (PipelineException ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	 ex.getMessage());
     }
     catch(Exception ex) {
       LogMgr.getInstance().log

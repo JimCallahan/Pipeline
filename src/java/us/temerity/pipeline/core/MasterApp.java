@@ -1,4 +1,4 @@
-// $Id: MasterApp.java,v 1.12 2005/01/22 06:10:09 jim Exp $
+// $Id: MasterApp.java,v 1.13 2005/02/12 15:30:52 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -58,6 +58,11 @@ class MasterApp
 
     boolean success = false;
     try {
+      if(!PackageInfo.sUser.equals(PackageInfo.sPipelineUser))
+	throw new PipelineException
+	  ("The plmaster(1) daemon may only be run by the " +
+	   "(" + PackageInfo.sPipelineUser + ") user!");
+
       MasterOptsParser parser = 
 	new MasterOptsParser(new StringReader(pPackedArgs));
       
@@ -70,17 +75,17 @@ class MasterApp
       
       success = true;
     }
+    catch(ParseException ex) {
+      handleParseException(ex);
+    }
     catch(PipelineException ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	 ex.getMessage());
     }
-    catch(ParseException ex) {
-      handleParseException(ex);
-    }
     catch(Exception ex) {
       LogMgr.getInstance().log
-	(LogMgr.Kind.Net, LogMgr.Level.Severe,
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	 getFullMessage(ex));
     }
     finally {

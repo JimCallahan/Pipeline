@@ -1,4 +1,4 @@
-// $Id: JobMgrApp.java,v 1.7 2005/01/22 06:10:09 jim Exp $
+// $Id: JobMgrApp.java,v 1.8 2005/02/12 15:30:52 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -56,6 +56,11 @@ class JobMgrApp
 
     boolean success = false;
     try {
+      if(!PackageInfo.sUser.equals(PackageInfo.sPipelineUser))
+	throw new PipelineException
+	  ("The pljobmgr(1) daemon may only be run by the " +
+	   "(" + PackageInfo.sPipelineUser + ") user!");
+
       JobMgrOptsParser parser = 
 	new JobMgrOptsParser(new StringReader(pPackedArgs));
       
@@ -71,10 +76,15 @@ class JobMgrApp
     catch(ParseException ex) {
       handleParseException(ex);
     }
-    catch (Exception ex) {
+    catch (PipelineException ex) {
       LogMgr.getInstance().log
-	(LogMgr.Kind.Net, LogMgr.Level.Severe,
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	 ex.getMessage());
+    }
+    catch(Exception ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	 getFullMessage(ex));
     }
     finally {
       LogMgr.getInstance().cleanup();

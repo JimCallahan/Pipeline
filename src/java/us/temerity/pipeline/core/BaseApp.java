@@ -1,4 +1,4 @@
-// $Id: BaseApp.java,v 1.12 2005/01/22 01:36:35 jim Exp $
+// $Id: BaseApp.java,v 1.13 2005/02/12 15:30:52 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -40,9 +40,7 @@ class BaseApp
       throw new IllegalArgumentException("The name of the application cannot be (null)!");
     pName = name;
 
-
-    /* init common support classes */ 
-    
+    /* init common support classes */     
     FileCleaner.init();
   }
 
