@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.66 2004/11/11 00:39:00 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.67 2004/11/14 02:01:06 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -101,11 +101,6 @@ class JNodeViewerPanel
       
       pPanelPopup.addSeparator();
 
-      item = new JMenuItem("Center");
-      item.setActionCommand("center");
-      item.addActionListener(this);
-      pPanelPopup.add(item);  
-      
       item = new JMenuItem("Frame Selection");
       item.setActionCommand("frame-selection");
       item.addActionListener(this);
@@ -2228,9 +2223,6 @@ class JNodeViewerPanel
 	      prefs.getNodeViewerRegisterNewNode().wasPressed(e))
 	doRegister();
       
-      else if((prefs.getNodeViewerCameraCenter() != null) &&
-	      prefs.getNodeViewerCameraCenter().wasPressed(e))
-	doCenter();
       else if((prefs.getNodeViewerCameraFrameSelection() != null) &&
 		prefs.getNodeViewerCameraFrameSelection().wasPressed(e))
 	doFrameSelection();
@@ -2408,8 +2400,6 @@ class JNodeViewerPanel
       doUpdate();
     else if(cmd.equals("register"))
       doRegister();
-    else if(cmd.equals("center"))
-      doCenter();
     else if(cmd.equals("frame-selection"))
       doFrameSelection();
     else if(cmd.equals("frame-all"))
@@ -3384,61 +3374,6 @@ class JNodeViewerPanel
 
  
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Move the camera so that it is centered on current mouse position.
-   */ 
-  private void 
-  doCenter() 
-  {
-    if(pMousePos != null) {
-      Point3d eyePos = new Point3d();
-      Point3d pos    = new Point3d();
-      
-      pCanvas.getCenterEyeInImagePlate(eyePos);
-      pCanvas.getPixelLocationInImagePlate(pMousePos.x, pMousePos.y, pos);
-      
-      Transform3D xform = new Transform3D();
-      pCanvas.getImagePlateToVworld(xform);
-      xform.transform(eyePos);
-      xform.transform(pos);
-      
-      Vector3d dir = new Vector3d(pos);
-      dir.sub(eyePos);
-      dir.scale((eyePos.z-1.0) / dir.z);
-    
-      Point3d p = new Point3d(eyePos);
-      p.sub(dir);
-      
-      centerOnPos(new Point2d(p.x, p.y));
-    }
-  }
-
-  /**
-   * Move the camera so that it is centered on the given world space position. 
-   */ 
-  private void 
-  centerOnPos
-  (
-   Point2d pos
-  ) 
-  {
-    Viewer viewer = pUniverse.getViewer();
-    TransformGroup tg = viewer.getViewingPlatform().getViewPlatformTransform();
-      
-    Transform3D xform = new Transform3D();
-    tg.getTransform(xform);
-    
-    Vector3d trans = new Vector3d();
-    xform.get(trans);
-
-    trans.x = pos.x;
-    trans.y = pos.y;
-
-    xform.setTranslation(trans);
-    tg.setTransform(xform);
-  }
-
 
   /**
    * Move the camera to frame the bounds of the currently selected nodes.

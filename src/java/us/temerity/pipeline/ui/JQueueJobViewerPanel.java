@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.20 2004/11/03 19:55:43 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.21 2004/11/14 02:01:06 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -93,11 +93,6 @@ class JQueueJobViewerPanel
       
       pPanelPopup.addSeparator();
 
-      item = new JMenuItem("Center");
-      item.setActionCommand("center");
-      item.addActionListener(this);
-      pPanelPopup.add(item);  
-      
       item = new JMenuItem("Frame Selection");
       item.setActionCommand("frame-selection");
       item.addActionListener(this);
@@ -1799,9 +1794,6 @@ class JQueueJobViewerPanel
 	 prefs.getJobViewerUpdate().wasPressed(e))
 	doUpdate();
 
-      else if((prefs.getJobViewerCameraCenter() != null) &&
-	      prefs.getJobViewerCameraCenter().wasPressed(e))
-	doCenter();
       else if((prefs.getJobViewerCameraFrameSelection() != null) &&
 		prefs.getJobViewerCameraFrameSelection().wasPressed(e))
 	doFrameSelection();
@@ -1897,8 +1889,6 @@ class JQueueJobViewerPanel
     String cmd = e.getActionCommand();
     if(cmd.equals("update"))
       doUpdate();
-    else if(cmd.equals("center"))
-      doCenter();
     else if(cmd.equals("frame-selection"))
       doFrameSelection();
     else if(cmd.equals("frame-all"))
@@ -1972,61 +1962,6 @@ class JQueueJobViewerPanel
   
 
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Move the camera so that it is centered on current mouse position.
-   */ 
-  private void 
-  doCenter() 
-  {
-    if(pMousePos != null) {
-      Point3d eyePos = new Point3d();
-      Point3d pos    = new Point3d();
-      
-      pCanvas.getCenterEyeInImagePlate(eyePos);
-      pCanvas.getPixelLocationInImagePlate(pMousePos.x, pMousePos.y, pos);
-      
-      Transform3D xform = new Transform3D();
-      pCanvas.getImagePlateToVworld(xform);
-      xform.transform(eyePos);
-      xform.transform(pos);
-      
-      Vector3d dir = new Vector3d(pos);
-      dir.sub(eyePos);
-      dir.scale((eyePos.z-1.0) / dir.z);
-    
-      Point3d p = new Point3d(eyePos);
-      p.sub(dir);
-      
-      centerOnPos(new Point2d(p.x, p.y));
-    }
-  }
-
-  /**
-   * Move the camera so that it is centered on the given world space position. 
-   */ 
-  private void 
-  centerOnPos
-  (
-   Point2d pos
-  ) 
-  {
-    Viewer viewer = pUniverse.getViewer();
-    TransformGroup tg = viewer.getViewingPlatform().getViewPlatformTransform();
-      
-    Transform3D xform = new Transform3D();
-    tg.getTransform(xform);
-    
-    Vector3d trans = new Vector3d();
-    xform.get(trans);
-
-    trans.x = pos.x;
-    trans.y = pos.y;
-
-    xform.setTranslation(trans);
-    tg.setTransform(xform);
-  }
-
 
   /**
    * Move the camera to frame the bounds of the currently selected jobs.

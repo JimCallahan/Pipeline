@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.36 2004/11/03 23:41:12 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.37 2004/11/14 02:01:07 jim Exp $
 
 import java.io.*; 
 import java.util.*;
@@ -647,12 +647,6 @@ class GenUserPrefsApp
 	new BasePref(),
 
 	new HotKeyPref
-	("Move the camera so that it is centered on current mouse position.",
-	 "NodeViewerCameraCenter", "Center:", 
-	 false, false, false, 67),  /* C */ 
-	 
-	
-	new HotKeyPref
 	("Move the camera to frame the bounds of the currently selected nodes.",
 	 "NodeViewerCameraFrameSelection", "Frame Selection:",
 	 false, false, false, 70),  /* F */ 
@@ -1035,12 +1029,6 @@ class GenUserPrefsApp
 	 false, false, false, 32), /* Space */ 
 	
 	new BasePref(),
-
-	new HotKeyPref
-	("Move the camera so that it is centered on current mouse position.",
-	 "JobViewerCameraCenter", "Center:", 
-	 false, false, false, 67),  /* C */ 
-	 
 	
 	new HotKeyPref
 	("Move the camera to frame the bounds of the currently selected jobs.",
@@ -1135,7 +1123,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.36 2004/11/03 23:41:12 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.37 2004/11/14 02:01:07 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -1388,7 +1376,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.36 2004/11/03 23:41:12 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.37 2004/11/14 02:01:07 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
