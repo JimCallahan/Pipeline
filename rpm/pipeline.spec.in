@@ -2,7 +2,7 @@ Summary: The Pipeline production visualization/automation system.
 Name: pipeline-@CUSTOMER@
 Version: @VERSION@
 Release: 1
-URL: http://us.temerity/pipeline
+URL: http://www.temerity.us/pipeline
 License: Commercial
 Vendor: Temerity Software, Inc
 Group: Applications/Productivity
@@ -38,7 +38,7 @@ The core features of Pipeline include:
 @ROOT_INST_DIR@/sbin/plfilemgr
 @ROOT_INST_DIR@/sbin/plmaster
 
-%defattr(755,root,root)
+%defattr(775,pipeline,pipeline)
 %dir @PRODDIR@/working
 
 %defattr(755,pipeline,pipeline)
