@@ -1,4 +1,4 @@
-// $Id: JobMgrClient.java,v 1.2 2004/08/04 01:38:57 jim Exp $
+// $Id: JobMgrClient.java,v 1.3 2004/09/03 01:50:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -28,10 +28,7 @@ import java.util.*;
  * of the queue. <P> 
  * 
  * The {@link MasterMgrClient MasterMgrClient} class can be used to schedule new jobs (see 
- * {@link MasterMgrClient#submitJobs submitJobs} and kill 
- * existing jobs (see {@link MasterMgrClient#killJobGroup killJobGroup}, 
- * {@link MasterMgrClient#killJobGroup killJobs} and 
- * {@link MasterMgrClient#killJobGroup killNodeJobs}).
+ * {@link MasterMgrClient#submitJobs submitJobs}. 
  */
 public
 class JobMgrClient
