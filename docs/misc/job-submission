@@ -137,3 +137,49 @@ QueueState:
     Error!
 
 
+
+------------------------------------------------------------------------------------
+
+JOB STATE 
+
+TIME STAMPS
+- Submitted
+- Started 
+- Completed
+
+JOB REQUIREMENTS
+(same as JNodeDetails)
+
+TARGETS
+- Primary Target-
+ Secondary Targets
+
+SOURCES 
+SOURCE-NODE-NAME1
+- Primary Sources 
+- Secondary Sources
+SOURCE-NODE-NAME2
+- Primary Sources 
+- Secondary Sources
+...
+
+PROCESS DETAILS
+- Commandline
+- Working Directory
+- ENVIRONMENT
++ name/value pairs... 
+
+EXECUTION RESULTS
+- Hostname
+- Exit Code
+
+- User Time
+- System Time
+
+- Average/Max Resident Memory
+- Average/Max Virtual Memory
+- Page Faults
+
+- Logs: [OUTPUT] [ERROR]  (buttons)
+
+	

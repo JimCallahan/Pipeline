@@ -47,6 +47,11 @@ OPERATIONS:
   the JobMgr a list of job IDs which are not still valid on startup and have the JobMgr
   remove any files associated with jobs not on this list during initialization.
 
+- QueueMgr job/info/group tables are currently based on a lazy read metaphor.  This should be 
+  simplified since all files are read at startup.  The tables should always match the disk 
+  representation so that no key has a (null) value.  In other words, every table entry will 
+  have a disk file and visa versa.  When a table entry is removed, the associated disk file 
+  should be deleted.
 
 
 
