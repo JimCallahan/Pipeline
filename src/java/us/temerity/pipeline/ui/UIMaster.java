@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.42 2004/09/27 04:32:38 jim Exp $
+// $Id: UIMaster.java,v 1.43 2004/09/28 10:20:14 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -510,6 +510,21 @@ class UIMaster
     return beginPanelOp("");
   }
 
+  /**
+   * Update the operation message in mid-operation.
+   * 
+   * @param msg
+   *   A short message describing the operation.
+   */ 
+  public void
+  updatePanelOp
+  (
+   String msg
+  )
+  {
+    assert(pOpsLock.isLocked());
+    SwingUtilities.invokeLater(new UpdateOpsTask(msg));
+  }
 
   /**
    * Release the panel operation lock and notify the user that the operation has 
@@ -2531,6 +2546,32 @@ class UIMaster
     run() 
     {
       pProgressLight.setIcon(sProgressLightOnIcon);
+      pProgressField.setText(pMsg);
+    }
+
+    private String  pMsg;
+  }
+
+  /* 
+   * Update the operation message.
+   */ 
+  private
+  class UpdateOpsTask
+    extends Thread
+  { 
+    UpdateOpsTask
+    ( 
+     String msg
+    ) 
+    {
+      super("UIMaster:UpdateOpsTask");
+
+      pMsg = msg;
+    }
+
+    public void 
+    run() 
+    {
       pProgressField.setText(pMsg);
     }
 
