@@ -380,6 +380,16 @@
 
 
 
+  <!--  H O R I Z O N T A L   B A R --> 
+
+  <style id="HorizontalBar">
+    <imagePainter path="HorizontalBar.png"	
+                  sourceInsets="3 3 3 3"/>
+  </style>
+  <bind style="HorizontalBar" type="name" key="HorizontalBar"/>
+
+
+
   <!--  S P A C E R  -->
 
   <style id="Spacer">
@@ -778,17 +788,6 @@
     <insets top="3" bottom="3" right="3" left="3"/>
   </style>
   <bind style="TitleValuePanel" type="name" key="TitleValuePanel"/>
-
-
-   
-  <!--  C A R D   P A N E L   -->
- 
-  <style id="CardPanel">
-    <imagePainter path="FrameIn.png"
-                  sourceInsets="3 3 3 3"/>
-    <insets top="3" bottom="3" right="3" left="3"/>
-  </style>
-  <bind style="CardPanel" type="name" key="CardPanel"/>
 
 
    
