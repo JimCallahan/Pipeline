@@ -1,4 +1,4 @@
-// $Id: VerifiedApp.java.in,v 1.6 2005/03/11 06:29:44 jim Exp $
+// $Id: VerifiedApp.java.in,v 1.7 2005/03/24 17:54:19 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -79,32 +79,34 @@ class VerifiedApp
       }
     }
 
-    /* check the license time window */ 
-    try {
-      if(!TimeService.isValid(sLicenseStart, sLicenseEnd)) {
-	SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd"); 
+    /* check the license time window (unless the license is Perpetual) */ 
+    if(sLicenseEnd < Long.MAX_VALUE) {
+      try {
+	if(!TimeService.isValid(sLicenseStart, sLicenseEnd)) {
+	  SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd"); 
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Net, LogMgr.Level.Severe,  
+	     "The current " + sLicenseType + " license is only valid from: " + 
+	     fmt.format(new Date(sLicenseStart)) + " until " + 
+	     fmt.format(new Date(sLicenseEnd)) + ".\n" + 
+	     "Contact <support@temerity.us> to renew the license.\n");
+	  
+	  System.exit(1);
+	}
+      }
+      catch(IOException ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,  
-	   "The current " + sLicenseType + " license is only valid from: " + 
-	   fmt.format(new Date(sLicenseStart)) + " until " + 
-	   fmt.format(new Date(sLicenseEnd)) + ".\n" + 
-	   "Contact <support@temerity.us> to renew the license.\n");
+	   "Unable to reliably determine the time!\n" +
+	   "Pipeline was unable to contact any well known Network Time Servers via the " +
+	   "InterNet in order to determine whether the current license has expired.\n" + 
+	   "Contact your system administrator to verify that your connection to the " + 
+	   "InterNet is functioning properly and that NTP packets are not being " + 
+	   "filtered by your firewall.");
 	
 	System.exit(1);
-      }
+      }      
     }
-    catch(IOException ex) {
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Net, LogMgr.Level.Severe,  
-	 "Unable to reliably determine the time!\n" +
-	 "Pipeline was unable to contact any well known Network Time Servers via the " +
-	 "InterNet in order to determine whether the current license has expired.\n" + 
-	 "Contact your system administrator to verify that your connection to the " + 
-	 "InterNet is functioning properly and that NTP packets are not being " + 
-	 "filtered by your firewall.");
-
-      System.exit(1);
-    }      
   }
 
 
