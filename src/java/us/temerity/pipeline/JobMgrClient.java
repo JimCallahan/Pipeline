@@ -1,4 +1,4 @@
-// $Id: JobMgrClient.java,v 1.3 2004/09/03 01:50:03 jim Exp $
+// $Id: JobMgrClient.java,v 1.4 2004/09/05 06:40:54 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -104,6 +104,14 @@ class JobMgrClient
    * Get current collected lines of captured STDOUT output from the given job starting 
    * at the given line. <P>
    * 
+   * By keeping a count of the lines previously retrieved and using this count as the 
+   * <CODE>start</CODE> argument, output can be incrementally retrieved from a running 
+   * job. If no new output is available since the last call, the returned array will 
+   * have zero length.  <P> 
+   * 
+   * If the last line of returned output is <CODE>null</CODE>, then the job has completed
+   * and all output has been retrieved. <P> 
+   * 
    * @param jobID
    *   The unique job identifier. 
    * 
@@ -136,7 +144,7 @@ class JobMgrClient
   }
 
   /** 
-   * Gets the current collected STDOUT output from the given job a single 
+   * Gets the current collected STDOUT output from the given job as a single 
    * <CODE>String</CODE>.  <P>
    * 
    * @param jobID
@@ -163,7 +171,8 @@ class JobMgrClient
       StringBuffer buf = new StringBuffer();
       int wk;
       for(wk=0; wk<lines.length; wk++) 
-	buf.append(lines[wk] + "\n");
+	if(lines[wk] != null) 
+	  buf.append(lines[wk] + "\n");
 
       return buf.toString();
     }
@@ -179,6 +188,14 @@ class JobMgrClient
   /**
    * Get current collected lines of captured STDERR output from the given job starting 
    * at the given line. <P>
+   * 
+   * By keeping a count of the lines previously retrieved and using this count as the 
+   * <CODE>start</CODE> argument, output can be incrementally retrieved from a running 
+   * job. If no new output is available since the last call, the returned array will 
+   * have zero length.  <P> 
+   * 
+   * If the last line of returned output is <CODE>null</CODE>, then the job has completed
+   * and all output has been retrieved. <P> 
    * 
    * @param jobID
    *   The unique job identifier. 
@@ -239,7 +256,8 @@ class JobMgrClient
       StringBuffer buf = new StringBuffer();
       int wk;
       for(wk=0; wk<lines.length; wk++) 
-	buf.append(lines[wk] + "\n");
+	if(lines[wk] != null) 
+	  buf.append(lines[wk] + "\n");
 
       return buf.toString();
     }

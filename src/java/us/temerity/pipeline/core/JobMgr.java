@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.8 2004/09/03 11:01:22 jim Exp $
+// $Id: JobMgr.java,v 1.9 2004/09/05 06:40:36 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -729,6 +729,9 @@ class JobMgr
       
       reader.close();
     }
+
+    /* indicates that this is the final line */ 
+    lines.add(null);
       
     String[] rtn = new String[lines.size()];
     return (String[]) lines.toArray(rtn);
