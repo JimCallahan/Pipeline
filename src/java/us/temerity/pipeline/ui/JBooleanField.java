@@ -1,4 +1,4 @@
-// $Id: JBooleanField.java,v 1.3 2004/06/14 22:45:35 jim Exp $
+// $Id: JBooleanField.java,v 1.4 2004/06/19 00:31:57 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -79,7 +79,7 @@ class JBooleanField
    boolean tf
   ) 
   {
-    pValue = tf;
+    pValue = tf;    
     pTextField.setText(pValue ? "YES" : "no");
 
     pTextField.fireActionPerformed2();
@@ -92,6 +92,16 @@ class JBooleanField
   getValue() 
   {
     return pValue;
+  }
+
+
+  /**
+   * Get the text value.
+   */ 
+  public String
+  getText() 
+  {
+    return pTextField.getText();
   }
 
 
@@ -112,11 +122,15 @@ class JBooleanField
     if(enabled && !isEnabled()) {
       addMouseListener(this);
       pTextField.addMouseListener(this);
+      
+      pTextField.setText(pValue ? "YES" : "no");
       pIconLabel.setIcon(sEnabledIcon);
     }
     else if(!enabled && isEnabled()) {
       removeMouseListener(this);
       pTextField.removeMouseListener(this);
+
+      pTextField.setText("-");
       pIconLabel.setIcon(sDisabledIcon);
     }
 
