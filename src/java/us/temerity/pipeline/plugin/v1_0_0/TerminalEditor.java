@@ -1,4 +1,4 @@
-// $Id: TerminalEditor.java,v 1.1 2004/12/30 03:13:29 jim Exp $
+// $Id: TerminalEditor.java,v 1.2 2005/01/01 08:39:22 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -84,7 +84,7 @@ class TerminalEditor
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID = 
+  private static final long serialVersionUID = 2099059926870311259L;
 
 }
 
