@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.2 2004/03/26 04:39:05 jim Exp $
+// $Id: FileMgrClient.java,v 1.3 2004/03/26 19:10:50 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -65,7 +65,7 @@ class FileMgrClient
 
   /*-- CONSTRUCTION HELPERS ----------------------------------------------------------------*/
 
-  private synchronized void 
+  private void 
   init
   ( 
    String hostname, 
@@ -140,7 +140,7 @@ class FileMgrClient
       throw new PipelineException(rsp.getMessage());	
     }
     else {
-      shutdown();
+      disconnect();
       throw new PipelineException
 	("Illegal response received from the FileMgrServer instance!");
     }
@@ -197,7 +197,7 @@ class FileMgrClient
       throw new PipelineException(rsp.getMessage());	
     }
     else {
-      shutdown();
+      disconnect();
       throw new PipelineException
 	("Illegal response received from the FileMgrServer instance!");
     }
@@ -235,7 +235,7 @@ class FileMgrClient
       throw new PipelineException(rsp.getMessage());	
     }
     else {
-      shutdown();
+      disconnect();
       throw new PipelineException
 	("Illegal response received from the FileMgrServer instance!");
     }
@@ -278,7 +278,7 @@ class FileMgrClient
       throw new PipelineException(rsp.getMessage());	
     }
     else {
-      shutdown();
+      disconnect();
       throw new PipelineException
 	("Illegal response received from the FileMgrServer instance!");
     }
@@ -320,7 +320,7 @@ class FileMgrClient
       throw new PipelineException(rsp.getMessage());	
     }
     else {
-      shutdown();
+      disconnect();
       throw new PipelineException
 	("Illegal response received from the FileMgrServer instance!");
     }
@@ -330,7 +330,7 @@ class FileMgrClient
    * Close the network connection if its is still connected.
    */
   public synchronized void 
-  shutdown() 
+  disconnect() 
   {
     if(pSocket == null)
       return;
@@ -339,7 +339,7 @@ class FileMgrClient
       if(pSocket.isConnected()) {
 	OutputStream out = pSocket.getOutputStream();
 	ObjectOutput objOut = new ObjectOutputStream(out);
-	objOut.writeObject(FileRequest.Shutdown);
+	objOut.writeObject(FileRequest.Disconnect);
 	objOut.flush(); 
 
 	pSocket.close();
@@ -352,6 +352,34 @@ class FileMgrClient
     }
   }
 
+  /**
+   * Order the server to refuse any further requests and then to exit as soon as all
+   * currently pending requests have be completed.
+   */
+  public synchronized void 
+  shutdown() 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    try {
+      OutputStream out = pSocket.getOutputStream();
+      ObjectOutput objOut = new ObjectOutputStream(out);
+      objOut.writeObject(FileRequest.Shutdown);
+      objOut.flush(); 
+
+      pSocket.close();
+    }
+    catch(IOException ex) {
+      disconnect();
+      throw new PipelineException
+	("IO problems on port (" + pPort + "):\n" + 
+	 ex.getMessage());
+    }
+    finally {
+      pSocket = null;
+    }
+  }
 
 
   /*----------------------------------------------------------------------------------------*/

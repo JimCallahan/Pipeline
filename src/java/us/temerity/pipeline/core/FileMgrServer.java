@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.3 2004/03/26 04:39:22 jim Exp $
+// $Id: FileMgrServer.java,v 1.4 2004/03/26 19:10:50 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -8,6 +8,7 @@ import us.temerity.pipeline.message.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.concurrent.atomic.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   F I L E   M G R   S E R V E R                                                          */
@@ -81,6 +82,9 @@ class FileMgrServer
     if(port < 0) 
       throw new IllegalArgumentException("Illegal port number (" + port + ")!");
     pPort = port;
+
+    pShutdown = new AtomicBoolean(false);
+    pTasks    = new HashSet<HandlerTask>();
   }
 
  
@@ -103,11 +107,29 @@ class FileMgrServer
       Logs.net.fine("Listening on Port: " + pPort);
       Logs.flush();
 
-      while(true) {
-	Socket socket = server.accept();
-	HandlerTask task = new HandlerTask(socket);
-	task.start();	
+      server.setSoTimeout(15000);
+      while(!pShutdown.get()) {
+	try {
+	  Socket socket = server.accept();
+	  
+	  HandlerTask task = new HandlerTask(socket);
+	  pTasks.add(task);
+	  task.start();	
+	}
+	catch(SocketTimeoutException ex) {
+	}
       }
+
+      try {
+	Logs.net.finer("Shutting Down -- Waiting for tasks to complete...");
+	for(HandlerTask task : pTasks) {
+	  task.join();
+	}
+      }
+      catch(InterruptedException ex) {
+      }
+
+      Logs.net.fine("Server Shutdown.");      
     }
     catch (IOException ex) {
       Logs.net.severe("IO problems on port (" + pPort + "):\n" + 
@@ -148,7 +170,7 @@ class FileMgrServer
 	Logs.flush();
 
 	boolean live = true;
-	while(pSocket.isConnected() && live) {
+	while(pSocket.isConnected() && live && !pShutdown.get()) {
 	  InputStream in    = pSocket.getInputStream();
 	  ObjectInput objIn = new ObjectInputStream(in);
 	  FileRequest kind  = (FileRequest) objIn.readObject();
@@ -200,8 +222,16 @@ class FileMgrServer
 	    }
 	    break;
 	    
-	  case Shutdown:
+	  case Disconnect:
 	    live = false;
+	    break;
+
+	  case Shutdown:
+	    pShutdown.set(true);
+	    break;	    
+
+	  default:
+	    assert(false);
 	  }
 	}
       }
@@ -222,6 +252,12 @@ class FileMgrServer
 
 	Logs.net.fine("Connection Closed: " + pSocket.getInetAddress());
 	Logs.flush();
+	
+	if(!pShutdown.get()) {
+	  synchronized(pTasks) {
+	    pTasks.remove(this);
+	  }
+	}
       }
     }
     
@@ -244,5 +280,14 @@ class FileMgrServer
    */
   private int  pPort;
   
+  /**
+   * Has the server been ordered to shutdown?
+   */
+  private AtomicBoolean  pShutdown;
+
+  /**
+   * The set of currently running tasks.
+   */ 
+  private HashSet<HandlerTask>  pTasks;
 }
 
