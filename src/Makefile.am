@@ -1,6 +1,5 @@
 
 SUBDIRS = \
-  database \
   java \
   utils
 
