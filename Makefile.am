@@ -1,6 +1,5 @@
 
 SUBDIRS = \
-  php \
   src
 
 
