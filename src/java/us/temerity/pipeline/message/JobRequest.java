@@ -1,4 +1,4 @@
-// $Id: JobRequest.java,v 1.1 2004/07/21 07:16:18 jim Exp $
+// $Id: JobRequest.java,v 1.2 2004/07/28 19:08:39 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -19,9 +19,60 @@ package us.temerity.pipeline.message;
  */
 public
 enum JobRequest
-{
+{ 
+  /**
+   * Get a point sample of the currently available system resources.
+   */ 
+  GetResources, 
+
+  /**
+   * Get the number of processors (CPUs).
+   */ 
+  GetNumProcessors,  
+
+  /**
+   * Get the total amount of system memory (in bytes).
+   */ 
+  GetTotalMemory, 
+
+  /**
+   * Get the size of the temporary disk drive (in bytes).
+   */ 
+  GetTotalDisk, 
+
+
+  /*----------------------------------------------------------------------------------------*/
   
-  // ...
+  /**
+   * An instance {@link JobStartReq JobStartReq} is next.
+   */ 
+  Start, 
+
+  /**
+   * An instance {@link JobKillReq JobKillReq} is next.
+   */ 
+  Kill, 
+
+  /**
+   * An instance {@link JobWaitReq JobWaitReq} is next.
+   */ 
+  Wait, 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * An instance {@link JobGetStdOutLinesReq JobGetStdOutLinesReq} is next.
+   */ 
+  GetStdOutLines, 
+
+  /**
+   * An instance {@link JobGetStdErrLinesReq JobGetStdErrLinesReq} is next.
+   */ 
+  GetStdErrLines, 
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * No more requests will be send over this connection.
