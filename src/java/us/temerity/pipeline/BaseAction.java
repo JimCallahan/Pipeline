@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.8 2004/04/11 19:26:11 jim Exp $
+// $Id: BaseAction.java,v 1.9 2004/05/21 18:07:30 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -612,7 +612,6 @@ class BaseAction
    */
   public Object 
   clone()
-    throws CloneNotSupportedException
   {
     BaseAction clone = (BaseAction) super.clone();
     

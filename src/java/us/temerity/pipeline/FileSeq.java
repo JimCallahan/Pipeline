@@ -1,4 +1,4 @@
-// $Id: FileSeq.java,v 1.10 2004/04/11 19:30:00 jim Exp $
+// $Id: FileSeq.java,v 1.11 2004/05/21 18:07:30 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -427,7 +427,6 @@ class FileSeq
    */
   public Object 
   clone()
-    throws CloneNotSupportedException
   {
     return new FileSeq(this);
   }

@@ -1,4 +1,4 @@
-// $Id: FrameRange.java,v 1.8 2004/03/23 20:41:25 jim Exp $
+// $Id: FrameRange.java,v 1.9 2004/05/21 18:07:30 jim Exp $
 
 package us.temerity.pipeline;
  
@@ -350,9 +350,14 @@ class FrameRange
    */
   public Object 
   clone()
-    throws CloneNotSupportedException
   {
-    return super.clone();
+    try {
+      return super.clone();
+    }
+    catch(CloneNotSupportedException ex) {
+      assert(false);
+      return null;
+    }
   }
 
 

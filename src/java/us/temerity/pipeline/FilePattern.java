@@ -1,4 +1,4 @@
-// $Id: FilePattern.java,v 1.7 2004/03/23 20:41:25 jim Exp $
+// $Id: FilePattern.java,v 1.8 2004/05/21 18:07:30 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -40,7 +40,7 @@ import java.io.*;
  */
 public
 class FilePattern
-implements Cloneable, Glueable, Serializable
+  implements Cloneable, Glueable, Serializable
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -357,9 +357,14 @@ implements Cloneable, Glueable, Serializable
    */
   public Object 
   clone()
-    throws CloneNotSupportedException
   {
-    return super.clone();
+    try {
+      return super.clone(); 
+    }
+    catch(CloneNotSupportedException ex) {
+      assert(false);
+      return null;
+    }
   }
 
 

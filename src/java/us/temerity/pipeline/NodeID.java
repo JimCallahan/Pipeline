@@ -1,4 +1,4 @@
-// $Id: NodeID.java,v 1.8 2004/05/02 12:05:44 jim Exp $
+// $Id: NodeID.java,v 1.9 2004/05/21 18:07:30 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -288,7 +288,6 @@ class NodeID
    */
   public Object 
   clone()
-    throws CloneNotSupportedException
   {
     return new NodeID(this);
   }

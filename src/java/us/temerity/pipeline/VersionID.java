@@ -1,4 +1,4 @@
-// $Id: VersionID.java,v 1.9 2004/04/24 22:33:02 jim Exp $
+// $Id: VersionID.java,v 1.10 2004/05/21 18:07:30 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -261,9 +261,14 @@ class VersionID
    */
   public Object 
   clone()
-    throws CloneNotSupportedException
   {
-    return super.clone();
+    try {
+      return super.clone();
+    }
+    catch(CloneNotSupportedException ex) {
+      assert(false);
+      return null;
+    }
   }
 
 

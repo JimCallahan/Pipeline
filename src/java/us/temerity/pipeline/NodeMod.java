@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.19 2004/04/20 21:58:31 jim Exp $
+// $Id: NodeMod.java,v 1.20 2004/05/21 18:07:30 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -657,16 +657,11 @@ class NodeMod
 	 "modified while frozen!");
 
     if(action != null) {
-      try {
-	pAction    = (BaseAction) action.clone();
-	pJobReqs   = JobReqs.defaultJobReqs();
-	pOverflow  = OverflowPolicy.Abort;
-	pExecution = ExecutionMethod.Serial;
-	pBatchSize = new Integer(0);
-      }
-      catch(CloneNotSupportedException ex) {
-	assert(false);
-      }
+      pAction    = (BaseAction) action.clone();
+      pJobReqs   = JobReqs.defaultJobReqs();
+      pOverflow  = OverflowPolicy.Abort;
+      pExecution = ExecutionMethod.Serial;
+      pBatchSize = new Integer(0);
     }
     else {
       pAction    = null;
@@ -708,12 +703,7 @@ class NodeMod
       throw new IllegalArgumentException
 	("The job requirements cannot be (null)!");
     
-    try {
-      pJobReqs = (JobReqs) jobReqs.clone();
-    }
-    catch(CloneNotSupportedException ex) {
-      assert(false);
-    }
+    pJobReqs = (JobReqs) jobReqs.clone();
 
     updateLastMod();
   }
@@ -1153,7 +1143,6 @@ class NodeMod
    */
   public Object 
   clone()
-    throws CloneNotSupportedException
   {
     return new NodeMod(this);
   }

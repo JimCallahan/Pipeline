@@ -1,4 +1,4 @@
-// $Id: LogMessage.java,v 1.3 2004/04/11 19:31:58 jim Exp $
+// $Id: LogMessage.java,v 1.4 2004/05/21 18:07:30 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -132,9 +132,14 @@ class LogMessage
    */
   public Object 
   clone()
-    throws CloneNotSupportedException
   {
-    return super.clone();
+    try {
+      return super.clone();
+    }
+    catch(CloneNotSupportedException ex) {
+      assert(false);
+      return null;
+    }
   }
 
 

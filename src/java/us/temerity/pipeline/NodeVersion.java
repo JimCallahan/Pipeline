@@ -1,4 +1,4 @@
-// $Id: NodeVersion.java,v 1.15 2004/04/20 21:59:58 jim Exp $
+// $Id: NodeVersion.java,v 1.16 2004/05/21 18:07:30 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -268,7 +268,6 @@ class NodeVersion
    */
   public Object 
   clone()
-    throws CloneNotSupportedException
   {
     return new NodeVersion(this);
   }

@@ -1,4 +1,4 @@
-// $Id: NodeCommon.java,v 1.12 2004/05/07 15:02:49 jim Exp $
+// $Id: NodeCommon.java,v 1.13 2004/05/21 18:07:30 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -231,20 +231,15 @@ class NodeCommon
 
     if((action != null) && (jobReqs != null) && 
        (overflow != null) && (execution != null) && (batchSize != null)) {
-      try {
-	pAction    = (BaseAction) action.clone();
-	pJobReqs   = (JobReqs)    jobReqs.clone();
-	pOverflow  = overflow;
-	pExecution = execution; 
-
-	if(batchSize < 0)
-	  throw new IllegalArgumentException
-	    ("The batch size cannot be negative!");
-	pBatchSize = batchSize; 
-      }
-      catch(CloneNotSupportedException ex) {
-	assert(false);
-      }
+      pAction    = (BaseAction) action.clone();
+      pJobReqs   = (JobReqs)    jobReqs.clone();
+      pOverflow  = overflow;
+      pExecution = execution; 
+      
+      if(batchSize < 0)
+	throw new IllegalArgumentException
+	  ("The batch size cannot be negative!");
+      pBatchSize = batchSize; 
     }
     else if(!((action == null) && (jobReqs == null))) {
       throw new IllegalArgumentException
@@ -336,15 +331,8 @@ class NodeCommon
   public BaseAction
   getAction() 
   {
-    if(pAction != null) {
-      try {
-	return (BaseAction) pAction.clone();
-      }
-      catch(CloneNotSupportedException ex) {
-	assert(false);
-      }
-    }
-      
+    if(pAction != null) 
+      return (BaseAction) pAction.clone();
     return null;
   }
   
@@ -359,15 +347,8 @@ class NodeCommon
   public JobReqs
   getJobRequirements() 
    {
-    if(pJobReqs != null) {
-      try {
-	return (JobReqs) pJobReqs.clone();
-      }
-      catch(CloneNotSupportedException ex) {
-	assert(false);
-      }
-    }
-      
+    if(pJobReqs != null) 
+      return (JobReqs) pJobReqs.clone();
     return null;
   }
 
@@ -480,7 +461,6 @@ class NodeCommon
    */
   public Object 
   clone()
-    throws CloneNotSupportedException
   {
     return new NodeCommon(this);
   }
