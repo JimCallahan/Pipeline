@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.21 2004/06/08 03:05:59 jim Exp $
+// $Id: UIMaster.java,v 1.22 2004/06/08 20:11:17 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1446,6 +1446,7 @@ class UIMaster
     Dimension size = new Dimension(vwidth, 19);
     field.setMinimumSize(size);
     field.setMaximumSize(size);
+    field.setPreferredSize(size);
 
     vpanel.add(field);
 
@@ -1487,6 +1488,7 @@ class UIMaster
     Dimension size = new Dimension(vwidth, 19);
     field.setMinimumSize(size);
     field.setMaximumSize(size);
+    field.setPreferredSize(size);
 
     vpanel.add(field);
 
