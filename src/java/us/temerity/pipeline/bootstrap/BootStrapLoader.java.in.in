@@ -1,4 +1,4 @@
-// $Id: BootStrapLoader.java.in.in,v 1.1 2004/03/22 03:12:45 jim Exp $
+// $Id: BootStrapLoader.java.in.in,v 1.2 2004/03/23 02:11:08 jim Exp $
 
 package us.temerity.pipeline.bootstrap;
 
@@ -37,7 +37,7 @@ class BootStrapLoader
   {
     super();
     
-    File license = new File("@ROOT_INST_DIR@", "pipeline-license.key");
+    File license = new File("@ROOT_INST_DIR@", "config/pipeline.key");
     if(!license.isFile()) 
       throw new LicenseException("The license file (" + license + ") was missing!");
 
@@ -48,7 +48,7 @@ class BootStrapLoader
     /* retrieve the customers private key 
          and the encrypted profile data attached to the key */ 
     PrivateKey privateKey = null;
-    String encrypted = null;
+    BigInteger encrypted = null;
     try {
       FileReader in = new FileReader(license);
       
@@ -66,7 +66,8 @@ class BootStrapLoader
 	char cs[] = new char[keySize];
 	in.read(cs, 0, cs.length);
 	
-	byte bytes[] = decodeBytes(new String(cs));
+	BigInteger big = new BigInteger(new String(cs));
+	byte bytes[] = big.toByteArray();
 	
 	KeyFactory factory = KeyFactory.getInstance("DH");
 	PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(bytes);
@@ -87,7 +88,7 @@ class BootStrapLoader
 	  buf.append(cs, 0, size);
 	}
 	
-	encrypted = buf.toString();
+	encrypted = new BigInteger(buf.toString());
       }
       
       in.close();
@@ -130,7 +131,7 @@ class BootStrapLoader
       try {
 	Cipher decipher = Cipher.getInstance("DES/ECB/PKCS5Padding");
 	decipher.init(Cipher.DECRYPT_MODE, key);
-	byte raw[] = decipher.doFinal(decodeBytes(encrypted));
+	byte raw[] = decipher.doFinal(encrypted.toByteArray());
 	
 	ByteArrayInputStream bin = new ByteArrayInputStream(raw);
 	
@@ -269,20 +270,18 @@ class BootStrapLoader
 	{
 	  int size = new Integer(new String(raw, idx, 9));
 	  if(size <= 0) 
-	    throw new IOException("A = " + size);
+	    throw new IOException();
 	  idx+=9;
 	  
 	  cname = new String(raw, idx, size);
 	  idx+=size;
 	}
 	
-	System.out.print("cname = " + cname + "\n");
-
 	byte cbytes[] = null;
 	{
 	  int size = new Integer(new String(raw, idx, 9));
 	  if(size <= 0) 
-	    throw new IOException("B = " + size);
+	    throw new IOException();
 	  idx+=9;
 	
 	  cbytes = new byte[size];
@@ -291,13 +290,10 @@ class BootStrapLoader
 	    cbytes[wk] = raw[idx];
 	}
 
-	System.out.print("cbytes = " + cbytes.length + "\n");
-		
 	pClasses.put(cname, cbytes);
       }
     }
     catch(Exception ex) {
-      ex.printStackTrace(System.out);
       throw new LicenseException
 	("The code vault (" + vault + ") has been corrupted!", ex);
     }
@@ -309,7 +305,7 @@ class BootStrapLoader
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Decrypts the 
+   * Finds the specified class. 
    */
   protected Class 
   findClass
@@ -325,35 +321,6 @@ class BootStrapLoader
     return defineClass(cname, cbytes, 0, cbytes.length);
   }
 
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   H E L P E R S                                                                        */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Convert a packed hexidecimal string into an array of bytes.
-   */
-  private byte[]
-  decodeBytes
-  (
-   String text
-  ) 
-  {
-    if((text.length() % 2) != 0) 
-      throw new IllegalArgumentException("Encoded text length was not a mulitple of two!");
-
-    char cs[]    = text.toCharArray();
-    byte bytes[] = new byte[cs.length / 2];
-   
-    int wk;
-    for(wk=0; wk<bytes.length; wk++) {
-      int v = Integer.valueOf(new String(cs, wk*2, 2), 16) - 128;
-      bytes[wk] = Integer.valueOf(v).byteValue();
-    }
-
-    return bytes;
-  }
 
 
   /*----------------------------------------------------------------------------------------*/
