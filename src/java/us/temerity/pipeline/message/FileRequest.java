@@ -1,4 +1,4 @@
-// $Id: FileRequest.java,v 1.9 2004/05/21 21:17:51 jim Exp $
+// $Id: FileRequest.java,v 1.10 2004/05/23 19:48:55 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -18,7 +18,12 @@ package us.temerity.pipeline.message;
  */
 public
 enum FileRequest
-{  
+{
+  /**
+   * An instance of {@link FileCreateWorkingAreaReq FileCreateWorkingAreaReq} is next.
+   */
+  CreateWorkingArea, 
+  
   /**
    * An instance of {@link FileCheckInReq FileCheckInReq} is next.
    */

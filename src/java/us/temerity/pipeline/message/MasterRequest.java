@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.1 2004/05/21 21:17:51 jim Exp $
+// $Id: MasterRequest.java,v 1.2 2004/05/23 19:48:55 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -20,18 +20,43 @@ public
 enum MasterRequest
 {  
   /**
-   * An instance of {@link NodeUpdatePathsReq NodeUpdatePathsReq} is next.
+   * An instance of {@link MiscGetPrivilegedUsersReq MiscGetPrivilegedUsersReq} is next.
    */
-  UpdatePaths, 
+  GetPrivilegedUsers, 
+
+  /**
+   * An instance of {@link MiscGrantPrivilegesReq MiscGrantPrivilegesReq} is next.
+   */
+  GrantPrivileges, 
+
+  /**
+   * An instance of {@link MiscRemovePrivilegesReq MiscRemovePrivilegesReq} is next.
+   */
+  RemovePrivileges, 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * An instance of {@link NodeCreateWorkingAreaReq NodeCreateWorkingAreaReq} is next.
+   */
+  CreateWorkingArea,  
 
   /**
    * An instance of {@link NodeGetWorkingAreasReq NodeGetWorkingAreasReq} is next.
    */
   GetWorkingAreas,  
 
-  // ...
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * An instance of {@link NodeUpdatePathsReq NodeUpdatePathsReq} is next.
+   */
+  UpdatePaths, 
 
 
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * An instance of {@link NodeGetWorkingReq NodeGetWorkingReq} is next.
@@ -53,9 +78,8 @@ enum MasterRequest
    */
   Unlink, 
 
-  // ...
 
-
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * An instance of {@link NodeStatusReq NodeStatusReq} is next.
@@ -87,9 +111,8 @@ enum MasterRequest
    */
   CheckOut, 
 
-  // ...
 
-
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * No more requests will be send over this connection.

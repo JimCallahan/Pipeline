@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.12 2004/05/21 21:17:51 jim Exp $
+// $Id: FileMgr.java,v 1.13 2004/05/23 19:48:55 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -208,6 +208,81 @@ class FileMgr
   /*----------------------------------------------------------------------------------------*/
   /*   O P S                                                                                */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Create a new empty working area directory. <P> 
+   * 
+   * If the working area directory already exists, the operation is successful even though 
+   * nothing is actually done.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to create the given working area directory.
+   */ 
+  public Object 
+  createWorkingArea
+  ( 
+   FileCreateWorkingAreaReq req 
+  ) 
+  {
+    TaskTimer timer = 
+      new TaskTimer("FileMgr.createWorkingArea(): " + 
+		    req.getAuthor() + "|" + req.getView());
+      
+    String author = req.getAuthor();
+    String view   = req.getView();
+
+    /* create the working area directory */ 
+    timer.aquire();
+    synchronized(pMakeDirLock) { 
+      timer.resume();	
+
+      try {
+	File wdir = new File(pProdDir, "working/" + author + "/" + view);
+	if(wdir.exists()) {
+	  if(!wdir.isDirectory()) 
+	    throw new PipelineException
+	      ("Somehow there exists a non-directory (" + wdir + 
+	       ") in the location of the working directory!");
+	  
+	  return new SuccessRsp(timer);
+	}
+	else {
+	  ArrayList<String> args = new ArrayList<String>();
+	  args.add("--parents");
+	  args.add("--mode=755");
+	  args.add(wdir.getPath());
+	  
+	  Map<String,String> env = System.getenv();
+
+	  SubProcess proc = 
+	    new SubProcess(author, "CreateWorkingArea", "mkdir", args, env, pProdDir);
+	  proc.start();
+	  
+	  try {
+	    proc.join();
+	    if(!proc.wasSuccessful()) 
+	      return new FailureRsp
+		(timer, 
+		 "Unable to create the working area directory (" + wdir + "):\n" + 
+		 "  " + proc.getStdErr());
+	  }
+	  catch(InterruptedException ex) {
+	    throw new PipelineException
+	      ("Interrupted while creating working area directory (" + wdir + ")!");
+	  }
+	}
+      }
+      catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
+      }	
+    }
+
+    return new SuccessRsp(timer);
+  }  
 
   /**
    * Compute the {@link FileState FileState} for each file associated with the working 

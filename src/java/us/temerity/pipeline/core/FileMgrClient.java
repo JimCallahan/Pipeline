@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.8 2004/04/17 19:49:02 jim Exp $
+// $Id: FileMgrClient.java,v 1.9 2004/05/23 19:48:55 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -72,6 +72,37 @@ class FileMgrClient
   /*----------------------------------------------------------------------------------------*/
   /*   O P S                                                                                */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Create a new empty working area directory for the given user and view. <P> 
+   * 
+   * If the working area directory already exists, the operation is successful even though 
+   * nothing is actually done.
+   * 
+   * @param author 
+   *   The name of the user which owns the working area.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   *
+   * @throws PipelineException
+   *   If unable to create the working area directory.
+   */
+  public synchronized void  
+  createWorkingArea
+  ( 
+   String author, 
+   String view   
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    FileCreateWorkingAreaReq req = new FileCreateWorkingAreaReq(author, view);
+
+    Object obj = performTransaction(FileRequest.CreateWorkingArea, req);
+    handleSimpleResponse(obj);
+  }
 
   /**
    * Compute the {@link FileState FileState} for each file associated with the working 
