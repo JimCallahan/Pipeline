@@ -60,8 +60,8 @@ done
 for x in TupleN[il].java
 do
   mv $x ORIG
-  head -344 ORIG > $x
-  tail +388 ORIG >> $x
+  head -335 ORIG > $x
+  tail +379 ORIG >> $x
   rm -f ORIG
 done
 
