@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.47 2004/10/21 08:40:17 jim Exp $
+// $Id: MasterMgr.java,v 1.48 2004/10/21 12:14:47 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2778,8 +2778,10 @@ class MasterMgr
       if(bundle == null) 
 	throw new PipelineException
 	  ("No working version (" + id + ") exists to be released.");
-
       NodeMod mod = bundle.uVersion;
+
+      /* kill any active jobs associated with the node */
+      killActiveJobs(id, mod.getTimeStamp(), mod.getPrimarySequence());
 
       /* remove the bundle */ 
       synchronized(pWorkingBundles) {
@@ -2886,18 +2888,57 @@ class MasterMgr
     NodeID nodeID = req.getNodeID();
     TaskTimer timer = new TaskTimer("MasterMgr.removeFiles(): " + nodeID);
 
+    TreeSet<Long> activeIDs = new TreeSet<Long>();
     TreeSet<FileSeq> fseqs = new TreeSet<FileSeq>();
+
     timer.aquire();
     ReentrantReadWriteLock lock = getWorkingLock(nodeID);
     lock.readLock().lock();
     try {
       timer.resume();
+
       WorkingBundle bundle = getWorkingBundle(nodeID);
+      NodeMod mod = bundle.uVersion;
+
+      ArrayList<Long> jobIDs = new ArrayList<Long>();
+      ArrayList<JobState> jobStates = new ArrayList<JobState>();
+      pQueueMgrClient.getJobStates(nodeID, mod.getTimeStamp(), mod.getPrimarySequence(),
+				   jobIDs, jobStates);
+
       TreeSet<Integer> indices = req.getIndices();
-      if(indices == null) 
-	fseqs.addAll(bundle.uVersion.getSequences());
+      if(indices == null) {
+	int wk = 0;
+	for(JobState state : jobStates) {
+	  Long jobID = jobIDs.get(wk);
+	  if((state != null) && (jobID != null)) {
+	    switch(state) {
+	    case Queued:
+	    case Paused:
+	    case Running:
+	      activeIDs.add(jobID);
+	    }
+	  }
+	  
+	  wk++;
+	}
+
+	fseqs.addAll(mod.getSequences());
+      }
       else {
-	for(FileSeq fseq : bundle.uVersion.getSequences()) {
+	for(Integer idx : indices) {
+	  JobState state = jobStates.get(idx);
+	  Long jobID = jobIDs.get(idx);
+	  if((state != null) && (jobID != null)) {
+	    switch(state) {
+	    case Queued:
+	    case Paused:
+	    case Running:
+	      activeIDs.add(jobID);
+	    }
+	  }
+	}
+
+	for(FileSeq fseq : mod.getSequences()) {
 	  for(Integer idx : indices) 
 	    fseqs.add(new FileSeq(fseq, idx));
 	}
@@ -2912,6 +2953,9 @@ class MasterMgr
     assert(fseqs != null);
 
     try {
+      if(!activeIDs.isEmpty()) 
+	pQueueMgrClient.killJobs(nodeID.getAuthor(), activeIDs);
+
       pFileMgrClient.removeAll(nodeID, fseqs);
       return new SuccessRsp(timer);  
     }
@@ -4335,10 +4379,59 @@ class MasterMgr
    *   The primary file sequence.
    * 
    * @throws PipelineException
-   *   If unable to determine the job IDs. 
+   *   If unable to determine the active job IDs.
    */ 
   private boolean
   hasActiveJobs
+  ( 
+   NodeID nodeID, 
+   Date stamp, 
+   FileSeq fseq
+  )
+    throws PipelineException 
+  {
+    ArrayList<Long> jobIDs = new ArrayList<Long>();
+    ArrayList<JobState> jobStates = new ArrayList<JobState>();
+    pQueueMgrClient.getJobStates(nodeID, stamp, fseq, jobIDs, jobStates);
+
+    int wk = 0;
+    for(JobState state : jobStates) {
+      Long jobID = jobIDs.get(wk);
+      if((state != null) && (jobID != null)) {
+	switch(state) {
+	case Queued:
+	case Paused:
+	case Running:
+	  return true;
+	}
+      }
+
+      wk++;
+    }
+
+    return false; 
+  }
+
+  /**
+   * Kill any active jobs associated with the given working version. <P> 
+   * 
+   * A job is considered active if it is {@link JobState#Queued Queued}, 
+   * {@link JobState#Paused Paused} or {@link JobState#Running Running}.
+   * 
+   * @param nodeID
+   *   The unique working version identifier. 
+   * 
+   * @param stamp
+   *   The timestamp of when the working version was created.
+   * 
+   * @param fseq
+   *   The primary file sequence.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the active job IDs.
+   */ 
+  private void
+  killActiveJobs
   ( 
    NodeID nodeID, 
    Date stamp, 
@@ -4359,15 +4452,17 @@ class MasterMgr
 	case Queued:
 	case Paused:
 	case Running:
-	  return true;
+	  activeIDs.add(jobID);
 	}
       }
 
       wk++;
     }
 
-    return false; 
+    if(!activeIDs.isEmpty()) 
+      pQueueMgrClient.killJobs(nodeID.getAuthor(), activeIDs);
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
