@@ -1,4 +1,4 @@
-// $Id: NodeMgrClient.java,v 1.1 2004/03/26 04:38:06 jim Exp $
+// $Id: NodeMgrClient.java,v 1.2 2004/03/26 19:10:06 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -61,7 +61,7 @@ class NodeMgrClient
 
   /*-- CONSTRUCTION HELPERS ----------------------------------------------------------------*/
 
-  private synchronized void 
+  private void 
   init
   ( 
    String hostname, 
@@ -77,6 +77,56 @@ class NodeMgrClient
     pPort = port;
   }
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   W O R K I N G   V E R S I O N S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the working version of the node. <P> 
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   *
+   * @throws PipelineException
+   *   If unable to retrieve the working version.
+   */
+  public synchronized NodeMod
+  getWorkingVersion
+  ( 
+   String view, 
+   String name
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+	 
+    NodeID id = new NodeID(PackageInfo.sUser, view, name);
+    NodeGetWorkingReq req = new NodeGetWorkingReq(id);
+
+    Object obj = performTransaction(NodeRequest.GetWorking, req);
+
+    if(obj instanceof NodeGetWorkingRsp) {
+      NodeGetWorkingRsp rsp = (NodeGetWorkingRsp) obj;
+      return rsp.getNodeMod();      
+    }
+    else if(obj instanceof FailureRsp) {
+      FailureRsp rsp = (FailureRsp) obj;
+      throw new PipelineException(rsp.getMessage());	
+    }
+    else {
+      disconnect();
+      throw new PipelineException
+	("Illegal response received from the NodeMgrServer instance!");
+    }
+  }  
+
+
+  // ...
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -103,7 +153,7 @@ class NodeMgrClient
    * @throws PipelineException
    *   If unable to register the given node.
    */
-  public void 
+  public synchronized void 
   register
   ( 
    String view, 
@@ -125,7 +175,7 @@ class NodeMgrClient
       throw new PipelineException(rsp.getMessage());	
     }
     else {
-      shutdown();
+      disconnect();
       throw new PipelineException
 	("Illegal response received from the NodeMgrServer instance!");
     }
@@ -138,7 +188,6 @@ class NodeMgrClient
 
 
 
-
   /*----------------------------------------------------------------------------------------*/
   /*   M I S C   O P S                                                                      */
   /*----------------------------------------------------------------------------------------*/
@@ -147,7 +196,7 @@ class NodeMgrClient
    * Close the network connection if its is still connected.
    */
   public synchronized void 
-  shutdown() 
+  disconnect() 
   {
     if(pSocket == null)
       return;
@@ -156,7 +205,7 @@ class NodeMgrClient
       if(pSocket.isConnected()) {
 	OutputStream out = pSocket.getOutputStream();
 	ObjectOutput objOut = new ObjectOutputStream(out);
-	objOut.writeObject(NodeRequest.Shutdown);
+	objOut.writeObject(NodeRequest.Disconnect);
 	objOut.flush(); 
 
 	pSocket.close();
@@ -169,6 +218,34 @@ class NodeMgrClient
     }
   }
 
+  /**
+   * Order the server to refuse any further requests and then to exit as soon as all
+   * currently pending requests have be completed.
+   */
+  public synchronized void 
+  shutdown() 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    try {
+      OutputStream out = pSocket.getOutputStream();
+      ObjectOutput objOut = new ObjectOutputStream(out);
+      objOut.writeObject(NodeRequest.Shutdown);
+      objOut.flush(); 
+
+      pSocket.close();
+    }
+    catch(IOException ex) {
+      disconnect();
+      throw new PipelineException
+	("IO problems on port (" + pPort + "):\n" + 
+	 ex.getMessage());
+    }
+    finally {
+      pSocket = null;
+    }
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -240,13 +317,13 @@ class NodeMgrClient
       return (objIn.readObject());
     }
     catch(IOException ex) {
-      shutdown();
+      disconnect();
       throw new PipelineException
 	("IO problems on port (" + pPort + "):\n" + 
 	 ex.getMessage());
     }
     catch(ClassNotFoundException ex) {
-      shutdown();
+      disconnect();
       throw new PipelineException
 	("Illegal object encountered on port (" + pPort + "):\n" + 
 	 ex.getMessage());  
