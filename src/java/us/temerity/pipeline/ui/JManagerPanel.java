@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.37 2004/09/21 23:51:21 jim Exp $
+// $Id: JManagerPanel.java,v 1.38 2004/09/26 05:11:16 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -683,8 +683,6 @@ class JManagerPanel
    ActionEvent e
   ) 
   {
-    System.out.print("Action: " + e.getActionCommand() + "\n");
-
     /* dispatch event */ 
     String cmd = e.getActionCommand();
     if(cmd.equals("new-window")) 
