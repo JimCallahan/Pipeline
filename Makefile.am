@@ -1,6 +1,7 @@
 
 SUBDIRS = \
-  Core
+  Core \
+  Vornoi
 #  Thread
 
 
