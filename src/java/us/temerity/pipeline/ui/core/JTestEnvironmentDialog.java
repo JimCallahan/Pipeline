@@ -1,4 +1,4 @@
-// $Id: JTestEnvironmentDialog.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JTestEnvironmentDialog.java,v 1.2 2005/02/04 09:25:53 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -99,7 +99,6 @@ class JTestEnvironmentDialog
       JButton btns[] = super.initUI("X", false, body, null, "Run Test", null, "Close");
 
       pack();
-      setResizable(false);
     }
 
     pBrowseDialog = 

@@ -1,4 +1,4 @@
-// $Id: JMonitorSubProcessDialog.java,v 1.3 2005/01/22 21:55:12 jim Exp $
+// $Id: JMonitorSubProcessDialog.java,v 1.4 2005/02/04 09:25:53 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -105,7 +105,7 @@ class JMonitorSubProcessDialog
 	    opanel.add(panel);
 	  }
 
-	  opanel.setMinimumSize(new Dimension(100, 50));
+	  opanel.setMinimumSize(new Dimension(100, 20));
 	}
 	
 	JPanel epanel = new JPanel();
@@ -124,7 +124,7 @@ class JMonitorSubProcessDialog
 	    epanel.add(panel);
 	  }
 
-	  epanel.setMinimumSize(new Dimension(100, 50));
+	  epanel.setMinimumSize(new Dimension(100, 20));
 	}
 
 	split = new JVertSplitPanel(opanel, epanel);
@@ -134,6 +134,9 @@ class JMonitorSubProcessDialog
 
       body.setAlignmentX(0.5f);
       body.setMinimumSize(new Dimension(100, 350));
+      body.setPreferredSize(new Dimension(800, 800));
+
+      body.setDividerLocation(100);
 
       super.initUI(header, false, body, null, null, null, "Kill");
     }
