@@ -1,4 +1,4 @@
-// $Id: JIntegerField.java,v 1.2 2004/06/14 22:47:37 jim Exp $
+// $Id: JIntegerField.java,v 1.3 2004/06/19 00:33:25 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -7,7 +7,7 @@ import javax.swing.*;
 import javax.swing.text.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   I N T E R G E R   F I E L D                                                            */
+/*   I N T E G E R   F I E L D                                                              */
 /*------------------------------------------------------------------------------------------*/
 
 /**
