@@ -1,4 +1,4 @@
-// $Id: NotifyServer.java,v 1.9 2004/07/24 18:17:59 jim Exp $
+// $Id: NotifyServer.java,v 1.10 2004/08/30 01:39:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -267,7 +267,7 @@ class NotifyServer
       Logs.net.severe(ex.getMessage());
     }
     finally {
-      Logs.net.fine("Server Shutdown.");
+      Logs.net.info("Server Shutdown.");
       Logs.flush();
     }
   }
@@ -298,8 +298,9 @@ class NotifyServer
       try {
 	server = new ServerSocket(pControlPort, 100);
 	Logs.net.fine("Listening for Control Connections on Port: " + pControlPort);
+	Logs.net.info("Server Ready [control].");
 	Logs.flush();
-	
+
 	server.setSoTimeout(PackageInfo.sServerTimeOut);
 
 	while(!pShutdown.get()) {
@@ -327,7 +328,7 @@ class NotifyServer
 	  Logs.flush();
 	}
 	
-	Logs.net.fine("Control Server Shutdown.");    
+	Logs.net.info("Control Server Shutdown.");    
 	Logs.flush();  
       }
       catch (IOException ex) {
@@ -493,6 +494,7 @@ class NotifyServer
       try {
 	server = new ServerSocket(pMonitorPort, 100);
 	Logs.net.fine("Listening for Monitor Connections on Port: " + pMonitorPort);
+	Logs.net.info("Server Ready [monitor].");
 	Logs.flush();
 	
 	server.setSoTimeout(PackageInfo.sServerTimeOut);
@@ -525,7 +527,7 @@ class NotifyServer
 	  Logs.flush();
 	}
 	
-	Logs.net.fine("Monitor Server Shutdown.");    
+	Logs.net.info("Monitor Server Shutdown.");    
 	Logs.flush();  
       }
       catch (IOException ex) {

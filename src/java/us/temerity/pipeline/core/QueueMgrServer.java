@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.9 2004/08/26 05:56:30 jim Exp $
+// $Id: QueueMgrServer.java,v 1.10 2004/08/30 01:39:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -125,6 +125,7 @@ class QueueMgrServer
     try {
       server = new ServerSocket(pPort, 100);
       Logs.net.fine("Listening on Port: " + pPort);
+      Logs.net.info("Server Ready.");
       Logs.flush();
 
       server.setSoTimeout(PackageInfo.sServerTimeOut);
@@ -187,7 +188,7 @@ class QueueMgrServer
 
       pQueueMgr.shutdown();
 
-      Logs.net.fine("Server Shutdown.");
+      Logs.net.info("Server Shutdown.");
     }
 
     Logs.flush();
@@ -472,6 +473,22 @@ class QueueMgrServer
 	    {
 	      QueueKillJobsReq req = (QueueKillJobsReq) objIn.readObject();
 	      objOut.writeObject(pQueueMgr.killJobs(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case PauseJobs:
+	    {
+	      QueuePauseJobsReq req = (QueuePauseJobsReq) objIn.readObject();
+	      objOut.writeObject(pQueueMgr.pauseJobs(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case ResumeJobs:
+	    {
+	      QueueResumeJobsReq req = (QueueResumeJobsReq) objIn.readObject();
+	      objOut.writeObject(pQueueMgr.resumeJobs(req));
 	      objOut.flush(); 
 	    }
 	    break;

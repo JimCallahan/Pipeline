@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.14 2004/07/24 18:17:59 jim Exp $
+// $Id: FileMgrServer.java,v 1.15 2004/08/30 01:39:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -108,6 +108,7 @@ class FileMgrServer
     try {
       server = new ServerSocket(pPort, 100);
       Logs.net.fine("Listening on Port: " + pPort);
+      Logs.net.info("Server Ready.");
       Logs.flush();
 
       server.setSoTimeout(PackageInfo.sServerTimeOut);
@@ -137,7 +138,7 @@ class FileMgrServer
 	Logs.flush();
       }
 
-      Logs.net.fine("Server Shutdown.");    
+      Logs.net.info("Server Shutdown.");    
       Logs.flush();  
     }
     catch (IOException ex) {
