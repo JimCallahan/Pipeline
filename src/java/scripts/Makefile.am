@@ -1,19 +1,12 @@
 
 instbindir = @bindir@
 
-instbin_SCRIPTS = \
-  pipeline \
-  plui
+instbin_SCRIPTS =
 
 
 instsbindir = @sbindir@
 
 instsbin_SCRIPTS = \
-  pldispatcher \
-  plserver \
-  pltest-dnotify \
-  pltest-fam \
-  pltest-rwlock
-
+  plfilemgr
 
 

@@ -645,17 +645,7 @@ AC_CONFIG_FILES([
   docs/Makefile 
   docs/images/Makefile
   docs/javadoc/Makefile
-
   docs/man/Makefile
-  docs/man/pipeline.html
-  docs/man/pldispatcher.html
-  docs/man/plget.html
-  docs/man/plput.html
-  docs/man/pls.html
-  docs/man/plserver.html
-  docs/man/plui.html
-  docs/man/realpath.html
-
   docs/manuals/Makefile
 
   src/Makefile
@@ -675,12 +665,7 @@ AC_CONFIG_FILES([
 
   src/java/scripts/Makefile
   src/java/scripts/pipeline
-  src/java/scripts/pldispatcher
-  src/java/scripts/plserver
-  src/java/scripts/pltest-dnotify
-  src/java/scripts/pltest-fam
-  src/java/scripts/pltest-rwlock
-  src/java/scripts/plui	
+  src/java/scripts/plfilemgr
 
   src/java/share/Makefile
 
