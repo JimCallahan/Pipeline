@@ -1,24 +1,25 @@
-// $Id: ViewerJobGroup.java,v 1.4 2004/09/11 14:19:14 jim Exp $
+// $Id: ViewerJobGroup.java,v 1.5 2004/12/31 07:40:20 jim Exp $
 
 package us.temerity.pipeline.ui;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.math.*;
 
 import java.io.*;
 import java.util.*;
-import javax.vecmath.*;
-import javax.media.j3d.*;
-import com.sun.j3d.utils.geometry.*;
+
+import net.java.games.jogl.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   V I E W E R   J O B   G R O U P                                                        */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A reusable Java3D based graphical representation of the status of a Pipeline job group. <P>
+ * Renders the current status of a job group as OpenGL geometry. <P> 
  */
 public 
 class ViewerJobGroup
+  extends ViewerIcon  
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -26,145 +27,45 @@ class ViewerJobGroup
 
   /**
    * Constuct a new viewer job. 
+   * 
+   * @param group
+   *   The job group. 
+   * 
+   * @param vjobs
+   *   The viewer jobs.
+   * 
+   * @param height
+   *   The vertical job span of the icon.
    */ 
   public 
-  ViewerJobGroup() 
+  ViewerJobGroup
+  (
+   QueueJobGroup group,
+   ArrayList<ViewerJob> vjobs, 
+   int height
+  ) 
   {
-    /* initialize state fields */ 
-    {
-      pViewerJobs = new ArrayList<ViewerJob>();
+    super();
 
-      pMode = SelectionMode.Normal;
+    if(group == null) 
+      throw new IllegalArgumentException("The job group cannot be (null)!");
+    pJobGroup = group;
 
-      pLineAntiAlias = true;
-      pLineThickness = 1.0;
+    if(vjobs == null) 
+      throw new IllegalArgumentException("The viewer jobs cannot be (null)!");
+    pViewerJobs = vjobs;
 
-      pIsVisible   = false;
+    pHeight = height;
 
-      pMinBounds = new Point2d();
-      pMaxBounds = new Point2d();
-    }    
+    pLabelText = ("[" + group.getGroupID() + "]  " + group.getRootPattern());
 
-    /* initialize the Java3D geometry */ 
-    {
-      /* the root branch group */ 
-      pRoot = new BranchGroup();
-      
-      /* the visibility switch */ 
-      {
-	pSwitch = new Switch();
-	pSwitch.setCapability(Switch.ALLOW_SWITCH_WRITE);
-
-	pRoot.addChild(pSwitch);
-      }
-      
-      /* the transform group used to position the job icon */ 
-      {
-	pLabelXform = new TransformGroup();
-	pLabelXform.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
-	
-	pSwitch.addChild(pLabelXform);
-      } 
-
-      /* the text label */ 
-      {
-	pLabelSwitch = new Switch(0);
-	pLabelSwitch.setCapability(Switch.ALLOW_SWITCH_WRITE);
-	pLabelSwitch.setCapability(Switch.ALLOW_CHILDREN_WRITE);
-	pLabelSwitch.setPickable(false);
-
-	for(SelectionMode mode : SelectionMode.all()) {
-	  BranchGroup group = new BranchGroup();
-	  group.setCapability(BranchGroup.ALLOW_DETACH);
-
-	  pLabelSwitch.addChild(group);
-	}
-
-	pLabelXform.addChild(pLabelSwitch);
-      }
-
-      /* the transform group used to position the job icon */ 
-      {
-	pXform = new TransformGroup();
-	pXform.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
-	
-	pSwitch.addChild(pXform);
-      }
-      
-      /* the job group icon */ 
-      try { 
-	AppearanceMgr mgr = AppearanceMgr.getInstance();
-	Appearance apr = mgr.getLineAppearance("DarkGrey");
-	
-	Point3d pts[] = new Point3d[4];
-	TexCoord2f uvs[] = new TexCoord2f[4];
-	{
-	  pts[0] = new Point3d(-0.5, -0.5, 0.0);
-	  uvs[0] = new TexCoord2f(0.0f, 0.0f);
-	  
-	  pts[1] = new Point3d(0.5, -0.5, 0.0);
-	  uvs[1] = new TexCoord2f(1.0f, 0.0f);
-	  
-	  pts[2] = new Point3d(0.5, 0.5, 0.0);
-	  uvs[2] = new TexCoord2f(1.0f, 1.0f);
-	  
-	  pts[3] = new Point3d(-0.5, 0.5, 0.0);
-	  uvs[3] = new TexCoord2f(0.0f, 1.0f);
-	}
-	
-	GeometryInfo gi = new GeometryInfo(GeometryInfo.QUAD_ARRAY);
-	gi.setCoordinates(pts);
-	gi.setTextureCoordinateParams(1, 2);
-	gi.setTextureCoordinates(0, uvs);
-	
-	NormalGenerator ng = new NormalGenerator();
-	ng.generateNormals(gi);
-	
-	Stripifier st = new Stripifier();
-	st.stripify(gi);
-	
-	GeometryArray ga = gi.getGeometryArray();
-	
-	pShape = new Shape3D(ga, apr);
-	pShape.setCapability(Shape3D.ALLOW_APPEARANCE_WRITE);
-	pShape.setCapability(Shape3D.ALLOW_PICKABLE_WRITE);
-	pShape.setPickable(true);
-	pShape.setUserData(this);
-	
-	pXform.addChild(pShape);
-      }
-      catch(IOException ex) {
-	Logs.tex.severe("Internal Error:\n" + 
-			"  " + ex.getMessage());
-	Logs.flush();
-	System.exit(1);
-      }
-      
-      /* the border lines */ 
-      {
-	Appearance apr = new Appearance();
-
-	LineArray la = new LineArray(8, LineArray.COORDINATES);
-
-	la.setCoordinate(0, new Point3d(-0.5, -0.5, 0.0));
-	la.setCoordinate(1, new Point3d(0.5, -0.5, 0.0));
-
-	la.setCoordinate(2, new Point3d(0.5, -0.5, 0.0));
-	la.setCoordinate(3, new Point3d(0.5, 0.5, 0.0));
-
-	la.setCoordinate(4, new Point3d(0.5, 0.5, 0.0));
-	la.setCoordinate(5, new Point3d(-0.5, 0.5, 0.0));
-
-	la.setCoordinate(6, new Point3d(-0.5, 0.5, 0.0));
-	la.setCoordinate(7, new Point3d(-0.5, -0.5, 0.0));
-
-	pBorderLines = new Shape3D(la, apr);
-	pBorderLines.setCapability(Shape3D.ALLOW_APPEARANCE_WRITE);
-	pBorderLines.setPickable(false);
-
-	pXform.addChild(pBorderLines);
-      }
-    }    
+    try {
+      GeometryMgr mgr = GeometryMgr.getInstance();
+      pLabelWidth = 0.35 * mgr.getTextWidth("CharterBTRoman", pLabelText, 0.05);
+    }
+    catch(IOException ex) {
+      throw new IllegalArgumentException(ex.getMessage());
+    }
   }
 
 
@@ -191,249 +92,170 @@ class ViewerJobGroup
     return Collections.unmodifiableCollection(pViewerJobs);
   }
 
-  /**
-   * Set the current job group and viewer jobs.
-   * 
-   * @param group
-   *   The job group. 
-   * 
-   * @param vjobs
-   *   The viewer jobs.
-   */ 
-  public void 
-  setCurrentState
-  (
-   QueueJobGroup group,
-   ArrayList<ViewerJob> vjobs
-  ) 
-  {
-    if(group == null) 
-      throw new IllegalArgumentException("The job group cannot be (null)!");
-    pJobGroup = group;
 
-    if(vjobs == null) 
-      throw new IllegalArgumentException("The viewer jobs cannot be (null)!");
-    pViewerJobs = vjobs;
-
-    {
-      String text = ("[" + group.getGroupID() + "]  " + group.getRootPattern());
-
-      if(!text.equals(pLabelText))
-	pLabelTextChanged = true;
-
-      pLabelText = text;
-    }
-  }
-
-  
-  /**
-   * Get the current selection mode.
-   */ 
-  public SelectionMode
-  getSelectionMode() 
-  {
-    return pMode;
-  }
-
-  /**
-   * Set the current selection mode.
-   */ 
-  public void 
-  setSelectionMode
-  (
-   SelectionMode mode
-  ) 
-  {
-    pMode = mode;
-    pModeChanged = true;
-  }
-
-
-  /**
-   * Is this geometry currently visible?
-   */ 
-  public boolean 
-  isVisible() 
-  {
-    return pIsVisible;
-  }
-
-  /**
-   * Set whether this geometry is currently visible.
-   */ 
-  public void 
-  setVisible
-  (
-   boolean tf  
-  ) 
-  {    
-    pIsVisible = tf;
-    pSwitch.setWhichChild(pIsVisible ? Switch.CHILD_ALL : Switch.CHILD_NONE);
-    pShape.setPickable(pIsVisible);
-  }
-
-  
-  /** 
-   * Get the minimum bounds of (2D position) of the job.
-   */ 
-  public Point2d
-  getMinBounds()
-  {
-    return new Point2d(pMinBounds);
-  }
+  /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Get the maximum bounds of (2D position) of the job.
+   * Get the vertical job span of the icon.
    */ 
-  public Point2d
-  getMaxBounds()
+  public int
+  getHeight()
   {
-    return new Point2d(pMaxBounds);
+    return pHeight; 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether the given position is inside the node icon.
+   */ 
+  public boolean
+  isInside
+  (
+   Point2d pos
+  ) 
+  {       
+    return getBounds().isInside(pos);      
   }
 
   /**
-   * Set the 2D position of the job (center of icon). 
+   * Whether any portion of the node icon is inside the given bounding box.
+   */ 
+  public boolean
+  isInsideOf
+  (
+   BBox2d bbox
+  ) 
+  {
+    return bbox.intersects(getBounds());
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the bounding box of the job group icon.
+   */ 
+  public BBox2d
+  getBounds()
+  {
+    BBox2d bbox = new BBox2d(pPos, pPos);
+    bbox.bloat(new Vector2d(0.5, 0.1875 * ((double) pHeight)));
+    return bbox;
+  }
+
+  /**
+   * Get the bounding box of the job group label. 
    */
-  public void 
-  setBounds
-  (
-   Point2d minB,
-   Point2d maxB   
-  ) 
+  public BBox2d
+  getLabelBounds() 
   {
-    pMinBounds.set(minB);
-    pMaxBounds.set(maxB);
+    BBox2d ib = getBounds();
+    Point2d bmin = new Point2d(ib.getMin().x(), ib.getMax().y());
+    BBox2d bbox = new BBox2d(bmin, Point2d.add(bmin, new Vector2d(pLabelWidth, 0.45)));
+    return bbox;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the width of the label geometry.
+   */ 
+  public double
+  getLabelWidth() 
+  {
+    return pLabelWidth;
   }
 
 
 
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Get the root group which contains all Java3D geometry.
-   */ 
-  public BranchGroup 
-  getBranchGroup() 
-  {
-    return pRoot;
-  }
+  /*   R E N D E R I N G                                                                    */
+  /*----------------------------------------------------------------------------------------*/
   
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   N O D E   S T A T E                                                                  */
-  /*----------------------------------------------------------------------------------------*/
-
   /**
-   * Update the position, geometry and appearance based on the current state of the job.
+   * Rebuild any OpenGL display list needed to render the node.
+   *
+   * @param gl
+   *   The OpenGL interface.
    */ 
   public void 
-  update() 
+  rebuild
+  (
+   GL gl
+  )
   {
-    UserPrefs prefs = UserPrefs.getInstance();
+    GeometryMgr mgr = GeometryMgr.getInstance();
+    try {
+      if(pLabelDL == null) 
+	pLabelDL = mgr.getTextDL(gl, "CharterBTRoman", pLabelText, 
+				 GeometryMgr.TextAlignment.Left, 0.05);
 
-    /* move/scale the job group so that it covers the bounds area */ 
-    {
-      Transform3D xform = new Transform3D();
-
-      Vector3d scale = new Vector3d((pMaxBounds.x - pMinBounds.x), 
-				    (pMaxBounds.y - pMinBounds.y), 1.0);
-      xform.setScale(scale);
-
-      Vector3d center = 
-	new Vector3d((pMinBounds.x + pMaxBounds.x) * 0.5, 
-		     (pMinBounds.y + pMaxBounds.y) * 0.5, 0.0);
-      xform.setTranslation(center);
-      
-      pXform.setTransform(xform);
-    }
-
-    /* move the label to the top of the bounds */ 
-    {
-      Transform3D xform = new Transform3D();
-
-      xform.setScale(prefs.getJobLabelSize());
-
-      Vector3d center = new Vector3d(pMinBounds.x, pMaxBounds.y+0.5, 0.0);
-      xform.setTranslation(center);
-
-      pLabelXform.setTransform(xform);
-    }
-
-    try { 
-      /* update the label */ 
-      {
-	if(pLabelTextChanged) {	  	  
-	  for(SelectionMode mode : SelectionMode.all()) {
-	    TransformGroup label = 
-	      ViewerLabels.createLabelGeometry(pLabelText, "CharterBTRoman", mode, 0.05, 
-					       new Point3d(), TextAlign.Left);
-
-	    BranchGroup group = new BranchGroup();
-	    group.setCapability(BranchGroup.ALLOW_DETACH);
-	    group.addChild(label);
-
-	    pLabelSwitch.setChild(group, mode.ordinal());
-	  }
-	  
-	  pLabelTextChanged = false;
-	}
-	
-	pLabelSwitch.setWhichChild(pMode.ordinal());
+      if(pIconDL == null) {
+	pIconDL = new int[3];
+	for(SelectionMode mode : SelectionMode.all()) 
+	  pIconDL[mode.ordinal()] = 
+	    mgr.getJobIconDL(gl, "Undefined-" + mode, false, pHeight);
       }
 
-      /* have the line preferences changed? */ 
-      boolean lineAprChanged = false;
-      if((pLineAntiAlias != prefs.getJobViewerLineAntiAlias()) ||
-	 (pLineThickness != prefs.getJobViewerLineThickness())) {
-
-	pLineAntiAlias = prefs.getJobViewerLineAntiAlias();
-	pLineThickness = prefs.getJobViewerLineThickness();
-
-	lineAprChanged = true;
-      }
-
-      /* update border color */
-      if(pModeChanged || lineAprChanged) {
-	String cname = null;
-	switch(pMode) {
-	case Normal:
-	  cname = "White";
-	  break;
-
-	case Selected:
-	  cname = "Yellow";
-	  break;
-
-	case Primary:
-	  cname = "Cyan";
-	}
-
-	Appearance apr = new Appearance();
-
-	apr.setTexture(TextureMgr.getInstance().getSimpleTexture(cname));
-	apr.setMaterial(null);
- 
-	{
-	  LineAttributes la = new LineAttributes();
-	  la.setLineAntialiasingEnable(pLineAntiAlias); 
-	  la.setLineWidth((float) pLineThickness);
-	  apr.setLineAttributes(la);
-	}
-
-	pBorderLines.setAppearance(apr);
-      }
-
+      if(pCollapsedDL == null) 
+	pCollapsedDL = mgr.getNodeIconDL(gl, "Collapsed");
     }
     catch(IOException ex) {
-      Logs.tex.severe("Internal Error:\n" + 
-		      "  " + ex.getMessage());
-      Logs.flush();
-      System.exit(1);
+      Logs.tex.severe(ex.getMessage());
     }
   }
 
+  
+  /**
+   * Render the OpenGL geometry for the node.
+   *
+   * @param gl
+   *   The OpenGL interface.
+   */ 
+  public void 
+  render
+  (
+   GL gl
+  )
+  {
+    gl.glPushMatrix();
+    {
+      gl.glTranslated(pPos.x(), pPos.y(), 0.0);
+      gl.glCallList(pIconDL[pMode.ordinal()]);
+      
+      if(pIsCollapsed) {
+	gl.glTranslated(0.8, 0.0, 0.0);
+	gl.glCallList(pCollapsedDL);
+	gl.glTranslated(-0.8, 0.0, 0.0);
+      }
 
+      {
+	switch(pMode) {
+	case Normal:
+	  gl.glColor3d(1.0, 1.0, 1.0);
+	  break;
+	  
+	case Selected:
+	  gl.glColor3d(1.0, 1.0, 0.0);
+	  break;
+	  
+	case Primary:
+	  gl.glColor3d(0.0, 1.0, 1.0);
+	}
+	
+	double dy = (0.1875 * ((double) pHeight)) + 0.1;
+	gl.glTranslated(-0.5, dy, 0.0);
+	gl.glScaled(0.35, 0.35, 0.35);
+	gl.glCallList(pLabelDL);
+      }
+    }
+    gl.glPopMatrix();
+  }
+
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
@@ -444,91 +266,46 @@ class ViewerJobGroup
    */ 
   private QueueJobGroup  pJobGroup; 
 
-
   /**
    * The set of viewer jobs which are members of this group indexed by <CODE>JobPath</CODE>.
    */ 
   private ArrayList<ViewerJob>  pViewerJobs; 
 
-
   /**
-   * The UI selection mode.
-   */
-  private SelectionMode  pMode;  
-
-  /**
-   * Whether this geometry is currently visible.
-   */
-  private boolean  pIsVisible;     
-
-  /**
-   * the minimum/maximum bounds (2D position) of the job.
+   * The vertical job span of the icon.
    */ 
-  private Point2d   pMinBounds; 
-  private Point2d   pMaxBounds; 
+  private int  pHeight;
 
 
   /**
-   * The text being used for the label geometry.
+   * The label text.
    */ 
-  private String  pLabelText;
+  private String  pLabelText; 
 
   /**
-   * Whether the text label geometry is no longer valid for the current node status.
+   * The width of the label geometry.
    */ 
-  private boolean  pLabelTextChanged;
+  private double  pLabelWidth;
 
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * The OpenGL display list handle for the label geometry.
+   */ 
+  private Integer  pLabelDL; 
 
   /**
-   * Whether the mode border color no longer valid for the current job status.
+   * The OpenGL display list handles for the icon geometry. <P> 
+   * 
+   * The array contains the display lists corresponding to the Normal, Selected and Primary
+   * selection modes.
    */ 
-  private boolean  pModeChanged;
-
+  private int[]  pIconDL; 
+  
   /**
-   * Whether to anti-alias lines.
+   * The OpenGL display list handle for the collapsed icon geometry.
    */ 
-  private boolean  pLineAntiAlias;
-
-  /** 
-   * The thickness of lines.
-   */
-  private double  pLineThickness;
-
-
-
-  /**
-   * The root branch group. 
-   */ 
-  private BranchGroup  pRoot;     
-
-  /**
-   * The switch group used to control job icon visbilty. 
-   */ 
-  private Switch  pSwitch;   
-
-  /** 
-   * The transform group used to position the label.
-   */ 
-  private TransformGroup  pLabelXform;      
-
-  /**
-   * The switch group which contains the label branch groups.
-   */ 
-  private Switch  pLabelSwitch;     
-
-  /** 
-   * The transform group used to position the box.
-   */ 
-  private TransformGroup  pXform;      
-
-  /**
-   * The job icon geometry.
-   */ 
-  private Shape3D  pShape;  
-
-  /**
-   * The job border lines geometry.
-   */ 
-  private Shape3D  pBorderLines;  
+  private Integer  pCollapsedDL; 
 
 }
