@@ -26,7 +26,6 @@
   <bind style="Splash" type="name" key="Splash"/>
 
 
-
   <!--  P R O G R E S S   B A R  -->
 
   <style id="ProgressBar">
@@ -303,6 +302,18 @@
   <bind style="PanelLabel" type="name" key="PanelLabel"/>
 
 
+  <!--  D I S A B L E   L A B E L  -->
+
+  <style id="DisableLabel">
+    <state value="DISABLED">  
+       <color value="#999999" type="TEXT_FOREGROUND"/>
+    </state>
+    <state> 
+       <color value="#ffffff" type="TEXT_FOREGROUND"/>    
+    </state>
+  </style>
+  <bind style="DisableLabel" type="name" key="DisableLabel"/>
+
 
   <!--  T E X T   F I E L D  -->
 
@@ -324,9 +335,16 @@
        <color value="#ffff00" type="TEXT_FOREGROUND"/>
        <color value="#727272" type="TEXT_BACKGROUND"/>
     </state>
-    <imagePainter path="EditableValuePanel.png"
-                  method="textFieldBackground"
-                  sourceInsets="3 3 3 3"/> 
+    <state value="DISABLED"> 
+      <imagePainter path="ValuePanel.png"
+                    method="textFieldBackground"
+                    sourceInsets="3 3 3 3"/>
+    </state>
+    <state> 
+      <imagePainter path="EditableValuePanel.png"
+                    method="textFieldBackground"
+                    sourceInsets="3 3 3 3"/> 
+    </state>
     <insets top="2" bottom="2" right="8" left="8"/>
     <font name="Lucida Sans Bold" size="12"/>
   </style>
@@ -401,26 +419,20 @@
   <!--  B O O L E A N   F I E L D  -->
 
   <style id="BooleanField">
-    <imagePainter path="EditableValuePanel.png"
-                  sourceInsets="3 3 3 3"/>
+    <state value="DISABLED"> 
+      <imagePainter path="ValuePanel.png"
+                    sourceInsets="3 3 3 3"/>
+    </state>
+    <state> 
+      <imagePainter path="EditableValuePanel.png"
+                    sourceInsets="3 3 3 3"/> 
+    </state>
     <insets top="2" bottom="2" right="2" left="2"/>
     <font name="Lucida Sans Bold" size="12"/>
   </style>
   <bind style="BooleanField" type="name" key="BooleanField"/>
 
-
-
-  <!--  C O L L E C T I O N   F I E L D  -->
-
-  <style id="CollectionField">
-    <imagePainter path="EditableValuePanel.png"
-                  sourceInsets="3 3 3 3"/>
-    <insets top="2" bottom="2" right="2" left="2"/>
-    <font name="Lucida Sans Bold" size="12"/>
-  </style>
-  <bind style="CollectionField" type="name" key="CollectionField"/>
-
-  <style id="CollectionTextField">
+  <style id="BooleanValueTextField">
     <state value="SELECTED">
        <color value="#ffffff" type="TEXT_FOREGROUND"/>
        <color value="#727272" type="TEXT_BACKGROUND"/>
@@ -430,7 +442,37 @@
                   sourceInsets="0 0 0 0"/>
     <font name="Lucida Sans Bold" size="12"/>
   </style>
-  <bind style="CollectionTextField" type="name" key="CollectionTextField"/>
+  <bind style="BooleanValueTextField" type="name" key="BooleanValueTextField"/>
+
+
+
+  <!--  C O L L E C T I O N   F I E L D  -->
+
+  <style id="CollectionField">
+    <state value="DISABLED"> 
+      <imagePainter path="ValuePanel.png"
+                    sourceInsets="3 3 3 3"/>
+    </state>
+    <state> 
+      <imagePainter path="EditableValuePanel.png"
+                    sourceInsets="3 3 3 3"/> 
+    </state>
+    <insets top="2" bottom="2" right="2" left="2"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="CollectionField" type="name" key="CollectionField"/>
+
+  <style id="CollectionValueTextField">
+    <state value="SELECTED">
+       <color value="#ffffff" type="TEXT_FOREGROUND"/>
+       <color value="#727272" type="TEXT_BACKGROUND"/>
+    </state>
+    <imagePainter path="DarkGrey.png"
+                  method="textFieldBackgroud"
+                  sourceInsets="0 0 0 0"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="CollectionValueTextField" type="name" key="CollectionValueTextField"/>
 
 
 
@@ -459,6 +501,7 @@
   <bind style="SliderThumb" type="region" key="SliderThumb"/>
 
 
+
   <!--  T R E E  -->
 
   <style id="Tree">
@@ -472,6 +515,9 @@
     <property key="Tree.leftChildIndent" type="integer" value="23"/>
     <property key="Tree.rightChildIndent" type="integer" value="0"/>
 
+    <property key="Tree.drawHorizontalLines" type="boolean" value="false"/>
+    <property key="Tree.drawVerticalLines" type="boolean" value="false"/>
+
     <insets top="3" bottom="3" right="3" left="-15"/>
   </style>
   <bind style="Tree" type="region" key="Tree"/>
@@ -483,6 +529,35 @@
   </style>
   <bind style="DarkTree" type="name" key="DarkTree"/>
   
+
+
+  <!--  T A B L E  -->
+
+  <style id="TableHeaderButton">
+    <state>
+      <imagePainter path="BlankButton.png"
+                    method="buttonBackground"
+                    sourceInsets="5 5 5 5"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="BlankButtonPressed.png"
+                    method="buttonBackground"	
+                    sourceInsets="5 5 5 5"/>
+    </state>
+    <insets top="4" bottom="4" right="10" left="10"/> 
+    <property key="Button.textShiftOffset" type="integer" value="1"/>  
+  </style>
+  <bind style="TableHeaderButton" type="name" key="TableHeaderButton"/>
+
+  <style id="SimpleTableCellRenderer">
+    <imagePainter path="ValuePanel.png"
+                  method="labelBackground"
+                  sourceInsets="3 3 3 3"/>
+    <insets top="2" bottom="2" right="8" left="8"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="SimpleTableCellRenderer" type="name" key="SimpleTableCellRenderer"/>
+
 
 
   <!--  L I S T  -->
@@ -519,12 +594,13 @@
 
 
    
-  <!--  S C R O L L   P A N E  -->
+  <!--  S C R O L L   P A N E -->
 
   <style id="ScrollPane">
     <imagePainter path="FrameIn.png"
+                  method="viewportBorder"
                   sourceInsets="3 3 3 3"/>
-    <insets top="3" bottom="3" right="3" left="3"/>
+    <property key="ScrollPane.viewportBorderInsets" type="insets" value="3 3 3 3"/>	
   </style>
   <bind style="ScrollPane" type="region" key="ScrollPane"/>
 
@@ -533,14 +609,9 @@
   <!--  S C R O L L   B A R  -->
 
   <style id="ScrollBar">
-    <state>
-      <imagePainter path="ScrollBar.png"
-                    method="scrollBarBackground"
-                    sourceInsets="0 2 0 0"/>
     <insets top="0" bottom="0" right="0" left="3"/>
     <property key="ScrollBar.allowsAbsolutePositioning" type="boolean" value="true"/>
     <property key="ScrollBar.squareButtons" type="boolean" value="true"/>
-    </state>
   </style>
   <bind style="ScrollBar" type="region" key="ScrollBar"/>
 
