@@ -2,20 +2,22 @@
 instbindir  = @bindir@
 
 instbin_PROGRAMS = \
-  pls
+  pls \
+  realpath
 
 pls_SOURCES = FB.cc PackageInfo.cc Pls.cc
+
+realpath_SOURCES = FB.cc PackageInfo.cc RealPath.cc 
+
 
 
 instsbindir  = @sbindir@
 
 instsbin_PROGRAMS = \
-  plrun \
-  realpath
+  plrun
 
+plrun_SOURCES = FB.cc PackageInfo.cc PlRun.cc 
 
-plrun_SOURCES    = FB.cc PackageInfo.cc PlRun.cc 
-realpath_SOURCES = FB.cc PackageInfo.cc RealPath.cc 
 
 
 EXTRA_DIST = \
@@ -25,7 +27,9 @@ EXTRA_DIST = \
   Timer.hh
 
 
+
 INCLUDES = 
+
 
 
 install-data-hook:
