@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.19 2004/06/23 22:31:38 jim Exp $
+// $Id: JNodeBrowserPanel.java,v 1.20 2004/07/07 13:25:34 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -120,12 +120,14 @@ class JNodeBrowserPanel
   {
     UIMaster master = UIMaster.getInstance();
 
+    PanelGroup<JNodeBrowserPanel> panels = master.getNodeBrowserPanels();
+
     if(pGroupID > 0)
-      master.releaseNodeBrowserGroup(pGroupID);
+      panels.releaseGroup(pGroupID);
 
     pGroupID = 0;
-    if((groupID > 0) && master.isNodeBrowserGroupUnused(groupID)) {
-      master.assignNodeBrowserGroup(this, groupID);
+    if((groupID > 0) && panels.isGroupUnused(groupID)) {
+      panels.assignGroup(this, groupID);
       pGroupID = groupID;
     }
   }
@@ -139,8 +141,8 @@ class JNodeBrowserPanel
    int groupID
   ) 
   {
-    UIMaster master = UIMaster.getInstance();
-    return master.isNodeBrowserGroupUnused(groupID);
+    PanelGroup<JNodeBrowserPanel> panels = UIMaster.getInstance().getNodeBrowserPanels();
+    return panels.isGroupUnused(groupID);
   }
 
 
@@ -163,7 +165,8 @@ class JNodeBrowserPanel
 
       UIMaster master = UIMaster.getInstance();
       if(pGroupID > 0) {
-	JNodeViewerPanel viewer = master.getNodeViewer(pGroupID);
+	PanelGroup<JNodeViewerPanel> panels = master.getNodeViewerPanels();
+	JNodeViewerPanel viewer = panels.getPanel(pGroupID);
 	if(viewer != null) {
 	  viewer.setRoots(pAuthor, pView, pSelected);
 	  viewer.updateManagerTitlePanel();
@@ -510,7 +513,8 @@ class JNodeBrowserPanel
 	    UIMaster master = UIMaster.getInstance();
 	    
 	    if(pGroupID > 0) {
-	      JNodeViewerPanel viewer = master.getNodeViewer(pGroupID);
+	      PanelGroup<JNodeViewerPanel> panels = master.getNodeViewerPanels();
+	      JNodeViewerPanel viewer = panels.getPanel(pGroupID);
 	      if(viewer != null) {
 		viewer.setRoots(pAuthor, pView, pSelected);
 		viewer.updateManagerTitlePanel();

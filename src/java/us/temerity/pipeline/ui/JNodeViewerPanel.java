@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.22 2004/06/28 23:37:38 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.23 2004/07/07 13:25:34 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -458,12 +458,14 @@ class JNodeViewerPanel
   {
     UIMaster master = UIMaster.getInstance();
 
+    PanelGroup<JNodeViewerPanel> panels = master.getNodeViewerPanels();
+
     if(pGroupID > 0)
-      master.releaseNodeViewerGroup(pGroupID);
+      panels.releaseGroup(pGroupID);
 
     pGroupID = 0;
-    if((groupID > 0) && master.isNodeViewerGroupUnused(groupID)) {
-      master.assignNodeViewerGroup(this, groupID);
+    if((groupID > 0) && panels.isGroupUnused(groupID)) {
+      panels.assignGroup(this, groupID);
       pGroupID = groupID;
     }
   }
@@ -477,8 +479,8 @@ class JNodeViewerPanel
    int groupID
   ) 
   {
-    UIMaster master = UIMaster.getInstance();
-    return master.isNodeViewerGroupUnused(groupID);
+    PanelGroup<JNodeViewerPanel> panels = UIMaster.getInstance().getNodeViewerPanels();
+    return panels.isGroupUnused(groupID);
   }
 
 
@@ -699,7 +701,7 @@ class JNodeViewerPanel
     pLinkItem.setEnabled(hasWorking && multiple);
     pUnlinkItem.setEnabled(hasWorking && multiple);
 
-    pRenameItem.setEnabled(hasWorking);
+    pRenameItem.setEnabled(hasWorking && !hasCheckedIn);
 
     pCheckInItem.setEnabled(hasWorking);
     pCheckOutItem.setEnabled(hasCheckedIn);
@@ -765,7 +767,8 @@ class JNodeViewerPanel
     /* update the associated node viewer */ 
     UIMaster master = UIMaster.getInstance();
     if(pGroupID > 0) {
-      JNodeBrowserPanel browser = master.getNodeBrowser(pGroupID);
+      PanelGroup<JNodeBrowserPanel> panels = master.getNodeBrowserPanels();
+      JNodeBrowserPanel browser = panels.getPanel(pGroupID);
       if(browser != null) {
 	if(browser.getAuthor().equals(pAuthor) && browser.getView().equals(pView)) {
 	  TreeSet<String> roots = new TreeSet<String>(pRoots.keySet());
@@ -779,16 +782,16 @@ class JNodeViewerPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Update the node details panels with the given node status.
+   * Update the connected node subpanels with the given node status.
    */ 
   private synchronized void
-  updateDetails
+  updateSubPanels
   (
    NodeStatus status
   ) 
   {
     if(pGroupID > 0) 
-      SwingUtilities.invokeLater(new UpdateNodeDetailsTask(pGroupID, pAuthor, pView, status));
+      SwingUtilities.invokeLater(new UpdateSubPanelsTask(pGroupID, pAuthor, pView, status));
     
     if(status != null) 
       pLastDetailsName = status.getName();
@@ -797,21 +800,21 @@ class JNodeViewerPanel
   }
 
   /**
-   * Update the node details panels.
+   * Update the connected node subpanels.
    */ 
   private synchronized void
-  updateDetails() 
+  updateSubPanels() 
   {
     NodeStatus status = null;
     if(pLastDetailsName != null) {
       for(NodeStatus root : pRoots.values()) {
-	status = updateDetailsHelper(root, pLastDetailsName);
+	status = updateSubPanelsHelper(root, pLastDetailsName);
 	if(status != null) 
 	  break;
       }
     }
 
-    updateDetails(status);
+    updateSubPanels(status);
   }
   
   /**
@@ -822,7 +825,7 @@ class JNodeViewerPanel
    *   The found node status or <CODE>null</CODE> if not found.
    */ 
   private NodeStatus
-  updateDetailsHelper
+  updateSubPanelsHelper
   (
    NodeStatus root, 
    String name
@@ -832,7 +835,7 @@ class JNodeViewerPanel
       return root;
 
     for(NodeStatus status : root.getSources()) {
-      NodeStatus found = updateDetailsHelper(status, name);
+      NodeStatus found = updateSubPanelsHelper(status, name);
       if(found != null) 
 	return found;
     }
@@ -912,7 +915,7 @@ class JNodeViewerPanel
     pNodePool.update();
 
     /* update the connected node details panels */ 
-    updateDetails();
+    updateSubPanels();
   }
   
   /**
@@ -2169,7 +2172,7 @@ class JNodeViewerPanel
   doDetails()
   {
     if(pPrimary != null) 
-      updateDetails(pPrimary.getNodeStatus());
+      updateSubPanels(pPrimary.getNodeStatus());
 
     for(ViewerNode vnode : clearSelection()) 
       vnode.update();
@@ -2317,12 +2320,12 @@ class JNodeViewerPanel
 	  pCreateLinkDialog.setVisible(true);
 	  
 	  if(pCreateLinkDialog.wasConfirmed()) {
-	    LinkCatagory lcat = pCreateLinkDialog.getLinkCatagory();
-	    LinkRelationship rel = pCreateLinkDialog.getLinkRelationship();
-	    Integer offset = pCreateLinkDialog.getFrameOffset();
+	    LinkPolicy policy    = pCreateLinkDialog.getPolicy();
+	    LinkRelationship rel = pCreateLinkDialog.getRelationship();
+	    Integer offset       = pCreateLinkDialog.getFrameOffset();
 	    
 	    LinkTask task = 
-	      new LinkTask(details.getName(), sources, lcat, rel, offset);
+	      new LinkTask(details.getName(), sources, policy, rel, offset);
 	    task.start();
 	  }
     	}
@@ -2554,15 +2557,15 @@ class JNodeViewerPanel
 	  pEditLinkDialog.setVisible(true);
 	  
 	  if(pEditLinkDialog.wasConfirmed()) {
-	    LinkCatagory lcat = pEditLinkDialog.getLinkCatagory();
-	    LinkRelationship rel = pEditLinkDialog.getLinkRelationship();
-	    Integer offset = pEditLinkDialog.getFrameOffset();
+	    LinkPolicy policy    = pEditLinkDialog.getPolicy();
+	    LinkRelationship rel = pEditLinkDialog.getRelationship();
+	    Integer offset       = pEditLinkDialog.getFrameOffset();
 	    
 	    TreeSet<String> sources = new TreeSet<String>();
 	    sources.add(link.getName());
 	    
 	    LinkTask task = 
-	      new LinkTask(details.getName(), sources, lcat, rel, offset);
+	      new LinkTask(details.getName(), sources, policy, rel, offset);
 	    task.start();
 	  }
 	}
@@ -3063,14 +3066,14 @@ class JNodeViewerPanel
     (
      String target, 
      TreeSet<String> sources, 
-     LinkCatagory lcat, 
+     LinkPolicy policy, 
      LinkRelationship rel, 
      Integer offset
     ) 
     {
       pTarget = target;
       pSources = sources;
-      pCatagory = lcat; 
+      pPolicy = policy; 
       pRelationship = rel;
       pFrameOffset = offset;
     }
@@ -3083,7 +3086,7 @@ class JNodeViewerPanel
 	try {
 	  for(String source : pSources) {
 	    master.getMasterMgrClient().link(pAuthor, pView, pTarget, source, 
-					     pCatagory, pRelationship, pFrameOffset);
+					     pPolicy, pRelationship, pFrameOffset);
 	  }
 	}
 	catch(PipelineException ex) {
@@ -3100,7 +3103,7 @@ class JNodeViewerPanel
     
     private String pTarget;
     private TreeSet<String> pSources;
-    private LinkCatagory pCatagory; 
+    private LinkPolicy pPolicy; 
     private LinkRelationship pRelationship; 
     private Integer pFrameOffset;
   }
@@ -3492,14 +3495,14 @@ class JNodeViewerPanel
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Update the node status being displayed by the connected node details panel.
+   * Update the node status being displayed by the connected node subpanels.
    */
   private 
-  class UpdateNodeDetailsTask
+  class UpdateSubPanelsTask
     extends Thread
   {
     public 
-    UpdateNodeDetailsTask
+    UpdateSubPanelsTask
     (
      int groupID, 
      String author, 
@@ -3516,10 +3519,22 @@ class JNodeViewerPanel
     public void 
     run()
     {
-      JNodeDetailsPanel details = UIMaster.getInstance().getNodeDetails(pGroupID);
-      if(details != null) {
-	details.updateNodeStatus(pAuthor, pView, pStatus);
-	details.updateManagerTitlePanel();
+      {
+	PanelGroup<JNodeDetailsPanel> panels = UIMaster.getInstance().getNodeDetailsPanels();
+	JNodeDetailsPanel details = panels.getPanel(pGroupID);
+	if(details != null) {
+	  details.updateNodeStatus(pAuthor, pView, pStatus);
+	  details.updateManagerTitlePanel();
+	}
+      }
+
+      {
+	PanelGroup<JNodeHistoryPanel> panels = UIMaster.getInstance().getNodeHistoryPanels();
+	JNodeHistoryPanel history = panels.getPanel(pGroupID);
+	if(history != null) {
+	  history.updateNodeStatus(pAuthor, pView, pStatus);
+	  history.updateManagerTitlePanel();
+	}
       }
     }
     
@@ -3616,10 +3631,6 @@ class JNodeViewerPanel
    */ 
   private JPopupMenu  pLinkPopup;
 
-  /**
-   * The link type submenu.
-   */ 
-  private JMenu  pLinkCatagoryMenu;
 
 
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.5 2004/06/28 00:17:13 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.6 2004/07/07 13:25:34 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -935,7 +935,7 @@ class JNodeDetailsPanel
 	  scroll.setHorizontalScrollBarPolicy
 	    (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 	  scroll.setVerticalScrollBarPolicy
-	    (ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+	    (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
 	  scroll.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE);
 
@@ -1022,12 +1022,14 @@ class JNodeDetailsPanel
   {
     UIMaster master = UIMaster.getInstance();
 
+    PanelGroup<JNodeDetailsPanel> panels = master.getNodeDetailsPanels();
+
     if(pGroupID > 0)
-      master.releaseNodeDetailsGroup(pGroupID);
+      panels.releaseGroup(pGroupID);
 
     pGroupID = 0;
-    if((groupID > 0) && master.isNodeDetailsGroupUnused(groupID)) {
-      master.assignNodeDetailsGroup(this, groupID);
+    if((groupID > 0) && panels.isGroupUnused(groupID)) {
+      panels.assignGroup(this, groupID);
       pGroupID = groupID;
     }
   }
@@ -1041,8 +1043,8 @@ class JNodeDetailsPanel
    int groupID
   ) 
   {
-    UIMaster master = UIMaster.getInstance();
-    return master.isNodeDetailsGroupUnused(groupID);
+    PanelGroup<JNodeDetailsPanel> panels = UIMaster.getInstance().getNodeDetailsPanels();
+    return panels.isGroupUnused(groupID);
   }
 
 
@@ -3798,7 +3800,8 @@ class JNodeDetailsPanel
 	}
 
 	if(pGroupID > 0) {
-	  JNodeViewerPanel viewer = UIMaster.getInstance().getNodeViewer(pGroupID);
+	  PanelGroup<JNodeViewerPanel> panels = master.getNodeViewerPanels();
+	  JNodeViewerPanel viewer = panels.getPanel(pGroupID);
 	  if(viewer != null) 
 	    viewer.updateRoots();
 	}
