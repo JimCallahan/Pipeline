@@ -2,11 +2,16 @@
 instbindir  = @sbindir@
 
 instbin_PROGRAMS = \
-  plput 
+  plget \
+  plput
 
 
 plput_SOURCES = PlPut.cc PackageInfo.cc
 plput_LDADD = \
+  @PHOENIX_CORE_LIB@
+
+plget_SOURCES = PlGet.cc PackageInfo.cc
+plget_LDADD = \
   @PHOENIX_CORE_LIB@
 
 

@@ -2,5 +2,6 @@
 htmldir = @datadir@/docs
 
 html_DATA = \
-  plput.html
+  plget.html \
+  plput.html 
 
