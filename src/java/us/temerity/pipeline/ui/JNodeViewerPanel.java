@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.79 2005/01/03 00:05:31 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.80 2005/01/03 00:28:19 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -954,37 +954,37 @@ class JNodeViewerPanel
       double anchorHeight = 0.0;
       for(String name : pRoots.keySet()) {
 	NodeStatus status = pRoots.get(name);
-	assert(status != null) : ("Missing Status for: " + name);
+	if(status != null) {
+	  NodePath path = new NodePath(name);
+	  Point2d anchor = new Point2d(0.0, anchorHeight);
+	  
+	  /* layout the upstream nodes */ 
+	  double uheight = 0.0;
+	  {
+	    TreeSet<String> seen = new TreeSet<String>();
+	    uheight = layoutNodes(true, true, status, path, anchor, wasCollapsed, seen);
+	  }
+	  
+	  /* layout the downstream nodes */ 
+	  double dheight = 0.0;  
+	  if(pShowDownstream) {
+	    TreeSet<String> seen = new TreeSet<String>();
+	    dheight = layoutNodes(true, false, status, path, anchor, wasCollapsed, seen);
+	  }
+	  
+	  /* shift the upstream/downstream nodes so that they line up vertically */ 
+	  if(uheight > dheight) {
+	    shiftUpstreamNodes(true, status, path, 
+			       anchorHeight + dheight*0.5, (dheight - uheight)*0.5);
+	  }
+	  else {
+	    shiftUpstreamNodes(true, status, path, anchorHeight + uheight*0.5, 0.0);
+	    if(pShowDownstream) 
+	      shiftDownstreamNodes(true, status, path, (uheight - dheight)*0.5);
+	  }
 	
-	NodePath path = new NodePath(name);
-	Point2d anchor = new Point2d(0.0, anchorHeight);
-	
-	/* layout the upstream nodes */ 
-	double uheight = 0.0;
-	{
-	  TreeSet<String> seen = new TreeSet<String>();
-	  uheight = layoutNodes(true, true, status, path, anchor, wasCollapsed, seen);
+	  anchorHeight += Math.min(uheight, dheight);
 	}
-	
-	/* layout the downstream nodes */ 
-	double dheight = 0.0;  
-	if(pShowDownstream) {
-	  TreeSet<String> seen = new TreeSet<String>();
-	  dheight = layoutNodes(true, false, status, path, anchor, wasCollapsed, seen);
-	}
-	
-	/* shift the upstream/downstream nodes so that they line up vertically */ 
-	if(uheight > dheight) {
-	  shiftUpstreamNodes(true, status, path, 
-			     anchorHeight + dheight*0.5, (dheight - uheight)*0.5);
-	}
-	else {
-	  shiftUpstreamNodes(true, status, path, anchorHeight + uheight*0.5, 0.0);
-	  if(pShowDownstream) 
-	    shiftDownstreamNodes(true, status, path, (uheight - dheight)*0.5);
-	}
-	
-	anchorHeight += Math.min(uheight, dheight);
       }
 
       /* shift entire layout */ 
