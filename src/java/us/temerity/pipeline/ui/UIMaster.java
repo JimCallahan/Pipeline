@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.48 2004/10/14 22:40:27 jim Exp $
+// $Id: UIMaster.java,v 1.49 2004/10/18 03:15:09 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -53,6 +53,9 @@ class UIMaster
    * 
    * @param jobPort
    *   The port number listened to by <B>pljobmgr</B>(1) daemons for incoming connections.
+   * 
+   * @param layout
+   *   The name of the override panel layout or <CODE>null</CODE> to use the default layout.
    */ 
   private 
   UIMaster
@@ -61,7 +64,8 @@ class UIMaster
    int masterPort, 
    String queueHost, 
    int queuePort, 
-   int jobPort
+   int jobPort, 
+   String layout
   ) 
   {
     pMasterMgrClient = new MasterMgrClient(masterHost, masterPort);
@@ -80,6 +84,8 @@ class UIMaster
     pQueueJobBrowserPanels = new PanelGroup<JQueueJobBrowserPanel>();
     pQueueJobViewerPanels  = new PanelGroup<JQueueJobViewerPanel>();
     pQueueJobDetailsPanels = new PanelGroup<JQueueJobDetailsPanel>();
+
+    pOverrideLayoutName = layout;
 
     SwingUtilities.invokeLater(new SplashFrameTask(this));
   }
@@ -108,6 +114,9 @@ class UIMaster
    * 
    * @param jobPort
    *   The port number listened to by <B>pljobmgr</B>(1) daemons for incoming connections.
+   * 
+   * @param layout
+   *   The name of the override panel layout or <CODE>null</CODE> to use the default layout.
    */ 
   public static void 
   init
@@ -116,11 +125,12 @@ class UIMaster
    int masterPort, 
    String queueHost, 
    int queuePort, 
-   int jobPort
+   int jobPort, 
+   String layout
   ) 
   {
     assert(sMaster == null);
-    sMaster = new UIMaster(masterHost, masterPort, queueHost, queuePort, jobPort);
+    sMaster = new UIMaster(masterHost, masterPort, queueHost, queuePort, jobPort, layout);
   }
 
 
@@ -2624,17 +2634,19 @@ class UIMaster
       pFrame.setVisible(true);
 
       {
-	String layoutName = null;
-	try {
-	  File file = new File(PackageInfo.sHomeDir, 
-			       PackageInfo.sUser + "/.pipeline/default-layout"); 
-	  if(file.isFile()) 
-	    layoutName = (String) LockedGlueFile.load(file);
+	String layoutName = pOverrideLayoutName;
+	if(layoutName == null) {
+	  try {
+	    File file = new File(PackageInfo.sHomeDir, 
+				 PackageInfo.sUser + "/.pipeline/default-layout"); 
+	    if(file.isFile()) 
+	      layoutName = (String) LockedGlueFile.load(file);
+	  }
+	  catch(Exception ex) {
+	    showErrorDialog(ex);
+	  }   
 	}
-	catch(Exception ex) {
-	  showErrorDialog(ex);
-	}   
-	
+	  
 	if(layoutName != null) {
 	  setDefaultLayoutName(layoutName);
 	  SwingUtilities.invokeLater(new RestoreSavedLayoutTask(layoutName));
@@ -3545,6 +3557,11 @@ class UIMaster
    * The name of the default layout.
    */ 
   private String  pDefaultLayoutName;
+ 
+  /**
+   * The name of the override default layout.
+   */ 
+  private String  pOverrideLayoutName;
  
   /**
    * The parent of the root manager panel.

@@ -1,4 +1,4 @@
-// $Id: GraphicalApp.java,v 1.5 2004/10/13 03:25:41 jim Exp $
+// $Id: GraphicalApp.java,v 1.6 2004/10/18 03:15:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -138,6 +138,9 @@ class GraphicalApp
 
     case GraphicalOptsParserConstants.HOSTNAME:
       return "a hostname";
+      
+    case GraphicalOptsParserConstants.LAYOUT_NAME:
+      return "a panel layout name";
       
     default: 
       if(printLiteral) 
