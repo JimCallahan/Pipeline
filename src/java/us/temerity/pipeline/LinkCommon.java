@@ -1,4 +1,4 @@
-// $Id: LinkCommon.java,v 1.4 2004/03/31 02:00:30 jim Exp $
+// $Id: LinkCommon.java,v 1.5 2004/03/31 08:34:24 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -131,7 +131,7 @@ class LinkCommon
    * Get the frame offset to be added to frame indices of files associated with the 
    * target node to determine the frame indices of files associated with the source node. <P> 
    * 
-   * @returns 
+   * @return
    *   The frame offset or <CODE>null</CODE> if the {@link #getRelationship getRelationship} 
    *   method returns anything other than {@link LinkRelationship#OneToOne OneToOne}.
    */
