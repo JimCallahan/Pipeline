@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.7 2004/06/14 22:42:23 jim Exp $
+// $Id: MasterMgr.java,v 1.8 2004/06/23 22:28:17 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3659,37 +3659,57 @@ class MasterMgr
       }
 
 
-      /* get per-file QueueStates */ 
+      /* get per-file QueueStates */  
       TreeMap<FileSeq,QueueState[]> queueStates = new TreeMap<FileSeq,QueueState[]>();
-      if(working.uQueueStates == null) {
-
-	// PLACEHOLDER 
-	for(FileSeq fseq : fileStates.keySet()) {
+      switch(versionState) {
+      case CheckedIn:
+	for(FileSeq fseq : latest.getSequences()) {
 	  QueueState qs[] = new QueueState[fseq.numFrames()];
+
 	  int wk;
 	  for(wk=0; wk<qs.length; wk++) 
-	    qs[wk] = QueueState.Finished;
+	    qs[wk] = QueueState.Undefined;
 
 	  queueStates.put(fseq, qs);
-	}	    
-	// PLACEHOLDER 
+	}
+	break;
 
-
-	// should check the queue here instead... 
-
-
-	working.uQueueStates = queueStates;
+      default:
+	{
+	  if(working.uQueueStates == null) {
+	    
+	    // PLACEHOLDER 
+	    for(FileSeq fseq : fileStates.keySet()) {
+	      QueueState qs[] = new QueueState[fseq.numFrames()];
+	      int wk;
+	      for(wk=0; wk<qs.length; wk++) 
+		qs[wk] = QueueState.Finished;
+	      
+	      queueStates.put(fseq, qs);
+	    }	    
+	    // PLACEHOLDER 
+	    
+	    
+	    // should check the queue here instead... 
+	    
+	    
+	    working.uQueueStates = queueStates;
+	  }
+	  else {
+	    queueStates = working.uQueueStates;
+	  }
+	}
       }
-      else {
-	queueStates = working.uQueueStates;
-      }
-
 
       /* compute overall queue state */ 
-      OverallQueueState overallQueueState = OverallQueueState.Finished; 
+      OverallQueueState overallQueueState = OverallQueueState.Undefined; 
       {
+	if(working != null) 
+	  overallQueueState = OverallQueueState.Finished; // FOR NOW 
 
 	// ...
+
+	// should combined per-file queue states here... 
 
       }
 

@@ -14,7 +14,7 @@ do
   frame=0
   for nstate in Pending CheckedIn Identical NeedsCheckOut Modified Conflicted ModifiedLinks
   do
-    for qstate in Stale Queued Running Missing Failed Finished
+    for qstate in Stale Queued Running Missing Failed Finished Undefined
     do
       simg=`printf "%s.%04d.sgi" $src/$mode $frame`
       dir=`echo $dest/$nstate-$qstate-$mode`
