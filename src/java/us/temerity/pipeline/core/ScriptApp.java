@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.33 2005/03/14 16:08:21 jim Exp $
+// $Id: ScriptApp.java,v 1.34 2005/03/15 19:09:10 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -526,15 +526,45 @@ class ScriptApp
   ) 
     throws PipelineException
   {
-    System.out.print
-      ("Offline():\n" + 
-       "  Exclude Latest  = " + exludeLatest + "\n" + 
-       "  Min Archives    = " + minArchives + "\n" + 
-       "\n");
+    /* perform an offline candidate query */ 
+    ArrayList<OfflineInfo> infos = 
+      client.offlineQuery(pattern, exludeLatest, minArchives, true);
+    if(infos.isEmpty()) 
+      throw new PipelineException
+	("No checked-in versions match the offline selection criteria!");
 
-  
-    //throw new PipelineException("Not implemented yet...");
 
+    /* offline the versions */ 
+    {
+      TreeMap<String,TreeSet<VersionID>> versions = new TreeMap<String,TreeSet<VersionID>>();
+      for(OfflineInfo info : infos) {
+	TreeSet<VersionID> vids = versions.get(info.getName());
+	if(vids == null) {
+	  vids = new TreeSet<VersionID>();
+	  versions.put(info.getName(), vids);
+	}
+	vids.add(info.getVersionID());
+      }
+
+      StringBuffer buf = new StringBuffer();
+      buf.append("Offlining Checked-In Versions:\n");
+      for(String name : versions.keySet()) {
+	for(VersionID vid : versions.get(name)) 
+	  buf.append("  " + pad(name, ' ', 75) + "  v" + vid.toString() + "\n");
+      }
+      
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
+	 buf.toString());
+      LogMgr.getInstance().flush();   
+
+      client.offline(versions);
+
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
+	 "Offline Complete.");
+      LogMgr.getInstance().flush();      
+    }
   }
 
   /**
