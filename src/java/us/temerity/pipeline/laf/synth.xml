@@ -258,6 +258,10 @@
       <imagePainter path="BrowseButton.png"
                     sourceInsets="0 0 0 0"/>
     </state>
+    <state value="DISABLED">
+      <imagePainter path="BrowseButtonDisabled.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
     <state value="PRESSED">
       <imagePainter path="BrowseButtonPressed.png"
                     sourceInsets="0 0 0 0"/>
