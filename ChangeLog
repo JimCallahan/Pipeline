@@ -1,3 +1,70 @@
+2004-04-17  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/core/FileMgrClient.java, src/java/us/temerity/pipeline/core/NodeMgr.java, src/java/us/temerity/pipeline/message/FileStateRsp.java, src/java/us/temerity/pipeline/tests/Makefile.in, src/java/us/temerity/pipeline/tests/TestFileMgrApp.java, ChangeLog, docs/misc/scheduling.lyx, src/java/us/temerity/pipeline/LinkState.java, src/java/us/temerity/pipeline/NodeCommon.java, src/java/us/temerity/pipeline/NodeDetails.java, src/java/us/temerity/pipeline/NodeMod.java, src/java/us/temerity/pipeline/NodeStatus.java, src/java/us/temerity/pipeline/NodeVersion.java, src/java/us/temerity/pipeline/OverallNodeState.java, src/java/us/temerity/pipeline/QueueState.java, src/java/us/temerity/pipeline/core/FileMgr.java:
+	initial revision
+
+2004-04-15  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/NodeDetails.java: comments
+
+	* src/java/us/temerity/pipeline/tests/TestNodeMgrApp.java:
+	test of NodeMgr.unmonitor()
+
+	* src/java/us/temerity/pipeline/SubProcess.java, src/java/us/temerity/pipeline/core/DNotify.java, src/java/us/temerity/pipeline/core/NotifyServer.java, src/java/us/temerity/pipeline/message/FileStateRsp.java:
+	improved logging efficiency
+
+	* src/java/us/temerity/pipeline/core/NodeMgr.java:
+	improved logging efficiency, added unmonitor() and is now called from revoke() and rename()
+
+	* src/java/us/temerity/pipeline/NodeMgrClient.java, src/java/us/temerity/pipeline/message/NodeStatusRsp.java:
+	latest node status classes
+
+	* src/java/us/temerity/pipeline/NodeID.java, src/java/us/temerity/pipeline/core/FileMgr.java, src/java/us/temerity/pipeline/core/NodeMgr.java:
+	added NodeID constructor with allows sharing of author and view with an existing NodeID
+
+	* src/java/us/temerity/pipeline/NodeDetails.java, src/java/us/temerity/pipeline/NodeStatus.java, src/java/us/temerity/pipeline/NodeSummary.java:
+	latest node status classes
+
+	* src/java/us/temerity/pipeline/FileState.java, src/java/us/temerity/pipeline/LinkPolicy.java, src/java/us/temerity/pipeline/LinkState.java, src/java/us/temerity/pipeline/Logs.java, src/java/us/temerity/pipeline/NodeDetails.java, src/java/us/temerity/pipeline/NodeSummary.java, src/java/us/temerity/pipeline/OverallNodeState.java, src/java/us/temerity/pipeline/OverallQueueState.java, src/java/us/temerity/pipeline/PropertyState.java, src/java/us/temerity/pipeline/QueueState.java, src/java/us/temerity/pipeline/VersionState.java, src/java/us/temerity/pipeline/message/NodeStatusRsp.java:
+	fixed references to NodeStatus in comments
+
+	* src/java/us/temerity/pipeline/NodeDetails.java, src/java/us/temerity/pipeline/NodeSummary.java:
+	added serialVersionUID
+
+	* src/java/us/temerity/pipeline/OverallNodeState.java, src/java/us/temerity/pipeline/LinkState.java:
+	comments
+
+	* src/java/us/temerity/pipeline/LinkVersion.java, src/java/us/temerity/pipeline/NodeMod.java, src/java/us/temerity/pipeline/NodeVersion.java:
+	no need to clone VersionID since it is read-only
+
+	* src/java/us/temerity/pipeline/NodeDetails.java, src/java/us/temerity/pipeline/NodeSummary.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/NodeMgrClient.java, src/java/us/temerity/pipeline/NodeStatus.java, src/java/us/temerity/pipeline/core/NodeMgr.java, src/java/us/temerity/pipeline/message/NodeStatusRsp.java:
+	replaced NodeStatus with NodeSummary and NodeDetails
+
+2004-04-14  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/FileState.java, src/java/us/temerity/pipeline/Makefile.in, src/java/us/temerity/pipeline/OverallNodeState.java, src/java/us/temerity/pipeline/PropertyState.java, src/java/us/temerity/pipeline/VersionState.java, src/java/us/temerity/pipeline/core/NodeMgr.java, src/java/us/temerity/pipeline/tests/Makefile.in, src/java/us/temerity/pipeline/DependState.java, src/java/us/temerity/pipeline/LinkState.java:
+	renamed DependState to LinkState
+
+	* src/java/us/temerity/pipeline/core/NodeMgr.java, src/java/us/temerity/pipeline/tests/TestNodeMgrApp.java:
+	updated to support overhaul DNotify
+
+	* src/java/us/temerity/pipeline/tests/TestDNotifyApp.java:
+	updated to be compatible with overhauled DNotify
+
+	* src/java/us/temerity/pipeline/core/DNotify.java:
+	complete overhaul to handle the creation and destruction of monitored directories -- now uses a tree datastructure internally to monitor all parent directories as well as leaf directories
+
+	* docs/man/plnotify.html.in: added --prod option
+
+	* src/java/us/temerity/pipeline/native/DNotify.cc:
+	added missing close() of file descriptor in unmonitorNative()
+
+	* src/java/us/temerity/pipeline/core/NotifyApp.java, src/java/us/temerity/pipeline/core/NotifyOptsParser.jj, src/java/us/temerity/pipeline/core/NotifyServer.java:
+	added --prod option
+
 2004-04-14  Jim Callahan  <jim@salamander>
 
 	* src/java/us/temerity/pipeline/tests/TestDNotifyApp.java:
