@@ -98,6 +98,9 @@ LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LICENSE_DOC = @LICENSE_DOC@
 LICENSE_END = @LICENSE_END@
+LICENSE_END_STAMP = @LICENSE_END_STAMP@
+LICENSE_START_STAMP = @LICENSE_START_STAMP@
+LICENSE_TYPE = @LICENSE_TYPE@
 LTLIBOBJS = @LTLIBOBJS@
 MAKE = @MAKE@
 MAKEINFO = @MAKEINFO@
@@ -465,7 +468,7 @@ clean-aux:
 	rm -f bootstrap/BootStrapLoader.java
 	rm -f core/ParseException.java core/SimpleCharStream.java 
 	rm -f core/Token.java core/TokenMgrError.java
-	rm -f core/PackageInfo.java
+	rm -f core/PackageInfo.java core/VerifiedApp.java
 	rm -f ui/core/JUserPrefsDialog.java ui/core/UserPrefs.java
 
 clean-parser: clean-core-parser 
@@ -509,6 +512,10 @@ PackageInfo.java.src: $(srcdir)/PackageInfo.java.src.in  $(top_builddir)/config.
 
 bootstrap/BootStrapLoader.java.in: $(srcdir)/bootstrap/BootStrapLoader.java.in.in  \
                                    $(top_builddir)/config.status
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
+
+core/VerifiedApp.java: $(srcdir)/core/VerifiedApp.java.in  \
+                       $(top_builddir)/config.status
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 
 laf/scripts/filter-fonts: $(srcdir)/laf/scripts/filter-fonts.in \

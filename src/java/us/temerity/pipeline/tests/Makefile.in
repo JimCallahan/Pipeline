@@ -27,6 +27,66 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
+	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
+	$(top_srcdir)/configure $(top_srcdir)/docs/javadoc/Makefile.in \
+	$(top_srcdir)/src/java/us/temerity/pipeline/Makefile.in \
+	$(top_srcdir)/src/java/us/temerity/pipeline/PackageInfo.java.src.in \
+	$(top_srcdir)/src/java/us/temerity/pipeline/bootstrap/BootStrapLoader.java.in.in \
+	$(top_srcdir)/src/java/us/temerity/pipeline/core/VerifiedApp.java.in \
+	$(top_srcdir)/src/java/us/temerity/pipeline/laf/scripts/build-web-icons.in \
+	$(top_srcdir)/src/java/us/temerity/pipeline/laf/scripts/filter-fonts.in \
+	$(top_srcdir)/src/java/us/temerity/pipeline/laf/scripts/filter-textures.in \
+	$(top_srcdir)/src/java/us/temerity/pipeline/laf/scripts/radial-menu.in \
+	$(top_srcdir)/src/java/us/temerity/pipeline/plugin/Makefile.in \
+	$(top_srcdir)/src/java/us/temerity/pipeline/tests/Makefile.in \
+	$(top_srcdir)/src/java/us/temerity/pipeline/tests/TestInfo.java.in \
+	AUTHORS COPYING ChangeLog INSTALL NEWS config/config.guess \
+	config/config.sub config/depcomp config/install-sh \
+	config/missing config/mkinstalldirs
+subdir = .
+ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
+am__aclocal_m4_deps = $(top_srcdir)/configure.ac
+am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
+	$(ACLOCAL_M4)
+am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
+ configure.lineno configure.status.lineno
+mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
+CONFIG_HEADER = config.h
+CONFIG_CLEAN_FILES = docs/javadoc/Makefile \
+	src/java/us/temerity/pipeline/Makefile \
+	src/java/us/temerity/pipeline/PackageInfo.java.src \
+	src/java/us/temerity/pipeline/bootstrap/BootStrapLoader.java.in \
+	src/java/us/temerity/pipeline/core/VerifiedApp.java \
+	src/java/us/temerity/pipeline/laf/scripts/filter-fonts \
+	src/java/us/temerity/pipeline/laf/scripts/filter-textures \
+	src/java/us/temerity/pipeline/laf/scripts/radial-menu \
+	src/java/us/temerity/pipeline/laf/scripts/build-web-icons \
+	src/java/us/temerity/pipeline/plugin/Makefile \
+	src/java/us/temerity/pipeline/tests/Makefile \
+	src/java/us/temerity/pipeline/tests/TestInfo.java
+SOURCES =
+DIST_SOURCES =
+RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
+	html-recursive info-recursive install-data-recursive \
+	install-exec-recursive install-info-recursive \
+	install-recursive installcheck-recursive installdirs-recursive \
+	pdf-recursive ps-recursive uninstall-info-recursive \
+	uninstall-recursive
+ETAGS = etags
+CTAGS = ctags
+DIST_SUBDIRS = $(SUBDIRS)
+DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
+distdir = $(PACKAGE)-$(VERSION)
+top_distdir = $(distdir)
+am__remove_distdir = \
+  { test ! -d $(distdir) \
+    || { find $(distdir) -type d ! -perm -200 -exec chmod u+w {} ';' \
+         && rm -fr $(distdir); }; }
+DIST_ARCHIVES = $(distdir).tar.gz
+GZIP_ENV = --best
+distuninstallcheck_listfiles = find . -type f -print
+distcleancheck_listfiles = find . -type f -print
 ACLOCAL = @ACLOCAL@
 AMDEP_FALSE = @AMDEP_FALSE@
 AMDEP_TRUE = @AMDEP_TRUE@
@@ -98,6 +158,9 @@ LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LICENSE_DOC = @LICENSE_DOC@
 LICENSE_END = @LICENSE_END@
+LICENSE_END_STAMP = @LICENSE_END_STAMP@
+LICENSE_START_STAMP = @LICENSE_START_STAMP@
+LICENSE_TYPE = @LICENSE_TYPE@
 LTLIBOBJS = @LTLIBOBJS@
 MAKE = @MAKE@
 MAKEINFO = @MAKEINFO@

@@ -25,7 +25,68 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
+build_triplet = @build@
 host_triplet = @host@
+DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
+	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
+	$(top_srcdir)/configure $(top_srcdir)/docs/javadoc/Makefile.in \
+	$(top_srcdir)/src/java/us/temerity/pipeline/Makefile.in \
+	$(top_srcdir)/src/java/us/temerity/pipeline/PackageInfo.java.src.in \
+	$(top_srcdir)/src/java/us/temerity/pipeline/bootstrap/BootStrapLoader.java.in.in \
+	$(top_srcdir)/src/java/us/temerity/pipeline/core/VerifiedApp.java.in \
+	$(top_srcdir)/src/java/us/temerity/pipeline/laf/scripts/build-web-icons.in \
+	$(top_srcdir)/src/java/us/temerity/pipeline/laf/scripts/filter-fonts.in \
+	$(top_srcdir)/src/java/us/temerity/pipeline/laf/scripts/filter-textures.in \
+	$(top_srcdir)/src/java/us/temerity/pipeline/laf/scripts/radial-menu.in \
+	$(top_srcdir)/src/java/us/temerity/pipeline/plugin/Makefile.in \
+	$(top_srcdir)/src/java/us/temerity/pipeline/tests/Makefile.in \
+	$(top_srcdir)/src/java/us/temerity/pipeline/tests/TestInfo.java.in \
+	AUTHORS COPYING ChangeLog INSTALL NEWS config/config.guess \
+	config/config.sub config/depcomp config/install-sh \
+	config/missing config/mkinstalldirs
+subdir = .
+ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
+am__aclocal_m4_deps = $(top_srcdir)/configure.ac
+am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
+	$(ACLOCAL_M4)
+am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
+ configure.lineno configure.status.lineno
+mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
+CONFIG_HEADER = config.h
+CONFIG_CLEAN_FILES = docs/javadoc/Makefile \
+	src/java/us/temerity/pipeline/Makefile \
+	src/java/us/temerity/pipeline/PackageInfo.java.src \
+	src/java/us/temerity/pipeline/bootstrap/BootStrapLoader.java.in \
+	src/java/us/temerity/pipeline/core/VerifiedApp.java \
+	src/java/us/temerity/pipeline/laf/scripts/filter-fonts \
+	src/java/us/temerity/pipeline/laf/scripts/filter-textures \
+	src/java/us/temerity/pipeline/laf/scripts/radial-menu \
+	src/java/us/temerity/pipeline/laf/scripts/build-web-icons \
+	src/java/us/temerity/pipeline/plugin/Makefile \
+	src/java/us/temerity/pipeline/tests/Makefile \
+	src/java/us/temerity/pipeline/tests/TestInfo.java
+SOURCES =
+DIST_SOURCES =
+RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
+	html-recursive info-recursive install-data-recursive \
+	install-exec-recursive install-info-recursive \
+	install-recursive installcheck-recursive installdirs-recursive \
+	pdf-recursive ps-recursive uninstall-info-recursive \
+	uninstall-recursive
+ETAGS = etags
+CTAGS = ctags
+DIST_SUBDIRS = $(SUBDIRS)
+DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
+distdir = $(PACKAGE)-$(VERSION)
+top_distdir = $(distdir)
+am__remove_distdir = \
+  { test ! -d $(distdir) \
+    || { find $(distdir) -type d ! -perm -200 -exec chmod u+w {} ';' \
+         && rm -fr $(distdir); }; }
+DIST_ARCHIVES = $(distdir).tar.gz
+GZIP_ENV = --best
+distuninstallcheck_listfiles = find . -type f -print
+distcleancheck_listfiles = find . -type f -print
 ACLOCAL = @ACLOCAL@
 AMDEP_FALSE = @AMDEP_FALSE@
 AMDEP_TRUE = @AMDEP_TRUE@
@@ -42,6 +103,7 @@ BUILD_TOOLSET = @BUILD_TOOLSET@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CHECKBOT = @CHECKBOT@
 CHMOD = @CHMOD@
 CHOWN = @CHOWN@
 CPPFLAGS = @CPPFLAGS@
@@ -96,13 +158,14 @@ LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LICENSE_DOC = @LICENSE_DOC@
 LICENSE_END = @LICENSE_END@
+LICENSE_END_STAMP = @LICENSE_END_STAMP@
+LICENSE_START_STAMP = @LICENSE_START_STAMP@
+LICENSE_TYPE = @LICENSE_TYPE@
 LTLIBOBJS = @LTLIBOBJS@
 MAKE = @MAKE@
 MAKEINFO = @MAKEINFO@
 MOZILLA = @MOZILLA@
 NODEDIR = @NODEDIR@
-NOTIFY_CONTROL_PORT = @NOTIFY_CONTROL_PORT@
-NOTIFY_MONITOR_PORT = @NOTIFY_MONITOR_PORT@
 OBJEXT = @OBJEXT@
 OS_ARCH = @OS_ARCH@
 OS_NAME = @OS_NAME@
@@ -115,19 +178,35 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PIPELINE_GID = @PIPELINE_GID@
+PIPELINE_GROUP = @PIPELINE_GROUP@
+PIPELINE_HOST_IDS = @PIPELINE_HOST_IDS@
+PIPELINE_HOST_NAMES = @PIPELINE_HOST_NAMES@
 PIPELINE_UID = @PIPELINE_UID@
+PIPELINE_USER = @PIPELINE_USER@
 PLCONFIG_VERSION = @PLCONFIG_VERSION@
 PLFILEMGR_DEBUG_OPTS = @PLFILEMGR_DEBUG_OPTS@
+PLFILEMGR_PROFILE_OPTS = @PLFILEMGR_PROFILE_OPTS@
 PLJOBMGR_DEBUG_OPTS = @PLJOBMGR_DEBUG_OPTS@
-PLMASTERMGR_DEBUG_OPTS = @PLMASTERMGR_DEBUG_OPTS@
-PLNOTIFY_DEBUG_OPTS = @PLNOTIFY_DEBUG_OPTS@
+PLJOBMGR_PROFILE_OPTS = @PLJOBMGR_PROFILE_OPTS@
+PLMASTER_DEBUG_OPTS = @PLMASTER_DEBUG_OPTS@
+PLMASTER_PROFILE_OPTS = @PLMASTER_PROFILE_OPTS@
+PLPLUGINMGR_DEBUG_OPTS = @PLPLUGINMGR_DEBUG_OPTS@
+PLPLUGINMGR_PROFILE_OPTS = @PLPLUGINMGR_PROFILE_OPTS@
+PLPLUGIN_DEBUG_OPTS = @PLPLUGIN_DEBUG_OPTS@
+PLPLUGIN_PROFILE_OPTS = @PLPLUGIN_PROFILE_OPTS@
 PLQUEUEMGR_DEBUG_OPTS = @PLQUEUEMGR_DEBUG_OPTS@
+PLQUEUEMGR_PROFILE_OPTS = @PLQUEUEMGR_PROFILE_OPTS@
+PLSCRIPT_DEBUG_OPTS = @PLSCRIPT_DEBUG_OPTS@
+PLSCRIPT_PROFILE_OPTS = @PLSCRIPT_PROFILE_OPTS@
 PLUI_DEBUG_OPTS = @PLUI_DEBUG_OPTS@
+PLUI_PROFILE_OPTS = @PLUI_PROFILE_OPTS@
 PL_FILE_PORT = @PL_FILE_PORT@
 PL_FILE_SERVER = @PL_FILE_SERVER@
 PL_JOB_PORT = @PL_JOB_PORT@
 PL_MASTER_PORT = @PL_MASTER_PORT@
 PL_MASTER_SERVER = @PL_MASTER_SERVER@
+PL_PLUGIN_PORT = @PL_PLUGIN_PORT@
+PL_PLUGIN_SERVER = @PL_PLUGIN_SERVER@
 PL_QUEUE_PORT = @PL_QUEUE_PORT@
 PL_QUEUE_SERVER = @PL_QUEUE_SERVER@
 PRODDIR = @PRODDIR@
@@ -136,13 +215,13 @@ QUEUEDIR = @QUEUEDIR@
 RANLIB = @RANLIB@
 RELEASE_STAMP = @RELEASE_STAMP@
 ROOT_INST_DIR = @ROOT_INST_DIR@
+RPM_DATE = @RPM_DATE@
 RPM_ROOT = @RPM_ROOT@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 SSH = @SSH@
 STRIP = @STRIP@
 TEMPDIR = @TEMPDIR@
-TOOLSETDIR = @TOOLSETDIR@
 VERSION = @VERSION@
 XDIFF = @XDIFF@
 YXXFLAGS = @YXXFLAGS@
@@ -156,6 +235,8 @@ am__fastdepCXX_TRUE = @am__fastdepCXX_TRUE@
 am__include = @am__include@
 am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@
+am__tar = @am__tar@
+am__untar = @am__untar@
 bindir = @bindir@
 build = @build@
 build_alias = @build_alias@
@@ -176,6 +257,7 @@ libdir = @libdir@
 libexecdir = @libexecdir@
 localstatedir = @localstatedir@
 mandir = @mandir@
+mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
@@ -216,8 +298,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
                   us.temerity.pipeline.glue \
                   us.temerity.pipeline.math \
                   us.temerity.pipeline.task \
-                  us.temerity.pipeline.toolset \
-                  us.temerity.pipeline.ui
+                  us.temerity.pipeline.toolset
 
        PACKAGES = $(MAIN_PACKAGES) $(PLUGIN_PACKAGES)
 
