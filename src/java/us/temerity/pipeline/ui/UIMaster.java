@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.45 2004/10/01 23:16:28 jim Exp $
+// $Id: UIMaster.java,v 1.46 2004/10/04 16:06:53 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -2898,6 +2898,429 @@ class UIMaster
     private SubProcess  pProc;
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The common base class for node tasks.
+   */ 
+  public
+  class BaseNodeTask
+    extends Thread
+  {
+    public 
+    BaseNodeTask
+    (
+     String tname, 
+     String author, 
+     String view
+    ) 
+    {
+      super(tname);
+
+      pAuthorName = author;
+      pViewName   = view; 
+    }
+
+    protected void
+    postOp() 
+    {}
+
+    protected String  pAuthorName; 
+    protected String  pViewName; 
+  }
+
+  /** 
+   * Edit/View the primary file sequence of the given node version.
+   */ 
+  public
+  class EditTask
+    extends BaseNodeTask
+  {
+    public 
+    EditTask
+    (
+     NodeCommon com, 
+     String author, 
+     String view
+    ) 
+    {
+      super("UIMaster:EditTask", author, view);
+
+      pNodeCommon = com;
+    }
+
+    public 
+    EditTask
+    (
+     NodeCommon com, 
+     String ename, 
+     VersionID evid, 
+     String author, 
+     String view
+    ) 
+    {
+      super("UIMaster:EditTask", author, view);
+
+      pNodeCommon    = com;
+      pEditorName    = ename;
+      pEditorVersion = evid; 
+    }
+
+    public void 
+    run() 
+    {
+      SubProcess proc = null;
+      {
+	UIMaster master = UIMaster.getInstance();
+	if(master.beginPanelOp("Launching Node Editor...")) {
+	  try {
+	    NodeMod mod = null;
+	    if(pNodeCommon instanceof NodeMod) 
+	      mod = (NodeMod) pNodeCommon;
+
+	    NodeVersion vsn = null;
+	    if(pNodeCommon instanceof NodeVersion) 
+	      vsn = (NodeVersion) pNodeCommon;
+
+	    /* create an editor plugin instance */ 
+	    BaseEditor editor = null;
+	    {
+	      String ename = pEditorName;
+	      if(ename == null) 
+		ename = pNodeCommon.getEditor();
+	      if(ename == null) 
+		throw new PipelineException
+		  ("No editor was specified for node (" + pNodeCommon.getName() + ")!");
+	      
+	      editor = PluginMgr.getInstance().newEditor(ename, pEditorVersion);
+	    }
+
+	    /* lookup the toolset environment */ 
+	    TreeMap<String,String> env = null;
+	    {
+	      String tname = pNodeCommon.getToolset();
+	      if(tname == null) 
+		throw new PipelineException
+		  ("No toolset was specified for node (" + pNodeCommon.getName() + ")!");
+
+	      MasterMgrClient client = master.getMasterMgrClient();
+	      
+	      String view = null;
+	      if(mod != null)
+		view = pViewName; 
+
+	      /* passes pAuthorName so that WORKING will correspond to the current view */ 
+	      env = client.getToolsetEnvironment(pAuthorName, view, tname);
+
+	      /* override these since the editor will be run as the current user */ 
+	      env.put("HOME", PackageInfo.sHomeDir + "/" + PackageInfo.sUser);
+	      env.put("USER", PackageInfo.sUser);
+	    }
+	    
+	    /* get the primary file sequence */ 
+	    FileSeq fseq = null;
+	    File dir = null; 
+	    {
+	      String path = null;
+	      if(mod != null) {
+		File wpath = 
+		  new File(PackageInfo.sWorkDir, 
+			   pAuthorName + "/" + pViewName + "/" + pNodeCommon.getName());
+		path = wpath.getParent();
+	      }
+	      else if(vsn != null) {
+		path = (PackageInfo.sRepoDir + "/" + 
+			vsn.getName() + "/" + vsn.getVersionID());
+	      }
+	      else {
+		assert(false);
+	      }
+	  
+	      fseq = new FileSeq(path, pNodeCommon.getPrimarySequence());
+	      dir = new File(path);
+	    }
+	    
+	    /* start the editor */ 
+	    proc = editor.launch(fseq, env, dir);
+	  }
+	  catch(PipelineException ex) {
+	    master.showErrorDialog(ex);
+	    return;
+	  }
+	  finally {
+	    master.endPanelOp("Done.");
+	  }
+	}
+
+	/* wait for the editor to exit */ 
+	try {
+	  proc.join();
+	  if(!proc.wasSuccessful()) 
+	    master.showSubprocessFailureDialog("Editor Failure:", proc);
+	}
+	catch(InterruptedException ex) {
+	  master.showErrorDialog(ex);
+	}
+      }
+    }
+ 
+    private NodeCommon  pNodeCommon; 
+    private String      pEditorName;
+    private VersionID   pEditorVersion; 
+  }
+
+  /** 
+   * Queue jobs to the queue for the given nodes.
+   */ 
+  public
+  class QueueJobsTask
+    extends BaseNodeTask
+  {
+    public 
+    QueueJobsTask
+    (
+     String name,
+     String author, 
+     String view
+    ) 
+    {
+      super("UIMaster:QueueJobsTask", author, view);
+
+      pNames = new TreeSet<String>();
+      pNames.add(name);
+    }
+
+    public 
+    QueueJobsTask
+    (
+     TreeSet<String> names,
+     String author, 
+     String view
+    ) 
+    {
+      super("UIMaster:QueueJobsTask", author, view);
+
+      pNames = names;
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp()) {
+	try {
+	  for(String name : pNames) {
+	    master.updatePanelOp("Submitting Jobs to the Queue: " + name);
+	    master.getMasterMgrClient().submitJobs(pAuthorName, pViewName, name, null);
+	  }
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	postOp();
+      }
+    }
+
+    private TreeSet<String>  pNames; 
+  }
+
+  /** 
+   * Pause the given jobs.
+   */ 
+  public
+  class PauseJobsTask
+    extends BaseNodeTask
+  {
+    public 
+    PauseJobsTask
+    (
+     TreeSet<Long> jobIDs,
+     String author, 
+     String view
+    ) 
+    {
+      super("UIMaster:PauseJobsTask", author, view);
+
+      pJobIDs = jobIDs; 
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Pausing Jobs...")) {
+	try {
+	  master.getQueueMgrClient().pauseJobs(pAuthorName, pJobIDs);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	postOp();
+      }
+    }
+
+    private TreeSet<Long>  pJobIDs; 
+  }
+
+  /** 
+   * Resume execution of the the given paused jobs.
+   */ 
+  public
+  class ResumeJobsTask
+    extends BaseNodeTask
+  {
+    public 
+    ResumeJobsTask
+    (
+     TreeSet<Long> jobIDs,
+     String author, 
+     String view
+    ) 
+    {
+      super("UIMaster:ResumeJobsTask", author, view);
+
+      pJobIDs = jobIDs; 
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Resuming Paused Jobs...")) {
+	try {
+	  master.getQueueMgrClient().resumeJobs(pAuthorName, pJobIDs);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	postOp();
+      }
+    }
+
+    private TreeSet<Long>  pJobIDs; 
+  }
+
+  /** 
+   * Kill the given jobs.
+   */ 
+  public
+  class KillJobsTask
+    extends BaseNodeTask
+  {
+    public 
+    KillJobsTask
+    (
+     TreeSet<Long> jobIDs,
+     String author, 
+     String view
+    ) 
+    {
+      super("UIMaster:KillJobsTask", author, view);
+
+      pJobIDs = jobIDs; 
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Killing Jobs...")) {
+	try {
+	  master.getQueueMgrClient().killJobs(pAuthorName, pJobIDs);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	postOp();
+      }
+    }
+
+    private TreeSet<Long>  pJobIDs; 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Remove the working area files associated with the given nodes.
+   */ 
+  public 
+  class RemoveFilesTask
+    extends BaseNodeTask
+  {
+    public 
+    RemoveFilesTask
+    (
+     String name,
+     String author, 
+     String view
+    ) 
+    {
+      super("UIMaster:RemoveFilesTask", author, view);
+
+      pNames = new TreeSet<String>();
+      pNames.add(name);
+    }
+
+    public 
+    RemoveFilesTask
+    (
+     TreeSet<String> names,
+     String author, 
+     String view
+    ) 
+    {
+      super("UIMaster:RemoveFilesTask", author, view);
+
+      pNames = names; 
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp()) {
+	try {
+	  for(String name : pNames) {
+	    master.updatePanelOp("Removing Files: " + name);
+	    master.getMasterMgrClient().removeFiles(pAuthorName, pViewName, name, null);
+	  }
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	postOp();
+      }
+    }
+
+    private TreeSet<String>  pNames; 
+  }
 
 
   /*----------------------------------------------------------------------------------------*/

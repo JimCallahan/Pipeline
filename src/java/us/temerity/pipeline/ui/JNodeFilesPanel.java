@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.12 2004/09/27 04:54:35 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.13 2004/10/04 16:06:53 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -77,6 +77,16 @@ class JNodeFilesPanel
       pWorkingPopup   = new JPopupMenu();  
       pCheckedInPopup = new JPopupMenu();  
 
+      {
+	item = new JMenuItem("Apply Changes");
+	pApplyItem = item;
+	item.setActionCommand("apply");
+	item.addActionListener(this);
+	pWorkingPopup.add(item);
+
+	pWorkingPopup.addSeparator();
+      }
+
       pEditWithMenus = new JMenu[2];
 
       JPopupMenu menus[] = { pWorkingPopup, pCheckedInPopup };
@@ -141,6 +151,17 @@ class JNodeFilesPanel
 
 	panel.setName("DialogHeader");	
 	panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+
+	{
+	  JLabel label = new JLabel();
+	  pHeaderIcon = label;
+	  
+	  label.addMouseListener(this); 
+
+	  panel.add(label);	  
+	}
+	
+	panel.add(Box.createRigidArea(new Dimension(3, 0)));
 
 	{
 	  JLabel label = new JLabel("X");
@@ -370,7 +391,7 @@ class JNodeFilesPanel
 	}
 
 	try {
-	  pHeaderLabel.setIcon(TextureMgr.getInstance().getIcon(name));
+	  pHeaderIcon.setIcon(TextureMgr.getInstance().getIcon(name));
 	}
 	catch(IOException ex) {
 	  Logs.tex.severe("Internal Error:\n" + 
@@ -454,6 +475,7 @@ class JNodeFilesPanel
     pFileSeqBox.revalidate();
 
     pApplyButton.setEnabled(false);
+    pApplyItem.setEnabled(false);
   }
 
 
@@ -971,6 +993,35 @@ class JNodeFilesPanel
 	    pTargetVersionID    = check.getVersionID();
 	    hasWorking          = check.hasWorking();
 	  }
+	  else if(source == pHeaderIcon) {
+	    NodeDetails details = pStatus.getDetails();
+	    if(details == null) 
+	      return;
+
+	    NodeMod work = details.getWorkingVersion();
+	    NodeVersion latest = details.getLatestVersion();
+	    if(work != null) {
+	      File file = new File(pStatus.getName());
+	      String path = (PackageInfo.sWorkDir + "/" + 
+			     pAuthor + "/" + pView + file.getParent());
+	      pTargetFileSeq   = new FileSeq(path, work.getPrimarySequence());
+	      pTargetVersionID = null;
+	    }
+	    else if(latest != null) {
+	      String path = (PackageInfo.sRepoDir + pStatus.getName() + "/" + 
+			     latest.getVersionID());
+	      pTargetFileSeq   = new FileSeq(path, latest.getPrimarySequence());
+	      pTargetVersionID = latest.getVersionID();
+	    }
+	    else {
+	      return;
+	    }
+
+	    pTargetFileIdx = null;
+	  }
+	  else {
+	    return;
+	  }
 
 	  if(pTargetVersionID != null) {
 	    updateCheckedInMenu();
@@ -1011,10 +1062,32 @@ class JNodeFilesPanel
 
     /* local hotkeys */ 
     UserPrefs prefs = UserPrefs.getInstance();
-    if((prefs.getNodeDetailsApplyChanges() != null) &&
-       prefs.getNodeDetailsApplyChanges().wasPressed(e) && 
+    if((prefs.getNodeFilesApplyChanges() != null) &&
+       prefs.getNodeFilesApplyChanges().wasPressed(e) && 
        pApplyButton.isEnabled())
       doApply();
+
+    else if((prefs.getNodeFilesEdit() != null) &&
+	    prefs.getNodeFilesEdit().wasPressed(e))
+      doEdit();
+    
+    else if((prefs.getNodeFilesQueueJobs() != null) &&
+	    prefs.getNodeFilesQueueJobs().wasPressed(e))
+      doQueueJobs();
+    else if((prefs.getNodeFilesPauseJobs() != null) &&
+	    prefs.getNodeFilesPauseJobs().wasPressed(e))
+	doPauseJobs();
+    else if((prefs.getNodeFilesResumeJobs() != null) &&
+	    prefs.getNodeFilesResumeJobs().wasPressed(e))
+      doResumeJobs();
+    else if((prefs.getNodeFilesKillJobs() != null) &&
+	      prefs.getNodeFilesKillJobs().wasPressed(e))
+      doKillJobs();
+    
+    else if((prefs.getNodeFilesRemoveFiles() != null) &&
+	    prefs.getNodeFilesRemoveFiles().wasPressed(e))
+      doRemoveFiles();
+    
     else {
       switch(e.getKeyCode()) {
       case KeyEvent.VK_SHIFT:
@@ -1118,6 +1191,7 @@ class JNodeFilesPanel
     }
 
     pApplyButton.setEnabled(false);
+    pApplyItem.setEnabled(false);
 	  
     RevertTask task = new RevertTask(files);
     task.start();
@@ -1187,6 +1261,7 @@ class JNodeFilesPanel
     label.setForeground(selected ? Color.yellow : Color.white);
 
     pApplyButton.setEnabled(true);
+    pApplyItem.setEnabled(true);
   }
   
   /**
@@ -2494,11 +2569,6 @@ class JNodeFilesPanel
    */ 
   private TreeMap<VersionID,TreeMap<FileSeq,boolean[]>>  pNovelty;
 
-  /**
-   * The button used to apply changes to the working version of the node.
-   */ 
-  private JButton  pApplyButton;
-
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -2506,6 +2576,11 @@ class JNodeFilesPanel
    * The working file popup menu.
    */ 
   private JPopupMenu  pWorkingPopup; 
+
+  /**
+   * The menu item used to apply changes to the working version of the node.
+   */ 
+  private JMenuItem  pApplyItem;
 
   /**
    * The checked-in file popup menu.
@@ -2545,12 +2620,18 @@ class JNodeFilesPanel
   /**
    * The node name/state header.
    */ 
-  private JLabel pHeaderLabel;
+  private JLabel  pHeaderIcon;
+  private JLabel  pHeaderLabel;
   
   /**
    * The fully resolved node name field.
    */ 
   private JTextField pNodeNameField;
+
+  /**
+   * The button used to apply changes to the working version of the node.
+   */ 
+  private JButton  pApplyButton;
 
 
   /**

@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.17 2004/09/27 04:54:35 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.18 2004/10/04 16:06:53 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -88,6 +88,70 @@ class JNodeDetailsPanel
       pLicenseKeyComponents   = new TreeMap<String,Component[]>();
     }
 
+    /* initialize the popup menus */ 
+    {
+      JMenuItem item;
+      JMenu sub;
+      
+      pWorkingPopup   = new JPopupMenu();  
+      pCheckedInPopup = new JPopupMenu(); 
+
+      {
+	item = new JMenuItem("Apply Changes");
+	pApplyItem = item;
+	item.setActionCommand("apply");
+	item.addActionListener(this);
+	pWorkingPopup.add(item);
+
+	pWorkingPopup.addSeparator();
+      }
+
+      pEditWithMenus = new JMenu[2];
+
+      JPopupMenu menus[] = { pWorkingPopup, pCheckedInPopup };
+      int wk;
+      for(wk=0; wk<menus.length; wk++) {
+	item = new JMenuItem((wk == 1) ? "View" : "Edit");
+	item.setActionCommand("edit");
+	item.addActionListener(this);
+	menus[wk].add(item);
+	
+	pEditWithMenus[wk] = new JMenu((wk == 1) ? "View With" : "Edit With");
+	menus[wk].add(pEditWithMenus[wk]);
+      }
+      
+      {
+	pWorkingPopup.addSeparator();
+	
+	item = new JMenuItem("Queue Jobs");
+	item.setActionCommand("queue-jobs");
+	item.addActionListener(this);
+	pWorkingPopup.add(item);
+	
+	item = new JMenuItem("Pause Jobs");
+	item.setActionCommand("pause-jobs");
+	item.addActionListener(this);
+	pWorkingPopup.add(item);
+      
+	item = new JMenuItem("Resume Jobs");
+	item.setActionCommand("resume-jobs");
+	item.addActionListener(this);
+	pWorkingPopup.add(item);
+	
+	item = new JMenuItem("Kill Jobs");
+	item.setActionCommand("kill-jobs");
+	item.addActionListener(this);
+	pWorkingPopup.add(item);
+
+	pWorkingPopup.addSeparator();
+
+	item = new JMenuItem("Remove Files");
+	item.setActionCommand("remove-files");
+	item.addActionListener(this);
+	pWorkingPopup.add(item);
+      }
+    }
+
     /* initialize the panel components */ 
     {
       setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));  
@@ -98,6 +162,17 @@ class JNodeDetailsPanel
 
 	panel.setName("DialogHeader");	
 	panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+	
+	{
+	  JLabel label = new JLabel();
+	  pHeaderIcon = label;
+	  
+	  label.addMouseListener(this); 
+
+	  panel.add(label);	  
+	}
+	
+	panel.add(Box.createRigidArea(new Dimension(3, 0)));
 
 	{
 	  JLabel label = new JLabel("X");
@@ -1339,7 +1414,7 @@ class JNodeDetailsPanel
       }
       
       try {
-	pHeaderLabel.setIcon(TextureMgr.getInstance().getIcon(name));
+	pHeaderIcon.setIcon(TextureMgr.getInstance().getIcon(name));
       }
       catch(IOException ex) {
 	Logs.tex.severe("Internal Error:\n" + 
@@ -1527,6 +1602,7 @@ class JNodeDetailsPanel
     updateJobRequirements(true);
 
     pApplyButton.setEnabled(false);
+    pApplyItem.setEnabled(false);
   }
 
   /**
@@ -1581,6 +1657,7 @@ class JNodeDetailsPanel
 
     /* restore the enabled state of the apply button */ 
     pApplyButton.setEnabled(isEnabled);
+    pApplyItem.setEnabled(isEnabled);
   }
 
   /**
@@ -2637,6 +2714,68 @@ class JNodeDetailsPanel
       pcomps[3].setForeground(fg);
     }
   }
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Update the checked-in file menu.
+   */ 
+  public void 
+  updateCheckedInMenu() 
+  {
+    rebuildEditorSubmenu(1);
+  }
+
+  /**
+   * Update the working file menu.
+   */ 
+  public void 
+  updateWorkingMenu() 
+  {
+    rebuildEditorSubmenu(0);
+  }
+
+  /**
+   * Rebuild the editor submenu.
+   * 
+   * @param idx
+   *   The node menu index: 0=Working, 1=Checked-In
+   */ 
+  private void 
+  rebuildEditorSubmenu
+  (
+   int idx
+  ) 
+  {
+    TreeMap<String,TreeSet<VersionID>> editors = PluginMgr.getInstance().getEditors();
+    
+    pEditWithMenus[idx].removeAll();
+    
+    for(String editor : editors.keySet()) {
+      JMenuItem item = new JMenuItem(editor);
+      item.setActionCommand("edit-with:" + editor);
+      item.addActionListener(this);
+      pEditWithMenus[idx].add(item);
+    }
+    
+    pEditWithMenus[idx].addSeparator();
+    
+    JMenu sub = new JMenu("All Versions");
+    pEditWithMenus[idx].add(sub);
+
+    for(String editor : editors.keySet()) {
+      JMenu esub = new JMenu(editor);
+      sub.add(esub);
+      
+      for(VersionID vid : editors.get(editor)) {
+	JMenuItem item = new JMenuItem(editor + " (v" + vid + ")");
+	item.setActionCommand("edit-with:" + editor + ":" + vid);
+	item.addActionListener(this);
+	esub.add(item);
+      }
+    }
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -2753,7 +2892,30 @@ class JNodeDetailsPanel
    MouseEvent e
   )
   {
-    pManagerPanel.handleManagerMouseEvent(e);
+    /* manager panel popups */ 
+    if(pManagerPanel.handleManagerMouseEvent(e)) 
+      return;
+
+    /* local mouse events */ 
+    if(e.getSource() == pHeaderIcon) {
+      if(pStatus == null) 
+	return; 
+
+      NodeDetails details = pStatus.getDetails();
+      if(details == null) 
+	return;
+
+      NodeMod work = details.getWorkingVersion();
+      NodeVersion latest = details.getLatestVersion();
+      if(work != null) {
+	updateWorkingMenu();
+	pWorkingPopup.show(e.getComponent(), e.getX(), e.getY());
+      }
+      else if(latest != null) {
+	updateCheckedInMenu();
+	pCheckedInPopup.show(e.getComponent(), e.getX(), e.getY());
+      }
+    }
   }
   
   /**
@@ -2785,6 +2947,28 @@ class JNodeDetailsPanel
        prefs.getNodeDetailsApplyChanges().wasPressed(e) && 
        pApplyButton.isEnabled())
       doApply();
+
+    else if((prefs.getNodeDetailsEdit() != null) &&
+	    prefs.getNodeDetailsEdit().wasPressed(e))
+      doEdit();
+    
+    else if((prefs.getNodeDetailsQueueJobs() != null) &&
+	    prefs.getNodeDetailsQueueJobs().wasPressed(e))
+      doQueueJobs();
+    else if((prefs.getNodeDetailsPauseJobs() != null) &&
+	    prefs.getNodeDetailsPauseJobs().wasPressed(e))
+	doPauseJobs();
+    else if((prefs.getNodeDetailsResumeJobs() != null) &&
+	    prefs.getNodeDetailsResumeJobs().wasPressed(e))
+      doResumeJobs();
+    else if((prefs.getNodeDetailsKillJobs() != null) &&
+	      prefs.getNodeDetailsKillJobs().wasPressed(e))
+      doKillJobs();
+    
+    else if((prefs.getNodeDetailsRemoveFiles() != null) &&
+	    prefs.getNodeDetailsRemoveFiles().wasPressed(e))
+      doRemoveFiles();
+
     else {
       switch(e.getKeyCode()) {
       case KeyEvent.VK_SHIFT:
@@ -2929,6 +3113,23 @@ class JNodeDetailsPanel
       doLicenseKeyChanged(cmd.substring(20));
     else if(cmd.startsWith("set-license-key:")) 
       doSetLicenseKey(cmd.substring(16));
+
+    else if(cmd.equals("edit"))
+      doEdit();
+    else if(cmd.startsWith("edit-with:"))
+      doEditWith(cmd.substring(10)); 
+
+    else if(cmd.equals("queue-jobs"))
+      doQueueJobs();
+    else if(cmd.equals("pause-jobs"))
+      doPauseJobs();
+    else if(cmd.equals("resume-jobs"))
+      doResumeJobs();
+    else if(cmd.equals("kill-jobs"))
+      doKillJobs();
+
+    else if(cmd.equals("remove-files"))
+      doRemoveFiles();        
   }
 
 
@@ -3111,6 +3312,7 @@ class JNodeDetailsPanel
 	  }	
 
 	  pApplyButton.setEnabled(false);
+	  pApplyItem.setEnabled(false);
 	  
 	  ModifyTask task = new ModifyTask(mod);
 	  task.start();
@@ -3156,6 +3358,7 @@ class JNodeDetailsPanel
   doToolsetChanged() 
   {
     pApplyButton.setEnabled(true);
+    pApplyItem.setEnabled(true);
 
     Color color = Color.white;
     if(hasWorking() && hasCheckedIn()) {
@@ -3199,6 +3402,7 @@ class JNodeDetailsPanel
   doEditorChanged() 
   {
     pApplyButton.setEnabled(true);
+    pApplyItem.setEnabled(true);
 
     Color color = Color.white;
     if(hasWorking() && hasCheckedIn()) {
@@ -3264,6 +3468,7 @@ class JNodeDetailsPanel
   doActionChanged()
   {
     pApplyButton.setEnabled(true);
+    pApplyItem.setEnabled(true);
 
     BaseAction oaction = getWorkingAction();
     {
@@ -3341,6 +3546,8 @@ class JNodeDetailsPanel
   doActionEnabledChanged() 
   {
     pApplyButton.setEnabled(true);
+    pApplyItem.setEnabled(true);
+
     updateActionEnabledColors();
   }
 
@@ -3417,6 +3624,7 @@ class JNodeDetailsPanel
   ) 
   {
     pApplyButton.setEnabled(true);
+    pApplyItem.setEnabled(true);
   
     updateActionParamColor(pname, null);
   }
@@ -3483,6 +3691,7 @@ class JNodeDetailsPanel
   doSourceParamsChanged()
   {
     pApplyButton.setEnabled(true);
+    pApplyItem.setEnabled(true);
 
     Color color = Color.white;
     if(hasWorking() && hasCheckedIn()) {
@@ -3527,6 +3736,7 @@ class JNodeDetailsPanel
   doOverflowPolicyChanged()
   {
     pApplyButton.setEnabled(true);
+    pApplyItem.setEnabled(true);
     
     Color color = Color.white;
     if(hasWorking() && hasCheckedIn()) {
@@ -3564,6 +3774,7 @@ class JNodeDetailsPanel
   doExecutionMethodChanged()
   {
     pApplyButton.setEnabled(true);
+    pApplyItem.setEnabled(true);
 
     String cmethod = null;
     Color color = Color.white;
@@ -3618,6 +3829,7 @@ class JNodeDetailsPanel
   doBatchSizeChanged()
   {
     pApplyButton.setEnabled(true);
+    pApplyItem.setEnabled(true);
     
     Color color = Color.white;
     if(hasWorking() && hasCheckedIn()) {
@@ -3658,6 +3870,7 @@ class JNodeDetailsPanel
   doPriorityChanged()
   {
     pApplyButton.setEnabled(true);
+    pApplyItem.setEnabled(true);
     
     Color color = Color.white;
     if(hasWorking() && hasCheckedIn()) {
@@ -3696,6 +3909,7 @@ class JNodeDetailsPanel
   doMaxLoadChanged()
   {
     pApplyButton.setEnabled(true);
+    pApplyItem.setEnabled(true);
     
     Color color = Color.white;
     if(hasWorking() && hasCheckedIn()) {
@@ -3733,6 +3947,7 @@ class JNodeDetailsPanel
   doMinMemoryChanged()
   {
     pApplyButton.setEnabled(true);
+    pApplyItem.setEnabled(true);
     
     Color color = Color.white;
     if(hasWorking() && hasCheckedIn()) {
@@ -3770,6 +3985,7 @@ class JNodeDetailsPanel
   doMinDiskChanged()
   {
     pApplyButton.setEnabled(true);
+    pApplyItem.setEnabled(true);
     
     Color color = Color.white;
     if(hasWorking() && hasCheckedIn()) {
@@ -3823,6 +4039,7 @@ class JNodeDetailsPanel
     Component pcomps[] = pSelectionKeyComponents.get(kname);
     if(pcomps != null) {
       pApplyButton.setEnabled(true);
+      pApplyItem.setEnabled(true);
     
       Color color = Color.white;
       if(hasWorking() && hasCheckedIn()) {
@@ -3877,6 +4094,7 @@ class JNodeDetailsPanel
     Component pcomps[] = pLicenseKeyComponents.get(kname);
     if(pcomps != null) {
       pApplyButton.setEnabled(true);
+      pApplyItem.setEnabled(true);
     
       Color color = Color.white;
       if(hasWorking() && hasCheckedIn()) {
@@ -3889,6 +4107,202 @@ class JNodeDetailsPanel
       pcomps[0].setForeground(color);
       pcomps[1].setForeground(color);
       pcomps[3].setForeground(color);
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Edit/View the current node with the editor specified by the node version.
+   */ 
+  private void 
+  doEdit() 
+  {
+    if(pStatus != null) {
+      NodeDetails details = pStatus.getDetails();
+      if(details != null) {
+	NodeCommon com = details.getWorkingVersion();
+	if(com == null) 
+	  com = details.getLatestVersion();
+
+	if(com != null) {
+	  EditTask task = new EditTask(com);
+	  task.start();
+	}
+      }
+    }
+  }
+
+  /**
+   * Edit/View the current node with the given editor.
+   */ 
+  private void 
+  doEditWith
+  (
+   String editor
+  ) 
+  {
+    String ename = null;
+    VersionID evid = null;
+    String parts[] = editor.split(":");
+    switch(parts.length) {
+    case 1:
+      ename = editor;
+      break;
+
+    case 2:
+      ename = parts[0];
+      evid = new VersionID(parts[1]);
+      break;
+
+    default:
+      assert(false);
+    }
+
+    if(pStatus != null) {
+      NodeDetails details = pStatus.getDetails();
+      if(details != null) {
+	NodeCommon com = details.getWorkingVersion();
+	if(com == null) 
+	  com = details.getLatestVersion();
+
+	if(com != null) {
+	  EditTask task = new EditTask(com, ename, evid);
+	  task.start();
+	}
+      }
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Queue jobs to the queue for the primary current node and all nodes upstream of it.
+   */ 
+  private void 
+  doQueueJobs() 
+  {
+    if(pStatus != null) {
+      NodeDetails details = pStatus.getDetails();
+      if(details != null) {
+	QueueJobsTask task = new QueueJobsTask(pStatus.getName());
+	task.start();
+      }
+    }
+  }
+
+  /**
+   * Pause all waiting jobs associated with the current node.
+   */ 
+  private void 
+  doPauseJobs() 
+  {
+    TreeSet<Long> paused = new TreeSet<Long>();
+    if(pStatus != null) {
+      NodeDetails details = pStatus.getDetails();
+      if(details != null) {
+	Long[] jobIDs   = details.getJobIDs();
+	QueueState[] qs = details.getQueueState();
+	assert(jobIDs.length == qs.length);
+
+	int wk;
+	for(wk=0; wk<jobIDs.length; wk++) {
+	  switch(qs[wk]) {
+	  case Queued:
+	    assert(jobIDs[wk] != null);
+	    paused.add(jobIDs[wk]);
+	  }
+	}
+      }
+    }
+
+    if(!paused.isEmpty()) {
+      PauseJobsTask task = new PauseJobsTask(paused);
+      task.start();
+    }
+  }
+
+  /**
+   * Resume execution of all paused jobs associated with the current node.
+   */ 
+  private void 
+  doResumeJobs() 
+  {
+    TreeSet<Long> resumed = new TreeSet<Long>();
+    if(pStatus != null) {
+      NodeDetails details = pStatus.getDetails();
+      if(details != null) {
+	Long[] jobIDs   = details.getJobIDs();
+	QueueState[] qs = details.getQueueState();
+	assert(jobIDs.length == qs.length);
+
+	int wk;
+	for(wk=0; wk<jobIDs.length; wk++) {
+	  switch(qs[wk]) {
+	  case Paused:
+	    assert(jobIDs[wk] != null);
+	    resumed.add(jobIDs[wk]);
+	  }
+	}
+      }
+    }
+
+    if(!resumed.isEmpty()) {
+      ResumeJobsTask task = new ResumeJobsTask(resumed);
+      task.start();
+    }
+  }
+
+  /**
+   * Kill all jobs associated with the current node.
+   */ 
+  private void 
+  doKillJobs() 
+  {
+    TreeSet<Long> dead = new TreeSet<Long>();
+    if(pStatus != null) {
+      NodeDetails details = pStatus.getDetails();
+      if(details != null) {
+	Long[] jobIDs   = details.getJobIDs();
+	QueueState[] qs = details.getQueueState();
+	assert(jobIDs.length == qs.length);
+
+	int wk;
+	for(wk=0; wk<jobIDs.length; wk++) {
+	  switch(qs[wk]) {
+	  case Queued:
+	  case Paused:
+	  case Running:
+	    assert(jobIDs[wk] != null);
+	    dead.add(jobIDs[wk]);
+	  }
+	}
+      }
+    }
+
+    if(!dead.isEmpty()) {
+      KillJobsTask task = new KillJobsTask(dead);
+      task.start();
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Remove all primary/secondary files associated with the current node.
+   */ 
+  private void 
+  doRemoveFiles() 
+  {
+    if(pStatus != null) {
+      NodeDetails details = pStatus.getDetails();
+      if(details != null) {
+	RemoveFilesTask task = new RemoveFilesTask(pStatus.getName());
+	task.start();
+      }
     }
   }
 
@@ -3944,6 +4358,203 @@ class JNodeDetailsPanel
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Edit/View the primary file sequence of the given node version.
+   */ 
+  private
+  class EditTask
+    extends UIMaster.EditTask
+  {
+    public 
+    EditTask
+    (
+     NodeCommon com
+    ) 
+    {
+      UIMaster.getInstance().super(com, pAuthor, pView);
+      setName("JNodeDetailsPanel:EditTask");
+    }
+
+    public 
+    EditTask
+    (
+     NodeCommon com, 
+     String ename, 
+     VersionID evid
+    ) 
+    {
+      UIMaster.getInstance().super(com, ename, evid, pAuthor, pView);
+      setName("JNodeDetailsPanel:EditTask");
+    }
+  }
+
+
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Queue jobs to the queue for the given node.
+   */ 
+  private
+  class QueueJobsTask
+    extends UIMaster.QueueJobsTask
+  {
+    public 
+    QueueJobsTask
+    (
+     String name
+    ) 
+    {
+      UIMaster.getInstance().super(name, pAuthor, pView);
+      setName("JNodeDetailsPanel:QueueJobsTask");
+    }
+
+    protected void
+    postOp() 
+    {
+      if(pGroupID > 0) {
+	PanelGroup<JNodeViewerPanel> panels = UIMaster.getInstance().getNodeViewerPanels();
+	JNodeViewerPanel viewer = panels.getPanel(pGroupID);
+	if(viewer != null) 
+	  viewer.updateRoots();
+      } 
+    }
+  }
+
+  /** 
+   * Pause the given jobs.
+   */ 
+  private
+  class PauseJobsTask
+    extends UIMaster.PauseJobsTask
+  {
+    public 
+    PauseJobsTask
+    (
+     TreeSet<Long> jobIDs
+    ) 
+    {
+      UIMaster.getInstance().super(jobIDs, pAuthor, pView);
+      setName("JNodeDetailsPanel:PauseJobsTask");
+
+      pJobIDs = jobIDs; 
+    }
+
+    protected void
+    postOp() 
+    {
+      if(pGroupID > 0) {
+	PanelGroup<JNodeViewerPanel> panels = UIMaster.getInstance().getNodeViewerPanels();
+	JNodeViewerPanel viewer = panels.getPanel(pGroupID);
+	if(viewer != null) 
+	  viewer.updateRoots();
+      }
+    }
+
+    private TreeSet<Long>  pJobIDs; 
+  }
+
+  /** 
+   * Resume execution of the the given paused jobs.
+   */ 
+  private
+  class ResumeJobsTask
+    extends UIMaster.ResumeJobsTask
+  {
+    public 
+    ResumeJobsTask
+    (
+     TreeSet<Long> jobIDs
+    ) 
+    {
+      UIMaster.getInstance().super(jobIDs, pAuthor, pView);
+      setName("JNodeDetailsPanel:ResumeJobsTask");
+
+      pJobIDs = jobIDs; 
+    }
+
+    protected void
+    postOp() 
+    {
+      if(pGroupID > 0) {
+	PanelGroup<JNodeViewerPanel> panels = UIMaster.getInstance().getNodeViewerPanels();
+	JNodeViewerPanel viewer = panels.getPanel(pGroupID);
+	if(viewer != null) 
+	  viewer.updateRoots();
+      }
+    }
+
+    private TreeSet<Long>  pJobIDs; 
+  }
+
+  /** 
+   * Kill the given jobs.
+   */ 
+  private
+  class KillJobsTask
+    extends UIMaster.KillJobsTask
+  {
+    public 
+    KillJobsTask
+    (
+     TreeSet<Long> jobIDs
+    ) 
+    {
+      UIMaster.getInstance().super(jobIDs, pAuthor, pView);
+      setName("JNodeDetailsPanel:KillJobsTask");
+
+      pJobIDs = jobIDs; 
+    }
+
+    protected void
+    postOp() 
+    {
+      if(pGroupID > 0) {
+	PanelGroup<JNodeViewerPanel> panels = UIMaster.getInstance().getNodeViewerPanels();
+	JNodeViewerPanel viewer = panels.getPanel(pGroupID);
+	if(viewer != null) 
+	  viewer.updateRoots();
+      }
+    }
+
+    private TreeSet<Long>  pJobIDs; 
+  }
+
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Remove the working area files associated with the given nodes.
+   */ 
+  private
+  class RemoveFilesTask
+    extends UIMaster.RemoveFilesTask
+  {
+    public 
+    RemoveFilesTask
+    (
+     String name
+    ) 
+    {
+      UIMaster.getInstance().super(name, pAuthor, pView);
+      setName("JNodeDetailsPanel:RemoveFilesTask");
+    }
+    
+    protected void
+    postOp() 
+    {
+      if(pGroupID > 0) {
+	PanelGroup<JNodeViewerPanel> panels = UIMaster.getInstance().getNodeViewerPanels();
+	JNodeViewerPanel viewer = panels.getPanel(pGroupID);
+	if(viewer != null) 
+	  viewer.updateRoots();
+      }      
+    }    
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -3976,9 +4587,33 @@ class JNodeDetailsPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * The working file popup menu.
+   */ 
+  private JPopupMenu  pWorkingPopup; 
+  
+  /**
+   * The menu item used to apply changes to the working version of the node.
+   */ 
+  private JMenuItem  pApplyItem;
+
+  /**
+   * The checked-in file popup menu.
+   */ 
+  private JPopupMenu  pCheckedInPopup; 
+
+  /**
+   * The edit with submenus.
+   */ 
+  private JMenu[]  pEditWithMenus; 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * The node name/state header.
    */ 
-  private JLabel pHeaderLabel;
+  private JLabel  pHeaderIcon;
+  private JLabel  pHeaderLabel;
   
   /**
    * The fully resolved node name field.

@@ -1,4 +1,4 @@
-// $Id: JQueueJobDetailsPanel.java,v 1.6 2004/09/27 04:54:35 jim Exp $
+// $Id: JQueueJobDetailsPanel.java,v 1.7 2004/10/04 16:06:53 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -75,6 +75,15 @@ class JQueueJobDetailsPanel
 
 	panel.setName("DialogHeader");	
 	panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+
+	{
+	  JLabel label = new JLabel();
+	  pHeaderIcon = label;
+	  
+	  panel.add(label);	  
+	}
+	
+	panel.add(Box.createRigidArea(new Dimension(3, 0)));
 
 	{
 	  JLabel label = new JLabel("X");
@@ -684,13 +693,13 @@ class JQueueJobDetailsPanel
     /* header */ 
     if((pJob != null) && (pJobInfo != null)) {
       pHeaderLabel.setText(" Job " + pJob.getJobID() + ":  " + agenda.getPrimaryTarget());
-      pHeaderLabel.setIcon(sIcons[pJobInfo.getState().ordinal()]);
+      pHeaderIcon.setIcon(sIcons[pJobInfo.getState().ordinal()]);
 
       pNodeNameField.setText(agenda.getNodeID().getName());
     }
     else {
       pHeaderLabel.setText(null);
-      pHeaderLabel.setIcon(sUndefinedIcon);
+      pHeaderIcon.setIcon(sUndefinedIcon);
 
       pNodeNameField.setText(null);
     }
@@ -1466,6 +1475,7 @@ class JQueueJobDetailsPanel
   /**
    * The node name/state header.
    */ 
+  private JLabel pHeaderIcon;
   private JLabel pHeaderLabel;
   
   /**

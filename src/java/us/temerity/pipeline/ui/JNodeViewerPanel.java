@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.52 2004/10/03 19:42:18 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.53 2004/10/04 16:06:53 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -2065,79 +2065,79 @@ class JNodeViewerPanel
 	  vnode.update();
       }
       
-      if((prefs.getNodeDetails() != null) &&
-	 prefs.getNodeDetails().wasPressed(e))
+      if((prefs.getNodeViewerDetails() != null) &&
+	 prefs.getNodeViewerDetails().wasPressed(e))
 	doDetails();
       
-      else if((prefs.getNodeMakeRoot() != null) &&
-	      prefs.getNodeMakeRoot().wasPressed(e))
+      else if((prefs.getNodeViewerMakeRoot() != null) &&
+	      prefs.getNodeViewerMakeRoot().wasPressed(e))
 	doMakeRoot();
-      else if((prefs.getNodeAddRoot() != null) &&
-	      prefs.getNodeAddRoot().wasPressed(e))
+      else if((prefs.getNodeViewerAddRoot() != null) &&
+	      prefs.getNodeViewerAddRoot().wasPressed(e))
 	doAddRoot();
-      else if((prefs.getNodeReplaceRoot() != null) &&
-	      prefs.getNodeReplaceRoot().wasPressed(e))
+      else if((prefs.getNodeViewerReplaceRoot() != null) &&
+	      prefs.getNodeViewerReplaceRoot().wasPressed(e))
 	doReplaceRoot();
-      else if((prefs.getNodeRemoveRoot() != null) &&
-	      prefs.getNodeRemoveRoot().wasPressed(e))
+      else if((prefs.getNodeViewerRemoveRoot() != null) &&
+	      prefs.getNodeViewerRemoveRoot().wasPressed(e))
 	doRemoveRoot();
-      else if((prefs.getNodeRemoveAllRoots() != null) &&
-	      prefs.getNodeRemoveAllRoots().wasPressed(e))
+      else if((prefs.getNodeViewerRemoveAllRoots() != null) &&
+	      prefs.getNodeViewerRemoveAllRoots().wasPressed(e))
 	doRemoveAllRoots();
       
-      else if((prefs.getNodeEdit() != null) &&
-	      prefs.getNodeEdit().wasPressed(e))
+      else if((prefs.getNodeViewerEdit() != null) &&
+	      prefs.getNodeViewerEdit().wasPressed(e))
 	doEdit();
 
-      else if((prefs.getNodeLink() != null) &&
-	      prefs.getNodeLink().wasPressed(e))
+      else if((prefs.getNodeViewerLink() != null) &&
+	      prefs.getNodeViewerLink().wasPressed(e))
 	doLink();
-      else if((prefs.getNodeUnlink() != null) &&
-	      prefs.getNodeUnlink().wasPressed(e))
+      else if((prefs.getNodeViewerUnlink() != null) &&
+	      prefs.getNodeViewerUnlink().wasPressed(e))
 	doUnlink();
       
-      else if((prefs.getNodeAddSecondary() != null) &&
-	      prefs.getNodeAddSecondary().wasPressed(e))
+      else if((prefs.getNodeViewerAddSecondary() != null) &&
+	      prefs.getNodeViewerAddSecondary().wasPressed(e))
 	doAddSecondary();
 
-      else if((prefs.getNodeQueueJobs() != null) &&
-	      prefs.getNodeQueueJobs().wasPressed(e))
+      else if((prefs.getNodeViewerQueueJobs() != null) &&
+	      prefs.getNodeViewerQueueJobs().wasPressed(e))
 	doQueueJobs();
-      else if((prefs.getNodePauseJobs() != null) &&
-	      prefs.getNodePauseJobs().wasPressed(e))
+      else if((prefs.getNodeViewerPauseJobs() != null) &&
+	      prefs.getNodeViewerPauseJobs().wasPressed(e))
 	doPauseJobs();
-      else if((prefs.getNodeResumeJobs() != null) &&
-	      prefs.getNodeResumeJobs().wasPressed(e))
+      else if((prefs.getNodeViewerResumeJobs() != null) &&
+	      prefs.getNodeViewerResumeJobs().wasPressed(e))
 	doResumeJobs();
-      else if((prefs.getNodeKillJobs() != null) &&
-	      prefs.getNodeKillJobs().wasPressed(e))
+      else if((prefs.getNodeViewerKillJobs() != null) &&
+	      prefs.getNodeViewerKillJobs().wasPressed(e))
 	doKillJobs();
 
-      else if((prefs.getNodeCheckIn() != null) &&
-	      prefs.getNodeCheckIn().wasPressed(e))
+      else if((prefs.getNodeViewerCheckIn() != null) &&
+	      prefs.getNodeViewerCheckIn().wasPressed(e))
 	doCheckIn();
-      else if((prefs.getNodeCheckOut() != null) &&
-	      prefs.getNodeCheckOut().wasPressed(e))
+      else if((prefs.getNodeViewerCheckOut() != null) &&
+	      prefs.getNodeViewerCheckOut().wasPressed(e))
 	doCheckOut();
-      else if((prefs.getNodeEvolve() != null) &&
-	      prefs.getNodeEvolve().wasPressed(e))
+      else if((prefs.getNodeViewerEvolve() != null) &&
+	      prefs.getNodeViewerEvolve().wasPressed(e))
 	doEvolve();
       
-      else if((prefs.getNodeClone() != null) &&
-	      prefs.getNodeClone().wasPressed(e))
+      else if((prefs.getNodeViewerClone() != null) &&
+	      prefs.getNodeViewerClone().wasPressed(e))
 	doClone();
-      else if((prefs.getNodeRelease() != null) &&
-	      prefs.getNodeRelease().wasPressed(e))
+      else if((prefs.getNodeViewerRelease() != null) &&
+	      prefs.getNodeViewerRelease().wasPressed(e))
 	doRelease();
-      else if((prefs.getNodeRemoveFiles() != null) &&
-	      prefs.getNodeRemoveFiles().wasPressed(e))
+      else if((prefs.getNodeViewerRemoveFiles() != null) &&
+	      prefs.getNodeViewerRemoveFiles().wasPressed(e))
 	doRemoveFiles();
 
-      else if((prefs.getNodeRename() != null) &&
-	      prefs.getNodeRename().wasPressed(e))
+      else if((prefs.getNodeViewerRename() != null) &&
+	      prefs.getNodeViewerRename().wasPressed(e))
 	doRename();
-      else if((prefs.getNodeRenumber() != null) &&
-	      prefs.getNodeRenumber().wasPressed(e))
+      else if((prefs.getNodeViewerRenumber() != null) &&
+	      prefs.getNodeViewerRenumber().wasPressed(e))
 	doRenumber();
       
       else 
@@ -2168,11 +2168,11 @@ class JNodeViewerPanel
       
       pSelectedLink = lunder.getLink();
       
-      if((prefs.getLinkEdit() != null) &&
-	 prefs.getLinkEdit().wasPressed(e))
+      if((prefs.getNodeViewerLinkEdit() != null) &&
+	 prefs.getNodeViewerLinkEdit().wasPressed(e))
 	doLinkEdit();
-      else if((prefs.getLinkUnlink() != null) &&
-	 prefs.getLinkUnlink().wasPressed(e))
+      else if((prefs.getNodeViewerLinkUnlink() != null) &&
+	 prefs.getNodeViewerLinkUnlink().wasPressed(e))
 	doLinkUnlink();
       else 
 	undefined = true;
@@ -2180,39 +2180,39 @@ class JNodeViewerPanel
     
     /* panel actions */
     else {
-      if((prefs.getUpdateNodes() != null) &&
-	 prefs.getUpdateNodes().wasPressed(e))
+      if((prefs.getNodeViewerUpdateNodes() != null) &&
+	 prefs.getNodeViewerUpdateNodes().wasPressed(e))
 	doUpdate();
-      else if((prefs.getRegisterNewNode() != null) &&
-	      prefs.getRegisterNewNode().wasPressed(e))
+      else if((prefs.getNodeViewerRegisterNewNode() != null) &&
+	      prefs.getNodeViewerRegisterNewNode().wasPressed(e))
 	doRegister();
       
-      else if((prefs.getCameraCenter() != null) &&
-	      prefs.getCameraCenter().wasPressed(e))
+      else if((prefs.getNodeViewerCameraCenter() != null) &&
+	      prefs.getNodeViewerCameraCenter().wasPressed(e))
 	doCenter();
-      else if((prefs.getCameraFrameSelection() != null) &&
-		prefs.getCameraFrameSelection().wasPressed(e))
+      else if((prefs.getNodeViewerCameraFrameSelection() != null) &&
+		prefs.getNodeViewerCameraFrameSelection().wasPressed(e))
 	doFrameSelection();
-      else if((prefs.getCameraFrameAll() != null) &&
-	      prefs.getCameraFrameAll().wasPressed(e))
+      else if((prefs.getNodeViewerCameraFrameAll() != null) &&
+	      prefs.getNodeViewerCameraFrameAll().wasPressed(e))
 	doFrameAll();
       
-      else if((prefs.getAutomaticExpandNodes() != null) &&
-	      prefs.getAutomaticExpandNodes().wasPressed(e))
+      else if((prefs.getNodeViewerAutomaticExpandNodes() != null) &&
+	      prefs.getNodeViewerAutomaticExpandNodes().wasPressed(e))
 	doAutomaticExpand();
-      else if((prefs.getCollapseAllNodes() != null) &&
-	      prefs.getCollapseAllNodes().wasPressed(e))
+      else if((prefs.getNodeViewerCollapseAllNodes() != null) &&
+	      prefs.getNodeViewerCollapseAllNodes().wasPressed(e))
 	doCollapseAll();
-      else if((prefs.getExpandAllNodes() != null) &&
-	      prefs.getExpandAllNodes().wasPressed(e))
+      else if((prefs.getNodeViewerExpandAllNodes() != null) &&
+	      prefs.getNodeViewerExpandAllNodes().wasPressed(e))
 	doExpandAll();
       
-      else if((prefs.getShowHideDownstreamNodes() != null) &&
-		prefs.getShowHideDownstreamNodes().wasPressed(e))
+      else if((prefs.getNodeViewerShowHideDownstreamNodes() != null) &&
+		prefs.getNodeViewerShowHideDownstreamNodes().wasPressed(e))
 	doShowHideDownstream();
       
-      else if((prefs.getRemoveAllRoots() != null) &&
-	      prefs.getRemoveAllRoots().wasPressed(e))
+      else if((prefs.getNodeViewerRemoveAllRoots() != null) &&
+	      prefs.getNodeViewerRemoveAllRoots().wasPressed(e))
 	doRemoveAllRoots();
 
       else
@@ -3548,7 +3548,7 @@ class JNodeViewerPanel
    */ 
   private
   class EditTask
-    extends Thread
+    extends UIMaster.EditTask
   {
     public 
     EditTask
@@ -3556,9 +3556,8 @@ class JNodeViewerPanel
      NodeCommon com
     ) 
     {
-      super("JNodeViewerPanel:EditTask");
-
-      pNodeCommon = com;
+      UIMaster.getInstance().super(com, pAuthor, pView);
+      setName("JNodeViewerPanel:EditTask");
     }
 
     public 
@@ -3569,113 +3568,9 @@ class JNodeViewerPanel
      VersionID evid
     ) 
     {
-      super("JNodeViewerPanel:EditTask");
-
-      pNodeCommon    = com;
-      pEditorName    = ename;
-      pEditorVersion = evid; 
+      UIMaster.getInstance().super(com, ename, evid, pAuthor, pView);
+      setName("JNodeViewerPanel:EditTask");
     }
-
-    public void 
-    run() 
-    {
-      SubProcess proc = null;
-      {
-	UIMaster master = UIMaster.getInstance();
-	if(master.beginPanelOp("Launching Node Editor...")) {
-	  try {
-	    NodeMod mod = null;
-	    if(pNodeCommon instanceof NodeMod) 
-	      mod = (NodeMod) pNodeCommon;
-
-	    NodeVersion vsn = null;
-	    if(pNodeCommon instanceof NodeVersion) 
-	      vsn = (NodeVersion) pNodeCommon;
-
-	    /* create an editor plugin instance */ 
-	    BaseEditor editor = null;
-	    {
-	      String ename = pEditorName;
-	      if(ename == null) 
-		ename = pNodeCommon.getEditor();
-	      if(ename == null) 
-		throw new PipelineException
-		  ("No editor was specified for node (" + pNodeCommon.getName() + ")!");
-	      
-	      editor = PluginMgr.getInstance().newEditor(ename, pEditorVersion);
-	    }
-
-	    /* lookup the toolset environment */ 
-	    TreeMap<String,String> env = null;
-	    {
-	      String tname = pNodeCommon.getToolset();
-	      if(tname == null) 
-		throw new PipelineException
-		  ("No toolset was specified for node (" + pNodeCommon.getName() + ")!");
-
-	      MasterMgrClient client = master.getMasterMgrClient();
-	      
-	      String view = null;
-	      if(mod != null)
-		view = pView; 
-
-	      /* passes pAuthor so that WORKING will correspond to the current view */ 
-	      env = client.getToolsetEnvironment(pAuthor, view, tname);
-
-	      /* override these since the editor will be run as the current user */ 
-	      env.put("HOME", PackageInfo.sHomeDir + "/" + PackageInfo.sUser);
-	      env.put("USER", PackageInfo.sUser);
-	    }
-	    
-	    /* get the primary file sequence */ 
-	    FileSeq fseq = null;
-	    File dir = null; 
-	    {
-	      String path = null;
-	      if(mod != null) {
-		File wpath = new File(PackageInfo.sWorkDir, 
-				      pAuthor + "/" + pView + "/" + pNodeCommon.getName());
-		path = wpath.getParent();
-	      }
-	      else if(vsn != null) {
-		path = (PackageInfo.sRepoDir + "/" + 
-			vsn.getName() + "/" + vsn.getVersionID());
-	      }
-	      else {
-		assert(false);
-	      }
-	  
-	      fseq = new FileSeq(path, pNodeCommon.getPrimarySequence());
-	      dir = new File(path);
-	    }
-	    
-	    /* start the editor */ 
-	    proc = editor.launch(fseq, env, dir);
-	  }
-	  catch(PipelineException ex) {
-	    master.showErrorDialog(ex);
-	    return;
-	  }
-	  finally {
-	    master.endPanelOp("Done.");
-	  }
-	}
-
-	/* wait for the editor to exit */ 
-	try {
-	  proc.join();
-	  if(!proc.wasSuccessful()) 
-	    master.showSubprocessFailureDialog("Editor Failure:", proc);
-	}
-	catch(InterruptedException ex) {
-	  master.showErrorDialog(ex);
-	}
-      }
-    }
- 
-    private NodeCommon  pNodeCommon; 
-    private String      pEditorName;
-    private VersionID   pEditorVersion; 
   }
 
   
@@ -4216,7 +4111,7 @@ class JNodeViewerPanel
    */ 
   private
   class RemoveFilesTask
-    extends Thread
+    extends UIMaster.RemoveFilesTask
   {
     public 
     RemoveFilesTask
@@ -4224,35 +4119,15 @@ class JNodeViewerPanel
      TreeSet<String> names
     ) 
     {
-      super("JNodeViewerPanel:RemoveFilesTask");
-
-      pNames = names; 
+      UIMaster.getInstance().super(names, pAuthor, pView);
+      setName("JNodeViewerPanel:RemoveFilesTask");
     }
-
-    public void 
-    run() 
+    
+    protected void
+    postOp() 
     {
-      UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp()) {
-	try {
-	  for(String name : pNames) {
-	    master.updatePanelOp("Removing Files: " + name);
-	    master.getMasterMgrClient().removeFiles(pAuthor, pView, name, null);
-	  }
-	}
-	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
-	    return;
-	}
-	finally {
-	  master.endPanelOp("Done.");
-	}
-      }
-	
       updateRoots();
-    }
-
-    private TreeSet<String>  pNames; 
+    }    
   }
 
   
@@ -4263,7 +4138,7 @@ class JNodeViewerPanel
    */ 
   private
   class QueueJobsTask
-    extends Thread
+    extends UIMaster.QueueJobsTask
   {
     public 
     QueueJobsTask
@@ -4271,35 +4146,15 @@ class JNodeViewerPanel
      TreeSet<String> names
     ) 
     {
-      super("JNodeViewerPanel:QueueJobsTask");
-
-      pNames = names; 
+      UIMaster.getInstance().super(names, pAuthor, pView);
+      setName("JNodeViewerPanel:QueueJobsTask");
     }
 
-    public void 
-    run() 
+    protected void
+    postOp() 
     {
-      UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp()) {
-	try {
-	  for(String name : pNames) {
-	    master.updatePanelOp("Submitting Jobs to the Queue: " + name);
-	    master.getMasterMgrClient().submitJobs(pAuthor, pView, name, null);
-	  }
-	}
-	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
-	  return;
-	}
-	finally {
-	  master.endPanelOp("Done.");
-	}
-
-	updateRoots();
-      }
+      updateRoots();
     }
-
-    private TreeSet<String>  pNames; 
   }
 
   /** 
@@ -4307,7 +4162,7 @@ class JNodeViewerPanel
    */ 
   private
   class PauseJobsTask
-    extends Thread
+    extends UIMaster.PauseJobsTask
   {
     public 
     PauseJobsTask
@@ -4315,29 +4170,16 @@ class JNodeViewerPanel
      TreeSet<Long> jobIDs
     ) 
     {
-      super("JNodeViewerPanel:PauseJobsTask");
+      UIMaster.getInstance().super(jobIDs, pAuthor, pView);
+      setName("JNodeViewerPanel:PauseJobsTask");
 
       pJobIDs = jobIDs; 
     }
 
-    public void 
-    run() 
+    protected void
+    postOp() 
     {
-      UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Pausing Jobs...")) {
-	try {
-	  master.getQueueMgrClient().pauseJobs(pAuthor, pJobIDs);
-	}
-	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
-	  return;
-	}
-	finally {
-	  master.endPanelOp("Done.");
-	}
-
-	updateRoots();
-      }
+      updateRoots();
     }
 
     private TreeSet<Long>  pJobIDs; 
@@ -4348,7 +4190,7 @@ class JNodeViewerPanel
    */ 
   private
   class ResumeJobsTask
-    extends Thread
+    extends UIMaster.ResumeJobsTask
   {
     public 
     ResumeJobsTask
@@ -4356,29 +4198,16 @@ class JNodeViewerPanel
      TreeSet<Long> jobIDs
     ) 
     {
-      super("JNodeViewerPanel:ResumeJobsTask");
+      UIMaster.getInstance().super(jobIDs, pAuthor, pView);
+      setName("JNodeViewerPanel:ResumeJobsTask");
 
       pJobIDs = jobIDs; 
     }
 
-    public void 
-    run() 
+    protected void
+    postOp() 
     {
-      UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Resuming Paused Jobs...")) {
-	try {
-	  master.getQueueMgrClient().resumeJobs(pAuthor, pJobIDs);
-	}
-	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
-	  return;
-	}
-	finally {
-	  master.endPanelOp("Done.");
-	}
-
-	updateRoots();
-      }
+      updateRoots();
     }
 
     private TreeSet<Long>  pJobIDs; 
@@ -4389,7 +4218,7 @@ class JNodeViewerPanel
    */ 
   private
   class KillJobsTask
-    extends Thread
+    extends UIMaster.KillJobsTask
   {
     public 
     KillJobsTask
@@ -4397,29 +4226,16 @@ class JNodeViewerPanel
      TreeSet<Long> jobIDs
     ) 
     {
-      super("JNodeViewerPanel:KillJobsTask");
+      UIMaster.getInstance().super(jobIDs, pAuthor, pView);
+      setName("JNodeViewerPanel:KillJobsTask");
 
       pJobIDs = jobIDs; 
     }
 
-    public void 
-    run() 
+    protected void
+    postOp() 
     {
-      UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Killing Jobs...")) {
-	try {
-	  master.getQueueMgrClient().killJobs(pAuthor, pJobIDs);
-	}
-	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
-	  return;
-	}
-	finally {
-	  master.endPanelOp("Done.");
-	}
-
-	updateRoots();
-      }
+      updateRoots();
     }
 
     private TreeSet<Long>  pJobIDs; 

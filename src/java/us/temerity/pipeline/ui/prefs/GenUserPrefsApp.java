@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.22 2004/10/03 19:42:18 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.23 2004/10/04 16:06:53 jim Exp $
 
 import java.io.*; 
 import java.util.*;
@@ -378,113 +378,113 @@ class GenUserPrefsApp
       BasePref prefs[] = {
 	new HotKeyPref
 	("Update connected node details panels.",
-	 "NodeDetails", "Details:",
+	 "NodeViewerDetails", "Details:",
 	 false, false, false, 68),  /* D */	
 
 	new BasePref(),
 
 	new HotKeyPref
 	("Make the current primary selection the only root node.", 
-	 "NodeMakeRoot", "Make Root:"),
+	 "NodeViewerMakeRoot", "Make Root:"),
 
 	new HotKeyPref
 	("Add the current primary selection to the set of root nodes.",
-	 "NodeAddRoot", "Add Root:"),
+	 "NodeViewerAddRoot", "Add Root:"),
 
 	new HotKeyPref
 	("Replace the root node of the current primary selection with the primary selection.",
-	 "NodeReplaceRoot", "Replace Root:"),
+	 "NodeViewerReplaceRoot", "Replace Root:"),
 
 	new HotKeyPref
 	("Remove the root node of the current primary selection from the set of roots nodes.",
-	 "NodeRemoveRoot", "Remove Root:"),
+	 "NodeViewerRemoveRoot", "Remove Root:"),
 
 	new HotKeyPref
 	("Remove all of the roots nodes.",
-	 "NodeRemoveAllRoots", "Remove All Roots:"), 
+	 "NodeViewerRemoveAllRoots", "Remove All Roots:"), 
 
 	new BasePref(),
 	
 	new HotKeyPref
 	("Edit primary file sequences of the current primary selection.",
-	 "NodeEdit", "Edit:", 
+	 "NodeViewerEdit", "Edit:", 
 	 false, false, false, 10),  /* Enter */ 
 
 	new BasePref(),
 	
 	new HotKeyPref
 	("Link the secondary selected nodes to the current primary selection.",
-	 "NodeLink", "Link:"), 
+	 "NodeViewerLink", "Link:"), 
 
 	new HotKeyPref
 	("Unlink the secondary selected nodes from the current primary selection.",
-	 "NodeUnlink", "Unlink:"), 
+	 "NodeViewerUnlink", "Unlink:"), 
 
 	new BasePref(),
 	
 	new HotKeyPref
 	("Add a secondary file sequence to the current primary selection.",
-	 "NodeAddSecondary", "Add Secondary:"), 
+	 "NodeViewerAddSecondary", "Add Secondary:"), 
 
 	new BasePref(),
 
 	new HotKeyPref
 	("Submit jobs to the queue for the current primary selection.",
-	 "NodeQueueJobs", "Queue Jobs:", 
+	 "NodeViewerQueueJobs", "Queue Jobs:", 
 	 false, false, false, 81),  /* Q */ 
 
 	new HotKeyPref
 	("Pause all jobs associated with the selected nodes.",
-	 "NodePauseJobs", "Pause Jobs:",
+	 "NodeViewerPauseJobs", "Pause Jobs:",
 	 false, false, false, 45),  /* Minus */ 
 
 	new HotKeyPref
 	("Resume execution of all jobs associated with the selected nodes.",
-	 "NodeResumeJobs", "Resume Jobs:", 
+	 "NodeViewerResumeJobs", "Resume Jobs:", 
 	 false, false, false, 61),  /* Equals */ 
 
 	new HotKeyPref
 	("Kill all jobs associated with the selected nodes.",
-	 "NodeKillJobs", "Kill Jobs:", 
+	 "NodeViewerKillJobs", "Kill Jobs:", 
 	 false, false, false, 8),  /* Backspace */ 
 
 	new BasePref(),
 	
 	new HotKeyPref
 	("Check-in the current primary selection.",
-	 "NodeCheckIn", "Check-In:"), 
+	 "NodeViewerCheckIn", "Check-In:"), 
 
 	new HotKeyPref
 	("Check-out the current primary selection.",
-	 "NodeCheckOut", "Check-Out:"), 
+	 "NodeViewerCheckOut", "Check-Out:"), 
 
 	new HotKeyPref
 	("Evolve the current primary selection.",
-	 "NodeEvolve", "Evolve Version:"), 
+	 "NodeViewerEvolve", "Evolve Version:"), 
 
 	new BasePref(),
 
 	new HotKeyPref
 	("Register a new node which is a clone of the current primary selection.",
-	 "NodeClone", "Clone:"), 
+	 "NodeViewerClone", "Clone:"), 
 
 	new HotKeyPref
 	("Release the current primary selection.",
-	 "NodeRelease", "Release:"),
+	 "NodeViewerRelease", "Release:"),
 
 	new HotKeyPref
 	("Remove all the primary/secondary files associated with the selected nodes.",
-	 "NodeRemoveFiles", "Remove Files:"), 
+	 "NodeViewerRemoveFiles", "Remove Files:"), 
 
 	new BasePref(),
 
 	new HotKeyPref
 	("Rename the current primary selection.",
-	 "NodeRename", "Rename:"), 
+	 "NodeViewerRename", "Rename:"), 
 
 	new HotKeyPref
 	("Renumber the current primary selection.",
-	 "NodeRenumber", "Renumber:"), 
+	 "NodeViewerRenumber", "Renumber:"), 
       };
 
       pPrefs.put("Panel|Node Viewer|Node|Hot Keys", prefs);
@@ -557,12 +557,12 @@ class GenUserPrefsApp
       BasePref prefs[] = {
 	new HotKeyPref
 	("Edit the properties of the selected link.", 
-	 "LinkEdit", "Edit Link:",	
+	 "NodeViewerLinkEdit", "Edit Link:",	
 	 false, false, false, 10),  /* Enter */ 
 
 	new HotKeyPref
 	("Remove the selected link.", 
-	 "LinkUnlink", "UnLink:", 
+	 "NodeViewerLinkUnlink", "UnLink:", 
 	 false, false, false, 82),  /* Backspace */ 	
       };
 
@@ -573,61 +573,55 @@ class GenUserPrefsApp
       BasePref prefs[] = {
 	new HotKeyPref
 	("Update the status of all nodes.", 
-	 "UpdateNodes", "Update Nodes:", 
+	 "NodeViewerUpdateNodes", "Update Nodes:", 
 	 false, false, false, 32), /* Space */ 
 	
 	new HotKeyPref
 	("Register a new node.",
-	 "RegisterNewNode", "Register New Node:",
+	 "NodeViewerRegisterNewNode", "Register New Node:",
 	 false, false, false, 82), /* R */ 	
 
 	new BasePref(),
 
 	new HotKeyPref
 	("Move the camera so that it is centered on current mouse position.",
-	 "CameraCenter", "Center:", 
+	 "NodeViewerCameraCenter", "Center:", 
 	 false, false, false, 67),  /* C */ 
 	 
 	
 	new HotKeyPref
 	("Move the camera to frame the bounds of the currently selected nodes.",
-	 "CameraFrameSelection", "Frame Selection:",
+	 "NodeViewerCameraFrameSelection", "Frame Selection:",
 	 false, false, false, 70),  /* F */ 
 	
 	new HotKeyPref
 	("Move the camera to frame all active nodes.",
-	 "CameraFrameAll", "Frame All:", 
+	 "NodeViewerCameraFrameAll", "Frame All:", 
 	 false, false, false, 71),  /* G */ 
 	
 	new BasePref(),
 
 	new HotKeyPref
 	("Automatically expand the first occurance of a node.",
-	 "AutomaticExpandNodes", "Automatic Expand:", 
+	 "NodeViewerAutomaticExpandNodes", "Automatic Expand:", 
 	 false, false, false, 65),  /* A */
 
 	new HotKeyPref
 	("Expand all nodes.",
-	 "ExpandAllNodes", "Expand All:", 
+	 "NodeViewerExpandAllNodes", "Expand All:", 
 	 false, false, false, 69),  /* E */
 
 	new HotKeyPref
 	("Collapse all nodes.",
-	 "CollapseAllNodes", "Collapse All:", 
+	 "NodeViewerCollapseAllNodes", "Collapse All:", 
 	 false, false, false, 67),  /* C */
 
 	new BasePref(),
 
 	new HotKeyPref
 	("Show/hide nodes downstream of the focus node.",
-	 "ShowHideDownstreamNodes", "Show/Hide Downstream:", 
+	 "NodeViewerShowHideDownstreamNodes", "Show/Hide Downstream:", 
 	 false, false, false, 68),  /* D */
-
-	new BasePref(),
-
-	new HotKeyPref
-	("Remove all of the roots nodes.",
-	 "RemoveAllRoots", "Remove All Roots:")
       };
 
       pPrefs.put("Panel|Node Viewer|Hot Keys", prefs);
@@ -638,12 +632,131 @@ class GenUserPrefsApp
 	new HotKeyPref
 	("Apply the changes to the working version.", 
 	 "NodeDetailsApplyChanges", "Apply Changes:",
-	 false, false, false, 155)   /* Insert */ 
+	 false, false, false, 155),   /* Insert */ 
+	
+	new BasePref(),
+	
+	new HotKeyPref
+	("Edit primary file sequences of the current node.",
+	 "NodeDetailsEdit", "Edit:", 
+	 false, false, false, 10),  /* Enter */ 
+
+	new BasePref(),
+
+	new HotKeyPref
+	("Submit jobs to the queue for the current node.",
+	 "NodeDetailsQueueJobs", "Queue Jobs:", 
+	 false, false, false, 81),  /* Q */ 
+
+	new HotKeyPref
+	("Pause all jobs associated with the current node.",
+	 "NodeDetailsPauseJobs", "Pause Jobs:",
+	 false, false, false, 45),  /* Minus */ 
+
+	new HotKeyPref
+	("Resume execution of all jobs associated with the current node.",
+	 "NodeDetailsResumeJobs", "Resume Jobs:", 
+	 false, false, false, 61),  /* Equals */ 
+
+	new HotKeyPref
+	("Kill all jobs associated with the current node.",
+	 "NodeDetailsKillJobs", "Kill Jobs:", 
+	 false, false, false, 8),  /* Backspace */ 
+
+	new BasePref(),
+
+	new HotKeyPref
+	("Remove all the primary/secondary files associated with the selected node.",
+	 "NodeDetailsRemoveFiles", "Remove Files:")
       };
 
       pPrefs.put("Panel|Node Details|Hot Keys", prefs);
     }
 
+    {
+      BasePref prefs[] = {
+	new HotKeyPref
+	("Apply the changes to the working version.", 
+	 "NodeFilesApplyChanges", "Apply Changes:",
+	 false, false, false, 155),  /* Insert */ 
+
+	new BasePref(),
+
+	new HotKeyPref
+	("Edit primary file sequences of the current node.",
+	 "NodeFilesEdit", "Edit:", 
+	 false, false, false, 10),  /* Enter */ 
+
+	new BasePref(),
+
+	new HotKeyPref
+	("Submit jobs to the queue for the current node.",
+	 "NodeFilesQueueJobs", "Queue Jobs:", 
+	 false, false, false, 81),  /* Q */ 
+
+	new HotKeyPref
+	("Pause all jobs associated with the current node.",
+	 "NodeFilesPauseJobs", "Pause Jobs:",
+	 false, false, false, 45),  /* Minus */ 
+
+	new HotKeyPref
+	("Resume execution of all jobs associated with the current node.",
+	 "NodeFilesResumeJobs", "Resume Jobs:", 
+	 false, false, false, 61),  /* Equals */ 
+
+	new HotKeyPref
+	("Kill all jobs associated with the current node.",
+	 "NodeFilesKillJobs", "Kill Jobs:", 
+	 false, false, false, 8),  /* Backspace */ 
+
+	new BasePref(),
+
+	new HotKeyPref
+	("Remove all the primary/secondary files associated with the selected node.",
+	 "NodeFilesRemoveFiles", "Remove Files:")
+      };
+
+      pPrefs.put("Panel|Node Files|Hot Keys", prefs);
+    }
+
+    {
+      BasePref prefs[] = {
+	new HotKeyPref
+	("Edit primary file sequences of the current node.",
+	 "NodeHistoryEdit", "Edit:", 
+	 false, false, false, 10),  /* Enter */ 
+
+	new BasePref(),
+
+	new HotKeyPref
+	("Submit jobs to the queue for the current node.",
+	 "NodeHistoryQueueJobs", "Queue Jobs:", 
+	 false, false, false, 81),  /* Q */ 
+
+	new HotKeyPref
+	("Pause all jobs associated with the current node.",
+	 "NodeHistoryPauseJobs", "Pause Jobs:",
+	 false, false, false, 45),  /* Minus */ 
+
+	new HotKeyPref
+	("Resume execution of all jobs associated with the current node.",
+	 "NodeHistoryResumeJobs", "Resume Jobs:", 
+	 false, false, false, 61),  /* Equals */ 
+
+	new HotKeyPref
+	("Kill all jobs associated with the current node.",
+	 "NodeHistoryKillJobs", "Kill Jobs:", 
+	 false, false, false, 8),  /* Backspace */ 
+
+	new BasePref(),
+
+	new HotKeyPref
+	("Remove all the primary/secondary files associated with the selected node.",
+	 "NodeHistoryRemoveFiles", "Remove Files:")
+      };
+
+      pPrefs.put("Panel|Node History|Hot Keys", prefs);
+    }
     
     {
       BasePref prefs[] = {
@@ -857,7 +970,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.22 2004/10/03 19:42:18 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.23 2004/10/04 16:06:53 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -1110,7 +1223,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.22 2004/10/03 19:42:18 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.23 2004/10/04 16:06:53 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
