@@ -1,4 +1,4 @@
-// $Id: PackageMod.java,v 1.4 2004/06/08 02:38:32 jim Exp $
+// $Id: PackageMod.java,v 1.5 2004/06/08 20:08:22 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -194,7 +194,7 @@ class PackageMod
    * environmental variable entries of the package. <P> 
    * 
    * The policies of the created variables will be set to the default policy for each 
-   * variable name (see {@lin MergePolicy#getDefaultPolicy getDefaultPolicy} for 
+   * variable name (see {@link MergePolicy#getDefaultPolicy getDefaultPolicy} for 
    * details).
    * 
    * @param script
