@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.14 2004/09/05 06:54:34 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.15 2004/09/08 19:24:08 jim Exp $
 
 import java.io.*; 
 import java.util.*;
@@ -56,7 +56,8 @@ class GenUserPrefsApp
       BasePref prefs[] = {
 	new HotKeyPref
 	("update connected node details panels",
-	 "NodeDetails", "Details:"),	
+	 "NodeDetails", "Details:",
+	 false, false, false, 68),  /* D */	
 
 	new BasePref(),
 
@@ -84,7 +85,8 @@ class GenUserPrefsApp
 	
 	new HotKeyPref
 	("edit primary file sequences of the current primary selection",
-	 "NodeEdit", "Edit:"), 
+	 "NodeEdit", "Edit:", 
+	 false, false, false, 10),  /* Enter */ 
 
 	new BasePref(),
 	
@@ -106,19 +108,23 @@ class GenUserPrefsApp
 
 	new HotKeyPref
 	("submit jobs to the queue for the current primary selection",
-	 "NodeQueueJobs", "Queue Jobs:"), 
-
-	new HotKeyPref
-	("kill all jobs associated with the selected nodes",
-	 "NodeKillJobs", "Kill Jobs:"), 
+	 "NodeQueueJobs", "Queue Jobs:", 
+	 false, false, false, 81),  /* Q */ 
 
 	new HotKeyPref
 	("pause all jobs associated with the selected nodes",
-	 "NodePauseJobs", "Pause Jobs:"), 
+	 "NodePauseJobs", "Pause Jobs:",
+	 false, false, false, 45),  /* Minus */ 
 
 	new HotKeyPref
 	("resume execution of all jobs associated with the selected nodes",
-	 "NodeResumeJobs", "Resume Jobs:"), 
+	 "NodeResumeJobs", "Resume Jobs:", 
+	 false, false, false, 61),  /* Equals */ 
+
+	new HotKeyPref
+	("kill all jobs associated with the selected nodes",
+	 "NodeKillJobs", "Kill Jobs:", 
+	 false, false, false, 8),  /* Backspace */ 
 
 	new BasePref(),
 	
@@ -225,11 +231,13 @@ class GenUserPrefsApp
       BasePref prefs[] = {
 	new HotKeyPref
 	("edit the properties of the selected link", 
-	 "LinkEdit", "Edit Link:"),	
+	 "LinkEdit", "Edit Link:",	
+	 false, false, false, 10),  /* Enter */ 
 
 	new HotKeyPref
 	("remove the selected link", 
-	 "LinkUnlink", "UnLink:"),	
+	 "LinkUnlink", "UnLink:", 
+	 false, false, false, 82),  /* Backspace */ 	
       };
 
       pPrefs.put("Panel|Node Viewer|Links|Hot Keys", prefs);
@@ -244,7 +252,8 @@ class GenUserPrefsApp
 	
 	new HotKeyPref
 	("register a new node",
-	 "RegisterNewNode", "Register New Node:"),	
+	 "RegisterNewNode", "Register New Node:",
+	 false, false, false, 82), /* R */ 	
 
 	new BasePref(),
 
@@ -357,21 +366,38 @@ class GenUserPrefsApp
       BasePref prefs[] = {
 	new HotKeyPref
 	("update connected job details panels",
-	 "JobDetails", "Details:"),
+	 "JobDetails", "Details:",
+	 false, false, false, 68),  /* D */
       
+	new HotKeyPref
+	("view the target files of the primary selected job", 
+	 "JobView", "View:",
+	 false, false, false, 10),  /* Enter */ 
+
 	new BasePref(),
 	
 	new HotKeyPref
-	("kill all selected jobs", 
-	 "JobKillJobs", "Kill Jobs:"), 
-
-	new HotKeyPref
 	("pause all selected jobs",
-	 "JobPauseJobs", "Pause Jobs:"), 
+	 "JobPauseJobs", "Pause Jobs:",
+	 false, false, false, 45),  /* Minus */ 
+
 
 	new HotKeyPref
 	("resume execution of all selected jobs",
-	 "JobResumeJobs", "Resume Jobs:")
+	 "JobResumeJobs", "Resume Jobs:",
+	 false, false, false, 61),  /* Equals */ 
+      
+	new HotKeyPref
+	("kill all selected jobs", 
+	 "JobKillJobs", "Kill Jobs:",
+	 false, false, false, 8),  /* Backspace */ 
+
+	new BasePref(),
+
+	new HotKeyPref
+	("delete the completed job groups",
+	 "DeleteJobGroups", "Delete Groups:",
+	 true, false, false, 8),  /* SHIFT + Backspace */ 
       };      
 
       pPrefs.put("Panel|Job Viewer|Job|Hot Keys", prefs);
@@ -422,6 +448,29 @@ class GenUserPrefsApp
 
       pPrefs.put("Panel|Job Viewer|Hot Keys", prefs);
     }
+
+    {
+      BasePref prefs[] = {
+	new HotKeyPref
+	("show the execution details dialog", 
+	 "ShowExecDetails", "Show Execution Details:",
+	 false, false, false, 68),  /* D */
+	
+	new BasePref(),
+
+	new HotKeyPref
+	("show the job output dialog", 
+	 "ShowJobOutput", "Show Job Output",
+	 false, false, false, 79),  /* O */
+	
+	new HotKeyPref
+	("show the job errors dialog",
+	 "ShowJobErrors", "Show Job Errors",
+	 false, false, false, 69)  /* E */
+      };
+
+      pPrefs.put("Panel|Job Details|Hot Keys", prefs);
+    }
   }
 
 
@@ -462,7 +511,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.14 2004/09/05 06:54:34 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.15 2004/09/08 19:24:08 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -715,7 +764,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.14 2004/09/05 06:54:34 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.15 2004/09/08 19:24:08 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
