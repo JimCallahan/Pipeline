@@ -1,4 +1,4 @@
-// $Id: JBaseUserPrefsDialog.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JBaseUserPrefsDialog.java,v 1.2 2005/02/01 14:52:47 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -163,7 +163,7 @@ class JBaseUserPrefsDialog
       
       String extra[][] = { { "Reset", "reset" } };
       JButton btns[] = 
-	super.initUI("User Preferences:", false, body, "Confirm", "Apply", extra, "Cancel");
+	super.initUI("User Preferences:", false, body, "Confirm", "Apply", extra, "Close");
 
       pConfirmButton.setToolTipText(UIFactory.formatToolTip
         ("Update the user interface to reflect the preference changes and close " +
