@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.55 2004/10/28 15:55:24 jim Exp $
+// $Id: UIMaster.java,v 1.56 2004/10/29 14:03:52 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -479,16 +479,6 @@ class UIMaster
     pManageSelectionKeysDialog.setVisible(true);
   }
 
-//   /**
-//    * Show the manage job servers dialog.
-//    */ 
-//   public void 
-//   showManageJobServersDialog()
-//   {
-//     pManageJobServersDialog.updateJobServers();
-//     pManageJobServersDialog.setVisible(true);
-//   }
-
   /**
    * Show the manage editors dialog.
    */ 
@@ -497,6 +487,16 @@ class UIMaster
   {
     pDefaultEditorsDialog.updateEditors();
     pDefaultEditorsDialog.setVisible(true);
+  }
+
+  /**
+   * Show the job submission dialog.
+   */ 
+  public JQueueJobsDialog
+  showQueueJobsDialog()
+  {
+    pQueueJobsDialog.setVisible(true);
+    return pQueueJobsDialog;
   }
 
   /**
@@ -2623,8 +2623,9 @@ class UIMaster
 	pManageToolsetsDialog      = new JManageToolsetsDialog();
 	pManageLicenseKeysDialog   = new JManageLicenseKeysDialog();
 	pManageSelectionKeysDialog = new JManageSelectionKeysDialog();
-	//	pManageJobServersDialog    = new JManageJobServersDialog();
 
+	pQueueJobsDialog = new JQueueJobsDialog();
+	
 	pSubProcessFailureDialog = new JSubProcessFailureDialog();
       }
 
@@ -3249,13 +3250,20 @@ class UIMaster
     (
      String name,
      String author, 
-     String view
+     String view, 
+     Integer batchSize, 
+     Integer priority, 
+     TreeSet<String> selectionKeys
     ) 
     {
       super("UIMaster:QueueJobsTask", author, view);
 
       pNames = new TreeSet<String>();
       pNames.add(name);
+
+      pBatchSize     = batchSize;
+      pPriority      = priority; 
+      pSelectionKeys = selectionKeys;
     }
 
     public 
@@ -3263,12 +3271,19 @@ class UIMaster
     (
      TreeSet<String> names,
      String author, 
-     String view
+     String view, 
+     Integer batchSize, 
+     Integer priority, 
+     TreeSet<String> selectionKeys
     ) 
     {
       super("UIMaster:QueueJobsTask", author, view);
 
       pNames = names;
+
+      pBatchSize     = batchSize;
+      pPriority      = priority; 
+      pSelectionKeys = selectionKeys;
     }
 
     public void 
@@ -3279,7 +3294,8 @@ class UIMaster
 	try {
 	  for(String name : pNames) {
 	    master.updatePanelOp("Submitting Jobs to the Queue: " + name);
-	    master.getMasterMgrClient().submitJobs(pAuthorName, pViewName, name, null);
+	    master.getMasterMgrClient().submitJobs(pAuthorName, pViewName, name, null, 
+						   pBatchSize, pPriority, pSelectionKeys);
 	  }
 	}
 	catch(PipelineException ex) {
@@ -3294,7 +3310,10 @@ class UIMaster
       }
     }
 
-    private TreeSet<String>  pNames; 
+    private TreeSet<String>  pNames;  
+    private Integer          pBatchSize;
+    private Integer          pPriority;
+    private TreeSet<String>  pSelectionKeys;
   }
 
   /** 
@@ -3700,9 +3719,9 @@ class UIMaster
   private JManageSelectionKeysDialog  pManageSelectionKeysDialog;
 
   /**
-   * The manage job servers dialog.
+   * The queue job submission dialog.
    */ 
-  ///  private JManageJobServersDialog  pManageJobServersDialog;
+  private JQueueJobsDialog  pQueueJobsDialog;
 
   /**
    * The dialog giving details of the failure of a subprocess.

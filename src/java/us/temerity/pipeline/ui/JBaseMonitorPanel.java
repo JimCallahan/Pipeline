@@ -1,4 +1,4 @@
-// $Id: JBaseMonitorPanel.java,v 1.1 2004/10/28 15:55:24 jim Exp $
+// $Id: JBaseMonitorPanel.java,v 1.2 2004/10/29 14:03:52 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -135,10 +135,15 @@ class JBaseMonitorPanel
     }
     else {
       String lines = getLines(pScrollBar.getValue(), pTextArea.getVisibleRows());
-      if(lines != null) 
-	pTextArea.setText(lines);
-      else 
+      if(lines != null) {
+	if(lines.length() == 0) 
+	  pTextArea.setText("(Nothing Output)");
+	else 
+	  pTextArea.setText(lines);
+      }
+      else {
 	pTextArea.setText("(Nothing Yet...)");			
+      }
     }
   }
   

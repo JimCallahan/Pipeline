@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.32 2004/10/21 01:23:26 jim Exp $
+// $Id: MasterMgrClient.java,v 1.33 2004/10/29 14:03:52 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -2261,7 +2261,68 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    return submitJobs(new NodeID(author, view, name), indices);
+    return submitJobs(new NodeID(author, view, name), indices, null, null, null);
+  }
+
+  /**
+   * Submit the group of jobs needed to regenerate the selected {@link QueueState#Stale Stale}
+   * files associated with the tree of nodes rooted at the given node. <P> 
+   * 
+   * The <CODE>batchSize</CODE>, <CODE>priority</CODE> or <CODE>selectionKeys</CODE> 
+   * parameters (if not <CODE>null</CODE>) will override the settings when creating jobs 
+   * associated with the root node of this submisssion.  However, the node will not be 
+   * modified by this operation and all jobs associated with nodes upstream of the root node
+   * of the submission will be unaffected. <P>
+   * 
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   *
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   * 
+   * @param indices
+   *   The file sequence indices of the files to regenerate or <CODE>null</CODE> to 
+   *   regenerate all <CODE>Stale</CODE> files.
+   * 
+   * @param batchSize 
+   *   For parallel jobs, this overrides the maximum number of frames assigned to each job
+   *   associated with the root node of the job submission.  
+   * 
+   * @param priority 
+   *   Overrides the priority of jobs associated with the root node of the job submission 
+   *   relative to other jobs.  
+   * 
+   * @param selectionKeys 
+   *   Overrides the set of selection keys an eligable host is required to have for jobs 
+   *   associated with the root node of the job submission.
+   * 
+   * @return 
+   *   The submitted job group.
+   * 
+   * @throws PipelineException
+   *   If unable to generate or submit the jobs.
+   */ 
+  public synchronized QueueJobGroup
+  submitJobs
+  ( 
+   String author, 
+   String view, 
+   String name, 
+   TreeSet<Integer> indices, 
+   Integer batchSize, 
+   Integer priority, 
+   Set<String> selectionKeys   
+  ) 
+    throws PipelineException
+  {
+    return submitJobs(new NodeID(author, view, name), indices, 
+		      batchSize, priority, selectionKeys);
   }
 
   /**
@@ -2288,7 +2349,59 @@ class MasterMgrClient
   submitJobs
   ( 
    NodeID nodeID,
-   TreeSet<Integer> indices
+   TreeSet<Integer> indices 
+  ) 
+    throws PipelineException
+  {
+    return submitJobs(nodeID, indices, null, null, null);
+  }
+
+  /**
+   * Submit the group of jobs needed to regenerate the selected {@link QueueState#Stale Stale}
+   * files associated with the tree of nodes rooted at the given node. <P> 
+   * 
+   * The <CODE>batchSize</CODE>, <CODE>priority</CODE> or <CODE>selectionKeys</CODE> 
+   * parameters (if not <CODE>null</CODE>) will override the settings when creating jobs 
+   * associated with the root node of this submisssion.  However, the node will not be 
+   * modified by this operation and all jobs associated with nodes upstream of the root node
+   * of the submission will be unaffected. <P>
+   * 
+   * If the <CODE>nodeID</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   *
+   * @param nodeID 
+   *   The unique working version identifier. 
+   *
+   * @param indices
+   *   The file sequence indices of the files to regenerate or <CODE>null</CODE> to 
+   *   regenerate all <CODE>Stale</CODE> files.
+   * 
+   * @param batchSize 
+   *   For parallel jobs, this overrides the maximum number of frames assigned to each job
+   *   associated with the root node of the job submission.  
+   * 
+   * @param priority 
+   *   Overrides the priority of jobs associated with the root node of the job submission 
+   *   relative to other jobs.  
+   * 
+   * @param selectionKeys 
+   *   Overrides the set of selection keys an eligable host is required to have for jobs 
+   *   associated with the root node of the job submission.
+   * 
+   * @return 
+   *   The submitted job group.
+   * 
+   * @throws PipelineException
+   *   If unable to generate or submit the jobs.
+   */ 
+  public synchronized QueueJobGroup
+  submitJobs
+  ( 
+   NodeID nodeID,
+   TreeSet<Integer> indices,
+   Integer batchSize, 
+   Integer priority, 
+   Set<String> selectionKeys   
   ) 
     throws PipelineException
   {
@@ -2298,7 +2411,8 @@ class MasterMgrClient
 
     verifyConnection();
 
-    NodeSubmitJobsReq req = new NodeSubmitJobsReq(nodeID, indices);
+    NodeSubmitJobsReq req = 
+      new NodeSubmitJobsReq(nodeID, indices, batchSize, priority, selectionKeys);
 
     Object obj = performTransaction(MasterRequest.SubmitJobs, req);
     if(obj instanceof NodeSubmitJobsRsp) {

@@ -1,4 +1,4 @@
-// $Id: NodeCommon.java,v 1.18 2004/10/22 17:05:25 jim Exp $
+// $Id: NodeCommon.java,v 1.19 2004/10/29 14:03:52 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -864,7 +864,7 @@ class NodeCommon
   /**
    * For parallel jobs, this is the maximum number of frames assigned to each job. If 
    * <CODE>null</CODE>, then this version of the node has no regeneration action and 
-   * therefore no batch size;
+   * therefore no batch size.
    */ 
   protected Integer  pBatchSize;          
 

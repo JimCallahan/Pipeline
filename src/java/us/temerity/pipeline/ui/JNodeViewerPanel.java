@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.60 2004/10/25 18:56:46 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.61 2004/10/29 14:03:52 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -235,7 +235,7 @@ class JNodeViewerPanel
 
       pNodePopup.addSeparator();
       
-      item = new JMenuItem("Queue Jobs");
+      item = new JMenuItem("Queue Jobs...");
       item.setActionCommand("queue-jobs");
       item.addActionListener(this);
       pNodePopup.add(item);
@@ -2942,8 +2942,23 @@ class JNodeViewerPanel
     }
     
     if(!roots.isEmpty()) {
-      QueueJobsTask task = new QueueJobsTask(roots);
-      task.start();
+      JQueueJobsDialog diag = UIMaster.getInstance().showQueueJobsDialog();
+      if(diag.wasConfirmed()) {
+	Integer batchSize = null;
+	if(diag.overrideBatchSize()) 
+	  batchSize = diag.getBatchSize();
+
+	Integer priority = null;
+	if(diag.overridePriority()) 
+	  priority = diag.getPriority();
+
+	TreeSet<String> keys = null;
+	if(diag.overrideSelectionKeys()) 
+	  keys = diag.getSelectionKeys();
+
+	QueueJobsTask task = new QueueJobsTask(roots, batchSize, priority, keys);
+	task.start();
+      }
     }
 
     for(ViewerNode vnode : clearSelection()) 
@@ -4159,10 +4174,13 @@ class JNodeViewerPanel
     public 
     QueueJobsTask
     (
-     TreeSet<String> names
+     TreeSet<String> names, 
+     Integer batchSize, 
+     Integer priority, 
+     TreeSet<String> selectionKeys
     ) 
     {
-      UIMaster.getInstance().super(names, pAuthor, pView);
+      UIMaster.getInstance().super(names, pAuthor, pView, batchSize, priority, selectionKeys);
       setName("JNodeViewerPanel:QueueJobsTask");
     }
 
@@ -4924,6 +4942,7 @@ class JNodeViewerPanel
    */ 
   private JAddSecondaryDialog  pAddSecondaryDialog;
 
+  
   /**
    * The export node properties dialog.
    */ 

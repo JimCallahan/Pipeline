@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.16 2004/10/28 15:55:24 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.17 2004/10/29 14:03:52 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -104,7 +104,7 @@ class JNodeFilesPanel
       {
 	pWorkingPopup.addSeparator();
 	
-	item = new JMenuItem("Queue Jobs");
+	item = new JMenuItem("Queue Jobs...");
 	item.setActionCommand("queue-jobs");
 	item.addActionListener(this);
 	pWorkingPopup.add(item);
@@ -1390,8 +1390,23 @@ class JNodeFilesPanel
       indices.add(pTargetFileIdx);
     }
 
-    QueueJobsTask task = new QueueJobsTask(indices);
-    task.start();
+    JQueueJobsDialog diag = UIMaster.getInstance().showQueueJobsDialog();
+    if(diag.wasConfirmed()) {
+      Integer batchSize = null;
+      if(diag.overrideBatchSize()) 
+	batchSize = diag.getBatchSize();
+      
+      Integer priority = null;
+      if(diag.overridePriority()) 
+	  priority = diag.getPriority();
+      
+      TreeSet<String> keys = null;
+      if(diag.overrideSelectionKeys()) 
+	keys = diag.getSelectionKeys();
+
+      QueueJobsTask task = new QueueJobsTask(indices, batchSize, priority, keys);
+      task.start();
+    }
   }
 
   /**
@@ -2313,12 +2328,18 @@ class JNodeFilesPanel
     public 
     QueueJobsTask
     (
-     TreeSet<Integer> indices
+     TreeSet<Integer> indices, 
+     Integer batchSize, 
+     Integer priority, 
+     TreeSet<String> selectionKeys
     ) 
     {
       super("JNodeFilesPanel:QueueJobsTask");
 
-      pIndices = indices; 
+      pIndices       = indices; 
+      pBatchSize     = batchSize;
+      pPriority      = priority; 
+      pSelectionKeys = selectionKeys;
     }
 
     public void 
@@ -2327,7 +2348,8 @@ class JNodeFilesPanel
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp("Submitting Jobs to the Queue...")) {
 	try {
-	  master.getMasterMgrClient().submitJobs(pAuthor, pView, pStatus.getName(), pIndices);
+	  master.getMasterMgrClient().submitJobs(pAuthor, pView, pStatus.getName(), pIndices, 
+						 pBatchSize, pPriority, pSelectionKeys);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -2347,6 +2369,9 @@ class JNodeFilesPanel
     }
 
     private TreeSet<Integer> pIndices; 
+    private Integer          pBatchSize;
+    private Integer          pPriority;
+    private TreeSet<String>  pSelectionKeys;
   }
 
   /** 

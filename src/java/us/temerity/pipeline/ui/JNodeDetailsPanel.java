@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.19 2004/10/09 20:01:38 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.20 2004/10/29 14:03:52 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -123,7 +123,7 @@ class JNodeDetailsPanel
       {
 	pWorkingPopup.addSeparator();
 	
-	item = new JMenuItem("Queue Jobs");
+	item = new JMenuItem("Queue Jobs...");
 	item.setActionCommand("queue-jobs");
 	item.addActionListener(this);
 	pWorkingPopup.add(item);
@@ -4170,8 +4170,24 @@ class JNodeDetailsPanel
     if(pStatus != null) {
       NodeDetails details = pStatus.getDetails();
       if(details != null) {
-	QueueJobsTask task = new QueueJobsTask(pStatus.getName());
-	task.start();
+	JQueueJobsDialog diag = UIMaster.getInstance().showQueueJobsDialog();
+	if(diag.wasConfirmed()) {
+	  Integer batchSize = null;
+	  if(diag.overrideBatchSize()) 
+	    batchSize = diag.getBatchSize();
+	  
+	  Integer priority = null;
+	  if(diag.overridePriority()) 
+	    priority = diag.getPriority();
+	  
+	  TreeSet<String> keys = null;
+	  if(diag.overrideSelectionKeys()) 
+	    keys = diag.getSelectionKeys();
+	  
+	  QueueJobsTask task = 
+	    new QueueJobsTask(pStatus.getName(), batchSize, priority, keys);
+	  task.start();
+	}
       }
     }
   }
@@ -4387,10 +4403,13 @@ class JNodeDetailsPanel
     public 
     QueueJobsTask
     (
-     String name
+     String name, 
+     Integer batchSize, 
+     Integer priority, 
+     TreeSet<String> selectionKeys
     ) 
     {
-      UIMaster.getInstance().super(name, pAuthor, pView);
+      UIMaster.getInstance().super(name, pAuthor, pView, batchSize, priority, selectionKeys);
       setName("JNodeDetailsPanel:QueueJobsTask");
     }
 

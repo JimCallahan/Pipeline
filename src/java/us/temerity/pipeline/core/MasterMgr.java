@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.50 2004/10/28 15:55:23 jim Exp $
+// $Id: MasterMgr.java,v 1.51 2004/10/29 14:03:52 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3793,7 +3793,8 @@ class MasterMgr
 	TreeSet<Long> rootJobIDs = new TreeSet<Long>();
 	TreeMap<Long,QueueJob> jobs = new TreeMap<Long,QueueJob>();
 
-	submitJobs(status, req.getFileIndices(), true, 
+	submitJobs(status, req.getFileIndices(), 
+		   true, req.getBatchSize(), req.getPriority(), req.getSelectionKeys(), 
 		   extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, jobs, 
 		   timer);
 
@@ -3839,6 +3840,12 @@ class MasterMgr
   /**
    * Recursively submit jobs to the queue to regenerate the selected files. <P> 
    * 
+   * The <CODE>batchSize</CODE>, <CODE>priority</CODE> or <CODE>selectionKeys</CODE> 
+   * parameters (if not <CODE>null</CODE>) will override the settings when creating jobs 
+   * associated with the root node of this submisssion.  However, the node will not be 
+   * modified by this operation and all jobs associated with nodes upstream of the root node
+   * of the submission will be unaffected. <P>
+   * 
    * The <CODE>rootJobIDs</CODE>, <CODE>existingJobIDs</CODE>, <CODE>generatedJobIDs</CODE> 
    * and <CODE>jobs</CODE> arguments contain the results of the job submission process. <P>
    * 
@@ -3850,6 +3857,18 @@ class MasterMgr
    * 
    * @param isRoot
    *   The this the root node of the job submission tree?
+   * 
+   * @param batchSize 
+   *   For parallel jobs, this overrides the maximum number of frames assigned to each job
+   *   associated with the root node of the job submission.  
+   * 
+   * @param priority 
+   *   Overrides the priority of jobs associated with the root node of the job submission 
+   *   relative to other jobs.  
+   * 
+   * @param selectionKeys 
+   *   Overrides the set of selection keys an eligable host is required to have for jobs 
+   *   associated with the root node of the job submission.
    * 
    * @param extJobIDs
    *   The per-file IDs of pre-existing jobs which will regenerate the files indexed 
@@ -3878,6 +3897,9 @@ class MasterMgr
    NodeStatus status, 
    TreeSet<Integer> indices,   
    boolean isRoot, 
+   Integer batchSize, 
+   Integer priority, 
+   Set<String> selectionKeys, 
    TreeMap<NodeID,Long[]> extJobIDs,   
    TreeMap<NodeID,Long[]> nodeJobIDs,   
    TreeMap<NodeID,TreeSet<Long>> upsJobIDs, 
@@ -3911,9 +3933,11 @@ class MasterMgr
     /* generate jobs for node */ 
     int numFrames = work.getPrimarySequence().numFrames();
 
-    int batchSize = 0; 
+    int bsize = 0; 
     if(work.getBatchSize() != null) 
-      batchSize = work.getBatchSize();
+      bsize = work.getBatchSize();
+    if(isRoot && (batchSize != null)) 
+      bsize = batchSize;
     
     Long[] jobIDs = details.getJobIDs();
     QueueState[] queueStates = details.getQueueState();
@@ -4028,7 +4052,7 @@ class MasterMgr
 	  TreeSet<Integer> batch = new TreeSet<Integer>();
 	  for(Integer idx : regen) {
 	    if(!batch.isEmpty() && 
-	       (((batchSize > 0) && (batch.size() >= batchSize)) ||
+	       (((bsize > 0) && (batch.size() >= bsize)) ||
 		(idx > (batch.last()+1)))) {
 	      batches.add(batch);
 	      batch = new TreeSet<Integer>();
@@ -4130,7 +4154,8 @@ class MasterMgr
 		TreeSet<Integer> lindices = sourceIndices.get(link.getName());
 		if((lindices != null) && (!lindices.isEmpty())) {
 		  NodeStatus lstatus = status.getSource(link.getName());
-		  submitJobs(lstatus, lindices, false, 
+		  submitJobs(lstatus, lindices, 
+			     false, null, null, null, 
 			     extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, 
 			     jobs, timer);
 		}
@@ -4224,9 +4249,20 @@ class MasterMgr
 			     primaryTarget, secondaryTargets, 
 			     primarySources, secondarySources, 
 			     work.getToolset(), env, dir);
+	  
+	  JobReqs jreqs = work.getJobRequirements();
+	  {
+	    if(isRoot && (priority != null)) 
+	      jreqs.setPriority(priority);
+
+	    if(isRoot && (selectionKeys != null)) {
+	      jreqs.removeAllSelectionKeys(); 
+	      jreqs.addSelectionKeys(selectionKeys);
+	    }
+	  }
 
 	  QueueJob job = 
-	    new QueueJob(agenda, work.getAction(), work.getJobRequirements(), sourceIDs);
+	    new QueueJob(agenda, work.getAction(), jreqs, sourceIDs);
 		       
 	  jobs.put(jobID, job);
 	}
@@ -4327,7 +4363,8 @@ class MasterMgr
       case Reference:
       case Dependency:
 	{
-	  submitJobs(lstatus, null, false, 
+	  submitJobs(lstatus, null, 
+		     false, null, null, null, 
 		     extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, 
 		     jobs, timer);
 	  

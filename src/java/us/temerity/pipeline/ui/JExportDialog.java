@@ -1,4 +1,4 @@
-// $Id: JExportDialog.java,v 1.1 2004/09/05 06:54:56 jim Exp $
+// $Id: JExportDialog.java,v 1.2 2004/10/29 14:03:52 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -350,7 +350,7 @@ class JExportDialog
   public boolean 
   exportBatchSize() 
   {
-    return ((pBatchSizeField.getValue() != null) && pBatchSizeField.getValue());
+    return pBatchSizeField.getValue();
   }
   
   /**

@@ -1,4 +1,4 @@
-// $Id: NodeSubmitJobsReq.java,v 1.2 2004/08/22 22:04:34 jim Exp $
+// $Id: NodeSubmitJobsReq.java,v 1.3 2004/10/29 14:03:52 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -36,12 +36,27 @@ class NodeSubmitJobsReq
    * @param indices
    *   The file sequence indices of the files to regenerate or <CODE>null</CODE> to 
    *   regenerate all <CODE>Stale</CODE> or <CODE>Missing</CODE> files.
+   * 
+   * @param batchSize 
+   *   For parallel jobs, this overrides the maximum number of frames assigned to each job
+   *   associated with the root node of the job submission.  
+   * 
+   * @param priority 
+   *   Overrides the priority of jobs associated with the root node of the job submission 
+   *   relative to other jobs.  
+   * 
+   * @param selectionKeys 
+   *   Overrides the set of selection keys an eligable host is required to have for jobs 
+   *   associated with the root node of the job submission.
    */
   public
   NodeSubmitJobsReq
   (
    NodeID id, 
-   TreeSet<Integer> indices
+   TreeSet<Integer> indices,
+   Integer batchSize, 
+   Integer priority, 
+   Set<String> selectionKeys  
   )
     throws PipelineException
   { 
@@ -50,7 +65,10 @@ class NodeSubmitJobsReq
 	("The working version ID cannot be (null)!");
     pNodeID = id;
 
-    pFileIndices = indices; 
+    pFileIndices   = indices; 
+    pBatchSize     = batchSize;
+    pPriority      = priority;
+    pSelectionKeys = selectionKeys;
   }
 
 
@@ -78,7 +96,48 @@ class NodeSubmitJobsReq
     return pFileIndices; 
   }
 
-    
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * For parallel jobs, this overrides the maximum number of frames assigned to each job
+   * associated with the root node of the job submission.
+   * 
+   * @return 
+   *   The batch size or <CODE>null</CODE> use node's original batch size.
+   */ 
+  public Integer
+  getBatchSize() 
+  {
+    return pBatchSize;
+  }
+
+  /** 
+   * Overrides the priority of jobs associated with the root node of the job submission 
+   * relative to other jobs.  
+   * 
+   * @return 
+   *   The priority or <CODE>null</CODE> to use node's original priority.
+   */
+  public Integer
+  getPriority()
+  {
+    return pPriority;
+  }
+
+  /**
+   * Overrides the set of selection keys an eligable host is required to have for jobs 
+   * associated with the root node of the job submission.
+   * 
+   * @return 
+   *   The selection keys or <CODE>null</CODE> to use node's original selection keys.
+   */
+  public Set<String>
+  getSelectionKeys()
+  {
+    return pSelectionKeys;
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -102,6 +161,25 @@ class NodeSubmitJobsReq
    * regenerate all <CODE>Stale</CODE> or <CODE>Missing</CODE> files.
    */
   private TreeSet<Integer>  pFileIndices; 
+
+  
+  /**
+   * For parallel jobs, this overrides the maximum number of frames assigned to each job
+   * associated with the root node of the job submission.
+   */ 
+  protected Integer  pBatchSize;         
+
+  /**
+   * Overrides the priority of jobs associated with the root node of the job submission 
+   * relative to other jobs.  
+   */
+  private Integer  pPriority;
+  
+  /**
+   * Overrides the set of selection keys an eligable host is required to have for jobs 
+   * associated with the root node of the job submission.
+   */
+  private Set<String>  pSelectionKeys;
 
 }
   
