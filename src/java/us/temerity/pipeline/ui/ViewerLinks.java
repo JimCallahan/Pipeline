@@ -1,14 +1,14 @@
-// $Id: ViewerLinks.java,v 1.9 2004/10/30 17:38:22 jim Exp $
+// $Id: ViewerLinks.java,v 1.10 2004/12/30 01:11:40 jim Exp $
 
 package us.temerity.pipeline.ui;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.math.*;
 
 import java.io.*;
 import java.util.*;
-import javax.vecmath.*;
-import javax.media.j3d.*;
-import com.sun.j3d.utils.geometry.*;
+
+import net.java.games.jogl.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   V I E W E R   L I N K S                                                                */
@@ -30,112 +30,8 @@ class ViewerLinks
   public 
   ViewerLinks() 
   {
-    /* initialize state fields */ 
-    {
-      pUpstreamLinks   = new HashMap<NodePath,ArrayList<Link>>();
-      pDownstreamLinks = new HashMap<NodePath,ArrayList<Link>>();
-
-      pAppearanceChanged = true;
-
-      pLineAntiAlias  = true;
-      pLineThickness  = 1.0;
-      pLineColorName  = "LightGrey";
-      pStaleColorName = "Purple";
-
-      pLinksChanged = true;
-    }
-
-    /* initialize the Java3D geometry */ 
-    {
-      /* the root branch group */ 
-      pRoot = new BranchGroup();
-      
-      /* unpickable geometry group */ 
-      {
-	BranchGroup group = new BranchGroup();
-	group.setPickable(false);
-
-	/* the line visibility switch */ 
-	{
-	  pLineSwitch = new Switch();
-	  pLineSwitch.setCapability(Switch.ALLOW_SWITCH_WRITE);
-	  
-	  group.addChild(pLineSwitch);
-	}
-	
-	/* the line geometry */ 
-	{
-	  pLines = new Shape3D();
-	  pLines.setCapability(Shape3D.ALLOW_APPEARANCE_WRITE);
-	  pLines.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
-	  
-	  pLineSwitch.addChild(pLines);
-	}
-
-
-	/* the stale line visibility switch */ 
-	{
-	  pStaleLineSwitch = new Switch();
-	  pStaleLineSwitch.setCapability(Switch.ALLOW_SWITCH_WRITE);
-	  
-	  group.addChild(pStaleLineSwitch);
-	}
-
-	/* the stale line geometry */ 
-	{
-	  pStaleLines = new Shape3D();
-	  pStaleLines.setCapability(Shape3D.ALLOW_APPEARANCE_WRITE);
-	  pStaleLines.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
-	  
-	  pStaleLineSwitch.addChild(pStaleLines);
-	}
-
-	
-	/* the polygon visibility switch */ 
-	{
-	  pTriSwitch = new Switch();
-	  pTriSwitch.setCapability(Switch.ALLOW_SWITCH_WRITE);
-	  
-	  group.addChild(pTriSwitch);
-	}
-	
-	/* the polygon geometry */ 
-	{
-	  pTris = new Shape3D();
-	  pTris.setCapability(Shape3D.ALLOW_APPEARANCE_WRITE);
-	  pTris.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
-	  
-	  pTriSwitch.addChild(pTris);
-	}
-
-
-	/* the polygon visibility switch */ 
-	{
-	  pStaleTriSwitch = new Switch();
-	  pStaleTriSwitch.setCapability(Switch.ALLOW_SWITCH_WRITE);
-	  
-	  group.addChild(pStaleTriSwitch);
-	}
-	
-	/* the stale polygon geometry */ 
-	{
-	  pStaleTris = new Shape3D();
-	  pStaleTris.setCapability(Shape3D.ALLOW_APPEARANCE_WRITE);
-	  pStaleTris.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
-	  
-	  pStaleTriSwitch.addChild(pStaleTris);
-	}
-
-
-	pRoot.addChild(group);
-      }
-
-      /* the link relationship icons */ 
-      {
-	pLinkRelationshipPool = new ViewerLinkRelationshipPool();
-	pRoot.addChild(pLinkRelationshipPool.getBranchGroup());
-      }
-    }    
+    pUpstreamLinks   = new HashMap<NodePath,ArrayList<Link>>();
+    pDownstreamLinks = new HashMap<NodePath,ArrayList<Link>>();
   }
 
 
@@ -175,7 +71,7 @@ class ViewerLinks
       pUpstreamLinks.put(path, links);
     }
     links.add(new Link(target, source, link, isStale));    
-    pLinksChanged = true;
+    pRefresh = true;
   }
 
   /** 
@@ -200,607 +96,454 @@ class ViewerLinks
       links = new ArrayList<Link>();
       pDownstreamLinks.put(path, links);
     }
-    links.add(new Link(target, source, null, false));    
-    pLinksChanged = true;
+    links.add(new Link(target, source, null, false));       
+    pRefresh = true;
   }
 
-
-
-  /*----------------------------------------------------------------------------------------*/
-
   /**
-   * Get the root group which contains all Java3D geometry.
-   */ 
-  public BranchGroup 
-  getBranchGroup() 
-  {
-    return pRoot;
-  }
-  
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   L I N K   S T A T E                                                                  */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Prepare to update the links.
+   * Remove all links.
    */ 
   public void 
-  updatePrep()
+  clear() 
   {
     pUpstreamLinks.clear();
     pDownstreamLinks.clear();
-
-    pLinksChanged = true;
-
-    pLinkRelationshipPool.updatePrep();
+    pRefresh = true;    
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   R E N D E R I N G                                                                    */
+  /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Update the geometry and appearance based on the current set of links.
+   * Force a rebuild of the links geometry.
+   */ 
+  protected void
+  refresh()
+  { 
+    pRefresh = true;   
+  }
+
+  /**
+   * Rebuild any OpenGL display list needd to render the node.
+   *
+   * @param gl
+   *   The OpenGL interface.
    */ 
   public void 
-  update() 
+  rebuild
+  (
+   GL gl
+  )
   {
-    UserPrefs prefs = UserPrefs.getInstance();
+    if(pLinksDL == null) 
+      pLinksDL = gl.glGenLists(1);
 
-    /* update the link appearance */ 
-    try {  
-      if(pAppearanceChanged || 
-	 (pLineAntiAlias != prefs.getLinkAntiAlias()) || 
-	 (pLineThickness != prefs.getLinkThickness()) ||
-	 (!pLineColorName.equals(prefs.getLinkColorName())) ||
-	 (!pStaleColorName.equals(prefs.getStaleColorName()))) {
+    if(pRefresh) { 
+      UserPrefs prefs = UserPrefs.getInstance();
 
-	pLineAntiAlias  = prefs.getLinkAntiAlias();
-	pLineThickness  = prefs.getLinkThickness();
-	pLineColorName  = prefs.getLinkColorName();
-	pStaleColorName = prefs.getStaleColorName();
-
-	{
-	  Appearance apr = new Appearance();
-	  
-	  apr.setTexture(TextureMgr.getInstance().getSimpleTexture(pLineColorName));
-	  apr.setMaterial(null);
-	  
-	  {
-	    LineAttributes la = new LineAttributes();
-	    la.setLineAntialiasingEnable(pLineAntiAlias);
-	    la.setLineWidth((float) pLineThickness);
-	    apr.setLineAttributes(la);
-	  }
-	  
-	  pLines.setAppearance(apr);
+      /* get the link relationship icon display lists */ 
+      try {
+	GeometryMgr mgr = GeometryMgr.getInstance();
+	if(prefs.getDrawLinkRelationship() && (pLinkRelDLs == null)) {
+	  pLinkRelDLs = new int[3];
+	  for(LinkRelationship rel : LinkRelationship.all()) 
+	    pLinkRelDLs[rel.ordinal()] = mgr.getLinkRelationshipDL(gl, rel);
 	}
-
-	{
-	  Appearance apr = new Appearance();
-	  
-	  apr.setTexture(TextureMgr.getInstance().getSimpleTexture(pStaleColorName));
-	  apr.setMaterial(null);
-	  
-	  {
-	    LineAttributes la = new LineAttributes();
-	    la.setLineAntialiasingEnable(pLineAntiAlias);
-	    la.setLineWidth((float) pLineThickness);
-	    apr.setLineAttributes(la);
-	  }
-	  
-	  pStaleLines.setAppearance(apr);
-	}
-
-	{
-	  Appearance apr = new Appearance();
-	  
-	  apr.setTexture(TextureMgr.getInstance().getSimpleTexture(pLineColorName));
-	  apr.setMaterial(null);
-
-	  apr.setPolygonAttributes(new PolygonAttributes());
-	    
-	  pTris.setAppearance(apr);
-	}	
-
-	{
-	  Appearance apr = new Appearance();
-	  
-	  apr.setTexture(TextureMgr.getInstance().getSimpleTexture(pStaleColorName));
-	  apr.setMaterial(null);
-
-	  apr.setPolygonAttributes(new PolygonAttributes());
-	    
-	  pStaleTris.setAppearance(apr);
-	}	
-
-	pAppearanceChanged = false;
       }
-    }
-    catch(IOException ex) {
-      Logs.tex.severe("Internal Error:\n" + 
-		      "  " + ex.getMessage());
-      Logs.flush();
-      System.exit(1);
-    }
-    
-    /* update the line geometry */ 
-    if(pLinksChanged) {
-      pLineSwitch.setWhichChild(Switch.CHILD_NONE);
-      pStaleLineSwitch.setWhichChild(Switch.CHILD_NONE);
-      pTriSwitch.setWhichChild(Switch.CHILD_NONE);
-      pStaleTriSwitch.setWhichChild(Switch.CHILD_NONE);
+      catch(IOException ex) {
+	Logs.tex.severe(ex.getMessage());
+	pLinkRelDLs = null;
+      }
+	
+      /* rebuild the link geometry */ 
+      gl.glNewList(pLinksDL, GL.GL_COMPILE);
+      {
+	Color3d color = prefs.getLinkColor();
+	Color3d stale = prefs.getStaleLinkColor();
 
-      if(!pUpstreamLinks.isEmpty() || !pDownstreamLinks.isEmpty()) {
-	/* compute the number of vertices */ 
-	int lvCnt  = 0;
-	int slvCnt = 0;
-	int tvCnt  = 0;
-	int stvCnt = 0;
-	{
-	  for(NodePath path : pUpstreamLinks.keySet()) {
-	    ArrayList<Link> links = pUpstreamLinks.get(path);
+	gl.glLineWidth((float) prefs.getLinkThickness());
 
-	    boolean anyStale = false;
-	    double targetY = links.get(0).getTargetPos().y;
-	    double minY = targetY;
-	    double maxY = targetY;
-	    double minStaleY = targetY;
-	    double maxStaleY = targetY;
-	    for(Link link : links) {
-	      double sourceY = link.getSourcePos().y;
-	      minY = Math.min(minY, sourceY);
-	      maxY = Math.max(maxY, sourceY);
+ 	/* upstream links */ 
+ 	{
+	  LinkedList<Point2d[]> arrows = new LinkedList<Point2d[]>();
+	  LinkedList<Point2d[]> sarrows = new LinkedList<Point2d[]>();
 
-	      if(link.isStale()) {
-		slvCnt += 2;
-		anyStale = true;
-		minStaleY = Math.min(minStaleY, sourceY);
-		maxStaleY = Math.max(maxStaleY, sourceY);
-	      }
-	      else {
-		lvCnt += 2;
-	      }
-	    }
+	  EnumMap<LinkRelationship,LinkedList<Point2d>> linkRels = 
+	    new EnumMap<LinkRelationship,LinkedList<Point2d>>(LinkRelationship.class);
+	  for(LinkRelationship rel : LinkRelationship.all()) 
+	    linkRels.put(rel, new LinkedList<Point2d>());
+	  
+	  gl.glEnable(GL.GL_LINE_SMOOTH); 
+	  gl.glBegin(GL.GL_LINES);
+	  {
+	    for(NodePath path : pUpstreamLinks.keySet()) {
+	      ArrayList<Link> links = pUpstreamLinks.get(path);
 
-	    {
-	      if(minStaleY < targetY) {
-		if(minY < minStaleY) 
-		  lvCnt += 2;
-		slvCnt += 2;
-	      }
-	      else {
-		lvCnt += 2;
-	      }
-	    
-	      if(maxStaleY > targetY) {
-		if(maxY > maxStaleY) 
-		  lvCnt += 2;		
-		slvCnt += 2;
-	      }
-	      else {
-		lvCnt += 2;
-	      }
-	    }
-	      
-	    if(anyStale) 
-	      slvCnt += 2;
-	    else 
-	      lvCnt += 2;
-	    
- 	    if(prefs.getDrawArrowHeads()) {
-	      if(anyStale) 
-		stvCnt += 3;
-	      else 
-		tvCnt += 3;
-	    }
-	    
-	    {
-	      Link link = links.get(0);
-	      NodeStatus status = link.getTargetNode().getNodeStatus(); 
-	      if(status != null) {
-		NodeDetails details = status.getDetails();
-		if(details != null) {
-		  NodeCommon com = details.getWorkingVersion();
-		  if(com == null) 
-		    com = details.getLatestVersion();
-		  if((com != null) && (com.getAction() != null) && 
-		     (!com.isActionEnabled()) && (prefs.getDrawDisabledAction())) {
-		    if(anyStale) 
-		      slvCnt += 2;
-		    else 
-		      lvCnt += 2;
-		  }
-		}
-	      }
-	    }
-
-	    for(Link link : links) {
-	      if(prefs.getDrawLinkPolicy()) {
-		switch(link.getLink().getPolicy()) {
-		case Association:
-		  if(link.isStale()) 
-		    slvCnt += 2;
-		  else 
-		    lvCnt += 2;
-
-		case Reference:
-		  if(link.isStale()) 
-		    slvCnt += 2;
-		  else 
-		    lvCnt += 2;
+	      boolean anyStale = false;
+	      for(Link link : links) {
+		if(link.isStale()) {
+		  anyStale = true;
+		  break;
 		}
 	      }
 
-	      if(prefs.getDrawLinkRelationship()) {
-		if(link.isStale()) 
-		  slvCnt += 2;
-		else 
-		  lvCnt += 2;
-	      }
-	    }
-	  }
-
-	  for(NodePath path : pDownstreamLinks.keySet()) {
-	    ArrayList<Link> links = pDownstreamLinks.get(path);
-	    lvCnt += 2*links.size() + 4;
-
-	    if(prefs.getDrawArrowHeads())
-	      tvCnt += 3*links.size();
-	  }
-	}
-	
-	/* create a new line array */ 
-	LineArray la = null;
-	if(lvCnt > 0) 
-	  la = new LineArray(lvCnt, LineArray.COORDINATES);
-	int lvi = 0;
-
-	/* create a new stale line array */ 
-	LineArray sla = null;
-	if(slvCnt > 0) 
-	  sla = new LineArray(slvCnt, LineArray.COORDINATES);
-	int slvi = 0;
-
-	/* create a new triangle array */ 
-	TriangleArray ta = null;
-	if(prefs.getDrawArrowHeads() && (tvCnt > 0)) 
-	  ta = new TriangleArray(tvCnt, TriangleArray.COORDINATES);
-	int tvi = 0;
-	
-	/* create a new stale triangle array */ 
-	TriangleArray sta = null;
-	if(prefs.getDrawArrowHeads() && (stvCnt > 0)) 
-	  sta = new TriangleArray(stvCnt, TriangleArray.COORDINATES);
-	int stvi = 0;
-	
-	/* upstream links */ 
-	{
-	  for(NodePath path : pUpstreamLinks.keySet()) {
-	    ArrayList<Link> links = pUpstreamLinks.get(path);
-	    
-	    boolean anyStale = false;
-	    for(Link link : links) {
-	      if(link.isStale()) {
-		anyStale = true;
-		break;
-	      }
-	    }
-
-	    double centerX = 0.0;
-	    double minY = 0.0;
-	    double maxY = 0.0;
-	    double targetY = 0.0;
-	    {
-	      Link link = links.get(0);
-	      Point3d tpos = link.getTargetPos();
-	      Point3d spos = link.getSourcePos();
-	      
-	      centerX = tpos.x + (spos.x - tpos.x)*prefs.getLinkVerticalCrossbar();
-	      minY = maxY = tpos.y;
-	      
-	      tpos.x += 0.5 + prefs.getLinkGap();
-
-	      targetY = tpos.y;
-	      
+	      double centerX = 0.0;
+	      double minY = 0.0;
+	      double maxY = 0.0;
+	      double targetY = 0.0;
 	      {
-		NodeStatus status = link.getTargetNode().getNodeStatus(); 
-		if(status != null) {
-		  NodeDetails details = status.getDetails();
-		  if(details != null) {
-		    NodeCommon com = details.getWorkingVersion();
-		    if(com == null) 
-		      com = details.getLatestVersion();
-		    if((com != null) &&  (com.getAction() != null) && 
-		       (!com.isActionEnabled()) && (prefs.getDrawDisabledAction())) {
-		      double s = prefs.getDisabledActionSize();
-		      
- 		      Point3d a = new Point3d(tpos.x, tpos.y-s, 0.0);
- 		      Point3d b = new Point3d(tpos.x, tpos.y+s, 0.0);
-
- 		      if(anyStale) {
- 			sla.setCoordinate(slvi, a);  slvi++;
- 			sla.setCoordinate(slvi, b);  slvi++;
- 		      } 
- 		      else {
- 			la.setCoordinate(lvi, a);  lvi++;
- 			la.setCoordinate(lvi, b);  lvi++;
- 		      }
-		    }
-		  }
-		}
-	      }
-
-	      if(prefs.getDrawArrowHeads()) {
-		double hx = prefs.getArrowHeadLength();
-		double hy = prefs.getArrowHeadWidth();
-
-		Point3d top = new Point3d(tpos.x+hx, tpos.y-hy, 0.0);
-		Point3d btm = new Point3d(tpos.x+hx, tpos.y+hy, 0.0);
-
-		if(anyStale) {
-		  sta.setCoordinate(stvi, tpos);  stvi++;
-		  sta.setCoordinate(stvi, top);   stvi++;
-		  sta.setCoordinate(stvi, btm);   stvi++;
-		}
-		else {
-		  ta.setCoordinate(tvi, tpos);  tvi++;
-		  ta.setCoordinate(tvi, top);   tvi++;
-		  ta.setCoordinate(tvi, btm);   tvi++;
-		}
-
-		tpos.x += prefs.getArrowHeadLength();
-	      }
-
-	      {
-		Point3d a = new Point3d(centerX, tpos.y, 0.0);
+		Link link = links.get(0);
+		Point2d tpos = link.getTargetPos();
+		Point2d spos = link.getSourcePos();
 		
-		if(anyStale) {
-		  sla.setCoordinate(slvi, tpos);  slvi++;
-		  sla.setCoordinate(slvi, a);     slvi++;
-		} 
-		else {
-		  la.setCoordinate(lvi, tpos);  lvi++;
-		  la.setCoordinate(lvi, a);     lvi++;
-		}
-	      }
-	    }
-	    
-	    double minStaleY = targetY;
-	    double maxStaleY = targetY;
-	    for(Link link : links) {
-	      Point3d tpos = link.getTargetPos();
-	      Point3d spos = link.getSourcePos();
-	      
-	      minY = Math.min(minY, spos.y);
-	      maxY = Math.max(maxY, spos.y);
-	      
-	      spos.x -= 0.5 + prefs.getLinkGap();
-
-	      if(link.isStale()) {
-		minStaleY = Math.min(minStaleY, spos.y);
-		maxStaleY = Math.max(maxStaleY, spos.y);
-	      }
-
-	      if(prefs.getDrawLinkRelationship()) {
-		ViewerLinkRelationship vlink = 
-		  pLinkRelationshipPool.addIcon(link.getLink(), link.getTargetNode());
-
-		double sp = spos.x;
-		if(prefs.getDrawLinkPolicy())
-		  sp -= prefs.getLinkPolicySize()*0.75;
-
-		double rc = (sp + centerX) * 0.5;
-
-		Point2d p = new Point2d(rc, spos.y);
-		vlink.setPosition(p);
-
-		Point3d a = new Point3d(centerX, spos.y, 0.0);
-		Point3d b = new Point3d(rc-0.25, spos.y, 0.0);
-		Point3d c = new Point3d(rc+0.25, spos.y, 0.0);
-
-		if(link.isStale()) {
-		  sla.setCoordinate(slvi, a);     slvi++;
-		  sla.setCoordinate(slvi, b);     slvi++;
-		  		     		   
-		  sla.setCoordinate(slvi, c);     slvi++;
-		  sla.setCoordinate(slvi, spos);  slvi++;
-		} 
-		else {
-		  la.setCoordinate(lvi, a);     lvi++;
-		  la.setCoordinate(lvi, b);     lvi++;
-		  
-		  la.setCoordinate(lvi, c);     lvi++;
-		  la.setCoordinate(lvi, spos);  lvi++;
-		}
-	      }
-	      else {
-		Point3d a = new Point3d(centerX, spos.y, 0.0);
-
-		if(link.isStale()) {
-		  sla.setCoordinate(lvi, a);     slvi++;
-		  sla.setCoordinate(lvi, spos);  slvi++;
-		}
-		else {
-		  la.setCoordinate(lvi, a);     lvi++;
-		  la.setCoordinate(lvi, spos);  lvi++;
-		}
-	      }
-
-	      if(prefs.getDrawLinkPolicy()) {
-		double s = prefs.getLinkPolicySize();
-		switch(link.getLink().getPolicy()) {
-		case Association:
-		  {
-		    Point3d a = new Point3d(spos.x-s*0.75, spos.y-s, 0.0);
-		    Point3d b = new Point3d(spos.x-s*0.75, spos.y+s, 0.0);
-
-		    if(link.isStale()) {
-		      sla.setCoordinate(slvi, a);  slvi++;
-		      sla.setCoordinate(slvi, b);  slvi++;
-		    }
-		    else {
-		      la.setCoordinate(lvi, a);  lvi++;
-		      la.setCoordinate(lvi, b);  lvi++;
-		    }
-		  }
-		  
-		case Reference:
-		  {
-		    Point3d a = new Point3d(spos.x, spos.y-s, 0.0);
-		    Point3d b = new Point3d(spos.x, spos.y+s, 0.0);
-
-		    if(link.isStale()) {
-		      sla.setCoordinate(slvi, a);  slvi++;
-		      sla.setCoordinate(slvi, b);  slvi++;
-		    }
-		    else {
-		      la.setCoordinate(lvi, a);  lvi++;
-		      la.setCoordinate(lvi, b);  lvi++;
+		centerX = tpos.x() + (spos.x() - tpos.x())*prefs.getLinkVerticalCrossbar();
+		minY = maxY = tpos.y();
+		
+		tpos.x(tpos.x() + (0.5 + prefs.getLinkGap()));
+		
+		targetY = tpos.y();
+		
+		{
+		  NodeStatus status = link.getTargetNode().getNodeStatus(); 
+		  if(status != null) {
+		    NodeDetails details = status.getDetails();
+		    if(details != null) {
+		      NodeCommon com = details.getWorkingVersion();
+		      if(com == null) 
+			com = details.getLatestVersion();
+		      if((com != null) &&  (com.getAction() != null) && 
+			 (!com.isActionEnabled()) && (prefs.getDrawDisabledAction())) {
+			double s = prefs.getDisabledActionSize();
+			
+			Point2d a = new Point2d(tpos.x(), tpos.y()-s);
+			Point2d b = new Point2d(tpos.x(), tpos.y()+s);
+			
+			if(anyStale) 
+			  gl.glColor3d(stale.r(), stale.g(), stale.b());
+			else 
+			  gl.glColor3d(color.r(), color.g(), color.b());
+			  
+			gl.glVertex2d(a.x(), a.y());
+			gl.glVertex2d(b.x(), b.y());
+		      }
 		    }
 		  }
 		}
+
+		if(prefs.getDrawArrowHeads()) {
+		  double hx = prefs.getArrowHeadLength();
+		  double hy = prefs.getArrowHeadWidth();
+		
+		  Point2d top = new Point2d(tpos.x()+hx, tpos.y()-hy);
+		  Point2d btm = new Point2d(tpos.x()+hx, tpos.y()+hy);
+		  
+		  Point2d verts[] = new Point2d[3];
+		  verts[0] = new Point2d(tpos.x(), tpos.y());
+		  verts[1] = new Point2d(top.x(), top.y());
+		  verts[2] = new Point2d(btm.x(), btm.y());
+
+		  if(anyStale) 
+		    sarrows.add(verts);
+		  else 
+		    arrows.add(verts);
+
+		  tpos.x(tpos.x() + prefs.getArrowHeadLength());
+		}
+		
+		{
+		  Point2d a = new Point2d(centerX, tpos.y());
+		  
+		  if(anyStale) 
+		    gl.glColor3d(stale.r(), stale.g(), stale.b());
+		  else 
+		    gl.glColor3d(color.r(), color.g(), color.b());
+		  
+		  gl.glVertex2d(tpos.x(), tpos.y());
+		  gl.glVertex2d(a.x(), a.y());
+		}
 	      }
-	    }
+	      
+	      double minStaleY = targetY;
+	      double maxStaleY = targetY;
+	      for(Link link : links) {
+		Point2d tpos = link.getTargetPos();
+		Point2d spos = link.getSourcePos();
+		
+		minY = Math.min(minY, spos.y());
+		maxY = Math.max(maxY, spos.y());
+		
+		spos.x(spos.x() - (0.5 + prefs.getLinkGap()));
+		
+		if(link.isStale()) {
+		  minStaleY = Math.min(minStaleY, spos.y());
+		  maxStaleY = Math.max(maxStaleY, spos.y());
+		}
+		
+		if(prefs.getDrawLinkRelationship()) {
+		  double sp = spos.x();
+		  if(prefs.getDrawLinkPolicy())
+		    sp -= prefs.getLinkPolicySize()*0.75;
+		
+		  double rc = (sp + centerX) * 0.5;
+		  
+		  LinkedList<Point2d> rpos = linkRels.get(link.getLink().getRelationship());
+		  rpos.add(new Point2d(rc, spos.y()));
+
+		  Point2d a = new Point2d(centerX, spos.y());
+		  Point2d b = new Point2d(rc-0.25, spos.y());
+		  Point2d c = new Point2d(rc+0.25, spos.y());
+
+		  if(link.isStale()) 
+		    gl.glColor3d(stale.r(), stale.g(), stale.b());
+		  else 
+		    gl.glColor3d(color.r(), color.g(), color.b());
+		  
+		  gl.glVertex2d(a.x(), a.y());
+		  gl.glVertex2d(b.x(), b.y());
+
+		  gl.glVertex2d(c.x(), c.y());
+		  gl.glVertex2d(spos.x(), spos.y());
+		}
+		else {
+		  Point2d a = new Point2d(centerX, spos.y());
+		  
+		  if(link.isStale()) 
+		    gl.glColor3d(stale.r(), stale.g(), stale.b());
+		  else 
+		    gl.glColor3d(color.r(), color.g(), color.b());
+
+		  gl.glVertex2d(a.x(), a.y());
+		  gl.glVertex2d(spos.x(), spos.y());
+		}
+
+		if(prefs.getDrawLinkPolicy()) {
+		  double s = prefs.getLinkPolicySize();
+		  switch(link.getLink().getPolicy()) {
+		  case Association:
+		    {
+		      Point2d a = new Point2d(spos.x()-s*0.75, spos.y()-s);
+		      Point2d b = new Point2d(spos.x()-s*0.75, spos.y()+s);
+
+		      if(link.isStale()) 
+			gl.glColor3d(stale.r(), stale.g(), stale.b());
+		      else 
+			gl.glColor3d(color.r(), color.g(), color.b());
+
+		      gl.glVertex2d(a.x(), a.y());
+		      gl.glVertex2d(b.x(), b.y());
+		    }
+		  
+		  case Reference:
+		    {
+		      Point2d a = new Point2d(spos.x(), spos.y()-s);
+		      Point2d b = new Point2d(spos.x(), spos.y()+s);
+
+		      if(link.isStale()) 
+			gl.glColor3d(stale.r(), stale.g(), stale.b());
+		      else 
+			gl.glColor3d(color.r(), color.g(), color.b());
+
+		      gl.glVertex2d(a.x(), a.y());
+		      gl.glVertex2d(b.x(), b.y());
+		    }
+		  }
+		}
+	      }
 	    
-	    {
-	      Point3d a = new Point3d(centerX, minY, 0.0);
-	      Point3d b = new Point3d(centerX, minStaleY, 0.0);
-	      Point3d c = new Point3d(centerX, targetY, 0.0);
+	      {
+		Point2d a = new Point2d(centerX, minY);
+		Point2d b = new Point2d(centerX, minStaleY);
+		Point2d c = new Point2d(centerX, targetY);
 	      
-	      if(minStaleY < targetY) {
-		sla.setCoordinate(slvi, b);  slvi++;  
-		sla.setCoordinate(slvi, c);  slvi++;
+		if(minStaleY < targetY) {
+		  gl.glColor3d(stale.r(), stale.g(), stale.b());
+		  
+		  gl.glVertex2d(b.x(), b.y());
+		  gl.glVertex2d(c.x(), c.y());
 	      
-		if(minY < minStaleY) {
-		  la.setCoordinate(lvi, a);  lvi++;  
-		  la.setCoordinate(lvi, b);  lvi++;
+		  if(minY < minStaleY) {
+		    gl.glColor3d(color.r(), color.g(), color.b());
+
+		    gl.glVertex2d(a.x(), a.y());
+		    gl.glVertex2d(b.x(), b.y());
+		  }
+		}
+		else {
+		  gl.glColor3d(color.r(), color.g(), color.b());
+		  
+		  gl.glVertex2d(a.x(), a.y());
+		  gl.glVertex2d(c.x(), c.y());
 		}
 	      }
-	      else {
-		la.setCoordinate(lvi, a);  lvi++;  
-		la.setCoordinate(lvi, c);  lvi++;
+
+	      {
+		Point2d a = new Point2d(centerX, maxY);
+		Point2d b = new Point2d(centerX, maxStaleY);
+		Point2d c = new Point2d(centerX, targetY);
+
+		if(maxStaleY > targetY) {
+		  gl.glColor3d(stale.r(), stale.g(), stale.b());
+		  
+		  gl.glVertex2d(b.x(), b.y());
+		  gl.glVertex2d(c.x(), c.y());
+	      
+		  if(maxY > maxStaleY) {
+		    gl.glColor3d(color.r(), color.g(), color.b());
+
+		    gl.glVertex2d(a.x(), a.y());
+		    gl.glVertex2d(b.x(), b.y());
+		  }
+		}
+		else {
+		  gl.glColor3d(color.r(), color.g(), color.b());
+		  
+		  gl.glVertex2d(a.x(), a.y());
+		  gl.glVertex2d(c.x(), c.y());
+		}
 	      }
 	    }
+	  }
+	  gl.glEnd();
+	  gl.glDisable(GL.GL_LINE_SMOOTH);
 
+	  if(!arrows.isEmpty() || !sarrows.isEmpty()) {
+	    gl.glEnable(GL.GL_POLYGON_SMOOTH);
+	    gl.glBegin(GL.GL_TRIANGLES);
 	    {
-	      Point3d a = new Point3d(centerX, maxY, 0.0);
-	      Point3d b = new Point3d(centerX, maxStaleY, 0.0);
-	      Point3d c = new Point3d(centerX, targetY, 0.0);
+	      gl.glColor3d(color.r(), color.g(), color.b());
+		
+	      for(Point2d verts[] : arrows) {
+		gl.glVertex2d(verts[0].x(), verts[0].y());
+		gl.glVertex2d(verts[1].x(), verts[1].y());
+		gl.glVertex2d(verts[2].x(), verts[2].y());
+	      }
 
-	      if(maxStaleY > targetY) {
-		sla.setCoordinate(slvi, b);  slvi++;  
-		sla.setCoordinate(slvi, c);  slvi++;
-	      
-		if(maxY > maxStaleY) {
-		  la.setCoordinate(lvi, a);  lvi++;  
-		  la.setCoordinate(lvi, b);  lvi++;
-		}
+	      gl.glColor3d(stale.r(), stale.g(), stale.b());
+		
+	      for(Point2d verts[] : sarrows) {
+		gl.glVertex2d(verts[0].x(), verts[0].y());
+		gl.glVertex2d(verts[1].x(), verts[1].y());
+		gl.glVertex2d(verts[2].x(), verts[2].y());
 	      }
-	      else {
-		la.setCoordinate(lvi, a);  lvi++;  
-		la.setCoordinate(lvi, c);  lvi++;
+	    }
+	    gl.glEnd();
+	    gl.glDisable(GL.GL_POLYGON_SMOOTH);
+	  }
+
+	  for(LinkRelationship rel : linkRels.keySet()) {
+	    int dl = pLinkRelDLs[rel.ordinal()];
+	    for(Point2d p : linkRels.get(rel)) {
+	      gl.glPushMatrix();
+	      {
+		gl.glTranslated(p.x(), p.y(), 0.0);
+		gl.glCallList(dl);
 	      }
+	      gl.glPopMatrix();	      
 	    }
 	  }
 	}
 
 	/* downstream links */ 
 	{
-	  for(NodePath path : pDownstreamLinks.keySet()) {
-	    ArrayList<Link> links = pDownstreamLinks.get(path);
+	  LinkedList<Point2d[]> arrows = new LinkedList<Point2d[]>();
+	  
+	  gl.glEnable(GL.GL_LINE_SMOOTH); 
+	  gl.glBegin(GL.GL_LINES);
+	  {
+	    gl.glColor3d(color.r(), color.g(), color.b());
 	    
-	    double centerX = 0.0;
-	    double minY = 0.0;
-	    double maxY = 0.0;
-	    {
-	      Link link = links.get(0);
-	      Point3d tpos = link.getTargetPos();
-	      Point3d spos = link.getSourcePos();
+	    for(NodePath path : pDownstreamLinks.keySet()) {
+	      ArrayList<Link> links = pDownstreamLinks.get(path);
 	      
-	      centerX = tpos.x + (spos.x - tpos.x)*prefs.getLinkVerticalCrossbar();
-	      minY = maxY = spos.y;
-
-	      spos.x -= 0.5 + prefs.getLinkGap();
-
-	      la.setCoordinate(lvi, spos);                               lvi++;
-	      la.setCoordinate(lvi, new Point3d(centerX, spos.y, 0.0));  lvi++;
-	    }
-	    
-	    for(Link link : links) {
-	      Point3d tpos = link.getTargetPos();
-	      Point3d spos = link.getSourcePos();
-	      
-	      minY = Math.min(minY, tpos.y);
-	      maxY = Math.max(maxY, tpos.y);
-	      
-	      tpos.x += 0.5 + prefs.getLinkGap();
-
-	      if(prefs.getDrawArrowHeads()) {
-		double hx = prefs.getArrowHeadLength();
-		double hy = prefs.getArrowHeadWidth();
-
-		ta.setCoordinate(tvi, tpos);                                    tvi++;
-		ta.setCoordinate(tvi, new Point3d(tpos.x+hx, tpos.y-hy, 0.0));  tvi++;
-		ta.setCoordinate(tvi, new Point3d(tpos.x+hx, tpos.y+hy, 0.0));  tvi++;
-
-		tpos.x += prefs.getArrowHeadLength();
+	      double centerX = 0.0;
+	      double minY = 0.0;
+	      double maxY = 0.0;
+	      {
+		Link link = links.get(0);
+		Point2d tpos = link.getTargetPos();
+		Point2d spos = link.getSourcePos();
+		
+		centerX = tpos.x() + (spos.x() - tpos.x())*prefs.getLinkVerticalCrossbar();
+		minY = maxY = spos.y();
+		
+		spos.x(spos.x() - (0.5 + prefs.getLinkGap()));
+		
+		gl.glVertex2d(spos.x(), spos.y());
+		gl.glVertex2d(centerX, spos.y());
 	      }
-
-	      la.setCoordinate(lvi, new Point3d(centerX, tpos.y, 0.0));  lvi++;
-	      la.setCoordinate(lvi, tpos);                               lvi++;
+	      
+	      for(Link link : links) {
+		Point2d tpos = link.getTargetPos();
+		Point2d spos = link.getSourcePos();
+		
+		minY = Math.min(minY, tpos.y());
+		maxY = Math.max(maxY, tpos.y());
+		
+		tpos.x(tpos.x() + (0.5 + prefs.getLinkGap()));
+		
+		if(prefs.getDrawArrowHeads()) {
+		  double hx = prefs.getArrowHeadLength();
+		  double hy = prefs.getArrowHeadWidth();
+		  
+		  Point2d verts[] = new Point2d[3];
+		  verts[0] = new Point2d(tpos);
+		  verts[1] = new Point2d(tpos.x()+hx, tpos.y()-hy);
+		  verts[2] = new Point2d(tpos.x()+hx, tpos.y()+hy);
+		  arrows.add(verts);
+		  
+		  tpos.x(tpos.x() + prefs.getArrowHeadLength());
+		}
+		
+		gl.glVertex2d(centerX, tpos.y());
+		gl.glVertex2d(tpos.x(), tpos.y());
+	      }
+	      
+	      gl.glVertex2d(centerX, minY);
+	      gl.glVertex2d(centerX, maxY);
 	    }
-
-	    la.setCoordinate(lvi, new Point3d(centerX, minY, 0.0));  lvi++;
-	    la.setCoordinate(lvi, new Point3d(centerX, maxY, 0.0));  lvi++;
+	  }
+	  gl.glEnd();
+	  gl.glDisable(GL.GL_LINE_SMOOTH);
+	 
+	  if(!arrows.isEmpty()) {
+	    gl.glEnable(GL.GL_POLYGON_SMOOTH);
+	    gl.glBegin(GL.GL_TRIANGLES);
+	    {
+	      gl.glColor3d(color.r(), color.g(), color.b());
+		
+	      for(Point2d verts[] : arrows) {
+		gl.glVertex2d(verts[0].x(), verts[0].y());
+		gl.glVertex2d(verts[1].x(), verts[1].y());
+		gl.glVertex2d(verts[2].x(), verts[2].y());
+	      }
+	    }
+	    gl.glEnd();
+	    gl.glDisable(GL.GL_POLYGON_SMOOTH);
 	  }
 	}
-
-	assert(lvi == lvCnt);
-	if(la != null) {
-	  pLines.setGeometry(la);
-	  pLineSwitch.setWhichChild(Switch.CHILD_ALL);
-	}
-
-	assert(slvi == slvCnt);
-	if(sla != null) {
-	  pStaleLines.setGeometry(sla);
-	  pStaleLineSwitch.setWhichChild(Switch.CHILD_ALL);
-	}
-
-	assert(tvi == tvCnt);
-	if(ta != null) {
-	  pTris.setGeometry(ta);
-	  pTriSwitch.setWhichChild(Switch.CHILD_ALL);	
-	}
-
-	assert(stvi == stvCnt);
-	if(sta != null) {
-	  pStaleTris.setGeometry(sta);
-	  pStaleTriSwitch.setWhichChild(Switch.CHILD_ALL);	
-	}
       }
-	
-      pLinkRelationshipPool.update();      
-
-      pLinksChanged = false;
+      gl.glEndList();
     }
   }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   H E L P E R S                                                                        */
-  /*----------------------------------------------------------------------------------------*/
-
-  private Point3d
-  to3d
+   
+  /**
+   * Render the OpenGL geometry for the node.
+   *
+   * @param gl
+   *   The OpenGL interface.
+   */ 
+  public void 
+  render
   (
-   Point2d p
-  ) 
+   GL gl
+  )
   {
-    return new Point3d(p.x, p.y, 0.0);
+    gl.glCallList(pLinksDL);
   }
-
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -833,16 +576,16 @@ class ViewerLinks
       return pTarget;
     }
 
-    public Point3d
+    public Point2d
     getTargetPos() 
     {
-      return to3d(pTarget.getPosition());
+      return pTarget.getPosition();
     }
 
-    public Point3d
+    public Point2d
     getSourcePos()
     {
-      return to3d(pSource.getPosition());
+      return pSource.getPosition();
     }
     
     public LinkCommon
@@ -880,89 +623,21 @@ class ViewerLinks
   private HashMap<NodePath,ArrayList<Link>>  pDownstreamLinks;
 
 
+  /*----------------------------------------------------------------------------------------*/
+  
   /**
-   * Whether the line appearance has been changed.
+   * The OpenGL display list handle for the links geometry.
    */ 
-  private boolean  pAppearanceChanged; 
-
-  /**
-   * Whether to anti-alias link lines.
-   */ 
-  private boolean  pLineAntiAlias;
-
-  /** 
-   * The thickness of link lines.
-   */
-  private double  pLineThickness;
+  private Integer  pLinksDL; 
 
   /**
-   * The name of the simple color texture to use for link lines.
+   * The OpenGL display list handles for the link relationship icon geometry.
    */ 
-  private String  pLineColorName;
+  private int[] pLinkRelDLs;
 
   /**
-   * The name of the simple color texture to use for stale link lines.
+   * Whether the OpenGL display list for the links geometry needs to be rebuilt.
    */ 
-  private String  pStaleColorName;
-
-  /**
-   * Whether the link geometry has changed since the last update.
-   */ 
-  private boolean pLinksChanged; 
-
-  /**
-   * The root branch group. 
-   */ 
-  private BranchGroup  pRoot;     
-
-
-  /**
-   * The switch group used to control line visbilty. 
-   */ 
-  private Switch  pLineSwitch;   
-
-  /**
-   * The line geometry.
-   */ 
-  private Shape3D  pLines;  
-
-
-  /**
-   * The switch group used to control stale line visbilty. 
-   */ 
-  private Switch  pStaleLineSwitch;   
-
-  /**
-   * The stale line geometry.
-   */ 
-  private Shape3D  pStaleLines;  
-
-
-  /**
-   * The switch group used to control triangle visbilty. 
-   */ 
-  private Switch  pTriSwitch;   
-
-  /**
-   * The triangle geometry.
-   */ 
-  private Shape3D  pTris;  
-
-
-  /**
-   * The switch group used to control stale triangle visbilty. 
-   */ 
-  private Switch  pStaleTriSwitch;   
-
-  /**
-   * The stale triangle geometry.
-   */ 
-  private Shape3D  pStaleTris;  
-
-
-  /**
-   * The reusable set of link relationship icons.
-   */ 
-  private ViewerLinkRelationshipPool  pLinkRelationshipPool;
+  private boolean  pRefresh;
 
 }
