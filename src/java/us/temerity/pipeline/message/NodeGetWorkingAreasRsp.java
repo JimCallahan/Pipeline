@@ -1,4 +1,4 @@
-// $Id: NodeGetWorkingAreasRsp.java,v 1.4 2004/06/08 20:05:11 jim Exp $
+// $Id: NodeGetWorkingAreasRsp.java,v 1.5 2004/07/24 18:26:02 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -14,7 +14,7 @@ import java.util.logging.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A successful response to a <CODE>NodeGetWorkingAreasReq</CODE> request.
+ * Get the table of current working area authors and views.
  */
 public
 class NodeGetWorkingAreasRsp
