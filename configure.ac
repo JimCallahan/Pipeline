@@ -586,7 +586,7 @@ AC_CONFIG_FILES([
   data/fonts/UtopiaBold/Makefile
 
   docs/Makefile 
- 
+  docs/images/Makefile
   docs/user-manual/Makefile
 
   src/Makefile
@@ -594,6 +594,7 @@ AC_CONFIG_FILES([
   src/database/Makefile
 
   src/database/scripts/Makefile
+  src/database/scripts/dbarchive
   src/database/scripts/dbinit
   src/database/scripts/dbstart
   src/database/scripts/dbstop
