@@ -1,0 +1,57 @@
+
+----------------------------------------------------------------------------------------------
+  U S E R   W O R K I N G   A R E A 
+----------------------------------------------------------------------------------------------
+
+$WORKING/
+  jobs/ati/models/
+    agent.ma
+
+
+----------------------------------------------------------------------------------------------
+  D A T A   F I L E   R E P O S I T O R Y 
+----------------------------------------------------------------------------------------------
+
+ROOT/
+  repository/  
+    jobs/ati/models/
+      v1.1/
+        agent.ma
+      v1.2/
+        agent.ma
+      v2.4
+        agent.ma
+    
+
+----------------------------------------------------------------------------------------------
+  G L U E   N O D E   D A T A B A S E     
+----------------------------------------------------------------------------------------------
+
+ROOT 
+  database/
+    versions/                               
+      jobs/ati/models/agent/              Fully resolved node name.
+        v1.1                              [NodeVersion]
+        v1.2                              [NodeVersion]
+        v2.4                              [NodeVersion]
+
+    comments/
+      jobs/ati/models/agent/              Fully resolved node name.
+        v1.1/
+          183091273009147                 [LogMessage: name is timestamp]
+          183091273012455                 [LogMessage: name is timestamp]
+        v2.4/
+          183091273012455                 [LogMessage: name is timestamp]
+
+    reverse/                              (can be rebuild from versions) 
+      jobs/ati/models/agent/              Fully resolved node name.
+        v1.1                              [TreeMap<String,VersionID>: node name -> version]
+        ...
+
+    mods/
+      jobs/ati/models/agent/              Fully resolved node name.
+        jim                               [NodeMod for user jim]
+        joe                               [NodeMod for user joe]
+  
+    
+==============================================================================================
