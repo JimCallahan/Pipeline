@@ -1,11 +1,10 @@
-// $Id: BaseMgrClient.java,v 1.14 2005/02/12 16:29:51 jim Exp $
+// $Id: BaseMgrClient.java,v 1.15 2005/02/16 00:41:38 jim Exp $
 
 package us.temerity.pipeline;
 
 import us.temerity.pipeline.message.*;
 
 import java.io.*;
-import java.nio.channels.*;
 import java.net.*;
 import java.util.*;
 
@@ -79,45 +78,38 @@ class BaseMgrClient
   verifyConnection() 
     throws PipelineException 
   {
-    if((pChannel != null) && pChannel.isConnected())
+    if((pSocket != null) && pSocket.isConnected())
       return;
 
     try {
-      InetSocketAddress addr = new InetSocketAddress(pHostname, pPort);
-      pChannel = SocketChannel.open(addr);
+      pSocket = new Socket();
 
+      InetSocketAddress addr = new InetSocketAddress(pHostname, pPort);
+      pSocket.connect(addr, 10000);
+      
       {
 	String cinfo = 
 	  ("Pipeline-" + PackageInfo.sVersion + " [" + PackageInfo.sRelease + "]");
 
-	Socket socket = pChannel.socket();
-	socket.setSoTimeout(10000);
+	pSocket.setSoTimeout(10000);
 
-	OutputStream out = socket.getOutputStream();
+	OutputStream out = pSocket.getOutputStream();
 	ObjectOutput objOut = new ObjectOutputStream(out);
 	objOut.writeObject(cinfo);
 	objOut.flush(); 
 
-	InputStream in  = socket.getInputStream();
+	InputStream in  = pSocket.getInputStream();
 	ObjectInput objIn  = new PluginInputStream(in);
 	Object rsp = objIn.readObject();
 	
-	socket.setSoTimeout(0);
+	pSocket.setSoTimeout(0);
 	
 	String sinfo = "Unknown"; 
 	if(rsp instanceof String) 
 	  sinfo = (String) rsp;
 	
 	if(!sinfo.equals(cinfo)) {
-	  try {
-	    socket.close();
-	  }
-	  catch (IOException ex) {
-	  }
-	  finally {
-	    pChannel = null;
-	  }
-	  
+	  disconnect();
 	  throw new PipelineException 
 	    (getServerDownMessage() + "\n  " + 
 	     "Connection rejected due to a mismatch in Pipeline " + 
@@ -128,6 +120,7 @@ class BaseMgrClient
       }
     }
     catch(IOException ex) {
+      disconnect();
       throw new PipelineException
 	(getServerDownMessage() + "\n  " + 
 	 ex.getMessage(), ex);
@@ -198,24 +191,23 @@ class BaseMgrClient
   public synchronized void 
   disconnect() 
   {
-    if(pChannel == null)
+    if(pSocket == null)
       return;
 
     try {
-      if(pChannel.isConnected()) {
-	Socket socket = pChannel.socket();
-	OutputStream out = socket.getOutputStream();
+      if(pSocket.isConnected()) {
+	OutputStream out = pSocket.getOutputStream();
 	ObjectOutput objOut = new ObjectOutputStream(out);
 	objOut.writeObject(pDisconnect);
 	objOut.flush(); 
 
-	socket.close();
+	pSocket.close();
       }
     }
     catch (IOException ex) {
     }
     finally {
-      pChannel = null;
+      pSocket = null;
     }
   }
 
@@ -230,13 +222,12 @@ class BaseMgrClient
     verifyConnection();
 
     try {
-      Socket socket = pChannel.socket();
-      OutputStream out = socket.getOutputStream();
+      OutputStream out = pSocket.getOutputStream();
       ObjectOutput objOut = new ObjectOutputStream(out);
       objOut.writeObject(pShutdown);
       objOut.flush(); 
 
-      socket.close();
+      pSocket.close();
     }
     catch(IOException ex) {
       disconnect();
@@ -245,7 +236,7 @@ class BaseMgrClient
 	 ex.getMessage());
     }
     finally {
-      pChannel = null;
+      pSocket = null;
     }
   }
 
@@ -268,17 +259,15 @@ class BaseMgrClient
     throws PipelineException 
   {
     verifyConnection();
-
     try {
-      Socket socket = pChannel.socket();
-      OutputStream out = socket.getOutputStream();
+      OutputStream out = pSocket.getOutputStream();
       ObjectOutput objOut = new ObjectOutputStream(out);
       objOut.writeObject(kind);
       if(req != null) 
 	objOut.writeObject(req);
       objOut.flush(); 
 
-      socket.close();
+      pSocket.close();
     }
     catch(IOException ex) {
       disconnect();
@@ -287,7 +276,7 @@ class BaseMgrClient
 	 ex.getMessage(), ex);
     }
     finally {
-      pChannel = null;
+      pSocket = null;
     }
   }
 
@@ -326,23 +315,26 @@ class BaseMgrClient
     throws PipelineException 
   {
     try {
-      Socket socket = pChannel.socket();
-      socket.setSoTimeout(timeout);
+      pSocket.setSoTimeout(timeout);
 
-      OutputStream out = socket.getOutputStream();
+      OutputStream out = pSocket.getOutputStream();
       ObjectOutput objOut = new ObjectOutputStream(out);
       objOut.writeObject(kind);
       if(req != null) 
 	objOut.writeObject(req);
       objOut.flush(); 
 
-      InputStream in  = socket.getInputStream();
+      InputStream in  = pSocket.getInputStream();
       ObjectInput objIn  = new PluginInputStream(in);
       Object rsp = objIn.readObject();
 
-      socket.setSoTimeout(0);
+      pSocket.setSoTimeout(0);
 
-      return rsp;
+      return rsp; 
+    }
+    catch(SocketException ex) {
+      throw new PipelineException
+	("Unable to set SO_TIMEOUT for socket!");
     }
     catch(IOException ex) {
       disconnect();
@@ -459,7 +451,7 @@ class BaseMgrClient
   /**
    * The network socket connection.
    */
-  private SocketChannel  pChannel;
+  private Socket  pSocket;
 
 
   /** 
