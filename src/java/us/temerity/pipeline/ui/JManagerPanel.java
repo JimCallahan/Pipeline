@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.55 2004/12/01 23:03:10 jim Exp $
+// $Id: JManagerPanel.java,v 1.56 2004/12/31 22:28:54 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -270,6 +270,13 @@ class JManagerPanel
       {
 	JMenu sub = new JMenu("Restore Layout");   
 	pRestoreLayoutMenu = sub;
+
+	pPopup.add(sub);  
+      }
+
+      {
+	JMenu sub = new JMenu("Restore Layout (no select)");   
+	pRestoreLayoutNoSelectMenu = sub;
 
 	pPopup.add(sub);  
       }
@@ -1447,7 +1454,9 @@ class JManagerPanel
     else if(cmd.equals("save-layout-as"))
       UIMaster.getInstance().showSaveLayoutDialog();
     else if(cmd.startsWith("restore-layout:")) 
-      UIMaster.getInstance().doRestoreSavedLayout(cmd.substring(15));
+      UIMaster.getInstance().doRestoreSavedLayout(cmd.substring(15), true);
+    else if(cmd.startsWith("restore-layout-no-select:")) 
+      UIMaster.getInstance().doRestoreSavedLayout(cmd.substring(25), false);
     else if(cmd.equals("manage-layouts"))
       UIMaster.getInstance().showManageLayoutsDialog();
 
@@ -1455,8 +1464,6 @@ class JManagerPanel
       UIMaster.getInstance().showUserPrefsDialog();
     else if(cmd.equals("default-editors"))
       UIMaster.getInstance().showDefaultEditorsDialog();
-//     else if(cmd.equals("manage-job-servers"))
-//       UIMaster.getInstance().showManageJobServersDialog();
 
     else if(cmd.equals("manage-users"))
       UIMaster.getInstance().showManageUsersDialog();
@@ -2257,14 +2264,17 @@ class JManagerPanel
 	pSaveLayoutItem.setEnabled(master.getLayoutName() != null);
 
 	pRestoreLayoutMenu.removeAll();
+	pRestoreLayoutNoSelectMenu.removeAll();
 	File dir = new File(PackageInfo.sHomeDir, PackageInfo.sUser + "/.pipeline/layouts");  
 	if(!dir.isDirectory()) {
 	  UIMaster.getInstance().showErrorDialog
 	    ("Error:", "The saved layout directory (" + dir + ") was missing!");
 	  pRestoreLayoutMenu.setEnabled(false);
+	  pRestoreLayoutNoSelectMenu.setEnabled(false);
 	} 
 	else {
-	  rebuildRestoreMenu(dir, dir, pRestoreLayoutMenu);
+	  rebuildRestoreMenu(dir, dir, pRestoreLayoutMenu, true);
+	  rebuildRestoreMenu(dir, dir, pRestoreLayoutNoSelectMenu, false);
 	}
       }
 
@@ -2319,13 +2329,17 @@ class JManagerPanel
      * 
      * @param menu
      *   The current parent menu.
+     * 
+     * @param select
+     *   Whether node and/or job group selections should be restored.
      */ 
     private void 
     rebuildRestoreMenu
     (
      File root, 
      File dir,
-     JMenu menu
+     JMenu menu, 
+     boolean select
     ) 
     {
       TreeMap<String,File> table = new TreeMap<String,File>();
@@ -2344,7 +2358,7 @@ class JManagerPanel
 	  JMenu sub = new JMenu(name);
 	  menu.add(sub);
 
-	  rebuildRestoreMenu(root, file, sub);
+	  rebuildRestoreMenu(root, file, sub, select);
 	}
       }
 
@@ -2352,7 +2366,8 @@ class JManagerPanel
 	File file = table.get(name);
 	if(file.isFile()) {
 	  JMenuItem item = new JMenuItem(name);
-	  item.setActionCommand("restore-layout:" + file.getPath().substring(rlen));
+	  item.setActionCommand((select ? "restore-layout:" : "restore-layout-no-select:") + 
+				file.getPath().substring(rlen));
 	  item.addActionListener(pPanel);
 
 	  menu.add(item);
@@ -2660,6 +2675,7 @@ class JManagerPanel
    */ 
   private JMenuItem  pSaveLayoutItem;
   private JMenu      pRestoreLayoutMenu;
+  private JMenu      pRestoreLayoutNoSelectMenu;
 
 
   /**

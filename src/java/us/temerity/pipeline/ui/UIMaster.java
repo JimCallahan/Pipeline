@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.68 2004/12/30 01:55:17 jim Exp $
+// $Id: UIMaster.java,v 1.69 2004/12/31 22:28:54 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -60,6 +60,12 @@ class UIMaster
    * 
    * @param layout
    *   The name of the override panel layout or <CODE>null</CODE> to use the default layout.
+   * 
+   * @param restoreLayout
+   *   Whether to restore the panel layout.
+   * 
+   * @param restoreSelections
+   *   Whether the restored layout should include node and/or job group selections.
    */ 
   private 
   UIMaster
@@ -69,7 +75,9 @@ class UIMaster
    String queueHost, 
    int queuePort, 
    int jobPort, 
-   String layout
+   String layout, 
+   boolean restoreLayout,
+   boolean restoreSelections
   ) 
   {
     pMasterMgrClient = new MasterMgrClient(masterHost, masterPort);
@@ -90,6 +98,8 @@ class UIMaster
     pQueueJobDetailsPanels = new PanelGroup<JQueueJobDetailsPanel>();
 
     pOverrideLayoutName = layout;
+    pRestoreLayout      = restoreLayout;
+    pRestoreSelections  = restoreSelections; 
 
     SwingUtilities.invokeLater(new SplashFrameTask(this));
   }
@@ -121,6 +131,12 @@ class UIMaster
    * 
    * @param layout
    *   The name of the override panel layout or <CODE>null</CODE> to use the default layout.
+   * 
+   * @param restoreLayout
+   *   Whether to restore the panel layout.
+   * 
+   * @param restoreSelections
+   *   Whether the restored layout should include node and/or job group selections.
    */ 
   public static void 
   init
@@ -130,11 +146,15 @@ class UIMaster
    String queueHost, 
    int queuePort, 
    int jobPort, 
-   String layout
+   String layout,
+   boolean restoreLayout,
+   boolean restoreSelections
   ) 
   {
     assert(sMaster == null);
-    sMaster = new UIMaster(masterHost, masterPort, queueHost, queuePort, jobPort, layout);
+    sMaster = new UIMaster(masterHost, masterPort, 
+			   queueHost, queuePort, jobPort, 
+			   layout, restoreLayout, restoreSelections);
   }
 
 
@@ -219,6 +239,16 @@ class UIMaster
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Whether the restored layouts should include node and/or job group selections.
+   */ 
+  public boolean
+  restoreSelections() 
+  {
+    return pRestoreSelections;
+  }
+
+
+  /**
    * Get the name of the current panel layout.
    * 
    * @return 
@@ -269,7 +299,6 @@ class UIMaster
     updateFrameHeaders();
   }
 
-
   /** 
    * Add the layout name to the top-level frame headers.
    */ 
@@ -288,6 +317,7 @@ class UIMaster
     pFrame.setTitle(title);    
   }
 
+    
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -3153,9 +3183,11 @@ class UIMaster
   public void 
   doRestoreSavedLayout
   (
-   String name
+   String name, 
+   boolean restoreSelections
   ) 
   {
+    pRestoreSelections = restoreSelections;
     SwingUtilities.invokeLater(new RestoreSavedLayoutTask(name));
   }
 
@@ -3524,17 +3556,20 @@ class UIMaster
 
       ArrayList<JFrame> frames = new ArrayList<JFrame>();
       {
-	String layoutName = pOverrideLayoutName;
-	if(layoutName == null) {
-	  try {
-	    File file = new File(PackageInfo.sHomeDir, 
-				 PackageInfo.sUser + "/.pipeline/default-layout"); 
-	    if(file.isFile()) 
-	      layoutName = (String) LockedGlueFile.load(file);
+	String layoutName = null;
+	if(pRestoreLayout) {
+	  layoutName = pOverrideLayoutName;
+	  if(layoutName == null) {
+	    try {
+	      File file = new File(PackageInfo.sHomeDir, 
+				   PackageInfo.sUser + "/.pipeline/default-layout"); 
+	      if(file.isFile()) 
+		layoutName = (String) LockedGlueFile.load(file);
+	    }
+	    catch(Exception ex) {
+	      showErrorDialog(ex);
+	    }   
 	  }
-	  catch(Exception ex) {
-	    showErrorDialog(ex);
-	  }   
 	}
 	  
 	if(layoutName != null) {
@@ -4581,6 +4616,16 @@ class UIMaster
    */ 
   private String  pOverrideLayoutName;
  
+  /** 
+   * Whether to restore the initial panel layout.
+   */
+  private boolean  pRestoreLayout;
+
+  /**
+   * Whether the restored initial layout should include node and/or job group selections.
+   */ 
+  private boolean  pRestoreSelections; 
+
   /**
    * The parent of the root manager panel.
    */ 

@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.24 2004/12/31 08:57:10 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.25 2004/12/31 22:28:54 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -67,7 +67,7 @@ class JQueueJobViewerPanel
   private synchronized void 
   initUI()
   {  
-    super.initUI(256.0);
+    super.initUI(128.0);
 
     /* initialize fields */ 
     {
@@ -723,10 +723,8 @@ class JQueueJobViewerPanel
 	bbox.grow(vgroup.getFullBounds());
     }
 
-    if(bbox != null) {
-      UserPrefs prefs = UserPrefs.getInstance();
-      bbox.bloat(prefs.getJobGroupSpace()); 
-    }    
+    if(bbox != null) 
+      bbox.bloat(UserPrefs.getInstance().getJobGroupSpace()); 
 
     return bbox;
   }
@@ -2076,11 +2074,13 @@ class JQueueJobViewerPanel
     throws GlueException
   {
     /* job groups */     
-    TreeSet<Long> groupIDs = (TreeSet<Long>) decoder.decode("JobGroupIDs");
-    if(groupIDs != null) {
-      pJobGroups = new TreeMap<Long,QueueJobGroup>();
-      for(Long groupID : groupIDs) 
- 	pJobGroups.put(groupID, null);
+    if(UIMaster.getInstance().restoreSelections()) {
+      TreeSet<Long> groupIDs = (TreeSet<Long>) decoder.decode("JobGroupIDs");
+      if(groupIDs != null) {
+	pJobGroups = new TreeMap<Long,QueueJobGroup>();
+	for(Long groupID : groupIDs) 
+	  pJobGroups.put(groupID, null);
+      }
     }
 
     super.fromGlue(decoder);

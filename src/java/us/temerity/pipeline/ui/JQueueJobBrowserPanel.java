@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.14 2004/12/07 04:55:17 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.15 2004/12/31 22:28:54 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1791,9 +1791,11 @@ class JQueueJobBrowserPanel
     if(filter != null) 
       pFilterViewsButton.setSelected(filter);
 
-    TreeSet<Long> selected = (TreeSet<Long>) decoder.decode("SelectedIDs");
-    if(selected != null) 
-      pSelectedIDs.addAll(selected);
+    if(UIMaster.getInstance().restoreSelections()) {
+      TreeSet<Long> selected = (TreeSet<Long>) decoder.decode("SelectedIDs");
+      if(selected != null) 
+	pSelectedIDs.addAll(selected);
+    }
 
     super.fromGlue(decoder);
   }

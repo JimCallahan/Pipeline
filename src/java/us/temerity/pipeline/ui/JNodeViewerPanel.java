@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.76 2004/12/31 08:55:56 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.77 2004/12/31 22:28:54 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -68,7 +68,7 @@ class JNodeViewerPanel
   protected synchronized void 
   initUI()
   {  
-    super.initUI(256.0);
+    super.initUI(128.0);
 
     /* initialize fields */ 
     {
@@ -3285,12 +3285,14 @@ class JNodeViewerPanel
   ) 
     throws GlueException
   {
-    /* root nodes */     
-    TreeSet<String> roots = (TreeSet<String>) decoder.decode("Roots");
-    if(roots != null) {
-      pRoots = new TreeMap<String,NodeStatus>();
-      for(String name : roots) 
-	pRoots.put(name, null);
+    /* root nodes */  
+    if(UIMaster.getInstance().restoreSelections()) {
+      TreeSet<String> roots = (TreeSet<String>) decoder.decode("Roots");
+      if(roots != null) {
+	pRoots = new TreeMap<String,NodeStatus>();
+	for(String name : roots) 
+	  pRoots.put(name, null);
+      }
     }
 
     super.fromGlue(decoder);

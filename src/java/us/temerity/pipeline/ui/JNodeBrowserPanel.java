@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.24 2004/12/01 23:03:10 jim Exp $
+// $Id: JNodeBrowserPanel.java,v 1.25 2004/12/31 22:28:54 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -894,7 +894,7 @@ class JNodeBrowserPanel
 
     TreeSet<String> selected = (TreeSet<String>) decoder.decode("Selected");
     pSelected.clear();
-    if(selected != null) 
+    if((selected != null) && UIMaster.getInstance().restoreSelections())
       pSelected.addAll(selected);
 
     TreeSet<String> expanded = (TreeSet<String>) decoder.decode("ExpandedPaths");
