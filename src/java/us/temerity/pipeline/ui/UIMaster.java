@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.3 2004/05/04 11:01:43 jim Exp $
+// $Id: UIMaster.java,v 1.4 2004/05/05 21:01:03 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -6,6 +6,7 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.laf.LookAndFeelLoader;
 
 import java.awt.*;
+import java.io.*;
 import java.util.*;
 import java.text.*;
 import javax.swing.*;
@@ -47,9 +48,9 @@ class UIMaster
 
     pManagerPanels = new LinkedList<JManagerPanel>();
     pNodeBrowsers  = new JNodeBrowserPanel[10];
+    pNodeViewers   = new JNodeViewerPanel[10];
 
-    InitUITask task = new InitUITask();
-    SwingUtilities.invokeLater(task);
+    SwingUtilities.invokeLater(new SplashFrameTask());
   }
 
 
@@ -194,7 +195,51 @@ class UIMaster
     assert((groupID > 0) && (groupID < 10));
     return (pNodeBrowsers[groupID] == null);      
   }
-   
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Assign the given node viewer to the given group.
+   */ 
+  public void 
+  assignNodeViewerGroup
+  (
+   JNodeViewerPanel panel, 
+   int groupID
+  ) 
+  {
+    assert((groupID > 0) && (groupID < 10));
+    assert(pNodeViewers[groupID] == null);
+    pNodeViewers[groupID] = panel;
+  }
+
+  /**
+   * Make the given node viewer group available.
+   */ 
+  public void 
+  releaseNodeViewerGroup 
+  (
+   int groupID
+  ) 
+  {
+    assert((groupID > 0) && (groupID < 10));
+    assert(pNodeViewers[groupID] != null);
+    pNodeViewers[groupID] = null;
+  }
+
+  /**
+   * Is the given node viewer group currently unused.
+   */ 
+  public boolean
+  isNodeViewerGroupUnused
+  (
+   int groupID
+  ) 
+  {
+    assert((groupID > 0) && (groupID < 10));
+    return (pNodeViewers[groupID] == null);      
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -286,10 +331,10 @@ class UIMaster
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Initialize the user interface components. 
+   * Initialize the look-and-feel and display the splash screen.
    */ 
   private
-  class InitUITask
+  class SplashFrameTask
     extends Thread
   { 
     public void 
@@ -320,19 +365,168 @@ class UIMaster
 	JPopupMenu.setDefaultLightWeightPopupEnabled(false);
       }
       
-      /* create and show the top-level components */ 
+      /* show the splash screen and do application startup tasks */ 
       {
-	JFrame frame = null;
-	{
-	  frame = new JFrame("plui");
-	  pFrame = frame;
+	JFrame frame = new JFrame("plui");
+	pSplashFrame = frame;
 
-	  frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	frame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+	frame.setResizable(false);
+	frame.setUndecorated(true);
+	
+	{
+	  JPanel panel = new JPanel();
 	  
-	  frame.setLocationRelativeTo(null);
-	  Point p = frame.getLocation();
-	  frame.setBounds(p.x-250, p.y-200, 500, 400);
+	  panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));   
+	
+	  /* splash image */ 
+	  {
+	    Box hbox = new Box(BoxLayout.X_AXIS);   
+
+	    hbox.add(Box.createHorizontalGlue());
+
+	    {
+	      JLabel label = new JLabel(sSplashIcon);
+	      label.setName("Splash");
+	    
+	      hbox.add(label);
+	    }
+
+	    hbox.add(Box.createHorizontalGlue());
+	    
+	    panel.add(hbox);
+	  }
+
+	  /* progress bar */ 
+	  {
+	    JProgressBar bar = new JProgressBar(JProgressBar.HORIZONTAL, 0, 141);
+	    pSplashProgress = bar;
+
+	    bar.setValue(1);
+	    
+	    panel.add(bar);
+	  }
+
+	  frame.setContentPane(panel);
 	}
+
+	frame.pack();
+	frame.setLocationRelativeTo(null);
+
+	frame.setVisible(true);
+      }
+      
+      /* perform application startup tasks */ 
+      StartupTask task = new StartupTask();
+      task.start();
+    }
+  }
+
+  /** 
+   * Perform application startup tasks.
+   */ 
+  private
+  class StartupTask
+    extends Thread
+  {
+    StartupTask()
+    {
+      pCnt = 1;
+    }
+
+    public void 
+    run() 
+    {  
+      int i;
+      
+      /* load textures */ 
+      try {
+	TextureMgr mgr = TextureMgr.getInstance();
+
+	for(OverallNodeState nstate : OverallNodeState.all()) {
+	  for(OverallQueueState qstate : OverallQueueState.all()) {
+	    for(SelectionMode mode : SelectionMode.all()) {
+	      mgr.verify(nstate + "-" + qstate + "-" + mode);
+	      update();
+	    }
+	  }
+	}
+
+	for(SelectionMode mode : SelectionMode.all()) {
+	  mgr.verify("Blank-" + mode);
+	  update();
+
+	  mgr.verify("Collapsed-" + mode);
+	  update();
+	}
+
+	mgr.verifySimple("White");
+	mgr.verifySimple("Yellow");
+	mgr.verifySimple("Grey");
+      }
+      catch(IOException ex) {
+	Logs.tex.severe("Unable to load textures!\n" + 
+			"  " + ex.getMessage());
+	System.exit(1);
+      }
+      
+      SwingUtilities.invokeLater(new MainFrameTask());
+    }
+
+    private void
+    update()
+    {
+      SwingUtilities.invokeLater(new UpdateStartupProgress(pCnt++));
+    }
+
+    private int  pCnt;
+  }
+
+  /** 
+   * Update the splash frame progress bar.
+   */ 
+  private
+  class UpdateStartupProgress
+    extends Thread
+  {
+    public 
+    UpdateStartupProgress
+    (
+     int value
+    ) 
+    {
+      pValue = value;
+    }
+
+    public void 
+    run() 
+    {  
+      pSplashProgress.setValue(pValue);
+    }
+
+    private int pValue;
+  }
+
+  /** 
+   * Initialize the user interface components. 
+   */ 
+  private
+  class MainFrameTask
+    extends Thread
+  { 
+    public void 
+    run() 
+    {
+      /* hide the splash screen */ 
+      pSplashFrame.setVisible(false);
+
+      /* create and show the main application frame */ 
+      {
+	JFrame frame = new JFrame("plui");
+	pFrame = frame;
+
+	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	
 	{
 	  JPanel root = new JPanel();
@@ -398,11 +592,13 @@ class UIMaster
 	  frame.setContentPane(root);
 	}
 	
+	frame.pack();
+	frame.setLocationRelativeTo(null);
+
 	frame.setVisible(true);
       }
     }
   }
-
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -417,6 +613,8 @@ class UIMaster
 
   //private static final long serialVersionUID = 584004318062788314L;
 
+  private static Icon sSplashIcon = 
+    new ImageIcon(LookAndFeelLoader.class.getResource("Splash.png"));
 
   private static Icon sProgressLightIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("ProgressLightIcon.png"));
@@ -436,6 +634,16 @@ class UIMaster
   private NodeMgrClient  pNodeMgrClient;
 
 
+  /**
+   * The splash screen frame.
+   */ 
+  private JFrame  pSplashFrame;
+
+  /**
+   * The splash screen progress bar;
+   */ 
+  private JProgressBar  pSplashProgress;
+  
 
   /**
    * The main application frame.
@@ -466,5 +674,13 @@ class UIMaster
    * The (0) element is always <CODE>null</CODE>, because the (0) group ID means unassinged.
    */ 
   private JNodeBrowserPanel[]  pNodeBrowsers;
+
+  /**
+   * The table of active node viewers indexed by assigned group: [1-9]. <P> 
+   * 
+   * If no node viewer is assigned to the group, the element will be <CODE>null</CODE>. 
+   * The (0) element is always <CODE>null</CODE>, because the (0) group ID means unassinged.
+   */ 
+  private JNodeViewerPanel[]  pNodeViewers;
 
 }
