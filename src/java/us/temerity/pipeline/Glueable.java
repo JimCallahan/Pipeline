@@ -1,4 +1,4 @@
-// $Id: Glueable.java,v 1.2 2004/02/14 17:41:57 jim Exp $
+// $Id: Glueable.java,v 1.3 2004/02/17 17:50:36 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -24,7 +24,7 @@ import java.util.*;
  * <CODE>Character</CODE>) as well as the <CODE>String</CODE> and <CODE>Enum</CODE> classes 
  * are also supported without needing to implement the <CODE>Glueable</CODE> interface. <P>
  * 
- * As a convience, any class which implements either the 
+ * As a convenience, any class which implements either the 
  * {@link Collection java.util.Collection} or {@link Map java.util.Map} interface is also 
  * supported without the need to implement the <CODE>Glueable</CODE> interface by a default 
  * mechanism. If a class implements one of these common interfaces but also implements 
@@ -39,7 +39,7 @@ import java.util.*;
  * 
  * The implementing class must also have an accessible no-arg constructor. When decoded 
  * from Glue, the class will be instantiated with this no-arg constructor and then 
- * initialized by calling the <CODE>fromGlue</CODE> method.  It is the reponsibility of the 
+ * initialized by calling the <CODE>fromGlue</CODE> method.  It is the responsibility of the 
  * implementing class to properly initialize all fields through the combination of these 
  * two methods. Typically, the no-arg constructor will setup reasonable default values for 
  * fields and the <CODE>fromGlue</CODE> method will override these defaults with values 
@@ -82,6 +82,15 @@ import java.util.*;
  *   }
  * }
  * </pre>
+ * 
+ * The Glue format is encodes/decodes data structures with multiple references
+ * to the same object automatically.  The Glue text format only stores the 
+ * full details of an object once no matter how many times it is referenced.
+ * Each object is assigned a unique ID the first time it is encoded and all 
+ * subsequence references to the object refer to this ID. <P>
+ * 
+ * Arrays of any dimension can also be encoded/decoded as long as the array component 
+ * type satisfies the conditions mentioned above for non-array objects.
  * 
  * @see GlueEncoder
  * @see GlueDecoder
