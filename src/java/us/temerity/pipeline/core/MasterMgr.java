@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.114 2005/04/04 08:35:59 jim Exp $
+// $Id: MasterMgr.java,v 1.115 2005/04/04 22:06:17 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6134,21 +6134,19 @@ class MasterMgr
 	  NodeID lnodeID = lstatus.getNodeID();
 	  
 	  TreeSet<Long> upsIDs = upsJobIDs.get(lnodeID);
-	  if(upsIDs != null) {
+	  if(upsIDs != null) 
 	    sourceIDs.addAll(upsIDs);
-	  }
-	  else {
-	    TreeSet<Integer> lindices = sourceIndices.get(link.getName());
-	    if((lindices != null) && !lindices.isEmpty()) {		  
-	      Long[] nIDs = nodeJobIDs.get(lnodeID);
-	      Long[] eIDs = extJobIDs.get(lnodeID);
-	      
-	      for(Integer idx : lindices) {
-		if((nIDs != null) && (nIDs[idx] != null)) 
-		  sourceIDs.add(nIDs[idx]);
-		else if((eIDs != null) && (eIDs[idx] != null)) 
-		  sourceIDs.add(eIDs[idx]);
-	      }
+
+	  TreeSet<Integer> lindices = sourceIndices.get(link.getName());
+	  if((lindices != null) && !lindices.isEmpty()) {		  
+	    Long[] nIDs = nodeJobIDs.get(lnodeID);
+	    Long[] eIDs = extJobIDs.get(lnodeID);
+	    
+	    for(Integer idx : lindices) {
+	      if((nIDs != null) && (nIDs[idx] != null)) 
+		sourceIDs.add(nIDs[idx]);
+	      else if((eIDs != null) && (eIDs[idx] != null)) 
+		sourceIDs.add(eIDs[idx]);
 	    }
 	  }
 	}
