@@ -1,4 +1,4 @@
-// $Id: JFileSelectDialog.java,v 1.4 2004/06/08 03:00:51 jim Exp $
+// $Id: JFileSelectDialog.java,v 1.5 2004/10/22 19:18:22 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -315,7 +315,7 @@ class JFileSelectDialog
       return; 
 
     File target = (File) pFileList.getSelectedValue();
-    if(target != null) 
+    if((target != null) && !target.isDirectory())
       updateTargetFile(target);
   }
 
@@ -323,6 +323,22 @@ class JFileSelectDialog
   /*----------------------------------------------------------------------------------------*/
   /*   A C T I O N S                                                                        */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Handle double-click on the given list element.
+   */ 
+  protected void 
+  doHandleDoubleClick
+  (
+   Object elem
+  )
+  { 
+    if((elem != null) && (elem instanceof File)) {
+      File file = (File) elem;
+      if(file.isDirectory()) 
+	updateTargetFile(file);
+    }
+  }
 
   /**
    * Jump to the directory named by the directory field.

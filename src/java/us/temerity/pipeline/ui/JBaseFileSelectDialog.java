@@ -1,4 +1,4 @@
-// $Id: JBaseFileSelectDialog.java,v 1.2 2004/07/14 21:04:07 jim Exp $
+// $Id: JBaseFileSelectDialog.java,v 1.3 2004/10/22 19:18:22 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -22,7 +22,7 @@ import javax.swing.tree.*;
 public abstract 
 class JBaseFileSelectDialog
   extends JBaseDialog
-  implements ListSelectionListener, DocumentListener
+implements ListSelectionListener, DocumentListener, MouseListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -166,6 +166,7 @@ class JBaseFileSelectDialog
 	lst.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 	lst.setCellRenderer(renderer);
 	lst.addListSelectionListener(this);
+	lst.addMouseListener(this);
 
 	{
 	  JScrollPane scroll = new JScrollPane(lst);
@@ -339,6 +340,53 @@ class JBaseFileSelectDialog
   }
 
 
+  /*-- MOUSE LISTENER METHODS --------------------------------------------------------------*/
+
+  /**
+   * Invoked when the mouse button has been clicked (pressed and released) on a component. 
+   */ 
+  public void 
+  mouseClicked(MouseEvent e) {}
+   
+  /**
+   * Invoked when the mouse enters a component. 
+   */
+  public void 
+  mouseEntered(MouseEvent e) {}
+  
+  /**
+   * Invoked when the mouse exits a component. 
+   */ 
+  public void 
+  mouseExited(MouseEvent e) {}
+
+  /**
+   * Invoked when a mouse button has been pressed on a component. 
+   */
+  public void 
+  mousePressed
+  (
+   MouseEvent e
+  )
+  {
+    switch(e.getButton()) {
+    case MouseEvent.BUTTON1:
+      if(e.getClickCount() == 2) {
+	int idx = pFileList.locationToIndex(e.getPoint());
+	if(idx != -1) {
+	  doHandleDoubleClick(pFileList.getModel().getElementAt(idx));
+	}
+      }
+    }
+  }
+
+  /**
+   * Invoked when a mouse button has been released on a component. 
+   */ 
+  public void 
+  mouseReleased(MouseEvent e) {}
+
+
   /*-- ACTION LISTENER METHODS -------------------------------------------------------------*/
 
   /** 
@@ -367,6 +415,15 @@ class JBaseFileSelectDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Handle double-click on the given list element.
+   */ 
+  protected abstract void 
+  doHandleDoubleClick
+  (
+   Object elem
+  );
+
+  /**
    * Jump to the directory named by the directory field.
    */ 
   protected abstract void 
@@ -384,14 +441,6 @@ class JBaseFileSelectDialog
   protected abstract void 
   doNewFolder();
 
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   S T A T I C   I N T E R N A L S                                                      */
-  /*----------------------------------------------------------------------------------------*/
-
-  //private static final long serialVersionUID = 257228426004498837L;
-  
 
 
   /*----------------------------------------------------------------------------------------*/

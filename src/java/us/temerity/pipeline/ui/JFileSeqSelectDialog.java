@@ -1,4 +1,4 @@
-// $Id: JFileSeqSelectDialog.java,v 1.1 2004/06/08 03:06:36 jim Exp $
+// $Id: JFileSeqSelectDialog.java,v 1.2 2004/10/22 19:18:22 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -54,8 +54,11 @@ class JFileSeqSelectDialog
   {
     pRenderer = new JFileSeqListCellRenderer();
     JTextField field = UIMaster.createTextField(null, 60, JLabel.LEFT);
+
     super.initUI("Select File Sequence:", pRenderer, 
 		 "File Sequence:", 90, field, "Select");
+
+//     pConfirmButton.setEnabled(true);
   }
 
 
@@ -309,16 +312,9 @@ class JFileSeqSelectDialog
       return; 
 
     Object obj = pFileList.getSelectedValue();
-    if(obj != null) {
-      if(obj instanceof File) 
-	updateTargetDir((File) obj);
-      else if(obj instanceof FileSeq) {
-	pFileSeq = (FileSeq) obj;
-	pFileField.setText(pFileSeq.toString());
-      }
-      else {
-	assert(false);
-      }
+    if((obj != null) && (obj instanceof FileSeq)) {
+      pFileSeq = (FileSeq) obj;
+      pFileField.setText(pFileSeq.toString());
     }
   }
 
@@ -326,6 +322,19 @@ class JFileSeqSelectDialog
   /*----------------------------------------------------------------------------------------*/
   /*   A C T I O N S                                                                        */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Handle double-click on the given list element.
+   */ 
+  protected void 
+  doHandleDoubleClick
+  (
+   Object elem
+  )
+  { 
+    if((elem != null) && (elem instanceof File)) 
+      updateTargetDir((File) elem);
+  }
 
   /**
    * Jump to the directory named by the directory field.
