@@ -1,4 +1,4 @@
-// $Id: FileStateReq.java,v 1.1 2004/03/09 09:45:31 jim Exp $
+// $Id: FileStateReq.java,v 1.2 2004/03/10 11:48:42 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -32,6 +32,10 @@ class FileStateReq
    * @param id [<B>in</B>]
    *   The unique working version identifier.
    * 
+   * @param vstate [<B>in</B>]
+   *   The relationship between the revision numbers of working and checked-in versions 
+   *   of the node.
+   * 
    * @param working [<B>in</B>]
    *   The revision number of the checked-in version upon which the working version 
    *   is based.
@@ -46,6 +50,7 @@ class FileStateReq
   FileStateReq
   (
    NodeID id, 
+   VersionState vstate, 
    VersionID working, 
    VersionID latest, 
    TreeSet<FileSeq> fseqs
@@ -54,6 +59,10 @@ class FileStateReq
     if(id == null) 
       throw new IllegalArgumentException("The working version ID cannot be (null)!");
     pNodeID = id;
+
+    if(vstate == null) 
+      throw new IllegalArgumentException("The version state cannot be (null)!");
+    pVersionState = vstate;
 
     pWorkingVersionID = working;
     pLatestVersionID  = latest;
@@ -75,6 +84,16 @@ class FileStateReq
   getNodeID() 
   {
     return pNodeID;
+  }
+
+  /**
+   * Gets relationship between the revision numbers of working and checked-in versions 
+   * of the node.
+   */
+  public VersionState
+  getVersionState() 
+  {
+    return pVersionState;
   }
   
   /**
@@ -123,6 +142,12 @@ class FileStateReq
    * The unique working version identifier.
    */ 
   private NodeID  pNodeID;
+
+  /**
+   * The relationship between the revision numbers of working and checked-in versions 
+   * of the node.
+   */
+  private VersionState  pVersionState;
 
   /**
    * The revision number of the checked-in version upon which the working version  is based.  
