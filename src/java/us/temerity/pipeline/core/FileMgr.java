@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.3 2004/03/25 02:08:45 jim Exp $
+// $Id: FileMgr.java,v 1.4 2004/03/26 04:38:45 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -52,7 +52,7 @@ import java.util.concurrent.locks.*;
  *   </DIV> 
  *   
  *   Where (<I>prod-dir</I>) is the root of the production file system hierarchy set by
- *   <I>configure(1)</I> or as an agument to the constructor for this class.  The 
+ *   <B>plconfig</B>(1)</I> or as an agument to the constructor for this class.  The 
  *   (<I>author</I>) is the name of the user owning the working version of the node.  The 
  *   (<I>view</I>) is the name of the particular working area view of which the working 
  *   version is a member.  In practice the environmental variable <CODE>$WORKING</CODE> is 
@@ -264,7 +264,7 @@ class FileMgr
 	    
 	    int wk = 0;
 	    for(File file : fseq.getFiles()) {
-	      File work = new File(pProdDir, req.getNodeID().getWorkingDir() + "/" + file);
+	      File work = new File(pProdDir, req.getNodeID().getWorkingParent() + "/" + file);
 
 	      if(work.isFile())
 		fs[wk] = FileState.Pending;
@@ -290,14 +290,14 @@ class FileMgr
 	    
 	    int wk = 0;
 	    for(File file : fseq.getFiles()) {
-	      File wpath = new File(req.getNodeID().getWorkingDir() + "/" + file);
+	      File wpath = new File(req.getNodeID().getWorkingParent() + "/" + file);
 	      File work  = new File(pProdDir, wpath.getPath());
 	      
 	      if(!work.isFile()) 
 		fs[wk] = FileState.Missing;
 	      else {
 		VersionID lvid = req.getLatestVersionID();
-		File lpath  = new File(req.getNodeID().getCheckedInDir(lvid) + "/" + file);
+		File lpath  = new File(req.getNodeID().getCheckedInPath(lvid) + "/" + file);
 		File latest = new File(pProdDir, lpath.getPath());
 		
 		if(!latest.isFile()) 
@@ -329,18 +329,18 @@ class FileMgr
 	    
 	    int wk = 0;
 	    for(File file : fseq.getFiles()) {
-	      File wpath = new File(req.getNodeID().getWorkingDir() + "/" + file);
+	      File wpath = new File(req.getNodeID().getWorkingParent() + "/" + file);
 	      File work  = new File(pProdDir, wpath.getPath());
 
 	      if(!work.isFile()) 
 		fs[wk] = FileState.Missing;
 	      else {
 		VersionID lvid = req.getLatestVersionID();
-		File lpath  = new File(req.getNodeID().getCheckedInDir(lvid) + "/" + file);
+		File lpath  = new File(req.getNodeID().getCheckedInPath(lvid) + "/" + file);
 		File latest = new File(pProdDir, lpath.getPath());
 
 		VersionID bvid = req.getWorkingVersionID();
-		File bpath = new File(req.getNodeID().getCheckedInDir(bvid) + "/" + file);
+		File bpath = new File(req.getNodeID().getCheckedInPath(bvid) + "/" + file);
 		File base  = new File(pProdDir, bpath.getPath());
 		
 		if(!latest.isFile()) {
@@ -451,7 +451,7 @@ class FileMgr
 	/* refresh the working checksums */ 
 	for(FileSeq fseq : req.getFileSequences()) {
 	  for(File file : fseq.getFiles()) {
-	    File work = new File(req.getNodeID().getWorkingDir(), file.getPath());
+	    File work = new File(req.getNodeID().getWorkingParent(), file.getPath());
 	    pCheckSum.refresh(work);
 	  }
 	}
@@ -462,7 +462,7 @@ class FileMgr
 	File rdir  = null;
 	File crdir = null;
 	{
-	  File rpath = req.getNodeID().getCheckedInDir(rvid);
+	  File rpath = req.getNodeID().getCheckedInPath(rvid);
 	  rdir  = new File(pProdDir, rpath.getPath());
 	  crdir = new File(pProdDir, "checksum/" + rpath);
 
@@ -515,7 +515,7 @@ class FileMgr
 	VersionID lvid = req.getLatestVersionID();
 	File ldir = null;
 	if(lvid != null) {
-	  ldir = new File(pProdDir, req.getNodeID().getCheckedInDir(lvid).getPath());
+	  ldir = new File(pProdDir, req.getNodeID().getCheckedInPath(lvid).getPath());
 	  if(!ldir.isDirectory()) {
 	    throw new PipelineException
 	      ("Somehow the latest repository directory (" + ldir + ") was missing!");
@@ -529,7 +529,7 @@ class FileMgr
 	File wdir  = null;
 	File cwdir = null;
 	{
-	  File wpath = req.getNodeID().getWorkingDir();
+	  File wpath = req.getNodeID().getWorkingParent();
 	  wdir  = new File(pProdDir, wpath.getPath());
 	  cwdir = new File(pProdDir, "checksum/" + wpath);
 	}
@@ -764,7 +764,7 @@ class FileMgr
 	File cwdir = null;
 	File bwdir = null;
 	{
-	  File wpath = req.getNodeID().getWorkingDir();
+	  File wpath = req.getNodeID().getWorkingParent();
 	  wdir  = new File(pProdDir, wpath.getPath());
 	  cwdir = new File(pProdDir, "checksum/" + wpath);
 
@@ -830,7 +830,7 @@ class FileMgr
 	File rdir  = null;
 	File crdir = null;
 	{
-	  File rpath = req.getNodeID().getCheckedInDir(rvid);
+	  File rpath = req.getNodeID().getCheckedInPath(rvid);
 	  rdir  = new File(pProdDir, rpath.getPath());
 	  crdir = new File(pProdDir, "checksum/" + rpath);
 	}
@@ -999,7 +999,7 @@ class FileMgr
 	File wdir  = null;
 	File cwdir = null;
 	{
-	  File wpath = req.getNodeID().getWorkingDir();
+	  File wpath = req.getNodeID().getWorkingParent();
 	  wdir  = new File(pProdDir, wpath.getPath());
 	  cwdir = new File(pProdDir, "checksum/" + wpath);
 	}
@@ -1009,7 +1009,7 @@ class FileMgr
 	File rdir  = null;
 	File crdir = null;
 	{
-	  File rpath = req.getNodeID().getCheckedInDir(rvid);
+	  File rpath = req.getNodeID().getCheckedInPath(rvid);
 	  rdir  = new File(pProdDir, rpath.getPath());
 	  crdir = new File(pProdDir, "checksum/" + rpath);
 	}
@@ -1124,7 +1124,7 @@ class FileMgr
 	File wdir  = null;
 	File cwdir = null;
 	{
-	  File wpath = req.getNodeID().getWorkingDir();
+	  File wpath = req.getNodeID().getWorkingParent();
 	  wdir  = new File(pProdDir, wpath.getPath());
 	  cwdir = new File(pProdDir, "checksum/" + wpath);
 	}
@@ -1134,7 +1134,7 @@ class FileMgr
 	File rdir  = null;
 	File crdir = null;
 	{
-	  File rpath = req.getNodeID().getCheckedInDir(rvid);
+	  File rpath = req.getNodeID().getCheckedInPath(rvid);
 	  rdir  = new File(pProdDir, rpath.getPath());
 	  crdir = new File(pProdDir, "checksum/" + rpath);
 	}
@@ -1164,6 +1164,28 @@ class FileMgr
 	    throw new PipelineException
 	      ("Interrupted while unfreezing the working files for version (" + 
 	       req.getNodeID() + ")!");
+	  }
+	}
+
+	/* add write permission to files associated with editable nodes */ 
+	if(req.isEditable()) {
+	  ArrayList<String> args = new ArrayList<String>();
+	  args.add("u+w");
+	  for(File file : files) 
+	    args.add(file.getName());
+
+	  SubProcess proc = 
+	    new SubProcess(req.getNodeID().getAuthor(), 
+			   "Unfreeze-SetWritable", "chmod", args, env, wdir);
+	  proc.start();
+	  
+	  try {
+	    proc.join();
+	  }
+	  catch(InterruptedException ex) {
+	    throw new PipelineException
+	      ("Interrupted while adding write access permission to the files for the " + 
+	       "working version (" + req.getNodeID() + ")!");
 	  }
 	}
 
@@ -1264,6 +1286,22 @@ class FileMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * The file system directory creation lock.
+   */
+  private Object pMakeDirLock;
+ 
+  /**
+   * The root production directory.
+   */ 
+  private File  pProdDir;
+
+  /**
+   * The checksum generator. 
+   */ 
+  private CheckSum  pCheckSum; 
+
+
+  /**
    * The per-node locks indexed by fully resolved node name. <P> 
    * 
    * These locks protect the files, symlinks and checksums associated with all checked-in 
@@ -1283,19 +1321,5 @@ class FileMgr
    */
   private HashMap<NodeID,Object>  pWorkingLocks;
 
-  /**
-   * The file system directory creation lock.
-   */
-  private Object pMakeDirLock;
- 
-  /**
-   * The root production directory.
-   */ 
-  private File  pProdDir;
-
-  /**
-   * The checksum generator. 
-   */ 
-  private CheckSum  pCheckSum; 
 }
 

@@ -1,4 +1,4 @@
-// $Id: NodeID.java,v 1.5 2004/03/23 20:41:25 jim Exp $
+// $Id: NodeID.java,v 1.6 2004/03/26 04:37:45 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -114,26 +114,41 @@ class NodeID
     File path = new File(pStringRep);
     return path.getParentFile();
   }
-  
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Get the working version directory path relative to the root production directory.
+   * Get the working version path relative to the root production directory.
    */
   public File
-  getWorkingDir() 
+  getWorkingPath() 
   {
-    File path = new File("/working" + pStringRep);
-    return path.getParentFile();
+    return (new File("/working" + pStringRep));
   }
-  
+
   /** 
-   * Get the checked-in version directory path relative to the root production directory.
+   * Get parent directory of the working version path relative to the root 
+   * production directory.
+   */
+  public File
+  getWorkingParent() 
+  {
+    return getWorkingPath().getParentFile();
+  }
+
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the checked-in version path relative to the root production directory.
    * 
    * @param vid 
    *   The revision number of the checked-in version.
    */
   public File
-  getCheckedInDir
+  getCheckedInPath
   (
    VersionID vid
   ) 
@@ -144,6 +159,7 @@ class NodeID
     File path = new File("/repository/" + pName + "/" + vid);
     return path;
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
