@@ -1,18 +1,22 @@
 BootClassPath = /usr/java/jdk1.5.0/jre/lib/rt.jar:/usr/java/jdk1.5.0/jre/lib/i18n.jar:/usr/java/jdk1.5.0/jre/lib/sunrsasign.jar:/usr/java/jdk1.5.0/jre/lib/jsse.jar:/usr/java/jdk1.5.0/jre/lib/jce.jar:/usr/java/jdk1.5.0/jre/lib/charsets.jar:/usr/java/jdk1.5.0/jre/classes
-FileHostname = 24-90-80-137.nyc.rr.com
+FileHostname = gecko
 FilePort = 53136
 HomeDirectory = /home
 HostIDs = 
-    24-90-80-137.nyc.rr.com       29828455353533001645806553028116067925
+    24-90-80-137.nyc.rr.com       -151796265836246037513599292049410084949
+    gecko                         -151796265836246037513599292049410084949
 JavaClassVersion = 49.0
 JavaHome = /usr/java/jdk1.5.0/jre
 JavaName = Java HotSpot(TM) Client VM
 JavaVendor = Sun Microsystems Inc.
 JavaVersion = 1.5.0-b64
 JobPort = 53140
-LicenseEnd = Sun Aug 17 02:12:55 EST 292278994
-LicenseStart = Thu Mar 10 05:50:13 EST 2005
-MasterHostname = 24-90-80-137.nyc.rr.com
+LicenseEnd = Sat Apr 09 22:50:30 EDT 2005
+LicenseEndStamp = 1113101430142
+LicenseStart = Thu Mar 10 21:50:30 EST 2005
+LicenseStartStamp = 1110509430142
+LicenseType = 30-Day Evaluation
+MasterHostname = gecko
 MasterPort = 53135
 NodeDirectory = /usr/share/pipeline
 OS-Arch = i386
@@ -22,12 +26,12 @@ PipelineGroup = pipeline
 PipelineGroupID = 502
 PipelineUser = pipeline
 PipelineUserID = 502
-PlConfigVersion = 2.5.1
-PluginHostname = 24-90-80-137.nyc.rr.com
+PlConfigVersion = 2.6.0
+PluginHostname = gecko
 PluginPort = 53141
 ProductionDirectory = /base/prod
 QueueDirectory = /usr/share/pipeline
-QueueHostname = 24-90-80-137.nyc.rr.com
+QueueHostname = gecko
 QueuePort = 53139
 RootInstallDirectory = /base/apps/i686-pc-linux-gnu-dbg
 TemporaryDirectory = /usr/tmp
