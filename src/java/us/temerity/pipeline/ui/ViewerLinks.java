@@ -1,4 +1,4 @@
-// $Id: ViewerLinks.java,v 1.4 2004/07/07 13:29:46 jim Exp $
+// $Id: ViewerLinks.java,v 1.5 2004/08/01 15:41:20 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -269,6 +269,22 @@ class ViewerLinks
  	    if(prefs.getDrawArrowHeads()) 
  	      tvCnt += 3;
 	    
+	    {
+	      Link link = links.get(0);
+	      NodeStatus status = link.getTargetNode().getNodeStatus(); 
+	      if(status != null) {
+		NodeDetails details = status.getDetails();
+		if(details != null) {
+		  NodeCommon com = details.getWorkingVersion();
+		  if(com == null) 
+		    com = details.getLatestVersion();
+		  if((com != null) && (!com.isActionEnabled()) && 
+		     (prefs.getDrawDisabledAction()))
+		    lvCnt += 2;
+		}
+	      }
+	    }
+
 	    for(Link link : links) {
 	      if(prefs.getDrawLinkPolicy()) {
 		switch(link.getLink().getPolicy()) {
@@ -288,10 +304,8 @@ class ViewerLinks
 	    ArrayList<Link> links = pDownstreamLinks.get(path);
 	    lvCnt += 2*links.size() + 4;
 
-	    for(Link link : links) {
- 	      if(prefs.getDrawArrowHeads())
-		tvCnt += 3;
-	    }
+	    if(prefs.getDrawArrowHeads())
+	      tvCnt += 3*links.size();
 	  }
 	}
 	
@@ -322,6 +336,24 @@ class ViewerLinks
 	      minY = maxY = tpos.y;
 	      
 	      tpos.x += 0.5 + prefs.getLinkGap();
+
+	      {
+		NodeStatus status = link.getTargetNode().getNodeStatus(); 
+		if(status != null) {
+		  NodeDetails details = status.getDetails();
+		  if(details != null) {
+		    NodeCommon com = details.getWorkingVersion();
+		    if(com == null) 
+		      com = details.getLatestVersion();
+		    if((com != null) && (!com.isActionEnabled()) && 
+		       (prefs.getDrawDisabledAction())) {
+		      double s = prefs.getDisabledActionSize();
+		      la.setCoordinate(lvi, new Point3d(tpos.x, tpos.y-s, 0.0));  lvi++;
+		      la.setCoordinate(lvi, new Point3d(tpos.x, tpos.y+s, 0.0));  lvi++;
+		    }
+		  }
+		}
+	      }
 
 	      if(prefs.getDrawArrowHeads()) {
 		double hx = prefs.getArrowHeadLength();
@@ -435,7 +467,7 @@ class ViewerLinks
 	      la.setCoordinate(lvi, new Point3d(centerX, tpos.y, 0.0));  lvi++;
 	      la.setCoordinate(lvi, tpos);                               lvi++;
 	    }
-	    
+
 	    la.setCoordinate(lvi, new Point3d(centerX, minY, 0.0));  lvi++;
 	    la.setCoordinate(lvi, new Point3d(centerX, maxY, 0.0));  lvi++;
 	  }

@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.6 2004/07/18 21:37:53 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.7 2004/08/01 15:41:39 jim Exp $
 
 import java.io.*; 
 import java.util.*;
@@ -36,7 +36,17 @@ class GenUserPrefsApp
 
 	new BoundedDoublePref
 	("the vertical offset distance for nodes with an odd depth level",
-	 "NodeOffset", "Vertical Offset:", 0.0, 1.0, 0.45)
+	 "NodeOffset", "Vertical Offset:", 0.0, 1.0, 0.45),
+	
+	new BasePref(),
+
+	new BooleanPref
+	("whether to draw graphics representating disabled actions",
+	 "DrawDisabledAction", "Draw Disabled Action:", true), 
+
+	new BoundedDoublePref
+	("the size of disabled action graphics", 
+	 "DisabledActionSize", "Disabled Action Size:", 0.05, 0.2, 0.15)
       };
 
       pPrefs.put("Panel|Node Viewer|Node|Appearance", prefs);
@@ -173,15 +183,15 @@ class GenUserPrefsApp
 	new BasePref(),
 	
 	new BooleanPref
-	("whether to draw graphics representating {@link LinkRelationship LinkRelationship}",
+	("whether to draw graphics representating LinkRelationship",
 	 "DrawLinkRelationship", "Draw Link Relationship:", true), 
 	 
 	new BooleanPref
-	("whether to draw graphics representating {@link LinkPolicy LinkPolicy}",
+	("whether to draw graphics representating LinkPolicy",
 	 "DrawLinkPolicy", "Draw Link Policy:", true), 
 
 	new BoundedDoublePref
-	("the size of {@link LinkPolicy LinkPolicy} graphics", 
+	("the size of LinkPolicy graphics", 
 	 "LinkPolicySize", "Link Policy Size:", 0.05, 0.2, 0.15)
       };
 
@@ -309,7 +319,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.6 2004/07/18 21:37:53 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.7 2004/08/01 15:41:39 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -562,7 +572,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.6 2004/07/18 21:37:53 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.7 2004/08/01 15:41:39 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
