@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.14 2004/09/08 18:36:52 jim Exp $
+// $Id: QueueMgr.java,v 1.15 2004/10/01 17:09:05 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3595,7 +3595,7 @@ class QueueMgr
   /**
    * The number of dispatcher cycles between garbage collection of jobs.
    */ 
-  private static final int  sGarbageCollectAfter = 100;   // MAKE THIS MUCH BIGGER!!!
+  private static final int  sGarbageCollectAfter = 600;  /* 10-minutes */ 
 
 
 
