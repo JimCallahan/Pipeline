@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.6 2004/03/30 22:12:20 jim Exp $
+// $Id: FileMgrServer.java,v 1.7 2004/04/11 19:21:53 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -119,7 +119,7 @@ class FileMgrServer
 	  task.start();	
 	}
 	catch(SocketTimeoutException ex) {
-	  Logs.net.finest("Timeout: accept()");
+	  //Logs.net.finest("Timeout: accept()");
 	}
       }
 
