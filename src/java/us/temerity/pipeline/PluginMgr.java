@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.6 2004/11/11 00:37:28 jim Exp $
+// $Id: PluginMgr.java,v 1.7 2004/12/29 17:29:42 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -63,7 +63,7 @@ class PluginMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the UIMaster instance.
+   * Get the PluginMgr instance.
    */ 
   public static PluginMgr
   getInstance() 
@@ -878,7 +878,7 @@ class PluginMgr
   /**
    * Line wrap the given String at word boundries.
    */ 
-  public String
+  private String
   wordWrap
   (
    String str,
@@ -1123,7 +1123,7 @@ class PluginMgr
    * @param dir
    *   The current directory.
    */ 
-  public synchronized void 
+  private synchronized void 
   refreshBelow
   (
    File dir
