@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.13 2004/03/28 00:45:16 jim Exp $
+// $Id: NodeMod.java,v 1.14 2004/03/29 08:15:28 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -954,7 +954,11 @@ class NodeMod
     if(name == null) 
       throw new IllegalArgumentException("The upstream node name cannot be (null)!");
 
-    return new LinkMod(pSources.get(name));
+    LinkMod link = pSources.get(name);
+    if(link != null) 
+      return new LinkMod(link);
+
+    return null;
   }
 
   /** 

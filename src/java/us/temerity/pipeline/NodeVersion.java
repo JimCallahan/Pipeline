@@ -1,4 +1,4 @@
-// $Id: NodeVersion.java,v 1.10 2004/03/28 00:45:16 jim Exp $
+// $Id: NodeVersion.java,v 1.11 2004/03/29 08:15:28 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -163,7 +163,11 @@ class NodeVersion
     if(name == null) 
       throw new IllegalArgumentException("The upstream node name cannot be (null)!");
 
-    return new LinkVersion(pSources.get(name));
+    LinkVersion link = pSources.get(name);
+    if(link != null) 
+      return new LinkVersion(link);
+
+    return null;
   }
 
   /** 
