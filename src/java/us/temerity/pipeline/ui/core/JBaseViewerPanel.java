@@ -1,4 +1,4 @@
-// $Id: JBaseViewerPanel.java,v 1.2 2005/01/07 11:33:42 jim Exp $
+// $Id: JBaseViewerPanel.java,v 1.3 2005/01/07 15:48:09 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -485,8 +485,8 @@ implements MouseListener, MouseMotionListener, GLEventListener
 		    MouseEvent.ALT_DOWN_MASK);
 
 	rb = (((mods & (on1 | off1)) == on1) || 
-		   ((mods & (on2 | off2)) == on2) || 
-		   ((mods & (on3 | off3)) == on3));
+	      ((mods & (on2 | off2)) == on2) || 
+	      ((mods & (on3 | off3)) == on3));
       }
       
       /* <BUTTON2+ALT>: pan start */ 
