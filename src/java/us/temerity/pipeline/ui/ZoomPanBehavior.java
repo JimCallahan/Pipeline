@@ -1,4 +1,4 @@
-// $Id: ZoomPanBehavior.java,v 1.1 2004/05/05 20:57:24 jim Exp $
+// $Id: ZoomPanBehavior.java,v 1.2 2004/09/01 12:23:35 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -40,11 +40,15 @@ class ZoomPanBehavior
    * 
    * @param viewer
    *    The viewer to be controlled.
+   * 
+   * @param maxFactor
+   *    The maximum zoom factor.
    */ 
   public 
   ZoomPanBehavior
   (
-   Viewer viewer  
+   Viewer viewer, 
+   double maxFactor
   ) 
   {
     assert(viewer != null);
@@ -52,6 +56,7 @@ class ZoomPanBehavior
 
     pPanSpeed  = 0.415;
     pZoomSpeed = 0.1;
+    pMaxFactor = maxFactor;
   }
 
 
@@ -248,7 +253,7 @@ class ZoomPanBehavior
 	    zoom = -dx;
 	  
 	  trans.add(new Vector3d(0.0f, 0.0f, pZoomSpeed*zoom));
-	  trans.z = Math.max(((double) canvas.getWidth()) / 64.0, trans.z);
+	  trans.z = Math.max(((double) canvas.getWidth()) / pMaxFactor, trans.z);
 	  
 	  xform.setTranslation(trans);	    
 	  tg.setTransform(xform);
@@ -286,6 +291,11 @@ class ZoomPanBehavior
    * The zoom speed scale factor. 
    */ 
   private double  pZoomSpeed;  
+
+  /**
+   * The max zoom factor. 
+   */ 
+  private double  pMaxFactor; 
 
 
   /**

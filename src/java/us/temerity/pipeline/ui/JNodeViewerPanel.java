@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.34 2004/08/30 06:50:53 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.35 2004/09/01 12:23:35 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -395,7 +395,7 @@ class JNodeViewerPanel
 	Point3d origin = new Point3d(0, 0, 0);
 	BoundingSphere bounds = new BoundingSphere(origin, Double.POSITIVE_INFINITY);
 	
-	ZoomPanBehavior zp = new ZoomPanBehavior(pUniverse.getViewer());
+	ZoomPanBehavior zp = new ZoomPanBehavior(pUniverse.getViewer(), 64.0);
 	zp.setSchedulingBounds(bounds);
 	
 	BranchGroup branch = new BranchGroup();

@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.6 2004/08/31 08:17:02 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.7 2004/09/01 12:23:35 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -245,7 +245,7 @@ class JQueueJobViewerPanel
 	Point3d origin = new Point3d(0, 0, 0);
 	BoundingSphere bounds = new BoundingSphere(origin, Double.POSITIVE_INFINITY);
 	
-	ZoomPanBehavior zp = new ZoomPanBehavior(pUniverse.getViewer());
+	ZoomPanBehavior zp = new ZoomPanBehavior(pUniverse.getViewer(), 24.0);
 	zp.setSchedulingBounds(bounds);
 	
 	BranchGroup branch = new BranchGroup();
@@ -1873,7 +1873,7 @@ class JQueueJobViewerPanel
       trans.z = nExtent.y * (cExtent.x / cExtent.y);
 
     trans.z *= 1.25;
-    trans.z = Math.max(((double) pCanvas.getWidth()) / 64.0, trans.z);
+    trans.z = Math.max(((double) pCanvas.getWidth()) / 24.0, trans.z);
 
     xform.setTranslation(trans);
     tg.setTransform(xform);
