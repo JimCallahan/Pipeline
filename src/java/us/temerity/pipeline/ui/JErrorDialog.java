@@ -1,4 +1,4 @@
-// $Id: JErrorDialog.java,v 1.2 2004/05/11 19:11:50 jim Exp $
+// $Id: JErrorDialog.java,v 1.3 2004/05/12 03:59:08 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -38,7 +38,7 @@ class JErrorDialog
     /* create dialog body components */ 
     {
       JPanel body = new JPanel(new BorderLayout());
-      body.setName("ErrorPanel");
+      body.setName("MainDialogPanel");
 
       body.setMinimumSize(new Dimension(344, 166));
 
