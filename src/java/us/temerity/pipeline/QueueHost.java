@@ -1,4 +1,4 @@
-// $Id: QueueHost.java,v 1.3 2004/08/01 19:31:46 jim Exp $
+// $Id: QueueHost.java,v 1.4 2004/10/16 23:32:31 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -427,11 +427,15 @@ class QueueHost
    * This method will return <CODE>null</CODE> under the following conditions: <P> 
    * 
    * <DIV style="margin-left: 40px;">
+   *   The host is reserved for another user.
    *   All of the slots are already filled by running jobs.<P>
    *   There are no system resource samples newer than the sample interval.<P>
    *   The host is unable to provide the system resourses specified by the job 
    *   requirements. <P>
    *   The host does not support all of the selection keys required.<P>
+   * 
+   * @param author
+   *   The name of the user submitting the job.
    * 
    * @param jreqs
    *   The requirements that this host must meet in order to be eligable to run the job. 
@@ -445,12 +449,16 @@ class QueueHost
   public Integer
   computeJobBias
   (
+   String author, 
    JobReqs jreqs, 
    TreeSet<String> keys
   )
   {
     ResourceSample sample = getLatestSample();
     if(sample == null) 
+      return null;
+
+    if((pReservation != null) && (!pReservation.equals(author)))
       return null;
 
     long now = Dates.now().getTime();

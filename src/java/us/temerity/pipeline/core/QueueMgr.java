@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.16 2004/10/05 17:52:09 jim Exp $
+// $Id: QueueMgr.java,v 1.17 2004/10/16 23:32:31 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2259,7 +2259,8 @@ class QueueMgr
 	    
 	  case Enabled:
 	    {
-	      Integer bias = host.computeJobBias(jreqs, keys);
+	      String author = job.getActionAgenda().getNodeID().getAuthor();
+	      Integer bias = host.computeJobBias(author, jreqs, keys);
 	      if((bias != null) && (bias > maxBias)) {
 		bestHost = hostname; 
 		maxBias  = bias;
