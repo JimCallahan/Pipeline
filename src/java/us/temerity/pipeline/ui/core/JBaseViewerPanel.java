@@ -1,4 +1,4 @@
-// $Id: JBaseViewerPanel.java,v 1.5 2005/01/08 08:32:18 jim Exp $
+// $Id: JBaseViewerPanel.java,v 1.6 2005/01/16 02:43:21 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -15,7 +15,6 @@ import java.util.*;
 import java.util.concurrent.atomic.*;
 import javax.swing.*;
 import javax.swing.event.*;
-import javax.swing.tree.*;
 
 import net.java.games.jogl.*;
 
@@ -29,7 +28,7 @@ import net.java.games.jogl.*;
 public abstract
 class JBaseViewerPanel
   extends JTopLevelPanel
-implements MouseListener, MouseMotionListener, GLEventListener
+  implements MouseListener, MouseMotionListener, GLEventListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
