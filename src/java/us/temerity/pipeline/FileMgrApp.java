@@ -1,4 +1,4 @@
-// $Id: FileMgrApp.java,v 1.1 2004/03/12 13:49:09 jim Exp $
+// $Id: FileMgrApp.java,v 1.2 2004/03/21 01:20:04 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -99,17 +99,17 @@ class FileMgrApp
   help()
   {
     Logs.ops.info(
-      "USAGE:  \n" +
-      "  plfilemgr [options] \n" + 
+      "USAGE:\n" +
+      "  plfilemgr [options]\n" + 
       "\n" + 
-      "  plfilemgr --help \n" +
-      "  plfilemgr --html-help \n" +
-      "  plfilemgr --version \n" + 
-      "  plfilemgr --release-date \n" + 
-      "  plfilemgr --copyright \n" + 
+      "  plfilemgr --help\n" +
+      "  plfilemgr --html-help\n" +
+      "  plfilemgr --version\n" + 
+      "  plfilemgr --release-date\n" + 
+      "  plfilemgr --copyright\n" + 
       "\n" + 
-      "GLOBAL OPTIONS: \n" +
-      "  [--prod=...][--port=...][--log=...] \n" +
+      "GLOBAL OPTIONS:\n" +
+      "  [--prod=...][--port=...][--log=...]\n" +
       "\n" + 
       "\n" +  
       "Use \"plfilemgr --html-help\" to browse the full documentation.\n");
