@@ -1,4 +1,4 @@
-// $Id: LogMessage.java,v 1.6 2004/07/14 20:59:20 jim Exp $
+// $Id: LogMessage.java,v 1.7 2004/10/12 23:20:11 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -114,7 +114,6 @@ class LogMessage
   public String
   getMessage() 
   {
-    assert(pMessage != null);
     return pMessage;
   }
 
