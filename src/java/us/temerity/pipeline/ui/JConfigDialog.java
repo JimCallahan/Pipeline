@@ -1,4 +1,4 @@
-// $Id: JConfigDialog.java,v 1.1 2004/05/21 00:14:35 jim Exp $
+// $Id: JConfigDialog.java,v 1.2 2004/06/28 23:37:14 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -143,7 +143,7 @@ class JConfigDialog
 
 	  UIMaster.createTitledTextField
 	    (tpanel, "Notify Monitor Port:", sTSize, 
-	     vpanel, String.valueOf(PackageInfo.sNotifyControlPort), sVSize);
+	     vpanel, String.valueOf(PackageInfo.sNotifyMonitorPort), sVSize);
 
 	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
 
