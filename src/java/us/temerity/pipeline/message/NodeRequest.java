@@ -1,4 +1,4 @@
-// $Id: NodeRequest.java,v 1.2 2004/03/26 19:13:17 jim Exp $
+// $Id: NodeRequest.java,v 1.3 2004/03/28 00:49:43 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -17,6 +17,7 @@ package us.temerity.pipeline.message;
  * <CODE>NodeMgrServer</CODE> side of the connection.
  * 
  * @see NodeGetWorkingReq
+ * @see NodeModifyPropertiesReq
  * @see NodeRegisterReq
  */
 public
@@ -28,11 +29,20 @@ enum NodeRequest
   GetWorking, 
 
   /**
+   * An instance of {@link NodeModifyPropertiesReq NodeModifyPropertiesReq} is next.
+   */
+  ModifyProperties, 
+
+  /**
    * An instance of {@link NodeRegisterReq NodeRegisterReq} is next.
    */
   Register, 
 
+
+
   // ...
+
+
 
   /**
    * No more requests will be send over this connection.
