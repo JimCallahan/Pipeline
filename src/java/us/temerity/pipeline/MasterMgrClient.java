@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.16 2004/07/25 03:03:59 jim Exp $
+// $Id: MasterMgrClient.java,v 1.17 2004/08/04 01:40:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1780,6 +1780,184 @@ class MasterMgrClient
     
     Object obj = performTransaction(MasterRequest.RevertFiles, req);
     handleSimpleResponse(obj);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   J O B   Q U E U E                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Submit the group of jobs needed to regenerate the selected {@link QueueState#Stale Stale}
+   * files associated with the tree of nodes rooted at the given node. <P> 
+   * 
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   *
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   * 
+   * @param indices
+   *   The file sequence indices of the files to regenerate or <CODE>null</CODE> to 
+   *   regenerate all <CODE>Stale</CODE> or <CODE>Missing</CODE> files.
+   * 
+   * @return 
+   *   The submitted job group.
+   * 
+   * @throws PipelineException
+   *   If unable to generate or submit the jobs.
+   */ 
+  public synchronized QueueJobGroup
+  submitJobs
+  ( 
+   String author, 
+   String view, 
+   String name, 
+   int[] indices
+  ) 
+    throws PipelineException
+  {
+    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
+      throw new PipelineException
+	("Only privileged users may submit jobs for nodes owned by another user!");
+
+    verifyConnection();
+
+    NodeID id = new NodeID(author, view, name);
+    NodeSubmitJobsReq req = new NodeSubmitJobsReq(id, indices);
+
+    Object obj = performTransaction(MasterRequest.SubmitJobs, req);
+    if(obj instanceof NodeSubmitJobsRsp) {
+      NodeSubmitJobsRsp rsp = (NodeSubmitJobsRsp) obj;
+      return rsp.getJobGroup();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Kill all jobs which belong to the job group with the given ID. <P> 
+   * 
+   * The <CODE>author</CODE> argument must match the user who submitted the jobs. <P> 
+   * 
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @param author 
+   *   The name of the user which owns the jobs.
+   * 
+   * @param groupID
+   *   The unique job group identifier.
+   * 
+   * @throws PipelineException 
+   *   If unable to kill the jobs.
+   */ 
+  public synchronized void
+  killJobGroup
+  (
+   String author, 
+   long groupID
+  ) 
+    throws PipelineException
+  {
+    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
+      throw new PipelineException
+	("Only privileged users may jobs owned by another user!");
+    
+    verifyConnection();
+
+    NodeKillJobGroupReq req = new NodeKillJobGroupReq(author, groupID);
+
+    Object obj = performTransaction(MasterRequest.KillJobGroup, req);
+    handleSimpleResponse(obj);    
+  }
+
+  /**
+   * Kill the jobs with the given IDs. <P> 
+   * 
+   * The <CODE>author</CODE> argument must match the user who submitted the jobs. <P> 
+   * 
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @param author 
+   *   The name of the user which owns the jobs.
+   * 
+   * @param jobIDs
+   *   The unique job identifiers.
+   * 
+   * @throws PipelineException 
+   *   If unable to kill the jobs.
+   */ 
+  public synchronized void
+  killJobs
+  (
+   String author, 
+   long[] jobIDs
+  ) 
+    throws PipelineException
+  {
+    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
+      throw new PipelineException
+	("Only privileged users may jobs owned by another user!");
+
+    verifyConnection();
+
+    NodeKillJobsReq req = new NodeKillJobsReq(author, jobIDs);
+
+    Object obj = performTransaction(MasterRequest.KillJobs, req);
+    handleSimpleResponse(obj); 
+  }
+
+  /**
+   * Kill all of the jobs associated with the given working version. <P> 
+   * 
+   * The <CODE>author</CODE> argument must match the user who submitted the jobs. <P> 
+   * 
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   * 
+   */ 
+  public synchronized void
+  killNodeJobs
+  (
+   String author, 
+   String view, 
+   String name
+  ) 
+    throws PipelineException
+  {
+    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
+      throw new PipelineException
+	("Only privileged users may jobs owned by another user!");
+    
+    verifyConnection();
+
+    NodeID id = new NodeID(author, view, name);
+    NodeKillNodeJobsReq req = new NodeKillNodeJobsReq(id);
+
+    Object obj = performTransaction(MasterRequest.KillNodeJobs, req);
+    handleSimpleResponse(obj); 
   }
 
 
