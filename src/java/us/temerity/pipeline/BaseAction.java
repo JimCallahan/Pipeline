@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.1 2004/02/25 01:25:17 jim Exp $
+// $Id: BaseAction.java,v 1.2 2004/02/25 06:21:00 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -594,7 +594,8 @@ class BaseAction
       for(ActionParam param : getSingleParams()) 
 	params.put(param.getName(), param.getValue());
 
-      encoder.encode("SingleParams", params);
+      if(!params.isEmpty()) 
+	encoder.encode("SingleParams", params);
     }
 
     {
@@ -610,7 +611,8 @@ class BaseAction
 	dparams.put(depend, params);
       }
 
-      encoder.encode("DependParams", dparams);
+      if(!dparams.isEmpty()) 
+	encoder.encode("DependParams", dparams);
     }
   }
   
