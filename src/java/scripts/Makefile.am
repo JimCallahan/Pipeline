@@ -4,8 +4,7 @@ instbindir = @ROOT_INST_DIR@/bin
 instbin_SCRIPTS = \
   plplugin \
   plscript \
-  plui \
-  jogltest
+  plui
 
 
 instsbindir = @ROOT_INST_DIR@/sbin
@@ -14,6 +13,7 @@ instsbin_SCRIPTS = \
   plfilemgr \
   pljobmgr \
   plmaster \
+  plpluginmgr \
   plqueuemgr \
   plrestore
 
