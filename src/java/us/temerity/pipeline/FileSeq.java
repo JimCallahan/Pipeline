@@ -1,4 +1,4 @@
-// $Id: FileSeq.java,v 1.3 2004/02/23 23:53:41 jim Exp $
+// $Id: FileSeq.java,v 1.4 2004/02/25 02:59:28 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -276,7 +276,7 @@ class FileSeq
     }
     catch (SecurityException ex) {
       throw new PipelineException
-	("Unable to delete file \"" + full + "\" from file sequence " + this + 
+	("Unable to delete file (" + full + ") from file sequence " + this + 
 	 " due to the Java Security Manager!");
     }
   }
@@ -311,7 +311,7 @@ class FileSeq
     }
     catch (SecurityException ex) {
       throw new PipelineException
-	("Unable to change the permissions to read-only for file \"" + full + "\" from " + 
+	("Unable to change the permissions to read-only for file (" + full + ") from " + 
 	 "file sequence " + this + " due to the Java Security Manager!");
     }
   }

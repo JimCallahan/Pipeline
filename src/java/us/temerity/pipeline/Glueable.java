@@ -1,4 +1,4 @@
-// $Id: Glueable.java,v 1.3 2004/02/17 17:50:36 jim Exp $
+// $Id: Glueable.java,v 1.4 2004/02/25 02:59:28 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -9,8 +9,8 @@ import java.util.*;
 /*------------------------------------------------------------------------------------------*/
 
 /** 
- * Support for the bidirectional translation between instantiated objects and a human 
- * readable text representation called Glue. The Glue format is designed for maximum forward
+ * Support for translation between instantiated objects and a human readable text 
+ * representation called Glue. The Glue format is designed for maximum forward
  * and backward compatibility between versions of classes which support the 
  * <CODE>Glueable</CODE> interface. <P>
  *

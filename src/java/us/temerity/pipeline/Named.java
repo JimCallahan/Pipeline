@@ -1,4 +1,4 @@
-// $Id: Named.java,v 1.2 2004/02/23 23:53:41 jim Exp $
+// $Id: Named.java,v 1.3 2004/02/25 02:59:28 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -10,7 +10,7 @@ import java.util.logging.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * An abstract base class which provides a simple name <CODE>String</CODE> and accessor.    
+ * Provides a simple name <CODE>String</CODE> and accessor.    
  */
 public
 class Named

@@ -1,8 +1,7 @@
-// $Id: GlueEncoder.java,v 1.4 2004/02/15 18:28:33 jim Exp $
+// $Id: GlueEncoder.java,v 1.5 2004/02/25 02:59:28 jim Exp $
 
 package us.temerity.pipeline;
 
-import java.lang.*;
 import java.lang.reflect.*;
 import java.util.*;
 
