@@ -733,6 +733,11 @@ AC_CONFIG_FILES([
 
   data/splash/Makefile
 
+  data/fonts/Makefile
+  data/fonts/UtopiaBold/Makefile
+  data/fonts/UtopiaBold/gen-fonts.bash
+  data/fonts/UtopiaBold/install-fonts.bash 
+
   src/Makefile
 
   src/database/Makefile
