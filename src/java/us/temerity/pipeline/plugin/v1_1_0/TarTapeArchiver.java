@@ -1,4 +1,4 @@
-// $Id: TarTapeArchiver.java,v 1.1 2005/04/02 00:32:33 jim Exp $
+// $Id: TarTapeArchiver.java,v 1.2 2005/04/02 01:01:28 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_1_0;
 
@@ -95,6 +95,19 @@ class TarTapeArchiver
     return 0L;
   }
   
+  /**
+   * Whether the archiver requires manual confirmation before initiating an archive or 
+   * restore operation. <P> 
+   * 
+   * @return
+   *   This method always returns <CODE>true</CODE>.
+   */ 
+  public boolean
+  isManual()
+  {
+    return true;
+  }
+
 
   
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: CpioTapeArchiver.java,v 1.2 2005/03/23 22:43:11 jim Exp $
+// $Id: CpioTapeArchiver.java,v 1.3 2005/04/02 01:00:58 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -68,8 +68,6 @@ class CpioTapeArchiver
 
       setLayout(layout);      
     }
-
-    underDevelopment();
   }
 
 
@@ -95,6 +93,19 @@ class CpioTapeArchiver
     return 0L;
   }
   
+  /**
+   * Whether the archiver requires manual confirmation before initiating an archive or 
+   * restore operation. <P> 
+   * 
+   * @return
+   *   This method always returns <CODE>true</CODE>.
+   */ 
+  public boolean
+  isManual()
+  {
+    return true;
+  }
+
 
   
   /*----------------------------------------------------------------------------------------*/
