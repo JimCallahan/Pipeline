@@ -129,40 +129,6 @@ AC_MSG_RESULT([$BASEDIR])
 
 
 
-AC_MSG_CHECKING([PHP Install Directory])
-
-AC_ARG_WITH([phproot], 
-            [  --with-phproot=DIR      Root directory of installed PHP files.])
-
-AC_SUBST(PHPROOT)
-PHPROOT=/var/www/html/pipeline
-
-if test "$with_phproot" 
-then
-  PHPROOT=$with_phproot
-fi
-
-AC_MSG_RESULT([$PHPROOT])
-
-
-
-AC_MSG_CHECKING([Httpd Group])
-
-AC_ARG_WITH([httpd], 
-            [  --with-httpd=GROUP      Group name of httpd(1) process.])
-
-AC_SUBST(HTTPD_GROUP)
-HTTPD_GROUP="apache"
-
-if test "$with_httpd" 
-then
-  HTTPD_GROUP=$with_httpd
-fi
-
-AC_MSG_RESULT([$HTTPD_GROUP])
-
-
-
 AC_MSG_CHECKING([Pipeline Server Hostname])
 
 AC_ARG_WITH([plserver], 
@@ -795,8 +761,6 @@ AC_CONFIG_FILES([
   src/java/Makefile
 
   src/java/docs/Makefile
-
-  src/java/jgo/Makefile
 
   src/java/pipeline/Makefile
   src/java/pipeline/PackageInfo.java
