@@ -1,4 +1,4 @@
-// $Id: TextureMgr.java,v 1.2 2004/05/06 11:21:30 jim Exp $
+// $Id: TextureMgr.java,v 1.3 2004/05/07 15:06:51 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -20,13 +20,19 @@ import javax.media.j3d.*;
 /*------------------------------------------------------------------------------------------*/
 
 /** 
- * Manages a cached set of {@link Texture2D Texture2D} and {@link ImageIcon ImageIcon} 
+ * Manages a cached set of textures used by {@link JNodeViewerPanel JNodeViewerPanel} to
+ * render Pipeline nodes. <P> 
+ * 
+ * Node textures are cached as {@link Texture2D Texture2D} and {@link ImageIcon ImageIcon} 
  * instances loaded from image files which are used to graphicly represent permutations of 
  * {@link OverallNodeState OverallNodeState} and {@link OverallQueueState OverallQueueState}
  * of Pipeline nodes. <P> 
  * 
- * Also maintains a small cacbe of simple 2x2 unfiltered monocolor textures which are 
- * looked up by symbolic color names.
+ * Font textures are also cached as <CODE>Texture2D</CODE> which are used to render node 
+ * and link labels in <CODE>JNodeViewerPanel</CODE> instances. <P> 
+ * 
+ * Finally, a small cacbe of simple 2x2 unfiltered monocolor textures are also managed by
+ * this class for use in rendering lines.
  */ 
 public
 class TextureMgr
@@ -56,7 +62,7 @@ class TextureMgr
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Get the UIMaster instance.
+   * Get the TextureMgr instance.
    */ 
   public static TextureMgr
   getInstance() 
@@ -87,6 +93,9 @@ class TextureMgr
   ) 
     throws IOException
   {
+    if(name == null)
+      throw new IllegalArgumentException("The color name cannot be (null)!");
+
     if(pSimpleTextures.containsKey(name))
       return;
 
@@ -254,14 +263,33 @@ class TextureMgr
   ) 
     throws IOException 
   { 
-    if((code > 0) || (code > 127))
+    if((code < 0) || (code > 127))
       throw new IllegalArgumentException
-	("The character code (" + code + ") must be in the [0-127] range!");
+	("The character code (" + ((int) code) + ") for character " + 
+	 "\"" + code + "\" must be in the [0-127] range!");
 
     verifyFontTextures(name);
     return pFontTextures.get(name)[code];
   }
 
+  /**
+   * Get the geometric description of the characters in the given font.
+   * 
+   * @param name
+   *   The symbolic name of the font.
+   * 
+   * @return
+   *   The geometric description or <CODE>null</CODE> if the font is unregistered.
+   */ 
+  public synchronized FontGeometry
+  getFontGeometry
+  (
+   String name
+  ) 
+  {
+    return pFontGeometry.get(name);
+  }
+    
 
 
   /*----------------------------------------------------------------------------------------*/
