@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.17 2004/05/29 06:38:06 jim Exp $
+// $Id: JNodeBrowserPanel.java,v 1.18 2004/06/14 22:48:37 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -84,7 +84,7 @@ class JNodeBrowserPanel
 	JScrollPane scroll = new JScrollPane(pTree);
 	
 	scroll.setMinimumSize(new Dimension(230, 120));
-	scroll.setPreferredSize(new Dimension(200, 500));
+	scroll.setPreferredSize(new Dimension(230, 500));
 	
 	scroll.setHorizontalScrollBarPolicy
 	  (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
