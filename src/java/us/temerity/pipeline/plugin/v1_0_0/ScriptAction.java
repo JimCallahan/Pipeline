@@ -1,4 +1,4 @@
-// $Id: ScriptAction.java,v 1.7 2004/11/11 00:35:26 jim Exp $
+// $Id: ScriptAction.java,v 1.8 2004/12/17 16:33:42 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -195,7 +195,7 @@ class ScriptAction
       NodeID nodeID = agenda.getNodeID();
       senv.put("PIPELINE_NODE_NAME", nodeID.getName());
       senv.put("PIPELINE_NODE_AUTHOR", nodeID.getAuthor());
-      senv.put("PIPELINE_NODE_VIEW", nodeID.getAuthor());
+      senv.put("PIPELINE_NODE_VIEW", nodeID.getView());
 
       senv.put("PIPELINE_PRIMARY_TARGET", fileList(agenda.getPrimaryTarget()));
 
