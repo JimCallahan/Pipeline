@@ -1,4 +1,4 @@
-// $Id: GlueableStuff.java,v 1.1 2004/02/15 16:17:44 jim Exp $
+// $Id: GlueableStuff.java,v 1.2 2004/02/15 18:29:13 jim Exp $
 
 import us.temerity.pipeline.*;
 import java.util.*;
@@ -27,6 +27,8 @@ class GlueableStuff
    String name
   ) 
   {
+    pOk = true;
+
     pName = name;
     
     {
@@ -67,7 +69,52 @@ class GlueableStuff
     pTable.put(new Integer(4), "four");
     pTable.put(new Integer(2), "two");
     
-//     pNull = null;
+    pSSet = new HashSet<String>();
+    pSSet.add("Is this ok?");
+    pSSet.add("How about this?");
+
+    pColor = GlueableColor.red;
+
+    pNumbers = new Float[5];
+    pNumbers[0] = new Float(3.1415);
+    pNumbers[1] = null;
+    pNumbers[2] = new Float(123.456);
+    pNumbers[3] = pNumbers[0];
+    pNumbers[4] = new Float(666.666);
+
+    pMixed = new Object[8];
+    pMixed[0] = pName;
+    pMixed[1] = new GlueableDude("John Doe", 55);
+    pMixed[2] = pNumbers;
+    pMixed[3] = pDude;
+    pMixed[4] = new Boolean(true);
+    
+    {
+      TreeSet<Integer> ts = new TreeSet<Integer>();
+      ts.add(45);
+      ts.add(13);
+      ts.add(99);
+      ts.add(-123);
+      
+      pMixed[6] = ts;
+    }
+
+    pMixed[7] = GlueableColor.green;
+
+    {
+      GlueableColor tmp[][] = {
+	{
+	  GlueableColor.yellow, 
+	  GlueableColor.blue, 
+	  GlueableColor.red 
+	}, 
+	{
+	  GlueableColor.green, 
+	  GlueableColor.red 
+	}
+      };
+      pPalette = tmp;
+    }
   }
   
 
@@ -83,14 +130,18 @@ class GlueableStuff
   ) 
    throws GlueException
   {
-    ge.encode("Name",  pName);
-    ge.encode("Stuff", pStuff);
-    ge.encode("Dude",  pDude);
-    ge.encode("List",  pList);
-    ge.encode("Set",   pSet);
-    ge.encode("Table", pTable);
-    
-//     ge.encode("Null", pNull);
+    ge.encode("Ok",      pOk);    
+    ge.encode("Name",    pName);
+    ge.encode("Stuff",   pStuff);
+    ge.encode("Dude",    pDude);
+    ge.encode("List",    pList);
+    ge.encode("Set",     pSet);
+    ge.encode("Table",   pTable);
+    ge.encode("SSet",    pSSet);
+    ge.encode("Color",   pColor);
+    ge.encode("Numbers", pNumbers);
+    ge.encode("Mixed",   pMixed);
+    ge.encode("Palette", pPalette);
   }
 
   public void 
@@ -100,26 +151,35 @@ class GlueableStuff
   ) 
     throws GlueException
   {
-    pName  = (String)       gd.decode("Name");
-    pStuff = (int[][])      gd.decode("Stuff");      
-    pDude  = (GlueableDude) gd.decode("Dude");
-    pList  = (ArrayList)    gd.decode("ArrayList");
-    pSet   = (HashSet)      gd.decode("HashSet");
-    pTable = (TreeMap)      gd.decode("Table");
+    pOk      = (Boolean)           gd.decode("Ok");
+    pName    = (String)            gd.decode("Name");
+    pStuff   = (int[][])           gd.decode("Stuff");      
+    pDude    = (GlueableDude)      gd.decode("Dude");
+    pList    = (ArrayList)         gd.decode("ArrayList");
+    pSet     = (HashSet)           gd.decode("HashSet");
+    pTable   = (TreeMap)           gd.decode("Table");
+    pSSet    = (HashSet<String>)   gd.decode("SSet");
+    pColor   = (GlueableColor)     gd.decode("Color");
+    pNumbers = (Float[])           gd.decode("Numbers");
+    pMixed   = (Object[])          gd.decode("Mixed");
+    pPalette = (GlueableColor[][]) gd.decode("Palette");
   }
   
-
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
-  private String        pName;
-  private int[][]       pStuff;
-  private GlueableDude  pDude;
-  private ArrayList     pList;
-  private Set           pSet;
-  private TreeMap       pTable;   
-
-//   protected String    pNull;
+  private Boolean            pOk;
+  private String             pName;
+  private int[][]            pStuff;
+  private GlueableDude       pDude;
+  private ArrayList          pList;
+  private Set                pSet;
+  private TreeMap            pTable;   
+  private Set<String>        pSSet;
+  private GlueableColor      pColor;
+  private Float[]            pNumbers;
+  private Object[]           pMixed; 
+  private GlueableColor[][]  pPalette;
 }
