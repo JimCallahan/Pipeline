@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.37 2004/09/16 21:59:08 jim Exp $
+// $Id: MasterMgr.java,v 1.38 2004/09/22 23:14:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2236,10 +2236,8 @@ class MasterMgr
 
       return new SuccessRsp(timer);
     }
-    catch(PipelineException ex) {
-      
-      // needs to remove the secondary file sequence from the NodeTreePath on failure...
-
+    catch(PipelineException ex) { timer.aquire();
+      removeSecondaryWorkingNodeTreePath(nodeID, fseq);
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
