@@ -100,7 +100,7 @@ dnl ----------------------------------------------------------------------------
 AC_MSG_CHECKING([Root Production Directory])
 
 AC_ARG_WITH([prod], 
-            [  --with-prod=PATH        Root of installed production heirarchy.])
+            [  --with-prod=DIR         Root of installed production heirarchy.])
 
 AC_SUBST(PRODDIR)
 PRODDIR=/base/prod
@@ -117,7 +117,7 @@ AC_MSG_RESULT([$PRODDIR])
 AC_MSG_CHECKING([Installed Toolsets Directory])
 
 AC_ARG_WITH([toolset], 
-            [  --with-toolset=PATH     Installed toolsets directory.])
+            [  --with-toolset=DIR      Installed toolsets directory.])
 
 AC_SUBST(TOOLSETDIR)
 TOOLSETDIR=/base/toolset/toolsets
@@ -134,7 +134,7 @@ AC_MSG_RESULT([$TOOLSETDIR])
 AC_MSG_CHECKING([User Home Directory])
 
 AC_ARG_WITH([home], 
-            [  --with-home=PATH        User home directory.])
+            [  --with-home=DIR         User home directory.])
 
 AC_SUBST(HOMEDIR)
 HOMEDIR=/home
@@ -145,6 +145,23 @@ then
 fi
 
 AC_MSG_RESULT([$HOMEDIR])
+
+
+
+AC_MSG_CHECKING([Temporary Directory])
+
+AC_ARG_WITH([temp], 
+            [  --with-temp=DIR         Temporary directory.])
+
+AC_SUBST(TEMPDIR)
+TEMPDIR=/usr/tmp
+
+if test "$with_temp" 
+then
+  TEMPDIR=$with_temp
+fi
+
+AC_MSG_RESULT([$TEMPDIR])
 
 
 
@@ -214,6 +231,8 @@ fi
 dnl ------------------------------------------------------------------------------------------
 
 AC_MSG_CHECKING([toolset])
+AC_SUBST(BUILD_TOOLSET)
+BUILD_TOOLSET=$TOOLSET
 AC_MSG_RESULT([$TOOLSET])
 
 
