@@ -1,7 +1,6 @@
 
 SUBDIRS = \
-  libs \
-  utils
+  src
 
 
 EXTRA_DIST = \
