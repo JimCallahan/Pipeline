@@ -1,4 +1,4 @@
-// $Id: MayaTextureSyncTool.java,v 1.3 2005/02/21 23:10:39 jim Exp $
+// $Id: MayaTextureSyncTool.java,v 1.4 2005/02/22 02:30:36 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -284,9 +284,6 @@ class MayaTextureSyncTool
 	      area.setWrapStyleWord(true);
 	      area.setEditable(false);
 	      
-// 	      Dimension size = area.getPreferredSize();
-// 	      area.setMaximumSize(new Dimension(size.width, size.height+19));
-
 	      hbox.add(area);
 	    }
 	    
