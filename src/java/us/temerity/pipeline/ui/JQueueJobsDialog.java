@@ -1,4 +1,4 @@
-// $Id: JQueueJobsDialog.java,v 1.3 2004/11/02 23:06:44 jim Exp $
+// $Id: JQueueJobsDialog.java,v 1.4 2004/12/07 04:55:17 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -54,40 +54,66 @@ class JQueueJobsDialog
 	  JPanel vpanel = (JPanel) comps[1];
 	  
 	  {
-	    JBooleanField field = 
-	      UIMaster.createTitledBooleanField(tpanel, "Override Batch Size:", sTSize,
-						vpanel, sVSize);
-	    pOverrideBatchSizeField = field;
-
-	    field.addActionListener(this);
-	    field.setActionCommand("batch-size-changed");
+	    {
+	      JBooleanField field = 
+		UIMaster.createTitledBooleanField(tpanel, "Override Batch Size:", sTSize,
+						  vpanel, sVSize);
+	      pOverrideBatchSizeField = field;
+	      
+	      field.addActionListener(this);
+	      field.setActionCommand("batch-size-changed");
+	    }
+	    
+	    UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+	    
+	    pBatchSizeField = 
+	      UIMaster.createTitledIntegerField(tpanel, "Batch Size:", sTSize,
+						vpanel, null, sVSize);
 	  }
-	  
-	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
-	  
-	  pBatchSizeField = 
-	    UIMaster.createTitledIntegerField(tpanel, "Batch Size:", sTSize,
-					      vpanel, null, sVSize);
 	  
 	  UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
 	  
 	  {
-	    JBooleanField field = 
-	      UIMaster.createTitledBooleanField(tpanel, "Override Priority:", sTSize,
-						vpanel, sVSize);
-	    pOverridePriorityField = field;
-
-	    field.addActionListener(this);
-	    field.setActionCommand("priority-changed");
+	    {
+	      JBooleanField field = 
+		UIMaster.createTitledBooleanField(tpanel, "Override Priority:", sTSize,
+						  vpanel, sVSize);
+	      pOverridePriorityField = field;
+	      
+	      field.addActionListener(this);
+	      field.setActionCommand("priority-changed");
+	    }
+	    
+	    pOverridePriorityField.addActionListener(this);
+	    
+	    UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+	    
+	    pPriorityField = 
+	      UIMaster.createTitledIntegerField(tpanel, "Priority:", sTSize,
+						vpanel, null, sVSize);
 	  }
+
+	  UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
 	  
-	  pOverridePriorityField.addActionListener(this);
-	  
-	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
-	  
-	  pPriorityField = 
-	    UIMaster.createTitledIntegerField(tpanel, "Priority:", sTSize,
-					      vpanel, null, sVSize);
+	  {
+	    {
+	      JBooleanField field = 
+		UIMaster.createTitledBooleanField(tpanel, "Override Ramp Up:", sTSize,
+						  vpanel, sVSize);
+	      pOverrideRampUpField = field;
+	      
+	      field.addActionListener(this);
+	      field.setActionCommand("ramp-up-changed");
+	    }
+	    
+	    pOverrideRampUpField.addActionListener(this);
+	    
+	    UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+	    
+	    pRampUpField = 
+	      UIMaster.createTitledIntegerField(tpanel, "Ramp Up Interval:", sTSize,
+						vpanel, null, sVSize);
+	  }
 	}
 	
 	JDrawer drawer = 
@@ -205,6 +231,27 @@ class JQueueJobsDialog
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether to override the ramp-up interval.
+   */ 
+  public boolean 
+  overrideRampUp() 
+  {
+    return pOverrideRampUpField.getValue();
+  }
+  
+  /**
+   * The overridden ramp-up interval.
+   */ 
+  public Integer
+  getRampUp()
+  {
+    return pRampUpField.getValue();
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
   
   /**
    * Whether to override the selection keys. 
@@ -291,9 +338,11 @@ class JQueueJobsDialog
     String cmd = e.getActionCommand();
     if(cmd.equals("batch-size-changed")) 
       doBatchSizeChanged();
-    if(cmd.equals("priority-changed")) 
+    else if(cmd.equals("priority-changed")) 
       doPriorityChanged();
-    if(cmd.equals("selection-keys-changed")) 
+    else if(cmd.equals("ramp-up-changed")) 
+      doRampUpChanged();
+    else if(cmd.equals("selection-keys-changed")) 
       doSelectionKeysChanged();
     else 
       super.actionPerformed(e);
@@ -332,6 +381,22 @@ class JQueueJobsDialog
     else {
       pPriorityField.setEnabled(false);
       pPriorityField.setValue(null);
+    }
+  }
+
+  /**
+   * The value of the override ramp-up interval field has changed.
+   */ 
+  public void 
+  doRampUpChanged()
+  {
+    if(pOverrideRampUpField.getValue()) {
+      pRampUpField.setEnabled(true);
+      pRampUpField.setValue(JobReqs.defaultJobReqs().getRampUp());
+    }
+    else {
+      pRampUpField.setEnabled(false);
+      pRampUpField.setValue(null);
     }
   }
 
@@ -438,7 +503,7 @@ class JQueueJobsDialog
   private static final long serialVersionUID = -8678401089074297592L;
   
   private static final int sTSize = 150;
-  private static final int sVSize = 180;
+  private static final int sVSize = 200;
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -459,7 +524,7 @@ class JQueueJobsDialog
   private JBooleanField  pOverrideBatchSizeField;
   
   /**
-   * The overriden the batch size.
+   * The overriden batch size.
    */ 
   private JIntegerField  pBatchSizeField;
   
@@ -470,11 +535,22 @@ class JQueueJobsDialog
   private JBooleanField  pOverridePriorityField;
   
   /**
-   * The overriden the priority.
+   * The overriden priority.
    */ 
   private JIntegerField  pPriorityField;
   
 
+  /**
+   * Whether to override the ramp-up interval.
+   */ 
+  private JBooleanField  pOverrideRampUpField;
+  
+  /**
+   * The overriden ramp-up interval.
+   */ 
+  private JIntegerField  pRampUpField;
+
+  
   /*----------------------------------------------------------------------------------------*/
 
   /**

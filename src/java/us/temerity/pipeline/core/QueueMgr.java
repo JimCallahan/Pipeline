@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.21 2004/11/09 06:01:32 jim Exp $
+// $Id: QueueMgr.java,v 1.22 2004/12/07 04:55:16 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1847,6 +1847,15 @@ class QueueMgr
 	  host.setStatus(QueueHost.Status.Hung);
       }
 
+      for(QueueHost host : pHosts.values()) {
+	switch(host.getStatus()) {
+	case Disabled:
+	case Hung:
+	case Shutdown:
+	  host.cancelHolds();
+	}
+      }	 
+
       for(String hname : samples.keySet()) {
 	QueueHost host = pHosts.get(hname);
 	if(host != null) {
@@ -2387,6 +2396,7 @@ class QueueMgr
 	synchronized(pHosts) {
 	  timer.resume();
 	  QueueHost host = pHosts.get(bestHost);
+	  host.setHold(job.getJobID(), jreqs.getRampUp());
 	  ResourceSample sample = host.getLatestSample();
 	  sample.setNumJobs(numJobs);
 	}
@@ -3610,13 +3620,15 @@ class QueueMgr
 	}
       }
 
-      /* update the number of currently running jobs */ 
+      /* update the number of currently running jobs and release any ramp-up holds */ 
       synchronized(pHosts) {
 	QueueHost host = pHosts.get(pHostname);
 	if(host != null) {
 	  ResourceSample sample = host.getLatestSample();
 	  if(sample != null)
 	    sample.setNumJobs(numJobs[0]);
+
+	  host.cancelHold(pJobID);
 	}
       }      
     }

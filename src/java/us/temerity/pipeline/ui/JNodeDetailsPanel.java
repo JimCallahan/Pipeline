@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.29 2004/12/01 23:03:10 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.30 2004/12/07 04:55:17 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -884,6 +884,65 @@ class JNodeDetailsPanel
 		  }
 
 		  UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
+
+		  /* ramp-up interval */ 
+		  { 
+		    {
+		      JLabel label = UIMaster.createFixedLabel
+			("Ramp Up Interval:", sTSize-7, JLabel.RIGHT, 
+			 "The time interval (in seconds) to wait before scheduling " + 
+			 "new jobs to the server running the job.");
+		      pRampUpTitle = label;
+		      tpanel.add(label);
+		    }
+
+		    {
+		      Box hbox = new Box(BoxLayout.X_AXIS);
+
+		      {		  
+			JIntegerField field = 
+			  UIMaster.createIntegerField(null, sVSize, JLabel.CENTER);
+			pWorkingRampUpField = field;
+
+			field.setActionCommand("ramp-up-changed");
+			field.addActionListener(this);
+
+			hbox.add(field);
+		      }
+
+		      hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+
+		      {
+			JButton btn = new JButton();		 
+			pSetRampUpButton = btn;
+			btn.setName("SmallLeftArrowButton");
+
+			Dimension size = new Dimension(12, 12);
+			btn.setMinimumSize(size);
+			btn.setMaximumSize(size);
+			btn.setPreferredSize(size);
+
+			btn.setActionCommand("set-ramp-up");
+			btn.addActionListener(this);
+
+			hbox.add(btn);
+		      } 
+
+		      hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+
+		      {
+			JTextField field = 
+			  UIMaster.createTextField("-", sVSize, JLabel.CENTER);
+			pCheckedInRampUpField = field;
+
+			hbox.add(field);
+		      }
+
+		      vpanel.add(hbox);
+		    }
+		  }
+
+		  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
 
 		  /* maximum load */ 
 		  { 
@@ -2429,6 +2488,32 @@ class JNodeDetailsPanel
 	doPriorityChanged();
       }
 
+      /* ramp-up interval */ 
+      { 
+	if(refresh) {
+	  pWorkingRampUpField.removeActionListener(this);
+	  {
+	    if(wjreq != null) 
+	      pWorkingRampUpField.setValue(wjreq.getRampUp());
+	    else 
+	      pWorkingRampUpField.setValue(null);	
+	  }
+	  pWorkingRampUpField.addActionListener(this);
+	  
+	  pWorkingRampUpField.setEnabled(!pIsLocked && !pIsFrozen && (wjreq != null));
+	}
+
+	pSetRampUpButton.setEnabled
+	  (!pIsLocked && !pIsFrozen && (wjreq != null) && (cjreq != null));
+	
+	if(cjreq != null)
+	  pCheckedInRampUpField.setText(String.valueOf(cjreq.getRampUp()));
+	else 
+	  pCheckedInRampUpField.setText("-");
+
+	doRampUpChanged();
+      }
+
       /* maximum load */ 
       { 
 	if(refresh) {
@@ -3272,6 +3357,10 @@ class JNodeDetailsPanel
       doSetPriority();
     else if(cmd.equals("priority-changed")) 
       doPriorityChanged();
+    else if(cmd.equals("set-ramp-up")) 
+      doSetRampUp();
+    else if(cmd.equals("ramp-up-changed")) 
+      doRampUpChanged();
     else if(cmd.equals("set-maximum-load")) 
       doSetMaxLoad();
     else if(cmd.equals("maximum-load-changed")) 
@@ -3437,6 +3526,15 @@ class JNodeDetailsPanel
 		pWorkingPriorityField.setValue(jreq.getPriority());
 	      else 
 		jreq.setPriority(priority);
+	    }
+	    
+	    /* ramp-up interval */ 
+	    {
+	      Integer interval = pWorkingRampUpField.getValue();
+	      if(interval == null) 
+		pWorkingRampUpField.setValue(jreq.getRampUp());
+	      else 
+		jreq.setRampUp(interval);
 	    }
 	    
 	    /* maximum load */ 
@@ -4076,6 +4174,45 @@ class JNodeDetailsPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Set the working ramp-up interval field from the value of the checked-in field.
+   */ 
+  private void 
+  doSetRampUp()
+  { 
+    pWorkingRampUpField.removeActionListener(this);
+      pWorkingRampUpField.setText(pCheckedInRampUpField.getText());
+    pWorkingRampUpField.addActionListener(this);
+
+    doRampUpChanged();
+  }
+
+  /**
+   * Update the appearance of the ramp-up interval field after a change of value.
+   */ 
+  private void 
+  doRampUpChanged()
+  {
+    pApplyButton.setEnabled(true);
+    pApplyItem.setEnabled(true);
+    
+    Color color = Color.white;
+    if(hasWorking() && hasCheckedIn()) {
+      String winterval = pWorkingRampUpField.getText();
+      String cinterval = pCheckedInRampUpField.getText();      
+      if(!cinterval.equals(winterval)) {
+	color = Color.cyan;
+      }
+    }
+
+    pRampUpTitle.setForeground(color);
+    pWorkingRampUpField.setWarningColor(color);
+    pCheckedInRampUpField.setForeground(color);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Set the working maximum load field from the value of the checked-in field.
    */ 
   private void 
@@ -4405,12 +4542,16 @@ class JNodeDetailsPanel
 	  if(diag.overridePriority()) 
 	    priority = diag.getPriority();
 	  
+	  Integer interval = null;
+	  if(diag.overrideRampUp()) 
+	    interval = diag.getRampUp();
+	  
 	  TreeSet<String> keys = null;
 	  if(diag.overrideSelectionKeys()) 
 	    keys = diag.getSelectionKeys();
 	  
 	  QueueJobsTask task = 
-	    new QueueJobsTask(pStatus.getName(), batchSize, priority, keys);
+	    new QueueJobsTask(pStatus.getName(), batchSize, priority, interval, keys);
 	  task.start();
 	}
       }
@@ -4759,7 +4900,7 @@ class JNodeDetailsPanel
      String name
     ) 
     {
-      this(name, null, null, null);
+      this(name, null, null, null, null);
     }
 
     public 
@@ -4768,10 +4909,12 @@ class JNodeDetailsPanel
      String name, 
      Integer batchSize, 
      Integer priority, 
+     Integer rampUp, 
      TreeSet<String> selectionKeys
     ) 
     {
-      UIMaster.getInstance().super(name, pAuthor, pView, batchSize, priority, selectionKeys);
+      UIMaster.getInstance().super(name, pAuthor, pView, 
+				   batchSize, priority, rampUp, selectionKeys);
       setName("JNodeDetailsPanel:QueueJobsTask");
     }
 
@@ -5280,6 +5423,27 @@ class JNodeDetailsPanel
    * The checked-in priority field.
    */ 
   private JTextField pCheckedInPriorityField;
+
+
+  /** 
+   * The ramp-up interval title label.
+   */ 
+  private JLabel  pRampUpTitle;
+
+  /**
+   * The working ramp-up interval field.
+   */ 
+  private JIntegerField pWorkingRampUpField;
+
+  /**
+   * The set ramp-up interval button.
+   */ 
+  private JButton  pSetRampUpButton;
+
+  /**
+   * The checked-in ramp-up interval field.
+   */ 
+  private JTextField pCheckedInRampUpField;
 
 
   /**

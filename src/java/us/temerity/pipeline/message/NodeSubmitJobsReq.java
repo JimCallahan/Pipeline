@@ -1,4 +1,4 @@
-// $Id: NodeSubmitJobsReq.java,v 1.4 2004/11/02 23:06:44 jim Exp $
+// $Id: NodeSubmitJobsReq.java,v 1.5 2004/12/07 04:55:17 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -45,6 +45,9 @@ class NodeSubmitJobsReq
    *   Overrides the priority of jobs associated with the root node of the job submission 
    *   relative to other jobs.  
    * 
+   * @param rampUp
+   *   Overrides the ramp-up interval (in seconds) for the job.
+   * 
    * @param selectionKeys 
    *   Overrides the set of selection keys an eligable host is required to have for jobs 
    *   associated with the root node of the job submission.
@@ -56,6 +59,7 @@ class NodeSubmitJobsReq
    TreeSet<Integer> indices,
    Integer batchSize, 
    Integer priority, 
+   Integer rampUp, 
    Set<String> selectionKeys  
   )
     throws PipelineException
@@ -68,6 +72,7 @@ class NodeSubmitJobsReq
     pFileIndices   = indices; 
     pBatchSize     = batchSize;
     pPriority      = priority;
+    pRampUp        = rampUp; 
     pSelectionKeys = selectionKeys;
   }
 
@@ -125,6 +130,19 @@ class NodeSubmitJobsReq
     return pPriority;
   }
 
+  /** 
+   * Overrides the ramp-up interval of jobs associated with the root node of the job 
+   * submission.
+   * 
+   * @return 
+   *   The ramp-up interval or <CODE>null</CODE> to use node's original ramp-up.
+   */
+  public Integer
+  getRampUp()
+  {
+    return pRampUp; 
+  }
+
   /**
    * Overrides the set of selection keys an eligable host is required to have for jobs 
    * associated with the root node of the job submission.
@@ -175,6 +193,12 @@ class NodeSubmitJobsReq
    */
   private Integer  pPriority;
   
+  /** 
+   * Overrides the ramp-up interval of jobs associated with the root node of the job 
+   * submission.
+   */
+  private Integer  pRampUp; 
+
   /**
    * Overrides the set of selection keys an eligable host is required to have for jobs 
    * associated with the root node of the job submission.

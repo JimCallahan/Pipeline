@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.71 2004/12/04 22:01:54 jim Exp $
+// $Id: MasterMgr.java,v 1.72 2004/12/07 04:55:16 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -4267,7 +4267,8 @@ class MasterMgr
 
       /* submit the jobs */ 
       return submitJobsCommon(status, req.getFileIndices(),
-			      req.getBatchSize(), req.getPriority(), req.getSelectionKeys(), 
+			      req.getBatchSize(), req.getPriority(), req.getRampUp(), 
+			      req.getSelectionKeys(), 
 			      timer);
     }
     catch(PipelineException ex) {
@@ -4341,8 +4342,8 @@ class MasterMgr
 
       /* submit the jobs */ 
       return submitJobsCommon(status, indices, 
-			      req.getBatchSize(), req.getPriority(), req.getSelectionKeys(), 
-			      timer);
+			      req.getBatchSize(), req.getPriority(), req.getRampUp(), 
+			      req.getSelectionKeys(), timer);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
@@ -4370,6 +4371,9 @@ class MasterMgr
    *   Overrides the priority of jobs associated with the root node of the job submission 
    *   relative to other jobs.  
    * 
+   * @param rampUp
+   *   Overrides the ramp-up interval (in seconds) for the job.
+   * 
    * @param selectionKeys 
    *   Overrides the set of selection keys an eligable host is required to have for jobs 
    *   associated with the root node of the job submission.
@@ -4384,6 +4388,7 @@ class MasterMgr
    TreeSet<Integer> indices,
    Integer batchSize, 
    Integer priority, 
+   Integer rampUp, 
    Set<String> selectionKeys, 
    TaskTimer timer 
   )
@@ -4398,7 +4403,7 @@ class MasterMgr
       TreeMap<Long,QueueJob> jobs = new TreeMap<Long,QueueJob>();
       
       submitJobs(status, indices, 
-		 true, batchSize, priority, selectionKeys, 
+		 true, batchSize, priority, rampUp, selectionKeys, 
 		 extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, jobs, 
 		 timer);
       
@@ -4498,6 +4503,9 @@ class MasterMgr
    *   Overrides the priority of jobs associated with the root node of the job submission 
    *   relative to other jobs.  
    * 
+   * @param rampUp
+   *   Overrides the ramp-up interval (in seconds) for the job.
+   * 
    * @param selectionKeys 
    *   Overrides the set of selection keys an eligable host is required to have for jobs 
    *   associated with the root node of the job submission.
@@ -4531,6 +4539,7 @@ class MasterMgr
    boolean isRoot, 
    Integer batchSize, 
    Integer priority, 
+   Integer rampUp, 
    Set<String> selectionKeys, 
    TreeMap<NodeID,Long[]> extJobIDs,   
    TreeMap<NodeID,Long[]> nodeJobIDs,   
@@ -4787,7 +4796,7 @@ class MasterMgr
 		if((lindices != null) && (!lindices.isEmpty())) {
 		  NodeStatus lstatus = status.getSource(link.getName());
 		  submitJobs(lstatus, lindices, 
-			     false, null, null, null, 
+			     false, null, null, null, null, 
 			     extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, 
 			     jobs, timer);
 		}
@@ -4886,6 +4895,9 @@ class MasterMgr
 	  {
 	    if(isRoot && (priority != null)) 
 	      jreqs.setPriority(priority);
+
+	    if(isRoot && (rampUp != null)) 
+	      jreqs.setRampUp(rampUp); 
 
 	    if(isRoot && (selectionKeys != null)) {
 	      jreqs.removeAllSelectionKeys(); 
@@ -4996,7 +5008,7 @@ class MasterMgr
       case Dependency:
 	{
 	  submitJobs(lstatus, null, 
-		     false, null, null, null, 
+		     false, null, null, null, null, 
 		     extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, 
 		     jobs, timer);
 	  

@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.70 2004/12/01 23:03:10 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.71 2004/12/07 04:55:17 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -3141,11 +3141,15 @@ class JNodeViewerPanel
 	if(diag.overridePriority()) 
 	  priority = diag.getPriority();
 
+	Integer interval = null;
+	if(diag.overrideRampUp()) 
+	  interval = diag.getRampUp();
+	  
 	TreeSet<String> keys = null;
 	if(diag.overrideSelectionKeys()) 
 	  keys = diag.getSelectionKeys();
 
-	QueueJobsTask task = new QueueJobsTask(roots, batchSize, priority, keys);
+	QueueJobsTask task = new QueueJobsTask(roots, batchSize, priority, interval, keys);
 	task.start();
       }
     }
@@ -4371,7 +4375,7 @@ class JNodeViewerPanel
      TreeSet<String> names
     ) 
     {
-      this(names, null, null, null);
+      this(names, null, null, null, null);
     }
 
     public 
@@ -4380,10 +4384,12 @@ class JNodeViewerPanel
      TreeSet<String> names, 
      Integer batchSize, 
      Integer priority, 
+     Integer rampUp, 
      TreeSet<String> selectionKeys
     ) 
     {
-      UIMaster.getInstance().super(names, pAuthor, pView, batchSize, priority, selectionKeys);
+      UIMaster.getInstance().super(names, pAuthor, pView, 
+				   batchSize, priority, rampUp, selectionKeys);
       setName("JNodeViewerPanel:QueueJobsTask");
     }
 

@@ -1,4 +1,4 @@
-// $Id: JobReqs.java,v 1.10 2004/08/22 21:47:48 jim Exp $
+// $Id: JobReqs.java,v 1.11 2004/12/07 04:55:12 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -57,7 +57,17 @@ import java.io.*;
  *     requirements are met, the job dispatcher adds the server to its list of candidate 
  *     hosts for the job.  If after all hosts are processed, there are no candidate hosts
  *     which meet the dynamic requirements, the current job is left in the queue and the 
- *     dispatcher proceeds the next job. <BR>
+ *     dispatcher proceeds the next job. <P> 
+ * 
+ *     Some jobs may take a fair amount of time to consume a majority of the system 
+ *     resources which will be used by the job over its lifetime.  In these cases, the 
+ *     dynamic resources sampled early in the life of the job under represent the eventual
+ *     resource usage of the job.  If several job of this kind are assigned in quick 
+ *     succession to a server, it will become overloaded once the jobs have reached their
+ *     peak resource usage.  To prevent overloads of this kind, jobs may optionally specify
+ *     a ramp-up time interval which delays the assignment of further jobs to a server while
+ *     the current job is getting started.  Job servers will not be considered by the 
+ *     dispatcher during the ramp-up interval of any jobs currently running on the server.
  *   </DIV> <BR>
  *   
  *   Selection Keys <BR>
@@ -115,6 +125,9 @@ class JobReqs
    * @param priority 
    *    The priority of the job relative to other jobs.  
    * 
+   * @param rampUp
+   *    The ramp-up interval (in seconds) for the job.
+   * 
    * @param maxLoad 
    *    The maxmimum system load allowed on an eligable host.
    * 
@@ -135,6 +148,7 @@ class JobReqs
   JobReqs
   (
    int priority, 
+   int rampUp,
    float maxLoad,              
    int minMemory,              
    int minDisk,                
@@ -144,6 +158,7 @@ class JobReqs
   {
     setPriority(priority);
 
+    setRampUp(rampUp);
     setMaxLoad(maxLoad);
     setMinMemory(minMemory);
     setMinDisk(minDisk);
@@ -163,7 +178,7 @@ class JobReqs
   public static JobReqs
   defaultJobReqs() 
   {
-    return (new JobReqs(50, 2.5f, 134217728, 67108864, 
+    return (new JobReqs(50, 0, 2.5f, 134217728, 67108864, 
 			new HashSet<String>(), new HashSet<String>()));
   }
 
@@ -201,6 +216,30 @@ class JobReqs
   /*----------------------------------------------------------------------------------------*/
 
   /** 
+   * Get the ramp-up interval (in seconds).
+   */
+  public int
+  getRampUp() 
+  {
+    return pRampUp;
+  }
+
+  /** 
+   * Set the ramp-up interval (in seconds).
+   */ 
+  public void 
+  setRampUp
+  (
+   int interval
+  ) 
+  {
+    if(interval < 0)
+      throw new IllegalArgumentException("The ramp-up interval cannot be negative!");
+    pRampUp = interval;
+  }
+
+
+  /** 
    * Get the maximum allowable system load.
    */
   public float
@@ -211,9 +250,6 @@ class JobReqs
 
   /** 
    * Set the maximum allowable system load on an eligable host.
-   * 
-   * @param load 
-   *    The maxmimum system load allowed.
    */ 
   public void 
   setMaxLoad
@@ -239,8 +275,6 @@ class JobReqs
   /**
    * Set the minimum amount of free memory (in bytes) required on an eligable host.
    * 
-   * @param bytes
-   *    The minimum amount of free memory.
    */ 
   public void 
   setMinMemory
@@ -267,9 +301,6 @@ class JobReqs
   /** 
    * Set the minimum amount of free temporary local disk space (in bytes) required on an 
    * eligable host.
-   *
-   * @param bytes 
-   *    The minimum amount of free temporary local disk space.
    */
   public void 
   setMinDisk
@@ -466,6 +497,7 @@ class JobReqs
       JobReqs reqs = (JobReqs) obj;
 
       if((pPriority == reqs.pPriority) &&
+	 (pRampUp == reqs.pRampUp) && 
 	 (pMaxLoad == reqs.pMaxLoad) && 
 	 (pMinMemory == reqs.pMinMemory) && 
 	 (pMinDisk == reqs.pMinDisk) && 
@@ -515,6 +547,7 @@ class JobReqs
     throws GlueException
   {
     encoder.encode("Priority",  pPriority);
+    encoder.encode("RampUp",    pRampUp);
     encoder.encode("MaxLoad",   pMaxLoad);
     encoder.encode("MinMemory", pMinMemory);
     encoder.encode("MinDisk",   pMinDisk);
@@ -537,6 +570,11 @@ class JobReqs
     if(priority == null) 
       throw new GlueException("The \"Priority\" was missing!");
     pPriority = priority;
+
+    Integer interval = (Integer) decoder.decode("RampUp");
+    if(interval == null) 
+      interval = 0;
+    pRampUp = interval;
 
     Float load = (Float) decoder.decode("MaxLoad");
     if(load == null) 
@@ -584,6 +622,11 @@ class JobReqs
    * The relative job priority.
    */
   private int  pPriority;
+ 
+  /**
+   * The ramp-up interval (in seconds).
+   */
+  private int  pRampUp;
  
   /**
    * The maximum allowable system load on an eligable host.

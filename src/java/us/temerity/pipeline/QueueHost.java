@@ -1,4 +1,4 @@
-// $Id: QueueHost.java,v 1.5 2004/10/28 17:06:13 jim Exp $
+// $Id: QueueHost.java,v 1.6 2004/12/07 04:55:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -57,8 +57,8 @@ class QueueHost
   {
     pStatus = Status.Shutdown;
 
+    pHoldTimeStamps = new TreeMap<Long,Date>();
     pSamples = new LinkedList<ResourceSample>();
-    
     pSelectionBiases = new TreeMap<String,Integer>();
   }
 
@@ -255,6 +255,79 @@ class QueueHost
     pTotalDisk = disk;
   }
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the timestamp of when all ramp-up intervals will have expired.
+   */ 
+  public Date
+  getHold() 
+  {
+    Date latest = new Date(0L);
+    for(Date stamp : pHoldTimeStamps.values()) {
+      if(stamp.compareTo(latest) > 0)
+	latest = stamp;
+    }
+    return latest;
+  }
+
+  /**
+   * Get the 
+   */ 
+  public Set<Long> 
+  getHeldJobIDs() 
+  {
+    return Collections.unmodifiableSet(pHoldTimeStamps.keySet());
+  }
+
+  /**
+   * Update the hold timestamp for the given job based on the job's ramp-up interval.
+   * 
+   * @param jobID
+   *   The unique job identifier.
+   * 
+   * @param interval
+   *   The ramp-up interval (in seconds).
+   */ 
+  public void 
+  setHold
+  (
+   long jobID, 
+   int interval
+  ) 
+  {
+    if(interval > 0) {
+      Date stamp = new Date(Dates.now().getTime() + interval*1000L);
+      pHoldTimeStamps.put(jobID, stamp);
+    }
+  }
+
+  /**
+   * Cancel the hold for the given completed job.
+   * 
+   * @param jobID
+   *   The unique job identifier.
+   */ 
+  public void 
+  cancelHold
+  (
+   long jobID
+  ) 
+  {
+    pHoldTimeStamps.remove(jobID);
+  }
+   
+  /**
+   * Cancel all holds.
+   */ 
+  public void 
+  cancelHolds() 
+  {
+    pHoldTimeStamps.clear();
+  }
+   
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -461,8 +534,9 @@ class QueueHost
     if((pReservation != null) && (!pReservation.equals(author)))
       return null;
 
-    long now = Dates.now().getTime();
-    if(((now - sample.getTimeStamp().getTime()) > sSampleInterval) ||
+    Date now = Dates.now();
+    if((getHold().compareTo(now) > 0) ||
+       ((now.getTime() - sample.getTimeStamp().getTime()) > sSampleInterval) ||
        (sample.getNumJobs() >= pJobSlots) ||
        (sample.getLoad() > jreqs.getMaxLoad()) ||
        (sample.getMemory() < jreqs.getMinMemory()) || 
@@ -656,6 +730,12 @@ class QueueHost
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The timestamps of when the ramp-up intervals for jobs assigned to this host will 
+   * have completed indexed by job ID.
+   */ 
+  private TreeMap<Long,Date>  pHoldTimeStamps;
 
   /**
    * The system resource usage samples (newest to oldest).

@@ -1,4 +1,4 @@
-// $Id: JQueueJobDetailsPanel.java,v 1.12 2004/12/01 23:03:10 jim Exp $
+// $Id: JQueueJobDetailsPanel.java,v 1.13 2004/12/07 04:55:17 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -396,6 +396,18 @@ class JQueueJobDetailsPanel
 	      }
 	      
 	      UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
+	      
+	      /* ramp-up interval */ 
+	      {
+		pRampUpField = UIMaster.createTitledIntegerField
+		  (tpanel, "Ramp Up Interval:", sTSize, 
+		   vpanel, null, sVSize, 
+		   "The time interval (in seconds) to wait before scheduling " + 
+		   "new jobs to the server running the job.");
+		pRampUpField.setEditable(false);
+	      }
+	      
+	      UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
 	      
 	      /* maximum load */ 
 	      { 
@@ -887,12 +899,14 @@ class JQueueJobDetailsPanel
 	JobReqs jreqs = pJob.getJobRequirements();
 	
 	pPriorityField.setValue(jreqs.getPriority());
+	pRampUpField.setValue(jreqs.getRampUp());
 	pMaxLoadField.setValue(jreqs.getMaxLoad());
 	pMinMemoryField.setValue(jreqs.getMinMemory());
 	pMinDiskField.setValue(jreqs.getMinDisk());
       }
       else {
 	pPriorityField.setValue(null);
+	pRampUpField.setValue(null);
 	pMaxLoadField.setValue(null);
 	pMinMemoryField.setValue(null);
 	pMinDiskField.setValue(null);
@@ -1645,6 +1659,11 @@ class JQueueJobDetailsPanel
    * The priority field.
    */ 
   private JIntegerField pPriorityField;
+
+  /**
+   * The ramp-up interval field.
+   */ 
+  private JIntegerField pRampUpField;
 
   /**
    * The maximum load field.

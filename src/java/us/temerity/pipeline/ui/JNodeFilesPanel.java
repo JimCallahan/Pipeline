@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.21 2004/12/01 23:03:10 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.22 2004/12/07 04:55:17 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1482,11 +1482,15 @@ class JNodeFilesPanel
       if(diag.overridePriority()) 
 	  priority = diag.getPriority();
       
+      Integer interval = null;
+      if(diag.overrideRampUp()) 
+	interval = diag.getRampUp();
+	  
       TreeSet<String> keys = null;
       if(diag.overrideSelectionKeys()) 
 	keys = diag.getSelectionKeys();
 
-      QueueJobsTask task = new QueueJobsTask(indices, batchSize, priority, keys);
+      QueueJobsTask task = new QueueJobsTask(indices, batchSize, priority, interval, keys);
       task.start();
     }
   }
@@ -2425,7 +2429,7 @@ class JNodeFilesPanel
      TreeSet<Integer> indices
     ) 
     {
-      this(indices, null, null, null);
+      this(indices, null, null, null, null);
     }
     
     public 
@@ -2434,6 +2438,7 @@ class JNodeFilesPanel
      TreeSet<Integer> indices, 
      Integer batchSize, 
      Integer priority, 
+     Integer rampUp, 
      TreeSet<String> selectionKeys
     ) 
     {
@@ -2442,6 +2447,7 @@ class JNodeFilesPanel
       pIndices       = indices; 
       pBatchSize     = batchSize;
       pPriority      = priority; 
+      pRampUp        = rampUp; 
       pSelectionKeys = selectionKeys;
     }
 
@@ -2452,7 +2458,8 @@ class JNodeFilesPanel
       if(master.beginPanelOp("Submitting Jobs to the Queue...")) {
 	try {
 	  master.getMasterMgrClient().submitJobs(pAuthor, pView, pStatus.getName(), pIndices, 
-						 pBatchSize, pPriority, pSelectionKeys);
+						 pBatchSize, pPriority, pRampUp, 
+						 pSelectionKeys);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -2474,6 +2481,7 @@ class JNodeFilesPanel
     private TreeSet<Integer> pIndices; 
     private Integer          pBatchSize;
     private Integer          pPriority;
+    private Integer          pRampUp; 
     private TreeSet<String>  pSelectionKeys;
   }
 

@@ -221,6 +221,7 @@ ScriptOptsParser
   private ExecutionMethod  pExecutionMethod;
   private Integer          pBatchSize;
   private Integer          pPriority;
+  private Integer          pRampUp; 
   private Float            pMaxLoad;
   private Long             pMinMemory;
   private Long             pMinDisk;
@@ -349,6 +350,7 @@ TOKEN :
 | <PARALLEL:        "--parallel">           
 | <BATCH_SIZE:      "--batch-size">      : INTEGER_SEP
 | <PRIORITY:        "--priority">        : INTEGER_SEP
+| <RAMP_UP:         "--ramp-up">         : INTEGER_SEP
 | <MAX_LOAD:        "--max-load">        : REAL_SEP     
 | <MIN_MEMORY:      "--min-memory">      : BYTE_SIZE_SEP
 | <MIN_DISK:        "--min-disk">        : BYTE_SIZE_SEP
@@ -3022,6 +3024,7 @@ WorkingRegister()
   pExecutionMethod = null;
   pBatchSize       = null;
   pPriority        = null;
+  pRampUp          = null;
   pMaxLoad         = null;
   pMinMemory       = null;
   pMinDisk         = null;
@@ -3039,7 +3042,7 @@ WorkingRegister()
       (new NodeID(pAuthor, pView, name), pFileSeq, pToolset, pEditorName, pNoAction, 
        pActionName, pActionVersionID, pActionEnabled, pParams, pSourceParams, 
        pOverflowPolicy, pExecutionMethod, pBatchSize, 
-       pPriority, pMaxLoad, pMinMemory, pMinDisk, 
+       pPriority, pRampUp, pMaxLoad, pMinMemory, pMinDisk, 
        pLicenseKeys, pSelectionKeys,
        pMasterMgrClient);
 
@@ -3056,7 +3059,7 @@ WorkingRegisterOpts()
   (Author() | View() | FSeq() | Toolset() | Editor() | 
    Action() | ActionEnabled() | Param() | SourceParam() | 
    Ignore() | Abort() | Serial() | Parallel() | BatchSize() | 
-   Priority() | MaxLoad() | MinMemory() | MinDisk() | 
+   Priority() | RampUp() | MaxLoad() | MinMemory() | MinDisk() | 
    LicenseKey() | SelectionKey()) 
   {}
 }
@@ -3117,6 +3120,7 @@ WorkingSet()
   pExecutionMethod = null;
   pBatchSize       = null;
   pPriority        = null;
+  pRampUp          = null;
   pMaxLoad         = null;
   pMinMemory       = null;
   pMinDisk         = null;
@@ -3130,7 +3134,7 @@ WorkingSet()
       (new NodeID(pAuthor, pView, name), pToolset, pEditorName, pNoAction, 
        pActionName, pActionVersionID, pActionEnabled, pParams, pSourceParams, 
        pOverflowPolicy, pExecutionMethod, pBatchSize, 
-       pPriority, pMaxLoad, pMinMemory, pMinDisk, 
+       pPriority, pRampUp, pMaxLoad, pMinMemory, pMinDisk, 
        pLicenseKeys, pSelectionKeys,
        pMasterMgrClient);
 
@@ -3147,7 +3151,7 @@ WorkingSetOpts()
   (Author() | View() | Toolset() | Editor() | 
    NoAction() | Action() | ActionEnabled() | Param() | NoParam() | SourceParam() | 
    Ignore() | Abort() | Serial() | Parallel() | BatchSize() | 
-   Priority() | MaxLoad() | MinMemory() | MinDisk() | 
+   Priority() | RampUp() | MaxLoad() | MinMemory() | MinDisk() | 
    LicenseKey() | SelectionKey()) 
   {}
 }
@@ -4738,6 +4742,7 @@ NoAction() :
     pExecutionMethod = null;
     pBatchSize       = null;
     pPriority        = null;
+    pRampUp          = null;
     pMaxLoad         = null;
     pMinMemory       = null;
     pMinDisk         = null;
@@ -4881,6 +4886,19 @@ Priority()
   <PRIORITY> EQ() p=IntegerLiteral() AE()
   {
     pPriority = p;
+  }
+}
+
+void 
+RampUp()
+  throws PipelineException : 
+{
+  int i; 
+}
+{
+  <RAMP_UP> EQ() i=IntegerLiteral() AE()
+  {
+    pRampUp = i; 
   }
 }
 

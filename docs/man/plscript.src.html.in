@@ -375,7 +375,9 @@ Node Versions</a></li>
 [<a href="#--batch-size"><span style="font-weight: bold;">--batch-size</span></a>=<span
  style="font-style: italic;">integer</span>] [<a href="#--priority"><span
  style="font-weight: bold;">--priority</span></a>=<span
- style="font-style: italic;">integer</span>] [<a href="#--max-load"><span
+ style="font-style: italic;">integer</span>] [<a href="#--ramp-up"><span
+ style="font-weight: bold;">--ramp-up</span></a>=<span
+ style="font-style: italic;">milliseconds</span>] [<a href="#--max-load"><span
  style="font-weight: bold;">--max-load</span></a>=<span
  style="font-style: italic;">real</span>] [<a href="#--min-memory"><span
  style="font-weight: bold;">--min-memory</span></a>=<span
@@ -447,7 +449,11 @@ Node Versions</a></li>
  href="#--batch-size"><span style="font-weight: bold;">--batch-size</span></a>=<span
  style="font-style: italic;">integer</span>] [<a href="#--priority"><span
  style="font-weight: bold;">--priority</span></a>=<span
- style="font-style: italic;">integer</span>] [<a href="#--max-load"><span
+ style="font-style: italic;">integer</span>] </span><span
+ style="font-weight: normal;">[<a href="#--ramp-up"><span
+ style="font-weight: bold;">--ramp-up</span></a>=<span
+ style="font-style: italic;">milliseconds</span>] </span><span
+ style="font-weight: normal;">[<a href="#--max-load"><span
  style="font-weight: bold;">--max-load</span></a>=<span
  style="font-style: italic;">real</span>] [<a href="#--min-memory"><span
  style="font-weight: bold;">--min-memory</span></a>=<span
@@ -1420,6 +1426,15 @@ assign to jobs associated with the target node.&nbsp; The Pipeline
 queue
 processes jobs in descending order of priority.&nbsp; <br>
   </div>
+  <br>
+  <span style="font-weight: normal;"><span style="font-weight: bold;"><a
+ name="--ramp-up"></a>--ramp-up</span>=<span style="font-style: italic;">milliseconds<br>
+  </span></span>
+  <div style="margin-left: 40px;"><br>
+Specified the ramp-up time interval (<span style="font-weight: normal;"><span
+ style="font-style: italic;">milliseconds</span>) during which no new
+jobs may be assigned to the server running this job.<br>
+  </span></div>
   <br>
   <span style="font-weight: normal;"></span><span
  style="font-weight: normal;"><span style="font-weight: bold;"><a
@@ -2450,7 +2465,11 @@ links.<br>
  style="font-style: italic;">integer</span>] <br>
 &nbsp;&nbsp;&nbsp; [<a href="#--priority"><span
  style="font-weight: bold;">--priority</span></a>=<span
- style="font-style: italic;">integer</span>] [<a href="#--max-load"><span
+ style="font-style: italic;">integer</span>] </span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;">[<a
+ href="#--ramp-up"><span style="font-weight: bold;">--ramp-up</span></a>=<span
+ style="font-style: italic;">milliseconds</span>] </span><span
+ style="font-weight: normal;">[<a href="#--max-load"><span
  style="font-weight: bold;">--max-load</span></a>=<span
  style="font-style: italic;">real</span>] <br>
 &nbsp;&nbsp;&nbsp; [<a href="#--min-memory"><span
@@ -2553,7 +2572,11 @@ with the working version.<br>
  style="font-style: italic;">integer</span>] <br>
 &nbsp;&nbsp;&nbsp; [<a href="#--priority"><span
  style="font-weight: bold;">--priority</span></a>=<span
- style="font-style: italic;">integer</span>] [<a href="#--max-load"><span
+ style="font-style: italic;">integer</span>]</span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;">
+[<a href="#--ramp-up"><span style="font-weight: bold;">--ramp-up</span></a>=<span
+ style="font-style: italic;">milliseconds</span>]</span><span
+ style="font-weight: normal;"> [<a href="#--max-load"><span
  style="font-weight: bold;">--max-load</span></a>=<span
  style="font-style: italic;">real</span>] <br>
 &nbsp;&nbsp;&nbsp; [<a href="#--min-memory"><span

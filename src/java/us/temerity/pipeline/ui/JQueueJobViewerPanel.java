@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.22 2004/12/01 23:03:10 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.23 2004/12/07 04:55:17 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -2238,11 +2238,15 @@ class JQueueJobViewerPanel
 	if(diag.overridePriority()) 
 	  priority = diag.getPriority();
 	
+	Integer interval = null;
+	if(diag.overrideRampUp()) 
+	  interval = diag.getRampUp();
+	
 	TreeSet<String> keys = null;
 	if(diag.overrideSelectionKeys()) 
 	  keys = diag.getSelectionKeys();
 
-	QueueJobsTask task = new QueueJobsTask(targets, batchSize, priority, keys);
+	QueueJobsTask task = new QueueJobsTask(targets, batchSize, priority, interval, keys);
 	task.start();
       }
     }
@@ -2831,7 +2835,7 @@ class JQueueJobViewerPanel
      TreeMap<NodeID,TreeSet<FileSeq>> targets
     ) 
     {
-      this(targets, null, null, null);
+      this(targets, null, null, null, null);
     }
     
     public 
@@ -2840,6 +2844,7 @@ class JQueueJobViewerPanel
      TreeMap<NodeID,TreeSet<FileSeq>> targets,
      Integer batchSize, 
      Integer priority, 
+     Integer rampUp, 
      TreeSet<String> selectionKeys
     ) 
     {
@@ -2848,6 +2853,7 @@ class JQueueJobViewerPanel
       pTargets       = targets;
       pBatchSize     = batchSize;
       pPriority      = priority; 
+      pRampUp        = rampUp; 
       pSelectionKeys = selectionKeys;
     }
 
@@ -2860,7 +2866,8 @@ class JQueueJobViewerPanel
 	  for(NodeID nodeID : pTargets.keySet()) {
 	    master.updatePanelOp("Resubmitting Jobs to the Queue: " + nodeID.getName());
 	    master.getMasterMgrClient().resubmitJobs(nodeID, pTargets.get(nodeID), 
-						     pBatchSize, pPriority, pSelectionKeys);
+						     pBatchSize, pPriority, pRampUp, 
+						     pSelectionKeys);
 	  }
 	}
 	catch(PipelineException ex) {
@@ -2878,6 +2885,7 @@ class JQueueJobViewerPanel
     private TreeMap<NodeID,TreeSet<FileSeq>>  pTargets;
     private Integer                           pBatchSize;
     private Integer                           pPriority;
+    private Integer                           pRampUp;
     private TreeSet<String>                   pSelectionKeys;
   }
 

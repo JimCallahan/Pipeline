@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.39 2004/11/17 13:33:50 jim Exp $
+// $Id: MasterMgrClient.java,v 1.40 2004/12/07 04:55:12 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -2322,7 +2322,7 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    return submitJobs(new NodeID(author, view, name), indices, null, null, null);
+    return submitJobs(new NodeID(author, view, name), indices, null, null, null, null);
   }
 
   /**
@@ -2359,6 +2359,9 @@ class MasterMgrClient
    *   Overrides the priority of jobs associated with the root node of the job submission 
    *   relative to other jobs.  
    * 
+   * @param rampUp
+   *    The ramp-up interval (in seconds) for the job.
+   * 
    * @param selectionKeys 
    *   Overrides the set of selection keys an eligable host is required to have for jobs 
    *   associated with the root node of the job submission.
@@ -2378,12 +2381,13 @@ class MasterMgrClient
    TreeSet<Integer> indices, 
    Integer batchSize, 
    Integer priority, 
+   Integer rampUp, 
    Set<String> selectionKeys   
   ) 
     throws PipelineException
   {
     return submitJobs(new NodeID(author, view, name), indices, 
-		      batchSize, priority, selectionKeys);
+		      batchSize, priority, rampUp, selectionKeys);
   }
 
   /**
@@ -2414,7 +2418,7 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    return submitJobs(nodeID, indices, null, null, null);
+    return submitJobs(nodeID, indices, null, null, null, null);
   }
 
   /**
@@ -2445,6 +2449,9 @@ class MasterMgrClient
    *   Overrides the priority of jobs associated with the root node of the job submission 
    *   relative to other jobs.  
    * 
+   * @param rampUp
+   *    The ramp-up interval (in seconds) for the job.
+   * 
    * @param selectionKeys 
    *   Overrides the set of selection keys an eligable host is required to have for jobs 
    *   associated with the root node of the job submission.
@@ -2461,7 +2468,8 @@ class MasterMgrClient
    NodeID nodeID,
    TreeSet<Integer> indices,
    Integer batchSize, 
-   Integer priority, 
+   Integer priority,  
+   Integer rampUp, 
    Set<String> selectionKeys   
   ) 
     throws PipelineException
@@ -2473,7 +2481,7 @@ class MasterMgrClient
     verifyConnection();
 
     NodeSubmitJobsReq req = 
-      new NodeSubmitJobsReq(nodeID, indices, batchSize, priority, selectionKeys);
+      new NodeSubmitJobsReq(nodeID, indices, batchSize, priority, rampUp, selectionKeys);
 
     Object obj = performTransaction(MasterRequest.SubmitJobs, req);
     if(obj instanceof NodeSubmitJobsRsp) {
@@ -2519,6 +2527,9 @@ class MasterMgrClient
    *   Overrides the priority of jobs associated with the root node of the job submission 
    *   relative to other jobs.  
    * 
+   * @param rampUp
+   *    The ramp-up interval (in seconds) for the job.
+   * 
    * @param selectionKeys 
    *   Overrides the set of selection keys an eligable host is required to have for jobs 
    *   associated with the root node of the job submission.
@@ -2536,6 +2547,7 @@ class MasterMgrClient
    TreeSet<FileSeq> targetSeqs, 
    Integer batchSize, 
    Integer priority, 
+   Integer rampUp, 
    Set<String> selectionKeys   
   ) 
     throws PipelineException
@@ -2547,7 +2559,7 @@ class MasterMgrClient
     verifyConnection();
 
     NodeResubmitJobsReq req = 
-      new NodeResubmitJobsReq(nodeID, targetSeqs, batchSize, priority, selectionKeys);
+      new NodeResubmitJobsReq(nodeID, targetSeqs, batchSize, priority, rampUp, selectionKeys);
 
     Object obj = performTransaction(MasterRequest.ResubmitJobs, req);
     if(obj instanceof NodeSubmitJobsRsp) {

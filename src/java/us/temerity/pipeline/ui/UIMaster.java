@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.61 2004/12/01 23:03:10 jim Exp $
+// $Id: UIMaster.java,v 1.62 2004/12/07 04:55:17 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -4083,6 +4083,7 @@ class UIMaster
      String view, 
      Integer batchSize, 
      Integer priority, 
+     Integer interval, 
      TreeSet<String> selectionKeys
     ) 
     {
@@ -4093,6 +4094,7 @@ class UIMaster
 
       pBatchSize     = batchSize;
       pPriority      = priority; 
+      pRampUp        = interval;
       pSelectionKeys = selectionKeys;
     }
 
@@ -4104,6 +4106,7 @@ class UIMaster
      String view, 
      Integer batchSize, 
      Integer priority, 
+     Integer interval, 
      TreeSet<String> selectionKeys
     ) 
     {
@@ -4113,6 +4116,7 @@ class UIMaster
 
       pBatchSize     = batchSize;
       pPriority      = priority; 
+      pRampUp        = interval;
       pSelectionKeys = selectionKeys;
     }
 
@@ -4125,7 +4129,8 @@ class UIMaster
 	  for(String name : pNames) {
 	    master.updatePanelOp("Submitting Jobs to the Queue: " + name);
 	    master.getMasterMgrClient().submitJobs(pAuthorName, pViewName, name, null, 
-						   pBatchSize, pPriority, pSelectionKeys);
+						   pBatchSize, pPriority, pRampUp, 
+						   pSelectionKeys);
 	  }
 	}
 	catch(PipelineException ex) {
@@ -4143,6 +4148,7 @@ class UIMaster
     private TreeSet<String>  pNames;  
     private Integer          pBatchSize;
     private Integer          pPriority;
+    private Integer          pRampUp; 
     private TreeSet<String>  pSelectionKeys;
   }
 

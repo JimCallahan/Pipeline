@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.23 2004/11/19 06:45:56 jim Exp $
+// $Id: ScriptApp.java,v 1.24 2004/12/07 04:55:16 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -208,7 +208,7 @@ class ScriptApp
       "        [--action-enabled=true|false] [--param=name:value ...]\n" +
       "        [--source-param=source-name,name:value ...]\n" +
       "        [--ignore | --abort] [--serial | --parallel] [--batch-size=integer]\n" +
-      "        [--priority=integer] [--max-load=real]\n" +
+      "        [--priority=integer] [--ramp-up=milliseconds] [--max-load=real]\n" +
       "        [--min-memory=bytes[K|M|G]] [--min-disk=bytes[K|M|G]]\n" +
       "        [--license-key=key-name[:true|false] ...]\n" +
       "        [--selection-key=key-name[:true|false] ...]\n" +
@@ -222,7 +222,7 @@ class ScriptApp
       "        [--action-enabled=true|false] [--param=name:value ...]\n" + 
       "        [--no-param=source-name | --source-param=source-name,name:value ...]\n" +
       "        [--ignore | --abort] [--serial | --parallel] [--batch-size=integer]\n" +
-      "        [--priority=integer] [--max-load=real]\n" +
+      "        [--priority=integer] [--ramp-up=milliseconds] [--max-load=real]\n" +
       "        [--min-memory=bytes[K|M|G]] [--min-disk=bytes[K|M|G]]\n" +
       "        [--license-key=key-name[:true|false] ...]\n" + 
       "        [--selection-key=key-name[:true|false] ...]\n" +
@@ -891,6 +891,7 @@ class ScriptApp
 	 "Batch Size        : " + batchSize + "\n" + 
 	 "\n" + 
 	 "Priority          : " + jreqs.getPriority() + "\n" + 
+	 "Ramp Up Interval  : " + jreqs.getRampUp() + "ms\n" +
 	 "Maximum Load      : " + String.format("%1$.2f", jreqs.getMaxLoad()) + "\n" +
 	 "Minimum Memory    : " + formatLong(jreqs.getMinMemory()) + "\n" +
 	 "Minimum Disk      : " + formatLong(jreqs.getMinDisk()));
@@ -976,6 +977,7 @@ class ScriptApp
    OverflowPolicy overflowPolicy,
    ExecutionMethod executionMethod,
    Integer batchSize,
+   Integer rampUp, 
    Integer priority,
    Float maxLoad,
    Long minMemory,
@@ -1016,7 +1018,7 @@ class ScriptApp
 	 (TreeMap<String,String>) params, 
 	 (TreeMap<String,TreeMap<String,String>>) sourceParams, 
 	 overflowPolicy, executionMethod, batchSize,
-	 priority, maxLoad, minMemory, minDisk,
+	 priority, rampUp, maxLoad, minMemory, minDisk,
 	 (TreeMap<String,Boolean>) licenseKeys, (TreeMap<String,Boolean>) selectionKeys,
 	 null, null, null, null, 
 	 client);
@@ -1047,6 +1049,7 @@ class ScriptApp
    ExecutionMethod executionMethod,
    Integer batchSize,
    Integer priority,
+   Integer rampUp, 
    Float maxLoad,
    Long minMemory,
    Long minDisk,
@@ -1087,7 +1090,7 @@ class ScriptApp
 	 (TreeMap<String,String>) params, 
 	 (TreeMap<String,TreeMap<String,String>>) sourceParams, 
 	 overflowPolicy, executionMethod, batchSize,
-	 priority, maxLoad, minMemory, minDisk,
+	 priority, rampUp, maxLoad, minMemory, minDisk,
 	 (TreeMap<String,Boolean>) licenseKeys, (TreeMap<String,Boolean>) selectionKeys,
 	 prevJobReqs, prevOverflowPolicy, prevExecutionMethod, prevBatchSize, 
 	 client);
@@ -1116,6 +1119,7 @@ class ScriptApp
    ExecutionMethod executionMethod,
    Integer batchSize,
    Integer priority,
+   Integer rampUp, 
    Float maxLoad,
    Long minMemory,
    Long minDisk,
@@ -1299,6 +1303,9 @@ class ScriptApp
 	  if(priority != null) 
 	    jreqs.setPriority(priority);
 	  
+	  if(rampUp != null) 
+	    jreqs.setRampUp(rampUp);
+
 	  if(maxLoad != null) 
 	    jreqs.setMaxLoad(maxLoad);
 	  
@@ -2188,6 +2195,7 @@ class ScriptApp
 	  String mem = "-";
 	  String mbs = "-";
 	  String mp  = "-";
+	  String mru = "-";
 	  String mml = "-";
 	  String mmm = "-";
 	  String mmd = "-";
@@ -2199,6 +2207,7 @@ class ScriptApp
 	      mbs = mod.getBatchSize().toString();
 	    
 	    mp  = String.valueOf(mjreqs.getPriority());
+	    mru = String.valueOf(mjreqs.getRampUp());
 	    mml = String.format("%1$.2f", mjreqs.getMaxLoad());
 	    mmm = formatLong(mjreqs.getMinMemory()); 
 	    mmd = formatLong(mjreqs.getMinDisk());
@@ -2208,6 +2217,7 @@ class ScriptApp
 	  String vem = "-";
 	  String vbs = "-";
 	  String vp  = "-";
+	  String vru = "-";
 	  String vml = "-";
 	  String vmm = "-";
 	  String vmd = "-";
@@ -2219,6 +2229,7 @@ class ScriptApp
 	      vbs = vsn.getBatchSize().toString();
 	    
 	    vp  = String.valueOf(vjreqs.getPriority());
+	    vru = String.valueOf(vjreqs.getRampUp());
 	    vml = String.format("%1$.2f", vjreqs.getMaxLoad());
 	    vmm = formatLong(vjreqs.getMinMemory()); 
 	    vmd = formatLong(vjreqs.getMinDisk());
@@ -2232,6 +2243,7 @@ class ScriptApp
 	     "Batch Size        : " + pad(mbs, ' ', 30) + " : " + vbs + "\n" +
 	     "\n" + 
 	     "Priority          : " + pad(mp, ' ', 30) + " : " + vp + "\n" +
+	     "Ramp Up Interval  : " + pad(mru, ' ', 30) + " : " + vru + "\n" +
 	     "Maximum Load      : " + pad(mml, ' ', 30) + " : " + vml + "\n" +
 	     "Minimum Memory    : " + pad(mmm, ' ', 30) + " : " + vmm + "\n" +
 	     "Minimum Disk      : " + pad(mmd, ' ', 30) + " : " + vmd);
