@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.4 2004/06/02 21:30:06 jim Exp $
+// $Id: MasterRequest.java,v 1.5 2004/06/08 02:24:14 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -60,6 +60,8 @@ enum MasterRequest
   CreateToolset, 
 
 
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Get the names and revision numbers of all toolset packages.
    */
@@ -74,6 +76,24 @@ enum MasterRequest
    * An instance of {@link MiscCreateToolsetPackageReq MiscCreateToolsetPackageReq} is next.
    */
   CreateToolsetPackage, 
+  
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * An instance of {@link MiscGetEditorForSuffixReq MiscGetEditorForSuffixReq} is next.
+   */
+  GetEditorForSuffix, 
+  
+  /**
+   * An instance of {@link MiscGetSuffixEditorsReq MiscGetSuffixEditorsReq} is next.
+   */
+  GetSuffixEditors, 
+  
+  /**
+   * An instance of {@link MiscSetSuffixEditorsReq MiscSetSuffixEditorsReq} is next.
+   */
+  SetSuffixEditors, 
   
 
   /*----------------------------------------------------------------------------------------*/
