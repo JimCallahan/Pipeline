@@ -1,4 +1,4 @@
-// $Id: Plugins.java,v 1.1 2004/02/23 23:50:55 jim Exp $
+// $Id: Plugins.java,v 1.2 2004/02/25 01:30:01 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -66,23 +66,23 @@ class Plugins
 	      sEditors.put(editor.getName(), cls);
 	      Logs.plg.fine("Loaded Editor Plugin: " + editor.getName());
 	    }
-// 	  else if(BaseAction.class.isAssignableFrom(cls)) {
-// 	    Logs.plg.finest("Instantiating Action: " + cname);
-// 	    BaseAction action = (BaseAction) cls.newInstance();
-
-// 	    sActions.put(action.getName(), cls);
-// 	    Logs.plg.fine("Loaded Action Plugin: " + action.getName());
-// 	  }
-// 	  else if(BaseTool.class.isAssignableFrom(cls)) {
-// 	    Logs.plg.finest("Instantiating Tool: " + cname);
-// 	    BaseTool tool = (BaseTool) cls.newInstance();
-
-// 	    sTools.put(tool.getName(), cls);
-// 	    Logs.plg.fine("Loaded Tool Plugin: " + tool.getName());
-// 	  }
+ 	    else if(BaseAction.class.isAssignableFrom(cls)) {
+ 	      Logs.plg.finest("Instantiating Action: " + cname);
+ 	      BaseAction action = (BaseAction) cls.newInstance();
+	      
+ 	      sActions.put(action.getName(), cls);
+ 	      Logs.plg.fine("Loaded Action Plugin: " + action.getName());
+ 	    }
+	    // 	  else if(BaseTool.class.isAssignableFrom(cls)) {
+	    // 	    Logs.plg.finest("Instantiating Tool: " + cname);
+	    // 	    BaseTool tool = (BaseTool) cls.newInstance();
+	    
+	    // 	    sTools.put(tool.getName(), cls);
+	    // 	    Logs.plg.fine("Loaded Tool Plugin: " + tool.getName());
+	    // 	  }
 	    else {
 	      throw new PipelineException
-		("Unknown type of plugin class \"" + cname + "\" found in the plugin " +
+		("Unknown type of plugin class (" + cname + ") found in the plugin " +
 		 "directory: " + dir + "!");
 	    }
 	  } 
@@ -148,15 +148,15 @@ class Plugins
    *   If no node action class can be found for the given <CODE>name</CODE> or instantiation 
    *   fails for the found class.
    */
- //  public static synchronized BaseAction
-//   newAction
-//   (
-//    String name
-//   ) 
-//     throws PipelineException
-//   {
-//     return (BaseAction) newPlugin("Action", sActions, name);
-//   }
+  public static synchronized BaseAction
+  newAction
+  (
+   String name
+  ) 
+    throws PipelineException
+  {
+    return (BaseAction) newPlugin("Action", sActions, name);
+  }
   
 
   /**
