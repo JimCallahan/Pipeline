@@ -2,24 +2,26 @@
 dsodir = @libdir@
 
 dso_DATA = \
-  libNativeProcess.so
+  libNative.so
 
 noinst_PROGRAMS = \
-  libNativeProcess.so
+  libNative.so
 
 
-libNativeProcess_so_SOURCES = \
-  NativeProcess.cc
+libNative_so_SOURCES = \
+  NativeProcess.cc \
+  NativeFileSys.cc
 
-libNativeProcess_so_LDADD = \
+libNative_so_LDADD = \
   @JNI_LDADD@
 
-libNativeProcess_so_LDFLAGS = \
+libNative_so_LDFLAGS = \
   @JNI_LDFLAGS@
 
 
 EXTRA_DIST = \
-  NativeProcess.hh
+  NativeProcess.hh \
+  NativeFileSys.hh
 
 
 INCLUDES = \

@@ -1,4 +1,4 @@
-// $Id: NativeProcess.cc,v 1.5 2004/02/25 01:27:09 jim Exp $
+// $Id: NativeProcess.cc,v 1.6 2004/03/07 02:37:17 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -20,6 +20,22 @@
 #  endif
 #endif
 
+#ifdef HAVE_CSTDLIB
+#  include <cstdlib>
+#else
+#  ifdef HAVE_STDLIB_H
+#    include <stdlib.h>
+#  endif
+#endif
+
+#ifdef HAVE_CLIMITS
+#  include <climits>
+#else
+#  ifdef HAVE_LIMITS_H
+#    include <limits.h>
+#  endif
+#endif
+
 #ifdef HAVE_CTYPE_H
 #  include <ctype.h>
 #endif
@@ -34,10 +50,6 @@
 
 #ifdef HAVE_UNISTD_H
 #  include <unistd.h>
-#endif
-
-#ifdef HAVE_STDLIB_H
-#  include <stdlib.h>
 #endif
 
 #ifdef HAVE_SYS_STAT_H

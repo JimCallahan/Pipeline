@@ -79,14 +79,6 @@ JNIEXPORT jboolean JNICALL Java_us_temerity_pipeline_NativeProcess_collectStatsN
 JNIEXPORT void JNICALL Java_us_temerity_pipeline_NativeProcess_signalNative
   (JNIEnv *, jobject, jint, jint);
 
-/*
- * Class:     us_temerity_pipeline_NativeProcess
- * Method:    chmodNative
- * Signature: (ILjava/lang/String;)V
- */
-JNIEXPORT void JNICALL Java_us_temerity_pipeline_NativeProcess_chmodNative
-  (JNIEnv *, jclass, jint, jstring);
-
 #ifdef __cplusplus
 }
 #endif

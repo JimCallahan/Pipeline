@@ -1,4 +1,4 @@
-// $Id: NativeProcess.java,v 1.4 2004/02/25 01:27:09 jim Exp $
+// $Id: NativeProcess.java,v 1.5 2004/03/07 02:37:17 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -32,6 +32,7 @@ import java.util.concurrent.atomic.*;
  */
 public
 class NativeProcess
+  extends Native
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -474,42 +475,6 @@ class NativeProcess
 
  
   /*----------------------------------------------------------------------------------------*/
-  /*   S T A T I C   S Y S T E M   O P S                                                    */
-  /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * Change file access permissions. <P> 
-   * 
-   * See the manpage for chmod(2) for details about the legal values for <CODE>mode</CODE>.
-   *
-   * @param mode [<B>in</B>]
-   *   The access mode bitmask.
-   *
-   * @param file [<B>in</B>]
-   *   The fully resolved path to the file to change.
-   * 
-   * @throws IOException 
-   *   If unable to change the mode of the given file.
-   */
-  public static void 
-  chmod
-  (
-   int mode, 
-   File file
-  ) 
-    throws IOException
-  {
-    if(!file.isAbsolute()) 
-      throw new IOException
-	("The file argument (" + file + ") must be an absolute path!");
-
-    chmodNative(mode, file.getPath());
-  }
-   
-  
-
-
-  /*----------------------------------------------------------------------------------------*/
   /*   N A T I V E    H E L P E R S                                                         */
   /*----------------------------------------------------------------------------------------*/
 
@@ -577,37 +542,6 @@ class NativeProcess
    int pid
   )
     throws IOException;
-
-
-  /**
-   * Change file access permissions. <P> 
-   * 
-   * @param mode [<B>in</B>]
-   *   The access mode bitmask.
-   *
-   * @param file [<B>in</B>]
-   *   The fully resolved path to the file to change.
-   * 
-   * @throws IOException 
-   *   If unable to change the mode of the given file.
-   */
-  private static native void 
-  chmodNative
-  (
-   int mode, 
-   String file
-  ) 
-    throws IOException;
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   S T A T I C   I N I T I A L I Z A T I O N                                            */
-  /*----------------------------------------------------------------------------------------*/
-  
-  static {
-    System.load(PackageInfo.sInstDir + "/lib/libNativeProcess.so");
-  }
 
 
 
