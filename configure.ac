@@ -215,6 +215,9 @@ dnl ----------------------------------------------------------------------------
 AC_SUBST(JAVA_C_FLAGS)
 JAVA_C_FLAGS=""
 
+AC_SUBST(JAVA_RUNTIME_FLAGS)
+JAVA_RUMTIME_FLAGS=""
+
 AC_SUBST(EXTRA_DEBUG_SUBDIRS)
 EXTRA_DEBUG_SUBDIRS=""
 
@@ -263,6 +266,7 @@ else
   esac
 
   JAVA_C_FLAGS="-g"
+  JAVA_RUNTIME_FLAGS="-enableassertions"
 
   EXTRA_DEBUG_SUBDIRS="tests"
   BUILD_MODE="dbg"
