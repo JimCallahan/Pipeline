@@ -81,7 +81,56 @@ option to <a
  style="font-weight: bold;">plconfig</span></a>(1). <br>
   <br>
   <br>
-  <code></code><span style="font-weight: bold;"><a
+</blockquote>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
+ name="--log-file"></a>--log-file</span>=<span
+ style="font-style: italic;">filename</span><br>
+<span style="font-style: italic;">
+</span><br>
+<span style="font-style: italic;">
+</span></div>
+<div style="margin-left: 80px;"><span style="font-style: italic;"><span
+ style="font-style: italic;"></span></span>Write all output to the
+given log file (filename) instead of printing to stdout.<br>
+<br>
+<span style="font-style: italic;"></span></div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
+ name="--default-log-file"></a>--standard-log-file</span><br>
+<span style="font-weight: bold;">
+</span><br>
+<span style="font-weight: bold;">
+</span></div>
+<div style="margin-left: 80px;">Write all output to the standard log
+file for <span style="font-weight: bold;">pljobmgr</span>(1) instead
+of printing to stdout.<br>
+<br>
+The standard log file for this site is:<br>
+<div style="margin-left: 40px;"><br>
+@ROOT_INST_DIR@/logs/pljobmgr.<span style="font-style: italic;">hostname</span>.log.#<br>
+</div>
+</div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"></span><br>
+<span style="font-weight: bold;">
+<a name="--log-depth"></a>--log-backups</span>=<span
+ style="font-style: italic;">num</span><br>
+<span style="font-style: italic;">
+</span></div>
+<br>
+<div style="margin-left: 80px;">When logging to a file using <a
+ href="#--log-file"><span style="font-weight: bold;">--log-file</span></a>,
+this option sets the number of rotating backups (<span
+ style="font-style: italic;">num</span>)
+to maintain of the logfile.&nbsp;&nbsp; The names of the backup files
+are the
+same as the log file with the backup number appended to the end of the
+name.&nbsp;&nbsp; The logfile will be automatically close the current
+logfile,
+rotate the backups and reopen the logfile whenever the log grows to
+larger than 1MB.<br>
+<br>
+The default number of backups is (10).</div>
+<blockquote style="margin-left: 80px;"> <code></code><span
+ style="font-weight: bold;"><a
  href="http://www.gnu.org/software/autoconf/"><span
  style="font-weight: bold;"></span></a></span><span
  style="font-weight: bold;"> </span></blockquote>

@@ -53,6 +53,8 @@ ScriptOptsParser
   private void 
   init()
   {
+    pLogBackups = 10;
+
     pMasterServer = PackageInfo.sMasterServer;
     pMasterPort   = PackageInfo.sMasterPort;
 
@@ -110,6 +112,19 @@ ScriptOptsParser
    * The application instance. 
    */
   private ScriptApp  pApp;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The name of the log file.
+   */ 
+  private String  pLogFile; 
+
+  /**
+   * The number of backup to maintain of the log file.
+   */ 
+  private int  pLogBackups;
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -263,7 +278,10 @@ TOKEN :
 | <QUEUE_PORT:   "--queue-port">    : PORT_NUMBER_SEP
 | <JOB_PORT:     "--job-port">      : PORT_NUMBER_SEP
 
-| <LOG:          "--log">           : LOG_SEP
+| <LOG_FILE:          "--log-file">           : PATH_SEP
+| <STANDARD_LOG_FILE: "--standard-log-file"> 
+| <LOG_BACKUPS:       "--log-backups">        : INTEGER_SEP
+| <LOG:               "--log">                : LOG_SEP
 
   /* batch */ 
 | <BATCH:        "--batch">         : PATH_SEP
@@ -1232,6 +1250,18 @@ void
 Commands() 
   throws PipelineException :
 {
+  /* setup the log files */ 
+  if(pLogFile != null) {
+    try {
+      Logs.fileHandler(pLogFile, pLogBackups);
+    }
+    catch(Exception ex) {
+      System.out.print("Unable to setup log file: " + ex.getMessage());
+      System.exit(1);
+    }
+  }
+  
+  /* initialize the plugins */ 
   try {
     PluginMgr.init();
   }
@@ -1240,6 +1270,7 @@ Commands()
     System.exit(1);
   }
 
+  /* create the network clients */ 
   pMasterMgrClient = new MasterMgrClient(pMasterServer, pMasterPort);
   pQueueMgrClient  = new QueueMgrClient(pQueueServer, pQueuePort);
 }
@@ -1267,6 +1298,18 @@ void
 Batch() 
   throws PipelineException : 
 {
+  /* setup the log files */ 
+  if(pLogFile != null) {
+    try {
+      Logs.fileHandler(pLogFile, pLogBackups);
+    }
+    catch(Exception ex) {
+      System.out.print("Unable to setup log file: " + ex.getMessage());
+      System.exit(1);
+    }
+  }
+  
+  /* initialize the plugins */ 
   try {
     PluginMgr.init();
   }
@@ -1275,6 +1318,7 @@ Batch()
     System.exit(1);
   }
 
+  /* create the network clients */ 
   pMasterMgrClient = new MasterMgrClient(pMasterServer, pMasterPort);
   pQueueMgrClient  = new QueueMgrClient(pQueueServer, pQueuePort);
 }
@@ -1449,7 +1493,7 @@ GlobalOpts()
 {
   (MasterHost() | MasterPort() | 
    QueueHost() | QueuePort() | JobPort() | 
-   Log())
+   Log() | LogFile() | StandardLogFile() | LogBackups())
   {}
 }
 
@@ -1518,6 +1562,37 @@ JobPort()
 }
 
 
+
+void LogFile() : 
+{
+  Token t;
+}
+{
+  <LOG_FILE> EQ() t=<PATH_ARG>
+  { 
+    pLogFile = t.image;
+  }
+}
+
+void StandardLogFile() : 
+{}
+{
+  <STANDARD_LOG_FILE>
+  { 
+    pLogFile = (PackageInfo.sHomeDir + "/" + PackageInfo.sUser + "/plscript.log");
+  }
+}
+
+void LogBackups() : 
+{
+  Token t;
+}
+{
+  <LOG_BACKUPS> EQ() t=<INTEGER>
+  { 
+    pLogBackups = Integer.parseInt(t.image);
+  }
+}
 
 void Log() : 
 {}

@@ -50,6 +50,8 @@ GraphicalOptsParser
   private void 
   init()
   {
+    pLogBackups = 10;
+
     pMasterServer = PackageInfo.sMasterServer;
     pMasterPort   = PackageInfo.sMasterPort;
 
@@ -67,6 +69,20 @@ GraphicalOptsParser
    * The application instance. 
    */
   private GraphicalApp  pApp;
+
+
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The name of the log file.
+   */ 
+  private String  pLogFile; 
+
+  /**
+   * The number of backup to maintain of the log file.
+   */ 
+  private int  pLogBackups;
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -125,10 +141,15 @@ TOKEN :
 
 | <QUEUE_HOST:   "--queue-host">    : HOSTNAME_SEP
 | <QUEUE_PORT:   "--queue-port">    : INTEGER_SEP
-| <JOB_PORT:     "--job-port">      : INTEGER_SEP
+| <JOB_PORT:     "--job-port">      : INTEGER_SEP 
 
-| <LOG:          "--log">           : LOG_SEP
+| <LOG_FILE:          "--log-file">           : PATH_SEP
+| <STANDARD_LOG_FILE: "--standard-log-file"> 
+| <LOG_BACKUPS:       "--log-backups">        : INTEGER_SEP
+| <LOG:               "--log">                : LOG_SEP
+
 | <LAYOUT:       "--layout">        : LAYOUT_SEP
+
 
   /* seperators */ 
 | <AE1: (["\0"])+> 
@@ -164,11 +185,30 @@ TOKEN :
 }
 
 
+/* filesystem path arguments */ 
+<PATH_SEP> 
+TOKEN :
+{
+  <EQ2:                "=">   : PATH_STATE
+| <MISSING_PATH_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<PATH_STATE> 
+TOKEN :
+{
+  <PATH_ARG:       ("/")* ("../")* <PATH_ARG_COMP> 
+		     ("/" (".." | (<PATH_ARG_COMP>)+)?)*>      : DEFAULT
+| <#PATH_ARG_COMP: (["a"-"z","A"-"Z","0"-"9","_","-","."])*>
+| <MISSING_PATH:   ["\0"]>                                     : IGNORE_STATE
+| <ILLEGAL_PATH:   (~["\0"])+>                                 : IGNORE_STATE
+}
+
+
 /* hostname arguments */ 
 <HOSTNAME_SEP> 
 TOKEN :
 {
-  <EQ2:                    "=">   : HOSTNAME_STATE
+  <EQ3:                    "=">   : HOSTNAME_STATE
 | <MISSING_HOSTNAME_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -186,7 +226,7 @@ TOKEN :
 <LOG_SEP> 
 TOKEN :
 {
-  <EQ3:               "=">   : LOG_STATE
+  <EQ4:               "=">   : LOG_STATE
 | <MISSING_LOG_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -217,7 +257,7 @@ TOKEN :
 <LAYOUT_SEP> 
 TOKEN :
 {
-  <EQ4:                "=">     : LAYOUT_STATE
+  <EQ5:                "=">     : LAYOUT_STATE
 | <MISSING_LAYOUT_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -254,6 +294,18 @@ Commands() :
 {
   (GlobalOpts() AE())*
   {
+    /* setup the log files */ 
+    if(pLogFile != null) {
+      try {
+	Logs.fileHandler(pLogFile, pLogBackups);
+      }
+      catch(Exception ex) {
+	System.out.print("Unable to setup log file: " + ex.getMessage());
+	System.exit(1);
+      }
+    }
+
+    /* initialize the plugins */
     try {
       PluginMgr.init();
     }
@@ -262,6 +314,7 @@ Commands() :
       System.exit(1);
     }
 
+    /* start the application */ 
     UIMaster.init(pMasterServer, pMasterPort, pQueueServer, pQueuePort, pJobPort, pLayout);
   }
 }
@@ -352,7 +405,8 @@ GlobalOpts() :
 {
   (MasterHost() | MasterPort() | 
    QueueHost() | QueuePort() | JobPort() | 
-   Log() | Layout()) 
+   Log() | LogFile() | StandardLogFile() | LogBackups() |
+   Layout()) 
   {}
 }
 
@@ -418,6 +472,37 @@ JobPort() :
 }
 
 
+
+void LogFile() : 
+{
+  Token t;
+}
+{
+  <LOG_FILE> EQ() t=<PATH_ARG>
+  { 
+    pLogFile = t.image;
+  }
+}
+
+void StandardLogFile() : 
+{}
+{
+  <STANDARD_LOG_FILE>
+  { 
+    pLogFile = (PackageInfo.sHomeDir + "/" + PackageInfo.sUser + "/plui.log");
+  }
+}
+
+void LogBackups() : 
+{
+  Token t;
+}
+{
+  <LOG_BACKUPS> EQ() t=<INTEGER>
+  { 
+    pLogBackups = Integer.parseInt(t.image);
+  }
+}
 
 void Log() : 
 {}
@@ -641,7 +726,7 @@ EQ() :
   Token t;
 }
 {
-  (t=<EQ1> | t=<EQ2> | t=<EQ3> | t=<EQ4>)
+  (t=<EQ1> | t=<EQ2> | t=<EQ3> | t=<EQ4> | t=<EQ5>)
   { 
     return t; 
   }

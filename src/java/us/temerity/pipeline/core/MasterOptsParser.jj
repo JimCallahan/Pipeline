@@ -48,6 +48,8 @@ MasterOptsParser
   private void 
   init()
   {
+    pLogBackups  = 10;
+
     pNodeDir     = PackageInfo.sNodeDir;
     pMasterPort  = PackageInfo.sMasterPort;
     
@@ -71,6 +73,19 @@ MasterOptsParser
    * The application instance. 
    */
   private MasterApp  pApp;
+
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The name of the log file.
+   */ 
+  private String  pLogFile; 
+
+  /**
+   * The number of backup to maintain of the log file.
+   */ 
+  private int  pLogBackups;
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -157,7 +172,11 @@ TOKEN :
 | <QUEUE_HOST:           "--queue-host">           : HOSTNAME_SEP
 | <QUEUE_PORT:           "--queue-port">           : INTEGER_SEP
 
-| <LOG:          "--log"> : LOG_SEP
+| <LOG_FILE:          "--log-file">                : PATH_SEP
+| <STANDARD_LOG_FILE: "--standard-log-file"> 
+| <LOG_BACKUPS:       "--log-backups">             : INTEGER_SEP
+| <LOG:               "--log">                     : LOG_SEP
+
 
   /* seperators */ 
 | <AE1: (["\0"])+> 
@@ -288,6 +307,18 @@ Commands() :
 {
   (GlobalOpts() AE())*
   { 
+    /* setup the log files */ 
+    if(pLogFile != null) {
+      try {
+	Logs.fileHandler(pLogFile, pLogBackups);
+      }
+      catch(Exception ex) {
+	System.out.print("Unable to setup log file: " + ex.getMessage());
+	System.exit(1);
+      }
+    }
+
+    /* initialize the plugins */ 
     try {
       PluginMgr.init();
     }
@@ -296,6 +327,7 @@ Commands() :
       System.exit(1);
     }
 
+    /* create the server */ 
     return (new MasterMgrServer(pNodeDir, pMasterPort, 
 				pProdDir, pFileServer, pFilePort, 
 				pControlPort, pMonitorPort, 
@@ -390,7 +422,7 @@ GlobalOpts() :
   (NodeDir() | MasterPort() | 
    ProdDir() | FileHost() | FilePort() | ControlPort() | MonitorPort() | 
    QueueHost() | QueuePort() | 
-   Log())
+   Log() | LogFile() | StandardLogFile() | LogBackups())
   {}
 }
 
@@ -506,6 +538,37 @@ QueuePort() :
   }
 }
 
+
+void LogFile() : 
+{
+  Token t;
+}
+{
+  <LOG_FILE> EQ() t=<PATH_ARG>
+  { 
+    pLogFile = t.image;
+  }
+}
+
+void StandardLogFile() : 
+{}
+{
+  <STANDARD_LOG_FILE>
+  { 
+    pLogFile = (PackageInfo.sInstDir + "/logs/plmaster.log");
+  }
+}
+
+void LogBackups() : 
+{
+  Token t;
+}
+{
+  <LOG_BACKUPS> EQ() t=<INTEGER>
+  { 
+    pLogBackups = Integer.parseInt(t.image);
+  }
+}
 
 void Log() : 
 {}

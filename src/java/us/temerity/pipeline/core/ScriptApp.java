@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.15 2004/10/21 01:23:26 jim Exp $
+// $Id: ScriptApp.java,v 1.16 2004/10/24 10:56:53 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -110,7 +110,7 @@ class ScriptApp
       "GLOBAL OPTIONS:\n" +
       "  [--master-host=...] [--master-port=...]\n" + 
       "  [--queue-host=...] [--queue-port=...] [--job-port=...]\n" + 
-      "  [--log=...]\n" +
+      "  [--log-file=...][--log-backups=...][--log=...]\n" +
       "\n" + 
       "COMMANDS:\n\n" +
       "  Privileged Users:\n" +

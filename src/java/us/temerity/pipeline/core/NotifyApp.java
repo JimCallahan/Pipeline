@@ -1,4 +1,4 @@
-// $Id: NotifyApp.java,v 1.9 2004/09/26 03:13:55 jim Exp $
+// $Id: NotifyApp.java,v 1.10 2004/10/24 10:56:53 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -145,7 +145,7 @@ class NotifyApp
       return "an unknown command";
 
     case NotifyOptsParserConstants.INTEGER:
-      return "a port number";
+      return "an integer";
 
     case NotifyOptsParserConstants.PATH_ARG:
       return "an file system path";

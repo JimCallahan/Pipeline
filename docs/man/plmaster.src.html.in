@@ -187,37 +187,74 @@ option to <a
 </span><b style="color: rgb(0, 0, 0);"><a name="--queue-host"></a>--queue-host</b><span
  style="color: rgb(0, 0, 0);">=</span><i style="color: rgb(0, 0, 0);">hostname</i><br
  style="color: rgb(0, 0, 0);">
-<blockquote style="color: rgb(0, 0, 0);">
-  <blockquote>Communicate with the <a href="plqueuemgr.html"><span
- style="font-weight: bold;">plqueuemgr</span></a>(1) daemon running on
+<blockquote style="color: rgb(0, 0, 0);"> Communicate with the <a
+ href="plqueuemgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1)
+daemon running on
 the given host (<i>hostname</i>). <br>
-    <br>
+  <br>
 The default hostname is set by the <a
  href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--queue-host"><span
  style="font-weight: bold;">--queue-host</span></a>
 option to <a
  href="//usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
  style="font-weight: bold;">plconfig</span></a>(1).<br>
-  </blockquote>
 </blockquote>
 <b style="color: rgb(0, 0, 0);"><a name="--queue-port"></a>--queue-port</b><span
  style="color: rgb(0, 0, 0);">=</span><i style="color: rgb(0, 0, 0);">num</i><br
  style="color: rgb(0, 0, 0);">
-<blockquote style="color: rgb(0, 0, 0);">
-  <blockquote>Communicate with the <a href="plqueuemgr.html"><span
- style="font-weight: bold;">plqueuemgr</span></a>(1) daemon using the
+<blockquote style="color: rgb(0, 0, 0);"> Communicate with the <a
+ href="plqueuemgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1)
+daemon using the
 given port (<i>num</i>).<br>
-    <br>
+  <br>
 The default port is set by the <a
  href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--queue-port"><span
  style="font-weight: bold;">--queue-port</span></a>
 option to <a
  href="//usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1).</blockquote>
+ style="font-weight: bold;">plconfig</span></a>(1).<br>
+  <br>
+  <br>
 </blockquote>
+<span style="font-weight: bold;"><a name="--log-file"></a>--log-file</span>=<span
+ style="font-style: italic;">filename<br>
 <br>
+</span>
+<div style="margin-left: 40px;"><span style="font-style: italic;"><span
+ style="font-style: italic;"></span></span>Write all output to the
+given log file (filename) instead of printing to stdout.<br>
 <br>
-<span style="font-weight: bold;"><a name="--log"></a>--log</span>=<span
+<span style="font-style: italic;"></span></div>
+<span style="font-weight: bold;"><a name="--default-log-file"></a>--standard-log-file<br>
+<br>
+</span>
+<div style="margin-left: 40px;">Write all output to the standard log
+file for <span style="font-weight: bold;">plmaster</span>(1) instead
+of printing to stdout.<br>
+<br>
+The standard log file for this site is:<br>
+<div style="margin-left: 40px;"><br>
+@ROOT_INST_DIR@/logs/plmaster.log.#<br>
+</div>
+</div>
+<span style="font-weight: bold;"><br>
+<a name="--log-depth"></a>--log-backups</span>=<span
+ style="font-style: italic;">num<br>
+</span>
+<div style="margin-left: 40px;"><br>
+When logging to a file using <a href="#--log-file"><span
+ style="font-weight: bold;">--log-file</span></a>, this option sets the
+number of rotating backups (<span style="font-style: italic;">num</span>)
+to maintain of the logfile.&nbsp;&nbsp; The names of the backup files
+are the same as the log file with the backup number appended to the end
+of the name.&nbsp;&nbsp; The logfile will be automatically close the
+current logfile, rotate the backups and reopen the logfile whenever the
+log grows to larger than 1MB.<br>
+<br>
+The default number of backups is (10).<br>
+</div>
+<span style="font-style: italic;"><br>
+</span><span style="font-weight: bold;"><a name="--log"></a>--log</span>=<span
  style="font-style: italic;">logger:level</span>[<span
  style="font-style: italic;">,logger:level</span>[...]]</div>
 <div style="margin-left: 40px;"><br>
@@ -318,7 +355,8 @@ java.util.logging.Logger</span> for more information about the format
 of this file.&nbsp; Settings from the <a href="#--log"><span
  style="font-weight: bold;">--log</span></a> option will override
 settings from the <span style="font-weight: bold;">logger.properties</span>
-file.</div>
+file.<br>
+</div>
 </div>
 <h3><a name="See_Also"></a>See Also</h3>
 <div style="margin-left: 40px;"><span style="font-weight: bold;">Documentation</span>

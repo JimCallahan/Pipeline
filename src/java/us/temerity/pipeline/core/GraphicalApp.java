@@ -1,4 +1,4 @@
-// $Id: GraphicalApp.java,v 1.6 2004/10/18 03:15:09 jim Exp $
+// $Id: GraphicalApp.java,v 1.7 2004/10/24 10:56:53 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -101,7 +101,7 @@ class GraphicalApp
       "GLOBAL OPTIONS:\n" +
       "  [--master-host=...][--master-port=...]\n" + 
       "  [--queue-host=...][--queue-port=...][--job-port=...]\n" + 
-      "  [--log=...]\n" +
+      "  [--log-file=...][--log-backups=...][--log=...]\n" +
       "\n" + 
       "\n" +  
       "Use \"plui --html-help\" to browse the full documentation.\n");
@@ -134,7 +134,7 @@ class GraphicalApp
       return "an unknown command";
 
     case GraphicalOptsParserConstants.INTEGER:
-      return "a port number";
+      return "an integer";
 
     case GraphicalOptsParserConstants.HOSTNAME:
       return "a hostname";

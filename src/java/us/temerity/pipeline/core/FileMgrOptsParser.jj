@@ -48,6 +48,8 @@ FileMgrOptsParser
   private void 
   init()
   {
+    pLogBackups = 10;
+
     pProdDir  = PackageInfo.sProdDir;
     pFilePort = PackageInfo.sFilePort;
   }
@@ -62,6 +64,22 @@ FileMgrOptsParser
    * The application instance. 
    */
   private FileMgrApp  pApp;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The name of the log file.
+   */ 
+  private String  pLogFile; 
+
+  /**
+   * The number of backup to maintain of the log file.
+   */ 
+  private int  pLogBackups;
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * The root directory of the file repository. 
@@ -91,7 +109,11 @@ TOKEN :
   /* global options */	
 | <PROD_DIR:     "--prod-dir">     : PATH_SEP
 | <FILE_PORT:    "--file-port">    : INTEGER_SEP
-| <LOG:          "--log">          : LOG_SEP
+
+| <LOG_FILE:          "--log-file">           : PATH_SEP
+| <STANDARD_LOG_FILE: "--standard-log-file"> 
+| <LOG_BACKUPS:       "--log-backups">        : INTEGER_SEP
+| <LOG:               "--log">                : LOG_SEP
 
   /* hidden options */ 
 | <NATIVE:       "--native"> : HOSTNAME_SEP
@@ -236,6 +258,18 @@ Commands() :
 {
   (GlobalOpts() AE())*
   { 
+    /* setup the log files */ 
+    if(pLogFile != null) {
+      try {
+	Logs.fileHandler(pLogFile, pLogBackups);
+      }
+      catch(Exception ex) {
+	System.out.print("Unable to setup log file: " + ex.getMessage());
+	System.exit(1);
+      }
+    }
+
+    /* create the server */ 
     return (new FileMgrServer(pProdDir, pFilePort));
   }
 }
@@ -324,7 +358,8 @@ void
 GlobalOpts() :
 {}
 {
-  (ProdDir() | FilePort() | Log())
+  (ProdDir() | FilePort() |
+   Log() | LogFile() | StandardLogFile() | LogBackups())
   {}
 }
 
@@ -354,6 +389,37 @@ FilePort() :
   }
 }
 
+
+void LogFile() : 
+{
+  Token t;
+}
+{
+  <LOG_FILE> EQ() t=<PATH_ARG>
+  { 
+    pLogFile = t.image;
+  }
+}
+
+void StandardLogFile() : 
+{}
+{
+  <STANDARD_LOG_FILE>
+  { 
+    pLogFile = (PackageInfo.sInstDir + "/logs/plfilemgr.log");
+  }
+}
+
+void LogBackups() : 
+{
+  Token t;
+}
+{
+  <LOG_BACKUPS> EQ() t=<INTEGER>
+  { 
+    pLogBackups = Integer.parseInt(t.image);
+  }
+}
 
 void Log() : 
 {}

@@ -11,6 +11,7 @@ import us.temerity.pipeline.*;
 import java.util.*;
 import java.text.*;
 import java.io.*;
+import java.net.*;
 import java.util.logging.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -48,7 +49,8 @@ JobMgrOptsParser
   private void 
   init()
   {
-    pJobPort = PackageInfo.sJobPort;
+    pLogBackups = 10;
+    pJobPort    = PackageInfo.sJobPort;
   }
  
 
@@ -61,6 +63,22 @@ JobMgrOptsParser
    * The application instance. 
    */
   private JobMgrApp  pApp;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The name of the log file.
+   */ 
+  private String  pLogFile; 
+
+  /**
+   * The number of backup to maintain of the log file.
+   */ 
+  private int  pLogBackups;
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * The network port to listen on.
@@ -85,7 +103,11 @@ TOKEN :
 
   /* global options */	
 | <JOB_PORT:     "--job-port">     : INTEGER_SEP
-| <LOG:          "--log">          : LOG_SEP
+
+| <LOG_FILE:          "--log-file">           : PATH_SEP
+| <STANDARD_LOG_FILE: "--standard-log-file"> 
+| <LOG_BACKUPS:       "--log-backups">        : INTEGER_SEP
+| <LOG:               "--log">                : LOG_SEP
 
   /* seperators */ 
 | <AE1: (["\0"])+> 
@@ -196,6 +218,18 @@ Commands() :
 {
   (GlobalOpts() AE())*
   { 
+    /* setup the log files */ 
+    if(pLogFile != null) {
+      try {
+	Logs.fileHandler(pLogFile, pLogBackups);
+      }
+      catch(Exception ex) {
+	System.out.print("Unable to setup log file: " + ex.getMessage());
+	System.exit(1);
+      }
+    }
+
+    /* initialize the plugins */ 
     try {
       PluginMgr.init();
     }
@@ -204,6 +238,7 @@ Commands() :
       System.exit(1);
     }
 
+    /* create the server */ 
     return (new JobMgrServer(pJobPort));
   }
 }
@@ -292,7 +327,8 @@ void
 GlobalOpts() :
 {}
 {
-  (JobPort() | Log())
+  (JobPort() |
+   Log() | LogFile() | StandardLogFile() | LogBackups())
   {}
 }
 
@@ -309,6 +345,64 @@ JobPort() :
   }
 }
 
+
+void LogFile() : 
+{
+  Token t;
+}
+{
+  <LOG_FILE> EQ() t=<PATH_ARG>
+  { 
+    pLogFile = t.image;
+  }
+}
+
+void StandardLogFile() : 
+{}
+{
+  <STANDARD_LOG_FILE>
+  { 
+    String hostname = null;
+    {
+      TreeSet hostnames = new TreeSet();
+      try {
+	Enumeration nets = NetworkInterface.getNetworkInterfaces();  
+	while(nets.hasMoreElements()) {
+	  NetworkInterface net = (NetworkInterface) nets.nextElement();
+	  Enumeration addrs = net.getInetAddresses();
+	  while(addrs.hasMoreElements()) {
+	  InetAddress addr = (InetAddress) addrs.nextElement();
+	  String ip = addr.getHostAddress();
+	  if(!ip.equals("127.0.0.1")) 
+	    hostnames.add(addr.getCanonicalHostName());
+	  }
+	}
+	
+	if(hostnames.isEmpty()) 
+	  throw new IOException();
+      }
+      catch(Exception ex) {
+	System.out.print("Could not determine the name of this machine!");
+	System.exit(1);
+      }
+
+      hostname = (String) hostnames.first();
+    }
+
+    pLogFile = (PackageInfo.sInstDir + "/logs/pljobmgr." + hostname + ".log");
+  }
+}
+
+void LogBackups() : 
+{
+  Token t;
+}
+{
+  <LOG_BACKUPS> EQ() t=<INTEGER>
+  { 
+    pLogBackups = Integer.parseInt(t.image);
+  }
+}
 
 void Log() : 
 {}

@@ -1,4 +1,4 @@
-// $Id: JobMgrApp.java,v 1.4 2004/09/26 03:13:55 jim Exp $
+// $Id: JobMgrApp.java,v 1.5 2004/10/24 10:56:53 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -107,7 +107,7 @@ class JobMgrApp
       "\n" + 
       "GLOBAL OPTIONS:\n" +
       "  [--job-port=...]\n" + 
-      "  [--log=...]\n" +
+      "  [--log-file=...][--log-backups=...][--log=...]\n" +
       "\n" + 
       "\n" +  
       "Use \"pljobmgr --html-help\" to browse the full documentation.\n");
@@ -139,7 +139,7 @@ class JobMgrApp
       return "an unknown command";
 
     case JobMgrOptsParserConstants.INTEGER:
-      return "a port number";
+      return "an integer";
 
     default: 
       if(printLiteral) 

@@ -1,4 +1,4 @@
-// $Id: Logs.java,v 1.9 2004/07/25 03:03:37 jim Exp $
+// $Id: Logs.java,v 1.10 2004/10/24 10:56:53 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -47,10 +47,8 @@ class Logs
     plg = Logger.getLogger("us.temerity.pipeline.plg");
     tex = Logger.getLogger("us.temerity.pipeline.tex");
     sum = Logger.getLogger("us.temerity.pipeline.sum");
-
     sub = Logger.getLogger("us.temerity.pipeline.sub");
     net = Logger.getLogger("us.temerity.pipeline.net");
-
     ops = Logger.getLogger("us.temerity.pipeline.ops");
     job = Logger.getLogger("us.temerity.pipeline.job");
 
@@ -61,26 +59,12 @@ class Logs
       plg.setUseParentHandlers(false);
       tex.setUseParentHandlers(false);
       sum.setUseParentHandlers(false);
-
       sub.setUseParentHandlers(false);
       net.setUseParentHandlers(false);
-
       ops.setUseParentHandlers(false); 
       job.setUseParentHandlers(false); 
       
-      sHandler = new StreamHandler(System.out, new LogFormatter());
-
-      arg.addHandler(sHandler);
-      glu.addHandler(sHandler);
-      plg.addHandler(sHandler);
-      tex.addHandler(sHandler);
-      sum.addHandler(sHandler);
-
-      sub.addHandler(sHandler);
-      net.addHandler(sHandler);
-
-      ops.addHandler(sHandler);
-      job.addHandler(sHandler);
+      addHandler(new StreamHandler(System.out, new LogFormatter()));
     }
   }
 
@@ -98,6 +82,31 @@ class Logs
     if(sHandler != null)
       sHandler.flush();
   }
+
+  /**
+   * Replace the stream handler with a file handler.
+   */ 
+  public static synchronized void
+  fileHandler
+  (
+   String logfile, 
+   int backups
+  ) 
+    throws IOException 
+  {
+    if(logfile.length() == 0) 
+      throw new IOException
+	("The name of the log file was empty!");
+    
+    if(backups < 0) 
+      throw new IOException
+	("The number of backup log files must be positive!");
+    
+    Handler handler = new FileHandler(logfile + ".%g", 1048576, backups, false);
+    handler.setFormatter(new LogFormatter());
+    
+    addHandler(handler);
+  }
   
   /** 
    * Add the given logging handler to all loggers.
@@ -108,6 +117,10 @@ class Logs
    Handler handler
   ) 
   {
+    Logs.shutdownHandler();
+
+    sHandler = handler;
+
     arg.addHandler(handler);
     glu.addHandler(handler);
     plg.addHandler(handler);
@@ -125,7 +138,7 @@ class Logs
    * Shutdown the console logging handler.
    */ 
   public static synchronized void
-  shutdownConsoleHandler()
+  shutdownHandler()
   {
     if(sHandler == null)
       return;
@@ -156,7 +169,7 @@ class Logs
   public static synchronized void
   cleanup()
   {
-    shutdownConsoleHandler();
+    shutdownHandler();
 
     arg = null;
     glu = null;
@@ -297,7 +310,7 @@ class Logs
   /** 
    * The output handler for all loggers. 
    */
-  private static StreamHandler sHandler;  
+  private static Handler sHandler;  
   
 }
 

@@ -48,6 +48,8 @@ PluginOptsParser
   private void 
   init()
   {
+    pLogBackups = 10;
+
     pList  = false;
     pForce = false; 
 
@@ -64,6 +66,22 @@ PluginOptsParser
    * The application instance. 
    */
   private PluginApp  pApp;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The name of the log file.
+   */ 
+  private String  pLogFile; 
+
+  /**
+   * The number of backup to maintain of the log file.
+   */ 
+  private int  pLogBackups;
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Whether to list information about the installed plugins.
@@ -105,8 +123,11 @@ TOKEN :
 | <COPYRIGHT:    "--copyright">    
 | <LICENSE:      "--license">    
 
-  /* global options */	
-| <LOG:          "--log">          : LOG_SEP
+  /* global options */
+| <LOG_FILE:          "--log-file">                : PATH_SEP
+| <STANDARD_LOG_FILE: "--standard-log-file"> 
+| <LOG_BACKUPS:       "--log-backups">             : INTEGER_SEP
+| <LOG:               "--log">                     : LOG_SEP
 
   /* action options */	
 | <LIST:         "--list">   
@@ -136,11 +157,48 @@ TOKEN :
 }
 
 
+/* integer arguments */ 
+<INTEGER_SEP> 
+TOKEN :
+{
+  <EQ1:                   "=">   : INTEGER_STATE
+| <MISSING_INTEGER_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<INTEGER_STATE> 
+TOKEN :
+{
+  <INTEGER:         (["0"-"9"])+>    : DEFAULT
+| <MISSING_INTEGER: ["\0"]>      : IGNORE_STATE
+| <ILLEGAL_INTEGER: (~["\0"])+>  : IGNORE_STATE
+}
+
+
+/* filesystem path arguments */ 
+<PATH_SEP> 
+TOKEN :
+{
+  <EQ2:                "=">   : PATH_STATE
+| <MISSING_PATH_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<PATH_STATE> 
+TOKEN :
+{
+  <PATH_ARG:       ("/")* ("../")* <PATH_ARG_COMP> 
+		     ("/" (".." | (<PATH_ARG_COMP>)+)?)*>      : DEFAULT
+| <#PATH_ARG_COMP: (["a"-"z","A"-"Z","0"-"9","_","-","."])*>
+| <MISSING_PATH:   ["\0"]>                                     : IGNORE_STATE
+| <ILLEGAL_PATH:   (~["\0"])+>                                 : IGNORE_STATE
+}
+
+
+
 /* --log arguments */ 
 <LOG_SEP> 
 TOKEN :
 {
-  <EQ1:               "=">   : LOG_STATE
+  <EQ3:               "=">   : LOG_STATE
 | <MISSING_LOG_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -192,6 +250,18 @@ Commands()
    (Inspect() (ClassFile() AE())+) | 
    ((Force())? Install() (ClassFile() AE())+))
   { 
+    /* setup the log files */ 
+    if(pLogFile != null) {
+      try {
+	Logs.fileHandler(pLogFile, pLogBackups);
+      }
+      catch(Exception ex) {
+	System.out.print("Unable to setup log file: " + ex.getMessage());
+	System.exit(1);
+      }
+    }
+
+    /* initialize the plugins */ 
     try {
       PluginMgr.init();
     }
@@ -200,6 +270,7 @@ Commands()
       System.exit(1);
     }
 
+    /* run the program */ 
     if(pList && pForce)
       throw new ParseException
 	("The --list and --force options are mutually exclusive!");
@@ -369,8 +440,40 @@ void
 GlobalOpts() :
 {}
 {
-  (Log())
+  (Log() | LogFile() | StandardLogFile() | LogBackups())
   {}
+}
+
+
+void LogFile() : 
+{
+  Token t;
+}
+{
+  <LOG_FILE> EQ() t=<PATH_ARG>
+  { 
+    pLogFile = t.image;
+  }
+}
+
+void StandardLogFile() : 
+{}
+{
+  <STANDARD_LOG_FILE>
+  { 
+    pLogFile = (PackageInfo.sInstDir + "/logs/plplugin.log");
+  }
+}
+
+void LogBackups() : 
+{
+  Token t;
+}
+{
+  <LOG_BACKUPS> EQ() t=<INTEGER>
+  { 
+    pLogBackups = Integer.parseInt(t.image);
+  }
 }
 
 void Log() : 
@@ -566,7 +669,7 @@ EQ() :
   Token t;
 }
 {
-  (t=<EQ1>) 
+  (t=<EQ1> | t=<EQ2> | t=<EQ3>)  
   { 
     return t; 
   }

@@ -1109,8 +1109,7 @@ option to <a
  name="--job-port"></a>--job-port</b>=<i>num<br>
 <br>
 </i>
-<div style="margin-left: 40px;"><i></i><span
- style="color: rgb(0, 0, 0);">Contact
+<div style="margin-left: 40px;"><span style="color: rgb(0, 0, 0);">Contact
 </span><a style="color: rgb(0, 0, 0);" href="pljobmgr.html"><span
  style="font-weight: bold;">pljobmgr</span></a><span
  style="color: rgb(0, 0, 0);">(1) daemons on an
@@ -1130,9 +1129,54 @@ option to </span><a style="color: rgb(0, 0, 0);"
 <br>
 <br>
 </span><span style="color: rgb(0, 0, 0);"></span></div>
+<span style="color: rgb(0, 0, 0);"></span><span
+ style="font-weight: bold;"><a name="--log-file"></a>--log-file</span>=<span
+ style="font-style: italic;">filename</span><br>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-style: italic;"></span><br>
+<span style="font-style: italic;"></span></div>
 </div>
-<span style="color: rgb(0, 0, 0);"><br>
-</span>
+</div>
+<div style="margin-left: 80px;"><span style="font-style: italic;"><span
+ style="font-style: italic;"></span></span>Write all output to the
+given log file (filename) instead of printing to stdout.<br>
+<br>
+<span style="font-style: italic;"></span></div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
+ name="--default-log-file"></a>--standard-log-file</span><br>
+<span style="font-weight: bold;"></span><br>
+<span style="font-weight: bold;"></span></div>
+<div style="margin-left: 80px;">Write all output to the standard log
+file for <span style="font-weight: bold;">plscript</span>(1) instead
+of printing to stdout.<br>
+<br>
+The standard log file for this site is:<br>
+<div style="margin-left: 40px;"><br>
+$HOME/plscript.log.#<br>
+</div>
+</div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"></span><br>
+<span style="font-weight: bold;"><a name="--log-depth"></a>--log-backups</span>=<span
+ style="font-style: italic;">num</span><br>
+<span style="font-style: italic;"></span><br>
+<div style="margin-left: 40px;">When logging to a file using <a
+ href="#--log-file"><span style="font-weight: bold;">--log-file</span></a>,
+this option sets the number of rotating backups (<span
+ style="font-style: italic;">num</span>)
+to maintain of the logfile.&nbsp;&nbsp; The names of the backup files
+are the
+same as the log file with the backup number appended to the end of the
+name.&nbsp;&nbsp; The logfile will be automatically close the current
+logfile,
+rotate the backups and reopen the logfile whenever the log grows to
+larger than 1MB.<br>
+<br>
+The default number of backups is (10).<br>
+</div>
+</div>
+<div style="margin-left: 40px;">
+<br>
+</div>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
  name="--logging"></a>--log</span>=<span style="font-style: italic;">logger:level</span>[<span
  style="font-style: italic;">,logger:level</span>[...]]</div>

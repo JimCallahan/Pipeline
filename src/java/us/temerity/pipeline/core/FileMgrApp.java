@@ -1,4 +1,4 @@
-// $Id: FileMgrApp.java,v 1.11 2004/09/26 03:13:55 jim Exp $
+// $Id: FileMgrApp.java,v 1.12 2004/10/24 10:56:53 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -109,7 +109,7 @@ class FileMgrApp
       "\n" + 
       "GLOBAL OPTIONS:\n" +
       "  [--prod-dir=...][--file-port=...]\n" + 
-      "  [--log=...]\n" +
+      "  [--log-file=...][--log-backups=...][--log=...]\n" +
       "\n" + 
       "\n" +  
       "Use \"plfilemgr --html-help\" to browse the full documentation.\n");
@@ -142,7 +142,7 @@ class FileMgrApp
       return "an unknown command";
 
     case FileMgrOptsParserConstants.INTEGER:
-      return "a port number";
+      return "an integer";
 
     case FileMgrOptsParserConstants.PATH_ARG:
       return "an file system path";

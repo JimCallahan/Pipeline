@@ -1,4 +1,4 @@
-// $Id: MasterApp.java,v 1.8 2004/09/26 03:13:55 jim Exp $
+// $Id: MasterApp.java,v 1.9 2004/10/24 10:56:53 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -112,7 +112,7 @@ class MasterApp
       "  [--prod-dir=...][--file-host=...][--file-port]\n" + 
       "  [--notify-control-port=...][--notify-monitor-port=...]\n" + 
       "  [--queue-host=...][--queue-port=...]\n" + 
-      "  [--log=...]\n" +
+      "  [--log-file=...][--log-backups=...][--log=...]\n" +
       "\n" + 
       "\n" +  
       "Use \"plmaster --html-help\" to browse the full documentation.\n");
@@ -145,7 +145,7 @@ class MasterApp
       return "an unknown command";
 
     case MasterOptsParserConstants.INTEGER:
-      return "a port number";
+      return "an integer";
 
     case MasterOptsParserConstants.PATH_ARG:
       return "an file system path";

@@ -48,6 +48,8 @@ QueueMgrOptsParser
   private void 
   init()
   {
+    pLogBackups = 10;
+
     pQueueDir  = PackageInfo.sQueueDir;
     pQueuePort = PackageInfo.sQueuePort;
     pJobPort = PackageInfo.sJobPort;
@@ -63,6 +65,22 @@ QueueMgrOptsParser
    * The application instance. 
    */
   private QueueMgrApp  pApp;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The name of the log file.
+   */ 
+  private String  pLogFile; 
+
+  /**
+   * The number of backup to maintain of the log file.
+   */ 
+  private int  pLogBackups;
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * The root directory of the queue repository. 
@@ -96,9 +114,14 @@ TOKEN :
 
   /* global options */	
 | <QUEUE_DIR:    "--queue-dir">     : PATH_SEP
-| <QUEUE_PORT:   "--queue-port">   : INTEGER_SEP
-| <JOB_PORT:     "--job-port">     : INTEGER_SEP
-| <LOG:          "--log">          : LOG_SEP
+| <QUEUE_PORT:   "--queue-port">    : INTEGER_SEP
+| <JOB_PORT:     "--job-port">      : INTEGER_SEP
+
+| <LOG_FILE:          "--log-file">           : PATH_SEP
+| <STANDARD_LOG_FILE: "--standard-log-file"> 
+| <LOG_BACKUPS:       "--log-backups">        : INTEGER_SEP
+| <LOG:               "--log">                : LOG_SEP
+
 
   /* seperators */ 
 | <AE1: (["\0"])+> 
@@ -209,6 +232,18 @@ Commands() :
 {
   (GlobalOpts() AE())*
   { 
+    /* setup the log files */ 
+    if(pLogFile != null) {
+      try {
+	Logs.fileHandler(pLogFile, pLogBackups);
+      }
+      catch(Exception ex) {
+	System.out.print("Unable to setup log file: " + ex.getMessage());
+	System.exit(1);
+      }
+    }
+
+    /* initialize the plugins */ 
     try {
       PluginMgr.init();
     }
@@ -217,6 +252,7 @@ Commands() :
       System.exit(1);
     }
 
+    /* create the server */ 
     return (new QueueMgrServer(pQueueDir, pQueuePort, pJobPort));
   }
 }
@@ -305,7 +341,8 @@ void
 GlobalOpts() :
 {}
 {
-  (QueueDir() | QueuePort() | JobPort() | Log())
+  (QueueDir() | QueuePort() | JobPort() | 
+   Log() | LogFile() | StandardLogFile() | LogBackups())
   {}
 }
 
@@ -348,6 +385,37 @@ JobPort() :
   }
 }
 
+
+void LogFile() : 
+{
+  Token t;
+}
+{
+  <LOG_FILE> EQ() t=<PATH_ARG>
+  { 
+    pLogFile = t.image;
+  }
+}
+
+void StandardLogFile() : 
+{}
+{
+  <STANDARD_LOG_FILE>
+  { 
+    pLogFile = (PackageInfo.sInstDir + "/logs/plqueuemgr.log");
+  }
+}
+
+void LogBackups() : 
+{
+  Token t;
+}
+{
+  <LOG_BACKUPS> EQ() t=<INTEGER>
+  { 
+    pLogBackups = Integer.parseInt(t.image);
+  }
+}
 
 void Log() : 
 {}

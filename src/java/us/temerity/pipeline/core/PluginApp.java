@@ -1,4 +1,4 @@
-// $Id: PluginApp.java,v 1.3 2004/09/26 03:13:55 jim Exp $
+// $Id: PluginApp.java,v 1.4 2004/10/24 10:56:53 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -109,7 +109,7 @@ class PluginApp
       "  plplugin --license\n" + 
       "\n" + 
       "OPTIONS:\n" +
-      "  [--log=...]\n" +
+      "  [--log-file=...][--log-backups=...][--log=...]\n" +
       "\n" + 
       "\n" +  
       "Use \"plplugin --html-help\" to browse the full documentation.\n");
@@ -143,6 +143,12 @@ class PluginApp
 
     case PluginOptsParserConstants.CLASS_FILE:
       return "a Java class file";
+
+    case PluginOptsParserConstants.PATH_ARG:
+      return "an file system path";
+
+    case PluginOptsParserConstants.INTEGER:
+      return "an integer";
 
     default: 
       if(printLiteral) 
