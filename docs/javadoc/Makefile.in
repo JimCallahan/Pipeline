@@ -199,15 +199,16 @@ javadoc.tar: docs-all
 docs-all: 
 	$(JAVADOC) $(JAVADOC_OPTS) \
                    us.temerity.pipeline \
+                   us.temerity.pipeline.core \
                    us.temerity.pipeline.message \
                    us.temerity.pipeline.plugin \
-                   $(top_builddir)/src/java/us/temerity/pipeline/PackageInfo.java
+                   $(top_builddir)/src/java/us/temerity/pipeline/core/PackageInfo.java
 	touch $@
 
 
 #--------------------------------------------------------------------------------------------#
 
-install: installdirs
+install: all installdirs
 	(docdir=`pwd`; \
          cd $(DESTDIR)$(ROOT_INST_DIR)/share/docs; \
          tar -xvf $$docdir/javadoc.tar)
