@@ -1,4 +1,4 @@
-// $Id: JActiveToolsetsListCellRenderer.java,v 1.1 2004/05/29 06:38:43 jim Exp $
+// $Id: JActiveToolsetsListCellRenderer.java,v 1.2 2004/06/02 21:34:00 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -15,11 +15,12 @@ import javax.swing.border.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The renderer used for the {@link JList JList} cells.
+ * The renderer used for the {@link JList JList} cells containing the names of active 
+ * toolsets maintained by a {@link JManageToolsetsDialog JManageToolsetsDialog} instance.
  */ 
 public
 class JActiveToolsetsListCellRenderer
-  extends JListCellRenderer
+  extends JExtraListCellRenderer
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -63,8 +64,9 @@ class JActiveToolsetsListCellRenderer
   {
     super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 
-    if(pDialog.isDefaultToolset(value.toString())) 
-      setText(value + " (default)");
+    String name = (String) value;
+    pLabel.setText(name);
+    pExtraLabel.setText(pDialog.isDefaultToolset(name) ? "(default)" : null);
     
     return this;
   }
@@ -86,6 +88,6 @@ class JActiveToolsetsListCellRenderer
   /**
    * The parent dialog.
    */
-  protected JManageToolsetsDialog  pDialog;
+  private JManageToolsetsDialog  pDialog;
 
 }

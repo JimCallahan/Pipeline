@@ -1,4 +1,4 @@
-// $Id: JAllToolsetsListCellRenderer.java,v 1.1 2004/05/29 06:38:43 jim Exp $
+// $Id: JAllToolsetsListCellRenderer.java,v 1.2 2004/06/02 21:34:00 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -19,7 +19,7 @@ import javax.swing.border.*;
  */ 
 public
 class JAllToolsetsListCellRenderer
-  extends JActiveToolsetsListCellRenderer
+  extends JExtraListCellRenderer
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -37,7 +37,9 @@ class JAllToolsetsListCellRenderer
    JManageToolsetsDialog dialog
   )
   {
-    super(dialog);
+    super();
+
+    pDialog = dialog;
   }
 
 
@@ -61,10 +63,24 @@ class JAllToolsetsListCellRenderer
   {
     super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 
-    if(pDialog.isModifiableToolset(value.toString())) 
-      setText(value + " (working)");
-    else 
-      setText(value.toString());
+    String name = (String) value;
+    pLabel.setText(name);
+    if(pDialog.isWorkingToolset(value.toString())) {
+      pExtraLabel.setText("(working)");
+      if(pDialog.hasPackageConflicts(value.toString())) {
+	pLabel.setForeground(isSelected ? Color.yellow : Color.cyan);
+
+	pExtraLabel.setIcon(isSelected ? sConflictSelectedIcon : sConflictIcon);
+	pExtraLabel.setForeground(isSelected ? Color.yellow : Color.cyan);
+      }
+      else {
+	pExtraLabel.setIcon(isSelected ? sCheckSelectedIcon : sCheckIcon);
+      }
+    }
+    else {
+      pExtraLabel.setText(null);
+      pExtraLabel.setIcon(null);
+    }
     
     return this;
   }
@@ -76,5 +92,16 @@ class JAllToolsetsListCellRenderer
   /*----------------------------------------------------------------------------------------*/
 
   private static final long serialVersionUID = -708863842600070381L;
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The parent dialog.
+   */
+  private JManageToolsetsDialog  pDialog;
 
 }
