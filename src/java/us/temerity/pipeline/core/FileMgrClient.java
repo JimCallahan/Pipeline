@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.14 2004/08/01 15:44:39 jim Exp $
+// $Id: FileMgrClient.java,v 1.15 2004/08/23 03:02:33 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -374,21 +374,20 @@ class FileMgrClient
    * @param id 
    *   The unique working version identifier.
    * 
-   * @param mod 
-   *   The working version of the node.
+   * @param fseqs
+   *   The primary/secondary file sequences. 
    */  
   public synchronized void 
   removeAll
   (
    NodeID id, 
-   NodeMod mod
+   TreeSet<FileSeq> fseqs
   ) 
     throws PipelineException 
   {
     verifyConnection();
 
-    FileRemoveAllReq req = 
-      new FileRemoveAllReq(id, mod.getSequences());
+    FileRemoveAllReq req = new FileRemoveAllReq(id, fseqs);
 
     Object obj = performTransaction(FileRequest.RemoveAll, req);
     handleSimpleResponse(obj);
