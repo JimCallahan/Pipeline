@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.53 2004/10/30 17:38:22 jim Exp $
+// $Id: MasterMgr.java,v 1.54 2004/10/31 20:04:13 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -307,7 +307,8 @@ class MasterMgr
 
     /* initialize the fields */ 
     {
-      pMakeDirLock = new Object();
+      pDatabaseLock = new ReentrantReadWriteLock();
+      pMakeDirLock  = new Object();
 
       pDefaultToolsetLock = new Object();
       pDefaultToolset     = null;
@@ -655,6 +656,7 @@ class MasterMgr
       
       /* invalidate the fields */ 
       {
+	pDatabaseLock        = null;
 	pMakeDirLock         = null;
 	
 	pDefaultToolsetLock  = null;
@@ -982,15 +984,21 @@ class MasterMgr
   getDefaultToolsetName() 
   {    
     TaskTimer timer = new TaskTimer();
-    
-    timer.aquire();
-    synchronized(pDefaultToolsetLock) {
-      timer.resume();	
 
-      if(pDefaultToolset != null) 
-	return new MiscGetDefaultToolsetNameRsp(timer, pDefaultToolset);
-      else 
-	return new FailureRsp(timer, "No default toolset is defined!");
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pDefaultToolsetLock) {
+	timer.resume();	
+	
+	if(pDefaultToolset != null) 
+	  return new MiscGetDefaultToolsetNameRsp(timer, pDefaultToolset);
+	else 
+	  return new FailureRsp(timer, "No default toolset is defined!");
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
 
@@ -1011,50 +1019,55 @@ class MasterMgr
   ) 
   {   
     String tname = req.getName();
-
     TaskTimer timer = new TaskTimer("MasterMgr.setDefaultToolsetName(): " + tname);
 
     timer.aquire();
-    synchronized(pToolsets) {
-      timer.resume();
-
-      if(!pToolsets.containsKey(tname)) 
-	return new FailureRsp
-	  (timer, 
-	   "No toolset named (" + tname + ") exists to be made the default toolset!");
-    }
-
-    timer.aquire();
-    synchronized(pDefaultToolsetLock) {
-      timer.resume();	 
-      
-      pDefaultToolset = tname;
-
-      try {
-	writeDefaultToolset();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pToolsets) {
+	timer.resume();
+	
+	if(!pToolsets.containsKey(tname)) 
+	  return new FailureRsp
+	    (timer, 
+	     "No toolset named (" + tname + ") exists to be made the default toolset!");
       }
-      catch(PipelineException ex) {
-	return new FailureRsp(timer, ex.getMessage());
-      }
-    }
-
-    timer.aquire();
-    synchronized(pActiveToolsets) {
-      timer.resume();	 
       
-      if(!pActiveToolsets.contains(tname)) {
-	pActiveToolsets.add(tname);
-
+      timer.aquire();
+      synchronized(pDefaultToolsetLock) {
+	timer.resume();	 
+	
+	pDefaultToolset = tname;
+	
 	try {
-	  writeActiveToolsets();
+	  writeDefaultToolset();
 	}
 	catch(PipelineException ex) {
 	  return new FailureRsp(timer, ex.getMessage());
 	}
       }
-    }
+      
+      timer.aquire();
+      synchronized(pActiveToolsets) {
+	timer.resume();	 
+	
+	if(!pActiveToolsets.contains(tname)) {
+	  pActiveToolsets.add(tname);
+	  
+	  try {
+	    writeActiveToolsets();
+	  }
+	  catch(PipelineException ex) {
+	    return new FailureRsp(timer, ex.getMessage());
+	  }
+	}
+      }
 
-    return new SuccessRsp(timer);
+      return new SuccessRsp(timer);
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
   }
 
   /**
@@ -1070,10 +1083,16 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    synchronized(pActiveToolsets) {
-      timer.resume();
-
-      return new MiscGetActiveToolsetNamesRsp(timer, new TreeSet<String>(pActiveToolsets));
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pActiveToolsets) {
+	timer.resume();
+	
+	return new MiscGetActiveToolsetNamesRsp(timer, new TreeSet<String>(pActiveToolsets));
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
 
@@ -1100,65 +1119,71 @@ class MasterMgr
 		    tname + " [" + req.isActive() + "]");
 
     timer.aquire();
-    synchronized(pToolsets) {
-      timer.resume();
-
-      if(!pToolsets.containsKey(tname)) 
-	return new FailureRsp
-	  (timer, 
-	   "No toolset named (" + tname + ") exists to be made the active!");
-    }
-
-    boolean removed = false;
-
-    timer.aquire();
-    synchronized(pActiveToolsets) {
-      timer.resume();	 
-
-      boolean changed = false;
-      if(req.isActive()) {
-	if(!pActiveToolsets.contains(tname)) {
-	  pActiveToolsets.add(tname);
-	  changed = true;
-	}
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pToolsets) {
+	timer.resume();
+	
+	if(!pToolsets.containsKey(tname)) 
+	  return new FailureRsp
+	    (timer, 
+	     "No toolset named (" + tname + ") exists to be made the active!");
       }
-      else {
-	if(pActiveToolsets.contains(tname)) {
-	  pActiveToolsets.remove(tname);
-	  changed = true;
-	  removed = true;
-	}
-      }
-
-      if(changed) {
-	try {
-	  writeActiveToolsets();
-	}
-	catch(PipelineException ex) {
-	  return new FailureRsp(timer, ex.getMessage());
-	}
-      }
-    }
-    
-    if(removed) {
+      
+      boolean removed = false;
+      
       timer.aquire();
-      synchronized(pDefaultToolsetLock) {
+      synchronized(pActiveToolsets) {
 	timer.resume();	 
 	
-	if((pDefaultToolset != null) && pDefaultToolset.equals(tname)) {
-	  pDefaultToolset = null;
+	boolean changed = false;
+	if(req.isActive()) {
+	  if(!pActiveToolsets.contains(tname)) {
+	    pActiveToolsets.add(tname);
+	    changed = true;
+	  }
+	}
+	else {
+	  if(pActiveToolsets.contains(tname)) {
+	    pActiveToolsets.remove(tname);
+	    changed = true;
+	    removed = true;
+	  }
+	}
 	
-	  File file = new File(pNodeDir, "toolsets/default-toolset");
-	  if(file.exists()) {
-	    if(!file.delete())
-	      return new FailureRsp
-		(timer, "Unable to remove the old default toolset file (" + file + ")!");
+	if(changed) {
+	  try {
+	    writeActiveToolsets();
+	  }
+	  catch(PipelineException ex) {
+	    return new FailureRsp(timer, ex.getMessage());
 	  }
 	}
       }
+      
+      if(removed) {
+	timer.aquire();
+	synchronized(pDefaultToolsetLock) {
+	  timer.resume();	 
+	  
+	  if((pDefaultToolset != null) && pDefaultToolset.equals(tname)) {
+	    pDefaultToolset = null;
+	    
+	    File file = new File(pNodeDir, "toolsets/default-toolset");
+	    if(file.exists()) {
+	      if(!file.delete())
+		return new FailureRsp
+		  (timer, "Unable to remove the old default toolset file (" + file + ")!");
+	    }
+	  }
+	}
+      }
+      
+      return new SuccessRsp(timer);
     }
-
-    return new SuccessRsp(timer);
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
   }
 
   /**
@@ -1174,10 +1199,16 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    synchronized(pToolsets) {
-      timer.resume();
-
-      return new MiscGetToolsetNamesRsp(timer, new TreeSet<String>(pToolsets.keySet()));
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pToolsets) {
+	timer.resume();
+	
+	return new MiscGetToolsetNamesRsp(timer, new TreeSet<String>(pToolsets.keySet()));
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }    
   }
 
@@ -1200,21 +1231,27 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    synchronized(pToolsets) {
-      timer.resume();
-    
-      Toolset tset = pToolsets.get(req.getName());
-      if(tset == null) {
-	try {
-	  tset = readToolset(req.getName());
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pToolsets) {
+	timer.resume();
+	
+	Toolset tset = pToolsets.get(req.getName());
+	if(tset == null) {
+	  try {
+	    tset = readToolset(req.getName());
+	  }
+	  catch(PipelineException ex) {
+	    return new FailureRsp(timer, ex.getMessage());
+	  }
 	}
-	catch(PipelineException ex) {
-	  return new FailureRsp(timer, ex.getMessage());
-	}
+	assert(tset != null);
+	
+	return new MiscGetToolsetRsp(timer, tset);
       }
-      assert(tset != null);
-
-      return new MiscGetToolsetRsp(timer, tset);
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
 
@@ -1235,14 +1272,22 @@ class MasterMgr
   ) 
   {
     TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
+      timer.resume();	
+
       TreeMap<String,String> env = 
 	getToolsetEnvironment(req.getAuthor(), req.getView(), req.getName(), timer);	
-
+      
       return new MiscGetToolsetEnvironmentRsp(timer, req.getName(), env);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
 
@@ -1282,24 +1327,30 @@ class MasterMgr
     throws PipelineException
   {
     timer.aquire();
-    synchronized(pToolsets) {
-      timer.resume();
-
-      Toolset tset = pToolsets.get(tname);
-      if(tset == null) 
-	tset = readToolset(tname);
-      assert(tset != null);
-      
-      TreeMap<String,String> env = null;
-      if((author != null) && (view != null)) 
-	env = tset.getEnvironment(author, view);
-      else if(author != null)
-	env = tset.getEnvironment(author);
-      else 
-	env = tset.getEnvironment();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pToolsets) {
+	timer.resume();
 	
-      assert(env != null);
-      return env;
+	Toolset tset = pToolsets.get(tname);
+	if(tset == null) 
+	  tset = readToolset(tname);
+	assert(tset != null);
+	
+	TreeMap<String,String> env = null;
+	if((author != null) && (view != null)) 
+	  env = tset.getEnvironment(author, view);
+	else if(author != null)
+	  env = tset.getEnvironment(author);
+	else 
+	  env = tset.getEnvironment();
+	
+	assert(env != null);
+	return env;
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
   
@@ -1323,71 +1374,77 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    synchronized(pToolsets) {
-      timer.resume();
-
-      if(pToolsets.containsKey(req.getName())) 
-	return new FailureRsp
-	  (timer, 
-	   "Unable to create the toolset (" + req.getName() + ") because a toolset " + 
-	   "already exists with that name!");
-
-      /* lookup the packages */  
-      ArrayList<PackageCommon> packages = new ArrayList<PackageCommon>();
-      timer.aquire();
-      synchronized(pToolsetPackages) {
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pToolsets) {
 	timer.resume();
-      
-	for(String pname : req.getPackages()) {
-	  VersionID vid = req.getVersions().get(pname);
-	  if(vid == null) 
-	    return new FailureRsp
-	      (timer, 
-	       "Unable to create the toolset (" + req.getName() + ") because the " +
-	       "revision number for package (" + pname + ") was missing!");
-
-	  TreeMap<VersionID,PackageVersion> versions = pToolsetPackages.get(pname);
-	  if((versions == null) || !versions.containsKey(vid))
-	    return new FailureRsp
-	      (timer, 
-	       "Unable to create the toolset (" + req.getName() + ") because the " +
-	       "package (" + pname + " v" + vid + ") does not exists!");
-
-	  PackageVersion pkg = versions.get(vid);
-	  if(pkg == null) {
-	    try {
-	      pkg = readToolsetPackage(pname, vid);
-	    }
-	    catch(PipelineException ex) {
-	      return new FailureRsp(timer, ex.getMessage());
-	    }
-	  }
-	  assert(pkg != null);
-
-	  packages.add(pkg);
-	}
-      }
+	
+	if(pToolsets.containsKey(req.getName())) 
+	  return new FailureRsp
+	    (timer, 
+	     "Unable to create the toolset (" + req.getName() + ") because a toolset " + 
+	     "already exists with that name!");
+	
+	/* lookup the packages */  
+	ArrayList<PackageCommon> packages = new ArrayList<PackageCommon>();
+	timer.aquire();
+	synchronized(pToolsetPackages) {
+	  timer.resume();
 	  
-      /* build the toolset */ 
-      Toolset tset = 
-	new Toolset(req.getAuthor(), req.getName(), packages, req.getDescription());
-      if(tset.hasConflicts()) 
-	return new FailureRsp
-	  (timer, 
-	   "Unable to create the toolset (" + req.getName() + ") due to conflicts between " + 
-	   "the supplied packages!");
-
-      try {
-	writeToolset(tset);
-      }
-      catch(PipelineException ex) {
-	return new FailureRsp(timer, ex.getMessage());	  
-      }
-      
-      pToolsets.put(tset.getName(), tset);
-
-      return new MiscCreateToolsetRsp(timer, tset);
-    }    
+	  for(String pname : req.getPackages()) {
+	    VersionID vid = req.getVersions().get(pname);
+	    if(vid == null) 
+	      return new FailureRsp
+		(timer, 
+		 "Unable to create the toolset (" + req.getName() + ") because the " +
+		 "revision number for package (" + pname + ") was missing!");
+	    
+	    TreeMap<VersionID,PackageVersion> versions = pToolsetPackages.get(pname);
+	    if((versions == null) || !versions.containsKey(vid))
+	      return new FailureRsp
+		(timer, 
+		 "Unable to create the toolset (" + req.getName() + ") because the " +
+		 "package (" + pname + " v" + vid + ") does not exists!");
+	    
+	    PackageVersion pkg = versions.get(vid);
+	    if(pkg == null) {
+	      try {
+		pkg = readToolsetPackage(pname, vid);
+	      }
+	      catch(PipelineException ex) {
+		return new FailureRsp(timer, ex.getMessage());
+	      }
+	    }
+	    assert(pkg != null);
+	    
+	    packages.add(pkg);
+	  }
+	}
+	
+	/* build the toolset */ 
+	Toolset tset = 
+	  new Toolset(req.getAuthor(), req.getName(), packages, req.getDescription());
+	if(tset.hasConflicts()) 
+	  return new FailureRsp
+	    (timer, 
+	     "Unable to create the toolset (" + req.getName() + ") due to conflicts " + 
+	     "between the supplied packages!");
+	
+	try {
+	  writeToolset(tset);
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());	  
+	}
+	
+	pToolsets.put(tset.getName(), tset);
+	
+	return new MiscCreateToolsetRsp(timer, tset);
+      }    
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
   }
 
 
@@ -1406,15 +1463,21 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    synchronized(pToolsetPackages) {
-      timer.resume();
-
-      TreeMap<String,TreeSet<VersionID>> names = new TreeMap<String,TreeSet<VersionID>>();
-      for(String name : pToolsetPackages.keySet()) 
-	names.put(name, new TreeSet<VersionID>(pToolsetPackages.get(name).keySet()));
-
-      return new MiscGetToolsetPackageNamesRsp(timer, names);
-    }        
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pToolsetPackages) {
+	timer.resume();
+	
+	TreeMap<String,TreeSet<VersionID>> names = new TreeMap<String,TreeSet<VersionID>>();
+	for(String name : pToolsetPackages.keySet()) 
+	  names.put(name, new TreeSet<VersionID>(pToolsetPackages.get(name).keySet()));
+	
+	return new MiscGetToolsetPackageNamesRsp(timer, names);
+      }  
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }      
   }
 
   /**
@@ -1436,28 +1499,34 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    synchronized(pToolsetPackages) {
-      timer.resume();
-    
-      TreeMap<VersionID,PackageVersion> versions = pToolsetPackages.get(req.getName());
-      if(versions == null) 
-	return new FailureRsp
-	  (timer, 
-	   "No toolset package (" + req.getName() + " v" + req.getVersionID() + ") exists!");
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pToolsetPackages) {
+	timer.resume();
+	
+	TreeMap<VersionID,PackageVersion> versions = pToolsetPackages.get(req.getName());
+	if(versions == null) 
+	  return new FailureRsp
+	    (timer, "No toolset package (" + req.getName() + " v" + req.getVersionID() + 
+	     ") exists!");
 
-      PackageVersion pkg = versions.get(req.getVersionID());
-      if(pkg == null) {
-	try {
-	  pkg = readToolsetPackage(req.getName(), req.getVersionID());
+	PackageVersion pkg = versions.get(req.getVersionID());
+	if(pkg == null) {
+	  try {
+	    pkg = readToolsetPackage(req.getName(), req.getVersionID());
+	  }
+	  catch(PipelineException ex) {
+	    return new FailureRsp(timer, ex.getMessage());
+	  }
 	}
-	catch(PipelineException ex) {
-	  return new FailureRsp(timer, ex.getMessage());
-	}
-      }
-      assert(pkg != null);
-
-      return new MiscGetToolsetPackageRsp(timer, pkg);
-    }    
+	assert(pkg != null);
+	
+	return new MiscGetToolsetPackageRsp(timer, pkg);
+      }  
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }  
   }
 
   /**
@@ -1479,42 +1548,47 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
     
     timer.aquire();
-    synchronized(pToolsetPackages) {
-      timer.resume();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pToolsetPackages) {
+	timer.resume();
 
-      String pname = req.getPackage().getName();
-      VersionID nvid = null;
-      TreeMap<VersionID,PackageVersion> versions = pToolsetPackages.get(pname);
-      if(versions == null) {
-	nvid = new VersionID();
+	String pname = req.getPackage().getName();
+	VersionID nvid = null;
+	TreeMap<VersionID,PackageVersion> versions = pToolsetPackages.get(pname);
+	if(versions == null) {
+	  nvid = new VersionID();
 
-	versions = new TreeMap<VersionID,PackageVersion>();
-	pToolsetPackages.put(pname, versions);
-      }
-      else {
-	assert(!versions.isEmpty());
-	if(req.getLevel() == null) 
-	  return new FailureRsp
-	    (timer, 
-	     "Unable to create the toolset package (" + pname + ") due to a " + 
-	     "missing revision number increment level!");
+	  versions = new TreeMap<VersionID,PackageVersion>();
+	  pToolsetPackages.put(pname, versions);
+	}
+	else {
+	  assert(!versions.isEmpty());
+	  if(req.getLevel() == null) 
+	    return new FailureRsp
+	      (timer, "Unable to create the toolset package (" + pname + ") due to a " + 
+	       "missing revision number increment level!");
+	  
+	  nvid = new VersionID(versions.lastKey(), req.getLevel());
+	}
 	
-	nvid = new VersionID(versions.lastKey(), req.getLevel());
+	PackageVersion pkg = 
+	  new PackageVersion(req.getAuthor(), req.getPackage(), nvid, req.getDescription());
+	
+	try {
+	  writeToolsetPackage(pkg);
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());	  
+	}
+	
+	versions.put(pkg.getVersionID(), pkg);
+	
+	return new MiscCreateToolsetPackageRsp(timer, pkg);
       }
-
-      PackageVersion pkg = 
-	new PackageVersion(req.getAuthor(), req.getPackage(), nvid, req.getDescription());
-
-      try {
-	writeToolsetPackage(pkg);
-      }
-      catch(PipelineException ex) {
-	return new FailureRsp(timer, ex.getMessage());	  
-      }
-      
-      versions.put(pkg.getVersionID(), pkg);
-
-      return new MiscCreateToolsetPackageRsp(timer, pkg);
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
 
@@ -1543,23 +1617,29 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
     
     timer.aquire();
-    synchronized(pSuffixEditors) {
-      timer.resume();
-
-      try {
-	String author = req.getAuthor();
-	TreeMap<String,SuffixEditor> editors = getSuffixEditors(author);
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pSuffixEditors) {
+	timer.resume();
 	
-	String ename = null;
-	SuffixEditor se = editors.get(req.getSuffix());
-	if(se != null) 
-	  ename = se.getEditor();
-	
-	return new MiscGetEditorForSuffixRsp(timer, ename); 
+	try {
+	  String author = req.getAuthor();
+	  TreeMap<String,SuffixEditor> editors = getSuffixEditors(author);
+	  
+	  String ename = null;
+	  SuffixEditor se = editors.get(req.getSuffix());
+	  if(se != null) 
+	    ename = se.getEditor();
+	  
+	  return new MiscGetEditorForSuffixRsp(timer, ename); 
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
+	}
       }
-      catch(PipelineException ex) {
-	return new FailureRsp(timer, ex.getMessage());
-      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
 
@@ -1582,25 +1662,31 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
     
     timer.aquire();
-    synchronized(pSuffixEditors) {
-      timer.resume();
-
-      try {
-	String author = req.getAuthor();
-	TreeSet<SuffixEditor> editors =	
-	  new TreeSet<SuffixEditor>(getSuffixEditors(author).values());
-	return new MiscGetSuffixEditorsRsp(timer, editors);
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pSuffixEditors) {
+	timer.resume();
+	
+	try {
+	  String author = req.getAuthor();
+	  TreeSet<SuffixEditor> editors =	
+	    new TreeSet<SuffixEditor>(getSuffixEditors(author).values());
+	  return new MiscGetSuffixEditorsRsp(timer, editors);
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
+	}
       }
-      catch(PipelineException ex) {
-	return new FailureRsp(timer, ex.getMessage());
-      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
 
   /**
    * Get the filename suffix to default editor mappings for the given user. 
    */ 
-  private  TreeMap<String,SuffixEditor> 
+  private TreeMap<String,SuffixEditor> 
   getSuffixEditors
   (
    String author
@@ -1649,23 +1735,29 @@ class MasterMgr
     TaskTimer timer = new TaskTimer("MasterMgr.setSuffixEditors()");
     
     timer.aquire();
-    synchronized(pSuffixEditors) {
-      timer.resume();
-
-      try {
-	writeSuffixEditors(req.getAuthor(), req.getEditors());
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pSuffixEditors) {
+	timer.resume();
+	
+	try {
+	  writeSuffixEditors(req.getAuthor(), req.getEditors());
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
+	}
+	
+	TreeMap<String,SuffixEditor> editors = new TreeMap<String,SuffixEditor>();
+	for(SuffixEditor se : req.getEditors()) 
+	  editors.put(se.getSuffix(), se);
+	
+	pSuffixEditors.put(req.getAuthor(), editors);
+	
+	return new SuccessRsp(timer);
       }
-      catch(PipelineException ex) {
-	return new FailureRsp(timer, ex.getMessage());
-      }
-
-      TreeMap<String,SuffixEditor> editors = new TreeMap<String,SuffixEditor>();
-      for(SuffixEditor se : req.getEditors()) 
-	editors.put(se.getSuffix(), se);
-
-      pSuffixEditors.put(req.getAuthor(), editors);
-
-      return new SuccessRsp(timer);
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
 
@@ -1688,11 +1780,17 @@ class MasterMgr
     TaskTimer timer = new TaskTimer("MasterMgr.getPrivilegedUsers()");
     
     timer.aquire();
-    synchronized(pPrivilegedUsers) {
-      timer.resume();	
-
-      TreeSet<String> users = new TreeSet<String>(pPrivilegedUsers);
-      return new MiscGetPrivilegedUsersRsp(timer, users);
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pPrivilegedUsers) {
+	timer.resume();	
+	
+	TreeSet<String> users = new TreeSet<String>(pPrivilegedUsers);
+	return new MiscGetPrivilegedUsersRsp(timer, users);
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
   
@@ -1716,21 +1814,27 @@ class MasterMgr
       new TaskTimer("MasterMgr.grantPrivileges(): " + req.getAuthor());
     
     timer.aquire();
-    synchronized(pPrivilegedUsers) {
-      timer.resume();	
-
-      if(!pPrivilegedUsers.contains(req.getAuthor())) {      
-	pPrivilegedUsers.add(req.getAuthor());
-	try {
-	  writePrivilegedUsers();
-	  pQueueMgrClient.setPrivilegedUsers(pPrivilegedUsers);
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pPrivilegedUsers) {
+	timer.resume();	
+	
+	if(!pPrivilegedUsers.contains(req.getAuthor())) {      
+	  pPrivilegedUsers.add(req.getAuthor());
+	  try {
+	    writePrivilegedUsers();
+	    pQueueMgrClient.setPrivilegedUsers(pPrivilegedUsers);
+	  }
+	  catch(PipelineException ex) {
+	    return new FailureRsp(timer, ex.getMessage());
+	  }      
 	}
-	catch(PipelineException ex) {
-	  return new FailureRsp(timer, ex.getMessage());
-	}      
+	
+	return new SuccessRsp(timer);
       }
-
-      return new SuccessRsp(timer);
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
 
@@ -1754,21 +1858,27 @@ class MasterMgr
       new TaskTimer("MasterMgr.removePrivileges(): " + req.getAuthor());
     
     timer.aquire();
-    synchronized(pPrivilegedUsers) {
-      timer.resume();	
-
-      if(pPrivilegedUsers.contains(req.getAuthor())) {      
-	pPrivilegedUsers.remove(req.getAuthor());
-	try {
-	  writePrivilegedUsers();
-	  pQueueMgrClient.setPrivilegedUsers(pPrivilegedUsers);
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pPrivilegedUsers) {
+	timer.resume();	
+	
+	if(pPrivilegedUsers.contains(req.getAuthor())) {      
+	  pPrivilegedUsers.remove(req.getAuthor());
+	  try {
+	    writePrivilegedUsers();
+	    pQueueMgrClient.setPrivilegedUsers(pPrivilegedUsers);
+	  }
+	  catch(PipelineException ex) {
+	    return new FailureRsp(timer, ex.getMessage());
+	  }      
 	}
-	catch(PipelineException ex) {
-	  return new FailureRsp(timer, ex.getMessage());
-	}      
+	
+	return new SuccessRsp(timer);
       }
-
-      return new SuccessRsp(timer);
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
 
@@ -1791,14 +1901,20 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
     
     timer.aquire();
-    synchronized(pWorkingAreaViews) {
-      timer.resume();	
-
-      TreeMap<String,TreeSet<String>> views = new TreeMap<String,TreeSet<String>>();
-      for(String author : pWorkingAreaViews.keySet()) 
-	views.put(author, (TreeSet<String>) pWorkingAreaViews.get(author).clone());
-
-      return new NodeGetWorkingAreasRsp(timer, views);
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pWorkingAreaViews) {
+	timer.resume();	
+	
+	TreeMap<String,TreeSet<String>> views = new TreeMap<String,TreeSet<String>>();
+	for(String author : pWorkingAreaViews.keySet()) 
+	  views.put(author, (TreeSet<String>) pWorkingAreaViews.get(author).clone());
+	
+	return new NodeGetWorkingAreasRsp(timer, views);
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
 
@@ -1826,44 +1942,50 @@ class MasterMgr
 		    req.getAuthor() + "|" + req.getView());
     
     timer.aquire();
-    synchronized(pWorkingAreaViews) {
-      timer.resume();	
-      
-      String author = req.getAuthor();
-      String view   = req.getView();
-
-      /* make sure it doesn't already exist */ 
-      TreeSet<String> views = pWorkingAreaViews.get(author);
-      if((views != null) && views.contains(view))
-	return new SuccessRsp(timer);
-
-      /* create the working area node directory */ 
-      File dir = new File(pNodeDir, "working/" + author + "/" + view);
-      synchronized(pMakeDirLock) {
-	if(!dir.isDirectory()) {
-	  if(!dir.mkdirs()) 
-	    return new FailureRsp
-	      (timer, 
-	       "Unable to create the working area (" + view + ") for user (" + author + ")!");
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pWorkingAreaViews) {
+	timer.resume();	
+	
+	String author = req.getAuthor();
+	String view   = req.getView();
+	
+	/* make sure it doesn't already exist */ 
+	TreeSet<String> views = pWorkingAreaViews.get(author);
+	if((views != null) && views.contains(view))
+	  return new SuccessRsp(timer);
+	
+	/* create the working area node directory */ 
+	File dir = new File(pNodeDir, "working/" + author + "/" + view);
+	synchronized(pMakeDirLock) {
+	  if(!dir.isDirectory()) {
+	    if(!dir.mkdirs()) 
+	      return new FailureRsp
+		(timer, "Unable to create the working area (" + view + ") for user " + 
+		 "(" + author + ")!");
+	  }
 	}
-      }
 
-      /* create the working area files directory */ 
-      try {
-	pFileMgrClient.createWorkingArea(author, view);
+	/* create the working area files directory */ 
+	try {
+	  pFileMgrClient.createWorkingArea(author, view);
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
+	}
+	
+	/* add the view to the runtime table */ 
+	if(views == null) {
+	  views = new TreeSet<String>();
+	  pWorkingAreaViews.put(author, views);
+	}
+	views.add(view);
+	
+	return new SuccessRsp(timer);
       }
-      catch(PipelineException ex) {
-	return new FailureRsp(timer, ex.getMessage());
-      }
-
-      /* add the view to the runtime table */ 
-      if(views == null) {
-	views = new TreeSet<String>();
-	pWorkingAreaViews.put(author, views);
-      }
-      views.add(view);
-
-      return new SuccessRsp(timer);
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }  
 
@@ -1895,46 +2017,52 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
-    synchronized(pNodeTreeRoot) {
-      timer.resume();	
-      
-      NodeTreeComp rootComp = new NodeTreeComp();
-      TreeMap<String,Boolean> paths = req.getPaths();
-      for(String path : paths.keySet()) {
-	String comps[] = path.split("/"); 
-
-	NodeTreeComp parentComp   = rootComp;
-	NodeTreeEntry parentEntry = pNodeTreeRoot;
-	int wk;
-	for(wk=1; wk<comps.length; wk++) {
-	  for(NodeTreeEntry entry : parentEntry.values()) {
-	    if(!parentComp.containsKey(entry.getName())) {
-	      NodeTreeComp comp = new NodeTreeComp(entry, req.getAuthor(), req.getView());
-	      parentComp.put(comp.getName(), comp);
-	    }
-	  }
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pNodeTreeRoot) {
+	timer.resume();	
 	
-	  NodeTreeEntry entry = (NodeTreeEntry) parentEntry.get(comps[wk]); 
-	  if(entry == null) {
-	    parentEntry = null;
-	    break;
-	  }
-
-	  NodeTreeComp comp = (NodeTreeComp) parentComp.get(comps[wk]);
-	  assert(comp != null);
+	NodeTreeComp rootComp = new NodeTreeComp();
+	TreeMap<String,Boolean> paths = req.getPaths();
+	for(String path : paths.keySet()) {
+	  String comps[] = path.split("/"); 
 	  
-	  parentEntry = entry;
-	  parentComp  = comp;
+	  NodeTreeComp parentComp   = rootComp;
+	  NodeTreeEntry parentEntry = pNodeTreeRoot;
+	  int wk;
+	  for(wk=1; wk<comps.length; wk++) {
+	    for(NodeTreeEntry entry : parentEntry.values()) {
+	      if(!parentComp.containsKey(entry.getName())) {
+		NodeTreeComp comp = new NodeTreeComp(entry, req.getAuthor(), req.getView());
+		parentComp.put(comp.getName(), comp);
+	      }
+	    }
+	    
+	    NodeTreeEntry entry = (NodeTreeEntry) parentEntry.get(comps[wk]); 
+	    if(entry == null) {
+	      parentEntry = null;
+	      break;
+	    }
+	    
+	    NodeTreeComp comp = (NodeTreeComp) parentComp.get(comps[wk]);
+	    assert(comp != null);
+	    
+	    parentEntry = entry;
+	    parentComp  = comp;
+	  }
+	  
+	  if((parentEntry != null) && (parentComp != null)) {
+	    boolean recursive = paths.get(path);
+	    updatePathsBelow(req.getAuthor(), req.getView(), 
+			     parentEntry, parentComp, recursive);
+	  }
 	}
 	
-	if((parentEntry != null) && (parentComp != null)) {
-	  boolean recursive = paths.get(path);
-	  updatePathsBelow(req.getAuthor(), req.getView(), 
-			   parentEntry, parentComp, recursive);
-	}
+	return new NodeUpdatePathsRsp(timer, req.getAuthor(), req.getView(), rootComp);
       }
-
-      return new NodeUpdatePathsRsp(timer, req.getAuthor(), req.getView(), rootComp);
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }
 
@@ -1986,6 +2114,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
+    pDatabaseLock.readLock().lock();
     ReentrantReadWriteLock lock = getWorkingLock(req.getNodeID());
     lock.readLock().lock();
     try {
@@ -1999,6 +2128,7 @@ class MasterMgr
     }
     finally {
       lock.readLock().unlock();
+      pDatabaseLock.readLock().unlock();
     }  
   }  
 
@@ -2036,6 +2166,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer("MasterMgr.modifyProperties(): " + nodeID);
 
     timer.aquire();
+    pDatabaseLock.readLock().lock();
     ReentrantReadWriteLock lock = getWorkingLock(nodeID);
     lock.writeLock().lock();
     try {
@@ -2068,6 +2199,7 @@ class MasterMgr
     }
     finally {
       lock.writeLock().unlock();
+      pDatabaseLock.readLock().unlock();
     }      
   }
   
@@ -2096,6 +2228,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer("MasterMgr.link(): " + targetID + " to " + sourceID);
 
     timer.aquire();
+    pDatabaseLock.readLock().lock();
     ReentrantReadWriteLock targetLock = getWorkingLock(targetID);
     targetLock.writeLock().lock();
     ReentrantReadWriteLock downstreamLock = getDownstreamLock(source);
@@ -2140,6 +2273,7 @@ class MasterMgr
     finally {
       downstreamLock.writeLock().unlock();
       targetLock.writeLock().unlock();
+      pDatabaseLock.readLock().unlock();
     }    
   }
 
@@ -2168,6 +2302,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer("MasterMgr.unlink(): " + targetID + " from " + sourceID);
 
     timer.aquire();
+    pDatabaseLock.readLock().lock();
     ReentrantReadWriteLock targetLock = getWorkingLock(targetID);
     targetLock.writeLock().lock();
     ReentrantReadWriteLock downstreamLock = getDownstreamLock(source);
@@ -2209,6 +2344,7 @@ class MasterMgr
     finally {
       downstreamLock.writeLock().unlock();
       targetLock.writeLock().unlock();
+      pDatabaseLock.readLock().unlock();
     }    
   }
 
@@ -2238,65 +2374,72 @@ class MasterMgr
 
     TaskTimer timer = new TaskTimer("MasterMgr.addSecondary(): " + nodeID);
 
-    /* reserve the node name, 
-         after verifying that it doesn't conflict with existing nodes */ 
     timer.aquire();
-    synchronized(pNodeTreeRoot) {
-      timer.resume();
-      
-      if(!isNodePathUnused(nodeID.getName(), fseq, true))
-	return new FailureRsp
-	  (timer, "Cannot add secondary file sequence (" + fseq + ") " + 
-	   "to node (" + nodeID.getName() + ") because its name conflicts with " + 
-	   "an existing node or one of its associated file sequences!");
-      
-      TreeSet<FileSeq> secondary = new TreeSet<FileSeq>();
-      secondary.add(fseq);
-      
-      addWorkingNodeTreePath(nodeID, secondary);
-    }
-
-    timer.aquire();
-    ReentrantReadWriteLock lock = getWorkingLock(nodeID);
-    lock.writeLock().lock();
+    pDatabaseLock.readLock().lock();
     try {
-      timer.resume();	
-
-      WorkingBundle bundle = getWorkingBundle(nodeID);
-      if(bundle == null) 
-	throw new PipelineException
-	  ("Secondary file sequences can only be added to working versions of nodes!\n" + 
-	   "No working version (" + nodeID + ") exists.");
-      NodeMod mod = new NodeMod(bundle.uVersion);
-
-      /* make sure there are no active jobs */ 
-      if(hasActiveJobs(nodeID, mod.getTimeStamp(), mod.getPrimarySequence()))
-	throw new PipelineException
-	  ("Unable to add secondary file sequences to the node (" + nodeID + ") " + 
-	   "while there are active jobs associated with the node!");
-
-      /* add the secondary sequence */ 
-      mod.addSecondarySequence(fseq);
+      /* reserve the node name, 
+           after verifying that it doesn't conflict with existing nodes */ 
+      synchronized(pNodeTreeRoot) {
+	timer.resume();
+	
+	if(!isNodePathUnused(nodeID.getName(), fseq, true))
+	  return new FailureRsp
+	    (timer, "Cannot add secondary file sequence (" + fseq + ") " + 
+	     "to node (" + nodeID.getName() + ") because its name conflicts with " + 
+	     "an existing node or one of its associated file sequences!");
+	
+	TreeSet<FileSeq> secondary = new TreeSet<FileSeq>();
+	secondary.add(fseq);
+	
+	addWorkingNodeTreePath(nodeID, secondary);
+      }
       
-      /* write the new working version to disk */ 
-      writeWorkingVersion(nodeID, mod);
-      
-      /* update the bundle */ 
-      bundle.uVersion = mod;
-
-      /* invalidate the cached per-file states */ 
-      bundle.uFileStates      = null;
-      bundle.uFileTimeStamps  = null;
-
-      return new SuccessRsp(timer);
-    }
-    catch(PipelineException ex) { timer.aquire();
-      removeSecondaryWorkingNodeTreePath(nodeID, fseq);
-      return new FailureRsp(timer, ex.getMessage());
+      timer.aquire();
+      ReentrantReadWriteLock lock = getWorkingLock(nodeID);
+      lock.writeLock().lock();
+      try {
+	timer.resume();	
+	
+	WorkingBundle bundle = getWorkingBundle(nodeID);
+	if(bundle == null) 
+	  throw new PipelineException
+	    ("Secondary file sequences can only be added to working versions of nodes!\n" + 
+	     "No working version (" + nodeID + ") exists.");
+	NodeMod mod = new NodeMod(bundle.uVersion);
+	
+	/* make sure there are no active jobs */ 
+	if(hasActiveJobs(nodeID, mod.getTimeStamp(), mod.getPrimarySequence()))
+	  throw new PipelineException
+	    ("Unable to add secondary file sequences to the node (" + nodeID + ") " + 
+	     "while there are active jobs associated with the node!");
+	
+	/* add the secondary sequence */ 
+	mod.addSecondarySequence(fseq);
+	
+	/* write the new working version to disk */ 
+	writeWorkingVersion(nodeID, mod);
+	
+	/* update the bundle */ 
+	bundle.uVersion = mod;
+	
+	/* invalidate the cached per-file states */ 
+	bundle.uFileStates      = null;
+	bundle.uFileTimeStamps  = null;
+	
+	return new SuccessRsp(timer);
+      }
+      catch(PipelineException ex) { 
+	timer.aquire();
+	removeSecondaryWorkingNodeTreePath(nodeID, fseq);
+	return new FailureRsp(timer, ex.getMessage());
+      }
+      finally {
+	lock.writeLock().unlock();
+      }    
     }
     finally {
-      lock.writeLock().unlock();
-    }    
+      pDatabaseLock.readLock().unlock();
+    }
   }
 
   /**
@@ -2323,6 +2466,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer("MasterMgr.removeSecondary(): " + nodeID);
 
     timer.aquire();
+    pDatabaseLock.readLock().lock();
     ReentrantReadWriteLock lock = getWorkingLock(nodeID);
     lock.writeLock().lock();
     try {
@@ -2364,6 +2508,7 @@ class MasterMgr
     }
     finally {
       lock.writeLock().unlock();
+      pDatabaseLock.readLock().unlock();
     }    
   }
 
@@ -2393,12 +2538,15 @@ class MasterMgr
     TaskTimer timer = new TaskTimer("MasterMgr.getCheckedInVersionIDs(): " + name);
 
     timer.aquire();
+    pDatabaseLock.readLock().lock();
     ReentrantReadWriteLock lock = getCheckedInLock(name);
     lock.readLock().lock();
     try {
       timer.resume();	
+
       TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
       TreeSet<VersionID> vids = new TreeSet<VersionID>(checkedIn.keySet());
+
       return new NodeGetCheckedInVersionIDsRsp(timer, vids);
     }
     catch(PipelineException ex) {
@@ -2406,6 +2554,7 @@ class MasterMgr
     }
     finally {
       lock.readLock().unlock();
+      pDatabaseLock.readLock().unlock();
     }  
   }  
       
@@ -2431,6 +2580,7 @@ class MasterMgr
     VersionID vid = req.getVersionID();
 
     timer.aquire();
+    pDatabaseLock.readLock().lock();
     ReentrantReadWriteLock lock = getCheckedInLock(name);
     lock.readLock().lock();
     try {
@@ -2453,6 +2603,7 @@ class MasterMgr
     }
     finally {
       lock.readLock().unlock();
+      pDatabaseLock.readLock().unlock();
     }  
   }  
 
@@ -2478,6 +2629,7 @@ class MasterMgr
     String name = req.getName();
 
     timer.aquire();
+    pDatabaseLock.readLock().lock();
     ReentrantReadWriteLock lock = getCheckedInLock(name);
     lock.readLock().lock();
     try {
@@ -2495,6 +2647,7 @@ class MasterMgr
     }
     finally {
       lock.readLock().unlock();
+      pDatabaseLock.readLock().unlock();
     }  
   }  
 
@@ -2521,6 +2674,7 @@ class MasterMgr
     String name = req.getName();
 
     timer.aquire();
+    pDatabaseLock.readLock().lock();
     ReentrantReadWriteLock lock = getCheckedInLock(name);
     lock.readLock().lock();
     try {
@@ -2552,6 +2706,7 @@ class MasterMgr
     }
     finally {
       lock.readLock().unlock();
+      pDatabaseLock.readLock().unlock();
     }  
   }  
 
@@ -2582,17 +2737,23 @@ class MasterMgr
    NodeStatusReq req 
   ) 
   {
-    assert(req != null);
-    NodeID nodeID = req.getNodeID();
-
     TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
+      timer.resume();
+
+      NodeID nodeID = req.getNodeID();
       NodeStatus root = performNodeOperation(new NodeOp(), nodeID, timer);
       return new NodeStatusRsp(timer, nodeID, root);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
     }    
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
   }
   
 
@@ -2640,71 +2801,78 @@ class MasterMgr
    boolean checkName
   ) 
   {
-    assert(req != null);
-
     /* node identifiers */ 
     String name   = req.getNodeMod().getName();
     NodeID nodeID = req.getNodeID();
 
     TaskTimer timer = new TaskTimer("MasterMgr.register(): " + nodeID);
 
-    /* reserve the node name, 
-         after verifying that it doesn't conflict with existing nodes */ 
-    if(checkName) {
-      timer.aquire();
-      synchronized(pNodeTreeRoot) {
-	timer.resume();
-	
-	if(!isNodePathUnused(name, req.getNodeMod().getPrimarySequence(), false)) 
-	  return new FailureRsp
-	    (timer, "Cannot register node (" + name + ") because its name conflicts with " + 
-	     "an existing node or one of its associated file sequences!");
-	
-	addWorkingNodeTreePath(nodeID, req.getNodeMod().getSequences());
-      }
-    }
-
     timer.aquire();
-    ReentrantReadWriteLock lock = getWorkingLock(nodeID);
-    lock.writeLock().lock();
+    pDatabaseLock.readLock().lock();
     try {
-      timer.resume();
+      timer.resume();	
 
-      /* write the new working version to disk */
-      writeWorkingVersion(nodeID, req.getNodeMod());	
-
-      /* create a working bundle for the new working version */ 
-      synchronized(pWorkingBundles) {
-	HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
-	if(table == null) {
-	  table = new HashMap<NodeID,WorkingBundle>();
-	  pWorkingBundles.put(name, table);
+      /* reserve the node name, 
+         after verifying that it doesn't conflict with existing nodes */ 
+      if(checkName) {
+	timer.aquire();
+	synchronized(pNodeTreeRoot) {
+	  timer.resume();
+	  
+	  if(!isNodePathUnused(name, req.getNodeMod().getPrimarySequence(), false)) 
+	    return new FailureRsp
+	      (timer, "Cannot register node (" + name + ") because its name conflicts " + 
+	       "with an existing node or one of its associated file sequences!");
+	
+	  addWorkingNodeTreePath(nodeID, req.getNodeMod().getSequences());
 	}
-	table.put(nodeID, new WorkingBundle(req.getNodeMod()));
       }
-
-      /* initialize the working downstream links */ 
+      
       timer.aquire();
-      ReentrantReadWriteLock downstreamLock = getDownstreamLock(nodeID.getName());
-      downstreamLock.writeLock().lock();
+      ReentrantReadWriteLock lock = getWorkingLock(nodeID);
+      lock.writeLock().lock();
       try {
 	timer.resume();
-
-	DownstreamLinks links = getDownstreamLinks(nodeID.getName()); 
-	links.createWorking(nodeID);
+	
+	/* write the new working version to disk */
+	writeWorkingVersion(nodeID, req.getNodeMod());	
+	
+	/* create a working bundle for the new working version */ 
+	synchronized(pWorkingBundles) {
+	  HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
+	  if(table == null) {
+	    table = new HashMap<NodeID,WorkingBundle>();
+	    pWorkingBundles.put(name, table);
+	  }
+	  table.put(nodeID, new WorkingBundle(req.getNodeMod()));
+	}
+	
+	/* initialize the working downstream links */ 
+	timer.aquire();
+	ReentrantReadWriteLock downstreamLock = getDownstreamLock(nodeID.getName());
+	downstreamLock.writeLock().lock();
+	try {
+	  timer.resume();
+	  
+	  DownstreamLinks links = getDownstreamLinks(nodeID.getName()); 
+	  links.createWorking(nodeID);
+	}
+	finally {
+	  downstreamLock.writeLock().unlock();
+	}      
+	
+	return new SuccessRsp(timer);
+      }
+      catch(PipelineException ex) {
+	return new FailureRsp(timer, ex.getMessage());
       }
       finally {
-	downstreamLock.writeLock().unlock();
-      }      
-
-      return new SuccessRsp(timer);
-    }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());
+	lock.writeLock().unlock();
+      }  
     }
     finally {
-      lock.writeLock().unlock();
-    }  
+      pDatabaseLock.readLock().unlock();
+    }
   }
 
 
@@ -2733,138 +2901,185 @@ class MasterMgr
 
     TaskTimer timer = new TaskTimer("MasterMgr.release(): " + id);
 
-    /* unlink the downstream working versions from the to be released working version */ 
-    {
-      timer.aquire();
-      ReentrantReadWriteLock downstreamLock = getDownstreamLock(name);
-      downstreamLock.writeLock().lock();
-      try {
-	timer.resume();
-
-	DownstreamLinks links = getDownstreamLinks(name); 
-	if(links != null) {
-	  TreeSet<String> targets = links.getWorking(id);
-	  if(targets != null) {
-	    for(String target : targets) {
-	      NodeID targetID = new NodeID(id, target);
-	      
-	      timer.suspend();
-	      Object obj = unlink(new NodeUnlinkReq(targetID, name));
-	      timer.accum(((TimedRsp) obj).getTimer());
-	      
-	      if(obj instanceof FailureRsp)  {
-		FailureRsp rsp = (FailureRsp) obj;
-		return new FailureRsp(timer, rsp.getMessage());
-	      }
-	    }
-	  }
-	}
-      }
-      catch(PipelineException ex) {
-	return new FailureRsp(timer, ex.getMessage());
-      }
-      finally {
-	downstreamLock.writeLock().unlock();
-      }
-    }
-
     timer.aquire();
-    ReentrantReadWriteLock lock = getWorkingLock(id);
-    lock.writeLock().lock();
+    pDatabaseLock.readLock().lock();
     try {
-      timer.resume();
+      timer.resume();	
 
-      WorkingBundle bundle = getWorkingBundle(id);
-      if(bundle == null) 
-	throw new PipelineException
-	  ("No working version (" + id + ") exists to be released.");
-      NodeMod mod = bundle.uVersion;
-
-      /* kill any active jobs associated with the node */
-      killActiveJobs(id, mod.getTimeStamp(), mod.getPrimarySequence());
-
-      /* remove the bundle */ 
-      synchronized(pWorkingBundles) {
-	HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
-	table.remove(id);
-      }
-
-      /* remove the working version file(s) */ 
+      /* unlink the downstream working versions from the to be released working version */ 
       {
-	File file   = new File(pNodeDir, id.getWorkingPath().getPath());
-	File backup = new File(file + ".backup");
-
-	if(file.isFile()) {
-	  if(!file.delete())
-	    throw new PipelineException
-	      ("Unable to remove the working version file (" + file + ")!");
-	}
-	else {
-	  throw new PipelineException
-	    ("Somehow the working version file (" + file + ") did not exist!");
-	}
-
-	if(backup.isFile()) {
-	  if(!backup.delete())
-	    throw new PipelineException      
-	      ("Unable to remove the backup working version file (" + backup + ")!");
-	}
-      }
-
-      /* update the downstream links of this node */ 
-      {
-	boolean isRevoked = false;
-
-	timer.aquire();	
+	timer.aquire();
 	ReentrantReadWriteLock downstreamLock = getDownstreamLock(name);
 	downstreamLock.writeLock().lock();
 	try {
 	  timer.resume();
 	  
 	  DownstreamLinks links = getDownstreamLinks(name); 
-	  links.releaseWorking(id);
-	}  
+	  if(links != null) {
+	    TreeSet<String> targets = links.getWorking(id);
+	    if(targets != null) {
+	      for(String target : targets) {
+		NodeID targetID = new NodeID(id, target);
+		
+		timer.suspend();
+		Object obj = unlink(new NodeUnlinkReq(targetID, name));
+		timer.accum(((TimedRsp) obj).getTimer());
+		
+		if(obj instanceof FailureRsp)  {
+		  FailureRsp rsp = (FailureRsp) obj;
+		  return new FailureRsp(timer, rsp.getMessage());
+		}
+	      }
+	    }
+	  }
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
+	}
 	finally {
 	  downstreamLock.writeLock().unlock();
-	} 
+	}
       }
+      
+      timer.aquire();
+      ReentrantReadWriteLock lock = getWorkingLock(id);
+      lock.writeLock().lock();
+      try {
+	timer.resume();
 
-      /* update the downstream links of the source nodes */ 
-      for(LinkMod link : mod.getSources()) {
-	String source = link.getName();
+	WorkingBundle bundle = getWorkingBundle(id);
+	if(bundle == null) 
+	  throw new PipelineException
+	    ("No working version (" + id + ") exists to be released.");
+	NodeMod mod = bundle.uVersion;
+	
+	/* kill any active jobs associated with the node */
+	killActiveJobs(id, mod.getTimeStamp(), mod.getPrimarySequence());
+	
+	/* remove the bundle */ 
+	synchronized(pWorkingBundles) {
+	  HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
+	  table.remove(id);
+	}
+	
+	/* remove the working version file(s) */ 
+	{
+	  File file   = new File(pNodeDir, id.getWorkingPath().getPath());
+	  File backup = new File(file + ".backup");
+	  
+	  if(file.isFile()) {
+	    if(!file.delete())
+	      throw new PipelineException
+		("Unable to remove the working version file (" + file + ")!");
+	  }
+	  else {
+	    throw new PipelineException
+	      ("Somehow the working version file (" + file + ") did not exist!");
+	  }
+	  
+	  if(backup.isFile()) {
+	    if(!backup.delete())
+	      throw new PipelineException      
+		("Unable to remove the backup working version file (" + backup + ")!");
+	  }
+	}
+	
+	/* update the downstream links of this node */ 
+	{
+	  boolean isRevoked = false;
+	  
+	  timer.aquire();	
+	  ReentrantReadWriteLock downstreamLock = getDownstreamLock(name);
+	  downstreamLock.writeLock().lock();
+	  try {
+	    timer.resume();
+	    
+	    DownstreamLinks links = getDownstreamLinks(name); 
+	    links.releaseWorking(id);
+	  }  
+	  finally {
+	    downstreamLock.writeLock().unlock();
+	  } 
+	}
+	
+	/* update the downstream links of the source nodes */ 
+	for(LinkMod link : mod.getSources()) {
+	  String source = link.getName();
+	  
+	  timer.aquire();	
+	  ReentrantReadWriteLock downstreamLock = getDownstreamLock(source);
+	  downstreamLock.writeLock().lock();
+	  try {
+	    timer.resume();
 
-	timer.aquire();	
-	ReentrantReadWriteLock downstreamLock = getDownstreamLock(source);
-	downstreamLock.writeLock().lock();
-	try {
-	  timer.resume();
+	    NodeID sourceID = new NodeID(id, source);
+	    DownstreamLinks links = getDownstreamLinks(source); 
+	    links.removeWorking(sourceID, name);
+	  }  
+	  finally {
+	    downstreamLock.writeLock().unlock();
+	  }    
+	}
+	
+	/* remove the node tree path */ 
+	removeWorkingNodeTreePath(id);
 
-	  NodeID sourceID = new NodeID(id, source);
-	  DownstreamLinks links = getDownstreamLinks(source); 
-	  links.removeWorking(sourceID, name);
- 	}  
-	finally {
-	  downstreamLock.writeLock().unlock();
-	}    
+	/* remove the associated files */ 
+	if(req.removeFiles()) 
+	  pFileMgrClient.removeAll(id, mod.getSequences());	
+	
+	unmonitor(id);
+	return new SuccessRsp(timer);
       }
-
-      /* remove the node tree path */ 
-      removeWorkingNodeTreePath(id);
-
-      /* remove the associated files */ 
-      if(req.removeFiles()) 
-	pFileMgrClient.removeAll(id, mod.getSequences());	
-
-      unmonitor(id);
-      return new SuccessRsp(timer);
-    }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());
+      catch(PipelineException ex) {
+	return new FailureRsp(timer, ex.getMessage());
+      }
+      finally {
+	lock.writeLock().unlock();
+      }   
     }
     finally {
-      lock.writeLock().unlock();
-    }    
+      pDatabaseLock.readLock().unlock();
+    } 
   }
+
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * 
+   * 
+   * @param req 
+   *   The node delete request.
+   *
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to delete the node.
+   */
+  public Object
+  delete
+  (
+   NodeDeleteReq req
+  ) 
+  {
+    assert(req != null);
+    String name = req.getName();
+    
+    TaskTimer timer = new TaskTimer("MasterMgr.delete(): " + name);
+    timer.aquire();
+    pDatabaseLock.writeLock().lock();
+    try {
+      timer.resume();	
+
+      // delete the node... 
+
+      return new FailureRsp(timer, "Not implemented yet...");
+    }
+    finally {
+      pDatabaseLock.writeLock().unlock();
+    }
+  }
+
 
     
   /*----------------------------------------------------------------------------------------*/
@@ -2888,80 +3103,89 @@ class MasterMgr
     NodeID nodeID = req.getNodeID();
     TaskTimer timer = new TaskTimer("MasterMgr.removeFiles(): " + nodeID);
 
-    TreeSet<Long> activeIDs = new TreeSet<Long>();
-    TreeSet<FileSeq> fseqs = new TreeSet<FileSeq>();
-
     timer.aquire();
-    ReentrantReadWriteLock lock = getWorkingLock(nodeID);
-    lock.readLock().lock();
+    pDatabaseLock.readLock().lock();
     try {
-      timer.resume();
+      timer.resume();	
 
-      WorkingBundle bundle = getWorkingBundle(nodeID);
-      NodeMod mod = bundle.uVersion;
-
-      ArrayList<Long> jobIDs = new ArrayList<Long>();
-      ArrayList<JobState> jobStates = new ArrayList<JobState>();
-      pQueueMgrClient.getJobStates(nodeID, mod.getTimeStamp(), mod.getPrimarySequence(),
-				   jobIDs, jobStates);
-
-      TreeSet<Integer> indices = req.getIndices();
-      if(indices == null) {
-	int wk = 0;
-	for(JobState state : jobStates) {
-	  Long jobID = jobIDs.get(wk);
-	  if((state != null) && (jobID != null)) {
-	    switch(state) {
-	    case Queued:
-	    case Paused:
-	    case Running:
-	      activeIDs.add(jobID);
+      TreeSet<Long> activeIDs = new TreeSet<Long>();
+      TreeSet<FileSeq> fseqs = new TreeSet<FileSeq>();
+      
+      timer.aquire();
+      ReentrantReadWriteLock lock = getWorkingLock(nodeID);
+      lock.readLock().lock();
+      try {
+	timer.resume();
+	
+	WorkingBundle bundle = getWorkingBundle(nodeID);
+	NodeMod mod = bundle.uVersion;
+	
+	ArrayList<Long> jobIDs = new ArrayList<Long>();
+	ArrayList<JobState> jobStates = new ArrayList<JobState>();
+	pQueueMgrClient.getJobStates(nodeID, mod.getTimeStamp(), mod.getPrimarySequence(),
+				     jobIDs, jobStates);
+	
+	TreeSet<Integer> indices = req.getIndices();
+	if(indices == null) {
+	  int wk = 0;
+	  for(JobState state : jobStates) {
+	    Long jobID = jobIDs.get(wk);
+	    if((state != null) && (jobID != null)) {
+	      switch(state) {
+	      case Queued:
+	      case Paused:
+	      case Running:
+		activeIDs.add(jobID);
+	      }
+	    }
+	    
+	    wk++;
+	  }
+	  
+	  fseqs.addAll(mod.getSequences());
+	}
+	else {
+	  for(Integer idx : indices) {
+	    JobState state = jobStates.get(idx);
+	    Long jobID = jobIDs.get(idx);
+	    if((state != null) && (jobID != null)) {
+	      switch(state) {
+	      case Queued:
+	      case Paused:
+	      case Running:
+		activeIDs.add(jobID);
+	      }
 	    }
 	  }
 	  
-	  wk++;
-	}
-
-	fseqs.addAll(mod.getSequences());
-      }
-      else {
-	for(Integer idx : indices) {
-	  JobState state = jobStates.get(idx);
-	  Long jobID = jobIDs.get(idx);
-	  if((state != null) && (jobID != null)) {
-	    switch(state) {
-	    case Queued:
-	    case Paused:
-	    case Running:
-	      activeIDs.add(jobID);
-	    }
+	  for(FileSeq fseq : mod.getSequences()) {
+	    for(Integer idx : indices) 
+	      fseqs.add(new FileSeq(fseq, idx));
 	  }
 	}
-
-	for(FileSeq fseq : mod.getSequences()) {
-	  for(Integer idx : indices) 
-	    fseqs.add(new FileSeq(fseq, idx));
-	}
       }
+      catch(PipelineException ex) {
+	return new FailureRsp(timer, ex.getMessage());
+      }    
+      finally {
+	lock.readLock().unlock();
+      }    
+      assert(fseqs != null);
+      
+      try {
+	if(!activeIDs.isEmpty()) 
+	  pQueueMgrClient.killJobs(nodeID.getAuthor(), activeIDs);
+	
+	pFileMgrClient.removeAll(nodeID, fseqs);
+	return new SuccessRsp(timer);  
+      }
+      catch(PipelineException ex) {
+	return new FailureRsp(timer, ex.getMessage());
+      }    
     }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());
-    }    
     finally {
-      lock.readLock().unlock();
-    }    
-    assert(fseqs != null);
-
-    try {
-      if(!activeIDs.isEmpty()) 
-	pQueueMgrClient.killJobs(nodeID.getAuthor(), activeIDs);
-
-      pFileMgrClient.removeAll(nodeID, fseqs);
-      return new SuccessRsp(timer);  
+      pDatabaseLock.readLock().unlock();
     }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());
-    }    
   }
 
      
@@ -2997,154 +3221,201 @@ class MasterMgr
 
     TaskTimer timer = new TaskTimer("MasterMgr.rename(): " + id + " to " + nid);
 
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
-      NodeCommon.validateName(nname);
-    }
-    catch(IllegalArgumentException ex) {
-      return new FailureRsp(timer, ex.getMessage());
-    }
+      timer.resume();	
 
-    if(name.equals(nname)) 
-      return new FailureRsp
-	(timer, "Cannot rename node (" + name + ") to the same name!");
+      try {
+	NodeCommon.validateName(nname);
+      }
+      catch(IllegalArgumentException ex) {
+	return new FailureRsp(timer, ex.getMessage());
+      }
 
-    /* determine the new file sequences */ 
-    FileSeq primary = null;
-    SortedSet<FileSeq> secondary = null;
-    {
+      if(name.equals(nname)) 
+	return new FailureRsp
+	  (timer, "Cannot rename node (" + name + ") to the same name!");
+
+      /* determine the new file sequences */ 
+      FileSeq primary = null;
+      SortedSet<FileSeq> secondary = null;
+      {
+	timer.aquire();
+	ReentrantReadWriteLock lock = getWorkingLock(id);
+	lock.readLock().lock();
+	try {
+	  timer.resume();
+
+	  WorkingBundle bundle = getWorkingBundle(id);
+	  NodeMod mod = bundle.uVersion;
+
+	  /* make sure its an initial version */ 
+	  if(mod.getWorkingID() != null) 
+	    throw new PipelineException
+	      ("Cannot rename node (" + name + ") because it is not an initial " + 
+	       "working version!");
+
+	  /* make sure there are no active jobs */ 
+	  if(hasActiveJobs(id, mod.getTimeStamp(), mod.getPrimarySequence()))
+	    throw new PipelineException
+	      ("Unable to rename the node (" + id + ") while there are active " + 
+	       "jobs associated with the node!");
+
+	  {
+	    FileSeq fseq = mod.getPrimarySequence();
+
+	    FilePattern opat = fseq.getFilePattern();
+	    FrameRange range = fseq.getFrameRange();
+
+	    File path = new File(nname);      
+	    FilePattern pat = 
+	      new FilePattern(path.getName(), opat.getPadding(), opat.getSuffix());
+
+	    primary = new FileSeq(pat, range);
+	  }
+
+	  secondary = mod.getSecondarySequences();
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
+	}
+	finally {
+	  lock.readLock().unlock();
+	}
+      }
+
+      /* reserve the new node name, 
+	   after verifying that it doesn't conflict with existing nodes */ 
+      timer.aquire();
+      synchronized(pNodeTreeRoot) {
+	timer.resume();
+
+	if(!isNodePathUnused(nname, primary, false)) 
+	  return new FailureRsp
+	    (timer, "Cannot rename node (" + name + ") to (" + nname + ") because the new " + 
+	     "name conflicts with an existing node or one of its associated file sequences!");
+
+	TreeSet<FileSeq> fseqs = new TreeSet<FileSeq>();
+	fseqs.add(primary);
+	fseqs.addAll(secondary);
+
+	addWorkingNodeTreePath(nid, fseqs);
+      }
+
+      /* unlink the downstream working versions from the to be renamed working version 
+	   while collecting the existing downstream links */ 
+      TreeMap<String,LinkMod> dlinks = null;
+      {
+	dlinks = new TreeMap<String,LinkMod>();
+
+	timer.aquire();
+	ReentrantReadWriteLock downstreamLock = getDownstreamLock(id.getName());
+	downstreamLock.writeLock().lock();
+	try {
+	  timer.resume();
+
+	  DownstreamLinks links = getDownstreamLinks(id.getName()); 
+	  assert(links != null); 
+
+	  for(String target : links.getWorking(id)) {
+	    NodeID targetID = new NodeID(id, target);
+
+	    timer.aquire();
+	    ReentrantReadWriteLock lock = getWorkingLock(targetID);
+	    lock.readLock().lock();
+	    try {
+	      timer.resume();
+
+	      LinkMod dlink = getWorkingBundle(targetID).uVersion.getSource(name);
+	      if(dlink != null) 
+		dlinks.put(target,dlink);
+	    }
+	    finally {
+	      lock.readLock().unlock();
+	    }  
+
+	    timer.suspend();
+	    Object obj = unlink(new NodeUnlinkReq(targetID, id.getName()));
+	    timer.accum(((TimedRsp) obj).getTimer());
+	  }
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
+	}
+	finally {
+	  downstreamLock.writeLock().unlock();
+	}
+      }
+
       timer.aquire();
       ReentrantReadWriteLock lock = getWorkingLock(id);
-      lock.readLock().lock();
+      lock.writeLock().lock();
+      ReentrantReadWriteLock nlock = getWorkingLock(nid);
+      nlock.writeLock().lock();
       try {
 	timer.resume();
-	
+
 	WorkingBundle bundle = getWorkingBundle(id);
-	NodeMod mod = bundle.uVersion;
+	NodeMod mod = new NodeMod(bundle.uVersion);
+	mod.rename(nname);
+	mod.removeAllSources();
 
-	/* make sure its an initial version */ 
-	if(mod.getWorkingID() != null) 
-	  throw new PipelineException
-	    ("Cannot rename node (" + name + ") because it is not an initial " + 
-	     "working version!");
-
-	/* make sure there are no active jobs */ 
-	if(hasActiveJobs(id, mod.getTimeStamp(), mod.getPrimarySequence()))
-	  throw new PipelineException
-	    ("Unable to rename the node (" + id + ") while there are active " + 
-	     "jobs associated with the node!");
-
+	/* register the new named node */ 
 	{
-	  FileSeq fseq = mod.getPrimarySequence();
-	  
-	  FilePattern opat = fseq.getFilePattern();
-	  FrameRange range = fseq.getFrameRange();
-	  
-	  File path = new File(nname);      
-	  FilePattern pat = 
-	    new FilePattern(path.getName(), opat.getPadding(), opat.getSuffix());
-
-	  primary = new FileSeq(pat, range);
-	}
-	
-	secondary = mod.getSecondarySequences();
-      }
-      catch(PipelineException ex) {
-	return new FailureRsp(timer, ex.getMessage());
-      }
-      finally {
-	lock.readLock().unlock();
-      }
-    }
-
-    /* reserve the new node name, 
-         after verifying that it doesn't conflict with existing nodes */ 
-    timer.aquire();
-    synchronized(pNodeTreeRoot) {
-      timer.resume();
-
-      if(!isNodePathUnused(nname, primary, false)) 
-	return new FailureRsp
-	  (timer, "Cannot rename node (" + name + ") to (" + nname + ") because the new " + 
-	   "name conflicts with an existing node or one of its associated file sequences!");
-      
-      TreeSet<FileSeq> fseqs = new TreeSet<FileSeq>();
-      fseqs.add(primary);
-      fseqs.addAll(secondary);
-
-      addWorkingNodeTreePath(nid, fseqs);
-    }
-
-    /* unlink the downstream working versions from the to be renamed working version 
-         while collecting the existing downstream links */ 
-    TreeMap<String,LinkMod> dlinks = null;
-    {
-      dlinks = new TreeMap<String,LinkMod>();
-
-      timer.aquire();
-      ReentrantReadWriteLock downstreamLock = getDownstreamLock(id.getName());
-      downstreamLock.writeLock().lock();
-      try {
-	timer.resume();
-
-	DownstreamLinks links = getDownstreamLinks(id.getName()); 
-	assert(links != null); 
-
-	for(String target : links.getWorking(id)) {
-	  NodeID targetID = new NodeID(id, target);
-
-	  timer.aquire();
-	  ReentrantReadWriteLock lock = getWorkingLock(targetID);
-	  lock.readLock().lock();
-	  try {
-	    timer.resume();
-
-	    LinkMod dlink = getWorkingBundle(targetID).uVersion.getSource(name);
-	    if(dlink != null) 
-	      dlinks.put(target,dlink);
+	  Object obj = register(new NodeRegisterReq(nid, mod), false);
+	  if(obj instanceof FailureRsp) {
+	    FailureRsp rsp = (FailureRsp) obj;
+	    throw new PipelineException(rsp.getMessage());	
 	  }
-	  finally {
-	    lock.readLock().unlock();
-	  }  
-	  
-	  timer.suspend();
-	  Object obj = unlink(new NodeUnlinkReq(targetID, id.getName()));
-	  timer.accum(((TimedRsp) obj).getTimer());
 	}
+
+	/* reconnect the upstream nodes to the new named node */ 
+	for(LinkMod ulink : bundle.uVersion.getSources()) {
+	  timer.suspend();
+	  Object obj = link(new NodeLinkReq(nid, ulink));
+	  timer.accum(((TimedRsp) obj).getTimer());
+	  if(obj instanceof FailureRsp) {
+	    FailureRsp rsp = (FailureRsp) obj;
+	    return new FailureRsp(timer, rsp.getMessage());
+	  }
+	}
+
+	/* release the old named node */ 
+	{
+	  timer.suspend();
+	  Object obj = release(new NodeReleaseReq(id, false));
+	  timer.accum(((TimedRsp) obj).getTimer());
+	  if(obj instanceof FailureRsp) {
+	    FailureRsp rsp = (FailureRsp) obj;
+	    throw new PipelineException(rsp.getMessage());	
+	  }
+	}
+
+	/* rename the files */ 
+	if(req.renameFiles()) 
+	  pFileMgrClient.rename(id, bundle.uVersion, nname);	
+
+	unmonitor(id);
       }
       catch(PipelineException ex) {
 	return new FailureRsp(timer, ex.getMessage());
       }
       finally {
-	downstreamLock.writeLock().unlock();
-      }
-    }
+	nlock.writeLock().unlock();
+	lock.writeLock().unlock();
+      }  
 
-    timer.aquire();
-    ReentrantReadWriteLock lock = getWorkingLock(id);
-    lock.writeLock().lock();
-    ReentrantReadWriteLock nlock = getWorkingLock(nid);
-    nlock.writeLock().lock();
-    try {
-      timer.resume();
+      /* reconnect the downstream nodes to the new named node */ 
+      for(String target : dlinks.keySet()) {
+	LinkMod dlink = dlinks.get(target);
 
-      WorkingBundle bundle = getWorkingBundle(id);
-      NodeMod mod = new NodeMod(bundle.uVersion);
-      mod.rename(nname);
-      mod.removeAllSources();
+	NodeID tid = new NodeID(id, target);
+	LinkMod ndlink = new LinkMod(nname, dlink.getPolicy(), 
+				     dlink.getRelationship(), dlink.getFrameOffset());
 
-      /* register the new named node */ 
-      {
-	Object obj = register(new NodeRegisterReq(nid, mod), false);
-	if(obj instanceof FailureRsp) {
-	  FailureRsp rsp = (FailureRsp) obj;
-	  throw new PipelineException(rsp.getMessage());	
-	}
-      }
-
-      /* reconnect the upstream nodes to the new named node */ 
-      for(LinkMod ulink : bundle.uVersion.getSources()) {
 	timer.suspend();
-	Object obj = link(new NodeLinkReq(nid, ulink));
+	Object obj = link(new NodeLinkReq(tid, ndlink));
 	timer.accum(((TimedRsp) obj).getTimer());
 	if(obj instanceof FailureRsp) {
 	  FailureRsp rsp = (FailureRsp) obj;
@@ -3152,49 +3423,11 @@ class MasterMgr
 	}
       }
 
-      /* release the old named node */ 
-      {
-	timer.suspend();
-	Object obj = release(new NodeReleaseReq(id, false));
-	timer.accum(((TimedRsp) obj).getTimer());
-	if(obj instanceof FailureRsp) {
-	  FailureRsp rsp = (FailureRsp) obj;
-	  throw new PipelineException(rsp.getMessage());	
-	}
-      }
-
-      /* rename the files */ 
-      if(req.renameFiles()) 
-	pFileMgrClient.rename(id, bundle.uVersion, nname);	
-
-      unmonitor(id);
-    }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());
+      return new SuccessRsp(timer);
     }
     finally {
-      nlock.writeLock().unlock();
-      lock.writeLock().unlock();
-    }  
-
-    /* reconnect the downstream nodes to the new named node */ 
-    for(String target : dlinks.keySet()) {
-      LinkMod dlink = dlinks.get(target);
-
-      NodeID tid = new NodeID(id, target);
-      LinkMod ndlink = new LinkMod(nname, dlink.getPolicy(), 
-				   dlink.getRelationship(), dlink.getFrameOffset());
-
-      timer.suspend();
-      Object obj = link(new NodeLinkReq(tid, ndlink));
-      timer.accum(((TimedRsp) obj).getTimer());
-      if(obj instanceof FailureRsp) {
-	FailureRsp rsp = (FailureRsp) obj;
-	return new FailureRsp(timer, rsp.getMessage());
-      }
+      pDatabaseLock.readLock().unlock();
     }
-
-    return new SuccessRsp(timer);
   }
 
 
@@ -3225,6 +3458,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer("MasterMgr.renumber(): " + nodeID + " [" + range + "]");
 
     timer.aquire();
+    pDatabaseLock.readLock().lock();
     ReentrantReadWriteLock lock = getWorkingLock(nodeID);
     lock.writeLock().lock(); 
     try {
@@ -3261,6 +3495,7 @@ class MasterMgr
     }
     finally {
       lock.writeLock().unlock();
+      pDatabaseLock.readLock().unlock();
     }    
   }
 
@@ -3287,7 +3522,12 @@ class MasterMgr
     NodeID nodeID = req.getNodeID();
 
     TaskTimer timer = new TaskTimer("MasterMgr.checkIn(): " + nodeID);
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
+      timer.resume();	
+
       /* determine the revision number of the to be created version of the root node */ 
       VersionID rootVersionID = null;
       {      
@@ -3322,7 +3562,10 @@ class MasterMgr
       return new FailureRsp(timer, 
 			    "Check-In operation aborted!\n\n" +
 			    ex.getMessage());
-    }    
+    }  
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }  
   }
 
 
@@ -3348,7 +3591,12 @@ class MasterMgr
     NodeID nodeID = req.getNodeID();
 
     TaskTimer timer = new TaskTimer("MasterMgr.checkOut(): " + nodeID);
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
+      timer.resume();	      
+
       /* get the current status of the nodes */ 
       HashMap<NodeID,NodeStatus> table = new HashMap<NodeID,NodeStatus>();
       {
@@ -3366,7 +3614,10 @@ class MasterMgr
       return new FailureRsp(timer, 
 			    "Check-Out operation aborted!\n\n" +
 			    ex.getMessage());
-    }    
+    }   
+    finally {
+      pDatabaseLock.readLock().unlock();
+    } 
   }
 
   /**
@@ -3700,13 +3951,21 @@ class MasterMgr
   ) 
   {
     TaskTimer timer = new TaskTimer("MasterMgr.revertFiles(): " + req.getNodeID());
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
+      timer.resume();	      
+
       pFileMgrClient.revert(req.getNodeID(), req.getFiles());
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
-    }    
+    }  
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }  
   }
 
 
@@ -3731,58 +3990,67 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer("MasterMgr.evolve(): " + req.getNodeID());
 
-    /* verify the checked-in revision number */ 
-    VersionID vid = req.getVersionID();
-    {
-      String name = req.getNodeID().getName();
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();	
 
+      /* verify the checked-in revision number */ 
+      VersionID vid = req.getVersionID();
+      {
+	String name = req.getNodeID().getName();
+
+	timer.aquire();
+	ReentrantReadWriteLock lock = getCheckedInLock(name);
+	lock.readLock().lock();
+	try {
+	  timer.resume();	
+
+	  TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
+	  if(vid == null) 
+	    vid = checkedIn.lastKey();
+	  else if(!checkedIn.containsKey(vid))
+	    throw new PipelineException 
+	      ("No checked-in version (" + vid + ") of node (" + name + ") exists!"); 
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
+	}
+	finally {
+	  lock.readLock().unlock();
+	}  
+      }
+
+      /* change the checked-in version number for the working version */ 
       timer.aquire();
-      ReentrantReadWriteLock lock = getCheckedInLock(name);
-      lock.readLock().lock();
+      ReentrantReadWriteLock lock = getWorkingLock(req.getNodeID());
+      lock.writeLock().lock();
       try {
-	timer.resume();	
-	
-	TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
-	if(vid == null) 
-	  vid = checkedIn.lastKey();
-	else if(!checkedIn.containsKey(vid))
-	  throw new PipelineException 
-	    ("No checked-in version (" + vid + ") of node (" + name + ") exists!"); 
+	timer.resume();
+
+	/* set the revision number */ 
+	WorkingBundle bundle = getWorkingBundle(req.getNodeID());
+	NodeMod mod = new NodeMod(bundle.uVersion);
+	mod.setWorkingID(vid);
+
+	/* write the working version to disk */ 
+	writeWorkingVersion(req.getNodeID(), mod);
+
+	/* update the bundle */ 
+	bundle.uVersion = mod;
+
+	return new SuccessRsp(timer);
       }
       catch(PipelineException ex) {
 	return new FailureRsp(timer, ex.getMessage());
       }
       finally {
-	lock.readLock().unlock();
+	lock.writeLock().unlock();
       }  
     }
-
-    /* change the checked-in version number for the working version */ 
-    timer.aquire();
-    ReentrantReadWriteLock lock = getWorkingLock(req.getNodeID());
-    lock.writeLock().lock();
-    try {
-      timer.resume();
-
-      /* set the revision number */ 
-      WorkingBundle bundle = getWorkingBundle(req.getNodeID());
-      NodeMod mod = new NodeMod(bundle.uVersion);
-      mod.setWorkingID(vid);
-
-      /* write the working version to disk */ 
-      writeWorkingVersion(req.getNodeID(), mod);
-      
-      /* update the bundle */ 
-      bundle.uVersion = mod;
-
-      return new SuccessRsp(timer);
-    }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());
-    }
     finally {
-      lock.writeLock().unlock();
-    }  
+      pDatabaseLock.readLock().unlock();
+    }
   }
 
 
@@ -3808,7 +4076,12 @@ class MasterMgr
   )
   {
     TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
     try {
+      timer.resume();	
+
       /* get the current status of the nodes */ 
       NodeStatus status = performNodeOperation(new NodeOp(), req.getNodeID(), timer);
 
@@ -3860,6 +4133,9 @@ class MasterMgr
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }    
   }
 
@@ -4534,6 +4810,95 @@ class MasterMgr
       pQueueMgrClient.killJobs(nodeID.getAuthor(), activeIDs);
   }
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A D M I N I S T R A T I O N                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Create a database backup file. <P> 
+   * 
+   * The backup will not be perfomed until any currently running database operations have 
+   * completed.  Once the databsae backup has begun, all new database operations will blocked
+   * until the backup is complete.  The this reason, the backup should be performed during 
+   * non-peak hours. <P> 
+   * 
+   * The database backup file will be named: <P> 
+   * <DIV style="margin-left: 40px;">
+   *   pipeline-db.<I>YYMMDD</I>.<I>HHMMSS</I>.tgz<P>
+   * </DIV>
+   * 
+   * Where <I>YYMMDD</I>.<I>HHMMSS</I> is the year, month, day, hour, minute and second of 
+   * the backup.  The backup file is a <B>gzip</B>(1) compressed <B>tar</B>(1) archive of
+   * the {@link Glueable GLUE} format files which make of the persistent storage of the
+   * Pipeline database. <P> 
+   * 
+   * Only privileged users may create a database backup. <P> 
+   * 
+   * @param req 
+   *   The backup request.
+   * 
+   * @return 
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to perform the backup.
+   */ 
+  public Object
+  backupDatabase
+  ( 
+   MiscBackupDatabaseReq req
+  )
+  {
+    TaskTimer timer = new TaskTimer("MasterMgr.backupDatabase: " + req.getBackupFile());
+
+    timer.aquire();
+    pDatabaseLock.writeLock().lock();
+    try {
+      timer.resume();	
+
+      /* write cached downstream links */ 
+      writeAllDownstreamLinks();
+      
+      /* create the backup */ 
+      {
+	ArrayList<String> args = new ArrayList<String>();
+	args.add("-zcvf");
+	args.add(req.getBackupFile().toString());
+	args.add("downstream"); 
+	args.add("etc"); 
+	args.add("repository"); 
+	args.add("toolsets"); 
+	args.add("working"); 
+	
+	Map<String,String> env = System.getenv();
+
+	SubProcessLight proc = 
+	  new SubProcessLight("BackupDatabase", "tar", args, env, PackageInfo.sNodeDir);
+	try {
+	  proc.start();
+	  proc.join();
+	  if(!proc.wasSuccessful()) 
+	    throw new PipelineException
+	      ("Unable to backing-up Pipeline database:\n\n" + 
+	       "  " + proc.getStdErr());	
+	}
+	catch(InterruptedException ex) {
+	  throw new PipelineException
+	    ("Interrupted while backing-up Pipeline database!");
+	}
+      }
+
+      // SHOULD THE QUEUEMGR BE BACKED UP AS WELL?
+
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }  
+    finally {
+      pDatabaseLock.writeLock().unlock();
+    }
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -7941,6 +8306,18 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The master database lock. <P> 
+   * 
+   * All operations which will access any data which is backed by the filesystem should 
+   * be protected this lock in read lock mode.  Any operation which require that the entire
+   * contents of the database remain constant during the operation should aquire the write
+   * mode lock. The scope of this lock should enclose all other locks for an operation. <P> 
+   * 
+   * This lock exists primary to support write-locked database backups and node deletion. <P> 
+   */ 
+  private ReentrantReadWriteLock  pDatabaseLock;
 
   /**
    * The file system directory creation lock.
