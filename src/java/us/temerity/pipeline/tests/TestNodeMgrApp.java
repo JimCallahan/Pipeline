@@ -1,4 +1,4 @@
-// $Id: TestNodeMgrApp.java,v 1.5 2004/03/30 22:20:11 jim Exp $
+// $Id: TestNodeMgrApp.java,v 1.6 2004/03/31 02:01:18 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -310,6 +310,8 @@ class TestNodeMgrApp
 		    new LinkCatagory("Eats", LinkPolicy.Both), LinkRelationship.All, null);
 
 	client.revoke("default", dragonfly.getName(), true);
+	
+	client.rename("default", sparrow.getName(), "/animals/mammal/bat", true);
 
 	client.disconnect();
       }
