@@ -1,11 +1,13 @@
 #!/bin/bash
 
-x=1
-while [ $x -lt 10 ]
-do 
-  echo starting subprocess: $x
-  sleep 1000 &
-  x=$(($x+1))
-done
+echo "Level = $1,  Process ID = $$"
 
-sleep 5000
+if [ $1 -eq 0 ]
+then
+  exit 0
+fi
+
+child-procs $(($1 - 1)) &
+child-procs $(($1 - 1)) &
+
+sleep 1000
