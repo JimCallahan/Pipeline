@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.30 2004/07/24 18:27:07 jim Exp $
+// $Id: JManagerPanel.java,v 1.31 2004/07/25 03:09:22 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -254,7 +254,6 @@ class JManagerPanel
 	item = new JMenuItem("Selection Keys...");
 	item.setActionCommand("manage-selection-keys");
 	item.addActionListener(this);
-	item.setEnabled(false); // FOR NOW    
 	sub.add(item);  
 
 	sub.addSeparator();
@@ -689,6 +688,8 @@ class JManagerPanel
       UIMaster.getInstance().showManageToolsetsDialog();
     else if(cmd.equals("manage-license-keys"))
       UIMaster.getInstance().showManageLicenseKeysDialog();
+    else if(cmd.equals("manage-selection-keys"))
+      UIMaster.getInstance().showManageSelectionKeysDialog();
     else if(cmd.equals("shutdown"))
       doShutdownServer();
     else if(cmd.equals("preferences"))
