@@ -1,4 +1,4 @@
-// $Id: JOfflineDialog.java,v 1.2 2005/03/21 07:04:36 jim Exp $
+// $Id: JOfflineDialog.java,v 1.3 2005/03/23 20:46:09 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -140,7 +140,7 @@ class JOfflineDialog
 	apanel.add(Box.createRigidArea(new Dimension(0, 4)));
 	
 	{
-	  NodeVersionTableModel model = new NodeVersionTableModel(1220);
+	  NodeVersionSizeTableModel model = new NodeVersionSizeTableModel(1220);
 	  pOfflineTableModel = model;
 	  
 	  JTablePanel tpanel = new JTablePanel(model);
@@ -826,7 +826,7 @@ class JOfflineDialog
   /**
    * The offline version table model.
    */ 
-  private NodeVersionTableModel  pOfflineTableModel;
+  private NodeVersionSizeTableModel  pOfflineTableModel;
 
   /**
    * The offline version table.

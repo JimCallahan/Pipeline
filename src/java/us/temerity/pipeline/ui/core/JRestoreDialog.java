@@ -1,4 +1,4 @@
-// $Id: JRestoreDialog.java,v 1.3 2005/03/23 00:35:23 jim Exp $
+// $Id: JRestoreDialog.java,v 1.4 2005/03/23 20:46:09 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -35,7 +35,11 @@ class JRestoreDialog
   {
     super("Restore Tool", false);
 
-    pArchiveVolumes = new TreeMap<String,ArchiveVolume>();
+    /* initialize fields */ 
+    {
+      pArchiveVolumes = new TreeMap<String,ArchiveVolume>();
+      pUpdateLock = new Object();
+    }
 
     /* create dialog body components */ 
     {
@@ -147,7 +151,7 @@ class JRestoreDialog
 	  vbox.add(Box.createRigidArea(new Dimension(0, 4)));
 
 	  {
-	    NodeVersionTableModel model = new NodeVersionTableModel(520);
+	    NodeVersionSizeTableModel model = new NodeVersionSizeTableModel(520);
 	    pRestoreTableModel = model;
 
 	    JTablePanel tpanel = new JTablePanel(model);
@@ -728,19 +732,21 @@ class JRestoreDialog
     {
       UIMaster master = UIMaster.getInstance();
       TreeMap<String,TreeMap<VersionID,RestoreRequest>> reqs = null;
-      if(master.beginPanelOp("Getting Restore Requests...")) {
-	try {
-	  MasterMgrClient client = master.getMasterMgrClient();
-	  reqs = client.getRestoreRequests();
-	}
-	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
-	}
-	finally {
-	  master.endPanelOp("Done.");
+      synchronized(pUpdateLock) {
+	if(master.beginPanelOp("Getting Restore Requests...")) {
+	  try {
+	    MasterMgrClient client = master.getMasterMgrClient();
+	    reqs = client.getRestoreRequests();
+	  }
+	  catch(PipelineException ex) {
+	    master.showErrorDialog(ex);
+	  }
+	  finally {
+	    master.endPanelOp("Done.");
+	  }
 	}
       }
-	
+
       UpdateRequestsTask task = new UpdateRequestsTask(reqs);
       SwingUtilities.invokeLater(task);
     }
@@ -798,15 +804,17 @@ class JRestoreDialog
     {
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient client = master.getMasterMgrClient();
-      if(master.beginPanelOp("Denying Requests...")) {
-	try {
-	  client.denyRestore(pVersions);
-	}
-	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
-	}
-	finally {
-	  master.endPanelOp("Done.");
+      synchronized(pUpdateLock) {
+	if(master.beginPanelOp("Denying Requests...")) {
+	  try {
+	    client.denyRestore(pVersions);
+	  }
+	  catch(PipelineException ex) {
+	    master.showErrorDialog(ex);
+	  }
+	  finally {
+	    master.endPanelOp("Done.");
+	  }
 	}
       }
 
@@ -845,37 +853,39 @@ class JRestoreDialog
 
       TreeMap<String,TreeMap<VersionID,TreeSet<String>>> contains = null;
       ArrayList<ArchiveVolume> volumes = null;
-      if(master.beginPanelOp("Update Archive Volumes...")) {
-	try {
-	  TreeMap<String,TreeSet<VersionID>> versions = 
-	    new TreeMap<String,TreeSet<VersionID>>();
-	  for(String name : pData.keySet()) 
-	    versions.put(name, new TreeSet<VersionID>(pData.get(name).keySet()));
-
-	  contains = client.getArchivesContaining(versions);
-	  TreeSet<String> anames = new TreeSet<String>();
-	  for(String name : contains.keySet()) {
-	    for(VersionID vid : contains.get(name).keySet())
-	      anames.addAll(contains.get(name).get(vid));
-	  }
-	   
-	  volumes = new ArrayList<ArchiveVolume>();
-	  for(String aname : anames) {
-	    ArchiveVolume vol = pArchiveVolumes.get(aname);
-	    if(vol == null) {
-	      master.updatePanelOp("Getting Archive Volume: " + aname);
-	      vol = client.getArchive(aname);
-	      pArchiveVolumes.put(aname, vol);
+      synchronized(pUpdateLock) {
+	if(master.beginPanelOp("Update Archive Volumes...")) {
+	  try {
+	    TreeMap<String,TreeSet<VersionID>> versions = 
+	      new TreeMap<String,TreeSet<VersionID>>();
+	    for(String name : pData.keySet()) 
+	      versions.put(name, new TreeSet<VersionID>(pData.get(name).keySet()));
+	    
+	    contains = client.getArchivesContaining(versions);
+	    TreeSet<String> anames = new TreeSet<String>();
+	    for(String name : contains.keySet()) {
+	      for(VersionID vid : contains.get(name).keySet())
+		anames.addAll(contains.get(name).get(vid));
 	    }
+	    
+	    volumes = new ArrayList<ArchiveVolume>();
+	    for(String aname : anames) {
+	      ArchiveVolume vol = pArchiveVolumes.get(aname);
+	      if(vol == null) {
+		master.updatePanelOp("Getting Archive Volume: " + aname);
+		vol = client.getArchive(aname);
+		pArchiveVolumes.put(aname, vol);
+	      }
 	      
-	    volumes.add(vol);
+	      volumes.add(vol);
+	    }
 	  }
-	}
-	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
-	}
-	finally {
-	  master.endPanelOp("Done.");
+	  catch(PipelineException ex) {
+	    master.showErrorDialog(ex);
+	  }
+	  finally {
+	    master.endPanelOp("Done.");
+	  }
 	}
       }
 	
@@ -1045,31 +1055,33 @@ class JRestoreDialog
       MasterMgrClient client = master.getMasterMgrClient();
 
       String aname = pNames.get(pIndex);
-      if(master.beginPanelOp("Restoring from: " + aname)) { 
-	TreeMap<String,TreeSet<VersionID>> versions = pVersions.get(aname);
-
-	try {
-	  client.restore(aname, versions, pArchiver);
-	}
-	catch(PipelineException ex) {
-	  StringBuffer buf = new StringBuffer();
-	  buf.append(ex.getMessage() + "\n\n" + 
-		     "Restore operation aborted early without restoring:\n");
+      synchronized(pUpdateLock) {
+	if(master.beginPanelOp("Restoring from: " + aname)) { 
+	  TreeMap<String,TreeSet<VersionID>> versions = pVersions.get(aname);
 	  
-	  int wk;
-	  for(wk=pIndex; wk<pNames.size(); wk++) 
-	    buf.append("  " + pNames.get(wk) + "\n");	    
+	  try {
+	    client.restore(aname, versions, pArchiver);
+	  }
+	  catch(PipelineException ex) {
+	    StringBuffer buf = new StringBuffer();
+	    buf.append(ex.getMessage() + "\n\n" + 
+		       "Restore operation aborted early without restoring:\n");
+	    
+	    int wk;
+	    for(wk=pIndex; wk<pNames.size(); wk++) 
+	      buf.append("  " + pNames.get(wk) + "\n");	    
+	    
+	    UIMaster.getInstance().showErrorDialog
+	      ("Error:", buf.toString());
+	    return;
+	  }
+	  finally {
+	    master.endPanelOp("Done.");
+	  }
 	  
-	  UIMaster.getInstance().showErrorDialog
-	    ("Error:", buf.toString());
-	  return;
+	  RemoveTask task = new RemoveTask(versions);
+	  SwingUtilities.invokeLater(task);      
 	}
-	finally {
-	  master.endPanelOp("Done.");
-	}
-
-	RemoveTask task = new RemoveTask(versions);
-	SwingUtilities.invokeLater(task);      
       }
 
       int next = pIndex+1;
@@ -1123,7 +1135,8 @@ class JRestoreDialog
 	}
       }
 
-      pRestoreTableModel.setData(data);
+      ArchivesTask task = new ArchivesTask(data);
+      task.start();
     }
 
     private TreeMap<String,TreeSet<VersionID>> pVersions; 
@@ -1153,6 +1166,11 @@ class JRestoreDialog
    */ 
   private TreeMap<String,ArchiveVolume>  pArchiveVolumes; 
 
+  /**
+   * A lock used to synchronize communication with the plmaster(1).
+   */ 
+  private Object  pUpdateLock; 
+  
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -1172,7 +1190,7 @@ class JRestoreDialog
   /**
    * The restore version table model.
    */
-  private NodeVersionTableModel  pRestoreTableModel; 
+  private NodeVersionSizeTableModel  pRestoreTableModel; 
  
   /**
    *  The restore version table.
@@ -1202,7 +1220,7 @@ class JRestoreDialog
    * based on the current archive selection.
    */ 
   private JLabel  pRestoreCountLabel; 
- 
+
 
   /*----------------------------------------------------------------------------------------*/
 

@@ -1,4 +1,4 @@
-// $Id: JArchiveDialog.java,v 1.6 2005/03/21 07:01:04 jim Exp $
+// $Id: JArchiveDialog.java,v 1.7 2005/03/23 20:46:09 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -140,7 +140,7 @@ class JArchiveDialog
 	apanel.add(Box.createRigidArea(new Dimension(0, 4)));
 	
 	{
-	  NodeVersionTableModel model = new NodeVersionTableModel(880);
+	  NodeVersionSizeTableModel model = new NodeVersionSizeTableModel(880);
 	  pArchiveTableModel = model;
 	  
 	  JTablePanel tpanel = new JTablePanel(model);
@@ -1131,7 +1131,7 @@ class JArchiveDialog
   /**
    * The archive version table model.
    */ 
-  private NodeVersionTableModel  pArchiveTableModel;
+  private NodeVersionSizeTableModel  pArchiveTableModel;
 
   /**
    * The archive version table.
