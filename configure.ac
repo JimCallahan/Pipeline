@@ -807,7 +807,6 @@ AC_CONFIG_FILES([
   src/java/scripts/Makefile
   src/java/scripts/plfilemgr
   src/java/scripts/plmaster
-  src/java/scripts/plservers
   src/java/scripts/plui
 
   src/java/share/Makefile
