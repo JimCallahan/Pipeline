@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.1 2004/08/04 01:43:45 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.2 2004/08/23 20:18:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -38,16 +38,6 @@ class PackageInfo
 
 
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The site domain name.
-   */
-  public static final String  sDomain = "@DOMAIN@";
-  
-  /**
-   * The site IP addresses.
-   */
-  public static final String  sIPAddrs = "@IP_ADDRS@";
 
   /**
    * The date and time the license expires.
