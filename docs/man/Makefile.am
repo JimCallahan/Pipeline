@@ -10,7 +10,7 @@ html_DATA = \
   realpath.html
 
 
-$(html_DATA): %.html: %.html.src copyright license
+$(html_DATA): %.html: %.src.html copyright license
 	@echo Adding legal notices to: $@
 	@awk -- '/@COPYRIGHT@/ { system("cat copyright") } \
                !/@COPYRIGHT@/ { print }' $< | \
