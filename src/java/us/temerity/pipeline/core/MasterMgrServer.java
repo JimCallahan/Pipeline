@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.14 2004/08/04 01:41:58 jim Exp $
+// $Id: MasterMgrServer.java,v 1.15 2004/08/22 22:02:00 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -646,14 +646,6 @@ class MasterMgrServer
 	    {
 	      NodeKillJobsReq req = (NodeKillJobsReq) objIn.readObject();
 	      objOut.writeObject(pMasterMgr.killJobs(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case KillNodeJobs: 
-	    {
-	      NodeKillNodeJobsReq req = (NodeKillNodeJobsReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.killNodeJobs(req));
 	      objOut.flush(); 
 	    }
 	    break;
