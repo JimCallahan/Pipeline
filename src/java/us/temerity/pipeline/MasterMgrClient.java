@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.51 2005/03/10 08:07:27 jim Exp $
+// $Id: MasterMgrClient.java,v 1.52 2005/03/11 06:32:08 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -3108,7 +3108,7 @@ class MasterMgrClient
     verifyConnection();
 
     MiscArchiveReq req = new MiscArchiveReq(prefix, versions, archiver);
-    Object obj = performTransaction(MasterRequest.Archive, req);
+    Object obj = performLongTransaction(MasterRequest.Archive, req, 15000, 60000);  
     if(obj instanceof MiscArchiveRsp) {
       MiscArchiveRsp rsp = (MiscArchiveRsp) obj;
       return rsp.getName();
@@ -3243,7 +3243,7 @@ class MasterMgrClient
     verifyConnection();
 
     MiscOfflineReq req = new MiscOfflineReq(versions);
-    Object obj = performTransaction(MasterRequest.Offline, req);
+    Object obj = performLongTransaction(MasterRequest.Offline, req, 15000, 60000);
     handleSimpleResponse(obj);    
   }
 
