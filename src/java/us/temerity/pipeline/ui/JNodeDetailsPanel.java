@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.11 2004/08/23 07:12:16 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.12 2004/08/31 08:15:19 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -897,9 +897,6 @@ class JNodeDetailsPanel
 		      vpanel.add(hbox);
 		    }
 		  }
-
-		  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
-
 		}
 
 		JDrawer drawer = 
