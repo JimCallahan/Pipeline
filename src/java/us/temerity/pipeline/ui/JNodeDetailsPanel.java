@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.18 2004/10/04 16:06:53 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.19 2004/10/09 20:01:38 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1152,23 +1152,6 @@ class JNodeDetailsPanel
   {
     PanelGroup<JNodeDetailsPanel> panels = UIMaster.getInstance().getNodeDetailsPanels();
     return panels.isGroupUnused(groupID);
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-  
-  /** 
-   * Get the name of the currently displayed node.
-   * 
-   * @return 
-   *   The fully resolved node name or <CODE>null</CODE> if undefined.
-   */ 
-  public synchronized String 
-  getNodeName() 
-  {
-    if(pStatus != null) 
-      return pStatus.getName();
-    return null;
   }
 
 
