@@ -15,9 +15,8 @@
  href="#Node_Names_and_File_System_Paths_"></a></i><i><br>
   </i><b>plscript</b> [<a href="#Global_Options"><i>global-options</i></a>]
   <a href="#--batch"><span style="font-weight: bold;">--batch</span></a>=<span
- style="font-style: italic;">batchfile</span><a
- href="plscript.src.html.in#--batch"><span style="font-weight: bold;"></span></a><span
- style="font-style: italic;"></span><br>
+ style="font-style: italic;">batchfile</span><a href="#--batch"><span
+ style="font-weight: bold;"></span></a><span style="font-style: italic;"></span><br>
   <span style="font-style: italic;"> </span> <br>
   <b>plscript</b> <a style="font-weight: bold;" href="#--help">--help</a><br>
   <b>plscript</b> <a style="font-weight: bold;" href="#--html-help">--html-help</a><br>
@@ -320,78 +319,65 @@ Node Versions</a></li>
  style="font-style: italic;">section</span> ...]]</span></li>
         <li style="font-weight: bold;"><a href="#working_--register"><span
  style="font-weight: normal;"><span style="font-weight: bold;">--</span></span>register</a><span
- style="font-weight: normal;"><a
- href="plscript.src.html.in#node_--register"><span
+ style="font-weight: normal;"><a href="#node_--register"><span
  style="font-weight: bold;"></span></a>=<span
  style="font-style: italic;">node-name</span>&nbsp;</span><span
  style="font-weight: normal;"><span style="font-weight: bold;"></span> </span><span
- style="font-weight: normal;">[</span><a
- href="plscript.src.html.in#--author">--author</a><span
+ style="font-weight: normal;">[</span><a href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
-          <span style="font-weight: normal;">[</span><a
- href="plscript.src.html.in#--view">--view</a><span
+          <span style="font-weight: normal;">[</span><a href="#--view">--view</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]</span><span
  style="font-weight: normal;"><span style="font-weight: bold;"> </span></span><span
- style="font-weight: normal;"><a href="plscript.src.html.in#--fseq"><span
+ style="font-weight: normal;"><a href="#--fseq"><span
  style="font-weight: bold;">--fseq</span></a>=<span
  style="font-style: italic;">prefix</span>[.#|@...][.<span
  style="font-style: italic;">suffix</span>][,<span
  style="font-style: italic;">start</span>[-<span
  style="font-style: italic;">end</span>[x<span
  style="font-style: italic;">by</span>]]</span><span
- style="font-weight: normal;">] [<a
- href="plscript.src.html.in#--toolset"><span style="font-weight: bold;">--toolset</span></a>=<span
- style="font-style: italic;">toolset-name</span>] [<a
- href="plscript.src.html.in#--editor"><span style="font-weight: bold;">--editor</span></a>=<span
+ style="font-weight: normal;">] [<a href="#--toolset"><span
+ style="font-weight: bold;">--toolset</span></a>=<span
+ style="font-style: italic;">toolset-name</span>] [<a href="#--editor"><span
+ style="font-weight: bold;">--editor</span></a>=<span
  style="font-style: italic;">editor-name</span></span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;">]
-[<a href="plscript.src.html.in#--no-action"><span
- style="font-weight: bold;"></span></a><span style="font-weight: bold;"><a
- href="plscript.src.html.in#--action">--action</a></span>=<span
+[<a href="#--no-action"><span style="font-weight: bold;"></span></a><span
+ style="font-weight: bold;"><a href="#--action">--action</a></span>=<span
  style="font-style: italic;">action-name</span></span><span
  style="font-weight: normal;">[:<span style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
  style="font-style: italic;">micro</span>]</span><span
- style="font-weight: normal;">] [<a
- href="plscript.src.html.in#--action-enabled"><span
+ style="font-weight: normal;">] [<a href="#--action-enabled"><span
  style="font-weight: bold;">--action-enabled</span></a>=true|false] [<a
- href="plscript.src.html.in#--param"><span style="font-weight: bold;">--param</span></a>=<span
+ href="#--param"><span style="font-weight: bold;">--param</span></a>=<span
  style="font-style: italic;">name</span>:<span
  style="font-style: italic;">value</span> ...] [</span><span
- style="font-weight: normal;"><a
- href="plscript.src.html.in#--source-param"><span
+ style="font-weight: normal;"><a href="#--source-param"><span
  style="font-weight: bold;">--source-param</span></a>=<span
  style="font-style: italic;">source-name</span>,<span
  style="font-style: italic;">name</span>:<span
- style="font-style: italic;">value</span> ...] [<a
- href="plscript.src.html.in#--ignore"><span style="font-weight: bold;">--ignore</span></a>
-| <a href="plscript.src.html.in#--abort"><span
- style="font-weight: bold;">--abort</span></a>]
-[<a href="plscript.src.html.in#--serial"><span
- style="font-weight: bold;">--serial</span></a>
-| <a href="plscript.src.html.in#--parallel"><span
- style="font-weight: bold;">--parallel</span></a>]
-[<a href="plscript.src.html.in#--batch-size"><span
- style="font-weight: bold;">--batch-size</span></a>=<span
- style="font-style: italic;">integer</span>] [<a
- href="plscript.src.html.in#--priority"><span style="font-weight: bold;">--priority</span></a>=<span
- style="font-style: italic;">integer</span>] [<a
- href="plscript.src.html.in#--max-load"><span style="font-weight: bold;">--max-load</span></a>=<span
- style="font-style: italic;">real</span>] [<a
- href="plscript.src.html.in#--min-memory"><span
+ style="font-style: italic;">value</span> ...] [<a href="#--ignore"><span
+ style="font-weight: bold;">--ignore</span></a>
+| <a href="#--abort"><span style="font-weight: bold;">--abort</span></a>]
+[<a href="#--serial"><span style="font-weight: bold;">--serial</span></a>
+| <a href="#--parallel"><span style="font-weight: bold;">--parallel</span></a>]
+[<a href="#--batch-size"><span style="font-weight: bold;">--batch-size</span></a>=<span
+ style="font-style: italic;">integer</span>] [<a href="#--priority"><span
+ style="font-weight: bold;">--priority</span></a>=<span
+ style="font-style: italic;">integer</span>] [<a href="#--max-load"><span
+ style="font-weight: bold;">--max-load</span></a>=<span
+ style="font-style: italic;">real</span>] [<a href="#--min-memory"><span
  style="font-weight: bold;">--min-memory</span></a>=<span
  style="font-style: italic;">bytes</span></span><span
  style="font-weight: normal;"><span style="font-style: italic;"></span>[K|M|G]</span><span
- style="font-weight: normal;">] [<a
- href="plscript.src.html.in#--min-disk"><span style="font-weight: bold;">--min-disk</span></a>=<span
+ style="font-weight: normal;">] [<a href="#--min-disk"><span
+ style="font-weight: bold;">--min-disk</span></a>=<span
  style="font-style: italic;">bytes</span></span><span
  style="font-weight: normal;"><span style="font-style: italic;"></span>[K|M|G]</span><span
- style="font-weight: normal;">] [<a
- href="plscript.src.html.in#--license-key"><span
+ style="font-weight: normal;">] [<a href="#--license-key"><span
  style="font-weight: bold;">--license-key</span></a>=<span
  style="font-style: italic;">key-name</span>[:true|false] ...] [<a
- href="plscript.src.html.in#--selection-key"><span
- style="font-weight: bold;">--selection-key</span></a>=<span
+ href="#--selection-key"><span style="font-weight: bold;">--selection-key</span></a>=<span
  style="font-style: italic;">key-name</span>[:true|false] ...]</span></li>
         <li style="font-weight: bold;"><a href="#working_--release"><span
  style="font-weight: normal;"><span
@@ -400,11 +386,9 @@ Node Versions</a></li>
  style="font-weight: normal;"><span style="font-weight: bold;">release</span></span></a><span
  style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
  style="font-style: italic;">node-name</span> </span><span
- style="font-weight: normal;">[</span><a
- href="plscript.src.html.in#--author">--author</a><span
+ style="font-weight: normal;">[</span><a href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
-          <span style="font-weight: normal;">[</span><a
- href="plscript.src.html.in#--view">--view</a><span
+          <span style="font-weight: normal;">[</span><a href="#--view">--view</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]</span><span
  style="font-weight: normal;">
 [<span style="font-weight: bold;">--remove-files</span>]</span></li>
@@ -498,7 +482,7 @@ Node Versions</a></li>
  style="font-weight: normal;"></span></li>
         <li style="font-weight: bold;"><span
  style="font-weight: normal;"><span
- style="font-weight: bold; color: rgb(153, 0, 0);">X</span><a
+ style="font-weight: bold; color: rgb(153, 0, 0);"></span><a
  href="#working_--add-secondary"><span style="font-weight: bold;">--add-secondary</span></a>=<span
  style="font-style: italic;">node-name</span> </span><span
  style="font-weight: normal;">[</span><a href="#--author">--author</a><span
@@ -514,7 +498,7 @@ Node Versions</a></li>
  style="font-style: italic;">by</span>]]</span></li>
         <li style="font-weight: bold;"><a
  href="#working_--remove-secondary"><span style="font-weight: normal;"><span
- style="font-weight: bold; color: rgb(153, 0, 0);">X</span></span><span
+ style="font-weight: bold; color: rgb(153, 0, 0);"></span></span><span
  style="font-weight: normal;"><span style="font-weight: bold;">--remove-secondary</span></span></a><span
  style="font-weight: normal;"><a href="#working_--remove-secondary"><span
  style="font-weight: bold;"></span></a>=<span
@@ -535,7 +519,7 @@ Node Versions</a></li>
  style="font-style: italic;">by</span>]]]</span></li>
         <li style="font-weight: bold;"><a href="#working_--rename"><span
  style="font-weight: normal;"><span
- style="font-weight: bold; color: rgb(153, 0, 0);">X</span></span></a><span
+ style="font-weight: bold; color: rgb(153, 0, 0);"></span></span></a><span
  style="font-weight: normal;"><a href="#working_--rename"><span
  style="font-weight: bold;">--rename</span></a>=</span><span
  style="font-weight: normal;"><span style="font-style: italic;">node-name</span>
@@ -551,7 +535,7 @@ Node Versions</a></li>
           </span></span></li>
         <li style="font-weight: bold;"><a href="#working_--renumber"><span
  style="font-weight: normal;"><span
- style="font-weight: bold; color: rgb(153, 0, 0);">X</span></span><span
+ style="font-weight: bold; color: rgb(153, 0, 0);"></span></span><span
  style="font-weight: normal;"><span style="font-weight: bold;">--renumber</span></span></a><span
  style="font-weight: normal;">=</span><span style="font-weight: normal;"><span
  style="font-style: italic;">node-name</span> </span><span
@@ -567,7 +551,7 @@ Node Versions</a></li>
 [<span style="font-weight: bold;">--remove-files</span>]</span></li>
         <li style="font-weight: bold;"><a href="#working_--edit"><span
  style="font-weight: normal;"><span
- style="font-weight: bold; color: rgb(153, 0, 0);">X</span></span><span
+ style="font-weight: bold; color: rgb(153, 0, 0);"></span></span><span
  style="font-weight: normal;"><span style="font-weight: bold;">--edit</span></span></a><span
  style="font-weight: normal;"><span style="font-weight: bold;"></span></span><span
  style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
@@ -600,29 +584,29 @@ Node Versions</a></li>
  style="font-style: italic;">suffix</span>][,<span
  style="font-style: italic;">start</span>[-<span
  style="font-style: italic;">end</span>[x<span
- style="font-style: italic;">by</span>]]]]</span></li>
+ style="font-style: italic;">by</span>]]]] [<span
+ style="font-weight: bold;">--wait</span>]<br>
+          </span></li>
         <li style="font-weight: bold;"><a href="#working_--submit-jobs"><span
  style="font-weight: normal;"><span
  style="font-weight: bold; color: rgb(153, 0, 0);">X</span></span></a><span
  style="font-weight: normal;"><a href="#working_--submit-jobs"><span
  style="font-weight: bold;">--submit-jobs</span></a>=node-name </span><span
- style="font-weight: normal;">[</span><a
- href="plscript.src.html.in#--author">--author</a><span
+ style="font-weight: normal;">[</span><a href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
-          <span style="font-weight: normal;">[</span><a
- href="plscript.src.html.in#--view">--view</a><span
+          <span style="font-weight: normal;">[</span><a href="#--view">--view</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]
           </span><span style="font-weight: normal;">[<span
  style="font-weight: bold;"></span></span><span
- style="font-weight: normal;"></span><a
- href="plscript.src.html.in#--frame"><span style="font-weight: bold;">--frame</span></a><span
+ style="font-weight: normal;"></span><a href="#--frame"><span
+ style="font-weight: bold;">--frame</span></a><span
  style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
  style="font-style: italic;">single</span>|<span
  style="font-style: italic;">start</span>-<span
  style="font-style: italic;">end</span>[,...] ...] [<span
  style="font-weight: bold;"></span></span><span
- style="font-weight: normal;"></span><a
- href="plscript.src.html.in#--index"><span style="font-weight: bold;">--index</span></a><span
+ style="font-weight: normal;"></span><a href="#--index"><span
+ style="font-weight: bold;">--index</span></a><span
  style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
  style="font-style: italic;">single</span>|<span
  style="font-style: italic;">start</span>-<span
@@ -633,22 +617,20 @@ Node Versions</a></li>
  style="font-weight: normal;"><a href="#working_--remove-files"><span
  style="font-weight: bold;">--remove-files</span></a>=<span
  style="font-style: italic;">node-name</span> </span><span
- style="font-weight: normal;">[</span><a
- href="plscript.src.html.in#--author">--author</a><span
+ style="font-weight: normal;">[</span><a href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
-          <span style="font-weight: normal;">[</span><a
- href="plscript.src.html.in#--view">--view</a><span
+          <span style="font-weight: normal;">[</span><a href="#--view">--view</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]
           </span><span style="font-weight: normal;">[<span
  style="font-weight: bold;"></span></span><span
- style="font-weight: normal;"></span><a
- href="plscript.src.html.in#--frame"><span style="font-weight: bold;">--frame</span></a><span
+ style="font-weight: normal;"></span><a href="#--frame"><span
+ style="font-weight: bold;">--frame</span></a><span
  style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
  style="font-style: italic;">single</span>|<span
  style="font-style: italic;">start</span>-<span
  style="font-style: italic;">end</span>[,...] ...] [</span><span
- style="font-weight: normal;"></span><a
- href="plscript.src.html.in#--index"><span style="font-weight: bold;">--index</span></a><span
+ style="font-weight: normal;"></span><a href="#--index"><span
+ style="font-weight: bold;">--index</span></a><span
  style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
  style="font-style: italic;">single</span>|<span
  style="font-style: italic;">start</span>-<span
@@ -714,6 +696,48 @@ Node Versions</a></li>
  style="font-weight: bold;">--latest</span></a></span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
  style="font-weight: normal;"> ...]</span></li>
+        <li style="font-weight: bold;"><span
+ style="font-weight: normal;"><a href="#checked-in_--view"><span
+ style="font-weight: bold;">--view</span></a>=</span><span
+ style="font-weight: normal;"><span style="font-style: italic;">node-name</span>
+[</span><span style="font-weight: normal;"></span><a href="#--version"><span
+ style="font-weight: bold;">--version</span></a><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span> | <span
+ style="font-weight: bold;"></span></span><span
+ style="font-weight: normal;"><a href="#--latest"><span
+ style="font-weight: bold;">--latest</span></a></span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"><span
+ style="font-weight: bold;"></span></span><span
+ style="font-weight: normal;"> ...]</span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"> </span></span><span
+ style="font-weight: normal;">[<a href="#--editor"><span
+ style="font-weight: bold;">--editor</span></a>=<span
+ style="font-style: italic;">editor-name</span></span><span
+ style="font-weight: normal;">[:<span style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;">] [</span><span
+ style="font-weight: normal;"><a href="#--frame"><span
+ style="font-weight: bold;">--frame</span></a>=<span
+ style="font-style: italic;">single</span>|<span
+ style="font-style: italic;">start</span>-<span
+ style="font-style: italic;">end</span>[,...] ...] [<a href="#--index"><span
+ style="font-weight: bold;">--index</span></a>=<span
+ style="font-style: italic;">single</span>|<span
+ style="font-style: italic;">start</span>-<span
+ style="font-style: italic;">end</span>[,...] ...] [</span><span
+ style="font-weight: normal;"><a href="#--fseq"><span
+ style="font-weight: bold;">--fseq</span></a>=<span
+ style="font-style: italic;">prefix</span>[.#|@...][.<span
+ style="font-style: italic;">suffix</span>][,<span
+ style="font-style: italic;">start</span>[-<span
+ style="font-style: italic;">end</span>[x<span
+ style="font-style: italic;">by</span>]]]]</span><span
+ style="font-weight: normal;"> [<span style="font-weight: bold;">--wait</span>]</span></li>
       </ul>
     </ul>
     <li style="font-weight: bold;"><a href="#Node_Operations"><span
@@ -1711,8 +1735,7 @@ This command requires privileged user status.<br>
 <div style="margin-left: 40px;">Makes the given toolset (<span
  style="font-style: italic;">toolset-name</span>) inactive.&nbsp; The
 given toolset must have been previously created
-(see <a href="plscript.src.html.in#toolset_--create"><span
- style="font-weight: bold;">toolset
+(see <a href="#toolset_--create"><span style="font-weight: bold;">toolset
 --create</span></a>).<span style="font-weight: normal;"></span><br>
 <span style="font-weight: normal;"></span></div>
 <span style="font-weight: normal;"><br>
@@ -2291,76 +2314,68 @@ links.<br>
  style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;"><br>
 &nbsp;&nbsp;&nbsp; </span><span style="font-weight: normal;">[</span><a
- style="font-weight: bold;" href="plscript.src.html.in#--author">--author</a><span
+ style="font-weight: bold;" href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
 <span style="font-weight: normal;">[</span><a style="font-weight: bold;"
- href="plscript.src.html.in#--view">--view</a><span
- style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]</span><span
+ href="#--view">--view</a><span style="font-weight: normal;">=<span
+ style="font-style: italic;">view-name</span>]</span><span
  style="font-weight: normal;"><span style="font-weight: bold;"></span></span><span
  style="font-weight: normal;"><br>
-&nbsp;&nbsp;&nbsp; <a href="plscript.src.html.in#--fseq"><span
- style="font-weight: bold;">--fseq</span></a>=<span
+&nbsp;&nbsp;&nbsp; <a href="#--fseq"><span style="font-weight: bold;">--fseq</span></a>=<span
  style="font-style: italic;">prefix</span>[.#|@...][.<span
  style="font-style: italic;">suffix</span>][,<span
  style="font-style: italic;">start</span>[-<span
  style="font-style: italic;">end</span>[x<span
  style="font-style: italic;">by</span>]]</span><span
  style="font-weight: normal;">] <br>
-&nbsp;&nbsp;&nbsp; [<a href="plscript.src.html.in#--toolset"><span
+&nbsp;&nbsp;&nbsp; [<a href="#--toolset"><span
  style="font-weight: bold;">--toolset</span></a>=<span
- style="font-style: italic;">toolset-name</span>] [<a
- href="plscript.src.html.in#--editor"><span style="font-weight: bold;">--editor</span></a>=<span
+ style="font-style: italic;">toolset-name</span>] [<a href="#--editor"><span
+ style="font-weight: bold;">--editor</span></a>=<span
  style="font-style: italic;">editor-name</span></span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;">]
 <br>
-&nbsp;&nbsp;&nbsp; [<a href="plscript.src.html.in#--no-action"><span
+&nbsp;&nbsp;&nbsp; [<a href="#--no-action"><span
  style="font-weight: bold;"></span></a><span style="font-weight: bold;"><a
- href="plscript.src.html.in#--action">--action</a></span>=<span
- style="font-style: italic;">action-name</span></span><span
+ href="#--action">--action</a></span>=<span style="font-style: italic;">action-name</span></span><span
  style="font-weight: normal;">[:<span style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
  style="font-style: italic;">micro</span>]</span><span
  style="font-weight: normal;">] <br>
-&nbsp;&nbsp;&nbsp; [<a href="plscript.src.html.in#--action-enabled"><span
+&nbsp;&nbsp;&nbsp; [<a href="#--action-enabled"><span
  style="font-weight: bold;">--action-enabled</span></a>=true|false] [<a
- href="plscript.src.html.in#--param"><span style="font-weight: bold;">--param</span></a>=<span
+ href="#--param"><span style="font-weight: bold;">--param</span></a>=<span
  style="font-style: italic;">name</span>:<span
  style="font-style: italic;">value</span> ...] <br>
 &nbsp;&nbsp;&nbsp; [</span><span style="font-weight: normal;"><a
- href="plscript.src.html.in#--source-param"><span
- style="font-weight: bold;">--source-param</span></a>=<span
+ href="#--source-param"><span style="font-weight: bold;">--source-param</span></a>=<span
  style="font-style: italic;">source-name</span>,<span
  style="font-style: italic;">name</span>:<span
  style="font-style: italic;">value</span> ...] <br>
-&nbsp;&nbsp;&nbsp; [<a href="plscript.src.html.in#--ignore"><span
- style="font-weight: bold;">--ignore</span></a>
-| <a href="plscript.src.html.in#--abort"><span
- style="font-weight: bold;">--abort</span></a>]
-[<a href="plscript.src.html.in#--serial"><span
- style="font-weight: bold;">--serial</span></a>
-| <a href="plscript.src.html.in#--parallel"><span
- style="font-weight: bold;">--parallel</span></a>]
-[<a href="plscript.src.html.in#--batch-size"><span
- style="font-weight: bold;">--batch-size</span></a>=<span
+&nbsp;&nbsp;&nbsp; [<a href="#--ignore"><span style="font-weight: bold;">--ignore</span></a>
+| <a href="#--abort"><span style="font-weight: bold;">--abort</span></a>]
+[<a href="#--serial"><span style="font-weight: bold;">--serial</span></a>
+| <a href="#--parallel"><span style="font-weight: bold;">--parallel</span></a>]
+[<a href="#--batch-size"><span style="font-weight: bold;">--batch-size</span></a>=<span
  style="font-style: italic;">integer</span>] <br>
-&nbsp;&nbsp;&nbsp; [<a href="plscript.src.html.in#--priority"><span
+&nbsp;&nbsp;&nbsp; [<a href="#--priority"><span
  style="font-weight: bold;">--priority</span></a>=<span
- style="font-style: italic;">integer</span>] [<a
- href="plscript.src.html.in#--max-load"><span style="font-weight: bold;">--max-load</span></a>=<span
+ style="font-style: italic;">integer</span>] [<a href="#--max-load"><span
+ style="font-weight: bold;">--max-load</span></a>=<span
  style="font-style: italic;">real</span>] <br>
-&nbsp;&nbsp;&nbsp; [<a href="plscript.src.html.in#--min-memory"><span
+&nbsp;&nbsp;&nbsp; [<a href="#--min-memory"><span
  style="font-weight: bold;">--min-memory</span></a>=<span
  style="font-style: italic;">bytes</span></span><span
  style="font-weight: normal;"><span style="font-style: italic;"></span>[K|M|G]</span><span
- style="font-weight: normal;">] [<a
- href="plscript.src.html.in#--min-disk"><span style="font-weight: bold;">--min-disk</span></a>=<span
+ style="font-weight: normal;">] [<a href="#--min-disk"><span
+ style="font-weight: bold;">--min-disk</span></a>=<span
  style="font-style: italic;">bytes</span></span><span
  style="font-weight: normal;"><span style="font-style: italic;"></span>[K|M|G]</span><span
  style="font-weight: normal;">] <br>
-&nbsp;&nbsp;&nbsp; [<a href="plscript.src.html.in#--license-key"><span
+&nbsp;&nbsp;&nbsp; [<a href="#--license-key"><span
  style="font-weight: bold;">--license-key</span></a>=<span
  style="font-style: italic;">key-name</span>[:true|false] ...] <br>
-&nbsp;&nbsp;&nbsp; [<a href="plscript.src.html.in#--selection-key"><span
+&nbsp;&nbsp;&nbsp; [<a href="#--selection-key"><span
  style="font-weight: bold;">--selection-key</span></a>=<span
  style="font-style: italic;">key-name</span>[:true|false] ...]</span><br>
 <span style="font-weight: normal;"></span><br>
@@ -2383,11 +2398,11 @@ by the user (<span style="font-style: italic;">user-name</span>). <br>
  style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;"><br>
 &nbsp;&nbsp;&nbsp; </span><span style="font-weight: normal;">[</span><a
- style="font-weight: bold;" href="plscript.src.html.in#--author">--author</a><span
+ style="font-weight: bold;" href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
 <span style="font-weight: normal;">[</span><a style="font-weight: bold;"
- href="plscript.src.html.in#--view">--view</a><span
- style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]</span><span
+ href="#--view">--view</a><span style="font-weight: normal;">=<span
+ style="font-style: italic;">view-name</span>]</span><span
  style="font-weight: normal;"><br>
 &nbsp;&nbsp;&nbsp; [<span style="font-weight: bold;">--remove-files</span>]<br>
 <br>
@@ -2753,6 +2768,8 @@ longer included in the new frame range will be deleted.<br>
  style="font-style: italic;">start</span>[-<span
  style="font-style: italic;">end</span>[x<span
  style="font-style: italic;">by</span>]]]]</span><span
+ style="font-weight: normal;"> <br>
+&nbsp;&nbsp;&nbsp; [<span style="font-weight: bold;">--wait</span>]</span><span
  style="font-weight: normal;"><span style="font-weight: bold;"></span></span><br>
 <span style="font-weight: normal;"></span></div>
 <span style="font-weight: normal;"> </span><br>
@@ -2760,12 +2777,25 @@ longer included in the new frame range will be deleted.<br>
 with the target working node version (<span style="font-style: italic;">node-name</span>)
 in the working area (<span style="font-style: italic;">view-name</span>)
 owned by the user (<span style="font-style: italic;">user-name</span>).&nbsp;&nbsp;
+<br>
+<br>
 The <span style="font-weight: bold;">--frame</span>, <span
  style="font-weight: bold;">--index</span> and <span
  style="font-weight: bold;">--fseq</span> options can be used to select
 which of the files associated with the target node should be
-edited.&nbsp; If none of these options are specified, the editor will
+edited.&nbsp; These options are mutually exclusive.&nbsp; A seperate
+Editor will be launched for each of the single or range arguments to
+the <span style="font-weight: bold;">--frame</span> or <span
+ style="font-weight: bold;">--index</span> options.&nbsp; If none of
+these options are specified, the Editor will
 edit all of the primary files associated with the target node.<br>
+<br>
+If the <span style="font-weight: bold;">--wait</span> option is
+specified <span style="font-weight: bold;">plscript</span>(1) will
+wait for the launched Editor(s) to exit and report the exit status any
+error messages from the Editor(s) before exiting itself.&nbsp;
+Otherwise,<span style="font-weight: bold;"> plscript</span>(1) will
+exit immediately after launching the Editor(s).
 </div>
 <span style="font-weight: normal;"><span style="font-weight: bold;"><br>
 </span></span>
@@ -2780,23 +2810,23 @@ edit all of the primary files associated with the target node.<br>
  style="font-weight: normal;"></span><br>
 <span style="font-weight: normal;">&nbsp;&nbsp;&nbsp; </span><span
  style="font-weight: normal;">[</span><a style="font-weight: bold;"
- href="plscript.src.html.in#--author">--author</a><span
- style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
+ href="#--author">--author</a><span style="font-weight: normal;">=<span
+ style="font-style: italic;">user-name</span>]</span>
 <span style="font-weight: normal;">[</span><a style="font-weight: bold;"
- href="plscript.src.html.in#--view">--view</a><span
- style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]</span><span
+ href="#--view">--view</a><span style="font-weight: normal;">=<span
+ style="font-style: italic;">view-name</span>]</span><span
  style="font-weight: normal;"></span><br>
 <span style="font-weight: normal;">&nbsp;&nbsp;&nbsp; </span><span
  style="font-weight: normal;">[<span style="font-weight: bold;"></span></span><span
- style="font-weight: normal;"></span><a
- href="plscript.src.html.in#--frame"><span style="font-weight: bold;">--frame</span></a><span
+ style="font-weight: normal;"></span><a href="#--frame"><span
+ style="font-weight: bold;">--frame</span></a><span
  style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
  style="font-style: italic;">single</span>|<span
  style="font-style: italic;">start</span>-<span
  style="font-style: italic;">end</span>[,...] ...] [<span
  style="font-weight: bold;"></span></span><span
- style="font-weight: normal;"></span><a
- href="plscript.src.html.in#--index"><span style="font-weight: bold;">--index</span></a><span
+ style="font-weight: normal;"></span><a href="#--index"><span
+ style="font-weight: bold;">--index</span></a><span
  style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
  style="font-style: italic;">single</span>|<span
  style="font-style: italic;">start</span>-<span
@@ -2834,22 +2864,22 @@ operations below to <br>
  style="font-weight: normal;"></span><span style="font-weight: normal;"></span><br>
 <span style="font-weight: normal;">&nbsp;&nbsp;&nbsp; </span><span
  style="font-weight: normal;">[</span><a style="font-weight: bold;"
- href="plscript.src.html.in#--author">--author</a><span
- style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
+ href="#--author">--author</a><span style="font-weight: normal;">=<span
+ style="font-style: italic;">user-name</span>]</span>
 <span style="font-weight: normal;">[</span><a style="font-weight: bold;"
- href="plscript.src.html.in#--view">--view</a><span
- style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]</span><span
+ href="#--view">--view</a><span style="font-weight: normal;">=<span
+ style="font-style: italic;">view-name</span>]</span><span
  style="font-weight: normal;"></span><br>
 <span style="font-weight: normal;">&nbsp;&nbsp;&nbsp; </span><span
  style="font-weight: normal;">[<span style="font-weight: bold;"></span></span><span
- style="font-weight: normal;"></span><a
- href="plscript.src.html.in#--frame"><span style="font-weight: bold;">--frame</span></a><span
+ style="font-weight: normal;"></span><a href="#--frame"><span
+ style="font-weight: bold;">--frame</span></a><span
  style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
  style="font-style: italic;">single</span>|<span
  style="font-style: italic;">start</span>-<span
  style="font-style: italic;">end</span>[,...] ...] [</span><span
- style="font-weight: normal;"></span><a
- href="plscript.src.html.in#--index"><span style="font-weight: bold;">--index</span></a><span
+ style="font-weight: normal;"></span><a href="#--index"><span
+ style="font-weight: bold;">--index</span></a><span
  style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
  style="font-style: italic;">single</span>|<span
  style="font-style: italic;">start</span>-<span
@@ -3022,7 +3052,83 @@ was modified with respect the the previous version.&nbsp; If no <span
 novelty information for all checked-in versions will be printed.</div>
 <span style="font-weight: normal;"></span></div>
 <span style="font-weight: normal;">
+</span><br>
+<div style="margin-left: 40px;"><span style="font-weight: normal;"><span
+ style="font-weight: bold;"><a name="checked-in_--view"></a>checked-in
+--view</span>=</span><span style="font-weight: normal;"><span
+ style="font-style: italic;">node-name</span>
+[</span><span style="font-weight: normal;"></span><a href="#--version"><span
+ style="font-weight: bold;">--version</span></a><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span> | <span
+ style="font-weight: bold;"></span></span><span
+ style="font-weight: normal;"><a href="#--latest"><span
+ style="font-weight: bold;">--latest</span></a></span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"><span
+ style="font-weight: bold;"></span></span><span
+ style="font-weight: normal;"> ...]</span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">&nbsp; </span></span><span
+ style="font-weight: normal;"><br>
+&nbsp;&nbsp;&nbsp; [<a href="#--editor"><span style="font-weight: bold;">--editor</span></a>=<span
+ style="font-style: italic;">editor-name</span></span><span
+ style="font-weight: normal;">[:<span style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;">] [</span><span
+ style="font-weight: normal;"><a href="#--frame"><span
+ style="font-weight: bold;">--frame</span></a>=<span
+ style="font-style: italic;">single</span>|<span
+ style="font-style: italic;">start</span>-<span
+ style="font-style: italic;">end</span>[,...] ...] <br>
+&nbsp;&nbsp;&nbsp; [<a href="#--index"><span style="font-weight: bold;">--index</span></a>=<span
+ style="font-style: italic;">single</span>|<span
+ style="font-style: italic;">start</span>-<span
+ style="font-style: italic;">end</span>[,...] ...] [</span><span
+ style="font-weight: normal;"><a href="#--fseq"><span
+ style="font-weight: bold;">--fseq</span></a>=<span
+ style="font-style: italic;">prefix</span>[.#|@...][.<span
+ style="font-style: italic;">suffix</span>][,<span
+ style="font-style: italic;">start</span>[-<span
+ style="font-style: italic;">end</span>[x<span
+ style="font-style: italic;">by</span>]]]]<br>
+&nbsp;&nbsp;&nbsp; [<span style="font-weight: bold;">--wait</span>]<br>
+<br>
 </span>
+<div style="margin-left: 40px;">Launch the Editor plugin associated
+with the given version (<span style="font-weight: normal;"><span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span></span><span
+ style="font-weight: normal;"><span style="font-style: italic;"></span></span>)
+of the target checked-in node (<span style="font-style: italic;">node-name</span>).
+&nbsp;
+<br>
+<br>
+The <span style="font-weight: bold;">--frame</span>, <span
+ style="font-weight: bold;">--index</span> and <span
+ style="font-weight: bold;">--fseq</span>
+options can be used to select
+which of the files associated with the target node should be
+viewed.&nbsp; These options are mutually exclusive.&nbsp; A seperate
+Editor will
+be launched for each of the single or range arguments to the <span
+ style="font-weight: bold;">--frame</span> or <span
+ style="font-weight: bold;">--index</span> options.&nbsp; If none of
+these options are specified, the Editor will view all of the primary
+files associated with the target node.<br>
+<br>
+If the <span style="font-weight: bold;">--wait</span> option is
+specified <span style="font-weight: bold;">plscript</span>(1)
+will wait for the launched Editor(s) to exit and report the exit status
+any error messages from the Editor(s) before exiting itself.&nbsp;
+Otherwise,<span style="font-weight: bold;"> plscript</span>(1) will
+exit immediately after launching the Editor(s).
+</div>
+</div>
+<span style="font-weight: normal;"><span style="font-weight: bold;"></span></span>
 <h3><span style="font-weight: normal;"><span style="font-weight: bold;"><a
  name="Node_Operations"></a>Node
 Operations</span></span></h3>
@@ -3122,7 +3228,7 @@ versions of the
 upstream nodes linked to the working and checked-in versions and the
 properties of
 these links. This section will be skipped if neither the working nor
-checked-in versions have upstream links.
+checked-in versions have upstream links.<br>
 </div>
 </div>
 <span style="font-weight: normal;"> </span></div>
@@ -3130,8 +3236,14 @@ checked-in versions have upstream links.
   <span style="font-weight: normal;"><span style="font-weight: bold;"></span></span>
 </ul>
 <div style="margin-left: 40px;">
-<span style="font-weight: normal;"></span><span
- style="font-weight: normal;"><span style="font-weight: bold;"><a
+<div style="margin-left: 40px;"><span style="font-weight: bold;">file</span><br>
+<div style="margin-left: 40px;">Prints the file state, queue state,
+generating job ID and last modified timestamp for each file associated
+with the working version.<br>
+<br>
+</div>
+</div>
+<span style="font-weight: normal;"><span style="font-weight: bold;"><a
  name="node_--check-in"></a>node</span></span><span
  style="font-weight: normal;"><span style="font-weight: bold;"></span></span><span
  style="font-weight: normal;"><span style="font-weight: bold;"> </span></span><span

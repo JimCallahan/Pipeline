@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.9 2004/09/22 23:14:56 jim Exp $
+// $Id: ScriptApp.java,v 1.10 2004/09/23 20:09:30 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1290,7 +1290,175 @@ class ScriptApp
     }
   }
 
-  
+  /**
+   * Launch the editor program for the given working version.
+   */ 
+  public void 
+  workingEdit
+  (
+   NodeID nodeID, 
+   String editorName, 
+   VersionID editorVersionID, 
+   ArrayList frames, 
+   ArrayList indices, 
+   FileSeq fseq, 
+   boolean wait, 
+   MasterMgrClient client
+  ) 
+    throws PipelineException
+  {
+    NodeMod mod = client.getWorkingVersion(nodeID);
+    FileSeq primary = mod.getPrimarySequence();
+    
+    /* build the file sequences to edit */ 
+    TreeSet<FileSeq> editSeqs = new TreeSet<FileSeq>();
+    if(fseq != null) {
+      boolean found = false;
+      ArrayList<File> fs = fseq.getFiles();
+      for(FileSeq nfseq : mod.getSequences()) {
+	if(nfseq.getFiles().containsAll(fs)) {
+	  editSeqs.add(fseq);
+	  found = true;
+	  break;
+	}
+      }
+	    
+      if(!found) 
+	throw new PipelineException
+	  ("The given file sequence (" + fseq + ") does not match any of the primary or " +
+	   "secondary file sequences of node (" + mod.getName() + ")!");
+    }
+    else if(!indices.isEmpty()) {
+      if(!primary.hasFrameNumbers()) 
+	throw new PipelineException
+	  ("The primary file sequence (" + primary + ") of node (" + mod.getName() + ") " +
+	   "does not have frame numbers, therefore the --index option cannot be used!");
+	   
+      for(int[] idx : (ArrayList<int[]>) indices) {
+	try {
+	  if(idx.length == 1) {
+	    editSeqs.add(new FileSeq(primary, idx[0]));
+	  }
+	  else if(idx.length == 2) {
+	    editSeqs.add(new FileSeq(primary, idx[0], idx[1]));
+	  }
+	  else {
+	    assert(false);
+	  }
+	}
+	catch(IllegalArgumentException ex) {
+	  throw new PipelineException
+	    ("Illegal --index arguments!\n" + 
+	     ex.getMessage());
+	}
+      }
+    }
+    else if(!frames.isEmpty()) {
+      if(!primary.hasFrameNumbers()) 
+	throw new PipelineException
+	  ("The primary file sequence (" + primary + ") of node (" + mod.getName() + ") " +
+	   "does not have frame numbers, therefore the --frame option cannot be used!");
+
+      FrameRange range = primary.getFrameRange();
+      int[] valid = range.getFrameNumbers();
+      for(int[] frm : (ArrayList<int[]>) frames) {
+	try {
+	  if(frm.length == 1) {
+	    editSeqs .add(new FileSeq(primary, range.frameToIndex(frm[0])));
+	  }
+	  else if(frm.length == 2) {
+	    int s = range.frameToIndex(frm[0]);
+	    int e = range.frameToIndex(frm[1]);
+	    editSeqs.add(new FileSeq(primary, s, e));
+	  }
+	  else {
+	    assert(false);
+	  }
+	}
+	catch(IllegalArgumentException ex) {
+	  throw new PipelineException
+	    ("Illegal --frame arguments!\n" + 
+	     ex.getMessage());
+	}
+      }
+    }
+    else {
+      editSeqs.add(primary);
+    }
+    assert(!editSeqs.isEmpty());
+
+    /* create an editor plugin instance */ 
+    BaseEditor editor = null;
+    {
+      String ename = editorName;
+      if(ename == null) 
+	ename = mod.getEditor();
+      
+      if(ename == null) 
+	throw new PipelineException
+	  ("No editor was specified for node (" + mod.getName() + ")!");
+     
+      editor = PluginMgr.getInstance().newEditor(ename, editorVersionID);
+    }
+
+    /* lookup the toolset environment */ 
+    TreeMap<String,String> env = null;
+    {
+      String tname = mod.getToolset();
+      if(tname == null) 
+	throw new PipelineException
+	  ("No toolset was specified for node (" + mod.getName() + ")!");
+
+      env = client.getToolsetEnvironment(nodeID.getAuthor(), nodeID.getView(), tname);
+      
+      /* override these since the editor will be run as the current user */ 
+      env.put("HOME", PackageInfo.sHomeDir + "/" + PackageInfo.sUser);
+      env.put("USER", PackageInfo.sUser);
+    }
+	    
+    /* the working directory */ 
+    File dir = null;
+    {
+      File path = new File(PackageInfo.sWorkDir, 
+			   nodeID.getAuthor() + "/" + nodeID.getView() + "/" + mod.getName());
+      dir = path.getParentFile();
+    }
+
+    /* launch an editor for each file sequence */ 
+    ArrayList<SubProcess> procs = new ArrayList<SubProcess>();
+    for(FileSeq fs : editSeqs) {
+      Logs.ops.info
+	("Editing: " + fs + " with " + 
+	 editor.getName() + " (v" + editor.getVersionID() + ")");
+      procs.add(editor.launch(fs, env, dir));
+    }
+    Logs.flush();
+
+    /* wait around for the results? */ 
+    if(wait) {
+      Logs.ops.info("\n" + 
+		    "Waiting for Editor(s) to exit...");
+      for(SubProcess proc : procs) {
+	try {
+	  proc.join();
+	  Logs.ops.info
+	    (tbar(80) + "\n" +
+	     "Editor Process : " + wordWrap(proc.getCommand(), 17, 80) + "\n" + 
+	     "Exit Code      : " + proc.getExitCode() + " " +
+	       (proc.wasSuccessful() ? "(success)" : "(failed)") + "\n" +
+	     "\n" +
+	     pad("-- Output ", '-', 80) + "\n" +
+	     proc.getStdOut() + "\n" + 
+	     pad("-- Errors ", '-', 80) + "\n" +
+	     proc.getStdErr());
+	}
+	catch(InterruptedException ex) {
+	  Logs.sub.severe
+	    ("Interrupted while waiting on an Editor Process to exit!");
+	}
+      }
+    }
+  }  
 
 
   /*----------------------------------------------------------------------------------------*/

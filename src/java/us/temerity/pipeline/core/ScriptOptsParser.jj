@@ -165,10 +165,11 @@ ScriptOptsParser
   /**
    * working node version command option temporaries
    */   
-  private TreeSet  pFrames; 
-  private TreeSet  pIndices; 
-  private FileSeq  pFileSeq; 
-  private Integer  pPadding; 
+  private ArrayList  pFrames; 
+  private ArrayList  pIndices; 
+  private FileSeq    pFileSeq; 
+  private Integer    pPadding; 
+  private Boolean    pWait; 
 
   private String    pMsg; 
   private String    pAuthor; 
@@ -308,6 +309,7 @@ TOKEN :
 | <RANGE:          "--range">           : FRAME_RANGE_SEP
 | <FRAME:          "--frame">           : FRAME_NUMBERS_SEP
 | <INDEX:          "--index">           : FRAME_INDICES_SEP
+| <WAIT:           "--wait">
 
 
   /* argument end separator */ 
@@ -3015,15 +3017,21 @@ WorkingEdit()
   pView            = "default";
   pEditorName      = null;
   pEditorVersionID = null;
-  pFrames          = new TreeSet();
-  pIndices         = new TreeSet();
+  pFrames          = new ArrayList();
+  pIndices         = new ArrayList();
   pFileSeq         = null;  
+  pWait            = false;
 }
 {
   <WORKING_EDIT> EQ() name=NodeName() AE() (WorkingEditOpts())* 
   {
-//     pApp.workingEdit(new NodeID(pAuthor, pView, name), pEditorName, pEditorVersionID, 
-// 		     pFrames, pIndices, pFileSeq);
+    if((!pFrames.isEmpty() && !pIndices.isEmpty()) || 
+       (pFileSeq != null) && ((!pFrames.isEmpty() || !pIndices.isEmpty())))
+      throw new PipelineException
+        ("The --frame, --index and --fseq options are mutually exclusive!");
+
+     pApp.workingEdit(new NodeID(pAuthor, pView, name), pEditorName, pEditorVersionID, 
+		      pFrames, pIndices, pFileSeq, pWait, pMasterMgrClient);
   }
 }
 
@@ -3032,7 +3040,7 @@ WorkingEditOpts()
   throws PipelineException : 
 {}
 {
-  (Author() | View() | EditorVersion() | Frame() | Index() | FSeq())
+  (Author() | View() | EditorVersion() | Frame() | Index() | FSeq() | Wait())
   {}
 }
 
@@ -3452,69 +3460,102 @@ PaddingFour() :
 }
 
 void 
-Frame() : 
+Frame() 
+  throws PipelineException : 
 {}
 {
   <FRAME> EQ() FrameNumbers() (COMMA() FrameNumbers())* AE()
+  {}
+}
+
+void 
+FrameNumbers() 
+  throws PipelineException : 
+{
+  Token s;
+  Token e = null;
+}
+{
+  s=<FRAME_NUMBER2> (DASH() e=<FRAME_NUMBER2>)?
   {
+    try {
+      if(e == null) {
+	int[] single = new int[1];
+	single[0] = Integer.parseInt(s.image);
+	pFrames.add(single);
+      }
+      else {
+	int[] range = new int[2];
+	range[0] = Integer.parseInt(s.image);
+	range[1] = Integer.parseInt(e.image);
+
+	if(range[0] > range[1])
+	  throw new PipelineException
+	    ("The start frame (" + range[0] + ") cannot be greater than the " + 
+	     "end frame (" + range[1] + ")!");
+
+	pFrames.add(range);	
+      } 
+    }
+    catch(NumberFormatException ex) {
+      throw new PipelineException(ex.getMessage());
+    }    
   }
 }
 
 void 
-FrameNumbers() : 
-{
-  Token s, e;
-}
-{
-  s=<FRAME_NUMBER2> (DASH() e=<FRAME_NUMBER2>)
-  {
-//     try {
-//       if(e == null) {
-//         pFrames.add(new Integer(s.image));
-//       }
-//       else {
-	
-
-//       } 
-//     }
-//     catch(NumberFormatException ex) {
-//       throw new PipelineException(ex.getMessage());
-//     }    
-  }
-}
-
-void 
-Index() : 
+Index() 
+  throws PipelineException : 
 {}
 {
   <INDEX> EQ() FrameIndices() (COMMA() FrameIndices())* AE()
-  {
-  }
+  {}
 }
 
 void 
-FrameIndices() : 
+FrameIndices() 
+  throws PipelineException : 
 {
-  Token s, e;
+  Token s;
+  Token e = null;
 }
 {
-  s=<FRAME_INDEX> (DASH() e=<FRAME_INDEX>)
+  s=<FRAME_INDEX> (DASH() e=<FRAME_INDEX>)?
   {
-//     try {
-//       if(e == null) {
-//         pFrames.add(new Integer(s.image));
-//       }
-//       else {
-	
+    try {
+      if(e == null) {
+	int[] single = new int[1];
+	single[0] = Integer.parseInt(s.image);
+	pIndices.add(single);
+      }
+      else {
+	int[] range = new int[2];
+	range[0] = Integer.parseInt(s.image);
+	range[1] = Integer.parseInt(e.image);
 
-//       } 
-//     }
-//     catch(NumberFormatException ex) {
-//       throw new PipelineException(ex.getMessage());
-//     }    
+	if(range[0] > range[1])
+	  throw new PipelineException
+	    ("The start index (" + range[0] + ") cannot be greater than the " + 
+	     "end index (" + range[1] + ")!");
+
+	pIndices.add(range);	
+      } 
+    }
+    catch(NumberFormatException ex) {
+      throw new PipelineException(ex.getMessage());
+    }    
   }
 }
 
+void
+Wait() : 
+{}
+{
+  <WAIT> AE()
+  {
+    pWait = true;
+  }
+}
 
 void
 Toolset() : 
