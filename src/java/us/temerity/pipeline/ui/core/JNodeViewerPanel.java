@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.10 2005/01/10 18:53:49 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.11 2005/01/12 21:47:16 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3644,7 +3644,8 @@ class JNodeViewerPanel
     /* the initial center of the node layout */ 
     {
       BBox2d bbox = getNodeBounds(pViewerNodes.values());
-      encoder.encode("InitialCenter", bbox.getCenter());
+      if(bbox != null) 
+	encoder.encode("InitialCenter", bbox.getCenter());
     } 
 
     /* whether to show the downstram links */
