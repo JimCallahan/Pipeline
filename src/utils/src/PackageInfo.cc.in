@@ -1,4 +1,4 @@
-// $Id: PackageInfo.cc.in,v 1.7 2003/09/22 20:51:12 jim Exp $
+// $Id: PackageInfo.cc.in,v 1.8 2003/12/15 02:08:03 jim Exp $
 
 #include <PackageInfo.hh>
 
@@ -28,8 +28,11 @@ const char* PackageInfo::sServer = "@SQL_SERVER@";
 const int PackageInfo::sPort = @SQL_PORT@;
 
 
-/* PBS server hostname */ 
-const char* PackageInfo::sPbsServer = "@PBS_SERVER@";
+/* pipeline user ID */ 
+const int PackageInfo::sPipelineUID = @PIPELINE_UID@;
+
+/* pipeline group ID */ 
+const int PackageInfo::sPipelineGID = @PIPELINE_GID@;
 
 
 /* base repository directory */ 

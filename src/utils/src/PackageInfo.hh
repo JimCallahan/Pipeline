@@ -1,4 +1,4 @@
-// $Id: PackageInfo.hh,v 1.3 2003/07/05 16:00:55 jim Exp $
+// $Id: PackageInfo.hh,v 1.4 2003/12/15 02:08:03 jim Exp $
 
 #ifndef PIPELINE_PACKAGE_INFO_HH
 #define PIPELINE_PACKAGE_INFO_HH
@@ -34,10 +34,13 @@ public:
   /* server port number */ 
   static const int sPort;
 
+  
+  /* pipeline user ID */ 
+  static const int sPipelineUID;
 
-  /* PBS server hostname */ 
-  static const char* sPbsServer;
- 
+  /* pipeline group ID */ 
+  static const int sPipelineGID;
+
 
   /* root directory of the production heirarchy */ 
   static const char* sBaseDir;
