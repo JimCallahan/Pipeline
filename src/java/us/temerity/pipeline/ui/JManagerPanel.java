@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.24 2004/06/14 22:48:12 jim Exp $
+// $Id: JManagerPanel.java,v 1.25 2004/06/28 00:15:03 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -220,10 +220,17 @@ class JManagerPanel
       item.setActionCommand("preferences");
       item.addActionListener(this);
       pPopup.add(item);  
-      
+
       {
 	JMenu sub = new JMenu("Admin");   
 	pPopup.add(sub);  
+
+	item = new JMenuItem("Default Editors...");
+	item.setActionCommand("default-editors");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	sub.addSeparator();
 
 	item = new JMenuItem("Manage Users...");
 	item.setActionCommand("manage-users");
@@ -232,11 +239,6 @@ class JManagerPanel
 
 	item = new JMenuItem("Manage Toolsets...");
 	item.setActionCommand("manage-toolsets");
-	item.addActionListener(this);
-	sub.add(item);  
-
-	item = new JMenuItem("Manage Editors...");
-	item.setActionCommand("manage-editors");
 	item.addActionListener(this);
 	sub.add(item);  
 
@@ -659,8 +661,8 @@ class JManagerPanel
       UIMaster.getInstance().showManageUsersDialog();
     else if(cmd.equals("manage-toolsets"))
       UIMaster.getInstance().showManageToolsetsDialog();
-    else if(cmd.equals("manage-editors"))
-      UIMaster.getInstance().showManageEditorsDialog();
+    else if(cmd.equals("default-editors"))
+      UIMaster.getInstance().showDefaultEditorsDialog();
     else if(cmd.equals("shutdown"))
       doShutdownServer();
     else if(cmd.equals("preferences"))
