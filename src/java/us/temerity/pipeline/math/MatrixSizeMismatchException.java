@@ -1,4 +1,4 @@
-// $Id: MatrixSizeMismatchException.java,v 1.1 2004/12/19 19:27:39 jim Exp $
+// $Id: MatrixSizeMismatchException.java,v 1.2 2004/12/21 00:20:28 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -35,10 +35,10 @@ class MatrixSizeMismatchException
    * @param cols1
    *   The number of columns in the first matrix.
    * 
-   * @param rows1
+   * @param rows2
    *   The number of rows in the first matrix.
    * 
-   * @param cols1
+   * @param cols2
    *   The number of columns in the first matrix.
    */ 
   public 
@@ -50,8 +50,8 @@ class MatrixSizeMismatchException
    int cols2
   )
   {
-    super("Size mismatch between the first matrix (" + rows1 + "x" + cols1 + ") and " + 
-	  "second matrix (" + rows2 + "x" + cols2 + ")!");
+    super("Size mismatch between the first " + rows1 + "x" + cols1 + " matrix and " + 
+	  "second " + rows2 + "x" + cols2 + " matrix!");
   }
     
   /**
