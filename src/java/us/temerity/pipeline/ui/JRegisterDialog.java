@@ -1,4 +1,4 @@
-// $Id: JRegisterDialog.java,v 1.3 2004/07/07 13:28:21 jim Exp $
+// $Id: JRegisterDialog.java,v 1.4 2004/07/14 21:10:12 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -343,7 +343,9 @@ class JRegisterDialog
 
       pFramePaddingField.setValue(fpat.getPadding());
     }
-    else {    
+    else {   
+      pFileModeField.setSelectedIndex(0);
+ 
       pFrameNumbersField.setValue(false);
       pFramePaddingField.setValue(null);
     }
