@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.9 2004/08/23 04:29:01 jim Exp $
+// $Id: QueueMgr.java,v 1.10 2004/08/26 05:56:30 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1107,28 +1107,72 @@ class QueueMgr
   }
 
   /**
-   * Get the JobStates of all existing jobs.
+   * Get the JobStatus of all jobs associated with the given job group IDs. 
+   * 
+   * @param req 
+   *   The job status request.
    * 
    * @return 
-   *   <CODE>QueueGetAllJobStatesRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to lookup the job states.
+   *   <CODE>QueueAllJobStatusRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the job status.
    */ 
   public Object
-  getAllJobStates() 
+  getJobStatus
+  (
+   QueueGetJobStatusReq req 
+  ) 
   {
     TaskTimer timer = new TaskTimer();
 
+    TreeSet<Long> jobIDs = new TreeSet<Long>();
+    timer.aquire();
+    synchronized(pJobGroups) {
+      timer.resume();
+      try {
+	for(Long groupID : req.getGroupIDs()) {
+	  QueueJobGroup group = lookupJobGroup(groupID);
+	  if(group != null) 
+	    jobIDs.addAll(group.getAllJobIDs());
+	}
+      }
+      catch(PipelineException ex) {
+	return new FailureRsp(timer, ex.getMessage());	  
+      }   
+    }
+
+    TreeMap<Long,JobState> states = new TreeMap<Long,JobState>();
     timer.aquire();  
     synchronized(pJobInfo) {
       timer.resume();
       try {
-	TreeMap<Long,JobState> states = new TreeMap<Long,JobState>();
-	for(Long jobID : pJobInfo.keySet()) {
-	  QueueJobInfo info = lookupJobInfo(jobID);	    
-	  states.put(jobID, info.getState());
+	for(Long jobID : jobIDs) {
+	  QueueJobInfo info = lookupJobInfo(jobID);
+	  if(info != null) 
+	    states.put(jobID, info.getState());
+	}
+      }
+      catch(PipelineException ex) {
+	return new FailureRsp(timer, ex.getMessage());	  
+      }  
+    }
+	
+    timer.aquire();  
+    synchronized(pJobs) {
+      timer.resume();
+      try {
+	TreeMap<Long,JobStatus> status = new TreeMap<Long,JobStatus>();
+	for(Long jobID : jobIDs) {
+	  QueueJob job = lookupJob(jobID);	
+	  JobState state = states.get(jobID);
+	  if((job != null) && (state != null)) {
+	    JobStatus js = 
+	      new JobStatus(jobID, job.getNodeID(), state, 
+			    job.getActionAgenda().getPrimaryTarget(), job.getSourceJobIDs());
+	    status.put(jobID, js);
+	  }
 	}
 	
-	return new QueueGetAllJobStatesRsp(timer, states);
+	return new QueueGetJobStatusRsp(timer, status);
       }
       catch(PipelineException ex) {
 	return new FailureRsp(timer, ex.getMessage());	  

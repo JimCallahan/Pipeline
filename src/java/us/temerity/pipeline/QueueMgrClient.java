@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.8 2004/08/23 04:29:01 jim Exp $
+// $Id: QueueMgrClient.java,v 1.9 2004/08/26 05:56:30 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -716,21 +716,29 @@ class QueueMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the JobStates of all existing jobs.
+   * Get the JobStatus of all jobs associated with the given job group IDs. 
+   * 
+   * @param groupIDs
+   *   The unique job group IDs.
    * 
    * @throws PipelineException
-   *   If unable to determine the states.
+   *   If unable to determine the job status.
    */ 
-  public synchronized TreeMap<Long,JobState>
-  getAllJobStates() 
+  public synchronized TreeMap<Long,JobStatus>
+  getJobStatus
+  (
+   TreeSet<Long> groupIDs
+  ) 
     throws PipelineException  
   {
     verifyConnection();
 
-    Object obj = performTransaction(QueueRequest.GetAllJobStates, null);
-    if(obj instanceof QueueGetAllJobStatesRsp) {
-      QueueGetAllJobStatesRsp rsp = (QueueGetAllJobStatesRsp) obj;
-      return rsp.getStates();
+    QueueGetJobStatusReq req = new QueueGetJobStatusReq(groupIDs);
+    
+    Object obj = performTransaction(QueueRequest.GetJobStatus, req);
+    if(obj instanceof QueueGetJobStatusRsp) {
+      QueueGetJobStatusRsp rsp = (QueueGetJobStatusRsp) obj;
+      return rsp.getStatus();
     }
     else {
       handleFailure(obj);
@@ -856,7 +864,8 @@ class QueueMgrClient
       return null;
     }        
   }
-  
+
+
 
 
   /*----------------------------------------------------------------------------------------*/

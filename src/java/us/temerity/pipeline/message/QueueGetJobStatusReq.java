@@ -1,4 +1,4 @@
-// $Id: QueueGetAllJobStatesRsp.java,v 1.2 2004/08/23 06:43:21 jim Exp $
+// $Id: QueueGetJobStatusReq.java,v 1.1 2004/08/26 05:57:36 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -7,48 +7,37 @@ import us.temerity.pipeline.core.*;
 
 import java.io.*;
 import java.util.*;
-import java.util.logging.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   Q U E U E   G E T   A L L   J O B   S T A T E S   R S P                                */
+/*   Q U E U E   G E T   J O B   S T A T U S   R E Q                                        */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Get the JobStates of all existing jobs.
+ * A request to get JobStatus of all jobs associated with the given job group IDs. 
  */
 public
-class QueueGetAllJobStatesRsp
-  extends TimedRsp
+class QueueGetJobStatusReq
+  implements Serializable
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Constructs a new response.
+   * Constructs a new request. <P> 
    * 
-   * @param timer 
-   *   The timing statistics for a task.
-   * 
-   * @param states
-   *   The JobStates of each job indexed by job ID. 
-   */ 
+   * @param groupIDs
+   *   The unique job group IDs.
+   */
   public
-  QueueGetAllJobStatesRsp
+  QueueGetJobStatusReq
   (
-   TaskTimer timer, 
-   TreeMap<Long,JobState> states
+   TreeSet<Long> groupIDs
   )
   { 
-    super(timer);
-
-    if(states == null) 
-      throw new IllegalArgumentException("The states cannot be (null)!");
-    pStates = states;
-
-    Logs.net.finest("QueueMgr.getAllJobStates():\n  " + getTimer());
-    if(Logs.net.isLoggable(Level.FINEST))
-      Logs.flush();
+    if(groupIDs == null) 
+      throw new IllegalArgumentException("The job group IDs cannot be (null)!");
+    pGroupIDs = groupIDs;
   }
 
 
@@ -56,23 +45,23 @@ class QueueGetAllJobStatesRsp
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * Gets the JobStates of each job indexed by job ID. 
-   */ 
-  public TreeMap<Long,JobState>
-  getStates() 
-  {
-    return pStates;
-  }
-  
 
+  /**
+   * Get the unique job group IDs.
+   */
+  public TreeSet<Long>
+  getGroupIDs() 
+  {
+    return pGroupIDs; 
+  }
+
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -6054747055753320836L;
+  private static final long serialVersionUID = -3834278173635328552L;
 
   
 
@@ -81,9 +70,10 @@ class QueueGetAllJobStatesRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The JobStates of each job indexed by job ID. 
+   * The unique working version identifier.
    */ 
-  private TreeMap<Long,JobState>  pStates;
+  private TreeSet<Long> pGroupIDs; 
+
 
 }
   
