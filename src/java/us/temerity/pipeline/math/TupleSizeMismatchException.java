@@ -1,4 +1,4 @@
-// $Id: TupleSizeMismatchException.java,v 1.2 2004/12/17 21:23:55 jim Exp $
+// $Id: TupleSizeMismatchException.java,v 1.3 2004/12/17 21:35:47 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -41,7 +41,7 @@ class TupleSizeMismatchException
    int sizeB
   )
   {
-    super("Size mismatch between the first tuple (" + sizeS + ") and second tuple " + 
+    super("Size mismatch between the first tuple (" + sizeA + ") and second tuple " + 
 	  "(" + sizeB + ")!"); 
   }
     
