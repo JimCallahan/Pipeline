@@ -1,4 +1,4 @@
-// $Id: NodeMgr.java,v 1.16 2004/04/15 17:55:51 jim Exp $
+// $Id: NodeMgr.java,v 1.17 2004/04/15 18:31:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -10,6 +10,7 @@ import java.io.*;
 import java.util.*;
 import java.util.concurrent.locks.*;
 import java.util.concurrent.atomic.*;
+import java.util.logging.Level;
 
 /*------------------------------------------------------------------------------------------*/
 /*   N O D E   M G R                                                                        */
@@ -312,7 +313,7 @@ class NodeMgr
       }
     }
 
-    if(!pNodeNames.isEmpty()) {
+    if(!pNodeNames.isEmpty() && Logs.ops.isLoggable(Level.FINER)) {
       StringBuffer buf = new StringBuffer(); 
       buf.append("Node Names:\n");
       for(String name : pNodeNames) 
@@ -448,7 +449,7 @@ class NodeMgr
       }
     }
 
-    if(!pDownstream.isEmpty()) { 
+    if(!pDownstream.isEmpty() && Logs.ops.isLoggable(Level.FINER)) { 
       StringBuffer buf = new StringBuffer(); 
       buf.append("Rebuilt Links:\n");
       for(String name : pDownstream.keySet()) 
@@ -1324,6 +1325,7 @@ class NodeMgr
 	pFileMgrClient.remove(id, mod);	
       }
 
+      unmonitor(id);
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
@@ -1455,6 +1457,8 @@ class NodeMgr
       if(req.renameFiles()) {
 	pFileMgrClient.rename(id, bundle.uVersion, nname);	
       }
+
+      unmonitor(id);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
@@ -1783,6 +1787,31 @@ class NodeMgr
       if(!ids.contains(id)) {
 	ids.add(id);
 	pNotifyControlClient.monitor(dir);
+      }
+    }
+  }
+
+  /**
+   * Notify the directory monitoring facility that the given working version no longer 
+   * needs to be monitored.  If there are no remaining working versions being monitored 
+   * for the directory containing the files associated with the working version, then 
+   * cease monitoring the directory.
+   */
+  private void
+  unmonitor
+  (
+   NodeID id
+  )
+    throws PipelineException 
+  { 
+    synchronized(pMonitored) {
+      File dir = id.getWorkingParent();
+
+      HashSet<NodeID> ids = pMonitored.get(dir);
+      if(ids != null) {
+	ids.remove(id);
+	if(ids.isEmpty()) 
+	  pNotifyControlClient.unmonitor(dir);
       }
     }
   }
