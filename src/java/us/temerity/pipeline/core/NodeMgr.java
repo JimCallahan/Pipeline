@@ -1,4 +1,4 @@
-// $Id: NodeMgr.java,v 1.8 2004/03/30 22:15:50 jim Exp $
+// $Id: NodeMgr.java,v 1.9 2004/03/31 02:03:08 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1055,6 +1055,34 @@ class NodeMgr
 
     Date start = new Date();
     long wait = 0;
+
+    /* unlink the downstream working versions from the to be revoked working version */ 
+    {
+      ReentrantReadWriteLock downstreamLock = getDownstreamLock(id.getName());
+      downstreamLock.writeLock().lock();
+      try {
+	wait  = (new Date()).getTime() - start.getTime();
+	start = new Date();
+
+	DownstreamLinks links = getDownstreamLinks(id.getName()); 
+	for(String target : links.getWorking(id)) {
+	  NodeID targetID = new NodeID(id.getAuthor(), id.getView(), target);
+	  Object obj = unlink(new NodeUnlinkReq(targetID, id.getName()));
+	  if(obj instanceof FailureRsp) 
+	    return obj;
+	}
+      }
+      catch(PipelineException ex) {
+	if(wait > 0) 
+	  return new FailureRsp(task, ex.getMessage(), wait, start);
+	else 
+	  return new FailureRsp(task, ex.getMessage(), start);
+      }
+      finally {
+	downstreamLock.writeLock().unlock();
+      }
+    }
+
     ReentrantReadWriteLock lock = getWorkingLock(id);
     lock.writeLock().lock();
     try {
@@ -1096,22 +1124,6 @@ class NodeMgr
 	  if(!backup.delete())
 	    throw new PipelineException      
 	      ("Unable to remove the backup working version file (" + backup + ")!");
-	}
-      }
-
-      /* unlink the downstream working versions from the revoked working version */ 
-      {
-	ReentrantReadWriteLock downstreamLock = getDownstreamLock(id.getName());
-	downstreamLock.writeLock().lock();
-	try {
-	  DownstreamLinks links = getDownstreamLinks(id.getName()); 
-	  for(String target : links.getWorking(id)) {
-	    NodeID targetID = new NodeID(id.getAuthor(), id.getView(), target);
-	    unlink(new NodeUnlinkReq(targetID, id.getName()));
-	  }
-	}
-	finally {
-	  downstreamLock.writeLock().unlock();
 	}
       }
 
@@ -1183,9 +1195,129 @@ class NodeMgr
    NodeRenameReq req
   ) 
   {
+    if(req == null) 
+      return new FailureRsp("The node rename request cannot be (null)!");
     
-    return new FailureRsp("Not implemented yet...");
+    NodeID id   = req.getNodeID();
+    String name = id.getName();
 
+    String nname = req.getNewName();
+    NodeID nid   = new NodeID(id.getAuthor(), id.getView(), nname);
+
+    String task = ("NodeMgr.rename(): " + id + " to " + nid);
+
+    Date start = new Date();
+    long wait = 0;
+
+    /* unlink the downstream working versions from the to be renamed working version 
+         while collecting the existing downstream links */ 
+    TreeMap<String,LinkMod> dlinks = null;
+    {
+      dlinks = new TreeMap<String,LinkMod>();
+
+      ReentrantReadWriteLock downstreamLock = getDownstreamLock(id.getName());
+      downstreamLock.writeLock().lock();
+      try {
+	wait  = (new Date()).getTime() - start.getTime();
+	start = new Date();
+
+	DownstreamLinks links = getDownstreamLinks(id.getName()); 
+	for(String target : links.getWorking(id)) {
+	  NodeID targetID = new NodeID(id.getAuthor(), id.getView(), target);
+
+	  ReentrantReadWriteLock lock = getWorkingLock(targetID);
+	  lock.readLock().lock();
+	  try {
+	    LinkMod dlink = getWorkingBundle(targetID).uVersion.getSource(name);
+	    if(dlink != null) 
+	      dlinks.put(target,dlink);
+	  }
+	  finally {
+	    lock.readLock().unlock();
+	  }  
+
+	  unlink(new NodeUnlinkReq(targetID, id.getName()));
+	}
+      }
+      catch(PipelineException ex) {
+	if(wait > 0) 
+	  return new FailureRsp(task, ex.getMessage(), wait, start);
+	else 
+	  return new FailureRsp(task, ex.getMessage(), start);
+      }
+      finally {
+	downstreamLock.writeLock().unlock();
+      }
+    }
+
+    ReentrantReadWriteLock lock = getWorkingLock(id);
+    lock.writeLock().lock();
+    ReentrantReadWriteLock nlock = getWorkingLock(nid);
+    nlock.writeLock().lock();
+    try {
+      wait  = (new Date()).getTime() - start.getTime();
+      start = new Date();
+
+      WorkingBundle bundle = getWorkingBundle(id);
+      NodeMod mod = new NodeMod(bundle.uVersion);
+      mod.rename(nname);
+      mod.removeAllSources();
+
+      /* register the new named node */ 
+      {
+	Object obj = register(new NodeRegisterReq(nid, mod));
+	if(obj instanceof FailureRsp) {
+	  FailureRsp rsp = (FailureRsp) obj;
+	  throw new PipelineException(rsp.getMessage());	
+	}
+      }
+
+      /* reconnect the upstream nodes to the new named node */ 
+      for(LinkMod ulink : bundle.uVersion.getSources()) {
+	Object obj = link(new NodeLinkReq(nid, ulink));
+	if(obj instanceof FailureRsp) 
+	  return obj;
+      }
+
+      /* revoke the old named node */ 
+      {
+	Object obj = revoke(new NodeRevokeReq(id, false));
+	if(obj instanceof FailureRsp) {
+	  FailureRsp rsp = (FailureRsp) obj;
+	  throw new PipelineException(rsp.getMessage());	
+	}
+      }
+
+      /* rename the files */ 
+      if(req.renameFiles()) {
+	pFileMgrClient.rename(id, bundle.uVersion, nname);	
+      }
+    }
+    catch(PipelineException ex) {
+      if(wait > 0) 
+	return new FailureRsp(task, ex.getMessage(), wait, start);
+      else 
+	return new FailureRsp(task, ex.getMessage(), start);
+    }
+    finally {
+      nlock.writeLock().unlock();
+      lock.writeLock().unlock();
+    }  
+
+    /* reconnect the downstream nodes to the new named node */ 
+    for(String target : dlinks.keySet()) {
+      LinkMod dlink = dlinks.get(target);
+
+      NodeID tid = new NodeID(id.getAuthor(), id.getView(), target);
+      LinkMod ndlink = new LinkMod(nname, dlink.getCatagory(), 
+				   dlink.getRelationship(), dlink.getFrameOffset());
+
+      Object obj = link(new NodeLinkReq(tid, ndlink));
+      if(obj instanceof FailureRsp) 
+	return obj;
+    }
+
+    return new SuccessRsp(task, wait, start);
   }
 
 
