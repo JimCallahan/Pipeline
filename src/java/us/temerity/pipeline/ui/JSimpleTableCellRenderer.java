@@ -1,4 +1,4 @@
-// $Id: JSimpleTableCellRenderer.java,v 1.1 2004/06/08 03:06:36 jim Exp $
+// $Id: JSimpleTableCellRenderer.java,v 1.2 2004/06/22 19:42:40 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -13,7 +13,8 @@ import javax.swing.table.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The renderer for {@link JTable JTable} cells containing simple {@link String String} data.
+ * The renderer for {@link JTable JTable} cells containing data convertable to a 
+ * {@link String String}.
  */ 
 public
 class JSimpleTableCellRenderer
@@ -62,7 +63,15 @@ class JSimpleTableCellRenderer
    int column
   )
   {
-    setText(value.toString());    
+    String text = null;
+    if(value != null) 
+      text = value.toString();
+
+    if(text != null) 
+      setText(text);
+    else 
+      setText("-");
+
     setForeground(isSelected ? Color.yellow : Color.white);
 
     return this;
