@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.12 2004/09/13 23:42:09 jim Exp $
+// $Id: QueueMgrClient.java,v 1.13 2004/09/20 05:34:53 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -668,7 +668,17 @@ class QueueMgrClient
     if(!isPrivileged()) 
       throw new PipelineException
 	("Only privileged users may edit the properties of the job server hosts!");
-    
+
+    for(TreeMap<String,Integer> table : biases.values()) {
+      for(String kname : table.keySet()) {
+	Integer bias = table.get(kname);
+	if((bias < -100) || (bias > 100)) 
+	  throw new PipelineException
+	    ("The selection bias (" + bias + ") for key (" + kname + ") must " + 
+	     "be in the range: [-100,100]!");
+      }
+    }
+
     verifyConnection();
 
     QueueEditHostsReq req = new QueueEditHostsReq(status, reservations, slots, biases);
