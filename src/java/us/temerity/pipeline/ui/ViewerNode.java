@@ -1,4 +1,4 @@
-// $Id: ViewerNode.java,v 1.11 2004/12/16 21:40:01 jim Exp $
+// $Id: ViewerNode.java,v 1.12 2004/12/17 15:05:33 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -244,7 +244,7 @@ class ViewerNode
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Rebuild any OpenGL display list needd to render the node.
+   * Rebuild any OpenGL display list needed to render the node.
    *
    * @param gl
    *   The OpenGL interface.
@@ -326,8 +326,8 @@ class ViewerNode
 	gl.glTranslated(-dx, 0.0, 0.0);
       }
     
+      gl.glTranslated(0.0, 0.55, 0.0);
       gl.glScaled(0.35, 0.35, 0.35);
-      gl.glTranslated(0.0, 1.5, 0.0);
       gl.glCallList(pLabelDL);
     }
     gl.glPopMatrix();
