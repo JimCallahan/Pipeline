@@ -1,4 +1,4 @@
-// $Id: NodeRegisterReq.java,v 1.2 2004/03/26 19:13:17 jim Exp $
+// $Id: NodeRegisterReq.java,v 1.3 2004/03/28 00:49:15 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -42,12 +42,22 @@ class NodeRegisterReq
   )
   { 
     if(id == null) 
-      throw new IllegalArgumentException("The working version ID cannot be (null)!");
+      throw new IllegalArgumentException
+	("The working version ID cannot be (null)!");
     pNodeID = id;
 
     if(mod == null) 
-      throw new IllegalArgumentException("The intial working version cannot be (null)!");
+      throw new IllegalArgumentException
+	("The intial working version cannot be (null)!");
     pNodeMod = mod;
+
+    if(mod.getWorkingID() != null) 
+      throw new IllegalArgumentException
+	("The working version was not an initial working version!");
+    
+    if(mod.hasSources()) 
+      throw new IllegalArgumentException
+	("The working version already has links to upstream nodes!");
   }
 
 
