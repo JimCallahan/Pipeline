@@ -1,4 +1,4 @@
-// $Id: NodeMgr.java,v 1.5 2004/03/09 09:44:04 jim Exp $
+// $Id: NodeMgr.java,v 1.6 2004/03/10 11:47:50 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -18,120 +18,8 @@ import java.util.concurrent.locks.*;
  * 
  * In addition to providing the runtime representation of nodes, this class also provides 
  * the I/O operations necessary to maintain a persistent file system representation for the
- * nodes and their associated files.  The following details the file system layout of node 
- * related information managed by this class.  <P>
- * 
- * The location of files (or symbolic links) associated with working versions: <P> 
- * 
- * <DIV style="margin-left: 40px;">
- *   <I>prod-dir</I>/working/<I>author</I>/<I>view</I>/ <BR>
- *   <DIV style="margin-left: 20px;">
- *     <I>fully-resolved-node-path</I>/ <BR>
- *     <DIV style="margin-left: 20px;">
- *       <I>node-name</I> <BR>
- *       ... <BR>
- *     </DIV> 
- *     ... <P>
- *   </DIV> 
- *   
- *   Where (<I>prod-dir</I>) is the root of the production file system hierarchy set by
- *   the <CODE>--with-prod=DIR</CODE> option to <I>configure(1)</I>.  The (<I>author</I>)
- *   is the name of the user owning the working version of the node.  The (<I>view</I>) is
- *   the name of the particular working area view of which the working version is a 
- *   member.  In practice the environmental variable <CODE>$WORKING</CODE> is set to 
- *   contain the full path to this particular view. <P> 
- * 
- *   The (<I>fully-resolved-node-path</I>) is all but the last component of the fully  
- *   resolved name of the node.  The last component of this name is the prefix of the files 
- *   which make up the primary file sequence of the node.  The (<I>node-name)</I> files are 
- *   one or more files which make up the primary and secondary file sequences associated 
- *   with the node. <P> 
- * 
- *   If the working version of a node has been frozen (see {@link #freeze freeze}), the 
- *   (<I>node-name)</I> files will not be regular files. Instead, they will be symbolic 
- *   links to the respective read-only file associated with the checked-in version upon 
- *   which the working version is based.
- * </DIV> <P> 
- * 
- * The location of files associated with checked-in versions: <P> 
- * 
- * <DIV style="margin-left: 40px;">
- *   <I>prod-dir</I>/repository/ <BR>
- *   <DIV style="margin-left: 20px;">
- *     <I>fully-resolved-node-path</I>/ <BR>
- *     <DIV style="margin-left: 20px;">
- *       <I>revision-number</I> <BR>
- *       <DIV style="margin-left: 20px;">
- *         <I>node-name</I> <BR>
- *         ... <BR>
- *       </DIV> 
- *       ... <BR>
- *     </DIV> 
- *     ... <P> 
- *   </DIV> 
- * 
- *   The files associated with each checked-in version of the node are grouped under the 
- *   (<I>revision-number</I>) of their respective versions.  The other components have the 
- *   same meaning described above for the working version files.  All checked-in files 
- *   have read-only file access permissions. <P> 
- * 
- *   When a new checked-in version is created, some of its associated files may identical
- *   to the respective files of previously checked-in versions for the node.  If this is the 
- *   case, a symbolic link will be created in place of the usual regular file which points 
- *   to this previously checked-in identical copy of the file.  This saves disk space and I/O 
- *   overhead associated with creating new checked-in versions which are largely similar 
- *   to previous checked-in versions.  These symbolic links will always point to the 
- *   earliest identical version of the file which is itself guaranteed to be a regular file.  
- *   In other words, checked-in files are either regular files or one level symbolic links 
- *   to regular files. 
- * </DIV> <P> 
- * 
- * The location of checksum files for the working and checked-in versions: <P> 
- * 
- * <DIV style="margin-left: 40px;">
- *   <I>prod-dir</I>/checksum/ <BR> 
- *   <DIV style="margin-left: 20px;">
- *     working/<I>author</I>/<I>view</I>/ <BR>
- *     <DIV style="margin-left: 20px;">
- *       <I>fully-resolved-node-path</I>/ <BR>
- *       <DIV style="margin-left: 20px;">
- *         <I>node-name</I> <BR>
- *         ... <BR>
- *       </DIV> 
- *       ... <P>
- *     </DIV> 
- * 
- *     repository/ <BR>
- *     <DIV style="margin-left: 20px;">
- *       <I>fully-resolved-node-path</I>/ <BR>
- *       <DIV style="margin-left: 20px;">
- *         <I>revision-number</I> <BR>
- *         <DIV style="margin-left: 20px;">
- *           <I>node-name</I> <BR>
- *           ... <BR>
- *         </DIV> 
- *         ... <BR>
- *       </DIV> 
- *       ... <P> 
- *     </DIV> 
- *   </DIV>
- * </DIV>
- * 
- * Each file associated with a checked-in version of a node has a corresponding checksum 
- * file with the same name as the checked-in file but located under the 
- * (<I>prod-dir</I>/checksum) directory.  These checksum files are generated at 
- * the time of check-in if no working checksum file already exists. <P> 
- * 
- * The files associated with working versions of nodes may also have generated checksum 
- * files.  The working checksum files are generated as a post process after successfully 
- * completing a job which regenerates a working file.  They may also be generated for files 
- * associated with leaf nodes during node status computations.  These working leaf node 
- * checksum files are only generated when the working and checked-in versions of a file 
- * are exactly the same size. <P>
- * 
- * Both kinds of checksums are used by Pipeline to optimize the comparison of large data
- * files associated with nodes.  The {@link CheckSum CheckSum} class configured to use 
- * the 128-bit MD5 message digest algorithm generates all checksums. <P> 
+ * nodes.  The following details the file system layout of node related information managed 
+ * by this class.  <P>
  * 
  * The persistent storage of nodes: <P> 
  * 
@@ -218,10 +106,10 @@ import java.util.concurrent.locks.*;
  *   upon shutdown of the server. <P> 
  * </DIV> 
  * 
- * @see CheckSum
  * @see NodeMod
  * @see NodeVersion
  * @see LogMessage
+ * @see FileMgr
  */
 public
 class NodeMgr
