@@ -16,6 +16,9 @@
 /* Define if using GNU's C++ compiler (g++). */ 
 #undef USING_GNU_CXX 
 
+/* Define if using Posix threads. */ 
+#undef USING_PTHREADS
+
 /* Define if OpenInventor is available. */ 
 #undef HAVE_OPEN_INVENTOR
 
