@@ -1,4 +1,4 @@
-// $Id: GlueDecoder.java,v 1.1 2004/02/12 15:50:12 jim Exp $
+// $Id: GlueDecoder.java,v 1.2 2004/02/14 22:16:40 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -9,37 +9,95 @@ import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   G L U E   D E C O D E R                                                                */
-/*                                                                                          */
-/*    Converts a set of objects from a human readable text representation.  The format      */
-/*    is flexible enough to handle adding, removing and renaming of fields.  All primitive  */
-/*    types and well as most of the classes in java.lang and java.util are supported        */
-/*    internally.  All other classes can add GLUE support by implementing the Glueable      */
-/*    interface.                                                                            */
 /*------------------------------------------------------------------------------------------*/
 
+/**
+ * Intantiates a set of objects read from a human readable text format called Glue. <P> 
+ * 
+ * The format is flexible enough to handle adding, removing and renaming of fields.  
+ * All primitive types and well as most of the classes in java.lang and java.util are 
+ * supported natively. All other classes can add Glue support by implementing the 
+ * {@link Glueable Glueable} interface.
+ * 
+ * @see Glueable
+ * @see GlueEncoder
+ */
 public
 class GlueDecoder
 {     
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
-  
+
+  /** 
+   * Decode objects from a <CODE>String</CODE> containing Glue text.
+   * 
+   * @param text [<B>in</B>]
+   *   The Glue format text to be decoded.
+   */
   public 
   GlueDecoder
   (
-   String text   /* IN: the GLUE format text to decode */ 
+   String text   
   ) 
-    throws GlueError
+    throws GlueException
   {
-    pObjects = new TreeMap<Long,Object>();
+    pState = new GlueParserState();
 
     try {
       GlueParser parser = new GlueParser(new StringReader(text));
-      parser.setDecoder(this);
-      pRoot = parser.Decode();
+      pRoot = parser.Decode(this, pState);
     }
     catch(ParseException ex) {
-      throw new GlueError(ex);
+      throw new GlueException(ex);
+    }
+  }
+
+  /** 
+   * Decode objects from an input stream of bytes containing Glue text.
+   * 
+   * @param stream [<B>in</B>]
+   *   The input stream of bytes containing the Glue text to be decoded.
+   */
+  public 
+  GlueDecoder
+  (
+   InputStream stream
+  ) 
+    throws GlueException
+  {
+    pState = new GlueParserState();
+
+    try {
+      GlueParser parser = new GlueParser(stream);
+      pRoot = parser.Decode(this, pState);
+    }
+    catch(ParseException ex) {
+      throw new GlueException(ex);
+    }
+  }
+
+  /** 
+   * Decode objects read from a character stream containing Glue text.
+   * 
+   * @param reader [<B>in</B>]
+   *   The character stream reader providing the Glue text to be decoded.
+   */
+  public 
+  GlueDecoder
+  (
+   Reader reader
+  ) 
+    throws GlueException
+  {
+    pState = new GlueParserState();
+
+    try {
+      GlueParser parser = new GlueParser(reader);
+      pRoot = parser.Decode(this, pState);
+    }
+    catch(ParseException ex) {
+      throw new GlueException(ex);
     }
   }
 
@@ -49,7 +107,12 @@ class GlueDecoder
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
-  /* The Object decoded from the GLUE text. */ 
+  /**
+   * Get the top-level decoded <CODE>Object</CODE>.
+   * 
+   * @returns
+   *   The <CODE>Object</CODE> at the highest level scope within the Glue format text.
+   */
   public Object 
   getObject() 
   {
@@ -57,132 +120,42 @@ class GlueDecoder
   }
   
 
-  /* Lookup an decoded Object with the given title.  
-     This method is used by Glueable objects to initialize their fields in readGlue(). 
-       Returns (null) if the field cannot be found. */ 
+  /** 
+   * Lookup an decoded <CODE>Object</CODE> with the given title from the current 
+   * Glue scope. <P> 
+   * 
+   * This method is used by objects implementing the {@link Glueable Glueable} interface 
+   * to initialize their fields from within 
+   * {@link Glueable#fromGlue(GlueDecoder) Glueable.fromGlue}.
+   * 
+   * @return
+   *   The decoded <CODE>Object</CODE> or <CODE>null</CODE> if no object with the given 
+   *   title exists at the current Glue scope.
+   */ 
   public Object
-  readEntity
+  decode
   ( 
-   String title  /* IN: title of object */ 
+   String title 
   ) 
   {
-    return pCurTable.get(title);
+    return pState.lookupCurrent(title);
   }
 
 
- 
-  /*----------------------------------------------------------------------------------------*/
-  /*   P A R S I N G                                                                        */
-  /*----------------------------------------------------------------------------------------*/
-
-  /* Used by the GLUE parser to initialize the table before readGlue() is called. */ 
-  public void 
-  setCurrentTable
-  (
-   HashMap table
-  ) 
-  {
-    assert(table != null);
-    pCurTable = table;
-  }
-
-  
-  /* Used by the parser to set the decoded Object. */ 
-  public void 
-  setRootObject
-  (
-   Object obj
-  ) 
-  {
-    assert(obj != null);
-    pRoot = obj;
-  }
-
-
-  /* Create a new instance of the given class and store it in the objects table. */ 
-  public Object 
-  newInstance
-  (
-   Long objID,
-   Class cls
-  ) 
-    throws ParseException
-  {
-    Object obj = null;
-    try {
-      obj = cls.newInstance();
-    }
-    catch(Exception ex) {
-      throw new ParseException(ex.toString());
-    }
-    
-    if(pObjects.containsKey(objID))
-      throw new ParseException("Duplicate object ID (" + objID + " encountered!");
-    pObjects.put(objID, obj);
-
-    return obj;
-  }
-
-  public Object 
-  newArrayInstance
-  (
-   Long objID,
-   Class cls,
-   int size
-  ) 
-    throws ParseException
-  {
-    Object obj = null;
-    try {
-      obj = Array.newInstance(cls, size);
-    }
-    catch(Exception ex) {
-      throw new ParseException(ex.toString());
-    }
-    
-    if(pObjects.containsKey(objID))
-      throw new ParseException("Duplicate object ID (" + objID + " encountered!");
-    pObjects.put(objID, obj);
-
-    return obj;
-  }
-
-
-  /* Add the given object to the objects table. */ 
-  public void 
-  addObject
-  (
-   Long objID,
-   Object obj
-  ) 
-    throws ParseException
-  {
-    assert(obj != null);
-    if(pObjects.containsKey(objID)) 
-      throw new ParseException("Duplicate object ID (" + objID + " encountered!");
-    pObjects.put(objID, obj);
-  }
-
-  
-  /* Lookup a previous instantiated object. */ 
-  public Object 
-  lookupObject
-  (
-   Long objID
-  )
-  {
-    return pObjects.get(objID);
-  }
-  
     
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
-
-  protected  HashMap  pCurTable;   /* Current object table index by title (String) */ 
-  protected  Object   pRoot;       /* The decoded Object. */ 
   
-  protected TreeMap<Long,Object>  pObjects;  /* Created objects indexed by object ID. */ 
+  /**
+   * The root decoded Object. 
+   */ 
+  private Object pRoot;       
+
+  /** 
+   * The parser helper class which maintains tables of objects used during decoding.  
+   */
+  private GlueParserState pState;
 }
 
 
