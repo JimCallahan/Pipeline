@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.14 2004/05/13 21:29:16 jim Exp $
+// $Id: JNodeBrowserPanel.java,v 1.15 2004/05/19 19:07:08 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -61,6 +61,8 @@ class JNodeBrowserPanel
   private void 
   initUI()
   {
+    pSelected = new TreeSet<String>();
+
     /* initialize the panel components */ 
     {
       setLayout(new BorderLayout());
@@ -72,7 +74,7 @@ class JNodeBrowserPanel
 	JTree tree = new JFancyTree(model); 
 	pTree = tree;
 
-	tree.setCellRenderer(new JNodeBrowserTreeCellRenderer());
+	tree.setCellRenderer(new JNodeBrowserTreeCellRenderer(this));
 	tree.setSelectionModel(null);
 	tree.addTreeExpansionListener(this);
 	tree.addMouseListener(this);
@@ -155,13 +157,80 @@ class JNodeBrowserPanel
   ) 
   {
     super.setAuthorView(author, view);
-    updateNodeTree();
+
+    if(pTree != null) {
+      updateNodeTree();
+
+      UIMaster master = UIMaster.getInstance();
+      if(pGroupID > 0) {
+	JNodeViewerPanel viewer = master.getNodeViewer(pGroupID);
+	if(viewer != null) {
+	  viewer.setRoots(pAuthor, pView, pSelected);
+	  viewer.updateManagerTitlePanel();
+	}
+      }
+    }
   }
 
 
 
   /*----------------------------------------------------------------------------------------*/
   /*   U S E R   I N T E R F A C E                                                          */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the fully resolved names of the nodes associated with the current tree selection.
+   */ 
+  public TreeSet<String>
+  getSelected() 
+  {
+    return pSelected;
+  }
+
+  /**
+   * Is the given tree path selected?
+   */ 
+  public boolean 
+  isSelected
+  (
+   TreePath tpath
+  ) 
+  {
+    return pSelected.contains(treePathToNodeName(tpath));
+  }
+
+  /**
+   * Clear the current tree node selection. <P> 
+   * 
+   * Does not notify any associated node viewer of the change.
+   */ 
+  public void 
+  clearSelection() 
+  {
+    pSelected.clear();
+  }
+
+  /**
+   * Replace the current tree node selection with the given set of nodes. <P> 
+   * 
+   * Does not notify any associated node viewer of the change.
+   * 
+   * @param names
+   *   The fully resolved names of the nodes to select.
+   */
+  public void 
+  updateSelection
+  ( 
+   TreeSet<String> names
+  ) 
+  {
+    pSelected.clear();
+    pSelected.addAll(names);
+
+    updateNodeTree(getExpandedPaths());
+  }
+  
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -174,12 +243,15 @@ class JNodeBrowserPanel
   }
 
   /**
-   * Update the node tree componenents based on the given set of paths.
+   * Update the node tree componenents based on the given set of expanded paths. <P> 
+   * 
+   * @param expanded
+   *   The paths of the expanded tree nodes.
    */ 
   private void 
   updateNodeTree
   (
-   TreeSet<String> paths
+   TreeSet<String> expanded
   )
   {
     if(pTree == null) 
@@ -193,6 +265,9 @@ class JNodeBrowserPanel
       if(!master.beginPanelOp()) 
 	return;
       try { 
+	TreeSet<String> paths = new TreeSet<String>(expanded);
+	paths.addAll(pSelected);
+
 	comp = master.getNodeMgrClient().updatePaths(pAuthor, pView, paths); 
       }
       catch(PipelineException ex) {
@@ -207,7 +282,7 @@ class JNodeBrowserPanel
     /* rebuild the tree model based on the updated node tree */ 
     {
       DefaultMutableTreeNode root = new DefaultMutableTreeNode(new NodeTreeComp());
-      rebuildTreeModel(comp, root);
+      rebuildTreeModel("", comp, root);
       
       DefaultTreeModel model = (DefaultTreeModel) pTree.getModel();
       model.setRoot(root);
@@ -268,16 +343,24 @@ class JNodeBrowserPanel
   private void 
   rebuildTreeModel
   (
+   String path,
    NodeTreeComp cnode, 
    DefaultMutableTreeNode tnode
   )
   { 
     for(NodeTreeComp comp : cnode.values()) {
+      String cpath = (path + "/" + comp);
+      switch(comp.getState()) {
+      case OtherPending:
+      case OtherWorking:
+	pSelected.remove(cpath);
+      }
+
       DefaultMutableTreeNode child = 
 	new DefaultMutableTreeNode(comp, (comp.getState() == NodeTreeComp.State.Branch));
       tnode.add(child);
 
-      rebuildTreeModel(comp, child);
+      rebuildTreeModel(cpath, comp, child);
     }
   }
 
@@ -361,6 +444,7 @@ class JNodeBrowserPanel
    MouseEvent e
   ) 
   {
+    int mods = e.getModifiersEx();
     TreePath tpath = pTree.getPathForLocation(e.getX(), e.getY());
     if(tpath != null) {
       DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) tpath.getLastPathComponent();
@@ -371,27 +455,75 @@ class JNodeBrowserPanel
       case Working:
       case CheckedIn: 
 	{
-	  UIMaster master = UIMaster.getInstance();
-	    
-	  if(pGroupID == 0) {
-	    Toolkit.getDefaultToolkit().beep();
-	    return;
-	  }
-
-	  JNodeViewerPanel viewer = master.getNodeViewer(pGroupID);
-	  if(viewer == null) {
-	    Toolkit.getDefaultToolkit().beep();
-	    return;
-	  }
-
-	  System.out.print("Selected Node: " + comp.getState() + 
-			   "  (" + e.getClickCount() + " clicks)\n" + 
-			   "  Author = " + pAuthor + "\n" +
-			   "    View = " + pView + "\n" + 
-			   "    Name = " + treePathToNodeName(tpath) + "\n");
+	  int on1  = (MouseEvent.BUTTON1_DOWN_MASK);
 	  
-	  viewer.setFocus(pAuthor, pView, treePathToNodeName(tpath));
-	  viewer.updateManagerTitlePanel();
+	  int off1 = (MouseEvent.BUTTON2_DOWN_MASK | 
+		      MouseEvent.BUTTON3_DOWN_MASK | 
+		      MouseEvent.SHIFT_DOWN_MASK |
+		      MouseEvent.ALT_DOWN_MASK |
+		      MouseEvent.CTRL_DOWN_MASK);
+
+
+	  int on2  = (MouseEvent.BUTTON1_DOWN_MASK |
+		      MouseEvent.SHIFT_DOWN_MASK);
+	  
+	  int off2 = (MouseEvent.BUTTON2_DOWN_MASK | 
+		      MouseEvent.BUTTON3_DOWN_MASK | 
+		      MouseEvent.SHIFT_DOWN_MASK |
+		      MouseEvent.CTRL_DOWN_MASK);
+	  
+	  
+	  int on3  = (MouseEvent.BUTTON1_DOWN_MASK |
+		      MouseEvent.SHIFT_DOWN_MASK |
+		      MouseEvent.CTRL_DOWN_MASK);
+	  
+	  int off3 = (MouseEvent.BUTTON2_DOWN_MASK | 
+		      MouseEvent.BUTTON3_DOWN_MASK | 
+		      MouseEvent.ALT_DOWN_MASK);
+
+	  
+	  String sname = treePathToNodeName(tpath);
+
+	  /* BUTTON1: replace selection */ 
+	  if((mods & (on1 | off1)) == on1) {
+	    pSelected.clear();
+	    pSelected.add(sname);
+	    repaint();
+	  }
+	  
+	  /* BUTTON1+SHIFT: toggle selection */ 
+	  else if((mods & (on2 | off2)) == on2) {
+	    if(pSelected.contains(sname))
+	      pSelected.remove(sname);
+	    else 
+	      pSelected.add(sname);
+	    repaint();
+	  }
+	    
+	  /* BUTTON1+SHIFT+CTRL: add to the selection */ 
+	  else if((mods & (on3 | off3)) == on3) {
+	    pSelected.add(sname);
+	    repaint();
+	  }
+
+	  /* update any associated node viewer */ 
+	  {
+	    UIMaster master = UIMaster.getInstance();
+	    
+	    if(pGroupID > 0) {
+	      JNodeViewerPanel viewer = master.getNodeViewer(pGroupID);
+	      if(viewer != null) {
+		viewer.setRoots(pAuthor, pView, pSelected);
+		viewer.updateManagerTitlePanel();
+		return;
+	      }
+	    }
+	    
+	    clearSelection();
+	    repaint();
+
+	    Toolkit.getDefaultToolkit().beep();
+	  }
 	}
       }
     }
@@ -418,9 +550,12 @@ class JNodeBrowserPanel
   {
     super.toGlue(encoder);
     
-    TreeSet<String> paths = getExpandedPaths();
-    if(!paths.isEmpty()) 
-      encoder.encode("ExpandedPaths", paths);
+    TreeSet<String> expanded = getExpandedPaths();
+    if(!expanded.isEmpty()) 
+      encoder.encode("ExpandedPaths", expanded);
+
+    if(!pSelected.isEmpty()) 
+      encoder.encode("Selected", pSelected);
   }
 
   public void 
@@ -432,9 +567,14 @@ class JNodeBrowserPanel
   {
     super.fromGlue(decoder);
 
-    TreeSet<String> paths = (TreeSet<String>) decoder.decode("ExpandedPaths");
-    if(paths != null) 
-      updateNodeTree(paths);
+    TreeSet<String> selected = (TreeSet<String>) decoder.decode("Selected");
+    pSelected.clear();
+    if(selected != null) 
+      pSelected.addAll(selected);
+
+    TreeSet<String> expanded = (TreeSet<String>) decoder.decode("ExpandedPaths");
+    if(expanded != null) 
+      updateNodeTree(expanded);
   }
   
 
@@ -454,5 +594,8 @@ class JNodeBrowserPanel
    */ 
   private JTree pTree;
 
-
+  /**
+   * The fully resolved names of the selected nodes.
+   */ 
+  private TreeSet<String> pSelected;
 }
