@@ -785,6 +785,7 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/Makefile
   src/java/us/temerity/pipeline/PackageInfo.java
   src/java/us/temerity/pipeline/bootstrap/BootStrapLoader.java.in
+  src/java/us/temerity/pipeline/laf/scripts/filter-fonts
   src/java/us/temerity/pipeline/laf/scripts/filter-textures
   src/java/us/temerity/pipeline/native/Makefile
   src/java/us/temerity/pipeline/plugin/Makefile

@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.4 2004/05/05 21:01:03 jim Exp $
+// $Id: UIMaster.java,v 1.5 2004/05/06 11:21:57 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -400,7 +400,7 @@ class UIMaster
 
 	  /* progress bar */ 
 	  {
-	    JProgressBar bar = new JProgressBar(JProgressBar.HORIZONTAL, 0, 141);
+	    JProgressBar bar = new JProgressBar(JProgressBar.HORIZONTAL, 0, 143);
 	    pSplashProgress = bar;
 
 	    bar.setValue(1);
@@ -447,23 +447,31 @@ class UIMaster
 	for(OverallNodeState nstate : OverallNodeState.all()) {
 	  for(OverallQueueState qstate : OverallQueueState.all()) {
 	    for(SelectionMode mode : SelectionMode.all()) {
-	      mgr.verify(nstate + "-" + qstate + "-" + mode);
+	      mgr.verifyTexture(nstate + "-" + qstate + "-" + mode);
 	      update();
 	    }
 	  }
 	}
 
 	for(SelectionMode mode : SelectionMode.all()) {
-	  mgr.verify("Blank-" + mode);
+	  mgr.verifyTexture("Blank-" + mode);
 	  update();
 
-	  mgr.verify("Collapsed-" + mode);
+	  mgr.verifyTexture("Collapsed-" + mode);
 	  update();
 	}
 
-	mgr.verifySimple("White");
-	mgr.verifySimple("Yellow");
-	mgr.verifySimple("Grey");
+	{
+	  mgr.registerFont("CharterBTRoman", new CharterBTRomanFontGeometry());
+	  mgr.verifyFontTextures("CharterBTRoman");
+	  pCnt += 10;
+	  SwingUtilities.invokeLater(new UpdateStartupProgress(pCnt));
+	}
+
+	mgr.verifySimpleTexture("White");
+	mgr.verifySimpleTexture("Yellow");
+	mgr.verifySimpleTexture("Grey");
+	update();
       }
       catch(IOException ex) {
 	Logs.tex.severe("Unable to load textures!\n" + 

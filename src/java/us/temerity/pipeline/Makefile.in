@@ -290,13 +290,14 @@ all: Makefile $(API_JAR)
 	$(MAKE) -C plugin $@
 	$(MAKE) $(VAULT) bootstrap-jar
 
-$(ALL_JAR): java-all textures
+$(ALL_JAR): java-all textures fonts
 	(cd ../../..; \
          $(JAR) cvf us/temerity/pipeline/$(ALL_JAR) \
                     us/temerity/pipeline/*.class \
                     us/temerity/pipeline/glue/*.class \
                     us/temerity/pipeline/laf/LookAndFeelLoader.class \
                     us/temerity/pipeline/laf/textures \
+                    us/temerity/pipeline/laf/fonts \
                     us/temerity/pipeline/core/*.class \
                     us/temerity/pipeline/message/*.class \
                     us/temerity/pipeline/ui/*.class)
@@ -305,13 +306,14 @@ $(ALL_JAR): java-all textures
                     us/temerity/pipeline/laf/*.xml us/temerity/pipeline/laf/*.png)
 
 
-$(API_JAR): java-all textures
+$(API_JAR): java-all textures fonts
 	(cd ../../..; \
          $(JAR) cvf us/temerity/pipeline/$(API_JAR) \
                     us/temerity/pipeline/*.class \
                     us/temerity/pipeline/glue/*.class \
                     us/temerity/pipeline/laf/LookAndFeelLoader.class \
                     us/temerity/pipeline/laf/textures \
+                    us/temerity/pipeline/laf/fonts \
                     us/temerity/pipeline/message/*.class)
 	(bdir=`pwd`; cd $(srcdir)/../../..; \
          $(JAR) uvf $$bdir/$(API_JAR) \
@@ -362,6 +364,11 @@ glue/%.java: glue/%.jj
 
 textures:
 	$(BASH) laf/scripts/filter-textures $(srcdir)/laf/maya/synth/images
+
+fonts: CharterBTRoman
+
+CharterBTRoman:
+	$(BASH) laf/scripts/filter-fonts $@ $(srcdir)/laf/maya/synth/images
 
 
 #--------------------------------------------------------------------------------------------#
