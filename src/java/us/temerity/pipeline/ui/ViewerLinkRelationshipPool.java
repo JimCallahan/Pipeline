@@ -1,4 +1,4 @@
-// $Id: ViewerLinkRelationshipPool.java,v 1.1 2004/05/18 00:35:05 jim Exp $
+// $Id: ViewerLinkRelationshipPool.java,v 1.2 2004/05/19 19:04:17 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -161,17 +161,6 @@ class ViewerLinkRelationshipPool
     }
 
     pPrevious = null;
-
-    // DEBUG 
-    {
-      System.out.print("ViewerLinkPool: \n" + 
- 		       "   Active = ");
-      for(LinkRelationship rel : pActive.keySet()) 
-	System.out.print(rel + "[" + pActive.get(rel).size() + "]  ");
-
-      System.out.print("\n" + 
-		       "  Reserve = " + pReserve.size() + "\n");
-    }
   }
 
 
