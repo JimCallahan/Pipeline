@@ -2,6 +2,14 @@
 imagesdir = @ROOT_INST_DIR@/share/docs/javadoc/images
 
 images_DATA = \
+  CoordSys.gif \
+  CoordSysIdentity.gif \
+  CoordSysMultCoordSys.gif \
+  CoordSysNScale.gif \
+  CoordSysTranslate.gif \
+  CoordSysUScale.gif \
+  CoordSysXformPoint.gif \
+  CoordSysXformVector.gif \
   Matrix33Array.gif \
   Matrix33ArrayIndex.gif \
   Matrix33Identity.gif \
