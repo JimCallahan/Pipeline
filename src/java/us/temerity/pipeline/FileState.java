@@ -1,4 +1,4 @@
-// $Id: FileState.java,v 1.2 2004/03/09 09:42:28 jim Exp $
+// $Id: FileState.java,v 1.3 2004/03/10 11:46:07 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -56,7 +56,8 @@ enum FileState
    * The working file and latest checked-in file associated with the node both exist and
    * are different from each other, yet these differences are entirely due to changes to the 
    * working file since the time it was checked-out.  The <CODE>VersionState</CODE> must 
-   * be {@link VersionState#Identical Identical}.
+   * be either {@link VersionState#Identical Identical} or 
+   * {@link VersionState#NeedsCheckOut NeedsCheckOut}.
    */
   Modified, 
 
@@ -64,10 +65,20 @@ enum FileState
    * The working file exists and is part of a file sequence that was added or had its 
    * frame range expanded since the time that the working version was checked-out.  There
    * is no corresponding file associated with the checked-in version upon which the 
-   * working version is based.  The <CODE>VersionState</CODE> must be 
-   * {@link VersionState#Identical Identical}.
+   * working version is based.  The <CODE>VersionState</CODE> must be either
+   * {@link VersionState#Identical Identical} or 
+   * {@link VersionState#NeedsCheckOut NeedsCheckOut}.
    */
   Added, 
+
+  /** 
+   * The working file exists and the checked-in file upon which the working file is based 
+   * exists but a new checked-in version has been created who's frame range no longer 
+   * includes the file. If the file is part of a secondary file sequence, then the 
+   * entire sequence may have been removed from the new checked-in version.
+   * The <CODE>VersionState</CODE> must be {@link VersionState#NeedsCheckOut NeedsCheckOut}.
+   */
+  Obsolete, 
 
   /**
    * The working file and latest checked-in file associated with the node both exist and
