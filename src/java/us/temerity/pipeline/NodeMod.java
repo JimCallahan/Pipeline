@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.3 2004/03/03 07:48:22 jim Exp $
+// $Id: NodeMod.java,v 1.4 2004/03/07 02:41:26 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -25,9 +25,8 @@ class NodeMod
   public 
   NodeMod()
   {
-    pSourceModDepends = new TreeMap<String,DependMod>();
-
-    pTargetNames = new TreeSet<String>();
+    pSources = new TreeMap<String,DependMod>();
+    updateLastCriticalMod();
   }
 
   /**
@@ -100,9 +99,7 @@ class NodeMod
 	  toolset, editor, 
 	  action, jobReqs, ignoreOverflow, isSerial, batchSize);
     
-    pSourceModDepends = new TreeMap<String,DependMod>();
-
-    pTargetNames = new TreeSet<String>();
+    pSources = new TreeMap<String,DependMod>();
 
     updateLastCriticalMod();
   }
@@ -123,13 +120,37 @@ class NodeMod
 
     pWorkingID = vsn.getVersionID();
 
-    pSourceModDepends = new TreeMap<String,DependMod>();
+    pSources = new TreeMap<String,DependMod>();
     for(DependVersion dep : vsn.getSources()) 
-      pSourceModDepends.put(dep.getName(), new DependMod(dep));
-
-    pTargetNames = new TreeSet<String>();
+      pSources.put(dep.getName(), new DependMod(dep));
 
     updateLastCriticalMod();
+  }
+
+
+  /** 
+   * Copy constructor. 
+   * 
+   * @param mod [<B>in</B>]
+   *   The <CODE>NodeMod</CODE> to copy.
+   */ 
+  public 
+  NodeMod
+  (
+   NodeMod mod
+  ) 
+  {
+    super(mod);
+
+    pWorkingID = mod.getWorkingID();
+    pIsFrozen  = mod.isFrozen();
+
+    pSources = new TreeMap<String,DependMod>();
+    for(DependMod dep : mod.getSources()) 
+      pSources.put(dep.getName(), new DependMod(dep));
+
+    pLastMod         = mod.getLastModification();
+    pLastCriticalMod = mod.getLastCriticalModification();
   }
 
 
@@ -151,7 +172,44 @@ class NodeMod
     return new VersionID(pWorkingID);
   }
   
-  
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Are the node properties, upstream connections and files associated with this working 
+   * version read-only?
+   */ 
+  public boolean 
+  isFrozen()
+  {
+    return pIsFrozen;
+  }
+
+  /** 
+   * Make the node properties, upstream connections and files associated with this working 
+   * version read-only.
+   */ 
+  public void 
+  freeze()
+  {
+    pIsFrozen = true;
+    updateLastMod();
+  }
+
+  /** 
+   * Make the node properties, upstream connections and files associated with this working 
+   * version modifiable.
+   */ 
+  public void 
+  unfreeze()
+  {
+    pIsFrozen = false;
+    updateLastMod();
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
   /** 
    * Get the timestamp of the last modification of this working version.
    */
@@ -210,6 +268,10 @@ class NodeMod
     if(pWorkingID != null) 
       throw new IllegalArgumentException
 	("Only initial working versions can be renamed!");
+
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("Frozen working versions cannot be renamed!");
 
     if(name == null) 
       throw new IllegalArgumentException("The new name cannot be (null)!");
@@ -300,6 +362,10 @@ class NodeMod
    FrameRange range
   ) 
   {
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("Frozen working versions cannot have their frame ranges adjusted!");
+
     FrameRange orange = pPrimarySeq.getFrameRange();
     if(orange == null) 
       throw new IllegalArgumentException
@@ -366,6 +432,10 @@ class NodeMod
    FileSeq fseq
   ) 
   {
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("The file sequences associated with frozen working versions cannot be modified!");
+
     if(fseq == null)
       throw new IllegalArgumentException
 	("The new secondary file sequence cannot be (null)!");
@@ -403,6 +473,10 @@ class NodeMod
    FileSeq fseq
   ) 
   {
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("The file sequences associated with frozen working versions cannot be modified!");
+
     if(!pSecondarySeqs.contains(fseq)) 
       throw new IllegalArgumentException
 	("The secondary file sequence (" + fseq + ") does not exist for this " + 
@@ -430,6 +504,10 @@ class NodeMod
    String name
   ) 
   {
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("Frozen working versions cannot have their editor modified!");
+
     pEditor = name;
     updateLastMod();
   }
@@ -452,6 +530,10 @@ class NodeMod
    BaseAction action 
   ) 
   {
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("Frozen working versions cannot have their regeneration action modified!");
+
     if(action != null) {
       try {
 	pAction = (BaseAction) action.clone();
@@ -486,6 +568,10 @@ class NodeMod
    JobReqs jobReqs
   ) 
   {
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("Frozen working versions cannot have their job requirements modified!");
+
     if(pAction == null) 
       throw new IllegalArgumentException
 	("Job requirements cannot be set for nodes without regeneration actions!");
@@ -514,6 +600,10 @@ class NodeMod
    boolean tf
   ) 
   {
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("IgnoreOverflow flag cannot be set for frozen working versions!");
+
     if(pAction == null) 
       throw new IllegalArgumentException
 	("IgnoreOverflow flag cannot be set for nodes without regeneration actions!");
@@ -533,6 +623,10 @@ class NodeMod
    boolean tf
   ) 
   {
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("IsSerial flag cannot be set for frozen working versions!");
+
     if(pAction == null) 
       throw new IllegalArgumentException
 	("IsSerial flag cannot be set for nodes without regeneration actions!");
@@ -551,6 +645,10 @@ class NodeMod
    int size
   ) 
   {
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("The batch size cannot be set for frozen working versions!");
+
     if(pAction == null) 
       throw new IllegalArgumentException
 	("The batch size cannot be set for nodes without regeneration actions!");
@@ -571,10 +669,10 @@ class NodeMod
   /** 
    * Get the fully resolved names of the upstream nodes.
    */
-  public ArrayList<String>
+  public Set<String>
   getSourceNames() 
   {
-    return new ArrayList<String>(pSourceModDepends.keySet());
+    return Collections.unmodifiableSet(pSources.keySet());
   }
 
   /** 
@@ -596,19 +694,16 @@ class NodeMod
     if(name == null) 
       throw new IllegalArgumentException("The upstream node name cannot be (null)!");
 
-    return new DependMod(pSourceModDepends.get(name));
+    return new DependMod(pSources.get(name));
   }
 
   /** 
    * Get the dependency relationship information for all of the upstream nodes.
    */
-  public ArrayList<DependMod>
+  public Collection<DependMod>
   getSources() 
   {
-    ArrayList<DependMod> deps = new ArrayList<DependMod>();
-    for(DependMod dep : pSourceModDepends.values()) 
-      deps.add(new DependMod(dep));
-    return deps;
+    return Collections.unmodifiableCollection(pSources.values());
   }
 
   /** 
@@ -623,7 +718,11 @@ class NodeMod
    DependMod dep
   ) 
   {
-    pSourceModDepends.put(dep.getName(), new DependMod(dep));
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("Frozen working versions cannot have their node connections modified!");
+
+    pSources.put(dep.getName(), new DependMod(dep));
 
     updateLastCriticalMod();
   }
@@ -640,13 +739,17 @@ class NodeMod
    String name
   ) 
   {
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("Frozen working versions cannot have their node connections modified!");
+
     if(name == null) 
       throw new IllegalArgumentException("The upstream node name cannot be (null)!");
 
-    if(!pSourceModDepends.containsKey(name)) 
+    if(!pSources.containsKey(name)) 
       throw new IllegalArgumentException("No upstream node named (" + name + ") exists!");
 
-    pSourceModDepends.remove(name);
+    pSources.remove(name);
 
     updateLastCriticalMod();
   }
@@ -657,74 +760,129 @@ class NodeMod
   public void
   removeAllSources() 
   {
-    pSourceModDepends.clear();
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("Frozen working versions cannot have their node connections modified!");
+
+    pSources.clear();
 
     updateLastCriticalMod();
   }
 
 
   /*----------------------------------------------------------------------------------------*/
-  
+  /*   O B J E C T   O V E R R I D E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
   /** 
-   * Get the fully resolved names of the downstream nodes.
-   */
-  public ArrayList<String>
-  getTargetNames() 
-  {
-    return new ArrayList<String>(pTargetNames);
-  }
-    
-  /** 
-   * Add the given node to the set of downstream nodes.
+   * Indicates whether some other object is "equal to" this one.
    * 
-   * @param name [<B>in</B>] 
-   *   The fully resolved node name of the downstream node.
+   * @param obj 
+   *   The reference object with which to compare.
    */
-  public void
-  addTarget
+  public boolean
+  equals
   (
-   String name
-  ) 
+   Object obj
+  )
   {
-    pTargetNames.add(name);
-
-    updateLastCriticalMod();
+    if(obj != null) {
+      if(obj instanceof NodeMod) {
+	NodeMod mod = (NodeMod) obj;
+	return (super.equals(obj) && 
+// 		(((pWorkingID == null) && (mod.pWorkingID == null)) ||  
+// 		 pWorkingID.equals(mod.pWorkingID)) &&                  
+		pSources.equals(mod.pSources));
+      }
+      else if(obj instanceof NodeVersion) {
+	NodeVersion vsn = (NodeVersion) obj;
+	return (super.equals(obj) && 
+		getSources().equals(vsn.getSources()));
+      }
+    }
+    return false;
   }
 
-  /** 
-   * Remove given node from the set of downstream nodes.
-   * 
-   * @param name [<B>in</B>] 
-   *   The fully resolved node name of the downstream node.
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C L O N E A B L E                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Return a deep copy of this object.
    */
-  public void
-  removeTarget
-  (
-   String name
-  ) 
+  public Object 
+  clone()
+    throws CloneNotSupportedException
   {
-    if(name == null) 
-      throw new IllegalArgumentException("The downstream node name cannot be (null)!");
-
-    if(!pTargetNames.contains(name)) 
-      throw new IllegalArgumentException("No downstream node named (" + name + ") exists!");
-
-    pTargetNames.remove(name);
-
-    updateLastCriticalMod();
+    return new NodeMod(this);
   }
-  
-  /** 
-   * Remove the dependency relationship information for all downstream nodes.
-   */
-  public void
-  removeAllTargets()
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   G L U E A B L E                                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  public void 
+  toGlue
+  ( 
+   GlueEncoder encoder   
+  ) 
+    throws GlueException
   {
-    pTargetNames.clear();
+    super.toGlue(encoder);
+
+    if(pWorkingID != null) 
+      encoder.encode("WorkingID", pWorkingID);
+
+    encoder.encode("IsFrozen", pIsFrozen);
     
-    updateLastCriticalMod();
+    encoder.encode("LastModification", pLastMod.getTime());
+    encoder.encode("LastCriticalModification", pLastCriticalMod.getTime());
+    
+    if(!pSources.isEmpty())
+      encoder.encode("Sources", pSources);
   }
-  
+
+
+  public void 
+  fromGlue
+  (
+   GlueDecoder decoder 
+  ) 
+    throws GlueException
+  {
+    super.fromGlue(decoder);
+
+    pWorkingID = (VersionID) decoder.decode("WorkingID");
+
+    Boolean frozen = (Boolean) decoder.decode("IsFrozen");
+    if(frozen == null)
+      throw new GlueException("The \"IsFrozen\" flag was missing!");
+    pIsFrozen = frozen;
+
+    {
+      Long stamp = (Long) decoder.decode("LastModification");
+      if(stamp == null) 
+	throw new GlueException("The \"LastModification\" was missing!");
+      pLastMod = new Date(stamp);
+    }
+
+    {
+      Long stamp = (Long) decoder.decode("LastCriticalModification");
+      if(stamp == null) 
+	throw new GlueException("The \"LastCriticalModification\" was missing!");
+      pLastCriticalMod = new Date(stamp);
+    }
+    
+    TreeMap<String,DependMod> sources = 
+      (TreeMap<String,DependMod>) decoder.decode("Sources"); 
+    if(sources != null) 
+      pSources = sources;
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -746,6 +904,13 @@ class NodeMod
    */ 
   private VersionID  pWorkingID;       
 
+  /**
+   * Has this working version been made read-only?  The node properties and upstream node 
+   * connections of a frozen working version cannot be modified.  In addition, all working
+   * files are replaced by symbolic links to the checked-in files upon which this working
+   * version is based.  For this reason initial working versions cannot be frozen.
+   */ 
+  private boolean pIsFrozen;
 
   /** 
    * The timestamp of the last modification of any field of this instance.  
@@ -763,12 +928,8 @@ class NodeMod
    * A table of dependency information associated with all nodes upstream of this 
    * node indexed by the fully resolved names of the upstream nodes.
    */ 
-  private TreeMap<String,DependMod>  pSourceModDepends;
+  private TreeMap<String,DependMod>  pSources;
  
-  /**
-   * The fully resolved names of all downstream nodes which depend upon this node.
-   */ 
-  private TreeSet<String>  pTargetNames;
  
 }
 
