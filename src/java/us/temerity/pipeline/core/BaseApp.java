@@ -1,8 +1,9 @@
-// $Id: BaseApp.java,v 1.1 2004/03/22 03:12:34 jim Exp $
+// $Id: BaseApp.java,v 1.2 2004/03/23 03:35:28 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.bootstrap.BootApp;
 
 import java.io.*; 
 import java.util.*;
