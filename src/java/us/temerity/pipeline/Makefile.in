@@ -375,6 +375,7 @@ PHONY: installdirs
 installdirs:
 	$(mkinstalldirs) $(DESTDIR)$(ROOT_INST_DIR)/lib
 	$(mkinstalldirs) $(DESTDIR)$(ROOT_INST_DIR)/plconfig
+	$(mkinstalldirs) $(DESTDIR)$(ROOT_INST_DIR)/logs
 	$(mkinstalldirs) $(DESTDIR)$(PRODDIR)/working
 	$(mkinstalldirs) $(DESTDIR)$(PRODDIR)/repository
 	$(mkinstalldirs) $(DESTDIR)$(PRODDIR)/checksum

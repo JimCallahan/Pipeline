@@ -44,6 +44,7 @@ The core features of Pipeline include:
 
 %defattr(775,@PIPELINE_USER@,@PIPELINE_GROUP@)
 %dir @PRODDIR@/working
+%dir @ROOT_INST_DIR@/logs
 
 %defattr(755,@PIPELINE_USER@,@PIPELINE_GROUP@)
 %dir @PRODDIR@/repository
