@@ -1,4 +1,4 @@
-// $Id: JobMgrControlClient.java,v 1.11 2005/02/07 19:00:39 jim Exp $
+// $Id: JobMgrControlClient.java,v 1.12 2005/02/07 20:26:44 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -174,7 +174,7 @@ class JobMgrControlClient
    *   The job to execute.
    * 
    * @throws PipelineException 
-   *   If unable to start the job.
+   *   If unable to contact the job server. 
    */ 
   public synchronized void
   jobStart
