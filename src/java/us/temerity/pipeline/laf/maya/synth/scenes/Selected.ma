@@ -1,6 +1,6 @@
 //Maya ASCII 5.0 scene
-//Name: selected.ma
-//Last modified: Mon, Aug 11, 2003 07:31:08 PM
+//Name: Selected.ma
+//Last modified: Thu, May 06, 2004 05:32:07 PM
 requires maya "5.0";
 currentUnit -l centimeter -a degree -t film;
 fileInfo "application" "maya";
@@ -21198,9 +21198,6 @@ createNode script -n "uiConfigurationScriptNode";
 		+ "\t\t\tpanel -e -l $label $panelName;\n"
 		+ "\t\t}\n"
 		+ "\t}\n"
-		+ "\tif ($useSceneConfig) {\n"
-		+ "\t\tscriptedPanel -e -to $panelName;\n"
-		+ "\t}\n"
 		+ "\t$panelName = `sceneUIReplacement -getNextScriptedPanel \"visorPanel\" \"Visor\"`;\n"
 		+ "\tif (\"\" == $panelName) {\n"
 		+ "\t\tif ($useSceneConfig) {\n"
@@ -21922,7 +21919,7 @@ select -ne :initialParticleSE;
 	setAttr ".ro" yes;
 select -ne :defaultRenderGlobals;
 	addAttr -ci true -sn "currentRenderer" -ln "currentRenderer" -dt "string";
-	setAttr ".outf" 3;
+	setAttr ".outf" 5;
 	setAttr ".top" 63;
 	setAttr ".rght" 63;
 	setAttr ".an" yes;
@@ -22355,4 +22352,4 @@ connectAttr "pointLightShape1.ltd" ":lightList1.l" -na;
 connectAttr "ambientLightShape1.ltd" ":lightList1.l" -na;
 connectAttr "pointLight1.iog" ":defaultLightSet.dsm" -na;
 connectAttr "ambientLight1.iog" ":defaultLightSet.dsm" -na;
-// End of selected.ma
+// End of Selected.ma

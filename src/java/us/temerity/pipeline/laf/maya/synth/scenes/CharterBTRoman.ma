@@ -1,6 +1,6 @@
 //Maya ASCII 5.0 scene
 //Name: CharterBTRoman.ma
-//Last modified: Wed, May 05, 2004 02:07:56 PM
+//Last modified: Fri, May 07, 2004 08:24:58 AM
 requires maya "5.0";
 currentUnit -l centimeter -a degree -t film;
 fileInfo "application" "maya";
@@ -36665,7 +36665,7 @@ select -ne :initialParticleSE;
 	setAttr ".ro" yes;
 select -ne :defaultRenderGlobals;
 	addAttr -ci true -sn "currentRenderer" -ln "currentRenderer" -dt "string";
-	setAttr ".outf" 3;
+	setAttr ".outf" 5;
 	setAttr ".top" 127;
 	setAttr ".rght" 127;
 	setAttr ".an" yes;
