@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.20 2004/11/11 00:37:05 jim Exp $
+// $Id: BaseAction.java,v 1.21 2004/11/11 00:41:19 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -80,7 +80,6 @@ class BaseAction
   {
     super(action.pName, action.pVersionID, action.pDescription);
 
-//     pVersionID    = action.pVersionID; //???
     pSingleParams = action.pSingleParams;
     pSourceParams = action.pSourceParams; 
   }

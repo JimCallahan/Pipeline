@@ -1,4 +1,4 @@
-// $Id: BaseEditor.java,v 1.7 2004/10/28 15:55:23 jim Exp $
+// $Id: BaseEditor.java,v 1.8 2004/11/11 00:41:19 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -75,8 +75,7 @@ class BaseEditor
   {
     super(editor.pName, editor.pVersionID, editor.pDescription);
 
-    pVersionID = new VersionID(editor.pVersionID);
-    pProgram   = editor.pProgram;
+    pProgram = editor.pProgram;
   }
 
 
