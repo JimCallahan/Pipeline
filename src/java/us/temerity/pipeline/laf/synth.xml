@@ -262,6 +262,27 @@
 
 
 
+  <!--  H O T   K E Y   F I E L D  -->
+
+  <style id="HotKeyField">
+    <state value="DEFAULT">
+       <color value="#ffffff" type="TEXT_FOREGROUND"/>
+       <color value="#727272" type="TEXT_BACKGROUND"/>
+    </state>
+    <state value="FOCUSED">
+       <color value="#ffff00" type="TEXT_FOREGROUND"/>
+       <color value="#727272" type="TEXT_BACKGROUND"/>
+    </state>
+    <imagePainter path="EditableValuePanel.png"
+                  method="labelBackground"
+                  sourceInsets="3 3 3 3"/>
+    <insets top="2" bottom="2" right="8" left="8"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="HotKeyField" type="name" key="HotKeyField"/>
+
+
+
   <!--  T E X T   A R E A  -->
 
   <style id="TextArea">
