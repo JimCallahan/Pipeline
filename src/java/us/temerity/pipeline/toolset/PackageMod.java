@@ -1,4 +1,4 @@
-// $Id: PackageMod.java,v 1.1 2004/05/21 21:21:31 jim Exp $
+// $Id: PackageMod.java,v 1.2 2004/05/23 19:56:48 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -13,7 +13,7 @@ import java.util.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A modifiable version of a package. <P> 
+ * A modifiable version of a Toolset Package. <P> 
  */
 public
 class PackageMod
@@ -30,7 +30,7 @@ class PackageMod
   }
 
   /**
-   * Construct an empty modifiable package.
+   * Construct an empty modifiable Package.
    * 
    * @param name 
    *   The name of the package
@@ -45,10 +45,10 @@ class PackageMod
   }
   
   /** 
-   * Construct a new modifiable version based on a read-only version of the package.
+   * Construct a new modifiable version based on a read-only version of the Package.
    * 
    * @param vsn 
-   *   The read-only version of the package.
+   *   The read-only version of the Package.
    */ 
   public 
   PackageMod
@@ -75,11 +75,68 @@ class PackageMod
   }
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Evaluate the given <B>bash</B>(1) shell script and use the results to initialize the 
-   * environmental variable entries of the package.
+   * Set the value and policy of the environmental variable entry with the given name.
+   * 
+   * @param name
+   *   The name of the environmental variable.
+   * 
+   * @param value
+   *   The value of the environmental variable.
+   * 
+   * @param policy
+   *   The Package combine policy for this entry.
+   */ 
+  public void 
+  setEntry
+  (
+   String name, 
+   String value, 
+   Policy policy
+  ) 
+  {
+    pEntries.put(name, new Entry(name, value, policy));
+  }
+
+  /**
+   * Set the policy of an existing environmental variable entry with the given name.
+   * 
+   * @param name
+   *   The name of the environmental variable.
+   * 
+   * @param policy
+   *   The new Package combine policy for this entry.
+   */ 
+  public void 
+  setPolicy
+  (
+   String name, 
+   Policy policy
+  ) 
+  {
+    Entry e = pEntries.get(name);
+    if(e == null) 
+      throw new IllegalArgumentException
+	("No environmental variable entry exist with the name (" + name + ")!");
+    
+    pEntries.put(name, new Entry(name, e.getValue(), policy));
+  }
+  
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   O P S                                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Evaluate the given <B>bash</B>(1) shell script and use the results to set the 
+   * environmental variable entries of the Package.
    * 
    * @param script
    *   The <B>bash</B>(1) shell script to evaluate.
@@ -88,7 +145,7 @@ class PackageMod
    *   If unable to evaluate the shell script.
    */ 
   public void 
-  init
+  loadShellScript
   (
    File script
   ) 
@@ -157,7 +214,7 @@ class PackageMod
 	     name.equals("LD_LIBRARY_PATH") || 
 	     name.equals("MANPATH") || 
 	     name.equals("INFOPATH")) 
-	    policy = Policy.PathAppend;
+	    policy = Policy.AppendPath;
 
 	  pEntries.put(name, new Entry(name, value, policy));
 	}
@@ -165,59 +222,6 @@ class PackageMod
     }
   }
 
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   A C C E S S                                                                          */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Set the value and policy of the environmental variable entry with the given name.
-   * 
-   * @param name
-   *   The name of the environmental variable.
-   * 
-   * @param value
-   *   The value of the environmental variable.
-   * 
-   * @param policy
-   *   The package combine policy for this entry.
-   */ 
-  public void 
-  setEntry
-  (
-   String name, 
-   String value, 
-   Policy policy
-  ) 
-  {
-    pEntries.put(name, new Entry(name, value, policy));
-  }
-
-  /**
-   * Set the policy of an existing environmental variable entry with the given name.
-   * 
-   * @param name
-   *   The name of the environmental variable.
-   * 
-   * @param policy
-   *   The new package combine policy for this entry.
-   */ 
-  public void 
-  setPolicy
-  (
-   String name, 
-   Policy policy
-  ) 
-  {
-    Entry e = pEntries.get(name);
-    if(e == null) 
-      throw new IllegalArgumentException
-	("No environmental variable entry exist with the name (" + name + ")!");
-    
-    pEntries.put(name, new Entry(name, e.getValue(), policy));
-  }
-  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -239,6 +243,6 @@ class PackageMod
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID = 4473685551529032568L;
+  private static final long serialVersionUID = 8739270879338857579L;
 
 }

@@ -1,4 +1,4 @@
-// $Id: PackageCommon.java,v 1.1 2004/05/21 21:21:31 jim Exp $
+// $Id: PackageCommon.java,v 1.2 2004/05/23 19:56:48 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -30,10 +30,10 @@ class PackageCommon
   }
 
   /**
-   * Internal constructor used by subclasses to create an empty package.
+   * Internal constructor used by subclasses to create an empty Package.
    * 
    * @param name 
-   *   The name of the package.
+   *   The name of the Package.
    */ 
   protected
   PackageCommon
@@ -67,7 +67,7 @@ class PackageCommon
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the names of the environmental variables defined for this package.
+   * Get the names of the environmental variables defined for this Package.
    */ 
   public Set<String>
   getNames() 
@@ -94,7 +94,7 @@ class PackageCommon
   }
   
   /**
-   * Get the package combine policy for the environmental variable with the given name.
+   * Get the Package combine policy for the environmental variable with the given name.
    * 
    * @return 
    *   The policy or <CODE>null</CODE> if the variable is undefined.
@@ -191,39 +191,40 @@ class PackageCommon
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * The policy on how entries with the same name are resolved when packages are combined.
+   * The policy on how entries with the same name are resolved when Packages are combined.
    */ 
   public 
   enum Policy
   {
     /**
-     * The entry can only be defined by one package of the toolset.
+     * The entry must not be defined by any previous Package.
      */ 
     Exclusive, 
 
     /**
-     * The entry may be replaced by entry with the same name defined by subsequent packages.
+     * The entry will replace any existing entry with the same name defined by any 
+     * previous Package.
      */ 
-    Replace,
+    Override, 
 
     /**
      * The entry is a colon seperated path who's value is appended to the value of any 
      * previously defined entry with the same name.
      */ 
-    PathAppend, 
+    AppendPath,
     
     /**
      * The entry is a colon seperated path who's value is prepended to the value of any 
      * previously defined entry with the same name.
      */ 
-    PathPrepend;
+    PrependPath;
   }
 
 
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * An environmental variable package entry.
+   * An environmental variable Package entry.
    */ 
   public 
   class Entry
@@ -239,7 +240,7 @@ class PackageCommon
      *   The value of the environmental variable or <CODE>null</CODE>.
      * 
      * @param policy
-     *   The package combine policy for this entry.
+     *   The Package combine policy for this entry.
      */ 
     public 
     Entry
@@ -276,7 +277,7 @@ class PackageCommon
     }
 
     /**
-     * Get the package combine policy for this entry.
+     * Get the Package combine policy for this entry.
      */ 
     public Policy
     getPolicy() 
@@ -356,7 +357,7 @@ class PackageCommon
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID = 4473685551529032568L;
+  private static final long serialVersionUID = -6890472432252789088L;
 
   
   

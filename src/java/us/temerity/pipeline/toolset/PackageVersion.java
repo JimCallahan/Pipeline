@@ -1,4 +1,4 @@
-// $Id: PackageVersion.java,v 1.1 2004/05/21 21:21:31 jim Exp $
+// $Id: PackageVersion.java,v 1.2 2004/05/23 19:56:48 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -180,7 +180,7 @@ class PackageVersion
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID = 4473685551529032568L;
+  private static final long serialVersionUID = 1339532394037898044L;
 
   
   
