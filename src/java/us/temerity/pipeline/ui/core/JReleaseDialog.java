@@ -1,4 +1,4 @@
-// $Id: JReleaseDialog.java,v 1.4 2005/02/22 06:07:02 jim Exp $
+// $Id: JReleaseDialog.java,v 1.5 2005/02/22 18:19:30 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -46,12 +46,11 @@ class JReleaseDialog
         JPanel vpanel = (JPanel) comps[1];
 	body = (Box) comps[2];
 		
-	{
-	  JBooleanField field = 
-	    UIFactory.createTitledBooleanField(tpanel, "Remove Working Files:", sTSize, 
-					      vpanel, sVSize);
-	  pRemoveFilesField = field;
-	}
+	pRemoveFilesField = 
+	  UIFactory.createTitledBooleanField
+	  (tpanel, "Remove Working Files:", sTSize, 
+	   vpanel, sVSize, 
+	   "Whether to remove the working area files associated with the released nodes.");
 
 	UIFactory.addVerticalGlue(tpanel, vpanel);
       }
