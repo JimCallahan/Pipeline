@@ -1,4 +1,4 @@
-// $Id: ViewerNodePool.java,v 1.3 2004/05/16 19:18:27 jim Exp $
+// $Id: ViewerNodePool.java,v 1.4 2004/08/26 06:01:36 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -18,7 +18,7 @@ import javax.media.j3d.*;
  * {@link JNodeViewerPanel JNodeViewerPanel} instances use this class to maintain a set 
  * of <CODE>ViewerNode</CODE> instances which correspond to {@link NodeStatus NodeStatus} 
  * objects retrieved from <B>plmaster</B>(1).  When the <CODE>NodeStatus</CODE> of a node 
- * is updated, any existing associated <CODE>ViewerNode</CODE> simply have its appearance
+ * is updated, any existing associated <CODE>ViewerNode</CODE> simply has its appearance
  * updated to reflect the changes. <P>
  * 
  * When existing <CODE>ViewerNode</CODE> instances are no longer needed they are simply

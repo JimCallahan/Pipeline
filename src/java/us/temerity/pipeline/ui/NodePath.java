@@ -1,4 +1,4 @@
-// $Id: NodePath.java,v 1.3 2004/05/19 19:03:54 jim Exp $
+// $Id: NodePath.java,v 1.4 2004/08/26 06:00:56 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -8,11 +8,11 @@ import java.util.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   N O D E   I D                                                                          */
+/*   N O D E   P A T H                                                                      */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The path from the focus node of a {@link JNodeViewerPanel JNodeViewerPanel} to a 
+ * The path from the root node of a {@link JNodeViewerPanel JNodeViewerPanel} to a 
  * specific upstream/downstream node.
  */
 public
@@ -24,7 +24,7 @@ class NodePath
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Construct new root node path from the name of the focus node. <P> 
+   * Construct new root node path from the name of the root node. <P> 
    * 
    * @param name 
    *   The fully resolved node name.
@@ -93,7 +93,7 @@ class NodePath
   }
 
   /** 
-   * Get the names of the nodes on the path from the focus node to the current node.
+   * Get the names of the nodes on the path from the root node to the current node.
    */ 
   public Collection<String>
   getNames() 
@@ -202,10 +202,10 @@ class NodePath
   public int
   compareTo
   (
-   NodePath id
+   NodePath path
   )
   {
-    return pStringRep.compareTo(id.pStringRep);
+    return pStringRep.compareTo(path.pStringRep);
   }
 
 
@@ -248,20 +248,11 @@ class NodePath
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   S T A T I C   I N T E R N A L S                                                      */
-  /*----------------------------------------------------------------------------------------*/
-
-  // private static final long serialVersionUID = -5074009750552938470L;
-
-
-
-
-  /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * The names of the nodes on the path from the focus node to the current node.
+   * The names of the nodes on the path from the root node to the current node.
    */
   private LinkedList<String> pNames;
 
