@@ -1,37 +1,395 @@
-2002-05-28  Jim Callahan  <jim@salamander>
+2002-08-23  Jim Callahan  <jim@wrkstn17.rhinofx.com>
 
-	* config.h.in, configure.in, Core/src/BBoxGn.hh, Core/src/ByteSwap.cc, Core/src/ByteSwap.hh, Core/src/CoordSysGn.cc, Core/src/CoordSysGn.hh, Core/src/DebugIV.cc, Core/src/DebugIV.hh, Core/src/DictGn.hh, Core/src/ExtraMath.hh, Core/src/FB.cc, Core/src/FB.hh, Core/src/FramePattern.hh, Core/src/Frustum.cc, Core/src/Frustum.hh, Core/src/Makefile.am, Core/src/MatrixGn.cc, Core/src/MatrixGn.hh, Core/src/PointGn.hh, Core/src/SearchPath.cc, Core/src/SearchPath.hh, Core/src/SpaceAtomic.cc, Core/src/SpaceAtomic.hh, Core/src/SpaceBase.hh, Core/src/SpaceGn.cc, Core/src/SpaceGn.hh, Core/src/SpaceInterpGn.hh, Core/src/SpaceInterpMethod.hh, Core/src/Timer.hh, Core/src/TypeInfo.cc, Core/src/TypeInfo.hh, Core/src/VecBase.hh, Core/src/VecGn.hh, Core/src/VectorGn.hh, Core/tests/Makefile.am, Core/tests/TestBBoxGn.cc, Core/tests/TestDict.cc, Core/tests/TestFB.cc, Core/tests/TestFrustum.cc, Core/tests/TestFrustumClipping.cc, Core/tests/TestFrustumXforms.cc, Core/tests/TestMatrixGn.cc, Core/tests/TestPointGn.cc, Core/tests/TestSearchPath.cc, Core/tests/TestSpaceGn.cc, Core/tests/TestVecGn.cc, Core/tests/TestVectorGn.cc, README, Thread/src/Condition.hh, Thread/src/Locker.hh, Thread/src/Lock.hh, Thread/src/Makefile.am, Thread/src/Sentinel.hh, Thread/src/SeqCondition.hh, Thread/src/SeqJob.hh, Thread/src/SeqThreadMgr.hh, Thread/src/SmartPtr.hh, Thread/src/Sync.hh, Thread/tests/Makefile.am, Thread/tests/TestSeqThreadMgr.cc, Thread/tests/TestSmartPtr.cc, UI/docs/Freedom.html, UI/src/BoxGn.cc, UI/src/BoxGn.hh, UI/src/Container.cc, UI/src/Container.hh, UI/src/Event.hh, UI/src/Fill.cc, UI/src/Fill.hh, UI/src/Layer.cc, UI/src/Layer.hh, UI/src/Makefile.am, UI/src/Selector.hh, UI/src/SmoothPane.cc, UI/src/SmoothPane.hh, UI/src/SpanGn.cc, UI/src/SpanGn.hh, UI/src/Thing.cc, UI/src/Thing.hh, UI/src/WindowX11.cc, UI/src/WindowX11.hh, UI/src/WinSysX11.cc, UI/src/WinSysX11.hh, UI/tests/Makefile.am, UI/tests/TestBlend.cc, UI/tests/TestGlxWindow.cc, UI/tests/TestLayout.cc, UI/tests/TestViewport2.cc, UI/tests/TestViewport.cc:
+	* src/java/pipeline/ClientApp.java, src/java/pipeline/ClientOptsParser.jj, src/java/pipeline/FrameRange.java, src/java/pipeline/Makefile.in, src/java/pipeline/Pipeline.java, src/java/pipeline/ProcMod.java, src/java/pipeline/share/dbinit.sql.in, src/java/pipeline/share/logger.properties, src/java/pipeline/StatusRsp.java:
+	register and basic status commands work again using JDBC
+
+	* configure.in: fixed default PLROOT
+
+2002-08-22  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/java/pipeline/share/dbinit.sql.in:
+	added ProcMod, ProcModDepend, DataMod, DataModDepend tables
+
+	* src/java/pipeline/scripts/dbinit.in: added echoing of SQL commands
+
+	* src/java/pipeline/Pipeline.java: made class public...
+
+	* src/java/pipeline/tests/Makefile.in:
+	fixed order of tests so that GlueParser is run last, added clean-data target
+
+	* src/java/pipeline/DataDepend.java, src/java/pipeline/ProcDepend.java, src/java/pipeline/tests/Makefile.in, src/java/pipeline/tests/TestDataDependApp.java, src/java/pipeline/tests/TestDataNodeApp.java, src/java/pipeline/tests/TestDataVersionApp.java, src/java/pipeline/tests/TestGlueParserApp.java, src/java/pipeline/tests/TestLogMessageApp.java, src/java/pipeline/tests/TestProcDependApp.java, src/java/pipeline/tests/TestProcNodeApp.java, src/java/pipeline/tests/TestProcVersionApp.java, src/java/pipeline/tests/TestTimeStampApp.java, src/java/pipeline/tests/TestVersionIDApp.java:
+	initial revision
+
+	* src/java/pipeline/ClientOptsParser.jj, src/java/pipeline/DataMod.java, src/java/pipeline/DataNode.java, src/java/pipeline/DataVersion.java, src/java/pipeline/GlueParser.jj, src/java/pipeline/Pipeline.java, src/java/pipeline/ProcMod.java, src/java/pipeline/ProcVersion.java, src/java/pipeline/scripts/pipeline.in:
+	replaced Depend with ProcDepend/DataDepend
+
+	* configure.in, src/java/pipeline/Makefile.in: added pipeline tests
+
+	* src/java/pipeline/Depend.java: replaced by ProcDepend and DataDepend
+
+2002-08-21  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* configure.in, src/java/Makefile.in, src/java/pipeline/ClientOptsParser.jj, src/java/pipeline/Makefile.in, src/java/pipeline/PackageInfo.java.in, src/java/pipeline/scripts/dbinit.in, src/java/pipeline/share/postgresql.conf.in:
+	added configure option to control Pipeline server port number
+
+	* src/java/pipeline/share/postgresql.conf: obsolete
+
+	* src/Makefile.am: added java
+
+	* configure.in: fixed a few stale paths related to pipeline scripts
+
+	* src/java/Makefile.am, src/java/Makefile.in, src/java/pipeline/ArgsHandler.java, src/java/pipeline/CleanFormatter.java, src/java/pipeline/ClientApp.java, src/java/pipeline/ClientOptsParser.jj, src/java/pipeline/DataMod.java, src/java/pipeline/DataNode.java, src/java/pipeline/DataVersion.java, src/java/pipeline/Depend.java, src/java/pipeline/docs/pipeline.html, src/java/pipeline/docs/pipeline.lyx, src/java/pipeline/FailureRsp.java, src/java/pipeline/FrameRange.java, src/java/pipeline/Glueable.java, src/java/pipeline/Glue.java, src/java/pipeline/GlueParser.jj, src/java/pipeline/LogMessage.java, src/java/pipeline/Makefile.in, src/java/pipeline/PackageInfo.java.in, src/java/pipeline/Pipeline.java, src/java/pipeline/ProcMod.java, src/java/pipeline/ProcNode.java, src/java/pipeline/ProcVersion.java, src/java/pipeline/scripts/dbinit.in, src/java/pipeline/scripts/dbstart.in, src/java/pipeline/scripts/dbstop.in, src/java/pipeline/scripts/pipeline.in, src/java/pipeline/share/dbinit.sql.in, src/java/pipeline/share/logger.properties, src/java/pipeline/share/pg_hba.conf, src/java/pipeline/share/pg_ident.conf, src/java/pipeline/share/postgresql.conf, src/java/pipeline/SuccessRsp.java, src/java/pipeline/TimeStamp.java, src/java/pipeline/VersionID.java:
+	reorganized to fit PostgreSQL and the autoconf style build tree
+
+	* src/Makefile.am: renamed cpp to cxx
+
+	* configure.in: added Java/Pipeline support
+
+2002-08-20  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/.cvsignore, src/cxx/.cvsignore, src/cxx/Makefile.am, src/Makefile.am:
+	initial revision
+
+	* configure.in, Makefile.am:
+	reorganized tree to support SML/Java stuff in addition to C++
+
+	* config.guess, config.sub, install-sh, missing, mkinstalldirs, configure.in, config/config.guess, config/config.sub, config/install-sh, config/missing, config/mkinstalldirs:
+	moved config files to subdir
+
+2002-07-19  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/cxx/libs/vornoi/src/Kite2Gn.hh, src/cxx/libs/vornoi/src/KiteGn.hh, src/cxx/libs/vornoi/src/Mesh2Gn.hh, src/cxx/libs/vornoi/src/Tri2Gn.hh, src/cxx/libs/vornoi/src/TriGn.hh, src/cxx/libs/vornoi/src/Vert2Gn.hh, src/cxx/libs/vornoi/src/VertGn.hh:
+	renamed Vornoi component classes
+
+2002-07-08  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/cxx/apps/.cvsignore, src/cxx/apps/Makefile.am, src/cxx/libs/.cvsignore, src/cxx/libs/image/.cvsignore, src/cxx/libs/image/docs/.cvsignore, src/cxx/libs/image/docs/Makefile.am, src/cxx/libs/image/Makefile.am, src/cxx/libs/image/src/.cvsignore, src/cxx/libs/image/src/ImageGn.cc, src/cxx/libs/image/src/ImageGn.hh, src/cxx/libs/image/src/ImageInfo.hh, src/cxx/libs/image/src/Makefile.am, src/cxx/libs/image/src/TiffHelpers.hh, src/cxx/libs/image/src/TiffInfo.hh, src/cxx/libs/image/tests/.cvsignore, src/cxx/libs/image/tests/Makefile.am, src/cxx/libs/image/tests/TestImageGn.cc, src/cxx/libs/Makefile.am, src/cxx/libs/vornoi/tests/TestInterp.cc, src/cxx/utils/.cvsignore, src/cxx/utils/docs/.cvsignore, src/cxx/utils/docs/Makefile.am, src/cxx/utils/Makefile.am, src/cxx/utils/src/.cvsignore, src/cxx/utils/src/IVPlay.cc, src/cxx/utils/src/Makefile.am:
+	initial revision
+
+	* src/cxx/libs/vornoi/tests/TestMesh2Gn.cc: new init() interface
+
+	* src/cxx/libs/vornoi/tests/TestFlock2.cc: simplified model
+
+	* src/cxx/libs/vornoi/tests/Makefile.am:
+	added image library related stuff for TestInterp
+
+	* src/cxx/libs/vornoi/src/VertGn.hh: fixed header define, added value()
+
+	* src/cxx/libs/vornoi/src/TriGn.hh: fixed header define
+
+	* src/cxx/libs/vornoi/src/Mesh2Gn.hh:
+	interp works, but has a few minor artifacts left to address
+
+	* src/cxx/libs/vornoi/src/KiteGn.hh: added area related methods
+
+	* src/cxx/libs/vornoi/src/Flock2.hh: simplified model
+
+	* src/cxx/libs/core/src/SpaceFullGn.hh:
+	changed referenced to template parameter T to Cell
+
+	* src/cxx/libs/core/src/Math.hh: added include of AtomicTypes.hh
+
+	* src/cxx/libs/core/src/ColorGn.hh:
+	added red(), grn(), blu() static contstructors
+
+	* src/cxx/libs/core/src/BBoxGn.hh: added scale()
+
+	* acconfig.h, acinclude.m4, aclocal.m4, config.h.in, configure.in, Makefile.am, README:
+	reorganized into libs, apps and utils
+
+2002-07-05  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/cxx/libs/vornoi/src/Mesh2Gn.hh: old interp method (buggy)
+
+	* src/cxx/libs/vornoi/src/Mesh2Gn.hh: interp seems to work...
+
+2002-06-27  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/cxx/libs/vornoi/src/Flock2.hh, src/cxx/libs/vornoi/tests/TestFlock2.cc, src/cxx/libs/vornoi/tests/TestMesh2Gn.cc:
+	initial revision
+
+	* src/cxx/libs/vornoi/tests/TestVornoiMesh2Gn.cc: obsolete
+
+	* src/cxx/libs/vornoi/tests/Makefile.am: added TestFlock
+
+	* src/cxx/libs/vornoi/src/KiteGn.hh, src/cxx/libs/vornoi/src/Mesh2Gn.hh, src/cxx/libs/vornoi/src/TriGn.hh, src/cxx/libs/vornoi/src/VertGn.hh:
+	removed uneeded STL vector usage
+
+	* src/cxx/libs/core/src/ExtraMath.hh: fixed bug in smoothlerp()
+
+	* src/cxx/libs/core/src/DebugIV.cc, src/cxx/libs/core/src/DebugIV.hh:
+	comments, added plot()
+
+2002-06-25  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/cxx/libs/core/tests/TestSpaceTreeBBoxGn.cc: extra ProcInfo stuff
+
+	* src/cxx/libs/vornoi/src/KiteGn.hh, src/cxx/libs/vornoi/src/Mesh2Gn.hh, src/cxx/libs/vornoi/src/TriGn.hh, src/cxx/libs/vornoi/src/VertGn.hh, src/cxx/libs/vornoi/tests/TestVornoiMesh2Gn.cc:
+	reuses Tris and Kites, full STL containers
+
+	* src/cxx/libs/vornoi/src/VornoiKiteGn.hh, src/cxx/libs/vornoi/src/VornoiMesh2Gn.hh, src/cxx/libs/vornoi/src/VornoiTriGn.hh, src/cxx/libs/vornoi/src/VornoiVertGn.hh:
+	renamed
+
+2002-06-23  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/cxx/libs/vornoi/.cvsignore, src/cxx/libs/vornoi/docs/.cvsignore, src/cxx/libs/vornoi/docs/Makefile.am, src/cxx/libs/vornoi/Makefile.am, src/cxx/libs/vornoi/src/.cvsignore, src/cxx/libs/vornoi/src/Makefile.am, src/cxx/libs/vornoi/src/VornoiKiteGn.hh, src/cxx/libs/vornoi/src/VornoiMesh2Gn.hh, src/cxx/libs/vornoi/src/VornoiTriGn.hh, src/cxx/libs/vornoi/src/VornoiVertGn.hh, src/cxx/libs/vornoi/tests/.cvsignore, src/cxx/libs/vornoi/tests/Makefile.am, src/cxx/libs/vornoi/tests/TestVornoiMesh2Gn.cc:
+	initial revision
+
+	* src/cxx/libs/core/src/DelauneyDataGn.hh, src/cxx/libs/core/src/DelauneyMeshOpsGn.hh, src/cxx/libs/core/src/DelauneyPrinter.hh, src/cxx/libs/core/src/DelauneyViser.hh, src/cxx/libs/core/src/Makefile.am, src/cxx/libs/core/src/MeshEdgeGn.hh, src/cxx/libs/core/src/MeshFaceGn.hh, src/cxx/libs/core/src/MeshGn.hh, src/cxx/libs/core/src/MeshInitGn.hh, src/cxx/libs/core/src/MeshOpsGn.hh, src/cxx/libs/core/src/MeshPrinter.hh, src/cxx/libs/core/src/MeshRegionGn.hh, src/cxx/libs/core/src/MeshVertexGn.hh, src/cxx/libs/core/src/MeshViser.hh, src/cxx/libs/core/src/PrintMeshOpsGn.hh, src/cxx/libs/core/src/VisMeshOpsGn.hh, src/cxx/libs/core/src/VornoiEdgeGn.hh, src/cxx/libs/core/src/VornoiFaceGn.cc, src/cxx/libs/core/src/VornoiFaceGn.hh, src/cxx/libs/core/src/VornoiMeshGn.cc, src/cxx/libs/core/src/VornoiMeshGn.hh, src/cxx/libs/core/src/VornoiVertexGn.cc, src/cxx/libs/core/src/VornoiVertexGn.hh, src/cxx/libs/core/tests/Makefile.am:
+	removed old Vornoi stuff
+
+	* src/cxx/libs/core/tests/TestMeshGn.cc, src/cxx/libs/core/tests/TestVornoiMeshGn.cc:
+	obsolete
+
+	* src/cxx/libs/core/tests/TestProcInfo.cc: initial revision
+
+	* configure.in, Makefile.am: added Vornoi library
+
+	* src/cxx/libs/core/src/ProcInfo.cc, src/cxx/libs/core/src/ProcInfo.hh:
+	initial revision
+
+	* src/cxx/libs/core/src/Makefile.am, src/cxx/libs/core/src/MeshEdgeGn.hh, src/cxx/libs/core/src/MeshFaceGn.hh, src/cxx/libs/core/src/MeshGn.hh, src/cxx/libs/core/src/MeshRegionGn.hh, src/cxx/libs/core/src/MeshVertexGn.hh, src/cxx/libs/core/src/SpaceTreeBBoxGn.hh, src/cxx/libs/core/src/VisMeshOpsGn.hh, src/cxx/libs/core/tests/Makefile.am, src/cxx/libs/core/tests/TestMeshGn.cc, src/cxx/libs/core/tests/TestSpaceTreeBBoxGn.cc, src/cxx/libs/core/src/DelauneyDataGn.hh, src/cxx/libs/core/src/DelauneyMeshOpsGn.hh:
+	final checkin before becoming obsolete
+
+2002-06-17  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/cxx/libs/core/src/EdgeGn.hh, src/cxx/libs/core/src/FaceGn.hh, src/cxx/libs/core/src/VertexGn.hh:
+	obsolete
+
+	* src/cxx/libs/core/src/DelauneyDataGn.hh, src/cxx/libs/core/src/DelauneyMeshOpsGn.hh, src/cxx/libs/core/src/MeshGn.hh, src/cxx/libs/core/src/MeshOpsGn.hh, src/cxx/libs/core/src/PrintMeshOpsGn.hh, src/cxx/libs/core/src/VisMeshOpsGn.hh:
+	converted over to pointers from crazy template types
+
+	* src/cxx/libs/core/src/MeshEdgeGn.hh, src/cxx/libs/core/src/MeshFaceGn.hh, src/cxx/libs/core/src/MeshRegionGn.hh, src/cxx/libs/core/src/MeshVertexGn.hh:
+	initial revision
+
+2002-06-16  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/cxx/libs/core/tests/TestSpaceTreeBBoxGn.cc: uncommented 2D test
+
+	* src/cxx/libs/core/tests/TestMeshGn.cc, src/cxx/libs/core/src/DelauneyMeshOpsGn.hh:
+	now uses SpaceTreeBBoxGn to make insert() linear time, was exponential
+
+	* src/cxx/libs/core/src/DelauneyDataGn.hh: renamed bbox() to getBBox()
+
+	* src/cxx/libs/core/tests/TestSpaceTreeBBoxGn.cc:
+	added lookup() and remove() regression tests
+
+	* src/cxx/libs/core/src/SpaceTreeGn.hh, src/cxx/libs/core/src/SpaceTreeBBoxGn.hh:
+	insert(), remove() and lookup() all work
+
+	* src/cxx/libs/core/src/MeshGn.hh: fixed buggy typedef
+
+	* src/cxx/libs/core/src/DelauneyDataGn.hh: added bbox() method...
+
+2002-06-14  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/cxx/libs/core/src/SpaceTreeBBoxGn.hh, src/cxx/libs/core/tests/TestSpaceTreeBBoxGn.cc:
+	initial revision
+
+	* src/cxx/libs/core/tests/TestVornoiMeshGn.cc:
+	now inserts points using a random walk
+
+	* src/cxx/libs/core/tests/TestSpaceTreeGn.cc: minor appearance changes
+
+	* src/cxx/libs/core/tests/TestMeshGn.cc:
+	now inserts points using a random walk
+
+	* src/cxx/libs/core/tests/TestBBoxGn.cc:
+	replaces insane 3D specific intersect test code with a fast generic N dimensional form
+
+	* src/cxx/libs/core/tests/Makefile.am: added TestSpaceTreeBBoxGn
+
+	* src/cxx/libs/core/src/VecGn.hh: fixed namespace path in length()
+
+	* src/cxx/libs/core/src/SpaceTreeGn.hh: comments
+
+	* src/cxx/libs/core/src/BBoxGn.hh:
+	replaces insane 3D specific intersect test code with a fast generic N dimensional form
+
+	* src/cxx/libs/core/src/SpaceAtomicGn.cc, src/cxx/libs/core/src/SpaceGn.cc, src/cxx/libs/core/src/SpaceIndexedGn.hh:
+	reduced size of ivars without an noticeable speed hit
+
+	* src/cxx/libs/core/tests/TestSpaceTreeGn.cc:
+	added hue cycling to the OpenInventor debug methods
+
+	* src/cxx/libs/core/src/VecBase.hh: fixed bug in min/maxComp() methods
+
+	* src/cxx/libs/core/src/SpaceTreeGn.hh:
+	added hue cycling to the OpenInventor debug methods
+
+	* src/cxx/libs/core/src/ColorGn.hh:
+	added color component accessors, fixed bugs in to/fromHSV()
+
+2002-06-13  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/cxx/libs/core/src/ColorGn.hh, src/cxx/libs/core/src/DebugIV.cc, src/cxx/libs/core/src/DebugIVHelpers.hh, src/cxx/libs/core/src/DebugIV.hh, src/cxx/libs/core/src/Frustum.cc, src/cxx/libs/core/src/Frustum.hh, src/cxx/libs/core/src/Makefile.am, src/cxx/libs/core/src/SpaceTreeGn.hh, src/cxx/libs/core/src/VecBase.hh, src/cxx/libs/core/src/VisMeshOpsGn.hh, src/cxx/libs/core/src/VornoiVertexGn.cc, src/cxx/libs/core/tests/TestMatrixGn.cc, src/cxx/libs/core/tests/TestSpaceTreeGn.cc:
+	converted to use ColorGn instead of VecGn
+
+2002-06-12  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/cxx/libs/core/src/SpaceTreeGn.hh, src/cxx/libs/core/tests/TestSpaceTreeGn.cc:
+	initial revision
+
+	* src/cxx/libs/core/src/Makefile.am, src/cxx/libs/core/tests/Makefile.am:
+	space classes reorg
+
+	* src/cxx/libs/core/tests/TestSpaceGn.cc: better messages
+
+	* src/cxx/libs/core/tests/TestMeshGn.cc: better file naming
+
+	* src/cxx/libs/core/src/TypeInfo.cc: made epsilons tighter
+
+	* src/cxx/libs/core/src/SpaceIndexedGn.hh: was SpaceBase.hh
+
+	* src/cxx/libs/core/src/SpaceGn.hh: space classes reorg
+
+	* src/cxx/libs/core/src/SpaceFullGn.hh:
+	all non-IO methods from the old SpaceAtomic class
+
+	* src/cxx/libs/core/src/SpaceAtomicGn.hh: fixed bug in template args
+
+	* src/cxx/libs/core/src/SpaceAtomicGn.cc:
+	added missing fstream includes
+
+	* src/cxx/libs/core/src/BBoxGn.hh: added position()
+
+2002-06-11  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/cxx/libs/core/src/SpaceBase.hh: renamed to SpaceIndexedGn
+
+	* src/cxx/libs/core/src/SpaceAtomic.cc, src/cxx/libs/core/src/SpaceAtomic.hh, src/cxx/libs/core/src/SpaceAtomicGn.cc, src/cxx/libs/core/src/SpaceAtomicGn.hh:
+	split into two classes, SpaceFullGn and SpaceAtomicGn
+
+	* src/cxx/libs/core/src/DelauneyDataGn.hh, src/cxx/libs/core/src/DelauneyMeshOpsGn.hh, src/cxx/libs/core/src/EdgeGn.hh, src/cxx/libs/core/src/FaceGn.hh, src/cxx/libs/core/src/MeshOpsGn.hh, src/cxx/libs/core/src/NoTypes.hh, src/cxx/libs/core/src/PrintMeshOpsGn.hh, src/cxx/libs/core/src/VertexGn.hh, src/cxx/libs/core/src/VisMeshOpsGn.hh, src/cxx/libs/core/tests/TestMeshGn.cc:
+	Mesh component now use vector<> instead of list<> for references to other components
+
+	* src/cxx/libs/core/src/DelauneyMeshOpsGn.hh, src/cxx/libs/core/tests/TestMeshGn.cc:
+	minor tweaks...
+
+	* src/cxx/libs/core/src/DelauneyDataGn.hh, src/cxx/libs/core/src/DelauneyPrinter.hh, src/cxx/libs/core/src/DelauneyViser.hh, src/cxx/libs/core/src/MeshPrinter.hh, src/cxx/libs/core/src/MeshViser.hh, src/cxx/libs/core/src/VisMeshOpsGn.hh:
+	intial revision
+
+	* src/cxx/libs/core/src/DelauneyMeshOpsGn.hh, src/cxx/libs/core/src/EdgeGn.hh, src/cxx/libs/core/src/FaceGn.hh, src/cxx/libs/core/src/MeshGn.hh, src/cxx/libs/core/src/MeshInitGn.hh, src/cxx/libs/core/src/MeshOpsGn.hh, src/cxx/libs/core/src/NoTypes.hh, src/cxx/libs/core/src/PrintMeshOpsGn.hh, src/cxx/libs/core/src/VertexGn.hh, src/cxx/libs/core/tests/TestMeshGn.cc:
+	basic delauney insertion works
+
+	* src/cxx/libs/core/src/MatrixGn.cc: comments
+
+	* src/cxx/libs/core/src/DebugIV.cc, src/cxx/libs/core/src/DebugIV.hh:
+	added size parameter to point()
+
+	* src/cxx/libs/core/src/DebugIVMeshOpsGn.hh: renamed to VisMeshOps.hh
+
+2002-06-10  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/cxx/libs/core/tests/TestMeshGn.cc: initial revision
+
+	* src/cxx/libs/core/tests/Makefile.am: added TestMeshGn
+
+	* src/cxx/libs/core/src/DebugIVHelpers.hh, src/cxx/libs/core/src/DebugIVMeshOpsGn.hh, src/cxx/libs/core/src/DelauneyMeshOpsGn.hh, src/cxx/libs/core/src/EdgeGn.hh, src/cxx/libs/core/src/FaceGn.hh, src/cxx/libs/core/src/IfType.hh, src/cxx/libs/core/src/MeshGn.hh, src/cxx/libs/core/src/MeshInitGn.hh, src/cxx/libs/core/src/MeshOpsGn.hh, src/cxx/libs/core/src/NoTypes.hh, src/cxx/libs/core/src/PrintMeshOpsGn.hh, src/cxx/libs/core/src/VertexGn.hh:
+	initial revision
+
+	* src/cxx/libs/core/src/Makefile.am:
+	added lots of new headers related to MeshGn
+
+	* src/cxx/libs/core/src/VornoiMeshGn.hh, src/cxx/libs/core/src/VornoiFaceGn.hh:
+	new BBox template params
+
+	* src/cxx/libs/core/src/FB.hh: added msgBegin(), msgEnd()
+
+	* src/cxx/libs/core/src/DebugIV.cc:
+	moved DebugHelpers to their own header
+
+	* src/cxx/libs/core/src/BBoxGn.hh:
+	changed the template parameters to conform with VecGn, PointGn, ...
+
+2002-06-01  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/cxx/libs/core/src/SpaceBase.hh, src/cxx/libs/core/src/SpaceGn.hh, src/cxx/libs/core/src/VecBase.hh, src/cxx/libs/core/src/VecGn.hh:
+	formatting comments only
+
+2002-05-31  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/cxx/libs/core/src/Makefile.am, src/cxx/libs/core/src/VornoiFaceGn.cc, src/cxx/libs/core/src/VornoiFaceGn.hh, src/cxx/libs/core/src/VornoiVertexGn.cc, src/cxx/libs/core/src/VornoiVertexGn.hh:
+	made methods related to internals protected, moved big routines to .cc files
+
+	* src/cxx/libs/core/src/VornoiEdgeGn.hh, src/cxx/libs/core/src/VornoiFaceGn.hh, src/cxx/libs/core/src/VornoiMeshGn.cc, src/cxx/libs/core/src/VornoiMeshGn.hh, src/cxx/libs/core/src/VornoiVertexGn.hh, src/cxx/libs/core/tests/TestVornoiMeshGn.cc:
+	split out vertex, edge and face data classes from VertexMeshGn
+
+	* src/cxx/libs/core/src/VornoiMeshGn.cc, src/cxx/libs/core/src/VornoiMeshGn.hh, src/cxx/libs/core/tests/TestVornoiMeshGn.cc:
+	Vornoi mesh generation fully functional
+
+2002-05-30  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/cxx/libs/core/tests/TestEdgeSort.cc: initial revision
+
+	* src/cxx/libs/core/tests/Makefile.am: added edge sort test
+
+	* src/cxx/libs/core/src/VectorGn.hh: fixed namespace scope for sqrt()
+
+	* src/cxx/libs/core/src/VecGn.hh: fixed indentation only
+
+	* src/cxx/libs/core/src/SpaceBase.hh: added #include <VecGn.hh>
+
+	* src/cxx/libs/core/src/Makefile.am: added VornoiMeshGn
+
+	* src/cxx/libs/core/src/DebugIV.hh:
+	added 2D versions of some geometry methods
+
+	* src/cxx/libs/core/src/DebugIV.cc:
+	fixed bug in circle(), renamed px2iv() routines...
+
+	* src/cxx/libs/core/src/BBoxGn.hh: fixed minor type bug
+
+	* src/cxx/libs/core/src/VornoiMeshGn.cc, src/cxx/libs/core/src/VornoiMeshGn.hh, src/cxx/libs/core/tests/TestVornoiMeshGn.cc:
+	basics work!
+
+	* src/cxx/libs/core/src/VornoiMeshGn.cc, src/cxx/libs/core/src/VornoiMeshGn.hh:
+	initial revision...
+
+2002-05-28  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* config.h.in, configure.in, src/cxx/libs/core/src/BBoxGn.hh, src/cxx/libs/core/src/ByteSwap.cc, src/cxx/libs/core/src/ByteSwap.hh, src/cxx/libs/core/src/CoordSysGn.cc, src/cxx/libs/core/src/CoordSysGn.hh, src/cxx/libs/core/src/DebugIV.cc, src/cxx/libs/core/src/DebugIV.hh, src/cxx/libs/core/src/DictGn.hh, src/cxx/libs/core/src/ExtraMath.hh, src/cxx/libs/core/src/FB.cc, src/cxx/libs/core/src/FB.hh, src/cxx/libs/core/src/FramePattern.hh, src/cxx/libs/core/src/Frustum.cc, src/cxx/libs/core/src/Frustum.hh, src/cxx/libs/core/src/Math.hh, src/cxx/libs/core/src/MatrixGn.cc, src/cxx/libs/core/src/MatrixGn.hh, src/cxx/libs/core/src/PointGn.hh, src/cxx/libs/core/src/SearchPath.hh, src/cxx/libs/core/src/SpaceAtomic.cc, src/cxx/libs/core/src/SpaceAtomic.hh, src/cxx/libs/core/src/SpaceBase.hh, src/cxx/libs/core/src/SpaceGn.cc, src/cxx/libs/core/src/SpaceGn.hh, src/cxx/libs/core/src/SpaceInterpGn.hh, src/cxx/libs/core/src/SpaceInterpMethod.hh, src/cxx/libs/core/src/Timer.hh, src/cxx/libs/core/src/TypeInfo.cc, src/cxx/libs/core/src/TypeInfo.hh, src/cxx/libs/core/src/VecBase.hh, src/cxx/libs/core/src/VecGn.hh, src/cxx/libs/core/src/VectorGn.hh, src/cxx/libs/core/tests/TestDict.cc, src/cxx/libs/core/tests/TestFrustum.cc, src/cxx/libs/core/tests/TestFrustumClipping.cc, src/cxx/libs/core/tests/TestFrustumXforms.cc, src/cxx/libs/core/tests/TestMatrixGn.cc, src/cxx/libs/core/tests/TestPointGn.cc, src/cxx/libs/core/tests/TestSpaceGn.cc, src/cxx/libs/core/tests/TestVecGn.cc, src/cxx/libs/core/tests/TestVectorGn.cc, src/cxx/libs/gui/src/BoxGn.hh, src/cxx/libs/gui/src/Container.hh, src/cxx/libs/gui/src/Event.hh, src/cxx/libs/gui/src/Fill.hh, src/cxx/libs/gui/src/Layer.hh, src/cxx/libs/gui/src/Selector.hh, src/cxx/libs/gui/src/SmoothPane.hh, src/cxx/libs/gui/src/SpanGn.hh, src/cxx/libs/gui/src/Thing.hh, src/cxx/libs/gui/src/WindowX11.hh, src/cxx/libs/gui/src/WinSysX11.hh, src/cxx/libs/thread/src/Condition.hh, src/cxx/libs/thread/src/Locker.hh, src/cxx/libs/thread/src/Lock.hh, src/cxx/libs/thread/src/Sentinel.hh, src/cxx/libs/thread/src/SeqCondition.hh, src/cxx/libs/thread/src/SeqJob.hh, src/cxx/libs/thread/src/SeqThreadMgr.hh, src/cxx/libs/thread/src/SmartPtr.hh, src/cxx/libs/thread/src/Sync.hh:
+	now uses typedefs for atomic C types defined in AtomicTypes.h
+
+	* src/cxx/libs/core/src/AtomicTypes.hh, ChangeLog: initial revision
+
+	* config.h.in, configure.in, README, src/cxx/libs/core/src/BBoxGn.hh, src/cxx/libs/core/src/ByteSwap.cc, src/cxx/libs/core/src/ByteSwap.hh, src/cxx/libs/core/src/CoordSysGn.cc, src/cxx/libs/core/src/CoordSysGn.hh, src/cxx/libs/core/src/DebugIV.cc, src/cxx/libs/core/src/DebugIV.hh, src/cxx/libs/core/src/DictGn.hh, src/cxx/libs/core/src/ExtraMath.hh, src/cxx/libs/core/src/FB.cc, src/cxx/libs/core/src/FB.hh, src/cxx/libs/core/src/FramePattern.hh, src/cxx/libs/core/src/Frustum.cc, src/cxx/libs/core/src/Frustum.hh, src/cxx/libs/core/src/Makefile.am, src/cxx/libs/core/src/MatrixGn.cc, src/cxx/libs/core/src/MatrixGn.hh, src/cxx/libs/core/src/PointGn.hh, src/cxx/libs/core/src/SearchPath.cc, src/cxx/libs/core/src/SearchPath.hh, src/cxx/libs/core/src/SpaceAtomic.cc, src/cxx/libs/core/src/SpaceAtomic.hh, src/cxx/libs/core/src/SpaceBase.hh, src/cxx/libs/core/src/SpaceGn.cc, src/cxx/libs/core/src/SpaceGn.hh, src/cxx/libs/core/src/SpaceInterpGn.hh, src/cxx/libs/core/src/SpaceInterpMethod.hh, src/cxx/libs/core/src/Timer.hh, src/cxx/libs/core/src/TypeInfo.cc, src/cxx/libs/core/src/TypeInfo.hh, src/cxx/libs/core/src/VecBase.hh, src/cxx/libs/core/src/VecGn.hh, src/cxx/libs/core/src/VectorGn.hh, src/cxx/libs/core/tests/Makefile.am, src/cxx/libs/core/tests/TestBBoxGn.cc, src/cxx/libs/core/tests/TestDict.cc, src/cxx/libs/core/tests/TestFB.cc, src/cxx/libs/core/tests/TestFrustum.cc, src/cxx/libs/core/tests/TestFrustumClipping.cc, src/cxx/libs/core/tests/TestFrustumXforms.cc, src/cxx/libs/core/tests/TestMatrixGn.cc, src/cxx/libs/core/tests/TestPointGn.cc, src/cxx/libs/core/tests/TestSearchPath.cc, src/cxx/libs/core/tests/TestSpaceGn.cc, src/cxx/libs/core/tests/TestVecGn.cc, src/cxx/libs/core/tests/TestVectorGn.cc, src/cxx/libs/gui/docs/Freedom.html, src/cxx/libs/gui/src/BoxGn.cc, src/cxx/libs/gui/src/BoxGn.hh, src/cxx/libs/gui/src/Container.cc, src/cxx/libs/gui/src/Container.hh, src/cxx/libs/gui/src/Event.hh, src/cxx/libs/gui/src/Fill.cc, src/cxx/libs/gui/src/Fill.hh, src/cxx/libs/gui/src/Layer.cc, src/cxx/libs/gui/src/Layer.hh, src/cxx/libs/gui/src/Makefile.am, src/cxx/libs/gui/src/Selector.hh, src/cxx/libs/gui/src/SmoothPane.cc, src/cxx/libs/gui/src/SmoothPane.hh, src/cxx/libs/gui/src/SpanGn.cc, src/cxx/libs/gui/src/SpanGn.hh, src/cxx/libs/gui/src/Thing.cc, src/cxx/libs/gui/src/Thing.hh, src/cxx/libs/gui/src/WindowX11.cc, src/cxx/libs/gui/src/WindowX11.hh, src/cxx/libs/gui/src/WinSysX11.cc, src/cxx/libs/gui/src/WinSysX11.hh, src/cxx/libs/gui/tests/Makefile.am, src/cxx/libs/gui/tests/TestBlend.cc, src/cxx/libs/gui/tests/TestGlxWindow.cc, src/cxx/libs/gui/tests/TestLayout.cc, src/cxx/libs/gui/tests/TestViewport2.cc, src/cxx/libs/gui/tests/TestViewport.cc, src/cxx/libs/thread/src/Condition.hh, src/cxx/libs/thread/src/Locker.hh, src/cxx/libs/thread/src/Lock.hh, src/cxx/libs/thread/src/Makefile.am, src/cxx/libs/thread/src/Sentinel.hh, src/cxx/libs/thread/src/SeqCondition.hh, src/cxx/libs/thread/src/SeqJob.hh, src/cxx/libs/thread/src/SeqThreadMgr.hh, src/cxx/libs/thread/src/SmartPtr.hh, src/cxx/libs/thread/src/Sync.hh, src/cxx/libs/thread/tests/Makefile.am, src/cxx/libs/thread/tests/TestSeqThreadMgr.cc, src/cxx/libs/thread/tests/TestSmartPtr.cc:
 	renamed Freedom to Phoenix
 
 	* .cvsignore: added configure, stamp-h.in
 
-	* Core/.cvsignore, Core/src/.cvsignore, Core/tests/.cvsignore, .cvsignore:
+	* .cvsignore, src/cxx/libs/core/.cvsignore, src/cxx/libs/core/src/.cvsignore, src/cxx/libs/core/tests/.cvsignore:
 	initial revision
 
-	* UI/src/Fill.cc, UI/src/BoxGn.cc, UI/src/Container.cc, UI/src/Event.hh, UI/src/Layer.cc, UI/src/Selector.hh, UI/src/SmoothPane.cc, UI/src/SpanGn.cc, UI/src/BoxGn.hh, UI/src/Container.hh, UI/src/Fill.hh, UI/src/Layer.hh, UI/src/Makefile.am, UI/src/SmoothPane.hh, UI/src/SpanGn.hh, UI/src/Thing.cc, UI/src/Thing.hh, UI/tests/Makefile.am, UI/tests/TestLayout.cc:
+	* src/cxx/libs/gui/src/Fill.cc, src/cxx/libs/gui/src/BoxGn.cc, src/cxx/libs/gui/src/Container.cc, src/cxx/libs/gui/src/Event.hh, src/cxx/libs/gui/src/Layer.cc, src/cxx/libs/gui/src/Selector.hh, src/cxx/libs/gui/src/SmoothPane.cc, src/cxx/libs/gui/src/SpanGn.cc, src/cxx/libs/gui/src/BoxGn.hh, src/cxx/libs/gui/src/Container.hh, src/cxx/libs/gui/src/Fill.hh, src/cxx/libs/gui/src/Layer.hh, src/cxx/libs/gui/src/Makefile.am, src/cxx/libs/gui/src/SmoothPane.hh, src/cxx/libs/gui/src/SpanGn.hh, src/cxx/libs/gui/src/Thing.cc, src/cxx/libs/gui/src/Thing.hh, src/cxx/libs/gui/tests/Makefile.am, src/cxx/libs/gui/tests/TestLayout.cc:
 	moved lots of code to source files from headers
 
-	* UI/docs/events.txt: initial revision
+	* src/cxx/libs/gui/docs/events.txt: initial revision
 
-	* Thread/tests/TestSeqThreadMgr.cc: improved formatting of messages
+	* src/cxx/libs/thread/tests/TestSeqThreadMgr.cc:
+	improved formatting of messages
 
-	* Thread/src/Locker.hh, Thread/src/SeqCondition.hh: initial revision
+	* src/cxx/libs/thread/src/Locker.hh, src/cxx/libs/thread/src/SeqCondition.hh:
+	initial revision
 
-	* Thread/src/Sync.hh: changed Condition to SeqCondition
+	* src/cxx/libs/thread/src/Sync.hh: changed Condition to SeqCondition
 
-	* Thread/src/SmartPtr.hh: fixed threading bug
+	* src/cxx/libs/thread/src/SmartPtr.hh: fixed threading bug
 
-	* Thread/src/SeqThreadMgr.hh: made Job argument to spawn, non-const
+	* src/cxx/libs/thread/src/SeqThreadMgr.hh:
+	made Job argument to spawn, non-const
 
-	* Thread/src/Sentinel.hh: changed Condition to SeqCondition
+	* src/cxx/libs/thread/src/Sentinel.hh:
+	changed Condition to SeqCondition
 
-	* Thread/src/Makefile.am: added Locker, SeqCondition
+	* src/cxx/libs/thread/src/Makefile.am: added Locker, SeqCondition
 
-	* Thread/src/Lock.hh: renamed try() to tryLock(), commented messages
+	* src/cxx/libs/thread/src/Lock.hh:
+	renamed try() to tryLock(), commented messages
 
-	* Thread/src/Condition.hh: now uses Locker<T> class
+	* src/cxx/libs/thread/src/Condition.hh: now uses Locker<T> class
 
-	* Core/src/Makefile.am: added headers to EXTRA_DIST
+	* src/cxx/libs/core/src/Makefile.am: added headers to EXTRA_DIST
 
 	* configure.in:
 	disabled check for SML compiler, disabled Thread and UI modules
@@ -48,100 +406,103 @@
 
 	* AUTHORS: revised message...
 
-2002-04-15  Jim Callahan  <jim@salamander>
+2002-04-15  Jim Callahan  <jim@wrkstn17.rhinofx.com>
 
-	* Thread/.cvsignore, Thread/docs/.cvsignore, Thread/docs/Makefile.am, Thread/Makefile.am, Thread/src/Condition.hh, Thread/src/.cvsignore, Thread/src/Lock.hh, Thread/src/Makefile.am, Thread/src/Sentinel.hh, Thread/src/SeqJob.hh, Thread/src/SeqThreadMgr.hh, Thread/src/SmartPtr.hh, Thread/src/Sync.hh, Thread/tests/.cvsignore, Thread/tests/Makefile.am, Thread/tests/TestSeqThreadMgr.cc, Thread/tests/TestSmartPtr.cc:
+	* src/cxx/libs/thread/.cvsignore, src/cxx/libs/thread/docs/.cvsignore, src/cxx/libs/thread/docs/Makefile.am, src/cxx/libs/thread/Makefile.am, src/cxx/libs/thread/src/Condition.hh, src/cxx/libs/thread/src/.cvsignore, src/cxx/libs/thread/src/Lock.hh, src/cxx/libs/thread/src/Makefile.am, src/cxx/libs/thread/src/Sentinel.hh, src/cxx/libs/thread/src/SeqJob.hh, src/cxx/libs/thread/src/SeqThreadMgr.hh, src/cxx/libs/thread/src/SmartPtr.hh, src/cxx/libs/thread/src/Sync.hh, src/cxx/libs/thread/tests/.cvsignore, src/cxx/libs/thread/tests/Makefile.am, src/cxx/libs/thread/tests/TestSeqThreadMgr.cc, src/cxx/libs/thread/tests/TestSmartPtr.cc:
 	initial revision
 
-2002-04-07  Jim Callahan  <jim@salamander>
+2002-04-07  Jim Callahan  <jim@wrkstn17.rhinofx.com>
 
-	* UI/src/WindowX11.cc, UI/src/WindowX11.hh, UI/src/WinSysX11.cc, UI/src/WinSysX11.hh:
+	* src/cxx/libs/gui/src/WindowX11.cc, src/cxx/libs/gui/src/WindowX11.hh, src/cxx/libs/gui/src/WinSysX11.cc, src/cxx/libs/gui/src/WinSysX11.hh:
 	initial revision
 
-	* UI/src/Makefile.am: new Window/WinSys classes
+	* src/cxx/libs/gui/src/Makefile.am: new Window/WinSys classes
 
-	* UI/src/GlxWindow.hh, UI/src/WindowBase.hh: obsolete
+	* src/cxx/libs/gui/src/GlxWindow.hh, src/cxx/libs/gui/src/WindowBase.hh:
+	obsolete
 
-	* UI/tests/TestLayout.cc: new Window/WinSys classes
+	* src/cxx/libs/gui/tests/TestLayout.cc: new Window/WinSys classes
 
-2002-04-05  Jim Callahan  <jim@salamander>
+2002-04-05  Jim Callahan  <jim@wrkstn17.rhinofx.com>
 
-	* UI/src/SmoothPane.hh: initial revision
+	* src/cxx/libs/gui/src/SmoothPane.hh: initial revision
 
-	* UI/tests/TestLayout.cc: added lots more stuff
+	* src/cxx/libs/gui/tests/TestLayout.cc: added lots more stuff
 
-	* UI/tests/Makefile.am, UI/src/WindowBase.hh, UI/src/Thing.cc:
+	* src/cxx/libs/gui/tests/Makefile.am, src/cxx/libs/gui/src/WindowBase.hh, src/cxx/libs/gui/src/Thing.cc:
 	renamed WinSys to UI
 
-	* UI/src/SpanGn.hh: renamed draw() to drawDebug() for inivisible Things
-
-	* UI/src/Makefile.am: renamed WinSys to UI
-
-	* UI/src/Layer.hh: initial revision
-
-	* UI/src/GlxWindow.hh: renamed WinSys to UI
-
-	* UI/src/Fill.hh, UI/src/Thing.hh:
+	* src/cxx/libs/gui/src/SpanGn.hh:
 	renamed draw() to drawDebug() for inivisible Things
 
-	* UI/src/Container.hh: initial revision
+	* src/cxx/libs/gui/src/Makefile.am: renamed WinSys to UI
 
-	* UI/src/CompoundThing.hh, UI/src/BoxGn.hh:
+	* src/cxx/libs/gui/src/Layer.hh: initial revision
+
+	* src/cxx/libs/gui/src/GlxWindow.hh: renamed WinSys to UI
+
+	* src/cxx/libs/gui/src/Fill.hh, src/cxx/libs/gui/src/Thing.hh:
+	renamed draw() to drawDebug() for inivisible Things
+
+	* src/cxx/libs/gui/src/Container.hh: initial revision
+
+	* src/cxx/libs/gui/src/CompoundThing.hh, src/cxx/libs/gui/src/BoxGn.hh:
 	renamed CompoundThing to Container
 
 	* configure.in, Makefile.am: renamed WinSys to UI
 
-2002-04-04  Jim Callahan  <jim@salamander>
+2002-04-04  Jim Callahan  <jim@wrkstn17.rhinofx.com>
 
-	* UI/docs/Freedom.html, UI/docs/freedom.txt, UI/docs/layout.txt:
+	* src/cxx/libs/gui/docs/Freedom.html, src/cxx/libs/gui/docs/freedom.txt, src/cxx/libs/gui/docs/layout.txt:
 	various ramblings to be consolidated later...
 
-	* UI/src/BoxGn.hh, UI/src/CompoundThing.hh, UI/src/Fill.hh, UI/src/SpanGn.hh, UI/src/Thing.cc, UI/src/Thing.hh, UI/tests/TestBlend.cc, UI/tests/TestLayout.cc, UI/tests/TestViewport2.cc, UI/tests/TestViewport.cc:
+	* src/cxx/libs/gui/src/BoxGn.hh, src/cxx/libs/gui/src/CompoundThing.hh, src/cxx/libs/gui/src/Fill.hh, src/cxx/libs/gui/src/SpanGn.hh, src/cxx/libs/gui/src/Thing.cc, src/cxx/libs/gui/src/Thing.hh, src/cxx/libs/gui/tests/TestBlend.cc, src/cxx/libs/gui/tests/TestLayout.cc, src/cxx/libs/gui/tests/TestViewport2.cc, src/cxx/libs/gui/tests/TestViewport.cc:
 	initial revision
 
-	* UI/tests/TestGlxWindow.cc: removed clear() and color
+	* src/cxx/libs/gui/tests/TestGlxWindow.cc: removed clear() and color
 
-	* UI/tests/Makefile.am: temporary mess
+	* src/cxx/libs/gui/tests/Makefile.am: temporary mess
 
-	* UI/src/WindowBase.hh: removed clear() and color
+	* src/cxx/libs/gui/src/WindowBase.hh: removed clear() and color
 
-	* UI/src/Makefile.am: lots changed...
+	* src/cxx/libs/gui/src/Makefile.am: lots changed...
 
-	* UI/src/GlxWindow.hh: added info(), removed clear() and color
+	* src/cxx/libs/gui/src/GlxWindow.hh:
+	added info(), removed clear() and color
 
-	* Core/src/VecBase.hh: added getp()
+	* src/cxx/libs/core/src/VecBase.hh: added getp()
 
-	* Core/src/Makefile.am, Core/tests/Makefile.am:
+	* src/cxx/libs/core/src/Makefile.am, src/cxx/libs/core/tests/Makefile.am:
 	name change from Uk to Freedom
 
-2002-03-26  Jim Callahan  <jim@salamander>
+2002-03-26  Jim Callahan  <jim@wrkstn17.rhinofx.com>
 
-	* AUTHORS, autogen.sh, configure.in, COPYING, Core/src/BBoxGn.hh, Core/src/ByteSwap.cc, Core/src/ByteSwap.hh, Core/src/CoordSysGn.cc, Core/src/CoordSysGn.hh, Core/src/DebugIV.cc, Core/src/DebugIV.hh, Core/src/DictGn.hh, Core/src/ExtraMath.hh, Core/src/FB.cc, Core/src/FB.hh, Core/src/FramePattern.hh, Core/src/Frustum.cc, Core/src/Frustum.hh, Core/src/Math.hh, Core/src/MatrixGn.cc, Core/src/MatrixGn.hh, Core/src/PointGn.hh, Core/src/SearchPath.cc, Core/src/SearchPath.hh, Core/src/SpaceAtomic.cc, Core/src/SpaceAtomic.hh, Core/src/SpaceBase.hh, Core/src/SpaceGn.cc, Core/src/SpaceGn.hh, Core/src/SpaceInterpGn.hh, Core/src/SpaceInterpMethod.hh, Core/src/Timer.hh, Core/src/TypeInfo.cc, Core/src/TypeInfo.hh, Core/src/VecBase.hh, Core/src/VecGn.hh, Core/src/VectorGn.hh, Core/tests/TestBBoxGn.cc, Core/tests/TestDict.cc, Core/tests/TestFB.cc, Core/tests/TestFrustum.cc, Core/tests/TestFrustumClipping.cc, Core/tests/TestFrustumXforms.cc, Core/tests/TestMatrixGn.cc, Core/tests/TestPointGn.cc, Core/tests/TestSearchPath.cc, Core/tests/TestSpaceGn.cc, Core/tests/TestVecGn.cc, Core/tests/TestVectorGn.cc, README, UI/src/GlxWindow.hh, UI/src/WindowBase.hh, UI/tests/TestGlxWindow.cc:
+	* AUTHORS, autogen.sh, configure.in, COPYING, README, src/cxx/libs/core/src/BBoxGn.hh, src/cxx/libs/core/src/ByteSwap.cc, src/cxx/libs/core/src/ByteSwap.hh, src/cxx/libs/core/src/CoordSysGn.cc, src/cxx/libs/core/src/CoordSysGn.hh, src/cxx/libs/core/src/DebugIV.cc, src/cxx/libs/core/src/DebugIV.hh, src/cxx/libs/core/src/DictGn.hh, src/cxx/libs/core/src/ExtraMath.hh, src/cxx/libs/core/src/FB.cc, src/cxx/libs/core/src/FB.hh, src/cxx/libs/core/src/FramePattern.hh, src/cxx/libs/core/src/Frustum.cc, src/cxx/libs/core/src/Frustum.hh, src/cxx/libs/core/src/Math.hh, src/cxx/libs/core/src/MatrixGn.cc, src/cxx/libs/core/src/MatrixGn.hh, src/cxx/libs/core/src/PointGn.hh, src/cxx/libs/core/src/SearchPath.cc, src/cxx/libs/core/src/SearchPath.hh, src/cxx/libs/core/src/SpaceAtomic.cc, src/cxx/libs/core/src/SpaceAtomic.hh, src/cxx/libs/core/src/SpaceBase.hh, src/cxx/libs/core/src/SpaceGn.cc, src/cxx/libs/core/src/SpaceGn.hh, src/cxx/libs/core/src/SpaceInterpGn.hh, src/cxx/libs/core/src/SpaceInterpMethod.hh, src/cxx/libs/core/src/Timer.hh, src/cxx/libs/core/src/TypeInfo.cc, src/cxx/libs/core/src/TypeInfo.hh, src/cxx/libs/core/src/VecBase.hh, src/cxx/libs/core/src/VecGn.hh, src/cxx/libs/core/src/VectorGn.hh, src/cxx/libs/core/tests/TestBBoxGn.cc, src/cxx/libs/core/tests/TestDict.cc, src/cxx/libs/core/tests/TestFB.cc, src/cxx/libs/core/tests/TestFrustum.cc, src/cxx/libs/core/tests/TestFrustumClipping.cc, src/cxx/libs/core/tests/TestFrustumXforms.cc, src/cxx/libs/core/tests/TestMatrixGn.cc, src/cxx/libs/core/tests/TestPointGn.cc, src/cxx/libs/core/tests/TestSearchPath.cc, src/cxx/libs/core/tests/TestSpaceGn.cc, src/cxx/libs/core/tests/TestVecGn.cc, src/cxx/libs/core/tests/TestVectorGn.cc, src/cxx/libs/gui/src/GlxWindow.hh, src/cxx/libs/gui/src/WindowBase.hh, src/cxx/libs/gui/tests/TestGlxWindow.cc:
 	renamed Uk namespace to Freedom
 
-	* Core/docs/.cvsignore, Core/docs/Makefile.am, UI/.cvsignore, UI/docs/.cvsignore, UI/docs/Makefile.am, UI/Makefile.am, UI/src/.cvsignore, UI/src/GlxWindow.hh, UI/src/Makefile.am, UI/src/WindowBase.hh, UI/tests/.cvsignore, UI/tests/Makefile.am, UI/tests/TestGlxWindow.cc:
+	* src/cxx/libs/core/docs/.cvsignore, src/cxx/libs/core/docs/Makefile.am, src/cxx/libs/gui/.cvsignore, src/cxx/libs/gui/docs/.cvsignore, src/cxx/libs/gui/docs/Makefile.am, src/cxx/libs/gui/Makefile.am, src/cxx/libs/gui/src/.cvsignore, src/cxx/libs/gui/src/GlxWindow.hh, src/cxx/libs/gui/src/Makefile.am, src/cxx/libs/gui/src/WindowBase.hh, src/cxx/libs/gui/tests/.cvsignore, src/cxx/libs/gui/tests/Makefile.am, src/cxx/libs/gui/tests/TestGlxWindow.cc:
 	intial revision
 
-	* configure.in, Core/Makefile.am, Core/tests/Makefile.am, Makefile.am:
+	* configure.in, Makefile.am, src/cxx/libs/core/Makefile.am, src/cxx/libs/core/tests/Makefile.am:
 	added WinSys
 
-	* Core/src/BBoxGn.hh, Core/src/ByteSwap.cc, Core/src/ByteSwap.hh, Core/src/CoordSysGn.cc, Core/src/CoordSysGn.hh, Core/src/DebugIV.cc, Core/src/DebugIV.hh, Core/src/DictGn.hh, Core/src/ExtraMath.hh, Core/src/FB.cc, Core/src/FB.hh, Core/src/FramePattern.hh, Core/src/Frustum.cc, Core/src/Frustum.hh, Core/src/Math.hh, Core/src/MatrixGn.cc, Core/src/MatrixGn.hh, Core/src/PointGn.hh, Core/src/SearchPath.cc, Core/src/SearchPath.hh, Core/src/SpaceAtomic.cc, Core/src/SpaceAtomic.hh, Core/src/SpaceBase.hh, Core/src/SpaceGn.cc, Core/src/SpaceGn.hh, Core/src/SpaceInterpGn.hh, Core/src/SpaceInterpMethod.hh, Core/src/Timer.hh, Core/src/TypeInfo.cc, Core/src/TypeInfo.hh, Core/src/VecBase.hh, Core/src/VecGn.hh, Core/src/VectorGn.hh, Core/tests/TestBBoxGn.cc, Core/tests/TestDict.cc, Core/tests/TestFB.cc, Core/tests/TestFrustum.cc, Core/tests/TestFrustumClipping.cc, Core/tests/TestFrustumXforms.cc, Core/tests/TestMatrixGn.cc, Core/tests/TestPointGn.cc, Core/tests/TestSearchPath.cc, Core/tests/TestSpaceGn.cc, Core/tests/TestVecGn.cc, Core/tests/TestVectorGn.cc:
+	* src/cxx/libs/core/src/BBoxGn.hh, src/cxx/libs/core/src/ByteSwap.cc, src/cxx/libs/core/src/ByteSwap.hh, src/cxx/libs/core/src/CoordSysGn.cc, src/cxx/libs/core/src/CoordSysGn.hh, src/cxx/libs/core/src/DebugIV.cc, src/cxx/libs/core/src/DebugIV.hh, src/cxx/libs/core/src/DictGn.hh, src/cxx/libs/core/src/ExtraMath.hh, src/cxx/libs/core/src/FB.cc, src/cxx/libs/core/src/FB.hh, src/cxx/libs/core/src/FramePattern.hh, src/cxx/libs/core/src/Frustum.cc, src/cxx/libs/core/src/Frustum.hh, src/cxx/libs/core/src/Math.hh, src/cxx/libs/core/src/MatrixGn.cc, src/cxx/libs/core/src/MatrixGn.hh, src/cxx/libs/core/src/PointGn.hh, src/cxx/libs/core/src/SearchPath.cc, src/cxx/libs/core/src/SearchPath.hh, src/cxx/libs/core/src/SpaceAtomic.cc, src/cxx/libs/core/src/SpaceAtomic.hh, src/cxx/libs/core/src/SpaceBase.hh, src/cxx/libs/core/src/SpaceGn.cc, src/cxx/libs/core/src/SpaceGn.hh, src/cxx/libs/core/src/SpaceInterpGn.hh, src/cxx/libs/core/src/SpaceInterpMethod.hh, src/cxx/libs/core/src/Timer.hh, src/cxx/libs/core/src/TypeInfo.cc, src/cxx/libs/core/src/TypeInfo.hh, src/cxx/libs/core/src/VecBase.hh, src/cxx/libs/core/src/VecGn.hh, src/cxx/libs/core/src/VectorGn.hh, src/cxx/libs/core/tests/TestBBoxGn.cc, src/cxx/libs/core/tests/TestDict.cc, src/cxx/libs/core/tests/TestFB.cc, src/cxx/libs/core/tests/TestFrustum.cc, src/cxx/libs/core/tests/TestFrustumClipping.cc, src/cxx/libs/core/tests/TestFrustumXforms.cc, src/cxx/libs/core/tests/TestMatrixGn.cc, src/cxx/libs/core/tests/TestPointGn.cc, src/cxx/libs/core/tests/TestSearchPath.cc, src/cxx/libs/core/tests/TestSpaceGn.cc, src/cxx/libs/core/tests/TestVecGn.cc, src/cxx/libs/core/tests/TestVectorGn.cc:
 	added namespace Uk::Core
 
-2002-03-23  Jim Callahan  <jim@salamander>
+2002-03-23  Jim Callahan  <jim@wrkstn17.rhinofx.com>
 
-	* config.h.in, Core/tests/TestFrustumClipping.cc:
+	* config.h.in, src/cxx/libs/core/tests/TestFrustumClipping.cc:
 	Gtkmm style build system
 
-	* Core/src/DebugIV.cc, Core/src/DebugIV.hh:
+	* src/cxx/libs/core/src/DebugIV.cc, src/cxx/libs/core/src/DebugIV.hh:
 	added pointSize(), lineWidth()
 
 	* autogen.sh, config.guess, config.sub: intial revision
 
 	* configure.in: Gtkmm style
 
-2002-03-20  Jim Callahan  <jim@salamander>
+2002-03-20  Jim Callahan  <jim@wrkstn17.rhinofx.com>
 
-	* acconfig.h, acinclude.m4, aclocal.m4, AUTHORS, config.h.in, configure.in, COPYING, Core/Makefile.am, Core/src/BBoxGn.hh, Core/src/ByteSwap.cc, Core/src/ByteSwap.hh, Core/src/CoordSysGn.cc, Core/src/CoordSysGn.hh, Core/src/DebugIV.cc, Core/src/DebugIV.hh, Core/src/DictGn.hh, Core/src/ExtraMath.hh, Core/src/FB.cc, Core/src/FB.hh, Core/src/FramePattern.hh, Core/src/Frustum.cc, Core/src/Frustum.hh, Core/src/Makefile.am, Core/src/Math.hh, Core/src/MatrixGn.cc, Core/src/MatrixGn.hh, Core/src/PointGn.hh, Core/src/SearchPath.cc, Core/src/SearchPath.hh, Core/src/SpaceAtomic.cc, Core/src/SpaceAtomic.hh, Core/src/SpaceBase.hh, Core/src/SpaceGn.cc, Core/src/SpaceGn.hh, Core/src/SpaceInterpGn.hh, Core/src/SpaceInterpMethod.hh, Core/src/Timer.hh, Core/src/TypeInfo.cc, Core/src/TypeInfo.hh, Core/src/VecBase.hh, Core/src/VecGn.hh, Core/src/VectorGn.hh, Core/tests/Makefile.am, Core/tests/TestBBoxGn.cc, Core/tests/TestDict.cc, Core/tests/TestFB.cc, Core/tests/TestFrustum.cc, Core/tests/TestFrustumClipping.cc, Core/tests/TestFrustumXforms.cc, Core/tests/TestMatrixGn.cc, Core/tests/TestPointGn.cc, Core/tests/TestSearchPath.cc, Core/tests/TestSpaceGn.cc, Core/tests/TestVecGn.cc, Core/tests/TestVectorGn.cc, INSTALL, install-sh, Makefile.am, missing, mkinstalldirs, NEWS, README:
+	* acconfig.h, acinclude.m4, aclocal.m4, AUTHORS, config.h.in, configure.in, COPYING, INSTALL, install-sh, Makefile.am, missing, mkinstalldirs, NEWS, README, src/cxx/libs/core/Makefile.am, src/cxx/libs/core/src/BBoxGn.hh, src/cxx/libs/core/src/ByteSwap.cc, src/cxx/libs/core/src/ByteSwap.hh, src/cxx/libs/core/src/CoordSysGn.cc, src/cxx/libs/core/src/CoordSysGn.hh, src/cxx/libs/core/src/DebugIV.cc, src/cxx/libs/core/src/DebugIV.hh, src/cxx/libs/core/src/DictGn.hh, src/cxx/libs/core/src/ExtraMath.hh, src/cxx/libs/core/src/FB.cc, src/cxx/libs/core/src/FB.hh, src/cxx/libs/core/src/FramePattern.hh, src/cxx/libs/core/src/Frustum.cc, src/cxx/libs/core/src/Frustum.hh, src/cxx/libs/core/src/Makefile.am, src/cxx/libs/core/src/Math.hh, src/cxx/libs/core/src/MatrixGn.cc, src/cxx/libs/core/src/MatrixGn.hh, src/cxx/libs/core/src/PointGn.hh, src/cxx/libs/core/src/SearchPath.cc, src/cxx/libs/core/src/SearchPath.hh, src/cxx/libs/core/src/SpaceAtomic.cc, src/cxx/libs/core/src/SpaceAtomic.hh, src/cxx/libs/core/src/SpaceBase.hh, src/cxx/libs/core/src/SpaceGn.cc, src/cxx/libs/core/src/SpaceGn.hh, src/cxx/libs/core/src/SpaceInterpGn.hh, src/cxx/libs/core/src/SpaceInterpMethod.hh, src/cxx/libs/core/src/Timer.hh, src/cxx/libs/core/src/TypeInfo.cc, src/cxx/libs/core/src/TypeInfo.hh, src/cxx/libs/core/src/VecBase.hh, src/cxx/libs/core/src/VecGn.hh, src/cxx/libs/core/src/VectorGn.hh, src/cxx/libs/core/tests/Makefile.am, src/cxx/libs/core/tests/TestBBoxGn.cc, src/cxx/libs/core/tests/TestDict.cc, src/cxx/libs/core/tests/TestFB.cc, src/cxx/libs/core/tests/TestFrustum.cc, src/cxx/libs/core/tests/TestFrustumClipping.cc, src/cxx/libs/core/tests/TestFrustumXforms.cc, src/cxx/libs/core/tests/TestMatrixGn.cc, src/cxx/libs/core/tests/TestPointGn.cc, src/cxx/libs/core/tests/TestSearchPath.cc, src/cxx/libs/core/tests/TestSpaceGn.cc, src/cxx/libs/core/tests/TestVecGn.cc, src/cxx/libs/core/tests/TestVectorGn.cc:
 	initial revision
 
