@@ -1,4 +1,4 @@
-// $Id: FB.hh,v 1.3 2004/04/06 15:42:57 jim Exp $
+// $Id: FB.hh,v 1.4 2004/04/09 17:55:12 jim Exp $
 
 #ifndef PIPELINE_FB_HH
 #define PIPELINE_FB_HH
@@ -33,8 +33,7 @@ namespace Pipeline {
 /*------------------------------------------------------------------------------------------*/
 /*   F E E D B A C K                                                                        */
 /*                                                                                          */
-/*     Static class which provides central control over timing stats, warnings, errors and  */
-/*     all other user messages.                                                             */
+/*     Static class which provides central control over timing stats and warnings messages. */
 /*------------------------------------------------------------------------------------------*/
 
 class FB
@@ -61,13 +60,11 @@ public:
   ) 
   {
     /* initialize the locks */ 
-    assert(sLockSet == NULL);
-    assert(sLockID == -1);
-    sLockSet = new LockSet();
-    sLockID = sLockSet->initLock();
-    assert(sLockID != -1);
+    LockSet::init();
+    sLock = LockSet::newLock();
+    assert(sLock != NULL);
 
-    sLockSet->lock(sLockID);
+    LockSet::lock(sLock);
     {
       /* this causes output to be flushed after each insertion,
 	 for better interactive monitoring at medium performance cost */ 
@@ -83,7 +80,7 @@ public:
       sTimers = new Timer[sNumTimers];
       assert(sTimers);
     }
-    sLockSet->unlock(sLockID);
+    LockSet::unlock(sLock);
   }
 
 
@@ -93,16 +90,7 @@ public:
   static bool
   isInitialized() 
   {
-    if(sLockSet == NULL) {
-      assert(sOut == NULL);
-      assert(sTimers == NULL);
-      return false;
-    }
-    else {
-      assert(sOut != NULL);
-      assert(sTimers != NULL);
-      return true;
-    }
+    return ((sLock != NULL) && (sOut != NULL) && (sTimers != NULL));
   }
 
 
@@ -118,7 +106,7 @@ public:
   static void
   lock()
   {
-    sLockSet->lock(sLockID);
+    LockSet::lock(sLock);
   }
   	
   /**
@@ -136,45 +124,11 @@ public:
   static void
   unlock()
   {
-    sLockSet->unlock(sLockID);
+    LockSet::unlock(sLock);
   }
   
   
 
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   E R R O R   M E S S A G E S                                                          */
-  /*----------------------------------------------------------------------------------------*/
-											    
-  /**
-   * Report the occurrence of an error.
-   * 
-   * param msg
-   *  The message text.
-   */ 
-  static void 										    
-  error											    
-  (											    
-   const char* msg = NULL 
-  ) 											    
-  {
-    sLockSet->lock(sLockID);						    
-    {
-      assert(sOut);
-      (*sOut) << std::flush;
-      
-      std::cerr << "FATAL ERROR: " << (msg ? msg : "Abort!") << "\n" << std::flush;
-    }
-    sLockSet->unlock(sLockID);
-    
-    sleep(5);
-
-    assert(false);									    
-    exit(EXIT_FAILURE);								    
-  }											    
-											    
-
-										    
   /*----------------------------------------------------------------------------------------*/
   /*   W A R N I N G   M E S S A G E S                                                      */
   /*----------------------------------------------------------------------------------------*/
@@ -192,11 +146,11 @@ public:
   ) 											    
   {		
     bool tf = false;
-    sLockSet->lock(sLockID);						    
+    LockSet::lock(sLock);						    
     {
       tf = (sWarnings && (level <= sWarningLevel));
     }
-    sLockSet->unlock(sLockID);	
+    LockSet::unlock(sLock);	
     return tf;		
   }											    
 
@@ -228,12 +182,12 @@ public:
   {	
     assert(level > 0);
 
-    sLockSet->lock(sLockID);						    
+    LockSet::lock(sLock);						    
     {									    
       sWarnings     = tf; 
       sWarningLevel = level;
     }
-    sLockSet->unlock(sLockID);
+    LockSet::unlock(sLock);
   }	
 
 											    
@@ -255,14 +209,14 @@ public:
   {											    
     assert(msg);									    
 
-    sLockSet->lock(sLockID);						    
+    LockSet::lock(sLock);						    
     {									    
       if(sWarnings && (level <= sWarningLevel)) {	
 	assert(sOut);									    
-	(*sOut) << "\nWARNING: " << msg << "\n\n";	
+	(*sOut) << "WARNING: " << msg << "\n";	
       }
     }
-    sLockSet->unlock(sLockID);					    
+    LockSet::unlock(sLock);					    
   }											    
 											    
 										    
@@ -284,11 +238,11 @@ public:
   ) 											    
   {		
     bool tf = false;
-    sLockSet->lock(sLockID);						    
+    LockSet::lock(sLock);						    
     {
       tf = (sStageStats && (level <= sStatLevel));
     }
-    sLockSet->unlock(sLockID);
+    LockSet::unlock(sLock);
     return tf;
   }											    
 		
@@ -317,12 +271,12 @@ public:
    UInt32 level = 1      		    
   ) 											    
   {		
-    sLockSet->lock(sLockID);						    
+    LockSet::lock(sLock);						    
     {
       sStageStats = tf;									    
       sStatLevel = level;	
     }
-    sLockSet->unlock(sLockID);								    
+    LockSet::unlock(sLock);								    
   }											    
 			    
   /**
@@ -342,25 +296,28 @@ public:
   (											    
    const char* title, 
    UInt32 level = 1   
-  ) 											    
+  ) 
+    throw(std::runtime_error)	
   {											    
     assert(title);									    
     assert(sTimers);									    
 	
-    sLockSet->lock(sLockID);						    
+    LockSet::lock(sLock);						    
     {				
       if(sStageStats && (level <= sStatLevel)) {
 	sIndentLevel += 2;
 	sTimerLevel++;	
 								    
 	if(sTimerLevel < 0) {							 
-	  sLockSet->unlock(sLockID);
-	  error("Somehow the stage nesting level has become negative!");	 
+	  LockSet::unlock(sLock);
+	  throw std::runtime_error
+	    ("Somehow the stage nesting level has become negative!");	 
 	}
 
 	if(sTimerLevel >= sNumTimers) {
-	  sLockSet->unlock(sLockID);							    
-	  error("Somehow the maximum stage nesting level has been exceeded!");		 
+	  LockSet::unlock(sLock);							    
+	  throw std::runtime_error
+	    ("Somehow the maximum stage nesting level has been exceeded!");
 	}
 
 	sTimers[sTimerLevel].reset();							    
@@ -370,7 +327,7 @@ public:
 	(*sOut) << title << "\n";
       }
     }
-    sLockSet->unlock(sLockID);
+    LockSet::unlock(sLock);
   }
 											    
   /**
@@ -391,7 +348,7 @@ public:
   {											    
     assert(msg);									    
 	
-    sLockSet->lock(sLockID);						    
+    LockSet::lock(sLock);						    
     {
       if(sStageStats && (level <= sStatLevel)) {
 	indent(1);
@@ -399,7 +356,7 @@ public:
 	(*sOut) << msg << "\n";
       }
     }
-    sLockSet->unlock(sLockID);		
+    LockSet::unlock(sLock);		
   }											    
 											    
   /**
@@ -414,14 +371,14 @@ public:
    UInt32 level = 1     		    
   )											    
   {	
-    sLockSet->lock(sLockID);						    
+    LockSet::lock(sLock);						    
     {
       if(sStageStats && (level <= sStatLevel)) {
 	assert(sOut);									    
 	(*sOut) << "\n";
       }
     }
-    sLockSet->unlock(sLockID);
+    LockSet::unlock(sLock);
   }
 											    
   /**
@@ -431,26 +388,29 @@ public:
    * will get mangled by multiple asynchronous threads.
    */ 				    
   static double										    
-  stageTime() 										    
+  stageTime() 
+    throw(std::runtime_error)
   {
     double time;
 
-    sLockSet->lock(sLockID);						    
+    LockSet::lock(sLock);						    
     {    
       if(sTimerLevel < 0) {
-	sLockSet->unlock(sLockID);
-	error("Somehow the stage nesting level has become negative!");	 
+	LockSet::unlock(sLock);
+	throw std::runtime_error
+	  ("Somehow the stage nesting level has become negative!");	 
       }
 
       if(sTimerLevel >= sNumTimers) {
-	sLockSet->unlock(sLockID);
-	error("Somehow the maximum stage nesting level has been exceeded!"); 
+	LockSet::unlock(sLock);
+	throw std::runtime_error
+	  ("Somehow the maximum stage nesting level has been exceeded!"); 
       }
     											    
       assert(sTimers);									    
       time = sTimers[sTimerLevel].seconds();
     }
-    sLockSet->unlock(sLockID);
+    LockSet::unlock(sLock);
     
     return time;
   }											    
@@ -468,19 +428,22 @@ public:
   stageEnd										    
   (											    
    UInt32 level = 1      		    
-  )											    
+  )
+    throw(std::runtime_error)
   {
-    sLockSet->lock(sLockID);						    
+    LockSet::lock(sLock);						    
     {				
       if(sStageStats && (level <= sStatLevel)) {
 	if(sTimerLevel < 0) {							 
-	  sLockSet->unlock(sLockID);
-	  error("Somehow the stage nesting level has become negative!");	 
+	  LockSet::unlock(sLock);
+	  throw std::runtime_error
+	    ("Somehow the stage nesting level has become negative!");	 
 	}
 
 	if(sTimerLevel >= sNumTimers) {
-	  sLockSet->unlock(sLockID);							    
-	  error("Somehow the maximum stage nesting level has been exceeded!");		 
+	  LockSet::unlock(sLock);							    
+	  throw std::runtime_error
+	    ("Somehow the maximum stage nesting level has been exceeded!");
 	}
 	
 	indent();
@@ -493,12 +456,13 @@ public:
 	if(sTimerLevel >= 0) 								    
 	  sTimerLevel--;
 	else {
-	  sLockSet->unlock(sLockID);
-	  error("Attempted to end a non-existent stage!");
+	  LockSet::unlock(sLock);
+	  throw std::runtime_error
+	    ("Attempted to end a non-existent stage!");
 	}
       }
     }
-    sLockSet->unlock(sLockID);
+    LockSet::unlock(sLock);
   }  											    
 											    
 
@@ -530,7 +494,7 @@ public:
   {											    
     assert(msg);									    
 	
-    sLockSet->lock(sLockID);						    
+    LockSet::lock(sLock);						    
     {
       if(sStageStats && (level <= sStatLevel)) {
 	assert(sOut);
@@ -551,7 +515,7 @@ public:
 	(*sOut) << msg << "\n";
       }
     }
-    sLockSet->unlock(sLockID);		
+    LockSet::unlock(sLock);		
   }								    
 
 
@@ -581,14 +545,9 @@ private:
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The shared set of locks.
-   */
-  static LockSet*  sLockSet;
-
-  /**
    * The ID of the lock which protects access to the following internal variables.
    */  
-  static int  sLockID;
+  static LockSet::Lock*  sLock;
 
 
   /**

@@ -1,4 +1,4 @@
-// $Id: Task.hh,v 1.3 2004/04/06 15:42:57 jim Exp $
+// $Id: Task.hh,v 1.4 2004/04/09 17:55:12 jim Exp $
 
 #ifndef PIPELINE_TASK_HH
 #define PIPELINE_TASK_HH
@@ -15,9 +15,7 @@
 #  include <sys/wait.h>
 #endif
 
-
 #include <PackageInfo.hh>
-
 
 namespace Pipeline {
 
@@ -39,6 +37,9 @@ public:
 
   /**
    * Construct a new task.
+   * 
+   * param name
+   *   The title of the task.
    */ 
   Task
   (
@@ -116,6 +117,7 @@ public:
   (
    long stackSize = 65536
   ) 
+    throw(std::runtime_error)
   {
     assert(stackSize > 0);
     char msg[1024];
@@ -124,7 +126,7 @@ public:
     pPID = clone(TaskLauncher, (void*) (pStack+stackSize-1), CLONE_VM, (void*) this);
     if(pPID == -1) {
       sprintf(msg, "Unable to spawn task thread %s: %s", pName, strerror(errno));
-      FB::error(msg);
+      throw std::runtime_error(msg);
     }      
   }
 
@@ -136,6 +138,7 @@ public:
    */ 
   int 
   wait() const 
+    throw(std::runtime_error)
   {
     assert(pPID > 0);
     char msg[1024];
@@ -149,7 +152,7 @@ public:
       default:	
 	sprintf(msg, "Unable to wait for %s[%d] to exit: %s", 
 		pName, pPID, strerror(errno));
-	FB::error(msg);
+	throw std::runtime_error(msg);
       }
     }
 
@@ -162,7 +165,7 @@ public:
     }
     else if(WCOREDUMP(status)) {
       sprintf(msg, "%s[%d]: Core dumped!", pName, pPID);
-      FB::error(msg);
+      throw std::runtime_error(msg);
     }
 
     return EXIT_FAILURE;
@@ -205,8 +208,18 @@ TaskLauncher
  void *obj
 ) 
 {
-  Task* task = (Task*) obj;
-  return (task->run());
+  try {
+    Task* task = (Task*) obj;
+    return (task->run());
+  } 
+  catch(std::runtime_error e) {
+    printf("TASK RUNTIME EXCEPTION: %s\n", e.what());
+    return EXIT_FAILURE;
+  }
+  catch(std::exception e) {
+    printf("UNCAUGHT TASK EXCEPTION: %s\n", e.what());
+    return EXIT_FAILURE;
+  }
 }
 
 

@@ -1,4 +1,4 @@
-// $Id: NotifyMgr.hh,v 1.4 2004/04/06 15:42:57 jim Exp $
+// $Id: NotifyMgr.hh,v 1.5 2004/04/09 17:55:12 jim Exp $
 
 #ifndef PIPELINE_NOTIFY_MGR_HH
 #define PIPELINE_NOTIFY_MGR_HH
@@ -13,6 +13,8 @@
 
 #include <LockSet.hh>
 #include <NotifyTask.hh>
+#include <NotifyControlServer.hh>
+#include <NotifyMonitorServer.hh>
 
 namespace Pipeline {
 
@@ -57,21 +59,20 @@ public:
    * 
    * param dir 
    *   The root directory of all watched directories.
+   * 
+   * param controlPort
+   *   The control network port number.
+   * 
+   * param monitorPort
+   *   The monitor network port number.
    */ 
   NotifyMgr
   ( 
-   const char* dir
-  ) : 
-    pShutdown(false),
-    pRootDir(strdup(dir))
-  {
-    pShutdownID = pLockSet.initLock();
-    assert(pShutdownID != -1);
-    pLockSet.lock(pShutdownID);
+   const char* dir,
+   int controlPort,
+   int monitorPort
+  );
 
-    pLockID = pLockSet.initLock();
-    assert(pLockID != -1);
-  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -82,9 +83,12 @@ public:
   {
     delete[] pRootDir;
 
+    delete pControlServer;
+    delete pMonitorServer;
+
     pLockSet.releaseLock(pShutdownID);
     pLockSet.releaseLock(pLockID);
-    
+
     assert(pTasks.empty());
   }
 
@@ -188,7 +192,6 @@ private:
   LockSet pLockSet;
 
 
-
   /**
    * The ID of the shutdown lock.  
    * 
@@ -212,6 +215,16 @@ private:
    * The root directory of all watched directories.
    */
   const char* pRootDir;
+
+  /**
+   * The notify control server.
+   */ 
+  NotifyControlServer*  pControlServer;
+
+  /**
+   * The notify monitor server.
+   */ 
+  NotifyMonitorServer*  pMonitorServer;
 
   /**
    * The list of managed tasks.

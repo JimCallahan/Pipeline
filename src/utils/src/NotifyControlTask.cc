@@ -1,13 +1,7 @@
-// $Id: NotifyControlTask.hh,v 1.3 2004/04/09 17:55:12 jim Exp $
+// $Id: NotifyControlTask.cc,v 1.1 2004/04/09 17:55:12 jim Exp $
 
-#ifndef PIPELINE_NOTIFY_CONTROL_TASK_HH
-#define PIPELINE_NOTIFY_CONTROL_TASK_HH
-
-#ifdef HAVE_CONFIG_H
-#  include "config.h"
-#endif
-
-#include <NotifyConnectTask.hh>
+#include <NotifyControlTask.hh>
+#include <NotifyMgr.hh>
 
 namespace Pipeline {
 
@@ -34,55 +28,57 @@ namespace Pipeline {
 /*    All directory names will be relative to the root production directory.                */
 /*------------------------------------------------------------------------------------------*/
 
-class NotifyControlTask : public NotifyConnectTask
+/*----------------------------------------------------------------------------------------*/
+/*   T A S K                                                                              */
+/*----------------------------------------------------------------------------------------*/
+
+/**
+ * Run the task.
+ */ 
+int
+NotifyControlTask::run()
 {
-public:
-  /*----------------------------------------------------------------------------------------*/
-  /*   C O N S T R U C T O R                                                                */
-  /*----------------------------------------------------------------------------------------*/
+  char msg[1024];
+  char data[1033];
+  data[1033] = '\0';
+  while(!pMgr.isShutdown()) {
+    int num = Network::read(pSocket, data, 1032);
+    if((num == -1) || (num < 1032)) {
+      FB::warn("Illegible message recieved!");
+      break;
+    }
+    
+    if(strncmp(data, "ADD_____", 8) == 0) {
+      sprintf(msg, "Add Directory: %s", data+8);
+      FB::threadMsg(msg, 4, pName, pPID);
 
-  /**
-   * Construct a new task.
-   * 
-   * param mgr
-   *   The notify task manager.
-   * 
-   * param sd
-   *   The socket descriptor.
-   */ 
-  NotifyControlTask
-  (
-   NotifyMgr& mgr, 
-   int sd
-  ) :
-    NotifyConnectTask("NotifyControlTask", mgr, sd)
-  {}
+      pMgr.addDir(data+8); 
+    }
+    else if(strncmp(data, "REMOVE__", 8) == 0) {
+      sprintf(msg, "Remove Directory: %s", data+8);
+      FB::threadMsg(msg, 4, pName, pPID);
+      
+      pMgr.removeDir(data+8); 
+    }
+    else if(strncmp(data, "CLOSE___", 8) == 0) {
+      FB::threadMsg("Close", 4, pName, pPID);
+      break;
+    }
+    else if(strncmp(data, "SHUTDOWN", 8) == 0) {
+      FB::threadMsg("Shutdown", 4, pName, pPID);
+      
+      pMgr.shutdown();
+    }
+    else {
+      FB::warn("Illegal message recieved!");
+      break;
+    }
+  }
 
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   D E S T R U C T O R                                                                  */
-  /*----------------------------------------------------------------------------------------*/
-
-  ~NotifyControlTask()
-  {}
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   T A S K                                                                              */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Run the task.
-   */ 
-  virtual int
-  run();
-
-
-};
-
+  FB::threadMsg("Connection Closed.", 3, pName, pPID);
+  
+  pIsFinished = true;
+  return EXIT_SUCCESS;
+}
 
 } // namespace Pipeline
-
-#endif

@@ -1,4 +1,4 @@
-// $Id: NotifyTask.cc,v 1.3 2004/04/06 15:42:57 jim Exp $
+// $Id: NotifyTask.cc,v 1.4 2004/04/09 17:55:12 jim Exp $
 
 #include <NotifyTask.hh>
 
@@ -38,6 +38,7 @@ NotifyTask::NotifyTask
        been initialized at the start of the run() method. */ 
   pLockID = pLockSet.initLock();
   assert(pLockID != -1);
+  printf("NotifyTask::pLockID = %d\n", pLockID);
   pLockSet.lock(pLockID);
 
   int wk;
@@ -193,8 +194,6 @@ NotifyTask::run()
 		<< "          " << pRootDir << "/" << pDirs[wk] << " (" << wk << ")\n";
 	    }
 	  }
-	  
-	  FB::getStream() << "\n";
 	}
 	FB::unlock();
       }

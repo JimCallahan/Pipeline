@@ -1,4 +1,4 @@
-// $Id: PlNotify.cc,v 1.4 2004/04/06 15:42:57 jim Exp $
+// $Id: PlNotify.cc,v 1.5 2004/04/09 17:55:12 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -7,8 +7,7 @@
 #include <PackageInfo.hh>
 #include <HtmlHelp.hh>
 #include <NotifyMgr.hh>
-#include <NotifyControlServer.hh>
-#include <Network.hh>
+#include <LockSet.hh>
 
 using namespace Pipeline;
 
@@ -42,10 +41,7 @@ usage()
 
 
 /**
- * Makes sure that the exit functions are called for: SIGHUP, SIGINT or SIGTERM
- * 
- * This is mainly to make sure that the semaphores used by LockSet are properly 
- * released on exit of plnotify(1).
+ * Makes sure that the semaphore sets are cleaned up for: SIGHUP, SIGINT or SIGTERM
  */ 
 void
 handleSignal
@@ -53,7 +49,8 @@ handleSignal
  int signal
 ) 
 {
-  exit(EXIT_FAILURE);
+  printf("Caught Signal: %s\n", strsignal(signal));
+  LockSet::cleanup();
 }
 
 /**
@@ -126,22 +123,8 @@ main
     }
   }
 
-
-  /* initialize the loggers */ 
-  {
-    FB::init(std::cout);
-    
-    if(statsLevel > 0) 
-      FB::setStageStats(true, statsLevel);
-    else 
-      FB::setStageStats(false);
-    
-    if(warningsLevel > 0) 
-      FB::setWarnings(true, warningsLevel);
-    else
-      FB::setWarnings(false);
-  }
-
+  /* initialize the LockSet table */ 
+  LockSet::init();
 
   /* register signal handlers for: SIGHUP, SIGINT and SIGTERM */ 
   {
@@ -158,23 +141,31 @@ main
     }
   }
   
+  /* initialize the loggers */ 
+  {
+    FB::init(std::cout);
+    
+    if(statsLevel > 0) 
+      FB::setStageStats(true, statsLevel);
+    else 
+      FB::setStageStats(false);
+    
+    if(warningsLevel > 0) 
+      FB::setWarnings(true, warningsLevel);
+    else
+      FB::setWarnings(false);
+  }
 
   /* startup the notify, control and monitory threads */ 
   FB::threadMsg("Started Daemon", 0);
   {
-    NotifyMgr mgr(prodDir);
-
-//     NotifyMonitorServer monitor(mgr, monitorPort);
-//     monitor.spawn();
-
-    NotifyControlServer control(mgr, controlPort);
-    control.spawn();
- 
+    NotifyMgr mgr(prodDir, controlPort, monitorPort);
     mgr.wait();
   }
   FB::threadMsg("All Finished", 0);
 
-  return EXIT_SUCCESS;
+  LockSet::cleanup();
+  exit(EXIT_SUCCESS);
 }
 
 

@@ -1,38 +1,9 @@
-// $Id: NotifyControlServer.hh,v 1.2 2004/04/06 15:42:57 jim Exp $
+// $Id: NotifyControlServer.hh,v 1.3 2004/04/09 17:55:12 jim Exp $
 
 #ifndef PIPELINE_NOTIFY_CONTROL_SERVER_HH
 #define PIPELINE_NOTIFY_CONTROL_SERVER_HH
 
-#ifdef HAVE_CONFIG_H
-#  include "config.h"
-#endif
-
-#ifdef HAVE_SYS_TYPES_H
-#  include <sys/types.h>
-#endif
-
-#ifdef HAVE_SYS_STAT_H
-#  include <sys/stat.h>
-#endif
-
-#ifdef HAVE_UNISTD_H
-#  include <unistd.h>
-#endif
-
-#ifdef HAVE_FCNTL_H
-#  include <fcntl.h>
-#endif
-
-#ifdef HAVE_SIGNAL_H
-#  include <signal.h>
-#endif
-
-#ifdef HAVE_ERRNO_H
-#  include <errno.h>
-#endif
-
-#include <Task.hh>
-#include <NotifyMgr.hh>
+#include <NotifyServerGn.hh>
 #include <NotifyControlTask.hh>
 
 namespace Pipeline {
@@ -44,16 +15,8 @@ namespace Pipeline {
 /*    for each incoming connection.                                                         */
 /*------------------------------------------------------------------------------------------*/
 
-class NotifyControlServer : public Task
+class NotifyControlServer : public NotifyServerGn<NotifyControlTask>
 {
-private: 
-  /*----------------------------------------------------------------------------------------*/
-  /*   T Y P E S                                                                            */
-  /*----------------------------------------------------------------------------------------*/
-
-  typedef std::list<NotifyControlTask*>  TaskList;
-
-
 public:
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -73,128 +36,8 @@ public:
    NotifyMgr& mgr, 
    int port
   ) :
-    Task("NotifyControlServer"), 
-    pMgr(mgr), 
-    pLockSet(mgr.getLockSet()), 
-    pPort(port)
-  { 
-    pLockID = pLockSet.initLock();
-    assert(pLockID != -1);
-
-    assert(pPort > 0);      
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   D E S T R U C T O R                                                                  */
-  /*----------------------------------------------------------------------------------------*/
-
-  ~NotifyControlServer()
-  {
-    pLockSet.releaseLock(pLockID);
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   T A S K                                                                              */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Run the task.
-   */ 
-  virtual int
-  run()
-  {
-    char msg[1024];
-
-    FB::threadMsg("Started", 1, pName, pPID);
-    {
-      /* initialize the network socket */ 
-      int sd = Network::socket();    
-      Network::setReuseAddr(sd, true);
-      Network::bind(sd, pPort);
-      Network::listen(sd);
-
-      {
-	sprintf(msg, "Listening on Port: %d", pPort);
-	FB::threadMsg(msg, 2, pName, pPID);
-      }
-
-      /* listen for incoming connections */ 
-      while(true) {
-	int csd = Network::accept(sd);
-	if(pMgr.isShutdown())
-	  break;
-
-	/* spawn a task to handle the connection */ 
-	pLockSet.lock(pLockID);
-	{
-	 NotifyControlTask* task = new NotifyControlTask(pMgr, csd);
-	 pTasks.push_back(task);
-	  
-	 task->spawn();
-
-	 FB::threadMsg("Connection Opened", 3, task->getName(), task->getPID());
-	}
-	pLockSet.unlock(pLockID);
-      }
-
-      /* wait for the tasks to complete */ 
-      pLockSet.lock(pLockID);
-      {
-	TaskList::iterator iter;
-	for(iter = pTasks.begin(); iter != pTasks.end(); iter++) {
-	  int code = (*iter)->wait();
-	  
-	  char msg[1024];
-	  sprintf(msg, "NotifyControlTask[%d] Exited = %d", (*iter)->getPID(), code);
-	  FB::threadMsg(msg, 3, pName, pPID);
-	  
-	  delete (*iter);
-	}
-	pTasks.clear();
-      }   
-      pLockSet.unlock(pLockID);
-    }
-    FB::threadMsg("Finished", 1, pName, pPID);
-
-    return EXIT_SUCCESS;
-  }
-
-
-
-private:
-  /*----------------------------------------------------------------------------------------*/
-  /*   I N T E R N A L S                                                                    */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The parent task manager.
-   */
-  NotifyMgr&  pMgr;
-
-  /**
-   * The shared set of locks.
-   */
-  LockSet& pLockSet;
-
-  /**
-   * The network port number.
-   */ 
-  int pPort;
-
-
-  /**
-   * The ID of the lock which protects access to the task list.
-   */
-  int pLockID;
-
-  /**
-   * The list of managed tasks.
-   */ 
-  TaskList  pTasks;
+    NotifyServerGn<NotifyControlTask>("NotifyControlServer", "NotifyControlTask", mgr, port)
+  {}
 
 };
 

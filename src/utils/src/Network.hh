@@ -1,4 +1,4 @@
-// $Id: Network.hh,v 1.1 2004/04/06 08:58:09 jim Exp $
+// $Id: Network.hh,v 1.2 2004/04/09 17:55:12 jim Exp $
 
 #ifndef PIPELINE_NETWORK_HH
 #define PIPELINE_NETWORK_HH
@@ -320,11 +320,11 @@ public:
   )
   {
     size_t n;
-    if((n = readHelper(sd, data, size)) == -1) {
+    if((n = readHelper(sd, data, size)) != size) {
       char msg[1024];
       sprintf(msg, "Unable to read (%d) bytes from the socket (%d): %s", 
 	      size, sd, strerror(errno));
-      FB::error(msg);
+      FB::warn(msg);
     }
 
     return n;
@@ -345,7 +345,7 @@ public:
    * return 
    *   The number of bytes written.
    */ 
-  static void
+  static ssize_t
   write
   (
    int sd,          
@@ -353,12 +353,15 @@ public:
    size_t size      
   )
   {
-    if(writeHelper(sd, data, size) != size) {
+    size_t n;
+    if((n = writeHelper(sd, data, size)) != size) {
       char msg[1024];
       sprintf(msg, "Unable to write (%d) bytes to the socket (%d): %s", 
 	      size, sd, strerror(errno));
-      FB::error(msg);
+      FB::warn(msg);
     }
+
+    return n;
   }
 
 
@@ -457,7 +460,7 @@ private:
       p += nwritten;
     }
 
-    return size;
+    return (size - nleft);
   }
 
 };

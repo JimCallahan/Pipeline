@@ -1,4 +1,4 @@
-// $Id: NotifyMgr.cc,v 1.3 2004/04/06 15:42:57 jim Exp $
+// $Id: NotifyMgr.cc,v 1.4 2004/04/09 17:55:12 jim Exp $
 
 #include <NotifyMgr.hh>
 
@@ -14,6 +14,52 @@ namespace Pipeline {
 /*    This class manages these threads and presets the user with a simple interface for     */
 /*    interacting with the NotifyTask instances.                                            */
 /*------------------------------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------------------------*/
+/*   C O N S T R U C T O R                                                                */
+/*----------------------------------------------------------------------------------------*/
+
+/**
+ * Construct a new notify task manager.
+ * 
+ * param dir 
+ *   The root directory of all watched directories.
+ * 
+ * param controlPort
+ *   The control network port number.
+ * 
+ * param monitorPort
+ *   The monitor network port number.
+ */ 
+NotifyMgr::NotifyMgr
+( 
+ const char* dir,
+ int controlPort,
+ int monitorPort
+) : 
+  pShutdown(false),
+  pRootDir(strdup(dir))
+{
+  /* intialize the locks */ 
+  pShutdownID = pLockSet.initLock();
+  assert(pShutdownID != -1);
+  printf("NotifyMgr::pShutdownID = %d\n", pShutdownID);
+  pLockSet.lock(pShutdownID);
+
+  pLockID = pLockSet.initLock();
+  assert(pLockID != -1);
+  printf("NotifyMgr::pLockID = %d\n", pLockID);
+
+  /* start the control server */ 
+  pControlServer = new NotifyControlServer(*this, controlPort);
+  pControlServer->spawn();
+
+  /* start the monitor server */ 
+  pMonitorServer = new NotifyMonitorServer(*this, monitorPort);
+  pMonitorServer->spawn();
+}
+
+
 
 /*----------------------------------------------------------------------------------------*/
 /*   A C C E S S                                                                          */
@@ -135,17 +181,9 @@ NotifyMgr::modified
   if(pShutdown) 
     return;
 
-  pLockSet.lock(pLockID);    
-  { 
-    // DEBUG 
-    char msg[1024];
-    sprintf(msg, "MODIFIED: %s/%s", pRootDir, dir);
-    FB::threadMsg(msg, 4);
-    // DEBUG 
-
-    
-    // distribute the diretory to the NotifyMonitorTask(s)... 
-
+  pLockSet.lock(pLockID);
+  {    
+    pMonitorServer->modified(dir);  
   }
   pLockSet.unlock(pLockID);  
 }
