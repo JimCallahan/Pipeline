@@ -1,4 +1,4 @@
-// $Id: ScriptAction.java,v 1.1 2004/09/08 18:31:28 jim Exp $
+// $Id: ScriptAction.java,v 1.2 2004/09/11 14:15:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -12,22 +12,14 @@ import java.io.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Executes a script using a arbitrary interpreter program. <P> 
+ * Runs an executable script. <P> 
  * 
  * This action defines the following single valued parameters: <BR>
  * 
  * <DIV style="margin-left: 40px;">
- *   Interpreter <BR>
+ *   Script <BR>
  *   <DIV style="margin-left: 40px;">
- *     The name of the program which will interpret the script text.  The fully resolved
- *     path to this program is placed on the first line of the generated temporary script
- *     immediately after "!#".  Any program which can be used in this manner can be used 
- *     for as the value for this parameter. <BR>
- *   </DIV> <BR>
- *   
- *   ScriptText <BR>
- *   <DIV style="margin-left: 40px;">
- *     The text to be interpreted. <BR>
+ *     The source node who's primary file sequence is a single executable script.
  *   </DIV> 
  * </DIV> <P> 
  * 
@@ -127,17 +119,10 @@ class ScriptAction
 
     {
       BaseActionParam param = 
-	new StringActionParam("Interpreter", 
-			      "The program which will interpret the script.", 
-			      "bash");
-      addSingleParam(param);
-    }
-
-    {
-      BaseActionParam param = 
-	new TextActionParam("ScriptText", 
-			    "The script text to execute.",
-			    "# put your script text here...");
+	new LinkActionParam
+	("Script", 
+	 "The node containing the script to execute.",
+	 null);
       addSingleParam(param);
     }
   }
@@ -168,62 +153,31 @@ class ScriptAction
   )
     throws PipelineException
   {
-    /* resolve the absolute path to the interpreter program */ 
-    String interp = null;
+    /* get the name of the executable script file */ 
+    File script = null;
     {
-      String prog = (String) getSingleParamValue("Interpreter");
-    
-      File ifile = new File(prog);
-      if(ifile.isAbsolute()) {
-	if(!ifile.exists()) 
-	  throw new PipelineException
-	    ("The interpreter program (" + prog + ") does not exist!");
+      String sname = (String) getSingleParamValue("Script"); 
+      if(sname == null) {
+	throw new PipelineException
+	  ("The Script parameter was not set!");
       }
-      else {
-	String path = agenda.getEnvironment().get("PATH");
-	if(path == null) 
+      else {	
+	FileSeq fseq = agenda.getPrimarySource(sname);
+	if(fseq == null) 
 	  throw new PipelineException
-	    ("The interpreter program (" + prog + ") was not absolute and no PATH was " +
-	     "provided in the environment!");
+	    ("Somehow the Script node (" + sname + ") was not one of the source nodes!");
 	
-	ExecPath exec = new ExecPath(path);
-	File absolute = exec.which(ifile.getPath());
-	if(absolute == null) {
-	  StringBuffer buf = new StringBuffer();
-	  buf.append("The interpreter program (" + prog + ") was not absolute and could " +
-		     "not be found using the PATH from the given environment!\n\n" +
-		     "The directories searched: \n");
-	  
-	  for(File edir : exec.getDirectories()) 
-	    buf.append("  " + edir + "\n");
-	  
-	  throw new PipelineException(buf.toString());
-	}
+	String suffix = fseq.getFilePattern().getSuffix();
+	if(!fseq.isSingle()) 
+	  throw new PipelineException
+	    ("The Script Action requires that the source node specified by the Script " +
+	     "parameter (" + sname + ") must have a single executable file as its " + 
+	     "primary file sequence!");
 	
-	ifile = absolute;
+	NodeID snodeID = new NodeID(agenda.getNodeID(), sname);
+	script = new File(PackageInfo.sProdDir,
+			  snodeID.getWorkingParent() + "/" + fseq.getFile(0));
       }
-
-      interp = ifile.getPath();
-    }
-
-    /* write a temporary executable script file */ 
-    File script = createTemp(agenda, 0755, "script");
-    try {      
-      FileWriter out = new FileWriter(script);
-	
-      String header = ("#!" + interp + "\n\n");
-      out.write(header);
-      
-      String body = (String) getSingleParamValue("ScriptText");
-      out.write(body);
-      
-      out.close();
-    }
-    catch(IOException ex) {
-      throw new PipelineException
-	("Unable to write temporary script file (" + script + ") for Job " + 
-	 "(" + agenda.getJobID() + ")!\n" +
-	 ex.getMessage());
     }
 
     /* add the extra environmental variables */ 
