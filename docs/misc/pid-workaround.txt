@@ -1,0 +1,68 @@
+http://developer.java.sun.com/developer/bugParade/bugs/4244896.html
+
+[Castalia@Arizona.edu] wrote:
+
+There is a very simple solution to obtaining the PID for
+those Java environments that utilize UNIXProcess to
+implement the abstract Process class. This involves
+trivial modifications to the Java source for Process.java
+and UNIXProcess.java (these files are available from the
+src.zip archive file of the JSDK distribution). No JNI
+mods or additions are needed.
+
+Add the following abstract method to the end of the Process
+class definition in Process.java:
+
+	/**
+	 * Gets the Process ID that uniquely identifies the system
+process.
+	 *
+	 * @return	the integer ID used by the system to identify
+the process.
+ 	 */
+	abstract public int ID();
+
+Then add the implementation of this method to the end of
+the UNIXProcess class definition in UNIXProcess.java:
+
+	public int getID() {
+	return pid;
+	}
+
+Note that the UNIXProcess class already contains the PID,
+but it's private and has no accessor method. Also note that
+the specific source code in UNIXProcess.java varies from
+platform to platform (I've found that the Linux version is
+different from the Solaris and Darwin versions), but that
+doesn't matter because they all contain the pid variable
+(they have to, of course, to uniquely identify the process
+on the system, duh, to waitFor or destroy it). So the same
+trivial accessor method will work.
+
+Compile these java files to class files. Put the class files
+in a java/lang subdirectory. Update your rt.jar file (this
+will be called classes.jar on Darwin) in your JRE lib
+directory (this may be /usr/java/jre/lib for Solaris, or
+/System/Library/Frameworks/JavaVM.framework/Versions/<v#>Classes
+for Darwin). I assume you've remembered to make a
+backup of the jar file you are going to update and that
+you have write permission for it. So, for example:
+
+jar uf /usr/java/jre/lib/rt.jar java
+
+This will use the Process.class and UNIXProcess*.class (4 or
+5) files in your java/lang subdirectory to replace the same
+files in the jar archive.
+
+NOTE: This does not in any way modifiy any existing
+functionality of your JRE, it just adds an accessor method
+for the pid value that was hidden there all along.
+
+It would, of course, be preferable if the addition of getID
+to the Process class definition was incorporated in a
+consistent and ubiquitous manner by the Java developers.
+
+I have tested this successfully for Solaris, Linux, and
+Darwin (Apple OS-X). I would be interested to hear if this
+solution, in whatever particular form it takes, works in
+MS-OS environments.

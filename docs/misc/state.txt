@@ -1,0 +1,123 @@
+
+
+  Node State: 
+ 
+  - Version Status: 
+
+      Test of Mod/Node existance in database and comparison of versions.
+
+    + PENDING: New node which has been registered but never checked-in.  
+
+    + CHECKED_IN: Node is in repository but has not been checked-out into working area.
+
+    + IDENTICAL: Node exists in both repository and working area with the same version.
+
+    + NEEDS_CHECKOUT: Repository version of node is newer then working area version. 
+
+
+  - Property Status: 
+
+      Comparison of the database properties (toolset, editor, ...) between the Mods and 
+      Nodes.  Directly analogous to Dependency Status but applied to node properties 
+      instead of dependency information.
+
+    + PENDING: (see Dependency Status)
+
+    + CHECKED_IN: (see Dependency Status)
+
+    + IDENTICAL: (see Dependency Status)
+
+    + MODIFIED: (see Dependency Status)
+
+    + NEEDS_CO: (see Dependency Status)
+   
+    + CONFLICTS: (see Dependency Status)
+
+
+  - Dependency Status: 
+
+      Comparison of the number, names and options (seq, all, frame offset) of dependencies
+      for Mods vs. Nodes.  Versions of the node's are not compared since Mods don't have 
+      version information for their dependencies.  
+
+    + PENDING:  Only possible state when Version Status is PENDING since there is no 
+                Node to compare against the Mod.
+
+    + CHECKED_IN:  Only possible state when Version Status is CHECKED_IN since there is no 
+                   Mod to compare against the Node.
+
+    + IDENTICAL:  Mod and Node have identical dependencies. Version Status may be
+                  either IDENTICAL or NEEDS_CO.  In the case of NEEDS_CO, 
+                  the Node has a newer version, but dependency information remains 
+                  identical to that of the Mod even though it was based on an older
+                  version of the Node.
+    
+    + MODIFIED:  Mod has different dependencies and/or dependency options
+                 than the Node. These differences are due to changes in the 
+                 Mod since the time of its check-out.  This implies a Version 
+                 Status of IDENTICAL.
+			 
+    + NEEDS_CO:  Mod and Node have different dependencies, but the differences 
+                 are ENTIRELY due to a new version of the Node since the Mod
+                 was checked-out.  The Mod remains identical to the Node upon
+                 which it was based.  This implies a Version Status of 
+                 NEEDS_CO.
+
+    + CONFLICTS:  Mod has different dependencies and/or dependency options than 
+                      the Node.  These differences are due to changes in the Mod from 
+                      its original state at the time of check-out AND also a new version 
+                      of the Node in the repository which has different dependencies than
+                      the version upon which the Mod was based.  This implies a Version 
+                      Status of NEEDS_CO.
+
+
+  - File Status: 
+
+      Comparison of the files associated with Mods and Nodes.  Each file associated 
+      with Data Mod/Nodes have individual File Status.  The states of IDENTICAL, 
+      MODIFIED, NEEDS_CO and CONFLICTS are directly analogous to their meaning 
+      for Dependency Status but applied to individual files.  
+
+      All of these states are superseded by the MISSING or STALE state if the 
+      conditions of those states are met.  In other words, until a file has been 
+      (re)generated (removing the conditions of MISSING or STALE) the file cannot 
+      meaningfully be compared with the repository.
+    
+    + PENDING:  Only possible state when Version Status is PENDING since there is no 
+                Node to compare against the Mod.  Implies that the working area file
+                assiciated with the Mod is not MISSING or STALE.
+
+    + CHECKED_IN: Only possible state when Version Status is CHECKED_IN since there are 
+                  no working area files to compare against the repository.
+
+    + IDENTICAL: (see Dependency Status)
+
+    + MODIFIED: (see Dependency Status)
+
+    + NEEDS_CO: (see Dependency Status)
+
+    + CONFLICTS: (see Dependency Status)
+
+    + MISSING:  The file was missing from the working area.  This implies a Version State
+                other than CHECKED_IN, since no working area files should be present to
+                be compared against the repository for this Version State.
+
+    + STALE:  For files associated with Data Nodes, the file exists in the working area
+              but changes to the upstream files or nodes mean that this file needs to 
+              be regenerated to reflect the changes.  There are several ways this can 
+              happen:
+
+	        1. The dependencies of the associated Data Node were changed after 
+                   the file was created.
+
+                2. The node properties of the Process Node which generated the file
+                   have been changed after the file was created.
+
+                3. Any of the files (process scripts or data files) which are in 
+                   the upstream dependency tree are newer than this file.  Note that
+                   this set of files can be more limited than ALL of the files upstream 
+                   since a file which is part of a sequence may only depend on a single 
+                   file from a sequence associated with an upstream node.
+
+
+                

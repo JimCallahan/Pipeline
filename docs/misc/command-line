@@ -1,0 +1,18 @@
+
+DEAD OPTIONS:
+  --process 
+  --html
+
+
+NEW OPTIONS:
+  --serial
+  --script
+
+
+CHANGED OPTIONS:
+  --editor  (using $EDITOR for regeneration scripts) 
+  --ignore
+  --abort
+  --depend
+  modify
+  register

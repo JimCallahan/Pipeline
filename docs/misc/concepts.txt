@@ -1,0 +1,119 @@
+
+-----------------------------------------------------------------------------------------------
+  T O P   L E V E L   V I E W
+-----------------------------------------------------------------------------------------------
+
+Data Nodes (graphical information):
+
+  + Rounded Rectangular Shape
+
+  + Short Name (long name as hint)
+
+  + StatusRsp (iconic indented symbol) 
+    - Registered: blank
+    - Up-to-date: checkmark
+    - Locally Modified: delta symbol
+    - Has Conflicts: "X" 
+    - Needs Check-out: "!"
+    - Missing Files: "?"
+    - Modified Depend: upside down delta symbol
+
+  + Queue Status (color) 
+    - Pending: green
+    - Running: yellow  (more accurately, the process node dependency is running) 
+      + How should progress on multi-file nodes be represented? As Left-to-right 
+        color change from running to finished colors?
+    - Failure: red  (the process node dependency, or one of its dependencies, failed)
+    - Finished: blue  (same as not queued?)
+
+
+Process Nodes (graphical information):
+
+  + Circular Shape 
+  
+  + Short Name (long name as hint?)
+
+  + StatusRsp (iconic indented figure?) 
+    - Registered: blank
+    - Up-to-date: checkmark
+    - Locally Modified: delta symbol
+    - Has Conflicts: "X" 
+    - Needs Check-out: "!"
+    - Missing Files: "?"
+    - Modified Depend: upside down delta symbol
+
+  + Queue Status (color) 
+    - Pending: green
+    - Running: yellow  
+    - Running (warnings): orange
+    - Failure: red  (or one of its data dependencies failed)
+    - Finished: blue  (same as not queued?)
+
+
+User Interaction:
+
+  + Nodes:
+    - First button click makes node the sole selection.
+
+    - Shift first button click adds/removes node from selection list.  If a node is added to
+      the selection list, all links are removed from the list.
+
+    - First button mouse click-and-drag from one node to another adds a dependency.  If the 
+      target node is a data node, then the previous dependency is replaced.
+
+    - Second button click-and-drag moves layout position of node (or of all selected nodes if 
+      the selection list is not empty).
+
+    - "delete" key invokes a "pipeline revoke" on all selected nodes with a "Registered"
+      status.  Nodes which have been previously checked-in are ignored (maybe with a warning?).
+
+    - Third button click brings up Action popup menu.  Items which are not appropriate given
+      the current status (since the last status action) of the node are greyed out.  
+
+      + Status: Does a "pipeline status --follow" on the node and updates the UI to reflect
+                any changes since the last status action.
+
+      + CheckIn: Brings up dialog with a text editor for checkin log message and optional 
+                 specific version selection field.  Confirmation starts the check-in.  If 
+                 any problems are encountered, a error dialog will report the problems.
+
+      + CheckOut: Brings up dialog allowing optional selection of a specific version or date.
+                  Confirmation starts the check-out.  If any problems are encountered, a error 
+                  dialog will report the problems.
+
+      + Comment: Does a "pipeline comment"
+
+
+  + Links:
+    - First button click makes link the sole selection.
+
+    - Shift first button click adds/removes links from selection list.  If a link is added to 
+      the selection list, all nodes are removed from the list.
+ 
+    - "delete" key removes the selected links (i.e. the dependencies of the target nodes).
+    
+
+  + Background Area:
+    - First button click empties the selection list.
+
+    - Second button click-and-drag pans the viewer.
+
+    - First-and-second button click-and-drag zooms the viewer.
+
+
+---------------------------------------------------------------------------------------------------
+  N O D E   D E T A I L S    
+---------------------------------------------------------------------------------------------------
+
+  + Selected nodes are displayed in this UI.
+
+  + Node Properties:  
+    - Same general layout as "pipeline status --long --show=all" with each section represented
+      as a collapsable pane.  Similar to Maya's "Action Editor" format... 
+
+    - The fields settable via "pipeline modify" are editable and trigger that pipeline 
+      command when changed.  
+
+    - The "files" section should also show queue status information for each file.
+
+  

@@ -1,0 +1,63 @@
+Font: Bitstream Charter
+Font: Bitstream Charter Bold
+Font: Bitstream Charter Bold Italic
+Font: Bitstream Charter Italic
+Font: Courier
+Font: Courier 10 Pitch
+Font: Courier 10 Pitch Bold
+Font: Courier 10 Pitch Bold Italic
+Font: Courier 10 Pitch Italic
+Font: Courier Bold
+Font: Courier Bold Italic
+Font: Courier Italic
+Font: Cursor
+Font: Kochi Gothic
+Font: Kochi Mincho
+Font: Lucida Bright Demibold
+Font: Lucida Bright Demibold Italic
+Font: Lucida Bright Italic
+Font: Lucida Bright Regular
+Font: Lucida Sans Demibold
+Font: Lucida Sans Demibold Oblique
+Font: Lucida Sans Oblique
+Font: Lucida Sans Regular
+Font: Lucida Sans Typewriter Bold
+Font: Lucida Sans Typewriter Bold Oblique
+Font: Lucida Sans Typewriter Oblique
+Font: Lucida Sans Typewriter Regular
+Font: Luxi Mono Bold
+Font: Luxi Mono Bold Oblique
+Font: Luxi Mono Oblique
+Font: Luxi Mono Regular
+Font: Luxi Sans Bold
+Font: Luxi Sans Bold Oblique
+Font: Luxi Sans Oblique
+Font: Luxi Sans Regular
+Font: Luxi Serif Bold
+Font: Luxi Serif Bold Oblique
+Font: Luxi Serif Oblique
+Font: Luxi Serif Regular
+Font: Utopia Bold
+Font: Utopia Bold Italic
+Font: Utopia Italic
+Font: Utopia Regular
+Font: dialog.plain
+Font: dialog.bold
+Font: dialog.bolditalic
+Font: dialog.italic
+Font: dialoginput.plain
+Font: dialoginput.bold
+Font: dialoginput.bolditalic
+Font: dialoginput.italic
+Font: monospaced.plain
+Font: monospaced.bold
+Font: monospaced.bolditalic
+Font: monospaced.italic
+Font: sansserif.plain
+Font: sansserif.bold
+Font: sansserif.bolditalic
+Font: sansserif.italic
+Font: serif.plain
+Font: serif.bold
+Font: serif.bolditalic
+Font: serif.italic

@@ -1,0 +1,663 @@
+#LyX 1.2 created this file. For more info see http://www.lyx.org/
+\lyxformat 220
+\textclass article
+\language english
+\inputencoding auto
+\fontscheme default
+\graphics default
+\paperfontsize default
+\spacing single 
+\papersize Default
+\paperpackage a4
+\use_geometry 0
+\use_amsmath 0
+\use_natbib 0
+\use_numerical_citations 0
+\paperorientation portrait
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\defskip medskip
+\quotes_language english
+\quotes_times 2
+\papercolumns 2
+\papersides 1
+\paperpagestyle fancy
+
+\layout Title
+
+Pipeline Development Roadmap
+\layout Author
+
+
+\noun on 
+James M.
+ Callahan
+\layout Standard
+
+
+\begin_inset LatexCommand \tableofcontents{}
+
+\end_inset 
+
+
+\layout Section
+
+Overview
+\layout Standard
+
+This document outlines the future course of 
+\noun on 
+Pipeline
+\noun default 
+ development over the next couple months.
+ It contains solutions to the problems encountered during use of the beta
+ version of 
+\noun on 
+Pipeline
+\noun default 
+ on the ATI demo project at RhinoFX.
+ This will serve as a guide to the tasks remaining before 
+\noun on 
+Pipeline
+\noun default 
+ is ready for its initial commercial release.
+\layout Section
+
+Performance
+\layout Subsection
+
+Database 
+\layout Standard
+
+The SQL database will be replaced with a custom server program written in
+ Java which will be able to represent the tree-like data structures inherent
+ to 
+\noun on 
+Pipeline
+\noun default 
+ in a vastly more efficient manner.
+ Much of the time currently spent by users waiting on status updates while
+ using 
+\emph on 
+plui(1)
+\emph default 
+ and 
+\emph on 
+pipeline(1)
+\emph default 
+ is related to the large numbers of queries required to traverse tree-like
+ data strucutures in SQL.
+ Also, some of the critical queries where themselves very costly and didn't
+ scale well for large numbers of users or nodes.
+\layout Standard
+
+The replacement database will be composed of a set of Java objects which
+ can be saved and restored from disk in a human readable text format.
+ The database server will provide a high level interface to manipulating
+ these Java objects and manage all thread and transaction related issues
+ internally.
+\layout Subsection
+
+File System 
+\layout Standard
+
+Whenever a user requests an status update, e needs to examine potentially
+ large numbers of files in order to compute a correct status for the associated
+ nodes.
+ The information required for these files usually is fairly lightweight
+ and consists of determining file existence, file size and last modified
+ time stamps.
+ In some cases, an expensive checksum may need to be generated for files
+ which have been modified.
+ In both cases though, this file system activity is taking place over the
+ network via NFS.
+ One of the problems with this approach is that the latency associated with
+ checking file status over NFS becomes significant when hundreds of files
+ are involved.
+ Even more problematic is the cost of moving entire files over the network
+ merely to generate checksums.
+ Lastly, even though a complex tree of nodes may involve hundred of associated
+ files, it is highly unlikely that all of the files have actually changed
+ since the last status update.
+ Currently, every file is checked with every update regardless if it has
+ changed or not.
+\layout Standard
+
+A possible solution to the network latency and transmission cost issues
+ would be to use a custom file status server program to manage file changes.
+ This file status server program would be run on the file server, this way
+ all files related to 
+\noun on 
+Pipeline
+\noun default 
+ would be accessed locally and bypassing NFS altogether.
+ If the file server hardware was incapable of running the file status server
+ program (NetApp), it could be run on a dedicated machine with very fast
+ access to the file server.
+ This server program could check large numbers of files with much lower
+ network activity and latency.
+ If checksums need to be generated, the source files would not have to be
+ transmitted over the network.
+\layout Standard
+
+The problem of redundently checking files which haven't changed can be solved
+ by using a feature of the Linux kernel called DNotify.
+ This feature allows programs to register interest in certain directories
+ and be notified (via signals) when files are created, deleted and modified
+ in these directories.
+ The file status server could maintain an internal table of information
+ related to files associated with active nodes and only update this table
+ when notified by the kernel that a change has occurred.
+\layout Subsection
+
+Lightweight Clients 
+\layout Standard
+
+When a user requests a status update, 
+\noun on 
+Pipeline
+\noun default 
+ currently must gather and analyze a large amount of database and file system
+ data to compute a small amount of state information for each node.
+ The source data for this computation must be moved over the network.
+ In addition, a large percentage of this source data is usually accessed
+ multiple times and possibly by more than one client program between changes
+ to the source data.
+ 
+\layout Standard
+
+Status updates could be made more efficient if they where computed lazily
+ on the server-side in response to file system change notifications, node
+ operations and queue activity.
+ Only those nodes which are actively being monitored by Pipeline clients
+ programs would need to be updated.
+ When new node states are generated on the server, only the changed state
+ information would need to be sent to clients.
+\layout Standard
+
+Another benefit of this approach would be the elimination of the need for
+ users to manually request the state of nodes.
+ Instead, the client programs would simply always display the latest known
+ state information without repeated user status requests.
+ This should improve useability and eliminate some user confusion related
+ to viewing stale node state information.
+\layout Section
+
+Nodes
+\layout Subsection
+
+Multiple Working Areas
+\layout Standard
+
+Currently, each user has a working directory where all files associated
+ with their working copies of nodes reside.
+ This prevents changes to working area files from being seen by other users
+ and allows each user to have their own version of a particular node.
+ However, each user can only have a single copy of a given file in their
+ working area at one time.
+ This is usually not a problem, but there are some cases where this limitation
+ causes difficulty.
+ For example, a user might be rendering a Maya scene, but wants to be able
+ to work on textures or model files being referenced by the running render.
+\layout Standard
+
+The solution is to allow user to have more than one working area.
+ Users should be allowed to create, destroy and change the active working
+ area on demand.
+ Each working area will be treated as if it was a seperate user.
+ Changes made in one working area can be communicated to other working areas
+ using the usual check-in/out mechanism.
+\layout Standard
+
+Currently, 
+\noun on 
+Pipeline
+\noun default 
+ provides an environmental variable called 
+\begin_inset Quotes eld
+\end_inset 
+
+WORKING
+\begin_inset Quotes erd
+\end_inset 
+
+ which contains the path to the current user's working directory.
+ To support multiple working areas, this variable will be replaced with
+ a pair of variables 
+\begin_inset Quotes eld
+\end_inset 
+
+PLWORK
+\begin_inset Quotes erd
+\end_inset 
+
+ and 
+\begin_inset Quotes eld
+\end_inset 
+
+PLVIEW
+\begin_inset Quotes erd
+\end_inset 
+
+ which when used together (i.e.
+ 
+\begin_inset Quotes eld
+\end_inset 
+
+$PLWORK/$PLVIEW
+\begin_inset Quotes erd
+\end_inset 
+
+).
+ When editors or regeneration actions are launched by 
+\noun on 
+Pipeline
+\noun default 
+, these variables will be set to point to the proper working area directory
+ for the node involved.
+\layout Subsection
+
+Node References
+\layout Standard
+
+Nodes can currently only be connected based on dependency relationships.
+ Changes to upstream nodes cause all downstream nodes to become stale and
+ require regeneration using the job queue.
+ This works well for the core functionality of Pipeline, but is overly strict
+ or undesirable to represent all kinds of node relationships.
+\layout Standard
+
+Node references provide a way to connection nodes which have a relationship
+ which isn't a dependency.
+ Instead of having the dependency 
+\noun on 
+Option
+\noun default 
+ and 
+\noun on 
+Offset
+\noun default 
+ parameters, references will have a 
+\noun on 
+Type
+\noun default 
+ parameter.
+ Users can create new reference types on demand to document the nature of
+ the relationship.
+ 
+\layout Standard
+
+When displaying trees of nodes, each type of reference can be optionally
+ displayed or ignored.
+ Reference links will be displayed differently than dependency links and
+ will be labeled with the reference type name.
+ 
+\layout Standard
+
+Another difference between dependencies and references is that nodes on
+ the upstream side of a reference link will not affect the state of the
+ downstream node and will not be regenerated by 
+\begin_inset Quotes eld
+\end_inset 
+
+make
+\begin_inset Quotes erd
+\end_inset 
+
+ operations initiated on the downstream side of the link.
+\layout Subsection
+
+Non-Stale Property Modifications
+\layout Standard
+
+Whenever any node property is changed, it causes node's with regeneration
+ actions to become stale and therefore require regeneration before they
+ can be checked-in.
+ In most cases this is desirable, since the property changes are not reflected
+ in the files associated with the modified node.
+ However, there are some node properties (editor, job requirements, etc...)
+ which cannot affect the contents of the associated files and therefore
+ should not cause the node to become stale when they are changed.
+ However, the node would still become modified when one of these properties
+ is changed to that these changed are properly handled by the check-in/out
+ system.
+\layout Subsection
+
+Node Tree Display and Layout
+\layout Standard
+
+Node trees are currently displayed by starting at some picked node and traversin
+g the upstream dependency links until all leaf nodes are reached.
+ Any nodes reachable by more than one path are displayed multiple times.
+ There is a single viewing area which can display more than one tree can
+ at a time.
+\layout Standard
+
+This will be replaced by multiple tabbed viewing areas in which each view
+ contains a single tree of nodes.
+ Two new layout styles will be added to the current upstream layout style.
+ The downstream layout will display the inverse tree of nodes which depend
+ on a single upstream node.
+ The bidirectional layout will display both upstream and downstream trees
+ centered on a single node.
+ 
+\layout Standard
+
+Any particular viewing area should be easily toggled between these three
+ layout styles.
+ Each style uses a single key node as the starting point for the layout.
+ When the layout style is changed, the key node will remain the same.
+ When a node is selected for display (left side of 
+\emph on 
+plui(1)
+\emph default 
+) they replace the key node for the currently selected viewing area tab.
+ In addition, any currently viewed node can be made the key node for a particula
+r viewing area tab.
+ Tabs can be added and removed on demand much like the tabs in Mozilla.
+ 
+\layout Standard
+
+Only the currently viewed tab will be considered when communicating with
+ the database and file servers to update node status.
+ In other words, there would be no overhead to having many tabs since only
+ one of them is active at any one time.
+ 
+\layout Standard
+
+One key difference in terms of status update is that nodes downstream of
+ the key node will not have their status evaluated.
+ These downstream side nodes will be rendered gray and without status symbols
+ since their status is undefined.
+ All node operations (check-in/out, make, etc..) will also be disabled for
+ these nodes.
+ The reason for this restriction becomes clear when you consider the huge
+ number of nodes which would need to be considered when the key node is
+ a commonly used dependency such as a model node.
+ Computing the status of the entire tree would then become equivalent to
+ computing the status of all node trees which reference the key node.
+ If status information is desired for one of the downstream side nodes,
+ it can be obtained by changing the key node to one further downstream.
+\layout Subsection
+
+Node Deletion
+\layout Standard
+
+Once a node has been checked-in, it cannot ever be removed.
+ This is usually exactly what is desired, since the permenancy of repository
+ versions is one of the core functions of 
+\noun on 
+Pipeline
+\noun default 
+.
+ However, sometimes a user creates and checks-in a node which is badly named
+ to placed in a awkward location.
+ Ideally, these kind of mistakes should be noticed before checking-in the
+ node, but sometimes mistakes are made.
+ 
+\layout Standard
+
+
+\noun on 
+Pipeline
+\noun default 
+ should provide a way to destroy a node and all of its checked-in repository
+ versions and associated files to deal with problem nodes.
+ All references to the deleted node would also be removed.
+ This operation should only be accessable to priviledged users, such as
+ system administrators or supervisors, since irreparable damage could be
+ done by deleting the wrong node.
+ 
+\layout Subsection
+
+File Deletion
+\layout Standard
+
+Pipeline should provide an operation which would remove a specific file
+ or all files assocated with a node.
+ This is sometimes desirable when the regeneration action has touched the
+ file, but then crashed or otherwise failed to finish writing the file properly.
+ Currently, Pipeline would consider the file to up-to-date and will refuse
+ to regenerate it.
+ This file deletion operation provides a way work around problems of this
+ kind.
+\layout Section
+
+Job Queue
+\layout Subsection
+
+Incremental Output
+\layout Standard
+
+Each line of output from standard out/error of running jobs will be captured
+ as it is output from the job.
+ Users will be able to monitor this output while jobs are running by opening
+ a dialog for the job.
+ Each line of output will be transmitted via a network connection from the
+ job monitoring daemon to each 
+\noun on 
+Pipeline
+\noun default 
+ client with an open job output dialog.
+ Upon job exit, all output will be stored in the database as usual.
+\layout Subsection
+
+Job Failure from Output
+\layout Standard
+
+Some programs, noteably Maya, fail to return a non-zero exit status for
+ some failure conditions.
+ What is needed is a flexible way to parse the output for signs that something
+ has gone wrong and possibly even kill the job.
+ For example, missing texture files will not cause Maya to fail but the
+ results of allowing the rendering to continue are less than ideal.
+ It would be good to be able to optionally request that Pipeline treat a
+ missing texture as a failure and thereby avoid further downstream processing.
+\layout Standard
+
+A solution would be to add a method to the regeneration action plugin API
+ which would be called after each line of output from the action's suprocess
+ and return a boolean value for whether processing should continue.
+ The default implementation would always return true.
+ Actions could provide controls over the output parsing as action parameters.
+\layout Section
+
+Customization
+\layout Subsection
+
+Tool API
+\layout Standard
+
+
+\noun on 
+Pipeline
+\noun default 
+ models the production process in a fairly abstract manner.
+ Features common to any conceivable production are implemented as core functiona
+lity.
+ However, it is often the case that a particular production or studio has
+ specialized needs which may not be generally desirable to include as a
+ core feature of 
+\noun on 
+Pipeline
+\noun default 
+.
+\layout Standard
+
+The current version supports three mechanisms for extending 
+\noun on 
+Pipeline
+\noun default 
+: editor plugins, action plugins and batch scripts.
+ 
+\noun on 
+Pipeline
+\noun default 
+ comes with a rich set of editor and action plugins to support the common
+ industry programs and these can be extended by writing a custom Java classes.
+ Batch scripts allow a set of Pipeline operations to be scripted and executed
+ on the command-line, but the limitation of communicating with command-line
+ arguments makes doing more complicated operations difficult.
+\layout Standard
+
+To support more arbitrarily complex operations and avoid awkward command-line
+ syntax, a new Java based API will be provided wich gives access to nearly
+ all 
+\noun on 
+Pipeline
+\noun default 
+ functionality.
+ This API can be used in two ways.
+ Standalone Java programs can use the API to make new kinds of 
+\noun on 
+Pipeline
+\noun default 
+ clients.
+ Tool plugins can be written which when loaded by 
+\emph on 
+plui(1)
+\emph default 
+ will provide additional high-level functionality to the user.
+ When loaded as a plugin, the tool will be able to create its own dialogs
+ for getting collecting input from the user.
+\layout Standard
+
+Tools could be written using this API to implement functionality such as
+ setting up a commonly used heirachy of nodes, performing a repetitive operation
+ on a large number of nodes or communicating with third party software.
+\layout Subsection
+
+Editor and Action Plugins
+\layout Standard
+
+The current set of core editors and actions is incomplete.
+ Notably support for Softimage, RenderMan and Mental Ray needs to be added.
+ The fcheck(1) editor plugin is less than ideal and other image playback
+ programs need to be supported.
+ Some common desktop text editors such as kedit(1) need to be added.
+ 
+\layout Standard
+
+There is also a problem with the way editors are launched which causes them
+ to be killed when plui(1) exits.
+ This is usually not desirable and can sometimes be very damaging when the
+ user has not saved their work.
+\layout Subsection
+
+User Preferences
+\layout Standard
+
+User preferences should be extended to support custom colors for all UI
+ elements, time/date formatting and hot keys for all 
+\noun on 
+Pipeline
+\noun default 
+ operations and UI navigation menu items.
+\layout Section
+
+System Administration
+\layout Subsection
+
+Backup and Restore
+\layout Standard
+
+Backup of the repsitory files should be more selective than simply backing
+ up the entire repository directory.
+ Once a particular version of a file has been backed up, there is no need
+ to process it every backup cycle.
+ 
+\noun on 
+Pipeline
+\noun default 
+ should provide support for determining when a repository file was created
+ and produce an incremental listing of files which need to be backed up.
+ The database should also store a list of backup tapes or other media which
+ contain a particular repository version.
+ Also, there needs to be a way to backup a running 
+\noun on 
+Pipeline
+\noun default 
+ database without stopping the database server.
+\layout Standard
+
+Similiarly, there is currently no support for using the database to determine
+ which files can safely be offlined or how to locate and restore offlined
+ files associated with nodes when needed.
+ The database representation of nodes need to be extended to contain information
+ which will identify the tape or other permanent storage media which contains
+ an offlined set of repository files.
+ Some additional 
+\noun on 
+Pipeline
+\noun default 
+ commands are needed to identify rarely used nodes and package up the needed
+ data to archive these nodes.
+ This functionality should be supported by pipeline(1) so that it can be
+ used in automated setting such as cron(1).
+\layout Section
+
+Documentation
+\layout Subsection
+
+User Manual
+\layout Standard
+
+There already exists man-page style documentation for all command line based
+ 
+\noun on 
+Pipeline
+\noun default 
+ programs, but this is inadequate to explain the bigger picture of how 
+\noun on 
+Pipeline
+\noun default 
+ is actually used in a production environment.
+ A user manual is needed which will explain the 
+\noun on 
+Pipeline
+\noun default 
+ model of production and the philosophies behind the design decisions.
+ The user manual should also include explanations of the graphical components
+ of 
+\emph on 
+plui(1)
+\emph default 
+ as well as a set of tutorials demonstrating the 
+\noun on 
+Pipeline
+\noun default 
+ approach to some common CG tasks.
+\layout Subsection
+
+System Adminstration Manual
+\layout Standard
+
+System administrators need a document which includes information about how
+ to install, configure and support 
+\noun on 
+Pipeline
+\noun default 
+ for their site.
+ This manual should also include a section on the backup and restore issues
+ mentioned above.
+\layout Subsection
+
+Developers Manual
+\layout Standard
+
+Writers of Java based Editor, Action and Tool plugins need a manual which
+ includes code examples and tutorials.
+ Information about compiling and installing this plugins is also needed.
+\layout Subsection
+
+Javadoc for APIs 
+\layout Standard
+
+A standard set of Javadoc based web pages needs to be generated for the
+ Java classes which make up the 
+\noun on 
+Pipeline
+\noun default 
+ APIs for Editor, Action and Tool plugins.
+\the_end

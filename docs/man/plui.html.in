@@ -1,0 +1,296 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>pipeline</title>
+  <meta http-equiv="content-type"
+ content="text/html; charset=ISO-8859-1">
+</head>
+<body>
+<h3>Name</h3>
+<blockquote><b>plui</b> - the pipeline user interface<br>
+</blockquote>
+<h3>Synopsis</h3>
+<blockquote><b>plui</b> [<a href="#Global_Options"><i>global-options</i></a>]<br>
+  <br>
+  <b>plui</b> <a href="#--help" style="font-weight: bold;">--help</a><br>
+  <b>plui</b> <a href="#--html-help" style="font-weight: bold;">--html-help</a><br>
+  <b>plui</b> <a href="#--version_" style="font-weight: bold;">--version</a><br>
+  <b>plui</b> <a href="#--release-date" style="font-weight: bold;">--release-date</a><br>
+  <b>plui</b> <a href="#--copyright" style="font-weight: bold;">--copyright</a><a
+ href="file://@datadir@/docs/man/pipeline.html#--toolsets"></a><br>
+</blockquote>
+<h3><a name="Description"></a>Description</h3>
+<blockquote>The <a href="file://@datadir@/docs/man/plui.html"><span
+ style="font-weight: bold;">plui</span></a>(1) tool is the graphical
+interface alternative to the command-line only <a
+ href="file://@datadir@/docs/man/pipeline.html"><span
+ style="font-weight: bold;">pipeline</span></a>(1) tool for performing
+Pipeline queries and commands.&nbsp; The <a
+ href="file://@datadir@/docs/man/plui.html"><span style="font-weight: bold;">plui</span></a>(1)
+tool is nicer looking and easier to use, while the <a
+ href="file://@datadir@/docs/man/pipeline.html"><span
+ style="font-weight: bold;">pipeline</span></a>(1) tool provides
+command-line only interface suitable for scripting and batch
+execution.&nbsp; <br>
+  <br>
+See the&nbsp;<a href="file://@datadir@/docs/man/user-manual/index.html"
+ style="font-weight: bold;">Pipeline
+Manual</a> for information about the
+shared concepts behind the two tools as well as detailed help on using
+the graphical interface of <a href="file://@datadir@/docs/man/plui.html"><span
+ style="font-weight: bold;">plui</span></a>(1).&nbsp; <br>
+  <br>
+All properties except for the <a
+ href="file:///code/src/pipeline/src/java/docs/pipeline.html.in#Global_Options"
+ style="font-weight: bold;">Global
+Options</a> detailed below, are configured through the Preferences
+panel once the graphical user interface started.&nbsp; <br>
+</blockquote>
+<blockquote></blockquote>
+<h3><a name="Information_Options"></a>Information
+Options</h3>
+<blockquote>The following options provide online information about <a
+ href="file://@datadir@/docs/man/pipeline.html"><span
+ style="font-weight: bold;">plui</span></a>(1) and then immediately
+exit:</blockquote>
+<blockquote><b><a name="--help"></a>--help</b><br>
+  <blockquote>Prints a brief usage message and exits.<br>
+  </blockquote>
+  <b><a name="--html-help"></a>--html-help</b><br>
+  <blockquote>Opens this page using the <a
+ href="http://www.mozilla.org"><b>mozilla</b></a>(1) web browser.
+Look <a href="http://www.mozilla.org/unix/remote.html">here</a> for
+details about how this works.<br>
+  </blockquote>
+  <b><a name="--version_"></a>--version</b><br>
+  <blockquote>Prints the version number of this software and exits.<br>
+  </blockquote>
+  <b><a name="--release-date"></a>--release-date</b><br>
+  <blockquote> Prints date that this software was released and exits.<br>
+  </blockquote>
+  <b><a name="--copyright"></a>--copyright</b><br>
+  <blockquote> Prints copyright notice for this software and exits.<br>
+  </blockquote>
+</blockquote>
+<blockquote>
+  <blockquote> </blockquote>
+</blockquote>
+<blockquote> </blockquote>
+<h3><a name="Global_Options"></a>Global
+Options</h3>
+<blockquote><b><a name="--server"></a>--server</b>=<i>hostname</i><br>
+</blockquote>
+<blockquote>
+  <blockquote>Communicate with the <a href="http://www.pgsql.com/">PostgreSQL</a>
+server running on the given host (<i>hostname</i>). <br>
+  </blockquote>
+  <b><a name="--port"></a>--port</b>=<i>num</i><br>
+  <blockquote>Communicate with the&nbsp;<a href="http://www.pgsql.com/">PostgreSQL</a>
+server over the given port (<i>num</i>) instead of the default 53135
+port.<br>
+  </blockquote>
+</blockquote>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
+ name="--logging"></a>--log</span>=<span style="font-style: italic;">logger:level</span>[<span
+ style="font-style: italic;">,logger:level</span>[...]]</div>
+<div style="margin-left: 40px;"><br>
+<div style="margin-left: 40px;">Normally all output from <a
+ href="file://@datadir@/docs/man/pipeline.html"><span
+ style="font-weight: bold;">plui</span></a>(1) is displayed using
+dialogs and other graphical components.&nbsp; In addition to this UI
+output, <a href="file://@datadir@/docs/man/pipeline.html"><span
+ style="font-weight: bold;">plui</span></a>(1) can generate detailed
+output on the command line tracing the various stages of internal
+execution.&nbsp; The arguments control the several different
+types of logging information (<span style="font-style: italic;">logger</span>)
+and different amounts of information (<span style="font-style: italic;">level</span>)
+of each type to generate.&nbsp; Several loggers can be modified in one
+option.<br>
+<br>
+The (<span style="font-style: italic;">logger</span>) portion of the
+option's argument can be:<br>
+<br>
+<span style="font-weight: bold;">all</span><br
+ style="font-weight: bold;">
+<div style="margin-left: 40px;">A shortcut for specifying all loggers
+at once.</div>
+<span style="font-weight: bold;"><br style="font-weight: bold;">
+</span><span style="font-weight: bold;">cmd</span><br
+ style="font-weight: bold;">
+<span style="font-weight: bold;"></span>
+<div style="margin-left: 40px;"><br>
+Logs the steps involved in completing commands not covered by one of
+the other loggers below. </div>
+<span style="font-weight: bold;"><br>
+sql</span><br style="font-weight: bold;">
+<span style="font-weight: bold;"><br>
+</span>
+<div style="margin-left: 40px;">Logs the details of communication with
+the <a href="http://www.pgsql.com/" style="font-weight: bold;">PostgreSQL</a>
+database server.&nbsp; <br>
+</div>
+<span style="font-weight: bold;"><br>
+sum</span><br style="font-weight: bold;">
+<span style="font-weight: bold;"><br>
+</span>
+<div style="margin-left: 40px;">Logs the activity of generating and
+comparing the checksum files which <a
+ href="file://@datadir@/docs/man/pipeline.html"><span
+ style="font-weight: bold;">plui</span></a>(1) uses to optimize
+comparisons of the working area and repository files associated with
+nodes.<br>
+<br>
+</div>
+<span style="font-weight: bold;">sub<br>
+<br>
+</span>
+<div style="margin-left: 40px;">Logs the creation and execution of
+external operating system level processes by&nbsp;<a
+ href="file://@datadir@/docs/man/pipeline.html"><span
+ style="font-weight: bold;">plui</span></a>(1).&nbsp; These processes
+include editors, programs started by regeneration actions and various
+file system related utilities.<br>
+<br>
+</div>
+<span style="font-weight: bold;">tex<br>
+<br>
+</span>
+<div style="margin-left: 40px;">Logs texture loading activity by <a
+ href="file://@datadir@/docs/man/pipeline.html"><span
+ style="font-weight: bold;">plui</span></a>(1).&nbsp; Texture images
+are used to draw various compontents of the graphical
+interface.&nbsp;&nbsp; </div>
+<span style="font-weight: bold;"><br style="font-weight: bold;">
+</span>The (<span style="font-style: italic;">level</span>) portion of
+the option's argument can be:<br>
+<br>
+<span style="font-weight: bold;">severe<br>
+<br>
+</span>
+<div style="margin-left: 40px;">This level is used for error messages
+and other catastrophic events.<br>
+</div>
+<br style="font-weight: bold;">
+<span style="font-weight: bold;">warning</span><br
+ style="font-weight: bold;">
+<br>
+<div style="margin-left: 40px;">This level is used for non-fatal error
+messages and advisory information.<br>
+</div>
+<br style="font-weight: bold;">
+<span style="font-weight: bold;">info</span><br
+ style="font-weight: bold;">
+<br>
+<div style="margin-left: 40px;">This is the default output level for
+all loggers and is used for normal output from&nbsp;<a
+ href="file://@datadir@/docs/man/pipeline.html"><span
+ style="font-weight: bold;">plui</span></a>(1). <br>
+</div>
+<br style="font-weight: bold;">
+<span style="font-weight: bold;">fine<br>
+</span><span style="font-weight: bold;">finer<br>
+</span><span style="font-weight: bold;">finest</span><br
+ style="font-weight: bold;">
+<br>
+<div style="margin-left: 40px;">This three levels are used for
+increasingly more detailed command tracing messages. <br>
+</div>
+<br>
+Logging can also be controlled on a system-wide basis by modifying
+the "logger.properties" file installed with&nbsp;<a
+ href="file://@datadir@/docs/man/pipeline.html"><span
+ style="font-weight: bold;">plui</span></a>(1).&nbsp; See the Java API
+documention for the class<span style="font-weight: bold;">
+java.util.logging.Logger</span> for
+more information about the format of this file.&nbsp; Settings from the
+<a
+ href="file:///code/src/pipeline/src/java/docs/pipeline.html.in#--logs"><span
+ style="font-weight: bold;">--logs</span></a> option will override
+settings from the "logger.properties" file.<span
+ style="font-weight: bold;">
+</span></div>
+</div>
+<div style="margin-left: 40px;"><br>
+</div>
+<blockquote>
+  <div style="margin-left: 40px;"> </div>
+</blockquote>
+<blockquote>
+  <blockquote> </blockquote>
+  <blockquote> </blockquote>
+</blockquote>
+<blockquote> </blockquote>
+<blockquote>
+  <blockquote> </blockquote>
+</blockquote>
+<h3><a name="See_Also"></a>See
+Also</h3>
+<blockquote>
+  <blockquote> <a href="file://@datadir@/docs/man/user-manual/index.html"
+ style="font-weight: bold;">Pipeline
+Manual</a>, <a href="http://www.pgsql.com/" style="font-weight: bold;">PostgreSQL</a><br>
+    <br>
+    <a href="file://@datadir@/docs/man/pipeline.html"><b>pipeline</b></a>(1),
+    <a href="file://@datadir@/docs/man/pljob.html"><span
+ style="font-weight: bold;">pljob</span></a>(1), <a
+ href="http://www.mozilla.org"><b>mozilla</b></a>(1)</blockquote>
+</blockquote>
+<blockquote>
+  <blockquote>
+    <blockquote> </blockquote>
+    <blockquote> </blockquote>
+    <blockquote> </blockquote>
+  </blockquote>
+</blockquote>
+<h3><a name="Files"></a>Files</h3>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
+ name="logger_properties"></a>@datadir@/logger.properties</span><br>
+<div style="margin-left: 40px;"><br>
+The site configuration for output loggers used by <a
+ href="file://@datadir@/docs/man/pipeline.html"><span
+ style="font-weight: bold;">pipeline</span></a>(1), <a
+ href="file://@datadir@/docs/man/plui.html"><span style="font-weight: bold;">plui</span></a>(1)
+and <a href="file://@datadir@/docs/man/pljob.html"><span
+ style="font-weight: bold;">pljob</span></a>(1).&nbsp; See the <a
+ href="file:///code/src/pipeline/src/java/docs/pipeline.html.in#--log"><span
+ style="font-weight: bold;">--log </span></a>option
+for details about the individual loggers.</div>
+</div>
+<h3><a name="Author"></a>Author</h3>
+<blockquote>
+  <blockquote> Jim Callahan &lt;<a href="mailto:jim@polaris.net">jim@polaris.net</a>&gt;<br>
+    <br>
+    <div style="margin-left: 40px;">Sole designer and author of <a
+ href="file://@datadir@/docs/man/pipeline.html"><span
+ style="font-weight: bold;">plui</span></a>(1).&nbsp; <br>
+    </div>
+  </blockquote>
+</blockquote>
+<h3><a name="Copyright"></a>Copyright<br>
+</h3>
+<blockquote>
+  <blockquote> <span style="font-weight: bold;">Copyright (c) 2001,
+2002, 2003 James M. Callahan.</span><br style="font-weight: bold;">
+    <br style="font-weight: bold;">
+Permission to use, copy and distribute this software and its
+documentation for any purpose is STRICTLY PROHIBITED without prior
+authorization in writing by James M. Callahan.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
+EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
+WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR
+PURPOSE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+IN NO EVENT SHALL JAMES M. CALLAHAN BE LIABLE FOR ANY SPECIAL,
+INCIDENTAL, INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY
+DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER
+OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF
+LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
+OF THIS SOFTWARE.<br>
+    <br>
+    <br>
+    <br>
+  </blockquote>
+</blockquote>
+</body>
+</html>

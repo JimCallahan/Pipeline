@@ -1,0 +1,125 @@
+
+
+
+Version <PVersion> {
+  pVersionID <VersionID:1> {
+    pIDs <int[3]> { 1 2 4 }
+  }
+  pToolset <String:2> { "dev040208" }
+  pEditor <EmacsEditor:3> { 
+    pName <String:4> { "emacs" }
+    pDesc <String:5> { "The GNU extensible, customizable, self-documenting text editor." }
+  }
+  pAction <NoneAction:6> { 
+    pName <String> { "-" }
+  }
+  pJobReqs <JobReqs> {
+    pMaxLoad <float> { 2.5 } 
+    pMinMemory <int> { 1024 } 
+    pMinDisk <int> { 64 } 
+    pLicenseMask <BitString> { 
+      pBits <boolean[]> { true true false }
+    }			      
+    pSelectMask <BitString> { 
+      pBits <boolean[]> { true false false false true  }
+    }
+    pSelectBias <int> { 0 }
+  }
+  pPrimary <FileSeq> {
+    pFilePattern <FilePattern> {
+      pPrefix <String> { "foo" }
+      pPadding <int> { 4 } 
+      pSuffix <String> { "rgb" }
+    }
+    pFrameRange <FrameRange> {
+      pStart <Integer> { 1 } 
+      pEnd <Integer> { 5 } 
+      pBy <Integer> { 1 }
+    }
+  }
+  pSecondary <ArrayList> {
+    [0] <FileSeq> {
+      pFilePattern <FilePattern> {
+	pPrefix <String> { "bar" }
+	pSuffix <String> { "tif" }
+      }
+      pFrameRange <FrameRange> {
+	pStart <Integer> { 125 } 
+	pEnd <Integer> { 225 } 
+	pBy <Integer> { 25 }
+      }
+    }
+    [1] <FileSeq> {
+      pFilePattern <FileSeq> {
+	pPrefix <String> { "cow" }
+	pPadding <Integer> { 3 } 
+      }
+      pFrameRange <FileSeq> {
+	pStart <Integer> { 2 } 
+	pEnd <Integer> { 6 } 
+      }
+    }
+  }
+}
+
+
+
+
+
+
+public 
+class FilePattern
+{
+  ... 
+  public void 
+  writeGlue
+  ( 
+   Glue glue,         /* IN: GLUE writer */ 
+   String title,      /* IN: title of object */ 
+   int level,         /* IN: nesting level */                 
+   StringBuffer out   /* IN/OUT: output GLUE text */ 
+  ) 
+  {
+    glue.writeEntity("Prefix", pPrefix, level+1, out);
+    glue.writeEntity("Padding", new Integer(pPadding), level+1, out);
+    glue.writeEntity("Suffix", pSuffix,  level+1, out);
+  }
+
+  protected String pPrefix;
+  protected int    pPadding;
+  protected String pSuffix;
+}
+
+
+
+
+public 
+class FileSeq
+{
+  ... 
+  public GlueGroup
+  encodeGlue() 
+  {
+    GlueMap gm = new GlueMap();
+    gm.insert("FilePattern", pFilePattern.encodeGlue());
+    gm.insert("FrameRange", pFrameRange.encodeGlue());
+
+    return gm;
+  }
+  
+  
+  public void 
+  decodeGlue
+  (
+   GlueGroup group
+  ) 
+    throws GlueMissing
+  {
+    GlueMap gm = Glue.getMap(group);
+    pFilePattern.decodeGlue(gm.extract("FilePattern"));
+    pFrameRange.decodeGlue(gm.extract("FrameRange"));
+  }
+  
+  protected FilePattern  pFilePattern;
+  protected FrameRange   pFrameRange;
+}

@@ -1,0 +1,423 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="content-type"
+ content="text/html; charset=ISO-8859-1">
+  <title>Pipeline - Quick Reference</title>
+</head>
+<body>
+<br>
+<table cellpadding="6" cellspacing="0" border="2"
+ style="width: 100%; text-align: left;" frame="vsides">
+  <tbody>
+    <tr>
+      <td
+ style="text-align: center; vertical-align: middle; background-color: rgb(255, 255, 187);"
+ colspan="2"><font size="+1"><span style="font-weight: bold;">Node
+State Symbols</span></font><br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="font-weight: bold; color: rgb(255, 255, 255); text-align: center; vertical-align: middle; background-color: rgb(102, 102, 102);">Symbols<br>
+      </td>
+      <td
+ style="vertical-align: top; font-weight: bold; background-color: rgb(153, 153, 153); color: rgb(255, 255, 255);">Description<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="text-align: center; vertical-align: middle; background-color: rgb(153, 153, 153);"><img
+ src="../images/pending-finished.gif" title="" alt=""
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="vertical-align: top; background-color: rgb(192, 192, 192);">Pending:<br>
+      <div style="margin-left: 40px;">The Pending state means that the
+node was created by you but has not yet been checked-in.&nbsp; At this
+point, you are the only artist which can seen this node in Pipeline and
+its associated file(s) exist only in your working area.<br>
+      </div>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="text-align: center; vertical-align: middle; background-color: rgb(153, 153, 153);"><img
+ src="../images/identical-finished.gif" title="" alt=""
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="vertical-align: top; background-color: rgb(204, 204, 204);">Identical:<br>
+      <div style="margin-left: 40px;">The Identical state means that
+the node's working area properties, dependencies and associated files
+are all identical to those of the latest version of the node in the
+repository.<br>
+      </div>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="background-color: rgb(153, 153, 153); text-align: center; vertical-align: middle;"><img
+ src="../images/modified-finished.gif" title="" alt=""
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="vertical-align: top; background-color: rgb(192, 192, 192);">Modified:<br>
+      <div style="margin-left: 40px;">The Modified state means that one
+or more of the node's working area properties or associated files have
+been changed since the node was last checked-out.&nbsp; Your changes
+were based on the latest version of the node.<br>
+      </div>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="text-align: center; vertical-align: middle; background-color: rgb(153, 153, 153);"><img
+ src="../images/moddep-finished.gif"
+ title="" alt="" style="width: 64px; height: 64px;"></td>
+      <td
+ style="vertical-align: top; background-color: rgb(204, 204, 204);">Modified
+Dependencies:<br>
+      <div style="margin-left: 40px;">One or more of the node's
+dependencies have been modified, but otherwise the node is identical to
+the latest version in the repository.&nbsp; Adding a new dependency,
+removing a previously existing dependency and changing the dependency
+options are all considered as modifications of the dependencies.&nbsp;
+In addition, the Mofied Dependencies state can be cause by one of the
+dependencies of the current node having a state other than Identical.<br>
+      </div>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="background-color: rgb(153, 153, 153); text-align: center; vertical-align: middle;"><img
+ src="../images/needsco-finished.gif" title="" alt=""
+ style="width: 64px; height: 64px;"></td>
+      <td
+ style="vertical-align: top; background-color: rgb(192, 192, 192);">Needs
+Check-Out:<br>
+      <div
+ style="margin-left: 40px; background-color: rgb(192, 192, 192);">This
+state means that someone else has checked-in a new version of the node
+since the last time you checked-out the node. In addition, no changes
+have been made to your working copy of the node since the node was
+checked-out.<br>
+      </div>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="text-align: center; vertical-align: middle; background-color: rgb(153, 153, 153);"><img
+ src="../images/conflicts-finished.gif" title="" alt=""
+ style="width: 64px; height: 64px;"></td>
+      <td
+ style="vertical-align: top; background-color: rgb(204, 204, 204);">Conflict:<br>
+      <div style="margin-left: 40px;">The Conflict state occurs when
+both the working copy and repository version of the node have changed
+since the last check-out.&nbsp; This can happen when two artists
+check-out the same version of a node and both modify their working
+copies.&nbsp; Once the first artist checks-in their changes, the second
+artist will see a Conflict state for the node.&nbsp; <br>
+      <br>
+At this point, the two artists will need to talk to each other to
+resolve how to combine their changes. Nodes cannot be checked-in when
+they are in the Conflict state. The second artist will need to
+check-out the new version created by the first artist and then modify
+it to include any of their changes they want preserved in the combined
+version. <br>
+      </div>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="background-color: rgb(153, 153, 153); text-align: center; vertical-align: middle;"><img
+ src="../images/checkedin-finished.gif" title="" alt=""
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="vertical-align: top; background-color: rgb(192, 192, 192);">Checked-In:<br>
+      <div style="margin-left: 40px;">This state means that the node
+has not been checked-out.&nbsp; In other words, the node exists in the
+repository but does not exist in your working area.<br>
+      </div>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<table cellpadding="6" cellspacing="0" border="2"
+ style="text-align: left; width: 100%;">
+  <tbody>
+    <tr>
+      <td
+ style="text-align: center; vertical-align: middle; background-color: rgb(255, 255, 187);"
+ colspan="2"><font size="+1"><span style="font-weight: bold;">Check-In...</span></font></td>
+      <td
+ style="vertical-align: top; background-color: rgb(255, 255, 221);">This
+operation creates a new version of the node and any of its modified
+dependencies in the repository.&nbsp;
+The node must be in a Finished (blue) state before Pipeline will allow
+the check-in.&nbsp; Once a node is checked-in, other artists will be
+able to
+see the node and check-out a copy of the node into their own working
+area. The check-in options are:<br>
+      <br>
+New Version:<br>
+      <div style="margin-left: 40px;">Inc Minor<br>
+      <div style="margin-left: 40px;">Increments the most minor version
+of the node.&nbsp; For example, if the previous latest version was
+(v2.4.6) then the new version will be (v2.4.7).<br>
+      <br>
+      </div>
+Add Minor<br>
+      <div style="margin-left: 40px;">Extends the levels of the version
+by one sublevel.&nbsp; For example, if the previous latest version was
+(v2.4.6) then the new version will be (v2.4.6.1).<br>
+      <br>
+      </div>
+Inc Major<br>
+      <div style="margin-left: 40px;">Increments the lowest major level
+of version. For example, if the previous latest version was (v2.4.6)
+then the new version will be (v2.5).</div>
+      </div>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="font-weight: bold; color: rgb(255, 255, 255); text-align: center; vertical-align: middle; background-color: rgb(102, 102, 102);">Before<br>
+      </td>
+      <td
+ style="font-weight: bold; color: rgb(255, 255, 255); text-align: center; vertical-align: middle; background-color: rgb(102, 102, 102);">After<br>
+      </td>
+      <td
+ style="vertical-align: top; font-weight: bold; background-color: rgb(153, 153, 153); color: rgb(255, 255, 255);">Notes<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="text-align: center; vertical-align: middle; background-color: rgb(153, 153, 153);"><img
+ src="../images/pending-finished.gif"
+ title="" alt="" style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; background-color: rgb(153, 153, 153);"><img
+ src="../images/identical-finished.gif"
+ title="" alt="" style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="vertical-align: top; background-color: rgb(192, 192, 192);">The
+initial check-in of a new node.&nbsp; Creates the first version of the
+node in the repository and makes the node visible to other artists. <br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="background-color: rgb(153, 153, 153); text-align: center; vertical-align: middle;"><img
+ src="../images/modified-finished.gif"
+ title="" alt="" style="width: 64px; height: 64px;"><br>
+      <img
+ src="../images/moddep-finished.gif"
+ title="" alt="" style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="background-color: rgb(153, 153, 153); text-align: center; vertical-align: middle;"><img
+ src="../images/identical-finished.gif"
+ title="" alt="" style="width: 64px; height: 64px;"> </td>
+      <td
+ style="vertical-align: top; background-color: rgb(204, 204, 204);">Saves
+working area changes to the node and its dependencies as a new
+repository version.<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="text-align: center; vertical-align: middle; background-color: rgb(255, 255, 187);"
+ colspan="2"><font size="+1"><span style="font-weight: bold;">Check-Out...</span></font><br>
+      </td>
+      <td
+ style="vertical-align: top; background-color: rgb(255, 255, 221);">This
+operation replaces (or creates) the working area copy of the node with
+a version from the repository.&nbsp; The check-out options are:<br>
+      <br>
+Version:<br>
+      <div style="margin-left: 40px;">The version number to
+check-out.&nbsp; The "Latest" choice will check out the most current
+repository version.&nbsp; Older versions can be checked-out by
+chooseing a specific version number.<br>
+      </div>
+      <br>
+Local Mods:<br>
+      <div style="margin-left: 40px;">Abort Check-Out<br>
+      <div style="margin-left: 40px;">Cancels the check-out if any of
+the nodes being checked-out have been modified in the working
+area.&nbsp; This prevents the check-out operation from
+unintententionally overwriting changes you haven't check-in.&nbsp; If
+the check-out is aborted, then none of the nodes will have been
+modified.<br>
+      <br>
+      </div>
+Force Overwrite<br>
+      <div style="margin-left: 40px;">Performs the check-out regarless
+of the state of the nodes.&nbsp; Any changes which have not been
+checked-in will be lost!&nbsp; <br>
+      </div>
+      </div>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="text-align: center; vertical-align: middle; background-color: rgb(102, 102, 102); color: rgb(255, 255, 255); font-weight: bold;">Before<br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; background-color: rgb(102, 102, 102); color: rgb(255, 255, 255); font-weight: bold;">After<br>
+      </td>
+      <td
+ style="vertical-align: top; font-weight: bold; color: rgb(255, 255, 255); background-color: rgb(153, 153, 153);">Notes<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="text-align: center; vertical-align: middle; background-color: rgb(153, 153, 153); font-weight: bold; color: rgb(255, 255, 255);"><img
+ src="../images/checkedin-finished.gif"
+ title="" alt="" style="width: 64px; height: 64px;"></td>
+      <td
+ style="text-align: center; vertical-align: middle; background-color: rgb(153, 153, 153);"><img
+ src="../images/identical-finished.gif"
+ title="" alt="" style="width: 64px; height: 64px;"></td>
+      <td
+ style="vertical-align: top; background-color: rgb(192, 192, 192);">Creates
+a working version of the node in the artists working area.&nbsp; Before
+this operation, the node did not exist in the working area.<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="text-align: center; vertical-align: middle; background-color: rgb(153, 153, 153);"><img
+ src="../images/needsco-finished.gif"
+ title="" alt="" style="width: 64px; height: 64px;"><br>
+      <img
+ src="../images/conflicts-finished.gif"
+ title="" alt="" style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; background-color: rgb(153, 153, 153);"><img
+ src="../images/identical-finished.gif"
+ title="" alt="" style="width: 64px; height: 64px;"></td>
+      <td
+ style="vertical-align: top; background-color: rgb(204, 204, 204);">Replaces
+the current working version of the node with a version from the
+repository.<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<table cellpadding="6" cellspacing="0" border="2"
+ style="width: 100%; text-align: left;" frame="vsides">
+  <tbody>
+    <tr>
+      <td
+ style="text-align: center; vertical-align: middle; background-color: rgb(255, 255, 187);"
+ colspan="2"><font size="+1"><span style="font-weight: bold;">File/Queue
+State Colors</span></font><br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="font-weight: bold; color: rgb(255, 255, 255); text-align: center; vertical-align: middle; background-color: rgb(102, 102, 102);">Colors<br>
+      </td>
+      <td
+ style="vertical-align: top; font-weight: bold; background-color: rgb(153, 153, 153); color: rgb(255, 255, 255);">Description<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="text-align: center; vertical-align: middle; background-color: rgb(153, 153, 153);"><img
+ src="../images/modified-missing.gif" title="" alt=""
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="vertical-align: top; background-color: rgb(192, 192, 192);">Missing:<br>
+      <div style="margin-left: 40px;">One or more of the files
+associated with the node do not exist in the working area.&nbsp; If
+this is a leaf node, then the file will need to be recreated or an
+older version check-out from the repository.&nbsp; The more common case
+is that this is a branch node which has a regeneration action that can
+be run to create the missing file(s).<br>
+      </div>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="text-align: center; vertical-align: middle; background-color: rgb(153, 153, 153);"><img
+ src="../images/modified-stale.gif" title="" alt=""
+ style="width: 64px; height: 64px;"> </td>
+      <td
+ style="vertical-align: top; background-color: rgb(204, 204, 204);">Stale:<br>
+      <div style="margin-left: 40px;">The node's properties have been
+modified since the time that the files associated with the node were
+saved.&nbsp; A node can also become Stale if one if its dependencies or
+the files associated with the dependencies are modified since the last
+time the the target node's files where changed.&nbsp; In other words,
+changes upstream of this node require that this node be regenerated to
+reflect the changes.<br>
+      </div>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="background-color: rgb(153, 153, 153); text-align: center; vertical-align: middle;"><img
+ src="../images/modified-queued.gif" title="" alt=""
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="vertical-align: top; background-color: rgb(192, 192, 192);">Queued:<br>
+      <div style="margin-left: 40px;">One or more jobs have been
+submitted which will regenerate files associated with the node, but
+none of these jobs has started running yet.<br>
+      </div>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="text-align: center; vertical-align: middle; background-color: rgb(153, 153, 153);"><img
+ src="../images/modified-running.gif" title="" alt=""
+ style="width: 64px; height: 64px;"></td>
+      <td
+ style="vertical-align: top; background-color: rgb(204, 204, 204);">Running:<br>
+      <div style="margin-left: 40px;">One or more of the jobs is
+currently running.<br>
+      </div>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="background-color: rgb(153, 153, 153); text-align: center; vertical-align: middle;"><img
+ src="../images/modified-error.gif" title="" alt=""
+ style="width: 64px; height: 64px;"></td>
+      <td
+ style="vertical-align: top; background-color: rgb(192, 192, 192);">Error:<br>
+      <div
+ style="margin-left: 40px; background-color: rgb(192, 192, 192);">At
+least one of the submitted jobs failed with errors.<br>
+      </div>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="text-align: center; vertical-align: middle; background-color: rgb(153, 153, 153);"><img
+ src="../images/modified-finished.gif" title="" alt=""
+ style="width: 64px; height: 64px;"></td>
+      <td
+ style="vertical-align: top; background-color: rgb(204, 204, 204);">Finished:<br>
+      <div style="margin-left: 40px;">All jobs submitted for this node
+have completed successfully and all associated files are
+up-to-date.&nbsp; Nodes must be in a Finished state before they can be
+checked-in.<br>
+      </div>
+      </td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

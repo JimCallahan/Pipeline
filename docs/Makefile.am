@@ -1,4 +1,6 @@
 
 SUBDIRS = \
   images \
-  user-manual 
+  javadoc \
+  man \
+  user-manual

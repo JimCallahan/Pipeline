@@ -1,0 +1,870 @@
+#LyX 1.2 created this file. For more info see http://www.lyx.org/
+\lyxformat 220
+\textclass article
+\language english
+\inputencoding auto
+\fontscheme default
+\graphics default
+\paperfontsize default
+\spacing single 
+\papersize Default
+\paperpackage a4
+\use_geometry 0
+\use_amsmath 0
+\use_natbib 0
+\use_numerical_citations 0
+\paperorientation portrait
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\defskip medskip
+\quotes_language english
+\quotes_times 2
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+
+\layout Title
+
+Pipeline: Production Automation Tool
+\layout Author
+
+Jim Callahan
+\layout Section
+
+Database Implementation
+\layout Standard
+
+A dependency graph is used by Pipeline to represent the production process.
+ Each node is this graph is stored separately in a database.
+ The structure of the graph is based on the following the 
+\noun on 
+Dependency
+\noun default 
+(s) field of each node back to the leaf nodes and is constructed on the
+ fly each time Flow is started.
+\layout Subsection
+
+Names and Filesystem Paths
+\layout Standard
+
+Both types of dependency graph nodes include a unique 
+\noun on 
+Name
+\noun default 
+ field which is used as the identifying key for database queries.
+ This 
+\noun on 
+Name
+\noun default 
+ is composed of two parts, a path and a basename.
+ The path part of the 
+\noun on 
+Name
+\noun default 
+ includes the directory path up to, but not including, the root directory
+ used to store production files.
+ The directories in this path represent a hierarchical organization such
+ as projects, scenes, shots, elements, etc...
+ The basename part of the path is used to identify a particular file within
+ this structure.
+ For instance, a 
+\noun on 
+DataNode
+\noun default 
+ with a 
+\noun on 
+Name
+\noun default 
+ of:
+\layout Quote
+
+
+\begin_inset Quotes eld
+\end_inset 
+
+/foo/elemA/houdini/hip/skins.hip
+\begin_inset Quotes erd
+\end_inset 
+
+
+\layout Standard
+
+Is composed of a path: 
+\layout Quote
+
+
+\begin_inset Quotes eld
+\end_inset 
+
+/foo/elemA/houdini/hip
+\begin_inset Quotes erd
+\end_inset 
+
+
+\layout Standard
+
+and a basename:
+\layout Quote
+
+
+\begin_inset Quotes eld
+\end_inset 
+
+skins.hip
+\begin_inset Quotes erd
+\end_inset 
+
+
+\layout Standard
+
+Its important to note that the 
+\noun on 
+Name
+\noun default 
+ is not a literal file location, but rather one component used to construct
+ such paths.
+ In the case of the example above, if the value of the environmental variable,
+ the 
+\begin_inset Quotes eld
+\end_inset 
+
+2.1.4
+\begin_inset Quotes erd
+\end_inset 
+
+ version of 
+\begin_inset Quotes eld
+\end_inset 
+
+skins.hip
+\begin_inset Quotes erd
+\end_inset 
+
+ would be stored in the repository as:
+\layout Quote
+
+
+\begin_inset Quotes eld
+\end_inset 
+
+/prod/repository/foo/elemA/houdini/hip/skins.hip/v2.1.4
+\begin_inset Quotes erd
+\end_inset 
+
+
+\layout Standard
+
+If an artist name 
+\begin_inset Quotes eld
+\end_inset 
+
+bob
+\begin_inset Quotes erd
+\end_inset 
+
+ checked out this version of the file, then a symbolic link (or a copy of
+ the file) named:
+\layout Quote
+
+
+\begin_inset Quotes eld
+\end_inset 
+
+/prod/working/bob/foo/elemA/houdini/hip/skins.hip
+\begin_inset Quotes erd
+\end_inset 
+
+
+\layout Standard
+
+would be created which points to the above file in the repository.
+ This link name should be the only way this file is referenced.
+ Note that each user has an exclusive working area under 
+\begin_inset Quotes eld
+\end_inset 
+
+/prod/$USER
+\begin_inset Quotes erd
+\end_inset 
+
+ which is not shared by other users.
+ All data sharing must go through the repository.
+ 
+\layout Standard
+
+Process nodes also have a 
+\noun on 
+Name
+\noun default 
+ field which is constructed and used in the same way as for data nodes except
+ that the file pointed to stores a shell script used to execute the process
+ instead of an arbitrary data file.
+\layout Subsection
+
+Data Nodes
+\layout Standard
+
+Each file referenced as part of the production process is represented by
+ a 
+\noun on 
+DataNode
+\noun default 
+ in the production database with the following fields:
+\layout Enumerate
+
+
+\noun on 
+Name
+\noun default 
+ [String] (R): A unique name which identifies the 
+\noun on 
+DataNode
+\noun default 
+ and is used in the construction of file system paths.
+ See the previous section for a more detailed explanation of the value of
+ 
+\noun on 
+Name
+\noun default 
+.
+\layout Enumerate
+
+
+\noun on 
+Versions
+\noun default 
+ [Version List] (RA): For each revision of the 
+\noun on 
+DataNode
+\noun default 
+, the following information is stored in the database:
+\begin_deeper 
+\layout Enumerate
+
+
+\emph on 
+\noun on 
+TimeStamp
+\emph default 
+\noun default 
+ [Date] (R): A record of the date and time of the commit of this revision.
+\layout Enumerate
+
+
+\noun on 
+Author
+\noun default 
+ [String] (R): The name of the user which committed this revision.
+\layout Enumerate
+
+
+\noun on 
+Message
+\noun default 
+ [String] (R): A short message describing the content or changes to the
+ content of this revision.
+ This message must be specified as part of the commit process.
+ Its length is entirely up to the user, but should be long enough to be
+ useful to others.
+\layout Enumerate
+
+
+\noun on 
+VersionID
+\noun default 
+ [Integer List] (R): A set of positive numbers which uniquely identify a
+ particular revision of the file and its relationship with other revisions.
+ Version numbers are ordered from most important to least important in the
+ list stored for the 
+\noun on 
+VersionID
+\noun default 
+ field.
+ For instance, a 
+\noun on 
+VersionID
+\noun default 
+ of [2, 4] is a older version than [3, 5, 1] and a newer version than [1,
+ 3] and [2].
+ 
+\noun on 
+VersionID
+\noun default 
+(s) are typically presented as dot separated strings to the user.
+ For example, [3, 5, 1] would be printed as version 
+\begin_inset Quotes eld
+\end_inset 
+
+3.5.1
+\begin_inset Quotes erd
+\end_inset 
+
+.
+\layout Enumerate
+
+
+\noun on 
+Dependency
+\noun default 
+ [Dependency] (R): Name of the
+\noun on 
+ ProcessNode
+\noun default 
+ and version of that node which generated the file managed by this 
+\noun on 
+DataNode
+\noun default 
+.
+ If this node is a leaf node in the tree, the 
+\noun on 
+DependsOn
+\noun default 
+ field will be null.
+ 
+\begin_deeper 
+\layout Enumerate
+
+
+\noun on 
+Name
+\noun default 
+ [String] (R): 
+\noun on 
+Name
+\noun default 
+ of 
+\noun on 
+ProcessNode
+\noun default 
+.
+\layout Enumerate
+
+
+\noun on 
+VersionID
+\noun default 
+ [Int List] (R): 
+\noun on 
+VersionID
+\noun default 
+ of 
+\noun on 
+ProcessNode
+\noun default 
+.
+\end_deeper 
+\layout Enumerate
+
+
+\noun on 
+Editor
+\noun default 
+ [String] (R): Name of the executable used to edit files of this type.
+\layout Enumerate
+
+
+\noun on 
+Toolset
+\noun default 
+ [String] (R): Name of the toolset under which the editor executable should
+ be run.
+\layout Enumerate
+
+
+\noun on 
+Comments
+\emph on 
+\noun default 
+ 
+\emph default 
+[LogMessage List] (RA): Any client critique notes or internal change comments
+ associated with this revision of the file.
+ Unlike the other fields, which are write-once and then unchangeable, this
+ field may be edited and new 
+\noun on 
+Comment
+\noun default 
+(s) added at any time.
+ Each 
+\noun on 
+Comment
+\noun default 
+ is represented by a data-structure with the following fields:
+\begin_deeper 
+\layout Enumerate
+
+
+\noun on 
+TimeStamp
+\noun default 
+ [Date] (R): A record of the date and time of the comment.
+\layout Enumerate
+
+
+\noun on 
+Author
+\noun default 
+ [String] (R): The name of the user which made the comment.
+\layout Enumerate
+
+
+\noun on 
+Message
+\noun default 
+ [String] (R): A message describing the changes which are necessary to progress
+ to the next revision.
+ Typically these messages are generated by supervisors or producers, but
+ may be generated by any artist to request a change to this revision of
+ the data file.
+\end_deeper 
+\end_deeper 
+\layout Subsection
+
+Process Nodes
+\layout Standard
+
+Non-interactive processes which are used to (re)generate 
+\noun on 
+DataNode(
+\noun default 
+s) are represented by a 
+\noun on 
+ProcessNode
+\noun default 
+ with the following fields:
+\layout Enumerate
+
+
+\noun on 
+Name
+\noun default 
+ [String] (R): A unique name which identifies the 
+\noun on 
+ProcessNode
+\noun default 
+ and is used in the construction of file system paths.
+ See the previous section for a more detailed explanation of the value of
+ 
+\noun on 
+Name
+\noun default 
+.
+\layout Enumerate
+
+
+\noun on 
+Versions
+\noun default 
+ [Version List] (RA): For each revision of the 
+\noun on 
+ProcessNode
+\noun default 
+, the following information is stored in the database:
+\begin_deeper 
+\layout Enumerate
+
+
+\emph on 
+\noun on 
+TimeStamp
+\emph default 
+\noun default 
+ [Date] (R): A record of the date and time of the commit of this revision.
+\layout Enumerate
+
+
+\noun on 
+Author
+\noun default 
+ [String] (R): The name of the user which committed this revision.
+\layout Enumerate
+
+
+\noun on 
+Message
+\noun default 
+ [String] (R): A short log message describing the content or changes to
+ the content of this revision.
+\layout Enumerate
+
+
+\noun on 
+VersionID
+\noun default 
+ [Integer List] (R): A set of positive numbers which uniquely identify a
+ particular revision of the script file and its relationship with other
+ revisions.
+ See the
+\noun on 
+ VersionID
+\noun default 
+ field of 
+\noun on 
+DataNode
+\noun default 
+ for details of usage.
+\layout Enumerate
+
+
+\noun on 
+Dependencies
+\noun default 
+ [Dependency List] (R): Names and versions of the 
+\noun on 
+DataNode
+\noun default 
+(s) referenced during the execution the process script associated with this
+ node.
+ 
+\begin_deeper 
+\layout Enumerate
+
+
+\noun on 
+Name
+\noun default 
+ [String] (R): 
+\noun on 
+Name
+\noun default 
+ of 
+\noun on 
+DataNode.
+\layout Enumerate
+
+
+\noun on 
+VersionID
+\noun default 
+ [Int List] (R): 
+\noun on 
+VersionID
+\noun default 
+ of 
+\noun on 
+DataNode.
+\end_deeper 
+\layout Enumerate
+
+
+\noun on 
+Toolset
+\noun default 
+ [String] (R): Name of the toolset under which the script should be run.
+\end_deeper 
+\layout Section
+
+Local Modifications
+\layout Standard
+
+The production process involves many modifications of 
+\noun on 
+DataNode
+\noun default 
+ and 
+\noun on 
+ProcessNode
+\noun default 
+ information prior to committing these changes to the database.
+ Not all changes are worth saving and may not even be fully functional.
+ Local modifications are a way of storing these changes to node information
+ since the last check-out.
+ These modifications are stored in local files under subdirectory called
+ 
+\begin_inset Quotes eld
+\end_inset 
+
+.pipeline
+\begin_inset Quotes erd
+\end_inset 
+
+ of the working directory which contains the file or process script associated
+ with a database node.
+\layout Subsection
+
+Data Node Mods
+\layout Standard
+
+For each registered or checked-out 
+\noun on 
+DataNode
+\noun default 
+, there is a local file which stores the following fields:
+\layout Enumerate
+
+
+\noun on 
+Name
+\noun default 
+ [String] (R): Identical to the 
+\noun on 
+Name
+\noun default 
+ field of the 
+\noun on 
+DataNode
+\noun default 
+ being modified.
+\layout Enumerate
+
+
+\emph on 
+\noun on 
+TimeStamp
+\emph default 
+\noun default 
+ [Date] (R): A record of the date and time this data file was checked-out
+ (or when it was registered if its a new node).
+ Note that this is not based on the 
+\noun on 
+TimeStamp
+\noun default 
+ stored in the database for the 
+\noun on 
+DataNode.
+
+\noun default 
+ 
+\layout Enumerate
+
+
+\noun on 
+VersionID
+\noun default 
+ [Integer List] (R): The 
+\noun on 
+VersionID
+\noun default 
+ of the 
+\noun on 
+DataNode
+\noun default 
+ that was checked-out (or 
+\begin_inset Quotes eld
+\end_inset 
+
+1
+\begin_inset Quotes erd
+\end_inset 
+
+ if its a new node).
+\layout Enumerate
+
+
+\noun on 
+Dependency
+\noun default 
+ [Dependency] (RW): Name of the
+\noun on 
+ ProcessNode
+\noun default 
+ and version of that node which generated the file managed by this 
+\noun on 
+DataNode
+\noun default 
+.
+ 
+\begin_deeper 
+\layout Enumerate
+
+
+\noun on 
+Name
+\noun default 
+ [String] (RW): 
+\noun on 
+Name
+\noun default 
+ of 
+\noun on 
+ProcessNode
+\noun default 
+.
+\layout Enumerate
+
+
+\noun on 
+VersionID
+\noun default 
+ [Int List] (RW): 
+\noun on 
+VersionID
+\noun default 
+ of 
+\noun on 
+ProcessNode
+\noun default 
+.
+\end_deeper 
+\layout Enumerate
+
+
+\noun on 
+Editor
+\noun default 
+ [String] (RW): Name of the executable used to edit files of this type.
+\layout Enumerate
+
+
+\noun on 
+Toolset
+\noun default 
+ [String] (RW): Name of the toolset under which the editor executable should
+ be run.
+\layout Standard
+
+The values of 
+\noun on 
+DependsOn
+\noun default 
+, 
+\noun on 
+Editor
+\noun default 
+ and 
+\noun on 
+Toolset
+\noun default 
+ can be changed locally and will override the corresponding fields from
+ the 
+\noun on 
+DataNode
+\noun default 
+ stored in the database.
+ During check-in, if the values of these fields have been modified from
+ those stored in the database, a new version will be checked-in using the
+ locally modified values.
+\layout Subsection
+
+Process Node Mods
+\layout Standard
+
+For each registered or checked-out 
+\noun on 
+ProcessNode
+\noun default 
+, there is a local file which stores the following fields:
+\layout Enumerate
+
+
+\noun on 
+Name
+\noun default 
+ [String] (R): Identical to the 
+\noun on 
+Name
+\noun default 
+ field of the 
+\noun on 
+ProcessNode
+\noun default 
+ being modified.
+\layout Enumerate
+
+
+\emph on 
+\noun on 
+TimeStamp
+\emph default 
+\noun default 
+ [Date] (R): A record of the date and time this script was checked-out.
+ Note that this is not based on the 
+\noun on 
+TimeStamp
+\noun default 
+ stored in the database for the 
+\noun on 
+ProcessNode.
+
+\noun default 
+ 
+\layout Enumerate
+
+
+\noun on 
+VersionID
+\noun default 
+ [Integer List] (R): The 
+\noun on 
+VersionID
+\noun default 
+ of the 
+\noun on 
+ProcessNode
+\noun default 
+ that was checked-out.
+ 
+\layout Enumerate
+
+
+\noun on 
+Dependencies
+\noun default 
+ [Dependency List] (RW): Names and versions of the 
+\noun on 
+DataNode
+\noun default 
+(s) referenced during the execution the process script associated with this
+ node.
+ 
+\begin_deeper 
+\layout Enumerate
+
+
+\noun on 
+Name
+\noun default 
+ [String] (RW): 
+\noun on 
+Name
+\noun default 
+ of 
+\noun on 
+ProcessNode
+\noun default 
+.
+\layout Enumerate
+
+
+\noun on 
+VersionID
+\noun default 
+ [Int List] (RW): 
+\noun on 
+VersionID
+\noun default 
+ of 
+\noun on 
+ProcessNode
+\noun default 
+.
+\end_deeper 
+\layout Enumerate
+
+
+\noun on 
+Toolset
+\noun default 
+ [String] (RW): Name of the toolset under which the script should be run.
+\layout Standard
+
+Similar to 
+\noun on 
+DataNodeMod
+\noun default 
+(s), the 
+\noun on 
+DependsOn
+\noun default 
+ and 
+\noun on 
+Toolset
+\noun default 
+ fields can be locally modified and will override the corresponding fields
+ from the 
+\noun on 
+ProcessNode
+\noun default 
+ stored in the database upon check-in.
+\the_end
