@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.23 2004/10/04 16:06:53 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.24 2004/10/09 18:44:32 jim Exp $
 
 import java.io.*; 
 import java.util.*;
@@ -399,10 +399,6 @@ class GenUserPrefsApp
 	("Remove the root node of the current primary selection from the set of roots nodes.",
 	 "NodeViewerRemoveRoot", "Remove Root:"),
 
-	new HotKeyPref
-	("Remove all of the roots nodes.",
-	 "NodeViewerRemoveAllRoots", "Remove All Roots:"), 
-
 	new BasePref(),
 	
 	new HotKeyPref
@@ -609,12 +605,12 @@ class GenUserPrefsApp
 	new HotKeyPref
 	("Expand all nodes.",
 	 "NodeViewerExpandAllNodes", "Expand All:", 
-	 false, false, false, 69),  /* E */
+	 false, false, false, 91),  /* Open Bracket */
 
 	new HotKeyPref
 	("Collapse all nodes.",
 	 "NodeViewerCollapseAllNodes", "Collapse All:", 
-	 false, false, false, 67),  /* C */
+	 false, false, false, 93),  /* Close Bracket */
 
 	new BasePref(),
 
@@ -622,6 +618,12 @@ class GenUserPrefsApp
 	("Show/hide nodes downstream of the focus node.",
 	 "NodeViewerShowHideDownstreamNodes", "Show/Hide Downstream:", 
 	 false, false, false, 68),  /* D */
+
+	new BasePref(),
+
+	new HotKeyPref
+	("Remove all of the roots nodes.",
+	 "NodeViewerRemoveAllRoots", "Remove All Roots:")
       };
 
       pPrefs.put("Panel|Node Viewer|Hot Keys", prefs);
@@ -897,12 +899,12 @@ class GenUserPrefsApp
 	new HotKeyPref
 	("Expand all jobs.",
 	 "JobViewerExpandAllJobs", "Expand All:", 
-	 false, false, false, 69),  /* E */
+	 false, false, false, 91),  /* Open Bracket */
 
 	new HotKeyPref
 	("Collapse all jobs.",
 	 "JobViewerCollapseAllJobs", "Collapse All:", 
-	 false, false, false, 67),  /* C */
+	 false, false, false, 93),  /* Close Bracket */
       };
 
       pPrefs.put("Panel|Job Viewer|Hot Keys", prefs);
@@ -970,7 +972,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.23 2004/10/04 16:06:53 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.24 2004/10/09 18:44:32 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -1223,7 +1225,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.23 2004/10/04 16:06:53 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.24 2004/10/09 18:44:32 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
