@@ -1,4 +1,4 @@
-// $Id: TestPluginsApp.java,v 1.2 2004/02/25 02:59:04 jim Exp $
+// $Id: TestPluginsApp.java,v 1.3 2004/02/25 06:21:15 jim Exp $
 
 import us.temerity.pipeline.*;
 
@@ -46,7 +46,7 @@ class TestPluginsApp
 
   public void 
   run() 
-    throws PipelineException, InterruptedException
+    throws GlueException, PipelineException, InterruptedException
   {
     TreeMap<String,String> env = Toolsets.lookup(TestInfo.sBuildToolset);
 
@@ -189,14 +189,13 @@ class TestPluginsApp
   }
  
 
-
   private void
   testActions
   (
    TreeMap<String,String> env, 
    File dir
   ) 
-    throws PipelineException, InterruptedException
+    throws GlueException, PipelineException, InterruptedException
   {
     {
       BaseAction script = Plugins.newAction("Script");
@@ -243,7 +242,36 @@ class TestPluginsApp
       proc.join();
       assert(proc.wasSuccessful());   
       assert(proc.getStdOut().equals("10633823966279326983230456482242756608\n"));
-    }
 
+      testGlue("ScriptAction", script);
+    }
+  }
+
+
+  private void 
+  testGlue
+  ( 
+   String title, 
+   Glueable obj   
+  ) 
+    throws GlueException
+  {
+    System.out.print("-----------------------------------\n" + 
+		     "BEFORE:\n");
+
+    GlueEncoder ge = new GlueEncoder(title, obj);
+    String text = ge.getText();
+    System.out.print(text + "\n");
+
+    System.out.print("AFTER:\n");
+
+    GlueDecoder gd = new GlueDecoder(text);
+    Object obj2 = gd.getObject();
+
+    GlueEncoder ge2 = new GlueEncoder(title, (Glueable) obj2);
+    String text2 = ge.getText();
+    System.out.print(text2 + "\n");
+    
+    assert(text.equals(text2));
   }
 }
