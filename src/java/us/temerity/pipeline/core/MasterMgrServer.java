@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.11 2004/07/18 21:31:40 jim Exp $
+// $Id: MasterMgrServer.java,v 1.12 2004/07/24 18:23:36 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -47,7 +47,7 @@ class MasterMgrServer
    * @param prodDir 
    *   The root production directory.
    * 
-   * @param fileHostname 
+   * @param fileHost 
    *   The name of the host running the <B>plfilemgr</B><A>(1) and <B>plnotify</B><A>(1) 
    *   daemons.
    * 
@@ -61,6 +61,12 @@ class MasterMgrServer
    * @param monitorPort 
    *   The network port listened to by the <B>plnotify</B><A>(1) daemon for 
    *   monitor connections.
+   * 
+   * @param queueHost
+   *   The hostname running <B>plqueuemgr</B>(1).
+   * 
+   * @param queuePort
+   *   The port number listened to by <B>plqueuemgr</B>(1) for incoming connections.
    */
   public
   MasterMgrServer
@@ -68,14 +74,18 @@ class MasterMgrServer
    File nodeDir, 
    int nodePort, 
    File prodDir, 
-   String fileHostname, 
+   String fileHost, 
    int filePort,
    int controlPort, 
-   int monitorPort
+   int monitorPort, 
+   String queueHost, 
+   int queuePort
   )
   { 
     super("MasterMgrServer");
-    init(nodeDir, nodePort, prodDir, fileHostname, filePort, controlPort, monitorPort);
+    init(nodeDir, nodePort, 
+	 prodDir, fileHost, filePort, controlPort, monitorPort, 
+	 queueHost, queuePort);
   }
   
   /** 
@@ -85,13 +95,27 @@ class MasterMgrServer
    * The root node directory is specified by the <B>--node-dir</B>=<I>dir</I>
    * option to <B>plconfig</B>(1). <P> 
    * 
+   * The network port to monitor for incoming connections is specified by the 
+   * <B>--master-port</B>=<I>dir</I> option to <B>plconfig</B>(1). <P>
+   * 
+   * The root production directory is specified by the <B>--prod-dir</B>=<I>dir</I>
+   * option to <B>plconfig</B>(1). <P> 
+   * 
    * The file server hostname is specified by the <B>--file-host</B>=<I>host</I>
    * option to <B>plconfig</B>(1). <P>  
    * 
-   * The network ports used are those specified by the 
-   * <B>--master-port</B>=<I>num</I>, <B>--file-port</B>=<I>num</I>, 
-   * <B>--notify-control-port</B>=<I>num</I> and 
-   * <B>--notify-monitor-port</B>=<I>num</I> options to <B>plconfig</B>(1).
+   * The network port listened to by the <B>plfilemgr</B><A>(1) daemon is specified 
+   * by the <B>--file-port</B>=<I>dir</I> option to <B>plconfig</B>(1). <P>
+   * 
+   * The network port listened to by the <B>plnotify</B><A>(1) daemon is specified 
+   * by the <B>--notify-control-port</B>=<I>num</I> and 
+   * <B>--notify-monitor-port</B>=<I>num</I> options to <B>plconfig</B>(1). <P>
+   * 
+   * The queue server hostname is specified by the <B>--queue-host</B>=<I>host</I>
+   * option to <B>plconfig</B>(1). <P>  
+   * 
+   * The port number listened to by <B>plqueuemgr</B>(1) for incoming connections is 
+   * specified by the <B>--queue-port</B>=<I>num</I> option to <B>plconfig</B>(1). 
    */
   public
   MasterMgrServer() 
@@ -99,7 +123,8 @@ class MasterMgrServer
     super("MasterMgrServer");
     init(PackageInfo.sNodeDir, PackageInfo.sMasterPort, 
 	 PackageInfo.sProdDir, PackageInfo.sFileServer, PackageInfo.sFilePort, 
-	 PackageInfo.sNotifyControlPort, PackageInfo.sNotifyMonitorPort);
+	 PackageInfo.sNotifyControlPort, PackageInfo.sNotifyMonitorPort, 
+	 PackageInfo.sQueueServer, PackageInfo.sQueuePort);
   }
 
 
@@ -117,7 +142,7 @@ class MasterMgrServer
    * @param prodDir 
    *   The root production directory.
    * 
-   * @param fileHostname 
+   * @param fileHost 
    *   The name of the host running the <B>plfilemgr</B><A>(1) and <B>plnotify</B><A>(1) 
    *   daemons.
    * 
@@ -131,6 +156,12 @@ class MasterMgrServer
    * @param monitorPort 
    *   The network port listened to by the <B>plnotify</B><A>(1) daemon for 
    *   monitor connections.
+   * 
+   * @param queueHost
+   *   The hostname running <B>plqueuemgr</B>(1).
+   * 
+   * @param queuePort
+   *   The port number listened to by <B>plqueuemgr</B>(1) for incoming connections.
    */
   private synchronized void 
   init
@@ -138,14 +169,17 @@ class MasterMgrServer
    File nodeDir, 
    int nodePort, 
    File prodDir, 
-   String fileHostname, 
+   String fileHost, 
    int filePort,
    int controlPort, 
-   int monitorPort
+   int monitorPort, 
+   String queueHost, 
+   int queuePort
   )
   { 
     pMasterMgr = new MasterMgr(nodeDir, prodDir, 
-			       fileHostname, filePort, controlPort, monitorPort);
+			       fileHost, filePort, controlPort, monitorPort, 
+			       queueHost, queuePort);
 
     if(nodePort < 0) 
       throw new IllegalArgumentException("Illegal port number (" + nodePort + ")!");
@@ -212,6 +246,9 @@ class MasterMgrServer
       Logs.net.severe("The Security Manager doesn't allow listening to sockets!\n" + 
 		      ex.getMessage());
       Logs.flush();
+    }
+    catch (Exception ex) {
+      Logs.net.severe(ex.getMessage());
     }
     finally {
       if(server != null) {
@@ -386,6 +423,35 @@ class MasterMgrServer
 	    {
 	      MiscSetSuffixEditorsReq req = (MiscSetSuffixEditorsReq) objIn.readObject();
 	      objOut.writeObject(pMasterMgr.setSuffixEditors(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+
+	  /*-- LICENSE KEYS ----------------------------------------------------------------*/
+	  case AddLicenseKey:
+	    {
+	      QueueAddLicenseKeyReq req = 
+		(QueueAddLicenseKeyReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.addLicenseKey(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case RemoveLicenseKey:
+	    {
+	      QueueRemoveLicenseKeyReq req = 
+		(QueueRemoveLicenseKeyReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.removeLicenseKey(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case SetTotalLicenses:
+	    {
+	      QueueSetTotalLicensesReq req = 
+		(QueueSetTotalLicensesReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.setTotalLicenses(req));
 	      objOut.flush(); 
 	    }
 	    break;
@@ -617,6 +683,9 @@ class MasterMgrServer
       catch(ClassNotFoundException ex) {
 	Logs.net.severe("Illegal object encountered on port (" + pPort + "):\n" + 
 			ex.getMessage());	
+      }
+      catch (Exception ex) {
+	Logs.net.severe(ex.getMessage());
       }
       finally {
 	try {
