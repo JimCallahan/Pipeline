@@ -27,17 +27,15 @@
 
 
 
-  <!--  P R O G R E S S   B A R  -->
+  <!-- T E X T U R E   L O A D E R   B A R  -->
 
-  <style id="ProgressBar">
-    <imagePainter path="ProgressBar.png" 
-                  method="progressBarBackground"
-                  sourceInsets="5 7 7 7"/>
-    <imagePainter path="ProgressBarMeter.png" 
-                  method="progressBarForeground"
-                  sourceInsets="7 7 7 7"/>
+  <style id="TextureLoaderBar">
+    <imagePainter path="TextureLoaderBar.png" 
+                  sourceInsets="3 7 7 7"/>
+    <insets top="2" bottom="6" right="6" left="6"/>
   </style>
-  <bind style="ProgressBar" type="region" key="ProgressBar"/>
+  <bind style="TextureLoaderBar" type="name" key="TextureLoaderBar"/>
+
 
 
   <!-- T O O L  T I P  -->
