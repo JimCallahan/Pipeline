@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.7 2004/08/01 15:41:39 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.8 2004/08/23 07:12:27 jim Exp $
 
 import java.io.*; 
 import java.util.*;
@@ -101,6 +101,20 @@ class GenUserPrefsApp
 	new HotKeyPref
 	("add a secondary file sequence to the current primary selection",
 	 "NodeAddSecondary", "Add Secondary:"), 
+
+	new BasePref(),
+
+	new HotKeyPref
+	("submit jobs to the queue for the current primary selection",
+	 "NodeQueueJobs", "Queue Jobs:"), 
+
+	new HotKeyPref
+	("kill all jobs associated with the selected nodes",
+	 "NodeKillJobs", "Kill Jobs:"), 
+
+	new HotKeyPref
+	("remove all the primary/secondary files associated with the selected nodes",
+	 "NodeRemoveFiles", "Remove Files:"), 
 
 	new BasePref(),
 	
@@ -270,11 +284,7 @@ class GenUserPrefsApp
 	new HotKeyPref
 	("apply the changes to the working version", 
 	 "NodeDetailsApplyChanges", "Apply Changes:",
-	 false, false, false, 155),  /* Insert */ 
-
-	new HotKeyPref
-	("apply the changes to the working version", 
-	 "NodeDetailsToggleFrozen", "Toggle Frozen:"),	
+	 false, false, false, 155)   /* Insert */ 
       };
 
       pPrefs.put("Panel|Node Details|Hot Keys", prefs);
@@ -319,7 +329,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.7 2004/08/01 15:41:39 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.8 2004/08/23 07:12:27 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -572,7 +582,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.7 2004/08/01 15:41:39 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.8 2004/08/23 07:12:27 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
