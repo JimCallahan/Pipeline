@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.7 2004/09/22 05:39:38 jim Exp $
+// $Id: ScriptApp.java,v 1.8 2004/09/22 20:58:26 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -21,7 +21,7 @@ import java.text.*;
  */
 public
 class ScriptApp
-  extends VerifiedApp
+  extends BaseApp
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
