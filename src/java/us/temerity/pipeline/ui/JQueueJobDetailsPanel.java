@@ -1,4 +1,4 @@
-// $Id: JQueueJobDetailsPanel.java,v 1.2 2004/08/31 12:43:24 jim Exp $
+// $Id: JQueueJobDetailsPanel.java,v 1.3 2004/09/05 06:50:05 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -117,7 +117,7 @@ class JQueueJobDetailsPanel
 
 	/* summary panel */ 
 	{
-	  Component comps[] = createCommonPanels();
+	  Component comps[] = UIMaster.createTitledPanels();
 	  {
 	    JPanel tpanel = (JPanel) comps[0];
 	    JPanel vpanel = (JPanel) comps[1];
@@ -162,13 +162,120 @@ class JQueueJobDetailsPanel
 	  vbox.add(drawer);
 	}
 
-	/* execution statistics panel */ 
-	{
-	  Component comps[] = createCommonPanels();
+	/* process details */ 
+	{ 
+	  Component comps[] = UIMaster.createTitledPanels();
 	  {
 	    JPanel tpanel = (JPanel) comps[0];
 	    JPanel vpanel = (JPanel) comps[1];
 	    
+	    /* execution details */ 
+	    {
+	      {
+		JLabel label = 
+		  UIMaster.createFixedLabel("Execution Details:", sTSize, JLabel.RIGHT);
+		tpanel.add(label);
+	      }
+		
+	      {
+		JButton btn = new JButton("Show...");
+		pExecDetailsButton = btn;
+
+		btn.setAlignmentX(0.5f);
+		
+		btn.setName("ValuePanelButton");
+		btn.setRolloverEnabled(false);
+		btn.setFocusable(false);
+		
+		btn.addActionListener(this);
+		btn.setActionCommand("show-exec-details");
+		
+		Dimension size = new Dimension(sVSize, 19);
+		btn.setMinimumSize(size);
+		btn.setPreferredSize(size);
+		btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+		
+		vpanel.add(btn);
+	      }
+	    }
+
+	    UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+
+	    /* hostname */ 
+	    { 
+	      pHostnameField =
+		UIMaster.createTitledTextField(tpanel, "Hostname:", sTSize, 
+					       vpanel, null, sVSize);
+	    }
+	    
+	    UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+	    
+	    /* exit code */ 
+	    { 
+	      pExitCodeField =
+		UIMaster.createTitledTextField(tpanel, "Exit Code:", sTSize, 
+					       vpanel, null, sVSize);
+	    }
+	    
+	    UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+	    
+	    /* logs */ 
+	    {
+	      {
+		JLabel label = 
+		  UIMaster.createFixedLabel("Logs:", sTSize, JLabel.RIGHT);
+		tpanel.add(label);
+	      }
+	      
+	      {
+		Box hbox = new Box(BoxLayout.X_AXIS);
+		
+		{
+		  JButton btn = new JButton("Output...");
+		  pOutputButton = btn;
+		  
+		  btn.setName("ValuePanelButton");
+		  btn.setRolloverEnabled(false);
+		  btn.setFocusable(false);
+		  
+		  btn.addActionListener(this);
+		  btn.setActionCommand("show-output");
+		  
+		  Dimension size = new Dimension(sHSize, 19);
+		  btn.setMinimumSize(size);
+		  btn.setPreferredSize(size);
+		  btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+		  
+		  hbox.add(btn);
+		}
+		
+		hbox.add(Box.createRigidArea(new Dimension(6, 0)));
+		
+		{
+		  JButton btn = new JButton("Errors...");
+		  pErrorButton = btn;
+		  
+		  btn.setName("ValuePanelButton");
+		  btn.setRolloverEnabled(false);
+		  btn.setFocusable(false);
+		  
+		  btn.addActionListener(this);
+		  btn.setActionCommand("show-error");
+		  
+		  Dimension size = new Dimension(sHSize, 19);
+		  btn.setMinimumSize(size);
+		  btn.setPreferredSize(size);
+		  btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+		  
+		  hbox.add(btn);
+		}
+		
+		vpanel.add(hbox);
+	      }		  
+	    }	    
+
+	    UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
+	      
 	    /* user time */ 
 	    {
 	      pUserTimeField = 
@@ -260,145 +367,7 @@ class JQueueJobDetailsPanel
 	    }
 	  }
 	  
-	  JDrawer drawer = new JDrawer("Execution Statistics:", (JComponent) comps[2], true);
-	  pStatsDrawer = drawer;
-	  vbox.add(drawer);
-	}
-
-	/* process details */ 
-	{ 
-	  Box pbox = new Box(BoxLayout.Y_AXIS);
-	  
-	  {
-	    Component comps[] = createCommonPanels();
-	    {
-	      JPanel tpanel = (JPanel) comps[0];
-	      JPanel vpanel = (JPanel) comps[1];
-	      
-	      /* hostname */ 
-	      { 
-		pHostnameField =
-		  UIMaster.createTitledTextField(tpanel, "Hostname:", sTSize, 
-						 vpanel, null, sVSize);
-	      }
-
-	      UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
-
-	      /* exit code */ 
-	      { 
-		pExitCodeField =
-		  UIMaster.createTitledTextField(tpanel, "Exit Code:", sTSize, 
-						 vpanel, null, sVSize);
-	      }
-	      
-	      UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
-
-	      /* logs */ 
-	      {
-		{
-		  JLabel label = 
-		    UIMaster.createFixedLabel("Logs:", sTSize, JLabel.RIGHT);
-		  tpanel.add(label);
-		}
-		
-		{
-		  Box hbox = new Box(BoxLayout.X_AXIS);
-
-		  {
-		    JButton btn = new JButton("Output");
-		    pOutputButton = btn;
-
-		    btn.setName("ValuePanelButton");
-		    btn.setRolloverEnabled(false);
-		    btn.setFocusable(false);
-		    
-		    btn.addActionListener(this);
-		    btn.setActionCommand("show-output");
-
-		    Dimension size = new Dimension(sHSize, 19);
-		    btn.setMinimumSize(size);
-		    btn.setPreferredSize(size);
-		    btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
-
-		    hbox.add(btn);
-		  }
-
-		  hbox.add(Box.createRigidArea(new Dimension(6, 0)));
-		    
-		  {
-		    JButton btn = new JButton("Error");
-		    pErrorButton = btn;
-
-		    btn.setName("ValuePanelButton");
-		    btn.setRolloverEnabled(false);
-		    btn.setFocusable(false);
-		    
-		    btn.addActionListener(this);
-		    btn.setActionCommand("show-error");
-
-		    Dimension size = new Dimension(sHSize, 19);
-		    btn.setMinimumSize(size);
-		    btn.setPreferredSize(size);
-		    btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
-
-		    hbox.add(btn);
-		  }
-		  
-		  vpanel.add(hbox);
-		}		  
-	      }
-
-	      UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
-
-	      /* command line */ 
-	      {
-		pCommandLineArea = 
-		  UIMaster.createTitledTextArea(tpanel, "Command Line:", sTSize, 
-						vpanel, null, sVSize, 6, true);
-		pCommandLineArea.setWrapStyleWord(false);
-	      }
-	      
-	      UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
-	      
-	      /* working directory */ 
-	      { 
-		pWorkDirField =
-		  UIMaster.createTitledTextField(tpanel, "Working Directory:", sTSize, 
-						 vpanel, null, sVSize);
-		pWorkDirField.setHorizontalAlignment(JLabel.LEFT);
-	      }
-	    }
-	      
-	    pbox.add(comps[2]);
-	  }
-	    
-	  {
-	    Box ebox = new Box(BoxLayout.X_AXIS);
-	    pEnvBox = ebox;
-	  
-	    ebox.addComponentListener(this);
-	  
-	    {
-	      JPanel spanel = new JPanel();
-	      spanel.setName("Spacer");
-	      
-	      spanel.setMinimumSize(new Dimension(7, 0));
-	      spanel.setMaximumSize(new Dimension(7, Integer.MAX_VALUE));
-	      spanel.setPreferredSize(new Dimension(7, 0));
-	      
-	      ebox.add(spanel);
-	    }
-	
-	    {
-	      JDrawer drawer = new JDrawer("Environment:", new JPanel(), false);
-	      pEnvDrawer = drawer;
-	      ebox.add(drawer);
-	    }
-
-	    pbox.add(ebox);
-	  }
-	  
-	  JDrawer drawer = new JDrawer("Process Details:", pbox, false);
+	  JDrawer drawer = new JDrawer("Process Details:", (JComponent) comps[2], false);
 	  pProcessDrawer = drawer;
 	  vbox.add(drawer);
 	} 
@@ -408,7 +377,7 @@ class JQueueJobDetailsPanel
 	  Box jrbox = new Box(BoxLayout.Y_AXIS);
 	  
 	  {
-	    Component comps[] = createCommonPanels();
+	    Component comps[] = UIMaster.createTitledPanels();
 	    {
 	      JPanel tpanel = (JPanel) comps[0];
 	      JPanel vpanel = (JPanel) comps[1];
@@ -570,45 +539,6 @@ class JQueueJobDetailsPanel
     }
 
     updateJob(null, null);
-  }
-
-
-  /**
-   * Create the title/value panels.
-   * 
-   * @return 
-   *   The title panel, value panel and containing box.
-   */   
-  private Component[]
-  createCommonPanels()
-  {
-    Component comps[] = new Component[3];
-    
-    Box body = new Box(BoxLayout.X_AXIS);
-    comps[2] = body;
-    {
-      {
-	JPanel panel = new JPanel();
-	comps[0] = panel;
-	
-	panel.setName("TitlePanel");
-	panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-      
-	body.add(panel);
-      }
-      
-      {
-	JPanel panel = new JPanel();
-	comps[1] = panel;
-	
-	panel.setName("ValuePanel");
-	panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-
-	body.add(panel);
-      }
-    }
-
-    return comps;
   }
 
 
@@ -779,218 +709,10 @@ class JQueueJobDetailsPanel
       }
     }
 
-    /* job requirements panel */ 
-    {
-      if(pJob != null) {
-	JobReqs jreqs = pJob.getJobRequirements();
-	
-	pPriorityField.setValue(jreqs.getPriority());
-	pMaxLoadField.setValue(jreqs.getMaxLoad());
-	pMinMemoryField.setValue(jreqs.getMinMemory());
-	pMinDiskField.setValue(jreqs.getMinDisk());
-      }
-      else {
-	pPriorityField.setValue(null);
-	pMaxLoadField.setValue(null);
-	pMinMemoryField.setValue(null);
-	pMinDiskField.setValue(null);
-      }
-
-      UIMaster master = UIMaster.getInstance();
-
-      /* selection keys */ 
-      {
-	TreeSet<String> knames = new TreeSet<String>();
-	if(pJob != null) {
-	  try {
-	    knames.addAll(master.getQueueMgrClient().getSelectionKeyNames());
-	  }
-	  catch(PipelineException ex) {
-	    master.showErrorDialog(ex);
-	  }
-	}
-
-	Component comps[] = createCommonPanels();
-	JPanel tpanel = (JPanel) comps[0];
-	JPanel vpanel = (JPanel) comps[1];
-
-	if(knames.isEmpty()) {
-	  tpanel.add(Box.createRigidArea(new Dimension(sTSize-7, 0)));
-	  vpanel.add(Box.createHorizontalGlue());
-	}
-	else {
-	  JobReqs jreqs = pJob.getJobRequirements();
-
-	  boolean first = true; 
-	  for(String kname : knames) {
-	
-	    if(!first) 
-	      UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
-	    first = false;
-
-	    String value = jreqs.getSelectionKeys().contains(kname) ? "YES" : "no";
-
-	    JTextField field = 
-	      UIMaster.createTitledTextField(tpanel, kname + ":", sTSize-7, 
-					     vpanel, value, sVSize);
-	  }
-	}
-
-	pSelectionDrawer.setContents((JComponent) comps[2]);
-      }
-
-      /* license keys */ 
-      {
-	TreeSet<String> knames = new TreeSet<String>();
-	if(pJob != null) {
-	  try {
-	    knames.addAll(master.getQueueMgrClient().getLicenseKeyNames());
-	  }
-	  catch(PipelineException ex) {
-	    master.showErrorDialog(ex);
-	  }
-	}
-
-	Component comps[] = createCommonPanels();
-	JPanel tpanel = (JPanel) comps[0];
-	JPanel vpanel = (JPanel) comps[1];
-
-	if(knames.isEmpty()) {
-	  tpanel.add(Box.createRigidArea(new Dimension(sTSize-7, 0)));
-	  vpanel.add(Box.createHorizontalGlue());
-	}
-	else {
-	  JobReqs jreqs = pJob.getJobRequirements();
-
-	  boolean first = true; 
-	  for(String kname : knames) {
-	
-	    if(!first) 
-	      UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
-	    first = false;
-
-	    String value = jreqs.getLicenseKeys().contains(kname) ? "YES" : "no";
-
-	    JTextField field = 
-	      UIMaster.createTitledTextField(tpanel, kname + ":", sTSize-7, 
-					     vpanel, value, sVSize);
-	  }
-	}
-
-	pLicenseDrawer.setContents((JComponent) comps[2]);
-      }
-      
-      pKeysBox.revalidate();
-      pKeysBox.repaint();
-    }
-    
-    /* files panel */ 
-    {
-      /* target files panel */ 
-      {
-	Component comps[] = createCommonPanels();
-	{
-	  JPanel tpanel = (JPanel) comps[0];
-	  JPanel vpanel = (JPanel) comps[1];
-
-	  {
-	    String text = "-";
-	    if(agenda != null) 
-	      text = agenda.getPrimaryTarget().toString();
-
-	    UIMaster.createTitledTextField(tpanel, "Primary Target:", sTSize-7, 
-					   vpanel, text, sVSize);
-	  }
-
-	  if(agenda != null) {
-	    SortedSet<FileSeq> fseqs = agenda.getSecondaryTargets();
-	    if(!fseqs.isEmpty()) {
-	      UIMaster.addVerticalSpacer(tpanel, vpanel, 9);
-	      for(FileSeq fseq : fseqs) {
-		UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
-		UIMaster.createTitledTextField(tpanel, "Secondary Target:", sTSize-7, 
-					       vpanel, fseq.toString(), sVSize);
-
-	      }
-	    }
-	  }	
-	}
-
-	pTargetFilesDrawer.setContents((JComponent) comps[2]);
-      }
-
-      /* source files panel */ 
-      if((agenda != null) && (!agenda.getSourceNames().isEmpty())) {
-	Box hbox = new Box(BoxLayout.X_AXIS);
-
-	hbox.addComponentListener(this);
-
-	{
-	  JPanel spanel = new JPanel();
-	  spanel.setName("Spacer");
-
-	  spanel.setMinimumSize(new Dimension(7, 0));
-	  spanel.setMaximumSize(new Dimension(7, Integer.MAX_VALUE));
-	  spanel.setPreferredSize(new Dimension(7, 0));
-
-	  hbox.add(spanel);
-	}
-
-	{
-	  Box vbox = new Box(BoxLayout.Y_AXIS);
-
-	  for(String sname : agenda.getSourceNames()) {
-	    Component comps[] = createCommonPanels();
-	    {
-	      JPanel tpanel = (JPanel) comps[0];
-	      JPanel vpanel = (JPanel) comps[1];
-
-	      {
-		String text = agenda.getPrimarySource(sname).toString();
-		UIMaster.createTitledTextField(tpanel, "Primary Source:", sTSize-14, 
-					       vpanel, text, sVSize);
-	      }
-
-	      SortedSet<FileSeq> fseqs = agenda.getSecondarySource(sname);
-	      if(!fseqs.isEmpty()) {
-		UIMaster.addVerticalSpacer(tpanel, vpanel, 9);
-		for(FileSeq fseq : fseqs) {
-		  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
-		  UIMaster.createTitledTextField(tpanel, "Secondary Source:", sTSize-14, 
-						 vpanel, fseq.toString(), sVSize);
-
-		}
-	      }
-	    }
-
-	    JDrawer drawer = new JDrawer(sname, (JComponent) comps[2], true);
-	    vbox.add(drawer);
-	  }
-
-	  hbox.add(vbox);
-	}
-
-	pSourceFilesDrawer.setContents(hbox);
-      }
-      else {
-	Component comps[] = createCommonPanels();
-	{
-	  JPanel tpanel = (JPanel) comps[0];
-	  JPanel vpanel = (JPanel) comps[1];
-
-	  tpanel.add(Box.createRigidArea(new Dimension(sTSize, 0)));
-	  vpanel.add(Box.createHorizontalGlue());
-	}
-
-	pSourceFilesDrawer.setContents((JComponent) comps[2]);
-      }
-
-      pFilesBox.revalidate();
-      pFilesBox.repaint();
-    }
-
     /* process details panel */ 
     {
+      pExecDetailsButton.setEnabled(pJob != null);
+
       {
 	String text = "-";
 	if((pJobInfo != null) && (pJobInfo.getHostname() != null)) 
@@ -1025,58 +747,6 @@ class JQueueJobDetailsPanel
 	pErrorButton.setEnabled(enabled);
       }
 
-      {
-	String text = "(none yet)";
-	if(results != null)
-	  text = results.getCommand();
-	
-	pCommandLineArea.setText(text);
-      }
-
-      {
-	String text = "-";
-	if(agenda != null) 
-	  text = agenda.getWorkingDir().toString();
-	
-	pWorkDirField.setText(text);
-      }
-
-      {
-	Component comps[] = createCommonPanels();
-	{
-	  JPanel tpanel = (JPanel) comps[0];
-	  JPanel vpanel = (JPanel) comps[1];
-
-	  if(agenda != null) {
-	    SortedMap<String,String> env = agenda.getEnvironment();
-	    String last = env.lastKey();
-	    for(String key : env.keySet()) {
-	      String value = env.get(key);
-	      
-	      JTextField field = 
-		UIMaster.createTitledTextField(tpanel, key + ":", sTSize-7, 
-					       vpanel, value, sVSize);
-	      field.setHorizontalAlignment(JLabel.LEFT);
-
-	      if(!key.equals(last))
-		UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
-	    }
-	  }
-	  else {
-	    tpanel.add(Box.createRigidArea(new Dimension(sTSize, 0)));
-	    vpanel.add(Box.createHorizontalGlue());
-	  }
-	}
-	    
-	pEnvDrawer.setContents((JComponent) comps[2]);
-      }
-
-      pEnvBox.revalidate();
-      pEnvBox.repaint();
-    }
-
-    /* execution statisitics panel */ 
-    {
       {
 	Double secs = null;
 	if(results != null)
@@ -1133,6 +803,226 @@ class JQueueJobDetailsPanel
 	pPageFaultsField.setText(formatLong(faults));
       }
     }
+
+    /* job requirements panel */ 
+    {
+      if(pJob != null) {
+	JobReqs jreqs = pJob.getJobRequirements();
+	
+	pPriorityField.setValue(jreqs.getPriority());
+	pMaxLoadField.setValue(jreqs.getMaxLoad());
+	pMinMemoryField.setValue(jreqs.getMinMemory());
+	pMinDiskField.setValue(jreqs.getMinDisk());
+      }
+      else {
+	pPriorityField.setValue(null);
+	pMaxLoadField.setValue(null);
+	pMinMemoryField.setValue(null);
+	pMinDiskField.setValue(null);
+      }
+
+      UIMaster master = UIMaster.getInstance();
+
+      /* selection keys */ 
+      {
+	TreeSet<String> knames = new TreeSet<String>();
+	if(pJob != null) {
+	  try {
+	    knames.addAll(master.getQueueMgrClient().getSelectionKeyNames());
+	  }
+	  catch(PipelineException ex) {
+	    master.showErrorDialog(ex);
+	  }
+	}
+
+	Component comps[] = UIMaster.createTitledPanels();
+	JPanel tpanel = (JPanel) comps[0];
+	JPanel vpanel = (JPanel) comps[1];
+
+	if(knames.isEmpty()) {
+	  tpanel.add(Box.createRigidArea(new Dimension(sTSize-7, 0)));
+	  vpanel.add(Box.createHorizontalGlue());
+	}
+	else {
+	  JobReqs jreqs = pJob.getJobRequirements();
+
+	  boolean first = true; 
+	  for(String kname : knames) {
+	
+	    if(!first) 
+	      UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+	    first = false;
+
+	    String value = jreqs.getSelectionKeys().contains(kname) ? "YES" : "no";
+
+	    JTextField field = 
+	      UIMaster.createTitledTextField(tpanel, kname + ":", sTSize-7, 
+					     vpanel, value, sVSize);
+	  }
+	}
+
+	pSelectionDrawer.setContents((JComponent) comps[2]);
+      }
+
+      /* license keys */ 
+      {
+	TreeSet<String> knames = new TreeSet<String>();
+	if(pJob != null) {
+	  try {
+	    knames.addAll(master.getQueueMgrClient().getLicenseKeyNames());
+	  }
+	  catch(PipelineException ex) {
+	    master.showErrorDialog(ex);
+	  }
+	}
+
+	Component comps[] = UIMaster.createTitledPanels();
+	JPanel tpanel = (JPanel) comps[0];
+	JPanel vpanel = (JPanel) comps[1];
+
+	if(knames.isEmpty()) {
+	  tpanel.add(Box.createRigidArea(new Dimension(sTSize-7, 0)));
+	  vpanel.add(Box.createHorizontalGlue());
+	}
+	else {
+	  JobReqs jreqs = pJob.getJobRequirements();
+
+	  boolean first = true; 
+	  for(String kname : knames) {
+	
+	    if(!first) 
+	      UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+	    first = false;
+
+	    String value = jreqs.getLicenseKeys().contains(kname) ? "YES" : "no";
+
+	    JTextField field = 
+	      UIMaster.createTitledTextField(tpanel, kname + ":", sTSize-7, 
+					     vpanel, value, sVSize);
+	  }
+	}
+
+	pLicenseDrawer.setContents((JComponent) comps[2]);
+      }
+      
+      pKeysBox.revalidate();
+      pKeysBox.repaint();
+    }
+    
+    /* files panel */ 
+    {
+      /* target files panel */ 
+      {
+	Component comps[] = UIMaster.createTitledPanels();
+	{
+	  JPanel tpanel = (JPanel) comps[0];
+	  JPanel vpanel = (JPanel) comps[1];
+
+	  {
+	    String text = "-";
+	    if(agenda != null) 
+	      text = agenda.getPrimaryTarget().toString();
+
+	    UIMaster.createTitledTextField(tpanel, "Primary Target:", sTSize-7, 
+					   vpanel, text, sVSize);
+	  }
+
+	  if(agenda != null) {
+	    SortedSet<FileSeq> fseqs = agenda.getSecondaryTargets();
+	    if(!fseqs.isEmpty()) {
+	      UIMaster.addVerticalSpacer(tpanel, vpanel, 9);
+	      for(FileSeq fseq : fseqs) {
+		UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+		UIMaster.createTitledTextField(tpanel, "Secondary Target:", sTSize-7, 
+					       vpanel, fseq.toString(), sVSize);
+
+	      }
+	    }
+	  }	
+	}
+
+	pTargetFilesDrawer.setContents((JComponent) comps[2]);
+      }
+
+      /* source files panel */ 
+      if((agenda != null) && (!agenda.getSourceNames().isEmpty())) {
+	Box hbox = new Box(BoxLayout.X_AXIS);
+
+	hbox.addComponentListener(this);
+
+	{
+	  JPanel spanel = new JPanel();
+	  spanel.setName("Spacer");
+
+	  spanel.setMinimumSize(new Dimension(7, 0));
+	  spanel.setMaximumSize(new Dimension(7, Integer.MAX_VALUE));
+	  spanel.setPreferredSize(new Dimension(7, 0));
+
+	  hbox.add(spanel);
+	}
+
+	{
+	  Box vbox = new Box(BoxLayout.Y_AXIS);
+
+	  for(String sname : agenda.getSourceNames()) {
+	    Component comps[] = UIMaster.createTitledPanels();
+	    {
+	      JPanel tpanel = (JPanel) comps[0];
+	      JPanel vpanel = (JPanel) comps[1];
+
+	      {
+		String text = agenda.getPrimarySource(sname).toString();
+		UIMaster.createTitledTextField(tpanel, "Primary Source:", sTSize-14, 
+					       vpanel, text, sVSize);
+	      }
+
+	      SortedSet<FileSeq> fseqs = agenda.getSecondarySource(sname);
+	      if(!fseqs.isEmpty()) {
+		UIMaster.addVerticalSpacer(tpanel, vpanel, 9);
+		for(FileSeq fseq : fseqs) {
+		  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+		  UIMaster.createTitledTextField(tpanel, "Secondary Source:", sTSize-14, 
+						 vpanel, fseq.toString(), sVSize);
+
+		}
+	      }
+	    }
+
+	    JDrawer drawer = new JDrawer(sname, (JComponent) comps[2], true);
+	    vbox.add(drawer);
+	  }
+
+	  hbox.add(vbox);
+	}
+
+	pSourceFilesDrawer.setContents(hbox);
+      }
+      else {
+	Component comps[] = UIMaster.createTitledPanels();
+	{
+	  JPanel tpanel = (JPanel) comps[0];
+	  JPanel vpanel = (JPanel) comps[1];
+
+	  tpanel.add(Box.createRigidArea(new Dimension(sTSize, 0)));
+	  vpanel.add(Box.createHorizontalGlue());
+	}
+
+	pSourceFilesDrawer.setContents((JComponent) comps[2]);
+      }
+
+      pFilesBox.revalidate();
+      pFilesBox.repaint();
+    }
+
+    if((pJob == null) || ((pLastJobID != null) && (pJob.getJobID() != pLastJobID))) {
+      pExecDetailsDialog = null;
+      pStdOutDialog      = null;
+      pStdErrDialog      = null;
+    }
+
+    pLastJobID = null;
+    if(pJob != null) 
+      pLastJobID = pJob.getJobID();
   }
 
   
@@ -1248,7 +1138,9 @@ class JQueueJobDetailsPanel
   ) 
   {
     String cmd = e.getActionCommand();
-    if(cmd.equals("show-output")) 
+    if(cmd.equals("show-exec-details")) 
+      doShowExecDetails();
+    else if(cmd.equals("show-output")) 
       doShowOutput();
     else if(cmd.equals("show-error")) 
       doShowError();
@@ -1262,14 +1154,60 @@ class JQueueJobDetailsPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Show the execution details dialog.
+   */ 
+  public void 
+  doShowExecDetails() 
+  {
+    if((pJob != null) && (pJobInfo != null)) {
+      if((pExecDetailsDialog == null) || !pExecDetailsDialog.isVisible())
+	pExecDetailsDialog = new JExecDetailsDialog();
+
+      ActionAgenda agenda = null;
+      if(pJob != null) 
+	agenda = pJob.getActionAgenda();
+      
+      QueueJobResults results = null;
+      if(pJobInfo != null)
+	results = pJobInfo.getResults();
+      
+      String command = "(none yet)";
+      if(results != null)
+	command = results.getCommand();
+      
+      String dir = "-";
+      if(agenda != null) 
+	dir = agenda.getWorkingDir().toString();
+      
+      SortedMap<String,String> env = new TreeMap<String,String>();
+      if(agenda != null) 
+	env = agenda.getEnvironment();
+      
+      String hostname = "";
+      if((pJobInfo != null) && (pJobInfo.getHostname() != null)) 
+	hostname = ("    [" + pJobInfo.getHostname() + "]");
+
+      String header = 
+	("Execution Details -" + pHeaderLabel.getText() + hostname);
+
+      pExecDetailsDialog.updateContents(header, command, dir, env);
+
+      pExecDetailsDialog.setVisible(true);
+    }
+  }
+
+  /**
    * Show the STDOUT dialog.
    */ 
   public void 
   doShowOutput()
   {
-
-    // ...
-
+    if((pJob != null) && (pJobInfo != null) && (pJobInfo.getHostname() != null)) {
+      if((pStdOutDialog == null) || !pStdOutDialog.isVisible())
+	pStdOutDialog = new JMonitorJobStdOutDialog(pJob, pJobInfo);
+      
+      pStdOutDialog.setVisible(true);
+    }
   }
 
   /**
@@ -1278,9 +1216,12 @@ class JQueueJobDetailsPanel
   public void 
   doShowError()
   {
-
-    // ...
-
+    if((pJob != null) && (pJobInfo != null) && (pJobInfo.getHostname() != null)) {
+      if((pStdErrDialog == null) || !pStdErrDialog.isVisible())
+	pStdErrDialog = new JMonitorJobStdErrDialog(pJob, pJobInfo);
+      
+      pStdErrDialog.setVisible(true);
+    }
   }
 
 
@@ -1299,15 +1240,16 @@ class JQueueJobDetailsPanel
      super.toGlue(encoder);
 
      encoder.encode("SummaryDrawerOpen",     pSummaryDrawer.isOpen());
+
+     encoder.encode("ProcessDrawerOpen",     pProcessDrawer.isOpen());
+
      encoder.encode("JobReqsDrawerOpen",     pJobReqsDrawer.isOpen());
      encoder.encode("SelectionDrawerOpen",   pSelectionDrawer.isOpen());
      encoder.encode("LicenseDrawerOpen",     pLicenseDrawer.isOpen());
+
      encoder.encode("FilesDrawerOpen",       pFilesDrawer.isOpen());
      encoder.encode("TargetFilesDrawerOpen", pTargetFilesDrawer.isOpen());
      encoder.encode("SourceFilesDrawerOpen", pSourceFilesDrawer.isOpen());
-     encoder.encode("EnvDrawerOpen",         pEnvDrawer.isOpen());
-     encoder.encode("ProcessDrawerOpen",     pProcessDrawer.isOpen());
-     encoder.encode("StatsDrawerOpen",       pStatsDrawer.isOpen());
    }
 
    public void 
@@ -1322,6 +1264,14 @@ class JQueueJobDetailsPanel
        if(open != null) 
 	 pSummaryDrawer.setIsOpen(open);
      }
+
+
+     {
+       Boolean open = (Boolean) decoder.decode("ProcessDrawerOpen");
+       if(open != null) 
+ 	pProcessDrawer.setIsOpen(open);
+     }
+
 
      {
        Boolean open = (Boolean) decoder.decode("JobReqsDrawerOpen");
@@ -1341,6 +1291,7 @@ class JQueueJobDetailsPanel
  	pLicenseDrawer.setIsOpen(open);
      }
 
+
      {
        Boolean open = (Boolean) decoder.decode("FilesDrawerOpen");
        if(open != null) 
@@ -1357,24 +1308,6 @@ class JQueueJobDetailsPanel
        Boolean open = (Boolean) decoder.decode("SourceFilesDrawerOpen");
        if(open != null) 
  	pSourceFilesDrawer.setIsOpen(open);
-     }
-
-     {
-       Boolean open = (Boolean) decoder.decode("EnvDrawerOpen");
-       if(open != null) 
- 	pEnvDrawer.setIsOpen(open);
-     }
-
-     {
-       Boolean open = (Boolean) decoder.decode("ProcessDrawerOpen");
-       if(open != null) 
- 	pProcessDrawer.setIsOpen(open);
-     }
-
-     {
-       Boolean open = (Boolean) decoder.decode("StatsDrawerOpen");
-       if(open != null) 
- 	pStatsDrawer.setIsOpen(open);
      }
 
      super.fromGlue(decoder);
@@ -1467,6 +1400,65 @@ class JQueueJobDetailsPanel
    */ 
   private JDrawer  pSummaryDrawer;
 
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The execution details dialog button.
+   */ 
+  private JButton pExecDetailsButton;
+
+  /**
+   * The hostname field.
+   */ 
+  private JTextField pHostnameField; 
+  
+  /**
+   * The exit code field.
+   */ 
+  private JTextField pExitCodeField; 
+
+  /**
+   * The STDOUT/STDERR dialog buttons.
+   */ 
+  private JButton  pOutputButton; 
+  private JButton  pErrorButton; 
+
+  /**
+   * The drawer containing the process details.
+   */ 
+  private JDrawer  pProcessDrawer;
+
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The user time field.
+   */ 
+  private JTextField  pUserTimeField;
+
+  /**
+   * The system time field.
+   */ 
+  private JTextField  pSystemTimeField;
+
+  /**
+   * The average/max resident memory fields;
+   */ 
+  private JTextField  pAvgResidentField;
+  private JTextField  pMaxResidentField;
+  
+  /**
+   * The average/max virtual memory fields;
+   */ 
+  private JTextField  pAvgVirtualField;
+  private JTextField  pMaxVirtualField;
+
+  /**
+   * The page faults field.
+   */ 
+  private JTextField  pPageFaultsField;
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -1537,85 +1529,28 @@ class JQueueJobDetailsPanel
    */ 
   private JDrawer  pFilesDrawer;
 
-  
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The hostname field.
+   * The execution details dialog.
    */ 
-  private JTextField pHostnameField; 
-  
-  /**
-   * The exit code field.
-   */ 
-  private JTextField pExitCodeField; 
+  private JExecDetailsDialog  pExecDetailsDialog; 
 
   /**
-   * The STDOUT/STDERR dialog buttons.
+   * The STDOUT dialog.
    */ 
-  private JButton  pOutputButton; 
-  private JButton  pErrorButton; 
+  private JMonitorJobStdOutDialog  pStdOutDialog; 
 
   /**
-   * The command line text area.
+   * The STDERR dialog.
    */ 
-  private JTextArea pCommandLineArea; 
-  
-  /**
-   * The working directory field.
-   */ 
-  private JTextField pWorkDirField; 
-  
-
-  /**
-   * The environment container.
-   */ 
-  private Box  pEnvBox;
-
-  /**
-   * The drawer containing the environment.
-   */ 
-  private JDrawer  pEnvDrawer;
+  private JMonitorJobStdErrDialog  pStdErrDialog; 
 
 
   /**
-   * The drawer containing the process details.
+   * The ID of the last job displayed by the panel.
    */ 
-  private JDrawer  pProcessDrawer;
-
-  
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The user time field.
-   */ 
-  private JTextField  pUserTimeField;
-
-  /**
-   * The system time field.
-   */ 
-  private JTextField  pSystemTimeField;
-
-  /**
-   * The average/max resident memory fields;
-   */ 
-  private JTextField  pAvgResidentField;
-  private JTextField  pMaxResidentField;
-  
-  /**
-   * The average/max virtual memory fields;
-   */ 
-  private JTextField  pAvgVirtualField;
-  private JTextField  pMaxVirtualField;
-
-  /**
-   * The page faults field.
-   */ 
-  private JTextField  pPageFaultsField;
-
-  /**
-   * The drawer containing the execution statistics.
-   */ 
-  private JDrawer  pStatsDrawer;
+  private Long  pLastJobID; 
 
 }
