@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.13 2004/08/30 14:29:52 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.14 2004/09/05 06:54:34 jim Exp $
 
 import java.io.*; 
 import java.util.*;
@@ -462,7 +462,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.13 2004/08/30 14:29:52 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.14 2004/09/05 06:54:34 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -715,7 +715,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.13 2004/08/30 14:29:52 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.14 2004/09/05 06:54:34 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -770,7 +770,7 @@ class GenUserPrefsApp
 	 "    {\n" +
 	 "      createTreeNodes(\"" + group + "\");\n" + 
 	 "\n" + 
-	 "      Component comps[] = createCommonPanels();\n" + 
+	 "      Component comps[] = UIMaster.createTitledPanels();\n" + 
 	 "      JPanel tpanel = (JPanel) comps[0];\n" +
 	 "      JPanel vpanel = (JPanel) comps[1];\n" + 
 	 "\n");
