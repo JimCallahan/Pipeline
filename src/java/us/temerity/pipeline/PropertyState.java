@@ -1,4 +1,4 @@
-// $Id: PropertyState.java,v 1.1 2004/03/01 21:45:04 jim Exp $
+// $Id: PropertyState.java,v 1.2 2004/03/07 02:43:44 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -10,7 +10,7 @@ package us.temerity.pipeline;
  * The relationship between the values of the node properties associated with the working 
  * and checked-in versions of a node. <P> 
  * 
- * The node properties include: 
+ * The node properties include: <BR>
  * 
  * <DIV style="margin-left: 40px;">
  *   The file patterns and frame ranges of primary and secondary file sequences. <BR>
