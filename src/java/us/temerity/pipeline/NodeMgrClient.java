@@ -1,4 +1,4 @@
-// $Id: NodeMgrClient.java,v 1.3 2004/03/28 00:44:58 jim Exp $
+// $Id: NodeMgrClient.java,v 1.4 2004/03/29 08:14:42 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -143,8 +143,8 @@ class NodeMgrClient
    * </DIV> 
    * 
    * Note that any existing upstream node link information contained in the
-   * <CODE>mod</CODE> argument will be ignored.  The {@link #linkNodes linkNodes} and
-   * {@link #unlinkNodes unlinkNodes} methods must be used to alter the connections 
+   * <CODE>mod</CODE> argument will be ignored.  The {@link #link link} and
+   * {@link #unlink unlink} methods must be used to alter the connections 
    * between working node versions.
    * 
    * @param view 
@@ -156,7 +156,7 @@ class NodeMgrClient
    * @throws PipelineException
    *   If unable to set the node properties.
    */
-  public void 
+  public synchronized void 
   modifyProperties
   ( 
    String view, 
@@ -184,6 +184,111 @@ class NodeMgrClient
     }
   }
 
+  /**
+   * Create or modify an existing link between the working versions. <P> 
+   * 
+   * If the <CODE>relationship</CODE> argument is <CODE>OneToOne</CODE> then the 
+   * <CODE>offset</CODE> argument must not be <CODE>null</CODE>.  For all other 
+   * link relationships, the <CODE>offset</CODE> argument must be <CODE>null</CODE>.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param target 
+   *   The fully resolved name of the downstream node to connect.
+   * 
+   * @param source 
+   *   The fully resolved name of the upstream node to connect.
+   * 
+   * @param catagory 
+   *   The named classification of the link's node state propogation policy.
+   * 
+   * @param relationship 
+   *   The nature of the relationship between files associated with the source and 
+   *   target nodes. 
+   * 
+   * @param offset 
+   *   The frame index offset.
+   * 
+   * @throws PipelineException
+   *   If unable to create or modify the link.
+   */
+  public synchronized void 
+  link
+  (
+   String view, 
+   String target, 
+   String source,
+   LinkCatagory catagory,   
+   LinkRelationship relationship,  
+   Integer offset
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    NodeID id = new NodeID(PackageInfo.sUser, view, target);
+    LinkMod link = new LinkMod(source, catagory, relationship, offset);
+    NodeLinkReq req = new NodeLinkReq(id, link);
+
+    Object obj = performTransaction(NodeRequest.Link, req);
+
+    if(obj instanceof SuccessRsp) {
+    }
+    else if(obj instanceof FailureRsp) {
+      FailureRsp rsp = (FailureRsp) obj;
+      throw new PipelineException(rsp.getMessage());	
+    }
+    else {
+      disconnect();
+      throw new PipelineException
+	("Illegal response received from the NodeMgrServer instance!");
+    }
+  } 
+
+  /**
+   * Destroy an existing link between the working versions. <P> 
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param target 
+   *   The fully resolved name of the downstream node to disconnect.
+   * 
+   * @param source 
+   *   The fully resolved name of the upstream node to disconnect.
+   * 
+   * @throws PipelineException
+   *   If unable to destroy the link.
+   */
+  public synchronized void 
+  unlink
+  (
+   String view, 
+   String target, 
+   String source
+  )
+    throws PipelineException
+  {
+    verifyConnection();
+
+    NodeID id = new NodeID(PackageInfo.sUser, view, target);
+    NodeUnlinkReq req = new NodeUnlinkReq(id, source);
+
+    Object obj = performTransaction(NodeRequest.Link, req);
+
+    if(obj instanceof SuccessRsp) {
+    }
+    else if(obj instanceof FailureRsp) {
+      FailureRsp rsp = (FailureRsp) obj;
+      throw new PipelineException(rsp.getMessage());	
+    }
+    else {
+      disconnect();
+      throw new PipelineException
+	("Illegal response received from the NodeMgrServer instance!");
+    }
+  } 
 
 
 
