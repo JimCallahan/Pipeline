@@ -44,7 +44,13 @@ ADMINISTRATION:
 
 USER INTERFACE: 
 
-- User preference for layout of job groups: horizontally or vertically.
+- File browsers should use double clicks to traverse directories.
+
+- Add simultaneous multiple column field changes in all tables.
+
+- Editors should use the node's parent directory as their working directory not /var/tmp!
+
+- Add a FrameRunning item to the JQueueJobViewerPanel menu.
 
 - NodeBrowser labels are truncated ("SomeLa...") sometimes. 
 
