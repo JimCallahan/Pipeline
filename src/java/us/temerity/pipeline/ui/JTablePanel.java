@@ -1,4 +1,4 @@
-// $Id: JTablePanel.java,v 1.8 2004/11/21 18:39:56 jim Exp $
+// $Id: JTablePanel.java,v 1.9 2004/12/06 07:39:16 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -52,6 +52,43 @@ class JTablePanel
    int width[], 
    TableCellRenderer renderers[], 
    TableCellEditor editors[]
+  ) 
+  {
+    this(model, width, renderers, editors, 
+	 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED, 
+	 ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);	 
+  }
+
+  /**
+   * Construct a new table panel.
+   * 
+   * @param model
+   *   The table model being viewed.
+   * 
+   * @param width
+   *   The horizontal size of each table column.
+   * 
+   * @param renderers
+   *   The cell renderer for each column.
+   * 
+   * @param editors
+   *   The cell editor for each column, can be <CODE>null</CODE> for uneditable columns.
+   * 
+   * @param horzScrollPolicy
+   *   The horizontal scrollbar policy.
+   * 
+   * @param vertScrollPolicy
+   *   The vertical scrollbar policy.
+   */ 
+  public 
+  JTablePanel
+  (
+   SortableTableModel model, 
+   int width[], 
+   TableCellRenderer renderers[], 
+   TableCellEditor editors[], 
+   int horzScrollPolicy,
+   int vertScrollPolicy
   ) 
   {
     assert(model.getColumnCount() == width.length);
@@ -130,7 +167,8 @@ class JTablePanel
 	tbox.add(panel);
       }
 
-      tbox.add(Box.createRigidArea(new Dimension(15, 0)));
+      if(vertScrollPolicy == ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS)
+	tbox.add(Box.createRigidArea(new Dimension(15, 0)));
 
       add(tbox);
     }
@@ -181,10 +219,8 @@ class JTablePanel
 
       scroll.setViewportView(pTable);
       
-      scroll.setHorizontalScrollBarPolicy
-	(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-      scroll.setVerticalScrollBarPolicy
-	(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+      scroll.setHorizontalScrollBarPolicy(horzScrollPolicy);
+      scroll.setVerticalScrollBarPolicy(vertScrollPolicy);
 
       scroll.getHorizontalScrollBar().addAdjustmentListener(this);
 

@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.12 2004/12/01 23:03:10 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.13 2004/12/06 07:39:16 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -24,7 +24,7 @@ import javax.swing.table.*;
 public 
 class JQueueJobBrowserPanel
   extends JTopLevelPanel
-  implements MouseListener, KeyListener, ActionListener
+  implements MouseListener, KeyListener, ActionListener, AdjustmentListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -266,96 +266,153 @@ class JQueueJobBrowserPanel
 	{
 	  JPanel panel = new JPanel();
 	  panel.setName("MainPanel");
-	  panel.setLayout(new BorderLayout());
+	  panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));  
 	  
 	  panel.addMouseListener(this); 
 	  panel.setFocusable(true);
 	  panel.addKeyListener(this);
 	  panel.addMouseListener(new KeyFocuser(panel));
+	  
+	  {	
+	    Box vbox = new Box(BoxLayout.Y_AXIS);
+	    vbox.setAlignmentX(0.5f);
 
-	  QueueHostsTableModel model = new QueueHostsTableModel(this, pLocalHostnames);
-	  pHostsTableModel = model;
-	    
-	  JTablePanel tpanel =
-	    new JTablePanel(model, model.getColumnWidths(), 
-			    model.getRenderers(), model.getEditors());
-	  pHostsTablePanel = tpanel;
-	  
-	  {
-	    JScrollPane scroll = tpanel.getTableScroll();
-	    scroll.addMouseListener(this); 
-	    scroll.setFocusable(true);
-	    scroll.addKeyListener(this);
-	    scroll.addMouseListener(new KeyFocuser(scroll));
-	  }
-	  
-	  panel.add(tpanel);
-
-	  int width[] = model.getColumnWidths(); 
-	  int total = 0;
-	  {
-	    int wk;
-	    for(wk=0; wk<width.length; wk++) 
-	      total += width[wk];
-	  }
-	  
-	  {
-	    Box box = new Box(BoxLayout.X_AXIS);
-	    
 	    {
-	      Box hbox = new Box(BoxLayout.X_AXIS);
+	      QueueHostnamesTableModel model = new QueueHostnamesTableModel(this);
+	      pHostnamesTableModel = model;
 	      
-	      int wk;
-	      for(wk=0; wk<width.length; wk++) {
-		String prefix = "";
-		if((wk > 2) && (wk < 6)) 
-		  prefix = "Blue";
-		else if((wk > 5) && (wk < 8)) 
-		  prefix = "Green"; 
-		
-		JButton btn = new JButton(pHostsTableModel.getColumnName(wk));
-		btn.setName(prefix + "TableHeaderButton");
-		
-		{	    
-		  Dimension size = new Dimension(width[wk], 23);
-		  btn.setMinimumSize(size);
-		  btn.setPreferredSize(size);
-		  btn.setMaximumSize(size);
-		}
-		
-		btn.addActionListener(tpanel);
-		btn.setActionCommand("sort-column:" + wk);	  
-		
-		btn.setFocusable(false);
-		
-		btn.setToolTipText
-		  (UIMaster.formatToolTip(pHostsTableModel.getColumnDescription(wk)));
+	      JTablePanel tpanel =
+		new JTablePanel(model, model.getColumnWidths(), 
+				model.getRenderers(), model.getEditors(), 
+				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER, 
+				ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+	      pHostnamesTablePanel = tpanel;
+	      
+	      {
+		JScrollPane scroll = tpanel.getTableScroll();
 
-		hbox.add(btn);
+		scroll.addMouseListener(this); 
+		scroll.setFocusable(true);
+		scroll.addKeyListener(this);
+		scroll.addMouseListener(new KeyFocuser(scroll));
 	      }
+
+	      vbox.add(tpanel);
+	    }
+
+	    vbox.add(Box.createRigidArea(new Dimension(0, 14)));
+
+	    vbox.setMinimumSize(new Dimension(206, 30));
+	    vbox.setMaximumSize(new Dimension(206, Integer.MAX_VALUE));
+
+	    panel.add(vbox);
+	  }
+
+	  panel.add(Box.createRigidArea(new Dimension(2, 0)));
+
+	  {	    
+	    QueueHostsTableModel model = new QueueHostsTableModel(this, pLocalHostnames);
+	    pHostsTableModel = model;
+
+	    JTablePanel tpanel =
+	      new JTablePanel(model, model.getColumnWidths(), 
+			      model.getRenderers(), model.getEditors());
+	    pHostsTablePanel = tpanel;
+	  
+	    {
+	      JScrollPane scroll = tpanel.getTableScroll();
+
+	      scroll.setHorizontalScrollBarPolicy
+		(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
 	      
-	      Dimension size = new Dimension(total, 23); 
-	      hbox.setMinimumSize(size);
-	      hbox.setPreferredSize(size);
-	      hbox.setMaximumSize(size);
-	      
-	      box.add(hbox);
+	      scroll.getVerticalScrollBar().addAdjustmentListener(this);
+	  
+	      scroll.addMouseListener(this); 
+	      scroll.setFocusable(true);
+	      scroll.addKeyListener(this);
+	      scroll.addMouseListener(new KeyFocuser(scroll));
+	    }
+	    
+	    panel.add(tpanel);
+	    
+	    int width[] = model.getColumnWidths(); 
+	    int total = 0;
+	    {
+	      int wk;
+	      for(wk=0; wk<width.length; wk++) 
+		total += width[wk];
 	    }
 	    
 	    {
-	      Box hbox = new Box(BoxLayout.X_AXIS);
-	      pSelectionKeyHeaderBox = hbox; 
+	      Box box = new Box(BoxLayout.X_AXIS);
 	      
-	      box.add(hbox);
-	    }	  
+	      {
+		Box hbox = new Box(BoxLayout.X_AXIS);
+		
+		int wk;
+		for(wk=0; wk<width.length; wk++) {
+		  String prefix = "";
+		  if((wk > 1) && (wk < 5)) 
+		    prefix = "Blue";
+		  else if((wk > 4) && (wk < 7)) 
+		    prefix = "Green"; 
+		  
+		  JButton btn = new JButton(pHostsTableModel.getColumnName(wk));
+		  btn.setName(prefix + "TableHeaderButton");
+		  
+		  {	    
+		    Dimension size = new Dimension(width[wk], 23);
+		    btn.setMinimumSize(size);
+		    btn.setPreferredSize(size);
+		    btn.setMaximumSize(size);
+		  }
+		  
+		  btn.addActionListener(tpanel);
+		  btn.setActionCommand("sort-column:" + wk);	  
+		  
+		  btn.setFocusable(false);
+		  
+		  btn.setToolTipText
+		    (UIMaster.formatToolTip(pHostsTableModel.getColumnDescription(wk)));
+		  
+		  hbox.add(btn);
+		}
+		
+		Dimension size = new Dimension(total, 23); 
+		hbox.setMinimumSize(size);
+		hbox.setPreferredSize(size);
+		hbox.setMaximumSize(size);
+		
+		box.add(hbox);
+	      }
+	      
+	      {
+		Box hbox = new Box(BoxLayout.X_AXIS);
+		pSelectionKeyHeaderBox = hbox; 
+		
+		box.add(hbox);
+	      }	  
 	    
-	    tpanel.getHeaderViewport().setView(box);
+	      tpanel.getHeaderViewport().setView(box);
+	    }
 	  }
 
 	  body.add(panel);
 	}
 
         tab.addTab(body);
+
+	/* synchronize the selected rows in the two hosts tables */ 
+	{
+	  JTable ntable = pHostnamesTablePanel.getTable();
+	  JTable htable = pHostsTablePanel.getTable();
+
+	  ntable.getSelectionModel().addListSelectionListener
+	    (new TableSyncSelector(ntable, htable));
+
+	  htable.getSelectionModel().addListSelectionListener
+	    (new TableSyncSelector(htable, ntable));
+	}
       }
 
       /* job slots panel */ 
@@ -648,7 +705,7 @@ class JQueueJobBrowserPanel
     int rows[] = pHostsTablePanel.getTable().getSelectedRows();
     int wk;
     for(wk=0; wk<rows.length; wk++) {
-      String hname = (String) pHostsTableModel.getValueAt(rows[wk], 0);
+      String hname = pHostsTableModel.getHostname(rows[wk]);
       hostnames.add(hname);
     }
 
@@ -814,14 +871,16 @@ class JQueueJobBrowserPanel
 
     /* job server panel */ 
     if((hosts != null) && (keys != null)) {
+      pHostnamesTableModel.setHostnames(hosts.keySet());
+
       pHostsTableModel.setQueueHosts(hosts, keys, pIsPrivileged);
       pHostsTableModel.fireTableStructureChanged(); 
-      
+
       {
 	TableColumnModel cmodel = pHostsTablePanel.getTable().getColumnModel();
 	
 	int wk;
-	for(wk=0; wk<8; wk++) {
+	for(wk=0; wk<7; wk++) {
 	  TableColumn tcol = cmodel.getColumn(wk);
 	  
 	  tcol.setCellRenderer(pHostsTableModel.getRenderers()[wk]);
@@ -836,7 +895,7 @@ class JQueueJobBrowserPanel
 	  tcol.setMaxWidth(width);
 	}
 	  
-	wk = 8;
+	wk = 7;
 	for(String kname : keys.keySet()) {
 	  TableColumn tcol = cmodel.getColumn(wk);
 	  
@@ -854,7 +913,7 @@ class JQueueJobBrowserPanel
       {
 	pSelectionKeyHeaderBox.removeAll();
 	
-	int wk = 8;
+	int wk = 7;
 	for(String kname : keys.keySet()) {
 	  JButton btn = new JButton(kname);
 	  btn.setName("PurpleTableHeaderButton");
@@ -931,6 +990,7 @@ class JQueueJobBrowserPanel
   }
 
 
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -976,6 +1036,35 @@ class JQueueJobBrowserPanel
       (pFilterViewsButton.isSelected() ? !pIsLocked : pIsPrivileged);
   }
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Update the sort of the hostnames table to match the hosts table.
+   */ 
+  public void
+  sortHostnamesTable
+  (
+   int[] rowToIndex
+  )
+  {
+    if(pHostnamesTableModel != null) 
+      pHostnamesTableModel.externalSort(rowToIndex);
+  }
+
+  /** 
+   * Update the sort of the hosts table to match the hostnames table.
+   */ 
+  public void
+  sortHostsTable
+  (
+   int[] rowToIndex
+  )
+  {
+    if(pHostsTableModel != null) 
+      pHostsTableModel.externalSort(rowToIndex);
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1258,6 +1347,31 @@ class JQueueJobBrowserPanel
       doGroupsDelete();
     else if(cmd.equals("delete-completed")) 
       doGroupsDeleteCompleted();
+  }
+
+
+  /*-- ADJUSTMENT LISTENER METHODS ---------------------------------------------------------*/
+
+  /**
+   * Invoked when the value of the adjustable has changed.
+   */ 
+  public void
+  adjustmentValueChanged
+  (
+   AdjustmentEvent e
+  )
+  { 
+    JViewport nview = pHostnamesTablePanel.getTableScroll().getViewport();
+    JViewport hview = pHostsTablePanel.getTableScroll().getViewport();
+    if((nview != null) && (hview != null)) {
+      Point npos = nview.getViewPosition();    
+      Point hpos = hview.getViewPosition();    
+      
+      if(npos.y != hpos.y) {
+ 	npos.y = hpos.y;
+ 	nview.setViewPosition(npos);
+      }
+    }  
   }
 
 
@@ -1732,6 +1846,68 @@ class JQueueJobBrowserPanel
   /*----------------------------------------------------------------------------------------*/
 
   private 
+  class TableSyncSelector
+    implements ListSelectionListener
+  {
+    public 
+    TableSyncSelector
+    (
+     JTable source,
+     JTable target
+    ) 
+    {
+      pSourceTable = source;
+      pTargetTable = target;
+    }
+
+    /**
+     * Called whenever the value of the selection changes.
+     */ 
+    public void 	
+    valueChanged
+    (
+     ListSelectionEvent e
+    )
+    {
+      if(e.getValueIsAdjusting()) 
+	return;
+      
+      DefaultListSelectionModel smodel = 
+	(DefaultListSelectionModel) pTargetTable.getSelectionModel();
+
+      ListSelectionListener[] listeners = smodel.getListSelectionListeners();
+      {
+	int wk;
+	for(wk=0; wk<listeners.length; wk++) 
+	  smodel.removeListSelectionListener(listeners[wk]);
+      }
+
+      smodel.clearSelection();
+
+      {
+	int rows[] = pSourceTable.getSelectedRows();
+	int wk; 
+	for(wk=0; wk<rows.length; wk++) 
+	  smodel.addSelectionInterval(rows[wk], rows[wk]);	  
+      }
+      
+      {
+	int wk;
+	for(wk=0; wk<listeners.length; wk++) 
+	  smodel.addListSelectionListener(listeners[wk]);
+      }
+
+      pTargetTable.repaint();
+    }
+
+    private JTable pSourceTable;
+    private JTable pTargetTable;
+  }  
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  private 
   class GroupsListSelector
     implements ListSelectionListener
   {
@@ -1784,6 +1960,9 @@ class JQueueJobBrowserPanel
     private Long  pJustSelected; 
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
   private 
   class SlotsListSelector
     implements ListSelectionListener
@@ -1818,6 +1997,9 @@ class JQueueJobBrowserPanel
       }
     }
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Get the current job information. 
@@ -2574,6 +2756,18 @@ class JQueueJobBrowserPanel
    */ 
   private JButton  pHostsApplyButton; 
 
+
+  /**
+   * The job server names table model.
+   */ 
+  private QueueHostnamesTableModel  pHostnamesTableModel;
+
+  /**
+   * The job server names table panel.
+   */ 
+  private JTablePanel  pHostnamesTablePanel;
+
+
   /**
    * The job servers table model.
    */ 
@@ -2583,6 +2777,7 @@ class JQueueJobBrowserPanel
    * The job servers table panel.
    */ 
   private JTablePanel  pHostsTablePanel;
+
 
   /**
    * The container of the header buttons for the selection key columns.

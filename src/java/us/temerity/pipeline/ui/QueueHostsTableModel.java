@@ -1,4 +1,4 @@
-// $Id: QueueHostsTableModel.java,v 1.8 2004/11/21 18:39:56 jim Exp $
+// $Id: QueueHostsTableModel.java,v 1.9 2004/12/06 07:39:17 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -57,12 +57,12 @@ class QueueHostsTableModel
 
     /* initialize the columns */ 
     { 
-      pNumColumns = 8;
+      pNumColumns = 7;
 
       {
 	Class classes[] = { 
-	  String.class, String.class, String.class, 
-	  QueueHost.class, QueueHost.class, QueueHost.class, 	  
+	  String.class, String.class, 
+	  QueueHost.class, QueueHost.class, QueueHost.class,
 	  QueueHost.class, Integer.class 
 	}; 
 	pColumnClasses = classes;
@@ -70,7 +70,7 @@ class QueueHostsTableModel
 
       {
 	String names[] = {
-	  "Hostname", "Status", "Reservation", 
+	  "Status", "Reservation", 
 	  "System Load", "Free Memory", "Free Disk Space", 
 	  "Jobs", "Slots" 
 	};
@@ -79,7 +79,6 @@ class QueueHostsTableModel
 
       {
 	String desc[] = {
-	  "The fully resolved host name.", 
 	  "The current status of the job server.", 
 	  "The name of the user holding the server reservation.", 
 	  "The system load of the server.", 
@@ -92,7 +91,7 @@ class QueueHostsTableModel
       }
 
       {
-	int widths[] = { 200, 120, 120, 135, 135, 135, 135, 60 };
+	int widths[] = { 120, 120, 135, 135, 135, 135, 60 };
 	pColumnWidths = widths;
       }
 
@@ -101,7 +100,6 @@ class QueueHostsTableModel
 	slotsRenderer.setName("GreenTableCellRenderer");
 
 	TableCellRenderer renderers[] = {
-	  new JSimpleTableCellRenderer(JLabel.CENTER), 
 	  new JSimpleTableCellRenderer(JLabel.CENTER), 
 	  new JSimpleTableCellRenderer(JLabel.CENTER),
 	  new JResourceSamplesTableCellRenderer
@@ -122,7 +120,6 @@ class QueueHostsTableModel
 	  new JCollectionTableCellEditor(QueueHost.Status.titles(), 120);
 
 	TableCellEditor editors[] = {
-	  null, 
 	  editor, 
 	  new JIdentifierTableCellEditor(120, JLabel.CENTER), 
 	  null, 
@@ -155,56 +152,65 @@ class QueueHostsTableModel
       Comparable value = null;
       switch(pSortColumn) {
       case 0:
-	value = host.getName();
-	break;
-
-      case 1:
 	value = host.getStatus().toString();
 	break;
 
-      case 2:
+      case 1:
 	value = host.getReservation();
 	if(value == null)
 	  value = "";
 	break;
 
+      case 2:
       case 3:
       case 4:
       case 5:
-      case 6:
 	{
 	  ResourceSample sample = host.getLatestSample();
-	  if(sample == null) 
-	    value = "";
+	  if(sample == null) {
+	    switch(pSortColumn) {
+	    case 2:
+	      value = new Float(0.0f);
+	      break;
+
+	    case 3:
+	    case 4:
+	      value = new Long(0);
+	      break;
+	      
+	    case 5:
+	      value = new Integer(0);
+	    }
+	  }
 	  else {
 	    switch(pSortColumn) {
-	    case 3:
+	    case 2:
 	      value = new Float(sample.getLoad());
 	      break;
 
-	    case 4:
+	    case 3:
 	      value = new Long(sample.getMemory());
 	      break;
 
-	    case 5:
+	    case 4:
 	      value = new Long(sample.getDisk());
 	      break;
 	      
-	    case 6:
+	    case 5:
 	      value = new Integer(sample.getNumJobs());
 	    }
 	  }
 	}
 	break;
 
-      case 7:
+      case 6:
 	value = new Integer(host.getJobSlots());
 	break;
 	
       default:
 	{
 	  value = "";
-	  String kname = pSelectionKeys.get(pSortColumn-8);
+	  String kname = pSelectionKeys.get(pSortColumn-7);
 	  if(kname != null) {
 	    Integer bias = host.getSelectionBias(kname);
 	    if(bias != null) 
@@ -235,10 +241,24 @@ class QueueHostsTableModel
 	pRowToIndex[wk] = indices.get(idx);
     }
 
-    fireTableDataChanged();
+    fireTableDataChanged(); 
+    
+    pParent.sortHostnamesTable(pRowToIndex);
   }
 
-
+  /**
+   * Copy the row sort order from another table model with the same number of rows.
+   */ 
+  public void
+  externalSort
+  (
+   int[] rowToIndex
+  ) 
+  {
+    pRowToIndex = rowToIndex.clone();
+    fireTableDataChanged();     
+  }
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   S O R T A B L E   T A B L E   M O D E L   O V E R R I D E S                          */
@@ -253,7 +273,7 @@ class QueueHostsTableModel
    int col
   )
   {
-    if(col < 8)
+    if(col < 7)
       return pColumnClasses[col];
     else 
       return Integer.class;
@@ -277,10 +297,10 @@ class QueueHostsTableModel
    int col
   ) 
   {
-    if(col < 8)
+    if(col < 7)
       return pColumnNames[col];
     else 
-      return pSelectionKeys.get(col-8);
+      return pSelectionKeys.get(col-7);
   }
 
   /**
@@ -292,10 +312,10 @@ class QueueHostsTableModel
    int col
   ) 
   {
-    if(col < 8)
+    if(col < 7)
       return pColumnDescriptions[col];
     else 
-      return pSelectionDescriptions.get(col-8);
+      return pSelectionDescriptions.get(col-7);
   }
 
 
@@ -339,6 +359,37 @@ class QueueHostsTableModel
 
   
   /*----------------------------------------------------------------------------------------*/
+  
+  /** 
+   * Get the name of the host on the given row.
+   */
+  public String
+  getHostname
+  (
+   int row
+  ) 
+  { 
+    QueueHost host = pQueueHosts.get(pRowToIndex[row]);
+    if(host != null) 
+      return host.getName();
+    return null;
+  }
+
+  /** 
+   * Get the names of the hosts in the current sorted order.
+   */
+  public ArrayList<String>
+  getHostnames() 
+  { 
+    ArrayList<String> names = new ArrayList<String>();
+
+    int row;
+    for(row=0; row<pQueueHosts.size(); row++) 
+      names.add(pQueueHosts.get(pRowToIndex[row]).getName());
+
+    return names;
+  }
+
   
   /**
    * Get the changes to host state. 
@@ -458,9 +509,9 @@ class QueueHostsTableModel
     }
       
     switch(col) {
+    case 0: 
     case 1: 
-    case 2: 
-    case 7:
+    case 6:
       return true;
 
     default:
@@ -481,26 +532,23 @@ class QueueHostsTableModel
     QueueHost host = pQueueHosts.get(pRowToIndex[row]);
     switch(col) {
     case 0:
-      return host.getName();
-
-    case 1:
       return host.getStatus().toString();
 
-    case 2:
+    case 1:
       return host.getReservation();
 
+    case 2:
     case 3:
     case 4:
     case 5:
-    case 6:
       return host;
       
-    case 7:
+    case 6:
       return host.getJobSlots();
 
     default:
       {
-	String kname = pSelectionKeys.get(col-8);
+	String kname = pSelectionKeys.get(col-7);
 	if(kname != null) 
 	  return host.getSelectionBias(kname);
 	else {
@@ -551,7 +599,7 @@ class QueueHostsTableModel
   {
     QueueHost host = pQueueHosts.get(srow);
     switch(col) {
-    case 1:
+    case 0:
       {
 	host.setStatus(QueueHost.Status.valueOf(QueueHost.Status.class, (String) value));
 
@@ -559,7 +607,7 @@ class QueueHostsTableModel
 	return true;
       }
 
-    case 2:
+    case 1:
       {
 	String author = (String) value;
 	if((author != null) && (author.length() == 0)) 
@@ -570,7 +618,7 @@ class QueueHostsTableModel
 	return true;
       }
 
-    case 7:
+    case 6:
       {
 	Integer slots = (Integer) value;
 	if((slots != null) && (slots >= 0)) 
@@ -582,7 +630,7 @@ class QueueHostsTableModel
       
     default:
       if(col > 7) {
-	String kname = pSelectionKeys.get(col-8);
+	String kname = pSelectionKeys.get(col-7);
 	if(kname != null) {
 	  Integer bias = (Integer) value;
 	  if(bias == null) {
