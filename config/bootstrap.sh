@@ -12,8 +12,8 @@ pushd i686-pc-linux-gnu-dbg
     --disable-opt \
     --with-compiler=GNU \
     --with-javamake=/usr/java/javamake/lib/javamake.jar \
-    --prefix=/base/apps/i686-pc-linux-gnu-dbg/pipeline-031027/pipeline \
-    --datadir=/base/apps/i686-pc-linux-gnu-dbg/pipeline-031027/pipeline/share \
+    --prefix=/base/apps/i686-pc-linux-gnu-dbg/pipeline-031212/pipeline \
+    --datadir=/base/apps/i686-pc-linux-gnu-dbg/pipeline-031212/pipeline/share \
     --with-prod=/fxrhino1/ATTO2/prod \
     --with-toolset=/base/toolset \
     --with-sql-server=linuxserv1 \
@@ -25,8 +25,8 @@ pushd i686-pc-linux-gnu-opt
     --enable-opt \
     --with-compiler=GNU \
     --with-javamake=/usr/java/javamake/lib/javamake.jar \
-    --prefix=/base/apps/i686-pc-linux-gnu-opt/pipeline-031027/pipeline \
-    --datadir=/base/apps/i686-pc-linux-gnu-opt/pipeline-031027/pipeline/share \
+    --prefix=/base/apps/i686-pc-linux-gnu-opt/pipeline-031212/pipeline \
+    --datadir=/base/apps/i686-pc-linux-gnu-opt/pipeline-031212/pipeline/share \
     --with-prod=/fxrhino1/ATTO2/prod \
     --with-toolset=/base/toolset \
     --with-sql-server=linuxserv1 \
