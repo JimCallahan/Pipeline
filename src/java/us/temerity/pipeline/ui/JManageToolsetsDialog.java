@@ -1,4 +1,4 @@
-// $Id: JManageToolsetsDialog.java,v 1.3 2004/06/03 09:26:55 jim Exp $
+// $Id: JManageToolsetsDialog.java,v 1.4 2004/06/03 10:21:53 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1444,7 +1444,13 @@ class JManageToolsetsDialog
 	if(file != null) {
 	  try {
 	    StringBuffer buf = new StringBuffer();
-	    
+	  
+	    buf.append("export TOOLSET=" + tset.getName() + "\n");
+	    buf.append("export USER=`whoami`\n");
+	    buf.append("export HOME=" + PackageInfo.sHomeDir + "/$USER\n");
+	    buf.append("export WORKING=" + PackageInfo.sWorkDir + "/$USER/default\n");
+	    buf.append("export _=/bin/env\n\n");
+  
 	    TreeMap<String,String> env = tset.getEnvironment();
 	    for(String ename : env.keySet()) {
 	      String evalue = env.get(ename);
