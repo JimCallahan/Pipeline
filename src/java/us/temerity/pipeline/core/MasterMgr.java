@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.8 2004/06/23 22:28:17 jim Exp $
+// $Id: MasterMgr.java,v 1.9 2004/06/28 00:09:12 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1207,7 +1207,7 @@ class MasterMgr
     timer.aquire();
     synchronized(pToolsets) {
       timer.resume();
-    
+
       Toolset tset = pToolsets.get(req.getName());
       if(tset == null) {
 	try {
@@ -1218,8 +1218,11 @@ class MasterMgr
 	}
       }
       assert(tset != null);
+      
+      TreeMap<String,String> env = tset.getEnvironment(req.getAuthor(), req.getView());
+      assert(env != null);
 
-      return new MiscGetToolsetEnvironmentRsp(timer, tset.getName(), tset.getEnvironment());
+      return new MiscGetToolsetEnvironmentRsp(timer, req.getName(), env);
     }
   }
 
@@ -2829,21 +2832,38 @@ class MasterMgr
 	}
 
 	/* initialize the working downstream links */ 
-	timer.aquire();
-	ReentrantReadWriteLock downstreamLock = getDownstreamLock(name);
-	downstreamLock.writeLock().lock();
-	try {
-	  timer.resume();
-	  
-	  DownstreamLinks links = getDownstreamLinks(name); 
-	  links.createWorking(nodeID);
+	{
+	  timer.aquire();
+	  ReentrantReadWriteLock downstreamLock = getDownstreamLock(name);
+	  downstreamLock.writeLock().lock();
+	  try {
+	    timer.resume();
+	    
+	    DownstreamLinks links = getDownstreamLinks(name); 
+	    links.createWorking(nodeID);
+	  }
+	  finally {
+	    downstreamLock.writeLock().unlock();
+	  }      
 	}
-	finally {
-	  downstreamLock.writeLock().unlock();
-	}      
+	  
+	/* set the working downstream links from the upstream nodes to this node */ 
+	for(LinkMod link : nwork.getSources()) {
+	  String lname = link.getName();
 
-	/* add downstream links to this node to the node's upstream */ 
-	// ????
+	  timer.aquire();
+	  ReentrantReadWriteLock downstreamLock = getDownstreamLock(lname);
+	  downstreamLock.writeLock().lock();
+	  try {
+	    timer.resume();
+	    
+	    DownstreamLinks dsl = getDownstreamLinks(lname);
+	    dsl.addWorking(new NodeID(nodeID, lname), name);
+	  }  
+	  finally {
+	    downstreamLock.writeLock().unlock();
+	  }     
+	}
       }
 
       /* update existing working version */ 
@@ -3281,7 +3301,7 @@ class MasterMgr
 	vid = root.getDetails().getLatestVersion().getVersionID();
       
       HashMap<String,NodeStatus> table = new HashMap<String,NodeStatus>();
-      getDownstremNodeStatus(root, nodeID, vid, new LinkedList<String>(), table, timer);
+      getDownstreamNodeStatus(root, nodeID, vid, new LinkedList<String>(), table, timer);
     }
 
     return root;
@@ -3684,7 +3704,7 @@ class MasterMgr
 	      int wk;
 	      for(wk=0; wk<qs.length; wk++) 
 		qs[wk] = QueueState.Finished;
-	      
+ 	      
 	      queueStates.put(fseq, qs);
 	    }	    
 	    // PLACEHOLDER 
@@ -3725,7 +3745,7 @@ class MasterMgr
       status.setDetails(details);
 
       /* peform the node operation -- may alter the status and/or status details */ 
-      nodeOp.perform(status);
+      nodeOp.perform(status, timer);
     }
     finally {
       if(nodeOp.writesCheckedIn())
@@ -3765,7 +3785,7 @@ class MasterMgr
    *   The shared task timer for this operation.
    */ 
   private void 
-  getDownstremNodeStatus
+  getDownstreamNodeStatus
   (
    NodeStatus root, 
    NodeID nodeID, 
@@ -3807,9 +3827,10 @@ class MasterMgr
       assert(dsl != null);
 
       TreeSet<String> wlinks = dsl.getWorking(nodeID);
-      if(wlinks != null) {	
+      if((wlinks != null) && (!wlinks.isEmpty())) {
 	for(String lname : wlinks) {
-	  getDownstremNodeStatus(root, new NodeID(nodeID, lname), null, branch, table, timer);
+	  getDownstreamNodeStatus(root, new NodeID(nodeID, lname), null, 
+				  branch, table, timer);
 
 	  NodeStatus lstatus = table.get(lname);
 	  assert(lstatus != null);
@@ -3824,18 +3845,20 @@ class MasterMgr
 	  clinks = dsl.getCheckedIn(vid);
 	else 
 	  clinks = dsl.getLatestCheckedIn();
-	assert(clinks != null);
-	
-	for(String lname : clinks.keySet()) {
-	  VersionID lvid = clinks.get(lname);
 
-	  getDownstremNodeStatus(root, new NodeID(nodeID, lname), lvid, branch, table, timer);
-
-	  NodeStatus lstatus = table.get(lname);
-	  assert(lstatus != null);
-
-	  status.addTarget(lstatus);
-	  lstatus.addSource(status);
+	if((clinks != null) && (!clinks.isEmpty())) {
+	  for(String lname : clinks.keySet()) {
+	    VersionID lvid = clinks.get(lname);
+	    
+	    getDownstreamNodeStatus(root, new NodeID(nodeID, lname), lvid, 
+				    branch, table, timer);
+	    
+	    NodeStatus lstatus = table.get(lname);
+	    assert(lstatus != null);
+	    
+	    status.addTarget(lstatus);
+	    lstatus.addSource(status);
+	  }
 	}
       }
     }
@@ -5215,13 +5238,17 @@ class MasterMgr
      * @param status 
      *   The pre-operation status of the node. 
      * 
+     * @param timer
+     *   The shared task timer for this operation.
+     * 
      * @throws PipelineException 
      *   If unable to perform the operation.
      */ 
     public void 
     perform
     (
-     NodeStatus status
+     NodeStatus status, 
+     TaskTimer timer
     )
       throws PipelineException
     {}
@@ -5241,8 +5268,6 @@ class MasterMgr
 
   /**
    * The node check-in operation. <P>
-   * 
-   * 
    */
   public 
   class NodeCheckInOp
@@ -5269,13 +5294,17 @@ class MasterMgr
      * @param status 
      *   The pre-operation status of the node. 
      * 
+     * @param timer
+     *   The shared task timer for this operation.
+     * 
      * @throws PipelineException 
      *   If unable to perform the operation.
      */ 
     public void 
     perform
     (
-     NodeStatus status
+     NodeStatus status, 
+     TaskTimer timer
     )
       throws PipelineException
     {
@@ -5377,7 +5406,7 @@ class MasterMgr
 	  /* update the node status details */ 
 	  NodeDetails ndetails = 
 	    new NodeDetails(name, 
-			    work, vsn, checkedIn.get(checkedIn.lastKey()).uVersion,
+			    nwork, vsn, checkedIn.get(checkedIn.lastKey()).uVersion,
 			    checkedIn.keySet(), 
 			    OverallNodeState.Identical, OverallQueueState.Finished, 
 			    VersionState.Identical, PropertyState.Identical, 
@@ -5385,7 +5414,41 @@ class MasterMgr
 			    fileStates, working.uFileTimeStamps, working.uQueueStates);
 
 	  status.setDetails(ndetails);
-	}      
+
+	  /* initialize the downstream links for the new checked-in version of this node */ 
+	  {
+	    timer.aquire();
+	    ReentrantReadWriteLock downstreamLock = getDownstreamLock(name);
+	    downstreamLock.writeLock().lock();
+	    try {
+	      timer.resume();
+	      
+	      DownstreamLinks dsl = getDownstreamLinks(name);
+	      dsl.createCheckedIn(vsn.getVersionID());
+	    }
+	    finally {
+	      downstreamLock.writeLock().unlock();
+	    }    
+	  }
+
+	  /* set the checked-in downstream links from the upstream nodes to this node */ 
+	  for(LinkVersion link : vsn.getSources()) { 
+	    String lname = link.getName();
+
+	    timer.aquire();
+	    ReentrantReadWriteLock downstreamLock = getDownstreamLock(lname);
+	    downstreamLock.writeLock().lock();
+	    try {
+	      timer.resume();
+
+	      DownstreamLinks dsl = getDownstreamLinks(lname);
+	      dsl.addCheckedIn(link.getVersionID(), name, vsn.getVersionID());
+	    }  
+	    finally {
+	      downstreamLock.writeLock().unlock();
+	    }     
+	  }
+	}
       }
     }
 
