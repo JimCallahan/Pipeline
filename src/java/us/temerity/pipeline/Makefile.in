@@ -170,7 +170,8 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 #   V A R I A B L E S                                                                        #
 #--------------------------------------------------------------------------------------------#
 
-          TARGET = pipeline.jar
+          TARGET = api.jar
+           VAULT = vault
 
          PARSERS = GlueParser \
                    ToolsetEnvParser \
@@ -179,7 +180,6 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
       JAVA_PATHS = -d ../../.. -classpath "../../..:$(srcdir)/../../.."
 
-     ALL_SOURCES = $(shell ls $(srcdir)/*.java $(srcdir)/message/*.java)
 
            ENUMS = DependState \
                    ExecutionMethod \
@@ -189,31 +189,89 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
                    OverallNodeState \
                    OverallQueueState \
                    OverflowPolicy \
-                   PosixSignal \
                    PropertyState \
                    QueueState \
                    VersionState \
+                   core/PosixSignal \
                    message/FileRequest
 
     ENUM_SOURCES = $(patsubst %,$(srcdir)/%.java,$(ENUMS))
 
+     API_SOURCES = $(shell ls $(srcdir)/*.java)
+
+    CORE_SOURCES = $(shell ls $(srcdir)/core/*.java)
+
+     MSG_SOURCES = $(shell ls $(srcdir)/message/*.java)
+
+     ALL_SOURCES = $(API_SOURCES) $(CORE_SOURCES) $(MSG_SOURCES)
+
     JAVA_SOURCES = $(ENUM_SOURCES) $(filter-out $(ENUM_SOURCES),$(ALL_SOURCES)) \
-                   PackageInfo.java $(patsubst %,%.java,$(PARSERS))
+                   core/PackageInfo.java $(patsubst %,core/%.java,$(PARSERS))
+
+      BS_SOURCES = $(shell ls $(srcdir)/bootstrap/*.java) \
+                   bootstrap/BootStrapLoader.java
+
+
+          LOCKED = $(patsubst $(srcdir)/core/%.java,core/%,$(CORE_SOURCES)) \
+                   $(patsubst $(srcdir)/message/%.java,message/%,$(MSG_SOURCES)) \
+                   core/FileMgrOptsParserConstants \
+		   core/FileMgrOptsParser \
+		   core/FileMgrOptsParserTokenManager \
+		   core/GlueParserConstants \
+		   core/GlueParser \
+		   core/GlueParserTokenManager \
+		   core/PackageInfo \
+		   core/ParseException \
+		   core/SimpleCharStream \
+		   core/Token \
+		   core/TokenMgrError \
+		   core/ToolsetEnvParserConstants \
+		   core/ToolsetEnvParser \
+		   core/ToolsetEnvParserTokenManager \
+		   core/FileCleaner:CleanupTask \
+		   core/FileMgrServer:HandlerTask \
+		   core/NodeMgr:CheckedInBundle \
+		   core/NodeMgr:WorkingBundle
 
 
 #--------------------------------------------------------------------------------------------#
 #   R U L E S                                                                                #
 #--------------------------------------------------------------------------------------------#
 
-all: Makefile PackageInfo.java $(TARGET) 
+all: Makefile $(TARGET) 
 	$(MAKE) -C native $@
 	$(MAKE) -C plugin $@
 	$(MAKE) -C tests $@
+	$(MAKE) $(VAULT) bootstrap-jar 
 
 $(TARGET): java-all
 	(cd ../../..; \
-         $(JAR) cvf us/temerity/pipeline/$@ \
-                    us/temerity/pipeline/*.class us/temerity/pipeline/message/*.class)
+         $(JAR) cvf us/temerity/pipeline/$(TARGET) \
+                    us/temerity/pipeline/*.class)
+
+bootstrap-jar: bootstrap-all
+	(cd ../../..; \
+         $(JAR) uvf us/temerity/pipeline/$(TARGET) \
+                    us/temerity/pipeline/bootstrap/*.class)
+
+bootstrap-all: $(BS_SOURCES)
+	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(BS_SOURCES)
+	touch $@
+	rm -f $(top_builddir)/docs/javadoc/docs-all
+
+bootstrap/BootStrapLoader.java: bootstrap/BootStrapLoader.java.in BootStrapFields
+	awk -- '/@BOOTSTRAP_FIELDS@/ { system("cat BootStrapFields") } \
+               !/@BOOTSTRAP_FIELDS@/ { print }' $< > $@
+
+BootStrapFields $(VAULT): java-all 
+	@(f=`for x in $(LOCKED); \
+            do \
+              echo "$$x" | awk -F. '{print $$0 ".class"}' | sed -e 's/:/$$/g';\
+            done`; \
+          echo $(JAVA) -classpath $(CRYPTO_APP_DIR) CryptoApp $(CUSTOMER_PROFILE) \
+            --build-vault $$f $(VAULT); \
+          $(JAVA) -classpath $(CRYPTO_APP_DIR) CryptoApp $(CUSTOMER_PROFILE) \
+            --build-vault $$f $(VAULT) > BootStrapFields);
 
 java-all: $(JAVA_SOURCES)
 	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(JAVA_SOURCES)
@@ -221,33 +279,36 @@ java-all: $(JAVA_SOURCES)
 	rm -f $(top_builddir)/docs/javadoc/docs-all
 
 %.java: %.jj
-	cp --force $(srcdir)/parser/ParseException.java .
-	cp --force $(srcdir)/parser/TokenMgrError.java .
-	$(JAVA_CC) $<
+	-@mkdir core
+	cp --force $(srcdir)/core/parser/ParseException.java core/
+	cp --force $(srcdir)/core/parser/TokenMgrError.java core/
+	(cd core; $(JAVA_CC) $<)
 
 
 #--------------------------------------------------------------------------------------------#
 
-install: installdirs install-jar
+install: all installdirs install-jar
 	$(MAKE) -C native $@
 	$(MAKE) -C plugin $@
 
-install-jar: $(TARGET)
-	$(INSTALL) -m 444 $< $(DESTDIR)$(ROOT_INST_DIR)/jar/$(TARGET)
+install-jar: $(TARGET) $(VAULT)
+	$(INSTALL) -m 444 $(TARGET) $(VAULT) $(DESTDIR)$(ROOT_INST_DIR)/lib
 
 PHONY: installdirs
 installdirs:
-	$(mkinstalldirs) $(DESTDIR)$(ROOT_INST_DIR)/jar
+	$(mkinstalldirs) $(DESTDIR)$(ROOT_INST_DIR)/lib
 	$(mkinstalldirs) $(DESTDIR)$(PRODDIR)/working
 	$(mkinstalldirs) $(DESTDIR)$(PRODDIR)/repository
 	$(mkinstalldirs) $(DESTDIR)$(PRODDIR)/checksum
+
 
 #--------------------------------------------------------------------------------------------#
 
 uninstall: uninstall-jar
 
 uninstall-jar: 
-	rm -f $(DESTDIR)$(ROOT_INST_DIR)/jar/$(TARGET)
+	rm -f $(DESTDIR)$(ROOT_INST_DIR)/lib/$(TARGET)
+	rm -f $(DESTDIR)$(ROOT_INST_DIR)/lib/$(VAULT)
 
 
 #--------------------------------------------------------------------------------------------#
@@ -258,7 +319,7 @@ check: all
 
 #--------------------------------------------------------------------------------------------#
 
-clean: clean-jar clean-class clean-aux clean-parser 
+clean: clean-jar clean-vault clean-class clean-aux clean-parser 
 	$(MAKE) -C native $@
 	$(MAKE) -C plugin $@
 	$(MAKE) -C tests $@
@@ -266,29 +327,35 @@ clean: clean-jar clean-class clean-aux clean-parser
 clean-jar:
 	rm -f $(TARGET)
 
+clean-vault: 
+	rm -f $(VAULT) BootStrapFields 
+
 clean-class:
-	rm -f *.class message/*.class
+	rm -f *.class 
+	rm -f message/*.class
+	rm -f core/*.class
 	rm -f java-all
 
 clean-aux:
-	rm -f ParseException.java SimpleCharStream.java Token.java TokenMgrError.java
-	rm -f PackageInfo.java
+	rm -f core/ParseException.java core/SimpleCharStream.java 
+	rm -f core/Token.java core/TokenMgrError.java
+	rm -f core/PackageInfo.java
 
 clean-parser:
 	@list='$(PARSERS)'; \
          for p in $$list; \
          do \
-          f=$$p".java"; \
+          f=core/$$p".java"; \
 	  if test -f $$f; then \
             echo rm -f $$f; \
             rm -f $$f; \
           fi; \
-          f=$$p"Constants.java"; \
+          f=core/$$p"Constants.java"; \
 	  if test -f $$f; then \
             echo rm -f $$f; \
             rm -f $$f; \
           fi; \
-          f=$$p"TokenManager.java"; \
+          f=core/$$p"TokenManager.java"; \
 	  if test -f $$f; then \
             echo rm -f $$f; \
             rm -f $$f; \
@@ -298,7 +365,11 @@ clean-parser:
 
 #--------------------------------------------------------------------------------------------#
 
-PackageInfo.java: $(srcdir)/PackageInfo.java.in  $(top_builddir)/config.status
+core/PackageInfo.java: $(srcdir)/core/PackageInfo.java.in  $(top_builddir)/config.status
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
+
+bootstrap/BootStrapLoader.java.in: $(srcdir)/bootstrap/BootStrapLoader.java.in.in  \
+                                   $(top_builddir)/config.status
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status

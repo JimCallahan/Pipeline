@@ -1,6 +1,8 @@
-// $Id: NodeVersion.java,v 1.6 2004/03/13 17:17:47 jim Exp $
+// $Id: NodeVersion.java,v 1.7 2004/03/22 03:11:08 jim Exp $
 
 package us.temerity.pipeline;
+
+import us.temerity.pipeline.core.LogMessage;
 
 import java.util.*;
 

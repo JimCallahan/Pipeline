@@ -1,6 +1,7 @@
-// $Id: TestNodeModVersionApp.java,v 1.2 2004/03/13 17:17:47 jim Exp $
+// $Id: TestNodeModVersionApp.java,v 1.3 2004/03/22 03:11:08 jim Exp $
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.core.*;
 import us.temerity.pipeline.message.*;
 
 import java.io.*; 

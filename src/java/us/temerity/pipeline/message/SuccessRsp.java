@@ -1,8 +1,9 @@
-// $Id: SuccessRsp.java,v 1.2 2004/03/12 23:08:23 jim Exp $
+// $Id: SuccessRsp.java,v 1.3 2004/03/22 03:11:08 jim Exp $
 
 package us.temerity.pipeline.message;
 
 import us.temerity.pipeline.*; 
+import us.temerity.pipeline.core.*; 
 
 import java.io.*;
 import java.util.*;

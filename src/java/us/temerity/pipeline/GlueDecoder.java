@@ -1,6 +1,8 @@
-// $Id: GlueDecoder.java,v 1.5 2004/02/25 02:59:28 jim Exp $
+// $Id: GlueDecoder.java,v 1.6 2004/03/22 03:11:08 jim Exp $
 
 package us.temerity.pipeline;
+
+import us.temerity.pipeline.core.*;
 
 import java.lang.reflect.*;
 import java.util.*;

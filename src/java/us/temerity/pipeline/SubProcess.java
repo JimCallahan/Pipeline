@@ -1,6 +1,8 @@
-// $Id: SubProcess.java,v 1.7 2004/03/21 00:58:02 jim Exp $
+// $Id: SubProcess.java,v 1.8 2004/03/22 03:11:08 jim Exp $
 
 package us.temerity.pipeline;
+
+import us.temerity.pipeline.core.*;
 
 import java.util.*;
 import java.util.logging.*;

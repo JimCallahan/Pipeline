@@ -173,13 +173,13 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
           TARGET = plugins.jar
 
 
-      JAVA_PATHS = -d ../../../.. -classpath ../pipeline.jar
+      JAVA_PATHS = -d ../../../.. -classpath ../api.jar		
 
     JAVA_SOURCES = $(shell ls $(srcdir)/*.java)
     JAVA_CLASSES = $(patsubst $(srcdir)/%.java,%.class,$(JAVA_SOURCES))
 
 
-      PLUGIN_DIR = $(ROOT_INST_DIR)/jar/us/temerity/pipeline/plugin
+      PLUGIN_DIR = $(ROOT_INST_DIR)/plugins/us/temerity/pipeline/plugin
 
 
 #--------------------------------------------------------------------------------------------#
@@ -203,7 +203,7 @@ java-all: $(JAVA_SOURCES)
 
 #--------------------------------------------------------------------------------------------#
 
-install: installdirs install-classes
+install: all installdirs install-classes
 
 install-classes: $(JAVA_CLASSES)
 	@list='$^'; for p in $$list; do \

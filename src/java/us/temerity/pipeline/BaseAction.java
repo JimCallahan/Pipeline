@@ -1,6 +1,8 @@
-// $Id: BaseAction.java,v 1.4 2004/03/07 02:46:07 jim Exp $
+// $Id: BaseAction.java,v 1.5 2004/03/22 03:11:08 jim Exp $
 
 package us.temerity.pipeline;
+
+import  us.temerity.pipeline.core.*;
 
 import java.util.*;
 import java.io.*;
@@ -513,6 +515,61 @@ class BaseAction
   )
     throws PipelineException;
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   M I S C   F I L E   U T I L S                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Add the given file to the set of files which will be removed upon termination of the
+   * Java runtime.
+   * 
+   * @param file [<B>in</B>]
+   *   The temporary file to cleanup.
+   */
+  protected void 
+  cleanupLater
+  (
+   File file
+  ) 
+  {
+    FileCleaner.add(file);
+  }
+
+  /**
+   * Change file access permissions. <P> 
+   * 
+   * See the manpage for chmod(2) for details about the legal values for <CODE>mode</CODE>.
+   *
+   * @param mode [<B>in</B>]
+   *   The access mode bitmask.
+   *
+   * @param file [<B>in</B>]
+   *   The fully resolved path to the file to change.
+   * 
+   * @throws IOException 
+   *   If unable to change the mode of the given file.
+   */
+  public static void 
+  chmod
+  (
+   int mode, 
+   File file
+  ) 
+    throws IOException
+  {
+    NativeFileSys.chmod(mode, file);
+  }
+
+  /**
+   * Get the directory used to store temporary files. 
+   */
+  protected File
+  getTempDir()
+  {
+    return PackageInfo.sTempDir;
+  }
 
 
 

@@ -1,6 +1,8 @@
-// $Id: NodeMod.java,v 1.9 2004/03/15 19:10:26 jim Exp $
+// $Id: NodeMod.java,v 1.10 2004/03/22 03:11:08 jim Exp $
 
 package us.temerity.pipeline;
+
+import us.temerity.pipeline.core.*;
 
 import java.io.*;
 import java.util.*;

@@ -1,6 +1,7 @@
-// $Id: TestSubProcessApp.java,v 1.2 2004/02/21 18:58:12 jim Exp $
+// $Id: TestSubProcessApp.java,v 1.3 2004/03/22 03:11:08 jim Exp $
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.core.*;
 
 import java.io.*; 
 import java.util.*; 

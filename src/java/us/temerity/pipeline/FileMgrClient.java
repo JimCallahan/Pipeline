@@ -1,7 +1,8 @@
-// $Id: FileMgrClient.java,v 1.7 2004/03/16 17:26:51 jim Exp $
+// $Id: FileMgrClient.java,v 1.8 2004/03/22 03:11:08 jim Exp $
 
 package us.temerity.pipeline;
 
+import us.temerity.pipeline.core.*;
 import us.temerity.pipeline.message.*;
 
 import java.io.*;

@@ -1,4 +1,4 @@
-// $Id: ScriptAction.java,v 1.2 2004/03/07 02:35:53 jim Exp $
+// $Id: ScriptAction.java,v 1.3 2004/03/22 03:11:08 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -237,13 +237,12 @@ class ScriptAction
     File script = null;
     try {
       /* create temporary directory */ 
-      File sdir = new File(PackageInfo.sTempDir, "pipeline");
+      File sdir = new File(getTempDir(), "pipeline");
       sdir.mkdir();
       
       /* generate script filename */ 
       File node = new File(name);
       script = File.createTempFile("ScriptAction-" + jobID, ".script", sdir);
-      Logs.sub.finest("Generated Temp Script: " + script);
 
       /* write script contents */ 
       {
@@ -259,10 +258,10 @@ class ScriptAction
       }
 
       /* schedule deletion of the temporary script upon exit of the calling program */ 
-      FileCleaner.add(script);
+      cleanupLater(script);
       
       /* make script executable */ 
-      NativeFileSys.chmod(0777, script);
+      chmod(0777, script);
     }
     catch (Exception ex) {
       throw new PipelineException

@@ -1,9 +1,6 @@
-// $Id: FileRequest.java,v 1.5 2004/03/16 17:27:24 jim Exp $
+// $Id: FileRequest.java,v 1.6 2004/03/22 03:11:08 jim Exp $
 
 package us.temerity.pipeline.message;
-
-import us.temerity.pipeline.FileMgrClient;
-import us.temerity.pipeline.FileMgrServer;
 
 /*------------------------------------------------------------------------------------------*/
 /*   F I L E   R E Q U E S T                                                                */
@@ -11,8 +8,7 @@ import us.temerity.pipeline.FileMgrServer;
 
 /**
  * The set of identifiers for file request messages which may be sent over a network 
- * connection from the {@link FileMgrClient FileMgrClient} to the 
- * {@link FileMgrServer FileMgrServer}.  <P> 
+ * connection from the <CODE>FileMgrClient</CODE> to the <CODE>FileMgrServer</CODE>.  <P> 
  * 
  * The protocol of communicaton between these file manager classes is for a 
  * <CODE>FileRequest</CODE> to be sent followed by a corresponding request
