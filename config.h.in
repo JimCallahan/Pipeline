@@ -1,0 +1,195 @@
+/* config.h.in.  Generated automatically from configure.in by autoheader.  */
+#ifndef AUTOCONF_CONFIG_H
+#define AUTOCONF_CONFIG_H
+
+
+
+/* Define if you have the ANSI C header files.  */
+#undef STDC_HEADERS
+
+/* Define the unique host architecture string. */ 
+#undef ARCHINFO_STRING
+
+/* Define if using the KAI C++ compiler (KCC). */ 
+#undef USING_KAI_CXX 
+
+/* Define if using SGI's MIPSPRO C++ compiler (CC). */ 
+#undef USING_MIPSPRO_CXX 
+
+/* Define if using GNU's C++ compiler (g++). */ 
+#undef USING_GNU_CXX 
+
+/* Define if OpenInventor is available. */ 
+#undef HAVE_OPEN_INVENTOR
+
+/* Define if OpenGL is available. */ 
+#undef HAVE_OPEN_GL
+
+/* Name of HTML documentation directory. */ 
+#undef HTML_DOCS_DIR
+
+/* Define if you have the <algobase> header file.  */
+#undef HAVE_ALGOBASE
+
+/* Define if you have the <algobase.h> header file.  */
+#undef HAVE_ALGOBASE_H
+
+/* Define if you have the <assert.h> header file.  */
+#undef HAVE_ASSERT_H
+
+/* Define if you have the <cassert> header file.  */
+#undef HAVE_CASSERT
+
+/* Define if you have the <climits> header file.  */
+#undef HAVE_CLIMITS
+
+/* Define if you have the <cstdio> header file.  */
+#undef HAVE_CSTDIO
+
+/* Define if you have the <cstdlib> header file.  */
+#undef HAVE_CSTDLIB
+
+/* Define if you have the <cstring> header file.  */
+#undef HAVE_CSTRING
+
+/* Define if you have the <float.h> header file.  */
+#undef HAVE_FLOAT_H
+
+/* Define if you have the <fstream> header file.  */
+#undef HAVE_FSTREAM
+
+/* Define if you have the <fstream.h> header file.  */
+#undef HAVE_FSTREAM_H
+
+/* Define if you have the <iomanip> header file.  */
+#undef HAVE_IOMANIP
+
+/* Define if you have the <iomanip.h> header file.  */
+#undef HAVE_IOMANIP_H
+
+/* Define if you have the <iostream> header file.  */
+#undef HAVE_IOSTREAM
+
+/* Define if you have the <iostream.h> header file.  */
+#undef HAVE_IOSTREAM_H
+
+/* Define if you have the <limits.h> header file.  */
+#undef HAVE_LIMITS_H
+
+/* Define if you have the <stdio.h> header file.  */
+#undef HAVE_STDIO_H
+
+/* Define if you have the <stdlib.h> header file.  */
+#undef HAVE_STDLIB_H
+
+/* Define if you have the <string.h> header file.  */
+#undef HAVE_STRING_H
+
+/* Define if you have the <strstream> header file.  */
+#undef HAVE_STRSTREAM
+
+/* Define if you have the <strstream.h> header file.  */
+#undef HAVE_STRSTREAM_H
+
+/* Name of package */
+#undef PACKAGE
+
+/* Version number of package */
+#undef VERSION
+
+/* Directory to find data files used by regression tests */
+#undef TEST_DATA_DIR
+
+
+
+/* Math functions */
+#undef HAVE_ACOS
+#undef HAVE_ACOSF
+#undef HAVE_FACOS
+#undef HAVE_ACOSL
+#undef HAVE_ASIN
+#undef HAVE_ASINF
+#undef HAVE_FASIN
+#undef HAVE_ASINL
+#undef HAVE_ATAN
+#undef HAVE_ATANF
+#undef HAVE_FATAN
+#undef HAVE_ATANL
+#undef HAVE_ATAN2
+#undef HAVE_ATAN2F
+#undef HAVE_FATAN2
+#undef HAVE_ATAN2L
+#undef HAVE_COS
+#undef HAVE_COSF
+#undef HAVE_FCOS
+#undef HAVE_COSL
+#undef HAVE_SIN
+#undef HAVE_SINF
+#undef HAVE_FSIN
+#undef HAVE_SINL
+#undef HAVE_TAN
+#undef HAVE_TANF
+#undef HAVE_FTAN
+#undef HAVE_TANL
+#undef HAVE_COSH
+#undef HAVE_COSHF
+#undef HAVE_FCOSH
+#undef HAVE_COSHL
+#undef HAVE_SINH
+#undef HAVE_SINHF
+#undef HAVE_FSINH
+#undef HAVE_SINHL
+#undef HAVE_TANH
+#undef HAVE_TANHF
+#undef HAVE_FTANH
+#undef HAVE_TANHL
+#undef HAVE_EXP
+#undef HAVE_EXPF
+#undef HAVE_FEXP
+#undef HAVE_EXPL
+#undef HAVE_LOG
+#undef HAVE_LOGF
+#undef HAVE_FLOG
+#undef HAVE_LOGL
+#undef HAVE_LOG10
+#undef HAVE_LOG10F
+#undef HAVE_FLOG10
+#undef HAVE_LOG10L
+#undef HAVE_POW
+#undef HAVE_POWF
+#undef HAVE_FPOW
+#undef HAVE_POWL
+#undef HAVE_SQRT
+#undef HAVE_SQRTF
+#undef HAVE_FSQRT
+#undef HAVE_SQRTL
+#undef HAVE_FLOOR
+#undef HAVE_FLOORF
+#undef HAVE_FFLOOR
+#undef HAVE_FLOORL
+#undef HAVE_CEIL
+#undef HAVE_CEILF
+#undef HAVE_FCEIL
+#undef HAVE_CEILL
+#undef HAVE_COPYSIGN
+#undef HAVE_COPYSIGNF
+#undef HAVE_COPYSIGNL
+#undef HAVE_DREM
+#undef HAVE_DREML
+#undef HAVE_TRUNC
+#undef HAVE_TRUNCF
+#undef HAVE_FTRUNC
+#undef HAVE_TRUNCL
+#undef HAVE_FMOD
+#undef HAVE_FMODF
+#undef HAVE_FMODL
+#undef HAVE_ABS
+#undef HAVE_LABS
+#undef HAVE_FABS
+#undef HAVE_FABSF
+#undef HAVE_FABSL
+#undef HAVE_RINT
+#undef HAVE_RINTF
+#undef HAVE_RINTL
+
+#endif
