@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.4 2004/08/31 08:16:09 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.5 2004/09/03 02:01:02 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -498,6 +498,23 @@ class JQueueJobBrowserPanel
   public void
   doUpdate()
   { 
+    /* enable/disable the DeleteCompleted button */ 
+    if(pFilterViewsButton.isSelected())
+      pDeleteCompletedButton.setEnabled(!pIsLocked);
+    else {
+      boolean privileged = false;
+      UIMaster master = UIMaster.getInstance();
+      try {
+	privileged = master.getMasterMgrClient().isPrivileged();
+      }
+      catch(PipelineException ex) {
+	master.showErrorDialog(ex);
+      }
+
+      pDeleteCompletedButton.setEnabled(privileged);
+    }
+    
+    /* update the jobs */ 
     GetJobsTask task = new GetJobsTask();
     task.start();
   }
@@ -508,9 +525,8 @@ class JQueueJobBrowserPanel
   public void
   doDeleteCompleted()
   { 
-
-    // ...
-
+    DeleteJobGroupsTask task = new DeleteJobGroupsTask(!pFilterViewsButton.isSelected());
+    task.start();
   }
 
 
@@ -627,6 +643,49 @@ class JQueueJobBrowserPanel
     private TreeMap<Long,JobStatus>      pStatus; 
   }
 
+  /** 
+   * Delete the completed job groups.
+   */ 
+  private
+  class DeleteJobGroupsTask
+    extends Thread
+  {
+    public 
+    DeleteJobGroupsTask
+    (
+     boolean allViews
+    ) 
+    {
+      super("JQueueJobsBrowserPanel:DeleteJobGroupsTask");
+
+      pAllViews = allViews;
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Deleting Job Groups...")) {
+	try {
+	  if(pAllViews) 
+	    master.getQueueMgrClient().deleteAllJobGroups();
+	  else 
+	    master.getQueueMgrClient().deleteViewJobGroups(pAuthor, pView);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	doUpdate();
+      }
+    }
+
+    private boolean  pAllViews; 
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -667,7 +726,7 @@ class JQueueJobBrowserPanel
   /**
    * Used to select whether job groups should be filtered by the current owner|view. 
    */ 
-  private JToggleButton  pFilterViewsButton;
+  private JToggleButton  pFilterViewsButton;  
 
   /**
    * Deletes completed job groups when pressed.
