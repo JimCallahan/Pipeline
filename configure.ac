@@ -742,7 +742,8 @@ AC_CONFIG_FILES([
   src/java/us/Makefile
   src/java/us/temerity/Makefile
   src/java/us/temerity/pipeline/Makefile
-  src/java/us/temerity/pipeline/PackageInfo.java
+  src/java/us/temerity/pipeline/bootstrap/BootStrapLoader.java.in
+  src/java/us/temerity/pipeline/core/PackageInfo.java
   src/java/us/temerity/pipeline/native/Makefile
   src/java/us/temerity/pipeline/plugin/Makefile
   src/java/us/temerity/pipeline/tests/Makefile
@@ -750,6 +751,7 @@ AC_CONFIG_FILES([
 
   src/java/scripts/Makefile
   src/java/scripts/plfilemgr
+  src/java/scripts/pltest
 
   src/java/share/Makefile
 
