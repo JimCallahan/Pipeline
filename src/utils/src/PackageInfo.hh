@@ -1,4 +1,4 @@
-// $Id: PackageInfo.hh,v 1.5 2003/12/17 04:47:59 jim Exp $
+// $Id: PackageInfo.hh,v 1.6 2004/02/13 13:56:07 jim Exp $
 
 #ifndef PIPELINE_PACKAGE_INFO_HH
 #define PIPELINE_PACKAGE_INFO_HH
@@ -28,11 +28,11 @@ public:
   static const char* sRelease;
 
 
-  /* server hostname */ 
-  static const char* sServer;
+  /* pipeline server hostname */ 
+  static const char* sPipelineServer;
 
-  /* server port number */ 
-  static const int sPort;
+  /* pipeline server port number */ 
+  static const int sPipelinePort;
 
   
   /* pipeline user ID */ 

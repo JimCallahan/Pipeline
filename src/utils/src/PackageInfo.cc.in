@@ -1,4 +1,4 @@
-// $Id: PackageInfo.cc.in,v 1.9 2003/12/17 04:47:59 jim Exp $
+// $Id: PackageInfo.cc.in,v 1.10 2004/02/13 13:56:07 jim Exp $
 
 #include <PackageInfo.hh>
 
@@ -21,11 +21,11 @@ const char* PackageInfo::sVersion = "@VERSION@";
 const char* PackageInfo::sRelease = "@RELEASE_STAMP@";  
 
 
-/* server hostname */ 
-const char* PackageInfo::sServer = "@SQL_SERVER@";
+/* pipeline server hostname */ 
+const char* PackageInfo::sPipelineServer = "@PL_SERVER@";
 
-/* server port number */ 
-const int PackageInfo::sPort = @SQL_PORT@;
+/* pipeline server port number */ 
+const int PackageInfo::sPipelinePort = @PL_PORT@;
 
 
 /* pipeline user ID */ 
@@ -78,7 +78,7 @@ const char* PackageInfo::sYpCat = "@YPCAT@";
 /* copyright message */ 
 const char* PackageInfo::sCopyright = 
 "-------------------------------------------------------------------------\n\
- Copyright (c) 2001, 2002, 2003 James M. Callahan.\n\
+ Copyright (c) 2001, 2002, 2003, 2004 James M. Callahan.\n\
 \n\
  Permission to use, copy and distribute this software and its\n\
  documentation for any purpose is STRICTLY PROHIBITED without prior\n\
