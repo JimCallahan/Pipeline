@@ -1,4 +1,4 @@
-// $Id: JFileMonitorPanel.java,v 1.2 2005/01/05 23:01:56 jim Exp $
+// $Id: JFileMonitorPanel.java,v 1.3 2005/01/22 21:55:12 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -27,22 +27,14 @@ class JFileMonitorPanel
    * 
    * @param file
    *   The file to monitor.
-   * 
-   * @param rows
-   *   The preferred number of rows of text.
-   * 
-   * @param cols
-   *   The preferred number of columns of text.
    */ 
   public 
   JFileMonitorPanel
   (
-   File file, 
-   int rows, 
-   int cols
+   File file
   ) 
   {
-    super(rows, cols);
+    super();
 
     pFileMonitor = new FileMonitor(file);
   }

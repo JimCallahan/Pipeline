@@ -847,19 +847,6 @@
   </style>
   <bind style="CodeTextArea" type="name" key="CodeTextArea"/>
 
-  <style id="MonitorTextArea">
-    <state value="SELECTED">
-       <color value="#ffff00" type="TEXT_FOREGROUND"/>
-       <color value="#727272" type="TEXT_BACKGROUND"/>
-    </state>
-    <imagePainter path="FrameInDark.png"
-                  method="textAreaBackground"
-                  sourceInsets="3 3 3 3"/>
-    <insets top="5" bottom="5" right="11" left="11"/>
-    <font name="Courier" size="16"/>
-  </style>
-  <bind style="MonitorTextArea" type="name" key="MonitorTextArea"/>
-
   <style id="ScrolledTextArea">
     <state value="SELECTED">
        <color value="#ffff00" type="TEXT_FOREGROUND"/>

@@ -1,4 +1,4 @@
-// $Id: JMonitorSubProcessDialog.java,v 1.2 2005/01/03 06:56:23 jim Exp $
+// $Id: JMonitorSubProcessDialog.java,v 1.3 2005/01/22 21:55:12 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -99,7 +99,7 @@ class JMonitorSubProcessDialog
 	  opanel.add(Box.createRigidArea(new Dimension(0, 4)));
 	  
 	  {
-	    JFileMonitorPanel panel = new JFileMonitorPanel(proc.getStdOutFile(), 10, 80);
+	    JFileMonitorPanel panel = new JFileMonitorPanel(proc.getStdOutFile());
 	    pStdOutPanel = panel;
 	    
 	    opanel.add(panel);
@@ -118,7 +118,7 @@ class JMonitorSubProcessDialog
 	  epanel.add(Box.createRigidArea(new Dimension(0, 4)));
 	  
 	  {
-	    JFileMonitorPanel panel = new JFileMonitorPanel(proc.getStdErrFile(), 10, 80);
+	    JFileMonitorPanel panel = new JFileMonitorPanel(proc.getStdErrFile());
 	    pStdErrPanel = panel;
 	    
 	    epanel.add(panel);

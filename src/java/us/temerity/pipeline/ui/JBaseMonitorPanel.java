@@ -1,4 +1,4 @@
-// $Id: JBaseMonitorPanel.java,v 1.2 2004/10/29 14:03:52 jim Exp $
+// $Id: JBaseMonitorPanel.java,v 1.3 2005/01/22 21:55:12 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -41,11 +41,7 @@ class JBaseMonitorPanel
    *   The preferred number of columns of text.
    */ 
   public 
-  JBaseMonitorPanel
-  (
-   int rows, 
-   int cols
-  ) 
+  JBaseMonitorPanel()
   {
     pFirstUpdate = new AtomicBoolean(false);
 
@@ -53,21 +49,41 @@ class JBaseMonitorPanel
       setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
       
       {
-	JMonitorTextArea area = new JMonitorTextArea(rows, cols);
+	JMonitorTextArea area = new JMonitorTextArea();
 	pTextArea = area;
 	
-	add(area);
+	{
+	  JScrollPane scroll = new JScrollPane(area);
+	  
+	  scroll.setWheelScrollingEnabled(false);	  
+	  
+ 	  scroll.setMinimumSize(new Dimension(150, 100));
+ 	  scroll.setPreferredSize(new Dimension(800, 500));
+	  
+	  scroll.setHorizontalScrollBarPolicy
+	    (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+	  scroll.setVerticalScrollBarPolicy
+	    (ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+	  
+	  add(scroll);
+	}
       }
       
-      add(Box.createRigidArea(new Dimension(4, 0)));
-      
       {
-	JScrollBar bar = new JScrollBar(JScrollBar.VERTICAL, 0, rows, 0, rows);
-	pScrollBar = bar;
-	
-	bar.addAdjustmentListener(this);
-	
-	add(bar);
+	Box vbox = new Box(BoxLayout.Y_AXIS);
+
+	{
+	  JScrollBar bar = new JScrollBar(JScrollBar.VERTICAL, 0, 10, 0, 10);
+	  pScrollBar = bar;
+
+	  bar.addAdjustmentListener(this);
+
+	  vbox.add(bar);
+	}
+
+	vbox.add(Box.createRigidArea(new Dimension(0, 14)));
+      
+	add(vbox);
       }
     }
   }
@@ -207,19 +223,12 @@ class JBaseMonitorPanel
     implements ComponentListener
   {
     public 
-    JMonitorTextArea
-    (
-     int rows, 
-     int cols
-    ) 
+    JMonitorTextArea() 
     {
       super();
-      
-      setPreferredSize(new Dimension(cols * getColumnWidth(), rows * getRowHeight()));
 
-      setName("MonitorTextArea");
-      setLineWrap(true);
-      setWrapStyleWord(true);
+      setName("CodeTextArea");
+      setLineWrap(false);
       setEditable(false);
 
       addComponentListener(this);
