@@ -450,12 +450,6 @@
 /* Define to 1 if you have the <zlib.h> header file. */
 #undef HAVE_ZLIB_H
 
-/* Name of HTML documentation directory. */
-#undef HTML_DOCS_DIR
-
-/* Name of directory where installed binaries live. */
-#undef INST_BIN_DIR
-
 /* Name of package */
 #undef PACKAGE
 

@@ -1,5 +1,5 @@
 
-htmldir = $(BASEDIR)/pipeline/share/docs
+htmldir = @datadir@/docs
 
 html_DATA = \
   plput.html

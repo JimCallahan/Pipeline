@@ -150,7 +150,7 @@ AC_MSG_RESULT([$SQL_SERVER])
 AC_MSG_CHECKING([PostgreSQL Server Port])
 
 AC_ARG_WITH([sql-port], 
-            [  --with-sql-port=NUM      Port number to use for PostgreSQL server.])
+            [  --with-sql-port=NUM     Port number to use for PostgreSQL server.])
 
 AC_SUBST(SQL_PORT)
 SQL_PORT=53135
@@ -704,15 +704,15 @@ BUILD_NAME="${host}-${BUILD_MODE}"
 AC_DEFINE_UNQUOTED(BUILD_NAME, "$BUILD_NAME", 
                    [Define a unique host architecture and build mode string.])
 
-AC_SUBST(INST_BIN_DIR)
-INST_BIN_DIR="/base/apps/${host}-${BUILD_MODE}/${PACKAGE}-${VERSION}/bin"
-AC_DEFINE_UNQUOTED(INST_BIN_DIR, "$INST_BIN_DIR", 
-                   [Name of directory where installed binaries live.])
+# AC_SUBST(INST_BIN_DIR)
+# INST_BIN_DIR="/base/apps/${host}-${BUILD_MODE}/${PACKAGE}-${VERSION}/bin"
+# AC_DEFINE_UNQUOTED(INST_BIN_DIR, "$INST_BIN_DIR", 
+#                    [Name of directory where installed binaries live.])
 
-AC_SUBST(HTML_DOCS_DIR)
-HTML_DOCS_DIR="/base/apps/${host}-${BUILD_MODE}/${PACKAGE}-${VERSION}/share/doc/html"
-AC_DEFINE_UNQUOTED(HTML_DOCS_DIR, "$HTML_DOCS_DIR",
-                   [Name of HTML documentation directory.])
+# AC_SUBST(HTML_DOCS_DIR)
+# HTML_DOCS_DIR="/base/apps/${host}-${BUILD_MODE}/${PACKAGE}-${VERSION}/share/doc/html"
+# AC_DEFINE_UNQUOTED(HTML_DOCS_DIR, "$HTML_DOCS_DIR",
+#                    [Name of HTML documentation directory.])
 
 
 
@@ -734,6 +734,7 @@ AC_CONFIG_FILES([
   data/splash/Makefile
 
   data/fonts/Makefile
+  data/fonts/clean-fonts.bash
   data/fonts/gen-fonts.bash
   data/fonts/install-fonts.bash 
 
@@ -750,7 +751,6 @@ AC_CONFIG_FILES([
   src/database/scripts/dbstop
 
   src/database/share/Makefile
-  src/database/share/dbinit.sql
   src/database/share/postgresql.conf
 
   src/java/Makefile

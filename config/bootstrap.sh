@@ -9,6 +9,8 @@ popd
 
 pushd i686-pc-linux-gnu-dbg
   /home/$USER/code/src/pipeline/configure \
+    --prefix=/base/pipeline \
+    --datadir=/usr/share/pipeline \
     --disable-opt \
     --with-compiler=GNU \
     --with-base=/base \
@@ -23,7 +25,8 @@ popd
 #     --enable-opt \
 #     --with-base=/base \
 #     --with-sql-server=linuxserv1 \
-#     --with-pbs-server=linuxserv1
+#     --with-pbs-server=linuxserv1 \
+#     --with-javamake=/usr/java/javamake/lib/javamake.jar
 # popd
 
 # pushd i686-pc-linux-gnu-prof

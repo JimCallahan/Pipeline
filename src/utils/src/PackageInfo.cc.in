@@ -1,4 +1,4 @@
-// $Id: PackageInfo.cc.in,v 1.4 2003/07/10 00:49:53 jim Exp $
+// $Id: PackageInfo.cc.in,v 1.5 2003/07/28 21:55:43 jim Exp $
 
 #include <PackageInfo.hh>
 
@@ -35,21 +35,20 @@ const char* PackageInfo::sPbsServer = "@PBS_SERVER@";
 /* root directory of the production heirarchy */ 
 const char* PackageInfo::sBaseDir = "@BASEDIR@"; 
 
+
 /* base repository directory */ 
 const char* PackageInfo::sRepoDir = "@BASEDIR@/prod/repository";
 
 /* base working area directory */ 
 const char* PackageInfo::sWorkDir = "@BASEDIR@/prod/working";
 
+
 /* installed toolset directory */ 
 const char* PackageInfo::sToolsetDir = "@BASEDIR@/toolset/toolsets";
 
-/* installed location of the toolset-exec program */ 
-const char* PackageInfo::sToolsetExec = "@BASEDIR@/toolset/sbin/toolset-exec";
-
 
 /* installed documentation directory */ 
-const char* PackageInfo::sDocsDir = "@BASEDIR@/pipeline/share/docs"; 
+const char* PackageInfo::sDocsDir = "@datadir@/docs"; 
 
 /* location of the Mozilla web browser */ 
 const char* PackageInfo::sMozilla = "@MOZILLA@";

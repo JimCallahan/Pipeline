@@ -1,7 +1,6 @@
 #!/bin/sh
 
-exec java -Djava.util.logging.config.file=@BASEDIR@/pipeline/share/logger.properties \
-          @JAVA_RUNTIME_FLAGS@ \
-          -cp @BASEDIR@/pipeline/share/jar/pipeline.jar:@JDBC_JAR@:@BASEDIR@ \
+exec java -Djava.util.logging.config.file=@datadir@/logger.properties \
+          @JAVA_RUNTIME_FLAGS@ -cp @prefix@/jar/pipeline.jar:@JDBC_JAR@:@prefix@/.. \
           pipeline/GraphicalApp "$@"
 

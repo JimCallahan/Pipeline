@@ -1,5 +1,5 @@
 
-instbindir  = @BASEDIR@/pipeline/sbin
+instbindir  = @sbindir@
 
 instbin_PROGRAMS = \
   plput 

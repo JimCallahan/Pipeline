@@ -1,5 +1,5 @@
 
-instbindir = @BASEDIR@/pipeline/bin
+instbindir = @bindir@
 
 instbin_SCRIPTS = \
   pipeline \
