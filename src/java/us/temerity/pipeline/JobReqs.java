@@ -1,4 +1,4 @@
-// $Id: JobReqs.java,v 1.11 2004/12/07 04:55:12 jim Exp $
+// $Id: JobReqs.java,v 1.12 2005/02/01 23:23:43 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -139,10 +139,12 @@ class JobReqs
    *    eligable host.
    * 
    * @param licenseKeys 
-   *    The set of license keys an eligable host is required to have.
+   *    The set of license keys an eligable host is required to have or <CODE>null</CODE>
+   *    for none.
    * 
    * @param selectionKeys 
-   *   The set of selection keys an eligable host is required to have.
+   *   The set of selection keys an eligable host is required to have or <CODE>null</CODE>
+   *   for none.
    */ 
   public 
   JobReqs
@@ -163,8 +165,13 @@ class JobReqs
     setMinMemory(minMemory);
     setMinDisk(minDisk);
 
-    pLicenseKeys   = new HashSet<String>(licenseKeys);
-    pSelectionKeys = new HashSet<String>(selectionKeys);
+    pLicenseKeys = new HashSet<String>();
+    if(licenseKeys != null) 
+      pLicenseKeys.addAll(licenseKeys);
+
+    pSelectionKeys = new HashSet<String>();
+    if(selectionKeys != null) 
+      pSelectionKeys.addAll(selectionKeys);
   }
 
   
