@@ -1,4 +1,4 @@
-// $Id: NodeRequest.java,v 1.7 2004/04/20 22:01:35 jim Exp $
+// $Id: NodeRequest.java,v 1.8 2004/04/24 22:41:22 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -26,6 +26,7 @@ package us.temerity.pipeline.message;
  * @see NodeRevokeReq
  * @see NodeRenameReq
  * @see NodeCheckInReq
+ * @see NodeCheckOutReq
  * 
  */
 public
@@ -79,6 +80,11 @@ enum NodeRequest
    * An instance of {@link NodeCheckInReq NodeCheckInReq} is next.
    */
   CheckIn, 
+
+  /**
+   * An instance of {@link NodeCheckOutReq NodeCheckOutReq} is next.
+   */
+  CheckOut, 
 
   // ...
 

@@ -1,4 +1,4 @@
-// $Id: NodeMgrServer.java,v 1.10 2004/04/20 21:55:28 jim Exp $
+// $Id: NodeMgrServer.java,v 1.11 2004/04/24 22:41:22 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -343,6 +343,14 @@ class NodeMgrServer
 	    {
 	      NodeCheckInReq req = (NodeCheckInReq) objIn.readObject();
 	      objOut.writeObject(pNodeMgr.checkIn(req));
+	      objOut.flush(); 
+	    }
+	    break;
+	    
+	  case CheckOut:
+	    {
+	      NodeCheckOutReq req = (NodeCheckOutReq) objIn.readObject();
+	      objOut.writeObject(pNodeMgr.checkOut(req));
 	      objOut.flush(); 
 	    }
 	    break;
