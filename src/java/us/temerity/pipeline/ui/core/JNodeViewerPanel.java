@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.21 2005/03/14 16:08:21 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.22 2005/03/15 19:13:37 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -4991,6 +4991,8 @@ class JNodeViewerPanel
 	      try {
 		MasterMgrClient client = master.getMasterMgrClient();
 		links = client.getCheckedInLinks(pStatus.getName());
+		if(offline == null) 
+		  offline = client.getOfflineVersionIDs(pStatus.getName());
 	      }
 	      catch(PipelineException ex) {
 		master.showErrorDialog(ex);
@@ -5156,7 +5158,7 @@ class JNodeViewerPanel
 	if(panel != null) {
 	  panel.updateNodeStatus(pAuthor, pView, pStatus, 
 				 pEditorPlugins, pEditorMenuLayout, 
-				 pLinks);
+				 pLinks, pOffline);
 	  panel.updateManagerTitlePanel();
 	}
       }
