@@ -1,4 +1,4 @@
-// $Id: PlNotify.cc,v 1.8 2004/07/14 20:43:43 jim Exp $
+// $Id: PlNotify.cc,v 1.9 2004/07/21 07:18:22 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -102,7 +102,7 @@ main
     char rflags[1024];
     if(strcmp("dbg", PackageInfo::sBuildMode) == 0) {
       sprintf(rflags, "%s %s", 
-	      "-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=43003", 
+	      PackageInfo::sPlNotifyDebugOpts, 
 	      PackageInfo::sJavaRuntimeFlags);
     }
     else {
