@@ -1,4 +1,4 @@
-// $Id: NodeCommon.java,v 1.3 2004/03/09 09:43:16 jim Exp $
+// $Id: NodeCommon.java,v 1.4 2004/03/11 10:56:07 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -99,7 +99,8 @@ class NodeCommon
   {
     super(name);
 
-    File path = new File(pName);
+    validateName(name);
+    File path = new File(name);
 
     {
       if(primary == null) 
@@ -449,6 +450,64 @@ class NodeCommon
     }
   }
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Verify that the given fully resolved node name is legal.
+   * 
+   * @param name [<B>in</B>]
+   *   The fully resolved node name.
+   * 
+   * @throws IllegalArgumentException
+   *   If the name is illegal.
+   */
+  protected void 
+  validateName
+  (
+   String name
+  )  
+  {
+    if(name == null) 
+      throw new IllegalArgumentException("The node name cannot be (null)!");
+      
+    if(name.length() == 0) 
+      throw new IllegalArgumentException("The node name cannot be empty!");
+
+    if(name.endsWith("/")) 
+      throw new IllegalArgumentException
+	("The node name (" + name + ") cannot end with a (/) character!");
+
+    String parts[] = name.split("/");
+
+    if(parts[0].length() != 0) 
+      throw new IllegalArgumentException("The node name (" + name + ") was not absolute!");
+
+    int wk;
+    for(wk=1; wk<parts.length; wk++) {
+      if(parts[wk].length() == 0) 
+ 	throw new IllegalArgumentException
+ 	  ("The node name (" + name + ") cannot contain repeated (/) characters!");
+      
+      char cs[] = parts[wk].toCharArray();
+      if(!Character.isLetter(cs[0]))
+ 	throw new IllegalArgumentException
+ 	  ("The first character the node name component (" + parts[wk] + ") was not " + 
+ 	   "a letter!");
+      
+      int ck;
+      for(ck=1; ck<cs.length; ck++) {
+	if(!(Character.isLetterOrDigit(cs[ck]) ||
+	     (cs[ck] == '_') || (cs[ck] == '-')))
+	  throw new IllegalArgumentException
+	    ("The node name component (" + parts[wk] + ") contained illegal characters!");
+      }
+    }
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/
