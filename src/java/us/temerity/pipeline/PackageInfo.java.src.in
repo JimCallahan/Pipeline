@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.8 2005/01/15 02:47:11 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.9 2005/02/22 18:16:33 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -208,13 +208,6 @@ class PackageInfo
 
 
   /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * The directory which contains the installed toolsets for this site. <P> 
-   *
-   * Set by appending "/toolsets" to value of the ToolsetDirectory customer profile entry.
-   */ 
-  public static final File sToolsetDir = new File("@TOOLSETDIR@", "toolsets");
 
   /** 
    * The directory which contains the home directories for users for this site. <P> 
