@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.11 2004/09/11 15:10:34 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.12 2004/09/13 04:03:39 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -2509,6 +2509,7 @@ class JQueueJobViewerPanel
 	    
 	    /* get the primary file sequence */ 
 	    FileSeq fseq = null;
+	    File dir = null; 
 	    {
 	      String path = null;
 	      {
@@ -2519,10 +2520,11 @@ class JQueueJobViewerPanel
 	      }
 
 	      fseq = new FileSeq(path, pJobStatus.getTargetSequence());
+	      dir = new File(path);
 	    }
 	    
 	    /* start the editor */ 
-	    proc = editor.launch(fseq, env, PackageInfo.sTempDir);	   
+	    proc = editor.launch(fseq, env, dir);
 	  }
 	  catch(PipelineException ex) {
 	    master.showErrorDialog(ex);

@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.10 2004/09/11 14:16:42 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.11 2004/09/13 04:03:38 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1989,9 +1989,15 @@ class JNodeFilesPanel
 	      env.put("HOME", PackageInfo.sHomeDir + "/" + PackageInfo.sUser);
 	      env.put("USER", PackageInfo.sUser);
 	    }
+
+	    File dir = null;
+	    {
+	      File path = new File(pFileSeq.getFilePattern().getPrefix());
+	      dir = path.getParentFile();
+	    }
 	    
 	    /* start the editor */ 
-	    proc = editor.launch(pFileSeq, env, PackageInfo.sTempDir);	   
+	    proc = editor.launch(pFileSeq, env, dir);	   
 	  }
 	  catch(PipelineException ex) {
 	    master.showErrorDialog(ex);
