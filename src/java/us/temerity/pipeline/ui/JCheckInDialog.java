@@ -1,4 +1,4 @@
-// $Id: JCheckInDialog.java,v 1.2 2004/06/28 00:13:56 jim Exp $
+// $Id: JCheckInDialog.java,v 1.3 2004/07/07 13:23:38 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -33,8 +33,8 @@ class JCheckInDialog
   public 
   JCheckInDialog() 
   {
-    super("Check-In Node", "Check-In");
-    setResizable(false);
+    super("Check-In Node", "Check-In", true);
+    //setResizable(false);
   }
 
 

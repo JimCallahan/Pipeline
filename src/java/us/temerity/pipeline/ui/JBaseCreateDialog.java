@@ -1,4 +1,4 @@
-// $Id: JBaseCreateDialog.java,v 1.4 2004/06/28 00:13:03 jim Exp $
+// $Id: JBaseCreateDialog.java,v 1.5 2004/07/07 13:23:38 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -45,11 +45,12 @@ class JBaseCreateDialog
   (
    Dialog owner,
    String title, 
-   String confirm
+   String confirm, 
+   boolean isScrolled
   ) 
   {
     super(owner, title, true);
-    initUI(confirm);
+    initUI(confirm, isScrolled);
   }
 
   /**
@@ -65,11 +66,12 @@ class JBaseCreateDialog
   JBaseCreateDialog
   (
    String title, 
-   String confirm
+   String confirm, 
+   boolean isScrolled
   ) 
   {
     super(title, true);
-    initUI(confirm);
+    initUI(confirm, isScrolled);
   }
 
 
@@ -84,7 +86,8 @@ class JBaseCreateDialog
   private void 
   initUI
   (
-   String confirm
+   String confirm, 
+   boolean isScrolled
   ) 
   {
     /* create dialog body components */ 
@@ -116,7 +119,7 @@ class JBaseCreateDialog
 	UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
 
 	ArrayList<String> versions = new ArrayList<String>();
-	versions.add("v1.0.0.0 (Initial)");
+	versions.add("v1.0.0 (Initial)");
 	pNewVersionField = 
 	  UIMaster.createTitledCollectionField(tpanel, "New Version:", sTSize, 
 					       vpanel, versions, sVSize);
@@ -126,12 +129,12 @@ class JBaseCreateDialog
 	{
 	  JTextArea area = 
 	    UIMaster.createTitledEditableTextArea(tpanel, "Description:", sTSize, 
-						  vpanel, "", sVSize, 5);
+						  vpanel, "", sVSize, 5, isScrolled);
 	  pDescriptionArea = area;
 	  area.getDocument().addDocumentListener(this);
 	}
 
-	UIMaster.addVerticalGlue(tpanel, vpanel);
+	tpanel.add(Box.createVerticalGlue());
       }
 
       super.initUI("X", true, body, confirm, null, null, "Cancel");
@@ -199,7 +202,7 @@ class JBaseCreateDialog
       pLatestVersionField.setText("-");
 
       ArrayList<String> versions = new ArrayList<String>();
-      versions.add("v1.0.0.0 (Initial)");
+      versions.add("v1.0.0 (Initial)");
       pNewVersionField.setValues(versions);
     }
     else {

@@ -1,4 +1,4 @@
-// $Id: JCreateToolsetDialog.java,v 1.1 2004/06/03 09:30:32 jim Exp $
+// $Id: JCreateToolsetDialog.java,v 1.2 2004/07/07 13:23:38 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -64,7 +64,7 @@ class JCreateToolsetDialog
 	{
 	  JTextArea area = 
 	    UIMaster.createTitledEditableTextArea(tpanel, "Description:", sTSize, 
-						  vpanel, "", sVSize, 5);
+						  vpanel, "", sVSize, 5, false);
 	  pDescriptionArea = area;
 	  area.getDocument().addDocumentListener(this);
 	}
