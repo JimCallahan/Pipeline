@@ -7,6 +7,7 @@ tmpfile="filter-textures.scm"
 
 rm -f $tmpfile
 echo '(load "'$src/../../../scripts/build-mipmap.scm'")' > $tmpfile
+echo '(load "'$src/../../../scripts/scale-convert.scm'")' >> $tmpfile
 
 anynewer=0
 for mode in Normal Selected Primary
@@ -47,6 +48,32 @@ do
     done
   done
 
+  frame=0
+  for nstate in Pending CheckedIn Identical NeedsCheckOut Modified Conflicted ModifiedLinks \
+                Missing Added Obsolete 
+  do
+    for qstate in Stale Queued Running Missing Failed Finished Undefined
+    do
+      simg=`printf "%s.%04d.sgi" $src/$mode $frame`
+      dir=`echo $dest/$nstate-$qstate-$mode`
+
+      if [ ! -d $dir ]
+      then 
+        mkdir -p $dir
+      fi
+
+      dimg=$dir/texture.21.png
+      if [ $simg -nt $dimg ] 
+      then
+        printf '(scale-convert "%s" "%s" 21)\n' $simg $dimg >> $tmpfile
+        anynewer=1
+      fi
+    
+      frame=$(($frame + 1))	
+    done
+  done
+
+  frame=70
   for extra in Blank Collapsed
   do 
     simg=`printf "%s.%04d.sgi" $src/$mode $frame`
@@ -80,6 +107,27 @@ do
 
     frame=$(($frame + 1))
   done
+
+  frame=70
+  for extra in Blank Collapsed
+  do 
+    simg=`printf "%s.%04d.sgi" $src/$mode $frame`
+    dir=`echo $dest/$extra-$mode`
+
+    if [ ! -d $dir ]
+    then 
+      mkdir -p $dir
+    fi
+
+    dimg=$dir/texture.21.png
+    if [ $simg -nt $dimg ] 
+    then
+      printf '(scale-convert "%s" "%s" 21)\n' $simg $dimg >> $tmpfile
+      anynewer=1
+    fi
+    
+    frame=$(($frame + 1))	
+  done  
 done
 
 frame=0
