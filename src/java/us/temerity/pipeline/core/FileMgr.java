@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.35 2005/03/14 16:08:21 jim Exp $
+// $Id: FileMgr.java,v 1.36 2005/03/15 19:11:00 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2220,7 +2220,7 @@ class FileMgr
 	  File target = null;
 	  for(VersionID lvid : symlinks.get(file)) {
 	    if(target == null) {
-	      target = new File(nodeDir, lvid + "/" + file);
+	      target = new File("../" + lvid + "/" + file);
 
 	      TreeSet<File> targets = moves.get(lvid);
 	      if(targets == null) {
