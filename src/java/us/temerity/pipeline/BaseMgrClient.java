@@ -1,4 +1,4 @@
-// $Id: BaseMgrClient.java,v 1.4 2004/07/24 18:17:23 jim Exp $
+// $Id: BaseMgrClient.java,v 1.5 2004/07/28 19:11:30 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -66,8 +66,37 @@ class BaseMgrClient
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*  O P S                                                                                 */
+  /*  C O N N E C T I O N                                                                   */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Make sure the network connection to the server instance has been established.  If the 
+   * connection is down, try to reconnect.
+   * 
+   * @throws PipelineException
+   *   If the connection is down and cannot be reestablished. 
+   */
+  public synchronized void 
+  verifyConnection() 
+    throws PipelineException 
+  {
+    if((pSocket != null) && pSocket.isConnected())
+      return;
+
+    try {
+      pSocket = new Socket(pHostname, pPort);
+    }
+    catch (IOException ex) {
+      throw new PipelineException
+	("IO problems on port (" + pPort + "):\n" + 
+	 ex.getMessage());
+    }
+    catch (SecurityException ex) {
+      throw new PipelineException
+	("The Security Manager doesn't allow socket connections!\n" + 
+	 ex.getMessage());
+    }
+  }
 
   /**
    * Close the network connection if its is still connected.
@@ -131,35 +160,6 @@ class BaseMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Make sure the network connection to the server instance has been established.  If the 
-   * connection is down, try to reconnect.
-   * 
-   * @throws PipelineException
-   *   If the connection is down and cannot be reestablished. 
-   */
-  protected synchronized void 
-  verifyConnection() 
-    throws PipelineException 
-  {
-    if((pSocket != null) && pSocket.isConnected())
-      return;
-
-    try {
-      pSocket = new Socket(pHostname, pPort);
-    }
-    catch (IOException ex) {
-      throw new PipelineException
-	("IO problems on port (" + pPort + "):\n" + 
-	 ex.getMessage());
-    }
-    catch (SecurityException ex) {
-      throw new PipelineException
-	("The Security Manager doesn't allow socket connections!\n" + 
-	 ex.getMessage());
-    }
-  }
-
-  /**
    * Send the given request to the server instance and wait for the response.
    * 
    * @param kind 
@@ -195,13 +195,13 @@ class BaseMgrClient
       return (objIn.readObject());
     }
     catch(IOException ex) {
-      shutdown();
+      disconnect();
       throw new PipelineException
 	("IO problems on port (" + pPort + "):\n" + 
 	 ex.getMessage());
     }
     catch(ClassNotFoundException ex) {
-      shutdown();
+      disconnect();
       throw new PipelineException
 	("Illegal object encountered on port (" + pPort + "):\n" + 
 	 ex.getMessage());  
