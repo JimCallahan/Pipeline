@@ -1,4 +1,4 @@
-// $Id: BaseMgrClient.java,v 1.17 2005/02/18 23:39:33 jim Exp $
+// $Id: BaseMgrClient.java,v 1.18 2005/03/15 19:08:49 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -266,6 +266,12 @@ class BaseMgrClient
       if(req != null) 
 	objOut.writeObject(req);
       objOut.flush(); 
+
+      try {
+	Thread.sleep(1000);
+      }
+      catch(InterruptedException ex) {
+      }
 
       pSocket.close();
     }

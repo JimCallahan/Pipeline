@@ -1481,8 +1481,7 @@ Commands()
    SuffixEditorCmds() | ViewCmds() | 
    WorkingCmds() | CheckedInCmds() | NodeCmds()) 
   {
-    pMasterMgrClient.disconnect();
-    pQueueMgrClient.disconnect();
+    disconnect();
   }
 }
     
@@ -1524,8 +1523,7 @@ Batch()
 {
   (BatchOpt())
   {
-    pMasterMgrClient.disconnect();
-    pQueueMgrClient.disconnect();
+    disconnect();
   }
 }
 
@@ -2060,6 +2058,9 @@ AdminShutdown()
 {
   <SHUTDOWN> AE() (ShutdownOpts())* 
   {
+    if(pQueueMgrClient != null) 
+      pQueueMgrClient.disconnect();
+
     if(pShutdownJobMgrs || pShutdownPluginMgr) 
       pMasterMgrClient.shutdown(pShutdownJobMgrs, pShutdownPluginMgr);
     else 
@@ -2069,6 +2070,15 @@ AdminShutdown()
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        "Shutting Down...");
     LogMgr.getInstance().flush();
+
+    /* give the sockets time to disconnect cleanly */ 
+    try {
+      Thread.sleep(1000);
+    }
+    catch(InterruptedException ex) {
+    }
+
+    System.exit(0);
   }
 }
 
@@ -2249,7 +2259,7 @@ AdminOffline()
   throws PipelineException : 
 {
   pArchivePattern    = null;
-  pExcludeLatest     = 10; 
+  pExcludeLatest     = 0; 
   pMinArchives       = 2; 
 }
 {
