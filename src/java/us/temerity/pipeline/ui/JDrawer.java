@@ -1,4 +1,4 @@
-// $Id: JDrawer.java,v 1.1 2004/06/14 22:55:00 jim Exp $
+// $Id: JDrawer.java,v 1.2 2004/06/19 00:33:10 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -215,6 +215,30 @@ class JDrawer
   ) 
   {
     pHeader.addActionListener(l);
+  }
+
+  /**
+   * Removes an ActionListener from the drawer. <P> 
+   */ 
+  public void 
+  removeActionListener
+  (
+   ActionListener l
+  )
+  {
+    pHeader.removeActionListener(l);
+  }
+  
+  /**
+   * Sets the action command for this drawer. <P> 
+   */
+  public void 
+  setActionCommand
+  (
+   String cmd
+  )
+  {
+    pHeader.setActionCommand(cmd);
   }
 
 
