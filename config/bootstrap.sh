@@ -14,7 +14,7 @@ pushd i686-pc-linux-gnu-dbg
     --disable-opt \
     --with-compiler=GNU \
     --with-crypto-app=$HOME/code2/src/pipeline/plconfig \
-    --with-customer=temerity \
+    --with-customer=testing \
     --with-customer-profile=$plprofile
 popd
 
