@@ -1,3 +1,78 @@
+2004-03-10  Jim Callahan  <jim@salamander>
+
+	* ChangeLog, src/java/us/temerity/pipeline/tests/Makefile.in, src/java/us/temerity/pipeline/tests/TestCheckSumApp.java, src/java/us/temerity/pipeline/tests/TestNodeIDApp.java:
+	updated for new configure optionssrc/java/us/temerity/pipeline/tests/Makefile.in
+
+	* src/java/us/temerity/pipeline/plugin/Makefile.in:
+	updated for new configure options
+
+	* src/java/us/temerity/pipeline/message/FileStateRsp.java: comments
+
+	* src/java/us/temerity/pipeline/message/FileStateReq.java:
+	added VersionState
+
+	* src/java/us/temerity/pipeline/FileMgr.java, src/java/us/temerity/pipeline/FileMgrClient.java, src/java/us/temerity/pipeline/FileMgrServer.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/NodeMgr.java:
+	moved node file related comments over to FileMgr
+
+	* src/java/us/temerity/pipeline/NodeID.java:
+	replaced getDir() and getBase() with getParent(), getWorkingDir() and getCheckedInDir()
+
+	* src/java/us/temerity/pipeline/FileState.java:
+	added the Obsolete state, comment changes
+
+	* src/java/us/temerity/pipeline/CheckSum.java:
+	the root checksum directory is now derived from the root production directory
+
+	* src/java/testbed/Makefile.in, src/java/testbed/PackageInfo.java.in, src/java/us/temerity/pipeline/Makefile.in, src/java/us/temerity/pipeline/PackageInfo.java.in, src/utils/src/PackageInfo.cc.in, src/utils/src/PackageInfo.hh:
+	updated for new configure options
+
+	* docs/man/plfs.html.in, docs/misc/file-state.txt, docs/misc/locking.txt, docs/misc/plfs.txt:
+	initial revision
+
+	* configure.ac:
+	replaced --with-pl-server and --with-pl-port options with --with-master-server, --with-master-port, --with-file-server and --with-file-port options
+
+2004-03-09  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/message/FailureRsp.java, src/java/us/temerity/pipeline/message/FileCheckInReq.java, src/java/us/temerity/pipeline/message/FileCheckOutReq.java, src/java/us/temerity/pipeline/message/FileCheckSumReq.java, src/java/us/temerity/pipeline/message/FileFreezeReq.java, src/java/us/temerity/pipeline/message/FileStateReq.java, src/java/us/temerity/pipeline/message/FileStateRsp.java, src/java/us/temerity/pipeline/message/FileUnfreezeReq.java, src/java/us/temerity/pipeline/message/SuccessRsp.java:
+	initial revision
+
+	* docs/javadoc/Makefile.in, src/java/us/temerity/pipeline/Makefile.in:
+	added support for the "message" subpackage
+
+	* src/java/us/temerity/pipeline/NodeMgr.java:
+	converted per-file state from HashMap to TreeMap in WorkingBundle
+
+	* src/java/us/temerity/pipeline/NodeCommon.java: added getSequences()
+
+	* src/java/us/temerity/pipeline/Named.java: indentation
+
+	* src/java/us/temerity/pipeline/FileState.java: comments
+
+	* src/java/us/temerity/pipeline/tests/TestCheckSumApp.java:
+	full suite of tests complete
+
+	* src/java/us/temerity/pipeline/CheckSum.java: comments
+
+	* src/java/us/temerity/pipeline/tests/Makefile.in: added CheckSum test
+
+	* src/java/us/temerity/pipeline/Plugins.java: comments
+
+	* src/java/us/temerity/pipeline/PackageInfo.java.in:
+	added sProdDir and sCheckSumDir
+
+	* src/java/us/temerity/pipeline/NodeMod.java:
+	changed setName() to rename(), added setToolset() and setProperties()
+
+	* src/java/us/temerity/pipeline/NodeMgr.java:
+	reorganized the node related directory structure, added checksums, implemented getNodeMod(), modifyNodeProperties(), getWorkingBundle()
+
+	* src/java/us/temerity/pipeline/CheckSum.java, src/java/us/temerity/pipeline/tests/TestCheckSumApp.java:
+	initial revision
+
 2004-03-09  Jim Callahan  <jim@salamander>
 
 	* src/java/us/temerity/pipeline/message/FailureRsp.java, src/java/us/temerity/pipeline/message/FileCheckInReq.java, src/java/us/temerity/pipeline/message/FileCheckOutReq.java, src/java/us/temerity/pipeline/message/FileCheckSumReq.java, src/java/us/temerity/pipeline/message/FileFreezeReq.java, src/java/us/temerity/pipeline/message/FileStateReq.java, src/java/us/temerity/pipeline/message/FileStateRsp.java, src/java/us/temerity/pipeline/message/FileUnfreezeReq.java, src/java/us/temerity/pipeline/message/SuccessRsp.java:
