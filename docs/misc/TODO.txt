@@ -29,37 +29,22 @@ OPERATIONS/BACKEND:
 - Add "Delete Job Group" and "Delete Finished Job Groups" operations.  QueueJobGroups with 
   unfinished jobs cannot be deleted until the jobs are completed (Finished, Killed, Aborted).
 
+- Task/Scheduling System
+
+
+ADMIN: 
+
 - Should there be an automatic delete of finished QueueJobGroups older than a certain number
   of days?
 
-- Add garbage collection of QueueJobs not referenced by any QueueJobGroup or job belonging 
-  to a group.  This should be run on QueueMgr startup and incrementally every X number of 
-  dispatcher cycles.
-
-  A mark and sweep approach should be used in which all jobs are added to a dead list.
-  Then the jobs belonging to a QueueGroup and their source jobs are recursively traversed and
-  removed from the dead list.  All jobs remaining on the dead list are then remove from the 
-  jobs/info tables and the file associated files deleted.  If the JobMgr which ran the job
-  is running, it should be told to delete all files associated with the deleted job as well.
-
-  Decide how to handle the files created by the JobMgr for a job which are not deleted 
-  because the JobMgr was not running when the job was deleted.  Maybe the QueueMgr give
-  the JobMgr a list of job IDs which are not still valid on startup and have the JobMgr
-  remove any files associated with jobs not on this list during initialization.
-
-- QueueMgr job/info/group tables are currently based on a lazy read metaphor.  This should be 
-  simplified since all files are read at startup.  The tables should always match the disk 
-  representation so that no key has a (null) value.  In other words, every table entry will 
-  have a disk file and visa versa.  When a table entry is removed, the associated disk file 
-  should be deleted.
-
 - Automated cleanup of Job Server sample files older than a given interval.
-
-- Task/Scheduling System
 
 - Automated Backup of Node/Queue database and production working areas.
 
 - Node and File Online/Offline System
+
+- Rotating log files.
+
 
 
 
@@ -89,8 +74,12 @@ USER INTERFACE:
 
 - Add Tooltips in JobViewer that display the "[123] PrimaryTarget.#.gif" title. 
 
+- Add rubberband selection of job groups.
+
 - Add "Edit" and "Edit With..." items to the JobMenu in the JobViewer.  
   Use MastMgrClient.getWorkingVersion(job.getNodID()) determing the default editor.
+
+- STDOUT/STDERR dialogs for jobs.
 
 
 
