@@ -1,4 +1,4 @@
-// $Id: JNodeHistoryPanel.java,v 1.7 2004/10/04 16:06:53 jim Exp $
+// $Id: JNodeHistoryPanel.java,v 1.8 2004/10/24 05:24:58 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -186,6 +186,7 @@ class JNodeHistoryPanel
 	
 	{
 	  JScrollPane scroll = new JScrollPane(vbox);
+	  pScroll = scroll;
 	  
 	  scroll.setHorizontalScrollBarPolicy
 	    (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -506,6 +507,8 @@ class JNodeHistoryPanel
     }
       
     pMessageBox.revalidate();
+
+    SwingUtilities.invokeLater(new ScrollTask());
   }
 
 
@@ -947,6 +950,29 @@ class JNodeHistoryPanel
   /*----------------------------------------------------------------------------------------*/
   
   /** 
+   * Scrolls to the top check-in message.
+   */ 
+  private
+  class ScrollTask
+    extends Thread
+  {
+    public 
+    ScrollTask()
+    {
+      super("JNodeHistoryPanel:ScrollTask");
+    }
+
+    public void 
+    run() 
+    {    
+      pScroll.getViewport().setViewPosition(new Point());
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
    * Edit/View the primary file sequence of the given node version.
    */ 
   private
@@ -1197,10 +1223,14 @@ class JNodeHistoryPanel
    */ 
   private JTextField pNodeNameField;
 
-
   /**
    * The log message container.
    */ 
   private Box  pMessageBox;
+
+  /**
+   * The scroll panel containing the messages.
+   */ 
+  private JScrollPane  pScroll; 
 
 }
