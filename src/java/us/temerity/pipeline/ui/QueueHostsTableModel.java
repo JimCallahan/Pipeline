@@ -1,4 +1,4 @@
-// $Id: QueueHostsTableModel.java,v 1.4 2004/08/30 02:54:30 jim Exp $
+// $Id: QueueHostsTableModel.java,v 1.5 2004/09/14 02:22:28 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -474,17 +474,40 @@ class QueueHostsTableModel
    int col
   ) 
   {
-    int idx = pRowToIndex[row];
-    QueueHost host = pQueueHosts.get(idx);
+    int vrow = pRowToIndex[row];
+    boolean edited = setValueAtHelper(value, vrow, col);
+    
+    int[] selected = pTable.getSelectedRows(); 
+    int wk;
+    for(wk=0; wk<selected.length; wk++) {
+      int srow = pRowToIndex[selected[wk]];
+      if(srow != vrow)
+	setValueAtHelper(value, srow, col);
+    }
+
+    if(edited) {
+      fireTableDataChanged();
+      pParent.doEdited(); 
+    }
+  }
+
+  public boolean 
+  setValueAtHelper
+  (
+   Object value, 
+   int srow, 
+   int col
+  ) 
+  {
+    QueueHost host = pQueueHosts.get(srow);
     switch(col) {
     case 1:
       {
 	host.setStatus(QueueHost.Status.valueOf(QueueHost.Status.class, (String) value));
 
-	pEditedStatusIndices.add(idx);
-	pParent.doEdited(); 
+	pEditedStatusIndices.add(srow);
+	return true;
       }
-      break;
 
     case 2:
       {
@@ -493,10 +516,9 @@ class QueueHostsTableModel
 	  author = null;
 	host.setReservation(author);
 
-	pEditedReserveIndices.add(idx);
-	pParent.doEdited(); 
+	pEditedReserveIndices.add(srow);
+	return true;
       }
-      break;
 
     case 7:
       {
@@ -504,11 +526,9 @@ class QueueHostsTableModel
 	if((slots != null) && (slots >= 0)) 
 	  host.setJobSlots(slots);
 
-	pEditedSlotsIndices.add(idx);
-	pParent.doEdited(); 
+	pEditedSlotsIndices.add(srow);
+	return true; 
       }
-      break;
-
       
     default:
       if(col > 7) {
@@ -517,17 +537,19 @@ class QueueHostsTableModel
 	  Integer bias = (Integer) value;
 	  if(bias == null) {
 	    host.removeSelectionKey(kname); 
-	    pEditedBiasesIndices.add(idx);
-	    pParent.doEdited(); 
+	    pEditedBiasesIndices.add(srow);
+	    return true; 
 	  }
 	  else if((bias >= -100) && (bias <= 100)) {
 	    host.addSelectionKey(kname, bias);
-	    pEditedBiasesIndices.add(idx);
-	    pParent.doEdited(); 
+	    pEditedBiasesIndices.add(srow);
+	    return true;
 	  }	  
 	}
       }
     }
+
+    return false;
   }
 
 

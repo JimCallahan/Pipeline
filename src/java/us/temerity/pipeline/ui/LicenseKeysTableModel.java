@@ -1,4 +1,4 @@
-// $Id: LicenseKeysTableModel.java,v 1.3 2004/08/30 02:54:30 jim Exp $
+// $Id: LicenseKeysTableModel.java,v 1.4 2004/09/14 02:22:28 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -245,14 +245,24 @@ class LicenseKeysTableModel
    int col
   ) 
   {
-    LicenseKey key = pLicenseKeys.get(pRowToIndex[row]);
     switch(col) {
     case 3:
       {
 	Integer total = (Integer) value;
-	if(total >= 0)
-	  key.setTotal(total);
+	if(total >= 0) {
+	  int vrow = pRowToIndex[row];
+	  pLicenseKeys.get(vrow).setTotal(total);
 
+	  int[] selected = pTable.getSelectedRows(); 
+	  int wk;
+	  for(wk=0; wk<selected.length; wk++) {
+	    int srow = pRowToIndex[selected[wk]];
+	    if(srow != vrow) 
+	      pLicenseKeys.get(srow).setTotal(total);
+	  }
+	}
+
+	fireTableDataChanged();
 	pParent.doEdited(); 
       }
       break;

@@ -1,4 +1,4 @@
-// $Id: SourceParamsTableModel.java,v 1.4 2004/09/11 14:17:53 jim Exp $
+// $Id: SourceParamsTableModel.java,v 1.5 2004/09/14 02:22:28 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -366,7 +366,19 @@ class SourceParamsTableModel
   ) 
   {
     assert(col > 0);
-    pParams[pRowToIndex[row]][col-1].setValue((Comparable) value);
+    Comparable val = (Comparable) value;
+    int vrow = pRowToIndex[row];
+    pParams[vrow][col-1].setValue(val);
+
+    int[] selected = pTable.getSelectedRows(); 
+    int wk;
+    for(wk=0; wk<selected.length; wk++) {
+      int srow = pRowToIndex[selected[wk]];
+      if((srow != vrow) && (pParams[srow] != null)) 
+	pParams[srow][col-1].setValue(val);	
+    }
+
+    fireTableDataChanged(); 
   }
 
 

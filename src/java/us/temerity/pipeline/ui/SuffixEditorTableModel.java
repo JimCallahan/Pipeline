@@ -1,4 +1,4 @@
-// $Id: SuffixEditorTableModel.java,v 1.6 2004/09/08 19:23:36 jim Exp $
+// $Id: SuffixEditorTableModel.java,v 1.7 2004/09/14 02:22:28 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -298,9 +298,31 @@ class SuffixEditorTableModel
    int col
   ) 
   {
-    SuffixEditor se = pSuffixEditors.get(pRowToIndex[row]);
     String str = (String) value;
 
+    int vrow = pRowToIndex[row];
+    setValueAtHelper(str, vrow, col);
+
+    int[] selected = pTable.getSelectedRows(); 
+    int wk;
+    for(wk=0; wk<selected.length; wk++) {
+      int srow = pRowToIndex[selected[wk]];
+      if(srow != vrow)
+	setValueAtHelper(str, srow, col);
+    }
+
+    fireTableDataChanged();
+  }
+
+  public void 
+  setValueAtHelper
+  (
+   String str, 
+   int srow, 
+   int col
+  ) 
+  {
+    SuffixEditor se = pSuffixEditors.get(srow);
     switch(col) {
     case 1:
       if(str.length() == 0)
