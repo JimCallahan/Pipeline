@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.35 2004/09/11 14:13:49 jim Exp $
+// $Id: MasterMgr.java,v 1.36 2004/09/13 23:43:01 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3476,10 +3476,6 @@ class MasterMgr
 	  throw new PipelineException
 	    ("No new jobs where generated for node (" + status + ") or any node upstream " +
 	     "of this node!");
-	
-	/* submit the jobs */ 
-	for(QueueJob job : jobs.values()) 
-	  pQueueMgrClient.submitJob(job);
 
 	/* generate the root file pattern */ 
 	String rootPattern = null;
@@ -3501,6 +3497,10 @@ class MasterMgr
 			    rootPattern, rootJobIDs, externalIDs, 
 			    new TreeSet<Long>(jobs.keySet()));
 	pQueueMgrClient.groupJobs(group);
+	
+	/* submit the jobs */ 
+	for(QueueJob job : jobs.values()) 
+	  pQueueMgrClient.submitJob(job);
 
 	return new NodeSubmitJobsRsp(timer, group);
       }
@@ -4885,7 +4885,7 @@ class MasterMgr
 			{
 			  Integer offset = link.getFrameOffset();
 			  int idx = wk+offset;
-			  if(((idx >= 0) || (idx < lqs.length)) &&
+			  if(((idx >= 0) && (idx < lqs.length)) &&
 			     ((lqs[idx] != QueueState.Finished) ||
 			      (lstamps[idx] == null) || 
 			      (fileTimeStamps[wk].compareTo(lstamps[idx]) < 0))) 
@@ -4999,7 +4999,7 @@ class MasterMgr
 		{
 		  Integer offset = link.getFrameOffset();
 		  int idx = wk+offset;
-		  if(((idx >= 0) || (idx < lqs.length)) && 
+		  if(((idx >= 0) && (idx < lqs.length)) && 
 		     ((lstamps[idx] != null) && 
 		      ((fileTimeStamps[wk] == null) ||
 		       (fileTimeStamps[wk].compareTo(lstamps[idx]) < 0)))) {
