@@ -1,4 +1,4 @@
-// $Id: QueueRequest.java,v 1.4 2004/07/28 19:09:53 jim Exp $
+// $Id: QueueRequest.java,v 1.5 2004/08/01 15:42:26 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -103,6 +103,12 @@ enum QueueRequest
    * An instance {@link QueueEditHostsReq QueueEditHostsReq} is next.
    */
   EditHosts, 
+  
+  /**
+   * An instance {@link QueueGetHostResourceSamplesReq QueueGetHostResourceSamplesReq} 
+   * is next.
+   */
+  GetHostResourceSamples, 
   
 
   /*----------------------------------------------------------------------------------------*/

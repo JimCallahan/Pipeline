@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.4 2004/07/28 19:18:09 jim Exp $
+// $Id: QueueMgrServer.java,v 1.5 2004/08/01 15:46:51 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -390,6 +390,15 @@ class QueueMgrServer
 	    {
 	      QueueEditHostsReq req = (QueueEditHostsReq) objIn.readObject();
 	      objOut.writeObject(pQueueMgr.editHosts(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case GetHostResourceSamples:
+	    {
+	      QueueGetHostResourceSamplesReq req = 
+		(QueueGetHostResourceSamplesReq) objIn.readObject();
+	      objOut.writeObject(pQueueMgr.getHostResourceSamples(req));
 	      objOut.flush(); 
 	    }
 	    break;
