@@ -1,4 +1,4 @@
-// $Id: QueueEditHostsReq.java,v 1.1 2004/07/28 19:10:23 jim Exp $
+// $Id: QueueEditHostsReq.java,v 1.2 2005/03/04 09:17:58 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -33,6 +33,9 @@ class QueueEditHostsReq
    * @param reservations
    *   The names of reserving users indexed by fully resolved names of the hosts.
    * 
+   * @param orders
+   *   The server dispatch order indexed by fully resolved names of the hosts.
+   * 
    * @param slots 
    *   The number of job slots indexed by fully resolved names of the hosts.
    * 
@@ -44,12 +47,14 @@ class QueueEditHostsReq
   (
    TreeMap<String,QueueHost.Status> status, 
    TreeMap<String,String> reservations, 
+   TreeMap<String,Integer> orders, 
    TreeMap<String,Integer> slots, 
    TreeMap<String,TreeMap<String,Integer>> biases
   )
   { 
     pStatus       = status;
     pReservations = reservations;
+    pJobOrders    = orders;
     pJobSlots     = slots; 
     pBiases       = biases; 
   }
@@ -76,6 +81,15 @@ class QueueEditHostsReq
   getReservations() 
   {
     return pReservations;
+  }
+
+  /**
+   * Gets the server dispatch order indexed by fully resolved names of the hosts.
+   */
+  public TreeMap<String,Integer>
+  getJobOrders() 
+  {
+    return pJobOrders; 
   }
 
   /**
@@ -119,6 +133,11 @@ class QueueEditHostsReq
    * The names of reserving users indexed by fully resolved names of the hosts.
    */ 
   private TreeMap<String,String>  pReservations;
+
+  /**
+   * The server dispatch order indexed by fully resolved names of the hosts.
+   */ 
+  private TreeMap<String,Integer>  pJobOrders;
 
   /**
    * The number of job slots indexed by fully resolved names of the hosts.
