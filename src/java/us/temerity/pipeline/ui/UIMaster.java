@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.6 2004/05/07 21:07:13 jim Exp $
+// $Id: UIMaster.java,v 1.7 2004/05/08 15:10:32 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -6,11 +6,13 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.laf.LookAndFeelLoader;
 
 import java.awt.*;
+import java.awt.event.*;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.locks.*;
 import java.text.*;
 import javax.swing.*;
+import javax.swing.event.*;
 import javax.swing.plaf.basic.*;
 import javax.swing.plaf.synth.*;
 
@@ -24,6 +26,7 @@ import javax.swing.plaf.synth.*;
  */ 
 public 
 class UIMaster
+   implements WindowListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -53,7 +56,7 @@ class UIMaster
     pNodeBrowsers  = new JNodeBrowserPanel[10];
     pNodeViewers   = new JNodeViewerPanel[10];
 
-    SwingUtilities.invokeLater(new SplashFrameTask());
+    SwingUtilities.invokeLater(new SplashFrameTask(this));
   }
 
 
@@ -296,6 +299,18 @@ class UIMaster
   }
 
 
+  /**
+   * Show the information dialog.
+   */ 
+  public void 
+  showAboutDialog()
+  {
+    pAboutDialog.setVisible(true);
+  }
+
+
+
+
   /*----------------------------------------------------------------------------------------*/
   /*   U S E R   I N T E R F A C E                                                          */
   /*----------------------------------------------------------------------------------------*/
@@ -378,6 +393,166 @@ class UIMaster
   }
   
 
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O M P O N E N T   C R E A T I O N                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Create a new label. <P> 
+   * 
+   * See {@link JLabel#setHorizontalAlignment JLabel.setHorizontalAlignment} for valid
+   * values for the <CODE>align</CODE> argument.
+   * 
+   * @param width
+   *   The minimum and preferred width.
+   * 
+   * @param align
+   *   The horizontal alignment.
+   */ 
+  public static JLabel
+  createLabel
+  (
+   String text, 
+   int width,
+   int align
+  )
+  {
+    JLabel label = new JLabel(text);
+
+    Dimension size = new Dimension(width, 19);
+    label.setMinimumSize(size);
+    label.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+    label.setPreferredSize(size);
+    
+    label.setHorizontalAlignment(align);
+    
+    return label;
+  }
+  
+  /**
+   * Create a new non-editable text field.
+   * 
+   * See {@link JLabel#setHorizontalAlignment JLabel.setHorizontalAlignment} for valid
+   * values for the <CODE>align</CODE> argument.
+   * 
+   * @param width
+   *   The minimum and preferred width.
+   * 
+   * @param align
+   *   The horizontal alignment.
+   */ 
+  public static JTextField
+  createTextField
+  (
+   String text, 
+   int width,
+   int align
+  )
+  {
+    JTextField field = new JTextField(text);
+
+    Dimension size = new Dimension(width, 19);
+    field.setMinimumSize(size);
+    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+    field.setPreferredSize(size);
+    
+    field.setHorizontalAlignment(align);
+    field.setEditable(false);
+    
+    return field;
+  }
+
+  /**
+   * Create a new editable text field.
+   * 
+   * See {@link JLabel#setHorizontalAlignment JLabel.setHorizontalAlignment} for valid
+   * values for the <CODE>align</CODE> argument.
+   * 
+   * @param width
+   *   The minimum and preferred width.
+   * 
+   * @param align
+   *   The horizontal alignment.
+   */ 
+  public static JTextField
+  createEditableTextField
+  (
+   String text, 
+   int width,
+   int align
+  )
+  {
+    JTextField field = new JTextField(text);
+    fiels.setName("EditableTextField");
+
+    Dimension size = new Dimension(width, 19);
+    field.setMinimumSize(size);
+    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+    field.setPreferredSize(size);
+    
+    field.setHorizontalAlignment(align);
+    field.setEditable(true);
+    
+    return field;
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   L I S T E N E R S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /*-- WINDOW LISTENER METHODS -------------------------------------------------------------*/
+
+  public void 
+  windowActivated(WindowEvent e) {} 
+  
+  public void 	
+  windowClosed(WindowEvent e) {} 
+
+  /**
+   * Invoked when the user attempts to close the window from the window's system menu.
+   */ 
+  public void 	
+  windowClosing
+  (
+   WindowEvent e
+  ) 
+  {
+    doQuit();
+  }
+         
+  public void 	
+  windowDeactivated(WindowEvent e) {}
+
+  public void 	
+  windowDeiconified(WindowEvent e) {}
+
+  public void 	
+  windowIconified(WindowEvent e) {}
+
+  public void 	
+  windowOpened(WindowEvent e) {}
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C T I O N S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Close the network connection and exit.
+   */ 
+  public void 
+  doQuit()
+  {
+    if(pNodeMgrClient != null) 
+      pNodeMgrClient.disconnect();
+
+    System.exit(0);
+  }
+  
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L   C L A S S E S                                                      */
@@ -390,6 +565,14 @@ class UIMaster
   class SplashFrameTask
     extends Thread
   { 
+    SplashFrameTask
+    (
+     UIMaster master
+    ) 
+    {
+      pMaster = master;
+    }
+
     public void 
     run() 
     {  
@@ -471,9 +654,11 @@ class UIMaster
       }
       
       /* perform application startup tasks */ 
-      StartupTask task = new StartupTask();
+      StartupTask task = new StartupTask(pMaster);
       task.start();
     }
+
+    private UIMaster  pMaster;
   }
 
   /** 
@@ -483,9 +668,13 @@ class UIMaster
   class StartupTask
     extends Thread
   {
-    StartupTask()
+    StartupTask
+    (
+     UIMaster master
+    ) 
     {
-      pCnt = 1;
+      pMaster = master;
+      pCnt    = 1;
     }
 
     public void 
@@ -532,7 +721,7 @@ class UIMaster
 	System.exit(1);
       }
       
-      SwingUtilities.invokeLater(new MainFrameTask());
+      SwingUtilities.invokeLater(new MainFrameTask(pMaster));
     }
 
     private void
@@ -541,7 +730,8 @@ class UIMaster
       SwingUtilities.invokeLater(new UpdateStartupProgress(pCnt++));
     }
 
-    private int  pCnt;
+    private UIMaster  pMaster;
+    private int       pCnt;
   }
 
   /** 
@@ -576,19 +766,28 @@ class UIMaster
   class MainFrameTask
     extends Thread
   { 
+    MainFrameTask
+    (
+     UIMaster master
+    ) 
+    {
+      pMaster = master;
+    }
+
     public void 
     run() 
     {
       /* hide the splash screen */ 
       pSplashFrame.setVisible(false);
-
+      
       /* create and show the main application frame */ 
       {
 	JFrame frame = new JFrame("plui");
 	pFrame = frame;
 
-	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	
+	frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+	frame.addWindowListener(pMaster);
+
 	{
 	  JPanel root = new JPanel();
 	  
@@ -642,7 +841,7 @@ class UIMaster
 	      panel.add(field);
 	    }
 	    
-	    panel.add(Box.createRigidArea(new Dimension(3, 0)));
+	    panel.add(Box.createRigidArea(new Dimension(8, 0)));
 	    panel.add(Box.createHorizontalGlue());
 	    
 	    root.add(panel);
@@ -656,9 +855,19 @@ class UIMaster
 	frame.pack();
 	frame.setLocationRelativeTo(null);
 
-	frame.setVisible(true);
       }
+
+      {
+	pAboutDialog = new JAboutDialog();
+
+	// ...
+
+      }
+      
+      pFrame.setVisible(true);
     }
+
+    private UIMaster  pMaster;
   }
   
   /**
@@ -800,4 +1009,9 @@ class UIMaster
    */ 
   private JNodeViewerPanel[]  pNodeViewers;
 
+
+  /**
+   * The information dialog.
+   */ 
+  private JAboutDialog  pAboutDialog;
 }
