@@ -2,6 +2,10 @@
 
 ACTIONS:
 
++ Port the old Pipeline actions to work with the new Pipeline.
+
++ Get Jesse's fix to the old MayaCollate.
+
 + Write Action classes for the remaining common CG tasks...  Finish Output OP support 
   in Houdini.  Add all supported Maya renderer related actions: MentalRay and Maya Renderers.
   Maya simulation actions: particle systems, dynamics, cloth, fluid dynamics.  Generic MEL
@@ -21,6 +25,29 @@ OPERATIONS:
 
 - The node status update immediately following a RemoveFiles operation frequently fails to   
   catch the removed files.  Updates after do work properly.
+
+- Add "Delete Job Group" and "Delete Finished Job Groups" operations.  QueueJobGroups with 
+  unfinished jobs cannot be deleted until the jobs are completed (Finished, Killed, Aborted).
+
+- Should there be an automatic delete of finished QueueJobGroups older than a certain number
+  of days?
+
+- Add garbage collection of QueueJobs not referenced by any QueueJobGroup or job belonging 
+  to a group.  This should be run on QueueMgr startup and incrementally every X number of 
+  dispatcher cycles.
+
+  A mark and sweep approach should be used in which all jobs are added to a dead list.
+  Then the jobs belonging to a QueueGroup and their source jobs are recursively traversed and
+  removed from the dead list.  All jobs remaining on the dead list are then remove from the 
+  jobs/info tables and the file associated files deleted.  If the JobMgr which ran the job
+  is running, it should be told to delete all files associated with the deleted job as well.
+
+  Decide how to handle the files created by the JobMgr for a job which are not deleted 
+  because the JobMgr was not running when the job was deleted.  Maybe the QueueMgr give
+  the JobMgr a list of job IDs which are not still valid on startup and have the JobMgr
+  remove any files associated with jobs not on this list during initialization.
+
+
 
 
 USER INTERFACE: 
@@ -47,10 +74,8 @@ USER INTERFACE:
   problems of some components not being instatiated yet at the point of update.  A more
   methodical system needs to replace the current ad hoc system.
 
-- Frame All doesn't take into account the size of the Collapsed triangle to the right of 
-  Jobs. 
+- Sorting the JobBrowser clears the current selection - it should be preserved.
 
-- Sorting of the ID column should be a numeric sort not a textual sort.
 
 
 RPMS:
