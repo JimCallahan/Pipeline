@@ -1,4 +1,4 @@
-// $Id: FileStateReq.java,v 1.2 2004/03/10 11:48:42 jim Exp $
+// $Id: FileStateReq.java,v 1.3 2004/03/15 19:11:48 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -63,6 +63,35 @@ class FileStateReq
     if(vstate == null) 
       throw new IllegalArgumentException("The version state cannot be (null)!");
     pVersionState = vstate;
+
+    switch(vstate) {
+    case Pending:
+      if(working != null) 
+	throw new IllegalArgumentException
+	  ("The working revision number must be (null) if the " +
+	   "VersionState is (Pending)!");
+      if(latest != null) 
+	throw new IllegalArgumentException
+	  ("The latest checked-in revision number must be (null) if the " + 
+	   "VersionState is (Pending)!");
+      break;
+
+    case CheckedIn:
+      throw new IllegalArgumentException
+	("No FileStates should ever need to be computed when the " +
+	 "VersionState is (CheckedIn)!");
+
+    case Identical:
+    case NeedsCheckOut:
+      if(working == null) 
+	throw new IllegalArgumentException
+	  ("The working revision number cannot be (null) if the " +
+	   "VersionState is (" + vstate.name() + ")!");
+      if(latest == null) 
+	throw new IllegalArgumentException
+	  ("The latest checked-in revision number cannot  be (null) if the " + 
+	   "VersionState is (" + vstate.name() + ")!");
+    }
 
     pWorkingVersionID = working;
     pLatestVersionID  = latest;
