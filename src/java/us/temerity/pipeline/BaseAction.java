@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.22 2004/11/18 09:16:58 jim Exp $
+// $Id: BaseAction.java,v 1.23 2004/11/19 06:45:56 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -36,8 +36,10 @@ class BaseAction
   {
     super();
 
-    pSingleParams = new TreeMap<String,ActionParam>();
-    pSourceParams = new TreeMap<String,TreeMap<String,ActionParam>>();
+    pSingleParams  = new TreeMap<String,ActionParam>();
+    pSourceParams  = new TreeMap<String,TreeMap<String,ActionParam>>();
+    pPresetChoices = new TreeMap<String,ArrayList<String>>();
+    pPresetValues  = new TreeMap<String,TreeMap<String,TreeMap<String,Comparable>>>();
   }
 
   /** 
@@ -62,8 +64,10 @@ class BaseAction
   {
     super(name, vid, desc);
 
-    pSingleParams = new TreeMap<String,ActionParam>();
-    pSourceParams = new TreeMap<String,TreeMap<String,ActionParam>>();
+    pSingleParams  = new TreeMap<String,ActionParam>();
+    pSourceParams  = new TreeMap<String,TreeMap<String,ActionParam>>();
+    pPresetChoices = new TreeMap<String,ArrayList<String>>();
+    pPresetValues  = new TreeMap<String,TreeMap<String,TreeMap<String,Comparable>>>();
   }
 
   /**
@@ -80,17 +84,17 @@ class BaseAction
   {
     super(action.pName, action.pVersionID, action.pDescription);
 
-    pSingleParams = action.pSingleParams;
-    pSourceParams = action.pSourceParams; 
+    pSingleParams  = action.pSingleParams;
+    pSourceParams  = action.pSourceParams; 
+    pPresetChoices = action.pPresetChoices;
+    pPresetValues  = action.pPresetValues;
   }
 
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   A C C E S S                                                                          */
+  /*   S I N G L E   V A L U E D   P A R A M E T E R S                                      */
   /*----------------------------------------------------------------------------------------*/
-
-  /*-- SINGLE VALUED PARAMETERS ------------------------------------------------------------*/
   
   /**
    * Does the action have any single valued parameters?
@@ -100,6 +104,9 @@ class BaseAction
   {
     return (!pSingleParams.isEmpty());
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Add a single valued parameter to this Action. <P>
@@ -116,13 +123,22 @@ class BaseAction
     ActionParam param 
   ) 
   {
-    if(pSingleParams.containsKey(param.getName())) 
+    String name = param.getName();
+    
+    if(pSingleParams.containsKey(name)) 
       throw new IllegalArgumentException
-	("A parameter named (" + param.getName() + ") already exists!");
+	("A single valued parameter named (" + name + ") already exists!");
 
-    pSingleParams.put(param.getName(), param); 
+    if(pPresetChoices.containsKey(name)) 
+      throw new IllegalArgumentException
+	("The single valued parameter (" + name + ") cannot be added because a preset " + 
+	 "already exists with the same name!");
+
+    pSingleParams.put(name, param); 
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
 
   /** 
    * Get the value of the single valued parameter with the given name.
@@ -183,8 +199,10 @@ class BaseAction
   getSingleParams()
   {
     return Collections.unmodifiableCollection(pSingleParams.values());
-  }
-  
+  }  
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Set the value of a single valued parameter. 
@@ -208,7 +226,7 @@ class BaseAction
     ActionParam param = pSingleParams.get(name);
     if(param == null) 
       throw new IllegalArgumentException
-	("No parameter named (" + param.getName() + ") exists for this action!");
+	("No parameter named (" + name + ") exists for this action!");
 
     param.setValue(value);
   }
@@ -244,7 +262,9 @@ class BaseAction
 
   
 
-  /*-- PER-SOURCE PARAMETERS ---------------------------------------------------------------*/
+  /*----------------------------------------------------------------------------------------*/
+  /*   P E R - S O U R C E   P A R A M E T E R S                                            */
+  /*----------------------------------------------------------------------------------------*/
   
   /**
    * Does this action support per-source parameters?  <P> 
@@ -318,7 +338,6 @@ class BaseAction
   {
     return Collections.unmodifiableSet(pSourceParams.keySet());
   }
-
 
   /**
    * Get the value of the named parameter for the given upstream node. 
@@ -411,6 +430,8 @@ class BaseAction
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Set the value of a per-source parameter for the given upstream node.
    *
@@ -494,6 +515,8 @@ class BaseAction
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Remove all of the per-source parameters associated with the given upstream node.
    * 
@@ -522,51 +545,197 @@ class BaseAction
   }  
 
 
+
   /*----------------------------------------------------------------------------------------*/
-  /*   U S E R   I N T E R F A C E                                                          */
+  /*   P R E S E T S                                                                        */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Specifies the grouping of single valued parameters used to layout components which 
-   * represent the parameters in the user interface. <P> 
+   * Add a named set of parameter preset choices to the action. <P> 
    * 
-   * The specified grouping must contain an entry for all single valued parameters defined 
-   * for the action exactly once.  A collapsible drawer component will be created for each
-   * group which contains a field for each parameter which is a member of the group in the 
-   * order specified by the group.  All <CODE>null</CODE> parameter name entries will cause 
-   * additional space to be added between parameter fields. Each subgroup will be represented
-   * by its own drawer nested within the parent groups drawer. <P> 
+   * This method is used by subclasses in their constructors initialize the presets 
+   * for single valued parameters that they support.
    * 
-   * This method should be called by subclasses in their constructor after intializing all 
-   * single valued parameters with the {@link #addSingleParam addSingleParam} method.
+   * @param name
+   *   The name of the preset.
    * 
-   * @param group
-   *   The parameter group.
-   */
-  protected void
-  setSingleGroup
+   * @param choices
+   *   The names of the possible preset choices.
+   */ 
+  protected void 
+  addPreset
   (
-   ParamGroup group
+   String name, 
+   ArrayList<String> choices
   ) 
   {
-    TreeSet<String> pnames = new TreeSet<String>();
-    collectParamNames(group, pnames);
+    if(pPresetChoices.containsKey(name)) 
+      throw new IllegalArgumentException
+	("The preset (" + name + ") already exists!");
     
-    for(String name : pnames) {
-      if(!pSingleParams.containsKey(name))
+    if(pSingleParams.containsKey(name)) 
+      throw new IllegalArgumentException
+	("The preset (" + name + ") cannot be added because a single valued parameter " + 
+	 "exists with the same name!");
+    
+    pPresetChoices.put(name, choices);
+  }
+
+  /**
+   * Add the values of single valued parameters which should be set when a given preset 
+   * choice is selected. <P> 
+   * 
+   * This method is used by subclasses in their constructors to specify the parameter
+   * values set by a preset choice after first adding the preset using the 
+   * {@link #addPreset addPreset} method.
+   * 
+   * @param name 
+   *   The name of the preset.
+   * 
+   * @param choice
+   *   The name of the preset choice which causes the parameter to be set.
+   * 
+   * @param values
+   *   The value assiged to each singled valued parameter indexed by parameter name.
+   */ 
+  protected void 
+  addPresetValues
+  (
+   String name, 
+   String choice, 
+   TreeMap<String,Comparable> values
+  ) 
+  {
+    TreeMap<String,TreeMap<String,Comparable>> choices = pPresetValues.get(name);
+    if(choices == null) {
+      if(!pPresetChoices.containsKey(name)) 
 	throw new IllegalArgumentException
-	  ("The single valued parameter (" + name + ") specified by the parameter group " + 
-	   "was not defined for this Action!");
+	  ("No preset named (" + name + ") exists!");
+      choices = new TreeMap<String,TreeMap<String,Comparable>>();
+      pPresetValues.put(name, choices);
+    }
+
+    TreeMap<String,Comparable> pvalues = choices.get(choice);
+    if(pvalues == null) {
+      if(!pPresetChoices.get(name).contains(choice)) 
+	throw new IllegalArgumentException
+	  ("No choice (" + choice + ") exists for preset (" + name + ")!");
+      pvalues = new TreeMap<String,Comparable>();
+      choices.put(choice, pvalues);
+    }
+
+    pvalues.putAll(values);
+  }
+    
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the choices for the given preset.
+   * 
+   * @param name
+   *   The name of the preset.
+   * 
+   * @return 
+   *   The names of the choices or <CODE>null</CODE> if no preset exists.
+   */ 
+  public List<String> 
+  getPresetChoices
+  (
+   String name
+  ) 
+  {
+    ArrayList<String> choices = pPresetChoices.get(name);
+    if(choices != null) 
+      return Collections.unmodifiableList(choices);
+    return null;
+  }
+
+  /**
+   * Get the preset values of single valued parameters set by a given preset choice.
+   * 
+   * @param name
+   *   The name of the preset.
+   * 
+   * @param choice
+   *   The name of the preset choice which causes the parameter to be set.
+   * 
+   * @return 
+   *   The parameter values indexed by parameter name or <CODE>null</CODE> if no 
+   *   preset choice exists.
+   */ 
+  public SortedMap<String,Comparable> 
+  getPresetValues
+  (
+   String name, 
+   String choice
+  ) 
+  {
+    TreeMap<String,TreeMap<String,Comparable>> choices = pPresetValues.get(name);
+    if(choices != null) {
+      TreeMap<String,Comparable> values = choices.get(choice);
+      if(values != null) 
+	return Collections.unmodifiableSortedMap(values);
+    }
+    return null;
+  }
+  
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   P A R A M E T E R    L A Y O U T                                                     */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Sets the hierarchical grouping of parameters and presets which determine the layout of 
+   * UI components. <P> 
+   * 
+   * The given layouts must contain an entry for all single valued parameters and presets
+   * defined for the action exactly once.  A collapsible drawer component will be created 
+   * for each layout group which contains a field for each parameter or preset entry in the 
+   * order specified by the group.  All <CODE>null</CODE> entries will cause additional space 
+   * to be added between the UI fields. Each layout subgroup will be represented by its own 
+   * drawer nested within the drawer for the parent layout group. <P> 
+   * 
+   * This method should be called by subclasses in their constructor after intializing all 
+   * single valued parameters with the {@link #addSingleParam addSingleParam} method and 
+   * adding any preset choices with {@link #addPreset addPreset} method.
+   * 
+   * @param group
+   *   The layout group.
+   */
+  protected void
+  setSingleLayout
+  (
+   LayoutGroup group
+  ) 
+  {
+    TreeSet<String> names = new TreeSet<String>();
+    collectLayoutNames(group, names);
+    
+    for(String name : names) {
+      if(!pSingleParams.containsKey(name) && !pPresetChoices.containsKey(name))
+	throw new IllegalArgumentException
+	  ("The entry (" + name + ") specified by the parameter layout group " + 
+	   "(" + group.getName() + ") does not match any single valued parameter or " + 
+	   "preset defined for this Action!");
     }
 
     for(String name : pSingleParams.keySet()) {
-      if(!pnames.contains(name))
+      if(!names.contains(name))
 	throw new IllegalArgumentException
 	  ("The single valued parameter (" + name + ") defined by this Action was not " + 
-	   "specified by the parameter group!");
+	   "specified by any the parameter layout group!");
     }
 
-    pSingleGroup = group; 
+    for(String name : pPresetChoices.keySet()) {
+      if(!names.contains(name))
+	throw new IllegalArgumentException
+	  ("The parameter preset (" + name + ") defined by this Action was not " + 
+	   "specified by any the parameter layout group!");
+    }
+
+    pSingleLayout = group; 
   }
 
   /**
@@ -574,24 +743,24 @@ class BaseAction
    * that no parameter is specified more than once.
    */ 
   private void 
-  collectParamNames
+  collectLayoutNames
   (
-   ParamGroup group, 
-   TreeSet<String> pnames
+   LayoutGroup group, 
+   TreeSet<String> names
   ) 
   {
-    for(String name : group.getParamNames()) {
+    for(String name : group.getEntries()) {
       if(name != null) {
-	if(pnames.contains(name)) 
+	if(names.contains(name)) 
 	  throw new IllegalArgumentException
 	    ("The single valued parameter (" + name + ") was specified more than once " +
 	     "in the given parameter group!");
-	pnames.add(name);
+	names.add(name);
       }
     }
       
-    for(ParamGroup sgroup : group.getSubGroups()) 
-      collectParamNames(sgroup, pnames);
+    for(LayoutGroup sgroup : group.getSubGroups()) 
+      collectLayoutNames(sgroup, names);
   }
 
   /**
@@ -601,50 +770,49 @@ class BaseAction
    * If no single valued parameter group has been previously specified, a group will 
    * be created which contains all single valued parameters in alphabetical order.
    */ 
-  public ParamGroup
-  getSingleGroup()
+  public LayoutGroup
+  getSingleLayout()
   {
-    if(pSingleGroup == null) {
-      pSingleGroup = new ParamGroup("ActionParameters", true);
+    if(pSingleLayout == null) {
+      pSingleLayout = new LayoutGroup("ActionParameters", true);
       for(String name : pSingleParams.keySet()) 
-	pSingleGroup.addParamName(name);
+	pSingleLayout.addEntry(name);
     }
     
-    return pSingleGroup; 
+    return pSingleLayout; 
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Specifies the grouping of per-source parameters used to layout components which 
-   * represent the parameters in the user interface. <P> 
+   * Specifies the ordering of per-source parameters in the user interface. <P> 
    * 
-   * The specified grouping must contain an entry for all per-source parameters defined 
+   * The specified list of parameters names must contains all per-source parameters defined 
    * for the action exactly once.  A table will be constructed for the per-source parameters
    * with a row for each source node and a column for each per-source parameter.  The order
-   * of the parameters within the group will determine the ordering of the columns from 
-   * left to right.  Parameter entries may not be <CODE>null</CODE> for per-source parameters.
-   * Parameter subgroups are also not allowed for per-source parameters. <P> 
+   * of the parameters within the list will determine the ordering of the columns from 
+   * left to right.  Parameter entries may not be <CODE>null</CODE> for per-source 
+   * parameters. <P> 
    * 
    * This method should be called by subclasses in their constructor if they have overriden
    * the {@link #supportsSourceParams supportsSourceParams} to return <CODE>true</CODE> and
    * have implemented the {@link #getInitialSourceParams getInitialSourceParams} method. 
    * 
-   * @param group
-   *   The parameter group.
+   * @param pnames
+   *   The ordered per-source parameter names. 
    */
   protected void
-  setSourceGroup
+  setSourceLayout
   (
-   ParamGroup group
+   List<String> pnames
   ) 
   {
     if(!supportsSourceParams()) 
       throw new IllegalArgumentException
 	("This action does not support per-source parameters!");
 
-    List<String> pnames = group.getParamNames();
     TreeMap<String,ActionParam> params = getInitialSourceParams();
 
     for(String name : pnames) {
@@ -661,7 +829,7 @@ class BaseAction
 	   "specified by the parameter group!");
     }
 
-    pSourceGroup = group; 
+    pSourceLayout = new ArrayList<String>(pnames);
   }
 
   /**
@@ -671,16 +839,17 @@ class BaseAction
    * If no per-source parameter group has been previously specified, a group will 
    * be created which contains all per-source parameters in alphabetical order.
    */ 
-  public ParamGroup
-  getSourceGroup()
+  public List<String>
+  getSourceLayout()
   {
-    if(pSourceGroup == null) {
-      pSourceGroup = new ParamGroup();
-      for(String name : pSourceParams.keySet()) 
-	pSourceGroup.addParamName(name);
+    if(pSourceLayout == null) {
+      if(supportsSourceParams()) 
+	pSourceLayout = new ArrayList<String>(getInitialSourceParams().keySet());
+      else 
+	pSourceLayout = new ArrayList<String>();
     }
-    
-    return pSourceGroup; 
+
+    return Collections.unmodifiableList(pSourceLayout);
   }
 
 
@@ -974,6 +1143,7 @@ class BaseAction
   
 
 
+
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
@@ -992,16 +1162,30 @@ class BaseAction
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * A named set of parameter preset choices.
+   */ 
+  private TreeMap<String,ArrayList<String>>  pPresetChoices;
+
+  /**
+   * The preset values to assign parameters indexed by preset name, choice name and target   
+   * parameter name.
+   */ 
+  private TreeMap<String,TreeMap<String,TreeMap<String,Comparable>>>  pPresetValues;
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Specifies the grouping of single valued parameters used layout components which 
    * represent the parameters in the user interface. 
    */ 
-  private ParamGroup  pSingleGroup;
+  private LayoutGroup  pSingleLayout;
 
   /**
    * Specifies the grouping of per-source parameters used to layout components which 
    * represent the parameters in the user interface. <P> 
    */ 
-  private ParamGroup  pSourceGroup;  
+  private ArrayList<String>  pSourceLayout;
 
 }
 

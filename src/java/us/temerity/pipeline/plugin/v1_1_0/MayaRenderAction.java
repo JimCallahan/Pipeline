@@ -1,4 +1,4 @@
-// $Id: MayaRenderAction.java,v 1.6 2004/11/18 09:16:58 jim Exp $
+// $Id: MayaRenderAction.java,v 1.7 2004/11/19 06:45:56 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_1_0;
 
@@ -78,13 +78,13 @@ class MayaRenderAction
     }
 
     {
-      ParamGroup group = new ParamGroup("ActionParameters", true);
-      group.addParamName("Renderer");
-      group.addParamName(null);
-      group.addParamName("CameraOverride");
-      group.addParamName("Processors"); 
+      LayoutGroup layout = new LayoutGroup("ActionParameters", true);
+      layout.addEntry("Renderer");
+      layout.addSeparator();
+      layout.addEntry("CameraOverride");
+      layout.addEntry("Processors"); 
 
-      setSingleGroup(group);
+      setSingleLayout(layout);
     }
   }
 

@@ -1,4 +1,4 @@
-// $Id: ParamGroup.java,v 1.1 2004/11/18 09:16:58 jim Exp $
+// $Id: LayoutGroup.java,v 1.1 2004/11/19 06:45:56 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -8,34 +8,30 @@ import java.util.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   P A R A M   G R O U P                                                                  */
+/*   L A Y O U T   G R O U P                                                                */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Hierarchical grouping of the parameters associated with plugins used to specify the 
- * layout of UI components.
+ * Hierarchical grouping of parameters and presets associated with plugins which determine 
+ * the layout of UI components.
  */
 public 
-class ParamGroup
+class LayoutGroup
   extends Named
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * Construct an unnamed open group. 
-   */ 
+
   public 
-  ParamGroup() 
+  LayoutGroup() 
   {
-    pIsOpen     = true;
-    pParamNames = new LinkedList<String>();
-    pSubGroups  = new LinkedList<ParamGroup>();
+    pEntries = new LinkedList<String>();
+    pSubGroups  = new LinkedList<LayoutGroup>();
   }
 
   /**
-   * Construct a new parameter group.
+   * Construct a new layout group..
    * 
    * @param name
    *   The name of the group.
@@ -44,7 +40,7 @@ class ParamGroup
    *   Whether the group is initially open.
    */ 
   public 
-  ParamGroup
+  LayoutGroup
   (
    String name,  
    boolean isOpen
@@ -52,8 +48,8 @@ class ParamGroup
   {
     super(name);
     pIsOpen     = isOpen;
-    pParamNames = new LinkedList<String>();
-    pSubGroups  = new LinkedList<ParamGroup>();
+    pEntries = new LinkedList<String>();
+    pSubGroups  = new LinkedList<LayoutGroup>();
   }
 
 
@@ -93,8 +89,8 @@ class ParamGroup
    * Whether the group is initially open. <P> 
    * 
    * If the group is open, the UI components will be created in a state which exposes the 
-   * parameter fields.  Otherwise the group title will be shown but the paramter fields 
-   * hidden initially.
+   * parameter/preset fields.  Otherwise the group title will be shown but the paramter/preset
+   * fields will be initially hidden.
    */ 
   public boolean
   isOpen() 
@@ -106,39 +102,40 @@ class ParamGroup
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the names of the parameters. <P> 
+   * Get the names of the parameters and/or presets in the order they should be 
+   * displayed in the user interface. <P> 
    * 
    * The return list may contain <CODE>null</CODE> values to indicate the positions of 
    * parameter separators.
    */ 
   public List<String>
-  getParamNames() 
+  getEntries() 
   {
-    return Collections.unmodifiableList(pParamNames);
+    return Collections.unmodifiableList(pEntries);
   }
 
   /**
-   * Add the given parameter name to the group. <P> 
+   * Add the given parameter/preset name to the group. <P> 
    * 
    * @param name
    *   The name of the parameter.
    */ 
   public void 
-  addParamName
+  addEntry
   (
    String name
   ) 
   {
-    pParamNames.add(name);
+    pEntries.add(name);
   }
 
   /**
-   * Add a parameter separator to the group. <P>
+   * Add a parameter/preset separator to the group. <P>
    */ 
   public void 
   addSeparator() 
   {
-    pParamNames.add(null);
+    pEntries.add(null);
   }
 
 
@@ -147,7 +144,7 @@ class ParamGroup
   /**
    * Get the parameter subgroups.
    */ 
-  public List<ParamGroup>
+  public List<LayoutGroup>
   getSubGroups() 
   {
     return Collections.unmodifiableList(pSubGroups);
@@ -162,7 +159,7 @@ class ParamGroup
   public void 
   addSubGroup
   (
-   ParamGroup group
+   LayoutGroup group
   ) 
   {
     pSubGroups.add(group);
@@ -183,8 +180,8 @@ class ParamGroup
   {
     super.toGlue(encoder);
 
-    if(!pParamNames.isEmpty()) 
-      encoder.encode("ParamNames", pParamNames);
+    if(!pEntries.isEmpty()) 
+      encoder.encode("Entries", pEntries);
 
     if(!pSubGroups.isEmpty())     
       encoder.encode("SubGroups", pSubGroups);
@@ -199,11 +196,11 @@ class ParamGroup
   {
     super.fromGlue(decoder);
     
-    LinkedList<String> names = (LinkedList<String>) decoder.decode("ParamNames");
+    LinkedList<String> names = (LinkedList<String>) decoder.decode("Entries");
     if(names != null) 
-      pParamNames = names;
+      pEntries = names;
 
-    LinkedList<ParamGroup> groups = (LinkedList<ParamGroup>) decoder.decode("SubGroups");
+    LinkedList<LayoutGroup> groups = (LinkedList<LayoutGroup>) decoder.decode("SubGroups");
     if(groups != null) 
       pSubGroups = groups;
   }
@@ -214,7 +211,7 @@ class ParamGroup
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 7509392510507154760L;
+  private static final long serialVersionUID = -6353586503001120251L;
       
 
   
@@ -225,12 +222,12 @@ class ParamGroup
   /**
    * The names of the member parameters.
    */ 
-  private LinkedList<String>  pParamNames; 
+  private LinkedList<String>  pEntries; 
 
   /**
-   * The parameters subgroups.
+   * The layout subgroups.
    */ 
-  private LinkedList<ParamGroup>  pSubGroups; 
+  private LinkedList<LayoutGroup>  pSubGroups; 
 
   /**
    * Whether the group is initially open.

@@ -1,4 +1,4 @@
-// $Id: SourceParamsTableModel.java,v 1.7 2004/11/18 09:16:58 jim Exp $
+// $Id: SourceParamsTableModel.java,v 1.8 2004/11/19 06:45:56 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -86,7 +86,7 @@ class SourceParamsTableModel
 
       /* parameters */ 
       int col = 1;
-      for(String pname : pAction.getSourceGroup().getParamNames()) {
+      for(String pname : pAction.getSourceLayout()) {
 	ActionParam aparam = params.get(pname);
 
 	pColumnClasses[col] = aparam.getClass();
@@ -151,7 +151,7 @@ class SourceParamsTableModel
 	  pParams[row] = new ActionParam[pNumColumns-1];
 
 	  int col = 0;
-	  for(String pname : pAction.getSourceGroup().getParamNames()) {
+	  for(String pname : pAction.getSourceLayout()) {
 	    ActionParam aparam = pAction.getSourceParam(sname, pname);
 	    pParams[row][col] = (ActionParam) aparam.clone();
 	    col++;
@@ -271,7 +271,7 @@ class SourceParamsTableModel
       pParams[srow] = new ActionParam[params.size()];
 
       int col = 0;
-      for(String pname : pAction.getSourceGroup().getParamNames()) {
+      for(String pname : pAction.getSourceLayout()) {
 	pParams[srow][col] = params.get(pname); 
 	col++;
       }

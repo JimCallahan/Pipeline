@@ -1,4 +1,4 @@
-// $Id: TestAction.java,v 1.6 2004/11/18 09:16:58 jim Exp $
+// $Id: TestAction.java,v 1.7 2004/11/19 06:45:56 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -77,39 +77,39 @@ class TestAction
     }
 
     {
-      ParamGroup group = new ParamGroup("ActionParameters", true);
-      group.addParamName("SomeString");
+      LayoutGroup layout = new LayoutGroup("ActionParameters", true);
+      layout.addEntry("SomeString");
 
       {
-	ParamGroup ngroup = new ParamGroup("Numbers", false);
-	ngroup.addParamName("SomeDouble");
-	ngroup.addParamName("SomeInteger");
+	LayoutGroup nlayout = new LayoutGroup("Numbers", false);
+	nlayout.addEntry("SomeDouble");
+	nlayout.addEntry("SomeInteger");
 
-	group.addSubGroup(ngroup);
+	layout.addSubGroup(nlayout);
       }
 
       {
-	ParamGroup mgroup = new ParamGroup("Miscellaneous", true);
-	mgroup.addParamName("SomeLink");
-	mgroup.addParamName(null);
-	mgroup.addParamName(null);
-	mgroup.addParamName("SomeEnum");
+	LayoutGroup mlayout = new LayoutGroup("Miscellaneous", true);
+	mlayout.addEntry("SomeLink");
+	mlayout.addSeparator();
+	mlayout.addSeparator();
+	mlayout.addEntry("SomeEnum");
 
-	group.addSubGroup(mgroup);
+	layout.addSubGroup(mlayout);
       }
 
-      setSingleGroup(group);
+      setSingleLayout(layout);
     }
 
     {
-      ParamGroup group = new ParamGroup();
-      group.addParamName("AnotherDouble");
-      group.addParamName("AnotherInteger");
-      group.addParamName("AnotherLink");
-      group.addParamName("AnotherString");
-      group.addParamName("AnotherEnum");
+      LinkedList<String> layout = new LinkedList<String>();
+      layout.add("AnotherDouble");
+      layout.add("AnotherInteger");
+      layout.add("AnotherLink");
+      layout.add("AnotherString");
+      layout.add("AnotherEnum");
 
-      setSourceGroup(group);
+      setSourceLayout(layout);
     }
   }
 

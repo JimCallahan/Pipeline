@@ -1,4 +1,4 @@
-// $Id: BaseParam.java,v 1.1 2004/11/11 00:40:09 jim Exp $
+// $Id: BaseParam.java,v 1.2 2004/11/19 06:45:56 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -144,6 +144,7 @@ class BaseParam
       return pValue.toString();
     return null;
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/

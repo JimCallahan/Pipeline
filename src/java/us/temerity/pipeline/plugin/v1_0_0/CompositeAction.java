@@ -1,4 +1,4 @@
-// $Id: CompositeAction.java,v 1.5 2004/11/18 09:16:58 jim Exp $
+// $Id: CompositeAction.java,v 1.6 2004/11/19 06:45:56 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -82,11 +82,11 @@ class CompositeAction
     }
 
     {
-      ParamGroup group = new ParamGroup();
-      group.addParamName("Order");
-      group.addParamName("Operation"); 
+      LinkedList<String> layout = new LinkedList<String>();
+      layout.add("Order");
+      layout.add("Operation"); 
 
-      setSourceGroup(group);
+      setSourceLayout(layout);
     }
   }
 

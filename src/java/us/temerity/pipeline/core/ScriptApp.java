@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.22 2004/11/18 09:16:58 jim Exp $
+// $Id: ScriptApp.java,v 1.23 2004/11/19 06:45:56 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -852,7 +852,7 @@ class ScriptApp
 	   "Enabled           : " + (com.isActionEnabled() ? "YES" : "no"));
 	
 	if(action.hasSingleParams()) 
-	  printSingleParams(action, action.getSingleGroup(), buf, 1);
+	  printSingleParams(action, action.getSingleLayout(), buf, 1);
 
 	if(action.supportsSourceParams() && (action.getSourceNames().size() > 0)) {
 	  buf.append("\n\n" +
@@ -864,7 +864,7 @@ class ScriptApp
 		       "Source Node       : " + sname);
 	    first = false;
 
-	    for(String pname : action.getSourceGroup().getParamNames()) {
+	    for(String pname : action.getSourceLayout()) {
 	      buf.append
 		("\n" + 
 		 pad(pname, 18) + ": " + action.getSourceParamValue(sname, pname));
@@ -932,7 +932,7 @@ class ScriptApp
   printSingleParams
   (
    BaseAction action, 
-   ParamGroup group, 
+   LayoutGroup group, 
    StringBuffer buf, 
    int level 
   ) 
@@ -941,13 +941,17 @@ class ScriptApp
     buf.append("\n\n" +
 	       pad(repeat('-', level*2) + " " + group.getNameUI() + " ", '-', 80));
 
-    for(String pname : group.getParamNames()) {
+    for(String pname : group.getEntries()) {
       buf.append("\n");	 
-      if(pname != null) 
-	buf.append(pad(pname, 18) + ": " + action.getSingleParamValue(pname));
+      if(pname != null) {
+	if(action.getSingleParam(pname) != null) 
+	  buf.append(pad(pname, 18) + ": " + action.getSingleParamValue(pname));
+	else if(action.getPresetChoices(pname) != null) 
+	  buf.append(pad(pname, 18) + ": PRESET");
+      }
     }
     
-    for(ParamGroup sgroup : group.getSubGroups()) {
+    for(LayoutGroup sgroup : group.getSubGroups()) {
       printSingleParams(action, sgroup, buf, level+1);
     }
   }
@@ -2103,9 +2107,9 @@ class ScriptApp
 	       ((vAction != null) && vAction.hasSingleParams())) {
 
 	      if((mAction != null) && mAction.hasSingleParams()) 
-		printBothSingleParams(mAction, vAction, mAction.getSingleGroup(), buf, 1);
+		printBothSingleParams(mAction, vAction, mAction.getSingleLayout(), buf, 1);
 	      else if((vAction != null) && vAction.hasSingleParams()) 
-		printCheckedInSingleParams(vAction, vAction.getSingleGroup(), buf, 1);
+		printCheckedInSingleParams(vAction, vAction.getSingleLayout(), buf, 1);
 	    }
 	    
 	    if(((mAction != null) && mAction.supportsSourceParams() && 
@@ -2125,7 +2129,7 @@ class ScriptApp
 			     "Source Node       : " + sname);
 		  afirst = false;
 		
-		  for(String pname : mAction.getSourceGroup().getParamNames()) {
+		  for(String pname : mAction.getSourceLayout()) {
 		    String mstr = "-";
 		    if(mAction.getSourceParamValue(sname, pname) != null) 
 		      mstr = mAction.getSourceParamValue(sname, pname).toString();
@@ -2151,7 +2155,7 @@ class ScriptApp
 			     "Source Node       : " + sname);
 		  afirst = false;
 		
-		  for(String pname : vAction.getSourceGroup().getParamNames()) {
+		  for(String pname : vAction.getSourceLayout()) {
 		    String vstr = "-";
 		    if(vAction.getSourceParamValue(sname, pname) != null)
 		      vstr = vAction.getSourceParamValue(sname, pname).toString();
@@ -2417,7 +2421,7 @@ class ScriptApp
   (
    BaseAction mAction, 
    BaseAction vAction, 
-   ParamGroup group, 
+   LayoutGroup group, 
    StringBuffer buf, 
    int level 
   ) 
@@ -2426,25 +2430,30 @@ class ScriptApp
     buf.append("\n\n" +
 	       pad(repeat('-', level*2) + " " + group.getNameUI() + " ", '-', 80));
 
-    for(String pname : group.getParamNames()) {
+    for(String pname : group.getEntries()) {
       buf.append("\n");	 
       if(pname != null) {
 	String mstr = "-";
 	if(mAction.getSingleParamValue(pname) != null) 
 	  mstr = mAction.getSingleParamValue(pname).toString();
+	else if(mAction.getPresetChoices(pname) != null)
+	  mstr = "PRESET";
 	
 	String vstr = "-";
 	if((vAction != null) && 
 	   vAction.getName().equals(mAction.getName()) && 
-	   vAction.getVersionID().equals(mAction.getVersionID()) && 
-	   (vAction.getSingleParamValue(pname) != null))
-	  vstr = vAction.getSingleParamValue(pname).toString();
+	   vAction.getVersionID().equals(mAction.getVersionID())) {
+	  if(vAction.getSingleParamValue(pname) != null)
+	    vstr = vAction.getSingleParamValue(pname).toString();
+	  else if(vAction.getPresetChoices(pname) != null)
+	    vstr = "PRESET";
+	}
 	
 	buf.append(pad(pname, 18) + ": " + pad(mstr, ' ', 30) + " : " + vstr);
       }
     }
     
-    for(ParamGroup sgroup : group.getSubGroups()) 
+    for(LayoutGroup sgroup : group.getSubGroups()) 
       printBothSingleParams(mAction, vAction, sgroup, buf, level+1);
   }
 
@@ -2452,7 +2461,7 @@ class ScriptApp
   printCheckedInSingleParams
   (
    BaseAction vAction, 
-   ParamGroup group, 
+   LayoutGroup group, 
    StringBuffer buf, 
    int level 
   ) 
@@ -2461,18 +2470,20 @@ class ScriptApp
     buf.append("\n\n" +
 	       pad(repeat('-', level*2) + " " + group.getNameUI() + " ", '-', 80));
 
-    for(String pname : group.getParamNames()) {
+    for(String pname : group.getEntries()) {
       buf.append("\n");
       if(pname != null) {
 	String vstr = "-"; 
 	if(vAction.getSingleParamValue(pname) != null) 
 	  vstr = vAction.getSingleParamValue(pname).toString();
+	else if(vAction.getPresetChoices(pname) != null)
+	  vstr = "PRESET";
 
 	buf.append(pad(pname, 18) + ": " + pad("-", ' ', 30) + " : " + vstr);
       }
     }
 
-    for(ParamGroup sgroup : group.getSubGroups()) 
+    for(LayoutGroup sgroup : group.getSubGroups()) 
       printCheckedInSingleParams(vAction, sgroup, buf, level+1);
   }
 
