@@ -1,4 +1,4 @@
-// $Id: ResourceSampleBlock.java,v 1.5 2005/01/22 06:10:09 jim Exp $
+// $Id: ResourceSampleBlock.java,v 1.6 2005/01/25 07:29:07 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -192,7 +192,7 @@ class ResourceSampleBlock
   }
 
   /**
-   * Get the time stamp of when the samples was recorded.
+   * Get the time stamp of when the samples were recorded.
    * 
    * @param idx
    *   The sample index.
