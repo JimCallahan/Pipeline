@@ -1,3 +1,412 @@
+2002-11-21  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/java/pipeline/Pipeline.java:
+	fixed a bug in both checkIn() and spawnPlPut(), checkin of trees now works
+
+	* src/java/pipeline/Pipeline.java:
+	added checkFiles arg to status methods, uses status to check for circular dependencies in register/mod commands
+
+2002-11-20  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* configure.in, src/java/pipeline/ClientApp.java, src/java/pipeline/DataMod.java, src/java/pipeline/Makefile.in, src/java/pipeline/Pipeline.java, src/java/pipeline/ProcMod.java, src/java/pipeline/tests/Makefile.in:
+	renamed JAVA vars, removed Houdini stuff phoenix/configure.in
+
+2002-11-19  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/java/pipeline/Pipeline.java:
+	added checkInTree code (still buggy), added more error checking for dependencies
+
+2002-11-15  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/java/pipeline/share/dbinit.sql.in: added Jeff to the users list
+
+	* src/java/pipeline/ClientApp.java:
+	added (missing) message for files where the timestamp would be printed
+
+	* src/java/pipeline/DataMod.java, src/java/pipeline/ProcMod.java:
+	added SQLExceptions for referenced to dependencies not found in the database
+
+2002-11-12  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/java/pipeline/ClientApp.java:
+	changed formatting of modified toolset/editor fields
+
+	* src/java/pipeline/docs/pipeline.html:
+	DataNode check now works (single node)
+
+	* src/java/pipeline/Pipeline.java: reorganized file list generation
+
+	* src/java/pipeline/ClientApp.java:
+	reformatted dates, now shows modified/up-to-date status of all node properties
+
+	* src/java/pipeline/BaseRsp.java:
+	fixed yet another bug in file list size
+
+	* src/java/pipeline/BaseRsp.java:
+	make seperate file list size getters for work/repository file lists
+
+	* src/java/pipeline/DataMod.java, src/java/pipeline/DataNode.java, src/java/pipeline/Pipeline.java, src/java/pipeline/ProcMod.java, src/java/pipeline/ProcNode.java:
+	moved filename generation methods to the Data/Proc Mod/Node classes
+
+	* src/java/pipeline/StatusRsp.java, src/java/pipeline/BaseRsp.java:
+	comments
+
+2002-11-11  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/java/pipeline/share/dbinit.sql.in:
+	added creation of users -- this is temporary until I come up with a way to automate the generation of user tables from NIS
+
+	* src/java/pipeline/Pipeline.java:
+	moved the rest of the SQL code to the other classes, throws SQLExceptions instead of returning FailureRsp objects
+
+	* src/java/pipeline/DataNode.java, src/java/pipeline/ProcNode.java:
+	moved dependency SQL to Proc/DataDepend classes, renamed checkIn() to insert(), throws SQLExceptions instead of returning FailureRsp objects
+
+	* src/java/pipeline/DataMod.java, src/java/pipeline/ProcMod.java:
+	added insert() method to help in the register process
+
+	* src/java/pipeline/ProcDepend.java, src/java/pipeline/DataDepend.java:
+	added insert(), insertMod() and deleteMod() methods -- converted from parts of Pipeline code
+
+	* src/java/pipeline/ClientApp.java:
+	when no files are affected, but node/mod properties are not up-to-date, print a (none) message in the file listing
+
+	* src/java/pipeline/BaseDepend.java, src/java/pipeline/BaseMod.java:
+	updated to use Maya v4.5
+
+2002-11-08  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/java/pipeline/Pipeline.java:
+	moved plput subprocess code into its own method, moved parts of modify() to the Data/Proc* classes
+
+	* src/java/pipeline/Makefile.in: added BaseDepend
+
+	* src/java/pipeline/DataDepend.java, src/java/pipeline/ProcDepend.java:
+	abstracted the common parts of Proc/DataDepend into BaseDepend
+
+	* src/java/pipeline/ClientApp.java:
+	change padding for dependency offsets to match date collumn
+
+	* src/java/pipeline/BaseNode.java: comments
+
+	* src/java/pipeline/BaseMod.java: added updateBasics()
+
+	* src/java/pipeline/BaseDepend.java:
+	abstracted the common parts of Proc/DataDepend into BaseDepend
+
+2002-11-07  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/java/pipeline/LogMessage.java: added lookupOrInsert()
+
+	* src/java/pipeline/DataVersion.java, src/java/pipeline/ProcVersion.java, src/java/pipeline/Pipeline.java:
+	moved Pipeline.getData/ProcNode() to Data/ProcNode.lookup()
+
+	* src/java/pipeline/ProcNode.java:
+	moved Pipeline.getProcNode() to ProcNode.lookup()
+
+	* src/java/pipeline/DataNode.java:
+	moved Pipeline.getDataNode() to DataNode.lookup()
+
+	* src/java/pipeline/DataMod.java: code beautification
+
+	* src/java/pipeline/BaseNode.java, src/java/pipeline/BaseVersion.java, src/java/pipeline/DataMod.java, src/java/pipeline/DataNode.java, src/java/pipeline/DataVersion.java, src/java/pipeline/Pipeline.java, src/java/pipeline/ProcMod.java, src/java/pipeline/ProcNode.java, src/java/pipeline/ProcVersion.java:
+	moved all but Pipeline.getProcNode() and Pipeline.getDataNode() to Data/Proc Mod/Node/Version classes
+
+	* src/java/pipeline/BaseMod.java, src/java/pipeline/BaseNode.java, src/java/pipeline/BaseVersion.java, src/java/pipeline/DataMod.java, src/java/pipeline/DataNode.java, src/java/pipeline/DataVersion.java, src/java/pipeline/GlueParser.jj, src/java/pipeline/Pipeline.java, src/java/pipeline/ProcMod.java, src/java/pipeline/ProcNode.java, src/java/pipeline/ProcVersion.java:
+	moved most of the SQL to the Data/Proc Mod/Node classes
+
+2002-11-06  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/java/pipeline/Pipeline.java, src/java/pipeline/ProcVersion.java, src/java/pipeline/ProcMod.java, src/java/pipeline/LogMessage.java, src/java/pipeline/DataVersion.java:
+	overhaul of TimeStamp fields
+
+	* src/java/pipeline/DataMod.java:
+	converted Pipeline.checkInNewData() to DataMod.checkIn()
+
+	* src/java/pipeline/ClientApp.java, src/java/pipeline/CleanFormatter.java, src/java/pipeline/BaseVersion.java, src/java/pipeline/BaseMod.java:
+	overhaul of TimeStamp fields
+
+	* src/java/pipeline/docs/pipeline.html, src/java/pipeline/share/logger.properties:
+	latest
+
+	* src/java/plutils/src/PlPut.cc: comments
+
+	* src/java/pipeline/tests/TestDataDependApp.java, src/java/pipeline/tests/TestDataNodeApp.java, src/java/pipeline/tests/TestDataVersionApp.java, src/java/pipeline/tests/TestProcDependApp.java, src/java/pipeline/tests/TestProcNodeApp.java, src/java/pipeline/tests/TestProcVersionApp.java, src/java/pipeline/share/dbinit.sql.in:
+	renamed Padding to Pad, NodeID to VersionID
+
+	* src/java/pipeline/ProcDepend.java:
+	removed obselete VersionID information on Depend classes
+
+	* src/java/pipeline/Pipeline.java:
+	checkin/status of DataNode's now works!
+
+	* src/java/pipeline/GlueParser.jj:
+	removed obselete VersionID information on Depend classes
+
+	* src/java/pipeline/DataVersion.java: added setDepend()
+
+	* src/java/pipeline/DataNode.java: fixed indentation
+
+	* src/java/pipeline/DataDepend.java:
+	removed obselete VersionID information on Depend classes
+
+	* src/java/pipeline/ClientOptsParser.jj: added View synonym for Edit
+
+	* src/java/pipeline/ClientApp.java:
+	removed obselete VersionID information on Depend classes
+
+	* src/java/pipeline/BaseRsp.java: fixed bug in file number count
+
+2002-11-05  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/java/pipeline/BaseMod.java: fixed indentation
+
+2002-11-04  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/java/pipeline/share/dbinit.sql.in:
+	changed fcheck to fcheck2 in EditorMap table
+
+	* src/java/pipeline/Pipeline.java:
+	simplified command line generation for editor subprocesses
+
+	* src/java/pipeline/share/dbinit.sql.in:
+	added lots more editor mappings
+
+	* src/java/pipeline/docs/pleditor.html: command line option reorg
+
+	* src/java/pipeline/SuffixEditorRsp.java:
+	added implementation of Comparable
+
+	* src/java/pipeline/Pipeline.java: command line option reorg (pleditor)
+
+	* src/java/pipeline/EditorOptsParser.jj, src/java/pipeline/EditorApp.java:
+	command line option reorg
+
+2002-11-02  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* config/bootstrap.sh: initial revision
+
+	* src/java/pipeline/share/logger.properties: commented debug loggers
+
+	* src/java/pipeline/share/dbinit.sql.in:
+	added Description fields to Data/ProcEditorMap tables
+
+	* src/java/pipeline/ToolsetApp.java:
+	got rid of extra newline at the end of toolset list
+
+	* src/java/pipeline/SuffixEditorRsp.java: added Description field
+
+	* src/java/pipeline/Pipeline.java:
+	added default toolset lookups and verification of explicit toolsets
+
+	* src/java/pipeline/EditorApp.java:
+	cleaned up printing of maps, added Description field
+
+2002-11-01  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/java/pipeline/DataMod.java, src/java/pipeline/DataNode.java, src/java/pipeline/GlueParser.jj:
+	made FrameRange optional
+
+	* src/java/pipeline/Pipeline.java:
+	added support methods for pltoolset, made FrameRange optional
+
+	* src/java/pipeline/share/logger.properties:
+	added pleditor and pltoolset specific loggers
+
+	* src/java/pipeline/Makefile.in: added support files for pltoolset
+
+	* src/java/pipeline/share/dbinit.sql.in:
+	added ToolsetMap table, Toolset entry in Globals table
+
+	* src/java/pipeline/docs/pleditor.html: latest...
+
+	* src/java/pipeline/docs/pipeline.html:
+	marked unfinished sections in red
+
+	* src/java/pipeline/PackageInfo.java.in, src/java/pipeline/EditorApp.java:
+	added MOZILLA config var
+
+	* src/java/pipeline/ClientOptsParser.jj, src/java/pipeline/ClientApp.java:
+	improves --help output, added --toolsets option
+
+	* configure.in: added MOZILLA config var
+
+	* src/java/pipeline/docs/pltoolset.html, src/java/pipeline/scripts/pltoolset.in, src/java/pipeline/ToolsetApp.java, src/java/pipeline/ToolsetOptsParser.jj:
+	initial revision
+
+2002-10-30  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/java/plutils/src/Makefile.am, src/java/pipeline/tests/Makefile.in, src/java/pipeline/share/dbinit.sql.in, src/java/pipeline/scripts/dbinit.in, src/java/pipeline/scripts/dbstart.in, src/java/pipeline/scripts/dbstop.in, src/java/pipeline/scripts/pipeline.in, src/java/pipeline/scripts/pleditor.in:
+	reorganized pipeline/toolset directories
+
+	* src/java/pipeline/docs/pipeline.html: added edit command
+
+	* src/java/pipeline/EditRsp.java: initial revision
+
+	* src/java/pipeline/ProcVersion.java, src/java/pipeline/ProcNode.java, src/java/pipeline/ProcMod.java:
+	made previously public ivars protected
+
+	* src/java/pipeline/Pipeline.java: added edit(), editHelper()
+
+	* src/java/pipeline/PackageInfo.java.in, src/java/pipeline/Makefile.in:
+	reorganized pipeline/toolset directories
+
+	* src/java/pipeline/FrameRange.java:
+	made previously public ivars protected, added isValid() predicate
+
+	* src/java/pipeline/FailureRsp.java, src/java/pipeline/DataVersion.java, src/java/pipeline/DataNode.java, src/java/pipeline/DataMod.java:
+	made previously public ivars protected
+
+	* src/java/pipeline/ClientOptsParser.jj: added edit command
+
+	* src/java/pipeline/ClientApp.java: added handleEdit()
+
+	* src/java/pipeline/BaseVersion.java, src/java/pipeline/BaseMod.java:
+	made previously public ivars protected
+
+	* configure.in: reorganized pipeline/toolset directories
+
+2002-10-29  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/java/pipeline/ClientOptsParser.jj:
+	added warning about --clone being unfinished
+
+	* src/java/pipeline/ClientApp.java:
+	cleaned up printing of FrameRange, Pad and Suffix from long status commands
+
+	* src/java/pipeline/Pipeline.java:
+	adding missing SQL for setting Suffix in checkInNewProc(), completed checkInProcVersion()
+
+	* configure.in, src/java/pipeline/Makefile.in:
+	added debugging options to javac
+
+	* src/java/pipeline/ClientApp.java:
+	added missing lookup of Proc/DataMod Suffix
+
+	* src/java/pipeline/BaseMod.java, src/java/pipeline/BaseNode.java, src/java/pipeline/BaseVersion.java:
+	initial revision
+
+	* src/java/pipeline/ClientApp.java, src/java/pipeline/ClientOptsParser.jj, src/java/pipeline/DataMod.java, src/java/pipeline/DataNode.java, src/java/pipeline/DataVersion.java, src/java/pipeline/docs/pipeline.html, src/java/pipeline/docs/pleditor.html, src/java/pipeline/EditorOptsParser.jj, src/java/pipeline/FrameRange.java, src/java/pipeline/GlueParser.jj, src/java/pipeline/LogMessage.java, src/java/pipeline/Makefile.in, src/java/pipeline/PackageInfo.java.in, src/java/pipeline/Pipeline.java, src/java/pipeline/ProcMod.java, src/java/pipeline/ProcNode.java, src/java/pipeline/ProcVersion.java, src/java/pipeline/share/dbinit.sql.in, src/java/pipeline/share/pg_hba.conf, src/java/pipeline/tests/Makefile.in, src/java/pipeline/tests/TestDataNodeApp.java, src/java/pipeline/tests/TestDataVersionApp.java, src/java/pipeline/tests/TestProcNodeApp.java, src/java/pipeline/tests/TestProcVersionApp.java:
+	added Pad, Suffix, FrameRange to Proc/DataNodes, removed Pattern, FrameRange from Proc/DataVersion, restructured database
+
+	* configure.in: added --with-plserver
+
+2002-10-23  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/java/pipeline/FramePattern.java: obsolete
+
+2002-10-22  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/java/pipeline/docs/pleditor.html, src/java/pipeline/EditorOptsParser.jj, src/java/pipeline/scripts/pleditor.in, src/java/pipeline/SuffixEditorRsp.java, src/java/pipeline/EditorApp.java:
+	initial revision
+
+	* configure.in, src/java/pipeline/ClientApp.java, src/java/pipeline/ClientOptsParser.jj, src/java/pipeline/docs/pipeline.html, src/java/pipeline/Makefile.in, src/java/pipeline/Pipeline.java, src/java/pipeline/scripts/dbinit.in, src/java/pipeline/share/dbinit.sql.in, src/java/pipeline/share/pg_hba.conf, src/java/pipeline/share/pg_ident.conf:
+	added pleditor
+
+2002-10-21  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/java/pipeline/share/dbinit.sql.in: comments
+
+	* src/java/pipeline/docs/pipeline.html: latest...
+
+	* src/java/pipeline/DataVersion.java, src/java/pipeline/ClientOptsParser.jj:
+	comments
+
+	* src/java/pipeline/ClientApp.java:
+	added modify time stamps to dependencies, cleaned up formatting
+
+	* configure.in: removed houdini stuff
+
+2002-10-13  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* configure.in, src/Makefile.am: moved houdini stuff to its own module
+
+2002-09-12  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* configure.in: renamed VEXDIR to HFSDIR
+
+2002-09-09  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/java/pipeline/Makefile.in:
+	updated automake header, added spaceing in rules...
+
+	* src/Makefile.am, configure.in: added Houdini/VEX stuff
+
+2002-09-06  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/java/pipeline/tests/Makefile.in: added TestTimeStampApp
+
+	* src/java/pipeline/Pipeline.java: half way done with checkin
+
+	* src/java/pipeline/Makefile.in:
+	fixed permissions for repository directory
+
+	* src/java/pipeline/ClientOptsParser.jj:
+	made --message option manditory
+
+	* src/java/pipeline/ClientApp.java:
+	added affected file listing for status
+
+	* src/java/pipeline/BaseRsp.java: initial revision
+
+	* src/java/pipeline/CheckInRsp.java, src/java/pipeline/StatusRsp.java:
+	added file lists and common base class
+
+	* src/java/.cvsignore: initial revision
+
+	* configure.in: added plutils subdirectory
+
+2002-08-30  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/java/pipeline/Makefile.in, src/java/pipeline/tests/Makefile.in:
+	re-added
+
+	* src/java/pipeline/docs/pipeline.html:
+	fixed referenced to pipelined and Berkeley DB to PostgreSQL
+
+	* src/java/pipeline/ClientOptsParser.jj:
+	commented debugging code in TimeStamp
+
+	* src/java/pipeline/CheckInRsp.java:
+	added file lists, fixed bug in states values
+
+	* src/java/pipeline/Makefile.in, src/java/pipeline/tests/Makefile.in:
+	should not have been checked in
+
+	* src/java/pipeline/share/dbinit.sql.in: added database permissions
+
+	* src/java/Makefile.am: added plutils
+
+	* src/java/Makefile.in: should not have been checked in
+
+	* src/java/plutils/.cvsignore, src/java/plutils/docs/.cvsignore, src/java/plutils/docs/Makefile.am, src/java/plutils/docs/plput.html, src/java/plutils/Makefile.am, src/java/plutils/src/.cvsignore, src/java/plutils/src/Makefile.am, src/java/plutils/src/PlPut.cc:
+	initial revision
+
+2002-08-29  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/java/pipeline/tests/TestTimeStampApp.java: obsolete
+
+	* src/java/pipeline/CheckInRsp.java, src/java/pipeline/FileDiff2.java, src/java/pipeline/FileDiff.java, src/java/pipeline/FramePattern.java, src/java/pipeline/tests/TestFileDiff2App.java, src/java/pipeline/tests/TestFileDiffApp.java, src/java/pipeline/tests/TestFramePatternApp.java:
+	initial revision
+
+	* src/java/pipeline/DataDepend.java, src/java/pipeline/DataMod.java, src/java/pipeline/DataNode.java, src/java/pipeline/DataVersion.java, src/java/pipeline/docs/pipeline.html, src/java/pipeline/FrameRange.java, src/java/pipeline/GlueParser.jj, src/java/pipeline/LogMessage.java, src/java/pipeline/Makefile.in, src/java/pipeline/Pipeline.java, src/java/pipeline/ProcDepend.java, src/java/pipeline/ProcMod.java, src/java/pipeline/ProcNode.java, src/java/pipeline/ProcVersion.java, src/java/pipeline/share/dbinit.sql.in, src/java/pipeline/StatusRsp.java, src/java/pipeline/tests/Makefile.in, src/java/pipeline/tests/TestVersionIDApp.java, src/java/pipeline/TimeStamp.java, src/java/pipeline/VersionID.java, ChangeLog, src/java/pipeline/ClientApp.java, src/java/pipeline/ClientOptsParser.jj:
+	single file checkin mostly works
+
+2002-08-26  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/java/pipeline/ClientApp.java, src/java/pipeline/ClientOptsParser.jj, src/java/pipeline/Pipeline.java:
+	recursive status now works, added statusTree() and statusSingle() for use internally by other commands like checkin
+
+	* src/java/pipeline/ClientApp.java, src/java/pipeline/ClientOptsParser.jj, src/java/pipeline/docs/pipeline.html, src/java/pipeline/Pipeline.java:
+	modify command now works
+
+2002-08-23  Jim Callahan  <jim@wrkstn17.rhinofx.com>
+
+	* src/java/pipeline/ClientApp.java, src/java/pipeline/ClientOptsParser.jj, src/java/pipeline/FrameRange.java, src/java/pipeline/Makefile.in, src/java/pipeline/Pipeline.java, src/java/pipeline/ProcMod.java, src/java/pipeline/share/dbinit.sql.in, src/java/pipeline/share/logger.properties, src/java/pipeline/StatusRsp.java:
+	register and basic status commands work again using JDBC
+
+	* configure.in: fixed default PLROOT
+
 2002-08-23  Jim Callahan  <jim@wrkstn17.rhinofx.com>
 
 	* src/java/pipeline/ClientApp.java, src/java/pipeline/ClientOptsParser.jj, src/java/pipeline/FrameRange.java, src/java/pipeline/Makefile.in, src/java/pipeline/Pipeline.java, src/java/pipeline/ProcMod.java, src/java/pipeline/share/dbinit.sql.in, src/java/pipeline/share/logger.properties, src/java/pipeline/StatusRsp.java:
