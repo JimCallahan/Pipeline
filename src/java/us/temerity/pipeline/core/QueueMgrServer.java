@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.16 2004/12/08 10:26:48 jim Exp $
+// $Id: QueueMgrServer.java,v 1.17 2005/01/15 02:54:55 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -58,7 +58,15 @@ class QueueMgrServer
   )
   { 
     super("QueueMgrServer");
-    init(dir, port, jobPort);
+
+    pQueueMgr = new QueueMgr(dir, jobPort);
+
+    if(port < 0) 
+      throw new IllegalArgumentException("Illegal port number (" + port + ")!");
+    pPort = port;
+
+    pShutdown = new AtomicBoolean(false);
+    pTasks    = new HashSet<HandlerTask>();
   }
   
   /** 
@@ -71,41 +79,7 @@ class QueueMgrServer
   public
   QueueMgrServer() 
   { 
-    super("QueueMgrServer");
-    init(PackageInfo.sQueueDir, PackageInfo.sQueuePort, PackageInfo.sJobPort);
-  }
-
-
-  /*-- CONSTRUCTION HELPERS ----------------------------------------------------------------*/
-
-  /**
-   * Initialize a new instance.
-   * 
-   * @param dir 
-   *   The root queue directory.
-   * 
-   * @param port 
-   *   The network port to monitor for incoming connections.
-   * 
-   * @param jobPort 
-   *   The network port listened to by the <B>pljobmgr</B><A>(1) daemons.
-   */ 
-  private synchronized void 
-  init
-  (
-   File dir, 
-   int port, 
-   int jobPort   
-  )
-  { 
-    pQueueMgr = new QueueMgr(dir, jobPort);
-
-    if(port < 0) 
-      throw new IllegalArgumentException("Illegal port number (" + port + ")!");
-    pPort = port;
-
-    pShutdown = new AtomicBoolean(false);
-    pTasks    = new HashSet<HandlerTask>();
+    this(PackageInfo.sQueueDir, PackageInfo.sQueuePort, PackageInfo.sJobPort);
   }
 
  
@@ -169,6 +143,8 @@ class QueueMgrServer
 	  for(HandlerTask task : pTasks) 
 	    task.join();
 	}
+
+	PluginMgrClient.getInstance().disconnect();
       }
       catch(InterruptedException ex) {
 	Logs.net.severe("Interrupted while shutting down!");
@@ -271,8 +247,8 @@ class QueueMgrServer
 	boolean live = true;
 	while(pSocket.isConnected() && live && !pShutdown.get()) {
 	  InputStream in    = pSocket.getInputStream();
-	  ObjectInput objIn = new ObjectInputStream(in);
-	  QueueRequest kind  = (QueueRequest) objIn.readObject();
+	  ObjectInput objIn = new PluginInputStream(in);
+	  QueueRequest kind = (QueueRequest) objIn.readObject();
 	  
 	  OutputStream out    = pSocket.getOutputStream();
 	  ObjectOutput objOut = new ObjectOutputStream(out);

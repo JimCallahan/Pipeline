@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.21 2004/11/17 13:33:50 jim Exp $
+// $Id: FileMgrClient.java,v 1.22 2005/01/15 02:53:20 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -63,8 +63,7 @@ class FileMgrClient
   public
   FileMgrClient() 
   {
-    super(PackageInfo.sFileServer, PackageInfo.sFilePort, 
-	  FileRequest.Disconnect, FileRequest.Shutdown);
+    this(PackageInfo.sFileServer, PackageInfo.sFilePort);
   }
 
 

@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.43 2005/01/07 07:07:51 jim Exp $
+// $Id: MasterMgrClient.java,v 1.44 2005/01/15 02:53:20 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -16,9 +16,9 @@ import java.util.regex.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A connection to the Pipeline master server daemon. <P> 
+ * A connection to the Pipeline master manager daemon. <P> 
  * 
- * This class handles network communication with the Pipeline master server daemon 
+ * This class handles network communication with the Pipeline master manager daemon 
  * <A HREF="../../../../man/plmaster.html"><B>plmaster</B><A>(1).  This class represents the
  * interface used by all Pipeline client programs and end user tools to interact with the 
  * Pipeline system.
@@ -61,8 +61,7 @@ class MasterMgrClient
   public
   MasterMgrClient() 
   {
-    super(PackageInfo.sMasterServer, PackageInfo.sMasterPort, 
-	  MasterRequest.Disconnect, MasterRequest.Shutdown);
+    this(PackageInfo.sMasterServer, PackageInfo.sMasterPort);
   }
 
 

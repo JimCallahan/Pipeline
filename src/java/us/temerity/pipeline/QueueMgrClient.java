@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.17 2004/10/25 18:56:46 jim Exp $
+// $Id: QueueMgrClient.java,v 1.18 2005/01/15 02:53:20 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -13,10 +13,10 @@ import java.util.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A connection to the Pipeline queue server daemon. <P> 
+ * A connection to the Pipeline queue manager daemon. <P> 
  * 
- * This class handles network communication with the Pipeline queue server daemon 
- * <A HREF="../../../../man/plmaster.html"><B>plqueuemgr</B><A>(1).  
+ * This class handles network communication with the Pipeline queue manager daemon 
+ * <A HREF="../../../../man/plqueuemgr.html"><B>plqueuemgr</B><A>(1).  
  */
 public
 class QueueMgrClient
@@ -44,33 +44,7 @@ class QueueMgrClient
   {
     super(hostname, port, 
 	  QueueRequest.Disconnect, QueueRequest.Shutdown);
-    init();
-  }
 
-  /** 
-   * Construct a new queue manager client. <P> 
-   * 
-   * The hostname and port used are those specified by the 
-   * <CODE><B>--queue-host</B>=<I>host</I></CODE> and 
-   * <CODE><B>--queue-port</B>=<I>num</I></CODE> options to <B>plconfig</B>(1).
-   */
-  public
-  QueueMgrClient() 
-  {
-    super(PackageInfo.sQueueServer, PackageInfo.sQueuePort, 
-	  QueueRequest.Disconnect, QueueRequest.Shutdown);
-    init();
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Initialize the fields.
-   */ 
-  private void 
-  init() 
-  {
     /* the canonical names of this host */ 
     pLocalHostnames = new TreeSet<String>();
     try {
@@ -87,7 +61,21 @@ class QueueMgrClient
       }
     }
     catch(Exception ex) {
+      Logs.net.warning(ex.getMessage());
     }
+  }
+
+  /** 
+   * Construct a new queue manager client. <P> 
+   * 
+   * The hostname and port used are those specified by the 
+   * <CODE><B>--queue-host</B>=<I>host</I></CODE> and 
+   * <CODE><B>--queue-port</B>=<I>num</I></CODE> options to <B>plconfig</B>(1).
+   */
+  public
+  QueueMgrClient() 
+  {
+    this(PackageInfo.sQueueServer, PackageInfo.sQueuePort);
   }
 
 

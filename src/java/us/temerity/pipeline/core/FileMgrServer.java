@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.20 2004/12/08 10:26:48 jim Exp $
+// $Id: FileMgrServer.java,v 1.21 2005/01/15 02:54:55 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -54,7 +54,15 @@ class FileMgrServer
   )
   { 
     super("FileMgrServer");
-    init(dir, port);
+
+    pFileMgr = new FileMgr(dir);
+
+    if(port < 0) 
+      throw new IllegalArgumentException("Illegal port number (" + port + ")!");
+    pPort = port;
+
+    pShutdown = new AtomicBoolean(false);
+    pTasks    = new HashSet<HandlerTask>();    
   }
   
   /** 
@@ -67,28 +75,7 @@ class FileMgrServer
   public
   FileMgrServer() 
   { 
-    super("FileMgrServer");
-    init(PackageInfo.sProdDir, PackageInfo.sFilePort);
-  }
-
-
-  /*-- CONSTRUCTION HELPERS ----------------------------------------------------------------*/
-
-  private synchronized void 
-  init
-  (
-   File dir, 
-   int port
-  )
-  { 
-    pFileMgr = new FileMgr(dir);
-
-    if(port < 0) 
-      throw new IllegalArgumentException("Illegal port number (" + port + ")!");
-    pPort = port;
-
-    pShutdown = new AtomicBoolean(false);
-    pTasks    = new HashSet<HandlerTask>();
+    this(PackageInfo.sProdDir, PackageInfo.sFilePort);
   }
 
  

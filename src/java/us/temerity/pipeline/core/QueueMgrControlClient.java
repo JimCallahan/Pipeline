@@ -1,4 +1,4 @@
-// $Id: QueueMgrControlClient.java,v 1.7 2004/10/21 07:35:47 jim Exp $
+// $Id: QueueMgrControlClient.java,v 1.8 2005/01/15 02:53:20 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -56,7 +56,7 @@ class QueueMgrControlClient
   public
   QueueMgrControlClient() 
   {
-    super(PackageInfo.sQueueServer, PackageInfo.sQueuePort);
+    this(PackageInfo.sQueueServer, PackageInfo.sQueuePort);
   }
 
 
