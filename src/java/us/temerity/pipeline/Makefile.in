@@ -64,6 +64,7 @@ EXEEXT = @EXEEXT@
 EXPORT_DYNAMIC = @EXPORT_DYNAMIC@
 EXTRA_DEBUG_SUBDIRS = @EXTRA_DEBUG_SUBDIRS@
 GEN_LIB = @GEN_LIB@
+ID = @ID@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
@@ -110,7 +111,6 @@ STRIP = @STRIP@
 TOOLSETDIR = @TOOLSETDIR@
 VERSION = @VERSION@
 XDIFF = @XDIFF@
-YPCAT = @YPCAT@
 YXXFLAGS = @YXXFLAGS@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
@@ -174,7 +174,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 #--------------------------------------------------------------------------------------------#
 
 all: Makefile PackageInfo.java $(TARGET) 
-#	$(MAKE) -C native $@
+	$(MAKE) -C native $@
 #	$(MAKE) -C plugin $@
 	$(MAKE) -C tests $@
 
@@ -193,7 +193,7 @@ java-all: $(JAVA_SOURCES)
 #--------------------------------------------------------------------------------------------#
 
 install: installdirs install-jar
-#	$(MAKE) -C native $@
+	$(MAKE) -C native $@
 #	$(MAKE) -C plugin $@
 
 install-jar: $(TARGET)
@@ -204,8 +204,8 @@ installdirs:
 	$(mkinstalldirs) $(prefix)/jar
 	$(mkinstalldirs) $(PRODDIR)/working
 	$(mkinstalldirs) $(PRODIR)/repository
-	chmod 0755 $(REPOSITORY)
-	chown pipeline.pipeline $(REPOSITORY)
+	chmod 0755 $(PRODIR)/repository
+	chown pipeline.pipeline $(PRODIR)/repository
 
 
 #--------------------------------------------------------------------------------------------#
@@ -225,7 +225,7 @@ check: all
 #--------------------------------------------------------------------------------------------#
 
 clean: clean-jar clean-class clean-aux clean-parser 
-#	$(MAKE) -C native $@
+	$(MAKE) -C native $@
 #	$(MAKE) -C plugin $@
 	$(MAKE) -C tests $@
 

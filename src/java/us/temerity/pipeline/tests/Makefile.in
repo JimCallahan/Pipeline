@@ -64,6 +64,7 @@ EXEEXT = @EXEEXT@
 EXPORT_DYNAMIC = @EXPORT_DYNAMIC@
 EXTRA_DEBUG_SUBDIRS = @EXTRA_DEBUG_SUBDIRS@
 GEN_LIB = @GEN_LIB@
+ID = @ID@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
@@ -110,7 +111,6 @@ STRIP = @STRIP@
 TOOLSETDIR = @TOOLSETDIR@
 VERSION = @VERSION@
 XDIFF = @XDIFF@
-YPCAT = @YPCAT@
 YXXFLAGS = @YXXFLAGS@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
@@ -166,8 +166,11 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
 #--------------------------------------------------------------------------------------------#
 
-           TESTS = Glue \
-                   FileSeq 
+#            TESTS = Glue \
+#                    FileSeq \
+#                    SubProcess 
+
+           TESTS = SubProcess 
 
 
          CLASSES = $(patsubst %,Test%App.class,$(TESTS))
@@ -178,7 +181,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
       JAVA_PATHS = -d . -classpath "../../../..:$(srcdir)/../../../.."
 
-    JAVA_SOURCES = $(shell ls $(srcdir)/*.java)
+    JAVA_SOURCES = $(shell ls *.java $(srcdir)/*.java)
 
 
 #--------------------------------------------------------------------------------------------#
