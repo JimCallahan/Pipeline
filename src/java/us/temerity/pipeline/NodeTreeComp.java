@@ -1,4 +1,4 @@
-// $Id: NodeTreeComp.java,v 1.3 2004/06/23 22:27:06 jim Exp $
+// $Id: NodeTreeComp.java,v 1.4 2004/10/24 03:52:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -30,7 +30,7 @@ class NodeTreeComp
   }  
 
   /**
-   * Construct a new node path component based on the given node path component entry.
+   * Construct a new node path component based on the given node path entry.
    * 
    * @param entry
    *   The node path component entry.
@@ -57,15 +57,20 @@ class NodeTreeComp
     if(entry.isLeaf()) {
       if(entry.isCheckedIn()) {
 	if(entry.hasWorking(author, view)) 
-	  pState = State.Working;
+	  pState = State.WorkingCurrentCheckedInSome;
+	else if(entry.hasWorking()) 
+	  pState = State.WorkingOtherCheckedInSome;
 	else 
-	  pState = State.CheckedIn;
+	  pState = State.WorkingNoneCheckedInSome;
       }
       else {
 	if(entry.hasWorking(author, view)) 
-	  pState = State.Pending;
+	  pState = State.WorkingCurrentCheckedInNone;
+	else if(entry.hasWorking())
+	  pState = State.WorkingOtherCheckedInNone;
 	else 
-	  pState = State.OtherPending;
+	  throw new IllegalArgumentException
+	    ("No working or checked-in versions exist for node component (" + pName + ")!");
       }
     }
     else {
@@ -100,7 +105,6 @@ class NodeTreeComp
     return pState;
   }
 
-
   
   /*----------------------------------------------------------------------------------------*/
   /*   C O N V E R S I O N                                                                  */
@@ -128,33 +132,42 @@ class NodeTreeComp
   enum State
   { 
     /**
-     * This is not the last component of a node path.
+     * This is a branch node path component. 
      */ 
     Branch, 
     
     /**
-     * This leaf node path component is only associated with a working version in the 
-     * current working area view.  
+     * This is a leaf node path component. A working version of the the node 
+     * exists in the current working area.  One or more checked-in versions of the 
+     * node also exist.
      */ 
-    Pending, 
+    WorkingCurrentCheckedInSome, 
 
     /**
-     * This leaf node path component is only associated with a working version in a  
-     * working area view other than the current one.
+     * This is a leaf node path component.  One or more working versions of the the node 
+     * exist but not in the current working area.  One or more checked-in versions of the 
+     * node also exist.
      */ 
-    OtherPending, 
+    WorkingOtherCheckedInSome, 
 
     /**
-     * This leaf node path component is associated with a checked-in version and is
-     * not checked-out in the current working area view.
+     * This is a leaf node path component.  No working version of the node exists in the 
+     * current working area.  However, one or more checked-in versions of the node do
+     * exist.
      */ 
-    CheckedIn, 
+    WorkingNoneCheckedInSome, 
 
     /**
-     * This leaf node path component is associated with both a checked-in version and a 
-     * working version in the current working area view. 
+     * This is a leaf node path component. A working version of the the node 
+     * exists in the current working area.  No checked-in versions of the exist.
      */ 
-    Working;
+    WorkingCurrentCheckedInNone, 
+
+    /**
+     * This is a leaf node path component.  One or more working versions of the the node 
+     * exist but not in the current working area.  No checked-in versions of the exist. 
+     */ 
+    WorkingOtherCheckedInNone;
   }
 
 

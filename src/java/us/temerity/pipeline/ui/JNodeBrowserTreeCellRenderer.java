@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserTreeCellRenderer.java,v 1.4 2004/06/23 22:32:13 jim Exp $
+// $Id: JNodeBrowserTreeCellRenderer.java,v 1.5 2004/10/24 03:52:03 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -65,45 +65,31 @@ class JNodeBrowserTreeCellRenderer
     DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) value;
     TreePath tpath = new TreePath(tnode.getPath());
     NodeTreeComp comp = (NodeTreeComp) tnode.getUserObject();
-
-    setText(comp.getName());
-
-    boolean selected = pBrowser.isSelected(tpath);
-
-    switch(comp.getState()) {
-    case Branch:
-      setIcon(sSpacerIcon);
-      break;
-
-    case Pending:
-      setIcon(sTreePendingIcon);
-      break;
-
-    case OtherPending:
-      setIcon(sTreeOtherPendingIcon);
-      break;
-
-    case CheckedIn:
-      setIcon(sTreeCheckedInIcon);
-      break;
-
-    case Working:
-      setIcon(sTreeWorkingIcon);
-      break;
-    }
-
-    switch(comp.getState()) {
-    case Branch:
-      setForeground(Color.white);
-      break;
-
-    case OtherPending:
-      setForeground(new Color(0.75f, 0.75f, 0.75f));
-      break;
+    if(comp != null) {
+      boolean selected = pBrowser.isSelected(tpath);
+      int idx = comp.getState().ordinal();
       
-    default:
-      setForeground(selected ? Color.yellow : Color.white);
-      break;
+      setText(comp.getName());
+      setIcon(selected ? sSelectedIcons[idx] : sIcons[idx]);
+      
+      switch(comp.getState()) {
+      case Branch:
+	setForeground(Color.white);
+	break;
+	
+      case WorkingOtherCheckedInNone:
+	setForeground(new Color(0.75f, 0.75f, 0.75f));
+	break;
+	
+      default:
+	setForeground(selected ? Color.yellow : Color.white);
+	break;
+      }
+    }
+    else {
+      setText("(hidden)");
+      setIcon(null);
+      setForeground(new Color(0.75f, 0.75f, 0.75f));
     }
     
     return this;
@@ -116,22 +102,23 @@ class JNodeBrowserTreeCellRenderer
 
   private static final long serialVersionUID = -3097835577102260282L;
 
+  private static Icon sIcons[] = {
+    new ImageIcon(LookAndFeelLoader.class.getResource("TreeCellSpacerIcon.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("TreeNodeIcon1.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("TreeNodeIcon2.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("TreeNodeIcon3.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("TreeNodeIcon4.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("TreeNodeIcon5.png"))
+  };
 
-  private static Icon sSpacerIcon = 
-    new ImageIcon(LookAndFeelLoader.class.getResource("TreeCellSpacerIcon.png"));
-
-  private static Icon sTreePendingIcon = 
-    new ImageIcon(LookAndFeelLoader.class.getResource("TreePendingIcon.png"));
-
-  private static Icon sTreeOtherPendingIcon = 
-    new ImageIcon(LookAndFeelLoader.class.getResource("TreeOtherPendingIcon.png"));
-
-  private static Icon sTreeWorkingIcon = 
-    new ImageIcon(LookAndFeelLoader.class.getResource("TreeWorkingIcon.png"));
-
-  private static Icon sTreeCheckedInIcon = 
-    new ImageIcon(LookAndFeelLoader.class.getResource("TreeCheckedInIcon.png"));
-
+  private static Icon sSelectedIcons[] = {
+    new ImageIcon(LookAndFeelLoader.class.getResource("TreeCellSpacerIcon.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("TreeNodeIcon1Selected.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("TreeNodeIcon2Selected.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("TreeNodeIcon3Selected.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("TreeNodeIcon4Selected.png")),
+    new ImageIcon(LookAndFeelLoader.class.getResource("TreeNodeIcon5Selected.png"))
+  };
 
 
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.27 2004/10/22 04:55:54 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.28 2004/10/24 03:52:03 jim Exp $
 
 import java.io.*; 
 import java.util.*;
@@ -369,7 +369,15 @@ class GenUserPrefsApp
 	new HotKeyPref
 	("Update the status of the node tree and selected nodes.", 
 	 "NodeBrowserUpdate", "Update Nodes:",
-	 false, false, false, 32)  /* Space */ 
+	 false, false, false, 32),  /* Space */ 
+
+	new BasePref(),
+
+	new HotKeyPref
+	("Show the node filter dialog.", 
+	 "NodeBrowserNodeFilter", "Node Filter:")	
+
+	// .. toggle individual filters hot keys
       };
 
       pPrefs.put("Panel|Node Browser|Hot Keys", prefs);
@@ -1011,7 +1019,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.27 2004/10/22 04:55:54 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.28 2004/10/24 03:52:03 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -1264,7 +1272,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.27 2004/10/22 04:55:54 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.28 2004/10/24 03:52:03 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 

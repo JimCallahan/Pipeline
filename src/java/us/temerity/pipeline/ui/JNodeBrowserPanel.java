@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.22 2004/09/27 04:54:35 jim Exp $
+// $Id: JNodeBrowserPanel.java,v 1.23 2004/10/24 03:52:03 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -23,7 +23,7 @@ import javax.swing.tree.*;
 public  
 class JNodeBrowserPanel
   extends JTopLevelPanel
-  implements TreeExpansionListener, MouseListener, KeyListener
+  implements TreeExpansionListener, MouseListener, KeyListener, ActionListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -61,7 +61,29 @@ class JNodeBrowserPanel
   private void 
   initUI()
   {
-    pSelected = new TreeSet<String>();
+    /* initialize fields */ 
+    {
+      pSelected = new TreeSet<String>();
+
+      pFilter = new TreeMap<NodeTreeComp.State, Boolean>();
+      pFilter.put(NodeTreeComp.State.WorkingCurrentCheckedInSome, true);
+      pFilter.put(NodeTreeComp.State.WorkingOtherCheckedInSome,   true);
+      pFilter.put(NodeTreeComp.State.WorkingNoneCheckedInSome,    true);
+      pFilter.put(NodeTreeComp.State.WorkingCurrentCheckedInNone, true);
+      pFilter.put(NodeTreeComp.State.WorkingOtherCheckedInNone,   true);
+    }
+
+    /* panel popup menu */ 
+    {
+      JMenuItem item;
+      
+      pPanelPopup = new JPopupMenu(); 
+      
+      item = new JMenuItem("Node Filter...");
+      item.setActionCommand("node-filter");
+      item.addActionListener(this);
+      pPanelPopup.add(item);  
+    }
 
     /* initialize the panel components */ 
     {
@@ -99,6 +121,9 @@ class JNodeBrowserPanel
 
     /* update the tree */ 
     updateNodeTree();
+
+    /* initialize dialogs */ 
+    pFilterDialog = new JNodeBrowserFilterDialog(this);
   }
 
 
@@ -235,6 +260,22 @@ class JNodeBrowserPanel
     updateNodeTree(getExpandedPaths(), null);
   }
   
+  /**
+   * Update the node filter.
+   * 
+   * @param filter
+   *   Whether to show node components with the given states.
+   */ 
+  public void 
+  updateFilter
+  (
+   TreeMap<NodeTreeComp.State, Boolean> filter
+  ) 
+  {
+    pFilter.putAll(filter);
+    updateNodeTree();
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -309,7 +350,7 @@ class JNodeBrowserPanel
     /* rebuild the tree model based on the updated node tree */ 
     {
       DefaultMutableTreeNode root = new DefaultMutableTreeNode(new NodeTreeComp());
-      rebuildTreeModel("", comp, root);
+      rebuildTreeModel("", comp, root, expanded, deep);
       
       DefaultTreeModel model = (DefaultTreeModel) pTree.getModel();
       model.setRoot(root);
@@ -372,21 +413,47 @@ class JNodeBrowserPanel
   (
    String path,
    NodeTreeComp cnode, 
-   DefaultMutableTreeNode tnode
+   DefaultMutableTreeNode tnode,
+   TreeSet<String> expanded,
+   String deep
   )
   { 
     for(NodeTreeComp comp : cnode.values()) {
       String cpath = (path + "/" + comp);
+      
       switch(comp.getState()) {
-      case OtherPending:
-	pSelected.remove(cpath);
+      case Branch:
+	{
+	  DefaultMutableTreeNode child = new DefaultMutableTreeNode(comp, true);
+	  tnode.add(child);
+      
+	  rebuildTreeModel(cpath, comp, child, expanded, deep); 
+
+	  if((expanded.contains(cpath) || (deep != null) && cpath.startsWith(deep)) &&
+	     child.isLeaf() && (comp.getState() == NodeTreeComp.State.Branch)) {
+	    DefaultMutableTreeNode hidden = new DefaultMutableTreeNode(null, false);
+	    child.add(hidden);
+	  }
+	}
+	break;
+
+      default:
+	{
+	  Boolean show = pFilter.get(comp.getState());
+	  if(show) {
+	    switch(comp.getState()) {
+	    case WorkingOtherCheckedInNone:
+	      pSelected.remove(cpath);
+	    }
+	    
+	    DefaultMutableTreeNode child = new DefaultMutableTreeNode(comp, false);
+	    tnode.add(child);
+	  }
+	  else {
+	    pSelected.remove(cpath);
+	  }
+	}
       }
-
-      DefaultMutableTreeNode child = 
-	new DefaultMutableTreeNode(comp, (comp.getState() == NodeTreeComp.State.Branch));
-      tnode.add(child);
-
-      rebuildTreeModel(cpath, comp, child);
     }
   }
 
@@ -404,7 +471,7 @@ class JNodeBrowserPanel
       while(e.hasMoreElements()) {
 	DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) e.nextElement(); 
  	NodeTreeComp comp = (NodeTreeComp) tnode.getUserObject();
- 	if(!comp.isEmpty()) 
+ 	if((comp != null) && !comp.isEmpty()) 
  	  pTree.expandPath(new TreePath(tnode.getPath()));
       }
     }    
@@ -508,123 +575,152 @@ class JNodeBrowserPanel
 
     /* local mouse events */ 
     int mods = e.getModifiersEx();
-    TreePath tpath = pTree.getPathForLocation(e.getX(), e.getY());
-    if(tpath != null) {
-      DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) tpath.getLastPathComponent();
-      NodeTreeComp comp = (NodeTreeComp) tnode.getUserObject();
-      switch(comp.getState()) {
-      case Branch:
-	{
-	  int on1  = (MouseEvent.BUTTON1_DOWN_MASK);
-	  
-	  int off1 = (MouseEvent.BUTTON2_DOWN_MASK | 
-		      MouseEvent.BUTTON3_DOWN_MASK | 
-		      MouseEvent.SHIFT_DOWN_MASK |
-		      MouseEvent.ALT_DOWN_MASK |
-		      MouseEvent.CTRL_DOWN_MASK);
-	  
-	  
-	  int on2  = (MouseEvent.BUTTON1_DOWN_MASK |
-		      MouseEvent.SHIFT_DOWN_MASK);
-	  
-	  int off2 = (MouseEvent.BUTTON2_DOWN_MASK | 
-		      MouseEvent.BUTTON3_DOWN_MASK | 
-		      MouseEvent.SHIFT_DOWN_MASK |
-		      MouseEvent.CTRL_DOWN_MASK);
-
-
-	  /* BUTTON1: expand/collapse */ 
-	  if((mods & (on1 | off1)) == on1) {
-	  }
-	  
-	  /* BUTTON1+SHIFT: deep expand/collapse */ 
-	  else if((mods & (on2 | off2)) == on2) {
-	    updateNodeTree(treePathToNodeName(tpath));
-	  }
-	  
-	  /* UNSUPPORTED */ 
-	  else {
-	    Toolkit.getDefaultToolkit().beep();
-	  }
-	}
-	break;
-
-      case Pending:
-      case Working:
-      case CheckedIn: 
-	{
-	  int on1  = (MouseEvent.BUTTON1_DOWN_MASK);
-	  
-	  int off1 = (MouseEvent.BUTTON2_DOWN_MASK | 
-		      MouseEvent.BUTTON3_DOWN_MASK | 
-		      MouseEvent.SHIFT_DOWN_MASK |
-		      MouseEvent.ALT_DOWN_MASK |
-		      MouseEvent.CTRL_DOWN_MASK);
-	  
-	  
-	  int on2  = (MouseEvent.BUTTON1_DOWN_MASK |
-		      MouseEvent.SHIFT_DOWN_MASK);
-	  
-	  int off2 = (MouseEvent.BUTTON2_DOWN_MASK | 
-		      MouseEvent.BUTTON3_DOWN_MASK | 
-		      MouseEvent.SHIFT_DOWN_MASK |
-		      MouseEvent.CTRL_DOWN_MASK);
-
-
-	  int on3  = (MouseEvent.BUTTON1_DOWN_MASK |
-		      MouseEvent.SHIFT_DOWN_MASK |
-		      MouseEvent.CTRL_DOWN_MASK);
-	  
-	  int off3 = (MouseEvent.BUTTON2_DOWN_MASK | 
-		      MouseEvent.BUTTON3_DOWN_MASK | 
-		      MouseEvent.ALT_DOWN_MASK);
-
-	  
-	  String sname = treePathToNodeName(tpath);
-	  boolean update = false;
-
-	  /* BUTTON1: replace selection */ 
-	  if((mods & (on1 | off1)) == on1) {
-	    pSelected.clear();
-	    pSelected.add(sname);
-	    repaint();
-	    update = true;
-	  }
-	  
-	  /* BUTTON1+SHIFT: toggle selection */ 
-	  else if((mods & (on2 | off2)) == on2) {
-	    if(pSelected.contains(sname))
-	      pSelected.remove(sname);
-	    else 
-	      pSelected.add(sname);
-	    repaint();
-	    update = true;
-	  }
-	    
-	  /* BUTTON1+SHIFT+CTRL: add to the selection */ 
-	  else if((mods & (on3 | off3)) == on3) {
-	    pSelected.add(sname);
-	    repaint();
-	    update = true;
-	  }
-
-	  /* update any associated node viewer */ 
-	  if(update) {
-	    UIMaster master = UIMaster.getInstance();
-	    if(pGroupID > 0) {
-	      PanelGroup<JNodeViewerPanel> panels = master.getNodeViewerPanels();
-	      JNodeViewerPanel viewer = panels.getPanel(pGroupID);
-	      if(viewer != null) {
-		viewer.setRoots(pAuthor, pView, pSelected);
-		viewer.updateManagerTitlePanel();
-		return;
+    switch(e.getButton()) {
+    case MouseEvent.BUTTON1:
+      {
+	TreePath tpath = pTree.getPathForLocation(e.getX(), e.getY());
+	if(tpath != null) {
+	  DefaultMutableTreeNode tnode = 
+	    (DefaultMutableTreeNode) tpath.getLastPathComponent();
+	  NodeTreeComp comp = (NodeTreeComp) tnode.getUserObject();
+	  if(comp != null) {
+	    switch(comp.getState()) {
+	    case Branch:
+	      {
+		int on1  = (MouseEvent.BUTTON1_DOWN_MASK);
+		
+		int off1 = (MouseEvent.BUTTON2_DOWN_MASK | 
+			    MouseEvent.BUTTON3_DOWN_MASK | 
+			    MouseEvent.SHIFT_DOWN_MASK |
+			    MouseEvent.ALT_DOWN_MASK |
+			    MouseEvent.CTRL_DOWN_MASK);
+		
+		
+		int on2  = (MouseEvent.BUTTON1_DOWN_MASK |
+			    MouseEvent.SHIFT_DOWN_MASK);
+		
+		int off2 = (MouseEvent.BUTTON2_DOWN_MASK | 
+			    MouseEvent.BUTTON3_DOWN_MASK | 
+			    MouseEvent.SHIFT_DOWN_MASK |
+			    MouseEvent.CTRL_DOWN_MASK);
+		
+		
+		/* BUTTON1: expand/collapse */ 
+		if((mods & (on1 | off1)) == on1) {
+		}
+		
+		/* BUTTON1+SHIFT: deep expand/collapse */ 
+		else if((mods & (on2 | off2)) == on2) {
+		  updateNodeTree(treePathToNodeName(tpath));
+		}
+		
+		/* UNSUPPORTED */ 
+		else {
+		  Toolkit.getDefaultToolkit().beep();
+		}
+	      }
+	      break;
+	      
+	    case WorkingCurrentCheckedInSome:
+	    case WorkingOtherCheckedInSome:
+	    case WorkingNoneCheckedInSome:
+	    case WorkingCurrentCheckedInNone:
+	      {
+		int on1  = (MouseEvent.BUTTON1_DOWN_MASK);
+		
+		int off1 = (MouseEvent.BUTTON2_DOWN_MASK | 
+			    MouseEvent.BUTTON3_DOWN_MASK | 
+			    MouseEvent.SHIFT_DOWN_MASK |
+			    MouseEvent.ALT_DOWN_MASK |
+			    MouseEvent.CTRL_DOWN_MASK);
+		
+		
+		int on2  = (MouseEvent.BUTTON1_DOWN_MASK |
+			    MouseEvent.SHIFT_DOWN_MASK);
+		
+		int off2 = (MouseEvent.BUTTON2_DOWN_MASK | 
+			    MouseEvent.BUTTON3_DOWN_MASK | 
+			    MouseEvent.SHIFT_DOWN_MASK |
+			    MouseEvent.CTRL_DOWN_MASK);
+		
+		
+		int on3  = (MouseEvent.BUTTON1_DOWN_MASK |
+			    MouseEvent.SHIFT_DOWN_MASK |
+			    MouseEvent.CTRL_DOWN_MASK);
+		
+		int off3 = (MouseEvent.BUTTON2_DOWN_MASK | 
+			    MouseEvent.BUTTON3_DOWN_MASK | 
+			    MouseEvent.ALT_DOWN_MASK);
+		
+		
+		String sname = treePathToNodeName(tpath);
+		boolean update = false;
+		
+		/* BUTTON1: replace selection */ 
+		if((mods & (on1 | off1)) == on1) {
+		  pSelected.clear();
+		  pSelected.add(sname);
+		  repaint();
+		  update = true;
+		}
+		
+		/* BUTTON1+SHIFT: toggle selection */ 
+		else if((mods & (on2 | off2)) == on2) {
+		  if(pSelected.contains(sname))
+		    pSelected.remove(sname);
+		else 
+		  pSelected.add(sname);
+		  repaint();
+		  update = true;
+		}
+		
+		/* BUTTON1+SHIFT+CTRL: add to the selection */ 
+		else if((mods & (on3 | off3)) == on3) {
+		  pSelected.add(sname);
+		  repaint();
+		  update = true;
+		}
+		
+		/* update any associated node viewer */ 
+		if(update) {
+		  UIMaster master = UIMaster.getInstance();
+		  if(pGroupID > 0) {
+		    PanelGroup<JNodeViewerPanel> panels = master.getNodeViewerPanels();
+		    JNodeViewerPanel viewer = panels.getPanel(pGroupID);
+		    if(viewer != null) {
+		      viewer.setRoots(pAuthor, pView, pSelected);
+		      viewer.updateManagerTitlePanel();
+		      return;
+		    }
+		  }
+		  
+		  clearSelection();
+		  repaint();
+		}
+		
+		Toolkit.getDefaultToolkit().beep();
 	      }
 	    }
-	    
-	    clearSelection();
-	    repaint();
 	  }
+	}
+      }
+      break;
 
+    case MouseEvent.BUTTON3:
+      {
+	int on1  = (MouseEvent.BUTTON3_DOWN_MASK);
+	
+	int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
+		    MouseEvent.BUTTON2_DOWN_MASK | 
+		    MouseEvent.SHIFT_DOWN_MASK |
+		    MouseEvent.ALT_DOWN_MASK |
+		    MouseEvent.CTRL_DOWN_MASK);
+	
+	/* BUTTON3: panel popup menu */ 
+	if((mods & (on1 | off1)) == on1) {
+	  pPanelPopup.show(e.getComponent(), e.getX(), e.getY());
+	}
+	else {
 	  Toolkit.getDefaultToolkit().beep();
 	}
       }
@@ -658,6 +754,13 @@ class JNodeBrowserPanel
     if((prefs.getNodeBrowserUpdate() != null) &&
        prefs.getNodeBrowserUpdate().wasPressed(e)) 
       doUpdate();
+    
+    else if((prefs.getNodeBrowserNodeFilter() != null) &&
+       prefs.getNodeBrowserNodeFilter().wasPressed(e)) 
+      doNodeFilter();
+
+    // .. toggle individual filters hot keys
+
     else {
       switch(e.getKeyCode()) {
       case KeyEvent.VK_SHIFT:
@@ -682,6 +785,26 @@ class JNodeBrowserPanel
    */ 
   public void 	
   keyTyped(KeyEvent e) {} 
+
+
+
+  /*-- ACTION LISTENER METHODS -------------------------------------------------------------*/
+
+  /** 
+   * Invoked when an action occurs. 
+   */ 
+  public void 
+  actionPerformed
+  (
+   ActionEvent e
+  ) 
+  {
+    String cmd = e.getActionCommand();
+    if(cmd.equals("node-filter"))
+      doNodeFilter();
+
+    // .. toggle individual filters hot keys
+  }
 
 
   
@@ -714,6 +837,15 @@ class JNodeBrowserPanel
     }
   }
 
+  /**
+   * Modify the node filter. 
+   */ 
+  public void 
+  doNodeFilter() 
+  {
+    pFilterDialog.updateFilter(pFilter);
+    pFilterDialog.setVisible(true);
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -735,6 +867,8 @@ class JNodeBrowserPanel
 
     if(!pSelected.isEmpty()) 
       encoder.encode("Selected", pSelected);
+
+    encoder.encode("Filter", pFilter);
   }
 
   public void 
@@ -754,6 +888,11 @@ class JNodeBrowserPanel
     TreeSet<String> expanded = (TreeSet<String>) decoder.decode("ExpandedPaths");
     if(expanded != null) 
       updateNodeTree(expanded, null);
+
+    TreeMap<NodeTreeComp.State, Boolean> filter = 
+      (TreeMap<NodeTreeComp.State, Boolean>) decoder.decode("Filter");
+    if(filter != null) 
+      pFilter.putAll(filter);
   }
   
 
@@ -777,4 +916,25 @@ class JNodeBrowserPanel
    * The fully resolved names of the selected nodes.
    */ 
   private TreeSet<String> pSelected;
+
+  /**
+   * Whether to show node components with the given states.
+   */ 
+  private TreeMap<NodeTreeComp.State, Boolean>  pFilter;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The panel popup menu.
+   */ 
+  private JPopupMenu  pPanelPopup; 
+
+
+  /**
+   * The editor dialog for node filters.
+   */ 
+  private JNodeBrowserFilterDialog  pFilterDialog; 
+
+
 }
