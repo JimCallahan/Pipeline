@@ -175,9 +175,11 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 #                     SubProcess \
 #                     Toolsets \
 #                     VersionID \
+#                     NativeFileSys \
+#                     NodeID \
 #                     Plugins 
 
-            TESTS = NativeFileSys
+            TESTS = VersionID
 
 
          CLASSES = $(patsubst %,Test%App.class,$(TESTS))
