@@ -27,10 +27,32 @@
 
 
 \begin_inset Formula $\left[\begin{array}{cccc}
-a_{11} & a_{12} & \cdots & a_{1m}\\
-a_{21} & a_{22} & \cdots & a_{2m}\\
+0 & 0 & \cdots & 0\\
+0 & 0 & \cdots & 0\\
 \vdots & \vdots & \ddots & \vdots\\
-a_{n1} & a_{n2} & \cdots & a_{nm}\end{array}\right]$
+0 & 0 & \cdots & 0\end{array}\right]$
+\end_inset 
+
+ 
+\layout Standard
+
+
+\begin_inset Formula $\left[\begin{array}{cccc}
+a_{11} & a_{12} & \cdots & a_{1n}\\
+a_{21} & a_{22} & \cdots & a_{2n}\\
+\vdots & \vdots & \ddots & \vdots\\
+a_{m1} & a_{m2} & \cdots & a_{mn}\end{array}\right]$
+\end_inset 
+
+ 
+\layout Standard
+
+
+\begin_inset Formula $\left[\begin{array}{cccc}
+a_{00} & a_{01} & \cdots & a_{0(n-1)}\\
+a_{10} & a_{11} & \cdots & a_{1(n-1)}\\
+\vdots & \vdots & \ddots & \vdots\\
+a_{(m-1)0} & a_{(m-1)1} & \cdots & a_{(m-1)(n-1)}\end{array}\right]$
 \end_inset 
 
 
@@ -38,10 +60,10 @@ a_{n1} & a_{n2} & \cdots & a_{nm}\end{array}\right]$
 
 
 \begin_inset Formula $\left[\begin{array}{cccc}
-a_{00} & a_{01} & \cdots & a_{0(m-1)}\\
-a_{10} & a_{11} & \cdots & a_{1(m-1)}\\
+a[0][0] & a[0][1] & \cdots & a[0][n-1]\\
+a[1][0] & a[1][1] & \cdots & a[1][n-1]\\
 \vdots & \vdots & \ddots & \vdots\\
-a_{(n-1)0} & a_{(n-1)1} & \cdots & a_{(n-1)(m-1)}\end{array}\right]$
+a[m-1][0] & a[m-1][1] & \cdots & a[m-1][n-1]\end{array}\right]$
 \end_inset 
 
 
@@ -49,21 +71,10 @@ a_{(n-1)0} & a_{(n-1)1} & \cdots & a_{(n-1)(m-1)}\end{array}\right]$
 
 
 \begin_inset Formula $\left[\begin{array}{cccc}
-a[0][0] & a[1][0] & \cdots & a[m-1][0]\\
-a[0][1] & a[1][1] & \cdots & a[m-1][1]\\
+a_{11} & a_{12} & \cdots & a_{1n}\\
+a_{21} & a_{22} & \cdots & a_{2n}\\
 \vdots & \vdots & \ddots & \vdots\\
-a[0][n-1] & a[1][n-1] & \cdots & a[m-1][n-1]\end{array}\right]$
-\end_inset 
-
-
-\layout Standard
-
-
-\begin_inset Formula $\left[\begin{array}{cccc}
-a_{11} & a_{12} & \cdots & a_{1m}\\
-a_{21} & a_{22} & \cdots & a_{2m}\\
-\vdots & \vdots & \ddots & \vdots\\
-a_{n1} & a_{n2} & \cdots & a_{nm}\end{array}\right]$
+a_{m1} & a_{m2} & \cdots & a_{mn}\end{array}\right]$
 \end_inset 
 
 
@@ -71,7 +82,7 @@ a_{n1} & a_{n2} & \cdots & a_{nm}\end{array}\right]$
 b_{1}\\
 b_{2}\\
 \vdots\\
-b_{m}\end{array}\right]$
+b_{n}\end{array}\right]$
 \end_inset 
 
 =
@@ -79,7 +90,7 @@ b_{m}\end{array}\right]$
 c_{1}\\
 c_{2}\\
 \vdots\\
-c_{n}\end{array}\right]$
+c_{m}\end{array}\right]$
 \end_inset 
 
 
@@ -87,10 +98,10 @@ c_{n}\end{array}\right]$
 
 
 \begin_inset Formula $\left[\begin{array}{cccc}
-a_{11} & a_{12} & \cdots & a_{1m}\\
-a_{21} & a_{22} & \cdots & a_{2m}\\
+a_{11} & a_{12} & \cdots & a_{1n}\\
+a_{21} & a_{22} & \cdots & a_{2n}\\
 \vdots & \vdots & \ddots & \vdots\\
-a_{n1} & a_{n2} & \cdots & a_{nm}\end{array}\right]$
+a_{m1} & a_{m2} & \cdots & a_{mn}\end{array}\right]$
 \end_inset 
 
 
@@ -98,7 +109,7 @@ a_{n1} & a_{n2} & \cdots & a_{nm}\end{array}\right]$
 b_{11} & b_{12} & \cdots & b_{1p}\\
 b_{21} & b_{22} & \cdots & b_{2p}\\
 \vdots & \vdots & \ddots & \vdots\\
-b_{m1} & b_{m2} & \cdots & b_{mp}\end{array}\right]$
+b_{n1} & b_{n2} & \cdots & b_{np}\end{array}\right]$
 \end_inset 
 
 =
@@ -106,7 +117,7 @@ b_{m1} & b_{m2} & \cdots & b_{mp}\end{array}\right]$
 c_{11} & c_{12} & \cdots & c_{1p}\\
 c_{21} & c_{22} & \cdots & c_{2p}\\
 \vdots & \vdots & \ddots & \vdots\\
-c_{n1} & c_{n2} & \cdots & c_{np}\end{array}\right]$
+c_{m1} & c_{m2} & \cdots & c_{mp}\end{array}\right]$
 \end_inset 
 
 
@@ -114,14 +125,14 @@ c_{n1} & c_{n2} & \cdots & c_{np}\end{array}\right]$
 
 
 \begin_inset Formula $\left[\begin{array}{cccc}
-a_{11} & a_{12} & \cdots & a_{1m}\\
-a_{21} & a_{22} & \cdots & a_{2m}\\
+a_{11} & a_{12} & \cdots & a_{1n}\\
+a_{21} & a_{22} & \cdots & a_{2n}\\
 \vdots & \vdots & \ddots & \vdots\\
-a_{n1} & a_{n2} & \cdots & a_{nm}\end{array}\right]\rightarrow\left[\begin{array}{cccc}
-a_{11} & a_{21} & \cdots & a_{1n}\\
-a_{12} & a_{22} & \cdots & a_{2n}\\
+a_{m1} & a_{m2} & \cdots & a_{mn}\end{array}\right]\rightarrow\left[\begin{array}{cccc}
+a_{11} & a_{21} & \cdots & a_{m1}\\
+a_{12} & a_{22} & \cdots & a_{m2}\\
 \vdots & \vdots & \ddots & \vdots\\
-a_{1m} & a_{2m} & \cdots & a_{nm}\end{array}\right]$
+a_{1n} & a_{2n} & \cdots & a_{mn}\end{array}\right]$
 \end_inset 
 
 
