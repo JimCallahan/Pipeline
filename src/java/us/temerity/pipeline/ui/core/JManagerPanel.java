@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.3 2005/01/07 07:10:15 jim Exp $
+// $Id: JManagerPanel.java,v 1.4 2005/01/07 16:17:02 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -317,17 +317,17 @@ class JManagerPanel
 
 	sub.addSeparator();
 
-	item = new JMenuItem("Editors...");
+	item = new JMenuItem("Editor Menus...");
 	item.setActionCommand("manage-editors");
 	item.addActionListener(this);
 	sub.add(item);  
 
-	item = new JMenuItem("Comparators...");
+	item = new JMenuItem("Comparator Menus...");
 	item.setActionCommand("manage-comparators");
 	item.addActionListener(this);
 	sub.add(item);  
 
-	item = new JMenuItem("Tools...");
+	item = new JMenuItem("Tool Menus...");
 	item.setActionCommand("manage-tools");
 	item.addActionListener(this);
 	sub.add(item);  
