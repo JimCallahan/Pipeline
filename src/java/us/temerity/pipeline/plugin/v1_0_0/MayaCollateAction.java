@@ -1,4 +1,4 @@
-// $Id: MayaCollateAction.java,v 1.1 2004/09/12 19:04:04 jim Exp $
+// $Id: MayaCollateAction.java,v 1.2 2004/09/13 04:04:29 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -14,26 +14,27 @@ import java.text.*;
 /*------------------------------------------------------------------------------------------*/
 
 /** 
- * Generates a new Maya scene by loaded a set of models and applying animation to them. <P> 
+ * Generates a new Maya scene from component scenes and imported animation data. <P> 
  * 
- * A new empty scene is first created.  The models are imported as Maya references from each
- * source node who's primary file sequence is a Maya scene file ("ma" or "mb").  Then
- * the animation data is applied to the imported models from each source node who's primary
- * file sequence is a Maya animation file ("anim") and which sets the per-source parameters 
- * below. <P> 
+ * A new empty scene is first created.  The component scenes are imported as Maya references 
+ * from each source node who's primary file sequence is a Maya scene file ("ma" or "mb").  
+ * Then the animation data is imported from each source node who's primary file sequence is 
+ * a Maya animation file ("anim") and which sets the per-source parameters below.  This 
+ * animation data is then applied objects in the to the generated scene. <P> 
  * 
- * There can be more than one animation applied to each model.  The per-source parameters 
- * associated with the animation nodes control how animation is applied.  Regions of animation
- * containing <B>Anim Length</B> frames are extracted from the source animation files starting
- * at <B>Anim Start</B> in each file.  The first extracted animation (lowest <B>Order</B>) is 
- * then applied to the generated Maya scene starting at <B>Start Frame</B>.  The following 
- * animations are concatented after each previous animation with a <B>Anim Offset</B> gap of 
- * frames bewteen each animation. <P> 
+ * The animation data is composed of a series of shots.  Each shot contains one or more 
+ * animations of equal frame length (End Frame - Start Frame) and which share the same 
+ * Shot Order.  Shots are processed in lowest to higest Shot Order.  The animations which 
+ * make up the first shot (lowest Shot Order) are applied to the generated Maya scene
+ * starting at Begin Frame. Subsequent shots are concatented after each previous shot with 
+ * an interval of Shot Gap frames between each animation.  The Start Frame and End Frame 
+ * per-source parameters for each animation specify the region of the animation which is 
+ * extracted from each animation file. <P> 
  * 
  * At each stage in the process, an optional MEL script may be evaluated.  The MEL scripts
  * must be the primary file sequence of one of the source nodes and are assigned to the 
- * appropriate stage using the <B>Intial MEL<B>, <B>Model MEL</B>, <B>Anim MEL</B> and 
- * <B>Final MEL</B> single valued parameters.
+ * appropriate stage using the Intial MEL, Model MEL, Anim MEL and Final MEL single valued 
+ * parameters. <P> 
  * 
  * This action defines the following single valued parameters: <BR>
  * 
@@ -46,8 +47,8 @@ import java.text.*;
  * 
  *   Model MEL <BR>
  *   <DIV style="margin-left: 40px;">
- *      The source node containing the MEL script to evaluate after importing all models but
- *      before loading and applying any animation data.
+ *      The source node containing the MEL script to evaluate after importing all models,
+ *      but before loading and applying any animation data.
  *   </DIV> <BR>
  * 
  *   Anim MEL <BR>
@@ -60,14 +61,14 @@ import java.text.*;
  *   <DIV style="margin-left: 40px;">
  *      The source node containing the MEL script to evaluate after saving the generated 
  *      Maya scene.
- *   </DIV> 
+ *   </DIV> <BR>
  * 
  *   Begin Frame <BR>
  *   <DIV style="margin-left: 40px;">
  *      The frame number of the first animation keyframe in the generated Maya scene. 
  *   </DIV> <BR>
  * 
- *   Key Delta <B> 
+ *   Key Delta <BR> 
  *   <DIV style="margin-left: 40px;">
  *      If this parameters is set, extra keyframes will be generated at (Start Frame + Key 
  *      Delta) and (End Frame - Key Delta) times to help preserve the shape of the curve
@@ -114,7 +115,7 @@ import java.text.*;
  *   Shot Gap<BR>
  *   <DIV style="margin-left: 40px;">
  *     The number of frames from the last frame of this animation to the first keyframe
- "     of the next animation.  If the Shot Gap is (0), then the last keyframe of this
+ *     of the next animation.  If the Shot Gap is (0), then the last keyframe of this
  *     animation will be replaced by the first keyframe of any successive animations.
  *   </DIV> <BR> 
  * 
@@ -445,11 +446,11 @@ class MayaCollateAction
 	   "  -reference\n" + 
 	   "  -type \"mayaAscii\"\n" +
 	   "  -namespace \"LOADANIM" + nspace + "\"\n" + 
-	       "  -options \"v=0\"\n" + 
+	   "  -options \"v=0\"\n" + 
 	   "  \"$WORKING" + file + "\";\n" + 
 	   "file\n" +
 	   "  -reference\n" +
-	   "   -type \"mayaAscii\"\n" +
+	   "  -type \"mayaAscii\"\n" +
 	   "  -namespace \"" + nspace + "\"\n" + 
 	   "  -options \"v=0\"\n" + 
 	   "  \"$WORKING" + file + "\";\n" +
