@@ -165,9 +165,11 @@ TOKEN :
 TOKEN :
 {
   <LOG_ALL:         "all">       
-| <LOG_ARG: 	    "arg">        
+| <LOG_ARG: 	    "arg">       
+| <LOG_GLU: 	    "glu">         
 | <LOG_OPS: 	    "ops">     
-| <LOG_NET: 	    "net">       
+| <LOG_NET: 	    "net">     
+| <LOG_PLG: 	    "plg">       
 | <COLON:  	    ":">       
 | <SEVERE:  	    "severe">  
 | <WARNING: 	    "warning"> 
@@ -361,8 +363,10 @@ void LoggerAll() :
   (<LOG_ALL> <COLON> v=LogLevel())
   {
     Logs.arg.setLevel(v); 
+    Logs.glu.setLevel(v);
     Logs.ops.setLevel(v);
     Logs.net.setLevel(v);
+    Logs.plg.setLevel(v);
   }
 }
 
@@ -383,7 +387,7 @@ Logger Logger() :
   Logger g;
 }
 {
-  (g=ArgLogger() | g=OpsLogger() | g=NetLogger())
+  (g=ArgLogger() | g=GluLogger() | g=OpsLogger() | g=NetLogger() | g=PlgLogger())
   {
     return g;
   }
@@ -395,6 +399,15 @@ Logger ArgLogger() :
   <LOG_ARG>
   {
     return Logs.arg;
+  }
+}
+
+Logger GluLogger() : 
+{}
+{
+  <LOG_GLU>
+  {
+    return Logs.glu;
   }
 }
 
@@ -413,6 +426,15 @@ Logger NetLogger() :
   <LOG_NET>
   {
     return Logs.net;
+  }
+}
+
+Logger PlgLogger() : 
+{}
+{
+  <LOG_PLG>
+  {
+    return Logs.plg;
   }
 }
 

@@ -155,6 +155,7 @@ TOKEN :
 | <LOG_ARG: 	    "arg">        
 | <LOG_OPS: 	    "ops">     
 | <LOG_NET: 	    "net">     
+| <LOG_PLG: 	    "plg">     
 | <LOG_SUB: 	    "sub">         
 | <COLON:  	    ":">       
 | <SEVERE:  	    "severe">  
@@ -195,6 +196,14 @@ Commands() :
 {
   (GlobalOpts() WS())*
   { 
+    try {
+      Plugins.init();
+    }
+    catch(PipelineException ex) {
+      Logs.plg.severe("Unable to load plugins: " + ex);
+      System.exit(1);
+    }
+
     return (new JobMgrServer(pJobPort));
   }
 }
@@ -325,6 +334,7 @@ void LoggerAll() :
     Logs.arg.setLevel(v); 
     Logs.ops.setLevel(v);
     Logs.net.setLevel(v);
+    Logs.plg.setLevel(v);
     Logs.sub.setLevel(v);
   }
 }
@@ -346,7 +356,7 @@ Logger Logger() :
   Logger g;
 }
 {
-  (g=ArgLogger() | g=OpsLogger() | g=NetLogger() | g=SubLogger())
+  (g=ArgLogger() | g=OpsLogger() | g=NetLogger() | g=PlgLogger() | g=SubLogger())
   {
     return g;
   }
@@ -376,6 +386,15 @@ Logger NetLogger() :
   <LOG_NET>
   {
     return Logs.net;
+  }
+}
+
+Logger PlgLogger() : 
+{}
+{
+  <LOG_PLG>
+  {
+    return Logs.plg;
   }
 }
 
