@@ -1,4 +1,4 @@
-// $Id: JResourceUsageHistoryDialog.java,v 1.10 2005/03/11 06:33:44 jim Exp $
+// $Id: JResourceUsageHistoryDialog.java,v 1.11 2005/04/02 20:57:31 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2475,7 +2475,7 @@ class JResourceUsageHistoryDialog
 	try {
 	  for(String hname : pHostnames) {
 	    try {
-	      master.updatePanelOp("Getting History: " + hname);
+	      master.updatePanelOp("Loading History: " + hname);
 	      ResourceSampleBlock block = qclient.getHostResourceSamples(hname);
 	      if(block != null) 
 		samples.put(hname, block);

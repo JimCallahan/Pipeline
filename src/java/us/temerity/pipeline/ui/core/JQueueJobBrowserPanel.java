@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.12 2005/03/21 07:01:57 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.13 2005/04/02 20:57:16 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2643,7 +2643,7 @@ class JQueueJobBrowserPanel
 	try {
 	  for(String hname : pHostnames) {
 	    try {
-	      master.updatePanelOp("Getting History: " + hname);
+	      master.updatePanelOp("Loading History: " + hname);
 	      ResourceSampleBlock block = qclient.getHostResourceSamples(hname);
 	      if(block != null) 
 		samples.put(hname, block);

@@ -1,4 +1,4 @@
-// $Id: JRestoreDialog.java,v 1.4 2005/03/23 20:46:09 jim Exp $
+// $Id: JRestoreDialog.java,v 1.5 2005/04/02 20:57:47 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -733,7 +733,7 @@ class JRestoreDialog
       UIMaster master = UIMaster.getInstance();
       TreeMap<String,TreeMap<VersionID,RestoreRequest>> reqs = null;
       synchronized(pUpdateLock) {
-	if(master.beginPanelOp("Getting Restore Requests...")) {
+	if(master.beginPanelOp("Loading Restore Requests...")) {
 	  try {
 	    MasterMgrClient client = master.getMasterMgrClient();
 	    reqs = client.getRestoreRequests();
@@ -872,7 +872,7 @@ class JRestoreDialog
 	    for(String aname : anames) {
 	      ArchiveVolume vol = pArchiveVolumes.get(aname);
 	      if(vol == null) {
-		master.updatePanelOp("Getting Archive Volume: " + aname);
+		master.updatePanelOp("Loading Archive Volume: " + aname);
 		vol = client.getArchive(aname);
 		pArchiveVolumes.put(aname, vol);
 	      }
