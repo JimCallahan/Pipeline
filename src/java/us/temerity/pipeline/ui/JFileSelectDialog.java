@@ -1,4 +1,4 @@
-// $Id: JFileSelectDialog.java,v 1.1 2004/05/29 06:38:43 jim Exp $
+// $Id: JFileSelectDialog.java,v 1.2 2004/05/29 07:23:00 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -502,7 +502,7 @@ class JFileSelectDialog
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID = 3369286732858994600L;
+  private static final long serialVersionUID = 257228426004498837L;
   
 
 

@@ -1,4 +1,4 @@
-// $Id: JTestPackageDialog.java,v 1.1 2004/05/29 06:38:43 jim Exp $
+// $Id: JTestPackageDialog.java,v 1.2 2004/05/29 07:23:00 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -255,7 +255,7 @@ class JTestPackageDialog
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID = 3273738289299034425L;
+  private static final long serialVersionUID = 2007445037961869833L;
   
   private static final int sSize = 450;
 
