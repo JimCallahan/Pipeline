@@ -395,6 +395,7 @@ AC_PATH_PROG(CHMOD, chmod, $PATH)
 AC_PATH_PROG(CHOWN, chown, $PATH)
 AC_PATH_PROG(DIFF, diff, $PATH)
 AC_PATH_PROG(MOZILLA, mozilla, $PATH)
+AC_PATH_PROG(GIMP, gimp, $PATH)
 
 AC_MSG_RESULT([ ])
 
@@ -771,6 +772,7 @@ AC_CONFIG_FILES([
   data/Makefile
 
   data/icons/Makefile
+  data/icons/gen-scm.bash
 
   src/Makefile
 
