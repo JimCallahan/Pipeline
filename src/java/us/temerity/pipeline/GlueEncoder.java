@@ -1,4 +1,4 @@
-// $Id: GlueEncoder.java,v 1.5 2004/02/25 02:59:28 jim Exp $
+// $Id: GlueEncoder.java,v 1.6 2004/02/25 06:19:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -322,17 +322,12 @@ class GlueEncoder
       boolean isCollection = false;
       boolean isMap        = false;
       {
-	assert(sGlueable != null);
-	Class iface[] = cls.getInterfaces();
-	int wk;
-	for(wk=0; wk<iface.length; wk++) { 
-	  if(sGlueable.isAssignableFrom(iface[wk])) 
-	    isGlueable = true;
-	  else if(sCollection.isAssignableFrom(iface[wk])) 
-	    isCollection = true;
-	  else if(sMap.isAssignableFrom(iface[wk])) 
-	    isMap = true;
-	}
+	if(sGlueable.isAssignableFrom(cls))
+	  isGlueable = true;
+	else if(sCollection.isAssignableFrom(cls))
+	  isCollection = true;
+	else if(sMap.isAssignableFrom(cls))
+	  isMap = true;
       }
       
       /* Glueable objects */ 
