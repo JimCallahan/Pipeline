@@ -1,4 +1,4 @@
-// $Id: GraphicalApp.java,v 1.4 2004/09/26 03:13:55 jim Exp $
+// $Id: GraphicalApp.java,v 1.5 2004/10/13 03:25:41 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -66,6 +66,12 @@ class GraphicalApp
     catch(ParseException ex) {
       handleParseException(ex);
       System.exit(1);
+    }
+    catch(InternalError ex) {
+      if(ex.getMessage().startsWith("Can't connect to X11 window server")) 
+	Logs.ops.severe(ex.getMessage());
+      else 
+	throw ex;
     }
   }
 
