@@ -1,4 +1,4 @@
-// $Id: JManageEditorsDialog.java,v 1.2 2005/01/07 16:18:22 jim Exp $
+// $Id: JManageToolMenusDialog.java,v 1.1 2005/01/09 23:14:19 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -9,14 +9,14 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   M A N A G E   E D I T O R S   D I A L O G                                              */
+/*   M A N A G E   T O O L   M E N U S   D I A L O G                                        */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Edits the layout of the editor plugin selection menu. 
+ * Edits the layout of the {@link BaseTool BaseTool} plugin selection menu. 
  */ 
 public 
-class JManageEditorsDialog
+class JManageToolMenusDialog
   extends JBaseManagePluginsDialog
 {
   /*----------------------------------------------------------------------------------------*/
@@ -27,9 +27,9 @@ class JManageEditorsDialog
    * Construct a new dialog.
    */ 
   public 
-  JManageEditorsDialog() 
+  JManageToolMenusDialog() 
   {
-    super("Manage Editor Menus"); 
+    super("Manage Tool Menus");
   }
 
 
@@ -49,8 +49,8 @@ class JManageEditorsDialog
     try {
       boolean isPrivileged = client.isPrivileged(false);
 
-      PluginMenuLayout layout = client.getEditorMenuLayout(); 
-      TreeMap<String,TreeSet<VersionID>> plugins = PluginMgr.getInstance().getEditors();
+      PluginMenuLayout layout = client.getToolMenuLayout(); 
+      TreeMap<String,TreeSet<VersionID>> plugins = PluginMgr.getInstance().getTools();
 
       updateMenuLayout(layout, plugins, isPrivileged);
     }
@@ -76,7 +76,7 @@ class JManageEditorsDialog
     MasterMgrClient client = master.getMasterMgrClient();
     try {
       PluginMenuLayout layout = getMenuLayout();
-      client.setEditorMenuLayout(layout); 
+      client.setToolMenuLayout(layout); 
     }
     catch(PipelineException ex) {
       master.showErrorDialog(ex);
@@ -89,6 +89,6 @@ class JManageEditorsDialog
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -2963299182259808775L;
+  private static final long serialVersionUID = -5308774884448103282L;
   
 }

@@ -1,4 +1,4 @@
-// $Id: JManageComparatorsDialog.java,v 1.2 2005/01/07 16:18:22 jim Exp $
+// $Id: JManageComparatorMenusDialog.java,v 1.1 2005/01/09 23:14:19 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -9,14 +9,14 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   M A N A G E   C O M P A R A T O R S   D I A L O G                                      */
+/*   M A N A G E   C O M P A R A T O R   M E N U S   D I A L O G                            */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Edits the layout of the comparator plugin selection menu. 
+ * Edits the layout of the {@link BaseComparator BaseComparator} plugin selection menu. 
  */ 
 public 
-class JManageComparatorsDialog
+class JManageComparatorMenusDialog
   extends JBaseManagePluginsDialog
 {
   /*----------------------------------------------------------------------------------------*/
@@ -27,7 +27,7 @@ class JManageComparatorsDialog
    * Construct a new dialog.
    */ 
   public 
-  JManageComparatorsDialog() 
+  JManageComparatorMenusDialog() 
   {
     super("Manage Comparator Menus"); 
   }
