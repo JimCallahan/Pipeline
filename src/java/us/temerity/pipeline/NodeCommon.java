@@ -1,4 +1,4 @@
-// $Id: NodeCommon.java,v 1.5 2004/03/13 17:17:47 jim Exp $
+// $Id: NodeCommon.java,v 1.6 2004/03/15 19:09:04 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -215,6 +215,7 @@ class NodeCommon
 	  throw new IllegalArgumentException
 	    ("The secondary file sequence (" + fseq + ") contained a different number " + 
 	     "of files than the primary file sequence (" + pPrimarySeq + ")!");
+	validatePrefix(fseq);
 	pSecondarySeqs.add(fseq);
       }
     }
@@ -605,6 +606,37 @@ class NodeCommon
       }
     }
   }
+
+  /** 
+   * Verify that the given file sequence has a legal prefix.
+   * 
+   * @param fseq [<B>in</B>]
+   *   The file sequence.
+   * 
+   * @throws IllegalArgumentException
+   *   If the prefix is illegal.
+   */
+  protected void 
+  validatePrefix
+  (
+   FileSeq fseq
+  ) 
+  {
+    char cs[] = fseq.getFilePattern().getPrefix().toCharArray();
+     
+    if(!Character.isLetter(cs[0]))
+      throw new IllegalArgumentException
+	("The first character the prefix for the file sequence (" + fseq + ") was not " + 
+	 "a letter!");
+
+    int ck;
+    for(ck=1; ck<cs.length; ck++) {
+      if(!(Character.isLetterOrDigit(cs[ck]) ||
+	   (cs[ck] == '_') || (cs[ck] == '-')))
+	throw new IllegalArgumentException
+	  ("The prefix of the file sequence (" + fseq + ") contained illegal characters!");
+    }
+  }
   
 
 
@@ -613,7 +645,7 @@ class NodeCommon
   /*----------------------------------------------------------------------------------------*/
 
   private static final long serialVersionUID = -3524516091753764603L;
-
+                                                
 
 
   /*----------------------------------------------------------------------------------------*/
