@@ -40,17 +40,15 @@ pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.tgz: pipeline-install \
 	tar -zcvf $@ pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@
 	rm -rf pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@
 
-pipeline-install: rpm-mkdirs
+pipeline-install: clean-rpms rpm-mkdirs
 	rm -rf DEST/pipeline DEST/plmaster DEST/plqueuemgr
-	DESTDIR=`pwd`/DEST/pipeline $(MAKE) -C ../src install
-	DESTDIR=`pwd`/DEST/pipeline $(MAKE) -C ../docs install
+	DESTDIR=`pwd`/DEST/pipeline $(MAKE) -C .. install
 	mkdir -p DEST/plmaster DEST/plqueuemgr/usr/share/pipeline
 	mv DEST/pipeline/usr DEST/plmaster
 	DESTDIR=`pwd`/SOURCES $(MAKE) -C ../src/standalone install
 
-rpm-mkdirs:
+rpm-mkdirs: 
 	mkdir -p BUILD DEST RPMS SPECS SOURCES SRPMS 
-
 
 
 RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
@@ -61,7 +59,6 @@ SPECS/pipeline-@CUSTOMER@-@VERSION@.spec: pipeline.spec
 	cp -f pipeline.spec $@
 
 
-
 RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
   SPECS/plqueuemgr-@CUSTOMER@-@VERSION@.spec
 	rpmbuild --rcfile rpmrc -bb SPECS/plqueuemgr-@CUSTOMER@-@VERSION@.spec
@@ -70,14 +67,12 @@ SPECS/plqueuemgr-@CUSTOMER@-@VERSION@.spec: plqueuemgr.spec
 	cp -f plqueuemgr.spec $@
 
 
-
 RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
   SPECS/plmaster-@CUSTOMER@-@VERSION@.spec
 	rpmbuild --rcfile rpmrc -bb SPECS/plmaster-@CUSTOMER@-@VERSION@.spec
 
 SPECS/plmaster-@CUSTOMER@-@VERSION@.spec: plmaster.spec
 	cp -f plmaster.spec $@
-
 
 
 SRPMS/plnotify-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.src.rpm: \
@@ -92,7 +87,7 @@ SPECS/plnotify-@CUSTOMER@-@VERSION@.spec: plnotify.spec
 
 install: all
 	mkdir -p ../../../../releases/pipeline
-	$(INSTALL_DATA) pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.bin \
+	$(INSTALL_PROGRAM) pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.bin \
           ../../../../releases/pipeline
 
 
