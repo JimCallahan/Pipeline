@@ -89,6 +89,25 @@ AC_MSG_RESULT([$RELEASE_STAMP])
 
 dnl ------------------------------------------------------------------------------------------
 
+AC_MSG_CHECKING([Customer Symbolic Name])
+
+AC_ARG_WITH([customer], 
+            [  --with-customer=NAME           The symbolic name of the customer.])
+
+AC_SUBST(CUSTOMER)
+CUSTOMER=/base/prod
+
+if test "$with_customer" 
+then
+  CUSTOMER=$with_customer
+else 
+  AC_MSG_ERROR([the --with-customer option is required.])
+fi
+
+AC_MSG_RESULT([$CUSTOMER])
+
+
+
 AC_MSG_CHECKING([Customer Profile])
 
 AC_ARG_WITH([customer-profile], 
@@ -105,6 +124,7 @@ else
 fi
 
 AC_MSG_RESULT([$CUSTOMER_PROFILE])
+
 
 
 AC_MSG_CHECKING([CryptoApp Directory])
@@ -128,6 +148,7 @@ else
 fi
 
 AC_MSG_RESULT([$CRYPTO_APP_DIR])
+
 
 
 AC_MSG_CHECKING([Customer Profile Version Check])
@@ -791,7 +812,7 @@ AC_CONFIG_FILES([
 
   rpm/Makefile
   rpm/pipeline.spec
-  rpm/install-header
+  rpm/headerB
   rpm/rpmrc
   rpm/rpmmacros
 
