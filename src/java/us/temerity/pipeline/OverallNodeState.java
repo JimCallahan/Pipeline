@@ -1,4 +1,4 @@
-// $Id: OverallNodeState.java,v 1.5 2004/04/17 19:49:01 jim Exp $
+// $Id: OverallNodeState.java,v 1.6 2004/04/18 04:07:43 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -25,7 +25,7 @@ enum OverallNodeState
    * 
    * The <CODE>VersionState</CODE> and therefore the <CODE>PropertyState</CODE>, 
    * <CODE>LinkState</CODE> and individual <CODE>FileState</CODE> of each file associated 
-   * with the node are <CODE>Pending</CODE>. <P> 
+   * with the node are also <CODE>Pending</CODE>. <P> 
    */
   Pending, 
 
@@ -78,7 +78,8 @@ enum OverallNodeState
    * The <CODE>VersionState</CODE> is <CODE>Identical</CODE>. One or more of the 
    * <CODE>PropertyState</CODE>, <CODE>LinkState</CODE> or individual <CODE>FileState</CODE>
    * of each file associated with the node are <CODE>Modified</CODE> or <CODE>Added</CODE>. 
-   * Also, none of these states are <CODE>NeedsCheckOut</CODE> or <CODE>Conflicted</CODE>.
+   * Also, none of these states are <CODE>NeedsCheckOut</CODE>, <CODE>Obsolete</CODE> or 
+   * <CODE>Conflicted</CODE>.
    */
   Modified,
 
@@ -87,9 +88,10 @@ enum OverallNodeState
    * latest checked-in version. <P> 
    *
    * The <CODE>VersionState</CODE> is <CODE>NeedsCheckOut</CODE>. One or more of the 
-   * <CODE>PropertyState</CODE>, <CODE>LinkState</CODE> or individual <CODE>FileState</CODE>
-   * of each file associated with the node are <CODE>NeedsCheckOut</CODE>. Also, none of 
-   * these states are <CODE>Added</CODE>, <CODE>Modified</CODE> or <CODE>Conflicted</CODE>.
+   * <CODE>PropertyState</CODE>,  <CODE>LinkState</CODE> or individual <CODE>FileState</CODE>
+   * of each file associated with the node are <CODE>NeedsCheckOut</CODE> or 
+   * <CODE>Obsolete</CODE>. Also, none of these states are <CODE>Added</CODE>, 
+   * <CODE>Modified</CODE> or <CODE>Conflicted</CODE>.
    */
   NeedsCheckOut,
 
@@ -103,7 +105,7 @@ enum OverallNodeState
    * <CODE>PropertyState</CODE>, <CODE>LinkState</CODE> or individual <CODE>FileState</CODE>
    * of each file associated with the node are <CODE>Conflicted</CODE>. Alternatively, some 
    * of the states are <CODE>Modified</CODE> or <CODE>Added</CODE> at the same time that
-   * some of them are <CODE>NeedsCheckOut</CODE>.
+   * some of them are <CODE>NeedsCheckOut</CODE> or <CODE>Obsolete</CODE>.
    */
   Conflicted;
 }
