@@ -1,4 +1,4 @@
-// $Id: PlPut.cc,v 1.2 2002/11/06 00:26:31 jim Exp $
+// $Id: PlPut.cc,v 1.3 2003/01/10 17:53:36 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -84,7 +84,7 @@ struct StringCmp
 void
 usage()
 {
-  cerr << "usage: plput [--verbose] < filelist\n"
+  cerr << "usage: plput [--verbose] listfile\n"
        << "       plput --help\n"
        << "       plput --html-help\n"
        << "       plput --version\n"
@@ -122,7 +122,9 @@ main
 
       exit(EXIT_SUCCESS);
     }
-    else if(strcmp(argv[1], "--verbose") == 0) {
+  }
+  else if(argc == 3) {
+    if(strcmp(argv[1], "--verbose") == 0) {
       FB::setWarnings(true);
       FB::setStageStats(true);
     }
@@ -132,26 +134,30 @@ main
     exit(EXIT_FAILURE);
   }
 
+  char* flist = argv[argc-1];
+
   FB::stageBegin("Working...");
   char msg[1024];
   
   /* read in the file list from stdin */ 
   typedef list<PathPair*> Pairs;
   Pairs pairs;
-  FB::stageBegin("Reading File List:");
+  FB::stageBegin("Reading File List: ");
   {
     char work[1024];
     char repo[1024];
 
-    while(cin) {
-      cin >> work >> repo;
-      if(!cin)
+    ifstream in(flist);
+    while(in) {
+      in >> work >> repo;
+      if(!in)
 	break;
       pairs.push_back(new PathPair(work, repo));
 
       sprintf(msg, "%s to %s", work, repo);
       FB::stageMsg(msg);
     }
+    in.close();
   }
   FB::stageEnd();
 
