@@ -271,16 +271,16 @@ TOKEN :
 | <LICENSE:      "--license">    
 
   /* global options */	
-| <MASTER_HOST:  "--master-host">   : HOST_NAME_SEP
+| <MASTER_HOST:  "--master-host">   : HOST_NAME_SEP2
 | <MASTER_PORT:  "--master-port">   : PORT_NUMBER_SEP
 
-| <QUEUE_HOST:   "--queue-host">    : HOST_NAME_SEP
+| <QUEUE_HOST:   "--queue-host">    : HOST_NAME_SEP2
 | <QUEUE_PORT:   "--queue-port">    : PORT_NUMBER_SEP
 | <JOB_PORT:     "--job-port">      : PORT_NUMBER_SEP
 
 | <LOG_FILE:          "--log-file">           : PATH_SEP
 | <STANDARD_LOG_FILE: "--standard-log-file"> 
-| <LOG_BACKUPS:       "--log-backups">        : INTEGER_SEP
+| <LOG_BACKUPS:       "--log-backups">        : INTEGER_SEP2
 | <LOG:               "--log">                : LOG_SEP
 
   /* batch */ 
@@ -425,6 +425,21 @@ TOKEN :
   <INTEGER:         (["0"-"9"])+>    : OPTIONS
 | <MISSING_INTEGER: ["\0"]>          : IGNORE_STATE
 | <ILLEGAL_INTEGER: (~["\0"])+>      : IGNORE_STATE
+} 
+
+<INTEGER_SEP2> 
+TOKEN :
+{
+  <EQ3:                    "=">   : INTEGER_STATE2
+| <MISSING_INTEGER_ARG2: ~["="]>  : IGNORE_STATE
+}
+
+<INTEGER_STATE2> 
+TOKEN :
+{
+  <INTEGER2:         (["0"-"9"])+>    : DEFAULT
+| <MISSING_INTEGER2: ["\0"]>          : IGNORE_STATE
+| <ILLEGAL_INTEGER2: (~["\0"])+>      : IGNORE_STATE
 }
 
 
@@ -432,14 +447,14 @@ TOKEN :
 <PORT_NUMBER_SEP> 
 TOKEN :
 {
-  <EQ3:                       "=">   : PORT_NUMBER_STATE
+  <EQ4:                       "=">   : PORT_NUMBER_STATE
 | <MISSING_PORT_NUMBER_ARG: ~["="]>  : IGNORE_STATE
 }
 
 <PORT_NUMBER_STATE> 
 TOKEN :
 {
-  <PORT_NUMBER:         (["0"-"9"])+>    : OPTIONS
+  <PORT_NUMBER:         (["0"-"9"])+>    : DEFAULT
 | <MISSING_PORT_NUMBER: ["\0"]>          : IGNORE_STATE
 | <ILLEGAL_PORT_NUMBER: (~["\0"])+>      : IGNORE_STATE
 }
@@ -449,7 +464,7 @@ TOKEN :
 <BYTE_SIZE_SEP> 
 TOKEN :
 {
-  <EQ4:                     "=">   : BYTE_SIZE_STATE
+  <EQ5:                     "=">   : BYTE_SIZE_STATE
 | <MISSING_BYTE_SIZE_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -469,7 +484,7 @@ TOKEN :
 <REAL_SEP> 
 TOKEN :
 {
-  <EQ5:                "=">   : REAL_STATE
+  <EQ6:                "=">   : REAL_STATE
 | <MISSING_REAL_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -487,7 +502,7 @@ TOKEN :
 <STRING_SEP> 
 TOKEN :
 {
-  <EQ6:                  "=">   : STRING_STATE
+  <EQ7:                  "=">   : STRING_STATE
 | <MISSING_STRING_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -503,7 +518,7 @@ TOKEN :
 <PATH_SEP> 
 TOKEN :
 {
-  <EQ7:                "=">   : PATH_STATE
+  <EQ8:                "=">   : PATH_STATE
 | <MISSING_PATH_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -511,7 +526,7 @@ TOKEN :
 TOKEN :
 {
   <PATH_ARG:       ("/")* ("../")* <PATH_ARG_COMP> 
-		     ("/" (".." | (<PATH_ARG_COMP>)+)?)*>      : OPTIONS
+		     ("/" (".." | (<PATH_ARG_COMP>)+)?)*>      : DEFAULT
 | <#PATH_ARG_COMP: (["a"-"z","A"-"Z","0"-"9","_","-","."])+>
 | <MISSING_PATH:   ["\0"]>                                     : IGNORE_STATE
 | <ILLEGAL_PATH:   (~["\0"])+>                                 : IGNORE_STATE
@@ -522,7 +537,7 @@ TOKEN :
 <HOST_NAME_SEP> 
 TOKEN :
 {
-  <EQ8:                    "=">   : HOST_NAME_STATE
+  <EQ9:                    "=">    : HOST_NAME_STATE
 | <MISSING_HOST_NAME_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -535,12 +550,28 @@ TOKEN :
 | <ILLEGAL_HOST_NAME: (~["\0"])+>                              : IGNORE_STATE
 }
 
+<HOST_NAME_SEP2> 
+TOKEN :
+{
+  <EQ10:                    "=">    : HOST_NAME_STATE2
+| <MISSING_HOST_NAME_ARG2: ~["="]>  : IGNORE_STATE
+}
+
+<HOST_NAME_STATE2> 
+TOKEN :
+{
+  <HOST_NAME2:          ((["a"-"z","A"-"Z","0"-"9"])+ 
+		        ("." (["a"-"z","A"-"Z","0"-"9"])+)*)>    : DEFAULT
+| <MISSING_HOST_NAME2:  ["\0"]>                                  : IGNORE_STATE
+| <ILLEGAL_HOST_NAME2:  (~["\0"])+>                              : IGNORE_STATE
+}
+
 
 /* node name arguments */ 
 <NODE_NAME_SEP> 
 TOKEN :
 {
-  <EQ9:                     "=">   : NODE_NAME_STATE
+  <EQ11:                    "=">   : NODE_NAME_STATE
 | <MISSING_NODE_NAME_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -559,7 +590,7 @@ TOKEN :
 <TOOLSET_NAME_SEP> 
 TOKEN :
 {
-  <EQ10:                       "=">           : TOOLSET_NAME_STATE
+  <EQ12:                       "=">   : TOOLSET_NAME_STATE
 | <MISSING_TOOLSET_NAME_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -577,7 +608,7 @@ TOKEN :
 <USER_NAME_SEP> 
 TOKEN :
 {
-  <EQ11:                    "=">   : USER_NAME_STATE
+  <EQ13:                    "=">   : USER_NAME_STATE
 | <MISSING_USER_NAME_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -595,7 +626,7 @@ TOKEN :
 <KEY_NAME_SEP> 
 TOKEN :
 {
-  <EQ12:                   "=">   : KEY_NAME_STATE
+  <EQ14:                   "=">   : KEY_NAME_STATE
 | <MISSING_KEY_NAME_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -613,7 +644,7 @@ TOKEN :
 <KEY_BIAS_SEP> 
 TOKEN :
 {
-  <EQ13:                   "=">   : KEY_BIAS_STATE
+  <EQ15:                   "=">   : KEY_BIAS_STATE
 | <MISSING_KEY_BIAS_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -633,7 +664,7 @@ TOKEN :
 <KEY_TOGGLE_SEP> 
 TOKEN :
 {
-  <EQ14:                     "=">   : KEY_TOGGLE_STATE
+  <EQ16:                     "=">   : KEY_TOGGLE_STATE
 | <MISSING_KEY_TOGGLE_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -652,7 +683,7 @@ TOKEN :
 <SUFFIX_SEP> 
 TOKEN :
 {
-  <EQ15:                 "=">   : SUFFIX_STATE
+  <EQ17:                 "=">   : SUFFIX_STATE
 | <MISSING_SUFFIX_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -669,7 +700,7 @@ TOKEN :
 <EDITOR_NAME_SEP> 
 TOKEN :
 {
-  <EQ16:                 "=">   : EDITOR_NAME_STATE
+  <EQ18:                 "=">   : EDITOR_NAME_STATE
 | <MISSING_EDITOR_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -688,7 +719,7 @@ TOKEN :
 <ACTION_NAME_SEP> 
 TOKEN :
 {
-  <EQ17:                 "=">   : ACTION_NAME_STATE
+  <EQ19:                 "=">   : ACTION_NAME_STATE
 | <MISSING_ACTION_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -707,7 +738,7 @@ TOKEN :
 <COMPARATOR_NAME_SEP> 
 TOKEN :
 {
-  <EQ18:                     "=">   : COMPARATOR_NAME_STATE
+  <EQ20:                     "=">   : COMPARATOR_NAME_STATE
 | <MISSING_COMPARATOR_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -726,7 +757,7 @@ TOKEN :
 <REVISION_NUMBER_SEP> 
 TOKEN :
 {
-  <EQ19:                          "=">   : REVISION_NUMBER_STATE
+  <EQ21:                          "=">   : REVISION_NUMBER_STATE
 | <MISSING_REVISION_NUMBER_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -745,7 +776,7 @@ TOKEN :
 <VIEW_NAME_SEP> 
 TOKEN :
 {
-  <EQ20:               "=">     : VIEW_NAME_STATE
+  <EQ22:               "=">     : VIEW_NAME_STATE
 | <MISSING_VIEW_ARG: ~["="]>    : IGNORE_STATE
 }
 
@@ -763,7 +794,7 @@ TOKEN :
 <PARAM_SEP> 
 TOKEN :
 {
-  <EQ21:                "=">      : PARAM_STATE
+  <EQ23:                "=">      : PARAM_STATE
 | <MISSING_PARAM_ARG: ~["="]>    : IGNORE_STATE
 }
 
@@ -789,7 +820,7 @@ TOKEN :
 <SOURCE_PARAM_SEP> 
 TOKEN :
 {
-  <EQ22:                       "=">   : SOURCE_PARAM_STATE
+  <EQ24:                       "=">   : SOURCE_PARAM_STATE
 | <MISSING_SOURCE_PARAM_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -808,7 +839,7 @@ TOKEN :
 <LINK_PARAM_SEP> 
 TOKEN :
 {
-  <EQ23:                     "=">    : LINK_PARAM_STATE
+  <EQ25:                     "=">    : LINK_PARAM_STATE
 | <MISSING_LINK_PARAM_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -837,7 +868,7 @@ TOKEN :
 <FILE_SEQ_SEP> 
 TOKEN :
 {
-  <EQ24:                   "=">   : FILE_SEQ_STATE
+  <EQ26:                   "=">   : FILE_SEQ_STATE
 | <MISSING_FILE_SEQ_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -869,7 +900,7 @@ TOKEN :
 <FRAME_RANGE_SEP> 
 TOKEN :
 {
-  <EQ25:                      "=">   : FRAME_RANGE_STATE
+  <EQ27:                      "=">   : FRAME_RANGE_STATE
 | <MISSING_FRAME_RANGE_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -888,7 +919,7 @@ TOKEN :
 <FRAME_NUMBERS_SEP> 
 TOKEN :
 {
-  <EQ26:                        "=">   : FRAME_NUMBERS_STATE
+  <EQ28:                        "=">   : FRAME_NUMBERS_STATE
 | <MISSING_FRAME_NUMBERS_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -907,7 +938,7 @@ TOKEN :
 <FRAME_INDICES_SEP> 
 TOKEN :
 {
-  <EQ27:                        "=">   : FRAME_INDICES_STATE
+  <EQ29:                        "=">   : FRAME_INDICES_STATE
 | <MISSING_FRAME_INDICES_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -926,7 +957,7 @@ TOKEN :
 <SECTION_SEP> 
 TOKEN :
 {
-  <EQ28:                  "=">   : SECTION_STATE
+  <EQ30:                  "=">   : SECTION_STATE
 | <MISSING_SECTION_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -958,7 +989,7 @@ TOKEN :
 <JOB_GROUP_ID_SEP>  
 TOKEN :
 {
-  <EQ29:                       "=">   : JOB_GROUP_ID_STATE
+  <EQ31:                       "=">   : JOB_GROUP_ID_STATE
 | <MISSING_JOB_GROUP_ID_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -975,7 +1006,7 @@ TOKEN :
 <JOB_ID_SEP>  
 TOKEN :
 {
-  <EQ30:                       "=">   : JOB_ID_STATE
+  <EQ32:                 "=">   : JOB_ID_STATE
 | <MISSING_JOB_ID_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -997,7 +1028,7 @@ TOKEN :
 <LOG_SEP> 
 TOKEN :
 {
-  <EQ31:              "=">   : LOG_STATE
+  <EQ33:              "=">   : LOG_STATE
 | <MISSING_LOG_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -1018,7 +1049,7 @@ TOKEN :
 | <FINER :  	    "finer">   
 | <FINEST:    	    "finest">  
 | <COMMA10: 	    ",">       
-| <AE25:            (["\0"])+>                   : OPTIONS
+| <AE25:            (["\0"])+>                   : DEFAULT
 | <ILLEGAL_LOG_ARG: (~["\0","a"-"z",":",","])+>  : IGNORE_STATE
 }
 
@@ -1588,7 +1619,7 @@ void LogBackups() :
   Token t;
 }
 {
-  <LOG_BACKUPS> EQ() t=<INTEGER>
+  <LOG_BACKUPS> EQ() t=<INTEGER2>
   { 
     pLogBackups = Integer.parseInt(t.image);
   }
@@ -4935,7 +4966,7 @@ HostName() :
   Token t;
 }
 {
-  t=<HOST_NAME>
+  (t=<HOST_NAME> | t=<HOST_NAME2>)
   {
     return t.image;
   }
@@ -5379,7 +5410,7 @@ EQ() :
    t=<EQ16> | t=<EQ17> | t=<EQ18> | t=<EQ19> | t=<EQ20> | 
    t=<EQ21> | t=<EQ22> | t=<EQ23> | t=<EQ24> | t=<EQ25> |
    t=<EQ26> | t=<EQ27> | t=<EQ28> | t=<EQ29> | t=<EQ30> | 
-   t=<EQ31>)
+   t=<EQ31> | t=<EQ32> | t=<EQ33>)
   { 
     return t; 
   }
