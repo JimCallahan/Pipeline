@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.23 2004/06/08 03:02:22 jim Exp $
+// $Id: JManagerPanel.java,v 1.24 2004/06/14 22:48:12 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -615,6 +615,8 @@ class JManagerPanel
       doNodeBrowserPanel();
     else if(cmd.equals("node-viewer"))
       doNodeViewerPanel();
+    else if(cmd.equals("node-details"))
+      doNodeDetailsPanel();
 
     // ...
 
@@ -708,6 +710,17 @@ class JManagerPanel
   {
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     setContents(new JNodeViewerPanel(dead));
+    dead.setGroupID(0);
+  }
+
+  /**
+   * Change the contents of this panel to a JNodeDetailsPanel. 
+   */ 
+  private void 
+  doNodeDetailsPanel()
+  {
+    JTopLevelPanel dead = (JTopLevelPanel) removeContents();
+    setContents(new JNodeDetailsPanel(dead));
     dead.setGroupID(0);
   }
 
