@@ -1,4 +1,4 @@
-// $Id: ViewerLinks.java,v 1.2 2004/05/17 03:14:15 jim Exp $
+// $Id: ViewerLinks.java,v 1.3 2004/05/18 00:34:31 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -46,40 +46,53 @@ class ViewerLinks
     {
       /* the root branch group */ 
       pRoot = new BranchGroup();
-      pRoot.setPickable(false);
       
-      /* the line visibility switch */ 
+      /* unpickable geometry group */ 
       {
-	pLineSwitch = new Switch();
-	pLineSwitch.setCapability(Switch.ALLOW_SWITCH_WRITE);
+	BranchGroup group = new BranchGroup();
+	group.setPickable(false);
 
-	pRoot.addChild(pLineSwitch);
+	/* the line visibility switch */ 
+	{
+	  pLineSwitch = new Switch();
+	  pLineSwitch.setCapability(Switch.ALLOW_SWITCH_WRITE);
+	  
+	  group.addChild(pLineSwitch);
+	}
+	
+	/* the line geometry */ 
+	{
+	  pLines = new Shape3D();
+	  pLines.setCapability(Shape3D.ALLOW_APPEARANCE_WRITE);
+	  pLines.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
+	  
+	  pLineSwitch.addChild(pLines);
+	}
+	
+	/* the line visibility switch */ 
+	{
+	  pTriSwitch = new Switch();
+	  pTriSwitch.setCapability(Switch.ALLOW_SWITCH_WRITE);
+	  
+	  group.addChild(pTriSwitch);
+	}
+	
+	/* the polygon geometry */ 
+	{
+	  pTris = new Shape3D();
+	  pTris.setCapability(Shape3D.ALLOW_APPEARANCE_WRITE);
+	  pTris.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
+	  
+	  pTriSwitch.addChild(pTris);
+	}
+
+	pRoot.addChild(group);
       }
-      
-      /* the line geometry */ 
+
+      /* the link relationship icons */ 
       {
-	pLines = new Shape3D();
-	pLines.setCapability(Shape3D.ALLOW_APPEARANCE_WRITE);
-	pLines.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
-
-	pLineSwitch.addChild(pLines);
-      }
-
-      /* the line visibility switch */ 
-      {
-	pTriSwitch = new Switch();
-	pTriSwitch.setCapability(Switch.ALLOW_SWITCH_WRITE);
-
-	pRoot.addChild(pTriSwitch);
-      }
-
-      /* the poluygon geometry */ 
-      {
-	pTris = new Shape3D();
-	pTris.setCapability(Shape3D.ALLOW_APPEARANCE_WRITE);
-	pTris.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
-
-	pTriSwitch.addChild(pTris);
+	pLinkRelationshipPool = new ViewerLinkRelationshipPool();
+	pRoot.addChild(pLinkRelationshipPool.getBranchGroup());
       }
     }    
   }
@@ -89,18 +102,6 @@ class ViewerLinks
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * Clear the previous set of links.
-   */
-  public void 
-  clear()
-  {
-    pUpstreamLinks.clear();
-    pDownstreamLinks.clear();
-
-    pLinksChanged = true;
-  }
   
   /** 
    * Add a link between the given viewer nodes. <P> 
@@ -179,6 +180,20 @@ class ViewerLinks
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Prepare to update the links.
+   */ 
+  public void 
+  updatePrep()
+  {
+    pUpstreamLinks.clear();
+    pDownstreamLinks.clear();
+
+    pLinksChanged = true;
+
+    pLinkRelationshipPool.updatePrep();
+  }
+  
+  /**
    * Update the geometry and appearance based on the current set of links.
    */ 
   public void 
@@ -251,13 +266,16 @@ class ViewerLinks
 	    
 	    for(Link link : links) {
 	      if(prefs.getDrawLinkPolicy()) {
-		switch(link.getDetails().getCatagory().getPolicy()) {
+		switch(link.getLink().getCatagory().getPolicy()) {
 		case None:
 		  lvCnt += 2;
 		case NodeStateOnly:
 		  lvCnt += 2;
 		}
 	      }
+
+	      if(prefs.getDrawLinkRelationship()) 
+		lvCnt += 2;
 	    }
 	  }
 
@@ -295,7 +313,7 @@ class ViewerLinks
 	      Point3d tpos = link.getTargetPos();
 	      Point3d spos = link.getSourcePos();
 	      
-	      centerX = (tpos.x + spos.x) * 0.5;
+	      centerX = tpos.x + (spos.x - tpos.x)*prefs.getLinkVerticalCrossbar();
 	      minY = maxY = tpos.y;
 	      
 	      tpos.x += 0.5 + prefs.getLinkGap();
@@ -324,12 +342,33 @@ class ViewerLinks
 	      
 	      spos.x -= 0.5 + prefs.getLinkGap();
 
-	      la.setCoordinate(lvi, new Point3d(centerX, spos.y, 0.0));  lvi++;
-	      la.setCoordinate(lvi, spos);                               lvi++;
+	      if(prefs.getDrawLinkRelationship()) {
+		ViewerLinkRelationship vlink = 
+		  pLinkRelationshipPool.addIcon(link.getLink(), link.getTargetNode());
+
+		double sp = spos.x;
+		if(prefs.getDrawLinkPolicy())
+		  sp -= prefs.getLinkPolicySize()*0.75;
+
+		double rc = (sp + centerX) * 0.5;
+
+		Point2d p = new Point2d(rc, spos.y);
+		vlink.setPosition(p);
+
+		la.setCoordinate(lvi, new Point3d(centerX, spos.y, 0.0));  lvi++;
+		la.setCoordinate(lvi, new Point3d(rc-0.25, spos.y, 0.0)); lvi++;
+
+		la.setCoordinate(lvi, new Point3d(rc+0.25, spos.y, 0.0)); lvi++;
+		la.setCoordinate(lvi, spos);                               lvi++;
+	      }
+	      else {
+		la.setCoordinate(lvi, new Point3d(centerX, spos.y, 0.0));  lvi++;
+		la.setCoordinate(lvi, spos);                               lvi++;
+	      }
 
 	      if(prefs.getDrawLinkPolicy()) {
 		double s = prefs.getLinkPolicySize();
-		switch(link.getDetails().getCatagory().getPolicy()) {
+		switch(link.getLink().getCatagory().getPolicy()) {
 		case None:
 		  la.setCoordinate(lvi, new Point3d(spos.x-s*0.75, spos.y-s, 0.0));  lvi++;
 		  la.setCoordinate(lvi, new Point3d(spos.x-s*0.75, spos.y+s, 0.0));  lvi++;
@@ -359,7 +398,7 @@ class ViewerLinks
 	      Point3d tpos = link.getTargetPos();
 	      Point3d spos = link.getSourcePos();
 	      
-	      centerX = (tpos.x + spos.x) * 0.5;
+	      centerX = tpos.x + (spos.x - tpos.x)*prefs.getLinkVerticalCrossbar();
 	      minY = maxY = spos.y;
 
 	      spos.x -= 0.5 + prefs.getLinkGap();
@@ -411,6 +450,8 @@ class ViewerLinks
 	}
       }
 	
+      pLinkRelationshipPool.update();      
+
       pLinksChanged = false;
     }
   }
@@ -428,9 +469,9 @@ class ViewerLinks
 // 	    System.out.print("    TargetPos: " + link.getTargetPos() + "\n" + 
 // 			     "    SourcePos: " + link.getSourcePos() + "\n" +
 // 			     "      Details: " + 
-// 			     link.getDetails().getCatagory().getName() + " [" + 
-// 			     link.getDetails().getCatagory().getPolicy() + "] - " + 
-// 			     link.getDetails().getRelationship() + "\n\n");
+// 			     link.getLink().getCatagory().getName() + " [" + 
+// 			     link.getLink().getCatagory().getPolicy() + "] - " + 
+// 			     link.getLink().getRelationship() + "\n\n");
 // 	  }
 // 	  System.out.print("\n");
 // 	}
@@ -481,8 +522,14 @@ class ViewerLinks
     ) 
     {
       pTarget  = target;
-      pSource  = source; 
+      pSource  = source;
       pDetails = details;
+    }
+
+    public ViewerNode
+    getTargetNode()
+    {
+      return pTarget;
     }
 
     public Point3d
@@ -498,7 +545,7 @@ class ViewerLinks
     }
     
     public LinkCommon
-    getDetails() 
+    getLink() 
     {
       return pDetails;
     }
@@ -545,7 +592,6 @@ class ViewerLinks
    */ 
   private boolean pLinksChanged; 
 
-
   /**
    * The root branch group. 
    */ 
@@ -573,5 +619,10 @@ class ViewerLinks
    */ 
   private Shape3D  pTris;  
 
+
+  /**
+   * The reusable set of link relationship icons.
+   */ 
+  private ViewerLinkRelationshipPool  pLinkRelationshipPool;
 
 }
