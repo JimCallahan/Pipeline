@@ -1,4 +1,4 @@
-// $Id: QueueHost.java,v 1.1 2004/07/24 18:28:45 jim Exp $
+// $Id: QueueHost.java,v 1.2 2004/07/28 19:13:12 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -39,7 +39,7 @@ class QueueHost
   public
   QueueHost
   (
-   String name
+   String name   
   ) 
   {
     super(name);
@@ -57,10 +57,7 @@ class QueueHost
   {
     pStatus = Status.Shutdown;
 
-    pMaxSamples = 50;
-    pLoad   = new LinkedList<Float>();
-    pMemory = new LinkedList<Long>();
-    pDisk   = new LinkedList<Long>();
+    pSamples = new LinkedList<ResourceSample>();
     
     pSelectionBiases = new TreeMap<String,Integer>();
   }
@@ -90,6 +87,12 @@ class QueueHost
   ) 
   {
     pStatus = status;
+
+    switch(pStatus) {
+    case Shutdown:
+    case Disabled:
+      pSamples.clear();
+    }
   }
 
 
@@ -129,191 +132,213 @@ class QueueHost
     pReservation = author;
   }
 
-  
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the last known sample of system load for the host.
+   * Get the maximum number jobs the host may be assigned.
    * 
    * @return 
-   *   The system load or <CODE>null</CODE> if no samples exist.
-   */ 
-  public Float 
-  getLoad() 
-  {
-    if(pLoad.isEmpty()) 
-      return null;
-    return pLoad.getLast();
-  }
-
-  /** 
-   * Get all of the samples of system load for the host.
-   * 
-   * @return 
-   *   The system load samples.  
-   */ 
-  public Float[]
-  getLoadSamples() 
-  {
-    Float load[] = new Float[pLoad.size()];
-    return (Float[]) pLoad.toArray(load);
-  }
-
-  
-  /**
-   * Get the last known sample of available free memory (in bytes) for the host.
-   * 
-   * @return 
-   *   The free memory or <CODE>null</CODE> if no samples exist.
-   */ 
-  public Long 
-  getMemory() 
-  {
-    if(pMemory.isEmpty()) 
-      return null;
-    return pMemory.getLast();
-  }
-
-  /** 
-   * Get all of the samples of available free memory (in bytes) for the host.
-   * 
-   * @return 
-   *   The system memory samples.  
-   */ 
-  public Long[]
-  getMemorySamples() 
-  {
-    Long memory[] = new Long[pMemory.size()];
-    return (Long[]) pMemory.toArray(memory);
-  }
-
-
-  /**
-   * Get the last known sample of available free temporary disk space (in bytes) for the host.
-   * 
-   * @return 
-   *   The free disk space or <CODE>null</CODE> if no samples exist.
-   */ 
-  public Long 
-  getDisk() 
-  {
-    if(pDisk.isEmpty()) 
-      return null;
-    return pDisk.getLast();
-  }
-
-  /** 
-   * Get all of the samples of available free temporary disk space (in bytes) for the host.
-   * 
-   * @return 
-   *   The system disk samples.  
-   */ 
-  public Long[]
-  getDiskSamples() 
-  {
-    Long disk[] = new Long[pDisk.size()];
-    return (Long[]) pDisk.toArray(disk);
-  }
-
-  
-  /**
-   * Add a resource usage sample for the host.
-   * 
-   * @param load
-   *   The system load.
-   * 
-   * @param memory
-   *   The available free memory (in bytes).
-   *
-   * @param disk
-   *   The available free temporary disk space (in bytes).
-   */ 
-  public void 
-  addResourceSample
-  (
-   float load, 
-   long memory, 
-   long disk
-  ) 
-  {
-    {
-      pLoad.addLast(load);
-
-      int extra = pLoad.size() - pMaxSamples;
-      while(extra > 0) {
-	pLoad.removeFirst();
-	extra--;
-      }
-    }
-
-    {
-      pMemory.addLast(memory);
-      
-      int extra = pMemory.size() - pMaxSamples;
-      while(extra > 0) {
-	pMemory.removeFirst();
-	extra--;
-      }
-    }
-
-    {
-      pDisk.addLast(disk);
-
-      int extra = pDisk.size() - pMaxSamples;
-      while(extra > 0) {
-	pDisk.removeFirst();
-	extra--;
-      }
-    }    
-  }
-
-  /**
-   * Get the maximum number of resource usage samples retained for the host.
+   *   The number of job slots.
    */ 
   public int 
-  getMaxSamples() 
+  getJobSlots() 
   {
-    return pMaxSamples;
+    return pJobSlots;
   }
 
   /**
-   * Set the maximum number of resource usage samples retained for the host.
+   * Set the maximum number jobs the host may be assigned.
+   * 
+   * @param slots
+   *   The number of job slots.
    */ 
-  public void
-  setMaxSamples
+  public void 
+  setJobSlots
   (
-   int samples
+   int slots
   ) 
   {
-    if(samples <= 0) 
+    if(slots < 0) 
       throw new IllegalArgumentException
-	("The number of samples (" + samples + ") must be positive!");
-    pMaxSamples = samples;
+	("The number of job slots (" + slots + ") cannot be negative!");
+    pJobSlots = slots;
+  }
+  
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the number of processors on the host.
+   * 
+   * @return 
+   *   The number of processors or <CODE>null</CODE> if unknown.
+   */ 
+  public Integer 
+  getNumProcessors() 
+  {
+    return pNumProcessors;
+  }
+
+  /**
+   * Set the the number of processors on the host.
+   * 
+   * @param procs 
+   *   The 
+   */ 
+  public void
+  setNumProcessors
+  (
+   Integer procs
+  ) 
+  {
+    pNumProcessors = procs; 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the total amount of memory (in bytes) on the host.
+   * 
+   * @return 
+   *   The memory size or <CODE>null</CODE> if unknown.
+   */ 
+  public Long 
+  getTotalMemory() 
+  {
+    return pTotalMemory;
+  }
+
+  /**
+   * Set the total amount of memory (in bytes) on the host.
+   * 
+   * @param memory 
+   *   The memory size.
+   */ 
+  public void
+  setTotalMemory
+  (
+   Long memory
+  ) 
+  {
+    pTotalMemory = memory;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the total amount of temporary disk space (in bytes) on the host.
+   * 
+   * @return 
+   *   The disk size or <CODE>null</CODE> if unknown.
+   */ 
+  public Long 
+  getTotalDisk() 
+  {
+    return pTotalDisk;
+  }
+
+  /**
+   * Set the total amount of temporary disk space (in bytes) on the host.
+   * 
+   * @param disk 
+   *   The disk size.
+   */ 
+  public void
+  setTotalDisk
+  (
+   Long disk
+  ) 
+  {
+    pTotalDisk = disk;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the maximum interval of time (in milliseconds) that system resource samples 
+   * are retained.
+   */
+  public static long
+  getSampleInterval()
+  {
+    return sSampleInterval;
+  }
+
+  /**
+   * Get the latest system resource sample.
+   * 
+   * @return 
+   *   The sample or <CODE>null</CODE> if there are no samples.
+   */ 
+  public ResourceSample
+  getLatestSample() 
+  {
+    if(!pSamples.isEmpty()) 
+      return pSamples.getFirst();
+    return null;
+  }
+
+  /**
+   * Get all of the system resource samples within the sample window.
+   * 
+   * @return 
+   *   The sample or <CODE>null</CODE> if there are no samples.
+   */ 
+  public List<ResourceSample> 
+  getSamples() 
+  {
+    pruneSamples();
+    return Collections.unmodifiableList(pSamples);
+  }
+  
+  /**
+   * Add a system resource usage sample.
+   * 
+   * @param sample
+   *   The sample of system resources.
+   */ 
+  public void 
+  addSample
+  (
+   ResourceSample sample
+  ) 
+  {
+    assert(pSamples.isEmpty() || 
+	   (pSamples.getFirst().getTimeStamp().compareTo(sample.getTimeStamp()) < 0));
+
+    pSamples.addFirst(sample);
+  }
+
+  /**
+   * Remove all samples older than the sample interval.
+   */ 
+  private void
+  pruneSamples()
+  {
+    long start = 0;
     {
-      int extra = pLoad.size() - pMaxSamples;
-      while(extra > 0) {
-	pLoad.removeFirst();
-	extra--;
-      }
+      ResourceSample sample = getLatestSample();
+      if(sample == null) 
+	return;
+      start = sample.getTimeStamp().getTime();
     }
 
-    {
-      int extra = pMemory.size() - pMaxSamples;
-      while(extra > 0) {
-	pMemory.removeFirst();
-	extra--;
-      }
-    }
+    boolean strip = false;
+    Iterator<ResourceSample> iter = pSamples.listIterator(0); 
+    while(iter.hasNext()) {
+      ResourceSample sample = iter.next();
+      if(!strip && ((start - sample.getTimeStamp().getTime()) > sSampleInterval))
+	strip = true;
 
-    {
-      int extra = pDisk.size() - pMaxSamples;
-      while(extra > 0) {
-	pDisk.removeFirst();
-	extra--;
-      }
+      if(strip) 
+	iter.remove();
     }
   }
+
 
   
   /*----------------------------------------------------------------------------------------*/
@@ -399,41 +424,52 @@ class QueueHost
   /**
    * Get the combined bias for a job with the given job requirements. <P> 
    * 
-   * This method will return <CODE>null</CODE> if the host is unable to provide the 
-   * system resourses specified by the job requirements or does not support all of the 
-   * selection keys required.
+   * This method will return <CODE>null</CODE> under the following conditions: <P> 
+   * 
+   * <DIV style="margin-left: 40px;">
+   *   All of the slots are already filled by running jobs.<P>
+   *   There are no system resource samples newer than the sample interval.<P>
+   *   The host is unable to provide the system resourses specified by the job 
+   *   requirements. <P>
+   *   The host does not support all of the selection keys required.<P>
    * 
    * @param jreqs
    *   The requirements that this host must meet in order to be eligable to run the job. 
+   * 
+   * @param keys 
+   *   The names of the valid selection keys.
    * 
    * @return 
    *   The combined selection bias or <CODE>null</CODE> if the host fails the requirements.
    */ 
   public Integer
-  checkJobRequirements
+  computeJobBias
   (
-   JobReqs jreqs
+   JobReqs jreqs, 
+   TreeSet<String> keys
   )
   {
-    Float load = getLoad();
-    if((load == null) || (load > jreqs.getMaxLoad())) 
+    ResourceSample sample = getLatestSample();
+    if(sample == null) 
       return null;
 
-    Long mem = getMemory();
-    if((mem == null) || (mem < jreqs.getMinMemory())) 
-      return null;
-
-    Long disk = getDisk();
-    if((disk == null) || (disk < jreqs.getMinDisk())) 
+    long now = Dates.now().getTime();
+    if(((now - sample.getTimeStamp().getTime()) > sSampleInterval) ||
+       (sample.getNumJobs() >= pJobSlots) ||
+       (sample.getLoad() > jreqs.getMaxLoad()) ||
+       (sample.getMemory() < jreqs.getMinMemory()) || 
+       (sample.getDisk() < jreqs.getMinDisk()))
       return null;
 
     int total = 0;
     for(String key : jreqs.getSelectionKeys()) {
-      Integer bias = pSelectionBiases.get(key);
-      if(bias == null) 
-	return null;
+      if(keys.contains(key)) {
+	Integer bias = pSelectionBiases.get(key);
+	if(bias == null) 
+	  return null;
       
-      total += bias;
+	total += bias;
+      }
     }
 
     return total;
@@ -455,8 +491,8 @@ class QueueHost
     
     if(pReservation != null) 
       encoder.encode("Reservation", pReservation);
-    
-    encoder.encode("MaxSamples", pMaxSamples);
+     
+    encoder.encode("JobSlots", pJobSlots);
 
     if(!pSelectionBiases.isEmpty()) 
       encoder.encode("SelectionBiases", pSelectionBiases);
@@ -475,10 +511,10 @@ class QueueHost
     if(author != null) 
       pReservation = author;
 
-    Integer samples = (Integer) decoder.decode("MaxSamples"); 
-    if(samples == null) 
-      throw new GlueException("The \"MaxSamples\" was missing!");
-    pMaxSamples = samples;
+    Integer slots = (Integer) decoder.decode("JobSlots"); 
+    if(slots == null) 
+      throw new GlueException("The \"JobSlots\" was missing!");
+    pJobSlots = slots;
 
     TreeMap<String,Integer> biases = 
       (TreeMap<String,Integer>) decoder.decode("SelectionBiases"); 
@@ -489,7 +525,7 @@ class QueueHost
   
 
   /*----------------------------------------------------------------------------------------*/
-  /*   I N T E R N A L   C L A S S E S                                                      */
+  /*   P U B L I C   C L A S S E S                                                          */
   /*----------------------------------------------------------------------------------------*/
   
   /**
@@ -520,6 +556,32 @@ class QueueHost
      * run new jobs which meet the selection criteria for the host.
      */ 
     Enabled; 
+
+    /**
+     * Get the list of all possible values.
+     */ 
+    public static ArrayList<Status>
+    all() 
+    {
+      Status values[] = values();
+      ArrayList<Status> all = new ArrayList<Status>(values.length);
+      int wk;
+      for(wk=0; wk<values.length; wk++)
+	all.add(values[wk]);
+      return all;
+    }
+    
+    /**
+     * Get the list of human friendly string representation for all possible values.
+     */ 
+    public static ArrayList<String>
+    titles() 
+    {
+      ArrayList<String> titles = new ArrayList<String>();
+      for(Status status : Status.all()) 
+	titles.add(status.toString());
+      return titles;
+    }
   }
 
 
@@ -529,6 +591,11 @@ class QueueHost
   /*----------------------------------------------------------------------------------------*/
 
   private static final long serialVersionUID = -5965011973074654660L;
+
+  /**
+   * The maximum interval of time (in milliseconds) for which samples are retained.
+   */ 
+  private static final long  sSampleInterval = 1800000;  /* 30-minutes */ 
 
 
 
@@ -550,25 +617,33 @@ class QueueHost
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The maxmimum number of number of resource usage samples retained for the host.
+   * The maximum number jobs the host may be assigned.
    */ 
-  private int  pMaxSamples;
+  private int  pJobSlots; 
 
   /**
-   * The samples of system load for the host.
+   * The number of processors on the host.
    */ 
-  private LinkedList<Float>  pLoad; 
+  private Integer  pNumProcessors; 
 
   /**
-   * The samples of available free memory (in bytes) for the host.
+   * The total amount of memory (in bytes) on the host.
    */ 
-  private LinkedList<Long>  pMemory;
+  private Long  pTotalMemory;
 
   /**
-   * The samples of available free temporary disk space (in bytes) for the host.
+   * The total amount of temporary disk space (in bytes) on the host.
    */ 
-  private LinkedList<Long>   pDisk;
-  
+  private Long  pTotalDisk;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The system resource usage samples (newest to oldest).
+   */ 
+  private LinkedList<ResourceSample>  pSamples;
+
 
   /*----------------------------------------------------------------------------------------*/
   
