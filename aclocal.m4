@@ -1,6 +1,6 @@
-# generated automatically by aclocal 1.7.2 -*- Autoconf -*-
+# aclocal.m4 generated automatically by aclocal 1.6.3 -*- Autoconf -*-
 
-# Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002
+# Copyright 1996, 1997, 1998, 1999, 2000, 2001, 2002
 # Free Software Foundation, Inc.
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -10,122 +10,6 @@
 # but WITHOUT ANY WARRANTY, to the extent permitted by law; without
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
-
-
-dnl PHX_CHECK_CXX_LIB(LIBRARY, FUNCTION, ARGS, INCLUDES [, ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND
-dnl              [, OTHER-LIBRARIES]]])
-AC_DEFUN(PHX_CHECK_CXX_LIB,
-[AC_MSG_CHECKING([for $2 in -l$1])
-dnl Use a cache variable name containing both the library and function name,
-dnl because the test really is for library $1 defining function $2, not
-dnl just for library $1.  Separate tests with the same $1 and different $2s
-dnl may have different results.
-ac_lib_var=`echo $1['_']$2 | sed 'y%./+-:%__p__%'`
-AC_CACHE_VAL(ac_cv_lib_$ac_lib_var,
-[ac_save_LIBS="$LIBS"
-LIBS="-l$1 $7 $LIBS"
-AC_TRY_LINK([$4],
-	    [$2($3)],
-	    eval "ac_cv_lib_$ac_lib_var=yes",
-	    eval "ac_cv_lib_$ac_lib_var=no")
-LIBS="$ac_save_LIBS"
-])dnl
-if eval "test \"`echo '$ac_cv_lib_'$ac_lib_var`\" = yes"; then
-  AC_MSG_RESULT(yes)
-  ifelse([$5], ,
-[changequote(, )dnl
-  ac_tr_lib=HAVE_LIB`echo $1 | sed -e 's/[^a-zA-Z0-9_]/_/g' \
-    -e 'y/abcdefghijklmnopqrstuvwxyz/ABCDEFGHIJKLMNOPQRSTUVWXYZ/'`
-changequote([, ])dnl
-  AC_DEFINE_UNQUOTED($ac_tr_lib)
-  LIBS="-l$1 $LIBS"
-], [$5])
-else
-  AC_MSG_RESULT(no)
-ifelse([$6], , , [$6
-])dnl
-fi
-])
-
-
-
-dnl PHX_CHECK_CXX_FUNC(FUNCTION, ARGS, INCLUDES [, ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]])
-AC_DEFUN(PHX_CHECK_CXX_FUNC,
-[AC_MSG_CHECKING([for $1])
-fx_func=`echo $1 | sed 'y%./+-:%__p__%'`
-AC_CACHE_VAL(ac_cv_fx_func_$fx_func,
-[AC_TRY_LINK([$3],
-             [$1($2)],
-             eval "ac_cv_fx_func_$fx_func=yes", 
-             eval "ac_cv_fx_func_$fx_func=no")
-])dnl
-if eval "test \"`echo '$ac_cv_fx_func_'$fx_func`\" = yes"; then
-  AC_MSG_RESULT(yes)
-  ifelse([$4], , , [$4])
-else
-  AC_MSG_RESULT(no)
-  ifelse([$5], , , [$5])
-fi
-])
-
-
-dnl PHX_CHECK_CXX_FUNCS(FUNCTIONS..., ARGS, INCLUDES)
-AC_DEFUN(PHX_CHECK_CXX_FUNCS,
-[for fx_func in $1
-do
-  fx_have_func=HAVE_`echo $fx_func | sed -e 's/[^a-zA-Z0-9_]/_/g' -e 'y/abcdefghijklmnopqrstuvwxyz/ABCDEFGHIJKLMNOPQRSTUVWXYZ/'`
-  PHX_CHECK_CXX_FUNC([$fx_func], [$2], [$3], AC_DEFINE_UNQUOTED([$fx_have_func]))dnl
-done
-])
-
-
-
-dnl PHX_TRY_CPP(INCLUDES, [CPP-OPTIONS, [ACTION-IF-TRUE [, ACTION-IF-FALSE]]])
-AC_DEFUN(PHX_TRY_CPP,
-[AC_REQUIRE_CPP()dnl
-cat > conftest.$ac_ext <<EOF
-[#]line __oline__ "configure"
-#include "confdefs.h"
-[$1]
-EOF
-dnl Capture the stderr of cpp.  eval is necessary to expand ac_cpp.
-dnl We used to copy stderr to stdout and capture it in a variable, but
-dnl that breaks under sh -x, which writes compile commands starting
-dnl with ` +' to stderr in eval and subshells.
-ac_try="$ac_cpp $2 conftest.$ac_ext >/dev/null 2>conftest.out"
-AC_TRY_EVAL(ac_try)
-ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
-if test -z "$ac_err"; then
-  ifelse([$3], , :, [rm -rf conftest*
-  $3])
-else
-  echo "$ac_err" >&AC_FD_CC
-  echo "configure: failed program was:" >&AC_FD_CC
-  cat conftest.$ac_ext >&AC_FD_CC
-ifelse([$4], , , [  rm -rf conftest*
-  $4
-])dnl
-fi
-rm -f conftest*])
-
-
-dnl PHX_CHECK_HEADER(HEADER-FILE, [CPP-OPTIONS, [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]]])
-AC_DEFUN(PHX_CHECK_HEADER,
-[dnl Do the transliteration at runtime so arg 1 can be a shell variable.
-ac_safe=`echo "$1" | sed 'y%./+-%__p_%'`
-AC_MSG_CHECKING([for $1])
-AC_CACHE_VAL(ac_cv_header_$ac_safe,
-[PHX_TRY_CPP([#include <$1>], [$2], eval "ac_cv_header_$ac_safe=yes",
-  eval "ac_cv_header_$ac_safe=no")])dnl
-if eval "test \"`echo '$ac_cv_header_'$ac_safe`\" = yes"; then
-  AC_MSG_RESULT(yes)
-  ifelse([$3], , :, [$3])
-else
-  AC_MSG_RESULT(no)
-ifelse([$4], , , [$4
-])dnl
-fi
-])
 
 # Like AC_CONFIG_HEADER, but automatically create stamp file. -*- Autoconf -*-
 
@@ -150,8 +34,60 @@ AC_PREREQ([2.52])
 
 # serial 6
 
-# AM_CONFIG_HEADER is obsolete.  It has been replaced by AC_CONFIG_HEADERS.
-AU_DEFUN([AM_CONFIG_HEADER], [AC_CONFIG_HEADERS($@)])
+# When config.status generates a header, we must update the stamp-h file.
+# This file resides in the same directory as the config header
+# that is generated.  We must strip everything past the first ":",
+# and everything past the last "/".
+
+# _AM_DIRNAME(PATH)
+# -----------------
+# Like AS_DIRNAME, only do it during macro expansion
+AC_DEFUN([_AM_DIRNAME],
+       [m4_if(regexp([$1], [^.*[^/]//*[^/][^/]*/*$]), -1,
+	      m4_if(regexp([$1], [^//\([^/]\|$\)]), -1,
+		    m4_if(regexp([$1], [^/.*]), -1,
+			  [.],
+			  patsubst([$1], [^\(/\).*], [\1])),
+		    patsubst([$1], [^\(//\)\([^/].*\|$\)], [\1])),
+	      patsubst([$1], [^\(.*[^/]\)//*[^/][^/]*/*$], [\1]))[]dnl
+])# _AM_DIRNAME
+
+
+# The stamp files are numbered to have different names.
+# We could number them on a directory basis, but that's additional
+# complications, let's have a unique counter.
+m4_define([_AM_STAMP_Count], [0])
+
+
+# _AM_STAMP(HEADER)
+# -----------------
+# The name of the stamp file for HEADER.
+AC_DEFUN([_AM_STAMP],
+[m4_define([_AM_STAMP_Count], m4_incr(_AM_STAMP_Count))dnl
+AS_ESCAPE(_AM_DIRNAME(patsubst([$1],
+                               [:.*])))/stamp-h[]_AM_STAMP_Count])
+
+
+# _AM_CONFIG_HEADER(HEADER[:SOURCES], COMMANDS, INIT-COMMANDS)
+# ------------------------------------------------------------
+# We used to try to get a real timestamp in stamp-h.  But the fear is that
+# that will cause unnecessary cvs conflicts.
+AC_DEFUN([_AM_CONFIG_HEADER],
+[# Add the stamp file to the list of files AC keeps track of,
+# along with our hook.
+AC_CONFIG_HEADERS([$1],
+                  [# update the timestamp
+echo 'timestamp for $1' >"_AM_STAMP([$1])"
+$2],
+                  [$3])
+])# _AM_CONFIG_HEADER
+
+
+# AM_CONFIG_HEADER(HEADER[:SOURCES]..., COMMANDS, INIT-COMMANDS)
+# --------------------------------------------------------------
+AC_DEFUN([AM_CONFIG_HEADER],
+[AC_FOREACH([_AM_File], [$1], [_AM_CONFIG_HEADER(_AM_File, [$2], [$3])])
+])# AM_CONFIG_HEADER
 
 # Do all the work for Automake.                            -*- Autoconf -*-
 
@@ -185,7 +121,7 @@ AU_DEFUN([AM_CONFIG_HEADER], [AC_CONFIG_HEADERS($@)])
 # CC etc. in the Makefile, will ask for an AC_PROG_CC use...
 
 
-AC_PREREQ([2.54])
+AC_PREREQ([2.52])
 
 # Autoconf 2.50 wants to disallow AM_ names.  We explicitly allow
 # the ones we care about.
@@ -210,16 +146,6 @@ if test "`cd $srcdir && pwd`" != "`pwd`" &&
    test -f $srcdir/config.status; then
   AC_MSG_ERROR([source directory already configured; run "make distclean" there first])
 fi
-
-# test whether we have cygpath
-if test -z "$CYGPATH_W"; then
-  if (cygpath --version) >/dev/null 2>/dev/null; then
-    CYGPATH_W='cygpath -w'
-  else
-    CYGPATH_W=echo
-  fi
-fi
-AC_SUBST([CYGPATH_W])
 
 # Define the identity of the package.
 dnl Distinguish between old-style and new-style calls.
@@ -252,28 +178,16 @@ AC_REQUIRE([AC_PROG_AWK])dnl
 AC_REQUIRE([AC_PROG_MAKE_SET])dnl
 
 _AM_IF_OPTION([no-dependencies],,
-[AC_PROVIDE_IFELSE([AC_PROG_CC],
+[AC_PROVIDE_IFELSE([AC_PROG_][CC],
                   [_AM_DEPENDENCIES(CC)],
-                  [define([AC_PROG_CC],
-                          defn([AC_PROG_CC])[_AM_DEPENDENCIES(CC)])])dnl
-AC_PROVIDE_IFELSE([AC_PROG_CXX],
+                  [define([AC_PROG_][CC],
+                          defn([AC_PROG_][CC])[_AM_DEPENDENCIES(CC)])])dnl
+AC_PROVIDE_IFELSE([AC_PROG_][CXX],
                   [_AM_DEPENDENCIES(CXX)],
-                  [define([AC_PROG_CXX],
-                          defn([AC_PROG_CXX])[_AM_DEPENDENCIES(CXX)])])dnl
+                  [define([AC_PROG_][CXX],
+                          defn([AC_PROG_][CXX])[_AM_DEPENDENCIES(CXX)])])dnl
 ])
 ])
-
-
-# When config.status generates a header, we must update the stamp-h file.
-# This file resides in the same directory as the config header
-# that is generated.  The stamp files are numbered to have different names.
-
-# Autoconf calls _AC_AM_CONFIG_HEADER_HOOK (when defined) in the
-# loop where config.status creates the headers, so we can generate
-# our stamp files there.
-AC_DEFUN([_AC_AM_CONFIG_HEADER_HOOK],
-[_am_stamp_count=`expr ${_am_stamp_count-0} + 1`
-echo "timestamp for $1" >`AS_DIRNAME([$1])`/stamp-h[]$_am_stamp_count])
 
 # Copyright 2002  Free Software Foundation, Inc.
 
@@ -295,14 +209,14 @@ echo "timestamp for $1" >`AS_DIRNAME([$1])`/stamp-h[]$_am_stamp_count])
 # ----------------------------
 # Automake X.Y traces this macro to ensure aclocal.m4 has been
 # generated from the m4 files accompanying Automake X.Y.
-AC_DEFUN([AM_AUTOMAKE_VERSION],[am__api_version="1.7"])
+AC_DEFUN([AM_AUTOMAKE_VERSION],[am__api_version="1.6"])
 
 # AM_SET_CURRENT_AUTOMAKE_VERSION
 # -------------------------------
 # Call AM_AUTOMAKE_VERSION so it can be traced.
 # This function is AC_REQUIREd by AC_INIT_AUTOMAKE.
 AC_DEFUN([AM_SET_CURRENT_AUTOMAKE_VERSION],
-	 [AM_AUTOMAKE_VERSION([1.7.2])])
+	 [AM_AUTOMAKE_VERSION([1.6.3])])
 
 # Helper functions for option handling.                    -*- Autoconf -*-
 
@@ -682,7 +596,7 @@ AC_CACHE_CHECK([dependency style of $depcc],
     if depmode=$depmode \
        source=conftest.c object=conftest.o \
        depfile=conftest.Po tmpdepfile=conftest.TPo \
-       $SHELL ./depcomp $depcc -c -o conftest.o conftest.c >/dev/null 2>&1 &&
+       $SHELL ./depcomp $depcc -c conftest.c -o conftest.o >/dev/null 2>&1 &&
        grep conftest.h conftest.Po > /dev/null 2>&1 &&
        ${MAKE-make} -s -f confmf > /dev/null 2>&1; then
       am_cv_$1_dependencies_compiler_type=$depmode
@@ -697,9 +611,6 @@ else
 fi
 ])
 AC_SUBST([$1DEPMODE], [depmode=$am_cv_$1_dependencies_compiler_type])
-AM_CONDITIONAL([am__fastdep$1], [
-  test "x$enable_dependency_tracking" != xno \
-  && test "$am_cv_$1_dependencies_compiler_type" = gcc3])
 ])
 
 
@@ -819,9 +730,7 @@ AC_DEFUN([AM_OUTPUT_DEPENDENCY_COMMANDS],
      [AMDEP_TRUE="$AMDEP_TRUE" ac_aux_dir="$ac_aux_dir"])
 ])
 
-# Check to see how 'make' treats includes.	-*- Autoconf -*-
-
-# Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+# Copyright 2001 Free Software Foundation, Inc.             -*- Autoconf -*-
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -861,7 +770,7 @@ echo "include confinc" > confmf
 # In particular we don't look at `^make:' because GNU make might
 # be invoked under some other name (usually "gmake"), in which
 # case it prints its new name instead of `make'.
-if test "`$am_make -s -f confmf 2> /dev/null | grep -v 'ing directory'`" = "done"; then
+if test "`$am_make -s -f confmf 2> /dev/null | fgrep -v 'ing directory'`" = "done"; then
    am__include=include
    am__quote=
    _am_result=GNU
@@ -921,7 +830,7 @@ else
 fi
 AC_CONFIG_COMMANDS_PRE(
 [if test -z "${$1_TRUE}" && test -z "${$1_FALSE}"; then
-  AC_MSG_ERROR([conditional "$1" was never defined.
+  AC_MSG_ERROR([conditional \"$1\" was never defined.
 Usually this means the macro was only invoked conditionally.])
 fi])])
 

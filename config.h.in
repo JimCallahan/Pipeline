@@ -21,6 +21,9 @@
 /* Define to 1 if you have the <algobase.h> header file. */
 #undef HAVE_ALGOBASE_H
 
+/* Define to 1 if you have the <algorithm> header file. */
+#undef HAVE_ALGORITHM
+
 /* Define to 1 if you have the `asin' function. */
 #undef HAVE_ASIN
 
@@ -102,6 +105,9 @@
 /* Define to 1 if you have the <cstring> header file. */
 #undef HAVE_CSTRING
 
+/* Define to 1 if you have the <deque> header file. */
+#undef HAVE_DEQUE
+
 /* Define to 1 if you have the `drem' function. */
 #undef HAVE_DREM
 
@@ -119,6 +125,12 @@
 
 /* Define to 1 if you have the `expl' function. */
 #undef HAVE_EXPL
+
+/* Define to 1 if you have the <ext/hash_map> header file. */
+#undef HAVE_EXT_HASH_MAP
+
+/* Define to 1 if you have the <ext/slist> header file. */
+#undef HAVE_EXT_SLIST
 
 /* Define to 1 if you have the `fabs' function. */
 #undef HAVE_FABS
@@ -222,6 +234,9 @@
 /* Define to 1 if you have the `ftrunc' function. */
 #undef HAVE_FTRUNC
 
+/* Define to 1 if you have the <hash_map> header file. */
+#undef HAVE_HASH_MAP
+
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
@@ -237,11 +252,17 @@
 /* Define to 1 if you have the <iostream.h> header file. */
 #undef HAVE_IOSTREAM_H
 
+/* Define to 1 if you have the <jpeglib.h> header file. */
+#undef HAVE_JPEGLIB_H
+
 /* Define to 1 if you have the `labs' function. */
 #undef HAVE_LABS
 
 /* Define to 1 if you have the <limits.h> header file. */
 #undef HAVE_LIMITS_H
+
+/* Define to 1 if you have the <list> header file. */
+#undef HAVE_LIST
 
 /* Define to 1 if you have the `llabs' function. */
 #undef HAVE_LLABS
@@ -309,6 +330,9 @@
 /* Define to 1 if you have the `sinl' function. */
 #undef HAVE_SINL
 
+/* Define to 1 if you have the <slist> header file. */
+#undef HAVE_SLIST
+
 /* Define to 1 if you have the `sqrt' function. */
 #undef HAVE_SQRT
 
@@ -317,6 +341,9 @@
 
 /* Define to 1 if you have the `sqrtl' function. */
 #undef HAVE_SQRTL
+
+/* Define to 1 if you have the <stack> header file. */
+#undef HAVE_STACK
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
@@ -363,6 +390,12 @@
 /* Define to 1 if you have the `tanl' function. */
 #undef HAVE_TANL
 
+/* Define to 1 if you have the <tiffio.h> header file. */
+#undef HAVE_TIFFIO_H
+
+/* Define to 1 if you have the <tiff.h> header file. */
+#undef HAVE_TIFF_H
+
 /* Define to 1 if you have the `trunc' function. */
 #undef HAVE_TRUNC
 
@@ -374,6 +407,12 @@
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
+
+/* Define to 1 if you have the <vector> header file. */
+#undef HAVE_VECTOR
+
+/* Define to 1 if you have the <zlib.h> header file. */
+#undef HAVE_ZLIB_H
 
 /* Name of HTML documentation directory. */
 #undef HTML_DOCS_DIR

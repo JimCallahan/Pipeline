@@ -15,24 +15,6 @@ AC_MSG_RESULT([ ])
 
 
 dnl -------------------------------------------------------------------------------------------
-dnl   Build Information.         
-dnl -------------------------------------------------------------------------------------------
-
-AC_MSG_RESULT([Build Information: ])
-
-AC_MSG_CHECKING([Package])
-AC_MSG_RESULT([$PACKAGE])
-
-AC_MSG_CHECKING([Version])
-AC_MSG_RESULT([$VERSION])
-
-AC_MSG_CHECKING([Release])
-AC_SUBST(RELEASE_STAMP)
-RELEASE_STAMP=`date`
-AC_MSG_RESULT([$RELEASE_STAMP])
-
-
-dnl -------------------------------------------------------------------------------------------
 dnl   Configuration options.
 dnl -------------------------------------------------------------------------------------------
 
@@ -90,7 +72,25 @@ case "$with_compiler" in
 esac
 
 AC_MSG_RESULT([$CXX ($CXX_VERSION)])
+AC_MSG_RESULT([ ])
 
+
+dnl -------------------------------------------------------------------------------------------
+dnl   Build Information.         
+dnl -------------------------------------------------------------------------------------------
+
+AC_MSG_RESULT([Build Information: ])
+
+AC_MSG_CHECKING([Package])
+AC_MSG_RESULT([$PACKAGE])
+
+AC_MSG_CHECKING([Version])
+AC_MSG_RESULT([$VERSION])
+
+AC_MSG_CHECKING([Release])
+AC_SUBST(RELEASE_STAMP)
+RELEASE_STAMP=`date`
+AC_MSG_RESULT([$RELEASE_STAMP])
 
 dnl -------------------------------------------------------------------------------------------
 
@@ -109,12 +109,10 @@ fi
 
 AC_MSG_RESULT([$BASEDIR])
 
-AC_MSG_RESULT([ ])
-
 
 dnl -------------------------------------------------------------------------------------------
 
-AC_MSG_CHECKING([Pipeline Server Hostname: ])
+AC_MSG_CHECKING([Pipeline Server Hostname])
 
 AC_ARG_WITH([plserver], 
             [  --with-plserver=HOST    Port number to use for Pipeline server.])
@@ -131,7 +129,7 @@ AC_MSG_RESULT([$PLSERVER])
 
 
 
-AC_MSG_CHECKING([Pipeline Server Port: ])
+AC_MSG_CHECKING([Pipeline Server Port])
 
 AC_ARG_WITH([plport], 
             [  --with-plport=NUM       Port number to use for Pipeline server.])
@@ -147,6 +145,13 @@ fi
 AC_MSG_RESULT([$PLPORT])
 
 
+dnl -------------------------------------------------------------------------------------------
+
+AC_MSG_CHECKING([PATH])
+AC_MSG_RESULT([$PATH])
+
+AC_MSG_CHECKING([TOOLSET])
+AC_MSG_RESULT([$TOOLSET])
 
 AC_MSG_RESULT([ ])
 
@@ -284,7 +289,7 @@ dnl ----------------------------------------------------------------------------
 
 dnl -- STANDARD C/C++ TOOLS -------------------------------------------------------------------
 
-AC_MSG_RESULT([Checking the C++ compiler environment:])
+AC_MSG_RESULT([The C++ compiler environment:])
 
 AC_LANG([C++])
 
@@ -293,13 +298,19 @@ AC_PROG_CXXCPP
 AC_SUBST(AR)
 AC_CANONICAL_HOST
 
+AC_HEADER_STDC
+AC_CHECK_HEADER([sys/types.h])    
+AC_CHECK_HEADER([sys/stat.h])     
+AC_CHECK_HEADER([strings.h])      
+AC_CHECK_HEADER([unistd.h])       
+
 AC_MSG_RESULT([ ])
 
 
 
 dnl -- SIZEOF C/C++ TYPES ---------------------------------------------------------------------
 
-AC_MSG_RESULT([Checking sizes of atomic C++ types:])
+AC_MSG_RESULT([Sizes of atomic C++ types:])
 
 AC_CHECK_SIZEOF(char, 1)
 AC_CHECK_SIZEOF(short, 2)
@@ -340,6 +351,7 @@ dnl -- SML COMPILER TOOLS ------------------------------------------------------
 AC_MSG_RESULT([Locating the SML development tools:])
 
 AC_PATH_PROG(SML, sml, $PATH)
+
 AC_SUBST(HEAP_SUFFIX)
 HEAP_SUFFIX=""
 
@@ -441,7 +453,7 @@ dnl ----------------------------------------------------------------------------
 dnl   Checks for libraries.	
 dnl -------------------------------------------------------------------------------------------
 
-AC_MSG_RESULT([Verifying REQUIRED libraries do exist:])
+AC_MSG_RESULT([Locating support libraries:])
 
 
 dnl -- MATH LIBARAY ---------------------------------------------------------------------------
@@ -491,6 +503,7 @@ AC_SUBST(TIFF_LIB)
 TIFF_LIB="${LIBTIFF} ${LIBJPEG} ${LIBZ}"
 
 
+
 dnl -- OPEN INVENTOR LIBARAY ------------------------------------------------------------------
 
 has_libInventor=no
@@ -526,65 +539,47 @@ dnl ----------------------------------------------------------------------------
 dnl   Checks for header files.
 dnl -------------------------------------------------------------------------------------------
 
-AC_MSG_RESULT([Verifying REQUIRED C system headers do exist:])
+AC_MSG_RESULT([Locating C system headers:])
 
-AC_HEADER_STDC
-AC_CHECK_HEADER([math.h],        , AC_MSG_ERROR([you needed that!]))
-AC_CHECK_HEADER([unistd.h],      , AC_MSG_ERROR([you needed that!]))
-AC_CHECK_HEADER([sys/types.h],   , AC_MSG_ERROR([you needed that!]))
-AC_CHECK_HEADER([sys/time.h],    , AC_MSG_ERROR([you needed that!]))
-AC_CHECK_HEADER([sys/stat.h],    , AC_MSG_ERROR([you needed that!]))
-AC_CHECK_HEADER([sys/param.h],   , AC_MSG_ERROR([you needed that!]))
-AC_CHECK_HEADER([sys/utsname.h], , AC_MSG_ERROR([you needed that!]))
-AC_CHECK_HEADER([strings.h],     , AC_MSG_ERROR([you needed that!]))
-AC_CHECK_HEADER([pwd.h],         , AC_MSG_ERROR([you needed that!]))
-AC_CHECK_HEADER([dlfcn.h],       , AC_MSG_ERROR([you needed that!]))
+AC_CHECK_HEADER([math.h])         
+AC_CHECK_HEADER([sys/time.h])     
+AC_CHECK_HEADER([sys/param.h])    
+AC_CHECK_HEADER([sys/utsname.h])  
+AC_CHECK_HEADER([pwd.h])          
+AC_CHECK_HEADER([dlfcn.h])        
 
 AC_MSG_RESULT([ ])
 
 
-AC_MSG_RESULT([Verifying REQUIRED C++ STL headers do exist:])
+AC_MSG_RESULT([Locating image support headers:])
 
-AC_CHECK_HEADER([hash_map],      , AC_MSG_ERROR([you needed that!]))
-AC_CHECK_HEADER([stack],         , AC_MSG_ERROR([you needed that!]))
-AC_CHECK_HEADER([deque],         , AC_MSG_ERROR([you needed that!]))
-AC_CHECK_HEADER([vector],        , AC_MSG_ERROR([you needed that!]))
-AC_CHECK_HEADER([list],          , AC_MSG_ERROR([you needed that!]))
-AC_CHECK_HEADER([slist],         , AC_MSG_ERROR([you needed that!]))
+AC_CHECK_HEADERS([tiff.h tiffio.h jpeglib.h zlib.h])
 
 AC_MSG_RESULT([ ])
 
 
-AC_MSG_RESULT([Verifying REQUIRED support library headers do exist:])
+AC_MSG_RESULT([Locating Basic C++ headers:])
 
-PHX_CHECK_HEADER([tiff.h],        
-                 [-I${prefix}/include], , AC_MSG_ERROR([you needed that!]))
-
-PHX_CHECK_HEADER([tiffio.h],      
-                 [-I${prefix}/include], , AC_MSG_ERROR([you needed that!]))
-
-PHX_CHECK_HEADER([jpeglib.h],     
-                 [-I${prefix}/include], , AC_MSG_ERROR([you needed that!]))
-
-PHX_CHECK_HEADER([zlib.h],        
-                 [-I${prefix}/include], , AC_MSG_ERROR([you needed that!]))
+AC_CHECK_HEADERS([float.h])
+AC_CHECK_HEADERS([cassert assert.h], [break])
+AC_CHECK_HEADERS([climits limits.h], [break])
+AC_CHECK_HEADERS([cstdlib stdlib.h], [break])
+AC_CHECK_HEADERS([cstdio stdio.h], [break])
+AC_CHECK_HEADERS([cstring string.h], [break])
+AC_CHECK_HEADERS([iostream iostream.h], [break])
+AC_CHECK_HEADERS([fstream fstream.h], [break])
+AC_CHECK_HEADERS([strstream strstream.h], [break])
+AC_CHECK_HEADERS([iomanip iomanip.h], [break])
+AC_CHECK_HEADERS([algorithm algobase algobase.h], [break])
 
 AC_MSG_RESULT([ ])
 
 
-AC_MSG_RESULT([Sorting out how your system handles standard C++ headers:])
-AC_CHECK_HEADERS(float.h)
-AC_CHECK_HEADERS(cassert assert.h)
-AC_CHECK_HEADERS(climits limits.h)
-AC_CHECK_HEADERS(cstdlib stdlib.h)
-AC_CHECK_HEADERS(cstdio stdio.h)
-AC_CHECK_HEADERS(cstring string.h)
-AC_CHECK_HEADERS(iostream iostream.h)
-AC_CHECK_HEADERS(fstream fstream.h)
-AC_CHECK_HEADERS(strstream strstream.h)
-AC_CHECK_HEADERS(iomanip iomanip.h)
-AC_CHECK_HEADERS(algobase algobase.h)
+AC_MSG_RESULT([Locating STL headers:])
 
+AC_CHECK_HEADERS([hash_map ext/hash_map], [break])
+AC_CHECK_HEADERS([slist ext/slist], [break])
+AC_CHECK_HEADERS([stack deque list vector])
 
 AC_MSG_RESULT([ ])
 
