@@ -1,4 +1,4 @@
-// $Id: LinkVersion.java,v 1.5 2004/12/04 21:12:16 jim Exp $
+// $Id: LinkVersion.java,v 1.6 2005/01/01 08:41:51 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -52,8 +52,12 @@ class LinkVersion
       if(vid == null) 
 	throw new IllegalArgumentException
 	  ("The node version ID cannot be (null) unless the link policy is (Association)!");
+      pVersionID = vid;
+      break;
+
+    case Association:
+      pVersionID = null;
     }
-    pVersionID = vid;
   }
 
   /**
