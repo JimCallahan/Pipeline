@@ -1,4 +1,4 @@
-// $Id: GlueEncoder.java,v 1.2 2004/02/14 22:17:19 jim Exp $
+// $Id: GlueEncoder.java,v 1.3 2004/02/15 16:15:01 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -178,10 +178,21 @@ class GlueEncoder
       pBuf.append(cls.getName() + "> #" + objID + " { " + obj + " }\n");
     }
     else if(cls == sCharacterClass) {
-      pBuf.append(cls.getName() + "> #" + objID + " { '" + obj + "' }\n");
+      Character c = (Character) obj;
+      pBuf.append(cls.getName() + "> #" + objID + " { " + ((int) c.charValue()) + " }\n");
     }
     else if(cls == sStringClass) {
-      pBuf.append(cls.getName() + "> #" + objID + " { \"" + obj + "\" }\n");
+      pBuf.append(cls.getName() + "> #" + objID + " { \"");
+
+      char cs[] = ((String) obj).toCharArray();
+      int wk;
+      for(wk=0; wk<cs.length; wk++) {
+	if(cs[wk] == '"') 
+	  pBuf.append("\\");
+	pBuf.append(cs[wk]);
+      }
+
+      pBuf.append("\" }\n");
     }
       
     /* arrays */ 
