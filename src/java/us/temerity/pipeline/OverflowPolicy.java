@@ -1,6 +1,8 @@
-// $Id: OverflowPolicy.java,v 1.2 2004/03/15 19:10:39 jim Exp $
+// $Id: OverflowPolicy.java,v 1.3 2004/06/19 00:28:38 jim Exp $
 
 package us.temerity.pipeline;
+
+import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   O V E R F L O W   P O L I C Y                                                          */
@@ -32,4 +34,50 @@ enum OverflowPolicy
    */
   Abort;
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the list of all possible values.
+   */ 
+  public static ArrayList<OverflowPolicy>
+  all() 
+  {
+    OverflowPolicy values[] = values();
+    ArrayList<OverflowPolicy> all = new ArrayList<OverflowPolicy>(values.length);
+    int wk;
+    for(wk=0; wk<values.length; wk++)
+      all.add(values[wk]);
+    return all;
+  }
+
+  /**
+   * Get the list of human friendly string representation for all possible values.
+   */ 
+  public static ArrayList<String>
+  titles() 
+  {
+    ArrayList<String> titles = new ArrayList<String>();
+    for(OverflowPolicy color : OverflowPolicy.all()) 
+      titles.add(color.toTitle());
+    return titles;
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O N V E R S I O N                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Convert to a more human friendly string representation.
+   */ 
+  public String
+  toTitle() 
+  {
+    return toString();
+  }
 }
