@@ -1,4 +1,4 @@
-// $Id: JBaseViewerPanel.java,v 1.4 2004/12/17 15:09:23 jim Exp $
+// $Id: JBaseViewerPanel.java,v 1.5 2004/12/31 07:39:13 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -136,6 +136,7 @@ implements MouseListener, MouseMotionListener, GLEventListener
     pFar  = far;
   }
 
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   U S E R   I N T E R F A C E                                                          */
@@ -576,7 +577,7 @@ implements MouseListener, MouseMotionListener, GLEventListener
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Move the camera to frame the given world space bounding box on the XY plane.
+   * Move the camera to frame the given bounding box.
    */ 
   protected void 
   doFrameBounds
@@ -587,10 +588,19 @@ implements MouseListener, MouseMotionListener, GLEventListener
     if(bbox == null) 
       return; 
 
-    // ....
+    Vector2d hrange = bbox.getRange();
+    hrange.mult(0.5);
     
-  }
+    double distX = hrange.x() / Math.tan(Math.toRadians(pFOV)*pAspect*0.5);
+    double distY = hrange.y() / Math.tan(Math.toRadians(pFOV)*0.5);
+    double z = Math.max(((double) pCanvas.getWidth()) / pMaxFactor, Math.max(distX, distY));
 
+    Point2d center = bbox.getCenter();
+    pCameraPos.set(center.x(), center.y(), z);
+    pCameraPos.negate();
+
+    pCanvas.repaint();
+  }
 
 
 
@@ -631,29 +641,29 @@ implements MouseListener, MouseMotionListener, GLEventListener
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * The expand/collapse policy to use when laying out nodes.
+   * The expand/collapse policy to use when laying out icons.
    */
   protected 
   enum LayoutPolicy
   {  
     /**
-     * Preserve the collapse mode of existing nodes and use an AutomaticExpand policy for 
-     * any newly created nodes.
+     * Preserve the collapse mode of existing icons and use an AutomaticExpand policy for 
+     * any newly created icons.
      */
     Preserve, 
 
     /**
-     * Expand all nodes.
+     * Expand all icons.
      */ 
     ExpandAll, 
 
     /**
-     * Collapse all nodes.
+     * Collapse all icons.
      */ 
     CollapseAll, 
     
     /**
-     * Expand the first occurance of a node and collapse all subsequence occurances.
+     * Expand the first occurance of a icon and collapse all subsequence occurances.
      */
     AutomaticExpand;
   }
