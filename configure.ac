@@ -744,6 +744,11 @@ AC_SUBST(PLSCRIPT_DEBUG_OPTS)
 PLSCRIPT_DEBUG_OPTS=${java_debug_opts}$(($debug_base+8))
 AC_MSG_RESULT([$PLSCRIPT_DEBUG_OPTS])
 
+AC_MSG_CHECKING([jogltest])
+AC_SUBST(JOGLTEST_DEBUG_OPTS)
+JOGLTEST_DEBUG_OPTS=${java_debug_opts}$(($debug_base+9))
+AC_MSG_RESULT([$JOGLTEST_DEBUG_OPTS])
+
 AC_MSG_RESULT([ ])
 
 
@@ -797,6 +802,11 @@ AC_MSG_CHECKING([plscript])
 AC_SUBST(PLSCRIPT_PROFILE_OPTS)
 PLSCRIPT_PROFILE_OPTS=${java_prof_opts}$(($prof_base+8))${java_prof_dir}"plscript"
 AC_MSG_RESULT([$PLSCRIPT_PROFILE_OPTS])
+
+AC_MSG_CHECKING([jogltest])
+AC_SUBST(JOGLTEST_PROFILE_OPTS)
+JOGLTEST_PROFILE_OPTS=${java_prof_opts}$(($prof_base+9))${java_prof_dir}"jogltest"
+AC_MSG_RESULT([$JOGLTEST_PROFILE_OPTS])
 
 AC_MSG_RESULT([ ])
 
@@ -1036,6 +1046,7 @@ AC_CONFIG_FILES([
   docs/images/Makefile
   docs/images/node-icons/Makefile
   docs/images/browser-icons/Makefile
+  docs/images/javadoc/Makefile
 
   docs/javadoc/Makefile
 
@@ -1077,6 +1088,7 @@ AC_CONFIG_FILES([
   src/java/scripts/plui
   src/java/scripts/plrestoreA
   src/java/scripts/plrestoreB
+  src/java/scripts/jogltest
 
   src/java/scripts/debug/Makefile
   src/java/scripts/debug/plfilemgr
@@ -1086,6 +1098,7 @@ AC_CONFIG_FILES([
   src/java/scripts/debug/plqueuemgr
   src/java/scripts/debug/plscript
   src/java/scripts/debug/plui
+  src/java/scripts/debug/jogltest
 
   src/java/scripts/profile/Makefile
   src/java/scripts/profile/plfilemgr
@@ -1095,6 +1108,7 @@ AC_CONFIG_FILES([
   src/java/scripts/profile/plqueuemgr
   src/java/scripts/profile/plscript
   src/java/scripts/profile/plui
+  src/java/scripts/profile/jogltest
 
   src/java/scripts/debug-profile/Makefile
   src/java/scripts/debug-profile/plfilemgr
@@ -1104,6 +1118,7 @@ AC_CONFIG_FILES([
   src/java/scripts/debug-profile/plqueuemgr
   src/java/scripts/debug-profile/plscript
   src/java/scripts/debug-profile/plui
+  src/java/scripts/debug-profile/jogltest
 
   src/java/share/Makefile
 
