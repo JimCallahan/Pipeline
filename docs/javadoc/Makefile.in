@@ -186,6 +186,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
        PACKAGES = us.temerity.pipeline \
                   us.temerity.pipeline.bootstrap \
                   us.temerity.pipeline.core \
+                  us.temerity.pipeline.glue \
                   us.temerity.pipeline.message \
                   us.temerity.pipeline.plugin
 
