@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.1 2004/07/14 21:03:49 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.2 2004/07/16 22:05:01 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -30,7 +30,7 @@ import javax.swing.tree.*;
 public  
 class JNodeFilesPanel
   extends JTopLevelPanel
-  implements ActionListener
+  implements ActionListener, MouseListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -69,6 +69,51 @@ class JNodeFilesPanel
   private void 
   initUI()
   {
+    /* initialize the popup menus */ 
+    {
+      JMenuItem item;
+      JMenu sub;
+
+      pWorkingPopup   = new JPopupMenu();  
+      pCheckedInPopup = new JPopupMenu();  
+
+      JPopupMenu menus[] = { pWorkingPopup, pCheckedInPopup };
+      int wk;
+      for(wk=0; wk<menus.length; wk++) {
+	item = new JMenuItem("Edit");
+	item.setActionCommand("edit");
+	item.addActionListener(this);
+	menus[wk].add(item);
+	
+	{
+	  sub = new JMenu("Edit With");
+	  menus[wk].add(sub);
+	  
+	  for(String editor : Plugins.getEditorNames()) {
+	    item = new JMenuItem(editor);
+	    item.setActionCommand("edit-with:" + editor);
+	    item.addActionListener(this);
+	    sub.add(item);
+	  }
+	}
+      }
+      
+      pWorkingPopup.addSeparator();
+
+      item = new JMenuItem("Make");
+      item.setActionCommand("make");
+      item.addActionListener(this);
+      item.setEnabled(false);  // FOR NOW...
+      pWorkingPopup.add(item);
+      
+      item = new JMenuItem("Queue");
+      item.setActionCommand("queue");
+      item.addActionListener(this);
+      item.setEnabled(false);  // FOR NOW...
+      pWorkingPopup.add(item);
+    }
+
+
     /* initialize the panel components */ 
     {
       setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));  
@@ -334,8 +379,9 @@ class JNodeFilesPanel
     {
       pFileSeqBox.removeAll();
 
-      pVersionBoxes   = new TreeMap<String,TreeMap<String,TreeMap<String,JCheckBox>>>();
+      pFileLabels     = new TreeMap<String,TreeMap<String,JFileLabel>>();
       pNameComponents = new TreeMap<String,TreeMap<String,ArrayList<JComponent>>>();
+      pVersionBoxes   = new TreeMap<String,TreeMap<String,TreeMap<String,JFileCheckBox>>>();
 
       if((pNovelty != null) && (details != null)) {
 	NodeMod mod     = details.getWorkingVersion(); 
@@ -349,41 +395,43 @@ class JNodeFilesPanel
 	else
 	  assert(false);
 
-	/* add the primary file sequence */ 
+	/* add the primary file sequence UI components */ 
 	FileSeq primary = com.getPrimarySequence();
-	addFileSeqComponents(primary, true);
+	addFileSeqComponents(primary, false);
 
-	ArrayList<FileSeq> secondary = 
-	  new ArrayList<FileSeq>(com.getSecondarySequences());
+	/* build a list of unique secondary file sequences */ 
+	TreeSet<FileSeq> secondary = new TreeSet<FileSeq>();
+	{
+	  secondary.addAll(com.getSecondarySequences());
 
-	/* add the secondary sequences of the working/latest version */ 
-	for(FileSeq fseq : secondary) 
-	  addFileSeqComponents(fseq, true);
-	
-	/* add the secondary sequences from previous versions which are not similar
-	   to the secondary sequences of the working/latest version */ 
-	TreeSet<FileSeq> unique = new TreeSet<FileSeq>();
-	for(TreeMap<FileSeq,boolean[]> table : pNovelty.values()) 
-	  unique.addAll(table.keySet());
-	
-	for(FileSeq ufseq : unique) {
-	  boolean found = false;
+	  TreeSet<FileSeq> unique = new TreeSet<FileSeq>();
+	  for(TreeMap<FileSeq,boolean[]> table : pNovelty.values()) 
+	    unique.addAll(table.keySet());
 	  
-	  if(ufseq.similarTo(primary)) 
-	    found = true;
-	  else {	    
-	    for(FileSeq fseq : secondary) { 
-	      if(ufseq.similarTo(fseq)) {
-		found = true;
-		break;
+	  for(FileSeq ufseq : unique) {
+	    boolean found = false;
+	    
+	    if(ufseq.similarTo(primary)) 
+	      found = true;
+	    else {	    
+	      for(FileSeq fseq : secondary) { 
+		if(ufseq.similarTo(fseq)) {
+		  found = true;
+		  break;
+		}
 	      }
 	    }
+	    
+	    if(!found) 
+	      secondary.add(ufseq);
 	  }
-	  
-	  if(!found) {
-	    addFileSeqComponents(ufseq, false);
-	    secondary.add(ufseq);
-	  }
+	}
+
+	/* add the secondary sequence UI components */ 
+	if(!secondary.isEmpty()) {
+	  FileSeq last = secondary.last();
+	  for(FileSeq fseq : secondary) 
+	    addFileSeqComponents(fseq, last.equals(fseq));
 	}
       }
 
@@ -412,7 +460,7 @@ class JNodeFilesPanel
   addFileSeqComponents
   (
    FileSeq fseq, 
-   boolean hasStates
+   boolean isLast
   ) 
   { 
     NodeDetails details = null;
@@ -420,31 +468,31 @@ class JNodeFilesPanel
       details = pStatus.getDetails();
 
     /* collate the row information */ 
-    TreeSet<String> allFiles = new TreeSet<String>();
-    TreeMap<String,FileState>  fstates = new TreeMap<String,FileState>();
-    TreeMap<String,QueueState> qstates = new TreeMap<String,QueueState>();
-    TreeMap<String,Boolean[]> novel = new TreeMap<String,Boolean[]>();
+    TreeSet<FileSeq> singles = new TreeSet<FileSeq>();	 
+    TreeSet<FileSeq> enabled = new TreeSet<FileSeq>();
+    TreeMap<FileSeq,FileState>  fstates = new TreeMap<FileSeq,FileState>();
+    TreeMap<FileSeq,QueueState> qstates = new TreeMap<FileSeq,QueueState>();
+    TreeMap<FileSeq,Boolean[]> novel = new TreeMap<FileSeq,Boolean[]>();
     {
       if(details != null) {
-	{
-	  ArrayList<File> files = fseq.getFiles();
-	  
+	{	  
 	  FileState[]  fs = details.getFileState(fseq);
 	  QueueState[] qs = details.getQueueState();
 	  if((fs != null) && (qs != null)) {
-	    assert(fs.length == files.size());
-	    assert(qs.length == files.size());
+	    assert(fs.length == fseq.numFrames());
+	    assert(qs.length == fseq.numFrames());
 	    
 	    int wk;
 	    for(wk=0; wk<fs.length; wk++) {
-	      String fname = files.get(wk).toString();
-	      assert(fname != null);
+	      FileSeq sfseq = new FileSeq(fseq, wk);
+	      singles.add(sfseq);
 	      
-	      fstates.put(fname, fs[wk]);
-	      qstates.put(fname, qs[wk]);
+	      fstates.put(sfseq, fs[wk]);
+	      qstates.put(sfseq, qs[wk]);
+
+	      if(fs[wk] != FileState.CheckedIn) 
+		enabled.add(sfseq);
 	    }
-	    
-	    allFiles.addAll(fstates.keySet());
 	  }
 	}
 	
@@ -458,31 +506,27 @@ class JNodeFilesPanel
 	    for(FileSeq nfseq : table.keySet()) {
 	      if(fseq.similarTo(nfseq)) {
 		boolean[] flags = table.get(nfseq);
-		ArrayList<File> files = nfseq.getFiles();
-		assert(flags.length == files.size());
 		
 		int wk;
 		for(wk=0; wk<flags.length; wk++) {
-		  String fname = files.get(wk).toString();
-		  assert(fname != null);
-		  
-		  Boolean[] rflags = novel.get(fname);
+		  FileSeq sfseq = new FileSeq(fseq, wk);
+		  singles.add(sfseq);
+
+		  Boolean[] rflags = novel.get(sfseq);
 		  if(rflags == null) {
 		    rflags = new Boolean[pNovelty.size()];
-		    novel.put(fname, rflags);
+		    novel.put(sfseq, rflags);
 		  }
 		  
 		  rflags[idx] = new Boolean(flags[wk]);
 		}
-		
+
 		break;
 	      }
 	    }
 
 	    idx++;
 	  }
-	  
-	  allFiles.addAll(novel.keySet());
 	}
       }
     }
@@ -494,25 +538,61 @@ class JNodeFilesPanel
       
       body.add(Box.createRigidArea(new Dimension(3, 0)));
 	
-      /* file state/name fields */ 
+      /* file state/name labels */ 
       {
+	String path = null;
+	{
+	  File file = new File(pStatus.getName());
+	  path = (PackageInfo.sWorkDir + "/" + 
+		  pAuthor + "/" + pView + file.getParent());
+	}
+
 	Box vbox = new Box(BoxLayout.Y_AXIS);
 	
-	vbox.add(Box.createRigidArea(new Dimension(0, 35)));
+	vbox.add(Box.createRigidArea(new Dimension(0, 4)));
 	
 	{
-	  Box box = new Box(BoxLayout.Y_AXIS);
+	  JFileLabel label = new JFileLabel(new FileSeq(path, fseq), fseq.toString());
+	  label.setName("TextFieldLabel");
+	  
+	  label.setHorizontalAlignment(JLabel.CENTER);
+	  label.setAlignmentX(0.5f);
+
+	  Dimension size = new Dimension(174, 27);
+	  label.setMaximumSize(size);
+	  label.setMaximumSize(size);
+	  label.setPreferredSize(size);
+		  
+	  if((details != null) && (details.getWorkingVersion() != null) && 
+	     details.getWorkingVersion().getSequences().contains(fseq))
+	    label.addMouseListener(this);
+	  
+	  vbox.add(label);
+	}
+
+	vbox.add(Box.createRigidArea(new Dimension(0, 4)));
+
+	{
+	  TreeMap<String,JFileLabel> labels = new TreeMap<String,JFileLabel>();
+	  pFileLabels.put(fseq.toString(), labels);
 
 	  TextureMgr mgr = TextureMgr.getInstance();
 	  try {
-	    for(String fname : allFiles) {
-	      FileState fstate  = fstates.get(fname);
-	      QueueState qstate = qstates.get(fname);
-	      
+	    for(FileSeq sfseq : singles) {
+	      FileState fstate  = fstates.get(sfseq);
+	      QueueState qstate = qstates.get(sfseq);
+
 	      String name = "Blank-Normal";
-	      if((fstate != null) && (qstate != null)) 
+	      FileSeq pfseq = null;
+	      if((fstate != null) && (qstate != null)) {
 		name = (fstate + "-" + qstate + "-Normal");
+
+		if(enabled.contains(sfseq))
+		  pfseq = new FileSeq(path, sfseq);
+	      }
 	      
+	      String fname = sfseq.getFile(0).toString();
+
 	      ImageIcon icon = mgr.getIcon21(name);
 	      
 	      {
@@ -526,27 +606,31 @@ class JNodeFilesPanel
 		hbox.add(Box.createRigidArea(new Dimension(3, 0)));
 		
 		{
-		  JTextField field = new JTextField(fname);
-		  field.setName("TextField");
+		  JFileLabel label = new JFileLabel(pfseq, fname);
+		  label.setName("TextFieldLabel");
 
 		  if((fstate != null) && (fstate != FileState.Identical))
-		    field.setForeground(Color.cyan);
+		    label.setForeground(Color.cyan);
 
-		  field.setHorizontalAlignment(JLabel.CENTER);
-		  field.setEditable(false);
+		  label.setHorizontalAlignment(JLabel.CENTER);
 
 		  Dimension size = new Dimension(150, 19);
-		  field.setMaximumSize(size);
-		  field.setMaximumSize(size);
-		  field.setPreferredSize(size);
+		  label.setMaximumSize(size);
+		  label.setMaximumSize(size);
+		  label.setPreferredSize(size);
+		  
+		  if(pfseq != null) 
+		    label.addMouseListener(this);
 
-		  hbox.add(field);
+		  labels.put(fname, label);
+		  
+		  hbox.add(label);
 		}
 		
-		box.add(hbox);
+		vbox.add(hbox);
 	      }
 
-	      box.add(Box.createRigidArea(new Dimension(0, 1)));
+	      vbox.add(Box.createRigidArea(new Dimension(0, 1)));
 	    }
 	  }
 	  catch(IOException ex) {
@@ -555,16 +639,14 @@ class JNodeFilesPanel
 	    Logs.flush();
 	    System.exit(1);
 	  }
-
-	  Dimension size = box.getPreferredSize();
-	  box.setMinimumSize(size);
-	  box.setMaximumSize(size);
-	 
-	  vbox.add(box);
 	}
 	
   	vbox.add(Box.createRigidArea(new Dimension(0, 18)));
 
+ 	Dimension size = vbox.getPreferredSize();
+ 	vbox.setMinimumSize(size);
+ 	vbox.setMaximumSize(size);
+	
 	body.add(vbox);
       }
 
@@ -638,7 +720,7 @@ class JNodeFilesPanel
 	/* table contents */ 
 	{
  	  JFileSeqPanel panel = 
-	    new JFileSeqPanel(this, fseq, allFiles, novel, pNovelty.size());
+	    new JFileSeqPanel(this, fseq, singles, enabled, novel, pNovelty.size());
 
 	  {
 	    JScrollPane scroll = new JScrollPane(panel);
@@ -671,8 +753,18 @@ class JNodeFilesPanel
       body.add(Box.createRigidArea(new Dimension(3, 0)));
     }
 
-    JDrawer drawer = new JDrawer(fseq.toString(), body, true);
-    pFileSeqBox.add(drawer);
+    pFileSeqBox.add(body);
+
+    if(!isLast) {
+      JPanel spanel = new JPanel();
+      spanel.setName("Spacer");
+      
+      spanel.setMinimumSize(new Dimension(sSize, 7));
+      spanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 7));
+      spanel.setPreferredSize(new Dimension(sSize, 7));
+      
+      pFileSeqBox.add(spanel);
+    }
   }
 
 
@@ -692,20 +784,94 @@ class JNodeFilesPanel
   ) 
   {
     String cmd = e.getActionCommand();
-    
-    System.out.print("ACTION = " + cmd + "\n");
-
-     if(cmd.equals("apply")) 
-       doApply();
-     else if(cmd.startsWith("file-check:")) {
-       String comps[] = cmd.split(":");
-       doFileChecked((JCheckBox) e.getSource(), comps[1], comps[2]);      
-     }
-     else if(cmd.startsWith("version-pressed:")) {
-       String comps[] = cmd.split(":");
-       doVersionPressed(comps[1], comps[2]);
-     }
+    if(cmd.equals("apply")) 
+      doApply();
+    else if(cmd.startsWith("file-check:")) {
+      String comps[] = cmd.split(":");
+      doFileChecked((JFileCheckBox) e.getSource(), comps[1], comps[2]);      
+    }
+    else if(cmd.startsWith("version-pressed:")) {
+      String comps[] = cmd.split(":");
+      doVersionPressed(comps[1], comps[2]);
+    }
+    else if(cmd.equals("edit"))
+      doEdit();
+    else if(cmd.startsWith("edit-with:"))
+      doEditWith(cmd.substring(10));    
   }
+
+
+  /*-- MOUSE LISTENER METHODS --------------------------------------------------------------*/
+
+  /**
+   * Invoked when the mouse button has been clicked (pressed and released) on a component. 
+   */ 
+  public void 
+  mouseClicked(MouseEvent e) {}
+   
+  /**
+   * Invoked when the mouse enters a component. 
+   */
+  public void 
+  mouseEntered(MouseEvent e) {}
+  
+  /**
+   * Invoked when the mouse exits a component. 
+   */ 
+  public void 
+  mouseExited(MouseEvent e) {}
+
+  /**
+   * Invoked when a mouse button has been pressed on a component. 
+   */
+  public void 
+  mousePressed
+  (
+   MouseEvent e
+  )
+  {
+    int mods = e.getModifiersEx();
+    switch(e.getButton()) {
+    case MouseEvent.BUTTON3:
+      {
+	int on1  = (MouseEvent.BUTTON3_DOWN_MASK);
+	
+	int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
+		    MouseEvent.BUTTON2_DOWN_MASK | 
+		    MouseEvent.SHIFT_DOWN_MASK |
+		    MouseEvent.ALT_DOWN_MASK |
+		    MouseEvent.CTRL_DOWN_MASK);
+	
+	/* BUTTON3: popup menu */ 
+	if((mods & (on1 | off1)) == on1) {
+	  Object source = e.getSource();
+	  if(source instanceof JFileLabel) {
+	    JFileLabel label = (JFileLabel) source;
+	    pTargetFileSeq   = label.getFileSeq();
+	    pTargetVersionID = label.getVersionID();
+	  }
+	  else if(source instanceof JFileCheckBox) {
+	    JFileCheckBox check = (JFileCheckBox) source;
+	    pTargetFileSeq      = check.getFileSeq();
+	    pTargetVersionID    = check.getVersionID();
+	  }
+
+	  if(pTargetVersionID != null) 
+	    pCheckedInPopup.show(e.getComponent(), e.getX(), e.getY());
+	  else 
+	    pWorkingPopup.show(e.getComponent(), e.getX(), e.getY());
+	}
+      }
+      break;
+    }
+  }
+
+
+  /**
+   * Invoked when a mouse button has been released on a component. 
+   */ 
+  public void 
+  mouseReleased(MouseEvent e) {}
 
 
 
@@ -714,23 +880,50 @@ class JNodeFilesPanel
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Modify the working version of the node based on the current settings if the 
-   * UI components.
+   * Replace working files with the selected checked-in files.
    */ 
   private void 
   doApply()
   {
-    
+    String dir = (PackageInfo.sRepoDir + pStatus.getName() + "/");
 
+    TreeMap<String,VersionID> files = new TreeMap<String,VersionID>();
+    for(TreeMap<String,ArrayList<JComponent>> table : pNameComponents.values()) {
+      for(ArrayList<JComponent> clist : table.values()) {
+	for(JComponent comp : clist) {
+	  if(comp instanceof JFileCheckBox) {
+	    JFileCheckBox check = (JFileCheckBox) comp;
+	    if(check.isSelected()) {
+	      String path = check.getFileSeq().getFile(0).toString();
+	      assert(path.startsWith(dir));
+
+	      String parts[] = path.substring(dir.length()).split("/");
+	      assert(parts.length == 2);
+
+	      files.put(parts[1], new VersionID(parts[0]));
+	    }
+	  }
+	}
+      }
+    }
+
+    pApplyButton.setEnabled(false);
+	  
+    RevertTask task = new RevertTask(files);
+    task.start();
   }
+  
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
-   * 
+   * Update the appearance of the row of file novelty components to reflect a change 
+   * in selection.
    */ 
   private void 
   doFileChecked
   (
-   JCheckBox check, 
+   JFileCheckBox check, 
    String sname, 
    String fname
   ) 
@@ -744,14 +937,14 @@ class JNodeFilesPanel
     int wk;
     for(wk=0; wk<comps.size(); wk++) {
       JComponent comp = comps.get(wk);
-      if(comp instanceof JCheckBox) {
-	JCheckBox cb = (JCheckBox) comp;
+      if(comp instanceof JFileCheckBox) {
+	JFileCheckBox cb = (JFileCheckBox) comp;
 	cb.setSelected(false);
 	if(cb == check) 
 	  idx = wk;
       }
-      else if(comp instanceof JLabel) {
-	JLabel label = (JLabel) comp;
+      else if(comp instanceof JFileLabel) {
+	JFileLabel label = (JFileLabel) comp;
 	if(label.getName().equals("FileBar"))
 	  label.setIcon(sFileBarIcon);
 	else 
@@ -766,8 +959,8 @@ class JNodeFilesPanel
 
       for(wk=idx-1; wk>=0; wk--) {
 	JComponent comp = comps.get(wk);
-	if(comp instanceof JLabel) {
-	  JLabel label = (JLabel) comp;
+	if(comp instanceof JFileLabel) {
+	  JFileLabel label = (JFileLabel) comp;
 	  if(label.getName().equals("FileBar"))
 	    label.setIcon(sFileBarIconSelected);
 	  else 
@@ -778,10 +971,16 @@ class JNodeFilesPanel
 	}
       }
     }
+
+    /* update the row label appearance */ 
+    JFileLabel label = pFileLabels.get(sname).get(fname);
+    label.setForeground(selected ? Color.yellow : Color.white);
+
+    pApplyButton.setEnabled(true);
   }
   
   /**
-   * 
+   * Select/Deselect all files in the given revision.
    */ 
   private void 
   doVersionPressed
@@ -791,10 +990,10 @@ class JNodeFilesPanel
   ) 
   {
     Boolean selected = null;
-    TreeMap<String,JCheckBox> table = pVersionBoxes.get(sname).get(vname);
+    TreeMap<String,JFileCheckBox> table = pVersionBoxes.get(sname).get(vname);
     if(table != null) {
       for(String fname : table.keySet()) {
-	JCheckBox check = table.get(fname);	
+	JFileCheckBox check = table.get(fname);	
 
 	if(selected == null) 
 	  selected = !check.isSelected();
@@ -804,13 +1003,134 @@ class JNodeFilesPanel
       }
     }
   }
-
   
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Edit/View the target file with the current editor.
+   */ 
+  private void 
+  doEdit() 
+  {
+    EditTask task = new EditTask(null);
+    task.start();
+  }
+
+  /**
+   * Edit/View the target file with the given editor.
+   */ 
+  private void 
+  doEditWith
+  (
+   String editor
+  ) 
+  {
+    EditTask task = new EditTask(editor);
+    task.start();
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L    C L A S S E S                                                     */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * A JLabel with an attached single file sequence and revision number.
+   */ 
+  private 
+  class JFileLabel
+    extends JLabel
+  {
+    public 
+    JFileLabel
+    (
+     FileSeq fseq, 
+     VersionID vid
+    ) 
+    {
+      super();
+      pFileSeq      = fseq;
+      pVersionID = vid;
+    }
+
+    public 
+    JFileLabel
+    (
+     FileSeq fseq,
+     String text 
+    ) 
+    {
+      super(text);
+      pFileSeq = fseq;
+    }
+
+
+    public FileSeq
+    getFileSeq() 
+    {
+      return pFileSeq;
+    }
+
+    public VersionID
+    getVersionID() 
+    {
+      return pVersionID;
+    }
+
+
+    private static final long serialVersionUID = 1637624990297368379L;
+
+    private FileSeq       pFileSeq;
+    private VersionID  pVersionID;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * A JCheckBox with an attached single file sequence. 
+   */ 
+  private 
+  class JFileCheckBox
+    extends JCheckBox
+  {
+    public 
+    JFileCheckBox
+    (
+     FileSeq fseq, 
+     VersionID vid
+    ) 
+    {
+      super();
+      pFileSeq   = fseq;
+      pVersionID = vid;
+    }
+
+
+    public FileSeq
+    getFileSeq() 
+    {
+      return pFileSeq;
+    }
+
+    public VersionID
+    getVersionID() 
+    {
+      return pVersionID;
+    }
+
+
+    private static final long serialVersionUID = 2303900581105425334L;
+
+    private FileSeq    pFileSeq;
+    private VersionID  pVersionID;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
   
   /**
    * A panel which displays the current state and revision history of a file sequence.  
@@ -833,8 +1153,11 @@ class JNodeFilesPanel
      * @param fseq
      *   The file sequence.
      * 
-     * @param files
-     *   The names of all of the files to display.
+     * @param singles
+     *   The single file sequences for all files to display.
+     * 
+     * @param enabled
+     *   The names of the files which have defined states.
      * 
      * @param flags
      *   The per-version (newest to oldest) file novelty flags indexed by filename.
@@ -847,8 +1170,9 @@ class JNodeFilesPanel
     (
      JNodeFilesPanel parent,
      FileSeq fseq, 
-     TreeSet<String> files,
-     TreeMap<String,Boolean[]> flags, 
+     TreeSet<FileSeq> singles,
+     TreeSet<FileSeq> enabled, 
+     TreeMap<FileSeq,Boolean[]> flags, 
      int numVersions
     ) 
     {
@@ -858,8 +1182,8 @@ class JNodeFilesPanel
 	new TreeMap<String,ArrayList<JComponent>>();
       pNameComponents.put(fseq.toString(), nameComps);
 
-      TreeMap<String,TreeMap<String,JCheckBox>> versionBoxes = 
-	new TreeMap<String,TreeMap<String,JCheckBox>>();
+      TreeMap<String,TreeMap<String,JFileCheckBox>> versionBoxes = 
+	new TreeMap<String,TreeMap<String,JFileCheckBox>>();
       pVersionBoxes.put(fseq.toString(), versionBoxes);
       
       ArrayList<VersionID> vids = new ArrayList<VersionID>(pNovelty.keySet());
@@ -871,8 +1195,10 @@ class JNodeFilesPanel
 	add(Box.createRigidArea(new Dimension(0, 1)));
 	
 	int fk=0;
-	for(String fname : files) {
-	  Boolean[] novel = flags.get(fname);
+	for(FileSeq sfseq : singles) {
+	  String fname = sfseq.getFile(0).toString();
+
+	  Boolean[] novel = flags.get(sfseq);
 	  if(novel == null) {
 	    add(Box.createRigidArea(new Dimension(70*numVersions, 19)));
 	  }
@@ -895,18 +1221,23 @@ class JNodeFilesPanel
 		  nameComps.put(fname, nlist);
 		}
 
-		TreeMap<String,JCheckBox> vboxes = versionBoxes.get(vid.toString());
+		TreeMap<String,JFileCheckBox> vboxes = versionBoxes.get(vid.toString());
 		if(vboxes == null) {
-		  vboxes = new TreeMap<String,JCheckBox>();
+		  vboxes = new TreeMap<String,JFileCheckBox>();
 		  versionBoxes.put(vid.toString(), vboxes);
 		}
+
+		String path = (PackageInfo.sRepoDir + pStatus.getName() + "/" + vid);
+		FileSeq pfseq = new FileSeq(path, sfseq);
+		
+		boolean isEnabled = enabled.contains(sfseq);
 
 		if(novel[wk]) {
 		  if((wk > 0) && (novel[wk-1] != null) && novel[wk-1])
 		    hbox.add(Box.createRigidArea(new Dimension(2, 0)));		  
 		  
 		  {
-		    JCheckBox check = new JCheckBox();
+		    JFileCheckBox check = new JFileCheckBox(pfseq, vid);
 		    check.setName("FileCheck");
 
 		    check.setSelected(false);
@@ -915,31 +1246,39 @@ class JNodeFilesPanel
 		    check.setMinimumSize(size);
 		    check.setMaximumSize(size);
 		    check.setPreferredSize(size);
-		  
-		    check.addActionListener(parent);
-		    check.setActionCommand("file-check:" + fseq + ":" + fname);
-
-		    nlist.add(check);
-		    vboxes.put(fname, check);
-
-		    int vk;
-		    for(vk=wk-1; vk>=0; vk--) {
-		      if((novel[vk] != null) && !novel[vk]) {
-			VersionID pvid = vids.get(vk);
-
-			TreeMap<String,JCheckBox> pvboxes = versionBoxes.get(pvid.toString());
-			if(pvboxes == null) {
-			  pvboxes = new TreeMap<String,JCheckBox>();
-			  versionBoxes.put(pvid.toString(), pvboxes);
+		    
+		    if(isEnabled) {
+		      check.addActionListener(parent);
+		      check.setActionCommand("file-check:" + fseq + ":" + fname);
+		      
+		      nlist.add(check);
+		      vboxes.put(fname, check);
+		      
+		      int vk;
+		      for(vk=wk-1; vk>=0; vk--) {
+			if((novel[vk] != null) && !novel[vk]) {
+			  VersionID pvid = vids.get(vk);
+			  
+			  TreeMap<String,JFileCheckBox> pvboxes = 
+			    versionBoxes.get(pvid.toString());
+			  if(pvboxes == null) {
+			    pvboxes = new TreeMap<String,JFileCheckBox>();
+			    versionBoxes.put(pvid.toString(), pvboxes);
+			  }
+			  
+			  pvboxes.put(fname, check);
 			}
-			
-			pvboxes.put(fname, check);
-		      }
-		      else {
-			break;
+			else {
+			  break;
+			}
 		      }
 		    }
-  
+		    else {
+		      check.setEnabled(false);
+		    }
+		    
+		    check.addMouseListener(parent);
+
 		    hbox.add(check);
 		  }
 		  
@@ -955,7 +1294,7 @@ class JNodeFilesPanel
 		  }
 		  
 		  {
-		    JLabel label = new JLabel();
+		    JFileLabel label = new JFileLabel(pfseq, vid);
 		    label.setName(extend ? "FileBarExtend" : "FileBar");
 		    label.setIcon(extend ? sFileBarExtendIcon : sFileBarIcon);
 
@@ -963,8 +1302,11 @@ class JNodeFilesPanel
 		    label.setMinimumSize(size);
 		    label.setMaximumSize(size);
 		    label.setPreferredSize(size);
+
+		    if(isEnabled) 
+		      nlist.add(label);
 		    
-		    nlist.add(label);
+		    label.addMouseListener(parent);
 
 		    hbox.add(label);	
 		  }
@@ -977,7 +1319,7 @@ class JNodeFilesPanel
 	    add(hbox);
 	  }
 	  
-	  if(fk < (files.size()-1)) 
+	  if(fk < (singles.size()-1)) 
 	    add(Box.createRigidArea(new Dimension(0, 3)));
 	  
 	  fk++;
@@ -985,7 +1327,7 @@ class JNodeFilesPanel
 	
 	add(Box.createRigidArea(new Dimension(0, 1)));
 	
-	Dimension size = new Dimension(70*numVersions, 20 + 22*(files.size()-1));
+	Dimension size = new Dimension(70*numVersions, 20 + 22*(singles.size()-1));
 	setMinimumSize(size);
 	setMaximumSize(size);
 	setPreferredSize(size);
@@ -1129,6 +1471,166 @@ class JNodeFilesPanel
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Edit/View the target file.
+   */ 
+  private
+  class EditTask
+    extends Thread
+  {
+    public 
+    EditTask
+    (
+     String ename
+    ) 
+    {
+      super("JNodeFilesPanel:EditTask");
+
+      pEditorName = ename;
+    }
+
+    public void 
+    run() 
+    {
+      SubProcess proc = null;
+      {
+	UIMaster master = UIMaster.getInstance();
+	if(master.beginPanelOp("Launching Node Editor...")) {
+	  try {
+	    MasterMgrClient client = master.getMasterMgrClient();
+
+	    String name = pStatus.getName();
+
+	    NodeDetails details = pStatus.getDetails();
+	    assert(details != null);
+
+	    NodeMod mod = details.getWorkingVersion();
+
+	    NodeVersion vsn = null;
+	    if(pTargetVersionID != null) 
+	      vsn = client.getCheckedInVersion(name, pTargetVersionID);
+	    else 
+	      vsn = details.getLatestVersion();
+
+	    NodeCommon com = null;
+	    if(mod != null) 
+	      com = mod;
+	    else 
+	      com = vsn;
+
+	    /* create an editor plugin instance */ 
+	    BaseEditor editor = null;
+	    {
+	      String ename = pEditorName;
+	      if(ename == null) 
+		ename = com.getEditor();
+	      if(ename == null) 
+		throw new PipelineException
+		  ("No editor was specified for node (" + name + ")!");
+	      
+	      editor = Plugins.newEditor(ename);
+	    }
+
+	    /* lookup the toolset environment */ 
+	    TreeMap<String,String> env = null;
+	    {
+	      String tname = com.getToolset();
+	      if(tname == null) 
+		throw new PipelineException
+		  ("No toolset was specified for node (" + name + ")!");
+	      
+	      String view = null;
+	      if(mod != null)
+		view = pView; 
+
+	      /* passes pAuthor so that WORKING will correspond to the current view */ 
+	      env = client.getToolsetEnvironment(pAuthor, view, tname);
+
+	      /* override these since the editor will be run as the current user */ 
+	      env.put("HOME", PackageInfo.sHomeDir + "/" + PackageInfo.sUser);
+	      env.put("USER", PackageInfo.sUser);
+	    }
+	    
+	    /* start the editor */ 
+	    proc = editor.launch(pTargetFileSeq, env, PackageInfo.sTempDir);	   
+	  }
+	  catch(PipelineException ex) {
+	    master.showErrorDialog(ex);
+	    return;
+	  }
+	  finally {
+	    master.endPanelOp("Done.");
+	  }
+	}
+
+	/* wait for the editor to exit */ 
+	try {
+	  proc.join();
+	  if(!proc.wasSuccessful()) 
+	    master.showSubprocessFailureDialog("Editor Failure:", proc);
+	}
+	catch(InterruptedException ex) {
+	  master.showErrorDialog(ex);
+	}
+      }
+    }
+
+    private String  pEditorName;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Replace working area files with the given repository versions.
+   */ 
+  private
+  class RevertTask
+    extends Thread
+  {
+    public 
+    RevertTask
+    (
+     TreeMap<String,VersionID> files
+    ) 
+    {
+      super("JNodeFilesPanel:RevertTask");
+
+      pFiles = files;
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Reverting Files...")) {
+	try {
+	  master.getMasterMgrClient().revertFiles(pAuthor, pView, pStatus.getName(), pFiles);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	if(pGroupID > 0) {
+	  PanelGroup<JNodeViewerPanel> panels = master.getNodeViewerPanels();
+	  JNodeViewerPanel viewer = panels.getPanel(pGroupID);
+	  if(viewer != null) 
+	    viewer.updateRoots();
+	}
+      }
+    }
+
+    private TreeMap<String,VersionID>  pFiles;
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
@@ -1174,6 +1676,30 @@ class JNodeFilesPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * The working file popup menu.
+   */ 
+  private JPopupMenu  pWorkingPopup; 
+
+  /**
+   * The checked-in file popup menu.
+   */ 
+  private JPopupMenu  pCheckedInPopup; 
+
+  
+  /**
+   * The file which is the target of the menu operation.
+   */ 
+  private FileSeq  pTargetFileSeq; 
+
+  /**
+   * The revision number of the checked-in version which is the target of the menu operation.
+   */ 
+  private VersionID  pTargetVersionID;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * The node name/state header.
    */ 
   private JLabel pHeaderLabel;
@@ -1190,6 +1716,11 @@ class JNodeFilesPanel
   private Box  pFileSeqBox;
 
   /**
+   * The file name labels indexed by file sequence (String) and file name.
+   */ 
+  private TreeMap<String,TreeMap<String,JFileLabel>>  pFileLabels;  
+
+  /**
    * The file novelty UI components indexed by file sequence (String) and file name.
    */ 
   private TreeMap<String,TreeMap<String,ArrayList<JComponent>>>  pNameComponents;
@@ -1198,6 +1729,6 @@ class JNodeFilesPanel
    * The file novelty check boxes indexed by file sequence (String), revision number (String)
    * and file name.
    */ 
-  private TreeMap<String,TreeMap<String,TreeMap<String,JCheckBox>>>  pVersionBoxes;
+  private TreeMap<String,TreeMap<String,TreeMap<String,JFileCheckBox>>>  pVersionBoxes;
 
 }
