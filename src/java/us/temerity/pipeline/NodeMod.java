@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.30 2004/10/03 19:42:18 jim Exp $
+// $Id: NodeMod.java,v 1.31 2004/10/21 07:05:32 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -105,6 +105,7 @@ class NodeMod
     
     pSources = new TreeMap<String,LinkMod>();
 
+    pTimeStamp = Dates.now();
     updateLastCriticalMod();
   }
 
@@ -149,6 +150,7 @@ class NodeMod
     
     pSources = new TreeMap<String,LinkMod>();
 
+    pTimeStamp = Dates.now();
     updateLastCriticalMod();
   }
 
@@ -176,6 +178,7 @@ class NodeMod
     for(LinkVersion link : vsn.getSources()) 
       pSources.put(link.getName(), new LinkMod(link));
 
+    pTimeStamp       = Dates.now();
     pLastMod         = timestamp;
     pLastCriticalMod = timestamp;
   }
@@ -201,6 +204,7 @@ class NodeMod
     for(LinkMod link : mod.getSources()) 
       pSources.put(link.getName(), new LinkMod(link));
 
+    pTimeStamp       = mod.getTimeStamp();
     pLastMod         = mod.getLastModification();
     pLastCriticalMod = mod.getLastCriticalModification();
   }
@@ -250,6 +254,15 @@ class NodeMod
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get when the working version was created.
+   */ 
+  public Date
+  getTimeStamp() 
+  {
+    return (Date) pTimeStamp.clone();
+  }
 
   /** 
    * Get the timestamp of the last modification of this working version.
@@ -1158,6 +1171,7 @@ class NodeMod
     if(pWorkingID != null) 
       encoder.encode("WorkingID", pWorkingID);
 
+    encoder.encode("TimeStamp", pTimeStamp.getTime());
     encoder.encode("LastModification", pLastMod.getTime());
     encoder.encode("LastCriticalModification", pLastCriticalMod.getTime());
     
@@ -1190,6 +1204,21 @@ class NodeMod
 	throw new GlueException("The \"LastCriticalModification\" was missing!");
       pLastCriticalMod = new Date(stamp);
     }
+
+    {
+      Long stamp = (Long) decoder.decode("TimeStamp");
+
+      /* TEMPORARY WORKAROUND: 
+       *   to prevent working versions created before Pipeline-1.8.8 which don't have a 
+       *   TimeStamp from generating an error when loaded */ 
+      if(stamp == null) 
+	stamp = 0L;
+      /* TEMPORARY WORKAROUND */ 
+
+      if(stamp == null) 
+ 	throw new GlueException("The \"TimeStamp\" was missing!");
+      pTimeStamp = new Date(stamp);
+    }
     
     TreeMap<String,LinkMod> sources = 
       (TreeMap<String,LinkMod>) decoder.decode("Sources"); 
@@ -1217,6 +1246,12 @@ class NodeMod
    * has never been checked-in.
    */ 
   private VersionID  pWorkingID;       
+
+  
+  /** 
+   * The timestamp of when the version was created.
+   */
+  private Date  pTimeStamp;
 
   /** 
    * The timestamp of the last modification of any field of this instance.  
