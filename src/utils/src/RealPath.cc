@@ -1,4 +1,4 @@
-/* $Id: RealPath.cc,v 1.2 2004/03/12 15:14:29 jim Exp $ */
+/* $Id: RealPath.cc,v 1.3 2004/03/21 01:20:26 jim Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -43,7 +43,17 @@ using namespace Pipeline;
 void
 usage()
 {
-  std::cerr << "usage: realpath path1 [path2 ...]\n"
+  std::cerr << "USAGE:\n"
+	    << "  realpath path1 [path2 ...]\n"
+	    << "\n" 
+	    << "  realpath --help\n"
+	    << "  realpath --html-help\n"
+	    << "  realpath --version\n"
+	    << "  realpath --release-date\n"
+	    << "  realpath --copyright\n"   
+	    << "\n"
+	    << "\n"
+	    << "Use \"realpath --html-help\" to browse the full documentation.\n" 
 	    << std::flush;
 }
 
@@ -52,8 +62,7 @@ int
 main
 (
  int argc, 
- char **argv, 
- char **envp
+ char **argv
 )
 {
   /* parse command line args */ 

@@ -1,4 +1,4 @@
-// $Id: Pls.cc,v 1.4 2004/03/12 15:14:29 jim Exp $
+// $Id: Pls.cc,v 1.5 2004/03/21 01:20:26 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -48,13 +48,14 @@ using namespace Pipeline;
 void
 usage()
 {
-  std::cerr << "usage: pls [options][directory]\n"
+  std::cerr << "USAGE:\n" 
+	    << "  pls [options][directory]\n"
 	    << "\n" 
-	    << "       pls --help\n"
-	    << "       pls --html-help\n"
-	    << "       pls --version\n"
-	    << "       pls --release-date\n"
-	    << "       pls --copyright\n" 
+	    << "  pls --help\n"
+	    << "  pls --html-help\n"
+	    << "  pls --version\n"
+	    << "  pls --release-date\n"
+	    << "  pls --copyright\n" 
 	    << "\n" 
 	    << "OPTIONS:\n" 
 	    << "  [--fcheck][--fcheck-exec][--zero][--size=bytes]\n" 

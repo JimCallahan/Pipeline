@@ -1,4 +1,4 @@
-// $Id: HtmlHelp.hh,v 1.2 2004/03/21 00:58:41 jim Exp $
+// $Id: HtmlHelp.hh,v 1.3 2004/03/21 01:20:26 jim Exp $
 
 #ifndef PIPELINE_HTML_HELP_HH
 #define PIPELINE_HTML_HELP_HH 
@@ -49,19 +49,21 @@ public:
   static void
   launch
   (
-   const char* name  /* IN: the name of the application */ 
+   const char* name   /* IN: the name of the application */ 
   )										    
   {											    
     char buf[1024];
     sprintf(buf, "openURL(file:%s/man/%s.html, new-tab)", PackageInfo::sDocsDir, name); 
     
     char* args[4]; 
-    args[0] = "mozilla";
-    args[1] = "-remote";
-    args[2] = buf;
+    args[0] = strdup("mozilla");
+    args[1] = strdup("-remote");
+    args[2] = strdup(buf);
     args[3] = NULL;
     
-    execv("mozilla", args);
+    execvp("mozilla", args);
+
+    exit(EXIT_FAILURE);
   }											    
 											    
 };
