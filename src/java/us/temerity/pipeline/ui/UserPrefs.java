@@ -1,4 +1,4 @@
-// $Id: UserPrefs.java,v 1.2 2004/05/13 21:29:16 jim Exp $
+// $Id: UserPrefs.java,v 1.3 2004/05/14 02:40:59 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -117,7 +117,73 @@ class UserPrefs
   {
     pNodeOffset = offset;
   }
+
+
+  /**
+   * Get the collapse node action hot key.
+   */ 
+  public HotKey
+  getCollapseNode() 
+  {
+    return pCollapseNode;
+  }
   
+  /**
+   * Set the collapse node action hot key.
+   */ 
+  public void 
+  setCollapseNode
+  (
+   HotKey key
+  ) 
+  {
+    pCollapseNode = key;
+  }
+
+
+  /**
+   * Get the expand node action hot key.
+   */ 
+  public HotKey
+  getExpandNode() 
+  {
+    return pExpandNode;
+  }
+  
+  /**
+   * Set the expand node action hot key.
+   */ 
+  public void 
+  setExpandNode
+  (
+   HotKey key
+  ) 
+  {
+    pExpandNode = key;
+  }
+
+
+  /**
+   * Get the expand all nodes action hot key.
+   */ 
+  public HotKey
+  getExpandAllNodes() 
+  {
+    return pExpandAllNodes;
+  }
+  
+  /**
+   * Set the expand all nodes action hot key.
+   */ 
+  public void 
+  setExpandAllNodes
+  (
+   HotKey key
+  ) 
+  {
+    pExpandAllNodes = key;
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -133,6 +199,10 @@ class UserPrefs
     pNodeSpaceX = 2.0;
     pNodeSpaceY = 2.0;
     pNodeOffset = 0.5;
+
+    pCollapseNode = null;
+    pExpandNode = null;
+    pExpandAllNodes = null;
 
     // ...
 
@@ -160,8 +230,6 @@ class UserPrefs
     File file = new File(PackageInfo.sHomeDir, 
 			 PackageInfo.sUser + "/.pipeline/preferences");
     sUserPrefs = (UserPrefs) LockedGlueFile.load(file);
-
-    System.out.print("Prefs loaded: " + file + "\n");
   }
 
 
@@ -178,9 +246,16 @@ class UserPrefs
     throws GlueException
   {
     /* node viewer */ 
-    encoder.encode("NodeSpaceX", pNodeSpaceX);
-    encoder.encode("NodeSpaceY", pNodeSpaceY);
-    encoder.encode("NodeOffset", pNodeOffset);
+    {
+      encoder.encode("NodeSpaceX", pNodeSpaceX);
+      encoder.encode("NodeSpaceY", pNodeSpaceY);
+      encoder.encode("NodeOffset", pNodeOffset);
+      
+      encoder.encode("CollapseNode",  pCollapseNode);
+      encoder.encode("ExpandNode",    pExpandNode);
+      encoder.encode("ExpandAllNodes", pExpandAllNodes);
+    }
+
 
     // ...
 
@@ -206,6 +281,19 @@ class UserPrefs
       Double offset = (Double) decoder.decode("NodeOffset");
       if(offset != null)
 	pNodeOffset = offset;
+
+
+      HotKey collapse = (HotKey) decoder.decode("CollapseNode");
+      if(collapse != null)
+	pCollapseNode = collapse;
+
+      HotKey expand = (HotKey) decoder.decode("ExpandNode");
+      if(expand != null)
+	pExpandNode = expand;
+
+      HotKey expandAll = (HotKey) decoder.decode("ExpandAllNodes");
+      if(expandAll != null)
+	pExpandAllNodes = expandAll;
     }
 
     
@@ -230,6 +318,9 @@ class UserPrefs
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
+
+  /*-- NODE VIEWER -------------------------------------------------------------------------*/
+
   /**
    * The horizontal distance between nodes in the node viewer.
    */ 
@@ -244,6 +335,22 @@ class UserPrefs
    * The vertical offset distance for nodes with an odd depth level in the node viewer.
    */ 
   private double  pNodeOffset;
+
+
+  /**
+   * The collapse node action hot key.
+   */ 
+  private HotKey  pCollapseNode;
+
+  /**
+   * The expand node action hot key.
+   */ 
+  private HotKey  pExpandNode;
+
+  /**
+   * The expand all nodes action hot key.
+   */ 
+  private HotKey  pExpandAllNodes;
 
   
 }

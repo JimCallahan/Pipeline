@@ -1,4 +1,4 @@
-// $Id: JUserPrefsDialog.java,v 1.2 2004/05/13 21:27:49 jim Exp $
+// $Id: JUserPrefsDialog.java,v 1.3 2004/05/14 02:40:50 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -291,19 +291,19 @@ class JUserPrefsDialog
 	{
 	  UserPrefs prefs = UserPrefs.getInstance();
 	  
-	  pNodeSpaceXSlider = 
+	  pNodeSpaceX = 
 	    UIMaster.createTitledSlider(tpanel, "Horizontal Space:", 120, 
 					vpanel, 1.0, 5.0, prefs.getNodeSpaceX(), 240);
 	  
 	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
 	  
-	  pNodeSpaceYSlider = 
+	  pNodeSpaceY = 
 	    UIMaster.createTitledSlider(tpanel, "Vertical Space:", 120, 
 					vpanel, 1.0, 5.0, prefs.getNodeSpaceY(), 240);
 
 	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
 	  
-	  pNodeOffsetSlider = 
+	  pNodeOffset = 
 	    UIMaster.createTitledSlider(tpanel, "Vertical Offset:", 120, 
 					vpanel, 0.0, 1.0, prefs.getNodeOffset(), 240);
 	  
@@ -341,8 +341,23 @@ class JUserPrefsDialog
 	JPanel tpanel = (JPanel) comps[0];
 	JPanel vpanel = (JPanel) comps[1];
 	
-	{
+	{ 
+	  pCollapseNode = 
+	    UIMaster.createTitledHotKeyField(tpanel, "Collapse Node:", 120, 
+					     vpanel, 240);
+	  
+	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
 
+	  pExpandNode = 
+	    UIMaster.createTitledHotKeyField(tpanel, "Expand Node:", 120, 
+					     vpanel, 240);
+
+	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+
+	  pExpandAllNodes = 
+	    UIMaster.createTitledHotKeyField(tpanel, "Expand All Nodes:", 120, 
+					     vpanel, 240);
+	  
 	  // ...
 
 	}
@@ -487,9 +502,16 @@ class JUserPrefsDialog
     UIMaster master = UIMaster.getInstance();
     UserPrefs prefs = UserPrefs.getInstance();
 
-    prefs.setNodeSpaceX(((double) pNodeSpaceXSlider.getValue())/1000.0);
-    prefs.setNodeSpaceY(((double) pNodeSpaceYSlider.getValue())/1000.0);
-    prefs.setNodeOffset(((double) pNodeOffsetSlider.getValue())/1000.0);
+    /* node viewer */ 
+    {
+      prefs.setNodeSpaceX(((double) pNodeSpaceX.getValue())/1000.0);
+      prefs.setNodeSpaceY(((double) pNodeSpaceY.getValue())/1000.0);
+      prefs.setNodeOffset(((double) pNodeOffset.getValue())/1000.0);
+      
+      prefs.setCollapseNode(pCollapseNode.getHotKey());
+      prefs.setExpandNode(pExpandNode.getHotKey());
+      prefs.setExpandAllNodes(pExpandAllNodes.getHotKey());
+    }
 
 
     // ... 
@@ -529,13 +551,19 @@ class JUserPrefsDialog
   {
     UserPrefs prefs = UserPrefs.getInstance();
     
-    pNodeSpaceXSlider.setValue((int) (prefs.getNodeSpaceX()*1000.0));
-    pNodeSpaceYSlider.setValue((int) (prefs.getNodeSpaceY()*1000.0));
-    pNodeOffsetSlider.setValue((int) (prefs.getNodeOffset()*1000.0));
+    /* node viewer */ 
+    {
+      pNodeSpaceX.setValue((int) (prefs.getNodeSpaceX()*1000.0));
+      pNodeSpaceY.setValue((int) (prefs.getNodeSpaceY()*1000.0));
+      pNodeOffset.setValue((int) (prefs.getNodeOffset()*1000.0));
 
-    
+      pCollapseNode.setHotKey(prefs.getCollapseNode());
+      pExpandNode.setHotKey(prefs.getExpandNode());
+      pExpandAllNodes.setHotKey(prefs.getExpandAllNodes());
+    }
+
+
     // ...
-
     
   }
 
@@ -693,8 +721,12 @@ class JUserPrefsDialog
   /**
    * Panels - NodeViewer - Nodes - Layout:
    */ 
-  private JSlider  pNodeSpaceXSlider; 
-  private JSlider  pNodeSpaceYSlider; 
-  private JSlider  pNodeOffsetSlider; 
+  private JSlider  pNodeSpaceX; 
+  private JSlider  pNodeSpaceY; 
+  private JSlider  pNodeOffset; 
+
+  private JHotKeyField  pCollapseNode;
+  private JHotKeyField  pExpandNode;
+  private JHotKeyField  pExpandAllNodes;
 
 }
