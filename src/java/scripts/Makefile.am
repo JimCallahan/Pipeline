@@ -2,11 +2,11 @@
 instbindir = @ROOT_INST_DIR@/bin
 
 instbin_SCRIPTS = \
-  pltest
+  plui
 
 
 instsbindir = @ROOT_INST_DIR@/sbin
 
 instsbin_SCRIPTS = \
-  plfilemgr
-
+  plfilemgr \
+  plmaster
