@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.64 2004/12/10 10:26:21 jim Exp $
+// $Id: UIMaster.java,v 1.65 2004/12/10 10:44:44 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -3200,7 +3200,12 @@ class UIMaster
 	}
 	
 	frame.pack();
-	frame.setLocationRelativeTo(null);
+
+	{
+	  Rectangle bounds = frame.getGraphicsConfiguration().getBounds();
+	  frame.setLocation(bounds.x + bounds.width/2 - frame.getWidth()/2, 
+			    bounds.y + bounds.height/2 - frame.getHeight()/2);
+	}
 
 	frame.setVisible(true);
       }
@@ -3519,7 +3524,12 @@ class UIMaster
 	}
 	
 	frame.setSize(520, 360);
-	frame.setLocationRelativeTo(null);
+
+	{
+	  Rectangle bounds = frame.getGraphicsConfiguration().getBounds();
+	  frame.setLocation(bounds.x + bounds.width/2 - frame.getWidth()/2, 
+			    bounds.y + bounds.height/2 - frame.getHeight()/2);
+	}
       }
 
       {

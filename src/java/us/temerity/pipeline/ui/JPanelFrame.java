@@ -1,4 +1,4 @@
-// $Id: JPanelFrame.java,v 1.2 2004/10/22 14:02:45 jim Exp $
+// $Id: JPanelFrame.java,v 1.3 2004/12/10 10:44:44 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -68,7 +68,12 @@ class JPanelFrame
     }
 
     setSize(520, 360);
-    setLocationRelativeTo(null);
+
+    {
+      Rectangle bounds = getGraphicsConfiguration().getBounds();
+      setLocation(bounds.x + bounds.width/2 - getWidth()/2, 
+		  bounds.y + bounds.height/2 - getHeight()/2);
+    }
   }
 
 

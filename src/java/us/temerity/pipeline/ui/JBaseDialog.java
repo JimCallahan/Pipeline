@@ -1,4 +1,4 @@
-// $Id: JBaseDialog.java,v 1.9 2004/09/05 06:45:06 jim Exp $
+// $Id: JBaseDialog.java,v 1.10 2004/12/10 10:44:44 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -238,7 +238,18 @@ class JBaseDialog
     setContentPane(root);
 
     pack();
-    setLocationRelativeTo(getOwner());
+
+    {
+      Window owner = getOwner();
+      if(owner != null) {
+	setLocationRelativeTo(owner);
+      }
+      else {
+	Rectangle bounds = getGraphicsConfiguration().getBounds();
+	setLocation(bounds.x + bounds.width/2 - getWidth()/2, 
+		    bounds.y + bounds.height/2 - getHeight()/2);		    
+      }
+    }
 
     return extraBtns;
   }
