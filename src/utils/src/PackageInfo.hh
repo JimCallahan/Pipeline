@@ -1,4 +1,4 @@
-// $Id: PackageInfo.hh,v 1.7 2004/03/10 11:44:39 jim Exp $
+// $Id: PackageInfo.hh,v 1.8 2004/04/05 05:52:35 jim Exp $
 
 #ifndef PIPELINE_PACKAGE_INFO_HH
 #define PIPELINE_PACKAGE_INFO_HH
@@ -21,29 +21,65 @@ public:
   /*   P U B L I C   F I E L D S                                                            */
   /*----------------------------------------------------------------------------------------*/
  
-  /* the version number */ 
+  /**
+   * The version identifier of this Pipeline release.
+   */ 
   static const char* sVersion;
 
-  /* when the package was released */ 
+  /**
+   * The date and time when this version of Pipeline was released.
+   */ 
   static const char* sRelease;
 
   
-  /* pipeline user ID */ 
+  /**
+   * The "pipeline" user ID 
+   */ 
   static const int sPipelineUID;
 
-  /* pipeline group ID */ 
+  /**
+   * The pipeline group ID 
+   */ 
   static const int sPipelineGID;
 
 
-  /* installed documentation directory */ 
+  /**
+   * The port number listened to by the Pipeline directory change notification daemon 
+   * plnotify(1) for control requests. 
+   * 
+   * Set by the NotifyControlPort customer profile entry.
+   */
+  static int sNotifyControlPort;
+
+  /**
+   * The port number listened to by the Pipeline directory change notification daemon 
+   * plnotify(1) for monitor requests.
+   * 
+   * Set by the NotifyMonitorPort customer profile entry.
+   */
+  static int sNotifyMonitorPort;
+
+
+  /**
+   * The root installed documentation directory. 
+   * 
+   * Set by appending "/share/docs" to the value of RootInstallDirectory customer profile 
+   * entry.
+   */ 
   static const char* sDocsDir;
 
-  /* location of the Mozilla web browser */ 
-  static const char* sMozilla;
 
-
-  /* copyright message */ 
+  
+  /**
+   * The copyright notice for Pipeline. 
+   */
   static const char* sCopyright;
+
+
+  /**
+   * The license agreement for Pipeline. 
+   */
+  static const char* sLicense;
 
 };
 

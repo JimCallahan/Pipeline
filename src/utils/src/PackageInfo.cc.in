@@ -1,4 +1,4 @@
-// $Id: PackageInfo.cc.in,v 1.12 2004/03/21 00:57:17 jim Exp $
+// $Id: PackageInfo.cc.in,v 1.13 2004/04/05 05:52:35 jim Exp $
 
 #include <PackageInfo.hh>
 
@@ -14,43 +14,152 @@ namespace Pipeline {
 /*   P U B L I C   F I E L D S                                                            */
 /*----------------------------------------------------------------------------------------*/
   
-/* the version number */ 
+/**
+ * The version identifier of this Pipeline release.
+ */ 
 const char* PackageInfo::sVersion = "@VERSION@";        
 
-/* when the package was released */ 
+/**
+ * The date and time when this version of Pipeline was released.
+ */ 
 const char* PackageInfo::sRelease = "@RELEASE_STAMP@";  
 
 
-/* pipeline user ID */ 
+/**
+ * The "pipeline" user ID 
+ */ 
 const int PackageInfo::sPipelineUID = @PIPELINE_UID@;
 
-/* pipeline group ID */ 
+/**
+ * The pipeline group ID 
+ */ 
 const int PackageInfo::sPipelineGID = @PIPELINE_GID@;
 
+/**
+ * The port number listened to by the Pipeline directory change notification daemon 
+ * plnotify(1) for control requests. 
+ * 
+ * Set by the NotifyControlPort customer profile entry.
+ */
+int PackageInfo::sNotifyControlPort = @NOTIFY_CONTROL_PORT@;
 
-/* installed documentation directory */ 
+/**
+ * The port number listened to by the Pipeline directory change notification daemon 
+ * plnotify(1) for monitor requests.
+ * 
+ * Set by the NotifyMonitorPort customer profile entry.
+ */
+int PackageInfo::sNotifyMonitorPort = @NOTIFY_MONITOR_PORT@;
+
+
+/**
+ * The root installed documentation directory. 
+ * 
+ * Set by appending "/share/docs" to the value of RootInstallDirectory customer profile 
+ * entry.
+ */ 
 const char* PackageInfo::sDocsDir = "@ROOT_INST_DIR@/share/docs"; 
 
 
-/* copyright message */ 
+/**
+ * The copyright notice for Pipeline. 
+ */
 const char* PackageInfo::sCopyright = 
-"-------------------------------------------------------------------------\n\
- Copyright (c) 2001, 2002, 2003, 2004 James M. Callahan.\n\
+"-----------------------------------------------------------------------------\n\
+  Copyright (c) 2002, 2003, 2004 Temerity Software, Inc.\n\
 \n\
- Permission to use, copy and distribute this software and its\n\
- documentation for any purpose is STRICTLY PROHIBITED without prior\n\
- authorization in writing by James M. Callahan.\n\
+  THE SOFTWARE IS PROVIDED \"AS-IS\" AND WITHOUT WARRANTY OF ANY KIND, \n\
+  EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY \n\
+  WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.\n\
 \n\
- THE SOFTWARE IS PROVIDED \"AS-IS\" AND WITHOUT WARRANTY OF ANY KIND,\n\
- EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY\n\
- WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.\n\
+  IN NO EVENT SHALL TEMERITY SOFTWARE, INC. BE LIABLE FOR ANY SPECIAL, \n\
+  INCIDENTAL, INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY \n\
+  DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER\n\
+  OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF \n\
+  LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE\n\
+  OF THIS SOFTWARE.\n\
+-----------------------------------------------------------------------------\n";
+
+
+/**
+ * The license agreement for Pipeline. 
+ */
+const char*  PackageInfo::sLicense = 
+"-----------------------------------------------------------------------------\n\
 \n\
- IN NO EVENT SHALL JAMES M. CALLAHAN BE LIABLE FOR ANY SPECIAL,\n\
- INCIDENTAL, INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY\n\
- DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER\n\
- OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF\n\
- LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE\n\
- OF THIS SOFTWARE.\n\
--------------------------------------------------------------------------\n";
+                       Temerity Software, Inc.\n\
+                          License Agreement\n\
+                        PIPELINE, VERSION @VERSION@\n\
+\n\
+  1. DEFINITIONS. \"Temerity\" means Temerity Software, Inc. \"Software\"\n\
+  means Pipeline, Version @VERSION@, software in binary and/or source code\n\
+  forms, any other machine readable materials (including, but not limited\n\
+  to, libraries, source files, header files, and data files), any user \n\
+  manuals, programming guides and other documentation provided to Licensee\n\
+  by Temerity under this Agreement.\n\
+\n\
+  2. LICENSE TO USE. Temerity grants you a non-exclusive and non-transferable\n\
+  license only for the internal use of Software, by the number of users and\n\
+  the class of computer hardware for which the corresponding fee has been paid.\n\
+\n\
+  3. RESTRICTIONS. Software is confidential and copyrighted. Title to \n\
+  Software and all associated intellectual property rights is retained by \n\
+  Temerity. You may not make copies of Software, other than a single copy of \n\
+  Software for archival purposes. Unless enforcement is prohibited by \n\
+  applicable law, you may not modify, decompile, or reverse engineer Software.\n\
+  You acknowledge that Software is not designed, licensed or intended for use\n\
+  in the design, construction, operation or maintenance of any nuclear facility.\n\
+  Temerity disclaims any express or implied warranty of fitness for such uses.\n\
+  No right, title or interest in or to any trademark, service mark, logo or\n\
+  trade name of Temerity or its licensors is granted under this Agreement.\n\
+\n\
+  4. LIMITED WARRANTY. Temerity warrants to you that for a period of ninety\n\
+  (90) days from the date of purchase, as evidenced by a copy of the receipt,\n\
+  the media on which Software is furnished (if any) will be free of defects\n\
+  in materials and workmanship under normal use. Except for the foregoing, \n\
+  Software is provided \"AS IS\". Your exclusive remedy and Temerity's entire\n\
+  liability under this limited warranty will be at Temerity's option to replace\n\
+  Software media or refund the fee paid for Software.\n\
+\n\
+  5. DISCLAIMER OF WARRANTY. UNLESS SPECIFIED IN THIS AGREEMENT, ALL EXPRESS\n\
+  OR IMPLIED CONDITIONS, REPRESENTATIONS AND WARRANTIES, INCLUDING ANY IMPLIED\n\
+  WARRANTY OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE OR \n\
+  NON-INFRINGEMENT, ARE DISCLAIMED, EXCEPT TO THE EXTENT THAT THESE DISCLAIMERS\n\
+  ARE HELD TO BE LEGALLY INVALID.\n\
+\n\
+  6. LIMITATION OF LIABILITY. TO THE EXTENT NOT PROHIBITED BY LAW, IN NO \n\
+  EVENTWILL TEMERITY BE LIABLE FOR ANY LOST REVENUE, PROFIT OR DATA, OR FOR \n\
+  SPECIAL, INDIRECT, CONSEQUENTIAL, INCIDENTAL OR PUNITIVE DAMAGES, HOWEVER \n\
+  CAUSED REGARDLESS OF THE THEORY OF LIABILITY, ARISING OUT OF OR RELATED TO \n\
+  THE USE OF OR INABILITY TO USE SOFTWARE, EVEN IF TEMERITY HAS BEEN ADVISED \n\
+  OF THE POSSIBILITY OF SUCH DAMAGES. In no event will Temerity's liability \n\
+  to you, whether in contract, tort (including negligence), or otherwise, \n\
+  exceed the amount paid by you for Software under this Agreement. The \n\
+  foregoing limitations will apply even if the above stated warranty fails \n\
+  of its essential purpose.\n\
+\n\
+  7. SEVERABILITY. If any provision of this Agreement is held to be \n\
+  unenforceable, this Agreement will remain in effect with the provision \n\
+  omitted, unless omission would frustrate the intent of the parties. In \n\
+  which event, the parties' obligations under the remaining terms of the \n\
+  Agreement will be conformed to accomplish the parties' original intent \n\
+  from the overall Agreement.\n\
+\n\
+  8. INTEGRATION. This Agreement is the entire agreement between you and \n\
+  Temerity relating to its subject matter. It supersedes all prior or \n\
+  contemporaneous oral or written communications, proposals, representations\n\
+  and warranties and prevails over any conflicting or additional terms of\n\
+  any quote, order, acknowledgment, or other communication between the \n\
+  parties relating to its subject matter during the term of this Agreement.\n\
+  No modification of this Agreement will be binding, unless in writing and\n\
+  signed by an authorized representative of each party.\n\
+\n\
+  For inquiries please contact:\n\
+\n\
+    Temerity Software, Inc.\n\
+    475 Central Avenue, Suite 300\n\
+    St. Petersburg, Florida  33701\n\
+\n\
+-----------------------------------------------------------------------------\n";
 
 } // namespace Pipeline
