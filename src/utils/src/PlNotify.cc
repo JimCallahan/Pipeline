@@ -1,4 +1,4 @@
-// $Id: PlNotify.cc,v 1.11 2004/08/29 09:18:24 jim Exp $
+// $Id: PlNotify.cc,v 1.12 2004/09/01 12:24:37 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -103,7 +103,8 @@ main
   char** argv2 = NULL;
   {
     char rflags[1024];
-    if(strcmp("dbg", PackageInfo::sBuildMode) == 0) {
+    if((strcmp("dbg", PackageInfo::sBuildMode) == 0) && 
+       (strlen(PackageInfo::sPlNotifyDebugOpts) > 0)) {
       sprintf(rflags, "%s %s", 
 	      PackageInfo::sPlNotifyDebugOpts, 
 	      PackageInfo::sJavaRuntimeFlags);
@@ -188,6 +189,18 @@ main
     argv2[argc2] = NULL;
   }
   
+  // DEBUG 
+//   {
+//     std::cerr << "CMD: ";
+
+//     int i; 
+//     for(i=0; i<argc2; i++) 
+//       std::cerr << i << "|" << argv2[i] << "| ";
+
+//     std::cerr << "\n";
+//   }
+  // DEBUG
+
   /* execute the command */ 
   if(execv(cmd, argv2) == -1) {
     sprintf(msg, "Unable to execute (%s): %s", cmd, strerror(errno));
