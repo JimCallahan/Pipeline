@@ -1,4 +1,4 @@
-// $Id: QueueJobInfo.java,v 1.2 2004/07/28 19:13:57 jim Exp $
+// $Id: QueueJobInfo.java,v 1.3 2004/08/22 21:53:33 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -44,7 +44,7 @@ class QueueJobInfo
 	("The job ID (" + jobID + ") must be positive!");
     pJobID = jobID;
 
-    pState = QueueState.Queued;
+    pState = JobState.Queued;
     pSubmittedStamp = Dates.now();
   }
 
@@ -64,9 +64,9 @@ class QueueJobInfo
   }
 
   /**
-   * Get the queue state of the job.
+   * Get the status of the job in the queue.
    */
-  public QueueState
+  public synchronized JobState
   getState() 
   {
     return pState;
@@ -78,7 +78,7 @@ class QueueJobInfo
   /**
    * Get the timestamp of when the job was submitted to the queue.
    */ 
-  public Date 
+  public synchronized Date 
   getSubmittedStamp() 
   {
     return pSubmittedStamp;
@@ -90,7 +90,7 @@ class QueueJobInfo
    * @return 
    *   The timestamp or <CODE>null</CODE> if the job was never started.
    */ 
-  public Date 
+  public synchronized Date 
   getStartedStamp() 
   {
     return pStartedStamp;
@@ -102,7 +102,7 @@ class QueueJobInfo
    * @return 
    *   The timestamp or <CODE>null</CODE> if the job has not completed yet.
    */ 
-  public Date 
+  public synchronized Date 
   getCompletedStamp() 
   {
     return pCompletedStamp;
@@ -117,7 +117,7 @@ class QueueJobInfo
    * @return 
    *   The hostname or <CODE>null</CODE> if the job was never assigned to a specific host.
    */ 
-  public String 
+  public synchronized String 
   getHostname() 
   {
     return pHostname;   
@@ -129,7 +129,7 @@ class QueueJobInfo
    * @return 
    *   The results or <CODE>null</CODE> if the job was never executed.
    */ 
-  public QueueJobResults
+  public synchronized QueueJobResults
   getResults() 
   {
     return pResults; 
@@ -147,7 +147,7 @@ class QueueJobInfo
    * @param hostname
    *   The full name of the host executing the job.
    */ 
-  public void 
+  public synchronized void 
   started
   (
    String hostname
@@ -159,18 +159,18 @@ class QueueJobInfo
     pHostname = hostname; 
 
     pStartedStamp = Dates.now();
-    pState = QueueState.Running;
+    pState = JobState.Running;
   }
   
   /**
    * Records that the job was aborted (cancelled) before it could be assigned to a 
    * host for execution.
    */ 
-  public void 
+  public synchronized void 
   aborted() 
   {
     pCompletedStamp = Dates.now();
-    pState = QueueState.Aborted;
+    pState = JobState.Aborted;
   }
 
   /**
@@ -179,7 +179,7 @@ class QueueJobInfo
    * @param results
    *   The execution results.
    */ 
-  public void 
+  public synchronized void 
   exited
   (
    QueueJobResults results
@@ -189,12 +189,10 @@ class QueueJobInfo
 
     pCompletedStamp = Dates.now();
 
-    if(pResults == null) 
-      pState = QueueState.Aborted;
-    else if(pResults.getExitCode() == SubProcess.SUCCESS)
-      pState = QueueState.Finished;
+    if((pResults != null) && (pResults.getExitCode() == SubProcess.SUCCESS))
+      pState = JobState.Finished;
     else 
-      pState = QueueState.Failed;
+      pState = JobState.Failed;
   }
 
 
@@ -215,13 +213,13 @@ class QueueJobInfo
     encoder.encode("State", pState);
 
     {
-      encoder.encode("SubmittedStamp", pSubmittedStamp);
+      encoder.encode("SubmittedStamp", pSubmittedStamp.getTime());
       
       if(pStartedStamp != null) 
-	encoder.encode("StartedStamp", pStartedStamp);
+	encoder.encode("StartedStamp", pStartedStamp.getTime());
 
       if(pCompletedStamp != null) 
-	encoder.encode("CompletedStamp", pCompletedStamp);
+	encoder.encode("CompletedStamp", pCompletedStamp.getTime());
     }
     
     if(pResults != null) 
@@ -240,28 +238,28 @@ class QueueJobInfo
       throw new GlueException("The \"JobID\" was missing!");
     pJobID = jobID;
         
-    QueueState state = (QueueState) decoder.decode("State"); 
+    JobState state = (JobState) decoder.decode("State"); 
     if(state == null) 
       throw new GlueException("The \"State\" was missing!");
     pState = state;
 
     {
-      Date date = (Date) decoder.decode("SubmittedStamp"); 
-      if(date == null) 
+      Long stamp = (Long) decoder.decode("SubmittedStamp"); 
+      if(stamp == null) 
 	throw new GlueException("The \"SubmittedStamp\" was missing!");
-      pSubmittedStamp = date;
+      pSubmittedStamp = new Date(stamp);
     }
 
     {
-      Date date = (Date) decoder.decode("StartedStamp"); 
-      if(date != null) 
-	pStartedStamp = date;
+      Long stamp = (Long) decoder.decode("StartedStamp"); 
+      if(stamp != null) 
+	pStartedStamp = new Date(stamp);
     }
 
     {
-      Date date = (Date) decoder.decode("CompletedStamp"); 
-      if(date != null) 
-	pCompletedStamp = date;
+      Long stamp = (Long) decoder.decode("CompletedStamp"); 
+      if(stamp != null) 
+	pCompletedStamp = new Date(stamp);
     }
 
     {
@@ -297,9 +295,9 @@ class QueueJobInfo
   private long  pJobID;
 
   /**
-   * The queue status of the job. 
+   * The status of the job in the queue.
    */
-  private QueueState  pState;
+  private JobState  pState;
 
 
   /*----------------------------------------------------------------------------------------*/
