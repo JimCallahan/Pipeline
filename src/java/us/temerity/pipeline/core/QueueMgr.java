@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.36 2005/03/04 09:05:26 jim Exp $
+// $Id: QueueMgr.java,v 1.37 2005/03/04 11:01:42 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2234,11 +2234,20 @@ class QueueMgr
 	}
 
 	for(String hostname : hostsInOrder) {
+	  if(pReady.isEmpty()) 
+	    break;
+
 	  QueueHost host = pHosts.get(hostname);
 	  switch(host.getStatus()) {
 	  case Enabled:
 	    {
 	      int slots = host.getAvailableSlots();
+
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Ops, LogMgr.Level.Finest,
+		 "Initial Slots [" + hostname + "] = " + slots + "\n");
+	      LogMgr.getInstance().flush();
+    
 	      while(slots > 0) {
 		/* rank job IDs by selection score, priority and submission stamp */
 		ArrayList<Long> rankedJobIDs = new ArrayList<Long>();
@@ -2324,66 +2333,73 @@ class QueueMgr
 		/* attempt to dispatch a job to the slot:
 		     in order of selection score, job priority and age */ 
 		TreeSet<Long> processed = new TreeSet<Long>();
-		for(Long jobID : rankedJobIDs) {
-		  QueueJob job = null;
-		  {
-		    timer.aquire();
-		    synchronized(pJobs) {
-		      timer.resume();
-		      job = pJobs.get(jobID);
-		    }
-		  }
-
-		  QueueJobInfo info = null;
-		  {
-		    timer.aquire();
-		    synchronized(pJobInfo) {
-		      timer.resume();
-		      info = pJobInfo.get(jobID);
-		    }
-		  }
-		  
-		  if((job == null) || (info == null)) {
-		    processed.add(jobID);
-		  }
-		  else {
-		    switch(info.getState()) {
-		    case Queued:
-		      /* pause ready jobs marked to be paused */ 
-		      if(pPaused.contains(jobID)) {
-			timer.aquire();
-			synchronized(pJobInfo) {
-			  timer.resume();
-			  
-			  info.paused();
-			  try {
-			    writeJobInfo(info);
-			  }
-			  catch(PipelineException ex) {
-			    LogMgr.getInstance().log
-			      (LogMgr.Kind.Net, LogMgr.Level.Severe,
-			       ex.getMessage()); 
-			    LogMgr.getInstance().flush();
-			  }
-			}
-
-			pWaiting.add(jobID);
-			processed.add(jobID);
-		      }
-
-		      /* try to dispatch the job */ 
-		      else if(dispatchJob(job, info, host, timer)) {
-			processed.add(jobID);
-		      }
+		{
+		  boolean jobDispatched = false;
+		  for(Long jobID : rankedJobIDs) {
+		    if(jobDispatched) 
 		      break;
+
+		    QueueJob job = null;
+		    {
+		      timer.aquire();
+		      synchronized(pJobs) {
+			timer.resume();
+			job = pJobs.get(jobID);
+		      }
+		    }
 		    
-		    /* skip aborted jobs */ 
-		    case Aborted:
+		    QueueJobInfo info = null;
+		    {
+		      timer.aquire();
+		      synchronized(pJobInfo) {
+			timer.resume();
+			info = pJobInfo.get(jobID);
+		      }
+		    }
+		    
+		    if((job == null) || (info == null)) {
 		      processed.add(jobID);
-		      break;
-		      
-		    default:
-		      assert(false);
+		    }
+		    else {
+		      switch(info.getState()) {
+		      case Queued:
+			/* pause ready jobs marked to be paused */ 
+			if(pPaused.contains(jobID)) {
+			  timer.aquire();
+			  synchronized(pJobInfo) {
+			    timer.resume();
+			    
+			    info.paused();
+			    try {
+			      writeJobInfo(info);
+			    }
+			    catch(PipelineException ex) {
+			      LogMgr.getInstance().log
+				(LogMgr.Kind.Net, LogMgr.Level.Severe,
+				 ex.getMessage()); 
+			      LogMgr.getInstance().flush();
+			    }
+			  }
+			  
+			  pWaiting.add(jobID);
+			  processed.add(jobID);
+			}
+			
+			/* try to dispatch the job */ 
+			else if(dispatchJob(job, info, host, timer)) {
+			  processed.add(jobID);
+			  jobDispatched = true;
+			}
+			break;
+		    
+			/* skip aborted jobs */ 
+		      case Aborted:
+			processed.add(jobID);
+			break;
+			
+		      default:
+			assert(false);
+		      }
 		    }
 		  }
 		}
@@ -2393,6 +2409,11 @@ class QueueMgr
 
 		/* next slot, if any are available */ 
 		slots = Math.min(slots-1, host.getAvailableSlots());
+
+		LogMgr.getInstance().log
+		  (LogMgr.Kind.Ops, LogMgr.Level.Finest,
+		   "Updated Slots [" + hostname + "] = " + slots + "\n");
+		LogMgr.getInstance().flush();
 	      }
 	    }
 	  }
