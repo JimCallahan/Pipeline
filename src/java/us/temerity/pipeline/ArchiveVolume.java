@@ -1,4 +1,4 @@
-// $Id: ArchiveVolume.java,v 1.2 2005/03/21 07:04:35 jim Exp $
+// $Id: ArchiveVolume.java,v 1.3 2005/03/24 03:48:33 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -217,34 +217,6 @@ class ArchiveVolume
       }
     }
     return new ArrayList<File>();
-  }
-  
-  /**
-   * Get the names of the files associated with ALL checked-in versions contained in 
-   * the archive relative to the base production directory.
-   */
-  public ArrayList<File>
-  getFiles() 
-  {
-    int cnt = 0;
-    for(String name : pFileSeqs.keySet()) {
-      TreeMap<VersionID,TreeSet<FileSeq>> versions = pFileSeqs.get(name);
-      for(VersionID vid : versions.keySet()) {
-	for(FileSeq fseq : versions.get(vid)) 
-	  cnt += fseq.numFrames();
-      }
-    }
-	
-    ArrayList<File> files = new ArrayList<File>(cnt);
-    for(String name : pFileSeqs.keySet()) {
-      TreeMap<VersionID,TreeSet<FileSeq>> versions = pFileSeqs.get(name);
-      for(VersionID vid : versions.keySet()) {
-	for(FileSeq fseq : versions.get(vid)) 
-	 files.addAll(fseq.getFiles());
-      }
-    }
-    
-    return files;
   }
   
   /**
