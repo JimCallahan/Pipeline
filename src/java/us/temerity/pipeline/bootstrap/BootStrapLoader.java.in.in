@@ -1,4 +1,4 @@
-// $Id: BootStrapLoader.java.in.in,v 1.7 2004/09/01 12:19:33 jim Exp $
+// $Id: BootStrapLoader.java.in.in,v 1.8 2004/12/29 17:29:06 jim Exp $
 
 package us.temerity.pipeline.bootstrap;
 
@@ -152,16 +152,19 @@ class BootStrapLoader
 	  throw new LicenseException
 	    ("The license file (" + license + ") has been corrupted!");
 
-	long now = TimeService.getTime();
-
-	if((now < start.getTime()) || (now > end.getTime())) 
+	if(!TimeService.isValid(start.getTime(), end.getTime())) 
 	  throw new LicenseException
-	    ("The current license expired on: " + end + "\n\n" + 
+	    ("The current license is only valid from " + start + " to " + end + ".\n" + 
 	     "Contact <support@temerity.us> to renew the license.\n");
       }
       catch(IOException ex) {
 	throw new LicenseException
-	  ("Unable to reliably determine the time!");
+	  ("Unable to reliably determine the time!\n" +
+	   "Pipeline was unable to contact any well known Network Time Servers via the " +
+	   "InterNet in order to determine whether the current license has expired.\n" + 
+	   "Contact your system administrator to verify that your connection to the " + 
+	   "InterNet is functioning properly and that NTP packets are not being " + 
+	   "filtered by your firewall.");
       }      
     }
 

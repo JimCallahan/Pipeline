@@ -1,4 +1,4 @@
-// $Id: TimeService.java,v 1.3 2004/06/02 21:31:32 jim Exp $
+// $Id: TimeService.java,v 1.4 2004/12/29 17:29:06 jim Exp $
 
 package us.temerity.pipeline.bootstrap;
 
@@ -55,7 +55,6 @@ class TimeService
 			    "  " + ex.getMessage());
     }      
   }
-    
 
   /**
    * Get the current time from one of a trusted list of NTP time servers.
@@ -82,7 +81,52 @@ class TimeService
     throw new IOException(buf.toString());
   }
   
-   
+  /**
+   * Wheterh the current time is within the given interval. <P> 
+   * 
+   * If the time reported by a time server is outside the interval, check the next time
+   * server until successful or all time servers have been exhasted.
+   * 
+   * @param start
+   *   The timestamp of the start of the time interval.
+   * 
+   * @param end
+   *   The timestamp of the end of the time interval.
+   * 
+   * @throws IOException 
+   *   If unable to successfully query any of the NTP servers.
+   */
+  public static boolean
+  isValid
+  (
+   long start, 
+   long end
+  ) 
+    throws IOException
+  {
+    StringBuffer buf = new StringBuffer();
+
+    int checked = 0;
+    int wk;
+    for(wk=0; wk<sNtpServers.length; wk++) {
+      try {
+	long stamp = getTime(sNtpServers[wk]);
+	if((stamp > start) && (stamp < end)) 
+	  return true;
+	checked++;
+      }
+      catch(IOException ex) {
+	buf.append(ex.getMessage());
+      }
+    }
+
+    if(checked == 0) 
+      throw new IOException(buf.toString());
+
+    return false;
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S                                                                        */
