@@ -1,6 +1,8 @@
-// $Id: BaseTool.java,v 1.4 2005/02/20 21:19:33 jim Exp $
+// $Id: BaseTool.java,v 1.5 2005/02/23 05:54:34 jim Exp $
 
 package us.temerity.pipeline;
+
+import us.temerity.pipeline.ui.*;
 
 import java.util.*;
 import java.io.*;
