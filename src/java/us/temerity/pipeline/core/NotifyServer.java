@@ -1,4 +1,4 @@
-// $Id: NotifyServer.java,v 1.7 2004/04/24 22:42:19 jim Exp $
+// $Id: NotifyServer.java,v 1.8 2004/07/14 20:55:15 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -218,7 +218,12 @@ class NotifyServer
 	pInitLatch.countDown();
 	
 	while(!pShutdown.get()) {
-	  TreeSet<File> dirs = pDNotify.watch(10);
+	  TreeSet<File> dirs = new TreeSet<File>();
+
+	  int wk;
+	  for(wk=0; wk<100; wk++) 
+	    dirs.addAll(pDNotify.watch(10));
+
 	  if(!dirs.isEmpty()) {
 	    synchronized(pMonitorTasks) {
 	      for(MonitorHandlerTask task : pMonitorTasks) {
@@ -571,6 +576,9 @@ class NotifyServer
      File dir
     ) 
     {
+      Logs.ops.finer("Directory Modified: " + dir);
+      Logs.flush();
+
       synchronized(pDirs) {
 	boolean empty = pDirs.isEmpty();
 	pDirs.add(dir);
