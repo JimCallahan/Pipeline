@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.12 2004/07/24 18:23:36 jim Exp $
+// $Id: MasterMgrServer.java,v 1.13 2004/07/25 03:06:17 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -423,35 +423,6 @@ class MasterMgrServer
 	    {
 	      MiscSetSuffixEditorsReq req = (MiscSetSuffixEditorsReq) objIn.readObject();
 	      objOut.writeObject(pMasterMgr.setSuffixEditors(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-
-	  /*-- LICENSE KEYS ----------------------------------------------------------------*/
-	  case AddLicenseKey:
-	    {
-	      QueueAddLicenseKeyReq req = 
-		(QueueAddLicenseKeyReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.addLicenseKey(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case RemoveLicenseKey:
-	    {
-	      QueueRemoveLicenseKeyReq req = 
-		(QueueRemoveLicenseKeyReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.removeLicenseKey(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case SetTotalLicenses:
-	    {
-	      QueueSetTotalLicensesReq req = 
-		(QueueSetTotalLicensesReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.setTotalLicenses(req));
 	      objOut.flush(); 
 	    }
 	    break;
