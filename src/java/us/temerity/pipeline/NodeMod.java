@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.21 2004/06/19 00:28:14 jim Exp $
+// $Id: NodeMod.java,v 1.22 2004/07/07 13:18:35 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -520,7 +520,7 @@ class NodeMod
 	 "working version (" + pName + ")!");
 
     for(FileSeq sfseq : pSecondarySeqs) 
-      if(fseq.getFilePattern().getPrefix().equals(sfseq.getFilePattern().getPrefix())) 
+      if(fseq.similarTo(sfseq))
 	throw new PipelineException
 	  ("The new secondary file sequence (" + fseq + ") for working version (" + pName + 
 	   ") conflicts with the secondary file sequence (" + sfseq + ") already " + 
