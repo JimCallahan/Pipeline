@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.9 2004/07/14 20:54:02 jim Exp $
+// $Id: MasterMgrServer.java,v 1.10 2004/07/16 22:03:11 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -484,6 +484,14 @@ class MasterMgrServer
 	    }
 	    break;
 
+	  case RemoveSecondary:
+	    {
+	      NodeRemoveSecondaryReq req = (NodeRemoveSecondaryReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.removeSecondary(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
 
 	  /*-- CHECKED-IN VERSIONS ---------------------------------------------------------*/
 	  case GetCheckedIn:
@@ -559,6 +567,14 @@ class MasterMgrServer
 	    {
 	      NodeCheckOutReq req = (NodeCheckOutReq) objIn.readObject();
 	      objOut.writeObject(pMasterMgr.checkOut(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case RevertFiles:
+	    {
+	      NodeRevertFilesReq req = (NodeRevertFilesReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.revertFiles(req));
 	      objOut.flush(); 
 	    }
 	    break;

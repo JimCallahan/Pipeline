@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.12 2004/07/14 20:53:13 jim Exp $
+// $Id: MasterMgr.java,v 1.13 2004/07/16 22:03:10 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2141,8 +2141,6 @@ class MasterMgr
       secondary.add(fseq);
       
       addWorkingNodeTreePath(nodeID, secondary);
-      
-      logNodeTree(); //DEBUG
     }
 
     timer.aquire();
@@ -2177,6 +2175,68 @@ class MasterMgr
       
       // needs to remove the secondary file sequence from the NodeTreePath on failure...
 
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      lock.writeLock().unlock();
+    }    
+  }
+
+  /**
+   * Remove a secondary file sequence from the given working version. <P> 
+   * 
+   * @param req 
+   *   The remove secondary request.
+   *
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to remove the secondary file sequence.
+   */
+  public Object
+  removeSecondary
+  (
+   NodeRemoveSecondaryReq req 
+  ) 
+  {
+    assert(req != null);
+    
+    NodeID nodeID = req.getNodeID();
+    FileSeq fseq  = req.getFileSequence();
+
+    TaskTimer timer = new TaskTimer("MasterMgr.removeSecondary(): " + nodeID);
+
+    timer.aquire();
+    ReentrantReadWriteLock lock = getWorkingLock(nodeID);
+    lock.writeLock().lock();
+    try {
+      timer.resume();	
+
+      WorkingBundle bundle = getWorkingBundle(nodeID);
+      if(bundle == null) 
+	throw new PipelineException
+	  ("Secondary file sequences can only be remove from working versions of nodes!\n" + 
+	   "No working version (" + nodeID + ") exists.");
+
+      /* remove the link */ 
+      NodeMod mod = new NodeMod(bundle.uVersion);
+      mod.removeSecondarySequence(fseq);
+      
+      /* write the new working version to disk */ 
+      writeWorkingVersion(nodeID, mod);
+      
+      /* update the bundle */ 
+      bundle.uVersion = mod;
+
+      /* invalidate the cached per-file states */ 
+      bundle.uFileStates      = null;
+      bundle.uFileTimeStamps  = null;
+
+      /* remove the sequence from the node tree */ 
+      removeSecondaryWorkingNodeTreePath(nodeID, fseq);
+      
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
@@ -3156,6 +3216,33 @@ class MasterMgr
     branch.removeLast();
   }
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Revert specific working area files to an earlier checked-in version of the files. <P> 
+   * 
+   * @param req 
+   *   The revert files request.
+   *
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to the revert the files.
+   */ 
+  public Object
+  revertFiles
+  ( 
+   NodeRevertFilesReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+    try {
+      pFileMgrClient.revert(req.getNodeID(), req.getFiles());
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }    
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -3306,6 +3393,37 @@ class MasterMgr
 	  entry = parent;
 	}
       }
+    }
+  }
+
+  /**
+   * Remove the given secondary file sequence of the working version from the node 
+   * path tree. <P> 
+   * 
+   * @param nodeID
+   *   The unique working version identifier.
+   * 
+   * @param fseq
+   *   The secondary file sequence to remove.
+   */ 
+  private void 
+  removeSecondaryWorkingNodeTreePath
+  (
+   NodeID nodeID, 
+   FileSeq fseq
+  )
+  {
+    synchronized(pNodeTreeRoot) {
+      String comps[] = nodeID.getName().split("/"); 
+      
+      NodeTreeEntry parent = pNodeTreeRoot;
+      int wk;
+      for(wk=1; wk<(comps.length-1); wk++) 
+	parent = (NodeTreeEntry) parent.get(comps[wk]);
+      
+      String name = comps[comps.length-1];
+      NodeTreeEntry entry = (NodeTreeEntry) parent.get(name);
+      entry.removeSequence(fseq);
     }
   }
 
@@ -3865,7 +3983,7 @@ class MasterMgr
 	      int wk;
 	      for(wk=0; wk<ts.length; wk++) {
 		if((fileTimeStamps[wk] == null) || 
-		   ((ts[wk] != null) && (fileTimeStamps[wk].compareTo(ts[wk]) < 0)))
+		   ((ts[wk] != null) && (ts[wk].compareTo(fileTimeStamps[wk]) < 0)))
 		  fileTimeStamps[wk] = ts[wk];
 	      }
 	    }	      
@@ -3991,6 +4109,7 @@ class MasterMgr
 	      case Modified:
 	      case ModifiedLinks:
 	      case Conflicted:	
+	      case Missing:
 		if(link.getPolicy() != LinkPolicy.None) 
 		  overallNodeState = OverallNodeState.ModifiedLinks;
 		break;
@@ -3999,11 +4118,6 @@ class MasterMgr
 	      case NeedsCheckOut:
 		if(!link.getVersionID().equals(ldetails.getWorkingVersion().getWorkingID()))
 		  overallNodeState = OverallNodeState.ModifiedLinks;
-		break;
-		
-	      default:
-		assert(false) : 
-		  ("Upstream Node Overall State = " + ldetails.getOverallNodeState());
 	      }
 	      
 	      if(overallNodeState != null)

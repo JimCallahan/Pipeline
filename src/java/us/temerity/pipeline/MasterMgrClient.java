@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.12 2004/07/14 20:59:40 jim Exp $
+// $Id: MasterMgrClient.java,v 1.13 2004/07/16 22:03:10 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1501,6 +1501,44 @@ class MasterMgrClient
     handleSimpleResponse(obj);
   } 
   
+  /**
+   * Remove a secondary file sequence from the given working version.
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param name
+   *   The fully resolved node name.
+   * 
+   * @param fseq
+   *   The secondary file sequence to remove.
+   * 
+   * @throws PipelineException
+   *   If unable to remove the file sequence.
+   */
+  public synchronized void 
+  removeSecondary
+  (
+   String author, 
+   String view, 
+   String name, 
+   FileSeq fseq
+  )
+    throws PipelineException
+  {
+    verifyConnection();
+
+    NodeID id = new NodeID(author, view, name);
+    NodeRemoveSecondaryReq req = new NodeRemoveSecondaryReq(id, fseq);
+
+    Object obj = performTransaction(MasterRequest.RemoveSecondary, req);
+    handleSimpleResponse(obj);
+  } 
+  
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1637,7 +1675,7 @@ class MasterMgrClient
    * @throws PipelineException
    *   If unable to determine the status of the node.
    */ 
-  public NodeStatus
+  public synchronized NodeStatus
   status
   ( 
    String author, 
@@ -1750,7 +1788,7 @@ class MasterMgrClient
    * @throws PipelineException 
    *   If unable to revoke the given node.
    */ 
-  public void 
+  public synchronized void 
   revoke
   ( 
    String author, 
@@ -1814,7 +1852,7 @@ class MasterMgrClient
    * @throws PipelineException 
    *   If unable to rename the given node or its associated primary files.
    */ 
-  public void 
+  public synchronized void 
   rename
   ( 
    String author, 
@@ -1879,7 +1917,7 @@ class MasterMgrClient
    * @throws PipelineException
    *   If unable to check-in the nodes.
    */ 
-  public NodeStatus
+  public synchronized NodeStatus
   checkIn
   ( 
    String author, 
@@ -1950,7 +1988,7 @@ class MasterMgrClient
    * @throws PipelineException
    *   If unable to check-out the nodes.
    */ 
-  public NodeStatus
+  public synchronized NodeStatus
   checkOut
   ( 
    String author, 
@@ -1980,6 +2018,50 @@ class MasterMgrClient
       return null;
     }
   } 
+
+  /**
+   * Revert specific working area files to an earlier checked-in version of the files. <P> 
+   * 
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   * 
+   * @param files
+   *   The table of checked-in file revision numbers indexed by file name.
+   * 
+   * @throws PipelineException
+   *   If unable to revert the files.
+   */ 
+  public synchronized void 
+  revertFiles  
+  ( 
+   String author, 
+   String view, 
+   String name, 
+   TreeMap<String,VersionID> files
+  )
+    throws PipelineException
+  {
+    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
+      throw new PipelineException
+	("Only privileged users may revert files owned by another user!");
+    
+    verifyConnection();
+
+    NodeID id = new NodeID(author, view, name);
+    NodeRevertFilesReq req = new NodeRevertFilesReq(id, files);
+    
+    Object obj = performTransaction(MasterRequest.RevertFiles, req);
+    handleSimpleResponse(obj);
+  }
 
 
 
