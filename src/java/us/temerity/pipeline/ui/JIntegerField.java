@@ -1,4 +1,4 @@
-// $Id: JIntegerField.java,v 1.1 2004/06/08 03:06:36 jim Exp $
+// $Id: JIntegerField.java,v 1.2 2004/06/14 22:47:37 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -21,6 +21,9 @@ class JIntegerField
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Construct a new field.
+   */ 
   public 
   JIntegerField() 
   {

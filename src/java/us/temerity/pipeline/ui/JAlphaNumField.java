@@ -1,4 +1,4 @@
-// $Id: JAlphaNumField.java,v 1.1 2004/06/08 03:06:36 jim Exp $
+// $Id: JAlphaNumField.java,v 1.2 2004/06/14 22:45:08 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -21,6 +21,9 @@ class JAlphaNumField
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Construct a new field.
+   */ 
   public 
   JAlphaNumField() 
   {

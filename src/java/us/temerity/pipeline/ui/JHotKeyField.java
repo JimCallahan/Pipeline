@@ -1,4 +1,4 @@
-// $Id: JHotKeyField.java,v 1.2 2004/05/21 00:15:05 jim Exp $
+// $Id: JHotKeyField.java,v 1.3 2004/06/14 22:47:37 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -20,6 +20,13 @@ class JHotKeyField
   extends JLabel
   implements FocusListener, MouseListener, KeyListener
 {
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O N S T R U C T O R                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Construct a new field.
+   */ 
   public 
   JHotKeyField()
   {

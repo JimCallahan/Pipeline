@@ -1,4 +1,4 @@
-// $Id: JIdentifierField.java,v 1.1 2004/05/11 19:17:03 jim Exp $
+// $Id: JIdentifierField.java,v 1.2 2004/06/14 22:47:37 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -26,6 +26,9 @@ class JIdentifierField
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Construct a new field.
+   */ 
   public 
   JIdentifierField() 
   {
