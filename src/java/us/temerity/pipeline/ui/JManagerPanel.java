@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.20 2004/05/21 21:17:51 jim Exp $
+// $Id: JManagerPanel.java,v 1.21 2004/05/23 19:58:19 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -221,6 +221,27 @@ class JManagerPanel
       item.addActionListener(this);
       pPopup.add(item);  
       
+      {
+	JMenu sub = new JMenu("Admin");   
+	pPopup.add(sub);  
+
+	item = new JMenuItem("Manage Toolsets...");
+	item.setActionCommand("manage-toolsets");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	item = new JMenuItem("Manage Users...");
+	item.setActionCommand("manage-users");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	item = new JMenuItem("Shutdown Server...");
+	pShutdownServerItem = item;
+	item.setActionCommand("shutdown");
+	item.addActionListener(this);
+	sub.add(item);  
+      }
+
       {
 	JMenu sub = new JMenu("Help");   
 	pPopup.add(sub);  
@@ -625,6 +646,12 @@ class JManagerPanel
       UIMaster.getInstance().doRestoreSavedLayout(cmd.substring(15));
     else if(cmd.equals("manage-layouts"))
       UIMaster.getInstance().showManageLayoutsDialog();
+    else if(cmd.equals("manage-toolsets"))
+      UIMaster.getInstance().showManageToolsetsDialog();
+    else if(cmd.equals("manage-users"))
+      UIMaster.getInstance().showManageUsersDialog();
+    else if(cmd.equals("shutdown"))
+      doShutdownServer();
     else if(cmd.equals("preferences"))
       UIMaster.getInstance().showUserPrefsDialog();
     else if(cmd.equals("about"))
@@ -893,30 +920,8 @@ class JManagerPanel
   private void 
   doChangeOwnerView()
   {
-    UIMaster master = UIMaster.getInstance();
-
-    TreeMap<String,TreeSet<String>> working = null;
-    try {
-      working = master.getMasterMgrClient().getWorkingAreas(); 
-      
-      // DEBUG 
-      {
-	TreeSet<String> views = new TreeSet<String>();
-	views.add("default");
-	views.add("texturing");
-	views.add("modeling");
-	views.add("animation");
-	working.put("joe", views);
-      }
-      // DEBUG 
-    }
-    catch(PipelineException ex) {
-      master.showErrorDialog(ex);
-      return;
-    }
-
     JOwnerViewDialog dialog = 
-      new JOwnerViewDialog(pTopLevelPanel.getAuthor(), pTopLevelPanel.getView(), working);
+      new JOwnerViewDialog(pTopLevelPanel.getAuthor(), pTopLevelPanel.getView());
     dialog.setVisible(true);
     
     if(dialog.wasConfirmed()) {
@@ -946,6 +951,29 @@ class JManagerPanel
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Shutdown the <B>plfilemgr</B>(1), <B>plnotify</B>(1) and <B>plmaster</B>(1) daemons.
+   */ 
+  private void 
+  doShutdownServer() 
+  {
+    JConfirmDialog confirm = new JConfirmDialog("Are you sure?");
+    confirm.setVisible(true);
+
+    if(confirm.wasConfirmed()) {
+      UIMaster master = UIMaster.getInstance();
+      try {
+	master.getMasterMgrClient().shutdown();
+      }
+      catch(PipelineException ex) {
+	master.showErrorDialog(ex);
+      }
+    }
+  }
+	
+      
 
   /*----------------------------------------------------------------------------------------*/
   /*  I N T E R N A L   C L A S S E S                                                       */
@@ -1038,6 +1066,17 @@ class JManagerPanel
 	} 
 	else {
 	  rebuildRestoreMenu(dir, dir, pRestoreLayoutMenu);
+	}
+      }
+
+      /* privileged status */ 
+      {
+	UIMaster master = UIMaster.getInstance();
+	try {
+	  pShutdownServerItem.setEnabled(master.getMasterMgrClient().isPrivileged(true));
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
 	}
       }
       
@@ -1335,7 +1374,10 @@ class JManagerPanel
   private JMenuItem  pAddRightItem; 
   private JMenuItem  pAddAboveItem; 
   private JMenuItem  pAddBelowItem; 
+
   private JMenuItem  pOwnerViewItem;
+
+  private JMenuItem  pShutdownServerItem;
 
   /**
    * The load layout submenu.
