@@ -1,4 +1,4 @@
-// $Id: JArchiveDialog.java,v 1.5 2005/03/14 16:08:21 jim Exp $
+// $Id: JArchiveDialog.java,v 1.6 2005/03/21 07:01:04 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -75,6 +75,9 @@ class JArchiveDialog
 	    btn.setActionCommand("candidate-search");
 	    btn.addActionListener(this);
 	    
+	    btn.setToolTipText(UIFactory.formatToolTip
+	      ("Search for new candidate checked-in versions to archive."));
+
 	    hbox.add(btn);
 	  }
 
@@ -91,6 +94,9 @@ class JArchiveDialog
 	    btn.setActionCommand("clear-candidate");
 	    btn.addActionListener(this);
 	    
+	    btn.setToolTipText(UIFactory.formatToolTip
+	      ("Clear the displayed candidate checked-in versions."));
+
 	    hbox.add(btn);	  
 	  }
 
@@ -162,6 +168,9 @@ class JArchiveDialog
 	    btn.setActionCommand("add-archive");
 	    btn.addActionListener(this);
 	    
+	    btn.setToolTipText(UIFactory.formatToolTip
+	     ("Add the selected candidate versions to the list of versions to be archived."));
+
 	    hbox.add(btn);
 	  }
 	    
@@ -178,6 +187,9 @@ class JArchiveDialog
 	    btn.setActionCommand("add-all-archive");
 	    btn.addActionListener(this);
 	    
+	    btn.setToolTipText(UIFactory.formatToolTip
+	      ("Add all candidate versions to the list of versions to be archived."));
+
 	    hbox.add(btn);
 	  }
 	  
@@ -194,6 +206,9 @@ class JArchiveDialog
 	    btn.setActionCommand("remove-archive");
 	    btn.addActionListener(this);
 	    
+	    btn.setToolTipText(UIFactory.formatToolTip
+	      ("Remove the selected versions from the list of versions to be archived."));
+
 	    hbox.add(btn);
 	  }
 	  
@@ -210,6 +225,9 @@ class JArchiveDialog
 	    btn.setActionCommand("remove-all-archive");
 	    btn.addActionListener(this);
 	    
+	    btn.setToolTipText(UIFactory.formatToolTip
+	      ("Clear the list of versions to be archived."));
+
 	    hbox.add(btn);	  
 	  }
 	  
@@ -226,6 +244,10 @@ class JArchiveDialog
 	    btn.setActionCommand("calc-archive");
 	    btn.addActionListener(this);
 	    
+	    btn.setToolTipText(UIFactory.formatToolTip
+	      ("Calculate the amount of disk space needed to archive the files " +
+	       "associated with the checked-in versions."));
+
 	    hbox.add(btn);
 	  }	  
 	  
@@ -253,8 +275,8 @@ class JArchiveDialog
       pack();
     }
 
-    pQueryDialog          = new JArchiveQueryDialog(this);
-    pArchiverParamsDialog = new JArchiverParamsDialog(this);
+    pQueryDialog         = new JArchiveQueryDialog(this);
+    pArchiveParamsDialog = new JArchiveParamsDialog(this);
   }
 
 
@@ -277,6 +299,8 @@ class JArchiveDialog
     catch(PipelineException ex) {
       master.showErrorDialog(ex);
     }
+
+    updateButtons();
   }
 
   /**
@@ -305,8 +329,6 @@ class JArchiveDialog
    ActionEvent e
   ) 
   {
-    super.actionPerformed(e);
-
     String cmd = e.getActionCommand();
     if(cmd.equals("candidate-search")) 
       doCandidateSearch();
@@ -326,6 +348,9 @@ class JArchiveDialog
 
     else if(cmd.equals("archive"))
       doArchive();
+
+    else 
+      super.actionPerformed(e);
   }
 
 
@@ -475,18 +500,18 @@ class JArchiveDialog
       versions.put(name, new TreeSet<VersionID>(data.get(name).keySet()));
 
     if(!versions.isEmpty()) {
-      pArchiverParamsDialog.updateArchiver();
-      pArchiverParamsDialog.setVisible(true);
-      if(pArchiverParamsDialog.wasConfirmed()) {
-	String prefix = pArchiverParamsDialog.getPrefix();
+      pArchiveParamsDialog.updateArchiver();
+      pArchiveParamsDialog.setVisible(true);
+      if(pArchiveParamsDialog.wasConfirmed()) {
+	String prefix = pArchiveParamsDialog.getPrefix();
 	if((prefix == null) || (prefix.length() == 0)) 
 	  prefix = "Archive";
 
-	Long minSize = pArchiverParamsDialog.getMinSize();
+	Long minSize = pArchiveParamsDialog.getMinSize();
 	if(minSize == null)
 	  minSize = 0L;
 
-	BaseArchiver archiver = pArchiverParamsDialog.getArchiver();
+	BaseArchiver archiver = pArchiveParamsDialog.getArchiver();
 	if(archiver != null) {
 	  AssignVersionsToArchivesTask task = 
 	    new AssignVersionsToArchivesTask(prefix, minSize, versions, archiver);
@@ -666,7 +691,7 @@ class JArchiveDialog
 	  }
 	}
 
-	UpdateArchiveTask task = new UpdateArchiveTask(data);
+	UpdateSizesTask task = new UpdateSizesTask(data);
 	SwingUtilities.invokeLater(task);
       }
     }
@@ -679,16 +704,16 @@ class JArchiveDialog
    * Update the archive table. 
    */ 
   private
-  class UpdateArchiveTask
+  class UpdateSizesTask
     extends Thread
   {
     public 
-    UpdateArchiveTask
+    UpdateSizesTask
     (
      TreeMap<String,TreeMap<VersionID,Long>> data
     ) 
     {
-      super("JArchiveDialog:UpdateArchiveTask");
+      super("JArchiveDialog:UpdateSizesTask");
       pData = data;
     }
 
@@ -871,10 +896,14 @@ class JArchiveDialog
 		 "Archive operation aborted early without creating " + 
 		 "(" + (archives.size()-lastIdx) + " of " + archives.size() + ") archive " +
 		 "volumes!");
+	      return;
 	    }
 	    finally {
 	      master.endPanelOp("Done.");
 	    }
+
+	    RemoveAllTask task = new RemoveAllTask();
+	    SwingUtilities.invokeLater(task);      
 	  }
 	}
       }
@@ -886,7 +915,6 @@ class JArchiveDialog
     private TreeMap<String,TreeSet<VersionID>>  pVersions;
     private BaseArchiver                        pArchiver; 
   }
-
 
   /** 
    * Ask the user if they are ready to write the archive.
@@ -970,8 +998,10 @@ class JArchiveDialog
       MasterMgrClient client = master.getMasterMgrClient();
       String msg = ("Archiving Volume (" + (pIndex+1) + " of " + pArchives.size() + ")...");
       if(master.beginPanelOp(msg)) {
+	TreeMap<String,TreeSet<VersionID>> versions = pArchives.get(pIndex);
+
 	try {
-	  client.archive(pPrefix, pArchives.get(pIndex), pArchiver);
+	  client.archive(pPrefix, versions, pArchiver);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog
@@ -980,10 +1010,14 @@ class JArchiveDialog
 	     "Archive operation aborted early without creating " + 
 	     "(" + (pArchives.size()-pIndex) + " of " + pArchives.size() + ") archive " +
 	     "volumes!");
+	  return;
 	}
 	finally {
 	  master.endPanelOp("Done.");
 	}
+
+	RemoveTask task = new RemoveTask(versions);
+	SwingUtilities.invokeLater(task);      
       }
 
       int nextIdx = pIndex+1;
@@ -1001,6 +1035,65 @@ class JArchiveDialog
   }
 
   
+  /** 
+   * Remove the given entries from the archive table.
+   */ 
+  private
+  class RemoveTask
+    extends Thread
+  {
+    public 
+    RemoveTask
+    (
+     TreeMap<String,TreeSet<VersionID>> versions
+    ) 
+    {
+      super("JArchiveDialog:RemoveTask");
+      pVersions = versions;
+    }
+
+    public void 
+    run() 
+    {
+      TreeMap<String,TreeMap<VersionID,Long>> data = pArchiveTableModel.getData();
+
+      for(String name : pVersions.keySet()) {
+	TreeMap<VersionID,Long> vsizes = data.get(name);
+	if(vsizes != null) {
+	  for(VersionID vid : pVersions.get(name)) 
+	    vsizes.remove(vid);
+
+	  if(vsizes.isEmpty()) 
+	    data.remove(name);
+	}
+      }
+
+      pArchiveTableModel.setData(data);
+    }
+
+    private TreeMap<String,TreeSet<VersionID>> pVersions; 
+  }
+
+  /** 
+   * Remove all entries from the archive table.
+   */ 
+  private
+  class RemoveAllTask
+    extends Thread
+  {
+    public 
+    RemoveAllTask() 
+    {
+      super("JArchiveDialog:RemoveAllTask");
+    }
+
+    public void 
+    run() 
+    {
+      doRemoveAllArchive();
+    }
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -1069,5 +1162,5 @@ class JArchiveDialog
   /**
    * The archiver parameters dialog.
    */ 
-  private JArchiverParamsDialog  pArchiverParamsDialog; 
+  private JArchiveParamsDialog  pArchiveParamsDialog; 
 }
