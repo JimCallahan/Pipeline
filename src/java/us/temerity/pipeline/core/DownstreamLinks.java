@@ -1,4 +1,4 @@
-// $Id: DownstreamLinks.java,v 1.4 2004/05/21 21:17:51 jim Exp $
+// $Id: DownstreamLinks.java,v 1.5 2004/07/18 21:28:27 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -65,6 +65,24 @@ class DownstreamLinks
   }
 
   
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   P R E D I C A T E S                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Are there any working and checked-in downstream links?
+   */ 
+  public boolean 
+  hasLinks() 
+  {
+    for(TreeSet<String> names : pWorkingLinks.values()) 
+      if((names != null) && !names.isEmpty())
+	return true;
+
+    return (!pCheckedInLinks.isEmpty());
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
