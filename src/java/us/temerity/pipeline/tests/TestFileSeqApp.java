@@ -1,4 +1,4 @@
-// $Id: TestFileSeqApp.java,v 1.3 2004/03/07 02:47:29 jim Exp $
+// $Id: TestFileSeqApp.java,v 1.4 2004/03/11 11:01:25 jim Exp $
 
 import us.temerity.pipeline.*;
 
@@ -194,6 +194,7 @@ class TestFileSeqApp
     }
     catch(GlueException ex) {
       System.out.print(ex + "\n");
+      assert(false);
     }
 
     {
