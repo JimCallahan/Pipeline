@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.52 2004/10/30 13:42:19 jim Exp $
+// $Id: MasterMgr.java,v 1.53 2004/10/30 17:38:22 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -5611,6 +5611,74 @@ class MasterMgr
       }
 
       /**
+       * Before updating the timestamps of the files associated with this node, determine 
+       * if staleness will be propogated from each upstream link. 
+       * 
+       * Staleness is propgated if the timestamp of any upstream file upon which any of this
+       * node's files depend through a Reference/Dependency link is newer than the dependent
+       * files.  These upstream timestamp have been previously modified to propogate staleness
+       * of those nodes further upstream.
+       */ 
+      switch(versionState) {
+      case CheckedIn:
+	break;
+
+      default:
+	{
+	  int wk;
+	  for(wk=0; wk<queueStates.length; wk++) {
+	    for(LinkMod link : work.getSources()) {
+	      NodeStatus lstatus = status.getSource(link.getName());
+	      NodeDetails ldetails = lstatus.getDetails();
+	      
+	      QueueState lqs[] = ldetails.getQueueState();
+	      Date lstamps[] = ldetails.getFileTimeStamps();
+
+	      boolean staleLink = false;
+	      switch(link.getRelationship()) {
+	      case OneToOne:
+		{
+		  Integer offset = link.getFrameOffset();
+		  int idx = wk+offset;
+		  if((idx >= 0) && (idx < lqs.length)) {
+		    if((lstamps[idx] != null) && 
+		       ((fileTimeStamps[wk] == null) || 
+			(fileTimeStamps[wk].compareTo(lstamps[idx]) < 0))) {
+		      switch(link.getPolicy()) {
+		      case Reference:
+		      case Dependency:
+			staleLink = true;
+		      }
+		    }
+		  }
+		}
+		break;
+		
+	      case All:
+		{
+		  int fk;
+		  for(fk=0; fk<lqs.length; fk++) {
+		    if((lstamps[fk] != null) && 
+		       ((fileTimeStamps[wk] == null) || 
+			(fileTimeStamps[wk].compareTo(lstamps[fk]) < 0))) {
+		      switch(link.getPolicy()) {
+		      case Reference:
+		      case Dependency:		      
+			staleLink = true;
+		      }
+		    }
+		  }
+		}
+	      }
+
+	      if(staleLink) 
+		status.addStaleLink(link.getName());
+	    }
+	  }
+	}
+      }
+
+      /**
        * Propagate staleness by updating the last modified time stamps of each file to be 
        * the newest of:
        * 
@@ -5629,6 +5697,7 @@ class MasterMgr
       default:
 	{
 	  Date critical = work.getLastCriticalModification();
+
 	  int wk;
 	  for(wk=0; wk<queueStates.length; wk++) {
 	    for(LinkMod link : work.getSources()) {
@@ -5638,6 +5707,7 @@ class MasterMgr
 	      QueueState lqs[] = ldetails.getQueueState();
 	      Date lstamps[] = ldetails.getFileTimeStamps();
 
+	      boolean staleLink = false;
 	      switch(link.getRelationship()) {
 	      case OneToOne:
 		{
@@ -5679,6 +5749,9 @@ class MasterMgr
 		  }
 		}
 	      }
+
+	      if(staleLink) 
+		status.addStaleLink(link.getName());
 	    }
 	  }
 	}

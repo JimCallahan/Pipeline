@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.56 2004/10/29 14:03:52 jim Exp $
+// $Id: UIMaster.java,v 1.57 2004/10/30 17:38:22 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -2449,6 +2449,7 @@ class UIMaster
 	  mgr.verifySimpleTexture("White");
 	  mgr.verifySimpleTexture("Yellow");
 	  mgr.verifySimpleTexture("Cyan");
+	  mgr.verifySimpleTexture("Purple");
 
 	  mgr.verifySimpleTexture("LightGrey");
 	  mgr.verifySimpleTexture("DarkGrey");

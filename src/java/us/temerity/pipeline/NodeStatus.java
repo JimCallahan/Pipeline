@@ -1,4 +1,4 @@
-// $Id: NodeStatus.java,v 1.13 2004/10/12 23:20:23 jim Exp $
+// $Id: NodeStatus.java,v 1.14 2004/10/30 17:38:22 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -42,6 +42,8 @@ class NodeStatus
 
     pSources = new TreeMap<String,NodeStatus>();
     pTargets = new TreeMap<String,NodeStatus>();
+
+    pStaleLinks = new TreeSet<String>();
   }
 
 
@@ -236,6 +238,60 @@ class NodeStatus
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Is staleness being propogated from any upstream node?
+   */ 
+  public boolean
+  hasStaleLinks()
+  {
+    return (!pStaleLinks.isEmpty());
+  }
+
+  /**
+   * Is staleness being propogated from any upstream node?
+   * 
+   * @param name  
+   *   The fully resolved name of the upstream node.
+   */ 
+  public boolean
+  isStaleLink
+  (
+   String name
+  )    
+  {
+    return pStaleLinks.contains(name);
+  }
+
+  /** 
+   * Get the fully resolved names names of upstream nodes which propagate staleness. <P> 
+   */ 
+  public Set<String>
+  getStaleLinks() 
+  {
+    return Collections.unmodifiableSet(pStaleLinks);
+  }
+
+  /** 
+   * Mark the given node as source of propagated staleness.
+   * 
+   * This method is used to initialize instances of this class and should not
+   * be called directly by the user.
+   * 
+   * @param name  
+   *   The fully resolved name of the upstream node.
+   */ 
+  public void 
+  addStaleLink
+  (
+   String name
+  ) 
+  {
+    pStaleLinks.add(name);
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   C O N V E R S I O N                                                                  */
@@ -293,5 +349,14 @@ class NodeStatus
    */
   private TreeMap<String,NodeStatus>  pTargets;
   
+
+  /**
+   * The names of the upstream nodes connected to this node which propagate staleness. <P> 
+   * 
+   * Note that this does not mean that all of these nodes are Stale themselves, only that
+   * they have timestamps which are newer than this node and which will be propogated 
+   * downstream and may eventually cause staleness.
+   */ 
+  private TreeSet<String>  pStaleLinks;
 }
 

@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.29 2004/10/25 18:56:47 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.30 2004/10/30 17:38:22 jim Exp $
 
 import java.io.*; 
 import java.util.*;
@@ -529,11 +529,17 @@ class GenUserPrefsApp
       colors.add("LightGrey");
       colors.add("White");
       colors.add("Yellow");
+      colors.add("Cyan");
+      colors.add("Purple");
 
       BasePref prefs[] = {
 	new ChoicePref
-	("The name of the simple color texture to use for link lines.", 
+	("The name of the color to use for link lines.", 
 	 "LinkColorName", "Line Color:", colors, "LightGrey"),
+
+	new ChoicePref
+	("The name of the color to use for stale link lines.", 
+	 "StaleColorName", "Stale Line Color:", colors, "Purple"),
 
 	new BooleanPref
 	("Whether to anti-alias link lines.", 
@@ -1075,7 +1081,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.29 2004/10/25 18:56:47 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.30 2004/10/30 17:38:22 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -1328,7 +1334,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.29 2004/10/25 18:56:47 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.30 2004/10/30 17:38:22 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 

@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.61 2004/10/29 14:03:52 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.62 2004/10/30 17:38:22 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1138,7 +1138,7 @@ class JNodeViewerPanel
 	      }
 	      assert(link != null);	    
 	      
-	      pLinks.addUpstreamLink(vnode, cvnode, link);
+	      pLinks.addUpstreamLink(vnode, cvnode, link, status.isStaleLink(link.getName()));
 	    }
 	    else {
 	      pLinks.addDownstreamLink(cvnode, vnode);
