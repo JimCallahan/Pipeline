@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.2 2004/08/26 06:05:02 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.3 2004/08/30 04:00:56 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -65,8 +65,9 @@ class JQueueJobBrowserPanel
       pJobGroups   = new TreeMap<Long,QueueJobGroup>(); 
       pJobStatus   = new TreeMap<Long,JobStatus>();
       pSelectedIDs = new TreeSet<Long>();
-    }
-
+    }    
+    
+    /* initialize the panel components */ 
     {
       setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));  
       
@@ -478,7 +479,6 @@ class JQueueJobBrowserPanel
     GetJobsTask task = new GetJobsTask();
     task.start();
   }
-
 
 
   /*----------------------------------------------------------------------------------------*/
