@@ -116,6 +116,22 @@
 
 
 
+  <!--  F O L D E R   B U T T O N  -->
+
+  <style id="FolderButton"> 
+    <state>
+      <imagePainter path="FolderButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="FolderButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="FolderButton" type="name" key="FolderButton"/>
+
+
+
   <!--  R A I S E D    B U T T O N  -->
 
   <style id="RaisedButton">
@@ -207,6 +223,15 @@
 
 
 
+  <!--  P A N E L   L A B E L  -->
+
+  <style id="PanelLabel">
+    <font name="Lucida Sans Bold" size="14"/>
+  </style>
+  <bind style="PanelLabel" type="name" key="PanelLabel"/>
+
+
+
   <!--  T E X T   F I E L D  -->
 
   <style id="TextField">
@@ -220,12 +245,18 @@
     <insets top="2" bottom="2" right="8" left="8"/>
     <font name="Lucida Sans Bold" size="12"/>
   </style>
-  <bind style="TextField" type="region" key="TextField"/>
+  <bind style="TextField" type="name" key="TextField"/>
 
   <style id="EditableTextField">
+    <state value="SELECTED">
+       <color value="#ffff00" type="TEXT_FOREGROUND"/>
+       <color value="#727272" type="TEXT_BACKGROUND"/>
+    </state>
     <imagePainter path="EditableValuePanel.png"
                   method="textFieldBackground"
                   sourceInsets="3 3 3 3"/> 
+    <insets top="2" bottom="2" right="8" left="8"/>
+    <font name="Lucida Sans Bold" size="12"/>
   </style>
   <bind style="EditableTextField" type="name" key="EditableTextField"/>
 
@@ -277,14 +308,13 @@
     <imageIcon id="TreeCellExpandedIcon" path="TreeCellExpandedIcon.png"/>
     <property key="Tree.expandedIcon" value="TreeCellExpandedIcon"/>
 
-    <property key="Tree.leftChildIndent" type="integer" value="8"/>
-    <property key="Tree.rightChildIndent" type="integer" value="12"/>
     <property key="Tree.rowHeight" type="integer" value="21"/>
+    <property key="Tree.leftChildIndent" type="integer" value="23"/>
+    <property key="Tree.rightChildIndent" type="integer" value="0"/>
 
-    <insets top="6" bottom="6" right="6" left="6"/>
+    <insets top="3" bottom="3" right="3" left="-15"/>
   </style>
   <bind style="Tree" type="region" key="Tree"/>
-
 
 
   <!--  L I S T  -->
@@ -306,11 +336,6 @@
     <insets top="3" bottom="3" right="3" left="3"/>
   </style>
   <bind style="ScrollPane" type="region" key="ScrollPane"/>
-
-  <style id="ScrollPaneTitle">
-    <font name="Lucida Sans Bold" size="14"/>
-  </style>
-  <bind style="ScrollPaneTitle" type="name" key="ScrollPaneTitle"/>
 
 
 
@@ -397,7 +422,7 @@
     </state>    
     <imageIcon id="MenuIcon" path="MenuIcon.png"/>
     <property key="Menu.arrowIcon" value="MenuIcon"/>
-    <insets top="4" bottom="4" right="0" left="8"/>
+    <insets top="4" bottom="4" right="2" left="8"/>
   </style>
   <bind style="Menu" type="region" key="Menu"/>
 
@@ -416,7 +441,7 @@
       <imagePainter path="MenuItemDisabled.png"
                     sourceInsets="4 8 4 0"/>
     </state>    
-    <insets top="4" bottom="4" right="0" left="8"/>
+    <insets top="4" bottom="4" right="2" left="8"/>
   </style>
   <bind style="MenuItem" type="region" key="MenuItem"/>
 
@@ -587,6 +612,20 @@
     <insets top="20" bottom="20" right="20" left="20"/>
   </style>
   <bind style="ErrorPanel" type="name" key="ErrorPanel"/>
+
+
+  <!--  S A V E D   L A Y O U T   P A N E L  -->
+  <style id="SaveLayoutPanel">
+    <insets top="20" bottom="20" right="20" left="20"/>
+  </style>
+  <bind style="SaveLayoutPanel" type="name" key="SaveLayoutPanel"/>
+
+
+  <!--  N E W   F O L D E R   P A N E L  -->
+  <style id="NewFolderPanel">
+    <insets top="20" bottom="20" right="20" left="20"/>
+  </style>
+  <bind style="NewFolderPanel" type="name" key="NewFolderPanel"/>
 
 
 
