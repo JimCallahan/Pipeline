@@ -1,4 +1,4 @@
-// $Id: PlNotify.cc,v 1.7 2004/04/11 16:28:42 jim Exp $
+// $Id: PlNotify.cc,v 1.8 2004/07/14 20:43:43 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -99,9 +99,19 @@ main
   int argc2 = 0;
   char** argv2 = NULL;
   {
+    char rflags[1024];
+    if(strcmp("dbg", PackageInfo::sBuildMode) == 0) {
+      sprintf(rflags, "%s %s", 
+	      "-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=43003", 
+	      PackageInfo::sJavaRuntimeFlags);
+    }
+    else {
+      strcpy(rflags, PackageInfo::sJavaRuntimeFlags);
+    }
+
     int jcnt = 1;
     {
-      const char* p = PackageInfo::sJavaRuntimeFlags;
+      const char* p = rflags;
       while((*p) != '\0') {
 	if((*p) == ' ') 
 	  jcnt++;
@@ -120,8 +130,8 @@ main
 
     int wk = 2;
     {
-      const char* p = PackageInfo::sJavaRuntimeFlags;
-      const char* q = PackageInfo::sJavaRuntimeFlags;
+      const char* p = rflags;
+      const char* q = rflags;
       while(true) {
 	if(((*q) == ' ') || ((*q) == '\0')) {
 	  int size = q - p + 1;

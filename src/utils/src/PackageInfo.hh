@@ -1,4 +1,4 @@
-// $Id: PackageInfo.hh,v 1.11 2004/04/11 16:28:42 jim Exp $
+// $Id: PackageInfo.hh,v 1.12 2004/07/14 20:43:43 jim Exp $
 
 #ifndef PIPELINE_PACKAGE_INFO_HH
 #define PIPELINE_PACKAGE_INFO_HH
@@ -32,6 +32,12 @@ public:
   static const char* sRelease;
 
   
+  /**
+   * The build mode: "opt" or "dbg".
+   */ 
+  static const char* sBuildMode;
+
+
   /**
    * The "pipeline" user ID 
    */ 
