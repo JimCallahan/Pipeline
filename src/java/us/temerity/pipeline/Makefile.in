@@ -197,7 +197,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
      API_SOURCES = $(shell ls $(srcdir)/*.java)
 
 
-    GLUE_SOURCES = $(shell ls $(srcdir)/*.java) 
+    GLUE_SOURCES = $(shell ls $(srcdir)/glue/*.java) 
 
     CORE_SOURCES = $(shell ls $(srcdir)/core/*.java) 
 
