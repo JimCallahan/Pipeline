@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.16 2004/07/14 20:50:00 jim Exp $
+// $Id: FileMgr.java,v 1.17 2004/07/16 22:03:50 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -265,9 +265,8 @@ class FileMgr
 	  try {
 	    proc.join();
 	    if(!proc.wasSuccessful()) 
-	      return new FailureRsp
-		(timer, 
-		 "Unable to create the working area directory (" + wdir + "):\n" + 
+	      throw new PipelineException
+		("Unable to create the working area directory (" + wdir + "):\n\n" + 
 		 "  " + proc.getStdErr());
 	  }
 	  catch(InterruptedException ex) {
@@ -663,16 +662,15 @@ class FileMgr
 	    
 	    try {
 	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to copying files for working version (" + req.getNodeID() + 
+		   ") into the file repository:\n" +
+		   "  " + proc.getStdErr());
 	    }
 	    catch(InterruptedException ex) {
 	      throw new PipelineException
 		("Interrupted while copying files for working version (" + req.getNodeID() + 
-		 ") into the file repository!");
-	    }
-	    
-	    if(!proc.wasSuccessful()) {
-	      throw new PipelineException
-		("Unable to copy files for working version (" + req.getNodeID() + 
 		 ") into the file repository!");
 	    }
 	    
@@ -711,6 +709,11 @@ class FileMgr
 	    
 	    try {
 	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to copying checksums for working version (" + 
+		   req.getNodeID() + ") into the checksum repository:\n" + 
+		   "  " + proc.getStdErr());		   
 	    }
 	    catch(InterruptedException ex) {
 	      throw new PipelineException
@@ -853,7 +856,7 @@ class FileMgr
 	    else {
 	      if(!cwdir.mkdirs())
 		throw new PipelineException
-		  ("Unable to create the working  checksum directory (" + cwdir + ")!");
+		  ("Unable to create the working checksum directory (" + cwdir + ")!");
 	    }
 
 	    if(!dirs.isEmpty()) {
@@ -870,6 +873,11 @@ class FileMgr
 	      
 	      try {
 		proc.join();
+		if(!proc.wasSuccessful()) 
+		  throw new PipelineException
+		    ("Unable to create directories for working version (" + 
+		     req.getNodeID() + "):\n\n" + 
+		     "  " + proc.getStdErr());	
 	      }
 	      catch(InterruptedException ex) {
 		throw new PipelineException
@@ -919,6 +927,11 @@ class FileMgr
 	    
 	    try {
 	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to backing-up the working files for version (" + 
+		   req.getNodeID() + "):\n\n" + 
+		   "  " + proc.getStdErr());	
 	    }
 	    catch(InterruptedException ex) {
 	      throw new PipelineException
@@ -942,6 +955,11 @@ class FileMgr
 	  
 	  try {
 	    proc.join();
+	    if(!proc.wasSuccessful()) 
+	      throw new PipelineException
+		("Unable to copy files from the repository for the " +
+		 "working version (" + req.getNodeID() + "):\n\n" + 
+		 "  " + proc.getStdErr());	
 	  }
 	  catch(InterruptedException ex) {
 	    throw new PipelineException
@@ -964,6 +982,11 @@ class FileMgr
 	  
 	  try {
 	    proc.join();
+	    if(!proc.wasSuccessful()) 
+	      throw new PipelineException
+		("Unable to copy checksums from the repository for the " +
+		 "working version (" + req.getNodeID() + "):\n\n" + 
+		 "  " + proc.getStdErr());	
 	  }
 	  catch(InterruptedException ex) {
 	    throw new PipelineException
@@ -987,6 +1010,11 @@ class FileMgr
 	    
 	    try {
 	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to add write access permission to the files for " + 
+		   "the working version (" + req.getNodeID() + "):\n\n" + 
+		   "  " + proc.getStdErr());	
 	    }
 	    catch(InterruptedException ex) {
 	      throw new PipelineException
@@ -1002,6 +1030,11 @@ class FileMgr
 	    
 	    try {
 	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to add write access permission to the checksums for " + 
+		   "the working version (" + req.getNodeID() + "):\n\n" + 
+		   "  " + proc.getStdErr());	
 	    }
 	    catch(InterruptedException ex) {
 	      throw new PipelineException
@@ -1021,6 +1054,269 @@ class FileMgr
       checkedInLock.readLock().unlock();
     }  
   }
+
+  /**
+   * 
+   * 
+   * @param req 
+   *   The revert request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to check-out the files.
+   */
+  public Object
+  revert
+  (
+   FileRevertReq req
+  ) 
+  {
+    assert(req != null);
+    TaskTimer timer = new TaskTimer("FileMgr.revert(): " + req.getNodeID());
+
+    timer.aquire();
+    ReentrantReadWriteLock checkedInLock = getCheckedInLock(req.getNodeID().getName());
+    checkedInLock.readLock().lock();
+    try {
+      Object workingLock = getWorkingLock(req.getNodeID());
+      synchronized(workingLock) {
+	timer.resume();	
+	
+	Map<String,String> env = System.getenv();
+
+	/* verify (or create) the working area file, backup and checksum directories */ 
+	File wdir  = null;
+	File cwdir = null;
+	File bwdir = null;
+	{
+	  File wpath = req.getNodeID().getWorkingParent();
+	  wdir  = new File(pProdDir, wpath.getPath());
+	  cwdir = new File(pProdDir, "checksum/" + wpath);
+
+	  timer.aquire();
+	  synchronized(pMakeDirLock) { 
+	    timer.resume();	
+
+	    ArrayList<File> dirs = new ArrayList<File>();
+	    if(wdir.exists()) {
+	      if(!wdir.isDirectory()) 
+		throw new PipelineException
+		  ("Somehow there exists a non-directory (" + wdir + 
+		   ") in the location of the working directory!");
+	    }
+	    else {
+	      dirs.add(wdir);
+	    }
+
+	    bwdir = new File(wdir, ".backup");
+	    if(bwdir.exists()) {
+	      if(!bwdir.isDirectory()) 
+		throw new PipelineException
+		  ("Somehow there exists a non-directory (" + bwdir + 
+		   ") in the location of the working backup directory!");
+	    }
+	    else {
+	      dirs.add(bwdir);
+	    }
+	    
+	    if(cwdir.exists()) {
+	      if(!cwdir.isDirectory()) 
+		throw new PipelineException
+		  ("Somehow there exists a non-directory (" + cwdir + 
+		   ") in the location of the working checksum directory!");
+	    }
+	    else {
+	      if(!cwdir.mkdirs())
+		throw new PipelineException
+		  ("Unable to create the working checksum directory (" + cwdir + ")!");
+	    }
+
+	    if(!dirs.isEmpty()) {
+	      ArrayList<String> args = new ArrayList<String>();
+	      args.add("--parents");
+	      args.add("--mode=755");
+	      for(File dir : dirs)
+		args.add(dir.getPath());
+	      
+	      SubProcess proc = 
+		new SubProcess(req.getNodeID().getAuthor(), 
+			       "Revert-MakeDirs", "mkdir", args, env, pProdDir);
+	      proc.start();
+	      
+	      try {
+		proc.join();
+		if(!proc.wasSuccessful()) 
+		  throw new PipelineException
+		    ("Unable to create directories for working version (" + 
+		     req.getNodeID() + "):\n\n" + 
+		     "  " + proc.getStdErr());	
+	      }
+	      catch(InterruptedException ex) {
+		throw new PipelineException
+		  ("Interrupted while creating directories for working version (" + 
+		   req.getNodeID() + ")!");
+	      }
+	    }
+	  }
+	}
+
+	/* move any existing working files which would be overwritten into 
+	    the backup directory */ 
+	{
+	  ArrayList<String> old = new ArrayList<String>();
+	  for(String file : req.getFiles().keySet()) {
+	    File work = new File(wdir, file);
+	    if(work.isFile()) 
+	      old.add(file);
+	  }
+	  
+	  if(!old.isEmpty()) {
+	    ArrayList<String> args = new ArrayList<String>();
+	    args.add("--force");
+	    args.add("--update");
+	    args.add("--target-directory=" + bwdir);
+	    args.addAll(old);
+
+	    SubProcess proc = 
+	      new SubProcess(req.getNodeID().getAuthor(), 
+			     "Revert-Backup", "mv", args, env, wdir);
+	    proc.start();
+	    
+	    try {
+	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to back-up the working files for version (" + 
+		   req.getNodeID() + "):\n\n" + 
+		   "  " + proc.getStdErr());	
+	    }
+	    catch(InterruptedException ex) {
+	      throw new PipelineException
+		("Interrupted while backing-up the working files for version (" + 
+		 req.getNodeID() + ")!");
+	    }
+	  }
+	}
+	
+	ArrayList<String> rfiles = new ArrayList<String>();
+	for(String file : req.getFiles().keySet()) 
+	  rfiles.add(req.getFiles().get(file) + "/" + file);
+
+	/* copy the checked-in files to the working directory */ 
+	{
+	  ArrayList<String> args = new ArrayList<String>();
+	  args.add("--target-directory=" + wdir);
+	  args.addAll(rfiles);
+
+	  File rdir = new File(pProdDir, "repository" + req.getNodeID().getName());
+	    
+	  SubProcess proc = 
+	    new SubProcess(req.getNodeID().getAuthor(), 
+			   "Revert-Copy", "cp", args, env, rdir);
+	  proc.start();
+	  
+	  try {
+	    proc.join();
+	    if(!proc.wasSuccessful()) 
+	      throw new PipelineException
+		("Unable to copy files from the repository for the " +
+		 "working version (" + req.getNodeID() + "):\n\n" + 
+		 "  " + proc.getStdErr());	
+	  }
+	  catch(InterruptedException ex) {
+	    throw new PipelineException
+	      ("Interrupted while copying files from the repository for the " +
+	       "working version (" + req.getNodeID() + ")!");
+	  }
+	}
+
+	/* overwrite the working checksums with the checked-in checksums */ 
+	{
+	  ArrayList<String> args = new ArrayList<String>();
+	  args.add("--force");
+	  args.add("--target-directory=" + cwdir);
+	  args.addAll(rfiles);
+
+	  File crdir = new File(pProdDir, "checksum/repository" + req.getNodeID().getName());
+
+	  SubProcess proc = 
+	    new SubProcess("Revert-CopyCheckSums", "cp", args, env, crdir);
+	  proc.start();
+	  
+	  try {
+	    proc.join();
+	    if(!proc.wasSuccessful()) 
+	      throw new PipelineException
+		("Unable to copy checksums from the repository for the " +
+		 "working version (" + req.getNodeID() + "):\n\n" + 
+		 "  " + proc.getStdErr());	
+	  }
+	  catch(InterruptedException ex) {
+	    throw new PipelineException
+	      ("Interrupted while copying checksums from the repository for the " +
+	       "working version (" + req.getNodeID() + ")!");
+	  }
+	}
+	
+	/* add write permission to the to working files and checksums */ 
+        {
+	  ArrayList<String> args = new ArrayList<String>();
+	  args.add("u+w");
+	  args.addAll(req.getFiles().keySet());
+
+	  {
+	    SubProcess proc = 
+	      new SubProcess(req.getNodeID().getAuthor(), 
+			     "Revert-SetWritable", "chmod", args, env, wdir);
+	    proc.start();
+	    
+	    try {
+	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to add write access permission to the files for " + 
+		   "the working version (" + req.getNodeID() + "):\n\n" + 
+		   "  " + proc.getStdErr());	
+	    }
+	    catch(InterruptedException ex) {
+	      throw new PipelineException
+		("Interrupted while adding write access permission to the files for " + 
+		 "the working version (" + req.getNodeID() + ")!");
+	    }
+	  }
+
+	  {
+	    SubProcess proc = 
+	      new SubProcess("Revert-SetWritableCheckSums", "chmod", args, env, cwdir);
+	    proc.start();
+	    
+	    try {
+	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to add write access permission to the checksums for " + 
+		   "the working version (" + req.getNodeID() + "):\n\n" + 
+		   "  " + proc.getStdErr());	
+	    }
+	    catch(InterruptedException ex) {
+	      throw new PipelineException
+		("Interrupted while adding write access permission to the checksums for " + 
+		 "the working version (" + req.getNodeID() + ")!");
+	    }
+	  }
+	}
+	
+	return new SuccessRsp(timer);
+      }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      checkedInLock.readLock().unlock();
+    }  
+  }
+
 
   /**
    * Replaces the files associated with a working version of a node with symlinks to  
@@ -1100,6 +1396,11 @@ class FileMgr
 	  
 	  try {
 	    proc.join();
+	    if(!proc.wasSuccessful()) 
+	      throw new PipelineException
+		("Unable to freeze the working files for version (" + 
+		 req.getNodeID() + "):\n\n" + 
+		 "  " + proc.getStdErr());	
 	  }
 	  catch(InterruptedException ex) {
 	    throw new PipelineException
@@ -1122,10 +1423,15 @@ class FileMgr
 	  
 	  try {
 	    proc.join();
+	    if(!proc.wasSuccessful()) 
+	      throw new PipelineException
+		("Unable to freeze the working checksums for version (" + 
+		 req.getNodeID() + "):\n\n" + 
+		 "  " + proc.getStdErr());	
 	  }
 	  catch(InterruptedException ex) {
 	    throw new PipelineException
-	      ("Interrupted while unfreezing the working checksums for version (" + 
+	      ("Interrupted while freezing the working checksums for version (" + 
 	       req.getNodeID() + ")!");
 	  }
 	}
@@ -1217,6 +1523,11 @@ class FileMgr
 	  
 	  try {
 	    proc.join();
+	    if(!proc.wasSuccessful()) 
+	      throw new PipelineException
+		("Unable to unfreeze the working files for version (" + 
+		 req.getNodeID() + "):\n\n" + 
+		 "  " + proc.getStdErr());	
 	  }
 	  catch(InterruptedException ex) {
 	    throw new PipelineException
@@ -1239,6 +1550,11 @@ class FileMgr
 	  
 	  try {
 	    proc.join();
+	    if(!proc.wasSuccessful()) 
+	      throw new PipelineException
+		("Unable to add write access permission to the files for the " + 
+		 "working version (" + req.getNodeID() + "):\n\n" + 
+		 "  " + proc.getStdErr());	
 	  }
 	  catch(InterruptedException ex) {
 	    throw new PipelineException
@@ -1261,6 +1577,11 @@ class FileMgr
 	  
 	  try {
 	    proc.join();
+	    if(!proc.wasSuccessful()) 
+	      throw new PipelineException
+		("Unable to unfreeze the working checksums for version (" + 
+		 req.getNodeID() + "):\n\n" + 
+		 "  " + proc.getStdErr());	
 	  }
 	  catch(InterruptedException ex) {
 	    throw new PipelineException
@@ -1349,6 +1670,11 @@ class FileMgr
 	    
 	    try {
 	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to remove the working files for version (" + 
+		   req.getNodeID() + "):\n\n" + 
+		   "  " + proc.getStdErr());	
 	    }
 	    catch(InterruptedException ex) {
 	      throw new PipelineException
@@ -1379,6 +1705,11 @@ class FileMgr
 	    
 	    try {
 	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to remove the working checksums for version (" + 
+		   req.getNodeID() + "):\n\n" + 
+		   "  " + proc.getStdErr());	
 	    }
 	    catch(InterruptedException ex) {
 	      throw new PipelineException
@@ -1503,6 +1834,10 @@ class FileMgr
 	      
 	      try {
 		proc.join();
+		if(!proc.wasSuccessful()) 
+		  throw new PipelineException
+		    ("Unable to create directories for working version (" + id + "):\n\n" + 
+		     "  " + proc.getStdErr());	
 	      }
 	      catch(InterruptedException ex) {
 		throw new PipelineException
@@ -1570,6 +1905,10 @@ class FileMgr
 	    
 	    try {
 	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to back-up the working files for version (" + id + "):\n\n" + 
+		   "  " + proc.getStdErr());	
 	    }
 	    catch(InterruptedException ex) {
 	      throw new PipelineException
@@ -1601,6 +1940,10 @@ class FileMgr
 	      
 	      try {
 		proc.join();
+		if(!proc.wasSuccessful()) 
+		  throw new PipelineException
+		    ("Unable to rename a primary file for version (" + id + "):\n\n" + 
+		     "  " + proc.getStdErr());	
 	      }
 	      catch(InterruptedException ex) {
 		throw new PipelineException
@@ -1632,6 +1975,10 @@ class FileMgr
 	    
 	    try {
 	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to rename the secondary files for version (" + id + "):\n\n" + 
+		   "  " + proc.getStdErr());	
 	    }
 	    catch(InterruptedException ex) {
 	      throw new PipelineException
@@ -1663,6 +2010,10 @@ class FileMgr
 	      
 	      try {
 		proc.join();
+		if(!proc.wasSuccessful()) 
+		  throw new PipelineException
+		    ("Unable to rename a primary checksum for version (" + id + "):\n\n" + 
+		     "  " + proc.getStdErr());	
 	      }
 	      catch(InterruptedException ex) {
 		throw new PipelineException
@@ -1694,6 +2045,10 @@ class FileMgr
 	    
 	    try {
 	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to rename the secondary checksums for version (" + id + "):\n\n" + 
+		   "  " + proc.getStdErr());	
 	    }
 	    catch(InterruptedException ex) {
 	      throw new PipelineException
