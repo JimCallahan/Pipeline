@@ -1,4 +1,4 @@
-// $Id: NotifyServer.java,v 1.3 2004/04/12 22:39:05 jim Exp $
+// $Id: NotifyServer.java,v 1.4 2004/04/13 20:44:39 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -54,6 +54,7 @@ class NotifyServer
    int monitorPort
   )
   { 
+    super("NotifyServer");
     init(controlPort, monitorPort);
   }
   
@@ -67,6 +68,7 @@ class NotifyServer
   public
   NotifyServer() 
   { 
+    super("NotifyServer");
     init(PackageInfo.sNotifyControlPort, PackageInfo.sNotifyMonitorPort);
   }
 
@@ -259,6 +261,7 @@ class NotifyServer
   {
     ControlTask() 
     {
+      super("NotifyServer:ControlTask");
       pTasks = new HashSet<ControlHandlerTask>();
     }
 
@@ -340,6 +343,8 @@ class NotifyServer
      HashSet<ControlHandlerTask> tasks
     ) 
     {
+      super("NotifyServer:ControlHandlerTask");
+
       pSocket = socket;
       pTasks  = tasks;
     }
@@ -445,7 +450,9 @@ class NotifyServer
     extends Thread
   {
     MonitorTask() 
-    {}
+    {
+      super("NotifyServer:MonitorTask");
+    }
 
     public void 
     run() 
@@ -524,6 +531,8 @@ class NotifyServer
      Socket socket
     ) 
     {
+      super("NotifyServer:MonitorHandlerTask");
+
       pSocket = socket;
       pDirs   = new HashSet<File>();
       pGate   = new Semaphore(1, true);

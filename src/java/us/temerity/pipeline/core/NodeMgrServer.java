@@ -1,4 +1,4 @@
-// $Id: NodeMgrServer.java,v 1.8 2004/04/12 22:39:05 jim Exp $
+// $Id: NodeMgrServer.java,v 1.9 2004/04/13 20:44:39 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -38,42 +38,68 @@ class NodeMgrServer
   /** 
    * Construct a new node manager server.
    * 
-   * @param dir 
+   * @param nodeDir 
    *   The root node directory.
    * 
-   * @param port 
+   * @param nodePort 
    *   The network port to monitor for incoming connections.
    * 
+   * @param prodDir 
+   *   The root production directory.
+   * 
    * @param fileHostname 
-   *   The name of the host running the <B>plfilemgr</B><A>(1).
+   *   The name of the host running the <B>plfilemgr</B><A>(1) and <B>plnotify</B><A>(1) 
+   *   daemons.
    * 
    * @param filePort 
-   *   The network port listened to by <B>plfilemgr</B><A>(1).
+   *   The network port listened to by the <B>plfilemgr</B><A>(1) daemon.
+   * 
+   * @param controlPort 
+   *   The network port listened to by the <B>plnotify</B><A>(1) daemon for 
+   *   control connections.
+   * 
+   * @param monitorPort 
+   *   The network port listened to by the <B>plnotify</B><A>(1) daemon for 
+   *   monitor connections.
    */
   public
   NodeMgrServer
   (
-   File dir, 
-   int port, 
+   File nodeDir, 
+   int nodePort, 
+   File prodDir, 
    String fileHostname, 
-   int filePort
+   int filePort,
+   int controlPort, 
+   int monitorPort
   )
   { 
-    init(dir, port, fileHostname, filePort);
+    super("NodeMgrServer");
+    init(nodeDir, nodePort, prodDir, fileHostname, filePort, controlPort, monitorPort);
   }
   
   /** 
    * Construct a new node manager using the default root node directory and 
-   * network port.
+   * network ports.
    * 
-   * The root node directory and network port used are those specified by 
-   * <B>plconfig(1)</B>.
+   * The root node directory is specified by the <B>--node-dir</B>=<I>dir</I>
+   * option to <B>plconfig</B>(1). <P> 
+   * 
+   * The file server hostname is specified by the <B>--file-host</B>=<I>host</I>
+   * option to <B>plconfig</B>(1). <P>  
+   * 
+   * The network ports used are those specified by the 
+   * <B>--master-port</B>=<I>num</I>, <B>--file-port</B>=<I>num</I>, 
+   * <B>--notify-control-port</B>=<I>num</I> and 
+   * <B>--notify-monitor-port</B>=<I>num</I> options to <B>plconfig</B>(1).
    */
   public
   NodeMgrServer() 
   { 
+    super("NodeMgrServer");
     init(PackageInfo.sNodeDir, PackageInfo.sMasterPort, 
-	 PackageInfo.sFileServer, PackageInfo.sFilePort);
+	 PackageInfo.sProdDir, PackageInfo.sFileServer, PackageInfo.sFilePort, 
+	 PackageInfo.sNotifyControlPort, PackageInfo.sNotifyMonitorPort);
   }
 
 
@@ -82,32 +108,48 @@ class NodeMgrServer
   /**
    * Initialize a new instance.
    * 
-   * @param dir 
+   * @param nodeDir 
    *   The root node directory.
    * 
-   * @param port 
+   * @param nodePort 
    *   The network port to monitor for incoming connections.
    * 
+   * @param prodDir 
+   *   The root production directory.
+   * 
    * @param fileHostname 
-   *   The name of the host running the <B>plfilemgr</B><A>(1).
+   *   The name of the host running the <B>plfilemgr</B><A>(1) and <B>plnotify</B><A>(1) 
+   *   daemons.
    * 
    * @param filePort 
-   *   The network port listened to by <B>plfilemgr</B><A>(1).
+   *   The network port listened to by <B>plfilemgr</B><A>(1) daemon.
+   * 
+   * @param controlPort 
+   *   The network port listened to by the <B>plnotify</B><A>(1) daemon for 
+   *   control connections.
+   * 
+   * @param monitorPort 
+   *   The network port listened to by the <B>plnotify</B><A>(1) daemon for 
+   *   monitor connections.
    */
   private synchronized void 
   init
   (
-   File dir, 
-   int port, 
+   File nodeDir, 
+   int nodePort, 
+   File prodDir, 
    String fileHostname, 
-   int filePort
+   int filePort,
+   int controlPort, 
+   int monitorPort
   )
   { 
-    pNodeMgr = new NodeMgr(dir, fileHostname, filePort);
+    pNodeMgr = new NodeMgr(nodeDir, prodDir, 
+			   fileHostname, filePort, controlPort, monitorPort);
 
-    if(port < 0) 
-      throw new IllegalArgumentException("Illegal port number (" + port + ")!");
-    pPort = port;
+    if(nodePort < 0) 
+      throw new IllegalArgumentException("Illegal port number (" + nodePort + ")!");
+    pPort = nodePort;
 
     pShutdown = new AtomicBoolean(false);
     pTasks    = new HashSet<HandlerTask>();
@@ -205,6 +247,7 @@ class NodeMgrServer
      Socket socket
     ) 
     {
+      super("NodeMgrServer:HandlerTask");
       pSocket = socket;
     }
 

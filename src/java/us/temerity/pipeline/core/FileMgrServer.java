@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.9 2004/04/12 22:39:05 jim Exp $
+// $Id: FileMgrServer.java,v 1.10 2004/04/13 20:44:39 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -51,6 +51,7 @@ class FileMgrServer
    int port
   )
   { 
+    super("FileMgrServer");
     init(dir, port);
   }
   
@@ -64,6 +65,7 @@ class FileMgrServer
   public
   FileMgrServer() 
   { 
+    super("FileMgrServer");
     init(PackageInfo.sProdDir, PackageInfo.sFilePort);
   }
 
@@ -177,6 +179,7 @@ class FileMgrServer
      Socket socket
     ) 
     {
+      super("FileMgrServer:HandlerTask");
       pSocket = socket;
     }
 

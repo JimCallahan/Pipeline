@@ -1,4 +1,4 @@
-// $Id: FileCleaner.java,v 1.3 2004/04/11 19:31:58 jim Exp $
+// $Id: FileCleaner.java,v 1.4 2004/04/13 20:44:39 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -87,7 +87,7 @@ class FileCleaner
     public 
     CleanupTask() 
     {
-      super("FileCleanup");
+      super("FileCleaner:CleanupTask");
     }
 
     public void 
