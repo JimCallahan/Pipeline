@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.23 2005/01/22 06:10:09 jim Exp $
+// $Id: JobMgr.java,v 1.24 2005/02/07 20:27:54 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -305,7 +305,7 @@ class JobMgr
    *   The job start request.
    * 
    * @return
-   *   <CODE>JobStartRsp</CODE> if successful or 
+   *   <CODE>SuccessRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to start the job.
    */ 
   public Object
@@ -320,11 +320,13 @@ class JobMgr
     /* create the job scratch directory */ 
     try {	
       File dir = new File(pJobDir, String.valueOf(job.getJobID()));
-      File scratch = new File(dir, "scratch");
-      if(dir.exists() || scratch.exists())
-	throw new IOException
-	  ("Somehow the job directory (" + dir + ") already exists!");
-      
+
+      /* job was previously started, 
+	   use existing results instead of starting a new process */ 
+      if(dir.exists()) 
+	return new SuccessRsp(timer);
+
+      File scratch = new File(dir, "scratch");      
       if(!scratch.mkdirs()) 
 	throw new IOException
 	  ("Unable to create the job directory (" + dir + ")!");
