@@ -1,4 +1,4 @@
-// $Id: Pls.cc,v 1.3 2003/10/17 23:00:27 jim Exp $
+// $Id: Pls.cc,v 1.4 2004/03/12 15:14:29 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -34,6 +34,7 @@
 
 #include <PackageInfo.hh>
 #include <FileSeq.hh>
+#include <HtmlHelp.hh>
 
 using namespace Pipeline;
 
@@ -92,17 +93,7 @@ main
 	exit(EXIT_SUCCESS);
       }
       else if(strcmp(argv[1], "--html-help") == 0) {
-	char buf[1024];
-	sprintf(buf, "openURL(file:%s/pls.html, new-window)", 
-		PackageInfo::sDocsDir); 
-	
-	char* args[4]; 
-	args[0] = strdup("mozilla");
-	args[1] = strdup("-remote");
-	args[2] = strdup(buf);
-	args[3] = NULL;
-	
-	execv(PackageInfo::sMozilla, args);
+	HtmlHelp::launch("pls");
       }
       else if(strcmp(argv[1], "--version") == 0) {
 	std::cerr << PackageInfo::sVersion << "\n";

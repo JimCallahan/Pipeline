@@ -1,4 +1,4 @@
-/* $Id: RealPath.cc,v 1.1 2004/01/18 23:21:04 jim Exp $ */
+/* $Id: RealPath.cc,v 1.2 2004/03/12 15:14:29 jim Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -29,6 +29,7 @@
 #endif
 
 #include <PackageInfo.hh>
+#include <HtmlHelp.hh>
 
 using namespace Pipeline;
 
@@ -67,17 +68,7 @@ main
       exit(EXIT_SUCCESS);
     }
     else if(strcmp(argv[1], "--html-help") == 0) {
-      char buf[1024];
-      sprintf(buf, "openURL(file:%s/plget.html, new-window)", 
-	      PackageInfo::sDocsDir); 
-
-      char* args[4]; 
-      args[0] = strdup("mozilla");
-      args[1] = strdup("-remote");
-      args[2] = strdup(buf);
-      args[3] = NULL;
-
-      execv(PackageInfo::sMozilla, args);
+      HtmlHelp::launch("realpath");
     }
     else if(strcmp(argv[1], "--version") == 0) {
       std::cerr << PackageInfo::sVersion << "\n";
