@@ -12,11 +12,11 @@ EXTRA_DIST = \
 
 plput_SOURCES = PlPut.cc PackageInfo.cc
 plput_LDADD = \
-  ../../../cxx/libs/core/src/libPhoenixCore.a
+  @PHOENIX_CORE_LIB@
 
 
 INCLUDES = \
-  -I$(srcdir)/../../../cxx/libs/core/src
+  @PHOENIX_CORE_INC@
 
 
 install-exec-local:

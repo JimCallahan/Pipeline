@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Phoenix, 0.1)
+AM_INIT_AUTOMAKE(Pipeline, 0.9)
 
 AC_MSG_RESULT([ ])
 
@@ -94,6 +94,23 @@ RELEASE_STAMP=`date`
 AC_MSG_RESULT([$RELEASE_STAMP])
 
 dnl -------------------------------------------------------------------------------------------
+
+AC_MSG_CHECKING([Code Install Directory])
+
+AC_ARG_WITH([codedir], 
+            [  --with-code=PATH       Root directory for code development.])
+
+AC_SUBST(CODEDIR)
+CODEDIR=$HOME/code
+
+if test "$with_codedir" 
+then
+  CODEDIR=$with_codedir
+fi
+
+AC_MSG_RESULT([$CODEDIR])
+
+
 
 AC_MSG_CHECKING([Base Install Directory])
 
@@ -247,7 +264,7 @@ then
 
     (sgi | SGI) \
        CFLAGS="$CFLAGS -64 -mips4 -TARG:platform=IP30";
-       CXXFLAGS="$CXXFLAGS -64 -mips4 -TARG:platform=IP30";;
+x       CXXFLAGS="$CXXFLAGS -64 -mips4 -TARG:platform=IP30";;
 
     (gnu | GNU) \
        AC_MSG_ERROR([no 64bit support for gcc]);;
@@ -541,8 +558,28 @@ then
 fi
 AC_SUBST(OPEN_GL_LIB)
 
+AC_MSG_RESULT([])
 
-AC_MSG_RESULT([ ])
+
+
+dnl -- PHOENIX LIBRARIES ----------------------------------------------------------------------
+
+AC_MSG_RESULT([Locating Phoenix Libraries:])
+
+
+PHOENIX_CORE_INC="-I${CODEDIR}/src/phoenix/src/libs/core/src" 
+AC_SUBST(PHOENIX_CORE_LIB)
+AC_MSG_RESULT([Core Include: $PHOENIX_CORE_INC])
+
+
+PHOENIX_CORE_LIB="$CODEDIR/build/phoenix/${host}-${BUILD_MODE}/src/libs/core/src/libPhoenixCore.a"
+AC_SUBST(PHOENIX_CORE_INC)
+AC_MSG_RESULT([Core Library: $PHOENIX_CORE_LIB])
+
+AC_DEFINE(HAVE_PHOENIX, 1, 
+          [Define if Phoenix is available.]) 
+
+AC_MSG_RESULT([])
 
 
 dnl -------------------------------------------------------------------------------------------
@@ -694,58 +731,24 @@ AC_CONFIG_FILES([
   Makefile
 
   src/Makefile
-  src/cxx/Makefile
 
-  src/cxx/libs/Makefile
+  src/pipeline/Makefile
+  src/pipeline/tests/Makefile
+  src/pipeline/PackageInfo.java
+  src/pipeline/scripts/dbinit
+  src/pipeline/scripts/dbstart
+  src/pipeline/scripts/dbstop
+  src/pipeline/scripts/pipeline
+  src/pipeline/scripts/pleditor
+  src/pipeline/scripts/pltoolset
+  src/pipeline/share/dbinit.sql
+  src/pipeline/share/postgresql.conf
 
-  src/cxx/libs/core/Makefile 
-  src/cxx/libs/core/src/Makefile
-  src/cxx/libs/core/tests/Makefile
-  src/cxx/libs/core/docs/Makefile
-
-  src/cxx/libs/image/Makefile 
-  src/cxx/libs/image/src/Makefile
-  src/cxx/libs/image/tests/Makefile
-  src/cxx/libs/image/docs/Makefile
-
-  src/cxx/libs/vornoi/Makefile 
-  src/cxx/libs/vornoi/src/Makefile
-  src/cxx/libs/vornoi/tests/Makefile
-  src/cxx/libs/vornoi/docs/Makefile
-
-  src/cxx/utils/Makefile
-  src/cxx/utils/src/Makefile
-  src/cxx/utils/docs/Makefile
-
-  src/java/Makefile
-
-  src/java/pipeline/Makefile
-  src/java/pipeline/tests/Makefile
-  src/java/pipeline/PackageInfo.java
-  src/java/pipeline/scripts/dbinit
-  src/java/pipeline/scripts/dbstart
-  src/java/pipeline/scripts/dbstop
-  src/java/pipeline/scripts/pipeline
-  src/java/pipeline/scripts/pleditor
-  src/java/pipeline/scripts/pltoolset
-  src/java/pipeline/share/dbinit.sql
-  src/java/pipeline/share/postgresql.conf
-
-  src/java/plutils/Makefile
-  src/java/plutils/src/Makefile
-  src/java/plutils/src/PackageInfo.cc
-  src/java/plutils/docs/Makefile
+  src/plutils/Makefile
+  src/plutils/src/Makefile
+  src/plutils/src/PackageInfo.cc
+  src/plutils/docs/Makefile
 ])
-
-dnl  src/cxx/libs/gui/Makefile 
-dnl  src/cxx/libs/gui/src/Makefile
-dnl  src/cxx/libs/gui/tests/Makefile  
-dnl  src/cxx/libs/gui/docs/Makefile
-
-dnl  src/cxx/libs/thread/Makefile 
-dnl  src/cxx/libs/thread/src/Makefile
-dnl  src/cxx/libs/thread/tests/Makefile  
-dnl  src/cxx/libs/thread/docs/Makefile
 
 AC_OUTPUT
 

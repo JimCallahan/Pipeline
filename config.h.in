@@ -309,6 +309,9 @@
 /* Define if OpenInventor is available. */
 #undef HAVE_OPEN_INVENTOR
 
+/* Define if Phoenix is available. */
+#undef HAVE_PHOENIX
+
 /* Define to 1 if you have the `pow' function. */
 #undef HAVE_POW
 
