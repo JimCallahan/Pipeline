@@ -1,4 +1,4 @@
-// $Id: NodeVersion.java,v 1.4 2004/03/07 02:43:10 jim Exp $
+// $Id: NodeVersion.java,v 1.5 2004/03/11 14:12:10 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -22,7 +22,9 @@ class NodeVersion
 
   public 
   NodeVersion()
-  {}
+  {
+    pSources = new TreeMap<String,DependVersion>();
+  }
 
   /**
    * Construct a new checked-in version based on a working version of the node.
@@ -258,6 +260,7 @@ class NodeVersion
     LogMessage msg = (LogMessage) decoder.decode("Message");
     if(msg == null) 
       throw new GlueException("The \"Message\" was missing!");
+    pMessage = msg;
     
     TreeMap<String,DependVersion> sources = 
       (TreeMap<String,DependVersion>) decoder.decode("Sources"); 
