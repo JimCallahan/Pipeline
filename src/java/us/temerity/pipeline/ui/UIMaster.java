@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.40 2004/09/05 06:53:34 jim Exp $
+// $Id: UIMaster.java,v 1.41 2004/09/11 14:18:25 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1094,6 +1094,28 @@ class UIMaster
     field.setMinimumSize(size);
     field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
     field.setPreferredSize(size);
+
+    return field;
+  }
+
+  /**
+   * Create a boolean field.
+   * 
+   * @param value
+   *   The initial value.
+   * 
+   * @param width
+   *   The minimum and preferred width of the field.
+   */ 
+  public static JBooleanField
+  createBooleanField
+  (
+   Boolean value, 
+   int width
+  ) 
+  {
+    JBooleanField field = createBooleanField(width);
+    field.setValue(value);
 
     return field;
   }
