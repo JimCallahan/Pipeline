@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.27 2004/08/30 01:40:44 jim Exp $
+// $Id: MasterMgr.java,v 1.28 2004/08/31 12:43:13 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3680,7 +3680,7 @@ class MasterMgr
 	}
 
 	/* group the frames into batches */ 
-	{
+	if(!regen.isEmpty()) {
 	  TreeSet<Integer> batch = new TreeSet<Integer>();
 	  for(Integer idx : regen) {
 	    if(!batch.isEmpty() && 
