@@ -1,4 +1,4 @@
-// $Id: BaseApp.java,v 1.3 2004/03/23 07:40:37 jim Exp $
+// $Id: BaseApp.java,v 1.4 2004/04/11 19:16:42 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -139,6 +139,15 @@ class BaseApp
   copyright()
   {
     Logs.ops.info(PackageInfo.sCopyright);
+  }
+
+  /**
+   * The implementation of the <CODE>--license</CODE> command-line option.
+   */ 
+  public void
+  license()
+  {
+    Logs.ops.info(PackageInfo.sLicense);
   }
     
 
