@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.3 2004/06/28 00:21:36 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.4 2004/06/28 23:39:20 jim Exp $
 
 import java.io.*; 
 import java.util.*;
@@ -73,12 +73,38 @@ class GenUserPrefsApp
 	new BasePref(),
 	
 	new HotKeyPref
+	("edit primary file sequences of the current primary selection",
+	 "NodeEdit", "Edit:"), 
+
+	new BasePref(),
+	
+	new HotKeyPref
+	("link the secondary selected nodes to the current primary selection",
+	 "NodeLink", "Link:"), 
+
+	new HotKeyPref
+	("unlink the secondary selected nodes from the current primary selection",
+	 "NodeUnlink", "Unlink:"), 
+
+	new BasePref(),
+	
+	new HotKeyPref
 	("rename the current primary selection",
 	 "NodeRename", "Rename:"), 
 
 	new HotKeyPref
 	("register a new node which is a clone of the current primary selection",
 	 "NodeClone", "Clone:"), 
+
+	new BasePref(),
+	
+	new HotKeyPref
+	("check-in the current primary selection",
+	 "NodeCheckIn", "Check-In:"), 
+
+	new HotKeyPref
+	("check-out the current primary selection",
+	 "NodeCheckOut", "Check-Out:"), 
 
 	new BasePref(),
 
@@ -152,8 +178,27 @@ class GenUserPrefsApp
       pPrefs.put("Panel|Node Viewer|Links|Appearance", prefs);
     }
 
+
     {
       BasePref prefs[] = {
+	new HotKeyPref
+	("edit the properties of the selected link", 
+	 "LinkEdit", "Edit Link:"),	
+
+	new HotKeyPref
+	("remove the selected link", 
+	 "LinkUnlink", "UnLink:"),	
+      };
+
+      pPrefs.put("Panel|Node Viewer|Links|Hot Keys", prefs);
+    }
+
+    {
+      BasePref prefs[] = {
+	new HotKeyPref
+	("update the status of all nodes", 
+	 "UpdateNodes", "Update Nodes:"),	
+	
 	new HotKeyPref
 	("register a new node",
 	 "RegisterNewNode", "Register New Node:"),	
@@ -254,7 +299,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.3 2004/06/28 00:21:36 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.4 2004/06/28 23:39:20 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -507,7 +552,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.3 2004/06/28 00:21:36 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.4 2004/06/28 23:39:20 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
