@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.57 2004/11/02 23:06:44 jim Exp $
+// $Id: MasterMgr.java,v 1.58 2004/11/03 02:55:08 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3779,8 +3779,10 @@ class MasterMgr
    * @param seen
    *   The names of the previously processed nodes.
    * 
-   * @param skipped
-   *   The names of the nodes which where skipped.
+   * @param dirty
+   *   The names of the nodes which should cause downstream nodes with enabled actions
+   *   to delete their working area files instead of replacing them with files from the
+   *   repository.
    * 
    * @param timer
    *   The shared task timer for this operation.
@@ -3798,7 +3800,7 @@ class MasterMgr
    HashMap<NodeID,NodeStatus> stable,
    LinkedList<String> branch, 
    HashSet<String> seen, 
-   HashSet<String> skipped, 
+   HashSet<String> dirty, 
    TaskTimer timer   
   ) 
     throws PipelineException 
@@ -3815,11 +3817,12 @@ class MasterMgr
     /* push the current node onto the end of the branch */ 
     branch.addLast(name);
 
-    /* make sure the node does have any active jobs */ 
+    /* make sure the node does have any active jobs */
+    NodeDetails details = null;
     {
       NodeStatus status = stable.get(nodeID);
       if(status != null) {
-	NodeDetails details = status.getDetails();
+	details = status.getDetails();
 	if(details != null) {
 	  switch(details.getOverallQueueState()) {
 	  case Queued:
@@ -3892,39 +3895,46 @@ class MasterMgr
       /* mark having seen this node already */ 
       seen.add(name);
  
-      /* see if the check-out should be skipped */ 
-      if(!isRoot && (work != null)) {
+      /* see if the check-out should be skipped, 
+           and if skipped whether the node should be marked dirty */ 
+      if(work != null) {
 	switch(mode) {
 	case OverwriteAll:
+	  if((details != null) && 
+	     (details.getOverallNodeState() == OverallNodeState.Identical) && 
+	     (details.getOverallQueueState() == OverallQueueState.Finished) && 
+	     work.getWorkingID().equals(vsn.getVersionID())) {
+	    branch.removeLast();
+	    return;
+	  }
 	  break;
 
 	case KeepNewer:
-	  if(work.getWorkingID().compareTo(vsn.getVersionID()) > 0) {
+	  if(!isRoot && (work.getWorkingID().compareTo(vsn.getVersionID()) > 0)) {
 	    branch.removeLast();
-	    skipped.add(name);
-	    return;      
+	    dirty.add(name);
+	    return;
 	  }
 	  break;
 
 	case KeepModified:
-	  if(work.getWorkingID().compareTo(vsn.getVersionID()) >= 0) {
+	  if(!isRoot && (work.getWorkingID().compareTo(vsn.getVersionID()) >= 0)) {
 	    branch.removeLast();
-	    skipped.add(name);
-	    return;      
-	  }	  
+	    dirty.add(name);
+	    return;
+	  }
 	}
       }
 
-      /* process the upstream nodes */ 
-      boolean skippedSource = false;
+      /* process the upstream nodes */
       for(LinkVersion link : vsn.getSources()) {
 	NodeID lnodeID = new NodeID(nodeID, link.getName());
 
 	performCheckOut(false, lnodeID, link.getVersionID(), mode, stable, 
-			branch, seen, skipped, timer);
+			branch, seen, dirty, timer);
 
-	if(skipped.contains(link.getName())) 
-	  skippedSource = true;
+	if(dirty.contains(link.getName())) 
+	  dirty.add(name);
       }
 
       /* get the current timestamp */ 
@@ -3932,14 +3942,14 @@ class MasterMgr
 
       {
 	/* remove the to be checked-out working files,
-	     since one or more of the source nodes where skipped making the checked-out 
-	     files invalid */ 
-	if(skippedSource) 
+	     if this is a dirty node with an enabled action */ 
+	if(dirty.contains(name) && vsn.isActionEnabled()) {
 	  pFileMgrClient.removeAll(nodeID, vsn.getSequences());
-
-	/* check-out the files */
-	else 
+	}
+	/* otherwise, check-out the files */
+	else {
 	  pFileMgrClient.checkOut(nodeID, vsn);
+	}
       }
 
       /* create a new working version and write it to disk */ 
