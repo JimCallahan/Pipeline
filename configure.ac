@@ -1050,6 +1050,7 @@ AC_CONFIG_FILES([
 
   docs/Makefile 
   docs/images/Makefile
+  docs/images/node-icons/Makefile
   docs/javadoc/Makefile
   docs/man/Makefile
   docs/man/plfilemgr.src.html

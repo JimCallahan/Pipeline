@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.46 2004/10/13 03:31:19 jim Exp $
+// $Id: JManagerPanel.java,v 1.47 2004/10/22 04:55:54 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -337,6 +337,11 @@ class JManagerPanel
 	item.addActionListener(this);
 	sub.add(item);  
 
+	item = new JMenuItem("Quick Reference...");
+	item.setActionCommand("quick-reference");
+	item.addActionListener(this);
+	sub.add(item);  
+	  
 	item = new JMenuItem("User Manual...");
 	item.setEnabled(false);
 	item.setActionCommand("user-anual");
@@ -1241,6 +1246,11 @@ class JManagerPanel
       UIMaster.getInstance().showAboutDialog();
       return true;
     }
+    else if((prefs.getShowQuickReference() != null) &&
+	    prefs.getShowQuickReference().wasPressed(e)) {
+      BaseApp.showURL("file:///" + PackageInfo.sDocsDir + "/manuals/quick-reference.html");
+      return true;
+    }
 
     else if((prefs.getShowHomePage() != null) &&
 	    prefs.getShowHomePage().wasPressed(e)) {
@@ -1376,6 +1386,8 @@ class JManagerPanel
 
     else if(cmd.equals("about"))
       UIMaster.getInstance().showAboutDialog();
+    else if(cmd.equals("quick-reference"))
+      BaseApp.showURL("file:///" + PackageInfo.sDocsDir + "/manuals/quick-reference.html");
 
     else if(cmd.equals("home-page"))
       BaseApp.showURL("http://www.temerity.us");

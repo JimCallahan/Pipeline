@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.26 2004/10/13 03:32:08 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.27 2004/10/22 04:55:54 jim Exp $
 
 import java.io.*; 
 import java.util.*;
@@ -119,6 +119,10 @@ class GenUserPrefsApp
 	new HotKeyPref
 	("Information about Pipeline.", 
 	 "ShowAbout", "About:"),   
+
+	new HotKeyPref
+	("Display the node state quick reference page.", 
+	 "ShowQuickReference", "Quick Reference:"),  
 
 	new BasePref(),
 	
@@ -1007,7 +1011,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.26 2004/10/13 03:32:08 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.27 2004/10/22 04:55:54 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -1260,7 +1264,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.26 2004/10/13 03:32:08 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.27 2004/10/22 04:55:54 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
