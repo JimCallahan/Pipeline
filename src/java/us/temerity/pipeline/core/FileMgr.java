@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.38 2005/03/23 00:35:23 jim Exp $
+// $Id: FileMgr.java,v 1.39 2005/03/23 22:42:53 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2492,7 +2492,7 @@ class FileMgr
       /* run the archiver */ 
       {
 	SubProcessHeavy proc = 
-	  archiver.restore(archiveName, files, restoreDir, outFile, errFile);
+	  archiver.restore(archiveName, stamp, files, restoreDir, outFile, errFile);
 	
 	FileCleaner.add(outFile);
 	FileCleaner.add(errFile);
@@ -2746,7 +2746,6 @@ class FileMgr
 	  File target = new File("../" + vid + "/" + file);
 	  for(VersionID svid : symlinks.get(file)) {
 	    File link = new File(pProdDir, "repository" + name + "/" + svid + "/" + file);
-	    System.out.print("Symlink: " + target + " -> " + link + "\n");
 	    NativeFileSys.symlink(target, link);
 	  }
 	}
@@ -2758,7 +2757,6 @@ class FileMgr
 	VersionID tvid = targets.get(file);
 	File target = new File("../" + tvid + "/" + file);
 	File link = new File(pProdDir, "repository" + name + "/" + vid + "/" + file);
-	System.out.print("Symlink: " + target + " -> " + link + "\n");
 	NativeFileSys.symlink(target, link);
       }
 

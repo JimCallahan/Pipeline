@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.102 2005/03/23 20:45:01 jim Exp $
+// $Id: MasterMgr.java,v 1.103 2005/03/23 22:42:53 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6961,19 +6961,7 @@ class MasterMgr
 		}
 	      }
 	    }
-	      
-	    // DEBUG 
-	    {
-	      System.out.print("\nOFFLINE:  " + name + "  " + vid + "\n");
-	      for(File file : symlinks.keySet()) {
-		System.out.print("  " + file + ":  ");
-		for(VersionID nvid : symlinks.get(file)) 
-		  System.out.print("" + nvid + "  ");
-		System.out.print("\n");
-	      }
-	    }
-	    // DEBUG 
-	    
+	      	    
 	    /* offline the files */ 
 	    pFileMgrClient.offline(name, vid, symlinks);
 
@@ -7562,29 +7550,7 @@ class MasterMgr
 	      }
 	    }
 	  }
-
-	  // DEBUG 
-	  {
-	    if(!symlinks.isEmpty()) {
-	      System.out.print("\nRESTORE-MOVE: " + name + "  " + vid + "\n");
-	      for(File file : symlinks.keySet()) {
-		System.out.print("  " + file + ":  ");
-		for(VersionID svid : symlinks.get(file)) 
-		  System.out.print(svid + "  ");
-		System.out.print("\n");
-	      }
-	    }
-	    
-	    if(!targets.isEmpty()) {
-	      System.out.print("\nRESTORE-LINK: " + name + "  " + vid + "\n");
-	      for(File file : targets.keySet()) {
-		VersionID tvid = targets.get(file);
-		System.out.print("  " + file + ":  " + tvid + "\n");
-	      }	
-	    }
-	  }
-	  // DEBUG
-	  
+ 
 	  /* restore the files */ 
 	  pFileMgrClient.restore(archiveName, stamp, name, vid, symlinks, targets);
 
