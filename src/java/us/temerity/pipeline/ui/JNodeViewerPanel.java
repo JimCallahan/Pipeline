@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.47 2004/10/01 21:56:59 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.48 2004/10/02 15:47:13 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -137,6 +137,13 @@ class JNodeViewerPanel
       item = new JMenuItem();
       pShowHideDownstreamItem = item;
       item.setActionCommand("show-hide-downstream");
+      item.addActionListener(this);
+      pPanelPopup.add(item);  
+
+      pPanelPopup.addSeparator();
+
+      item = new JMenuItem("Remove All Roots");
+      item.setActionCommand("remove-all-roots");
       item.addActionListener(this);
       pPanelPopup.add(item);  
     }
@@ -501,11 +508,8 @@ class JNodeViewerPanel
   {
     super.setAuthorView(author, view);    
 
-    if(pRoots != null) {
-      TreeSet<String> roots = new TreeSet<String>(pRoots.keySet());
-      pRoots.clear();      
-      setRoots(roots);
-    }
+    if(pRoots != null) 
+      updateRoots();
   }
 
 
@@ -544,17 +548,8 @@ class JNodeViewerPanel
    TreeSet<String> names
   )
   {
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();
-
     super.setAuthorView(author, view);
-    
-    pRoots.clear();
-    for(String name : names) 
-      pRoots.put(name, null);
-    
-    updateNodeBrowserSelection();
-    updateNodeStatus(); 
+    setRoots(names);
   }
 
   /**
@@ -569,34 +564,9 @@ class JNodeViewerPanel
    TreeSet<String> names
   )
   {
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();
-
-    /* are there any new nodes being added? */ 
-    boolean refresh = false;
-    for(String name : names) {
-      if(!pRoots.containsKey(name)) {
-	refresh = true;
-	break;
-      }
-    }
-    
-    /* complete update */ 
-    if(refresh) {
-      pRoots.clear();
-      for(String name : names) 
-	pRoots.put(name, null);
-    }
-    
-    /* filter out unselected nodes */ 
-    else {
-      TreeMap<String,NodeStatus> roots = new TreeMap<String,NodeStatus>();
-      for(String name : pRoots.keySet()) {
-	if(names.contains(name))
-	  roots.put(name, pRoots.get(name));
-      }
-      pRoots = roots;
-    } 
+    pRoots.clear();
+    for(String name : names) 
+      pRoots.put(name, null);
     
     updateNodeBrowserSelection();
     updateNodeStatus(); 
@@ -623,6 +593,8 @@ class JNodeViewerPanel
   /**
    * Add the given node names to the root nodes displayed by the viewer. <P> 
    * 
+   * A full update is performed.
+   * 
    * @param names
    *   The fully resolved node names.
    */
@@ -631,15 +603,17 @@ class JNodeViewerPanel
   (
    TreeSet<String> names
   )
-  {
+  {    
     TreeSet<String> roots = new TreeSet<String>(pRoots.keySet());
     roots.addAll(names);
-    
+
     setRoots(roots);
   }
 
   /**
    * Remove the given node name from the root nodes displayed by the viewer. <P> 
+   * 
+   * The tree of nodes rooted at the given node is hidden but no update is performed.
    * 
    * @param name
    *   The fully resolved node name.
@@ -650,9 +624,29 @@ class JNodeViewerPanel
    String name
   )
   {
-    TreeSet<String> roots = new TreeSet<String>(pRoots.keySet());
-    roots.remove(name);
+    pRoots.remove(name);
+    
+    updateNodeBrowserSelection();
+    updateNodeStatus(); 
+  }
 
+  /**
+   * Remove the given node names from the root nodes displayed by the viewer. <P> 
+   * 
+   * A full update is performed.
+   * 
+   * @param names
+   *   The fully resolved node names.
+   */
+  private synchronized void
+  removeRoots
+  (
+   TreeSet<String> names
+  )
+  {
+    TreeSet<String> roots = new TreeSet<String>(pRoots.keySet());
+    roots.removeAll(names);
+    
     setRoots(roots);
   }
 
@@ -2150,6 +2144,10 @@ class JNodeViewerPanel
 		prefs.getShowHideDownstreamNodes().wasPressed(e))
 	doShowHideDownstream();
       
+      else if((prefs.getRemoveAllRoots() != null) &&
+	      prefs.getRemoveAllRoots().wasPressed(e))
+	doRemoveAllRoots();
+
       else
 	undefined = true;
     } 
@@ -2362,6 +2360,9 @@ class JNodeViewerPanel
     roots.add(prim);
 
     setRoots(roots);
+
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();
   }
 
   /**
@@ -2373,6 +2374,9 @@ class JNodeViewerPanel
     String prim = getPrimarySelectionName();
 
     addRoot(prim);
+
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();
   }
 
   /**
@@ -2389,6 +2393,9 @@ class JNodeViewerPanel
     roots.add(prim);
 
     setRoots(roots);
+
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();
   }
   
   /**
@@ -2399,6 +2406,9 @@ class JNodeViewerPanel
   {
     String root = getPrimarySelectionRootName();
     removeRoot(root);
+
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();
   }
 
   /**
@@ -3622,10 +3632,12 @@ class JNodeViewerPanel
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp("Linking Nodes...")) {
+	TreeSet<String> linked = new TreeSet<String>();
 	try {
 	  for(String source : pSources) {
 	    master.getMasterMgrClient().link(pAuthor, pView, pTarget, source, 
 					     pPolicy, pRelationship, pFrameOffset);
+	    linked.add(source);
 	  }
 	}
 	catch(PipelineException ex) {
@@ -3636,7 +3648,7 @@ class JNodeViewerPanel
 	  master.endPanelOp("Done.");
 	}
 
-	updateRoots();
+	removeRoots(linked);
       }
     }
     
@@ -3672,9 +3684,11 @@ class JNodeViewerPanel
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp("Unlinking Nodes...")) {
+	TreeSet<String> unlinked = new TreeSet<String>();
 	try {
 	  for(String source : pSources) {
 	    master.getMasterMgrClient().unlink(pAuthor, pView, pTarget, source);
+	    unlinked.add(source);
 	  }
 	}
 	catch(PipelineException ex) {
@@ -3685,7 +3699,7 @@ class JNodeViewerPanel
 	  master.endPanelOp("Done.");
 	}
 
-	updateRoots();
+	addRoots(unlinked);
       }
     }
     
