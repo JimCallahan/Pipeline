@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.36 2004/08/31 08:15:00 jim Exp $
+// $Id: JManagerPanel.java,v 1.37 2004/09/21 23:51:21 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -223,6 +223,11 @@ class JManagerPanel
       item.addActionListener(this);
       pPopup.add(item);  
 
+      item = new JMenuItem("Job Servers");
+      item.setActionCommand("manage-job-servers");
+      item.addActionListener(this);
+      pPopup.add(item);  
+
       {
 	JMenu sub = new JMenu("Admin");   
 	pPopup.add(sub);  
@@ -253,11 +258,6 @@ class JManagerPanel
 
 	item = new JMenuItem("Selection Keys...");
 	item.setActionCommand("manage-selection-keys");
-	item.addActionListener(this);
-	sub.add(item);  
-
-	item = new JMenuItem("Job Servers");
-	item.setActionCommand("manage-job-servers");
 	item.addActionListener(this);
 	sub.add(item);  
 
