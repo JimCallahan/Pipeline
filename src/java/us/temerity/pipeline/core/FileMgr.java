@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.18 2004/07/18 21:28:57 jim Exp $
+// $Id: FileMgr.java,v 1.19 2004/07/21 07:13:18 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -172,26 +172,8 @@ class FileMgr
   FileMgr
   (
    File dir
-  )
-  { 
-    init(dir);
-  }
-  
-
-  /*-- CONTRUCTION HELPERS -----------------------------------------------------------------*/
-
-  /**
-   * Initialize a new instance.
-   * 
-   * @param dir 
-   *   The root production directory.
-   */
-  private synchronized void 
-  init
-  (
-   File dir
-  )
-  { 
+  ) 
+  {
     pCheckedInLocks = new HashMap<String,ReentrantReadWriteLock>();
     pWorkingLocks   = new HashMap<NodeID,Object>();
     pMakeDirLock    = new Object();
