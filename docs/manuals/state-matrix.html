@@ -1,0 +1,442 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>State Matrix</title>
+</head>
+<body>
+<table
+ style="margin-left: auto; margin-right: auto; height: 810px; width: 690px; text-align: left;"
+ border="2" cellpadding="6" cellspacing="0">
+  <tbody>
+    <tr align="center">
+      <td colspan="7"
+ style="vertical-align: top; background-color: rgb(255, 255, 204);"><big><big><span
+ style="font-weight: bold;">Possible States</span></big></big><br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="font-weight: bold; background-color: rgb(153, 153, 153); height: 90px; text-align: center; vertical-align: middle; width: 110px;"><span
+ style="color: rgb(255, 255, 255);"></span><br>
+      </td>
+      <td
+ style="background-color: rgb(153, 153, 153); height: 90px; width: 90px; text-align: center; vertical-align: middle;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);">Undefined</span><br>
+      </td>
+      <td
+ style="background-color: rgb(153, 153, 153); height: 90px; width: 90px; text-align: center; vertical-align: middle;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);">Finished</span><br>
+      </td>
+      <td
+ style="background-color: rgb(153, 153, 153); height: 90px; width: 90px; text-align: center; vertical-align: middle;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);">Stale</span><br>
+      </td>
+      <td
+ style="background-color: rgb(153, 153, 153); height: 90px; width: 90px; text-align: center; vertical-align: middle;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);">Queued</span><br>
+      </td>
+      <td
+ style="background-color: rgb(153, 153, 153); height: 90px; width: 90px; text-align: center; vertical-align: middle;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);">Running</span><br>
+      </td>
+      <td
+ style="background-color: rgb(153, 153, 153); height: 90px; width: 90px; text-align: center; vertical-align: middle;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);">Failed</span><br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="font-weight: bold; color: rgb(255, 255, 255); background-color: rgb(153, 153, 153); height: 90px; text-align: center; vertical-align: middle; width: 110px;">Checked-In<br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span><img
+ alt="" src="../images/node-icons/CheckedIn-Undefined.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; height: 90px; width: 90px; background-color: rgb(102, 102, 102);"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span><br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; height: 90px; width: 90px; background-color: rgb(102, 102, 102);"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span><br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; height: 90px; width: 90px; background-color: rgb(102, 102, 102);"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span><br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; height: 90px; width: 90px; background-color: rgb(102, 102, 102);"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span><br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; height: 90px; width: 90px; background-color: rgb(102, 102, 102);"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span><br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="font-weight: bold; background-color: rgb(153, 153, 153); height: 90px; text-align: center; vertical-align: middle; width: 110px;"><span
+ style="color: rgb(255, 255, 255);">Pending</span><br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; height: 90px; width: 90px; background-color: rgb(102, 102, 102);"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span> <br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span><img
+ alt="" src="../images/node-icons/Pending-Finished.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span> <img
+ alt="" src="../images/node-icons/Pending-Stale.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span> <img
+ alt="" src="../images/node-icons/Pending-Queued.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span> <img
+ alt="" src="../images/node-icons/Pending-Running.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span> <img
+ alt="" src="../images/node-icons/Pending-Failed.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="font-weight: bold; background-color: rgb(153, 153, 153); height: 90px; text-align: center; vertical-align: middle; width: 110px;"><span
+ style="color: rgb(255, 255, 255);">Identical</span><br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; height: 90px; width: 90px; background-color: rgb(102, 102, 102);"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span> <br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span><img
+ alt="" src="../images/node-icons/Identical-Finished.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span> <img
+ alt="" src="../images/node-icons/Identical-Stale.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span> <img
+ alt="" src="../images/node-icons/Identical-Queued.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span> <img
+ alt="" src="../images/node-icons/Identical-Running.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span> <img
+ alt="" src="../images/node-icons/Identical-Failed.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="font-weight: bold; color: rgb(255, 255, 255); background-color: rgb(153, 153, 153); height: 90px; text-align: center; vertical-align: middle; width: 110px;">Modified
+      <br>
+Links<br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; height: 90px; width: 90px; background-color: rgb(102, 102, 102);"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span><img
+ alt="" src="../images/node-icons/ModifiedLinks-Finished.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span> <img
+ alt="" src="../images/node-icons/ModifiedLinks-Stale.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span> <img
+ alt="" src="../images/node-icons/ModifiedLinks-Queued.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span> <img
+ alt="" src="../images/node-icons/ModifiedLinks-Running.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span> <img
+ alt="" src="../images/node-icons/ModifiedLinks-Failed.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="font-weight: bold; color: rgb(255, 255, 255); background-color: rgb(153, 153, 153); height: 90px; text-align: center; vertical-align: middle; width: 110px;">Modified<br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; height: 90px; width: 90px; background-color: rgb(102, 102, 102);"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span><img
+ alt="" src="../images/node-icons/Modified-Finished.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span> <img
+ alt="" src="../images/node-icons/Modified-Stale.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span> <img
+ alt="" src="../images/node-icons/Modified-Queued.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span> <img
+ alt="" src="../images/node-icons/Modified-Running.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span> <img
+ alt="" src="../images/node-icons/Modified-Failed.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="font-weight: bold; color: rgb(255, 255, 255); background-color: rgb(153, 153, 153); height: 90px; text-align: center; vertical-align: middle; width: 110px;">Needs<br>
+Check-Out<br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; height: 90px; width: 90px; background-color: rgb(102, 102, 102);"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span><img
+ alt="" src="../images/node-icons/NeedsCheckOut-Finished.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span> <img
+ alt="" src="../images/node-icons/NeedsCheckOut-Stale.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span> <img
+ alt="" src="../images/node-icons/NeedsCheckOut-Queued.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span> <img
+ alt="" src="../images/node-icons/NeedsCheckOut-Running.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span> <img
+ alt="" src="../images/node-icons/NeedsCheckOut-Failed.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="font-weight: bold; color: rgb(255, 255, 255); background-color: rgb(153, 153, 153); height: 90px; text-align: center; vertical-align: middle; width: 110px;">Conflicted<br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; height: 90px; width: 90px; background-color: rgb(102, 102, 102);"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span><img
+ alt="" src="../images/node-icons/Conflicted-Finished.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span> <img
+ alt="" src="../images/node-icons/Conflicted-Stale.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span> <img
+ alt="" src="../images/node-icons/Conflicted-Queued.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span> <img
+ alt="" src="../images/node-icons/Conflicted-Running.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span> <img
+ alt="" src="../images/node-icons/Conflicted-Failed.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="font-weight: bold; color: rgb(255, 255, 255); background-color: rgb(153, 153, 153); height: 90px; text-align: center; vertical-align: middle; width: 110px;">Missing<br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; height: 90px; width: 90px; background-color: rgb(102, 102, 102);"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span><img
+ alt="" src="../images/node-icons/Missing-Finished.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span><img
+ alt="" src="../images/node-icons/Missing-Stale.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; height: 90px; width: 90px; background-color: rgb(102, 102, 102);"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span><br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; height: 90px; width: 90px; background-color: rgb(102, 102, 102);"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span><br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; height: 90px; width: 90px; background-color: rgb(102, 102, 102);"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span><br>
+      </td>
+    </tr>
+    <tr align="center">
+      <td colspan="7"
+ style="vertical-align: top; background-color: rgb(153, 153, 153);"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);">Per-File
+Specific States</span><br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="font-weight: bold; color: rgb(255, 255, 255); background-color: rgb(153, 153, 153); height: 90px; text-align: center; vertical-align: middle; width: 110px;">Added<br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; height: 90px; width: 90px; background-color: rgb(102, 102, 102);"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span><img
+ alt="" src="../images/node-icons/Added-Finished.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span><img
+ alt="" src="../images/node-icons/Added-Stale.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span> <img
+ alt="" src="../images/node-icons/Added-Queued.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span> <img
+ alt="" src="../images/node-icons/Added-Running.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span> <img
+ alt="" src="../images/node-icons/Added-Failed.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="font-weight: bold; color: rgb(255, 255, 255); background-color: rgb(153, 153, 153); height: 90px; text-align: center; vertical-align: middle; width: 110px;">Obsolete<br>
+      </td>
+      <td
+ style="text-align: center; vertical-align: middle; height: 90px; width: 90px; background-color: rgb(102, 102, 102);"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span><img
+ alt="" src="../images/node-icons/Obsolete-Finished.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span><img
+ alt="" src="../images/node-icons/Obsolete-Stale.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span> <img
+ alt="" src="../images/node-icons/Obsolete-Queued.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span> <img
+ alt="" src="../images/node-icons/Obsolete-Running.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+      <td
+ style="background-color: rgb(127, 127, 127); text-align: center; vertical-align: middle; height: 90px; width: 90px;"><span
+ style="font-weight: bold; color: rgb(255, 255, 255);"></span> <img
+ alt="" src="../images/node-icons/Obsolete-Failed.gif"
+ style="width: 64px; height: 64px;"><br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+</body>
+</html>
