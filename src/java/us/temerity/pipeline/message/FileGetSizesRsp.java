@@ -1,4 +1,4 @@
-// $Id: FileGetSizesRsp.java,v 1.2 2005/01/22 01:36:36 jim Exp $
+// $Id: FileGetSizesRsp.java,v 1.3 2005/01/22 06:10:09 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -7,7 +7,6 @@ import us.temerity.pipeline.core.*;
 
 import java.io.*;
 import java.util.*;
-import java.util.logging.Level;
 
 /*------------------------------------------------------------------------------------------*/
 /*   F I L E   G E T   S I Z E S   R S P                                                    */
@@ -48,8 +47,8 @@ class FileGetSizesRsp
     pSizes = sizes;
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Net, LogMgr.Level.Finest,
-"FileMgr.getSizes(): \n  " + getTimer());
+      (LogMgr.Kind.Net, LogMgr.Level.Finest,
+       "FileMgr.getSizes(): \n  " + getTimer());
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
       LogMgr.getInstance().flush();
   }

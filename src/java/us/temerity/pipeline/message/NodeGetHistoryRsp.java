@@ -1,4 +1,4 @@
-// $Id: NodeGetHistoryRsp.java,v 1.2 2005/01/22 01:36:36 jim Exp $
+// $Id: NodeGetHistoryRsp.java,v 1.3 2005/01/22 06:10:10 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -7,7 +7,6 @@ import us.temerity.pipeline.core.*;
 
 import java.io.*;
 import java.util.*;
-import java.util.logging.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   N O D E   G E T   C H E C K E D - I N   R S P                                          */
@@ -48,9 +47,9 @@ class NodeGetHistoryRsp
     pHistory = history;
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Net, LogMgr.Level.Finest,
-"MasterMgr.getHistory(): " + name + ":\n" + 
-		    "  " + getTimer());
+      (LogMgr.Kind.Net, LogMgr.Level.Finest,
+       "MasterMgr.getHistory(): " + name + ":\n" + 
+       "  " + getTimer());
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
       LogMgr.getInstance().flush();
   }

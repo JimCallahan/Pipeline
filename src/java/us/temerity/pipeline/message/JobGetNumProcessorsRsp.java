@@ -1,4 +1,4 @@
-// $Id: JobGetNumProcessorsRsp.java,v 1.2 2005/01/22 01:36:36 jim Exp $
+// $Id: JobGetNumProcessorsRsp.java,v 1.3 2005/01/22 06:10:09 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -7,7 +7,6 @@ import us.temerity.pipeline.core.*;
 
 import java.io.*;
 import java.util.*;
-import java.util.logging.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   J O B   N U M   P R O C E S S O R S   R S P                                            */
@@ -47,8 +46,8 @@ class JobGetNumProcessorsRsp
     pProcs = procs;
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Net, LogMgr.Level.Finest,
-"JobMgr.getProcessors():\n  " + getTimer());
+      (LogMgr.Kind.Net, LogMgr.Level.Finest,
+       "JobMgr.getProcessors():\n  " + getTimer());
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
       LogMgr.getInstance().flush();
   }

@@ -1,11 +1,10 @@
-// $Id: QueueJobInfo.java,v 1.7 2004/10/31 15:19:30 jim Exp $
+// $Id: QueueJobInfo.java,v 1.8 2005/01/22 06:10:09 jim Exp $
 
 package us.temerity.pipeline;
 
 import us.temerity.pipeline.glue.*;
 
 import java.util.*;
-import java.util.logging.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: CheckSum.java,v 1.6 2005/01/22 01:36:35 jim Exp $
+// $Id: CheckSum.java,v 1.7 2005/01/22 06:10:09 jim Exp $
 
 package us.temerity.pipeline.core;
  
@@ -7,7 +7,6 @@ import us.temerity.pipeline.*;
 import java.lang.*;
 import java.security.*;
 import java.util.*;
-import java.util.logging.*;
 import java.io.*;
 import java.nio.*;
 import java.nio.channels.*;

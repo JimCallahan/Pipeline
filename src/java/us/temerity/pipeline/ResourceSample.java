@@ -1,11 +1,10 @@
-// $Id: ResourceSample.java,v 1.4 2005/01/21 17:26:21 jim Exp $
+// $Id: ResourceSample.java,v 1.5 2005/01/22 06:10:09 jim Exp $
 
 package us.temerity.pipeline;
 
 import us.temerity.pipeline.glue.*;
 
 import java.util.*;
-import java.util.logging.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/

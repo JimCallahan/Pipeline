@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.85 2005/01/22 01:36:35 jim Exp $
+// $Id: MasterMgr.java,v 1.86 2005/01/22 06:10:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -13,7 +13,6 @@ import java.util.*;
 import java.util.regex.*;
 import java.util.concurrent.locks.*;
 import java.util.concurrent.atomic.*;
-import java.util.logging.Level;
 
 /*------------------------------------------------------------------------------------------*/
 /*   N O D E   M G R                                                                        */

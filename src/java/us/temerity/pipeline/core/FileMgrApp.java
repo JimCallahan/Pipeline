@@ -1,4 +1,4 @@
-// $Id: FileMgrApp.java,v 1.13 2005/01/22 01:36:35 jim Exp $
+// $Id: FileMgrApp.java,v 1.14 2005/01/22 06:10:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -7,7 +7,6 @@ import us.temerity.pipeline.*;
 import java.io.*; 
 import java.net.*; 
 import java.util.*;
-import java.util.logging.*;
 import java.text.*;
 
 /*------------------------------------------------------------------------------------------*/

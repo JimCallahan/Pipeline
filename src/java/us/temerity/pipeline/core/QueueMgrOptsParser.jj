@@ -11,7 +11,6 @@ import us.temerity.pipeline.*;
 import java.util.*;
 import java.text.*;
 import java.io.*;
-import java.util.logging.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   M G R   O P T S   P A R S E R                                              */
@@ -540,7 +539,7 @@ LogMgr.Level LogLevel() :
 
 LogMgr.Level SevereLevel() :
 {
-  Level v;
+  LogMgr.Level v;
 }
 {
   <SEVERE> 
@@ -551,7 +550,7 @@ LogMgr.Level SevereLevel() :
 
 LogMgr.Level WarningLevel() :
 {
-  Level v;
+  LogMgr.Level v;
 }
 {
   <WARNING> 
@@ -562,7 +561,7 @@ LogMgr.Level WarningLevel() :
 
 LogMgr.Level InfoLevel() :
 {
-  Level v;
+  LogMgr.Level v;
 }
 {
   <INFO> 
@@ -573,7 +572,7 @@ LogMgr.Level InfoLevel() :
 
 LogMgr.Level FineLevel() :
 {
-  Level v;
+  LogMgr.Level v;
 }
 {
   <FINE> 
@@ -584,7 +583,7 @@ LogMgr.Level FineLevel() :
 
 LogMgr.Level FinerLevel() :
 {
-  Level v;
+  LogMgr.Level v;
 }
 {
   <FINER> 
@@ -595,7 +594,7 @@ LogMgr.Level FinerLevel() :
 
 LogMgr.Level FinestLevel() :
 {
-  Level v;
+  LogMgr.Level v;
 }
 {
   <FINEST> 

@@ -1,9 +1,8 @@
-// $Id: BaseSubProcess.java,v 1.3 2005/01/22 01:36:35 jim Exp $
+// $Id: BaseSubProcess.java,v 1.4 2005/01/22 06:10:09 jim Exp $
 
 package us.temerity.pipeline;
 
 import java.util.*;
-import java.util.logging.*;
 import java.util.concurrent.atomic.*;
 import java.io.*;
 
@@ -391,10 +390,10 @@ class BaseSubProcess
 	} 
 	catch(InterruptedException ex) {
 	  LogMgr.getInstance().log
-(LogMgr.Kind.Sub, LogMgr.Level.Severe,
-"Interrupted while trying to send signal (" + signal + ") " + 
-			  "to process [" + dpid + "] using plrun(1):\n" +
-			  "  " + ex.getMessage());
+	    (LogMgr.Kind.Sub, LogMgr.Level.Severe,
+	     "Interrupted while trying to send signal (" + signal + ") " + 
+	     "to process [" + dpid + "] using plrun(1):\n" +
+	     "  " + ex.getMessage());
 	}
 	wasSignalled = true;
       }
@@ -405,18 +404,17 @@ class BaseSubProcess
 	}
 	catch(IOException ex) {
 	  LogMgr.getInstance().log
-(LogMgr.Kind.Sub, LogMgr.Level.Warning,
-
-            "Unable to send signal (" + signal + ") to process [" + dpid + "]: " +
-	    ex.getMessage());
+	    (LogMgr.Kind.Sub, LogMgr.Level.Warning,
+	     "Unable to send signal (" + signal + ") to process [" + dpid + "]: " +
+	     ex.getMessage());
 	}
       }
       
       /* log it... */ 
       if(wasSignalled) 
 	LogMgr.getInstance().log
-(LogMgr.Kind.Sub, LogMgr.Level.Fine,
-"Sent signal (" + signal + ") to process [" + dpid + "].");
+	  (LogMgr.Kind.Sub, LogMgr.Level.Fine,
+	   "Sent signal (" + signal + ") to process [" + dpid + "].");
     }
   }
   

@@ -1,4 +1,4 @@
-// $Id: TestPluginsApp.java,v 1.13 2005/01/22 01:36:36 jim Exp $
+// $Id: TestPluginsApp.java,v 1.14 2005/01/22 06:10:10 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
@@ -6,7 +6,6 @@ import us.temerity.pipeline.core.*;
 
 import java.io.*; 
 import java.util.*; 
-import java.util.logging.*; 
 
 /*------------------------------------------------------------------------------------------*/
 /*   T E S T   o f   P L U G I N S                                                          */

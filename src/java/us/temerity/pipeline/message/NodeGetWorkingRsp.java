@@ -1,4 +1,4 @@
-// $Id: NodeGetWorkingRsp.java,v 1.7 2005/01/22 01:36:36 jim Exp $
+// $Id: NodeGetWorkingRsp.java,v 1.8 2005/01/22 06:10:10 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -7,7 +7,6 @@ import us.temerity.pipeline.core.*;
 
 import java.io.*;
 import java.util.*;
-import java.util.logging.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   N O D E   G E T   W O R K I N G   R S P                                                */
@@ -55,8 +54,8 @@ class NodeGetWorkingRsp
     pNodeMod = mod;
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Net, LogMgr.Level.Finest,
-"MasterMgr.getWorkingVersion(): " + id + ":\n  " + getTimer());
+      (LogMgr.Kind.Net, LogMgr.Level.Finest,
+       "MasterMgr.getWorkingVersion(): " + id + ":\n  " + getTimer());
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
       LogMgr.getInstance().flush();
   }

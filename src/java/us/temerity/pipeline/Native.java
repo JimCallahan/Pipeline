@@ -1,4 +1,4 @@
-// $Id: Native.java,v 1.5 2005/01/22 01:36:35 jim Exp $
+// $Id: Native.java,v 1.6 2005/01/22 06:10:09 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -34,8 +34,8 @@ class Native
       String path = (PackageInfo.sInstDir + "/lib/" + lib);
 
       LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Fine,
-"Loading Native Library: " + path);
+	(LogMgr.Kind.Ops, LogMgr.Level.Fine,
+	 "Loading Native Library: " + path);
       System.load(path);
             
       sIsLibraryLoaded = true;

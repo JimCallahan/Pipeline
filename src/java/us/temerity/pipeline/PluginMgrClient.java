@@ -1,4 +1,4 @@
-// $Id: PluginMgrClient.java,v 1.2 2005/01/15 15:06:24 jim Exp $
+// $Id: PluginMgrClient.java,v 1.3 2005/01/22 06:10:09 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -10,7 +10,6 @@ import java.io.*;
 import java.nio.*;
 import java.nio.channels.*;
 import java.util.*;
-import java.util.logging.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   P L U G I N   M G R   C L I E N T                                                      */

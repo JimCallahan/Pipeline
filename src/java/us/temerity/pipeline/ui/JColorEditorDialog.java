@@ -1,4 +1,4 @@
-// $Id: JColorEditorDialog.java,v 1.8 2005/01/22 01:36:36 jim Exp $
+// $Id: JColorEditorDialog.java,v 1.9 2005/01/22 06:10:10 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -740,8 +740,8 @@ class JColorEditorDialog
     /* build the texture object */    
     String name = "ColorCircle";
     LogMgr.getInstance().log
-(LogMgr.Kind.Tex, LogMgr.Level.Fine,
-"Loading Texture: " + name);
+      (LogMgr.Kind.Tex, LogMgr.Level.Fine,
+       "Loading Texture: " + name);
     try {
       int handle[] = new int[1];
       gl.glGenTextures(1, handle); 
@@ -751,8 +751,8 @@ class JColorEditorDialog
       int level, size; 
       for(level=0, size=sMaxTexRes; size>=1; level++, size/=2) {
 	LogMgr.getInstance().log
-(LogMgr.Kind.Tex, LogMgr.Level.Finer,
-"Loading MipMap: " + size + "x" + size);
+	  (LogMgr.Kind.Tex, LogMgr.Level.Finer,
+	   "Loading MipMap: " + size + "x" + size);
 	LogMgr.getInstance().flush();
 
 	String path = ("textures/" + name + "/texture." + size + ".png");
@@ -793,8 +793,8 @@ class JColorEditorDialog
     }
     catch(Exception ex) {
       LogMgr.getInstance().log
-(LogMgr.Kind.Tex, LogMgr.Level.Severe,
-ex.getMessage());
+	(LogMgr.Kind.Tex, LogMgr.Level.Severe,
+	 ex.getMessage());
     }
   }
 

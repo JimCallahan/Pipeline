@@ -1,4 +1,4 @@
-// $Id: NodeGetCheckedInVersionIDsRsp.java,v 1.1 2004/10/09 16:54:40 jim Exp $
+// $Id: NodeGetCheckedInVersionIDsRsp.java,v 1.2 2005/01/22 06:10:10 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -7,7 +7,6 @@ import us.temerity.pipeline.core.*;
 
 import java.io.*;
 import java.util.*;
-import java.util.logging.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   N O D E   G E T   C H E C K E D - I N   V E R S I O N   I D S   R S P                  */

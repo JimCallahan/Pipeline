@@ -1,9 +1,8 @@
-// $Id: GenUserPrefsApp.java,v 1.8 2005/01/21 17:25:21 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.9 2005/01/22 06:10:10 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
 import java.util.*;
-import java.util.logging.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   G E N   U S E R   P R E F S   A P P                                                    */
@@ -1489,7 +1488,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.8 2005/01/21 17:25:21 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.9 2005/01/22 06:10:10 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -1744,7 +1743,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.8 2005/01/21 17:25:21 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.9 2005/01/22 06:10:10 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3100,7 +3099,7 @@ class GenUserPrefsApp
 
       StringBuffer buf = new StringBuffer();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.8 2005/01/21 17:25:21 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.9 2005/01/22 06:10:10 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

@@ -1,11 +1,10 @@
-// $Id: TestSubProcessApp.java,v 1.6 2005/01/22 01:36:36 jim Exp $
+// $Id: TestSubProcessApp.java,v 1.7 2005/01/22 06:10:10 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
 
 import java.io.*; 
 import java.util.*; 
-import java.util.logging.*; 
 
 /*------------------------------------------------------------------------------------------*/
 /*   T E S T   o f   S U B P R O C E S S                                                    */

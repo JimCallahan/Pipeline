@@ -1,11 +1,10 @@
-// $Id: QueueHost.java,v 1.10 2005/01/22 01:36:35 jim Exp $
+// $Id: QueueHost.java,v 1.11 2005/01/22 06:10:09 jim Exp $
 
 package us.temerity.pipeline;
 
 import us.temerity.pipeline.glue.*;
 
 import java.util.*;
-import java.util.logging.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -434,8 +433,8 @@ class QueueHost
   {
     pNumJobsDelta++;
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Finest,
-"Job Started - Delta = " + pNumJobsDelta);
+      (LogMgr.Kind.Ops, LogMgr.Level.Finest,
+       "Job Started - Delta = " + pNumJobsDelta);
   }
 
   /**
@@ -459,8 +458,8 @@ class QueueHost
       pNumJobsDelta--;
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Finest,
-"Job Finished - Delta = " + pNumJobsDelta);
+      (LogMgr.Kind.Ops, LogMgr.Level.Finest,
+       "Job Finished - Delta = " + pNumJobsDelta);
   }
 
   
@@ -594,12 +593,12 @@ class QueueHost
       return null;
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Finest,
-"Dispatcher - " + 
-		    "Jobs = " + sample.getNumJobs() + "  " + 
-		    "Delta = " + pNumJobsDelta + "  " + 
-		    "Total = " + (sample.getNumJobs() + pNumJobsDelta) + "  " +
-		    "Slots = " + pJobSlots);
+      (LogMgr.Kind.Ops, LogMgr.Level.Finest,
+       "Dispatcher - " + 
+       "Jobs = " + sample.getNumJobs() + "  " + 
+       "Delta = " + pNumJobsDelta + "  " + 
+       "Total = " + (sample.getNumJobs() + pNumJobsDelta) + "  " +
+       "Slots = " + pJobSlots);
 
     int total = 0;
     for(String key : jreqs.getSelectionKeys()) {

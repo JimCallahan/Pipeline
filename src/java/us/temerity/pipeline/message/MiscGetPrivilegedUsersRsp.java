@@ -1,4 +1,4 @@
-// $Id: MiscGetPrivilegedUsersRsp.java,v 1.5 2005/01/22 01:36:36 jim Exp $
+// $Id: MiscGetPrivilegedUsersRsp.java,v 1.6 2005/01/22 06:10:09 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -7,7 +7,6 @@ import us.temerity.pipeline.core.*;
 
 import java.io.*;
 import java.util.*;
-import java.util.logging.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M I S C   G E T   P R I V I L E G E D   U S E R S   R S P                              */
@@ -47,8 +46,8 @@ class MiscGetPrivilegedUsersRsp
     pUsers = users;
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Net, LogMgr.Level.Finest,
-getTimer().toString());
+      (LogMgr.Kind.Net, LogMgr.Level.Finest,
+       getTimer().toString());
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
       LogMgr.getInstance().flush();
   }

@@ -1,4 +1,4 @@
-// $Id: SuffixEditor.java,v 1.1 2004/06/08 03:06:36 jim Exp $
+// $Id: SuffixEditor.java,v 1.2 2005/01/22 06:10:09 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -6,7 +6,6 @@ import us.temerity.pipeline.glue.*;
 
 import java.io.*;
 import java.util.*;
-import java.util.logging.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   S U F F I X   E D I T O R                                                              */

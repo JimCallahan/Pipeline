@@ -1,10 +1,9 @@
-// $Id: PluginInputStream.java,v 1.2 2005/01/22 01:36:35 jim Exp $
+// $Id: PluginInputStream.java,v 1.3 2005/01/22 06:10:09 jim Exp $
 
 package us.temerity.pipeline;
 
 import java.lang.*;
 import java.util.*;
-import java.util.logging.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -65,8 +64,8 @@ class PluginInputStream
       }
       catch(PipelineException ex) {
 	LogMgr.getInstance().log
-(LogMgr.Kind.Plg, LogMgr.Level.Warning,
-ex.getMessage());
+	  (LogMgr.Kind.Plg, LogMgr.Level.Warning,
+	   ex.getMessage());
       }
     }
 

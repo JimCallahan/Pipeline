@@ -1,4 +1,4 @@
-// $Id: BaseArchiver.java,v 1.3 2005/01/22 01:36:35 jim Exp $
+// $Id: BaseArchiver.java,v 1.4 2005/01/22 06:10:09 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -272,8 +272,8 @@ class BaseArchiver
 	}
 	catch(IllegalArgumentException ex) {
 	  LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Warning,
-ex.getMessage());
+	    (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+	     ex.getMessage());
 	}
       }
     }

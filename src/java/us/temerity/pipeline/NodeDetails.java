@@ -1,9 +1,8 @@
-// $Id: NodeDetails.java,v 1.13 2004/12/04 21:11:32 jim Exp $
+// $Id: NodeDetails.java,v 1.14 2005/01/22 06:10:09 jim Exp $
 
 package us.temerity.pipeline;
 
 import java.util.*;
-import java.util.logging.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: QueueGetRunningJobInfoRsp.java,v 1.2 2005/01/22 01:36:36 jim Exp $
+// $Id: QueueGetRunningJobInfoRsp.java,v 1.3 2005/01/22 06:10:10 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -7,7 +7,6 @@ import us.temerity.pipeline.core.*;
 
 import java.io.*;
 import java.util.*;
-import java.util.logging.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   G E T   R U N N I N G   J O B   I N F O   R S P                            */
@@ -47,8 +46,8 @@ class QueueGetRunningJobInfoRsp
     pJobInfo = jobInfo;
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Net, LogMgr.Level.Finest,
-"QueueMgr.getRunningJobInfo():\n  " + getTimer());
+      (LogMgr.Kind.Net, LogMgr.Level.Finest,
+       "QueueMgr.getRunningJobInfo():\n  " + getTimer());
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
       LogMgr.getInstance().flush();
   }

@@ -1,9 +1,8 @@
-// $Id: JobStatus.java,v 1.1 2004/08/26 06:05:15 jim Exp $
+// $Id: JobStatus.java,v 1.2 2005/01/22 06:10:09 jim Exp $
 
 package us.temerity.pipeline;
 
 import java.util.*;
-import java.util.logging.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/

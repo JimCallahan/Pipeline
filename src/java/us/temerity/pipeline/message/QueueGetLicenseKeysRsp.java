@@ -1,4 +1,4 @@
-// $Id: QueueGetLicenseKeysRsp.java,v 1.3 2005/01/22 01:36:36 jim Exp $
+// $Id: QueueGetLicenseKeysRsp.java,v 1.4 2005/01/22 06:10:10 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -7,7 +7,6 @@ import us.temerity.pipeline.core.*;
 
 import java.io.*;
 import java.util.*;
-import java.util.logging.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   G E T   L I C E N S E   K E Y S   R S P                                    */
@@ -47,8 +46,8 @@ class QueueGetLicenseKeysRsp
     pKeys = keys;
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Net, LogMgr.Level.Finest,
-"QueueMgr.getLicenseKeys():\n  " + getTimer());
+      (LogMgr.Kind.Net, LogMgr.Level.Finest,
+       "QueueMgr.getLicenseKeys():\n  " + getTimer());
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
       LogMgr.getInstance().flush();
   }

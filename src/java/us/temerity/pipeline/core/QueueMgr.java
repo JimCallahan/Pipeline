@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.28 2005/01/22 01:36:35 jim Exp $
+// $Id: QueueMgr.java,v 1.29 2005/01/22 06:10:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -11,7 +11,6 @@ import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
-import java.util.logging.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   M G R                                                                      */

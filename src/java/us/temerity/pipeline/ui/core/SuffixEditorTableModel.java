@@ -1,4 +1,4 @@
-// $Id: SuffixEditorTableModel.java,v 1.3 2005/01/22 01:36:36 jim Exp $
+// $Id: SuffixEditorTableModel.java,v 1.4 2005/01/22 06:10:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -86,8 +86,8 @@ class SuffixEditorTableModel
 	  } 
 	  catch(PipelineException ex) {
 	    LogMgr.getInstance().log
-(LogMgr.Kind.Plg, LogMgr.Level.Warning,
-ex.getMessage());
+	      (LogMgr.Kind.Plg, LogMgr.Level.Warning,
+	       ex.getMessage());
 	  }
 
 	  ArrayList<String> values = new ArrayList<String>(pclient.getEditors().keySet());

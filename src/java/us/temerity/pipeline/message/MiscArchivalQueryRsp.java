@@ -1,4 +1,4 @@
-// $Id: MiscArchivalQueryRsp.java,v 1.2 2005/01/22 01:36:36 jim Exp $
+// $Id: MiscArchivalQueryRsp.java,v 1.3 2005/01/22 06:10:09 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -8,7 +8,6 @@ import us.temerity.pipeline.toolset.*;
 
 import java.io.*;
 import java.util.*;
-import java.util.logging.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M I S C   A R C H I V A L   Q U E R Y   R S P                                          */
@@ -50,8 +49,8 @@ class MiscArchivalQueryRsp
     pInfo = info;
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Net, LogMgr.Level.Finest,
-"MasterMgr.archivalQuery()\n  " + getTimer());
+      (LogMgr.Kind.Net, LogMgr.Level.Finest,
+       "MasterMgr.archivalQuery()\n  " + getTimer());
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
       LogMgr.getInstance().flush();
   }

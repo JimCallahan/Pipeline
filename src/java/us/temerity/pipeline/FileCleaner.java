@@ -1,4 +1,4 @@
-// $Id: FileCleaner.java,v 1.5 2005/01/22 01:36:35 jim Exp $
+// $Id: FileCleaner.java,v 1.6 2005/01/22 06:10:09 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -44,8 +44,8 @@ class FileCleaner
   {
     FileCleaner cleaner = new FileCleaner();
     LogMgr.getInstance().log
-(LogMgr.Kind.Sub, LogMgr.Level.Finer,
-"File Cleaner Initialized.");
+      (LogMgr.Kind.Sub, LogMgr.Level.Finer,
+       "File Cleaner Initialized.");
   }
 
 
@@ -73,8 +73,8 @@ class FileCleaner
     synchronized(sFiles) {
       sFiles.add(file);
       LogMgr.getInstance().log
-(LogMgr.Kind.Sub, LogMgr.Level.Finer,
-"Scheduled Cleanup of: " + file);
+	(LogMgr.Kind.Sub, LogMgr.Level.Finer,
+	 "Scheduled Cleanup of: " + file);
     }
   }
 
@@ -101,8 +101,8 @@ class FileCleaner
 	for(File file : sFiles) {
 	  if(file.exists()) {
 	    LogMgr.getInstance().log
-(LogMgr.Kind.Sub, LogMgr.Level.Finer,
-"Cleaning: " + file);
+	      (LogMgr.Kind.Sub, LogMgr.Level.Finer,
+	       "Cleaning: " + file);
 	    file.delete();
 	  }
 	}

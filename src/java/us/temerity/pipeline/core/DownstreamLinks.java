@@ -1,4 +1,4 @@
-// $Id: DownstreamLinks.java,v 1.9 2005/01/03 00:05:31 jim Exp $
+// $Id: DownstreamLinks.java,v 1.10 2005/01/22 06:10:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6,7 +6,6 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
 
 import java.util.*;
-import java.util.logging.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/

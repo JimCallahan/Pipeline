@@ -1,4 +1,4 @@
-// $Id: JobWaitRsp.java,v 1.4 2005/01/22 01:36:36 jim Exp $
+// $Id: JobWaitRsp.java,v 1.5 2005/01/22 06:10:09 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -8,7 +8,6 @@ import us.temerity.pipeline.toolset.*;
 
 import java.io.*;
 import java.util.*;
-import java.util.logging.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   J O B   W A I T   R S P                                                                */
@@ -53,8 +52,8 @@ class JobWaitRsp
     pResults = results; 
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Net, LogMgr.Level.Finest,
-"JobMgr.wait(): " + jobID + "\n  " + getTimer());
+      (LogMgr.Kind.Net, LogMgr.Level.Finest,
+       "JobMgr.wait(): " + jobID + "\n  " + getTimer());
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
       LogMgr.getInstance().flush();
   }

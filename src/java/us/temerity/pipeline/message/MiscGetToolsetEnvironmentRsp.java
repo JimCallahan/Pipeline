@@ -1,4 +1,4 @@
-// $Id: MiscGetToolsetEnvironmentRsp.java,v 1.3 2005/01/22 01:36:36 jim Exp $
+// $Id: MiscGetToolsetEnvironmentRsp.java,v 1.4 2005/01/22 06:10:10 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -8,7 +8,6 @@ import us.temerity.pipeline.toolset.*;
 
 import java.io.*;
 import java.util.*;
-import java.util.logging.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M I S C   G E T   T O O L S E T   E N V I R O N M E N T   R S P                        */
@@ -50,9 +49,9 @@ class MiscGetToolsetEnvironmentRsp
     pEnvironment = env;
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Net, LogMgr.Level.Finest,
-"MasterMgr.getToolsetEnvironment(): " + name + "\n" + 
-		    "  " + getTimer());
+      (LogMgr.Kind.Net, LogMgr.Level.Finest,
+       "MasterMgr.getToolsetEnvironment(): " + name + "\n" + 
+       "  " + getTimer());
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
       LogMgr.getInstance().flush();
   }

@@ -1,4 +1,4 @@
-// $Id: TestFileMgrApp.java,v 1.16 2005/01/22 01:36:36 jim Exp $
+// $Id: TestFileMgrApp.java,v 1.17 2005/01/22 06:10:10 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -6,7 +6,6 @@ import us.temerity.pipeline.message.*;
 
 import java.io.*; 
 import java.util.*; 
-import java.util.logging.*; 
 
 /*------------------------------------------------------------------------------------------*/
 /*   T E S T   o f   F I L E   M G R                                                        */

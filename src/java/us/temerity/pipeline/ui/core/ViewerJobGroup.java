@@ -1,4 +1,4 @@
-// $Id: ViewerJobGroup.java,v 1.2 2005/01/22 01:36:36 jim Exp $
+// $Id: ViewerJobGroup.java,v 1.3 2005/01/22 06:10:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -205,8 +205,8 @@ class ViewerJobGroup
     }
     catch(IOException ex) {
       LogMgr.getInstance().log
-(LogMgr.Kind.Tex, LogMgr.Level.Severe,
-ex.getMessage());
+	(LogMgr.Kind.Tex, LogMgr.Level.Severe,
+	 ex.getMessage());
     }
   }
 

@@ -1,11 +1,10 @@
-// $Id: FileSeq.java,v 1.16 2005/01/22 01:36:35 jim Exp $
+// $Id: FileSeq.java,v 1.17 2005/01/22 06:10:09 jim Exp $
 
 package us.temerity.pipeline;
 
 import us.temerity.pipeline.glue.*;
 
 import java.util.*;
-import java.util.logging.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -357,8 +356,8 @@ class FileSeq
 	full = new File(dir, file.getPath());
 	if(full.isFile()) {
 	  LogMgr.getInstance().log
-(LogMgr.Kind.Sub, LogMgr.Level.Finest,
-"Deleting file: " + full);
+	    (LogMgr.Kind.Sub, LogMgr.Level.Finest,
+	     "Deleting file: " + full);
 	  full.delete();
 	}
       }
@@ -394,8 +393,8 @@ class FileSeq
 	full = new File(dir, file.getPath());
 	if(full.isFile()) {
 	  LogMgr.getInstance().log
-(LogMgr.Kind.Sub, LogMgr.Level.Finest,
-"Making file read-only: " + full);
+	    (LogMgr.Kind.Sub, LogMgr.Level.Finest,
+	     "Making file read-only: " + full);
 	  full.setReadOnly();
 	}
       }

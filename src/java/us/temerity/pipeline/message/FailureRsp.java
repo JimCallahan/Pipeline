@@ -1,11 +1,9 @@
-// $Id: FailureRsp.java,v 1.8 2005/01/22 01:36:36 jim Exp $
+// $Id: FailureRsp.java,v 1.9 2005/01/22 06:10:09 jim Exp $
 
 package us.temerity.pipeline.message;
 
 import us.temerity.pipeline.*; 
 import us.temerity.pipeline.core.*; 
-
-import java.util.logging.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   F A I L U R E   R S P                                                                  */
@@ -45,8 +43,8 @@ class FailureRsp
     pMsg = msg;
   
     LogMgr.getInstance().log
-(LogMgr.Kind.Net, LogMgr.Level.Finest,
-getTimer().toString());
+      (LogMgr.Kind.Net, LogMgr.Level.Finest,
+       getTimer().toString());
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
       LogMgr.getInstance().flush();
   }

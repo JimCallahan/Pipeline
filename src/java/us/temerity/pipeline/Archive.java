@@ -1,11 +1,10 @@
-// $Id: Archive.java,v 1.2 2005/01/15 02:56:32 jim Exp $
+// $Id: Archive.java,v 1.3 2005/01/22 06:10:09 jim Exp $
 
 package us.temerity.pipeline;
 
 import us.temerity.pipeline.glue.*;
 
 import java.util.*;
-import java.util.logging.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/

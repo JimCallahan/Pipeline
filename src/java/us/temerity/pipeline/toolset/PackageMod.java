@@ -1,4 +1,4 @@
-// $Id: PackageMod.java,v 1.7 2005/01/22 01:36:36 jim Exp $
+// $Id: PackageMod.java,v 1.8 2005/01/22 06:10:10 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -238,8 +238,8 @@ class PackageMod
       }
       catch(InterruptedException ex) {
 	LogMgr.getInstance().log
-(LogMgr.Kind.Sub, LogMgr.Level.Severe,
-ex.getMessage());
+	  (LogMgr.Kind.Sub, LogMgr.Level.Severe,
+	   ex.getMessage());
       }
     
       if(!proc.wasSuccessful()) 

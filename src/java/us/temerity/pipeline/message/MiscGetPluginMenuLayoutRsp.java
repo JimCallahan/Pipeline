@@ -1,4 +1,4 @@
-// $Id: MiscGetPluginMenuLayoutRsp.java,v 1.2 2005/01/22 01:36:36 jim Exp $
+// $Id: MiscGetPluginMenuLayoutRsp.java,v 1.3 2005/01/22 06:10:09 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -7,7 +7,6 @@ import us.temerity.pipeline.core.*;
 
 import java.io.*;
 import java.util.*;
-import java.util.logging.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M I S C   G E T   P L U G I N   M E N U   L A Y O U T   R S P                          */
@@ -47,8 +46,8 @@ class MiscGetPluginMenuLayoutRsp
     pLayout = layout;
     
     LogMgr.getInstance().log
-(LogMgr.Kind.Net, LogMgr.Level.Finest,
-getTimer().toString());
+      (LogMgr.Kind.Net, LogMgr.Level.Finest,
+       getTimer().toString());
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
       LogMgr.getInstance().flush();
   }

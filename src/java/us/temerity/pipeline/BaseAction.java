@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.26 2005/01/22 01:36:35 jim Exp $
+// $Id: BaseAction.java,v 1.27 2005/01/22 06:10:09 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -276,8 +276,8 @@ class BaseAction
 	}
 	catch(IllegalArgumentException ex) {
 	  LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Warning,
-ex.getMessage());
+	    (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+	     ex.getMessage());
 	}
       }
     }
@@ -530,8 +530,8 @@ ex.getMessage());
 	    }
 	    catch(IllegalArgumentException ex) {
 	      LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Warning,
-ex.getMessage());
+		(LogMgr.Kind.Ops, LogMgr.Level.Warning,
+		 ex.getMessage());
 	    }
 	  }
 	}

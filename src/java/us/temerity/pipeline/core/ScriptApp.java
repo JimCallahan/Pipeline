@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.29 2005/01/22 01:36:35 jim Exp $
+// $Id: ScriptApp.java,v 1.30 2005/01/22 06:10:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -8,7 +8,6 @@ import us.temerity.pipeline.toolset.*;
 import java.io.*; 
 import java.net.*; 
 import java.util.*;
-import java.util.logging.*;
 import java.text.*;
 
 /*------------------------------------------------------------------------------------------*/

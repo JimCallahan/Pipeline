@@ -1,4 +1,4 @@
-// $Id: FileStateRsp.java,v 1.12 2005/01/22 01:36:36 jim Exp $
+// $Id: FileStateRsp.java,v 1.13 2005/01/22 06:10:09 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -7,7 +7,6 @@ import us.temerity.pipeline.core.*;
 
 import java.io.*;
 import java.util.*;
-import java.util.logging.Level;
 
 /*------------------------------------------------------------------------------------------*/
 /*   F I L E   S T A T E   R S P                                                            */
@@ -73,8 +72,8 @@ class FileStateRsp
       for(FileSeq fseq : states.keySet()) 
 	buf.append("[" + fseq + "]");
       LogMgr.getInstance().log
-(LogMgr.Kind.Net, LogMgr.Level.Finest,
-buf.toString() + ":\n  " + getTimer());
+	(LogMgr.Kind.Net, LogMgr.Level.Finest,
+	 buf.toString() + ":\n  " + getTimer());
       LogMgr.getInstance().flush();
     }
   }

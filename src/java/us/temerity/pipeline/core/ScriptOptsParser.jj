@@ -12,7 +12,6 @@ import us.temerity.pipeline.ui.*;
 import java.util.*;
 import java.text.*;
 import java.io.*;
-import java.util.logging.*;
 import javax.swing.*;        
 
 /*------------------------------------------------------------------------------------------*/
@@ -1831,7 +1830,7 @@ LogMgr.Level LogLevel() :
 
 LogMgr.Level SevereLevel() :
 {
-  Level v;
+  LogMgr.Level v;
 }
 {
   <SEVERE> 
@@ -1842,7 +1841,7 @@ LogMgr.Level SevereLevel() :
 
 LogMgr.Level WarningLevel() :
 {
-  Level v;
+  LogMgr.Level v;
 }
 {
   <WARNING> 
@@ -1853,7 +1852,7 @@ LogMgr.Level WarningLevel() :
 
 LogMgr.Level InfoLevel() :
 {
-  Level v;
+  LogMgr.Level v;
 }
 {
   <INFO> 
@@ -1864,7 +1863,7 @@ LogMgr.Level InfoLevel() :
 
 LogMgr.Level FineLevel() :
 {
-  Level v;
+  LogMgr.Level v;
 }
 {
   <FINE> 
@@ -1875,7 +1874,7 @@ LogMgr.Level FineLevel() :
 
 LogMgr.Level FinerLevel() :
 {
-  Level v;
+  LogMgr.Level v;
 }
 {
   <FINER> 
@@ -1886,7 +1885,7 @@ LogMgr.Level FinerLevel() :
 
 LogMgr.Level FinestLevel() :
 {
-  Level v;
+  LogMgr.Level v;
 }
 {
   <FINEST> 
@@ -1920,8 +1919,8 @@ PrivilegedGet()
     while(iter.hasNext()) {
       String user = (String) iter.next();
       LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-user);
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
+	 user);
     }
     LogMgr.getInstance().flush();
   }
@@ -1938,8 +1937,8 @@ PrivilegedGrant()
   {
     pMasterMgrClient.grantPrivileges(user);
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-"Granted privilged status to (" + user + ").");
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Granted privilged status to (" + user + ").");
     LogMgr.getInstance().flush();
   }
 }
@@ -1955,8 +1954,8 @@ PrivilegedRevoke()
   {
     pMasterMgrClient.removePrivileges(user);
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-"Revoked privilged status of (" + user + ").");
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Revoked privilged status of (" + user + ").");
     LogMgr.getInstance().flush();
   }
 }
@@ -1991,8 +1990,8 @@ AdminShutdown()
       pMasterMgrClient.shutdown();
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-"Shutting Down...");
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Shutting Down...");
     LogMgr.getInstance().flush();
   }
 }
@@ -2044,8 +2043,8 @@ AdminBackup()
     
     pMasterMgrClient.backupDatabase(file);
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-"Database Saved: " + file);
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Database Saved: " + file);
     LogMgr.getInstance().flush();
   }
 }
@@ -2072,8 +2071,8 @@ DefaultToolsetGet()
   <TOOLSET_GET> AE()
   {
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-pMasterMgrClient.getDefaultToolsetName());
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       pMasterMgrClient.getDefaultToolsetName());
     LogMgr.getInstance().flush();
   }
 }
@@ -2089,8 +2088,8 @@ DefaultToolsetSet()
   {
     pMasterMgrClient.setDefaultToolsetName(tname);
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-"Default toolset set to (" + tname + ").");
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Default toolset set to (" + tname + ").");
     LogMgr.getInstance().flush();
   }
 }
@@ -2119,8 +2118,8 @@ ActiveToolsetGet()
     while(iter.hasNext()) {
       String tname = (String) iter.next();
       LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-tname);
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
+	 tname);
     }
     LogMgr.getInstance().flush();
   }
@@ -2137,8 +2136,8 @@ ActiveToolsetAdd()
   {
     pMasterMgrClient.setToolsetActive(tname, true);
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-"Toolset (" + tname + ") is now active.");
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Toolset (" + tname + ") is now active.");
     LogMgr.getInstance().flush();
   }
 }
@@ -2154,8 +2153,8 @@ ActiveToolsetRemove()
   {
     pMasterMgrClient.setToolsetActive(tname, false);
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-"Toolset (" + tname + ") is now inactive.");
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Toolset (" + tname + ") is now inactive.");
     LogMgr.getInstance().flush();
   }
 }
@@ -2184,8 +2183,8 @@ ToolsetGet()
     while(iter.hasNext()) {
       String tname = (String) iter.next();
       LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-tname);
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
+	 tname);
     }
     LogMgr.getInstance().flush();
   }
@@ -2256,8 +2255,8 @@ LicenseKeyGet()
     while(iter.hasNext()) {
       String kname = (String) iter.next();
       LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-kname);
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
+	 kname);
     }
     LogMgr.getInstance().flush();    
   }
@@ -2308,8 +2307,8 @@ LicenseKeyAdd()
     pQueueMgrClient.addLicenseKey(key);
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-"Added license key (" + kname + ").");
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Added license key (" + kname + ").");
     LogMgr.getInstance().flush();
   }
 }
@@ -2339,8 +2338,8 @@ LicenseKeySet()
     pQueueMgrClient.setTotalLicenses(kname, pTotal);
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-"License key (" + kname + ") now has (" + pTotal + ") total licenses.");
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "License key (" + kname + ") now has (" + pTotal + ") total licenses.");
     LogMgr.getInstance().flush();
   }
 }
@@ -2357,8 +2356,8 @@ LicenseKeyRemove()
     pQueueMgrClient.removeLicenseKey(kname);
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-"Removed license key (" + kname + ").");
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Removed license key (" + kname + ").");
     LogMgr.getInstance().flush();
   }
 }
@@ -2389,8 +2388,8 @@ SelectionKeyGet()
     while(iter.hasNext()) {
       String kname = (String) iter.next();
       LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-kname);
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
+	 kname);
     }
     LogMgr.getInstance().flush();    
   }
@@ -2437,8 +2436,8 @@ SelectionKeyAdd()
     pQueueMgrClient.addSelectionKey(key);
     
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-"Added selection key (" + kname + ").");
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Added selection key (" + kname + ").");
     LogMgr.getInstance().flush();
   }
 }
@@ -2455,8 +2454,8 @@ SelectionKeyRemove()
     pQueueMgrClient.removeSelectionKey(kname);
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-"Removed selection key (" + kname + ").");
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Removed selection key (" + kname + ").");
     LogMgr.getInstance().flush();
   }
 }
@@ -2487,8 +2486,8 @@ JobServerGet()
     while(iter.hasNext()) {
       String hname = (String) iter.next();
       LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-hname);
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
+	 hname);
     }
     LogMgr.getInstance().flush();    
   }
@@ -2530,8 +2529,8 @@ JobServerAdd()
     pQueueMgrClient.addHost(hname);
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-"Added job server (" + hname + ").");
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Added job server (" + hname + ").");
     LogMgr.getInstance().flush();
   }
 }
@@ -2558,8 +2557,8 @@ JobServerSet()
 		  pQueueMgrClient);
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-"Modified properties of job server (" + hname + ").");
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Modified properties of job server (" + hname + ").");
     LogMgr.getInstance().flush();
   }
 }
@@ -2679,8 +2678,8 @@ JobServerRemove()
     pApp.removeHost(hname, pQueueMgrClient);
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-"Removed job server (" + hname + ").");
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Removed job server (" + hname + ").");
     LogMgr.getInstance().flush();
   }
 }
@@ -2717,8 +2716,8 @@ EditorGet()
       while(viter.hasNext()) {
 	VersionID vid = (VersionID) viter.next();
 	LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-name + " (v" + vid + ")");
+	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	   name + " (v" + vid + ")");
       }
     }
     
@@ -2738,8 +2737,8 @@ EditorGetInfo()
   {
     BaseEditor plg = PluginMgrClient.getInstance().newEditor(name, vid);
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-plg.toString());
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       plg.toString());
     LogMgr.getInstance().flush();
   }
 }
@@ -2785,8 +2784,8 @@ ActionGet()
       while(viter.hasNext()) {
 	VersionID vid = (VersionID) viter.next();
 	LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-name + " (v" + vid + ")");
+	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	   name + " (v" + vid + ")");
       }
     }
     
@@ -2806,8 +2805,8 @@ ActionGetInfo()
   {
     BaseAction plg = PluginMgrClient.getInstance().newAction(name, vid);
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-plg.toString());
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       plg.toString());
     LogMgr.getInstance().flush();
   }
 }
@@ -2853,8 +2852,8 @@ ComparatorGet()
       while(viter.hasNext()) {
 	VersionID vid = (VersionID) viter.next();
 	LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-name + " (v" + vid + ")");
+	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	   name + " (v" + vid + ")");
       }
     }
     
@@ -2874,8 +2873,8 @@ ComparatorGetInfo()
   {
     BaseComparator plg = PluginMgrClient.getInstance().newComparator(name, vid);
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-plg.toString());
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       plg.toString());
     LogMgr.getInstance().flush();
   }
 }
@@ -2921,8 +2920,8 @@ ToolGet()
       while(viter.hasNext()) {
 	VersionID vid = (VersionID) viter.next();
 	LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-name + " (v" + vid + ")");
+	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	   name + " (v" + vid + ")");
       }
     }
     
@@ -2942,8 +2941,8 @@ ToolGetInfo()
   {
     BaseTool plg = PluginMgrClient.getInstance().newTool(name, vid);
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-plg.toString());
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       plg.toString());
     LogMgr.getInstance().flush();
   }
 }
@@ -2989,8 +2988,8 @@ ArchiverGet()
       while(viter.hasNext()) {
 	VersionID vid = (VersionID) viter.next();
 	LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-name + " (v" + vid + ")");
+	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	   name + " (v" + vid + ")");
       }
     }
     
@@ -3010,8 +3009,8 @@ ArchiverGetInfo()
   {
     BaseArchiver plg = PluginMgrClient.getInstance().newArchiver(name, vid);
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-plg.toString());
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       plg.toString());
     LogMgr.getInstance().flush();
   }
 }
@@ -3056,8 +3055,8 @@ SuffixEditorGet()
     while(iter.hasNext()) {
       SuffixEditor se = (SuffixEditor) iter.next();
       LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-se.getSuffix());
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
+	 se.getSuffix());
     }
     LogMgr.getInstance().flush();    
   }
@@ -3109,8 +3108,8 @@ SuffixEditorSet()
     pApp.addSuffixEditor(se, pMasterMgrClient);
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-"Added default editor for suffix (" + suffix + ").");
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Added default editor for suffix (" + suffix + ").");
     LogMgr.getInstance().flush();
   }
 }
@@ -3136,8 +3135,8 @@ SuffixEditorRemove()
     pApp.removeSuffixEditor(suffix, pMasterMgrClient);
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-"Removed default editor for suffix (" + suffix + ").");
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Removed default editor for suffix (" + suffix + ").");
     LogMgr.getInstance().flush();
   }
 }
@@ -3152,8 +3151,8 @@ SuffixEditorReset()
     pApp.resetSuffixEditors(pMasterMgrClient);
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-"Reset suffix editors to site defaults.");
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Reset suffix editors to site defaults.");
     LogMgr.getInstance().flush();
   }
 }
@@ -3187,8 +3186,8 @@ ViewGet()
     while(iter.hasNext()) {
       String vname = (String) iter.next();
       LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-vname);
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
+	 vname);
     }
     LogMgr.getInstance().flush();    
   }
@@ -3360,8 +3359,8 @@ WorkingRegister()
        pMasterMgrClient);
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-"Registered Node: " + name);
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Registered Node: " + name);
     LogMgr.getInstance().flush();
   }
 }
@@ -3398,8 +3397,8 @@ WorkingRelease()
     pMasterMgrClient.release(new NodeID(pAuthor, pView, name), pRemoveFiles);
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-"Released Node: " + name);
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Released Node: " + name);
     LogMgr.getInstance().flush();
   }
 }
@@ -3456,8 +3455,8 @@ WorkingSet()
        pMasterMgrClient);
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-"Node Properties Set: " + name);
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Node Properties Set: " + name);
     LogMgr.getInstance().flush();
   }
 }
@@ -3500,8 +3499,8 @@ WorkingLink()
 			  pLinkSourceName, pLinkPolicy, pLinkRelationship, pLinkFrameOffset);
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-"Linked Nodes: " + pLinkSourceName + " to " + name);
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Linked Nodes: " + pLinkSourceName + " to " + name);
     LogMgr.getInstance().flush();
   }
 }
@@ -3610,8 +3609,8 @@ WorkingUnlink()
     pMasterMgrClient.unlink(pAuthor, pView, name, pLinkSourceName);
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-"Unlinked Nodes: " + pLinkSourceName + " from " + name);
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Unlinked Nodes: " + pLinkSourceName + " from " + name);
     LogMgr.getInstance().flush();
   }
 }
@@ -3660,8 +3659,8 @@ WorkingAddSecondary()
     pMasterMgrClient.addSecondary(new NodeID(pAuthor, pView, name), pFileSeq);
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-"Added Secondary: " + pFileSeq + " to " + name);
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Added Secondary: " + pFileSeq + " to " + name);
     LogMgr.getInstance().flush();
   }
 }
@@ -3686,8 +3685,8 @@ WorkingRemoveSecondary()
     pMasterMgrClient.removeSecondary(new NodeID(pAuthor, pView, name), pFileSeq);
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-"Removed Secondary: " + pFileSeq + " from " + name);
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Removed Secondary: " + pFileSeq + " from " + name);
     LogMgr.getInstance().flush();
   }
 }
@@ -3725,8 +3724,8 @@ WorkingRename()
     pMasterMgrClient.rename(new NodeID(pAuthor, pView, name), pNewName, pRenameFiles);
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-"Renamed: " + name + " to " + pNewName);
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Renamed: " + name + " to " + pNewName);
     LogMgr.getInstance().flush();    
   }
 }
@@ -3776,8 +3775,8 @@ WorkingRenumber()
     pMasterMgrClient.renumber(new NodeID(pAuthor, pView, name), pFrameRange, pRemoveFiles);
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-"Renumbered: " + name);
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Renumbered: " + name);
     LogMgr.getInstance().flush();    
   }
 }
@@ -3915,8 +3914,8 @@ WorkingRemoveFiles()
 			    pFrames, pIndices, pMasterMgrClient);
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-"Removed Files: " + name);
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Removed Files: " + name);
     LogMgr.getInstance().flush();    
   }
 }
@@ -4279,8 +4278,8 @@ NodeCheckIn()
     pMasterMgrClient.checkIn(new NodeID(pAuthor, pView, name), pMessage, pLevel);
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-"Checked-In: " + name);
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Checked-In: " + name);
     LogMgr.getInstance().flush();
   }
 }
@@ -4369,8 +4368,8 @@ NodeCheckOut()
 			      pCheckOutMode, pCheckOutMethod);
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-"Checked-Out: " + name);
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Checked-Out: " + name);
     LogMgr.getInstance().flush();
   }
 }
@@ -4476,8 +4475,8 @@ NodeEvolve()
     pMasterMgrClient.evolve(new NodeID(pAuthor, pView, name), vid);
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Ops, LogMgr.Level.Info,
-"Evolved: " + name);
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Evolved: " + name);
     LogMgr.getInstance().flush();
   }
 }

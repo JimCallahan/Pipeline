@@ -1,4 +1,4 @@
-// $Id: VerifiedApp.java.in,v 1.4 2004/09/12 22:44:00 jim Exp $
+// $Id: VerifiedApp.java.in,v 1.5 2005/01/22 06:10:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -7,7 +7,6 @@ import us.temerity.pipeline.*;
 import java.io.*; 
 import java.net.*; 
 import java.util.*;
-import java.util.logging.*;
 import java.text.*;
 import java.math.*;
 import java.security.*;
@@ -47,7 +46,9 @@ class VerifiedApp
       IDs = generateIDs();
     }
     catch(IOException ex) {
-      Logs.net.severe(ex.getMessage());
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Severe,
+	 ex.getMessage());
       System.exit(1);
     }
 
@@ -70,7 +71,10 @@ class VerifiedApp
       }
       
       if(!verified) {
-	Logs.net.severe("Pipeline is not licensed for this machine!");
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	   "Pipeline is not licensed for this machine!");
+
 	System.exit(1);
       }
     }

@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.7 2005/01/22 01:36:36 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.8 2005/01/22 06:10:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1594,9 +1594,9 @@ class JNodeDetailsPanel
       }
       catch(IOException ex) {
 	LogMgr.getInstance().log
-(LogMgr.Kind.Tex, LogMgr.Level.Severe,
-"Internal Error:\n" + 
-			"  " + ex.getMessage());
+	  (LogMgr.Kind.Tex, LogMgr.Level.Severe,
+	   "Internal Error:\n" + 
+	   "  " + ex.getMessage());
 	LogMgr.getInstance().flush();
 	System.exit(1);
       } 

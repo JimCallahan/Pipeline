@@ -1,4 +1,4 @@
-// $Id: NodeGetCheckedInFileNoveltyRsp.java,v 1.3 2005/01/22 01:36:36 jim Exp $
+// $Id: NodeGetCheckedInFileNoveltyRsp.java,v 1.4 2005/01/22 06:10:10 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -7,7 +7,6 @@ import us.temerity.pipeline.core.*;
 
 import java.io.*;
 import java.util.*;
-import java.util.logging.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   N O D E   G E T   C H E C K E D - I N   F I L E   N O V E L T Y   R S P                */
@@ -52,9 +51,9 @@ class NodeGetCheckedInFileNoveltyRsp
     pNovelty = novelty;
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Net, LogMgr.Level.Finest,
-"MasterMgr.getCheckedInFileNovelty(): " + name + ":\n" + 
-		    "  " + getTimer());
+      (LogMgr.Kind.Net, LogMgr.Level.Finest,
+       "MasterMgr.getCheckedInFileNovelty(): " + name + ":\n" + 
+       "  " + getTimer());
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
       LogMgr.getInstance().flush();
   }

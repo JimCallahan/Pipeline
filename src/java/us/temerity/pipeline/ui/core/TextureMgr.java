@@ -1,4 +1,4 @@
-// $Id: TextureMgr.java,v 1.2 2005/01/22 01:36:36 jim Exp $
+// $Id: TextureMgr.java,v 1.3 2005/01/22 06:10:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -142,8 +142,8 @@ class TextureMgr
 
 	if(geom.isPrintable(code)) {
 	  LogMgr.getInstance().log
-(LogMgr.Kind.Tex, LogMgr.Level.Fine,
-"Loading Font Texture: " + name + " \"" + code + "\"");
+	    (LogMgr.Kind.Tex, LogMgr.Level.Fine,
+	     "Loading Font Texture: " + name + " \"" + code + "\"");
 
 	  int handle[] = new int[1];
 	  gl.glGenTextures(1, handle); 
@@ -154,8 +154,8 @@ class TextureMgr
 	  int level, size; 
 	  for(level=0, size=sMaxFontRes; size>=1; level++, size/=2) {
 	    LogMgr.getInstance().log
-(LogMgr.Kind.Tex, LogMgr.Level.Finer,
-"Loading MipMap: " + size + "x" + size);
+	      (LogMgr.Kind.Tex, LogMgr.Level.Finer,
+	       "Loading MipMap: " + size + "x" + size);
 	    LogMgr.getInstance().flush();
 	    
 	    String path = ("fonts/" + name + "/" + icode + "/texture." + size + ".png");
@@ -290,8 +290,8 @@ class TextureMgr
 
     /* build the texture and icon */ 
     LogMgr.getInstance().log
-(LogMgr.Kind.Tex, LogMgr.Level.Fine,
-"Loading Texture: " + name);
+      (LogMgr.Kind.Tex, LogMgr.Level.Fine,
+       "Loading Texture: " + name);
     {
       int handle[] = new int[1];
       gl.glGenTextures(1, handle); 
@@ -301,8 +301,8 @@ class TextureMgr
       int level, size; 
       for(level=0, size=sMaxTexRes; size>=1; level++, size/=2) {
 	LogMgr.getInstance().log
-(LogMgr.Kind.Tex, LogMgr.Level.Finer,
-"Loading MipMap: " + size + "x" + size);
+	  (LogMgr.Kind.Tex, LogMgr.Level.Finer,
+	   "Loading MipMap: " + size + "x" + size);
 	LogMgr.getInstance().flush();
 
 	String path = ("textures/" + name + "/texture." + size + ".png");
@@ -428,8 +428,8 @@ class TextureMgr
     int size = sIconRes[idx];
 	  
     LogMgr.getInstance().log
-(LogMgr.Kind.Tex, LogMgr.Level.Fine,
-"Loading Icon: " + name + " " + size + "x" + size);
+      (LogMgr.Kind.Tex, LogMgr.Level.Fine,
+       "Loading Icon: " + name + " " + size + "x" + size);
     LogMgr.getInstance().flush();
     
     String path = ("textures/" + name + "/texture." + size + ".png");

@@ -1,9 +1,8 @@
-// $Id: SubProcessLight.java,v 1.4 2005/01/22 01:36:35 jim Exp $
+// $Id: SubProcessLight.java,v 1.5 2005/01/22 06:10:09 jim Exp $
 
 package us.temerity.pipeline;
 
 import java.util.*;
-import java.util.logging.*;
 import java.util.concurrent.atomic.*;
 import java.io.*;
 
@@ -274,11 +273,11 @@ class SubProcessLight
     /* log it... */ 
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Sub, LogMgr.Level.Finest)) {
       LogMgr.getInstance().log
-(LogMgr.Kind.Sub, LogMgr.Level.Fine,
-getName() + " [command]: \"" + getCommand() + "\"");
+	(LogMgr.Kind.Sub, LogMgr.Level.Fine,
+	 getName() + " [command]: \"" + getCommand() + "\"");
       LogMgr.getInstance().log
-(LogMgr.Kind.Sub, LogMgr.Level.Finer,
-getName() + " [working directory]: " + getWorkingDir());
+	(LogMgr.Kind.Sub, LogMgr.Level.Finer,
+	 getName() + " [working directory]: " + getWorkingDir());
       
       String[] env = getEnvironment();
       StringBuffer buf = new StringBuffer();
@@ -287,8 +286,8 @@ getName() + " [working directory]: " + getWorkingDir());
       for(wk=0; wk<env.length; wk++) 
 	buf.append("  " + env[wk] + "\n");
       LogMgr.getInstance().log
-(LogMgr.Kind.Sub, LogMgr.Level.Finest,
-buf.toString());
+	(LogMgr.Kind.Sub, LogMgr.Level.Finest,
+	 buf.toString());
 	
       LogMgr.getInstance().flush();
     }
@@ -308,16 +307,16 @@ buf.toString());
       }
       catch(IOException ex) {
 	LogMgr.getInstance().log
-(LogMgr.Kind.Sub, LogMgr.Level.Warning,
-getName() + " [exec failed]: " + ex.getMessage());	  
+	  (LogMgr.Kind.Sub, LogMgr.Level.Warning,
+	   getName() + " [exec failed]: " + ex.getMessage());	  
 	
 	extraErrors = ex.getMessage();
 	pExitCode = -1;
       }
       catch(Exception ex) {
 	LogMgr.getInstance().log
-(LogMgr.Kind.Sub, LogMgr.Level.Severe,
-getName() + " [internal error]: " + getFullMessage(ex));
+	  (LogMgr.Kind.Sub, LogMgr.Level.Severe,
+	   getName() + " [internal error]: " + getFullMessage(ex));
 	LogMgr.getInstance().flush();
 
 	pExitCode = -2;
@@ -333,8 +332,8 @@ getName() + " [internal error]: " + getFullMessage(ex));
     }
     catch (InterruptedException ex) {
       LogMgr.getInstance().log
-(LogMgr.Kind.Sub, LogMgr.Level.Warning,
-getName() + " [interrupted]: " + ex.getMessage());
+	(LogMgr.Kind.Sub, LogMgr.Level.Warning,
+	 getName() + " [interrupted]: " + ex.getMessage());
 
       stdout.interrupt();
       stderr.interrupt();
@@ -346,8 +345,8 @@ getName() + " [interrupted]: " + ex.getMessage());
     }
     catch(IOException ex) {
       LogMgr.getInstance().log
-(LogMgr.Kind.Sub, LogMgr.Level.Warning,
-getName() + " [close STDIN]: " + ex.getMessage());
+	(LogMgr.Kind.Sub, LogMgr.Level.Warning,
+	 getName() + " [close STDIN]: " + ex.getMessage());
     }
 
     assert(!stdout.isAlive());
@@ -375,8 +374,8 @@ getName() + " [close STDIN]: " + ex.getMessage());
       }
       
       LogMgr.getInstance().log
-(LogMgr.Kind.Sub, LogMgr.Level.Fine,
-buf.toString());
+	(LogMgr.Kind.Sub, LogMgr.Level.Fine,
+	 buf.toString());
       LogMgr.getInstance().flush();
     }
   }
@@ -430,16 +429,16 @@ buf.toString());
 	throw new IllegalStateException("The subprocess was never initialized!");
 
       LogMgr.getInstance().log
-(LogMgr.Kind.Sub, LogMgr.Level.Finest,
-pName + " [" + pStream + "]: thread started.");
+	(LogMgr.Kind.Sub, LogMgr.Level.Finest,
+	 pName + " [" + pStream + "]: thread started.");
 
       try {
 	while(!pIsFinished.get() && !pProc.isRunning()) {
 	  try {
 	    LogMgr.getInstance().log
-(LogMgr.Kind.Sub, LogMgr.Level.Finest,
-pName + " [" + pStream + "]: waiting (" + 
-			    sCollectionDelay + ") milliseconds to start collection.");
+	      (LogMgr.Kind.Sub, LogMgr.Level.Finest,
+	       pName + " [" + pStream + "]: waiting (" + 
+	       sCollectionDelay + ") milliseconds to start collection.");
 	    sleep(sCollectionDelay);
 	  }
 	  catch(InterruptedException ex) {
@@ -450,8 +449,8 @@ pName + " [" + pStream + "]: waiting (" +
 	}
 
 	LogMgr.getInstance().log
-(LogMgr.Kind.Sub, LogMgr.Level.Finest,
-pName + " [" + pStream + "]: collecting...");	
+	  (LogMgr.Kind.Sub, LogMgr.Level.Finest,
+	   pName + " [" + pStream + "]: collecting...");	
 
 	while(appendNext());
 	closePipe();
@@ -459,26 +458,26 @@ pName + " [" + pStream + "]: collecting...");
 	if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Sub, LogMgr.Level.Finest)) {
 	  String text = getText(); 
 	  LogMgr.getInstance().log
-(LogMgr.Kind.Sub, LogMgr.Level.Finest,
-pName + " [" + pStream + "]: " + 
-			  ((text != null) ? ("\n" + text + "\n") : "(none)"));
+	    (LogMgr.Kind.Sub, LogMgr.Level.Finest,
+	     pName + " [" + pStream + "]: " + 
+	     ((text != null) ? ("\n" + text + "\n") : "(none)"));
 	}
 
 	LogMgr.getInstance().log
-(LogMgr.Kind.Sub, LogMgr.Level.Finest,
-pName + " [" + pStream + "]: closed.");	
+	  (LogMgr.Kind.Sub, LogMgr.Level.Finest,
+	   pName + " [" + pStream + "]: closed.");	
 	LogMgr.getInstance().flush();
       }
       catch (IOException ex) {
 	LogMgr.getInstance().log
-(LogMgr.Kind.Sub, LogMgr.Level.Severe,
-"IO Error while reading from " + pName + " [" + pStream + "]\n" + 
-			ex.getMessage());
+	  (LogMgr.Kind.Sub, LogMgr.Level.Severe,
+	   "IO Error while reading from " + pName + " [" + pStream + "]\n" + 
+	   ex.getMessage());
       }
 
       LogMgr.getInstance().log
-(LogMgr.Kind.Sub, LogMgr.Level.Finest,
-pName + " [" + pStream + "]: thread finished.");
+	(LogMgr.Kind.Sub, LogMgr.Level.Finest,
+	 pName + " [" + pStream + "]: thread finished.");
     }
 
     private String  pName;

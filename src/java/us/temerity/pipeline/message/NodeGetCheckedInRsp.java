@@ -1,4 +1,4 @@
-// $Id: NodeGetCheckedInRsp.java,v 1.2 2005/01/22 01:36:36 jim Exp $
+// $Id: NodeGetCheckedInRsp.java,v 1.3 2005/01/22 06:10:10 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -7,7 +7,6 @@ import us.temerity.pipeline.core.*;
 
 import java.io.*;
 import java.util.*;
-import java.util.logging.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   N O D E   G E T   C H E C K E D - I N   R S P                                          */
@@ -47,10 +46,10 @@ class NodeGetCheckedInRsp
     pNodeVersion = vsn;
 
     LogMgr.getInstance().log
-(LogMgr.Kind.Net, LogMgr.Level.Finest,
-"MasterMgr.getCheckedInVersion(): " + 
-		    vsn.getName() + "(v" + vsn.getVersionID() + "):\n" + 
-		    "  " + getTimer());
+      (LogMgr.Kind.Net, LogMgr.Level.Finest,
+       "MasterMgr.getCheckedInVersion(): " + 
+       vsn.getName() + "(v" + vsn.getVersionID() + "):\n" + 
+       "  " + getTimer());
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
       LogMgr.getInstance().flush();
   }
