@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.3 2004/09/10 15:40:09 jim Exp $
+// $Id: PluginMgr.java,v 1.4 2004/09/28 18:03:47 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -237,60 +237,6 @@ class PluginMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Print information about the currently installed Pipeline plugins to STDOUT.
-   */ 
-  public synchronized void
-  listPlugins() 
-    throws PipelineException
-  {
-    try {
-      refresh();
-    }
-    catch(PipelineException ex) {
-      Logs.plg.warning(ex.getMessage());
-    }
-
-    StringBuffer buf = new StringBuffer(); 
-    printPlugins("Editor", pEditors, buf);
-    printPlugins("Action", pActions, buf);
-    printPlugins("Comparators", pComps, buf);
-
-    Logs.plg.info(buf.toString());
-    Logs.flush();
-  }
-
-  /**
-   * Append information about the given type of plugins to the given string buffer.
-   */ 
-  private synchronized void
-  printPlugins
-  (
-   String ptype,
-   TreeMap<String,TreeMap<VersionID,Plugin>> table,
-   StringBuffer buf
-  ) 
-    throws PipelineException
-  {
-    buf.append(ptype.toUpperCase() + " PLUGINS:\n\n");
-
-    for(String name : table.keySet()) {	
-      TreeMap<VersionID,Plugin> plgs = table.get(name);
-      for(VersionID vid : plgs.keySet()) {
-	BasePlugin plg = newPluginHelper(ptype, table, name, vid);
-
-	Plugin plugin = plgs.get(vid);
-	Date stamp = new Date(plugin.getPluginFile().lastModified());
-	
-	buf.append("  Name        : " + plg.getName() + "\n" + 
-		   "  Version     : " + plg.getVersionID() + "\n" + 
-		   "  Description : " + plg.getDescription() + "\n" + 
-		   "  Class       : " + plg.getClass().getName() + "\n" + 
-		   "  Installed   : " + Dates.format(stamp) + "\n\n");
-      }
-    }
-  }
-
-  /**
    * Print information about the Pipeline plugin specified by the given class file.
    */ 
   public synchronized void
@@ -311,11 +257,11 @@ class PluginMgr
       type = "COMPARATOR";
     
     Logs.plg.info
-      (type + " PLUGIN: " + file + "\n\n" + 
-       "  Name        : " + plg.getName() + "\n" + 
-       "  Version     : " + plg.getVersionID() + "\n" + 
-       "  Description : " + plg.getDescription() + "\n" + 
-       "  Class       : " + plg.getClass().getName() + "\n\n");      
+      (pad("== " + type + " PLUGIN ", '=', 80) + "\n" +
+       "Name        : " + plg.getName() + "\n" + 
+       "Version     : " + plg.getVersionID() + "\n" + 
+       "Description : " + wordWrap(plg.getDescription(), 14, 80) + "\n" + 
+       "Class       : " + plg.getClass().getName());      
     Logs.flush();
   }
   
@@ -357,6 +303,244 @@ class PluginMgr
     }
   }
   
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Print information about the currently installed Pipeline plugins to STDOUT.
+   */ 
+  public synchronized void
+  listPlugins() 
+    throws PipelineException
+  {
+    try {
+      refresh();
+    }
+    catch(PipelineException ex) {
+      Logs.plg.warning(ex.getMessage());
+    }
+
+    StringBuffer buf = new StringBuffer(); 
+    printPlugins("Editor", pEditors, buf);
+    printPlugins("Action", pActions, buf);
+    printPlugins("Comparators", pComps, buf);
+
+    Logs.plg.info(buf.toString());
+    Logs.flush();
+  }
+
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Print information about the currently installed Editor plugins to STDOUT.
+   */ 
+  public synchronized void
+  listEditorPlugins() 
+    throws PipelineException
+  {
+    try {
+      refresh();
+    }
+    catch(PipelineException ex) {
+      Logs.plg.warning(ex.getMessage());
+    }
+
+    StringBuffer buf = new StringBuffer(); 
+    printPlugins("Editor", pEditors, buf);
+
+    Logs.plg.info(buf.toString());
+    Logs.flush();
+  }
+
+  /**
+   * Print information about the given Editor plugin to STDOUT.
+   */ 
+  public synchronized void
+  listEditorPlugin
+  (
+   String name, 
+   VersionID vid 
+  ) 
+    throws PipelineException
+  {
+    listPlugin("Editor", pEditors, name, vid);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Print information about the currently installed Action plugins to STDOUT.
+   */ 
+  public synchronized void
+  listActionPlugins() 
+    throws PipelineException
+  {
+    try {
+      refresh();
+    }
+    catch(PipelineException ex) {
+      Logs.plg.warning(ex.getMessage());
+    }
+
+    StringBuffer buf = new StringBuffer(); 
+    printPlugins("Action", pActions, buf);
+
+    Logs.plg.info(buf.toString());
+    Logs.flush();
+  }
+
+  /**
+   * Print information about the given Action plugin to STDOUT.
+   */ 
+  public synchronized void
+  listActionPlugin
+  (
+   String name, 
+   VersionID vid 
+  ) 
+    throws PipelineException
+  {
+    listPlugin("Action", pActions, name, vid);
+  }
+
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Print information about the currently installed Comparator plugins to STDOUT.
+   */ 
+  public synchronized void
+  listComparatorPlugins() 
+    throws PipelineException
+  {
+    try {
+      refresh();
+    }
+    catch(PipelineException ex) {
+      Logs.plg.warning(ex.getMessage());
+    }
+
+    StringBuffer buf = new StringBuffer(); 
+    printPlugins("Comparator", pComps, buf);
+
+    Logs.plg.info(buf.toString());
+    Logs.flush();
+  }
+
+  /**
+   * Print information about the given Comparator plugin to STDOUT.
+   */ 
+  public synchronized void
+  listComparatorPlugin
+  (
+   String name, 
+   VersionID vid 
+  ) 
+    throws PipelineException
+  {
+    listPlugin("Comparator", pComps, name, vid);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Print information about the given plugin to STDOUT.
+   */ 
+  private synchronized void
+  listPlugin
+  (
+   String ptype,
+   TreeMap<String,TreeMap<VersionID,Plugin>> table,
+   String name, 
+   VersionID vid 
+  ) 
+    throws PipelineException
+  {
+    try {
+      refresh();
+    }
+    catch(PipelineException ex) {
+      Logs.plg.warning(ex.getMessage());
+    }
+
+    TreeMap<VersionID,Plugin> plgs = table.get(name);
+    if(plgs == null) 
+      throw new PipelineException
+	("No " + ptype + " plugin named (" + name + ") exists!");
+
+    VersionID pvid = null;
+    if(vid == null) 
+      pvid = plgs.lastKey();
+    else if(plgs.keySet().contains(vid)) 
+      pvid = vid;
+    else 
+      throw new PipelineException
+	("No version (" + vid + ") of " + ptype + " plugin (" + name + ") exists!");
+
+    BasePlugin plg = newPluginHelper(ptype, table, name, pvid);
+
+    Plugin plugin = plgs.get(pvid);
+    Date stamp = new Date(plugin.getPluginFile().lastModified());
+
+    Logs.plg.info(pad("== " + ptype.toUpperCase() + " PLUGIN ", '=', 80) + "\n" +
+		  printPlugin(plg, stamp));
+    Logs.flush();
+  }
+  
+  /**
+   * Append information about the given type of plugins to the given string buffer.
+   */ 
+  private synchronized void
+  printPlugins
+  (
+   String ptype,
+   TreeMap<String,TreeMap<VersionID,Plugin>> table,
+   StringBuffer buf
+  ) 
+    throws PipelineException
+  {
+    boolean first = true;
+    for(String name : table.keySet()) {	
+      TreeMap<VersionID,Plugin> plgs = table.get(name);
+      for(VersionID vid : plgs.keySet()) {
+	BasePlugin plg = newPluginHelper(ptype, table, name, vid);
+
+	Plugin plugin = plgs.get(vid);
+	Date stamp = new Date(plugin.getPluginFile().lastModified());
+	
+	if(first) 
+	  buf.append(pad("== " + ptype.toUpperCase() + " PLUGINS ", '=', 80) + "\n");
+	else 
+	  buf.append(bar(80) + "\n");
+	first = false;
+
+	buf.append(printPlugin(plg, stamp));
+      }
+    }
+  }
+  
+  /**
+   * Append information about the given plugin to the given string buffer.
+   */ 
+  private synchronized String
+  printPlugin
+  (
+   BasePlugin plg,
+   Date stamp
+  ) 
+    throws PipelineException
+  {
+    return
+      ("Name        : " + plg.getName() + "\n" + 
+       "Version     : " + plg.getVersionID() + "\n" + 
+       "Description : " + wordWrap(plg.getDescription(), 14, 80) + "\n" + 
+       "Class       : " + plg.getClass().getName() + "\n" + 
+       "Installed   : " + Dates.format(stamp) + "\n\n");
+  }
+
   /**
    * Temporarily instantiate an prospective plugin in order to verify its correctness.
    * 
@@ -525,16 +709,121 @@ class PluginMgr
       Date stamp = new Date(plugin.getPluginFile().lastModified());
       
       Logs.net.info
-	("INSTALLED " + ptype.toUpperCase() + " PLUGIN: " + file + "\n\n" +
-	 "  Name        : " + plg.getName() + "\n" + 
-	 "  Version     : " + plg.getVersionID() + "\n" + 
-	 "  Description : " + plg.getDescription() + "\n" + 
-	 "  Class       : " + plg.getClass().getName() + "\n" + 
-	 "  Installed   : " + Dates.format(stamp) + "\n\n");
+	(pad("== INSTALLED " + ptype.toUpperCase() + " PLUGIN ", '=', 80) + "\n" + 
+	 "Name        : " + plg.getName() + "\n" + 
+	 "Version     : " + plg.getVersionID() + "\n" + 
+	 "Description : " + wordWrap(plg.getDescription(), 14, 80) + "\n" + 
+	 "Class       : " + plg.getClass().getName() + "\n" + 
+	 "Installed   : " + Dates.format(stamp) + "\n" +
+	 "Class File  : " + file);
+
       Logs.flush();
     }	  
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Generate a string consisting the the given character repeated N number of times.
+   */ 
+  private String
+  repeat
+  (
+   char c,
+   int size
+  ) 
+  {
+    StringBuffer buf = new StringBuffer();
+    int wk;
+    for(wk=0; wk<size; wk++) 
+      buf.append(c);
+    return buf.toString();
+  }
+
+  /**
+   * Pad the given string with the given string so that it is at least N characters long.
+   */ 
+  private String
+  pad
+  (
+   String str, 
+   char c,
+   int size
+  ) 
+  {
+    return (str + repeat(c, Math.max(0, size - str.length())));
+  }
+
+  /**
+   * Generate a horizontal bar.
+   */ 
+  private String
+  bar
+  (
+   int size
+  ) 
+  {
+    return repeat('-', size);
+  }
+
+  /**
+   * Generate a horizontal title bar.
+   */ 
+  private String
+  tbar
+  (
+   int size
+  ) 
+  {
+    return repeat('=', size);
+  }
+
+  /**
+   * Line wrap the given String at word boundries.
+   */ 
+  public String
+  wordWrap
+  (
+   String str,
+   int indent, 
+   int size
+  ) 
+  {
+    if(str.length() + indent < size) 
+      return str;
+
+    StringBuffer buf = new StringBuffer();
+    String words[] = str.split("\\p{Blank}");
+    int cnt = indent;
+    int wk;
+    for(wk=0; wk<words.length; wk++) {
+      int ws = words[wk].length();
+      if(ws > 0) {
+	if((size - cnt - ws) > 0) {
+	  buf.append(words[wk]);
+	  cnt += ws;
+	}
+	else {
+	  buf.append("\n" + repeat(' ', indent) + words[wk]);
+	  cnt = indent + ws;
+	}
+
+	if(wk < (words.length-1)) {
+	  if((size - cnt) > 0) {
+	    buf.append(' ');
+	    cnt++;
+	  }
+	  else {
+	    buf.append("\n" + repeat(' ', indent));
+	    cnt = indent;
+	  }
+	}
+      }
+    }
+
+    return buf.toString();
+  }
 
   /*----------------------------------------------------------------------------------------*/
   /*   C L A S S   H E L P E R S                                                            */
