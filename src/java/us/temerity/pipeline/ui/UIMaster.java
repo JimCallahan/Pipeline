@@ -1,10 +1,11 @@
-// $Id: UIMaster.java,v 1.66 2004/12/16 15:43:54 jim Exp $
+// $Id: UIMaster.java,v 1.67 2004/12/17 08:17:11 jim Exp $
 
 package us.temerity.pipeline.ui;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
 import us.temerity.pipeline.glue.*;
+import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.laf.LookAndFeelLoader;
 
 import java.awt.*;
@@ -1174,6 +1175,32 @@ class UIMaster
   }
 
   /**
+   * Create a new color field. <P> 
+   * 
+   * @param value
+   *   The initial value.
+   * 
+   * @param width
+   *   The minimum and preferred width.
+   */ 
+  public static JColorField
+  createColorField
+  (
+   Color3d value,  
+   int width
+  )
+  {
+    JColorField field = new JColorField(value);
+
+    Dimension size = new Dimension(width, 19);
+    field.setMinimumSize(size);
+    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+    field.setPreferredSize(size);
+
+    return field;
+  }  
+
+  /**
    * Create a new non-editable text area.
    * 
    * @param text
@@ -2046,6 +2073,82 @@ class UIMaster
     tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
 
     JDoubleField field = createDoubleField(value, vwidth, JLabel.CENTER);
+    vpanel.add(field);
+
+    return field;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Create a new color field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param value
+   *   The initial value.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the identifier field.
+   */ 
+  public static JColorField
+  createTitledColorField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   Color3d value, 
+   int vwidth
+  )
+  {
+    return createTitledColorField(tpanel, title, twidth, vpanel, value, vwidth, null);
+  }
+  
+  /**
+   * Create a new color field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param value
+   *   The initial value.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the identifier field.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   */ 
+  public static JColorField
+  createTitledColorField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   Color3d value, 
+   int vwidth, 
+   String tooltip
+  )
+  {
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
+
+    JColorField field = createColorField(value, vwidth);
     vpanel.add(field);
 
     return field;
