@@ -1,4 +1,4 @@
-// $Id: AppearanceMgr.java,v 1.2 2004/05/16 19:09:30 jim Exp $
+// $Id: AppearanceMgr.java,v 1.3 2004/05/18 00:30:47 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -210,6 +210,49 @@ class AppearanceMgr
 
       apprs[code] = apr;
     }
+
+    return apr;
+  }
+
+  /** 
+   * Get a link relationship icon appearance.
+   * 
+   * @param relationship 
+   *   The nature of the relationship between files associated with the source and 
+   *   target nodes. 
+   * 
+   * @throws IOException
+   *   If unable to find the texture.
+   */ 
+  public synchronized Appearance
+  getLinkRelationshipAppearance
+  (
+   LinkRelationship relationship
+  ) 
+    throws IOException
+  { 
+    String aname = ("LinkRelationship-" + relationship);
+    
+    Appearance apr = pNodeApprs.get(aname);
+    if(apr != null) 
+      return apr;
+
+    apr = new Appearance();
+    apr.setTexture(TextureMgr.getInstance().getTexture(aname));
+	  
+    {
+      RenderingAttributes attr = new RenderingAttributes();
+      attr.setAlphaTestFunction(RenderingAttributes.GREATER);
+      apr.setRenderingAttributes(attr);
+    }
+	  
+    {
+      TransparencyAttributes attr = new TransparencyAttributes();
+      attr.setTransparencyMode(TransparencyAttributes.BLENDED);
+      apr.setTransparencyAttributes(attr);
+    }
+
+    pNodeApprs.put(aname, apr);
 
     return apr;
   }
