@@ -1,4 +1,4 @@
-// $Id: FB.hh,v 1.5 2004/04/09 18:13:46 jim Exp $
+// $Id: FB.hh,v 1.6 2004/08/22 22:17:10 jim Exp $
 
 #ifndef PIPELINE_FB_HH
 #define PIPELINE_FB_HH
@@ -212,7 +212,6 @@ public:
 											    
     if(sExitOnError) {		
       sleep(2);
-      assert(false);									    
       exit(EXIT_FAILURE);								    
     }											    
     else {										    
