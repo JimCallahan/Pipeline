@@ -1,4 +1,4 @@
-// $Id: JRenameDialog.java,v 1.1 2004/06/14 22:55:00 jim Exp $
+// $Id: JRenameDialog.java,v 1.2 2004/07/18 21:36:51 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -14,11 +14,11 @@ import javax.swing.event.*;
 import javax.swing.tree.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   R E V O K E   D I A L O G                                                              */
+/*   R E N A M E   D I A L O G                                                              */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Queries the user for options to the node revoke operation.
+ * Queries the user for options to the node rename operation.
  */ 
 public 
 class JRenameDialog
@@ -58,10 +58,15 @@ class JRenameDialog
 	  body.add(vpanel);
 	}
 	
-	pOldPrefixField =
-	  UIMaster.createTitledPathField(tpanel, "Old Filename Prefix:", sTSize, 
-					 vpanel, "", sVSize);
-	pOldPrefixField.setEditable(false);
+	{
+	  JPathField field = 
+	    UIMaster.createTitledPathField(tpanel, "Old Filename Prefix:", sTSize, 
+					   vpanel, "", sVSize);
+	  pOldPrefixField = field;
+
+	  field.setEditable(false);
+	  field.setEnabled(false);
+	}
 
 	UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
 	
@@ -125,7 +130,7 @@ class JRenameDialog
    * Update the UI components based on the given node working version.
    * 
    * @param mod 
-   *   The working version to revoke.
+   *   The working version to rename.
    */ 
   public void 
   updateNode
