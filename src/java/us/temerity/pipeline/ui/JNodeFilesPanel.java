@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.8 2004/09/05 06:48:33 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.9 2004/09/08 18:39:57 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -30,7 +30,7 @@ import javax.swing.tree.*;
 public  
 class JNodeFilesPanel
   extends JTopLevelPanel
-  implements ActionListener, MouseListener
+  implements MouseListener, KeyListener, ActionListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -77,25 +77,18 @@ class JNodeFilesPanel
       pWorkingPopup   = new JPopupMenu();  
       pCheckedInPopup = new JPopupMenu();  
 
+      pEditWithMenus = new JMenu[2];
+
       JPopupMenu menus[] = { pWorkingPopup, pCheckedInPopup };
       int wk;
       for(wk=0; wk<menus.length; wk++) {
-	item = new JMenuItem("Edit");
+	item = new JMenuItem((wk == 1) ? "View" : "Edit");
 	item.setActionCommand("edit");
 	item.addActionListener(this);
 	menus[wk].add(item);
 	
-	{
-	  sub = new JMenu("Edit With");
-	  menus[wk].add(sub);
-	  
-	  for(String editor : Plugins.getEditorNames()) {
-	    item = new JMenuItem(editor);
-	    item.setActionCommand("edit-with:" + editor);
-	    item.addActionListener(this);
-	    sub.add(item);
-	  }
-	}
+	pEditWithMenus[wk] = new JMenu((wk == 1) ? "View With" : "Edit With");
+	menus[wk].add(pEditWithMenus[wk]);
       }
       
       {
@@ -132,18 +125,8 @@ class JNodeFilesPanel
       {
 	pCheckedInPopup.addSeparator();
 	
-	{
-	  sub = new JMenu("Compare With");
-	  pCompareWithMenu = sub;
-	  pCheckedInPopup.add(sub);
-	  
-	  for(String comparator : Plugins.getComparatorNames()) {
-	    item = new JMenuItem(comparator);
-	    item.setActionCommand("compare-with:" + comparator);
-	    item.addActionListener(this);
-	    sub.add(item);
-	  }
-	}
+	pCompareWithMenu = new JMenu("Compare With");
+	pCheckedInPopup.add(pCompareWithMenu);
       }	
     }
 
@@ -201,6 +184,10 @@ class JNodeFilesPanel
 	  JTextField field = UIMaster.createTextField(null, 100, JLabel.LEFT);
 	  pNodeNameField = field;
 	  
+	  field.setFocusable(true);
+	  field.addKeyListener(this);
+	  field.addMouseListener(this); 
+
 	  hbox.add(field);
 	}
 
@@ -232,6 +219,10 @@ class JNodeFilesPanel
       Dimension size = new Dimension(sSize+22, 120);
       setMinimumSize(size);
       setPreferredSize(size); 
+
+      setFocusable(true);
+      addKeyListener(this);
+      addMouseListener(this); 
     }
 
     updateNodeStatus(null, null);
@@ -565,21 +556,30 @@ class JNodeFilesPanel
 	  vbox.add(Box.createRigidArea(new Dimension(0, 4)));
 	  
 	  {
-	    JFileLabel label = new JFileLabel(fseq.toString(), new FileSeq(path, fseq), null);
-	    label.setName("TextFieldLabel");
+	    Box lbox = new Box(BoxLayout.X_AXIS);
+
+	    lbox.add(Box.createRigidArea(new Dimension(0, 27))); 
+
+	    {
+	      JFileLabel label = 
+		new JFileLabel(fseq.toString(), new FileSeq(path, fseq), null);
+	      label.setName("TextFieldLabel");
+	      
+	      label.setHorizontalAlignment(JLabel.CENTER);
+	      label.setAlignmentX(0.5f);
+	      
+	      Dimension size = new Dimension(164, 27);
+	      label.setMinimumSize(size);
+	      label.setMaximumSize(new Dimension(Integer.MAX_VALUE, 27));
+	      
+	      if((details != null) && (details.getWorkingVersion() != null) && 
+  	       details.getWorkingVersion().getSequences().contains(fseq))
+		label.addMouseListener(this);
+	      
+	      lbox.add(label);
+	    }
 	    
-	    label.setHorizontalAlignment(JLabel.CENTER);
-	    label.setAlignmentX(0.5f);
-	    
-	    Dimension size = new Dimension(164, 27);
-	    label.setMinimumSize(size);
-	    label.setMaximumSize(new Dimension(Integer.MAX_VALUE, 27));
-	    
-	    if((details != null) && (details.getWorkingVersion() != null) && 
-	       details.getWorkingVersion().getSequences().contains(fseq))
-	      label.addMouseListener(this);
-	    
-	    vbox.add(label);
+	    vbox.add(lbox);
 	  }
 	  
 	  vbox.add(Box.createRigidArea(new Dimension(0, 4)));
@@ -598,10 +598,10 @@ class JNodeFilesPanel
 		String name = "Blank-Normal";
 		FileSeq pfseq = null;
 		if((fstate != null) && (qstate != null)) {
-		name = (fstate + "-" + qstate + "-Normal");
+		  name = (fstate + "-" + qstate + "-Normal");
 		
-		if(enabled.contains(sfseq))
-		  pfseq = new FileSeq(path, sfseq);
+		  if(enabled.contains(sfseq))
+		    pfseq = new FileSeq(path, sfseq);
 		}
 		
 		String fname = sfseq.getFile(0).toString();
@@ -794,53 +794,106 @@ class JNodeFilesPanel
     }
   }
 
+  /**
+   * Update the checked-in file menu.
+   */ 
+  public void 
+  updateCheckedInMenu() 
+  {
+    rebuildEditorSubmenu(1);
+    rebuildComparatorSubmenu();
+  }
+
+  /**
+   * Update the working file menu.
+   */ 
+  public void 
+  updateWorkingMenu() 
+  {
+    rebuildEditorSubmenu(0);
+  }
+
+  /**
+   * Rebuild the editor submenu.
+   * 
+   * @param idx
+   *   The node menu index: 0=Medium, 1=Long
+   */ 
+  private void 
+  rebuildEditorSubmenu
+  (
+   int idx
+  ) 
+  {
+    TreeMap<String,TreeSet<VersionID>> editors = PluginMgr.getInstance().getEditors();
+    
+    pEditWithMenus[idx].removeAll();
+    
+    for(String editor : editors.keySet()) {
+      JMenuItem item = new JMenuItem(editor);
+      item.setActionCommand("edit-with:" + editor);
+      item.addActionListener(this);
+      pEditWithMenus[idx].add(item);
+    }
+    
+    pEditWithMenus[idx].addSeparator();
+    
+    JMenu sub = new JMenu("All Versions");
+    pEditWithMenus[idx].add(sub);
+
+    for(String editor : editors.keySet()) {
+      JMenu esub = new JMenu(editor);
+      sub.add(esub);
+      
+      for(VersionID vid : editors.get(editor)) {
+	JMenuItem item = new JMenuItem(editor + " (v" + vid + ")");
+	item.setActionCommand("edit-with:" + editor + ":" + vid);
+	item.addActionListener(this);
+	esub.add(item);
+      }
+    }
+  }
+
+  /**
+   * Rebuild the comparator submenu.
+   */ 
+  private void 
+  rebuildComparatorSubmenu()
+  {
+    TreeMap<String,TreeSet<VersionID>> comparators = PluginMgr.getInstance().getComparators();
+
+    pCompareWithMenu.removeAll();
+    
+    for(String comparator : comparators.keySet()) {
+      JMenuItem item = new JMenuItem(comparator);
+      item.setActionCommand("compare-with:" + comparator);
+      item.addActionListener(this);
+      pCompareWithMenu.add(item);
+    }
+    
+    pCompareWithMenu.addSeparator();
+    
+    JMenu sub = new JMenu("All Versions");
+    pCompareWithMenu.add(sub);
+
+    for(String comparator : comparators.keySet()) {
+      JMenu csub = new JMenu(comparator);
+      sub.add(csub);
+      
+      for(VersionID vid : comparators.get(comparator)) {
+	JMenuItem item = new JMenuItem(comparator + " (v" + vid + ")");
+	item.setActionCommand("compare-with:" + comparator + ":" + vid);
+	item.addActionListener(this);
+	csub.add(item);
+      }
+    }
+  }
+
+    
 
   /*----------------------------------------------------------------------------------------*/
   /*   L I S T E N E R S                                                                    */
   /*----------------------------------------------------------------------------------------*/
-
-  /*-- ACTION LISTENER METHODS -------------------------------------------------------------*/
-
-  /** 
-   * Invoked when an action occurs. 
-   */ 
-  public void 
-  actionPerformed
-  (
-   ActionEvent e
-  ) 
-  {
-    String cmd = e.getActionCommand();
-    if(cmd.equals("apply")) 
-      doApply();
-    else if(cmd.startsWith("file-check:")) {
-      String comps[] = cmd.split(":");
-      doFileChecked((JFileCheckBox) e.getSource(), comps[1], comps[2]);      
-    }
-    else if(cmd.startsWith("version-pressed:")) {
-      String comps[] = cmd.split(":");
-      doVersionPressed(comps[1], comps[2]);
-    }
-    else if(cmd.equals("edit"))
-      doEdit();
-    else if(cmd.startsWith("edit-with:"))
-      doEditWith(cmd.substring(10)); 
-    else if(cmd.startsWith("compare-with:"))
-      doCompareWith(cmd.substring(13)); 
-
-    else if(cmd.equals("queue-jobs"))
-      doQueueJobs();
-    else if(cmd.equals("pause-jobs"))
-      doPauseJobs();
-    else if(cmd.equals("resume-jobs"))
-      doResumeJobs();
-    else if(cmd.equals("kill-jobs"))
-      doKillJobs();
-
-    else if(cmd.equals("remove-files"))
-      doRemoveFiles();    
-  }
-
 
   /*-- MOUSE LISTENER METHODS --------------------------------------------------------------*/
 
@@ -854,13 +907,25 @@ class JNodeFilesPanel
    * Invoked when the mouse enters a component. 
    */
   public void 
-  mouseEntered(MouseEvent e) {}
+  mouseEntered
+  (
+   MouseEvent e
+  ) 
+  {
+    requestFocusInWindow();
+  }
   
   /**
    * Invoked when the mouse exits a component. 
    */ 
   public void 
-  mouseExited(MouseEvent e) {}
+  mouseExited
+  (
+   MouseEvent e
+  ) 
+  {
+    KeyboardFocusManager.getCurrentKeyboardFocusManager().clearGlobalFocusOwner();
+  }
 
   /**
    * Invoked when a mouse button has been pressed on a component. 
@@ -903,10 +968,12 @@ class JNodeFilesPanel
 	  }
 
 	  if(pTargetVersionID != null) {
+	    updateCheckedInMenu();
 	    pCompareWithMenu.setEnabled(hasWorking);
 	    pCheckedInPopup.show(e.getComponent(), e.getX(), e.getY());
 	  }
 	  else {
+	    updateWorkingMenu();
 	    pWorkingPopup.show(e.getComponent(), e.getX(), e.getY());
 	  }
 	}
@@ -915,12 +982,86 @@ class JNodeFilesPanel
     }
   }
 
-
   /**
    * Invoked when a mouse button has been released on a component. 
    */ 
   public void 
   mouseReleased(MouseEvent e) {}
+
+
+  /*-- KEY LISTENER METHODS ----------------------------------------------------------------*/
+
+  /**
+   * invoked when a key has been pressed.
+   */   
+  public void 
+  keyPressed
+  (
+   KeyEvent e
+  )
+  {
+    UserPrefs prefs = UserPrefs.getInstance();
+
+    if((prefs.getNodeDetailsApplyChanges() != null) &&
+       prefs.getNodeDetailsApplyChanges().wasPressed(e) && 
+       pApplyButton.isEnabled())
+      doApply();
+  }
+
+  /**
+   * Invoked when a key has been released.
+   */ 
+  public void 	
+  keyReleased(KeyEvent e) {}
+
+  /**
+   * Invoked when a key has been typed.
+   */ 
+  public void 	
+  keyTyped(KeyEvent e) {} 
+
+
+  /*-- ACTION LISTENER METHODS -------------------------------------------------------------*/
+
+  /** 
+   * Invoked when an action occurs. 
+   */ 
+  public void 
+  actionPerformed
+  (
+   ActionEvent e
+  ) 
+  {
+    String cmd = e.getActionCommand();
+    if(cmd.equals("apply")) 
+      doApply();
+    else if(cmd.startsWith("file-check:")) {
+      String comps[] = cmd.split(":");
+      doFileChecked((JFileCheckBox) e.getSource(), comps[1], comps[2]);      
+    }
+    else if(cmd.startsWith("version-pressed:")) {
+      String comps[] = cmd.split(":");
+      doVersionPressed(comps[1], comps[2]);
+    }
+    else if(cmd.equals("edit"))
+      doEdit();
+    else if(cmd.startsWith("edit-with:"))
+      doEditWith(cmd.substring(10)); 
+    else if(cmd.startsWith("compare-with:"))
+      doCompareWith(cmd.substring(13)); 
+
+    else if(cmd.equals("queue-jobs"))
+      doQueueJobs();
+    else if(cmd.equals("pause-jobs"))
+      doPauseJobs();
+    else if(cmd.equals("resume-jobs"))
+      doResumeJobs();
+    else if(cmd.equals("kill-jobs"))
+      doKillJobs();
+
+    else if(cmd.equals("remove-files"))
+      doRemoveFiles();    
+  }
 
 
 
@@ -1063,7 +1204,7 @@ class JNodeFilesPanel
   doEdit() 
   {
     if(pTargetFileSeq != null) {
-      EditTask task = new EditTask(null, pTargetFileSeq, pTargetVersionID);
+      EditTask task = new EditTask(pTargetFileSeq, pTargetVersionID);
       task.start();
     }
   }
@@ -1077,8 +1218,25 @@ class JNodeFilesPanel
    String editor
   ) 
   {
+    String ename = null;
+    VersionID evid = null;
+    String parts[] = editor.split(":");
+    switch(parts.length) {
+    case 1:
+      ename = editor;
+      break;
+
+    case 2:
+      ename = parts[0];
+      evid = new VersionID(parts[1]);
+      break;
+
+    default:
+      assert(false);
+    }
+
     if(pTargetFileSeq != null) {
-      EditTask task = new EditTask(editor, pTargetFileSeq, pTargetVersionID);
+      EditTask task = new EditTask(ename, evid, pTargetFileSeq, pTargetVersionID);
       task.start();
     }
   }
@@ -1096,8 +1254,25 @@ class JNodeFilesPanel
    String comparator
   ) 
   {
+    String cname = null;
+    VersionID cvid = null;
+    String parts[] = comparator.split(":");
+    switch(parts.length) {
+    case 1:
+      cname = comparator;
+      break;
+
+    case 2:
+      cname = parts[0];
+      cvid = new VersionID(parts[1]);
+      break;
+
+    default:
+      assert(false);
+    }
+
     if(pTargetFileSeq != null) {
-      CompareTask task = new CompareTask(comparator, pTargetFileSeq, pTargetVersionID);
+      CompareTask task = new CompareTask(cname, cvid, pTargetFileSeq, pTargetVersionID);
       task.start();
     }
   }
@@ -1726,16 +1901,31 @@ class JNodeFilesPanel
     public 
     EditTask
     (
-     String ename, 
      FileSeq fseq, 
      VersionID vid
     ) 
     {
       super("JNodeFilesPanel:EditTask");
 
-      pEditorName = ename;
-      pFileSeq    = fseq; 
-      pVersionID  = vid; 
+      pFileSeq   = fseq; 
+      pVersionID = vid; 
+    }
+
+    public 
+    EditTask
+    (
+     String ename, 
+     VersionID evid,
+     FileSeq fseq, 
+     VersionID vid
+    ) 
+    {
+      super("JNodeFilesPanel:EditTask");
+
+      pEditorName    = ename;
+      pEditorVersion = evid; 
+      pFileSeq       = fseq; 
+      pVersionID     = vid; 
     }
 
     public void 
@@ -1777,7 +1967,7 @@ class JNodeFilesPanel
 		throw new PipelineException
 		  ("No editor was specified for node (" + name + ")!");
 	      
-	      editor = Plugins.newEditor(ename);
+	      editor = PluginMgr.getInstance().newEditor(ename, pEditorVersion); 
 	    }
 
 	    /* lookup the toolset environment */ 
@@ -1825,6 +2015,7 @@ class JNodeFilesPanel
     }
 
     private String     pEditorName;
+    private VersionID  pEditorVersion; 
     private FileSeq    pFileSeq; 
     private VersionID  pVersionID; 
   }
@@ -1843,16 +2034,18 @@ class JNodeFilesPanel
     public 
     CompareTask
     (
-     String ename,
+     String cname,   
+     VersionID cvid,
      FileSeq fseq, 
      VersionID vid
     ) 
     {
       super("JNodeFilesPanel:CompareTask");
 
-      pComparatorName = ename;
-      pFileSeq        = fseq; 
-      pVersionID      = vid; 
+      pComparatorName    = cname;
+      pComparatorVersion = cvid; 
+      pFileSeq           = fseq; 
+      pVersionID         = vid; 
     }
 
     public void 
@@ -1885,7 +2078,8 @@ class JNodeFilesPanel
 	      com = vsn;
 
 	    /* create an comparator plugin instance */ 
-	    BaseComparator comparator = Plugins.newComparator(pComparatorName);
+	    BaseComparator comparator = 
+	      PluginMgr.getInstance().newComparator(pComparatorName, pComparatorVersion);
 
 	    /* the checked-in file */ 
 	    File fileB = new File(pFileSeq.toString());
@@ -1944,6 +2138,7 @@ class JNodeFilesPanel
     }
 
     private String     pComparatorName;
+    private VersionID  pComparatorVersion; 
     private FileSeq    pFileSeq; 
     private VersionID  pVersionID; 
   }
@@ -2290,7 +2485,13 @@ class JNodeFilesPanel
    * The checked-in file popup menu.
    */ 
   private JPopupMenu  pCheckedInPopup; 
+
   
+  /**
+   * The edit with submenus.
+   */ 
+  private JMenu[]  pEditWithMenus; 
+
   /**
    * The compare with submenu.
    */ 
