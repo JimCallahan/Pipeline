@@ -1,4 +1,4 @@
-// $Id: GlueParserState.java,v 1.5 2004/05/08 23:28:49 jim Exp $
+// $Id: GlueParserState.java,v 1.6 2004/05/16 19:04:27 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -91,12 +91,15 @@ class GlueParserState
   ) 
     throws ParseException
   {
+    assert(cls != null);
+
     Object obj = null;
     try {
       obj = cls.newInstance();
     }
     catch(Exception ex) {
-      throw new ParseException(ex.toString());
+      throw new ParseException("Unable to instantiate class (" + cls + "):\n" + 
+			       "  " + ex.toString());
     }
     
     if(pMasterTable.containsKey(objID))
