@@ -320,6 +320,18 @@
 
 
 
+  <!--  H O U R   B A R   L A B E L  -->
+
+  <style id="HourBarLabel">
+    <imagePainter path="HourBar.png" 
+                  method="labelBackground"
+                  sourceInsets="0 1 0 0"/>
+    <insets top="0" bottom="0" right="0" left="3"/>
+  </style>
+  <bind style="HourBarLabel" type="name" key="HourBarLabel"/>
+
+
+
   <!--  S M A L L   L E F T   A R R O W   B U T T O N  -->
 
   <style id="SmallLeftArrowButton"> 
@@ -495,6 +507,32 @@
 
 
 
+  <!--  G R A P H   P A N E L  -->
+
+  <style id="BlueGraphPanel">
+    <imagePainter path="BlueGraphPanel.png"
+                  sourceInsets="1 1 1 0"/>
+    <insets top="2" bottom="2" right="0" left="0"/>
+  </style>
+  <bind style="BlueGraphPanel" type="name" key="BlueGraphPanel"/>
+
+  <style id="GreenGraphPanel">
+    <imagePainter path="GreenGraphPanel.png"
+                  sourceInsets="1 1 1 0"/>
+    <insets top="2" bottom="2" right="0" left="0"/>
+  </style>
+  <bind style="GreenGraphPanel" type="name" key="GreenGraphPanel"/>
+
+  <style id="PurpleGraphPanel">
+    <imagePainter path="PurpleGraphPanel.png"
+                  sourceInsets="1 1 1 0"/>
+    <insets top="2" bottom="2" right="0" left="0"/>
+  </style>
+  <bind style="PurpleGraphPanel" type="name" key="PurpleGraphPanel"/>
+
+
+
+
   <!--  P A N E L   L A B E L  -->
 
   <style id="PanelLabel">
@@ -576,6 +614,46 @@
     <font name="Lucida Sans Bold" size="12"/>
   </style>
   <bind style="EditableTextField" type="name" key="EditableTextField"/>
+
+  <style id="GreenEditableTextField">
+    <state value="SELECTED">
+       <color value="#ffff00" type="TEXT_FOREGROUND"/>
+       <color value="#727272" type="TEXT_BACKGROUND"/>
+    </state>
+    <state value="DISABLED"> 
+      <imagePainter path="GreenValuePanel.png"
+                    method="textFieldBackground"
+                    sourceInsets="3 3 3 3"/>
+    </state>
+    <state> 
+      <imagePainter path="GreenEditableValuePanel.png"
+                    method="textFieldBackground"
+                    sourceInsets="3 3 3 3"/> 
+    </state>
+    <insets top="2" bottom="2" right="8" left="8"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="GreenEditableTextField" type="name" key="GreenEditableTextField"/>
+
+  <style id="PurpleEditableTextField">
+    <state value="SELECTED">
+       <color value="#ffff00" type="TEXT_FOREGROUND"/>
+       <color value="#727272" type="TEXT_BACKGROUND"/>
+    </state>
+    <state value="DISABLED"> 
+      <imagePainter path="PurpleValuePanel.png"
+                    method="textFieldBackground"
+                    sourceInsets="3 3 3 3"/>
+    </state>
+    <state> 
+      <imagePainter path="PurpleEditableValuePanel.png"
+                    method="textFieldBackground"
+                    sourceInsets="3 3 3 3"/> 
+    </state>
+    <insets top="2" bottom="2" right="8" left="8"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="PurpleEditableTextField" type="name" key="PurpleEditableTextField"/>
 
   <style id="WarningTextField">
     <state value="DISABLED"> 
