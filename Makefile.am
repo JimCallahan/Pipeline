@@ -1,7 +1,7 @@
 
 SUBDIRS = \
   Core \
-  WinSys
+  UI
 
 
 
