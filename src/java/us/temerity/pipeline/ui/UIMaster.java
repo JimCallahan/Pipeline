@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.37 2004/08/26 05:58:54 jim Exp $
+// $Id: UIMaster.java,v 1.38 2004/08/30 02:55:05 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -2083,7 +2083,7 @@ class UIMaster
 
 	  /* progress bar */ 
 	  {
-	    JProgressBar bar = new JProgressBar(JProgressBar.HORIZONTAL, 0, 272);
+	    JProgressBar bar = new JProgressBar(JProgressBar.HORIZONTAL, 0, 294);
 	    pSplashProgress = bar;
 
 	    bar.setValue(1);
@@ -2253,6 +2253,7 @@ class UIMaster
 	  mgr.verifySimpleTexture("DarkGrey");
 	  
 	  mgr.verifySimpleTexture("Queued");
+	  mgr.verifySimpleTexture("Paused");
 	  mgr.verifySimpleTexture("Aborted");
 	  mgr.verifySimpleTexture("Running");
 	  mgr.verifySimpleTexture("Finished");
