@@ -1,4 +1,4 @@
-// $Id: JExportPanel.java,v 1.1 2005/03/30 20:37:29 jim Exp $
+// $Id: JExportPanel.java,v 1.2 2005/04/02 20:56:52 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -138,8 +138,6 @@ class JExportPanel
 	  
 	{
 	  Box jrbox = new Box(BoxLayout.X_AXIS);
-	  pJobReqsBox = jrbox;
-	  
 	  jrbox.addComponentListener(this);
 	  
 	  {
@@ -871,11 +869,6 @@ class JExportPanel
   
   
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The job requirements container.
-   */ 
-  private Box  pJobReqsBox;
 
   /**
    * The job requirements spacer.
