@@ -1,4 +1,4 @@
-// $Id: JBooleanField.java,v 1.1 2004/05/16 19:21:38 jim Exp $
+// $Id: JBooleanField.java,v 1.2 2004/06/08 02:47:00 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -33,10 +33,15 @@ class JBooleanField
       add(Box.createHorizontalGlue());
       
       {
-	JLabel label = new JLabel();
-	pLabel = label;
-	
-	add(label);
+	JValueField field = new JValueField(this);
+	pTextField = field;
+
+	field.setName("BooleanValueTextField");
+	field.setHorizontalAlignment(JLabel.CENTER);
+	field.setEditable(false);
+	field.addMouseListener(this);
+
+	add(field);
       }
       
       add(Box.createHorizontalGlue());
@@ -62,7 +67,9 @@ class JBooleanField
   ) 
   {
     pValue = tf;
-    pLabel.setText(pValue ? "YES" : "no");
+    pTextField.setText(pValue ? "YES" : "no");
+
+    pTextField.fireActionPerformed2();
   }
 
   /**
@@ -74,6 +81,68 @@ class JBooleanField
     return pValue;
   }
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   E V E N T S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Adds the specified action listener to receive action events from this collection field.
+   */ 
+  public void
+  addActionListener
+  (
+   ActionListener l
+  )
+  {
+    pTextField.addActionListener(l);
+  }
+
+  /**
+   * Removes the specified action listener so that it no longer receives action events
+   * from this collection field.
+   */ 
+  public void 	
+  removeActionListener
+  (
+   ActionListener l
+  )
+  {
+    pTextField.removeActionListener(l);
+  }
+          
+  /**
+   * Sets the command string used for action events.
+   */ 
+  public void 	
+  setActionCommand
+  (
+   String command
+  )
+  {
+    pTextField.setActionCommand(command);
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   J C O M P O N E N T   O V E R R I D E S                                              */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Sets the foreground color of this component.
+   */ 
+  public void 
+  setForeground
+  (
+   Color fg
+  )
+  {
+    if(pTextField != null) 
+      pTextField.setForeground(fg);
+  }
+          
 
   
   /*----------------------------------------------------------------------------------------*/
@@ -117,6 +186,41 @@ class JBooleanField
   
 
   /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L   C L A S S E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  public
+  class JValueField
+    extends JTextField
+  {
+    public 
+    JValueField
+    (
+     JBooleanField parent
+    ) 
+    {
+      pParent = parent;
+    }    
+
+    public JBooleanField
+    getParent()
+    {
+      return pParent;
+    }
+
+    public void 
+    fireActionPerformed2()
+    {
+      fireActionPerformed();
+    }
+
+    private static final long serialVersionUID = 133532305819177444L;
+
+    private JBooleanField  pParent;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
@@ -133,9 +237,9 @@ class JBooleanField
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The text label.
+   * The value text field.
    */ 
-  private JLabel  pLabel;
+  private JValueField  pTextField;
 
   /**
    * The underlying boolean value.
