@@ -1,4 +1,4 @@
-// $Id: LinkCommon.java,v 1.6 2004/04/20 21:53:54 jim Exp $
+// $Id: LinkCommon.java,v 1.7 2004/07/07 13:17:40 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -39,8 +39,8 @@ class LinkCommon
    * @param name 
    *   The fully resolved name of the source node.
    * 
-   * @param catagory 
-   *   The named classification of the link's node state propogation policy.
+   * @param policy 
+   *   The node state propogation policy.
    * 
    * @param relationship 
    *   The nature of the relationship between files associated with the source and 
@@ -53,16 +53,16 @@ class LinkCommon
   LinkCommon
   (
    String name,  
-   LinkCatagory catagory, 
+   LinkPolicy policy,
    LinkRelationship relationship,  
    Integer offset     
   ) 
   {
     super(name);
 
-    if(catagory == null) 
-      throw new IllegalArgumentException("The link catagory cannot be (null)!");
-    pCatagory = catagory;
+    if(policy == null) 
+      throw new IllegalArgumentException("The policy cannot be (null)!");
+    pPolicy = policy;
 
     if(relationship == null) 
       throw new IllegalArgumentException("The link relationship cannot be (null)!");
@@ -95,7 +95,7 @@ class LinkCommon
   {
     super(link.getName());
 
-    pCatagory     = link.getCatagory();
+    pPolicy       = link.getPolicy();
     pRelationship = link.getRelationship();
     pFrameOffset  = link.getFrameOffset();
   }
@@ -107,15 +107,14 @@ class LinkCommon
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the named classification of this link's {@link OverallNodeState OverallNodeState} 
-   * and {@link OverallQueueState OverallQueueState} propogation policy.
+   * Get the link's {@link OverallNodeState OverallNodeState} and
+   * {@link OverallQueueState OverallQueueState} propagation policy.
    */ 
-  public LinkCatagory
-  getCatagory() 
+  public LinkPolicy
+  getPolicy() 
   {
-    return pCatagory;
+    return pPolicy;
   }
-
 
   /**
    * Get the nature of the relationship between files associated with the source and 
@@ -165,7 +164,7 @@ class LinkCommon
     if((obj != null) && (obj instanceof LinkCommon)) {
       LinkCommon link = (LinkCommon) obj;
       return (super.equals(obj) && 
-	      (pCatagory.equals(link.pCatagory)) &&
+	      (pPolicy.equals(link.pPolicy)) && 
 	      (pRelationship == link.pRelationship) &&
 	      (((pFrameOffset == null) && (link.pFrameOffset == null)) ||
 	       ((pFrameOffset != null) && pFrameOffset.equals(link.pFrameOffset))));
@@ -188,7 +187,7 @@ class LinkCommon
   {
     super.toGlue(encoder);
 
-    encoder.encode("Catagory", pCatagory);
+    encoder.encode("Policy", pPolicy);
     encoder.encode("Relationship", pRelationship);
 
     if(pRelationship == LinkRelationship.OneToOne)
@@ -204,10 +203,10 @@ class LinkCommon
   {
     super.fromGlue(decoder);
 
-    LinkCatagory catagory = (LinkCatagory) decoder.decode("Catagory");
-    if(catagory == null) 
-      throw new GlueException("The \"Catagory\" entry was missing or (null)!");
-    pCatagory = catagory;
+    LinkPolicy policy = (LinkPolicy) decoder.decode("Policy");
+    if(policy == null) 
+      throw new GlueException("The \"Policy\" entry was missing or (null)!");
+    pPolicy = policy;
 
     LinkRelationship relationship = (LinkRelationship) decoder.decode("Relationship");
     if(relationship == null) 
@@ -241,10 +240,10 @@ class LinkCommon
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * The named classification of this link's {@link OverallNodeState OverallNodeState} and 
-   * {@link OverallQueueState OverallQueueState} propogation policy.
+   * The link's {@link OverallNodeState OverallNodeState} and 
+   * {@link OverallQueueState OverallQueueState} propagation policy.
    */
-  protected LinkCatagory  pCatagory; 
+  protected LinkPolicy  pPolicy; 
 
   /**
    * The nature of the relationship between files associated with the source and target 

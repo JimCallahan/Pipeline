@@ -1,4 +1,4 @@
-// $Id: LinkMod.java,v 1.2 2004/03/23 07:40:37 jim Exp $
+// $Id: LinkMod.java,v 1.3 2004/07/07 13:17:40 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -34,8 +34,8 @@ class LinkMod
    * @param name 
    *   The fully resolved name of the source node.
    * 
-   * @param catagory 
-   *   The named classification of the link's node state propogation policy.
+   * @param policy 
+   *   The node state propogation policy.
    * 
    * @param relationship 
    *   The nature of the relationship between files associated with the source and 
@@ -48,12 +48,12 @@ class LinkMod
   LinkMod
   (
    String name, 
-   LinkCatagory catagory,   
+   LinkPolicy policy,
    LinkRelationship relationship,  
    Integer offset
   ) 
   {
-    super(name, catagory, relationship, offset);
+    super(name, policy, relationship, offset);
   }
 
   /**
@@ -87,20 +87,19 @@ class LinkMod
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Set the named classification of this link's {@link OverallNodeState OverallNodeState} 
-   * and {@link OverallQueueState OverallQueueState} propogation policy.
+   * Set the link's {@link OverallNodeState OverallNodeState} and
+   * {@link OverallQueueState OverallQueueState} propagation policy.
    */ 
   public void 
-  setCatagory
+  setPolicy
   (
-   LinkCatagory catagory
+   LinkPolicy policy
   ) 
   {
-    if(catagory == null) 
-      throw new IllegalArgumentException("The link catagory cannot be (null)!");
-    pCatagory = catagory;
+    if(policy == null) 
+      throw new IllegalArgumentException("The policy cannot be (null)!");
+    pPolicy = policy;
   }
-
 
   /**
    * Set the nature of the relationship between files associated with the source and 
