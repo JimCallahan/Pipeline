@@ -1,4 +1,4 @@
-// $Id: NodeRenameReq.java,v 1.3 2004/05/21 21:17:51 jim Exp $
+// $Id: NodeRenameReq.java,v 1.4 2004/07/18 21:32:30 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -47,7 +47,7 @@ class NodeRenameReq
   { 
     if(id == null) 
       throw new IllegalArgumentException
-	("The downstream working version ID cannot be (null)!");
+	("The working version ID cannot be (null)!");
     pNodeID = id;
 
     if(newName == null) 
