@@ -1,4 +1,4 @@
-// $Id: JobWaitRsp.java,v 1.2 2004/08/23 03:07:10 jim Exp $
+// $Id: JobStartRsp.java,v 1.1 2004/08/23 03:07:10 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -11,14 +11,14 @@ import java.util.*;
 import java.util.logging.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   J O B   W A I T   R S P                                                                */
+/*   J O B   S T A R T   R S P                                                              */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A successful response to a {@link JobWaitReq JobWaitReq} request.
+ * A successful response to a {@link JobStartReq JobStartReq} request.
  */ 
 public
-class JobWaitRsp
+class JobStartRsp
   extends TimedRsp
 {
   /*----------------------------------------------------------------------------------------*/
@@ -30,31 +30,26 @@ class JobWaitRsp
    *
    * @param jobID
    *   The unique job identifier.
-   *
+   * 
    * @param timer 
    *   The timing statistics for a task.
-   * 
-   * @param results
-   *   The execution results or <CODE>null</CODE> if the job was never executed.
    * 
    * @param jobs
    *   The number of currently running jobs.
    */ 
   public
-  JobWaitRsp
+  JobStartRsp
   (
-   long jobID,
+   long jobID, 
    TaskTimer timer, 
-   QueueJobResults results, 
    int jobs
   )
   { 
     super(timer);
 
-    pResults = results; 
     pNumJobs = jobs;
 
-    Logs.net.finest("JobMgr.wait(): " + jobID + "\n  " + getTimer());
+    Logs.net.finest("JobMgr.start(): " + jobID + "\n  " + getTimer());
     if(Logs.net.isLoggable(Level.FINEST))
       Logs.flush();
   }
@@ -65,15 +60,6 @@ class JobWaitRsp
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
-  /**
-   * Gets the execution results.
-   */
-  public QueueJobResults
-  getResults()
-  {
-    return pResults;
-  }
-  
   /**
    * Get the number of jobs running on the host.
    */ 
@@ -88,7 +74,7 @@ class JobWaitRsp
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -7864068873410009351L;
+  private static final long serialVersionUID = 672080887635869383L;
 
   
 
@@ -97,13 +83,9 @@ class JobWaitRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The the execution results.
-   */ 
-  private QueueJobResults  pResults; 
-
-  /**
    * The number of currently running jobs.
    */ 
   private int  pNumJobs; 
+
 }
   
