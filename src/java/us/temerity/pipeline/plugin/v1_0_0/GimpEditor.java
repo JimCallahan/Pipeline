@@ -1,30 +1,30 @@
-// $Id: XDviEditor.java,v 1.2 2004/03/07 02:35:53 jim Exp $
+// $Id: GimpEditor.java,v 1.1 2004/09/08 18:31:28 jim Exp $
 
-package us.temerity.pipeline.plugin;
+package us.temerity.pipeline.plugin.v1_0_0;
 
-import us.temerity.pipeline.SingleEditor; 
+import us.temerity.pipeline.*; 
 
 /*------------------------------------------------------------------------------------------*/
-/*   X D V I   E D I T O R                                                                  */
+/*   G I M P   E D I T O R                                                                  */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The DVI previewer for the X Window System.             
+ * The GNU Image Manipuation Program. 
  */
 public
-class XDviEditor
-  extends SingleEditor
+class GimpEditor
+  extends BaseEditor
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
   
   public
-  XDviEditor()
+  GimpEditor()
   {
-    super("XDvi",
-	  "The DVI previewer for the X Window System.", 
-	  "xdvi");
+    super("Gimp", new VersionID("1.0.0"), 
+	  "The GNU Image Manipulation Program.", 
+	  "gimp");
   }
 
 
@@ -33,7 +33,7 @@ class XDviEditor
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 6803361743847912904L;
+  private static final long serialVersionUID = -3360850101193207174L;
 
 }
 

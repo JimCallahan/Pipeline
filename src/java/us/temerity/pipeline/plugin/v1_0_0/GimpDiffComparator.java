@@ -1,6 +1,6 @@
-// $Id: GimpDiffComparator.java,v 1.2 2004/07/24 18:26:21 jim Exp $
+// $Id: GimpDiffComparator.java,v 1.1 2004/09/08 18:31:28 jim Exp $
 
-package us.temerity.pipeline.plugin;
+package us.temerity.pipeline.plugin.v1_0_0;
 
 import us.temerity.pipeline.*; 
 
@@ -25,7 +25,7 @@ class GimpDiffComparator
   public
   GimpDiffComparator()
   {
-    super("GimpDiff", 
+    super("GimpDiff", new VersionID("1.0.0"),
 	  "Image comparison using GIMP.", 
 	  "gimp");
   }

@@ -1,9 +1,8 @@
-// $Id: FCheckEditor.java,v 1.5 2004/07/16 22:02:00 jim Exp $
+// $Id: FCheckEditor.java,v 1.1 2004/09/08 18:31:28 jim Exp $
 
-package us.temerity.pipeline.plugin;
+package us.temerity.pipeline.plugin.v1_0_0;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.glue.*;
 
 import java.io.*;
 import java.util.*;
@@ -26,7 +25,7 @@ class FCheckEditor
   public
   FCheckEditor()
   {
-    super("FCheck", 
+    super("FCheck", new VersionID("1.0.0"),
 	  "The Maya image viewer.", 
 	  "fcheck");
   }

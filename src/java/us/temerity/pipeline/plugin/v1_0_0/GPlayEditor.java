@@ -1,39 +1,39 @@
-// $Id: GimpEditor.java,v 1.3 2004/03/07 02:35:53 jim Exp $
+// $Id: GPlayEditor.java,v 1.1 2004/09/08 18:31:28 jim Exp $
 
-package us.temerity.pipeline.plugin;
+package us.temerity.pipeline.plugin.v1_0_0;
 
-import us.temerity.pipeline.BaseEditor; 
+import us.temerity.pipeline.*; 
+
 
 /*------------------------------------------------------------------------------------------*/
-/*   G I M P   E D I T O R                                                                  */
+/*   G P L A Y   E D I T O R                                                                */
 /*------------------------------------------------------------------------------------------*/
 
-/**
- * The GNU Image Manipuation Program. 
+/** 
+ * The Houdini 3D model viewer.
  */
 public
-class GimpEditor
-  extends BaseEditor
+class GPlayEditor
+  extends SingleEditor
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
   
   public
-  GimpEditor()
+  GPlayEditor()
   {
-    super("Gimp", 
-	  "The GNU Image Manipulation Program.", 
-	  "gimp");
+    super("GPlay", new VersionID("1.0.0"), 
+	  "The Houdini 3D model viewer.", 
+	  "gplay");
   }
-
 
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -3360850101193207174L;
+  private static final long serialVersionUID = -3692817573568021007L;
 
 }
 

@@ -1,38 +1,39 @@
-// $Id: XDiffComparator.java,v 1.1 2004/07/18 21:38:18 jim Exp $
+// $Id: XDviEditor.java,v 1.1 2004/09/08 18:31:28 jim Exp $
 
-package us.temerity.pipeline.plugin;
+package us.temerity.pipeline.plugin.v1_0_0;
 
-import us.temerity.pipeline.BaseComparator; 
+import us.temerity.pipeline.*; 
 
 /*------------------------------------------------------------------------------------------*/
-/*   X D I F F   C O M P A R A T O R                                                        */
+/*   X D V I   E D I T O R                                                                  */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The graphical text file comparator and merge tool.
+ * The DVI previewer for the X Window System.             
  */
 public
-class XDiffComparator
-  extends BaseComparator
+class XDviEditor
+  extends SingleEditor
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
   
   public
-  XDiffComparator()
+  XDviEditor()
   {
-    super("XDiff", 
-	  "The X11 based text file comparator and merge tool.", 
-	  "xdiff");
+    super("XDvi", new VersionID("1.0.0"), 
+	  "The DVI previewer for the X Window System.", 
+	  "xdvi");
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -3650862921762683348L;
+  private static final long serialVersionUID = 6803361743847912904L;
 
 }
 

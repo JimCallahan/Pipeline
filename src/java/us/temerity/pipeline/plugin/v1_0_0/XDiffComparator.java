@@ -1,30 +1,30 @@
-// $Id: GEditEditor.java,v 1.2 2004/03/07 02:35:53 jim Exp $
+// $Id: XDiffComparator.java,v 1.1 2004/09/08 18:31:28 jim Exp $
 
-package us.temerity.pipeline.plugin;
+package us.temerity.pipeline.plugin.v1_0_0;
 
-import us.temerity.pipeline.BaseEditor; 
+import us.temerity.pipeline.*; 
 
 /*------------------------------------------------------------------------------------------*/
-/*   G E D I T   E D I T O R                                                                */
+/*   X D I F F   C O M P A R A T O R                                                        */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The lightweight GNOME desktop text editor.                                            
+ * The graphical text file comparator and merge tool.
  */
 public
-class GEditEditor
-  extends BaseEditor
+class XDiffComparator
+  extends BaseComparator
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
   
   public
-  GEditEditor()
+  XDiffComparator()
   {
-    super("GEdit", 
-	  "A lightweight text editor for the GNOME desktop.", 
-	  "gedit");
+    super("XDiff", new VersionID("1.0.0"), 
+	  "The X11 based text file comparator and merge tool.", 
+	  "xdiff");
   }
 
 
@@ -32,7 +32,7 @@ class GEditEditor
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 7568592679705964360L;
+  private static final long serialVersionUID = -3650862921762683348L;
 
 }
 

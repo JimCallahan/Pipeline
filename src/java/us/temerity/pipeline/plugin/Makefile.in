@@ -200,21 +200,29 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
       JAVA_PATHS = -d ../../../.. -classpath ../api.jar		
 
-    JAVA_SOURCES = $(shell ls $(srcdir)/*.java)
-    JAVA_CLASSES = $(shell ls *.class)
+    JAVA_SOURCES = $(shell find $(srcdir) -type f -name "*.java")
+    JAVA_CLASSES = $(patsubst $(srcdir)/%.java,%.class,$(JAVA_SOURCES))
 
       PLUGIN_DIR = $(ROOT_INST_DIR)/plugins/us/temerity/pipeline/plugin
+     EXAMPLE_DIR = $(ROOT_INST_DIR)/examples/us/temerity/pipeline/plugin
+
+
+     PLUGIN_DIRS = 
 
 
 #--------------------------------------------------------------------------------------------#
 #   R U L E S                                                                                #
 #--------------------------------------------------------------------------------------------#
 
+foo:
+	echo $(PLUGIN_DIRS)
+
 all: Makefile java-all $(TARGET) 
 
 $(TARGET): java-all
 	(cd ../../../..; \
-         $(JAR) cvf us/temerity/pipeline/plugin/$@ us/temerity/pipeline/plugin/*.class)
+         $(JAR) cvf us/temerity/pipeline/plugin/$@ \
+                $(patsubst %,us/temerity/pipeline/plugin/%,$(JAVA_CLASSES)))
 
 java-all: $(JAVA_SOURCES)
 	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(JAVA_SOURCES)
@@ -226,22 +234,39 @@ java-all: $(JAVA_SOURCES)
 
 check:
 
+
 #--------------------------------------------------------------------------------------------#
 
-install: all installdirs install-classes
+install: all installdirs install-sources install-classes 
+	echo "Original Plugins" > $(DESTDIR)$(ROOT_INST_DIR)/plugins/lock
 
 install-classes: $(JAVA_CLASSES)
 	@list='$^'; for p in $$list; do \
-          f=`basename $$p`; \
+          d=`dirname $$p`; \
 	  if test -f $$p; then \
-            echo $(INSTALL) -m 444 $$p $(DESTDIR)$(PLUGIN_DIR)/$$f; \
-            $(INSTALL) -m 444 $$p $(DESTDIR)$(PLUGIN_DIR)/$$f; \
+            echo $(INSTALL) -m 644 $$p $(DESTDIR)$(PLUGIN_DIR)/$$d; \
+            $(INSTALL) -m 644 $$p $(DESTDIR)$(PLUGIN_DIR)/$$d; \
           fi; \
          done
 
+installdirs: $(sort $(dir $(JAVA_CLASSES)))
+	@list='$^'; for p in $$list; do \
+           echo $(mkinstalldirs) $(DESTDIR)$(EXAMPLE_DIR)/$$p; \
+           $(mkinstalldirs) $(DESTDIR)$(EXAMPLE_DIR)/$$p; \
+           echo $(mkinstalldirs) $(DESTDIR)$(PLUGIN_DIR)/$$p; \
+           $(mkinstalldirs) $(DESTDIR)$(PLUGIN_DIR)/$$p; \
+         done
 
-installdirs:
-	$(mkinstalldirs) $(DESTDIR)$(PLUGIN_DIR)
+install-sources: $(JAVA_SOURCES)
+	@list='$^'; for p in $$list; do \
+          f=`echo $$p | sed -e 's:$(srcdir)/::g'`; \
+          d=`dirname $$f`; \
+          if test -f $$p; then \
+            echo $(INSTALL) -m 444 $$p $(DESTDIR)$(EXAMPLE_DIR)/$$d; \
+            $(INSTALL) -m 444 $$p $(DESTDIR)$(EXAMPLE_DIR)/$$d; \
+          fi; \
+         done
+
 
 
 #--------------------------------------------------------------------------------------------#

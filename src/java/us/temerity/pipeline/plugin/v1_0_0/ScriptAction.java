@@ -1,6 +1,6 @@
-// $Id: ScriptAction.java,v 1.7 2004/08/22 22:06:10 jim Exp $
+// $Id: ScriptAction.java,v 1.1 2004/09/08 18:31:28 jim Exp $
 
-package us.temerity.pipeline.plugin;
+package us.temerity.pipeline.plugin.v1_0_0;
 
 import us.temerity.pipeline.*;
 
@@ -122,7 +122,7 @@ class ScriptAction
   public
   ScriptAction() 
   {
-    super("Script", 
+    super("Script", new VersionID("1.0.0"), 
 	  "Interprets an arbitrary script.");
 
     {

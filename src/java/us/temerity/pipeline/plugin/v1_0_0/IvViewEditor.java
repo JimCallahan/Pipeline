@@ -1,39 +1,38 @@
-// $Id: MayaEditor.java,v 1.3 2004/03/07 02:35:53 jim Exp $
+// $Id: IvViewEditor.java,v 1.1 2004/09/08 18:31:28 jim Exp $
 
-package us.temerity.pipeline.plugin;
+package us.temerity.pipeline.plugin.v1_0_0;
 
-import us.temerity.pipeline.SingleEditor; 
+import us.temerity.pipeline.*; 
 
 /*------------------------------------------------------------------------------------------*/
-/*   M A Y A   E D I T O R                                                                  */
+/*   I V V I E W   E D I T O R                                                              */
 /*------------------------------------------------------------------------------------------*/
 
-/** 
- * The 3D modeling, animation and rendering program from Alias|Wavefront.             
+/**
+ * The scene viewer distributed with OpenInventor.
  */
 public
-class MayaEditor
-  extends SingleEditor
+class IvViewEditor
+  extends BaseEditor
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
   
   public
-  MayaEditor()
+  IvViewEditor()
   {
-    super("Maya", 
-	  "3D modeling and animation software from Alias|Wavefront.", 
-	  "maya");
+    super("IvView", new VersionID("1.0.0"),
+	  "The scene viewer distributed with OpenInventor.", 
+	  "ivview");
   }
-
 
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 480056724240714359L;
+  private static final long serialVersionUID = 4618243875282394678L;
 
 }
 

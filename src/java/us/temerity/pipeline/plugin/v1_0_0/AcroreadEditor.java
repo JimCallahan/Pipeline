@@ -1,38 +1,39 @@
-// $Id: EmacsEditor.java,v 1.3 2004/03/07 02:35:53 jim Exp $
+// $Id: AcroreadEditor.java,v 1.1 2004/09/08 18:31:28 jim Exp $
 
-package us.temerity.pipeline.plugin;
+package us.temerity.pipeline.plugin.v1_0_0;
 
-import us.temerity.pipeline.BaseEditor; 
+import us.temerity.pipeline.*; 
 
 /*------------------------------------------------------------------------------------------*/
-/*   E M A C S   E D I T O R                                                                */
+/*   A C R O R E A D   E D I T O R                                                          */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The GNU extensible, customizable, self-documenting text editor.
+ * The Adobe Portable Document Format (PDF) viewer.
  */
 public
-class EmacsEditor
-  extends BaseEditor
+class AcroreadEditor
+  extends SingleEditor
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
   
   public
-  EmacsEditor()
+  AcroreadEditor()
   {
-    super("Emacs", 
-	  "The GNU extensible, customizable, self-documenting text editor.", 
-	  "emacs");
+    super("Acroread", new VersionID("1.0.0"),
+	  "The Adobe Portable Document Format (PDF) viewer.",
+	  "acroread");
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -5044455288055639029L;
+  private static final long serialVersionUID = 2396414608583621951L;
 
 }
 

@@ -1,19 +1,18 @@
-// $Id: MPlayEditor.java,v 1.2 2004/03/07 02:35:53 jim Exp $
+// $Id: EmacsClientEditor.java,v 1.1 2004/09/08 18:31:28 jim Exp $
 
-package us.temerity.pipeline.plugin;
+package us.temerity.pipeline.plugin.v1_0_0;
 
-import us.temerity.pipeline.BaseEditor;
+import us.temerity.pipeline.*; 
 
 /*------------------------------------------------------------------------------------------*/
-/*   M P L A Y   E D I T O R                                                                */
+/*   E M A C S   C L I E N T   E D I T O R                                                  */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The Houdini image viewer.                                    
+ * The GNU extensible, customizable, self-documenting text editor run as a client.
  */
-
 public
-class MPlayEditor
+class EmacsClientEditor
   extends BaseEditor
 {  
   /*----------------------------------------------------------------------------------------*/
@@ -21,20 +20,20 @@ class MPlayEditor
   /*----------------------------------------------------------------------------------------*/
   
   public
-  MPlayEditor()
+  EmacsClientEditor()
   {
-    super("MPlay", 
-	  "The Houdini image viewer.", 
-	  "mplay");              
+    super("EmacsClient", new VersionID("1.0.0"), 
+	  "The GNU extensible, customizable, self-documenting text editor.", 
+	  "emacsclient");
   }
-
+  
 
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 5745249168281577899L;
+  private static final long serialVersionUID = -3166729535592453265L;
 
 }
 

@@ -1,30 +1,31 @@
-// $Id: HoudiniEditor.java,v 1.3 2004/03/07 02:35:53 jim Exp $
+// $Id: GEditEditor.java,v 1.1 2004/09/08 18:31:28 jim Exp $
 
-package us.temerity.pipeline.plugin;
+package us.temerity.pipeline.plugin.v1_0_0;
 
-import us.temerity.pipeline.SingleEditor; 
+import us.temerity.pipeline.BaseEditor; 
+import us.temerity.pipeline.VersionID; 
 
 /*------------------------------------------------------------------------------------------*/
-/*   H O U D I N I   E D I O T O R                                                          */
+/*   G E D I T   E D I T O R                                                                */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The 3D modeling and animation software from Side Effects Software.
+ * The lightweight GNOME desktop text editor.                                            
  */
 public
-class HoudiniEditor
-  extends SingleEditor
+class GEditEditor
+  extends BaseEditor
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
   
   public
-  HoudiniEditor()
+  GEditEditor()
   {
-    super("Houdini", 
-	  "3D modeling and animation software from Side Effects Software.", 
-	  "houdini");
+    super("GEdit", new VersionID("1.0.0"),
+	  "A lightweight text editor for the GNOME desktop.", 
+	  "gedit");
   }
 
 
@@ -32,7 +33,7 @@ class HoudiniEditor
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -1104835857294060158L;
+  private static final long serialVersionUID = 7568592679705964360L;
 
 }
 

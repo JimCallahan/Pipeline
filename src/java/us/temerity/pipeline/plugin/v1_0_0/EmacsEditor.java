@@ -1,31 +1,31 @@
-// $Id: GPlayEditor.java,v 1.2 2004/03/07 02:35:53 jim Exp $
+// $Id: EmacsEditor.java,v 1.1 2004/09/08 18:31:28 jim Exp $
 
-package us.temerity.pipeline.plugin;
+package us.temerity.pipeline.plugin.v1_0_0;
 
-import us.temerity.pipeline.SingleEditor; 
-
+import us.temerity.pipeline.BaseEditor; 
+import us.temerity.pipeline.VersionID; 
 
 /*------------------------------------------------------------------------------------------*/
-/*   G P L A Y   E D I T O R                                                                */
+/*   E M A C S   E D I T O R                                                                */
 /*------------------------------------------------------------------------------------------*/
 
-/** 
- * The Houdini 3D model viewer.
+/**
+ * The GNU extensible, customizable, self-documenting text editor.
  */
 public
-class GPlayEditor
-  extends SingleEditor
+class EmacsEditor
+  extends BaseEditor
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
   
   public
-  GPlayEditor()
+  EmacsEditor()
   {
-    super("GPlay", 
-	  "The Houdini 3D model viewer.", 
-	  "gplay");
+    super("Emacs", new VersionID("1.0.0"),
+	  "The GNU extensible, customizable, self-documenting text editor.", 
+	  "emacs");
   }
 
 
@@ -33,7 +33,7 @@ class GPlayEditor
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -3692817573568021007L;
+  private static final long serialVersionUID = -5044455288055639029L;
 
 }
 

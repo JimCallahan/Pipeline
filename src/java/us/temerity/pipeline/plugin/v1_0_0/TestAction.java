@@ -1,6 +1,6 @@
-// $Id: TestAction.java,v 1.4 2004/07/24 18:14:11 jim Exp $
+// $Id: TestAction.java,v 1.1 2004/09/08 18:31:28 jim Exp $
 
-package us.temerity.pipeline.plugin;
+package us.temerity.pipeline.plugin.v1_0_0;
 
 import us.temerity.pipeline.*;
 
@@ -25,7 +25,7 @@ class TestAction
   public
   TestAction() 
   {
-    super("Test", 
+    super("Test",  new VersionID("1.0.0"),
 	  "A test action with at lease one of each type of parameter.");
 
     {
@@ -61,12 +61,18 @@ class TestAction
     }
 
     {
+      ArrayList<String> colors = new ArrayList<String>();
+      colors.add("Red");
+      colors.add("Yellow");
+      colors.add("Green");
+      colors.add("Cyan");
+      colors.add("Blue");
+      colors.add("Purple");
+
       BaseActionParam param = 
 	new EnumActionParam("SomeEnum",
 			    "An enum parameter.",
-			    TestColor.Red, 
-			    TestColor.all(),
-			    TestColor.titles());
+			    "Purple", colors);
       addSingleParam(param);
     }
     
@@ -136,12 +142,18 @@ class TestAction
     }
 
     {
+      ArrayList<String> colors = new ArrayList<String>();
+      colors.add("Red");
+      colors.add("Yello");
+      colors.add("Green");
+      colors.add("Cyan");
+      colors.add("Blue");
+      colors.add("Purple");
+
       BaseActionParam param = 
 	new EnumActionParam("AnotherEnum",
 			    "An enum parameter.",
-			    TestColor.Red, 
-			    TestColor.all(),
-			    TestColor.titles());
+			    "Cyan", colors);
       params.put(param.getName(), param);
     }
     
