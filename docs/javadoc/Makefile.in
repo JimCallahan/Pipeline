@@ -181,7 +181,7 @@ javadoc.tar: docs-all
 	tar -cvf $@ javadoc
 
 docs-all: 
-	$(JAVADOC) $(JAVADOC_OPTS) us.temerity.pipeline \
+	$(JAVADOC) $(JAVADOC_OPTS) us.temerity.pipeline us.temerity.pipeline.plugin \
                    $(top_builddir)/src/java/us/temerity/pipeline/PackageInfo.java
 	touch $@
 
