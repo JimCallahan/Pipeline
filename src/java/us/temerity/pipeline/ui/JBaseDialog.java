@@ -1,4 +1,4 @@
-// $Id: JBaseDialog.java,v 1.7 2004/05/29 06:38:06 jim Exp $
+// $Id: JBaseDialog.java,v 1.8 2004/06/02 21:52:43 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -269,13 +269,13 @@ class JBaseDialog
   public void 
   setVisible
   (
-   boolean tf
+   boolean isVisible
   )
   {
-    if(tf)
+    if(isVisible)
       pConfirmed = false;
 
-    super.setVisible(tf);
+    super.setVisible(isVisible);
   }
     
 
