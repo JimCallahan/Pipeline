@@ -1,4 +1,4 @@
-// $Id: DNotify.java,v 1.2 2004/04/11 19:17:50 jim Exp $
+// $Id: DNotify.java,v 1.3 2004/04/12 22:36:29 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -148,23 +148,20 @@ class DNotify
   /** 
    * Wait for one of the monitored directories to be modified. <P> 
    *
-   * This method also applies the changes to the set of monitored directories requested by 
-   * the {@link #monitor monitor} and {@link #unmonitor unmonitor} methods.  The 
-   * <CODE>timeout</CODE> argument controls the maximum delay between requesting a change
-   * via the <CODE>monitor</CODE> and <CODE>unmonitor</CODE> methods and the application 
-   * of that change.  Note that the change may actually be applied much sooner if there is
-   * file system activity. <P> 
+   * Before waiting, this method also applies the changes to the set of monitored 
+   * directories requested by the {@link #monitor monitor} and {@link #unmonitor unmonitor} 
+   * methods. <P> 
    * 
    * Due to details with the way the OS supports directory change notification, it is 
    * crucial that this method be called from the same thread which instantiated the 
    * <CODE>DNotify</CODE> instance.  
    * 
    * @param timeout
-   *   The maximum number of milliseconds before applying changes to the monitored 
-   *   directory list.
+   *   The maximum number of milliseconds to wait before returning.
    * 
    * @return
-   *   The modified directory. 
+   *   The modified directory or <CODE>null</CODE> if no directories changed before the 
+   *   timeout interval elapsed.
    */ 
   public synchronized File 
   watch
@@ -178,80 +175,80 @@ class DNotify
 	("This method must be called from the same thread which instantiated the " + 
 	 "DNotify instance!");
 
-    while(true) {
-      synchronized(pLock) {
-	if(!pMonitor.isEmpty() || !pUnmonitor.isEmpty()) {
-	  for(File dir : pMonitor) {
-	    if(!pDirToDesc.containsKey(dir)) {
-	      if(pDirToDesc.size() >= getLimit())
-		throw new IOException
-		  ("Maximum number of directories (" + pMaxDirs + ") reached!");
-
-	      int fd = monitorNative(dir.getPath());
-	      
-	      Logs.ops.fine("Monitoring Directory: [" + fd + "] " + dir);
+    synchronized(pLock) {
+      if(!pMonitor.isEmpty() || !pUnmonitor.isEmpty()) {
+	for(File dir : pMonitor) {
+	  if(!pDirToDesc.containsKey(dir)) {
+	    if(pDirToDesc.size() >= getLimit())
+	      throw new IOException
+		("Maximum number of directories (" + pMaxDirs + ") reached!");
 	    
-	      pDirToDesc.put(dir, fd);
-	      pDescToDir.put(fd, dir);
-
-	      if(pMinDesc == null) 
-		pMinDesc = new Integer(fd);
-	      else 
-		pMinDesc = Math.min(pMinDesc, fd);		
-	    }
-	  }
-	  pMonitor.clear();
-	  
-	  for(File dir : pUnmonitor) {
-	    if(pDirToDesc.containsKey(dir)) {
-	      
-	      int fd = pDirToDesc.get(dir);
-	      unmonitorNative(fd);
-
-	      Logs.ops.fine("Unmonitoring Directory: [" + fd + "] " + dir);
-	      
-	      pDirToDesc.remove(dir);
-	      pDescToDir.remove(fd); 
-
-	      if(pDirToDesc.isEmpty()) 
-		pMinDesc = null;
-	    }
-	  }
-	  pUnmonitor.clear();
-	  
-	  assert(pDirToDesc.size() == pDescToDir.size());
-	  
-	  if(!pDirToDesc.isEmpty()) {
-	    StringBuffer buf = new StringBuffer();
-	    buf.append("Directories Currently Monitored: " + pDirToDesc.size() + "\n");
-
- 	    for(File file : pDirToDesc.keySet()) 
- 	      buf.append("  [" + pDirToDesc.get(file) + "] " + file + "\n");
-	    Logs.ops.finest(buf.toString());
-	    Logs.flush();
+	    int fd = monitorNative(dir.getPath());
+	    
+	    Logs.ops.fine("Monitoring Directory: [" + fd + "] " + dir);
+	    
+	    pDirToDesc.put(dir, fd);
+	    pDescToDir.put(fd, dir);
+	    
+	    if(pMinDesc == null) 
+	      pMinDesc = new Integer(fd);
+	    else 
+	      pMinDesc = Math.min(pMinDesc, fd);		
 	  }
 	}
-      }
+	pMonitor.clear();
+	
+	for(File dir : pUnmonitor) {
+	  if(pDirToDesc.containsKey(dir)) {
+	    
+	    int fd = pDirToDesc.get(dir);
+	    unmonitorNative(fd);
 
-      /* wait for a modification signal */ 
-      int fd = watchNative(timeout);
-
-      /* lookup the name of the modified directory */ 
-      if(fd > 0) {
-	synchronized(pLock) {
-	  File dir = pDescToDir.get(fd);
-	  if(dir == null) {
-	    throw new IOException
-	      ("Couldn't determine the directory name for the file descriptor (" + fd + ")!");
+	    Logs.ops.fine("Unmonitoring Directory: [" + fd + "] " + dir);
+	    
+	    pDirToDesc.remove(dir);
+	    pDescToDir.remove(fd); 
+	    
+	    if(pDirToDesc.isEmpty()) 
+	      pMinDesc = null;
 	  }
-
-	  Logs.ops.fine("Directory Modified: [" + fd + "] " + dir);
+	}
+	pUnmonitor.clear();
+	
+	assert(pDirToDesc.size() == pDescToDir.size());
+	
+	if(!pDirToDesc.isEmpty()) {
+	  StringBuffer buf = new StringBuffer();
+	  buf.append("Directories Currently Monitored: " + pDirToDesc.size() + "\n");
+	  
+	  for(File file : pDirToDesc.keySet()) 
+	    buf.append("  [" + pDirToDesc.get(file) + "] " + file + "\n");
+	  Logs.ops.finest(buf.toString());
 	  Logs.flush();
-      
-	  return dir; 
 	}
       }
     }
+    
+    /* wait for a modification signal */ 
+    int fd = watchNative(timeout);
+    
+    /* lookup the name of the modified directory */ 
+    if(fd > 0) {
+      synchronized(pLock) {
+	File dir = pDescToDir.get(fd);
+	if(dir == null) {
+	  throw new IOException
+	    ("Couldn't determine the directory name for the file descriptor (" + fd + ")!");
+	}
+	
+	Logs.ops.fine("Directory Modified: [" + fd + "] " + dir);
+	Logs.flush();
+	
+	return dir; 
+      }
+    }
+
+    return null;
   }
 
 

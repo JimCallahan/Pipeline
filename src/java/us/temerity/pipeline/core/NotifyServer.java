@@ -1,4 +1,4 @@
-// $Id: NotifyServer.java,v 1.1 2004/04/11 19:25:29 jim Exp $
+// $Id: NotifyServer.java,v 1.2 2004/04/12 22:36:29 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -201,15 +201,23 @@ class NotifyServer
 	
 	while(!pShutdown.get()) {
 	  File dir = pDNotify.watch(10);
-	  synchronized(pMonitorTasks) {
-	    for(MonitorHandlerTask task : pMonitorTasks) 
-	      task.addDir(dir);
+	  if(dir != null) {
+	    synchronized(pMonitorTasks) {
+	      for(MonitorHandlerTask task : pMonitorTasks) 
+		task.addDir(dir);
+	    }
 	  }
 	}
+	
+	Logs.net.finer("Server Shutting Down...");
+	Logs.flush();
       }
       catch(IOException ex) {
 	Logs.net.severe(ex.getMessage());
       }
+
+      Logs.net.finer("Waiting for Control Server to complete...");
+      Logs.flush();
 
       try {
 	control.join();
@@ -218,6 +226,9 @@ class NotifyServer
 	Logs.net.severe
 	  ("Interrupted while waiting for the master control thread to complete!");
       }
+
+      Logs.net.finer("Waiting for Monitor Server to complete...");
+      Logs.flush();
 
       try {
 	monitor.join();
@@ -380,6 +391,8 @@ class NotifyServer
 	    break;
 
 	  case Shutdown:
+	    Logs.net.info("Shutdown Request Received: " + pSocket.getInetAddress());
+	    Logs.flush();
 	    pShutdown.set(true);
 	    break;	    
 
@@ -464,6 +477,7 @@ class NotifyServer
 	  Logs.net.finer("Shutting Down Monitor Threads -- Waiting for tasks to complete...");
 	  Logs.flush();
 	  for(MonitorHandlerTask task : pMonitorTasks) {
+	    task.shutdown();
 	    task.join();
 	  }
 	}
@@ -513,6 +527,15 @@ class NotifyServer
       pSocket = socket;
       pDirs   = new HashSet<File>();
       pGate   = new Semaphore(1, true);
+    }
+
+    public void 
+    shutdown() 
+    {
+      synchronized(pDirs) {
+	if(pDirs.isEmpty())
+	  pGate.release();
+      }
     }
 
     public void 
@@ -588,6 +611,8 @@ class NotifyServer
 	    break;
 
 	  case Shutdown:
+	    Logs.net.info("Shutdown Request Received: " + pSocket.getInetAddress());
+	    Logs.flush();
 	    pShutdown.set(true);
 	    break;	    
 
