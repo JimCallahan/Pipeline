@@ -4,6 +4,4 @@ SUBDIRS = \
   java \
   utils
 
-# php
-
 
