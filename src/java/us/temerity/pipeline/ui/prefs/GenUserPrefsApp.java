@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.44 2004/12/31 07:41:15 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.45 2004/12/31 08:56:53 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -1003,7 +1003,7 @@ class GenUserPrefsApp
 	
 	new BoundedDoublePref
 	("The distance between job groups.",
-	 "JobGroupSpace", "Group Space:", 0.0, 3.0, 1.0)
+	 "JobGroupSpace", "Group Space:", 0.15, 3.0, 0.3)
       };
 
       pPrefs.put("Panel|Job Viewer|Appearance", prefs);
@@ -1111,7 +1111,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.44 2004/12/31 07:41:15 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.45 2004/12/31 08:56:53 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -1365,7 +1365,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.44 2004/12/31 07:41:15 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.45 2004/12/31 08:56:53 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
