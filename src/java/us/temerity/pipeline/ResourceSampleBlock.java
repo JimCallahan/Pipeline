@@ -1,4 +1,4 @@
-// $Id: ResourceSampleBlock.java,v 1.2 2004/08/01 19:31:46 jim Exp $
+// $Id: ResourceSampleBlock.java,v 1.3 2004/08/04 01:40:45 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -82,7 +82,7 @@ class ResourceSampleBlock
   /**
    * Construct a new sample block.
    * 
-   * @param samples
+   * @param blocks
    *   The resource sample blocks.
    */ 
   public 

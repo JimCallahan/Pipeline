@@ -1,4 +1,4 @@
-// $Id: JBarGraph.java,v 1.3 2004/08/01 19:31:46 jim Exp $
+// $Id: JBarGraph.java,v 1.4 2004/08/04 01:42:54 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -55,7 +55,8 @@ class JBarGraph
    * @param values
    *   The normalized [0,1] values.
    * 
-   * @param hightlight
+   * @param highlight
+   *   Whether to highlight the first sample.
    */ 
   public void 
   setValues

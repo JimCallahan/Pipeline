@@ -1,4 +1,4 @@
-// $Id: QueueRemoveHostsReq.java,v 1.1 2004/07/28 19:10:23 jim Exp $
+// $Id: QueueRemoveHostsReq.java,v 1.2 2004/08/04 01:42:24 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -26,7 +26,7 @@ class QueueRemoveHostsReq
   /** 
    * Constructs a new request. <P> 
    * 
-   * @param hostname
+   * @param hostnames
    *   The fully resolved names of the hosts.
    */
   public

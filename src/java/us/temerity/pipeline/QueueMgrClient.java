@@ -1,9 +1,8 @@
-// $Id: QueueMgrClient.java,v 1.5 2004/08/01 19:31:46 jim Exp $
+// $Id: QueueMgrClient.java,v 1.6 2004/08/04 01:40:31 jim Exp $
 
 package us.temerity.pipeline;
 
 import us.temerity.pipeline.message.*;
-import us.temerity.pipeline.toolset.*;
 
 import java.io.*;
 import java.net.*;
@@ -613,7 +612,7 @@ class QueueMgrClient
    * Any of the arguments may be <CODE>null</CODE> if no changes are do be made for
    * the type of host property the argument controls. <P> 
    * 
-   * A <B>pljobmgr<B>(1) daemon must be running on a host before its status can be 
+   * A <B>pljobmgr</B>(1) daemon must be running on a host before its status can be 
    * changed to <CODE>Disabled</CODE> or <CODE>Enabled</CODE>.  If <B>plqueuemgr<B>(1) cannot
    * establish a network connection to a <B>pljobmgr<B>(1) daemon running on the host, the 
    * status will be overridden and changed to <CODE>Shutdown</CODE>.
@@ -710,13 +709,6 @@ class QueueMgrClient
     }        
   }
 
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   J O B S                                                                              */
-  /*----------------------------------------------------------------------------------------*/
-
-  // submit(), kill(), etc.. 
 
 
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.5 2004/08/01 15:46:51 jim Exp $
+// $Id: QueueMgrServer.java,v 1.6 2004/08/04 01:42:12 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.*;
  * The server-side manager of queue queries and operations. <P> 
  * 
  * This class handles network communication with {@link QueueMgrClient QueueMgrClient} 
- * and {@link QueueMgrFullClient QueueMgrFullClient} instances running on remote hosts.  
+ * and {@link QueueMgrControlClient QueueMgrControlClient} instances running on remote hosts.
  * This class listens for new connections from clients and creats a thread to manage each 
  * connection.  Each of these threads then listens for requests for queue related operations 
  * and dispatches these requests to an underlying instance of the {@link QueueMgr QueueMgr}
