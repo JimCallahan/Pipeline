@@ -10,11 +10,13 @@
        <color value="#ffff00" type="TEXT_FOREGROUND"/>
        <color value="#666666" type="TEXT_BACKGROUND"/>
     </state>
-    <font name="Lucida Sans Bold" size="12"/>
-    <property key="ScrollBar.thumbHeight" type="integer" value="16"/>
   </style>
   <bind style="Default" type="region" key=".*"/>
 
+  <style id="DefaultFont">
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="DefaultFont" type="name" key=".*"/>
 
 
   <!--  R O O T   P A N E L  -->
@@ -28,19 +30,19 @@
 
 
 
-  <!--  S T O P   L I G H T -->
+  <!--  L O C K E D   L I G H T -->
 
-  <style id="StopLight"> 
+  <style id="LockedLight"> 
     <state>
-      <imagePainter path="StopLight.png"
+      <imagePainter path="LockedLight.png"
                     sourceInsets="0 0 0 0"/>
     </state>
     <state value="SELECTED">
-      <imagePainter path="StopLightOn.png"
+      <imagePainter path="LockedLightOn.png"
                     sourceInsets="0 0 0 0"/>
     </state>
   </style>
-  <bind style="StopLight" type="name" key="StopLight"/>
+  <bind style="LockedLight" type="name" key="LockedLight"/>
 
 
 
@@ -88,6 +90,56 @@
 
 
 
+  <!--  R A I S E D    B U T T O N  -->
+
+  <style id="RaisedConfirmButton">
+    <state>
+      <imagePainter path="RaisedConfirmButton.png"
+                    method="buttonBackground"
+                    sourceInsets="23 21 4 4"/>
+    </state>
+    <state value="PRESSED">
+      <color value="#ffff00" type="TEXT_FOREGROUND"/>
+      <imagePainter path="RaisedConfirmButtonPressed.png"
+                    method="buttonBackground"	
+                    sourceInsets="23 21 4 4"/>
+    </state>
+    <state value="DISABLED">
+      <color value="#e5e5e5" type="TEXT_FOREGROUND"/>
+      <imagePainter path="RaisedConfirmButtonDisabled.png"
+                    method="buttonBackground"	
+                    sourceInsets="23 21 4 4"/>
+    </state>
+    <insets top="8" bottom="8" right="0" left="30"/> 
+    <property key="Button.textShiftOffset" type="integer" value="1"/>  
+  </style>
+  <bind style="RaisedConfirmButton" type="name" key="RaisedConfirmButton"/>
+
+  <style id="RaisedCancelButton">
+    <state>
+      <imagePainter path="RaisedCancelButton.png"
+                    method="buttonBackground"
+                    sourceInsets="23 21 4 4"/>
+    </state>
+    <state value="PRESSED">
+      <color value="#ffff00" type="TEXT_FOREGROUND"/>
+      <imagePainter path="RaisedCancelButtonPressed.png"
+                    method="buttonBackground"	
+                    sourceInsets="23 21 4 4"/>
+    </state>
+    <state value="DISABLED">
+      <color value="#e5e5e5" type="TEXT_FOREGROUND"/>
+      <imagePainter path="RaisedCancelButtonDisabled.png"
+                    method="buttonBackground"	
+                    sourceInsets="23 21 4 4"/>
+    </state>
+    <insets top="8" bottom="8" right="0" left="30"/> 
+    <property key="Button.textShiftOffset" type="integer" value="1"/>  
+  </style>
+  <bind style="RaisedCancelButton" type="name" key="RaisedCancelButton"/>
+
+
+
   <!--  T E X T   F I E L D  -->
 
   <style id="TextField">
@@ -95,6 +147,7 @@
                   method="textFieldBackground"
                   sourceInsets="3 3 3 3"/>
     <insets top="2" bottom="2" right="8" left="8"/>
+    <font name="Lucida Sans Bold" size="12"/>
   </style>
   <bind style="TextField" type="region" key="TextField"/>
 
@@ -192,8 +245,6 @@
   <!--  M E N U S  -->
 
   <style id="Menu">
-    <imageIcon id="MenuIcon" path="MenuIcon.png"/>
-    <property key="Menu.arrowIcon" value="MenuIcon"/>
     <state>
       <imagePainter path="MenuItem.png"
                     sourceInsets="4 8 4 0"/>
@@ -202,6 +253,8 @@
       <imagePainter path="MenuItemSelected.png"
                     sourceInsets="4 8 4 0"/>
     </state>
+    <imageIcon id="MenuIcon" path="MenuIcon.png"/>
+    <property key="Menu.arrowIcon" value="MenuIcon"/>
     <insets top="4" bottom="4" right="0" left="8"/>
   </style>
   <bind style="Menu" type="region" key="Menu"/>
@@ -212,13 +265,14 @@
                     sourceInsets="4 8 4 0"/>
     </state>
     <state value="MOUSE_OVER">
+      <color value="#ffff00" type="TEXT_FOREGROUND"/>
       <imagePainter path="MenuItemSelected.png"
                     sourceInsets="4 8 4 0"/>
     </state>
     <state value="DISABLED">
+      <color value="#e5e5e5" type="TEXT_FOREGROUND"/>
       <imagePainter path="MenuItemDisabled.png"
                     sourceInsets="4 8 4 0"/>
-      <color value="#e5e5e5" type="TEXT_FOREGROUND"/>
     </state>    
     <insets top="4" bottom="4" right="0" left="8"/>
   </style>
@@ -354,5 +408,25 @@
   <bind style="TabbedPaneTab" type="region" key="TabbedPaneTab"/>
 
 
+  <!--  D I A L O G S  -->
+
+  <style id="ModalDialogHeader">
+    <imagePainter path="ModalDialogHeader.png"	
+                  sourceInsets="0 3 6 3"/>
+    <insets top="15" bottom="21" right="15" left="15"/>
+  </style>
+  <bind style="ModalDialogHeader" type="name" key="ModalDialogHeader"/>
+
+  <style id="ModalDialogHeaderLabel">
+    <font name="Lucida Sans Demibold" size="14"/>
+  </style>
+  <bind style="ModalDialogHeaderLabel" type="name" key="ModalDialogHeaderLabel"/>
+
+  <style id="DialogButtonPanel">
+    <imagePainter path="DialogButtonPanel.png"	
+                  sourceInsets="6 3 0 3"/>
+    <insets top="21" bottom="15" right="15" left="15"/>
+  </style>
+  <bind style="DialogButtonPanel" type="name" key="DialogButtonPanel"/>
 
 </synth>
