@@ -1,4 +1,4 @@
-// $Id: JFileSeqSelectDialog.java,v 1.4 2005/01/03 06:56:23 jim Exp $
+// $Id: JFileSeqSelectDialog.java,v 1.5 2005/03/28 04:16:45 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -195,91 +195,13 @@ class JFileSeqSelectDialog
 
 
 	/* collate the files into file sequences */ 
-	TreeMap<String,FileSeq> fseqs = new TreeMap<String,FileSeq>();
-	{
-	  /* collect all files who's names are valid file sequences fragments */ 
-	  TreeMap<String,Fragment> ufrags = new TreeMap<String,Fragment>();
-	  TreeMap<String,Fragment> pfrags = new TreeMap<String,Fragment>();
-	  for(File file : files) {
-	    String comps[] = file.getName().split("\\.", -1);
-	    int num = comps.length;
-	    if(((num == 2) || (num == 3)) &&
-	       (comps[0].length() > 0) && 
-	       (comps[1].length() > 0) && 
-	       ((num == 2) || (comps[2].length() > 0))) {
-
-	      String prefix = comps[0];
-	      Integer frame = null;		
-	      String suffix = null;
-	      try {
-		frame = new Integer(comps[1]);
-		if(num == 3) 
-		  suffix = comps[2];
-	      }
-	      catch(NumberFormatException ex) {
-		if(num == 2) 
-		  suffix = comps[1];
-		else if(num == 3) 
-		  prefix = null;
-	      }
-	      
-	      if(prefix != null) {
-		if(frame != null) {
-		  boolean isPadded = comps[1].startsWith("0");
-		  int digits = comps[1].length();
-		  String key = (prefix + "|" + suffix + "|" + digits);
-		  
-		  Fragment frag = null;
-		  if(isPadded) {
-		    frag = pfrags.get(key);
-		    if(frag == null) {
-		      frag = new Fragment(prefix, suffix, digits);
-		      pfrags.put(key, frag);
-		    }
-		  }
-		  else {
-		    frag = ufrags.get(key);
-		    if(frag == null) {
-		      frag = new Fragment(prefix, suffix, digits);
-		      ufrags.put(key, frag);
-		    }		    
-		  }
-		  
-		  frag.uFrames.add(frame);
-		}
-		else {
-		  FileSeq fseq = new FileSeq(prefix, suffix);
-		  fseqs.put(fseq.toString(), fseq);
-		}
-	      }
-	    }
-	  }
-	  
-	  /* merge any unpadded fragment which coincides with a padded fragment */ 
-	  for(String key : pfrags.keySet()) {
-	    Fragment pfrag = pfrags.get(key);
-	    Fragment ufrag = ufrags.get(key);
-
-	    if(ufrag != null) {
-	      pfrag.uFrames.addAll(ufrag.uFrames);
-	      ufrags.remove(key);
-	    }
-	  }
-
-	  /* build file sequences from the fragments */ 
-	  for(Fragment frag : ufrags.values()) {
-	    FileSeq fseq = frag.toFileSeq();
-	    fseqs.put(fseq.toString(), fseq);
-	  }
-
-	  for(Fragment frag : pfrags.values()) {
-	    FileSeq fseq = frag.toFileSeq();
-	    fseqs.put(fseq.toString(), fseq);
-	  }
+	try {
+	  Set<FileSeq> fseqs = FileSeq.collate(files, true);
+	  for(FileSeq fseq : fseqs)
+	    model.addElement(fseq);
 	}
-
-	for(FileSeq fseq : fseqs.values())
-	  model.addElement(fseq);
+	catch(PipelineException ex) {
+	}
 
 	{
 	  pRenderer.setDirectory(dir);
@@ -391,68 +313,6 @@ class JFileSeqSelectDialog
     else {
       Toolkit.getDefaultToolkit().beep();
     }
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   I N T E R N A L   C L A S S E S                                                      */
-  /*----------------------------------------------------------------------------------------*/
-
-  private 
-  class Fragment
-  {
-    public 
-    Fragment
-    (
-     String prefix, 
-     String suffix, 
-     int digits
-    ) 
-    {
-      uPrefix = prefix; 
-      uSuffix = suffix;
-      uDigits = digits; 
-
-      uFrames = new TreeSet<Integer>();
-    }
-
-    public FileSeq
-    toFileSeq() 
-    {
-      FilePattern fpat = new FilePattern(uPrefix, uDigits, uSuffix);
-
-      FrameRange frange = null;
-      {
-	int startFrame = uFrames.first();
-	int endFrame   = uFrames.last();
-	if(endFrame == startFrame) {
-	  frange = new FrameRange(startFrame);
-	}
-	else {
-	  int byFrame = (endFrame - startFrame) + 1;
-	  {
-	    int prev = startFrame;
-	    for(Integer frame : uFrames) {
-	      int inc = (frame - prev);
-	      if(inc > 0) 
-		byFrame = Math.min(byFrame, inc);
-	      prev = frame;
-	    }
-	  }
-	  
-	  frange = new FrameRange(startFrame, endFrame, byFrame);
-	}
-      }
-      
-      return new FileSeq(fpat, frange);
-    }
-
-
-    public String  uPrefix; 
-    public String  uSuffix; 
-    public int     uDigits; 
-
-    public TreeSet<Integer>  uFrames;
   }
 
 
