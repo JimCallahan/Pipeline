@@ -1,4 +1,4 @@
-// $Id: JRegisterDialog.java,v 1.5 2004/09/03 11:03:51 jim Exp $
+// $Id: JRegisterDialog.java,v 1.6 2004/09/08 19:23:23 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -280,7 +280,8 @@ class JRegisterDialog
     {
       String editor = pEditorField.getSelected();
 
-      ArrayList<String> values = new ArrayList<String>(Plugins.getEditorNames());
+      PluginMgr mgr = PluginMgr.getInstance();
+      ArrayList<String> values = new ArrayList<String>(mgr.getEditors().keySet());
       values.add("-");
       pEditorField.setValues(values);
 
