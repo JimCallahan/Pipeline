@@ -1,4 +1,4 @@
-// $Id: PluginInputStream.java,v 1.3 2005/01/22 06:10:09 jim Exp $
+// $Id: PluginInputStream.java,v 1.4 2005/02/07 14:51:17 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -58,7 +58,9 @@ class PluginInputStream
     throws IOException, ClassNotFoundException
   {
     if(desc.getName().equals("us.temerity.pipeline.NodeCommon") ||
-       desc.getName().equals("us.temerity.pipeline.QueueJob")) {       
+       desc.getName().equals("us.temerity.pipeline.QueueJob") ||
+       desc.getName().equals("us.temerity.pipeline.Archive") ||
+       desc.getName().equals("us.temerity.pipeline.message.MiscArchiveReq")) {       
       try {
 	PluginMgrClient.getInstance().update();
       }
