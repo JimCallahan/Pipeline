@@ -1,4 +1,4 @@
-// $Id: TestInfo.java.in,v 1.2 2004/02/21 18:56:47 jim Exp $
+// $Id: TestInfo.java.in,v 1.3 2004/02/25 01:27:53 jim Exp $
 
 import java.io.File;
 
@@ -33,6 +33,12 @@ class TestInfo
    * The top level build directory.
    */ 
   public static final String sTopBuildDir = "@top_builddir@";        
+
+
+  /** 
+   * The name of the toolset used to build Pipeline. <P> 
+   */ 
+  public static final String sBuildToolset = "@BUILD_TOOLSET@";
 
 
   /**
