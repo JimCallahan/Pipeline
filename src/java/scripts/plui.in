@@ -2,5 +2,5 @@
 
 exec java -Djava.util.logging.config.file=@datadir@/logger.properties \
           @JAVA_RUNTIME_FLAGS@ -cp @prefix@/jar/pipeline.jar:@JDBC_JAR@:@prefix@/.. \
-          -Xincgc -Xms32m -Xmx256m pipeline/GraphicalApp "$@"
+          -Xms32m -Xmx256m pipeline/GraphicalApp "$@"
 
