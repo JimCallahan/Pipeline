@@ -1,4 +1,4 @@
-// $Id: TestAction.java,v 1.1 2004/09/08 18:31:28 jim Exp $
+// $Id: TestAction.java,v 1.2 2004/09/10 15:41:59 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -84,7 +84,33 @@ class TestAction
       addSingleParam(param);
     }
 
-    // add per-link parameters
+    {
+      ArrayList<String> layout = new ArrayList<String>();
+      layout.add("SomeString");
+      layout.add("SomeText");
+      layout.add(null);
+      layout.add("SomeDouble");
+      layout.add("SomeInteger");
+      layout.add(null);
+      layout.add("SomeLink");
+      layout.add(null);
+      layout.add(null);
+      layout.add("SomeEnum");
+
+      setSingleLayout(layout);
+    }
+
+    {
+      ArrayList<String> layout = new ArrayList<String>();
+      layout.add("AnotherText");
+      layout.add("AnotherDouble");
+      layout.add("AnotherInteger");
+      layout.add("AnotherLink");
+      layout.add("AnotherString");
+      layout.add("AnotherEnum");
+
+      setSourceLayout(layout);
+    }
   }
 
 
