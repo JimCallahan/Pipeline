@@ -1,4 +1,4 @@
-// $Id: JComboBoxCellRenderer.java,v 1.4 2004/05/02 12:12:23 jim Exp $
+// $Id: JComboBoxCellRenderer.java,v 1.5 2004/05/04 17:49:52 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -59,7 +59,7 @@ class JComboBoxCellRenderer
     
     if(index == -1) {
       setHorizontalAlignment(JLabel.CENTER);
-      setForeground(new Color(1.0f, 1.0f, 0.0f));
+      setForeground(Color.yellow);
       setBackground(new Color(0.45f, 0.45f, 0.45f));
       setIcon(null);
     }
@@ -67,12 +67,12 @@ class JComboBoxCellRenderer
       setHorizontalAlignment(JLabel.LEFT);
       setBackground(new Color(0.5f, 0.5f, 0.5f));
       if(isSelected) {
-	setForeground(new Color(1.0f, 1.0f, 0.0f));
+	setForeground(Color.yellow);
 	setIcon(sSelectedIcon);
       }
       else {
 	setIcon(sNormalIcon);
-	setForeground(new Color(1.0f, 1.0f, 1.0f));
+	setForeground(Color.white);
       }
     }    
     
