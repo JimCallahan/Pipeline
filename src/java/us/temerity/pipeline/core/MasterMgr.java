@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.69 2004/11/21 03:42:04 jim Exp $
+// $Id: MasterMgr.java,v 1.70 2004/12/04 21:16:40 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3958,8 +3958,12 @@ class MasterMgr
       for(LinkVersion link : vsn.getSources()) {
 	NodeID lnodeID = new NodeID(nodeID, link.getName());
 
-	performCheckOut(false, lnodeID, link.getVersionID(), mode, method, stable, 
-			branch, seen, dirty, timer);
+	switch(link.getPolicy()) {
+	case Dependency:
+	case Reference:
+	  performCheckOut(false, lnodeID, link.getVersionID(), mode, method, stable, 
+			  branch, seen, dirty, timer);
+	}
 
 	if(dirty.contains(link.getName())) 
 	  dirty.add(name);
@@ -6414,13 +6418,14 @@ class MasterMgr
 	}
       }
 
-      /* get per-file FileStates and newest last modification timestamps */ 
+      /* get per-file FileStates and timestamps */ 
       TreeMap<FileSeq, FileState[]> fileStates = new TreeMap<FileSeq, FileState[]>(); 
       boolean[] anyMissing = null;
-      Date[] fileTimeStamps = null;
+      Date[] newestStamps = null;
+      Date[] oldestStamps = null;
       switch(versionState) {
       case CheckedIn:
-	/* if checked-in, all files must be CheckedIn, no files can be missing and all 
+	/* if checked-in, all files must be CheckedIn, no files can be Missing and all 
 	   timestamps must be (null) */ 
 	for(FileSeq fseq : latest.getSequences()) {
 	  FileState fs[] = new FileState[fseq.numFrames()];
@@ -6434,8 +6439,11 @@ class MasterMgr
 	  if(anyMissing == null) 
 	    anyMissing = new boolean[fs.length];
 	  
-	  if(fileTimeStamps == null) 
-	    fileTimeStamps = new Date[fs.length];
+	  if(newestStamps == null) 
+	    newestStamps = new Date[fs.length];	  
+
+	  if(oldestStamps == null) 
+	    oldestStamps = new Date[fs.length];
 	}
 	break;
 
@@ -6451,7 +6459,7 @@ class MasterMgr
 	  pFileMgrClient.states(nodeID, work, versionState, work.isFrozen(), 
 				vid, fileStates, stamps);
 
-	  /* get the newest of the timestamp for each file sequence index */ 
+	  /* get the newest/oldest of the timestamp for each file sequence index */ 
 	  {
 	    Date stamp = null;
 	    if(work.isFrozen()) 
@@ -6460,20 +6468,29 @@ class MasterMgr
 	    for(FileSeq fseq : stamps.keySet()) {
 	      Date[] ts = stamps.get(fseq);
 	      
-	      if(fileTimeStamps == null) 
-		fileTimeStamps = new Date[ts.length];
+	      if(newestStamps == null) 
+		newestStamps = new Date[ts.length];
+	      
+	      if(oldestStamps == null) 
+		oldestStamps = new Date[ts.length];
 	      
 	      int wk;
 	      for(wk=0; wk<ts.length; wk++) {
-		/* the newest among the primary/secondary files for the index */ 
-		if((fileTimeStamps[wk] == null) || 
-		   ((ts[wk] != null) && (ts[wk].compareTo(fileTimeStamps[wk]) > 0)))
-		  fileTimeStamps[wk] = ts[wk];
-		
-		/* for frozen nodes, use the node creation timestmp if newer than the files */
-		if((fileTimeStamps[wk] == null) || 
-		   ((stamp != null) && (stamp.compareTo(fileTimeStamps[wk]) > 0)))
-		  fileTimeStamps[wk] = stamp;
+		if(stamp != null) {
+		  newestStamps[wk] = stamp; 
+		  oldestStamps[wk] = stamp;
+		}
+		else {
+		  /* the newest among the primary/secondary files for the index */ 
+		  if((newestStamps[wk] == null) || 
+		     ((ts[wk] != null) && (ts[wk].compareTo(newestStamps[wk]) > 0)))
+		    newestStamps[wk] = ts[wk];
+		  
+		  /* the oldest among the primary/secondary files for the index */ 
+		  if((oldestStamps[wk] == null) || 
+		     ((ts[wk] != null) && (ts[wk].compareTo(oldestStamps[wk]) < 0)))
+		    oldestStamps[wk] = ts[wk];
+		}
 	      }
 	    }
 	  }
@@ -6496,6 +6513,7 @@ class MasterMgr
 
       /* compute overall node state */ 
       OverallNodeState overallNodeState = null;
+      TreeSet<String> nonIgnoredSources = new TreeSet<String>();
       switch(versionState) {
       case Pending:
 	{
@@ -6527,7 +6545,7 @@ class MasterMgr
 	  boolean anyMissingFs       = false;
 	  for(FileState fs[] : fileStates.values()) {
 	    int wk;
-	    for(wk=0; wk<fs.length; wk++) {
+ 	    for(wk=0; wk<fs.length; wk++) {
 	      switch(fs[wk]) {
 	      case NeedsCheckOut:
 	      case Obsolete:
@@ -6602,12 +6620,11 @@ class MasterMgr
 		
 		  case Identical:
 		  case NeedsCheckOut:
-		    if(!link.getVersionID().equals(lvid))
+		    if(!link.getVersionID().equals(lvid)) {
 		      overallNodeState = OverallNodeState.ModifiedLinks;
+		      nonIgnoredSources.add(link.getName());
+		    }
 		  }
-	      
-		  if(overallNodeState != null)
-		    break;
 		}
 	      }
 	    }
@@ -6694,50 +6711,65 @@ class MasterMgr
 	      }
 	      
 	      if(queueStates[wk] == null) {
-		/* check for missing files or if the working version has been modified since 
-		   any of the primary/secondary files were created */ 
-		if(anyMissing[wk] ||
-		   (fileTimeStamps[wk].compareTo(work.getLastCriticalModification()) < 0)) {
-		  queueStates[wk] = QueueState.Stale;
-		}
+		switch(overallNodeState) {
+		case Identical: 
+		  queueStates[wk] = QueueState.Finished;
+		  break;
+		  
+		default:
+		  /* check for missing files or if the working version has been modified 
+		     since the oldest of the primary/secondary files were created */ 
+		  if(anyMissing[wk] ||
+		     (oldestStamps[wk].compareTo(work.getLastCriticalModification()) < 0)) {
+		    queueStates[wk] = QueueState.Stale;
+		  }
 		
-		/* check upstream per-file dependencies */ 
-		else {
-		  for(LinkMod link : work.getSources()) {
-		    if(link.getPolicy() == LinkPolicy.Dependency) {
-		      NodeStatus lstatus = status.getSource(link.getName());
-		      NodeDetails ldetails = lstatus.getDetails();
+		  /* check upstream per-file dependencies */ 
+		  else {
+		    for(LinkMod link : work.getSources()) {
+		      if(link.getPolicy() == LinkPolicy.Dependency) {
+			NodeStatus lstatus = status.getSource(link.getName());
+			NodeDetails ldetails = lstatus.getDetails();
+			
+			QueueState lqs[] = ldetails.getQueueState();
+			Date lstamps[] = ldetails.getFileTimeStamps();
 		      
-		      QueueState lqs[] = ldetails.getQueueState();
-		      Date lstamps[] = ldetails.getFileTimeStamps();
-		      
-		      // FIX THIS: 
-		      //   If the FileState of the upstream file is Identical, the 
-		      //   PropertyState is Identical and the upstream working version is 
-		      //   based on the same checked-in version as indicated by the link, 
-		      //   a newer upstream file timestamp should not make the current file 
-		      //   Stale!
-		      
-		      switch(link.getRelationship()) {
-		      case OneToOne:
-			{
-			  Integer offset = link.getFrameOffset();
-			  int idx = wk+offset;
-			  if(((idx >= 0) && (idx < lqs.length)) &&
-			     ((lqs[idx] != QueueState.Finished) ||
-			      (lstamps[idx] == null) || 
-			      (fileTimeStamps[wk].compareTo(lstamps[idx]) < 0))) 
-			    queueStates[wk] = QueueState.Stale;
+			boolean lanyMissing[] = null;
+			for(FileSeq lfseq : ldetails.getFileStateSequences()) {
+			  FileState lfs[] = ldetails.getFileState(lfseq);
+	    
+			  if(lanyMissing == null) 
+			    lanyMissing = new boolean[lfs.length];
+			  
+			  int mk;
+			  for(mk=0; mk<lanyMissing.length; mk++) {
+			    if(lfs[mk] == FileState.Missing) 
+			      lanyMissing[mk] = true;
+			  }
 			}
-			break;
+
+			switch(link.getRelationship()) {
+			case OneToOne:
+			  {
+			    Integer offset = link.getFrameOffset();
+			    int idx = wk+offset;
+			    if(((idx >= 0) && (idx < lqs.length)) &&
+			       ((lqs[idx] != QueueState.Finished) || 
+				lanyMissing[idx] || 
+				((lstamps[idx] != null) &&
+				 (oldestStamps[wk].compareTo(lstamps[idx]) < 0))))
+			      queueStates[wk] = QueueState.Stale;
+			  }
+			  break;
 			
 		      case All:
 			{
 			  int fk;
 			  for(fk=0; fk<lqs.length; fk++) {
-			    if((lqs[fk] != QueueState.Finished) ||
-			       (lstamps[fk] == null) || 
-			       (fileTimeStamps[wk].compareTo(lstamps[fk]) < 0)) {
+			    if((lqs[fk] != QueueState.Finished) || 
+			       lanyMissing[fk] || 
+			       ((lstamps[fk] != null) &&
+				(oldestStamps[wk].compareTo(lstamps[fk]) < 0))) {
 			      queueStates[wk] = QueueState.Stale;
 			      break;
 			    }
@@ -6752,6 +6784,7 @@ class MasterMgr
 		  
 		  if(queueStates[wk] == null) 
 		    queueStates[wk] = QueueState.Finished;
+		  }
 		}
 	      }
 	    }
@@ -6815,11 +6848,15 @@ class MasterMgr
 
       /**
        * Before updating the timestamps of the files associated with this node, determine 
-       * if staleness will be propogated from each upstream link. 
+       * if staleness will be propogated from each upstream link. <P> 
        * 
        * Staleness is propgated if the timestamp of any upstream file upon which any of this
-       * node's files depend through a Reference/Dependency link is newer than the dependent
-       * files.  These upstream timestamp have been previously modified to propogate staleness
+       * node's files depend (through a Reference/Dependency link) is newer than the dependent
+       * files.  Timestamps for these upstream nodes will be ignore if the ignore timestamp
+       * flag is set for the upstream file and the upstream node is not a member of the 
+       * nonIgnoredSources set. <P> 
+       *        
+       * These upstream timestamp have been previously modified to propogate staleness
        * of those nodes further upstream.
        */ 
       switch(versionState) {
@@ -6836,7 +6873,7 @@ class MasterMgr
 	      case Dependency:
 		{	      
 		  boolean staleLink = false;
-		  
+
 		  switch(overallQueueState) {
 		  case Running:
 		    break;
@@ -6848,8 +6885,27 @@ class MasterMgr
 		      switch(ldetails.getOverallQueueState()) {
 		      case Finished:
 			{
-			  QueueState lqs[] = ldetails.getQueueState();
-			  Date lstamps[] = ldetails.getFileTimeStamps();
+			  QueueState lqs[]   = ldetails.getQueueState();
+			  Date lstamps[]     = ldetails.getFileTimeStamps();
+			  boolean lignored[] = ldetails.ignoreTimeStamps();
+
+			  boolean nonIgnored = nonIgnoredSources.contains(link.getName());
+
+			  // THIS WAS ALREADY COMPUTED ABOVE!  MODIFY THIS TO REUSE THE 
+			  // PREVIOUS RESULTS INSTEAD OF RECOMPUTING THEM HERE.
+			  boolean lanyMissing[] = null;
+			  for(FileSeq lfseq : ldetails.getFileStateSequences()) {
+			    FileState lfs[] = ldetails.getFileState(lfseq);
+			    
+			    if(lanyMissing == null) 
+			      lanyMissing = new boolean[lfs.length];
+			    
+			    int mk;
+			    for(mk=0; mk<lanyMissing.length; mk++) {
+			      if(lfs[mk] == FileState.Missing) 
+				lanyMissing[mk] = true;
+			    }
+			  }
 			  
 			  switch(link.getRelationship()) {
 			  case OneToOne:
@@ -6857,9 +6913,9 @@ class MasterMgr
 			      Integer offset = link.getFrameOffset();
 			      int idx = wk+offset;
 			      if((idx >= 0) && (idx < lqs.length)) {
-				if((lstamps[idx] == null) || 
-				   ((fileTimeStamps[wk] == null) || 
-				    (fileTimeStamps[wk].compareTo(lstamps[idx]) < 0))) 
+				if(anyMissing[wk] || lanyMissing[idx] || 
+				   ((!lignored[idx] || nonIgnored) && 
+				    (oldestStamps[wk].compareTo(lstamps[idx]) < 0)))
 				  staleLink = true;
 			      }
 			    }
@@ -6869,9 +6925,9 @@ class MasterMgr
 			    {
 			      int fk;
 			      for(fk=0; fk<lqs.length; fk++) {
-				if((lstamps[fk] == null) ||
-				   ((fileTimeStamps[wk] == null) || 
-				    (fileTimeStamps[wk].compareTo(lstamps[fk]) < 0)))
+				if(anyMissing[wk] || lanyMissing[fk] || 
+				   ((!lignored[fk] || nonIgnored) && 
+				    (oldestStamps[wk].compareTo(lstamps[fk]) < 0)))
 				  staleLink = true;
 			      }
 			    }
@@ -6895,31 +6951,41 @@ class MasterMgr
       }
 
       /**
-       * Propagate staleness by updating the last modified time stamps of each file to be 
+       * Propagate staleness by setting the per-file time stamps of each file to be 
        * the newest of:
        * 
-       *   + The actual file time stamp.
+       *   + The newest actual file time stamp.
        * 
-       *   + If the file is missing, the time stamp of when the file status was computed.
+       *   + If the FileState is Missing, the time stamp of when the FileState was computed.
        * 
        *   + The last critical modification timestamp of the current node.
        * 
-       *   + The timestamp of any upstream file upon which the file depends through a 
-       *     Reference/Dependency link.  These upstream timestamp have been previously
-       *     modified to propogate staleness of those nodes further upstream.
+       *   + The time stamp of any upstream file upon which the file depends through a 
+       *     Reference/Dependency link.  These upstream time stamp have been previously
+       *     modified to propogate staleness of those nodes further upstream.  Upstream 
+       *     per-file time stamps which are (null) should be ignored.
        */
+      Date[] fileStamps = new Date[oldestStamps.length];
+      boolean[] ignoreStamps = new boolean[oldestStamps.length];
       switch(versionState) {
       case CheckedIn:
 	break;
 
       default:
 	{
-	  Date critical = work.getLastCriticalModification();
-
 	  int wk;
 	  for(wk=0; wk<queueStates.length; wk++) {
-	    if(fileTimeStamps[wk] == null) 
-	      fileTimeStamps[wk] = missingStamp;
+	    if(anyMissing[wk]) 
+	      fileStamps[wk] = missingStamp;
+	    else 
+	      fileStamps[wk] = newestStamps[wk];
+
+	    Date critical = work.getLastCriticalModification();
+	    if(critical.compareTo(fileStamps[wk]) > 0)
+	      fileStamps[wk] = critical;
+
+	    if(overallNodeState == OverallNodeState.Identical) 
+	      ignoreStamps[wk] = true;
 
 	    for(LinkMod link : work.getSources()) { 
 	      switch(link.getPolicy()) {
@@ -6929,35 +6995,37 @@ class MasterMgr
 		  NodeStatus lstatus = status.getSource(link.getName());
 		  NodeDetails ldetails = lstatus.getDetails();
 	      
-		  QueueState lqs[] = ldetails.getQueueState();
-		  Date lstamps[] = ldetails.getFileTimeStamps();
+		  QueueState lqs[]   = ldetails.getQueueState();
+		  Date lstamps[]     = ldetails.getFileTimeStamps();
+		  boolean lignored[] = ldetails.ignoreTimeStamps();
 		  
+		  boolean nonIgnored = nonIgnoredSources.contains(link.getName());
+
 		  switch(link.getRelationship()) {
 		  case OneToOne:
 		    {
 		      Integer offset = link.getFrameOffset();
 		      int idx = wk+offset;
+
 		      if((idx >= 0) && (idx < lqs.length)) {
-			Date stamp = critical;
-			if((lstamps[idx] != null) && (lstamps[idx].compareTo(critical) > 0)) 
-			  stamp = lstamps[idx];
-			
-			if(fileTimeStamps[wk].compareTo(stamp) < 0) 
-			  fileTimeStamps[wk] = stamp;
+			if(!lignored[idx] || nonIgnored) {
+			  ignoreStamps[wk] = false;
+			  if(lstamps[idx].compareTo(fileStamps[wk]) > 0)
+			    fileStamps[wk] = lstamps[idx];
+			}
 		      }
 		    }
 		    break;
-		
+
 		  case All:
 		    {
 		      int fk;
 		      for(fk=0; fk<lqs.length; fk++) {
-			Date stamp = critical;
-			if((lstamps[fk] != null) && (lstamps[fk].compareTo(critical) > 0)) 
-			  stamp = lstamps[fk];
-			
-			if(fileTimeStamps[wk].compareTo(stamp) < 0)
-			  fileTimeStamps[wk] = stamp;
+			if(!lignored[fk] || nonIgnored) {
+			  ignoreStamps[wk] = false;
+			  if(lstamps[fk].compareTo(fileStamps[wk]) > 0) 
+			    fileStamps[wk] = lstamps[fk];
+			}
 		      }
 		    }
 		  }
@@ -6974,7 +7042,7 @@ class MasterMgr
 			work, base, latest, versionIDs, 
 			overallNodeState, overallQueueState, 
 			versionState, propertyState, linkState, 
-			fileStates, fileTimeStamps, 
+			fileStates, fileStamps, ignoreStamps, 
 			jobIDs, queueStates);
 
       /* add the details to the node's status */ 
@@ -6998,7 +7066,8 @@ class MasterMgr
 
   /**
    * Recursively traverse the upstream nodes removing the propagate staleness flags
-   * from any links for which all downstream links also have the propagate staleness flag.
+   * from any links for which all Dependency/Reference downstream links do not also have 
+   * the propagate staleness flag. 
    * 
    * @param status
    *   The status of the current node.
@@ -7012,9 +7081,22 @@ class MasterMgr
     boolean nonStale = false;
     for(NodeStatus tstatus : status.getTargets()) {
       if(!tstatus.isStaleLink(status.getName())) {
-	nonStale = true;
-	break;
+	NodeDetails tdetails = tstatus.getDetails();
+	if(tdetails != null) {
+	  NodeMod tmod = tdetails.getWorkingVersion(); 
+	  if(tmod != null) {
+	    LinkMod link = tmod.getSource(status.getName());
+	    switch(link.getPolicy()) {
+	    case Dependency:
+	    case Reference:
+	      nonStale = true;
+	    }
+	  }
+	}
       }
+
+      if(nonStale)
+	break;
     }
 
     for(NodeStatus lstatus : status.getSources()) {
@@ -8970,6 +9052,7 @@ class MasterMgr
 	  TreeMap<FileSeq,FileState[]> fileStates = new TreeMap<FileSeq,FileState[]>();
 	  Long[] jobIDs = null;
 	  QueueState[] queueStates = null;
+	  boolean[] ignoreStamps = null;
 	  {
 	    for(FileSeq fseq : details.getFileStateSequences()) {
 	      FileState fs[] = new FileState[fseq.numFrames()];
@@ -8993,8 +9076,15 @@ class MasterMgr
 	      for(wk=0; wk<queueStates.length; wk++) 
 		queueStates[wk] = QueueState.Finished;
 	    }
+
+	    {
+	      ignoreStamps = new boolean[queueStates.length];
+	      int wk;
+	      for(wk=0; wk<ignoreStamps.length; wk++) 
+		ignoreStamps[wk] = true;
+	    }
 	  }
-	  
+
 	  /* create a new working version and write it to disk */ 
 	  NodeMod nwork = new NodeMod(vsn, work.getLastCriticalModification(), false);
 	  writeWorkingVersion(nodeID, nwork);
@@ -9010,7 +9100,7 @@ class MasterMgr
 			    OverallNodeState.Identical, OverallQueueState.Finished, 
 			    VersionState.Identical, PropertyState.Identical, 
 			    LinkState.Identical, 
-			    fileStates, details.getFileTimeStamps(), 
+			    fileStates, details.getFileTimeStamps(), ignoreStamps, 
 			    jobIDs, queueStates);
 
 	  status.setDetails(ndetails);
