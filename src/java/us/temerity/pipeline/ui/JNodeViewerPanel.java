@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.39 2004/09/08 18:42:43 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.40 2004/09/11 14:17:03 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1639,7 +1639,7 @@ class JNodeViewerPanel
 	    
 	      NodeDetails details = pPrimary.getNodeStatus().getDetails();
 	      if(details != null) {
-		if(pIsLocked || (details.getWorkingVersion() == null)) {
+		if(pIsLocked) {
 		  updateMediumNodeMenu();
 		  pMediumNodePopup.show(e.getComponent(), e.getX(), e.getY());
 		}
