@@ -1,7 +1,7 @@
 Summary: The Pipeline production visualization/automation system.
 Name: pipeline-@CUSTOMER@
 Version: @VERSION@
-Release: 1
+Release: @PROFILE_STAMP@
 URL: http://www.temerity.us/pipeline
 License: Commercial
 Vendor: Temerity Software, Inc

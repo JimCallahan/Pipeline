@@ -33,7 +33,7 @@ then
     exit 1
 fi
 
-rpm=pipeline-@CUSTOMER@-@VERSION@-1.i686.rpm
+rpm=pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm
 
 if [ -x /usr/bin/md5sum ]
 then
