@@ -1,4 +1,4 @@
-// $Id: BaseArchiver.java,v 1.8 2005/03/15 20:08:23 jim Exp $
+// $Id: BaseArchiver.java,v 1.9 2005/03/23 22:43:11 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -448,6 +448,9 @@ class BaseArchiver
    * @param name 
    *   The name of the archive volume to restore.
    * 
+   * @param stamp
+   *   The timestamp of the start of the restore operation.
+   * 
    * @param files
    *   The names of the files to restore relative to the base production directory.
    * 
@@ -470,6 +473,7 @@ class BaseArchiver
   restore
   (
    String name, 
+   Date stamp, 
    Collection<File> files, 
    File dir,
    File outFile, 
@@ -550,14 +554,19 @@ class BaseArchiver
    * 
    * @param name 
    *   The name of the archive volume.
+   * 
+   * @param stamp
+   *   The timestamp of the start of the restore operation.
    */
   public File
   getRestoreTempDir
   (
-   String name
+   String name, 
+   Date stamp
   )
   {
-    return new File(PackageInfo.sTempDir, "plfilemgr/restore/" + name + "/scratch");
+    return new File(PackageInfo.sTempDir, 
+		    "plfilemgr/restore/" + name + "-" + stamp.getTime() + "/scratch");
   }
 
   /** 
@@ -618,6 +627,9 @@ class BaseArchiver
    * @param name 
    *   The name of the archive volume.
    * 
+   * @param stamp
+   *   The timestamp of the start of the restore operation.
+   * 
    * @param mode 
    *   The access mode bitmask.
    * 
@@ -634,6 +646,7 @@ class BaseArchiver
   createRestoreTemp
   (
    String name, 
+   Date stamp,  
    int mode, 
    String suffix
   ) 
@@ -642,7 +655,7 @@ class BaseArchiver
     File tmp = null;
     try {
       tmp = File.createTempFile(pName + "-", "." + suffix, 
-				getRestoreTempDir(name));
+				getRestoreTempDir(name, stamp));
       chmod(mode, tmp);
     }
     catch(Exception ex) {

@@ -1,4 +1,4 @@
-// $Id: CpioTapeArchiver.java,v 1.1 2005/03/18 16:35:47 jim Exp $
+// $Id: CpioTapeArchiver.java,v 1.2 2005/03/23 22:43:11 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -184,6 +184,9 @@ class CpioTapeArchiver
    * @param name 
    *   The name of the backup.
    * 
+   * @param stamp
+   *   The timestamp of the start of the restore operation.
+   * 
    * @param files
    *   The names of the files to restore relative to the base production directory.
    * 
@@ -206,6 +209,7 @@ class CpioTapeArchiver
   restore
   (
    String name, 
+   Date stamp, 
    Collection<File> files, 
    File dir,
    File outFile, 

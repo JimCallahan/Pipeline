@@ -1,4 +1,4 @@
-// $Id: CdRomArchiver.java,v 1.2 2005/03/18 16:36:41 jim Exp $
+// $Id: CdRomArchiver.java,v 1.3 2005/03/23 22:43:11 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -220,6 +220,9 @@ class CdRomArchiver
    * @param name 
    *   The name of the backup.
    * 
+   * @param stamp
+   *   The timestamp of the start of the restore operation.
+   * 
    * @param files
    *   The names of the files to restore relative to the base production directory.
    * 
@@ -242,6 +245,7 @@ class CdRomArchiver
   restore
   (
    String name, 
+   Date stamp, 
    Collection<File> files, 
    File dir,
    File outFile, 
@@ -262,7 +266,7 @@ class CdRomArchiver
 	  ("The restore mount point (" + mount + ") is not valid!");
     }
 
-    File script = createArchiveTemp(name, 0755, "bash");
+    File script = createRestoreTemp(name, stamp, 0755, "bash");
     try {
       FileWriter out = new FileWriter(script);
 
@@ -270,12 +274,16 @@ class CdRomArchiver
 	("#!/bin/bash\n" +
 	 "\n");
 
-      for(File file : files) {
-	File source = new File(mount, file.getPath());
-	File target = new File(dir, file.getPath());
-	out.write("cp --verbose " + source + " " + target + "\n");
-      }
+      TreeSet<String> dirs = new TreeSet<String>();
+      for(File file : files) 
+	dirs.add(file.getParent().substring(1));
 
+      for(String rdir : dirs) 
+	out.write("mkdir --verbose --parents --mode=777 " + rdir + "\n");
+	
+      for(File file : files) 
+	out.write("cp --verbose " + mount + file + " " + file.getPath().substring(1) + "\n");
+      
       out.close();      
     }
     catch(IOException ex) {
@@ -283,10 +291,13 @@ class CdRomArchiver
 	("Unable to create the temporary shell script (" + script + ")!\n" + 
 	 ex.getMessage());
     }
+    
+    Map<String,String> env = System.getenv();
+    ArrayList<String> args = new ArrayList<String>();
 
     try {
       return new SubProcessHeavy
- 	(getName(), script.getPath(), new ArrayList<String>(), System.getenv(), dir, 
+ 	(getName(), script.getPath(), new ArrayList<String>(), System.getenv(), dir,
  	 outFile, errFile);
     }
     catch(Exception ex) {
