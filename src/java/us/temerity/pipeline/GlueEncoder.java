@@ -1,4 +1,4 @@
-// $Id: GlueEncoder.java,v 1.3 2004/02/15 16:15:01 jim Exp $
+// $Id: GlueEncoder.java,v 1.4 2004/02/15 18:28:33 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -193,6 +193,10 @@ class GlueEncoder
       }
 
       pBuf.append("\" }\n");
+    }
+    else if(cls.isEnum()) {
+      Enum e = (Enum) obj;
+      pBuf.append(cls.getName() + "> #" + objID + " { :" + e.name() + ": }\n");
     }
       
     /* arrays */ 
@@ -498,6 +502,7 @@ class GlueEncoder
       sFloatClass     = Class.forName("java.lang.Float");
       sDoubleClass    = Class.forName("java.lang.Double");
       sCharacterClass = Class.forName("java.lang.Character");
+
       sStringClass    = Class.forName("java.lang.String");
     }
     catch (ClassNotFoundException ex) {
@@ -526,6 +531,7 @@ class GlueEncoder
   private static Class sFloatClass;     
   private static Class sDoubleClass;    
   private static Class sCharacterClass; 
+
   private static Class sStringClass;     
 
 
