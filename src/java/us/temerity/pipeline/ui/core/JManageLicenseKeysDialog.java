@@ -1,4 +1,4 @@
-// $Id: JManageLicenseKeysDialog.java,v 1.4 2005/03/18 16:33:53 jim Exp $
+// $Id: JManageLicenseKeysDialog.java,v 1.5 2005/03/20 22:55:30 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -166,8 +166,8 @@ class JManageLicenseKeysDialog
     try {
       int wk;
       for(wk=0; wk<pTableModel.getRowCount(); wk++) {
-	String kname  = (String) pTableModel.getValueAt(wk, 0);
-	Integer total = (Integer) pTableModel.getValueAt(wk, 3);
+	String kname  = pTableModel.getName(wk);
+	Integer total = pTableModel.getTotal(wk);
 	
 	client.setTotalLicenses(kname, total);
       }
@@ -220,7 +220,7 @@ class JManageLicenseKeysDialog
       int rows[] = pTablePanel.getTable().getSelectedRows();
       int wk;
       for(wk=0; wk<rows.length; wk++) {
-	String kname = (String) pTableModel.getValueAt(rows[wk], 0);
+	String kname = pTableModel.getName(rows[wk]);
 	client.removeLicenseKey(kname);
       }
 

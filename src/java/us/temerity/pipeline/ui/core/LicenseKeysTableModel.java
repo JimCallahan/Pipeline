@@ -1,4 +1,4 @@
-// $Id: LicenseKeysTableModel.java,v 1.3 2005/03/11 06:33:44 jim Exp $
+// $Id: LicenseKeysTableModel.java,v 1.4 2005/03/20 22:55:30 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -159,6 +159,39 @@ class LicenseKeysTableModel
 
   /*----------------------------------------------------------------------------------------*/
   /*   U S E R   I N T E R F A C E                                                          */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the name of license key at the given row.
+   */
+  public String 
+  getName
+  (
+   int row
+  ) 
+  {
+    LicenseKey key = pLicenseKeys.get(pRowToIndex[row]);
+    if(key != null) 
+      return key.getName();
+    return null;
+  }
+
+  /**
+   * Get total number of licenses for the license key at the given row.
+   */
+  public Integer 
+  getTotal
+  (
+   int row
+  ) 
+  {
+    LicenseKey key = pLicenseKeys.get(pRowToIndex[row]);
+    if(key != null) 
+      return key.getTotal();
+    return null;    
+  }
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**

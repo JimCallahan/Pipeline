@@ -1,4 +1,4 @@
-// $Id: SelectionKeysTableModel.java,v 1.3 2005/03/11 06:33:44 jim Exp $
+// $Id: SelectionKeysTableModel.java,v 1.4 2005/03/20 22:55:30 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -140,6 +140,24 @@ class SelectionKeysTableModel
 
   /*----------------------------------------------------------------------------------------*/
   /*   U S E R   I N T E R F A C E                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the name of license key at the given row.
+   */
+  public String 
+  getName
+  (
+   int row
+  ) 
+  {
+    SelectionKey key = pSelectionKeys.get(pRowToIndex[row]);
+    if(key != null) 
+      return key.getName();
+    return null;
+  }
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
