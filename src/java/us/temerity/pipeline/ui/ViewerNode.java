@@ -1,4 +1,4 @@
-// $Id: ViewerNode.java,v 1.5 2004/07/22 00:07:16 jim Exp $
+// $Id: ViewerNode.java,v 1.6 2004/08/26 06:00:32 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -25,7 +25,7 @@ import com.sun.j3d.utils.geometry.*;
  * a <CODE>NodeStatus</CODE> may be represented by more than one <CODE>ViewerNode</CODE>
  * if the node is reachable via multiple upstream/downstream paths.  For this reason, each
  * instance of this class maintains a {@link NodePath NodePath} field in addition to the 
- * current <CODE>NodeStatus</CODE> to identify the unique path from the focus node of the 
+ * current <CODE>NodeStatus</CODE> to identify the unique path from the root node of the 
  * {@link JNodeViewerPanel JNodeViewerPanel} to the <CODE>NodeStatus</CODE> associated
  * with this <CODE>ViewerNode</CODE> instance.
  */
@@ -231,7 +231,7 @@ class ViewerNode
   }
 
   /**
-   * Get the path from the focus node to the current node.
+   * Get the path from the root node to the current node.
    */ 
   public NodePath
   getNodePath() 
@@ -255,7 +255,7 @@ class ViewerNode
    *   The current node status.
    * 
    * @param path
-   *   The path from the focus node to the current node.
+   *   The path from the root node to the current node.
    */ 
   public void 
   setCurrentState
@@ -357,12 +357,7 @@ class ViewerNode
   ) 
   {    
     pIsVisible = tf;
-
-    if(pIsVisible) 
-      pSwitch.setWhichChild(Switch.CHILD_ALL);
-    else 
-      pSwitch.setWhichChild(Switch.CHILD_NONE);
-
+    pSwitch.setWhichChild(pIsVisible ? Switch.CHILD_ALL : Switch.CHILD_NONE);
     pShape.setPickable(pIsVisible);
   }
 
@@ -386,11 +381,7 @@ class ViewerNode
   ) 
   {    
     pIsCollapsed = tf;
-
-    if(pIsCollapsed) 
-      pCollapsedSwitch.setWhichChild(Switch.CHILD_ALL);
-    else 
-      pCollapsedSwitch.setWhichChild(Switch.CHILD_NONE);
+    pCollapsedSwitch.setWhichChild(pIsCollapsed ? Switch.CHILD_ALL : Switch.CHILD_NONE);
   }
   
   
@@ -518,7 +509,7 @@ class ViewerNode
   private NodeStatus  pStatus;
 
   /**
-   * The path from the focus node to the current node.
+   * The path from the root node to the current node.
    */ 
   private NodePath  pPath;
 
