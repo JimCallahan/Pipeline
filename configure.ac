@@ -165,6 +165,8 @@ fi
 AC_MSG_RESULT([$SQL_PORT])
 
 
+dnl ------------------------------------------------------------------------------------------
+
 AC_MSG_CHECKING([Max License/Selection Keys])
 
 AC_ARG_WITH([max-keys], 
@@ -183,23 +185,28 @@ AC_MSG_RESULT([$MAX_KEYS])
 
 dnl ------------------------------------------------------------------------------------------
 
-AC_MSG_CHECKING([PBS Server Hostname])
+AC_MSG_CHECKING([Pipeline User ID])
 
-AC_ARG_WITH([pbs-server], 
-            [  --with-pbs-server=HOST  Hostname of PBS server.])
-
-AC_SUBST(PBS_SERVER)
-PBS_SERVER="localhost"
-
-if test "$with_pbs_server" 
-then
-  PBS_SERVER=$with_pbs_server
+AC_SUBST(PIPELINE_UID)
+PIPELINE_UID=`id --user pipeline`
+if test -z "$PIPELINE_UID"
+then 
+  AC_MSG_ERROR([the pipeline user does not seem to exist!]);
+else 
+  AC_MSG_RESULT([$PIPELINE_UID])
 fi
 
-AC_MSG_RESULT([$PBS_SERVER])
 
+AC_MSG_CHECKING([Pipeline Group ID])
 
-AC_MSG_RESULT([ ])
+AC_SUBST(PIPELINE_GID)
+PIPELINE_GID=`id --group pipeline`
+if test -z "$PIPELINE_GID"
+then 
+  AC_MSG_ERROR([the pipeline user does not seem to exist!]);
+else 
+  AC_MSG_RESULT([$PIPELINE_GID])
+fi
 
 
 dnl ------------------------------------------------------------------------------------------
