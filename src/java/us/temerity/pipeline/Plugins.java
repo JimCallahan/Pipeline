@@ -1,4 +1,4 @@
-// $Id: Plugins.java,v 1.2 2004/02/25 01:30:01 jim Exp $
+// $Id: Plugins.java,v 1.3 2004/03/09 05:06:30 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -115,7 +115,7 @@ class Plugins
   /**
    * Create a new node editor instance based on the given name. <P> 
    * 
-   * Note that <CODE>name<CODE> is not the name of the class, but rather the name obtained
+   * Note that <CODE>name</CODE> is not the name of the class, but rather the name obtained
    * by calling {@link BaseEditor#getName BaseEditor.getName} for the returned editor.
    * 
    * @param name [<B>in</B>]
@@ -138,7 +138,7 @@ class Plugins
   /**
    * Create a new node action instance based on the given name. <P> 
    * 
-   * Note that <CODE>name<CODE> is not the name of the class, but rather the name obtained
+   * Note that <CODE>name</CODE> is not the name of the class, but rather the name obtained
    * by calling {@link BaseAction#getName BaseAction.getName} for the returned action.
    * 
    * @param name [<B>in</B>]
@@ -162,7 +162,7 @@ class Plugins
   /**
    * Create a new tool instance based on the given name. <P> 
    * 
-   * Note that <CODE>name<CODE> is not the name of the class, but rather the name obtained
+   * Note that <CODE>name</CODE> is not the name of the class, but rather the name obtained
    * by calling {@link BaseTool#getName BaseTool.getName} for the returned tool.
    * 
    * @param name [<B>in</B>]
