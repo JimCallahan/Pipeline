@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.14 2004/10/09 16:56:47 jim Exp $
+// $Id: ScriptApp.java,v 1.15 2004/10/21 01:23:26 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -281,7 +281,7 @@ class ScriptApp
       "        --msg=\"log-message\" [--major | --minor | --micro]\n" +
       "      --check-out=node-name\n" +
       "        [--author=user-name] [--view=view-name]\n" +
-      "        [--version=major.minor.micro] [--keep-newer]\n" +
+      "        [--version=major.minor.micro] [--always | --keep-newer | --keep-modified]\n" +
       "      --evolve=node-name\n" +
       "        [--author=user-name] [--view=view-name]\n" +
       "        [--version=major.minor.micro]\n" +

@@ -1,4 +1,4 @@
-// $Id: NodeCheckOutReq.java,v 1.2 2004/05/21 21:17:51 jim Exp $
+// $Id: NodeCheckOutReq.java,v 1.3 2004/10/21 01:23:26 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -37,16 +37,16 @@ class NodeCheckOutReq
    * @param vid 
    *   The revision number of the node to check-out.
    * 
-   * @param keepNewer
-   *   Should upstream nodes which have a newer revision number than the version to be 
-   *   checked-out be skipped? 
+   * @param mode
+   *   The criteria used to determine whether nodes upstream of the root node of the check-out
+   *   should also be checked-out.
    */
   public
   NodeCheckOutReq
   (
    NodeID id, 
    VersionID vid, 
-   boolean keepNewer
+   CheckOutMode mode
   )
   { 
     if(id == null) 
@@ -55,7 +55,7 @@ class NodeCheckOutReq
     pNodeID = id;
 
     pVersionID = vid;
-    pKeepNewer = keepNewer;
+    pMode      = mode;
   }
 
 
@@ -86,13 +86,13 @@ class NodeCheckOutReq
   }
 
   /**
-   * Should upstream nodes which have a newer revision number than the version to be 
-   * checked-out be skipped? 
+   * The criteria used to determine whether nodes upstream of the root node of the check-out
+   * should also be checked-out.
    */ 
-  public boolean 
-  keepNewer()
+  public CheckOutMode 
+  getMode()
   {
-    return pKeepNewer;
+    return pMode;
   }
 
 
@@ -120,10 +120,10 @@ class NodeCheckOutReq
   private VersionID  pVersionID;       
 
   /**
-   * Should upstream nodes which have a newer revision number than the version to be 
-   * checked-out be skipped? 
+   * The criteria used to determine whether nodes upstream of the root node of the check-out
+   * should also be checked-out.
    */ 
-  private boolean  pKeepNewer; 
+  private CheckOutMode  pMode; 
 
 }
   

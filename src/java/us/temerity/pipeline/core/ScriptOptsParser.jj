@@ -237,7 +237,7 @@ ScriptOptsParser
   private boolean          pUpstream;
   private boolean          pLinkGraph; 
   private VersionID.Level  pLevel; 
-  private boolean          pKeepNewer;
+  private CheckOutMode     pCheckOutMode; 
 
 }
 
@@ -351,7 +351,9 @@ TOKEN :
 | <MAJOR:          "--major">
 | <MINOR:          "--minor">
 | <MICRO:          "--micro">
+| <ALWAYS:         "--always">
 | <KEEP_NEWER:     "--keep-newer">
+| <KEEP_MODIFIED:  "--keep-modified">
 | <BRIEF:          "--brief">
 | <UPSTREAM:       "--upstream">
 | <LINK_GRAPH:     "--link-graph">
@@ -3875,10 +3877,10 @@ NodeCheckOut()
 {
   String name = null;
 
-  pAuthor     = PackageInfo.sUser;
-  pView       = "default";
-  pVersionIDs = new TreeSet();
-  pKeepNewer  = false;
+  pAuthor       = PackageInfo.sUser;
+  pView         = "default";
+  pVersionIDs   = new TreeSet();
+  pCheckOutMode = CheckOutMode.Always; 
 }
 {
   <NODE_CHECK_OUT> EQ() name=NodeName() AE() (NodeCheckOutOpts())*
@@ -3892,7 +3894,7 @@ NodeCheckOut()
       vid = (VersionID) pVersionIDs.first();
     }
 
-    pMasterMgrClient.checkOut(new NodeID(pAuthor, pView, name), vid, pKeepNewer);
+    pMasterMgrClient.checkOut(new NodeID(pAuthor, pView, name), vid, pCheckOutMode);
 
     Logs.ops.info("Checked-Out: " + name);
     Logs.flush();
@@ -3904,8 +3906,18 @@ NodeCheckOutOpts()
   throws PipelineException : 
 {}
 {
-  (Author() | View() | VersionOption() | KeepNewer()) 
+  (Author() | View() | VersionOption() | Always() | KeepNewer() | KeepModified())
   {}
+}
+
+void
+Always() : 
+{}
+{
+  <ALWAYS> AE()
+  {
+    pCheckOutMode = CheckOutMode.Always; 
+  }
 }
 
 void
@@ -3914,7 +3926,17 @@ KeepNewer() :
 {
   <KEEP_NEWER> AE()
   {
-    pKeepNewer = true;
+    pCheckOutMode = CheckOutMode.KeepNewer; 
+  }
+}
+
+void
+KeepModified() : 
+{}
+{
+  <KEEP_MODIFIED> AE()
+  {
+    pCheckOutMode = CheckOutMode.KeepModified; 
   }
 }
 

@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.57 2004/10/16 23:14:15 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.58 2004/10/21 01:23:26 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -3139,7 +3139,7 @@ class JNodeViewerPanel
 	  VersionID vid = pCheckOutDialog.getVersionID();
 	  if(vid != null) {
 	    CheckOutTask task = 
-	      new CheckOutTask(status.getName(), vid, pCheckOutDialog.keepNewer());
+	      new CheckOutTask(status.getName(), vid, pCheckOutDialog.getMode());
 	    task.start();
 	  }
 	}
@@ -4316,14 +4316,14 @@ class JNodeViewerPanel
     (
      String name, 
      VersionID vid, 
-     boolean keepNewer
+     CheckOutMode mode
     ) 
     {
       super("JNodeViewerPanel:CheckOutTask");
 
       pName      = name; 
       pVersionID = vid; 
-      pKeepNewer = keepNewer;
+      pMode      = mode; 
     }
 
     public void 
@@ -4332,7 +4332,7 @@ class JNodeViewerPanel
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp("Checking-Out Nodes...")) {
 	try {
-	  master.getMasterMgrClient().checkOut(pAuthor, pView, pName, pVersionID, pKeepNewer);
+	  master.getMasterMgrClient().checkOut(pAuthor, pView, pName, pVersionID, pMode);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -4346,9 +4346,9 @@ class JNodeViewerPanel
       }
     }
 
-    private String     pName; 
-    private VersionID  pVersionID; 
-    private boolean    pKeepNewer;
+    private String        pName; 
+    private VersionID     pVersionID; 
+    private CheckOutMode  pMode; 
   }
 
   /** 

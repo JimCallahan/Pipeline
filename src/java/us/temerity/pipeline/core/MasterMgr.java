@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.44 2004/10/09 16:54:40 jim Exp $
+// $Id: MasterMgr.java,v 1.45 2004/10/21 01:23:26 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3232,8 +3232,9 @@ class MasterMgr
 
     TaskTimer timer = new TaskTimer("MasterMgr.checkOut(): " + nodeID);
     try {
-      performCheckOut(true, nodeID, req.getVersionID(), req.keepNewer(), 
-		      new LinkedList<String>(), new HashSet<String>(), timer);
+      performCheckOut(true, nodeID, req.getVersionID(), req.getMode(), 
+		      new LinkedList<String>(), new HashSet<String>(), new HashSet<String>(), 
+		      timer);
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
@@ -3258,15 +3259,18 @@ class MasterMgr
    * @param vid 
    *   The revision number of the node to check-out.
    * 
-   * @param keepNewer
-   *   Should upstream nodes which have a newer revision number than the version to be 
-   *   checked-out be skipped? 
+   * @param mode
+   *   The criteria used to determine whether nodes upstream of the root node of the check-out
+   *   should also be checked-out.
    * 
    * @param branch
    *   The names of the nodes from the root to this node.
    * 
    * @param seen
    *   The names of the previously processed nodes.
+   * 
+   * @param skipped
+   *   The names of the nodes which where skipped.
    * 
    * @param timer
    *   The shared task timer for this operation.
@@ -3280,9 +3284,10 @@ class MasterMgr
    boolean isRoot, 
    NodeID nodeID, 
    VersionID vid, 
-   boolean keepNewer, 
+   CheckOutMode mode,
    LinkedList<String> branch, 
    HashSet<String> seen, 
+   HashSet<String> skipped, 
    TaskTimer timer   
   ) 
     throws PipelineException 
@@ -3358,26 +3363,56 @@ class MasterMgr
       /* mark having seen this node already */ 
       seen.add(name);
  
-      /* skip the check-out if the existing working version is already newer than 
-       * the version to be checked-out and the KeepNewer option is set */ 
-      if(!isRoot && keepNewer && 
-	 (work != null) && (work.getWorkingID().compareTo(vsn.getVersionID()) > 0)) {
-	branch.removeLast();
-	return;      
+      /* see if the check-out should be skipped */ 
+      if(!isRoot && (work != null)) {
+	switch(mode) {
+	case Always:
+	  break;
+
+	case KeepNewer:
+	  if(work.getWorkingID().compareTo(vsn.getVersionID()) > 0) {
+	    branch.removeLast();
+	    skipped.add(name);
+	    return;      
+	  }
+	  break;
+
+	case KeepModified:
+	  if(work.getWorkingID().compareTo(vsn.getVersionID()) >= 0) {
+	    branch.removeLast();
+	    skipped.add(name);
+	    return;      
+	  }	  
+	}
       }
 
       /* process the upstream nodes */ 
+      boolean skippedSource = false;
       for(LinkVersion link : vsn.getSources()) {
 	NodeID lnodeID = new NodeID(nodeID, link.getName());
-	performCheckOut(false, lnodeID, link.getVersionID(), keepNewer, branch, seen, timer);
+
+	performCheckOut(false, lnodeID, link.getVersionID(), mode, 
+			branch, seen, skipped, timer);
+
+	if(skipped.contains(link.getName())) 
+	  skippedSource = true;
       }
 
       /* get the current timestamp */ 
       Date timestamp = Dates.now(); 
 
-      /* check-out the files */
-      pFileMgrClient.checkOut(nodeID, vsn);
-           
+      {
+	/* remove the to be checked-out working files,
+	     since one or more of the source nodes where skipped making the checked-out 
+	     files invalid */ 
+	if(skippedSource) 
+	  pFileMgrClient.removeAll(nodeID, vsn.getSequences());
+
+	/* check-out the files */
+	else 
+	  pFileMgrClient.checkOut(nodeID, vsn);
+      }
+
       /* create a new working version and write it to disk */ 
       NodeMod nwork = new NodeMod(vsn, timestamp);
       writeWorkingVersion(nodeID, nwork);

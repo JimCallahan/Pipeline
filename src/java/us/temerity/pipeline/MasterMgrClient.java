@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.31 2004/10/18 02:34:06 jim Exp $
+// $Id: MasterMgrClient.java,v 1.32 2004/10/21 01:23:26 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1996,9 +1996,9 @@ class MasterMgrClient
    * @param vid 
    *   The revision number of the node to check-out.
    * 
-   * @param keepNewer
-   *   Should upstream nodes which have a newer revision number than the version to be 
-   *   checked-out be skipped? 
+   * @param mode
+   *   The criteria used to determine whether nodes upstream of the root node of the check-out
+   *   should also be checked-out.
    * 
    * @throws PipelineException
    *   If unable to check-out the nodes.
@@ -2010,11 +2010,11 @@ class MasterMgrClient
    String view, 
    String name, 
    VersionID vid, 
-   boolean keepNewer
+   CheckOutMode mode
   ) 
     throws PipelineException
   {
-    checkOut(new NodeID(author, view, name), vid, keepNewer);
+    checkOut(new NodeID(author, view, name), vid, mode);
   } 
 
   /** 
@@ -2038,9 +2038,9 @@ class MasterMgrClient
    * @param vid 
    *   The revision number of the node to check-out.
    * 
-   * @param keepNewer
-   *   Should upstream nodes which have a newer revision number than the version to be 
-   *   checked-out be skipped? 
+   * @param mode
+   *   The criteria used to determine whether nodes upstream of the root node of the check-out
+   *   should also be checked-out.
    * 
    * @throws PipelineException
    *   If unable to check-out the nodes.
@@ -2050,7 +2050,7 @@ class MasterMgrClient
   ( 
    NodeID nodeID,
    VersionID vid, 
-   boolean keepNewer
+   CheckOutMode mode
   ) 
     throws PipelineException
   {
@@ -2060,7 +2060,7 @@ class MasterMgrClient
 
     verifyConnection();
 
-    NodeCheckOutReq req = new NodeCheckOutReq(nodeID, vid, keepNewer);
+    NodeCheckOutReq req = new NodeCheckOutReq(nodeID, vid, mode);
 
     Object obj = performTransaction(MasterRequest.CheckOut, req);
     handleSimpleResponse(obj);

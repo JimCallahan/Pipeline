@@ -1,4 +1,4 @@
-// $Id: JCheckOutDialog.java,v 1.2 2004/06/28 23:03:38 jim Exp $
+// $Id: JCheckOutDialog.java,v 1.3 2004/10/21 01:23:26 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -76,9 +76,9 @@ class JCheckOutDialog
 
 	UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
 
-	pKeepNewerField = 
-	  UIMaster.createTitledBooleanField(tpanel, "Keep Newer:", sTSize, 
-					    vpanel, sVSize); 
+	pModeField = 
+	  UIMaster.createTitledCollectionField(tpanel, "Check-Out Mode:", sTSize, 
+					       vpanel, CheckOutMode.titles(), sVSize);
 
 	UIMaster.addVerticalGlue(tpanel, vpanel);
       }
@@ -109,13 +109,13 @@ class JCheckOutDialog
   }
     
   /**
-   * Whether upstream nodes which have a newer revision number than the version to be 
-   * checked-out should be skipped? 
+   * The criteria used to determine whether nodes upstream of the root node of the check-out
+   * should also be checked-out.
    */ 
-  public boolean
-  keepNewer() 
+  public CheckOutMode
+  getMode() 
   {
-    return pKeepNewerField.getValue();
+    return CheckOutMode.values()[pModeField.getSelectedIndex()];
   }
   
 
@@ -150,8 +150,6 @@ class JCheckOutDialog
 
       pVersionField.setValues(values);
 
-      pKeepNewerField.setValue(false);
-
       pConfirmButton.setEnabled(false);
     }
     else {
@@ -168,10 +166,10 @@ class JCheckOutDialog
       pVersionField.setValues(values);
       pVersionField.setSelectedIndex(0);
       
-      pKeepNewerField.setValue(false);
-
       pConfirmButton.setEnabled(true);
     }
+
+    pModeField.setSelectedIndex(0);
   }
 
 
@@ -208,9 +206,9 @@ class JCheckOutDialog
   private JCollectionField  pVersionField; 
 
   /**
-   * Whether upstream nodes which have a newer revision number than the version to be 
-   * checked-out should be skipped? 
+   * The criteria used to determine whether nodes upstream of the root node of the check-out
+   * should also be checked-out.
    */ 
-  private JBooleanField  pKeepNewerField;
+  private JCollectionField  pModeField;
 
 }
