@@ -270,9 +270,12 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 		   core/ToolsetEnvParserConstants \
 		   core/ToolsetEnvParser \
 		   core/ToolsetEnvParserTokenManager \
-                   ui/UIMaster:InitUITask \
                    ui/JManagerPanel:GroupMenuAnchor \
-                   ui/JManagerPanel:PopupMenuAnchor
+                   ui/JManagerPanel:PopupMenuAnchor \
+                   ui/UIMaster:MainFrameTask \
+                   ui/UIMaster:SplashFrameTask \
+                   ui/UIMaster:StartupTask \
+                   ui/UIMaster:UpdateStartupProgress
 
 
 
@@ -282,30 +285,37 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 #   R U L E S                                                                                #
 #--------------------------------------------------------------------------------------------#
 
-all: Makefile $(ALL_JAR) $(API_JAR) 
+all: Makefile $(API_JAR) 
 	$(MAKE) -C native $@
 	$(MAKE) -C plugin $@
-	$(MAKE) -C tests $@
-	$(MAKE) $(VAULT) bootstrap-jar laf-jar
+	$(MAKE) $(VAULT) bootstrap-jar
 
-$(ALL_JAR): java-all
+$(ALL_JAR): java-all textures
 	(cd ../../..; \
          $(JAR) cvf us/temerity/pipeline/$(ALL_JAR) \
                     us/temerity/pipeline/*.class \
                     us/temerity/pipeline/glue/*.class \
-                    us/temerity/pipeline/laf/*.class \
+                    us/temerity/pipeline/laf/LookAndFeelLoader.class \
+                    us/temerity/pipeline/laf/textures \
                     us/temerity/pipeline/core/*.class \
                     us/temerity/pipeline/message/*.class \
                     us/temerity/pipeline/ui/*.class)
+	(bdir=`pwd`; cd $(srcdir)/../../..; \
+         $(JAR) uvf $$bdir/$(ALL_JAR) \
+                    us/temerity/pipeline/laf/*.xml us/temerity/pipeline/laf/*.png)
 
 
-$(API_JAR): java-all
+$(API_JAR): java-all textures
 	(cd ../../..; \
          $(JAR) cvf us/temerity/pipeline/$(API_JAR) \
                     us/temerity/pipeline/*.class \
                     us/temerity/pipeline/glue/*.class \
-                    us/temerity/pipeline/laf/*.class \
+                    us/temerity/pipeline/laf/LookAndFeelLoader.class \
+                    us/temerity/pipeline/laf/textures \
                     us/temerity/pipeline/message/*.class)
+	(bdir=`pwd`; cd $(srcdir)/../../..; \
+         $(JAR) uvf $$bdir/$(API_JAR) \
+                    us/temerity/pipeline/laf/*.xml us/temerity/pipeline/laf/*.png)
 
 bootstrap-jar: bootstrap-all
 	(cd ../../..; \
@@ -332,15 +342,6 @@ BootStrapFields $(VAULT): java-all
             --build-vault $$f $(VAULT) > BootStrapFields);
 
 
-laf-jar: 
-	(bdir=`pwd`; \
-         cd $(srcdir)/../../..; \
-         $(JAR) uvf $$bdir/$(ALL_JAR) \
-                    us/temerity/pipeline/laf/*.xml us/temerity/pipeline/laf/*.png; \
-         $(JAR) uvf $$bdir/$(API_JAR) \
-                    us/temerity/pipeline/laf/*.xml us/temerity/pipeline/laf/*.png)
-
-
 java-all: $(JAVA_SOURCES)
 	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(JAVA_SOURCES)
 	touch $@
@@ -357,6 +358,10 @@ glue/%.java: glue/%.jj
 	cp --force $(srcdir)/glue/parser/ParseException.java glue/
 	cp --force $(srcdir)/glue/parser/TokenMgrError.java glue/
 	(cd glue; $(JAVA_CC) $<)
+
+
+textures:
+	$(BASH) laf/scripts/filter-textures $(srcdir)/laf/maya/synth/images
 
 
 #--------------------------------------------------------------------------------------------#
@@ -388,13 +393,16 @@ uninstall-jar:
 
 #--------------------------------------------------------------------------------------------#
 
-check: all
+check: Makefile $(ALL_JAR) 
+	$(MAKE) -C native $@
+	$(MAKE) -C plugin $@
 	$(MAKE) -C tests $@
+
 
 
 #--------------------------------------------------------------------------------------------#
 
-clean: clean-jar clean-vault clean-class clean-aux clean-parser 
+clean: clean-jar clean-vault clean-class clean-aux clean-parser clean-textures
 	$(MAKE) -C native $@
 	$(MAKE) -C plugin $@
 	$(MAKE) -C tests $@
@@ -467,6 +475,9 @@ clean-glue-parser:
             rm -f $$f; \
           fi; \
          done	
+
+clean-textures:
+	rm -rf laf/textures
 
 
 #--------------------------------------------------------------------------------------------#
