@@ -1,4 +1,4 @@
-// $Id: PlPut.cc,v 1.1 2002/08/30 22:57:45 jim Exp $
+// $Id: PlPut.cc,v 1.2 2002/11/06 00:26:31 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -34,7 +34,7 @@ using namespace Phoenix::Core;
 /*------------------------------------------------------------------------------------------*/
 /*   P L P U T                                                                              */
 /*                                                                                          */
-/*     A utility program used internally by the pipeline(1) tool to copy files from a       */ 
+/*     A utility program used internally by the pipeline(1) tool to copy files from a       */
 /*     usr's working area into the repository.                                              */
 /*------------------------------------------------------------------------------------------*/
 
