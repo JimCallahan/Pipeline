@@ -1,4 +1,4 @@
-// $Id: TestNodeModVersionApp.java,v 1.1 2004/03/11 14:12:53 jim Exp $
+// $Id: TestNodeModVersionApp.java,v 1.2 2004/03/13 17:17:47 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.message.*;
@@ -62,8 +62,7 @@ class TestNodeModVersionApp
       NodeMod mod = 
 	new NodeMod("/organisms/animals/reptiles/frog", 
 		    primary, secondary, 
-		    TestInfo.sBuildToolset, "Emacs", 
-		    null, null, false, false, 0);
+		    TestInfo.sBuildToolset, "Emacs");
 
       test(mod);
 
@@ -225,14 +224,13 @@ class TestNodeModVersionApp
       selectionKeys.add("Rush");
       selectionKeys.add("Pentium4");
 
-      JobReqs jreqs = new JobReqs(50, 2.5f, 256*1024*1024, 512*1024*1024, 
-				  licenseKeys, selectionKeys);
+      JobReqs jreqs = new JobReqs(50, 2.5f, 256, 512, licenseKeys, selectionKeys);
 
       NodeMod mod = 
 	new NodeMod("/organisms/animals/reptiles/snake", 
 		    primary, secondary, 
 		    TestInfo.sBuildToolset, "Emacs", 
-		    action, jreqs, false, false, 0);
+		    action, jreqs, OverflowPolicy.Abort, ExecutionMethod.Serial, 0);
 
       test(mod);
 
@@ -257,9 +255,7 @@ class TestNodeModVersionApp
 
       HashSet<String> selectionKeys = new HashSet<String>();
 
-      JobReqs jreqs = new JobReqs(50, 2.5f, 256*1024*1024, 512*1024*1024, 
-				  licenseKeys, selectionKeys);
-      mod.setJobRequirements(jreqs);
+      mod.setJobRequirements(JobReqs.defaultJobReqs());
 
       test(mod);
 
@@ -270,8 +266,8 @@ class TestNodeModVersionApp
     {
       NodeMod mod = new NodeMod(mod4);
       
-      mod.setIgnoreOverflow(true);
-      mod.setIsSerial(true);
+      mod.setOverflowPolicy(OverflowPolicy.Ignore);
+      mod.setExecutionMethod(ExecutionMethod.Serial);
 
       try {
 	mod.setBatchSize(10);
@@ -280,7 +276,7 @@ class TestNodeModVersionApp
 	System.out.print("Caught: " + ex.getMessage() + "\n");
       }
       
-      mod.setIsSerial(false);
+      mod.setExecutionMethod(ExecutionMethod.Parallel);
       mod.setBatchSize(10);
 
       test(mod);
@@ -365,6 +361,9 @@ class TestNodeModVersionApp
 
       GlueDecoder gd = new GlueDecoder(ge.getText());
       NodeMod mod2 = (NodeMod) gd.getObject();
+
+//       GlueEncoder ge2 = new GlueEncoder("NodeMod (Glue)", mod2);
+//       System.out.print(ge2.getText() + "\n");
 		       
       assert(mod.equals(mod2));
     }

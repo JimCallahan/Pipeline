@@ -1,4 +1,4 @@
-// $Id: NodeVersion.java,v 1.5 2004/03/11 14:12:10 jim Exp $
+// $Id: NodeVersion.java,v 1.6 2004/03/13 17:17:47 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -23,7 +23,7 @@ class NodeVersion
   public 
   NodeVersion()
   {
-    pSources = new TreeMap<String,DependVersion>();
+    pSources = new TreeMap<String,LinkVersion>();
   }
 
   /**
@@ -51,7 +51,7 @@ class NodeVersion
     pVersionID = vid;
     pMessage   = new LogMessage(msg);
 
-    pSources = new TreeMap<String,DependVersion>();
+    pSources = new TreeMap<String,LinkVersion>();
   }
 
   /** 
@@ -72,9 +72,9 @@ class NodeVersion
 
     pMessage = new LogMessage(vsn.pMessage);
 
-    pSources = new TreeMap<String,DependVersion>();
-    for(DependVersion dep : vsn.getSources()) 
-      pSources.put(dep.getName(), new DependVersion(dep));
+    pSources = new TreeMap<String,LinkVersion>();
+    for(LinkVersion link : vsn.getSources()) 
+      pSources.put(link.getName(), new LinkVersion(link));
   }
 
 
@@ -133,16 +133,16 @@ class NodeVersion
   }
 
   /** 
-   * Get the dependency relationship information for the given upstream node.
+   * Get the link relationship information for the given upstream node.
    * 
    * @param name [<B>in</B>] 
    *   The fully resolved node name of the upstream node.
    * 
    * @return 
-   *   The dependency relationship information or <CODE>null</CODE> if no upstream node
+   *   The link relationship information or <CODE>null</CODE> if no upstream node
    *   exits with the given name.
    */
-  public DependVersion
+  public LinkVersion
   getSource
   (
    String name
@@ -151,19 +151,19 @@ class NodeVersion
     if(name == null) 
       throw new IllegalArgumentException("The upstream node name cannot be (null)!");
 
-    return new DependVersion(pSources.get(name));
+    return new LinkVersion(pSources.get(name));
   }
 
   /** 
-   * Get the dependency relationship information for all of the upstream nodes.
+   * Get the link relationship information for all of the upstream nodes.
    */
-  public ArrayList<DependVersion>
+  public ArrayList<LinkVersion>
   getSources() 
   {
-    ArrayList<DependVersion> deps = new ArrayList<DependVersion>();
-    for(DependVersion dep : pSources.values()) 
-      deps.add(new DependVersion(dep));
-    return deps;
+    ArrayList<LinkVersion> links = new ArrayList<LinkVersion>();
+    for(LinkVersion link : pSources.values()) 
+      links.add(new LinkVersion(link));
+    return links;
   }
 
   
@@ -262,8 +262,8 @@ class NodeVersion
       throw new GlueException("The \"Message\" was missing!");
     pMessage = msg;
     
-    TreeMap<String,DependVersion> sources = 
-      (TreeMap<String,DependVersion>) decoder.decode("Sources"); 
+    TreeMap<String,LinkVersion> sources = 
+      (TreeMap<String,LinkVersion>) decoder.decode("Sources"); 
     if(sources != null) 
       pSources = sources;
   }
@@ -296,10 +296,10 @@ class NodeVersion
   private LogMessage  pMessage;        
 
   /**
-   * A table of dependency information associated with all nodes upstream of this 
+   * A table of link relationship information associated with all nodes upstream of this 
    * node indexed by the fully resolved names of the upstream nodes.
    */ 
-  private TreeMap<String,DependVersion>  pSources;
+  private TreeMap<String,LinkVersion>  pSources;
  
 }
 

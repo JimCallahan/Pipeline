@@ -1,4 +1,4 @@
-// $Id: TestFileMgrApp.java,v 1.2 2004/03/12 23:11:43 jim Exp $
+// $Id: TestFileMgrApp.java,v 1.3 2004/03/13 17:19:40 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.message.*;
@@ -66,8 +66,7 @@ class TestFileMgrApp
 				new FrameRange(0, 43, 1)));
       
       modA = new NodeMod(name, primary, secondary, 
-			TestInfo.sBuildToolset, null, 
-			null, null, false, false, 0);
+			TestInfo.sBuildToolset, null);
     }
 
     NodeID idB = null;
@@ -82,8 +81,7 @@ class TestFileMgrApp
       TreeSet<FileSeq> secondary = new TreeSet<FileSeq>();
       
       modB = new NodeMod(name, primary, secondary, 
-			TestInfo.sBuildToolset, null, 
-			null, null, false, false, 0);
+			TestInfo.sBuildToolset, null);
     }
 
     /* initialize data files */ 
