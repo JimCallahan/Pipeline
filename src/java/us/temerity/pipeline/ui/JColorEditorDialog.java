@@ -1,4 +1,4 @@
-// $Id: JColorEditorDialog.java,v 1.4 2004/12/29 23:08:15 jim Exp $
+// $Id: JColorEditorDialog.java,v 1.5 2004/12/30 00:38:48 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -329,54 +329,43 @@ class JColorEditorDialog
       double theta = Math.PI / 6.0;
       double x = Math.cos(theta);
       double y = Math.sin(theta);
-      
-      double r = r1a-0.003;
 
       gl.glPushMatrix();
       {
-      	gl.glTranslated(0.5, 0.5, 0.0);
+	gl.glTranslated(0.5, 0.5, 0.0);
 	gl.glRotated(pHSV.x(), 0.0, 0.0, 1.0);
-
+	
+	gl.glEnable(GL.GL_POLYGON_SMOOTH);
 	gl.glBegin(GL.GL_TRIANGLES);
 	{
-	  gl.glColor4d(c.r(), c.g(), c.b(), 0.5); 
+	  gl.glColor3d(c.r(), c.g(), c.b()); 
 	  gl.glVertex2d(0.0, -r1a); 
 	  
-	  gl.glColor4d(1.0, 1.0, 1.0, 0.5);
+	  gl.glColor3d(1.0, 1.0, 1.0);
 	  gl.glVertex2d(x*r1a, y*r1a);
-
-	  gl.glColor4d(0.0, 0.0, 0.0, 0.5);
+	  
+	  gl.glColor3d(0.0, 0.0, 0.0);
 	  gl.glVertex2d(-x*r1a, y*r1a);
-
-
- 	  gl.glColor3d(c.r(), c.g(), c.b()); 
- 	  gl.glVertex2d(0.0, -r); 
+	  }
+	gl.glEnd();
+	gl.glDisable(GL.GL_POLYGON_SMOOTH);
+      
+	/* the HSV triangle color circle */ 
+	{
+	  Point2d p = Point2d.lerp(new Point2d(-x*r1a, y*r1a), 
+				   Point2d.lerp(new Point2d(x*r1a, y*r1a), 
+						new Point2d(0.0, -r1a), 
+						pHSV.y()), 
+				   pHSV.z());
 	  
- 	  gl.glColor3d(1.0, 1.0, 1.0);
- 	  gl.glVertex2d(x*r, y*r);
-
- 	  gl.glColor3d(0.0, 0.0, 0.0);
- 	  gl.glVertex2d(-x*r, y*r);
- 	}
- 	gl.glEnd();
-      }
-
-      /* the HSV triangle color circle */ 
-      {
-	Point2d p = Point2d.lerp(new Point2d(-x*r1a, y*r1a), 
-				 Point2d.lerp(new Point2d(x*r1a, y*r1a), 
-					      new Point2d(0.0, -r1a), 
-					      pHSV.y()), 
-				 pHSV.z());
-	
-	gl.glTranslated(p.x(), p.y(), 0.0);
-	
-	double s = (sOuterRadius - sInnerRadius) * 0.65;
-	gl.glScaled(s, s, s);
+	  gl.glTranslated(p.x(), p.y(), 0.0);
 	  
-	gl.glCallList((pHSV.z() > 0.5) ? pBlackDL : pWhiteDL);
+	  double s = (sOuterRadius - sInnerRadius) * 0.65;
+	  gl.glScaled(s, s, s);
+	  
+	  gl.glCallList((pHSV.z() > 0.5) ? pBlackDL : pWhiteDL);
+	}
       }
-
       gl.glPopMatrix();
     }
 
