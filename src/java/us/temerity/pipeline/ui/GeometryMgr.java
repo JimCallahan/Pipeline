@@ -1,4 +1,4 @@
-// $Id: GeometryMgr.java,v 1.2 2004/12/29 17:33:26 jim Exp $
+// $Id: GeometryMgr.java,v 1.3 2004/12/31 07:38:44 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -36,6 +36,7 @@ class GeometryMgr
     pTextDLs     = new HashMap<String,Integer>();
     pLinkRelDLs  = new EnumMap<LinkRelationship,Integer>(LinkRelationship.class);
     pNodeIconDLs = new HashMap<String,Integer>();
+    pJobIconDLs  = new HashMap<String,TreeMap<Integer,Integer>>();
   }
 
 
@@ -55,6 +56,53 @@ class GeometryMgr
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Compute the width of the label geometry which would be generated if the given 
+   * parameters were passed to {@link #getTextDL getTextDL}.
+   * 
+   * @param name
+   *   The name of the font.
+   * 
+   * @param text
+   *   The text to render. 
+   * 
+   * @param space
+   *   The amount of space between characters.
+   * 
+   * @throws IOException
+   *   If unable to lookup the font.
+   */ 
+  public double 
+  getTextWidth
+  (
+   String name, 
+   String text,
+   double space
+  ) 
+    throws IOException   
+  {
+    double width = 0.0;
+    {
+      FontGeometry geom = TextureMgr.getInstance().getFontGeometry(name);
+      if(geom == null) 
+	throw new IOException 
+	  ("No font named (" + name + ") has been registered with the TextureMgr!");
+      
+      int wk;
+      for(wk=0; wk<text.length(); wk++) {
+	char code = text.charAt(wk);
+	if((code >= 0) && (code <128)) {
+	  if(geom.isPrintable(code)) 
+	    width += geom.getOrigin(code).x() + geom.getExtent(code).x() + space;
+	  else 
+	    width += space * 4.0;
+	}
+      }
+    }
+
+    return width;
+  }
 
   /**
    * Get an OpenGL display list which renders a text string as textures quads. <P> 
@@ -110,14 +158,13 @@ class GeometryMgr
       /* lookup the character textures and compute the total string width */ 
       ArrayList<Integer> texIDs = new ArrayList<Integer>();
       ArrayList<Double> offsets = new ArrayList<Double>();
-      double width = 0.0;
+      double width  = 0.0;
       {
 	FontGeometry geom = texMgr.getFontGeometry(name);
 	if(geom == null) 
 	  throw new IOException 
 	    ("No font named (" + name + ") has been registered with the TextureMgr!");
 	
-	Point2d pos = new Point2d();
 	int wk;
 	for(wk=0; wk<text.length(); wk++) {
 	  char code = text.charAt(wk);
@@ -137,7 +184,7 @@ class GeometryMgr
 	  }
 	}
       }
-      
+
       /* generate display list */ 
       {
 	double x = 0.0;
@@ -240,16 +287,16 @@ class GeometryMgr
 	gl.glBegin(GL.GL_QUADS);
 	{
 	  gl.glTexCoord2d(0.0, 1.0);
-	  gl.glVertex3d(-0.25, -0.25, 0.0);
+	  gl.glVertex2d(-0.25, -0.25);
 	  
 	  gl.glTexCoord2d(1.0, 1.0);
-	  gl.glVertex3d(0.25, -0.25, 0.0);
+	  gl.glVertex2d(0.25, -0.25);
 	  
 	  gl.glTexCoord2d(1.0, 0.0);	
-	  gl.glVertex3d(0.25, 0.25, 0.0);
+	  gl.glVertex2d(0.25, 0.25);
 	  
 	  gl.glTexCoord2d(0.0, 0.0);
-	  gl.glVertex3d(-0.25, 0.25, 0.0);
+	  gl.glVertex2d(-0.25, 0.25);
 	}
 	gl.glEnd();
 
@@ -304,18 +351,141 @@ class GeometryMgr
 	gl.glBegin(GL.GL_QUADS);
 	{
 	  gl.glTexCoord2d(0.0, 1.0);
-	  gl.glVertex3d(-0.5, -0.5, 0.0);
+	  gl.glVertex2d(-0.5, -0.5);
 	  
 	  gl.glTexCoord2d(1.0, 1.0);
-	  gl.glVertex3d(0.5, -0.5, 0.0);
+	  gl.glVertex2d(0.5, -0.5);
 	  
 	  gl.glTexCoord2d(1.0, 0.0);	
-	  gl.glVertex3d(0.5, 0.5, 0.0);
+	  gl.glVertex2d(0.5, 0.5);
 	  
 	  gl.glTexCoord2d(0.0, 0.0);
-	  gl.glVertex3d(-0.5, 0.5, 0.0);
+	  gl.glVertex2d(-0.5, 0.5);
 	}
 	gl.glEnd();
+
+	gl.glDisable(GL.GL_TEXTURE_2D); 
+      }
+      gl.glEndList();
+    }
+
+    return dl;
+  }
+
+  /** 
+   * Get an OpenGL display list which renders a job icon. <P> 
+   * 
+   * The display list renders one or more quads on the XY plane which are (1.0) units wide
+   * and (0.375 * height) units high and centered around the origin. 
+   * 
+   * @param gl
+   *   The OpenGL interface.
+   * 
+   * @param name
+   *   The combined job state name.
+   * 
+   * @param external
+   *   Whether the job is external to the job group.
+   * 
+   * @param height
+   *   The vertical job span of the icon.
+   * 
+   * @return 
+   *   The display list handle.
+   * 
+   * @throws IOException
+   *   If unable to lookup or generate the display list.
+   */ 
+  public synchronized int
+  getJobIconDL
+  (
+   GL gl,
+   String name, 
+   boolean external,
+   int height
+  ) 
+    throws IOException
+  { 
+    if(height < 1) 
+      throw new IllegalArgumentException
+	("The height (" + height + ") must be greater-than zero!");
+
+    if(external && (height > 1)) 
+      throw new IllegalArgumentException
+	("External jobs must have a height of one!");
+
+    String sname = ((external ? "ExternalJob" : "Job") + "-" + name);
+    TreeMap<Integer,Integer> dls = pJobIconDLs.get(sname);
+    if(dls == null) {
+      dls = new TreeMap<Integer,Integer>();
+      pJobIconDLs.put(sname, dls);
+    }
+
+    Integer dl = dls.get(height);
+    if(dl == null) {
+      int texID = TextureMgr.getInstance().getTexture(gl, sname);
+
+      dl = gl.glGenLists(1);
+      dls.put(height, dl);
+
+      gl.glNewList(dl, GL.GL_COMPILE);
+      {
+	gl.glEnable(GL.GL_TEXTURE_2D);
+	gl.glBindTexture(GL.GL_TEXTURE_2D, texID);
+	
+	gl.glColor3d(1.0, 1.0, 1.0);
+
+	if(height == 1) {
+	  gl.glBegin(GL.GL_QUADS);
+	  {
+	    gl.glTexCoord2d(0.0, 0.6875);
+	    gl.glVertex2d(-0.5, -0.1875);
+	    
+	    gl.glTexCoord2d(1.0, 0.6875);
+	    gl.glVertex2d(0.5, -0.1875);
+	    
+	    gl.glTexCoord2d(1.0, 0.3125);	
+	    gl.glVertex2d(0.5, 0.1875);
+	    
+	    gl.glTexCoord2d(0.0, 0.3125);
+	    gl.glVertex2d(-0.5, 0.1875);
+	  }
+	  gl.glEnd();
+	}
+	else {
+	  double dy = 0.1875 * ((double) height);
+	  
+	  gl.glBegin(GL.GL_QUAD_STRIP);
+	  {
+	    gl.glTexCoord2d(0.0, 0.6875);
+	    gl.glVertex2d(-0.5, -dy);
+	    
+	    gl.glTexCoord2d(1.0, 0.6875);
+	    gl.glVertex2d(0.5, -dy);
+	    
+	    
+	    gl.glTexCoord2d(0.0, 0.5625);
+	    gl.glVertex2d(-0.5, -dy+0.125);
+	    
+	    gl.glTexCoord2d(1.0, 0.5625);
+	    gl.glVertex2d(0.5, -dy+0.125);
+	    
+	    
+	    gl.glTexCoord2d(0.0, 0.4375);
+	    gl.glVertex2d(-0.5, dy-0.125);
+	    
+	    gl.glTexCoord2d(1.0, 0.4375);	
+	    gl.glVertex2d(0.5, dy-0.125);
+	    
+	    
+	    gl.glTexCoord2d(0.0, 0.3125);
+	    gl.glVertex2d(-0.5, dy);
+	    
+	    gl.glTexCoord2d(1.0, 0.3125);	
+	    gl.glVertex2d(0.5, dy);
+	  }
+	  gl.glEnd();
+	}
 
 	gl.glDisable(GL.GL_TEXTURE_2D); 
       }
@@ -387,5 +557,11 @@ class GeometryMgr
    * name.
    */ 
   private HashMap<String,Integer>  pNodeIconDLs;
+  
+  /**
+   * The OpenGL display lists which render the job icons indexed by the job state name
+   * and job height.
+   */ 
+  private HashMap<String,TreeMap<Integer,Integer>>  pJobIconDLs;
   
 }
