@@ -1,4 +1,4 @@
-// $Id: ViewerNodePool.java,v 1.5 2004/08/30 06:52:15 jim Exp $
+// $Id: ViewerNodePool.java,v 1.6 2004/10/02 17:39:28 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -6,6 +6,7 @@ import us.temerity.pipeline.*;
 
 import java.util.*;
 import javax.media.j3d.*;
+import javax.vecmath.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   V I E W E R   N O D E   P O O L                                                        */
@@ -99,6 +100,68 @@ class ViewerNodePool
     return Collections.unmodifiableCollection(pActive.values());
   }
   
+  
+  /**
+   * Compontet the bounding box of the given viewer nodes.
+   * 
+   * @param vnodes
+   *   The viewer nodes.
+   * 
+   * @return 
+   *   The [minimum, maximum] corners of the bounding box or <CODE>null</CODE> if no
+   *   viewer nodes are given.
+   */ 
+  public static Point2d[]
+  getBounds
+  (
+   Collection<ViewerNode> vnodes
+  ) 
+  {
+    if(vnodes.isEmpty())
+      return null;
+
+    Point2d bbox[] = {
+      new Point2d(Integer.MAX_VALUE, Integer.MAX_VALUE),
+      new Point2d(Integer.MIN_VALUE, Integer.MIN_VALUE)
+    };
+
+    for(ViewerNode vnode : vnodes) {
+      Point2d pos = vnode.getPosition();
+      
+      bbox[0].x = Math.min(bbox[0].x, pos.x);
+      bbox[0].y = Math.min(bbox[0].y, pos.y);
+
+      bbox[1].x = Math.max(bbox[1].x, pos.x);
+      bbox[1].y = Math.max(bbox[1].y, pos.y);
+    }
+
+    {
+      UserPrefs prefs = UserPrefs.getInstance();
+      
+      bbox[0].x -= prefs.getNodeSpaceX()*0.5;
+      bbox[0].y -= prefs.getNodeSpaceY()*0.5;
+      
+      bbox[1].x += prefs.getNodeSpaceX()*0.5;
+      bbox[1].y += prefs.getNodeSpaceY()*0.5;
+    }
+
+    return bbox;
+  }
+
+  /**
+   * Compontet the bounding box of all active nodes.
+   * 
+   * @return 
+   *   The [minimum, maximum] corners of the bounding box or <CODE>null</CODE> if no
+   *   active nodes exist.
+   */ 
+  public synchronized Point2d[]
+  getActiveBounds() 
+  {
+    return getBounds(pActive.values());
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   N O D E   S T A T E                                                                  */
