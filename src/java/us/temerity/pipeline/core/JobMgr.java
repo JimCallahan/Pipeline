@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.1 2004/07/21 07:15:01 jim Exp $
+// $Id: JobMgr.java,v 1.2 2004/07/25 03:05:19 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -19,9 +19,7 @@ import java.util.concurrent.locks.*;
  * 
  * 
  * @see JobMgrClient
- * @see JobMgrFullClient
  * @see JobMgrServer
- * @see MasterMgr
  */
 public
 class JobMgr

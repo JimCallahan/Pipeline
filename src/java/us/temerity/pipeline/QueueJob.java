@@ -1,4 +1,4 @@
-// $Id: QueueJob.java,v 1.1 2004/07/24 18:28:45 jim Exp $
+// $Id: QueueJob.java,v 1.2 2004/07/25 03:04:19 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -36,7 +36,7 @@ class QueueJob
    * @param aname
    *   The name of the action plugin instance used execute the job.
    * 
-   * @param jobReqs 
+   * @param jreqs 
    *   The requirements that a server must meet in order to be eligable to run the job.
    * 
    * @param sourceIDs

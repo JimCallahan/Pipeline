@@ -1,4 +1,4 @@
-// $Id: QueueGetLicenseKeysRsp.java,v 1.1 2004/07/24 18:28:45 jim Exp $
+// $Id: QueueGetLicenseKeysRsp.java,v 1.2 2004/07/25 03:07:33 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -30,8 +30,8 @@ class QueueGetLicenseKeysRsp
    * @param timer 
    *   The timing statistics for a task.
    * 
-   * @param names
-   *   The license key names
+   * @param keys
+   *   The license keys
    */ 
   public
   QueueGetLicenseKeysRsp

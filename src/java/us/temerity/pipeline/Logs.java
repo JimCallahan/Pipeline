@@ -1,4 +1,4 @@
-// $Id: Logs.java,v 1.8 2004/04/30 08:40:52 jim Exp $
+// $Id: Logs.java,v 1.9 2004/07/25 03:03:37 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -244,7 +244,7 @@ class Logs
    * 
    * @see BaseAction 
    * @see BaseEditor 
-   * @see BaseTool
+   * @see BaseComparator
    */
   public static Logger plg;   
  

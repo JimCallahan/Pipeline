@@ -1,4 +1,4 @@
-// $Id: QueueAddLicenseKeyReq.java,v 1.1 2004/07/24 18:28:45 jim Exp $
+// $Id: QueueAddLicenseKeyReq.java,v 1.2 2004/07/25 03:07:33 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -14,9 +14,6 @@ import java.util.*;
 
 /**
  * A request to add a license key to the currently defined license keys. <P> 
- * 
- * @see MasterMgr
- * @see QueueMgr
  */
 public
 class QueueAddLicenseKeyReq
