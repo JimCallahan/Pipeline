@@ -1,4 +1,4 @@
-// $Id: QueueRequest.java,v 1.9 2004/08/30 02:48:15 jim Exp $
+// $Id: QueueRequest.java,v 1.10 2004/09/03 01:59:38 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -133,25 +133,11 @@ enum QueueRequest
    */
   GetJobInfo, 
 
-  /**
-   * An instance {@link QueueGetJobGroupReq QueueGetJobGroupReq} is next.
-   */
-  GetJobGroup, 
-
-  /**
-   * Get all of the existing the job groups.
-   */
-  GetJobGroups, 
 
   /**
    * An instance {@link QueueSubmitJobReq QueueSubmitJobReq} is next.
    */
   SubmitJob, 
-
-  /**
-   * An instance {@link QueueGroupJobsReq QueueGroupJobsReq} is next.
-   */
-  GroupJobs, 
 
   /**
    * An instance {@link QueueKillJobsReq QueueKillJobsReq} is next.
@@ -167,6 +153,37 @@ enum QueueRequest
    * An instance {@link QueueResumeJobsReq QueueResumeJobsReq} is next.
    */
   ResumeJobs, 
+
+
+  /**
+   * An instance {@link QueueGroupJobsReq QueueGroupJobsReq} is next.
+   */
+  GroupJobs, 
+
+  /**
+   * An instance {@link QueueGetJobGroupReq QueueGetJobGroupReq} is next.
+   */
+  GetJobGroup, 
+
+  /**
+   * Get all of the existing the job groups.
+   */
+  GetJobGroups, 
+
+  /**
+   * An instance {@link QueueDeleteJobGroupsReq QueueDeleteJobGroupsReq} is next.
+   */
+  DeleteJobGroups, 
+
+  /**
+   * An instance {@link QueueDeleteViewJobGroupsReq QueueDeleteViewJobGroupsReq} is next.
+   */
+  DeleteViewJobGroups, 
+  
+  /** 
+   * Delete all of the completed job groups in all working areas. 
+   */ 
+  DeleteAllJobGroups,
 
 
   /*----------------------------------------------------------------------------------------*/
