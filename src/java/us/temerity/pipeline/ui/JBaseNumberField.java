@@ -1,4 +1,4 @@
-// $Id: JBaseNumberField.java,v 1.1 2004/06/23 22:31:07 jim Exp $
+// $Id: JBaseNumberField.java,v 1.2 2004/09/05 06:45:30 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -95,6 +95,25 @@ class JBaseNumberField<T>
   createDefaultModel()
   {
     return new NumberDocument();
+  }
+
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   J C O M P O N E N T   O V E R R I D E S                                              */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Sets whether or not this component is enabled. 
+   */
+  public void 
+  setEnabled
+  (
+   boolean enabled
+  )
+  {
+    super.setEnabled(enabled);
+    setName(isEnabled() ? "EditableTextField" : "TextField");
   }
 
 
