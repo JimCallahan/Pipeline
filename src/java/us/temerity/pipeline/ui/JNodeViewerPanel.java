@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.20 2004/06/22 19:42:06 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.21 2004/06/28 00:18:01 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -254,6 +254,12 @@ class JNodeViewerPanel
       item.addActionListener(this);
       pNodePopup.add(item);
 
+      item = new JMenuItem("Renumber...");
+      item.setActionCommand("renumber");
+      item.setEnabled(false);  // FOR NOW...
+      item.addActionListener(this);
+      pNodePopup.add(item);
+
       item = new JMenuItem("Import...");
       item.setActionCommand("import");
       item.addActionListener(this);
@@ -275,7 +281,6 @@ class JNodeViewerPanel
       item = new JMenuItem("Check-Out...");
       item.setActionCommand("check-out");
       item.addActionListener(this);
-      item.setEnabled(false);  // FOR NOW...
       pNodePopup.add(item);
       
       pNodePopup.addSeparator();
@@ -438,6 +443,7 @@ class JNodeViewerPanel
       pRegisterDialog = new JRegisterDialog();
       pRevokeDialog   = new JRevokeDialog();
       pCheckInDialog  = new JCheckInDialog();
+      pCheckOutDialog = new JCheckOutDialog();
     }
   }
 
@@ -2080,6 +2086,10 @@ class JNodeViewerPanel
       doRemoveRoot();
     else if(cmd.equals("remove-all-roots"))
       doRemoveAllRoots();
+    else if(cmd.equals("edit"))
+      doEdit();
+    else if(cmd.startsWith("edit-with:"))
+      doEditWith(cmd.substring(10));
     else if(cmd.equals("rename"))
       doRename();
     else if(cmd.equals("clone"))
@@ -2088,6 +2098,8 @@ class JNodeViewerPanel
       doRevoke();
     else if(cmd.equals("check-in"))
       doCheckIn();
+    else if(cmd.equals("check-out"))
+      doCheckOut();
 
 
     // ...
@@ -2201,6 +2213,59 @@ class JNodeViewerPanel
   }
 
   
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Edit/View the primary selected node with the editor specified by the node version.
+   */ 
+  public void 
+  doEdit() 
+  {
+    if(pPrimary != null) {
+      NodeDetails details = pPrimary.getNodeStatus().getDetails();
+      if(details != null) {
+	NodeCommon com = details.getWorkingVersion();
+	if(com == null) 
+	  com = details.getLatestVersion();
+
+	if(com != null) {
+	  EditTask task = new EditTask(com, null);
+	  task.start();
+	}
+      }
+    }
+
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();
+  }
+
+  /**
+   * Edit/View the primary selected node with the given editor.
+   */ 
+  public void 
+  doEditWith
+  (
+   String editor
+  ) 
+  {
+    if(pPrimary != null) {
+      NodeDetails details = pPrimary.getNodeStatus().getDetails();
+      if(details != null) {
+	NodeCommon com = details.getWorkingVersion();
+	if(com == null) 
+	  com = details.getLatestVersion();
+
+	if(com != null) {
+	  EditTask task = new EditTask(com, editor);
+	  task.start();
+	}
+      }
+    }
+
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -2338,6 +2403,34 @@ class JNodeViewerPanel
 
 	  CheckInTask task = new CheckInTask(status.getName(), desc, level);
 	  task.start();
+	}
+      }
+    }
+
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();
+  }
+
+  /**
+   * Check-out the primary selected node.
+   */ 
+  public void 
+  doCheckOut() 
+  {
+    if(pPrimary != null) {
+      NodeStatus status = pPrimary.getNodeStatus();
+      NodeDetails details = status.getDetails();
+      if(details != null) {
+	pCheckOutDialog.updateNameVersions("Check-Out:  " + status, details.getVersionIDs());
+	pCheckOutDialog.setVisible(true);
+	
+	if(pCheckOutDialog.wasConfirmed()) {
+	  VersionID vid = pCheckOutDialog.getVersionID();
+	  if(vid != null) {
+	    CheckOutTask task = 
+	      new CheckOutTask(status.getName(), vid, pCheckOutDialog.keepNewer());
+	    task.start();
+	  }
 	}
       }
     }
@@ -2674,6 +2767,97 @@ class JNodeViewerPanel
   }
 
   
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Edit/View the primary file sequence of the given node version.
+   */ 
+  private
+  class EditTask
+    extends Thread
+  {
+    public 
+    EditTask
+    (
+     NodeCommon com, 
+     String ename
+    ) 
+    {
+      pNodeCommon = com;
+      pEditorName = ename;
+    }
+
+    public void 
+    run() 
+    {
+      SubProcess proc = null;
+      {
+	UIMaster master = UIMaster.getInstance();
+	if(master.beginPanelOp("Launching Node Editor...")) {
+	  try {
+	    
+	    /* create an editor plugin instance */ 
+	    BaseEditor editor = null;
+	    {
+	      String ename = pEditorName;
+	      if(ename == null) 
+		ename = pNodeCommon.getEditor();
+	      if(ename == null) 
+		throw new PipelineException
+		  ("No editor was specified for node (" + pNodeCommon.getName() + ")!");
+	      
+	      editor = Plugins.newEditor(ename);
+	    }
+	    
+	    /* lookup the toolset environment */ 
+	    TreeMap<String,String> env = null;
+	    {
+	      String tname = pNodeCommon.getToolset();
+	      if(tname == null) 
+		throw new PipelineException
+		  ("No toolset was specified for node (" + pNodeCommon.getName() + ")!");
+
+	      MasterMgrClient client = master.getMasterMgrClient();
+	      env = client.getToolsetEnvironment(pAuthor, pView, tname);
+	    }
+	    
+	    /* get the primary file sequence */ 
+	    File path = new File(PackageInfo.sWorkDir, 
+				 pAuthor + "/" + pView + "/" + pNodeCommon.getName());
+	    FileSeq fseq = new FileSeq(path.getParent(), 
+				       pNodeCommon.getPrimarySequence());
+	    
+	    /* start the editor */ 
+	    proc = editor.launch(fseq, env, PackageInfo.sTempDir);	   
+	  }
+	  catch(PipelineException ex) {
+	    master.showErrorDialog(ex);
+	    return;
+	  }
+	  finally {
+	    master.endPanelOp("Done.");
+	  }
+	}
+
+	/* wait for the editor to exit */ 
+	try {
+	  proc.join();
+	  if(!proc.wasSuccessful()) 
+	    master.showSubprocessFailureDialog("Editor Failure:", proc);
+	}
+	catch(InterruptedException ex) {
+	  master.showErrorDialog(ex);
+	}
+      }
+    }
+ 
+    private NodeCommon  pNodeCommon; 
+    private String      pEditorName;
+  }
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /** 
@@ -2828,7 +3012,7 @@ class JNodeViewerPanel
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Checking-in Node...")) {
+      if(master.beginPanelOp("Checking-In Nodes...")) {
 	try {
 	  master.getMasterMgrClient().checkIn(pAuthor, pView, pName, pDescription, pLevel);
 	}
@@ -2844,9 +3028,54 @@ class JNodeViewerPanel
       }
     }
 
-    private String  pName; 
-    private String  pDescription;  
+    private String           pName; 
+    private String           pDescription;  
     private VersionID.Level  pLevel;
+  }
+
+  /** 
+   * Check-out a given node.
+   */ 
+  private
+  class CheckOutTask
+    extends Thread
+  {
+    public 
+    CheckOutTask
+    (
+     String name, 
+     VersionID vid, 
+     boolean keepNewer
+    ) 
+    {
+      pName      = name; 
+      pVersionID = vid; 
+      pKeepNewer = keepNewer;
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Checking-Out Nodes...")) {
+	try {
+	  master.getMasterMgrClient().checkOut(pAuthor, pView, pName, pVersionID, pKeepNewer);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	updateRoots();
+      }
+    }
+
+    private String     pName; 
+    private VersionID  pVersionID; 
+    private boolean    pKeepNewer;
   }
 
 
@@ -3196,5 +3425,10 @@ class JNodeViewerPanel
    * The check-in node dialog.
    */ 
   private JCheckInDialog  pCheckInDialog;
+
+  /** 
+   * The check-out node dialog.
+   */ 
+  private JCheckOutDialog  pCheckOutDialog;
 
 }
