@@ -1,4 +1,4 @@
-// $Id: JMenuAnchor.java,v 1.2 2004/04/29 04:53:29 jim Exp $
+// $Id: JMenuAnchor.java,v 1.3 2004/04/30 11:24:07 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -26,14 +26,18 @@ class JMenuAnchor
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Construct a manager panel. 
+   * Construct a popup menu anchor. 
    */
   JMenuAnchor
   (
-   JPopupMenu menu
+   JManagerPanel mgr
   )
   {
     super();
+
+    if(mgr == null) 
+      throw new IllegalArgumentException("The manager panel cannot be (null)!");
+    pMgrPanel = mgr;
 
     setIcon(sNormalIcon);
 
@@ -42,43 +46,7 @@ class JMenuAnchor
     setMaximumSize(size);
     setPreferredSize(size);
 
-    setPopupMenu(menu);
     addMouseListener(this);
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   A C C E S S                                                                          */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Get the associated popup menu.
-   */ 
-  public JPopupMenu 
-  getPopupMenu() 
-  { 
-    return pPopup;
-  }
-    
-  /**
-   * Set the associated popup menu.
-   */ 
-  public void
-  setPopupMenu
-  (
-   JPopupMenu menu
-  )
-  { 
-    if(menu == null)
-      throw new IllegalArgumentException("The popup menu cannot be (null)!");
-
-    if(pPopup!= null) 
-      pPopup.removePopupMenuListener(this);
-
-    pPopup = menu;
-
-    pPopup.addPopupMenuListener(this);
   }
 
 
@@ -129,7 +97,7 @@ class JMenuAnchor
   )
   {
     setIcon(sPressedIcon);
-    pPopup.show(e.getComponent(), e.getX(), e.getY()); 
+    pMgrPanel.showPopup(e);
   }
   
   /**
@@ -180,11 +148,12 @@ class JMenuAnchor
   {}
 
 
+
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
-  //private static final long serialVersionUID = -3122417485809218152L;
+  private static final long serialVersionUID = -8272128881241954656L;
 
 
   static private Icon sNormalIcon = 
@@ -200,7 +169,8 @@ class JMenuAnchor
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The popup menu.
+   * The parent manager panel.
    */ 
-  private JPopupMenu  pPopup; 
+  private JManagerPanel  pMgrPanel;
+
 }
