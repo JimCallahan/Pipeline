@@ -1,4 +1,4 @@
-// $Id: MayaRenderAction.java,v 1.1 2004/09/09 17:07:37 jim Exp $
+// $Id: MayaRenderAction.java,v 1.2 2004/09/10 15:41:40 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -10,10 +10,11 @@ import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M A Y A   R E N D E R                                                                  */
-/*                                                                                          */
-/*     Renders the Maya scene of its only dependency.                                       */
 /*------------------------------------------------------------------------------------------*/
 
+/**
+ * Renders a series of images using a single Maya scene source node.
+ */
 public
 class MayaRenderAction
   extends BaseAction
@@ -101,14 +102,15 @@ class MayaRenderAction
 	    ("The MayaRender Action requires that the output images have frame numbers.");
       }
       
+      NodeID nodeID = agenda.getNodeID();
       if(agenda.getSourceNames().size() == 1) {	
 	for(String sname : agenda.getSourceNames()) {
 	  FileSeq fseq = agenda.getPrimarySource(sname);
 	  String suffix = fseq.getFilePattern().getSuffix();
 	  if((suffix != null) && (suffix.equals("ma") || suffix.equals("mb"))) {
-	    File path = new File(sname);
-	    scene = new File(agenda.getWorkingDir(), 
-			     path.getParent() + "/" + fseq.getFile(0));
+	    NodeID snodeID = new NodeID(nodeID, sname);
+	    scene = new File(PackageInfo.sProdDir,
+			     snodeID.getWorkingParent() + "/" + fseq.getFile(0));
 	  }
 	  
 	  break;
