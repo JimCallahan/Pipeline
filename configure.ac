@@ -787,6 +787,7 @@ AC_CONFIG_FILES([
   src/pipeline/scripts/pipeline
   src/pipeline/scripts/pleditor
   src/pipeline/scripts/pltoolset
+  src/pipeline/scripts/plui
   src/pipeline/share/dbinit.sql
   src/pipeline/share/postgresql.conf
 
