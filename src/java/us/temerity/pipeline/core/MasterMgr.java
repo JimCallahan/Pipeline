@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.36 2004/09/13 23:43:01 jim Exp $
+// $Id: MasterMgr.java,v 1.37 2004/09/16 21:59:08 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1979,10 +1979,9 @@ class MasterMgr
    * Node properties include: <BR>
    * 
    * <DIV style="margin-left: 40px;">
-   *   The file patterns and frame ranges of primary and secondary file sequences. <BR>
    *   The toolset environment under which editors and actions are run. <BR>
    *   The name of the editor plugin used to edit the data files associated with the node.<BR>
-   *   The regeneration action and its single and per-dependency parameters. <BR>
+   *   The regeneration action and its single and per-source parameters. <BR>
    *   The overflow policy, execution method and job batch size. <BR> 
    *   The job requirements. <P>
    * </DIV> 
