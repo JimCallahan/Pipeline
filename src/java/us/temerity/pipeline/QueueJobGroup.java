@@ -1,4 +1,4 @@
-// $Id: QueueJobGroup.java,v 1.3 2004/08/23 04:28:40 jim Exp $
+// $Id: QueueJobGroup.java,v 1.4 2004/08/25 05:15:46 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -41,6 +41,9 @@ class QueueJobGroup
    * @param nodeID
    *   The unique working version identifier of the root target node of the job group.
    * 
+   * @param rootPattern
+   *   The filename pattern string of the root target files.
+   *
    * @param rootIDs
    *   The unique identifiers of the root jobs of the group.
    *
@@ -52,6 +55,7 @@ class QueueJobGroup
   (
    long groupID, 
    NodeID nodeID, 
+   String rootPattern, 
    TreeSet<Long> rootIDs,
    TreeSet<Long> jobIDs
   ) 
@@ -64,6 +68,10 @@ class QueueJobGroup
     if(nodeID == null) 
       throw new IllegalArgumentException("The node ID cannot be (null)!");
     pNodeID = nodeID;
+
+    if(rootPattern == null) 
+      throw new IllegalArgumentException("The node ID cannot be (null)!");
+    pRootPattern = rootPattern;
 
     pRootIDs = new TreeSet<Long>();
     if(rootIDs != null) 
@@ -100,7 +108,6 @@ class QueueJobGroup
     return pNodeID;
   }
 
-
   /*----------------------------------------------------------------------------------------*/
   
   /**
@@ -127,6 +134,15 @@ class QueueJobGroup
 
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Gets filename pattern string of the root target files.
+   */
+  public String
+  getRootPattern() 
+  {
+    return pRootPattern;
+  }
+
   /**
    * Get the unique identifiers of the root jobs of the group. 
    */ 
@@ -175,6 +191,7 @@ class QueueJobGroup
   {
     encoder.encode("GroupID", pGroupID);
     encoder.encode("NodeID", pNodeID);
+    encoder.encode("RootPattern", pRootPattern);
     encoder.encode("RootIDs", pRootIDs);
     encoder.encode("JobIDs", pJobIDs);
   }
@@ -196,6 +213,11 @@ class QueueJobGroup
       throw new GlueException("The \"NodeID\" was missing!");
     pNodeID = nodeID;    
 
+    String rpat = (String) decoder.decode("RootPattern");
+    if(rpat == null) 
+      throw new GlueException("The \"RootPattern\" was missing!");
+    pRootPattern = rpat;    
+
     {
       TreeSet<Long> ids = (TreeSet<Long>) decoder.decode("RootIDs");
       if(ids != null) 
@@ -213,7 +235,7 @@ class QueueJobGroup
     }
   }
   
-
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -253,6 +275,11 @@ class QueueJobGroup
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The filename pattern string of the root target files.
+   */
+  private String pRootPattern; 
 
   /**
    * The unique identifiers of the root jobs of the group.
