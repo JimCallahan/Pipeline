@@ -1,4 +1,4 @@
-// $Id: LicenseKey.java,v 1.1 2004/06/19 00:29:07 jim Exp $
+// $Id: LicenseKey.java,v 1.2 2004/07/24 18:14:33 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -38,18 +38,98 @@ class LicenseKey
    * 
    * @param desc 
    *   A short description of the license key.
+   * 
+   * @param total
+   *   The total number of licenses.
    */ 
   public
   LicenseKey
   (
    String name,  
-   String desc
+   String desc, 
+   int total
   ) 
   {
     super(name, desc);
+    setTotal(total);
   }
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the total number of licenses.
+   */ 
+  public int 
+  getTotal() 
+  {
+    return pTotal;
+  }
+
+  /**
+   * Set the total number of licenses.
+   */ 
+  public void
+  setTotal
+  (
+   int total
+  ) 
+  {
+    if(total < 0) 
+      throw new IllegalArgumentException
+	("The total number of licenses cannot be negative!");
+    pTotal = total;
+  }
+
+
+  /**
+   * Get the available number of licenses.
+   */ 
+  public int 
+  getAvailable() 
+  {
+    return Math.max((pTotal - pUsed), 0);
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   O P S                                                                                */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Attempt to aquire a license.
+   * 
+   * @return 
+   *   Whether a license was available.
+   */ 
+  public boolean
+  aquire() 
+  {
+    if((pUsed - pTotal) > 0) {
+      pUsed++;
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Release a previously aquired license.
+   */ 
+  public void
+  release()
+  {
+    if(pUsed > 0) 
+      pUsed--;
+  }
+
+  
+  
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   G L U E A B L E                                                                      */
@@ -65,6 +145,7 @@ class LicenseKey
     super.toGlue(encoder);
     
     encoder.encode("Description", pDescription);    
+    encoder.encode("Total", pTotal);    
   }
   
   public void 
@@ -80,6 +161,11 @@ class LicenseKey
     if(desc == null) 
       throw new GlueException("The \"Description\" was missing!");
     pDescription = desc;
+
+    Integer total = (Integer) decoder.decode("Total"); 
+    if(total == null) 
+      throw new GlueException("The \"Total\" was missing!");
+    pTotal = total;
   }
 
 
@@ -89,6 +175,23 @@ class LicenseKey
   /*----------------------------------------------------------------------------------------*/
 
   private static final long serialVersionUID = 7616282979518347032L;
+
+
+  
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The total number of licenses.
+   */ 
+  private int  pTotal; 
+
+  /**
+   * The number of licenses currently in use.
+   */ 
+  private int  pUsed; 
 
 }
 
