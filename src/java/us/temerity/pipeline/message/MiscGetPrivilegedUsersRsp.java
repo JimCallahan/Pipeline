@@ -1,4 +1,4 @@
-// $Id: MiscGetPrivilegedUsersRsp.java,v 1.1 2004/05/23 20:01:27 jim Exp $
+// $Id: MiscGetPrivilegedUsersRsp.java,v 1.2 2004/05/29 06:35:04 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -13,8 +13,7 @@ import java.util.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A successful response to a {@link MiscGetPrivilegedUsersReq MiscGetPrivilegedUsersReq} 
- * request.
+ * A successful response to a <CODE>MiscGetPrivilegedUsersReq</CODE> request.
  */
 public
 class MiscGetPrivilegedUsersRsp

@@ -1,4 +1,4 @@
-// $Id: NodeGetWorkingAreasRsp.java,v 1.2 2004/05/21 21:17:51 jim Exp $
+// $Id: NodeGetWorkingAreasRsp.java,v 1.3 2004/05/29 06:35:04 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -13,7 +13,7 @@ import java.util.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A successful response to a {@link NodeGetWorkingAreasReq NodeGetWorkingAreasReq} request.
+ * A successful response to a <CODE>NodeGetWorkingAreasReq</CODE> request.
  */
 public
 class NodeGetWorkingAreasRsp
