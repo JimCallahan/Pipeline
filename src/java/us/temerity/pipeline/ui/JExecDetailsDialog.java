@@ -1,4 +1,4 @@
-// $Id: JExecDetailsDialog.java,v 1.3 2004/09/11 14:15:38 jim Exp $
+// $Id: JExecDetailsDialog.java,v 1.4 2004/11/19 11:55:02 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -67,7 +67,7 @@ class JExecDetailsDialog
 	Dimension size = new Dimension(100, 7);       
 	panel.setPreferredSize(size);
 	panel.setMinimumSize(size);
-	panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+	panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 7));
 	
 	body.add(panel);
       }
