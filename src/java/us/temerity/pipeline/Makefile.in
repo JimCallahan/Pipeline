@@ -224,9 +224,9 @@ PHONY: installdirs
 installdirs:
 	$(mkinstalldirs) $(prefix)/jar
 	$(mkinstalldirs) $(PRODDIR)/working
-	$(mkinstalldirs) $(PRODIR)/repository
-	chmod 0755 $(PRODIR)/repository
-	chown pipeline.pipeline $(PRODIR)/repository
+	$(mkinstalldirs) $(PRODDIR)/repository
+	chmod 0755 $(PRODDIR)/repository $(PRODDIR)/checksum
+	chown pipeline.pipeline $(PRODDIR)/repository $(PRODDIR)/checksum
 
 
 #--------------------------------------------------------------------------------------------#
