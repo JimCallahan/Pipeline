@@ -90,6 +90,7 @@ LTLIBOBJS = @LTLIBOBJS@
 MAKE = @MAKE@
 MAKEINFO = @MAKEINFO@
 MOZILLA = @MOZILLA@
+NODEDIR = @NODEDIR@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
@@ -176,8 +177,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 #                     VersionID \
 #                     Plugins 
 
-
-            TESTS = VersionID
+            TESTS = NativeFileSys
 
 
          CLASSES = $(patsubst %,Test%App.class,$(TESTS))
