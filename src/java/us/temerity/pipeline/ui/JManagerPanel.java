@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.45 2004/10/09 20:03:05 jim Exp $
+// $Id: JManagerPanel.java,v 1.46 2004/10/13 03:31:19 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -272,7 +272,7 @@ class JManagerPanel
       item.setActionCommand("manage-layouts");
       item.addActionListener(this);
       pPopup.add(item);  
-      
+
       pPopup.addSeparator();
 
       item = new JMenuItem("Preferences...");
@@ -860,30 +860,89 @@ class JManagerPanel
   {
     int mods = e.getModifiersEx();
 
-    int on1  = (MouseEvent.BUTTON3_DOWN_MASK |
-		MouseEvent.ALT_DOWN_MASK);		  
-    
-    int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
-		MouseEvent.BUTTON2_DOWN_MASK | 
-		MouseEvent.SHIFT_DOWN_MASK |
-		MouseEvent.CTRL_DOWN_MASK);
+    int on[] = {
+      (MouseEvent.BUTTON3_DOWN_MASK |
+       MouseEvent.ALT_DOWN_MASK),
 
-    int on2  = (MouseEvent.BUTTON3_DOWN_MASK |
-		MouseEvent.CTRL_DOWN_MASK);	  
+      (MouseEvent.BUTTON3_DOWN_MASK |
+       MouseEvent.CTRL_DOWN_MASK),
+
+      (MouseEvent.BUTTON3_DOWN_MASK |
+       MouseEvent.SHIFT_DOWN_MASK),
+
+      (MouseEvent.BUTTON3_DOWN_MASK |
+       MouseEvent.ALT_DOWN_MASK |
+       MouseEvent.CTRL_DOWN_MASK),
+
+      (MouseEvent.BUTTON3_DOWN_MASK |
+       MouseEvent.ALT_DOWN_MASK |
+       MouseEvent.SHIFT_DOWN_MASK),
+
+      (MouseEvent.BUTTON3_DOWN_MASK |
+       MouseEvent.CTRL_DOWN_MASK |
+       MouseEvent.SHIFT_DOWN_MASK),
+
+      (MouseEvent.BUTTON3_DOWN_MASK |
+       MouseEvent.ALT_DOWN_MASK |
+       MouseEvent.CTRL_DOWN_MASK |
+       MouseEvent.SHIFT_DOWN_MASK)
+    };
+
+    int off[] = {
+      (MouseEvent.BUTTON1_DOWN_MASK | 
+       MouseEvent.BUTTON2_DOWN_MASK | 
+       MouseEvent.SHIFT_DOWN_MASK |
+       MouseEvent.CTRL_DOWN_MASK), 
+
+      (MouseEvent.BUTTON1_DOWN_MASK | 
+       MouseEvent.BUTTON2_DOWN_MASK | 
+       MouseEvent.ALT_DOWN_MASK |
+       MouseEvent.SHIFT_DOWN_MASK), 
+
+      (MouseEvent.BUTTON1_DOWN_MASK | 
+       MouseEvent.BUTTON2_DOWN_MASK | 
+       MouseEvent.ALT_DOWN_MASK |
+       MouseEvent.CTRL_DOWN_MASK), 
+
+      (MouseEvent.BUTTON1_DOWN_MASK | 
+       MouseEvent.BUTTON2_DOWN_MASK | 
+       MouseEvent.SHIFT_DOWN_MASK), 
+
+      (MouseEvent.BUTTON1_DOWN_MASK | 
+       MouseEvent.BUTTON2_DOWN_MASK | 
+       MouseEvent.CTRL_DOWN_MASK), 
+      
+      (MouseEvent.BUTTON1_DOWN_MASK | 
+       MouseEvent.BUTTON2_DOWN_MASK | 
+       MouseEvent.ALT_DOWN_MASK),
+
+      (MouseEvent.BUTTON1_DOWN_MASK | 
+       MouseEvent.BUTTON2_DOWN_MASK)
+    }; 
+
+
+    UserPrefs prefs = UserPrefs.getInstance();
+
+    ArrayList<String> keys = new ArrayList<String>();
+    keys.add("ALT");
+    keys.add("CTRL");
+    keys.add("SHIFT");
+    keys.add("ALT+CTRL");
+    keys.add("ALT+SHIFT");
+    keys.add("CTRL+SHIFT");
+    keys.add("ALT+CTRL+SHIFT");
     
-    int off2 = (MouseEvent.BUTTON1_DOWN_MASK | 
-		MouseEvent.BUTTON2_DOWN_MASK | 
-		MouseEvent.SHIFT_DOWN_MASK |
-		MouseEvent.ALT_DOWN_MASK);
-    
-    /* BUTTON3+ALT: main manager popup menu */ 
-    if((mods & (on1 | off1)) == on1) {
+    int mainIdx  = keys.indexOf(prefs.getMainMenuPopup());
+    int groupIdx = keys.indexOf(prefs.getGroupMenuPopup());
+
+    /* BUTTON3+keys: main manager popup menu */ 
+    if((mainIdx > -1) && (mods & (on[mainIdx] | off[mainIdx])) == on[mainIdx]) {
       pPopupMenuAnchor.handleAnchorMouseEvent(e);
       return true;
     }
 
-    /* BUTTON3+CTRL: panel group popup menu */ 
-    else if((mods & (on2 | off2)) == on2) {
+    /* BUTTON3+keys: panel group popup menu */ 
+    else if((groupIdx > -1) && (mods & (on[groupIdx] | off[groupIdx])) == on[groupIdx]) {
       pGroupMenuAnchor.handleAnchorMouseEvent(e);
       return true;
     }

@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.25 2004/10/09 20:15:25 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.26 2004/10/13 03:32:08 jim Exp $
 
 import java.io.*; 
 import java.util.*;
@@ -24,8 +24,23 @@ class GenUserPrefsApp
   {
     pPrefs = new TreeMap<String,BasePref[]>();
 
+    LinkedList<String> keys = new LinkedList<String>();
+    keys.add("ALT");
+    keys.add("CTRL");
+    keys.add("SHIFT");
+    keys.add("ALT+CTRL");
+    keys.add("ALT+SHIFT");
+    keys.add("CTRL+SHIFT");
+    keys.add("ALT+CTRL+SHIFT");
+
     {
       BasePref prefs[] = {
+	new ChoicePref
+	("The function keys pressed in combination with MOUSE3 to show the Main Menu.", 
+	 "MainMenuPopup", "Main Menu Popup:", keys, "ALT"),
+
+	new BasePref(),
+
 	new HotKeyPref
 	("Change the working area view of the panel.", 
 	 "ManagerChangeOwnerView", "Change Owner|View:",
@@ -42,6 +57,10 @@ class GenUserPrefsApp
 	("Manage the saved panel layouts.",
 	 "ShowManageLayouts", "Manage Layouts:"),
 
+	new HotKeyPref
+	("Make the current panel layout the default layout.",
+	 "SetDefaultLayout", "Set Default Layout:"),  
+	
 	new BasePref(),
 
 	new HotKeyPref
@@ -127,6 +146,12 @@ class GenUserPrefsApp
 
     {
       BasePref prefs[] = {
+	new ChoicePref
+	("The function keys pressed in combination with MOUSE3 to show the Group Menu.", 
+	 "GroupMenuPopup", "Group Menu Popup:", keys, "CTRL"),
+
+	new BasePref(),
+
 	new HotKeyPref
 	("No panel group.", 
 	 "ManagerGroup0", "No Group:",
@@ -982,7 +1007,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.25 2004/10/09 20:15:25 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.26 2004/10/13 03:32:08 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -1235,7 +1260,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.25 2004/10/09 20:15:25 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.26 2004/10/13 03:32:08 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
