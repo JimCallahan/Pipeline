@@ -1,0 +1,123 @@
+// $Id: PackageInfo.java.in,v 1.1 2004/02/12 15:50:12 jim Exp $
+
+package us.temerity.pipeline;
+
+import java.lang.*;
+import java.util.*;
+
+/*------------------------------------------------------------------------------------------*/
+/*   P A C K A G E   I N F O                                                                */
+/*                                                                                          */
+/*    Information about this release of the pipeline tools.                                 */
+/*------------------------------------------------------------------------------------------*/
+
+public
+class PackageInfo
+{ 
+  /*----------------------------------------------------------------------------------------*/
+  /*   P U B L I C   F I E L D S                                                            */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /* the version number */ 
+  public static String sVersion = "@VERSION@";        
+
+  /* when the package was released */ 
+  public static String sRelease = "@RELEASE_STAMP@";  
+
+
+  /* root install directory */ 
+  public static String sInstDir = "@prefix@";
+
+
+  /* Pipeline server hostname */ 
+  public static String sPipelineServer = "@PL_SERVER@";
+
+  /* Pipeline server port number */ 
+  public static int sPipelinePort = @PL_PORT@;
+
+
+  /* base repository directory */ 
+  public static String sRepoDir = "@PRODDIR@/repository";
+
+  /* base working area directory */ 
+  public static String sWorkDir = "@PRODDIR@/working";
+
+
+  /* installed toolset directory */ 
+  public static String sToolsetDir = "@TOOLSETDIR@/toolsets";
+
+
+  /* installed read-only architecture-independent data directory */ 
+  public static String sDataDir = "@datadir@"; 
+
+  /* installed documentation directory */ 
+  public static String sDocsDir = "@datadir@/docs"; 
+
+  /* location of the Mozilla web browser */ 
+  public static String sMozilla = "@MOZILLA@";
+
+
+  /* installed location of the GNU Bourne Again SHell */ 
+  public static String sBash = "@BASH@";
+
+  /* installed location of the GNU make program */ 
+  public static String sMake = "@MAKE@";
+
+  /* installed location of the md5sum program */ 
+  public static String sMd5sum = "@MD5SUM@";
+
+  /* installed location of the diff program */ 
+  public static String sDiff = "@DIFF@";
+
+  /* installed location of the kill program */ 
+  public static String sKill = "@KILL@";
+
+  /* installed location of the SSH program */ 
+  public static String sSsh = "@SSH@";
+
+  /* installed location of the ypcat program */ 
+  public static String sYpCat = "@YPCAT@";
+
+  /* installed location of the df program */ 
+  public static String sDf = "@DF@";
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   M E T H O D S                                                          */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /* --copyright */ 
+  public static String
+  copyright()
+  {
+    return
+      ("-------------------------------------------------------------------------" + sNL +
+       " Copyright (c) 2001, 2002, 2003 James M. Callahan." + sNL +
+       sNL +
+       " Permission to use, copy and distribute this software and its" + sNL +
+       " documentation for any purpose is STRICTLY PROHIBITED without prior" + sNL +
+       " authorization in writing by James M. Callahan." + sNL +
+       sNL +         
+       " THE SOFTWARE IS PROVIDED \"AS-IS\" AND WITHOUT WARRANTY OF ANY KIND," + sNL +
+       " EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY" + sNL +
+       " WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE." + sNL +
+       sNL +       
+       " IN NO EVENT SHALL JAMES M. CALLAHAN BE LIABLE FOR ANY SPECIAL," + sNL +
+       " INCIDENTAL, INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY" + sNL +
+       " DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER" + sNL +
+       " OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF" + sNL +
+       " LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE" + sNL +
+       " OF THIS SOFTWARE." + sNL +
+       "-------------------------------------------------------------------------" + sNL);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  protected static String sNL = System.getProperty("line.separator", "\n");
+}
+
+
+
