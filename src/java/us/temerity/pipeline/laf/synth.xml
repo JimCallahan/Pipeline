@@ -31,6 +31,23 @@
   <bind style="PanelBar" type="name" key="PanelBar"/>
 
 
+  <!--  P A N E L   M E N U   B U T T O N  --> 
+
+  <style id="PanelMenuButton"> 
+    <state>
+      <imagePainter path="PanelMenuButton.png"
+                    sourceInsets="0 0 0 0"/>
+      <insets top="0" bottom="0" right="0" left="0"/> 
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="PanelMenuButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+      <insets top="0" bottom="0" right="0" left="0"/> 
+    </state>
+  </style>
+  <bind style="PanelMenuButton" type="name" key="PanelMenuButton"/>
+
+
   <!--  C L O S E   B U T T O N  -->
 
   <style id="CloseButton"> 
@@ -124,8 +141,6 @@
   <bind style="ScrollBarArrowSouth" type="name" key="ScrollBar.button"/>
 
 
-
-
   <!--  M E N U S  -->
 
   <style id="Menu">
@@ -133,13 +148,13 @@
     <property key="Menu.arrowIcon" value="MenuIcon"/>
     <state>
       <imagePainter path="MenuItem.png"
-                    sourceInsets="5 4 5 0"/>
-      <insets top="5" bottom="5" right="0" left="4"/>
+                    sourceInsets="4 8 4 0"/>
+      <insets top="4" bottom="4" right="0" left="8"/>
     </state>
     <state value="SELECTED">
       <imagePainter path="MenuItemSelected.png"
-                    sourceInsets="5 4 5 0"/>
-      <insets top="5" bottom="5" right="0" left="4"/>
+                    sourceInsets="4 8 4 0"/>
+      <insets top="4" bottom="4" right="0" left="8"/>
     </state>
   </style>
   <bind style="Menu" type="region" key="Menu"/>
@@ -147,13 +162,13 @@
   <style id="MenuItem">
     <state>
       <imagePainter path="MenuItem.png"
-                    sourceInsets="5 4 5 0"/>
-      <insets top="5" bottom="5" right="0" left="4"/>
+                    sourceInsets="4 8 4 0"/>
+      <insets top="4" bottom="4" right="0" left="8"/>
     </state>
     <state value="MOUSE_OVER">
       <imagePainter path="MenuItemSelected.png"
-                    sourceInsets="5 4 5 0"/>
-      <insets top="5" bottom="5" right="0" left="4"/>
+                    sourceInsets="4 8 4 0"/>
+      <insets top="4" bottom="4" right="0" left="8"/>
     </state>
   </style>
   <bind style="MenuItem" type="region" key="MenuItem"/>

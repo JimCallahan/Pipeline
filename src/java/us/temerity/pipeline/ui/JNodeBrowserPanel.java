@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.2 2004/04/28 00:43:23 jim Exp $
+// $Id: JNodeBrowserPanel.java,v 1.3 2004/04/28 03:59:57 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -33,23 +33,35 @@ class JNodeBrowserPanel
     setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));   
 
     {
-      JPanel bar = new JPanel();
-      bar.setName("PanelBar");
-      bar.setLayout(new BoxLayout(bar, BoxLayout.X_AXIS)); 
-      bar.setMinimumSize(new Dimension(200, 29));
-      bar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 29));
-      bar.setPreferredSize(new Dimension(200, 29));
+      JPanel panel = new JPanel();
+      panel.setName("PanelBar");
+      panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS)); 
+      panel.setMinimumSize(new Dimension(200, 29));
+      panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 29));
+      panel.setPreferredSize(new Dimension(200, 29));
 
-      bar.add(Box.createHorizontalGlue());
+      {
+	JButton btn = new JButton();
+	btn.setName("PanelMenuButton");
+
+	Dimension size = new Dimension(14, 19);
+	btn.setMinimumSize(size);
+	btn.setMaximumSize(size);
+	btn.setPreferredSize(size);
+	
+	panel.add(btn);
+      }
+
+      panel.add(Box.createHorizontalGlue());
 
       {
 	JComboBox combo = new JComboBox();
 	combo.setRenderer(new JComboBoxCellRenderer());
 
-// 	Dimension size = new Dimension(109, 17);
-// 	combo.setMinimumSize(size);
-// 	combo.setMaximumSize(size);
-// 	combo.setPreferredSize(size);
+	Dimension size = new Dimension(155, 19);
+	combo.setMinimumSize(size);
+	combo.setMaximumSize(size);
+	combo.setPreferredSize(size);
 
 	combo.addItem("Node Browser");
 	combo.addItem("Node Viewer");
@@ -62,26 +74,24 @@ class JNodeBrowserPanel
 	combo.addItem("Task Timeline");
 	combo.addItem("Task Details");
 	
-	bar.add(combo);
+	panel.add(combo);
       }
 
-      bar.add(Box.createRigidArea(new Dimension(25,0)));
+      panel.add(Box.createHorizontalGlue());
 
       {
-	JButton close = new JButton();
-	close.setName("CloseButton");
+	JButton btn = new JButton();
+	btn.setName("CloseButton");
 
-	Dimension size = new Dimension(15, 25);
-	close.setMinimumSize(size);
-	close.setMaximumSize(size);
-	close.setPreferredSize(size);
+	Dimension size = new Dimension(15, 19);
+	btn.setMinimumSize(size);
+	btn.setMaximumSize(size);
+	btn.setPreferredSize(size);
 	
-	bar.add(close);
+	panel.add(btn);
       }
 
-      bar.add(Box.createRigidArea(new Dimension(7,0)));
-
-      add(bar);
+      add(panel);
     }
 
     add(Box.createVerticalGlue());

@@ -1,6 +1,8 @@
-// $Id: JComboBoxCellRenderer.java,v 1.1 2004/04/28 00:43:23 jim Exp $
+// $Id: JComboBoxCellRenderer.java,v 1.2 2004/04/28 03:59:57 jim Exp $
 
 package us.temerity.pipeline.ui;
+
+import us.temerity.pipeline.laf.LookAndFeelLoader;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -68,7 +70,7 @@ class JComboBoxCellRenderer
       else 
 	setIcon(sNormalIcon);
     }    
-
+    
     return this;
   }
 
@@ -77,7 +79,10 @@ class JComboBoxCellRenderer
   /*   S T A T I C    I N T E R N A L S                                                     */
   /*----------------------------------------------------------------------------------------*/
 
-  static private Icon sNormalIcon   = new ImageIcon("ListCellNormalIcon.png");
-  static private Icon sSelectedIcon = new ImageIcon("ListCellSelectedIcon.png");
+  static private Icon sNormalIcon = 
+    new ImageIcon(LookAndFeelLoader.class.getResource("ListCellNormalIcon.png"));
+
+  static private Icon sSelectedIcon = 
+    new ImageIcon(LookAndFeelLoader.class.getResource("ListCellSelectedIcon.png"));
 
 }

@@ -1,9 +1,9 @@
-// $Id: UIMain.java,v 1.2 2004/04/27 02:20:57 jim Exp $
+// $Id: UIMain.java,v 1.3 2004/04/28 03:59:57 jim Exp $
 
 package us.temerity.pipeline.ui;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.laf.PipelineLookAndFeelLoader;
+import us.temerity.pipeline.laf.LookAndFeelLoader;
 
 import java.awt.*;
 import java.text.*;
@@ -71,8 +71,8 @@ class UIMain
     {
       try {
 	SynthLookAndFeel synth = new SynthLookAndFeel();
-	synth.load(PipelineLookAndFeelLoader.class.getResourceAsStream("synth.xml"),
-		   PipelineLookAndFeelLoader.class);
+	synth.load(LookAndFeelLoader.class.getResourceAsStream("synth.xml"),
+		   LookAndFeelLoader.class);
 	UIManager.setLookAndFeel(synth);
       }
       catch(ParseException ex) {
