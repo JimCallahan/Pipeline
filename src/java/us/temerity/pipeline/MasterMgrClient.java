@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.7 2004/06/14 22:40:54 jim Exp $
+// $Id: MasterMgrClient.java,v 1.8 2004/06/19 00:25:53 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -162,7 +162,9 @@ class MasterMgrClient
   /**
    * Set the default toolset name. <P> 
    * 
-   * Also makes the given toolset active if not already active.
+   * Also makes the given toolset active if not already active. <P> 
+   * 
+   * This method will fail if the current user does not have privileged access status.
    * 
    * @param name
    *   The name of the new default toolset.
@@ -177,6 +179,10 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {    
+    if(!isPrivileged(false)) 
+      throw new PipelineException
+	("Only privileged users may set the default toolset!");
+
     verifyConnection();
 
     MiscSetDefaultToolsetNameReq req = new MiscSetDefaultToolsetNameReq(name);
@@ -212,6 +218,8 @@ class MasterMgrClient
   /**
    * Set the active/inactive state of the toolset with the given name. <P> 
    * 
+   * This method will fail if the current user does not have privileged access status.
+   * 
    * @param name
    *   The name of the toolset.
    *
@@ -229,6 +237,10 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {    
+    if(!isPrivileged(false)) 
+      throw new PipelineException
+	("Only privileged users may change the active status of a toolset!");
+
     verifyConnection();
 
     MiscSetToolsetActiveReq req = new MiscSetToolsetActiveReq(name, isActive);
@@ -336,7 +348,9 @@ class MasterMgrClient
    * revision numbers of the given packages are passed to the server which then looks up 
    * its own copy of the toolset package (identified by the name and revision number) to 
    * generate the toolset.  This insures that the contents of the toolset package cannot 
-   * be altered by client programs.
+   * be altered by client programs. <P> 
+   * 
+   * This method will fail if the current user does not have privileged access status.
    * 
    * @param name
    *   The name of the new toolset.
@@ -459,7 +473,9 @@ class MasterMgrClient
    * toolset packages. <P> 
    * 
    * The <CODE>level</CODE> argument may be <CODE>null</CODE> if this is the first 
-   * revision of the package.
+   * revision of the package. <P> 
+   * 
+   * This method will fail if the current user does not have privileged access status.
    * 
    * @param mod
    *   The source modifiable toolset package.
@@ -624,6 +640,276 @@ class MasterMgrClient
     handleSimpleResponse(obj);
   }
   
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the names of the currently defined license keys. <P>  
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the license keys.
+   */
+  public synchronized TreeSet<String>
+  getLicenseKeyNames() 
+    throws PipelineException  
+  {
+    // TEMPORARY
+
+    TreeSet<String> names = new TreeSet<String>();
+    names.add("Maya");
+    names.add("Houdini");
+    names.add("RenderMan");
+
+    return names;
+  }
+
+  /**
+   * Get the set of currently defined license keys. <P>  
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the license keys.
+   */
+  public synchronized TreeSet<LicenseKey>
+  getLicenseKeys() 
+    throws PipelineException  
+  {
+    // TEMPORARY
+
+    TreeSet<LicenseKey> keys = new TreeSet<LicenseKey>();
+    keys.add(new LicenseKey("Maya", "Maya"));
+    keys.add(new LicenseKey("Houdini", "Houdini"));
+    keys.add(new LicenseKey("RenderMan", "RenderMan"));
+    
+    return keys;
+  }
+
+  /**
+   * Add the given license key to the currently defined license keys. <P> 
+   * 
+   * If a license key already exists which has the same name as the given key, it will be 
+   * silently overridden by this operation. <P> 
+   * 
+   * This method will fail if the current user does not have privileged access status.
+   * 
+   * @param key
+   *   The license key to add.
+   * 
+   * @throws PipelineException
+   *   If unable to add the license key.
+   */ 
+  public synchronized void
+  addLicenseKey
+  (
+   LicenseKey key
+  ) 
+    throws PipelineException  
+  {
+    if(!isPrivileged(false)) 
+      throw new PipelineException
+	("Only privileged users may add license keys!");
+    
+
+    throw new PipelineException("Not implemented yet...");
+
+  }
+
+  /**
+   * Remove the license key with the given name from currently defined license keys. <P> 
+   * 
+   * This method will fail if the current user does not have privileged access status.
+   * 
+   * @param name
+   *   The name of the license key to remove.
+   * 
+   * @throws PipelineException
+   *   If unable to remove the license key.
+   */ 
+  public synchronized void
+  removeLicenseKey
+  (
+   String name
+  ) 
+    throws PipelineException  
+  {
+    if(!isPrivileged(false)) 
+      throw new PipelineException
+	("Only privileged users may remove license keys!");
+    
+    
+    throw new PipelineException("Not implemented yet...");
+
+  }  
+
+  /**
+   * Get the count of available/total licenses for all currently defined license keys. <P> 
+   * 
+   * @return 
+   *   The [available, total] number of licenses indexed by license key name.
+   * 
+   * @throws PipelineException
+   *   If unable to get the license counts.
+   */ 
+  public synchronized TreeMap<String,int[]>
+  getLicenseCounts() 
+    throws PipelineException  
+  {
+
+    throw new PipelineException("Not implemented yet...");
+  }
+  
+  /**
+   * Set the total number of licenses associated with the named license key. <P> 
+   * 
+   * This method will fail if the current user does not have privileged access status.
+   * 
+   * @param name
+   *   The name of the license key.
+   * 
+   * @throws PipelineException
+   *   If unable to set the license total for the given license key.
+   */ 
+  public synchronized void
+  setTotalLicenses
+  (
+   String name
+  ) 
+    throws PipelineException  
+  {
+    if(!isPrivileged(false)) 
+      throw new PipelineException
+	("Only privileged users may set the total number of licenses for a license key!");
+    
+    
+    throw new PipelineException("Not implemented yet...");
+
+  }
+
+  /**
+   * Set the number of available licenses associated with the named license key. <P> 
+   * 
+   * This method will fail if the current user does not have privileged access status.
+   * 
+   * @param name
+   *   The name of the license key.
+   * 
+   * @throws PipelineException
+   *   If unable to set the available licenses for the given license key.
+   */ 
+  public synchronized void
+  setAvailableLicenses
+  (
+   String name
+  ) 
+    throws PipelineException  
+  {
+    if(!isPrivileged(false)) 
+      throw new PipelineException
+	("Only privileged users may set the number of available licenses for a license key!");
+    
+    
+    throw new PipelineException("Not implemented yet...");
+
+  }
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the names of the currently defined selection keys. <P>  
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the selection keys.
+   */
+  public synchronized TreeSet<String>
+  getSelectionKeyNames() 
+    throws PipelineException  
+  {
+    // TEMPORARY
+
+    TreeSet<String> names = new TreeSet<String>();
+    names.add("Rush");
+    names.add("Fast");
+
+    return names;
+  }
+
+  /**
+   * Get the set of currently defined selection keys. <P>  
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the selection keys.
+   */
+  public synchronized TreeSet<SelectionKey>
+  getSelectionKeys() 
+    throws PipelineException  
+  {
+    // TEMPORARY
+
+    TreeSet<SelectionKey> keys = new TreeSet<SelectionKey>();
+    keys.add(new SelectionKey("Rush", "High priority jobs."));
+    keys.add(new SelectionKey("Fast", "Fastest available CPU speed."));
+
+    return keys;
+  }
+
+  /**
+   * Add the given selection key to the currently defined selection keys. <P> 
+   * 
+   * If a selection key already exists which has the same name as the given key, it will be 
+   * silently overridden by this operation. <P> 
+   * 
+   * This method will fail if the current user does not have privileged access status.
+   * 
+   * @param key
+   *   The selection key to add.
+   * 
+   * @throws PipelineException
+   *   If unable to add the selection key.
+   */ 
+  public synchronized void
+  addSelectionKey
+  (
+   SelectionKey key
+  ) 
+    throws PipelineException  
+  {
+    if(!isPrivileged(false)) 
+      throw new PipelineException
+	("Only privileged users may add selection keys!");
+    
+
+    throw new PipelineException("Not implemented yet...");
+
+  }
+
+  /**
+   * Remove the selection key with the given name from currently defined selection keys. <P> 
+   * 
+   * This method will fail if the current user does not have privileged access status.
+   * 
+   * @param name
+   *   The name of the selection key to remove.
+   * 
+   * @throws PipelineException
+   *   If unable to remove the selection key.
+   */ 
+  public synchronized void
+  removeSelectionKey
+  (
+   String name
+  ) 
+    throws PipelineException  
+  {
+    if(!isPrivileged(false)) 
+      throw new PipelineException
+	("Only privileged users may remove selection keys!");
+    
+    
+    throw new PipelineException("Not implemented yet...");
+
+  }  
+
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -1111,7 +1397,10 @@ class MasterMgrClient
    * Note that any existing upstream node link information contained in the
    * <CODE>mod</CODE> argument will be ignored.  The {@link #link link} and
    * {@link #unlink unlink} methods must be used to alter the connections 
-   * between working node versions.
+   * between working node versions. <P> 
+   * 
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
    * 
    * @param author 
    *   The name of the user which owns the working version.
@@ -1393,43 +1682,6 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Register an initial working version of a node owned by the current user. <P> 
-   * 
-   * The <CODE>mod</CODE> argument must have a node name which does not already exist and
-   * does not match any of the path components of any existing node.  <P> 
-   * 
-   * The working version must be an inital version.  In other words, the 
-   * {@link NodeMod#getWorkingID() NodeMod.getWorkingID} method must return 
-   * <CODE>null</CODE>.  As an intial working version, the <CODE>mod</CODE> argument should
-   * not contain any upstream node link information.
-   *  
-   * @param view 
-   *   The name of the user's working area view. 
-   *
-   * @param mod
-   *   The initial working version to register.
-   * 
-   * @throws PipelineException
-   *   If unable to register the given node.
-   */
-  public synchronized void 
-  register
-  ( 
-   String view, 
-   NodeMod mod
-  ) 
-    throws PipelineException
-  {
-    verifyConnection();
-
-    NodeID id = new NodeID(PackageInfo.sUser, view, mod.getName());
-    NodeRegisterReq req = new NodeRegisterReq(id, mod);
-
-    Object obj = performTransaction(MasterRequest.Register, req);
-    handleSimpleResponse(obj);
-  }
-
-  /**
    * Register an initial working version of a node owned by the given user. <P> 
    * 
    * The <CODE>mod</CODE> argument must have a node name which does not already exist and
@@ -1477,51 +1729,39 @@ class MasterMgrClient
     handleSimpleResponse(obj);
   }
 
-
-  /*----------------------------------------------------------------------------------------*/
-
   /**
-   * Revoke a working version of a node owned by the current user which has never 
-   * been checked-in  <P> 
+   * Register an initial working version of a node owned by the current user. <P> 
    * 
-   * This operation is provided to allow users to remove nodes which they have previously 
-   * registered, but which they no longer want to keep or share with other users. If a 
-   * working version is successfully revoked, all node connections to the revoked node 
-   * will be also be removed. <P> 
+   * The <CODE>mod</CODE> argument must have a node name which does not already exist and
+   * does not match any of the path components of any existing node.  <P> 
    * 
-   * In addition to removing the working version of the node, this operation can also 
-   * delete the files associated with the working version if the <CODE>removeFiles</CODE>
-   * argument is <CODE>true</CODE>.
-   * 
+   * The working version must be an inital version.  In other words, the 
+   * {@link NodeMod#getWorkingID() NodeMod.getWorkingID} method must return 
+   * <CODE>null</CODE>.  As an intial working version, the <CODE>mod</CODE> argument should
+   * not contain any upstream node link information.
+   *  
    * @param view 
    *   The name of the user's working area view. 
+   *
+   * @param mod
+   *   The initial working version to register.
    * 
-   * @param name 
-   *   The fully resolved node name.
-   *
-   * @param removeFiles 
-   *   Should the files associated with the working version be deleted?
-   *
-   * @throws PipelineException 
-   *   If unable to revoke the given node.
-   */ 
-  public void 
-  revoke
+   * @throws PipelineException
+   *   If unable to register the given node.
+   */
+  public synchronized void 
+  register
   ( 
    String view, 
-   String name, 
-   boolean removeFiles
+   NodeMod mod
   ) 
     throws PipelineException
   {
-    verifyConnection();
+    register(PackageInfo.sUser, view, mod);
+  }
 
-    NodeID id = new NodeID(PackageInfo.sUser, view, name);
-    NodeRevokeReq req = new NodeRevokeReq(id, removeFiles);
 
-    Object obj = performTransaction(MasterRequest.Revoke, req);
-    handleSimpleResponse(obj);
-  } 
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Revoke a working version of a node owned by the given user which has never 
@@ -1577,58 +1817,45 @@ class MasterMgrClient
     handleSimpleResponse(obj);
   } 
 
-
-  /*----------------------------------------------------------------------------------------*/
-
   /**
-   * Rename a working version of a node owned by the current user which has never 
-   * been checked-in. <P> 
+   * Revoke a working version of a node owned by the current user which has never 
+   * been checked-in  <P> 
    * 
-   * This operation allows a user to change the name of a previously registered node before 
-   * it is checked-in. If a working version is successfully renamed, all node connections 
-   * will be preserved. <P> 
+   * This operation is provided to allow users to remove nodes which they have previously 
+   * registered, but which they no longer want to keep or share with other users. If a 
+   * working version is successfully revoked, all node connections to the revoked node 
+   * will be also be removed. <P> 
    * 
-   * In addition to changing the name of the working version, this operation can also 
-   * rename the files associated with the working version to match the new node name if 
-   * the <CODE>renameFiles</CODE> argument is <CODE>true</CODE>.  The primary file sequence
-   * will be renamed to have a prefix which is identical to the last component of the 
-   * <CODE>newName</CODE> argument.  The secondary file sequence prefixes will remain
-   * unchanged. Both primary and secondary file sequences will be moved into the working 
-   * directory based on the new node name.
+   * In addition to removing the working version of the node, this operation can also 
+   * delete the files associated with the working version if the <CODE>removeFiles</CODE>
+   * argument is <CODE>true</CODE>.
    * 
    * @param view 
    *   The name of the user's working area view. 
    * 
-   * @param oldName 
-   *   The current fully resolved node name.
-   * 
-   * @param newName 
-   *   The new fully resolved node name.
-   * 
-   * @param renameFiles 
-   *   Should the files associated with the working version be renamed?
-   * 
+   * @param name 
+   *   The fully resolved node name.
+   *
+   * @param removeFiles 
+   *   Should the files associated with the working version be deleted?
+   *
    * @throws PipelineException 
-   *   If unable to rename the given node or its associated primary files.
+   *   If unable to revoke the given node.
    */ 
   public void 
-  rename
+  revoke
   ( 
    String view, 
-   String oldName, 
-   String newName,
-   boolean renameFiles
+   String name, 
+   boolean removeFiles
   ) 
     throws PipelineException
   {
-    verifyConnection();
-
-    NodeID id = new NodeID(PackageInfo.sUser, view, oldName);
-    NodeRenameReq req = new NodeRenameReq(id, newName, renameFiles);
-
-    Object obj = performTransaction(MasterRequest.Rename, req);
-    handleSimpleResponse(obj);
+    revoke(PackageInfo.sUser, view, name, removeFiles);
   } 
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Rename a working version of a node owned by the given user which has never 
@@ -1691,11 +1918,125 @@ class MasterMgrClient
     handleSimpleResponse(obj);
   } 
 
+  /**
+   * Rename a working version of a node owned by the current user which has never 
+   * been checked-in. <P> 
+   * 
+   * This operation allows a user to change the name of a previously registered node before 
+   * it is checked-in. If a working version is successfully renamed, all node connections 
+   * will be preserved. <P> 
+   * 
+   * In addition to changing the name of the working version, this operation can also 
+   * rename the files associated with the working version to match the new node name if 
+   * the <CODE>renameFiles</CODE> argument is <CODE>true</CODE>.  The primary file sequence
+   * will be renamed to have a prefix which is identical to the last component of the 
+   * <CODE>newName</CODE> argument.  The secondary file sequence prefixes will remain
+   * unchanged. Both primary and secondary file sequences will be moved into the working 
+   * directory based on the new node name.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param oldName 
+   *   The current fully resolved node name.
+   * 
+   * @param newName 
+   *   The new fully resolved node name.
+   * 
+   * @param renameFiles 
+   *   Should the files associated with the working version be renamed?
+   * 
+   * @throws PipelineException 
+   *   If unable to rename the given node or its associated primary files.
+   */ 
+  public void 
+  rename
+  ( 
+   String view, 
+   String oldName, 
+   String newName,
+   boolean renameFiles
+  ) 
+    throws PipelineException
+  {
+    rename(PackageInfo.sUser, view, oldName, newName, renameFiles);
+  } 
+
 
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Check-In the tree of nodes rooted at the given working version. <P> 
+   * Check-In the tree of nodes owned by the given user rooted at the given working 
+   * version. <P> 
+   * 
+   * The check-in operation proceeds in a depth-first manner checking-in the most upstream
+   * nodes first.  The check-in operation aborts at the first failure of a particular node. 
+   * It is therefore possible for the overall check-in to fail after already succeeding for 
+   * some set of upstream nodes. <P> 
+   * 
+   * The returned <CODE>NodeStatus</CODE> instance can be used access the status of all 
+   * nodes (both upstream and downstream) linked to the given node.  The status information 
+   * for the upstream nodes will also include detailed state and version information which is 
+   * accessable by calling the {@link NodeStatus#getDetails NodeStatus.getDetails} method. <P>
+   * 
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   * 
+   * @param msg 
+   *   The check-in message text.
+   * 
+   * @param level  
+   *   The revision number component level to increment.
+   * 
+   * @return 
+   *   The post check-in status of tree of nodes linked to the given node.
+   * 
+   * @throws PipelineException
+   *   If unable to check-in the nodes.
+   */ 
+  public NodeStatus
+  checkIn
+  ( 
+   String author, 
+   String view, 
+   String name, 
+   String msg, 
+   VersionID.Level level   
+  ) 
+    throws PipelineException
+  {
+    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
+      throw new PipelineException
+	("Only privileged users may check-in nodes owned by another user!");
+
+    verifyConnection();
+
+    NodeID id = new NodeID(author, view, name);
+    NodeCheckInReq req = new NodeCheckInReq(id, msg, level);
+
+    Object obj = performTransaction(MasterRequest.CheckIn, req);
+    if(obj instanceof NodeStatusRsp) {
+      NodeStatusRsp rsp = (NodeStatusRsp) obj;
+      return rsp.getNodeStatus();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  } 
+
+  /** 
+   * Check-In the tree of nodes owned by the current user rooted at the given working 
+   * version. <P> 
    * 
    * The check-in operation proceeds in a depth-first manner checking-in the most upstream
    * nodes first.  The check-in operation aborts at the first failure of a particular node. 
@@ -1735,12 +2076,70 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
+    return checkIn(PackageInfo.sUser, view, name, msg, level);
+  } 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Check-Out the tree of nodes owned by the given user rooted at the given working 
+   * version. <P> 
+   * 
+   * If the <CODE>vid</CODE> argument is <CODE>null</CODE> then check-out the latest 
+   * version. <P>
+   * 
+   * The returned <CODE>NodeStatus</CODE> instance can be used access the status of all 
+   * nodes (both upstream and downstream) linked to the given node.  The status information 
+   * for the upstream nodes will also include detailed state and version information which is 
+   * accessable by calling the {@link NodeStatus#getDetails NodeStatus.getDetails} method. <P>
+   * 
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   * 
+   * @param vid 
+   *   The revision number of the node to check-out.
+   * 
+   * @param keepNewer
+   *   Should upstream nodes which have a newer revision number than the version to be 
+   *   checked-out be skipped? 
+   * 
+   * @return 
+   *   The post check-out status of tree of nodes linked to the given node.
+   * 
+   * @throws PipelineException
+   *   If unable to check-out the nodes.
+   */ 
+  public NodeStatus
+  checkOut
+  ( 
+   String author, 
+   String view, 
+   String name, 
+   VersionID vid, 
+   boolean keepNewer
+  ) 
+    throws PipelineException
+  {
+    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
+      throw new PipelineException
+	("Only privileged users may check-in nodes owned by another user!");
+
     verifyConnection();
 
-    NodeID id = new NodeID(PackageInfo.sUser, view, name);
-    NodeCheckInReq req = new NodeCheckInReq(id, msg, level);
+    NodeID id = new NodeID(author, view, name);
+    NodeCheckOutReq req = new NodeCheckOutReq(id, vid, keepNewer);
 
-    Object obj = performTransaction(MasterRequest.CheckIn, req);
+    Object obj = performTransaction(MasterRequest.CheckOut, req);
     if(obj instanceof NodeStatusRsp) {
       NodeStatusRsp rsp = (NodeStatusRsp) obj;
       return rsp.getNodeStatus();
@@ -1750,9 +2149,10 @@ class MasterMgrClient
       return null;
     }
   } 
-  
+
   /** 
-   * Check-Out the tree of nodes rooted at the given working version. <P> 
+   * Check-Out the tree of nodes owned by the current user rooted at the given working 
+   * version. <P> 
    * 
    * If the <CODE>vid</CODE> argument is <CODE>null</CODE> then check-out the latest 
    * version. <P>
@@ -1791,20 +2191,7 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    verifyConnection();
-
-    NodeID id = new NodeID(PackageInfo.sUser, view, name);
-    NodeCheckOutReq req = new NodeCheckOutReq(id, vid, keepNewer);
-
-    Object obj = performTransaction(MasterRequest.CheckOut, req);
-    if(obj instanceof NodeStatusRsp) {
-      NodeStatusRsp rsp = (NodeStatusRsp) obj;
-      return rsp.getNodeStatus();
-    }
-    else {
-      handleFailure(obj);
-      return null;
-    }
+    return checkOut(PackageInfo.sUser, view, name, vid, keepNewer);
   } 
 
 
