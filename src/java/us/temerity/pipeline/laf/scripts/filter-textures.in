@@ -13,7 +13,8 @@ anynewer=0
 for mode in Normal Selected Primary
 do
   frame=0
-  for nstate in Pending CheckedIn Identical NeedsCheckOut Modified Conflicted ModifiedLinks
+  for nstate in Pending CheckedIn Identical NeedsCheckOut Modified \
+                Conflicted ModifiedLinks Missing
   do
     for qstate in Stale Queued Running Missing Failed Finished Undefined
     do
@@ -49,8 +50,8 @@ do
   done
 
   frame=0
-  for nstate in Pending CheckedIn Identical NeedsCheckOut Modified Conflicted ModifiedLinks \
-                Missing Added Obsolete 
+  for nstate in Pending CheckedIn Identical NeedsCheckOut Modified \
+                Conflicted ModifiedLinks Missing Added Obsolete 
   do
     for qstate in Stale Queued Running Missing Failed Finished Undefined
     do
