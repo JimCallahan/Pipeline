@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.18 2004/05/21 21:17:51 jim Exp $
+// $Id: UIMaster.java,v 1.19 2004/05/23 20:00:52 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -355,6 +355,25 @@ class UIMaster
   showConfigDialog()
   {
     pConfigDialog.setVisible(true);
+  }
+
+  /**
+   * Show the manage toolsets dialog.
+   */ 
+  public void 
+  showManageToolsetsDialog()
+  {
+    pManageToolsetsDialog.setVisible(true);
+  }
+
+  /**
+   * Show the manage users dialog.
+   */ 
+  public void 
+  showManageUsersDialog()
+  {
+    pManageUsersDialog.updateList();
+    pManageUsersDialog.setVisible(true);
   }
 
 
@@ -933,8 +952,6 @@ class UIMaster
     return field;
   }
 
-
-
   /**
    * Add vertical space into the given panels.
    */ 
@@ -950,7 +967,6 @@ class UIMaster
     vpanel.add(Box.createRigidArea(new Dimension(0, height)));
   }
 
-
   /**
    * Add vertical glue into the given panels.
    */ 
@@ -963,6 +979,98 @@ class UIMaster
   {
     tpanel.add(Box.createVerticalGlue());
     vpanel.add(Box.createVerticalGlue());
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Create list panel components.
+   * 
+   * @param box
+   *   The parent horizontal box.
+   * 
+   * @param title
+   *   The title of the list.
+   * 
+   * @param size
+   *   The preferred size of the list.
+   */ 
+  protected static JList 
+  createListComponents
+  (
+   Box box, 
+   String title, 
+   Dimension size
+  ) 
+  {
+    return createListComponents(box, title, size, true, true);
+  }
+
+  /**
+   * Create list panel components.
+   * 
+   * @param box
+   *   The parent horizontal box.
+   * 
+   * @param title
+   *   The title of the list.
+   * 
+   * @param size
+   *   The preferred size of the list.
+   * 
+   * @param headerSpacer
+   *   Add a vertical header spacer?
+   * 
+   * @param footerSpacer
+   *   Add a vertical footer spacer?
+   */ 
+  protected static JList 
+  createListComponents
+  (
+   Box box, 
+   String title, 
+   Dimension size, 
+   boolean headerSpacer, 
+   boolean footerSpacer
+  ) 
+  {
+    Box vbox = new Box(BoxLayout.Y_AXIS);	
+
+    if(headerSpacer)
+      vbox.add(Box.createRigidArea(new Dimension(0, 20)));
+    
+    vbox.add(UIMaster.createPanelLabel(title));
+    
+    vbox.add(Box.createRigidArea(new Dimension(0, 4)));
+
+    JList lst = null;
+    {
+      lst = new JList(new DefaultListModel());
+      lst.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+      lst.setCellRenderer(new JListCellRenderer());
+
+      {
+	JScrollPane scroll = new JScrollPane(lst);
+	
+	scroll.setMinimumSize(new Dimension(150, 150));
+	scroll.setPreferredSize(size);
+	
+	scroll.setHorizontalScrollBarPolicy
+	  (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+	scroll.setVerticalScrollBarPolicy
+	  (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+	
+	vbox.add(scroll);
+      }
+    }
+
+    if(footerSpacer) 
+      vbox.add(Box.createRigidArea(new Dimension(0, 20)));
+
+    box.add(vbox);
+
+    return lst;
   }
 
 
@@ -1224,6 +1332,17 @@ class UIMaster
 	Logs.flush();
 	System.exit(1);	 
       }
+
+      /* make sure that the default working area exists */ 
+      try {
+	pMasterMgrClient.createWorkingArea("default");
+      }
+      catch(PipelineException ex) {	
+	Logs.ops.severe("Unable to initialize the default working area!\n" + 
+			"  " + ex.getMessage());
+	Logs.flush();
+	System.exit(1);	 
+      }
       
       /* load textures */ 
       try {
@@ -1402,12 +1521,14 @@ class UIMaster
       }
 
       {
-	pSaveLayoutDialog    = new JSaveLayoutDialog();
-	pManageLayoutsDialog = new JManageLayoutsDialog();
-	pErrorDialog         = new JErrorDialog();
-	pUserPrefsDialog     = new JUserPrefsDialog();
-	pAboutDialog         = new JAboutDialog();
-	pConfigDialog        = new JConfigDialog();
+	pSaveLayoutDialog     = new JSaveLayoutDialog();
+	pManageLayoutsDialog  = new JManageLayoutsDialog();
+	pErrorDialog          = new JErrorDialog();
+	pUserPrefsDialog      = new JUserPrefsDialog();
+	pAboutDialog          = new JAboutDialog();
+	pConfigDialog         = new JConfigDialog();
+	pManageToolsetsDialog = new JManageToolsetsDialog();
+	pManageUsersDialog    = new JManageUsersDialog();
       }
       
       pFrame.setVisible(true);
@@ -1775,4 +1896,14 @@ class UIMaster
    * The customer configuration profile data dialog.
    */ 
   private JConfigDialog  pConfigDialog;
+
+  /**
+   * The manage toolsets dialog.
+   */ 
+  private JManageToolsetsDialog  pManageToolsetsDialog;
+
+  /**
+   * The manage users dialog.
+   */ 
+  private JManageUsersDialog  pManageUsersDialog;
 }
