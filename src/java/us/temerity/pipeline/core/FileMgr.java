@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.24 2004/11/03 18:16:31 jim Exp $
+// $Id: FileMgr.java,v 1.25 2004/11/03 19:53:49 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1849,7 +1849,7 @@ class FileMgr
 	  }
 	}
       
-	{
+	if(args.size() > 1) {
 	  SubProcessLight proc = 
 	    new SubProcessLight(req.getNodeID().getAuthor(), 
 				"ChangeMode", "chmod", args, env, wdir);
