@@ -193,6 +193,6 @@ public class ParseException extends Exception {
   /**
    * The serial version ID.
    */
-  static final long serialVersionUID = -1080928748128400094L;
+  private static final long serialVersionUID = -1080928748128400094L;
 
 }

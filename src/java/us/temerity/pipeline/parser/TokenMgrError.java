@@ -134,5 +134,5 @@ public class TokenMgrError extends Error
   /**
    * The serial version ID.
    */
-  static final long serialVersionUID = -876982591262671909L;
+  private static final long serialVersionUID = -876982591262671909L;
 }
