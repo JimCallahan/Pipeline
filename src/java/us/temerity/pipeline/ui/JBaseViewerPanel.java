@@ -1,4 +1,4 @@
-// $Id: JBaseViewerPanel.java,v 1.2 2004/12/16 15:39:23 jim Exp $
+// $Id: JBaseViewerPanel.java,v 1.3 2004/12/16 21:42:50 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -93,6 +93,7 @@ implements MouseListener, MouseMotionListener, GLEventListener
 	pCanvas.addGLEventListener(this);
 	pCanvas.addMouseListener(this);
 	pCanvas.addMouseMotionListener(this);
+	pCanvas.setFocusable(true);	
 
 	add(pCanvas);
       }
@@ -205,11 +206,11 @@ implements MouseListener, MouseMotionListener, GLEventListener
     /* draw rubber band geometry */ 
     if((pRbStart != null) && (pRbEnd != null)) {
 
-      /* compute world coordinates */ 
-      Point2d s = new Point2d(pRbStart);
-      Point2d e = new Point2d(pRbEnd);
+      /* compute world space coordinates */ 
+      Point2d rs = new Point2d(pRbStart);
+      Point2d re = new Point2d(pRbEnd);
       {
-	Dimension size = drawable.getSize();
+	Dimension size = pCanvas.getSize();
 	Vector2d half = new Vector2d(size.getWidth()*0.5, size.getHeight()*0.5);
 	
 	double f = -pCameraPos.z() * pPerspFactor;
@@ -217,8 +218,8 @@ implements MouseListener, MouseMotionListener, GLEventListener
 	
 	Vector2d camera = new Vector2d(pCameraPos.x(), pCameraPos.y());
 
-	s.sub(half).mult(pCanvasToScreen).mult(persp).sub(camera);
-	e.sub(half).mult(pCanvasToScreen).mult(persp).sub(camera);
+	rs.sub(half).mult(pCanvasToScreen).mult(persp).sub(camera);
+	re.sub(half).mult(pCanvasToScreen).mult(persp).sub(camera);
       }
 	
       /* render the rubberband */ 
@@ -227,10 +228,10 @@ implements MouseListener, MouseMotionListener, GLEventListener
 
 	gl.glBegin(GL.GL_LINE_LOOP);
 	{
-	  gl.glVertex3d(s.x(), s.y(), 0.0);
-	  gl.glVertex3d(e.x(), s.y(), 0.0);
-	  gl.glVertex3d(e.x(), e.y(), 0.0);
-	  gl.glVertex3d(s.x(), e.y(), 0.0);
+	  gl.glVertex3d(rs.x(), rs.y(), 0.0);
+	  gl.glVertex3d(re.x(), rs.y(), 0.0);
+	  gl.glVertex3d(re.x(), re.y(), 0.0);
+	  gl.glVertex3d(rs.x(), re.y(), 0.0);
 	}
 	gl.glEnd();
 
@@ -379,8 +380,8 @@ implements MouseListener, MouseMotionListener, GLEventListener
 		    MouseEvent.ALT_DOWN_MASK);
 
 	rb = (((mods & (on1 | off1)) == on1) || 
-		   ((mods & (on2 | off2)) == on2) || 
-		   ((mods & (on3 | off3)) == on3));
+	      ((mods & (on2 | off2)) == on2) || 
+	      ((mods & (on3 | off3)) == on3));
       }
       
       /* <BUTTON2+ALT>: pan start */ 
@@ -434,46 +435,7 @@ implements MouseListener, MouseMotionListener, GLEventListener
    * Invoked when a mouse button has been released on a component. 
    */ 
   public void 
-  mouseReleased
-  (
-   MouseEvent e
-  ) 
-  {
-    handleMouseReleased(e);
-  }
-
-  /**
-   * Handle viewer related mouse release events.
-   *
-   * @return 
-   *   Whether the event was handled.
-   */ 
-  protected boolean
-  handleMouseReleased
-  (
-   MouseEvent e
-  ) 
-  {
-    boolean handled = false;
-    {
-      int mods = e.getModifiersEx();
-      switch(e.getButton()) {
-      case MouseEvent.BUTTON1:
-	if((pRbStart != null) && (pRbEnd != null)) {
-	  doRubberBandSelect(pRbStart, pRbEnd);
-	  handled = true;
-	}
-      }
-    }
-
-    pRbStart = null;
-    pRbEnd   = null;
-
-    pCanvas.setCursor(Cursor.getDefaultCursor());
-    pCanvas.repaint();
-
-    return handled;
-  }
+  mouseReleased(MouseEvent e) {}
 
 
   /*-- MOUSE MOTION LISTNER METHODS --------------------------------------------------------*/
@@ -613,19 +575,6 @@ implements MouseListener, MouseMotionListener, GLEventListener
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C T I O N S                                                                        */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Perform a rubberband selection using the given canvas coordinates.
-   */ 
-  protected abstract void 
-  doRubberBandSelect
-  (
-   Point2d rbStart,
-   Point2d rbEnd
-  ); 
-
-
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -798,13 +747,15 @@ implements MouseListener, MouseMotionListener, GLEventListener
   /**
    * The location of the start of a rubberband drag in canvas coordinates.
    */ 
-  private Point2d  pRbStart;  
+  protected Point2d  pRbStart;  
 
   /**
    * The location of the end of a rubberband drag in canvas coordinates.
    */
-  private Point2d  pRbEnd;  
+  protected Point2d  pRbEnd;  
 
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * The location of the start of a mouse drag in canvas coordinates.
@@ -819,7 +770,7 @@ implements MouseListener, MouseMotionListener, GLEventListener
   /**
    * The maximum camera zoom factor. 
    */ 
-  private double  pMaxFactor; 
+  protected double  pMaxFactor; 
 
 
 }
