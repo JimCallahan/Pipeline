@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.10 2004/08/26 06:01:10 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.11 2004/08/30 02:55:32 jim Exp $
 
 import java.io.*; 
 import java.util.*;
@@ -113,8 +113,12 @@ class GenUserPrefsApp
 	 "NodeKillJobs", "Kill Jobs:"), 
 
 	new HotKeyPref
-	("remove all the primary/secondary files associated with the selected nodes",
-	 "NodeRemoveFiles", "Remove Files:"), 
+	("pause all jobs associated with the selected nodes",
+	 "NodePauseJobs", "Pause Jobs:"), 
+
+	new HotKeyPref
+	("resume execution of all jobs associated with the selected nodes",
+	 "NodeResumeJobs", "Resume Jobs:"), 
 
 	new BasePref(),
 	
@@ -135,6 +139,10 @@ class GenUserPrefsApp
 	new HotKeyPref
 	("release the current primary selection",
 	 "NodeRelease", "Release:"),
+
+	new HotKeyPref
+	("remove all the primary/secondary files associated with the selected nodes",
+	 "NodeRemoveFiles", "Remove Files:"), 
 
 	new BasePref(),
 
@@ -430,7 +438,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.10 2004/08/26 06:01:10 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.11 2004/08/30 02:55:32 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -683,7 +691,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.10 2004/08/26 06:01:10 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.11 2004/08/30 02:55:32 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
