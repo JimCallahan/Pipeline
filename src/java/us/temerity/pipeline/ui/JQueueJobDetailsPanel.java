@@ -1,4 +1,4 @@
-// $Id: JQueueJobDetailsPanel.java,v 1.3 2004/09/05 06:50:05 jim Exp $
+// $Id: JQueueJobDetailsPanel.java,v 1.4 2004/09/08 18:43:12 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -26,7 +26,7 @@ import javax.swing.tree.*;
 public  
 class JQueueJobDetailsPanel
   extends JTopLevelPanel
-  implements ComponentListener, ActionListener
+  implements MouseListener, KeyListener, ComponentListener, ActionListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -102,6 +102,10 @@ class JQueueJobDetailsPanel
 	  JTextField field = UIMaster.createTextField(null, 100, JLabel.LEFT);
 	  pNodeNameField = field;
 	  
+	  field.setFocusable(true);
+	  field.addKeyListener(this);
+	  field.addMouseListener(this); 
+
 	  hbox.add(field);
 	}
 
@@ -117,7 +121,7 @@ class JQueueJobDetailsPanel
 
 	/* summary panel */ 
 	{
-	  Component comps[] = UIMaster.createTitledPanels();
+	  Component comps[] = createCommonPanels();
 	  {
 	    JPanel tpanel = (JPanel) comps[0];
 	    JPanel vpanel = (JPanel) comps[1];
@@ -164,7 +168,7 @@ class JQueueJobDetailsPanel
 
 	/* process details */ 
 	{ 
-	  Component comps[] = UIMaster.createTitledPanels();
+	  Component comps[] = createCommonPanels();
 	  {
 	    JPanel tpanel = (JPanel) comps[0];
 	    JPanel vpanel = (JPanel) comps[1];
@@ -377,7 +381,7 @@ class JQueueJobDetailsPanel
 	  Box jrbox = new Box(BoxLayout.Y_AXIS);
 	  
 	  {
-	    Component comps[] = UIMaster.createTitledPanels();
+	    Component comps[] = createCommonPanels();
 	    {
 	      JPanel tpanel = (JPanel) comps[0];
 	      JPanel vpanel = (JPanel) comps[1];
@@ -536,9 +540,34 @@ class JQueueJobDetailsPanel
 	  add(scroll);
 	}
       }
+
+      setFocusable(true);
+      addKeyListener(this);
+      addMouseListener(this); 
     }
 
     updateJob(null, null);
+  }
+
+  /**
+   * Create the title/value panels.
+   * 
+   * @return 
+   *   The title panel, value panel and containing box.
+   */   
+  private Component[]
+  createCommonPanels()
+  {
+    Component comps[] = UIMaster.createTitledPanels();
+
+    {
+      JPanel panel = (JPanel) comps[0];
+      panel.setFocusable(true);
+      panel.addKeyListener(this);
+      panel.addMouseListener(this); 
+    }
+
+    return comps;
   }
 
 
@@ -835,7 +864,7 @@ class JQueueJobDetailsPanel
 	  }
 	}
 
-	Component comps[] = UIMaster.createTitledPanels();
+	Component comps[] = createCommonPanels();
 	JPanel tpanel = (JPanel) comps[0];
 	JPanel vpanel = (JPanel) comps[1];
 
@@ -876,7 +905,7 @@ class JQueueJobDetailsPanel
 	  }
 	}
 
-	Component comps[] = UIMaster.createTitledPanels();
+	Component comps[] = createCommonPanels();
 	JPanel tpanel = (JPanel) comps[0];
 	JPanel vpanel = (JPanel) comps[1];
 
@@ -913,7 +942,7 @@ class JQueueJobDetailsPanel
     {
       /* target files panel */ 
       {
-	Component comps[] = UIMaster.createTitledPanels();
+	Component comps[] = createCommonPanels();
 	{
 	  JPanel tpanel = (JPanel) comps[0];
 	  JPanel vpanel = (JPanel) comps[1];
@@ -965,7 +994,7 @@ class JQueueJobDetailsPanel
 	  Box vbox = new Box(BoxLayout.Y_AXIS);
 
 	  for(String sname : agenda.getSourceNames()) {
-	    Component comps[] = UIMaster.createTitledPanels();
+	    Component comps[] = createCommonPanels();
 	    {
 	      JPanel tpanel = (JPanel) comps[0];
 	      JPanel vpanel = (JPanel) comps[1];
@@ -998,7 +1027,7 @@ class JQueueJobDetailsPanel
 	pSourceFilesDrawer.setContents(hbox);
       }
       else {
-	Component comps[] = UIMaster.createTitledPanels();
+	Component comps[] = createCommonPanels();
 	{
 	  JPanel tpanel = (JPanel) comps[0];
 	  JPanel vpanel = (JPanel) comps[1];
@@ -1086,6 +1115,90 @@ class JQueueJobDetailsPanel
   /*   L I S T E N E R S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
+  /*-- MOUSE LISTENER METHODS --------------------------------------------------------------*/
+
+  /**
+   * Invoked when the mouse button has been clicked (pressed and released) on a component. 
+   */ 
+  public void 
+  mouseClicked(MouseEvent e) {}
+   
+  /**
+   * Invoked when the mouse enters a component. 
+   */
+  public void 
+  mouseEntered
+  (
+   MouseEvent e
+  ) 
+  {
+    requestFocusInWindow();
+  }
+
+  /**
+   * Invoked when the mouse exits a component. 
+   */ 
+  public void 
+  mouseExited
+  (
+   MouseEvent e
+  ) 
+  {
+    KeyboardFocusManager.getCurrentKeyboardFocusManager().clearGlobalFocusOwner();
+  }
+
+  /**
+   * Invoked when a mouse button has been pressed on a component. 
+   */
+  public void 
+  mousePressed(MouseEvent e) {}
+  
+  /**
+   * Invoked when a mouse button has been released on a component. 
+   */ 
+  public void 
+  mouseReleased(MouseEvent e) {}
+
+
+  /*-- KEY LISTENER METHODS ----------------------------------------------------------------*/
+
+  /**
+   * invoked when a key has been pressed.
+   */   
+  public void 
+  keyPressed
+  (
+   KeyEvent e
+  )
+  {
+    UserPrefs prefs = UserPrefs.getInstance();
+
+    if((prefs.getShowExecDetails() != null) &&
+       prefs.getShowExecDetails().wasPressed(e)) 
+      doShowExecDetails();
+
+    else if((prefs.getShowJobOutput() != null) &&
+       prefs.getShowJobOutput().wasPressed(e)) 
+      doShowOutput();
+
+    else if((prefs.getShowJobErrors() != null) &&
+       prefs.getShowJobErrors().wasPressed(e)) 
+      doShowErrors();
+  }
+
+  /**
+   * Invoked when a key has been released.
+   */ 
+  public void 	
+  keyReleased(KeyEvent e) {}
+
+  /**
+   * Invoked when a key has been typed.
+   */ 
+  public void 	
+  keyTyped(KeyEvent e) {} 
+
+
   /*-- COMPONENT LISTENER METHODS ----------------------------------------------------------*/
 
   /**
@@ -1143,9 +1256,8 @@ class JQueueJobDetailsPanel
     else if(cmd.equals("show-output")) 
       doShowOutput();
     else if(cmd.equals("show-error")) 
-      doShowError();
+      doShowErrors();
   }
-
 
 
 
@@ -1163,35 +1275,7 @@ class JQueueJobDetailsPanel
       if((pExecDetailsDialog == null) || !pExecDetailsDialog.isVisible())
 	pExecDetailsDialog = new JExecDetailsDialog();
 
-      ActionAgenda agenda = null;
-      if(pJob != null) 
-	agenda = pJob.getActionAgenda();
-      
-      QueueJobResults results = null;
-      if(pJobInfo != null)
-	results = pJobInfo.getResults();
-      
-      String command = "(none yet)";
-      if(results != null)
-	command = results.getCommand();
-      
-      String dir = "-";
-      if(agenda != null) 
-	dir = agenda.getWorkingDir().toString();
-      
-      SortedMap<String,String> env = new TreeMap<String,String>();
-      if(agenda != null) 
-	env = agenda.getEnvironment();
-      
-      String hostname = "";
-      if((pJobInfo != null) && (pJobInfo.getHostname() != null)) 
-	hostname = ("    [" + pJobInfo.getHostname() + "]");
-
-      String header = 
-	("Execution Details -" + pHeaderLabel.getText() + hostname);
-
-      pExecDetailsDialog.updateContents(header, command, dir, env);
-
+      pExecDetailsDialog.updateContents(pHeaderLabel.getText(), pJob, pJobInfo);
       pExecDetailsDialog.setVisible(true);
     }
   }
@@ -1214,7 +1298,7 @@ class JQueueJobDetailsPanel
    * Show the STDERR dialog.
    */ 
   public void 
-  doShowError()
+  doShowErrors()
   {
     if((pJob != null) && (pJobInfo != null) && (pJobInfo.getHostname() != null)) {
       if((pStdErrDialog == null) || !pStdErrDialog.isVisible())
