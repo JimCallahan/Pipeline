@@ -1,4 +1,4 @@
-// $Id: JBaseDialog.java,v 1.10 2004/12/10 10:44:44 jim Exp $
+// $Id: JBaseDialog.java,v 1.11 2004/12/17 15:07:29 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -306,11 +306,12 @@ class JBaseDialog
    ActionEvent e
   ) 
   {
-    if(e.getActionCommand().equals("confirm")) 
+    String cmd = e.getActionCommand();
+    if(cmd.equals("confirm")) 
       doConfirm();
-    else if(e.getActionCommand().equals("apply")) 
+    else if(cmd.equals("apply")) 
       doApply();
-    else if(e.getActionCommand().equals("cancel")) 
+    else if(cmd.equals("cancel")) 
       doCancel();
   }
 
