@@ -3,20 +3,95 @@
 /* Define a unique host architecture and build mode string. */
 #undef BUILD_NAME
 
+/* Define to 1 if you have the `abs' function. */
+#undef HAVE_ABS
+
+/* Define to 1 if you have the `acos' function. */
+#undef HAVE_ACOS
+
+/* Define to 1 if you have the `acosf' function. */
+#undef HAVE_ACOSF
+
+/* Define to 1 if you have the `acosl' function. */
+#undef HAVE_ACOSL
+
 /* Define to 1 if you have the <algobase> header file. */
 #undef HAVE_ALGOBASE
 
 /* Define to 1 if you have the <algobase.h> header file. */
 #undef HAVE_ALGOBASE_H
 
+/* Define to 1 if you have the `asin' function. */
+#undef HAVE_ASIN
+
+/* Define to 1 if you have the `asinf' function. */
+#undef HAVE_ASINF
+
+/* Define to 1 if you have the `asinl' function. */
+#undef HAVE_ASINL
+
 /* Define to 1 if you have the <assert.h> header file. */
 #undef HAVE_ASSERT_H
+
+/* Define to 1 if you have the `atan' function. */
+#undef HAVE_ATAN
+
+/* Define to 1 if you have the `atan2' function. */
+#undef HAVE_ATAN2
+
+/* Define to 1 if you have the `atan2f' function. */
+#undef HAVE_ATAN2F
+
+/* Define to 1 if you have the `atan2l' function. */
+#undef HAVE_ATAN2L
+
+/* Define to 1 if you have the `atanf' function. */
+#undef HAVE_ATANF
+
+/* Define to 1 if you have the `atanl' function. */
+#undef HAVE_ATANL
 
 /* Define to 1 if you have the <cassert> header file. */
 #undef HAVE_CASSERT
 
+/* Define to 1 if you have the `ceil' function. */
+#undef HAVE_CEIL
+
+/* Define to 1 if you have the `ceilf' function. */
+#undef HAVE_CEILF
+
+/* Define to 1 if you have the `ceill' function. */
+#undef HAVE_CEILL
+
 /* Define to 1 if you have the <climits> header file. */
 #undef HAVE_CLIMITS
+
+/* Define to 1 if you have the `copysign' function. */
+#undef HAVE_COPYSIGN
+
+/* Define to 1 if you have the `copysignf' function. */
+#undef HAVE_COPYSIGNF
+
+/* Define to 1 if you have the `copysignl' function. */
+#undef HAVE_COPYSIGNL
+
+/* Define to 1 if you have the `cos' function. */
+#undef HAVE_COS
+
+/* Define to 1 if you have the `cosf' function. */
+#undef HAVE_COSF
+
+/* Define to 1 if you have the `cosh' function. */
+#undef HAVE_COSH
+
+/* Define to 1 if you have the `coshf' function. */
+#undef HAVE_COSHF
+
+/* Define to 1 if you have the `coshl' function. */
+#undef HAVE_COSHL
+
+/* Define to 1 if you have the `cosl' function. */
+#undef HAVE_COSL
 
 /* Define to 1 if you have the <cstdio> header file. */
 #undef HAVE_CSTDIO
@@ -27,14 +102,125 @@
 /* Define to 1 if you have the <cstring> header file. */
 #undef HAVE_CSTRING
 
+/* Define to 1 if you have the `drem' function. */
+#undef HAVE_DREM
+
+/* Define to 1 if you have the `dremf' function. */
+#undef HAVE_DREMF
+
+/* Define to 1 if you have the `dreml' function. */
+#undef HAVE_DREML
+
+/* Define to 1 if you have the `exp' function. */
+#undef HAVE_EXP
+
+/* Define to 1 if you have the `expf' function. */
+#undef HAVE_EXPF
+
+/* Define to 1 if you have the `expl' function. */
+#undef HAVE_EXPL
+
+/* Define to 1 if you have the `fabs' function. */
+#undef HAVE_FABS
+
+/* Define to 1 if you have the `fabsf' function. */
+#undef HAVE_FABSF
+
+/* Define to 1 if you have the `fabsl' function. */
+#undef HAVE_FABSL
+
+/* Define to 1 if you have the `facos' function. */
+#undef HAVE_FACOS
+
+/* Define to 1 if you have the `fasin' function. */
+#undef HAVE_FASIN
+
+/* Define to 1 if you have the `fatan' function. */
+#undef HAVE_FATAN
+
+/* Define to 1 if you have the `fatan2' function. */
+#undef HAVE_FATAN2
+
+/* Define to 1 if you have the `fceil' function. */
+#undef HAVE_FCEIL
+
+/* Define to 1 if you have the `fcopysign' function. */
+#undef HAVE_FCOPYSIGN
+
+/* Define to 1 if you have the `fcos' function. */
+#undef HAVE_FCOS
+
+/* Define to 1 if you have the `fcosh' function. */
+#undef HAVE_FCOSH
+
+/* Define to 1 if you have the `fdrem' function. */
+#undef HAVE_FDREM
+
+/* Define to 1 if you have the `fexp' function. */
+#undef HAVE_FEXP
+
+/* Define to 1 if you have the `ffloor' function. */
+#undef HAVE_FFLOOR
+
+/* Define to 1 if you have the `ffmod' function. */
+#undef HAVE_FFMOD
+
 /* Define to 1 if you have the <float.h> header file. */
 #undef HAVE_FLOAT_H
+
+/* Define to 1 if you have the `flog' function. */
+#undef HAVE_FLOG
+
+/* Define to 1 if you have the `flog10' function. */
+#undef HAVE_FLOG10
+
+/* Define to 1 if you have the `floor' function. */
+#undef HAVE_FLOOR
+
+/* Define to 1 if you have the `floorf' function. */
+#undef HAVE_FLOORF
+
+/* Define to 1 if you have the `floorl' function. */
+#undef HAVE_FLOORL
+
+/* Define to 1 if you have the `fmod' function. */
+#undef HAVE_FMOD
+
+/* Define to 1 if you have the `fmodf' function. */
+#undef HAVE_FMODF
+
+/* Define to 1 if you have the `fmodl' function. */
+#undef HAVE_FMODL
+
+/* Define to 1 if you have the `fpow' function. */
+#undef HAVE_FPOW
+
+/* Define to 1 if you have the `frint' function. */
+#undef HAVE_FRINT
+
+/* Define to 1 if you have the `fsin' function. */
+#undef HAVE_FSIN
+
+/* Define to 1 if you have the `fsinh' function. */
+#undef HAVE_FSINH
+
+/* Define to 1 if you have the `fsqrt' function. */
+#undef HAVE_FSQRT
 
 /* Define to 1 if you have the <fstream> header file. */
 #undef HAVE_FSTREAM
 
 /* Define to 1 if you have the <fstream.h> header file. */
 #undef HAVE_FSTREAM_H
+
+/* Define to 1 if you have the `ftan' function. */
+#undef HAVE_FTAN
+
+/* Define to 1 if you have the `ftanh' function. */
+#undef HAVE_FTANH
+
+/* Define to 1 if you have the `ftrunc' function. */
+#undef HAVE_FTRUNC
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
@@ -51,8 +237,32 @@
 /* Define to 1 if you have the <iostream.h> header file. */
 #undef HAVE_IOSTREAM_H
 
+/* Define to 1 if you have the `labs' function. */
+#undef HAVE_LABS
+
 /* Define to 1 if you have the <limits.h> header file. */
 #undef HAVE_LIMITS_H
+
+/* Define to 1 if you have the `llabs' function. */
+#undef HAVE_LLABS
+
+/* Define to 1 if you have the `log' function. */
+#undef HAVE_LOG
+
+/* Define to 1 if you have the `log10' function. */
+#undef HAVE_LOG10
+
+/* Define to 1 if you have the `log10f' function. */
+#undef HAVE_LOG10F
+
+/* Define to 1 if you have the `log10l' function. */
+#undef HAVE_LOG10L
+
+/* Define to 1 if you have the `logf' function. */
+#undef HAVE_LOGF
+
+/* Define to 1 if you have the `logl' function. */
+#undef HAVE_LOGL
 
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
@@ -62,6 +272,51 @@
 
 /* Define if OpenInventor is available. */
 #undef HAVE_OPEN_INVENTOR
+
+/* Define to 1 if you have the `pow' function. */
+#undef HAVE_POW
+
+/* Define to 1 if you have the `powf' function. */
+#undef HAVE_POWF
+
+/* Define to 1 if you have the `powl' function. */
+#undef HAVE_POWL
+
+/* Define to 1 if you have the `rint' function. */
+#undef HAVE_RINT
+
+/* Define to 1 if you have the `rintf' function. */
+#undef HAVE_RINTF
+
+/* Define to 1 if you have the `rintl' function. */
+#undef HAVE_RINTL
+
+/* Define to 1 if you have the `sin' function. */
+#undef HAVE_SIN
+
+/* Define to 1 if you have the `sinf' function. */
+#undef HAVE_SINF
+
+/* Define to 1 if you have the `sinh' function. */
+#undef HAVE_SINH
+
+/* Define to 1 if you have the `sinhf' function. */
+#undef HAVE_SINHF
+
+/* Define to 1 if you have the `sinhl' function. */
+#undef HAVE_SINHL
+
+/* Define to 1 if you have the `sinl' function. */
+#undef HAVE_SINL
+
+/* Define to 1 if you have the `sqrt' function. */
+#undef HAVE_SQRT
+
+/* Define to 1 if you have the `sqrtf' function. */
+#undef HAVE_SQRTF
+
+/* Define to 1 if you have the `sqrtl' function. */
+#undef HAVE_SQRTL
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
@@ -89,6 +344,33 @@
 
 /* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
+
+/* Define to 1 if you have the `tan' function. */
+#undef HAVE_TAN
+
+/* Define to 1 if you have the `tanf' function. */
+#undef HAVE_TANF
+
+/* Define to 1 if you have the `tanh' function. */
+#undef HAVE_TANH
+
+/* Define to 1 if you have the `tanhf' function. */
+#undef HAVE_TANHF
+
+/* Define to 1 if you have the `tanhl' function. */
+#undef HAVE_TANHL
+
+/* Define to 1 if you have the `tanl' function. */
+#undef HAVE_TANL
+
+/* Define to 1 if you have the `trunc' function. */
+#undef HAVE_TRUNC
+
+/* Define to 1 if you have the `truncf' function. */
+#undef HAVE_TRUNCF
+
+/* Define to 1 if you have the `truncl' function. */
+#undef HAVE_TRUNCL
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H

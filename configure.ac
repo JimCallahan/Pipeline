@@ -446,8 +446,13 @@ AC_MSG_RESULT([Verifying REQUIRED libraries do exist:])
 
 dnl -- MATH LIBARAY ---------------------------------------------------------------------------
 
-PHX_CHECK_CXX_LIB(m, [sin], [0.0], [#include <math.h>], 
-                  [Define if libm is available.])
+AC_CHECK_LIB(m, [sin], [has_libm=yes])
+if test "$has_libm" = "yes"
+then
+  LIBS="-lm $LIBS"
+else 
+  AC_MSG_ERROR([could not find the Math library.])
+fi
 
 
 dnl -- IMAGE LIBARIES -------------------------------------------------------------------------
@@ -488,27 +493,31 @@ TIFF_LIB="${LIBTIFF} ${LIBJPEG} ${LIBZ}"
 
 dnl -- OPEN INVENTOR LIBARAY ------------------------------------------------------------------
 
+has_libInventor=no
+AC_CHECK_LIB(Inventor, [main], [has_libInventor=yes])
+INVENTOR_LIB=""
+if test "$has_libInventor" = "yes"
+then
+  INVENTOR_LIB="-lInventor -lInventorXt"
+  AC_DEFINE(HAVE_OPEN_INVENTOR, 1, 
+            [Define if OpenInventor is available.])  
+fi
 AC_SUBST(INVENTOR_LIB)
-INVENTOR_LIB=
-
-PHX_CHECK_CXX_LIB(Inventor, [SbMatrix::identity], [], [#include <Inventor/SbLinear.h>], 
-[], 
-[INVENTOR_LIB="-lInventor -lInventorXt"
-AC_DEFINE(HAVE_OPEN_INVENTOR, 1, 
-          [Define if OpenInventor is available.])], 
-[INVENTOR_LIB=""])
 
 
 dnl -- OPEN GL LIBARAY ------------------------------------------------------------------------
 
+has_libGL=no
+AC_CHECK_LIB(GL, [main], [has_libGL=yes])
+OPEN_GL_LIB=""
+if test "$has_libGL" = "yes"
+then
+  OPEN_GL_LIB="-lGL -L/usr/X11R6/lib -lX11"
+  AC_DEFINE(HAVE_OPEN_GL, 1, 
+            [Define if OpenGL is available.])  
+fi
 AC_SUBST(OPEN_GL_LIB)
-OPEN_GL_LIB=
 
-PHX_CHECK_CXX_LIB(GL, [glGetError], [], [#include <GL/gl.h>], [],
-[OPEN_GL_LIB="-lGL -L/usr/X11R6/lib -lX11"
-AC_DEFINE(HAVE_OPEN_GL, 1, 
-          [Define if OpenGL is available.])], 
-[OPEN_GL_LIB=""])
 
 AC_MSG_RESULT([ ])
 
@@ -599,68 +608,45 @@ dnl ----------------------------------------------------------------------------
 dnl   Checks for library functions.
 dnl -------------------------------------------------------------------------------------------
 
-AC_MSG_RESULT([Determining the ugly details of your math library:])
+AC_MSG_RESULT([Testing functions supported by your math library:])
 
 dnl -- TRIGONOMETRY ---------------------------------------------------------------------------
 
-PHX_CHECK_CXX_FUNCS([acos acosf facos acosl], [0.0], [#include <math.h>], 
-                    ["Define if math functions are available."])
-PHX_CHECK_CXX_FUNCS([asin asinf fasin asinl], [0.0], [#include <math.h>], 
-                    ["Define if math functions are available."])
-PHX_CHECK_CXX_FUNCS([atan atanf fatan atanl], [0.0], [#include <math.h>], 
-                    ["Define if math functions are available."])
-PHX_CHECK_CXX_FUNCS([atan2 atan2f fatan2 atan2l], [1.0, 1.0], [#include <math.h>], 
-                    ["Define if math functions are available."])
+AC_CHECK_FUNCS([acos acosf facos acosl])
+AC_CHECK_FUNCS([asin asinf fasin asinl])
+AC_CHECK_FUNCS([atan atanf fatan atanl])
+AC_CHECK_FUNCS([atan2 atan2f fatan2 atan2l])
 
-PHX_CHECK_CXX_FUNCS([cos cosf fcos cosl], [0.0], [#include <math.h>], 
-                    ["Define if math functions are available."])
-PHX_CHECK_CXX_FUNCS([sin sinf fsin sinl], [0.0], [#include <math.h>], 
-                    ["Define if math functions are available."])
-PHX_CHECK_CXX_FUNCS([tan tanf ftan tanl], [0.0], [#include <math.h>], 
-                    ["Define if math functions are available."])
+AC_CHECK_FUNCS([cos cosf fcos cosl])
+AC_CHECK_FUNCS([sin sinf fsin sinl])
+AC_CHECK_FUNCS([tan tanf ftan tanl])
 
-PHX_CHECK_CXX_FUNCS([cosh coshf fcosh coshl], [0.0], [#include <math.h>], 
-                    ["Define if math functions are available."])
-PHX_CHECK_CXX_FUNCS([sinh sinhf fsinh sinhl], [0.0], [#include <math.h>], 
-                    ["Define if math functions are available."])
-PHX_CHECK_CXX_FUNCS([tanh tanhf ftanh tanhl], [0.0], [#include <math.h>], 
-                    ["Define if math functions are available."])
+AC_CHECK_FUNCS([cosh coshf fcosh coshl])
+AC_CHECK_FUNCS([sinh sinhf fsinh sinhl])
+AC_CHECK_FUNCS([tanh tanhf ftanh tanhl])
 
 
 dnl -- EXPONENTIALS ---------------------------------------------------------------------------
 										       
-PHX_CHECK_CXX_FUNCS([exp expf fexp expl], [0.0], [#include <math.h>], 
-                    ["Define if math functions are available."])		       
-PHX_CHECK_CXX_FUNCS([log logf flog logl], [0.0], [#include <math.h>], 
-                    ["Define if math functions are available."])		       
-PHX_CHECK_CXX_FUNCS([log10 log10f flog10 log10l], [0.0], [#include <math.h>], 
-                    ["Define if math functions are available."])	       
-PHX_CHECK_CXX_FUNCS([pow powf fpow powl], [10.0, 3.0], [#include <math.h>], 
-                    ["Define if math functions are available."])	       
-PHX_CHECK_CXX_FUNCS([sqrt sqrtf fsqrt sqrtl], [2.0], [#include <math.h>], 
-                    ["Define if math functions are available."])	       
+AC_CHECK_FUNCS([exp expf fexp expl])
+AC_CHECK_FUNCS([log logf flog logl])
+AC_CHECK_FUNCS([log10 log10f flog10 log10l])
+AC_CHECK_FUNCS([pow powf fpow powl])
+AC_CHECK_FUNCS([sqrt sqrtf fsqrt sqrtl])
 										       
 										       
 dnl -- MISC MATH ------------------------------------------------------------------------------
 
-PHX_CHECK_CXX_FUNCS([floor floorf ffloor floorl], [0.0], [#include <math.h>], 
-                    ["Define if math functions are available."])
-PHX_CHECK_CXX_FUNCS([ceil ceilf fceil ceill], [0.0], [#include <math.h>], 
-                    ["Define if math functions are available."])
-PHX_CHECK_CXX_FUNCS([copysign copysignf fcopysign copysignl], [1.0, -1.0], 
-                    [#include <math.h>], ["Define if math functions are available."])
-PHX_CHECK_CXX_FUNCS([drem dremf fdrem dreml], [10.0, 3.0], [#include <math.h>], 
-                    ["Define if math functions are available."])
-PHX_CHECK_CXX_FUNCS([trunc truncf ftrunc truncl], [0.0], [#include <math.h>], 
-                    ["Define if math functions are available."])
-PHX_CHECK_CXX_FUNCS([fmod fmodf ffmod fmodl], [10.0, 3.0], [#include <math.h>], 
-                    ["Define if math functions are available."])
-PHX_CHECK_CXX_FUNCS([abs labs llabs], [0], [#include <stdlib.h>],
-                    ["Define if math functions are available."])
-PHX_CHECK_CXX_FUNCS([fabs fabsf fabsl], [0.0], [#include <math.h>], 
-                    ["Define if math functions are available."])
-PHX_CHECK_CXX_FUNCS([rint rintf frint rintl], [0.0], [#include <math.h>], 
-                    ["Define if math functions are available."])
+AC_CHECK_FUNCS([floor floorf ffloor floorl])
+AC_CHECK_FUNCS([ceil ceilf fceil ceill])
+AC_CHECK_FUNCS([copysign copysignf fcopysign copysignl])
+AC_CHECK_FUNCS([drem dremf fdrem dreml])
+AC_CHECK_FUNCS([trunc truncf ftrunc truncl])
+AC_CHECK_FUNCS([fmod fmodf ffmod fmodl])
+AC_CHECK_FUNCS([abs labs llabs])
+AC_CHECK_FUNCS([fabs fabsf fabsl])
+AC_CHECK_FUNCS([rint rintf frint rintl])
+
 
 AC_MSG_RESULT([ ])
 
