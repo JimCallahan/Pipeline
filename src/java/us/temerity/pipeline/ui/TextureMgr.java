@@ -1,4 +1,4 @@
-// $Id: TextureMgr.java,v 1.3 2004/05/07 15:06:51 jim Exp $
+// $Id: TextureMgr.java,v 1.4 2004/07/07 13:29:02 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -53,7 +53,7 @@ class TextureMgr
     pFontGeometry   = new HashMap<String,FontGeometry>();
 
     pIconTextures   = new HashMap<String,Texture2D>();
-    pIconImages     = new HashMap<String,ImageIcon>();
+    pIconImages     = new HashMap<String,ImageIcon[]>();
   }
 
 
@@ -314,7 +314,7 @@ class TextureMgr
     throws IOException
   {
     if(name == null)
-      throw new IllegalArgumentException("The font name cannot be (null)!");
+      throw new IllegalArgumentException("The texture name cannot be (null)!");
 
     /* make sure they haven't already been loaded */ 
     if(pIconTextures.containsKey(name)) {
@@ -341,17 +341,70 @@ class TextureMgr
 	   
 	ImageComponent2D img = new ImageComponent2D(ImageComponent2D.FORMAT_RGBA, bi);
 	tex.setImage(level, img);
-	
-	if(size == sIconRes) 
-	  pIconImages.put(name, new ImageIcon(bi));
+
+	if(size == sIconRes[0]) {
+	  ImageIcon icons[] = pIconImages.get(name);
+	  if(icons == null) {
+	    icons = new ImageIcon[sIconRes.length];
+	    pIconImages.put(name, icons);
+	  }
+
+	  icons[0] = new ImageIcon(bi);
+	}
       }
- 	 
+
       tex.setMinFilter(Texture.MULTI_LEVEL_LINEAR);
       tex.setMagFilter(Texture.BASE_LEVEL_LINEAR);
 
       pIconTextures.put(name, tex);
     }
   }
+
+  /** 
+   * Verify that the 21x21 icon with the given name is currently loaded.
+   * 
+   * If the 21x21 icon is not currently loaded then read icon image from disk.
+   * 
+   * @param name
+   *   The name of the texture.
+   * 
+   * @throws IOException
+   *   If unable to load the sourc image.
+   */ 
+  public synchronized void
+  verifyIcon21
+  (
+   String name
+  )
+    throws IOException 
+  {
+    if(name == null)
+      throw new IllegalArgumentException("The icon name cannot be (null)!");
+
+    /* make it hasn't already been loaded */ 
+    ImageIcon icons[] = pIconImages.get(name);
+    if((icons != null) && (icons[1] != null))
+      return;
+
+    int size = sIconRes[1];
+	  
+    Logs.tex.fine("Loading Icon: " + name + " " + size + "x" + size);
+    Logs.flush();
+    
+    String path = ("textures/" + name + "/texture." + size + ".png");
+    URL url = LookAndFeelLoader.class.getResource(path);
+    if(url == null) 
+      throw new IOException("Unable to find: " + path);
+    BufferedImage bi = ImageIO.read(url);
+      
+    if(icons == null) {
+      icons = new ImageIcon[sIconRes.length];
+      pIconImages.put(name, icons);
+    }
+
+    icons[1] = new ImageIcon(bi);
+  } 	
+
 
   /**
    * Get the texture for the given combination of node states. <P> 
@@ -374,7 +427,7 @@ class TextureMgr
   }
 
   /**
-   * Get the icon for the given combination of node states. <P> 
+   * Get the 32x32 icon for the given combination of node states. <P> 
    * 
    * @param name
    *   The name of the texture.
@@ -390,7 +443,37 @@ class TextureMgr
     throws IOException 
   {
     verifyTexture(name);
-    return pIconImages.get(name);
+
+    ImageIcon icons[] = pIconImages.get(name);
+    if((icons == null) || (icons[0] == null)) 
+      throw new IOException("Unable to find a 32x32 icon for (" + name + ")!");
+
+    return icons[0];
+  }
+  
+  /**
+   * Get the 21x21 icon for the given combination of node states. <P> 
+   * 
+   * @param name
+   *   The name of the texture.
+   * 
+   * @throws IOException
+   *   If unable to retrieve the icon.
+   */ 
+  public ImageIcon
+  getIcon21
+  (
+   String name
+  ) 
+    throws IOException 
+  {
+    verifyIcon21(name);
+
+    ImageIcon icons[] = pIconImages.get(name);
+    if((icons == null) || (icons[1] == null)) 
+      throw new IOException("Unable to find a 21x21 icon for (" + name + ")!");
+
+    return icons[1];
   }
   
 
@@ -415,10 +498,11 @@ class TextureMgr
    */ 
   private static final int  sMaxFontRes = 32;
 
+
   /**
-   * The resolution of the icon images.
+   * The resolutions of the icon images.
    */ 
-  private static final int  sIconRes = 32;
+  private static final int  sIconRes[] = { 32, 21 };
 
   
 
@@ -450,8 +534,8 @@ class TextureMgr
   private HashMap<String,Texture2D>  pIconTextures;
 
   /**
-   * The node state icons indexed by texture name.
+   * The node state icons at sIconRes resolutions indexed by texture name.
    */ 
-  private HashMap<String,ImageIcon>  pIconImages;
+  private HashMap<String,ImageIcon[]>  pIconImages;
   
 }
