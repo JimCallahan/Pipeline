@@ -1,4 +1,4 @@
-// $Id: NodeMgrClient.java,v 1.11 2004/04/24 22:31:26 jim Exp $
+// $Id: NodeMgrClient.java,v 1.12 2004/05/02 12:06:13 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -129,6 +129,82 @@ class NodeMgrClient
       pSocket = null;
     }
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   G E N E R A L                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /* 
+   * Get the table of current working area authors and views
+   *
+   * @return 
+   *   The table of working area view names indexed by author user name.
+   *
+   * @throws PipelineException
+   *   If unable to determine the working areas.
+   */
+  public synchronized TreeMap<String,TreeSet<String>>
+  getWorkingAreas() 
+    throws PipelineException
+  {
+    verifyConnection();
+	 
+    NodeGetWorkingAreasReq req = new NodeGetWorkingAreasReq();
+
+    Object obj = performTransaction(NodeRequest.GetWorkingAreas, req);
+    if(obj instanceof NodeGetWorkingAreasRsp) {
+      NodeGetWorkingAreasRsp rsp = (NodeGetWorkingAreasRsp) obj;
+      return rsp.getTable();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
+
+  /* 
+   * Update the immediate children of all node path components along the given path 
+   * which are visible within a working area view owned by the user. <P> 
+   * 
+   * @param author 
+   *   The of the user which owns the working version..
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param path 
+   *   The fully resolved node path.
+   * 
+   * @throws PipelineException
+   *   If unable to update the node path.
+   */
+  public synchronized NodeTreeComp
+  updatePath
+  (
+   String author, 
+   String view, 
+   String path
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+	 
+    NodeID id = new NodeID(author, view, path);
+    NodeUpdatePathReq req = new NodeUpdatePathReq(id);
+
+    Object obj = performTransaction(NodeRequest.UpdatePath, req);
+    if(obj instanceof NodeUpdatePathRsp) {
+      NodeUpdatePathRsp rsp = (NodeUpdatePathRsp) obj;
+      return rsp.getRootComp();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
+
 
 
 
