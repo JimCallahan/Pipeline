@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.24 2005/03/23 00:35:23 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.25 2005/03/23 20:47:21 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -117,6 +117,12 @@ class JNodeViewerPanel
       item.addActionListener(this);
       pPanelPopup.add(item);  
 
+      item = new JMenuItem("Request Restore...");     
+      pPanelRestoreItem = item;
+      item.setActionCommand("restore");
+      item.addActionListener(this);
+      pPanelPopup.add(item);
+      
       pPanelPopup.addSeparator();
       
       item = new JMenuItem("Frame Selection");
@@ -462,7 +468,7 @@ class JNodeViewerPanel
       pCheckInDialog      = new JCheckInDialog();
       pCheckOutDialog     = new JCheckOutDialog();
       pEvolveDialog       = new JEvolveDialog();
-      pRestoreDialog      = new JRestoreNodeDialog();
+      pRestoreDialog      = new JRequestRestoreDialog();
       pCreateLinkDialog   = new JCreateLinkDialog();
       pEditLinkDialog     = new JEditLinkDialog();
     }
@@ -766,7 +772,10 @@ class JNodeViewerPanel
     updateMenuToolTip
       (pReleaseViewItem, prefs.getNodeViewerReleaseView(), 
        "Release nodes from the current working area view.");
-    
+    updateMenuToolTip
+      (pPanelRestoreItem, prefs.getNodeViewerCheckOut(), 
+       "Submit requests to restore offline checked-in versions.");
+
     updateMenuToolTip
       (pFrameSelectionItem, prefs.getFrameSelection(), 
        "Move the camera to frame the bounds of the currently selected nodes.");
@@ -827,7 +836,7 @@ class JNodeViewerPanel
     for(wk=0; wk<3; wk++) {
       updateMenuToolTip
 	(pRestoreItems[wk], prefs.getNodeViewerCheckOut(), 
-	 "Restore offline checked-in versions of the primary selection.");
+	 "Submit requests to restore offline checked-in versions of the selected ndoes.");
     }
 
     for(wk=0; wk<2; wk++) {
@@ -3505,37 +3514,8 @@ class JNodeViewerPanel
   private void 
   doRestore() 
   {
-    if(pPrimary != null) {
-      UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
-
-      NodeStatus status = pPrimary.getNodeStatus();
-
-      TreeSet<VersionID> offline = null;
-      try {
-	offline  = client.getOfflineVersionIDs(status.getName());
-      }
-      catch (PipelineException ex) {
-	master.showErrorDialog(ex);
-	return;
-      }
-      
-      pRestoreDialog.updateNameVersions
-	("Restore Versions:  " + status, offline);
-      pRestoreDialog.setVisible(true);
-      
-      if(pRestoreDialog.wasConfirmed()) {
-	TreeSet<VersionID> restore = pRestoreDialog.getVersionIDs();
-	if(!restore.isEmpty()) {
-	  TreeMap<String,TreeSet<VersionID>> versions = 
-	    new TreeMap<String,TreeSet<VersionID>>();
-	  versions.put(status.getName(), restore);
-	  
-	  RestoreTask task = new RestoreTask(versions);
-	    task.start();
-	}
-      }
-    }
+    RestoreQueryTask task = new RestoreQueryTask(getSelectedNames());
+    task.start();
 
     clearSelection();
     refresh(); 
@@ -4842,6 +4822,94 @@ class JNodeViewerPanel
   }
 
   /** 
+   * Get the names and revision numbers of the nodes to restore.
+   */ 
+  private
+  class RestoreQueryTask
+    extends Thread
+  {
+    public 
+    RestoreQueryTask
+    (
+     TreeSet<String> names
+    ) 
+    {
+      super("JNodeViewerPanel:RestoreQueryTask");
+      pNames = names;
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      MasterMgrClient client = master.getMasterMgrClient();
+      TreeMap<String,TreeSet<VersionID>> offline = null; 
+      if(master.beginPanelOp("Searching for Offline Versions...")) {
+	try {
+	  if(pNames.isEmpty()) {
+	    offline = client.restoreQuery(null);
+	  }
+	  else {
+	    offline = new TreeMap<String,TreeSet<VersionID>>();
+	    for(String name : pNames) {
+	      TreeMap<String,TreeSet<VersionID>> versions = client.restoreQuery(name);
+	      TreeSet<VersionID> vids = versions.get(name);
+	      if((vids != null) && !vids.isEmpty())
+		offline.put(name, vids);
+	    }
+	  }
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+	
+	ShowRequestRestoreTask task = new ShowRequestRestoreTask(offline);
+	SwingUtilities.invokeLater(task);
+      }
+    }
+
+    private TreeSet<String>  pNames; 
+  }
+
+  /** 
+   * Update the contents of the request restore dialog and query the user for a selection.
+   */ 
+  private
+  class ShowRequestRestoreTask
+    extends Thread
+  {
+    public 
+    ShowRequestRestoreTask
+    (
+     TreeMap<String,TreeSet<VersionID>> versions   
+    ) 
+    {
+      super("JNodeViewerPanel:ShowRequestRestoreTask");
+      pVersions = versions;
+    }
+
+    public void 
+    run() 
+    {
+      pRestoreDialog.setVersions(pVersions);
+      pRestoreDialog.setVisible(true);
+      if(pRestoreDialog.wasConfirmed()) {
+	TreeMap<String,TreeSet<VersionID>> selected = pRestoreDialog.getSelectedVersions();
+	if(!selected.isEmpty()) {
+	  RestoreTask task = new RestoreTask(selected);
+	  task.start();	  
+	}
+      }
+    }
+
+    private TreeMap<String,TreeSet<VersionID>>  pVersions;   
+  }
+
+  /** 
    * Restore the given versions of the node.
    */ 
   private
@@ -5440,6 +5508,7 @@ class JNodeViewerPanel
   private JMenuItem  pUpdateItem;
   private JMenuItem  pRegisterItem;
   private JMenuItem  pReleaseViewItem;
+  private JMenuItem  pPanelRestoreItem;
   private JMenuItem  pFrameAllItem;
   private JMenuItem  pFrameSelectionItem;
   private JMenuItem  pAutomaticExpandItem;
@@ -5590,7 +5659,7 @@ class JNodeViewerPanel
   /** 
    * The restore node dialog.
    */ 
-  private JRestoreNodeDialog  pRestoreDialog;
+  private JRequestRestoreDialog  pRestoreDialog;
 
 
   /**
