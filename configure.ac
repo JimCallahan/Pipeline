@@ -244,21 +244,6 @@ AC_MSG_RESULT([$ROOT_INST_DIR])
 
 
 
-AC_MSG_CHECKING([Installed Toolsets Directory])
-
-AC_SUBST(TOOLSETDIR)
-TOOLSETDIR=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                 --lookup ToolsetDirectory`
-
-if test "$TOOLSETDIR" == "null"
-then
-  AC_MSG_ERROR([customer profile was incomplete.])
-fi 
-
-AC_MSG_RESULT([$TOOLSETDIR])
-
-
-
 AC_MSG_CHECKING([User Home Directory])
 
 AC_SUBST(HOMEDIR)
