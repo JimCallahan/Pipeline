@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.9 2004/09/05 06:40:36 jim Exp $
+// $Id: JobMgr.java,v 1.10 2004/09/09 17:06:19 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -329,7 +329,7 @@ class JobMgr
     TaskTimer timer = new TaskTimer(); 
 
     ExecuteTask task = new ExecuteTask(job);
-    int numJobs = 0;
+    int numJobs = 1;
     timer.aquire();
     synchronized(pExecuteTasks) {
       timer.resume();
