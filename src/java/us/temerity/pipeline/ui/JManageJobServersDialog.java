@@ -1,4 +1,4 @@
-// $Id: JManageJobServersDialog.java,v 1.4 2004/08/25 05:19:59 jim Exp $
+// $Id: JManageJobServersDialog.java,v 1.5 2004/09/22 20:00:30 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -431,7 +431,7 @@ class JManageJobServersDialog
      boolean update
     ) 
     {
-      super("JManageJobServersDialog:RemoveHostsTask");
+      super("JManageJobServersDialog:EditHostsTask");
       
       pUpdate = update; 
 
