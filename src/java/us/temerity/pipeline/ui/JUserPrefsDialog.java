@@ -1,4 +1,4 @@
-// $Id: JUserPrefsDialog.java,v 1.1 2004/05/13 02:37:41 jim Exp $
+// $Id: JUserPrefsDialog.java,v 1.2 2004/05/13 21:27:49 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -134,20 +134,14 @@ class JUserPrefsDialog
 	    tpanel.add(Box.createVerticalGlue());
 	    vpanel.add(Box.createVerticalGlue());
 
-	    cpanel.add(comps[2], "Empty");
+	    cpanel.add(comps[2], " ");
 	    
-	    layout.show(pCardPanel, "Empty");
+	    layout.show(pCardPanel, " ");
 	  }
 
-	  cpanel.add(initNodeViewerNodeLayoutPanel(), 
-		     ":Panels:Node Viewer:Node Layout:");
+	  initNodeBrowserPanels();
+	  initNodeViewerPanels();
 
-	  cpanel.add(initNodeViewerLinkAppearancePanel(), 
-		     ":Panels:Node Viewer:Link Appearance:");
-	  
-	  cpanel.add(initNodeViewerHotKeysPanel(), 
-		     ":Panels:Node Viewer:Hot Keys:");
-	  
 	  // ...
 	  
 	  panel.add(cpanel);
@@ -180,9 +174,9 @@ class JUserPrefsDialog
 	panels.add(panel);
 	
 	{
-	  DefaultMutableTreeNode tnode = 
+	  DefaultMutableTreeNode keys = 
 	    new DefaultMutableTreeNode("Hot Keys", false);
-	  panel.add(tnode);
+	  panel.add(keys);
 	}
       }
 
@@ -192,21 +186,51 @@ class JUserPrefsDialog
 	panels.add(panel);
 	
 	{
-	  DefaultMutableTreeNode tnode = 
-	    new DefaultMutableTreeNode("Node Layout", false);
-	  panel.add(tnode);
-	}
-	
-	{
-	  DefaultMutableTreeNode tnode = 
-	    new DefaultMutableTreeNode("Link Appearance", false);
-	  panel.add(tnode);
+	  DefaultMutableTreeNode nodes = 
+	    new DefaultMutableTreeNode("Nodes", true);
+	  panel.add(nodes);
+	  
+	  {
+	    DefaultMutableTreeNode layout = 
+	      new DefaultMutableTreeNode("Layout", false);
+	    nodes.add(layout);
+	  }
+	  
+	  {
+	    DefaultMutableTreeNode layout = 
+	      new DefaultMutableTreeNode("Appearance", false);
+	    nodes.add(layout);
+	  }
+	  
+	  {
+	    DefaultMutableTreeNode keys = 
+	      new DefaultMutableTreeNode("Hot Keys", false);
+	    nodes.add(keys);
+	  }
 	}
 
 	{
-	  DefaultMutableTreeNode tnode = 
+	  DefaultMutableTreeNode links = 
+	    new DefaultMutableTreeNode("Links", true);
+	  panel.add(links);
+	  
+	  {
+	    DefaultMutableTreeNode layout = 
+	      new DefaultMutableTreeNode("Appearance", false);
+	    links.add(layout);
+	  }
+	  
+	  {
+	    DefaultMutableTreeNode keys = 
+	      new DefaultMutableTreeNode("Hot Keys", false);
+	    links.add(keys);
+	  }
+	}
+	
+	{
+	  DefaultMutableTreeNode keys = 
 	    new DefaultMutableTreeNode("Hot Keys", false);
-	  panel.add(tnode);
+	  panel.add(keys);
 	}
       }
 
@@ -220,78 +244,175 @@ class JUserPrefsDialog
   }
 
   /**
-   * Initialize the node viewer node layout panel.
+   * Initialize the node browser panels.
    */ 
-  private Component
-  initNodeViewerNodeLayoutPanel()
+  private void 
+  initNodeBrowserPanels()
   { 
-    Component comps[] = createCommonPanels();
-    JPanel tpanel = (JPanel) comps[0];
-    JPanel vpanel = (JPanel) comps[1];
+    String ptitle = "Panels - Node Browser - ";
 
+    /* hot keys */ 
     {
-      UserPrefs prefs = UserPrefs.getInstance();
+      Component comps[] = createCommonPanels();
+      JPanel tpanel = (JPanel) comps[0];
+      JPanel vpanel = (JPanel) comps[1];
       
-      pNodeSpaceXSlider = 
-	UIMaster.createTitledSlider(tpanel, "Horizontal Space:", 120, 
-				    vpanel, 1.0, 5.0, prefs.getNodeSpaceX(), 240);
+      {
+	
+	// ...
+	
+      }
       
-      UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+      tpanel.add(Box.createVerticalGlue());
+      vpanel.add(Box.createVerticalGlue());
       
-      pNodeSpaceYSlider = 
-	UIMaster.createTitledSlider(tpanel, "Vertical Space:", 120, 
-				    vpanel, 1.0, 5.0, prefs.getNodeSpaceY(), 240);
+      pCardPanel.add(comps[2], ptitle + "Hot Keys:");
+    }
+  }
+  
+  /**
+   * Initialize the node viewer panels.
+   */ 
+  private void 
+  initNodeViewerPanels()
+  { 
+    String ptitle = "Panels - Node Viewer - ";
 
+    /* nodes */ 
+    {
+      String ntitle = (ptitle + "Nodes - ");
 
-      // ...
+      /* layout */ 
+      {
+	Component comps[] = createCommonPanels();
+	JPanel tpanel = (JPanel) comps[0];
+	JPanel vpanel = (JPanel) comps[1];
+	
+	{
+	  UserPrefs prefs = UserPrefs.getInstance();
+	  
+	  pNodeSpaceXSlider = 
+	    UIMaster.createTitledSlider(tpanel, "Horizontal Space:", 120, 
+					vpanel, 1.0, 5.0, prefs.getNodeSpaceX(), 240);
+	  
+	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+	  
+	  pNodeSpaceYSlider = 
+	    UIMaster.createTitledSlider(tpanel, "Vertical Space:", 120, 
+					vpanel, 1.0, 5.0, prefs.getNodeSpaceY(), 240);
+
+	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+	  
+	  pNodeOffsetSlider = 
+	    UIMaster.createTitledSlider(tpanel, "Vertical Offset:", 120, 
+					vpanel, 0.0, 1.0, prefs.getNodeOffset(), 240);
+	  
+	  
+	  // ...
+	}
+	
+	tpanel.add(Box.createVerticalGlue());
+	vpanel.add(Box.createVerticalGlue());
+	
+	pCardPanel.add(comps[2], ntitle + "Layout:");
+      }
+      
+      /* appearance */ 
+      {
+	Component comps[] = createCommonPanels();
+	JPanel tpanel = (JPanel) comps[0];
+	JPanel vpanel = (JPanel) comps[1];
+	
+	{
+
+	  // ...
+
+	}
+	
+	tpanel.add(Box.createVerticalGlue());
+	vpanel.add(Box.createVerticalGlue());
+	
+	pCardPanel.add(comps[2], ntitle + "Appearance:");
+      }
+
+      /* hot keys */ 
+      {
+	Component comps[] = createCommonPanels();
+	JPanel tpanel = (JPanel) comps[0];
+	JPanel vpanel = (JPanel) comps[1];
+	
+	{
+
+	  // ...
+
+	}
+	
+	tpanel.add(Box.createVerticalGlue());
+	vpanel.add(Box.createVerticalGlue());
+	
+	pCardPanel.add(comps[2], ntitle + "Hot Keys:");
+      }
     }
 
-    tpanel.add(Box.createVerticalGlue());
-    vpanel.add(Box.createVerticalGlue());
+    /* links */ 
+    {
+      String ltitle = (ptitle + "Links - ");
 
-    return comps[2];
+      /* appearance */ 
+      {
+	Component comps[] = createCommonPanels();
+	JPanel tpanel = (JPanel) comps[0];
+	JPanel vpanel = (JPanel) comps[1];
+	
+	{
+
+	  // ...
+
+	}
+	
+	tpanel.add(Box.createVerticalGlue());
+	vpanel.add(Box.createVerticalGlue());
+	
+	pCardPanel.add(comps[2], ltitle + "Appearance:");
+      }
+
+      /* hot keys */ 
+      {
+	Component comps[] = createCommonPanels();
+	JPanel tpanel = (JPanel) comps[0];
+	JPanel vpanel = (JPanel) comps[1];
+	
+	{
+
+	  // ...
+
+	}
+	
+	tpanel.add(Box.createVerticalGlue());
+	vpanel.add(Box.createVerticalGlue());
+	
+	pCardPanel.add(comps[2], ltitle + "Hot Keys:");
+      }
+    }
+
+    /* hot keys */ 
+    {
+      Component comps[] = createCommonPanels();
+      JPanel tpanel = (JPanel) comps[0];
+      JPanel vpanel = (JPanel) comps[1];
+      
+      {
+	
+	// ...
+	
+      }
+      
+      tpanel.add(Box.createVerticalGlue());
+      vpanel.add(Box.createVerticalGlue());
+      
+      pCardPanel.add(comps[2], ptitle + "Hot Keys:");
+    }
   }
-
-  /**
-   * Initialize the node viewer link appearance panel.
-   */ 
-  private Component
-  initNodeViewerLinkAppearancePanel()
-  {
-    Component comps[] = createCommonPanels();
-    JPanel tpanel = (JPanel) comps[0];
-    JPanel vpanel = (JPanel) comps[1];
-
-    // ...
-
-
-    tpanel.add(Box.createVerticalGlue());
-    vpanel.add(Box.createVerticalGlue());
-
-    return comps[2];
-  }
-
-  /**
-   * Initialize the node viewer hot keys panel.
-   */ 
-  private Component
-  initNodeViewerHotKeysPanel()
-  {
-    Component comps[] = createCommonPanels();
-    JPanel tpanel = (JPanel) comps[0];
-    JPanel vpanel = (JPanel) comps[1];
-
-    // ...
-
-
-    tpanel.add(Box.createVerticalGlue());
-    vpanel.add(Box.createVerticalGlue());
-
-    return comps[2];
-  }
-
-
-  // ...
   
 
 
@@ -363,10 +484,12 @@ class JUserPrefsDialog
   public void 
   savePrefs() 
   {
+    UIMaster master = UIMaster.getInstance();
     UserPrefs prefs = UserPrefs.getInstance();
 
     prefs.setNodeSpaceX(((double) pNodeSpaceXSlider.getValue())/1000.0);
     prefs.setNodeSpaceY(((double) pNodeSpaceYSlider.getValue())/1000.0);
+    prefs.setNodeOffset(((double) pNodeOffsetSlider.getValue())/1000.0);
 
 
     // ... 
@@ -376,8 +499,11 @@ class JUserPrefsDialog
       UserPrefs.save();
     }    
     catch(Exception ex) {
-      UIMaster.getInstance().showErrorDialog(ex);
+      master.showErrorDialog(ex);
+      return;
     }
+
+    master.updateUserPrefs();
   }
 
   /**
@@ -405,6 +531,7 @@ class JUserPrefsDialog
     
     pNodeSpaceXSlider.setValue((int) (prefs.getNodeSpaceX()*1000.0));
     pNodeSpaceYSlider.setValue((int) (prefs.getNodeSpaceY()*1000.0));
+    pNodeOffsetSlider.setValue((int) (prefs.getNodeOffset()*1000.0));
 
     
     // ...
@@ -472,26 +599,26 @@ class JUserPrefsDialog
     if(tpath != null) {
       DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) tpath.getLastPathComponent();
       if(tnode.isLeaf()) {
-	String selected = null;
+	String title = null;
 	{
 	  StringBuffer buf = new StringBuffer();
 	  TreeNode path[] = tnode.getPath();
 	  int wk;
-	  for(wk=1; wk<path.length; wk++) 
-	    buf.append(":" + path[wk].toString());
-	  buf.append(":");
-	  selected = buf.toString();
+	  for(wk=1; wk<path.length-1; wk++) 
+	    buf.append(path[wk].toString() + " - ");
+	  buf.append(path[wk].toString() + ":");
+	  title = buf.toString();
 	}
 
-	pCardLabel.setText(tnode.toString() + ":");
-	layout.show(pCardPanel, selected);
+	pCardLabel.setText(title);
+	layout.show(pCardPanel, title);
 
 	return;
       }
     }
 
     pCardLabel.setText(" ");
-    layout.show(pCardPanel, "Empty");
+    layout.show(pCardPanel, " ");
   }
 
 
@@ -537,7 +664,7 @@ class JUserPrefsDialog
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  // private static final long serialVersionUID = -6397533004329010874L;
+  private static final long serialVersionUID = -4876180050225500742L;
 
 
 
@@ -564,9 +691,10 @@ class JUserPrefsDialog
 
 
   /**
-   * The components for: NodeViewer - Node Layout 
+   * Panels - NodeViewer - Nodes - Layout:
    */ 
   private JSlider  pNodeSpaceXSlider; 
   private JSlider  pNodeSpaceYSlider; 
+  private JSlider  pNodeOffsetSlider; 
 
 }
