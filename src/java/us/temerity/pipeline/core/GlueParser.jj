@@ -134,6 +134,7 @@ TOKEN :
 | <#EXPONENT:		("e" (["-","+"])? (["0"-"9"])+)>
 | <REAL_LITERAL:        (["-","+"])? (["0"-"9"])+ "." (["0"-"9"])+ (<EXPONENT>)?>
 
+| <EMPTY_STRING:        "\"\""> 
 | <OPEN_QUOTE:          "\""> : STRING_STATE
 | <COLON:               ":"> 
 
@@ -174,8 +175,8 @@ TOKEN :
 <STRING_STATE>
 TOKEN :
 {
-  <STRING_LITERAL:      ((~["\""]) | "\\\"")+>
-| <CLOSE_QUOTE:          "\""> : DEFAULT
+  <STRING_LITERAL:      ((~["\""]) | "\\\"" )+>
+| <CLOSE_QUOTE:         "\""> : DEFAULT
 }
 
 
@@ -726,6 +727,18 @@ RealValue() :
 String
 StringValue() : 
 {
+  String s = null;
+}
+{
+  (s=StringLiteral() | s=EmptyString())
+  {
+    return s; 
+  }
+}
+
+String
+StringLiteral() : 
+{
   Token t;
 }
 {
@@ -741,6 +754,16 @@ StringValue() :
     }
 
     return buf.toString();
+  }
+}
+
+String
+EmptyString() :
+{}
+{
+  <EMPTY_STRING>
+  {
+    return "";
   }
 }
 
