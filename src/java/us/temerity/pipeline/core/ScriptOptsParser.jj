@@ -713,7 +713,7 @@ TOKEN :
 <SOURCE_PARAM_STATE> 
 TOKEN :
 {
-  <SOURCE_NAME:         ("/" (["a"-"z","A"-"Z","0"-"9"])+)* 
+  <SOURCE_NAME:         ("/" (["a"-"z","A"-"Z","0"-"9","_","-"])+)* 
 			("/" ["a"-"z","A"-"Z"] 
 		          (["a"-"z","A"-"Z","0"-"9","_","-"])*)+> 
 | <COMMA1:              ",">                                       : PARAM_STATE
@@ -732,7 +732,7 @@ TOKEN :
 <LINK_PARAM_STATE> 
 TOKEN :
 {
-  <LINK_NAME:         ("/" (["a"-"z","A"-"Z","0"-"9"])+)* 
+  <LINK_NAME:         ("/" (["a"-"z","A"-"Z","0"-"9","_","-"])+)* 
 		      ("/" ["a"-"z","A"-"Z"] 
 		        (["a"-"z","A"-"Z","0"-"9","_","-"])*)+> 
 | <COMMA2:            ",">                                       : LINK_RELATION_STATE
