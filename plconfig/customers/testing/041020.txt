@@ -4,7 +4,7 @@ FileHostname = localhost
 FilePort = 53136
 HomeDirectory = /home
 HostIDs = 
-    24-193-206-134.nyc.rr.com     114924469044875614070618827632400493981
+    24-193-206-134.nyc.rr.com     7287163038268053933459334657512295823
 JavaClassVersion = 49.0
 JavaHome = /usr/java/jdk1.5.0/jre
 JavaName = Java HotSpot(TM) Client VM
@@ -12,7 +12,7 @@ JavaVendor = Sun Microsystems Inc.
 JavaVersion = 1.5.0-b64
 JobPort = 53140
 LicenseEnd = Sun Aug 17 02:12:55 EST 292278994
-LicenseStart = Wed Oct 20 00:14:10 EDT 2004
+LicenseStart = Fri Oct 22 10:23:03 EDT 2004
 MasterHostname = localhost
 MasterPort = 53135
 NodeDirectory = /usr/share/pipeline
