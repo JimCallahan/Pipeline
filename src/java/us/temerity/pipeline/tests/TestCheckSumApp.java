@@ -1,4 +1,4 @@
-// $Id: TestCheckSumApp.java,v 1.3 2004/03/10 11:49:53 jim Exp $
+// $Id: TestCheckSumApp.java,v 1.4 2004/03/15 19:12:24 jim Exp $
 
 import us.temerity.pipeline.*;
 
@@ -95,37 +95,19 @@ class TestCheckSumApp
       for(Integer size : table.keySet()) {
 	ArrayList<File> paths = table.get(size);
 
-	long mtotal = 0;
+	long total = 0;
 	{
-	  System.out.print("  Memory Mapped [" + size + "]:\n");
-	  mtotal += refresh(paths.get(0), 0);
-	  mtotal += refresh(paths.get(1), 0);
-	  mtotal += refresh(paths.get(2), 0);
+	  System.out.print("  File Size: " + size + ":\n");
+	  total += refresh(paths.get(0));
+	  total += refresh(paths.get(1));
+	  total += refresh(paths.get(2));
+	  total += refresh(paths.get(3));
+	  total += refresh(paths.get(4));
+	  total += refresh(paths.get(5));
 
-	  double rate = (((double) size) / ((double) (mtotal))) * (3000.0 / (1024.0*1024.0));
-	  System.out.print("   TOTAL = " + mtotal + " msec\n" + 
+	  double rate = (((double) size) / ((double) (total))) * (6000.0 / (1024.0*1024.0));
+	  System.out.print("   TOTAL = " + total + " msec\n" + 
 			   "    RATE = " + ((float) rate) + " MB/sec\n\n");
-	}
-	
-	long stotal = 0;
-	{
-	  System.out.print("  Stream I/O [" + size + "]:\n");
-	  stotal += refresh(paths.get(3), Long.MAX_VALUE);
-	  stotal += refresh(paths.get(4), Long.MAX_VALUE);
-	  stotal += refresh(paths.get(5), Long.MAX_VALUE);
-
-	  double rate = (((double) size) / ((double) (stotal))) * (3000.0 / (1024.0*1024.0));
-	  System.out.print("   TOTAL = " + stotal + " msec\n" + 
-			   "    RATE = " + ((float) rate) + " MB/sec\n\n");
-	}
-
-	if(mtotal < stotal) {
-	  float factor = ((float) stotal) / ((float) mtotal);
-	  System.out.print("  Memory Mapped: " + factor + " (times faster)\n\n\n");
-	}
-	else {
-	  float factor = ((float) mtotal) / ((float) stotal);
-	  System.out.print("  Stream I/O: " + factor + " (times faster)\n\n\n");
 	}
       }
     }
@@ -162,13 +144,12 @@ class TestCheckSumApp
   private long 
   refresh
   (
-   File path, 
-   long size
+   File path
   ) 
     throws PipelineException
   {
     Date start = new Date();
-    pCheckSum.refresh(path, size); 
+    pCheckSum.refresh(path); 
     long time = (new Date()).getTime() - start.getTime();
    
     System.out.print("    Time = " + time + " msec\n");
