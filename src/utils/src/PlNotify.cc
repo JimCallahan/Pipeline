@@ -1,4 +1,4 @@
-// $Id: PlNotify.cc,v 1.10 2004/08/27 23:34:40 jim Exp $
+// $Id: PlNotify.cc,v 1.11 2004/08/29 09:18:24 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -37,6 +37,7 @@
 #endif
 
 #include <PackageInfo.hh>
+#include <NativeArch.hh>
 
 using namespace Pipeline;
 
@@ -62,7 +63,7 @@ main
   {
     uid_t gid  = getgid();
     if(gid != PackageInfo::sPipelineGID) {
-      sprintf(msg, "This program can only be run by the (%) group!", 
+      sprintf(msg, "This program can only be run by the (%s) group!", 
 	      PackageInfo::sPipelineGroup);
       FB::error(msg);	
     }
@@ -122,13 +123,19 @@ main
     }
     
     argc2 = argc+jcnt+5;
+
+    if(NativeArch::sHostname != NULL) 
+      argc2++;
+
     argv2 = new char*[argc2+1];
     argv2[0] = cmd;
     
-    char props[1024];
-    sprintf(props, "-Djava.util.logging.config.file=%s/share/logger.properties", 
-	    PackageInfo::sInstDir);
-    argv2[1] = props;
+    {
+      char props[1024];
+      sprintf(props, "-Djava.util.logging.config.file=%s/share/logger.properties", 
+	      PackageInfo::sInstDir);
+      argv2[1] = strdup(props);
+    }
 
     int wk = 2;
     {
@@ -167,13 +174,19 @@ main
     argv2[wk] = "us.temerity.pipeline.core.NotifyApp";
     wk++;
 
+    if(NativeArch::sHostname != NULL) {
+      char nopt[1024];
+      sprintf(nopt, "--native=%s", NativeArch::sHostname);
+      argv2[wk] = strdup(nopt);
+      wk++;
+    }
+
     int i;
     for(i=1; i<argc; i++, wk++) 
       argv2[wk] = argv[i];
 
     argv2[argc2] = NULL;
   }
-
   
   /* execute the command */ 
   if(execv(cmd, argv2) == -1) {
