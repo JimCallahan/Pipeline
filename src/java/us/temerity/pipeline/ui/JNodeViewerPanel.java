@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.46 2004/09/28 11:09:07 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.47 2004/10/01 21:56:59 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -430,7 +430,7 @@ class JNodeViewerPanel
       pExportDialog   = new JExportDialog();
       pRenameDialog   = new JRenameDialog();
       pRenumberDialog = new JRenumberDialog();
-      pRegisterDialog = new JRegisterDialog(this);
+      pRegisterDialog = new JRegisterDialog();
       pReleaseDialog  = new JReleaseDialog();
       pCheckInDialog  = new JCheckInDialog();
       pCheckOutDialog = new JCheckOutDialog();
@@ -616,6 +616,24 @@ class JNodeViewerPanel
   {
     TreeSet<String> roots = new TreeSet<String>(pRoots.keySet());
     roots.add(name);
+    
+    setRoots(roots);
+  }
+
+  /**
+   * Add the given node names to the root nodes displayed by the viewer. <P> 
+   * 
+   * @param names
+   *   The fully resolved node names.
+   */
+  public synchronized void 
+  addRoots
+  (
+   TreeSet<String> names
+  )
+  {
+    TreeSet<String> roots = new TreeSet<String>(pRoots.keySet());
+    roots.addAll(names);
     
     setRoots(roots);
   }
@@ -2689,7 +2707,7 @@ class JNodeViewerPanel
 	}
       }
     }
-
+    
     for(ViewerNode vnode : clearSelection()) 
       vnode.update();
   }
@@ -2711,6 +2729,10 @@ class JNodeViewerPanel
 	
 	pRegisterDialog.updateNode(pAuthor, pView, com);
 	pRegisterDialog.setVisible(true);
+
+	TreeSet<String> names = pRegisterDialog.getRegistered();
+	if(!names.isEmpty()) 
+	  addRoots(names);
       }
     }
 
@@ -2725,7 +2747,11 @@ class JNodeViewerPanel
   doRegister() 
   {
     pRegisterDialog.updateNode(pAuthor, pView, null);
-    pRegisterDialog.setVisible(true);
+    pRegisterDialog.setVisible(true); 
+
+    TreeSet<String> names = pRegisterDialog.getRegistered();
+    if(!names.isEmpty()) 
+      addRoots(names);
   }
 
   /**
@@ -4440,7 +4466,6 @@ class JNodeViewerPanel
 		  pRoots.put(name, status);
 		}
 		catch(PipelineException ex) {
-		  System.out.print("[undefined]\n");
 		  dead.add(name);
 		}
 	      }

@@ -1,4 +1,4 @@
-// $Id: JRegisterDialog.java,v 1.7 2004/09/27 16:32:26 jim Exp $
+// $Id: JRegisterDialog.java,v 1.8 2004/10/01 21:56:59 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -32,15 +32,11 @@ class JRegisterDialog
    * Construct a new dialog.
    */ 
   public 
-  JRegisterDialog
-  (
-   JNodeViewerPanel viewer
-  ) 
+  JRegisterDialog() 
   {
     super("Register Node", true);
 
-    assert(viewer != null);
-    pViewer = viewer;
+    pRegistered = new TreeSet<String>();
 
     /* create dialog body components */ 
     {
@@ -212,7 +208,7 @@ class JRegisterDialog
 	{ "Browse",  "browse" }
       };
 
-      super.initUI("Register New Node:", true, body, "Confirm", "Apply", extra, "Cancel");
+      super.initUI("Register New Node:", true, body, "Confirm", "Apply", extra, "Close");
 
       pack();
       setResizable(false);
@@ -221,6 +217,23 @@ class JRegisterDialog
     doUpdateFrameFields();
 
     pFileSeqDialog = new JFileSeqSelectDialog(this);
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the names of the registered nodes.
+   */ 
+  public TreeSet<String> 
+  getRegistered() 
+  {
+    synchronized(pRegistered) {
+      return pRegistered;
+    }
   }
 
 
@@ -245,6 +258,10 @@ class JRegisterDialog
   {  
     pAuthor = author; 
     pView   = view; 
+
+    synchronized(pRegistered) {
+      pRegistered.clear();
+    }
 
     String defaultToolset = null;
     {
@@ -442,8 +459,21 @@ class JRegisterDialog
     if(mod == null) 
       return; 
     
-    RegisterTask task = new RegisterTask(pAuthor, pView, mod);
-    task.start();
+    UIMaster master = UIMaster.getInstance();
+    if(master.beginPanelOp("Registering New Node: " + mod.getName())) {
+      try {
+	master.getMasterMgrClient().register(pAuthor, pView, mod);
+	synchronized(pRegistered) {
+	  pRegistered.add(mod.getName());
+	}
+      }
+      catch(PipelineException ex) {
+	master.showErrorDialog(ex);
+      }
+      finally {
+	master.endPanelOp("Done.");
+      }
+    }
 
     super.doConfirm();
   }
@@ -458,6 +488,10 @@ class JRegisterDialog
     if(mod == null) 
       return; 
     
+    pConfirmButton.setEnabled(false);
+    pApplyButton.setEnabled(false);
+    pCancelButton.setEnabled(false);
+
     RegisterTask task = new RegisterTask(pAuthor, pView, mod);
     task.start();
   }
@@ -703,25 +737,50 @@ class JRegisterDialog
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Registering New Node...")) {
+      if(master.beginPanelOp("Registering New Node: " + pNodeMod.getName())) {
 	try {
 	  master.getMasterMgrClient().register(pAuthor, pView, pNodeMod);
+	  synchronized(pRegistered) {
+	    pRegistered.add(pNodeMod.getName());
+	  }
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
-	  return;
 	}
 	finally {
 	  master.endPanelOp("Done.");
 	}
       }
 
-      pViewer.addRoot(pNodeMod.getName());
+      SwingUtilities.invokeLater(new DoneTask());
     }
 
     private String   pAuthor; 
     private String   pView; 
     private NodeMod  pNodeMod;
+  }
+
+
+  /** 
+   * Renable buttons.
+   */ 
+  private
+  class DoneTask
+    extends Thread
+  {
+    public 
+    DoneTask() 
+    {
+      super("JRegisterDialog:DoneTask");
+    }
+
+    public void 
+    run() 
+    {
+      pConfirmButton.setEnabled(true);
+      pApplyButton.setEnabled(true);
+      pCancelButton.setEnabled(true);
+    }
   }
 
 
@@ -751,14 +810,13 @@ class JRegisterDialog
    */ 
   private NodeMod  pNodeMod; 
 
+  /**
+   * The names of the registered nodes.
+   */ 
+  private TreeSet<String>  pRegistered; 
+
 
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The parent node viewer.
-   */ 
-  private JNodeViewerPanel  pViewer; 
-
 
   /**
    * The owner of the current working area.
