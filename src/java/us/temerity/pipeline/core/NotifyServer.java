@@ -1,4 +1,4 @@
-// $Id: NotifyServer.java,v 1.2 2004/04/12 22:36:29 jim Exp $
+// $Id: NotifyServer.java,v 1.3 2004/04/12 22:39:05 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -611,7 +611,7 @@ class NotifyServer
 	    break;
 
 	  case Shutdown:
-	    Logs.net.info("Shutdown Request Received: " + pSocket.getInetAddress());
+	    Logs.net.warning("Shutdown Request Received: " + pSocket.getInetAddress());
 	    Logs.flush();
 	    pShutdown.set(true);
 	    break;	    
