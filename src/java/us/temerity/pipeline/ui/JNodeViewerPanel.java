@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.38 2004/09/05 06:49:09 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.39 2004/09/08 18:42:43 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -154,6 +154,8 @@ class JNodeViewerPanel
 
       pNodePopup = new JPopupMenu();  
       pNodePopup.addPopupMenuListener(this);
+
+      pEditWithMenus = new JMenu[2];
        
       JPopupMenu menus[] = { pShortNodePopup, pMediumNodePopup, pNodePopup };
       int wk;
@@ -198,17 +200,8 @@ class JNodeViewerPanel
 	  item.addActionListener(this);
 	  menus[wk].add(item);
 	  
-	  {
-	    sub = new JMenu((wk == 1) ? "View With" : "Edit With");
-	    menus[wk].add(sub);
-	    
-	    for(String editor : Plugins.getEditorNames()) {
-	      item = new JMenuItem(editor);
-	      item.setActionCommand("edit-with:" + editor);
-	      item.addActionListener(this);
-	      sub.add(item);
-	    }
-	  }
+	  pEditWithMenus[wk-1] = new JMenu((wk == 1) ? "View With" : "Edit With");
+	  menus[wk].add(pEditWithMenus[wk-1]);
 	}
       }
 
@@ -695,6 +688,15 @@ class JNodeViewerPanel
   }
 
   /**
+   * Update the medium node menu.
+   */ 
+  public void 
+  updateMediumNodeMenu() 
+  {
+    rebuildEditorSubmenu(0);
+  }
+
+  /**
    * Update the node menu.
    */ 
   public void 
@@ -724,6 +726,8 @@ class JNodeViewerPanel
 
     pRemoveSecondaryMenu.setEnabled(false);
 
+    rebuildEditorSubmenu(1);
+
     /* rebuild remove secondary items */ 
     if(!pIsLocked) {
       JMenuItem item;
@@ -747,6 +751,48 @@ class JNodeViewerPanel
       pRemoveSecondaryMenu.setEnabled(pRemoveSecondaryMenu.getItemCount() > 0);
     }
   }
+
+  /**
+   * Rebuild the editor submenu.
+   * 
+   * @param idx
+   *   The node menu index: 0=Medium, 1=Long
+   */ 
+  private void 
+  rebuildEditorSubmenu
+  (
+   int idx
+  ) 
+  {
+    TreeMap<String,TreeSet<VersionID>> editors = PluginMgr.getInstance().getEditors();
+    
+    pEditWithMenus[idx].removeAll();
+    
+    for(String editor : editors.keySet()) {
+      JMenuItem item = new JMenuItem(editor);
+      item.setActionCommand("edit-with:" + editor);
+      item.addActionListener(this);
+      pEditWithMenus[idx].add(item);
+    }
+    
+    pEditWithMenus[idx].addSeparator();
+    
+    JMenu sub = new JMenu("All Versions");
+    pEditWithMenus[idx].add(sub);
+
+    for(String editor : editors.keySet()) {
+      JMenu esub = new JMenu(editor);
+      sub.add(esub);
+      
+      for(VersionID vid : editors.get(editor)) {
+	JMenuItem item = new JMenuItem(editor + " (v" + vid + ")");
+	item.setActionCommand("edit-with:" + editor + ":" + vid);
+	item.addActionListener(this);
+	esub.add(item);
+      }
+    }
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1591,8 +1637,10 @@ class JNodeViewerPanel
 	      for(ViewerNode vnode : primarySelect(vunder)) 
 		vnode.update();
 	    
-	      if(pPrimary.getNodeStatus().getDetails() != null) {
-		if(pIsLocked) {
+	      NodeDetails details = pPrimary.getNodeStatus().getDetails();
+	      if(details != null) {
+		if(pIsLocked || (details.getWorkingVersion() == null)) {
+		  updateMediumNodeMenu();
 		  pMediumNodePopup.show(e.getComponent(), e.getX(), e.getY());
 		}
 		else {
@@ -2135,7 +2183,7 @@ class JNodeViewerPanel
 
     else if(cmd.equals("edit"))
       doEdit();
-    else if(cmd.startsWith("edit-with:"))
+    else if(cmd.startsWith("edit-with:")) 
       doEditWith(cmd.substring(10));    
 
     else if(cmd.equals("link")) 
@@ -2322,7 +2370,7 @@ class JNodeViewerPanel
 	  com = details.getLatestVersion();
 
 	if(com != null) {
-	  EditTask task = new EditTask(com, null);
+	  EditTask task = new EditTask(com);
 	  task.start();
 	}
       }
@@ -2341,6 +2389,23 @@ class JNodeViewerPanel
    String editor
   ) 
   {
+    String ename = null;
+    VersionID evid = null;
+    String parts[] = editor.split(":");
+    switch(parts.length) {
+    case 1:
+      ename = editor;
+      break;
+
+    case 2:
+      ename = parts[0];
+      evid = new VersionID(parts[1]);
+      break;
+
+    default:
+      assert(false);
+    }
+
     if(pPrimary != null) {
       NodeDetails details = pPrimary.getNodeStatus().getDetails();
       if(details != null) {
@@ -2349,7 +2414,7 @@ class JNodeViewerPanel
 	  com = details.getLatestVersion();
 
 	if(com != null) {
-	  EditTask task = new EditTask(com, editor);
+	  EditTask task = new EditTask(com, ename, evid);
 	  task.start();
 	}
       }
@@ -3303,14 +3368,27 @@ class JNodeViewerPanel
     public 
     EditTask
     (
-     NodeCommon com, 
-     String ename
+     NodeCommon com
     ) 
     {
       super("JNodeViewerPanel:EditTask");
 
       pNodeCommon = com;
-      pEditorName = ename;
+    }
+
+    public 
+    EditTask
+    (
+     NodeCommon com, 
+     String ename, 
+     VersionID evid
+    ) 
+    {
+      super("JNodeViewerPanel:EditTask");
+
+      pNodeCommon    = com;
+      pEditorName    = ename;
+      pEditorVersion = evid; 
     }
 
     public void 
@@ -3339,7 +3417,7 @@ class JNodeViewerPanel
 		throw new PipelineException
 		  ("No editor was specified for node (" + pNodeCommon.getName() + ")!");
 	      
-	      editor = Plugins.newEditor(ename);
+	      editor = PluginMgr.getInstance().newEditor(ename, pEditorVersion);
 	    }
 
 	    /* lookup the toolset environment */ 
@@ -3410,6 +3488,7 @@ class JNodeViewerPanel
  
     private NodeCommon  pNodeCommon; 
     private String      pEditorName;
+    private VersionID   pEditorVersion; 
   }
 
   
@@ -3667,7 +3746,7 @@ class JNodeViewerPanel
 		  }
 		}
 
-		/* update the links if we need to reference them below */ 
+		/* update the links if we need them for per-source action parameters below */
 		if(addedLinks && pExportDialog.exportActionSourceParams()) 
 		  tmod = client.getWorkingVersion(pAuthor, pView, tname);
 	      }
@@ -3681,37 +3760,42 @@ class JNodeViewerPanel
 		  tmod.setEditor(smod.getEditor());
 	      }
 
-	      /* actions and parameters */ 
+	      /* actions */ 
 	      BaseAction taction = tmod.getAction(); 
 	      {
 		BaseAction saction = smod.getAction(); 
 		if((saction != null) && pExportDialog.exportAction()) {
 		  
-		  if((taction == null) || !taction.getName().equals(saction.getName())) {
-		    tmod.setAction(Plugins.newAction(saction.getName()));
-		    taction = tmod.getAction();
-		  }
-		  
-		  if(pExportDialog.exportActionEnabled()) 
-		    tmod.setActionEnabled(smod.isActionEnabled()); 
-		  
-		  for(BaseActionParam param : saction.getSingleParams()) {
-		    if(pExportDialog.exportActionSingleParam(param.getName())) 
-		      taction.setSingleParamValue(param.getName(), param.getValue());
-		  }
-		  
-		  if(pExportDialog.exportActionSourceParams()) {
-		    for(String source : saction.getSourceNames()) {
-		      if(tmod.getSource(source) != null) {
-			for(BaseActionParam param : saction.getSourceParams(source)) {
-			  taction.setSourceParamValue(source, 
-						      param.getName(), param.getValue());
+		  /* the action and parameters */ 
+		  {
+		    PluginMgr mgr = PluginMgr.getInstance();
+		    if((taction == null) || !taction.getName().equals(saction.getName())) 
+		      taction = mgr.newAction(saction.getName(), saction.getVersionID()); 
+		    
+		    for(BaseActionParam param : saction.getSingleParams()) {
+		      if(pExportDialog.exportActionSingleParam(param.getName())) 
+			taction.setSingleParamValue(param.getName(), param.getValue());
+		    }
+		    
+		    if(pExportDialog.exportActionSourceParams()) {
+		      for(String source : saction.getSourceNames()) {
+			if(tmod.getSource(source) != null) {
+			  taction.removeSourceParams(source);
+			  taction.initSourceParams(source);
+			  for(BaseActionParam param : saction.getSourceParams(source)) {
+			    taction.setSourceParamValue(source, 
+							param.getName(), param.getValue());
+			  }
 			}
 		      }
 		    }
-		  }
 		    
-		  tmod.setAction(taction);
+		    tmod.setAction(taction);
+		  }
+
+		  /* action enabled */ 
+		  if(pExportDialog.exportActionEnabled()) 
+		    tmod.setActionEnabled(smod.isActionEnabled()); 
 		}
 	      }
 		  
@@ -3766,7 +3850,6 @@ class JNodeViewerPanel
 	      }
 
 	      /* apply the changes */ 
-	      tmod.removeAllSources();
 	      client.modifyProperties(pAuthor, pView, tmod);	      
 	    }
 	  }
@@ -4677,6 +4760,11 @@ class JNodeViewerPanel
   private JMenuItem  pCheckInItem;
   private JMenuItem  pCheckOutItem;
   private JMenuItem  pReleaseItem;
+
+  /**
+   * The edit with submenus.
+   */ 
+  private JMenu[]  pEditWithMenus; 
 
   /**
    * The remove secondary node submenu.
