@@ -1,4 +1,4 @@
-// $Id: DependVersion.java,v 1.1 2004/02/28 20:05:47 jim Exp $
+// $Id: DependVersion.java,v 1.2 2004/03/07 02:38:26 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -11,7 +11,6 @@ package us.temerity.pipeline;
  * (<CODE>NodeVersion</CODE>) and the upstream checked-in version of the node upon which 
  * it depends. <P> 
  *  
- * @see Node 
  * @see NodeVersion 
  */ 
 public

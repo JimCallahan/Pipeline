@@ -1,4 +1,4 @@
-// $Id: DependMod.java,v 1.1 2004/02/28 20:05:47 jim Exp $
+// $Id: DependMod.java,v 1.2 2004/03/07 02:38:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -10,7 +10,6 @@ package us.temerity.pipeline;
  * Information about the dependency relationship between a modifiable working version 
  * of a node (<CODE>NodeMod</CODE>) and the upstream node upon which it depends. <P> 
  * 
- * @see Node 
  * @see DependMod 
  */ 
 public
