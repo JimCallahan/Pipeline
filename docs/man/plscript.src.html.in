@@ -799,7 +799,7 @@ Operations</span></span></a></li>
  style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
  style="font-style: italic;">micro</span>]</span><span
- style="font-weight: normal;"> [<span style="font-weight: bold;">--always</span>
+ style="font-weight: normal;"> [<span style="font-weight: bold;">--overwrite-all</span>
 | <span style="font-weight: bold;">--keep-newer</span> | <span
  style="font-weight: bold;">--keep-modified</span>]<br>
           </span></li>
@@ -3457,7 +3457,7 @@ target node prior to checking-in the target node. <br>
  style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
  style="font-style: italic;">micro</span>] </span><span
- style="font-weight: normal;">[<span style="font-weight: bold;">--always</span>
+ style="font-weight: normal;">[<span style="font-weight: bold;">--overwrite-all</span>
 | <span style="font-weight: bold;">--keep-newer</span> | <span
  style="font-weight: bold;">--keep-modified</span>]</span><span
  style="font-weight: normal;"><br>
@@ -3479,10 +3479,12 @@ If the <span style="font-weight: bold;">--keep-newer</span> option is
 specified,
 newer versions of these upstream nodes will not be checked-out.&nbsp;
 If the <span style="font-weight: bold;">--keep-modified</span> option
-is specified, the check-out will be skipped if there exists a working
+is specified, the check-out will be skipped if there exists a modified
+working
 version which is based on the version being checked-out or on a version
 which is newer than the version being checked-out.&nbsp; Otherwise, all
-upstream nodes will be checked-out.<br>
+upstream nodes will be checked-out overwriting all existing working
+versions.<br>
 </span></div>
 <span style="font-weight: normal;"></span><span
  style="font-weight: normal;"><span style="font-weight: bold;"></span></span></div>

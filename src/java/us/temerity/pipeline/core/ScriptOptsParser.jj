@@ -369,7 +369,7 @@ TOKEN :
 | <MAJOR:          "--major">
 | <MINOR:          "--minor">
 | <MICRO:          "--micro">
-| <ALWAYS:         "--always">
+| <OVERWRITE_ALL:  "--overwrite-all">
 | <KEEP_NEWER:     "--keep-newer">
 | <KEEP_MODIFIED:  "--keep-modified">
 | <BRIEF:          "--brief">
@@ -3986,7 +3986,7 @@ NodeCheckOut()
   pAuthor       = PackageInfo.sUser;
   pView         = "default";
   pVersionIDs   = new TreeSet();
-  pCheckOutMode = CheckOutMode.Always; 
+  pCheckOutMode = CheckOutMode.OverwriteAll; 
 }
 {
   <NODE_CHECK_OUT> EQ() name=NodeName() AE() (NodeCheckOutOpts())*
@@ -4012,17 +4012,17 @@ NodeCheckOutOpts()
   throws PipelineException : 
 {}
 {
-  (Author() | View() | VersionOption() | Always() | KeepNewer() | KeepModified())
+  (Author() | View() | VersionOption() | OverwriteAll() | KeepNewer() | KeepModified())
   {}
 }
 
 void
-Always() : 
+OverwriteAll() : 
 {}
 {
-  <ALWAYS> AE()
+  <OVERWRITE_ALL> AE()
   {
-    pCheckOutMode = CheckOutMode.Always; 
+    pCheckOutMode = CheckOutMode.OverwriteAll; 
   }
 }
 

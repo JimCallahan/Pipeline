@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.55 2004/11/01 00:49:44 jim Exp $
+// $Id: MasterMgr.java,v 1.56 2004/11/02 19:11:56 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3895,7 +3895,7 @@ class MasterMgr
       /* see if the check-out should be skipped */ 
       if(!isRoot && (work != null)) {
 	switch(mode) {
-	case Always:
+	case OverwriteAll:
 	  break;
 
 	case KeepNewer:

@@ -1,4 +1,4 @@
-// $Id: CheckOutMode.java,v 1.1 2004/10/21 01:23:26 jim Exp $
+// $Id: CheckOutMode.java,v 1.2 2004/11/02 19:11:56 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -17,9 +17,9 @@ enum CheckOutMode
 {  
   /**
    * Check-out upstream nodes regardless of the version of any existing working version 
-   * of the node.
+   * of the node overwriting all working versions.
    */
-  Always, 
+  OverwriteAll, 
   
   /**
    * Skip the check-out if there exists a working version which is based on a version 
@@ -89,7 +89,7 @@ enum CheckOutMode
   /*----------------------------------------------------------------------------------------*/
 
   private static String sTitles[] = {
-    "Always", 
+    "Overwrite All", 
     "Keep Newer",
     "Keep Modified"
   };
