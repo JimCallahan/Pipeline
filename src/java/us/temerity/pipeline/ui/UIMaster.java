@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.24 2004/06/19 00:36:09 jim Exp $
+// $Id: UIMaster.java,v 1.25 2004/06/23 22:34:22 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -856,7 +856,6 @@ class UIMaster
   )
   {
     JIntegerField field = new JIntegerField();
-    field.setName("EditableTextField");
 
     Dimension size = new Dimension(width, 19);
     field.setMinimumSize(size);
@@ -895,7 +894,6 @@ class UIMaster
   )
   {
     JByteSizeField field = new JByteSizeField();
-    field.setName("EditableTextField");
 
     Dimension size = new Dimension(width, 19);
     field.setMinimumSize(size);
@@ -934,7 +932,6 @@ class UIMaster
   )
   {
     JFloatField field = new JFloatField();
-    field.setName("EditableTextField");
 
     Dimension size = new Dimension(width, 19);
     field.setMinimumSize(size);
@@ -973,7 +970,6 @@ class UIMaster
   )
   {
     JDoubleField field = new JDoubleField();
-    field.setName("EditableTextField");
 
     Dimension size = new Dimension(width, 19);
     field.setMinimumSize(size);
@@ -2043,7 +2039,7 @@ class UIMaster
 
 	  /* progress bar */ 
 	  {
-	    JProgressBar bar = new JProgressBar(JProgressBar.HORIZONTAL, 0, 146);
+	    JProgressBar bar = new JProgressBar(JProgressBar.HORIZONTAL, 0, 153);
 	    pSplashProgress = bar;
 
 	    bar.setValue(1);
