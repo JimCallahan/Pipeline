@@ -1,4 +1,4 @@
-// $Id: JHotKeyField.java,v 1.1 2004/05/14 02:36:26 jim Exp $
+// $Id: JHotKeyField.java,v 1.2 2004/05/21 00:15:05 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -152,7 +152,7 @@ class JHotKeyField
     case KeyEvent.VK_CONTROL:
       break;
 
-    case KeyEvent.VK_BACK_SPACE:
+    case KeyEvent.VK_DELETE:
       setHotKey(null);
       KeyboardFocusManager.getCurrentKeyboardFocusManager().clearGlobalFocusOwner();
       break;
