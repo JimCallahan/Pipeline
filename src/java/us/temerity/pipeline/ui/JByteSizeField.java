@@ -1,4 +1,4 @@
-// $Id: JByteSizeField.java,v 1.1 2004/06/19 00:36:29 jim Exp $
+// $Id: JByteSizeField.java,v 1.2 2004/06/23 22:31:07 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -47,8 +47,7 @@ import java.awt.event.*;
  */ 
 public 
 class JByteSizeField
-  extends JTextField 
-  implements ActionListener
+  extends JBaseNumberField<Long>
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -61,8 +60,6 @@ class JByteSizeField
   JByteSizeField() 
   {
     super();
-
-    addActionListener(this);
   }
 
 
@@ -72,10 +69,10 @@ class JByteSizeField
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the integer value.
+   * Get the Long  value.
    * 
    * @return 
-   *   The value or <CODE>null</CODE> if empty or invalid.
+   *   The Long value or <CODE>null</CODE> if empty or invalid.
    */ 
   public Long
   getValue()
@@ -84,10 +81,10 @@ class JByteSizeField
   }
 
   /**
-   * Set the integer value.
+   * Set th eLong value.
    * 
    * @param value
-   *   The integer value or <CODE>null</CODE> to clear.
+   *   The Long value or <CODE>null</CODE> to clear.
    */ 
   public void 
   setValue
@@ -99,130 +96,27 @@ class JByteSizeField
   }
   
 
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
   
-  /*----------------------------------------------------------------------------------------*/
-  /*   T E X T   F I E L D   O V E R R I D E S                                              */
-  /*----------------------------------------------------------------------------------------*/
-
   /**
-   * Creates the default implementation of the model to be used at construction if one 
-   * isn't explicitly given.
+   * Checks a speculative result text for validity.
    */ 
-  protected Document 	
-  createDefaultModel()
-  {
-    return new IntegerDocument();
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   L I S T E N E R S                                                                    */
-  /*----------------------------------------------------------------------------------------*/
-
-  /*-- ACTION LISTENER METHODS -------------------------------------------------------------*/
-
-  /** 
-   * Invoked when an action occurs. 
-   */ 
-  public void 
-  actionPerformed
+  protected boolean 
+  isValidResult
   (
-   ActionEvent e
+   String text
   ) 
   {
-    setValue(getValue());
-  }
-
-
- 
-  /*----------------------------------------------------------------------------------------*/
-  /*   I N T E R N A L   C L A S S E S                                                      */
-  /*----------------------------------------------------------------------------------------*/
-
-  private 
-  class IntegerDocument 
-    extends PlainDocument 
-  {
-    /**
-     * Removes some content from the document. 
-     */ 
-    public void 
-    remove
-    (
-     int offset,
-     int length
-    )
-      throws BadLocationException
-    {
-      String before = "";
-      if(offset > 0) 
-	before = getText(0, offset);
-      
-      String after = getText(offset+length, getLength()-(offset+length));
-
-      if(isValidResult(before + after)) 
-	super.remove(offset, length);
-      else 
-	Toolkit.getDefaultToolkit().beep();
+    try {
+      stringToLong(text);
+      return true;
     }
-
-    /**
-     * Inserts some content into the document. 
-     */ 
-    public void 
-    insertString
-    (
-     int offset, 
-     String str, 
-     AttributeSet attr
-    ) 
-      throws BadLocationException 
-    {
-      if((str == null) || (str.length() == 0)) 
-	return;
-
-      String ustr = null;
-      {
-	char cs[] = str.toCharArray();
-	int wk;
-	for(wk=0; wk<cs.length; wk++) 
-	  cs[wk] = Character.toUpperCase(cs[wk]);
-	ustr = new String(cs); 
-      }
-
-      String before = "";
-      if(offset > 0) 
-	before = getText(0, offset);
-
-      String after = getText(offset, getLength()-offset);
-
-      if(isValidResult(before + ustr + after)) 
-	super.insertString(offset, ustr, attr);
-      else 
-	Toolkit.getDefaultToolkit().beep();
+    catch(NumberFormatException ex) {
+      return false;
     }
-
-    /**
-     * Checks a speculative result text for validity.
-     */ 
-    private boolean 
-    isValidResult
-    (
-     String text
-    ) 
-    {
-      try {
-	stringToLong(text);
-	return true;
-      }
-      catch(NumberFormatException ex) {
-	return false;
-      }
-    }      
-
-    private static final long serialVersionUID = -34742317502709134L;
-  }
+  }      
 
 
 
@@ -249,7 +143,7 @@ class JByteSizeField
   )
     throws NumberFormatException
   {
-    if((text != null) && (text.length() > 0)) {
+    if((text != null) && (text.length() > 0) && !text.equals("-")) {
       String istr = text;
       long scale = 1;
       if(text.endsWith("K")) {
@@ -301,7 +195,7 @@ class JByteSizeField
 	return (value.toString());
     }
     else {
-      return ("");
+      return ("-");
     }
   }
   

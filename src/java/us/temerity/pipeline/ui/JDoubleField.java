@@ -1,4 +1,4 @@
-// $Id: JDoubleField.java,v 1.2 2004/06/22 19:39:21 jim Exp $
+// $Id: JDoubleField.java,v 1.3 2004/06/23 22:31:07 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -12,12 +12,11 @@ import javax.swing.text.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A text field which only allows input of legal integer values. <P>
+ * A text field which only allows input of legal Double values. <P>
  */ 
 public 
 class JDoubleField
-  extends JTextField 
-  implements ActionListener
+  extends JBaseNumberField<Double>
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -30,7 +29,6 @@ class JDoubleField
   JDoubleField() 
   {
     super();
-    addActionListener(this);
   }
 
 
@@ -40,10 +38,10 @@ class JDoubleField
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the integer value.
+   * Get the Double value.
    * 
    * @return 
-   *   The value or <CODE>null</CODE> if empty.
+   *   The Double value or <CODE>null</CODE> if empty.
    */ 
   public Double
   getValue()
@@ -61,10 +59,10 @@ class JDoubleField
   }
 
   /**
-   * Set the integer value.
+   * Set the Double value.
    * 
    * @param value
-   *   The integer value or <CODE>null</CODE> to clear.
+   *   The Double value or <CODE>null</CODE> to clear.
    */ 
   public void 
   setValue
@@ -79,131 +77,39 @@ class JDoubleField
   }
   
 
-  
+
   /*----------------------------------------------------------------------------------------*/
-  /*   T E X T   F I E L D   O V E R R I D E S                                              */
+  /*   H E L P E R S                                                                        */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Creates the default implementation of the model to be used at construction if one 
-   * isn't explicitly given.
+   * Checks a speculative result text for validity.
    */ 
-  protected Document 	
-  createDefaultModel()
-  {
-    return new DoubleDocument();
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   L I S T E N E R S                                                                    */
-  /*----------------------------------------------------------------------------------------*/
-
-  /*-- ACTION LISTENER METHODS -------------------------------------------------------------*/
-
-  /** 
-   * Invoked when an action occurs. 
-   */ 
-  public void 
-  actionPerformed
+  protected boolean 
+  isValidResult
   (
-   ActionEvent e
+   String text
   ) 
   {
-    setValue(getValue());
-  }
-
-
- 
-  /*----------------------------------------------------------------------------------------*/
-  /*   I N T E R N A L   C L A S S E S                                                      */
-  /*----------------------------------------------------------------------------------------*/
-
-  private 
-  class DoubleDocument 
-    extends PlainDocument 
-  {
-    /**
-     * Removes some content from the document. 
-     */ 
-    public void 
-    remove
-    (
-     int offset,
-     int length
-    )
-      throws BadLocationException
-    {
-      String before = "";
-      if(offset > 0) 
-	before = getText(0, offset);
-      
-      String after = getText(offset+length, getLength()-(offset+length));
-
-      if(isValidResult(before + after)) 
-	super.remove(offset, length);
-      else 
-	Toolkit.getDefaultToolkit().beep();
-    }
-
-    /**
-     * Inserts some content into the document. 
-     */ 
-    public void 
-    insertString
-    (
-     int offset, 
-     String str, 
-     AttributeSet attr
-    ) 
-      throws BadLocationException 
-    {
-      if((str == null) || (str.length() == 0)) 
-	return;
-
-      String before = "";
-      if(offset > 0) 
-	before = getText(0, offset);
-
-      String after = getText(offset, getLength()-offset);
-
-      if(isValidResult(before + str + after)) 
-	super.insertString(offset, str, attr);
-      else 
-	Toolkit.getDefaultToolkit().beep();
-    }
-
-    /**
-     * Checks a speculative result text for validity.
-     */ 
-    private boolean 
-    isValidResult
-    (
-     String text
-    ) 
-    {
-      if((text.length() == 0) || text.equals("-"))
-	return true;
-
-      char cs[] = text.toCharArray();
-      int wk;
-      for(wk=0; wk<cs.length; wk++) {
-	if(!(Character.isDigit(cs[wk]) || (cs[wk] == '.') || (cs[wk] == '-')))
-	  return false;
-      }
-
-      try {
-	Double value = new Double(text);
-	return true;
-      }
-      catch(NumberFormatException ex) {
+    if((text.length() == 0) || text.equals("-"))
+      return true;
+    
+    char cs[] = text.toCharArray();
+    int wk;
+    for(wk=0; wk<cs.length; wk++) {
+      if(!(Character.isDigit(cs[wk]) || (cs[wk] == '.') || (cs[wk] == '-')))
 	return false;
-      }
-    }      
+    }
+    
+    try {
+      Double value = new Double(text);
+      return true;
+    }
+    catch(NumberFormatException ex) {
+      return false;
+    }
+  }      
 
-    private static final long serialVersionUID = -1072612196078397445L;
-  }
 
 
   /*----------------------------------------------------------------------------------------*/

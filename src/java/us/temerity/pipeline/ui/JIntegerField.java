@@ -1,4 +1,4 @@
-// $Id: JIntegerField.java,v 1.4 2004/06/22 19:39:21 jim Exp $
+// $Id: JIntegerField.java,v 1.5 2004/06/23 22:31:07 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -12,12 +12,11 @@ import javax.swing.text.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A text field which only allows input of legal integer values. <P>
+ * A text field which only allows input of legal Integer values. <P>
  */ 
 public 
 class JIntegerField
-  extends JTextField 
-  implements ActionListener
+  extends JBaseNumberField<Integer>
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -30,7 +29,6 @@ class JIntegerField
   JIntegerField() 
   {
     super();
-    addActionListener(this);
   }
 
 
@@ -40,10 +38,10 @@ class JIntegerField
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the integer value.
+   * Get the Integer value.
    * 
    * @return 
-   *   The value or <CODE>null</CODE> if empty.
+   *   The Integer value or <CODE>null</CODE> if empty.
    */ 
   public Integer
   getValue()
@@ -61,10 +59,10 @@ class JIntegerField
   }
 
   /**
-   * Set the integer value.
+   * Set the Integer value.
    * 
    * @param value
-   *   The integer value or <CODE>null</CODE> to clear.
+   *   The Integer value or <CODE>null</CODE> to clear.
    */ 
   public void 
   setValue
@@ -79,124 +77,31 @@ class JIntegerField
   }
   
 
-  
+
   /*----------------------------------------------------------------------------------------*/
-  /*   T E X T   F I E L D   O V E R R I D E S                                              */
+  /*   H E L P E R S                                                                        */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Creates the default implementation of the model to be used at construction if one 
-   * isn't explicitly given.
-   */ 
-  protected Document 	
-  createDefaultModel()
-  {
-    return new IntegerDocument();
-  }
-
-
- 
-  /*----------------------------------------------------------------------------------------*/
-  /*   L I S T E N E R S                                                                    */
-  /*----------------------------------------------------------------------------------------*/
-
-  /*-- ACTION LISTENER METHODS -------------------------------------------------------------*/
-
-  /** 
-   * Invoked when an action occurs. 
-   */ 
-  public void 
-  actionPerformed
+   * Checks a speculative result text for validity.
+   */  
+  protected boolean 
+  isValidResult 
   (
-   ActionEvent e
+   String text
   ) 
   {
-    setValue(getValue());
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   I N T E R N A L   C L A S S E S                                                      */
-  /*----------------------------------------------------------------------------------------*/
-
-  private 
-  class IntegerDocument 
-    extends PlainDocument 
-  {
-    /**
-     * Removes some content from the document. 
-     */ 
-    public void 
-    remove
-    (
-     int offset,
-     int length
-    )
-      throws BadLocationException
-    {
-      String before = "";
-      if(offset > 0) 
-	before = getText(0, offset);
-      
-      String after = getText(offset+length, getLength()-(offset+length));
-
-      if(isValidResult(before + after)) 
-	super.remove(offset, length);
-      else 
-	Toolkit.getDefaultToolkit().beep();
+    if((text.length() == 0) || text.equals("-"))
+      return true;
+    
+    try {
+      Integer value = new Integer(text);
+      return true;
     }
-
-    /**
-     * Inserts some content into the document. 
-     */ 
-    public void 
-    insertString
-    (
-     int offset, 
-     String str, 
-     AttributeSet attr
-    ) 
-      throws BadLocationException 
-    {
-      if((str == null) || (str.length() == 0)) 
-	return;
-
-      String before = "";
-      if(offset > 0) 
-	before = getText(0, offset);
-
-      String after = getText(offset, getLength()-offset);
-
-      if(isValidResult(before + str + after)) 
-	super.insertString(offset, str, attr);
-      else 
-	Toolkit.getDefaultToolkit().beep();
+    catch(NumberFormatException ex) {
+      return false;
     }
-
-    /**
-     * Checks a speculative result text for validity.
-     */ 
-    private boolean 
-    isValidResult
-    (
-     String text
-    ) 
-    {
-      if((text.length() == 0) || text.equals("-"))
-	return true;
-
-      try {
-	Integer value = new Integer(text);
-	return true;
-      }
-      catch(NumberFormatException ex) {
-	return false;
-      }
-    }      
-
-    private static final long serialVersionUID = -34742317502709134L;
-  }
+  }      
 
 
   /*----------------------------------------------------------------------------------------*/
