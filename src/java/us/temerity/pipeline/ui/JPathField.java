@@ -1,4 +1,4 @@
-// $Id: JPathField.java,v 1.2 2004/06/14 22:47:37 jim Exp $
+// $Id: JPathField.java,v 1.3 2004/10/22 17:07:37 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -36,6 +36,36 @@ class JPathField
   JPathField() 
   {
     super();
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   P R E D I C A T E S                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Is the current value of the field a valid path string?
+   */ 
+  public boolean
+  isPathValid()
+  {
+    String text = getText();
+    if((text == null) || (text.length() == 0))
+      return false;
+    
+    String comps[] = text.split("/", -1);
+    if(comps.length > 0) {
+      if(comps[0].length() > 0) 
+	return false;	
+      
+      int wk;
+      for(wk=1; wk<(comps.length-1); wk++) {
+	if(comps[wk].length() == 0) 
+	  return false;	
+      }
+    }
+
+    return true;
   }
 
   
@@ -122,32 +152,14 @@ class JPathField
      String text
     ) 
     {
-      /* check for illegal characters */ 
-      {
-	char[] cs = text.toCharArray();
-	int wk;
-	for(wk=1; wk<cs.length; wk++) {
-	  if(!(Character.isLetterOrDigit(cs[wk]) || 
-	       (cs[wk] == '_') || (cs[wk] == '-') || (cs[wk] == '.') || (cs[wk] == '/'))) 
-	    return false;
-	}
+      char[] cs = text.toCharArray();
+      int wk;
+      for(wk=1; wk<cs.length; wk++) {
+	if(!(Character.isLetterOrDigit(cs[wk]) || 
+	     (cs[wk] == '_') || (cs[wk] == '-') || (cs[wk] == '.') || (cs[wk] == '/'))) 
+	  return false;
       }
-
-      /* check for missing lead "/" and repeated "/"'s */ 
-      {
-	String comps[] = text.split("/", -1);
-	if(comps.length > 0) {
-	  if(comps[0].length() > 0) 
-	    return false;	
-
-	  int wk;
-	  for(wk=1; wk<(comps.length-1); wk++) {
-	    if(comps[wk].length() == 0) 
-	      return false;	
-	  }
-	}
-      }
-
+    
       return true;
     }      
 

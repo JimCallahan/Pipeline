@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.58 2004/10/21 01:23:26 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.59 2004/10/22 17:07:37 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -2751,10 +2751,16 @@ class JNodeViewerPanel
 	  pRenameDialog.setVisible(true);
 	
 	  if(pRenameDialog.wasConfirmed()) {
-	    String name = pRenameDialog.getName();
-	    RenameTask task = 
-	      new RenameTask(mod.getName(), name, pRenameDialog.renameFiles());
-	    task.start();
+	    try {
+	      String name = pRenameDialog.getNewName();
+
+	      RenameTask task = 
+		new RenameTask(mod.getName(), name, pRenameDialog.renameFiles());
+	      task.start();
+	    }
+	    catch(PipelineException ex) {
+	      UIMaster.getInstance().showErrorDialog(ex);
+	    }
 	  }
 	}
       }

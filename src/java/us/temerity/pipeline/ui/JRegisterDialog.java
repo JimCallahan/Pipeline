@@ -1,4 +1,4 @@
-// $Id: JRegisterDialog.java,v 1.8 2004/10/01 21:56:59 jim Exp $
+// $Id: JRegisterDialog.java,v 1.9 2004/10/22 17:07:37 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -62,7 +62,7 @@ class JRegisterDialog
 	
 	pPrefixField =
 	  UIMaster.createTitledPathField(tpanel, "Filename Prefix:", sTSize, 
-					 vpanel, "", sVSize);
+					 vpanel, "/", sVSize);
 	
 	UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
 
@@ -323,6 +323,8 @@ class JRegisterDialog
       else 
 	updateEditor();
     }
+
+    pack();
   }
 
   /**
@@ -612,7 +614,7 @@ class JRegisterDialog
       String name = pPrefixField.getText();
       String prefix = null;
       {
-	if((name == null) || (name.length() == 0) || name.endsWith("/"))
+	if(!pPrefixField.isPathValid() || name.endsWith("/"))
 	  throw new PipelineException
 	    ("Unable to register node without a valid filename prefix!");
 	

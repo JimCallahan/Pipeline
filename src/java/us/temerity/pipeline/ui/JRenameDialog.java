@@ -1,4 +1,4 @@
-// $Id: JRenameDialog.java,v 1.2 2004/07/18 21:36:51 jim Exp $
+// $Id: JRenameDialog.java,v 1.3 2004/10/22 17:07:37 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -102,13 +102,20 @@ class JRenameDialog
    * Get the new node name.
    */ 
   public String
-  getName() 
+  getNewName() 
+    throws PipelineException
   {
     String name = pNewPrefixField.getText();
-    if((name != null) && (name.length() > 0)) 
+    if((name != null) && (name.length() > 0)) {
+      if(!pNewPrefixField.isPathValid()) 
+	throw new PipelineException
+	  ("The new node name (" + name + ") is not valid!");
       return name;
-
-    return null;
+    }
+    else {
+      throw new PipelineException
+	("No new node name was specified!");
+    }      
   }
   
   /**
