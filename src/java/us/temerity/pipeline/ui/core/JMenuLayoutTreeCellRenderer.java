@@ -1,4 +1,4 @@
-// $Id: JLayoutTreeCellRenderer.java,v 1.2 2005/01/05 09:44:31 jim Exp $
+// $Id: JMenuLayoutTreeCellRenderer.java,v 1.1 2005/01/05 09:44:31 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -13,15 +13,15 @@ import javax.swing.border.*;
 import javax.swing.tree.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   L A Y O U T   T R E E   C E L L   R E N D E R E R                                      */
+/*   M E N U   L A Y O U T   T R E E   C E L L   R E N D E R E R                            */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The renderer used for {@link JTree JTree} cells for 
- * {@link JBaseLayoutDialog JBaseLayoutDialog}.
+ * The renderer used for {@link JTree JTree} cells for the menu layout tree of the 
+ * {@link JBaseManagePluginsDialog JBaseManagePluginsDialog}.
  */ 
 public
-class JLayoutTreeCellRenderer
+class JMenuLayoutTreeCellRenderer
   extends JPanel 
   implements TreeCellRenderer 
 {
@@ -33,7 +33,7 @@ class JLayoutTreeCellRenderer
    * Construct a new renderer.
    */
   public 
-  JLayoutTreeCellRenderer() 
+  JMenuLayoutTreeCellRenderer() 
   {
     super();
     
@@ -45,9 +45,9 @@ class JLayoutTreeCellRenderer
     
     add(Box.createRigidArea(new Dimension(32, 0)));
     
-    pExtraLabel = new JLabel();
-    pExtraLabel.setHorizontalTextPosition(JLabel.LEFT);
-    add(pExtraLabel);
+    pPluginLabel = new JLabel();
+    pPluginLabel.setHorizontalTextPosition(JLabel.LEFT);
+    add(pPluginLabel);
     
     add(Box.createRigidArea(new Dimension(5, 0)));
   }
@@ -74,11 +74,12 @@ class JLayoutTreeCellRenderer
   ) 
   {     
     DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) value;
-    JSaveLayoutDialog.TreeData data = (JSaveLayoutDialog.TreeData) tnode.getUserObject();
+    JBaseManagePluginsDialog.MenuLayoutData data = 
+      (JBaseManagePluginsDialog.MenuLayoutData) tnode.getUserObject();
 
     pLabel.setText(data.toString());
 
-    if(data.getName() != null) {
+    if(data.isItem()) {
       if(isSelected) {
 	pLabel.setForeground(Color.yellow);
 	pLabel.setIcon(sSelectedIcon);
@@ -87,33 +88,28 @@ class JLayoutTreeCellRenderer
 	pLabel.setForeground(Color.white);
 	pLabel.setIcon(sNormalIcon);
       }	
-
-      String lname = null;
-      if(data.getDir().getPath().length() > 1) 
-	lname = (data.getDir() + "/" + data.getName());
-      else 
-	lname = ("/" + data.getName());
       
-      if((lname != null) && lname.equals(UIMaster.getInstance().getDefaultLayoutName())) 
-	pExtraLabel.setText("(default)");
+      if(data.getName() != null) 
+	pPluginLabel.setText(data.getName() + " (v" + data.getVersionID() + ")");      
       else 
-	pExtraLabel.setText(null);
+	pPluginLabel.setText("(none)");
     }
     else {
       pLabel.setForeground(isSelected ? Color.yellow : Color.white);
       pLabel.setIcon(sSpacerIcon);
-      pExtraLabel.setText(null);
+      pPluginLabel.setText(null);
     }
 
     return this;
   }
 
 
+
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C    I N T E R N A L S                                                     */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -5085958176505086517L;
+  private static final long serialVersionUID = 2573743079809572059L;
 
 
   private static Icon sSpacerIcon = 
@@ -132,13 +128,13 @@ class JLayoutTreeCellRenderer
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The main label.
+   * The menu label.
    */
-  protected JLabel  pLabel;
+  private JLabel  pLabel;
 
   /**
-   * The extra information (right justified) label.
+   * The plugin version label.
    */
-  protected JLabel  pExtraLabel;
+  private JLabel  pPluginLabel;
 
 }

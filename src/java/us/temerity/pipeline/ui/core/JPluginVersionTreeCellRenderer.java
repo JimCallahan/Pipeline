@@ -1,4 +1,4 @@
-// $Id: JLayoutTreeCellRenderer.java,v 1.2 2005/01/05 09:44:31 jim Exp $
+// $Id: JPluginVersionTreeCellRenderer.java,v 1.1 2005/01/05 09:44:52 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -13,16 +13,16 @@ import javax.swing.border.*;
 import javax.swing.tree.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   L A Y O U T   T R E E   C E L L   R E N D E R E R                                      */
+/*   P L U G I N   V E R S I O N   T R E E   C E L L   R E N D E R E R                      */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The renderer used for {@link JTree JTree} cells for 
- * {@link JBaseLayoutDialog JBaseLayoutDialog}.
+ * The renderer used for {@link JTree JTree} cells of the plugin version tree in the 
+ * {@link JBaseManagePluginsDialog JBaseManagePluginsDialog}.
  */ 
 public
-class JLayoutTreeCellRenderer
-  extends JPanel 
+class JPluginVersionTreeCellRenderer
+  extends JLabel 
   implements TreeCellRenderer 
 {
   /*----------------------------------------------------------------------------------------*/
@@ -33,23 +33,10 @@ class JLayoutTreeCellRenderer
    * Construct a new renderer.
    */
   public 
-  JLayoutTreeCellRenderer() 
+  JPluginVersionTreeCellRenderer() 
   {
-    super();
-    
-    setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-    
-    pLabel = new JLabel();
-    pLabel.setHorizontalAlignment(JLabel.LEFT);
-    add(pLabel);
-    
-    add(Box.createRigidArea(new Dimension(32, 0)));
-    
-    pExtraLabel = new JLabel();
-    pExtraLabel.setHorizontalTextPosition(JLabel.LEFT);
-    add(pExtraLabel);
-    
-    add(Box.createRigidArea(new Dimension(5, 0)));
+    setOpaque(true);    
+    setBackground(new Color(0.45f, 0.45f, 0.45f));
   }
 
 
@@ -74,46 +61,30 @@ class JLayoutTreeCellRenderer
   ) 
   {     
     DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) value;
-    JSaveLayoutDialog.TreeData data = (JSaveLayoutDialog.TreeData) tnode.getUserObject();
+    JBaseManagePluginsDialog.PluginVersionData data = 
+      (JBaseManagePluginsDialog.PluginVersionData) tnode.getUserObject();
 
-    pLabel.setText(data.toString());
+    setText(data.toString());
 
-    if(data.getName() != null) {
-      if(isSelected) {
-	pLabel.setForeground(Color.yellow);
-	pLabel.setIcon(sSelectedIcon);
-      }
-      else {
-	pLabel.setForeground(Color.white);
-	pLabel.setIcon(sNormalIcon);
-      }	
-
-      String lname = null;
-      if(data.getDir().getPath().length() > 1) 
-	lname = (data.getDir() + "/" + data.getName());
-      else 
-	lname = ("/" + data.getName());
-      
-      if((lname != null) && lname.equals(UIMaster.getInstance().getDefaultLayoutName())) 
-	pExtraLabel.setText("(default)");
-      else 
-	pExtraLabel.setText(null);
+    if(isSelected) {
+      setForeground(Color.yellow);
+      setIcon((data.getName() != null) ? sSelectedIcon : sSpacerIcon);
     }
     else {
-      pLabel.setForeground(isSelected ? Color.yellow : Color.white);
-      pLabel.setIcon(sSpacerIcon);
-      pExtraLabel.setText(null);
+      setForeground(Color.white);
+      setIcon((data.getName() != null) ? sNormalIcon : sSpacerIcon);
     }
 
     return this;
   }
 
 
+
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C    I N T E R N A L S                                                     */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -5085958176505086517L;
+  private static final long serialVersionUID = 4002556236355126376L;
 
 
   private static Icon sSpacerIcon = 
@@ -124,21 +95,5 @@ class JLayoutTreeCellRenderer
 
   private static Icon sSelectedIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("ListCellSelectedIcon.png"));
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   I N T E R N A L S                                                                    */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The main label.
-   */
-  protected JLabel  pLabel;
-
-  /**
-   * The extra information (right justified) label.
-   */
-  protected JLabel  pExtraLabel;
 
 }

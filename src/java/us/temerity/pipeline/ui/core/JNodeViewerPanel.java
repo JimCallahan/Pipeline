@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.2 2005/01/05 09:44:31 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -84,6 +84,7 @@ class JNodeViewerPanel
       pRemoveSecondarySeqs = new TreeMap<String,FileSeq>();
 
       pEditorPlugins = PluginMgr.getInstance().getEditors();
+      pToolPlugins   = PluginMgr.getInstance().getTools();
     }
 
     /* panel popup menu */ 
@@ -373,7 +374,16 @@ class JNodeViewerPanel
       item.addActionListener(this);
       pLinkPopup.add(item);
     }
-    
+
+    /* link popup menu */ 
+    {
+      JMenuItem item;
+      JMenu sub;
+      
+      pToolPopup = new JPopupMenu();  
+      pToolPopup.addPopupMenuListener(this);
+    }
+
     /* initialize components */ 
     {
       pCanvas.addKeyListener(this);
@@ -796,6 +806,37 @@ class JNodeViewerPanel
     }
   }
 
+  /**
+   * Update the tool menu.
+   */ 
+  public void 
+  updateToolMenu() 
+  {
+    pToolPopup.removeAll();
+    for(String name : pToolPlugins.keySet()) {
+      JMenuItem item = new JMenuItem(name);
+      item.setActionCommand("run-tool:" + name);
+      item.addActionListener(this);
+      pToolPopup.add(item);
+    }
+    
+    pToolPopup.addSeparator();
+    
+    JMenu sub = new JMenu("All Versions");
+    pToolPopup.add(sub);
+
+    for(String name : pToolPlugins.keySet()) {
+      JMenu tsub = new JMenu(name);
+      sub.add(tsub);
+      
+      for(VersionID vid : pToolPlugins.get(name)) {
+	JMenuItem item = new JMenuItem(name + " (v" + vid + ")");
+	item.setActionCommand("run-tool:" + name + ":" + vid);
+	item.addActionListener(this);
+	tsub.add(item);
+      }
+    }
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -928,8 +969,9 @@ class JNodeViewerPanel
    boolean updateSubPanels
   )
   { 
-    /* refresh the editor plugins */ 
+    /* refresh the plugins */ 
     pEditorPlugins = PluginMgr.getInstance().getEditors();
+    pToolPlugins   = PluginMgr.getInstance().getTools();
     
     /* compute the center of the current layout if no pinned node is set */ 
     if(pPinnedPath == null) {
@@ -1632,6 +1674,15 @@ class JNodeViewerPanel
 		      MouseEvent.SHIFT_DOWN_MASK |
 		      MouseEvent.ALT_DOWN_MASK |
 		      MouseEvent.CTRL_DOWN_MASK);
+
+
+	  int on2  = (MouseEvent.BUTTON3_DOWN_MASK |
+		      MouseEvent.SHIFT_DOWN_MASK);
+	  
+	  int off2 = (MouseEvent.BUTTON1_DOWN_MASK | 
+		      MouseEvent.BUTTON2_DOWN_MASK | 
+		      MouseEvent.ALT_DOWN_MASK |
+		      MouseEvent.CTRL_DOWN_MASK);
 	  
 	  /* BUTTON3: node/link popup menu */ 
 	  if((mods & (on1 | off1)) == on1) {
@@ -1689,8 +1740,19 @@ class JNodeViewerPanel
 	      }
 	    }
 	  }
+
+	  /* BUTTON3+SHIFT: tool popup menu */ 
+	  else if((mods & (on2 | off2)) == on2) {
+	    if(under instanceof ViewerNode) {
+	      ViewerNode vunder = (ViewerNode) under;
+	      primarySelect(vunder);
+	      refresh();
+	    }
+	    
+	    updateToolMenu();
+	    pToolPopup.show(e.getComponent(), e.getX(), e.getY());
+	  }
 	}
-	break;
       }
     }
 
@@ -1710,10 +1772,25 @@ class JNodeViewerPanel
 			MouseEvent.ALT_DOWN_MASK |
 			MouseEvent.CTRL_DOWN_MASK);
 	    
+
+	    int on2  = (MouseEvent.BUTTON3_DOWN_MASK |
+			MouseEvent.SHIFT_DOWN_MASK);
+	      
+	    int off2 = (MouseEvent.BUTTON1_DOWN_MASK | 
+			MouseEvent.BUTTON2_DOWN_MASK | 
+			MouseEvent.ALT_DOWN_MASK |
+			MouseEvent.CTRL_DOWN_MASK);
+	    
 	    /* BUTTON3: panel popup menu */ 
 	    if((mods & (on1 | off1)) == on1) {
 	      updatePanelMenu();
 	      pPanelPopup.show(e.getComponent(), e.getX(), e.getY());
+	    }
+
+	    /* BUTTON3+SHIFT: tool popup menu */ 
+	    else if((mods & (on2 | off2)) == on2) {
+	      updateToolMenu();
+	      pToolPopup.show(e.getComponent(), e.getX(), e.getY());
 	    }
 	  }
 	}
@@ -2181,6 +2258,10 @@ class JNodeViewerPanel
       doCollapseAll();
     else if(cmd.equals("show-hide-downstream"))
       doShowHideDownstream();
+
+    /* tool menu events */ 
+    else if(cmd.startsWith("run-tool:")) 
+      doRunTool(cmd.substring(9));    
 
     else {
       clearSelection();
@@ -3237,6 +3318,76 @@ class JNodeViewerPanel
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Run the given tool plugin.
+   */ 
+  private void 
+  doRunTool
+  (
+   String name 
+  ) 
+  {
+    String tname = null;
+    VersionID tvid = null;
+    String parts[] = name.split(":");
+    switch(parts.length) {
+    case 1:
+      tname = name;
+      break;
+
+    case 2:
+      tname = parts[0];
+      tvid = new VersionID(parts[1]);
+      break;
+
+    default:
+      assert(false);
+    }
+    
+    try {
+      BaseTool tool = PluginMgr.getInstance().newTool(tname, tvid);
+
+      String primary = null;
+      if(pPrimary != null) 
+	primary = pPrimary.getNodeStatus().getName();
+      
+      TreeMap<String,NodeStatus> selected = new TreeMap<String,NodeStatus>();
+      for(ViewerNode vnode : pSelected.values()) {
+	NodeStatus status = vnode.getNodeStatus();
+	NodeStatus ostatus = selected.get(status.getName());
+	if((ostatus == null) || (ostatus.getDetails() == null)) 
+	  selected.put(status.getName(), status);
+      }
+
+      tool.setSelectedNodes(primary, selected);
+
+      if(tool.isInteractive()) {
+	JToolDialog diag = new JToolDialog(tool);
+	tool.update();
+	
+	diag.setVisible(true);
+	if(!diag.wasConfirmed()) 
+	  return;
+      }
+	
+      tool.validate();
+
+      RunToolTask task = new RunToolTask(tool);
+      task.start();	
+    }
+    catch(PipelineException ex) {
+      UIMaster.getInstance().showErrorDialog(ex);
+    }
+    finally {
+      clearSelection();
+      refresh(); 
+    }
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   G L U E A B L E                                                                      */
   /*----------------------------------------------------------------------------------------*/
 
@@ -4238,66 +4389,49 @@ class JNodeViewerPanel
     private JNodeViewerPanel  pViewer;
   }
 
-
-  // DEBUG
-  private void 
-  printStatusShortHelper
-  (
-   NodeStatus status,
-   int level, 
-   StringBuffer buf
-  ) 
-    throws GlueException
-  {
-    printStatusShortDownstreamHelper(status, level, buf);
-
-    buf.append("->");
-    int wk;
-    for(wk=0; wk<level; wk++) 
-      buf.append("  ");
-    buf.append("---\n");
-
-    printStatusShortUpstreamHelper(status, level, buf);
-  }
-
-  private void 
-  printStatusShortDownstreamHelper
-  (
-   NodeStatus status,
-   int level, 
-   StringBuffer buf
-  ) 
-    throws GlueException
-  {
-    for(NodeStatus tstatus : status.getTargets()) 
-      printStatusShortDownstreamHelper(tstatus, level+1, buf);
-
-    buf.append("->");
-    int wk;
-    for(wk=0; wk<level; wk++) 
-      buf.append("  ");
-    buf.append(status.getNodeID().getName() + "\n");
-  }
   
-  private void 
-  printStatusShortUpstreamHelper
-  (
-   NodeStatus status,
-   int level, 
-   StringBuffer buf
-  ) 
-    throws GlueException
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Run the given tool.
+   */ 
+  private
+  class RunToolTask
+    extends Thread
   {
-    buf.append("->");
-    int wk;
-    for(wk=0; wk<level; wk++) 
-      buf.append("  ");
-    buf.append(status.getNodeID().getName() + "\n");
-    
-    for(NodeStatus sstatus : status.getSources()) 
-      printStatusShortUpstreamHelper(sstatus, level+1, buf);
+    public 
+    RunToolTask
+    (
+     BaseTool tool
+    ) 
+    {
+      super("JNodeViewerPanel:RunToolTask");
+      pTool = tool;
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Running " + pTool.getName() + "...")) {
+	try {
+	  pTool.execute(master.getMasterMgrClient(), master.getQueueMgrClient());
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	updateRoots();
+      }
+    }
+
+    private BaseTool  pTool;
   }
-  
+
 
   /*----------------------------------------------------------------------------------------*/
   
@@ -4568,6 +4702,11 @@ class JNodeViewerPanel
    */
   private TreeMap<String,TreeSet<VersionID>>  pEditorPlugins; 
 
+  /**
+   * Cached names and version numbers of the loaded tool plugins. 
+   */
+  private TreeMap<String,TreeSet<VersionID>>  pToolPlugins; 
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -4623,6 +4762,14 @@ class JNodeViewerPanel
   private JMenuItem  pRegisterItem;
   private JMenuItem  pShowHideDownstreamItem;
   
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The tool plugin popup menu.
+   */ 
+  private JPopupMenu  pToolPopup; 
+
 
   /*----------------------------------------------------------------------------------------*/
 

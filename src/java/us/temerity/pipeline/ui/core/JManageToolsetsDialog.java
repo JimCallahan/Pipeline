@@ -1,4 +1,4 @@
-// $Id: JManageToolsetsDialog.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JManageToolsetsDialog.java,v 1.2 2005/01/05 09:44:31 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2431,7 +2431,8 @@ class JManageToolsetsDialog
     for(wk=0; wk<root.getChildCount(); wk++) {
       DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) root.getChildAt(wk);  
       TreeData tdata = (TreeData) tnode.getUserObject();
-      if((tdata != null) && sdata.getName().equals(tdata.getLabel())) {
+      if((tdata != null) && 
+	 (sdata.getName() != null) && sdata.getName().equals(tdata.getLabel())) {
 	int vk;
 	for(vk=0; vk<tnode.getChildCount(); vk++) {
 	  DefaultMutableTreeNode vnode = (DefaultMutableTreeNode) tnode.getChildAt(vk);  

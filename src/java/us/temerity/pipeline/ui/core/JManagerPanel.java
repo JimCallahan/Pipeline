@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JManagerPanel.java,v 1.2 2005/01/05 09:44:31 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -114,19 +114,19 @@ class JManagerPanel
 
 	sub.addSeparator();
 
-	item = new JMenuItem("Task Timeline");
-	item.setActionCommand("task-timeline-window");
-	item.addActionListener(this);
-	item.setEnabled(false); // FOR NOW 
-	sub.add(item);  
+// 	item = new JMenuItem("Task Timeline");
+// 	item.setActionCommand("task-timeline-window");
+// 	item.addActionListener(this);
+// 	item.setEnabled(false); // FOR NOW 
+// 	sub.add(item);  
 
-	item = new JMenuItem("Task Details");
-	item.setActionCommand("task-details-window");
-	item.addActionListener(this);
-	item.setEnabled(false); // FOR NOW    
-	sub.add(item);  
+// 	item = new JMenuItem("Task Details");
+// 	item.setActionCommand("task-details-window");
+// 	item.addActionListener(this);
+// 	item.setEnabled(false); // FOR NOW    
+// 	sub.add(item);  
 
-	sub.addSeparator();
+// 	sub.addSeparator();
 
 	item = new JMenuItem("None");
 	item.setActionCommand("none-window");
@@ -190,19 +190,19 @@ class JManagerPanel
 
 	sub.addSeparator();
 
-	item = new JMenuItem("Task Timeline");
-	item.setActionCommand("task-timeline");
-	item.addActionListener(this);
-	item.setEnabled(false); // FOR NOW 
-	sub.add(item);  
+// 	item = new JMenuItem("Task Timeline");
+// 	item.setActionCommand("task-timeline");
+// 	item.addActionListener(this);
+// 	item.setEnabled(false); // FOR NOW 
+// 	sub.add(item);  
 
-	item = new JMenuItem("Task Details");
-	item.setActionCommand("task-details");
-	item.addActionListener(this);
-	item.setEnabled(false); // FOR NOW    
-	sub.add(item);  
+// 	item = new JMenuItem("Task Details");
+// 	item.setActionCommand("task-details");
+// 	item.addActionListener(this);
+// 	item.setEnabled(false); // FOR NOW    
+// 	sub.add(item);  
 
-	sub.addSeparator();
+// 	sub.addSeparator();
 
 	item = new JMenuItem("None");
 	item.setActionCommand("none");
@@ -317,6 +317,18 @@ class JManagerPanel
 
 	sub.addSeparator();
 
+	item = new JMenuItem("Editors...");
+	item.setActionCommand("manage-editors");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	item = new JMenuItem("Tools...");
+	item.setActionCommand("manage-tools");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	sub.addSeparator();
+
 	item = new JMenuItem("License Keys...");
 	item.setActionCommand("manage-license-keys");
 	item.addActionListener(this);
@@ -337,13 +349,13 @@ class JManagerPanel
 
 	sub.addSeparator();
 
-	item = new JMenuItem("Archive Tool...");
+	item = new JMenuItem("Archive...");
 	pArchiveItem = item;
 	item.setActionCommand("archive");
 	item.addActionListener(this);
 	sub.add(item);  
 
-	item = new JMenuItem("Restore Tool...");
+	item = new JMenuItem("Restore...");
 	pRestoreItem = item;
 	item.setActionCommand("restore");
 	item.addActionListener(this);
@@ -1297,11 +1309,6 @@ class JManagerPanel
       UIMaster.getInstance().showDefaultEditorsDialog();
       return true;
     }
-//     else if((prefs.getShowManageJobServers() != null) &&
-// 	    prefs.getShowManageJobServers().wasPressed(e)) {
-//       UIMaster.getInstance().showManageJobServersDialog();
-//       return true;
-//     }
 
     else if((prefs.getShowManageUsers() != null) &&
 	    prefs.getShowManageUsers().wasPressed(e)) {
@@ -1311,6 +1318,16 @@ class JManagerPanel
     else if((prefs.getShowManageToolsets() != null) &&
 	    prefs.getShowManageToolsets().wasPressed(e)) {
       UIMaster.getInstance().showManageToolsetsDialog();
+      return true;
+    }
+    else if((prefs.getShowManageEditors() != null) &&
+	    prefs.getShowManageEditors().wasPressed(e)) {
+      UIMaster.getInstance().showManageEditorsDialog();
+      return true;
+    }
+    else if((prefs.getShowManageTools() != null) &&
+	    prefs.getShowManageTools().wasPressed(e)) {
+      UIMaster.getInstance().showManageToolsDialog();
       return true;
     }
     else if((prefs.getShowManageLicenseKeys() != null) &&
@@ -1470,6 +1487,12 @@ class JManagerPanel
       UIMaster.getInstance().showManageUsersDialog();
     else if(cmd.equals("manage-toolsets"))
       UIMaster.getInstance().showManageToolsetsDialog();
+
+    else if(cmd.equals("manage-editors"))
+      UIMaster.getInstance().showManageEditorsDialog();
+    else if(cmd.equals("manage-tools"))
+      UIMaster.getInstance().showManageToolsDialog();
+
     else if(cmd.equals("manage-license-keys"))
       UIMaster.getInstance().showManageLicenseKeysDialog();
     else if(cmd.equals("manage-selection-keys"))

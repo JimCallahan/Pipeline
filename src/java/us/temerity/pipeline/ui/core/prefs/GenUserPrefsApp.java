@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.1 2005/01/03 06:56:25 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.2 2005/01/05 09:44:31 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -95,6 +95,16 @@ class GenUserPrefsApp
 	new HotKeyPref
 	("Manage the toolset environments.", 
 	 "ShowManageToolsets", "Toolsets:"),    
+
+	new BasePref(),
+
+	new HotKeyPref
+	("Manage the editor plugin menu layout.", 
+	 "ShowManageEditors", "Editors:"),    
+
+	new HotKeyPref
+	("Manage the tool plugin menu layout.", 
+	 "ShowManageTools", "Tools:"),    
 
 	new BasePref(),
 
@@ -1102,7 +1112,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.1 2005/01/03 06:56:25 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.2 2005/01/05 09:44:31 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -1357,7 +1367,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.1 2005/01/03 06:56:25 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.2 2005/01/05 09:44:31 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 

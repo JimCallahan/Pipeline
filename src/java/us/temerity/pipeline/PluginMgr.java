@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.8 2005/01/01 00:50:10 jim Exp $
+// $Id: PluginMgr.java,v 1.9 2005/01/05 09:44:31 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -16,7 +16,7 @@ import java.util.logging.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A set of static methods for mamanging Pipeline plugin classes.
+ * A set of static methods for managing Pipeline plugin classes.
  */
 public
 class PluginMgr
@@ -37,6 +37,7 @@ class PluginMgr
     pActions    = new TreeMap<String,TreeMap<VersionID,Plugin>>(); 
     pComps      = new TreeMap<String,TreeMap<VersionID,Plugin>>(); 
     pArchivers  = new TreeMap<String,TreeMap<VersionID,Plugin>>(); 
+    pTools      = new TreeMap<String,TreeMap<VersionID,Plugin>>(); 
   }
 
 
@@ -156,6 +157,28 @@ class PluginMgr
     TreeMap<String,TreeSet<VersionID>> table = new TreeMap<String,TreeSet<VersionID>>();
     for(String name : pArchivers.keySet()) {
       TreeMap<VersionID,Plugin> plgs = pArchivers.get(name);
+      table.put(name, new TreeSet<VersionID>(plgs.keySet()));
+    }
+
+    return table;
+  }
+
+  /**
+   * Get the names and version numbers of all available tool plugins.
+   */ 
+  public synchronized TreeMap<String,TreeSet<VersionID>>
+  getTools() 
+  {
+    try {
+      refresh();
+    }
+    catch(PipelineException ex) {
+      Logs.plg.warning(ex.getMessage());
+    } 
+
+    TreeMap<String,TreeSet<VersionID>> table = new TreeMap<String,TreeSet<VersionID>>();
+    for(String name : pTools.keySet()) {
+      TreeMap<VersionID,Plugin> plgs = pTools.get(name);
       table.put(name, new TreeSet<VersionID>(plgs.keySet()));
     }
 
@@ -282,6 +305,35 @@ class PluginMgr
     return (BaseArchiver) newPlugin("Archiver", pArchivers, name, vid);
   }
 
+  /**
+   * Create a new tool plugin instance with the given name and version. <P> 
+   * 
+   * Note that the <CODE>name</CODE> argument is not the name of the class, but rather the 
+   * name obtained by calling {@link BaseTool#getName BaseTool.getName} for the 
+   * returned tool.
+   * 
+   * @param name 
+   *   The name of the tool plugin to instantiate.  
+   * 
+   * @param vid
+   *   The revision number of the tool to instantiate or <CODE>null</CODE> for the 
+   *   latest version.
+   * 
+   * @throws  PipelineException
+   *   If no tool plugin can be found for the given or instantiation fails for some 
+   *   reason.
+   */
+  public synchronized BaseTool
+  newTool
+  (
+   String name, 
+   VersionID vid
+  ) 
+    throws PipelineException
+  {
+    return (BaseTool) newPlugin("Tool", pTools, name, vid);
+  }
+
 
   
   /*----------------------------------------------------------------------------------------*/
@@ -309,6 +361,8 @@ class PluginMgr
       type = "COMPARATOR";
     else if(plg instanceof BaseArchiver) 
       type = "ARCHIVER";
+    else if(plg instanceof BaseTool) 
+      type = "TOOL";
     
     Logs.plg.info
       (pad("== " + type + " PLUGIN ", '=', 80) + "\n" +
@@ -353,6 +407,8 @@ class PluginMgr
 	installPluginHelper("Comparator", pComps, plg, file, force);
       else if(plg instanceof BaseArchiver) 
 	installPluginHelper("Archiver", pArchivers, plg, file, force);
+      else if(plg instanceof BaseTool) 
+	installPluginHelper("Tool", pTools, plg, file, force);
     }
     finally {
       releaseFileLock(true);
@@ -381,6 +437,7 @@ class PluginMgr
     printPlugins("Action", pActions, buf);
     printPlugins("Comparators", pComps, buf);
     printPlugins("Archiver", pArchivers, buf);
+    printPlugins("Tool", pTools, buf);
 
     Logs.plg.info(buf.toString());
     Logs.flush();
@@ -536,6 +593,44 @@ class PluginMgr
     throws PipelineException
   {
     listPlugin("Archiver", pArchivers, name, vid);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Print information about the currently installed Tool plugins to STDOUT.
+   */ 
+  public synchronized void
+  listToolPlugins() 
+    throws PipelineException
+  {
+    try {
+      refresh();
+    }
+    catch(PipelineException ex) {
+      Logs.plg.warning(ex.getMessage());
+    }
+
+    StringBuffer buf = new StringBuffer(); 
+    printPlugins("Tool", pTools, buf);
+
+    Logs.plg.info(buf.toString());
+    Logs.flush();
+  }
+
+  /**
+   * Print information about the given Tool plugin to STDOUT.
+   */ 
+  public synchronized void
+  listToolPlugin
+  (
+   String name, 
+   VersionID vid 
+  ) 
+    throws PipelineException
+  {
+    listPlugin("Tool", pTools, name, vid);
   }
 
 
@@ -707,7 +802,8 @@ class PluginMgr
       if(!(BaseEditor.class.isAssignableFrom(cls) || 
 	   BaseAction.class.isAssignableFrom(cls) || 
 	   BaseComparator.class.isAssignableFrom(cls) || 
-	   BaseArchiver.class.isAssignableFrom(cls)))
+	   BaseArchiver.class.isAssignableFrom(cls) ||
+	   BaseTool.class.isAssignableFrom(cls)))
 	throw new PipelineException
 	  ("The class file (" + file + ") does not contain a legal Pipeline plugin!");
 	
@@ -932,7 +1028,7 @@ class PluginMgr
    * for the given name and version, it will be loaded before the plugin is instantiated. <P>
    * 
    * @param ptype 
-   *   The kind of plugin being instantiated: Editor, Comparator, Action or Archiver.
+   *   The kind of plugin being instantiated: Editor, Comparator, Action, Archiver or Tool.
    * 
    * @param table 
    *   The table of plugin to search.
@@ -997,7 +1093,7 @@ class PluginMgr
    * given name and version.
    * 
    * @param ptype 
-   *   The kind of plugin being instantiated: Editor, Comparator, Action or Archiver.
+   *   The kind of plugin being instantiated: Editor, Comparator, Action, Archiver or Tool.
    * 
    * @param table 
    *   The table of plugins to search.
@@ -1059,9 +1155,9 @@ class PluginMgr
 
   /**
    * Loads all {@link BaseEditor BaseEditor}, {@link BaseComparator BaseComparator},
-   * {@link BaseAction BaseAction} and {@link BaseArchiver BaseArchiver} classes found in 
-   * the installed Pipeline plugin directories which are newer than previously loaded 
-   * plugin classes.
+   * {@link BaseAction BaseAction}, {@link BaseArchiver BaseArchiver} and 
+   * {@link BaseTool BaseTool} classes found in the installed Pipeline plugin directories 
+   * which are newer than previously loaded plugin classes.
    */
   private synchronized void 
   refresh() 
@@ -1201,10 +1297,11 @@ class PluginMgr
 	    if(!(updatePlugin(BaseEditor.class, "Editor", pEditors, cls, file, vid) ||
 		 updatePlugin(BaseAction.class, "Action", pActions, cls, file, vid) ||
 		 updatePlugin(BaseComparator.class, "Comparator", pComps, cls, file, vid) ||
-		 updatePlugin(  BaseArchiver.class, "Archiver", pArchivers, cls, file, vid)))
+		 updatePlugin(BaseArchiver.class, "Archiver", pArchivers, cls, file, vid) ||
+		 updatePlugin(BaseTool.class, "Tool", pTools, cls, file, vid)))
 	      throw new PipelineException
 		("The class file (" + file + ") does not contain a legal Editor, Action, " + 
-		 "Comparator or Archiver plugin!");
+		 "Comparator, Archiver or Tool plugin!");
 	  } 
 	  catch(LinkageError ex) {
 	    throw new PipelineException
@@ -1239,7 +1336,7 @@ class PluginMgr
    *   The expected base class of the loaded plugin.
    * 
    * @param ptype 
-   *   The kind of plugin being instantiated: Editor, Comparator, Action or Archiver.
+   *   The kind of plugin being instantiated: Editor, Comparator, Action, Archiver or Tool.
    * 
    * @param table 
    *   The table used to store the loaded plugin.
@@ -1472,6 +1569,11 @@ class PluginMgr
    * The table of loaded archivers plugins indexed by plugin name and version.
    */
   private TreeMap<String,TreeMap<VersionID,Plugin>>  pArchivers;
+
+  /** 
+   * The table of loaded tool plugins indexed by plugin name and version.
+   */
+  private TreeMap<String,TreeMap<VersionID,Plugin>>  pTools;
 
 
   /**

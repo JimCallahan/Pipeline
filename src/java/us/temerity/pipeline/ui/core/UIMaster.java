@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.1 2005/01/03 06:56:25 jim Exp $
+// $Id: UIMaster.java,v 1.2 2005/01/05 09:44:31 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -492,6 +492,26 @@ class UIMaster
   {
     pManageToolsetsDialog.updateAll();
     pManageToolsetsDialog.setVisible(true);
+  }
+
+  /**
+   * Show the manage editors dialog.
+   */ 
+  public void 
+  showManageEditorsDialog()
+  {
+    pManageEditorsDialog.updateMenuLayout();
+    pManageEditorsDialog.setVisible(true);
+  }
+
+  /**
+   * Show the manage tools dialog.
+   */ 
+  public void 
+  showManageToolsDialog()
+  {
+    pManageToolsDialog.updateMenuLayout();
+    pManageToolsDialog.setVisible(true);
   }
 
   /**
@@ -1278,6 +1298,8 @@ class UIMaster
 
 	pManageUsersDialog         = new JManageUsersDialog();
 	pManageToolsetsDialog      = new JManageToolsetsDialog();
+	pManageEditorsDialog       = new JManageEditorsDialog();
+	pManageToolsDialog         = new JManageToolsDialog();
 	pManageLicenseKeysDialog   = new JManageLicenseKeysDialog();
 	pManageSelectionKeysDialog = new JManageSelectionKeysDialog();
 
@@ -2370,6 +2392,16 @@ class UIMaster
    * The manage toolsets dialog.
    */ 
   private JManageToolsetsDialog  pManageToolsetsDialog;
+
+  /**
+   * The manage editors dialog.
+   */ 
+  private JManageEditorsDialog  pManageEditorsDialog;
+
+  /**
+   * The manage tools dialog.
+   */ 
+  private JManageToolsDialog  pManageToolsDialog;
 
   /**
    * The manage license keys dialog.
