@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.5 2004/03/26 19:11:56 jim Exp $
+// $Id: FileMgr.java,v 1.6 2004/03/30 22:11:56 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -177,18 +177,15 @@ class FileMgr
     init(dir);
   }
   
-  /** 
-   * Construct a new file manager using the default root production directory.
-   */
-  public
-  FileMgr() 
-  { 
-    init(PackageInfo.sProdDir);
-  }
-
 
   /*-- CONTRUCTION HELPERS -----------------------------------------------------------------*/
 
+  /**
+   * Initialize a new instance.
+   * 
+   * @param dir 
+   *   The root production directory.
+   */
   private synchronized void 
   init
   (
@@ -1267,6 +1264,450 @@ class FileMgr
     finally {
       checkedInLock.readLock().unlock();
     }  
+  }
+
+  /**
+   * Remove the files associated with the given working version.
+   * 
+   * @param req 
+   *   The remove request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to remove the files.
+   */
+  public Object
+  remove
+  (
+   FileRemoveReq req
+  ) 
+  {
+    if(req == null) 
+      return new FailureRsp("The file remove request cannot be (null)!");
+
+    String task = null;
+    {
+      StringBuffer buf = new StringBuffer();
+      buf.append("FileMgr.remove(): " + req.getNodeID() + " ");
+      for(FileSeq fseq : req.getFileSequences()) 
+	buf.append("[" + fseq + "]");
+      task = buf.toString();
+    }
+
+    Date start = new Date();
+    long wait = 0;
+    try {
+      Object workingLock = getWorkingLock(req.getNodeID());
+      synchronized(workingLock) {
+	wait  = (new Date()).getTime() - start.getTime();
+	start = new Date();
+	
+	Map<String,String> env = System.getenv();
+	
+	/* the working and working checksum directories */ 
+	File wdir  = null;
+	File cwdir = null;
+	{
+	  File wpath = req.getNodeID().getWorkingParent();
+	  wdir  = new File(pProdDir, wpath.getPath());
+	  cwdir = new File(pProdDir, "checksum/" + wpath);
+	}
+	
+	/* build the list of files to delete */ 
+	ArrayList<File> files = new ArrayList<File>();
+	for(FileSeq fseq : req.getFileSequences()) 
+	  files.addAll(fseq.getFiles());
+	
+	/* remove the working files */ 
+	{
+	  ArrayList<String> old = new ArrayList<String>();
+	  for(File file : files) {
+	    File work = new File(wdir, file.getPath());
+	    if(work.isFile()) 
+	      old.add(file.getName());
+	  }
+	  
+	  if(!old.isEmpty()) {
+	    ArrayList<String> args = new ArrayList<String>();
+	    args.add("--force");
+	    args.addAll(old);
+	    
+	    SubProcess proc = 
+	      new SubProcess(req.getNodeID().getAuthor(), 
+			     "Remove-Files", "rm", args, env, wdir);
+	    proc.start();
+	    
+	    try {
+	      proc.join();
+	    }
+	    catch(InterruptedException ex) {
+	      throw new PipelineException
+		("Interrupted while removing the working files for version (" + 
+		 req.getNodeID() + ")!");
+	    }
+	  }
+	}
+	
+	/* remove the working checksums */ 
+	{
+	  ArrayList<String> old = new ArrayList<String>();
+	  for(File file : files) {
+	    File cksum = new File(cwdir, file.getPath());
+	    if(cksum.isFile()) 
+	      old.add(file.getName());
+	  }
+	  
+	  if(!old.isEmpty()) {
+	    ArrayList<String> args = new ArrayList<String>();
+	    args.add("--force");
+	    args.addAll(old);
+	    
+	    SubProcess proc = 
+	      new SubProcess(req.getNodeID().getAuthor(), 
+			     "Remove-CheckSums", "rm", args, env, cwdir);
+	    proc.start();
+	    
+	    try {
+	      proc.join();
+	    }
+	    catch(InterruptedException ex) {
+	      throw new PipelineException
+		("Interrupted while removing the working checksums for version (" + 
+		 req.getNodeID() + ")!");
+	    }
+	  }
+	}
+	
+	return new SuccessRsp(task, wait, start);
+      }
+    }    
+    catch(PipelineException ex) {
+      if(wait > 0) 
+	return new FailureRsp(task, ex.getMessage(), wait, start);
+      else 
+	return new FailureRsp(task, ex.getMessage(), start);
+    }
+  }
+
+  /**
+   * Rename the files associated with the given working version.
+   * 
+   * @param req 
+   *   The rename request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to rename the files.
+   */
+  public Object
+  rename
+  (
+   FileRenameReq req
+  ) 
+  {
+    if(req == null) 
+      return new FailureRsp("The rename request cannot be (null)!");
+    
+    String task = null;
+    {
+      StringBuffer buf = new StringBuffer();
+      buf.append("FileMgr.rename(): " + req.getNodeID() + " ");
+      for(FileSeq fseq : req.getFileSequences()) 
+	buf.append("[" + fseq + "]");
+      buf.append(" to " + req.getNewName());
+      task = buf.toString();
+    }
+
+    Date start = new Date();
+    long wait = 0;
+    try {
+      Object workingLock = getWorkingLock(req.getNodeID());
+      synchronized(workingLock) {
+	wait  = (new Date()).getTime() - start.getTime();
+	start = new Date();    
+	
+	Map<String,String> env = System.getenv();
+	
+	/* the new named node identifier */ 
+	NodeID id = new NodeID(req.getNodeID().getAuthor(), req.getNodeID().getView(), 
+			       req.getNewName());
+
+	/* the old working area file, backup and checksum directories */ 
+	File owdir  = null;
+	File ocwdir = null;
+	File obwdir = null;
+	{
+	  File wpath = req.getNodeID().getWorkingParent();
+	  owdir  = new File(pProdDir, wpath.getPath());
+	  ocwdir = new File(pProdDir, "checksum/" + wpath);
+	  obwdir = new File(owdir, ".backup");
+	}
+	
+	/* verify (or create) the new working area file, backup and checksum directories */ 
+	File wdir  = null;
+	File cwdir = null;
+	File bwdir = null;
+	{
+	  File wpath = id.getWorkingParent();
+	  wdir  = new File(pProdDir, wpath.getPath());
+	  cwdir = new File(pProdDir, "checksum/" + wpath);
+	  
+	  synchronized(pMakeDirLock) { 
+	    ArrayList<File> dirs = new ArrayList<File>();
+	    if(wdir.exists()) {
+	      if(!wdir.isDirectory()) 
+		throw new PipelineException
+		  ("Somehow there exists a non-directory (" + wdir + 
+		   ") in the location of the working directory!");
+	    }
+	    else {
+	      dirs.add(wdir);
+	    }
+	    
+	    bwdir = new File(wdir, ".backup");
+	    if(bwdir.exists()) {
+	      if(!bwdir.isDirectory()) 
+		throw new PipelineException
+		  ("Somehow there exists a non-directory (" + bwdir + 
+		   ") in the location of the working backup directory!");
+	    }
+	    else {
+	      dirs.add(bwdir);
+	    }
+	    
+	    if(cwdir.exists()) {
+	      if(!cwdir.isDirectory()) 
+		throw new PipelineException
+		  ("Somehow there exists a non-directory (" + cwdir + 
+		   ") in the location of the working checksum directory!");
+	    }
+	    else {
+	      dirs.add(cwdir);
+	    }
+	    
+	    if(!dirs.isEmpty()) {
+	      ArrayList<String> args = new ArrayList<String>();
+	      args.add("--parents");
+	      args.add("--mode=755");
+	      for(File dir : dirs)
+		args.add(dir.getPath());
+	      
+	      SubProcess proc = 
+		new SubProcess(req.getNodeID().getAuthor(), 
+			       "Rename-MakeDirs", "mkdir", args, env, pProdDir);
+	      proc.start();
+	      
+	      try {
+		proc.join();
+	      }
+	      catch(InterruptedException ex) {
+		throw new PipelineException
+		  ("Interrupted while creating directories for working version (" + id + 
+		   ")!");
+	      }
+	    }
+	  }
+	}
+	
+	/* build the lists of old primary, new primary and secondary file names */ 
+	ArrayList<File> opfiles = null;
+	ArrayList<File> pfiles  = null;
+	ArrayList<File> sfiles  = null;
+	{
+	  opfiles = new ArrayList<File>();
+	  pfiles  = new ArrayList<File>();
+	  sfiles  = new ArrayList<File>();
+	  boolean primary = true;
+	  for(FileSeq fseq : req.getFileSequences()) {
+	    if(primary) {
+	      opfiles.addAll(fseq.getFiles());
+	      
+	      File path = new File(req.getNewName());
+	      FilePattern pat = fseq.getFilePattern();
+	      FileSeq nfseq = new FileSeq(new FilePattern(path.getName(), pat.getPadding(), 
+							  pat.getSuffix()),
+					  fseq.getFrameRange());	  
+	      pfiles.addAll(nfseq.getFiles());
+	      
+	      primary = false;
+	    }
+	    else {
+	      sfiles.addAll(fseq.getFiles());
+	    }
+	  }
+	}
+	
+	/* move any existing new named working files which would be overwritten into 
+	   the backup directory */ 
+	{
+	  ArrayList<String> old = new ArrayList<String>();
+	  for(File file : pfiles) {
+	    File work = new File(wdir, file.getPath());
+	    if(work.isFile()) 
+	      old.add(file.getName());
+	  }
+	  for(File file : sfiles) {
+	    File work = new File(wdir, file.getPath());
+	    if(work.isFile()) 
+	      old.add(file.getName());
+	  }
+	  
+	  if(!old.isEmpty()) {
+	    ArrayList<String> args = new ArrayList<String>();
+	    args.add("--force");
+	    args.add("--update");
+	    args.add("--target-directory=" + bwdir);
+	    args.addAll(old);
+	    
+	    SubProcess proc = 
+	      new SubProcess(req.getNodeID().getAuthor(), 
+			     "Rename-Backup", "mv", args, env, wdir);
+	    proc.start();
+	    
+	    try {
+	      proc.join();
+	    }
+	    catch(InterruptedException ex) {
+	      throw new PipelineException
+		("Interrupted while backing-up the working files for version (" + id + ")!");
+	    }
+	  }
+	}
+      
+	/* move each primary file */ 
+	{
+	  Iterator<File> oiter = opfiles.iterator();
+	  Iterator<File>  iter = pfiles.iterator();
+	  while(oiter.hasNext() && iter.hasNext()) {
+	    File ofile = oiter.next();
+	    File opath = new File(owdir, ofile.getName());
+	    
+	    File file = iter.next();
+	    
+	    if(opath.isFile()) {
+	      ArrayList<String> args = new ArrayList<String>();
+	      args.add("--force");
+	      args.add(opath.getPath());
+	      args.add(file.getName());
+	      
+	      SubProcess proc = 
+		new SubProcess(req.getNodeID().getAuthor(), 
+			       "Rename-Primary", "mv", args, env, wdir);
+	      proc.start();
+	      
+	      try {
+		proc.join();
+	      }
+	      catch(InterruptedException ex) {
+		throw new PipelineException
+		  ("Interrupted while renaming a primary file for version (" + id + ")!");
+	      }
+	    }
+	  }
+	}
+	
+	/* move all of the secondary files */ 
+	{	
+	  ArrayList<String> old = new ArrayList<String>();
+	  for(File file : sfiles) {
+	    File work = new File(owdir, file.getPath());
+	    if(work.isFile()) 
+	      old.add(file.getName());
+	  }
+	  
+	  if(!old.isEmpty()) {
+	    ArrayList<String> args = new ArrayList<String>();
+	    args.add("--force");
+	    args.add("--target-directory=" + wdir);
+	    args.addAll(old);
+	    
+	    SubProcess proc = 
+	      new SubProcess(req.getNodeID().getAuthor(), 
+			     "Rename-Secondary", "mv", args, env, owdir);
+	    proc.start();
+	    
+	    try {
+	      proc.join();
+	    }
+	    catch(InterruptedException ex) {
+	      throw new PipelineException
+		("Interrupted while renaming the secondary files for version (" + id + ")!");
+	    }
+	  }
+	}
+
+	/* move each primary checksum */ 
+	{
+	  Iterator<File> oiter = opfiles.iterator();
+	  Iterator<File>  iter = pfiles.iterator();
+	  while(oiter.hasNext() && iter.hasNext()) {
+	    File ofile = oiter.next();
+	    File opath = new File(ocwdir, ofile.getName());
+	    
+	    File file = iter.next();
+	    
+	    if(opath.isFile()) {
+	      ArrayList<String> args = new ArrayList<String>();
+	      args.add("--force");
+	      args.add(opath.getPath());
+	      args.add(file.getName());
+	      
+	      SubProcess proc = 
+		new SubProcess(req.getNodeID().getAuthor(), 
+			       "Rename-PrimaryCheckSum", "mv", args, env, cwdir);
+	      proc.start();
+	      
+	      try {
+		proc.join();
+	      }
+	      catch(InterruptedException ex) {
+		throw new PipelineException
+		  ("Interrupted while renaming a primary checksum for version (" + id + ")!");
+	      }
+	    }
+	  }
+	}
+	
+	/* move all of the secondary checksums */ 
+	{	
+	  ArrayList<String> old = new ArrayList<String>();
+	  for(File file : sfiles) {
+	    File work = new File(ocwdir, file.getPath());
+	    if(work.isFile()) 
+	      old.add(file.getName());
+	  }
+	  
+	  if(!old.isEmpty()) {
+	    ArrayList<String> args = new ArrayList<String>();
+	    args.add("--force");
+	    args.add("--target-directory=" + cwdir);
+	    args.addAll(old);
+
+	    SubProcess proc = 
+	      new SubProcess(req.getNodeID().getAuthor(), 
+			   "Rename-SecondaryCheckSums", "mv", args, env, ocwdir);
+	    proc.start();
+	    
+	    try {
+	      proc.join();
+	    }
+	    catch(InterruptedException ex) {
+	      throw new PipelineException
+		("Interrupted while renaming the secondary checksums for version (" + id + 
+		 ")!");
+	    }
+	  }
+	}
+
+	return new SuccessRsp(task, wait, start);
+      }
+    }
+    catch(PipelineException ex) {
+      if(wait > 0) 
+	return new FailureRsp(task, ex.getMessage(), wait, start);
+      else 
+	return new FailureRsp(task, ex.getMessage(), start);
+    }
   }
 
 
