@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.in,v 1.6 2004/02/28 20:00:39 jim Exp $
+// $Id: PackageInfo.java.in,v 1.7 2004/03/07 02:43:27 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -76,6 +76,12 @@ class PackageInfo
    * to <I>configure(1)</I>.    
    */
   public static final File sWorkDir = new File("@PRODDIR@", "working");
+
+  /** 
+   * The root directory of the persistent node storage area. <P>
+   * Set by the <CODE>--with-node=DIR</CODE> option to <I>configure(1)</I>.    
+   */
+  public static final File sNodeDir = new File("@NODEDIR@");
 
   /** 
    * The directory which contains the installed toolsets for this site. <P> 
