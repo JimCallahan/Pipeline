@@ -1,4 +1,4 @@
-// $Id: ViewerLinks.java,v 1.1 2005/01/03 06:56:25 jim Exp $
+// $Id: ViewerLinks.java,v 1.2 2005/01/08 08:32:18 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -7,6 +7,7 @@ import us.temerity.pipeline.math.*;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.atomic.*;
 
 import net.java.games.jogl.*;
 
@@ -34,6 +35,9 @@ class ViewerLinks
     pDownstreamLinks = new HashMap<NodePath,ArrayList<Link>>();
 
     pLinkRels = new LinkedList<ViewerLinkRelationship>();
+
+    pLinksDL = new AtomicInteger(0);
+    pRefresh = true;
   }
 
 
@@ -159,8 +163,8 @@ class ViewerLinks
    GL gl
   )
   {
-    if(pLinksDL == null) 
-      pLinksDL = gl.glGenLists(1);
+    if(pLinksDL.get() == 0) 
+      pLinksDL.set(UIMaster.getInstance().getDisplayList(gl));
 
     if(pRefresh) { 
       UserPrefs prefs = UserPrefs.getInstance();
@@ -180,7 +184,7 @@ class ViewerLinks
       }
 	
       /* rebuild the link geometry */ 
-      gl.glNewList(pLinksDL, GL.GL_COMPILE);
+      gl.glNewList(pLinksDL.get(), GL.GL_COMPILE);
       {
 	pLinkRels.clear();
 
@@ -190,7 +194,7 @@ class ViewerLinks
 	gl.glLineWidth((float) prefs.getLinkThickness());
 
  	/* upstream links */ 
- 	{
+	if(!pUpstreamLinks.isEmpty()) {
 	  LinkedList<Point2d[]> arrows = new LinkedList<Point2d[]>();
 	  LinkedList<Point2d[]> sarrows = new LinkedList<Point2d[]>();
 
@@ -468,7 +472,7 @@ class ViewerLinks
 	}
 
 	/* downstream links */ 
-	{
+	if(!pDownstreamLinks.isEmpty()) {
 	  LinkedList<Point2d[]> arrows = new LinkedList<Point2d[]>();
 	  
 	  gl.glEnable(GL.GL_LINE_SMOOTH); 
@@ -562,9 +566,18 @@ class ViewerLinks
    GL gl
   )
   {
-    gl.glCallList(pLinksDL);
+    gl.glCallList(pLinksDL.get());
   }
   
+  /**
+   * Return the previously allocated OpenGL display lists to the pool of display lists to be 
+   * reused. 
+   */ 
+  public void 
+  freeDisplayLists() 
+  {
+    UIMaster.getInstance().freeDisplayList(pLinksDL.getAndSet(0));
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -654,7 +667,7 @@ class ViewerLinks
   /**
    * The OpenGL display list handle for the links geometry.
    */ 
-  private Integer  pLinksDL; 
+  private AtomicInteger  pLinksDL; 
 
   /**
    * The OpenGL display list handles for the link relationship icon geometry.

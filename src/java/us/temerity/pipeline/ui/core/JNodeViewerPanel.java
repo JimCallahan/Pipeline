@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.4 2005/01/07 11:33:42 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.5 2005/01/08 08:32:18 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -13,6 +13,7 @@ import java.awt.event.*;
 import java.awt.geom.*;
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.atomic.*;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -1544,15 +1545,15 @@ class JNodeViewerPanel
 
     /* render the scene geometry */ 
     {
-      if(pSceneDL == null) 
-	pSceneDL = gl.glGenLists(1);
+      if(pSceneDL.get() == 0) 
+	pSceneDL.set(UIMaster.getInstance().getDisplayList(gl));
       
       if(pRefreshScene) {
 	for(ViewerNode vnode : pViewerNodes.values()) 
 	  vnode.rebuild(gl);
 	pViewerLinks.rebuild(gl);
 
-	gl.glNewList(pSceneDL, GL.GL_COMPILE_AND_EXECUTE);
+	gl.glNewList(pSceneDL.get(), GL.GL_COMPILE_AND_EXECUTE);
 	{
 	  for(ViewerNode vnode : pViewerNodes.values()) 
 	    vnode.render(gl);
@@ -1563,10 +1564,24 @@ class JNodeViewerPanel
 	pRefreshScene = false;
       }
       else {
-	gl.glCallList(pSceneDL);
+	gl.glCallList(pSceneDL.get());
       }
     }
   }
+
+  /**
+   * Return the previously allocated OpenGL display lists to the pool of display lists to be 
+   * reused. 
+   */ 
+  public void 
+  freeDisplayLists() 
+  {
+    super.freeDisplayLists();
+
+    if(pViewerLinks != null) 
+      pViewerLinks.freeDisplayLists();
+  }
+
 
 
   /*-- MOUSE LISTENER METHODS --------------------------------------------------------------*/

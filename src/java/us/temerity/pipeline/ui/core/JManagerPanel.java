@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.4 2005/01/07 16:17:02 jim Exp $
+// $Id: JManagerPanel.java,v 1.5 2005/01/08 08:32:18 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -681,6 +681,7 @@ class JManagerPanel
   {
     if(pTopLevelPanel != null) {
       pTopLevelPanel.setGroupID(0);
+      pTopLevelPanel.freeDisplayLists();
     }
     else {
       Component contents = getContents();
@@ -1710,6 +1711,7 @@ class JManagerPanel
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     setContents(new JNodeBrowserPanel(dead));
     dead.setGroupID(0);
+    dead.freeDisplayLists();
     refocusOnChildPanel();
   }
 
@@ -1727,6 +1729,7 @@ class JManagerPanel
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     setContents(new JNodeViewerPanel(dead));
     dead.setGroupID(0);
+    dead.freeDisplayLists();
     refocusOnChildPanel();
   }
 
@@ -1745,6 +1748,7 @@ class JManagerPanel
     JNodeDetailsPanel panel = new JNodeDetailsPanel(dead);
     setContents(panel);
     dead.setGroupID(0);
+    dead.freeDisplayLists();
     refocusOnChildPanel();
     
     updateNodeSubpanels(panel.getGroupID());
@@ -1765,6 +1769,7 @@ class JManagerPanel
     JNodeFilesPanel panel = new JNodeFilesPanel(dead);
     setContents(panel);
     dead.setGroupID(0);
+    dead.freeDisplayLists();
     refocusOnChildPanel();
 
     updateNodeSubpanels(panel.getGroupID());
@@ -1785,6 +1790,7 @@ class JManagerPanel
     JNodeHistoryPanel panel = new JNodeHistoryPanel(dead);
     setContents(panel);
     dead.setGroupID(0);
+    dead.freeDisplayLists();
     refocusOnChildPanel();
 
     updateNodeSubpanels(panel.getGroupID());
@@ -1824,6 +1830,7 @@ class JManagerPanel
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     setContents(new JQueueJobBrowserPanel(dead));
     dead.setGroupID(0);
+    dead.freeDisplayLists();
     refocusOnChildPanel();
   }
 
@@ -1841,6 +1848,7 @@ class JManagerPanel
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     setContents(new JQueueJobViewerPanel(dead));
     dead.setGroupID(0);
+    dead.freeDisplayLists();
     refocusOnChildPanel();
   }
 
@@ -1858,6 +1866,7 @@ class JManagerPanel
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     setContents(new JQueueJobDetailsPanel(dead));
     dead.setGroupID(0);
+    dead.freeDisplayLists();
     refocusOnChildPanel();
   }
 
@@ -1878,6 +1887,7 @@ class JManagerPanel
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     setContents(new JEmptyPanel(dead));
     dead.setGroupID(0);  
+    dead.freeDisplayLists();
     refocusOnChildPanel();  
   }
 
@@ -2071,6 +2081,7 @@ class JManagerPanel
       grandpa.refocusOnChildPanel();
 
       pTopLevelPanel.setGroupID(0);
+      pTopLevelPanel.freeDisplayLists();
     }
 
     /* remove this tab from the parent tabbed pane */ 
@@ -2091,6 +2102,7 @@ class JManagerPanel
       }
 
       pTopLevelPanel.setGroupID(0);
+      pTopLevelPanel.freeDisplayLists();
     }
   }
 

@@ -1,4 +1,4 @@
-// $Id: JBaseViewerPanel.java,v 1.4 2005/01/08 05:31:33 jim Exp $
+// $Id: JBaseViewerPanel.java,v 1.5 2005/01/08 08:32:18 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -12,6 +12,7 @@ import java.awt.event.*;
 import java.awt.geom.*;
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.atomic.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.tree.*;
@@ -69,6 +70,9 @@ implements MouseListener, MouseMotionListener, GLEventListener
   {  
     /* initialize fields */ 
     {
+      pSceneDL = new AtomicInteger(0);
+      pRefreshScene = true;
+
       pLayoutPolicy = LayoutPolicy.Preserve;
 
       pCameraPos = new Point3d(0.0, 0.0, -20.0);
@@ -285,6 +289,17 @@ implements MouseListener, MouseMotionListener, GLEventListener
    boolean deviceChanged
   )
   {}
+
+  /**
+   * Return the previously allocated OpenGL display lists to the pool of display lists to be 
+   * reused. 
+   */ 
+  public void 
+  freeDisplayLists() 
+  {
+    UIMaster.getInstance().freeDisplayList(pSceneDL.getAndSet(0));
+  }
+
   
 
   /*-- MOUSE LISTENER METHODS --------------------------------------------------------------*/
@@ -700,7 +715,7 @@ implements MouseListener, MouseMotionListener, GLEventListener
   /**
    * The OpenGL display list handle for the scene geometry.
    */ 
-  protected Integer  pSceneDL; 
+  protected AtomicInteger  pSceneDL; 
 
   /**
    * Whether the OpenGL display list for the scene geometry needs to be rebuilt.

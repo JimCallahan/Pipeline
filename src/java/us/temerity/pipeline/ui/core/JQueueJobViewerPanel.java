@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.2 2005/01/07 08:41:50 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.3 2005/01/08 08:32:18 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1034,8 +1034,8 @@ class JQueueJobViewerPanel
 
     /* render the scene geometry */ 
     {
-      if(pSceneDL == null) 
-	pSceneDL = gl.glGenLists(1);
+      if(pSceneDL.get() == 0) 
+	pSceneDL.set(UIMaster.getInstance().getDisplayList(gl));
       
       if(pRefreshScene) {
 	for(ViewerJob vjob : pViewerJobs.values()) 
@@ -1044,7 +1044,7 @@ class JQueueJobViewerPanel
 	for(ViewerJobGroup vgroup : pViewerJobGroups.values()) 
 	  vgroup.rebuild(gl);
 
-	gl.glNewList(pSceneDL, GL.GL_COMPILE_AND_EXECUTE);
+	gl.glNewList(pSceneDL.get(), GL.GL_COMPILE_AND_EXECUTE);
 	{
 	  for(ViewerJob vjob : pViewerJobs.values()) 
 	    vjob.render(gl);
@@ -1057,11 +1057,12 @@ class JQueueJobViewerPanel
 	pRefreshScene = false;
       }
       else {
-	gl.glCallList(pSceneDL);
+	gl.glCallList(pSceneDL.get());
       }
     }    
   }
    
+
 
   /*-- MOUSE LISTENER METHODS --------------------------------------------------------------*/
 
@@ -2043,6 +2044,7 @@ class JQueueJobViewerPanel
   }
 
 
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L   C L A S S E S                                                      */

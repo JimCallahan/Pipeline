@@ -1,4 +1,4 @@
-// $Id: JTopLevelPanel.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JTopLevelPanel.java,v 1.2 2005/01/08 08:32:18 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -246,6 +246,16 @@ class JTopLevelPanel
     return false;
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Return the previously allocated OpenGL display lists to the pool of display lists to be 
+   * reused. 
+   */ 
+  public void 
+  freeDisplayLists() 
+  {}
 
 
   /*----------------------------------------------------------------------------------------*/

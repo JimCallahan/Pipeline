@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.6 2005/01/08 05:31:14 jim Exp $
+// $Id: UIMaster.java,v 1.7 2005/01/08 08:32:18 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -115,7 +115,8 @@ class UIMaster
     pCollapsedNodePaths = new HashSet<String>();
 
     pDebugGL = debugGL;
-    pTraceGL = traceGL;
+    pTraceGL = traceGL; 
+    pDisplayLists = new TreeSet<Integer>();
 
     SwingUtilities.invokeLater(new SplashFrameTask(this));
   }
@@ -472,27 +473,6 @@ class UIMaster
   }
   
 
-  /*----------------------------------------------------------------------------------------*/
- 
-  /**
-   * Whether to check all OpenGL calls for errors.
-   */ 
-  public boolean 
-  getDebugGL() 
-  {
-    return pDebugGL;
-  }
-
-  /**
-   * Whether to print all OpenGL calls to STDOUT.
-   */ 
-  public boolean 
-  getTraceGL() 
-  {
-    return pTraceGL;
-  }
-  
-
 
   /*----------------------------------------------------------------------------------------*/
   /*   D I A L O G S                                                                        */
@@ -828,6 +808,27 @@ class UIMaster
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Whether to check all OpenGL calls for errors.
+   */ 
+  public boolean 
+  getDebugGL() 
+  {
+    return pDebugGL;
+  }
+
+  /**
+   * Whether to print all OpenGL calls to STDOUT.
+   */ 
+  public boolean 
+  getTraceGL() 
+  {
+    return pTraceGL;
+  }
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Create a new OpenGL rendering canvas shared among all GLCanvas instances.
    */ 
   public synchronized GLCanvas
@@ -837,6 +838,61 @@ class UIMaster
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Create or reuse an OpenGL display list.
+   * 
+   * @return 
+   *   The OpenGL display list handle.
+   * 
+   * @throws GLException
+   *   If unable to return a valid handle.
+   */ 
+  public synchronized int
+  getDisplayList
+  (
+   GL gl   
+  ) 
+    throws GLException 
+  {
+    int dl = 0;
+    if(!pDisplayLists.isEmpty()) {
+      dl = pDisplayLists.first(); 
+      pDisplayLists.remove(dl);
+    }
+    else {    
+      dl = gl.glGenLists(1);
+    }
+    
+    if(dl == 0) 
+      throw new GLException("Unable to allocate any new display lists!");
+
+    return dl;
+  }
+
+  /**
+   * Return a previously allocated OpenGL display list to the pool of display lists to be 
+   * reused. <P> 
+   * 
+   * This should be used by object which allocate display lists in the shared OpenGL 
+   * context using {@link #getDisplayList getDisplayList} to free the display list resources
+   * when they are finalized. 
+   * 
+   * @param dl 
+   *   The display list handle.
+   */ 
+  public synchronized void 
+  freeDisplayList
+  (
+   int dl
+  ) 
+  {
+    if(dl > 0) 
+      pDisplayLists.add(dl);
+  }
+  
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   L I S T E N E R S                                                                    */
@@ -1003,12 +1059,17 @@ class UIMaster
     synchronized(pCollapsedNodePaths) {
       File file = new File(PackageInfo.sHomeDir, 
 			   PackageInfo.sUser + "/.pipeline/collapsed-nodes");
-      try {
-	LockedGlueFile.save(file, "CollapsedNodePaths", pCollapsedNodePaths); 
+      if(pCollapsedNodePaths.isEmpty()) {
+	file.delete();
       }
-      catch(Exception ex) {
-	Logs.ops.warning("Unable to save (" + file + ")!");
-	Logs.flush();
+      else {
+	try {
+	  LockedGlueFile.save(file, "CollapsedNodePaths", pCollapsedNodePaths); 
+	}
+	catch(Exception ex) {
+	  Logs.ops.warning("Unable to save (" + file + ")!");
+	  Logs.flush();
+	}
       }
     }
 
@@ -1540,8 +1601,15 @@ class UIMaster
     {
       /* clean up existing panels */ 
       {
-	pFrame.setVisible(false);
-	pRootPanel.removeAll();
+	{
+	  pFrame.setVisible(false);
+
+	  JManagerPanel mpanel = (JManagerPanel) pRootPanel.getComponent(0);
+	  if(mpanel != null) 
+	    mpanel.releasePanelGroups();
+
+	  pRootPanel.removeAll();
+	}
 	
 	for(JPanelFrame frame : pPanelFrames) {
 	  frame.removePanels();
@@ -2401,6 +2469,17 @@ class UIMaster
 
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Whether to check all OpenGL calls for errors.
+   */ 
+  private boolean pDebugGL;
+
+  /**
+   * Whether to print all OpenGL calls to STDOUT.
+   */ 
+  private boolean pTraceGL;
+  
+
   /** 
    * The OpenGL capabilities used by all GLCanvas instances.
    */ 
@@ -2411,6 +2490,17 @@ class UIMaster
    * display lists are initialized.
    */ 
   private GLCanvas  pGLCanvas;
+  
+
+  /**
+   * The OpenGL display list handles which have been previously allocated with glGenLists() 
+   * but are no longer being used by any instance. <P> 
+   * 
+   * These display list handles are collected when objects which create OpenGL display 
+   * lists are garbage collected.  The display lists where all created in the same OpenGL
+   * context as pGLCanvas. <P> 
+   */ 
+  private TreeSet<Integer>  pDisplayLists; 
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -2545,19 +2635,6 @@ class UIMaster
    */ 
   private HashSet<String>  pCollapsedNodePaths;
 
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Whether to check all OpenGL calls for errors.
-   */ 
-  private boolean pDebugGL;
-
-  /**
-   * Whether to print all OpenGL calls to STDOUT.
-   */ 
-  private boolean pTraceGL;
-  
 
   /*----------------------------------------------------------------------------------------*/
 
