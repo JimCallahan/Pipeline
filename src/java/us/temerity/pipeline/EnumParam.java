@@ -1,4 +1,4 @@
-// $Id: EnumParam.java,v 1.1 2004/11/11 00:40:09 jim Exp $
+// $Id: EnumParam.java,v 1.2 2004/11/19 11:49:54 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -76,6 +76,15 @@ class EnumParam
   ) 
   {
     return pValues.get(idx);
+  }
+
+  /**
+   * Get the index of the current value 
+   */ 
+  public int 
+  getIndex() 
+  {
+    return pValues.indexOf(pValue);
   }
 
 
