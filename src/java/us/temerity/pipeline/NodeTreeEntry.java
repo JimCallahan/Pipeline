@@ -1,4 +1,4 @@
-// $Id: NodeTreeEntry.java,v 1.4 2004/10/24 03:52:03 jim Exp $
+// $Id: NodeTreeEntry.java,v 1.5 2005/03/28 04:15:46 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -93,7 +93,7 @@ class NodeTreeEntry
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Is this componet the last component of a node path?
+   * Is this component the last component of a node path?
    */ 
   public boolean
   isLeaf() 
