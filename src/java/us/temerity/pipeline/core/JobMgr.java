@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.7 2004/09/03 01:52:04 jim Exp $
+// $Id: JobMgr.java,v 1.8 2004/09/03 11:01:22 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -517,59 +517,68 @@ class JobMgr
     TreeSet<Long> live = req.getJobIDs();
     Map<String,String> env = System.getenv();
 
-    File files[] = pJobDir.listFiles(); 
-    int wk;
-    for(wk=0; wk<files.length; wk++) {
-      File dir = files[wk];
-      try {
-	if(dir.isDirectory()) {
-	  Long jobID = new Long(dir.getName());
-	  if(!live.contains(jobID)) {
-	    boolean executing = false;
-	    {
-	      timer.aquire();
-	      synchronized(pExecuteTasks) {
-		timer.resume();
-		executing = pExecuteTasks.containsKey(jobID);
+    ArrayList<String> args = new ArrayList<String>();
+    args.add("--recursive");
+    args.add("--force");
+
+    boolean removeFiles = false;
+    {
+      File files[] = pJobDir.listFiles(); 
+      int wk;
+      for(wk=0; wk<files.length; wk++) {
+	File dir = files[wk];
+	try {
+	  if(dir.isDirectory()) {
+	    Long jobID = new Long(dir.getName());
+	    if(!live.contains(jobID)) {
+	      boolean executing = false;
+	      {
+		timer.aquire();
+		synchronized(pExecuteTasks) {
+		  timer.resume();
+		  executing = pExecuteTasks.containsKey(jobID);
+		}
 	      }
-	    }
-	    
-	    if(!executing) {
-	      Logs.glu.finer("Cleaning Job: " + jobID);
 	      
-	      ArrayList<String> args = new ArrayList<String>();
-	      args.add("--recursive");
-	      args.add("--force");
-	      args.add(dir.toString());
-	      
-	      SubProcess proc = 
-		new SubProcess("Remove-JobFiles", "rm", args, env, pJobDir);
-	      proc.start();
-	      
-	      try {
-		proc.join();
-		if(!proc.wasSuccessful()) 
-		  throw new PipelineException
-		    ("Unable to remove the output files for job (" + jobID + "):\n\n" + 
-		     "  " + proc.getStdErr());	
-	      }
-	      catch(InterruptedException ex) {
-		throw new PipelineException
-		  ("Interrupted while removing the output files for job (" + jobID + ")!");
+	      if(!executing) {
+		Logs.glu.finer("Cleaning Job: " + jobID);
+		args.add(dir.getName());
+		removeFiles = true;
 	      }
 	    }
 	  }
+	  else {
+	    Logs.glu.severe
+	      ("Illegal file encountered in the job output directory (" + dir + ")!");
+	  }
 	}
-	else {
-	  Logs.glu.severe
-	    ("Illegal file encountered in the job output directory (" + dir + ")!");
+	catch(NumberFormatException ex) {
+	  Logs.glu.severe("Illegal job output directory encountered (" + dir + ")!");
 	}
       }
-      catch(NumberFormatException ex) {
-	Logs.glu.severe("Illegal job output directory encountered (" + dir + ")!");
+    }
+
+    if(removeFiles) {
+      try {
+	SubProcess proc = 
+	  new SubProcess("Remove-JobFiles", "rm", args, env, pJobDir);
+	proc.start();
+	
+	try {
+	  proc.join();
+	  if(!proc.wasSuccessful()) 
+	    throw new PipelineException
+	    ("Unable to remove the output files:\n\n" + 
+	     "  " + proc.getStdErr());	
+	}
+	catch(InterruptedException ex) {
+	  throw new PipelineException
+	    ("Interrupted while removing the output files!");
+	}
       }
       catch(PipelineException ex) {
 	Logs.ops.severe(ex.getMessage());
+	return new FailureRsp(timer, ex.getMessage());
       }
     }
     
