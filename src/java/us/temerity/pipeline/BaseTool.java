@@ -1,4 +1,4 @@
-// $Id: BaseTool.java,v 1.3 2005/02/20 20:53:57 jim Exp $
+// $Id: BaseTool.java,v 1.4 2005/02/20 21:19:33 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -17,6 +17,25 @@ import javax.swing.*;
  * Tool plugins provide a mechanism for extending the functionality of the <B>plui</B>(1) 
  * graphical user interface to Pipeline.  The tool is triggered by a menu item displayed
  * in the Node Viewer panel similar to the built-in operations such as Check-In or Edit. <P>
+ * 
+ * Tools are responsible for creating any user interface components they require to collect
+ * user input by overriding the {@link #collectPhaseInput collectPhaseInput} method.  The
+ * {@link UIFactory UIFactory} class contains a large number of static methods for creating
+ * UI component with a Pipeline look-and-feel.  The {@link JToolDialog JToolDialog} class
+ * should be used as the container for presenting any created components to the user. <P> 
+ * 
+ * The functionality of tool subclasses is provided by overriding the 
+ * {@link #executePhase executePhase} method. <P> 
+ * 
+ * These two methods are alternatively executed until the tool signifies that execution 
+ * is complete or an error occurs.  In this way, the user interface components provided 
+ * by the tool and the operations taken can be different during each phase of execution.
+ * This allows for very flexible tools which may adapt during their execution based on 
+ * additional user input. <P> 
+ * 
+ * Single phase tools which collect no user input execept for the selected nodes at the 
+ * time the tool is run can be created by only overriding the <CODE>executePhase</CODE>
+ * method and returning <CODE>true</CODE> on exit from this method. <P> 
  * 
  * While new plugin subclass versions are being modified and tested the 
  * {@link #underDevelopment underDevelopment} method should be called in the subclasses
