@@ -1,4 +1,4 @@
-// $Id: CdRomArchiver.java,v 1.1 2005/03/15 19:14:37 jim Exp $
+// $Id: CdRomArchiver.java,v 1.2 2005/03/18 16:36:41 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -50,7 +50,7 @@ class CdRomArchiver
       ArchiverParam param = 
 	new StringArchiverParam
 	("SCSIDevice", 
-	 "The SCSI device use to burn the CD-ROM.", 
+	 "The ID of the SCSI device use to burn the CD-ROM.", 
 	 "1,1,0");
       addParam(param);
     }
@@ -143,6 +143,11 @@ class CdRomArchiver
   ) 
     throws PipelineException
   {
+    String device = (String) getParamValue("SCSIDevice");
+    if(device == null) 
+      throw new PipelineException
+	("The SCSI device cannot be (null)");
+
     /* write the cdrecord(1) file list */ 
     File filelist = createArchiveTemp(name, 0644, "txt");
     try {
@@ -176,9 +181,17 @@ class CdRomArchiver
       out.write
 	("#!/bin/bash\n" +
 	 "\n" +
+	 "echo \"----------------------------------------------------------------------\"\n" +
+	 "echo \"  mkisofs -R -o " + iso + " -graft-points -path-list " + filelist +
+	 " -V " + name + "\"\n" + 
+	 "echo \"----------------------------------------------------------------------\"\n" +
 	 "mkisofs -R -o " + iso + " -graft-points -path-list " + filelist +
 	 " -V " + name + "\n" + 
-	 "cdrecord -v speed=2 dev=1,1,0 " + iso + "\n");
+	 "\n" +
+	 "echo \"----------------------------------------------------------------------\"\n" +
+	 "echo \"  cdrecord -v speed=2 dev=" + device + " " + iso + "\"\n" +
+	 "echo \"----------------------------------------------------------------------\"\n" +
+	 "cdrecord -v speed=2 dev=" + device + " " + iso + "\n");
 
       out.close();      
     }
@@ -236,7 +249,51 @@ class CdRomArchiver
   ) 
     throws PipelineException
   {
-    throw new PipelineException("Not implemented yet...");
+    File mount = null;
+    {
+      String path = (String) getParamValue("RestoreMount");
+      if(path == null) 
+	throw new PipelineException
+	  ("The restore mount point for the CD-ROM cannot be (null)");
+      
+      mount = new File(path);
+      if(!mount.isDirectory()) 
+	throw new PipelineException
+	  ("The restore mount point (" + mount + ") is not valid!");
+    }
+
+    File script = createArchiveTemp(name, 0755, "bash");
+    try {
+      FileWriter out = new FileWriter(script);
+
+      out.write
+	("#!/bin/bash\n" +
+	 "\n");
+
+      for(File file : files) {
+	File source = new File(mount, file.getPath());
+	File target = new File(dir, file.getPath());
+	out.write("cp --verbose " + source + " " + target + "\n");
+      }
+
+      out.close();      
+    }
+    catch(IOException ex) {
+      throw new PipelineException
+	("Unable to create the temporary shell script (" + script + ")!\n" + 
+	 ex.getMessage());
+    }
+
+    try {
+      return new SubProcessHeavy
+ 	(getName(), script.getPath(), new ArrayList<String>(), System.getenv(), dir, 
+ 	 outFile, errFile);
+    }
+    catch(Exception ex) {
+      throw new PipelineException
+ 	("Unable to generate the SubProcess to perform the restore operation!\n" +
+ 	 ex.getMessage());
+    }    
   }
 
 
