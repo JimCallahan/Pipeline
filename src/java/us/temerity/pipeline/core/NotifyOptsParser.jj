@@ -48,6 +48,7 @@ NotifyOptsParser
   private void 
   init()
   {
+    pProdDir     = PackageInfo.sProdDir;
     pControlPort = PackageInfo.sNotifyControlPort;
     pMonitorPort = PackageInfo.sNotifyMonitorPort;
   }
@@ -95,7 +96,7 @@ TOKEN :
 | <LICENSE:      "--license">    
 
   /* global options */	
-| <PROD:         "--prod">          : PATH_SEP
+| <PROD_DIR:     "--prod-dir">      : PATH_SEP
 | <CONTROL_PORT: "--control-port">  : INTEGER_SEP
 | <MONITOR_PORT: "--monitor-port">  : INTEGER_SEP
 | <LOG:          "--log">           : LOG_SEP
@@ -298,18 +299,18 @@ void
 GlobalOpts() :
 {}
 {
-  (Prod() | ControlPort() | MonitorPort() | Log())
+  (ProdDir() | ControlPort() | MonitorPort() | Log())
   {}
 }
 
 
 void
-Prod() :
+ProdDir() :
 {
   Token t;
 }
 {
-  <PROD> EQ() t=<PATH_ARG>
+  <PROD_DIR> EQ() t=<PATH_ARG>
   { 
     pProdDir = new File(t.image);
   }
