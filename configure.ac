@@ -230,6 +230,12 @@ JAVA_C_FLAGS=""
 AC_SUBST(JAVA_RUNTIME_FLAGS)
 JAVA_RUMTIME_FLAGS=""
 
+AC_SUBST(JNI_LDADD)
+JNI_LDADD=""
+
+AC_SUBST(JNI_LDFLAGS)
+JNI_LDFLAGS=""
+
 AC_SUBST(EXTRA_DEBUG_SUBDIRS)
 EXTRA_DEBUG_SUBDIRS=""
 
@@ -252,7 +258,8 @@ then
        CXXFLAGS="$CXXFLAGS -O2 -OPT:Olimit=8192";;
 
     (gnu | GNU | "") \
-       CXXFLAGS="$CXXFLAGS -O2";;
+       CXXFLAGS="$CXXFLAGS -O2";
+       JNI_LDFLAGS="-shared ";;
 
     (*) \
        CXXFLAGS="$CXXFLAGS -O2";;
@@ -261,7 +268,6 @@ then
   CXXFLAGS="$CXXFLAGS -DNDEBUG"
   EXTRA_DEBUG_SUBDIRS=""
   BUILD_MODE="opt"
-
 else
   case "$with_compiler" in 
     (kai | KAI) \
@@ -271,7 +277,8 @@ else
        CXXFLAGS="$CXXFLAGS -g";;
 
     (gnu | GNU | "") \
-       CXXFLAGS="$CXXFLAGS -g";;
+       CXXFLAGS="$CXXFLAGS -g";
+       JNI_LDFLAGS="-shared ";;
 
     (*) \
        CXXFLAGS="$CXXFLAGS -g";;
@@ -363,6 +370,7 @@ AC_MSG_RESULT([The C++ compiler environment:])
 
 AC_LANG([C++])
 
+AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_CXXCPP
 AC_SUBST(AR)
@@ -435,7 +443,16 @@ AC_MSG_RESULT([Locating the Java development tools:])
 AC_PATH_PROG(JAVA,    java,   $PATH)
 AC_PATH_PROG(JAVA_C,  javac,  $PATH)
 AC_PATH_PROG(JAVA_CC, javacc, $PATH)
+AC_PATH_PROG(JAVA_H,  javah,  $PATH)
 AC_PATH_PROG(JAR,     jar,    $PATH)
+
+
+AC_MSG_CHECKING([java include])
+
+AC_SUBST(JAVA_INC)
+JAVA_INC=`dirname $JAVA`/../include
+
+AC_MSG_RESULT([$JAVA_INC])
 
 
 AC_MSG_CHECKING([Javamake])
@@ -515,7 +532,7 @@ dnl ----------------------------------------------------------------------------
 AC_MSG_RESULT([Locating C system headers:])
 
 AC_CHECK_HEADERS([math.h errno.h pwd.h dlfcn.h libgen.h time.h dirent.h ctype.h])      
-AC_CHECK_HEADERS([sys/time.h sys/param.h sys/utsname.h])  
+AC_CHECK_HEADERS([sys/time.h sys/param.h sys/utsname.h sys/wait.h sys/resource.h])  
 
 AC_MSG_RESULT([ ])
 
@@ -638,14 +655,18 @@ AC_CONFIG_FILES([
 
   src/java/pipeline/Makefile
   src/java/pipeline/PackageInfo.java
+  src/java/pipeline/native/Makefile
 
   src/java/pipeline/tests/Makefile
+  src/java/pipeline/tests/native/Makefile
+  
   src/java/pipeline/plugin/Makefile
 
   src/java/scripts/Makefile
   src/java/scripts/pipeline
   src/java/scripts/plserver
   src/java/scripts/plui
+  src/java/scripts/pltest	
 
   src/java/share/Makefile
 

@@ -7,4 +7,12 @@ instbin_SCRIPTS = \
   plui
 
 
+instsbindir = @sbindir@
+
+instsbin_SCRIPTS = \
+  plserver \
+  pltest
+
+
+
 
