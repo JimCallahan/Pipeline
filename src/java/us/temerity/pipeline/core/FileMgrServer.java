@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.19 2004/11/16 03:56:36 jim Exp $
+// $Id: FileMgrServer.java,v 1.20 2004/12/08 10:26:48 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -337,6 +337,9 @@ class FileMgrServer
 	}
       }
       catch(AsynchronousCloseException ex) {
+      }
+      catch (EOFException ex) {
+	Logs.net.severe("Connection on port (" + pPort + ") terminated abruptly!");	
       }
       catch (IOException ex) {
 	Logs.net.severe("IO problems on port (" + pPort + "):\n" + 

@@ -1,4 +1,4 @@
-// $Id: JobMgrServer.java,v 1.10 2004/11/09 06:01:32 jim Exp $
+// $Id: JobMgrServer.java,v 1.11 2004/12/08 10:26:48 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -396,6 +396,9 @@ class JobMgrServer
 	}
       }
       catch(AsynchronousCloseException ex) {
+      }
+      catch (EOFException ex) {
+	Logs.net.severe("Connection on port (" + pPort + ") terminated abruptly!");	
       }
       catch (IOException ex) {
 	Logs.net.severe("IO problems on port (" + pPort + "):\n" + 

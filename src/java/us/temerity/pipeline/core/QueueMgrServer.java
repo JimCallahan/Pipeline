@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.15 2004/10/25 18:56:46 jim Exp $
+// $Id: QueueMgrServer.java,v 1.16 2004/12/08 10:26:48 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -565,9 +565,17 @@ class QueueMgrServer
       }
       catch(AsynchronousCloseException ex) {
       }
+      catch (EOFException ex) {
+	InetAddress addr = pSocket.getInetAddress(); 
+	String host = "???";
+	if(addr != null) 
+	  host = addr.getCanonicalHostName();
+	
+	Logs.net.severe("Connection from (" + host + ":" + pPort + ") terminated abruptly!");
+      }
       catch (IOException ex) {
 	InetAddress addr = pSocket.getInetAddress(); 
-	String host = "?";
+	String host = "???";
 	if(addr != null) 
 	  host = addr.getCanonicalHostName();
 
@@ -577,7 +585,7 @@ class QueueMgrServer
       }
       catch(ClassNotFoundException ex) {
 	InetAddress addr = pSocket.getInetAddress(); 
-	String host = "?";
+	String host = "???";
 	if(addr != null) 
 	  host = addr.getCanonicalHostName();
 

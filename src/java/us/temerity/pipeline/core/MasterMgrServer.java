@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.25 2004/11/16 03:56:36 jim Exp $
+// $Id: MasterMgrServer.java,v 1.26 2004/12/08 10:26:48 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -755,14 +755,33 @@ class MasterMgrServer
       }
       catch(AsynchronousCloseException ex) {
       }
+      catch (EOFException ex) {
+	InetAddress addr = pSocket.getInetAddress(); 
+	String host = "???";
+	if(addr != null) 
+	  host = addr.getCanonicalHostName();
+	
+	Logs.net.severe("Connection from (" + host + ":" + pPort + ") terminated abruptly!");
+      }
       catch (IOException ex) {
-	Logs.net.severe("IO problems on port (" + pPort + "):\n" + 
-			ex.getMessage());
-	ex.printStackTrace();
+	InetAddress addr = pSocket.getInetAddress(); 
+	String host = "???";
+	if(addr != null) 
+	  host = addr.getCanonicalHostName();
+
+	Logs.net.severe("IO problems on connection from " + 
+			"(" + host + ":" + pPort + "):\n" + 
+			getFullMessage(ex));
       }
       catch(ClassNotFoundException ex) {
-	Logs.net.severe("Illegal object encountered on port (" + pPort + "):\n" + 
-			ex.getMessage());	
+	InetAddress addr = pSocket.getInetAddress(); 
+	String host = "???";
+	if(addr != null) 
+	  host = addr.getCanonicalHostName();
+
+	Logs.net.severe("Illegal object encountered on connection from " + 
+			"(" + host + ":" + pPort + "):\n" + 
+			getFullMessage(ex));
       }
       catch (Exception ex) {
 	Logs.net.severe(ex.getMessage());
@@ -798,6 +817,39 @@ class MasterMgrServer
     private Socket         pSocket;
   }
   
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Generate a string containing both the exception message and stack trace. 
+   * 
+   * @param ex 
+   *   The thrown exception.   
+   */ 
+  private String 
+  getFullMessage
+  (
+   Throwable ex
+  ) 
+  {
+    StringBuffer buf = new StringBuffer();
+     
+    if(ex.getMessage() != null) 
+      buf.append(ex.getMessage() + "\n\n"); 	
+    else if(ex.toString() != null) 
+      buf.append(ex.toString() + "\n\n"); 	
+      
+    buf.append("Stack Trace:\n");
+    StackTraceElement stack[] = ex.getStackTrace();
+    int wk;
+    for(wk=0; wk<stack.length; wk++) 
+      buf.append("  " + stack[wk].toString() + "\n");
+   
+    return (buf.toString());
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
