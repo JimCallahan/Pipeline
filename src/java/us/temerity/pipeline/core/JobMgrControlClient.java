@@ -1,4 +1,4 @@
-// $Id: JobMgrControlClient.java,v 1.3 2004/08/23 03:03:32 jim Exp $
+// $Id: JobMgrControlClient.java,v 1.4 2004/09/03 01:52:31 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -261,6 +261,40 @@ class JobMgrControlClient
       handleFailure(obj);
       return null;
     } 
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   J O B   M A N A G E M E N T                                                          */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Clean up obsolete job resources. <P> 
+   * 
+   * The <CODE>jobIDs</CODE> argument contains the ID of all jobs which are still being 
+   * maintained by the the queue.  Any jobs not on this list are no longer reachable from
+   * any job group and therefore all resources associated with the job should be deleted.
+   * 
+   * @param jobIDs
+   *   The IDs of all active jobs.
+   * 
+   * @throws PipelineException 
+   *   If unable to perform the cleanup.
+   */ 
+  public synchronized void
+  cleanupResources
+  (
+   TreeSet<Long> jobIDs
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+    
+    JobCleanupResourcesReq req = new JobCleanupResourcesReq(jobIDs);
+    
+    Object obj = performTransaction(JobRequest.CleanupResources, req); 
+    handleSimpleResponse(obj);    
   }
 
 }

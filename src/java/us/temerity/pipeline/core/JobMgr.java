@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.6 2004/08/23 03:03:32 jim Exp $
+// $Id: JobMgr.java,v 1.7 2004/09/03 01:52:04 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -488,6 +488,95 @@ class JobMgr
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+  /*   J O B   M A N A G E M E N T                                                          */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Clean up obsolete job resources. <P> 
+   * 
+   * The <CODE>jobIDs</CODE> argument contains the ID of all jobs which are still being 
+   * maintained by the the queue.  Any jobs not on this list are no longer reachable from
+   * any job group and therefore all resources associated with the job should be deleted.
+   * 
+   * @param req
+   *   The cleanup request.
+   *
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to cleanup.
+   */ 
+  public synchronized Object
+  cleanupResources
+  (
+   JobCleanupResourcesReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer("JobMgr.cleanupResources()");
+
+    TreeSet<Long> live = req.getJobIDs();
+    Map<String,String> env = System.getenv();
+
+    File files[] = pJobDir.listFiles(); 
+    int wk;
+    for(wk=0; wk<files.length; wk++) {
+      File dir = files[wk];
+      try {
+	if(dir.isDirectory()) {
+	  Long jobID = new Long(dir.getName());
+	  if(!live.contains(jobID)) {
+	    boolean executing = false;
+	    {
+	      timer.aquire();
+	      synchronized(pExecuteTasks) {
+		timer.resume();
+		executing = pExecuteTasks.containsKey(jobID);
+	      }
+	    }
+	    
+	    if(!executing) {
+	      Logs.glu.finer("Cleaning Job: " + jobID);
+	      
+	      ArrayList<String> args = new ArrayList<String>();
+	      args.add("--recursive");
+	      args.add("--force");
+	      args.add(dir.toString());
+	      
+	      SubProcess proc = 
+		new SubProcess("Remove-JobFiles", "rm", args, env, pJobDir);
+	      proc.start();
+	      
+	      try {
+		proc.join();
+		if(!proc.wasSuccessful()) 
+		  throw new PipelineException
+		    ("Unable to remove the output files for job (" + jobID + "):\n\n" + 
+		     "  " + proc.getStdErr());	
+	      }
+	      catch(InterruptedException ex) {
+		throw new PipelineException
+		  ("Interrupted while removing the output files for job (" + jobID + ")!");
+	      }
+	    }
+	  }
+	}
+	else {
+	  Logs.glu.severe
+	    ("Illegal file encountered in the job output directory (" + dir + ")!");
+	}
+      }
+      catch(NumberFormatException ex) {
+	Logs.glu.severe("Illegal job output directory encountered (" + dir + ")!");
+      }
+      catch(PipelineException ex) {
+	Logs.ops.severe(ex.getMessage());
+      }
+    }
+    
+    return new SuccessRsp(timer);
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   J O B   O U T P U T                                                                  */
@@ -496,7 +585,7 @@ class JobMgr
   /**
    * Get current collected lines of captured STDOUT output from the given job starting 
    * at the given line. <P>
-  
+   * 
    * @param req
    *   The job output request.
    * 
