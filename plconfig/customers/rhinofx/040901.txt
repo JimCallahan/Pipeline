@@ -1,0 +1,37 @@
+BootClassPath = /usr/java/jdk1.5.0/jre/lib/rt.jar:/usr/java/jdk1.5.0/jre/lib/i18n.jar:/usr/java/jdk1.5.0/jre/lib/sunrsasign.jar:/usr/java/jdk1.5.0/jre/lib/jsse.jar:/usr/java/jdk1.5.0/jre/lib/jce.jar:/usr/java/jdk1.5.0/jre/lib/charsets.jar:/usr/java/jdk1.5.0/jre/classes
+EnableCaching = false
+FileHostname = fxpl
+FilePort = 53136
+HomeDirectory = /home
+HostIDs = 
+    fxlinux105.rhinofx.com        102139429554732251369589364177307886544
+    fxpl.rhinofx.com              87142390468521239938863263014391921847
+JavaClassVersion = 49.0
+JavaHome = /usr/java/jdk1.5.0/jre
+JavaName = Java HotSpot(TM) Server VM
+JavaVendor = Sun Microsystems Inc.
+JavaVersion = 1.5.0-beta2-b51
+JobPort = 53140
+LibraryPath = /usr/java/jdk1.5.0/jre/lib/ext
+LicenseEnd = Sun Aug 17 02:12:55 EST 292278994
+LicenseStart = Wed Sep 01 11:10:57 EDT 2004
+MasterHostname = fxpl
+MasterPort = 53135
+NodeDirectory = /usr/share/pipeline
+NotifyControlPort = 53137
+NotifyMonitorPort = 53138
+OS-Arch = i386
+OS-Name = Linux
+OS-Version = 2.4.21-9.0.1.ELsmp
+PipelineGroup = plnew
+PipelineGroupID = 552
+PipelineUser = plnew
+PipelineUserID = 552
+PlConfigVersion = 2.2.0
+ProductionDirectory = /vol/sledgehammer1/vol1/prod
+QueueDirectory = /usr/share/pipeline
+QueueHostname = fxlinux105
+QueuePort = 53139
+RootInstallDirectory = /base/apps
+TemporaryDirectory = /usr/tmp
+ToolsetDirectory = /base/toolset/pl-toolsets
