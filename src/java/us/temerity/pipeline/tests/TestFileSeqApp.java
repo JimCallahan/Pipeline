@@ -1,4 +1,4 @@
-// $Id: TestFileSeqApp.java,v 1.1 2004/02/14 18:49:17 jim Exp $
+// $Id: TestFileSeqApp.java,v 1.2 2004/03/03 07:49:27 jim Exp $
 
 import us.temerity.pipeline.*;
 
@@ -95,7 +95,7 @@ class TestFileSeqApp
 
     {
       FileSeq fseq = new FileSeq(new FilePattern("salamander", 0, "gif"), 
-				 new FrameRange(10, 123, 14));
+				 new FrameRange(10, 122, 14));
       test(fseq);
     }
     
@@ -116,7 +116,7 @@ class TestFileSeqApp
 
     {
       FileSeq fseq = new FileSeq(new FilePattern("heron", 6, "rgb"), 
-				 new FrameRange(1, 100, 25));
+				 new FrameRange(1, 101, 25));
       test(fseq);
     }
 
