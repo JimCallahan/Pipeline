@@ -1,11 +1,13 @@
-// $Id: JManagerPanel.java,v 1.7 2004/04/30 11:21:34 jim Exp $
+// $Id: JManagerPanel.java,v 1.8 2004/05/02 12:15:16 jim Exp $
 
 package us.temerity.pipeline.ui;
 
+import us.temerity.pipeline.*;
 import us.temerity.pipeline.laf.LookAndFeelLoader;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.util.*;
 import javax.swing.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -38,45 +40,152 @@ class JManagerPanel
   {
     super();
 
+    pAuthor = PackageInfo.sUser;
+    pView   = "default";
+
+    initUI();
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Initialize the common user interface components.
+   */ 
+  private void 
+  initUI()
+  {
     setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));   
 
     /* panel layout popup menu */ 
     {
       JMenuItem item;
       
-      pPopup = new JPopupMenu();    
-            
-      item = new JMenuItem("Add Tab");
-      pAddTabItem = item;
-      item.setActionCommand("add-tab");
-      item.addActionListener(this);
-      pPopup.add(item);  
-      
+      pPopup = new JPopupMenu();  
+ 
+      {
+	JMenu sub = new JMenu("Panel Type");   
+	pPopup.add(sub);  
+   
+	item = new JMenuItem("Node Browser");
+	pNodeBrowserItem = item;
+	item.setActionCommand("node-browser");
+	item.addActionListener(this);
+	sub.add(item);  
+	
+	item = new JMenuItem("Node Viewer");
+	pNodeViewerItem = item;
+	item.setActionCommand("node-viewer");
+	item.addActionListener(this);
+	sub.add(item);  
+	
+	sub.addSeparator();
+
+	item = new JMenuItem("Node Details");
+	pNodeDetailsItem = item;
+	item.setActionCommand("node-details");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	item = new JMenuItem("Node Links");
+	pNodeLinksItem = item;
+	item.setActionCommand("node-links");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	item = new JMenuItem("Node Files");
+	pNodeFilesItem = item;
+	item.setActionCommand("node-files");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	item = new JMenuItem("Node History");
+	pNodeHistoryItem = item;
+	item.setActionCommand("node-history");
+	item.addActionListener(this);
+	sub.add(item);  
+	
+	sub.addSeparator();
+
+	item = new JMenuItem("Queue Manager");
+	pQueueManagerItem = item;
+	item.setActionCommand("queue-manager");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	item = new JMenuItem("Job Details");
+	pJobDetailsItem = item;
+	item.setActionCommand("job-details");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	sub.addSeparator();
+
+	item = new JMenuItem("Task Timeline");
+	pTaskTimelineItem = item;
+	item.setActionCommand("task-timeline");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	item = new JMenuItem("Task Details");
+	pTaskDetailsItem = item;
+	item.setActionCommand("task-details");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	sub.addSeparator();
+
+	item = new JMenuItem("None");
+	pNoneItem = item;
+	item.setActionCommand("none");
+	item.addActionListener(this);
+	sub.add(item);
+      }
+
+      {
+	JMenu sub = new JMenu("Panel Layout");   
+	pPopup.add(sub);  
+   
+	item = new JMenuItem("Add Tab");
+	pAddTabItem = item;
+	item.setActionCommand("add-tab");
+	item.addActionListener(this);
+	sub.add(item);  
+	
+	sub.addSeparator();
+	
+	item = new JMenuItem("Add Left");
+	pAddLeftItem = item;
+	item.setActionCommand("add-left");
+	item.addActionListener(this);
+	sub.add(item);  
+	
+	item = new JMenuItem("Add Right");
+	pAddRightItem = item;
+	item.setActionCommand("add-right");
+	item.addActionListener(this);
+	sub.add(item);  
+	
+	sub.addSeparator();
+	
+	item = new JMenuItem("Add Above");
+	pAddAboveItem = item;
+	item.setActionCommand("add-above");
+	item.addActionListener(this);
+	sub.add(item);  
+	
+	item = new JMenuItem("Add Below");
+	pAddBelowItem = item;
+	item.setActionCommand("add-below");
+	item.addActionListener(this);
+	sub.add(item);  
+      }
+
       pPopup.addSeparator();
 
-      item = new JMenuItem("Add Left");
-      pAddLeftItem = item;
-      item.setActionCommand("add-left");
-      item.addActionListener(this);
-      pPopup.add(item);  
-      
-      item = new JMenuItem("Add Right");
-      pAddRightItem = item;
-      item.setActionCommand("add-right");
-      item.addActionListener(this);
-      pPopup.add(item);  
-	  
-      pPopup.addSeparator();
-      
-      item = new JMenuItem("Add Above");
-      pAddAboveItem = item;
-      item.setActionCommand("add-above");
-      item.addActionListener(this);
-      pPopup.add(item);  
-	  
-      item = new JMenuItem("Add Below");
-      pAddBelowItem = item;
-      item.setActionCommand("add-below");
+      item = new JMenuItem("Change Owner|View...");
+      pOwnerViewItem = item;
+      item.setActionCommand("change-owner-view");
       item.addActionListener(this);
       pPopup.add(item);  
     }
@@ -99,8 +208,7 @@ class JManagerPanel
 	panel.add(anchor);
       }
 
-      panel.add(Box.createHorizontalGlue());
-      panel.add(Box.createRigidArea(new Dimension(8, 0)));
+      panel.add(Box.createRigidArea(new Dimension(16, 0)));
 
       {
 	JToggleButton btn = new JToggleButton();
@@ -120,36 +228,35 @@ class JManagerPanel
       panel.add(Box.createRigidArea(new Dimension(4, 0)));
 
       {
-	JComboBox combo = new JComboBox();
-	pSelectorCombo = combo;
+	JTextField field = new JTextField(pAuthor + " | " + pView);
+	pOwnerViewField = field;
 
-	combo.setRenderer(new JComboBoxCellRenderer());
+	Dimension size = new Dimension(120, 19);
+	field.setMinimumSize(size);
+	field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+	field.setPreferredSize(size);
 
-	Dimension size = new Dimension(155, 19);
-	combo.setMinimumSize(size);
-	combo.setMaximumSize(size);
-	combo.setPreferredSize(size);
-
-	combo.setActionCommand("select-panel-type");
-        combo.addActionListener(this);
-
-	combo.addItem("Node Browser");
-	combo.addItem("Node Viewer");
-	combo.addItem("Node Properties");
-	combo.addItem("Node Links");
-	combo.addItem("Node Files");
-	combo.addItem("Node History");
-	combo.addItem("Queue Manager");
-	combo.addItem("Job Details");
-	combo.addItem("Task Timeline");
-	combo.addItem("Task Details");
-	combo.addItem("Empty");
+	field.setHorizontalAlignment(JLabel.CENTER);
+	field.setEditable(false);
 	
-	panel.add(combo);
+	panel.add(field);
       }
 
-      panel.add(Box.createRigidArea(new Dimension(8, 0)));
-      panel.add(Box.createHorizontalGlue());
+      panel.add(Box.createRigidArea(new Dimension(4, 0)));
+
+      {
+	JToggleButton btn = new JToggleButton();
+	btn.setName("LockedLight");
+
+	Dimension size = new Dimension(16, 19);
+	btn.setMinimumSize(size);
+	btn.setMaximumSize(size);
+	btn.setPreferredSize(size);
+
+	panel.add(btn);
+      }
+
+      panel.add(Box.createRigidArea(new Dimension(16, 0)));
 
       {
 	JButton btn = new JButton();
@@ -252,6 +359,35 @@ class JManagerPanel
   }
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   U S E R   I N T E R F A C E                                                          */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Disable new client/server operations until the current operation is complete.
+   */ 
+  public void 
+  disableOps() 
+  {
+
+    // ...
+
+  }
+
+  /**
+   * Reenable client/server operations.
+   */ 
+  public void 
+  enableOps() 
+  {
+
+    // ...
+
+  }
+
+
+
   /*----------------------------------------------------------------------------------------*/
   /*   L I S T E N E R S                                                                    */
   /*----------------------------------------------------------------------------------------*/
@@ -270,9 +406,7 @@ class JManagerPanel
     System.out.print("Action: " + e.getActionCommand() + "\n");
 
     /* dispatch event */ 
-    if(e.getActionCommand().equals("select-panel-type")) 
-      System.out.print("Select Panel: " + pSelectorCombo.getSelectedItem() + "\n");
-    else if(e.getActionCommand().equals("add-left"))
+    if(e.getActionCommand().equals("add-left"))
       doAddLeft();
     else if(e.getActionCommand().equals("add-right"))
       doAddRight();
@@ -282,11 +416,13 @@ class JManagerPanel
       doAddBelow();
     else if(e.getActionCommand().equals("add-tab"))
       doAddTab();
+    else if(e.getActionCommand().equals("close-panel"))
+      doClosePanel();
 
     // ...
 
-    else if(e.getActionCommand().equals("close-panel"))
-      doClosePanel();
+    else if(e.getActionCommand().equals("change-owner-view"))
+      doChangeOwnerView();
   }
 
 
@@ -488,6 +624,36 @@ class JManagerPanel
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Change the owner|view of this panel.
+   */ 
+  private void 
+  doChangeOwnerView()
+  {
+    UIMaster master = UIMaster.getInstance();
+
+    TreeMap<String,TreeSet<String>> working = null;
+    try {
+      working = master.getWorkingAreas(); 
+    }
+    catch(PipelineException ex) {
+      master.showErrorDialog(ex);
+      return;
+    }
+
+    JOwnerViewDialog dialog = new JOwnerViewDialog(pAuthor, pView, working);
+    dialog.setVisible(true);
+    
+    if(dialog.wasConfirmed()) {
+      pAuthor = dialog.getAuthor();
+      pView   = dialog.getView();
+
+      pOwnerViewField.setText(pAuthor + " | " + pView);
+    }
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -509,11 +675,6 @@ class JManagerPanel
    */ 
   private JPanel  pTitlePanel;
 
-  /**
-   * The combo box used to select the panel type.
-   */ 
-  private JComboBox  pSelectorCombo;
-
 
   /**
    * The panel layout popup menu.
@@ -523,9 +684,40 @@ class JManagerPanel
   /**
    * The popup menu items.
    */ 
+  private JMenuItem  pNodeBrowserItem;
+  private JMenuItem  pNodeViewerItem;
+  private JMenuItem  pNodeDetailsItem;
+  private JMenuItem  pNodeLinksItem;
+  private JMenuItem  pNodeFilesItem;
+  private JMenuItem  pNodeHistoryItem;
+  private JMenuItem  pQueueManagerItem;
+  private JMenuItem  pJobDetailsItem;
+  private JMenuItem  pTaskTimelineItem;
+  private JMenuItem  pTaskDetailsItem;
+  private JMenuItem  pNoneItem;
+
   private JMenuItem  pAddTabItem; 
   private JMenuItem  pAddLeftItem; 
   private JMenuItem  pAddRightItem; 
   private JMenuItem  pAddAboveItem; 
-  private JMenuItem  pAddBelowItem;   
+  private JMenuItem  pAddBelowItem; 
+
+  private JMenuItem  pOwnerViewItem;
+
+
+  /**
+   * The combo box used to select the panel type.
+   */ 
+  private JTextField  pOwnerViewField;
+
+  /** 
+   * The name of user which owns the working area view associated with this panel.
+   */
+  private String  pAuthor;
+
+  /** 
+   * The name of the working area view associated with this panel.
+   */
+  private String  pView;
+
 }
