@@ -1,4 +1,4 @@
-// $Id: SubProcess.java,v 1.16 2004/08/29 09:22:06 jim Exp $
+// $Id: SubProcess.java,v 1.17 2004/09/05 06:43:24 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -666,6 +666,7 @@ class SubProcess
     }
       
     /* the monitoring tasks */ 
+    String extraErrors = null;
     StdOutTask stdout = new StdOutTask(getName());
     StdErrTask stderr = new StdErrTask(getName());
     StatsTask  stats  = new StatsTask(getName());
@@ -681,8 +682,11 @@ class SubProcess
       }
       catch(IOException ex) {
 	Logs.sub.warning(ex.getMessage());
+	extraErrors = ex.getMessage();
+	pExitCode = -1;
       }
       finally {
+	assert(pExitCode != null);
 	pIsFinished.set(true);
       }
       
@@ -701,6 +705,12 @@ class SubProcess
     assert(!stderr.isAlive());
     assert(!stats.isAlive());
     
+    if(extraErrors != null) {
+      synchronized(pErrLines) {
+	pErrLines.add(extraErrors);
+      }
+    }
+
     if(Logs.sub.isLoggable(Level.FINE)) {
       StringBuffer buf = new StringBuffer();
       buf.append(getName() + " [exit]: ");
