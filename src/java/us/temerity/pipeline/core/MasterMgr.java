@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.64 2004/11/05 19:41:56 jim Exp $
+// $Id: MasterMgr.java,v 1.65 2004/11/05 23:47:04 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3710,16 +3710,15 @@ class MasterMgr
       timer.resume();	      
 
       /* get the current status of the nodes */ 
-      HashMap<NodeID,NodeStatus> table = new HashMap<NodeID,NodeStatus>();
-      {
-	NodeStatus status = performNodeOperation(new NodeOp(), req.getNodeID(), false, timer);
-	buildStatusTable(status, table);
-      }
+      HashMap<String,NodeStatus> table = new HashMap<String,NodeStatus>();
+      performUpstreamNodeOp(new NodeOp(), req.getNodeID(), false,
+			    new LinkedList<String>(), table, timer);
 
       /* check-out the nodes */ 
       performCheckOut(true, nodeID, req.getVersionID(), req.getMode(), table, 
 		      new LinkedList<String>(), new HashSet<String>(), new HashSet<String>(), 
 		      timer);
+
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
@@ -3730,31 +3729,6 @@ class MasterMgr
     finally {
       pDatabaseLock.readLock().unlock();
     } 
-  }
-
-  /**
-   * Build a node status table indexed by node ID by traversing the status tree.
-   * 
-   * @param status
-   *   The current node status.
-   * 
-   * @param table
-   *   The current node status indexed by node ID.
-   */ 
-  private void 
-  buildStatusTable
-  (
-   NodeStatus status, 
-   HashMap<NodeID,NodeStatus> table
-  ) 
-  {
-    if(table.containsKey(status.getNodeID())) 
-      return;
-
-    table.put(status.getNodeID(), status);
-
-    for(NodeStatus lstatus : status.getSources()) 
-      buildStatusTable(lstatus, table);
   }
 
   /**
@@ -3776,8 +3750,8 @@ class MasterMgr
    *   The criteria used to determine whether nodes upstream of the root node of the check-out
    *   should also be checked-out.
    *
-   * @param table
-   *   The current node status indexed by node ID.
+   * @param stable
+   *   The current node status indexed by fully resolved node name.
    * 
    * @param branch
    *   The names of the nodes from the root to this node.
@@ -3803,7 +3777,7 @@ class MasterMgr
    NodeID nodeID, 
    VersionID vid, 
    CheckOutMode mode,
-   HashMap<NodeID,NodeStatus> stable,
+   HashMap<String,NodeStatus> stable,
    LinkedList<String> branch, 
    HashSet<String> seen, 
    HashSet<String> dirty, 
@@ -3823,23 +3797,28 @@ class MasterMgr
     /* push the current node onto the end of the branch */ 
     branch.addLast(name);
 
-    /* make sure the node does have any active jobs */
+    /* lookup or compute the node status */ 
     NodeDetails details = null;
     {
-      NodeStatus status = stable.get(nodeID);
-      if(status != null) {
-	details = status.getDetails();
-	if(details != null) {
-	  switch(details.getOverallQueueState()) {
-	  case Queued:
-	  case Paused:
-	  case Running:
-	    throw new PipelineException
-	      ("The node (" + nodeID + ") cannot be checked-out while there are active " + 
-	       "jobs associated with the node!");	      
-	  }
-	}
+      NodeStatus status = stable.get(name);
+      if(status == null) {
+	performUpstreamNodeOp(new NodeOp(), nodeID, false,
+			      new LinkedList<String>(), stable, timer);
+	status = stable.get(name);
       }
+
+      details = status.getDetails();
+      assert(details != null);
+    }
+
+    /* make sure the node does have any active jobs */
+    switch(details.getOverallQueueState()) {
+    case Queued:
+    case Paused:
+    case Running:
+      throw new PipelineException
+	("The node (" + nodeID + ") cannot be checked-out while there are active " + 
+	 "jobs associated with the node!");	      
     }
 
     timer.aquire();
