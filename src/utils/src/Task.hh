@@ -1,4 +1,4 @@
-// $Id: Task.hh,v 1.1 2004/04/05 05:50:07 jim Exp $
+// $Id: Task.hh,v 1.2 2004/04/06 08:58:52 jim Exp $
 
 #ifndef PIPELINE_TASK_HH
 #define PIPELINE_TASK_HH
@@ -40,7 +40,11 @@ public:
   /**
    * Construct a new task.
    */ 
-  Task() : 
+  Task
+  (
+   const char* name = "UnknownTask"
+  ) : 
+    pName(strdup(name)), 
     pPID(-1), 
     pStack(NULL)
   {}
@@ -53,6 +57,8 @@ public:
 
   ~Task()
   {
+    delete[] pName;
+
     if(pStack != NULL)
       delete[] pStack;
   }
@@ -64,10 +70,19 @@ public:
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * 
+   */ 
+  const char* 
+  getName() const
+  {
+    return pName;
+  }
+
+  /**
    * Get the OS process ID for the thread.
    */ 
   int 
-  getPID() 
+  getPID() const 
   {
     return pPID;
   }
@@ -81,7 +96,7 @@ public:
   /**
    * Run the task. 
    */ 
-  virtual void 
+  virtual int
   run() = 0;
 
 
@@ -108,11 +123,11 @@ public:
     pStack = new char[stackSize];
     pPID = clone(TaskLauncher, (void*) (pStack+stackSize-1), CLONE_VM, (void*) this);
     if(pPID == -1) {
-      sprintf(msg, "Unable to spawn task thread: %s", strerror(errno));
+      sprintf(msg, "Unable to spawn %s: %s", pName, strerror(errno));
       FB::error(msg);
     }      
 
-    printf("Spawned Thread (%d)\n", pPID);
+    printf("Spawned Thread: %s[%d]\n", pName, pPID);
   }
 
   /**
@@ -122,29 +137,37 @@ public:
    *   The exit code returned from the Task::run() method.
    */ 
   int 
-  wait()
+  wait() const 
   {
     assert(pPID > 0);
     char msg[1024];
 
     int status;
     if(waitpid(pPID, &status, __WCLONE) == -1) {
-      sprintf(msg, "Unable to wait for task thread (%d): %s", pPID, strerror(errno));
-      FB::error(msg);
+      switch(errno) {
+      case ECHILD:
+	return EXIT_SUCCESS;
+
+      default:	
+	sprintf(msg, "Unable to wait for %s[%d] to exit: %s", 
+		pName, pPID, strerror(errno));
+	FB::error(msg);
+      }
     }
 
     if(WIFEXITED(status))
       return WEXITSTATUS(status);
     else if(WIFSIGNALED(status)) {
-      sprintf(msg, "Task thread (%d) exited due to signal (%d)!", pPID, WTERMSIG(status));
-      FB::error(msg);
+      sprintf(msg, "%s[%d]: Exited due to signal (%d)!", 
+	      pName, pPID, WTERMSIG(status));
+      FB::warn(msg);
     }
     else if(WCOREDUMP(status)) {
-      sprintf(msg, "Task thread (%d) core dumped!", pPID);
+      sprintf(msg, "%s[%d]: Core dumped!", pName, pPID);
       FB::error(msg);
     }
 
-    return -1;
+    return EXIT_FAILURE;
   }
 
 
@@ -153,6 +176,11 @@ protected:
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The name of the task.
+   */ 
+  char* pName; 
 
   /**
    * The OS process ID of the thread running the task.
@@ -180,10 +208,7 @@ TaskLauncher
 ) 
 {
   Task* task = (Task*) obj;
-  task->run();
-
-  assert(false);
-  return 0;
+  return (task->run());
 }
 
 

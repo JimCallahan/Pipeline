@@ -1,4 +1,4 @@
-// $Id: NotifyMgr.hh,v 1.2 2004/04/05 06:27:55 jim Exp $
+// $Id: NotifyMgr.hh,v 1.3 2004/04/06 08:58:52 jim Exp $
 
 #ifndef PIPELINE_NOTIFY_MGR_HH
 #define PIPELINE_NOTIFY_MGR_HH
@@ -11,7 +11,7 @@
 #  include <list>
 #endif
 
-#include <Lock.hh>
+#include <LockSet.hh>
 #include <NotifyTask.hh>
 
 namespace Pipeline {
@@ -36,7 +36,7 @@ private:
   /*   T Y P E S                                                                            */
   /*----------------------------------------------------------------------------------------*/
 
-  typedef std::list<NotifyTask*> TaskList;
+  typedef std::list<NotifyTask*>  TaskList;
 
   
 private:
@@ -62,8 +62,15 @@ public:
   ( 
    const char* dir
   ) : 
+    pShutdown(false),
     pRootDir(strdup(dir))
   {
+    pShutdownID = pLockSet.initLock();
+    assert(pShutdownID != -1);
+    pLockSet.lock(pShutdownID);
+
+    pLockID = pLockSet.initLock();
+    assert(pLockID != -1);
   }
 
 
@@ -74,6 +81,9 @@ public:
   ~NotifyMgr()
   {
     delete[] pRootDir;
+
+    pLockSet.releaseLock(pShutdownID);
+    pLockSet.releaseLock(pLockID);
     
     assert(pTasks.empty());
   }
@@ -83,6 +93,16 @@ public:
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the shared lock set.
+   */
+  LockSet& 
+  getLockSet()  
+  {
+    return pLockSet;
+  }
+  
 
   /**
    * Add the given directory to the set of directories monitored for change notification.
@@ -108,16 +128,33 @@ public:
    const char* dir
   );
 
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   T A S K   C O N T R O L                                                              */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Order the task to exit as soon as possible.
+   * Order all associated tasks to exit as soon as possible.
    */ 
   void
-  shutdown();
+  shutdown()
+  {
+    printf("NotifyMgr::shutdown()!\n");
+    
+    pShutdown = true;
+    pLockSet.unlock(pShutdownID);
+  }
+
+  /**
+   * Has a shutdown order been given?
+   */ 
+  bool
+  isShutdown() const 
+  {
+    return pShutdown;
+  }
+
 
   /**
    * Wait for all tasks to exit.
@@ -148,9 +185,30 @@ private:
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Protects access to the internal variables.
+   * The shared set of locks.
    */
-  Lock  pLock;
+  LockSet pLockSet;
+
+
+
+  /**
+   * The ID of the shutdown lock.  
+   * 
+   * This lock is aquired in the constructor and released when shutdown() is called.
+   */ 
+  int pShutdownID;
+
+  /** 
+   * Has the order been given to exit as soon as possible?
+   */ 
+  bool pShutdown;
+
+
+
+  /**
+   * The ID of the lock which protects access to the following internal variables.
+   */
+  int pLockID;
 
   /** 
    * The root directory of all watched directories.

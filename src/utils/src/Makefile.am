@@ -20,6 +20,17 @@ instsbin_PROGRAMS = \
 plrun_SOURCES = FB.cc PackageInfo.cc PlRun.cc 
 
 plnotify_SOURCES = FB.cc PackageInfo.cc NotifyTask.cc NotifyMgr.cc PlNotify.cc 
+plnotify_LDADD = $(PTHREAD_LIB)
+
+
+
+noinst_PROGRAMS = \
+  test-plnotify \
+  test-locks
+
+test_plnotify_SOURCES = FB.cc PackageInfo.cc TestPlNotify.cc
+
+test_locks_SOURCES = FB.cc PackageInfo.cc TestLocks.cc
 
 
 

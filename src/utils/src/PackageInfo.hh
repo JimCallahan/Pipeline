@@ -1,4 +1,4 @@
-// $Id: PackageInfo.hh,v 1.8 2004/04/05 05:52:35 jim Exp $
+// $Id: PackageInfo.hh,v 1.9 2004/04/06 08:58:52 jim Exp $
 
 #ifndef PIPELINE_PACKAGE_INFO_HH
 #define PIPELINE_PACKAGE_INFO_HH
@@ -42,6 +42,13 @@ public:
    */ 
   static const int sPipelineGID;
 
+
+  /** 
+   * The root directory of the file repository. 
+   * 
+   * Set by the ProductionDirectory customer profile entry.
+   */
+  static const char* sProdDir;
 
   /**
    * The port number listened to by the Pipeline directory change notification daemon 

@@ -1,4 +1,4 @@
-// $Id: PlNotify.cc,v 1.2 2004/04/05 06:27:55 jim Exp $
+// $Id: PlNotify.cc,v 1.3 2004/04/06 08:58:52 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -7,16 +7,18 @@
 #include <PackageInfo.hh>
 #include <HtmlHelp.hh>
 #include <NotifyMgr.hh>
+#include <NotifyControlServer.hh>
+#include <Network.hh>
 
 using namespace Pipeline;
 
 /*------------------------------------------------------------------------------------------*/
 /*   P L   N O T I F Y                                                                      */
-/*                                                                                          */
-/*                                                                                          */
 /*------------------------------------------------------------------------------------------*/
 
-/* usage message */ 
+/**
+ * The usage message.
+*/ 
 void
 usage()
 {
@@ -31,7 +33,7 @@ usage()
 	    << "  plnotify --license\n" 
 	    << "\n" 
 	    << "OPTIONS:\n" 
-	    << "  [--control-port=NUM][--monitor-port=NUM]\n" 
+	    << "  [--prod=DIR][--control-port=NUM][--monitor-port=NUM]\n" 
 	    << "  [--stats=LEVEL][--warnings=LEVEL]\n" 
 	    << "\n"
 	    << "Use \"plnotify --html-help\" to browse the full documentation.\n" 
@@ -39,6 +41,24 @@ usage()
 }
 
 
+/**
+ * Makes sure that the exit functions are called for: SIGHUP, SIGINT or SIGTERM
+ * 
+ * This is mainly to make sure that the semaphores used by LockSet are properly 
+ * released on exit of plnotify(1).
+ */ 
+void
+handleSignal
+(
+ int signal
+) 
+{
+  exit(EXIT_FAILURE);
+}
+
+/**
+ * The top-level function.
+ */ 
 int
 main
 (
@@ -49,58 +69,59 @@ main
 {
   /* parse command line args */ 
   char msg[2048];
+  const char* prodDir = PackageInfo::sProdDir;
   int controlPort = PackageInfo::sNotifyControlPort;
   int monitorPort = PackageInfo::sNotifyMonitorPort;
   int statsLevel = -1;
   int warningsLevel = -1;
-  switch(argc) {
-  case 1:
-    break;
-
-  case 2:
-    if(strcmp(argv[1], "--help") == 0) {
-      usage();
-      exit(EXIT_SUCCESS);
-    }
-    else if(strcmp(argv[1], "--html-help") == 0) {
-      HtmlHelp::launch("pls");
-    }
-    else if(strcmp(argv[1], "--version") == 0) {
-      std::cerr << PackageInfo::sVersion << "\n";
-      exit(EXIT_SUCCESS);
-    }
-    else if(strcmp(argv[1], "--release-date") == 0) {
-      std::cerr << PackageInfo::sRelease << "\n";
-      exit(EXIT_SUCCESS);
-    }
-    else if(strcmp(argv[1], "--copyright") == 0) {
-      std::cerr << PackageInfo::sCopyright << "\n";
-      exit(EXIT_SUCCESS);
-    }
-    else if(strcmp(argv[1], "--license") == 0) {
-      std::cerr << PackageInfo::sLicense << "\n";
-      exit(EXIT_SUCCESS);
-    }
-  }
-
   {
     int i = 1;
     for(i=1; i<argc; i++) {
-      if(strncmp(argv[i], "--control-port=", 15) == 0) 
-	controlPort = atol(argv[i]+15);
-      if(strncmp(argv[i], "--monitor-port=", 15) == 0) 
-	monitorPort = atol(argv[i]+15);
-      else if(strncmp(argv[i], "--stats=", 8) == 0) 
+      if(strcmp(argv[i], "--help") == 0) {
+ 	usage();
+ 	exit(EXIT_SUCCESS);
+      }
+      else if(strcmp(argv[i], "--html-help") == 0) {
+ 	HtmlHelp::launch("plnotify");
+      }
+      else if(strcmp(argv[i], "--version") == 0) {
+ 	std::cerr << PackageInfo::sVersion << "\n";
+ 	exit(EXIT_SUCCESS);
+      }
+      else if(strcmp(argv[i], "--release-date") == 0) {
+ 	std::cerr << PackageInfo::sRelease << "\n";
+ 	exit(EXIT_SUCCESS);
+       }
+      else if(strcmp(argv[i], "--copyright") == 0) {
+ 	std::cerr << PackageInfo::sCopyright << "\n";
+ 	exit(EXIT_SUCCESS);
+      }
+      else if(strcmp(argv[i], "--license") == 0) {
+ 	std::cerr << PackageInfo::sLicense << "\n";
+ 	exit(EXIT_SUCCESS);
+      }
+      else if(strncmp(argv[i], "--prod=", 7) == 0) {
+ 	prodDir = argv[i]+7; 
+      }
+      else if(strncmp(argv[i], "--control-port=", 15) == 0) {
+ 	controlPort = atol(argv[i]+15);
+      }
+      else if(strncmp(argv[i], "--monitor-port=", 15) == 0) {
+ 	monitorPort = atol(argv[i]+15);
+      }
+      else if(strncmp(argv[i], "--stats=", 8) == 0) {
 	statsLevel = atoi(argv[i]+8);
-      else if(strncmp(argv[i], "--warnings=", 11) == 0) 
+      }
+      else if(strncmp(argv[i], "--warnings=", 11) == 0) {
 	warningsLevel = atoi(argv[i]+11);
+      }
       else if(strncmp(argv[i], "--", 2) == 0) {
-	sprintf(msg, "Illegal option: %s", argv[i]);
-	FB::error(msg);
+ 	sprintf(msg, "Illegal option: %s", argv[i]);
+ 	FB::error(msg);
       }
       else {
-	sprintf(msg, "Illegal argument: %s", argv[i]);
-	FB::error(msg);
+ 	sprintf(msg, "Illegal argument: %s", argv[i]);
+ 	FB::error(msg);
       }
     }
   }
@@ -122,44 +143,39 @@ main
   }
 
 
+  /* register signal handlers for: SIGHUP, SIGINT and SIGTERM */ 
+  {
+    struct sigaction sa;
+    sa.sa_handler = handleSignal;
 
+    int signals[3] = { SIGHUP, SIGINT, SIGTERM };
+    int wk;
+    for(wk=0; wk<3; wk++) {
+      if(sigaction(signals[wk], &sa, NULL) == -1) {
+	sprintf(msg, "Unable to register the signal handler: %s", strerror(errno));
+	FB::error(msg);
+      }
+    }
+  }
+  
 
+  /* startup the notify, control and monitory threads */ 
   FB::stageBegin("Working...", 1);
   {
-    NotifyMgr mgr("/usr/tmp");
+    NotifyMgr mgr(prodDir);
 
-    /* monitor some directories */ 
-    int wk; 
-    for(wk=0; wk<3000; wk++) {
-      char dir[1024];
-      sprintf(dir, "clone/%d", wk);
-      mgr.addDir(dir);
-    }
+//     NotifyMonitorServer monitor(mgr, monitorPort);
+//     monitor.spawn();
 
-    /* unmonitor some directories */ 
-    for(wk=0; wk<1500; wk+=2) {
-      char dir[1024];
-      sprintf(dir, "clone/%d", wk);
-      mgr.removeDir(dir);
-    }
-
-    sleep(15);
-
-    /* monitor some more directories */ 
-    for(wk=0; wk<200; wk++) {
-      char dir[1024];
-      sprintf(dir, "clone/%d", wk);
-      mgr.addDir(dir);
-    }
-
-    sleep(60);
-
-    mgr.shutdown();
+    NotifyControlServer control(mgr, controlPort);
+    control.spawn();
+ 
     mgr.wait();
   }
   FB::stageEnd(1);
 
-
-
   return EXIT_SUCCESS;
 }
+
+
+

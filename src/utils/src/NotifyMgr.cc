@@ -1,4 +1,4 @@
-// $Id: NotifyMgr.cc,v 1.1 2004/04/05 06:27:55 jim Exp $
+// $Id: NotifyMgr.cc,v 1.2 2004/04/06 08:58:52 jim Exp $
 
 #include <NotifyMgr.hh>
 
@@ -31,7 +31,10 @@ NotifyMgr::addDir
  const char* dir
 ) 
 {
-  pLock.lock();
+  if(pShutdown) 
+    return;
+
+  pLockSet.lock(pLockID);
   {
     bool added = false;
     {
@@ -39,13 +42,13 @@ NotifyMgr::addDir
       for(iter = pTasks.begin(); iter != pTasks.end(); iter++) {
 	if((*iter)->addDir(dir)) {
 	  added = true;
-	    break;
+	  break;
 	}
       }
     }
 
     if(!added) {
-      NotifyTask* task = new NotifyTask(this, pRootDir);
+      NotifyTask* task = new NotifyTask(*this, pRootDir);
       pTasks.push_back(task);
       
       task->spawn();
@@ -54,7 +57,7 @@ NotifyMgr::addDir
 	FB::error("Unable to add a directory to freshly created NotifyTask!");
     }
   }
-  pLock.unlock();      
+  pLockSet.unlock(pLockID);
 }
   
 /**
@@ -69,13 +72,16 @@ NotifyMgr::removeDir
  const char* dir
 ) 
 {
-  pLock.lock();
+  if(pShutdown) 
+    return;
+
+  pLockSet.lock(pLockID);
   {    
     TaskList::iterator iter;
     for(iter = pTasks.begin(); iter != pTasks.end(); iter++)
 	(*iter)->removeDir(dir);
   }
-  pLock.unlock();     
+  pLockSet.unlock(pLockID);     
 }
   
 
@@ -85,28 +91,20 @@ NotifyMgr::removeDir
 /*----------------------------------------------------------------------------------------*/
 
 /**
- * Order the task to exit as soon as possible.
- */ 
-void
-NotifyMgr::shutdown()
-{
-  pLock.lock();
-  {    
-    TaskList::iterator iter;
-    for(iter = pTasks.begin(); iter != pTasks.end(); iter++) 
-      (*iter)->shutdown();
-  }
-  pLock.unlock();  
-}
-
-/**
  * Wait for all tasks to exit.
  */ 
 void
 NotifyMgr::wait()
 {
-  pLock.lock();
+  printf("Waiting for Shutdown...\n");
+  pLockSet.lock(pShutdownID);
+
+  printf("Waiting for NotifyMgr lock...\n");
+  pLockSet.lock(pLockID);
   {    
+
+    printf("Waiting for NotifyTasks to exit...\n");
+
     TaskList::iterator iter;
     for(iter = pTasks.begin(); iter != pTasks.end(); iter++) {
       int code = (*iter)->wait();
@@ -119,7 +117,7 @@ NotifyMgr::wait()
     }
     pTasks.clear();
   }
-  pLock.unlock();  
+  pLockSet.unlock(pLockID);  
 }
 
 
@@ -136,7 +134,10 @@ NotifyMgr::modified
  const char* dir
 )
 {
-  pLock.lock();
+  if(pShutdown) 
+    return;
+
+  pLockSet.lock(pLockID);    
   {    
 
     // DEBUG
@@ -144,7 +145,7 @@ NotifyMgr::modified
     // DEBUG
 
   }
-  pLock.unlock();  
+  pLockSet.unlock(pLockID);  
 }
 
 
