@@ -1,0 +1,44 @@
+<synth>
+  <style id="default">
+    <opaque value="true"/>
+    <state>
+      <color value="#ffffff" type="FOREGROUND"/>
+      <color value="#7f7f7f" type="BACKGROUND"/>
+    </state>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="default" type="region" key=".*"/>
+
+  <style id="splitpane">
+    <imagePainter path="BorderIn.png" 
+                  sourceInsets="6 6 6 6"
+                  paintCenter="true"/>
+    <insets top="6" bottom="6" right="6" left="6"/>
+  </style>
+  <bind style="splitpane" type="region" key="SplitPane"/>
+
+  <style id="splitpanedivider">
+    <imagePainter path="VBar.png"
+                  sourceInsets="4 4 4 4" 
+		  paintCenter="true"/>
+    <insets top="4" bottom="4" right="4" left="4"/>
+  </style>
+  <bind style="splitpanedivider" type="region" key="SplitPaneDivider"/>
+
+  <style id="splitpaneleftbutton">
+    <imagePainter path="VBarLeftButton.png"
+                  sourceInsets="2 2 2 2" 
+		  paintCenter="true"/>
+    <insets top="2" bottom="2" right="2" left="2"/>
+  </style>
+  <bind style="splitpaneleftbutton" type="name" key="SplitPaneDivider.leftOneTouchButton"/>
+
+  <style id="splitpanerightbutton">
+    <imagePainter path="VBarRightButton.png"
+                  sourceInsets="2 2 2 2" 
+		  paintCenter="true"/>
+    <insets top="2" bottom="2" right="2" left="2"/>
+  </style>
+  <bind style="splitpanerightbutton" type="name" key="SplitPaneDivider.rightOneTouchButton"/>
+
+</synth>
