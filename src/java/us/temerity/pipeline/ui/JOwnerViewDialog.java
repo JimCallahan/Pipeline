@@ -1,4 +1,4 @@
-// $Id: JOwnerViewDialog.java,v 1.3 2004/05/08 15:07:59 jim Exp $
+// $Id: JOwnerViewDialog.java,v 1.4 2004/05/08 23:38:38 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -80,7 +80,7 @@ class JOwnerViewDialog
 	body.add(Box.createRigidArea(new Dimension(20, 0)));
       }
 
-      super.initUI("Change Owner|View", true, body, "Confirm", null, "Cancel");
+      super.initUI("Change Owner|View", true, body, "Confirm", null, null, "Cancel");
     }
 
       

@@ -1,4 +1,4 @@
-// $Id: JAboutDialog.java,v 1.1 2004/05/08 15:13:09 jim Exp $
+// $Id: JAboutDialog.java,v 1.2 2004/05/08 23:38:38 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -66,7 +66,7 @@ class JAboutDialog
       pTitlePanel.add(Box.createVerticalGlue());
       pValuePanel.add(Box.createVerticalGlue());
 
-      super.initUI("About Pipeline:", false, body, null, null, "Close");
+      super.initUI("About Pipeline:", false, body, null, null, null, "Close");
     }  
 
     setResizable(false);

@@ -1,4 +1,4 @@
-// $Id: JBaseDialog.java,v 1.3 2004/05/08 15:06:13 jim Exp $
+// $Id: JBaseDialog.java,v 1.4 2004/05/08 23:38:38 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -94,10 +94,16 @@ class JBaseDialog
    * @param apply
    *   The title of the apply button.
    * 
+   * @param extra
+   *   An array of title/action-command strings pairs used to create extra buttons.
+   * 
    * @param cancel
    *   The title of the cancel button.
+   * 
+   * @return 
+   *   The array of created extra buttons or <CODE>null</CODE> if extra was <CODE>null</CODE>.
    */ 
-  protected void 
+  protected JButton[]
   initUI
   (
    String title,  
@@ -105,6 +111,7 @@ class JBaseDialog
    JComponent body, 
    String confirm, 
    String apply, 
+   String[][] extra,
    String cancel
   ) 
   {
@@ -118,8 +125,10 @@ class JBaseDialog
       
       {
 	JLabel label = new JLabel(title);
-	label.setName("DialogHeaderLabel");
-	
+	pHeaderLabel = label;
+
+	label.setName("DialogHeaderLabel");	
+
 	panel.add(label);	  
       }
       
@@ -131,6 +140,7 @@ class JBaseDialog
     if(body != null) 
       root.add(body);
 
+    JButton[] extraBtns = null;
     {
       JPanel panel = new JPanel();
       
@@ -174,8 +184,35 @@ class JBaseDialog
 	
 	panel.add(btn);	  
       }
-      
-      if(((confirm != null) || (apply != null)) && (cancel != null))
+
+      if(((confirm != null) || (apply != null)) && (extra != null)) 
+	panel.add(Box.createRigidArea(new Dimension(20, 0)));
+
+      if(extra != null) {
+	extraBtns = new JButton[extra.length];
+
+	int wk;
+	for(wk=0; wk<extra.length; wk++) {
+	  JButton btn = new JButton(extra[wk][0]);
+	  extraBtns[wk] = btn;
+	  btn.setName("RaisedButton");
+	
+	  Dimension size = new Dimension(108, 31);
+	  btn.setMinimumSize(size);
+	  btn.setMaximumSize(size);
+	  btn.setPreferredSize(size);
+	  
+	  btn.setActionCommand(extra[wk][1]);
+	  btn.addActionListener(this);
+	
+	  panel.add(btn);	  
+
+	  if(wk<(extra.length-1)) 
+	    panel.add(Box.createRigidArea(new Dimension(20, 0)));	     
+	}
+      }
+
+      if(((confirm != null) || (apply != null) || (extra != null)) && (cancel != null))
 	panel.add(Box.createRigidArea(new Dimension(40, 0)));
      
       if(cancel != null) {
@@ -204,8 +241,9 @@ class JBaseDialog
 
     pack();
     setLocationRelativeTo(getOwner());
-  }
 
+    return extraBtns;
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -221,6 +259,8 @@ class JBaseDialog
     return pConfirmed;
   }
 
+
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -317,7 +357,14 @@ class JBaseDialog
    * The state of the dialog upon closing.
    */
   protected boolean  pConfirmed;
-  
+
+
+  /**
+   * The dialog header label.
+   */ 
+  protected JLabel  pHeaderLabel;
+
+
   /**
    * The footer buttons.
    */ 
