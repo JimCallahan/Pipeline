@@ -1,4 +1,4 @@
-// $Id: FileMgrApp.java,v 1.1 2004/03/22 03:12:34 jim Exp $
+// $Id: FileMgrApp.java,v 1.2 2004/03/23 03:35:52 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -14,7 +14,7 @@ import java.text.*;
 
 /**
  * The application class of the 
- * <A HREF="../../../../man/plfilemgr.html"><I>plfilemgr(1)</I></A> daemon process. <P> 
+ * <A HREF="../../../../man/plfilemgr.html"><B>plfilemgr</B></A>(1) daemon process. <P> 
  */
 public
 class FileMgrApp
