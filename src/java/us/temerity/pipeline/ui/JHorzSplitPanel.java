@@ -1,4 +1,4 @@
-// $Id: JHorzSplitPanel.java,v 1.1 2004/05/11 19:17:03 jim Exp $
+// $Id: JHorzSplitPanel.java,v 1.2 2004/06/03 09:26:26 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -67,6 +67,7 @@ class JHorzSplitPanel
     setOneTouchExpandable(true);
     setResizeWeight(0.5);
     setDividerSize(10);
+    setAlignmentX(0.5f);
 
     Container bar = (Container) getComponent(2); 
     bar.getComponent(0).setName("SplitPaneHorizontalDivider.leftOneTouchButton");
