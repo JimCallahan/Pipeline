@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.6 2004/06/08 20:06:18 jim Exp $
+// $Id: MasterMgrClient.java,v 1.7 2004/06/14 22:40:54 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -881,6 +881,29 @@ class MasterMgrClient
     }
   }
 
+
+  /**
+   * Create a new empty working area for the current user and view. <P> 
+   * 
+   * If the working area already exists, the operation is successful even though 
+   * nothing is actually done.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   *
+   * @throws PipelineException
+   *   If unable to create the working area.
+   */
+  public synchronized void  
+  createWorkingArea
+  ( 
+   String view   
+  ) 
+    throws PipelineException 
+  {
+    createWorkingArea(PackageInfo.sUser, view);
+  }
+
   /**
    * Create a new empty working area for the given user and view. <P> 
    * 
@@ -916,35 +939,6 @@ class MasterMgrClient
     handleSimpleResponse(obj);
   }
 
-  /**
-   * Create a new empty working area for the current user and view. <P> 
-   * 
-   * If the working area already exists, the operation is successful even though 
-   * nothing is actually done.
-   * 
-   * @param view 
-   *   The name of the user's working area view. 
-   *
-   * @throws PipelineException
-   *   If unable to create the working area.
-   */
-  public synchronized void  
-  createWorkingArea
-  ( 
-   String view   
-  ) 
-    throws PipelineException 
-  {
-    verifyConnection();
-
-    NodeCreateWorkingAreaReq req = new NodeCreateWorkingAreaReq(PackageInfo.sUser, view);
-
-    Object obj = performTransaction(MasterRequest.CreateWorkingArea, req);
-    handleSimpleResponse(obj);
-  }
-
-
-
   /*----------------------------------------------------------------------------------------*/
 
   /** 
@@ -952,7 +946,7 @@ class MasterMgrClient
    * which are visible within a working area view owned by the given user. <P> 
    * 
    * @param author 
-   *   The of the user which owns the working version..
+   *   The of the user which owns the working version.
    * 
    * @param view 
    *   The name of the user's working area view. 
@@ -994,7 +988,7 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Get the working version of the node. <P> 
+   * Get the working version of the node for the current user. <P> 
    * 
    * @param view 
    *   The name of the user's working area view. 
@@ -1013,9 +1007,36 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
+    return getWorkingVersion(PackageInfo.sUser, view, name);
+  }  
+
+  /** 
+   * Get the working version of the node for the given user. <P> 
+   * 
+   * @param author 
+   *   The of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   *
+   * @throws PipelineException
+   *   If unable to retrieve the working version.
+   */
+  public synchronized NodeMod
+  getWorkingVersion
+  ( 
+   String author, 
+   String view, 
+   String name
+  ) 
+    throws PipelineException
+  {
     verifyConnection();
 	 
-    NodeID id = new NodeID(PackageInfo.sUser, view, name);
+    NodeID id = new NodeID(author, view, name);
     NodeGetWorkingReq req = new NodeGetWorkingReq(id);
 
     Object obj = performTransaction(MasterRequest.GetWorking, req);
@@ -1029,8 +1050,11 @@ class MasterMgrClient
     }
   }  
 
+
+  /*----------------------------------------------------------------------------------------*/
+
   /** 
-   * Set the node properties of the working version of the node. <P> 
+   * Set the node properties of the working version of the node for the current user. <P> 
    * 
    * Node properties include: <BR>
    * 
@@ -1066,9 +1090,57 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
+    modifyProperties(PackageInfo.sUser, view, mod);
+  }
+
+  /** 
+   * Set the node properties of the working version of the node for the given user. <P> 
+   * 
+   * Node properties include: <BR>
+   * 
+   * <DIV style="margin-left: 40px;">
+   *   The file patterns and frame ranges of primary and secondary file sequences. <BR>
+   *   The toolset environment under which editors and actions are run. <BR>
+   *   The name of the editor plugin used to edit the data files associated with the node.<BR>
+   *   The regeneration action and its single and per-dependency parameters. <BR>
+   *   The job requirements. <BR>
+   *   The IgnoreOverflow and IsSerial flags. <BR>
+   *   The job batch size. <P> 
+   * </DIV> 
+   * 
+   * Note that any existing upstream node link information contained in the
+   * <CODE>mod</CODE> argument will be ignored.  The {@link #link link} and
+   * {@link #unlink unlink} methods must be used to alter the connections 
+   * between working node versions.
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param mod 
+   *   The working version containing the node property information to copy.
+   * 
+   * @throws PipelineException
+   *   If unable to set the node properties.
+   */
+  public synchronized void 
+  modifyProperties
+  ( 
+   String author, 
+   String view, 
+   NodeMod mod   
+  ) 
+    throws PipelineException
+  {
+    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
+      throw new PipelineException
+	("Only privileged users may modify nodes owned by another user!");
+
     verifyConnection();
 
-    NodeID id = new NodeID(PackageInfo.sUser, view, mod.getName());
+    NodeID id = new NodeID(author, view, mod.getName());
     NodeModifyPropertiesReq req = new NodeModifyPropertiesReq(id, mod);
 
     Object obj = performTransaction(MasterRequest.ModifyProperties, req);
@@ -1195,6 +1267,46 @@ class MasterMgrClient
     Object obj = performTransaction(MasterRequest.Unlink, req);
     handleSimpleResponse(obj);
   } 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C H E C K E D - I N   V E R S I O N S                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the checked-in version of the node with the given revision number. <P> 
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   *
+   * @param vid
+   *   The revision number of the checked-in version.
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the checked-in version.
+   */
+  public synchronized NodeVersion
+  getCheckedInVersion
+  ( 
+   String name, 
+   VersionID vid
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+	 
+    NodeGetCheckedInReq req = new NodeGetCheckedInReq(name, vid);
+
+    Object obj = performTransaction(MasterRequest.GetCheckedIn, req);
+    if(obj instanceof NodeGetCheckedInRsp) {
+      NodeGetCheckedInRsp rsp = (NodeGetCheckedInRsp) obj;
+      return rsp.getNodeVersion();      
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }  
 
 
 
