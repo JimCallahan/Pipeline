@@ -1,4 +1,4 @@
-// $Id: NodeID.java,v 1.6 2004/03/26 04:37:45 jim Exp $
+// $Id: NodeID.java,v 1.7 2004/04/15 17:55:51 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -59,6 +59,31 @@ class NodeID
     if(view == null) 
       throw new IllegalArgumentException("The view cannot be (null)!");
     pView = view;
+
+    buildCache();
+  }
+
+  /** 
+   * Construct a unique working version identifier with a different node name, but 
+   * in the same view owned by the same user as the given identifier.
+   * 
+   * @param id
+   *   The source of user and view information.
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   */
+  public
+  NodeID
+  ( 
+   NodeID id, 
+   String name
+  ) 
+  {
+    super(name);
+
+    pAuthor = id.getAuthor();    
+    pView   = id.getView();
 
     buildCache();
   }

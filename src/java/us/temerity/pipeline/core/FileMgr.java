@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.7 2004/03/31 08:34:56 jim Exp $
+// $Id: FileMgr.java,v 1.8 2004/04/15 17:55:51 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1378,8 +1378,7 @@ class FileMgr
 	Map<String,String> env = System.getenv();
 	
 	/* the new named node identifier */ 
-	NodeID id = new NodeID(req.getNodeID().getAuthor(), req.getNodeID().getView(), 
-			       req.getNewName());
+	NodeID id = new NodeID(req.getNodeID(), req.getNewName());
 
 	/* the old working area file, backup and checksum directories */ 
 	File owdir  = null;

@@ -1,4 +1,4 @@
-// $Id: NodeMgr.java,v 1.15 2004/04/15 00:10:09 jim Exp $
+// $Id: NodeMgr.java,v 1.16 2004/04/15 17:55:51 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -866,7 +866,7 @@ class NodeMgr
 
     NodeID targetID = req.getTargetID();
     String source   = req.getSourceLink().getName();
-    NodeID sourceID = new NodeID(targetID.getAuthor(), targetID.getView(), source);
+    NodeID sourceID = new NodeID(targetID, source);
 
     TaskTimer timer = new TaskTimer("NodeMgr.link(): " + targetID + " to " + sourceID);
 
@@ -936,7 +936,7 @@ class NodeMgr
    
     NodeID targetID = req.getTargetID();
     String source   = req.getSourceName();
-    NodeID sourceID = new NodeID(targetID.getAuthor(), targetID.getView(), source);
+    NodeID sourceID = new NodeID(targetID, source);
 
     TaskTimer timer = new TaskTimer("NodeMgr.unlink(): " + targetID + " from " + sourceID);
 
@@ -983,19 +983,20 @@ class NodeMgr
     }    
   }
 
+
+
   /*----------------------------------------------------------------------------------------*/
   /*   N O D E   S T A T U S                                                                */
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Get the summarized state of the tree of nodes rooted at the given node. <P> 
+   * Get the status of the tree of nodes rooted at the given node. <P> 
    * 
-   * The <CODE>NodeSummary</CODE> contained in the return <CODE>NodeStatusRsp</CODE> is the 
-   * root of both upstream and downstream trees of <CODE>NodeSummary</CODE> which contain
-   * the summarized states of all nodes reachable through both upstream and downstream 
-   * connections from the given node.  The upstream <CODE>NodeSummary</CODE> instances
-   * will contain complete state information.  The downstream <CODE>NodeSummary</CODE> 
-   * instances will only contain the node name and timestamp.
+   * In addition to providing node status information for the given node, the returned 
+   * <CODE>NodeStatus</CODE> instance can be used access the status of all nodes (both 
+   * upstream and downstream) linked to the given node.  The status information for the 
+   * upstream nodes will also include detailed state and version information which is 
+   * accessable by calling the {@link NodeStatus#getDetails NodeStatus.getDetails} method.
    * 
    * @param req 
    *   The node status request.
@@ -1010,6 +1011,50 @@ class NodeMgr
    NodeStatusReq req 
   ) 
   {
+    assert(req != null);
+
+    NodeID nodeID = req.getNodeID();
+
+    TaskTimer timer = new TaskTimer("NodeMgr.status(): " + nodeID);
+    try {
+      HashMap<String,NodeStatus> states = new HashMap<String,NodeStatus>();
+
+      upstreamStatusHelper(nodeID, states, timer);
+      downstreamStatusHelper(nodeID, states, timer);
+
+      NodeStatus root = states.get(nodeID.getName());
+      if(root == null) 
+	throw new PipelineException("Internal Error!");
+
+      return new NodeStatusRsp(timer, nodeID, root);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }    
+  }
+
+  /**
+   * Recursively compute the state of all nodes upstream of the given node.
+   * 
+   * @param nodeID
+   *   The unique working version identifier.
+   * 
+   * @param states
+   *   The previously computed states indexed by node name.
+   * 
+   * @param timer
+   *   The shared task timer for this operation.
+   */ 
+  private void 
+  upstreamStatusHelper
+  (
+   NodeID nodeID, 
+   HashMap<String,NodeStatus> states, 
+   TaskTimer timer
+  ) 
+    throws PipelineException
+  {
+    
     // first compute status for upstream nodes... 
     
 
@@ -1025,7 +1070,30 @@ class NodeMgr
     
 
     
-    return new FailureRsp(new TaskTimer(), "Not implemented yet.");
+  } 
+  
+  /**
+   * Recursively compute the state of all nodes downstream of the given node.
+   * 
+   * @param nodeID
+   *   The unique working version identifier.
+   * 
+   * @param states
+   *   The previously computed states indexed by node name.
+   * 
+   * @param timer
+   *   The shared task timer for this operation.
+   */ 
+  private void 
+  downstreamStatusHelper
+  (
+   NodeID nodeID, 
+   HashMap<String,NodeStatus> states, 
+   TaskTimer timer
+  ) 
+    throws PipelineException
+  {
+    
 
   } 
     
@@ -1153,7 +1221,7 @@ class NodeMgr
 
 	DownstreamLinks links = getDownstreamLinks(id.getName()); 
 	for(String target : links.getWorking(id)) {
-	  NodeID targetID = new NodeID(id.getAuthor(), id.getView(), target);
+	  NodeID targetID = new NodeID(id, target);
 
 	  timer.suspend();
 	  Object obj = unlink(new NodeUnlinkReq(targetID, id.getName()));
@@ -1242,7 +1310,7 @@ class NodeMgr
 	try {
 	  timer.resume();
 
-	  NodeID sourceID = new NodeID(id.getAuthor(), id.getView(), source);
+	  NodeID sourceID = new NodeID(id, source);
 	  DownstreamLinks links = getDownstreamLinks(source); 
 	  links.removeWorking(sourceID, id.getName());
  	}  
@@ -1292,7 +1360,7 @@ class NodeMgr
     String name = id.getName();
 
     String nname = req.getNewName();
-    NodeID nid   = new NodeID(id.getAuthor(), id.getView(), nname);
+    NodeID nid   = new NodeID(id, nname);
 
     TaskTimer timer = new TaskTimer("NodeMgr.rename(): " + id + " to " + nid);
 
@@ -1310,7 +1378,7 @@ class NodeMgr
 
 	DownstreamLinks links = getDownstreamLinks(id.getName()); 
 	for(String target : links.getWorking(id)) {
-	  NodeID targetID = new NodeID(id.getAuthor(), id.getView(), target);
+	  NodeID targetID = new NodeID(id, target);
 
 	  timer.aquire();
 	  ReentrantReadWriteLock lock = getWorkingLock(targetID);
@@ -1400,7 +1468,7 @@ class NodeMgr
     for(String target : dlinks.keySet()) {
       LinkMod dlink = dlinks.get(target);
 
-      NodeID tid = new NodeID(id.getAuthor(), id.getView(), target);
+      NodeID tid = new NodeID(id, target);
       LinkMod ndlink = new LinkMod(nname, dlink.getCatagory(), 
 				   dlink.getRelationship(), dlink.getFrameOffset());
 
@@ -1466,7 +1534,7 @@ class NodeMgr
     }
     
     timer.aquire();
-    NodeID id = new NodeID(targetID.getAuthor(), targetID.getView(), name);
+    NodeID id = new NodeID(targetID, name);
     ReentrantReadWriteLock lock = getWorkingLock(id);
     lock.readLock().lock();
     try {
