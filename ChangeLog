@@ -1,3 +1,144 @@
+2005-03-31  Jim Callahan  <jim@24-90-80-137.nyc.rr.com>
+
+	* src/java/us/temerity/pipeline/core/FileMgrClient.java:
+	fixed [Bug #283] - File Mgr Timeouts
+
+2005-03-30  Jim Callahan  <jim@24-90-80-137.nyc.rr.com>
+
+	* src/java/us/temerity/pipeline/ui/core/JRegisterDialog.java: comments
+
+	* src/java/us/temerity/pipeline/ui/core/JExportDialog.java:
+	made the minimum height smaller
+
+	* src/java/us/temerity/pipeline/core/FileMgrClient.java, src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/message/FileCloneReq.java, src/java/us/temerity/pipeline/ui/core/JCloneDialog.java, src/java/us/temerity/pipeline/core/FileMgr.java:
+	enhanced the frame range aspects of the Clone operation
+
+	* src/java/us/temerity/pipeline/MasterMgrClient.java, src/java/us/temerity/pipeline/core/FileMgr.java, src/java/us/temerity/pipeline/core/FileMgrClient.java, src/java/us/temerity/pipeline/core/FileMgrServer.java, src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/core/MasterMgrServer.java, src/java/us/temerity/pipeline/message/FileCloneReq.java, src/java/us/temerity/pipeline/message/FileRequest.java, src/java/us/temerity/pipeline/message/MasterRequest.java, src/java/us/temerity/pipeline/message/NodeCloneFilesReq.java, src/java/us/temerity/pipeline/ui/core/JCloneDialog.java, src/java/us/temerity/pipeline/ui/core/JExportDialog.java, src/java/us/temerity/pipeline/ui/core/JExportPanel.java, src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java:
+	implemented [Bug #241] - Clone Files/Links
+
+2005-03-29  Jim Callahan  <jim@24-90-80-137.nyc.rr.com>
+
+	* src/java/us/temerity/pipeline/message/FileRenameReq.java, src/java/us/temerity/pipeline/message/NodeRenameReq.java, src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/core/JRenameDialog.java, docs/man/plscript.src.html.in, src/java/us/temerity/pipeline/MasterMgrClient.java, src/java/us/temerity/pipeline/NodeMod.java, src/java/us/temerity/pipeline/core/FileMgr.java, src/java/us/temerity/pipeline/core/FileMgrClient.java, src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/core/ScriptApp.java, src/java/us/temerity/pipeline/core/ScriptOptsParser.jj:
+	implemented [Bug #275] - Rename Suffix
+
+2005-03-28  Jim Callahan  <jim@24-90-80-137.nyc.rr.com>
+
+	* src/java/us/temerity/pipeline/ui/JTablePanel.java:
+	fixed [Bug #279] - Table Header Missing
+
+	* configure.ac: v1.9.16
+
+	* src/java/us/temerity/pipeline/plugin/v1_0_0/MayaTextureSyncTool.java:
+	reorganization finished
+
+	* src/java/us/temerity/pipeline/MasterMgrClient.java, src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/core/MasterMgrServer.java, src/java/us/temerity/pipeline/message/MasterRequest.java, src/java/us/temerity/pipeline/message/NodeGetNodeOwningReq.java, src/java/us/temerity/pipeline/message/NodeGetNodeOwningRsp.java:
+	added getNodeOwning()
+
+	* src/java/us/temerity/pipeline/ui/core/JShutdownDialog.java:
+	defaults changed to YES
+
+	* src/java/us/temerity/pipeline/ui/JFileSeqSelectDialog.java:
+	now uses FileSeq.collate()
+
+	* src/java/us/temerity/pipeline/FileSeq.java:
+	added collate() and contains() methods
+
+	* src/java/us/temerity/pipeline/NodeTreeEntry.java: comments
+
+2005-03-25  Jim Callahan  <jim@24-90-80-137.nyc.rr.com>
+
+	* src/java/us/temerity/pipeline/plugin/v1_0_0/MayaTextureSyncTool.java:
+	complete rewrite - almost complete except final exectute phase
+
+	* src/java/us/temerity/pipeline/laf/Splash.png, src/java/us/temerity/pipeline/laf/source/Splash.xcf:
+	v1.9.16
+
+2005-03-24  Jim Callahan  <jim@24-90-80-137.nyc.rr.com>
+
+	* plconfig/customers/rhinofx/050324, plconfig/customers/rhinofx/050324.txt:
+	initial revision
+
+	* src/java/us/temerity/pipeline/core/VerifiedApp.java.in:
+	removed the time check for Perpetual licenses
+
+	* src/java/us/temerity/pipeline/core/MasterMgr.java:
+	added 48-hour expire of resolved restore requests
+
+	* docs/man/plscript.src.html.in, src/java/us/temerity/pipeline/core/ScriptApp.java, src/java/us/temerity/pipeline/core/ScriptOptsParser.jj:
+	added archive-volume --get/--get-info
+
+	* src/java/us/temerity/pipeline/ArchiveVolume.java:
+	removed getFiles() method
+
+2005-03-23  Jim Callahan  <jim@24-90-80-137.nyc.rr.com>
+
+	* src/java/us/temerity/pipeline/BaseArchiver.java, src/java/us/temerity/pipeline/plugin/v1_0_0/CdRomArchiver.java, src/java/us/temerity/pipeline/plugin/v1_0_0/CpioFileArchiver.java, src/java/us/temerity/pipeline/plugin/v1_0_0/CpioTapeArchiver.java, src/java/us/temerity/pipeline/plugin/v1_0_0/TarFileArchiver.java, src/java/us/temerity/pipeline/plugin/v1_0_0/TarTapeArchiver.java:
+	added timestamp parameter to restore()
+
+	* src/java/us/temerity/pipeline/core/FileMgr.java, src/java/us/temerity/pipeline/core/MasterMgr.java:
+	removed debugging prints
+
+	* rpm/pipeline.spec.in: added restore directory
+
+	* src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java:
+	removed unecessary node update after a sumission of restore requests
+
+	* src/java/us/temerity/pipeline/ui/core/JRequestRestoreDialog.java, src/java/us/temerity/pipeline/ui/core/JRestoreQueryDialog.java:
+	intial revision
+
+	* src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java:
+	uses new JRequestRestoreDialog
+
+	* src/java/us/temerity/pipeline/ui/core/JRestoreNodeDialog.java:
+	made obsolete by JRequestRestoreDialog
+
+	* src/java/us/temerity/pipeline/ui/core/NodeVersionTableModel.java:
+	removed size column
+
+	* src/java/us/temerity/pipeline/ui/core/JArchiveDialog.java, src/java/us/temerity/pipeline/ui/core/JOfflineDialog.java, src/java/us/temerity/pipeline/ui/core/JRestoreDialog.java, src/java/us/temerity/pipeline/ui/core/NodeVersionSizeTableModel.java:
+	renamed NodeVersionTableModel to NodeVersionSizeTableModel
+
+	* src/java/us/temerity/pipeline/message/MiscOfflineQueryRsp.java:
+	comments
+
+	* src/java/us/temerity/pipeline/MasterMgrClient.java, src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/core/MasterMgrServer.java, src/java/us/temerity/pipeline/message/MasterRequest.java, src/java/us/temerity/pipeline/message/MiscRestoreQueryReq.java, src/java/us/temerity/pipeline/message/MiscRestoreQueryRsp.java:
+	added restoreQuery() method
+
+	* src/java/us/temerity/pipeline/core/MasterMgr.java:
+	added offline checkes for checkOut(), revertFiles() and evolve() methods
+
+	* src/java/us/temerity/pipeline/Makefile.in, src/java/us/temerity/pipeline/MasterMgrClient.java, src/java/us/temerity/pipeline/PluginInputStream.java, src/java/us/temerity/pipeline/core/CheckSum.java, src/java/us/temerity/pipeline/core/FileMgr.java, src/java/us/temerity/pipeline/core/FileMgrClient.java, src/java/us/temerity/pipeline/core/FileMgrServer.java, src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/core/MasterMgrServer.java, src/java/us/temerity/pipeline/message/FileArchiveReq.java, src/java/us/temerity/pipeline/message/FileExtractCleanupReq.java, src/java/us/temerity/pipeline/message/FileExtractReq.java, src/java/us/temerity/pipeline/message/FileRequest.java, src/java/us/temerity/pipeline/message/FileRestoreReq.java, src/java/us/temerity/pipeline/ui/core/JArchiveParamsDialog.java, src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/core/JRestoreDialog.java, src/java/us/temerity/pipeline/ui/core/JRestoreNodeDialog.java, src/java/us/temerity/pipeline/ui/core/RestoreRequestTableModel.java:
+	implemented [Bug #272] - Restore Operation
+
+2005-03-21  Jim Callahan  <jim@24-90-80-137.nyc.rr.com>
+
+	* src/java/us/temerity/pipeline/message/FileRequest.java, src/java/us/temerity/pipeline/message/MasterRequest.java:
+	added restore operations
+
+	* src/java/us/temerity/pipeline/message/FileRestoreReq.java, src/java/us/temerity/pipeline/message/MiscDenyRestoreReq.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/message/FileArchiveRsp.java, src/java/us/temerity/pipeline/message/FileArchiverRsp.java:
+	renamed FileArchiveRsp to FileArchiverRsp
+
+	* ChangeLog: latest
+
+	* docs/javadoc/Makefile.in: removed us.temerity.pipeline.task package
+
+	* docs/man/plscript.src.html.in: removed HTML cruft
+
+	* src/java/us/temerity/pipeline/ui/core/JArchiveParamsDialog.java, src/java/us/temerity/pipeline/ui/core/JRestoreParamsDialog.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/core/MasterMgrServer.java, src/java/us/temerity/pipeline/core/ScriptApp.java, src/java/us/temerity/pipeline/message/MasterRequest.java, src/java/us/temerity/pipeline/message/MiscGetArchivesContainingReq.java, src/java/us/temerity/pipeline/message/MiscGetArchivesContainingRsp.java, src/java/us/temerity/pipeline/message/MiscGetRestoreRequestsRsp.java, src/java/us/temerity/pipeline/message/MiscGetRestoreSizesReq.java, src/java/us/temerity/pipeline/message/MiscRequestRestoreReq.java, src/java/us/temerity/pipeline/message/MiscRestoreReq.java, src/java/us/temerity/pipeline/ui/core/ArchiveVolumeTableModel.java, src/java/us/temerity/pipeline/ui/core/JManagerPanel.java, src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/core/JOfflineDialog.java, src/java/us/temerity/pipeline/ui/core/JRestoreDialog.java, src/java/us/temerity/pipeline/ui/core/JRestoreNodeDialog.java, src/java/us/temerity/pipeline/ui/core/NodeVersionTableModel.java, src/java/us/temerity/pipeline/ui/core/RestoreRequestTableModel.java, src/java/us/temerity/pipeline/ArchiveVolume.java, src/java/us/temerity/pipeline/MasterMgrClient.java, src/java/us/temerity/pipeline/PluginInputStream.java, src/java/us/temerity/pipeline/RestoreRequest.java, src/java/us/temerity/pipeline/RestoreState.java, src/java/us/temerity/pipeline/core/FileMgr.java:
+	implemented [Bug #272] - Restore Operation
+
+	* src/java/us/temerity/pipeline/ui/core/JQueueJobBrowserPanel.java, src/java/us/temerity/pipeline/ui/core/QueueJobGroupsTableModel.java, src/java/us/temerity/pipeline/ui/core/QueueSlotsTableModel.java:
+	replaced hacky getValueAt() calls with typed getters
+
+	* src/java/us/temerity/pipeline/ui/core/JArchiveDialog.java, src/java/us/temerity/pipeline/ui/core/JArchiverParamsDialog.java:
+	renamed JArchiverParamsDialog to JArchiveParamsDialog
+
 2005-03-21  Jim Callahan  <jim@24-90-80-137.nyc.rr.com>
 
 	* docs/javadoc/Makefile.in: removed us.temerity.pipeline.task package
