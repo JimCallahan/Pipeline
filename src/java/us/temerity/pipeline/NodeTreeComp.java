@@ -1,4 +1,4 @@
-// $Id: NodeTreeComp.java,v 1.2 2004/05/04 17:48:47 jim Exp $
+// $Id: NodeTreeComp.java,v 1.3 2004/06/23 22:27:06 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -56,15 +56,10 @@ class NodeTreeComp
     
     if(entry.isLeaf()) {
       if(entry.isCheckedIn()) {
-	if(entry.hasWorking()) {
-	  if(entry.hasWorking(author, view)) 
-	    pState = State.Working;
-	  else 
-	    pState = State.OtherWorking;
-	}
-	else {
+	if(entry.hasWorking(author, view)) 
+	  pState = State.Working;
+	else 
 	  pState = State.CheckedIn;
-	}
       }
       else {
 	if(entry.hasWorking(author, view)) 
@@ -150,23 +145,16 @@ class NodeTreeComp
     OtherPending, 
 
     /**
-     * This leaf node path component is only associated with a checked-in version and is
-     * not checked-out in any working area view.
+     * This leaf node path component is associated with a checked-in version and is
+     * not checked-out in the current working area view.
      */ 
     CheckedIn, 
 
     /**
-     * This leaf node path component is associated with a checked-in version, a working
-     * version in the current working area view and possibly working versions in other 
-     * views as well.
+     * This leaf node path component is associated with both a checked-in version and a 
+     * working version in the current working area view. 
      */ 
-    Working,
-
-    /**
-     * This leaf node path component is associated with a checked-in version and at least
-     * one working version in a working area view other than the current one.
-     */ 
-    OtherWorking;
+    Working;
   }
 
 
