@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.12 2004/11/03 18:16:31 jim Exp $
+// $Id: JobMgr.java,v 1.13 2004/11/05 18:16:26 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -938,20 +938,22 @@ class JobMgr
 	      }
 	    }
 
-	    SubProcessLight proc = 
-	      new SubProcessLight(agenda.getNodeID().getAuthor(), 
-				  "RemoveTargets", "rm", args, env, wdir);
-	    try {
-	      proc.start();
-	      proc.join();
-	      if(!proc.wasSuccessful()) 
+	    if(args.size() > 1) {
+	      SubProcessLight proc = 
+		new SubProcessLight(agenda.getNodeID().getAuthor(), 
+				    "RemoveTargets", "rm", args, env, wdir);
+	      try {
+		proc.start();
+		proc.join();
+		if(!proc.wasSuccessful()) 
+		  throw new PipelineException
+		    ("Unable to remove the target files of job (" + jobID + "):\n\n" + 
+		     "  " + proc.getStdErr());	
+	      }
+	      catch(InterruptedException ex) {
 		throw new PipelineException
-		  ("Unable to remove the target files of job (" + jobID + "):\n\n" + 
-		   "  " + proc.getStdErr());	
-	    }
-	    catch(InterruptedException ex) {
-	      throw new PipelineException
-		("Interrupted while removing the target files of job (" + jobID + ")!");
+		  ("Interrupted while removing the target files of job (" + jobID + ")!");
+	      }
 	    }
 	  }
 	  
@@ -1013,20 +1015,23 @@ class JobMgr
 	    }
 	  }
 	  
-	  SubProcessLight proc = 
-	    new SubProcessLight(agenda.getNodeID().getAuthor(), 
-				"ReadOnlyTargets", "chmod", args, env, wdir);
-	  try {
-	    proc.start();
-	    proc.join();
-	    if(!proc.wasSuccessful()) 
+	  if(args.size() > 1) {
+	    SubProcessLight proc = 
+	      new SubProcessLight(agenda.getNodeID().getAuthor(), 
+				  "ReadOnlyTargets", "chmod", args, env, wdir);
+	    try {
+	      proc.start();
+	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to make the target files of job (" + jobID + ") read-only:\n\n" + 
+		   "  " + proc.getStdErr());	
+	    }
+	    catch(InterruptedException ex) {
 	      throw new PipelineException
-		("Unable to make the target files of job (" + jobID + ") read-only:\n\n" + 
-		 "  " + proc.getStdErr());	
-	  }
-	  catch(InterruptedException ex) {
-	    throw new PipelineException
-	      ("Interrupted while making the target files of job (" + jobID + ") read-only!");
+		("Interrupted while making the target files of job (" + jobID + ") " + 
+		 "read-only!");
+	    }
 	  }
 	}
 
