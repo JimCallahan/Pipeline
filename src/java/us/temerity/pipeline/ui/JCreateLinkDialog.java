@@ -1,4 +1,4 @@
-// $Id: JCreateLinkDialog.java,v 1.3 2004/08/22 22:06:54 jim Exp $
+// $Id: JCreateLinkDialog.java,v 1.4 2004/09/09 17:08:01 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -42,7 +42,7 @@ class JCreateLinkDialog
   public void 
   updateLink() 
   {
-    super.updateLink(LinkPolicy.NodeAndQueue, LinkRelationship.All, null); 
+    super.updateLink(LinkPolicy.Dependency, LinkRelationship.All, null); 
   }
 
 

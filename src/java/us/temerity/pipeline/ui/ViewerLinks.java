@@ -1,4 +1,4 @@
-// $Id: ViewerLinks.java,v 1.6 2004/08/22 22:07:42 jim Exp $
+// $Id: ViewerLinks.java,v 1.7 2004/09/09 17:08:01 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -288,9 +288,9 @@ class ViewerLinks
 	    for(Link link : links) {
 	      if(prefs.getDrawLinkPolicy()) {
 		switch(link.getLink().getPolicy()) {
-		case None:
+		case Association:
 		  lvCnt += 2;
-		case NodeOnly:
+		case Reference:
 		  lvCnt += 2;
 		}
 	      }
@@ -406,11 +406,11 @@ class ViewerLinks
 	      if(prefs.getDrawLinkPolicy()) {
 		double s = prefs.getLinkPolicySize();
 		switch(link.getLink().getPolicy()) {
-		case None:
+		case Association:
 		  la.setCoordinate(lvi, new Point3d(spos.x-s*0.75, spos.y-s, 0.0));  lvi++;
 		  la.setCoordinate(lvi, new Point3d(spos.x-s*0.75, spos.y+s, 0.0));  lvi++;
 		  
-		case NodeOnly:
+		case Reference:
 		  la.setCoordinate(lvi, new Point3d(spos.x, spos.y-s, 0.0));  lvi++;
 		  la.setCoordinate(lvi, new Point3d(spos.x, spos.y+s, 0.0));  lvi++;
 		}

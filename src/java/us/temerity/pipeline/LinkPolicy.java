@@ -1,4 +1,4 @@
-// $Id: LinkPolicy.java,v 1.5 2004/08/22 21:48:37 jim Exp $
+// $Id: LinkPolicy.java,v 1.6 2004/09/09 17:05:46 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -9,7 +9,7 @@ import java.util.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The policy concerning whether the {@link OverallNodeState OverallNodeState} and 
+ * The policy concerning how the {@link OverallNodeState OverallNodeState} and 
  * {@link OverallQueueState OverallQueueState} of the source node are considered when 
  * computing the state of the target node.
  *
@@ -20,26 +20,48 @@ public
 enum LinkPolicy
 {  
   /** 
-   * Neither the <CODE>OverallNodeState</CODE> or the <CODE>OverallQueueState</CODE> of 
-   * the source node are considered when computing the state of the target 
+   * This kind of link represents a loose association of the source node with the target
    * node. <P> 
+   * 
+   * The link has no affect on the target node in terms of <CODE>OverallNodeState</CODE> or 
+   * <CODE>OverallQueueState</CODE>.  In other words, changes to the source node will not 
+   * cause the target node to become <CODE>Stale</CODE> or <CODE>ModifiedLinks</CODE>.
    *
    * If the target node has a regeneration action (see {@link BaseAction BaseAction}), the 
-   * source node and its associated files will be omitted during action execution.
+   * source node and its associated files will be omitted from the 
+   * @{link ActionAgenda ActionAgenda} passed to the action during job preparation. 
    */
-  None,
+  Association,
 
   /**
-   * Only the <CODE>OverallNodeState</CODE> is considered when computing the 
-   * state of the target node.
+   * This kind of link represents an indirect relationship between the target node on the 
+   * source node. <P> 
+   *
+   * The link has no affect on the target node's <CODE>OverallQueueState</CODE>, but can 
+   * affect the target node's <CODE>OverallNodeState</CODE>. Changes to the source node will 
+   * not cause the target node to become <CODE>Stale</CODE>, but may cause it to become
+   * <CODE>ModifiedLinks</CODE>. <P> 
+   *
+   * References are often to describe externally referenced assets by nodes.  For example, 
+   * a rendering scene file might reference textures that it assigns to objects.  A change 
+   * to the texture doesn't actually change the scene file but the images produced by 
+   * rendering the scene file would be different.  A change to the texture would not cause
+   * the scene file to become <CODE>Stale</CODE>, but nodes downstream of the scene file
+   * which depend on the scene would become <CODE>Stale</CODE>.  In essence, a 
+   * <CODE>Reference</CODE> link communicates staleness downstream without causing the 
+   * target node to become <CODE>Stale</CODE> itself.  Changes to the source node will 
+   * cause the target node to become <CODE>ModifiedLinks<CODE> since the target node will
+   * need to record the correct version of the target node used when it is checked-in. <P>
    */
-  NodeOnly, 
+  Reference, 
 
   /**
-   * Both the <CODE>OverallNodeState</CODE> and the per-file <CODE>QueueState</CODE> of the 
-   * source node are considered when computing the state of the target node.
+   * This kind of link represents the standard concept of a dependency. <P> 
+   * 
+   * Changes to the source node will affect both the <CODE>OverallNodeState</CODE> and
+   * <CODE>OverallQueueState</CODE> of the target node.
    */
-  NodeAndQueue;
+  Dependency;
 
 
 
@@ -85,18 +107,7 @@ enum LinkPolicy
   public String
   toTitle() 
   {
-    return sTitles[ordinal()];
+    return toString();
   }
 
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   S T A T I C   I N T E R N A L S                                                      */
-  /*----------------------------------------------------------------------------------------*/
-
-  private static String sTitles[] = {
-    "None", 
-    "Node Only", 
-    "Node & Queue"
-  };
 }

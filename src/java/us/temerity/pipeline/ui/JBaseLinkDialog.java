@@ -1,4 +1,4 @@
-// $Id: JBaseLinkDialog.java,v 1.4 2004/08/04 01:43:05 jim Exp $
+// $Id: JBaseLinkDialog.java,v 1.5 2004/09/09 17:08:01 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -222,7 +222,7 @@ class JBaseLinkDialog
     
     ArrayList<String> values = new ArrayList<String>();
     switch(getPolicy()) {
-    case None:
+    case Association:
       values.add("-");
       pRelationshipField.setValues(values);
       pRelationshipField.setEnabled(false);
