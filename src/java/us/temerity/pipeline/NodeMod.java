@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.25 2004/08/23 07:12:16 jim Exp $
+// $Id: NodeMod.java,v 1.26 2004/09/05 06:42:24 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -551,7 +551,7 @@ class NodeMod
 
     pToolset = toolset;
 
-    updateLastMod();    
+    updateLastCriticalMod();
   }
 
   /** 
@@ -807,7 +807,7 @@ class NodeMod
       String toolset = mod.getToolset();
       if(!pToolset.equals(toolset)) {
 	pToolset = toolset;
-	modified = true;
+	critical = true;
       }
     }
 
