@@ -1,4 +1,4 @@
-// $Id: NodeMgr.java,v 1.19 2004/04/18 04:08:47 jim Exp $
+// $Id: NodeMgr.java,v 1.20 2004/04/19 21:06:44 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -517,6 +517,16 @@ class NodeMgr
 	      ("I/O ERROR:\n" + 
 	       "  Somehow the checked-in version (" + vid + ") of node (" + name + ") " + 
 	       "was missing!");
+	  
+	  {
+	    DownstreamLinks dsl = pDownstream.get(name); 
+	    if(dsl == null) {
+	      dsl = new DownstreamLinks(name);
+	      pDownstream.put(dsl.getName(), dsl);
+	    }
+	    
+	    dsl.createCheckedIn(vid);
+	  }
 
 	  for(LinkVersion link : vsn.getSources()) {
 	    DownstreamLinks dsl = pDownstream.get(link.getName());
@@ -586,7 +596,16 @@ class NodeMgr
 	      throw new PipelineException
 		("I/O ERROR:\n" + 
 		 "  Somehow the working version (" + id + ") was missing!");
+	    {
+	      DownstreamLinks dsl = pDownstream.get(id.getName());
+	      if(dsl == null) {
+		dsl = new DownstreamLinks(id.getName());
+		pDownstream.put(dsl.getName(), dsl);
+	      }
 	    
+	      dsl.createWorking(id);
+	    }	    
+
 	    for(LinkMod link : mod.getSources()) {
 	      DownstreamLinks dsl = pDownstream.get(link.getName());
 	      if(dsl == null) {
@@ -1008,14 +1027,22 @@ class NodeMgr
 
     TaskTimer timer = new TaskTimer();
     try {
-      HashMap<String,NodeStatus> table = new HashMap<String,NodeStatus>();
+      NodeStatus root = null;
+      {
+	HashMap<String,NodeStatus> table = new HashMap<String,NodeStatus>();
+	upstreamStatusHelper(nodeID, new LinkedList<String>(), table, timer);
+	root = table.get(nodeID.getName());
+	assert(root != null);
+      }
 
-      upstreamStatusHelper(nodeID, new LinkedList<String>(), table, timer);
-      downstreamStatusHelper(nodeID, table, timer);
+      {
+	VersionID vid = null;
+	if(root.getDetails().getWorkingVersion() == null) 
+	  vid = root.getDetails().getLatestVersion().getVersionID();
 
-      NodeStatus root = table.get(nodeID.getName());
-      if(root == null) 
-	throw new PipelineException("Internal Error!");
+	HashMap<String,NodeStatus> table = new HashMap<String,NodeStatus>();
+	downstreamStatusHelper(root, nodeID, vid, new LinkedList<String>(), table, timer);
+      }
 
       return new NodeStatusRsp(timer, nodeID, root);
     }
@@ -1029,6 +1056,9 @@ class NodeMgr
    * 
    * @param nodeID
    *   The unique working version identifier.
+   * 
+   * @param branch
+   *   The names of the nodes from the root to this node.
    * 
    * @param table
    *   The previously computed states indexed by node name.
@@ -1421,12 +1451,24 @@ class NodeMgr
   } 
   
   /**
-   * Recursively compute the state of all nodes downstream of the given node.
+   * Recursively compute the state of all nodes downstream of the given node. <P> 
+   * 
+   * If the <CODE>vid</CODE> argument is not <CODE>null</CODE>, then follow the downstream
+   * links associated with the checked-in version with this revision number.
+   * 
+   * @param root
+   *   The status of the root node of the tree.
    * 
    * @param nodeID
    *   The unique working version identifier.
    * 
-   * @param states
+   * @param vid 
+   *   The revision number of the checked-in node version.
+   * 
+   * @param branch
+   *   The names of the nodes from the root to this node.
+   * 
+   * @param table
    *   The previously computed states indexed by node name.
    * 
    * @param timer
@@ -1435,19 +1477,99 @@ class NodeMgr
   private void 
   downstreamStatusHelper
   (
+   NodeStatus root, 
    NodeID nodeID, 
-   HashMap<String,NodeStatus> states, 
+   VersionID vid, 
+   LinkedList<String> branch, 
+   HashMap<String,NodeStatus> table, 
    TaskTimer timer
   ) 
     throws PipelineException
   {
+    String name = nodeID.getName();
 
-    // not yet... 
+    /* check for circularity */ 
+    if(branch.contains(name)) {
+      StringBuffer buf = new StringBuffer();
+      buf.append("Link circularity detected: \n" + 
+		 "  ");
+      boolean found = false;
+      for(String bname : branch) {
+	if(bname.equals(name)) 
+	  found = true;
+	if(found) 
+	  buf.append(bname + " -> ");
+      }
+      buf.append(name);
+      throw new PipelineException(buf.toString());
+    }
 
+    /* make sure it hasn't already been processed */ 
+    if(table.containsKey(name)) 
+      return;
+
+    /* push the current node onto the end of the branch */ 
+    branch.addLast(name);
+
+
+    timer.aquire();
+    ReentrantReadWriteLock lock = getDownstreamLock(nodeID.getName());
+    lock.readLock().lock();
+    try {
+      timer.resume();
+
+      /* add the status stub */ 
+      NodeStatus status = root; 
+      if(!root.getNodeID().equals(nodeID)) {
+	status = new NodeStatus(nodeID);
+	table.put(name, status);
+      }
+
+      /* process downstream nodes */ 
+      DownstreamLinks dsl = getDownstreamLinks(nodeID.getName()); 
+      assert(dsl != null);
+
+      TreeSet<String> wlinks = dsl.getWorking(nodeID);
+      if(wlinks != null) {	
+	for(String lname : wlinks) {
+	  downstreamStatusHelper(root, new NodeID(nodeID, lname), null, branch, table, timer);
+
+	  NodeStatus lstatus = table.get(lname);
+	  assert(lstatus != null);
+
+	  status.addTarget(lstatus);
+	  lstatus.addSource(status);
+	}
+      }
+      else {
+	TreeMap<String,VersionID> clinks = null;
+	if(vid != null)
+	  clinks = dsl.getCheckedIn(vid);
+	else 
+	  clinks = dsl.getLatestCheckedIn();
+	assert(clinks != null);
+	
+	for(String lname : clinks.keySet()) {
+	  VersionID lvid = clinks.get(lname);
+
+	  downstreamStatusHelper(root, new NodeID(nodeID, lname), lvid, branch, table, timer);
+
+	  NodeStatus lstatus = table.get(lname);
+	  assert(lstatus != null);
+
+	  status.addTarget(lstatus);
+	  lstatus.addSource(status);
+	}
+      }
+    }
+    finally {
+      lock.readLock().unlock();
+    }
+
+    /* pop the current node off of the end of the branch */ 
+    branch.removeLast();
   } 
     
-  
-
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1471,10 +1593,12 @@ class NodeMgr
   ) 
   {
     assert(req != null);
-    TaskTimer timer = new TaskTimer("NodeMgr.register(): " + req.getNodeID());
 
     /* node identifiers */ 
     String name = req.getNodeMod().getName();
+    NodeID id   = req.getNodeID();
+
+    TaskTimer timer = new TaskTimer("NodeMgr.register(): " + id);
 
     /* reserve the node name, 
          after verifying that it doesn't conflict with existing nodes */ 
@@ -1502,14 +1626,14 @@ class NodeMgr
     }
 
     timer.aquire();
-    ReentrantReadWriteLock lock = getWorkingLock(req.getNodeID());
+    ReentrantReadWriteLock lock = getWorkingLock(id);
     lock.writeLock().lock();
     try {
       timer.resume();
 
       /* write the new working version to disk */ 
       try {
-	writeWorkingVersion(req.getNodeID(), req.getNodeMod());
+	writeWorkingVersion(id, req.getNodeMod());
       }
       catch(PipelineException ex) { 
 	synchronized(pNodeNames) {
@@ -1520,8 +1644,22 @@ class NodeMgr
 
       /* create a working bundle for the new working version */ 
       synchronized(pWorkingBundles) {
-	pWorkingBundles.put(req.getNodeID(), new WorkingBundle(req.getNodeMod()));
+	pWorkingBundles.put(id, new WorkingBundle(req.getNodeMod()));
       }
+
+      /* initialize the working downstream links */ 
+      timer.aquire();
+      ReentrantReadWriteLock downstreamLock = getDownstreamLock(id.getName());
+      downstreamLock.writeLock().lock();
+      try {
+	timer.resume();
+
+	DownstreamLinks links = getDownstreamLinks(id.getName()); 
+	links.createWorking(id);
+      }
+      finally {
+	downstreamLock.writeLock().unlock();
+      }      
 
       return new SuccessRsp(timer);
     }
@@ -1555,7 +1693,6 @@ class NodeMgr
   ) 
   {
     assert(req != null);
-    
     NodeID id = req.getNodeID();
 
     TaskTimer timer = new TaskTimer("NodeMgr.revoke(): " + id);
@@ -1569,6 +1706,8 @@ class NodeMgr
 	timer.resume();
 
 	DownstreamLinks links = getDownstreamLinks(id.getName()); 
+	assert(links != null);
+
 	for(String target : links.getWorking(id)) {
 	  NodeID targetID = new NodeID(id, target);
 
@@ -1727,6 +1866,8 @@ class NodeMgr
 	timer.resume();
 
 	DownstreamLinks links = getDownstreamLinks(id.getName()); 
+	assert(links != null); 
+
 	for(String target : links.getWorking(id)) {
 	  NodeID targetID = new NodeID(id, target);
 
