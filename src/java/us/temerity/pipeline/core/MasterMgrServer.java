@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.23 2004/11/02 23:06:44 jim Exp $
+// $Id: MasterMgrServer.java,v 1.24 2004/11/06 23:36:29 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -50,19 +50,10 @@ class MasterMgrServer
    *   The root production directory.
    * 
    * @param fileHost 
-   *   The name of the host running the <B>plfilemgr</B><A>(1) and <B>plnotify</B><A>(1) 
-   *   daemons.
+   *   The name of the host running the <B>plfilemgr</B><A>(1) daemon.
    * 
    * @param filePort 
    *   The network port listened to by the <B>plfilemgr</B><A>(1) daemon.
-   * 
-   * @param controlPort 
-   *   The network port listened to by the <B>plnotify</B><A>(1) daemon for 
-   *   control connections.
-   * 
-   * @param monitorPort 
-   *   The network port listened to by the <B>plnotify</B><A>(1) daemon for 
-   *   monitor connections.
    * 
    * @param queueHost
    *   The hostname running <B>plqueuemgr</B>(1).
@@ -78,15 +69,13 @@ class MasterMgrServer
    File prodDir, 
    String fileHost, 
    int filePort,
-   int controlPort, 
-   int monitorPort, 
    String queueHost, 
    int queuePort
   )
   { 
     super("MasterMgrServer");
     init(nodeDir, nodePort, 
-	 prodDir, fileHost, filePort, controlPort, monitorPort, 
+	 prodDir, fileHost, filePort, 
 	 queueHost, queuePort);
   }
   
@@ -109,10 +98,6 @@ class MasterMgrServer
    * The network port listened to by the <B>plfilemgr</B><A>(1) daemon is specified 
    * by the <B>--file-port</B>=<I>dir</I> option to <B>plconfig</B>(1). <P>
    * 
-   * The network port listened to by the <B>plnotify</B><A>(1) daemon is specified 
-   * by the <B>--notify-control-port</B>=<I>num</I> and 
-   * <B>--notify-monitor-port</B>=<I>num</I> options to <B>plconfig</B>(1). <P>
-   * 
    * The queue server hostname is specified by the <B>--queue-host</B>=<I>host</I>
    * option to <B>plconfig</B>(1). <P>  
    * 
@@ -125,7 +110,6 @@ class MasterMgrServer
     super("MasterMgrServer");
     init(PackageInfo.sNodeDir, PackageInfo.sMasterPort, 
 	 PackageInfo.sProdDir, PackageInfo.sFileServer, PackageInfo.sFilePort, 
-	 PackageInfo.sNotifyControlPort, PackageInfo.sNotifyMonitorPort, 
 	 PackageInfo.sQueueServer, PackageInfo.sQueuePort);
   }
 
@@ -145,19 +129,10 @@ class MasterMgrServer
    *   The root production directory.
    * 
    * @param fileHost 
-   *   The name of the host running the <B>plfilemgr</B><A>(1) and <B>plnotify</B><A>(1) 
-   *   daemons.
+   *   The name of the host running the <B>plfilemgr</B><A>(1) daemon.
    * 
    * @param filePort 
    *   The network port listened to by <B>plfilemgr</B><A>(1) daemon.
-   * 
-   * @param controlPort 
-   *   The network port listened to by the <B>plnotify</B><A>(1) daemon for 
-   *   control connections.
-   * 
-   * @param monitorPort 
-   *   The network port listened to by the <B>plnotify</B><A>(1) daemon for 
-   *   monitor connections.
    * 
    * @param queueHost
    *   The hostname running <B>plqueuemgr</B>(1).
@@ -173,14 +148,12 @@ class MasterMgrServer
    File prodDir, 
    String fileHost, 
    int filePort,
-   int controlPort, 
-   int monitorPort, 
    String queueHost, 
    int queuePort
   )
   { 
     pMasterMgr = new MasterMgr(nodeDir, prodDir, 
-			       fileHost, filePort, controlPort, monitorPort, 
+			       fileHost, filePort, 
 			       queueHost, queuePort);
 
     if(nodePort < 0) 

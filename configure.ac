@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 1.8.13)
+AM_INIT_AUTOMAKE(Pipeline, 1.9.0)
 
 AC_MSG_RESULT([ ])
 
@@ -338,31 +338,6 @@ AC_MSG_RESULT([$PL_FILE_SERVER])
 
 
 
-AC_MSG_CHECKING([Pipeline Caching Enabled])
-
-AC_SUBST(PL_ENABLE_CACHING)
-PL_ENABLE_CACHING=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                        --lookup EnableCaching`
-
-AC_SUBST(PLNOTIFY_RPM_PATH)
-PLNOTIFY_RPM_PATH=""
-
-if test "$PL_ENABLE_CACHING" == "null"
-then
-  AC_MSG_ERROR([customer profile was incomplete.])
-fi 
-
-if test "$PL_ENABLE_CACHING" == "true" 
-then
-  PLNOTIFY_RPM_PATH=$ROOT_INST_DIR/sbin/plnotify
-  AC_MSG_RESULT([yes])
-else 
-  AC_MSG_RESULT([no])
-fi
-
-AM_CONDITIONAL(ENABLE_CACHING_COND, test $PL_ENABLE_CACHING = true)
-
-
 AC_MSG_CHECKING([Pipeline File Server Port])
 
 AC_SUBST(PL_FILE_PORT)
@@ -375,36 +350,6 @@ then
 fi 
 
 AC_MSG_RESULT([$PL_FILE_PORT])
-
-
-
-AC_MSG_CHECKING([Pipeline Directory Notification Control Port])
-
-AC_SUBST(NOTIFY_CONTROL_PORT)
-NOTIFY_CONTROL_PORT=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                          --lookup NotifyControlPort`
-
-if test "$NOTIFY_CONTROL_PORT" == "null"
-then
-  AC_MSG_ERROR([customer profile was incomplete.])
-fi 
-
-AC_MSG_RESULT([$NOTIFY_CONTROL_PORT])
-
-
-
-AC_MSG_CHECKING([Pipeline Directory Notification Monitor Port])
-
-AC_SUBST(NOTIFY_MONITOR_PORT)
-NOTIFY_MONITOR_PORT=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
-                          --lookup NotifyMonitorPort`
-
-if test "$NOTIFY_MONITOR_PORT" == "null"
-then
-  AC_MSG_ERROR([customer profile was incomplete.])
-fi 
-
-AC_MSG_RESULT([$NOTIFY_MONITOR_PORT])
 
 
 
@@ -774,11 +719,6 @@ AC_SUBST(PLFILEMGR_DEBUG_OPTS)
 PLFILEMGR_DEBUG_OPTS=${java_debug_opts}$(($debug_base+2))
 AC_MSG_RESULT([$PLFILEMGR_DEBUG_OPTS])
 
-AC_MSG_CHECKING([plnotify])
-AC_SUBST(PLNOTIFY_DEBUG_OPTS)
-PLNOTIFY_DEBUG_OPTS=${java_debug_opts}$(($debug_base+3))
-AC_MSG_RESULT([$PLNOTIFY_DEBUG_OPTS])
-
 AC_MSG_CHECKING([plplugin])
 AC_SUBST(PLPLUGIN_DEBUG_OPTS)
 PLPLUGIN_DEBUG_OPTS=${java_debug_opts}$(($debug_base+4))
@@ -832,11 +772,6 @@ AC_MSG_CHECKING([plfilemgr])
 AC_SUBST(PLFILEMGR_PROFILE_OPTS)
 PLFILEMGR_PROFILE_OPTS=${java_prof_opts}$(($prof_base+2))${java_prof_dir}"plfilemgr"
 AC_MSG_RESULT([$PLFILEMGR_PROFILE_OPTS])
-
-AC_MSG_CHECKING([plnotify])
-AC_SUBST(PLNOTIFY_PROFILE_OPTS)
-PLNOTIFY_PROFILE_OPTS=${java_prof_opts}$(($prof_base+3))${java_prof_dir}"plnotify"
-AC_MSG_RESULT([$PLNOTIFY_PROFILE_OPTS])
 
 AC_MSG_CHECKING([plplugin])
 AC_SUBST(PLPLUGIN_PROFILE_OPTS)
@@ -1108,9 +1043,9 @@ AC_CONFIG_FILES([
   docs/man/plfilemgr.src.html
   docs/man/pljobmgr.src.html
   docs/man/plmaster.src.html
-  docs/man/plnotify.src.html
   docs/man/plplugin.src.html
   docs/man/plqueuemgr.src.html
+  docs/man/plrestore.src.html
   docs/man/plscript.src.html
   docs/man/plui.src.html
   docs/manuals/Makefile
@@ -1140,6 +1075,8 @@ AC_CONFIG_FILES([
   src/java/scripts/plqueuemgr
   src/java/scripts/plscript
   src/java/scripts/plui
+  src/java/scripts/plrestoreA
+  src/java/scripts/plrestoreB
 
   src/java/scripts/debug/Makefile
   src/java/scripts/debug/plfilemgr
@@ -1170,11 +1107,6 @@ AC_CONFIG_FILES([
 
   src/java/share/Makefile
 
-  src/standalone/Makefile
-  src/standalone/plnotify/configure.ac
-  src/standalone/plnotify/Makefile.am
-  src/standalone/plnotify/NativeArch.cc
-
   src/utils/Makefile
   src/utils/src/Makefile
   src/utils/src/PackageInfo.cc.src
@@ -1183,7 +1115,6 @@ AC_CONFIG_FILES([
   rpm/pipeline.spec
   rpm/plqueuemgr.spec
   rpm/plmaster.spec
-  rpm/plnotify.spec
   rpm/headerB
   rpm/rpmrc
   rpm/rpmmacros

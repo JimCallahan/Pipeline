@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.6 2004/10/18 02:34:20 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.7 2004/11/06 23:36:29 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -119,32 +119,11 @@ class PackageInfo
   public static final String sFileServer = "@PL_FILE_SERVER@";
 
   /**
-   * Whether file state caching by plmaster(1) and invalidation by plnotify(1) is enabled.
-   */ 
-  public static final boolean sEnableCaching = @PL_ENABLE_CACHING@;  
-
-  /**
    * The port number listened to by the Pipeline file server <I>plfilemgr(1)</I>. <P> 
    *
    * Set by the FilePort customer profile entry.
    */
   public static final int sFilePort = @PL_FILE_PORT@;
-
-  /**
-   * The port number listened to by the Pipeline directory change notification daemon 
-   * <I>plnotify(1)</I> for control requests. <P> 
-   *
-   * Set by the NotifyControlPort customer profile entry.
-   */
-  public static final int sNotifyControlPort = @NOTIFY_CONTROL_PORT@;
-
-  /**
-   * The port number listened to by the Pipeline directory change notification daemon 
-   * <I>plnotify(1)</I> for monitor requests. <P> 
-   *
-   * Set by the NotifyMonitorPort customer profile entry.
-   */
-  public static final int sNotifyMonitorPort = @NOTIFY_MONITOR_PORT@;
 
   /** 
    * The root directory of the file repository. <P>

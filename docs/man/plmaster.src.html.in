@@ -119,10 +119,8 @@ option to <a
 </span></span>
 <div style="margin-left: 40px;">Use an alternative file server (host)
 to run the Pipeline File Manager daemon <a href="plfilemgr.html"><span
- style="font-weight: bold;">plfilemgr</span></a>(1) and the<span
- style="font-weight: normal;"> </span>Pipeline Directory Notification<span
- style="font-weight: normal;"> daemon <a href="plnotify.html"><span
- style="font-weight: bold;">plnotify</span></a>(1)</span>.</div>
+ style="font-weight: bold;">plfilemgr</span></a>(1)<span
+ style="font-weight: normal;"></span>.</div>
 </div>
 <br>
 <div style="margin-left: 80px;">The
@@ -148,41 +146,7 @@ default file port is set by the <a
 option to <a
  href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
  style="font-weight: bold;">plconfig</span></a>(1). </div>
-<h4 style="margin-left: 40px;"><b><a name="--notify-control-port"></a>--notify-control-port</b><span
- style="font-weight: normal;">=</span><i style="font-weight: normal;">num</i></h4>
-<div style="margin-left: 80px;"><span style="font-weight: normal;">Use
-an alternative network port (<span style="font-style: italic;">num</span>)
-to communicate control requests to the Pipeline </span>Directory
-Notification<span style="font-weight: normal;"> daemon <a
- href="plnotify.html"><span style="font-weight: bold;">plnotify</span></a>(1)</span>.<br>
-<br>
-The
-default directory notification control port is set by the <a
- href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--notify-control-port"><span
- style="font-weight: bold;">--notify-control-port</span></a>
-option to <a
- href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1).<br>
-<span style="font-weight: normal;"></span><span
- style="font-weight: normal;"></span></div>
-<h4 style="margin-left: 40px;"><b><a name="--notify-monitor-port"></a>--notify-monitor-port</b><span
- style="font-weight: normal;">=</span><i style="font-weight: normal;">num</i></h4>
-<div style="margin-left: 80px;"><span style="font-weight: normal;">Use
-an alternative network port (<span style="font-style: italic;">num</span>)
-to communicate monitor requests to the Pipeline </span>Directory
-Notification<span style="font-weight: normal;"> daemon <a
- href="plnotify.html"><span style="font-weight: bold;">plnotify</span></a>(1)</span>.<br>
-</div>
-<br>
-<div style="margin-left: 80px;">The
-default directory notification control port is set by the <a
- href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--notify-monitor-port"><span
- style="font-weight: bold;">--notify-monitor-port</span></a>
-option to <a
- href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1).</div>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><br>
-<br>
 <br>
 </span><b style="color: rgb(0, 0, 0);"><a name="--queue-host"></a>--queue-host</b><span
  style="color: rgb(0, 0, 0);">=</span><i style="color: rgb(0, 0, 0);">hostname</i><br
@@ -375,14 +339,12 @@ Java API</span></a><br>
  style="font-weight: bold;">plui</span></a>(1), <a href="plscript.html"><span
  style="font-weight: bold;">plscript</span></a>(1), <a
  href="plfilemgr.html"><span style="font-weight: bold;">plfilemgr</span></a>(1),
-<a href="plnotify.html"><span style="font-weight: bold;">plnotify</span></a>(1),
 <a href="plqueuemgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1),
 <a href="pljobmgr.html"><span style="font-weight: bold;">pljobmgr</span></a>(1),
 <a href="plplugin.html"><span style="font-weight: bold;">plplugin</span></a>(1),
 <a
  href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1)<a
- href="plnotify.html"><span style="font-weight: bold;"></span></a><br>
+ style="font-weight: bold;">plconfig</span></a>(1)
 <br>
 </div>
 <span style="font-weight: bold;">Other Software</span><br>

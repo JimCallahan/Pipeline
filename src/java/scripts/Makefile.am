@@ -13,10 +13,17 @@ instsbin_SCRIPTS = \
   plfilemgr \
   pljobmgr \
   plmaster \
-  plqueuemgr
+  plqueuemgr \
+  plrestore
 
 
 SUBDIRS = \
   debug \
   profile \
   debug-profile
+
+
+
+plrestore: plrestoreA $(top_srcdir)/docs/legal/@LICENSE_DOC@.txt plrestoreB 
+	rm -f $@
+	cat $^ > $@

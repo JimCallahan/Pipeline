@@ -254,7 +254,6 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
                    MasterOptsParser \
                    PluginOptsParser \
                    QueueMgrOptsParser \
-                   NotifyOptsParser \
                    ScriptOptsParser \
                    GlueParser
 

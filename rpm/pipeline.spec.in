@@ -49,13 +49,13 @@ The core features of Pipeline include:
 
 %defattr(4550,root,@PIPELINE_GROUP@)
 @ROOT_INST_DIR@/sbin/plrun
-@PLNOTIFY_RPM_PATH@
 
 %defattr(500,@PIPELINE_USER@,@PIPELINE_GROUP@)
 @ROOT_INST_DIR@/sbin/plfilemgr
 @ROOT_INST_DIR@/sbin/pljobmgr
 @ROOT_INST_DIR@/sbin/plmaster
 @ROOT_INST_DIR@/sbin/plqueuemgr
+@ROOT_INST_DIR@/sbin/plrestore
 
 @ROOT_INST_DIR@/sbin/debug/plfilemgr
 @ROOT_INST_DIR@/sbin/debug/pljobmgr

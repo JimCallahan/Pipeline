@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.65 2004/11/05 23:47:04 jim Exp $
+// $Id: MasterMgr.java,v 1.66 2004/11/06 23:36:29 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -206,19 +206,10 @@ class MasterMgr
    *   The root production directory.
    * 
    * @param fileHost 
-   *   The name of the host running the <B>plfilemgr</B><A>(1) and <B>plnotify</B><A>(1) 
-   *   daemons.
+   *   The name of the host running the <B>plfilemgr</B><A>(1) daemon.
    * 
    * @param filePort 
    *   The network port listened to by the <B>plfilemgr</B><A>(1) daemon.
-   * 
-   * @param controlPort 
-   *   The network port listened to by the <B>plnotify</B><A>(1) daemon for 
-   *   control connections.
-   * 
-   * @param monitorPort 
-   *   The network port listened to by the <B>plnotify</B><A>(1) daemon for 
-   *   monitor connections.
    * 
    * @param queueHost
    *   The hostname running <B>plqueuemgr</B>(1).
@@ -233,8 +224,6 @@ class MasterMgr
    File prodDir, 
    String fileHost, 
    int filePort, 
-   int controlPort, 
-   int monitorPort, 
    String queueHost, 
    int queuePort
   )
@@ -263,20 +252,7 @@ class MasterMgr
 
     /* startup initialization */ 
     init(nodeDir, prodDir);
- 
-    if(PackageInfo.sEnableCaching) {
-      /* initialize the monitored directory table */ 
-      pMonitored = new HashMap<File,HashSet<NodeID>>();
-      
-      /* make a control connection to the directory notification daemon */ 
-      pNotifyControlClient = new NotifyControlClient(fileHost, controlPort);
-      
-      /* make a monitor connection to the directory notification daemon and 
-	  start a task to listen for directory change notifcations */
-      pDirtyDirTask = new DirtyDirTask(fileHost, monitorPort);
-      pDirtyDirTask.start();
-    }
-  }
+   }
 
 
   /*-- CONSTRUCTION HELPERS ----------------------------------------------------------------*/
@@ -836,7 +812,7 @@ class MasterMgr
   /**
    * Shutdown the node manager. <P> 
    * 
-   * Also sends a shutdown request to the <B>plfilemgr</B>(1) and <B>plnotify</B>(1) 
+   * Also sends a shutdown request to the <B>plfilemgr</B>(1) and <B>plqueuemgr</B>(1) 
    * daemons if there are live network connections to these daemons. <P> 
    * 
    * It is crucial that this method be called when only a single thread is able to access
@@ -869,31 +845,6 @@ class MasterMgr
       }
       catch(PipelineException ex) {
 	Logs.net.warning(ex.getMessage());
-      }
-    }
-
-    if(PackageInfo.sEnableCaching) {
-      /* close the control connection to the directory change notification daemon */ 
-      if(pNotifyControlClient != null) {
-	try {
-	  pNotifyControlClient.shutdown(); 
-	}
-	catch(PipelineException ex) {
-	  Logs.net.warning(ex.getMessage());
-	}
-      }
-      
-      /* shutdown task listening to the monitor connection to the directory change 
-	 notification daemon */ 
-      if(pDirtyDirTask != null) {
-	pDirtyDirTask.shutdown();
-	
-	try {
-	  pDirtyDirTask.join();
-	}
-	catch(InterruptedException ex) {
-	  Logs.net.severe("Interrupted while waiting on the DirtyDirTask to complete!");
-	}
       }
     }
 
@@ -2427,10 +2378,6 @@ class MasterMgr
 	/* update the bundle */ 
 	bundle.uVersion = mod;
 	
-	/* invalidate the cached per-file states */ 
-	bundle.uFileStates      = null;
-	bundle.uFileTimeStamps  = null;
-	
 	return new SuccessRsp(timer);
       }
       catch(PipelineException ex) { 
@@ -2498,10 +2445,6 @@ class MasterMgr
       
       /* update the bundle */ 
       bundle.uVersion = mod;
-
-      /* invalidate the cached per-file states */ 
-      bundle.uFileStates      = null;
-      bundle.uFileTimeStamps  = null;
 
       /* remove the sequence from the node tree */ 
       removeSecondaryWorkingNodeTreePath(nodeID, fseq);
@@ -3034,7 +2977,6 @@ class MasterMgr
 	if(req.removeFiles()) 
 	  pFileMgrClient.removeAll(id, mod.getSequences());	
 	
-	unmonitor(id);
 	return new SuccessRsp(timer);
       }
       catch(PipelineException ex) {
@@ -3507,8 +3449,6 @@ class MasterMgr
 	/* rename the files */ 
 	if(req.renameFiles()) 
 	  pFileMgrClient.rename(id, bundle.uVersion, nname);	
-
-	unmonitor(id);
       }
       catch(PipelineException ex) {
 	return new FailureRsp(timer, ex.getMessage());
@@ -3591,10 +3531,6 @@ class MasterMgr
       
       /* update the bundle */ 
       bundle.uVersion = mod;
-
-      /* invalidate the cached per-file states */ 
-      bundle.uFileStates      = null;
-      bundle.uFileTimeStamps  = null;
 
       /* remove obsolete files... */ 
       if(req.removeFiles()) 
@@ -3984,9 +3920,7 @@ class MasterMgr
       /* update existing working version */ 
       else {
 	/* update the working bundle */ 
-	working.uVersion        = nwork;
-	working.uFileStates     = null;
-	working.uFileTimeStamps = null;
+	working.uVersion = nwork;
 
 	/* remove the downstream links from any obsolete upstream nodes */ 
 	for(LinkMod link : work.getSources()) {
@@ -5159,7 +5093,6 @@ class MasterMgr
 	}
       }
 
-      // SHOULD THE QUEUEMGR BE BACKED UP AS WELL?
 
       return new SuccessRsp(timer);
     }
@@ -5964,22 +5897,22 @@ class MasterMgr
 
       default:
 	{
- 	  if(!PackageInfo.sEnableCaching || 
-	     (working.uFileStates == null) || (working.uFileTimeStamps == null)) {
+	  /* query the file manager for per-file states */ 
+	  {
 	    VersionID vid = null;
 	    if(latest != null) 
 	      vid = latest.getVersionID();
-
+	    
 	    TreeMap<FileSeq, Date[]> stamps = new TreeMap<FileSeq, Date[]>();
-
+	    
 	    pFileMgrClient.states(nodeID, work, versionState, vid, fileStates, stamps);
-
+	    
 	    for(FileSeq fseq : stamps.keySet()) {
 	      Date[] ts = stamps.get(fseq);
-
+	      
 	      if(fileTimeStamps == null) 
 		fileTimeStamps = new Date[ts.length];
-
+	    
 	      int wk;
 	      for(wk=0; wk<ts.length; wk++) {
 		if((fileTimeStamps[wk] == null) || 
@@ -5987,13 +5920,6 @@ class MasterMgr
 		  fileTimeStamps[wk] = ts[wk];
 	      }
 	    }	      
-
-	    working.uFileStates     = fileStates;
-	    working.uFileTimeStamps = fileTimeStamps;
-	  }
-	  else {
-	    fileStates     = working.uFileStates;
-	    fileTimeStamps = working.uFileTimeStamps;
 	  }
 
 	  /* precompute whether any files are missing */ 
@@ -6803,7 +6729,6 @@ class MasterMgr
     }
 
     if(bundle != null) {
-      monitor(id);
       return bundle;
     }
 
@@ -6820,7 +6745,6 @@ class MasterMgr
       pWorkingBundles.get(name).put(id, bundle);
     }
     
-    monitor(id);
     return bundle;
   }
 
@@ -6863,68 +6787,6 @@ class MasterMgr
     return links;
   }
 
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   D I R E C T O R Y   N O T I F I C A T I O N S                                        */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Make sure that the directory containing the files associated with the 
-   * working version is being monitored.
-   */
-  private void
-  monitor
-  (
-   NodeID id
-  )
-    throws PipelineException 
-  { 
-    if(PackageInfo.sEnableCaching) {
-      synchronized(pMonitored) {
-	File dir = id.getWorkingParent();
-	
-	HashSet<NodeID> ids = pMonitored.get(dir);
-	if(ids == null) {
-	  ids = new HashSet<NodeID>();
-	  pMonitored.put(dir, ids);
-	}
-	
-	if(!ids.contains(id)) {
-	  ids.add(id);
-	  pNotifyControlClient.monitor(dir);
-	}
-      }
-    }
-  }
-
-  /**
-   * Notify the directory monitoring facility that the given working version no longer 
-   * needs to be monitored.  If there are no remaining working versions being monitored 
-   * for the directory containing the files associated with the working version, then 
-   * cease monitoring the directory.
-   */
-  private void
-  unmonitor
-  (
-   NodeID id
-  )
-    throws PipelineException 
-  { 
-    if(PackageInfo.sEnableCaching) {
-      synchronized(pMonitored) {
-	File dir = id.getWorkingParent();
-	
-	HashSet<NodeID> ids = pMonitored.get(dir);
-	if(ids != null) {
-	  ids.remove(id);
-	  if(ids.isEmpty()) 
-	    pNotifyControlClient.unmonitor(dir);
-	}
-      }
-    }
-  }
-
-  
 
   /*----------------------------------------------------------------------------------------*/
   /*   I / O   H E L P E R S                                                                */
@@ -8369,13 +8231,6 @@ class MasterMgr
 
 	  /* update the working bundle */ 
 	  working.uVersion    = nwork;
-	  working.uFileStates = fileStates;
-
-	  /* invalidate the cached node state for all other working versions */ 
-	  if(PackageInfo.sEnableCaching) {
-	    DirtyNodeTask task = new DirtyNodeTask(name, nodeID);
-	    task.start();
-	  }
 
 	  /* update the node status details */ 
 	  NodeDetails ndetails = 
@@ -8475,32 +8330,10 @@ class MasterMgr
       uVersion = mod;
     }
 
-
     /**
      * The working version of a node. 
      */ 
     public NodeMod  uVersion;
-
-    
-    /**
-     * A table containing the relationship between individual files associated with the 
-     * working and checked-in versions of this node indexed by working file sequence. <P> 
-     * 
-     * May be <CODE>null</CODE> if invalidated. If the entry for a file sequence is missing
-     * from this table, then the <CODE>VersionState</CODE> was <CODE>CheckedIn</CODE> and 
-     * no working files existed.
-     */
-    public TreeMap<FileSeq,FileState[]>  uFileStates;
-
-    /**
-     * A table containing the newest last modification timestamp for each primary/secondary
-     * file index. 
-     * 
-     * May be <CODE>null</CODE> if invalidated.  If an individual file timestamp is 
-     * <CODE>null</CODE>, then the <CODE>FileState</CODE> for all of the primary/secondary 
-     * files were <CODE>Missing</CODE> when the timestamp was being collected.
-     */
-    public Date[]  uFileTimeStamps;
   }
 
 
@@ -8533,159 +8366,6 @@ class MasterMgr
     // Add Task related stuff here later... 
 
   }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Opens a monitor connection to the <B>plnotify<B>(1) daemon and invalidates the cached
-   * node state information of the <CODE>WorkingBundles</CODE> who's associated files live
-   * in the directories which have been modified.
-   */ 
-  private
-  class DirtyDirTask
-    extends Thread
-  {
-    DirtyDirTask
-    (
-     String hostname, 
-     int port
-    ) 
-    {
-      super("MasterMgr:DirtyDirTask");
-      pClient = new NotifyMonitorClient(hostname, port);
-      pShutdown = new AtomicBoolean(false);
-    }
-    
-    public void 
-    shutdown()
-    {
-      pShutdown.set(true);
-    }
-
-    public void 
-    run() 
-    { 
-      Logs.net.fine("DirtyDirTask Started.");
-      Logs.flush();
-
-      while(!pShutdown.get()) {
-	try {
-	  HashSet<File> dirs = pClient.watch();
-
-	  HashSet<NodeID> dirty = new HashSet<NodeID>();
-	  for(File dir : dirs) {
-	    synchronized(pMonitored) {
-	      HashSet<NodeID> ids = pMonitored.get(dir);
-	      if(ids != null) {
-		for(NodeID id : ids) 
-		  dirty.add(id);
-	      }
-	    }
-	  }
-	  
-	  for(NodeID id : dirty) {
-	    TaskTimer timer = new TaskTimer("File State Invalidated: " + id);
-	    timer.aquire();
-	    ReentrantReadWriteLock lock = getWorkingLock(id);
-	    lock.writeLock().lock();
-	    try {
-	      timer.resume();	
-	      
-	      WorkingBundle bundle = getWorkingBundle(id);
-	      bundle.uFileStates      = null;
-	      bundle.uFileTimeStamps  = null;
-	    }
-	    catch(PipelineException ex) {
-	      Logs.net.warning("DirtyDirTask: " + ex.getMessage());	      
-	    }	    
-	    finally {
-	      lock.writeLock().unlock();
-	    }    	  
-	    
-	    timer.suspend();
-	    Logs.net.finest(timer.toString());
-	  }
-	}
-	catch(PipelineException ex) {
-	  Logs.net.warning("DirtyDirTask: " + ex.getMessage());
-	}
-      }
-
-      Logs.net.fine("DirtyDirTask Shutdown.");
-      Logs.flush();
-    }
-
-    private NotifyMonitorClient pClient;
-    private AtomicBoolean       pShutdown;
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Invalidate the cached node state information for all working versions of a node except 
-   * the given version. <P> 
-   * 
-   * When a new checked-in version is created for a node, all working versions except the 
-   * version used to create the new revision need to be invalidated.  The check-in operation
-   * will spawn instances of this class for each new checked-in version created.
-   */ 
-  private
-  class DirtyNodeTask
-    extends Thread
-  {
-    DirtyNodeTask
-    (
-     String name,
-     NodeID id
-    ) 
-    {
-      super("MasterMgr:DirtyNodeTask");
-
-      pName   = name;
-      pNodeID = id;
-    }
-
-    public void 
-    run() 
-    { 
-      TreeSet<NodeID> nodeIDs = new TreeSet<NodeID>();
-      synchronized(pWorkingBundles) {
-	HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(pName);
-	if(table != null) 
-	  nodeIDs.addAll(table.keySet());
-	nodeIDs.remove(pNodeID);
-      }
-
-      for(NodeID id : nodeIDs) {
-	TaskTimer timer = new TaskTimer("File State Invalidated: " + id);
-	timer.aquire();
-	ReentrantReadWriteLock lock = getWorkingLock(id);
-	lock.writeLock().lock();
-	try {
-	  timer.resume();	
-	  
-	  WorkingBundle bundle = getWorkingBundle(id);
-	  bundle.uFileStates     = null;
-	  bundle.uFileTimeStamps = null;
-	}
-	catch(PipelineException ex) {
-	  Logs.net.warning("DirtyNodeTask: " + ex.getMessage());	      
-	}	    
-	finally {
-	  lock.writeLock().unlock();
-	} 
-	  
-	timer.suspend();
-	Logs.net.finest(timer.toString());   	  
-      }
-    }
-
-    private String  pName;
-    private NodeID  pNodeID; 
-  }
-
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -8858,33 +8538,6 @@ class MasterMgr
    * The connection to the file manager daemon: <B>plfilemgr<B>(1).
    */ 
   private FileMgrClient  pFileMgrClient;
-
-  
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The following fields will be <CODE>null</CODE> and never referenced if caching
-   * is disabled (PackageInfo.sEnableCaching == false).
-   */ 
-
-  /**
-   * The set of working versions who's associated files are being monitored indexed 
-   * by the parent directory of these files relative to the root production directory. <P> 
-   * 
-   * Access to this table should be protected by a synchronized block.
-   */
-  private HashMap<File,HashSet<NodeID>> pMonitored;
-
-  /** 
-   * The control connection to the directory notification daemon: <B>plnotify<B>(1).
-   */ 
-  private NotifyControlClient  pNotifyControlClient;
-
-  /** 
-   * The task which listens to the monitor connection to the directory notification 
-   * daemon: <B>plnotify<B>(1).
-   */ 
-  private DirtyDirTask  pDirtyDirTask;  
  
 
   /*----------------------------------------------------------------------------------------*/

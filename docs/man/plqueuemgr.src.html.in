@@ -277,14 +277,12 @@ Programs</span><br>
  style="font-weight: bold;">plscript</span></a>(1), <a
  href="plmaster.html"><span style="font-weight: bold;">plmaster</span></a>(1),
 <a href="plfilemgr.html"><span style="font-weight: bold;">plfilemgr</span></a>(1),
-<a href="plnotify.html"><span style="font-weight: bold;">plnotify</span></a>(1),
 <a href="plqueuemgr.html"><span style="font-weight: bold;"></span></a><a
  href="pljobmgr.html"><span style="font-weight: bold;">pljobmgr</span></a>(1),
 <a href="plplugin.html"><span style="font-weight: bold;">plplugin</span></a>(1),
 <a
  href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1)<a
- href="plnotify.html"><span style="font-weight: bold;"></span></a><br>
+ style="font-weight: bold;">plconfig</span></a>(1)
 <br>
 </div>
 <div style="margin-left: 40px;"><span style="font-weight: bold;">Other

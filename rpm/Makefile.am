@@ -3,15 +3,10 @@ noinst_DATA = \
   pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.bin
 
 
-if ENABLE_CACHING_COND
-PLNOTIFY_RPM = SRPMS/plnotify-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.src.rpm
-endif ENABLE_CACHING_COND
-
 RPMS = \
   RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
   RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
-  RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
-  $(PLNOTIFY_RPM)
+  RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm 
 
 
 
@@ -49,9 +44,6 @@ pipeline-install: clean-rpms rpm-mkdirs
 	DESTDIR=`pwd`/DEST/pipeline $(MAKE) -C .. install
 	mkdir -p DEST/plmaster DEST/plqueuemgr/usr/share/pipeline
 	mv DEST/pipeline/usr DEST/plmaster
-if ENABLE_CACHING_COND
-	DESTDIR=`pwd`/SOURCES $(MAKE) -C ../src/standalone install
-endif ENABLE_CACHING_COND
 
 rpm-mkdirs: 
 	mkdir -p BUILD DEST RPMS SPECS SOURCES SRPMS 
@@ -79,15 +71,6 @@ RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
 
 SPECS/plmaster-@CUSTOMER@-@VERSION@.spec: plmaster.spec
 	cp -f plmaster.spec $@
-
-
-SRPMS/plnotify-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.src.rpm: \
-  SPECS/plnotify-@CUSTOMER@-@VERSION@.spec \
-  SOURCES/plnotify-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.tgz
-	rpmbuild --rcfile rpmrc -ba --clean SPECS/plnotify-@CUSTOMER@-@VERSION@.spec
-
-SPECS/plnotify-@CUSTOMER@-@VERSION@.spec: plnotify.spec
-	cp -f plnotify.spec $@
 
 
 

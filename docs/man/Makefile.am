@@ -5,9 +5,9 @@ html_DATA = \
   plfilemgr.html \
   pljobmgr.html \
   plmaster.html \
-  plnotify.html \
-  plqueuemgr.html \
   plplugin.html \
+  plqueuemgr.html \
+  plrestore.html \
   pls.html \
   plscript.html \
   plui.html \

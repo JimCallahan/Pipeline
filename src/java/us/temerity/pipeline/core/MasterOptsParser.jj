@@ -56,8 +56,6 @@ MasterOptsParser
     pProdDir     = PackageInfo.sProdDir;
     pFileServer  = PackageInfo.sFileServer;
     pFilePort    = PackageInfo.sFilePort;
-    pControlPort = PackageInfo.sNotifyControlPort;
-    pMonitorPort = PackageInfo.sNotifyMonitorPort;
 
     pQueueServer = PackageInfo.sQueueServer; 
     pQueuePort   = PackageInfo.sQueuePort;
@@ -109,8 +107,7 @@ MasterOptsParser
   private File pProdDir;
 
   /*
-   * The name of the host running the <B>plfilemgr</B><A>(1) and <B>plnotify</B><A>(1) 
-   * daemons. 
+   * The name of the host running the <B>plfilemgr</B><A>(1) daemon. 
    */
   private String  pFileServer;
 
@@ -118,18 +115,6 @@ MasterOptsParser
    * The network port listened to by the <B>plfilemgr</B><A>(1) daemon.
    */
   private int  pFilePort;
-
-  /**
-   * The network port listened to by the <B>plnotify</B><A>(1) daemon for 
-   * control connections.
-   */
-  private int  pControlPort;
-
-  /**
-   * The network port listened to by the <B>plnotify</B><A>(1) daemon for 
-   * monitor connections.
-   */
-  private int  pMonitorPort;
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -166,8 +151,6 @@ TOKEN :
 | <PROD_DIR:             "--prod-dir">             : PATH_SEP
 | <FILE_HOST:            "--file-host">            : HOSTNAME_SEP
 | <FILE_PORT:            "--file-port">            : INTEGER_SEP
-| <NOTIFY_CONTROL_PORT:  "--notify-control-port">  : INTEGER_SEP
-| <NOTIFY_MONITOR_PORT:  "--notify-monitor-port">  : INTEGER_SEP
 
 | <QUEUE_HOST:           "--queue-host">           : HOSTNAME_SEP
 | <QUEUE_PORT:           "--queue-port">           : INTEGER_SEP
@@ -243,10 +226,10 @@ TOKEN :
 <HOSTNAME_STATE> 
 TOKEN :
 {
-  <HOSTNAME:         ((["a"-"z","A"-"Z","0"-"9"])+ 
-		      ("." (["a"-"z","A"-"Z","0"-"9"])+)*)>   : DEFAULT
-| <MISSING_HOSTNAME: ["\0"]>                                  : IGNORE_STATE
-| <ILLEGAL_HOSTNAME: (~["\0"])+>                              : IGNORE_STATE
+  <HOSTNAME:         ((["a"-"z","A"-"Z","0"-"9","-"])+ 
+		      ("." (["a"-"z","A"-"Z","0"-"9","-"])+)*)>   : DEFAULT
+| <MISSING_HOSTNAME: ["\0"]>                                      : IGNORE_STATE
+| <ILLEGAL_HOSTNAME: (~["\0"])+>                                  : IGNORE_STATE
 }
 
 
@@ -330,7 +313,6 @@ Commands() :
     /* create the server */ 
     return (new MasterMgrServer(pNodeDir, pMasterPort, 
 				pProdDir, pFileServer, pFilePort, 
-				pControlPort, pMonitorPort, 
 				pQueueServer, pQueuePort));
   }
 }
@@ -420,8 +402,7 @@ GlobalOpts() :
 {}
 {
   (NodeDir() | MasterPort() | 
-   ProdDir() | FileHost() | FilePort() | ControlPort() | MonitorPort() | 
-   QueueHost() | QueuePort() | 
+   ProdDir() | FileHost() | FilePort() | QueueHost() | QueuePort() | 
    Log() | LogFile() | StandardLogFile() | LogBackups())
   {}
 }
@@ -486,30 +467,6 @@ FilePort() :
   <FILE_PORT> EQ() t=<INTEGER>
   { 
     pFilePort = Integer.parseInt(t.image);
-  }
-}
-
-void
-ControlPort() :
-{
-  Token t;
-}
-{
-  <NOTIFY_CONTROL_PORT> EQ() t=<INTEGER>
-  { 
-    pControlPort = Integer.parseInt(t.image);
-  }
-}
-
-void
-MonitorPort() :
-{
-  Token t;
-}
-{
-  <NOTIFY_MONITOR_PORT> EQ() t=<INTEGER>
-  { 
-    pMonitorPort = Integer.parseInt(t.image);
   }
 }
 

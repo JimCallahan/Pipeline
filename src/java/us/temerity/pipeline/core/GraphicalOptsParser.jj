@@ -215,10 +215,10 @@ TOKEN :
 <HOSTNAME_STATE> 
 TOKEN :
 {
-  <HOSTNAME:         ((["a"-"z","A"-"Z","0"-"9"])+ 
-		      ("." (["a"-"z","A"-"Z","0"-"9"])+)*)>   : DEFAULT
-| <MISSING_HOSTNAME: ["\0"]>                                  : IGNORE_STATE
-| <ILLEGAL_HOSTNAME: (~["\0"])+>                              : IGNORE_STATE
+  <HOSTNAME:         ((["a"-"z","A"-"Z","0"-"9","-"])+ 
+		      ("." (["a"-"z","A"-"Z","0"-"9","-"])+)*)>   : DEFAULT
+| <MISSING_HOSTNAME: ["\0"]>                                      : IGNORE_STATE
+| <ILLEGAL_HOSTNAME: (~["\0"])+>                                  : IGNORE_STATE
 }
 
 

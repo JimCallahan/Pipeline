@@ -59,6 +59,9 @@ Users</a></li>
       <li style="font-weight: bold;">admin</li>
       <ul>
         <li style="font-weight: bold;"><a href="#admin_--shutdown">--shutdown</a></li>
+        <li style="font-weight: bold;"><a href="#admin_--backup">--backup</a><span
+ style="font-weight: normal;">=</span><span
+ style="font-style: italic; font-weight: normal;">dir</span></li>
       </ul>
     </ul>
   </ul>
@@ -1709,7 +1712,7 @@ This
 command can only be run by the (@PIPELINE_USER@) user.
 </div>
 <h3><a name="Administration"></a>Administration</h3>
-<div style="margin-left: 40px;">All of the following commands require
+<div style="margin-left: 40px;">The following commands require
 privileged user status.<br>
 <br>
 <span style="font-weight: bold;"><a name="admin_--shutdown"></a>admin
@@ -1717,13 +1720,26 @@ privileged user status.<br>
 <br>
 <div style="margin-left: 40px;">Causes any running <a
  href="plmaster.html"><span style="font-weight: bold;">plmaster</span></a>(1),
-<a href="plqueuemgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1),
-<a href="plfilemgr.html"><span style="font-weight: bold;">plfilemgr</span></a>(1)
-and <a href="plnotify.html"><span style="font-weight: bold;">plnotify</span></a>(1)
+<a href="plqueuemgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1)
+and <a href="plfilemgr.html"><span style="font-weight: bold;">plfilemgr</span></a>(1)
 daemons to perform shutdown tasks and exit as soon as possible.&nbsp;
 The <a href="pljobmgr.html"><span style="font-weight: bold;">pljobmgr</span></a>(1)
 daemons are not affected by this command.<br>
+<br>
 </div>
+</div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
+ name="admin_--backup"></a>admin --backup</span>=<span
+ style="font-style: italic;">dir<br>
+<br>
+</span>
+<div style="margin-left: 40px;">&lt;&gt;Creates a tarball in the given
+directory (dir) which contains a backup of the current state of the
+Pipeline database.&nbsp; All database operations are blocked while the
+backup is in progress to insure a that the backup is complete and in a
+consistent state.&nbsp; The name of the generated backup file is
+printed when the backup is complete.<br>
+&lt;&gt;</div>
 </div>
 <h3><a name="Toolset_Administration"></a>Toolset Administration</h3>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
@@ -3965,7 +3981,6 @@ Programs</span><br>
  style="font-weight: bold;">plui</span></a>(1), <a href="plmaster.html"><span
  style="font-weight: bold;">plmaster</span></a>(1), <a
  href="plfilemgr.html"><span style="font-weight: bold;">plfilemgr</span></a>(1),
-<a href="plnotify.html"><span style="font-weight: bold;">plnotify</span></a>(1),
 <a href="plqueuemgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1),
 <a href="pljobmgr.html"><span style="font-weight: bold;">pljobmgr</span></a>(1),
 <a href="plplugin.html"><span style="font-weight: bold;">plplugin</span></a>(1),

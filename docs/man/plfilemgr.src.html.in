@@ -256,15 +256,14 @@ Java API</span></a><br>
 <div style="margin-left: 40px;"><a href="plui.html"><span
  style="font-weight: bold;">plui</span></a>(1), <a href="plscript.html"><span
  style="font-weight: bold;">plscript</span></a>(1), <a
- href="plmaster.html"><span style="font-weight: bold;">plmaster</span></a>(1),
-<a href="plnotify.html"><span style="font-weight: bold;">plnotify</span></a>(1),
-<a href="plqueuemgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1),
+ href="plmaster.html"><span style="font-weight: bold;">plmaster</span></a>(1),&nbsp;<a
+ href="plqueuemgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1),
 <a href="pljobmgr.html"><span style="font-weight: bold;">pljobmgr</span></a>(1),
 <a href="plplugin.html"><span style="font-weight: bold;">plplugin</span></a>(1),
 <a
  href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1)<a
- href="plnotify.html"><span style="font-weight: bold;"></span></a><br>
+ style="font-weight: bold;">plconfig</span></a>(1)
+<br>
 <br>
 </div>
 <span style="font-weight: bold;">Other Software</span><br>
