@@ -17,13 +17,7 @@ OPERATIONS:
 
 - Implement Import/Export ops in NodeViewer
 
-- Implement Make
-
-- Add an operation to delete the working area files associated with a node, but add 
-  a warning and confirmation dialog if the node has no regeneration action.
-
 - Per-file Queue/Kill/Remove
-
 
 
 USER INTERFACE: 
@@ -36,22 +30,16 @@ USER INTERFACE:
 
 - Task/Scheduling Panels
 
-- Multiple top level windows and tear-off panels.
-
-- Improved UI for panel save/restore.
+- Improved UI for panel save/restore.  Its sort of clunky but works currently...
 
 
 BACKEND: 
-
-- Add checkes 
-
-- Get rid of the IsFrozen field of NodeMod and the associated UI elements.
 
 - Automated cleanup of Job Server sample files older than a given interval.
 
 - Task/Scheduling System
 
-- Automated Backup of Node/Queue database and production working areas.x
+- Automated Backup of Node/Queue database and production working areas.
 
 - Node and File Online/Offline System
 
