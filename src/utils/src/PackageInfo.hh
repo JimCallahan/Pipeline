@@ -1,4 +1,4 @@
-// $Id: PackageInfo.hh,v 1.4 2003/12/15 02:08:03 jim Exp $
+// $Id: PackageInfo.hh,v 1.5 2003/12/17 04:47:59 jim Exp $
 
 #ifndef PIPELINE_PACKAGE_INFO_HH
 #define PIPELINE_PACKAGE_INFO_HH
@@ -82,6 +82,9 @@ public:
   
   /* installed location of the SSH program */ 
   static const char* sSsh;
+
+  /* installed location of the YPCAT program */ 
+  static const char* sYpCat;
 
 
   /* copyright message */ 

@@ -1,4 +1,4 @@
-// $Id: PackageInfo.cc.in,v 1.8 2003/12/15 02:08:03 jim Exp $
+// $Id: PackageInfo.cc.in,v 1.9 2003/12/17 04:47:59 jim Exp $
 
 #include <PackageInfo.hh>
 
@@ -70,6 +70,9 @@ const char* PackageInfo::sKill = "@KILL@";
 
 /* installed location of the SSH program */ 
 const char* PackageInfo::sSsh = "@SSH@";
+
+/* installed location of the YPCAT program */ 
+const char* PackageInfo::sYpCat = "@YPCAT@";
 
 
 /* copyright message */ 
