@@ -222,6 +222,25 @@
   </style>
   <bind style="TextField" type="region" key="TextField"/>
 
+  <style id="EditableTextField">
+    <imagePainter path="EditableValuePanel.png"
+                  method="textFieldBackground"
+                  sourceInsets="3 3 3 3"/> 
+  </style>
+  <bind style="EditableTextField" type="name" key="EditableTextField"/>
+
+
+
+  <!--  T E X T   A R E A  -->
+
+  <style id="TextArea">
+    <imagePainter path="DarkGrey.png"
+                  method="textAreaBackground"
+                  sourceInsets="0 0 0 0"/>
+    <insets top="3" bottom="3" right="3" left="3"/>
+  </style>
+  <bind style="TextArea" type="region" key="TextArea"/>
+
 
 
   <!--  C O M B O   B O X  -->
@@ -267,6 +286,7 @@
   <bind style="Tree" type="region" key="Tree"/>
 
 
+
   <!--  L I S T  -->
 
   <style id="List">
@@ -275,6 +295,7 @@
                   sourceInsets="0 0 0 0"/>
   </style>
   <bind style="List" type="region" key="List"/>
+
 
    
   <!--  S C R O L L   P A N E  -->
@@ -369,6 +390,11 @@
       <imagePainter path="MenuItemSelected.png"
                     sourceInsets="4 8 4 0"/>
     </state>
+    <state value="DISABLED">
+      <color value="#e5e5e5" type="TEXT_FOREGROUND"/>
+      <imagePainter path="MenuItemDisabled.png"
+                    sourceInsets="4 8 4 0"/>
+    </state>    
     <imageIcon id="MenuIcon" path="MenuIcon.png"/>
     <property key="Menu.arrowIcon" value="MenuIcon"/>
     <insets top="4" bottom="4" right="0" left="8"/>
@@ -553,5 +579,15 @@
     <insets top="21" bottom="15" right="15" left="15"/>
   </style>
   <bind style="DialogButtonPanel" type="name" key="DialogButtonPanel"/>
+
+
+
+  <!--  E R R O R   P A N E L  -->
+  <style id="ErrorPanel">
+    <insets top="20" bottom="20" right="20" left="20"/>
+  </style>
+  <bind style="ErrorPanel" type="name" key="ErrorPanel"/>
+
+
 
 </synth>
