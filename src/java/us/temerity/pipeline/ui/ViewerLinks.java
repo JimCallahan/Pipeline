@@ -1,4 +1,4 @@
-// $Id: ViewerLinks.java,v 1.7 2004/09/09 17:08:01 jim Exp $
+// $Id: ViewerLinks.java,v 1.8 2004/10/03 17:07:26 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -278,8 +278,8 @@ class ViewerLinks
 		  NodeCommon com = details.getWorkingVersion();
 		  if(com == null) 
 		    com = details.getLatestVersion();
-		  if((com != null) && (!com.isActionEnabled()) && 
-		     (prefs.getDrawDisabledAction()))
+		  if((com != null) && (com.getAction() != null) && 
+		     (!com.isActionEnabled()) && (prefs.getDrawDisabledAction()))
 		    lvCnt += 2;
 		}
 	      }
@@ -345,8 +345,8 @@ class ViewerLinks
 		    NodeCommon com = details.getWorkingVersion();
 		    if(com == null) 
 		      com = details.getLatestVersion();
-		    if((com != null) && (!com.isActionEnabled()) && 
-		       (prefs.getDrawDisabledAction())) {
+		    if((com != null) &&  (com.getAction() != null) && 
+		       (!com.isActionEnabled()) && (prefs.getDrawDisabledAction())) {
 		      double s = prefs.getDisabledActionSize();
 		      la.setCoordinate(lvi, new Point3d(tpos.x, tpos.y-s, 0.0));  lvi++;
 		      la.setCoordinate(lvi, new Point3d(tpos.x, tpos.y+s, 0.0));  lvi++;
