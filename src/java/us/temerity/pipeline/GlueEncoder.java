@@ -1,4 +1,4 @@
-// $Id: GlueEncoder.java,v 1.1 2004/02/12 15:50:12 jim Exp $
+// $Id: GlueEncoder.java,v 1.2 2004/02/14 22:17:19 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -8,14 +8,19 @@ import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   G L U E   E N C O D E R                                                                */
-/*                                                                                          */
-/*    Converts a set of objects into a human readable text representation.  The format      */
-/*    is flexible enough to handle adding, removing and renaming of fields.  All primitive  */
-/*    types and well as most of the classes in java.lang and java.util are supported        */
-/*    internally.  All other classes can add GLUE support by implementing the Glueable      */
-/*    interface.                                                                            */
 /*------------------------------------------------------------------------------------------*/
 
+/**
+ * Converts a set of objects into a human readable text representation called Glue. <P> 
+ * 
+ * The format is flexible enough to handle adding, removing and renaming of fields.  
+ * All primitive types and well as most of the classes in java.lang and java.util are 
+ * supported natively. All other classes can add Glue support by implementing the 
+ * {@link Glueable Glueable} interface.
+ * 
+ * @see Glueable
+ * @see GlueDecoder
+ */
 public
 class GlueEncoder
 {     
@@ -23,21 +28,29 @@ class GlueEncoder
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
   
-  /* Encode the given object. */ 
+  /** 
+   * Encode the heirarchy of objects reachable from the given object into Glue format text.
+   * 
+   * @param title [<B>in</B>]
+   *   The name to be given to the object when encoded.
+   * 
+   * @param obj [<B>in</B>]
+   *   The <CODE>Object</CODE> to be encoded.
+   */
   public 
   GlueEncoder
   (
-   String title,   /* IN: title of object */ 
-   Glueable obj    /* IN: the object to encode */ 
+   String title,  
+   Glueable obj   
   ) 
-    throws GlueError
+    throws GlueException
   {
     pNextID  = 1;
     pObjects = new HashMap<Integer,HashMap<Long,Object>>();  
     pBuf     = new StringBuffer();
     pLevel   = 0;
 
-    writeEntity(title, obj);
+    encode(title, obj);
   }
 
   
@@ -46,7 +59,9 @@ class GlueEncoder
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
-  /* The GLUE format text. */ 
+  /** 
+   * Gets a <CODE>String</CODE> containing the Glue representation of the encoded objects.
+   */
   public String 
   getText() 
   {
@@ -59,14 +74,26 @@ class GlueEncoder
   /*   I / O                                                                                */
   /*----------------------------------------------------------------------------------------*/
 
-  /* Encode an arbitrarily typed Object as GLUE format text. */ 
+  /**
+   * Encode an arbitrarily typed Object as Glue format text at the current Glue scope. <P> 
+   * 
+   * This method is used by objects implementing the {@link Glueable Glueable} interface 
+   * to encode their fields from within 
+   * {@link Glueable#toGlue(GlueEncoder) Glueable.toGlue}.
+   * 
+   * @param title [<B>in</B>]
+   *   The name to be given to the object when encoded.
+   * 
+   * @param obj [<B>in</B>]
+   *   The <CODE>Object</CODE> to be encoded.
+   */ 
   public void 
-  writeEntity
+  encode
   (
-   String title,      /* IN: title of object */ 
-   Object obj         /* IN: object to write */  
+   String title,    
+   Object obj       
   ) 
-    throws GlueError
+    throws GlueException
   {
     if(obj == null) {
       pBuf.append(indent());
@@ -78,7 +105,7 @@ class GlueEncoder
 
     Long objID = lookupID(obj);
     if(objID != null) {
-      writeRef(title, obj, objID);
+      writeRef(title, objID);
       return;
     }
     
@@ -90,13 +117,20 @@ class GlueEncoder
 
   /*-- I/O HELPERS -------------------------------------------------------------------------*/
 
-  /* Encode a reference to a previously encoded Object. */ 
-  protected void 
+  /**
+   * Encode a reference to a previously encoded Object. 
+   * 
+   * @param title [<B>in</B>]
+   *   The name to be given to the object when encoded.
+   * 
+   * @param objID [<B>in</B>]
+   *   The unique ID of the object.
+   */ 
+  private void 
   writeRef
   (
-   String title,      /* IN: title of object */ 
-   Object obj,        /* IN: object to write */  
-   Long objID         /* IN: unique object ID */ 
+   String title,  
+   Long objID     
   ) 
   {
     pBuf.append(indent());
@@ -105,16 +139,26 @@ class GlueEncoder
     pBuf.append("<REF> #" + objID + "\n");
   }
 
-
-  /* Encode the first reference to an Object. */ 
-  protected void 
+  /**
+   * Encode the first reference to an Object. 
+   * 
+   * @param title [<B>in</B>]
+   *   The name to be given to the object when encoded.
+   * 
+   * @param obj [<B>in</B>]
+   *   The <CODE>Object</CODE> to be encoded.
+   *
+   * @param objID [<B>in</B>]
+   *   The unique ID of the object.
+   */ 
+  private void 
   writeObject
   (
-   String title,      /* IN: title of object */ 
-   Object obj,        /* IN: object to write */  
-   Long objID         /* IN: unique object ID */ 
+   String title, 
+   Object obj,   
+   Long objID    
   ) 
-    throws GlueError
+    throws GlueException
   {
     /* header */ 
     pBuf.append(indent());
@@ -249,7 +293,7 @@ class GlueEncoder
 	int wk;
 	for(wk=0; wk<dim; wk++) {
 	  Object comp = Array.get(obj, wk);
-	  writeEntity(String.valueOf(wk), comp);
+	  encode(String.valueOf(wk), comp);
 	}
       }
       pLevel--;
@@ -284,7 +328,7 @@ class GlueEncoder
 	  pBuf.append(cls.getName() + "> #" + objID + " {\n");
 	  
 	  Glueable gobj = (Glueable) obj;
-	  gobj.writeGlue(this);
+	  gobj.toGlue(this);
 	}
 	pLevel--;
 
@@ -300,7 +344,7 @@ class GlueEncoder
 	  Collection col = (Collection) obj;
 	  Iterator iter = col.iterator();
 	  while(iter.hasNext()) {
-	    writeEntity("", iter.next());
+	    encode("", iter.next());
 	  }
 	}
 	pLevel--;
@@ -323,8 +367,8 @@ class GlueEncoder
 	    pBuf.append(indent() + "{\n");
 	    pLevel++;
 	    {
-	      writeEntity("Key", key);
-	      writeEntity("Val", val);
+	      encode("Key", key);
+	      encode("Val", val);
 	    }
 	    pLevel--;
 	    pBuf.append(indent() + "}\n");
@@ -337,14 +381,16 @@ class GlueEncoder
     
       /* unsupported */ 
       else {
-	throw new GlueError("Unsupported Class: " + cls.getName());
+	throw new GlueException("Unsupported Class: " + cls.getName());
       }
     }
   }
 
   
-  /* Generate an indentation string. */ 
-  protected String 
+  /**
+   * Generate an indentation string. 
+   */ 
+  private String 
   indent() 
   {
     assert(pLevel >= 0);
@@ -361,9 +407,14 @@ class GlueEncoder
 
   /*-- OBJECT IDs --------------------------------------------------------------------------*/
 
-  /* Lookup the unique object ID for the given object. 
-       Returns (null) if the object has not been previously encountered. */ 
-  protected Long
+  /** 
+   * Lookup the unique object ID for the given object. 
+   * 
+   * @return 
+   *   The object's ID or <CODE>null</CODE> if the object has not been previously 
+   *   encountered. 
+   */ 
+  private Long
   lookupID
   (
    Object obj
@@ -386,9 +437,16 @@ class GlueEncoder
   }
 
 
-  /* Insert a new object into the object table and assign it a unique ID.
-      Returns the ID for the just inserted object. */ 
-  protected Long
+  /**
+   * Insert a new object into the object table and assign it a unique ID.
+   * 
+   * @param obj [<B>in</B>]
+   *   The <CODE>Object</CODE> to be inserted.
+   * 
+   * @return 
+   *   The ID assigned to the inserted object.
+   */
+  private Long
   insertID 
   (
    Object obj
@@ -415,7 +473,7 @@ class GlueEncoder
   /*   S T A T I C   I N I T I A L I Z A T I O N                                            */
   /*----------------------------------------------------------------------------------------*/
 
-  {
+  static {
     try {
       sGlueable       = Class.forName("us.temerity.pipeline.Glueable");
       sCollection     = Class.forName("java.util.Collection");
@@ -432,6 +490,7 @@ class GlueEncoder
       sStringClass    = Class.forName("java.lang.String");
     }
     catch (ClassNotFoundException ex) {
+      assert(false) : ex.toString();
     }
   }
 
@@ -440,40 +499,51 @@ class GlueEncoder
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
-  
-  protected static Class sGlueable       = null;
-  protected static Class sCollection     = null;
-  protected static Class sMap            = null;
+
+  /**
+   * Cached class objects for types and interfaces which are tested frequently.
+   */
+  private static Class sGlueable;       
+  private static Class sCollection;     
+  private static Class sMap;            
     
-  protected static Class sBooleanClass   = null; 
-  protected static Class sByteClass      = null;  
-  protected static Class sShortClass     = null; 
-  protected static Class sIntegerClass   = null; 
-  protected static Class sLongClass      = null; 
-  protected static Class sFloatClass     = null; 
-  protected static Class sDoubleClass    = null; 
-  protected static Class sCharacterClass = null; 
-  protected static Class sStringClass    = null;  
+  private static Class sBooleanClass;   
+  private static Class sByteClass;       
+  private static Class sShortClass;     
+  private static Class sIntegerClass;   
+  private static Class sLongClass;      
+  private static Class sFloatClass;     
+  private static Class sDoubleClass;    
+  private static Class sCharacterClass; 
+  private static Class sStringClass;     
 
 
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
-
-  protected long  pNextID;        /* A unique identifier for the next object processed. */ 
+  
+  /** 
+   * A unique identifier for the next object processed. 
+   */ 
+  private long  pNextID;        
 
   /** 
    * The table of encoded/decoded object tables indexed by Object.hashCode().  Each 
    * object table contains the encoded/decoded objects with the same Object.hashCode()
    * indexed by unique object IDs. 
    */ 
-  protected HashMap<Integer,HashMap<Long,Object>>  pObjects;    
+  private HashMap<Integer,HashMap<Long,Object>>  pObjects;    
 
-  
-  protected StringBuffer  pBuf;   /* The buffer holding the GLUE encoded text. */ 
+  /**
+   * The string buffer holding the GLUE encoded text. 
+   */ 
+  private StringBuffer  pBuf;   
  
-  protected int  pLevel;          /* The current nesting level. */ 
+  /**
+   * The current nesting level. 
+   */
+  private int  pLevel;          
  
 }
 
