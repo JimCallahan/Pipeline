@@ -1,8 +1,9 @@
-// $Id: SuffixEditorTableModel.java,v 1.2 2004/06/22 19:44:18 jim Exp $
+// $Id: SuffixEditorTableModel.java,v 1.3 2004/06/28 00:19:40 jim Exp $
 
 package us.temerity.pipeline.ui;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.core.*;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -34,43 +35,71 @@ class SuffixEditorTableModel
   SuffixEditorTableModel()
   {
     super();
-
-    pEditors = new ArrayList<SuffixEditor>();
-   
-    pSortColumn    = 0;
-    pSortAscending = true;
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   U S E R   I N T E R F A C E                                                          */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Sort the rows by the values in the given column number. 
-   */ 
-  public void 
-  sortByColumn
-  (
-   int col
-  ) 
-  {
-    pSortAscending = (pSortColumn == col) ? !pSortAscending : true;
-    pSortColumn    = col;
     
-    sort();
+    /* initialize the columns */ 
+    { 
+      pNumColumns = 3;
+
+      {
+	Class classes[] = { String.class, String.class, String.class }; 
+	pColumnClasses = classes;
+      }
+
+      {
+	String names[] = {"Suffix", "Format Description", "Editor" };
+	pColumnNames = names;
+      }
+
+      {
+	int widths[] = { 80, 600, 130 };
+	pColumnWidths = widths;
+      }
+
+      {
+	TableCellRenderer renderers[] = {
+	  new JSimpleTableCellRenderer(JLabel.CENTER), 
+	  new JSimpleTableCellRenderer(JLabel.LEFT), 
+	  new JSimpleTableCellRenderer(JLabel.CENTER)
+	};
+	pRenderers = renderers;
+      }
+
+      {
+	JCollectionTableCellEditor editor = null;
+	{
+	  ArrayList<String> values = new ArrayList<String>(Plugins.getEditorNames());
+	  values.add("-");
+	  editor = new JCollectionTableCellEditor(values, 130);
+	}
+	
+	TableCellEditor editors[] = {
+	  null, 
+	  new JStringTableCellEditor(200, JLabel.LEFT), 
+	  editor
+	};
+	pEditors = editors;
+      }
+    }
+
+    pSuffixEditors = new ArrayList<SuffixEditor>();
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S O R T I N G                                                                        */
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Sort the rows by the values in the current sort column and direction.
    */ 
-  private void 
+  protected void 
   sort()
   {
     ArrayList<String> values = new ArrayList<String>();
     ArrayList<Integer> indices = new ArrayList<Integer>();
     int idx = 0;
-    for(SuffixEditor se : pEditors) {
+    for(SuffixEditor se : pSuffixEditors) {
       String value = null;
       switch(pSortColumn) {
       case 0:
@@ -117,33 +146,38 @@ class SuffixEditorTableModel
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   A C C E S S                                                                          */
+  /*   U S E R   I N T E R F A C E                                                          */
   /*----------------------------------------------------------------------------------------*/
 
   /**
    * Get the underlying set of editors.
    */ 
   public TreeSet<SuffixEditor>
-  getEditors() 
+  getSuffixEditors() 
   {
-    return new TreeSet<SuffixEditor>(pEditors);
+    return new TreeSet<SuffixEditor>(pSuffixEditors);
   }
 
   /**
    * Get the underlying set of editors.
    */ 
   public void
-  setEditors
+  setSuffixEditors
   (
     TreeSet<SuffixEditor> editors
   ) 
   {
-    pEditors.clear();
-    pEditors.addAll(editors);
+    pSuffixEditors.clear();
+    pSuffixEditors.addAll(editors);
 
     sort();
   }
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   T A B L E   M O D E L   O V E R R I D E S                                            */
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Get index of the row which contains the given editor.
@@ -154,7 +188,7 @@ class SuffixEditorTableModel
    SuffixEditor se
   )
   {
-    int idx = pEditors.indexOf(se);
+    int idx = pSuffixEditors.indexOf(se);
     if(idx != -1) {
       int row;
       for(row=0; row<pRowToIndex.length; row++) 
@@ -175,18 +209,18 @@ class SuffixEditorTableModel
    int rows[]
   ) 
   {
-    if((rows == null) || (rows.length == 0)) 
+    if((rows == null) || (rows.length == 0))
       return;
 
     TreeSet<SuffixEditor> dead = new TreeSet<SuffixEditor>();
     int wk;
     for(wk=0; wk<rows.length; wk++) 
-      dead.add(pEditors.get(pRowToIndex[rows[wk]]));
+      dead.add(pSuffixEditors.get(pRowToIndex[rows[wk]]));
     
     for(SuffixEditor se : dead) 
-      pEditors.remove(se);
+      pSuffixEditors.remove(se);
 
-    fireTableDataChanged();
+    sort();
   }
 
 
@@ -196,45 +230,25 @@ class SuffixEditorTableModel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Returns the most specific superclass for all the cell values in the column.
-   */
-  public Class 	
-  getColumnClass
-  (
-   int col
-  )
-  {
-    return String.class;
-  }
-
-  /**
    * Returns the number of rows in the model.
    */ 
   public int 
   getRowCount()
   {
-    return pEditors.size();
+    return pSuffixEditors.size();
   }
 
   /**
-   * Returns the number of columns in the model.
+   * Returns true if the cell at rowIndex and columnIndex is editable.
    */ 
-  public int
-  getColumnCount()
-  {
-    return 3;
-  }
-
-  /**
-   * Returns the name of the column at columnIndex.
-   */ 
-  public String 	
-  getColumnName
+  public boolean 	
+  isCellEditable
   (
+   int row, 
    int col
   ) 
   {
-    return sColumnNames[col];
+    return (col != 0);
   }
 
   /**
@@ -247,7 +261,7 @@ class SuffixEditorTableModel
    int col
   )
   {
-    SuffixEditor se = pEditors.get(pRowToIndex[row]);
+    SuffixEditor se = pSuffixEditors.get(pRowToIndex[row]);
     switch(col) {
     case 0:
       return se.getSuffix();
@@ -277,19 +291,6 @@ class SuffixEditorTableModel
   }
 
   /**
-   * Returns true if the cell at rowIndex and columnIndex is editable.
-   */ 
-  public boolean 	
-  isCellEditable
-  (
-   int row, 
-   int col
-  ) 
-  {
-    return (col != 0);
-  }
-
-  /**
    * Sets the value in the cell at columnIndex and rowIndex to aValue.
    */ 
   public void 
@@ -300,7 +301,7 @@ class SuffixEditorTableModel
    int col
   ) 
   {
-    SuffixEditor se = pEditors.get(pRowToIndex[row]);
+    SuffixEditor se = pSuffixEditors.get(pRowToIndex[row]);
     String str = (String) value;
 
     switch(col) {
@@ -332,15 +333,6 @@ class SuffixEditorTableModel
   private static final long serialVersionUID = -6364186076302362940L;
 
 
-  /**
-   * The table column titles.
-   */ 
-  private final String sColumnNames[] = {
-    "Suffix", 
-    "Format Description", 
-    "Editor"
-  };
-
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
@@ -349,22 +341,8 @@ class SuffixEditorTableModel
   /**
    * The underlying set of editors.
    */ 
-  private ArrayList<SuffixEditor> pEditors;
+  private ArrayList<SuffixEditor> pSuffixEditors;
 
 
-  /**
-   * Editor indices for each displayed row number.
-   */ 
-  private int[] pRowToIndex;   
-
-  /**
-   * The number of the column used to sort rows.
-   */ 
-  private int pSortColumn;
-
-  /**
-   * Sort in ascending order?
-   */ 
-  private boolean pSortAscending;
 
 }

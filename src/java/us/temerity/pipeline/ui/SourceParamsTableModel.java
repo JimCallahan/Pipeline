@@ -1,4 +1,4 @@
-// $Id: SourceParamsTableModel.java,v 1.1 2004/06/22 19:44:54 jim Exp $
+// $Id: SourceParamsTableModel.java,v 1.2 2004/06/28 00:19:40 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -159,11 +159,7 @@ class SourceParamsTableModel
     }
 
     /* initial sort */ 
-    {
-      pSortColumn    = 0;
-      pSortAscending = true;
-      sort();
-    }
+    sort();
   }
 
 
@@ -172,24 +168,9 @@ class SourceParamsTableModel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Sort the rows by the values in the given column number. 
-   */ 
-  public void 
-  sortByColumn
-  (
-   int col
-  ) 
-  {
-    pSortAscending = (pSortColumn == col) ? !pSortAscending : true;
-    pSortColumn    = col;
-    
-    sort();
-  }
-
-  /**
    * Sort the rows by the values in the current sort column and direction.
    */ 
-  private void 
+  protected void 
   sort()
   {
     ArrayList<Comparable> values = new ArrayList<Comparable>();
@@ -239,38 +220,7 @@ class SourceParamsTableModel
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   A C C E S S                                                                          */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Get the widths of the columns.
-   */ 
-  public int[] 
-  getColumnWidths() 
-  {
-    return pColumnWidths;
-  }
-
-  /**
-   * Get the renderers for each column. 
-   */ 
-  public TableCellRenderer[] 
-  getRenderers() 
-  {
-    return pRenderers;
-  }
-
-  /**
-   * Get the renderers for each column. 
-   */ 
-  public TableCellEditor[] 
-  getEditors() 
-  {
-    return pEditors;
-  }
-
-
-
+  /*   U S E R   I N T E R F A C E                                                          */
   /*----------------------------------------------------------------------------------------*/
 
   /** 
@@ -299,10 +249,6 @@ class SourceParamsTableModel
     }
   }
 
-
-
-  /*----------------------------------------------------------------------------------------*/
-
   /**
    * Add default valued source parameters for the given rows.
    */ 
@@ -329,7 +275,6 @@ class SourceParamsTableModel
 
     fireTableDataChanged();
   }
-
 
   /**
    * Remove the source parameters for the given rows.
@@ -359,18 +304,6 @@ class SourceParamsTableModel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Returns the most specific superclass for all the cell values in the column.
-   */
-  public Class 	
-  getColumnClass
-  (
-   int col
-  )
-  {
-    return pColumnClasses[col];
-  }
-
-  /**
    * Returns the number of rows in the model.
    */ 
   public int 
@@ -380,24 +313,22 @@ class SourceParamsTableModel
   }
 
   /**
-   * Returns the number of columns in the model.
+   * Returns true if the cell at rowIndex and columnIndex is editable.
    */ 
-  public int
-  getColumnCount()
-  {
-    return pNumColumns;
-  }
-
-  /**
-   * Returns the name of the column at columnIndex.
-   */ 
-  public String 	
-  getColumnName
+  public boolean 	
+  isCellEditable
   (
+   int row, 
    int col
   ) 
   {
-    return pColumnNames[col];
+    int srow = pRowToIndex[row];
+    if((pParams[srow] != null) && (col > 0)) {
+      if(pIsEditable || (pParams[srow][col-1] instanceof TextActionParam)) 
+	return true;
+    }
+
+    return false;
   }
 
   /**
@@ -419,25 +350,6 @@ class SourceParamsTableModel
       return pParams[srow][col-1];
 
     return null;
-  }
-
-  /**
-   * Returns true if the cell at rowIndex and columnIndex is editable.
-   */ 
-  public boolean 	
-  isCellEditable
-  (
-   int row, 
-   int col
-  ) 
-  {
-    int srow = pRowToIndex[row];
-    if((pParams[srow] != null) && (col > 0)) {
-      if(pIsEditable || (pParams[srow][col-1] instanceof TextActionParam)) 
-	return true;
-    }
-
-    return false;
   }
 
   /**
@@ -496,56 +408,9 @@ class SourceParamsTableModel
    */ 
   private BaseActionParam[][]  pParams;
 
-
-  /**
-   * The number of columns.
-   */ 
-  private int pNumColumns;
-
-  /**
-   * The type of each column.
-   */ 
-  private Class  pColumnClasses[]; 
-
-  /**
-   * The UI names of the columns
-   */ 
-  private String  pColumnNames[]; 
-
   /**
    * The parameter names of the columns.
    */ 
   private String  pParamNames[]; 
-  
-  /**
-   * The widths of the columns
-   */ 
-  private int  pColumnWidths[]; 
-    
-  /**
-   * The render for each column
-   */ 
-  private TableCellRenderer  pRenderers[]; 
-  
-  /**
-   * The editor for each column
-   */ 
-  private TableCellEditor  pEditors[]; 
-
-
-  /**
-   * Param row indices for each displayed row number.
-   */ 
-  private int[] pRowToIndex;   
-
-  /**
-   * The number of the column used to sort rows.
-   */ 
-  private int pSortColumn;
-
-  /**
-   * Sort in ascending order?
-   */ 
-  private boolean pSortAscending;
 
 }
