@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.7 2004/12/29 17:29:42 jim Exp $
+// $Id: PluginMgr.java,v 1.8 2005/01/01 00:50:10 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -964,8 +964,9 @@ class PluginMgr
        that the plugin is instantiated from the latest available class file */ 
     {
       boolean refreshAll = false;
-      if(vid == null) 
+      if(vid == null) {
 	refreshAll = true; 
+      }
       else {
 	TreeMap<VersionID,Plugin> versions = table.get(name);
 	if((versions == null) || versions.isEmpty())
@@ -976,23 +977,8 @@ class PluginMgr
 	    pvid = versions.lastKey();
 	
 	  Plugin plugin = versions.get(pvid);
-	  if(plugin != null) {
-	    File file = new File(PackageInfo.sInstDir, "plugins/lock");
-	    if(!file.isFile()) 
-	      throw new PipelineException("The plugin directory lock file was missing!");
-	    
-	    if((pLastRefresh == null) || (pLastRefresh <= file.lastModified())) {
-	      aquireFileLock();
-	      try {
-		refreshPlugin(plugin.getPluginFile(), pvid);
-	      }
-	      finally {
-		releaseFileLock(false);
-	      }
-	      
-	      pLastRefresh = new Long(Dates.now().getTime());
-	    }
-	  }
+	  if(plugin != null) 
+	    refreshPlugin(plugin.getPluginFile(), pvid, true);
 	  else 
 	    refreshAll = true;
 	}
@@ -1081,15 +1067,6 @@ class PluginMgr
   refresh() 
     throws PipelineException
   {
-    {
-      File file = new File(PackageInfo.sInstDir, "plugins/lock");
-      if(!file.isFile()) 
-	throw new PipelineException("The plugin directory lock file was missing!");
-      
-      if((pLastRefresh != null) && (pLastRefresh > file.lastModified())) 
-	return;
-    }
-
     TaskTimer timer = new TaskTimer("Plugins Refreshed");
 
     timer.aquire();
@@ -1108,8 +1085,6 @@ class PluginMgr
     finally {
       releaseFileLock(false);
     }
-
-    pLastRefresh = new Long(Dates.now().getTime());
 
     Logs.plg.finer(timer.toString()); 
     if(Logs.plg.isLoggable(Level.FINER))
@@ -1156,7 +1131,7 @@ class PluginMgr
 	       ex.getMessage());
 	  }
 	  
-	  refreshPlugin(file, vid);
+	  refreshPlugin(file, vid, false);
 	}
 	catch(PipelineException ex) {
 	  Logs.plg.warning(ex.getMessage());
@@ -1169,7 +1144,7 @@ class PluginMgr
   }
   
   /**
-   * Reload the plugin in the given class file using a unique class loaded if it has 
+   * Reload the plugin in the given class file using a unique class loader if it has 
    * been modified since the last time the plugin was loaded.
    * 
    * @param file
@@ -1177,12 +1152,16 @@ class PluginMgr
    * 
    * @param vid
    *   The expected revision number of the plugin.
+   * 
+   * @param lock
+   *   Whether to aquire the file lock.
    */ 
   private synchronized void
   refreshPlugin
   (
    File file,
-   VersionID vid
+   VersionID vid, 
+   boolean lock
   ) 
     throws PipelineException
   {
@@ -1193,53 +1172,61 @@ class PluginMgr
     Long ostamp = pTimeStamps.get(file);
     long nstamp = file.lastModified();
     if((ostamp == null) || (nstamp > ostamp)) {
-      pTimeStamps.put(file, nstamp);
-      
-      String parts[] = file.getName().split("\\.");
-      if((parts.length == 2) && parts[1].equals("class")) {
-	Logs.plg.finer("Found class file: " + file);
-	String cname = (pkgName + "." + parts[0]);
+      if(lock)
+	aquireFileLock();
+      try {
+	pTimeStamps.put(file, nstamp);
+	
+	String parts[] = file.getName().split("\\.");
+	if((parts.length == 2) && parts[1].equals("class")) {
+	  Logs.plg.finer("Found class file: " + file);
+	  String cname = (pkgName + "." + parts[0]);
 	  
-	URL classpath[] = null;
-	try {
-	  File path = new File(PackageInfo.sInstDir + "/plugins/");
-	  URL url = path.toURI().toURL();      
-	  classpath = new URL[]{url};
-	} 
-	catch(MalformedURLException ex) {
-	  throw new PipelineException
-	    ("Unable to construct a proper plugin class path!");
-	}
-    
-	ClassLoader loader = new URLClassLoader(classpath);
-	try {
-	  Logs.plg.finer("Loading: " + cname);
-	  Class cls = loader.loadClass(cname);
-	  
-	  if(!(updatePlugin(    BaseEditor.class,     "Editor",   pEditors, cls, file, vid) ||
-	       updatePlugin(    BaseAction.class,     "Action",   pActions, cls, file, vid) ||
-	       updatePlugin(BaseComparator.class, "Comparator",     pComps, cls, file, vid) ||
-	       updatePlugin(  BaseArchiver.class,   "Archiver", pArchivers, cls, file, vid)))
+	  URL classpath[] = null;
+	  try {
+	    File path = new File(PackageInfo.sInstDir + "/plugins/");
+	    URL url = path.toURI().toURL();      
+	    classpath = new URL[]{url};
+	  } 
+	  catch(MalformedURLException ex) {
 	    throw new PipelineException
-	      ("The class file (" + file + ") does not contain a legal Editor, Action, " + 
-	       "Comparator or Archiver plugin!");
-	} 
-	catch(LinkageError ex) {
-	  throw new PipelineException
-	    ("Unable to link plugin class (" + cname + "):\n" + 
-	     ex.getMessage());
+	      ("Unable to construct a proper plugin class path!");
+	  }
+	  
+	  ClassLoader loader = new URLClassLoader(classpath);
+	  try {
+	    Logs.plg.finer("Loading: " + cname);
+	    Class cls = loader.loadClass(cname);
+	    
+	    if(!(updatePlugin(BaseEditor.class, "Editor", pEditors, cls, file, vid) ||
+		 updatePlugin(BaseAction.class, "Action", pActions, cls, file, vid) ||
+		 updatePlugin(BaseComparator.class, "Comparator", pComps, cls, file, vid) ||
+		 updatePlugin(  BaseArchiver.class, "Archiver", pArchivers, cls, file, vid)))
+	      throw new PipelineException
+		("The class file (" + file + ") does not contain a legal Editor, Action, " + 
+		 "Comparator or Archiver plugin!");
+	  } 
+	  catch(LinkageError ex) {
+	    throw new PipelineException
+	      ("Unable to link plugin class (" + cname + "):\n" + 
+	       ex.getMessage());
+	  }
+	  catch(ClassNotFoundException ex) {
+	    throw new PipelineException
+	      ("Unable to find plugin class (" + cname + "):\n" +
+	       ex.getMessage());
+	  }	  
+	  
+	  Logs.flush();
 	}
-	catch(ClassNotFoundException ex) {
-	  throw new PipelineException
-	    ("Unable to find plugin class (" + cname + "):\n" +
-	     ex.getMessage());
-	}	  
-
-	Logs.flush();
+	else {
+	  throw new PipelineException 
+	    ("Found a non-class file (" + file + ") in the plugin directory!");
+	}
       }
-      else {
-	throw new PipelineException 
-	  ("Found a non-class file (" + file + ") in the plugin directory!");
+      finally {
+	if(lock)
+	  releaseFileLock(false);
       }
     }
   }
@@ -1460,11 +1447,6 @@ class PluginMgr
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The timestamp of the last time the plugins where refreshed.
-   */ 
-  private Long  pLastRefresh; 
 
   /**
    * The last modified timestamps each plugin file at the time the plugin was loaded.
