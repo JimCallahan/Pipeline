@@ -132,8 +132,8 @@ dnl ----------------------------------------------------------------------------
 
 AC_MSG_CHECKING([Pipeline Server Hostname])
 
-AC_ARG_WITH([plserver], 
-            [  --with-plserver=HOST    Hostname of PostGreSQL server.])
+AC_ARG_WITH([pl-server], 
+            [  --with-pl-server=HOST   Hostname of PostGreSQL server.])
 
 AC_SUBST(PLSERVER)
 PLSERVER="localhost"
@@ -149,8 +149,8 @@ AC_MSG_RESULT([$PLSERVER])
 
 AC_MSG_CHECKING([Pipeline Server Port])
 
-AC_ARG_WITH([plport], 
-            [  --with-plport=NUM       Port number to use for Pipeline server.])
+AC_ARG_WITH([pl-port], 
+            [  --with-pl-port=NUM      Port number to use for Pipeline server.])
 
 AC_SUBST(PLPORT)
 PLPORT=53135
@@ -167,8 +167,8 @@ dnl ----------------------------------------------------------------------------
 
 AC_MSG_CHECKING([PBS Server Hostname])
 
-AC_ARG_WITH([pbsserver], 
-            [  --with-pbsserver=HOST   Hostname of PBS server.])
+AC_ARG_WITH([pbs-server], 
+            [  --with-pbs-server=HOST  Hostname of PBS server.])
 
 AC_SUBST(PBS_SERVER)
 PBS_SERVER="localhost"
