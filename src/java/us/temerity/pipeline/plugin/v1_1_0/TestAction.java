@@ -1,4 +1,4 @@
-// $Id: TestAction.java,v 1.1 2004/09/08 18:31:28 jim Exp $
+// $Id: TestAction.java,v 1.2 2004/09/08 19:34:59 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_1_0;
 
@@ -179,7 +179,7 @@ class TestAction
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 1201400081088512588L;
+  private static final long serialVersionUID = 1201400081088512589L;
 
 }
 
