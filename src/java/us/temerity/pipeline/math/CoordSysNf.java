@@ -1,4 +1,4 @@
-// $Id: CoordSysNf.java,v 1.2 2004/12/29 17:26:15 jim Exp $
+// $Id: CoordSysNf.java,v 1.3 2004/12/29 22:11:13 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -658,7 +658,7 @@ class CoordSysNf
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID = 
+  private static final long serialVersionUID = -2044361182791073559L;
 
 
 

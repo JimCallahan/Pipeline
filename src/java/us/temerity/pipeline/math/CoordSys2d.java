@@ -521,6 +521,6 @@ class CoordSys2d
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID = 
+  private static final long serialVersionUID = -1719826926386389147L;
 
 }

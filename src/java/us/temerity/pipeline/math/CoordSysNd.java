@@ -658,7 +658,7 @@ class CoordSysNd
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID = 
+  private static final long serialVersionUID = -4120832248146896026L;
 
 
 
