@@ -1,4 +1,4 @@
-// $Id: BaseMgrClient.java,v 1.16 2005/02/17 20:14:34 jim Exp $
+// $Id: BaseMgrClient.java,v 1.17 2005/02/18 23:39:33 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -360,10 +360,6 @@ class BaseMgrClient
 
       return rsp; 
     }
-    catch(SocketException ex) {
-      throw new PipelineException
-	("Unable to set SO_TIMEOUT for socket!");
-    }
     catch(IOException ex) {
       disconnect();
       throw new PipelineException
@@ -435,25 +431,12 @@ class BaseMgrClient
 	catch(SocketTimeoutException ex) {
 	  if(ex.bytesTransferred > 0) 
 	    throw ex;
-
-	  // DEBUG
-	  else {
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Net, LogMgr.Level.Warning,
-	       "Still waiting...");
-	    LogMgr.getInstance().flush();
-	  }
-	  // DEBUG
 	}
       }
 
       pSocket.setSoTimeout(0);
 
       return rsp; 
-    }
-    catch(SocketException ex) {
-      throw new PipelineException
-	("Unable to set SO_TIMEOUT for socket!");
     }
     catch(IOException ex) {
       disconnect();
