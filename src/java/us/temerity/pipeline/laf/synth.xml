@@ -159,6 +159,20 @@
   <bind style="ViewsButton" type="name" key="ViewsButton"/>
 
 
+  <!--  D E L E T E   C O M P L E T E D   B U T T O N  -->
+
+  <style id="DeleteCompletedButton"> 
+    <state>
+      <imagePainter path="DeleteCompletedButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state> 
+    <state value="PRESSED">
+      <imagePainter path="DeleteCompletedButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="DeleteCompletedButton" type="name" key="DeleteCompletedButton"/>
+
 
   <!--  F R O Z E N   B U T T O N  -->
 
