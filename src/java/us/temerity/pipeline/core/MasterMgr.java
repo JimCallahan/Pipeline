@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.32 2004/09/05 06:43:38 jim Exp $
+// $Id: MasterMgr.java,v 1.33 2004/09/08 18:36:05 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1987,10 +1987,9 @@ class MasterMgr
    *   The job requirements. <P>
    * </DIV> 
    * 
-   * Note that any existing upstream dependency relationship information contain in the
-   * working version being copied will be ignored.  The {@link #link link} and
-   * {@link #unlink unlink} methods must be used to alter the connections 
-   * between working node versions.
+   * Note that any links to upstream nodes contain in the working version used to set node
+   * properties will be ignored.  The {@link #link link} and {@link #unlink unlink} methods 
+   * must be used to alter the connections between working node versions.
    * 
    * @param req 
    *   The modify properties request.
@@ -3875,7 +3874,7 @@ class MasterMgr
 	  new ActionAgenda(jobID, nodeID, 
 			   primaryTarget, secondaryTargets, 
 			   primarySources, secondarySources, 
-			   env, dir);
+			   work.getToolset(), env, dir);
 
 	QueueJob job = 
 	  new QueueJob(agenda, work.getAction(), work.getJobRequirements(), sourceIDs);
@@ -6458,6 +6457,10 @@ class MasterMgr
 
   /**
    * Write the downstream links to disk. <P> 
+   * 
+   * If no working or checked-in versions exist for the node, the downstream links file
+   * associated with the node will be removed instead of being written.  See the 
+   * @{link DownstreamLinks#hasLinks DownstreamLinks.hasLink} method for details. <P> 
    * 
    * This method assumes that the write lock for the downstream links has already been 
    * aquired.
