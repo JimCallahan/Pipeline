@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.47 2005/02/07 14:50:26 jim Exp $
+// $Id: MasterMgrClient.java,v 1.48 2005/02/09 18:23:44 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1828,7 +1828,7 @@ class MasterMgrClient
    *   The fully resolved node name.
    *
    * @return 
-   *   The table of per-file novelty flags indexed by revision number and file sequence.
+   *   The per-file novelty flags indexed by revision number and file sequence.
    * 
    * @throws PipelineException
    *   If unable to determine the file revision history.
@@ -1855,6 +1855,40 @@ class MasterMgrClient
     }
   }    
   
+  /**
+   * Get the upstream links of all checked-in versions of the given node.
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   *
+   * @return 
+   *   The checked-in links indexed by revision number and upstream node name.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the checked-in links.
+   */
+  public synchronized TreeMap<VersionID,TreeMap<String,LinkVersion>> 
+  getCheckedInLinks
+  ( 
+   String name
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+    
+    NodeGetCheckedInLinksReq req = new NodeGetCheckedInLinksReq(name);
+    
+    Object obj = performTransaction(MasterRequest.GetCheckedInLinks, req);
+    if(obj instanceof NodeGetCheckedInLinksRsp) {
+      NodeGetCheckedInLinksRsp rsp = (NodeGetCheckedInLinksRsp) obj;
+      return rsp.getLinks();      
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }    
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   N O D E   S T A T U S                                                                */

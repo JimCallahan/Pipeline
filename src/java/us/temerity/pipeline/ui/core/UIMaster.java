@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.14 2005/01/30 08:42:02 jim Exp $
+// $Id: UIMaster.java,v 1.15 2005/02/09 18:23:45 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -102,6 +102,7 @@ class UIMaster
     pNodeDetailsPanels = new PanelGroup<JNodeDetailsPanel>();
     pNodeHistoryPanels = new PanelGroup<JNodeHistoryPanel>();
     pNodeFilesPanels   = new PanelGroup<JNodeFilesPanel>();
+    pNodeLinksPanels   = new PanelGroup<JNodeLinksPanel>();
 
     pQueueJobBrowserPanels = new PanelGroup<JQueueJobBrowserPanel>();
     pQueueJobViewerPanels  = new PanelGroup<JQueueJobViewerPanel>();
@@ -398,6 +399,15 @@ class UIMaster
   getNodeFilesPanels() 
   {
     return pNodeFilesPanels;
+  }
+
+  /**
+   * Get the node links panel group.
+   */ 
+  public PanelGroup<JNodeLinksPanel>
+  getNodeLinksPanels() 
+  {
+    return pNodeLinksPanels;
   }
 
 
@@ -1688,6 +1698,7 @@ class UIMaster
 	pNodeDetailsPanels.clear();
 	pNodeHistoryPanels.clear();
 	pNodeFilesPanels.clear();
+	pNodeLinksPanels.clear();
 	
 	pQueueJobBrowserPanels.clear();
 	pQueueJobViewerPanels.clear();
@@ -2663,6 +2674,11 @@ class UIMaster
    * The active node files panels. <P> 
    */ 
   private PanelGroup<JNodeFilesPanel>  pNodeFilesPanels;
+
+  /**
+   * The active node links panels. <P> 
+   */ 
+  private PanelGroup<JNodeLinksPanel>  pNodeLinksPanels;
 
 
   /**

@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.88 2005/02/08 13:13:38 jim Exp $
+// $Id: MasterMgr.java,v 1.89 2005/02/09 18:23:44 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3055,6 +3055,63 @@ class MasterMgr
       }
 	
       return new NodeGetCheckedInFileNoveltyRsp(timer, name, novelty);
+    }
+    finally {
+      lock.readLock().unlock();
+      pDatabaseLock.readLock().unlock();
+    }  
+  }  
+
+  /** 
+   * Get the upstream links of all checked-in versions of the given node.
+   * 
+   * @param req 
+   *   The links request.
+   * 
+   * @return
+   *   <CODE>NodeGetCheckedInLinksRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to retrieve the checked-in links.
+   */
+  public Object
+  getCheckedInLinks
+  ( 
+   NodeGetCheckedInLinksReq req
+  ) 
+  {	 
+    TaskTimer timer = new TaskTimer();
+  
+    String name = req.getName();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    ReentrantReadWriteLock lock = getCheckedInLock(name);
+    lock.readLock().lock();
+    try {
+      timer.resume();	
+
+      TreeMap<VersionID,CheckedInBundle> checkedIn = null;
+      try {
+	checkedIn = getCheckedInBundles(name);
+      }
+      catch(PipelineException ex) {
+      }
+
+      TreeMap<VersionID,TreeMap<String,LinkVersion>> links = 
+	new TreeMap<VersionID,TreeMap<String,LinkVersion>>();
+
+      if(checkedIn != null) {
+	for(VersionID vid : checkedIn.keySet()) {
+	  NodeVersion vsn = checkedIn.get(vid).uVersion;
+	  
+	  TreeMap<String,LinkVersion> table = new TreeMap<String,LinkVersion>();
+	  for(LinkVersion link : vsn.getSources()) 
+	    table.put(link.getName(), link);
+
+	  links.put(vid, table);
+	}
+      }
+	
+      return new NodeGetCheckedInLinksRsp(timer, links);
     }
     finally {
       lock.readLock().unlock();

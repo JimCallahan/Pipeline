@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.12 2005/02/01 14:52:06 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.13 2005/02/09 18:23:45 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -251,6 +251,8 @@ class GenUserPrefsApp
 	 "ManagerNodeViewerWindow", "Node Viewer:",
 	 false, true, false, 113),  /* ALT+F2 */ 
 
+	new BasePref(),
+
 	new HotKeyPref
 	("Create a new window containing a Node Details panel.", 
 	 "ManagerNodeDetailsWindow", "Node Details:",
@@ -262,33 +264,38 @@ class GenUserPrefsApp
 	 false, true, false, 115),  /* ALT+F4 */ 
 
 	new HotKeyPref
+	("Create a new window containing a Node Links panel.", 
+	 "ManagerNodeLinksWindow", "Node Links:",
+	 false, true, false, 116),  /* ALT+F5 */ 
+
+	new HotKeyPref
 	("Create a new window containing a Node History panel.", 
 	 "ManagerNodeHistoryWindow", "Node History:",
-	 false, true, false, 116),  /* ALT+F5 */ 
+	 false, true, false, 117),  /* ALT+F6 */ 
 
 	new BasePref(),
 
 	new HotKeyPref
 	("Create a new window containing a Job Browser panel.",
 	 "ManagerJobBrowserWindow", "Job Browser:",
-	 false, true, false, 117),  /* ALT+F6 */ 
+	 false, true, false, 118),  /* ALT+F7 */ 
 	
 	new HotKeyPref
 	("Create a new window containing a Job Viewer panel.", 
 	 "ManagerJobViewerWindow", "Job Viewer:",
-	 false, true, false, 118),  /* ALT+F7 */ 
+	 false, true, false, 119),  /* ALT+F8 */ 
 
 	new HotKeyPref
 	("Create a new window containing a Job Details panel.", 
 	 "ManagerJobDetailsWindow", "Job Details:",
-	 false, true, false, 119),  /* ALT+F8 */ 
+	 false, true, false, 120),  /* ALT+F9 */ 
 
 	new BasePref(),
 
 	new HotKeyPref
 	("Create a new window containing an empty panel.", 
 	 "ManagerEmptyWindow", "None:",
-	 false, true, false, 120),  /* ALT+F9 */ 	
+	 false, true, false, 121),  /* ALT+F10 */ 	
       };
 
       pPrefs.put("Main Menu|Panel Window|Hot Keys", prefs);
@@ -306,6 +313,8 @@ class GenUserPrefsApp
 	 "ManagerNodeViewerPanel", "Node Viewer:",
 	 false, false, false, 113),  /* F2 */ 
 
+	new BasePref(),
+
 	new HotKeyPref
 	("Change the panel type to a Node Details panel.", 
 	 "ManagerNodeDetailsPanel", "Node Details:",
@@ -317,33 +326,38 @@ class GenUserPrefsApp
 	 false, false, false, 115),  /* F4 */ 
 
 	new HotKeyPref
+	("Change the panel type to a Node Links panel.", 
+	 "ManagerNodeLinksPanel", "Node Links:",
+	 false, false, false, 116),  /* F5 */ 
+
+	new HotKeyPref
 	("Change the panel type to a Node History panel.", 
 	 "ManagerNodeHistoryPanel", "Node History:",
-	 false, false, false, 116),  /* F5 */ 
+	 false, false, false, 117),  /* F6 */ 
 
 	new BasePref(),
 
 	new HotKeyPref
 	("Change the panel type to a Job Browser panel.",
 	 "ManagerJobBrowserPanel", "Job Browser:",
-	 false, false, false, 117),  /* F6 */ 
+	 false, false, false, 118),  /* F7 */ 
 	
 	new HotKeyPref
 	("Change the panel type to a Job Viewer panel.", 
 	 "ManagerJobViewerPanel", "Job Viewer:",
-	 false, false, false, 118),  /* F7 */ 
+	 false, false, false, 119),  /* F8 */ 
 	
 	new HotKeyPref
 	("Change the panel type to a Job Details panel.", 
 	 "ManagerJobDetailsPanel", "Job Details:",
-	 false, false, false, 119),  /* F8 */ 
+	 false, false, false, 120),  /* F9 */ 
 	
 	new BasePref(),
 
 	new HotKeyPref
 	("Change the panel type to an empty panel.", 
 	 "ManagerEmptyPanel", "None:",
-	 false, false, false, 120),  /* F9 */ 
+	 false, false, false, 121),  /* F9 */ 
       };
 
       pPrefs.put("Main Menu|Panel Type|Hot Keys", prefs);
@@ -852,6 +866,50 @@ class GenUserPrefsApp
     }
 
     {
+      BasePref prefs[] = {
+	new DuplicateHotKeyPref
+	("Apply the changes to the working version.", 
+	 "NodeLinksApplyChanges", "Apply Changes:", "ApplyChanges"), 
+	
+	new BasePref(),
+	
+	new DuplicateHotKeyPref
+	("Edit primary file sequences of the current node.",
+	 "NodeLinksEdit", "Edit:", "Edit"), 
+
+	new BasePref(),
+
+	new DuplicateHotKeyPref
+	("Submit jobs to the queue for the current node.",
+	 "NodeLinksQueueJobs", "Queue Jobs:", "QueueJobs"), 
+
+	new DuplicateHotKeyPref
+	("Submit jobs to the queue for the current node with special job requirements.",
+	 "NodeLinksQueueJobsSpecial", "Queue Jobs Special:", "QueueJobsSpecial"),  
+
+	new DuplicateHotKeyPref
+	("Pause all jobs associated with the current node.",
+	 "NodeLinksPauseJobs", "Pause Jobs:", "PauseJobs"), 
+
+	new DuplicateHotKeyPref
+	("Resume execution of all jobs associated with the current node.",
+	 "NodeLinksResumeJobs", "Resume Jobs:", "ResumeJobs"), 
+
+	new DuplicateHotKeyPref
+	("Kill all jobs associated with the current node.",
+	 "NodeLinksKillJobs", "Kill Jobs:", "KillJobs"), 
+
+	new BasePref(),
+
+	new DuplicateHotKeyPref
+	("Remove all the primary/secondary files associated with the selected node.",
+	 "NodeLinksRemoveFiles", "Remove Files:", "RemoveFiles"), 
+      };
+
+      pPrefs.put("Panels|Node Links|Hot Keys", prefs);
+    }
+
+    {
       BasePref prefs[] = {	
 	new DuplicateHotKeyPref
 	("Edit primary file sequences of the current node.",
@@ -1284,6 +1342,7 @@ class GenUserPrefsApp
 
       pPrefPanels.add("Panels|Node Details|Hot Keys");
       pPrefPanels.add("Panels|Node Files|Hot Keys");
+      pPrefPanels.add("Panels|Node Links|Hot Keys");
       pPrefPanels.add("Panels|Node History|Hot Keys");
 
       pPrefPanels.add("Panels|Job Browser|Hot Keys");
@@ -1307,6 +1366,7 @@ class GenUserPrefsApp
 	manager.add("ManagerNodeViewerWindow");
 	manager.add("ManagerNodeDetailsWindow");
 	manager.add("ManagerNodeFilesWindow");
+	manager.add("ManagerNodeLinksWindow");
 	manager.add("ManagerNodeHistoryWindow");
 	manager.add("ManagerJobBrowserWindow");
 	manager.add("ManagerJobViewerWindow");
@@ -1320,6 +1380,7 @@ class GenUserPrefsApp
 	manager.add("ManagerNodeViewerPanel");
 	manager.add("ManagerNodeDetailsPanel");
 	manager.add("ManagerNodeFilesPanel");
+	manager.add("ManagerNodeLinksPanel");
 	manager.add("ManagerNodeHistoryPanel");
 	manager.add("ManagerJobBrowserPanel");
 	manager.add("ManagerJobViewerPanel");
@@ -1487,6 +1548,17 @@ class GenUserPrefsApp
     
       {
 	TreeSet<String> group = new TreeSet<String>();
+	pHotKeyGroups.put("NodeLinks", group);
+      
+	group.addAll(manager);
+	group.add(applyChanges);
+	group.add(edit);
+	group.addAll(jobs);
+	group.add(removeFiles);
+      }
+    
+      {
+	TreeSet<String> group = new TreeSet<String>();
 	pHotKeyGroups.put("NodeHistory", group);
       
 	group.addAll(manager);
@@ -1621,7 +1693,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.12 2005/02/01 14:52:06 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.13 2005/02/09 18:23:45 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -1876,7 +1948,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.12 2005/02/01 14:52:06 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.13 2005/02/09 18:23:45 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3232,7 +3304,7 @@ class GenUserPrefsApp
 
       StringBuffer buf = new StringBuffer();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.12 2005/02/01 14:52:06 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.13 2005/02/09 18:23:45 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

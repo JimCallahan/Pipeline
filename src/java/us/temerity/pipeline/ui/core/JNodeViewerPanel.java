@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.12 2005/01/15 02:56:33 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.13 2005/02/09 18:23:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -4728,6 +4728,7 @@ class JNodeViewerPanel
       UIMaster master = UIMaster.getInstance();
 
       TreeMap<VersionID,TreeMap<FileSeq,boolean[]>> novelty = null;
+      TreeMap<VersionID,TreeMap<String,LinkVersion>> links = null;
       TreeMap<VersionID,LogMessage> history = null;
 
       TreeMap<Long,QueueJobGroup> jobGroups = null; 
@@ -4745,6 +4746,25 @@ class JNodeViewerPanel
 	      try {
 		MasterMgrClient client = master.getMasterMgrClient();
 		novelty = client.getCheckedInFileNovelty(pStatus.getName());
+	      }
+	      catch(PipelineException ex) {
+		master.showErrorDialog(ex);
+	      }
+	      finally {
+		master.endPanelOp("Done.");
+	      }
+	    }
+	  }
+	}
+
+	{
+	  PanelGroup<JNodeLinksPanel> panels = master.getNodeLinksPanels();
+	  JNodeLinksPanel panel = panels.getPanel(pGroupID);
+	  if(panel != null) {
+	    if(master.beginPanelOp("Updating Node Links...")) {
+	      try {
+		MasterMgrClient client = master.getMasterMgrClient();
+		links = client.getCheckedInLinks(pStatus.getName());
 	      }
 	      catch(PipelineException ex) {
 		master.showErrorDialog(ex);
@@ -4808,7 +4828,7 @@ class JNodeViewerPanel
       UpdateSubPanelComponentsTask task = 
 	new UpdateSubPanelComponentsTask(pGroupID, pAuthor, pView, pStatus, 
 					 pEditorPlugins, pEditorMenuLayout, 
-					 novelty, history, 
+					 novelty, links, history, 
 					 pUpdateJobs, jobGroups, jobStatus, jobInfo, 
 					 hosts, keys);
       SwingUtilities.invokeLater(task);
@@ -4838,6 +4858,7 @@ class JNodeViewerPanel
      TreeMap<String,TreeSet<VersionID>> editorPlugins, 
      PluginMenuLayout editorLayout,
      TreeMap<VersionID,TreeMap<FileSeq,boolean[]>> novelty,
+     TreeMap<VersionID,TreeMap<String,LinkVersion>> links,
      TreeMap<VersionID,LogMessage> history,
      boolean updateJobs, 
      TreeMap<Long,QueueJobGroup> jobGroups, 
@@ -4861,6 +4882,7 @@ class JNodeViewerPanel
       pEditorMenuLayout = new PluginMenuLayout(editorLayout);
 
       pNovelty = novelty;
+      pLinks   = links;
       pHistory = history;
 
       pUpdateJobs = updateJobs; 
@@ -4898,6 +4920,17 @@ class JNodeViewerPanel
       }
       
       {
+	PanelGroup<JNodeLinksPanel> panels = master.getNodeLinksPanels();
+	JNodeLinksPanel panel = panels.getPanel(pGroupID);
+	if(panel != null) {
+	  panel.updateNodeStatus(pAuthor, pView, pStatus, 
+				 pEditorPlugins, pEditorMenuLayout, 
+				 pLinks);
+	  panel.updateManagerTitlePanel();
+	}
+      }
+
+      {
 	PanelGroup<JNodeHistoryPanel> panels = master.getNodeHistoryPanels();
 	JNodeHistoryPanel panel = panels.getPanel(pGroupID);
 	if(panel != null) {
@@ -4928,6 +4961,7 @@ class JNodeViewerPanel
     private PluginMenuLayout  pEditorMenuLayout;
 
     private TreeMap<VersionID,TreeMap<FileSeq,boolean[]>>  pNovelty;
+    private TreeMap<VersionID,TreeMap<String,LinkVersion>> pLinks; 
     private TreeMap<VersionID,LogMessage>                  pHistory;
 
     private boolean                      pUpdateJobs; 

@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.8 2005/02/04 10:59:11 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.9 2005/02/09 18:23:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -761,7 +761,7 @@ class JNodeFilesPanel
 	      if(flags != null) {
 		int wk;
 		for(wk=0; wk<flags.length; wk++) {
-		  if(flags[wk]) {
+		  if((flags[wk] != null) && flags[wk]) {
 		    hasNovel = true;
 		    break;
 		  }
@@ -811,15 +811,14 @@ class JNodeFilesPanel
 		  bvid = details.getBaseVersion().getVersionID();
 		  
 		for(VersionID vid : vids) {
-		  JButton btn = new JButton("v" + vid.toString());
+		  JButton btn = new JButton("v" + vid);
 		  btn.setName("TableHeaderButton");
 		    
 		  if((bvid != null) && bvid.equals(vid)) 
 		    btn.setForeground(Color.cyan);
 		    
 		  btn.addActionListener(this);
-		  btn.setActionCommand
-		    ("version-pressed:" + fseq.toString() + ":" + vid.toString());
+		  btn.setActionCommand("version-pressed:" + fseq + ":" + vid);
 		    
 		  btn.setFocusable(false);
 		    
@@ -2141,7 +2140,6 @@ class JNodeFilesPanel
       pHasWorking = hasWorking;
 
       pIsExtended = isExtended;
-      setName(pIsExtended ? "FileBarExtend" : "FileBar");
       setSelected(false);
 
       Dimension size = new Dimension(70, 19);
@@ -2276,9 +2274,18 @@ class JNodeFilesPanel
     ) 
     {
       super();
+
       pFileSeq   = fseq;
       pVersionID = vid;
       pHasWorking = hasWorking;
+
+      setName("FileCheck");
+      setSelected(false);
+      
+      Dimension size = new Dimension(12, 19);
+      setMinimumSize(size);
+      setMaximumSize(size);
+      setPreferredSize(size);
     }
 
     public FileSeq
@@ -2309,7 +2316,6 @@ class JNodeFilesPanel
 
 
   /*----------------------------------------------------------------------------------------*/
-
   
   /**
    * A panel which displays the current state and revision history of a file sequence.  
@@ -2418,14 +2424,6 @@ class JNodeFilesPanel
 		  
 		  {
 		    JFileCheckBox check = new JFileCheckBox(sfseq, vid, isEnabled);
-		    check.setName("FileCheck");
-
-		    check.setSelected(false);
-
-		    Dimension size = new Dimension(12, 19);
-		    check.setMinimumSize(size);
-		    check.setMaximumSize(size);
-		    check.setPreferredSize(size);
 		    
 		    if(isEnabled && !pIsFrozen) {
 		      check.addActionListener(parent);

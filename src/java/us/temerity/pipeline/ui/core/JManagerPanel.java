@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.9 2005/01/15 21:15:54 jim Exp $
+// $Id: JManagerPanel.java,v 1.10 2005/02/09 18:23:44 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -82,6 +82,8 @@ class JManagerPanel
 	item.addActionListener(this);
 	sub.add(item);  
 
+	sub.addSeparator();
+
 	item = new JMenuItem("Node Details");
 	pNodeDetailsWindowItem = item;
 	item.setActionCommand("node-details-window");
@@ -91,6 +93,12 @@ class JManagerPanel
 	item = new JMenuItem("Node Files");
 	pNodeFilesWindowItem = item;
 	item.setActionCommand("node-files-window");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	item = new JMenuItem("Node Links");
+	pNodeLinksWindowItem = item;
+	item.setActionCommand("node-links-window");
 	item.addActionListener(this);
 	sub.add(item);  
 
@@ -153,6 +161,8 @@ class JManagerPanel
 	item.addActionListener(this);
 	sub.add(item);  
 
+	sub.addSeparator();
+
 	item = new JMenuItem("Node Details");
 	pNodeDetailsPanelItem = item;
 	item.setActionCommand("node-details");
@@ -162,6 +172,12 @@ class JManagerPanel
 	item = new JMenuItem("Node Files");
 	pNodeFilesPanelItem = item;
 	item.setActionCommand("node-files");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	item = new JMenuItem("Node Links");
+	pNodeLinksPanelItem = item;
+	item.setActionCommand("node-links");
 	item.addActionListener(this);
 	sub.add(item);  
 
@@ -890,6 +906,9 @@ class JManagerPanel
       (pNodeFilesWindowItem, prefs.getManagerNodeFilesWindow(), 
        "Create a new window containing a Node Files panel.");
     updateMenuToolTip
+      (pNodeLinksWindowItem, prefs.getManagerNodeLinksWindow(), 
+       "Create a new window containing a Node Links panel.");
+    updateMenuToolTip
       (pNodeHistoryWindowItem, prefs.getManagerNodeHistoryWindow(), 
        "Create a new window containing a Node History panel.");
     updateMenuToolTip
@@ -922,6 +941,9 @@ class JManagerPanel
     updateMenuToolTip
       (pNodeFilesPanelItem, prefs.getManagerNodeFilesPanel(), 
        "Change the panel type to a Node Files panel.");
+    updateMenuToolTip
+      (pNodeLinksPanelItem, prefs.getManagerNodeLinksPanel(), 
+       "Change the panel type to a Node Links panel.");
     updateMenuToolTip
       (pNodeHistoryPanelItem, prefs.getManagerNodeHistoryPanel(), 
        "Change the panel type to a Node History panel.");
@@ -1381,6 +1403,11 @@ class JManagerPanel
       doNodeFilesWindow();
       return true;
     }
+    else if((prefs.getManagerNodeLinksWindow() != null) &&
+	    prefs.getManagerNodeLinksWindow().wasPressed(e)) {
+      doNodeLinksWindow();
+      return true;
+    }
     else if((prefs.getManagerNodeHistoryWindow() != null) &&
 	    prefs.getManagerNodeHistoryWindow().wasPressed(e)) {
       doNodeHistoryWindow();
@@ -1434,6 +1461,11 @@ class JManagerPanel
     else if((prefs.getManagerNodeFilesPanel() != null) &&
 	    prefs.getManagerNodeFilesPanel().wasPressed(e)) {
       doNodeFilesPanel();
+      return true;
+    }
+    else if((prefs.getManagerNodeLinksPanel() != null) &&
+	    prefs.getManagerNodeLinksPanel().wasPressed(e)) {
+      doNodeLinksPanel();
       return true;
     }
     else if((prefs.getManagerNodeHistoryPanel() != null) &&
@@ -1711,6 +1743,8 @@ class JManagerPanel
       doNodeDetailsWindow();
     else if(cmd.equals("node-files-window"))
       doNodeFilesWindow();
+    else if(cmd.equals("node-links-window"))
+      doNodeLinksWindow();
     else if(cmd.equals("node-history-window"))
       doNodeHistoryWindow();
 
@@ -1736,6 +1770,8 @@ class JManagerPanel
       doNodeDetailsPanel();
     else if(cmd.equals("node-files"))
       doNodeFilesPanel();
+    else if(cmd.equals("node-links"))
+      doNodeLinksPanel();
     else if(cmd.equals("node-history"))
       doNodeHistoryPanel();
 
@@ -1895,6 +1931,22 @@ class JManagerPanel
 
     JManagerPanel mgr = frame.getManagerPanel();
     JNodeFilesPanel panel = new JNodeFilesPanel(pTopLevelPanel);
+    mgr.setContents(panel); 
+    
+    updateNodeSubpanels(panel.getGroupID());
+  }
+
+  /** 
+   * Create a new secondary panel frame containing a JNodeLinksPanel. 
+   */ 
+  private void 
+  doNodeLinksWindow() 
+  {
+    JPanelFrame frame = UIMaster.getInstance().createWindow();
+    frame.setSize(612, 752);
+
+    JManagerPanel mgr = frame.getManagerPanel();
+    JNodeLinksPanel panel = new JNodeLinksPanel(pTopLevelPanel);
     mgr.setContents(panel); 
     
     updateNodeSubpanels(panel.getGroupID());
@@ -2070,6 +2122,27 @@ class JManagerPanel
 
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     JNodeFilesPanel panel = new JNodeFilesPanel(dead);
+    setContents(panel);
+    dead.setGroupID(0);
+    dead.freeDisplayLists();
+    refocusOnChildPanel();
+
+    updateNodeSubpanels(panel.getGroupID());
+  }
+
+  /**
+   * Change the contents of this panel to a JNodeLinksPanel. 
+   */ 
+  private void 
+  doNodeLinksPanel()
+  {
+    if(getContents() instanceof JNodeLinksPanel) {
+      Toolkit.getDefaultToolkit().beep();
+      return; 
+    }
+
+    JTopLevelPanel dead = (JTopLevelPanel) removeContents();
+    JNodeLinksPanel panel = new JNodeLinksPanel(dead);
     setContents(panel);
     dead.setGroupID(0);
     dead.freeDisplayLists();
@@ -3059,6 +3132,7 @@ class JManagerPanel
   private JMenuItem  pNodeViewerWindowItem;
   private JMenuItem  pNodeDetailsWindowItem;
   private JMenuItem  pNodeFilesWindowItem;
+  private JMenuItem  pNodeLinksWindowItem;
   private JMenuItem  pNodeHistoryWindowItem;
   private JMenuItem  pJobBrowserWindowItem;
   private JMenuItem  pJobViewerWindowItem;
@@ -3071,6 +3145,7 @@ class JManagerPanel
   private JMenuItem  pNodeViewerPanelItem;
   private JMenuItem  pNodeDetailsPanelItem;
   private JMenuItem  pNodeFilesPanelItem;
+  private JMenuItem  pNodeLinksPanelItem;
   private JMenuItem  pNodeHistoryPanelItem;
   private JMenuItem  pJobBrowserPanelItem;
   private JMenuItem  pJobViewerPanelItem;
