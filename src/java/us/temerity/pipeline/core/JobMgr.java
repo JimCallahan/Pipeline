@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.5 2004/08/22 21:59:19 jim Exp $
+// $Id: JobMgr.java,v 1.6 2004/08/23 03:03:32 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -87,14 +87,18 @@ class JobMgr
   getResources() 
   {
     TaskTimer timer = new TaskTimer();
-    timer.aquire();
     try {
       /* count the number of running jobs */ 
       int numJobs = 0;
+      timer.aquire();
       synchronized(pExecuteTasks) {
 	timer.resume();
-	numJobs = pExecuteTasks.size();
+	for(ExecuteTask task : pExecuteTasks.values()) 
+	  if(task.isAlive())
+	    numJobs++;
       }
+
+      Logs.ops.finest("GetResources - Num Jobs: " + numJobs);
 
       /* system load (1-minute average) */ 
       float load = 0.0f;
@@ -312,7 +316,7 @@ class JobMgr
    *   The job start request.
    * 
    * @return
-   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>JobStartRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to start the job.
    */ 
   public Object
@@ -322,20 +326,25 @@ class JobMgr
   ) 
   {
     QueueJob job = req.getJob();
-
-    TaskTimer timer = new TaskTimer("JobMgr.start(): " + job.getJobID()); 
+    TaskTimer timer = new TaskTimer(); 
 
     ExecuteTask task = new ExecuteTask(job);
-
+    int numJobs = 0;
     timer.aquire();
     synchronized(pExecuteTasks) {
       timer.resume();
-      pExecuteTasks.put(job.getJobID(), task);
+      pExecuteTasks.put(job.getJobID(), task); 
+
+      for(ExecuteTask etask : pExecuteTasks.values()) 
+	if(etask.isAlive())
+	  numJobs++;
+
+      Logs.ops.finest("JobStart - Num Jobs: " + numJobs);
     }
 
     task.start();
 
-    return new SuccessRsp(timer);
+    return new JobStartRsp(job.getJobID(), timer, numJobs);
   }
 
   /**
@@ -400,8 +409,8 @@ class JobMgr
   ) 
   {
     TaskTimer timer = new TaskTimer(); 
-    timer.aquire();
     try {
+      timer.aquire();
       ExecuteTask task = null;
       synchronized(pExecuteTasks) {
 	timer.resume();
@@ -457,8 +466,21 @@ class JobMgr
 	}
       }
       
+
+      /* count the number of running jobs */ 
+      int numJobs = 0;
+      timer.aquire();
+      synchronized(pExecuteTasks) {
+	timer.resume();
+	for(ExecuteTask etask : pExecuteTasks.values()) 
+	  if(etask.isAlive())
+	    numJobs++;
+      }
+
+      Logs.ops.finest("JobWait - Num Jobs: " + numJobs);
+
       assert(results != null);
-      return new JobWaitRsp(req.getJobID(), timer, results);
+      return new JobWaitRsp(req.getJobID(), timer, results, numJobs);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
