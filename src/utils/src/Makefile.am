@@ -14,10 +14,12 @@ realpath_SOURCES = FB.cc PackageInfo.cc RealPath.cc
 instsbindir  = @ROOT_INST_DIR@/sbin
 
 instsbin_PROGRAMS = \
-  plrun
+  plrun \
+  plnotify
 
 plrun_SOURCES = FB.cc PackageInfo.cc PlRun.cc 
 
+plnotify_SOURCES = FB.cc PackageInfo.cc PlNotify.cc
 
 
 EXTRA_DIST = \

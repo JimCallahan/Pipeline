@@ -1,4 +1,4 @@
-// $Id: PackageInfo.cc.in,v 1.15 2004/04/09 18:03:24 jim Exp $
+// $Id: PackageInfo.cc.in,v 1.16 2004/04/11 16:28:42 jim Exp $
 
 #include <PackageInfo.hh>
 
@@ -35,6 +35,24 @@ const int PackageInfo::sPipelineUID = @PIPELINE_UID@;
  */ 
 const int PackageInfo::sPipelineGID = @PIPELINE_GID@;
 
+
+/**
+ * The installed location of Java.
+ */ 
+const char* PackageInfo::sJavaHome = "@JAVA_HOME@";
+
+/**
+ * The runtime options to be passed to Java.
+ */ 
+const char* PackageInfo::sJavaRuntimeFlags = "@JAVA_RUNTIME_FLAGS@";
+
+ 
+/** 	
+ * The root installation directory. <P>
+ *
+ * Set by the RootInstallDirectory customer profile entry.
+ */ 
+const char* PackageInfo::sInstDir = "@ROOT_INST_DIR@";
 
 /**
  * The root installed documentation directory. 
