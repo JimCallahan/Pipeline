@@ -1,4 +1,4 @@
-// $Id: MayaCollateAction.java,v 1.1 2004/12/05 01:30:28 jim Exp $
+// $Id: MayaCollateAction.java,v 1.2 2005/01/18 19:45:08 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_2_0;
 
@@ -32,6 +32,12 @@ import java.text.*;
  * must be the primary file sequence of one of the source nodes and are assigned to the 
  * appropriate stage using the Intial MEL, Model MEL, Anim MEL and Final MEL single valued 
  * parameters. <P> 
+ * 
+ * For models which have animation data for at least one shot, any shots which do not have 
+ * animation data should have a visibility key (set to off) at the start of the shot. In 
+ * other words, missing animation data implies that the model is also missing from the 
+ * scene. The exception is that a model with NO animation for any scene should always be 
+ * visible. <P> 
  * 
  * This action defines the following single valued parameters: <BR>
  * 
