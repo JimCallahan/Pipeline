@@ -1,4 +1,4 @@
-// $Id: JBaseDialog.java,v 1.8 2004/06/02 21:52:43 jim Exp $
+// $Id: JBaseDialog.java,v 1.9 2004/09/05 06:45:06 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -41,7 +41,7 @@ class JBaseDialog
    boolean modal
   ) 
   {
-    super(UIMaster.getInstance().getFrame(), title, modal);
+    super((JFrame) null, title, modal);
   }
 
   /**
