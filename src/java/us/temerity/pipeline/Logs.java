@@ -1,4 +1,4 @@
-// $Id: Logs.java,v 1.11 2004/10/28 15:55:23 jim Exp $
+// $Id: Logs.java,v 1.12 2005/01/14 16:02:51 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -36,7 +36,7 @@ class Logs
   /**
    * Initialize all {@link Logger Logger} instances and message handlers.
    */
-  public static synchronized void 
+  public static void 
   init() 
   {
     assert(sHandler == null);
@@ -63,7 +63,7 @@ class Logs
       net.setUseParentHandlers(false);
       ops.setUseParentHandlers(false); 
       job.setUseParentHandlers(false); 
-      
+
       addHandler(new StreamHandler(System.out, new LogFormatter()));
     }
   }
@@ -76,17 +76,19 @@ class Logs
   /** 
    * Flush any cached messages to the output stream. 
    */ 
-  public static synchronized void 
+  public static void 
   flush() 
   {
-    if(sHandler != null)
-      sHandler.flush();
+    synchronized(sHandlerLock) {
+      if(sHandler != null)
+	sHandler.flush();
+    }
   }
 
   /**
    * Replace the stream handler with a file handler.
    */ 
-  public static synchronized void
+  public static void
   fileHandler
   (
    String logfile, 
@@ -94,71 +96,77 @@ class Logs
   ) 
     throws IOException 
   {
-    if(logfile.length() == 0) 
-      throw new IOException
-	("The name of the log file was empty!");
-    
-    if(backups < 0) 
-      throw new IOException
-	("The number of backup log files must be positive!");
-    
-    Handler handler = new FileHandler(logfile + ".%g", 10485760, backups, false);
-    handler.setFormatter(new LogFormatter());
-    
-    addHandler(handler);
+    synchronized(sHandlerLock) {
+      if(logfile.length() == 0) 
+	throw new IOException
+	  ("The name of the log file was empty!");
+      
+      if(backups < 0) 
+	throw new IOException
+	  ("The number of backup log files must be positive!");
+      
+      Handler handler = new FileHandler(logfile + ".%g", 10485760, backups, false);
+      handler.setFormatter(new LogFormatter());
+      
+      addHandler(handler);
+    }
   }
   
   /** 
    * Add the given logging handler to all loggers.
    */ 
-  public static synchronized void
+  public static void
   addHandler
   ( 
    Handler handler
   ) 
   {
-    Logs.shutdownHandler();
+    synchronized(sHandlerLock) {
+      Logs.shutdownHandler();
 
-    sHandler = handler;
-
-    arg.addHandler(handler);
-    glu.addHandler(handler);
-    plg.addHandler(handler);
-    tex.addHandler(handler);
-    sum.addHandler(handler);
-    
-    sub.addHandler(handler);
-    net.addHandler(handler);
-    
-    ops.addHandler(handler);
-    job.addHandler(handler);
+      sHandler = handler;
+      
+      arg.addHandler(handler);
+      glu.addHandler(handler);
+      plg.addHandler(handler);
+      tex.addHandler(handler);
+      sum.addHandler(handler);
+      
+      sub.addHandler(handler);
+      net.addHandler(handler);
+      
+      ops.addHandler(handler);
+      job.addHandler(handler);
+    }
   }
 
   /**
    * Shutdown the console logging handler.
    */ 
-  public static synchronized void
+  public static void
   shutdownHandler()
   {
-    if(sHandler == null)
-      return;
+    synchronized(sHandlerLock) {
+      if(sHandler == null)
+	return;
 
-    sHandler.flush();
-    sHandler.close();
-
-    arg.removeHandler(sHandler);
-    glu.removeHandler(sHandler);
-    plg.removeHandler(sHandler);
-    tex.removeHandler(sHandler);
-    sum.removeHandler(sHandler);
+      sHandler.flush();
+      sHandler.close();
+      
+      arg.removeHandler(sHandler);
+      glu.removeHandler(sHandler);
+      plg.removeHandler(sHandler);
+      tex.removeHandler(sHandler);
+      sum.removeHandler(sHandler);
+      
+      sub.removeHandler(sHandler);
+      net.removeHandler(sHandler);
     
-    sub.removeHandler(sHandler);
-    net.removeHandler(sHandler);
-    
-    ops.removeHandler(sHandler);
-    job.removeHandler(sHandler);
-    
-    sHandler = null;
+      ops.removeHandler(sHandler);
+      job.removeHandler(sHandler);
+      
+      sHandler = null;
+    }
   }
 
   /** 
@@ -166,19 +174,21 @@ class Logs
    * 
    * Flushes any cached messages and closes down the output stream.
    */ 
-  public static synchronized void
+  public static void
   cleanup()
   {
-    shutdownHandler();
+    synchronized(sHandlerLock) {
+      shutdownHandler();
 
-    arg = null;
-    glu = null;
-    plg = null;
-    tex = null;
-    sum = null;
-    net = null;
-    ops = null;
-    job = null;
+      arg = null;
+      glu = null;
+      plg = null;
+      tex = null;
+      sum = null;
+      net = null;
+      ops = null;
+      job = null;
+    }
   }
 
 
@@ -242,7 +252,7 @@ class Logs
   /** 
    * The {@link Logger Logger} used for messages related to command-line argument parsing.
    */
-  public static Logger arg;    
+  public static Logger arg;
 
   /**
    * The {@link Logger Logger} used for messages related to Glue parsing.
@@ -308,10 +318,15 @@ class Logs
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * The lock which protects access to the output handler.
+   */ 
+  private static Object  sHandlerLock = new Object();
+
   /** 
    * The output handler for all loggers. 
    */
-  private static Handler sHandler;  
+  private static Handler  sHandler;  
   
 }
 
