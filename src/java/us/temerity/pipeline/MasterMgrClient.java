@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.3 2004/05/29 06:38:06 jim Exp $
+// $Id: MasterMgrClient.java,v 1.4 2004/06/02 21:29:25 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -185,6 +185,7 @@ class MasterMgrClient
     handleSimpleResponse(obj);    
   }
 
+
   /**
    * Get the names of the currently active toolsets.
    * 
@@ -207,6 +208,35 @@ class MasterMgrClient
       return null;
     }
   }
+
+  /**
+   * Set the active/inactive state of the toolset with the given name. <P> 
+   * 
+   * @param name
+   *   The name of the toolset.
+   *
+   * @param isActive
+   *   Whether the toolset should be active.
+   * 
+   * @throws PipelineException
+   *   If unable to change the active state of the toolset.
+   */ 
+  public synchronized void
+  setToolsetActive
+  (
+   String name, 
+   boolean isActive
+  ) 
+    throws PipelineException
+  {    
+    verifyConnection();
+
+    MiscSetToolsetActiveReq req = new MiscSetToolsetActiveReq(name, isActive);
+
+    Object obj = performTransaction(MasterRequest.SetToolsetActive, req);
+    handleSimpleResponse(obj);    
+  }
+
 
   /**
    * Get the names of all toolsets.
@@ -263,6 +293,37 @@ class MasterMgrClient
   }
 
   /**
+   * Get the cooked toolset environment with the given name.
+   * 
+   * @param name
+   *   The toolset name.
+   * 
+   * @throws PipelineException
+   *   If unable to find the toolset.
+   */ 
+  public synchronized TreeMap<String,String> 
+  getToolsetEnvironment
+  (
+   String name
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    MiscGetToolsetEnvironmentReq req = new MiscGetToolsetEnvironmentReq(name);
+
+    Object obj = performTransaction(MasterRequest.GetToolsetEnvironment, req);
+    if(obj instanceof MiscGetToolsetRsp) {
+      MiscGetToolsetEnvironmentRsp rsp = (MiscGetToolsetEnvironmentRsp) obj;
+      return rsp.getEnvironment();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+
+  /**
    * Create a new toolset and possibly new package versions from the given set of 
    * packages. <P>
    * 
@@ -286,10 +347,13 @@ class MasterMgrClient
    * @param packages
    *   The packages in order of evaluation.
    * 
+   * @return 
+   *   The newly created toolset.
+   * 
    * @throws PipelineException
    *   If unable to create a new toolset.
    */
-  public synchronized void 
+  public synchronized Toolset
   createToolset
   (
    String name, 
@@ -314,8 +378,15 @@ class MasterMgrClient
     MiscCreateToolsetReq req =
       new MiscCreateToolsetReq(PackageInfo.sUser, name, desc, names, versions);
 
-    Object obj = performTransaction(MasterRequest.CreateToolset, req);
-    handleSimpleResponse(obj);
+    Object obj = performTransaction(MasterRequest.CreateToolset, req); 
+    if(obj instanceof MiscCreateToolsetRsp) {
+      MiscCreateToolsetRsp rsp = (MiscCreateToolsetRsp) obj;
+      return rsp.getToolset();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }    
   }
 
 
@@ -399,10 +470,13 @@ class MasterMgrClient
    * @param level
    *   The revision number component level to increment.
    * 
+   * @return 
+   *   The newly created package.
+   * 
    * @throws PipelineException
    *   If unable to create a new toolset packages.
    */
-  public synchronized void 
+  public synchronized PackageVersion
   createToolsetPackage
   (
    PackageMod mod, 
@@ -420,8 +494,15 @@ class MasterMgrClient
     MiscCreateToolsetPackageReq req =
       new MiscCreateToolsetPackageReq(PackageInfo.sUser, mod, desc, level);
 
-    Object obj = performTransaction(MasterRequest.CreateToolsetPackage, req);
-    handleSimpleResponse(obj);
+    Object obj = performTransaction(MasterRequest.CreateToolsetPackage, req); 
+    if(obj instanceof MiscCreateToolsetPackageRsp) {
+      MiscCreateToolsetPackageRsp rsp = (MiscCreateToolsetPackageRsp) obj;
+      return rsp.getPackage();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
   }
 
 

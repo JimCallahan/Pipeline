@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.3 2004/05/29 06:38:06 jim Exp $
+// $Id: MasterMgr.java,v 1.4 2004/06/02 21:29:25 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -969,23 +969,25 @@ class MasterMgr
    MiscSetDefaultToolsetNameReq req 
   ) 
   {   
-    TaskTimer timer = new TaskTimer("MasterMgr.setDefaultToolsetName(): " + req.getName());
+    String tname = req.getName();
+
+    TaskTimer timer = new TaskTimer("MasterMgr.setDefaultToolsetName(): " + tname);
 
     timer.aquire();
     synchronized(pToolsets) {
       timer.resume();
 
-      if(!pToolsets.containsKey(req.getName())) 
+      if(!pToolsets.containsKey(tname)) 
 	return new FailureRsp
 	  (timer, 
-	   "No toolset named (" + req.getName() + ") exists to be made the default toolset!");
+	   "No toolset named (" + tname + ") exists to be made the default toolset!");
     }
 
     timer.aquire();
     synchronized(pDefaultToolsetLock) {
       timer.resume();	 
       
-      pDefaultToolset = req.getName();
+      pDefaultToolset = tname;
 
       try {
 	writeDefaultToolset();
@@ -993,9 +995,25 @@ class MasterMgr
       catch(PipelineException ex) {
 	return new FailureRsp(timer, ex.getMessage());
       }
-
-      return new SuccessRsp(timer);
     }
+
+    timer.aquire();
+    synchronized(pActiveToolsets) {
+      timer.resume();	 
+      
+      if(!pActiveToolsets.contains(tname)) {
+	pActiveToolsets.add(tname);
+
+	try {
+	  writeActiveToolsets();
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
+	}
+      }
+    }
+
+    return new SuccessRsp(timer);
   }
 
 
@@ -1019,6 +1037,92 @@ class MasterMgr
       return new MiscGetActiveToolsetNamesRsp(timer, new TreeSet<String>(pActiveToolsets));
     }
   }
+
+  /**
+   * Set the active/inactive state of the toolset with the given name. <P> 
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to make the given toolset active.
+   */
+  public Object
+  setToolsetActive
+  (
+   MiscSetToolsetActiveReq req 
+  ) 
+  {
+    String tname = req.getName();
+
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.setActiveToolsetName(): " + 
+		    tname + " [" + req.isActive() + "]");
+
+    timer.aquire();
+    synchronized(pToolsets) {
+      timer.resume();
+
+      if(!pToolsets.containsKey(tname)) 
+	return new FailureRsp
+	  (timer, 
+	   "No toolset named (" + tname + ") exists to be made the active!");
+    }
+
+    boolean removed = false;
+
+    timer.aquire();
+    synchronized(pActiveToolsets) {
+      timer.resume();	 
+
+      boolean changed = false;
+      if(req.isActive()) {
+	if(!pActiveToolsets.contains(tname)) {
+	  pActiveToolsets.add(tname);
+	  changed = true;
+	}
+      }
+      else {
+	if(pActiveToolsets.contains(tname)) {
+	  pActiveToolsets.remove(tname);
+	  changed = true;
+	  removed = true;
+	}
+      }
+
+      if(changed) {
+	try {
+	  writeActiveToolsets();
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
+	}
+      }
+    }
+    
+    if(removed) {
+      timer.aquire();
+      synchronized(pDefaultToolsetLock) {
+	timer.resume();	 
+	
+	if((pDefaultToolset != null) && pDefaultToolset.equals(tname)) {
+	  pDefaultToolset = null;
+	
+	  File file = new File(pNodeDir, "toolsets/default-toolset");
+	  if(file.exists()) {
+	    if(!file.delete())
+	      return new FailureRsp
+		(timer, "Unable to remove the old default toolset file (" + file + ")!");
+	  }
+	}
+      }
+    }
+
+    return new SuccessRsp(timer);
+  }
+
+
 
   /**
    * Get the names of all toolsets.
@@ -1074,6 +1178,43 @@ class MasterMgr
       assert(tset != null);
 
       return new MiscGetToolsetRsp(timer, tset);
+    }
+  }
+
+  /**
+   * Get the cooked toolset environment with the given name.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetToolsetEnvironmentRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to find the toolset.
+   */
+  public Object
+  getToolsetEnvironment
+  ( 
+   MiscGetToolsetEnvironmentReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    synchronized(pToolsets) {
+      timer.resume();
+    
+      Toolset tset = pToolsets.get(req.getName());
+      if(tset == null) {
+	try {
+	  tset = readToolset(req.getName());
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
+	}
+      }
+      assert(tset != null);
+
+      return new MiscGetToolsetEnvironmentRsp(timer, tset.getName(), tset.getEnvironment());
     }
   }
 
@@ -1153,7 +1294,7 @@ class MasterMgr
       
       pToolsets.put(tset.getName(), tset);
 
-      return new SuccessRsp(timer);
+      return new MiscCreateToolsetRsp(timer, tset);
     }    
   }
 
@@ -1281,7 +1422,7 @@ class MasterMgr
       
       versions.put(pkg.getVersionID(), pkg);
 
-      return new SuccessRsp(timer);
+      return new MiscCreateToolsetPackageRsp(timer, pkg);
     }
   }
    
@@ -3839,7 +3980,7 @@ class MasterMgr
 	    ("Unable to remove the old active toolsets file (" + file + ")!");
       }
 
-      if(pActiveToolsets.isEmpty()) {
+      if(!pActiveToolsets.isEmpty()) {
 	Logs.ops.finer("Writing Active Toolsets.");
 
 	try {

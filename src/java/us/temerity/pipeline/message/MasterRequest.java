@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.3 2004/05/29 06:34:32 jim Exp $
+// $Id: MasterRequest.java,v 1.4 2004/06/02 21:30:06 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -35,6 +35,11 @@ enum MasterRequest
   GetActiveToolsetNames, 
 
   /**
+   * An instance of {@link MiscSetToolsetActiveReq MiscSetToolsetActiveReq} is next.
+   */
+  SetToolsetActive, 
+
+  /**
    * Get the names of all toolsets.
    */
   GetToolsetNames, 
@@ -43,6 +48,11 @@ enum MasterRequest
    * An instance of {@link MiscGetToolsetReq MiscGetToolsetReq} is next.
    */
   GetToolset, 
+
+  /**
+   * An instance of {@link MiscGetToolsetEnvironmentReq MiscGetToolsetEnvironmentReq} is next.
+   */
+  GetToolsetEnvironment, 
 
   /**
    * An instance of {@link MiscCreateToolsetReq MiscCreateToolsetReq} is next.
