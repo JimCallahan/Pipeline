@@ -177,7 +177,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 #                     Plugins 
 
 
-            TESTS = FileSeq
+            TESTS = VersionID
 
 
          CLASSES = $(patsubst %,Test%App.class,$(TESTS))
