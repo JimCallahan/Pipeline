@@ -1,4 +1,4 @@
-// $Id: JColorEditorDialog.java,v 1.2 2004/12/29 17:31:45 jim Exp $
+// $Id: JColorEditorDialog.java,v 1.3 2004/12/29 22:36:33 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -382,7 +382,8 @@ class JColorEditorDialog
 
     /* the RGB swatch */ 
     {
-      double s = 0.4;
+      double s  = 0.4;
+      double s2 = 0.425;
 
       gl.glPushMatrix();
       {
@@ -390,6 +391,12 @@ class JColorEditorDialog
 	
 	gl.glBegin(GL.GL_QUADS);
 	{
+	  gl.glColor3d(1.0, 1.0, 1.0);
+	  gl.glVertex2d( s2,  s2);
+	  gl.glVertex2d( s2, -s2);
+	  gl.glVertex2d(-s2, -s2);
+	  gl.glVertex2d(-s2,  s2);
+
 	  c = getColor();
 	  gl.glColor3d(c.r(), c.g(), c.b());
 	  gl.glVertex2d( s,  s);
@@ -467,47 +474,25 @@ class JColorEditorDialog
    MouseEvent e 
   ) 
   {
-    Point2d p  = canvasToRing(e.getPoint());
-    Point2d hr = ringToPolar(p);
+    Point2d pos = canvasToRing(e.getPoint());
+    Point2d hr  = ringToPolar(pos);
 
-    System.out.print("Press: C = " + e.getPoint() + 
-		     "  Pos = " + p + "  Hue/Radius = " + hr + "\n\n");
-
-    if((hr.y() > 1.0) && (hr.y() < (sOuterRadius/sInnerRadius))) {
-      pHSV.x(hr.x()); 
-      pCanvas.repaint();
-      pEditingHue = true;
-    }
-    else {
-      //CoordSys2d space = pTriSpace.mult(CoordSys2d.newRotate(Math.toRadians(pHSV.x())));
+    if(hr.y() < 1.0) {
       CoordSys2d rot = CoordSys2d.newRotate(Math.toRadians(-pHSV.x()));
       CoordSys2d space = rot.mult(pTriSpace);
       CoordSys2d inv = space.inverse(0.000001);
       
-      System.out.print("Tri:\n" + pTriSpace + "\n" + 
-		       "Rot:\n" + rot + "\n" + 
-		       "Space:\n" + space + "\n" + 
-		       "Inv:\n" + inv + "\n\n");		       
+      Point2d p = inv.xform(pos);
+      if(!computeSatVal(p)) 
+	return;
 
-      if(inv != null) {
-	Point2d tp = inv.xform(p);
-	System.out.print("  WP = " + p + "  TP = " + tp + "\n");
-
-	Point2d tb = new Point2d(0.0, 0.0);
-	Point2d wb = space.xform(tb);
-	Point2d tb2 = inv.xform(wb);
-	System.out.print("  TB = " + tb + "  WB = " + wb + "  TB2 = " + tb2 +"\n");
-
-	Point2d ts = new Point2d(0.5, 1.0);
-	Point2d ws = space.xform(ts);      
-	Point2d ts2 = inv.xform(ws);
-	System.out.print("  TS = " + ts + "  WS = " + ws + "  TS2 = " + ts2 + "\n");
-	
-	Point2d tw = new Point2d(1.0, 0.0);
-	Point2d ww = space.xform(tw);
-	Point2d tw2 = inv.xform(ww);
-	System.out.print("  TW = " + tw + "  WW = " + ww + "  TW2 = " + tw2 + "\n\n");
-      }
+      pCanvas.repaint();
+      pEditingSatVal = true;
+    }
+    else if((hr.y() > 1.0) && (hr.y() < (sOuterRadius/sInnerRadius))) {
+      pHSV.x(hr.x()); 
+      pCanvas.repaint();
+      pEditingHue = true;
     }
   }
 
@@ -520,14 +505,8 @@ class JColorEditorDialog
    MouseEvent e
   ) 
   {
-    Point2d p  = canvasToRing(e.getPoint());
-    Point2d hr = ringToPolar(p);
-
-    if(pEditingHue) {
-      pHSV.x(hr.x()); 
-      pCanvas.repaint();
-      pEditingHue = false;
-    }
+    pEditingSatVal = false;
+    pEditingHue    = false;
   }
 
   /**
@@ -549,10 +528,82 @@ class JColorEditorDialog
    MouseEvent e
   )
   {
-    Point2d p = canvasToRing(e.getPoint());
-    Point2d hr = ringToPolar(p);
+    Point2d pos = canvasToRing(e.getPoint());
+    Point2d hr = ringToPolar(pos);
     
-    if(pEditingHue) {
+    if(pEditingSatVal) {
+      CoordSys2d rot = CoordSys2d.newRotate(Math.toRadians(-pHSV.x()));
+      CoordSys2d space = rot.mult(pTriSpace);
+      CoordSys2d inv = space.inverse(0.000001);
+      
+      Point2d p = inv.xform(pos);
+      if(!computeSatVal(p)) {
+	double sy = Math.sin(Math.PI / 6.0);
+	Point2d m = new Point2d(0.5, sy / (1.0 + sy));
+
+	Point2d a = new Point2d(0.5, 1.0);
+	Point2d b = new Point2d();
+	Point2d c = new Point2d(1.0, 0.0);
+
+	Vector2d ma = new Vector2d(m, a);
+	Vector2d mb = new Vector2d(m, b);
+	Vector2d mc = new Vector2d(m, c);
+
+	Vector2d pa = new Vector2d(-ma.y(), ma.x()); 
+	Vector2d pb = new Vector2d(-mb.y(), mb.x());
+	Vector2d pc = new Vector2d(-mc.y(), mc.x());
+
+	Vector2d mp = new Vector2d(m, p);
+	double da = mp.dot(pa);
+	double db = mp.dot(pb);
+	double dc = mp.dot(pc);
+
+	int region = -1;
+	if(da > 0.0) {
+	  if(db > 0.0) 
+	    region = 2;
+	  else 
+	    region = 0;
+	}
+	else {
+	  if(dc > 0.0) 
+	    region = 1;
+	  else 
+	    region = 2;
+	}
+
+	switch(region) {
+	case 0:
+	  {
+	    double value = (((m.y() * (0.5 - p.x())) + (0.5 * (p.y() - m.y()))) / 
+			    ((0.5 - p.x()) + (0.5 * (p.y() - m.y())))); 
+	    pHSV.y(1.0);
+	    pHSV.z(ExtraMath.clamp(value, 0.0, 1.0));
+	  }
+	  break;
+
+	case 1:
+	  {	    
+	    double sat = 1.0 - (((p.x() - 0.5) * (1.0 - m.y())) /
+				((0.5 * (p.y() - m.y())) + (p.x() - 0.5)));
+	    pHSV.y(ExtraMath.clamp(sat, 0.0, 1.0));
+	    pHSV.z(1.0);
+	  }
+	  break;
+
+	case 2:
+	  {
+	    double value = (((m.y() * (0.5 - p.x())) + (0.5 * (p.y() - m.y()))) / 
+			    (p.y() - m.y()));
+	    pHSV.y(0.0);
+	    pHSV.z(ExtraMath.clamp(value, 0.0, 1.0));
+	  }
+	}
+      }
+      
+      pCanvas.repaint();
+    }
+    else if(pEditingHue) {
       pHSV.x(hr.x()); 
       pCanvas.repaint();
     }
@@ -631,6 +682,50 @@ class JColorEditorDialog
   }
 
 
+  /** 
+   * Determine whether the given triangle space position is inside the triangle
+   * and if it is compute and set the saturation and value.
+   * 
+   * @return 
+   *   Whether the position was inside the triangle.
+   */ 
+  private boolean
+  computeSatVal
+  (
+   Point2d p
+  ) 
+  {
+    if(p.anyLt(0.0) || p.anyGe(1.0)) 
+      return false;
+    
+    double sat = 1.0 - ((p.x() - 0.5*p.y()) / (p.x() + 0.5*p.y()));
+    if(sat > 1.0)
+      return false;
+    
+    Point2d a = new Point2d(0.5, 1.0);
+    Point2d b = new Point2d(1.0, 0.0);
+    Point2d c = new Point2d();
+    
+    Point2d q = Point2d.lerp(b, a, sat);
+    
+    Vector2d cp = new Vector2d(c, p);
+    double lcp = cp.length();
+    
+    Vector2d cq = new Vector2d(c, q);
+    double lcq = cq.length();
+    
+    if(lcp > lcq) 
+      return false;
+    
+    double value = lcp / lcq;
+    
+    pHSV.y(ExtraMath.clamp(sat, 0.0, 1.0));
+    pHSV.z(ExtraMath.clamp(value, 0.0, 1.0));
+
+    return true;
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -684,6 +779,11 @@ class JColorEditorDialog
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether a mouse drag which changes the saturation/value is currently in progress.
+   */ 
+  private boolean  pEditingSatVal; 
 
   /**
    * Whether a mouse drag which changes the hue is currently in progress.
