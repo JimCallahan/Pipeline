@@ -1,4 +1,4 @@
-// $Id: NotifyServer.java,v 1.8 2004/07/14 20:55:15 jim Exp $
+// $Id: NotifyServer.java,v 1.9 2004/07/24 18:17:59 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -263,6 +263,9 @@ class NotifyServer
 	  ("Interrupted while waiting for the master monitor thread to complete!");
       }
     }
+    catch (Exception ex) {
+      Logs.net.severe(ex.getMessage());
+    }
     finally {
       Logs.net.fine("Server Shutdown.");
       Logs.flush();
@@ -336,6 +339,9 @@ class NotifyServer
 	Logs.net.severe("The Security Manager doesn't allow listening to sockets!\n" + 
 			ex.getMessage());
 	Logs.flush();
+      }
+      catch (Exception ex) {
+	Logs.net.severe(ex.getMessage());
       }
       finally {
 	if(server != null) {
@@ -437,6 +443,9 @@ class NotifyServer
 	Logs.net.severe("Illegal object encountered on port (" + pControlPort + "):\n" + 
 			ex.getMessage());	
       }
+      catch (Exception ex) {
+	Logs.net.severe(ex.getMessage());
+      }
       finally {
 	try {
 	  pSocket.close();
@@ -528,6 +537,9 @@ class NotifyServer
 	Logs.net.severe("The Security Manager doesn't allow listening to sockets!\n" + 
 			ex.getMessage());
 	Logs.flush();
+      }
+      catch (Exception ex) {
+	Logs.net.severe(ex.getMessage());
       }
       finally {
 	if(server != null) {
@@ -661,6 +673,9 @@ class NotifyServer
       catch(ClassNotFoundException ex) {
 	Logs.net.severe("Illegal object encountered on port (" + pMonitorPort + "):\n" + 
 			ex.getMessage());	
+      }
+      catch (Exception ex) {
+	Logs.net.severe(ex.getMessage());
       }
       finally {
 	try {

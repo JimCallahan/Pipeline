@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.13 2004/07/18 21:29:29 jim Exp $
+// $Id: FileMgrServer.java,v 1.14 2004/07/24 18:17:59 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -149,6 +149,9 @@ class FileMgrServer
       Logs.net.severe("The Security Manager doesn't allow listening to sockets!\n" + 
 		      ex.getMessage());
       Logs.flush();
+    }
+    catch (Exception ex) {
+      Logs.net.severe(ex.getMessage());
     }
     finally {
       if(server != null) {
@@ -305,6 +308,9 @@ class FileMgrServer
       catch(ClassNotFoundException ex) {
 	Logs.net.severe("Illegal object encountered on port (" + pPort + "):\n" + 
 			ex.getMessage());	
+      }
+      catch (Exception ex) {
+	Logs.net.severe(ex.getMessage());
       }
       finally {
 	try {

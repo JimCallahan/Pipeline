@@ -1,4 +1,4 @@
-// $Id: JobMgrServer.java,v 1.1 2004/07/21 07:15:01 jim Exp $
+// $Id: JobMgrServer.java,v 1.2 2004/07/24 18:17:59 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -150,6 +150,9 @@ class JobMgrServer
 		      ex.getMessage());
       Logs.flush();
     }
+    catch (Exception ex) {
+      Logs.net.severe(ex.getMessage());
+    }
     finally {
       if(server != null) {
 	try {
@@ -228,6 +231,9 @@ class JobMgrServer
       catch(ClassNotFoundException ex) {
 	Logs.net.severe("Illegal object encountered on port (" + pPort + "):\n" + 
 			ex.getMessage());	
+      }
+      catch (Exception ex) {
+	Logs.net.severe(ex.getMessage());
       }
       finally {
 	try {

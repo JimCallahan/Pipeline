@@ -1,4 +1,4 @@
-// $Id: JobMgrApp.java,v 1.1 2004/07/21 07:15:01 jim Exp $
+// $Id: JobMgrApp.java,v 1.2 2004/07/24 18:17:59 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -72,7 +72,7 @@ class JobMgrApp
     catch(ParseException ex) {
       handleParseException(ex);
     }
-    catch (InterruptedException ex) {
+    catch (Exception ex) {
       Logs.net.severe(ex.getMessage());
     }
     finally {

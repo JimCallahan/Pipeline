@@ -1,4 +1,4 @@
-// $Id: NotifyApp.java,v 1.4 2004/07/21 07:14:32 jim Exp $
+// $Id: NotifyApp.java,v 1.5 2004/07/24 18:17:59 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -72,8 +72,8 @@ class NotifyApp
     catch(ParseException ex) {
       handleParseException(ex);
     }
-    catch (InterruptedException ex) {
-      Logs.net.severe(ex.getMessage());
+    catch(Exception ex) {
+      Logs.net.severe(getFullMessage(ex));
     }
     finally {
       Logs.cleanup();

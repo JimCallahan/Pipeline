@@ -1,4 +1,4 @@
-// $Id: FileMgrApp.java,v 1.7 2004/07/21 07:14:32 jim Exp $
+// $Id: FileMgrApp.java,v 1.8 2004/07/24 18:17:59 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -74,8 +74,8 @@ class FileMgrApp
     catch(ParseException ex) {
       handleParseException(ex);
     }
-    catch (InterruptedException ex) {
-      Logs.net.severe(ex.getMessage());
+    catch(Exception ex) {
+      Logs.net.severe(getFullMessage(ex));
     }
     finally {
       Logs.cleanup();

@@ -1,4 +1,4 @@
-// $Id: MasterApp.java,v 1.3 2004/07/21 07:14:32 jim Exp $
+// $Id: MasterApp.java,v 1.4 2004/07/24 18:18:47 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -74,8 +74,8 @@ class MasterApp
     catch(ParseException ex) {
       handleParseException(ex);
     }
-    catch (InterruptedException ex) {
-      Logs.net.severe(ex.getMessage());
+    catch(Exception ex) {
+      Logs.net.severe(getFullMessage(ex));
     }
     finally {
       Logs.cleanup();
@@ -111,6 +111,7 @@ class MasterApp
       "  [--node-dir=...][--master-port=...]\n" + 
       "  [--prod-dir=...][--file-host=...][--file-port]\n" + 
       "  [--notify-control-port=...][--notify-monitor-port=...]\n" + 
+      "  [--queue-host=...][--queue-port]\n" + 
       "  [--log=...]\n" +
       "\n" + 
       "\n" +  
