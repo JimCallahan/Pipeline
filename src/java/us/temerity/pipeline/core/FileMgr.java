@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.6 2004/03/30 22:11:56 jim Exp $
+// $Id: FileMgr.java,v 1.7 2004/03/31 08:34:56 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -226,27 +226,16 @@ class FileMgr
    FileStateReq req
   ) 
   {
-    if(req == null) 
-      return new FailureRsp("The file state request cannot be (null)!");
+    assert(req != null);
+    TaskTimer timer = new TaskTimer();
 
-    String task = null;
-    {
-      StringBuffer buf = new StringBuffer();
-      buf.append("FileMgr.computeFileStates(): " + req.getNodeID() + " ");
-      for(FileSeq fseq : req.getFileSequences()) 
-	buf.append("[" + fseq + "]");
-      task = buf.toString();
-    }
-
-    Date start = new Date();
-    long wait = 0;
+    timer.aquire();
     ReentrantReadWriteLock checkedInLock = getCheckedInLock(req.getNodeID().getName());
     checkedInLock.readLock().lock();
     try {
       Object workingLock = getWorkingLock(req.getNodeID());
       synchronized(workingLock) {
-	wait  = (new Date()).getTime() - start.getTime();
-	start = new Date();
+	timer.resume();
 
 	NodeID id = req.getNodeID();
 	TreeMap<FileSeq, FileState[]> states = new TreeMap<FileSeq, FileState[]>();
@@ -386,20 +375,14 @@ class FileMgr
 	  break;
 	}
 	
-	return new FileStateRsp(req.getNodeID(), states, wait, start);
+	return new FileStateRsp(timer, req.getNodeID(), states);
       }
     }
     catch(PipelineException ex) {
-      if(wait > 0) 
-	return new FailureRsp(task, ex.getMessage(), wait, start);
-      else 
-	return new FailureRsp(task, ex.getMessage(), start);
+      return new FailureRsp(timer, ex.getMessage());
     }
     catch(IOException ex) {
-      if(wait > 0) 
-	return new FailureRsp(task, ex.getMessage(), wait, start);
-      else 
-	return new FailureRsp(task, ex.getMessage(), start);
+      return new FailureRsp(timer, ex.getMessage());
     }
     finally {
       checkedInLock.readLock().unlock();
@@ -423,27 +406,23 @@ class FileMgr
    FileCheckInReq req
   ) 
   {
-    if(req == null) 
-      return new FailureRsp("The check-in request cannot be (null)!");
-    
-    String task = null;
+    assert(req != null);
+    TaskTimer timer = null;
     {
       StringBuffer buf = new StringBuffer();
       buf.append("FileMgr.checkIn(): " + req.getNodeID() + " (" + req.getVersionID() + ") ");
       for(FileSeq fseq : req.getFileSequences()) 
 	buf.append("[" + fseq + "]");
-      task = buf.toString();
+      timer = new TaskTimer(buf.toString());
     }
 
-    Date start = new Date();
-    long wait = 0;
+    timer.aquire();
     ReentrantReadWriteLock checkedInLock = getCheckedInLock(req.getNodeID().getName());
     checkedInLock.writeLock().lock();
     try {
       Object workingLock = getWorkingLock(req.getNodeID());
       synchronized(workingLock) {
-	wait  = (new Date()).getTime() - start.getTime();
-	start = new Date();
+	timer.resume();
 
 	/* refresh the working checksums */ 
 	for(FileSeq fseq : req.getFileSequences()) {
@@ -463,7 +442,10 @@ class FileMgr
 	  rdir  = new File(pProdDir, rpath.getPath());
 	  crdir = new File(pProdDir, "checksum/" + rpath);
 
+	  timer.aquire();
 	  synchronized(pMakeDirLock) { 
+	    timer.resume();
+
 	    if(rdir.exists()) {
 	      if(rdir.isDirectory()) 
 		throw new PipelineException
@@ -572,7 +554,6 @@ class FileMgr
 		break;
 
 	      default:
-		//assert(false);
 		throw new PipelineException
 		  ("Somehow the working file (" + work + ") with a file state of (" + 
 		   states[wk].name() + ") was erroneously submitted for check-in!");
@@ -701,14 +682,11 @@ class FileMgr
 	  }
 	}
 
-	return new SuccessRsp(task, wait, start);
+	return new SuccessRsp(timer);
       }
     }
     catch(PipelineException ex) {
-      if(wait > 0) 
-	return new FailureRsp(task, ex.getMessage(), wait, start);
-      else 
-	return new FailureRsp(task, ex.getMessage(), start);
+      return new FailureRsp(timer, ex.getMessage());
     }
     finally {
       checkedInLock.writeLock().unlock();
@@ -732,27 +710,23 @@ class FileMgr
    FileCheckOutReq req
   ) 
   {
-    if(req == null) 
-      return new FailureRsp("The check-out request cannot be (null)!");
-    
-    String task = null;
+    assert(req != null);
+    TaskTimer timer = null;
     {
       StringBuffer buf = new StringBuffer();
       buf.append("FileMgr.checkOut(): " + req.getNodeID() + " (" + req.getVersionID() + ") ");
       for(FileSeq fseq : req.getFileSequences()) 
 	buf.append("[" + fseq + "]");
-      task = buf.toString();
+      timer = new TaskTimer(buf.toString());
     }
 
-    Date start = new Date();
-    long wait = 0;
+    timer.aquire();
     ReentrantReadWriteLock checkedInLock = getCheckedInLock(req.getNodeID().getName());
     checkedInLock.readLock().lock();
     try {
       Object workingLock = getWorkingLock(req.getNodeID());
       synchronized(workingLock) {
-	wait  = (new Date()).getTime() - start.getTime();
-	start = new Date();
+	timer.resume();	
 
 	Map<String,String> env = System.getenv();
 
@@ -765,7 +739,10 @@ class FileMgr
 	  wdir  = new File(pProdDir, wpath.getPath());
 	  cwdir = new File(pProdDir, "checksum/" + wpath);
 
+	  timer.aquire();
 	  synchronized(pMakeDirLock) { 
+	    timer.resume();	
+
 	    ArrayList<File> dirs = new ArrayList<File>();
 	    if(wdir.exists()) {
 	      if(!wdir.isDirectory()) 
@@ -958,14 +935,11 @@ class FileMgr
 	  }
 	}
 
-	return new SuccessRsp(task, wait, start);
+	return new SuccessRsp(timer);
       }
     }
     catch(PipelineException ex) {
-      if(wait > 0) 
-	return new FailureRsp(task, ex.getMessage(), wait, start);
-      else 
-	return new FailureRsp(task, ex.getMessage(), start);
+      return new FailureRsp(timer, ex.getMessage());
     }
     finally {
       checkedInLock.readLock().unlock();
@@ -990,27 +964,23 @@ class FileMgr
    FileFreezeReq req
   ) 
   {
-    if(req == null) 
-      return new FailureRsp("The freeze request cannot be (null)!");
-    
-    String task = null;
+    assert(req != null);
+    TaskTimer timer = null;
     {
       StringBuffer buf = new StringBuffer();
       buf.append("FileMgr.freeze(): " + req.getNodeID() + " ");
       for(FileSeq fseq : req.getFileSequences()) 
 	buf.append("[" + fseq + "]");
-      task = buf.toString();
+      timer = new TaskTimer(buf.toString());
     }
 
-    Date start = new Date();
-    long wait = 0;
+    timer.aquire();
     ReentrantReadWriteLock checkedInLock = getCheckedInLock(req.getNodeID().getName());
     checkedInLock.readLock().lock();
     try {
       Object workingLock = getWorkingLock(req.getNodeID());
       synchronized(workingLock) {
-	wait  = (new Date()).getTime() - start.getTime();
-	start = new Date();
+	timer.resume();	
 
 	Map<String,String> env = System.getenv();
 
@@ -1084,14 +1054,11 @@ class FileMgr
 	  }
 	}
 
-	return new SuccessRsp(task, wait, start);
+	return new SuccessRsp(timer);
       }
     }
     catch(PipelineException ex) {
-      if(wait > 0) 
-	return new FailureRsp(task, ex.getMessage(), wait, start);
-      else 
-	return new FailureRsp(task, ex.getMessage(), start);
+      return new FailureRsp(timer, ex.getMessage());
     }
     finally {
       checkedInLock.readLock().unlock();
@@ -1115,27 +1082,23 @@ class FileMgr
    FileUnfreezeReq req
   ) 
   {
-    if(req == null) 
-      return new FailureRsp("The unfreeze request cannot be (null)!");
-    
-    String task = null;
+    assert(req != null);
+    TaskTimer timer = null;
     {
       StringBuffer buf = new StringBuffer();
       buf.append("FileMgr.unfreeze(): " + req.getNodeID() + " ");
       for(FileSeq fseq : req.getFileSequences()) 
 	buf.append("[" + fseq + "]");
-      task = buf.toString();
+      timer = new TaskTimer(buf.toString());
     }
 
-    Date start = new Date();
-    long wait = 0;
+    timer.aquire();
     ReentrantReadWriteLock checkedInLock = getCheckedInLock(req.getNodeID().getName());
     checkedInLock.readLock().lock();
     try {
       Object workingLock = getWorkingLock(req.getNodeID());
       synchronized(workingLock) {
-	wait  = (new Date()).getTime() - start.getTime();
-	start = new Date();
+	timer.resume();	
 
 	Map<String,String> env = System.getenv();
 
@@ -1252,14 +1215,11 @@ class FileMgr
 	  }
 	}
 
-	return new SuccessRsp(task, wait, start);
+	return new SuccessRsp(timer);
       }
     }
     catch(PipelineException ex) {
-      if(wait > 0) 
-	return new FailureRsp(task, ex.getMessage(), wait, start);
-      else 
-	return new FailureRsp(task, ex.getMessage(), start);
+      return new FailureRsp(timer, ex.getMessage());
     }
     finally {
       checkedInLock.readLock().unlock();
@@ -1282,25 +1242,21 @@ class FileMgr
    FileRemoveReq req
   ) 
   {
-    if(req == null) 
-      return new FailureRsp("The file remove request cannot be (null)!");
-
-    String task = null;
+    assert(req != null);
+    TaskTimer timer = null;
     {
       StringBuffer buf = new StringBuffer();
       buf.append("FileMgr.remove(): " + req.getNodeID() + " ");
       for(FileSeq fseq : req.getFileSequences()) 
 	buf.append("[" + fseq + "]");
-      task = buf.toString();
+      timer = new TaskTimer(buf.toString());
     }
 
-    Date start = new Date();
-    long wait = 0;
+    timer.aquire();
     try {
       Object workingLock = getWorkingLock(req.getNodeID());
       synchronized(workingLock) {
-	wait  = (new Date()).getTime() - start.getTime();
-	start = new Date();
+	timer.resume();	
 	
 	Map<String,String> env = System.getenv();
 	
@@ -1378,14 +1334,11 @@ class FileMgr
 	  }
 	}
 	
-	return new SuccessRsp(task, wait, start);
+	return new SuccessRsp(timer);
       }
-    }    
+    }
     catch(PipelineException ex) {
-      if(wait > 0) 
-	return new FailureRsp(task, ex.getMessage(), wait, start);
-      else 
-	return new FailureRsp(task, ex.getMessage(), start);
+      return new FailureRsp(timer, ex.getMessage());
     }
   }
 
@@ -1405,26 +1358,22 @@ class FileMgr
    FileRenameReq req
   ) 
   {
-    if(req == null) 
-      return new FailureRsp("The rename request cannot be (null)!");
-    
-    String task = null;
+    assert(req != null);
+    TaskTimer timer = null;
     {
       StringBuffer buf = new StringBuffer();
       buf.append("FileMgr.rename(): " + req.getNodeID() + " ");
       for(FileSeq fseq : req.getFileSequences()) 
 	buf.append("[" + fseq + "]");
       buf.append(" to " + req.getNewName());
-      task = buf.toString();
+      timer = new TaskTimer(buf.toString());
     }
 
-    Date start = new Date();
-    long wait = 0;
+    timer.aquire();
     try {
       Object workingLock = getWorkingLock(req.getNodeID());
       synchronized(workingLock) {
-	wait  = (new Date()).getTime() - start.getTime();
-	start = new Date();    
+	timer.resume();	
 	
 	Map<String,String> env = System.getenv();
 	
@@ -1699,14 +1648,11 @@ class FileMgr
 	  }
 	}
 
-	return new SuccessRsp(task, wait, start);
+	return new SuccessRsp(timer);
       }
     }
     catch(PipelineException ex) {
-      if(wait > 0) 
-	return new FailureRsp(task, ex.getMessage(), wait, start);
-      else 
-	return new FailureRsp(task, ex.getMessage(), start);
+      return new FailureRsp(timer, ex.getMessage());
     }
   }
 

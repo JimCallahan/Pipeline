@@ -1,4 +1,4 @@
-// $Id: FileRenameReq.java,v 1.1 2004/03/30 22:19:18 jim Exp $
+// $Id: FileRenameReq.java,v 1.2 2004/03/31 08:34:56 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -32,8 +32,8 @@ class FileRenameReq
    * @param fseqs
    *   The file sequences associated with the working version.
    * 
-   * @param fseqs 
-   *   The primary and secondary file sequences associated with the working version.
+   * @param newName
+   *   The new name for the node.
    */
   public
   FileRenameReq

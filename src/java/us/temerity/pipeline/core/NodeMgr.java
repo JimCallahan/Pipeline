@@ -1,4 +1,4 @@
-// $Id: NodeMgr.java,v 1.9 2004/03/31 02:03:08 jim Exp $
+// $Id: NodeMgr.java,v 1.10 2004/03/31 08:34:56 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -683,27 +683,20 @@ class NodeMgr
    NodeGetWorkingReq req
   ) 
   {	 
-    if(req == null) 
-      return new FailureRsp("The get working version request cannot be (null)!");
+    assert(req != null);
+    TaskTimer timer = new TaskTimer("NodeMgr.getWorkingVersion(): " + req.getNodeID());
 
-    String task = ("NodeMgr.getWorkingVersion(): " + req.getNodeID());
-
-    Date start = new Date();
-    long wait = 0;
+    timer.aquire();
     ReentrantReadWriteLock lock = getWorkingLock(req.getNodeID());
     lock.readLock().lock();
     try {
-      wait  = (new Date()).getTime() - start.getTime();
-      start = new Date();
+      timer.resume();	
       
       NodeMod mod = new NodeMod(getWorkingBundle(req.getNodeID()).uVersion);
-      return new NodeGetWorkingRsp(req.getNodeID(), mod, wait, start);
+      return new NodeGetWorkingRsp(timer, req.getNodeID(), mod);
     }
     catch(PipelineException ex) {
-      if(wait > 0) 
-	return new FailureRsp(task, ex.getMessage(), wait, start);
-      else 
-	return new FailureRsp(task, ex.getMessage(), start);
+      return new FailureRsp(timer, ex.getMessage());
     }
     finally {
       lock.readLock().unlock();
@@ -743,18 +736,14 @@ class NodeMgr
    NodeModifyPropertiesReq req
   ) 
   {
-    if(req == null) 
-      return new FailureRsp("The modify properties request cannot be (null)!");
+    assert(req != null);
+    TaskTimer timer = new TaskTimer("NodeMgr.modifyProperties(): " + req.getNodeID());
 
-    String task = ("NodeMgr.modifyProperties(): " + req.getNodeID());
-
-    Date start = new Date();
-    long wait = 0;
+    timer.aquire();
     ReentrantReadWriteLock lock = getWorkingLock(req.getNodeID());
     lock.writeLock().lock();
     try {
-      wait  = (new Date()).getTime() - start.getTime();
-      start = new Date();
+      timer.resume();
 
       /* set the node properties */ 
       WorkingBundle bundle = getWorkingBundle(req.getNodeID());
@@ -775,13 +764,10 @@ class NodeMgr
 	  bundle.uQueueStates = null;
       }
 
-      return new SuccessRsp(task, wait, start);
+      return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
-      if(wait > 0) 
-	return new FailureRsp(task, ex.getMessage(), wait, start);
-      else 
-	return new FailureRsp(task, ex.getMessage(), start);
+      return new FailureRsp(timer, ex.getMessage());
     }
     finally {
       lock.writeLock().unlock();
@@ -804,24 +790,21 @@ class NodeMgr
    NodeLinkReq req 
   ) 
   {
-    if(req == null) 
-      return new FailureRsp("The node link request cannot be (null)!");
-    
+    assert(req != null);
+
     NodeID targetID = req.getTargetID();
     String source   = req.getSourceLink().getName();
     NodeID sourceID = new NodeID(targetID.getAuthor(), targetID.getView(), source);
 
-    String task = ("NodeMgr.link(): " + targetID + " to " + sourceID);
+    TaskTimer timer = new TaskTimer("NodeMgr.link(): " + targetID + " to " + sourceID);
 
-    Date start = new Date();
-    long wait = 0;
+    timer.aquire();
     ReentrantReadWriteLock targetLock = getWorkingLock(targetID);
     targetLock.writeLock().lock();
     ReentrantReadWriteLock downstreamLock = getDownstreamLock(source);
     downstreamLock.writeLock().lock();
     try {
-      wait  = (new Date()).getTime() - start.getTime();
-      start = new Date();
+      timer.resume();
 
       WorkingBundle bundle = getWorkingBundle(targetID);
       if(bundle == null) 
@@ -832,7 +815,8 @@ class NodeMgr
       /* add the link */ 
       NodeMod mod = new NodeMod(bundle.uVersion);
       if(mod.getSource(source) == null) 
-	checkForCircularity(source, targetID, new HashSet<String>(), new Stack<String>()); 
+	checkForCircularity(timer, source, targetID, 
+			    new HashSet<String>(), new Stack<String>()); 
       mod.setSource(req.getSourceLink());
       
       /* write the new working version to disk */ 
@@ -849,13 +833,10 @@ class NodeMgr
       DownstreamLinks links = getDownstreamLinks(source); 
       links.addWorking(sourceID, targetID.getName());
 
-      return new SuccessRsp(task, wait, start);
+      return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
-      if(wait > 0) 
-	return new FailureRsp(task, ex.getMessage(), wait, start);
-      else 
-	return new FailureRsp(task, ex.getMessage(), start);
+      return new FailureRsp(timer, ex.getMessage());
     }
     finally {
       downstreamLock.writeLock().unlock();
@@ -879,24 +860,21 @@ class NodeMgr
    NodeUnlinkReq req 
   ) 
   {
-    if(req == null) 
-      return new FailureRsp("The node unlink request cannot be (null)!");
-    
+    assert(req != null);
+   
     NodeID targetID = req.getTargetID();
     String source   = req.getSourceName();
     NodeID sourceID = new NodeID(targetID.getAuthor(), targetID.getView(), source);
 
-    String task = ("NodeMgr.unlink(): " + targetID + " from " + sourceID);
+    TaskTimer timer = new TaskTimer("NodeMgr.unlink(): " + targetID + " from " + sourceID);
 
-    Date start = new Date();
-    long wait = 0;
+    timer.aquire();
     ReentrantReadWriteLock targetLock = getWorkingLock(targetID);
     targetLock.writeLock().lock();
     ReentrantReadWriteLock downstreamLock = getDownstreamLock(source);
     downstreamLock.writeLock().lock();
     try {
-      wait  = (new Date()).getTime() - start.getTime();
-      start = new Date();
+      timer.resume();	
 
       WorkingBundle bundle = getWorkingBundle(targetID);
       if(bundle == null) 
@@ -922,13 +900,10 @@ class NodeMgr
       DownstreamLinks links = getDownstreamLinks(source); 
       links.removeWorking(sourceID, targetID.getName());
 
-      return new SuccessRsp(task, wait, start);
+      return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
-      if(wait > 0) 
-	return new FailureRsp(task, ex.getMessage(), wait, start);
-      else 
-	return new FailureRsp(task, ex.getMessage(), start);
+      return new FailureRsp(timer, ex.getMessage());
     }
     finally {
       downstreamLock.writeLock().unlock();
@@ -958,18 +933,21 @@ class NodeMgr
    NodeRegisterReq req
   ) 
   {
-    if(req == null) 
-      return new FailureRsp("The node register request cannot be (null)!");
+    assert(req != null);
+    TaskTimer timer = new TaskTimer("NodeMgr.register(): " + req.getNodeID());
 
     /* node identifiers */ 
     String name = req.getNodeMod().getName();
 
     /* reserve the node name, 
          after verifying that it doesn't conflict with existing nodes */ 
+    timer.aquire();
     synchronized(pNodeNames) {
+      timer.resume();
+      
       if(pNodeNames.contains(name))
 	return new FailureRsp
-	  ("Cannot register node (" + name + ") because a node with that name " + 
+	  (timer, "Cannot register node (" + name + ") because a node with that name " + 
 	   "already exists!");
       
       File path = new File(name);
@@ -977,7 +955,7 @@ class NodeMgr
       while((parent = path.getParentFile()) != null) {
 	if(pNodeNames.contains(parent.getPath())) 
 	  return new FailureRsp
-	   ("Cannot register node (" + name + ") because its node path contains " +
+	   (timer, "Cannot register node (" + name + ") because its node path contains " +
 	    "an existing node (" + parent + ")!");
 
 	path = parent;
@@ -985,16 +963,12 @@ class NodeMgr
 
       pNodeNames.add(name);
     }
-    
-    String task = ("NodeMgr.register(): " + req.getNodeID());
 
-    Date start = new Date();
-    long wait = 0;
+    timer.aquire();
     ReentrantReadWriteLock lock = getWorkingLock(req.getNodeID());
     lock.writeLock().lock();
     try {
-      wait  = (new Date()).getTime() - start.getTime();
-      start = new Date();
+      timer.resume();
 
       /* write the new working version to disk */ 
       try {
@@ -1012,13 +986,10 @@ class NodeMgr
 	pWorkingBundles.put(req.getNodeID(), new WorkingBundle(req.getNodeMod()));
       }
 
-      return new SuccessRsp(task, wait, start);
+      return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
-      if(wait > 0) 
-	return new FailureRsp(task, ex.getMessage(), wait, start);
-      else 
-	return new FailureRsp(task, ex.getMessage(), start);
+      return new FailureRsp(timer, ex.getMessage());
     }
     finally {
       lock.writeLock().unlock();
@@ -1046,48 +1017,47 @@ class NodeMgr
    NodeRevokeReq req
   ) 
   {
-    if(req == null) 
-      return new FailureRsp("The node revoke request cannot be (null)!");
+    assert(req != null);
     
     NodeID id = req.getNodeID();
-    
-    String task = ("NodeMgr.revoke(): " + id);
 
-    Date start = new Date();
-    long wait = 0;
+    TaskTimer timer = new TaskTimer("NodeMgr.revoke(): " + id);
 
     /* unlink the downstream working versions from the to be revoked working version */ 
     {
+      timer.aquire();
       ReentrantReadWriteLock downstreamLock = getDownstreamLock(id.getName());
       downstreamLock.writeLock().lock();
       try {
-	wait  = (new Date()).getTime() - start.getTime();
-	start = new Date();
+	timer.resume();
 
 	DownstreamLinks links = getDownstreamLinks(id.getName()); 
 	for(String target : links.getWorking(id)) {
 	  NodeID targetID = new NodeID(id.getAuthor(), id.getView(), target);
+
+	  timer.suspend();
 	  Object obj = unlink(new NodeUnlinkReq(targetID, id.getName()));
-	  if(obj instanceof FailureRsp) 
-	    return obj;
+	  timer.accum(((TimedRsp) obj).getTimer());
+
+	  if(obj instanceof FailureRsp)  {
+	    FailureRsp rsp = (FailureRsp) obj;
+	    return new FailureRsp(timer, rsp.getMessage());
+	  }
 	}
       }
       catch(PipelineException ex) {
-	if(wait > 0) 
-	  return new FailureRsp(task, ex.getMessage(), wait, start);
-	else 
-	  return new FailureRsp(task, ex.getMessage(), start);
+	return new FailureRsp(timer, ex.getMessage());
       }
       finally {
 	downstreamLock.writeLock().unlock();
       }
     }
 
+    timer.aquire();
     ReentrantReadWriteLock lock = getWorkingLock(id);
     lock.writeLock().lock();
     try {
-      wait  = (new Date()).getTime() - start.getTime();
-      start = new Date();
+      timer.resume();
 
       WorkingBundle bundle = getWorkingBundle(id);
       if(bundle == null) 
@@ -1145,9 +1115,13 @@ class NodeMgr
       /* update the downstream links of the source nodes */ 
       for(LinkMod link : mod.getSources()) {
 	String source = link.getName();
+
+	timer.aquire();	
 	ReentrantReadWriteLock downstreamLock = getDownstreamLock(source);
 	downstreamLock.writeLock().lock();
 	try {
+	  timer.resume();
+
 	  NodeID sourceID = new NodeID(id.getAuthor(), id.getView(), source);
 	  DownstreamLinks links = getDownstreamLinks(source); 
 	  links.removeWorking(sourceID, id.getName());
@@ -1162,13 +1136,10 @@ class NodeMgr
 	pFileMgrClient.remove(id, mod);	
       }
 
-      return new SuccessRsp(task, wait, start);
+      return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
-      if(wait > 0) 
-	return new FailureRsp(task, ex.getMessage(), wait, start);
-      else 
-	return new FailureRsp(task, ex.getMessage(), start);
+      return new FailureRsp(timer, ex.getMessage());
     }
     finally {
       lock.writeLock().unlock();
@@ -1195,8 +1166,7 @@ class NodeMgr
    NodeRenameReq req
   ) 
   {
-    if(req == null) 
-      return new FailureRsp("The node rename request cannot be (null)!");
+    assert(req != null);
     
     NodeID id   = req.getNodeID();
     String name = id.getName();
@@ -1204,10 +1174,7 @@ class NodeMgr
     String nname = req.getNewName();
     NodeID nid   = new NodeID(id.getAuthor(), id.getView(), nname);
 
-    String task = ("NodeMgr.rename(): " + id + " to " + nid);
-
-    Date start = new Date();
-    long wait = 0;
+    TaskTimer timer = new TaskTimer("NodeMgr.rename(): " + id + " to " + nid);
 
     /* unlink the downstream working versions from the to be renamed working version 
          while collecting the existing downstream links */ 
@@ -1215,19 +1182,22 @@ class NodeMgr
     {
       dlinks = new TreeMap<String,LinkMod>();
 
+      timer.aquire();
       ReentrantReadWriteLock downstreamLock = getDownstreamLock(id.getName());
       downstreamLock.writeLock().lock();
       try {
-	wait  = (new Date()).getTime() - start.getTime();
-	start = new Date();
+	timer.resume();
 
 	DownstreamLinks links = getDownstreamLinks(id.getName()); 
 	for(String target : links.getWorking(id)) {
 	  NodeID targetID = new NodeID(id.getAuthor(), id.getView(), target);
 
+	  timer.aquire();
 	  ReentrantReadWriteLock lock = getWorkingLock(targetID);
 	  lock.readLock().lock();
 	  try {
+	    timer.resume();
+
 	    LinkMod dlink = getWorkingBundle(targetID).uVersion.getSource(name);
 	    if(dlink != null) 
 	      dlinks.put(target,dlink);
@@ -1235,28 +1205,27 @@ class NodeMgr
 	  finally {
 	    lock.readLock().unlock();
 	  }  
-
-	  unlink(new NodeUnlinkReq(targetID, id.getName()));
+	  
+	  timer.suspend();
+	  Object obj = unlink(new NodeUnlinkReq(targetID, id.getName()));
+	  timer.accum(((TimedRsp) obj).getTimer());
 	}
       }
       catch(PipelineException ex) {
-	if(wait > 0) 
-	  return new FailureRsp(task, ex.getMessage(), wait, start);
-	else 
-	  return new FailureRsp(task, ex.getMessage(), start);
+	return new FailureRsp(timer, ex.getMessage());
       }
       finally {
 	downstreamLock.writeLock().unlock();
       }
     }
 
+    timer.aquire();
     ReentrantReadWriteLock lock = getWorkingLock(id);
     lock.writeLock().lock();
     ReentrantReadWriteLock nlock = getWorkingLock(nid);
     nlock.writeLock().lock();
     try {
-      wait  = (new Date()).getTime() - start.getTime();
-      start = new Date();
+      timer.resume();
 
       WorkingBundle bundle = getWorkingBundle(id);
       NodeMod mod = new NodeMod(bundle.uVersion);
@@ -1274,14 +1243,20 @@ class NodeMgr
 
       /* reconnect the upstream nodes to the new named node */ 
       for(LinkMod ulink : bundle.uVersion.getSources()) {
+	timer.suspend();
 	Object obj = link(new NodeLinkReq(nid, ulink));
-	if(obj instanceof FailureRsp) 
-	  return obj;
+	timer.accum(((TimedRsp) obj).getTimer());
+	if(obj instanceof FailureRsp) {
+	  FailureRsp rsp = (FailureRsp) obj;
+	  return new FailureRsp(timer, rsp.getMessage());
+	}
       }
 
       /* revoke the old named node */ 
       {
+	timer.suspend();
 	Object obj = revoke(new NodeRevokeReq(id, false));
+	timer.accum(((TimedRsp) obj).getTimer());
 	if(obj instanceof FailureRsp) {
 	  FailureRsp rsp = (FailureRsp) obj;
 	  throw new PipelineException(rsp.getMessage());	
@@ -1294,10 +1269,7 @@ class NodeMgr
       }
     }
     catch(PipelineException ex) {
-      if(wait > 0) 
-	return new FailureRsp(task, ex.getMessage(), wait, start);
-      else 
-	return new FailureRsp(task, ex.getMessage(), start);
+      return new FailureRsp(timer, ex.getMessage());
     }
     finally {
       nlock.writeLock().unlock();
@@ -1312,12 +1284,16 @@ class NodeMgr
       LinkMod ndlink = new LinkMod(nname, dlink.getCatagory(), 
 				   dlink.getRelationship(), dlink.getFrameOffset());
 
+      timer.suspend();
       Object obj = link(new NodeLinkReq(tid, ndlink));
-      if(obj instanceof FailureRsp) 
-	return obj;
+      timer.accum(((TimedRsp) obj).getTimer());
+      if(obj instanceof FailureRsp) {
+	FailureRsp rsp = (FailureRsp) obj;
+	return new FailureRsp(timer, rsp.getMessage());
+      }
     }
 
-    return new SuccessRsp(task, wait, start);
+    return new SuccessRsp(timer);
   }
 
 
@@ -1348,6 +1324,7 @@ class NodeMgr
   private void 
   checkForCircularity
   ( 
+   TaskTimer timer, 
    String name,
    NodeID targetID, 
    HashSet<String> checked, 
@@ -1367,12 +1344,14 @@ class NodeMgr
       buf.append(targetID.getName());
       throw new PipelineException(buf.toString());
     }
-
-
+    
+    timer.aquire();
     NodeID id = new NodeID(targetID.getAuthor(), targetID.getView(), name);
     ReentrantReadWriteLock lock = getWorkingLock(id);
     lock.readLock().lock();
     try {
+      timer.resume();
+
       WorkingBundle bundle = getWorkingBundle(id);
       if(bundle == null) 
 	throw new PipelineException
@@ -1382,7 +1361,7 @@ class NodeMgr
       checked.add(name);
       branch.push(name);
       for(LinkMod link : bundle.uVersion.getSources()) 
-	checkForCircularity(link.getName(), targetID, checked, branch);
+	checkForCircularity(timer, link.getName(), targetID, checked, branch);
       branch.pop();      
     }
     finally {

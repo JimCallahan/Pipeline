@@ -1,4 +1,4 @@
-// $Id: NodeGetWorkingRsp.java,v 1.1 2004/03/26 19:13:41 jim Exp $
+// $Id: NodeGetWorkingRsp.java,v 1.2 2004/03/31 08:34:56 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -17,7 +17,7 @@ import java.util.*;
  */
 public
 class NodeGetWorkingRsp
-  implements Serializable
+  extends TimedRsp
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
@@ -26,18 +26,25 @@ class NodeGetWorkingRsp
   /** 
    * Constructs a new response.
    * 
+   * @param timer 
+   *   The timing statistics for a task.
+   * 
+   * @param id 
+   *   The unique working version identifier.
+   * 
    * @param mod
    *   The working version.
    */
   public
   NodeGetWorkingRsp
   (
+   TaskTimer timer, 
    NodeID id, 
-   NodeMod mod, 
-   long wait, 
-   Date start
+   NodeMod mod
   )
   { 
+    super(timer);
+
     if(id == null) 
       throw new IllegalArgumentException("The working version ID cannot be (null)!");
     pNodeID = id;
@@ -46,12 +53,9 @@ class NodeGetWorkingRsp
       throw new IllegalArgumentException("The intial working version cannot be (null)!");
     pNodeMod = mod;
 
-    pWait   = wait;
-    pActive = (new Date()).getTime() - start.getTime();
-
-    Logs.net.finest("NodeMgr.getWorkingVersion(): " + id + ": " +
-		    pWait + "/" + pActive + " (msec) wait/active");
+    Logs.net.finest("NodeMgr.getWorkingVersion(): " + id + ":\n  " + getTimer());
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -75,24 +79,6 @@ class NodeGetWorkingRsp
   {
     return pNodeMod;
   }
-  
-  /**
-   * Gets the number of milliseconds spent waiting to aquire the needed locks.
-   */
-  public long 
-  getWaitTime() 
-  {
-    return pWait;
-  }
-
-  /**
-   * Gets the number of milliseconds spent fufilling the request.
-   */
-  public long
-  getActiveTime() 
-  {
-    return pActive;
-  }
 
 
 
@@ -100,7 +86,7 @@ class NodeGetWorkingRsp
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -7806634912469985967L;
+  //private static final long serialVersionUID = -7806634912469985967L;
 
   
 
@@ -117,16 +103,6 @@ class NodeGetWorkingRsp
    * The working version of the node.
    */
   private NodeMod  pNodeMod;
-
-  /*
-   * The number of milliseconds spent waiting to aquire the needed locks.
-   */ 
-  private long  pWait;
-
-  /**
-   * The number of milliseconds spent fufilling the request.
-   */ 
-  private long  pActive; 
 
 }
   

@@ -1,4 +1,4 @@
-// $Id: FileStateRsp.java,v 1.6 2004/03/26 19:13:17 jim Exp $
+// $Id: FileStateRsp.java,v 1.7 2004/03/31 08:34:56 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -17,7 +17,7 @@ import java.util.*;
  */
 public
 class FileStateRsp
-  implements Serializable
+  extends TimedRsp
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
@@ -26,28 +26,26 @@ class FileStateRsp
   /** 
    * Constructs a new response.
    * 
+   * @param timer 
+   *   The timing statistics for a task.
+   * 
    * @param id 
    *   The unique working version identifier.
    * 
    * @param states 
    *   The <CODE>FileState</CODE> of each the primary and secondary file associated with 
    *   the working version indexed by file sequence.
-   * 
-   * @param wait 
-   *   The number of milliseconds spent waiting to aquire the needed locks.
-   * 
-   * @param start 
-   *   The timestamp of when the request started to be fufilled.
    */
   public
   FileStateRsp
   (
+   TaskTimer timer, 
    NodeID id, 
-   TreeMap<FileSeq, FileState[]> states, 
-   long wait, 
-   Date start
+   TreeMap<FileSeq, FileState[]> states
   )
   { 
+    super(timer);
+
     if(id == null) 
       throw new IllegalArgumentException("The working version ID cannot be (null)!");
     pNodeID = id;
@@ -56,16 +54,12 @@ class FileStateRsp
       throw new IllegalArgumentException("The working file states cannot (null)!");
     pStates = states;
 
-    pWait   = wait;
-    pActive = (new Date()).getTime() - start.getTime();
-
     {
       StringBuffer buf = new StringBuffer();
       buf.append("FileMgr.computeFileStates(): " + id + " ");
       for(FileSeq fseq : states.keySet()) 
 	buf.append("[" + fseq + "]");
-      Logs.net.finest(buf.toString() + ": " +
-		      pWait + "/" + pActive + " (msec) wait/active");
+      Logs.net.finest(buf.toString() + ":\n  " + getTimer());
     }
   }
 
@@ -94,26 +88,6 @@ class FileStateRsp
   }
 
   
-  /**
-   * Gets the number of milliseconds spent waiting to aquire the needed locks.
-   */
-  public long 
-  getWaitTime() 
-  {
-    return pWait;
-  }
-
-  /**
-   * Gets the number of milliseconds spent fufilling the request.
-   */
-  public long
-  getActiveTime() 
-  {
-    return pActive;
-  }
-
-
-
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
@@ -136,17 +110,6 @@ class FileStateRsp
    * the working version indexed by file sequence.
    */
   private TreeMap<FileSeq, FileState[]>  pStates; 
-
-
-  /*
-   * The number of milliseconds spent waiting to aquire the needed locks.
-   */ 
-  private long  pWait;
-
-  /**
-   * The number of milliseconds spent fufilling the request.
-   */ 
-  private long  pActive; 
 
 }
   
