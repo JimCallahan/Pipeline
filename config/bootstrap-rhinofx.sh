@@ -13,7 +13,8 @@ plprofile=$plsrcdir/plconfig/customers/rhinofx/041020
 pushd i686-pc-linux-gnu-dbg
   $plsrcdir/configure \
     --disable-opt \
-    --enable-attach \
+    --with-debug-base=43000 \
+    --with-prof-base=43100 \
     --with-compiler=GNU \
     --with-crypto-app=$plsrcdir/plconfig \
     --with-customer=rhinofx \
