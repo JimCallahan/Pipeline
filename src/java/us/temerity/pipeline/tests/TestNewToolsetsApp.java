@@ -1,4 +1,4 @@
-// $Id: TestNewToolsetsApp.java,v 1.1 2004/05/21 21:17:51 jim Exp $
+// $Id: TestNewToolsetsApp.java,v 1.2 2004/05/23 19:52:17 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -54,7 +54,7 @@ class TestNewToolsetsApp
       File file = new File(dir, files[wk]);
       if(file.isFile()) {
 	PackageMod mod = new PackageMod(file.getName());
-	mod.init(file);
+	mod.loadShellScript(file);
 	printPackage(mod);
       }
     }
