@@ -1,4 +1,4 @@
-// $Id: JExportDialog.java,v 1.2 2005/03/30 20:37:29 jim Exp $
+// $Id: JExportDialog.java,v 1.3 2005/03/30 22:42:38 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -68,7 +68,7 @@ class JExportDialog
 	scroll.setVerticalScrollBarPolicy
 	  (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 	
-	Dimension size = new Dimension(sTSize+sVSize+52, 300);
+	Dimension size = new Dimension(sTSize+sVSize+52, 150);
 	scroll.setMinimumSize(size);
 	scroll.setPreferredSize(size);
 
