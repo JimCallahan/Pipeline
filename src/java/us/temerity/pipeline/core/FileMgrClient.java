@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.3 2004/03/26 19:10:50 jim Exp $
+// $Id: FileMgrClient.java,v 1.4 2004/03/28 00:45:31 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -52,9 +52,11 @@ class FileMgrClient
   }
 
   /** 
-   * Construct a new file manager client using the default hostname and port.
+   * Construct a new file manager client using the default hostname and port. <P> 
    * 
-   * The hostname and port used are those specified by <B>plconfig(1)</B>.
+   * The hostname and port used are those specified by the 
+   * <CODE><B>--file-host</B>=<I>host</I></CODE> and 
+   * <CODE><B>--file-port</B>=<I>num</I></CODE> options to <B>plconfig</B>(1).
    */
   public
   FileMgrClient() 
