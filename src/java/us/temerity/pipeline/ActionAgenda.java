@@ -1,4 +1,4 @@
-// $Id: ActionAgenda.java,v 1.1 2004/07/24 18:28:45 jim Exp $
+// $Id: ActionAgenda.java,v 1.2 2004/08/22 21:46:11 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -250,7 +250,7 @@ class ActionAgenda
       encoder.encode("SecondarySources", pSecondarySources);
 
     encoder.encode("Environment", pEnvironment);
-    encoder.encode("WorkingDir", pWorkingDir);
+    encoder.encode("WorkingDir", pWorkingDir.toString());
   }
   
   public void 
@@ -308,10 +308,10 @@ class ActionAgenda
       throw new GlueException("The \"Environment\" was missing!");
     pEnvironment = env;
 
-    File dir = (File) decoder.decode("WorkingDir"); 
+    String dir = (String) decoder.decode("WorkingDir"); 
     if(dir == null) 
       throw new GlueException("The \"WorkingDir\" was missing!");
-    pWorkingDir = dir;
+    pWorkingDir = new File(dir);
   }
 
 
