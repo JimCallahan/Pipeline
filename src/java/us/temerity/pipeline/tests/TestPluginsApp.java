@@ -1,4 +1,4 @@
-// $Id: TestPluginsApp.java,v 1.3 2004/02/25 06:21:15 jim Exp $
+// $Id: TestPluginsApp.java,v 1.4 2004/02/28 20:04:18 jim Exp $
 
 import us.temerity.pipeline.*;
 
@@ -46,14 +46,14 @@ class TestPluginsApp
 
   public void 
   run() 
-    throws GlueException, PipelineException, InterruptedException
+    throws CloneNotSupportedException, GlueException, PipelineException, InterruptedException
   {
     TreeMap<String,String> env = Toolsets.lookup(TestInfo.sBuildToolset);
 
     File dir = new File(System.getProperty("user.dir") + "/data");
 
-//     testEditors(env, dir);
     testActions(env, dir);
+    testEditors(env, dir);
   }
 
 
@@ -67,127 +67,125 @@ class TestPluginsApp
    TreeMap<String,String> env, 
    File dir
   ) 
-    throws PipelineException, InterruptedException
+    throws CloneNotSupportedException, GlueException, PipelineException, InterruptedException
   {
     {
       BaseEditor emacs = Plugins.newEditor("Emacs");
       FileSeq fseq = new FileSeq("sometext", null);
-      SubProcess proc = emacs.launch(fseq, env, dir);
-      proc.join();
-      assert(proc.wasSuccessful());
+      testEditorHelper(emacs, fseq, env, dir);
     }
   
     {
       BaseEditor emacs = Plugins.newEditor("EmacsClient");
       FileSeq fseq = new FileSeq("sometext", null);
-      SubProcess proc = emacs.launch(fseq, env, dir);
-      proc.join();
-      assert(proc.wasSuccessful());
-    }
-  
-    {
-      BaseEditor maya = Plugins.newEditor("Maya");
-      FileSeq fseq = new FileSeq("sphere", "ma");
-      SubProcess proc = maya.launch(fseq, env, dir);
-      proc.join();
-      assert(proc.wasSuccessful());
+      testEditorHelper(emacs, fseq, env, dir);
     }
 
     {
+      BaseEditor maya = Plugins.newEditor("Maya");
+      FileSeq fseq = new FileSeq("sphere", "ma");
+      testEditorHelper(maya, fseq, env, dir);
+    }
+    
+    {
       BaseEditor ivview = Plugins.newEditor("IvView");
       FileSeq fseq = new FileSeq("sphere", "iv");
-      SubProcess proc = ivview.launch(fseq, env, dir);
-      proc.join();
-      assert(proc.wasSuccessful());
+      testEditorHelper(ivview, fseq, env, dir);
     }
 
     {
       BaseEditor houdini = Plugins.newEditor("Houdini");
       FileSeq fseq = new FileSeq("sphere", "hipnc");
-      SubProcess proc = houdini.launch(fseq, env, dir);
-      proc.join();
-      assert(proc.wasSuccessful());
+      testEditorHelper(houdini, fseq, env, dir);
     }
 
     {
       BaseEditor gplay = Plugins.newEditor("GPlay");
       FileSeq fseq = new FileSeq("sphere", "bgeo");
-      SubProcess proc = gplay.launch(fseq, env, dir);
-      proc.join();
-      assert(proc.wasSuccessful());
+      testEditorHelper(gplay, fseq, env, dir);
     }
 
     {
       BaseEditor fcheck = Plugins.newEditor("FCheck");
       FileSeq fseq = new FileSeq("testimage", "iff");
-      SubProcess proc = fcheck.launch(fseq, env, dir);
-      proc.join();
-      assert(proc.wasSuccessful());
+      testEditorHelper(fcheck, fseq, env, dir);
     }
-  
+    
     {
       BaseEditor fcheck = Plugins.newEditor("FCheck");
       FilePattern pat = 
-    	new FilePattern("normal", 4, "iff");
+   	new FilePattern("normal", 4, "iff");
       FrameRange range = new FrameRange(0, 18, 2);
       FileSeq fseq = new FileSeq(pat, range);
-      SubProcess proc = fcheck.launch(fseq, env, dir);
-      proc.join();
-      assert(proc.wasSuccessful());
+      testEditorHelper(fcheck, fseq, env, dir);
     }
 
     {
       BaseEditor mplay = Plugins.newEditor("MPlay");
       FileSeq fseq = new FileSeq("testimage", "tif");
-      SubProcess proc = mplay.launch(fseq, env, dir);
-      proc.join();
-      assert(proc.wasSuccessful());
+      testEditorHelper(mplay, fseq, env, dir);
     }
 
     {
       BaseEditor mplay = Plugins.newEditor("MPlay");
       FilePattern pat = 
-    	new FilePattern("normal", 4, "tif");
+   	new FilePattern("normal", 4, "tif");
       FrameRange range = new FrameRange(0, 18, 2);
       FileSeq fseq = new FileSeq(pat, range);
-      SubProcess proc = mplay.launch(fseq, env, dir);
-      proc.join();
-      assert(proc.wasSuccessful());
+      testEditorHelper(mplay, fseq, env, dir);
     }
-  
+
     {
       BaseEditor acroread = Plugins.newEditor("Acroread");
       FileSeq fseq = new FileSeq("roadmap", "pdf");
-      SubProcess proc = acroread.launch(fseq, env, dir);
-      proc.join();
-      assert(proc.wasSuccessful());
+      testEditorHelper(acroread, fseq, env, dir);
     }
-  
+
     {
       BaseEditor gedit = Plugins.newEditor("GEdit");
       FileSeq fseq = new FileSeq("sometext", null);
-      SubProcess proc = gedit.launch(fseq, env, dir);
-      proc.join();
-      assert(proc.wasSuccessful());
+      testEditorHelper(gedit, fseq, env, dir);
     }
-  
+    
     {
       BaseEditor xdvi = Plugins.newEditor("XDvi");
       FileSeq fseq = new FileSeq("roadmap", "dvi");
-      SubProcess proc = xdvi.launch(fseq, env, dir);
-      proc.join();
-      assert(proc.wasSuccessful());
+      testEditorHelper(xdvi, fseq, env, dir);
     }
-  
+
     {
       BaseEditor gimp = Plugins.newEditor("Gimp");
       FileSeq fseq = new FileSeq("testimage", "tif");
-      SubProcess proc = gimp.launch(fseq, env, dir);
-      proc.join();
-      assert(proc.wasSuccessful());
+      testEditorHelper(gimp, fseq, env, dir);
     }
   }
  
+  private void 
+  testEditorHelper
+  (
+   BaseEditor editor, 
+   FileSeq fseq, 
+   TreeMap<String,String> env, 
+   File dir
+  ) 
+    throws CloneNotSupportedException, GlueException, PipelineException, InterruptedException
+  {
+    SubProcess proc = editor.launch(fseq, env, dir);
+    proc.join();
+    assert(proc.wasSuccessful());
+
+    testGlue(editor.getName(), editor);
+
+    BaseEditor clone = (BaseEditor) editor.clone();
+    assert(editor.equals(clone));
+
+    System.out.print("Editor:\n" + 
+		     "  Name = " + clone.getName() + "\n" +
+		     "  Description = " + clone.getDescription() + "\n" +
+		     "  Program = " + clone.getProgram() + "\n\n");
+  }
+
+
 
   private void
   testActions
@@ -195,7 +193,7 @@ class TestPluginsApp
    TreeMap<String,String> env, 
    File dir
   ) 
-    throws GlueException, PipelineException, InterruptedException
+    throws CloneNotSupportedException, GlueException, PipelineException, InterruptedException
   {
     {
       BaseAction script = Plugins.newAction("Script");
@@ -221,7 +219,7 @@ class TestPluginsApp
 	primarySources.put("/some/dependency/node/mike", 
 			   new FileSeq(new FilePattern("mike", 4, "txt"), 
 				       new FrameRange(2, 5, 1)));
-      
+   
 	TreeMap<String,ArrayList> secondarySources = new TreeMap<String,ArrayList>();
 	{
 	  ArrayList fseqs = new ArrayList();
@@ -244,6 +242,39 @@ class TestPluginsApp
       assert(proc.getStdOut().equals("10633823966279326983230456482242756608\n"));
 
       testGlue("ScriptAction", script);
+
+      BaseAction clone = null;
+      {
+	System.out.print("CLONE:\n");
+	
+	clone = (BaseAction) script.clone();
+	assert(script.equals(clone));
+	
+	{
+	  GlueEncoder ge = new GlueEncoder("ScriptAction", clone);
+	  String text = ge.getText();
+	  System.out.print(text + "\n");
+	}
+      }
+      
+      {
+	System.out.print("MODIFIED:\n");
+	
+	script.setSingleParamValue("Interpreter", "perl");
+	assert(!script.equals(clone));
+	
+	{
+	  GlueEncoder ge = new GlueEncoder("ScriptAction", script);
+	  String text = ge.getText();
+	  System.out.print(text + "\n");
+	}
+	
+	{
+	  GlueEncoder ge = new GlueEncoder("ScriptAction", clone);
+	  String text = ge.getText();
+	  System.out.print(text + "\n");
+	}
+      }
     }
   }
 
@@ -266,7 +297,8 @@ class TestPluginsApp
     System.out.print("AFTER:\n");
 
     GlueDecoder gd = new GlueDecoder(text);
-    Object obj2 = gd.getObject();
+    Object obj2 = gd.getObject();	
+    assert(obj.equals(obj2));
 
     GlueEncoder ge2 = new GlueEncoder(title, (Glueable) obj2);
     String text2 = ge.getText();
