@@ -1,4 +1,4 @@
-// $Id: NodeMgrClient.java,v 1.7 2004/04/11 19:30:20 jim Exp $
+// $Id: NodeMgrClient.java,v 1.8 2004/04/15 00:10:09 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -241,10 +241,14 @@ class NodeMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Get the current overall status of the given node. <P> 
+   * Get the summarized state of the tree of nodes rooted at the given node. <P> 
    * 
-   * The returned <CODE>NodeStatus</CODE> can be used to access the status of all nodes 
-   * reachable through both upstream and downstream connections from the given node.
+   * The returned <CODE>NodeSummary</CODE> is the root of both upstream and downstream 
+   * trees of <CODE>NodeSummary</CODE> which contain the summarized states of all nodes 
+   * reachable through both upstream and downstream connections from the given node.  The 
+   * upstream <CODE>NodeSummary</CODE> instances will contain complete state information.  
+   * The downstream <CODE>NodeSummary</CODE> instances will only contain the node name and 
+   * timestamp.  
    * 
    * @param view 
    *   The name of the user's working area view. 
@@ -255,7 +259,7 @@ class NodeMgrClient
    * @throws PipelineException
    *   If unable to determine the status of the node.
    */ 
-  public NodeStatus
+  public NodeSummary
   status
   ( 
    String view, 
@@ -271,7 +275,7 @@ class NodeMgrClient
     Object obj = performTransaction(NodeRequest.Status, req);
     if(obj instanceof NodeStatusRsp) {
       NodeStatusRsp rsp = (NodeStatusRsp) obj;
-      return rsp.getNodeStatus();
+      return rsp.getNodeSummary();
     }
     else {
       handleFailure(obj);

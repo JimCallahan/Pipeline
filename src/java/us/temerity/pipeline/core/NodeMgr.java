@@ -1,4 +1,4 @@
-// $Id: NodeMgr.java,v 1.14 2004/04/14 20:59:33 jim Exp $
+// $Id: NodeMgr.java,v 1.15 2004/04/15 00:10:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -988,10 +988,14 @@ class NodeMgr
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Get the current overall status of the given node. <P> 
+   * Get the summarized state of the tree of nodes rooted at the given node. <P> 
    * 
-   * The returned <CODE>NodeStatus</CODE> can be used to access the status of all nodes 
-   * reachable through both upstream and downstream connections from the given node.
+   * The <CODE>NodeSummary</CODE> contained in the return <CODE>NodeStatusRsp</CODE> is the 
+   * root of both upstream and downstream trees of <CODE>NodeSummary</CODE> which contain
+   * the summarized states of all nodes reachable through both upstream and downstream 
+   * connections from the given node.  The upstream <CODE>NodeSummary</CODE> instances
+   * will contain complete state information.  The downstream <CODE>NodeSummary</CODE> 
+   * instances will only contain the node name and timestamp.
    * 
    * @param req 
    *   The node status request.
@@ -1025,6 +1029,8 @@ class NodeMgr
 
   } 
     
+  
+
 
 
   /*----------------------------------------------------------------------------------------*/
