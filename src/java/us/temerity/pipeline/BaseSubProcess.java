@@ -1,4 +1,4 @@
-// $Id: BaseSubProcess.java,v 1.4 2005/01/22 06:10:09 jim Exp $
+// $Id: BaseSubProcess.java,v 1.5 2005/02/04 09:24:06 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -154,7 +154,10 @@ class BaseSubProcess
     
     /* working directory */ 
     {
-      assert(dir != null);
+      if(dir == null) 
+	throw new IllegalArgumentException
+	  ("The working directory cannot be (null)!");
+      
       if(!dir.isDirectory()) 
 	throw new IllegalArgumentException
 	  ("The working directory (" + dir.getPath() + ") does not exist!");
