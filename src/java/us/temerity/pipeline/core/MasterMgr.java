@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.20 2004/08/01 15:45:43 jim Exp $
+// $Id: MasterMgr.java,v 1.21 2004/08/04 01:41:16 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -328,15 +328,23 @@ class MasterMgr
 
       pDownstreamLocks = new HashMap<String,ReentrantReadWriteLock>();
       pDownstream      = new HashMap<String,DownstreamLinks>();
+
+      pQueueSubmitLock = new Object();
     }
 
     /* perform startup I/O operations */ 
-    {
+    try {
       makeRootDirs();
       initToolsets();
       initPrivilegedUsers();
       rebuildDownstreamLinks();
       initNodeTree();
+      readNextIDs();
+    }
+    catch(Exception ex) {
+      Logs.ops.severe(ex.getMessage());
+      Logs.flush();
+      System.exit(1);
     }
   }
 
@@ -348,9 +356,10 @@ class MasterMgr
    */ 
   private void 
   makeRootDirs() 
+    throws PipelineException
   {
     if(!pNodeDir.isDirectory()) 
-      throw new IllegalArgumentException
+      throw new PipelineException
 	("The root node directory (" + pNodeDir + ") does not exist!");
     
     ArrayList<File> dirs = new ArrayList<File>();
@@ -379,46 +388,42 @@ class MasterMgr
    */ 
   private void 
   initToolsets()
+    throws PipelineException
   {
-    try {
-      readDefaultToolset();
-      readActiveToolsets();
+    readDefaultToolset();
+    readActiveToolsets();
 
-      /* initialize toolset keys */ 
-      {
-	File dir = new File(pNodeDir, "toolsets/toolsets");
-	File files[] = dir.listFiles(); 
-	int wk;
-	for(wk=0; wk<files.length; wk++) {
-	  if(files[wk].isFile()) 
-	    pToolsets.put(files[wk].getName(), null);
-	}
+    /* initialize toolset keys */ 
+    {
+      File dir = new File(pNodeDir, "toolsets/toolsets");
+      File files[] = dir.listFiles(); 
+      int wk;
+      for(wk=0; wk<files.length; wk++) {
+	if(files[wk].isFile()) 
+	  pToolsets.put(files[wk].getName(), null);
       }
-
-      /* initialize package keys */ 
-      {
-	File dir = new File(pNodeDir, "toolsets/packages");
-	File dirs[] = dir.listFiles(); 
-	int dk;
-	for(dk=0; dk<dirs.length; dk++) {
-	  if(dirs[dk].isDirectory()) {
-	    TreeMap<VersionID,PackageVersion> versions = 
-	      new TreeMap<VersionID,PackageVersion>();
-
-	    pToolsetPackages.put(dirs[dk].getName(), versions);
-	   
-	    File files[] = dirs[dk].listFiles(); 
-	    int wk;
-	    for(wk=0; wk<files.length; wk++) {
-	      if(files[wk].isFile()) 
-		versions.put(new VersionID(files[wk].getName()), null);
-	    }
+    }
+    
+    /* initialize package keys */ 
+    {
+      File dir = new File(pNodeDir, "toolsets/packages");
+      File dirs[] = dir.listFiles(); 
+      int dk;
+      for(dk=0; dk<dirs.length; dk++) {
+	if(dirs[dk].isDirectory()) {
+	  TreeMap<VersionID,PackageVersion> versions = 
+	    new TreeMap<VersionID,PackageVersion>();
+	  
+	  pToolsetPackages.put(dirs[dk].getName(), versions);
+	  
+	  File files[] = dirs[dk].listFiles(); 
+	  int wk;
+	  for(wk=0; wk<files.length; wk++) {
+	    if(files[wk].isFile()) 
+	      versions.put(new VersionID(files[wk].getName()), null);
 	  }
 	}
       }
-    }
-    catch(PipelineException ex) {
-      throw new IllegalArgumentException(ex.getMessage());
     }
   }
 
@@ -430,14 +435,10 @@ class MasterMgr
    */ 
   private void 
   initPrivilegedUsers()
+    throws PipelineException
   {
-    try {
-      readPrivilegedUsers();	 
-      pQueueMgrClient.setPrivilegedUsers(pPrivilegedUsers);
-    }
-    catch(PipelineException ex) {
-      throw new IllegalArgumentException(ex.getMessage());
-    }
+    readPrivilegedUsers();	 
+    pQueueMgrClient.setPrivilegedUsers(pPrivilegedUsers);
   }
   
 
@@ -448,6 +449,7 @@ class MasterMgr
    */
   private void 
   initNodeTree()
+    throws PipelineException 
   {
     {
       File dir = new File(pNodeDir, "repository");
@@ -504,6 +506,7 @@ class MasterMgr
    String prefix, 
    File dir
   ) 
+    throws PipelineException
   {
     boolean allDirs  = true;
     boolean allFiles = true;
@@ -526,14 +529,9 @@ class MasterMgr
       String full = dir.getPath();
       String path = full.substring(prefix.length());
       if(path.length() > 0) {
-	try {
-	  TreeMap<VersionID,CheckedInBundle> table = readCheckedInVersions(path);
-	  for(CheckedInBundle bundle : table.values()) 
-	    addCheckedInNodeTreePath(bundle.uVersion);
-	}
-	catch(PipelineException ex) {
-	  throw new IllegalStateException(ex.getMessage());
-	}
+	TreeMap<VersionID,CheckedInBundle> table = readCheckedInVersions(path);
+	for(CheckedInBundle bundle : table.values()) 
+	  addCheckedInNodeTreePath(bundle.uVersion);
       }
     }
     else if(allDirs) {
@@ -571,6 +569,7 @@ class MasterMgr
    String view, 
    File dir
   ) 
+    throws PipelineException 
   {
     File files[] = dir.listFiles(); 
     int wk;
@@ -580,14 +579,9 @@ class MasterMgr
       else {
 	String path = files[wk].getPath();
 	if(!path.endsWith(".backup")) {
-	  try {
-	    NodeID nodeID = new NodeID(author, view, path.substring(prefix.length()));
-	    NodeMod mod = readWorkingVersion(nodeID);
-	    addWorkingNodeTreePath(nodeID, mod.getSequences());
-	  }
-	  catch(PipelineException ex) {
-	    throw new IllegalStateException(ex.getMessage());
-	  }
+	  NodeID nodeID = new NodeID(author, view, path.substring(prefix.length()));
+	  NodeMod mod = readWorkingVersion(nodeID);
+	  addWorkingNodeTreePath(nodeID, mod.getSequences());
 	}
       }
     }
@@ -602,6 +596,7 @@ class MasterMgr
    */ 
   private void 
   rebuildDownstreamLinks()
+    throws PipelineException 
   {
     {
       File dir = new File(pNodeDir, "downstream");
@@ -681,6 +676,8 @@ class MasterMgr
 	
 	pDownstreamLocks     = null;
 	pDownstream          = null;
+
+	pQueueSubmitLock     = null; 
       }
       
       /* reinitialize */ 
@@ -705,6 +702,7 @@ class MasterMgr
    String prefix, 
    File dir
   ) 
+    throws PipelineException 
   {
     boolean allDirs  = true;
     boolean allFiles = true;
@@ -726,16 +724,7 @@ class MasterMgr
     if(allFiles) {
       String name = dir.getPath().substring(prefix.length());
       
-      TreeMap<VersionID,CheckedInBundle> table = null;
-      try {
-	table = readCheckedInVersions(name);
-      }
-      catch(PipelineException ex) {
-	Logs.ops.severe(ex.getMessage());
-	Logs.flush();
-	System.exit(1);
-      }   
-
+      TreeMap<VersionID,CheckedInBundle> table = readCheckedInVersions(name);
       for(VersionID vid : table.keySet()) {
 	NodeVersion vsn = table.get(vid).uVersion;
 	  
@@ -795,6 +784,7 @@ class MasterMgr
    String prefix, 
    File dir
   ) 
+    throws PipelineException 
   {
     File files[] = dir.listFiles(); 
     int wk;
@@ -804,43 +794,35 @@ class MasterMgr
       else {
 	String path = files[wk].getPath();
 	if(!path.endsWith(".backup")) {
-	  try {
-	    NodeID id = new NodeID(author, view, path.substring(prefix.length()));
-	    NodeMod mod = readWorkingVersion(id);
-	    if(mod == null) 
-	      throw new PipelineException
-		("I/O ERROR:\n" + 
-		 "  Somehow the working version (" + id + ") was missing!");
-	    {
-	      DownstreamLinks dsl = pDownstream.get(id.getName());
-	      if(dsl == null) {
-		dsl = new DownstreamLinks(id.getName());
-		pDownstream.put(dsl.getName(), dsl);
-	      }
-	    
-	      dsl.createWorking(id);
-	    }	    
-
-	    for(LinkMod link : mod.getSources()) {
-	      DownstreamLinks dsl = pDownstream.get(link.getName());
-	      if(dsl == null) {
-		dsl = new DownstreamLinks(link.getName());
-		pDownstream.put(dsl.getName(), dsl);
-	      }
-	    
-	      dsl.addWorking(new NodeID(author, view, link.getName()), mod.getName());
+	  NodeID id = new NodeID(author, view, path.substring(prefix.length()));
+	  NodeMod mod = readWorkingVersion(id);
+	  if(mod == null) 
+	    throw new PipelineException
+	      ("I/O ERROR:\n" + 
+	       "  Somehow the working version (" + id + ") was missing!");
+	  {
+	    DownstreamLinks dsl = pDownstream.get(id.getName());
+	    if(dsl == null) {
+	      dsl = new DownstreamLinks(id.getName());
+	      pDownstream.put(dsl.getName(), dsl);
 	    }
-	  }
-	  catch(PipelineException ex) {
-	    Logs.ops.severe(ex.getMessage());
-	    Logs.flush();
-	    System.exit(1);
-	  }      
+	    
+	    dsl.createWorking(id);
+	  }	    
+	  
+	  for(LinkMod link : mod.getSources()) {
+	    DownstreamLinks dsl = pDownstream.get(link.getName());
+	    if(dsl == null) {
+	      dsl = new DownstreamLinks(link.getName());
+	      pDownstream.put(dsl.getName(), dsl);
+	    }
+	    
+	    dsl.addWorking(new NodeID(author, view, link.getName()), mod.getName());
+	  }  
 	}
       }
     }
   }
-  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -915,6 +897,20 @@ class MasterMgr
     }
     catch(InterruptedException ex) {
     }
+
+
+    /* write cached downstream links */ 
+    writeAllDownstreamLinks();
+
+    /* write the job/group ID files */ 
+    try {
+      writeNextIDs();
+    }
+    catch(PipelineException ex) {
+      Logs.net.warning(ex.getMessage());
+    }
+
+    Logs.flush();
   }
 
   /**
@@ -3072,17 +3068,8 @@ class MasterMgr
 
     TaskTimer timer = new TaskTimer();
     try {
-      //
-      // Add a check for running queue jobs related to the nodes to be checked-out and put 
-      // hold on the submission of jobs for these nodes until the check-out is complete.
-      //
-      
       performCheckOut(true, nodeID, req.getVersionID(), req.keepNewer(), 
 		      new LinkedList<String>(), new HashSet<String>(), timer);
-      
-      //
-      // Release the queue job submission holds.
-      // 
       
       NodeStatus root = performNodeOperation(new NodeOp(), nodeID, timer);
       return new NodeStatusRsp(timer, nodeID, root);
@@ -3265,26 +3252,8 @@ class MasterMgr
 	    downstreamLock.writeLock().unlock();
 	  }      
 	}
-	  
-	/* set the working downstream links from the upstream nodes to this node */ 
-	for(LinkMod link : nwork.getSources()) {
-	  String lname = link.getName();
-
-	  timer.aquire();
-	  ReentrantReadWriteLock downstreamLock = getDownstreamLock(lname);
-	  downstreamLock.writeLock().lock();
-	  try {
-	    timer.resume();
-	    
-	    DownstreamLinks dsl = getDownstreamLinks(lname);
-	    dsl.addWorking(new NodeID(nodeID, lname), name);
-	  }  
-	  finally {
-	    downstreamLock.writeLock().unlock();
-	  }     
-	}
       }
-
+	 
       /* update existing working version */ 
       else {
 	/* update the working bundle */ 
@@ -3311,6 +3280,24 @@ class MasterMgr
 	    }
 	  }
 	}  
+      }
+
+      /* set the working downstream links from the upstream nodes to this node */ 
+      for(LinkMod link : nwork.getSources()) {
+	String lname = link.getName();
+	
+	timer.aquire();
+	ReentrantReadWriteLock downstreamLock = getDownstreamLock(lname);
+	downstreamLock.writeLock().lock();
+	try {
+	  timer.resume();
+	  
+	  DownstreamLinks dsl = getDownstreamLinks(lname);
+	  dsl.addWorking(new NodeID(nodeID, lname), name);
+	}  
+	finally {
+	  downstreamLock.writeLock().unlock();
+	}     
       }
     }
     finally {
@@ -3348,6 +3335,274 @@ class MasterMgr
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
     }    
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   J O B   Q U E U E                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Submit the group of jobs needed to regenerate the selected {@link QueueState#Stale Stale}
+   * files associated with the tree of nodes rooted at the given node. 
+   *
+   * @param req 
+   *   The submit jobs request.
+   * 
+   * @return 
+   *   <CODE>NodeSubmitJobsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to submit the jobs.
+   */ 
+  public Object
+  submitJobs
+  ( 
+   NodeSubmitJobsReq req
+  )
+  {
+    TaskTimer timer = new TaskTimer();
+    try {
+      NodeStatus root = performNodeOperation(new NodeOp(), req.getNodeID(), timer);
+
+      synchronized(pQueueSubmitLock) {
+	//submitJobs(root, req.getFileIndices(), 
+      
+	return null;
+      }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }    
+  }
+
+  /**
+   * Recursively submit jobs to the queue to regenerate the selected files.
+   * 
+   * @param status
+   *   The current node status.
+   * 
+   * @param indices
+   *   The file sequence indices of the files to regenerate.
+   * 
+   * @param nodeJobIDs
+   *   The table of per-file unique job identifiers indexed by working version node ID.
+   * 
+   * @param jobs
+   *   The generated QueueJobs indexed by job ID. 
+   */
+//   private void 
+//   submitJobs
+//   (
+//    NodeStatus status, 
+//    int indices[], 
+//    TreeMap<NodeID,Long[]> nodeJobIDs,
+//    TreeMap<Long,QueueJob> jobs
+//   ) 
+//     throws PipelineException
+//   {
+//     NodeID nodeID = status.getNodeID();
+//     NodeDetails details = status.getDetails();
+//     NodeMod mod = details.getWorkingVersion();
+//     if(mod == null) 
+//       throw new PipelineException 
+// 	("No working version exists for (" + nodeID + ")!");
+    
+//     Long[] jobIDs = nodeJobIDs.get(nodeID);
+//     if(jobIDs == null) {
+//       jobIDs = pQueueMgrClient.getJobIDs(nodeID, mod.getPrimarySequence()); 
+//       nodeJobIDs.put(nodeID, jobIDs);
+//     }
+//     assert(jobID != null);
+
+//     QueueState[] qs = details.getQueueState();
+
+//     switch(mod.getExecutionMethod()) {
+//     case Serial:
+//       {
+// 	/* determine whether new jobs need to be submitted */ 
+// 	boolean regen = false;
+// 	if(indices == null) {
+// 	  regen = true;
+// 	}
+// 	else {
+// 	  int wk;
+// 	  for(wk=0; wk<indices.length; wk++) {
+// 	    int idx = indices[wk];
+// 	    if((idx < 0) || (idx > (jobIDs.length-1))) {
+// 	      switch(mod.getOverflowPolicy()) {
+// 	      case Abort:
+// 		throw new PipelineException 
+// 		  ("The file sequence index (" + idx + ") was outside the valid range " + 
+// 		   "[0," + jobIDs.length + "] for working version (" + nodeID + ")!");
+// 	      }
+// 	    }
+// 	    else {
+// 	      switch(qs[idx]) {
+// 	      case Queued:
+// 	      case Running:
+// 		throw new PipelineException
+// 		  ("There already exists a " + qs[idx] + " job (" + jobIDs[idx] + ") which " +
+// 		   "will regenerate (" + mod.getPrimarySequence().getFile(idx) + ") for " + 
+// 		   "working version (" + nodeID + ")!\n\n" + 
+// 		   "You must either wait for this job to complete or kill it before you " + 
+// 		   "can submit new jobs for this file.");
+// 		  break;
+		  
+// 	      case Stale:
+// 	      case Aborted:
+// 	      case Failed:
+// 		regen = true;
+// 	      }
+// 	    }
+// 	  }
+// 	}
+
+// 	if(regen) {
+// 	  FileSeq primaryTarget = mod.getPrimarySequence();
+
+// 	  SortedSet<FileSeq> secondaryTargets = mod.getSecondarySequences(); 
+
+// 	  TreeMap<String,FileSeq> primarySources = 
+// 	    new TreeMap<String,FileSeq>();
+
+// 	  TreeMap<String,Set<FileSeq>> secondarySources = 
+// 	    new TreeMap<String,TreeSet<FileSeq>>();
+
+// 	  TreeSet<Long> sourceIDs = new TreeSet<Long>();
+
+// 	  for(LinkMod link : mod.getSources()) {
+// 	    NodeStatus lstatus = status.getSource(link.getName());
+// 	    NodeDetails ldetails = lstate.getDetails();
+
+// 	    /* submit jobs for upstream nodes first */ 
+// 	    switch(link.getPolicy()) {
+// 	    case Both:
+// 	      {
+// 		submitJobs(lstatus, null, nodeJobIDs, jobs);
+
+// 		Long[] ljobIDs = nodeJobIDs.get(lstatus.getNodeID());
+// 		QueueState[] lqs = ldetails.getQueueState();
+		
+// 		/* add upstream job IDs */ 
+// 		int wk;
+// 		for(wk=0; wk<ljobIDs.length; wk++) {
+// 		  if(ljobIDs[wk] != null) {
+// 		    if(jobs.containsKey(ljobIDs[wk]))
+// 		      sourceIDs.add(ljobIDs[wk]);
+// 		    else {
+// 		      switch(lqs[wk]) {
+// 		      case Queued:
+// 		      case Running:
+// 			sourceIDs.add(ljobIDs[wk]);
+// 		      }
+// 		    }
+// 		  }
+// 		}
+// 	      }
+// 	    }
+
+// 	    /* add source file sequences */ 
+// 	    switch(link.getPolicy()) {
+// 	    case NodeStateOnly:
+// 	    case Both:
+	      
+	      
+
+
+
+// 	    }
+// 	  }
+
+// 	  ActionAgenda agenda = 
+// 	    new ActionAgenda(pNextJobID++, nodeID, 
+// 			     primaryTarget, secondaryTargets, 
+// 			     primarySources, secondarySources, 
+// 			     env, dir);
+
+
+// 	  QueueJob job = 
+// 	    new QueueJob(agenda, mod.getAction().getName(), 
+// 			 mod.getJobRequirements(), sourceIDs); 
+	
+
+// 	}
+//       }
+
+
+//     case Parallel:
+//       {
+
+
+
+//       }
+//     }
+//   }
+   
+
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  
+  /**
+   * Kill all jobs which belong to the job group with the given ID. <P> 
+   * 
+   * @param req 
+   *   The submit jobs request.
+   * 
+   * @return 
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to kill the jobs.
+   */ 
+  public Object
+  killJobGroup
+  (
+   NodeKillJobGroupReq req
+  ) 
+  {
+
+
+    return new FailureRsp(new TaskTimer(), "Not Implemented");
+  }
+
+  /**
+   * Kill the jobs with the given IDs. <P> 
+   * 
+   * @param req 
+   *   The submit jobs request.
+   * 
+   * @return 
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to kill the jobs.
+   */ 
+  public Object
+  killJobs
+  (
+   NodeKillJobsReq req
+  ) 
+  {
+
+    return new FailureRsp(new TaskTimer(), "Not Implemented");
+  }
+
+  /**
+   * Kill all of the jobs associated with the given working version. <P> 
+   * 
+   * @param req 
+   *   The submit jobs request.
+   * 
+   * @return 
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to kill the jobs.
+   */ 
+  public Object
+  killNodeJobs
+  (
+   NodeKillNodeJobsReq req
+  ) 
+  {
+
+
+    return new FailureRsp(new TaskTimer(), "Not Implemented");
   }
 
 
@@ -4024,10 +4279,10 @@ class MasterMgr
 	for(LinkVersion link : latest.getSources()) {
 	  NodeID lnodeID = new NodeID(nodeID, link.getName());
 	  performUpstreamNodeOp(nodeOp, lnodeID, branch, table, timer);
-
+	  
 	  NodeStatus lstatus = table.get(link.getName());
 	  assert(lstatus != null);
-
+	  
 	  status.addSource(lstatus);
 	  lstatus.addTarget(status);
 	}
@@ -4037,10 +4292,10 @@ class MasterMgr
 	for(LinkMod link : work.getSources()) {
 	  NodeID lnodeID = new NodeID(nodeID, link.getName());
 	  performUpstreamNodeOp(nodeOp, lnodeID, branch, table, timer);
-
+	  
 	  NodeStatus lstatus = table.get(link.getName());
 	  assert(lstatus != null);
-
+	  
 	  status.addSource(lstatus);
 	  lstatus.addTarget(status);
 	}
@@ -4258,7 +4513,7 @@ class MasterMgr
 	    // "ps[]" should be computed by querying the queue here.  
 	    // 
 	    // The returned QueueState arrays will only contain: Queued, Running, Failed 
-	    // Aborted, Finished or (null).  A (null) value means either that no queue job 
+	    // Aborted, Finished or (null).  A (null) value means that no queue job 
 	    // could be found which generates the file.
 	    // 
 	    // The following stub code therefore simple indicates that no jobs exist.
@@ -5452,6 +5707,106 @@ class MasterMgr
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write next job/group ID to disk.
+   * 
+   * @throws PipelineException
+   *   If unable to write the file.
+   */ 
+  private void 
+  writeNextIDs() 
+    throws PipelineException
+  {
+    File file = new File(pNodeDir, "etc/next-ids");
+    if(file.exists()) {
+      if(!file.delete())
+	throw new PipelineException
+	  ("Unable to remove the old job/group IDs file (" + file + ")!");
+    }
+    
+    Logs.ops.finer("Writing Next IDs.");
+
+    try {
+      String glue = null;
+      try {
+	TreeMap<String,Long> table = new TreeMap<String,Long>();
+	synchronized(pQueueSubmitLock) {
+	  table.put("JobID",      pNextJobID);
+	  table.put("JobGroupID", pNextJobGroupID);
+	}
+
+	GlueEncoder ge = new GlueEncoderImpl("NextIDs", table);
+	glue = ge.getText();
+      }
+      catch(GlueException ex) {
+	Logs.glu.severe
+	  ("Unable to generate a Glue format representation of the job/group IDs!");
+	Logs.flush();
+	
+	throw new IOException(ex.getMessage());
+      }
+      
+      {
+	FileWriter out = new FileWriter(file);
+	out.write(glue);
+	out.flush();
+	out.close();
+      }
+    }
+    catch(IOException ex) {
+      throw new PipelineException
+	("I/O ERROR: \n" + 
+	 "  While attempting to write the job/group IDs file (" + file + ")...\n" + 
+	 "    " + ex.getMessage());
+    }
+  }
+  
+  /**
+   * Read a next job/group ID from disk.
+   * 
+   * @throws PipelineException
+   *   If unable to read the file.
+   */ 
+  private void 
+  readNextIDs() 
+    throws PipelineException 
+  {
+    File file = new File(pNodeDir, "etc/next-ids");
+    if(file.exists()) {
+      Logs.ops.finer("Reading Next IDs.");
+      
+      try {
+	FileReader in = new FileReader(file);
+	GlueDecoder gd = new GlueDecoderImpl(in);
+	TreeMap<String,Long> table = (TreeMap<String,Long>) gd.getObject();
+	in.close();
+
+	synchronized(pQueueSubmitLock) {
+	  pNextJobID      = table.get("JobID");
+	  pNextJobGroupID = table.get("JobGroupID");
+	}
+
+	return;
+      }
+      catch(Exception ex) {
+	Logs.glu.severe
+	    ("The job/group IDs file (" + file + ") appears to be corrupted!");
+	Logs.flush();
+	
+	throw new PipelineException
+	  ("I/O ERROR: \n" + 
+	   "  While attempting to read the job/group IDs file (" + file + ")...\n" + 
+	   "    " + ex.getMessage());
+      }
+    }
+    
+    synchronized(pQueueSubmitLock) {
+      pNextJobID      = 1L;
+      pNextJobGroupID = 1L;
+    }
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -5920,7 +6275,7 @@ class MasterMgr
     public
     NodeOp()
     {}
-    
+
     /**
      * Perform the status operation on the given node.
      * 
@@ -6209,7 +6564,6 @@ class MasterMgr
     {
       return true;
     }
-
 
     /**
      * The node check-in request.
@@ -6641,5 +6995,24 @@ class MasterMgr
   private QueueMgrClient  pQueueMgrClient;
   
 
+  /**
+   * A lock used to serialize submissions of jobs to the queue.
+   */ 
+  private Object pQueueSubmitLock; 
+
+  /**
+   * The next available QueueJob identifier. <P> 
+   * 
+   * Access to this field should be protected by a synchronized(pQueueSubmitLock) block.
+   */ 
+  private long  pNextJobID; 
+  
+  /**
+   * The next available QueueJobGroup identifier. <P> 
+   * 
+   * Access to this field should be protected by a synchronized(pQueueSubmitLock) block.
+   */ 
+  private long  pNextJobGroupID; 
+  
 }
 
