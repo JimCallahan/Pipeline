@@ -370,7 +370,7 @@ Logger Logger() :
   Logger g;
 }
 {
-  (g=ArgLogger() | g=OpsLogger() | g=NetLogger() | g=SumLogger())
+  (g=ArgLogger() | g=OpsLogger() | g=NetLogger() | g=SubLogger() | g=SumLogger())
   {
     return g;
   }
