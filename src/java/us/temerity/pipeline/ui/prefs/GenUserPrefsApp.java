@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.20 2004/10/01 23:16:28 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.21 2004/10/02 15:45:39 jim Exp $
 
 import java.io.*; 
 import java.util.*;
@@ -618,6 +618,12 @@ class GenUserPrefsApp
 	("Show/hide nodes downstream of the focus node.",
 	 "ShowHideDownstreamNodes", "Show/Hide Downstream:", 
 	 false, false, false, 68),  /* D */
+
+	new BasePref(),
+
+	new HotKeyPref
+	("Remove all of the roots nodes.",
+	 "RemoveAllRoots", "Remove All Roots:")
       };
 
       pPrefs.put("Panel|Node Viewer|Hot Keys", prefs);
@@ -847,7 +853,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.20 2004/10/01 23:16:28 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.21 2004/10/02 15:45:39 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -1100,7 +1106,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.20 2004/10/01 23:16:28 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.21 2004/10/02 15:45:39 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
