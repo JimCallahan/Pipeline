@@ -7,9 +7,3 @@ instbin_SCRIPTS = \
   pltoolset \
   plui
 
-
-
-instincdir = @BASEDIR@/pipeline/include
-
-instinc_SCRIPTS = \
-  plutils.bash
