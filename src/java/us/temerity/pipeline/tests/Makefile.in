@@ -159,7 +159,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 #   V A R I A B L E S                                                                        #
 #--------------------------------------------------------------------------------------------#
 
- TEST_CLASS_PATH = ".:../pipeline.jar:../plugin/pipeline.plugin.jar:tests.jar"
+ TEST_CLASS_PATH = ".:../pipeline.jar:../plugin/plugins.jar:tests.jar"
 
     LOGGER_PROPS = $(srcdir)/../../../../share/logger.properties
 
@@ -168,9 +168,10 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
 #            TESTS = Glue \
 #                    FileSeq \
-#                    SubProcess 
+#                    SubProcess \
+#                    Plugins
 
-           TESTS = SubProcess 
+           TESTS = Plugins
 
 
          CLASSES = $(patsubst %,Test%App.class,$(TESTS))
@@ -205,7 +206,7 @@ check: all check-each
 
 check-each: $(CLASSES) ../pipeline.jar
 	rm -rf data
-	mkdir data
+	cp -r $(srcdir)/data data
 	@failed=0; all=0; \
          banner1="========================================================================"; \
          banner2="------------------------------------------------------------------------"; \
