@@ -1,9 +1,6 @@
 
 ACTIONS:
 
-- Add output parsing method which can trigger a kill of the job and updates a completion 
-  percentage field.
-
 - Add a job server resourecs method similar to the output parsing methods above.
 
 - Port the old Pipeline actions to work with the new Pipeline.
@@ -27,53 +24,19 @@ ACTIONS:
 
 OPERATIONS/BACKEND: 
 
-- NativeProcess/SubProcess statistics apear to be incorrect.
-
-- Command-line client program similar to the old pipeline(1).
-
 - Task/Scheduling System
-
-- The commandline should be updated in QueueJobInfo as soon as the job is launched 
-  so that the user doesn't have to wait for the QueueJobResults (at the end of the job).
-
-- Add a "Release View" operation which performs "Release" on all nodes in the view and 
-  then deletes the view and optionally the entire production subdirectory for the view.
-  If any nodes cannot be released, then the operation is aborted early and the offending
-  nodes are reported.
 
 - Would caching of checksums improve the performance of the FileMgr?
 
 
 ADMINISTRATION: 
 
-- Automated cleanup of Job Server sample files older than a given interval.
-
 - Automated Backup of Node/Queue database and production working areas.
 
 - Node and File Online/Offline System
 
-- Rotating log files.
-
 
 USER INTERFACE: 
-
-- Check for duplicate hotkeys in the same group when changing a hot key.
-
-- Sorting the JobBrowser clears the current selection - it should be preserved.
-
-- Add Tooltips for title labels in ALL panels!
-
-- Add optional hot key reminders in menu item names.
-
-- Implement Import (source links, per-source action parameters) in NodeViewer.
-
-- Thumbnail display options in the NodeViewer
-
-- File browsers should use double clicks to traverse directories.
-
-- Add a FrameRunning item to the JQueueJobViewerPanel menu.
-
-- NodeBrowser labels are truncated ("SomeLa...") sometimes. 
 
 - Improved UI for panel save/restore.  Its sort of clunky but works currently...
 
@@ -86,6 +49,7 @@ USER INTERFACE:
 - When layouts are restored, there can be conflicts between multiple update tasks and 
   problems of some components not being instatiated yet at the point of update.  A more
   methodical system needs to replace the current ad hoc system.
+
 
 
 IMPORTANT UNIMPLEMENTED JOB RELATED ISSUES:

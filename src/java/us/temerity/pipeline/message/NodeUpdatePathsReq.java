@@ -1,4 +1,4 @@
-// $Id: NodeUpdatePathsReq.java,v 1.2 2004/05/21 21:17:51 jim Exp $
+// $Id: NodeUpdatePathsReq.java,v 1.3 2004/09/26 06:23:08 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -36,14 +36,15 @@ class NodeUpdatePathsReq
    *   The name of the user's working area view. 
    * 
    * @param paths 
-   *   The set of fully resolved node paths to update.
+   *   Whether to update all children (true) or only the immediate children (false) of the 
+   *   given fully resolved node path indices.
    */
   public
   NodeUpdatePathsReq
   (
    String author, 
    String view, 
-   TreeSet<String> paths
+   TreeMap<String,Boolean> paths
   )
   { 
     if(author == null) 
@@ -55,7 +56,7 @@ class NodeUpdatePathsReq
     pView = view;
 
     if(paths == null) 
-      throw new IllegalArgumentException("The working path ID cannot be (null)!");
+      throw new IllegalArgumentException("The paths cannot be (null)!");
     pPaths = paths;
   }
 
@@ -84,9 +85,10 @@ class NodeUpdatePathsReq
   }
 
   /**
-   * The set of fully resolved node paths to update.
+   * Whether to update all children (true) or only the immediate children (false) of the 
+   * fully resolved node path indices.
    */
-  public TreeSet<String>
+  public TreeMap<String,Boolean>
   getPaths()
   {
     return pPaths;
@@ -117,9 +119,10 @@ class NodeUpdatePathsReq
   private String  pView;
 
   /**
-   * The set fully resolved node paths to update.
+   * Whether to update all children (true) or only the immediate children (false) of the 
+   * fully resolved node path indices.
    */ 
-  private TreeSet<String>  pPaths;
+  private TreeMap<String,Boolean>  pPaths;
 
 }
   

@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 1.8.2)
+AM_INIT_AUTOMAKE(Pipeline, 1.8.3)
 
 AC_MSG_RESULT([ ])
 
@@ -783,13 +783,13 @@ PLSCRIPT_DEBUG_OPTS=""
 if test "$BUILD_MODE" = "dbg" -a "$enable_attach" = "yes"
 then 
   java_debug_opts="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address="
-  PLMASTERMGR_DEBUG_OPTS=${java_debug_opts}"43001 -Xloggc:/usr/tmp/plmaster-gc.log -Xmx64m"
-  PLFILEMGR_DEBUG_OPTS=${java_debug_opts}"43002 -Xloggc:/usr/tmp/plfilemgr-gc.log -Xmx64m"
+  PLMASTERMGR_DEBUG_OPTS=${java_debug_opts}"43001"
+  PLFILEMGR_DEBUG_OPTS=${java_debug_opts}"43002"
   PLNOTIFY_DEBUG_OPTS=${java_debug_opts}"43003"
   PLPLUGIN_DEBUG_OPTS=${java_debug_opts}"43004"
-  PLQUEUEMGR_DEBUG_OPTS=${java_debug_opts}"43005 -Xloggc:/usr/tmp/plqueuemgr-gc.log -Xmx64m"
-  PLJOBMGR_DEBUG_OPTS=${java_debug_opts}"43006 -Xloggc:/usr/tmp/pljobmgr-gc.log -Xmx64m"
-  PLUI_DEBUG_OPTS=${java_debug_opts}"43007 -Xloggc:/usr/tmp/plui-gc.log -Xmx64m"
+  PLQUEUEMGR_DEBUG_OPTS=${java_debug_opts}"43005"
+  PLJOBMGR_DEBUG_OPTS=${java_debug_opts}"43006"
+  PLUI_DEBUG_OPTS=${java_debug_opts}"43007"
   PLSCRIPT_DEBUG_OPTS=${java_debug_opts}"43008"
   AC_MSG_RESULT([yes])
 else 

@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.27 2004/09/20 05:34:29 jim Exp $
+// $Id: MasterMgrClient.java,v 1.28 2004/09/26 06:23:08 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -939,6 +939,40 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
+    TreeMap<String,Boolean> ipaths = new TreeMap<String,Boolean>();
+    for(String path : paths) 
+      ipaths.put(path, false);
+
+    return updatePaths(author, view, ipaths);
+  }
+
+
+  /** 
+   * Update the children of all node path components along the given paths
+   * which are visible within a working area view owned by the given user. <P> 
+   * 
+   * @param author 
+   *   The of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param paths 
+   *   Whether to update all children (true) or only the immediate children (false) of the 
+   *   given fully resolved node path indices.
+   * 
+   * @throws PipelineException
+   *   If unable to update the node paths.
+   */
+  public synchronized NodeTreeComp
+  updatePaths
+  (
+   String author, 
+   String view, 
+   TreeMap<String,Boolean> paths
+  ) 
+    throws PipelineException
+  {
     verifyConnection();
 	 
     NodeUpdatePathsReq req = new NodeUpdatePathsReq(author, view, paths);
@@ -953,7 +987,6 @@ class MasterMgrClient
       return null;
     }
   }
-
 
 
   /*----------------------------------------------------------------------------------------*/

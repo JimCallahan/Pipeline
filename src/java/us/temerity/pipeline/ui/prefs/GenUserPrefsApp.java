@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.16 2004/09/11 14:18:51 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.17 2004/09/26 06:23:08 jim Exp $
 
 import java.io.*; 
 import java.util.*;
@@ -23,6 +23,17 @@ class GenUserPrefsApp
   GenUserPrefsApp() 
   {
     pPrefs = new TreeMap<String,BasePref[]>();
+
+    {
+      BasePref prefs[] = {
+	new HotKeyPref
+	("update the status of the node tree and selected nodes.", 
+	 "NodeBrowserUpdate", "Update Nodes:",
+	 false, false, false, 32)  /* Space */ 
+      };
+
+      pPrefs.put("Panel|Node Browser|Hot Keys", prefs);
+    }
 
     {
       BasePref prefs[] = {
@@ -525,7 +536,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.16 2004/09/11 14:18:51 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.17 2004/09/26 06:23:08 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -778,7 +789,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.16 2004/09/11 14:18:51 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.17 2004/09/26 06:23:08 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 

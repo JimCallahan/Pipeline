@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.39 2004/09/23 09:23:42 jim Exp $
+// $Id: MasterMgr.java,v 1.40 2004/09/26 06:23:08 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1899,7 +1899,8 @@ class MasterMgr
       timer.resume();	
       
       NodeTreeComp rootComp = new NodeTreeComp();
-      for(String path : req.getPaths()) {
+      TreeMap<String,Boolean> paths = req.getPaths();
+      for(String path : paths.keySet()) {
 	String comps[] = path.split("/"); 
 
 	NodeTreeComp parentComp   = rootComp;
@@ -1927,16 +1928,35 @@ class MasterMgr
 	}
 	
 	if((parentEntry != null) && (parentComp != null)) {
-	  for(NodeTreeEntry entry : parentEntry.values()) {
-	    if(!parentComp.containsKey(entry.getName())) {
-	      NodeTreeComp comp = new NodeTreeComp(entry, req.getAuthor(), req.getView());
-	      parentComp.put(comp.getName(), comp);
-	    }
-	  }
+	  boolean recursive = paths.get(path);
+	  updatePathsBelow(req.getAuthor(), req.getView(), 
+			   parentEntry, parentComp, recursive);
 	}
       }
 
       return new NodeUpdatePathsRsp(timer, req.getAuthor(), req.getView(), rootComp);
+    }
+  }
+
+  private void 
+  updatePathsBelow
+  (
+   String author, 
+   String view, 
+   NodeTreeEntry parentEntry, 
+   NodeTreeComp parentComp,
+   boolean recursive
+  ) 
+  {
+    synchronized(pNodeTreeRoot) {
+      for(NodeTreeEntry entry : parentEntry.values()) {
+	if(!parentComp.containsKey(entry.getName())) {
+	  NodeTreeComp comp = new NodeTreeComp(entry, author, view);
+	  parentComp.put(comp.getName(), comp);
+	  if(recursive) 
+	    updatePathsBelow(author, view, entry, comp, true);
+	}
+      } 
     }
   }
 
@@ -2652,18 +2672,21 @@ class MasterMgr
 	timer.resume();
 
 	DownstreamLinks links = getDownstreamLinks(name); 
-	assert(links != null);
-
-	for(String target : links.getWorking(id)) {
-	  NodeID targetID = new NodeID(id, target);
-
-	  timer.suspend();
-	  Object obj = unlink(new NodeUnlinkReq(targetID, name));
-	  timer.accum(((TimedRsp) obj).getTimer());
-
-	  if(obj instanceof FailureRsp)  {
-	    FailureRsp rsp = (FailureRsp) obj;
-	    return new FailureRsp(timer, rsp.getMessage());
+	if(links != null) {
+	  TreeSet<String> targets = links.getWorking(id);
+	  if(targets != null) {
+	    for(String target : targets) {
+	      NodeID targetID = new NodeID(id, target);
+	      
+	      timer.suspend();
+	      Object obj = unlink(new NodeUnlinkReq(targetID, name));
+	      timer.accum(((TimedRsp) obj).getTimer());
+	      
+	      if(obj instanceof FailureRsp)  {
+		FailureRsp rsp = (FailureRsp) obj;
+		return new FailureRsp(timer, rsp.getMessage());
+	      }
+	    }
 	  }
 	}
       }

@@ -1,43 +1,34 @@
-This was thrown when freezing a newly created toolset.
 
-Exception in thread "AWT-EventQueue-0" java.lang.NullPointerException
-        at us.temerity.pipeline.ui.JManageToolsetsDialog.selectTreePackage(JMana
-geToolsetsDialog.java:2434)
-        at us.temerity.pipeline.ui.JManageToolsetsDialog.updateAll(JManageToolse
-tsDialog.java:778)
-        at us.temerity.pipeline.ui.JManageToolsetsDialog.doFreezeToolset(JManage
-ToolsetsDialog.java:1652)
-        at us.temerity.pipeline.ui.JManageToolsetsDialog.actionPerformed(JManage
-ToolsetsDialog.java:1378)
-        at javax.swing.AbstractButton.fireActionPerformed(AbstractButton.java:18
-49)
-        at javax.swing.AbstractButton$Handler.actionPerformed(AbstractButton.jav
-a:2167)
-        at javax.swing.DefaultButtonModel.fireActionPerformed(DefaultButtonModel
-.java:420)
-        at javax.swing.DefaultButtonModel.setPressed(DefaultButtonModel.java:258
-)
-        at javax.swing.AbstractButton.doClick(AbstractButton.java:302)
-        at javax.swing.plaf.basic.BasicMenuItemUI.doClick(BasicMenuItemUI.java:1
-000)
-        at javax.swing.plaf.basic.BasicMenuItemUI$Handler.mouseReleased(BasicMen                                        uItemUI.java:1041)
-        at java.awt.Component.processMouseEvent(Component.java:5465)
-        at javax.swing.JComponent.processMouseEvent(JComponent.java:3089)
-        at java.awt.Component.processEvent(Component.java:5230)
+Exception in thread "AWT-EventQueue-0" java.lang.ArrayIndexOutOfBoundsException: 0
+        at us.temerity.pipeline.ui.QueueJobGroupsTableModel.getValueAt(QueueJobGroupsTableModel.java:270)
+        at us.temerity.pipeline.ui.JQueueJobBrowserPanel.valueChanged(JQueueJobBrowserPanel.java:462)
+        at javax.swing.DefaultListSelectionModel.fireValueChanged(DefaultListSelectionModel.java:187)
+        at javax.swing.DefaultListSelectionModel.fireValueChanged(DefaultListSelectionModel.java:157)
+        at javax.swing.DefaultListSelectionModel.setValueIsAdjusting(DefaultListSelectionModel.java:619)
+        at javax.swing.plaf.basic.BasicTableUI$Actions.actionPerformed(BasicTableUI.java:567)
+        at javax.swing.SwingUtilities.notifyAction(SwingUtilities.java:1571)
+        at javax.swing.JComponent.processKeyBinding(JComponent.java:2726)
+        at javax.swing.JTable.processKeyBinding(JTable.java:3456)
+        at javax.swing.JComponent.processKeyBindings(JComponent.java:2772)
+        at javax.swing.JComponent.processKeyEvent(JComponent.java:2689)
+        at java.awt.Component.processEvent(Component.java:5242)
         at java.awt.Container.processEvent(Container.java:1961)
         at java.awt.Component.dispatchEventImpl(Component.java:3933)
         at java.awt.Container.dispatchEventImpl(Container.java:2019)
         at java.awt.Component.dispatchEvent(Component.java:3781)
-        at java.awt.LightweightDispatcher.retargetMouseEvent(Container.java:4205                                        )
-        at java.awt.LightweightDispatcher.processMouseEvent(Container.java:3885)
-        at java.awt.LightweightDispatcher.dispatchEvent(Container.java:3815)
-        at java.awt.Container.dispatchEventImpl(Container.java:2005)
+        at java.awt.KeyboardFocusManager.redispatchEvent(KeyboardFocusManager.java:1810)
+        at java.awt.DefaultKeyboardFocusManager.dispatchKeyEvent(DefaultKeyboardFocusManager.java:668)
+        at java.awt.DefaultKeyboardFocusManager.preDispatchKeyEvent(DefaultKeyboardFocusManager.java:916)
+        at java.awt.DefaultKeyboardFocusManager.typeAheadAssertions(DefaultKeyboardFocusManager.java:794)
+        at java.awt.DefaultKeyboardFocusManager.dispatchEvent(DefaultKeyboardFocusManager.java:632)
+        at java.awt.Component.dispatchEventImpl(Component.java:3819)
+        at java.awt.Container.dispatchEventImpl(Container.java:2019)
+        at java.awt.Window.dispatchEventImpl(Window.java:1764)
         at java.awt.Component.dispatchEvent(Component.java:3781)
         at java.awt.EventQueue.dispatchEvent(EventQueue.java:463)
-        at java.awt.EventDispatchThread.pumpOneEventForHierarchy(EventDispatchTh                                        read.java:234)
-        at java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThre                                        ad.java:163)
+        at java.awt.EventDispatchThread.pumpOneEventForHierarchy(EventDispatchThread.java:234)
+        at java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:163)
         at java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:157)
         at java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:149)
-        at java.awt.EventDispatchThread.run(EventDispatchThread.java:110) 
+        at java.awt.EventDispatchThread.run(EventDispatchThread.java:110)
 
-------------
