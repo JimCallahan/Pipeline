@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.15 2004/05/23 19:59:01 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.16 2004/06/08 03:03:45 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -86,6 +86,14 @@ class JNodeViewerPanel
       
       pPanelPopup = new JPopupMenu();  
       pPanelPopup.addPopupMenuListener(this);
+
+      item = new JMenuItem("Register...");
+      pRegisterItem = item;
+      item.setActionCommand("register");
+      item.addActionListener(this);
+      pPanelPopup.add(item);  
+      
+      pPanelPopup.addSeparator();
 
       item = new JMenuItem("Center");
       item.setActionCommand("center");
@@ -188,6 +196,7 @@ class JNodeViewerPanel
       pNodePopup.add(sub);
 
       item = new JMenuItem("Unlink");
+      pUnlinkItem = item;
       item.setActionCommand("unlink");
       item.addActionListener(this);
       pNodePopup.add(item);
@@ -195,6 +204,7 @@ class JNodeViewerPanel
       pNodePopup.addSeparator();
       
       item = new JMenuItem("Add Secondary...");
+      pAddSecondaryItem = item;
       item.setActionCommand("add-secondary");
       item.addActionListener(this);
       pNodePopup.add(item);
@@ -207,11 +217,13 @@ class JNodeViewerPanel
       pNodePopup.addSeparator();
       
       item = new JMenuItem("Make");
+      pMakeItem = item;
       item.setActionCommand("make");
       item.addActionListener(this);
       pNodePopup.add(item);
       
       item = new JMenuItem("Make Local");
+      pMakeLocalItem = item;
       item.setActionCommand("make-local");
       item.addActionListener(this);
       pNodePopup.add(item);
@@ -219,16 +231,19 @@ class JNodeViewerPanel
       pNodePopup.addSeparator();
       
       item = new JMenuItem("Rename...");
+      pRenameItem = item;
       item.setActionCommand("rename");
       item.addActionListener(this);
       pNodePopup.add(item);
 
       item = new JMenuItem("Import...");
+      pImportItem = item;
       item.setActionCommand("import");
       item.addActionListener(this);
       pNodePopup.add(item);
 
       item = new JMenuItem("Clone...");
+      pCloneItem = item;
       item.setActionCommand("clone");
       item.addActionListener(this);
       pNodePopup.add(item);
@@ -236,11 +251,13 @@ class JNodeViewerPanel
       pNodePopup.addSeparator();
       
       item = new JMenuItem("Check-In...");
+      pCheckInItem = item;
       item.setActionCommand("check-in");
       item.addActionListener(this);
       pNodePopup.add(item);
   
       item = new JMenuItem("Check-Out...");
+      pCheckOutItem = item;
       item.setActionCommand("check-out");
       item.addActionListener(this);
       pNodePopup.add(item);
@@ -248,16 +265,19 @@ class JNodeViewerPanel
       pNodePopup.addSeparator();
 
       item = new JMenuItem("Release");
+      pReleaseItem = item;
       item.setActionCommand("release");
       item.addActionListener(this);
       pNodePopup.add(item);
       
       item = new JMenuItem("Revoke");
+      pRevokeItem = item;
       item.setActionCommand("revoke");
       item.addActionListener(this);
       pNodePopup.add(item);
 
       item = new JMenuItem("Destroy");
+      pDestroyItem = item;
       item.setActionCommand("destroy");
       item.addActionListener(this);
       pNodePopup.add(item);
@@ -394,6 +414,11 @@ class JNodeViewerPanel
 
 	pUniverse.addBranchGraph(pGeomBranch);
       }				 
+    }
+
+    /* initialize child dialogs */ 
+    {
+      pRegisterDialog = new JRegisterDialog();
     }
   }
 
@@ -542,6 +567,24 @@ class JNodeViewerPanel
     updateNodeStatus(); 
   }
 
+  /**
+   * Add the given node name to the root nodes displayed by the viewer. <P> 
+   * 
+   * @param name
+   *   The fully resolved node name.
+   */
+  public synchronized void 
+  addRoot
+  (
+   String name
+  )
+  {
+    TreeSet<String> roots = new TreeSet<String>(pRoots.keySet());
+    roots.add(name);
+    
+    setRoots(roots);
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   U S E R   I N T E R F A C E                                                          */
@@ -565,6 +608,7 @@ class JNodeViewerPanel
   public void 
   updatePanelMenu() 
   {
+    pRegisterItem.setEnabled(!pIsLocked);
     pShowHideDownstreamItem.setText((pShowDownstream ? "Hide" : "Show") + " Downstream");
   }
 
@@ -574,53 +618,75 @@ class JNodeViewerPanel
   public void 
   updateNodeMenu() 
   {
-    UIMaster master = UIMaster.getInstance(); 
-    try {
-      JMenuItem item;
+    pLinkMenu.setEnabled(false);
+    pUnlinkItem.setEnabled(!pIsLocked);
+    pAddSecondaryItem.setEnabled(!pIsLocked);
+    pRemoveSecondaryMenu.setEnabled(false);
+    pMakeItem.setEnabled(!pIsLocked);
+    pMakeLocalItem.setEnabled(!pIsLocked);
+    pRenameItem.setEnabled(!pIsLocked);
+    pImportItem.setEnabled(!pIsLocked);
+    pCloneItem.setEnabled(!pIsLocked);
+    pCheckInItem.setEnabled(!pIsLocked);
+    pCheckOutItem.setEnabled(!pIsLocked);
+    pReleaseItem.setEnabled(!pIsLocked);
+    pRevokeItem.setEnabled(!pIsLocked);
+    pDestroyItem.setEnabled(false);
 
-      /* clear existing items */ 
-      {
-	pLinkMenu.removeAll();
-	pLinkMenu.setEnabled(false);
+    if(!pIsLocked) {
+      UIMaster master = UIMaster.getInstance(); 
+      try {
+	JMenuItem item;
 	
-	pRemoveSecondaryMenu.setEnabled(false);
-	pRemoveSecondaryMenu.removeAll();
-	pRemoveSecondarySeqs.clear();
-      }
-
-      /* rebuild items */ 
-      {
-	for(String catagory : master.getMasterMgrClient().getLinkCatagories().keySet()) {
-	  item = new JMenuItem(catagory);
-	  item.setActionCommand("link:" + catagory);
-	  item.addActionListener(this);
-	  pLinkMenu.add(item);
+	/* clear existing items */ 
+	{
+	  pLinkMenu.removeAll();
+	  
+	  pRemoveSecondaryMenu.removeAll();
+	  pRemoveSecondarySeqs.clear();
 	}
-	pLinkMenu.setEnabled(pLinkMenu.getItemCount() > 0);
 	
-	if(pPrimary != null) {
-	  NodeDetails details = pPrimary.getNodeStatus().getDetails();
-	  if(details != null) {
-	    NodeMod mod = details.getWorkingVersion();
-	    if(mod != null) {
-	      for(FileSeq fseq : mod.getSecondarySequences()) {
-		String fname = fseq.toString();
-
-		item = new JMenuItem(fname);
-		item.setActionCommand("remove-secondary:" + fname);
-		item.addActionListener(this);
-		pRemoveSecondaryMenu.add(item);
-	      
-		pRemoveSecondarySeqs.put(fname, fseq);
+	/* rebuild items */ 
+	{
+	  for(String catagory : master.getMasterMgrClient().getLinkCatagories().keySet()) {
+	    item = new JMenuItem(catagory);
+	    item.setActionCommand("link:" + catagory);
+	    item.addActionListener(this);
+	    pLinkMenu.add(item);
+	  }
+	  pLinkMenu.setEnabled(pLinkMenu.getItemCount() > 0);
+	
+	  if(pPrimary != null) {
+	    NodeDetails details = pPrimary.getNodeStatus().getDetails();
+	    if(details != null) {
+	      NodeMod mod = details.getWorkingVersion();
+	      if(mod != null) {
+		for(FileSeq fseq : mod.getSecondarySequences()) {
+		  String fname = fseq.toString();
+		  
+		  item = new JMenuItem(fname);
+		  item.setActionCommand("remove-secondary:" + fname);
+		  item.addActionListener(this);
+		  pRemoveSecondaryMenu.add(item);
+		  
+		  pRemoveSecondarySeqs.put(fname, fseq);
+		}
 	      }
 	    }
 	  }
+	  pRemoveSecondaryMenu.setEnabled(pRemoveSecondaryMenu.getItemCount() > 0);
 	}
-	pRemoveSecondaryMenu.setEnabled(pRemoveSecondaryMenu.getItemCount() > 0);
+
+	/* privileged operations */ 
+	{
+	  boolean isPrivileged = master.getMasterMgrClient().isPrivileged();
+
+	  pDestroyItem.setEnabled(isPrivileged);
+	}
       }
-    }
-    catch(PipelineException ex) {
-      master.showErrorDialog(ex);
+      catch(PipelineException ex) {
+	master.showErrorDialog(ex);
+      }
     }
   }
 
@@ -1835,9 +1901,15 @@ class JNodeViewerPanel
     else if(cmd.equals("remove-all-roots"))
       doRemoveAllRoots();
 
+    else if(cmd.equals("clone"))
+      doClone();
+
+
     // ...
     
     /* panel menu events */ 
+    else if(cmd.equals("register"))
+      doRegister();
     else if(cmd.equals("center"))
       doCenter();
     else if(cmd.equals("frame-selection"))
@@ -1889,10 +1961,7 @@ class JNodeViewerPanel
   {
     String prim = getPrimarySelectionName();
 
-    TreeSet<String> roots = new TreeSet<String>(pRoots.keySet());
-    roots.add(prim);
-
-    setRoots(roots);
+    addRoot(prim);
   }
 
   /**
@@ -1935,6 +2004,57 @@ class JNodeViewerPanel
   }
 
   
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Register a new node based on the primary selected node.
+   */ 
+  public void 
+  doClone() 
+  {
+    if(pPrimary == null) 
+      return;
+
+    NodeDetails details = pPrimary.getNodeStatus().getDetails();
+    if(details == null) 
+      return;
+
+    NodeCommon com = details.getWorkingVersion();
+    if(com == null) 
+      com = details.getLatestVersion();
+    assert(com != null);
+
+    pRegisterDialog.updateNode(pAuthor, pView, com);
+    pRegisterDialog.setVisible(true);
+    
+    if(pRegisterDialog.wasConfirmed()) {
+      NodeMod mod = pRegisterDialog.getWorkingVersion();
+      if(mod != null) {
+	RegisterTask task = new RegisterTask(mod);
+	task.start();
+      }
+    }
+  }
+
+  /**
+   * Register a new node.
+   */ 
+  public void 
+  doRegister() 
+  {
+    pRegisterDialog.updateNode(pAuthor, pView, null);
+    pRegisterDialog.setVisible(true);
+    
+    if(pRegisterDialog.wasConfirmed()) {
+      NodeMod mod = pRegisterDialog.getWorkingVersion();
+      if(mod != null) {
+	RegisterTask task = new RegisterTask(mod);
+	task.start();
+      }
+    }
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -2265,6 +2385,46 @@ class JNodeViewerPanel
   /*----------------------------------------------------------------------------------------*/
 
   /** 
+   * Register a new node.
+   */ 
+  private
+  class RegisterTask
+    extends Thread
+  {
+    public 
+    RegisterTask
+    (
+     NodeMod mod 
+    ) 
+    {
+      pNodeMod = mod;
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Registering New Node...")) {
+	try {
+	  master.getMasterMgrClient().register(pAuthor, pView, pNodeMod);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+      }
+
+      addRoot(pNodeMod.getName());
+    }
+
+    private NodeMod  pNodeMod;
+  }
+
+
+  /** 
    * Get the status of the root nodes.
    */ 
   private
@@ -2424,6 +2584,7 @@ class JNodeViewerPanel
   /**
    * The panel popup menu items.
    */
+  private JMenuItem  pRegisterItem;
   private JMenuItem  pShowHideDownstreamItem;
   
 
@@ -2434,6 +2595,22 @@ class JNodeViewerPanel
    */ 
   private JPopupMenu  pNodePopup; 
   
+  /**
+   * The node popup menu items.
+   */ 
+  private JMenuItem  pUnlinkItem;
+  private JMenuItem  pAddSecondaryItem;
+  private JMenuItem  pMakeItem;
+  private JMenuItem  pMakeLocalItem;
+  private JMenuItem  pRenameItem;
+  private JMenuItem  pImportItem;
+  private JMenuItem  pCloneItem;
+  private JMenuItem  pCheckInItem;
+  private JMenuItem  pCheckOutItem;
+  private JMenuItem  pReleaseItem;
+  private JMenuItem  pRevokeItem;
+  private JMenuItem  pDestroyItem;
+
   /**
    * The link node submenu.
    */ 
@@ -2530,5 +2707,13 @@ class JNodeViewerPanel
    */ 
   private Point2d  pMinNodeBounds;
   private Point2d  pMaxNodeBounds;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The register node dialog.
+   */ 
+  private JRegisterDialog  pRegisterDialog;
 
 }
