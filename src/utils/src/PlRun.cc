@@ -1,4 +1,4 @@
-// $Id: PlRun.cc,v 1.3 2003/12/31 20:33:49 jim Exp $
+// $Id: PlRun.cc,v 1.4 2004/01/03 18:47:41 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -142,7 +142,7 @@ main
 
   /* execute the command */ 
   if(execve(cmd, argv+3, envp2) == -1) {
-    sprintf(msg, "unable to execute \"%s\": %s", argv[2], strerror(errno));
+    sprintf(msg, "unable to execute \"%s\": %s", cmd, strerror(errno));
     FB::error(msg);
   }
   
