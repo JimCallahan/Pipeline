@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.1 2004/04/26 23:20:10 jim Exp $
+// $Id: JManagerPanel.java,v 1.2 2004/04/27 02:20:57 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -40,15 +40,12 @@ class JManagerPanel
    Component child
   )
   {
-    if(getParent() == null)
-      setName("RootPanel");
-
+    super(new BorderLayout());
     setContents(child); 
 
     /* panel layout popup menu */ 
     {
       JMenuItem item;
-      JMenu sub;
       
       pPopup = new JPopupMenu();    
       
@@ -111,28 +108,47 @@ class JManagerPanel
       pPopup.addSeparator();
 
       {	
-	sub = new JMenu("Panel Layout");
-	pPopup.add(sub); 
+	JMenu layout = new JMenu("Panel Layout");
+	pPopup.add(layout); 
 	
-	item = new JMenuItem("Horizontal Split");
-	item.setActionCommand("horzontal-split");
-	item.addActionListener(this);
-	sub.add(item);  
+	{	
+	  JMenu horz = new JMenu("Horizontal Split");
+	  layout.add(horz); 
+	  
+	  item = new JMenuItem("Add Left");
+	  item.setActionCommand("add-left");
+	  item.addActionListener(this);
+	  horz.add(item);  
 	
-	item = new JMenuItem("Vertical Split");
-	item.setActionCommand("vertical-split");
-	item.addActionListener(this);
-	sub.add(item);  
+	  item = new JMenuItem("Add Right");
+	  item.setActionCommand("add-right");
+	  item.addActionListener(this);
+	  horz.add(item);  
+	}
+
+	{	
+	  JMenu vert = new JMenu("Vertical Split");
+	  layout.add(vert); 
+	  
+	  item = new JMenuItem("Add Above");
+	  item.setActionCommand("add-above");
+	  item.addActionListener(this);
+	  vert.add(item);  
 	
-	sub.addSeparator();
+	  item = new JMenuItem("Add Below");
+	  item.setActionCommand("add-below");
+	  item.addActionListener(this);
+	  vert.add(item);  
+	}
+	
+	layout.addSeparator();
 	
 	item = new JMenuItem("Add Tabs");
 	item.setActionCommand("add-tabs");
 	item.addActionListener(this);
-	sub.add(item);  
+	layout.add(item);  
       }
 
-      pPopup.addSeparator();
       pPopup.addSeparator();
 	
       item = new JMenuItem("Close Panel");
@@ -145,23 +161,8 @@ class JManagerPanel
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   O P S                                                                                */
+  /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Show the panel popup menu. <P> 
-   * 
-   * @param event
-   *   The mouse event causing the menu to be shown.
-   */ 
-  public void 
-  showPopup
-  (
-   MouseEvent event
-  ) 
-  {
-  }
-
 
   /**
    * Set sole child component of the panel.
@@ -175,10 +176,10 @@ class JManagerPanel
    Component child
   ) 
   { 
-    if(getComponentCount() == 1) {
-      Component old = getComponent(0);
-      old.removeMouseListener(this);
-    }
+    if(child == null)
+      return;
+
+    removeContents();
 
     add(child, 0);
     validate();
@@ -186,6 +187,26 @@ class JManagerPanel
     addMouseListener(this);
   }
     
+  /**
+   * Remove the sole child component of the panel.
+   * 
+   * @return 
+   *   The removed child or <CODE>null</CODE> if there was no child.
+   */ 
+  public Component
+  removeContents() 
+  { 
+    if(getComponentCount() == 1) {
+      Component old = getComponent(0);
+      old.removeMouseListener(this);
+      remove(0);
+      
+      return old;
+    }
+
+    assert(getComponentCount() == 0);
+    return null;
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -235,13 +256,13 @@ class JManagerPanel
   {
     int mods = e.getModifiersEx();
     if(e.getButton() == MouseEvent.BUTTON3) {
-      int on  = (MouseEvent.BUTTON3_DOWN_MASK |
-		  MouseEvent.CTRL_DOWN_MASK);
+      int on  = (MouseEvent.BUTTON3_DOWN_MASK);
       
       int off = (MouseEvent.BUTTON1_DOWN_MASK | 
 		 MouseEvent.BUTTON2_DOWN_MASK | 
 		 MouseEvent.SHIFT_DOWN_MASK |
-		 MouseEvent.ALT_DOWN_MASK);
+		 MouseEvent.ALT_DOWN_MASK |
+		 MouseEvent.CTRL_DOWN_MASK);
 
       if((mods & (on | off)) == on) 
 	pPopup.show(e.getComponent(), e.getX(), e.getY());
@@ -269,14 +290,22 @@ class JManagerPanel
    ActionEvent e
   ) 
   {
+    System.out.print("Action: " + e.getActionCommand() + "\n");
+
     /* dispatch event */ 
-    if(e.getActionCommand().equals("horzontal-split"))
-      doHorizontalSplit();
+    if(e.getActionCommand().equals("add-left"))
+      doAddLeft();
+    else if(e.getActionCommand().equals("add-right"))
+      doAddRight();
+    else if(e.getActionCommand().equals("add-above"))
+      doAddAbove();
+    else if(e.getActionCommand().equals("add-below"))
+      doAddBelow();
 
     // ...
 
-    System.out.print("Action: " + e.getActionCommand() + "\n");
-
+    else if(e.getActionCommand().equals("close-panel"))
+      doClosePanel();
   }
 
 
@@ -285,17 +314,158 @@ class JManagerPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Split the panel into left and right sub-panels.
+   * Split the panel horizontally adding a new empty panel on the left.
    */ 
   private void 
-  doHorizontalSplit()
+  doAddLeft()
   {
-    assert(getComponentCount() == 1);
-    
+    JManagerPanel left = null;
+    {
+      JPanel panel = new JPanel();
+      panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
 
+      left = new JManagerPanel(panel);
+    }
 
+    JManagerPanel right = null;
+    {    
+      Component old = removeContents();
+      right = new JManagerPanel(old);
+    }
+
+    setContents(new JSplitPanel(JSplitPane.HORIZONTAL_SPLIT, left, right));
   }
-  
+
+  /**
+   * Split the panel horizontally adding a new empty panel on the right.
+   */ 
+  private void 
+  doAddRight()
+  {
+    JManagerPanel left = null;
+    {
+      Component old = removeContents();
+      left = new JManagerPanel(old);
+    }
+
+    JManagerPanel right = null;
+    {    
+      JPanel panel = new JPanel();
+      panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+
+      right = new JManagerPanel(panel);
+    }
+
+    setContents(new JSplitPanel(JSplitPane.HORIZONTAL_SPLIT, left, right));
+  }
+
+  /**
+   * Split the panel vertically adding a new empty panel above.
+   */ 
+  private void 
+  doAddAbove()
+  {
+    JManagerPanel above = null;
+    {
+      JPanel panel = new JPanel();
+      panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+
+      above = new JManagerPanel(panel);
+    }
+
+    JManagerPanel below = null;
+    {    
+      Component old = removeContents();
+      below = new JManagerPanel(old);
+    }
+
+    setContents(new JSplitPanel(JSplitPane.VERTICAL_SPLIT, above, below));
+  }
+
+  /**
+   * Split the panel vertically adding a new empty panel below.
+   */ 
+  private void 
+  doAddBelow()
+  {
+    JManagerPanel above = null;
+    {
+      Component old = removeContents();
+      above  = new JManagerPanel(old);
+    }
+
+    JManagerPanel below = null;
+    {    
+      JPanel panel = new JPanel();
+      panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+
+      below = new JManagerPanel(panel);
+    }
+
+    setContents(new JSplitPanel(JSplitPane.VERTICAL_SPLIT, above, below));
+  }
+
+
+  // ...
+
+
+  /**
+   * 
+   */ 
+  private void 
+  doClosePanel()
+  {
+    Container parent = getParent();
+
+
+    if(parent == null) {
+      System.out.print("Parent: (null)\n");
+      return;
+    }
+    System.out.print("Parent: " + parent.getClass().getName() + "\n");
+
+    /* replace the parent split pane with the other child */ 
+    if(parent instanceof JSplitPanel) {
+      JSplitPanel split = (JSplitPanel) parent;
+
+      Component live = null;
+      switch(split.getOrientation()) {
+      case JSplitPane.HORIZONTAL_SPLIT:
+	if(split.getLeftComponent() == this) 
+	  live = split.getRightComponent();
+	else if(split.getRightComponent() == this) 
+	  live = split.getLeftComponent();
+	else 
+	  assert(false);
+	break;
+
+      case JSplitPane.VERTICAL_SPLIT:
+	if(split.getTopComponent() == this) 
+	  live = split.getBottomComponent();
+	else if(split.getBottomComponent() == this) 
+	  live = split.getTopComponent();
+	else 
+	  assert(false);	
+	break;
+
+      default:
+	assert(false);
+      }
+      assert(live != null);
+      
+      split.removeAll();
+      
+      JManagerPanel liveMgr = (JManagerPanel) live;
+      JManagerPanel grandpa = (JManagerPanel) split.getParent();
+      grandpa.setContents(liveMgr.removeContents());
+    }
+    else {
+      System.out.print("Unknown...\n");      
+    }
+
+    
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/

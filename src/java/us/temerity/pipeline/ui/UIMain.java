@@ -1,4 +1,4 @@
-// $Id: UIMain.java,v 1.1 2004/04/26 23:20:10 jim Exp $
+// $Id: UIMain.java,v 1.2 2004/04/27 02:20:57 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -100,7 +100,13 @@ class UIMain
 	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
       }
 
-      JManagerPanel rootPanel = new JManagerPanel(new JNodeBrowserPanel());
+      
+      JNodeBrowserPanel panel = new JNodeBrowserPanel();
+      panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+
+      JManagerPanel rootPanel = new JManagerPanel(panel);
+      rootPanel.setName("RootPanel");
+
       frame.add(rootPanel);
       
       
