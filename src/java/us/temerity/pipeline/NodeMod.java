@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.14 2004/03/29 08:15:28 jim Exp $
+// $Id: NodeMod.java,v 1.15 2004/03/30 22:11:22 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -315,14 +315,16 @@ class NodeMod
   ( 
    String name
   ) 
+    throws PipelineException
   {
     if(pWorkingID != null) 
-      throw new IllegalArgumentException
-	("Only initial working versions can be renamed!");
+      throw new PipelineException
+	("Only initial working versions can be renamed.\n" +
+	 "The working version (" + pName + ") is not an initial working version!");
 
     if(pIsFrozen) 
-      throw new IllegalArgumentException
-	("Frozen working versions cannot be renamed!");
+      throw new PipelineException
+	("The working version (" + pName + ") cannot be renamed while frozen!");
 
     validateName(name);
     pName = name;
@@ -415,16 +417,18 @@ class NodeMod
   (
    FrameRange range
   ) 
+    throws PipelineException
   {
     if(pIsFrozen) 
-      throw new IllegalArgumentException
-	("Frozen working versions cannot have their frame ranges adjusted!");
+      throw new PipelineException
+	("The working version (" + pName + ") cannot have its frame range adjusted " +
+	 "while frozen!");
 
     FrameRange orange = pPrimarySeq.getFrameRange();
     if(orange == null) 
       throw new IllegalArgumentException
-	("The file sequences associated with this working version did not have a " +
-	 "frame number component and therefore has no frame range to be modified!");
+	("The file sequences associated with the working version (" + pName + ") do not " +
+	 "have frame number components and therefore have no frame ranges to adjust!");
 
     if(range == null)
       throw new IllegalArgumentException
@@ -441,14 +445,15 @@ class NodeMod
     }
     else {
       if(orange.getBy() != range.getBy())
-	throw new IllegalArgumentException
-	  ("The new frame range (" + range + ") had a different frame step increment than " +
-	   "the original primary frame range (" + orange + ")!");
+	throw new PipelineException
+	  ("The new frame range (" + range + ") for the working version (" + pName + ") " + 
+	   "had a different frame step increment than the original primary frame range " +
+	   "(" + orange + ")!");
       
       if(((range.getStart() - orange.getStart()) % orange.getBy()) != 0) 
-	throw new IllegalArgumentException
-	  ("The new frame range (" + range + ") was not aligned with the original " + 
-	   "primary frame range (" + orange + ")!");
+	throw new PipelineException
+	  ("The new frame range (" + range + ") for the working version (" + pName + ") " + 
+	   "was not aligned with the original primary frame range (" + orange + ")!");
       
       int deltaS = (range.getStart() - orange.getStart()) / orange.getBy();
       int deltaE = (range.getEnd() - orange.getEnd()) / orange.getBy();
@@ -496,30 +501,33 @@ class NodeMod
   (
    FileSeq fseq
   ) 
+    throws PipelineException
   {
     if(pIsFrozen) 
-      throw new IllegalArgumentException
-	("The file sequences associated with frozen working versions cannot be modified!");
+      throw new PipelineException
+	("The file sequences associated with the frozen working version (" + pName + ") " +
+	 "cannot be modified!");
 
     if(fseq == null)
       throw new IllegalArgumentException
 	("The new secondary file sequence cannot be (null)!");
     
     if(fseq.numFrames() != pPrimarySeq.numFrames()) 
-      throw new IllegalArgumentException
+      throw new PipelineException
 	("The new secondary file sequence (" + fseq + ") does not contain the same number " +
 	 "of files as the primary file sequence (" + pPrimarySeq + ")!");
     
     if(pSecondarySeqs.contains(fseq)) 
-      throw new IllegalArgumentException
-	("The secondary file sequence (" + fseq + ") is already exists for this " + 
-	 "working version!");
+      throw new PipelineException
+	("The secondary file sequence (" + fseq + ") is already associated with the " +
+	 "working version (" + pName + ")!");
 
     for(FileSeq sfseq : pSecondarySeqs) 
       if(fseq.getFilePattern().getPrefix().equals(sfseq.getFilePattern().getPrefix())) 
-	throw new IllegalArgumentException
-	  ("The new secondary file sequence (" + fseq + ") conflicts with the existing " + 
-	   "secondary file sequence (" + sfseq + ")!");
+	throw new PipelineException
+	  ("The new secondary file sequence (" + fseq + ") for working version (" + pName + 
+	   ") conflicts with the secondary file sequence (" + sfseq + ") already " + 
+	   "associated with this working version!");
 
     validatePrefix(fseq);
     pSecondarySeqs.add(fseq);
@@ -538,15 +546,17 @@ class NodeMod
   (
    FileSeq fseq
   ) 
+    throws PipelineException
   {
     if(pIsFrozen) 
-      throw new IllegalArgumentException
-	("The file sequences associated with frozen working versions cannot be modified!");
+      throw new PipelineException
+	("The file sequences associated with the frozen working version (" + pName + ") " +
+	 "cannot be modified!");
 
     if(!pSecondarySeqs.contains(fseq)) 
-      throw new IllegalArgumentException
-	("The secondary file sequence (" + fseq + ") does not exist for this " + 
-	 "working version!");
+      throw new PipelineException
+	("The secondary file sequence (" + fseq + ") was not associated with the working " + 
+	 "working version (" + pName + ")!");
 
     pSecondarySeqs.remove(fseq);
 
@@ -582,18 +592,20 @@ class NodeMod
   (
    String toolset
   ) 
+    throws PipelineException
   {
     if(pIsFrozen) 
-      throw new IllegalArgumentException
-	("Frozen working versions cannot have their editor modified!");
+      throw new PipelineException
+	("The working version (" + pName + ") cannot have its toolset modified " + 
+	 "while frozen!");
     
     if(toolset == null) 
       throw new IllegalArgumentException
 	("The toolset argument cannot be (null)!");
 
     if(!Toolsets.exists(toolset)) 
-      throw new IllegalArgumentException
-	("No toolset named (" + toolset + ") exists!");
+      throw new PipelineException
+	("No valid toolset named (" + toolset + ") exists!");
 
     pToolset = toolset;
 
@@ -612,10 +624,12 @@ class NodeMod
   (
    String name
   ) 
+    throws PipelineException
   {
     if(pIsFrozen) 
-      throw new IllegalArgumentException
-	("Frozen working versions cannot have their editor modified!");
+      throw new PipelineException
+	("The working version (" + pName + ") cannot have its editor modified " + 
+	 "while frozen!");
 
     pEditor = name;
     updateLastMod();
@@ -638,10 +652,12 @@ class NodeMod
   (
    BaseAction action 
   ) 
+    throws PipelineException
   {
     if(pIsFrozen) 
-      throw new IllegalArgumentException
-	("Frozen working versions cannot have their regeneration action modified!");
+      throw new PipelineException
+	("The working version (" + pName + ") cannot have its regeneration action " + 
+	 "modified while frozen!");
 
     if(action != null) {
       try {
@@ -679,14 +695,17 @@ class NodeMod
   ( 
    JobReqs jobReqs
   ) 
+    throws PipelineException
   {
     if(pIsFrozen) 
-      throw new IllegalArgumentException
-	("Frozen working versions cannot have their job requirements modified!");
+      throw new PipelineException
+	("The working version (" + pName + ") cannot have its job requirements " + 
+	 "modified while frozen!");
 
     if(pAction == null) 
-      throw new IllegalArgumentException
-	("Job requirements cannot be set for nodes without regeneration actions!");
+      throw new PipelineException
+	("Job requirements cannot be set for working version (" + pName + ") because it " +
+	 "has no regeneration action!");
 
     if(jobReqs == null)
       throw new IllegalArgumentException
@@ -710,14 +729,17 @@ class NodeMod
   ( 
    OverflowPolicy overflow
   ) 
+    throws PipelineException
   {
     if(pIsFrozen) 
-      throw new IllegalArgumentException
-	("The overflow policy cannot be set for frozen working versions!");
+      throw new PipelineException
+	("The working version (" + pName + ") cannot have its overflow policy " + 
+	 "modified while frozen!");
 
     if(pAction == null) 
-      throw new IllegalArgumentException
-	("The overflow policy cannot be set for nodes without regeneration actions!");
+      throw new PipelineException
+	("The overflow policy cannot be set for working version (" + pName + ") because it " +
+	 "has no regeneration action!");
 
     if(overflow == null) 
       throw new IllegalArgumentException
@@ -736,14 +758,17 @@ class NodeMod
   ( 
    ExecutionMethod execution 
   ) 
+    throws PipelineException
   {
     if(pIsFrozen) 
-      throw new IllegalArgumentException
-	("The execution method cannot be set for frozen working versions!");
+      throw new PipelineException
+	("The working version (" + pName + ") cannot have its execution method " + 
+	 "modified while frozen!");
 
     if(pAction == null) 
-      throw new IllegalArgumentException
-	("The execution method cannot be set for nodes without regeneration actions!");
+      throw new PipelineException
+	("The execution method cannot be set for working version (" + pName + ") because " +
+	 "it has no regeneration action!");
 
     if(execution == null) 
       throw new IllegalArgumentException
@@ -761,14 +786,17 @@ class NodeMod
   (
    int size
   ) 
+    throws PipelineException
   {
     if(pIsFrozen) 
-      throw new IllegalArgumentException
-	("The batch size cannot be set for frozen working versions!");
+      throw new PipelineException
+	("The working version (" + pName + ") cannot have its batch size " + 
+	 "modified while frozen!");
 
     if(pAction == null) 
-      throw new IllegalArgumentException
-	("The batch size cannot be set for nodes without regeneration actions!");
+      throw new PipelineException
+	("The batch size cannot be set for working version (" + pName + ") because it " +
+	 "has no regeneration action!");
 
     if(pExecution == ExecutionMethod.Serial) 
       throw new IllegalArgumentException
@@ -816,14 +844,16 @@ class NodeMod
   ( 
    NodeMod mod
   ) 
+    throws PipelineException
   {
     if(mod == null) 
       throw new IllegalArgumentException
 	("The working version cannot be (null)!");
 
     if(pIsFrozen) 
-      throw new IllegalArgumentException
-	("Frozen working versions cannot have their node properties modified!");
+      throw new PipelineException
+	("The working version (" + pName + ") cannot have its node properties " + 
+	 "modified while frozen!");
 
     if(!pName.equals(mod.getName())) 
       throw new IllegalArgumentException
@@ -981,10 +1011,12 @@ class NodeMod
   (
    LinkMod link
   ) 
+    throws PipelineException
   {
     if(pIsFrozen) 
-      throw new IllegalArgumentException
-	("Frozen working versions cannot have their node connections modified!");
+      throw new PipelineException
+	("The working version (" + pName + ") cannot have its node connections " + 
+	 "modified while frozen!");
 
     pSources.put(link.getName(), new LinkMod(link));
 
@@ -1002,16 +1034,20 @@ class NodeMod
   (
    String name
   ) 
+    throws PipelineException
   {
     if(pIsFrozen) 
-      throw new IllegalArgumentException
-	("Frozen working versions cannot have their node connections modified!");
+      throw new PipelineException
+	("The working version (" + pName + ") cannot have its node connections " + 
+	 "modified while frozen!");
 
     if(name == null) 
       throw new IllegalArgumentException("The upstream node name cannot be (null)!");
 
     if(!pSources.containsKey(name)) 
-      throw new IllegalArgumentException("No upstream node named (" + name + ") exists!");
+      throw new PipelineException
+	("No connection to an upstream node named (" + name + ") exists for the working " +
+	 "version (" + pName + ")!");
 
     pSources.remove(name);
 
@@ -1023,10 +1059,12 @@ class NodeMod
    */
   public void
   removeAllSources() 
+    throws PipelineException
   {
     if(pIsFrozen) 
-      throw new IllegalArgumentException
-	("Frozen working versions cannot have their node connections modified!");
+      throw new PipelineException
+	("The working version (" + pName + ") cannot have its node connections " + 
+	 "modified while frozen!");
 
     pSources.clear();
 
