@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.62 2004/10/30 17:38:22 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.63 2004/11/01 00:49:44 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -316,7 +316,12 @@ class JNodeViewerPanel
       item = new JMenuItem("Renumber...");
       pRenumberItem = item;
       item.setActionCommand("renumber");
-      item.setEnabled(false);  
+      item.addActionListener(this);
+      pNodePopup.add(item);
+
+      item = new JMenuItem("Delete...");
+      pDeleteItem = item;
+      item.setActionCommand("delete");
       item.addActionListener(this);
       pNodePopup.add(item);
     }
@@ -440,6 +445,7 @@ class JNodeViewerPanel
       pRenumberDialog = new JRenumberDialog();
       pRegisterDialog = new JRegisterDialog();
       pReleaseDialog  = new JReleaseDialog();
+      pDeleteDialog   = new JDeleteDialog();
       pCheckInDialog  = new JCheckInDialog();
       pCheckOutDialog = new JCheckOutDialog();
       pEvolveDialog   = new JEvolveDialog();
@@ -727,6 +733,7 @@ class JNodeViewerPanel
     boolean hasWorking   = (mod != null);
     boolean hasCheckedIn = (details.getLatestVersion() != null);
     boolean multiple     = (getSelectedNames().size() >= 2);
+    
 
     pLinkItem.setEnabled(hasWorking && multiple);
     pUnlinkItem.setEnabled(hasWorking && multiple);
@@ -740,6 +747,17 @@ class JNodeViewerPanel
     pEvolveItem.setEnabled(hasWorking && hasCheckedIn);
     
     pReleaseItem.setEnabled(hasWorking);
+    
+    {
+      UIMaster master = UIMaster.getInstance();
+      try {
+	boolean isPrivileged = master.getMasterMgrClient().isPrivileged(true);
+	pDeleteItem.setEnabled((hasWorking || hasCheckedIn) && isPrivileged);
+      }
+      catch(PipelineException ex) {
+	master.showErrorDialog(ex);
+      }
+    }
 
     pRemoveSecondaryMenu.setEnabled(false);
 
@@ -2139,6 +2157,9 @@ class JNodeViewerPanel
       else if((prefs.getNodeViewerRenumber() != null) &&
 	      prefs.getNodeViewerRenumber().wasPressed(e))
 	doRenumber();
+      else if((prefs.getNodeViewerDelete() != null) &&
+	      prefs.getNodeViewerDelete().wasPressed(e))
+	doDelete();
       
       else 
 	undefined = true;
@@ -2347,6 +2368,8 @@ class JNodeViewerPanel
       doRename();
     else if(cmd.equals("renumber"))
       doRenumber();
+    else if(cmd.equals("delete"))
+      doDelete();
 
     /* link menu events */ 
     else if(cmd.equals("link-edit")) 
@@ -2914,6 +2937,44 @@ class JNodeViewerPanel
     if(!names.isEmpty()) {
       RemoveFilesTask task = new RemoveFilesTask(names);
       task.start();
+    }
+
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();
+  }
+
+  /**
+   * Delete the primary selected node.
+   */ 
+  private void 
+  doDelete() 
+  {
+    if(pPrimary != null) {
+      NodeDetails details = pPrimary.getNodeStatus().getDetails();
+      if(details != null) {
+	
+	String text = null;
+	{
+	  NodeMod mod = details.getWorkingVersion();
+	  NodeVersion vsn = details.getLatestVersion();
+	  if(mod != null) 
+	    text = mod.getPrimarySequence().toString();
+	  else if(vsn != null) 
+	    text = mod.getPrimarySequence().toString();
+	}
+
+	pDeleteDialog.updateHeader("Delete Node:  " + text);
+	pDeleteDialog.setVisible(true);
+      
+	if(pDeleteDialog.wasConfirmed()) {
+	  JConfirmDialog confirm = new JConfirmDialog("Are you sure?");
+	  confirm.setVisible(true);
+	  if(confirm.wasConfirmed()) {
+	    DeleteTask task = new DeleteTask(details.getName(), pDeleteDialog.removeFiles());
+	    task.start();
+	  }
+	}
+      }
     }
 
     for(ViewerNode vnode : clearSelection()) 
@@ -4089,7 +4150,6 @@ class JNodeViewerPanel
     private boolean     pRemoveFiles; 
   }
 
-
   /** 
    * Release a given node.
    */ 
@@ -4135,6 +4195,50 @@ class JNodeViewerPanel
 
     private TreeSet<String>  pNames; 
     private boolean          pRemoveFiles; 
+  }
+
+  /** 
+   * Delete a given node.
+   */ 
+  private
+  class DeleteTask
+    extends Thread
+  {
+    public 
+    DeleteTask
+    (
+     String name,
+     boolean removeFiles
+    ) 
+    {
+      super("JNodeViewerPanel:DeleteTask");
+
+      pName        = name;
+      pRemoveFiles = removeFiles;
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Deleting Node: " + pName)) {
+	try {	
+	  master.getMasterMgrClient().delete(pName, pRemoveFiles);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	updateRoots();
+      }
+    }
+
+    private String   pName; 
+    private boolean  pRemoveFiles; 
   }
 
   /** 
@@ -4828,6 +4932,7 @@ class JNodeViewerPanel
   private JMenuItem  pCheckOutItem;
   private JMenuItem  pEvolveItem;
   private JMenuItem  pReleaseItem;
+  private JMenuItem  pDeleteItem;
 
   /**
    * The edit with submenus.
@@ -4967,6 +5072,11 @@ class JNodeViewerPanel
    * The release node dialog.
    */ 
   private JReleaseDialog  pReleaseDialog;
+
+  /**
+   * The delete node dialog.
+   */ 
+  private JDeleteDialog  pDeleteDialog;
 
   /** 
    * The check-in node dialog.

@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.22 2004/10/28 15:55:23 jim Exp $
+// $Id: FileMgr.java,v 1.23 2004/11/01 00:49:44 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1997,6 +1997,99 @@ class FileMgr
       return new FailureRsp(timer, ex.getMessage());
     }
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Remove the all of the files associated all checked-in versions of a node.
+   * 
+   * @param req 
+   *   The delete request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to delete the files.
+   */
+  public Object
+  deleteCheckedIn
+  (
+   FileDeleteCheckedInReq req
+  ) 
+  {
+    String name = req.getName();
+    TaskTimer timer = new TaskTimer("FileMgr.deleteCheckedIn(): " + name);
+    
+    timer.aquire();
+    ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
+    checkedInLock.writeLock().lock();
+    try {
+      String rdir  = (pProdDir + "/repository" + name);
+      String crdir = (pProdDir + "/checksum/repository" + name);
+      
+      {
+	ArrayList<String> args = new ArrayList<String>();
+	args.add("--recursive");
+	args.add("u+w");
+	args.add(rdir);
+	args.add(crdir);
+	
+	Map<String,String> env = System.getenv();
+	
+	SubProcessLight proc = 
+	  new SubProcessLight("ChmodCheckedIn", "chmod", args, env, PackageInfo.sTempDir);
+	try {
+	  proc.start();
+	  proc.join();
+	  if(!proc.wasSuccessful()) 
+	    throw new PipelineException
+	      ("Unable to make the files associated with the checked-in versions of " + 
+	       "node (" + name + ") writeable:\n" +
+	       "  " + proc.getStdErr());
+	}
+	catch(InterruptedException ex) {
+	  throw new PipelineException
+	    ("Interrupted while making the files associated with the checked-in " + 
+	     "versions of node (" + name + ") writeable!");
+	}
+      }
+
+      {
+	ArrayList<String> args = new ArrayList<String>();
+	args.add("--recursive");
+	args.add("--force");
+	args.add(rdir);
+	args.add(crdir);
+	
+	Map<String,String> env = System.getenv();
+	
+	SubProcessLight proc = 
+	  new SubProcessLight("DeleteCheckedIn", "rm", args, env, PackageInfo.sTempDir);
+	try {
+	  proc.start();
+	  proc.join();
+	  if(!proc.wasSuccessful()) 
+	    throw new PipelineException
+	      ("Unable to remove all files associated with the checked-in versions of " + 
+	       "node (" + name + ") from the repository:\n" +
+	       "  " + proc.getStdErr());
+	}
+	catch(InterruptedException ex) {
+	  throw new PipelineException
+	    ("Interrupted while removing all files associated with the checked-in " + 
+	     "versions of node (" + name + ") from the repository!");
+	}
+	
+	return new SuccessRsp(timer);
+      }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      checkedInLock.writeLock().unlock();
+    }  
+  }  
 
 
 

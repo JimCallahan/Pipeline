@@ -1,4 +1,4 @@
-// $Id: JReleaseDialog.java,v 1.3 2004/11/01 00:49:44 jim Exp $
+// $Id: JDeleteDialog.java,v 1.1 2004/11/01 00:49:44 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -14,14 +14,14 @@ import javax.swing.event.*;
 import javax.swing.tree.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   R E L E A S E   D I A L O G                                                            */
+/*   D E L E T E   D I A L O G                                                              */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Queries the user for options to the node release operation.
+ * Queries the user for options to the node delete operation.
  */ 
 public 
-class JReleaseDialog
+class JDeleteDialog
   extends JBaseDialog
 {
   /*----------------------------------------------------------------------------------------*/
@@ -32,9 +32,9 @@ class JReleaseDialog
    * Construct a new dialog.
    */ 
   public 
-  JReleaseDialog() 
+  JDeleteDialog() 
   {
-    super("Release Node", true);
+    super("Delete Node", true);
 
     /* create dialog body components */ 
     {
@@ -68,7 +68,7 @@ class JReleaseDialog
 	UIMaster.addVerticalGlue(tpanel, vpanel);
       }
 
-      super.initUI("X", true, body, "Release", null, null, "Cancel");
+      super.initUI("X", true, body, "Delete", null, null, "Cancel");
 
       pack();
       setResizable(false);
@@ -81,7 +81,7 @@ class JReleaseDialog
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Get whether to remove the files associated with the released node.
+   * Get whether to remove the working files associated with the deleted node.
    */
   public boolean
   removeFiles() 
@@ -117,7 +117,7 @@ class JReleaseDialog
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -8701942318291685416L;
+  private static final long serialVersionUID = -2391833497249062891L;
 
   private static final int sTSize  = 150;
   private static final int sVSize  = 300;

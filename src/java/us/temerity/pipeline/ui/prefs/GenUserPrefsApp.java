@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.30 2004/10/30 17:38:22 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.31 2004/11/01 00:49:44 jim Exp $
 
 import java.io.*; 
 import java.util.*;
@@ -518,6 +518,10 @@ class GenUserPrefsApp
 	new HotKeyPref
 	("Renumber the current primary selection.",
 	 "NodeViewerRenumber", "Renumber:"), 
+	
+	new HotKeyPref
+	("Delete the current primary selection.",
+	 "NodeViewerDelete", "Delete:")
       };
 
       pPrefs.put("Panel|Node Viewer|Node|Hot Keys", prefs);
@@ -1081,7 +1085,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.30 2004/10/30 17:38:22 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.31 2004/11/01 00:49:44 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -1334,7 +1338,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.30 2004/10/30 17:38:22 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.31 2004/11/01 00:49:44 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 

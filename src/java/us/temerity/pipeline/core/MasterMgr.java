@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.54 2004/10/31 20:04:13 jim Exp $
+// $Id: MasterMgr.java,v 1.55 2004/11/01 00:49:44 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3047,7 +3047,8 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * 
+   * Delete all working and checked-in versions of a node and optionally remove all  
+   * associated working area files. <P> 
    * 
    * @param req 
    *   The node delete request.
@@ -3071,9 +3072,114 @@ class MasterMgr
     try {
       timer.resume();	
 
-      // delete the node... 
+      /* get the checked-in versions  */ 
+      TreeMap<VersionID,CheckedInBundle> checkedIn = null;
+      try {
+	checkedIn = getCheckedInBundles(name);
+      }
+      catch(PipelineException ex) {
+	checkedIn = new TreeMap<VersionID,CheckedInBundle>();
+      }
 
-      return new FailureRsp(timer, "Not implemented yet...");
+      /* get the downstream links */ 
+      DownstreamLinks dsl = getDownstreamLinks(name);
+
+      /* make sure none of the checked-in versions are the source node of a link of 
+           another node */ 
+      for(VersionID vid : checkedIn.keySet()) {
+	TreeMap<String,VersionID> dlinks = dsl.getCheckedIn(vid);
+	if(dlinks == null) 
+	  throw new PipelineException
+	    ("Somehow there was no downstream links entry for checked-in version " + 
+	     "(" + vid + ") of node (" + name + ")!");
+	
+	if(!dlinks.isEmpty()) 
+	  throw new PipelineException
+	    ("Cannot delete node (" + name + ") because the checked-in version " + 
+	     "(" + vid + ") is linked to other nodes!");
+      } 
+
+
+      /* release all working versions of the node */ 
+      {
+	ArrayList<NodeID> dead = new ArrayList<NodeID>();
+	for(String author : pWorkingAreaViews.keySet()) {
+	  for(String view : pWorkingAreaViews.get(author)) {
+	    NodeID nodeID = new NodeID(author, view, name);
+	    try {
+	      getWorkingBundle(nodeID);
+	      dead.add(nodeID);
+	    }
+	    catch(PipelineException ex) {
+	    }
+	  }
+	}
+
+	for(NodeID nodeID : dead) {
+	  timer.suspend();
+	  Object obj = release(new NodeReleaseReq(nodeID, req.removeFiles()));
+	  timer.accum(((TimedRsp) obj).getTimer());
+	  if(obj instanceof FailureRsp) {
+	    FailureRsp rsp = (FailureRsp) obj;
+	    throw new PipelineException(rsp.getMessage());	
+	  }
+
+	  pWorkingLocks.remove(nodeID);
+	}
+	
+	assert(pWorkingBundles.get(name).isEmpty());
+	pWorkingBundles.remove(name);
+      }
+
+	
+      /* delete the checked-in versions */ 
+      if(!checkedIn.isEmpty()) {
+
+	/* delete files associated with all checked-in versions of the node */ 
+	pFileMgrClient.deleteCheckedIn(name);
+	
+	/* remove the checked-in version files */ 
+	for(VersionID vid : checkedIn.keySet()) {
+	  File file = new File(pNodeDir, "repository" + name + "/" + vid);
+	  if(!file.delete())
+	    throw new PipelineException
+	      ("Unable to remove the checked-in version file (" + file + ")!");
+	}
+
+	/* remove the checked-in version directory */
+	{
+	  File dir = new File(pNodeDir, "repository" + name);
+	  if(!dir.delete())
+	    throw new PipelineException
+	      ("Unable to remove the checked-in version directory (" + dir + ")!");
+	}	    
+	
+	/* remove the checked-in version entries */ 
+	pCheckedInLocks.remove(name);
+	pCheckedInBundles.remove(name);
+      }
+	
+
+      /* remove the downstream links file and entry */ 
+      {
+	File file = new File(pNodeDir, "downstream" + name);
+	if(file.isFile()) {
+	  if(!file.delete())
+	    throw new PipelineException
+	      ("Unable to remove the downstream links file (" + file + ")!");
+	}
+
+	pDownstream.remove(name);
+      }
+
+
+      /* remove the leaf node tree entry */ 
+      removeNodeTreePath(name);
+
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
     }
     finally {
       pDatabaseLock.writeLock().unlock();
@@ -5048,6 +5154,51 @@ class MasterMgr
 
 	  entry = parent;
 	}
+      }
+    }
+  }
+
+  /**
+   * Remove all entries for the given node. <P> 
+   * 
+   * Removes any branch components which become empty due to the node entry removal.
+   * 
+   * @param name
+   *   The fully resolved node name.
+   */ 
+  private void 
+  removeNodeTreePath
+  (
+   String name
+  )
+  {
+    synchronized(pNodeTreeRoot) {
+      String comps[] = name.split("/"); 
+      
+      Stack<NodeTreeEntry> stack = new Stack<NodeTreeEntry>();
+      stack.push(pNodeTreeRoot);
+
+      int wk;
+      for(wk=1; wk<comps.length; wk++) {
+	NodeTreeEntry entry = (NodeTreeEntry) stack.peek().get(comps[wk]);
+	if(entry == null)
+	  return;
+	stack.push(entry);
+      }
+
+      NodeTreeEntry entry = stack.pop();
+      assert(entry != null); 
+      assert(entry.isLeaf());
+
+      while(!stack.isEmpty()) {
+	NodeTreeEntry parent = stack.pop();
+	assert(!parent.isLeaf());
+	
+	parent.remove(entry.getName());
+	if(!parent.isEmpty()) 
+	  break;
+	
+	entry = parent;
       }
     }
   }

@@ -1,4 +1,4 @@
-// $Id: FileRequest.java,v 1.12 2004/07/18 21:29:29 jim Exp $
+// $Id: FileRequest.java,v 1.13 2004/11/01 00:49:44 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -68,6 +68,11 @@ enum FileRequest
    * An instance of {@link FileRenameReq FileRenameReq} is next.
    */
   Rename, 
+
+  /**
+   * An instance of {@link FileDeleteCheckedInReq FileDeleteCheckedInReq} is next.
+   */
+  DeleteCheckedIn, 
 
   /**
    * No more requests will be send over this connection.

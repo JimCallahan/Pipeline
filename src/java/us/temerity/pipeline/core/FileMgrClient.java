@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.17 2004/10/18 02:34:06 jim Exp $
+// $Id: FileMgrClient.java,v 1.18 2004/11/01 00:49:44 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -356,6 +356,28 @@ class FileMgrClient
     Object obj = performTransaction(FileRequest.Rename, req);
     handleSimpleResponse(obj);
   }
+
+  /**
+   * Remove the all of the files associated all checked-in versions of a node.
+   *
+   * @param name
+   *   The fully resolved node name. 
+   */  
+  public synchronized void 
+  deleteCheckedIn
+  (
+   String name
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    FileDeleteCheckedInReq req = new FileDeleteCheckedInReq(name);
+
+    Object obj = performTransaction(FileRequest.DeleteCheckedIn, req);
+    handleSimpleResponse(obj);
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/

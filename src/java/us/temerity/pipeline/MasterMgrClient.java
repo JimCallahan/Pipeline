@@ -1,9 +1,10 @@
-// $Id: MasterMgrClient.java,v 1.34 2004/10/31 20:01:35 jim Exp $
+// $Id: MasterMgrClient.java,v 1.35 2004/11/01 00:49:44 jim Exp $
 
 package us.temerity.pipeline;
 
 import us.temerity.pipeline.message.*;
 import us.temerity.pipeline.toolset.*;
+import us.temerity.pipeline.glue.*;
 
 import java.io.*;
 import java.net.*;
