@@ -1,4 +1,4 @@
-// $Id: CheckSum.java,v 1.1 2004/03/09 05:02:37 jim Exp $
+// $Id: CheckSum.java,v 1.2 2004/03/09 06:23:24 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -50,7 +50,7 @@ class CheckSum
    * <DIV style="margin-left: 40px;">
    *   "SHA-1" <BR>
    *   <DIV style="margin-left: 20px;">
-   *     SThe Secure Hash Algorithm, as defined in Secure Hash Standard, NIST FIPS 180-1. <P>
+   *     The Secure Hash Algorithm, as defined in Secure Hash Standard, NIST FIPS 180-1. <P>
    *   </DIV>
    * </DIV>
    * 
