@@ -1,4 +1,4 @@
-// $Id: FilePattern.java,v 1.4 2004/02/28 19:57:17 jim Exp $
+// $Id: FilePattern.java,v 1.5 2004/03/08 04:36:06 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -71,6 +71,8 @@ implements Cloneable, Glueable, Serializable
     pPrefix = prefix;
     
     pPadding = -1;
+
+    buildCache();
   }
 
   /**
@@ -103,6 +105,8 @@ implements Cloneable, Glueable, Serializable
     if((suffix != null) && (suffix.length() == 0)) 
       throw new IllegalArgumentException("The suffix was an empty string!");
     pSuffix = suffix;
+
+    buildCache();
   }
 
   /**
@@ -145,6 +149,8 @@ implements Cloneable, Glueable, Serializable
     if((suffix != null) && (suffix.length() == 0)) 
       throw new IllegalArgumentException("The suffix was an empty string!");
     pSuffix  = suffix;
+
+    buildCache();
   }
 
   /**
@@ -162,6 +168,9 @@ implements Cloneable, Glueable, Serializable
     pPrefix  = pattern.getPrefix();
     pPadding = pattern.getPadding();
     pSuffix  = pattern.getSuffix();
+
+    pStringRep = pattern.toString();
+    pHashCode  = pattern.hashCode();
   }
 
 
@@ -308,7 +317,8 @@ implements Cloneable, Glueable, Serializable
   {
     if((obj != null) && (obj instanceof FilePattern)) {
       FilePattern pat = (FilePattern) obj;
-      return toString().equals(pat.toString());
+      return ((pHashCode == pat.pHashCode) && 
+	      pStringRep.equals(pat.pStringRep));
     }
 
     return false;
@@ -320,7 +330,8 @@ implements Cloneable, Glueable, Serializable
   public int 
   hashCode() 
   {
-    return toString().hashCode();
+    assert(pStringRep != null);
+    return pHashCode;
   }
 
   /**
@@ -329,34 +340,8 @@ implements Cloneable, Glueable, Serializable
   public String
   toString() 
   {
-    StringBuffer buf = new StringBuffer();
-    buf.append(pPrefix);
-
-    switch(pPadding) {
-    case -1:
-      break;
-
-    case 0:
-      buf.append(".@");
-      break;
-
-    case 4:
-      buf.append(".#");
-      break;
-
-    default:
-      {
-	buf.append(".");
-	int wk; 
-	for(wk=0; wk<pPadding; wk++) 
-	  buf.append("@");
-      }
-    }
-      
-    if(pSuffix != null) 
-      buf.append("." + pSuffix);
-	     
-    return (buf.toString());
+    assert(pStringRep != null);
+    return pStringRep;
   }
 
 
@@ -422,6 +407,54 @@ implements Cloneable, Glueable, Serializable
     if((suffix != null) && (suffix.length() == 0)) 
       throw new GlueException("The \"Suffix\" was an empty string!");
     pSuffix = suffix;
+
+    buildCache();
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Compute the cached string representation and hash code for the file pattern.
+   */
+  private void
+  buildCache() 
+  {
+    {
+      StringBuffer buf = new StringBuffer();
+      buf.append(pPrefix);
+      
+      switch(pPadding) {
+      case -1:
+	break;
+	
+      case 0:
+	buf.append(".@");
+	break;
+	
+      case 4:
+	buf.append(".#");
+	break;
+	
+      default:
+	{
+	  buf.append(".");
+	  int wk; 
+	  for(wk=0; wk<pPadding; wk++) 
+	    buf.append("@");
+	}
+      }
+      
+      if(pSuffix != null) 
+	buf.append("." + pSuffix);
+      
+      pStringRep = buf.toString();
+    }
+
+    pHashCode = pStringRep.hashCode();
   }
 
 
@@ -455,5 +488,17 @@ implements Cloneable, Glueable, Serializable
    * will have <I>no</I> suffix component.
    */ 
   private String pSuffix;  
+
+
+  /** 
+   * The cached string representation.
+   */
+  private String  pStringRep;
+ 
+  /** 
+   * The cached hash code.
+   */
+  private int  pHashCode;
+ 
 }
 

@@ -1,4 +1,4 @@
-// $Id: VersionID.java,v 1.3 2004/03/07 02:44:58 jim Exp $
+// $Id: VersionID.java,v 1.4 2004/03/08 04:36:06 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -37,7 +37,9 @@ class VersionID
    */ 
   public 
   VersionID() 
-  {}
+  {
+    buildCache();
+  }
 
   /**
    * Construct from revision number components. 
@@ -71,6 +73,8 @@ class VersionID
     }
 
     pIDs = comps.clone();
+
+    buildCache();
   }
 
   /**
@@ -85,7 +89,51 @@ class VersionID
    String str 
   ) 
   {
-    init(str);
+    if(str == null) 
+      throw new IllegalArgumentException
+	("The version string cannot be (null)!");
+
+    if(str.length() == 0) 
+      throw new IllegalArgumentException
+	("The version string cannot be empty!");      
+
+    String[] parts = str.split("\\.");
+    if(parts.length != 4)
+      throw new IllegalArgumentException
+	("Found the wrong number (" + parts.length + ") of revision number compoents " + 
+	 "in (" + str + "), should have been (4)!");
+
+    int ids[] = new int[4];
+    
+    int wk;
+    for(wk=0; wk<4; wk++) {
+      if(parts[wk].length() == 0) 
+	throw new IllegalArgumentException
+	  ("Found a missing version number component in (" + str + ")!");
+
+      int num = 0;
+      try {
+	num = Integer.parseInt(parts[wk]);
+      }
+      catch (NumberFormatException e) {
+	throw new IllegalArgumentException
+	  ("Illegal version number component (" + parts[wk] + ") found in (" + str + ")!");
+      }
+
+      if(num < 0) 
+	throw new IllegalArgumentException
+	  ("Negative version number component (" + num + ") found in (" + str + ")!");
+
+      if((wk == 0) && (num < 1)) 
+	throw new IllegalArgumentException
+	  ("The first version number component (" + num + ") must be positive!");
+      
+      ids[wk] = num;
+    }
+
+    pIDs = ids;
+
+    buildCache();
   }
 
   /**
@@ -117,6 +165,8 @@ class VersionID
     int wk;
     for(wk=idx+1; wk<4; wk++) 
       pIDs[wk] = 0;
+
+    buildCache();
   }
 
   /**
@@ -129,6 +179,8 @@ class VersionID
   ) 
   {
     pIDs = vid.pIDs.clone();
+
+    buildCache();
   }
 
     
@@ -166,7 +218,8 @@ class VersionID
   {
     if((obj != null) && (obj instanceof VersionID)) {
       VersionID vid = (VersionID) obj;
-      return (Arrays.equals(pIDs, vid.pIDs));
+      return ((pHashCode == vid.pHashCode) && 
+	      Arrays.equals(pIDs, vid.pIDs));
     }
     return false;
   }
@@ -177,7 +230,8 @@ class VersionID
   public int 
   hashCode() 
   {
-    return toString().hashCode();
+    assert(pStringRep != null);
+    return pHashCode;
   }
 
   /**
@@ -186,16 +240,8 @@ class VersionID
   public String
   toString() 
   {
-    StringBuffer buf = new StringBuffer();
-
-    int wk;
-    for(wk=0; wk<4; wk++) {
-      buf.append(pIDs[wk]);
-      if(wk < 3) 
-	buf.append(".");
-    }
-
-    return buf.toString();
+    assert(pStringRep != null);
+    return pStringRep;
   }
 
 
@@ -265,66 +311,6 @@ class VersionID
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   H E L P E R S                                                                        */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Initialize from a string representation. 
-   */ 
-  protected void 
-  init
-  (
-   String str    
-  ) 
-  {
-    if(str == null) 
-      throw new IllegalArgumentException
-	("The version string cannot be (null)!");
-
-    if(str.length() == 0) 
-      throw new IllegalArgumentException
-	("The version string cannot be empty!");      
-
-    String[] parts = str.split("\\.");
-    if(parts.length != 4)
-      throw new IllegalArgumentException
-	("Found the wrong number (" + parts.length + ") of revision number compoents " + 
-	 "in (" + str + "), should have been (4)!");
-
-    int ids[] = new int[4];
-    
-    int wk;
-    for(wk=0; wk<4; wk++) {
-      if(parts[wk].length() == 0) 
-	throw new IllegalArgumentException
-	  ("Found a missing version number component in (" + str + ")!");
-
-      int num = 0;
-      try {
-	num = Integer.parseInt(parts[wk]);
-      }
-      catch (NumberFormatException e) {
-	throw new IllegalArgumentException
-	  ("Illegal version number component (" + parts[wk] + ") found in (" + str + ")!");
-      }
-
-      if(num < 0) 
-	throw new IllegalArgumentException
-	  ("Negative version number component (" + num + ") found in (" + str + ")!");
-
-      if((wk == 0) && (num < 1)) 
-	throw new IllegalArgumentException
-	  ("The first version number component (" + num + ") must be positive!");
-      
-      ids[wk] = num;
-    }
-
-    pIDs = ids;
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
   /*   P U B L I C   C L A S S E S                                                          */
   /*----------------------------------------------------------------------------------------*/
 
@@ -384,6 +370,35 @@ class VersionID
   }
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Compute the cached string representation and hash code for the file pattern.
+   */
+  private void
+  buildCache() 
+  {
+    {
+      StringBuffer buf = new StringBuffer();
+      
+      int wk;
+      for(wk=0; wk<4; wk++) {
+	buf.append(pIDs[wk]);
+	if(wk < 3) 
+	  buf.append(".");
+      }
+      
+      pStringRep = buf.toString();
+    }
+
+    pHashCode = pStringRep.hashCode();
+  }
+
+
+
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
@@ -399,8 +414,18 @@ class VersionID
   /**
    * The revision number components.
    */
-  protected int[] pIDs = { 1, 0, 0, 0 };
+  private int[] pIDs = { 1, 0, 0, 0 };
   
+
+  /** 
+   * The cached string representation.
+   */
+  private String  pStringRep;
+ 
+  /** 
+   * The cached hash code.
+   */
+  private int  pHashCode;
 }
 
 

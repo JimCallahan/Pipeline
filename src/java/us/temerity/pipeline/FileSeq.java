@@ -1,4 +1,4 @@
-// $Id: FileSeq.java,v 1.5 2004/02/28 19:58:16 jim Exp $
+// $Id: FileSeq.java,v 1.6 2004/03/08 04:36:06 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -56,6 +56,8 @@ class FileSeq
       pFilePattern = new FilePattern(prefix);
 
     pFrameRange = null;
+
+    buildCache();
   }
 
   /**
@@ -94,6 +96,8 @@ class FileSeq
     else if(pFilePattern.hasFrameNumbers()) 
       throw new IllegalArgumentException
 	("The FilePattern HAS a frame number component, but FrameRange was (null)!");
+
+    buildCache();
   }
 
 
@@ -119,6 +123,8 @@ class FileSeq
       pFrameRange = new FrameRange(fseq.getFrameRange().indexToFrame(idx));
     else 
       pFrameRange = null;
+
+    buildCache();
   }
 
   
@@ -133,6 +139,9 @@ class FileSeq
   {
     pFilePattern = fseq.getFilePattern();
     pFrameRange  = fseq.getFrameRange();
+
+    pStringRep = fseq.toString();
+    pHashCode  = fseq.hashCode();
   }
 
 
@@ -336,14 +345,8 @@ class FileSeq
   {
     if((obj != null) && (obj instanceof FileSeq)) {
       FileSeq fseq = (FileSeq) obj;
-
-      if(!pFilePattern.equals(fseq.pFilePattern))
-	return false;
-
-      if(((pFrameRange == null) && (fseq.pFrameRange == null)) || 
-	 ((pFrameRange != null) && (fseq.pFrameRange != null) &&
-	  pFrameRange.equals(fseq.pFrameRange)))
-	return true;
+      return ((pHashCode == fseq.pHashCode) && 
+	      pStringRep.equals(fseq.pStringRep));
     }
     return false;
   }
@@ -354,7 +357,8 @@ class FileSeq
   public int 
   hashCode() 
   {
-    return toString().hashCode();
+    assert(pStringRep != null);
+    return pHashCode;
   }
 
   /**
@@ -363,16 +367,10 @@ class FileSeq
   public String
   toString() 
   {
-    if(pFrameRange != null) {
-      if(pFrameRange.isSingle())
-	return pFilePattern.getFile(pFrameRange.getStart()).getPath();
-      else 
-	return (pFilePattern.toString() + ", " + pFrameRange.toString());
-    }
-    else {
-      return pFilePattern.toString();
-    }
+    assert(pStringRep != null);
+    return pStringRep;
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -405,7 +403,7 @@ class FileSeq
    * Compares this <CODE>FileSeq</CODE> with the given <CODE>FileSeq</CODE> for order.
    * 
    * @param fseq [<B>in</B>]
-   *   The <CODE>VersionID</CODE> to be compared.
+   *   The <CODE>FileSeq</CODE> to be compared.
    */
   public int
   compareTo
@@ -413,7 +411,7 @@ class FileSeq
    FileSeq fseq
   )
   {
-    return toString().compareTo(fseq.toString());
+    return pStringRep.compareTo(fseq.pStringRep);
   }
 
 
@@ -463,6 +461,33 @@ class FileSeq
     pFilePattern = pat;
 
     pFrameRange = (FrameRange) decoder.decode("FrameRange");
+
+    buildCache();
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Compute the cached string representation and hash code for the file sequence.
+   */
+  private void
+  buildCache() 
+  {
+    if(pFrameRange != null) {
+      if(pFrameRange.isSingle())
+	pStringRep = pFilePattern.getFile(pFrameRange.getStart()).getPath();
+      else 
+	pStringRep = (pFilePattern.toString() + ", " + pFrameRange.toString());
+    }
+    else {
+      pStringRep = pFilePattern.toString();
+    }
+
+    pHashCode = pStringRep.hashCode();    
   }
 
 
@@ -490,6 +515,16 @@ class FileSeq
    */ 
   private FrameRange pFrameRange;  
 
-}
+
+  /** 
+   * The cached string representation.
+   */
+  private String  pStringRep;
+ 
+  /** 
+   * The cached hash code.
+   */
+  private int  pHashCode;
+} 
 
 
