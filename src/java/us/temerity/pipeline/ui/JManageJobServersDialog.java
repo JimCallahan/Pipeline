@@ -1,4 +1,4 @@
-// $Id: JManageJobServersDialog.java,v 1.1 2004/07/28 19:22:50 jim Exp $
+// $Id: JManageJobServersDialog.java,v 1.2 2004/08/01 15:34:41 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -13,7 +13,7 @@ import java.util.*;
 import java.text.*;
 import javax.swing.*;
 import javax.swing.event.*;
-import javax.swing.tree.*;
+import javax.swing.table.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M A N A G E   J O B   S E R V E R S   D I A L O G                                      */
@@ -40,7 +40,7 @@ class JManageJobServersDialog
   {
     super("Manage Job Servers", false);
 
-    /* icreate dialog body components */ 
+    /* create dialog body components */ 
     {
       JPanel body = new JPanel();
       body.setName("MainDialogPanel");
@@ -56,10 +56,69 @@ class JManageJobServersDialog
 			  model.getRenderers(), model.getEditors());
 	pTablePanel = tpanel;
 
+	int width[] = model.getColumnWidths(); 
+	int total = 0;
+	{
+	  int wk;
+	  for(wk=0; wk<width.length; wk++) 
+	    total += width[wk];
+	}
+	
+	{
+	  Box box = new Box(BoxLayout.X_AXIS);
+	  
+	  {
+	    Box hbox = new Box(BoxLayout.X_AXIS);
+
+	    int wk;
+	    for(wk=0; wk<width.length; wk++) {
+	      String prefix = "";
+	      if((wk > 2) && (wk < 6)) 
+		prefix = "Blue";
+	      else if((wk > 5) && (wk < 8)) 
+		prefix = "Green"; 
+	      
+	      JButton btn = new JButton(pTableModel.getColumnName(wk));
+	      btn.setName(prefix + "TableHeaderButton");
+	      
+	      {	    
+		Dimension size = new Dimension(width[wk], 23);
+		btn.setMinimumSize(size);
+		btn.setPreferredSize(size);
+		btn.setMaximumSize(size);
+	      }
+	      
+	      btn.addActionListener(tpanel);
+	      btn.setActionCommand("sort-column:" + wk);	  
+	      
+	      hbox.add(btn);
+	    }
+	    
+	    Dimension size = new Dimension(total, 23); 
+	    hbox.setMinimumSize(size);
+	    hbox.setPreferredSize(size);
+	    hbox.setMaximumSize(size);
+
+	    box.add(hbox);
+	  }
+
+	  {
+	    Box hbox = new Box(BoxLayout.X_AXIS);
+	    pSelectionKeyHeaderBox = hbox; 
+	  
+	    box.add(hbox);
+	  }	  
+	  
+	  tpanel.getHeaderViewport().setView(box);
+	}
+
 	body.add(tpanel);
       }
 
+
       String extra[][] = {
+	null,
+	{ "History", "history" }, 
 	null,
 	{ "Add",    "add" }, 
 	{ "Remove", "remove" },
@@ -68,12 +127,35 @@ class JManageJobServersDialog
 
       JButton btns[] = super.initUI("Manage Job Servers:", false, body, 
 				    "Confirm", "Apply", extra, "Close");
-      pAddButton    = btns[1];
-      pRemoveButton = btns[2];
+      pAddButton    = btns[3];
+      pRemoveButton = btns[4];
 
       doUpdate();
       pack();
     }
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get names of the selected hosts.
+   */ 
+  public TreeSet<String> 
+  getSelectedHostnames() 
+  {
+    TreeSet<String> hostnames = new TreeSet<String>();
+    int rows[] = pTablePanel.getTable().getSelectedRows();
+    int wk;
+    for(wk=0; wk<rows.length; wk++) {
+      String hname = (String) pTableModel.getValueAt(rows[wk], 0);
+      hostnames.add(hname);
+    }
+
+    return hostnames;
   }
 
 
@@ -111,7 +193,9 @@ class JManageJobServersDialog
     super.actionPerformed(e);
 
     String cmd = e.getActionCommand();
-    if(cmd.equals("add")) 
+    if(cmd.equals("history")) 
+      doHistory();
+    else if(cmd.equals("add")) 
       doAdd();
     else if(cmd.equals("remove")) 
       doRemove();
@@ -148,6 +232,21 @@ class JManageJobServersDialog
   }
 
   /**
+   * Show the resource usage history dialogs for the selected hosts.
+   */ 
+  private void 
+  doHistory()
+  {
+    pTablePanel.cancelEditing();
+
+    TreeSet<String> hostnames = getSelectedHostnames();
+    for(String hname : hostnames) {
+      GetHistoryTask task = new GetHistoryTask(hname);
+      task.start();      
+    }
+  }
+
+  /**
    * Add a new server. 
    */ 
   private void 
@@ -175,14 +274,7 @@ class JManageJobServersDialog
   {
     pTablePanel.cancelEditing();
 
-    TreeSet<String> hostnames = new TreeSet<String>();
-    int rows[] = pTablePanel.getTable().getSelectedRows();
-    int wk;
-    for(wk=0; wk<rows.length; wk++) {
-      String hname = (String) pTableModel.getValueAt(rows[wk], 0);
-      hostnames.add(hname);
-    }
-    
+    TreeSet<String> hostnames = getSelectedHostnames();    
     if(!hostnames.isEmpty()) {
       RemoveHostsTask task = new RemoveHostsTask(hostnames);
       task.start();
@@ -400,9 +492,70 @@ class JManageJobServersDialog
     run() 
     {
       pTableModel.setQueueHosts(pHosts, pKeys, pIsPrivileged);
+      pTableModel.fireTableStructureChanged(); 
 
-      // update the Locked icon of the JManagerPanel base on pIsPrivileged... 
+      {
+	TableColumnModel cmodel = pTablePanel.getTable().getColumnModel();
+	
+	int wk;
+	for(wk=0; wk<8; wk++) {
+	  TableColumn tcol = cmodel.getColumn(wk);
 
+	  tcol.setCellRenderer(pTableModel.getRenderers()[wk]);
+
+	  TableCellEditor editor = pTableModel.getEditors()[wk];
+	  if(editor != null) 
+	    tcol.setCellEditor(editor);
+
+	  int width = pTableModel.getColumnWidths()[wk];
+	  tcol.setMinWidth(width);
+	  tcol.setPreferredWidth(width);
+	  tcol.setMaxWidth(width);
+	}
+
+	wk = 8;
+	for(String kname : pKeys) {
+	  TableColumn tcol = cmodel.getColumn(wk);
+
+	  tcol.setCellRenderer(new JSelectionBiasTableCellRenderer());
+	  tcol.setCellEditor(new JSelectionBiasTableCellEditor());
+
+	  tcol.setMinWidth(100);
+	  tcol.setPreferredWidth(100);
+	  tcol.setMaxWidth(100);
+
+	  wk++;
+	}
+      }
+
+      {
+	pSelectionKeyHeaderBox.removeAll();
+	
+	int wk = 8;
+	for(String kname : pKeys) {
+	  JButton btn = new JButton(kname);
+	  btn.setName("PurpleTableHeaderButton");
+	  
+	  {	    
+	    Dimension size = new Dimension(100, 23);
+	    btn.setMinimumSize(size);
+	    btn.setPreferredSize(size);
+	    btn.setMaximumSize(size);
+	  }
+	  
+	  btn.addActionListener(pTablePanel);
+	  btn.setActionCommand("sort-column:" + wk);	  
+	  
+	  pSelectionKeyHeaderBox.add(btn);
+
+	  wk++;
+	}
+
+	Box parent = (Box) pSelectionKeyHeaderBox.getParent();
+	parent.revalidate();
+	parent.repaint();
+      }
+      
       pConfirmButton.setEnabled(false);
       pApplyButton.setEnabled(false);
 
@@ -415,11 +568,121 @@ class JManageJobServersDialog
   }
   
 
+  /** 
+   * Get the full resource usage history.
+   */ 
+  private
+  class GetHistoryTask
+    extends Thread
+  {
+    public 
+    GetHistoryTask
+    (
+     String hostname
+    ) 
+    {
+      pHostname = hostname; 
+    }
+    
+    public void
+    run()
+    {
+      UIMaster master = UIMaster.getInstance();
+      QueueMgrClient client = master.getQueueMgrClient();
+
+      ArrayList<ResourceSample> samples = null;
+      try {
+	samples = client.getHostResourceSamples(pHostname);
+      }
+      catch(PipelineException ex) {
+	samples = new ArrayList<ResourceSample>();
+      }
+      
+      TreeMap<String,QueueHost> hosts = null;
+      TreeSet<String> keys = null;
+      boolean isPrivileged = false;
+      try {
+	hosts = client.getHosts(); 
+	keys = client.getSelectionKeyNames();
+	
+	isPrivileged = master.getMasterMgrClient().isPrivileged(false);
+      }
+      catch(PipelineException ex) {
+	master.showErrorDialog(ex);
+      }
+      
+      try {
+	QueueHost host = hosts.get(pHostname);
+	if(host == null)
+	  throw new PipelineException
+	    ("The host (" + pHostname + ") is not a valid job server!"); 
+
+	ArrayList<ResourceSample> allSamples = new ArrayList<ResourceSample>(); 
+	if(samples.isEmpty()) {
+	  allSamples.addAll(host.getSamples());
+	}
+	else {
+	  ResourceSample latest = samples.get(0);
+	  for(ResourceSample sample : host.getSamples()) {
+	    if(sample.getTimeStamp().compareTo(latest.getTimeStamp()) > 0) 
+	      allSamples.add(sample);
+	  }
+	  allSamples.addAll(samples);
+	}
+
+	if(allSamples.isEmpty()) 
+	  throw new PipelineException
+	    ("No resource usage information exists for (" + pHostname + ")!");
+
+	ShowHistoryTask task = new ShowHistoryTask(host, allSamples);
+	SwingUtilities.invokeLater(task);
+      }
+      catch(PipelineException ex) {
+	master.showErrorDialog(ex);
+      }
+
+      UpdateTask task = new UpdateTask(hosts, keys, isPrivileged);
+      SwingUtilities.invokeLater(task);
+    }
+
+    private String  pHostname;
+  }
+
+  /** 
+   * Display the full resource usage history dialog.
+   */ 
+  private
+  class ShowHistoryTask
+    extends Thread
+  {
+    public 
+    ShowHistoryTask
+    (
+     QueueHost host,
+     ArrayList<ResourceSample> samples
+    ) 
+    {
+      pHost    = host; 
+      pSamples = samples; 
+    }
+    
+    public void
+    run()
+    {
+      JJobServerHistoryDialog diag = 
+	new JJobServerHistoryDialog(pHost, pSamples);
+      diag.setVisible(true);  
+    }
+
+    private QueueHost                 pHost;
+    private ArrayList<ResourceSample> pSamples;
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
-  
+
   private static final long serialVersionUID = 8533790804117777204L;
 
 
@@ -442,6 +705,11 @@ class JManageJobServersDialog
    * The job servers table panel.
    */ 
   private JTablePanel  pTablePanel;
+
+  /**
+   * The container of the header buttons for the selection key columns.
+   */ 
+  private Box  pSelectionKeyHeaderBox; 
 
   /**
    * The panel buttons.
