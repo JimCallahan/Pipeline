@@ -178,11 +178,12 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
     LOGGER_PROPS = $(srcdir)/../../../../share/logger.properties
          GC_OPTS = #-Xmx256m -Xloggc:garbage-collection.log
+      DEBUG_OPTS = -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=43000
 
 
 #--------------------------------------------------------------------------------------------#
 
-           TESTS = NodeMgr
+           TESTS = NodeMgr2
 
 #             TESTS = CheckSum \
 #                     DNotify \
@@ -248,10 +249,11 @@ check-each: $(CLASSES) clean-data
             echo; \
             echo env LD_LIBRARY_PATH=./native:$$LD_LIBRARY_PATH \
                  $(JAVA) -Djava.util.logging.config.file=$(LOGGER_PROPS) $(GC_OPTS) \
-                         -cp $(TEST_CLASS_PATH) $(JAVA_RUNTIME_FLAGS) $$c; \
+                         $(DEBUG_OPTS) -cp $(TEST_CLASS_PATH) $(JAVA_RUNTIME_FLAGS) $$c; \
             if env LD_LIBRARY_PATH=./native:$$LD_LIBRARY_PATH \
                    $(JAVA) -Djava.util.logging.config.file=$(LOGGER_PROPS) $(GC_OPTS) \
-                           -cp $(TEST_CLASS_PATH) $(JAVA_RUNTIME_FLAGS) $$c; then \
+                           $(DEBUG_OPTS) -cp $(TEST_CLASS_PATH) $(JAVA_RUNTIME_FLAGS) $$c; \
+            then \
               all=`expr $$all + 1`; \
               echo; \
               echo $$banner2; \
