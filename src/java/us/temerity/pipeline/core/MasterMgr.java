@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.72 2004/12/07 04:55:16 jim Exp $
+// $Id: MasterMgr.java,v 1.73 2005/01/03 00:04:43 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2773,7 +2773,7 @@ class MasterMgr
 
       NodeID nodeID = req.getNodeID();
       NodeStatus root = 
-	performNodeOperation(new NodeOp(), nodeID, req.skipAssociations(), timer);
+	performNodeOperation(new NodeOp(), nodeID, timer);
       return new NodeStatusRsp(timer, nodeID, root);
     }
     catch(PipelineException ex) {
@@ -2990,7 +2990,7 @@ class MasterMgr
 	  table.remove(id);
 	}
 	
-	/* remove the working version file(s) */ 
+	/* remove the working version node file(s) */ 
 	{
 	  File file   = new File(pNodeDir, id.getWorkingPath().getPath());
 	  File backup = new File(file + ".backup");
@@ -3010,6 +3010,9 @@ class MasterMgr
 	      throw new PipelineException      
 		("Unable to remove the backup working version file (" + backup + ")!");
 	  }
+
+	  File root = new File(pNodeDir, "working/" + id.getAuthor() + "/" + id.getView());
+	  deleteEmptyParentDirs(root, new File(pNodeDir, id.getWorkingParent().toString()));
 	}
 	
 	/* update the downstream links of this node */ 
@@ -3126,7 +3129,6 @@ class MasterMgr
 	     "(" + vid + ") is linked to other nodes!");
       } 
 
-
       /* release all working versions of the node */ 
       {
 	ArrayList<NodeID> dead = new ArrayList<NodeID>();
@@ -3157,10 +3159,18 @@ class MasterMgr
 	assert(pWorkingBundles.get(name).isEmpty());
 	pWorkingBundles.remove(name);
       }
-
 	
       /* delete the checked-in versions */ 
       if(!checkedIn.isEmpty()) {
+
+	/* remove the downstream links to this node from the checked-in source nodes */ 
+	for(VersionID vid : checkedIn.keySet()) {
+	  NodeVersion vsn = checkedIn.get(vid).uVersion;
+	  for(LinkVersion link : vsn.getSources()) {
+	    DownstreamLinks ldsl = getDownstreamLinks(link.getName());
+	    ldsl.deleteCheckedIn(link.getVersionID(), name);
+	  }
+	}
 
 	/* delete files associated with all checked-in versions of the node */ 
 	pFileMgrClient.deleteCheckedIn(name);
@@ -3173,19 +3183,21 @@ class MasterMgr
 	      ("Unable to remove the checked-in version file (" + file + ")!");
 	}
 
-	/* remove the checked-in version directory */
+	/* remove the checked-in version node directory */
 	{
 	  File dir = new File(pNodeDir, "repository" + name);
+	  File parent =  dir.getParentFile();
 	  if(!dir.delete())
 	    throw new PipelineException
 	      ("Unable to remove the checked-in version directory (" + dir + ")!");
+	  
+	  deleteEmptyParentDirs(new File(pNodeDir, "repository"), parent);
 	}	    
 	
 	/* remove the checked-in version entries */ 
 	pCheckedInLocks.remove(name);
 	pCheckedInBundles.remove(name);
       }
-	
 
       /* remove the downstream links file and entry */ 
       {
@@ -3199,7 +3211,6 @@ class MasterMgr
 	pDownstream.remove(name);
       }
 
-
       /* remove the leaf node tree entry */ 
       removeNodeTreePath(name);
 
@@ -3212,7 +3223,6 @@ class MasterMgr
       pDatabaseLock.writeLock().unlock();
     }
   }
-
 
     
   /*----------------------------------------------------------------------------------------*/
@@ -3694,7 +3704,7 @@ class MasterMgr
       }
 
       /* check-in the tree of nodes */ 
-      performNodeOperation(new NodeCheckInOp(req, rootVersionID), nodeID, false, timer);
+      performNodeOperation(new NodeCheckInOp(req, rootVersionID), nodeID, timer);
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
@@ -3738,7 +3748,7 @@ class MasterMgr
 
       /* get the current status of the nodes */ 
       HashMap<String,NodeStatus> table = new HashMap<String,NodeStatus>();
-      performUpstreamNodeOp(new NodeOp(), req.getNodeID(), false,
+      performUpstreamNodeOp(new NodeOp(), req.getNodeID(), 
 			    new LinkedList<String>(), table, timer);
 
       /* check-out the nodes */ 
@@ -3833,7 +3843,7 @@ class MasterMgr
     {
       NodeStatus status = stable.get(name);
       if(status == null) {
-	performUpstreamNodeOp(new NodeOp(), nodeID, false,
+	performUpstreamNodeOp(new NodeOp(), nodeID, 
 			      new LinkedList<String>(), stable, timer);
 	status = stable.get(name);
       }
@@ -3957,13 +3967,8 @@ class MasterMgr
       /* process the upstream nodes */
       for(LinkVersion link : vsn.getSources()) {
 	NodeID lnodeID = new NodeID(nodeID, link.getName());
-
-	switch(link.getPolicy()) {
-	case Dependency:
-	case Reference:
-	  performCheckOut(false, lnodeID, link.getVersionID(), mode, method, stable, 
-			  branch, seen, dirty, timer);
-	}
+	performCheckOut(false, lnodeID, link.getVersionID(), mode, method, stable, 
+			branch, seen, dirty, timer);
 
 	if(dirty.contains(link.getName())) 
 	  dirty.add(name);
@@ -4263,7 +4268,7 @@ class MasterMgr
       timer.resume();	
 
       /* get the current status of the nodes */ 
-      NodeStatus status = performNodeOperation(new NodeOp(), req.getNodeID(), false, timer);
+      NodeStatus status = performNodeOperation(new NodeOp(), req.getNodeID(), timer);
 
       /* submit the jobs */ 
       return submitJobsCommon(status, req.getFileIndices(),
@@ -4310,7 +4315,7 @@ class MasterMgr
       timer.resume();	
 
       /* get the current status of the nodes */ 
-      NodeStatus status = performNodeOperation(new NodeOp(), req.getNodeID(), false, timer);
+      NodeStatus status = performNodeOperation(new NodeOp(), req.getNodeID(), timer);
 
       /* compute the file indices of the given target file sequences */ 
       TreeSet<Integer> indices = new TreeSet<Integer>();      
@@ -4731,112 +4736,80 @@ class MasterMgr
 	    NodeMod lwork = ldetails.getWorkingVersion();
 	    int lnumFrames = lwork.getPrimarySequence().numFrames();
 
-	    switch(link.getPolicy()) {
-	    case Association:
+	    switch(link.getRelationship()) {
+	    case All:
+	      {
+		TreeSet<Integer> frames = new TreeSet<Integer>();
+		int idx; 
+		for(idx=0; idx<lnumFrames; idx++)
+		  frames.add(idx);
+		
+		sourceIndices.put(link.getName(), frames);
+	      }
 	      break;
 	      
-	    case Reference:
-	    case Dependency:
-	      switch(link.getRelationship()) {
-	      case None:
-		break;
-		
-	      case All:
-		{
-		  TreeSet<Integer> frames = new TreeSet<Integer>();
-		  int idx; 
-		  for(idx=0; idx<lnumFrames; idx++)
-		    frames.add(idx);
+	    case OneToOne:
+	      {
+		TreeSet<Integer> frames = new TreeSet<Integer>();
+		for(Integer idx : batch) {
+		  int lidx = idx + link.getFrameOffset();
 		  
-		  sourceIndices.put(link.getName(), frames);
-		}
-		break;
-		
-	      case OneToOne:
-		{
-		  TreeSet<Integer> frames = new TreeSet<Integer>();
-		  for(Integer idx : batch) {
-		    int lidx = idx + link.getFrameOffset();
-		    
-		    if((lidx < 0) || (lidx >= lnumFrames)) {
-		      switch(work.getOverflowPolicy()) {
-		      case Ignore:
-			break;
-
-		      case Abort:
-			throw new PipelineException
-			  ("The frame offset (" + link.getFrameOffset() + ") for the link " +
-			   "between target node (" + status + ") and source node " +
-			   "(" + lstatus + ") overflows the frame range of the source node!");
-		      }
-		    }
-		    else {
-		      frames.add(lidx);
+		  if((lidx < 0) || (lidx >= lnumFrames)) {
+		    switch(work.getOverflowPolicy()) {
+		    case Ignore:
+		      break;
+		      
+		    case Abort:
+		      throw new PipelineException
+			("The frame offset (" + link.getFrameOffset() + ") for the link " +
+			 "between target node (" + status + ") and source node " +
+			 "(" + lstatus + ") overflows the frame range of the source node!");
 		    }
 		  }
-
-		  sourceIndices.put(link.getName(), frames);
+		  else {
+		    frames.add(lidx);
+		  }
 		}
+		
+		sourceIndices.put(link.getName(), frames);
 	      }
 	    }
 	  }
 	}
       
 	/* generate jobs for the source frames first */ 
-	{
-	  for(LinkMod link : work.getSources()) {
-	    switch(link.getPolicy()) {
-	    case Association:
-	      break;
-	    
-	    case Reference:
-	    case Dependency:
-	      {
-		TreeSet<Integer> lindices = sourceIndices.get(link.getName());
-		if((lindices != null) && (!lindices.isEmpty())) {
-		  NodeStatus lstatus = status.getSource(link.getName());
-		  submitJobs(lstatus, lindices, 
-			     false, null, null, null, null, 
-			     extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, 
-			     jobs, timer);
-		}
-	      }
-	    }
+	for(LinkMod link : work.getSources()) {
+	  TreeSet<Integer> lindices = sourceIndices.get(link.getName());
+	  if((lindices != null) && (!lindices.isEmpty())) {
+	    NodeStatus lstatus = status.getSource(link.getName());
+	    submitJobs(lstatus, lindices, 
+		       false, null, null, null, null, 
+		       extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, 
+		       jobs, timer);
 	  }
 	}
 
 	/* determine the source job IDs */ 
 	TreeSet<Long> sourceIDs = new TreeSet<Long>();
-	{
-	  for(LinkMod link : work.getSources()) {
-	    switch(link.getPolicy()) {
-	    case Association:
-	      break;
-	    
-	    case Reference:
-	    case Dependency:
-	      {
-		NodeStatus lstatus = status.getSource(link.getName());
-		NodeID lnodeID = lstatus.getNodeID();
+	for(LinkMod link : work.getSources()) {
+	  NodeStatus lstatus = status.getSource(link.getName());
+	  NodeID lnodeID = lstatus.getNodeID();
+	  
+	  TreeSet<Long> upsIDs = upsJobIDs.get(lnodeID);
+	  if(upsIDs != null) {
+	    sourceIDs.addAll(upsIDs);
+	  }
+	  else {
+	    TreeSet<Integer> lindices = sourceIndices.get(link.getName());
+	    if((lindices != null) && !lindices.isEmpty()) {		  
+	      Long[] nIDs = nodeJobIDs.get(lnodeID);
+	      Long[] eIDs = extJobIDs.get(lnodeID);
 	      
-		TreeSet<Long> upsIDs = upsJobIDs.get(lnodeID);
-		if(upsIDs != null) {
-		  sourceIDs.addAll(upsIDs);
-		}
-		else {
-		  TreeSet<Integer> lindices = sourceIndices.get(link.getName());
-		  if((lindices != null) && !lindices.isEmpty()) {		  
-		    Long[] nIDs = nodeJobIDs.get(lnodeID);
-		    Long[] eIDs = extJobIDs.get(lnodeID);
-		  
-		    for(Integer idx : lindices) {
-		      if((nIDs != null) && (nIDs[idx] != null)) 
-			sourceIDs.add(nIDs[idx]);
-		      else if((eIDs != null) && (eIDs[idx] != null)) 
-			sourceIDs.add(eIDs[idx]);
-		    }
-		  }
-		}
+	      for(Integer idx : lindices) {
+		if((nIDs != null) && (nIDs[idx] != null)) 
+		  sourceIDs.add(nIDs[idx]);
+		else if((eIDs != null) && (eIDs[idx] != null)) 
+		  sourceIDs.add(eIDs[idx]);
 	      }
 	    }
 	  }
@@ -5000,49 +4973,40 @@ class MasterMgr
       NodeStatus lstatus = status.getSource(link.getName());
       NodeID lnodeID = lstatus.getNodeID();
 
-      switch(link.getPolicy()) {
-      case Association:
-	break;
-
-      case Reference:
-      case Dependency:
-	{
-	  submitJobs(lstatus, null, 
-		     false, null, null, null, null, 
-		     extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, 
-		     jobs, timer);
-	  
-	  /* external job IDs */ 
-	  {
-	    Long ids[] = extJobIDs.get(lnodeID);
-	    if(ids != null) {
-	      int wk;
-	      for(wk=0; wk<ids.length; wk++) {
-		if(ids[wk] != null) 
-		  jobIDs.add(ids[wk]);
-	      }
-	    }
-	  }
-	  
-	  /* generated job IDs (for nodes with actions) */ 
-	  {
-	    Long ids[] = nodeJobIDs.get(lnodeID);
-	    if(ids != null) {
-	      int wk;
-	      for(wk=0; wk<ids.length; wk++) {
-		if(ids[wk] != null) 
-		  jobIDs.add(ids[wk]);
-	      }
-	    }
-	  }
-
-	  /* collected upstream job IDs (for nodes without actions) */ 
-	  {
-	    TreeSet<Long> ids = upsJobIDs.get(lnodeID);
-	    if(ids != null) 
-	      jobIDs.addAll(ids);
+      submitJobs(lstatus, null, 
+		 false, null, null, null, null, 
+		 extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, 
+		 jobs, timer);
+      
+      /* external job IDs */ 
+      {
+	Long ids[] = extJobIDs.get(lnodeID);
+	if(ids != null) {
+	  int wk;
+	  for(wk=0; wk<ids.length; wk++) {
+	    if(ids[wk] != null) 
+	      jobIDs.add(ids[wk]);
 	  }
 	}
+      }
+      
+      /* generated job IDs (for nodes with actions) */ 
+      {
+	Long ids[] = nodeJobIDs.get(lnodeID);
+	if(ids != null) {
+	  int wk;
+	  for(wk=0; wk<ids.length; wk++) {
+	    if(ids[wk] != null) 
+	      jobIDs.add(ids[wk]);
+	  }
+	}
+      }
+      
+      /* collected upstream job IDs (for nodes without actions) */ 
+      {
+	TreeSet<Long> ids = upsJobIDs.get(lnodeID);
+	if(ids != null) 
+	    jobIDs.addAll(ids);
       }
     }
 
@@ -5822,7 +5786,7 @@ class MasterMgr
    * @param name
    *   The fully resolved node name.
    */ 
-  private void 
+  private void
   removeNodeTreePath
   (
    String name
@@ -5853,7 +5817,7 @@ class MasterMgr
 	parent.remove(entry.getName());
 	if(!parent.isEmpty()) 
 	  break;
-	
+
 	entry = parent;
       }
     }
@@ -6131,10 +6095,6 @@ class MasterMgr
    * @param nodeID
    *   The unique working version identifier.
    * 
-   * @param skipAssoc
-   *   Whether to skip computing the status of all nodes on the upstream side of an 
-   *   Association link.
-   * 
    * @param timer
    *   The shared task timer for this operation.
    * 
@@ -6149,7 +6109,6 @@ class MasterMgr
   (
    NodeOp nodeOp, 
    NodeID nodeID,
-   boolean skipAssoc, 
    TaskTimer timer
   ) 
     throws PipelineException
@@ -6157,8 +6116,7 @@ class MasterMgr
     NodeStatus root = null;
     {
       HashMap<String,NodeStatus> table = new HashMap<String,NodeStatus>();
-      performUpstreamNodeOp(nodeOp, nodeID, skipAssoc, 
-			    new LinkedList<String>(), table, timer);
+      performUpstreamNodeOp(nodeOp, nodeID, new LinkedList<String>(), table, timer);
 
       root = table.get(nodeID.getName());
       assert(root != null);
@@ -6194,10 +6152,6 @@ class MasterMgr
    * @param nodeID
    *   The unique working version identifier.
    * 
-   * @param skipAssoc
-   *   Whether to skip computing the status of all nodes on the upstream side of an 
-   *   Association link.
-   * 
    * @param branch
    *   The names of the nodes from the root to this node.
    * 
@@ -6215,7 +6169,6 @@ class MasterMgr
   (
    NodeOp nodeOp,
    NodeID nodeID, 
-   boolean skipAssoc, 
    LinkedList<String> branch, 
    HashMap<String,NodeStatus> table, 
    TaskTimer timer
@@ -6396,15 +6349,8 @@ class MasterMgr
 	for(LinkVersion link : latest.getSources()) {
 	  NodeID lnodeID = new NodeID(nodeID, link.getName());
 
-	  NodeStatus lstatus = null;
-	  if(skipAssoc && (link.getPolicy() == LinkPolicy.Association)) {
-	    lstatus = new NodeStatus(lnodeID);
-	  }
-	  else {  
-	    performUpstreamNodeOp(nodeOp, lnodeID, skipAssoc, branch, table, timer);
-	    lstatus = table.get(link.getName());
-	  }
-	  assert(lstatus != null);
+	  performUpstreamNodeOp(nodeOp, lnodeID, branch, table, timer);
+	  NodeStatus lstatus = table.get(link.getName());
 	      
 	  status.addSource(lstatus);
 	  lstatus.addTarget(status);
@@ -6415,16 +6361,9 @@ class MasterMgr
 	for(LinkMod link : work.getSources()) {
 	  NodeID lnodeID = new NodeID(nodeID, link.getName());
 
-	  NodeStatus lstatus = null;
-	  if(skipAssoc && (link.getPolicy() == LinkPolicy.Association)) {
-	    lstatus = new NodeStatus(lnodeID);
-	  }
-	  else {  
-	    performUpstreamNodeOp(nodeOp, lnodeID, skipAssoc, branch, table, timer);
-	    lstatus = table.get(link.getName());
-	  }
-	  assert(lstatus != null);
-	  
+	  performUpstreamNodeOp(nodeOp, lnodeID, branch, table, timer);
+	  NodeStatus lstatus = table.get(link.getName());
+
 	  status.addSource(lstatus);
 	  lstatus.addTarget(status);
 	}
@@ -6615,28 +6554,22 @@ class MasterMgr
 	    /* the work and base version have the same set of links 
 		 because (linkState == Identical) */
 	    for(LinkVersion link : base.getSources()) {
-	      switch(link.getPolicy()) {
-	      case Reference:
-	      case Dependency:
-		{
-		  NodeDetails ldetails = table.get(link.getName()).getDetails();
-		  VersionID lvid = ldetails.getWorkingVersion().getWorkingID();
-
-		  switch(ldetails.getOverallNodeState()) {
-		  case Modified:
-		  case ModifiedLinks:
-		  case Conflicted:	
-		  case Missing:
-		    overallNodeState = OverallNodeState.ModifiedLinks;
-		    break;
+	      NodeDetails ldetails = table.get(link.getName()).getDetails();
+	      VersionID lvid = ldetails.getWorkingVersion().getWorkingID();
+	      
+	      switch(ldetails.getOverallNodeState()) {
+	      case Modified:
+	      case ModifiedLinks:
+	      case Conflicted:	
+	      case Missing:
+		overallNodeState = OverallNodeState.ModifiedLinks;
+		break;
 		
-		  case Identical:
-		  case NeedsCheckOut:
-		    if(!link.getVersionID().equals(lvid)) {
-		      overallNodeState = OverallNodeState.ModifiedLinks;
-		      nonIgnoredSources.add(link.getName());
-		    }
-		  }
+	      case Identical:
+	      case NeedsCheckOut:
+		if(!link.getVersionID().equals(lvid)) {
+		  overallNodeState = OverallNodeState.ModifiedLinks;
+		  nonIgnoredSources.add(link.getName());
 		}
 	      }
 	    }
@@ -6880,81 +6813,75 @@ class MasterMgr
 	  int wk;
 	  for(wk=0; wk<queueStates.length; wk++) {
 	    for(LinkMod link : work.getSources()) {
-	      switch(link.getPolicy()) {
-	      case Reference:
-	      case Dependency:
-		{	      
-		  boolean staleLink = false;
+	      boolean staleLink = false;
 
-		  switch(overallQueueState) {
-		  case Running:
-		    break;
+	      switch(overallQueueState) {
+	      case Running:
+		break;
 
-		  default:
+	      default:
+		{
+		  NodeStatus lstatus = status.getSource(link.getName());
+		  NodeDetails ldetails = lstatus.getDetails();
+		  switch(ldetails.getOverallQueueState()) {
+		  case Finished:
 		    {
-		      NodeStatus lstatus = status.getSource(link.getName());
-		      NodeDetails ldetails = lstatus.getDetails();
-		      switch(ldetails.getOverallQueueState()) {
-		      case Finished:
-			{
-			  QueueState lqs[]   = ldetails.getQueueState();
-			  Date lstamps[]     = ldetails.getFileTimeStamps();
-			  boolean lignored[] = ldetails.ignoreTimeStamps();
+		      QueueState lqs[]   = ldetails.getQueueState();
+		      Date lstamps[]     = ldetails.getFileTimeStamps();
+		      boolean lignored[] = ldetails.ignoreTimeStamps();
 
-			  boolean nonIgnored = nonIgnoredSources.contains(link.getName());
+		      boolean nonIgnored = nonIgnoredSources.contains(link.getName());
 
-			  boolean lanyMissing[] = null;
-			  for(FileSeq lfseq : ldetails.getFileStateSequences()) {
-			    FileState lfs[] = ldetails.getFileState(lfseq);
+		      boolean lanyMissing[] = null;
+		      for(FileSeq lfseq : ldetails.getFileStateSequences()) {
+			FileState lfs[] = ldetails.getFileState(lfseq);
 			    
-			    if(lanyMissing == null) 
-			      lanyMissing = new boolean[lfs.length];
+			if(lanyMissing == null) 
+			  lanyMissing = new boolean[lfs.length];
 			    
-			    int mk;
-			    for(mk=0; mk<lanyMissing.length; mk++) {
-			      if(lfs[mk] == FileState.Missing) 
-				lanyMissing[mk] = true;
-			    }
-			  }
+			int mk;
+			for(mk=0; mk<lanyMissing.length; mk++) {
+			  if(lfs[mk] == FileState.Missing) 
+			    lanyMissing[mk] = true;
+			}
+		      }
 			  
-			  switch(link.getRelationship()) {
-			  case OneToOne:
-			    {
-			      Integer offset = link.getFrameOffset();
-			      int idx = wk+offset;
-			      if((idx >= 0) && (idx < lqs.length)) {
-				if(anyMissing[wk] || lanyMissing[idx] || 
-				   ((!lignored[idx] || nonIgnored) && 
-				    (oldestStamps[wk].compareTo(lstamps[idx]) < 0)))
-				  staleLink = true;
-			      }
-			    }
-			    break;
-			    
-			  case All:
-			    {
-			      int fk;
-			      for(fk=0; fk<lqs.length; fk++) {
-				if(anyMissing[wk] || lanyMissing[fk] || 
-				   ((!lignored[fk] || nonIgnored) && 
-				    (oldestStamps[wk].compareTo(lstamps[fk]) < 0)))
-				  staleLink = true;
-			      }
-			    }
+		      switch(link.getRelationship()) {
+		      case OneToOne:
+			{
+			  Integer offset = link.getFrameOffset();
+			  int idx = wk+offset;
+			  if((idx >= 0) && (idx < lqs.length)) {
+			    if(anyMissing[wk] || lanyMissing[idx] || 
+			       ((!lignored[idx] || nonIgnored) && 
+				(oldestStamps[wk].compareTo(lstamps[idx]) < 0)))
+			      staleLink = true;
 			  }
 			}
 			break;
-			
-		      default:
-			staleLink = true;
+			    
+		      case All:
+			{
+			  int fk;
+			  for(fk=0; fk<lqs.length; fk++) {
+			    if(anyMissing[wk] || lanyMissing[fk] || 
+			       ((!lignored[fk] || nonIgnored) && 
+				(oldestStamps[wk].compareTo(lstamps[fk]) < 0)))
+			      staleLink = true;
+			  }
+			}
 		      }
 		    }
+		    break;
+			
+		  default:
+		    staleLink = true;
 		  }
-
-		  if(staleLink) 
-		    status.addStaleLink(link.getName());
 		}
 	      }
+
+	      if(staleLink) 
+		status.addStaleLink(link.getName());
 	    }
 	  }
 	}
@@ -7001,45 +6928,39 @@ class MasterMgr
 	    }
 
 	    for(LinkMod link : work.getSources()) { 
-	      switch(link.getPolicy()) {
-	      case Reference:
-	      case Dependency:
-		{
-		  NodeStatus lstatus = status.getSource(link.getName());
-		  NodeDetails ldetails = lstatus.getDetails();
+	      NodeStatus lstatus = status.getSource(link.getName());
+	      NodeDetails ldetails = lstatus.getDetails();
 	      
-		  QueueState lqs[]   = ldetails.getQueueState();
-		  Date lstamps[]     = ldetails.getFileTimeStamps();
-		  boolean lignored[] = ldetails.ignoreTimeStamps();
+	      QueueState lqs[]   = ldetails.getQueueState();
+	      Date lstamps[]     = ldetails.getFileTimeStamps();
+	      boolean lignored[] = ldetails.ignoreTimeStamps();
+	      
+	      boolean nonIgnored = nonIgnoredSources.contains(link.getName());
+	      
+	      switch(link.getRelationship()) {
+	      case OneToOne:
+		{
+		  Integer offset = link.getFrameOffset();
+		  int idx = wk+offset;
 		  
-		  boolean nonIgnored = nonIgnoredSources.contains(link.getName());
-
-		  switch(link.getRelationship()) {
-		  case OneToOne:
-		    {
-		      Integer offset = link.getFrameOffset();
-		      int idx = wk+offset;
-
-		      if((idx >= 0) && (idx < lqs.length)) {
-			if(!lignored[idx] || nonIgnored) {
-			  ignoreStamps[wk] = false;
-			  if(lstamps[idx].compareTo(fileStamps[wk]) > 0)
-			    fileStamps[wk] = lstamps[idx];
-			}
-		      }
+		  if((idx >= 0) && (idx < lqs.length)) {
+		    if(!lignored[idx] || nonIgnored) {
+		      ignoreStamps[wk] = false;
+		      if(lstamps[idx].compareTo(fileStamps[wk]) > 0)
+			fileStamps[wk] = lstamps[idx];
 		    }
-		    break;
-
-		  case All:
-		    {
-		      int fk;
-		      for(fk=0; fk<lqs.length; fk++) {
-			if(!lignored[fk] || nonIgnored) {
-			  ignoreStamps[wk] = false;
-			  if(lstamps[fk].compareTo(fileStamps[wk]) > 0) 
-			    fileStamps[wk] = lstamps[fk];
-			}
-		      }
+		  }
+		}
+		break;
+		
+	      case All:
+		{
+		  int fk;
+		  for(fk=0; fk<lqs.length; fk++) {
+		    if(!lignored[fk] || nonIgnored) {
+		      ignoreStamps[wk] = false;
+		      if(lstamps[fk].compareTo(fileStamps[wk]) > 0) 
+			fileStamps[wk] = lstamps[fk];
 		    }
 		  }
 		}
@@ -7097,14 +7018,8 @@ class MasterMgr
 	NodeDetails tdetails = tstatus.getDetails();
 	if(tdetails != null) {
 	  NodeMod tmod = tdetails.getWorkingVersion(); 
-	  if(tmod != null) {
-	    LinkMod link = tmod.getSource(status.getName());
-	    switch(link.getPolicy()) {
-	    case Dependency:
-	    case Reference:
-	      nonStale = true;
-	    }
-	  }
+	  if(tmod != null) 
+	    nonStale = true;
 	}
       }
 
@@ -7450,6 +7365,50 @@ class MasterMgr
   /*   I / O   H E L P E R S                                                                */
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Recursively remove all empty directories at or above the given directory.
+   * 
+   * @param root
+   *   The delete operation should stop at this directory regardles of whether it is empty.
+   * 
+   * @param parent
+   *   The start directory of the delete operation.
+   */ 
+  public void 
+  deleteEmptyParentDirs
+  (
+   File root, 
+   File dir
+  ) 
+    throws PipelineException
+  { 
+    synchronized(pMakeDirLock) {
+      File tmp = dir;
+      while(true) {
+	if((tmp == null) || tmp.equals(root) || !tmp.isDirectory())
+	  break;
+	
+	File files[] = tmp.listFiles();
+	if((files == null) || (files.length > 0)) 
+	  break;
+	
+	File parent = tmp.getParentFile();
+
+	Logs.ops.finest("Deleting Empty Directory: " + tmp);
+	Logs.flush();
+
+	if(!tmp.delete()) 
+	  throw new PipelineException
+	    ("Unable to delete the empty directory (" + tmp + ")!");
+
+	tmp = parent;
+      }
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+ 
   /**
    * Write the given archive information to disk. <P> 
    * 

@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.27 2004/11/17 13:33:50 jim Exp $
+// $Id: FileMgr.java,v 1.28 2005/01/03 00:04:43 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1669,6 +1669,9 @@ class FileMgr
 	}
       }
 
+      File rparent = (new File(rdir)).getParentFile();
+      File crparent = (new File(crdir)).getParentFile();      
+
       {
 	ArrayList<String> args = new ArrayList<String>();
 	args.add("--recursive");
@@ -1694,9 +1697,12 @@ class FileMgr
 	    ("Interrupted while removing all files associated with the checked-in " + 
 	     "versions of node (" + name + ") from the repository!");
 	}
-	
-	return new SuccessRsp(timer);
       }
+
+      deleteEmptyParentDirs(new File(pProdDir + "/repository"), rparent);
+      deleteEmptyParentDirs(new File(pProdDir + "/checksum/repository"), crparent);
+
+      return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
@@ -2213,6 +2219,10 @@ class FileMgr
 		 id + ")!");
 	    }
 	  }
+
+	  deleteEmptyParentDirs
+	    (new File(pProdDir, "checksum/working/" + id.getAuthor() + "/" + id.getView()),
+	     cwdir);
 	}
 	
 	return new SuccessRsp(timer);
@@ -2223,7 +2233,47 @@ class FileMgr
     }
   }
 
+  /**
+   * Recursively remove all empty directories at or above the given directory.
+   * 
+   * @param root
+   *   The delete operation should stop at this directory regardles of whether it is empty.
+   * 
+   * @param parent
+   *   The start directory of the delete operation.
+   */ 
+  public void 
+  deleteEmptyParentDirs
+  (
+   File root, 
+   File dir
+  ) 
+    throws PipelineException
+  { 
+    synchronized(pMakeDirLock) {
+      File tmp = dir;
+      while(true) {
+	if((tmp == null) || tmp.equals(root) || !tmp.isDirectory())
+	  break;
+	
+	File files[] = tmp.listFiles();
+	if((files == null) || (files.length > 0)) 
+	  break;
+	
+	File parent = tmp.getParentFile();
 
+	Logs.ops.finest("Deleting Empty Directory: " + tmp);
+	Logs.flush();
+
+	if(!tmp.delete()) 
+	  throw new PipelineException
+	    ("Unable to delete the empty directory (" + tmp + ")!");
+
+	tmp = parent;
+      }
+    }
+  }
+ 
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
