@@ -1,4 +1,4 @@
-// $Id: NodeDetails.java,v 1.3 2004/04/15 00:19:45 jim Exp $
+// $Id: NodeDetails.java,v 1.4 2004/04/15 17:54:28 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -18,7 +18,7 @@ import java.io.*;
  */
 public
 class NodeDetails
-  extends Named
+  implements Serializable
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -85,9 +85,32 @@ class NodeDetails
    TreeMap<FileSeq,QueueState[]> queueStates
   ) 
   {
-    super(name);
+    if(name == null) 
+      throw new IllegalArgumentException("The node name cannot be (null)!");
+    pName = name;
+
 
     pTimeStamp = new Date();
+
+
+    if((mod != null) && !mod.getName().equals(pName))
+      throw new IllegalArgumentException
+	("The working version name (" + mod.getName() + ") didn't match the " + 
+	 "details name (" + pName + ")!");
+    pWorkingVersion = mod;
+
+    if((base != null) && !base.getName().equals(pName))
+      throw new IllegalArgumentException
+	("The base checked-in version name (" + base.getName() + ") didn't match the " + 
+	 "details name (" + pName + ")!");
+    pBaseVersion = base;
+
+    if((latest != null) && !latest.getName().equals(pName))
+      throw new IllegalArgumentException
+	("The latest checked-in version name (" + latest.getName() + ") didn't match the " + 
+	 "details name (" + pName + ")!");
+    pLatestVersion = latest;
+
 
     pOverallNodeState  = overallNodeState;
     pOverallQueueState = overallQueueState;
@@ -104,29 +127,25 @@ class NodeDetails
       pQueueStates.put(fseq, queueStates.get(fseq).clone());
   }
 
-  /**
-   * Construct an undefined state.
-   * 
-   * @param name 
-   *   The fully resolved node name.
-   */
-  protected 
-  NodeDetails
-  (
-   String name
-  ) 
-  {
-    super(name);
-
-    pTimeStamp = new Date();
-  }
-
 
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Gets the fully resolved node name.
+   */ 
+  public String
+  getName() 
+  {
+    assert(pName != null);
+    return pName;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
   /**
    * Get when the node state was determined.
    */ 
@@ -292,13 +311,19 @@ class NodeDetails
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -8694000140938559535L;
+  private static final long serialVersionUID = 6369659954228775104L;
 
 
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The fully resolved node name.
+   */
+  private String  pName;      
+
 
   /**
    * When the message node state was determined.

@@ -1,4 +1,4 @@
-// $Id: NodeStatusRsp.java,v 1.3 2004/04/15 00:19:45 jim Exp $
+// $Id: NodeStatusRsp.java,v 1.4 2004/04/15 17:56:16 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -32,15 +32,15 @@ class NodeStatusRsp
    * @param id 
    *   The unique working version identifier.
    * 
-   * @param summary
-   *   The compact summary of the state of node.
+   * @param status
+   *   The status of the node.
    */
   public
   NodeStatusRsp
   (
    TaskTimer timer, 
    NodeID id, 
-   NodeSummary summary
+   NodeStatus status
   )
   { 
     super(timer);
@@ -49,9 +49,9 @@ class NodeStatusRsp
       throw new IllegalArgumentException("The working version ID cannot be (null)!");
     pNodeID = id;
 
-    if(summary == null) 
-      throw new IllegalArgumentException("The node state summary cannot be (null)!");
-    pNodeSummary = summary;    
+    if(status == null) 
+      throw new IllegalArgumentException("The node status cannot be (null)!");
+    pNodeStatus = status;    
 
     Logs.net.finest("NodeMgr.status(): " + id + ":\n  " + getTimer());
   }
@@ -72,12 +72,12 @@ class NodeStatusRsp
   }
   
   /**
-   * Gets the compact summary of the state of node.
+   * Gets the status of the node.
    */
-  public NodeSummary
-  getNodeSummary() 
+  public NodeStatus
+  getNodeStatus() 
   {
-    return pNodeSummary;
+    return pNodeStatus;
   }
 
 
@@ -100,9 +100,9 @@ class NodeStatusRsp
   private NodeID  pNodeID;
 
   /**
-   * The compact summary of the state of node.
+   * The status of the node.
    */
-  private NodeSummary  pNodeSummary;
+  private NodeStatus  pNodeStatus;
 
 }
   
