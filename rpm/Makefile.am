@@ -11,7 +11,7 @@ pipeline-@CUSTOMER@-@VERSION@-i686-rpm.bin: \
 	chmod 555 $@
 
 header: RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-1.i686.rpm \
-          headerA headerB $(top_srcdir)/docs/legal/license.txt
+          headerA headerB $(top_srcdir)/docs/legal/@LICENSE_DOC@.txt
 	rm -f $@
 	@echo "Building Install Header..."
 	@(cd RPMS/i686; \
