@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.10 2005/02/09 18:23:44 jim Exp $
+// $Id: JManagerPanel.java,v 1.11 2005/02/19 01:06:02 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -223,6 +223,12 @@ class JManagerPanel
 	item = new JMenuItem("Add Tab");
 	pAddTabItem = item;
 	item.setActionCommand("add-tab");
+	item.addActionListener(this);
+	sub.add(item);  
+	
+	item = new JMenuItem("Add Top Tab");
+	pAddTopTabItem = item;
+	item.setActionCommand("add-top-tab");
 	item.addActionListener(this);
 	sub.add(item);  
 	
@@ -965,6 +971,9 @@ class JManagerPanel
       (pAddTabItem, prefs.getManagerAddTab(), 
        "Add a tabbed panel.");
     updateMenuToolTip
+      (pAddTopTabItem, prefs.getManagerAddTopTab(), 
+       "Add a tab to the containing tabbed panel.");
+    updateMenuToolTip
       (pAddLeftItem, prefs.getManagerAddLeft(), 
        "Split the panel horizontally adding a new panel left.");
     updateMenuToolTip
@@ -1502,6 +1511,11 @@ class JManagerPanel
       doAddTab();
       return true;
     }
+    else if((prefs.getManagerAddTopTab() != null) &&
+	    prefs.getManagerAddTopTab().wasPressed(e)) {
+      doAddTopTab();
+      return true;
+    }
     else if((prefs.getManagerAddLeft() != null) &&
 	    prefs.getManagerAddLeft().wasPressed(e)) {
       doAddLeft();
@@ -1796,6 +1810,8 @@ class JManagerPanel
       doAddBelow();
     else if(cmd.equals("add-tab"))
       doAddTab();
+    else if(cmd.equals("add-top-tab"))
+      doAddTopTab();
     else if(cmd.equals("close-panel"))
       doClosePanel();
 
@@ -2373,7 +2389,56 @@ class JManagerPanel
     /* if the parent is already a tabbed pane, simply add another tab */ 
     if(parent instanceof JTabbedPanel) {
       JTabbedPanel tab = (JTabbedPanel) parent;
-      JManagerPanel select = (JManagerPanel) tab.getSelectedComponent();
+
+      JManagerPanel mgr = new JManagerPanel();
+      mgr.setContents(new JEmptyPanel(pTopLevelPanel));
+
+      tab.addTab(mgr);
+    }
+    
+    /* create a new tabbed panel with the contents of this panel as its first tab */
+    else {
+      Component comp = removeContents();
+      if(comp != null) {
+	JManagerPanel mgr = new JManagerPanel();
+	mgr.setContents(comp);
+
+	JTabbedPanel tab = new JTabbedPanel();
+	tab.addTab(mgr);
+
+	{
+	  JManagerPanel smgr = new JManagerPanel();
+	  smgr.setContents(new JEmptyPanel(pTopLevelPanel));
+	  tab.addTab(smgr);
+	  tab.setSelectedIndex(1);
+	}
+
+	setContents(tab);
+      }
+    }
+
+    refocusOnChildPanel();
+  }
+
+  /**
+   * Add a new empty tab to the child tabbed pane. <P> 
+   * 
+   * If the current child isn't already a tabbed pane, a new tabbed pane is created and
+   * the current child is moved to the first tab of the new tabbed pane.
+   */ 
+  private void 
+  doAddTopTab()
+  { 
+    Container parent = getParent();
+    while(true) {
+      if((parent == null) || (parent instanceof JTabbedPanel))
+	break;
+      parent = parent.getParent();
+    }
+
+    /* if the parent is already a tabbed pane, simply add another tab */ 
+    if((parent != null) && (parent instanceof JTabbedPanel)) {
+      JTabbedPanel tab = (JTabbedPanel) parent;
 
       JManagerPanel mgr = new JManagerPanel();
       mgr.setContents(new JEmptyPanel(pTopLevelPanel));
@@ -3153,6 +3218,7 @@ class JManagerPanel
   private JMenuItem  pEmptyPanelItem;
 
   private JMenuItem  pAddTabItem; 
+  private JMenuItem  pAddTopTabItem; 
   private JMenuItem  pAddLeftItem; 
   private JMenuItem  pAddRightItem; 
   private JMenuItem  pAddAboveItem; 

@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.14 2005/02/18 23:47:53 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.15 2005/02/19 01:06:02 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -369,6 +369,11 @@ class GenUserPrefsApp
 	("Add a tabbed panel.", 
 	 "ManagerAddTab", "Add Tab:",
 	 false, true, false, 84),  /* ALT+T */ 
+
+	new HotKeyPref
+	("Add a tab to the containing tabbed panel.", 
+	 "ManagerAddTopTab", "Add Top Tab:",
+	 true, true, false, 84),  /* ALT+SHIFT+T */ 
 
 	new BasePref(),
 
@@ -1693,7 +1698,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.14 2005/02/18 23:47:53 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.15 2005/02/19 01:06:02 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -1948,7 +1953,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.14 2005/02/18 23:47:53 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.15 2005/02/19 01:06:02 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3304,7 +3309,7 @@ class GenUserPrefsApp
 
       StringBuffer buf = new StringBuffer();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.14 2005/02/18 23:47:53 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.15 2005/02/19 01:06:02 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 
