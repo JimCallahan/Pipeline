@@ -1,4 +1,4 @@
-// $Id: JobMgrServer.java,v 1.16 2005/02/12 16:29:51 jim Exp $
+// $Id: JobMgrServer.java,v 1.17 2005/02/18 23:37:12 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -255,7 +255,7 @@ class JobMgrServer
 	boolean live = true;
 	while(pSocket.isConnected() && live && !pShutdown.get()) {
 	  InputStream in     = pSocket.getInputStream();
-	  ObjectInput objIn  = new ObjectInputStream(in);
+	  ObjectInput objIn  = new PluginInputStream(in);
 	  Object obj         = objIn.readObject();
 
 	  OutputStream out    = pSocket.getOutputStream();

@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.23 2005/02/12 16:29:51 jim Exp $
+// $Id: FileMgrServer.java,v 1.24 2005/02/18 23:37:12 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -215,7 +215,7 @@ class FileMgrServer
 	boolean live = true;
 	while(pSocket.isConnected() && live && !pShutdown.get()) {
 	  InputStream in    = pSocket.getInputStream();
-	  ObjectInput objIn = new ObjectInputStream(in);
+	  ObjectInput objIn = new PluginInputStream(in);
 	  Object obj        = objIn.readObject();
 	  
 	  OutputStream out    = pSocket.getOutputStream();
