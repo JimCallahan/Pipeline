@@ -192,7 +192,7 @@ increasingly more detailed command tracing messages. <br>
 </div>
 <br>
 Logging can also be controlled on a system-wide basis by modifying the <a
- href="plfilemgr.html.in#logger_properties"><span
+ href="plfilemgr.html#logger_properties"><span
  style="font-weight: bold;">logger.properties</span></a>
 file installed as part of the Pipeline distributuion. <span
  style="font-weight: bold;"></span>See the Java
@@ -213,9 +213,7 @@ Manual</a><span style="font-weight: bold;">, </span><a
  href="../javadoc/index.html"><span style="font-weight: bold;">Pipeline
 Java API</span></a><br>
 </div>
-<div style="margin-left: 40px;"><a
- href="../javadoc/us/temerity/pipeline/FileMgrClient.html"><span
- style="font-weight: bold;"></span></a><span style="font-weight: bold;">Pipeline
+<div style="margin-left: 40px;"><span style="font-weight: bold;">Pipeline
 Programs</span><br>
 <div style="margin-left: 40px;"><a href="plmaster.html"><span
  style="font-weight: bold;">plmaster</span></a>(1), <a

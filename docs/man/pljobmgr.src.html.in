@@ -183,9 +183,7 @@ of this file.&nbsp; Settings from the <a href="#--log"><span
 settings from the <span style="font-weight: bold;">logger.properties</span>
 file.</div>
 </div>
-<h3><a name="See_Also"></a>See Also<a
- href="../javadoc/us/temerity/pipeline/FileMgrClient.html"><span
- style="font-weight: bold;"></span></a><br>
+<h3><a name="See_Also"></a>See Also<br>
 </h3>
 <div style="margin-left: 40px;">
 <span style="font-weight: bold;">Pipeline Programs</span><br>

@@ -69,10 +69,10 @@ agreement</span></a> for this software and exits.<br>
 nodes are stored.<br>
 <br>
 The default root node directory is set by the <a
- href="file:///usr/share/doc/@PLCONFIG_VERSION@/plconfig.html#--node-dir"><span
+ href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--node-dir"><span
  style="font-weight: bold;">--node-dir</span></a>
 option to <a
- href="file:///usr/share/doc/@PLCONFIG_VERSION@/plconfig.html"><span
+ href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
  style="font-weight: bold;">plconfig</span></a>(1).</div>
 </div>
 <h4 style="font-weight: normal; margin-left: 80px;"><span
@@ -86,10 +86,10 @@ alternative network port (<i>num</i>).&nbsp; <br>
 <br>
 The
 default port is set by the <a
- href="../../../../../../../usr/share/doc/@PLCONFIG_VERSION@/plconfig.html#--master-port"><span
+ href="//usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--master-port"><span
  style="font-weight: bold;">--master-port</span></a>
 option to <a
- href="file:///usr/share/doc/@PLCONFIG_VERSION@/plconfig.html"><span
+ href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
  style="font-weight: bold;">plconfig</span></a>(1). <br>
 <br>
 <br>
@@ -105,10 +105,10 @@ Use an alternative root production directory (<span
 <br>
 The
 default root production directory is set by the <a
- href="file:///usr/share/doc/@PLCONFIG_VERSION@/plconfig.html#--prod-dir"><span
+ href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--prod-dir"><span
  style="font-weight: bold;">--prod-dir</span></a>
 option to <a
- href="file:///usr/share/doc/@PLCONFIG_VERSION@/plconfig.html"><span
+ href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
  style="font-weight: bold;">plconfig</span></a>(1).
 </div>
 <b><br>
@@ -127,10 +127,10 @@ to run the Pipeline File Manager daemon <a href="plfilemgr.html"><span
 <br>
 <div style="margin-left: 80px;">The
 default file host is set by the <a
- href="file:///usr/share/doc/@PLCONFIG_VERSION@/plconfig.html#--file-host"><span
+ href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--file-host"><span
  style="font-weight: bold;">--file-host</span></a>
 option to <a
- href="file:///usr/share/doc/@PLCONFIG_VERSION@/plconfig.html"><span
+ href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
  style="font-weight: bold;">plconfig</span></a>(1).<br>
 </div>
 <span style="font-weight: bold;"></span>
@@ -143,10 +143,10 @@ to communicate with the Pipeline File Manager daemon <span
 </span></h4>
 <div style="margin-left: 80px;">The
 default file port is set by the <a
- href="file:///usr/share/doc/@PLCONFIG_VERSION@/plconfig.html#--file-port"><span
+ href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--file-port"><span
  style="font-weight: bold;">--file-port</span></a>
 option to <a
- href="file:///usr/share/doc/@PLCONFIG_VERSION@/plconfig.html"><span
+ href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
  style="font-weight: bold;">plconfig</span></a>(1). </div>
 <h4 style="margin-left: 40px;"><b><a name="--notify-control-port"></a>--notify-control-port</b><span
  style="font-weight: normal;">=</span><i style="font-weight: normal;">num</i></h4>
@@ -158,10 +158,10 @@ Notification<span style="font-weight: normal;"> daemon <a
 <br>
 The
 default directory notification control port is set by the <a
- href="file:///usr/share/doc/@PLCONFIG_VERSION@/plconfig.html#--notify-control-port"><span
+ href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--notify-control-port"><span
  style="font-weight: bold;">--notify-control-port</span></a>
 option to <a
- href="file:///usr/share/doc/@PLCONFIG_VERSION@/plconfig.html"><span
+ href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
  style="font-weight: bold;">plconfig</span></a>(1).<br>
 <span style="font-weight: normal;"></span><span
  style="font-weight: normal;"></span></div>
@@ -176,10 +176,10 @@ Notification<span style="font-weight: normal;"> daemon <a
 <br>
 <div style="margin-left: 80px;">The
 default directory notification control port is set by the <a
- href="file:///usr/share/doc/@PLCONFIG_VERSION@/plconfig.html#--notify-monitor-port"><span
+ href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--notify-monitor-port"><span
  style="font-weight: bold;">--notify-monitor-port</span></a>
 option to <a
- href="file:///usr/share/doc/@PLCONFIG_VERSION@/plconfig.html"><span
+ href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
  style="font-weight: bold;">plconfig</span></a>(1).</div>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><br>
 <br>
@@ -196,7 +196,7 @@ The default hostname is set by the <a
  href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--queue-host"><span
  style="font-weight: bold;">--queue-host</span></a>
 option to <a
- href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
+ href="//usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
  style="font-weight: bold;">plconfig</span></a>(1).<br>
   </blockquote>
 </blockquote>
@@ -212,7 +212,7 @@ The default port is set by the <a
  href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--queue-port"><span
  style="font-weight: bold;">--queue-port</span></a>
 option to <a
- href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
+ href="//usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
  style="font-weight: bold;">plconfig</span></a>(1).</blockquote>
 </blockquote>
 <br>
@@ -339,7 +339,7 @@ Java API</span></a><br>
  href="plfilemgr.html"><span style="font-weight: bold;">plfilemgr</span></a>(1),
 <a href="plnotify.html"><span style="font-weight: bold;">plnotify</span></a>(1),
 <a href="pljobmgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1),
-<a href="file:///usr/share/doc/@PLCONFIG_VERSION@/plconfig.html"><span
+<a href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
  style="font-weight: bold;">plconfig</span></a>(1)<br>
 <br>
 </div>

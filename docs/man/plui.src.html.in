@@ -27,7 +27,7 @@ and queries.&nbsp; <br>
   <br>
 The functionality of <span style="font-weight: bold;">plui</span>(1)
 is also available in a scripting format using the <a
- href="pipeline.html"><span style="font-weight: bold;">pipeline</span></a>(1)
+ href="plui.html"><span style="font-weight: bold;">pipeline</span></a>(1)
 command-line only client program.&nbsp; Custom user tools may also
 access the full functionality of <span style="font-weight: bold;">plui</span>(1)
 using the <a href="../javadoc/index.html"><span
@@ -40,15 +40,14 @@ the graphical interface of <a href="plui.html"><span
  style="font-weight: bold;">plui</span></a>(1).&nbsp; <br>
   <br>
 All properties, except for the <a
- href="file:///code/src/pipeline/src/java/docs/pipeline.html.in#Global_Options"
+ href="#Global_Options"
  style="font-weight: bold;">Global
 Options</a> detailed below, are configurable by the Preferences
 panel once the graphical user interface started.&nbsp; <br>
 </blockquote>
 <h3><a name="Information_Options"></a>Information
 Options</h3>
-<blockquote>The following options provide online information about <a
- href="pipeline.html"><span style="font-weight: bold;">plui</span></a>(1)
+<blockquote>The following options provide online information about <span style="font-weight: bold;">plui</span>(1)
 and then immediately
 exit:</blockquote>
 <blockquote><b><a name="--help"></a>--help</b><br>
