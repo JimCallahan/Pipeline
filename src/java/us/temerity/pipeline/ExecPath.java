@@ -1,4 +1,4 @@
-// $Id: ExecPath.java,v 1.1 2004/02/20 22:48:48 jim Exp $
+// $Id: ExecPath.java,v 1.2 2004/02/23 23:53:41 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -50,12 +50,12 @@ class ExecPath
       File dir = new File(dirs[wk]);
 
       if(!dir.isDirectory()) 
-	throw new IllegalArgumentException(
-	  "A component of path \"" + dir + "\" was NOT a directory!");
+	throw new IllegalArgumentException
+	  ("A component of path \"" + dir + "\" was NOT a directory!");
 
       if(!dir.isAbsolute()) 
-	throw new IllegalArgumentException(
-	  "A component of path \"" + dir + "\" was NOT absolute!");
+	throw new IllegalArgumentException
+	  ("A component of path \"" + dir + "\" was NOT absolute!");
 	
       pDirs.add(dir);
     }

@@ -1,10 +1,9 @@
-// $Id: Named.java,v 1.1 2004/02/17 17:50:00 jim Exp $
+// $Id: Named.java,v 1.2 2004/02/23 23:53:41 jim Exp $
 
 package us.temerity.pipeline;
 
 import java.util.*;
 import java.util.logging.*;
-import java.sql.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   N A M E D                                                                              */
@@ -82,7 +81,7 @@ class Named
   {
     String name = (String) decoder.decode("Name"); 
     if(name == null) 
-      throw new GlueException("The \"Start\" frame was missing!");
+      throw new GlueException("The \"Name\" was missing!");
   }
 
 

@@ -1,10 +1,9 @@
-// $Id: FileSeq.java,v 1.2 2004/02/14 18:48:25 jim Exp $
+// $Id: FileSeq.java,v 1.3 2004/02/23 23:53:41 jim Exp $
 
 package us.temerity.pipeline;
 
 import java.util.*;
 import java.util.logging.*;
-import java.sql.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -87,14 +86,14 @@ class FileSeq
 
     if(range != null) {
       if(!pPattern.hasFrameNumbers())
-	throw new IllegalArgumentException(
-	  "The FilePattern has NO frame number component, but FrameRange was NOT (null)!");
+	throw new IllegalArgumentException
+	  ("The FilePattern has NO frame number component, but FrameRange was NOT (null)!");
 
       pFrameRange = new FrameRange(range);
     }      
     else if(pPattern.hasFrameNumbers()) 
-      throw new IllegalArgumentException(
-        "The FilePattern HAS a frame number component, but FrameRange was (null)!");
+      throw new IllegalArgumentException
+	("The FilePattern HAS a frame number component, but FrameRange was (null)!");
   }
 
 
@@ -205,9 +204,6 @@ class FileSeq
   /**
    * Generated a literal filename for the given frame number. <P>
    * 
-   * This method is only valid for <CODE>FilePattern</CODE> objects which have a frame 
-   * number component.
-   * 
    * @param idx  [<B>in</B>]
    *   The frame index of the file.  Valid frame indices are in the range: 
    *   [0,{@link #numFrames() numFrames()}).
@@ -279,9 +275,9 @@ class FileSeq
       }
     }
     catch (SecurityException ex) {
-      throw new PipelineException(
-	"Unable to delete file \"" + full + "\" from file sequence " + this + 
-	" due to the Java Security Manager!");
+      throw new PipelineException
+	("Unable to delete file \"" + full + "\" from file sequence " + this + 
+	 " due to the Java Security Manager!");
     }
   }
 
@@ -314,9 +310,9 @@ class FileSeq
       }
     }
     catch (SecurityException ex) {
-      throw new PipelineException(
-	"Unable to change the permissions to read-only for file \"" + full + "\" from " + 
-	"file sequence " + this + " due to the Java Security Manager!");
+      throw new PipelineException
+	("Unable to change the permissions to read-only for file \"" + full + "\" from " + 
+	 "file sequence " + this + " due to the Java Security Manager!");
     }
   }
 

@@ -1,4 +1,4 @@
-// $Id: NativeProcess.java,v 1.2 2004/02/21 18:54:35 jim Exp $
+// $Id: NativeProcess.java,v 1.3 2004/02/23 23:53:41 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -64,8 +64,8 @@ class NativeProcess
     if(cmd == null)
       throw new IllegalArgumentException("The command line arguments cannot be (null)!");
     if(cmd.length == 0) 
-      throw new IllegalArgumentException(
-	"The command line arguments must contain at least the name of the program to run!");
+      throw new IllegalArgumentException
+	("The command line arguments must contain at least the name of the program to run!");
     pCmd = cmd;
 
     if(env == null)

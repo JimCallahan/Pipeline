@@ -311,8 +311,8 @@ SimpleValue(Class cls, Long objID) :
 	    obj = Enum.valueOf(cls, (String) val);
 	  }
 	  catch(IllegalArgumentException ex) {
-	    throw new ParseException(
-	      "The \"" + cls.getName() + "\" enumeration does not contain \"" + val + "\"!");
+	    throw new ParseException
+	      ("The \"" + cls.getName() + "\" enumeration does not contain \"" + val + "\"!");
 	  }
 	}
 	else 

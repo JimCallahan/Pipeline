@@ -1,4 +1,4 @@
-// $Id: FrameRange.java,v 1.3 2004/02/14 18:48:25 jim Exp $
+// $Id: FrameRange.java,v 1.4 2004/02/23 23:53:41 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -56,8 +56,8 @@ class FrameRange
   ) 
   {
     if(single < 0)
-      throw new IllegalArgumentException(
-        "The frame number (" + single + ") cannot be negative!");
+      throw new IllegalArgumentException
+	("The frame number (" + single + ") cannot be negative!");
 
     pStart = single;
     pEnd   = single;
@@ -92,17 +92,17 @@ class FrameRange
   ) 
   {
     if(start < 0)
-      throw new IllegalArgumentException(
-        "The start frame (" + start + ") cannot be negative!");
+      throw new IllegalArgumentException
+	("The start frame (" + start + ") cannot be negative!");
 
     if(start > end) 
-      throw new IllegalArgumentException(
-        "The start frame (" + start + ") cannot be greater-than " + 
-	"the end frame (" + end + ")!");
+      throw new IllegalArgumentException
+	("The start frame (" + start + ") cannot be greater-than " + 
+	 "the end frame (" + end + ")!");
 
     if(by <= 0) 
-      throw new IllegalArgumentException(
-        "The frame increment (" + by + ") must be positive!");
+      throw new IllegalArgumentException
+	("The frame increment (" + by + ") must be positive!");
 
     pStart = start;
     pEnd   = end;
@@ -251,9 +251,9 @@ class FrameRange
   )
   {
     if((idx < 0) || (idx >= pNumFrames)) 
-      throw new IllegalArgumentException(
-	"The given frame index (" + idx + ") was not valid for the range: " + 
-	"[0," + pNumFrames + ")."); 
+      throw new IllegalArgumentException
+	("The given frame index (" + idx + ") was not valid for the range: " + 
+	 "[0," + pNumFrames + ")."); 
       
     return (pStart + pBy*idx);
   }
@@ -277,8 +277,8 @@ class FrameRange
   ) 
   {
     if(!isValid(frame))
-      throw new IllegalArgumentException(
-	"The given frame (" + frame + ") was not valid for the range: " + this + "."); 
+      throw new IllegalArgumentException
+	("The given frame (" + frame + ") was not valid for the range: " + this + "."); 
     
     return ((frame - pStart) / pBy);
   }
@@ -374,13 +374,13 @@ class FrameRange
 	throw new GlueException("Found an \"End\" frame without a \"By\" frame increment!");
 
       if(start > end) 
-	throw new GlueException(
-	  "The \"Start\" frame (" + start + ") cannot be greater-than " + 
-	  "the \"End\" frame (" + end + ")!");
+	throw new GlueException
+	  ("The \"Start\" frame (" + start + ") cannot be greater-than " + 
+	   "the \"End\" frame (" + end + ")!");
 
       if(by <= 0) 
-        throw new GlueException(
-          "The \"By\" frame increment (" + by + ") must be positive!");
+        throw new GlueException
+	  ("The \"By\" frame increment (" + by + ") must be positive!");
 
       pEnd = end;
       pBy  = by;

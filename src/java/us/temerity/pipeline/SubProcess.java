@@ -1,4 +1,4 @@
-// $Id: SubProcess.java,v 1.2 2004/02/21 18:55:18 jim Exp $
+// $Id: SubProcess.java,v 1.3 2004/02/23 23:53:41 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -167,8 +167,8 @@ class SubProcess
   )
   {
     if((user != null) && (!sUser.equals("pipeline"))) 
-      throw new IllegalArgumentException(
-	"Only the \"pipeline\" user is allowed to run processes as another user!");
+      throw new IllegalArgumentException
+	("Only the \"pipeline\" user is allowed to run processes as another user!");
     pSubstituteUser = user;
 
     /* build environment */ 
@@ -199,15 +199,15 @@ class SubProcess
       File file = new File(prog);
       if(file.isAbsolute()) {
 	if(!file.exists()) 
-	  throw new IllegalArgumentException(
-	    "The program \"" + prog + "\" does not exist!");
+	  throw new IllegalArgumentException
+	    ("The program \"" + prog + "\" does not exist!");
       }
       else {
 	String path = env.get("PATH");
 	if(path == null) 
-	  throw new IllegalArgumentException(
-	    "The program \"" + prog + "\" was not absolute and no PATH was provided in " +
-            "the environment!");
+	  throw new IllegalArgumentException
+	    ("The program \"" + prog + "\" was not absolute and no PATH was provided in " +
+	     "the environment!");
 	  
 	ExecPath epath = new ExecPath(path);
 	File absolute = epath.which(prog);
@@ -247,8 +247,8 @@ class SubProcess
     {
       assert(dir != null);
       if(!dir.isDirectory()) 
-	throw new IllegalArgumentException(
-	  "The working directory \"" + dir.getPath() + "\" does not exist!");
+	throw new IllegalArgumentException
+	  ("The working directory \"" + dir.getPath() + "\" does not exist!");
     } 
     
     /* create low-level process */ 
@@ -296,9 +296,9 @@ class SubProcess
 	proc.join();
       } 
       catch(InterruptedException ex) {
-	throw new IllegalArgumentException(
-	  "Unable to determine the UID for user \"" + user + "\":\n" +  
-	  ex.getMessage());
+	throw new IllegalArgumentException
+	  ("Unable to determine the UID for user \"" + user + "\":\n" +  
+	   ex.getMessage());
       }
 
       Integer exitCode = proc.getExitCode();
@@ -311,8 +311,8 @@ class SubProcess
 	  return uid;
 	}
 	catch(NumberFormatException ex) {
-	  throw new IllegalArgumentException(
-	    "Illegal UID (" + out + ") found for user \"" + user + "\"!");
+	  throw new IllegalArgumentException
+	    ("Illegal UID (" + out + ") found for user \"" + user + "\"!");
 	}
       }
       else {
@@ -554,8 +554,8 @@ class SubProcess
   ) 
   {
     if(millis <= 0)
-      throw new IllegalArgumentException(
-	"Resource statistics collection interval (" + millis + ") must be positive!");
+      throw new IllegalArgumentException
+	("Resource statistics collection interval (" + millis + ") must be positive!");
     pStatsInterval.set(millis);
   }
 
@@ -983,9 +983,9 @@ class SubProcess
 	    sleep(sCollectionDelay);
 	  }
 	  catch(InterruptedException ex) {
-	    throw new IllegalStateException(
-	      pName + " [" + pStream + "]: thread was interrupted while " + 
-	      "waiting to start collection!");
+	    throw new IllegalStateException
+	      (pName + " [" + pStream + "]: thread was interrupted while " + 
+	       "waiting to start collection!");
 	  }
 	}
 

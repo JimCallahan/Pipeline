@@ -1,4 +1,4 @@
-// $Id: FilePattern.java,v 1.2 2004/02/14 17:41:57 jim Exp $
+// $Id: FilePattern.java,v 1.3 2004/02/23 23:53:41 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -138,8 +138,8 @@ implements Glueable
     pPrefix = prefix;
 
     if(padding < -1)
-      throw new IllegalArgumentException(
-	"The frame number padding (" + padding + ") must (-1), (0) or a positive value!");
+      throw new IllegalArgumentException
+	("The frame number padding (" + padding + ") must (-1), (0) or a positive value!");
     pPadding = padding;
 
     if((suffix != null) && (suffix.length() == 0)) 
@@ -396,9 +396,9 @@ implements Glueable
     Integer padding = (Integer) decoder.decode("Padding");
     if(padding != null) {
       if(padding < -1)
-	throw new GlueException(
-	  "The frame number \"Padding\" (" + padding + ") must (-1), (0) " + 
-	  "or a positive value!");
+	throw new GlueException
+	  ("The frame number \"Padding\" (" + padding + ") must (-1), (0) " + 
+	   "or a positive value!");
       pPadding = padding;
     }
 
