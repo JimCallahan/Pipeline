@@ -242,6 +242,16 @@ do
   frame=24
   mkmipmaps $frame $mode $nstate $qstate 1
   mkicon $frame $mode $nstate $qstate 1
+
+
+  nstate=Added
+  mkicon 69 $mode $nstate Finished 1
+  mkicon 64 $mode $nstate Stale 1
+
+
+  nstate=Obsolete
+  mkicon 77 $mode $nstate Finished 1
+  mkicon 72 $mode $nstate Stale 1
 done
 
 frame=0

@@ -1,4 +1,4 @@
-// $Id: JTextureLoaderBar.java,v 1.6 2005/01/31 23:02:01 jim Exp $
+// $Id: JTextureLoaderBar.java,v 1.7 2005/02/09 18:21:47 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -151,6 +151,16 @@ class JTextureLoaderBar
 	{
 	  String name = ("NeedsCheckOutMajor-Stale-Frozen-" + mode);
 	  pTextures.add(name);
+	  pIcon21s.add(name);
+	}
+
+	{
+	  String name = ("Added-Finished-Frozen-" + mode);
+	  pIcon21s.add(name);
+	}
+	
+	{
+	  String name = ("Obsolete-Finished-Frozen-" + mode);
 	  pIcon21s.add(name);
 	}
       }
