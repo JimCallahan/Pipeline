@@ -1,4 +1,4 @@
-// $Id: QueueHost.java,v 1.15 2005/03/04 11:02:17 jim Exp $
+// $Id: QueueHost.java,v 1.16 2005/03/05 02:29:22 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -91,7 +91,6 @@ class QueueHost
 
     switch(pStatus) {
     case Shutdown:
-    case Disabled:
       pSamples.clear();
       break;
 

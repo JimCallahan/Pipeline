@@ -1,4 +1,4 @@
-// $Id: QueueSlotsTableModel.java,v 1.2 2005/03/04 09:20:30 jim Exp $
+// $Id: QueueSlotsTableModel.java,v 1.3 2005/03/05 02:29:23 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -94,14 +94,14 @@ class QueueSlotsTableModel
 
       {
 	TableCellRenderer renderers[] = {
-	  new JSimpleTableCellRenderer(JLabel.CENTER), 
-	  new JSimpleTableCellRenderer(JLabel.CENTER), 
-	  new JSimpleTableCellRenderer(JLabel.CENTER), 
-	  new JSimpleTableCellRenderer(JLabel.CENTER), 
-	  new JSimpleTableCellRenderer(JLabel.CENTER),
-	  new JSimpleTableCellRenderer(JLabel.CENTER),
-	  new JSimpleTableCellRenderer(JLabel.LEFT), 
-	  new JSimpleTableCellRenderer(JLabel.CENTER)
+	  new JSlotsTableCellRenderer(this, JLabel.CENTER), 
+	  new JSlotsTableCellRenderer(this, JLabel.CENTER), 
+	  new JSlotsTableCellRenderer(this, JLabel.CENTER), 
+	  new JSlotsTableCellRenderer(this, JLabel.CENTER), 
+	  new JSlotsTableCellRenderer(this, JLabel.CENTER),
+	  new JSlotsTableCellRenderer(this, JLabel.CENTER),
+	  new JSlotsTableCellRenderer(this, JLabel.LEFT), 
+	  new JSlotsTableCellRenderer(this, JLabel.CENTER)
 	};
 	pRenderers = renderers;
       }
@@ -247,10 +247,12 @@ class QueueSlotsTableModel
     for(QueueHost host : hosts.values()) {
       switch(host.getStatus()) {
       case Enabled:
+      case Disabled:
 	cnt += host.getJobSlots();
       }
     }
 
+    pIsEnabled = new boolean[cnt];
     pHostnames = new String[cnt];
     pJobInfo   = new QueueJobInfo[cnt];
     pJobStatus = new JobStatus[cnt];
@@ -263,6 +265,7 @@ class QueueSlotsTableModel
       QueueHost host = hosts.get(hostname);
       switch(host.getStatus()) {
       case Enabled:
+      case Disabled:
 	{
 	  int slots = host.getJobSlots();
 
@@ -285,6 +288,7 @@ class QueueSlotsTableModel
 	  
 	  int sk;
 	  for(sk=0; sk<host.getJobSlots(); sk++) {
+	    pIsEnabled[wk] = (host.getStatus() == QueueHost.Status.Enabled);
 	    pHostnames[wk] = hostname;
 	    
 	    if(sk < hinfo.size()) {
@@ -309,7 +313,18 @@ class QueueSlotsTableModel
     
     sort();
   }
-
+  
+  /**
+   * Whether the host owning the slot on the given row is enabled.
+   */ 
+  public boolean 
+  isSlotEnabled
+  (
+   int row
+  ) 
+  {
+    return pIsEnabled[pRowToIndex[row]];
+  }
 
 
 
@@ -434,6 +449,11 @@ class QueueSlotsTableModel
    * Does the current user have privileged status?
    */ 
   private boolean  pIsPrivileged;
+
+  /**
+   * Whether the host owning each slot is enabled.
+   */ 
+  private boolean[] pIsEnabled; 
 
   /**
    * The per-slot hostnames.

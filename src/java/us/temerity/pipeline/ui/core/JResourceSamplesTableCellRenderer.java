@@ -1,4 +1,4 @@
-// $Id: JResourceSamplesTableCellRenderer.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JResourceSamplesTableCellRenderer.java,v 1.2 2005/03/05 02:29:23 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -46,14 +46,42 @@ class JResourceSamplesTableCellRenderer
   {
     pSampleType = type; 
 
-    Color fg = new Color(0.0f, 0.59f, 1.0f);
-    Color hl = new Color(1.0f, 1.0f, 0.0f);
-    String prefix = "Blue";
+    String prefix = null;
     switch(pSampleType) {
     case Jobs:
-      fg = new Color(0.0f, 1.0f, 0.0f);
-      hl = new Color(1.0f, 0.0f, 0.0f);
-      prefix = "Green";
+      {
+	Color fg[] = {
+	  new Color(0.0f,  1.0f,  0.0f),
+	  new Color(0.56f, 0.75f, 0.56f)
+	};
+	pBarForeground = fg;
+	
+	Color hl[] = {
+	  new Color(1.0f, 0.0f,  0.0f),
+	  new Color(0.7f, 0.52f, 0.52f)
+	};
+	pBarHighlight = hl;
+	
+	prefix = "Green";
+      }
+      break;
+
+    default:
+      {
+	Color fg[] = {
+	  new Color(0.0f,  0.59f, 1.0f),
+	  new Color(0.56f, 0.67f, 0.75f)
+	};
+	pBarForeground = fg;
+	
+	Color hl[] = {
+	  new Color(1.0f, 1.0f, 0.0f), 
+	  new Color(1.0f, 1.0f, 0.75f)      
+	};
+	pBarHighlight = hl;
+
+	prefix = "Blue";
+      }
     }
 
     {
@@ -90,9 +118,6 @@ class JResourceSamplesTableCellRenderer
 	JBarGraph bar = new JBarGraph();
 	pBarGraph = bar;
 
-	bar.setForeground(fg);
-	bar.setHighlight(hl);
-
 	panel.add(bar);
       }
     }
@@ -119,6 +144,13 @@ class JResourceSamplesTableCellRenderer
   )
   {
     QueueHost host = (QueueHost) value; 
+
+    Color fg = new Color(0.75f, 0.75f, 0.75f);
+    switch(host.getStatus()) {
+    case Enabled:
+      fg = (isSelected ? Color.yellow : Color.white);
+    }
+
     List<ResourceSample> samples = host.getSamples();
     if((samples != null) && !samples.isEmpty()) { 
 
@@ -144,7 +176,7 @@ class JResourceSamplesTableCellRenderer
 	  pLabel.setText(String.valueOf(first.getNumJobs()));
 	}
 
-	pLabel.setForeground(isSelected ? Color.yellow : Color.white);
+	pLabel.setForeground(fg);
       }
 
       /* update the value graph */ 
@@ -195,13 +227,25 @@ class JResourceSamplesTableCellRenderer
 	  }
 	}
 	
-	pBarGraph.setValues(vs, true);
+	pBarGraph.setValues(vs, true);	
+
+
+	switch(host.getStatus()) {
+	case Enabled:
+	  pBarGraph.setForeground(pBarForeground[0]);
+	  pBarGraph.setHighlight(pBarHighlight[0]);
+	  break;
+	  
+	default:
+	  pBarGraph.setForeground(pBarForeground[1]);
+	  pBarGraph.setHighlight(pBarHighlight[1]);
+	}	  
       }
 
       return pPanel;
     }
     else {
-      pNullLabel.setForeground(isSelected ? Color.yellow : Color.white);
+      pNullLabel.setForeground(fg);
 
       return pNullLabel;
     }
@@ -275,5 +319,14 @@ class JResourceSamplesTableCellRenderer
    * The graph of the values.
    */ 
   private JBarGraph  pBarGraph; 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Bar colors: [enabled, disabled]
+   */ 
+  private Color[]  pBarForeground;
+  private Color[]  pBarHighlight;
 
 }

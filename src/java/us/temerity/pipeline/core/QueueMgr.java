@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.37 2005/03/04 11:01:42 jim Exp $
+// $Id: QueueMgr.java,v 1.38 2005/03/05 02:29:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1837,9 +1837,8 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer("QueueMgr.collector()");
 
-    /* get the names of the currently enabled hosts 
-         and the names of those enabled hosts for which total memory/disk isn't known */ 
-    TreeSet<String> enabled = new TreeSet<String>();
+    /* get the names of the currently enabled/disabled hosts */
+    TreeSet<String> needsCollect = new TreeSet<String>();
     TreeSet<String> needsTotals = new TreeSet<String>();
     {
       timer.aquire();
@@ -1849,25 +1848,25 @@ class QueueMgr
 	  QueueHost host = pHosts.get(hname);
 	  switch(host.getStatus()) {
 	  case Enabled:
-	    enabled.add(hname);
-	    
+	  case Disabled:
+	    needsCollect.add(hname);
 	    if((host.getNumProcessors() == null) || 
 	       (host.getTotalMemory() == null) ||
 	       (host.getTotalDisk() == null)) 
 	      needsTotals.add(hname);
-	  }
+	  }	  
 	}
       }
     }
 
-    /* collect system resource usage samples from the enabled hosts */ 
+    /* collect system resource usage samples from the hosts */ 
     TreeSet<String> dead = new TreeSet<String>();
     TreeSet<String> hung = new TreeSet<String>();
     TreeMap<String,ResourceSample> samples = new TreeMap<String,ResourceSample>();
     TreeMap<String,Integer> numProcs = new TreeMap<String,Integer>();
     TreeMap<String,Long> totalMemory = new TreeMap<String,Long>();
     TreeMap<String,Long> totalDisk = new TreeMap<String,Long>();
-    for(String hname : enabled) {
+    for(String hname : needsCollect) {
       try {
 	JobMgrControlClient client = new JobMgrControlClient(hname, pJobPort);
 	ResourceSample sample = client.getResources();
@@ -1943,6 +1942,7 @@ class QueueMgr
 	if(host != null) {
 	  switch(host.getStatus()) {
 	  case Enabled:
+	  case Disabled:
 	    {
 	      ResourceSample sample = samples.get(hname);
 	      if(sample != null)
@@ -3887,6 +3887,7 @@ class QueueMgr
     {
       /* wait for the job to finish and collect the results */ 
       QueueJobResults results = null;
+      int tries = 0;
       boolean done = false;
       while(!done) {
 	JobMgrControlClient client = new JobMgrControlClient(pHostname, pJobPort);	
@@ -3897,11 +3898,24 @@ class QueueMgr
 	catch(PipelineException ex) {
 	  Throwable cause = ex.getCause();
 	  if(cause instanceof SocketTimeoutException) {
+	    tries++;
+	    String msg = null;
+	    if(tries < sMaxWaitReconnects) {
+	      msg = 
+		("Unable to retrieved results for job (" + pJobID + ") from " + 
+		 "(" + pHostname + ") before the connection timed-out.\n" + 
+		 "Reconnecting for the (" + tries + ") time...");
+	    }
+	    else {
+	      msg = 
+		("Giving up retrieved results for job (" + pJobID + ") from " +
+		 "(" + pHostname + ") after (" + tries + ") attempts!\n" + 
+		 "Marking the job as Failed!");
+	      done = true;
+	    }
+
 	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Net, LogMgr.Level.Warning,
-	       "Partial results for job (" + pJobID + "), retrieved from " + 
-	       "(" + pHostname + ") before the connection timed-out.\n" + 
-	       "Reconnecting...");
+	      (LogMgr.Kind.Net, LogMgr.Level.Warning, msg);
 	    LogMgr.getInstance().flush();
 	  }
 	  else {
@@ -4105,6 +4119,11 @@ class QueueMgr
    */ 
   private static final int  sGarbageCollectAfter = 600;  /* 10-minutes */ 
 
+  /**
+   * The maximum number of times to attempt to reconnect to a job server while waiting
+   * of the results of a job. 
+   */ 
+  private static final int  sMaxWaitReconnects = 10;
 
 
   /*----------------------------------------------------------------------------------------*/
