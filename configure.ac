@@ -556,7 +556,7 @@ dnl ----------------------------------------------------------------------------
 AC_MSG_RESULT([Locating C system headers:])
 
 AC_CHECK_HEADERS([math.h errno.h pwd.h dlfcn.h libgen.h time.h dirent.h ctype.h])
-AC_CHECK_HEADERS([fam.h select.h])      
+AC_CHECK_HEADERS([fcntl.h fam.h select.h signal.h])      
 AC_CHECK_HEADERS([sys/time.h sys/param.h sys/utsname.h sys/wait.h sys/resource.h])  
 
 AC_MSG_RESULT([ ])
