@@ -1,4 +1,4 @@
-// $Id: FrameRange.java,v 1.2 2004/02/14 17:41:57 jim Exp $
+// $Id: FrameRange.java,v 1.3 2004/02/14 18:48:25 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -236,7 +236,7 @@ class FrameRange
    * 
    * @param idx [<B>in</B>]
    *   The frame index to convert.  Valid frame indices are in the range: 
-   *   [0,{@link numFrames() numFrames()}).
+   *   [0,{@link #numFrames() numFrames()}).
    * 
    * @return 
    *   The frame number corresponding to the given frame index.
