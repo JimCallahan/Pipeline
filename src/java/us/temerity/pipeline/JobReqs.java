@@ -1,4 +1,4 @@
-// $Id: JobReqs.java,v 1.9 2004/06/19 00:24:49 jim Exp $
+// $Id: JobReqs.java,v 1.10 2004/08/22 21:47:48 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -163,7 +163,7 @@ class JobReqs
   public static JobReqs
   defaultJobReqs() 
   {
-    return (new JobReqs(0, 2.5f, 134217728, 67108864, 
+    return (new JobReqs(50, 2.5f, 134217728, 67108864, 
 			new HashSet<String>(), new HashSet<String>()));
   }
 
