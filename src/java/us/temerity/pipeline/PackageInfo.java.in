@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.in,v 1.8 2004/03/09 05:06:23 jim Exp $
+// $Id: PackageInfo.java.in,v 1.9 2004/03/10 11:44:39 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -51,16 +51,29 @@ class PackageInfo
 
 
   /**
-   * The hostname which runs the Pipeline server. <P> 
-   * Set by the <CODE>--pl-server=HOST</CODE> option to <I>configure(1)</I>.
+   * The hostname which runs the Pipeline master server. <P> 
+   * Set by the <CODE>--master-server=HOST</CODE> option to <I>configure(1)</I>.
    */
-  public static final String sPipelineServer = "@PL_SERVER@";
+  public static final String sMasterServer = "@PL_MASTER_SERVER@";
 
   /**
-   * The port number listened to by the Pipeline server. <P> 
-   * Set by the <CODE>--pl-port=NUM</CODE> option to <I>configure(1)</I>.   
+   * The port number listened to by the Pipeline master server. <P> 
+   * Set by the <CODE>--master-port=NUM</CODE> option to <I>configure(1)</I>.   
    */
-  public static final int sPipelinePort = @PL_PORT@;
+  public static final int sMasterPort = @PL_MASTER_PORT@;
+
+
+  /**
+   * The hostname which runs the Pipeline file server. <P> 
+   * Set by the <CODE>--file-server=HOST</CODE> option to <I>configure(1)</I>.
+   */
+  public static final String sFileServer = "@PL_FILE_SERVER@";
+
+  /**
+   * The port number listened to by the Pipeline file server. <P> 
+   * Set by the <CODE>--file-port=NUM</CODE> option to <I>configure(1)</I>.   
+   */
+  public static final int sFilePort = @PL_FILE_PORT@;
 
 
   /** 

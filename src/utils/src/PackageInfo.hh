@@ -1,4 +1,4 @@
-// $Id: PackageInfo.hh,v 1.6 2004/02/13 13:56:07 jim Exp $
+// $Id: PackageInfo.hh,v 1.7 2004/03/10 11:44:39 jim Exp $
 
 #ifndef PIPELINE_PACKAGE_INFO_HH
 #define PIPELINE_PACKAGE_INFO_HH
@@ -27,13 +27,6 @@ public:
   /* when the package was released */ 
   static const char* sRelease;
 
-
-  /* pipeline server hostname */ 
-  static const char* sPipelineServer;
-
-  /* pipeline server port number */ 
-  static const int sPipelinePort;
-
   
   /* pipeline user ID */ 
   static const int sPipelineUID;
@@ -42,49 +35,11 @@ public:
   static const int sPipelineGID;
 
 
-  /* root directory of the production heirarchy */ 
-  static const char* sBaseDir;
-
-  /* base repository directory */ 
-  static const char* sRepoDir;
-  
-  /* base working area directory */ 
-  static const char* sWorkDir;
-  
-  /* installed toolset directory */ 
-  static const char* sToolsetDir;
-  
-  /* installed location of the toolset-exec program */ 
-  static const char* sToolsetExec;
-
-
   /* installed documentation directory */ 
   static const char* sDocsDir;
 
   /* location of the Mozilla web browser */ 
   static const char* sMozilla;
-
-
-  /* installed location of the GNU Bourne Again SHell */ 
-  static const char* sBash;
-  
-  /* installed location of the GNU make program */ 
-  static const char* sMake;
-  
-  /* installed location of the md5sum program */ 
-  static const char* sMd5sum;
-  
-  /* installed location of the diff program */ 
-  static const char* sDiff;
-  
-  /* installed location of the kill program */ 
-  static const char* sKill;
-  
-  /* installed location of the SSH program */ 
-  static const char* sSsh;
-
-  /* installed location of the YPCAT program */ 
-  static const char* sYpCat;
 
 
   /* copyright message */ 

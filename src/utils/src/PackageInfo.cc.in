@@ -1,4 +1,4 @@
-// $Id: PackageInfo.cc.in,v 1.10 2004/02/13 13:56:07 jim Exp $
+// $Id: PackageInfo.cc.in,v 1.11 2004/03/10 11:44:39 jim Exp $
 
 #include <PackageInfo.hh>
 
@@ -21,13 +21,6 @@ const char* PackageInfo::sVersion = "@VERSION@";
 const char* PackageInfo::sRelease = "@RELEASE_STAMP@";  
 
 
-/* pipeline server hostname */ 
-const char* PackageInfo::sPipelineServer = "@PL_SERVER@";
-
-/* pipeline server port number */ 
-const int PackageInfo::sPipelinePort = @PL_PORT@;
-
-
 /* pipeline user ID */ 
 const int PackageInfo::sPipelineUID = @PIPELINE_UID@;
 
@@ -35,44 +28,11 @@ const int PackageInfo::sPipelineUID = @PIPELINE_UID@;
 const int PackageInfo::sPipelineGID = @PIPELINE_GID@;
 
 
-/* base repository directory */ 
-const char* PackageInfo::sRepoDir = "@PRODDIR@/repository";
-
-/* base working area directory */ 
-const char* PackageInfo::sWorkDir = "@PRODDIR@/working";
-
-
-/* installed toolset directory */ 
-const char* PackageInfo::sToolsetDir = "@TOOLSETDIR@/toolsets";
-
-
 /* installed documentation directory */ 
 const char* PackageInfo::sDocsDir = "@datadir@/docs"; 
 
 /* location of the Mozilla web browser */ 
 const char* PackageInfo::sMozilla = "@MOZILLA@";
-
-
-/* installed location of the GNU Bourne Again SHell */ 
-const char* PackageInfo::sBash = "@BASH@";
-
-/* installed location of the GNU make program */ 
-const char* PackageInfo::sMake = "@MAKE@";
-
-/* installed location of the md5sum program */ 
-const char* PackageInfo::sMd5sum = "@MD5SUM@";
-
-/* installed location of the diff program */ 
-const char* PackageInfo::sDiff = "@DIFF@";
-  
-/* installed location of the kill program */ 
-const char* PackageInfo::sKill = "@KILL@";
-
-/* installed location of the SSH program */ 
-const char* PackageInfo::sSsh = "@SSH@";
-
-/* installed location of the YPCAT program */ 
-const char* PackageInfo::sYpCat = "@YPCAT@";
 
 
 /* copyright message */ 

@@ -101,8 +101,10 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PIPELINE_GID = @PIPELINE_GID@
 PIPELINE_UID = @PIPELINE_UID@
-PL_PORT = @PL_PORT@
-PL_SERVER = @PL_SERVER@
+PL_FILE_PORT = @PL_FILE_PORT@
+PL_FILE_SERVER = @PL_FILE_SERVER@
+PL_MASTER_PORT = @PL_MASTER_PORT@
+PL_MASTER_SERVER = @PL_MASTER_SERVER@
 PRODDIR = @PRODDIR@
 PTHREAD_LIB = @PTHREAD_LIB@
 RANLIB = @RANLIB@
@@ -171,8 +173,15 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
       JAVA_PATHS = -d ../../.. -classpath "../../..:$(srcdir)/../../.."
 
-    JAVA_SOURCES = $(shell ls *.java $(srcdir)/*.java $(srcdir)/message/*.java) \
+     ALL_SOURCES = $(shell ls *.java $(srcdir)/*.java $(srcdir)/message/*.java) \
                    $(patsubst %,%.java,$(PARSERS))
+
+    # 
+    # This hack is here to workaround a bug in the Java compiler which requires that enum 
+    # classes are compiled BEFORE any classes which use the enum class!
+    #
+    JAVA_SOURCES = $(filter %State.java %PosixSignal.java,$(ALL_SOURCES)) \
+                   $(filter-out %State.java %PosixSignal.java,$(ALL_SOURCES))
 
 
 #--------------------------------------------------------------------------------------------#
