@@ -1,4 +1,4 @@
-// $Id: NativeProcess.cc,v 1.3 2004/02/21 18:56:29 jim Exp $
+// $Id: NativeProcess.cc,v 1.4 2004/02/23 23:46:31 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -523,7 +523,6 @@ JNICALL Java_us_temerity_pipeline_NativeProcess_execNative
     }
   }
 
-
   /* fork a process */ 
   {
     pid_t pid = fork();
@@ -624,6 +623,14 @@ JNICALL Java_us_temerity_pipeline_NativeProcess_execNative
 		  "NativeProcess.execNative()", dir);
 	  perror(msg);
 	  exit(EXIT_FAILURE);    
+	}
+
+	/* put this process into its own process group */ 
+	if(setsid() == -1) {
+	  sprintf(msg, "%s, unable to create a new process group for the child process", 
+		  "NativeProcess.execNative()");
+	  perror(msg);
+	  exit(EXIT_FAILURE);    	    
 	}
 
 	/* overlay the process */ 
