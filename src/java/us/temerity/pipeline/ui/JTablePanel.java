@@ -1,4 +1,4 @@
-// $Id: JTablePanel.java,v 1.1 2004/06/08 03:06:36 jim Exp $
+// $Id: JTablePanel.java,v 1.2 2004/06/22 19:43:28 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -24,7 +24,7 @@ import javax.swing.border.*;
 public 
 class JTablePanel 
   extends JPanel 
-  implements ActionListener
+  implements ActionListener, AdjustmentListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -53,13 +53,11 @@ class JTablePanel
   (
    SortableTableModel model, 
    int width[], 
-   boolean resize[], 
    TableCellRenderer renderers[], 
    TableCellEditor editors[]
   ) 
   {
     assert(model.getColumnCount() == width.length);
-    assert(width.length == resize.length);
     assert(width.length == renderers.length);
     assert(width.length == editors.length);
 
@@ -76,42 +74,64 @@ class JTablePanel
     }
 
     {
-      Box hbox = new Box(BoxLayout.X_AXIS);
+      Box tbox = new Box(BoxLayout.X_AXIS);
 
-      int wk;
-      for(wk=0; wk<width.length; wk++) {
+      {
+	JPanel panel = new JPanel();
+	pHeaderPanel = panel;
+	
+	panel.setName("TitleValuePanel");
+	panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+	
 	{
-	  JButton btn = new JButton(pTableModel.getColumnName(wk));
-	  btn.setName("TableHeaderButton");
-
+	  JViewport view = new JViewport();
+	  pHeaderViewport = view;
+	  
 	  {
-	    int extra = 0;
-	    if((wk == 0) || (wk == (width.length-1)))
-	      extra = 3;
+	    Box hbox = new Box(BoxLayout.X_AXIS);
 	    
-	    Dimension size = new Dimension(width[wk]+extra, 25);
-	    btn.setMinimumSize(size);
-	    btn.setPreferredSize(size);
+	    int wk;
+	    for(wk=0; wk<width.length; wk++) {
+	      {
+		JButton btn = new JButton(pTableModel.getColumnName(wk));
+		btn.setName("TableHeaderButton");
+		
+		{	    
+		  Dimension size = new Dimension(width[wk], 23);
+		  btn.setMinimumSize(size);
+		  btn.setPreferredSize(size);
+		  btn.setMaximumSize(size);
+		}
+		
+		btn.addActionListener(this);
+		btn.setActionCommand("sort-column:" + wk);	  
+		
+		hbox.add(btn);
+	      }
+	    }
+
+
+	    Dimension size = new Dimension(total, 23); 
+	    hbox.setMinimumSize(size);
+	    hbox.setPreferredSize(size);
+	    hbox.setMaximumSize(size);
 	    
-	    if(!resize[wk]) 
-	      btn.setMaximumSize(size);
-	    else 
-	      btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 25));
+	    view.setView(hbox);
 	  }
 
-	  btn.addActionListener(this);
-	  btn.setActionCommand("sort-column:" + wk);	  
+	  panel.add(view);
 
-	  hbox.add(btn);
+	  Dimension size = panel.getPreferredSize();
+ 	  panel.setMinimumSize(new Dimension(100, size.height));
+ 	  panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, size.height));
 	}
-
-	if(wk<(width.length-1))
-	  hbox.add(Box.createRigidArea(new Dimension(2, 0)));
+	
+	tbox.add(panel);
       }
 
-      hbox.add(Box.createRigidArea(new Dimension(17, 0)));
-	
-      add(hbox);
+      tbox.add(Box.createRigidArea(new Dimension(15, 0)));
+
+      add(tbox);
     }
 
     add(Box.createRigidArea(new Dimension(0, 1)));
@@ -143,23 +163,27 @@ class JTablePanel
 
 	  tcol.setMinWidth(width[wk]);
 	  tcol.setPreferredWidth(width[wk]);
-
-	  if(!resize[wk]) 
-	    tcol.setMaxWidth(width[wk]);
+	  tcol.setMaxWidth(width[wk]);
 	}
       }
+      
+      table.setPreferredScrollableViewportSize(new Dimension(total, 300));
+      table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
     }
 
     {
-      JScrollPane scroll = new JScrollPane(pTable);
-      
-      pTable.setPreferredScrollableViewportSize(new Dimension(total, 300));
+      JScrollPane scroll = new JScrollPane();
+      pTableScroll = scroll;
+
+      scroll.setViewportView(pTable);
       
       scroll.setHorizontalScrollBarPolicy
-	(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+	(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
       scroll.setVerticalScrollBarPolicy
 	(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-      
+
+      scroll.getHorizontalScrollBar().addAdjustmentListener(this);
+
       add(scroll);
     }
   }
@@ -214,7 +238,7 @@ class JTablePanel
   {
     return pTable;
   }
-
+ 
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -235,7 +259,30 @@ class JTablePanel
     String cmd = e.getActionCommand();
     if(cmd.startsWith("sort-column:")) 
       doSort(Integer.valueOf(cmd.substring(12)));
+  }
 
+
+  /*-- ADJUSTMENT LISTENER METHODS ---------------------------------------------------------*/
+
+  /**
+   * Invoked when the value of the adjustable has changed.
+   */ 
+  public void
+  adjustmentValueChanged
+  (
+   AdjustmentEvent e
+  )
+  { 
+    JViewport mview = pTableScroll.getViewport();
+    if((mview != null) && (pHeaderViewport != null)) {
+      Point mpos = mview.getViewPosition();    
+      Point hpos = pHeaderViewport.getViewPosition();
+
+      if(mpos.x != hpos.x) {
+	hpos.x = mpos.x;
+	pHeaderViewport.setViewPosition(hpos);
+      }
+    }  
   }
 
 
@@ -272,6 +319,17 @@ class JTablePanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * The column header.
+   */ 
+  private JPanel pHeaderPanel;
+
+  /**
+   * The scroll pane containing the column header.
+   */ 
+  private JViewport  pHeaderViewport;
+
+
+  /**
    * The table model.
    */ 
   private SortableTableModel pTableModel;
@@ -285,5 +343,10 @@ class JTablePanel
    * The cell editors.
    */ 
   private TableCellEditor  pEditors[];
+
+  /**
+   * The scroll pane containing the table.
+   */ 
+  private JScrollPane  pTableScroll;
 
 }
