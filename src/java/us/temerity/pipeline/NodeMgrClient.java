@@ -1,4 +1,4 @@
-// $Id: NodeMgrClient.java,v 1.12 2004/05/02 12:06:13 jim Exp $
+// $Id: NodeMgrClient.java,v 1.13 2004/05/04 11:00:15 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -165,8 +165,8 @@ class NodeMgrClient
   }
 
   /* 
-   * Update the immediate children of all node path components along the given path 
-   * which are visible within a working area view owned by the user. <P> 
+   * Update the immediate children of all node path components along the given paths
+   * which are visible within a working area view owned by the given user. <P> 
    * 
    * @param author 
    *   The of the user which owns the working version..
@@ -174,29 +174,28 @@ class NodeMgrClient
    * @param view 
    *   The name of the user's working area view. 
    * 
-   * @param path 
-   *   The fully resolved node path.
+   * @param paths 
+   *   The set of fully resolved node paths to update.
    * 
    * @throws PipelineException
-   *   If unable to update the node path.
+   *   If unable to update the node paths.
    */
   public synchronized NodeTreeComp
-  updatePath
+  updatePaths
   (
    String author, 
    String view, 
-   String path
+   TreeSet<String> paths
   ) 
     throws PipelineException
   {
     verifyConnection();
 	 
-    NodeID id = new NodeID(author, view, path);
-    NodeUpdatePathReq req = new NodeUpdatePathReq(id);
+    NodeUpdatePathsReq req = new NodeUpdatePathsReq(author, view, paths);
 
-    Object obj = performTransaction(NodeRequest.UpdatePath, req);
-    if(obj instanceof NodeUpdatePathRsp) {
-      NodeUpdatePathRsp rsp = (NodeUpdatePathRsp) obj;
+    Object obj = performTransaction(NodeRequest.UpdatePaths, req);
+    if(obj instanceof NodeUpdatePathsRsp) {
+      NodeUpdatePathsRsp rsp = (NodeUpdatePathsRsp) obj;
       return rsp.getRootComp();
     }
     else {

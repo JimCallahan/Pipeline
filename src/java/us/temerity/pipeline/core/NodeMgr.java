@@ -1,4 +1,4 @@
-// $Id: NodeMgr.java,v 1.24 2004/05/03 04:30:38 jim Exp $
+// $Id: NodeMgr.java,v 1.25 2004/05/04 11:00:15 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -776,20 +776,19 @@ class NodeMgr
    * which are visible within a working area view owned by the user. <P> 
    * 
    * @param req 
-   *   The update path request.
+   *   The update paths request.
    * 
    * @return
-   *   <CODE>NodeUpdatePathRsp</CODE> if successful or 
+   *   <CODE>NodeUpdatePathsRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to register the inital working version.
    */
   public Object
-  updatePath
+  updatePaths
   (
-   NodeUpdatePathReq req
+   NodeUpdatePathsReq req
   ) 
   {
     assert(req != null);
-    NodeID nodeID = req.getNodeID();
 
     TaskTimer timer = new TaskTimer();
 
@@ -797,42 +796,47 @@ class NodeMgr
     synchronized(pNodeTreeRoot) {
       timer.resume();	
       
-      String comps[] = nodeID.getName().split("/"); 
-
       NodeTreeComp rootComp = new NodeTreeComp();
+      for(String path : req.getPaths()) {
+	String comps[] = path.split("/"); 
 
-      NodeTreeComp parentComp   = rootComp;
-      NodeTreeEntry parentEntry = pNodeTreeRoot;
-      int wk;
-      for(wk=1; wk<comps.length; wk++) {
-	for(NodeTreeCommon com : parentEntry.values()) {
-	  NodeTreeEntry entry = (NodeTreeEntry) com;
-	  NodeTreeComp comp = new NodeTreeComp(entry, nodeID.getAuthor(), nodeID.getView());
-	  parentComp.put(comp.getName(), comp);
+	NodeTreeComp parentComp   = rootComp;
+	NodeTreeEntry parentEntry = pNodeTreeRoot;
+	int wk;
+	for(wk=1; wk<comps.length; wk++) {
+	  for(NodeTreeCommon com : parentEntry.values()) {
+	    if(!parentComp.containsKey(com.getName())) {
+	      NodeTreeEntry entry = (NodeTreeEntry) com;
+	      NodeTreeComp comp = new NodeTreeComp(entry, req.getAuthor(), req.getView());
+	      parentComp.put(comp.getName(), comp);
+	    }
+	  }
+	
+	  NodeTreeEntry entry = (NodeTreeEntry) parentEntry.get(comps[wk]); 
+	  if(entry == null) {
+	    parentEntry = null;
+	    break;
+	  }
+
+	  NodeTreeComp comp = (NodeTreeComp) parentComp.get(comps[wk]);
+	  assert(comp != null);
+	  
+	  parentEntry = entry;
+	  parentComp  = comp;
 	}
 	
-	NodeTreeEntry entry = (NodeTreeEntry) parentEntry.get(comps[wk]); 
-	if(entry == null) {
-	  parentEntry = null;
-	  break;
-	}
-
-	NodeTreeComp comp = (NodeTreeComp) parentComp.get(comps[wk]);
-	assert(comp != null);
-
-	parentEntry = entry;
-	parentComp  = comp;
-      }
-
-      if((parentEntry != null) && (parentComp != null)) {
-	for(NodeTreeCommon com : parentEntry.values()) {
-	  NodeTreeEntry entry = (NodeTreeEntry) com;
-	  NodeTreeComp comp = new NodeTreeComp(entry, nodeID.getAuthor(), nodeID.getView());
-	  parentComp.put(comp.getName(), comp);
+	if((parentEntry != null) && (parentComp != null)) {
+	  for(NodeTreeCommon com : parentEntry.values()) {
+	    if(!parentComp.containsKey(com.getName())) {
+	      NodeTreeEntry entry = (NodeTreeEntry) com;
+	      NodeTreeComp comp = new NodeTreeComp(entry, req.getAuthor(), req.getView());
+	      parentComp.put(comp.getName(), comp);
+	    }
+	  }
 	}
       }
 
-      return new NodeUpdatePathRsp(timer, nodeID, rootComp);
+      return new NodeUpdatePathsRsp(timer, req.getAuthor(), req.getView(), rootComp);
     }
   }
 

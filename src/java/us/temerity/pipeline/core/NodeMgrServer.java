@@ -1,4 +1,4 @@
-// $Id: NodeMgrServer.java,v 1.12 2004/05/02 12:09:18 jim Exp $
+// $Id: NodeMgrServer.java,v 1.13 2004/05/04 11:00:15 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -279,10 +279,10 @@ class NodeMgrServer
 	    }
 	    break;
 
-	  case UpdatePath:
+	  case UpdatePaths:
 	    {
-	      NodeUpdatePathReq req = (NodeUpdatePathReq) objIn.readObject();
-	      objOut.writeObject(pNodeMgr.updatePath(req));
+	      NodeUpdatePathsReq req = (NodeUpdatePathsReq) objIn.readObject();
+	      objOut.writeObject(pNodeMgr.updatePaths(req));
 	      objOut.flush(); 
 	    }
 	    break;

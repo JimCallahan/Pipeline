@@ -1,4 +1,4 @@
-// $Id: NodeRequest.java,v 1.9 2004/05/02 12:13:12 jim Exp $
+// $Id: NodeRequest.java,v 1.10 2004/05/04 11:00:15 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -33,9 +33,9 @@ public
 enum NodeRequest
 {  
   /**
-   * An instance of {@link NodeUpdatePathReq NodeUpdatePathReq} is next.
+   * An instance of {@link NodeUpdatePathsReq NodeUpdatePathsReq} is next.
    */
-  UpdatePath, 
+  UpdatePaths, 
 
   /**
    * An instance of {@link NodeGetWorkingAreasReq NodeGetWorkingAreasReq} is next.

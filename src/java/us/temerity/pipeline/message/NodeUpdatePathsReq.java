@@ -1,4 +1,4 @@
-// $Id: NodeUpdatePathReq.java,v 1.1 2004/05/02 12:13:34 jim Exp $
+// $Id: NodeUpdatePathsReq.java,v 1.1 2004/05/04 11:00:16 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -9,17 +9,17 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   N O D E   U P D A T E   P A T H   R E Q                                                */
+/*   N O D E   U P D A T E   P A T H S   R E Q                                              */
 /*------------------------------------------------------------------------------------------*/
 
 /**
  * A request to update the immediate children of all node path components along the 
- * given path.
+ * given paths.
  * 
  * @see NodeMgr
  */
 public
-class NodeUpdatePathReq
+class NodeUpdatePathsReq
   implements Serializable
 {
   /*----------------------------------------------------------------------------------------*/
@@ -29,18 +29,34 @@ class NodeUpdatePathReq
   /** 
    * Constructs a new request.
    * 
-   * @param id 
-   *   The unique working path identifier.
+   * @param author 
+   *   The of the user which owns the working area view.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param paths 
+   *   The set of fully resolved node paths to update.
    */
   public
-  NodeUpdatePathReq
+  NodeUpdatePathsReq
   (
-   NodeID id
+   String author, 
+   String view, 
+   TreeSet<String> paths
   )
   { 
-    if(id == null) 
+    if(author == null) 
+      throw new IllegalArgumentException("The author cannot be (null)!");
+    pAuthor = author;
+
+    if(view == null) 
+      throw new IllegalArgumentException("The view cannot be (null)!");
+    pView = view;
+
+    if(paths == null) 
       throw new IllegalArgumentException("The working path ID cannot be (null)!");
-    pNodeID = id;
+    pPaths = paths;
   }
 
 
@@ -49,13 +65,31 @@ class NodeUpdatePathReq
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
-  /**
-   * Gets the unique working path identifier.
-   */
-  public NodeID
-  getNodeID() 
+  /** 
+   * Get the name of user which owens the working area view.
+   */ 
+  public String
+  getAuthor() 
   {
-    return pNodeID;
+    return pAuthor;
+  }
+
+  /** 
+   * Get the name of the working area view.
+   */
+  public String
+  getView()
+  {
+    return pView;
+  }
+
+  /**
+   * The set of fully resolved node paths to update.
+   */
+  public TreeSet<String>
+  getPaths()
+  {
+    return pPaths;
   }
 
 
@@ -72,10 +106,20 @@ class NodeUpdatePathReq
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
+  /** 
+   * The name of user which owens the working area view.
+   */
+  private String  pAuthor;
+
+  /** 
+   * The name of the working area view.
+   */
+  private String  pView;
+
   /**
-   * The unique working version identifier.
+   * The set fully resolved node paths to update.
    */ 
-  private NodeID  pNodeID;
+  private TreeSet<String>  pPaths;
 
 }
   

@@ -1,4 +1,4 @@
-// $Id: NodeUpdatePathRsp.java,v 1.1 2004/05/02 12:13:34 jim Exp $
+// $Id: NodeUpdatePathsRsp.java,v 1.1 2004/05/04 11:00:16 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -9,14 +9,14 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   N O D E   U P D A T E   P A T H   R S P                                                */
+/*   N O D E   U P D A T E   P A T H S   R S P                                              */
 /*------------------------------------------------------------------------------------------*/
 
 /**
  * A successful response to a {@link NodeUpdatePathReq NodeUpdatePathReq} request.
  */
 public
-class NodeUpdatePathRsp
+class NodeUpdatePathsRsp
   extends TimedRsp
 {
   /*----------------------------------------------------------------------------------------*/
@@ -29,31 +29,40 @@ class NodeUpdatePathRsp
    * @param timer 
    *   The timing statistics for a task.
    * 
-   * @param id 
-   *   The unique working path identifier.
+   * @param author 
+   *   The of the user which owns the working area view.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
    * 
    * @param rootComp
    *   The root node path component.
    */ 
   public
-  NodeUpdatePathRsp
+  NodeUpdatePathsRsp
   (
    TaskTimer timer, 
-   NodeID id, 
+   String author, 
+   String view, 
    NodeTreeComp rootComp
   )
   { 
     super(timer);
 
-    if(id == null) 
-      throw new IllegalArgumentException("The working path ID cannot be (null)!");
-    pNodeID = id;
+    if(author == null) 
+      throw new IllegalArgumentException("The author cannot be (null)!");
+    pAuthor = author;
+
+    if(view == null) 
+      throw new IllegalArgumentException("The view cannot be (null)!");
+    pView = view;
 
     if(rootComp == null) 
       throw new IllegalArgumentException("The root node path component cannot be (null)!");
     pRootComp = rootComp;
 
-    Logs.net.finest("NodeMgr.updatePath(): " + id + ":\n  " + getTimer());
+    Logs.net.finest("NodeMgr.updatePaths(): " + author + "|" + view + 
+		    "\n  " + getTimer());
   }
 
 
@@ -62,13 +71,22 @@ class NodeUpdatePathRsp
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
-  /**
-   * Gets the unique working path identifier.
-   */
-  public NodeID
-  getNodeID() 
+  /** 
+   * Get the name of user which owens the working area view.
+   */ 
+  public String
+  getAuthor() 
   {
-    return pNodeID;
+    return pAuthor;
+  }
+
+  /** 
+   * Get the name of the working area view.
+   */
+  public String
+  getView()
+  {
+    return pView;
   }
   
   /**
@@ -94,10 +112,15 @@ class NodeUpdatePathRsp
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
-  /**
-   * The unique working path identifier.
-   */ 
-  private NodeID  pNodeID;
+  /** 
+   * The name of user which owens the working area view.
+   */
+  private String  pAuthor;
+
+  /** 
+   * The name of the working area view.
+   */
+  private String  pView;
 
   /**
    * The root node path component.
