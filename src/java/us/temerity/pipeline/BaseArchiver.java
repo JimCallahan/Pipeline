@@ -1,4 +1,4 @@
-// $Id: BaseArchiver.java,v 1.6 2005/03/10 08:07:27 jim Exp $
+// $Id: BaseArchiver.java,v 1.7 2005/03/15 19:10:24 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -571,7 +571,7 @@ class BaseArchiver
   {
     File tmp = null;
     try {
-      tmp = File.createTempFile(pName + "-" + name, "." + suffix, 
+      tmp = File.createTempFile(pName + "-", "." + suffix, 
 				getArchiveTempDir(name));
       chmod(mode, tmp);
     }
@@ -619,7 +619,7 @@ class BaseArchiver
   {
     File tmp = null;
     try {
-      tmp = File.createTempFile(pName + "-" + name, "." + suffix, 
+      tmp = File.createTempFile(pName + "-", "." + suffix, 
 				getRestoreTempDir(name));
       chmod(mode, tmp);
     }
