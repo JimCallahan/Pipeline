@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.75 2004/12/31 07:39:48 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.76 2004/12/31 08:55:56 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -917,10 +917,25 @@ class JNodeViewerPanel
   }
 
   /**
-   * Update the visualization graphics.
+   * Update the visualization graphics and any connected subpanels.
    */
   private synchronized void 
-  updateUniverse()
+  updateUniverse() 
+  { 
+    updateUniverse(true);
+  }
+
+  /**
+   * Update the visualization graphics.
+   * 
+   * @param updateSubPanels
+   *   Whether to also update any connected subpanels.
+   */
+  private synchronized void 
+  updateUniverse
+  (
+   boolean updateSubPanels
+  )
   { 
     /* compute the center of the current layout if no pinned node is set */ 
     if(pPinnedPath == null) {
@@ -1015,7 +1030,8 @@ class JNodeViewerPanel
     refresh();
 
     /* update the connected node details panels */ 
-    updateSubPanels(true);
+    if(updateSubPanels) 
+      updateSubPanels(true);
   }
   
   /**
@@ -1607,7 +1623,7 @@ class JNodeViewerPanel
 	      pPinnedPos  = vunder.getPosition();
 	      pPinnedPath = vunder.getNodePath();
 
-	      updateUniverse();
+	      updateUniverse(false);
 	    }
 	  }
 	}
