@@ -210,18 +210,35 @@ Administration</span></span></a><br>
       <li style="font-weight: bold; color: rgb(153, 0, 0);">editor</li>
       <ul style="color: rgb(153, 0, 0);">
         <li style="font-weight: bold;">--get</li>
-        <li style="font-weight: bold;">--get-info</li>
+        <li style="font-weight: bold;">--get-info<span
+ style="font-weight: normal;">=<span style="font-style: italic;">editor-name</span>[:<span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>]</span></li>
+        <li style="font-weight: bold;">--get-info-all<br>
+        </li>
       </ul>
       <li style="font-weight: bold; color: rgb(153, 0, 0);">action</li>
       <ul style="color: rgb(153, 0, 0);">
         <li style="font-weight: bold;">--get</li>
-        <li style="font-weight: bold;">--get-info</li>
+        <li style="font-weight: bold;">--get-info<span
+ style="font-weight: normal;">=<span style="font-style: italic;">action-name</span>[:<span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>]</span></li>
+        <li style="font-weight: bold;">--get-info-all<br>
+        </li>
       </ul>
       <li style="font-weight: bold; color: rgb(153, 0, 0);">comparator</li>
       <ul>
         <li style="font-weight: bold; color: rgb(153, 0, 0);">--get</li>
+        <li style="font-weight: bold; color: rgb(153, 0, 0);">--get-info<span
+ style="font-weight: normal;">=<span style="font-style: italic;">comparator-name</span>[:<span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>]</span></li>
         <li style="font-weight: bold;"><span
- style="color: rgb(153, 0, 0);">--get-info</span><br>
+ style="color: rgb(153, 0, 0);">--get-info-all</span><br>
         </li>
       </ul>
     </ul>
@@ -286,7 +303,7 @@ Area Views</a><br>
     <li style="font-weight: bold;"><a href="#Working_Node_Versions">Working
 Node Versions</a></li>
     <ul>
-      <li style="font-weight: bold; color: rgb(153, 0, 0);">working</li>
+      <li style="font-weight: bold; color: rgb(0, 0, 0);">working</li>
       <ul>
         <li style="font-weight: bold;"><a href="#working_--get-info">--get-info</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">node-name</span></span>
@@ -301,6 +318,97 @@ Node Versions</a></li>
  style="font-weight: normal;"><span style="font-weight: bold;">--hide</span>=<span
  style="font-style: italic;">section</span>[,<span
  style="font-style: italic;">section</span> ...]]</span></li>
+        <li style="font-weight: bold;"><a href="#working_--register"><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--</span></span>register</a><span
+ style="font-weight: normal;"><a
+ href="plscript.src.html.in#node_--register"><span
+ style="font-weight: bold;"></span></a>=<span
+ style="font-style: italic;">node-name</span>&nbsp;</span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span> </span><span
+ style="font-weight: normal;">[</span><a
+ href="plscript.src.html.in#--author">--author</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
+          <span style="font-weight: normal;">[</span><a
+ href="plscript.src.html.in#--view">--view</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]</span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"> </span></span><span
+ style="font-weight: normal;"><a href="plscript.src.html.in#--fseq"><span
+ style="font-weight: bold;">--fseq</span></a>=<span
+ style="font-style: italic;">prefix</span>[.#|@...][.<span
+ style="font-style: italic;">suffix</span>][,<span
+ style="font-style: italic;">start</span>[-<span
+ style="font-style: italic;">end</span>[x<span
+ style="font-style: italic;">by</span>]]</span><span
+ style="font-weight: normal;">] [<a
+ href="plscript.src.html.in#--toolset"><span style="font-weight: bold;">--toolset</span></a>=<span
+ style="font-style: italic;">toolset-name</span>] [<a
+ href="plscript.src.html.in#--editor"><span style="font-weight: bold;">--editor</span></a>=<span
+ style="font-style: italic;">editor-name</span></span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;">]
+[<a href="plscript.src.html.in#--no-action"><span
+ style="font-weight: bold;">--no-action</span></a>
+|<span style="font-weight: bold;"> <a
+ href="plscript.src.html.in#--action">--action</a></span>=<span
+ style="font-style: italic;">action-name</span></span><span
+ style="font-weight: normal;">[:<span style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;">] [<a
+ href="plscript.src.html.in#--action-enabled"><span
+ style="font-weight: bold;">--action-enabled</span></a>=true|false] [<a
+ href="plscript.src.html.in#--param"><span style="font-weight: bold;">--param</span></a>=<span
+ style="font-style: italic;">name</span>:<span
+ style="font-style: italic;">value</span> ...] [</span><span
+ style="font-weight: normal;"><a
+ href="plscript.src.html.in#--source-param"><span
+ style="font-weight: bold;">--source-param</span></a>=<span
+ style="font-style: italic;">source-name</span>,<span
+ style="font-style: italic;">name</span>:<span
+ style="font-style: italic;">value</span> ...] [<a
+ href="plscript.src.html.in#--ignore"><span style="font-weight: bold;">--ignore</span></a>
+| <a href="plscript.src.html.in#--abort"><span
+ style="font-weight: bold;">--abort</span></a>]
+[<a href="plscript.src.html.in#--serial"><span
+ style="font-weight: bold;">--serial</span></a>
+| <a href="plscript.src.html.in#--parallel"><span
+ style="font-weight: bold;">--parallel</span></a>]
+[<a href="plscript.src.html.in#--batch-size"><span
+ style="font-weight: bold;">--batch-size</span></a>=<span
+ style="font-style: italic;">integer</span>] [<a
+ href="plscript.src.html.in#--priority"><span style="font-weight: bold;">--priority</span></a>=<span
+ style="font-style: italic;">integer</span>] [<a
+ href="plscript.src.html.in#--max-load"><span style="font-weight: bold;">--max-load</span></a>=<span
+ style="font-style: italic;">real</span>] [<a
+ href="plscript.src.html.in#--min-memory"><span
+ style="font-weight: bold;">--min-memory</span></a>=<span
+ style="font-style: italic;">bytes</span></span><span
+ style="font-weight: normal;"><span style="font-style: italic;"></span>[K|M|G]</span><span
+ style="font-weight: normal;">] [<a
+ href="plscript.src.html.in#--min-disk"><span style="font-weight: bold;">--min-disk</span></a>=<span
+ style="font-style: italic;">bytes</span></span><span
+ style="font-weight: normal;"><span style="font-style: italic;"></span>[K|M|G]</span><span
+ style="font-weight: normal;">] [<a
+ href="plscript.src.html.in#--license-key"><span
+ style="font-weight: bold;">--license-key</span></a>=<span
+ style="font-style: italic;">key-name</span>[:true|false] ...] [<a
+ href="plscript.src.html.in#--selection-key"><span
+ style="font-weight: bold;">--selection-key</span></a>=<span
+ style="font-style: italic;">key-name</span>[:true|false] ...]</span></li>
+        <li style="font-weight: bold;"><a href="#working_--release"><span
+ style="font-weight: normal;"><span
+ style="font-weight: bold; color: rgb(153, 0, 0);">X</span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--</span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">release</span></span></a><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
+ style="font-style: italic;">node-name</span> </span><span
+ style="font-weight: normal;">[</span><a
+ href="plscript.src.html.in#--author">--author</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
+          <span style="font-weight: normal;">[</span><a
+ href="plscript.src.html.in#--view">--view</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]</span><span
+ style="font-weight: normal;">
+[<span style="font-weight: bold;">--remove-files</span>]</span></li>
         <li style="font-weight: bold;"><span
  style="font-weight: normal;"><a href="#working_--set"><span
  style="font-weight: bold;">--set</span></a>=<span
@@ -317,8 +425,8 @@ Node Versions</a></li>
  style="font-weight: normal;"></span><span style="font-weight: normal;">]
 [<a href="#--no-action"><span style="font-weight: bold;"></span></a><span
  style="font-weight: bold;"></span></span><a href="#--action"><span
- style="font-weight: normal;"><a href="#--no-action"><span
- style="font-weight: bold;">--no-action</span></a></span></a><span
+ style="font-weight: normal;"></span></a><a href="#--no-action"><span
+ style="font-weight: bold;">--no-action</span></a><span
  style="font-weight: normal;"><span style="font-weight: bold;"></span> |</span><a
  href="#--action"><span style="font-weight: normal;"> </span></a><span
  style="font-weight: normal;"><span style="font-weight: bold;"><a
@@ -390,8 +498,9 @@ Node Versions</a></li>
  style="font-weight: normal;"><span style="font-style: italic;"> ...</span></span><span
  style="font-weight: normal;"></span></li>
         <li style="font-weight: bold;"><span
- style="font-weight: normal;"><a href="#working_--add-secondary"><span
- style="font-weight: bold;">--add-secondary</span></a>=<span
+ style="font-weight: normal;"><span
+ style="font-weight: bold; color: rgb(153, 0, 0);">X</span><a
+ href="#working_--add-secondary"><span style="font-weight: bold;">--add-secondary</span></a>=<span
  style="font-style: italic;">node-name</span> </span><span
  style="font-weight: normal;">[</span><a href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
@@ -406,7 +515,8 @@ Node Versions</a></li>
  style="font-style: italic;">by</span>]]</span></li>
         <li style="font-weight: bold;"><a
  href="#working_--remove-secondary"><span style="font-weight: normal;"><span
- style="font-weight: bold;">--remove-secondary</span></span></a><span
+ style="font-weight: bold; color: rgb(153, 0, 0);">X</span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--remove-secondary</span></span></a><span
  style="font-weight: normal;"><a href="#working_--remove-secondary"><span
  style="font-weight: bold;"></span></a>=<span
  style="font-style: italic;">node-name</span> </span><span
@@ -424,7 +534,9 @@ Node Versions</a></li>
  style="font-style: italic;">start</span>[-<span
  style="font-style: italic;">end</span>[x<span
  style="font-style: italic;">by</span>]]]</span></li>
-        <li style="font-weight: bold;"><span
+        <li style="font-weight: bold;"><a href="#working_--rename"><span
+ style="font-weight: normal;"><span
+ style="font-weight: bold; color: rgb(153, 0, 0);">X</span></span></a><span
  style="font-weight: normal;"><a href="#working_--rename"><span
  style="font-weight: bold;">--rename</span></a>=</span><span
  style="font-weight: normal;"><span style="font-style: italic;">node-name</span>
@@ -439,6 +551,8 @@ Node Versions</a></li>
  style="font-style: italic;"><br>
           </span></span></li>
         <li style="font-weight: bold;"><a href="#working_--renumber"><span
+ style="font-weight: normal;"><span
+ style="font-weight: bold; color: rgb(153, 0, 0);">X</span></span><span
  style="font-weight: normal;"><span style="font-weight: bold;">--renumber</span></span></a><span
  style="font-weight: normal;">=</span><span style="font-weight: normal;"><span
  style="font-style: italic;">node-name</span> </span><span
@@ -453,6 +567,8 @@ Node Versions</a></li>
  style="font-weight: normal;"><span style="font-style: italic;"></span>
 [<span style="font-weight: bold;">--remove-files</span>]</span></li>
         <li style="font-weight: bold;"><a href="#working_--edit"><span
+ style="font-weight: normal;"><span
+ style="font-weight: bold; color: rgb(153, 0, 0);">X</span></span><span
  style="font-weight: normal;"><span style="font-weight: bold;">--edit</span></span></a><span
  style="font-weight: normal;"><span style="font-weight: bold;"></span></span><span
  style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
@@ -485,9 +601,59 @@ Node Versions</a></li>
  style="font-style: italic;">suffix</span>][,<span
  style="font-style: italic;">start</span>[-<span
  style="font-style: italic;">end</span>[x<span
- style="font-style: italic;">by</span>]]]]</span><span
- style="font-weight: normal;"><span style="font-weight: bold;"></span><br>
-          </span></li>
+ style="font-style: italic;">by</span>]]]]</span></li>
+        <li style="font-weight: bold;"><a href="#working_--submit-jobs"><span
+ style="font-weight: normal;"><span
+ style="font-weight: bold; color: rgb(153, 0, 0);">X</span></span></a><span
+ style="font-weight: normal;"><a href="#working_--submit-jobs"><span
+ style="font-weight: bold;">--submit-jobs</span></a>=node-name </span><span
+ style="font-weight: normal;">[</span><a
+ href="plscript.src.html.in#--author">--author</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
+          <span style="font-weight: normal;">[</span><a
+ href="plscript.src.html.in#--view">--view</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]
+          </span><span style="font-weight: normal;">[<span
+ style="font-weight: bold;"></span></span><span
+ style="font-weight: normal;"></span><a
+ href="plscript.src.html.in#--frame"><span style="font-weight: bold;">--frame</span></a><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
+ style="font-style: italic;">single</span>|<span
+ style="font-style: italic;">start</span>-<span
+ style="font-style: italic;">end</span>[,...] ...] [<span
+ style="font-weight: bold;"></span></span><span
+ style="font-weight: normal;"></span><a
+ href="plscript.src.html.in#--index"><span style="font-weight: bold;">--index</span></a><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
+ style="font-style: italic;">single</span>|<span
+ style="font-style: italic;">start</span>-<span
+ style="font-style: italic;">end</span>[,...] ...]</span></li>
+        <li style="font-weight: bold;"><a href="#working_--remove-files"><span
+ style="font-weight: normal;"><span
+ style="font-weight: bold; color: rgb(153, 0, 0);">X</span></span></a><span
+ style="font-weight: normal;"><a href="#working_--remove-files"><span
+ style="font-weight: bold;">--remove-files</span></a>=<span
+ style="font-style: italic;">node-name</span> </span><span
+ style="font-weight: normal;">[</span><a
+ href="plscript.src.html.in#--author">--author</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
+          <span style="font-weight: normal;">[</span><a
+ href="plscript.src.html.in#--view">--view</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]
+          </span><span style="font-weight: normal;">[<span
+ style="font-weight: bold;"></span></span><span
+ style="font-weight: normal;"></span><a
+ href="plscript.src.html.in#--frame"><span style="font-weight: bold;">--frame</span></a><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
+ style="font-style: italic;">single</span>|<span
+ style="font-style: italic;">start</span>-<span
+ style="font-style: italic;">end</span>[,...] ...] [</span><span
+ style="font-weight: normal;"></span><a
+ href="plscript.src.html.in#--index"><span style="font-weight: bold;">--index</span></a><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
+ style="font-style: italic;">single</span>|<span
+ style="font-style: italic;">start</span>-<span
+ style="font-style: italic;">end</span>[,...] ...]</span></li>
       </ul>
     </ul>
     <li style="font-weight: bold;"><a href="#Checked-In_Node_Versions">Checked-In
@@ -584,81 +750,6 @@ Operations</span></span></a></li>
       <span style="font-weight: normal;"><span
  style="font-weight: bold;"></span></span>
       <ul>
-        <li style="font-weight: bold;"><a href="#node_--register"><span
- style="font-weight: normal;"><span style="font-weight: bold;">--</span></span>register</a><span
- style="font-weight: normal;"><a href="#node_--register"><span
- style="font-weight: bold;"></span></a>=<span
- style="font-style: italic;">node-name</span>&nbsp;</span><span
- style="font-weight: normal;"><span style="font-weight: bold;"></span> </span><span
- style="font-weight: normal;">[</span><a href="#--author">--author</a><span
- style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
-          <span style="font-weight: normal;">[</span><a href="#--view">--view</a><span
- style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]</span><span
- style="font-weight: normal;"><span style="font-weight: bold;"> </span></span><span
- style="font-weight: normal;"><a href="#--fseq"><span
- style="font-weight: bold;">--fseq</span></a>=<span
- style="font-style: italic;">prefix</span>[.#|@...][.<span
- style="font-style: italic;">suffix</span>][,<span
- style="font-style: italic;">start</span>[-<span
- style="font-style: italic;">end</span>[x<span
- style="font-style: italic;">by</span>]]</span><span
- style="font-weight: normal;">] [<a href="#--toolset"><span
- style="font-weight: bold;">--toolset</span></a>=<span
- style="font-style: italic;">toolset-name</span>] [<a href="#--editor"><span
- style="font-weight: bold;">--editor</span></a>=<span
- style="font-style: italic;">editor-name</span></span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;">]
-[<a href="#--no-action"><span style="font-weight: bold;">--no-action</span></a>
-|<span style="font-weight: bold;"> <a href="#--action">--action</a></span>=<span
- style="font-style: italic;">action-name</span></span><span
- style="font-weight: normal;">[:<span style="font-style: italic;">major</span>.<span
- style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span>]</span><span
- style="font-weight: normal;">] [<a href="#--action-enabled"><span
- style="font-weight: bold;">--action-enabled</span></a>=true|false] [<a
- href="#--param"><span style="font-weight: bold;">--param</span></a>=<span
- style="font-style: italic;">name</span>:<span
- style="font-style: italic;">value</span> ...] [</span><span
- style="font-weight: normal;"><a href="#--source-param"><span
- style="font-weight: bold;">--source-param</span></a>=<span
- style="font-style: italic;">source-name</span>,<span
- style="font-style: italic;">name</span>:<span
- style="font-style: italic;">value</span> ...] [<a href="#--ignore"><span
- style="font-weight: bold;">--ignore</span></a>
-| <a href="#--abort"><span style="font-weight: bold;">--abort</span></a>]
-[<a href="#--serial"><span style="font-weight: bold;">--serial</span></a>
-| <a href="#--parallel"><span style="font-weight: bold;">--parallel</span></a>]
-[<a href="#--batch-size"><span style="font-weight: bold;">--batch-size</span></a>=<span
- style="font-style: italic;">integer</span>] [<a href="#--priority"><span
- style="font-weight: bold;">--priority</span></a>=<span
- style="font-style: italic;">integer</span>] [<a href="#--max-load"><span
- style="font-weight: bold;">--max-load</span></a>=<span
- style="font-style: italic;">real</span>] [<a href="#--min-memory"><span
- style="font-weight: bold;">--min-memory</span></a>=<span
- style="font-style: italic;">bytes</span></span><span
- style="font-weight: normal;"><span style="font-style: italic;"></span>[K|M|G]</span><span
- style="font-weight: normal;">] [<a href="#--min-disk"><span
- style="font-weight: bold;">--min-disk</span></a>=<span
- style="font-style: italic;">bytes</span></span><span
- style="font-weight: normal;"><span style="font-style: italic;"></span>[K|M|G]</span><span
- style="font-weight: normal;">] [<a href="#--license-key"><span
- style="font-weight: bold;">--license-key</span></a>=<span
- style="font-style: italic;">key-name</span>[:true|false] ...] [<a
- href="#--selection-key"><span style="font-weight: bold;">--selection-key</span></a>=<span
- style="font-style: italic;">key-name</span>[:true|false] ...]</span></li>
-      </ul>
-      <ul>
-        <li style="font-weight: bold;"><a href="#node_--release"><span
- style="font-weight: normal;"><span style="font-weight: bold;">--</span></span><span
- style="font-weight: normal;"><span style="font-weight: bold;">release</span></span></a><span
- style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
- style="font-style: italic;">node-name</span> </span><span
- style="font-weight: normal;">[</span><a href="#--author">--author</a><span
- style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
-          <span style="font-weight: normal;">[</span><a href="#--view">--view</a><span
- style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]</span><span
- style="font-weight: normal;">
-[<span style="font-weight: bold;">--remove-files</span>]</span></li>
         <li style="font-weight: bold;"><span
  style="font-weight: normal;"><a href="#node_--check-in"><span
  style="font-weight: bold;">--check-in</span></a>=<span
@@ -692,50 +783,6 @@ Operations</span></span></a></li>
  style="font-style: italic;">minor</span>.<span
  style="font-style: italic;">micro</span>]</span><span
  style="font-weight: normal;"> [<span style="font-weight: bold;">--keep-newer</span>]</span></li>
-        <li style="font-weight: bold;"><span
- style="font-weight: normal;"><a href="#node_--submit-jobs"><span
- style="font-weight: bold;">--submit-jobs</span></a>=node-name </span><span
- style="font-weight: normal;">[</span><a href="#--author">--author</a><span
- style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
-          <span style="font-weight: normal;">[</span><a href="#--view">--view</a><span
- style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]
-          </span><span style="font-weight: normal;">[<span
- style="font-weight: bold;"></span></span><span
- style="font-weight: normal;"></span><a href="#--frame"><span
- style="font-weight: bold;">--frame</span></a><span
- style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
- style="font-style: italic;">single</span>|<span
- style="font-style: italic;">start</span>-<span
- style="font-style: italic;">end</span>[,...] ...] [<span
- style="font-weight: bold;"></span></span><span
- style="font-weight: normal;"></span><a href="#--index"><span
- style="font-weight: bold;">--index</span></a><span
- style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
- style="font-style: italic;">single</span>|<span
- style="font-style: italic;">start</span>-<span
- style="font-style: italic;">end</span>[,...] ...]</span></li>
-        <li style="font-weight: bold;"><span
- style="font-weight: normal;"><a href="#node_--remove-files"><span
- style="font-weight: bold;">--remove-files</span></a>=<span
- style="font-style: italic;">node-name</span> </span><span
- style="font-weight: normal;">[</span><a href="#--author">--author</a><span
- style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
-          <span style="font-weight: normal;">[</span><a href="#--view">--view</a><span
- style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]
-          </span><span style="font-weight: normal;">[<span
- style="font-weight: bold;"></span></span><span
- style="font-weight: normal;"></span><a href="#--frame"><span
- style="font-weight: bold;">--frame</span></a><span
- style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
- style="font-style: italic;">single</span>|<span
- style="font-style: italic;">start</span>-<span
- style="font-style: italic;">end</span>[,...] ...] [</span><span
- style="font-weight: normal;"></span><a href="#--index"><span
- style="font-weight: bold;">--index</span></a><span
- style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
- style="font-style: italic;">single</span>|<span
- style="font-style: italic;">start</span>-<span
- style="font-style: italic;">end</span>[,...] ...]</span></li>
       </ul>
     </ul>
     <li style="font-weight: bold;"><a href="#Queue_Operations"><span
@@ -2185,7 +2232,7 @@ printed.&nbsp; The following sections are supported by these options: <br>
 <div style="margin-left: 40px;">A shortcut for speciying all of the
 sections at once.</div>
 <span style="font-weight: bold;"></span><br>
-<span style="font-weight: bold;">version<br>
+<span style="font-weight: bold;">vsn<br>
 <br>
 </span>
 <div style="margin-left: 40px;">Prints the revision number of the
@@ -2198,7 +2245,7 @@ prop</span><br>
 environment and default editor for the working version.<br>
 </div>
 <br>
-<span style="font-weight: bold;">action</span><br>
+<span style="font-weight: bold;">act</span><br>
 <br>
 <div style="margin-left: 40px;">Prints the name, version, single and
 per-source parameters of the Action plugin associated with the working
@@ -2216,7 +2263,8 @@ version. <br>
 <span style="font-weight: bold;">key</span><br>
 <br>
 <div style="margin-left: 40px;">Prints the names of the license and
-selection keys required by jobs associated with the working version.&nbsp;
+selection keys required by jobs associated with the working
+version.&nbsp;
 This section will be skipped if there is no Action plugin associated
 with the working
 version.
@@ -2232,6 +2280,129 @@ links.<br>
 </div>
 </div>
 <span style="font-weight: normal;"> </span><br>
+<span style="font-weight: bold;"><a name="working_--register"></a>working</span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"> </span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--</span></span><span
+ style="font-weight: bold;">register</span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
+ style="font-style: italic;">node-name</span></span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"><br>
+&nbsp;&nbsp;&nbsp; </span><span style="font-weight: normal;">[</span><a
+ style="font-weight: bold;" href="plscript.src.html.in#--author">--author</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
+<span style="font-weight: normal;">[</span><a style="font-weight: bold;"
+ href="plscript.src.html.in#--view">--view</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]</span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span></span><span
+ style="font-weight: normal;"><br>
+&nbsp;&nbsp;&nbsp; <a href="plscript.src.html.in#--fseq"><span
+ style="font-weight: bold;">--fseq</span></a>=<span
+ style="font-style: italic;">prefix</span>[.#|@...][.<span
+ style="font-style: italic;">suffix</span>][,<span
+ style="font-style: italic;">start</span>[-<span
+ style="font-style: italic;">end</span>[x<span
+ style="font-style: italic;">by</span>]]</span><span
+ style="font-weight: normal;">] <br>
+&nbsp;&nbsp;&nbsp; [<a href="plscript.src.html.in#--toolset"><span
+ style="font-weight: bold;">--toolset</span></a>=<span
+ style="font-style: italic;">toolset-name</span>] [<a
+ href="plscript.src.html.in#--editor"><span style="font-weight: bold;">--editor</span></a>=<span
+ style="font-style: italic;">editor-name</span></span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;">]
+<br>
+&nbsp;&nbsp;&nbsp; [<a href="plscript.src.html.in#--no-action"><span
+ style="font-weight: bold;">--no-action</span></a>
+|<span style="font-weight: bold;"> <a
+ href="plscript.src.html.in#--action">--action</a></span>=<span
+ style="font-style: italic;">action-name</span></span><span
+ style="font-weight: normal;">[:<span style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;">] <br>
+&nbsp;&nbsp;&nbsp; [<a href="plscript.src.html.in#--action-enabled"><span
+ style="font-weight: bold;">--action-enabled</span></a>=true|false] [<a
+ href="plscript.src.html.in#--param"><span style="font-weight: bold;">--param</span></a>=<span
+ style="font-style: italic;">name</span>:<span
+ style="font-style: italic;">value</span> ...] <br>
+&nbsp;&nbsp;&nbsp; [</span><span style="font-weight: normal;"><a
+ href="plscript.src.html.in#--source-param"><span
+ style="font-weight: bold;">--source-param</span></a>=<span
+ style="font-style: italic;">source-name</span>,<span
+ style="font-style: italic;">name</span>:<span
+ style="font-style: italic;">value</span> ...] <br>
+&nbsp;&nbsp;&nbsp; [<a href="plscript.src.html.in#--ignore"><span
+ style="font-weight: bold;">--ignore</span></a>
+| <a href="plscript.src.html.in#--abort"><span
+ style="font-weight: bold;">--abort</span></a>]
+[<a href="plscript.src.html.in#--serial"><span
+ style="font-weight: bold;">--serial</span></a>
+| <a href="plscript.src.html.in#--parallel"><span
+ style="font-weight: bold;">--parallel</span></a>]
+[<a href="plscript.src.html.in#--batch-size"><span
+ style="font-weight: bold;">--batch-size</span></a>=<span
+ style="font-style: italic;">integer</span>] <br>
+&nbsp;&nbsp;&nbsp; [<a href="plscript.src.html.in#--priority"><span
+ style="font-weight: bold;">--priority</span></a>=<span
+ style="font-style: italic;">integer</span>] [<a
+ href="plscript.src.html.in#--max-load"><span style="font-weight: bold;">--max-load</span></a>=<span
+ style="font-style: italic;">real</span>] <br>
+&nbsp;&nbsp;&nbsp; [<a href="plscript.src.html.in#--min-memory"><span
+ style="font-weight: bold;">--min-memory</span></a>=<span
+ style="font-style: italic;">bytes</span></span><span
+ style="font-weight: normal;"><span style="font-style: italic;"></span>[K|M|G]</span><span
+ style="font-weight: normal;">] [<a
+ href="plscript.src.html.in#--min-disk"><span style="font-weight: bold;">--min-disk</span></a>=<span
+ style="font-style: italic;">bytes</span></span><span
+ style="font-weight: normal;"><span style="font-style: italic;"></span>[K|M|G]</span><span
+ style="font-weight: normal;">] <br>
+&nbsp;&nbsp;&nbsp; [<a href="plscript.src.html.in#--license-key"><span
+ style="font-weight: bold;">--license-key</span></a>=<span
+ style="font-style: italic;">key-name</span>[:true|false] ...] <br>
+&nbsp;&nbsp;&nbsp; [<a href="plscript.src.html.in#--selection-key"><span
+ style="font-weight: bold;">--selection-key</span></a>=<span
+ style="font-style: italic;">key-name</span>[:true|false] ...]</span><br>
+<span style="font-weight: normal;"></span><br>
+<div style="margin-left: 40px;">Register a new working node version
+version (<span style="font-style: italic;">node-name</span>) in the
+working area (<span style="font-style: italic;">view-name</span>) owned
+by the user (<span style="font-style: italic;">user-name</span>). <br>
+</div>
+<br>
+<span style="font-weight: bold;"><a name="working_--release"></a>working</span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"><span
+ style="font-weight: bold;"></span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"> </span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--</span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">release</span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
+ style="font-style: italic;">node-name</span> </span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"><br>
+&nbsp;&nbsp;&nbsp; </span><span style="font-weight: normal;">[</span><a
+ style="font-weight: bold;" href="plscript.src.html.in#--author">--author</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
+<span style="font-weight: normal;">[</span><a style="font-weight: bold;"
+ href="plscript.src.html.in#--view">--view</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]</span><span
+ style="font-weight: normal;"><br>
+&nbsp;&nbsp;&nbsp; [<span style="font-weight: bold;">--remove-files</span>]<br>
+<br>
+</span>
+<div style="margin-left: 40px;">Release the target working node version
+version (<span style="font-style: italic;">node-name</span>) in the
+working area (<span style="font-style: italic;">view-name</span>) owned
+by the user (<span style="font-style: italic;">user-name</span>).&nbsp;
+If the <span style="font-weight: bold;">--remove-files</span> option
+is specified, also delete the primary and secondary files associated
+with the working version.<br>
+<br>
+</div>
 <span style="font-weight: bold;"><a name="working_--set"></a>working </span><span
  style="font-weight: normal;"><span style="font-weight: bold;">--set</span>=<span
  style="font-style: italic;">node-name <br>
@@ -2596,6 +2767,107 @@ which of the files associated with the target node should be
 edited.&nbsp; If none of these options are specified, the editor will
 edit all of the primary files associated with the target node.<br>
 </div>
+<span style="font-weight: normal;"><span style="font-weight: bold;"><br>
+</span></span>
+<div style="margin-left: 40px;"><span style="font-weight: normal;"><span
+ style="font-weight: bold;"><a name="working_--submit-jobs"></a>working</span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"> </span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--submit-jobs</span>=node-name
+</span><span style="font-weight: normal;"></span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
+ style="font-weight: normal;"></span><br>
+<span style="font-weight: normal;">&nbsp;&nbsp;&nbsp; </span><span
+ style="font-weight: normal;">[</span><a style="font-weight: bold;"
+ href="plscript.src.html.in#--author">--author</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
+<span style="font-weight: normal;">[</span><a style="font-weight: bold;"
+ href="plscript.src.html.in#--view">--view</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]</span><span
+ style="font-weight: normal;"></span><br>
+<span style="font-weight: normal;">&nbsp;&nbsp;&nbsp; </span><span
+ style="font-weight: normal;">[<span style="font-weight: bold;"></span></span><span
+ style="font-weight: normal;"></span><a
+ href="plscript.src.html.in#--frame"><span style="font-weight: bold;">--frame</span></a><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
+ style="font-style: italic;">single</span>|<span
+ style="font-style: italic;">start</span>-<span
+ style="font-style: italic;">end</span>[,...] ...] [<span
+ style="font-weight: bold;"></span></span><span
+ style="font-weight: normal;"></span><a
+ href="plscript.src.html.in#--index"><span style="font-weight: bold;">--index</span></a><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
+ style="font-style: italic;">single</span>|<span
+ style="font-style: italic;">start</span>-<span
+ style="font-style: italic;">end</span>[,...] ...]</span><br>
+<span style="font-weight: normal;"></span><br>
+<span style="font-weight: normal;"></span></div>
+<div style="margin-left: 80px;">Submit jobs to the Pipeline queue for
+execution which are required to regenerate the stale files associated
+with the target working node version (<span style="font-style: italic;">node-name</span>)
+in the working area (<span style="font-style: italic;">view-name</span>)
+owned by the user (<span style="font-style: italic;">user-name</span>).&nbsp;
+Jobs required to regenerate any upstream nodes connected through
+Dependency links to the target will also be submitted.&nbsp; The <span
+ style="font-weight: bold;">--frame</span> and <span
+ style="font-weight: bold;">--index</span>
+options can be used to select which of the files associated with the
+target node should be regenerated.&nbsp; If none of these options are
+specified, all stale files associated with the
+target node will be regenerated.<br>
+<br>
+If successful, the ID of the job group for all of the submitted jobs
+will be printed.&nbsp; This ID can be used with the job-group
+operations below to <br>
+</div>
+<div style="margin-left: 40px;"><span style="font-weight: normal;"></span><br>
+<span style="font-weight: normal;"></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"><a
+ name="working_--remove-files"></a>working</span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"> </span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--remove-files</span>=<span
+ style="font-style: italic;">node-name</span> </span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"></span><br>
+<span style="font-weight: normal;">&nbsp;&nbsp;&nbsp; </span><span
+ style="font-weight: normal;">[</span><a style="font-weight: bold;"
+ href="plscript.src.html.in#--author">--author</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
+<span style="font-weight: normal;">[</span><a style="font-weight: bold;"
+ href="plscript.src.html.in#--view">--view</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]</span><span
+ style="font-weight: normal;"></span><br>
+<span style="font-weight: normal;">&nbsp;&nbsp;&nbsp; </span><span
+ style="font-weight: normal;">[<span style="font-weight: bold;"></span></span><span
+ style="font-weight: normal;"></span><a
+ href="plscript.src.html.in#--frame"><span style="font-weight: bold;">--frame</span></a><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
+ style="font-style: italic;">single</span>|<span
+ style="font-style: italic;">start</span>-<span
+ style="font-style: italic;">end</span>[,...] ...] [</span><span
+ style="font-weight: normal;"></span><a
+ href="plscript.src.html.in#--index"><span style="font-weight: bold;">--index</span></a><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
+ style="font-style: italic;">single</span>|<span
+ style="font-style: italic;">start</span>-<span
+ style="font-style: italic;">end</span>[,...] ...]</span><br>
+<span style="font-weight: normal;"></span><span
+ style="font-weight: normal;"></span><br>
+<span style="font-weight: normal;"></span></div>
+<div style="margin-left: 80px;">Deletes the primary and secondary files
+assciated with the target working node version (<span
+ style="font-style: italic;">node-name</span>) in the working area (<span
+ style="font-style: italic;">view-name</span>) owned by the user (<span
+ style="font-style: italic;">user-name</span>).&nbsp; The <span
+ style="font-weight: bold;">--frame</span> and <span
+ style="font-weight: bold;">--index</span>
+options can be used to select which of the files associated with the
+target node should be deleted.&nbsp; If none of these options are
+specified, all files associated with the
+target node will be regenerated.</div>
 <h3><a name="Checked-In_Node_Versions"></a>Checked-In Node Versions</h3>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
  name="checked-in_--get-info"></a>checked-in</span>
@@ -2641,7 +2913,7 @@ printed.&nbsp; The following sections are supported by these options: <br>
 <div style="margin-left: 40px;">A shortcut for speciying all of the
 sections at once.</div>
 <br>
-<span style="font-weight: bold;">version<br>
+<span style="font-weight: bold;">vsn<br>
 <br>
 </span>
 <div style="margin-left: 40px;">Prints the revision number of the
@@ -2673,7 +2945,8 @@ version.<br>
 <span style="font-weight: bold;">key</span> <br>
 <br>
 <div style="margin-left: 40px;">Prints the names of the license and
-selection keys required by jobs associated with the checked-in version.&nbsp;
+selection keys required by jobs associated with the checked-in
+version.&nbsp;
 This section will be skipped if there is no Action plugin associated
 with the checked-in
 version.
@@ -2797,7 +3070,7 @@ printed.&nbsp; The following sections are supported by these options: <br>
 sections at once.<br>
 <br>
 </div>
-<span style="font-weight: bold;"></span><span style="font-weight: bold;">version<br>
+<span style="font-weight: bold;"></span><span style="font-weight: bold;">vsn<br>
 <br>
 </span>
 <div style="margin-left: 40px;">Prints the version state and revision
@@ -2856,121 +3129,7 @@ checked-in versions have upstream links.
 <ul style="margin-left: 40px;">
   <span style="font-weight: normal;"><span style="font-weight: bold;"></span></span>
 </ul>
-<div style="margin-left: 40px;"><span style="font-weight: normal;"><span
- style="font-weight: bold;"><a name="node_--register"></a>node</span></span><span
- style="font-weight: normal;"><span style="font-weight: bold;"></span></span><span
- style="font-weight: normal;"><span style="font-weight: bold;"> </span></span><span
- style="font-weight: normal;"><span style="font-weight: bold;">--</span></span><span
- style="font-weight: bold;">register</span><span
- style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
- style="font-style: italic;">node-name</span></span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;"><br>
-&nbsp;&nbsp;&nbsp; </span><span style="font-weight: normal;">[</span><a
- style="font-weight: bold;" href="#--author">--author</a><span
- style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
-<span style="font-weight: normal;">[</span><a style="font-weight: bold;"
- href="#--view">--view</a><span style="font-weight: normal;">=<span
- style="font-style: italic;">view-name</span>]</span><span
- style="font-weight: normal;"><span style="font-weight: bold;"></span></span><span
- style="font-weight: normal;"><br>
-&nbsp;&nbsp;&nbsp; <a href="#--fseq"><span style="font-weight: bold;">--fseq</span></a>=<span
- style="font-style: italic;">prefix</span>[.#|@...][.<span
- style="font-style: italic;">suffix</span>][,<span
- style="font-style: italic;">start</span>[-<span
- style="font-style: italic;">end</span>[x<span
- style="font-style: italic;">by</span>]]</span><span
- style="font-weight: normal;">] <br>
-&nbsp;&nbsp;&nbsp; [<a href="#--toolset"><span
- style="font-weight: bold;">--toolset</span></a>=<span
- style="font-style: italic;">toolset-name</span>] [<a href="#--editor"><span
- style="font-weight: bold;">--editor</span></a>=<span
- style="font-style: italic;">editor-name</span></span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;">]
-<br>
-&nbsp;&nbsp;&nbsp; [<a href="#--no-action"><span
- style="font-weight: bold;">--no-action</span></a>
-|<span style="font-weight: bold;"> <a href="#--action">--action</a></span>=<span
- style="font-style: italic;">action-name</span></span><span
- style="font-weight: normal;">[:<span style="font-style: italic;">major</span>.<span
- style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span>]</span><span
- style="font-weight: normal;">] <br>
-&nbsp;&nbsp;&nbsp; [<a href="#--action-enabled"><span
- style="font-weight: bold;">--action-enabled</span></a>=true|false] [<a
- href="#--param"><span style="font-weight: bold;">--param</span></a>=<span
- style="font-style: italic;">name</span>:<span
- style="font-style: italic;">value</span> ...] <br>
-&nbsp;&nbsp;&nbsp; [</span><span style="font-weight: normal;"><a
- href="#--source-param"><span style="font-weight: bold;">--source-param</span></a>=<span
- style="font-style: italic;">source-name</span>,<span
- style="font-style: italic;">name</span>:<span
- style="font-style: italic;">value</span> ...] <br>
-&nbsp;&nbsp;&nbsp; [<a href="#--ignore"><span style="font-weight: bold;">--ignore</span></a>
-| <a href="#--abort"><span style="font-weight: bold;">--abort</span></a>]
-[<a href="#--serial"><span style="font-weight: bold;">--serial</span></a>
-| <a href="#--parallel"><span style="font-weight: bold;">--parallel</span></a>]
-[<a href="#--batch-size"><span style="font-weight: bold;">--batch-size</span></a>=<span
- style="font-style: italic;">integer</span>] <br>
-&nbsp;&nbsp;&nbsp; [<a href="#--priority"><span
- style="font-weight: bold;">--priority</span></a>=<span
- style="font-style: italic;">integer</span>] [<a href="#--max-load"><span
- style="font-weight: bold;">--max-load</span></a>=<span
- style="font-style: italic;">real</span>] <br>
-&nbsp;&nbsp;&nbsp; [<a href="#--min-memory"><span
- style="font-weight: bold;">--min-memory</span></a>=<span
- style="font-style: italic;">bytes</span></span><span
- style="font-weight: normal;"><span style="font-style: italic;"></span>[K|M|G]</span><span
- style="font-weight: normal;">] [<a href="#--min-disk"><span
- style="font-weight: bold;">--min-disk</span></a>=<span
- style="font-style: italic;">bytes</span></span><span
- style="font-weight: normal;"><span style="font-style: italic;"></span>[K|M|G]</span><span
- style="font-weight: normal;">] <br>
-&nbsp;&nbsp;&nbsp; [<a href="#--license-key"><span
- style="font-weight: bold;">--license-key</span></a>=<span
- style="font-style: italic;">key-name</span>[:true|false] ...] <br>
-&nbsp;&nbsp;&nbsp; [<a href="#--selection-key"><span
- style="font-weight: bold;">--selection-key</span></a>=<span
- style="font-style: italic;">key-name</span>[:true|false] ...]</span><br>
-<span style="font-weight: normal;"></span><br>
-<div style="margin-left: 40px;">Register a new working node version
-version (<span style="font-style: italic;">node-name</span>) in the
-working area (<span style="font-style: italic;">view-name</span>) owned
-by the user (<span style="font-style: italic;">user-name</span>). <br>
-</div>
-<br>
-<span style="font-weight: normal;"></span><span
- style="font-weight: normal;"><span style="font-weight: bold;"><a
- name="node_--release"></a>node</span></span><span
- style="font-weight: normal;"><span style="font-weight: bold;"></span></span><span
- style="font-weight: normal;"><span style="font-weight: bold;"> </span></span><span
- style="font-weight: normal;"><span style="font-weight: bold;">--</span></span><span
- style="font-weight: normal;"><span style="font-weight: bold;">release</span></span><span
- style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
- style="font-style: italic;">node-name</span> </span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;"><br>
-&nbsp;&nbsp;&nbsp; </span><span style="font-weight: normal;">[</span><a
- style="font-weight: bold;" href="#--author">--author</a><span
- style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
-<span style="font-weight: normal;">[</span><a style="font-weight: bold;"
- href="#--view">--view</a><span style="font-weight: normal;">=<span
- style="font-style: italic;">view-name</span>]</span><span
- style="font-weight: normal;"><br>
-&nbsp;&nbsp;&nbsp; [<span style="font-weight: bold;">--remove-files</span>]<br>
-<br>
-</span>
-<div style="margin-left: 40px;">Release the target working node version
-version (<span style="font-style: italic;">node-name</span>) in the
-working area (<span style="font-style: italic;">view-name</span>) owned
-by the user (<span style="font-style: italic;">user-name</span>).&nbsp;
-If the <span style="font-weight: bold;">--remove-files</span> option
-is specified, also delete the primary and secondary files associated
-with the working version.<br>
-</div>
-<span style="font-weight: normal;"></span><br>
+<div style="margin-left: 40px;">
 <span style="font-weight: normal;"></span><span
  style="font-weight: normal;"><span style="font-weight: bold;"><a
  name="node_--check-in"></a>node</span></span><span
@@ -3048,105 +3207,8 @@ of all upstream nodes of the checked-in version.&nbsp; If the <span
  style="font-weight: bold;">--keep-newer</span> option is specified,
 newer versions of these upstream nodes will not be replaced.<br>
 </span></div>
-<span style="font-weight: normal;"></span><br>
 <span style="font-weight: normal;"></span><span
- style="font-weight: normal;"><span style="font-weight: bold;"><a
- name="node_--submit-jobs"></a>node</span></span><span
- style="font-weight: normal;"><span style="font-weight: bold;"></span></span><span
- style="font-weight: normal;"><span style="font-weight: bold;"> </span></span><span
- style="font-weight: normal;"><span style="font-weight: bold;">--submit-jobs</span>=node-name
-</span><span style="font-weight: normal;"></span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
- style="font-weight: normal;"><br>
-&nbsp;&nbsp;&nbsp; </span><span style="font-weight: normal;">[</span><a
- style="font-weight: bold;" href="#--author">--author</a><span
- style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
-<span style="font-weight: normal;">[</span><a style="font-weight: bold;"
- href="#--view">--view</a><span style="font-weight: normal;">=<span
- style="font-style: italic;">view-name</span>]</span><span
- style="font-weight: normal;"><br>
-&nbsp;&nbsp;&nbsp; </span><span style="font-weight: normal;">[<span
- style="font-weight: bold;"></span></span><span
- style="font-weight: normal;"></span><a href="#--frame"><span
- style="font-weight: bold;">--frame</span></a><span
- style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
- style="font-style: italic;">single</span>|<span
- style="font-style: italic;">start</span>-<span
- style="font-style: italic;">end</span>[,...] ...] [<span
- style="font-weight: bold;"></span></span><span
- style="font-weight: normal;"></span><a href="#--index"><span
- style="font-weight: bold;">--index</span></a><span
- style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
- style="font-style: italic;">single</span>|<span
- style="font-style: italic;">start</span>-<span
- style="font-style: italic;">end</span>[,...] ...]<br>
-<br>
-</span>
-<div style="margin-left: 40px;">Submit jobs to the Pipeline queue for
-execution which are required to regenerate the stale files associated
-with the target working node version (<span style="font-style: italic;">node-name</span>)
-in the working area (<span style="font-style: italic;">view-name</span>)
-owned by the user (<span style="font-style: italic;">user-name</span>).&nbsp;
-Jobs required to regenerate any upstream nodes connected through
-Dependency links to the target will also be submitted.&nbsp; The <span
- style="font-weight: bold;">--frame</span> and <span
- style="font-weight: bold;">--index</span>
-options can be used to select which of the files associated with the
-target node should be regenerated.&nbsp; If none of these options are
-specified, all stale files associated with the
-target node will be regenerated.<br>
-<br>
-If successful, the ID of the job group for all of the submitted jobs
-will be printed.&nbsp; This ID can be used with the job-group
-operations below to <br>
-</div>
-<span style="font-weight: normal;"></span><br>
-<span style="font-weight: normal;"></span><span
- style="font-weight: normal;"><span style="font-weight: bold;"><a
- name="node_--remove-files"></a>node</span></span><span
- style="font-weight: normal;"><span style="font-weight: bold;"></span></span><span
- style="font-weight: normal;"><span style="font-weight: bold;"> </span></span><span
- style="font-weight: normal;"><span style="font-weight: bold;">--remove-files</span>=<span
- style="font-style: italic;">node-name</span> </span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;"><br>
-&nbsp;&nbsp;&nbsp; </span><span style="font-weight: normal;">[</span><a
- style="font-weight: bold;" href="#--author">--author</a><span
- style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
-<span style="font-weight: normal;">[</span><a style="font-weight: bold;"
- href="#--view">--view</a><span style="font-weight: normal;">=<span
- style="font-style: italic;">view-name</span>]</span><span
- style="font-weight: normal;"><br>
-&nbsp;&nbsp;&nbsp; </span><span style="font-weight: normal;">[<span
- style="font-weight: bold;"></span></span><span
- style="font-weight: normal;"></span><a href="#--frame"><span
- style="font-weight: bold;">--frame</span></a><span
- style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
- style="font-style: italic;">single</span>|<span
- style="font-style: italic;">start</span>-<span
- style="font-style: italic;">end</span>[,...] ...] [</span><span
- style="font-weight: normal;"></span><a href="#--index"><span
- style="font-weight: bold;">--index</span></a><span
- style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
- style="font-style: italic;">single</span>|<span
- style="font-style: italic;">start</span>-<span
- style="font-style: italic;">end</span>[,...] ...]</span><br>
-<span style="font-weight: normal;"></span></div>
-<span style="font-weight: normal;"><br>
-</span>
-<div style="margin-left: 80px;">Deletes the primary and secondary files
-assciated with the target working node version (<span
- style="font-style: italic;">node-name</span>) in the working area (<span
- style="font-style: italic;">view-name</span>) owned by the user (<span
- style="font-style: italic;">user-name</span>).&nbsp; The <span
- style="font-weight: bold;">--frame</span> and <span
- style="font-weight: bold;">--index</span>
-options can be used to select which of the files associated with the
-target node should be deleted.&nbsp; If none of these options are
-specified, all files associated with the
-target node will be regenerated.</div>
+ style="font-weight: normal;"><span style="font-weight: bold;"></span></span></div>
 <span style="font-weight: normal;"></span>
 <ul>
   <ul>
@@ -3352,27 +3414,27 @@ printed.&nbsp; The following sections are supported by these options: <br>
 <div style="margin-left: 80px;">A shortcut for speciying all of the
 sections at once.</div>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"></span><br>
-<span style="font-weight: bold;">timing</span><br>
+<span style="font-weight: bold;">time</span><br>
 <br>
 <div style="margin-left: 40px;">Prints submitted, started and completed
 time stamps for the job.<br>
 </div>
 </div>
 <div style="margin-left: 40px;"><br>
-<span style="font-weight: bold;">process</span><br>
+<span style="font-weight: bold;">proc</span><br>
 <br>
 <div style="margin-left: 40px;">Prints the hostname, exit code and
 execution statistics of the job process.<br>
 </div>
 <br>
-<span style="font-weight: bold;">workdir<br>
+<span style="font-weight: bold;">wkdir<br>
 <br>
 </span>
 <div style="margin-left: 40px;">Prints the working directory of the job
 process.<br>
 </div>
 <br>
-<span style="font-weight: bold;">command</span><br>
+<span style="font-weight: bold;">cmd</span><br>
 <br>
 <div style="margin-left: 40px;">Prints the job process command and its
 command-line arguments.<br>
@@ -3385,33 +3447,33 @@ command-line arguments.<br>
 the toolset environment used to execute the job process.<br>
 </div>
 <br>
-<span style="font-weight: bold;">output<br>
+<span style="font-weight: bold;">out<br>
 <br>
 </span>
 <div style="margin-left: 40px;">Prints the output (stdout) of the job
 process.<br>
 </div>
 <br>
-<span style="font-weight: bold;">errors<br>
+<span style="font-weight: bold;">err<br>
 <br>
 </span>
 <div style="margin-left: 40px;">Prints the error messages (stderr) of
 the job process.<br>
 </div>
 <br>
-<span style="font-weight: bold;">jobreqs<br>
+<span style="font-weight: bold;">jreq<br>
 <br>
 </span>
 <div style="margin-left: 40px;">Prints the job requirements.<br>
 <br>
 </div>
-<span style="font-weight: bold;">keys</span> <br>
+<span style="font-weight: bold;">key</span><br>
 <br>
 <div style="margin-left: 40px;">Prints the names of the license and
 selection keys required by the job.
 </div>
 <span style="font-weight: bold;"></span><br>
-<span style="font-weight: bold;">files<br>
+<span style="font-weight: bold;">file<br>
 </span>
 <div style="margin-left: 40px;"><br>
 Prints the primary and secondary target file sequences of the
