@@ -1,0 +1,1342 @@
+options {
+  STATIC = false;
+}
+
+PARSER_BEGIN(ScriptOptsParser)
+
+package us.temerity.pipeline.core;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.ui.*;
+
+import java.util.*;
+import java.text.*;
+import java.io.*;
+import java.util.logging.*;
+import javax.swing.*;        
+
+/*------------------------------------------------------------------------------------------*/
+/*   S C R I P T   O P T S   P A R S E R                                                    */
+/*                                                                                          */
+/*    The parser for the plscript(1) tool.                                                  */
+/*------------------------------------------------------------------------------------------*/
+
+public class 
+ScriptOptsParser
+{
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Set the application instance. 
+   */ 
+  public void 
+  setApp
+  (
+   ScriptApp app  
+  ) 
+  {
+    if(app == null) 
+      throw new IllegalArgumentException("The application cannot be (null)!");
+    pApp = app;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N I T I A L I Z A T I O N                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Initialize the parser.
+   */
+  private void 
+  init()
+  {
+    pMasterServer = PackageInfo.sMasterServer;
+    pMasterPort   = PackageInfo.sMasterPort;
+
+    pQueueServer = PackageInfo.sQueueServer; 
+    pQueuePort   = PackageInfo.sQueuePort;
+    pJobPort     = PackageInfo.sJobPort;
+
+    pBatchFiles = new Stack();
+  }
+ 
+  /**
+   * Initialize the parser from a parent parser.
+   */ 
+  public void 
+  init
+  (
+   ScriptOptsParser parent
+  ) 
+  {
+    pApp = parent.pApp;
+
+    pMasterServer    = parent.pMasterServer;
+    pMasterPort      = parent.pMasterPort;
+    pMasterMgrClient = parent.pMasterMgrClient;
+
+    pQueueServer    = parent.pQueueServer;
+    pQueuePort      = parent.pQueuePort;
+    pJobPort        = parent.pJobPort;
+    pQueueMgrClient = parent.pQueueMgrClient;
+
+    pBatchFiles = new Stack(); 
+    pBatchFiles.addAll(parent.pBatchFiles);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The application instance. 
+   */
+  private ScriptApp  pApp;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The name of the host running the <B>plmaster</B><A>(1) daemon.
+   */ 
+  private String  pMasterServer;
+
+  /**
+   * The network port listened to by the <B>plmaster</B><A>(1) daemon.
+   */
+  private int  pMasterPort;
+
+  /**
+   * The connection to the <B>plmaster</B><A>(1) daemon. 
+   */ 
+  private MasterMgrClient  pMasterMgrClient; 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /*
+   * The name of the host running the <B>plqueuemgr</B><A>(1) daemon. 
+   */
+  private String  pQueueServer;
+
+  /**
+   * The network port listened to by the <B>plqueuemgr</B><A>(1) daemon.
+   */
+  private int  pQueuePort;
+
+  /**
+   * The network port listened to by the <B>pljobmgr</B><A>(1) daemons.
+   */
+  private int  pJobPort;
+
+  /**
+   * The connection to the <B>plqueuemgr</B><A>(1) daemon. 
+   */ 
+  private QueueMgrClient  pQueueMgrClient; 
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The stack of currently open batch files.
+   */ 
+  private Stack pBatchFiles; 
+
+}
+
+
+PARSER_END(ScriptOptsParser)
+
+<DEFAULT> 
+TOKEN :
+{       
+  /* information options */ 
+  <HELP:         "--help">         
+| <HTML_HELP:    "--html-help">    
+| <VERSION:      "--version">      
+| <RELEASE_DATE: "--release-date"> 
+| <COPYRIGHT:    "--copyright">    
+| <LICENSE:      "--license">    
+
+  /* global options */	
+| <MASTER_HOST:  "--master-host">   : HOSTNAME_SEP
+| <MASTER_PORT:  "--master-port">   : INTEGER_SEP
+
+| <QUEUE_HOST:   "--queue-host">    : HOSTNAME_SEP
+| <QUEUE_PORT:   "--queue-port">    : INTEGER_SEP
+| <JOB_PORT:     "--job-port">      : INTEGER_SEP
+
+| <LOG:          "--log">           : LOG_SEP
+
+  /* batch */ 
+| <BATCH:        "--batch">         : PATH_SEP
+		   
+  /* commands */ 
+| <PRIVILEGED:        "privileged">        
+| <DEFAULT_TOOLSET:   "default-toolset">   
+| <ACTIVE_TOOLSET:    "active-toolset">    
+| <TOOLSET:           "toolset">           
+| <LICENSE_KEY:       "license-key">       
+| <SELECTION_KEY:     "selection-key">     
+| <JOB_SERVER:        "job-server">        
+
+  /* command options */ 
+| <GET:            "--get">           
+| <GET_INFO:       "--get-info">        : NAME_SEP  
+| <SET:            "--set">             : NAME_SEP 
+| <ADD:            "--add">             : NAME_SEP 
+| <MSG:            "--msg">             : STRING_SEP
+| <REMOVE:         "--remove">          : NAME_SEP
+| <EXPORT:         "--export">          : NAME_SEP   
+| <TOTAL:          "--total">           : INTEGER_SEP  
+| <SHUTDOWN:       "--shutdown">       
+| <DISABLE:        "--disable">       
+| <ENABLE:         "--enable">  
+| <RESERVE:        "--reserve">         : NAME_SEP            
+| <OPEN:           "--open">  
+| <SLOTS:          "--slots">           : INTEGER_SEP  
+| <LICENSE_BIAS:   "--license-bias">    : INTEGER_SEP 
+| <SELECTION_BIAS: "--selection-bias">  : INTEGER_SEP  
+| <REMOVE_KEY:     "--remove-key">      : NAME_SEP   
+
+  /* argument end separator */ 
+| <AE1: ("\0")+>
+
+  /* errors */ 
+| <UNKNOWN_OPTION:  "-" ("-")? (~["\0","="])*>  : IGNORE_STATE
+| <UNKNOWN_COMMAND: ~["-","\0"] (~["\0"])*>     : IGNORE_STATE
+}
+
+
+/* common states */ 
+<IGNORE_STATE> 
+TOKEN :
+{
+  <IGNORED: (~[])+>
+}
+
+
+/* integer arguments */ 
+<INTEGER_SEP> 
+TOKEN :
+{
+  <EQ1:                   "=">   : INTEGER_STATE
+| <MISSING_INTEGER_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<INTEGER_STATE> 
+TOKEN :
+{
+  <INTEGER:         (["0"-"9"])+>    : DEFAULT
+| <MISSING_INTEGER: ["\0"]>          : IGNORE_STATE
+| <ILLEGAL_INTEGER: (~["\0"])+>      : IGNORE_STATE
+}
+
+
+/* string arguments */   
+<STRING_SEP> 
+TOKEN :
+{
+  <EQ2:                  "=">   : STRING_STATE
+| <MISSING_STRING_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<STRING_STATE>
+TOKEN :
+{
+  <STRING:         (~["\0"])*>  : DEFAULT
+| <EMPTY_STRING:   "\0">        : DEFAULT
+}
+
+
+/* filesystem path arguments */ 
+<PATH_SEP> 
+TOKEN :
+{
+  <EQ3:                "=">   : PATH_STATE
+| <MISSING_PATH_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<PATH_STATE> 
+TOKEN :
+{
+  <PATH_ARG:       ("/")* ("../")* <PATH_ARG_COMP> 
+		     ("/" (".." | (<PATH_ARG_COMP>)+)?)*>      : DEFAULT
+| <#PATH_ARG_COMP: (["a"-"z","A"-"Z","0"-"9","_","-","."])*>
+| <MISSING_PATH:   ["\0"]>                                     : IGNORE_STATE
+| <ILLEGAL_PATH:   (~["\0"])+>                                 : IGNORE_STATE
+}
+
+
+/* hostname arguments */ 
+<HOSTNAME_SEP> 
+TOKEN :
+{
+  <EQ4:                    "=">   : HOSTNAME_STATE
+| <MISSING_HOSTNAME_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<HOSTNAME_STATE> 
+TOKEN :
+{
+  <HOSTNAME:         ((["a"-"z","A"-"Z","0"-"9"])+ 
+		      ("." (["a"-"z","A"-"Z","0"-"9"])+)*)>   : DEFAULT
+| <MISSING_HOSTNAME: ["\0"]>                                  : IGNORE_STATE
+| <ILLEGAL_HOSTNAME: (~["\0"])+>                              : IGNORE_STATE
+}
+
+
+/* node name arguments */ 
+<NODE_SEP> 
+TOKEN :
+{
+  <EQ5:                "=">   : NODE_STATE
+| <MISSING_NODE_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<NODE_STATE> 
+TOKEN :
+{
+  <NODE_ARG:       ("/" (["a"-"z","A"-"Z","0"-"9","_","-"])+)+>  : DEFAULT
+| <MISSING_NODE:   ["\0"]>                                       : IGNORE_STATE
+| <ILLEGAL_NODE:   (~["\0"])+>                                   : IGNORE_STATE
+}
+
+
+/* user name arguments */ 
+<NAME_SEP> 
+TOKEN :
+{
+  <EQ6:                "=">   : NAME_STATE
+| <MISSING_NAME_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<NAME_STATE> 
+TOKEN :
+{
+  <TRUE:           "true">                                   : DEFAULT
+| <FALSE:          "false">                                  : DEFAULT
+| <NAME:           (["a"-"z","A"-"Z"]) 
+		     (["a"-"z","A"-"Z","0"-"9","_","-"])+>  
+| <COLON1:         ":">                                      
+| <AE2:            ["\0"]>                                   : DEFAULT
+| <ILLEGAL_NAME:   (~[":","\0"])+>                           : IGNORE_STATE
+}
+
+
+/* --log arguments */ 
+<LOG_SEP> 
+TOKEN :
+{
+  <EQ7:               "=">   : LOG_STATE
+| <MISSING_LOG_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<LOG_STATE> 
+TOKEN :
+{
+  <LOG_ALL:         "all">       
+| <LOG_ARG: 	    "arg">        
+| <LOG_OPS: 	    "ops">     
+| <LOG_NET: 	    "net">      
+| <LOG_PLG: 	    "plg">       
+| <LOG_SUB: 	    "sub">     
+| <COLON:  	    ":">       
+| <SEVERE:  	    "severe">  
+| <WARNING: 	    "warning"> 
+| <INFO:    	    "info">    
+| <FINE:    	    "fine">    
+| <FINER :  	    "finer">   
+| <FINEST:    	    "finest">  
+| <COMMA:  	    ",">       
+| <AE3:             (["\0"])+>                   : DEFAULT
+| <ILLEGAL_LOG_ARG: (~["\0","a"-"z",":",","])+>  : IGNORE_STATE
+}
+
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   T O P   L E V E L                                                                      */
+/*------------------------------------------------------------------------------------------*/
+
+void
+CommandLine() 
+  throws PipelineException :
+{
+  init();
+}
+{
+  (InformationOpts() | ((GlobalOpts() AE())* (Batch() | Commands()))) <EOF>
+  {}
+}
+
+
+void 
+Commands() 
+  throws PipelineException :
+{
+  try {
+    PluginMgr.init();
+  }
+  catch(PipelineException ex) {
+    Logs.plg.severe("Unable to load plugins: " + ex);
+    System.exit(1);
+  }
+
+  pMasterMgrClient = new MasterMgrClient(pMasterServer, pMasterPort);
+  pQueueMgrClient  = new QueueMgrClient(pQueueServer, pQueuePort);
+}
+{
+  (PrivilegedCmds() | 
+    DefaultToolsetCmds() | ActiveToolsetCmds() | ToolsetCmds() |
+    LicenseKeyCmds() | SelectionKeyCmds() 
+
+    ) AE()
+  {
+    pMasterMgrClient.disconnect();
+    pQueueMgrClient.disconnect();
+  }
+}
+    
+
+/*------------------------------------------------------------------------------------------*/
+/*   B A T C H   M O D E                                                                    */
+/*------------------------------------------------------------------------------------------*/
+
+void 
+Batch() 
+  throws PipelineException : 
+{
+  try {
+    PluginMgr.init();
+  }
+  catch(PipelineException ex) {
+    Logs.plg.severe("Unable to load plugins: " + ex);
+    System.exit(1);
+  }
+
+  pMasterMgrClient = new MasterMgrClient(pMasterServer, pMasterPort);
+  pQueueMgrClient  = new QueueMgrClient(pQueueServer, pQueuePort);
+}
+{
+  (BatchOpt())
+  {
+    pMasterMgrClient.disconnect();
+    pQueueMgrClient.disconnect();
+  }
+}
+
+void 
+BatchOpt() 
+  throws PipelineException : 
+{
+  Token t;
+}
+{
+  <BATCH> EQ() t=<PATH_ARG> AE()
+  {
+    /* process the batch file */ 
+    File canon = null;
+    {
+      File file = new File(t.image);
+      try {
+	canon = file.getCanonicalFile();
+      }
+      catch(IOException ex) {
+	throw new PipelineException
+        ("Unable to determine the canonical filesystem path to the batch " + 
+	 "file (" + file + ")!");
+      }
+    }
+
+    Logs.ops.info("Processing Batch File: " + canon);
+
+    if(pBatchFiles.contains(canon)) {
+      StringBuffer buf = new StringBuffer();
+      buf.append("Circular Batch Files:\n");
+
+      Iterator iter = pBatchFiles.iterator();
+      while(iter.hasNext()) {
+	File file = (File) iter.next();
+	buf.append("  " + file + " -> ");
+      }
+      buf.append("  " + canon);
+
+      throw new PipelineException(buf.toString());
+    }
+    pBatchFiles.push(canon);
+
+    ArrayList lines = pApp.packageFile(canon);
+    Iterator iter = lines.iterator();
+    while(iter.hasNext()) {
+      String line = (String) iter.next();
+
+      Logs.ops.info
+	("\n" + 
+	 pApp.repeat("*", 80) + "\n" +
+	 "  BATCH: |" + line.replace('\0',' ') + "|\n" +
+	 pApp.repeat("*", 80) + "\n");
+      
+      ScriptOptsParser parser = new ScriptOptsParser(new StringReader(line));
+      parser.init(this);
+      parser.BatchCommand();
+    }
+
+    pBatchFiles.pop();
+  }
+}
+
+void 
+BatchCommand() 
+  throws PipelineException : 
+{}
+{
+  (PrivilegedCmds() | 
+   DefaultToolsetCmds() | ActiveToolsetCmds() | ToolsetCmds() |
+   LicenseKeyCmds() | SelectionKeyCmds() 
+   
+   ) (AE())* <EOF>
+  {}
+}
+
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   I N F O R M A T I O N   O P T I O N S                                                  */
+/*------------------------------------------------------------------------------------------*/
+
+void
+InformationOpts() :
+{}
+{
+  (Help() | HtmlHelp() | Version() | ReleaseDate() | Copyright() | License())
+  {}
+}
+
+void
+Help() : 
+{}
+{
+  <HELP> AE()
+  { 
+    pApp.help(); 
+  }
+}
+
+void
+HtmlHelp() : 
+{}
+{
+  <HTML_HELP> AE()
+  { 
+    pApp.htmlHelp(); 
+  }
+}
+
+void
+Version() :
+{}
+{
+  <VERSION> AE()
+  { 
+    pApp.version(); 
+  }
+}
+
+void
+ReleaseDate() :
+{}
+{
+  <RELEASE_DATE> AE()
+  { 
+    pApp.releaseDate(); 
+  }
+}
+
+void
+Copyright() :
+{}
+{
+  <COPYRIGHT> AE() 
+  { 
+    pApp.copyright(); 
+  }
+}
+
+void
+License() :
+{}
+{
+  <LICENSE> AE() 
+  { 
+    pApp.license(); 
+  }
+}
+
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   G L O B A L   O P T I O N S                                                            */
+/*------------------------------------------------------------------------------------------*/
+
+void
+GlobalOpts() :
+{}
+{
+  (MasterHost() | MasterPort() | 
+   QueueHost() | QueuePort() | JobPort() | 
+   Log())
+  {}
+}
+
+
+void
+MasterHost() :
+{
+  Token t;
+}
+{
+  <MASTER_HOST> EQ() t=<HOSTNAME>
+  { 
+    pMasterServer = t.image;
+  }
+}
+
+void
+MasterPort() :
+{
+  int port; 
+}
+{
+  <MASTER_PORT> EQ() port=IntegerLiteral() 
+  { 
+    pMasterPort = port;
+  }
+}
+
+void
+QueueHost() :
+{
+  Token t;
+}
+{
+  <QUEUE_HOST> EQ() t=<HOSTNAME>
+  { 
+    pQueueServer = t.image;
+  }
+}
+
+void
+QueuePort() :
+{
+  int port; 
+}
+{
+  <QUEUE_PORT> EQ() port=IntegerLiteral() 
+  { 
+    pQueuePort = port;
+  }
+}
+
+void
+JobPort() :
+{
+  int port; 
+}
+{
+  <JOB_PORT> EQ() port=IntegerLiteral() 
+  { 
+    pJobPort = port;
+  }
+}
+
+
+
+void Log() : 
+{}
+{
+  (<LOG> EQ() LoggerArg() (<COMMA> LoggerArg())*)
+  {}
+}
+
+void LoggerArg() : 
+{}
+{
+  (LoggerAll() | LoggerPair()) 
+  {}
+}
+
+void LoggerAll() : 
+{
+  Level v;
+}
+{
+  (<LOG_ALL> <COLON> v=LogLevel())
+  {
+    Logs.arg.setLevel(v); 
+    Logs.ops.setLevel(v);
+    Logs.net.setLevel(v);
+    Logs.plg.setLevel(v);
+    Logs.sub.setLevel(v);
+  }
+}
+
+void LoggerPair() : 
+{
+  Logger g; 
+  Level v;
+}
+{
+  (g=Logger() <COLON> v=LogLevel())
+  {
+    g.setLevel(v);
+  }
+}
+
+Logger Logger() :
+{
+  Logger g;
+}
+{
+  (g=ArgLogger() | g=OpsLogger() | g=NetLogger() | 
+   g=PlgLogger() | g=SubLogger())
+  {
+    return g;
+  }
+}
+
+Logger ArgLogger() : 
+{}
+{
+  <LOG_ARG>
+  {
+    return Logs.arg;
+  }
+}
+
+Logger OpsLogger() : 
+{}
+{
+  <LOG_OPS>
+  {
+    return Logs.ops;
+  }
+}
+
+Logger NetLogger() : 
+{}
+{
+  <LOG_NET>
+  {
+    return Logs.net;
+  }
+}
+
+Logger PlgLogger() : 
+{}
+{
+  <LOG_PLG>
+  {
+    return Logs.plg;
+  }
+}
+
+Logger SubLogger() : 
+{}
+{
+  <LOG_SUB>
+  {
+    return Logs.sub;
+  }
+}
+
+
+Level LogLevel() : 
+{
+  Level v;
+}
+{
+  (v=SevereLevel() | v=WarningLevel() | v=InfoLevel() | 
+   v=FineLevel() | v=FinerLevel() | v=FinestLevel()) 
+  {
+    return v;
+  }
+}
+
+Level SevereLevel() :
+{
+  Level v;
+}
+{
+  <SEVERE> 
+  {
+    return Level.SEVERE;
+  }
+}
+
+Level WarningLevel() :
+{
+  Level v;
+}
+{
+  <WARNING> 
+  {
+    return Level.WARNING;
+  }
+}
+
+Level InfoLevel() :
+{
+  Level v;
+}
+{
+  <INFO> 
+  {
+    return Level.INFO;
+  }
+}
+
+Level FineLevel() :
+{
+  Level v;
+}
+{
+  <FINE> 
+  {
+    return Level.FINE;
+  }
+}
+
+Level FinerLevel() :
+{
+  Level v;
+}
+{
+  <FINER> 
+  {
+    return Level.FINER;
+  }
+}
+
+Level FinestLevel() :
+{
+  Level v;
+}
+{
+  <FINEST> 
+  {
+    return Level.FINEST;
+  }
+}
+
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   P R I V I L E G E D   U S E R S                                                        */
+/*------------------------------------------------------------------------------------------*/
+
+void 
+PrivilegedCmds() 
+  throws PipelineException : 
+{}
+{
+  <PRIVILEGED> AE() (PrivilegedGet() |  PrivilegedSet())
+  {}
+}
+
+void 
+PrivilegedGet() 
+  throws PipelineException : 
+{}
+{
+  <GET>
+  {
+    TreeSet users = pMasterMgrClient.getPrivilegedUsers(false);
+    Iterator iter = users.iterator();
+    while(iter.hasNext()) {
+      String user = (String) iter.next();
+      Logs.ops.info(user);
+    }
+    Logs.flush();
+  }
+}
+
+void 
+PrivilegedSet() 
+  throws PipelineException : 
+{
+  String user = null;
+  boolean tf = true;
+}
+{
+  <SET> EQ() user=Name() (COLON() tf=TrueFalse())?
+  {
+    if(tf) 
+      pMasterMgrClient.grantPrivileges(user);
+    else 
+      pMasterMgrClient.removePrivileges(user);
+  }
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   T O O L S E T                                                                          */
+/*------------------------------------------------------------------------------------------*/
+
+void 
+DefaultToolsetCmds() 
+  throws PipelineException : 
+{}
+{
+  <DEFAULT_TOOLSET> AE() (DefaultToolsetGet() |  DefaultToolsetSet())
+  {}
+}
+
+void 
+DefaultToolsetGet() 
+  throws PipelineException : 
+{}
+{
+  <GET>
+  {
+    Logs.ops.info(pMasterMgrClient.getDefaultToolsetName());
+    Logs.flush();
+  }
+}
+
+void 
+DefaultToolsetSet() 
+  throws PipelineException : 
+{
+  String tname = null;
+}
+{
+  <SET> EQ() tname=Name()
+  {
+    pMasterMgrClient.setDefaultToolsetName(tname);
+  }
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
+ActiveToolsetCmds() 
+  throws PipelineException : 
+{}
+{
+  <ACTIVE_TOOLSET> AE() (ActiveToolsetGet() |  ActiveToolsetSet())
+  {}
+}
+
+void 
+ActiveToolsetGet() 
+  throws PipelineException : 
+{}
+{
+  <GET>
+  {
+    TreeSet tnames = pMasterMgrClient.getActiveToolsetNames(); 
+    Iterator iter = tnames.iterator();
+    while(iter.hasNext()) {
+      String tname = (String) iter.next();
+      Logs.ops.info(tname);
+    }
+    Logs.flush();
+  }
+}
+
+void 
+ActiveToolsetSet() 
+  throws PipelineException : 
+{
+  String tname = null;
+  boolean tf = true;
+}
+{
+  <SET> EQ() tname=Name() (COLON() tf=TrueFalse())?
+  {
+    pMasterMgrClient.setToolsetActive(tname, tf);
+  }
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
+ToolsetCmds() 
+  throws PipelineException : 
+{}
+{
+  <TOOLSET> AE() (ToolsetGet() |  ToolsetGetInfo() |  ToolsetExport())
+  {}
+}
+
+void 
+ToolsetGet() 
+  throws PipelineException : 
+{}
+{
+  <GET>
+  {
+    TreeSet tnames = pMasterMgrClient.getToolsetNames(); 
+    Iterator iter = tnames.iterator();
+    while(iter.hasNext()) {
+      String tname = (String) iter.next();
+      Logs.ops.info(tname);
+    }
+    Logs.flush();
+  }
+}
+
+void 
+ToolsetGetInfo() 
+  throws PipelineException : 
+{
+  String tname = null;
+}
+{
+  <GET_INFO> EQ() tname=Name()
+  {
+    pApp.printToolset(tname, pMasterMgrClient);
+  }
+}
+
+void 
+ToolsetExport() 
+  throws PipelineException : 
+{
+  String tname = null;
+}
+{
+  <EXPORT> EQ() tname=Name()
+  {
+    pApp.exportToolset(tname, pMasterMgrClient);
+  }
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   Q U E U E   A D M I N I S T R A T I O N                                                */
+/*------------------------------------------------------------------------------------------*/
+
+void 
+LicenseKeyCmds() 
+  throws PipelineException : 
+{}
+{
+  <LICENSE_KEY> AE() 
+     (LicenseKeyGet() | LicenseKeyGetInfo() | LicenseKeyAdd() | 
+      LicenseKeySet() | LicenseKeyRemove())
+  {}
+}
+
+void 
+LicenseKeyGet() 
+  throws PipelineException : 
+{}
+{
+  <GET>
+  {
+    TreeSet knames = pQueueMgrClient.getLicenseKeyNames();
+    Iterator iter = knames.iterator();
+    while(iter.hasNext()) {
+      String kname = (String) iter.next();
+      Logs.ops.info(kname);
+    }
+    Logs.flush();    
+  }
+}
+
+void 
+LicenseKeyGetInfo() 
+  throws PipelineException : 
+{
+  String kname = null;
+}
+{
+  <GET_INFO> EQ() kname=Name()
+  {
+    pApp.printLicenseKey(kname, pQueueMgrClient);
+  }
+}
+
+void 
+LicenseKeyAdd() 
+  throws PipelineException : 
+{
+  String kname = null;
+  String msg = null;
+  int total = 0;
+}
+{
+  <ADD> EQ() kname=Name() AE() 
+     ((msg=Msg() AE() total=Total()) | (total=Total() AE() msg=Msg()))
+  {
+    LicenseKey key = new LicenseKey(kname, msg, total);
+    pQueueMgrClient.addLicenseKey(key);
+  }
+}
+ 
+void 
+LicenseKeySet() 
+  throws PipelineException : 
+{
+  String kname = null;
+  int total = 0;
+}
+{
+  <SET> EQ() kname=Name() AE() total=Total()
+  {
+    pQueueMgrClient.setTotalLicenses(kname, total);
+  }
+}
+ 
+void 
+LicenseKeyRemove() 
+  throws PipelineException : 
+{
+  String kname = null;
+}
+{
+  <REMOVE> EQ() kname=Name()
+  {
+    pQueueMgrClient.removeLicenseKey(kname);
+  }
+}
+
+int 
+Total() : 
+{
+  int total = 0;
+}
+{
+  <TOTAL> EQ() total=IntegerLiteral() 
+  {
+    return total;
+  }
+}
+      
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
+SelectionKeyCmds() 
+  throws PipelineException : 
+{}
+{
+  <SELECTION_KEY> AE() 
+     (SelectionKeyGet() | SelectionKeyGetInfo() | SelectionKeyAdd() | SelectionKeyRemove())
+  {}
+}
+
+void 
+SelectionKeyGet() 
+  throws PipelineException : 
+{}
+{
+  <GET>
+  {
+    TreeSet knames = pQueueMgrClient.getSelectionKeyNames();
+    Iterator iter = knames.iterator();
+    while(iter.hasNext()) {
+      String kname = (String) iter.next();
+      Logs.ops.info(kname);
+    }
+    Logs.flush();    
+  }
+}
+
+void 
+SelectionKeyGetInfo() 
+  throws PipelineException : 
+{
+  String kname = null;
+}
+{
+  <GET_INFO> EQ() kname=Name()
+  {
+    pApp.printSelectionKey(kname, pQueueMgrClient);
+  }
+}
+
+void 
+SelectionKeyAdd() 
+  throws PipelineException : 
+{
+  String kname = null;
+  String msg = null;
+}
+{
+  <ADD> EQ() kname=Name() AE() msg=Msg()
+  {
+    SelectionKey key = new SelectionKey(kname, msg);
+    pQueueMgrClient.addSelectionKey(key);
+  }
+}
+ 
+void 
+SelectionKeyRemove() 
+  throws PipelineException : 
+{
+  String kname = null;
+}
+{
+  <REMOVE> EQ() kname=Name()
+  {
+    pQueueMgrClient.removeSelectionKey(kname);
+  }
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+
+// void 
+// JobServerCmds() 
+//   throws PipelineException : 
+// {}
+// {
+//   <SELECTION_KEY> AE() 
+//      (JobServerGet() | JobServerGetInfo() | JobServerAdd() | 
+//       JobServerSet() | JobServerRemove())
+//   {}
+// }
+
+
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   S H A R E D   T O K E N S                                                              */
+/*------------------------------------------------------------------------------------------*/
+
+Token
+AE() :
+{
+  Token t;
+}
+{
+  (t=<AE1> | t=<AE2> | t=<AE3>)
+  { 
+    return t; 
+  }
+}
+
+Token
+COLON() :
+{
+  Token t;
+}
+{
+  (t=<COLON1>)
+  { 
+    return t; 
+  }
+}
+
+Token
+EQ() :
+{
+  Token t;
+}
+{
+  (t=<EQ1> | t=<EQ2> | t=<EQ3> | t=<EQ4> | t=<EQ5> | t=<EQ6> | t=<EQ7>)
+  { 
+    return t; 
+  }
+}
+
+
+boolean 
+TrueFalse() : 
+{
+  boolean tf; 
+}
+{
+  (tf=True() | tf=False()) 
+  { 
+    return tf; 
+  }
+}
+
+boolean 
+True() : 
+{}
+{
+  <TRUE>
+  { 
+    return true; 
+  }
+}
+
+boolean 
+False() : 
+{}
+{
+  <FALSE>
+  { 
+    return false; 
+  }
+}
+
+String
+Name() : 
+{
+  Token t;
+}
+{
+  t=<NAME>
+  {
+    return t.image;
+  }
+}
+
+
+int
+IntegerLiteral() :
+{
+  Token t;
+}
+{
+  t=<INTEGER>
+  { 
+    try {
+      return Integer.parseInt(t.image);
+    }
+    catch(NumberFormatException ex) {
+      Logs.arg.severe(ex.getMessage());
+    }
+  }
+}
+
+String
+StringLiteral() : 
+{
+  Token t;
+}
+{
+  t=<STRING>
+  { 
+    if(t.image.length() > 0) 
+      return t.image;
+    return null;
+  }
+}
+
+
+
+String 
+Msg() : 
+{
+  String msg; 
+}
+{
+  <MSG> EQ() msg=StringLiteral() 
+  {
+    return msg;
+  }
+}

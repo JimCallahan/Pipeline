@@ -1,0 +1,130 @@
+options {
+  STATIC = false;
+}
+
+PARSER_BEGIN(BatchParser)
+
+package us.temerity.pipeline.core;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.ui.*;
+
+import java.util.*;
+import java.text.*;
+import java.io.*;
+import java.util.logging.*;
+import javax.swing.*;        
+
+/*------------------------------------------------------------------------------------------*/
+/*   B A T C H   P A R S E R                                                                */
+/*                                                                                          */
+/*    The parser of command-line batch files.                                               */
+/*------------------------------------------------------------------------------------------*/
+
+public class 
+BatchParser
+{
+  private ArrayList  pLines; 
+}
+
+
+PARSER_END(BatchParser)
+
+<DEFAULT> 
+TOKEN :
+{       
+  <OPEN_QUOTE:       "'">           : QUOTED_STATE 
+| <ESCAPED_NEWLINE:  "\\" "\n">   
+| <WS_NEWLINE:       ([" ","\t"])+ "\n">
+| <WS:               ([" ","\t"])+>
+| <NEWLINE:          "\n">
+| <ANY:              (~["\n","'"," ","\t"])+>
+}
+ 
+
+<QUOTED_STATE> 
+TOKEN :
+{
+  <QUOTED:         (~["'"])+>  
+| <CLOSE_QUOTE:    "'">        : DEFAULT
+}
+
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   T O P   L E V E L                                                                      */
+/*------------------------------------------------------------------------------------------*/
+
+ArrayList
+Contents() :
+{
+  pLines = new ArrayList();
+}
+{
+  (Line() | Blank())+ <EOF>
+  {
+    return pLines;
+  }	
+}
+
+void 
+Blank() : 
+{}
+{
+  ((WS() <NEWLINE>) | <WS_NEWLINE> | <NEWLINE>) 
+  {}
+}
+
+void
+Line() :
+{
+  StringBuffer buf = new StringBuffer();
+}
+{
+  Argument(buf) (WS() Argument(buf))* (<WS_NEWLINE> | <NEWLINE>) 
+  {
+    pLines.add(buf.toString());
+  }	
+}
+
+void
+Argument(StringBuffer buf) : 
+{}
+{
+  (Any(buf) | Quoted(buf))+ 
+  {
+    buf.append('\0');
+  }
+}
+
+void
+Any(StringBuffer buf) : 
+{
+  Token t;
+} 
+{
+  t=<ANY>
+  {
+    buf.append(t.image);
+  }
+}
+
+void
+Quoted(StringBuffer buf) : 
+{
+  Token t;
+} 
+{
+  <OPEN_QUOTE> t=<QUOTED> <CLOSE_QUOTE> 
+  {
+    buf.append(t.image);
+  }
+}
+
+void
+WS() : 
+{}
+{
+  (<WS> (<ESCAPED_NEWLINE> (<WS>)?)*) | (<ESCAPED_NEWLINE> (<WS>)?)+
+  {}
+}
