@@ -1,4 +1,4 @@
-// $Id: PlRun.cc,v 1.1 2003/12/15 02:08:16 jim Exp $
+// $Id: PlRun.cc,v 1.2 2003/12/17 04:49:12 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -40,7 +40,6 @@ usage()
 	    << std::flush;
 }
 
-  
 int
 main
 (
@@ -67,7 +66,7 @@ main
     if((uid != PackageInfo::sPipelineUID) || (gid != PackageInfo::sPipelineGID)) 
       FB::error("plrun can only be run by the \"pipeline.pipeline\" user!");	
   }
-  
+
   /* change user */ 
   {
     if(argv[1] == NULL) 
@@ -94,12 +93,40 @@ main
     }
   }
   
+  /* build a new environment (to get around ld.so ignoring LD_LIBRARY_PATH) */ 
+  char** envp2 = NULL;
+  {
+    int cnt = 0;
+    {
+      char** p = envp;
+      while((*p) != NULL) {
+	cnt++;
+	p++;
+      }
+    }
+
+    envp2 = new char*[cnt+1];
+    {
+      int wk = 0;
+      char** p = envp;
+      while((*p) != NULL) {
+	if((strlen(*p) > 24) && (strncmp(*p, "PIPELINE_LD_LIBRARY_PATH", 24) == 0)) 
+	  envp2[wk] = strdup((*p)+9);
+	else 
+	  envp2[wk] = strdup(*p);
+	wk++;
+	p++;
+      }
+    }
+  }
+  assert(envp2);
+
   /* execute the command */ 
-  if(execve(argv[2], argv+2, envp) == -1) {
+  if(execve(argv[2], argv+2, envp2) == -1) {
     sprintf(msg, "unable to execute \"%s\": %s", argv[2], strerror(errno));
     FB::error(msg);
   }
-
+  
   /* execution should never get here! */ 
   assert(false);
   return EXIT_FAILURE;
