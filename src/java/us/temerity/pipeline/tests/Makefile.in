@@ -204,7 +204,8 @@ java-all: $(JAVA_SOURCES)
 check: all check-each 
 
 check-each: $(CLASSES) ../pipeline.jar
-	@if test ! -d data; then mkdir data; fi
+	rm -rf data
+	mkdir data
 	@failed=0; all=0; \
          banner1="========================================================================"; \
          banner2="------------------------------------------------------------------------"; \
