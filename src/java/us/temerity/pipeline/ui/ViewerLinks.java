@@ -1,4 +1,4 @@
-// $Id: ViewerLinks.java,v 1.10 2004/12/30 01:11:40 jim Exp $
+// $Id: ViewerLinks.java,v 1.11 2004/12/30 01:54:08 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -32,6 +32,8 @@ class ViewerLinks
   {
     pUpstreamLinks   = new HashMap<NodePath,ArrayList<Link>>();
     pDownstreamLinks = new HashMap<NodePath,ArrayList<Link>>();
+
+    pLinkRels = new LinkedList<ViewerLinkRelationship>();
   }
 
 
@@ -114,18 +116,37 @@ class ViewerLinks
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   P I C K I N G                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Get the link relationship icon under the given mouse position.
+   * 
+   * @param
+   *   The pick position.
+   * 
+   * @return 
+   *   The link relationship icon or <CODE>null</CODE> if none are under the given position.
+   */ 
+  public ViewerLinkRelationship
+  pickLinkRelationship
+  (
+   Point2d pos
+  ) 
+  {
+    for(ViewerLinkRelationship vrel : pLinkRels) {
+      if(vrel.isInside(pos)) 
+	return vrel;
+    }
+    return null;
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   R E N D E R I N G                                                                    */
   /*----------------------------------------------------------------------------------------*/
   
-  /**
-   * Force a rebuild of the links geometry.
-   */ 
-  protected void
-  refresh()
-  { 
-    pRefresh = true;   
-  }
-
   /**
    * Rebuild any OpenGL display list needd to render the node.
    *
@@ -161,6 +182,8 @@ class ViewerLinks
       /* rebuild the link geometry */ 
       gl.glNewList(pLinksDL, GL.GL_COMPILE);
       {
+	pLinkRels.clear();
+
 	Color3d color = prefs.getLinkColor();
 	Color3d stale = prefs.getStaleLinkColor();
 
@@ -171,10 +194,12 @@ class ViewerLinks
 	  LinkedList<Point2d[]> arrows = new LinkedList<Point2d[]>();
 	  LinkedList<Point2d[]> sarrows = new LinkedList<Point2d[]>();
 
-	  EnumMap<LinkRelationship,LinkedList<Point2d>> linkRels = 
-	    new EnumMap<LinkRelationship,LinkedList<Point2d>>(LinkRelationship.class);
+	  EnumMap<LinkRelationship,LinkedList<ViewerLinkRelationship>> linkRels = 
+	    new EnumMap<LinkRelationship,
+	                LinkedList<ViewerLinkRelationship>>(LinkRelationship.class);
+
 	  for(LinkRelationship rel : LinkRelationship.all()) 
-	    linkRels.put(rel, new LinkedList<Point2d>());
+	    linkRels.put(rel, new LinkedList<ViewerLinkRelationship>());
 	  
 	  gl.glEnable(GL.GL_LINE_SMOOTH); 
 	  gl.glBegin(GL.GL_LINES);
@@ -289,8 +314,15 @@ class ViewerLinks
 		
 		  double rc = (sp + centerX) * 0.5;
 		  
-		  LinkedList<Point2d> rpos = linkRels.get(link.getLink().getRelationship());
-		  rpos.add(new Point2d(rc, spos.y()));
+		  {
+		    LinkedList<ViewerLinkRelationship> vrels = 
+		      linkRels.get(link.getLink().getRelationship());
+
+		    ViewerLinkRelationship vrel = 
+		      new ViewerLinkRelationship(link.getLink(), link.getTargetNode(), 
+						 new Point2d(rc, spos.y()));
+		    vrels.add(vrel);
+		  }
 
 		  Point2d a = new Point2d(centerX, spos.y());
 		  Point2d b = new Point2d(rc-0.25, spos.y());
@@ -435,9 +467,12 @@ class ViewerLinks
 
 	  for(LinkRelationship rel : linkRels.keySet()) {
 	    int dl = pLinkRelDLs[rel.ordinal()];
-	    for(Point2d p : linkRels.get(rel)) {
+	    for(ViewerLinkRelationship vrel : linkRels.get(rel)) {
+	      pLinkRels.add(vrel);
+
 	      gl.glPushMatrix();
 	      {
+		Point2d p = vrel.getPosition();
 		gl.glTranslated(p.x(), p.y(), 0.0);
 		gl.glCallList(dl);
 	      }
@@ -621,6 +656,11 @@ class ViewerLinks
    * The table of downstream links indexed by the path to the common upstream node.
    */ 
   private HashMap<NodePath,ArrayList<Link>>  pDownstreamLinks;
+
+  /**
+   * The rendered link relationship icons.
+   */ 
+  private LinkedList<ViewerLinkRelationship>  pLinkRels; 
 
 
   /*----------------------------------------------------------------------------------------*/
