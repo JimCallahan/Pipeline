@@ -1,4 +1,4 @@
-// $Id: Pls.cc,v 1.2 2003/10/11 04:16:07 jim Exp $
+// $Id: Pls.cc,v 1.3 2003/10/17 23:00:27 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -204,11 +204,6 @@ main
 	file += "/";
       }
       file += namelist[n]->d_name;
-
-      if(access(file.c_str(), F_OK) == -1) {  
-	sprintf(msg, "Unable to access: %s", file.c_str());
-	FB::error(msg);	
-      }
 
       struct stat buf;
       if(stat(file.c_str(), &buf) == 0) {
