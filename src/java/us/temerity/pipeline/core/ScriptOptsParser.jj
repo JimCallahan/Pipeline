@@ -853,10 +853,8 @@ TOKEN :
 TOKEN :
 {
   <ARCHIVE_PREFIX:          (["a"-"z","A"-"Z"]) 
-	                      (["a"-"z","A"-"Z","0"-"9","_","-"])+>   
-| <COLON11:                 ":">                                     : REVISION_NUMBER_STATE 
-| <AE46:                    ["\0"]>                                  : OPTIONS
-| <ILLEGAL_ARCHIVE_PREFIX:  (~[":","\0"])+>                          : IGNORE_STATE
+	                      (["a"-"z","A"-"Z","0"-"9","_","-"])+>  : OPTIONS
+| <ILLEGAL_ARCHIVE_PREFIX:  (~["\0"])+>                              : IGNORE_STATE
 }
 
 
@@ -6140,8 +6138,7 @@ AE() :
    t=<AE26> | t=<AE27> | t=<AE28> | t=<AE29> | t=<AE30> |
    t=<AE31> | t=<AE32> | t=<AE33> | t=<AE34> | t=<AE35> |
    t=<AE36> | t=<AE37> | t=<AE38> | t=<AE39> | t=<AE40> | 
-   t=<AE41> | t=<AE42> | t=<AE43> | t=<AE44> | t=<AE45> | 
-   t=<AE46>)
+   t=<AE41> | t=<AE42> | t=<AE43> | t=<AE44> | t=<AE45>)
   { 
     return t; 
   }
@@ -6178,8 +6175,7 @@ COLON() :
 }
 {
   (t=<COLON1>  | t=<COLON2>  | t=<COLON3>  | t=<COLON4>  | t=<COLON5>  | 
-   t=<COLON6>  | t=<COLON7>  | t=<COLON8>  | t=<COLON9>  | t=<COLON10> |
-   t=<COLON11>)
+   t=<COLON6>  | t=<COLON7>  | t=<COLON8>  | t=<COLON9>  | t=<COLON10>)
   { 
     return t; 
   }
