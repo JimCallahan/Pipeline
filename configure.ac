@@ -702,6 +702,7 @@ AC_CONFIG_FILES([
   src/java/pipeline/PackageInfo.java
 
   src/java/pipeline/tests/Makefile
+  src/java/pipeline/plugin/Makefile
 
   src/java/scripts/Makefile
   src/java/scripts/pipeline
