@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.16 2004/05/19 19:03:36 jim Exp $
+// $Id: UIMaster.java,v 1.17 2004/05/21 00:17:22 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -348,6 +348,16 @@ class UIMaster
     pAboutDialog.setVisible(true);
   }
 
+  /**
+   * Show the customer configuration profile dialog.
+   */ 
+  public void 
+  showConfigDialog()
+  {
+    pConfigDialog.setVisible(true);
+  }
+
+
 
 
 
@@ -520,6 +530,9 @@ class UIMaster
    * See {@link JLabel#setHorizontalAlignment JLabel.setHorizontalAlignment} for valid
    * values for the <CODE>align</CODE> argument.
    * 
+   * @param text
+   *   The initial text.
+   * 
    * @param width
    *   The minimum and preferred width.
    * 
@@ -553,6 +566,9 @@ class UIMaster
    * 
    * See {@link JLabel#setHorizontalAlignment JLabel.setHorizontalAlignment} for valid
    * values for the <CODE>align</CODE> argument.
+   * 
+   * @param text
+   *   The initial text.
    * 
    * @param width
    *   The minimum and preferred width.
@@ -588,6 +604,9 @@ class UIMaster
    * See {@link JLabel#setHorizontalAlignment JLabel.setHorizontalAlignment} for valid
    * values for the <CODE>align</CODE> argument.
    * 
+   * @param text
+   *   The initial text.
+   * 
    * @param width
    *   The minimum and preferred width.
    * 
@@ -618,6 +637,76 @@ class UIMaster
     return field;
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Create a new non-editable text field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the text field.
+   */ 
+  public static JTextField
+  createTitledTextField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   String text, 
+   int vwidth
+  )
+  {
+    tpanel.add(UIMaster.createLabel(title, twidth, JLabel.RIGHT));
+
+    JTextField field = createTextField(text, vwidth, JLabel.CENTER);
+    vpanel.add(field);
+
+    return field;
+  }
+
+  /**
+   * Create a new editable text field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the text field.
+   */ 
+  public static JTextField
+  createTitledEditableTextField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   String text, 
+   int vwidth
+  )
+  {
+    tpanel.add(UIMaster.createLabel(title, twidth, JLabel.RIGHT));
+
+    JTextField field = createEditableTextField(text, vwidth, JLabel.CENTER);
+    vpanel.add(field);
+
+    return field;
+  }
 
   /**
    * Create a new hot key field with a title and add them to the given panels.
@@ -859,6 +948,21 @@ class UIMaster
   {
     tpanel.add(Box.createRigidArea(new Dimension(0, height)));
     vpanel.add(Box.createRigidArea(new Dimension(0, height)));
+  }
+
+
+  /**
+   * Add vertical glue into the given panels.
+   */ 
+  public static void 
+  addVerticalGlue
+  (
+   JPanel tpanel, 
+   JPanel vpanel
+  ) 
+  {
+    tpanel.add(Box.createVerticalGlue());
+    vpanel.add(Box.createVerticalGlue());
   }
 
 
@@ -1303,6 +1407,7 @@ class UIMaster
 	pErrorDialog         = new JErrorDialog();
 	pUserPrefsDialog     = new JUserPrefsDialog();
 	pAboutDialog         = new JAboutDialog();
+	pConfigDialog        = new JConfigDialog();
       }
       
       pFrame.setVisible(true);
@@ -1665,4 +1770,9 @@ class UIMaster
    * The information dialog.
    */ 
   private JAboutDialog  pAboutDialog;
+
+  /**
+   * The customer configuration profile data dialog.
+   */ 
+  private JConfigDialog  pConfigDialog;
 }
