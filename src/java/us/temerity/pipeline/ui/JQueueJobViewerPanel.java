@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.5 2004/08/30 14:30:25 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.6 2004/08/31 08:17:02 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -137,7 +137,6 @@ class JQueueJobViewerPanel
       item = new JMenuItem("Update Details");
       item.setActionCommand("details");
       item.addActionListener(this);
-      item.setEnabled(false);  // FOR NOW!!
       pJobPopup.add(item);
 
       pJobPopup.addSeparator();
@@ -183,7 +182,7 @@ class JQueueJobViewerPanel
       
       pGroupPopup.addSeparator();
       
-      item = new JMenuItem("Delete");
+      item = new JMenuItem("Delete Group");
       item.setActionCommand("delete-group");
       item.addActionListener(this);
       item.setEnabled(false);  // FOR NOW!!
@@ -1652,13 +1651,9 @@ class JQueueJobViewerPanel
   {
     System.out.print("Action: " + e.getActionCommand() + "\n");
 
-    /* job menu events */ 
-    String cmd = e.getActionCommand();
-    if(cmd.equals("details"))
-      doDetails();
-
     /* panel menu events */ 
-    else if(cmd.equals("update"))
+    String cmd = e.getActionCommand();
+    if(cmd.equals("update"))
       doUpdate();
     else if(cmd.equals("center"))
       doCenter();
@@ -1674,6 +1669,8 @@ class JQueueJobViewerPanel
       doCollapseAll();
 
     /* job/group events */ 
+    else if(cmd.equals("details"))
+      doDetails();
     else if(cmd.equals("pause-jobs"))
       doPauseJobs();
     else if(cmd.equals("resume-jobs"))
@@ -1823,8 +1820,10 @@ class JQueueJobViewerPanel
       maxPos.y = Math.max(maxPos.y, maxB.y);
     }
 
-    if(frameGroups) 
+    if(frameGroups) {
       minPos.x = 0.0;
+      maxPos.y += 1.25;
+    }
 
     frameBounds(minPos, maxPos);    
   }  
@@ -1930,12 +1929,12 @@ class JQueueJobViewerPanel
   private void
   doDetails()
   {
-
-    System.out.print("doDetails(): " + 
-		     pPrimary.getJobStatus() + 
-		     " [" + pPrimary.getJobStatus().getJobID() + "]\n"); 
-
-    // ...
+    if(pGroupID > 0) {
+      if(pPrimary != null) {
+	GetJobInfoTask task = new GetJobInfoTask(pPrimary.getJobStatus().getJobID());
+	task.start();
+      }
+    }
 
     for(ViewerJob vjob : clearSelection()) 
       vjob.update();
@@ -2126,6 +2125,88 @@ class JQueueJobViewerPanel
   }
 
   
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the current job information. 
+   */ 
+  private 
+  class GetJobInfoTask
+    extends Thread
+  {
+    public 
+    GetJobInfoTask
+    (
+     long jobID
+    ) 
+    {
+      pJobID = jobID;
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();      
+
+      QueueJob     job  = null;
+      QueueJobInfo info = null; 
+      if(master.beginPanelOp("Updating Job Details...")) {
+	try {
+	  QueueMgrClient client = master.getQueueMgrClient();
+	  job  = client.getJob(pJobID);
+	  info = client.getJobInfo(pJobID);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+      }
+
+      UpdateDetailsPanelTask task = new UpdateDetailsPanelTask(job, info);
+      SwingUtilities.invokeLater(task);
+    }
+
+    private long  pJobID; 
+  }
+
+  /**
+   * Update the job details panel.
+   */
+  private 
+  class UpdateDetailsPanelTask
+    extends Thread
+  {
+    public 
+    UpdateDetailsPanelTask
+    (
+     QueueJob job, 
+     QueueJobInfo info
+    ) 
+    {
+      pJob     = job; 
+      pJobInfo = info; 
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();      
+
+      PanelGroup<JQueueJobDetailsPanel> panels = master.getQueueJobDetailsPanels();
+      JQueueJobDetailsPanel panel = panels.getPanel(pGroupID);
+      if(panel != null) {
+	panel.updateJob(pAuthor, pView, pJob, pJobInfo);
+	panel.updateManagerTitlePanel();
+      }
+    }    
+
+    private QueueJob      pJob; 
+    private QueueJobInfo  pJobInfo; 
+  }
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /** 
