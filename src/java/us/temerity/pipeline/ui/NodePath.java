@@ -1,4 +1,4 @@
-// $Id: NodePath.java,v 1.2 2004/05/13 21:28:40 jim Exp $
+// $Id: NodePath.java,v 1.3 2004/05/19 19:03:54 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -99,6 +99,15 @@ class NodePath
   getNames() 
   {
     return Collections.unmodifiableCollection(pNames);
+  }
+
+  /** 
+   * Get the name of the root node.
+   */
+  public String
+  getRootName() 
+  {
+    return pNames.getFirst();
   }
 
   /** 
