@@ -1,4 +1,4 @@
-// $Id: JTextureLoaderBar.java,v 1.2 2005/01/08 05:31:33 jim Exp $
+// $Id: JTextureLoaderBar.java,v 1.3 2005/01/12 21:39:09 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -8,6 +8,7 @@ import us.temerity.pipeline.math.*;
 import java.awt.*;
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.atomic.*;
 import javax.swing.*;
 
 import net.java.games.jogl.*;
@@ -51,6 +52,7 @@ class JTextureLoaderBar
     }
 
     pFinishedTask = finished;
+    pLaunched = new AtomicBoolean(false);
     pFirst = true;
     
     pTextures = new LinkedList<String>();
@@ -100,6 +102,18 @@ class JTextureLoaderBar
 	
 	{
 	  String name = ("ModifiedLinks-Stale-Frozen-" + mode);
+	  pTextures.add(name);
+	  pIcon21s.add(name);
+	}
+	
+	{
+	  String name = ("Conflicted-Finished-Frozen-" + mode);
+	  pTextures.add(name);
+	  pIcon21s.add(name);
+	}
+	
+	{
+	  String name = ("Conflicted-Stale-Frozen-" + mode);
 	  pTextures.add(name);
 	  pIcon21s.add(name);
 	}
@@ -266,7 +280,7 @@ class JTextureLoaderBar
 	pPercent += pInc;
 	pCanvas.repaint();
       }
-      else {
+      else if(!pLaunched.getAndSet(true)) {
 	SwingUtilities.invokeLater(pFinishedTask);
       }
     }
@@ -330,6 +344,11 @@ class JTextureLoaderBar
    */ 
   private Thread  pFinishedTask; 
 
+  /**
+   * Whether the pFinishTask has been started.
+   */ 
+  private AtomicBoolean  pLaunched; 
+  
 
   /**
    * Whether this is the first display pass.
