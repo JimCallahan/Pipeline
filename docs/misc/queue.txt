@@ -122,3 +122,39 @@ DISPATCHER:
         
         + Process WaitQueue: 
             Moves any job which 
+
+
+
+-----------------------
+
+QUEUE SERVER TABLE: 
+
+   First Column: 
+
+     + Hostname 
+
+
+   Time Based Graph or Simple Value Columns: 
+
+     + System Load
+
+     + Free Memory        (Total Memory) 
+
+     + Free Disk Space    (Total Disk Space) 
+
+  
+   Misc: 
+
+     + Status: Shutdown, Disabled or Enabled 
+
+     + Reservation  (user name)
+
+   
+   Selection Biases: 
+    
+     + Key Name
+  
+     + Bias Value
+
+
+   
