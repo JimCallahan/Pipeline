@@ -446,7 +446,7 @@ clean-web-icons:
 
 #--------------------------------------------------------------------------------------------#
 
-core/PackageInfo.java: $(srcdir)/core/PackageInfo.java.in  $(top_builddir)/config.status
+PackageInfo.java.src: $(srcdir)/PackageInfo.java.src.in  $(top_builddir)/config.status
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 
 bootstrap/BootStrapLoader.java.in: $(srcdir)/bootstrap/BootStrapLoader.java.in.in  \
