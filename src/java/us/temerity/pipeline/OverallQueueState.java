@@ -1,11 +1,11 @@
-// $Id: OverallQueueState.java,v 1.6 2004/06/23 22:27:29 jim Exp $
+// $Id: OverallQueueState.java,v 1.7 2004/07/07 13:20:17 jim Exp $
 
 package us.temerity.pipeline;
 
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   Q U E U E    S T A T E                                                                 */
+/*   O V E R A L L   Q U E U E   S T A T E                                                  */
 /*------------------------------------------------------------------------------------------*/
 
 /**
