@@ -1,4 +1,4 @@
-// $Id: NodeCommon.java,v 1.11 2004/04/20 21:55:01 jim Exp $
+// $Id: NodeCommon.java,v 1.12 2004/05/07 15:02:49 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -579,6 +579,19 @@ class NodeCommon
     }
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O N V E R S I O N                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The string representation of the primary file sequence.
+   */ 
+  public String
+  toString() 
+  {
+    return pPrimarySeq.toString();
+  }
 
 
   /*----------------------------------------------------------------------------------------*/

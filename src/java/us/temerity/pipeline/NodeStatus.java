@@ -1,4 +1,4 @@
-// $Id: NodeStatus.java,v 1.9 2004/04/17 19:49:01 jim Exp $
+// $Id: NodeStatus.java,v 1.10 2004/05/07 15:02:49 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -215,6 +215,25 @@ class NodeStatus
   ) 
   {
     pTargets.put(status.getName(), status);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O N V E R S I O N                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The string representation of the primary file sequence if details exist or the 
+   * short node name if details are missing.
+   */ 
+  public String
+  toString() 
+  {
+    if(pDetails != null) 
+      return pDetails.toString();
+
+    File path = new File(pNodeID.getName());
+    return path.getName();
   }
 
 

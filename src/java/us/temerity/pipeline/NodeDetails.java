@@ -1,4 +1,4 @@
-// $Id: NodeDetails.java,v 1.7 2004/04/18 04:07:31 jim Exp $
+// $Id: NodeDetails.java,v 1.8 2004/05/07 15:02:49 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -326,6 +326,24 @@ class NodeDetails
   {
     return pQueueStates.get(fseq);
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O N V E R S I O N                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The string representation of the primary file sequence.
+   */ 
+  public String
+  toString()
+  {
+    if(pWorkingVersion != null)
+      return pWorkingVersion.toString();
+    return pLatestVersion.toString();
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
