@@ -1,4 +1,4 @@
-// $Id: JFileSelectDialog.java,v 1.2 2004/05/29 07:23:00 jim Exp $
+// $Id: JFileSelectDialog.java,v 1.3 2004/06/03 09:25:53 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -22,7 +22,7 @@ import javax.swing.tree.*;
 public 
 class JFileSelectDialog
   extends JBaseDialog
-  implements ListSelectionListener
+  implements ListSelectionListener, DocumentListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -156,7 +156,9 @@ class JFileSelectDialog
 
 	  field.addActionListener(this);
 	  field.setActionCommand("jump-dir");
-	  
+
+	  field.getDocument().addDocumentListener(this);
+
 	  hbox.add(field);
 	}
 	
@@ -244,8 +246,12 @@ class JFileSelectDialog
 	  {
 	    JIdentifierField field = UIMaster.createIdentifierField(null, 60, JLabel.LEFT);
 	    pFileField = field;
+
 	    field.addActionListener(this);
-	    
+	    field.setActionCommand("confirm");
+
+	    field.getDocument().addDocumentListener(this);
+
 	    hbox.add(field);
 	  }
 	  
@@ -305,6 +311,18 @@ class JFileSelectDialog
   /*----------------------------------------------------------------------------------------*/
   /*   U S E R   I N T E R F A C E                                                          */
   /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Update the initial name of the selected target file in the current directory.
+   */ 
+  public void 
+  updateTargetName
+  (
+   String name
+  ) 
+  {
+    pFileField.setText(name);
+  }
 
   /**
    * Update target file or directory. 
@@ -350,7 +368,17 @@ class JFileSelectDialog
 	name = canon.getName();
       }
       else {
-	assert(false);
+	Toolkit.getDefaultToolkit().beep();
+
+	File file = canon;
+	while(file.getPath().length() > 1) {
+	  if(file.isDirectory()) {
+	    dir = file;
+	    break;
+	  }
+
+	  file = file.getParentFile();
+	}
       }
     }
 
@@ -372,7 +400,7 @@ class JFileSelectDialog
 	    dirs.add(fs[wk]);
 	}
 	
-	if(!dir.getName().equals("/")) 
+	if(!dir.getPath().equals("/")) 
 	  model.addElement(new File(dir, ".."));
 	
 	for(File file : dirs) 
@@ -381,7 +409,7 @@ class JFileSelectDialog
 	for(File file : files) 
 	  model.addElement(file);
 	
-	pDirField.setText(canon.getPath());
+	pDirField.setText(dir.getPath());
       }
       else {
 	Toolkit.getDefaultToolkit().beep();
@@ -389,9 +417,31 @@ class JFileSelectDialog
       }
     }
 
-    if(pFileField != null) 
+    if((pFileField != null) && (name != null))
       pFileField.setText(name);
   }
+
+  /**
+   * Update the enabled status of the confirm button.
+   */ 
+  private void 
+  updateConfirmButton()
+  {
+    boolean enabled = true;
+    
+    String dir = pDirField.getText();
+    if((dir == null) || (dir.length() == 0))
+      enabled = false;
+
+    if(pFileField != null) {
+      String file = pFileField.getText();
+      if((file == null) || (file.length() == 0))
+	enabled = false;
+    }
+
+    pConfirmButton.setEnabled(enabled);
+  }
+
 
 
 
@@ -416,6 +466,39 @@ class JFileSelectDialog
     File target = (File) pFileList.getSelectedValue();
     if(target != null) 
       updateTargetFile(target);
+  }
+
+
+  /*-- DOCUMENT LISTENER METHODS -----------------------------------------------------------*/
+
+  /**
+   * Gives notification that an attribute or set of attributes changed.
+   */ 
+  public void 
+  changedUpdate(DocumentEvent e) {}
+
+  /**
+   * Gives notification that there was an insert into the document.
+   */
+  public void
+  insertUpdate
+  (
+   DocumentEvent e
+  )
+  {
+    updateConfirmButton();
+  }
+  
+  /**
+   * Gives notification that a portion of the document has been removed.
+   */
+  public void 
+  removeUpdate
+  (
+   DocumentEvent e
+  )
+  {
+    updateConfirmButton();    
   }
 
 
