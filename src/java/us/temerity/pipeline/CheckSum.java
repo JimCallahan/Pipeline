@@ -1,4 +1,4 @@
-// $Id: CheckSum.java,v 1.3 2004/03/10 11:45:38 jim Exp $
+// $Id: CheckSum.java,v 1.4 2004/03/11 11:00:04 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -223,11 +223,14 @@ class CheckSum
 	throw new PipelineException
 	  ("The checksum directory (" + dir + ") exists but is not a directory!");
     }
-    else { 
+    else {
       try {
-	dir.mkdirs();
+	if(!dir.mkdirs()) {
+	  throw new PipelineException
+	    ("Unable to create the checksum directory (" + dir + ")!");
+	}
       }
-      catch(SecurityException ex) {
+      catch (SecurityException ex) {
 	throw new PipelineException
 	  ("Unable to create the checksum directory (" + dir + ")!");
       }
