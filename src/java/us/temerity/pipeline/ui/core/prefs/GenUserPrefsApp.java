@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.11 2005/01/31 23:02:33 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.12 2005/02/01 14:52:06 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -1146,7 +1146,35 @@ class GenUserPrefsApp
 
 	new DuplicateHotKeyPref
 	("Move the camera to frame all resource usage history graphs.",
-	 "ResourceUsageFrameAll", "Frame All:", "FrameAll")
+	 "ResourceUsageFrameAll", "Frame All:", "FrameAll"), 
+
+	new BasePref(),
+
+	new HotKeyPref
+	("Toggle the display of the system load graphs.",
+	 "ToggleSystemLoad", "Show/Hide System Load"),
+
+	new HotKeyPref
+	("Toggle the display of the free memory graphs.",
+	 "ToggleFreeMemory", "Show/Hide Free Memory"),
+
+	new HotKeyPref
+	("Toggle the display of the free temporary disk space graphs.",
+	 "ToggleFreeDisk", "Show/Hide Free Disk"),
+
+	new HotKeyPref
+	("Toggle the display of the job count graphs.",
+	 "ToggleJobCount", "Show/Hide Job Count"),
+
+	new BasePref(),
+
+	new HotKeyPref
+	("Toggle the display of the full load bar.",
+	 "ToggleFullLoadBar", "Show/Hide Full Load Bar"),
+
+	new HotKeyPref
+	("Toggle the display of the job slots level bar.", 
+	 "ToggleJobSlotsBar", "Show/Hide Job Slots Bar")
       };
 
       pPrefs.put("Dialogs|Resource Usage History|Hot Keys", prefs);
@@ -1175,15 +1203,19 @@ class GenUserPrefsApp
 	("The color used to mark the level of full processor utilization.", 
 	 "FullLoadColor", "Full Load Color:", Color.yellow),
 	
+	new BooleanPref
+	("Whether to initially render the full load level bar.", 
+	 "ShowFullLoadBar", "Show Full Load Bar:", true),
+
 	new BasePref(),
 
 	new ColorPref
 	("The color used to render the free memory background.", 
-	 "FreeMemoryBgColor", "Free Memory Background:", new Color(0.0f, 0.27f, 0.45f)), 
+	 "FreeMemoryBgColor", "Free Mem Background:", new Color(0.0f, 0.27f, 0.45f)), 
 	
 	new ColorPref
 	("The color used to render free memory sample values.", 
-	 "FreeMemoryFgColor", "Free Memory Foreground:", new Color(0.0f, 0.59f, 1.0f)),
+	 "FreeMemoryFgColor", "Free Mem Foreground:", new Color(0.0f, 0.59f, 1.0f)),
 	
 	new BasePref(),
 	
@@ -1216,7 +1248,11 @@ class GenUserPrefsApp
 
 	new ColorPref
 	("The color used to mark the current number of job slots.", 
-	 "JobSlotsColor", "Job Slots Color:", Color.yellow)
+	 "JobSlotsColor", "Job Slots Color:", Color.yellow), 
+	
+	new BooleanPref
+	("Whether to initially render the job slots level bar.", 
+	 "ShowJobSlotsBar", "Show Job Slots Bar:", true),
       };
 
       pPrefs.put("Dialogs|Resource Usage History|Appearance", prefs);
@@ -1585,7 +1621,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.11 2005/01/31 23:02:33 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.12 2005/02/01 14:52:06 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -1840,7 +1876,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.11 2005/01/31 23:02:33 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.12 2005/02/01 14:52:06 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3196,7 +3232,7 @@ class GenUserPrefsApp
 
       StringBuffer buf = new StringBuffer();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.11 2005/01/31 23:02:33 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.12 2005/02/01 14:52:06 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 
