@@ -1,4 +1,4 @@
-// $Id: Vector4l.java,v 1.3 2004/12/14 14:08:43 jim Exp $
+// $Id: Vector4l.java,v 1.4 2004/12/16 21:35:41 jim Exp $
 
 package us.temerity.pipeline.math;
 
