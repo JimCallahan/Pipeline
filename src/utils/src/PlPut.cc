@@ -1,4 +1,4 @@
-// $Id: PlPut.cc,v 1.12 2003/09/22 20:55:31 jim Exp $
+// $Id: PlPut.cc,v 1.13 2003/10/09 00:26:42 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -152,7 +152,8 @@ main
   FB::setWarnings(false);
   FB::setStageStats(false);
 
-  if(argc == 2) {
+  switch(argc) {
+  case 2:
     if(strcmp(argv[1], "--help") == 0) {
       usage();
       exit(EXIT_SUCCESS);
@@ -182,17 +183,24 @@ main
       std::cerr << PackageInfo::sCopyright << "\n";
       exit(EXIT_SUCCESS);
     }
-  }
-  else if((argc > 2) && (argc < 5)) {
-    int wk;
-    for(wk=1; wk<3; wk++) {
-      if(strcmp(argv[wk], "--verbose") == 0) {
-	FB::setWarnings(true);
-	FB::setStageStats(true);
-      }
+    else {
+      usage();
+      exit(EXIT_FAILURE);      
     }
-  }
-  else {
+    break;
+
+  case 3:
+    if(strcmp(argv[1], "--verbose") == 0) {
+      FB::setWarnings(true);
+      FB::setStageStats(true);
+    }
+    else {
+      usage();
+      exit(EXIT_FAILURE);      
+    }
+    break;
+
+  default:
     usage();
     exit(EXIT_FAILURE);
   }
@@ -232,28 +240,24 @@ main
       else if(strcmp(mode, "copy") == 0)
 	isLink = false;
       else {
-	char msg[1024];
 	sprintf(msg, "Illegal mode \"%s\" encountered!", mode);
 	FB::error(msg);
       }
 
       if(isLink) {
 	if(strncmp(work, PackageInfo::sRepoDir, repoDirSize) != 0) {
-	  char msg[1024];
 	  sprintf(msg, "Illegal repository filename \"%s\" encountered!", work);
 	  FB::error(msg);	
 	}
       }
       else {
 	if(strncmp(work, PackageInfo::sWorkDir, workDirSize) != 0) {
-	  char msg[1024];
 	  sprintf(msg, "Illegal working area filename \"%s\" encountered!", work);
 	  FB::error(msg);	
 	}
       }
 	  
       if(strncmp(repo, PackageInfo::sRepoDir, repoDirSize) != 0) {
-	char msg[1024];
 	sprintf(msg, "Illegal repository filename \"%s\" encountered!", repo);
 	FB::error(msg);	
       }

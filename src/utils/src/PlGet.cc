@@ -1,4 +1,4 @@
-// $Id: PlGet.cc,v 1.2 2003/09/22 20:55:31 jim Exp $
+// $Id: PlGet.cc,v 1.3 2003/10/09 00:26:42 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -124,7 +124,8 @@ main
   FB::setWarnings(false);
   FB::setStageStats(false);
 
-  if(argc == 2) {
+  switch(argc) {
+  case 2:
     if(strcmp(argv[1], "--help") == 0) {
       usage();
       exit(EXIT_SUCCESS);
@@ -154,17 +155,24 @@ main
       std::cerr << PackageInfo::sCopyright << "\n";
       exit(EXIT_SUCCESS);
     }
-  }
-  else if((argc > 2) && (argc < 5)) {
-    int wk;
-    for(wk=1; wk<3; wk++) {
-      if(strcmp(argv[wk], "--verbose") == 0) {
-	FB::setWarnings(true);
-	FB::setStageStats(true);
-      }
+    else {
+      usage();
+      exit(EXIT_FAILURE);      
     }
-  }
-  else {
+    break;
+
+  case 3:
+    if(strcmp(argv[1], "--verbose") == 0) {
+      FB::setWarnings(true);
+      FB::setStageStats(true);
+    }
+    else {
+      usage();
+      exit(EXIT_FAILURE);      
+    }
+    break;
+
+  default:
     usage();
     exit(EXIT_FAILURE);
   }
