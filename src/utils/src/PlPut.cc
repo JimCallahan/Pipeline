@@ -1,4 +1,4 @@
-// $Id: PlPut.cc,v 1.4 2003/01/25 01:35:04 jim Exp $
+// $Id: PlPut.cc,v 1.5 2003/01/26 00:21:01 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -6,15 +6,12 @@
 
 #ifdef HAVE_FSTREAM
 #  include <fstream>
+   using std::ifstream;
+   using std::ofstream;
 #else
 #  ifdef HAVE_FSTREAM_H
 #    include <fstream.h>
 #  endif
-#endif
-
-#ifdef HAVE_FSTREAM
-  using std::ifstream;
-  using std::ofstream;
 #endif
 
 #ifdef HAVE_LIST
@@ -153,13 +150,13 @@ usage()
 void
 checkRepoFiles
 (
- list<PathPair*>& pairs,    /* IN: list of work/repo pairs */ 
- bool md5                         /* IN: check MD5 checksums as well? */ 
+ std::list<PathPair*>& pairs,    /* IN: list of work/repo pairs */ 
+ bool md5                        /* IN: check MD5 checksums as well? */ 
 )
 {
   char msg[1024];
 
-  list<PathPair*>::iterator iter;
+  std::list<PathPair*>::iterator iter;
   for(iter=pairs.begin(); iter != pairs.end(); iter++) {
     const char* repo = (*iter)->uRepo;
     FB::stageMsg(repo);
@@ -198,9 +195,9 @@ checkRepoFiles
 bool
 copyFileToRepo
 (
- const char* work,           /* IN: working area file */ 
- const char* repo,           /* IN: repository file */ 
- list<const char*>& copied   /* IN/OUT: list of succesfully copied files */ 
+ const char* work,                /* IN: working area file */ 
+ const char* repo,                /* IN: repository file */ 
+ std::list<const char*>& copied   /* IN/OUT: list of succesfully copied files */ 
 )
 {
   char msg[1024];
@@ -214,7 +211,7 @@ copyFileToRepo
   }
   
   /* create/open repository file */ 
-  ofstream out(repo, ios::out | ios::noreplace, 0444);
+  ofstream out(repo);
   if(!in) {
     sprintf(msg, "unable to open repository file: %s", repo);
     FB::warn(msg);
@@ -228,6 +225,13 @@ copyFileToRepo
   in.close();
   out.close();
   
+  /* chmod 444 */ 
+  if(chmod(repo, 0444) != 0) {
+    sprintf(msg, "unable change mode of repository file: %s", repo);
+    FB::warn(msg);
+    return false;
+  }
+
   /* success! */ 
   sprintf(msg, "copied: %s to %s", work, repo);
   FB::stageMsg(msg);
@@ -237,7 +241,7 @@ copyFileToRepo
 
 
   
-void
+int
 main
 (
  int argc, 
@@ -245,7 +249,7 @@ main
 )
 {
   /* parse command line args */ 
-  FB::init(cout);
+  FB::init(std::cout);
   FB::setWarnings(false);
   FB::setStageStats(false);
 
@@ -303,7 +307,7 @@ main
   char msg[1024];
   
   /* read in the file list from stdin */ 
-  typedef list<PathPair*> Pairs;
+  typedef std::list<PathPair*> Pairs;
   Pairs pairs;
   FB::stageBegin("Reading File List: ");
   {
@@ -314,7 +318,7 @@ main
     ifstream in(flist);
     if(!in) {
       char msg[1024];
-      sprintf(msg, "Unable to read file list from: \"%s\"!", flist);
+      sprintf(msg, "Unable to read file list from: %s!", flist);
       FB::error(msg);
     }
 
@@ -369,7 +373,7 @@ main
   FB::stageBegin("Creating Repository Directories:");
   {
     /* build a list of unique directories needed by all paths */ 
-    typedef set<const char*, StringCmp> DirSet;
+    typedef std::set<const char*, StringCmp> DirSet;
     DirSet dirs;
     {
       Pairs::iterator iter;
@@ -466,7 +470,7 @@ main
   /* copy the files... */ 
   FB::stageBegin("Copying Files:");
   bool aborted = false;
-  list<const char*> copied;
+  std::list<const char*> copied;
   {
     Pairs::iterator iter;
     for(iter=pairs.begin(); iter!=pairs.end() && !aborted; iter++) {      
@@ -486,7 +490,7 @@ main
     if(aborted) {
       FB::stageBegin("Copy Failed, Cleaning:");
       {
-	list<const char*>::iterator citer;
+	std::list<const char*>::iterator citer;
 	for(citer=copied.begin(); citer!=copied.end() && !aborted; citer++) {
 	  const char* file = *citer;
 	  if(unlink(file) != 0) {
