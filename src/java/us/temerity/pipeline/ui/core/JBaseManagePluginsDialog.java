@@ -1,4 +1,4 @@
-// $Id: JBaseManagePluginsDialog.java,v 1.2 2005/01/05 17:41:49 jim Exp $
+// $Id: JBaseManagePluginsDialog.java,v 1.3 2005/01/07 07:09:49 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -57,14 +57,8 @@ class JBaseManagePluginsDialog
       pPopup = new JPopupMenu();  
  
       item = new JMenuItem("New Menu...");
-      pNewSubmenu = item;
-      item.setActionCommand("new-submenu");
-      item.addActionListener(this);
-      pPopup.add(item);  
-   
-      item = new JMenuItem("New Item...");
-      pNewMenuItem = item;
-      item.setActionCommand("new-menu-item");
+      pNewMenu = item;
+      item.setActionCommand("new-menu");
       item.addActionListener(this);
       pPopup.add(item);  
    
@@ -75,8 +69,6 @@ class JBaseManagePluginsDialog
       item.setActionCommand("rename-menu");
       item.addActionListener(this);
       pPopup.add(item);  
-
-      pPopup.addSeparator();
 
       item = new JMenuItem("Delete...");
       pDeleteMenu = item;
@@ -102,14 +94,15 @@ class JBaseManagePluginsDialog
 	
 	{
 	  DefaultMutableTreeNode root = 
-	    new DefaultMutableTreeNode(new MenuLayoutData(), true);
+	    new DefaultMutableTreeNode(new PluginMenuLayout(), true);
 	  DefaultTreeModel model = new DefaultTreeModel(root, true);
 	  
 	  JTree tree = new JFancyTree(model); 
 	  pMenuLayoutTree = tree;
 	  tree.setName("DarkTree");
 	  
-	  tree.setCellRenderer(new JMenuLayoutTreeCellRenderer());
+	  tree.setRootVisible(true);
+	  tree.setCellRenderer(new JPluginMenuLayoutTreeCellRenderer());
 	  tree.getSelectionModel().setSelectionMode
 	    (TreeSelectionModel.SINGLE_TREE_SELECTION);
 	  tree.setExpandsSelectedPaths(true);
@@ -120,9 +113,8 @@ class JBaseManagePluginsDialog
 	  {
 	    JScrollPane scroll = new JScrollPane(tree);
 	    
-	    Dimension size = new Dimension(sLWidth, sLHeight);
-	    scroll.setMinimumSize(size);
-	    scroll.setPreferredSize(size);
+	    scroll.setMinimumSize(new Dimension(400, 100));
+	    scroll.setPreferredSize(new Dimension(400, 500));
 	    
 	    scroll.setHorizontalScrollBarPolicy
 	      (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -165,7 +157,7 @@ class JBaseManagePluginsDialog
 	
 	{
 	  JButton btn = new JButton();
-	  pRemovePluginButton = btn;
+	  pClearPluginButton = btn;
 	  btn.setName("RightArrowButton");
 	  
 	  Dimension size = new Dimension(16, 16);
@@ -173,7 +165,7 @@ class JBaseManagePluginsDialog
 	  btn.setMaximumSize(size);
 	  btn.setPreferredSize(size);
 	  
-	  btn.setActionCommand("remove-plugin");
+	  btn.setActionCommand("clear-plugin");
 	  btn.addActionListener(this);
 	  
 	  vbox.add(btn);
@@ -214,9 +206,8 @@ class JBaseManagePluginsDialog
 	  {
 	    JScrollPane scroll = new JScrollPane(tree);
 	    
-	    Dimension size = new Dimension(sLWidth, sLHeight);
-	    scroll.setMinimumSize(size);
-	    scroll.setPreferredSize(size);
+	    scroll.setMinimumSize(new Dimension(150, 100));
+	    scroll.setPreferredSize(new Dimension(150, 500));
 	    
 	    scroll.setHorizontalScrollBarPolicy
 	      (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -272,12 +263,11 @@ class JBaseManagePluginsDialog
     rebuildPluginVersions();
 
     pSetPluginButton.setEnabled(false);
-    pRemovePluginButton.setEnabled(false);
+    pClearPluginButton.setEnabled(false);
 
     pConfirmButton.setEnabled(pIsPrivileged);
     pApplyButton.setEnabled(pIsPrivileged);
   }
-
   
   /**
    * Get the plugin menu layout specified by the UI components.
@@ -285,11 +275,7 @@ class JBaseManagePluginsDialog
   protected PluginMenuLayout
   getMenuLayout() 
   {
-    
-    // ...
-    
-
-    return new PluginMenuLayout();
+    return pMenuLayout;
   }
   
 
@@ -308,46 +294,23 @@ class JBaseManagePluginsDialog
   ) 
   {    
     if(tpath != null) {
+      pMenuLayoutTree.clearSelection();
       pMenuLayoutTree.addSelectionPath(tpath);
+    }
 
-      DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) tpath.getLastPathComponent();
-      MenuLayoutData data = (MenuLayoutData) tnode.getUserObject();
-  
-      pNewSubmenu.setEnabled(!data.isItem());
-      pNewMenuItem.setEnabled(!data.isItem());
-      pRenameMenu.setEnabled(true);
+    PluginMenuLayout pml = getSelectedPluginMenuLayout();
+    if(pml != null) {
+      pNewMenu.setEnabled(pml.isSubmenu());
+      pRenameMenu.setEnabled(!pml.getTitle().equals("Plugin Menu"));
       pDeleteMenu.setEnabled(true);
-
-      return;
     }
-
-    pNewSubmenu.setEnabled(false);
-    pNewMenuItem.setEnabled(false);
-    pRenameMenu.setEnabled(true);
-    pDeleteMenu.setEnabled(true);
+    else {
+      pNewMenu.setEnabled(true);
+      pRenameMenu.setEnabled(false);
+      pDeleteMenu.setEnabled(false);
+    }
   }
 
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   C O M P O N E N T   O V E R R I D E S                                                */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Shows or hides this component.
-   */ 
-  public void 
-  setVisible
-  (
-   boolean isVisible
-  )
-  {
-    if(!isVisible) {
-      
-
-    }
-
-    super.setVisible(isVisible);
-  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -365,42 +328,29 @@ class JBaseManagePluginsDialog
    TreeSelectionEvent e
   )
   { 
-    MenuLayoutData mdata = null;
-    {
-      TreePath mpath = pMenuLayoutTree.getSelectionPath();
-      if(mpath != null) {
-	DefaultMutableTreeNode mnode = (DefaultMutableTreeNode) mpath.getLastPathComponent();
-	mdata = (MenuLayoutData) mnode.getUserObject();
-      }
-    }
+    PluginMenuLayout pml = getSelectedPluginMenuLayout(); 
+    PluginVersionData vdata = getSelectedPluginVersionData();
 
-    PluginVersionData vdata = null;
-    {
-      TreePath vpath = pPluginVersionTree.getSelectionPath();
-      if(vpath != null) {
-	DefaultMutableTreeNode vnode = (DefaultMutableTreeNode) vpath.getLastPathComponent();
-	vdata = (PluginVersionData) vnode.getUserObject();
-      }
-    }
-    
     if(e.getSource() == pMenuLayoutTree) {
-      if((mdata != null) && mdata.isItem() && 
-	 (mdata.getName() != null) && (mdata.getVersionID() != null)) {
-	selectPluginVersion(mdata.getName(), mdata.getVersionID());
-	pRemovePluginButton.setEnabled(true);
-      }
-      else {
-	pRemovePluginButton.setEnabled(false);
-      }
-    }
-    else if(e.getSource() == pPluginVersionTree) {
-      if((mdata != null) && mdata.isItem() && 
-	 (vdata != null) && (vdata.getName() != null) && (vdata.getVersionID() != null)) {
-	pSetPluginButton.setEnabled(true); 
+      if((pml != null) && pml.isMenuItem()) {
+	selectPluginVersion(pml.getName(), pml.getVersionID());
+	vdata = getSelectedPluginVersionData();
+
+	pSetPluginButton.setEnabled(true);
+	pClearPluginButton.setEnabled(true);
       }
       else {
 	pSetPluginButton.setEnabled(false);
+	pClearPluginButton.setEnabled(false);
       }
+    }
+
+    if((pml != null) && (pml.isMenuItem() || (pml.size() == 0)) &&
+       (vdata != null) && (vdata.getName() != null) && (vdata.getVersionID() != null)) {
+      pSetPluginButton.setEnabled(true); 
+    }
+    else {
+      pSetPluginButton.setEnabled(false);
     }
   }
 
@@ -487,18 +437,16 @@ class JBaseManagePluginsDialog
     super.actionPerformed(e);
 
     String cmd = e.getActionCommand();
-    if(cmd.equals("new-submenu")) 
-      doNewSubmenu();
-    else if(cmd.equals("new-menu-item")) 
-      doNewMenuItem();
+    if(cmd.equals("new-menu")) 
+      doNewMenu();
     if(cmd.equals("rename-menu")) 
       doRenameMenu();
     if(cmd.equals("delete-menu")) 
       doDeleteMenu();
     if(cmd.equals("set-plugin"))
       doSetPlugin();
-    if(cmd.equals("remove-plugin"))
-      doRemovePlugin();
+    if(cmd.equals("clear-plugin"))
+      doClearPlugin();
   }
 
 
@@ -521,73 +469,107 @@ class JBaseManagePluginsDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * 
+   * Add a new plugin layout menu.
    */ 
   public void 
-  doNewSubmenu()
+  doNewMenu()
   {
-    JNewNameDialog diag = new JNewNameDialog(this, "New Menu", "New Menu Name:", null, "Add");
+    JNewNameDialog diag = 
+      new JNewNameDialog(this, "New Menu", "New Menu Name:", null, "Add");
+
+    diag.setVisible(true);
     if(diag.wasConfirmed()) {
       String name = diag.getName();
-      
-      // .. .
-
+      if((name != null) && (name.length() > 0)) {
+	DefaultMutableTreeNode mnode = getSelectedMenuLayoutNode();
+	if(mnode == null) {
+	  DefaultTreeModel model = (DefaultTreeModel) pMenuLayoutTree.getModel();
+	  mnode = (DefaultMutableTreeNode) model.getRoot();
+	}
+	
+	if(mnode != null) {
+	  PluginMenuLayout pml = (PluginMenuLayout) mnode.getUserObject();
+	  if(pml.isSubmenu()) {
+	    pMenuLayoutTree.expandPath(new TreePath(mnode.getPath()));
+	    pml.add(new PluginMenuLayout(name));
+	    rebuildMenuLayout();
+	  }
+	}
+      }
     }
   }
 
   /**
-   * 
-   */ 
-  public void 
-  doNewMenuItem()
-  {
-    JNewNameDialog diag = new JNewNameDialog(this, "New Item", "New Item Name:", null, "Add");
-    if(diag.wasConfirmed()) {
-      String name = diag.getName();
-      
-      // .. .
-
-    }
-    
-  }
-
-  /**
-   * 
+   * Rename the currently selected plugin layout menu.
    */ 
   public void 
   doRenameMenu()
   {
-    
+    PluginMenuLayout pml = getSelectedPluginMenuLayout();
+    if(pml != null) {
+      JNewNameDialog diag = 
+	new JNewNameDialog(this, "Rename Menu", "Menu Name:", pml.getTitle(), "Add");
+
+      diag.setVisible(true);
+      if(diag.wasConfirmed()) {
+	String name = diag.getName();
+	if((name != null) && (name.length() > 0)) 
+	  pml.setTitle(name);
+      }
+    }    
   }
 
   /**
-   * 
+   * Delete the currently selected plugin layout menu (and all submenus).
    */ 
   public void 
   doDeleteMenu()
   {
-    
+    DefaultMutableTreeNode mnode = getSelectedMenuLayoutNode();
+    if(mnode != null) {
+      DefaultMutableTreeNode pnode = (DefaultMutableTreeNode) mnode.getParent(); 
+      if(pnode != null) {
+	PluginMenuLayout parent = (PluginMenuLayout) pnode.getUserObject();
+	PluginMenuLayout child  = (PluginMenuLayout) mnode.getUserObject();
+	parent.remove(child);
+      }
+      else {
+	pMenuLayout = new PluginMenuLayout();
+      }
+
+      rebuildMenuLayout();
+    }
   }
  
 
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * 
+   * Set the plugin version associated with the currently selected menu. 
    */ 
   public void 
   doSetPlugin()
   {
-    
+    PluginMenuLayout pml = getSelectedPluginMenuLayout(); 
+    PluginVersionData vdata = getSelectedPluginVersionData();
+    if((pml != null) && (pml.size() == 0) && 
+       (vdata != null) && (vdata.getName() != null) && (vdata.getVersionID() != null)) {
+      pml.setPlugin(vdata.getName(), vdata.getVersionID());
+      rebuildMenuLayout();
+    }
   }
 
   /**
-   * 
+   * Clear the plugin version associated with the currently selected menu. 
    */ 
   public void 
-  doRemovePlugin()
+  doClearPlugin()
   {
-    
+    PluginMenuLayout pml = getSelectedPluginMenuLayout(); 
+    if((pml != null) && pml.isMenuItem()) {
+      pml.clearPlugin();
+      rebuildMenuLayout();
+    }
   }
 
 
@@ -596,33 +578,104 @@ class JBaseManagePluginsDialog
   /*   H E L P E R S                                                                        */
   /*----------------------------------------------------------------------------------------*/
 
+  /** 
+   * Get the paths of the expanded tree nodes. 
+   */ 
+  private TreeSet<String> 
+  getExpandedTreeNodes
+  (
+   JTree tree
+  )
+  {
+    TreeSet<String> expanded = new TreeSet<String>();
+
+    DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
+    DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();   
+    Enumeration e = tree.getExpandedDescendants(new TreePath(root.getPath()));
+    if(e != null) {
+      while(e.hasMoreElements()) {
+	TreePath tpath = (TreePath) e.nextElement(); 
+	expanded.add(treePathToString(tpath));
+      }
+    }
+
+    return expanded;
+  }
+
+  /**
+   * Expand the tree nodes with the given paths.
+   */ 
+  private void 
+  rexpandTreeNodes
+  (
+   JTree tree, 
+   TreeSet<String> expanded 
+  )
+  { 
+    DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
+    DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();   
+    Enumeration e = root.depthFirstEnumeration();
+    if(e != null) {
+      while(e.hasMoreElements()) {
+	DefaultMutableTreeNode mnode = (DefaultMutableTreeNode) e.nextElement(); 
+	TreePath tpath = new TreePath(mnode.getPath());
+	if(expanded.contains(treePathToString(tpath))) 
+	  tree.expandPath(tpath);
+      }
+    }    
+  }
+
+  /**
+   * Convert a tree path into a string.
+   */ 
+  private String
+  treePathToString
+  (
+   TreePath tpath
+  ) 
+  {
+    StringBuffer buf = new StringBuffer();
+
+    Object[] path = tpath.getPath(); 
+    int wk;
+    for(wk=0; wk<path.length; wk++) 
+      buf.append("/" + path[wk]);
+
+    return buf.toString();
+  }
+
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Rebuild the menu layout tree nodes.
    */ 
   private void 
   rebuildMenuLayout() 
   {
-    DefaultMutableTreeNode root = 
-      new DefaultMutableTreeNode(new MenuLayoutData(), true);
-    
-    for(PluginMenuLayout pml : pMenuLayout) 
-      rebuildMenuLayout(pml, root);
+    TreeSet<String> expanded = getExpandedTreeNodes(pMenuLayoutTree);
+
+    DefaultMutableTreeNode root = rebuildMenuLayout(pMenuLayout, null);
     
     DefaultTreeModel model = (DefaultTreeModel) pMenuLayoutTree.getModel();
     model.setRoot(root);      
+
+    rexpandTreeNodes(pMenuLayoutTree, expanded);
   }
 
   /**
    * Recursively rebuild the menu layout tree nodes.
    */ 
-  private void 
+  private DefaultMutableTreeNode
   rebuildMenuLayout
   (
    PluginMenuLayout layout, 
    DefaultMutableTreeNode root
   ) 
-  {
-    if(layout.isItem()) {
+  { 
+    DefaultMutableTreeNode vnode = null;
+    if(layout.isMenuItem()) {
       String name = layout.getName();
       VersionID vid = layout.getVersionID();
 
@@ -632,19 +685,52 @@ class JBaseManagePluginsDialog
 	vid = null;
       }
 
-      DefaultMutableTreeNode vnode = 
-	new DefaultMutableTreeNode(new MenuLayoutData(layout.getTitle(), name, vid), false);
-      root.add(vnode);
+      vnode = new DefaultMutableTreeNode(layout, false);
+      if(root != null) 
+	root.add(vnode);
     }
     else {
-      DefaultMutableTreeNode vnode = 
-	new DefaultMutableTreeNode(new MenuLayoutData(layout.getTitle()), true);
-      root.add(vnode);
+      vnode = new DefaultMutableTreeNode(layout, true);
+      if(root != null)
+	root.add(vnode);
 
       for(PluginMenuLayout pml : layout) 
 	rebuildMenuLayout(pml, vnode);
     }
+
+    return vnode;
   }
+
+  /**
+   * Get the selected menu layout tree node.
+   * 
+   * @return 
+   *   The node or <CODE>null</CODE> if none is selected.
+   */ 
+  private DefaultMutableTreeNode
+  getSelectedMenuLayoutNode() 
+  {
+    TreePath mpath = pMenuLayoutTree.getSelectionPath();
+    if(mpath != null) 
+      return ((DefaultMutableTreeNode) mpath.getLastPathComponent());
+    return null;
+  }
+
+  /**
+   * Get the selected menu layout tree node user data.
+   * 
+   * @return 
+   *   The data or <CODE>null</CODE> if none is selected.
+   */ 
+  private PluginMenuLayout
+  getSelectedPluginMenuLayout() 
+  {
+    DefaultMutableTreeNode mnode = getSelectedMenuLayoutNode();
+    if(mnode != null) 
+      return ((PluginMenuLayout) mnode.getUserObject());
+    return null;
+  }
+
 
 
 
@@ -656,6 +742,8 @@ class JBaseManagePluginsDialog
   private void 
   rebuildPluginVersions()
   {
+    TreeSet<String> expanded = getExpandedTreeNodes(pMenuLayoutTree);
+
     DefaultMutableTreeNode root = new DefaultMutableTreeNode(new PluginVersionData());
 
     for(String name : pPluginVersions.keySet()) {
@@ -672,6 +760,8 @@ class JBaseManagePluginsDialog
     
     DefaultTreeModel model = (DefaultTreeModel) pPluginVersionTree.getModel();
     model.setRoot(root);
+
+    rexpandTreeNodes(pMenuLayoutTree, expanded);
   }
 
   /**
@@ -706,80 +796,41 @@ class JBaseManagePluginsDialog
     }    
   }
 
+  /**
+   * Get the selected plugin version tree node.
+   * 
+   * @return 
+   *   The node or <CODE>null</CODE> if none is selected.
+   */ 
+  private DefaultMutableTreeNode
+  getSelectedPluginVersionNode() 
+  {
+    TreePath mpath = pPluginVersionTree.getSelectionPath();
+    if(mpath != null) 
+      return ((DefaultMutableTreeNode) mpath.getLastPathComponent());
+    return null;
+  }
+
+  /**
+   * Get the selected plugin version tree node user data.
+   * 
+   * @return 
+   *   The data or <CODE>null</CODE> if none is selected.
+   */ 
+  private PluginVersionData
+  getSelectedPluginVersionData() 
+  {
+    DefaultMutableTreeNode mnode = getSelectedPluginVersionNode();
+    if(mnode != null) 
+      return ((PluginVersionData) mnode.getUserObject());
+    return null;
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
   /*   P U B L I C   C L A S S E S                                                          */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * User data of menu layout tree nodes.
-   */ 
-  public
-  class MenuLayoutData
-  {
-    public 
-    MenuLayoutData() 
-    {}
-
-    public 
-    MenuLayoutData
-    ( 
-     String label
-    )
-    {
-      pLabel = label;
-    }
-
-    public 
-    MenuLayoutData
-    ( 
-     String label, 
-     String name, 
-     VersionID vid
-    )
-    {
-      pLabel     = label;
-      pIsItem    = true;
-      pName      = name;
-      pVersionID = vid; 
-    }
-
-    public String
-    getLabel() 
-    {
-      return pLabel;
-    }
-    
-    public boolean
-    isItem()
-    {
-      return pIsItem;
-    }
-
-    public String
-    getName() 
-    {
-      return pName;
-    }
-
-    public VersionID
-    getVersionID()
-    {
-      return pVersionID;
-    }    
-
-    public String
-    toString()
-    {
-      return pLabel;
-    }
-
-    private String     pLabel;
-    private boolean    pIsItem; 
-    private String     pName;
-    private VersionID  pVersionID; 
-  }
 
   /**
    * User data of plugin version tree nodes.
@@ -844,17 +895,6 @@ class JBaseManagePluginsDialog
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   S T A T I C   I N T E R N A L S                                                      */
-  /*----------------------------------------------------------------------------------------*/
-
-  //private static final long serialVersionUID = 
-  
-  protected static final int  sLWidth  = 240;
-  protected static final int  sLHeight = 400;
-
-
-
-  /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
@@ -884,8 +924,7 @@ class JBaseManagePluginsDialog
   /**
    * Layout menu items.
    */ 
-  private JMenuItem  pNewSubmenu; 
-  private JMenuItem  pNewMenuItem; 
+  private JMenuItem  pNewMenu; 
   private JMenuItem  pRenameMenu;
   private JMenuItem  pDeleteMenu;
   
@@ -901,7 +940,7 @@ class JBaseManagePluginsDialog
    * Plugin buttons.
    */ 
   private JButton  pSetPluginButton; 
-  private JButton  pRemovePluginButton; 
+  private JButton  pClearPluginButton; 
      
   /**
    * The plugin versions tree.
