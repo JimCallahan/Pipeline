@@ -659,6 +659,15 @@
   <bind style="BottomTitlePanel" type="name" key="BottomTitlePanel"/>
 
 
+  <!--  I C O N   P A N E L  -->
+
+  <style id="IconPanel">
+    <imagePainter path="IconPanel.png" 
+                  sourceInsets="0 0 0 1"/>
+    <insets top="8" bottom="8" right="0" left="0"/>
+  </style>
+  <bind style="IconPanel" type="name" key="IconPanel"/>
+
 
   <!--  V A L U E   P A N E L  -->
 
