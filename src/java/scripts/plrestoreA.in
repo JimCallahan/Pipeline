@@ -1,0 +1,56 @@
+#!/bin/sh
+
+#--------------------------------------------------------------------------------------------#
+#   O P T I O N S                                                                            #
+#--------------------------------------------------------------------------------------------#
+
+function help_option() 
+{
+  echo "USAGE:"
+  echo "  plrestore pipeline-db.######.######.tgz"
+  echo
+  echo "  plrestore --help"
+  echo "  plrestore --html-help"
+  echo "  plrestore --version"
+  echo "  plrestore --release-date"
+  echo "  plrestore --copyright"
+  echo "  plrestore --license"
+
+  exit 0
+}
+
+function html_help_option() 
+{
+  url="file://@ROOT_INST_DIR@/share/docs/man/plrestore.html"
+
+  if mozilla -remote 'ping()' &> /dev/null 
+  then 
+    mozilla -remote 'openURL('$url', new-tab)'
+  else 
+    mozilla $url &
+  fi
+
+  exit 0
+}
+
+function version_option() 
+{
+  echo "@VERSION@"
+  exit 0
+}
+
+function release_date_option() 
+{
+  echo "@RELEASE_STAMP@"
+  exit 0
+}
+
+function copyright_option() 
+{
+  echo "Copyright (c) 2002, 2003, 2004 Temerity Software, Inc."
+  exit 0
+}
+
+function license_option() 
+{
+  more <<EOF
