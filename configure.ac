@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 1.0.3)
+AM_INIT_AUTOMAKE(Pipeline, 1.0.4)
 
 AC_MSG_RESULT([ ])
 
@@ -181,6 +181,24 @@ then
 fi
 
 AC_MSG_RESULT([$MAX_KEYS])
+
+
+dnl ------------------------------------------------------------------------------------------
+
+AC_MSG_CHECKING([Job Server Port])
+
+AC_ARG_WITH([job-port], 
+            [  --with-job-port=NUM     Port number for plserver(1).])
+
+AC_SUBST(JOB_PORT)
+JOB_PORT=53136
+
+if test "$with_job_port" 
+then
+  JOB_PORT=$with_job_port
+fi
+
+AC_MSG_RESULT([$JOB_PORT])
 
 
 dnl ------------------------------------------------------------------------------------------
@@ -650,6 +668,7 @@ AC_CONFIG_FILES([
   src/java/docs/Makefile
 
   src/java/docs/pipeline.html 
+  src/java/docs/pldispatcher.html 
   src/java/docs/plserver.html 
   src/java/docs/plui.html
 
@@ -664,6 +683,7 @@ AC_CONFIG_FILES([
 
   src/java/scripts/Makefile
   src/java/scripts/pipeline
+  src/java/scripts/pldispatcher
   src/java/scripts/plserver
   src/java/scripts/plui
   src/java/scripts/pltest	
