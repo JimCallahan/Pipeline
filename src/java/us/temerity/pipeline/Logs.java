@@ -1,4 +1,4 @@
-// $Id: Logs.java,v 1.7 2004/04/15 00:19:45 jim Exp $
+// $Id: Logs.java,v 1.8 2004/04/30 08:40:52 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -54,7 +54,7 @@ class Logs
     ops = Logger.getLogger("us.temerity.pipeline.ops");
     job = Logger.getLogger("us.temerity.pipeline.job");
 
-    /* attach response handlers to stdout (instead of stderr) */ 
+    /* attach handlers to stdout (instead of stderr) */ 
     {
       arg.setUseParentHandlers(false); 
       glu.setUseParentHandlers(false); 
@@ -98,7 +98,55 @@ class Logs
     if(sHandler != null)
       sHandler.flush();
   }
+  
+  /** 
+   * Add the given logging handler to all loggers.
+   */ 
+  public static synchronized void
+  addHandler
+  ( 
+   Handler handler
+  ) 
+  {
+    arg.addHandler(handler);
+    glu.addHandler(handler);
+    plg.addHandler(handler);
+    tex.addHandler(handler);
+    sum.addHandler(handler);
+    
+    sub.addHandler(handler);
+    net.addHandler(handler);
+    
+    ops.addHandler(handler);
+    job.addHandler(handler);
+  }
 
+  /**
+   * Shutdown the console logging handler.
+   */ 
+  public static synchronized void
+  shutdownConsoleHandler()
+  {
+    if(sHandler == null)
+      return;
+
+    sHandler.flush();
+    sHandler.close();
+
+    arg.removeHandler(sHandler);
+    glu.removeHandler(sHandler);
+    plg.removeHandler(sHandler);
+    tex.removeHandler(sHandler);
+    sum.removeHandler(sHandler);
+    
+    sub.removeHandler(sHandler);
+    net.removeHandler(sHandler);
+    
+    ops.removeHandler(sHandler);
+    job.removeHandler(sHandler);
+    
+    sHandler = null;
+  }
 
   /** 
    * Close down the logging facilities. <P> 
@@ -108,10 +156,7 @@ class Logs
   public static synchronized void
   cleanup()
   {
-    assert(sHandler != null); 
-    sHandler.flush();
-    sHandler.close();
-    sHandler = null;
+    shutdownConsoleHandler();
 
     arg = null;
     glu = null;

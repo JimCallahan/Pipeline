@@ -3,8 +3,10 @@
     <state>
       <color value="#ffffff" type="FOREGROUND"/>
       <color value="#7f7f7f" type="BACKGROUND"/>
+      <color value="#ffff00" type="TEXT_FOREGROUND"/>
     </state>
     <font name="Lucida Sans Bold" size="12"/>
+    <property key="ScrollBar.thumbHeight" type="integer" value="16"/>
   </style>
   <bind style="Default" type="region" key=".*"/>
 
@@ -21,6 +23,22 @@
 
 
 
+  <!--  S T O P   L I G H T -->
+
+  <style id="StopLight"> 
+    <state>
+      <imagePainter path="StopLight.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="SELECTED">
+      <imagePainter path="StopLightOn.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="StopLight" type="name" key="StopLight"/>
+
+
+
   <!--  P A N E L   B A R  -->
 
   <style id="PanelBar">
@@ -33,21 +51,47 @@
 
 
 
+  <!--  T A R G E T   B U T T O N  -->
+
+  <style id="TargetButton"> 
+    <state>
+      <imagePainter path="TargetButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="SELECTED">
+      <imagePainter path="TargetButtonSelected.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="TargetButton" type="name" key="TargetButton"/>
+
+
+
   <!--  C L O S E   B U T T O N  -->
 
   <style id="CloseButton"> 
     <state>
       <imagePainter path="CloseButton.png"
                     sourceInsets="0 0 0 0"/>
-      <insets top="0" bottom="0" right="0" left="0"/> 
     </state>
     <state value="PRESSED">
       <imagePainter path="CloseButtonPressed.png"
                     sourceInsets="0 0 0 0"/>
-      <insets top="0" bottom="0" right="0" left="0"/> 
     </state>
   </style>
   <bind style="CloseButton" type="name" key="CloseButton"/>
+
+
+
+  <!--  T E X T   F I E L D  -->
+
+  <style id="TextField">
+    <imagePainter path="ValuePanel.png"
+                  method="textFieldBackground"
+                  sourceInsets="3 3 3 3"/>
+    <insets top="2" bottom="2" right="8" left="8"/>
+  </style>
+  <bind style="TextField" type="region" key="TextField"/>
 
 
 
@@ -55,15 +99,14 @@
 
   <style id="ComboBox">
       <imagePainter path="ValueBox.png"
-                    sourceInsets="1 2 1 2"/>
-      <insets top="1" bottom="1" right="2" left="2"/>
+                    sourceInsets="3 3 3 3"/>
+      <insets top="2" bottom="2" right="2" left="2"/>
   </style>
   <bind style="ComboBox" type="region" key="ComboBox"/>
 
   <style id="ComboBoxArrowButton">
     <imagePainter path="ComboBoxArrowButton.png"
                   sourceInsets="0 0 0 0"/>
-    <insets top="0" bottom="0" right="0" left="0"/> 
   </style>
   <bind style="ComboBoxArrowButton" type="name" key="ComboBox.arrowButton"/>
 
@@ -71,7 +114,6 @@
     <imagePainter path="Panel.png"
                   sourceInsets="5 5 5 5"
                   paintCenter="false"/>
-    <insets top="5" bottom="5" right="5" left="5"/>
     <property key="ScrollPane.viewportBorderInsets" type="insets" value="5 5 5 5"/>
   </style>
   <bind style="ComboBoxScrollPane" type="name" key="ComboBox.scrollPane"/>
@@ -91,38 +133,51 @@
   <style id="ScrollBarThumb">
     <state>
       <imagePainter path="ScrollBarThumb.png"
-                    sourceInsets="10 6 10 6"/>
-      <insets top="10" bottom="10" right="6" left="6"/> 
+                    sourceInsets="7 6 7 6"/>
     </state>
-    <state value="PRESSED">
+    <state value="SELECTED">
       <imagePainter path="ScrollBarThumbPressed.png"
-                    sourceInsets="10 6 10 6"/>
-      <insets top="10" bottom="10" right="6" left="6"/>
+                    sourceInsets="7 6 7 6"/>
     </state>
   </style>
   <bind style="ScrollBarThumb" type="region" key="ScrollBarThumb"/>
 
   <style id="ScrollBarTrack"> 
     <imagePainter path="ScrollBarTrack.png"
-                  sourceInsets="10 6 10 6"/>
-    <insets top="10" bottom="10" right="6" left="6"/>
+                  sourceInsets="7 6 7 6"/>
   </style>
   <bind style="ScrollBarTrack" type="region" key="ScrollBarTrack"/>
    
   <style id="ScrollBarArrowNorth"> 
-    <imagePainter path="ScrollArrowNorth.png"
-                  method="arrowButtonForeground"
-                  direction="north"
-                  sourceInsets="0 0 0 0"/>
+    <state>
+      <imagePainter path="ScrollArrowNorth.png"
+                    method="arrowButtonForeground"
+                    direction="north"
+                    sourceInsets="16 14 0 0"/>  
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="ScrollArrowNorthPressed.png"
+                    method="arrowButtonForeground"
+                    direction="north"
+                    sourceInsets="16 14 0 0"/>  
+    </state>
     <insets top="0" bottom="0" right="0" left="0"/>
   </style>
   <bind style="ScrollBarArrowNorth" type="name" key="ScrollBar.button"/>
 
   <style id="ScrollBarArrowSouth"> 
-    <imagePainter path="ScrollArrowSouth.png"
-                  method="arrowButtonForeground"
-                  direction="south"
-                  sourceInsets="0 0 0 0"/>
+    <state>
+      <imagePainter path="ScrollArrowSouth.png"
+                    method="arrowButtonForeground"
+                    direction="south"
+                    sourceInsets="16 14 0 0"/> 
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="ScrollArrowSouthPressed.png"
+                    method="arrowButtonForeground"
+                    direction="south" 
+                    sourceInsets="16 14 0 0"/> 
+    </state>
     <insets top="0" bottom="0" right="0" left="0"/>
   </style>
   <bind style="ScrollBarArrowSouth" type="name" key="ScrollBar.button"/>

@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.5 2004/04/29 04:53:29 jim Exp $
+// $Id: JManagerPanel.java,v 1.6 2004/04/30 08:40:52 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -38,7 +38,6 @@ class JManagerPanel
   {
     super();
 
-    setName("Manager");
     setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));   
 
     /* panel layout popup menu */ 
@@ -85,9 +84,9 @@ class JManagerPanel
       panel.setName("PanelBar");
       panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS)); 
 
-      panel.setMinimumSize(new Dimension(200, 29));
+      panel.setMinimumSize(new Dimension(230, 29));
       panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 29));
-      panel.setPreferredSize(new Dimension(200, 29));
+      panel.setPreferredSize(new Dimension(230, 29));
 
       {
 	JMenuAnchor anchor = new JMenuAnchor(pPopup);
@@ -95,6 +94,24 @@ class JManagerPanel
       }
 
       panel.add(Box.createHorizontalGlue());
+      panel.add(Box.createRigidArea(new Dimension(8, 0)));
+
+      {
+	JToggleButton btn = new JToggleButton();
+	btn.setName("TargetButton");
+
+	Dimension size = new Dimension(15, 19);
+	btn.setMinimumSize(size);
+	btn.setMaximumSize(size);
+	btn.setPreferredSize(size);
+	
+	btn.setActionCommand("target-panel");
+        btn.addActionListener(this);
+
+	panel.add(btn);
+      }
+
+      panel.add(Box.createRigidArea(new Dimension(4, 0)));
 
       {
 	JComboBox combo = new JComboBox();
@@ -125,6 +142,7 @@ class JManagerPanel
 	panel.add(combo);
       }
 
+      panel.add(Box.createRigidArea(new Dimension(8, 0)));
       panel.add(Box.createHorizontalGlue());
 
       {
@@ -204,7 +222,7 @@ class JManagerPanel
   /*   L I S T E N E R S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
-  /*-- ACTION LISTNER METHODS --------------------------------------------------------------*/
+  /*-- ACTION LISTENER METHODS -------------------------------------------------------------*/
 
   /** 
    * Invoked when an action occurs. 
@@ -376,6 +394,10 @@ class JManagerPanel
     if(parent instanceof JSplitPanel) {
       JSplitPanel split = (JSplitPanel) parent;
 
+      Container sparent = split.getParent();
+      if(!(sparent instanceof JManagerPanel))
+	return;
+
       Component live = null;
       switch(split.getOrientation()) {
       case JSplitPane.HORIZONTAL_SPLIT:
@@ -404,7 +426,7 @@ class JManagerPanel
       split.removeAll();
       
       JManagerPanel liveMgr = (JManagerPanel) live;
-      JManagerPanel grandpa = (JManagerPanel) split.getParent();
+      JManagerPanel grandpa = (JManagerPanel) sparent;
       grandpa.setContents(liveMgr.removeContents());
     }
 

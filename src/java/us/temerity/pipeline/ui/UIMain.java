@@ -1,4 +1,4 @@
-// $Id: UIMain.java,v 1.5 2004/04/29 04:54:06 jim Exp $
+// $Id: UIMain.java,v 1.6 2004/04/30 08:40:52 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -68,24 +68,24 @@ class UIMain
 //     }
 
     /* load the Pipeline look-and-feel */ 
-  //   {
-//       try {
-// 	SynthLookAndFeel synth = new SynthLookAndFeel();
-// 	synth.load(LookAndFeelLoader.class.getResourceAsStream("synth.xml"),
-// 		   LookAndFeelLoader.class);
-// 	UIManager.setLookAndFeel(synth);
-//       }
-//       catch(ParseException ex) {
-// 	Logs.ops.severe("Unable to parse the look-and-feel XML file (synth.xml):\n" + 
-// 			"  " + ex.getMessage());
-// 	System.exit(1);
-//       }
-//       catch(UnsupportedLookAndFeelException ex) {
-// 	Logs.ops.severe("Unable to load the Pipeline look-and-feel:\n" + 
-// 			"  " + ex.getMessage());
-// 	System.exit(1);
-//       }
-//     }
+    {
+      try {
+	SynthLookAndFeel synth = new SynthLookAndFeel();
+	synth.load(LookAndFeelLoader.class.getResourceAsStream("synth.xml"),
+		   LookAndFeelLoader.class);
+	UIManager.setLookAndFeel(synth);
+      }
+      catch(ParseException ex) {
+	Logs.ops.severe("Unable to parse the look-and-feel XML file (synth.xml):\n" + 
+			"  " + ex.getMessage());
+	System.exit(1);
+      }
+      catch(UnsupportedLookAndFeelException ex) {
+	Logs.ops.severe("Unable to load the Pipeline look-and-feel:\n" + 
+			"  " + ex.getMessage());
+	System.exit(1);
+      }
+    }
 
     /* application wide UI settings */ 
     {
@@ -98,34 +98,11 @@ class UIMain
       {
 	frame = new JFrame("plui");
 	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-      }
-
-      JPanel content = null;
-      {
-	content = new JPanel(new BorderLayout());
-	content.setName("RootPanel");
-
-	frame.setContentPane(content);
-      }
-      
-      JManagerPanel root = null;
-      {
-	root = new JManagerPanel();
-	content.add(root, BorderLayout.CENTER);
-      }
-
-      {
-	JNodeBrowserPanel panel = new JNodeBrowserPanel();
-	panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-	root.setContents(panel);
+	frame.setContentPane(new JRootPanel());
       }
 
       frame.pack();
       frame.setVisible(true);
-
-
-      RepaintManager rmgr = RepaintManager.currentManager(frame);
-      System.out.print("Dubble Buffered = " + rmgr.isDoubleBufferingEnabled() + "\n");
     }
   }
 
