@@ -1,4 +1,4 @@
-// $Id: JBarGraph.java,v 1.4 2004/08/04 01:42:54 jim Exp $
+// $Id: JBarGraph.java,v 1.5 2004/08/25 05:17:43 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -23,7 +23,7 @@ class JBarGraph
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Construct a new tree component.
+   * Construct a new component.
    */
   public 
   JBarGraph()
