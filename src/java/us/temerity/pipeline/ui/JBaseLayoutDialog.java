@@ -1,4 +1,4 @@
-// $Id: JBaseLayoutDialog.java,v 1.3 2004/05/29 06:38:06 jim Exp $
+// $Id: JBaseLayoutDialog.java,v 1.4 2004/10/13 03:34:02 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -67,15 +67,18 @@ class JBaseLayoutDialog
   /**
    * Initialize the common user interface components. <P> 
    */ 
-  protected void
+  protected JButton[]
   initUI
   (
    String title,  
    JComponent extraComps, 
    String confirm,
+   String[][] extra,
    String cancel
   )
   {
+    JButton[] extraBtns = null;
+
     /* create dialog body components */ 
     {
       JPanel body = new JPanel();
@@ -97,7 +100,6 @@ class JBaseLayoutDialog
 
 	tree.setCellRenderer(new JLayoutTreeCellRenderer());
 	tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-	tree.setExpandsSelectedPaths(true);
 
 	{
 	  JScrollPane scroll = new JScrollPane(pTree);
@@ -117,13 +119,15 @@ class JBaseLayoutDialog
       if(extraComps != null) 
 	body.add(extraComps);
 	  
-      super.initUI(title, true, body, confirm, null, null, cancel);
+      extraBtns = super.initUI(title, true, body, confirm, null, extra, cancel);
     }  
+    
+    return extraBtns;
   }
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   A C C E S S                                                                          */
+  /*   U S E R   I N T E R F A C E                                                          */
   /*----------------------------------------------------------------------------------------*/
   
   /**
@@ -147,6 +151,16 @@ class JBaseLayoutDialog
       
       DefaultTreeModel model = (DefaultTreeModel) pTree.getModel();
       model.setRoot(root);
+
+      {
+         Enumeration e = root.depthFirstEnumeration();
+	 if(e != null) {
+	   while(e.hasMoreElements()) {
+	     DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) e.nextElement(); 
+	     pTree.expandPath(new TreePath(tnode.getPath()));
+	   }
+	 }
+      }
     }
 
     pTree.clearSelection();

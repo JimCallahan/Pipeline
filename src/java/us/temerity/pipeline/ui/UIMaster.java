@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.46 2004/10/04 16:06:53 jim Exp $
+// $Id: UIMaster.java,v 1.47 2004/10/13 03:34:02 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -219,23 +219,63 @@ class UIMaster
   /**
    * Set the name of the current panel layout.
    */ 
-  private void 
+  public void 
   setLayoutName
   (
    String name
   ) 
   {
     pLayoutName = name;
+    updateFrameHeaders();
+  }
 
-    File path = new File(pLayoutName);
-    String title = ("plui [" + path.getName() + "]");
+
+  /**
+   * Get the name of the default panel layout.
+   * 
+   * @return 
+   *   The name or <CODE>null</CODE> if unset.
+   */ 
+  public String 
+  getDefaultLayoutName() 
+  {
+    return pDefaultLayoutName;
+  }
+  
+  /**
+   * Set the name of the default panel layout.
+   */ 
+  public void 
+  setDefaultLayoutName
+  (
+   String name
+  ) 
+  {
+    pDefaultLayoutName = name;
+    updateFrameHeaders();
+  }
+
+
+  /** 
+   * Add the layout name to the top-level frame headers.
+   */ 
+  private void 
+  updateFrameHeaders()
+  {
+    String title = "plui";
+    if(pLayoutName != null) {
+      File path = new File(pLayoutName);
+      String def = "";
+      if((pDefaultLayoutName != null) && pDefaultLayoutName.equals(pLayoutName))
+	def = " (default)";
+      title = ("plui | " + path.getName() + def);
+    }
 
     pFrame.setTitle(title);    
     for(JPanelFrame frame : pPanelFrames) 
       frame.setTitle(title);
   }
 
-  
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -1550,8 +1590,6 @@ class UIMaster
     field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
     field.setPreferredSize(size);
     
-    field.setHorizontalAlignment(JLabel.CENTER);
-    
     vpanel.add(field);
 
     return field;
@@ -2049,9 +2087,43 @@ class UIMaster
   doSaveLayout()
   {
     if(pLayoutName != null) 
-      SwingUtilities.invokeLater(new SaveLayoutTask());
+      saveLayoutHelper();
     else 
       showSaveLayoutDialog();
+  }
+
+  /**
+   * Save the current panel layout helper.
+   */
+  private void
+  saveLayoutHelper() 
+  {
+    try {
+      File file = new File(PackageInfo.sHomeDir, 
+			   PackageInfo.sUser + "/.pipeline/layouts/" + pLayoutName);
+      
+      File dir = file.getParentFile();
+      if(!dir.isDirectory()) 
+	dir.mkdirs();
+      
+      LinkedList<PanelLayout> layouts = new LinkedList<PanelLayout>();
+      {
+	JManagerPanel mpanel = (JManagerPanel) pRootPanel.getComponent(0);
+	PanelLayout layout = new PanelLayout(mpanel, pFrame.getBounds());
+	layouts.add(layout);
+      }
+      
+      for(JPanelFrame frame : pPanelFrames) {
+	JManagerPanel mpanel = frame.getManagerPanel();
+	PanelLayout layout = new PanelLayout(mpanel, frame.getBounds());
+	layouts.add(layout);
+      }
+      
+      LockedGlueFile.save(file, "PanelLayout", layouts);
+    }
+    catch(Exception ex) {
+      showErrorDialog(ex);
+    }
   }
 
   /**
@@ -2066,6 +2138,33 @@ class UIMaster
     SwingUtilities.invokeLater(new RestoreSavedLayoutTask(name));
   }
 
+  /**
+   * Make the given panel layout the default layout.
+   */
+  public void 
+  doDefaultLayout
+  (
+   String layoutName
+  )
+  {
+    if((layoutName != null) && (layoutName.equals(pLayoutName)))
+      saveLayoutHelper();
+
+    try {
+      File file = new File(PackageInfo.sHomeDir, 
+			   PackageInfo.sUser + "/.pipeline/default-layout");
+
+      if(layoutName != null) 
+	LockedGlueFile.save(file, "DefaultLayout", layoutName);
+      else 
+	file.delete();
+
+      setDefaultLayoutName(layoutName);
+    }
+    catch(Exception ex) {
+      showErrorDialog(ex);
+    }    
+  }
 
   /**
    * Close the network connection and exit.
@@ -2523,6 +2622,24 @@ class UIMaster
       }
       
       pFrame.setVisible(true);
+
+      {
+	String layoutName = null;
+	try {
+	  File file = new File(PackageInfo.sHomeDir, 
+			       PackageInfo.sUser + "/.pipeline/default-layout"); 
+	  if(file.isFile()) 
+	    layoutName = (String) LockedGlueFile.load(file);
+	}
+	catch(Exception ex) {
+	  showErrorDialog(ex);
+	}   
+	
+	if(layoutName != null) {
+	  setDefaultLayoutName(layoutName);
+	  SwingUtilities.invokeLater(new RestoreSavedLayoutTask(layoutName));
+	}
+      }
     }
 
     private UIMaster  pMaster;
@@ -2634,7 +2751,7 @@ class UIMaster
 	  String name = pSaveLayoutDialog.getSelectedName();
 	  if((name != null) && (name.length() > 0)) {
 	    setLayoutName(name);	    
-	    SwingUtilities.invokeLater(new SaveLayoutTask());
+	    saveLayoutHelper();
 	  }
 	}
       }  
@@ -2733,14 +2850,21 @@ class UIMaster
 
       /* restore saved panels */
       LinkedList<PanelLayout> layouts = null;
-      try {      
+      {
 	File file = new File(PackageInfo.sHomeDir, 
 			     PackageInfo.sUser + "/.pipeline/layouts" + pName);
+	try {      
+	  if(!file.isFile()) 
+	    throw new GlueException();
 
-	layouts = (LinkedList<PanelLayout>) LockedGlueFile.load(file);
-      }
-      catch(Exception ex) {
-	showErrorDialog(ex);
+	  layouts = (LinkedList<PanelLayout>) LockedGlueFile.load(file);
+	}
+	catch(GlueException ex) {
+	  showErrorDialog("Error:", "Unable to load saved layout (" + file + ")!");
+	}
+	catch(Exception ex) {
+	  showErrorDialog(ex);
+	}
       }
 
       if((layouts != null) && !layouts.isEmpty()) {
@@ -3414,6 +3538,11 @@ class UIMaster
    * The name of the last saved/loaded layout.
    */ 
   private String  pLayoutName;
+ 
+  /**
+   * The name of the default layout.
+   */ 
+  private String  pDefaultLayoutName;
  
   /**
    * The parent of the root manager panel.

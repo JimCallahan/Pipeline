@@ -1,4 +1,4 @@
-// $Id: JLayoutTreeCellRenderer.java,v 1.1 2004/05/13 02:37:41 jim Exp $
+// $Id: JLayoutTreeCellRenderer.java,v 1.2 2004/10/13 03:34:02 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -22,7 +22,7 @@ import javax.swing.tree.*;
  */ 
 public
 class JLayoutTreeCellRenderer
-  extends JLabel 
+  extends JPanel 
   implements TreeCellRenderer 
 {
   /*----------------------------------------------------------------------------------------*/
@@ -35,8 +35,21 @@ class JLayoutTreeCellRenderer
   public 
   JLayoutTreeCellRenderer() 
   {
-    setOpaque(true);    
-    setBackground(new Color(0.45f, 0.45f, 0.45f));
+    super();
+    
+    setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+    
+    pLabel = new JLabel();
+    pLabel.setHorizontalAlignment(JLabel.LEFT);
+    add(pLabel);
+    
+    add(Box.createRigidArea(new Dimension(32, 0)));
+    
+    pExtraLabel = new JLabel();
+    pExtraLabel.setHorizontalTextPosition(JLabel.LEFT);
+    add(pExtraLabel);
+    
+    add(Box.createRigidArea(new Dimension(5, 0)));
   }
 
 
@@ -63,21 +76,33 @@ class JLayoutTreeCellRenderer
     DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) value;
     JSaveLayoutDialog.TreeData data = (JSaveLayoutDialog.TreeData) tnode.getUserObject();
 
-    setText(data.toString());
+    pLabel.setText(data.toString());
 
     if(data.getName() != null) {
       if(isSelected) {
-	setForeground(Color.yellow);
-	setIcon(sSelectedIcon);
+	pLabel.setForeground(Color.yellow);
+	pLabel.setIcon(sSelectedIcon);
       }
       else {
-	setForeground(Color.white);
-	setIcon(sNormalIcon);
+	pLabel.setForeground(Color.white);
+	pLabel.setIcon(sNormalIcon);
       }	
+
+      String lname = null;
+      if(data.getDir().getPath().length() > 1) 
+	lname = (data.getDir() + "/" + data.getName());
+      else 
+	lname = ("/" + data.getName());
+      
+      if((lname != null) && lname.equals(UIMaster.getInstance().getDefaultLayoutName())) 
+	pExtraLabel.setText("(default)");
+      else 
+	pExtraLabel.setText(null);
     }
     else {
-      setForeground(isSelected ? Color.yellow : Color.white);
-      setIcon(sSpacerIcon);
+      pLabel.setForeground(isSelected ? Color.yellow : Color.white);
+      pLabel.setIcon(sSpacerIcon);
+      pExtraLabel.setText(null);
     }
 
     return this;
@@ -99,5 +124,19 @@ class JLayoutTreeCellRenderer
 
   private static Icon sSelectedIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("ListCellSelectedIcon.png"));
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The main label.
+   */
+  protected JLabel  pLabel;
+
+  /**
+   * The extra information (right justified) label.
+   */
+  protected JLabel  pExtraLabel;
 
 }

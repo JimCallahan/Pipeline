@@ -1,4 +1,4 @@
-// $Id: JManageLayoutsDialog.java,v 1.4 2004/05/13 21:29:16 jim Exp $
+// $Id: JManageLayoutsDialog.java,v 1.5 2004/10/13 03:34:02 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -22,7 +22,7 @@ import javax.swing.event.*;
 public 
 class JManageLayoutsDialog
   extends JBaseLayoutDialog
-  implements ActionListener, MouseListener
+  implements ActionListener, TreeSelectionListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -63,30 +63,28 @@ class JManageLayoutsDialog
   protected void
   initUI()
   {
-    /* popup menu */ 
-    {
-      JMenuItem item;
-      
-      pPopup = new JPopupMenu();  
-      
-      item = new JMenuItem("Rename...");
-      item.setActionCommand("rename-layout");
-      item.addActionListener(this);
-      pPopup.add(item);  
-	
-      item = new JMenuItem("Delete");
-      item.setActionCommand("delete-layout");
-      item.addActionListener(this);
-      pPopup.add(item);  
-    }
-
     /* create dialog body components */ 
     {
-      super.initUI("Manage Saved Layouts:", null, null, "Close");
-      pTree.addMouseListener(this);
+      String[][] extra = {
+	{ "Rename", "rename-layout" },
+	{ "Delete",    "delete-layout" }, 
+	{ "Default",   "default-layout" }
+      };
+
+      JButton[] extraBtns = super.initUI("Manage Saved Layouts:", null, null, extra, "Close");
+      pRenameButton  = extraBtns[0];
+      pDeleteButton  = extraBtns[1];
+      pDefaultButton = extraBtns[2];
     }
+
+    pTree.addTreeSelectionListener(this);
+    pRenameButton.setEnabled(false);
+    pDeleteButton.setEnabled(false);
+    pDefaultButton.setEnabled(false);
   }
   
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   L I S T E N E R S                                                                    */
@@ -109,67 +107,38 @@ class JManageLayoutsDialog
       doRenameLayout();
     else if(e.getActionCommand().equals("delete-layout")) 
       doDeleteLayout();
+    else if(e.getActionCommand().equals("default-layout")) 
+      doDefaultLayout();
   }
 
 
-
-  /*-- MOUSE LISTENER METHODS -----------------------------------------------------------*/
-
+  /*-- TREE SELECTION LISTENER METHODS -----------------------------------------------------*/
+     
   /**
-   * Invoked when the mouse button has been clicked (pressed and released) on a component. 
+   * Called whenever the value of the selection changes.
    */ 
-  public void 
-  mouseClicked(MouseEvent e) {}
-  
-  /**
-   * Invoked when the mouse enters a component. 
-   */
-  public void 
-  mouseEntered(MouseEvent e) {}
-
-  /**
-   * Invoked when the mouse exits a component. 
-   */ 
-  public void 
-  mouseExited(MouseEvent e) {}
-
-  /**
-   * Invoked when a mouse button has been pressed on a component. 
-   */
-  public void 
-  mousePressed
+  public void 	
+  valueChanged
   (
-   MouseEvent e
+   TreeSelectionEvent e
   )
-  {
-    int mods = e.getModifiersEx();
-    switch(e.getButton()) {
-    case MouseEvent.BUTTON3:
-      {
-	int on1  = (MouseEvent.BUTTON3_DOWN_MASK);
-	
-	int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
-		    MouseEvent.BUTTON2_DOWN_MASK | 
-		    MouseEvent.SHIFT_DOWN_MASK |
-		    MouseEvent.ALT_DOWN_MASK |
-		    MouseEvent.CTRL_DOWN_MASK);
-	
-	/* BUTTON3 */ 
-	if((mods & (on1 | off1)) == on1) {
-	  pTree.setSelectionPath(pTree.getPathForLocation(e.getX(), e.getY()));
-	  pPopup.show(e.getComponent(), e.getX(), e.getY()); 
-	}
-      }
+  { 
+    TreePath tpath = pTree.getSelectionPath(); 
+    if(tpath != null) {
+      DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) tpath.getLastPathComponent();
+      TreeData data = (TreeData) tnode.getUserObject();
+
+      pRenameButton.setEnabled(true);
+      pDeleteButton.setEnabled(true);
+      pDefaultButton.setEnabled(data.getName() != null);
+    }
+    else {
+      pRenameButton.setEnabled(false);
+      pDeleteButton.setEnabled(false);
+      pDefaultButton.setEnabled(false);
     }
   }
 
-  /**
-   * Invoked when a mouse button has been released on a component. 
-   */ 
-  public void 
-  mouseReleased(MouseEvent e) {}
-
-  
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C T I O N S                                                                        */
@@ -185,27 +154,73 @@ class JManageLayoutsDialog
     if(tpath == null)
       return;
     
+    UIMaster master = UIMaster.getInstance();
+
     DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) tpath.getLastPathComponent();
     TreeData data = (TreeData) tnode.getUserObject();
 
+    String selected = null;
     if(data.getName() == null) {
       JNewIdentifierDialog diag = 
 	new JNewIdentifierDialog(this, "Rename Folder", "New Folder Name:", 
 				 data.getDir().getName(), "Rename");
       diag.setVisible(true);
-      if(diag.wasConfirmed()) 
-	renameFiles(data.getDir().getPath(), 
-		    data.getDir().getParent() + "/" + diag.getName());
+      if(diag.wasConfirmed()) {
+	String oname = (data.getDir().getPath()); 
+
+	String nname = null;
+	if(data.getDir().getParent().length() > 1) 
+	  nname = (data.getDir().getParent() + "/" + diag.getName());
+	else 
+	  nname = ("/" + diag.getName());
+
+	renameFiles(oname, nname);
+	
+	String lname = master.getLayoutName();
+	if((lname != null) && lname.startsWith(oname)) 
+	  master.setLayoutName(nname + lname.substring(oname.length()));
+	
+	String dname = master.getDefaultLayoutName();
+	if((dname != null) && dname.startsWith(oname)) 
+	  master.doDefaultLayout(nname + dname.substring(oname.length()));
+
+	selected = nname;
+      }
     }
     else {
       JNewIdentifierDialog diag = 
 	new JNewIdentifierDialog(this, "Rename Layout", "New Layout Name:", 
 				 data.getName(), "Rename");
       diag.setVisible(true);
-      if(diag.wasConfirmed()) 
-	renameFiles(data.getDir() + "/" + data.getName(), 
-		    data.getDir() + "/" + diag.getName());
+      if(diag.wasConfirmed()) {
+	String oname = (data.getDir() + "/" + data.getName());
+
+	String nname = null;
+	if(data.getDir().getPath().length() > 1) 
+	  nname = (data.getDir() + "/" + diag.getName());
+	else 
+	  nname = ("/" + diag.getName());
+
+	renameFiles(oname, nname);
+
+	String lname = master.getLayoutName();
+	if((lname != null) && lname.equals(oname)) 
+	  master.setLayoutName(nname);
+	
+	String dname = master.getDefaultLayoutName();
+	if((dname != null) && dname.equals(oname))
+	  master.doDefaultLayout(nname);
+
+	selected = nname;
+      }
     }
+
+    try {
+      updateLayouts(selected);
+    }
+    catch(PipelineException ex) {
+      master.showErrorDialog(ex);
+    }    
   }
    
   /**
@@ -229,14 +244,7 @@ class JManageLayoutsDialog
       master.showErrorDialog
 	("I/O Error:", "Unable to rename (" + oname + ") to (" + nname + ")!");
       return;
-    }
-
-    try {
-      updateLayouts(nname);
-    }
-    catch(PipelineException ex) {
-      master.showErrorDialog(ex);
-    }      
+    }  
   }
 
 
@@ -244,11 +252,13 @@ class JManageLayoutsDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Rename the currently selected layout or folder.
+   * Delete the currently selected layout or folder.
    */ 
   private void 
   doDeleteLayout()
   {
+    UIMaster master = UIMaster.getInstance();
+
     String selected = null;
     {
       TreePath tpath = pTree.getSelectionPath(); 
@@ -275,11 +285,19 @@ class JManageLayoutsDialog
     File file = new File(base + selected);
     deleteFiles(file);
 
+    String lname = master.getLayoutName();
+    if((lname != null) && lname.startsWith(selected)) 
+      master.setLayoutName(null);
+    
+    String dname = master.getDefaultLayoutName();
+    if((dname != null) && dname.startsWith(selected)) 
+      master.doDefaultLayout(null);
+
     try {
       updateLayouts(null);
     }
     catch(PipelineException ex) {
-      UIMaster.getInstance().showErrorDialog(ex);
+      master.showErrorDialog(ex);
     }      
   }
 
@@ -333,6 +351,50 @@ class JManageLayoutsDialog
   }
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Make the currently selected layout the default layout.
+   */ 
+  private void 
+  doDefaultLayout()
+  {
+    UIMaster master = UIMaster.getInstance();
+
+    String selected = null;
+    {
+      TreePath tpath = pTree.getSelectionPath(); 
+      if(tpath == null)
+	return;
+
+      DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) tpath.getLastPathComponent();
+      TreeData data = (TreeData) tnode.getUserObject();
+      
+      if(data.getName() != null) {
+	if(data.getDir().getPath().length() > 1) 
+	  selected = (data.getDir() + "/" + data.getName());
+	else 
+	  selected = ("/" + data.getName());
+      }
+    }
+
+    System.out.print("Default: " + selected + "\n");
+
+    if(selected == null) 
+      return;
+
+    master.doDefaultLayout(selected);
+
+    try {
+      updateLayouts(selected);
+    }
+    catch(PipelineException ex) {
+      master.showErrorDialog(ex);
+    }      
+  }
+
+
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
@@ -346,8 +408,10 @@ class JManageLayoutsDialog
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * The popup menu.
+   * The panel buttons.
    */ 
-  private JPopupMenu  pPopup; 
+  private JButton  pRenameButton;
+  private JButton  pDeleteButton;
+  private JButton  pDefaultButton;
 
 }
