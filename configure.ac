@@ -464,6 +464,12 @@ AC_PATH_PROG(JAVA_CC, javacc, $PATH)
 AC_PATH_PROG(JAVA_H,  javah,  $PATH)
 AC_PATH_PROG(JAR,     jar,    $PATH)
 
+AC_PATH_PROG(RMIC,         rmic,        $PATH)
+AC_PATH_PROG(RMID,         rmid,        $PATH)
+AC_PATH_PROG(RMI_REGISTRY, rmiregistry, $PATH)
+
+
+
 
 AC_MSG_CHECKING([java include])
 
@@ -671,6 +677,8 @@ AC_CONFIG_FILES([
   src/java/docs/pldispatcher.html 
   src/java/docs/plserver.html 
   src/java/docs/plui.html
+
+  src/java/testbed/Makefile
 
   src/java/pipeline/Makefile
   src/java/pipeline/PackageInfo.java
