@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.41 2004/10/01 22:14:42 jim Exp $
+// $Id: JManagerPanel.java,v 1.42 2004/10/01 23:16:28 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -65,11 +65,74 @@ class JManagerPanel
       
       pPopup = new JPopupMenu();  
  
-      item = new JMenuItem("New Window");
-      item.setActionCommand("new-window");
-      item.addActionListener(this);
-      pPopup.add(item);
-      
+      {
+	JMenu sub = new JMenu("New Window");   
+	pPopup.add(sub);  
+   
+	item = new JMenuItem("Node Browser");
+	item.setActionCommand("node-browser-window");
+	item.addActionListener(this);
+	sub.add(item);  
+	
+	item = new JMenuItem("Node Viewer");
+	item.setActionCommand("node-viewer-window");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	item = new JMenuItem("Node Details");
+	item.setActionCommand("node-details-window");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	item = new JMenuItem("Node Files");
+	item.setActionCommand("node-files-window");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	item = new JMenuItem("Node History");
+	item.setActionCommand("node-history-window");
+	item.addActionListener(this);
+	sub.add(item);  
+	
+	sub.addSeparator();
+
+	item = new JMenuItem("Job Browser");
+	item.setActionCommand("job-browser-window");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	item = new JMenuItem("Job Viewer");
+	item.setActionCommand("job-viewer-window");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	item = new JMenuItem("Job Details");
+	item.setActionCommand("job-details-window");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	sub.addSeparator();
+
+	item = new JMenuItem("Task Timeline");
+	item.setActionCommand("task-timeline-window");
+	item.addActionListener(this);
+	item.setEnabled(false); // FOR NOW 
+	sub.add(item);  
+
+	item = new JMenuItem("Task Details");
+	item.setActionCommand("task-details-window");
+	item.addActionListener(this);
+	item.setEnabled(false); // FOR NOW    
+	sub.add(item);  
+
+	sub.addSeparator();
+
+	item = new JMenuItem("None");
+	item.setActionCommand("none-window");
+	item.addActionListener(this);
+	sub.add(item);
+      }
+
       pPopup.addSeparator();
       
       {
@@ -869,10 +932,52 @@ class JManagerPanel
   {
     UserPrefs prefs = UserPrefs.getInstance(); 
 
-    /* windows */ 
-    if((prefs.getManagerNewWindow() != null) &&
-       prefs.getManagerNewWindow().wasPressed(e)) {
-      doNewWindow();
+    /* windows */
+    if((prefs.getManagerNodeBrowserWindow() != null) &&
+       prefs.getManagerNodeBrowserWindow().wasPressed(e)) {
+      doNodeBrowserWindow();
+      return true;
+    }
+    else if((prefs.getManagerNodeViewerWindow() != null) &&
+	    prefs.getManagerNodeViewerWindow().wasPressed(e)) {
+      doNodeViewerWindow();
+      return true;
+    }
+    else if((prefs.getManagerNodeDetailsWindow() != null) &&
+	    prefs.getManagerNodeDetailsWindow().wasPressed(e)) {
+      doNodeDetailsWindow();
+      return true;
+    }
+    else if((prefs.getManagerNodeFilesWindow() != null) &&
+	    prefs.getManagerNodeFilesWindow().wasPressed(e)) {
+      doNodeFilesWindow();
+      return true;
+    }
+    else if((prefs.getManagerNodeHistoryWindow() != null) &&
+	    prefs.getManagerNodeHistoryWindow().wasPressed(e)) {
+      doNodeHistoryWindow();
+      return true;
+    }
+
+    else if((prefs.getManagerJobBrowserWindow() != null) &&
+	    prefs.getManagerJobBrowserWindow().wasPressed(e)) {
+      doJobBrowserWindow();
+      return true;
+    }
+    else if((prefs.getManagerJobViewerWindow() != null) &&
+	    prefs.getManagerJobViewerWindow().wasPressed(e)) {
+      doJobViewerWindow();
+      return true;
+    }
+    else if((prefs.getManagerJobDetailsWindow() != null) &&
+	    prefs.getManagerJobDetailsWindow().wasPressed(e)) {
+      doJobDetailsWindow();
+      return true;
+    }
+
+    else if((prefs.getManagerEmptyWindow() != null) &&
+	    prefs.getManagerEmptyWindow().wasPressed(e)) {
+      doEmptyWindow();
       return true;
     }
 
@@ -1117,8 +1222,26 @@ class JManagerPanel
   {
     /* windows */ 
     String cmd = e.getActionCommand();
-    if(cmd.equals("new-window")) 
-      doNewWindow();
+    if(cmd.equals("node-browser-window"))
+      doNodeBrowserWindow();
+    else if(cmd.equals("node-viewer-window"))
+      doNodeViewerWindow();
+    else if(cmd.equals("node-details-window"))
+      doNodeDetailsWindow();
+    else if(cmd.equals("node-files-window"))
+      doNodeFilesWindow();
+    else if(cmd.equals("node-history-window"))
+      doNodeHistoryWindow();
+
+    else if(cmd.equals("job-browser-window"))
+      doJobBrowserWindow();
+    else if(cmd.equals("job-viewer-window"))
+      doJobViewerWindow();
+    else if(cmd.equals("job-details-window"))
+      doJobDetailsWindow();
+
+    else if(cmd.equals("none-window"))
+      doEmptyWindow();
 
     /* panels */ 
     else if(cmd.equals("node-browser"))
@@ -1215,13 +1338,126 @@ class JManagerPanel
   /*   A C T I O N S                                                                        */
   /*----------------------------------------------------------------------------------------*/
 
-  /**
-   * Create a new secondary panel frame.
+  /** 
+   * Create a new secondary panel frame containing a JNodeBrowserPanel. 
    */ 
   private void 
-  doNewWindow() 
+  doNodeBrowserWindow() 
   {
-    UIMaster.getInstance().createWindow();
+    JPanelFrame frame = UIMaster.getInstance().createWindow();
+    frame.setSize(300, 600);
+
+    JManagerPanel mgr = frame.getManagerPanel();
+    mgr.setContents(new JNodeBrowserPanel(pTopLevelPanel));
+  }
+
+  /** 
+   * Create a new secondary panel frame containing a JNodeViewerPanel. 
+   */ 
+  private void 
+  doNodeViewerWindow() 
+  {
+    JPanelFrame frame = UIMaster.getInstance().createWindow();
+    frame.setSize(600, 600);
+
+    JManagerPanel mgr = frame.getManagerPanel();
+    mgr.setContents(new JNodeViewerPanel(pTopLevelPanel));
+  }
+
+  /** 
+   * Create a new secondary panel frame containing a JNodeDetailsPanel. 
+   */ 
+  private void 
+  doNodeDetailsWindow() 
+  {
+    JPanelFrame frame = UIMaster.getInstance().createWindow();
+    frame.setSize(532, 752);
+
+    JManagerPanel mgr = frame.getManagerPanel();
+    mgr.setContents(new JNodeDetailsPanel(pTopLevelPanel));
+  }
+
+  /** 
+   * Create a new secondary panel frame containing a JNodeFilesPanel. 
+   */ 
+  private void 
+  doNodeFilesWindow() 
+  {
+    JPanelFrame frame = UIMaster.getInstance().createWindow();
+    frame.setSize(532, 752);
+
+    JManagerPanel mgr = frame.getManagerPanel();
+    mgr.setContents(new JNodeFilesPanel(pTopLevelPanel));
+  }
+
+  /** 
+   * Create a new secondary panel frame containing a JNodeHistoryPanel. 
+   */ 
+  private void 
+  doNodeHistoryWindow() 
+  {
+    JPanelFrame frame = UIMaster.getInstance().createWindow();
+    frame.setSize(532, 752);
+
+    JManagerPanel mgr = frame.getManagerPanel();
+    mgr.setContents(new JNodeHistoryPanel(pTopLevelPanel));
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Create a new secondary panel frame containing a JQueueJobBrowserPanel. 
+   */ 
+  private void 
+  doJobBrowserWindow() 
+  {
+    JPanelFrame frame = UIMaster.getInstance().createWindow();
+    frame.setSize(1137, 350);
+
+    JManagerPanel mgr = frame.getManagerPanel();
+    mgr.setContents(new JQueueJobBrowserPanel(pTopLevelPanel));
+  }
+
+  /** 
+   * Create a new secondary panel frame containing a JQueueJobViewerPanel. 
+   */ 
+  private void 
+  doJobViewerWindow() 
+  {
+    JPanelFrame frame = UIMaster.getInstance().createWindow();
+    frame.setSize(600, 600);
+
+    JManagerPanel mgr = frame.getManagerPanel();
+    mgr.setContents(new JQueueJobViewerPanel(pTopLevelPanel));
+  }
+
+  /** 
+   * Create a new secondary panel frame containing a JQueueJobDetailsPanel. 
+   */ 
+  private void 
+  doJobDetailsWindow() 
+  {
+    JPanelFrame frame = UIMaster.getInstance().createWindow();
+    frame.setSize(497, 582);
+
+    JManagerPanel mgr = frame.getManagerPanel();
+    mgr.setContents(new JQueueJobDetailsPanel(pTopLevelPanel));
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /** 
+   * Create a new secondary panel frame containing a JEmptyPanel. 
+   */ 
+  private void 
+  doEmptyWindow() 
+  {
+    JPanelFrame frame = UIMaster.getInstance().createWindow();
+
+    JManagerPanel mgr = frame.getManagerPanel();
+    mgr.setContents(new JEmptyPanel(pTopLevelPanel));
   }
 
 

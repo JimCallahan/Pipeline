@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.19 2004/09/28 14:31:45 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.20 2004/10/01 23:16:28 jim Exp $
 
 import java.io.*; 
 import java.util.*;
@@ -26,13 +26,6 @@ class GenUserPrefsApp
 
     {
       BasePref prefs[] = {
-	new HotKeyPref
-	("Create a new top-level window.", 
-	 "ManagerNewWindow", "New Window:",
-	 false, true, false, 87),  /* ALT+W */ 
-
-	new BasePref(),
-	
 	new HotKeyPref
 	("Change the working area view of the panel.", 
 	 "ManagerChangeOwnerView", "Change Owner|View:",
@@ -188,6 +181,61 @@ class GenUserPrefsApp
       };
 
       pPrefs.put("Panel|Universal|Panel Group|Hot Keys", prefs);
+    }
+
+    {
+      BasePref prefs[] = {
+	new HotKeyPref
+	("Create a new window containing a Node Browser panel.", 
+	 "ManagerNodeBrowserWindow", "Node Browser:",
+	 false, true, false, 112),  /* ALT+F1 */ 
+
+	new HotKeyPref
+	("Create a new window containing a Node Viewer panel.", 
+	 "ManagerNodeViewerWindow", "Node Viewer:",
+	 false, true, false, 113),  /* ALT+F2 */ 
+
+	new HotKeyPref
+	("Create a new window containing a Node Details panel.", 
+	 "ManagerNodeDetailsWindow", "Node Details:",
+	 false, true, false, 114),  /* ALT+F3 */ 
+
+	new HotKeyPref
+	("Create a new window containing a Node Files panel.", 
+	 "ManagerNodeFilesWindow", "Node Files:",
+	 false, true, false, 115),  /* ALT+F4 */ 
+
+	new HotKeyPref
+	("Create a new window containing a Node History panel.", 
+	 "ManagerNodeHistoryWindow", "Node History:",
+	 false, true, false, 116),  /* ALT+F5 */ 
+
+	new BasePref(),
+
+	new HotKeyPref
+	("Create a new window containing a Job Browser panel.",
+	 "ManagerJobBrowserWindow", "Job Browser:",
+	 false, true, false, 117),  /* ALT+F6 */ 
+	
+	new HotKeyPref
+	("Create a new window containing a Job Viewer panel.", 
+	 "ManagerJobViewerWindow", "Job Viewer:",
+	 false, true, false, 118),  /* ALT+F7 */ 
+
+	new HotKeyPref
+	("Create a new window containing a Job Details panel.", 
+	 "ManagerJobDetailsWindow", "Job Details:",
+	 false, true, false, 119),  /* ALT+F8 */ 
+
+	new BasePref(),
+
+	new HotKeyPref
+	("Create a new empty top-level window.", 
+	 "ManagerEmptyWindow", "None:",
+	 false, true, false, 120),  /* ALT+F9 */ 	
+      };
+
+      pPrefs.put("Panel|Universal|Panel Window|Hot Keys", prefs);
     }
 
     {
@@ -799,7 +847,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.19 2004/09/28 14:31:45 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.20 2004/10/01 23:16:28 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -1052,7 +1100,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.19 2004/09/28 14:31:45 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.20 2004/10/01 23:16:28 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 

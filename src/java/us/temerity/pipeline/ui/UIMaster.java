@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.44 2004/09/28 11:06:19 jim Exp $
+// $Id: UIMaster.java,v 1.45 2004/10/01 23:16:28 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -174,14 +174,19 @@ class UIMaster
   
   /**
    * Create and show a new secondary panel frame.
+   * 
+   * @return 
+   *   The newly created frame.
    */ 
-  public void
+  public JPanelFrame
   createWindow() 
   {
     JPanelFrame frame = new JPanelFrame(); 
     pPanelFrames.add(frame);
 
     frame.setVisible(true);
+
+    return frame;
   }
   
   /**
