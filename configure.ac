@@ -709,6 +709,7 @@ AC_CONFIG_FILES([
   src/java/scripts/Makefile
   src/java/scripts/pipeline
   src/java/scripts/pleditor
+  src/java/scripts/pljob
   src/java/scripts/pltoolset
   src/java/scripts/plui
 
