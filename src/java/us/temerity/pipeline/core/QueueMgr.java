@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.30 2005/01/30 02:05:22 jim Exp $
+// $Id: QueueMgr.java,v 1.31 2005/02/07 19:42:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1966,6 +1966,14 @@ class QueueMgr
 	  }
 	}
       }
+
+      for(QueueHost host : pHosts.values()) {
+	switch(host.getStatus()) {
+	case Hung:
+	  if((host.getLastModified().getTime() + sUnhangInterval) < now.getTime()) 
+	    host.setStatus(QueueHost.Status.Enabled);	      
+	}
+      }
     }
 
     /* write the last interval of samples to disk */ 
@@ -3892,18 +3900,22 @@ class QueueMgr
   /**
    * The minimum time a cycle of the collector loop should take (in milliseconds).
    */ 
-  private static final long  sCollectorInterval = 15000;  /* 15-second */ 
+  private static final long  sCollectorInterval = 15000L;  /* 15-second */ 
 
   /**
    * The maximum age of a sample file before it is deleted (in milliseconds).
    */ 
-  private static final long  sSampleCleanupInterval = 86400000;  /* 24-hours */ 
+  private static final long  sSampleCleanupInterval = 86400000L;  /* 24-hours */ 
 
+  /**
+   * The interval between attempts to recontact Hung job servers. 
+   */ 
+  private static final long  sUnhangInterval = 60000L; //600000L;  /* 10-minutes */ 
 
   /**
    * The minimum time a cycle of the dispatcher loop should take (in milliseconds).
    */ 
-  private static final long  sDispatcherInterval = 1000;  /* 1-second */ 
+  private static final long  sDispatcherInterval = 1000L;  /* 1-second */ 
 
   /**
    * The number of dispatcher cycles between garbage collection of jobs.

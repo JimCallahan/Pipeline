@@ -1,4 +1,4 @@
-// $Id: QueueHost.java,v 1.11 2005/01/22 06:10:09 jim Exp $
+// $Id: QueueHost.java,v 1.12 2005/02/07 19:42:23 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -54,7 +54,8 @@ class QueueHost
   private void 
   init() 
   {
-    pStatus = Status.Shutdown;
+    pStatus       = Status.Shutdown;
+    pLastModified = new Date();
 
     pHoldTimeStamps = new TreeMap<Long,Date>();
     pSamples = new LinkedList<ResourceSample>();
@@ -85,13 +86,23 @@ class QueueHost
    Status status
   ) 
   {
-    pStatus = status;
+    pStatus       = status;
+    pLastModified = new Date();
 
     switch(pStatus) {
     case Shutdown:
     case Disabled:
       pSamples.clear();
     }
+  }
+
+  /**
+   * Get the timestamp of when the status was last modified.
+   */ 
+  public Date
+  getLastModified()
+  {
+    return pLastModified;
   }
 
 
@@ -756,6 +767,11 @@ class QueueHost
    * The current operational status of the host.
    */ 
   private Status  pStatus;
+
+  /**
+   * The timestamp of when the status was last modified.
+   */ 
+  private Date  pLastModified; 
 
   /**
    * The name of the reserving user or <CODE>null</CODE> if the host is not reserved.
