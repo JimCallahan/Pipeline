@@ -1,4 +1,4 @@
-// $Id: SuffixEditorTableModel.java,v 1.1 2004/06/08 03:06:36 jim Exp $
+// $Id: SuffixEditorTableModel.java,v 1.2 2004/06/22 19:44:18 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -67,7 +67,6 @@ class SuffixEditorTableModel
   private void 
   sort()
   {
-
     ArrayList<String> values = new ArrayList<String>();
     ArrayList<Integer> indices = new ArrayList<Integer>();
     int idx = 0;
