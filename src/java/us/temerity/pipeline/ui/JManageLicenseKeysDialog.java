@@ -1,4 +1,4 @@
-// $Id: JManageLicenseKeysDialog.java,v 1.1 2004/07/24 18:28:45 jim Exp $
+// $Id: JManageLicenseKeysDialog.java,v 1.2 2004/07/25 03:08:59 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -89,7 +89,7 @@ class JManageLicenseKeysDialog
   updateLicenseKeys() 
   { 
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.getMasterMgrClient();
+    QueueMgrClient client = master.getQueueMgrClient();
     try {
       pIsPrivileged = client.isPrivileged(false);
     }
@@ -164,14 +164,14 @@ class JManageLicenseKeysDialog
   setTotalKeys() 
   {
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient masterClient = master.getMasterMgrClient();
+    QueueMgrClient client = master.getQueueMgrClient();
     try {
       int wk;
       for(wk=0; wk<pTableModel.getRowCount(); wk++) {
 	String kname  = (String) pTableModel.getValueAt(wk, 0);
 	Integer total = (Integer) pTableModel.getValueAt(wk, 3);
 	
-	masterClient.setTotalLicenses(kname, total);
+	client.setTotalLicenses(kname, total);
       }
     }
     catch(PipelineException ex) {
@@ -196,11 +196,10 @@ class JManageLicenseKeysDialog
 	 (desc != null) && (desc.length() > 0)) {
 
 	UIMaster master = UIMaster.getInstance();
-	QueueMgrClient queueClient = master.getQueueMgrClient();
-	MasterMgrClient masterClient = master.getMasterMgrClient();
+	QueueMgrClient client = master.getQueueMgrClient();
 	try {
-	  masterClient.addLicenseKey(new LicenseKey(kname, desc, 0));
-	  pTableModel.setLicenseKeys(queueClient.getLicenseKeys(), pIsPrivileged);
+	  client.addLicenseKey(new LicenseKey(kname, desc, 0));
+	  pTableModel.setLicenseKeys(client.getLicenseKeys(), pIsPrivileged);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -218,17 +217,16 @@ class JManageLicenseKeysDialog
     pTablePanel.cancelEditing();
 
     UIMaster master = UIMaster.getInstance();
-    QueueMgrClient queueClient = master.getQueueMgrClient();
-    MasterMgrClient masterClient = master.getMasterMgrClient();
+    QueueMgrClient client = master.getQueueMgrClient();
     try {
       int rows[] = pTablePanel.getTable().getSelectedRows();
       int wk;
       for(wk=0; wk<rows.length; wk++) {
 	String kname = (String) pTableModel.getValueAt(rows[wk], 0);
-	masterClient.removeLicenseKey(kname);
+	client.removeLicenseKey(kname);
       }
 
-      pTableModel.setLicenseKeys(queueClient.getLicenseKeys(), pIsPrivileged);
+      pTableModel.setLicenseKeys(client.getLicenseKeys(), pIsPrivileged);
     }
     catch(PipelineException ex) {
       master.showErrorDialog(ex);
@@ -244,10 +242,9 @@ class JManageLicenseKeysDialog
     pTablePanel.cancelEditing();
 
     UIMaster master = UIMaster.getInstance();
-    QueueMgrClient queueClient = master.getQueueMgrClient();
-    MasterMgrClient masterClient = master.getMasterMgrClient();
+    QueueMgrClient client = master.getQueueMgrClient();
     try {
-      pTableModel.setLicenseKeys(queueClient.getLicenseKeys(), pIsPrivileged);
+      pTableModel.setLicenseKeys(client.getLicenseKeys(), pIsPrivileged);
     }
     catch(PipelineException ex) {
       master.showErrorDialog(ex);
@@ -301,6 +298,8 @@ class JManageLicenseKeysDialog
   private JButton  pAddButton;
   private JButton  pRemoveButton;
 
-  
+  /**
+   * The new key creation dialog.
+   */ 
   private JCreateLicenseKeyDialog  pCreateDialog; 
 }
