@@ -1,4 +1,4 @@
-// $Id: PluginMenuLayout.java,v 1.1 2005/01/05 09:44:00 jim Exp $
+// $Id: PluginMenuLayout.java,v 1.2 2005/01/05 17:41:24 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -17,7 +17,7 @@ import java.io.*;
  */
 public
 class PluginMenuLayout
-  extends TreeMap<String,PluginMenuLayout>
+  extends LinkedList<PluginMenuLayout> 
   implements Glueable, Serializable
 {  
   /*----------------------------------------------------------------------------------------*/
@@ -99,8 +99,8 @@ class PluginMenuLayout
     pName      = layout.getName();
     pVersionID = layout.getVersionID(); 
 
-    for(String name : layout.keySet()) 
-      put(name, new PluginMenuLayout(layout.get(name)));
+    for(PluginMenuLayout pml : layout) 
+      add(new PluginMenuLayout(pml));
   }
   
 
@@ -156,7 +156,8 @@ class PluginMenuLayout
     return null;
   }
 
-
+  
+   
 
   /*----------------------------------------------------------------------------------------*/
   /*   G L U E A B L E                                                                      */
@@ -169,7 +170,7 @@ class PluginMenuLayout
   ) 
     throws GlueException
   {
-    encoder.encode("Title", pName);
+    encoder.encode("Title", pTitle);
 
     if(pName != null) 
       encoder.encode("Name", pName);
@@ -178,7 +179,7 @@ class PluginMenuLayout
       encoder.encode("VersionID", pVersionID);
 
     if(!isEmpty()) 
-      encoder.encode("Entries", new TreeMap<String,PluginMenuLayout>(this));
+      encoder.encode("Children", new LinkedList<PluginMenuLayout>(this));
   }
   
   public void 
@@ -201,9 +202,9 @@ class PluginMenuLayout
     if(vid != null) 
       pVersionID = vid; 
 
-    TreeMap<String,PluginMenuLayout> entries = 
-      (TreeMap<String,PluginMenuLayout>) decoder.decode("Entries"); 
-    putAll(entries);
+    LinkedList<PluginMenuLayout> children = 
+      (LinkedList<PluginMenuLayout>) decoder.decode("Children"); 
+    addAll(children);
   }
 
 
