@@ -183,6 +183,15 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
      LOCAL_URLS = $(patsubst %,-link file://%,$(LOCAL_DIRS))
 
 
+       PACKAGES = us.temerity.pipeline \
+                  us.temerity.pipeline.bootstrap \
+                  us.temerity.pipeline.core \
+                  us.temerity.pipeline.message \
+                  us.temerity.pipeline.plugin
+
+   PACKAGE_HTML = $(patsubst %,$(top_srcdir)/src/java/%/package.html,$(subst .,/,$(PACKAGES)))
+
+
    JAVADOC_OPTS = -sourcepath $(top_srcdir)/src/java \
                   -classpath $(top_builddir)/src/java \
                   -d javadoc -source 1.5 -use $(EXTERNAL_URLS) 
@@ -196,13 +205,9 @@ all: javadoc.tar
 javadoc.tar: docs-all
 	tar -cvf $@ javadoc
 
-docs-all: 
-	$(JAVADOC) $(JAVADOC_OPTS) \
-                   us.temerity.pipeline \
-                   us.temerity.pipeline.core \
-                   us.temerity.pipeline.message \
-                   us.temerity.pipeline.plugin \
-                   $(top_builddir)/src/java/us/temerity/pipeline/core/PackageInfo.java
+docs-all: $(PACKAGE_HTML)
+	$(JAVADOC) $(JAVADOC_OPTS) $(PACKAGES) \
+           $(top_builddir)/src/java/us/temerity/pipeline/core/PackageInfo.java
 	touch $@
 
 
