@@ -1,4 +1,4 @@
-// $Id: SwitchAction.java,v 1.1 2004/09/22 05:41:54 jim Exp $
+// $Id: SwitchAction.java,v 1.2 2004/10/14 22:36:12 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -80,11 +80,26 @@ class SwitchAction
   )
     throws PipelineException
   {
+    makeTargetDir(agenda);
+
     /* sanity checks */ 
     {
+      FileSeq target = agenda.getPrimaryTarget();
+
+      {
+	String sname = (String) getSingleParamValue("Source");
+	if(sname == null) 
+	  throw new PipelineException
+	    ("The Source node was not set!");
+	
+	if(!agenda.getSourceNames().contains(sname))
+	  throw new PipelineException
+	    ("The Source node (" + sname + ") is not linked to the target node " + 
+	     "(" + target + ")!");
+      }	
+
       /* the primary file sequences */ 
       {
-	FileSeq target = agenda.getPrimaryTarget();
 	for(String sname : agenda.getSourceNames()) {
 	  FileSeq source = agenda.getPrimarySource(sname);
 
@@ -112,6 +127,7 @@ class SwitchAction
     /* create a temporary script file */ 
     File script = createTemp(agenda, 0755, "bash");
     try {      
+      String sname = (String) getSingleParamValue("Source");
       FileWriter out = new FileWriter(script);
 
       out.write("#!/bin/bash\n\n");
@@ -119,17 +135,15 @@ class SwitchAction
       /* the primary file sequences */ 
       {
 	FileSeq target = agenda.getPrimaryTarget();
-	for(String sname : agenda.getSourceNames()) {
-	  NodeID snodeID = new NodeID(agenda.getNodeID(), sname);
-	  File sdir = new File(PackageInfo.sProdDir, snodeID.getWorkingParent().toString());
+	NodeID snodeID = new NodeID(agenda.getNodeID(), sname);
+	File sdir = new File(PackageInfo.sProdDir, snodeID.getWorkingParent().toString());
 	  
-	  FileSeq source = agenda.getPrimarySource(sname);
-	  int wk;
-	  for(wk=0; wk<target.numFrames(); wk++) {
-	    out.write("cp --remove-destination " + 
-		      sdir + "/" + source.getFile(wk) + " " +
-		      target.getFile(wk) + "\n");
-	  }
+	FileSeq source = agenda.getPrimarySource(sname);
+	int wk;
+	for(wk=0; wk<target.numFrames(); wk++) {
+	  out.write("cp --remove-destination " + 
+		    sdir + "/" + source.getFile(wk) + " " +
+		    target.getFile(wk) + "\n");
 	}
       }
 
@@ -138,24 +152,22 @@ class SwitchAction
 	ArrayList<FileSeq> targets = 
 	  new ArrayList<FileSeq>(agenda.getSecondaryTargets());
 
-	for(String sname : agenda.getSourceNames()) {
-	  NodeID snodeID = new NodeID(agenda.getNodeID(), sname);
-	  File sdir = new File(PackageInfo.sProdDir, snodeID.getWorkingParent().toString());
+	NodeID snodeID = new NodeID(agenda.getNodeID(), sname);
+	File sdir = new File(PackageInfo.sProdDir, snodeID.getWorkingParent().toString());
 
-	  ArrayList<FileSeq> sources = 
-	    new ArrayList<FileSeq>(agenda.getSecondarySources(sname));
-
-	  int sk;
-	  for(sk=0; sk<targets.size(); sk++) {
-	    FileSeq target = targets.get(sk);
-	    FileSeq source = sources.get(sk);
-
-	    int wk;
-	    for(wk=0; wk<target.numFrames(); wk++) {
-	      out.write("cp --remove-destination " + 
-			sdir + "/" + source.getFile(wk) + " " +
-			target.getFile(wk) + "\n");
-	    }
+	ArrayList<FileSeq> sources = 
+	  new ArrayList<FileSeq>(agenda.getSecondarySources(sname));
+	
+	int sk;
+	for(sk=0; sk<targets.size(); sk++) {
+	  FileSeq target = targets.get(sk);
+	  FileSeq source = sources.get(sk);
+	  
+	  int wk;
+	  for(wk=0; wk<target.numFrames(); wk++) {
+	    out.write("cp --remove-destination " + 
+		      sdir + "/" + source.getFile(wk) + " " +
+		      target.getFile(wk) + "\n");
 	  }
 	}
       }
