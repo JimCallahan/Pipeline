@@ -7,6 +7,7 @@ html_DATA = \
   plmaster.html \
   plnotify.html \
   plqueuemgr.html \
+  plplugin.html \
   pls.html \
   plui.html \
   realpath.html
