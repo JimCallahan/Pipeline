@@ -1,4 +1,4 @@
-// $Id: PackageInfo.cc.in,v 1.2 2003/02/10 16:11:12 jim Exp $
+// $Id: PackageInfo.cc.in,v 1.3 2003/07/05 16:00:55 jim Exp $
 
 #include <PackageInfo.hh>
 
@@ -20,14 +20,33 @@ const char* PackageInfo::sVersion = "@VERSION@";
 /* when the package was released */ 
 const char* PackageInfo::sRelease = "@RELEASE_STAMP@";  
 
+
 /* server hostname */ 
 const char* PackageInfo::sServer = "@PLSERVER@";
 
 /* server port number */ 
-const int sPort = @PLPORT@;
+const int PackageInfo::sPort = @PLPORT@;
+
+
+/* PBS server hostname */ 
+const char* PackageInfo::sPbsServer = "@PBS_SERVER@";
+
 
 /* root directory of the production heirarchy */ 
 const char* PackageInfo::sBaseDir = "@BASEDIR@"; 
+
+/* base repository directory */ 
+const char* PackageInfo::sRepoDir = "@BASEDIR@/prod/repository";
+
+/* base working area directory */ 
+const char* PackageInfo::sWorkDir = "@BASEDIR@/prod/working";
+
+/* installed toolset directory */ 
+const char* PackageInfo::sToolsetDir = "@BASEDIR@/toolset/toolsets";
+
+/* installed location of the toolset-exec program */ 
+const char* PackageInfo::sToolsetExec = "@BASEDIR@/toolset/sbin/toolset-exec";
+
 
 /* installed documentation directory */ 
 const char* PackageInfo::sDocsDir = "@BASEDIR@/pipeline/share/docs"; 
@@ -35,21 +54,26 @@ const char* PackageInfo::sDocsDir = "@BASEDIR@/pipeline/share/docs";
 /* location of the Mozilla web browser */ 
 const char* PackageInfo::sMozilla = "@MOZILLA@";
 
-/* installed location of the toolset-exec program */ 
-const char* PackageInfo::sToolsetExec = "@BASEDIR@/toolset/sbin/toolset-exec";
 
-/* installed location of the java interpreter */ 
-const char* PackageInfo::sJava = "@JAVA@";
-
-/* installed location of the Java Database JAR file */ 
-const char* PackageInfo::sJDBC = "@JDBC_JAR@";
+/* installed location of the GNU Bourne Again SHell */ 
+const char* PackageInfo::sBash = "@BASH@";
 
 /* installed location of the GNU make program */ 
 const char* PackageInfo::sMake = "@MAKE@";
 
+/* installed location of the md5sum program */ 
+const char* PackageInfo::sMd5sum = "@MD5SUM@";
+
 /* installed location of the diff program */ 
 const char* PackageInfo::sDiff = "@DIFF@";
   
+/* installed location of the kill program */ 
+const char* PackageInfo::sKill = "@KILL@";
+
+/* installed location of the SSH program */ 
+const char* PackageInfo::sSsh = "@SSH@";
+
+
 /* copyright message */ 
 const char* PackageInfo::sCopyright = 
 "-------------------------------------------------------------------------\n\
