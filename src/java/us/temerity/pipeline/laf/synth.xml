@@ -17,16 +17,27 @@
   </style>
   <bind style="splitpane" type="region" key="SplitPane"/>
 
-  <style id="splitpanedivider">
+  <style id="splitpanevbar">
     <imagePainter path="VBar.png"
+                  direction="vertical"
                   sourceInsets="4 4 4 4" 
 		  paintCenter="true"/>
     <insets top="4" bottom="4" right="4" left="4"/>
   </style>
-  <bind style="splitpanedivider" type="region" key="SplitPaneDivider"/>
+  <bind style="splitpanevbar" type="region" key="SplitPaneDivider"/>
+
+  <style id="splitpanehbar">
+    <imagePainter path="HBar.png"
+                  direction="horizontal"
+                  sourceInsets="4 4 4 4" 
+		  paintCenter="true"/>
+    <insets top="4" bottom="4" right="4" left="4"/>
+  </style>
+  <bind style="splitpanehbar" type="region" key="SplitPaneDivider"/>
 
   <style id="splitpaneleftbutton">
     <imagePainter path="VBarLeftButton.png"
+                  direction="vertical"
                   sourceInsets="2 2 2 2" 
 		  paintCenter="true"/>
     <insets top="2" bottom="2" right="2" left="2"/>
@@ -35,10 +46,29 @@
 
   <style id="splitpanerightbutton">
     <imagePainter path="VBarRightButton.png"
+                  direction="vertical"
                   sourceInsets="2 2 2 2" 
 		  paintCenter="true"/>
     <insets top="2" bottom="2" right="2" left="2"/>
   </style>
   <bind style="splitpanerightbutton" type="name" key="SplitPaneDivider.rightOneTouchButton"/>
+
+  <style id="splitpaneupbutton">
+    <imagePainter path="HBarUpButton.png"
+                  direction="horizontal"
+                  sourceInsets="2 2 2 2" 
+		  paintCenter="true"/>
+    <insets top="2" bottom="2" right="2" left="2"/>
+  </style>
+  <bind style="splitpaneupbutton" type="name" key="SplitPaneDivider.leftOneTouchButton"/>
+
+  <style id="splitpanedownbutton">
+    <imagePainter path="HBarDownButton.png"
+                  direction="horizontal"
+                  sourceInsets="2 2 2 2" 
+		  paintCenter="true"/>
+    <insets top="2" bottom="2" right="2" left="2"/>
+  </style>
+  <bind style="splitpanedownbutton" type="name" key="SplitPaneDivider.rightOneTouchButton"/>
 
 </synth>
