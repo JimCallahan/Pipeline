@@ -1,4 +1,4 @@
-// $Id: SubProcess.java,v 1.4 2004/02/25 01:29:19 jim Exp $
+// $Id: SubProcess.java,v 1.5 2004/02/28 20:01:34 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -137,7 +137,7 @@ class SubProcess
 
     if(user == null) 
       throw new IllegalArgumentException("The user name cannot be (null)!");
-    if(sUser.equals(user)) {
+    if(PackageInfo.sUser.equals(user)) {
       init(null, program, args, env, dir);
     }
     else {
@@ -165,7 +165,7 @@ class SubProcess
    File dir    
   )
   {
-    if((user != null) && (!sUser.equals("pipeline"))) 
+    if((user != null) && (!PackageInfo.sUser.equals("pipeline"))) 
       throw new IllegalArgumentException
 	("Only the (pipeline) user is allowed to run processes as another user!");
     pSubstituteUser = user;
@@ -1159,11 +1159,6 @@ class SubProcess
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * The name of the user running this program.
-   */ 
-  private static final String  sUser = System.getProperty("user.name");
 
   /**
    * A table of cached UIDs indexed by username.
