@@ -1,4 +1,4 @@
-// $Id: TestAction.java,v 1.2 2004/09/08 19:34:59 jim Exp $
+// $Id: TestAction.java,v 1.3 2004/09/10 15:43:35 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_1_0;
 
@@ -33,6 +33,14 @@ class TestAction
 	new DoubleActionParam("SomeDouble", 
 			      "An double parameter.",
 			      123.456);
+      addSingleParam(param);
+    }
+
+    {
+      BaseActionParam param = 
+	new BooleanActionParam("SomeBoolean", 
+			       "An boolean parameter.",
+			       false);
       addSingleParam(param);
     }
 
@@ -129,6 +137,14 @@ class TestAction
 	new IntegerActionParam("SecondInteger", 
 			       "A second integer parameter.",
 			       2);
+      params.put(param.getName(), param);
+    }
+    
+    {
+      BaseActionParam param = 
+	new BooleanActionParam("AnotherBoolean", 
+			       "A boolean parameter.",
+			       true);
       params.put(param.getName(), param);
     }
     
