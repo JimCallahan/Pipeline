@@ -1,4 +1,4 @@
-// $Id: DNotify.java,v 1.3 2004/04/12 22:36:29 jim Exp $
+// $Id: DNotify.java,v 1.4 2004/04/14 18:43:48 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -39,22 +39,29 @@ class DNotify
 
   /** 
    * Construct a new directory monitor.
+   * 
+   * @param dir     
+   *   The root production directory.
    */ 
   public 
-  DNotify() 
+  DNotify
+  (
+   File dir
+  ) 
     throws IOException     
   {
-    pThread = Thread.currentThread();
+    pThread  = Thread.currentThread();
+    pProdDir = dir;
 
-    pLock      = new Object();
-    pMonitor   = new HashSet<File>();
-    pUnmonitor = new HashSet<File>();
-    pDirToDesc = new HashMap<File,Integer>();
-    pDescToDir = new HashMap<Integer,File>();
+    pLock        = new Object();
+    pMonitor     = new TreeSet<File>();
+    pUnmonitor   = new TreeSet<File>();
+    pDirToEntry  = new TreeMap<File,DirEntry>();
+    pDescToEntry = new TreeMap<Integer,DirEntry>();
 
-    pMaxDirs = initNative();
+    pMaxDesc = initNative();
 
-    Logs.ops.finest("Maximum Directories: " + pMaxDirs);
+    Logs.ops.finest("Maximum Directories: " + pMaxDesc);
     Logs.flush();
   }
 
@@ -64,12 +71,21 @@ class DNotify
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Get the name of the root production directory.
+   */
+  public File
+  getRoot() 
+  {
+    return pProdDir;
+  }
+
+  /**
    * Get the maximum number of directories which may be monitored by a thread.
    */
   public int
   getLimit()
   {
-    return pMaxDirs;
+    return pMaxDesc;
   }
 
   /**
@@ -79,18 +95,19 @@ class DNotify
   getNumMonitored() 
   {
     synchronized(pLock) {
-      return pDirToDesc.size();
+      return pDescToEntry.size();
     }
   }
 
   /**
-   * Get the set of currently monitored directories.
+   * Get the names of the currently monitored directories relative to the root 
+   * production directory.
    */ 
   public TreeSet<File>
   getMonitored() 
   {
     synchronized(pLock) {
-      return new TreeSet(pDirToDesc.keySet());
+      return new TreeSet(pDirToEntry.keySet());
     }
   }
     
@@ -104,7 +121,7 @@ class DNotify
    * Begin monitoring the given directory.
    * 
    * @param dir
-   *   The directory to monitor.
+   *   The name of the directory to begin monitoring.
    */ 
   public void
   monitor
@@ -113,14 +130,14 @@ class DNotify
   ) 
     throws IOException 
   {
-    File canon = dir.getCanonicalFile();
-    if(!canon.isDirectory()) 
-      throw new IOException("Path to monitor was NOT a directory: " + canon);
-    
-    synchronized(pLock) {
-      if((pMonitor.size() + pDirToDesc.size()) >= pMaxDirs) 
-	throw new IOException("Directory limit (" + pMaxDirs + ") reached!");
+    if(!dir.isAbsolute()) 
+      throw new IOException
+	("The directory to monitor (" + dir + ") must be specified as an absolute path " + 
+	 "stripped of the root production directory (" + pProdDir + ") prefix!");
 
+    synchronized(pLock) {
+      if((pMonitor.size() + pDescToEntry.size() + 1) > pMaxDesc) 
+	throw new IOException("Directory limit (" + pMaxDesc + ") reached!");
       pMonitor.add(dir);
     }
   }
@@ -129,8 +146,8 @@ class DNotify
    * Cease monitoring the given directory.
    * 
    * @param dir
-   *   The directory to quit monitoring.
-   */ 
+   *   The name of the director to cease monitoring.
+   */
   public void 
   unmonitor
   (
@@ -138,32 +155,49 @@ class DNotify
   ) 
     throws IOException 
   {
-    File canon = dir.getCanonicalFile();
-    
+    if(!dir.isAbsolute()) 
+      throw new IOException
+	("The directory to unmonitor (" + dir + ") must be specified as an absolute path " + 
+	 "stripped of the root production directory (" + pProdDir + ") prefix!");
+
     synchronized(pLock) {
       pUnmonitor.add(dir);
     }
   }
 
   /** 
-   * Wait for one of the monitored directories to be modified. <P> 
+   * Wait for the specified amount of time for one or more of the monitored directories to 
+   * be created, removed or files located in one of the monitored directories to be 
+   * created, modified, removed, or renamed. <P> 
    *
    * Before waiting, this method also applies the changes to the set of monitored 
    * directories requested by the {@link #monitor monitor} and {@link #unmonitor unmonitor} 
    * methods. <P> 
    * 
+   * In addition, all existing parent directories of the set of monitored directories up to 
+   * the root production directory are also monitored for changes. Changes to one of these
+   * parent directories will not be reported unless the directory is also a member of the 
+   * set of monitored directories or if the change which occured is the creation or removal 
+   * of one the monitored set of directories. <P> 
+   * 
+   * If no directory changes occured for one of the monitored directories within the 
+   * <CODE>timeout</CODE> interval, the returned set will be empty.  In not empty, the 
+   * returned set will contain the absolute paths of the changed directories stripped of 
+   * the root production directory prefix. <P> 
+   * 
    * Due to details with the way the OS supports directory change notification, it is 
    * crucial that this method be called from the same thread which instantiated the 
-   * <CODE>DNotify</CODE> instance.  
+   * <CODE>DNotify</CODE> instance.  An <CODE>IOException</CODE> will be thrown if this
+   * methods is called from a different thread than the one which created the instance.
    * 
    * @param timeout
-   *   The maximum number of milliseconds to wait before returning.
+   *   The maximum number of milliseconds to wait for directory changes.
    * 
    * @return
-   *   The modified directory or <CODE>null</CODE> if no directories changed before the 
-   *   timeout interval elapsed.
+   *   The set of monitored directories for which a change occured during the 
+   *   <CODE>timeout</CODE> interval. 
    */ 
-  public synchronized File 
+  public synchronized TreeSet<File>
   watch
   (
    int timeout
@@ -172,89 +206,276 @@ class DNotify
   {
     if(!pThread.equals(Thread.currentThread())) 
       throw new IllegalStateException
-	("This method must be called from the same thread which instantiated the " + 
-	 "DNotify instance!");
+	("This method must be called from the same thread (" + pThread.getName() + ") " + 
+	 "which instantiated the DNotify instance!");
 
+    boolean changed = false;
     synchronized(pLock) {
       if(!pMonitor.isEmpty() || !pUnmonitor.isEmpty()) {
+	changed = true;
+
+	/* monitor the root production directory */ 
+	if(pRoot == null) {
+	  if(!pProdDir.isDirectory()) 
+	    throw new IOException
+	      ("The root production directory (" + pProdDir + ") does not exist!");
+	  
+	  int fd = monitorNative(pProdDir.getPath());
+	  if(fd == -1) 
+	    throw new IOException
+	      ("Unable to monitor root production directory (" + pProdDir + ")!");
+
+	  pRoot = new DirEntry(new File("/"), fd, false);
+	  pDescToEntry.put(fd, pRoot);
+	}
+
+
+	/* begin monitoring directories and their parents */ 
 	for(File dir : pMonitor) {
-	  if(!pDirToDesc.containsKey(dir)) {
-	    if(pDirToDesc.size() >= getLimit())
-	      throw new IOException
-		("Maximum number of directories (" + pMaxDirs + ") reached!");
-	    
-	    int fd = monitorNative(dir.getPath());
-	    
-	    Logs.ops.fine("Monitoring Directory: [" + fd + "] " + dir);
-	    
-	    pDirToDesc.put(dir, fd);
-	    pDescToDir.put(fd, dir);
-	    
-	    if(pMinDesc == null) 
-	      pMinDesc = new Integer(fd);
-	    else 
-	      pMinDesc = Math.min(pMinDesc, fd);		
+	  if(!pDirToEntry.containsKey(dir)) {
+	    if(pDescToEntry.size() >= pMaxDesc)
+	      throw new IOException("Directory limit (" + pMaxDesc + ") reached!");
+
+	    String comps[] = dir.getPath().split("/");
+	    DirEntry parent = pRoot;
+	    int wk;
+	    for(wk=1; wk<comps.length; wk++) {
+	      DirEntry child = parent.uChildren.get(comps[wk]);
+	      if((child == null) || (child.uFileDesc == null)) {
+		File pdir = new File(parent.uDir, comps[wk]);
+		
+		Integer desc = null;
+		File path = new File(pProdDir + pdir.getPath());
+		if(path.isDirectory()) {
+		  int fd = monitorNative(path.getPath());
+		  if(fd != -1) 
+		    desc = fd;
+		}
+		
+		boolean leaf = (wk == (comps.length-1));
+		if(child == null) {
+		  child = new DirEntry(pdir, desc, leaf);
+		  parent.uChildren.put(comps[wk], child);
+		}
+		else {
+		  child.uFileDesc = desc;
+		  if(leaf) 
+		    child.uNotify = true;
+		}
+
+		if(desc != null) 
+		  pDescToEntry.put(desc, child);
+		
+		if(leaf) {
+		  Logs.ops.fine("Monitoring Directory: " + dir);
+		  Logs.flush();
+		  
+		  pDirToEntry.put(dir, child);
+		}
+	      }
+	      
+	      parent = child;
+	    }
 	  }
 	}
 	pMonitor.clear();
 	
-	for(File dir : pUnmonitor) {
-	  if(pDirToDesc.containsKey(dir)) {
-	    
-	    int fd = pDirToDesc.get(dir);
-	    unmonitorNative(fd);
 
-	    Logs.ops.fine("Unmonitoring Directory: [" + fd + "] " + dir);
-	    
-	    pDirToDesc.remove(dir);
-	    pDescToDir.remove(fd); 
-	    
-	    if(pDirToDesc.isEmpty()) 
-	      pMinDesc = null;
+	/* cease monitoring directories and possibly their parents */ 
+	for(File dir : pUnmonitor) {
+	  Stack<DirEntry> ents = new Stack<DirEntry>();
+	  {
+	    ents.push(pRoot);
+	    String comps[] = dir.getPath().split("/");
+	    DirEntry parent = pRoot;
+	    int wk;
+	    for(wk=1; wk<comps.length; wk++) {
+	      DirEntry child = parent.uChildren.get(comps[wk]);
+	      if(child == null) 
+		break;
+	      
+	      ents.push(child);
+	      parent = child;
+	    }
+	  }
+
+	  DirEntry leaf = ents.peek();
+	  if(leaf.uDir.equals(dir)) {
+	    leaf.uNotify = false;
+	    pDirToEntry.remove(dir);
+
+	    Logs.ops.fine("Unmonitoring Directory: " + dir);
+	    Logs.flush();
+
+	    while(true) {
+	      DirEntry de = ents.pop();
+	      if(ents.empty() || !de.uChildren.isEmpty()) 
+		break;
+	      
+	      if(de.uFileDesc != null) {
+		unmonitorNative(de.uFileDesc);
+		pDescToEntry.remove(de.uFileDesc);
+	      }
+
+	      DirEntry parent = ents.peek();
+	      parent.uChildren.remove(de.uDir.getName());	      
+	    }
 	  }
 	}
 	pUnmonitor.clear();
-	
-	assert(pDirToDesc.size() == pDescToDir.size());
-	
-	if(!pDirToDesc.isEmpty()) {
-	  StringBuffer buf = new StringBuffer();
-	  buf.append("Directories Currently Monitored: " + pDirToDesc.size() + "\n");
-	  
-	  for(File file : pDirToDesc.keySet()) 
-	    buf.append("  [" + pDirToDesc.get(file) + "] " + file + "\n");
-	  Logs.ops.finest(buf.toString());
-	  Logs.flush();
-	}
       }
     }
     
+
     /* wait for a modification signal */ 
     int fd = watchNative(timeout);
-    
-    /* lookup the name of the modified directory */ 
+    TreeSet<File> modified = new TreeSet<File>();
     if(fd > 0) {
       synchronized(pLock) {
-	File dir = pDescToDir.get(fd);
-	if(dir == null) {
-	  throw new IOException
-	    ("Couldn't determine the directory name for the file descriptor (" + fd + ")!");
+	DirEntry de = pDescToEntry.get(fd);
+	if(de != null) {
+	  if(de.uNotify) {
+	    modified.add(de.uDir);
+
+	    Logs.ops.fine("Directory Modified: " + de.uDir);
+	    Logs.flush();
+	  }
+	  
+	  for(DirEntry child : de.uChildren.values())
+	    changed |= recheckSubdirs(child, modified);
 	}
-	
-	Logs.ops.fine("Directory Modified: [" + fd + "] " + dir);
-	Logs.flush();
-	
-	return dir; 
       }
     }
 
-    return null;
+
+    /* debugging */ 
+    if(changed) {
+      synchronized(pLock) {
+	logInternals();
+      }
+    }
+
+    return modified;
   }
 
 
+  /**
+   * Recheck the monitored subdirectories of the just modified directory. <P> 
+   *
+   * Makes sure that any created subdirectories will be monitored and any destroyed 
+   * subdirectories will no longer be monitored.
+   */ 
+  private boolean
+  recheckSubdirs
+  (
+   DirEntry de, 
+   TreeSet<File> modified
+  ) 
+  {
+    boolean changed = false;
+    try {
+      File path = new File(pProdDir + de.uDir.getPath());
+      if(path.isDirectory()) {
+	if(de.uFileDesc == null) {
+	  int cfd = monitorNative(path.getPath());
+	  if(cfd != -1) {	      
+	    de.uFileDesc = cfd;
+	    pDescToEntry.put(cfd, de);
+	  }
+	  changed = true;
+	}
+      }
+      else {
+	if(de.uFileDesc != null) {
+	  unmonitorNative(de.uFileDesc);
+	  pDescToEntry.remove(de.uFileDesc);
+	  de.uFileDesc = null;
+	  changed = true;
+	}
+      }
+      
+      if(changed && (de.uNotify)) {
+	modified.add(de.uDir);
+	
+	Logs.ops.fine("Directory Modified: " + de.uDir);
+	Logs.flush();
+      }
+    }
+    catch(IOException ex) {
+      Logs.ops.severe(ex.getMessage());
+    }
+
+    for(DirEntry child : de.uChildren.values())
+      changed |= recheckSubdirs(child, modified);
+
+    return changed;
+  }
+
+
+  /**
+   * Generate a long log message detailing the internal datastrutures of this instance.
+   */ 
+  private void 
+  logInternals() 
+  {
+    if(pRoot == null) 
+      return;
+
+    StringBuffer buf = new StringBuffer();
+    
+    buf.append("DNotify Internals:\n" + 
+	       "  Directory Tree:\n" + 
+	       "    " + pProdDir + "\n");
+    logTree(pRoot, 3, buf);
+    buf.append("\n");
+	  
+    buf.append("  Monitored Directories:\n");
+    for(File dir : pDirToEntry.keySet())
+      buf.append("    " + dir + "\n");
+    buf.append("\n");
+    
+    buf.append("  Open Descriptors:\n");
+    for(Integer desc : pDescToEntry.keySet())
+      buf.append("    [" + desc + "] " + (pDescToEntry.get(desc).uDir) + "\n");
+    
+    Logs.ops.finest(buf.toString());
+    Logs.flush();
+  }
+  
+  /**
+   * Recursively traverse the directory entries generating the debugging log message text.
+   */ 
+  private void 
+  logTree
+  (
+   DirEntry de, 
+   int level, 
+   StringBuffer buf
+  ) 
+  {
+    int wk;
+    for(wk=0; wk<level; wk++)
+      buf.append("  ");
+
+    buf.append(de.uDir);
+
+    if(de.uFileDesc != null) 
+      buf.append(" [" + de.uFileDesc + "]");
+    
+    if(de.uNotify) 
+      buf.append(" NOTIFY");
+
+    buf.append("\n");    
+
+    for(DirEntry child : de.uChildren.values()) 
+      logTree(child, level+1, buf);
+  }
+
+  
+
 
   /*----------------------------------------------------------------------------------------*/
-  /*   H E L P E R S                                                                        */
+  /*   N A T I V E   H E L P E R S                                                          */
   /*----------------------------------------------------------------------------------------*/
   
   /**
@@ -319,6 +540,59 @@ class DNotify
   
   
   /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L   C L A S S E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * A tree-node datastructure used to represent a monitored directory.
+   */ 
+  private class
+  DirEntry
+  {
+    public 
+    DirEntry
+    (
+     File dir, 
+     Integer fd, 
+     boolean notify
+    ) 
+    {
+      uDir      = dir;
+      uFileDesc = fd;
+      uNotify   = notify;
+
+      uChildren = new TreeMap<String,DirEntry>();
+    }
+
+
+    /** 
+     * The absolute directory path stripped of the root production directory prefix.
+     */ 
+    public File  uDir;
+
+    /**
+     * The open file descriptor associated with the directory 
+     * or <CODE>null</CODE> if the directory is not currently open.
+     */ 
+    public Integer  uFileDesc;
+
+    /**
+     * Should clients be notified when changes to the contents of the directory are 
+     * detected?
+     */ 
+    public boolean  uNotify;    
+
+
+    /**
+     * The table of directory entries for directories which are the immeadiate children 
+     * of this directory indexed by the relative name of the child directory.
+     */ 
+    public TreeMap<String,DirEntry>  uChildren;
+  }
+
+
+  
+  /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N I T I A L I Z A T I O N                                            */
   /*----------------------------------------------------------------------------------------*/
   
@@ -336,41 +610,51 @@ class DNotify
    */
   private Thread pThread;
 
+  /**
+   * The root production directory.
+   */ 
+  private File  pProdDir;
+
 
   /**
-   * The lock which protects access to all fields.
+   * The lock which protects access to the following fields.
    */
   private Object pLock;
 
-  /**
-   * The set of directories to add to the monitored tables.
-   */ 
-  private HashSet<File>  pMonitor;
 
   /**
-   * The set of directories to remove from the monitored tables.
+   * The set of directories to begin monitoring (if not already monitored). <P>
+   * 
+   * The names of the directories are relative to the root production directory.
    */ 
-  private HashSet<File>  pUnmonitor;
+  private TreeSet<File>  pMonitor;
 
   /**
-   * The minimum numbered file descriptor or <CODE>null</CODE> if no file descriptors 
-   * are being monitored.
+   * The set of directories to cease monitoring (if currently being monitored). <P>
+   * 
+   * The names of the directories are relative to the root production directory.
+   */ 
+  private TreeSet<File>  pUnmonitor;
+
+
+  /**
+   * The per-process limit on the maximum number of file descriptors.
    */
-  private Integer pMinDesc;
+  private int pMaxDesc;
 
   /**
-   * The maximum number of directories that can be monitored. <P>
-   */
-  private int pMaxDirs;
-
-  /**
-   * The set of monitored directory file descriptors indexed by canonical directory name.
+   * The root of the directory entry tree corresponding to the root production directory.
    */ 
-  private HashMap<File,Integer>  pDirToDesc;
+  private DirEntry  pRoot;
 
   /**
-   * The set of monitored canonical directory names indexed by directory file descriptor.
+   * The mapping of directory name to directory entry.
    */ 
-  private HashMap<Integer,File>  pDescToDir;
+  private TreeMap<File,DirEntry>  pDirToEntry;
+
+  /**
+   * The mapping of directory file descriptor to directory entry.
+   */ 
+  private TreeMap<Integer,DirEntry>  pDescToEntry;
   
 }
