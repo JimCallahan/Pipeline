@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.3 2004/06/22 19:41:11 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.4 2004/06/23 22:33:45 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1472,6 +1472,9 @@ class JNodeDetailsPanel
     NodeVersion vsn = getCheckedInVersion();
     assert(vsn != null);
 
+    /* save whether the apply button is already enabled? */ 
+    boolean isEnabled = pApplyButton.isEnabled();
+
     /* properties panel */ 
     {
       /* toolset */ 
@@ -1508,6 +1511,9 @@ class JNodeDetailsPanel
 
     /* job requirements panel */ 
     updateJobRequirements(false); 
+
+    /* restore the enabled state of the apply button */ 
+    pApplyButton.setEnabled(isEnabled);
   }
 
 
@@ -1618,7 +1624,7 @@ class JNodeDetailsPanel
 	      else if(aparam instanceof TextActionParam) {
 		pTextParamValues.put(aparam.getName(), (String) aparam.getValue());
 
-		JButton btn = new JButton("Edit...");
+		JButton btn = new JButton(pIsLocked ? "View..." : "Edit...");
 		pcomps[1] = btn;
 		
 		btn.setName("ValuePanelButton");
@@ -1671,10 +1677,12 @@ class JNodeDetailsPanel
 	      }
 	    }
 	    else {
-	      JTextField field = UIMaster.createTextField("-", sVSize, JLabel.CENTER);
-	      pcomps[1] = field;
+	      JLabel label = UIMaster.createLabel("-", sVSize, JLabel.CENTER);
+	      label.setName("TextFieldLabel");
+
+	      pcomps[1] = label;
 	      
-	      hbox.add(field);
+	      hbox.add(label);
 	    }
 	  }
 
@@ -1736,10 +1744,12 @@ class JNodeDetailsPanel
 	      }
 	    }
 	    else {
-	      JTextField field = UIMaster.createTextField("-", sVSize, JLabel.CENTER);
-	      pcomps[3] = field;
+	      JLabel label = UIMaster.createLabel("-", sVSize, JLabel.CENTER);
+	      label.setName("TextFieldLabel");
+
+	      pcomps[3] = label;
 	      
-	      hbox.add(field);
+	      hbox.add(label);
 	    }
 	  }
 	  
@@ -2120,7 +2130,8 @@ class JNodeDetailsPanel
 	  for(String kname : pSelectionKeyComponents.keySet()) {
 	    Component pcomps[] = pSelectionKeyComponents.get(kname);
 	    JBooleanField field = (JBooleanField) pcomps[1];
-	    if(field.getValue()) 
+	    Boolean value = field.getValue();
+	    if((value != null) && value) 
 	      previous.add(kname);
 	  }
 	}
@@ -2181,11 +2192,13 @@ class JNodeDetailsPanel
 	      
 	      if(wjreq != null)
 		field.setValue(hasWorkingKey);
+	      else 
+		field.setValue(null);
 
 	      field.setActionCommand("selection-key-changed:" + kname);
 	      field.addActionListener(this);
 
-	      field.setEnabled(!pIsLocked);
+	      field.setEnabled(!pIsLocked && (wjreq != null));
 
 	      hbox.add(field);
 	    }
@@ -2241,7 +2254,8 @@ class JNodeDetailsPanel
 	  for(String kname : pLicenseKeyComponents.keySet()) {
 	    Component pcomps[] = pLicenseKeyComponents.get(kname);
 	    JBooleanField field = (JBooleanField) pcomps[1];
-	    if(field.getValue()) 
+	    Boolean value = field.getValue();
+	    if((value != null) && value) 
 	      previous.add(kname);
 	  }
 	}
@@ -2301,11 +2315,13 @@ class JNodeDetailsPanel
 	      
 	      if(wjreq != null)
 		field.setValue(hasWorkingKey);
+	      else 
+		field.setValue(null);
 
 	      field.setActionCommand("license-key-changed:" + kname);
 	      field.addActionListener(this);
 
-	      field.setEnabled(!pIsLocked);
+	      field.setEnabled(!pIsLocked && (wjreq != null));
 
 	      hbox.add(field);
 	    }
@@ -2474,10 +2490,19 @@ class JNodeDetailsPanel
       else
 	fg = Color.cyan;
     }
-
-    int wk;
-    for(wk=0; wk<pcomps.length; wk++) 
-      pcomps[wk].setForeground(fg);
+    
+    {
+      pcomps[0].setForeground(fg);
+      
+      if(pcomps[1] instanceof JIntegerField) 
+	((JIntegerField) pcomps[1]).setWarningColor(fg);
+      else if(pcomps[1] instanceof JDoubleField) 
+	((JDoubleField) pcomps[1]).setWarningColor(fg);
+      else 
+	pcomps[1].setForeground(fg);
+      
+      pcomps[3].setForeground(fg);
+    }
   }
 
 
@@ -2864,7 +2889,8 @@ class JNodeDetailsPanel
 	      for(String kname : pSelectionKeyComponents.keySet()) {
 		Component pcomps[] = pSelectionKeyComponents.get(kname);
 		JBooleanField field = (JBooleanField) pcomps[1];
-		if(field.getValue()) 
+		Boolean value = field.getValue();
+		if((value != null) && value) 
 		  jreq.addSelectionKey(kname);
 	      }
 	    }
@@ -2876,7 +2902,8 @@ class JNodeDetailsPanel
 	      for(String kname : pLicenseKeyComponents.keySet()) {
 		Component pcomps[] = pLicenseKeyComponents.get(kname);
 		JBooleanField field = (JBooleanField) pcomps[1];
-		if(field.getValue()) 
+		Boolean value = field.getValue();
+		if((value != null) && value) 
 		  jreq.addLicenseKey(kname);
 	      }
 	    }
@@ -3024,8 +3051,8 @@ class JNodeDetailsPanel
       
     pActionParamComponents.clear();
     updateActionParams();
-
     updateActionColors();
+
     updateJobRequirements((oaction == null) && (getWorkingAction() != null));
   }
 
@@ -3062,9 +3089,8 @@ class JNodeDetailsPanel
       }
 
       updateActionParams();
+      updateActionColors();
     }
-    
-    updateActionColors();
 
     updateJobRequirements((oaction == null) && (getWorkingAction() != null));
   }
@@ -3161,15 +3187,23 @@ class JNodeDetailsPanel
     if(waction != null) {
       BaseActionParam param = waction.getSingleParam(pname);
 
-      pEditTextDialog.updateText("Edit:  " + param.getNameUI(), 
-				 pTextParamValues.get(pname)); 
+      if(pIsLocked) {
+	pViewTextDialog.updateText("View:  " + param.getNameUI(), 
+				   pTextParamValues.get(pname));
 
-      pEditTextDialog.setVisible(true);      
-      if(pEditTextDialog.wasConfirmed()) {
-	pTextParamValues.put(pname, pEditTextDialog.getText());
-	doActionParamChanged(pname);
+	pViewTextDialog.setVisible(true);
       }
-    }	
+      else {
+	pEditTextDialog.updateText("Edit:  " + param.getNameUI(), 
+				   pTextParamValues.get(pname)); 
+	
+	pEditTextDialog.setVisible(true);      
+	if(pEditTextDialog.wasConfirmed()) {
+	  pTextParamValues.put(pname, pEditTextDialog.getText());
+	  doActionParamChanged(pname);
+	}
+      }	
+    }
   }
 
   /**
@@ -3349,7 +3383,7 @@ class JNodeDetailsPanel
     pWorkingExecutionMethodField.setForeground(color);
     pCheckedInExecutionMethodField.setForeground(color);
 
-    if((getWorkingAction() != null) && 
+    if((getWorkingAction() == null) || 
        (pWorkingExecutionMethodField.getSelectedIndex() == 0)) {
       pWorkingBatchSizeField.setValue(null);
       pWorkingBatchSizeField.setEnabled(false);
@@ -3402,7 +3436,7 @@ class JNodeDetailsPanel
     }
 
     pBatchSizeTitle.setForeground(color);
-    pWorkingBatchSizeField.setForeground(color);
+    pWorkingBatchSizeField.setWarningColor(color);
     pCheckedInBatchSizeField.setForeground(color);
   }
 
@@ -3434,12 +3468,13 @@ class JNodeDetailsPanel
     if(hasWorking() && hasCheckedIn()) {
       String wpriority = pWorkingPriorityField.getText();
       String cpriority = pCheckedInPriorityField.getText();      
-      if(!cpriority.equals(wpriority))
+      if(!cpriority.equals(wpriority)) {
 	color = Color.cyan;
+      }
     }
 
     pPriorityTitle.setForeground(color);
-    pWorkingPriorityField.setForeground(color);
+    pWorkingPriorityField.setWarningColor(color);
     pCheckedInPriorityField.setForeground(color);
   }
 
@@ -3476,7 +3511,7 @@ class JNodeDetailsPanel
     }
 
     pMaxLoadTitle.setForeground(color);
-    pWorkingMaxLoadField.setForeground(color);
+    pWorkingMaxLoadField.setWarningColor(color);
     pCheckedInMaxLoadField.setForeground(color);
   }
 
@@ -3513,7 +3548,7 @@ class JNodeDetailsPanel
     }
 
     pMinMemoryTitle.setForeground(color);
-    pWorkingMinMemoryField.setForeground(color);
+    pWorkingMinMemoryField.setWarningColor(color);
     pCheckedInMinMemoryField.setForeground(color);
   }
 
@@ -3550,7 +3585,7 @@ class JNodeDetailsPanel
     }
 
     pMinDiskTitle.setForeground(color);
-    pWorkingMinDiskField.setForeground(color);
+    pWorkingMinDiskField.setWarningColor(color);
     pCheckedInMinDiskField.setForeground(color);
   }
 
