@@ -11,3 +11,6 @@ editor_DATA = \
   pipeline
 
 
+install-data-hook:
+	mv -f $(DESTDIR)@NODEDIR@/etc/suffix-editors/pipeline \
+              $(DESTDIR)@NODEDIR@/etc/suffix-editors/@PIPELINE_USER@
