@@ -1,3 +1,1079 @@
+2003-05-19  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/Makefile.in: added FileSequence
+
+	* src/java/pipeline/VersionID.java: removed Serializable implements
+
+	* src/java/pipeline/JWorkingDirTree.java:
+	changed the name of the root directory to "working"
+
+	* src/java/pipeline/JRegisterDialog.java:
+	completed doBrowse() which fills out the fields based on the results of browsing
+
+	* src/java/pipeline/JNodeChooser.java:
+	changed the name of the root directory to "working"
+
+	* src/java/pipeline/JFileSeqLister.java:
+	fully functional, now used FileSequence objects to represent scripts, file patterns, and frame ranges
+
+	* src/java/pipeline/JBrowseDialog.java:
+	added getSelected() and error checking of selection on Confirm
+
+	* src/java/pipeline/FilePattern.java:
+	added accessors, fixed bug in toString()
+
+	* src/java/pipeline/FileSequence.java: initial revision
+
+	* tests/data/plants/berry.txt, tests/mod-bear2, tests/add-berry:
+	moved berry into the plants directory
+
+	* src/java/pipeline/JComboBoxCellRenderer.java, src/java/pipeline/JFileSeqLister.java, src/java/pipeline/JNodeChooserNode.java, src/java/pipeline/JNodeChooserNodeRenderer.java, src/java/pipeline/JWorkingDirNode.java, src/java/pipeline/JWorkingDirTree.java, src/java/pipeline/JBrowseDialog.java:
+	intial revision
+
+	* src/java/pipeline/Makefile.in: added several new classes
+
+	* src/java/pipeline/JRegisterDialog.java:
+	lots added... Now fully functional except Browse menu item and actual database operation
+
+	* src/java/pipeline/JNodeChooser.java:
+	renamed JTreeNode to JNodeChooserNode, JTreeNodeRenderer to JNodeChooserNodeRenderer
+
+	* src/java/pipeline/JDetailsDialog.java: minor layout changes in UI
+
+	* src/java/pipeline/JConnectDialog.java:
+	changed boolean pWasPressed, into an enumeration pResult
+
+	* src/java/pipeline/JBaseDialog.java:
+	added addFixedIntegerField() and addCenterLabel(), improved ComvoBox look
+
+	* src/java/pipeline/GraphicalApp.java:
+	added FormattedTextField, TextArea and List look-and-feel
+
+	* src/java/pipeline/JTreeNodeRenderer.java:
+	renamed to JNodeChooserNodeRenderer.java
+
+	* src/java/pipeline/JTreeNode.java: renamed to JNodeChooserNode.java
+
+2003-05-17  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/Database.java, src/java/pipeline/Editor.java, src/java/pipeline/GraphicalApp.java, src/java/pipeline/JNodeViewer.java, src/java/pipeline/JViewerNode.java, src/java/pipeline/LogMessage.java, src/java/pipeline/Logs.java, src/java/pipeline/Makefile.in, src/java/pipeline/PDepend.java, src/java/pipeline/PMod.java, src/java/pipeline/PNode.java, src/java/pipeline/PVersion.java, src/java/pipeline/Pipeline.java, src/java/pipeline/Toolset.java:
+	added Logs.db() so that SQL statements will be flushed by the logs handler immeadiately
+
+	* src/java/pipeline/JBaseDialog.java, src/java/pipeline/JRegisterDialog.java:
+	initial revision
+
+	* src/java/pipeline/JConnectDialog.java, src/java/pipeline/JDetailsDialog.java:
+	moved common code to JBaseDialog
+
+2003-05-16  Jim Callahan  <jim@salamander>
+
+	* data/maya/scenes/normal.ma, data/maya/scenes/selected.ma:
+	added collapsed icons
+
+	* src/java/pipeline/GraphicalApp.java, src/java/pipeline/JDetailsDialog.java, src/java/pipeline/JNodeChooser.java, src/java/pipeline/JNodeViewer.java, src/java/pipeline/JTreeNodeRenderer.java, src/java/pipeline/JViewerNode.java:
+	added node collapse/expand, move most used menu items to simple button presses
+
+	* data/icons/Makefile.am, data/icons/gen-list.bash.in, data/icons/gen-scm.bash.in:
+	added collapsed icons
+
+	* src/java/pipeline/Makefile.in: added JViewerCollapsed
+
+	* data/maya/images/normal.0038.tif, data/maya/images/selected.0038.tif, src/java/pipeline/JViewerCollapsed.java:
+	initial revision
+
+	* Makefile.am: renabled data subdir
+
+	* data/icons/Makefile.am, data/icons/gen-list.bash.in, data/icons/gen-scm.bash.in:
+	new icon names
+
+	* tests/data/animals/bear, tests/data/animals/dragonfly, tests/data/animals/fish, tests/data/animals/fly.txt, tests/data/animals/frog, tests/data/animals/frog.txt, tests/data/animals/snake, tests/data/animals/tadpole, tests/data/basics/multiA.1.txt, tests/data/basics/multiA.2.txt, tests/data/basics/multiA.3.txt, tests/data/basics/multiB.002.txt, tests/data/basics/multiB.004.txt, tests/data/basics/simpleA.txt, tests/data/basics/simpleB.txt, tests/data/basics/simpleC.txt, tests/data/basics/simpleD.txt, tests/data/basics/simpleE, tests/data/basics/simpleE.txt:
+	initial revision
+
+	* tests/data/bear, tests/data/berry.txt, tests/data/dragonfly, tests/data/fish, tests/data/fly.txt, tests/data/frog, tests/data/frog.txt, tests/data/multiA.1.txt, tests/data/multiA.2.txt, tests/data/multiA.3.txt, tests/data/multiB.002.txt, tests/data/multiB.004.txt, tests/data/simpleA.txt, tests/data/simpleB.txt, tests/data/simpleC.txt, tests/data/simpleD.txt, tests/data/simpleE, tests/data/simpleE.txt, tests/data/snake, tests/data/tadpole:
+	obsolete
+
+	* tests/add-bear, tests/add-dragonfly, tests/add-fish, tests/add-fly, tests/add-frog, tests/add-multiA, tests/add-multiB, tests/add-simpleA, tests/add-simpleB, tests/add-simpleC, tests/add-simpleD, tests/add-simpleE, tests/add-snake, tests/add-tadpole, tests/mod-bear, tests/mod-simpleD, tests/mod-simpleE:
+	moved nodes into subdirs
+
+	* data/maya/images/normal.0000.tif, data/maya/images/normal.0001.tif, data/maya/images/normal.0002.tif, data/maya/images/normal.0003.tif, data/maya/images/normal.0004.tif, data/maya/images/normal.0005.tif, data/maya/images/normal.0006.tif, data/maya/images/normal.0007.tif, data/maya/images/normal.0008.tif, data/maya/images/normal.0009.tif, data/maya/images/normal.0010.tif, data/maya/images/normal.0011.tif, data/maya/images/normal.0012.tif, data/maya/images/normal.0013.tif, data/maya/images/normal.0014.tif, data/maya/images/normal.0015.tif, data/maya/images/normal.0016.tif, data/maya/images/normal.0017.tif, data/maya/images/normal.0018.tif, data/maya/images/normal.0019.tif, data/maya/images/normal.0020.tif, data/maya/images/normal.0021.tif, data/maya/images/normal.0022.tif, data/maya/images/normal.0023.tif, data/maya/images/normal.0024.tif, data/maya/images/normal.0025.tif, data/maya/images/normal.0026.tif, data/maya/images/normal.0027.tif, data/maya/images/normal.0028.tif, data/maya/images/normal.0029.tif, data/maya/images/normal.0030.tif, data/maya/images/normal.0031.tif, data/maya/images/normal.0032.tif, data/maya/images/normal.0033.tif, data/maya/images/normal.0034.tif, data/maya/images/normal.0035.tif, data/maya/images/normal.0036.tif, data/maya/images/normal.0037.tif, data/maya/images/selected.0000.tif, data/maya/images/selected.0001.tif, data/maya/images/selected.0002.tif, data/maya/images/selected.0003.tif, data/maya/images/selected.0004.tif, data/maya/images/selected.0005.tif, data/maya/images/selected.0006.tif, data/maya/images/selected.0007.tif, data/maya/images/selected.0008.tif, data/maya/images/selected.0009.tif, data/maya/images/selected.0010.tif, data/maya/images/selected.0011.tif, data/maya/images/selected.0012.tif, data/maya/images/selected.0013.tif, data/maya/images/selected.0014.tif, data/maya/images/selected.0015.tif, data/maya/images/selected.0016.tif, data/maya/images/selected.0017.tif, data/maya/images/selected.0018.tif, data/maya/images/selected.0019.tif, data/maya/images/selected.0020.tif, data/maya/images/selected.0021.tif, data/maya/images/selected.0022.tif, data/maya/images/selected.0023.tif, data/maya/images/selected.0024.tif, data/maya/images/selected.0025.tif, data/maya/images/selected.0026.tif, data/maya/images/selected.0027.tif, data/maya/images/selected.0028.tif, data/maya/images/selected.0029.tif, data/maya/images/selected.0030.tif, data/maya/images/selected.0031.tif, data/maya/images/selected.0032.tif, data/maya/images/selected.0033.tif, data/maya/images/selected.0034.tif, data/maya/images/selected.0035.tif, data/maya/images/selected.0036.tif, data/maya/images/selected.0037.tif:
+	initial revision
+
+	* data/maya/images/proc-node-selected.0029.tif, data/maya/images/proc-node-selected.0030.tif, data/maya/images/proc-node-selected.0031.tif, data/maya/images/proc-node-selected.0032.tif, data/maya/images/proc-node-selected.0033.tif, data/maya/images/proc-node-selected.0034.tif, data/maya/images/proc-node-selected.0035.tif, data/maya/images/proc-node-selected.0036.tif, data/maya/images/proc-node-selected.0037.tif, data/maya/images/proc-node-selected.0000.tif, data/maya/images/proc-node-selected.0001.tif, data/maya/images/proc-node-selected.0002.tif, data/maya/images/proc-node-selected.0003.tif, data/maya/images/proc-node-selected.0004.tif, data/maya/images/proc-node-selected.0005.tif, data/maya/images/proc-node-selected.0006.tif, data/maya/images/proc-node-selected.0007.tif, data/maya/images/proc-node-selected.0008.tif, data/maya/images/proc-node-selected.0009.tif, data/maya/images/proc-node-selected.0010.tif, data/maya/images/proc-node-selected.0011.tif, data/maya/images/proc-node-selected.0012.tif, data/maya/images/proc-node-selected.0013.tif, data/maya/images/proc-node-selected.0014.tif, data/maya/images/proc-node-selected.0015.tif, data/maya/images/proc-node-selected.0016.tif, data/maya/images/proc-node-selected.0017.tif, data/maya/images/proc-node-selected.0018.tif, data/maya/images/proc-node-selected.0019.tif, data/maya/images/proc-node-selected.0020.tif, data/maya/images/proc-node-selected.0021.tif, data/maya/images/proc-node-selected.0022.tif, data/maya/images/proc-node-selected.0023.tif, data/maya/images/proc-node-selected.0024.tif, data/maya/images/proc-node-selected.0025.tif, data/maya/images/proc-node-selected.0026.tif, data/maya/images/proc-node-selected.0027.tif, data/maya/images/proc-node-selected.0028.tif, data/maya/images/proc-node.0004.tif, data/maya/images/proc-node.0005.tif, data/maya/images/proc-node.0006.tif, data/maya/images/proc-node.0007.tif, data/maya/images/proc-node.0008.tif, data/maya/images/proc-node.0009.tif, data/maya/images/proc-node.0010.tif, data/maya/images/proc-node.0011.tif, data/maya/images/proc-node.0012.tif, data/maya/images/proc-node.0013.tif, data/maya/images/proc-node.0014.tif, data/maya/images/proc-node.0015.tif, data/maya/images/proc-node.0016.tif, data/maya/images/proc-node.0017.tif, data/maya/images/proc-node.0018.tif, data/maya/images/proc-node.0019.tif, data/maya/images/proc-node.0020.tif, data/maya/images/proc-node.0021.tif, data/maya/images/proc-node.0022.tif, data/maya/images/proc-node.0023.tif, data/maya/images/proc-node.0024.tif, data/maya/images/proc-node.0025.tif, data/maya/images/proc-node.0026.tif, data/maya/images/proc-node.0027.tif, data/maya/images/proc-node.0028.tif, data/maya/images/proc-node.0029.tif, data/maya/images/proc-node.0030.tif, data/maya/images/proc-node.0031.tif, data/maya/images/proc-node.0032.tif, data/maya/images/proc-node.0033.tif, data/maya/images/proc-node.0034.tif, data/maya/images/proc-node.0035.tif, data/maya/images/proc-node.0036.tif, data/maya/images/proc-node.0037.tif, data/maya/images/data-node-selected.0002.tif, data/maya/images/data-node-selected.0003.tif, data/maya/images/data-node-selected.0004.tif, data/maya/images/data-node-selected.0005.tif, data/maya/images/data-node-selected.0006.tif, data/maya/images/data-node-selected.0007.tif, data/maya/images/data-node-selected.0008.tif, data/maya/images/data-node-selected.0009.tif, data/maya/images/data-node-selected.0010.tif, data/maya/images/data-node-selected.0011.tif, data/maya/images/data-node-selected.0012.tif, data/maya/images/data-node-selected.0013.tif, data/maya/images/data-node-selected.0014.tif, data/maya/images/data-node-selected.0015.tif, data/maya/images/data-node-selected.0016.tif, data/maya/images/data-node-selected.0017.tif, data/maya/images/data-node-selected.0018.tif, data/maya/images/data-node-selected.0019.tif, data/maya/images/data-node-selected.0020.tif, data/maya/images/data-node-selected.0021.tif, data/maya/images/data-node-selected.0022.tif, data/maya/images/data-node-selected.0023.tif, data/maya/images/data-node-selected.0024.tif, data/maya/images/data-node-selected.0025.tif, data/maya/images/data-node-selected.0026.tif, data/maya/images/data-node-selected.0027.tif, data/maya/images/data-node-selected.0028.tif, data/maya/images/data-node-selected.0029.tif, data/maya/images/data-node-selected.0030.tif, data/maya/images/data-node-selected.0031.tif, data/maya/images/data-node-selected.0032.tif, data/maya/images/data-node-selected.0033.tif, data/maya/images/data-node-selected.0034.tif, data/maya/images/data-node-selected.0035.tif, data/maya/images/data-node-selected.0036.tif, data/maya/images/data-node-selected.0037.tif, data/maya/images/proc-node.0000.tif, data/maya/images/proc-node.0001.tif, data/maya/images/proc-node.0002.tif, data/maya/images/proc-node.0003.tif, data/maya/images/data-node-selected.0000.tif, data/maya/images/data-node-selected.0001.tif, data/maya/images/data-node.0000.tif, data/maya/images/data-node.0001.tif, data/maya/images/data-node.0002.tif, data/maya/images/data-node.0003.tif, data/maya/images/data-node.0004.tif, data/maya/images/data-node.0005.tif, data/maya/images/data-node.0006.tif, data/maya/images/data-node.0007.tif, data/maya/images/data-node.0008.tif, data/maya/images/data-node.0009.tif, data/maya/images/data-node.0010.tif, data/maya/images/data-node.0011.tif, data/maya/images/data-node.0012.tif, data/maya/images/data-node.0013.tif, data/maya/images/data-node.0014.tif, data/maya/images/data-node.0015.tif, data/maya/images/data-node.0016.tif, data/maya/images/data-node.0017.tif, data/maya/images/data-node.0018.tif, data/maya/images/data-node.0019.tif, data/maya/images/data-node.0020.tif, data/maya/images/data-node.0021.tif, data/maya/images/data-node.0022.tif, data/maya/images/data-node.0023.tif, data/maya/images/data-node.0024.tif, data/maya/images/data-node.0025.tif, data/maya/images/data-node.0026.tif, data/maya/images/data-node.0027.tif, data/maya/images/data-node.0028.tif, data/maya/images/data-node.0029.tif, data/maya/images/data-node.0030.tif, data/maya/images/data-node.0031.tif, data/maya/images/data-node.0032.tif, data/maya/images/data-node.0033.tif, data/maya/images/data-node.0034.tif, data/maya/images/data-node.0035.tif, data/maya/images/data-node.0036.tif, data/maya/images/data-node.0037.tif:
+	obsolete
+
+	* data/maya/scenes/normal.ma, data/maya/scenes/selected.ma:
+	initial revision
+
+	* data/maya/scenes/proc-node-selected.ma, data/maya/scenes/proc-node.ma, data/maya/scenes/data-node-selected.ma, data/maya/scenes/data-node.ma:
+	obsolete
+
+	* src/java/pipeline/PState.java:
+	updated icon naming, fixed queue colors to match icons
+
+	* src/java/pipeline/JViewerNode.java:
+	removed obsolete Center constructor parameter, renamed Status to Show menu item
+
+	* src/java/pipeline/JTreeNodeRenderer.java: updated icon naming
+
+	* src/java/pipeline/JNodeViewer.java: removed obsolete pNodes
+
+	* src/java/pipeline/JNodeChooser.java:
+	added update button, removed RefreshNodes menu item
+
+	* src/java/pipeline/JDetailsDialog.java: updated icon naming
+
+	* src/java/pipeline/GraphicalApp.java:
+	added update button, fixed bug in working directory when it is /
+
+2003-05-15  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/PState.java:
+	added regeneration script related states and filename generators, added queue colors
+
+	* src/java/pipeline/JDetailsDialog.java:
+	restored dependencies, files, logs and comments
+
+	* src/java/pipeline/GraphicalApp.java: now sorts the pRoots
+
+	* src/java/pipeline/FrameRange.java: fixed bug in getNumFrame()
+
+	* src/java/pipeline/ClientApp.java:
+	added the regeneration script to the list of files shown for status
+
+2003-05-14  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JDetailsDialog.java: added fixed size text fields
+
+	* src/java/pipeline/PState.java: added colors
+
+	* tests/Makefile.am, tests/add-berry, tests/data/berry.txt, tests/mod-bear2:
+	added berry tests
+
+	* src/java/pipeline/JDetailsDialog.java:
+	version and database properties working again
+
+2003-05-13  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/GraphicalApp.java, src/java/pipeline/GraphicalOptsParser.jj, src/java/pipeline/JDetailsDialog.java, src/java/pipeline/JLinksPane.java, src/java/pipeline/JNodeChooser.java, src/java/pipeline/JNodeTimeline.java, src/java/pipeline/JNodeViewer.java, src/java/pipeline/JTreeNodeRenderer.java, src/java/pipeline/Makefile.in, src/java/pipeline/PState.java, src/java/pipeline/Pipeline.java:
+	massive overhaul to use new PState, PMod, PNode, PVersion and DatabaseException classes
+
+	* src/java/pipeline/ClientOptsParser.jj:
+	added early check for valid current working directory, alt-working now uses the DIR_ARG token
+
+	* src/java/pipeline/ClientApp.java: fixed non-html help message
+
+	* src/java/pipeline/BaseApp.java:
+	added getCurrentWorkingDir() and isCwdValid()
+
+	* src/java/pipeline/JTreeNode.java, src/java/pipeline/JViewerLink.java, src/java/pipeline/JViewerNode.java:
+	intial revision
+
+	* src/java/pipeline/JNode.java, src/java/pipeline/JNodeLink.java, src/java/pipeline/JTreeBase.java, src/java/pipeline/JTreeData.java, src/java/pipeline/JTreeProc.java, src/java/pipeline/TreeData.java, src/java/pipeline/TreeProc.java:
+	obsolete
+
+	* tests/Makefile.am, tests/add-bear, tests/add-dragonfly, tests/add-fish, tests/add-fly, tests/add-frog, tests/add-multiA, tests/add-multiB, tests/add-simpleA, tests/add-simpleB, tests/add-simpleC, tests/add-simpleD, tests/add-simpleE, tests/add-snake, tests/add-tadpole, tests/mod-bear, tests/mod-simpleD, tests/mod-simpleE:
+	tests now run from inside the working area root directory for USER
+
+2003-05-13  Jim Callahan  <jim@salamander>
+
+	* tests/Makefile.am: renabled simple tests
+
+	* src/java/pipeline/Pipeline.java:
+	now computes per-file states, per-file queue states are not yet working though
+
+	* src/java/pipeline/PVersion.java:
+	added equalProps() and equalDepends()
+
+	* src/java/pipeline/PState.java:
+	added computeNodeStates(), computeFileStates(), setAllFileStates(), setAllQueueStates(), get*File() methods
+
+2003-05-12  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/PNode.java: fixed SQL statement bug in lookup()
+
+	* src/java/pipeline/PMod.java: comments, more assertions
+
+	* src/java/pipeline/Makefile.in: added ClientApp and FilePattern
+
+	* src/java/pipeline/FrameRange.java:
+	added assertion in copy constructor
+
+	* src/java/pipeline/ClientOptsParser.jj, src/java/pipeline/ClientApp.java:
+	completed handleStatus() and handleStatusLong(), compiles but is NOT fully tested...
+
+	* src/java/pipeline/CheckSum.java: improved logging
+
+	* src/java/pipeline/BaseApp.java:
+	improved error handling for toRel*() methods
+
+	* src/database/share/dbinit.sql.in: added QueueJob and QueueFile tables
+
+	* src/java/pipeline/FilePattern.java: initial revision
+
+2003-05-10  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/Pipeline.java:
+	added the skeleton of the status command and associated helpers
+
+	* src/java/pipeline/PState.java: adde getDepends()
+
+	* src/java/pipeline/PNode.java: comments
+
+	* src/java/pipeline/PMod.java: error messages
+
+2003-05-09  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/Makefile.in: added PDepend
+
+	* src/java/docs/pipeline.html:
+	modernised options to modify and register, added --alt-working, renamed Network Options secion to Global Options, reworked Regeneration Script Execution section
+
+	* configure.ac: added tests, removed SML related stuff
+
+	* Makefile.am: added tests, temporarily disabled data
+
+	* src/java/scripts/plutils.bash, tests/.cvsignore, tests/Makefile.am, tests/add-bear, tests/add-dragonfly, tests/add-fish, tests/add-fly, tests/add-frog, tests/add-multiA, tests/add-multiB, tests/add-simpleA, tests/add-simpleB, tests/add-simpleC, tests/add-simpleD, tests/add-simpleE, tests/add-snake, tests/add-tadpole, tests/data/bear, tests/data/dragonfly, tests/data/fish, tests/data/fly.txt, tests/data/frog, tests/data/frog.txt, tests/data/multiA.1.txt, tests/data/multiA.2.txt, tests/data/multiA.3.txt, tests/data/multiB.002.txt, tests/data/multiB.004.txt, tests/data/simpleA.txt, tests/data/simpleB.txt, tests/data/simpleC.txt, tests/data/simpleD.txt, tests/data/simpleE, tests/data/simpleE.txt, tests/data/snake, tests/data/tadpole, tests/mod-bear, tests/mod-simpleD, tests/mod-simpleE:
+	initial revision
+
+	* src/java/scripts/Makefile.am: added plutils.bash
+
+	* src/java/pipeline/tests/TestCheckSumApp.java: improved test messages
+
+	* src/java/pipeline/tests/Makefile.in:
+	fixed banners to be consistent with the installchecks
+
+	* src/java/pipeline/Pipeline.java:
+	added modify(), register() now used modifyHelper() for clones
+
+	* src/java/pipeline/PackageInfo.java.in:
+	converted sCopyright field into a method called copyright()
+
+	* src/java/pipeline/PVersion.java: added removeDepends()
+
+	* src/java/pipeline/PMod.java:
+	improved exception messages, fixed bug in SQL statements, fixed bug where pDepends == null
+
+	* src/java/pipeline/PDepend.java:
+	removed field pName which was hidding a field of the same name from PNamed
+
+	* src/java/pipeline/Logs.java: made the class public
+
+	* src/java/pipeline/ClientOptsParser.jj:
+	added --alt-working, modify command, improved exception handling for node names
+
+	* src/java/pipeline/ClientApp.java: added handleModify()
+
+	* src/database/share/dbinit.sql.in: updated the default toolset
+
+2003-05-07  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/BaseApp.java, src/java/pipeline/CheckSum.java, src/java/pipeline/ClientApp.java, src/java/pipeline/ClientOptsParser.jj, src/java/pipeline/Database.java, src/java/pipeline/Editor.java, src/java/pipeline/EditorApp.java, src/java/pipeline/EditorOptsParser.jj, src/java/pipeline/Makefile.in, src/java/pipeline/PDepend.java, src/java/pipeline/PMod.java, src/java/pipeline/PNode.java, src/java/pipeline/PVersion.java, src/java/pipeline/PackageInfo.java.in, src/java/pipeline/Pipeline.java, src/java/pipeline/Toolset.java, src/java/pipeline/ToolsetApp.java, src/java/pipeline/ToolsetOptsParser.jj, src/java/pipeline/tests/TestCheckSumApp.java, src/java/share/logger.properties, src/database/share/dbinit.sql.in, src/java/docs/pipeline.html:
+	reorganized entire Logger system, the register pipeline command now seems to work
+
+	* src/java/pipeline/Logs.java: initial revision
+
+2003-05-06  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/Makefile.in: removed all obsolete classes
+
+	* src/java/share/logger.properties: removed args and rsp loggers
+
+	* src/java/pipeline/tests/TestVersionIDApp.java:
+	improved logging and testing
+
+	* src/java/pipeline/EditorOptsParser.jj: comments
+
+	* src/java/pipeline/tests/TestSubProcessApp.java, src/java/pipeline/tests/TestCheckSumApp.java:
+	improved logging and testing
+
+	* src/java/pipeline/tests/Makefile.in:
+	fixed bug in logger.properties path argument to java
+
+	* src/java/pipeline/ToolsetOptsParser.jj: comments
+
+	* src/java/pipeline/Toolset.java:
+	changed SQL field from UserName to Author
+
+	* src/java/pipeline/Pipeline.java:
+	standardized with Toolset and Editor classes, removed nearly all functionality
+
+	* src/java/pipeline/PDepend.java:
+	added missing throws SQLException qualifiers
+
+	* src/java/pipeline/LogMessage.java: comments
+
+	* src/java/pipeline/GraphicalApp.java:
+	removed call to obsolete setWorking()
+
+	* src/java/pipeline/EditorApp.java, src/java/pipeline/ToolsetApp.java:
+	got rid of arg and rsp loggers
+
+	* src/java/pipeline/ClientOptsParser.jj:
+	standardized with other OptsParsers, disabled nearly all actions
+
+	* src/java/pipeline/ClientApp.java:
+	standardized with EditorApp and ToolsetApp, disabled nearly all handlers
+
+	* src/java/pipeline/CheckSum.java: cleaned up and made logger external
+
+	* src/java/pipeline/BaseApp.java: got rid of arg and rsp loggers
+
+	* src/java/pipeline/CheckSumException.java, src/java/pipeline/PutOrder.java:
+	initial revision
+
+	* src/java/pipeline/StringComparator.java: obsolete
+
+	* src/java/pipeline/PDepend.java, src/java/pipeline/PMod.java, src/java/pipeline/PNode.java, src/java/pipeline/PVersion.java:
+	compiles, but no idea if it works yet
+
+	* src/java/pipeline/Editor.java:
+	changed UserName to Author in SQL statements
+
+	* src/database/share/dbinit.sql.in: new PNode, PVersion, PMod setup
+
+	* src/java/pipeline/FramePattern.java: obsolete
+
+2003-05-05  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/Makefile.in: latest
+
+	* src/java/pipeline/PState.java: initial revision
+
+	* src/java/pipeline/PDepend.java: yet another bug in toGlue()
+
+2003-05-04  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/ToolsetOptsParser.jj:
+	renamed pToolset to pDatabase, now used new constructor for Toolset objects
+
+	* src/java/pipeline/ToolsetApp.java:
+	comments, removed handleAny(), moved empty toolset list error checking to Toolset class
+
+	* src/java/pipeline/JDetailsDialog.java:
+	temporarily disabled pltoolset methods
+
+	* src/java/pipeline/Pipeline.java:
+	removed pltoolset and pleditor related methods
+
+	* src/java/pipeline/PDepend.java: fixed bug in toGlue()
+
+	* src/java/pipeline/EditorOptsParser.jj, src/java/pipeline/EditorApp.java:
+	converted from FailureRsp and exit code returns to throwing DatabaseExceptions
+
+	* src/java/pipeline/Toolset.java, src/java/pipeline/Database.java:
+	added application name to constructor to pass onto loggers
+
+	* src/java/pipeline/DataDepend.java: cleaned up equals()
+
+	* src/java/pipeline/ClientApp.java:
+	renamed LogMessage.getUserName() to getAuthor()
+
+	* src/java/pipeline/BaseVersion.java:
+	upgraded contructors to use new LogMessage superclass constructors
+
+	* src/java/pipeline/BaseDepend.java: cleaned up equals()
+
+	* src/java/pipeline/BaseApp.java: comments
+
+	* src/java/docs/pleditor.html: removed --process options
+
+	* src/database/share/dbinit.sql.in:
+	removed Globals table, combined DataEditorMap and ProcEditorMap into EditorMap
+
+	* src/java/pipeline/Editor.java, src/java/pipeline/EditorEntry.java:
+	initial revision
+
+	* src/java/pipeline/SuffixEditorRsp.java: replaced by EditorEntry.java
+
+	* src/java/pipeline/Toolset.java: comments
+
+	* src/java/pipeline/Toolset.java, src/java/pipeline/ToolsetOptsParser.jj:
+	renamed Toolset.getToolsets() to Toolset.getToolsetList()
+
+	* src/java/pipeline/VersionID.java: cleaned up equals()
+
+	* src/java/pipeline/PackageInfo.java.in:
+	moved repository, working area and toolset dirs here instead of being looked up in the database
+
+	* src/java/pipeline/PDepend.java:
+	cleaned up equals(), fixed bug in toGlue()
+
+	* src/java/share/logger.properties:
+	changed loggers to read app specific properties
+
+	* src/java/pipeline/ToolsetOptsParser.jj, src/java/pipeline/ToolsetApp.java:
+	converted from FailureRsp and exit code returns to throwing DatabaseExceptions
+
+	* src/java/pipeline/FrameRange.java: cleaned up equals()
+
+	* src/java/pipeline/BaseApp.java:
+	changed loggers to read app specific properties
+
+	* src/java/pipeline/Database.java, src/java/pipeline/DatabaseException.java, src/java/pipeline/StringComparator.java, src/java/pipeline/Toolset.java:
+	initial revision
+
+2003-05-03  Jim Callahan  <jim@salamander>
+
+	* src/java/docs/command-line, src/java/pipeline/PDepend.java, src/java/pipeline/PMod.java, src/java/pipeline/PNamed.java, src/java/pipeline/PNode.java, src/java/pipeline/PVersion.java:
+	initial revision
+
+	* src/java/pipeline/Makefile.in: added new node classes
+
+	* src/java/docs/pipeline.html: data/process node integration
+
+	* src/java/pipeline/Pipeline.java:
+	changed to arguments to LogMessage.lookupOrInsert()
+
+2003-05-02  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JDetailsDialog.java, src/java/pipeline/LogMessage.java:
+	renamed LogMessage.getUserName() to getAuthor()
+
+	* src/java/pipeline/DataState.java, src/java/pipeline/FrameRange.java:
+	renamed FrameRange.getRange() to getNumFrames()
+
+2003-04-30  Jim Callahan  <jim@salamander>
+
+	* src/java/share/logger.properties: latest
+
+	* src/java/pipeline/Pipeline.java: added computeQueueState()
+
+	* src/java/pipeline/StateEnums.java: comments
+
+	* src/java/pipeline/ProcMod.java:
+	remove update of LastMod in updateBasics()
+
+	* src/java/pipeline/JDetailsDialog.java:
+	added missing removeAll for pFileBox
+
+	* src/java/pipeline/DataState.java: finished getOverallQueueState()
+
+	* src/java/pipeline/DataMod.java:
+	remove update of LastMod in updateBasics()
+
+	* src/java/pipeline/BaseMod.java:
+	added modifiedSince() and getLastMod()
+
+2003-04-29  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/StateEnums.java: comments
+
+	* src/java/pipeline/ProcState.java:
+	added missing MODIFIED state to setFileState()
+
+	* src/java/pipeline/JDetailsDialog.java:
+	all UI component layout and state update complete, no actions implemented yet
+
+	* src/java/pipeline/GraphicalApp.java: added look-and-feel for TextPane
+
+	* src/java/pipeline/DataState.java: removed debugging print
+
+	* src/java/pipeline/DataMod.java: comments
+
+	* src/java/Makefile.am: removed obsolete JGo stuff
+
+	* configure.ac: removed obsolete PHP stuff...
+
+2003-04-28  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JNodeViewer.java:
+	fixed initial disabled state of short vs. relative names menu items
+
+	* src/java/pipeline/JDetailsDialog.java:
+	complete overhaul to use Box containers instead of GridBag
+
+	* src/java/pipeline/ProcState.java:
+	simplified getIconName(), added getOverallQueueState(), fixed bug in getOverallState()
+
+	* src/java/pipeline/DataState.java: simplified getIconName()
+
+	* src/java/pipeline/StateEnums.java:
+	changed symbols and added queue state for process nodes
+
+	* src/java/pipeline/Pipeline.java:
+	fixed bug in stateData() and stateProc() related to versionIDs
+
+	* configure.ac, src/java/scripts/pipeline.in, src/java/scripts/pleditor.in, src/java/scripts/pltoolset.in, src/java/scripts/plui.in:
+	turned on assertions
+
+	* data/maya/scenes/proc-node-selected.ma, data/maya/scenes/proc-node.ma, data/maya/images/proc-node-selected.0022.tif, data/maya/images/proc-node-selected.0023.tif, data/maya/images/proc-node-selected.0024.tif, data/maya/images/proc-node-selected.0025.tif, data/maya/images/proc-node-selected.0026.tif, data/maya/images/proc-node-selected.0027.tif, data/maya/images/proc-node-selected.0028.tif, data/maya/images/proc-node-selected.0029.tif, data/maya/images/proc-node-selected.0030.tif, data/maya/images/proc-node-selected.0031.tif, data/maya/images/proc-node-selected.0032.tif, data/maya/images/proc-node-selected.0033.tif, data/maya/images/proc-node-selected.0034.tif, data/maya/images/proc-node-selected.0035.tif, data/maya/images/proc-node-selected.0036.tif, data/maya/images/proc-node.0000.tif, data/maya/images/proc-node.0001.tif, data/maya/images/proc-node.0002.tif, data/maya/images/proc-node.0003.tif, data/maya/images/proc-node.0004.tif, data/maya/images/proc-node.0005.tif, data/maya/images/proc-node.0006.tif, data/maya/images/proc-node.0007.tif, data/maya/images/proc-node.0008.tif, data/maya/images/proc-node.0009.tif, data/maya/images/proc-node.0010.tif, data/maya/images/proc-node.0011.tif, data/maya/images/proc-node.0012.tif, data/maya/images/proc-node.0013.tif, data/maya/images/proc-node.0014.tif, data/maya/images/proc-node.0015.tif, data/maya/images/proc-node.0016.tif, data/maya/images/proc-node.0017.tif, data/maya/images/proc-node.0018.tif, data/maya/images/proc-node.0019.tif, data/maya/images/proc-node.0020.tif, data/maya/images/proc-node.0021.tif, data/maya/images/proc-node.0022.tif, data/maya/images/proc-node.0023.tif, data/maya/images/proc-node.0024.tif, data/maya/images/proc-node.0025.tif, data/maya/images/proc-node.0026.tif, data/maya/images/proc-node.0027.tif, data/maya/images/proc-node.0028.tif, data/maya/images/proc-node.0029.tif, data/maya/images/proc-node.0030.tif, data/maya/images/proc-node.0031.tif, data/maya/images/proc-node.0032.tif, data/maya/images/proc-node.0033.tif, data/maya/images/proc-node.0034.tif, data/maya/images/proc-node.0035.tif, data/maya/images/proc-node.0036.tif, data/maya/scenes/data-node-selected.ma, data/maya/scenes/data-node.ma, data/maya/images/data-node.0019.tif, data/maya/images/data-node.0020.tif, data/maya/images/data-node.0021.tif, data/maya/images/data-node.0022.tif, data/maya/images/data-node.0023.tif, data/maya/images/data-node.0024.tif, data/maya/images/data-node.0025.tif, data/maya/images/data-node.0026.tif, data/maya/images/data-node.0027.tif, data/maya/images/data-node.0028.tif, data/maya/images/data-node.0029.tif, data/maya/images/data-node.0030.tif, data/maya/images/data-node.0031.tif, data/maya/images/data-node.0032.tif, data/maya/images/data-node.0033.tif, data/maya/images/data-node.0034.tif, data/maya/images/data-node.0035.tif, data/maya/images/data-node.0036.tif, data/maya/images/data-node.0037.tif, data/maya/images/proc-node-selected.0000.tif, data/maya/images/proc-node-selected.0001.tif, data/maya/images/proc-node-selected.0002.tif, data/maya/images/proc-node-selected.0003.tif, data/maya/images/proc-node-selected.0004.tif, data/maya/images/proc-node-selected.0005.tif, data/maya/images/proc-node-selected.0006.tif, data/maya/images/proc-node-selected.0007.tif, data/maya/images/proc-node-selected.0008.tif, data/maya/images/proc-node-selected.0009.tif, data/maya/images/proc-node-selected.0010.tif, data/maya/images/proc-node-selected.0011.tif, data/maya/images/proc-node-selected.0012.tif, data/maya/images/proc-node-selected.0013.tif, data/maya/images/proc-node-selected.0014.tif, data/maya/images/proc-node-selected.0015.tif, data/maya/images/proc-node-selected.0016.tif, data/maya/images/proc-node-selected.0017.tif, data/maya/images/proc-node-selected.0018.tif, data/maya/images/proc-node-selected.0019.tif, data/maya/images/proc-node-selected.0020.tif, data/maya/images/proc-node-selected.0021.tif, data/icons/Makefile.am, data/maya/images/data-node-selected.0000.tif, data/maya/images/data-node-selected.0001.tif, data/maya/images/data-node-selected.0002.tif, data/maya/images/data-node-selected.0003.tif, data/maya/images/data-node-selected.0004.tif, data/maya/images/data-node-selected.0005.tif, data/maya/images/data-node-selected.0006.tif, data/maya/images/data-node-selected.0007.tif, data/maya/images/data-node-selected.0008.tif, data/maya/images/data-node-selected.0009.tif, data/maya/images/data-node-selected.0010.tif, data/maya/images/data-node-selected.0011.tif, data/maya/images/data-node-selected.0012.tif, data/maya/images/data-node-selected.0013.tif, data/maya/images/data-node-selected.0014.tif, data/maya/images/data-node-selected.0015.tif, data/maya/images/data-node-selected.0016.tif, data/maya/images/data-node-selected.0017.tif, data/maya/images/data-node-selected.0018.tif, data/maya/images/data-node-selected.0019.tif, data/maya/images/data-node-selected.0020.tif, data/maya/images/data-node-selected.0021.tif, data/maya/images/data-node-selected.0022.tif, data/maya/images/data-node-selected.0023.tif, data/maya/images/data-node-selected.0024.tif, data/maya/images/data-node-selected.0025.tif, data/maya/images/data-node-selected.0026.tif, data/maya/images/data-node-selected.0027.tif, data/maya/images/data-node-selected.0028.tif, data/maya/images/data-node-selected.0029.tif, data/maya/images/data-node-selected.0030.tif, data/maya/images/data-node-selected.0031.tif, data/maya/images/data-node-selected.0032.tif, data/maya/images/data-node-selected.0033.tif, data/maya/images/data-node-selected.0034.tif, data/maya/images/data-node-selected.0035.tif, data/maya/images/data-node-selected.0036.tif, data/maya/images/data-node-selected.0037.tif, data/maya/images/data-node.0000.tif, data/maya/images/data-node.0001.tif, data/maya/images/data-node.0002.tif, data/maya/images/data-node.0003.tif, data/maya/images/data-node.0004.tif, data/maya/images/data-node.0005.tif, data/maya/images/data-node.0006.tif, data/maya/images/data-node.0007.tif, data/maya/images/data-node.0008.tif, data/maya/images/data-node.0009.tif, data/maya/images/data-node.0010.tif, data/maya/images/data-node.0011.tif, data/maya/images/data-node.0012.tif, data/maya/images/data-node.0013.tif, data/maya/images/data-node.0014.tif, data/maya/images/data-node.0015.tif, data/maya/images/data-node.0016.tif, data/maya/images/data-node.0017.tif, data/maya/images/data-node.0018.tif:
+	latest icons
+
+2003-04-26  Jim Callahan  <jim@salamander>
+
+	* data/icons/gen-list.bash.in, data/maya/images/data-node-selected.0037.tif, data/maya/images/data-node.0037.tif, data/maya/images/proc-node-selected.0037.tif, data/maya/images/proc-node.0037.tif, src/java/pipeline/StateEnums.java:
+	initial revision
+
+	* src/java/pipeline/BaseStateEnums.java, src/java/pipeline/FileState.java:
+	obsolete
+
+	* configure.ac, data/maya/images/proc-node.0019.tif, data/maya/images/proc-node.0020.tif, data/maya/images/proc-node.0021.tif, data/maya/images/proc-node.0022.tif, data/maya/images/proc-node.0023.tif, data/maya/images/proc-node.0024.tif, data/maya/images/proc-node.0025.tif, data/maya/images/proc-node.0026.tif, data/maya/images/proc-node.0027.tif, data/maya/images/proc-node.0028.tif, data/maya/images/proc-node.0029.tif, data/maya/images/proc-node.0030.tif, data/maya/images/proc-node.0031.tif, data/maya/images/proc-node.0032.tif, data/maya/images/proc-node.0033.tif, data/maya/images/proc-node.0034.tif, data/maya/images/proc-node.0035.tif, data/maya/images/proc-node.0036.tif, data/maya/scenes/data-node-selected.ma, data/maya/scenes/data-node.ma, data/maya/scenes/proc-node-selected.ma, data/maya/scenes/proc-node.ma, data/maya/images/data-node-selected.0017.tif, data/maya/images/data-node-selected.0018.tif, data/maya/images/data-node-selected.0019.tif, data/maya/images/data-node-selected.0020.tif, data/maya/images/data-node-selected.0021.tif, data/maya/images/data-node-selected.0022.tif, data/maya/images/data-node-selected.0023.tif, data/maya/images/data-node-selected.0024.tif, data/maya/images/data-node-selected.0025.tif, data/maya/images/data-node-selected.0026.tif, data/maya/images/data-node-selected.0027.tif, data/maya/images/data-node-selected.0028.tif, data/maya/images/data-node-selected.0029.tif, data/maya/images/data-node-selected.0030.tif, data/maya/images/data-node-selected.0031.tif, data/maya/images/data-node-selected.0032.tif, data/maya/images/data-node-selected.0033.tif, data/maya/images/data-node-selected.0034.tif, data/maya/images/data-node-selected.0035.tif, data/maya/images/data-node-selected.0036.tif, data/maya/images/data-node.0000.tif, data/maya/images/data-node.0001.tif, data/maya/images/data-node.0002.tif, data/maya/images/data-node.0003.tif, data/maya/images/data-node.0004.tif, data/maya/images/data-node.0005.tif, data/maya/images/data-node.0006.tif, data/maya/images/data-node.0007.tif, data/maya/images/data-node.0008.tif, data/maya/images/data-node.0009.tif, data/maya/images/data-node.0010.tif, data/maya/images/data-node.0011.tif, data/maya/images/data-node.0012.tif, data/maya/images/data-node.0013.tif, data/maya/images/data-node.0014.tif, data/maya/images/data-node.0015.tif, data/maya/images/data-node.0016.tif, data/maya/images/data-node.0017.tif, data/maya/images/data-node.0018.tif, data/maya/images/data-node.0019.tif, data/maya/images/data-node.0020.tif, data/maya/images/data-node.0021.tif, data/maya/images/data-node.0022.tif, data/maya/images/data-node.0023.tif, data/maya/images/data-node.0024.tif, data/maya/images/data-node.0025.tif, data/maya/images/data-node.0026.tif, data/maya/images/data-node.0027.tif, data/maya/images/data-node.0028.tif, data/maya/images/data-node.0029.tif, data/maya/images/data-node.0030.tif, data/maya/images/data-node.0031.tif, data/maya/images/data-node.0032.tif, data/maya/images/data-node.0033.tif, data/maya/images/data-node.0034.tif, data/maya/images/data-node.0035.tif, data/maya/images/data-node.0036.tif, data/maya/images/proc-node-selected.0000.tif, data/maya/images/proc-node-selected.0001.tif, data/maya/images/proc-node-selected.0002.tif, data/maya/images/proc-node-selected.0003.tif, data/maya/images/proc-node-selected.0004.tif, data/maya/images/proc-node-selected.0005.tif, data/maya/images/proc-node-selected.0006.tif, data/maya/images/proc-node-selected.0007.tif, data/maya/images/proc-node-selected.0008.tif, data/maya/images/proc-node-selected.0009.tif, data/maya/images/proc-node-selected.0010.tif, data/maya/images/proc-node-selected.0011.tif, data/maya/images/proc-node-selected.0012.tif, data/maya/images/proc-node-selected.0013.tif, data/maya/images/proc-node-selected.0014.tif, data/maya/images/proc-node-selected.0015.tif, data/maya/images/proc-node-selected.0016.tif, data/maya/images/proc-node-selected.0017.tif, data/maya/images/proc-node-selected.0018.tif, data/maya/images/proc-node-selected.0019.tif, data/maya/images/proc-node-selected.0020.tif, data/maya/images/proc-node-selected.0021.tif, data/maya/images/proc-node-selected.0022.tif, data/maya/images/proc-node-selected.0023.tif, data/maya/images/proc-node-selected.0024.tif, data/maya/images/proc-node-selected.0025.tif, data/maya/images/proc-node-selected.0026.tif, data/maya/images/proc-node-selected.0027.tif, data/maya/images/proc-node-selected.0028.tif, data/maya/images/proc-node-selected.0029.tif, data/maya/images/proc-node-selected.0030.tif, data/maya/images/proc-node-selected.0031.tif, data/maya/images/proc-node-selected.0032.tif, data/maya/images/proc-node-selected.0033.tif, data/maya/images/proc-node-selected.0034.tif, data/maya/images/proc-node-selected.0035.tif, data/maya/images/proc-node-selected.0036.tif, data/maya/images/proc-node.0000.tif, data/maya/images/proc-node.0001.tif, data/maya/images/proc-node.0002.tif, data/maya/images/proc-node.0003.tif, data/maya/images/proc-node.0004.tif, data/maya/images/proc-node.0005.tif, data/maya/images/proc-node.0006.tif, data/maya/images/proc-node.0007.tif, data/maya/images/proc-node.0008.tif, data/maya/images/proc-node.0009.tif, data/maya/images/proc-node.0010.tif, data/maya/images/proc-node.0011.tif, data/maya/images/proc-node.0012.tif, data/maya/images/proc-node.0013.tif, data/maya/images/proc-node.0014.tif, data/maya/images/proc-node.0015.tif, data/maya/images/proc-node.0016.tif, data/maya/images/proc-node.0017.tif, data/maya/images/proc-node.0018.tif, data/icons/Makefile.am, data/icons/gen-scm.bash.in, data/maya/images/data-node-selected.0000.tif, data/maya/images/data-node-selected.0001.tif, data/maya/images/data-node-selected.0002.tif, data/maya/images/data-node-selected.0003.tif, data/maya/images/data-node-selected.0004.tif, data/maya/images/data-node-selected.0005.tif, data/maya/images/data-node-selected.0006.tif, data/maya/images/data-node-selected.0007.tif, data/maya/images/data-node-selected.0008.tif, data/maya/images/data-node-selected.0009.tif, data/maya/images/data-node-selected.0010.tif, data/maya/images/data-node-selected.0011.tif, data/maya/images/data-node-selected.0012.tif, data/maya/images/data-node-selected.0013.tif, data/maya/images/data-node-selected.0014.tif, data/maya/images/data-node-selected.0015.tif, data/maya/images/data-node-selected.0016.tif, src/java/docs/state.txt, src/java/pipeline/BaseMod.java, src/java/pipeline/BaseState.java, src/java/pipeline/DataMod.java, src/java/pipeline/DataNode.java, src/java/pipeline/DataState.java, src/java/pipeline/FrameRange.java, src/java/pipeline/GraphicalApp.java, src/java/pipeline/JDetailsDialog.java, src/java/pipeline/JNode.java, src/java/pipeline/JNodeChooser.java, src/java/pipeline/JNodeTimeline.java, src/java/pipeline/JTreeBase.java, src/java/pipeline/JTreeData.java, src/java/pipeline/JTreeNodeRenderer.java, src/java/pipeline/JTreeProc.java, src/java/pipeline/Makefile.in, src/java/pipeline/Pipeline.java, src/java/pipeline/ProcMod.java, src/java/pipeline/ProcNode.java, src/java/pipeline/ProcState.java, src/java/pipeline/TreeData.java, src/java/pipeline/TreeProc.java, src/java/share/logger.properties:
+	StatusRsp to BaseState overhaul partially complete
+
+2003-04-24  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/BaseState.java, src/java/pipeline/BaseStateEnums.java, src/java/pipeline/DataState.java, src/java/pipeline/FileState.java, src/java/pipeline/Makefile.in, src/java/pipeline/ProcState.java:
+	initial revision
+
+2003-04-23  Jim Callahan  <jim@salamander>
+
+	* src/java/docs/state.txt: initial revision
+
+	* src/java/pipeline/tests/Makefile.in: removed old GLUE tests
+
+	* src/java/pipeline/StatusRsp.java: added iconStateName() method
+
+	* src/java/pipeline/ProcNode.java: comments
+
+	* src/java/pipeline/ProcMod.java: added LastMod field
+
+	* src/java/pipeline/Pipeline.java:
+	added LastMod field, changed Ignore to a Object so that changes are detectable
+
+	* src/java/pipeline/LogMessage.java: comments
+
+	* src/java/pipeline/JDetailsDialog.java:
+	incomplete state with main layout done but little else
+
+	* src/java/pipeline/GraphicalApp.java: add ComboBox look-and-feel
+
+	* src/java/pipeline/DataNode.java: comments
+
+	* src/java/pipeline/DataMod.java: added LastMod field
+
+	* src/java/pipeline/ClientOptsParser.jj:
+	added LastMod field, changed Ignore to a Object so that changes are detectable
+
+	* src/java/pipeline/BaseMod.java, src/database/share/dbinit.sql.in:
+	added LastMod field
+
+2003-04-21  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/Makefile.in: added JCollapsePanel, JDetailsDialog
+
+	* src/java/pipeline/JNodeViewer.java:
+	made initial named relative, now updates details dialogs when node name style changes
+
+	* src/java/pipeline/JNodeChooser.java: removed menu mnenomics
+
+	* src/java/pipeline/JNode.java:
+	added full path name as a tooltip, details dialog works, rearranged popup menu items
+
+	* src/java/pipeline/GraphicalApp.java:
+	added getFrame(), split look-and-feel stuff out of initUI(), details dialogs now work
+
+	* src/java/pipeline/JCollapsePanel.java, src/java/pipeline/JDetailsDialog.java:
+	initial revision
+
+	* src/java/pipeline/JConnectDialog.java: renamed from JReconnectDialog
+
+	* src/java/pipeline/JReconnectDialog.java: renamed to JConnectDialog
+
+2003-04-20  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JNodeViewer.java:
+	added name formatting menu and support functions
+
+	* src/java/pipeline/JNode.java:
+	now used JNodeViewer::formatName() to create node labels
+
+	* src/java/pipeline/GraphicalApp.java:
+	removed directory chooser, added current directory title bar
+
+2003-04-19  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JTreeNodeRenderer.java:
+	made selection color for directories the same as for nodes
+
+	* src/java/pipeline/JNodeViewer.java, src/java/pipeline/JNode.java:
+	resurected (single) selection for the node which initiates a popup menu
+
+	* src/java/pipeline/JNodeChooser.java:
+	moved App->ChangeDirectory to JNodeChooser popup->MakeCurrent, made popup specific to tree node under mouse instead of using selection lists
+
+	* src/java/pipeline/GraphicalApp.java:
+	moved App->ChangeDirectory to JNodeChooser popup->MakeCurrent
+
+	* src/java/pipeline/BaseApp.java:
+	converted static sUser to instance var pUser
+
+2003-04-17  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/BaseApp.java, src/java/pipeline/GraphicalApp.java:
+	change of working directory UI now works, but is very ugly looking
+
+	* src/java/pipeline/Makefile.in: added JErrorDialog
+
+	* src/java/pipeline/JReconnectDialog.java: fully fuctional
+
+	* src/java/pipeline/JNode.java, src/java/pipeline/JNodeChooser.java:
+	added check for database connection with error dialog on failure
+
+	* src/java/pipeline/GraphicalOptsParser.jj:
+	renamed connect() to reconnect()
+
+	* src/java/pipeline/GraphicalApp.java: fully fuctional
+
+	* src/java/docs/fonts.txt, src/java/docs/look-and-feel.txt, src/java/pipeline/JErrorDialog.java:
+	initial revision
+
+2003-04-16  Jim Callahan  <jim@salamander>
+
+	* src/Makefile.am, src/java/pipeline/GraphicalApp.java, src/java/pipeline/GraphicalOptsParser.jj, src/java/pipeline/Makefile.in:
+	partial conversion to using GUI dialogs for database connection
+
+	* src/java/pipeline/JReconnectDialog.java: initial revision
+
+	* src/java/pipeline/JLinksPane.java:
+	JSelector with the selection code removed
+
+	* src/java/docs/pipeline.html:
+	fixed example paths in File Names and File System Paths section
+
+	* src/java/pipeline/Makefile.in: converted from JSelector to JLinksPane
+
+	* src/java/pipeline/JNodeViewer.java:
+	moved app level menus to the the menubar, resizes pane to bounding box of nodes, removed selection code, converted from JSelector to JLinksPane, improved layout of nodes
+
+	* src/java/pipeline/JNodeTimeline.java, src/java/pipeline/JNodePane.java:
+	moved app level menus to the the menubar
+
+	* src/java/pipeline/JNodeChooser.java:
+	moved app level menus to the the menubar, removed selection code
+
+	* src/java/pipeline/JNode.java:
+	removed selection code, disabled incomplete popup menu items
+
+	* src/java/pipeline/GraphicalApp.java:
+	moved app level menus to the the menubar
+
+	* src/java/pipeline/BaseApp.java:
+	added missing initialization for pSqlLog
+
+2003-03-29  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/GraphicalApp.java, src/java/pipeline/JNode.java, src/java/pipeline/JNodeChooser.java, src/java/pipeline/JNodePane.java, src/java/pipeline/JNodeTimeline.java, src/java/pipeline/JNodeViewer.java, src/java/pipeline/TreeData.java, src/java/pipeline/TreeProc.java:
+	improved layout, rearranged and renamed popup menus, fixed update bugs
+
+2003-03-28  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/GraphicalApp.java, src/java/pipeline/JNodeViewer.java, src/java/pipeline/Makefile.in, src/java/pipeline/TreeData.java, src/java/pipeline/TreeProc.java, src/java/share/logger.properties:
+	added node trees and JNodeViewer tree layout
+
+2003-03-20  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/ClientApp.java, src/java/pipeline/JNode.java, src/java/pipeline/JNodeChooser.java, src/java/pipeline/JNodeViewer.java, src/java/pipeline/JTreeData.java, src/java/pipeline/Makefile.in, src/java/pipeline/Pipeline.java, src/java/pipeline/StatusRsp.java, src/java/pipeline/SuffixEditorRsp.java:
+	StatusRsp overhaul
+
+	* src/java/pipeline/DataStatusRsp.java, src/java/pipeline/JTreeBase.java, src/java/pipeline/JTreeNodeRenderer.java, src/java/pipeline/JTreeProc.java, src/java/pipeline/ProcStatusRsp.java:
+	initial revision
+
+2003-03-18  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JTreeDataRenderer.java, src/java/pipeline/JGoDataNode.java, src/java/pipeline/JGoNode.java, src/java/pipeline/JGoNodeLink.java, src/java/pipeline/JGoNodePort.java, src/java/pipeline/JGoNodeView.java, src/java/pipeline/JGoProcNode.java:
+	obsolete
+
+	* src/java/pipeline/Makefile.in:
+	renamed JTreePipelineNode to JTreeData, JTreePipelineRenderer to JTreeDataRenderer
+
+	* src/java/pipeline/StatusRsp.java: add isProc()
+
+	* src/java/pipeline/JTreeData.java, src/java/pipeline/JTreeDataRenderer.java:
+	initial revision
+
+	* src/java/pipeline/JNodeChooser.java:
+	renamed JTreePipelineNode to JTreeData, JTreePipelineRenderer to JTreeDataRenderer
+
+	* src/java/pipeline/JTreePipelineNode.java, src/java/pipeline/JTreePipelineRenderer.java:
+	renamed
+
+2003-03-17  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JNodeViewer.java, src/java/pipeline/JSelector.java, src/java/pipeline/Makefile.in, src/java/pipeline/ProcVersion.java:
+	added link support
+
+	* src/java/pipeline/JNode.java: added updateBounds to setStatus()
+
+	* src/java/pipeline/GraphicalApp.java: add Panel look-and-feel
+
+	* src/java/pipeline/JNodeLink.java, src/java/pipeline/Vec2D.java:
+	initial revision
+
+2003-03-14  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/GraphicalApp.java, src/java/pipeline/JNode.java, src/java/pipeline/JNodeChooser.java, src/java/pipeline/JNodeViewer.java:
+	hide selected now works
+
+2003-03-13  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JSelector.java:
+	fixed rect selection bug, now fully functional
+
+	* src/java/pipeline/JNodeViewer.java, src/java/pipeline/JNode.java:
+	comments
+
+	* src/java/pipeline/GraphicalApp.java:
+	fixed JSplitPane bar placement bug
+
+	* aclocal.m4, src/java/pipeline/JNode.java, src/java/pipeline/JNodeViewer.java, src/java/pipeline/JSelector.java, src/java/pipeline/Makefile.in:
+	dragged area selection added
+
+2003-03-12  Jim Callahan  <jim@salamander>
+
+	* aclocal.m4: latest
+
+	* src/java/pipeline/GraphicalApp.java, src/java/pipeline/JNode.java, src/java/pipeline/JNodePane.java, src/java/pipeline/JNodeViewer.java, src/java/share/logger.properties:
+	improved node selection within JNodeViewer
+
+2003-03-11  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/GraphicalApp.java, src/java/pipeline/JGoNode.java, src/java/pipeline/JNode.java, src/java/pipeline/JNodeChooser.java, src/java/pipeline/JNodePane.java, src/java/pipeline/JNodeTimeline.java, src/java/pipeline/JNodeViewer.java, src/java/pipeline/JTreePipelineNode.java, src/java/pipeline/JTreePipelineRenderer.java, src/java/pipeline/Makefile.in:
+	basic selection and node dragging work
+
+2003-03-07  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/GraphicalApp.java, src/java/pipeline/JNodeChooser.java, src/java/pipeline/Makefile.in, src/java/scripts/plui.in:
+	first attempt at JGo replacement
+
+	* src/java/pipeline/JNode.java, src/java/pipeline/JNodePane.java, src/java/pipeline/JNodeTimeline.java, src/java/pipeline/JNodeViewer.java:
+	initial revision
+
+	* src/java/pipeline/GraphicalApp.java, src/java/pipeline/JGoNode.java, src/java/pipeline/JGoNodeView.java, src/java/pipeline/JNodeChooser.java, src/java/pipeline/Makefile.in:
+	cleaned up listeners, added node links and layout
+
+	* src/java/pipeline/BaseApp.java, src/java/pipeline/GraphicalApp.java, src/java/pipeline/JNodeChooser.java, src/java/pipeline/JTreePipelineRenderer.java, src/java/pipeline/Pipeline.java:
+	improved look-and-feel, popup menus for JNodeChooser, show selected item now works
+
+2003-03-06  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/GraphicalApp.java, src/java/pipeline/JGoNodeView.java, src/java/pipeline/JNodeChooser.java, src/java/pipeline/Makefile.in, src/java/pipeline/Pipeline.java:
+	new StatusRsp based scheme to unify the view of the NodeChooser with that of the NodeViewer
+
+	* src/java/pipeline/JTreePipelineNode.java, src/java/pipeline/JTreePipelineRenderer.java:
+	initial revision
+
+2003-02-27  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/GraphicalApp.java, src/java/pipeline/JNodeChooser.java:
+	added 3 pane layout
+
+2003-02-24  Jim Callahan  <jim@salamander>
+
+	* config/bootstrap.sh: latest
+
+	* src/java/pipeline/Makefile.in: removed old commented code
+
+	* aclocal.m4, configure.ac: fixed typo
+
+	* src/java/pipeline/JNodeChooser.java: fixed layout bug
+
+	* aclocal.m4: latest
+
+	* src/java/pipeline/JGoNode.java: titles no longer are bold
+
+	* src/java/pipeline/GraphicalApp.java, src/java/pipeline/JNodeChooser.java:
+	now used UIManager to set colors and icons
+
+	* data/icons/Makefile.am: added tree icons
+
+	* data/icons/tree-collapsed.gif, data/icons/tree-expanded.gif:
+	fixed alignment
+
+	* data/icons/gen-scm.bash.in: added 16 pixel icons
+
+2003-02-23  Jim Callahan  <jim@salamander>
+
+	* data/icons/tree-collapsed.gif, data/icons/tree-expanded.gif:
+	intial revision
+
+2003-02-22  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/ClientUI.java: replaced by GraphicApp.java
+
+	* data/maya/scenes/data-node-selected.ma, data/maya/scenes/proc-node-selected.ma:
+	initial revision
+
+	* src/java/pipeline/Pipeline.java:
+	added node names queries and isConnected() predicate
+
+	* src/java/pipeline/Makefile.in, src/java/pipeline/GraphicalApp.java:
+	early node chooser test
+
+	* src/java/pipeline/JGoNode.java, src/java/pipeline/JGoNodeLink.java, src/java/pipeline/JGoNodeView.java:
+	support for node selection highlighting
+
+	* src/java/pipeline/JNodeChooser.java: initial checkin
+
+	* data/maya/images/proc-node-selected.0018.tif, data/maya/images/proc-node-selected.0019.tif, data/maya/images/proc-node-selected.0020.tif, data/maya/images/proc-node-selected.0021.tif, data/maya/images/proc-node-selected.0022.tif, data/maya/images/proc-node-selected.0023.tif, data/maya/images/proc-node-selected.0024.tif, data/maya/images/proc-node-selected.0025.tif, data/maya/images/proc-node-selected.0026.tif, data/maya/images/proc-node-selected.0027.tif, data/maya/images/proc-node-selected.0028.tif, data/maya/images/proc-node-selected.0029.tif, data/maya/images/proc-node-selected.0030.tif, data/maya/images/proc-node-selected.0031.tif, data/maya/images/proc-node-selected.0032.tif, data/maya/images/proc-node-selected.0033.tif, data/maya/images/proc-node-selected.0034.tif, data/maya/images/proc-node-selected.0035.tif, data/maya/images/proc-node-selected.0036.tif, data/maya/images/data-node-selected.0000.tif, data/maya/images/data-node-selected.0001.tif, data/maya/images/data-node-selected.0002.tif, data/maya/images/data-node-selected.0003.tif, data/maya/images/data-node-selected.0004.tif, data/maya/images/data-node-selected.0005.tif, data/maya/images/data-node-selected.0006.tif, data/maya/images/data-node-selected.0007.tif, data/maya/images/data-node-selected.0008.tif, data/maya/images/data-node-selected.0009.tif, data/maya/images/data-node-selected.0010.tif, data/maya/images/data-node-selected.0011.tif, data/maya/images/data-node-selected.0012.tif, data/maya/images/data-node-selected.0013.tif, data/maya/images/data-node-selected.0014.tif, data/maya/images/data-node-selected.0015.tif, data/maya/images/data-node-selected.0016.tif, data/maya/images/data-node-selected.0017.tif, data/maya/images/data-node-selected.0018.tif, data/maya/images/data-node-selected.0019.tif, data/maya/images/data-node-selected.0020.tif, data/maya/images/data-node-selected.0021.tif, data/maya/images/data-node-selected.0022.tif, data/maya/images/data-node-selected.0023.tif, data/maya/images/data-node-selected.0024.tif, data/maya/images/data-node-selected.0025.tif, data/maya/images/data-node-selected.0026.tif, data/maya/images/data-node-selected.0027.tif, data/maya/images/data-node-selected.0028.tif, data/maya/images/data-node-selected.0029.tif, data/maya/images/data-node-selected.0030.tif, data/maya/images/data-node-selected.0031.tif, data/maya/images/data-node-selected.0032.tif, data/maya/images/data-node-selected.0033.tif, data/maya/images/data-node-selected.0034.tif, data/maya/images/data-node-selected.0035.tif, data/maya/images/data-node-selected.0036.tif, data/maya/images/proc-node-selected.0000.tif, data/maya/images/proc-node-selected.0001.tif, data/maya/images/proc-node-selected.0002.tif, data/maya/images/proc-node-selected.0003.tif, data/maya/images/proc-node-selected.0004.tif, data/maya/images/proc-node-selected.0005.tif, data/maya/images/proc-node-selected.0006.tif, data/maya/images/proc-node-selected.0007.tif, data/maya/images/proc-node-selected.0008.tif, data/maya/images/proc-node-selected.0009.tif, data/maya/images/proc-node-selected.0010.tif, data/maya/images/proc-node-selected.0011.tif, data/maya/images/proc-node-selected.0012.tif, data/maya/images/proc-node-selected.0013.tif, data/maya/images/proc-node-selected.0014.tif, data/maya/images/proc-node-selected.0015.tif, data/maya/images/proc-node-selected.0016.tif, data/maya/images/proc-node-selected.0017.tif, data/icons/Makefile.am, data/icons/build-icon.scm, data/icons/gen-scm.bash.in, data/maya/images/data-node.0000.tif, data/maya/images/data-node.0001.tif, data/maya/images/data-node.0002.tif, data/maya/images/data-node.0003.tif, data/maya/images/data-node.0004.tif, data/maya/images/data-node.0005.tif, data/maya/images/data-node.0006.tif, data/maya/images/data-node.0007.tif, data/maya/images/data-node.0008.tif, data/maya/images/data-node.0009.tif, data/maya/images/data-node.0010.tif, data/maya/images/data-node.0011.tif, data/maya/images/data-node.0012.tif, data/maya/images/data-node.0013.tif, data/maya/images/data-node.0014.tif, data/maya/images/data-node.0015.tif, data/maya/images/data-node.0016.tif, data/maya/images/data-node.0017.tif, data/maya/images/data-node.0018.tif, data/maya/images/data-node.0019.tif, data/maya/images/data-node.0020.tif, data/maya/images/data-node.0021.tif, data/maya/images/data-node.0022.tif, data/maya/images/data-node.0023.tif, data/maya/images/data-node.0024.tif, data/maya/images/data-node.0025.tif, data/maya/images/data-node.0026.tif, data/maya/images/data-node.0027.tif, data/maya/images/data-node.0028.tif, data/maya/images/data-node.0029.tif, data/maya/images/data-node.0030.tif, data/maya/images/data-node.0031.tif, data/maya/images/data-node.0032.tif, data/maya/images/data-node.0033.tif, data/maya/images/data-node.0034.tif, data/maya/images/data-node.0035.tif, data/maya/images/data-node.0036.tif, data/maya/images/proc-node.0000.tif, data/maya/images/proc-node.0001.tif, data/maya/images/proc-node.0002.tif, data/maya/images/proc-node.0003.tif, data/maya/images/proc-node.0004.tif, data/maya/images/proc-node.0005.tif, data/maya/images/proc-node.0006.tif, data/maya/images/proc-node.0007.tif, data/maya/images/proc-node.0008.tif, data/maya/images/proc-node.0009.tif, data/maya/images/proc-node.0010.tif, data/maya/images/proc-node.0011.tif, data/maya/images/proc-node.0012.tif, data/maya/images/proc-node.0013.tif, data/maya/images/proc-node.0014.tif, data/maya/images/proc-node.0015.tif, data/maya/images/proc-node.0016.tif, data/maya/images/proc-node.0017.tif, data/maya/images/proc-node.0018.tif, data/maya/images/proc-node.0019.tif, data/maya/images/proc-node.0020.tif, data/maya/images/proc-node.0021.tif, data/maya/images/proc-node.0022.tif, data/maya/images/proc-node.0023.tif, data/maya/images/proc-node.0024.tif, data/maya/images/proc-node.0025.tif, data/maya/images/proc-node.0026.tif, data/maya/images/proc-node.0027.tif, data/maya/images/proc-node.0028.tif, data/maya/images/proc-node.0029.tif, data/maya/images/proc-node.0030.tif, data/maya/images/proc-node.0031.tif, data/maya/images/proc-node.0032.tif, data/maya/images/proc-node.0033.tif, data/maya/images/proc-node.0034.tif, data/maya/images/proc-node.0035.tif, data/maya/images/proc-node.0036.tif, data/maya/scenes/data-node.ma, data/maya/scenes/proc-node.ma:
+	support for node selection highlighting
+
+2003-02-20  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/GraphicalApp.java, src/java/pipeline/GraphicalOptsParser.jj:
+	initial revision
+
+	* src/java/scripts/plui.in: renamed application class to GraphicalApp
+
+	* src/java/pipeline/BaseApp.java, src/java/pipeline/ClientApp.java, src/java/pipeline/EditorApp.java, src/java/pipeline/Makefile.in, src/java/pipeline/ToolsetApp.java:
+	moved even more stuff into ClientBase class from subclasses
+
+2003-02-19  Jim Callahan  <jim@salamander>
+
+	* src/database/share/dbinit.sql.in: added pltest user
+
+	* src/java/pipeline/ClientUI.java, src/java/pipeline/Pipeline.java:
+	comments
+
+	* src/java/pipeline/ClientApp.java:
+	toolset/editor now displayed in status of needs-checkout nodes
+
+	* src/java/pipeline/BaseRsp.java: comments
+
+	* data/icons/Makefile.am, data/icons/gen-scm.bash.in:
+	added registered icons
+
+	* data/maya/images/data-node.0036.tif, data/maya/images/proc-node.0031.tif, data/maya/images/proc-node.0032.tif, data/maya/images/proc-node.0033.tif, data/maya/images/proc-node.0034.tif, data/maya/images/proc-node.0035.tif, data/maya/images/proc-node.0036.tif:
+	intial revision
+
+	* data/maya/images/proc-node.0028.tif, data/maya/images/proc-node.0029.tif, data/maya/images/proc-node.0030.tif, data/maya/images/data-node.0000.tif, data/maya/images/data-node.0001.tif, data/maya/images/data-node.0002.tif, data/maya/images/data-node.0003.tif, data/maya/images/data-node.0004.tif, data/maya/images/data-node.0005.tif, data/maya/images/data-node.0006.tif, data/maya/images/data-node.0007.tif, data/maya/images/data-node.0008.tif, data/maya/images/data-node.0009.tif, data/maya/images/data-node.0010.tif, data/maya/images/data-node.0011.tif, data/maya/images/data-node.0012.tif, data/maya/images/data-node.0013.tif, data/maya/images/data-node.0014.tif, data/maya/images/data-node.0015.tif, data/maya/images/data-node.0016.tif, data/maya/images/data-node.0017.tif, data/maya/images/data-node.0018.tif, data/maya/images/data-node.0019.tif, data/maya/images/data-node.0020.tif, data/maya/images/data-node.0021.tif, data/maya/images/data-node.0022.tif, data/maya/images/data-node.0023.tif, data/maya/images/data-node.0024.tif, data/maya/images/data-node.0025.tif, data/maya/images/data-node.0026.tif, data/maya/images/data-node.0027.tif, data/maya/images/data-node.0028.tif, data/maya/images/data-node.0029.tif, data/maya/images/data-node.0030.tif, data/maya/images/data-node.0031.tif, data/maya/images/data-node.0032.tif, data/maya/images/data-node.0033.tif, data/maya/images/data-node.0034.tif, data/maya/images/data-node.0035.tif, data/maya/images/proc-node.0000.tif, data/maya/images/proc-node.0001.tif, data/maya/images/proc-node.0002.tif, data/maya/images/proc-node.0003.tif, data/maya/images/proc-node.0004.tif, data/maya/images/proc-node.0005.tif, data/maya/images/proc-node.0006.tif, data/maya/images/proc-node.0007.tif, data/maya/images/proc-node.0008.tif, data/maya/images/proc-node.0009.tif, data/maya/images/proc-node.0010.tif, data/maya/images/proc-node.0011.tif, data/maya/images/proc-node.0012.tif, data/maya/images/proc-node.0013.tif, data/maya/images/proc-node.0014.tif, data/maya/images/proc-node.0015.tif, data/maya/images/proc-node.0016.tif, data/maya/images/proc-node.0017.tif, data/maya/images/proc-node.0018.tif, data/maya/images/proc-node.0019.tif, data/maya/images/proc-node.0020.tif, data/maya/images/proc-node.0021.tif, data/maya/images/proc-node.0022.tif, data/maya/images/proc-node.0023.tif, data/maya/images/proc-node.0024.tif, data/maya/images/proc-node.0025.tif, data/maya/images/proc-node.0026.tif, data/maya/images/proc-node.0027.tif, data/maya/scenes/data-node.ma:
+	icons more squarish
+
+	* data/maya/scenes/proc-node.ma: added regisitered images
+
+	* aclocal.m4, configure.ac: add check for gimp
+
+	* src/java/pipeline/ClientOptsParser.jj, src/java/pipeline/EditorOptsParser.jj, src/java/pipeline/ToolsetOptsParser.jj:
+	common base class, BaseApp, complete
+
+	* data/icons/data-uptodate-errors-32.gif, data/icons/data-uptodate-errors-48.gif, data/icons/data-uptodate-errors-64.gif, data/icons/data-uptodate-finished-24.gif, data/icons/data-uptodate-finished-32.gif, data/icons/data-uptodate-finished-48.gif, data/icons/data-uptodate-finished-64.gif, data/icons/data-uptodate-pending-24.gif, data/icons/data-uptodate-pending-32.gif, data/icons/data-uptodate-pending-48.gif, data/icons/data-uptodate-pending-64.gif, data/icons/data-uptodate-running-24.gif, data/icons/data-uptodate-running-32.gif, data/icons/data-uptodate-running-48.gif, data/icons/data-uptodate-running-64.gif, data/icons/data-checkout-errors-24.gif, data/icons/data-checkout-errors-32.gif, data/icons/data-checkout-errors-48.gif, data/icons/data-checkout-errors-64.gif, data/icons/data-checkout-finished-24.gif, data/icons/data-checkout-finished-32.gif, data/icons/data-checkout-finished-48.gif, data/icons/data-checkout-finished-64.gif, data/icons/data-checkout-pending-24.gif, data/icons/data-checkout-pending-32.gif, data/icons/data-checkout-pending-48.gif, data/icons/data-checkout-pending-64.gif, data/icons/data-checkout-running-24.gif, data/icons/data-checkout-running-32.gif, data/icons/data-checkout-running-48.gif, data/icons/data-checkout-running-64.gif, data/icons/data-conflicts-errors-24.gif, data/icons/data-conflicts-errors-32.gif, data/icons/data-conflicts-errors-48.gif, data/icons/data-conflicts-errors-64.gif, data/icons/data-conflicts-finished-24.gif, data/icons/data-conflicts-finished-32.gif, data/icons/data-conflicts-finished-48.gif, data/icons/data-conflicts-finished-64.gif, data/icons/data-conflicts-pending-24.gif, data/icons/data-conflicts-pending-32.gif, data/icons/data-conflicts-pending-48.gif, data/icons/data-conflicts-pending-64.gif, data/icons/data-conflicts-running-24.gif, data/icons/data-conflicts-running-32.gif, data/icons/data-conflicts-running-48.gif, data/icons/data-conflicts-running-64.gif, data/icons/data-depend-errors-24.gif, data/icons/data-depend-errors-32.gif, data/icons/data-depend-errors-48.gif, data/icons/data-depend-errors-64.gif, data/icons/data-depend-finished-24.gif, data/icons/data-depend-finished-32.gif, data/icons/data-depend-finished-48.gif, data/icons/data-depend-finished-64.gif, data/icons/data-depend-pending-24.gif, data/icons/data-depend-pending-32.gif, data/icons/data-depend-pending-48.gif, data/icons/data-depend-pending-64.gif, data/icons/data-depend-running-24.gif, data/icons/data-depend-running-32.gif, data/icons/data-depend-running-48.gif, data/icons/data-depend-running-64.gif, data/icons/data-missing-errors-24.gif, data/icons/data-missing-errors-32.gif, data/icons/data-missing-errors-48.gif, data/icons/data-missing-errors-64.gif, data/icons/data-missing-finished-24.gif, data/icons/data-missing-finished-32.gif, data/icons/data-missing-finished-48.gif, data/icons/data-missing-finished-64.gif, data/icons/data-missing-pending-24.gif, data/icons/data-missing-pending-32.gif, data/icons/data-missing-pending-48.gif, data/icons/data-missing-pending-64.gif, data/icons/data-missing-running-24.gif, data/icons/data-missing-running-32.gif, data/icons/data-missing-running-48.gif, data/icons/data-missing-running-64.gif, data/icons/data-modified-errors-24.gif, data/icons/data-modified-errors-32.gif, data/icons/data-modified-errors-48.gif, data/icons/data-modified-errors-64.gif, data/icons/data-modified-finished-24.gif, data/icons/data-modified-finished-32.gif, data/icons/data-modified-finished-48.gif, data/icons/data-modified-finished-64.gif, data/icons/data-modified-pending-24.gif, data/icons/data-modified-pending-32.gif, data/icons/data-modified-pending-48.gif, data/icons/data-modified-pending-64.gif, data/icons/data-modified-running-24.gif, data/icons/data-modified-running-32.gif, data/icons/data-modified-running-48.gif, data/icons/data-modified-running-64.gif, data/icons/data-registered-errors-24.gif, data/icons/data-registered-errors-32.gif, data/icons/data-registered-errors-48.gif, data/icons/data-registered-errors-64.gif, data/icons/data-registered-finished-24.gif, data/icons/data-registered-finished-32.gif, data/icons/data-registered-finished-48.gif, data/icons/data-registered-finished-64.gif, data/icons/data-registered-pending-24.gif, data/icons/data-registered-pending-32.gif, data/icons/data-registered-pending-48.gif, data/icons/data-registered-pending-64.gif, data/icons/data-registered-running-24.gif, data/icons/data-registered-running-32.gif, data/icons/data-registered-running-48.gif, data/icons/data-registered-running-64.gif, data/icons/data-uptodate-errors-24.gif:
+	obsolete
+
+	* data/icons/Makefile.am: automated icon generation
+
+	* data/icons/build-icon.scm, data/icons/gen-scm.bash.in:
+	initial revision
+
+2003-02-18  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/ClientApp.java, src/java/pipeline/ClientOptsParser.jj, src/java/pipeline/ClientUI.java, src/java/pipeline/EditorApp.java, src/java/pipeline/EditorOptsParser.jj, src/java/pipeline/JGoNode.java, src/java/pipeline/JGoNodePort.java, src/java/pipeline/Makefile.in, src/java/pipeline/Pipeline.java, src/java/pipeline/StatusRsp.java, src/java/pipeline/ToolsetApp.java, src/java/pipeline/ToolsetOptsParser.jj:
+	partway through command-line app overhaul
+
+	* src/java/pipeline/BaseApp.java: initial revision
+
+	* Makefile.am, aclocal.m4, configure.ac: added data directories
+
+	* src/java/docs/concepts.txt: whatever...
+
+	* data/.cvsignore, data/Makefile.am, data/maya/images/data-node.0018.tif, data/maya/images/data-node.0019.tif, data/maya/images/data-node.0020.tif, data/maya/images/data-node.0021.tif, data/maya/images/data-node.0022.tif, data/maya/images/data-node.0023.tif, data/maya/images/data-node.0024.tif, data/maya/images/data-node.0025.tif, data/maya/images/data-node.0026.tif, data/maya/images/data-node.0027.tif, data/maya/images/data-node.0028.tif, data/maya/images/data-node.0029.tif, data/maya/images/data-node.0030.tif, data/maya/images/data-node.0031.tif, data/maya/images/data-node.0032.tif, data/maya/images/data-node.0033.tif, data/maya/images/data-node.0034.tif, data/maya/images/data-node.0035.tif, data/maya/images/proc-node.0000.tif, data/maya/images/proc-node.0001.tif, data/maya/images/proc-node.0002.tif, data/maya/images/proc-node.0003.tif, data/maya/images/proc-node.0004.tif, data/maya/images/proc-node.0005.tif, data/maya/images/proc-node.0006.tif, data/maya/images/proc-node.0007.tif, data/maya/images/proc-node.0008.tif, data/maya/images/proc-node.0009.tif, data/maya/images/proc-node.0010.tif, data/maya/images/proc-node.0011.tif, data/maya/images/proc-node.0012.tif, data/maya/images/proc-node.0013.tif, data/maya/images/proc-node.0014.tif, data/maya/images/proc-node.0015.tif, data/maya/images/proc-node.0016.tif, data/maya/images/proc-node.0017.tif, data/maya/images/proc-node.0018.tif, data/maya/images/proc-node.0019.tif, data/maya/images/proc-node.0020.tif, data/maya/images/proc-node.0021.tif, data/maya/images/proc-node.0022.tif, data/maya/images/proc-node.0023.tif, data/maya/images/proc-node.0024.tif, data/maya/images/proc-node.0025.tif, data/maya/images/proc-node.0026.tif, data/maya/images/proc-node.0027.tif, data/maya/images/proc-node.0028.tif, data/maya/images/proc-node.0029.tif, data/maya/images/proc-node.0030.tif, data/maya/scenes/data-node.ma, data/maya/scenes/proc-node.ma, data/icons/.cvsignore, data/icons/Makefile.am, data/icons/data-checkout-errors-24.gif, data/icons/data-checkout-errors-32.gif, data/icons/data-checkout-errors-48.gif, data/icons/data-checkout-errors-64.gif, data/icons/data-checkout-finished-24.gif, data/icons/data-checkout-finished-32.gif, data/icons/data-checkout-finished-48.gif, data/icons/data-checkout-finished-64.gif, data/icons/data-checkout-pending-24.gif, data/icons/data-checkout-pending-32.gif, data/icons/data-checkout-pending-48.gif, data/icons/data-checkout-pending-64.gif, data/icons/data-checkout-running-24.gif, data/icons/data-checkout-running-32.gif, data/icons/data-checkout-running-48.gif, data/icons/data-checkout-running-64.gif, data/icons/data-conflicts-errors-24.gif, data/icons/data-conflicts-errors-32.gif, data/icons/data-conflicts-errors-48.gif, data/icons/data-conflicts-errors-64.gif, data/icons/data-conflicts-finished-24.gif, data/icons/data-conflicts-finished-32.gif, data/icons/data-conflicts-finished-48.gif, data/icons/data-conflicts-finished-64.gif, data/icons/data-conflicts-pending-24.gif, data/icons/data-conflicts-pending-32.gif, data/icons/data-conflicts-pending-48.gif, data/icons/data-conflicts-pending-64.gif, data/icons/data-conflicts-running-24.gif, data/icons/data-conflicts-running-32.gif, data/icons/data-conflicts-running-48.gif, data/icons/data-conflicts-running-64.gif, data/icons/data-depend-errors-24.gif, data/icons/data-depend-errors-32.gif, data/icons/data-depend-errors-48.gif, data/icons/data-depend-errors-64.gif, data/icons/data-depend-finished-24.gif, data/icons/data-depend-finished-32.gif, data/icons/data-depend-finished-48.gif, data/icons/data-depend-finished-64.gif, data/icons/data-depend-pending-24.gif, data/icons/data-depend-pending-32.gif, data/icons/data-depend-pending-48.gif, data/icons/data-depend-pending-64.gif, data/icons/data-depend-running-24.gif, data/icons/data-depend-running-32.gif, data/icons/data-depend-running-48.gif, data/icons/data-depend-running-64.gif, data/icons/data-missing-errors-24.gif, data/icons/data-missing-errors-32.gif, data/icons/data-missing-errors-48.gif, data/icons/data-missing-errors-64.gif, data/icons/data-missing-finished-24.gif, data/icons/data-missing-finished-32.gif, data/icons/data-missing-finished-48.gif, data/icons/data-missing-finished-64.gif, data/icons/data-missing-pending-24.gif, data/icons/data-missing-pending-32.gif, data/icons/data-missing-pending-48.gif, data/icons/data-missing-pending-64.gif, data/icons/data-missing-running-24.gif, data/icons/data-missing-running-32.gif, data/icons/data-missing-running-48.gif, data/icons/data-missing-running-64.gif, data/icons/data-modified-errors-24.gif, data/icons/data-modified-errors-32.gif, data/icons/data-modified-errors-48.gif, data/icons/data-modified-errors-64.gif, data/icons/data-modified-finished-24.gif, data/icons/data-modified-finished-32.gif, data/icons/data-modified-finished-48.gif, data/icons/data-modified-finished-64.gif, data/icons/data-modified-pending-24.gif, data/icons/data-modified-pending-32.gif, data/icons/data-modified-pending-48.gif, data/icons/data-modified-pending-64.gif, data/icons/data-modified-running-24.gif, data/icons/data-modified-running-32.gif, data/icons/data-modified-running-48.gif, data/icons/data-modified-running-64.gif, data/icons/data-registered-errors-24.gif, data/icons/data-registered-errors-32.gif, data/icons/data-registered-errors-48.gif, data/icons/data-registered-errors-64.gif, data/icons/data-registered-finished-24.gif, data/icons/data-registered-finished-32.gif, data/icons/data-registered-finished-48.gif, data/icons/data-registered-finished-64.gif, data/icons/data-registered-pending-24.gif, data/icons/data-registered-pending-32.gif, data/icons/data-registered-pending-48.gif, data/icons/data-registered-pending-64.gif, data/icons/data-registered-running-24.gif, data/icons/data-registered-running-32.gif, data/icons/data-registered-running-48.gif, data/icons/data-registered-running-64.gif, data/icons/data-uptodate-errors-24.gif, data/icons/data-uptodate-errors-32.gif, data/icons/data-uptodate-errors-48.gif, data/icons/data-uptodate-errors-64.gif, data/icons/data-uptodate-finished-24.gif, data/icons/data-uptodate-finished-32.gif, data/icons/data-uptodate-finished-48.gif, data/icons/data-uptodate-finished-64.gif, data/icons/data-uptodate-pending-24.gif, data/icons/data-uptodate-pending-32.gif, data/icons/data-uptodate-pending-48.gif, data/icons/data-uptodate-pending-64.gif, data/icons/data-uptodate-running-24.gif, data/icons/data-uptodate-running-32.gif, data/icons/data-uptodate-running-48.gif, data/icons/data-uptodate-running-64.gif, data/maya/images/data-node.0000.tif, data/maya/images/data-node.0001.tif, data/maya/images/data-node.0002.tif, data/maya/images/data-node.0003.tif, data/maya/images/data-node.0004.tif, data/maya/images/data-node.0005.tif, data/maya/images/data-node.0006.tif, data/maya/images/data-node.0007.tif, data/maya/images/data-node.0008.tif, data/maya/images/data-node.0009.tif, data/maya/images/data-node.0010.tif, data/maya/images/data-node.0011.tif, data/maya/images/data-node.0012.tif, data/maya/images/data-node.0013.tif, data/maya/images/data-node.0014.tif, data/maya/images/data-node.0015.tif, data/maya/images/data-node.0016.tif, data/maya/images/data-node.0017.tif:
+	initial revision
+
+	* data/maya/scenes/process-node.ma: obsolete
+
+2003-02-15  Jim Callahan  <jim@salamander>
+
+	* data/maya/scenes/process-node.ma, data/maya/workspace.mel, src/java/docs/concepts.txt, src/java/pipeline/JGoDataNode.java, src/java/pipeline/JGoNode.java, src/java/pipeline/JGoNodeLink.java, src/java/pipeline/JGoNodePort.java, src/java/pipeline/JGoNodeView.java:
+	initial revision
+
+	* src/java/pipeline/JGoProcNodePort.java: obsolete
+
+	* src/java/pipeline/ClientUI.java, src/java/pipeline/JGoProcNode.java, src/java/pipeline/Makefile.in, src/java/share/logger.properties:
+	very early skeleton of UI
+
+2003-02-14  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JGoProcNode.java, src/java/pipeline/JGoProcNodePort.java:
+	initial revision
+
+2003-02-13  Jim Callahan  <jim@salamander>
+
+	* src/java/docs/pipeline.html, src/java/pipeline/ClientOptsParser.jj, src/java/pipeline/Pipeline.java:
+	simplified command and check-out behavior
+
+	* src/java/pipeline/ClientApp.java: added handleSimple()
+
+2003-02-12  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/TestGoNode.java:
+	made helper methods protected, comments
+
+	* src/java/scripts/plui.in: added JGo.jar to classpath
+
+	* src/java/pipeline/Makefile.in: added TestGoNode, TestGoNodePort
+
+	* src/java/pipeline/ClientUI.java: minimal app example from JGo works
+
+	* src/java/pipeline/CheckInRsp.java: comments
+
+	* src/java/pipeline/TestGoNode.java, src/java/pipeline/TestGoNodePort.java:
+	initial revision
+
+2003-02-11  Jim Callahan  <jim@salamander>
+
+	* src/java/docs/pipeline.html:
+	changed make command to generate GNUmakefiles by default
+
+	* src/java/pipeline/Pipeline.java:
+	added repository symlink support, changed make command to generate GNUmakefiles by default
+
+	* src/utils/src/Makefile.am, src/utils/src/PlPut.cc, src/java/pipeline/CheckInRsp.java, src/java/pipeline/DataMod.java, src/java/pipeline/DataNode.java, src/java/pipeline/ProcMod.java, src/java/pipeline/ProcNode.java:
+	added repository symlink support
+
+	* src/.cvsignore, src/Makefile.am, src/database/.cvsignore, src/database/Makefile.am, src/database/scripts/.cvsignore, src/database/scripts/Makefile.am, src/database/share/.cvsignore, src/database/share/Makefile.am, src/java/docs/.cvsignore, src/java/docs/Makefile.am, src/java/scripts/.cvsignore, src/java/scripts/Makefile.am, src/java/share/.cvsignore, src/java/share/Makefile.am:
+	initial revision
+
+	* configure.ac, src/java/Makefile.am, src/utils/src/Makefile.am:
+	new directory structure
+
+	* src/java/scripts/pipeline.in, src/java/scripts/pleditor.in, src/java/scripts/pltoolset.in, src/java/scripts/plui.in:
+	added jar installation subdir
+
+	* src/java/pipeline/tests/Makefile.in: fixed paths
+
+	* src/java/pipeline/Makefile.in: removed subdir stuff
+
+	* src/java/pipeline/EditorOptsParser.jj, src/java/pipeline/ToolsetOptsParser.jj:
+	fixed bug which ignored --server/--port networks options
+
+2003-02-10  Jim Callahan  <jim@salamander>
+
+	* aclocal.m4, configure.ac: added plui
+
+	* src/java/pipeline/Makefile.in: added ClientUI
+
+	* src/java/pipeline/ClientApp.java: comments
+
+	* src/utils/src/Makefile.am: disabled super-pipeline
+
+	* Makefile.am: disabled PHP
+
+	* src/java/pipeline/ClientUI.java, src/java/scripts/plui.in:
+	initial revision
+
+	* Makefile.am, aclocal.m4, configure.ac, src/java/docs/pipeline.html, src/java/pipeline/ClientApp.java, src/java/pipeline/ClientOptsParser.jj, src/utils/src/Makefile.am, src/utils/src/PlPut.cc:
+	added HTML output stubs
+
+	* src/utils/src/PackageInfo.cc.in, src/utils/src/PackageInfo.hh:
+	added sJava, sJDBC
+
+	* src/java/pipeline/tests/TestCheckSumApp.java:
+	checksums are now refreshed before being checked
+
+	* src/utils/src/SuperPipeline.cc: initial revision
+
+2003-02-08  Jim Callahan  <jim@salamander>
+
+	* config.h.in, config/bootstrap.sh, configure.ac, src/java/pipeline/Makefile.in, src/java/pipeline/tests/Makefile.in, src/utils/src/Makefile.am:
+	pipeline/phoenix code split
+
+2003-02-07  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/ProcVersion.java:
+	added a getDepend() which takes a name instead of an index
+
+	* src/java/pipeline/ProcMod.java:
+	improved dependency comparison in isIdentical()
+
+	* src/java/pipeline/Pipeline.java:
+	changed checkin() to use a pregenerated StatusRsp table, finished the propogation of modified dependency status, removed the --follow option to checkin
+
+	* src/java/docs/pipeline.html, src/java/pipeline/ClientOptsParser.jj:
+	removed --follow option to checkin
+
+	* src/java/pipeline/ClientApp.java: removed dependency debugging code
+
+	* src/java/pipeline/BaseVersion.java: fixed GLUE output bug
+
+2003-01-31  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/Pipeline.java:
+	status() now fully supports modified-depend -- checkin still needs to be fixed
+
+	* src/java/pipeline/ClientApp.java:
+	differentiated locally-modified from modified-depend in dependency reports
+
+	* src/java/pipeline/BaseRsp.java: added setState()
+
+	* src/java/pipeline/ClientApp.java:
+	added the propogation of modified state up the dependency tree, fixed bug in reporting modified dependencies
+
+	* src/java/pipeline/ClientOptsParser.jj, src/java/pipeline/Pipeline.java:
+	added the propogation of modified state up the dependency tree
+
+	* src/java/pipeline/Pipeline.java:
+	replaced boolean return code of statusTree() with the StatusException
+
+	* src/java/pipeline/CheckSum.java, src/java/share/logger.properties:
+	added a new logger for long duration checksum tasks
+
+	* src/java/pipeline/ClientApp.java:
+	added printing of relative path names, fixed and improved ProcDepend version reporting
+
+	* src/java/pipeline/StatusRsp.java: added "Modified Depend" state
+
+	* src/java/pipeline/ProcDepend.java: fixed bug in copy constructor
+
+	* src/java/docs/pipeline.html, src/java/pipeline/ClientOptsParser.jj:
+	added --absolute
+
+2003-01-30  Jim Callahan  <jim@salamander>
+
+	* configure.ac: readded pltoolset
+
+	* src/java/pipeline/CheckSum.java:
+	fixed a few overly aggressive error checking bugs
+
+	* src/java/pipeline/Makefile.in: fixed bug in
+
+	* src/java/pipeline/Pipeline.java:
+	removed --md5 option to plput, added CheckSum generation
+
+	* src/utils/docs/plput.html, src/utils/src/PlPut.cc:
+	removed --md5 stuff since it is now handles internally by Pipeline
+
+	* src/java/pipeline/BaseVersion.java, src/java/pipeline/DataVersion.java, src/java/pipeline/ProcNode.java, src/java/pipeline/ProcVersion.java:
+	added Ignore paramater to ProcVersion which required shared version of insert() to be specialized
+
+2003-01-29  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/Pipeline.java:
+	now uses CheckSum instead of FileDiff2
+
+	* src/java/pipeline/CheckSum.java:
+	added handler for NoSuchAlgorithmException
+
+2003-01-28  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/Makefile.in: fixed bug in makefile regeneration
+
+	* src/java/pipeline/tests/Makefile.in:
+	fixed bug in makefile regeneration, added TestCheckSumApp
+
+	* src/java/pipeline/tests/TestSubProcessApp.java: finished test
+
+	* src/java/pipeline/SubProcess.java:
+	fixed bug in stdout/err string output
+
+	* src/java/pipeline/CheckSum.java, src/java/pipeline/tests/TestCheckSumApp.java:
+	initial revision
+
+	* aclocal.m4: rearraged C system header checks
+
+	* src/java/pipeline/SubProcess.java, src/java/pipeline/tests/TestSubProcessApp.java:
+	initial revision
+
+	* src/java/share/logger.properties: added test logger
+
+	* src/java/pipeline/Makefile.in, src/java/pipeline/tests/Makefile.in:
+	updated to autoconf 2.53
+
+2003-01-27  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/ClientApp.java:
+	added check for NULL to print of VersionID for dependencies
+
+	* src/java/pipeline/Pipeline.java:
+	now prints stderr of plput in addition to stdout
+
 2003-01-26  Jim Callahan  <jim@salamander>
 
 	* src/java/plutils/src/PlPut.cc:
