@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.18 2004/09/27 04:54:35 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.19 2004/09/28 14:31:45 jim Exp $
 
 import java.io.*; 
 import java.util.*;
@@ -28,44 +28,51 @@ class GenUserPrefsApp
       BasePref prefs[] = {
 	new HotKeyPref
 	("Create a new top-level window.", 
-	 "ManagerNewWindow", "New Window:"),
+	 "ManagerNewWindow", "New Window:",
+	 false, true, false, 87),  /* ALT+W */ 
 
 	new BasePref(),
 	
 	new HotKeyPref
 	("Change the working area view of the panel.", 
-	 "ManagerChangeOwnerView", "Change Owner|View:"),
+	 "ManagerChangeOwnerView", "Change Owner|View:",
+	 false, true, false, 86),  /* ALT+V */ 
 
 	new BasePref(),
 	
 	new HotKeyPref
 	("Save the current panel layout.",
-	 "SaveLayout", "Save Layout:"),
+	 "SaveLayout", "Save Layout:",
+	 false, true, false, 83),  /* ALT+S */ 
 	
 	new HotKeyPref
 	("Manage the saved panel layouts.",
-	 "ShowManageLayouts", "Manage Layouts:"), 
+	 "ShowManageLayouts", "Manage Layouts:"),
 
 	new BasePref(),
 
 	new HotKeyPref
 	("Edit the user preferences.",
-	 "ShowUserPrefs", "Preferences:"),
+	 "ShowUserPrefs", "Preferences:",
+	 false, true, false, 80),  /* ALT+P */ 
 
 	new HotKeyPref
 	("Manage the default editor for filename suffix.", 
-	 "ShowDefaultEditors", "Default Editors:"),
+	 "ShowDefaultEditors", "Default Editors:",
+	 false, true, false, 69),  /* ALT+E */ 
 
 	new HotKeyPref
 	("Manage the job servers.", 
-	 "ShowManageJobServers", "Job Servers:"),
+	 "ShowManageJobServers", "Job Servers:",
+	 false, true, false, 74),  /* ALT+J */ 
 
 	new BasePref(),
 	new BasePref(),
 	
 	new HotKeyPref
 	("Quit.", 
-	 "Quit", "Quit:")
+	 "Quit", "Quit:",
+	 false, true, false, 81)  /* ALT+Q */ 
       };
 
       pPrefs.put("Panel|Universal|Main|Hot Keys", prefs);
@@ -129,45 +136,55 @@ class GenUserPrefsApp
       BasePref prefs[] = {
 	new HotKeyPref
 	("No panel group.", 
-	 "ManagerGroup0", "No Group:"), 
+	 "ManagerGroup0", "No Group:",
+	 false, false, true, 48),  /* CTRL+0 */ 
 
 	new BasePref(),
 
 	new HotKeyPref
 	("Set the panel group to (1).", 
-	 "ManagerGroup1", "Group 1:"), 
+	 "ManagerGroup1", "Group 1:",
+	 false, false, true, 49),  /* CTRL+1 */ 
 
 	new HotKeyPref
 	("Set the panel group to (2).", 
-	 "ManagerGroup2", "Group 2:"), 
+	 "ManagerGroup2", "Group 2:",
+	 false, false, true, 50),  /* CTRL+2 */ 
 
 	new HotKeyPref
 	("Set the panel group to (3).", 
-	 "ManagerGroup3", "Group 3:"), 
+	 "ManagerGroup3", "Group 3:",
+	 false, false, true, 51),  /* CTRL+3 */ 
 
 	new HotKeyPref
 	("Set the panel group to (4).", 
-	 "ManagerGroup4", "Group 4:"), 
+	 "ManagerGroup4", "Group 4:",
+	 false, false, true, 52),  /* CTRL+4 */ 
 
 	new HotKeyPref
 	("Set the panel group to (5).", 
-	 "ManagerGroup5", "Group 5:"), 
+	 "ManagerGroup5", "Group 5:",
+	 false, false, true, 53),  /* CTRL+5 */ 
 
 	new HotKeyPref
 	("Set the panel group to (6).", 
-	 "ManagerGroup6", "Group 6:"), 
+	 "ManagerGroup6", "Group 6:",
+	 false, false, true, 54),  /* CTRL+6 */ 
 
 	new HotKeyPref
 	("Set the panel group to (7).", 
-	 "ManagerGroup7", "Group 7:"), 
+	 "ManagerGroup7", "Group 7:",
+	 false, false, true, 55),  /* CTRL+7 */ 
 
 	new HotKeyPref
 	("Set the panel group to (8).", 
-	 "ManagerGroup8", "Group 8:"), 
+	 "ManagerGroup8", "Group 8:",
+	 false, false, true, 56),  /* CTRL+8 */ 
 
 	new HotKeyPref
 	("Set the panel group to (9).", 
-	 "ManagerGroup9", "Group 9:")
+	 "ManagerGroup9", "Group 9:",
+	 false, false, true, 57)  /* CTRL+9 */ 
       };
 
       pPrefs.put("Panel|Universal|Panel Group|Hot Keys", prefs);
@@ -177,43 +194,52 @@ class GenUserPrefsApp
       BasePref prefs[] = {
 	new HotKeyPref
 	("Change to a Node Browser panel.", 
-	 "ManagerNodeBrowserPanel", "Node Browser:"),
+	 "ManagerNodeBrowserPanel", "Node Browser:",
+	 false, false, false, 112),  /* F1 */ 
 
 	new HotKeyPref
 	("Change to a Node Viewer panel.", 
-	 "ManagerNodeViewerPanel", "Node Viewer:"),
+	 "ManagerNodeViewerPanel", "Node Viewer:",
+	 false, false, false, 113),  /* F2 */ 
 
 	new HotKeyPref
 	("Change to a Node Details panel.", 
-	 "ManagerNodeDetailsPanel", "Node Details:"),
+	 "ManagerNodeDetailsPanel", "Node Details:",
+	 false, false, false, 114),  /* F3 */ 
 
 	new HotKeyPref
 	("Change to a Node Files panel.", 
-	 "ManagerNodeFilesPanel", "Node Files:"),
+	 "ManagerNodeFilesPanel", "Node Files:",
+	 false, false, false, 115),  /* F4 */ 
 
 	new HotKeyPref
 	("Change to a Node History panel.", 
-	 "ManagerNodeHistoryPanel", "Node History:"),
+	 "ManagerNodeHistoryPanel", "Node History:",
+	 false, false, false, 116),  /* F5 */ 
 
 	new BasePref(),
 
 	new HotKeyPref
-	("Change to a Job Browser panel.", 
-	 "ManagerJobBrowserPanel", "Job Browser:"),
+	("Change to a Job Browser panel.",
+	 "ManagerJobBrowserPanel", "Job Browser:",
+	 false, false, false, 117),  /* F6 */ 
 	
 	new HotKeyPref
 	("Change to a Job Viewer panel.", 
-	 "ManagerJobViewerPanel", "Job Viewer:"),
+	 "ManagerJobViewerPanel", "Job Viewer:",
+	 false, false, false, 118),  /* F7 */ 
 	
 	new HotKeyPref
 	("Change to a Job Details panel.", 
-	 "ManagerJobDetailsPanel", "Job Details:"),
+	 "ManagerJobDetailsPanel", "Job Details:",
+	 false, false, false, 119),  /* F8 */ 
 	
 	new BasePref(),
 
 	new HotKeyPref
 	("Change to an empty panel.", 
-	 "ManagerEmptyPanel", "None:")
+	 "ManagerEmptyPanel", "None:",
+	 false, false, false, 120),  /* F9 */ 
       };
 
       pPrefs.put("Panel|Universal|Panel Type|Hot Keys", prefs);
@@ -223,33 +249,39 @@ class GenUserPrefsApp
       BasePref prefs[] = {
 	new HotKeyPref
 	("Add a tabbed panel.", 
-	 "ManagerAddTab", "Add Tab:"),
+	 "ManagerAddTab", "Add Tab:",
+	 false, true, false, 84),  /* ALT+T */ 
 
 	new BasePref(),
 
 	new HotKeyPref
 	("Split the panel horizontally adding a new panel left.", 
-	 "ManagerAddLeft", "Add Left:"),
+	 "ManagerAddLeft", "Add Left:",
+	 false, true, false, 76),  /* ALT+L */ 
 
 	new HotKeyPref
 	("Split the panel horizontally adding a new panel right.", 
-	 "ManagerAddRight", "Add Right:"), 
+	 "ManagerAddRight", "Add Right:",
+	 false, true, false, 82),  /* ALT+R */ 
 
 	new BasePref(),
 
 	new HotKeyPref
 	("Split the panel vertically adding a new panel above.", 
-	 "ManagerAddAbove", "Add Above:"),
+	 "ManagerAddAbove", "Add Above:",
+	 false, true, false, 65),  /* ALT+A */ 
 
 	new HotKeyPref
 	("Split the panel vertically adding a new panel below.", 
-	 "ManagerAddBelow", "Add Below:"),
+	 "ManagerAddBelow", "Add Below:",
+	 false, true, false, 66),  /* ALT+B */ 
 
 	new BasePref(),
 
 	new HotKeyPref
 	("Close the current panel.", 
-	 "ManagerClosePanel", "Close Panel:"),
+	 "ManagerClosePanel", "Close Panel:",
+	 false, true, false, 88)   /* ALT+X */ 
       };
 
       pPrefs.put("Panel|Universal|Panel Layout|Hot Keys", prefs);
@@ -767,7 +799,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.18 2004/09/27 04:54:35 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.19 2004/09/28 14:31:45 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -1020,7 +1052,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.18 2004/09/27 04:54:35 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.19 2004/09/28 14:31:45 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
