@@ -1,4 +1,4 @@
-// $Id: LinkPolicy.java,v 1.6 2004/09/09 17:05:46 jim Exp $
+// $Id: LinkPolicy.java,v 1.7 2004/09/10 15:39:52 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -29,7 +29,7 @@ enum LinkPolicy
    *
    * If the target node has a regeneration action (see {@link BaseAction BaseAction}), the 
    * source node and its associated files will be omitted from the 
-   * @{link ActionAgenda ActionAgenda} passed to the action during job preparation. 
+   * {@link ActionAgenda ActionAgenda} passed to the action during job preparation. 
    */
   Association,
 
