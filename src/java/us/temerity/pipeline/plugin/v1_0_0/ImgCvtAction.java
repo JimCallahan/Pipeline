@@ -1,4 +1,4 @@
-// $Id: ImgCvtAction.java,v 1.4 2004/10/28 15:55:24 jim Exp $
+// $Id: ImgCvtAction.java,v 1.5 2004/11/03 19:54:33 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -162,10 +162,10 @@ class ImgCvtAction
 	toSeq = fseq;
       }
 
-      if(fromSeq.numFrames() < toSeq.numFrames()) 
-	fromSeq = new FileSeq(fromSeq, 0, toSeq.numFrames());
-      else if(toSeq.numFrames() < fromSeq.numFrames()) 
-	toSeq = new FileSeq(toSeq, 0, fromSeq.numFrames());
+      if(fromSeq.numFrames() != toSeq.numFrames()) 
+	throw new PipelineException 
+	  ("The source file sequence (" + fromSeq + ") did not have the same number of " +
+	   "frames as the target file sequence (" + toSeq + ")!");
     }
     
     /* create the process to run the action */ 
