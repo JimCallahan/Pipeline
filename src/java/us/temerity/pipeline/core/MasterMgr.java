@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.22 2004/08/22 22:01:45 jim Exp $
+// $Id: MasterMgr.java,v 1.23 2004/08/23 03:02:10 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2750,7 +2750,7 @@ class MasterMgr
 
       /* remove the associated files */ 
       if(req.removeFiles()) 
-	pFileMgrClient.removeAll(id, mod);	
+	pFileMgrClient.removeAll(id, mod.getSequences());	
 
       unmonitor(id);
       return new SuccessRsp(timer);
@@ -3883,6 +3883,52 @@ class MasterMgr
     }    
   }
 
+  /**
+   * Remove the working area files associated with the given node. <P>  
+   * 
+   * @param req 
+   *   The submit jobs request.
+   * 
+   * @return 
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to kill the jobs.
+   */ 
+  public Object
+  removeFiles
+  (
+   NodeRemoveFilesReq req
+  ) 
+  {
+    NodeID nodeID = req.getNodeID();
+    TaskTimer timer = new TaskTimer("MasterMgr.removeFiles(): " + nodeID);
+
+    TreeSet<FileSeq> fseqs = null;
+    timer.aquire();
+    ReentrantReadWriteLock lock = getWorkingLock(nodeID);
+    lock.readLock().lock();
+    try {
+      timer.resume();
+      WorkingBundle bundle = getWorkingBundle(nodeID);
+      fseqs = bundle.uVersion.getSequences();
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }    
+    finally {
+      lock.readLock().unlock();
+    }    
+    assert(fseqs != null);
+
+    try {
+      pFileMgrClient.removeAll(nodeID, fseqs);
+      return new SuccessRsp(timer);  
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }    
+  }
+
+     
 
 
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.18 2004/08/22 21:50:25 jim Exp $
+// $Id: MasterMgrClient.java,v 1.19 2004/08/23 03:02:10 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1898,6 +1898,49 @@ class MasterMgrClient
 
     Object obj = performTransaction(MasterRequest.KillJobs, req);
     handleSimpleResponse(obj); 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Remove the working area files associated with the given node. <P>  
+   * 
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   * 
+   * @throws PipelineException 
+   *   If unable to kill the jobs.
+   */ 
+  public synchronized void
+  removeFiles
+  (
+   String author,  
+   String view, 
+   String name
+  ) 
+    throws PipelineException
+  {
+    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
+      throw new PipelineException
+	("Only privileged users may remove files owned by another user!");
+    
+    verifyConnection();
+
+    NodeID nodeID = new NodeID(author, view, name);
+    NodeRemoveFilesReq req = new NodeRemoveFilesReq(nodeID);
+
+    Object obj = performTransaction(MasterRequest.RemoveFiles, req);
+    handleSimpleResponse(obj);    
   }
 
 
