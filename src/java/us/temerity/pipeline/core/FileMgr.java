@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.30 2005/01/22 01:36:35 jim Exp $
+// $Id: FileMgr.java,v 1.31 2005/02/22 18:18:30 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -253,6 +253,69 @@ class FileMgr
 	  catch(InterruptedException ex) {
 	    throw new PipelineException
 	      ("Interrupted while creating working area directory (" + wdir + ")!");
+	  }
+	}
+      }
+      catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
+      }	
+    }
+
+    return new SuccessRsp(timer);
+  }  
+
+  /**
+   * Remove an entire working area directory. <P> 
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to remove the given working area directory.
+   */ 
+  public Object 
+  removeWorkingArea
+  ( 
+   FileRemoveWorkingAreaReq req 
+  ) 
+  {
+    TaskTimer timer = 
+      new TaskTimer("FileMgr.removeWorkingArea(): " + 
+		    req.getAuthor() + "|" + req.getView());
+      
+    String author = req.getAuthor();
+    String view   = req.getView();
+
+    /* remove the working area directory */ 
+    timer.aquire();
+    synchronized(pMakeDirLock) { 
+      timer.resume();	
+
+      try {
+	File wdir = new File(pProdDir, "working/" + author + "/" + view);
+	if(wdir.exists()) {
+	  ArrayList<String> args = new ArrayList<String>();
+	  args.add("rm"); //debug
+	  args.add("--recursive");
+	  args.add("--force");
+	  args.add(wdir.getPath());
+	  
+	  Map<String,String> env = System.getenv();
+
+	  SubProcessLight proc = 
+	    new SubProcessLight(author, "RemoveWorkingArea", "echo", args, env, pProdDir);
+	  try {
+	    proc.start();
+	    proc.join();
+	    if(!proc.wasSuccessful()) 
+	      throw new PipelineException
+		("Unable to remove the working area directory (" + wdir + "):\n\n" + 
+		 "  " + proc.getStdErr());
+	  }
+	  catch(InterruptedException ex) {
+	    throw new PipelineException
+	      ("Interrupted while removing the working area directory (" + wdir + ")!");
 	  }
 	}
       }

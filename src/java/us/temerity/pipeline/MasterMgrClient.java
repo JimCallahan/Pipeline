@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.48 2005/02/09 18:23:44 jim Exp $
+// $Id: MasterMgrClient.java,v 1.49 2005/02/22 18:18:29 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1102,6 +1102,47 @@ class MasterMgrClient
     handleSimpleResponse(obj);
   }
 
+  /**
+   * Remove the entire working area for the given user and view. <P> 
+   * 
+   * This method will only succeed there are no working versions of any node currently
+   * checked-out in the given working area.  All nodes must be released prior to removing 
+   * the working area. <P> 
+   * 
+   * Any files not managed by Pipeline which exist in the working area directory will be 
+   * deleted by this operation.
+   * 
+   * @param author 
+   *   The name of the user which owns the working area.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   *
+   * @throws PipelineException
+   *   If unable to remove the working area.
+   */
+  public synchronized void  
+  removeWorkingArea
+  ( 
+   String author, 
+   String view   
+  ) 
+    throws PipelineException 
+  {
+    throw new PipelineException
+      ("This feature is not implemented yet!");
+
+//     if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
+//       throw new PipelineException
+// 	("Only privileged users may remove working areas owned by another user!");
+
+//     verifyConnection();
+
+//     NodeRemoveWorkingAreaReq req = new NodeRemoveWorkingAreaReq(author, view);
+
+//     Object obj = performTransaction(MasterRequest.RemoveWorkingArea, req);
+//     handleSimpleResponse(obj);
+  }
 
 
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.90 2005/02/17 20:15:04 jim Exp $
+// $Id: MasterMgr.java,v 1.91 2005/02/22 18:18:29 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2322,6 +2322,83 @@ class MasterMgr
     }
     finally {
       pDatabaseLock.readLock().unlock();
+    }
+  }  
+
+  /**
+   * Remove an entire working area. <P> 
+   * 
+   * If the working area does not exist, the operation is successful even though nothing
+   * is actually done.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to remove the given working area.
+   */ 
+  public Object 
+  removeWorkingArea
+  ( 
+   NodeRemoveWorkingAreaReq req 
+  ) 
+  {
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.createWorkingArea(): " + 
+		    req.getAuthor() + "|" + req.getView());
+
+    if(req.getView().equals("default")) 
+      return new FailureRsp(timer, "The default working area cannot be removed!");
+
+    timer.aquire();
+    pDatabaseLock.writeLock().lock();
+    try {
+      timer.resume();	
+
+      String author = req.getAuthor();
+      String view   = req.getView();
+	
+      /* abort if it doesn't exist */ 
+      TreeSet<String> views = pWorkingAreaViews.get(author);
+      if((views == null) || !views.contains(view))
+	return new SuccessRsp(timer);
+	
+      /* make sure there are no working versions in the working area */ 
+      TreeSet<String> names = new TreeSet<String>();
+      for(HashMap<NodeID,WorkingBundle> bundles : pWorkingBundles.values()) {
+	for(NodeID nodeID : bundles.keySet()) {
+	  if(author.equals(nodeID.getAuthor()) && view.equals(nodeID.getView())) 
+	    names.add(nodeID.getName());
+	}
+      }
+
+      if(!names.isEmpty()) {
+	StringBuffer buf = new StringBuffer();
+	buf.append
+	  ("The working area view (" + view + " ownned by user (" + author + ") " + 
+	   "cannot be removed because it still contains unreleased nodes!\n\n" + 
+	   "The unreleased node are: ");
+	for(String name : names) 
+	  buf.append("\n  " + name);
+	return new FailureRsp(timer, buf.toString());
+      }
+
+      /* remove the working area files directory */ 
+      try {
+	pFileMgrClient.removeWorkingArea(author, view);
+      }
+      catch(PipelineException ex) {
+	return new FailureRsp(timer, ex.getMessage());
+      }
+      
+      /* remove view from the runtime table */ 
+      views.remove(view);
+      
+      return new SuccessRsp(timer);
+    }
+    finally {
+      pDatabaseLock.writeLock().unlock();
     }
   }  
 

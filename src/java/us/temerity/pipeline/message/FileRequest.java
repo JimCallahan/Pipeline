@@ -1,4 +1,4 @@
-// $Id: FileRequest.java,v 1.15 2004/11/16 03:56:36 jim Exp $
+// $Id: FileRequest.java,v 1.16 2005/02/22 18:18:30 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -24,6 +24,14 @@ enum FileRequest
    */
   CreateWorkingArea, 
   
+  /**
+   * An instance of {@link FileRemoveWorkingAreaReq FileRemoveWorkingAreaReq} is next.
+   */
+  RemoveWorkingArea, 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * An instance of {@link FileCheckInReq FileCheckInReq} is next.
    */
@@ -69,6 +77,9 @@ enum FileRequest
    */
   DeleteCheckedIn, 
 
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * An instance of {@link FileOfflineReq FileOfflineReq} is next.
    */
@@ -83,6 +94,9 @@ enum FileRequest
    * An instance of {@link FileGetSizesReq FileGetSizesReq} is next.
    */
   GetSizes, 
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * No more requests will be send over this connection.

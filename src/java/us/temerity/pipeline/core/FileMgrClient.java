@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.23 2005/01/15 15:06:24 jim Exp $
+// $Id: FileMgrClient.java,v 1.24 2005/02/22 18:18:30 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -100,6 +100,37 @@ class FileMgrClient
     FileCreateWorkingAreaReq req = new FileCreateWorkingAreaReq(author, view);
 
     Object obj = performTransaction(FileRequest.CreateWorkingArea, req);
+    handleSimpleResponse(obj);
+  }
+
+  /**
+   * Remove an entire working area directory for the given user and view. <P> 
+   * 
+   * If the working area directory does not exist, the operation is successful even though 
+   * nothing is actually done.
+   * 
+   * @param author 
+   *   The name of the user which owns the working area.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   *
+   * @throws PipelineException
+   *   If unable to remove the working area directory.
+   */
+  public synchronized void  
+  removeWorkingArea
+  ( 
+   String author, 
+   String view   
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    FileRemoveWorkingAreaReq req = new FileRemoveWorkingAreaReq(author, view);
+
+    Object obj = performTransaction(FileRequest.RemoveWorkingArea, req);
     handleSimpleResponse(obj);
   }
 

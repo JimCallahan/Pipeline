@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.36 2005/02/18 23:37:12 jim Exp $
+// $Id: MasterMgrServer.java,v 1.37 2005/02/22 18:18:30 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -515,6 +515,14 @@ class MasterMgrServer
 	      {
 		NodeCreateWorkingAreaReq req = (NodeCreateWorkingAreaReq) objIn.readObject();
 		objOut.writeObject(pMasterMgr.createWorkingArea(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case RemoveWorkingArea:
+	      {
+		NodeRemoveWorkingAreaReq req = (NodeRemoveWorkingAreaReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.removeWorkingArea(req));
 		objOut.flush(); 
 	      }
 	      break;
