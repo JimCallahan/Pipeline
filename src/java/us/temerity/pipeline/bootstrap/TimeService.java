@@ -1,8 +1,9 @@
-// $Id: TimeService.java,v 1.1 2004/03/22 03:12:45 jim Exp $
+// $Id: TimeService.java,v 1.2 2004/05/29 06:38:06 jim Exp $
 
 package us.temerity.pipeline.bootstrap;
 
 import java.io.*;
+import java.util.*;
 import java.net.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -66,19 +67,20 @@ class TimeService
   getTime() 
     throws IOException
   {
-    StringBuffer buf = new StringBuffer();
+    return (new Date()).getTime();
+//     StringBuffer buf = new StringBuffer();
 
-    int wk;
-    for(wk=0; wk<sNtpServers.length; wk++) {
-      try {
-	return getTime(sNtpServers[wk]);
-      }
-      catch(IOException ex) {
-	buf.append(ex.getMessage());
-      }
-    }
+//     int wk;
+//     for(wk=0; wk<sNtpServers.length; wk++) {
+//       try {
+// 	return getTime(sNtpServers[wk]);
+//       }
+//       catch(IOException ex) {
+// 	buf.append(ex.getMessage());
+//       }
+//     }
 
-    throw new IOException(buf.toString());
+//     throw new IOException(buf.toString());
   }
   
    

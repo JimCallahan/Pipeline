@@ -1,4 +1,4 @@
-// $Id: SubProcess.java,v 1.12 2004/04/24 22:32:29 jim Exp $
+// $Id: SubProcess.java,v 1.13 2004/05/29 06:38:06 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -213,7 +213,7 @@ class SubProcess
 	if(absolute == null) {
 	  StringBuffer buf = new StringBuffer();
 	  buf.append("The program (" + prog + ") was not absolute and could not be " +
-		     "found using the PATH of given environment!\n\n" +
+		     "found using the PATH of the given environment!\n\n" +
 		     "The directories which make up the PATH are: \n");
 	    
 	  for(File edir : epath.getDirectories()) 
@@ -354,7 +354,7 @@ class SubProcess
   {
     if(isAlive())
       throw new IllegalStateException("The subprocess still running!");
-    return (pExitCode == SUCCESS);
+    return ((pExitCode != null) && (pExitCode == SUCCESS));
   }
 
 
@@ -535,7 +535,7 @@ class SubProcess
       String[] lines = new String[numLines];
       int wk;
       for(wk=0; wk<lines.length; wk++) {
-	lines[wk] = pOutLines.get(start+wk);
+	lines[wk] = pErrLines.get(start+wk);
       }
 
       return lines;

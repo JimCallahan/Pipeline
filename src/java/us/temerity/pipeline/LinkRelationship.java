@@ -1,4 +1,4 @@
-// $Id: LinkRelationship.java,v 1.2 2004/05/18 00:34:55 jim Exp $
+// $Id: LinkRelationship.java,v 1.3 2004/05/29 06:38:06 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -47,11 +47,11 @@ enum LinkRelationship
   public static ArrayList<LinkRelationship>
   all() 
   {
-    ArrayList<LinkRelationship> vals = new ArrayList<LinkRelationship>();
-    vals.add(None);
-    vals.add(OneToOne); 
-    vals.add(All);
-
-    return vals;
+    LinkRelationship values[] = values();
+    ArrayList<LinkRelationship> all = new ArrayList<LinkRelationship>(values.length);
+    int wk;
+    for(wk=0; wk<values.length; wk++)
+      all.add(values[wk]);
+    return all;
   }
 }

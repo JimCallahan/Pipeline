@@ -1,4 +1,4 @@
-// $Id: OverallQueueState.java,v 1.3 2004/05/05 20:57:06 jim Exp $
+// $Id: OverallQueueState.java,v 1.4 2004/05/29 06:38:06 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -75,14 +75,11 @@ enum OverallQueueState
   public static ArrayList<OverallQueueState>
   all() 
   {
-    ArrayList<OverallQueueState> states = new ArrayList<OverallQueueState>();
-    states.add(Finished);
-    states.add(Missing);
-    states.add(Stale);
-    states.add(Queued);
-    states.add(Running);
-    states.add(Failed);
-
-    return states;
+    OverallQueueState values[] = values();
+    ArrayList<OverallQueueState> all = new ArrayList<OverallQueueState>(values.length);
+    int wk;
+    for(wk=0; wk<values.length; wk++)
+      all.add(values[wk]);
+    return all;
   }
 }

@@ -1,4 +1,4 @@
-// $Id: JBaseUserPrefsDialog.java,v 1.2 2004/05/23 19:57:53 jim Exp $
+// $Id: JBaseUserPrefsDialog.java,v 1.3 2004/05/29 06:38:06 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -83,7 +83,7 @@ class JBaseUserPrefsDialog
 	    scroll.setHorizontalScrollBarPolicy
 	      (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 	    scroll.setVerticalScrollBarPolicy
-	      (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+	      (ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
 	    
 	    panel.add(scroll);
 	  }

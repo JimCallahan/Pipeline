@@ -1,4 +1,4 @@
-// $Id: GlueEncoderImpl.java,v 1.1 2004/05/08 23:28:49 jim Exp $
+// $Id: GlueEncoderImpl.java,v 1.2 2004/05/29 06:38:06 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -43,7 +43,7 @@ class GlueEncoderImpl
   GlueEncoderImpl
   (
    String title,  
-   Glueable obj   
+   Object obj   
   ) 
     throws GlueException
   {

@@ -1,4 +1,4 @@
-// $Id: JFancyTree.java,v 1.1 2004/05/11 19:17:03 jim Exp $
+// $Id: JFancyTree.java,v 1.2 2004/05/29 06:38:06 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -8,7 +8,7 @@ import javax.swing.*;
 import javax.swing.tree.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   L A Y E R E D   T R E E                                                                */
+/*   F A N C Y   T R E E                                                                    */
 /*------------------------------------------------------------------------------------------*/
 
 /**

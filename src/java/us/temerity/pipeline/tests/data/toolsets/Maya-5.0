@@ -1,0 +1,21 @@
+
+export MAYA_LOCATION=/base/apps/i686-pc-linux-gnu-opt/maya-5.0/aw/maya5.0
+
+if ! echo $PATH | /bin/grep -q "$MAYA_LOCATION/bin"
+then
+  export PATH="${PATH}:$MAYA_LOCATION/bin"
+fi
+
+if [ -z "$LD_LIBRARY_PATH" ]
+then 
+  export LD_LIBRARY_PATH=$MAYA_LOCATION/lib
+else 
+  if ! echo $LD_LIBRARY_PATH | /bin/grep -q "$MAYA_LOCATION/lib"
+  then
+    export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:$MAYA_LOCATION/lib"
+  fi
+fi
+
+export WF_IMF_SGI_MATTE=
+export WF_IMF_CIN_CORRECTION=both
+export WF_IMF_CIN_WHITE_POINT=685

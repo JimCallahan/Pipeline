@@ -1,8 +1,9 @@
-// $Id: MasterMgrClient.java,v 1.2 2004/05/23 19:48:13 jim Exp $
+// $Id: MasterMgrClient.java,v 1.3 2004/05/29 06:38:06 jim Exp $
 
 package us.temerity.pipeline;
 
 import us.temerity.pipeline.message.*;
+import us.temerity.pipeline.toolset.*;
 
 import java.io.*;
 import java.net.*;
@@ -102,7 +103,7 @@ class MasterMgrClient
    * Order the <B>plmaster</B>(1) daemon to refuse any further requests and then to exit 
    * as soon as all currently pending requests have be completed. <P> 
    * 
-   * If successfull, <B>plmaster</B>(1) will also shutdown both the <B>plfilemgr<B>(1) and 
+   * If successfull, <B>plmaster</B>(1) will also shutdown both the <B>plfilemgr</B>(1) and 
    * <B>plnotify</B>(1) daemons as part of its shutdown procedure.
    */
   public synchronized void 
@@ -133,6 +134,298 @@ class MasterMgrClient
 
   /*----------------------------------------------------------------------------------------*/
   /*   G E N E R A L                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the name of the default toolset.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the default toolset name.
+   */ 
+  public synchronized String
+  getDefaultToolsetName() 
+    throws PipelineException
+  {    
+    verifyConnection();
+
+    Object obj = performTransaction(MasterRequest.GetDefaultToolsetName, null);
+    if(obj instanceof MiscGetDefaultToolsetNameRsp) {
+      MiscGetDefaultToolsetNameRsp rsp = (MiscGetDefaultToolsetNameRsp) obj;
+      return rsp.getName();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
+
+  /**
+   * Set the default toolset name. <P> 
+   * 
+   * Also makes the given toolset active if not already active.
+   * 
+   * @param name
+   *   The name of the new default toolset.
+   * 
+   * @throws PipelineException
+   *   If unable to make the given toolset the default.
+   */ 
+  public synchronized void
+  setDefaultToolsetName
+  (
+   String name
+  ) 
+    throws PipelineException
+  {    
+    verifyConnection();
+
+    MiscSetDefaultToolsetNameReq req = new MiscSetDefaultToolsetNameReq(name);
+
+    Object obj = performTransaction(MasterRequest.SetDefaultToolsetName, req);
+    handleSimpleResponse(obj);    
+  }
+
+  /**
+   * Get the names of the currently active toolsets.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the toolset names.
+   */ 
+  public synchronized TreeSet<String>
+  getActiveToolsetNames() 
+    throws PipelineException
+  {    
+    verifyConnection();
+
+    Object obj = performTransaction(MasterRequest.GetActiveToolsetNames, null);
+    if(obj instanceof MiscGetActiveToolsetNamesRsp) {
+      MiscGetActiveToolsetNamesRsp rsp = (MiscGetActiveToolsetNamesRsp) obj;
+      return rsp.getNames();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
+
+  /**
+   * Get the names of all toolsets.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the toolset names.
+   */ 
+  public synchronized TreeSet<String>
+  getToolsetNames() 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    Object obj = performTransaction(MasterRequest.GetToolsetNames, null);
+    if(obj instanceof MiscGetToolsetNamesRsp) {
+      MiscGetToolsetNamesRsp rsp = (MiscGetToolsetNamesRsp) obj;
+      return rsp.getNames();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }    
+  }
+
+  /**
+   * Get the toolset with the given name.
+   * 
+   * @param name
+   *   The toolset name.
+   * 
+   * @throws PipelineException
+   *   If unable to find the toolset.
+   */ 
+  public synchronized Toolset
+  getToolset
+  (
+   String name
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    MiscGetToolsetReq req = new MiscGetToolsetReq(name);
+
+    Object obj = performTransaction(MasterRequest.GetToolset, req);
+    if(obj instanceof MiscGetToolsetRsp) {
+      MiscGetToolsetRsp rsp = (MiscGetToolsetRsp) obj;
+      return rsp.getToolset();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+
+  /**
+   * Create a new toolset and possibly new package versions from the given set of 
+   * packages. <P>
+   * 
+   * New packages will only be created if the generated toolset defined by evaluating 
+   * the <CODE>packages</CODE> argument has no environment conflicts (see 
+   * {@link Toolset#hasConflicts Toolset.hasConflicts}).  If any conflicts are detected, 
+   * an exception will be thrown and no new toolset will be created. <P> 
+   * 
+   * All packages given must already exist on the master server.  Only the names and 
+   * revision numbers of the given packages are passed to the server which then looks up 
+   * its own copy of the toolset package (identified by the name and revision number) to 
+   * generate the toolset.  This insures that the contents of the toolset package cannot 
+   * be altered by client programs.
+   * 
+   * @param name
+   *   The name of the new toolset.
+   * 
+   * @param desc 
+   *   The toolset description text.
+   * 
+   * @param packages
+   *   The packages in order of evaluation.
+   * 
+   * @throws PipelineException
+   *   If unable to create a new toolset.
+   */
+  public synchronized void 
+  createToolset
+  (
+   String name, 
+   String desc, 
+   Collection<PackageVersion> packages
+  ) 
+    throws PipelineException  
+  {
+    if(!isPrivileged(false)) 
+      throw new PipelineException
+	("Only privileged users may create new toolsets!");
+
+    verifyConnection();
+
+    ArrayList<String> names = new ArrayList<String>();
+    TreeMap<String,VersionID> versions = new TreeMap<String,VersionID>();
+    for(PackageVersion pkg : packages) {
+      names.add(pkg.getName());
+      versions.put(pkg.getName(), pkg.getVersionID());
+    }
+
+    MiscCreateToolsetReq req =
+      new MiscCreateToolsetReq(PackageInfo.sUser, name, desc, names, versions);
+
+    Object obj = performTransaction(MasterRequest.CreateToolset, req);
+    handleSimpleResponse(obj);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the names and revision numbers of all toolset packages.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the package names.
+   */ 
+  public synchronized TreeMap<String,TreeSet<VersionID>>
+  getToolsetPackageNames() 
+    throws PipelineException    
+  {
+    verifyConnection();
+
+    Object obj = performTransaction(MasterRequest.GetToolsetPackageNames, null);
+    if(obj instanceof MiscGetToolsetPackageNamesRsp) {
+      MiscGetToolsetPackageNamesRsp rsp = (MiscGetToolsetPackageNamesRsp) obj;
+      return rsp.getNames();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+
+  /**
+   * Get the toolset package with the given name and revision number. 
+   * 
+   * @param name
+   *   The toolset package name.
+   * 
+   * @param vid
+   *   The revision number of the package.
+   * 
+   * @throws PipelineException
+   *   If unable to find the toolset package.
+   */ 
+  public synchronized PackageVersion
+  getToolsetPackage
+  (
+   String name, 
+   VersionID vid
+  ) 
+    throws PipelineException    
+  {
+    verifyConnection();
+
+    MiscGetToolsetPackageReq req = new MiscGetToolsetPackageReq(name, vid);
+
+    Object obj = performTransaction(MasterRequest.GetToolsetPackage, req);
+    if(obj instanceof MiscGetToolsetPackageRsp) {
+      MiscGetToolsetPackageRsp rsp = (MiscGetToolsetPackageRsp) obj;
+      return rsp.getPackage();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+
+  /**
+   * Create a new read-only toolset package from the given modifiable package. <P> 
+   * 
+   * Once created, the read-only package can not be altered and will remain accessable
+   * forever.  Only read-only toolset packages can be used to create toolset, therefore
+   * this method is a necessary prerequisite to building a new toolset from modifiable 
+   * toolset packages. <P> 
+   * 
+   * The <CODE>level</CODE> argument may be <CODE>null</CODE> if this is the first 
+   * revision of the package.
+   * 
+   * @param mod
+   *   The source modifiable toolset package.
+   * 
+   * @param desc 
+   *   The package description text.
+   * 
+   * @param level
+   *   The revision number component level to increment.
+   * 
+   * @throws PipelineException
+   *   If unable to create a new toolset packages.
+   */
+  public synchronized void 
+  createToolsetPackage
+  (
+   PackageMod mod, 
+   String desc, 
+   VersionID.Level level
+  ) 
+    throws PipelineException  
+  {
+    if(!isPrivileged(false)) 
+      throw new PipelineException
+	("Only privileged users may create new toolset packages!");
+
+    verifyConnection();
+
+    MiscCreateToolsetPackageReq req =
+      new MiscCreateToolsetPackageReq(PackageInfo.sUser, mod, desc, level);
+
+    Object obj = performTransaction(MasterRequest.CreateToolsetPackage, req);
+    handleSimpleResponse(obj);
+  }
+
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -280,9 +573,7 @@ class MasterMgrClient
   {
     verifyConnection();
 
-    MiscGetPrivilegedUsersReq req = new MiscGetPrivilegedUsersReq();
-
-    Object obj = performTransaction(MasterRequest.GetPrivilegedUsers, req);
+    Object obj = performTransaction(MasterRequest.GetPrivilegedUsers, null);
     if(obj instanceof MiscGetPrivilegedUsersRsp) {
       MiscGetPrivilegedUsersRsp rsp = (MiscGetPrivilegedUsersRsp) obj;
       pPrivilegedUsers = rsp.getUsers();
@@ -307,7 +598,7 @@ class MasterMgrClient
    *   If unable to make the given user privileged.
    */
   public synchronized void 
-  grantPriviledges
+  grantPrivileges
   (
    String author
   ) 
@@ -335,13 +626,13 @@ class MasterMgrClient
    * if called by any other user.
    * 
    * @param author
-   *   The user to remove priviledges from.
+   *   The user to remove privileges from.
    * 
    * @throws PipelineException
-   *   If unable to remove the given user's priviledges.
+   *   If unable to remove the given user's privileges.
    */
   public synchronized void 
-  removePriviledges
+  removePrivileges
   (
    String author
   ) 
@@ -380,9 +671,7 @@ class MasterMgrClient
   {
     verifyConnection();
 	 
-    NodeGetWorkingAreasReq req = new NodeGetWorkingAreasReq();
-
-    Object obj = performTransaction(MasterRequest.GetWorkingAreas, req);
+    Object obj = performTransaction(MasterRequest.GetWorkingAreas, null);
     if(obj instanceof NodeGetWorkingAreasRsp) {
       NodeGetWorkingAreasRsp rsp = (NodeGetWorkingAreasRsp) obj;
       return rsp.getTable();
@@ -1182,7 +1471,7 @@ class MasterMgrClient
 
 
   /**
-   * The cached names of the priviledged users. <P> 
+   * The cached names of the privileged users. <P> 
    *
    * May be <CODE>null</CODE> if the cache has been invalidated.
    */ 

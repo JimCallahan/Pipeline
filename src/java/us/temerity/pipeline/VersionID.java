@@ -1,4 +1,4 @@
-// $Id: VersionID.java,v 1.10 2004/05/21 18:07:30 jim Exp $
+// $Id: VersionID.java,v 1.11 2004/05/29 06:38:06 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -359,6 +359,20 @@ class VersionID
      * </DIV>
      */
     Micro;
+
+    /**
+     * Get the list of all possible values.
+     */ 
+    public static ArrayList<Level>
+    all() 
+    {
+      Level values[] = values();
+      ArrayList<Level> all = new ArrayList<Level>(values.length);
+      int wk;
+      for(wk=0; wk<values.length; wk++)
+	all.add(values[wk]);
+      return all;
+    }
   }
 
 

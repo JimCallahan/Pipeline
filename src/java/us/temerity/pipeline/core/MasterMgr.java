@@ -1,10 +1,11 @@
-// $Id: MasterMgr.java,v 1.2 2004/05/23 19:48:13 jim Exp $
+// $Id: MasterMgr.java,v 1.3 2004/05/29 06:38:06 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.message.*;
+import us.temerity.pipeline.toolset.*;
 import us.temerity.pipeline.ui.NodeStyles;
 
 import java.io.*;
@@ -134,6 +135,10 @@ import java.util.logging.Level;
  *       <I>toolset</I> <BR>
  *       ... <P>
  *     </DIV> 
+ * 
+ *     default-toolset<BR>
+ *     active-toolsets<P> 
+ * 
  *   </DIV> 
  * 
  *   Where (<I>node-dir</I>) is the root of the persistent node storage area set by  
@@ -148,8 +153,19 @@ import java.util.logging.Level;
  *   Toolsets are stored in files named after the Toolset (<I>toolset</I>) in a seperate 
  *   directory.  Toolsets are built by merging the environments of several Packages.  The
  *   persistent files for Toolsets contains the specific names and versions of the Packages
- *   used to build the Toolset and a consise environment which is the result of merging 
+ *   used to build the Toolset and a cooked environment which is the result of merging 
  *   the packages. <P> 
+ * 
+ *   The <CODE>default-toolset</CODE> file contains the name of the default active toolset.
+ *   The default toolset is used for all newly created nodes unless explicitly overridden
+ *   by the user. <P> 
+ * 
+ *   The <CODE>active-toolsets</CODE> file contains the names of the Toolsets which should
+ *   be made visible to users.  All toolsets remain functional regarless of wheter they 
+ *   are listed in the <CODE>active-toolsets</CODE> file.  The purpose of this active
+ *   toolset list is to filter the toolsets shown to users to the set which are actively 
+ *   being used since the number of toolsets can become large over time.  The active list 
+ *   will contain all toolsets which are reasonable for an artist to be using for new nodes.
  * </DIV> 
  * 
  * <H3> Miscellaneous Files </H3>
@@ -159,7 +175,7 @@ import java.util.logging.Level;
  * access is required when an operation is dangerous or involves making changes which affect 
  * all users. The "pipeline" user is always privileged. <P> 
  * 
- * The list of priviledged users is maintained in a Glue format text file called: <P> 
+ * The list of privileged users is maintained in a Glue format text file called: <P> 
  * 
  * <DIV style="margin-left: 40px;">
  *   <I>node-dir</I>/etc/privileged-users <P>
@@ -281,7 +297,13 @@ class MasterMgr
     {
       pMakeDirLock = new Object();
 
-      pPrivilegedUsers = new PrivilegedUsers();
+      pDefaultToolsetLock = new Object();
+      pDefaultToolset     = null;
+      pActiveToolsets     = new TreeSet<String>();
+      pToolsets           = new TreeMap<String,Toolset>();
+      pToolsetPackages    = new TreeMap<String,TreeMap<VersionID,PackageVersion>>();
+
+      pPrivilegedUsers = new TreeSet<String>();
 
       pWorkingAreaViews = new TreeMap<String,TreeSet<String>>();
       pNodeTreeRoot     = new NodeTreeEntry();
@@ -299,6 +321,7 @@ class MasterMgr
     /* perform startup I/O operations */ 
     {
       makeRootDirs();
+      initToolsets();
       initPrivilegedUsers();
       rebuildDownstreamLinks();
       initNodeTree();
@@ -335,6 +358,57 @@ class MasterMgr
     }
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Load the toolset and toolset package indices.
+   */ 
+  private void 
+  initToolsets()
+  {
+    try {
+      readDefaultToolset();
+      readActiveToolsets();
+
+      /* initialize toolset keys */ 
+      {
+	File dir = new File(pNodeDir, "toolsets/toolsets");
+	File files[] = dir.listFiles(); 
+	int wk;
+	for(wk=0; wk<files.length; wk++) {
+	  if(files[wk].isFile()) 
+	    pToolsets.put(files[wk].getName(), null);
+	}
+      }
+
+      /* initialize package keys */ 
+      {
+	File dir = new File(pNodeDir, "toolsets/packages");
+	File dirs[] = dir.listFiles(); 
+	int dk;
+	for(dk=0; dk<dirs.length; dk++) {
+	  if(dirs[dk].isDirectory()) {
+	    TreeMap<VersionID,PackageVersion> versions = 
+	      new TreeMap<VersionID,PackageVersion>();
+
+	    pToolsetPackages.put(dirs[dk].getName(), versions);
+	   
+	    File files[] = dirs[dk].listFiles(); 
+	    int wk;
+	    for(wk=0; wk<files.length; wk++) {
+	      if(files[wk].isFile()) 
+		versions.put(new VersionID(files[wk].getName()), null);
+	    }
+	  }
+	}
+      }
+    }
+    catch(PipelineException ex) {
+      throw new IllegalArgumentException(ex.getMessage());
+    }
+  }
+  
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -775,6 +849,12 @@ class MasterMgr
       pMakeDirLock         = null;
       pNodeDir             = null;
 
+      pDefaultToolsetLock  = null;
+      pDefaultToolset      = null;
+      pActiveToolsets      = null;
+      pToolsets            = null;
+      pToolsetPackages     = null;
+
       pPrivilegedUsers     = null;
 
       pNodeTreeRoot        = null;
@@ -849,22 +929,375 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
   /*   G E N E R A L                                                                        */
   /*----------------------------------------------------------------------------------------*/
-  
+
   /**
-   * Get the names of the privileged users. <P> 
+   * Get the name of the default toolset.
+   * 
+   * @return
+   *   <CODE>MiscGetDefaultToolsetNameRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the default toolset name.
+   */
+  public Object
+  getDefaultToolsetName() 
+  {    
+    TaskTimer timer = new TaskTimer();
+    
+    timer.aquire();
+    synchronized(pDefaultToolsetLock) {
+      timer.resume();	
+
+      if(pDefaultToolset != null) 
+	return new MiscGetDefaultToolsetNameRsp(timer, pDefaultToolset);
+      else 
+	return new FailureRsp(timer, "No default toolset is defined!");
+    }
+  }
+
+  /**
+   * Set the name of the default toolset.
    * 
    * @param req 
    *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to make the given toolset the default.
+   */
+  public Object
+  setDefaultToolsetName
+  (
+   MiscSetDefaultToolsetNameReq req 
+  ) 
+  {   
+    TaskTimer timer = new TaskTimer("MasterMgr.setDefaultToolsetName(): " + req.getName());
+
+    timer.aquire();
+    synchronized(pToolsets) {
+      timer.resume();
+
+      if(!pToolsets.containsKey(req.getName())) 
+	return new FailureRsp
+	  (timer, 
+	   "No toolset named (" + req.getName() + ") exists to be made the default toolset!");
+    }
+
+    timer.aquire();
+    synchronized(pDefaultToolsetLock) {
+      timer.resume();	 
+      
+      pDefaultToolset = req.getName();
+
+      try {
+	writeDefaultToolset();
+      }
+      catch(PipelineException ex) {
+	return new FailureRsp(timer, ex.getMessage());
+      }
+
+      return new SuccessRsp(timer);
+    }
+  }
+
+
+
+  /**
+   * Get the names of the currently active toolsets.
+   * 
+   * @return
+   *   <CODE>MiscGetActiveToolsetNamesRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the toolset names.
+   */
+  public Object
+  getActiveToolsetNames() 
+  {    
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    synchronized(pActiveToolsets) {
+      timer.resume();
+
+      return new MiscGetActiveToolsetNamesRsp(timer, new TreeSet<String>(pActiveToolsets));
+    }
+  }
+
+  /**
+   * Get the names of all toolsets.
+   * 
+   * @return
+   *   <CODE>MiscGetToolsetNamesRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the toolset names.
+   */
+  public Object
+  getToolsetNames()
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    synchronized(pToolsets) {
+      timer.resume();
+
+      return new MiscGetToolsetNamesRsp(timer, new TreeSet<String>(pToolsets.keySet()));
+    }    
+  }
+
+  /**
+   * Get the toolset with the given name.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetToolsetRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to find the toolset.
+   */
+  public Object
+  getToolset
+  ( 
+   MiscGetToolsetReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    synchronized(pToolsets) {
+      timer.resume();
+    
+      Toolset tset = pToolsets.get(req.getName());
+      if(tset == null) {
+	try {
+	  tset = readToolset(req.getName());
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
+	}
+      }
+      assert(tset != null);
+
+      return new MiscGetToolsetRsp(timer, tset);
+    }
+  }
+
+  /**
+   * Create a new toolset from the given toolset packages.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to create the toolset and/or toolset packages.
+   */
+  public Object
+  createToolset
+  ( 
+   MiscCreateToolsetReq req
+  )  
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    synchronized(pToolsets) {
+      timer.resume();
+
+      /* lookup the packages */  
+      ArrayList<PackageCommon> packages = new ArrayList<PackageCommon>();
+      timer.aquire();
+      synchronized(pToolsetPackages) {
+	timer.resume();
+      
+	for(String pname : req.getPackages()) {
+	  VersionID vid = req.getVersions().get(pname);
+	  if(vid == null) 
+	    return new FailureRsp
+	      (timer, 
+	       "Unable to create the toolset (" + req.getName() + ") because the " +
+	       "revision number for package (" + pname + ") was missing!");
+
+	  TreeMap<VersionID,PackageVersion> versions = pToolsetPackages.get(pname);
+	  if((versions == null) || !versions.containsKey(vid))
+	    return new FailureRsp
+	      (timer, 
+	       "Unable to create the toolset (" + req.getName() + ") because the " +
+	       "package (" + pname + " v" + vid + ") does not exists!");
+
+	  PackageVersion pkg = versions.get(vid);
+	  if(pkg == null) {
+	    try {
+	      pkg = readToolsetPackage(pname, vid);
+	    }
+	    catch(PipelineException ex) {
+	      return new FailureRsp(timer, ex.getMessage());
+	    }
+	  }
+	  assert(pkg != null);
+
+	  packages.add(pkg);
+	}
+      }
+	  
+      /* build the toolset */ 
+      Toolset tset = 
+	new Toolset(req.getAuthor(), req.getName(), packages, req.getDescription());
+      if(tset.hasConflicts()) 
+	return new FailureRsp
+	  (timer, 
+	   "Unable to create the toolset (" + req.getName() + ") due to conflicts between " + 
+	   "the supplied packages!");
+
+      try {
+	writeToolset(tset);
+      }
+      catch(PipelineException ex) {
+	return new FailureRsp(timer, ex.getMessage());	  
+      }
+      
+      pToolsets.put(tset.getName(), tset);
+
+      return new SuccessRsp(timer);
+    }    
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the names and revision numbers of all toolset packages.
+   * 
+   * @return
+   *   <CODE>MiscGetToolsetPackageNamesRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the package names.
+   */
+  public Object
+  getToolsetPackageNames()
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    synchronized(pToolsetPackages) {
+      timer.resume();
+
+      TreeMap<String,TreeSet<VersionID>> names = new TreeMap<String,TreeSet<VersionID>>();
+      for(String name : pToolsetPackages.keySet()) 
+	names.put(name, new TreeSet<VersionID>(pToolsetPackages.get(name).keySet()));
+
+      return new MiscGetToolsetPackageNamesRsp(timer, names);
+    }        
+  }
+
+  /**
+   * Get the toolset package with the given name and revision number. 
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetToolsetPackageRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to find the toolset package.
+   */
+  public Object
+  getToolsetPackage
+  ( 
+   MiscGetToolsetPackageReq req
+  )  
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    synchronized(pToolsetPackages) {
+      timer.resume();
+    
+      TreeMap<VersionID,PackageVersion> versions = pToolsetPackages.get(req.getName());
+      if(versions == null) 
+	return new FailureRsp
+	  (timer, 
+	   "No toolset package (" + req.getName() + " v" + req.getVersionID() + ") exists!");
+
+      PackageVersion pkg = versions.get(req.getVersionID());
+      if(pkg == null) {
+	try {
+	  pkg = readToolsetPackage(req.getName(), req.getVersionID());
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
+	}
+      }
+      assert(pkg != null);
+
+      return new MiscGetToolsetPackageRsp(timer, pkg);
+    }    
+  }
+
+  /**
+   * Create a new read-only package from the given modifiable package.
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to create the new package.
+   */ 
+  public Object
+  createToolsetPackage
+  (
+   MiscCreateToolsetPackageReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+    
+    timer.aquire();
+    synchronized(pToolsetPackages) {
+      timer.resume();
+
+      String pname = req.getPackage().getName();
+      VersionID nvid = null;
+      TreeMap<VersionID,PackageVersion> versions = pToolsetPackages.get(pname);
+      if(versions == null) {
+	nvid = new VersionID();
+
+	versions = new TreeMap<VersionID,PackageVersion>();
+	pToolsetPackages.put(pname, versions);
+      }
+      else {
+	assert(!versions.isEmpty());
+	if(req.getLevel() == null) 
+	  return new FailureRsp
+	    (timer, 
+	     "Unable to create the toolset package (" + pname + ") due to a " + 
+	     "missing revision number increment level!");
+	
+	nvid = new VersionID(versions.lastKey(), req.getLevel());
+      }
+
+      PackageVersion pkg = 
+	new PackageVersion(req.getAuthor(), req.getPackage(), nvid, req.getDescription());
+
+      try {
+	writeToolsetPackage(pkg);
+      }
+      catch(PipelineException ex) {
+	return new FailureRsp(timer, ex.getMessage());	  
+      }
+      
+      versions.put(pkg.getVersionID(), pkg);
+
+      return new SuccessRsp(timer);
+    }
+  }
+   
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the names of the privileged users. <P> 
    * 
    * @return
    *   <CODE>MiscGetPrivilegedUsersRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to determine the privileged users.
    */ 
   public Object 
-  getPrivilegedUsers
-  ( 
-   MiscGetPrivilegedUsersReq req 
-  ) 
+  getPrivilegedUsers()
   {
     TaskTimer timer = new TaskTimer();
     
@@ -922,7 +1355,7 @@ class MasterMgr
    * 
    * @return
    *   <CODE>SuccessRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to to remove the given user's priviledges.
+   *   <CODE>FailureRsp</CODE> if unable to to remove the given user's privileges.
    */ 
   public Object 
   removePrivileges
@@ -957,18 +1390,12 @@ class MasterMgr
   /**
    * Get the table of current working area authors and views.
    * 
-   * @param req 
-   *   The request.
-   * 
    * @return
    *   <CODE>NodeUpdatePathRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to register the inital working version.
    */
   public Object
-  getWorkingAreas
-  (
-   NodeGetWorkingAreasReq req
-  ) 
+  getWorkingAreas()
   {
     TaskTimer timer = new TaskTimer();
     
@@ -1021,11 +1448,13 @@ class MasterMgr
 
       /* create the working area node directory */ 
       File dir = new File(pNodeDir, "working/" + author + "/" + view);
-      if(!dir.isDirectory()) {
-	if(!dir.mkdirs()) 
-	  return new FailureRsp
-	    (timer, 
-	     "Unable to create the working area (" + view + ") for user (" + author + ")!");
+      synchronized(pMakeDirLock) {
+	if(!dir.isDirectory()) {
+	  if(!dir.mkdirs()) 
+	    return new FailureRsp
+	      (timer, 
+	       "Unable to create the working area (" + view + ") for user (" + author + ")!");
+	}
       }
 
       /* create the working area files directory */ 
@@ -3301,6 +3730,429 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Write the default toolset to disk. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to write the default toolset file.
+   */ 
+  private void 
+  writeDefaultToolset() 
+    throws PipelineException
+  {
+    synchronized(pDefaultToolsetLock) {
+      File file = new File(pNodeDir, "toolsets/default-toolset");
+      if(file.exists()) {
+	if(!file.delete())
+	  throw new PipelineException
+	    ("Unable to remove the old default toolset file (" + file + ")!");
+      }
+
+      if(pDefaultToolset != null) {
+	Logs.ops.finer("Writing Default Toolset.");
+
+	try {
+	  String glue = null;
+	  try {
+	    GlueEncoder ge = new GlueEncoderImpl("DefaultToolset", pDefaultToolset);
+	    glue = ge.getText();
+	  }
+	  catch(GlueException ex) {
+	    Logs.glu.severe
+	      ("Unable to generate a Glue format representation of the default toolset!");
+	    Logs.flush();
+	    
+	    throw new IOException(ex.getMessage());
+	  }
+	  
+	  {
+	    FileWriter out = new FileWriter(file);
+	    out.write(glue);
+	    out.flush();
+	    out.close();
+	  }
+	}
+	catch(IOException ex) {
+	  throw new PipelineException
+	    ("I/O ERROR: \n" + 
+	     "  While attempting to write the default toolset file (" + file + ")...\n" + 
+	     "    " + ex.getMessage());
+	}
+      }
+    }
+  }
+  
+  /**
+   * Read the default toolsets from disk.
+   * 
+   * @throws PipelineException
+   *   If unable to read the default toolset file.
+   */ 
+  private void 
+  readDefaultToolset()
+    throws PipelineException
+  {
+    synchronized(pDefaultToolsetLock) {
+      pDefaultToolset = null;
+
+      File file = new File(pNodeDir, "toolsets/default-toolset");
+      if(file.isFile()) {
+	Logs.ops.finer("Reading Default Toolset.");
+
+	try {
+	  FileReader in = new FileReader(file);
+	  GlueDecoder gd = new GlueDecoderImpl(in);
+	  pDefaultToolset = (String) gd.getObject();
+	  in.close();
+	}
+	catch(Exception ex) {
+	  Logs.glu.severe
+	    ("The default toolset file (" + file + ") appears to be corrupted!");
+	  Logs.flush();
+	  
+	  throw new PipelineException
+	    ("I/O ERROR: \n" + 
+	     "  While attempting to read the default toolset file (" + file + ")...\n" + 
+	   "    " + ex.getMessage());
+	}
+      }
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write the active toolset to disk. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to write the active toolset file.
+   */ 
+  private void 
+  writeActiveToolsets() 
+    throws PipelineException
+  {
+    synchronized(pActiveToolsets) {
+      File file = new File(pNodeDir, "toolsets/active-toolsets");
+      if(file.exists()) {
+	if(!file.delete())
+	  throw new PipelineException
+	    ("Unable to remove the old active toolsets file (" + file + ")!");
+      }
+
+      if(pActiveToolsets.isEmpty()) {
+	Logs.ops.finer("Writing Active Toolsets.");
+
+	try {
+	  String glue = null;
+	  try {
+	    GlueEncoder ge = new GlueEncoderImpl("ActiveToolsets", pActiveToolsets);
+	    glue = ge.getText();
+	  }
+	  catch(GlueException ex) {
+	    Logs.glu.severe
+	      ("Unable to generate a Glue format representation of the active toolsets!");
+	    Logs.flush();
+	    
+	    throw new IOException(ex.getMessage());
+	  }
+	  
+	  {
+	    FileWriter out = new FileWriter(file);
+	    out.write(glue);
+	    out.flush();
+	    out.close();
+	  }
+	}
+	catch(IOException ex) {
+	  throw new PipelineException
+	    ("I/O ERROR: \n" + 
+	     "  While attempting to write the active toolsets file (" + file + ")...\n" + 
+	     "    " + ex.getMessage());
+	}
+      }
+    }
+  }
+  
+  /**
+   * Read the active toolsets from disk.
+   * 
+   * @throws PipelineException
+   *   If unable to read the active toolset file.
+   */ 
+  private void 
+  readActiveToolsets()
+    throws PipelineException
+  {
+    synchronized(pActiveToolsets) {
+      pActiveToolsets.clear();
+
+      File file = new File(pNodeDir, "toolsets/active-toolsets");
+      if(file.isFile()) {
+	Logs.ops.finer("Reading Active Toolsets.");
+
+	TreeSet<String> tsets = null;
+	try {
+	  FileReader in = new FileReader(file);
+	  GlueDecoder gd = new GlueDecoderImpl(in);
+	  tsets = (TreeSet<String>) gd.getObject();
+	  in.close();
+	}
+	catch(Exception ex) {
+	  Logs.glu.severe
+	    ("The active toolsets file (" + file + ") appears to be corrupted!");
+	  Logs.flush();
+	  
+	  throw new PipelineException
+	    ("I/O ERROR: \n" + 
+	     "  While attempting to read the active toolsets file (" + file + ")...\n" + 
+	   "    " + ex.getMessage());
+	}
+
+	pActiveToolsets.addAll(tsets);
+      }
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write the given toolset to disk. <P> 
+   * 
+   * @param tset
+   *   The toolset.
+   * 
+   * @throws PipelineException
+   *   If unable to write the toolset file.
+   */ 
+  private void 
+  writeToolset
+  (
+   Toolset tset
+  ) 
+    throws PipelineException
+  {
+    synchronized(pToolsets) {
+      File file = new File(pNodeDir, "toolsets/toolsets/" + tset.getName());
+      if(file.exists()) {
+	throw new PipelineException
+	  ("Unable to overrite the existing toolset file(" + file + ")!");
+      }
+
+      Logs.ops.finer("Writing Toolset: " + tset.getName());
+
+      try {
+	String glue = null;
+	try {
+	  GlueEncoder ge = new GlueEncoderImpl("Toolset", tset);
+	  glue = ge.getText();
+	}
+	catch(GlueException ex) {
+	  Logs.glu.severe
+	    ("Unable to generate a Glue format representation of the toolset " + 
+	     "(" + tset.getName() + ")!");
+	  Logs.flush();
+	  
+	  throw new IOException(ex.getMessage());
+	}
+	  
+	{
+	  FileWriter out = new FileWriter(file);
+	  out.write(glue);
+	  out.flush();
+	  out.close();
+	}
+      }
+      catch(IOException ex) {
+	throw new PipelineException
+	  ("I/O ERROR: \n" + 
+	   "  While attempting to write the toolset file (" + file + ")...\n" + 
+	   "    " + ex.getMessage());
+      }
+    }
+  }
+  
+  /**
+   * Read the toolset with the given name from disk. <P> 
+   * 
+   * @param name
+   *   The toolset name.
+   * 
+   * @throws PipelineException
+   *   If unable to read the toolset file.
+   */ 
+  private Toolset
+  readToolset
+  (
+   String name
+  )
+    throws PipelineException
+  {
+    synchronized(pToolsets) {
+      File file = new File(pNodeDir, "toolsets/toolsets/" + name);
+      if(!file.isFile()) 
+	throw new PipelineException
+	  ("No toolset file exists for toolset (" + name + ")!");
+
+      Logs.ops.finer("Reading Toolset: " + name);
+
+      Toolset tset = null;
+      try {
+	FileReader in = new FileReader(file);
+	GlueDecoder gd = new GlueDecoderImpl(in);
+	tset = (Toolset) gd.getObject();
+	in.close();
+      }
+      catch(Exception ex) {
+	Logs.glu.severe
+	  ("The toolset file (" + file + ") appears to be corrupted!");
+	Logs.flush();
+	
+	throw new PipelineException
+	  ("I/O ERROR: \n" + 
+	   "  While attempting to read the toolset file (" + file + ")...\n" + 
+	   "    " + ex.getMessage());
+      }
+      assert(tset != null);
+      assert(tset.getName().equals(name));
+
+      pToolsets.put(name, tset);      
+
+      return tset;
+    }
+  }
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write the given toolset package to disk. <P> 
+   * 
+   * @param pkg
+   *   The toolset package.
+   * 
+   * @throws PipelineException
+   *   If unable to write the toolset package file.
+   */ 
+  private void 
+  writeToolsetPackage
+  (
+   PackageVersion pkg
+  ) 
+    throws PipelineException
+  {
+    synchronized(pToolsetPackages) {
+      File dir = new File(pNodeDir, "toolsets/packages/" + pkg.getName());
+      synchronized(pMakeDirLock) {
+	if(!dir.isDirectory()) 
+	  if(!dir.mkdirs()) 
+	    throw new PipelineException
+	      ("Unable to create toolset package directory (" + dir + ")!");
+      }
+
+      File file = new File(dir, pkg.getVersionID().toString());
+      if(file.exists()) {
+	throw new PipelineException
+	  ("Unable to overrite the existing toolset package file(" + file + ")!");
+      }
+
+      Logs.ops.finer("Writing Toolset Package: " + pkg.getName() + " v" + pkg.getVersionID());
+
+      try {
+	String glue = null;
+	try {
+	  GlueEncoder ge = new GlueEncoderImpl("ToolsetPackage", pkg);
+	  glue = ge.getText();
+	}
+	catch(GlueException ex) {
+	  Logs.glu.severe
+	    ("Unable to generate a Glue format representation of the toolset package " + 
+	     "(" + pkg.getName() + " v" + pkg.getVersionID() + ")!");
+	  Logs.flush();
+	  
+	  throw new IOException(ex.getMessage());
+	}
+	  
+	{
+	  FileWriter out = new FileWriter(file);
+	  out.write(glue);
+	  out.flush();
+	  out.close();
+	}
+      }
+      catch(IOException ex) {
+	throw new PipelineException
+	  ("I/O ERROR: \n" + 
+	   "  While attempting to write the toolset package file (" + file + ")...\n" + 
+	   "    " + ex.getMessage());
+      }
+    }
+  }
+  
+  /**
+   * Read the toolset package with the given name and revision number from disk.
+   * 
+   * @param name
+   *   The toolset package name.
+   * 
+   * @param vid
+   *   The revision number.
+   * 
+   * @throws PipelineException
+   *   If unable to read the toolset package file.
+   */ 
+  private PackageVersion
+  readToolsetPackage
+  (
+   String name, 
+   VersionID vid
+  )
+    throws PipelineException
+  {
+    synchronized(pToolsetPackages) {
+      File file = new File(pNodeDir, "toolsets/packages/" + name + "/" + vid);
+      if(!file.isFile()) 
+	throw new PipelineException
+	  ("No toolset package file exists for package (" + name + " v" + vid + ")!");
+
+      Logs.ops.finer("Reading Toolset Package: " + name + " v" + vid);
+
+      PackageVersion pkg = null;
+      try {
+	FileReader in = new FileReader(file);
+	GlueDecoder gd = new GlueDecoderImpl(in);
+	pkg = (PackageVersion) gd.getObject();
+	in.close();
+      }
+      catch(Exception ex) {
+	Logs.glu.severe
+	  ("The toolset package file (" + file + ") appears to be corrupted!");
+	Logs.flush();
+	
+	throw new PipelineException
+	  ("I/O ERROR: \n" + 
+	   "  While attempting to read the toolset package file (" + file + ")...\n" + 
+	   "    " + ex.getMessage());
+      }
+      assert(pkg != null);
+      assert(pkg.getName().equals(name));
+      assert(pkg.getVersionID().equals(vid));
+
+      TreeMap<VersionID,PackageVersion> versions = pToolsetPackages.get(name);
+      if(versions == null) {
+	versions = new TreeMap<VersionID,PackageVersion>();
+	pToolsetPackages.put(name, versions);
+      }
+
+      versions.put(vid, pkg);
+
+      return pkg;
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Write the privileged users to disk. <P> 
    * 
    * @throws PipelineException
@@ -3369,11 +4221,11 @@ class MasterMgr
       if(file.isFile()) {
 	Logs.ops.finer("Reading Privileged Users.");
 
-	PrivilegedUsers users = null;
+	TreeSet<String> users = null;
 	try {
 	  FileReader in = new FileReader(file);
 	  GlueDecoder gd = new GlueDecoderImpl(in);
-	  users = (PrivilegedUsers) gd.getObject();
+	  users = (TreeSet<String>) gd.getObject();
 	  in.close();
 	}
 	catch(Exception ex) {
@@ -4247,15 +5099,56 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The cached names of the priviledged users. 
+   * The name of the default toolset.<P> <P> 
+   * 
+   * Access to the <CODE>pDefaultToolset</CODE> field should be protected by a synchronized 
+   * block on the <CODE>pDefaultToolsetLock</CODE> field.
    */ 
-  private PrivilegedUsers  pPrivilegedUsers;
+  private Object pDefaultToolsetLock;
+  private String pDefaultToolset;
+
+  /**
+   * The names of the active toolsets. <P> 
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */ 
+  private TreeSet<String> pActiveToolsets; 
+
+  /**
+   * The cached table of all toolsets indexed by toolset name. <P> 
+   * 
+   * All existing toolsets will have a key in this table, but the value may be 
+   * null if the toolset is not currently cached.<P> 
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */
+  private TreeMap<String,Toolset>  pToolsets;
+
+  /**
+   * The cached table of all toolset packages indexed by package name and revision number. <P>
+   * 
+   * All existing package names and revision numbers will be included as keys in this table,
+   * but the package value may be null if the package is not currently cached.<P> 
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */ 
+  private TreeMap<String,TreeMap<VersionID,PackageVersion>>  pToolsetPackages;
 
 
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The table of working area view names indexed by author user name.
+   * The cached names of the privileged users. <P> 
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */ 
+  private TreeSet<String>  pPrivilegedUsers;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The table of working area view names indexed by author user name. <P> 
    * 
    * Access to this field should be protected by a synchronized block.
    */ 

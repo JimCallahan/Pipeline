@@ -1,4 +1,4 @@
-// $Id: JSelectLayoutDialog.java,v 1.3 2004/05/13 21:29:16 jim Exp $
+// $Id: JSelectLayoutDialog.java,v 1.4 2004/05/29 06:38:06 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -144,7 +144,7 @@ class JSelectLayoutDialog
    *   The name of the current layout or <CODE>null</CODE> if none.
    */ 
   public void 
-  updateLayuouts
+  updateLayouts
   ( 
    String current
   ) 

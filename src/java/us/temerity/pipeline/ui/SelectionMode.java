@@ -1,4 +1,4 @@
-// $Id: SelectionMode.java,v 1.1 2004/05/05 20:57:24 jim Exp $
+// $Id: SelectionMode.java,v 1.2 2004/05/29 06:38:06 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -36,11 +36,11 @@ enum SelectionMode
   public static ArrayList<SelectionMode>
   all() 
   {
-    ArrayList<SelectionMode> modes = new ArrayList<SelectionMode>();
-    modes.add(Normal);
-    modes.add(Selected); 
-    modes.add(Primary);
-
-    return modes;
+    SelectionMode values[] = values();
+    ArrayList<SelectionMode> all = new ArrayList<SelectionMode>(values.length);
+    int wk;
+    for(wk=0; wk<values.length; wk++)
+      all.add(values[wk]);
+    return all;
   }
 }

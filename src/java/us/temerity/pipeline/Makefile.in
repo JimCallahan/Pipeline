@@ -197,7 +197,8 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
                    PosixSignal \
                    message/FileRequest \
                    message/MasterRequest \
-                   ui/SelectionMode
+                   ui/SelectionMode \
+                   toolset/MergePolicy
 
 
     ENUM_SOURCES = $(patsubst %,$(srcdir)/%.java,$(ENUMS))
@@ -238,7 +239,6 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
                    bootstrap/BootStrapLoader.java
 
           LOCKED = $(shell ls core/*.class) \
-                   $(shell ls toolset/*.class) \
                    $(shell ls ui/*.class)
 
 
@@ -276,7 +276,8 @@ $(API_JAR): java-all textures fonts
                     us/temerity/pipeline/laf/LookAndFeelLoader.class \
                     us/temerity/pipeline/laf/textures \
                     us/temerity/pipeline/laf/fonts \
-                    us/temerity/pipeline/message/*.class)
+                    us/temerity/pipeline/message/*.class \
+                    us/temerity/pipeline/toolset/*.class)
 	(bdir=`pwd`; cd $(srcdir)/../../..; \
          $(JAR) uvf $$bdir/$(API_JAR) \
                     us/temerity/pipeline/laf/*.xml us/temerity/pipeline/laf/*.png)
@@ -387,6 +388,7 @@ clean-class:
 	rm -f message/*.class
 	rm -f core/*.class
 	rm -f ui/*.class
+	rm -f ui/prefs/*.class
 	rm -f java-all bootstrap-all
 
 clean-aux:
@@ -394,6 +396,7 @@ clean-aux:
 	rm -f core/ParseException.java core/SimpleCharStream.java 
 	rm -f core/Token.java core/TokenMgrError.java
 	rm -f core/PackageInfo.java
+	rm -f ui/JUserPrefsDialog.java ui/UserPrefs.java
 
 clean-parser: clean-core-parser 
 

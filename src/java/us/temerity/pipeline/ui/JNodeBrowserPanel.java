@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.16 2004/05/21 21:17:51 jim Exp $
+// $Id: JNodeBrowserPanel.java,v 1.17 2004/05/29 06:38:06 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -89,7 +89,7 @@ class JNodeBrowserPanel
 	scroll.setHorizontalScrollBarPolicy
 	  (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 	scroll.setVerticalScrollBarPolicy
-	  (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+	  (ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
 
 	add(scroll);
       }

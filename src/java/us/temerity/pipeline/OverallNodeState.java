@@ -1,4 +1,4 @@
-// $Id: OverallNodeState.java,v 1.7 2004/05/05 20:57:06 jim Exp $
+// $Id: OverallNodeState.java,v 1.8 2004/05/29 06:38:06 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -118,15 +118,11 @@ enum OverallNodeState
   public static ArrayList<OverallNodeState>
   all() 
   {
-    ArrayList<OverallNodeState> states = new ArrayList<OverallNodeState>();
-    states.add(Pending);
-    states.add(CheckedIn);
-    states.add(Identical);
-    states.add(ModifiedLinks);
-    states.add(Modified);
-    states.add(NeedsCheckOut);
-    states.add(Conflicted);
-
-    return states;
+    OverallNodeState values[] = values();
+    ArrayList<OverallNodeState> all = new ArrayList<OverallNodeState>(values.length);
+    int wk;
+    for(wk=0; wk<values.length; wk++)
+      all.add(values[wk]);
+    return all;
   }
 }

@@ -1,4 +1,4 @@
-// $Id: JBaseLayoutDialog.java,v 1.2 2004/05/13 02:37:41 jim Exp $
+// $Id: JBaseLayoutDialog.java,v 1.3 2004/05/29 06:38:06 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -108,7 +108,7 @@ class JBaseLayoutDialog
 	  scroll.setHorizontalScrollBarPolicy
 	    (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 	  scroll.setVerticalScrollBarPolicy
-	    (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+	    (ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
 	  
 	  body.add(scroll);
 	}
@@ -238,13 +238,6 @@ class JBaseLayoutDialog
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   S T A T I C   I N T E R N A L S                                                      */
-  /*----------------------------------------------------------------------------------------*/
-
-  private static final long serialVersionUID = -6397533004329010874L;
-
-
-  /*----------------------------------------------------------------------------------------*/
   /*   P U B L I C   C L A S S E S                                                          */
   /*----------------------------------------------------------------------------------------*/
 
@@ -296,6 +289,13 @@ class JBaseLayoutDialog
     private String  pName;
   }
     
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static final long serialVersionUID = -6397533004329010874L;
 
 
   /*----------------------------------------------------------------------------------------*/

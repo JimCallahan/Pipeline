@@ -1,4 +1,4 @@
-// $Id: TestMasterMgr2App.java,v 1.1 2004/05/21 21:17:51 jim Exp $
+// $Id: TestMasterMgr2App.java,v 1.2 2004/05/29 06:38:06 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -167,8 +167,8 @@ class TestMasterMgr2App
     /* initialize data files */ 
     {
       File dir = new File(prodDir, "working/" + user + "/default/images");
-
       dir.mkdirs();
+
       ArrayList<String> args = new ArrayList<String>();
 
       for(FileSeq fseq : modA.getSequences()) 
@@ -189,10 +189,13 @@ class TestMasterMgr2App
     }
     
     {
+      File dir = new File(prodDir, "working/" + user + "/default");
+      dir.mkdirs();
+
       ArrayList<String> args = new ArrayList<String>();
       args.add("--recursive");
       args.add("animals");
-      args.add(prodDir + "/working/" + user + "/default");
+      args.add(dir.getPath());
 
       SubProcess proc = new SubProcess("CopyFiles", "cp", args, env, cwd);
       proc.start();

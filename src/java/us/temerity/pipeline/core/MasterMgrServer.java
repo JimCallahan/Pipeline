@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.2 2004/05/23 19:48:13 jim Exp $
+// $Id: MasterMgrServer.java,v 1.3 2004/05/29 06:38:06 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -271,11 +271,84 @@ class MasterMgrServer
 	  Logs.flush();
 
 	  switch(kind) {
+	  /*-- TOOLSETS --------------------------------------------------------------------*/
+	  case GetDefaultToolsetName:
+	    {
+	      objOut.writeObject(pMasterMgr.getDefaultToolsetName());
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case SetDefaultToolsetName:
+	    {
+	      MiscSetDefaultToolsetNameReq req = 
+		(MiscSetDefaultToolsetNameReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.setDefaultToolsetName(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case GetActiveToolsetNames:
+	    {
+	      objOut.writeObject(pMasterMgr.getActiveToolsetNames());
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case GetToolsetNames:
+	    {
+	      objOut.writeObject(pMasterMgr.getToolsetNames());
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case GetToolset:
+	    {
+	      MiscGetToolsetReq req = (MiscGetToolsetReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.getToolset(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case CreateToolset:
+	    {
+	      MiscCreateToolsetReq req = (MiscCreateToolsetReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.createToolset(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+
+	  /*-- TOOLSET PACKAGES ------------------------------------------------------------*/
+	  case GetToolsetPackageNames:
+	    {
+	      objOut.writeObject(pMasterMgr.getToolsetPackageNames());
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case GetToolsetPackage:
+	    {
+	      MiscGetToolsetPackageReq req = (MiscGetToolsetPackageReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.getToolsetPackage(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case CreateToolsetPackage:
+	    {
+	      MiscCreateToolsetPackageReq req = 
+		(MiscCreateToolsetPackageReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.createToolsetPackage(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+
 	  /*-- PRIVILEGED USER STATUS ------------------------------------------------------*/
 	  case GetPrivilegedUsers:
 	    {
-	      MiscGetPrivilegedUsersReq req = (MiscGetPrivilegedUsersReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.getPrivilegedUsers(req));
+	      objOut.writeObject(pMasterMgr.getPrivilegedUsers());
 	      objOut.flush(); 
 	    }
 	    break;
@@ -300,8 +373,7 @@ class MasterMgrServer
 	  /*-- WORKING AREAS ---------------------------------------------------------------*/
 	  case GetWorkingAreas:
 	    {
-	      NodeGetWorkingAreasReq req = (NodeGetWorkingAreasReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.getWorkingAreas(req));
+	      objOut.writeObject(pMasterMgr.getWorkingAreas());
 	      objOut.flush(); 
 	    }
 	    break;
@@ -435,6 +507,7 @@ class MasterMgrServer
       catch (IOException ex) {
 	Logs.net.severe("IO problems on port (" + pPort + "):\n" + 
 			ex.getMessage());
+	ex.printStackTrace();
       }
       catch(ClassNotFoundException ex) {
 	Logs.net.severe("Illegal object encountered on port (" + pPort + "):\n" + 

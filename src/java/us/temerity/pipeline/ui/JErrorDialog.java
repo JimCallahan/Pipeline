@@ -1,4 +1,4 @@
-// $Id: JErrorDialog.java,v 1.4 2004/05/16 19:10:18 jim Exp $
+// $Id: JErrorDialog.java,v 1.5 2004/05/29 06:38:06 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -40,7 +40,7 @@ class JErrorDialog
       JPanel body = new JPanel(new BorderLayout());
       body.setName("MainDialogPanel");
 
-      body.setMinimumSize(new Dimension(344, 166));
+      body.setMinimumSize(new Dimension(300, 180));
 
       {
 	JTextArea area = new JTextArea(8, 25); 
@@ -53,13 +53,14 @@ class JErrorDialog
       
       {
 	JScrollPane scroll = new JScrollPane(pMessageArea);
-	scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 	scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+	scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 	
 	body.add(scroll);
       }
 
       super.initUI("Error:", true, body, null, null, null, "Close");
+      setSize(520, 350);
     }  
   }
 

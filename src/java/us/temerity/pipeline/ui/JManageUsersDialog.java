@@ -1,4 +1,4 @@
-// $Id: JManageUsersDialog.java,v 1.1 2004/05/23 20:01:27 jim Exp $
+// $Id: JManageUsersDialog.java,v 1.2 2004/05/29 06:38:06 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -133,7 +133,7 @@ class JManageUsersDialog
       UIMaster master = UIMaster.getInstance();
 
       try {
-	master.getMasterMgrClient().grantPriviledges(diag.getName());
+	master.getMasterMgrClient().grantPrivileges(diag.getName());
       }
       catch(PipelineException ex) {
 	master.showErrorDialog(ex);
@@ -155,7 +155,7 @@ class JManageUsersDialog
       UIMaster master = UIMaster.getInstance();
 
       try {
-	master.getMasterMgrClient().removePriviledges(name);
+	master.getMasterMgrClient().removePrivileges(name);
       }
       catch(PipelineException ex) {
 	master.showErrorDialog(ex);

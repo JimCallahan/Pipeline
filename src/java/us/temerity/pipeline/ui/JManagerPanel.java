@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.21 2004/05/23 19:58:19 jim Exp $
+// $Id: JManagerPanel.java,v 1.22 2004/05/29 06:38:06 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -234,6 +234,8 @@ class JManagerPanel
 	item.setActionCommand("manage-users");
 	item.addActionListener(this);
 	sub.add(item);  
+
+	sub.addSeparator();
 
 	item = new JMenuItem("Shutdown Server...");
 	pShutdownServerItem = item;
@@ -968,8 +970,9 @@ class JManagerPanel
 	master.getMasterMgrClient().shutdown();
       }
       catch(PipelineException ex) {
-	master.showErrorDialog(ex);
       }
+
+      System.exit(0);
     }
   }
 	

@@ -1,4 +1,4 @@
-// $Id: LogMessage.java,v 1.4 2004/05/21 18:07:30 jim Exp $
+// $Id: LogMessage.java,v 1.5 2004/05/29 06:38:06 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -25,6 +25,31 @@ class LogMessage
   public 
   LogMessage() 
   {}
+
+  /**
+   * Construct a new message owned by the given author (recording the time). 
+   * 
+   * @param author
+   *   The name of the user creating the message.
+   * 
+   * @param msg 
+   *   The message text.
+   */ 
+  public 
+  LogMessage
+  (
+   String author, 
+   String msg  
+  ) 
+  {
+    pTimeStamp = new Date();
+
+    if(author == null) 
+      throw new IllegalArgumentException("The author cannot be (null)!");
+    pAuthor = author;
+
+    pMessage = msg;
+  }
 
   /**
    * Construct a new message (recording the current author and time). 

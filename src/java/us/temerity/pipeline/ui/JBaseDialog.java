@@ -1,4 +1,4 @@
-// $Id: JBaseDialog.java,v 1.6 2004/05/23 19:57:37 jim Exp $
+// $Id: JBaseDialog.java,v 1.7 2004/05/29 06:38:06 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -191,18 +191,20 @@ class JBaseDialog
 
 	int wk;
 	for(wk=0; wk<extra.length; wk++) {
-	  JButton btn = new JButton(extra[wk][0]);
-	  extraBtns[wk] = btn;
-	  btn.setName("RaisedButton");
-	
-	  Dimension size = btn.getPreferredSize();
-	  btn.setMinimumSize(new Dimension(108, 31));
-	  btn.setMaximumSize(new Dimension(size.width, 31));
-	  
-	  btn.setActionCommand(extra[wk][1]);
-	  btn.addActionListener(this);
-	
-	  panel.add(btn);	  
+	  if(extra[wk] != null) {
+	    JButton btn = new JButton(extra[wk][0]);
+	    extraBtns[wk] = btn;
+	    btn.setName("RaisedButton");
+	    
+	    Dimension size = btn.getPreferredSize();
+	    btn.setMinimumSize(new Dimension(108, 31));
+	    btn.setMaximumSize(new Dimension(size.width, 31));
+	    
+	    btn.setActionCommand(extra[wk][1]);
+	    btn.addActionListener(this);
+
+	    panel.add(btn);	  
+	  }
 
 	  if(wk<(extra.length-1)) 
 	    panel.add(Box.createRigidArea(new Dimension(20, 0)));	     

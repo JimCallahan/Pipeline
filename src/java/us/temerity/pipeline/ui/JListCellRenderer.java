@@ -1,4 +1,4 @@
-// $Id: JListCellRenderer.java,v 1.2 2004/05/11 19:15:24 jim Exp $
+// $Id: JListCellRenderer.java,v 1.3 2004/05/29 06:38:06 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -43,7 +43,7 @@ class JListCellRenderer
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Generates the component to be displayed for both popup list and combo box field. 
+   * Generates the component to be displayed for JList cells.
    */ 
   public Component 
   getListCellRendererComponent

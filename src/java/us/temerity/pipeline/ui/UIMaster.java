@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.19 2004/05/23 20:00:52 jim Exp $
+// $Id: UIMaster.java,v 1.20 2004/05/29 06:38:06 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -363,6 +363,7 @@ class UIMaster
   public void 
   showManageToolsetsDialog()
   {
+    pManageToolsetsDialog.updateAll();
     pManageToolsetsDialog.setVisible(true);
   }
 
@@ -515,6 +516,35 @@ class UIMaster
   }
   
   /**
+   * Create a new fixed size label. <P> 
+   * 
+   * See {@link JLabel#setHorizontalAlignment JLabel.setHorizontalAlignment} for valid
+   * values for the <CODE>align</CODE> argument.
+   * 
+   * @param text
+   *   The label text.
+   * 
+   * @param width
+   *   The fixed width.
+   * 
+   * @param align
+   *   The horizontal alignment.
+   */ 
+  public static JLabel
+  createFixedLabel
+  (
+   String text, 
+   int width,
+   int align
+  )
+  {
+    JLabel label = createLabel(text, width, align);
+    label.setMaximumSize(new Dimension(width, 19));
+    
+    return label;
+  }
+  
+  /**
    * Create a new panel title label. <P> 
    * 
    * @param text
@@ -603,15 +633,9 @@ class UIMaster
    int align
   )
   {
-    JTextField field = new JTextField(text);
+    JTextField field = createTextField(text, width, align);
     field.setName("EditableTextField");
 
-    Dimension size = new Dimension(width, 19);
-    field.setMinimumSize(size);
-    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
-    field.setPreferredSize(size);
-    
-    field.setHorizontalAlignment(align);
     field.setEditable(true);
     
     return field;
@@ -656,6 +680,71 @@ class UIMaster
     return field;
   }
 
+  
+  /**
+   * Create a new non-editable text area.
+   * 
+   * @param text
+   *   The initial text.
+   * 
+   * @param width
+   *   The minimum and preferred width.
+   * 
+   * @param rows
+   *   The initial number of rows.
+   */ 
+  public static JTextArea
+  createTextArea
+  (
+   String text, 
+   int width,
+   int rows
+  )
+  {
+    JTextArea area = new JTextArea(text, rows, 0);
+    area.setName("TextArea");
+
+    Dimension size = new Dimension(width, 19*rows);
+    area.setMinimumSize(size);
+    area.setMaximumSize(new Dimension(Integer.MAX_VALUE, size.height));
+    area.setPreferredSize(size);
+
+    area.setLineWrap(true);
+    area.setWrapStyleWord(true);
+
+    area.setEditable(false);
+    
+    return area;
+  }
+
+  /**
+   * Create a new editable text area.
+   * 
+   * @param text
+   *   The initial text.
+   * 
+   * @param width
+   *   The minimum and preferred width.
+   * 
+   * @param rows
+   *   The initial number of rows.
+   */ 
+  public static JTextArea
+  createEditableTextArea
+  (
+   String text, 
+   int width,
+   int rows
+  )
+  {
+    JTextArea area = createTextArea(text, width, rows);
+    area.setName("EditableTextArea");
+
+    area.setEditable(true);
+    
+    return area;
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -671,6 +760,9 @@ class UIMaster
    * @param vpanel
    *   The values panel.
    * 
+   * @param text
+   *   The initial text.
+   * 
    * @param vwidth
    *   The minimum and preferred width of the text field.
    */ 
@@ -685,7 +777,7 @@ class UIMaster
    int vwidth
   )
   {
-    tpanel.add(UIMaster.createLabel(title, twidth, JLabel.RIGHT));
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT));
 
     JTextField field = createTextField(text, vwidth, JLabel.CENTER);
     vpanel.add(field);
@@ -705,6 +797,9 @@ class UIMaster
    * @param vpanel
    *   The values panel.
    * 
+   * @param text
+   *   The initial text.
+   * 
    * @param vwidth
    *   The minimum and preferred width of the text field.
    */ 
@@ -719,13 +814,14 @@ class UIMaster
    int vwidth
   )
   {
-    tpanel.add(UIMaster.createLabel(title, twidth, JLabel.RIGHT));
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT));
 
     JTextField field = createEditableTextField(text, vwidth, JLabel.CENTER);
     vpanel.add(field);
 
     return field;
   }
+
 
   /**
    * Create a new hot key field with a title and add them to the given panels.
@@ -752,7 +848,7 @@ class UIMaster
    int vwidth
   )
   {
-    tpanel.add(UIMaster.createLabel(title, twidth, JLabel.RIGHT));
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT));
 
     JHotKeyField field = new JHotKeyField();
     field.setName("HotKeyField"); 
@@ -767,6 +863,91 @@ class UIMaster
     vpanel.add(field);
 
     return field;
+  }
+
+
+  /**
+   * Create a new non-editable text area with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param text
+   *   The initial text.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the text area.
+   * 
+   * @param rows
+   *   The initial number of rows.
+   */ 
+  public static JTextArea
+  createTitledTextArea
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   String text, 
+   int vwidth,
+   int rows
+  )
+  {
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT));
+    tpanel.add(Box.createRigidArea(new Dimension(0, 19*(rows-1))));
+
+    JTextArea area = createTextArea(text, vwidth, rows);
+    vpanel.add(area);
+
+    return area;
+  }
+
+  /**
+   * Create a new editable text area with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param text
+   *   The initial text.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the text area.
+   * 
+   * @param rows
+   *   The initial number of rows.
+   */ 
+  public static JTextArea
+  createTitledEditableTextArea
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   String text, 
+   int vwidth,
+   int rows
+  )
+  {
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT));
+    tpanel.add(Box.createRigidArea(new Dimension(0, 19*(rows-1))));
+
+    JTextArea area = createEditableTextArea(text, vwidth, rows);
+    vpanel.add(area);
+
+    return area;
   }
 
 
@@ -806,7 +987,7 @@ class UIMaster
    int vwidth
   ) 
   {
-    tpanel.add(UIMaster.createLabel(title, twidth, JLabel.RIGHT));
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT));
 
     JSlider slider = new JSlider(vmin, vmax, vmin);
       
@@ -898,7 +1079,7 @@ class UIMaster
    int vwidth
   ) 
   {
-    tpanel.add(UIMaster.createLabel(title, twidth, JLabel.RIGHT));
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT));
 
     JCollectionField field = new JCollectionField(values);
 
@@ -939,7 +1120,7 @@ class UIMaster
    int vwidth
   ) 
   {
-    tpanel.add(UIMaster.createLabel(title, twidth, JLabel.RIGHT));
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT));
 
     JBooleanField field = new JBooleanField();
 
@@ -996,7 +1177,7 @@ class UIMaster
    * @param size
    *   The preferred size of the list.
    */ 
-  protected static JList 
+  public static JList 
   createListComponents
   (
    Box box, 
@@ -1025,7 +1206,7 @@ class UIMaster
    * @param footerSpacer
    *   Add a vertical footer spacer?
    */ 
-  protected static JList 
+  public static JList 
   createListComponents
   (
    Box box, 
@@ -1040,7 +1221,7 @@ class UIMaster
     if(headerSpacer)
       vbox.add(Box.createRigidArea(new Dimension(0, 20)));
     
-    vbox.add(UIMaster.createPanelLabel(title));
+    vbox.add(createPanelLabel(title));
     
     vbox.add(Box.createRigidArea(new Dimension(0, 4)));
 
@@ -1059,7 +1240,7 @@ class UIMaster
 	scroll.setHorizontalScrollBarPolicy
 	  (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 	scroll.setVerticalScrollBarPolicy
-	  (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+	  (ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
 	
 	vbox.add(scroll);
       }
@@ -1072,6 +1253,7 @@ class UIMaster
 
     return lst;
   }
+
 
 
 
@@ -1515,9 +1697,8 @@ class UIMaster
 	  frame.setContentPane(root);
 	}
 	
-	frame.pack();
+	frame.setSize(520, 360);
 	frame.setLocationRelativeTo(null);
-
       }
 
       {

@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserTreeCellRenderer.java,v 1.2 2004/05/19 19:06:15 jim Exp $
+// $Id: JNodeBrowserTreeCellRenderer.java,v 1.3 2004/05/29 06:38:06 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -24,7 +24,6 @@ public
 class JNodeBrowserTreeCellRenderer
    extends JLabel
    implements TreeCellRenderer
-//extends DefaultTreeCellRenderer
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */

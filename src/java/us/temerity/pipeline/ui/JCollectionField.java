@@ -1,4 +1,4 @@
-// $Id: JCollectionField.java,v 1.1 2004/05/16 19:21:38 jim Exp $
+// $Id: JCollectionField.java,v 1.2 2004/05/29 06:38:06 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -30,20 +30,23 @@ class JCollectionField
     super();  
     setName("CollectionField");
 
+    setAlignmentY(0.5f);
     setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
     addMouseListener(this);
 
     {
-      add(Box.createHorizontalGlue());
-      
       {
-	JLabel label = new JLabel();
-	pLabel = label;
-	
-	add(label);
+	JValueField field = new JValueField(this);
+	pTextField = field;
+
+	field.setName("CollectionTextField");
+	field.setHorizontalAlignment(JLabel.CENTER);
+	field.setEditable(false);
+	field.addMouseListener(this);
+
+	add(field);
       }
     
-      add(Box.createHorizontalGlue());
       add(new JLabel(sIcon));
       add(Box.createRigidArea(new Dimension(8, 0)));
     }
@@ -90,7 +93,7 @@ class JCollectionField
   public Collection<String>
   getValues() 
   {
-    return pValues;
+    return Collections.unmodifiableCollection(pValues);
   }
 
 
@@ -134,9 +137,11 @@ class JCollectionField
     pSelectedIdx = idx;
 
     if(pSelectedIdx >= 0) 
-      pLabel.setText(pValues.get(idx));
+      pTextField.setText(pValues.get(idx));
     else 
-      pLabel.setText(null);
+      pTextField.setText(null);
+
+    pTextField.fireActionPerformed2();
   }
  
   /**
@@ -150,9 +155,52 @@ class JCollectionField
   {
     return pSelectedIdx;
   }
- 
 
-  
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   E V E N T S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Adds the specified action listener to receive action events from this collection field.
+   */ 
+  public void
+  addActionListener
+  (
+   ActionListener l
+  )
+  {
+    pTextField.addActionListener(l);
+  }
+
+  /**
+   * Removes the specified action listener so that it no longer receives action events
+   * from this collection field.
+   */ 
+  public void 	
+  removeActionListener
+  (
+   ActionListener l
+  )
+  {
+    pTextField.removeActionListener(l);
+  }
+          
+  /**
+   * Sets the command string used for action events.
+   */ 
+  public void 	
+  setActionCommand
+  (
+   String command
+  )
+  {
+    pTextField.setActionCommand(command);
+  }
+
+
+
   /*----------------------------------------------------------------------------------------*/
   /*   L I S T E N E R S                                                                    */
   /*----------------------------------------------------------------------------------------*/
@@ -202,8 +250,8 @@ class JCollectionField
   ) 
   {
     if((pValues.size() > 0) && (pSelectedIdx >= 0)) {
-      Dimension size = e.getComponent().getSize();
-      pPopup.setPopupSize(new Dimension(size.width, 23*pValues.size()));
+      Dimension size = getSize();
+      pPopup.setPopupSize(new Dimension(size.width, 23*pValues.size() + 10));
       pPopup.show(e.getComponent(), 0, size.height);
     }
   } 
@@ -214,6 +262,42 @@ class JCollectionField
   public void 
   mouseReleased(MouseEvent e) {}
   
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L   C L A S S E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  public
+  class JValueField
+    extends JTextField
+  {
+    public 
+    JValueField
+    (
+     JCollectionField parent
+    ) 
+    {
+      pParent = parent;
+    }    
+
+    public JCollectionField
+    getParent()
+    {
+      return pParent;
+    }
+
+    public void 
+    fireActionPerformed2()
+    {
+      fireActionPerformed();
+    }
+
+    private static final long serialVersionUID = -5299266041553415611L;
+
+    private JCollectionField  pParent;
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -237,9 +321,9 @@ class JCollectionField
   private JPopupMenu  pPopup; 
 
   /**
-   * The text label.
+   * The value text field.
    */ 
-  private JLabel  pLabel;
+  private JValueField  pTextField;
 
 
   /**
