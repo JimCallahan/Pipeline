@@ -1,4 +1,4 @@
-// $Id: GraphicalApp.java,v 1.1 2004/04/24 22:44:42 jim Exp $
+// $Id: GraphicalApp.java,v 1.2 2004/07/24 18:20:39 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -94,6 +94,7 @@ class GraphicalApp
       "\n" + 
       "GLOBAL OPTIONS:\n" +
       "  [--master-host=...][--master-port=...]\n" + 
+      "  [--queue-host=...][--queue-port=...][--job-port=...]\n" + 
       "  [--log=...]\n" +
       "\n" + 
       "\n" +  

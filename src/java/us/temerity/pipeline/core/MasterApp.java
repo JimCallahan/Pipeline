@@ -1,4 +1,4 @@
-// $Id: MasterApp.java,v 1.4 2004/07/24 18:18:47 jim Exp $
+// $Id: MasterApp.java,v 1.5 2004/07/24 18:20:39 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -111,7 +111,7 @@ class MasterApp
       "  [--node-dir=...][--master-port=...]\n" + 
       "  [--prod-dir=...][--file-host=...][--file-port]\n" + 
       "  [--notify-control-port=...][--notify-monitor-port=...]\n" + 
-      "  [--queue-host=...][--queue-port]\n" + 
+      "  [--queue-host=...][--queue-port=...]\n" + 
       "  [--log=...]\n" +
       "\n" + 
       "\n" +  
