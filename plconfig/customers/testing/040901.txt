@@ -4,15 +4,15 @@ FileHostname = localhost
 FilePort = 53136
 HomeDirectory = /home
 HostIDs = 
-    salamander.nyc.rr.com         82681217059132541249961559817396805793
+    salamander.nyc.rr.com         -54858395760690626386465850961459190102
 JavaClassVersion = 49.0
 JavaHome = /usr/java/jdk1.5.0/jre
 JavaName = Java HotSpot(TM) Client VM
 JavaVendor = Sun Microsystems Inc.
 JavaVersion = 1.5.0-beta2-b51
 JobPort = 53140
-LicenseEnd = Fri Oct 01 08:13:34 EDT 2004
-LicenseStart = Wed Sep 01 08:13:34 EDT 2004
+LicenseEnd = Sat Oct 02 10:15:13 EDT 2004
+LicenseStart = Thu Sep 02 10:15:13 EDT 2004
 MasterHostname = localhost
 MasterPort = 53135
 NodeDirectory = /usr/share/pipeline
@@ -25,7 +25,7 @@ PipelineGroup = pipeline
 PipelineGroupID = 502
 PipelineUser = pipeline
 PipelineUserID = 502
-PlConfigVersion = 2.2.0
+PlConfigVersion = 2.2.1
 ProductionDirectory = /base/prod
 QueueDirectory = /usr/share/pipeline
 QueueHostname = localhost
