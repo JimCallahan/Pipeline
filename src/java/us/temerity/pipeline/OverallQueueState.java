@@ -1,4 +1,4 @@
-// $Id: OverallQueueState.java,v 1.7 2004/07/07 13:20:17 jim Exp $
+// $Id: OverallQueueState.java,v 1.8 2004/07/14 21:01:54 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -35,17 +35,9 @@ enum OverallQueueState
 
   /**
    * One or more of the files associated with the node have a <CODE>QueueState<CODE> of 
-   * {@link QueueState#Missing Missing}. <P> 
-   * 
-   * This state has precedence over the <CODE>Finished</CODE> state.
-   */
-  Missing,
-
-  /**
-   * One or more of the files associated with the node have a <CODE>QueueState<CODE> of 
    * {@link QueueState#Stale Stale}. <P> 
    * 
-   * This state has precedence over the <CODE>Finished</CODE> and <CODE>Missing</CODE> states.
+   * This state has precedence over the <CODE>Finished</CODE> states.
    */
   Stale,
 
@@ -53,8 +45,7 @@ enum OverallQueueState
    * One or more of the files associated with the node have a <CODE>QueueState<CODE> of 
    * {@link QueueState#Queued Queued}. <P> 
    * 
-   * This state has precedence over the <CODE>Finished</CODE>, <CODE>Missing</CODE> and 
-   * <CODE>Stale</CODE> states.
+   * This state has precedence over the <CODE>Finished</CODE> and <CODE>Stale</CODE> states.
    */
   Queued,
 
@@ -62,8 +53,8 @@ enum OverallQueueState
    * One or more of the files associated with the node have a <CODE>QueueState<CODE> of 
    * {@link QueueState#Running Running}. <P> 
    * 
-   * This state has precedence over the <CODE>Finished</CODE>, <CODE>Missing</CODE>, 
-   * <CODE>Stale</CODE> and <CODE>Queued</CODE> states.
+   * This state has precedence over the <CODE>Finished</CODE>, <CODE>Stale</CODE> and 
+   * <CODE>Queued</CODE> states.
    */
   Running,
 
@@ -71,8 +62,8 @@ enum OverallQueueState
    * One or more of the files associated with the node have a <CODE>QueueState<CODE> of 
    * {@link QueueState#Failed Failed}. <P> 
    * 
-   * This state has precedence over the <CODE>Finished</CODE>, <CODE>Missing</CODE>, 
-   * <CODE>Stale</CODE>, <CODE>Queued</CODE> and <CODE>Running</CODE> states.
+   * This state has precedence over the <CODE>Finished</CODE>, <CODE>Stale</CODE>, 
+   * <CODE>Queued</CODE> and <CODE>Running</CODE> states.
    */
   Failed;
 

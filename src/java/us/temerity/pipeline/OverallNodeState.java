@@ -1,4 +1,4 @@
-// $Id: OverallNodeState.java,v 1.9 2004/06/14 22:39:17 jim Exp $
+// $Id: OverallNodeState.java,v 1.10 2004/07/14 21:01:35 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -74,7 +74,7 @@ enum OverallNodeState
   ModifiedLinks, 
 
   /**
-   * The working version is based on the lastest checked-in version, but is node identical
+   * The working version is based on the latest checked-in version, but is node identical
    * to that version. <P> 
    * 
    * The <CODE>VersionState</CODE> is <CODE>Identical</CODE>. One or more of the 
@@ -109,8 +109,20 @@ enum OverallNodeState
    * of the states are <CODE>Modified</CODE> or <CODE>Added</CODE> at the same time that
    * some of them are <CODE>NeedsCheckOut</CODE> or <CODE>Obsolete</CODE>.
    */
-  Conflicted;
+  Conflicted, 
 
+  /**
+   * A working version exists, but one or more of the associated files are missing from 
+   * the working area. <P> 
+   * 
+   * This implies that one or more of the individual <CODE>FileState</CODE> of each file 
+   * associated with the node are <CODE>Missing</CODE>. <P> 
+   * 
+   * This state has precedence over all other states except <CODE>CheckedIn</CODE> which 
+   * can never occur at the same time as <CODE>Missing</CODE> since there are no working 
+   * files to check for existence.
+   */
+  Missing;
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -159,6 +171,7 @@ enum OverallNodeState
     "Modified Links",
     "Modified", 
     "Needs Check-Out", 
-    "Conflicted"
+    "Conflicted", 
+    "Missing"
   };
 }
