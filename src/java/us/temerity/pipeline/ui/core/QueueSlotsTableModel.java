@@ -1,4 +1,4 @@
-// $Id: QueueSlotsTableModel.java,v 1.4 2005/03/11 06:33:44 jim Exp $
+// $Id: QueueSlotsTableModel.java,v 1.5 2005/03/21 07:01:57 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -216,6 +216,24 @@ class QueueSlotsTableModel
 
   /*----------------------------------------------------------------------------------------*/
   /*   U S E R   I N T E R F A C E                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the ID of the job at the given row.
+   */
+  public Long
+  getJobID
+  (
+   int row
+  ) 
+  {
+    QueueJobInfo info = pJobInfo[pRowToIndex[row]];
+    if(info != null) 
+      return info.getJobID();
+    return null;
+  }
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**

@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.11 2005/03/11 06:33:44 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.12 2005/03/21 07:01:57 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -777,7 +777,7 @@ class JQueueJobBrowserPanel
     int rows[] = pSlotsTablePanel.getTable().getSelectedRows();
     int wk;
     for(wk=0; wk<rows.length; wk++) {
-      Long jobID = (Long) pSlotsTableModel.getValueAt(rows[wk], 1);
+      Long jobID = pSlotsTableModel.getJobID(rows[wk]);
       if(jobID != null) 
 	jobIDs.add(jobID);
     }
@@ -795,7 +795,7 @@ class JQueueJobBrowserPanel
     int rows[] = pGroupsTablePanel.getTable().getSelectedRows();
     int wk;
     for(wk=0; wk<rows.length; wk++) {
-      Long groupID = (Long) pGroupsTableModel.getValueAt(rows[wk], 0);
+      Long groupID = pGroupsTableModel.getGroupID(rows[wk]);
       groupIDs.add(groupID);
     }
 
@@ -2341,7 +2341,7 @@ class JQueueJobBrowserPanel
 	int rows[] = pGroupsTablePanel.getTable().getSelectedRows();
 	int wk;
 	for(wk=0; wk<rows.length; wk++) {
-	  Long groupID = (Long) pGroupsTableModel.getValueAt(rows[wk], 0);
+	  Long groupID = pGroupsTableModel.getGroupID(rows[wk]);
 	  pSelectedIDs.add(groupID);
 	}
       }
@@ -2385,7 +2385,7 @@ class JQueueJobBrowserPanel
 	  int rows[] = pSlotsTablePanel.getTable().getSelectedRows();
 	  int wk;
 	  for(wk=0; wk<rows.length; wk++) 
-	    jobID = (Long) pSlotsTableModel.getValueAt(rows[wk], 1);
+	    jobID = pSlotsTableModel.getJobID(rows[wk]);
 	}
 	
 	GetJobInfoTask task = new GetJobInfoTask(pGroupID, jobID);
