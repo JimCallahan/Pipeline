@@ -381,6 +381,17 @@
 
 
    
+  <!--  C A R D   P A N E L   -->
+ 
+  <style id="CardPanel">
+    <imagePainter path="FrameIn.png"
+                  sourceInsets="3 3 3 3"/>
+    <insets top="3" bottom="3" right="3" left="3"/>
+  </style>
+  <bind style="CardPanel" type="name" key="CardPanel"/>
+
+
+   
   <!--  S C R O L L   P A N E  -->
 
   <style id="ScrollPane">

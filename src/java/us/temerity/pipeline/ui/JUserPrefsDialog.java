@@ -1,4 +1,4 @@
-// $Id: JUserPrefsDialog.java,v 1.6 2004/05/18 00:33:10 jim Exp $
+// $Id: JUserPrefsDialog.java,v 1.7 2004/05/18 20:23:46 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -81,7 +81,7 @@ class JUserPrefsDialog
 	    JScrollPane scroll = new JScrollPane(pTree);
 	    
 	    scroll.setMinimumSize(new Dimension(230, 120));
-	    scroll.setPreferredSize(new Dimension(230, 150));
+	    scroll.setPreferredSize(new Dimension(230, 250));
 	    
 	    scroll.setHorizontalScrollBarPolicy
 	      (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -125,14 +125,15 @@ class JUserPrefsDialog
 	  CardLayout layout = new CardLayout();
 	  JPanel cpanel = new JPanel(layout);
 	  pCardPanel = cpanel;
+	  
+	  cpanel.setName("CardPanel");
 	
 	  { 
 	    Component comps[] = createCommonPanels();
 	    JPanel tpanel = (JPanel) comps[0];
 	    JPanel vpanel = (JPanel) comps[1];
 
-	    tpanel.add(Box.createVerticalGlue());
-	    vpanel.add(Box.createVerticalGlue());
+	    UIMaster.addVerticalSpacer(tpanel, vpanel, 100);
 
 	    cpanel.add(comps[2], " ");
 	    
@@ -144,6 +145,10 @@ class JUserPrefsDialog
 
 	  // ...
 	  
+	  Dimension size = new Dimension(395, 286);
+ 	  cpanel.setMinimumSize(size);
+ 	  cpanel.setPreferredSize(size);
+
 	  panel.add(cpanel);
 	}
 
@@ -437,6 +442,7 @@ class JUserPrefsDialog
     Component comps[] = new Component[3];
 
     Box body = new Box(BoxLayout.X_AXIS);
+    comps[2] = body;
     {
       {
 	JPanel panel = new JPanel();
@@ -467,16 +473,6 @@ class JUserPrefsDialog
 
 	body.add(panel);
       }
-    }
-
-    {
-      JScrollPane scroll = new JScrollPane(body);
-      comps[2] = scroll;
-
-      scroll.setHorizontalScrollBarPolicy
-	(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-      scroll.setVerticalScrollBarPolicy
-	(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
     }
 
     return comps;
