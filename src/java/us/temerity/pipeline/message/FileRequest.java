@@ -1,4 +1,4 @@
-// $Id: FileRequest.java,v 1.3 2004/03/13 17:19:13 jim Exp $
+// $Id: FileRequest.java,v 1.4 2004/03/15 19:11:33 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -15,7 +15,7 @@ import us.temerity.pipeline.FileMgrServer;
  * {@link FileMgrServer FileMgrServer}.  <P> 
  * 
  * The protocol of communicaton between these file manager classes is for a 
- * <CODE>FileRequest</CODE> to be sent followed by a corresponding <CODE>File*Req</CODE> 
+ * <CODE>FileRequest</CODE> to be sent followed by a corresponding request
  * object which contains the needed request data.  The purpose of this enumeration is to 
  * make testing for which request is being send more efficient and cleaner on the 
  * <CODE>FileMgrServer</CODE> side of the connection.
@@ -31,32 +31,32 @@ public
 enum FileRequest
 {  
   /**
-   * An instance of <CODE>FileCheckInReq</CODE> is next.
+   * An instance of {@link FileCheckInReq FileCheckInReq} is next.
    */
   CheckIn, 
   
   /**
-   * An instance of <CODE>FileCheckOutReq</CODE> is next.
+   * An instance of {@link FileCheckOutReq FileCheckOutReq} is next.
    */
   CheckOut, 
   
   /**
-   * An instance of <CODE>FileCheckSumReq</CODE> is next.
+   * An instance of {@link FileCheckSumReq FileCheckSumReq} is next.
    */
   CheckSum, 
   
   /**
-   * An instance of <CODE>FileFreezeReq</CODE> is next.
+   * An instance of {@link FileFreezeReq FileFreezeReq} is next.
    */
   Freeze, 
   
   /**
-   * An instance of <CODE>FileUnfreezeReq</CODE> is next.
+   * An instance of {@link FileUnfreezeReq FileUnfreezeReq} is next.
    */
   Unfreeze, 
   
   /**
-   * An instance of <CODE>FileStateReq</CODE> is next.
+   * An instance of {@link FileStateReq FileStateReq} is next.
    */
   State, 
 
