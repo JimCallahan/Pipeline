@@ -1,4 +1,4 @@
-// $Id: JTopLevelPanel.java,v 1.7 2004/06/23 22:33:06 jim Exp $
+// $Id: JTopLevelPanel.java,v 1.8 2004/07/28 19:21:47 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -132,6 +132,15 @@ class JTopLevelPanel
   isLocked() 
   {
     return pIsLocked;
+  }
+
+  /**
+   * Get the Author|View field text.
+   */ 
+  public String
+  getTitle() 
+  {
+    return (pAuthor + " | " + pView);
   }
 
   /** 
