@@ -17,9 +17,10 @@ echo '(load "'$scripts/web-icon.scm'")' > $tmpfile
 anynewer=0
 frame=0
 for nstate in Pending CheckedIn Identical NeedsCheckOut Modified \
-              Conflicted ModifiedLinks Missing Added Obsolete 
+              Conflicted ModifiedLinks Missing Added Obsolete \
+              NeedsCheckOutMicro NeedsCheckOutMajor 
 do
-  for qstate in Stale Queued Running Missing Failed Finished Paused Undefined
+  for qstate in Stale Queued Running Aborted Failed Finished Paused Undefined
   do
     simg=`printf "%s.%04d.sgi" $src/Normal $frame`
 
