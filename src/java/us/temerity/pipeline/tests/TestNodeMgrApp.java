@@ -1,4 +1,4 @@
-// $Id: TestNodeMgrApp.java,v 1.3 2004/03/28 00:50:37 jim Exp $
+// $Id: TestNodeMgrApp.java,v 1.4 2004/03/29 08:19:39 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -29,6 +29,7 @@ class TestNodeMgrApp
     Logs.init();
     Logs.net.setLevel(Level.FINEST);
     Logs.sub.setLevel(Level.FINER);
+    Logs.ops.setLevel(Level.FINER);
 
     try {
       TestNodeMgrApp app = new TestNodeMgrApp();
@@ -57,11 +58,9 @@ class TestNodeMgrApp
     nodeDir.mkdirs();
     
     /* test nodes */ 
-    NodeID idA = null;
     NodeMod modA = null;
     {
       String name = "/images/normal";
-      idA = new NodeID(user, "default", name);
       
       FileSeq primary = new FileSeq(new FilePattern("normal", 4, "tif"), 
 				    new FrameRange(0, 43, 1));
@@ -74,11 +73,9 @@ class TestNodeMgrApp
 			TestInfo.sBuildToolset, null);
     }
 
-    NodeID idB = null;
     NodeMod modB = null;
     {
       String name = "/images/selected";
-      idB = new NodeID(user, "default", name);
       
       FileSeq primary = new FileSeq(new FilePattern("selected", 4, "tif"), 
 				    new FrameRange(0, 43, 1));
@@ -89,11 +86,89 @@ class TestNodeMgrApp
 			TestInfo.sBuildToolset, null);
     }
 
-    /* initialize data files */ 
-    File prod = new File(cwd, "prod");
-    File dir = new File(prod, "working/" + user + "/default/images");
-
+    NodeMod fly = null;
     {
+      String name = "/animals/insects/fly";
+      
+      FileSeq primary = new FileSeq(new FilePattern("fly", "txt"), null);
+      TreeSet<FileSeq> secondary = new TreeSet<FileSeq>();
+      
+      fly = new NodeMod(name, primary, secondary, 
+			TestInfo.sBuildToolset, null);
+    }
+
+    NodeMod dragonfly = null;
+    {
+      String name = "/animals/insects/dragonfly";
+      
+      FileSeq primary = new FileSeq(new FilePattern("dragonfly", "txt"), null);
+      TreeSet<FileSeq> secondary = new TreeSet<FileSeq>();
+      
+      dragonfly = new NodeMod(name, primary, secondary, 
+			      TestInfo.sBuildToolset, null);
+    }
+
+    NodeMod frog = null;
+    {
+      String name = "/animals/amphibians/frog";
+      
+      FileSeq primary = new FileSeq(new FilePattern("frog", "txt"), null);
+      TreeSet<FileSeq> secondary = new TreeSet<FileSeq>();
+      
+      frog = new NodeMod(name, primary, secondary, 
+			 TestInfo.sBuildToolset, null);
+    }
+
+    NodeMod salamander = null;
+    {
+      String name = "/animals/amphibians/salamander";
+      
+      FileSeq primary = new FileSeq(new FilePattern("salamander", "txt"), null);
+      TreeSet<FileSeq> secondary = new TreeSet<FileSeq>();
+      
+      salamander = new NodeMod(name, primary, secondary, 
+			       TestInfo.sBuildToolset, null);
+    }
+
+    NodeMod snake = null;
+    {
+      String name = "/animals/reptiles/snake";
+      
+      FileSeq primary = new FileSeq(new FilePattern("snake", "txt"), null);
+      TreeSet<FileSeq> secondary = new TreeSet<FileSeq>();
+      
+      snake = new NodeMod(name, primary, secondary, 
+			  TestInfo.sBuildToolset, null);
+    }
+
+    NodeMod sparrow = null;
+    {
+      String name = "/animals/birds/sparrow";
+      
+      FileSeq primary = new FileSeq(new FilePattern("sparrow", "txt"), null);
+      TreeSet<FileSeq> secondary = new TreeSet<FileSeq>();
+      
+      sparrow = new NodeMod(name, primary, secondary, 
+			    TestInfo.sBuildToolset, null);
+    }
+
+    NodeMod eagle = null;
+    {
+      String name = "/animals/birds/eagle";
+      
+      FileSeq primary = new FileSeq(new FilePattern("eagle", "txt"), null);
+      TreeSet<FileSeq> secondary = new TreeSet<FileSeq>();
+      
+      eagle = new NodeMod(name, primary, secondary, 
+			  TestInfo.sBuildToolset, null);
+    }
+
+    LinkCatagory ref = new LinkCatagory("RenderReference", LinkPolicy.None);
+
+    /* initialize data files */ 
+    {
+      File dir = new File(cwd, "prod/working/" + user + "/default/images");
+
       dir.mkdirs();
       ArrayList<String> args = new ArrayList<String>();
 
@@ -114,6 +189,17 @@ class TestNodeMgrApp
       proc.join();
     }
     
+    {
+      ArrayList<String> args = new ArrayList<String>();
+      args.add("--recursive");
+      args.add("animals");
+      args.add(cwd + "/prod/working/" + user + "/default");
+
+      SubProcess proc = new SubProcess("CopyFiles", "cp", args, env, cwd);
+      proc.start();
+      proc.join();
+    }
+
     {
       /* start the node manager server */ 
       NodeMgrServer server = new NodeMgrServer(nodeDir, 53139);
@@ -143,13 +229,26 @@ class TestNodeMgrApp
       }
       
       NodeMgrClient client = new NodeMgrClient("localhost", 53139);
+      client.link("default", modA.getName(), modB.getName(), 
+		  ref, LinkRelationship.None, null);
+      modA = client.getWorkingVersion("default", modA.getName());
       client.shutdown();
       
       server.join();
     }
 
-    /* port a change to be released */ 
-    Thread.currentThread().sleep(5000);
+    {
+      ArrayList<String> args = new ArrayList<String>();
+      args.add("--force");
+      args.add("--recursive");
+      args.add("downstream");
+      
+      SubProcess proc = 
+	new SubProcess("RemoveDownstreamLinks", "rm", args, env, nodeDir);
+      proc.start();
+      
+      proc.join();
+    }
 
     {
       /* start the node manager server */ 
@@ -168,12 +267,40 @@ class TestNodeMgrApp
 	
 	ClientTask2 clientB = new ClientTask2(456, modB);
 	clients.add(clientB);
-	
+
 	for(ClientTask2 client : clients) 
 	  client.start();
 	
 	for(ClientTask2 client : clients) 
 	  client.join();
+      }
+
+      {
+	NodeMgrClient client = new NodeMgrClient("localhost", 53139);
+	client.register("default", fly);
+	client.register("default", dragonfly);
+	client.disconnect();
+      }
+
+      {
+	ClientTask3 clientA = 
+	  new ClientTask3(433, snake, frog, fly, dragonfly, salamander);
+	clientA.start();
+	
+	ClientTask4 clientB = 
+	  new ClientTask4(153, eagle, sparrow, fly, dragonfly);
+	clientB.start();
+	
+	clientA.join();
+	clientB.join();
+      }
+
+
+      {
+	NodeMgrClient client = new NodeMgrClient("localhost", 53139);
+	client.link("default", eagle.getName(), snake.getName(), 
+		    new LinkCatagory("Eats", LinkPolicy.Both), LinkRelationship.All, null);
+	client.disconnect();
       }
       
       NodeMgrClient client = new NodeMgrClient("localhost", 53139);
@@ -262,12 +389,6 @@ class TestNodeMgrApp
 	  }
 	}
 
-
-
-	// ...
-      
-
-
 	client.disconnect();
       }
       catch(PipelineException ex) {
@@ -319,11 +440,6 @@ class TestNodeMgrApp
 	  }
 	}
 
-
-	// ...
-      
-
-
 	client.disconnect();
       }
       catch(Exception ex) {
@@ -334,6 +450,155 @@ class TestNodeMgrApp
     private long     pSeed; 
     private String   pName;
     private NodeMod  pNodeMod;
+  }
+
+  private 
+  class ClientTask3
+    extends Thread
+  {
+    public 
+    ClientTask3
+    (
+     long seed,   
+     NodeMod snake, 
+     NodeMod frog, 
+     NodeMod fly, 
+     NodeMod dragonfly, 
+     NodeMod salamander
+    ) 
+    {
+      pSeed = seed;
+      pSnake = snake;
+      pFrog = frog;
+      pFly = fly;
+      pDragonfly = dragonfly;
+      pSalamander = salamander;
+    }
+
+    public void 
+    run() 
+    {
+      Random random = new Random(pSeed);
+      try {
+	sleep(random.nextInt(1000));
+      }
+      catch(InterruptedException ex) {
+	assert(false);
+      }
+
+      try {
+	NodeMgrClient client = new NodeMgrClient("localhost", 53139);
+
+	client.register("default", pSalamander);
+	client.register("default", pFrog);
+	client.register("default", pSnake);
+
+	client.link("default", pSnake.getName(), pFrog.getName(), 
+		    new LinkCatagory("Eats", LinkPolicy.Both), LinkRelationship.All, null);
+
+	client.link("default", pFrog.getName(), pDragonfly.getName(), 
+		    new LinkCatagory("Eats", LinkPolicy.Both), LinkRelationship.All, null);
+
+	client.link("default", pSnake.getName(), pSalamander.getName(), 
+		    new LinkCatagory("Eats", LinkPolicy.Both), LinkRelationship.All, null);
+
+	client.link("default", pFrog.getName(), pFly.getName(), 
+		    new LinkCatagory("Eats", LinkPolicy.Both), LinkRelationship.All, null);
+	
+	client.link("default", pDragonfly.getName(), pFly.getName(),
+		    new LinkCatagory("Eats", LinkPolicy.Both), LinkRelationship.All, null);
+
+	client.disconnect();
+      }
+      catch(Exception ex) {
+	Logs.ops.severe(ex.getMessage());
+      }
+    }
+
+    private long     pSeed; 
+    private NodeMod  pSnake;
+    private NodeMod  pFrog;
+    private NodeMod  pFly;
+    private NodeMod  pDragonfly;
+    private NodeMod  pSalamander;
+  }
+
+
+  private 
+  class ClientTask4
+    extends Thread
+  {
+    public 
+    ClientTask4
+    (
+     long seed,
+     NodeMod eagle, 
+     NodeMod sparrow, 
+     NodeMod fly, 
+     NodeMod dragonfly
+    ) 
+    {
+      pSeed = seed;
+      pEagle = eagle;
+      pSparrow = sparrow;
+      pFly = fly;
+      pDragonfly = dragonfly;
+    }
+
+    public void 
+    run() 
+    {
+      Random random = new Random(pSeed);
+      try {
+	sleep(random.nextInt(1000));
+      }
+      catch(InterruptedException ex) {
+	assert(false);
+      }
+
+      try {
+	NodeMgrClient client = new NodeMgrClient("localhost", 53139);
+
+	client.register("default", pSparrow);
+	client.register("default", pEagle);
+
+	client.link("default", pEagle.getName(), pSparrow.getName(), 
+		    new LinkCatagory("Eats", LinkPolicy.Both), LinkRelationship.All, null);
+
+	client.link("default", pSparrow.getName(), pDragonfly.getName(), 
+		    new LinkCatagory("Eats", LinkPolicy.Both), LinkRelationship.All, null);
+
+	client.link("default", pSparrow.getName(), pFly.getName(), 
+		    new LinkCatagory("Eats", LinkPolicy.Both), LinkRelationship.All, null);
+
+	try {
+	  client.link("default", pFly.getName(), pFly.getName(), 
+		      new LinkCatagory("Eats", LinkPolicy.Both), LinkRelationship.All, null);
+	} 
+	catch(PipelineException ex) {
+	  System.out.print("Caught: " + ex.getMessage() + "\n\n");
+	}
+
+	try {
+	  client.link("default", pFly.getName(), pEagle.getName(), 
+		      new LinkCatagory("Eats", LinkPolicy.Both), LinkRelationship.All, null);
+	} 
+	catch(PipelineException ex) {
+	  System.out.print("Caught: " + ex.getMessage() + "\n\n");
+	}
+
+	client.disconnect();
+      }
+      catch(Exception ex) {
+	Logs.ops.severe(ex.getMessage());
+      }
+    }
+
+    private long     pSeed; 
+    private NodeMod  pEagle;
+    private NodeMod  pSparrow;
+    private NodeMod  pFly;
+    private NodeMod  pDragonfly;
   }
 
 
