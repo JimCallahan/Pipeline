@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.64 2004/11/02 20:03:29 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.65 2004/11/03 23:41:12 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -72,8 +72,9 @@ class JNodeViewerPanel
     {
       pRoots = new TreeMap<String,NodeStatus>();
 
-      pShowDownstream = UserPrefs.getInstance().getShowDownstream();
-      pLayoutPolicy   = LayoutPolicy.AutomaticExpand;
+      pShowDownstream   = UserPrefs.getInstance().getShowDownstream();
+      pShowAssociations = UserPrefs.getInstance().getShowAssociations();
+      pLayoutPolicy     = LayoutPolicy.AutomaticExpand;
 
       pSelected = new HashMap<NodePath,ViewerNode>();
 
@@ -137,6 +138,12 @@ class JNodeViewerPanel
       item = new JMenuItem();
       pShowHideDownstreamItem = item;
       item.setActionCommand("show-hide-downstream");
+      item.addActionListener(this);
+      pPanelPopup.add(item);  
+
+      item = new JMenuItem();
+      pShowHideAssociationsItem = item;
+      item.setActionCommand("show-hide-associations");
       item.addActionListener(this);
       pPanelPopup.add(item);  
 
@@ -711,7 +718,12 @@ class JNodeViewerPanel
   updatePanelMenu() 
   {
     pRegisterItem.setEnabled(!pIsLocked);
-    pShowHideDownstreamItem.setText((pShowDownstream ? "Hide" : "Show") + " Downstream");
+
+    pShowHideDownstreamItem.setText
+      ((pShowDownstream ? "Hide" : "Show") + " Downstream");
+
+    pShowHideAssociationsItem.setText
+      ((pShowAssociations ? "Hide" : "Show") + " Associations");
   }
 
   /**
@@ -2240,6 +2252,10 @@ class JNodeViewerPanel
 		prefs.getNodeViewerShowHideDownstreamNodes().wasPressed(e))
 	doShowHideDownstream();
       
+      else if((prefs.getNodeViewerShowHideAssociationsNodes() != null) &&
+		prefs.getNodeViewerShowHideAssociationsNodes().wasPressed(e))
+	doShowHideAssociations();
+      
       else if((prefs.getNodeViewerRemoveAllRoots() != null) &&
 	      prefs.getNodeViewerRemoveAllRoots().wasPressed(e))
 	doRemoveAllRoots();
@@ -2406,6 +2422,9 @@ class JNodeViewerPanel
       doCollapseAll();
     else if(cmd.equals("show-hide-downstream"))
       doShowHideDownstream();
+    else if(cmd.equals("show-hide-associations"))
+      doShowHideAssociations();
+
 
     // ...
 
@@ -3561,6 +3580,20 @@ class JNodeViewerPanel
   }
 
 
+  /**
+   * Show/Hide nodes upstream of an Association link. 
+   */ 
+  private void
+  doShowHideAssociations()
+  {
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();
+
+    pShowAssociations = !pShowAssociations;
+    doUpdate();
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   G L U E A B L E                                                                      */
@@ -4601,7 +4634,7 @@ class JNodeViewerPanel
 	      if(pRoots.get(name) == null) {
 		try {
 		  MasterMgrClient client = master.getMasterMgrClient();
-		  NodeStatus status = client.status(pAuthor, pView, name);
+		  NodeStatus status = client.status(pAuthor, pView, name, !pShowAssociations);
 		  pRoots.put(name, status);
 		}
 		catch(PipelineException ex) {
@@ -4930,6 +4963,11 @@ class JNodeViewerPanel
   private boolean  pShowDownstream;
 
   /**
+   * Whether to evaluate the status of and display the nodes upstream of an Association link.
+   */ 
+  private boolean  pShowAssociations;
+
+  /**
    * The expand/collapse policy to use when laying out nodes.
    */ 
   private LayoutPolicy  pLayoutPolicy;
@@ -4956,6 +4994,7 @@ class JNodeViewerPanel
    */
   private JMenuItem  pRegisterItem;
   private JMenuItem  pShowHideDownstreamItem;
+  private JMenuItem  pShowHideAssociationsItem;
   
 
   /*----------------------------------------------------------------------------------------*/

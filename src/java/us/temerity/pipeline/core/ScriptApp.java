@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.18 2004/11/03 19:55:42 jim Exp $
+// $Id: ScriptApp.java,v 1.19 2004/11/03 23:41:12 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1878,7 +1878,7 @@ class ScriptApp
     NodeStatus root = null;
     TreeMap<String,NodeStatus> table = new TreeMap<String,NodeStatus>();
     {
-      root = mclient.status(nodeID);
+      root = mclient.status(nodeID, false);
       if(printUpstream) 
 	unpackStatus(root, table); 
       else 

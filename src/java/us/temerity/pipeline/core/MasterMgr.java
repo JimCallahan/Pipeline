@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.61 2004/11/03 19:55:42 jim Exp $
+// $Id: MasterMgr.java,v 1.62 2004/11/03 23:41:12 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2750,7 +2750,8 @@ class MasterMgr
       timer.resume();
 
       NodeID nodeID = req.getNodeID();
-      NodeStatus root = performNodeOperation(new NodeOp(), nodeID, timer);
+      NodeStatus root = 
+	performNodeOperation(new NodeOp(), nodeID, req.skipAssociations(), timer);
       return new NodeStatusRsp(timer, nodeID, root);
     }
     catch(PipelineException ex) {
@@ -3666,7 +3667,7 @@ class MasterMgr
       }
 
       /* check-in the tree of nodes */ 
-      performNodeOperation(new NodeCheckInOp(req, rootVersionID), nodeID, timer);
+      performNodeOperation(new NodeCheckInOp(req, rootVersionID), nodeID, false, timer);
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
@@ -3711,7 +3712,7 @@ class MasterMgr
       /* get the current status of the nodes */ 
       HashMap<NodeID,NodeStatus> table = new HashMap<NodeID,NodeStatus>();
       {
-	NodeStatus status = performNodeOperation(new NodeOp(), req.getNodeID(), timer);
+	NodeStatus status = performNodeOperation(new NodeOp(), req.getNodeID(), false, timer);
 	buildStatusTable(status, table);
       }
 
@@ -4229,7 +4230,7 @@ class MasterMgr
       timer.resume();	
 
       /* get the current status of the nodes */ 
-      NodeStatus status = performNodeOperation(new NodeOp(), req.getNodeID(), timer);
+      NodeStatus status = performNodeOperation(new NodeOp(), req.getNodeID(), false, timer);
 
       /* submit the jobs */ 
       return submitJobsCommon(status, req.getFileIndices(),
@@ -4275,7 +4276,7 @@ class MasterMgr
       timer.resume();	
 
       /* get the current status of the nodes */ 
-      NodeStatus status = performNodeOperation(new NodeOp(), req.getNodeID(), timer);
+      NodeStatus status = performNodeOperation(new NodeOp(), req.getNodeID(), false, timer);
 
       /* compute the file indices of the given target file sequences */ 
       TreeSet<Integer> indices = new TreeSet<Integer>();      
@@ -5664,6 +5665,10 @@ class MasterMgr
    * @param nodeID
    *   The unique working version identifier.
    * 
+   * @param skipAssoc
+   *   Whether to skip computing the status of all nodes on the upstream side of an 
+   *   Association link.
+   * 
    * @param timer
    *   The shared task timer for this operation.
    * 
@@ -5678,6 +5683,7 @@ class MasterMgr
   (
    NodeOp nodeOp, 
    NodeID nodeID,
+   boolean skipAssoc, 
    TaskTimer timer
   ) 
     throws PipelineException
@@ -5685,7 +5691,8 @@ class MasterMgr
     NodeStatus root = null;
     {
       HashMap<String,NodeStatus> table = new HashMap<String,NodeStatus>();
-      performUpstreamNodeOp(nodeOp, nodeID, new LinkedList<String>(), table, timer);
+      performUpstreamNodeOp(nodeOp, nodeID, skipAssoc, 
+			    new LinkedList<String>(), table, timer);
       root = table.get(nodeID.getName());
       assert(root != null);
     }
@@ -5718,6 +5725,10 @@ class MasterMgr
    * @param nodeID
    *   The unique working version identifier.
    * 
+   * @param skipAssoc
+   *   Whether to skip computing the status of all nodes on the upstream side of an 
+   *   Association link.
+   * 
    * @param branch
    *   The names of the nodes from the root to this node.
    * 
@@ -5735,6 +5746,7 @@ class MasterMgr
   (
    NodeOp nodeOp,
    NodeID nodeID, 
+   boolean skipAssoc, 
    LinkedList<String> branch, 
    HashMap<String,NodeStatus> table, 
    TaskTimer timer
@@ -5913,11 +5925,17 @@ class MasterMgr
       case CheckedIn:
 	for(LinkVersion link : latest.getSources()) {
 	  NodeID lnodeID = new NodeID(nodeID, link.getName());
-	  performUpstreamNodeOp(nodeOp, lnodeID, branch, table, timer);
-	  
-	  NodeStatus lstatus = table.get(link.getName());
+
+	  NodeStatus lstatus = null;
+	  if(skipAssoc && (link.getPolicy() == LinkPolicy.Association)) {
+	    lstatus = new NodeStatus(lnodeID);
+	  }
+	  else {  
+	    performUpstreamNodeOp(nodeOp, lnodeID, skipAssoc, branch, table, timer);
+	    lstatus = table.get(link.getName());
+	  }
 	  assert(lstatus != null);
-	  
+	      
 	  status.addSource(lstatus);
 	  lstatus.addTarget(status);
 	}
@@ -5926,9 +5944,15 @@ class MasterMgr
       default:
 	for(LinkMod link : work.getSources()) {
 	  NodeID lnodeID = new NodeID(nodeID, link.getName());
-	  performUpstreamNodeOp(nodeOp, lnodeID, branch, table, timer);
-	  
-	  NodeStatus lstatus = table.get(link.getName());
+
+	  NodeStatus lstatus = null;
+	  if(skipAssoc && (link.getPolicy() == LinkPolicy.Association)) {
+	    lstatus = new NodeStatus(lnodeID);
+	  }
+	  else {  
+	    performUpstreamNodeOp(nodeOp, lnodeID, skipAssoc, branch, table, timer);
+	    lstatus = table.get(link.getName());
+	  }
 	  assert(lstatus != null);
 	  
 	  status.addSource(lstatus);
@@ -6100,25 +6124,31 @@ class MasterMgr
 	    /* the work and base version have the same set of links 
 		 because (linkState == Identical) */
 	    for(LinkVersion link : base.getSources()) {
-	      NodeDetails ldetails = table.get(link.getName()).getDetails();
+	      switch(link.getPolicy()) {
+	      case Reference:
+	      case Dependency:
+		{
+		  NodeDetails ldetails = table.get(link.getName()).getDetails();
+		  VersionID lvid = ldetails.getWorkingVersion().getWorkingID();
 
-	      switch(ldetails.getOverallNodeState()) {
-	      case Modified:
-	      case ModifiedLinks:
-	      case Conflicted:	
-	      case Missing:
-		if(link.getPolicy() != LinkPolicy.Association) 
-		  overallNodeState = OverallNodeState.ModifiedLinks;
-		break;
+		  switch(ldetails.getOverallNodeState()) {
+		  case Modified:
+		  case ModifiedLinks:
+		  case Conflicted:	
+		  case Missing:
+		    overallNodeState = OverallNodeState.ModifiedLinks;
+		    break;
 		
-	      case Identical:
-	      case NeedsCheckOut:
-		if(!link.getVersionID().equals(ldetails.getWorkingVersion().getWorkingID()))
-		  overallNodeState = OverallNodeState.ModifiedLinks;
-	      }
+		  case Identical:
+		  case NeedsCheckOut:
+		    if(!link.getVersionID().equals(lvid))
+		      overallNodeState = OverallNodeState.ModifiedLinks;
+		  }
 	      
-	      if(overallNodeState != null)
-		break;
+		  if(overallNodeState != null)
+		    break;
+		}
+	      }
 	    }
 
 	    if(overallNodeState == null)
@@ -6333,51 +6363,47 @@ class MasterMgr
 	  int wk;
 	  for(wk=0; wk<queueStates.length; wk++) {
 	    for(LinkMod link : work.getSources()) {
-	      NodeStatus lstatus = status.getSource(link.getName());
-	      NodeDetails ldetails = lstatus.getDetails();
-	      
-	      QueueState lqs[] = ldetails.getQueueState();
-	      Date lstamps[] = ldetails.getFileTimeStamps();
-
-	      boolean staleLink = false;
-	      switch(link.getRelationship()) {
-	      case OneToOne:
-		{
-		  Integer offset = link.getFrameOffset();
-		  int idx = wk+offset;
-		  if((idx >= 0) && (idx < lqs.length)) {
-		    if((lstamps[idx] != null) && 
-		       ((fileTimeStamps[wk] == null) || 
-			(fileTimeStamps[wk].compareTo(lstamps[idx]) < 0))) {
-		      switch(link.getPolicy()) {
-		      case Reference:
-		      case Dependency:
-			staleLink = true;
+	      switch(link.getPolicy()) {
+	      case Reference:
+	      case Dependency:
+		{	      
+		  NodeStatus lstatus = status.getSource(link.getName());
+		  NodeDetails ldetails = lstatus.getDetails();
+		  
+		  QueueState lqs[] = ldetails.getQueueState();
+		  Date lstamps[] = ldetails.getFileTimeStamps();
+		  
+		  boolean staleLink = false;
+		  switch(link.getRelationship()) {
+		  case OneToOne:
+		    {
+		      Integer offset = link.getFrameOffset();
+		      int idx = wk+offset;
+		      if((idx >= 0) && (idx < lqs.length)) {
+			if((lstamps[idx] != null) && 
+			   ((fileTimeStamps[wk] == null) || 
+			    (fileTimeStamps[wk].compareTo(lstamps[idx]) < 0))) 
+			  staleLink = true;
+		      }
+		    }
+		    break;
+		    
+		  case All:
+		    {
+		      int fk;
+		      for(fk=0; fk<lqs.length; fk++) {
+			if((lstamps[fk] != null) && 
+			   ((fileTimeStamps[wk] == null) || 
+			    (fileTimeStamps[wk].compareTo(lstamps[fk]) < 0)))
+			  staleLink = true;
 		      }
 		    }
 		  }
-		}
-		break;
-		
-	      case All:
-		{
-		  int fk;
-		  for(fk=0; fk<lqs.length; fk++) {
-		    if((lstamps[fk] != null) && 
-		       ((fileTimeStamps[wk] == null) || 
-			(fileTimeStamps[wk].compareTo(lstamps[fk]) < 0))) {
-		      switch(link.getPolicy()) {
-		      case Reference:
-		      case Dependency:		      
-			staleLink = true;
-		      }
-		    }
-		  }
+		  
+		  if(staleLink) 
+		    status.addStaleLink(link.getName());
 		}
 	      }
-
-	      if(staleLink) 
-		status.addStaleLink(link.getName());
 	    }
 	  }
 	}
@@ -6405,63 +6431,59 @@ class MasterMgr
 
 	  int wk;
 	  for(wk=0; wk<queueStates.length; wk++) {
-	    for(LinkMod link : work.getSources()) {
-	      NodeStatus lstatus = status.getSource(link.getName());
-	      NodeDetails ldetails = lstatus.getDetails();
+	    for(LinkMod link : work.getSources()) { 
+	      switch(link.getPolicy()) {
+	      case Reference:
+	      case Dependency:
+		{
+		  NodeStatus lstatus = status.getSource(link.getName());
+		  NodeDetails ldetails = lstatus.getDetails();
 	      
-	      QueueState lqs[] = ldetails.getQueueState();
-	      Date lstamps[] = ldetails.getFileTimeStamps();
-
-	      boolean staleLink = false;
-	      switch(link.getRelationship()) {
-	      case OneToOne:
-		{
-		  Integer offset = link.getFrameOffset();
-		  int idx = wk+offset;
-		  if((idx >= 0) && (idx < lqs.length)) {
- 		    Date stamp = critical;
- 		    if((lstamps[idx] != null) && (lstamps[idx].compareTo(critical) > 0)) 
- 		      stamp = lstamps[idx];
-
- 		    if((fileTimeStamps[wk] == null) ||
- 		       (fileTimeStamps[wk].compareTo(stamp) < 0)) {
-		      switch(link.getPolicy()) {
-		      case Reference:
-		      case Dependency:
-			fileTimeStamps[wk] = stamp;
+		  QueueState lqs[] = ldetails.getQueueState();
+		  Date lstamps[] = ldetails.getFileTimeStamps();
+		  
+		  boolean staleLink = false;
+		  switch(link.getRelationship()) {
+		  case OneToOne:
+		    {
+		      Integer offset = link.getFrameOffset();
+		      int idx = wk+offset;
+		      if((idx >= 0) && (idx < lqs.length)) {
+			Date stamp = critical;
+			if((lstamps[idx] != null) && (lstamps[idx].compareTo(critical) > 0)) 
+			  stamp = lstamps[idx];
+			
+			if((fileTimeStamps[wk] == null) ||
+			   (fileTimeStamps[wk].compareTo(stamp) < 0)) 
+			  fileTimeStamps[wk] = stamp;
 		      }
 		    }
-		  }
-		}
-		break;
+		    break;
 		
-	      case All:
-		{
-		  int fk;
-		  for(fk=0; fk<lqs.length; fk++) {
- 		    Date stamp = critical;
- 		    if((lstamps[fk] != null) && (lstamps[fk].compareTo(critical) > 0)) 
- 		      stamp = lstamps[fk];
-
- 		    if((fileTimeStamps[wk] == null) ||
- 		       (fileTimeStamps[wk].compareTo(stamp) < 0)) {
-		      switch(link.getPolicy()) {
-		      case Reference:
-		      case Dependency:
- 			fileTimeStamps[wk] = stamp;
+		  case All:
+		    {
+		      int fk;
+		      for(fk=0; fk<lqs.length; fk++) {
+			Date stamp = critical;
+			if((lstamps[fk] != null) && (lstamps[fk].compareTo(critical) > 0)) 
+			  stamp = lstamps[fk];
+			
+			if((fileTimeStamps[wk] == null) ||
+			   (fileTimeStamps[wk].compareTo(stamp) < 0)) 
+			  fileTimeStamps[wk] = stamp;
 		      }
 		    }
 		  }
+		  
+		  if(staleLink) 
+		    status.addStaleLink(link.getName());
 		}
 	      }
-
-	      if(staleLink) 
-		status.addStaleLink(link.getName());
 	    }
 	  }
 	}
       }
-
+	
       /* create the node details */
       NodeDetails details = 
 	new NodeDetails(name, 
