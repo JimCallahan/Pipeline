@@ -1,4 +1,4 @@
-// $Id: LogFormatter.java,v 1.5 2004/07/14 20:57:43 jim Exp $
+// $Id: LogFormatter.java,v 1.6 2004/10/21 01:31:45 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -48,18 +48,19 @@ class LogFormatter
     String stamp = Dates.format(new Date(record.getMillis()));
 
     if(record.getLevel().equals(Level.SEVERE)) {
-      return (name + "-ERROR: " + stamp + sNL +
+      return (stamp + " " + name + "-ERROR: " + sNL +
 	      record.getMessage() + sNL);
     }
     else if(record.getLevel().equals(Level.WARNING)) {
-      return (name + "-WARNING: " + stamp + sNL +
+      return (stamp + " " + name + "-WARNING: " + sNL +
 	      record.getMessage() + sNL);
     }
     else if(record.getLevel().equals(Level.INFO)) {
       return (record.getMessage() + sNL);
     }
     else  {
-      return (name + "-DEBUG [" + record.getLevel().toString().toLowerCase() + "]: " + 
+      return (stamp + " " + name + "-DEBUG " + 
+	      "[" + record.getLevel().toString().toLowerCase() + "]: " + 
 	      record.getMessage() + sNL);
     }
   }
