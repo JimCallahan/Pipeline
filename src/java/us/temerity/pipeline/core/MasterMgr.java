@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.46 2004/10/21 07:08:15 jim Exp $
+// $Id: MasterMgr.java,v 1.47 2004/10/21 08:40:17 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2032,22 +2032,30 @@ class MasterMgr
    NodeModifyPropertiesReq req
   ) 
   {
-    TaskTimer timer = new TaskTimer("MasterMgr.modifyProperties(): " + req.getNodeID());
+    NodeID nodeID = req.getNodeID();
+    TaskTimer timer = new TaskTimer("MasterMgr.modifyProperties(): " + nodeID);
 
     timer.aquire();
-    ReentrantReadWriteLock lock = getWorkingLock(req.getNodeID());
+    ReentrantReadWriteLock lock = getWorkingLock(nodeID);
     lock.writeLock().lock();
     try {
       timer.resume();
 
       /* set the node properties */ 
-      WorkingBundle bundle = getWorkingBundle(req.getNodeID());
+      WorkingBundle bundle = getWorkingBundle(nodeID);
       NodeMod mod = new NodeMod(bundle.uVersion);
       Date critical = mod.getLastCriticalModification();
       if(mod.setProperties(req.getNodeMod())) {
 
+	/* make sure there are no active jobs, if this is a critical modification */ 
+	if((critical.compareTo(mod.getLastCriticalModification()) < 0) &&
+	   hasActiveJobs(nodeID, mod.getTimeStamp(), mod.getPrimarySequence()))
+	  throw new PipelineException
+	    ("Unable to modify critical properties of node (" + nodeID + ") " + 
+	     "while there are active jobs associated with the node!");
+
 	/* write the new working version to disk */ 
-	writeWorkingVersion(req.getNodeID(), mod);
+	writeWorkingVersion(nodeID, mod);
 
 	/* update the bundle */ 
 	bundle.uVersion = mod;
@@ -2100,9 +2108,15 @@ class MasterMgr
 	throw new PipelineException
 	  ("Only working versions of nodes can be linked!\n" + 
 	   "No working version (" + targetID + ") exists for the downstream node.");
-
-      /* add the link */ 
       NodeMod mod = new NodeMod(bundle.uVersion);
+
+      /* make sure there are no active jobs */ 
+      if(hasActiveJobs(targetID, mod.getTimeStamp(), mod.getPrimarySequence()))
+	throw new PipelineException
+	  ("Unable to change the links of target node (" + targetID + ") " + 
+	   "while there are active jobs associated with the node!");
+      
+      /* add the link */ 
       if(mod.getSource(source) == null) 
 	checkForCircularity(timer, source, targetID, 
 			    new HashSet<String>(), new Stack<String>()); 
@@ -2166,9 +2180,15 @@ class MasterMgr
 	throw new PipelineException
 	  ("Only working versions of nodes can be unlinked!\n" + 
 	   "No working version (" + targetID + ") exists for the downstream node.");
+      NodeMod mod = new NodeMod(bundle.uVersion);
+
+      /* make sure there are no active jobs */ 
+      if(hasActiveJobs(targetID, mod.getTimeStamp(), mod.getPrimarySequence()))
+	throw new PipelineException
+	  ("Unable to change the links of target node (" + targetID + ") " + 
+	   "while there are active jobs associated with the node!");
 
       /* remove the link */ 
-      NodeMod mod = new NodeMod(bundle.uVersion);
       mod.removeSource(source);
       
       /* write the new working version to disk */ 
@@ -2247,9 +2267,15 @@ class MasterMgr
 	throw new PipelineException
 	  ("Secondary file sequences can only be added to working versions of nodes!\n" + 
 	   "No working version (" + nodeID + ") exists.");
+      NodeMod mod = new NodeMod(bundle.uVersion);
+
+      /* make sure there are no active jobs */ 
+      if(hasActiveJobs(nodeID, mod.getTimeStamp(), mod.getPrimarySequence()))
+	throw new PipelineException
+	  ("Unable to add secondary file sequences to the node (" + nodeID + ") " + 
+	   "while there are active jobs associated with the node!");
 
       /* add the secondary sequence */ 
-      NodeMod mod = new NodeMod(bundle.uVersion);
       mod.addSecondarySequence(fseq);
       
       /* write the new working version to disk */ 
@@ -2307,9 +2333,15 @@ class MasterMgr
 	throw new PipelineException
 	  ("Secondary file sequences can only be remove from working versions of nodes!\n" + 
 	   "No working version (" + nodeID + ") exists.");
+      NodeMod mod = new NodeMod(bundle.uVersion);
+
+      /* make sure there are no active jobs */ 
+      if(hasActiveJobs(nodeID, mod.getTimeStamp(), mod.getPrimarySequence()))
+	throw new PipelineException
+	  ("Unable to remove secondary file sequences from the node (" + nodeID + ") " + 
+	   "while there are active jobs associated with the node!");
 
       /* remove the link */ 
-      NodeMod mod = new NodeMod(bundle.uVersion);
       mod.removeSecondarySequence(fseq);
       
       /* write the new working version to disk */ 
@@ -2938,10 +2970,17 @@ class MasterMgr
 	WorkingBundle bundle = getWorkingBundle(id);
 	NodeMod mod = bundle.uVersion;
 
+	/* make sure its an initial version */ 
 	if(mod.getWorkingID() != null) 
 	  throw new PipelineException
 	    ("Cannot rename node (" + name + ") because it is not an initial " + 
 	     "working version!");
+
+	/* make sure there are no active jobs */ 
+	if(hasActiveJobs(id, mod.getTimeStamp(), mod.getPrimarySequence()))
+	  throw new PipelineException
+	    ("Unable to rename the node (" + id + ") while there are active " + 
+	     "jobs associated with the node!");
 
 	{
 	  FileSeq fseq = mod.getPrimarySequence();
@@ -3352,7 +3391,7 @@ class MasterMgr
 	  case Paused:
 	  case Running:
 	    throw new PipelineException
-	      ("The node (" + name + ") cannot be checked-out while there are active " + 
+	      ("The node (" + nodeID + ") cannot be checked-out while there are active " + 
 	       "jobs associated with the node!");	      
 	  }
 	}
@@ -4278,6 +4317,56 @@ class MasterMgr
     /* if this is the root node, make the collected jobs the root jobs */ 
     if(isRoot) 
       rootJobIDs.addAll(jobIDs);
+  }
+
+  /**
+   * Get the IDs of all active jobs associated with the given working version. <P> 
+   * 
+   * A job is considered active if it is {@link JobState#Queued Queued}, 
+   * {@link JobState#Paused Paused} or {@link JobState#Running Running}.
+   * 
+   * @param nodeID
+   *   The unique working version identifier. 
+   * 
+   * @param stamp
+   *   The timestamp of when the working version was created.
+   * 
+   * @param fseq
+   *   The primary file sequence.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the job IDs. 
+   */ 
+  private boolean
+  hasActiveJobs
+  ( 
+   NodeID nodeID, 
+   Date stamp, 
+   FileSeq fseq
+  )
+    throws PipelineException 
+  {
+    ArrayList<Long> jobIDs = new ArrayList<Long>();
+    ArrayList<JobState> jobStates = new ArrayList<JobState>();
+    pQueueMgrClient.getJobStates(nodeID, stamp, fseq, jobIDs, jobStates);
+
+    TreeSet<Long> activeIDs = new TreeSet<Long>();
+    int wk = 0;
+    for(JobState state : jobStates) {
+      Long jobID = jobIDs.get(wk);
+      if((state != null) && (jobID != null)) {
+	switch(state) {
+	case Queued:
+	case Paused:
+	case Running:
+	  return true;
+	}
+      }
+
+      wk++;
+    }
+
+    return false; 
   }
 
 
