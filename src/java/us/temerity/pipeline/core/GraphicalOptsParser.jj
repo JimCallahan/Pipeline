@@ -52,6 +52,10 @@ GraphicalOptsParser
   {
     pMasterServer = PackageInfo.sMasterServer;
     pMasterPort   = PackageInfo.sMasterPort;
+
+    pQueueServer = PackageInfo.sQueueServer; 
+    pQueuePort   = PackageInfo.sQueuePort;
+    pJobPort     = PackageInfo.sJobPort;
   }
  
 
@@ -65,6 +69,8 @@ GraphicalOptsParser
   private GraphicalApp  pApp;
 
 
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * The name of the host running the <B>plmaster</B><A>(1) daemon.
    */ 
@@ -75,6 +81,23 @@ GraphicalOptsParser
    */
   private int  pMasterPort;
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /*
+   * The name of the host running the <B>plqueuemgr</B><A>(1) daemon. 
+   */
+  private String  pQueueServer;
+
+  /**
+   * The network port listened to by the <B>plqueuemgr</B><A>(1) daemon.
+   */
+  private int  pQueuePort;
+
+  /**
+   * The network port listened to by the <B>pljobmgr</B><A>(1) daemons.
+   */
+  private int  pJobPort;
 }
 
 
@@ -94,6 +117,11 @@ TOKEN :
   /* global options */	
 | <MASTER_HOST:  "--master-host">   : HOSTNAME_SEP
 | <MASTER_PORT:  "--master-port">   : INTEGER_SEP
+
+| <QUEUE_HOST:   "--queue-host">    : HOSTNAME_SEP
+| <QUEUE_PORT:   "--queue-port">    : INTEGER_SEP
+| <JOB_PORT:     "--job-port">      : INTEGER_SEP
+
 | <LOG:          "--log">           : LOG_SEP
 
   /* seperators */ 
@@ -209,7 +237,7 @@ Commands() :
       System.exit(1);
     }
 
-    UIMaster.init(pMasterServer, pMasterPort);
+    UIMaster.init(pMasterServer, pMasterPort, pQueueServer, pQueuePort, pJobPort);
   }
 }
     
@@ -297,7 +325,9 @@ void
 GlobalOpts() :
 {}
 {
-  (MasterHost() | MasterPort() | Log())
+  (MasterHost() | MasterPort() | 
+   QueueHost() | QueuePort() | JobPort() | 
+   Log())
   {}
 }
 
@@ -325,6 +355,43 @@ MasterPort() :
     pMasterPort = Integer.parseInt(t.image);
   }
 }
+
+void
+QueueHost() :
+{
+  Token t;
+}
+{
+  <QUEUE_HOST> EQ() t=<HOSTNAME>
+  { 
+    pQueueServer = t.image;
+  }
+}
+
+void
+QueuePort() :
+{
+  Token t;
+}
+{
+  <QUEUE_PORT> EQ() t=<INTEGER>
+  { 
+    pQueuePort = Integer.parseInt(t.image);
+  }
+}
+
+void
+JobPort() :
+{
+  Token t;
+}
+{
+  <JOB_PORT> EQ() t=<INTEGER>
+  { 
+    pJobPort = Integer.parseInt(t.image);
+  }
+}
+
 
 
 void Log() : 

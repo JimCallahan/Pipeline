@@ -56,6 +56,9 @@ MasterOptsParser
     pFilePort    = PackageInfo.sFilePort;
     pControlPort = PackageInfo.sNotifyControlPort;
     pMonitorPort = PackageInfo.sNotifyMonitorPort;
+
+    pQueueServer = PackageInfo.sQueueServer; 
+    pQueuePort   = PackageInfo.sQueuePort;
   }
  
 
@@ -70,6 +73,8 @@ MasterOptsParser
   private MasterApp  pApp;
 
 
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * The root directory of the of the persistent node storage area.
    */ 
@@ -81,6 +86,7 @@ MasterOptsParser
   private int  pMasterPort;
   
   
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * The root directory of the file repository. 
@@ -109,6 +115,19 @@ MasterOptsParser
    * monitor connections.
    */
   private int  pMonitorPort;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /*
+   * The name of the host running the <B>plqueuemgr</B><A>(1) daemon. 
+   */
+  private String  pQueueServer;
+
+  /**
+   * The network port listened to by the <B>plqueuemgr</B><A>(1) daemon.
+   */
+  private int  pQueuePort;
 }
 
 
@@ -134,6 +153,9 @@ TOKEN :
 | <FILE_PORT:            "--file-port">            : INTEGER_SEP
 | <NOTIFY_CONTROL_PORT:  "--notify-control-port">  : INTEGER_SEP
 | <NOTIFY_MONITOR_PORT:  "--notify-monitor-port">  : INTEGER_SEP
+
+| <QUEUE_HOST:           "--queue-host">           : HOSTNAME_SEP
+| <QUEUE_PORT:           "--queue-port">           : INTEGER_SEP
 
 | <LOG:          "--log">           : LOG_SEP
 
@@ -268,7 +290,8 @@ Commands() :
   { 
     return (new MasterMgrServer(pNodeDir, pMasterPort, 
 				pProdDir, pFileServer, pFilePort, 
-				pControlPort, pMonitorPort));
+				pControlPort, pMonitorPort, 
+				pQueueServer, pQueuePort));
   }
 }
     
@@ -358,6 +381,7 @@ GlobalOpts() :
 {
   (NodeDir() | MasterPort() | 
    ProdDir() | FileHost() | FilePort() | ControlPort() | MonitorPort() | 
+   QueueHost() | QueuePort() | 
    Log())
   {}
 }
@@ -446,6 +470,31 @@ MonitorPort() :
   <NOTIFY_MONITOR_PORT> EQ() t=<INTEGER>
   { 
     pMonitorPort = Integer.parseInt(t.image);
+  }
+}
+
+
+void
+QueueHost() :
+{
+  Token t;
+}
+{
+  <QUEUE_HOST> EQ() t=<PATH_ARG>
+  { 
+    pQueueServer = t.image;
+  }
+}
+
+void
+QueuePort() :
+{
+  Token t;
+}
+{
+  <QUEUE_PORT> EQ() t=<INTEGER>
+  { 
+    pQueuePort = Integer.parseInt(t.image);
   }
 }
 
