@@ -1,4 +1,4 @@
-// $Id: JTreeCellRenderer.java,v 1.1 2004/05/04 17:50:47 jim Exp $
+// $Id: JTreeCellRenderer.java,v 1.2 2004/05/05 21:00:24 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -106,7 +106,7 @@ class JTreeCellRenderer
   /*   S T A T I C    I N T E R N A L S                                                     */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID = 584004318062788314L;
+  private static final long serialVersionUID = -5085958176505086517L;
 
 
   private static Icon sTreePendingIcon = 
