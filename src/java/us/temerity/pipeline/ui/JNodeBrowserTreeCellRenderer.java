@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserTreeCellRenderer.java,v 1.1 2004/05/11 19:17:03 jim Exp $
+// $Id: JNodeBrowserTreeCellRenderer.java,v 1.2 2004/05/19 19:06:15 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -22,7 +22,9 @@ import javax.swing.tree.*;
  */ 
 public
 class JNodeBrowserTreeCellRenderer
-  extends DefaultTreeCellRenderer
+   extends JLabel
+   implements TreeCellRenderer
+//extends DefaultTreeCellRenderer
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -32,9 +34,12 @@ class JNodeBrowserTreeCellRenderer
    * Construct a new renderer.
    */
   public 
-  JNodeBrowserTreeCellRenderer() 
+  JNodeBrowserTreeCellRenderer
+  (
+   JNodeBrowserPanel browser
+  ) 
   {
-    super();
+    pBrowser = browser;
   }
 
 
@@ -58,11 +63,16 @@ class JNodeBrowserTreeCellRenderer
    boolean hasFocus
   ) 
   { 
-    super.getTreeCellRendererComponent(tree, value, 
-				       isSelected, isExpanded, isLeaf, row, hasFocus);
-    
+    //super.getTreeCellRendererComponent(tree, value, 
+    //isSelected, isExpanded, isLeaf, row, hasFocus);
+
     DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) value;
+    TreePath tpath = new TreePath(tnode.getPath());
     NodeTreeComp comp = (NodeTreeComp) tnode.getUserObject();
+
+    setText(comp.getName());
+
+    boolean selected = pBrowser.isSelected(tpath);
 
     switch(comp.getState()) {
     case Branch:
@@ -90,13 +100,17 @@ class JNodeBrowserTreeCellRenderer
     }
 
     switch(comp.getState()) {
+    case Branch:
+      setForeground(Color.white);
+      break;
+
     case OtherPending:
     case OtherWorking:
       setForeground(new Color(0.75f, 0.75f, 0.75f));
       break;
       
     default:
-      setForeground(Color.white);
+      setForeground(selected ? Color.yellow : Color.white);
       break;
     }
     
@@ -130,5 +144,14 @@ class JNodeBrowserTreeCellRenderer
     new ImageIcon(LookAndFeelLoader.class.getResource("TreeOtherWorkingIcon.png"));
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The parent node browser.
+   */ 
+  private JNodeBrowserPanel  pBrowser;
 
 }
