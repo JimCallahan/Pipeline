@@ -138,9 +138,9 @@ AC_ARG_WITH([pl-server],
 AC_SUBST(PLSERVER)
 PLSERVER="localhost"
 
-if test "$with_plserver" 
+if test "$with_pl_server" 
 then
-  PLSERVER=$with_plserver
+  PLSERVER=$with_pl_server
 fi
 
 AC_MSG_RESULT([$PLSERVER])
@@ -155,9 +155,9 @@ AC_ARG_WITH([pl-port],
 AC_SUBST(PLPORT)
 PLPORT=53135
 
-if test "$with_plport" 
+if test "$with_pl_port" 
 then
-  PLPORT=$with_plport
+  PLPORT=$with_pl_port
 fi
 
 AC_MSG_RESULT([$PLPORT])
@@ -173,9 +173,9 @@ AC_ARG_WITH([pbs-server],
 AC_SUBST(PBS_SERVER)
 PBS_SERVER="localhost"
 
-if test "$with_plserver" 
+if test "$with_pbs_server" 
 then
-  PBS_SERVER=$with_plserver
+  PBS_SERVER=$with_pbs_server
 fi
 
 AC_MSG_RESULT([$PBS_SERVER])
