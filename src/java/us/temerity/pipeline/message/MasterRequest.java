@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.2 2004/05/23 19:48:55 jim Exp $
+// $Id: MasterRequest.java,v 1.3 2004/05/29 06:34:32 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -20,7 +20,56 @@ public
 enum MasterRequest
 {  
   /**
-   * An instance of {@link MiscGetPrivilegedUsersReq MiscGetPrivilegedUsersReq} is next.
+   * Get the name of the default toolset.
+   */
+  GetDefaultToolsetName, 
+
+  /**
+   * An instance of {@link MiscSetDefaultToolsetNameReq MiscSetDefaultToolsetNameReq} is next.
+   */
+  SetDefaultToolsetName, 
+
+  /**
+   * Get the names of the currently active toolsets.
+   */
+  GetActiveToolsetNames, 
+
+  /**
+   * Get the names of all toolsets.
+   */
+  GetToolsetNames, 
+
+  /**
+   * An instance of {@link MiscGetToolsetReq MiscGetToolsetReq} is next.
+   */
+  GetToolset, 
+
+  /**
+   * An instance of {@link MiscCreateToolsetReq MiscCreateToolsetReq} is next.
+   */
+  CreateToolset, 
+
+
+  /**
+   * Get the names and revision numbers of all toolset packages.
+   */
+  GetToolsetPackageNames, 
+
+  /**
+   * An instance of {@link MiscGetToolsetPackageReq MiscGetToolsetPackageReq} is next.
+   */
+  GetToolsetPackage, 
+
+  /**
+   * An instance of {@link MiscCreateToolsetPackageReq MiscCreateToolsetPackageReq} is next.
+   */
+  CreateToolsetPackage, 
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the names of the privileged users.
    */
   GetPrivilegedUsers, 
 
@@ -38,14 +87,15 @@ enum MasterRequest
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Get the table of current working area authors and views.
+   */
+  GetWorkingAreas,  
+
+  /**
    * An instance of {@link NodeCreateWorkingAreaReq NodeCreateWorkingAreaReq} is next.
    */
   CreateWorkingArea,  
 
-  /**
-   * An instance of {@link NodeGetWorkingAreasReq NodeGetWorkingAreasReq} is next.
-   */
-  GetWorkingAreas,  
 
 
   /*----------------------------------------------------------------------------------------*/
