@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.10 2004/08/27 23:34:40 jim Exp $
+// $Id: QueueMgrClient.java,v 1.11 2004/09/03 01:51:48 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -807,9 +807,143 @@ class QueueMgrClient
       return null;
     }        
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Kill the jobs with the given IDs. <P> 
+   * 
+   * The <CODE>author</CODE> argument must match the user who submitted the jobs. <P> 
+   * 
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @param author 
+   *   The name of the user which owns the jobs.
+   * 
+   * @param jobIDs
+   *   The unique job identifiers.
+   * 
+   * @throws PipelineException 
+   *   If unable to kill the jobs.
+   */  
+  public synchronized void
+  killJobs
+  (
+   String author, 
+   TreeSet<Long> jobIDs
+  ) 
+    throws PipelineException
+  {
+    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
+      throw new PipelineException
+	("Only privileged users may jobs owned by another user!");
+
+    verifyConnection();
+
+    QueueKillJobsReq req = new QueueKillJobsReq(jobIDs);
+    Object obj = performTransaction(QueueRequest.KillJobs, req); 
+    handleSimpleResponse(obj);
+  }
+
+  /**
+   * Pause the jobs with the given IDs. <P> 
+   * 
+   * The <CODE>author</CODE> argument must match the user who submitted the jobs. <P> 
+   * 
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @param author 
+   *   The name of the user which owns the jobs.
+   * 
+   * @param jobIDs
+   *   The unique job identifiers.
+   * 
+   * @throws PipelineException 
+   *   If unable to pause the jobs.
+   */  
+  public synchronized void
+  pauseJobs
+  (
+   String author, 
+   TreeSet<Long> jobIDs
+  ) 
+    throws PipelineException
+  {
+    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
+      throw new PipelineException
+	("Only privileged users may pause jobs owned by another user!");
+
+    verifyConnection();
+
+    QueuePauseJobsReq req = new QueuePauseJobsReq(jobIDs);
+    Object obj = performTransaction(QueueRequest.PauseJobs, req); 
+    handleSimpleResponse(obj);
+  }
+
+  /**
+   * Resume execution of the paused jobs with the given IDs. <P> 
+   * 
+   * The <CODE>author</CODE> argument must match the user who submitted the jobs. <P> 
+   * 
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @param author 
+   *   The name of the user which owns the jobs.
+   * 
+   * @param jobIDs
+   *   The unique job identifiers.
+   * 
+   * @throws PipelineException 
+   *   If unable to resume the jobs.
+   */  
+  public synchronized void
+  resumeJobs
+  (
+   String author, 
+   TreeSet<Long> jobIDs
+  ) 
+    throws PipelineException
+  {
+    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
+      throw new PipelineException
+	("Only privileged users may resume jobs owned by another user!");
+
+    verifyConnection();
+
+    QueueResumeJobsReq req = new QueueResumeJobsReq(jobIDs);
+    Object obj = performTransaction(QueueRequest.ResumeJobs, req); 
+    handleSimpleResponse(obj);
+  }
   
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Notify the queue that a set of previously submitted jobs make up a job group.
+   * 
+   * @param group
+   *   The queue job group.
+   * 
+   * @throws PipelineException
+   *   If unable to group the jobs.
+   */ 
+  public synchronized void 
+  groupJobs
+  (
+   QueueJobGroup group
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    QueueGroupJobsReq req = new QueueGroupJobsReq(group);
+    Object obj = performTransaction(QueueRequest.GroupJobs, req); 
+    handleSimpleResponse(obj);
+  }
 
   /**
    * Get the job group with the given ID. 
@@ -846,7 +980,7 @@ class QueueMgrClient
    * Get all of the existing job groups.
    * 
    * @throws PipelineException
-   *   If no job group exists with the given ID.
+   *   If no job groups exist.
    */ 
   public synchronized TreeMap<Long,QueueJobGroup>
   getJobGroups()
@@ -865,7 +999,100 @@ class QueueMgrClient
     }        
   }
 
+  /**
+   * Delete the completed job groups. <P> 
+   * 
+   * The authors specified by the <CODE>groupAuthors</CODE> argument must match the user 
+   * who submitted the groups. <P> 
+   * 
+   * If any of the authors specified by the <CODE>groupAuthors</CODE> argument are different 
+   * than the current user, this method will fail unless the current user has privileged 
+   * access status.
+   * 
+   * @param groupAuthors
+   *   The name of the user which submitted the group indexed by job group ID.
+   * 
+   * @throws PipelineException
+   *   If no job group exists with the given ID or if the job group is not completed.
+   */ 
+  public synchronized void
+  deleteJobGroups
+  (
+   TreeMap<Long,String> groupAuthors
+  ) 
+    throws PipelineException  
+  {
+    if(!isPrivileged(false)) {
+      for(String author : groupAuthors.values()) 
+	if(!PackageInfo.sUser.equals(author))
+	  throw new PipelineException
+	    ("Only privileged users may delete job groups owned by another user!");
+    }
 
+    verifyConnection();
+
+    QueueDeleteJobGroupsReq req = new QueueDeleteJobGroupsReq(groupAuthors);
+
+    Object obj = performTransaction(QueueRequest.DeleteJobGroups, req);
+    handleSimpleResponse(obj);
+  }
+
+  /**
+   * Delete all of the completed job groups created in the given working area. <P> 
+   * 
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @param author 
+   *   The name of the user which owns the job groups.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @throws PipelineException
+   *   If unable to delete the job groups.
+   */ 
+  public synchronized void
+  deleteViewJobGroups
+  ( 
+   String author, 
+   String view
+  ) 
+    throws PipelineException  
+  {
+    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
+      throw new PipelineException
+	("Only privileged users may delete job groups owned by another user!");
+
+    verifyConnection();
+
+    QueueDeleteViewJobGroupsReq req = new QueueDeleteViewJobGroupsReq(author, view);
+
+    Object obj = performTransaction(QueueRequest.DeleteViewJobGroups, req);
+    handleSimpleResponse(obj);
+  }
+
+  /**
+   * Delete all of the completed job groups in all working areas. <P> 
+   * 
+   * This method will fail unless the current user has privileged access status.
+   * 
+   * @throws PipelineException
+   *   If unable to delete the job groups.
+   */ 
+  public synchronized void
+  deleteAllJobGroups() 
+    throws PipelineException  
+  {
+    if(!isPrivileged(false))
+      throw new PipelineException
+	("Only privileged users may delete job groups owned by another user!");
+
+    verifyConnection();
+
+    Object obj = performTransaction(QueueRequest.DeleteAllJobGroups, null);
+    handleSimpleResponse(obj);
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
