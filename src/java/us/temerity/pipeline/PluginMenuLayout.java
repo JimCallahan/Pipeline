@@ -1,4 +1,4 @@
-// $Id: PluginMenuLayout.java,v 1.3 2005/01/05 23:01:56 jim Exp $
+// $Id: PluginMenuLayout.java,v 1.4 2005/01/07 07:08:54 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -30,7 +30,7 @@ class PluginMenuLayout
   public 
   PluginMenuLayout() 
   {
-    pTitle = "root";
+    pTitle = "Plugin Menu";
   }  
 
   /**
@@ -118,6 +118,20 @@ class PluginMenuLayout
     return pTitle; 
   }
 
+  /**
+   * Set the title the submenu or menu item.
+   */ 
+  public void 
+  setTitle
+  (
+   String title
+  ) 
+  {
+    if(title == null) 
+      throw new IllegalArgumentException("The menu title cannot be (null)!");
+    pTitle = title;
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -125,13 +139,25 @@ class PluginMenuLayout
    * Whether this is a menu item? 
    */ 
   public boolean
-  isItem() 
+  isMenuItem() 
   {
     return (pName != null);
   }
 
   /**
-   * Gets the name of the plugin version.
+   * Whether this is a submenu? 
+   */ 
+  public boolean
+  isSubmenu() 
+  {
+    return !isMenuItem();
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Gets the name of the plugin associated with the menu item.
    * 
    * @return 
    *   The name or <CODE>null</CODE> if this is not a menu item.
@@ -143,7 +169,7 @@ class PluginMenuLayout
   }
 
   /**
-   * Gets the revision number of the plugin version.
+   * Gets the revision number of the plugin associated with the menu item.
    * 
    * @return 
    *   The revision number or <CODE>null</CODE> if this is not a menu item.
@@ -156,8 +182,64 @@ class PluginMenuLayout
     return null;
   }
 
-  
-   
+  /**
+   * Sets the name and version of the plugin associated with the menu item.
+   */ 
+  public void
+  setPlugin
+  (
+   String name,
+   VersionID vid
+  ) 
+  {
+    if(name == null)
+      throw new IllegalArgumentException
+	("The plugin name cannot be (null)!");
+
+    if(vid == null)
+      throw new IllegalArgumentException
+	("The plugin revision number cannot be (null)!");
+
+    pName      = name;
+    pVersionID = vid;
+  }
+
+  /**
+   * Clear the plugin associated with the menu item.
+   */ 
+  public void 
+  clearPlugin()
+  { 
+    pName      = null; 
+    pVersionID = null;
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   O B J E C T   O V E R R I D E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Indicates whether some other object is "equal to" this one.
+   * 
+   * @param obj 
+   *   The reference object with which to compare.
+   */
+  public boolean
+  equals
+  (
+   Object obj   
+  )
+  {
+    if((obj != null) && (obj instanceof PluginMenuLayout)) {
+      PluginMenuLayout pml = (PluginMenuLayout) obj;
+      return (pTitle.equals(pml.pTitle));
+    }
+    return false;
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   G L U E A B L E                                                                      */
