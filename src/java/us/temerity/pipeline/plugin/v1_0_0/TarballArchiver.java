@@ -1,4 +1,4 @@
-// $Id: TarballArchiver.java,v 1.1 2004/11/14 02:02:11 jim Exp $
+// $Id: TarballArchiver.java,v 1.2 2005/02/07 14:52:39 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -66,6 +66,16 @@ class TarballArchiver
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether the archiver requires manual confirmation before initiating an archive or 
+   * restore operation. <P> 
+   */ 
+  public boolean
+  isManual()
+  {
+    return false;
+  }
 
   /**
    * Get the capacity of the media (in bytes).
