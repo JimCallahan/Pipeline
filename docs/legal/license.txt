@@ -3,10 +3,10 @@
 
                  IMPORTANT - PLEASE READ CAREFULLY
 
-TEMERITY, DEFINED BELOW, IS WILLING TO LICENSE THE SOFTWARE, DEFINED
-BELOW, ONLY TO THE CUSTOMER, DEFINED BELOW, AND ONLY IF ALL OF THE TERMS
-CONTAINED IN THIS SOFTWARE LICENSE AGREEMENT ARE ACCEPTED BY THE 
-CUSTOMER.  BY INSTALLING AND/OR USING AND/OR OTHERWISE ACCESSING THE
+TEMERITY (DEFINED BELOW) IS WILLING TO LICENSE THE SOFTWARE (DEFINED
+BELOW) ONLY TO THE CUSTOMER (DEFINED BELOW) AND ONLY IF ALL OF THE TERMS
+CONTAINED IN THIS SOFTWARE LICENSE AGREEMENT ARE ACCEPTED BY THE
+CUSTOMER. BY INSTALLING AND/OR USING AND/OR OTHERWISE ACCESSING THE
 SOFTWARE THE CUSTOMER EXPRESSLY ACKNOWLEDGES AND AGREES THAT IT SHALL BE
 BOUND BY THE TERMS CONTAINED HEREIN.
 
@@ -81,31 +81,30 @@ accepted, a non-exclusive, non-transferable, non-sublicensable, limited
 license to use the Software, subject to the terms and conditions of this
 Agreement (the "License").
 
-b) ONLINE BUG DATABASE.  Temerity may, at its sole discretion, provide
-access to an online bug database, associated with the Software, to
-Customer. Access to the Online Bug Database is intended to aid Customer
-in reporting to Temerity possible failures of the Software to conform
-with the provided specification contained in the Software documentation
-furnished to Customer. In addition, the Online Bug Database may act as a
-source of information about work-arounds as well as the status of any
-possible remedies for such reported failures. However, no guarantees are
-made Temerity that such remedies exist or will be made available to
-Customer through this Online Bug Database.  Use of this Online Bug
-Database by Customer in no way alters or amends the responsibilities of
-Temerity to the Customer defined in Article 4 of this agreement.
+b) Online Support Resources. Temerity may, at its sole discretion,
+provide Customer access to online support resources including a bug
+database, user discussion forums, tutorials and other instructional
+material.  These resources may be provided to aid Customer in resolving
+questions about the proper usage of the Software and in reporting any to
+Temerity possible failures of the Software to conform with the provided
+specification contained in the Software documentation furnished to
+Customer. In addition, the Online Support Resources may act as a source
+of information about work-arounds as well as the status of any possible
+remedies for such reported failures.  No guarantees are made by Temerity
+that such remedies exist or will be made available to Customer through
+use of these Online Support Resources.  The use of these Online Support
+Resources by Customer shall not in any way alter or amend the rights and
+responsibilities of Temerity to the Customer defined in Article 4 of
+this agreement.
 
-c) INITIAL HOTLINE SUPPORT. Temerity may, from time to time, elect to
-provide a period of initial hotline support services to Customer
-following acquisition of Software. Temerity reserves the right to amend
-or terminate such policy at any time in its sole discretion without
-notice. Temerity current policy is that for a period of thirty (30) days
-from Delivery, Temerity shall provide Customer with access to Temerity's
-hotline support services in relation to the Software, where available.
-Unless Customer otherwise purchases support or maintenance services from
-Temerity or a Reseller and with the sole exception of the above noted
-temporary access to the hotline, Customer shall not be entitled to any
-form of support services, software maintenance services or products
-relating to the Software.
+c) Consulting Services.  In order to aid the process of configuration,
+installation and possible customization of the Software to suit
+Customer's needs, forty (40) hours of either on-site or remote
+consulting services will be provided to Customer by a trained
+representative of Temerity free of charge within the first thirty (30)
+days from Delivery of the Software.  Additional consulting services,
+beyond the first forty (40) hours, may be contracted from Temerity at an
+hourly rate negotiated with Temerity at the time of service.
 
 d) INSTALLATION LOCATION. Use of the License shall be limited to one
 local area network at the Original Site. Relocation of the Software may
@@ -320,31 +319,29 @@ b) EVALUATION OR DEMONSTRATION LICENSES.  In the event that the
 Software is provided to Customer for evaluation and/or demonstration
 purposes Articles 2(b), 2(c), 4(a), 4(b) and 4(c) shall not apply. All
 Software provided for evaluation and/or demonstration purposes is
-provided "as is" and without warranties of any kind.
+provided "as is" and without warranties, support or consulting services
+of any kind.
 
 c) GOVERNING LAW AND NOTICE.  This Agreement shall be governed and
 interpreted in accordance with the laws of the State of Florida and the
 United States Code, where the Federal law takes precedence, for purposes
-of any action commenced under this agreement or with respect to any tort
-committed or alleged to be committed in the performance of this
-agreement. No "choice of law" rules of any jurisdiction, including
-Florida, shall apply to this agreement. The parties expressly agree to
-waive any right to a jury trial and agree that any proceeding under this
-agreement or in connection thereto shall be heard by a judge, if any
-such proceeding occurs for any reason. Any dispute under this agreement
-shall be submitted to arbitration under the arbitration rules and the
-laws of the State of Florida which govern voluntary binding arbitration.
-Customer agrees to comply with the Canadian, Provincial, United States
-Federal and local export laws and regulations, as applicable, with
-respect to the acquisition, receipt and shipment of the Software. Notice
-or delivery of any document required or permitted to be given hereunder
-shall be made by certified mail, return receipt requested, and by fax to
-the attention of Registered Agent, Temerity Software Inc., 475 Central
-Ave. #300, St. Petersburg, Florida 33701. Notice shall be deemed
-received on the third day after proper delivery by certified mail,
-except a notice of termination governed by Article 5(b). Notice to
-Customer hereunder shall be made to the address given by the customer in
-this agreement.
+of any action commenced under this Agreement or in relation thereto. No
+"choice of law" rules of any jurisdiction, including Florida, shall
+apply to this Agreement. Any dispute under this agreement shall be
+submitted to arbitration under the arbitration rules and the laws of the
+State of Florida which govern voluntary binding arbitration. Customer
+agrees to comply with the export laws and regulations, as applicable of
+Canada (national and provincial), the United States (federal and local)
+and of any other applicable jurisdiction with respect to the
+acquisition, receipt and shipment of the Software. Notice or delivery of
+any document required or permitted to be given hereunder shall be made
+by certified mail, return receipt requested, and by fax to the attention
+of Registered Agent, Temerity Software Inc., 475 Central Ave. #300, St.
+Petersburg, Florida 33701. Notice shall be deemed received on the third
+day after proper delivery by certified mail, except a notice of
+termination governed by Article 5(b), which shall be deemed delivered as
+provided by Article 5(b). Notice to Customer hereunder shall be made to
+the address given by the customer in this agreement.
 
 d) HEADINGS.  Article headings used in this Agreement are for reference
 purposes only and shall not be used in the interpretation of this 
