@@ -1,0 +1,60 @@
+#!/bin/bash
+
+scripts=@srcdir@
+src=@srcdir@/../maya/synth/images
+dest=@top_srcdir@/docs/images/node-icons
+
+if [ ! -d $dest ]
+then 
+  mkdir -p $dest
+fi
+
+tmpfile="build-web-icons.scm"
+
+rm -f $tmpfile
+echo '(load "'$scripts/web-icon.scm'")' > $tmpfile
+
+anynewer=0
+frame=0
+for nstate in Pending CheckedIn Identical NeedsCheckOut Modified \
+              Conflicted ModifiedLinks Missing Added Obsolete 
+do
+  for qstate in Stale Queued Running Missing Failed Finished Undefined
+  do
+    simg=`printf "%s.%04d.sgi" $src/Normal $frame`
+
+    dimg=$dest/$nstate-$qstate.gif
+    if [ $simg -nt $dimg ] 
+    then
+      printf '(web-icon "%s" "%s")\n' $simg $dimg >> $tmpfile
+      anynewer=1
+    fi
+
+    frame=$(($frame + 1))
+  done
+done
+
+frame=70
+for extra in Blank Collapsed
+do 
+  simg=`printf "%s.%04d.sgi" $src/Normal $frame`
+
+  dimg=$dest/$extra.gif
+  if [ $simg -nt $dimg ] 
+  then
+    printf '(web-icon "%s" "%s")\n' $simg $dimg >> $tmpfile
+    anynewer=1
+  fi
+
+  frame=$(($frame + 1))
+done
+
+if [ $anynewer -eq 1 ]
+then 
+  echo '(gimp-quit 1)' >> $tmpfile
+
+  cat $tmpfile
+  time @GIMP@ -i -d -b '(load "'$tmpfile'")'
+fi
+
+rm -f $tmpfile
