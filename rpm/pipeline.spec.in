@@ -46,12 +46,15 @@ The core features of Pipeline include:
 %dir @PRODDIR@/checksum
 %dir @NODEDIR@
 
+%defattr(644,pipeline,pipeline)
+@NODEDIR@/etc/suffix-editors/pipeline
+
 %defattr(-,root,root)
 @ROOT_INST_DIR@/lib
 @ROOT_INST_DIR@/plugins
 #@ROOT_INST_DIR@/share/docs
 @ROOT_INST_DIR@/share/logger.properties
-@NODEDIR@/etc/suffix-editors/pipeline
+
 
 %changelog
 * Thu Mar 18 2004 Jim Callahan <jim@salamander>
