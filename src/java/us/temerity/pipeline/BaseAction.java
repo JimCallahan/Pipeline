@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.15 2004/09/08 18:33:09 jim Exp $
+// $Id: BaseAction.java,v 1.16 2004/09/10 15:39:05 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -523,6 +523,171 @@ class BaseAction
   }  
 
 
+  /*----------------------------------------------------------------------------------------*/
+  /*   U S E R   I N T E R F A C E                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Set the layout of single valued parameters in the user interface. <P> 
+   * 
+   * The <CODE>layout</CODE> argument must contain the name of each single valued parameter
+   * exactly once, but may also contain <CODE>null</CODE> values.  The order of the parameter
+   * names in this layout list determines that order that the parameters are listed in the 
+   * user interface.  Extra space will be added between parameters for each <CODE>null</CODE>
+   * value encountered.  In this way parameters can be grouped by inserting <CODE>null</CODE>
+   * entries between parameter names. <P> 
+   * 
+   * This method should be called by subclasses in their constructor after intializing all 
+   * single valued parameters with the {@link #addSingleParam addSingleParam} method.
+   * 
+   * @param layout
+   *   The names of the single valued parameters.
+   */
+  protected void
+  setSingleLayout
+  (
+   Collection<String> layout
+  ) 
+  {
+    for(String name : layout)
+      if((name != null) && !pSingleParams.containsKey(name)) 
+	throw new IllegalArgumentException
+	  ("There is no single valued parameter (" + name + ") defined for this Action!");
+
+    for(String pname : pSingleParams.keySet()) {
+      int cnt = 0;
+      for(String name : layout) 
+	if((name != null) && name.equals(pname)) 
+	  cnt++;
+      
+      switch(cnt) {
+      case 0:
+	throw new IllegalArgumentException
+	  ("The single valued parameter (" + pname + ") was not specified in the layout!");
+	
+      case 1:
+	break;
+
+      default:
+	throw new IllegalArgumentException
+	  ("The single valued parameter (" + pname + ") was specified (" + cnt + ") times " +
+	   "by the layout!  Each parameter may only be specified once.");
+      }
+    }
+
+    pSingleLayout = new ArrayList<String>(layout);    
+  }
+
+  /**
+   * Get the layout of single valued parameters in the user interface. <P> 
+   * 
+   * The returned parameter names will include all single valued parameters exactly 
+   * once.  The returned names may also contain <CODE>null</CODE> values, which should
+   * be interpreted as delimeters between groupings of parameters.
+   * 
+   * @return 
+   *   The names of each single valued parameter in the order of layout.
+   */ 
+  public Collection<String> 
+  getSingleLayout() 
+  {
+    if(pSingleLayout == null) 
+      pSingleLayout = new ArrayList<String>(pSingleParams.keySet());
+    
+    return Collections.unmodifiableCollection(pSingleLayout);
+  }
+
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Set the layout of per-source parameters in the user interface. <P> 
+   * 
+   * The <CODE>layout</CODE> argument must contain the name of each per-source parameter
+   * exactly once.  The order of the parameter names in this layout list determines that 
+   * order that the parameters are listed in the user interface. <P> 
+   * 
+   * This method should be called by subclasses in their constructor if they have overriden
+   * the {@link #supportsSourceParams supportsSourceParams} to return <CODE>true</CODE> and
+   * have implemented the {@link #getInitialSourceParams getInitialSourceParams} method. 
+   * All parameters defined by the <CODE>getInitialSourceParams</CODE> method must be
+   * a member of the <CODE>layout</CODE> argument.
+   * 
+   * @param layout
+   *   The names of the per-source parameters.
+   */
+  protected void
+  setSourceLayout
+  (
+   Collection<String> layout
+  ) 
+  {
+    if(!supportsSourceParams()) 
+      throw new IllegalArgumentException
+	("This action does not have per-source parameters!");
+    
+    TreeMap<String,BaseActionParam> params = getInitialSourceParams();
+    if(params == null) 
+      throw new IllegalArgumentException
+	("This action does not have per-source parameters!");
+
+    for(String name : layout)
+      if((name != null) && !params.containsKey(name)) 
+	throw new IllegalArgumentException
+	  ("There is no per-source parameter (" + name + ") defined for this Action!");
+
+    for(String pname : params.keySet()) {
+      int cnt = 0;
+      for(String name : layout) 
+	if((name != null) && name.equals(pname)) 
+	  cnt++;
+      
+      switch(cnt) {
+      case 0:
+	throw new IllegalArgumentException
+	  ("The per-source parameter (" + pname + ") was not specified in the layout!");
+	
+      case 1:
+	break;
+
+      default:
+	throw new IllegalArgumentException
+	  ("The per-source parameter (" + pname + ") was specified (" + cnt + ") times " +
+	   "by the layout!  Each parameter may only be specified once.");
+      }
+    }
+
+    pSourceLayout = new ArrayList<String>(layout);    
+  }
+
+  /**
+   * Get the layout of per-source parameters in the user interface. <P> 
+   * 
+   * The returned parameter names will include all per-source parameters exactly 
+   * once. 
+   * 
+   * @return 
+   *   The names of each per-source parameter in the order of layout.
+   */ 
+  public Collection<String> 
+  getSourceLayout() 
+  {
+    if(!supportsSourceParams()) 
+      throw new IllegalArgumentException
+	("This action does not have per-source parameters!");
+
+    if(pSourceLayout == null) {
+      TreeMap<String,BaseActionParam> params = getInitialSourceParams();
+      if(params == null) 
+	throw new IllegalArgumentException
+	  ("This action does not have per-source parameters!");
+      
+      pSourceLayout = new ArrayList<String>(params.keySet());
+    }
+    
+    return Collections.unmodifiableCollection(pSourceLayout);
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C T I O N                                                                          */
@@ -818,6 +983,21 @@ class BaseAction
    * The table of action parameters associated with each linked upstream node.
    */
   private TreeMap<String,TreeMap<String,BaseActionParam>>  pSourceParams;    
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Used to determing the order and grouping of single valued parameters in the 
+   * graphical user interface. 
+   */ 
+  private ArrayList<String>  pSingleLayout;
+
+  /**
+   * Used to determing the order and grouping of per-source parameters in the 
+   * graphical user interface. 
+   */ 
+  private ArrayList<String>  pSourceLayout;
 
 }
 
