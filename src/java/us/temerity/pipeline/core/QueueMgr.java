@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.31 2005/02/07 19:42:23 jim Exp $
+// $Id: QueueMgr.java,v 1.32 2005/02/16 02:02:35 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2496,6 +2496,16 @@ class QueueMgr
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
 	   ex.getMessage()); 
 	LogMgr.getInstance().flush();
+
+	Throwable cause = ex.getCause();
+	if(cause instanceof SocketTimeoutException) {
+	  timer.aquire();
+	  synchronized(pHosts) {
+	    timer.resume();
+	    QueueHost host = pHosts.get(bestHost);
+	    host.setStatus(QueueHost.Status.Hung);
+	  }
+	}	
 
 	timer.aquire();
 	synchronized(pLicenseKeys) {
