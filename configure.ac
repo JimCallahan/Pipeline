@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 1.0.5)
+AM_INIT_AUTOMAKE(Pipeline, 1.1.0)
 
 AC_MSG_RESULT([ ])
 
@@ -132,73 +132,39 @@ AC_MSG_RESULT([$TOOLSETDIR])
 
 dnl ------------------------------------------------------------------------------------------
 
-AC_MSG_CHECKING([PostgreSQL Server Hostname])
+AC_MSG_CHECKING([Pipeline Server Hostname])
 
-AC_ARG_WITH([sql-server], 
-            [  --with-sql-server=HOST  Hostname of PostgreSQL server.])
+AC_ARG_WITH([pl-server], 
+            [  --with-pl-server=HOST   Hostname of Pipeline server.])
 
-AC_SUBST(SQL_SERVER)
-SQL_SERVER="localhost"
+AC_SUBST(PL_SERVER)
+PL_SERVER="localhost"
 
-if test "$with_sql_server" 
+if test "$with_server" 
 then
-  SQL_SERVER=$with_sql_server
+  PL_SERVER=$with_server
 fi
 
-AC_MSG_RESULT([$SQL_SERVER])
+AC_MSG_RESULT([$PL_SERVER])
 
 
 
-AC_MSG_CHECKING([PostgreSQL Server Port])
+AC_MSG_CHECKING([Pipeline Server Port])
 
-AC_ARG_WITH([sql-port], 
-            [  --with-sql-port=NUM     Port number to use for PostgreSQL server.])
+AC_ARG_WITH([pl-port], 
+            [  --with-pl-port=NUM      Port number to use for PostgreSQL server.])
 
-AC_SUBST(SQL_PORT)
-SQL_PORT=53135
+AC_SUBST(PL_PORT)
+PL_PORT=53135
 
-if test "$with_sql_port" 
+if test "$with_pl_port" 
 then
-  SQL_PORT=$with_sql_port
+  PL_PORT=$with_pl_port
 fi
 
-AC_MSG_RESULT([$SQL_PORT])
+AC_MSG_RESULT([$PL_PORT])
 
 
-dnl ------------------------------------------------------------------------------------------
-
-AC_MSG_CHECKING([Max License/Selection Keys])
-
-AC_ARG_WITH([max-keys], 
-            [  --with-max-keys=NUM     The maximum number of license/select keys.])
-
-AC_SUBST(MAX_KEYS)
-MAX_KEYS=40
-
-if test "$with_max_keys" 
-then
-  MAX_KEYS=$with_max_keys
-fi
-
-AC_MSG_RESULT([$MAX_KEYS])
-
-
-dnl ------------------------------------------------------------------------------------------
-
-AC_MSG_CHECKING([Job Server Port])
-
-AC_ARG_WITH([job-port], 
-            [  --with-job-port=NUM     Port number for plserver(1).])
-
-AC_SUBST(JOB_PORT)
-JOB_PORT=53136
-
-if test "$with_job_port" 
-then
-  JOB_PORT=$with_job_port
-fi
-
-AC_MSG_RESULT([$JOB_PORT])
 
 
 dnl ------------------------------------------------------------------------------------------
@@ -283,6 +249,9 @@ then
        CXXFLAGS="$CXXFLAGS -O2";;
   esac
 
+  JAVA_C_FLAGS="-source 1.5 -deprecation -Xlint:all,-serial,-depreciation"
+  JAVA_RUNTIME_FLAGS="-disableassertions"
+
   CXXFLAGS="$CXXFLAGS -DNDEBUG"
   EXTRA_DEBUG_SUBDIRS=""
   BUILD_MODE="opt"
@@ -302,7 +271,7 @@ else
        CXXFLAGS="$CXXFLAGS -g";;
   esac
 
-  JAVA_C_FLAGS="-g"
+  JAVA_C_FLAGS="-g -source 1.5 -deprecation -Xlint:all"
   JAVA_RUNTIME_FLAGS="-enableassertions"
 
   EXTRA_DEBUG_SUBDIRS="tests"
@@ -446,6 +415,7 @@ AC_PATH_PROG(MOZILLA, mozilla, $PATH)
 AC_MSG_RESULT([ ])
 
 
+
 dnl -- IMAGE MAJICK --------------------------------------------------------------------------
 
 AC_MSG_RESULT([Locating Image tools:])
@@ -454,21 +424,17 @@ AC_PATH_PROG(CONVERT, convert, $PATH)
 AC_MSG_RESULT([ ])
 
 
+
 dnl -- JAVA TOOLS ----------------------------------------------------------------------------
 
 AC_MSG_RESULT([Locating the Java development tools:])
 
-AC_PATH_PROG(JAVA,    java,   $PATH)
-AC_PATH_PROG(JAVA_C,  javac,  $PATH)
-AC_PATH_PROG(JAVA_CC, javacc, $PATH)
-AC_PATH_PROG(JAVA_H,  javah,  $PATH)
-AC_PATH_PROG(JAR,     jar,    $PATH)
-
-AC_PATH_PROG(RMIC,         rmic,        $PATH)
-AC_PATH_PROG(RMID,         rmid,        $PATH)
-AC_PATH_PROG(RMI_REGISTRY, rmiregistry, $PATH)
-
-
+AC_PATH_PROG(JAVA,    java,    $PATH)
+AC_PATH_PROG(JAVA_C,  javac,   $PATH)
+AC_PATH_PROG(JAVA_CC, javacc,  $PATH)
+AC_PATH_PROG(JAVA_H,  javah,   $PATH)
+AC_PATH_PROG(JAVADOC, javadoc, $PATH)
+AC_PATH_PROG(JAR,     jar,     $PATH)
 
 
 AC_MSG_CHECKING([java include])
@@ -477,68 +443,6 @@ AC_SUBST(JAVA_INC)
 JAVA_INC=`dirname $JAVA`/../include
 
 AC_MSG_RESULT([$JAVA_INC])
-
-
-AC_MSG_CHECKING([Javamake])
-
-AC_ARG_WITH([javamake], 
-            [  --with-javamake=JAR     Location of javamake JAR file.])
-
-AC_SUBST(JAVAMAKE)
-JAVAMAKE=""
-
-if test "$with_javamake" 
-then
-  JAVAMAKE=$with_javamake
-else 
-  AC_MSG_ERROR([location of javamake JAR file was not specified: --with-javamake=...])
-fi
-
-AC_MSG_RESULT([$JAVAMAKE])
-
-AC_MSG_RESULT([ ])
-
-
-dnl -- DATABASE TOOLS ------------------------------------------------------------------------
-
-AC_MSG_RESULT([Locating the Database tools:])
-
-AC_PATH_PROG(SQL,       psql,      $PATH)
-
-AC_SUBST(JDBC_JAR)
-JDBC_JAR=""
-
-AC_SUBST(SQL_VERSION)
-SQL_VERSION=`postmaster --version | awk '{print $3}'`
-
-case "$SQL_VERSION" in 
-  (7.3.4) \
-    JDBC_JAR=/usr/share/pgsql/pg73jdbc3.jar;;
-
-  (7.3.2) \
-    JDBC_JAR=/usr/share/pgsql/pg73b1jdbc3.jar;;
-
-  (7.2.3) \
-    JDBC_JAR=/usr/share/pgsql/jdbc7.2dev-1.2.jar;;
-
-  (7.2.3-RH) \
-    JDBC_JAR=/usr/share/pgsql/java/rh-pgsql-jdbc2.jar;;
-
-  (*) \
-     AC_MSG_ERROR([don't know how to handle this version of PostgreSQL]);;
-esac
-
-AC_MSG_CHECKING([SQL version])
-AC_MSG_RESULT([$SQL_VERSION])	
-
-AC_MSG_CHECKING([JDBC jarfile])
-AC_MSG_RESULT([$JDBC_JAR])
-
-AC_PATH_PROG(INITDB,      initdb,    $PATH)
-AC_PATH_PROG(CREATEDB,    createdb,  $PATH)
-AC_PATH_PROG(DROPDB,      dropdb,    $PATH)
-AC_PATH_PROG(POSTMASTER,  postmaster,  $PATH)
-AC_PATH_PROG(PG_CTL,      pg_ctl,      $PATH)
 
 AC_MSG_RESULT([ ])
 
@@ -637,7 +541,6 @@ AC_CONFIG_FILES([
   Makefile
 
   data/Makefile
-
   data/icons/Makefile
   data/icons/gen-icons.bash
   data/icons/install-icons.bash 
@@ -648,68 +551,52 @@ AC_CONFIG_FILES([
   data/fonts/clean-fonts.bash
   data/fonts/gen-fonts.bash
   data/fonts/install-fonts.bash 
-
   data/fonts/CharterBTRoman/Makefile
   data/fonts/UtopiaBold/Makefile
 
   docs/Makefile 
   docs/images/Makefile
-  docs/user-manual/Makefile
+  docs/javadoc/Makefile
+
+  docs/man/Makefile
+  docs/man/pipeline.html
+  docs/man/pldispatcher.html
+  docs/man/plget.html
+  docs/man/plput.html
+  docs/man/pls.html
+  docs/man/plserver.html
+  docs/man/plui.html
+  docs/man/realpath.html
+
+  docs/manuals/Makefile
 
   src/Makefile
-
-  src/database/Makefile
-
-  src/database/scripts/Makefile
-  src/database/scripts/dbarchive
-  src/database/scripts/dbinit
-  src/database/scripts/dbstart
-  src/database/scripts/dbstop
-
-  src/database/share/Makefile
-  src/database/share/dbinit.sql
-  src/database/share/postgresql.conf
-
   src/java/Makefile
-
-  src/java/docs/Makefile
-
-  src/java/docs/pipeline.html 
-  src/java/docs/pldispatcher.html 
-  src/java/docs/plserver.html 
-  src/java/docs/plui.html
-
   src/java/testbed/Makefile
+  src/java/testbed/PackageInfo.java
   src/java/testbed/native/Makefile
 
-  src/java/pipeline/Makefile
-  src/java/pipeline/PackageInfo.java
-  src/java/pipeline/native/Makefile
-
-  src/java/pipeline/tests/Makefile
-  src/java/pipeline/tests/native/Makefile
-  
-  src/java/pipeline/plugin/Makefile
+  src/java/us/Makefile
+  src/java/us/temerity/Makefile
+  src/java/us/temerity/pipeline/Makefile
+  src/java/us/temerity/pipeline/PackageInfo.java
+  src/java/us/temerity/pipeline/native/Makefile
+  src/java/us/temerity/pipeline/tests/Makefile
 
   src/java/scripts/Makefile
   src/java/scripts/pipeline
   src/java/scripts/pldispatcher
   src/java/scripts/plserver
-  src/java/scripts/plui
-  src/java/scripts/pltest	
+  src/java/scripts/pltest-dnotify
+  src/java/scripts/pltest-fam
+  src/java/scripts/pltest-rwlock
+  src/java/scripts/plui	
 
   src/java/share/Makefile
 
   src/utils/Makefile
-
   src/utils/src/Makefile
   src/utils/src/PackageInfo.cc
-
-  src/utils/docs/Makefile
-  src/utils/docs/plput.html
-  src/utils/docs/plget.html
-  src/utils/docs/pls.html
-  src/utils/docs/realpath.html
 
   tests/Makefile  
 ])
