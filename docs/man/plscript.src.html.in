@@ -691,33 +691,33 @@ Operations</span></span></a></li>
  style="font-style: italic;">section</span> ...]]</span></li>
         <li style="font-weight: bold;"><span
  style="font-weight: normal;"><a
- href="plscript.src.html.in#job-group_--kill"><span
+ href="#job-group_--kill"><span
  style="font-weight: bold;">--kill</span></a>=<span
  style="font-style: italic;">group-id</span>[,<span
  style="font-style: italic;">group-id</span> ...]</span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;">
 [</span><a style="font-weight: bold;"
- href="plscript.src.html.in#--author">--author</a><span
+ href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span></li>
         <li style="font-weight: bold;"><span
  style="font-weight: normal;"><a
- href="plscript.src.html.in#job-group_--pause"><span
+ href="#job-group_--pause"><span
  style="font-weight: bold;">--pause</span></a>=<span
  style="font-style: italic;">group-id</span>[,<span
  style="font-style: italic;">group-id</span> ...] </span><span
  style="font-weight: normal;">[</span><a style="font-weight: bold;"
- href="plscript.src.html.in#--author">--author</a><span
+ href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span><span
  style="font-weight: normal;"><span style="font-weight: bold;"></span></span></li>
         <li style="font-weight: bold;"><span
  style="font-weight: normal;"><a
- href="plscript.src.html.in#job-group_--resume"><span
+ href="#job-group_--resume"><span
  style="font-weight: bold;">--resume</span></a>=<span
  style="font-style: italic;">group-id</span>[,<span
  style="font-style: italic;">group-id</span> ...]</span><span
  style="font-weight: normal;"> </span><span
  style="font-weight: normal;">[</span><a style="font-weight: bold;"
- href="plscript.src.html.in#--author">--author</a><span
+ href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span></li>
         <li style="font-weight: bold;"><span
  style="font-weight: normal;"><a href="#job-group_--remove"><span
@@ -726,7 +726,7 @@ Operations</span></span></a></li>
  style="font-weight: normal;"><span style="font-style: italic;">group-id</span>
 ...]</span><span style="font-weight: normal;"> </span><span
  style="font-weight: normal;">[</span><a style="font-weight: bold;"
- href="plscript.src.html.in#--author">--author</a><span
+ href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span><span
  style="font-weight: normal;"><span style="font-style: italic;"></span></span></li>
         <li style="font-weight: bold;"><span
@@ -760,7 +760,7 @@ Operations</span></span></a></li>
  style="font-style: italic;">job-id</span>[,<span
  style="font-style: italic;">job-id</span> ...]</span><span
  style="font-weight: normal;"> [</span><a style="font-weight: bold;"
- href="plscript.src.html.in#--author">--author</a><span
+ href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span></li>
         <li style="font-weight: bold;"><span
  style="font-weight: normal;"><a href="#job_--pause"><span
@@ -768,7 +768,7 @@ Operations</span></span></a></li>
  style="font-style: italic;">job-id</span>[,<span
  style="font-style: italic;">job-id</span> ...]</span><span
  style="font-weight: normal;"> [</span><a style="font-weight: bold;"
- href="plscript.src.html.in#--author">--author</a><span
+ href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span><span
  style="font-weight: normal;"><span style="font-weight: bold;"></span></span></li>
         <li style="font-weight: bold;"><span
@@ -777,7 +777,7 @@ Operations</span></span></a></li>
  style="font-style: italic;">job-id</span>[,<span
  style="font-style: italic;">job-id</span> ...]</span><span
  style="font-weight: normal;"> [</span><a style="font-weight: bold;"
- href="plscript.src.html.in#--author">--author</a><span
+ href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span></li>
       </ul>
     </ul>
@@ -814,10 +814,10 @@ privileged users.<br>
 When performing several commands in quick succession, the commands and
 options can be provided in a separate file (<span
  style="font-style: italic;">batchfile</span>) using the <a
- href="--batch"><span style="font-weight: bold;">--batch</span></a>
+ href="#--batch"><span style="font-weight: bold;">--batch</span></a>
 option.&nbsp; Since there is a rather substantial overhead to starting <span
  style="font-weight: bold;">plscript</span>(1) and establishing network
-connections to the server daemons, the <a href="--batch"><span
+connections to the server daemons, the <a href="#--batch"><span
  style="font-weight: bold;">--batch</span></a>
 option can dramatically improve performance for large numbers of
 commands.<br>
@@ -833,9 +833,8 @@ The available (<i>command</i>) keywords and the command specific
 options are detailed in the <a style="font-weight: bold;"
  href="#Commands">Commands</a> section. &nbsp;<br>
   <br>
-The set of (<i>options</i>) shared by more than one <a
- href="file://@datadir@/docs/plscript.html"><span
- style="font-weight: bold;">plscript</span></a>(1) command are
+The set of (<i>options</i>) shared by more than one <span
+ style="font-weight: bold;">plscript</span>(1) command are
 explained in the <a style="font-weight: bold;" href="#Shared_Options">Shared
 Options</a> section. &nbsp;<br>
   <br>
@@ -872,7 +871,7 @@ exit:</blockquote>
   <b><a name="--copyright"></a>--copyright<br>
   </b><br>
   <div style="margin-left: 40px;"> Prints the <a
- href="plmaster.src.html.in#Copyright"><span style="font-weight: bold;">copyright
+ href="#Copyright"><span style="font-weight: bold;">copyright
 notice</span></a> for this
 software and exits.<br>
   <br>
@@ -881,7 +880,7 @@ software and exits.<br>
   <br>
   </span>
   <div style="margin-left: 40px;">Prints the <a
- href="plmaster.src.html.in#License_Agreement"><span
+ href="#License_Agreement"><span
  style="font-weight: bold;">license
 agreement</span></a> for this software and exits.<br>
   </div>
@@ -2550,10 +2549,10 @@ Operations</span></span></h3>
  style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;"><br>
 &nbsp;&nbsp;&nbsp; </span><span style="font-weight: normal;">[</span><a
- style="font-weight: bold;" href="plscript.src.html.in#--author">--author</a><span
+ style="font-weight: bold;" href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
 <span style="font-weight: normal;">[</span><a style="font-weight: bold;"
- href="plscript.src.html.in#--view">--view</a><span
+ href="#--view">--view</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]</span><span
  style="font-weight: normal;"><br>
 &nbsp;&nbsp;&nbsp; </span><span style="font-weight: normal;">[<span
@@ -2637,10 +2636,10 @@ these links.
  style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;"><br>
 &nbsp;&nbsp;&nbsp; </span><span style="font-weight: normal;">[</span><a
- style="font-weight: bold;" href="plscript.src.html.in#--author">--author</a><span
+ style="font-weight: bold;" href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
 <span style="font-weight: normal;">[</span><a style="font-weight: bold;"
- href="plscript.src.html.in#--view">--view</a><span
+ href="#--view">--view</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]</span><span
  style="font-weight: normal;"><span style="font-weight: bold;"></span></span><span
  style="font-weight: normal;"><br>
@@ -2724,10 +2723,10 @@ by the user (<span style="font-style: italic;">user-name</span>). <br>
  style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;"><br>
 &nbsp;&nbsp;&nbsp; </span><span style="font-weight: normal;">[</span><a
- style="font-weight: bold;" href="plscript.src.html.in#--author">--author</a><span
+ style="font-weight: bold;" href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
 <span style="font-weight: normal;">[</span><a style="font-weight: bold;"
- href="plscript.src.html.in#--view">--view</a><span
+ href="#--view">--view</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]</span><span
  style="font-weight: normal;"><br>
 &nbsp;&nbsp;&nbsp; [<span style="font-weight: bold;">--remove-files</span>]<br>
@@ -2753,10 +2752,10 @@ with the working version.<br>
  style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;"><br>
 &nbsp;&nbsp;&nbsp; </span><span style="font-weight: normal;">[</span><a
- style="font-weight: bold;" href="plscript.src.html.in#--author">--author</a><span
+ style="font-weight: bold;" href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
 <span style="font-weight: normal;">[</span><a style="font-weight: bold;"
- href="plscript.src.html.in#--view">--view</a><span
+ href="#--view">--view</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]</span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
  style="font-weight: bold;"><br>
@@ -2791,10 +2790,10 @@ target node prior to checking-in the target node.<br>
  style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;"><br>
 &nbsp;&nbsp;&nbsp; </span><span style="font-weight: normal;">[</span><a
- style="font-weight: bold;" href="plscript.src.html.in#--author">--author</a><span
+ style="font-weight: bold;" href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
 <span style="font-weight: normal;">[</span><a style="font-weight: bold;"
- href="plscript.src.html.in#--view">--view</a><span
+ href="#--view">--view</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]</span><span
  style="font-weight: normal;"><br>
 &nbsp;&nbsp;&nbsp; </span><span style="font-weight: normal;">[<a
@@ -2831,10 +2830,10 @@ newer versions of these upstream nodes will not be replaced.<br>
  style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
  style="font-weight: normal;"><br>
 &nbsp;&nbsp;&nbsp; </span><span style="font-weight: normal;">[</span><a
- style="font-weight: bold;" href="plscript.src.html.in#--author">--author</a><span
+ style="font-weight: bold;" href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
 <span style="font-weight: normal;">[</span><a style="font-weight: bold;"
- href="plscript.src.html.in#--view">--view</a><span
+ href="#--view">--view</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]</span><span
  style="font-weight: normal;"><br>
 &nbsp;&nbsp;&nbsp; </span><span style="font-weight: normal;">[<span
@@ -2884,10 +2883,10 @@ operations below to <br>
  style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;"><br>
 &nbsp;&nbsp;&nbsp; </span><span style="font-weight: normal;">[</span><a
- style="font-weight: bold;" href="plscript.src.html.in#--author">--author</a><span
+ style="font-weight: bold;" href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
 <span style="font-weight: normal;">[</span><a style="font-weight: bold;"
- href="plscript.src.html.in#--view">--view</a><span
+ href="#--view">--view</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]</span><span
  style="font-weight: normal;"><br>
 &nbsp;&nbsp;&nbsp; </span><span style="font-weight: normal;">[<span
@@ -2998,7 +2997,7 @@ upstream dependencies of the one or more jobs within the job group.<br>
  style="font-style: italic;">group-id</span> ...]</span><span
  style="font-weight: normal;"><br>
 &nbsp;&nbsp;&nbsp; [</span><a style="font-weight: bold;"
- href="plscript.src.html.in#--author">--author</a><span
+ href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span><br>
 <span style="font-weight: normal;"><br>
 </span>
@@ -3017,7 +3016,7 @@ Queued jobs which are members of the given job groups (<span
  style="font-style: italic;">group-id</span> ...]</span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;"><br>
 &nbsp;&nbsp;&nbsp; [</span><a style="font-weight: bold;"
- href="plscript.src.html.in#--author">--author</a><span
+ href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]<br>
 <br>
 </span>
@@ -3035,7 +3034,7 @@ owned by the given user (<span style="font-style: italic;">user-name</span>).</d
  style="font-style: italic;">group-id</span> ...]</span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;"><br>
 &nbsp;&nbsp;&nbsp; [</span><a style="font-weight: bold;"
- href="plscript.src.html.in#--author">--author</a><span
+ href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span><br>
 <span style="font-weight: normal;"></span><span
  style="font-weight: normal;"><span style="font-weight: bold;"><br>
@@ -3073,10 +3072,10 @@ state) before the groups may be removed.<br>
  style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;"><br>
 &nbsp;&nbsp;&nbsp; </span><span style="font-weight: normal;">[</span><a
- style="font-weight: bold;" href="plscript.src.html.in#--author">--author</a><span
+ style="font-weight: bold;" href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
 <span style="font-weight: normal;">[</span><a style="font-weight: bold;"
- href="plscript.src.html.in#--view">--view</a><span
+ href="#--view">--view</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]<br>
 <br>
 </span>
@@ -3201,7 +3200,7 @@ source file sequences of the job are also printed.<br>
  style="font-style: italic;">job-id</span> ...]</span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;"><br>
 &nbsp;&nbsp;&nbsp; [</span><a style="font-weight: bold;"
- href="plscript.src.html.in#--author">--author</a><span
+ href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]<br>
 <br>
 </span>
@@ -3218,7 +3217,7 @@ owned by the given user (<span style="font-style: italic;">user-name</span>).</d
  style="font-style: italic;">job-id</span> ...]</span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;"><br>
 &nbsp;&nbsp;&nbsp; [</span><a style="font-weight: bold;"
- href="plscript.src.html.in#--author">--author</a><span
+ href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]<br>
 <br>
 </span>
@@ -3235,7 +3234,7 @@ owned by the given user (<span style="font-style: italic;">user-name</span>).</d
  style="font-style: italic;">job-id</span> ...]</span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;"><br>
 &nbsp;&nbsp;&nbsp; [</span><a style="font-weight: bold;"
- href="plscript.src.html.in#--author">--author</a><span
+ href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]<br>
 <br>
 </span>
@@ -3384,7 +3383,7 @@ Software</span><br>
 <div style="margin-left: 40px;"><br>
 The site configuration for output loggers used by Pipeline
 programs.&nbsp;
-See the <a href="plmaster.src.html.in#--log"><span
+See the <a href="#--log"><span
  style="font-weight: bold;">--log </span></a>option
 for details about the individual loggers.</div>
 </div>

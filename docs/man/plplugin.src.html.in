@@ -11,13 +11,13 @@
 </blockquote>
 <h3><a name="Synopsis"></a>Synopsis</h3>
 <blockquote><b>plplugin</b> [<a
- href="plplugin.src.html.in#Global_Options"><i>options</i></a>] <a
+ href="#Global_Options"><i>options</i></a>] <a
  style="font-weight: bold;" href="#--list">--list</a><span
  style="font-weight: bold;"> </span><br>
-  <b>plplugin</b> [<a href="plplugin.src.html.in#Global_Options"><i>options</i></a>]
+  <b>plplugin</b> [<a href="#Global_Options"><i>options</i></a>]
   <a href="#--inspect"><span style="font-weight: bold;">--inspect</span></a>
   <i>class-file1 </i>[<i>class-file2 ...</i>]<b><br>
-plplugin</b> [<a href="plplugin.src.html.in#Global_Options"><i>options</i></a>]
+plplugin</b> [<a href="#Global_Options"><i>options</i></a>]
 [<a href="#--force"><span style="font-weight: bold;">--force</span></a>]
   <a href="#--install"><span style="font-weight: bold;">--install</span></a>
   <i>class-file1 </i>[<i>class-file2 ...</i>]<i><br>

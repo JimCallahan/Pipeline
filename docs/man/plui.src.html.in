@@ -26,9 +26,9 @@ various Pipeline daemon processes to perform Pipeline node operations
 and queries.&nbsp; <br>
   <br>
 The functionality of <span style="font-weight: bold;">plui</span>(1)
-is also available in a scripting format using the <a href="plui.html"><span
- style="font-weight: bold;">pipeline</span></a>(1)
-command-line only client program.&nbsp; Custom user tools may also
+is also available in a scripting format using the <a
+ href="plscript.html"><span style="font-weight: bold;">plscript</span></a>(1)
+command-line scripting tool. Custom user tools may also
 access the full functionality of <span style="font-weight: bold;">plui</span>(1)
 using the <a href="../javadoc/index.html"><span
  style="font-weight: bold;">Pipeline Java API</span></a>.&nbsp; <br>
@@ -313,8 +313,7 @@ Java API</span></a><span style="font-weight: bold;"></span></div>
   <a href="plplugin.html"><span style="font-weight: bold;">plplugin</span></a>(1),
   <a
  href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1)<a
- href="pipeline.html"><span style="font-weight: bold;"></span></a><br>
+ style="font-weight: bold;">plconfig</span></a>(1)<br>
   <br>
   </div>
   <span style="font-weight: bold;">Other Software</span><br>
