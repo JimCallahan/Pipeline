@@ -1,4 +1,4 @@
-// $Id: LockedGlueFile.java,v 1.1 2004/05/11 19:09:20 jim Exp $
+// $Id: LockedGlueFile.java,v 1.2 2004/05/16 19:05:28 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -62,8 +62,7 @@ class LockedGlueFile
     }
     catch (Exception ex) {
       ex.printStackTrace();
-      throw new GlueException("Unable to load Glue file (" + file + "):\n" + 
-			      "  " + ex);
+      throw new GlueException("Unable to load Glue file (" + file + ")!", ex);
     }
   }
 
