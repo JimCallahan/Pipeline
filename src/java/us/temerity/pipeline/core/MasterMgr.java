@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.95 2005/03/11 06:34:39 jim Exp $
+// $Id: MasterMgr.java,v 1.96 2005/03/13 04:42:59 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -5861,204 +5861,21 @@ class MasterMgr
     }  
   }
 
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Get offline related information about the checked-in versions which match the 
-   * given criteria. <P> 
-   * 
-   * @param req 
-   *   The query request.
-   * 
-   * @return 
-   *   <CODE>MiscOfflineQueryRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to perform the query.
-   */
-  public Object
-  offlineQuery
-  (
-   MiscOfflineQueryReq req
-  ) 
-  {
-    TaskTimer timer = new TaskTimer();
-
-    pDatabaseLock.readLock().lock();
-    try {
-      String pattern      = req.getPattern();
-      Integer exclude     = req.getExcludeLatest();
-      Integer maxWorking  = req.getMaxWorking();
-      Integer minArchives = req.getMinArchives();
-      
-      /* get the node names which match the pattern */ 
-      TreeMap<String,TreeMap<String,TreeSet<String>>> matches = 
-	new TreeMap<String,TreeMap<String,TreeSet<String>>>();
-      {
-	timer.aquire();
-	synchronized(pNodeTreeRoot) {
-	  try {
-	    timer.resume();
-	    
-	    Pattern pat = null;
-	    if(pattern != null) 
-	      pat = Pattern.compile(pattern);
-	    
-	    for(NodeTreeEntry entry : pNodeTreeRoot.values())
-	      matchingCheckedInNodes(pat, "", entry, matches);
-	  }
-	  catch(PatternSyntaxException ex) {
-	    return new FailureRsp(timer, 
-				  "Illegal Node Name Pattern:\n\n" + ex.getMessage());
-	  }
-	}
-      }
-      
-      /* process the matching nodes */ 
-      ArrayList<OfflineInfo> offlineInfo = new ArrayList<OfflineInfo>();
-      VersionID latestID = null;
-      for(String name : matches.keySet()) {
-	
-	/* get the revision numbers of the included versions */ 
-	TreeSet<VersionID> vids = new TreeSet<VersionID>();
-	{
-	  timer.aquire();
-	  ReentrantReadWriteLock lock = getCheckedInLock(name);
-	  lock.readLock().lock();  
-	  try {
-	    timer.resume();	
-	    TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
-	    int wk = 0;
-	    for(VersionID vid : checkedIn.keySet()) {
-	      if((exclude != null) && (wk >= (checkedIn.size() - exclude)))
-		break;
-	      vids.add(vid);
-	      wk++;
-	    }
-
-	    latestID = checkedIn.lastKey();
-	  }
-	  catch(PipelineException ex) {
-	    return new FailureRsp(timer, "Internal Error: " + ex.getMessage());
-	  }
-	  finally {
-	    lock.readLock().unlock();  
-	  }
-	}
-	
-	/* process the matching checked-in versions */ 
-	for(VersionID vid : vids) {
-
-	  /* get the number of archives which already contain the checked-in version */ 
-	  int numArchives = 0;
-	  String lastArchive = null;
-	  {
-	    timer.aquire();
-	    synchronized(pArchivedIn) {
-	      timer.resume();
-	      
-	      TreeMap<VersionID,TreeSet<String>> versions = pArchivedIn.get(name);
-	      if(versions != null) {
-		TreeSet<String> archives = versions.get(vid);
-		if(archives != null) {
-		  numArchives = archives.size();
-		  lastArchive = archives.last();
-		}
-	      }
-	    }
-	  }
-
-	  /* only include the checked-in versions are members of at least the given 
-	     minimum number of archives  */ 
-	  if((minArchives == null) || (numArchives >= minArchives)) {
-
-	    /* get the timestamp of the latest archive containing the checked-in version */ 
-	    Date archived = null;
-	    if(lastArchive != null) {
-	      timer.aquire();
-	      synchronized(pArchivedOn) {
-		timer.resume();
-		archived = pArchivedOn.get(lastArchive);
-	      }
-	    }
-	    
-	    /* get the number of working versions based on the checked-in version and 
-	       the timestamp of when the latest working version was checked-out */ 
-	    int numWorking = 0;
-	    Date checkedOut = null;
-	    boolean canOffline = true;
-	    {	      
-	      TreeMap<String,TreeSet<String>> areas = matches.get(name);
-	      for(String author : areas.keySet()) {
-		TreeSet<String> views = areas.get(author);
-		for(String view : views) {
-		  NodeID nodeID = new NodeID(author, view, name);
-		  
-		  timer.aquire();
-		  ReentrantReadWriteLock lock = getWorkingLock(nodeID);
-		  lock.readLock().lock();
-		  try {
-		    timer.resume();	
-		      
-		    WorkingBundle bundle = getWorkingBundle(nodeID);
-		    NodeMod mod = bundle.uVersion;
-		    if(vid.equals(mod.getWorkingID())) {
-		      if((checkedOut == null) || 
-			 (checkedOut.compareTo(mod.getTimeStamp()) < 0)) 
-			checkedOut = mod.getTimeStamp();
-		      canOffline = false;
-		      numWorking++;
-		    }		      
-		  } 
-		  finally {
-		    lock.readLock().unlock();
-		  } 
-
-		  if(vid.equals(latestID))
-		    canOffline = false;
-		}
-	      }
-	    }
-
-	    /* only include checked-in version which do not have more than the given
-	       maximum number of working versions based on the checked-in version */ 
-	    if((maxWorking == null) || (numWorking <= maxWorking)) {
-	      OfflineInfo info = 
-		new OfflineInfo(name, vid, checkedOut, numWorking, 
-				archived, numArchives, canOffline);
-	      offlineInfo.add(info);
-	    }
-	  }
-	}	
-      }
-
-      return new MiscOfflineQueryRsp(timer, offlineInfo);
-    }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());
-    }    
-    finally {
-      pDatabaseLock.readLock().unlock();
-    }  
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-  
   /**
    * Calculate the total size (in bytes) of the files associated with the given 
-   * checked-in versions.
+   * checked-in versions for archival purposes. <P> 
    * 
    * @param req
    *   The file sizes request.
    * 
    * @return
-   *   <CODE>MiscGetSizesRsp</CODE> if successful or 
+   *   <CODE>MiscGetArchiveSizesRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to determine the file sizes.
    */ 
   public Object
-  getSizes
+  getArchiveSizes
   (
-   MiscGetSizesReq req
+   MiscGetArchiveSizesReq req
   ) 
   {
     TaskTimer timer = new TaskTimer();
@@ -6090,21 +5907,12 @@ class MasterMgr
       }
 
       /* compute the sizes of the files */ 
-      TreeMap<String,TreeMap<VersionID,Long>> sizes = null;
-      if(req.considerLinks()) 
-	sizes = pFileMgrClient.getOfflinedSizes(fseqs);
-      else 
-	sizes = pFileMgrClient.getArchivedSizes(fseqs);
-
-      return new MiscGetSizesRsp(timer, sizes);
+      return new MiscGetSizesRsp(timer, pFileMgrClient.getArchiveSizes(fseqs));
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
     }
   }
-
-
-  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Archive the files associated with the given checked-in versions. <P> 
@@ -6143,7 +5951,7 @@ class MasterMgr
 
 	/* recheck the sizes of the versions */ 
 	{
-	  Object obj = getSizes(new MiscGetSizesReq(versions, false));
+	  Object obj = getArchiveSizes(new MiscGetArchiveSizesReq(versions));
 	  if(obj instanceof FailureRsp) {
 	    FailureRsp rsp = (FailureRsp) obj;
 	    throw new PipelineException(rsp.getMessage());	
@@ -6262,6 +6070,335 @@ class MasterMgr
     }
   }
   
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get offline related information about the checked-in versions which match the 
+   * given criteria. <P> 
+   * 
+   * @param req 
+   *   The query request.
+   * 
+   * @return 
+   *   <CODE>MiscOfflineQueryRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to perform the query.
+   */
+  public Object
+  offlineQuery
+  (
+   MiscOfflineQueryReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    pDatabaseLock.readLock().lock();
+    try {
+      String pattern      = req.getPattern();
+      Integer exclude     = req.getExcludeLatest();
+      Integer maxWorking  = req.getMaxWorking();
+      Integer minArchives = req.getMinArchives();
+      boolean unusedOnly  = req.getUnusedOnly();
+
+      /* get the node names which match the pattern */ 
+      TreeMap<String,TreeMap<String,TreeSet<String>>> matches = 
+	new TreeMap<String,TreeMap<String,TreeSet<String>>>();
+      {
+	timer.aquire();
+	synchronized(pNodeTreeRoot) {
+	  try {
+	    timer.resume();
+	    
+	    Pattern pat = null;
+	    if(pattern != null) 
+	      pat = Pattern.compile(pattern);
+	    
+	    for(NodeTreeEntry entry : pNodeTreeRoot.values())
+	      matchingCheckedInNodes(pat, "", entry, matches);
+	  }
+	  catch(PatternSyntaxException ex) {
+	    return new FailureRsp(timer, 
+				  "Illegal Node Name Pattern:\n\n" + ex.getMessage());
+	  }
+	}
+      }
+      
+      /* process the matching nodes */ 
+      ArrayList<OfflineInfo> offlineInfo = new ArrayList<OfflineInfo>();
+      VersionID latestID = null;
+      for(String name : matches.keySet()) {
+	
+	/* get the revision numbers of the included versions */ 
+	TreeSet<VersionID> vids = new TreeSet<VersionID>();
+	{
+	  timer.aquire();
+	  ReentrantReadWriteLock lock = getCheckedInLock(name);
+	  lock.readLock().lock();  
+	  try {
+	    timer.resume();	
+	    TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
+	    int wk = 0;
+	    for(VersionID vid : checkedIn.keySet()) {
+	      if((exclude != null) && (wk >= (checkedIn.size() - exclude)))
+		break;
+	      vids.add(vid);
+	      wk++;
+	    }
+
+	    latestID = checkedIn.lastKey();
+	  }
+	  catch(PipelineException ex) {
+	    return new FailureRsp(timer, "Internal Error: " + ex.getMessage());
+	  }
+	  finally {
+	    lock.readLock().unlock();  
+	  }
+	}
+	
+	/* process the matching checked-in versions */ 
+	for(VersionID vid : vids) {
+
+	  /* get the number of archives which already contain the checked-in version */ 
+	  int numArchives = 0;
+	  String lastArchive = null;
+	  {
+	    timer.aquire();
+	    synchronized(pArchivedIn) {
+	      timer.resume();
+	      
+	      TreeMap<VersionID,TreeSet<String>> versions = pArchivedIn.get(name);
+	      if(versions != null) {
+		TreeSet<String> archives = versions.get(vid);
+		if(archives != null) {
+		  numArchives = archives.size();
+		  lastArchive = archives.last();
+		}
+	      }
+	    }
+	  }
+
+	  /* only include the checked-in versions are members of at least the given 
+	     minimum number of archives  */ 
+	  if((minArchives == null) || (numArchives >= minArchives)) {
+
+	    /* get the timestamp of the latest archive containing the checked-in version */ 
+	    Date archived = null;
+	    if(lastArchive != null) {
+	      timer.aquire();
+	      synchronized(pArchivedOn) {
+		timer.resume();
+		archived = pArchivedOn.get(lastArchive);
+	      }
+	    }
+	    
+	    /* get the number of working versions based on the checked-in version and 
+	       the timestamp of when the latest working version was checked-out */ 
+	    int numWorking = 0;
+	    Date checkedOut = null;
+	    String lastAuthor = null;
+	    String lastView = null;
+	    boolean canOffline = true;
+	    {	      
+	      TreeMap<String,TreeSet<String>> areas = matches.get(name);
+	      for(String author : areas.keySet()) {
+		TreeSet<String> views = areas.get(author);
+		for(String view : views) {
+		  NodeID nodeID = new NodeID(author, view, name);
+		  
+		  timer.aquire();
+		  ReentrantReadWriteLock lock = getWorkingLock(nodeID);
+		  lock.readLock().lock();
+		  try {
+		    timer.resume();	
+
+		    WorkingBundle bundle = getWorkingBundle(nodeID);
+		    NodeMod mod = bundle.uVersion;
+		    if(vid.equals(mod.getWorkingID())) {
+		      if((checkedOut == null) || 
+			 (checkedOut.compareTo(mod.getTimeStamp()) < 0)) {
+			checkedOut = mod.getTimeStamp();
+			lastAuthor = author;
+			lastView   = view; 
+		      }
+
+		      canOffline = false;
+		      numWorking++;
+		    }		      
+		  } 
+		  finally {
+		    lock.readLock().unlock();
+		  } 
+
+		  if(vid.equals(latestID))
+		    canOffline = false;
+		}
+	      }
+	    }
+
+	    /* only include checked-in version which do not have more than the given
+	       maximum number of working versions based on the checked-in version */ 
+	    if(((maxWorking == null) || (numWorking <= maxWorking)) && 
+	       (!unusedOnly || (unusedOnly && canOffline))) {
+	      OfflineInfo info = 
+		new OfflineInfo(name, vid, checkedOut, lastAuthor, lastView, numWorking, 
+				archived, numArchives, canOffline);
+	      offlineInfo.add(info);
+	    }
+	  }
+	}	
+      }
+
+      return new MiscOfflineQueryRsp(timer, offlineInfo);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }    
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }  
+  }
+
+  /**
+   * Calculate the total size (in bytes) of the files associated with the given 
+   * checked-in versions for offlining purposes. <P> 
+   * 
+   * File sizes reflect the actual amount of bytes that will be freed from disk if the 
+   * given checked-in versions are offlined.  A file will only contribute to this freed
+   * size if it a regular file and there are no symbolic links from later online versions 
+   * which target and which are not associated with the given versions. <P> 
+   * 
+   * @param req
+   *   The file sizes request.
+   * 
+   * @return
+   *   <CODE>MiscGetOfflineSizesRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the file sizes.
+   */ 
+  public Object
+  getOfflineSizes
+  (
+   MiscGetOfflineSizesReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+    try {
+      /* determine which file contribute the to offlines size */ 
+      TreeMap<String,TreeMap<VersionID,TreeSet<File>>> contribute = 
+	new TreeMap<String,TreeMap<VersionID,TreeSet<File>>>();
+      {
+	TreeMap<String,TreeSet<VersionID>> versions = req.getVersions();
+	for(String name : versions.keySet()) {
+
+	  timer.aquire();
+	  ReentrantReadWriteLock lock = getCheckedInLock(name);
+	  lock.readLock().lock(); 
+	  try {
+	    timer.resume();
+
+	    TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
+	    ArrayList<VersionID> vids = new ArrayList<VersionID>(checkedIn.keySet());
+
+	    /* process the to be offlined versions */ 
+	    TreeSet<VersionID> ovids = versions.get(name);
+	    for(VersionID vid : ovids) {
+	      CheckedInBundle bundle = checkedIn.get(vid);
+	      if(bundle == null) 
+		throw new PipelineException 
+		  ("No checked-in version (" + vid + ") of node (" + name + ") exists!");
+	      NodeVersion vsn = checkedIn.get(vid).uVersion;
+		
+	      /* determine which files contributes to the offlined size */ 
+	      for(FileSeq fseq : vsn.getSequences()) {
+
+		FrameRange range = fseq.getFrameRange();
+		boolean isNovel[] = vsn.isNovel(fseq);
+		int fk;
+		for(fk=0; fk<isNovel.length; fk++) {
+
+		  /* we are only concerned with file which are new in the offline version */ 
+		  if(isNovel[fk]) {
+		    File file = fseq.getFile(fk);
+		    boolean selected = true;
+
+		    /* step through the versions later than the offline version */ 
+		    int vk;
+		    for(vk=vids.indexOf(vid)+1; vk<vids.size(); vk++) {
+		      VersionID nvid = vids.get(vk);
+
+		      /* determine if there is a newer version of the corresponding file 
+			 associated with this later version */ 
+		      boolean isNewer = false;
+		      {
+			NodeVersion nvsn = checkedIn.get(nvid).uVersion;
+			for(FileSeq nfseq : nvsn.getSequences()) {
+			  if(fseq.similarTo(nfseq)) {
+			    int nfk = 0;
+			    if(range != null) {
+			      int frame = range.indexToFrame(fk);
+			      
+			      FrameRange nrange = nfseq.getFrameRange();
+			      if(nrange.isValid(frame)) 
+				nfk = nrange.frameToIndex(frame);
+			      else 
+				nfk = -1;
+			    }
+
+			    if((nfk == -1) || nvsn.isNovel(nfseq)[nfk]) 
+			      isNewer = true;
+			    
+			    break;
+			  }
+			}
+		      }
+
+		      /* whether this later version is also being offlined */ 
+		      boolean isOffline = ovids.contains(nvid);
+
+		      if(isNewer) {
+			break;
+		      }
+		      else if(!isOffline) {
+			selected = false;
+			break;
+		      }
+		    }
+
+		    /* the current file contributes to the offlined size */ 
+		    if(selected) {
+		      TreeMap<VersionID,TreeSet<File>> cversions = contribute.get(name);
+		      if(cversions == null) {
+			cversions = new TreeMap<VersionID,TreeSet<File>>();
+			contribute.put(name, cversions);
+		      }
+
+		      TreeSet<File> cfiles = cversions.get(vid);
+		      if(cfiles == null) {
+			cfiles = new TreeSet<File>();
+			cversions.put(vid, cfiles);
+		      }
+
+		      cfiles.add(file);
+		    }
+		  }
+		}
+	      }
+	    }
+	  }
+	  finally {
+	    lock.readLock().unlock();
+	  }
+	}
+      }
+
+      /* compute the sizes of the files */ 
+      return new MiscGetSizesRsp(timer, pFileMgrClient.getOfflineSizes(contribute));
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+  }
+
+
   /**
    * Remove the repository files associated with the given checked-in versions. <P> 
    * 
@@ -6288,10 +6425,109 @@ class MasterMgr
    MiscOfflineReq req
   ) 
   {
+    return new FailureRsp(new TaskTimer(), "Not Implemented yet...");
 
-    // ...
+//     TaskTimer timer = new TaskTimer("MasterMgr.offline()");
 
-    return new FailureRsp(new TaskTimer(), "Not implemented yet.");
+//     timer.aquire();
+//     pDatabaseLock.writeLock().lock();
+//     try {
+//       timer.resume();	
+
+//       TreeMap<String,TreeSet<VersionID>> versions = req.getVersions();
+//       for(String name : versions.keySet()) {
+// 	for(VersionID vid : versions.get(name)) {
+	  
+// 	  /* determine the revision numbers of the symlinks from later versions which 
+// 	     target files being offlined, indexed by the names of the to be offlined files */ 
+// 	  TreeMap<File,TreeSet<VersionID>> symlinks = new TreeMap<File,TreeSet<VersionID>>();
+// 	  {
+// 	    TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
+// 	    ArrayList<VersionID> vids = new ArrayList<VersionID>(checkedIn.keySet());
+
+// 	    /* process the to be offlined versions */ 
+// 	    TreeSet<VersionID> ovids = versions.get(name);
+// 	    for(VersionID vid : ovids) {
+// 	      CheckedInBundle bundle = checkedIn.get(vid);
+// 	      if(bundle == null) 
+// 		throw new PipelineException 
+// 		  ("No checked-in version (" + vid + ") of node (" + name + ") exists!");
+// 	      NodeVersion vsn = checkedIn.get(vid).uVersion;
+	      
+// 	       /* determine which symlinks target the to be offlined files */ 
+// 	      for(FileSeq fseq : vsn.getSequences()) {
+
+// 		FrameRange range = fseq.getFrameRange();
+// 		boolean isNovel[] = vsn.isNovel(fseq);
+// 		int fk;
+// 		for(fk=0; fk<isNovel.length; fk++) {
+
+// 		  VersionID svid = null;
+// 		  if(isNovel[fk]) 
+// 		    svid = vid;
+// 		  else {
+		    
+// 		  }
+
+
+
+// 		}
+// 	      }
+// 	    }
+// 	  }
+
+// 	  pFileMgrClient.offline(name, vid, symlinks);
+// 	}
+//       }
+
+
+//       return new SuccessRsp(timer);
+//     }
+//     catch(PipelineException ex) {
+//       return new FailureRsp(timer, ex.getMessage());
+//     }  
+//     finally {
+//       pDatabaseLock.writeLock().unlock();
+//     }
+  }
+
+  
+  /**
+   * Given a specific file sequence index for a checked-in version, return whether the 
+   * corresponding file from another checked-in version has the IsNovel flag set. <P> 
+   * 
+   * @param name
+   *   The fully resolved node name.
+   * 
+   * @param vid
+   *   The checked-in revision number of the source version.
+   * 
+   * @param fseq
+   *   The file sequence in question.
+   * 
+   * @param idx
+   *   The file index within the file sequence.
+   * 
+   * @param ovid
+   *   The other checked-in version to search.
+   * 
+   * @return
+   *   Whether the IsNovel flag is set or <CODE>null</CODE> if there is no corresponding
+   *   file in the other version.
+   */
+  private Boolean
+  isNovelInOtherVersion
+  (
+   String name, 
+   VersionID vid, 
+   FileSeq fseq, 
+   int idx, 
+   VersionID nvid
+  ) 
+  {
+    
+
+    return null;
   }
 
 
