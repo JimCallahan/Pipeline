@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.13 2004/07/25 03:06:17 jim Exp $
+// $Id: MasterMgrServer.java,v 1.14 2004/08/04 01:41:58 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -620,6 +620,40 @@ class MasterMgrServer
 	    {
 	      NodeRevertFilesReq req = (NodeRevertFilesReq) objIn.readObject();
 	      objOut.writeObject(pMasterMgr.revertFiles(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+
+	  /*-- REVISION CONTROL ------------------------------------------------------------*/
+	  case SubmitJobs: 
+	    {
+	      NodeSubmitJobsReq req = (NodeSubmitJobsReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.submitJobs(req));
+	      objOut.flush(); 
+	    }
+	    break;  
+
+	  case KillJobGroup: 
+	    {
+	      NodeKillJobGroupReq req = (NodeKillJobGroupReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.killJobGroup(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case KillJobs: 
+	    {
+	      NodeKillJobsReq req = (NodeKillJobsReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.killJobs(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case KillNodeJobs: 
+	    {
+	      NodeKillNodeJobsReq req = (NodeKillNodeJobsReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.killNodeJobs(req));
 	      objOut.flush(); 
 	    }
 	    break;
