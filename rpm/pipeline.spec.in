@@ -28,7 +28,7 @@ The core features of Pipeline include:
 %defattr(555,root,root)
 @ROOT_INST_DIR@/bin/pls
 @ROOT_INST_DIR@/bin/realpath
-@ROOT_INST_DIR@/bin/pltest
+@ROOT_INST_DIR@/bin/plui
 
 %defattr(4550,root,pipeline)
 @ROOT_INST_DIR@/sbin/plrun
@@ -36,6 +36,7 @@ The core features of Pipeline include:
 
 %defattr(500,pipeline,pipeline)
 @ROOT_INST_DIR@/sbin/plfilemgr
+@ROOT_INST_DIR@/sbin/plmaster
 
 %defattr(755,root,root)
 %dir @PRODDIR@/working
@@ -43,6 +44,7 @@ The core features of Pipeline include:
 %defattr(755,pipeline,pipeline)
 %dir @PRODDIR@/repository
 %dir @PRODDIR@/checksum
+%dir @NODEDIR@
 
 %defattr(-,root,root)
 @ROOT_INST_DIR@/lib
