@@ -1,4 +1,4 @@
-// $Id: FilePattern.java,v 1.8 2004/05/21 18:07:30 jim Exp $
+// $Id: FilePattern.java,v 1.9 2004/06/28 00:05:32 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -151,6 +151,32 @@ class FilePattern
     if((suffix != null) && (suffix.length() == 0)) 
       throw new IllegalArgumentException("The suffix was an empty string!");
     pSuffix  = suffix;
+
+    buildCache();
+  }
+
+  /**
+   * Construct a <CODE>FilePattern</CODE> by prepend a path to an existing pattern.
+   * 
+   * @param path
+   *   The path to prepend.
+   * 
+   * @param pattern  
+   *   The <CODE>FilePattern</CODE> to prepend.
+   */ 
+  public 
+  FilePattern
+  (
+   String path, 
+   FilePattern pattern 
+  )  
+  {
+    if(path == null) 
+      throw new IllegalArgumentException("The prepend path cannot be (null)!");
+
+    pPrefix  = path + "/" + pattern.getPrefix();
+    pPadding = pattern.getPadding();
+    pSuffix  = pattern.getSuffix();
 
     buildCache();
   }

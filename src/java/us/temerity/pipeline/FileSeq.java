@@ -1,4 +1,4 @@
-// $Id: FileSeq.java,v 1.11 2004/05/21 18:07:30 jim Exp $
+// $Id: FileSeq.java,v 1.12 2004/06/28 00:05:32 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -125,6 +125,28 @@ class FileSeq
       pFrameRange = new FrameRange(fseq.getFrameRange().indexToFrame(idx));
     else 
       pFrameRange = null;
+
+    buildCache();
+  }
+
+  /** 
+   * Construct a <CODE>FileSeq</CODE> by prepend a path to an existing file sequence.
+   * 
+   * @param path
+   *   The path to prepend.
+   * 
+   * @param fseq  
+   *   The file sequence to prepend.
+   */ 
+  public
+  FileSeq
+  (
+   String path, 
+   FileSeq fseq
+  ) 
+  {
+    pFilePattern = new FilePattern(path, fseq.getFilePattern());
+    pFrameRange  = fseq.getFrameRange();
 
     buildCache();
   }
