@@ -1,4 +1,4 @@
-// $Id: NodeCommon.java,v 1.17 2004/09/22 23:13:24 jim Exp $
+// $Id: NodeCommon.java,v 1.18 2004/10/22 17:05:25 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -698,7 +698,7 @@ class NodeCommon
    * @throws IllegalArgumentException
    *   If the name is illegal.
    */
-  protected void 
+  public static void 
   validateName
   (
    String name
@@ -750,7 +750,7 @@ class NodeCommon
    * @throws IllegalArgumentException
    *   If the prefix is illegal.
    */
-  protected void 
+  public static void 
   validatePrefix
   (
    FileSeq fseq
