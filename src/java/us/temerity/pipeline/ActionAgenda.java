@@ -1,4 +1,4 @@
-// $Id: ActionAgenda.java,v 1.2 2004/08/22 21:46:11 jim Exp $
+// $Id: ActionAgenda.java,v 1.3 2004/09/08 18:32:06 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -48,8 +48,11 @@ class ActionAgenda
    * @param secondarySources  
    *   The secondary file sequences indexed by fully resolved source node name.
    *
+   * @param toolset 
+   *   The name of the toolset environment under which the action is executed.
+   * 
    * @param env  
-   *   The environment under which the action is executed.
+   *   The cooked toolset environment.
    * 
    * @param dir
    *   The execution working directory.
@@ -63,6 +66,7 @@ class ActionAgenda
    Set<FileSeq> secondaryTargets,
    Map<String,FileSeq> primarySources,        
    Map<String,Set<FileSeq>> secondarySources,  
+   String toolset, 
    Map<String,String> env, 
    File dir
   ) 
@@ -98,6 +102,11 @@ class ActionAgenda
     for(String name : secondarySources.keySet()) 
       pSecondarySources.put(name, new TreeSet<FileSeq>(secondarySources.get(name)));
 
+    if(toolset == null) 
+      throw new IllegalArgumentException
+	("The toolset cannot be (null)!");
+    pToolset = toolset;
+    
     if(env == null) 
       throw new IllegalArgumentException
 	("The execution environment cannot be (null)!");
@@ -204,6 +213,15 @@ class ActionAgenda
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Get the name of the toolset environment.
+   */ 
+  public String
+  getToolset()
+  {
+    return pToolset;
+  }
+
+  /**
    * Get the environment under which the action is executed.
    */ 
   public SortedMap<String,String>
@@ -249,7 +267,10 @@ class ActionAgenda
     if(!pSecondarySources.isEmpty())
       encoder.encode("SecondarySources", pSecondarySources);
 
+    
+    encoder.encode("Toolset", pToolset);
     encoder.encode("Environment", pEnvironment);
+
     encoder.encode("WorkingDir", pWorkingDir.toString());
   }
   
@@ -302,6 +323,11 @@ class ActionAgenda
       else 
 	pSecondarySources = new TreeMap<String,TreeSet<FileSeq>>();
     }
+
+    String toolset = (String) decoder.decode("Toolset");
+    if(toolset == null) 
+      throw new GlueException("The \"Toolset\" was missing!");
+    pToolset = toolset;
 
     TreeMap<String,String> env = (TreeMap<String,String>) decoder.decode("Environment"); 
     if(env == null) 
@@ -357,6 +383,11 @@ class ActionAgenda
    * The secondary file sequences indexed by fully resolved source node name.
    */
   private TreeMap<String,TreeSet<FileSeq>> pSecondarySources;
+
+  /**
+   * The name of the toolset environment.
+   */
+  private String  pToolset; 
 
   /**
    * The environment under which the action is executed.
