@@ -1,4 +1,4 @@
-// $Id: NodeCommon.java,v 1.10 2004/04/17 19:49:01 jim Exp $
+// $Id: NodeCommon.java,v 1.11 2004/04/20 21:55:01 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -432,17 +432,17 @@ class NodeCommon
 	    pSecondarySeqs.equals(com.pSecondarySeqs) && 
 	    pToolset.equals(com.pToolset) && 
 	    (((pEditor == null) && (com.pEditor == null)) || 
-	     pEditor.equals(com.pEditor)) &&
+	     ((pEditor != null) && pEditor.equals(com.pEditor))) &&
 	    (((pAction == null) && (com.pAction == null)) || 
-	     pAction.equals(com.pAction)) &&
+	     ((pAction != null) && pAction.equals(com.pAction))) &&
 	    (((pJobReqs == null) && (com.pJobReqs == null)) || 
-	     pJobReqs.equals(com.pJobReqs)) &&
+	     ((pJobReqs != null) && pJobReqs.equals(com.pJobReqs))) &&
 	    (((pOverflow == null) && (com.pOverflow == null)) || 
-	     pOverflow.equals(com.pOverflow)) &&
+	     ((pOverflow != null) && pOverflow.equals(com.pOverflow))) &&
 	    (((pExecution == null) && (com.pExecution == null)) || 
-	     pExecution.equals(com.pExecution)) &&
+	     ((pExecution != null) && pExecution.equals(com.pExecution))) &&
 	    (((pBatchSize == null) && (com.pBatchSize == null)) || 
-	     (pBatchSize.equals(com.pBatchSize))));
+	     ((pBatchSize != null) && pBatchSize.equals(com.pBatchSize))));
   }
 
 
