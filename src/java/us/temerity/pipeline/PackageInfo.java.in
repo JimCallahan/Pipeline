@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.in,v 1.5 2004/02/25 01:27:42 jim Exp $
+// $Id: PackageInfo.java.in,v 1.6 2004/02/28 20:00:39 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -21,6 +21,11 @@ class PackageInfo
   /*   P U B L I C   F I E L D S                                                            */
   /*----------------------------------------------------------------------------------------*/
  
+  /**
+   * The name of the user running this program.
+   */ 
+  public static final String sUser = System.getProperty("user.name");
+
   /**
    * The version identifier of this Pipeline release.
    */ 
