@@ -1,6 +1,8 @@
-// $Id: LinkVersion.java,v 1.3 2004/04/15 00:11:54 jim Exp $
+// $Id: LinkVersion.java,v 1.4 2004/04/20 21:54:30 jim Exp $
 
 package us.temerity.pipeline;
+
+import us.temerity.pipeline.glue.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   L I N K   V E R S I O N                                                                */
@@ -64,6 +66,7 @@ class LinkVersion
   }
 
 
+
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
@@ -78,6 +81,69 @@ class LinkVersion
     return pVersionID;
   }
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   O B J E C T   O V E R R I D E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Indicates whether some other object is "equal to" this one.
+   * 
+   * @param obj 
+   *   The reference object with which to compare.
+   */
+  public boolean
+  equals
+  (
+   Object obj
+  )
+  {
+    if(obj != null) {
+      if(obj instanceof LinkVersion) {
+	LinkVersion vsn = (LinkVersion) obj;
+	return (super.equals(obj) && 
+		(pVersionID.equals(vsn.pVersionID)));
+      }
+      else if(obj instanceof LinkMod) {
+	return super.equals(obj);
+      }
+    }
+    return false;
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   G L U E A B L E                                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  public void 
+  toGlue
+  ( 
+   GlueEncoder encoder   
+  ) 
+    throws GlueException
+  {
+    super.toGlue(encoder);
+
+    encoder.encode("VersionID", pVersionID);
+  }
+
+  public void 
+  fromGlue
+  (
+   GlueDecoder decoder 
+  ) 
+    throws GlueException
+  {
+    super.fromGlue(decoder);
+
+    VersionID vid = (VersionID) decoder.decode("VersionID");
+    if(vid == null) 
+      throw new GlueException("The \"VersionID\" was missing!");
+    pVersionID = vid;
+  }
 
 
 
