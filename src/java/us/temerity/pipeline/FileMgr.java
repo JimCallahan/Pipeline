@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.1 2004/03/10 11:48:12 jim Exp $
+// $Id: FileMgr.java,v 1.2 2004/03/12 23:09:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -231,10 +231,23 @@ class FileMgr
   {
     if(req == null) 
       return new FailureRsp("The checksum request cannot be (null)!");
+    
+    String task = null;
+    {
+      StringBuffer buf = new StringBuffer();
+      buf.append("FileMgr.refreshCheckSums(): " + req.getNodeID() + " ");
+      for(FileSeq fseq : req.getFileSequences()) 
+	buf.append("[" + fseq + "]");
+      task = buf.toString();
+    }
 
+    Date start = new Date();
+    long wait = 0;
     try {
       Object workLock = getWorkLock(req.getNodeID());
       synchronized(workLock) {
+	wait  = (new Date()).getTime() - start.getTime();
+	start = new Date();
 
 	for(FileSeq fseq : req.getFileSequences()) {
 	  for(File file : fseq.getFiles()) {
@@ -242,12 +255,15 @@ class FileMgr
 	    pCheckSum.refresh(work, 1024);
 	  }
 	}
-	
-	return new SuccessRsp();
+
+	return new SuccessRsp(task, wait, start);
       }
     }
     catch(PipelineException ex) {
-      return new FailureRsp(ex.getMessage());
+      if(wait > 0) 
+	return new FailureRsp(task, ex.getMessage(), wait, start);
+      else 
+	return new FailureRsp(task, ex.getMessage(), start);
     }
   }
 
@@ -270,12 +286,26 @@ class FileMgr
   {
     if(req == null) 
       return new FailureRsp("The file state request cannot be (null)!");
-    
+
+    String task = null;
+    {
+      StringBuffer buf = new StringBuffer();
+      buf.append("FileMgr.computeFileStates(): " + req.getNodeID() + " ");
+      for(FileSeq fseq : req.getFileSequences()) 
+	buf.append("[" + fseq + "]");
+      task = buf.toString();
+    }
+
+    Date start = new Date();
+    long wait = 0;
     ReentrantReadWriteLock nodeLock = getNodeLock(req.getNodeID().getName());
     nodeLock.readLock().lock();
     try {
       Object workLock = getWorkLock(req.getNodeID());
       synchronized(workLock) {
+	wait  = (new Date()).getTime() - start.getTime();
+	start = new Date();
+
 	NodeID id = req.getNodeID();
 	TreeMap<FileSeq, FileState[]> states = new TreeMap<FileSeq, FileState[]>();
 
@@ -303,8 +333,10 @@ class FileMgr
 	case CheckedIn:
 	  assert(false);
 	  return new FailureRsp
-	    ("INTERNAL ERROR: No attempt to compute file states should ever be made when " + 
-	     "the VersionState for a working version is CheckedIn!");
+	    (task, 
+	     "INTERNAL ERROR: No attempt to compute file states should ever be made when " + 
+	     "the VersionState for a working version is CheckedIn!", 
+	     wait, start);
 	  
 	case Identical:
 	  for(FileSeq fseq : req.getFileSequences()) {
@@ -408,14 +440,20 @@ class FileMgr
 	  break;
 	}
 	
-	return new FileStateRsp(req.getNodeID(), states);
+	return new FileStateRsp(req.getNodeID(), states, wait, start);
       }
     }
     catch(PipelineException ex) {
-      return new FailureRsp(ex.getMessage());
+      if(wait > 0) 
+	return new FailureRsp(task, ex.getMessage(), wait, start);
+      else 
+	return new FailureRsp(task, ex.getMessage(), start);
     }
     catch(IOException ex) {
-      return new FailureRsp(ex.getMessage());
+      if(wait > 0) 
+	return new FailureRsp(task, ex.getMessage(), wait, start);
+      else 
+	return new FailureRsp(task, ex.getMessage(), start);
     }
     finally {
       nodeLock.readLock().unlock();

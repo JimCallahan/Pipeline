@@ -1,4 +1,4 @@
-// $Id: FileRequest.java,v 1.1 2004/03/11 11:01:43 jim Exp $
+// $Id: FileRequest.java,v 1.2 2004/03/12 23:08:23 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -55,5 +55,10 @@ enum FileRequest
   /**
    * An instance of <CODE>FileStateReq</CODE> is next.
    */
-  State;  
+  State, 
+
+  /**
+   * No more requests will be send over this connection.
+   */
+  Shutdown;
 }
