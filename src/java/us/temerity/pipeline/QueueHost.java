@@ -1,4 +1,4 @@
-// $Id: QueueHost.java,v 1.14 2005/03/03 03:56:33 jim Exp $
+// $Id: QueueHost.java,v 1.15 2005/03/04 11:02:17 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -489,7 +489,8 @@ class QueueHost
     pNumJobsDelta++;
     LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Finest,
-       "Job Started - Delta = " + pNumJobsDelta);
+       "Job Started [" + getName() + "]:  Delta = " + pNumJobsDelta);
+    LogMgr.getInstance().flush();
   }
 
   /**
@@ -514,7 +515,8 @@ class QueueHost
 
     LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Finest,
-       "Job Finished - Delta = " + pNumJobsDelta);
+       "Job Finished [" + getName() + "]:  Delta = " + pNumJobsDelta);
+    LogMgr.getInstance().flush();
   }
 
   
@@ -622,11 +624,12 @@ class QueueHost
 
     LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Finest,
-       "Dispatcher - " + 
+       "Available Slots [" + getName() + "]:  " + 
        "Jobs = " + sample.getNumJobs() + "  " + 
        "Delta = " + pNumJobsDelta + "  " + 
        "Total = " + (sample.getNumJobs() + pNumJobsDelta) + "  " +
        "Slots = " + pJobSlots);
+    LogMgr.getInstance().flush();
 
     return (pJobSlots - (sample.getNumJobs() + pNumJobsDelta));
   }
