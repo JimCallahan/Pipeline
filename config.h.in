@@ -255,6 +255,9 @@
 /* Define to 1 if you have the <iostream.h> header file. */
 #undef HAVE_IOSTREAM_H
 
+/* Define to 1 if you have the <iterator> header file. */
+#undef HAVE_ITERATOR
+
 /* Define to 1 if you have the <jpeglib.h> header file. */
 #undef HAVE_JPEGLIB_H
 
@@ -413,6 +416,9 @@
 
 /* Define to 1 if you have the <tiff.h> header file. */
 #undef HAVE_TIFF_H
+
+/* Define to 1 if you have the <time.h> header file. */
+#undef HAVE_TIME_H
 
 /* Define to 1 if you have the `trunc' function. */
 #undef HAVE_TRUNC

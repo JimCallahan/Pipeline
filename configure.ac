@@ -579,6 +579,7 @@ AC_CHECK_HEADERS([iostream iostream.h], [break])
 AC_CHECK_HEADERS([fstream fstream.h], [break])
 AC_CHECK_HEADERS([strstream strstream.h], [break])
 AC_CHECK_HEADERS([iomanip iomanip.h], [break])
+AC_CHECK_HEADERS([iterator])
 AC_CHECK_HEADERS([algorithm algobase algobase.h], [break])
 
 AC_MSG_RESULT([ ])
