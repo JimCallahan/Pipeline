@@ -1,6 +1,6 @@
-// $Id: TimeService.java,v 1.5 2005/01/12 13:07:15 jim Exp $
+// $Id: TimeService.java,v 1.1 2005/03/11 06:30:28 jim Exp $
 
-package us.temerity.pipeline.bootstrap;
+package us.temerity.pipeline.core;
 
 import java.io.*;
 import java.util.*;
