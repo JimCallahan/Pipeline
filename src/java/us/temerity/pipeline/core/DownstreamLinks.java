@@ -1,4 +1,4 @@
-// $Id: DownstreamLinks.java,v 1.1 2004/03/29 08:18:22 jim Exp $
+// $Id: DownstreamLinks.java,v 1.2 2004/04/19 21:05:47 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -42,8 +42,8 @@ class DownstreamLinks
   public
   DownstreamLinks() 
   {
-    pWorkingLinks   = new HashMap<NodeID,TreeSet<String>>();
-    pCheckedInLinks = new HashMap<VersionID,TreeMap<String,VersionID>>();
+    pWorkingLinks   = new TreeMap<NodeID,TreeSet<String>>();
+    pCheckedInLinks = new TreeMap<VersionID,TreeMap<String,VersionID>>();
   }
 
   /**
@@ -62,8 +62,8 @@ class DownstreamLinks
       throw new IllegalArgumentException("The node name cannot be (null)!");
     pName = name;
 
-    pWorkingLinks   = new HashMap<NodeID,TreeSet<String>>();
-    pCheckedInLinks = new HashMap<VersionID,TreeMap<String,VersionID>>();
+    pWorkingLinks   = new TreeMap<NodeID,TreeSet<String>>();
+    pCheckedInLinks = new TreeMap<VersionID,TreeMap<String,VersionID>>();
   }
 
   
@@ -86,7 +86,12 @@ class DownstreamLinks
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Gets the names of the nodes connected by a downstream link to the given working version.
+   * Gets the names of the nodes connected by a downstream link to the given working 
+   * version. <P> 
+   * 
+   * A return value of <CODE>null</CODE> indicates that no working version with the 
+   * given node ID exists.  If the working version does exist and has no downstream
+   * links, an empty <CODE>TreeSet</CODE> will be returned.
    * 
    * @param id
    *   The unique working version identifier.
@@ -108,9 +113,30 @@ class DownstreamLinks
     TreeSet<String> links = pWorkingLinks.get(id);
     if(links != null)
       return new TreeSet<String>(links);
-    return new TreeSet<String>();
+
+    return null;
   }
   
+  /**
+   * If no downstream links already exist for the given working version, create an 
+   * empty set of downstream links for the version.
+   * 
+   * @param id
+   *   The unique working version identifier.
+   */ 
+  public void 
+  createWorking
+  (
+   NodeID id
+  ) 
+  {
+    TreeSet<String> links = pWorkingLinks.get(id);
+    if(links == null) {
+      links = new TreeSet<String>();
+      pWorkingLinks.put(id, links);
+    }
+  }
+
   /** 
    * Add the name of a node connected by a downstream link to the given working version.
    * 
@@ -172,9 +198,24 @@ class DownstreamLinks
     TreeSet<String> links = pWorkingLinks.get(id);
     if(links != null) 
       links.remove(name);
+  }
 
-    if(links.isEmpty()) 
-      pWorkingLinks.remove(id);
+  /**
+   * Delete the given working version from the downstream links table. <P> 
+   * 
+   * Used when releasing a working version so that subsequent calls to the 
+   * {@link #getWorking getWorking} method will return <CODE>null</CODE>.
+   * 
+   * @param id
+   *   The unique working version identifier.
+   */ 
+  public void 
+  releaseWorking
+  (
+   NodeID id
+  ) 
+  {
+    pWorkingLinks.remove(id);
   }
 
 
@@ -182,7 +223,11 @@ class DownstreamLinks
 
   /**  
    * Get the revision numbers indexed by node name of the checked-in nodes connected by a 
-   * downstream link to the checked-in version with the given revision number.
+   * downstream link to the checked-in version with the given revision number. <P> 
+   * 
+   * A return value of <CODE>null</CODE> indicates that no checked-in version with the given 
+   * revision number exists.  If the checked-in version does exist and has no downstream
+   * links, an empty <CODE>TreeMap</CODE> will be returned.
    * 
    * @param vid 
    *   The revision number of the checked-in node version.
@@ -203,9 +248,54 @@ class DownstreamLinks
     TreeMap<String,VersionID> links = pCheckedInLinks.get(vid);
     if(links != null)
       return new TreeMap<String,VersionID>(links);
-    return new TreeMap<String,VersionID>();
+
+    return null;
   }
   
+  /**  
+   * Get the revision numbers indexed by node name of the checked-in nodes connected by a 
+   * downstream link to the checked-in version with the given revision number.
+   * 
+   * A return value of <CODE>null</CODE> indicates that no checked-in versions exist.
+   * If the latest checked-in version does exist and has no downstream links, an 
+   * empty <CODE>TreeMap</CODE> will be returned.
+   * 
+   * @return
+   *   The table of revision numbers indexed by the names of the downstream nodes.
+   */
+  public TreeMap<String,VersionID>
+  getLatestCheckedIn() 
+  {
+    if(pCheckedInLinks.isEmpty()) 
+      return null;
+    
+    TreeMap<String,VersionID> links = pCheckedInLinks.get(pCheckedInLinks.lastKey());
+    if(links != null)
+      return new TreeMap<String,VersionID>(links);
+
+    return null;
+  }
+  
+  /**
+   * If no downstream links already exist for the given checked-in version, create an 
+   * empty set of downstream links for the version.
+   * 
+   * @param vid 
+   *   The revision number of the checked-in node version.
+   */ 
+  public void 
+  createCheckedIn
+  (
+   VersionID vid
+  ) 
+  { 
+    TreeMap<String,VersionID> links = pCheckedInLinks.get(vid);
+    if(links == null) {
+      links = new TreeMap<String,VersionID>();
+      pCheckedInLinks.put(vid, links);
+    }
+  }
+
   /** 
    * Add the name and revision of a checked-in version of a node connected by a downstream 
    * link to the checked-in version with the given revision number.
@@ -281,13 +371,13 @@ class DownstreamLinks
       throw new GlueException("The \"Name\" was missing!");
     pName = name;
 
-    HashMap<NodeID,TreeSet<String>> working = 
-      (HashMap<NodeID,TreeSet<String>>) decoder.decode("WorkingLinks");
+    TreeMap<NodeID,TreeSet<String>> working = 
+      (TreeMap<NodeID,TreeSet<String>>) decoder.decode("WorkingLinks");
     if(working != null) 
       pWorkingLinks = working;
 
-    HashMap<VersionID,TreeMap<String,VersionID>> checkedIn = 
-      (HashMap<VersionID,TreeMap<String,VersionID>>) decoder.decode("CheckedInLinks");
+    TreeMap<VersionID,TreeMap<String,VersionID>> checkedIn = 
+      (TreeMap<VersionID,TreeMap<String,VersionID>>) decoder.decode("CheckedInLinks");
     if(checkedIn != null) 
       pCheckedInLinks = checkedIn;
   }
@@ -306,13 +396,13 @@ class DownstreamLinks
   /** 
    * The names of the working nodes downstream indexed by working version id.
    */
-  private HashMap<NodeID,TreeSet<String>>  pWorkingLinks;
+  private TreeMap<NodeID,TreeSet<String>>  pWorkingLinks;
 
   /** 
    * The revision numbers of the checked-in nodes downstream indexed by revision number and
    * downstream node name.
    */
-  private HashMap<VersionID,TreeMap<String,VersionID>>  pCheckedInLinks;
+  private TreeMap<VersionID,TreeMap<String,VersionID>>  pCheckedInLinks;
   
 }
 
