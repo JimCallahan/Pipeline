@@ -70,7 +70,7 @@ INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 JAR = @JAR@
 JAVA = @JAVA@
-JAVAMAKE = @JAVAMAKE@
+JAVADOC = @JAVADOC@
 JAVA_C = @JAVA_C@
 JAVA_CC = @JAVA_CC@
 JAVA_C_FLAGS = @JAVA_C_FLAGS@
@@ -159,22 +159,14 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 #   V A R I A B L E S                                                                        #
 #--------------------------------------------------------------------------------------------#
 
-         WORKING = $(PRODDIR)/working
-      REPOSITORY = $(PRODDIR)/repository
-
-     JAVA_C_OPTS = $(JAVA_C_FLAGS) \
-                   -d ../../.. -classpath "../../..:$(srcdir)/../../.."
-
-
-#--------------------------------------------------------------------------------------------#
-
           TARGET = pipeline.jar
 
          PARSERS = GlueParser
 
-          NATIVE = NativeSystem
 
-         HEADERS = $(patsubst %,native/%.h,$(NATIVE))
+      JAVA_PATHS = -d ../../.. -classpath "../../..:$(srcdir)/../../.."
+
+    JAVA_SOURCES = $(shell ls *.java $(srcdir)/*.java) $(patsubst %,%.java,$(PARSERS))
 
 
 #--------------------------------------------------------------------------------------------#
@@ -189,9 +181,10 @@ all: Makefile PackageInfo.java $(TARGET)
 $(TARGET): java-all
 	(cd ../../..; $(JAR) cvf us/temerity/pipeline/$@ us/temerity/pipeline/*.class)
 
-.PHONY: java-all
-java-all: $(patsubst %,%.java,$(PARSERS))
-	$(JAVA_C) $(JAVA_C_OPTS) *.java $(srcdir)/*.java
+java-all: $(JAVA_SOURCES)
+	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(JAVA_SOURCES)
+	touch $@
+	rm -f $(top_builddir)/docs/javadoc/docs-all
 
 %.java: %.jj
 	$(JAVA_CC) $<
@@ -206,17 +199,13 @@ install: installdirs install-jar
 install-jar: $(TARGET)
 	$(INSTALL) -m 444 $< $(prefix)/jar/$<
 
+PHONY: installdirs
 installdirs:
-	$(mkinstalldirs) $(bindir)
 	$(mkinstalldirs) $(prefix)/jar
-	$(mkinstalldirs) $(WORKING)
-	$(mkinstalldirs) $(REPOSITORY)
+	$(mkinstalldirs) $(PRODDIR)/working
+	$(mkinstalldirs) $(PRODIR)/repository
 	chmod 0755 $(REPOSITORY)
 	chown pipeline.pipeline $(REPOSITORY)
-	$(mkinstalldirs) $(prefix)/dbroot
-	chmod 0700 $(prefix)/dbroot
-	chown pipeline.pipeline $(prefix)/dbroot
-
 
 
 #--------------------------------------------------------------------------------------------#
@@ -233,7 +222,6 @@ check: all
 	$(MAKE) -C tests $@
 
 
-
 #--------------------------------------------------------------------------------------------#
 
 clean: clean-jar clean-class clean-aux clean-parser 
@@ -246,11 +234,11 @@ clean-jar:
 
 clean-class:
 	rm -f *.class
+	rm -f java-all
 
 clean-aux:
 	rm -f ParseException.java SimpleCharStream.java Token.java TokenMgrError.java
 	rm -f PackageInfo.java
-	rm -f javamake.pdb
 
 clean-parser:
 	@list='$(PARSERS)'; \
@@ -276,12 +264,9 @@ clean-parser:
 
 #--------------------------------------------------------------------------------------------#
 
-PHONY: installdirs
+PackageInfo.java: $(srcdir)/PackageInfo.java.in  $(top_builddir)/config.status
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 
-
-
-#--------------------------------------------------------------------------------------------#
-
-Makefile PackageInfo.java:  $(srcdir)/Makefile.in  $(top_builddir)/config.status
+Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 
