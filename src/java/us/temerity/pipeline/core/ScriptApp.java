@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.35 2005/03/21 07:04:36 jim Exp $
+// $Id: ScriptApp.java,v 1.36 2005/03/24 03:49:01 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -573,7 +573,7 @@ class ScriptApp
   public void 
   restore
   (
-   String prefix, 
+   String archiveName, 
    TreeMap params,
    TreeMap versions, 
    MasterMgrClient client
@@ -584,25 +584,164 @@ class ScriptApp
     TreeMap<String,TreeSet<VersionID>> aversions = 
       (TreeMap<String,TreeSet<VersionID>>) versions; 
 
-    System.out.print
-      ("Restore():\n" + 
-       "       Prefix = " + prefix + "\n" + 
-       "   Parameters =\n");
-    for(String name : aparams.keySet()) 
-      System.out.print("    " + name + " = " + aparams.get(name) + "\n");
-    System.out.print
-      ("     Versions =\n");
-    for(String name : aversions.keySet()) 
-      for(VersionID vid : aversions.get(name)) 
-	System.out.print("    " + name + " (" + vid + ")\n");
-    System.out.print("\n");
+    ArchiveVolume vol = client.getArchive(archiveName);
 
+    BaseArchiver archiver = vol.getArchiver();
+    for(String pname : aparams.keySet()) {
+      String value = aparams.get(pname);
+      try {
+	ArchiverParam aparam = archiver.getParam(pname);
+	if(aparam == null)
+	  throw new PipelineException 
+	    ("No parameter named (" + pname + ") exists for Archiver " + 
+	     "(" + archiver.getName() + ")!");
+	    
+	if(aparam instanceof BooleanArchiverParam) {
+	  archiver.setParamValue(pname, new Boolean(value));
+	}
+	else if(aparam instanceof ByteSizeArchiverParam) {
+	  archiver.setParamValue(pname, parseLong(value));
+	}
+	else if(aparam instanceof DirectoryArchiverParam) {
+	  archiver.setParamValue(pname, value);
+	}
+	else if(aparam instanceof DoubleArchiverParam) {
+	  archiver.setParamValue(pname, new Double(value));
+	}
+	else if(aparam instanceof EnumArchiverParam) {
+	  EnumArchiverParam eparam = (EnumArchiverParam) aparam;
+	  if(!eparam.getValues().contains(value))
+	    throw new PipelineException
+	      ("The value (" + value + ") is not one of the enumerations of " +
+	       "parameter (" + pname + ")!");
+	  
+	  archiver.setParamValue(pname, value);
+	}
+	else if(aparam instanceof IntegerArchiverParam) {
+	  archiver.setParamValue(pname, new Integer(value));
+	}
+	else if(aparam instanceof StringArchiverParam) {
+	  archiver.setParamValue(pname, value);
+	}
+	else {
+	  assert(false) : "Unknown archiver parameter type!";
+	}
+      }
+      catch(NumberFormatException ex) {
+	throw new PipelineException
+	  ("The value (" + value + ") is not legal for parameter (" + pname + ")!");
+      }
 
-    //throw new PipelineException("Not implemented yet...");
+      archiver.setParamValue(pname, value);
+    }
 
+    client.restore(archiveName, aversions, archiver);
+  }
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   A R C H I V E   V O L U M E                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Print the names of all archive volumes.
+   */ 
+  public void 
+  printArchiveVolumeNames
+  (
+   MasterMgrClient client
+  ) 
+    throws PipelineException 
+  {
+    TreeMap<String,Date> archives = client.getArchiveIndex();
+
+    StringBuffer buf = new StringBuffer();
+    for(String name : archives.keySet()) 
+      buf.append(name + "\n");
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       buf.toString());
+    LogMgr.getInstance().flush();
   }
 
-  
+  /**
+   * Print a text representation of the given archive volume.
+   */ 
+  public void 
+  printArchiveVolume
+  (
+   String archiveName, 
+   TreeSet sections,
+   MasterMgrClient client
+  )
+    throws PipelineException 
+  {
+    ArchiveVolume vol = client.getArchive(archiveName);
+
+    StringBuffer buf = new StringBuffer();
+    buf.append
+      (tbar(80) + "\n" +
+       "Archive Volume    : " + archiveName + "\n" + 
+       "Created           : " + Dates.format(vol.getTimeStamp()));
+
+    if(sections.contains("arch")) {
+      BaseArchiver archiver = vol.getArchiver();
+
+      buf.append
+	("\n\n" + 
+	 pad("-- Archiver Plugin ", '-', 80) + "\n" +
+	 "Archiver          : " + archiver.getName() + "\n" +
+	 "Version           : " + archiver.getVersionID() + "\n" +
+	 "Operation         : " + (archiver.isManual() ? "Manual" : "Automatic") + "\n" +
+	 "Capacity          : " + formatLong(archiver.getCapacity()));
+
+      if(archiver.hasParams()) {
+	buf.append
+	  ("\n\n" +
+	   pad("-- Archiver Parameters ", '-', 80));
+	
+	for(String pname : archiver.getLayout()) {
+	  buf.append
+	    ("\n" + 
+	     pad(pname, 18) + ": " + archiver.getParamValue(pname));
+	}
+      }
+    }
+
+    if(sections.contains("vsn")) {
+      buf.append
+	("\n\n" + 
+	 pad("-- Versions ", '-', 80));
+    
+      for(String name : vol.getNames()) {
+	for(VersionID vid : vol.getVersionIDs(name)) {
+	  buf.append
+	    ("\n" + 
+	     pad(name + " (v" + vid + ")", 72) + "  " + formatLong(vol.getSize(name, vid)));
+	}
+      }
+    }
+
+    if(sections.contains("file")) {
+      buf.append
+	("\n\n" + 
+	 pad("-- Files ", '-', 80));
+      
+      for(String name : vol.getNames()) {
+	for(VersionID vid : vol.getVersionIDs(name)) {
+	  for(File file : vol.getFiles(name, vid)) 
+	    buf.append("\n" + name + "/" + vid + "/" + file);
+	}
+      }
+    }
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       buf.toString());
+    LogMgr.getInstance().flush();
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -3066,8 +3205,12 @@ class ScriptApp
     if(value == null) 
       return "-";
 
-    if(value < 1048576) {
+    if(value < 1024) {
       return value.toString();
+    }
+    else if(value < 1048576) {
+      double k = ((double) value) / 1024.0;
+      return String.format("%1$.1fK", k);
     }
     else if(value < 1073741824) {
       double m = ((double) value) / 1048576.0;

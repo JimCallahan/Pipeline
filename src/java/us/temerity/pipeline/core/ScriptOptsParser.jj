@@ -308,6 +308,7 @@ TOKEN :
   /* commands */ 
 | <PRIVILEGED:        "privileged">       : PRIVILEGED_OPTS 
 | <ADMIN:             "admin">            : ADMIN_OPTS
+| <ARCHIVE_VOLUME:    "archive-volume">   : ARCHIVE_VOLUME_OPTS
 | <DEFAULT_TOOLSET:   "default-toolset">  : TOOLSET_OPTS 
 | <ACTIVE_TOOLSET:    "active-toolset">   : TOOLSET_OPTS 
 | <TOOLSET1:          "toolset">          : TOOLSET_OPTS 
@@ -1104,6 +1105,7 @@ TOKEN :
 | <OUT:              "out"> 
 | <ERR:              "err"> 
 | <FILE:             "file"> 
+| <ARCH:             "arch"> 
 | <COMMA7:           ","> 
 | <AE22:             "\0">               : OPTIONS
 | <ILLEGAL_SECTION:  (~[",","\0"])+>     : IGNORE_STATE
@@ -1213,6 +1215,18 @@ TOKEN :
 | <AE45:               ["\0"]>   
 | <UNKNOWN_OPTION19:   "-" ("-")? (~["\0","="])*> : IGNORE_STATE
 | <UNKNOWN19:          ~["-","\0"] (~["\0"])*>    : IGNORE_STATE   
+}
+
+
+/* toolset command options */ 
+<ARCHIVE_VOLUME_OPTS> 
+TOKEN :
+{
+  <ARCHIVE_VOLUME_GET:       "--get">                   : OPTIONS
+| <ARCHIVE_VOLUME_GET_INFO:  "--get-info">              : ARCHIVE_PREFIX_SEP
+| <AE46:                     ["\0"]>            
+| <UNKNOWN_OPTION20:         "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN20:                ~["-","\0"] (~["\0"])*>    : IGNORE_STATE          
 }
 
 
@@ -1472,7 +1486,7 @@ Commands()
   pQueueMgrClient  = new QueueMgrClient(pQueueServer, pQueuePort);
 }
 {
-  (PrivilegedCmds() | AdminCmds() |
+  (PrivilegedCmds() | AdminCmds() | ArchiveVolumeCmds() |
    DefaultToolsetCmds() | ActiveToolsetCmds() | ToolsetCmds() |
    LicenseKeyCmds() | SelectionKeyCmds() | JobServerCmds() | 
    EditorCmds() | ActionCmds() | ComparatorCmds() | ToolCmds() | ArchiverCmds() | 
@@ -1593,7 +1607,7 @@ BatchCommand()
   throws PipelineException : 
 {}
 {
-  (PrivilegedCmds() | AdminCmds() |
+  (PrivilegedCmds() | AdminCmds() | ArchiveVolumeCmds() |
    DefaultToolsetCmds() | ActiveToolsetCmds() | ToolsetCmds() |
    LicenseKeyCmds() | SelectionKeyCmds() | JobServerCmds() | 
    EditorCmds() | ActionCmds() | ComparatorCmds() | ToolCmds() | ArchiverCmds() | 
@@ -2326,8 +2340,7 @@ AdminRestore()
   <RESTORE> EQ() t=<ARCHIVE_PREFIX> AE() (AdminRestoreOpts())*
   {
     String prefix = t.image;
-    pApp.restore(prefix, pParams, pCheckedInVersions, 
-		 pMasterMgrClient);
+    pApp.restore(prefix, pParams, pCheckedInVersions, pMasterMgrClient);
   }
 }
 
@@ -2370,6 +2383,113 @@ VersionName() :
     return t.image;
   }
 }
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   A R C H I V E   V O L U M E    C O M M A N D S                                         */
+/*------------------------------------------------------------------------------------------*/
+
+void 
+ArchiveVolumeCmds() 
+  throws PipelineException : 
+{}
+{
+  <ARCHIVE_VOLUME> AE() (ArchiveVolumeGet() |  ArchiveVolumeGetInfo())
+  {}
+}
+
+void 
+ArchiveVolumeGet() 
+  throws PipelineException : 
+{}
+{
+  <ARCHIVE_VOLUME_GET> AE()
+  {
+    pApp.printArchiveVolumeNames(pMasterMgrClient);
+  }
+}
+
+void 
+ArchiveVolumeGetInfo()
+  throws PipelineException : 
+{
+  Token t;
+
+  pSections = new TreeSet();
+}
+{
+  <ARCHIVE_VOLUME_GET_INFO> EQ() t=<ARCHIVE_PREFIX> AE() (ArchiveVolumeGetInfoOpts())*
+  {
+    pApp.printArchiveVolume(t.image, pSections, pMasterMgrClient);
+  }
+}
+
+void
+ArchiveVolumeGetInfoOpts() :
+{}
+{
+  (ArchiveVolumeGetInfoShow() | ArchiveVolumeGetInfoHide()) 
+  {}
+}
+
+void 
+ArchiveVolumeGetInfoShow() : 
+{}
+{
+  <SHOW> EQ() ArchiveVolumeGetInfoShowSections() 
+    (COMMA() ArchiveVolumeGetInfoShowSections())* AE()  
+  {}
+}
+
+void 
+ArchiveVolumeGetInfoShowSections() : 
+{}
+{
+  (ArchiveVolumeGetInfoShowAll() | 
+  ShowArch() | ShowVsn() | ShowFile()) 
+  {}
+}
+
+void 
+ArchiveVolumeGetInfoShowAll() : 
+{}
+{
+  <ALL>
+  {
+    pSections.add("arch");
+    pSections.add("vsn");
+    pSections.add("file");
+  }
+}
+
+void 
+ArchiveVolumeGetInfoHide() : 
+{}
+{
+  <HIDE> EQ() ArchiveVolumeGetInfoHideSections() 
+    (COMMA() ArchiveVolumeGetInfoHideSections())* AE()  
+  {}
+}
+
+void 
+ArchiveVolumeGetInfoHideSections() : 
+{}
+{
+  (ArchiveVolumeGetInfoHideAll() | 
+   HideArch() | HideVsn() | HideFile())
+  {}
+}
+
+void 
+ArchiveVolumeGetInfoHideAll() : 
+{}
+{
+  <ALL>
+  {
+    pSections.clear(); 
+  }
+}
+
 
 
 /*------------------------------------------------------------------------------------------*/
@@ -4869,6 +4989,16 @@ ShowAct() :
 }
 
 void
+ShowArch() : 
+{}
+{
+  <ARCH>  
+  {
+    pSections.add("arch");    
+  }
+}
+
+void
 ShowJReq() : 
 {}
 {
@@ -5007,6 +5137,16 @@ HideAct() :
   <ACT>  
   {
     pSections.remove("act");    
+  }
+}
+
+void
+HideArch() : 
+{}
+{
+  <ARCH>  
+  {
+    pSections.remove("arch");    
   }
 }
 
@@ -6138,7 +6278,8 @@ AE() :
    t=<AE26> | t=<AE27> | t=<AE28> | t=<AE29> | t=<AE30> |
    t=<AE31> | t=<AE32> | t=<AE33> | t=<AE34> | t=<AE35> |
    t=<AE36> | t=<AE37> | t=<AE38> | t=<AE39> | t=<AE40> | 
-   t=<AE41> | t=<AE42> | t=<AE43> | t=<AE44> | t=<AE45>)
+   t=<AE41> | t=<AE42> | t=<AE43> | t=<AE44> | t=<AE45> | 
+   t=<AE46>)
   { 
     return t; 
   }

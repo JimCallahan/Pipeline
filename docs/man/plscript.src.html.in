@@ -122,11 +122,23 @@ Users</a></li>
  style="font-style: italic;">name</span>:<span
  style="font-style: italic;">value</span> ...] </span><span
  style="font-weight: normal;">[<span style="font-weight: bold;">--vsn</span>=<span
- style="font-style: italic;">node-name:</span></span><span
- style="font-weight: normal;"><span style="font-style: italic;">major.minor.micro<span
- style="font-style: italic;"></span></span><span
- style="font-style: italic;"> ...</span>]<br>
-          </span></li>
+ style="font-style: italic;">node-name</span>[:</span><span
+ style="font-weight: normal;"><span style="font-style: italic;">major.minor.micro</span>]<span
+ style="font-style: italic;"> ...</span>]</span></li>
+      </ul>
+      <li style="font-weight: bold;">archive-volume</li>
+      <ul>
+        <li style="font-weight: bold;"><a href="#archive-volume_--get">--get</a></li>
+        <li style="font-weight: bold;"><a
+ href="#archiver_--get-info-all">--get-info</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">archive-name
+          </span></span><span style="font-weight: normal;">[<span
+ style="font-weight: bold;">--show</span>=<span
+ style="font-style: italic;">section</span>[,<span
+ style="font-style: italic;">section</span> ...]] [</span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--hide</span>=<span
+ style="font-style: italic;">section</span>[,<span
+ style="font-style: italic;">section</span> ...]]</span></li>
       </ul>
     </ul>
   </ul>
@@ -1941,7 +1953,7 @@ option is ignored.</span><br>
  style="font-style: italic;">integer</span>]<br>
 </span>
 <div style="margin-left: 40px;"><br>
-<span style="font-style: italic;"></span>Remove the repository files
+<span style="font-style: italic;"></span>Removes the repository files
 associated with the given checked-in versions which match the given
 search criteria.&nbsp; A checked-in version cannot be selected for
 offlining if there exists
@@ -1997,14 +2009,114 @@ volumes.&nbsp; By default, the minimum number of archives is (2).<br>
  style="font-style: italic;">value</span> ...] </span><span
  style="font-weight: normal;"><br>
 &nbsp; [<span style="font-weight: bold;">--node</span>=<span
- style="font-style: italic;">node-name:</span></span><span
- style="font-weight: normal;"><span style="font-style: italic;">major.minor.micro<span
- style="font-style: italic;"></span></span><span
+ style="font-style: italic;">node-name</span></span><span
+ style="font-weight: normal;">[:<span style="font-style: italic;">major.minor.micro</span>]<span
  style="font-style: italic;"> ...</span>]<br>
 </span>
 <div style="margin-left: 40px;"><br>
-<span style="font-style: italic;">Not yet implemented...</span><br>
+<span style="font-style: italic;"></span>Restores the files associated
+with offline checked-in versions from the given archive volume (<span
+ style="font-style: italic;">archive-name</span>).&nbsp; If the
+Archiver plugin requires manual intervention to insert tapes or other
+media, this must be performed before running <span
+ style="font-weight: bold;">plscript</span>(1).<span
+ style="font-weight: normal;"><span style="font-weight: bold;"><br
+ style="font-weight: bold;">
+<br>
+--param</span>=<span style="font-style: italic;">name:value</span><br>
+<br>
+</span>
+<div style="margin-left: 40px;">By default, the files are restored
+using the same Archiver plugin parameters which were used to create the
+archive volume.&nbsp; This option allows the values of these parameters
+to be overriden during the restore operation.&nbsp; This is sometime
+necessary for parameters specifying outdated physical devices or
+filesystem locations which may not longer be valid at the time of the
+restore operation.<br>
+<span style="font-weight: normal;"> </span></div>
 </div>
+</div>
+<div style="margin-left: 80px;"><span style="font-weight: normal;"><span
+ style="font-weight: bold;"><br>
+--node</span>=<span style="font-style: italic;">node-name</span></span><span
+ style="font-weight: normal;">[:<span style="font-style: italic;">major.minor.micro</span>]<span
+ style="font-style: italic;"><br>
+</span></span>
+<div style="margin-left: 40px;"><br>
+Specifies the fully resolved names (<span style="font-style: italic;">node-name</span>)
+and revision numbers (<span style="font-weight: normal;"><span
+ style="font-style: italic;">major.minor.micro</span>) of the offline
+checked-in versions to restore.&nbsp; If the revision number is
+omitted, all versions of the node contained in the archive volume will
+be restored.&nbsp; If no <span style="font-weight: bold;">--node</span>
+options are specified, the entire contents of the archive volume will
+be restored.<br>
+<br>
+<br>
+</span></div>
+</div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
+ name="archive-volume_--get"></a>archive-volume --get</span><br>
+<br>
+<div style="margin-left: 40px;">Prints the names of all archive volumes
+containing copies of the files associated with checked-in nodes.&nbsp;
+Archive volumes can be created using the <a href="#admin_--archive"><span
+ style="font-weight: bold;">admin --archive</span></a> command or using
+the Archive Tool in <span style="font-weight: bold;">plui</span>(1).&nbsp;
+<br>
+</div>
+<br>
+</div>
+<span style="font-weight: bold;"></span>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
+ name="archive-volume_--get-info"></a>archive-volume --get-info</span><span
+ style="font-weight: normal;">=<span style="font-style: italic;">archive-name
+</span></span><span style="font-weight: normal;"><br>
+&nbsp; [<span style="font-weight: bold;">--show</span>=<span
+ style="font-style: italic;">section</span>[,<span
+ style="font-style: italic;">section</span> ...]] [</span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--hide</span>=<span
+ style="font-style: italic;">section</span>[,<span
+ style="font-style: italic;">section</span> ...]]</span></div>
+<div style="margin-left: 80px;"><br>
+Prints a summary of information about the contents of the given archive
+volume (<span style="font-style: italic;">archive-name</span>).&nbsp;
+The <span style="font-weight: bold;">--show</span> and <span
+ style="font-weight: bold;">--hide</span> options control the kinds of
+information (<span style="font-style: italic;">section</span>)
+printed.&nbsp; The following sections are supported by these options: <br>
+<div style="margin-left: 40px;"><br>
+</div>
+<span style="font-weight: bold;">all</span><br>
+<span style="font-weight: bold;"></span><br>
+<span style="font-weight: bold;"></span>
+<div style="margin-left: 40px;">A shortcut for speciying all of the
+sections at once.</div>
+<span style="font-weight: bold;"></span><br>
+<span style="font-weight: bold;">arch</span><br>
+<span style="font-weight: bold;"></span><br>
+<span style="font-weight: bold;"></span>
+<div style="margin-left: 40px;">Prints information about the Archiver
+plugin used to create the archive volume, including the names and
+values of all Archiver plugin parameters.<br>
+</div>
+</div>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><br>
+vsn<br>
+</span>
+<div style="margin-left: 40px;"><br>
+Prints the fully resolved name, revision number and total size of the
+files associated with each checked-in version contained in the archive
+volume.<br>
+<br>
+</div>
+<span style="font-weight: bold;">file<br>
+</span></div>
+</div>
+<div style="margin-left: 120px;"><br>
+Prints the fully resolved names of each of the files associated with
+checked-in versions contained in the archive volume.<br>
 </div>
 <h3><a name="Toolset_Administration"></a>Toolset Administration</h3>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
@@ -3487,7 +3599,7 @@ checked-in version.<br>
 environment and default editor for the checked-in version.<br>
 </div>
 <br>
-<span style="font-weight: bold;">action</span><br>
+<span style="font-weight: bold;">act</span><br>
 <br>
 <div style="margin-left: 40px;">Prints the name, version, single and
 per-source parameters of the Action plugin associated with the
