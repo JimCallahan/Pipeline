@@ -9,66 +9,66 @@
   </style>
   <bind style="default" type="region" key=".*"/>
 
-  <style id="splitpane">
+
+  <!-- 
+  <style id="SplitPane">
     <imagePainter path="BorderIn.png" 
-                  sourceInsets="6 6 6 6"
-                  paintCenter="true"/>
+                  sourceInsets="6 6 6 6"/>
     <insets top="6" bottom="6" right="6" left="6"/>
   </style>
-  <bind style="splitpane" type="region" key="SplitPane"/>
+  <bind style="SplitPane" type="region" key="SplitPane"/>
+  -->
 
-  <style id="splitpanevbar">
-    <imagePainter path="VBar.png"
-                  direction="vertical"
-                  sourceInsets="4 4 4 4" 
-		  paintCenter="true"/>
+  <style id="SplitPaneHorizontalDivider">
+    <imagePainter path="SplitPaneHorizontalDivider.png"
+                  method="splitPaneDividerForeground"
+                  direction="horizontal_split"
+                  sourceInsets="4 4 4 4"/>
     <insets top="4" bottom="4" right="4" left="4"/>
   </style>
-  <bind style="splitpanevbar" type="region" key="SplitPaneDivider"/>
+  <bind style="SplitPaneHorizontalDivider" type="region" key="SplitPaneDivider"/>
 
-  <style id="splitpanehbar">
-    <imagePainter path="HBar.png"
-                  direction="horizontal"
-                  sourceInsets="4 4 4 4" 
-		  paintCenter="true"/>
+  <style id="SplitPaneHorizontalDividerLeftButton">
+    <imagePainter path="SplitPaneHorizontalDividerLeftButton.png"
+                  sourceInsets="2 2 2 2"/>
+    <insets top="2" bottom="2" right="2" left="2"/>
+  </style>
+  <bind style="SplitPaneHorizontalDividerLeftButton" type="name" 
+        key="SplitPaneHorizontalDivider.leftOneTouchButton"/>
+
+  <style id="SplitPaneHorizontalDividerRightButton">
+    <imagePainter path="SplitPaneHorizontalDividerRightButton.png"
+                  sourceInsets="2 2 2 2"/>
+    <insets top="2" bottom="2" right="2" left="2"/>
+  </style>
+  <bind style="SplitPaneHorizontalDividerRightButton" type="name" 
+        key="SplitPaneHorizontalDivider.rightOneTouchButton"/>
+
+
+  <style id="SplitPaneVerticalDivider">
+    <imagePainter path="SplitPaneVerticalDivider.png"
+                  method="splitPaneDividerForeground"
+                  direction="vertical_split"
+                  sourceInsets="4 4 4 4"/>
     <insets top="4" bottom="4" right="4" left="4"/>
   </style>
-  <bind style="splitpanehbar" type="region" key="SplitPaneDivider"/>
+  <bind style="SplitPaneVerticalDivider" type="region" key="SplitPaneDivider"/>
 
-  <style id="splitpaneleftbutton">
-    <imagePainter path="VBarLeftButton.png"
-                  direction="vertical"
-                  sourceInsets="2 2 2 2" 
-		  paintCenter="true"/>
+  <style id="SplitPaneVerticalDividerUpButton">
+    <imagePainter path="SplitPaneVerticalDividerUpButton.png"
+                  sourceInsets="2 2 2 2"/>
     <insets top="2" bottom="2" right="2" left="2"/>
   </style>
-  <bind style="splitpaneleftbutton" type="name" key="SplitPaneDivider.leftOneTouchButton"/>
+  <bind style="SplitPaneVerticalDividerUpButton" type="name" 
+        key="SplitPaneVerticalDivider.upOneTouchButton"/>
 
-  <style id="splitpanerightbutton">
-    <imagePainter path="VBarRightButton.png"
-                  direction="vertical"
-                  sourceInsets="2 2 2 2" 
-		  paintCenter="true"/>
+  <style id="SplitPaneVerticalDividerDownButton">
+    <imagePainter path="SplitPaneVerticalDividerDownButton.png"
+                  sourceInsets="2 2 2 2"/>
     <insets top="2" bottom="2" right="2" left="2"/>
   </style>
-  <bind style="splitpanerightbutton" type="name" key="SplitPaneDivider.rightOneTouchButton"/>
+  <bind style="SplitPaneVerticalDividerDownButton" type="name" 
+        key="SplitPaneVerticalDivider.downOneTouchButton"/>
 
-  <style id="splitpaneupbutton">
-    <imagePainter path="HBarUpButton.png"
-                  direction="horizontal"
-                  sourceInsets="2 2 2 2" 
-		  paintCenter="true"/>
-    <insets top="2" bottom="2" right="2" left="2"/>
-  </style>
-  <bind style="splitpaneupbutton" type="name" key="SplitPaneDivider.leftOneTouchButton"/>
-
-  <style id="splitpanedownbutton">
-    <imagePainter path="HBarDownButton.png"
-                  direction="horizontal"
-                  sourceInsets="2 2 2 2" 
-		  paintCenter="true"/>
-    <insets top="2" bottom="2" right="2" left="2"/>
-  </style>
-  <bind style="splitpanedownbutton" type="name" key="SplitPaneDivider.rightOneTouchButton"/>
 
 </synth>
