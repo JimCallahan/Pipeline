@@ -335,11 +335,10 @@ AC_PROG_INSTALL
 
 unset BASH
 AC_PATH_PROG(BASH, bash, $PATH)
-AC_PATH_PROG(WISH, wish, $PATH)
-
 AC_PATH_PROG(MAKE, make, $PATH)
 AC_PATH_PROG(CVS, cvs, $PATH)
-
+AC_PATH_PROG(MD5SUM, md5sum, $PATH)
+AC_PATH_PROG(DIFF, diff, $PATH)
 AC_PATH_PROG(MOZILLA, mozilla, $PATH)
 
 AC_MSG_RESULT([ ])
@@ -552,10 +551,8 @@ dnl ----------------------------------------------------------------------------
 
 AC_MSG_RESULT([Locating C system headers:])
 
-AC_CHECK_HEADERS([math.h])         
+AC_CHECK_HEADERS([math.h errno.h pwd.h dlfcn.h libgen.h])         
 AC_CHECK_HEADERS([time.h sys/time.h sys/param.h sys/utsname.h])  
-AC_CHECK_HEADERS([pwd.h])          
-AC_CHECK_HEADERS([dlfcn.h])        
 
 AC_MSG_RESULT([ ])
 
@@ -589,7 +586,7 @@ AC_MSG_RESULT([Locating STL headers:])
 
 AC_CHECK_HEADERS([hash_map ext/hash_map], [break])
 AC_CHECK_HEADERS([slist ext/slist], [break])
-AC_CHECK_HEADERS([stack deque list vector])
+AC_CHECK_HEADERS([stack deque list set vector])
 
 AC_MSG_RESULT([ ])
 
@@ -735,6 +732,7 @@ AC_CONFIG_FILES([
 
   src/java/plutils/Makefile
   src/java/plutils/src/Makefile
+  src/java/plutils/src/PackageInfo.cc
   src/java/plutils/docs/Makefile
 ])
 

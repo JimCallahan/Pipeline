@@ -6,8 +6,11 @@ instbin_SCRIPTS =
 noinst_PROGRAMS = \
   plput
 
+EXTRA_DIST = \
+  PackageInfo.hh
 
-plput_SOURCES = PlPut.cc
+
+plput_SOURCES = PlPut.cc PackageInfo.cc
 plput_LDADD = \
   ../../../cxx/libs/core/src/libPhoenixCore.a
 

@@ -120,6 +120,9 @@
 /* Define to 1 if you have the `dreml' function. */
 #undef HAVE_DREML
 
+/* Define to 1 if you have the <errno.h> header file. */
+#undef HAVE_ERRNO_H
+
 /* Define to 1 if you have the `exp' function. */
 #undef HAVE_EXP
 
@@ -264,6 +267,9 @@
 /* Define to 1 if you have the `labs' function. */
 #undef HAVE_LABS
 
+/* Define to 1 if you have the <libgen.h> header file. */
+#undef HAVE_LIBGEN_H
+
 /* Define to 1 if you have the <limits.h> header file. */
 #undef HAVE_LIMITS_H
 
@@ -323,6 +329,9 @@
 
 /* Define to 1 if you have the `rintl' function. */
 #undef HAVE_RINTL
+
+/* Define to 1 if you have the <set> header file. */
+#undef HAVE_SET
 
 /* Define to 1 if you have the `sin' function. */
 #undef HAVE_SIN
