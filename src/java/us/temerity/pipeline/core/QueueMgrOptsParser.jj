@@ -209,6 +209,14 @@ Commands() :
 {
   (GlobalOpts() WS())*
   { 
+    try {
+      PluginMgr.init();
+    }
+    catch(PipelineException ex) {
+      Logs.plg.severe("Unable to load plugins: " + ex);
+      System.exit(1);
+    }
+
     return (new QueueMgrServer(pQueueDir, pQueuePort, pJobPort));
   }
 }
