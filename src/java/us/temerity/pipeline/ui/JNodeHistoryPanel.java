@@ -1,4 +1,4 @@
-// $Id: JNodeHistoryPanel.java,v 1.3 2004/07/22 00:07:16 jim Exp $
+// $Id: JNodeHistoryPanel.java,v 1.4 2004/08/31 08:15:37 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -333,7 +333,6 @@ class JNodeHistoryPanel
 
       if(pHistory != null) {
 	VersionID initial = new VersionID();
-	SimpleDateFormat fmt = new SimpleDateFormat("HH:mm:ss MM/dd/yyyy");
 	
 	ArrayList<VersionID> vids = new ArrayList<VersionID>(pHistory.keySet());
 	Collections.reverse(vids);
