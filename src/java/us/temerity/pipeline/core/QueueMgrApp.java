@@ -1,4 +1,4 @@
-// $Id: QueueMgrApp.java,v 1.1 2004/07/21 07:15:01 jim Exp $
+// $Id: QueueMgrApp.java,v 1.2 2004/07/24 18:24:50 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -72,8 +72,8 @@ class QueueMgrApp
     catch(ParseException ex) {
       handleParseException(ex);
     }
-    catch (InterruptedException ex) {
-      Logs.net.severe(ex.getMessage());
+    catch(Exception ex) {
+      Logs.net.severe(getFullMessage(ex));
     }
     finally {
       Logs.cleanup();
