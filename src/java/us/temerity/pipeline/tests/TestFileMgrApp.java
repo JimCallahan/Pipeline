@@ -1,4 +1,4 @@
-// $Id: TestFileMgrApp.java,v 1.6 2004/03/16 16:12:54 jim Exp $
+// $Id: TestFileMgrApp.java,v 1.7 2004/03/16 17:27:46 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.message.*;
@@ -182,11 +182,8 @@ class TestFileMgrApp
       File dir = new File(cwd, "prod/working/" + user + "/default/images");
 
       Random random = new Random(pSeed);
-      int sleep = random.nextInt(1000);
-
-      //System.out.print(getName() + ": sleeping for " + sleep + " msecs...\n");
       try {
-	sleep(sleep);
+	sleep(random.nextInt(1000));
       }
       catch(InterruptedException ex) {
 	assert(false);
@@ -217,7 +214,7 @@ class TestFileMgrApp
 	      
 	      {
 		TreeMap<FileSeq, FileState[]> states = 
-		  client.computeFileStates(pNodeID, pNodeMod, vstate, lvid);
+		  client.states(pNodeID, pNodeMod, vstate, lvid);
 		printStates(states);
 		
 		client.checkIn(pNodeID, pNodeMod, vid, lvid, states);
@@ -280,7 +277,7 @@ class TestFileMgrApp
 
 	    {
 	      TreeMap<FileSeq, FileState[]> states = 
-		client.computeFileStates(pNodeID, pNodeMod, vstate, latest);
+		client.states(pNodeID, pNodeMod, vstate, latest);
 	      printStates(states);
 	    }
 
@@ -321,7 +318,7 @@ class TestFileMgrApp
 
 	    {
 	      TreeMap<FileSeq, FileState[]> states = 
-		client.computeFileStates(pNodeID, pNodeMod, vstate, latest);
+		client.states(pNodeID, pNodeMod, vstate, latest);
 	      printStates(states);
 	    }
 	  }
@@ -330,14 +327,10 @@ class TestFileMgrApp
 	  int wk=0;
 	  for(wk=0; wk<count; wk++) {
 	    TreeMap<FileSeq, FileState[]> states = 
-	      client.computeFileStates(pNodeID, pNodeMod, VersionState.Pending, null); 
+	      client.states(pNodeID, pNodeMod, VersionState.Pending, null); 
 	    
-	    client.refreshCheckSums(pNodeID, pNodeMod.getSequences());
-	    
-	    int sleep2 = 1000 + random.nextInt(1000);
-	    //System.out.print(getName() + ": sleeping for " + sleep2 + " msecs...\n");
 	    try {
-	      sleep(sleep2);
+	      sleep(1000 + random.nextInt(1000));
 	    }
 	    catch(InterruptedException ex) {
 	      assert(false);

@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.6 2004/03/16 16:11:34 jim Exp $
+// $Id: FileMgrServer.java,v 1.7 2004/03/16 17:26:51 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -22,8 +22,8 @@ import java.util.*;
  * and dispatches these requests to an underlying instance of the {@link FileMgr FileMgr}
  * class.
  * 
- * @see FileMgrClient
  * @see FileMgr
+ * @see FileMgrClient
  */
 public
 class FileMgrServer
@@ -177,14 +177,6 @@ class FileMgrServer
 	    }
 	    break;
 	    
-	  case CheckSum:
-	    {
-	      FileCheckSumReq req = (FileCheckSumReq) objIn.readObject();
-	      objOut.writeObject(pFileMgr.refreshCheckSums(req));
-	      objOut.flush(); 
-	    }
-	    break;
-	    
 	  case Freeze:
 	    {
 	      FileFreezeReq req = (FileFreezeReq) objIn.readObject();
@@ -204,7 +196,7 @@ class FileMgrServer
 	  case State:
 	    {
 	      FileStateReq req = (FileStateReq) objIn.readObject();
-	      objOut.writeObject(pFileMgr.computeFileStates(req));
+	      objOut.writeObject(pFileMgr.states(req));
 	      objOut.flush(); 
 	    }
 	    break;

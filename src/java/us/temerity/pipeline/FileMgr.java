@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.5 2004/03/16 16:11:33 jim Exp $
+// $Id: FileMgr.java,v 1.6 2004/03/16 17:26:51 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -151,6 +151,7 @@ import java.util.concurrent.locks.*;
  * the 128-bit MD5 message digest algorithm generates all checksums. <P> 
  * 
  * @see FileMgrClient
+ * @see FileMgrServer
  * @see NodeMgr
  * @see CheckSum
  */
@@ -215,60 +216,6 @@ class FileMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Refresh any missing or out-of-date checksums for the given working version of a node.
-   * 
-   * @param req [<B>in</B>]
-   *   The checksum request.
-   * 
-   * @return
-   *   <CODE>SuccessRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to generate the checksum files.
-   */
-  public Object
-  refreshCheckSums
-  (
-   FileCheckSumReq req
-  ) 
-  {
-    if(req == null) 
-      return new FailureRsp("The checksum request cannot be (null)!");
-    
-    String task = null;
-    {
-      StringBuffer buf = new StringBuffer();
-      buf.append("FileMgr.refreshCheckSums(): " + req.getNodeID() + " ");
-      for(FileSeq fseq : req.getFileSequences()) 
-	buf.append("[" + fseq + "]");
-      task = buf.toString();
-    }
-
-    Date start = new Date();
-    long wait = 0;
-    try {
-      Object workLock = getWorkLock(req.getNodeID());
-      synchronized(workLock) {
-	wait  = (new Date()).getTime() - start.getTime();
-	start = new Date();
-
-	for(FileSeq fseq : req.getFileSequences()) {
-	  for(File file : fseq.getFiles()) {
-	    File work = new File(req.getNodeID().getWorkingDir(), file.getPath());
-	    pCheckSum.refresh(work);
-	  }
-	}
-
-	return new SuccessRsp(task, wait, start);
-      }
-    }
-    catch(PipelineException ex) {
-      if(wait > 0) 
-	return new FailureRsp(task, ex.getMessage(), wait, start);
-      else 
-	return new FailureRsp(task, ex.getMessage(), start);
-    }
-  }
-
-  /**
    * Compute the {@link FileState FileState} for each file associated with the working 
    * version of a node. <P> 
    * 
@@ -280,7 +227,7 @@ class FileMgr
    *   <CODE>FailureRsp</CODE> if unable to compute the file states.
    */ 
   public Object
-  computeFileStates
+  states
   (
    FileStateReq req
   ) 
@@ -503,6 +450,14 @@ class FileMgr
       synchronized(workLock) {
 	wait  = (new Date()).getTime() - start.getTime();
 	start = new Date();
+
+	/* refresh the working checksums */ 
+	for(FileSeq fseq : req.getFileSequences()) {
+	  for(File file : fseq.getFiles()) {
+	    File work = new File(req.getNodeID().getWorkingDir(), file.getPath());
+	    pCheckSum.refresh(work);
+	  }
+	}
 
 	/* create the repository file and checksum directories
 	     as well any missing subdirectories */ 

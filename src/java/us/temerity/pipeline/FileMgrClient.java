@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.6 2004/03/16 16:11:34 jim Exp $
+// $Id: FileMgrClient.java,v 1.7 2004/03/16 17:26:51 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -15,11 +15,16 @@ import java.util.*;
 /**
  * The client-side manager of file system queries and operations. <P> 
  * 
- * This class handles network communication with {@link FileMgr FileMgr} instances running 
- * on the file server.  The methods of this class correspond directly to the methods with 
- * the same name of the <CODE>FileMgr</CODE> class.  See that class for more details.
+ * This class handles network communication with the Pipeline file management daemon 
+ * <A HREF="../../../../man/plfilemgr.html"><B>plfilemgr</B><A>(1) running on the file 
+ * server.  This daemon contains an instance of the {@link FileMgrServer FileMgrServer} 
+ * class which dispatches the requests sent by this class to an underlying instance 
+ * of the {@link FileMgr FileMgr} class which performs the actual operations.  The methods 
+ * of this class correspond directly to the methods with the same name of the 
+ * <CODE>FileMgr</CODE> class.  See that class for more details.
  * 
  * @see FileMgr
+ * @see FileMgrServer
  */
 public
 class FileMgrClient
@@ -85,46 +90,6 @@ class FileMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Refresh any missing or out-of-date checksums for the given files sequences associated
-   * with the given working version of a node.
-   * 
-   * @param id [<B>in</B>]
-   *   The unique working version identifier.
-   * 
-   * @param fseqs [<B>in</B>]
-   *   The primary and secondary file sequences associated with the working version.
-   * 
-   * @throws PipelineException
-   *   If unable to regenerate the checksums.
-   */
-  public synchronized void 
-  refreshCheckSums
-  (
-   NodeID id, 
-   TreeSet<FileSeq> fseqs
-  ) 
-    throws PipelineException 
-  {
-    verifyConnection();
-
-    FileCheckSumReq req = new FileCheckSumReq(id, fseqs);
-
-    Object obj = performTransaction(FileRequest.CheckSum, req);
-
-    if(obj instanceof SuccessRsp) {
-    }
-    else if(obj instanceof FailureRsp) {
-      FailureRsp rsp = (FailureRsp) obj;
-      throw new PipelineException(rsp.getMessage());	
-    }
-    else {
-      shutdown();
-      throw new PipelineException
-	("Illegal response received from the FileMgrServer instance!");
-    }
-  }
-
-  /**
    * Compute the {@link FileState FileState} for each file associated with the working 
    * version of a node. <P> 
    * 
@@ -152,7 +117,7 @@ class FileMgrClient
    *   If unable to compute the file states.
    */ 
   public synchronized TreeMap<FileSeq, FileState[]>
-  computeFileStates
+  states
   (
    NodeID id, 
    NodeMod mod, 
@@ -222,11 +187,8 @@ class FileMgrClient
   {
     verifyConnection();
 
-    TreeSet<FileSeq> fseqs = mod.getSequences();
-    refreshCheckSums(id, fseqs);
-
     FileCheckInReq req = 
-      new FileCheckInReq(id, vid, latest, fseqs, states); 
+      new FileCheckInReq(id, vid, latest, mod.getSequences(), states); 
 
     Object obj = performTransaction(FileRequest.CheckIn, req);
 
