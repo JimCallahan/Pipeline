@@ -1,4 +1,4 @@
-// $Id: JToolsetDetailsDialog.java,v 1.1 2004/06/03 09:30:32 jim Exp $
+// $Id: JToolsetDetailsDialog.java,v 1.2 2004/07/07 13:27:38 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -97,7 +97,7 @@ class JToolsetDetailsDialog
 
 	  pDescriptionArea = 
 	    UIMaster.createTitledTextArea(tpanel, "Description:", sTSize, 
-					  vpanel, "", sVSize, 3);
+					  vpanel, "", sVSize, 3, false);
 	  
 	  tpanel.setMaximumSize(new Dimension(sTSize, Integer.MAX_VALUE));
 

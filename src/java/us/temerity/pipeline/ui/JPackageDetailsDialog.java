@@ -1,4 +1,4 @@
-// $Id: JPackageDetailsDialog.java,v 1.3 2004/06/08 03:04:16 jim Exp $
+// $Id: JPackageDetailsDialog.java,v 1.4 2004/07/07 13:27:38 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -99,7 +99,7 @@ class JPackageDetailsDialog
 
 	  pDescriptionArea = 
 	    UIMaster.createTitledTextArea(tpanel, "Description:", sTSize, 
-					  vpanel, "", sVSize, 3);
+					  vpanel, "", sVSize, 3, false);
 	  
 	  tpanel.setMaximumSize(new Dimension(sTSize, Integer.MAX_VALUE));
 
