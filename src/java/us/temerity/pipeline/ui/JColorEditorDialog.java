@@ -1,4 +1,4 @@
-// $Id: JColorEditorDialog.java,v 1.3 2004/12/29 22:36:33 jim Exp $
+// $Id: JColorEditorDialog.java,v 1.4 2004/12/29 23:08:15 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -383,7 +383,6 @@ class JColorEditorDialog
     /* the RGB swatch */ 
     {
       double s  = 0.4;
-      double s2 = 0.425;
 
       gl.glPushMatrix();
       {
@@ -391,14 +390,18 @@ class JColorEditorDialog
 	
 	gl.glBegin(GL.GL_QUADS);
 	{
-	  gl.glColor3d(1.0, 1.0, 1.0);
-	  gl.glVertex2d( s2,  s2);
-	  gl.glVertex2d( s2, -s2);
-	  gl.glVertex2d(-s2, -s2);
-	  gl.glVertex2d(-s2,  s2);
-
 	  c = getColor();
 	  gl.glColor3d(c.r(), c.g(), c.b());
+	  gl.glVertex2d( s,  s);
+	  gl.glVertex2d( s, -s);
+	  gl.glVertex2d(-s, -s);
+	  gl.glVertex2d(-s,  s);
+	}
+	gl.glEnd();
+
+	gl.glBegin(GL.GL_LINE_LOOP);
+	{
+	  gl.glColor3d(1.0, 1.0, 1.0);
 	  gl.glVertex2d( s,  s);
 	  gl.glVertex2d( s, -s);
 	  gl.glVertex2d(-s, -s);
