@@ -2,3 +2,4 @@ Makefile.in
 configure
 stamp-h.in
 autom4te.cache
+autom4te-2.53.cache
