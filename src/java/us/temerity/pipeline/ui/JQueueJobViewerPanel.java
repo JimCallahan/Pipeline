@@ -1,22 +1,22 @@
-// $Id: JQueueJobViewerPanel.java,v 1.23 2004/12/07 04:55:17 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.24 2004/12/31 08:57:10 jim Exp $
 
 package us.temerity.pipeline.ui;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*; 
 import us.temerity.pipeline.glue.*;
+import us.temerity.pipeline.math.*;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.*;
 import java.io.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.tree.*;
-import javax.vecmath.*;
-import javax.media.j3d.*;
-import com.sun.j3d.utils.universe.*;
-import com.sun.j3d.utils.geometry.*;
+
+import net.java.games.jogl.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   J O B   V I E W E R   P A N E L                                            */
@@ -28,9 +28,8 @@ import com.sun.j3d.utils.geometry.*;
  */ 
 public  
 class JQueueJobViewerPanel
-  extends JTopLevelPanel
-  implements ComponentListener, MouseListener, MouseMotionListener, KeyListener, 
-             PopupMenuListener, ActionListener
+  extends JBaseViewerPanel
+  implements KeyListener, PopupMenuListener, ActionListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -68,15 +67,18 @@ class JQueueJobViewerPanel
   private synchronized void 
   initUI()
   {  
+    super.initUI(256.0);
+
     /* initialize fields */ 
     {
       pJobGroups = new TreeMap<Long,QueueJobGroup>(); 
       pJobStatus = new TreeMap<Long,JobStatus>();
 
-      pLayoutPolicy = LayoutPolicy.AutomaticExpand;
+      pViewerJobGroups = new TreeMap<Long,ViewerJobGroup>();
+      pViewerJobs      = new HashMap<JobPath,ViewerJob>();
 
-      pSelected       = new HashMap<JobPath,ViewerJob>();
       pSelectedGroups = new TreeMap<Long,ViewerJobGroup>();
+      pSelected       = new HashMap<JobPath,ViewerJob>();
     }
 
     /* panel popup menu */ 
@@ -223,93 +225,7 @@ class JQueueJobViewerPanel
 
     /* initialize the panel components */ 
     {
-      setLayout(new BorderLayout());
-      setMinimumSize(new Dimension(50, 50));
-      setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-      
-      /* canvas */ 
-      {
-	pCanvas = new Canvas3D(SimpleUniverse.getPreferredConfiguration());
-	pCanvas.addComponentListener(this); 
-	pCanvas.addMouseListener(this); 
-	pCanvas.addMouseMotionListener(this); 
-	pCanvas.setFocusable(true);
-	pCanvas.addKeyListener(this);
-	
-	add(pCanvas);
-      }
-
-      /* grey backgound */ 
-      BranchGroup background = new BranchGroup();
-      {
-	Point3d origin = new Point3d(0, 0, 0);
-	BoundingSphere bounds = new BoundingSphere(origin, Double.POSITIVE_INFINITY);
-	
- 	Background bg = new Background(0.5f, 0.5f, 0.5f);
-	bg.setApplicationBounds(bounds);
-	
-	background.addChild(bg);
-	background.compile();
-      }
-      
-      /* the universe */ 
-      {
-	pUniverse = new SimpleUniverse(pCanvas);
-	pUniverse.addBranchGraph(background);
-      }
-      
-      /* initialialize camera position */ 
-      {
-	Viewer viewer = pUniverse.getViewer();
-	TransformGroup tg = viewer.getViewingPlatform().getViewPlatformTransform();
-	
-	Transform3D xform = new Transform3D();
-	xform.setTranslation(new Vector3d(0.0, 0.0, 10.0));
-	tg.setTransform(xform);
-	
-	View view = viewer.getView();
-	view.setFrontClipDistance(0.5);
-	view.setBackClipDistance(1000.0); 
-      }
-      
-      /* zoomer-paner */ 
-      {
-	Point3d origin = new Point3d(0, 0, 0);
-	BoundingSphere bounds = new BoundingSphere(origin, Double.POSITIVE_INFINITY);
-	
-	ZoomPanBehavior zp = new ZoomPanBehavior(pUniverse.getViewer(), 24.0);
-	zp.setSchedulingBounds(bounds);
-	
-	BranchGroup branch = new BranchGroup();
-	branch.addChild(zp);
-	
-	pUniverse.addBranchGraph(branch);
-      }
-
-      /* rubber band geometry */ 
-      {
-	pRubberBand = new RubberBand();
-	pUniverse.addBranchGraph(pRubberBand.getBranchGroup());
-      }
-
-      /* the job geometry */ 
-      {
-	pGeomBranch = new BranchGroup();
-	
-	/* the job pool */ 
-	{
-	  pJobPool = new ViewerJobPool();
-	  pGeomBranch.addChild(pJobPool.getBranchGroup());
-	}
-
-	/* the job group pool */ 
-	{
-	  pJobGroupPool = new ViewerJobGroupPool();
-	  pGeomBranch.addChild(pJobGroupPool.getBranchGroup());
-	}
-
-	pUniverse.addBranchGraph(pGeomBranch);
-      }				 
+      pCanvas.addKeyListener(this);
     }
   }
 
@@ -594,68 +510,96 @@ class JQueueJobViewerPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Update the visualization graphics.
+   * Update the visualization graphics and any connected subpanels.
    */
   private synchronized void 
   updateUniverse()
+  {
+    updateUniverse(true);
+  }
+
+  /**
+   * Update the visualization graphics.
+   * 
+   * @param updateSubPanels
+   *   Whether to also update any connected subpanels.
+   */
+  private synchronized void 
+  updateUniverse
+  (
+   boolean updateSubPanels
+  )
   {  
+    /* get the paths to the currently collapsed jobs */ 
+    TreeSet<JobPath> wasCollapsed = new TreeSet<JobPath>();
+    for(ViewerJob vjob : pViewerJobs.values()) {
+      if(vjob.isCollapsed()) 
+	wasCollapsed.add(vjob.getJobPath());
+    }
+
+    /* remove all previous jobs and job groups */ 
+    pViewerJobGroups.clear();
+    pViewerJobs.clear();
+
     UserPrefs prefs = UserPrefs.getInstance();
-
-    pJobPool.updatePrep();
-    pJobGroupPool.updatePrep();
-
     boolean horzLayout = prefs.getJobViewerOrientation().equals("Horizontal");
     if(!pJobGroups.isEmpty()) {
-      Point2d uanchor = new Point2d();
+      Point2d ganchor = new Point2d();
       for(QueueJobGroup group : pJobGroups.values()) {
-	Point2d ganchor = uanchor;
 
 	/* layout the jobs */ 
-	Vector2d gspan = new Vector2d();
+	int gheight = 0;
 	ArrayList<ViewerJob> created = new ArrayList<ViewerJob>();
-	for(Long jobID : group.getRootIDs()) {
-	  JobStatus status = pJobStatus.get(jobID);
-	  if(status != null) {
-	    JobPath path = new JobPath(jobID);
-	    Point2d anchor = 
-	      new Point2d(ganchor.x + prefs.getJobSizeX() + prefs.getJobSpace(), 
-			  ganchor.y + gspan.y);
-	    
-	    Vector2d span = null; 
-	    {
-	      TreeSet<Long> seen = new TreeSet<Long>();
-	      span = layoutJobs(true, status, path, anchor, 
-				group.getExternalIDs(), created, seen);
+	{
+	  Point2d anchor = Point2d.add(ganchor, new Vector2d(1.0, 0.0));
+	  for(Long jobID : group.getRootIDs()) {
+	    JobStatus status = pJobStatus.get(jobID);
+	    if(status != null) {
+	      JobPath path = new JobPath(jobID);
+	      ViewerJob vjob = layoutJobs(true, status, path, anchor, 
+					  group.getExternalIDs(), created, 
+					  wasCollapsed, new TreeSet<Long>());
+	      
+	      anchor.y(anchor.y() - vjob.getBounds().getRange().y());
+	      gheight += vjob.getHeight();
 	    }
-	    
-	    gspan.x = Math.max(span.x, gspan.x);
-	    gspan.y += span.y;
 	  }
 	}
 
-	ViewerJobGroup vgroup = pJobGroupPool.lookupOrCreateViewerJobGroup(group, created);
-	vgroup.setBounds(new Point2d(ganchor.x, ganchor.y + gspan.y), 
-			 new Point2d(ganchor.x + prefs.getJobSizeX(), ganchor.y));
+	ViewerJobGroup vgroup = new ViewerJobGroup(group, created, gheight); 
+	pViewerJobGroups.put(group.getGroupID(), vgroup);
 
-	if(horzLayout) {
-	  uanchor.x = ganchor.x + prefs.getJobSizeX() + gspan.x + prefs.getJobGroupSpace();
-	  uanchor.y = ganchor.y;
+	double vspan = 0.0;
+	{
+	  BBox2d bbox = vgroup.getBounds();
+	  vspan = bbox.getRange().y(); 
+	  Vector2d offset = Vector2d.mult(bbox.getRange(), new Vector2d(0.5, -0.5));
+	  vgroup.setPosition(Point2d.add(ganchor, offset));
 	}
-	else {
-	  uanchor.x = ganchor.x; 
-	  uanchor.y = ganchor.y + gspan.y - prefs.getJobGroupSpace();
+
+	{
+	  BBox2d bbox = vgroup.getFullBounds();
+	  for(ViewerJob vjob : created) {
+	    bbox.grow(vjob.getFullBounds()); 
+	  }
+
+	  if(horzLayout) 
+	    ganchor.x(bbox.getMax().x() + prefs.getJobGroupSpace());
+	  else 
+	    ganchor.y(bbox.getMin().y() - 0.45 - prefs.getJobGroupSpace());
 	}
       }
 	
       /* preserve the current layout */ 
       pLayoutPolicy = LayoutPolicy.Preserve;
     }
-      
-    pJobGroupPool.update();
-    pJobPool.update();
+   
+    /* render the changes */ 
+    refresh();
 
     /* update the connected job details panels */ 
-    updateJobDetails();
+    if(updateSubPanels) 
+      updateJobDetails();
   }
   
   /**
@@ -679,13 +623,16 @@ class JQueueJobViewerPanel
    * @param created
    *   The created viewer jobs. 
    * 
+   * @param wasCollapsed
+   *   The job paths of the previously collapsed jobs.
+   * 
    * @param seen
    *   The IDs of the processed jobs.
    * 
    * @return 
-   *   The size of the layout area of the viewer job including its children.
+   *   The root job. 
    */ 
-  private Vector2d
+  private ViewerJob
   layoutJobs
   (
    boolean isRoot, 
@@ -694,67 +641,95 @@ class JQueueJobViewerPanel
    Point2d anchor, 
    SortedSet<Long> external, 
    ArrayList<ViewerJob> created, 
+   TreeSet<JobPath> wasCollapsed, 
    TreeSet<Long> seen
   ) 
   {
-    UserPrefs prefs = UserPrefs.getInstance();
-
-    ViewerJob vjob = pJobPool.lookupOrCreateViewerJob(status, path);
-    vjob.setExternal(external.contains(status.getJobID()));    
+    ViewerJob vjob = new ViewerJob(path, status, external.contains(status.getJobID()));
+    pViewerJobs.put(path, vjob);
     created.add(vjob);
 
     if(status.hasSources() && !vjob.isExternal()) {
       switch(pLayoutPolicy) {
       case Preserve:
-	if(!vjob.isReset()) 
-	  break;
+	vjob.setCollapsed(wasCollapsed.contains(path));
+	break;
 	
       case AutomaticExpand:
 	vjob.setCollapsed(seen.contains(status.getJobID()));
-	break;
-	
-      case ExpandAll:
-	vjob.setCollapsed(false);
 	break;
 	
       case CollapseAll:
 	vjob.setCollapsed(true);
       }
     }
-    else {
-      vjob.setCollapsed(false);
-    }
 
     seen.add(status.getJobID());
 
-    Vector2d mspan = new Vector2d(); 
-    if(status.hasSources() && !vjob.isExternal() && !vjob.isCollapsed()) {
+    /* layout the upstream jobs */ 
+    if(status.hasSources() && !vjob.isExternal() && !vjob.isCollapsed()) { 
+      Point2d canchor = Point2d.add(anchor, new Vector2d(1.0, 0.0));
+      int cheight = 0;
+      
       for(Long childID : status.getSourceJobIDs()) {
 	JobStatus cstatus = pJobStatus.get(childID);
 	if(cstatus != null) {
-	  JobPath cpath = new JobPath(path, cstatus.getJobID());	  
-	  Point2d canchor = new Point2d(anchor.x + prefs.getJobSizeX(), anchor.y + mspan.y);
-	
-	  Vector2d span = layoutJobs(false, cstatus, cpath, canchor, external, created, seen);
-	  mspan.x = Math.max(mspan.x, span.x);
-	  mspan.y += span.y;
+	  JobPath cpath = new JobPath(path, cstatus.getJobID());	 
+	  
+	  ViewerJob cvjob = layoutJobs(false, cstatus, cpath, canchor, 
+				       external, created, wasCollapsed, seen);
+	  
+	  canchor.y(canchor.y() - cvjob.getBounds().getRange().y());
+	  cheight += cvjob.getHeight();
 	}
       }
-    }
-    else {
-      mspan.y = -prefs.getJobSizeY();
+
+      vjob.setHeight(cheight);
     }
 
-    vjob.setBounds(new Point2d(anchor.x + prefs.getJobSpace(), 
-			       anchor.y + mspan.y + prefs.getJobSpace()), 
-		   new Point2d(anchor.x + prefs.getJobSizeX() - prefs.getJobSpace(), 
-			       anchor.y - prefs.getJobSpace()));
-    
-    mspan.x += prefs.getJobSizeX();
+    BBox2d bbox = vjob.getBounds();
+    Vector2d offset = Vector2d.mult(bbox.getRange(), new Vector2d(0.5, -0.5));
+    vjob.setPosition(Point2d.add(anchor, offset));
 
-    return mspan;
+    return vjob;
   }
 
+
+  /**
+   * Get the bounding box which contains the given viewer jobs and job groups. <P> 
+   * 
+   * @return 
+   *   The bounding box or <CODE>null</CODE> if no nodes are given.
+   */ 
+  private BBox2d
+  getJobBounds
+  (
+   Collection<ViewerJob> jobs, 
+   Collection<ViewerJobGroup> groups
+  ) 
+  {
+    BBox2d bbox = null;
+    for(ViewerJob vjob : jobs) {
+      if(bbox == null) 
+	bbox = vjob.getFullBounds();
+      else 
+	bbox.grow(vjob.getFullBounds());
+    }
+    
+    for(ViewerJobGroup vgroup : groups) {
+      if(bbox == null) 
+	bbox = vgroup.getFullBounds();
+      else 
+	bbox.grow(vgroup.getFullBounds());
+    }
+
+    if(bbox != null) {
+      UserPrefs prefs = UserPrefs.getInstance();
+      bbox.bloat(prefs.getJobGroupSpace()); 
+    }    
+
+    return bbox;
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -821,200 +796,134 @@ class JQueueJobViewerPanel
 
   /**
    * Clear the current selection.
-   * 
-   * @return 
-   *   The previously selected jobs.
    */ 
-  public ArrayList<ViewerJob>
+  public void 
   clearSelection()
   {
-    ArrayList<ViewerJob> changed = new ArrayList<ViewerJob>(pSelected.values());
+    for(ViewerJob vjob : pSelected.values()) 
+      vjob.setSelectionMode(SelectionMode.Normal);
+    
+    pSelected.clear();
+    pPrimary = null;
 
-    {
-      for(ViewerJob vjob : pSelected.values()) 
-	vjob.setSelectionMode(SelectionMode.Normal);
+    for(ViewerJobGroup vgroup : pSelectedGroups.values()) 
+      vgroup.setSelectionMode(SelectionMode.Normal);
       
-      pSelected.clear();
-      pPrimary = null;
-    }
-
-    {
-      for(ViewerJobGroup vgroup : pSelectedGroups.values()) {
-	vgroup.setSelectionMode(SelectionMode.Normal);
-	vgroup.update();
-      }
-      
-      pSelectedGroups.clear();
-      pPrimaryGroup = null;
-    }
-
-    return changed;
+    pSelectedGroups.clear();
+    pPrimaryGroup = null;
   }
   
 
   /**
    * Make the given viewer job the primary selection.
-   * 
-   * @return 
-   *   The viewer jobs who's selection state changed.
    */ 
-  public ArrayList<ViewerJob>
+  public void
   primarySelect
   (
    ViewerJob vjob
   ) 
   {
-    ArrayList<ViewerJob> changed = new ArrayList<ViewerJob>();
-
     switch(vjob.getSelectionMode()) {
     case Normal:
       pSelected.put(vjob.getJobPath(), vjob);
       
     case Selected:
-      if(pPrimary != null) {
+      if(pPrimary != null) 
 	pPrimary.setSelectionMode(SelectionMode.Selected);
-	changed.add(pPrimary);
-      }
       pPrimary = vjob;
       vjob.setSelectionMode(SelectionMode.Primary);
-      changed.add(vjob);
     }
 
-    if(pPrimaryGroup != null) {
+    if(pPrimaryGroup != null) 
       pPrimaryGroup.setSelectionMode(SelectionMode.Selected);
-      pPrimaryGroup.update();
-    }
-
-    return changed;
   }
 
   /**
    * Make the given viewer job group the primary selection.
-   * 
-   * @return 
-   *   The viewer jobs who's selection state changed.
    */ 
-  public ArrayList<ViewerJob>
+  public void 
   primarySelect
   (
    ViewerJobGroup vgroup
   ) 
   {
-    ArrayList<ViewerJob> changed = new ArrayList<ViewerJob>();
-
     switch(vgroup.getSelectionMode()) {
     case Normal:
       pSelectedGroups.put(vgroup.getGroup().getGroupID(), vgroup);
-
       for(ViewerJob vjob : vgroup.getViewerJobs()) 
-	changed.addAll(addSelect(vjob));
+	addSelect(vjob);
 	
     case Selected:
-      if(pPrimaryGroup != null) {
+      if(pPrimaryGroup != null) 
 	pPrimaryGroup.setSelectionMode(SelectionMode.Selected);
-	pPrimaryGroup.update();
-      }
-
       pPrimaryGroup = vgroup;
       vgroup.setSelectionMode(SelectionMode.Primary);
-      vgroup.update();
     }
 
-    if(pPrimary != null) {
+    if(pPrimary != null) 
       pPrimary.setSelectionMode(SelectionMode.Selected);
-      changed.add(pPrimary);
-    }
-
-    return changed;
   }
 
 
   /**
    * Add the given viewer job to the selection.
-   * 
-   * @return 
-   *   The viewer jobs who's selection state changed.
    */ 
-  public ArrayList<ViewerJob>
+  public void 
   addSelect
   (
    ViewerJob vjob
   ) 
   {
-    ArrayList<ViewerJob> changed = new ArrayList<ViewerJob>();
-
     switch(vjob.getSelectionMode()) {
     case Primary:
       if(pPrimary != null) {
 	pPrimary.setSelectionMode(SelectionMode.Selected);
-	changed.add(pPrimary);
 	pPrimary = null;
       }
 
     case Normal:
       vjob.setSelectionMode(SelectionMode.Selected);
       pSelected.put(vjob.getJobPath(), vjob);
-      changed.add(vjob);
     }
-
-    return changed;
   }
 
   /**
    * Add the given viewer job group to the selection.
-   * 
-   * @return 
-   *   The viewer jobs who's selection state changed.
    */ 
-  public ArrayList<ViewerJob>
+  public void 
   addSelect
   (
    ViewerJobGroup vgroup
   ) 
   {
-    ArrayList<ViewerJob> changed = new ArrayList<ViewerJob>();
-
     switch(vgroup.getSelectionMode()) {
     case Primary:
       if(pPrimaryGroup != null) {
 	pPrimaryGroup.setSelectionMode(SelectionMode.Selected);
-	pPrimaryGroup.update();
 	pPrimaryGroup = null;
       }
 
     case Normal:
       vgroup.setSelectionMode(SelectionMode.Selected);
-      vgroup.update();
-
       pSelectedGroups.put(vgroup.getGroup().getGroupID(), vgroup);
-      
       for(ViewerJob vjob : vgroup.getViewerJobs()) 
-	changed.addAll(addSelect(vjob));
+	addSelect(vjob);
     }
-
-    return changed;
   }
-
 
   /**
    * Toggle the selection of the given viewer job.
-   * 
-   * @return 
-   *   The viewer jobs who's selection state changed.
    */ 
-  public  ArrayList<ViewerJob> 
+  public void 
   toggleSelect
   (
    ViewerJob vjob
   ) 
   {
-    ArrayList<ViewerJob> changed = new ArrayList<ViewerJob>();
-
     switch(vjob.getSelectionMode()) {
     case Primary:
       if(pPrimary != null) {
 	pPrimary.setSelectionMode(SelectionMode.Selected);
-	changed.add(pPrimary);
 	pPrimary = null;
       }
 
@@ -1027,219 +936,131 @@ class JQueueJobViewerPanel
       vjob.setSelectionMode(SelectionMode.Selected);
       pSelected.put(vjob.getJobPath(), vjob);      
     }
-    
-    changed.add(vjob);
-    return changed;
   }
 
   /**
    * Toggle the selection of the given viewer job group.
-   * 
-   * @return 
-   *   The viewer jobs who's selection state changed.
    */ 
-  public  ArrayList<ViewerJob> 
+  public void 
   toggleSelect
   (
    ViewerJobGroup vgroup
   ) 
   {
-    ArrayList<ViewerJob> changed = new ArrayList<ViewerJob>();
-
     switch(vgroup.getSelectionMode()) {
     case Primary:
       if(pPrimaryGroup != null) {
 	pPrimaryGroup.setSelectionMode(SelectionMode.Selected);
-	pPrimaryGroup.update();
 	pPrimaryGroup = null;
       }
 
     case Selected:
       vgroup.setSelectionMode(SelectionMode.Normal);
-      vgroup.update();
-
       pSelectedGroups.remove(vgroup.getGroup().getGroupID());
-
       for(ViewerJob vjob : vgroup.getViewerJobs()) {
 	vjob.setSelectionMode(SelectionMode.Normal);
 	pSelected.remove(vjob.getJobPath());	
-	changed.add(vjob);
       }
       break;
 
     case Normal:
       vgroup.setSelectionMode(SelectionMode.Selected);
-      vgroup.update();
-
       pSelectedGroups.put(vgroup.getGroup().getGroupID(), vgroup);
-      
       for(ViewerJob vjob : vgroup.getViewerJobs()) 
-	changed.addAll(addSelect(vjob));
+	addSelect(vjob);
     }
-
-    return changed;
   }
 
 
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the user-data of the Java3D object under given mouse position. <P> 
-   * 
-   * @return
-   *   The picked object or <CODE>null</CODE> if no pickable object was under position.
+   * Get the ViewerJob or ViewerJobGroup under the current mouse position. <P> 
    */ 
   private Object
-  objectAtMousePos
-  (
-   int x, 
-   int y
-  ) 
+  objectAtMousePos() 
   {
-    PickRay ray = null;
+    /* compute world coordinates */ 
+    Point2d pos = new Point2d(pMousePos);
     {
-      Point3d eyePos = new Point3d();
-      Point3d pos    = new Point3d();
-
-      pCanvas.getCenterEyeInImagePlate(eyePos);
-      pCanvas.getPixelLocationInImagePlate(x, y, pos);
+      Dimension size = pCanvas.getSize();
+      Vector2d half = new Vector2d(size.getWidth()*0.5, size.getHeight()*0.5);
       
-      Transform3D motion = new Transform3D();
-      pCanvas.getImagePlateToVworld(motion);
-      motion.transform(eyePos);
-      motion.transform(pos);
+      double f = -pCameraPos.z() * pPerspFactor;
+      Vector2d persp = new Vector2d(f * pAspect, f);
       
-      Vector3d dir = new Vector3d(pos);
-      dir.sub(eyePos);
+      Vector2d camera = new Vector2d(pCameraPos.x(), pCameraPos.y());
       
-      ray = new PickRay(eyePos, dir);
+      pos.sub(half).mult(pCanvasToScreen).mult(persp).sub(camera);
     }
     
-    SceneGraphPath gpath = pGeomBranch.pickClosest(ray);
-    if(gpath != null) 
-      return gpath.getObject().getUserData();
+    /* check job icons */ 
+    for(ViewerJob vjob : pViewerJobs.values()) {
+      if(vjob.isInside(pos)) 
+	return vjob; 
+    }
+
+    /* check job group icons */ 
+    for(ViewerJobGroup vgroup : pViewerJobGroups.values()) {
+      if(vgroup.isInside(pos)) 
+	return vgroup;
+    }
+
     return null;
   }
 
-  /**
-   * Get the user-data of the Java3D object under given mouse position. <P> 
-   * 
-   * @return
-   *   The picked object or <CODE>null</CODE> if no pickable object was under position.
-   */ 
-  private Object
-  objectAtMousePos
-  (
-   Point pos
-  ) 
-  {
-    if(pos == null) 
-      return null;
-
-    return objectAtMousePos(pos.x, pos.y);
-  }
 
 
   /*----------------------------------------------------------------------------------------*/
   /*   L I S T E N E R S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
-  /*-- COMPONENT LISTENER METHODS ----------------------------------------------------------*/
+  /*-- GL EVENT LISTENER METHODS -----------------------------------------------------------*/
 
   /**
-   * Invoked when the component has been made invisible. 
+   * Called by the drawable to initiate OpenGL rendering by the client.
    */ 
-  public void 	
-  componentHidden
+  public void 
+  display
   (
-   ComponentEvent e
-  )
-  {}
-  
-  /**
-   * Invoked when the component's position changes. 
-   */ 
-  public void 	
-  componentMoved
-  (
-   ComponentEvent e
-  )
-  {}
-
-  /**
-   * Invoked when the component's size changes. 
-   */ 
-  public void 	
-  componentResized
-  (
-   ComponentEvent e
+   GLDrawable drawable
   )
   {
-    /* adjust the minimum zoom distance based on the canvas size */ 
+    super.display(drawable); 
+    GL gl = drawable.getGL();
+
+    /* render the scene geometry */ 
     {
-      Viewer viewer = pUniverse.getViewer();
-      TransformGroup tg = viewer.getViewingPlatform().getViewPlatformTransform();
+      if(pSceneDL == null) 
+	pSceneDL = gl.glGenLists(1);
       
-      Transform3D xform = new Transform3D();
-      tg.getTransform(xform);
-      
-      Vector3d trans = new Vector3d();
-      xform.get(trans);
-      
-      double minZ = ((double) pCanvas.getWidth()) / 64.0;
-      if(minZ > trans.z) {
-	trans.z = minZ;
-	
-	xform.setTranslation(trans);
-	tg.setTransform(xform);
-      }    
-    }
+      if(pRefreshScene) {
+	for(ViewerJob vjob : pViewerJobs.values()) 
+	  vjob.rebuild(gl);
+
+	for(ViewerJobGroup vgroup : pViewerJobGroups.values()) 
+	  vgroup.rebuild(gl);
+
+	gl.glNewList(pSceneDL, GL.GL_COMPILE_AND_EXECUTE);
+	{
+	  for(ViewerJob vjob : pViewerJobs.values()) 
+	    vjob.render(gl);
+
+	  for(ViewerJobGroup vgroup : pViewerJobGroups.values()) 
+	    vgroup.render(gl);
+	}
+	gl.glEndList();
+
+	pRefreshScene = false;
+      }
+      else {
+	gl.glCallList(pSceneDL);
+      }
+    }    
   }
-
-  /**
-   * Invoked when the component has been made visible. 
-   */ 
-  public void 	
-  componentShown
-  (
-   ComponentEvent e
-  )
-  {}
-
-  
+   
 
   /*-- MOUSE LISTENER METHODS --------------------------------------------------------------*/
-
-  /**
-   * Invoked when the mouse button has been clicked (pressed and released) on a component. 
-   */ 
-  public void 
-  mouseClicked(MouseEvent e) {}
-   
-  /**
-   * Invoked when the mouse enters a component. 
-   */
-  public void 
-  mouseEntered
-  (
-   MouseEvent e
-  ) 
-  {
-    pCanvas.requestFocusInWindow();
-    pMousePos = e.getPoint();
-  }
-  
-  /**
-   * Invoked when the mouse exits a component. 
-   */ 
-  public void 
-  mouseExited
-  (
-   MouseEvent e
-  ) 
-  {
-    KeyboardFocusManager.getCurrentKeyboardFocusManager().clearGlobalFocusOwner();
-  }
 
   /**
    * Invoked when a mouse button has been pressed on a component. 
@@ -1250,16 +1071,16 @@ class JQueueJobViewerPanel
    MouseEvent e
   )
   {
+    int mods = e.getModifiersEx();
+
     /* manager panel popups */ 
     if(pManagerPanel.handleManagerMouseEvent(e)) 
       return;
 
     /* local mouse events */ 
-    pMousePos = e.getPoint();
-    Object under = objectAtMousePos(pMousePos);
+    Object under = objectAtMousePos();
 
     /* mouse press is over a pickable object viewer job */ 
-    int mods = e.getModifiersEx();
     if(under != null) {
       switch(e.getButton()) {
       case MouseEvent.BUTTON1:
@@ -1291,28 +1112,22 @@ class JQueueJobViewerPanel
 		      MouseEvent.BUTTON3_DOWN_MASK | 
 		      MouseEvent.ALT_DOWN_MASK);
 
-	  HashMap<JobPath,ViewerJob> changed = new HashMap<JobPath,ViewerJob>();
-	  
 	  if(e.getClickCount() == 1) {
 	    /* BUTTON1: replace selection */ 
 	    if((mods & (on1 | off1)) == on1) {
 	      if(under instanceof ViewerJob) {
 		ViewerJob vunder = (ViewerJob) under;	
 
-		for(ViewerJob vjob : clearSelection()) 
-		  changed.put(vjob.getJobPath(), vjob);
-		
-		for(ViewerJob vjob : addSelect(vunder))
-		  changed.put(vjob.getJobPath(), vjob);
+		clearSelection();
+		addSelect(vunder);
+		refresh();
 	      }
 	      else if(under instanceof ViewerJobGroup) {
 		ViewerJobGroup vunder = (ViewerJobGroup) under;	
-		
-		for(ViewerJob vjob : clearSelection()) 
-		  changed.put(vjob.getJobPath(), vjob);
-		
-		for(ViewerJob vjob : addSelect(vunder))
-		  changed.put(vjob.getJobPath(), vjob);		
+	
+		clearSelection();
+		addSelect(vunder);
+		refresh();
 	      }
 	    }
 	    
@@ -1320,13 +1135,15 @@ class JQueueJobViewerPanel
 	    else if((mods & (on2 | off2)) == on2) {
 	      if(under instanceof ViewerJob) {
 		ViewerJob vunder = (ViewerJob) under;
-		for(ViewerJob vjob : toggleSelect(vunder)) 
-		  changed.put(vjob.getJobPath(), vjob);
+
+		toggleSelect(vunder); 
+		refresh();
 	      }
 	      else if(under instanceof ViewerJobGroup) {
 		ViewerJobGroup vunder = (ViewerJobGroup) under;	
-		for(ViewerJob vjob : toggleSelect(vunder)) 
-		  changed.put(vjob.getJobPath(), vjob);
+
+		toggleSelect(vunder); 
+		refresh();
 	      }
 	    }
 	    
@@ -1334,13 +1151,15 @@ class JQueueJobViewerPanel
 	    else if((mods & (on3 | off3)) == on3) {
 	      if(under instanceof ViewerJob) {
 		ViewerJob vunder = (ViewerJob) under;
-		for(ViewerJob vjob : addSelect(vunder))
-		  changed.put(vjob.getJobPath(), vjob);
+
+		addSelect(vunder);
+		refresh();
 	      }
 	      else if(under instanceof ViewerJobGroup) {
 		ViewerJobGroup vunder = (ViewerJobGroup) under;	
-		for(ViewerJob vjob : addSelect(vunder))
-		  changed.put(vjob.getJobPath(), vjob);
+
+		addSelect(vunder);
+		refresh();
 	      }
 	    }
 	  }
@@ -1349,17 +1168,13 @@ class JQueueJobViewerPanel
 	    if(under instanceof ViewerJob) {
 	      ViewerJob vunder = (ViewerJob) under;
 	      if((mods & (on1 | off1)) == on1) {
-		for(ViewerJob vjob : primarySelect(vunder)) 
-		  vjob.update();
+		primarySelect(vunder);
+		refresh();
 		
 		doDetails();
 	      }
 	    }
 	  }
-	    
-	  /* update the appearance of all jobs who's selection state changed */ 
-	  for(ViewerJob vjob : changed.values()) 
-	    vjob.update();
 	}
 	break;
 
@@ -1378,8 +1193,8 @@ class JQueueJobViewerPanel
 	  /* BUTTON2: expand/collapse a job */ 
 	  if((mods & (on1 | off1)) == on1) {
 	    if(vunder.getJobStatus().hasSources()) {
-	      vunder.setCollapsed(!vunder.isCollapsed());
-	      updateUniverse();
+	      vunder.toggleCollapsed();
+	      updateUniverse(false);
 	    }
 	  }
 	}
@@ -1395,18 +1210,13 @@ class JQueueJobViewerPanel
 		      MouseEvent.ALT_DOWN_MASK |
 		      MouseEvent.CTRL_DOWN_MASK);
 	  
-	  HashMap<JobPath,ViewerJob> changed = new HashMap<JobPath,ViewerJob>();
-
 	  /* BUTTON3: job popup menu */ 
 	  if((mods & (on1 | off1)) == on1) {
 	    if(under instanceof ViewerJob) {
 	      ViewerJob vunder = (ViewerJob) under;
 
-	      for(ViewerJob vjob : addSelect(vunder))
-		changed.put(vjob.getJobPath(), vjob);
-	    
-	      for(ViewerJob vjob : primarySelect(vunder)) 
-		changed.put(vjob.getJobPath(), vjob);
+	      addSelect(vunder);
+	      primarySelect(vunder);
 
 	      updateViewMenu(pViewWithMenu);
 	      pJobPopup.show(e.getComponent(), e.getX(), e.getY());
@@ -1414,80 +1224,40 @@ class JQueueJobViewerPanel
 	    else if(under instanceof ViewerJobGroup) {
 	      ViewerJobGroup vunder = (ViewerJobGroup) under;	
 
-	      for(ViewerJob vjob : addSelect(vunder))
-		changed.put(vjob.getJobPath(), vjob);
-	    
-	      for(ViewerJob vjob : primarySelect(vunder)) 
-		changed.put(vjob.getJobPath(), vjob);
+	      addSelect(vunder);
+	      primarySelect(vunder);
 	      
 	      updateViewMenu(pGroupViewWithMenu);
 	      pGroupPopup.show(e.getComponent(), e.getX(), e.getY());
 	    }
 	  }
-
-	  /* update the appearance of all jobs who's selection state changed */ 
-	  for(ViewerJob vjob : changed.values()) 
-	    vjob.update();
 	}
 	break;
       }
     }
-    
+ 
     /* mouse press is over an unused spot on the canvas */ 
     else {
-      switch(e.getButton()) {
-      case MouseEvent.BUTTON1:
-	{
-	  int on1  = (MouseEvent.BUTTON1_DOWN_MASK);
-
-	  int off1 = (MouseEvent.BUTTON2_DOWN_MASK | 
-		      MouseEvent.BUTTON3_DOWN_MASK | 
-		      MouseEvent.SHIFT_DOWN_MASK |
-		      MouseEvent.ALT_DOWN_MASK |
-		      MouseEvent.CTRL_DOWN_MASK);
-
-
-	  int on2  = (MouseEvent.BUTTON1_DOWN_MASK |
-		      MouseEvent.SHIFT_DOWN_MASK);
-
-	  int off2 = (MouseEvent.BUTTON2_DOWN_MASK | 
-		      MouseEvent.BUTTON3_DOWN_MASK | 
-		      MouseEvent.ALT_DOWN_MASK |
-		      MouseEvent.CTRL_DOWN_MASK);
-
-
-	  int on3  = (MouseEvent.BUTTON1_DOWN_MASK |
-		      MouseEvent.SHIFT_DOWN_MASK |
-		      MouseEvent.CTRL_DOWN_MASK);
-
-	  int off3 = (MouseEvent.BUTTON2_DOWN_MASK | 
-		      MouseEvent.BUTTON3_DOWN_MASK | 
-		      MouseEvent.ALT_DOWN_MASK);
-
-	  /* BUTTON1[+SHIFT[+CTRL]]: begin rubber band drag */ 
-	  if(((mods & (on1 | off1)) == on1) || 
-	     ((mods & (on2 | off2)) == on2) || 
-	     ((mods & (on3 | off3)) == on3)) {
-	    pRubberBand.beginDrag(new Point2d((double) e.getX(), (double) e.getY()));
+      if(handleMousePressed(e)) 
+	return;
+      else {
+	switch(e.getButton()) {
+	case MouseEvent.BUTTON3:
+	  {
+	    int on1  = (MouseEvent.BUTTON3_DOWN_MASK);
+	    
+	    int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
+			MouseEvent.BUTTON2_DOWN_MASK | 
+			MouseEvent.SHIFT_DOWN_MASK |
+			MouseEvent.ALT_DOWN_MASK |
+			MouseEvent.CTRL_DOWN_MASK);
+	    
+	    /* BUTTON3: panel popup menu */ 
+	    if((mods & (on1 | off1)) == on1) {
+	      pPanelPopup.show(e.getComponent(), e.getX(), e.getY());
+	    }
 	  }
 	}
-	break;
-
-      case MouseEvent.BUTTON3:
-	{
-	  int on1  = (MouseEvent.BUTTON3_DOWN_MASK);
-
-	  int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
-		      MouseEvent.BUTTON2_DOWN_MASK | 
-		      MouseEvent.SHIFT_DOWN_MASK |
-		      MouseEvent.ALT_DOWN_MASK |
-		      MouseEvent.CTRL_DOWN_MASK);
-		  
-	  /* BUTTON3: panel popup menu */ 
-	  if((mods & (on1 | off1)) == on1) 
-	    pPanelPopup.show(e.getComponent(), e.getX(), e.getY());
-	}
-	break;
       }
     }
   }
@@ -1505,195 +1275,115 @@ class JQueueJobViewerPanel
 
     switch(e.getButton()) {
     case MouseEvent.BUTTON1:
-      if(pRubberBand.isDragging()) {
-	BoundingBox bbox = pRubberBand.endDrag();
-	if(bbox != null) {
-	  SceneGraphPath gpaths[] = pGeomBranch.pickAll(new PickBounds(bbox));
-
-	  int on1  = 0;
+      if(pRbStart != null) {
+	int on1  = 0;
+	
+	int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
+		    MouseEvent.BUTTON2_DOWN_MASK | 
+		    MouseEvent.BUTTON3_DOWN_MASK | 
+		    MouseEvent.SHIFT_DOWN_MASK |
+		    MouseEvent.ALT_DOWN_MASK |
+		    MouseEvent.CTRL_DOWN_MASK);
+	
+	
+	int on2  = (MouseEvent.SHIFT_DOWN_MASK);
+	
+	int off2 = (MouseEvent.BUTTON1_DOWN_MASK |
+		    MouseEvent.BUTTON2_DOWN_MASK | 
+		    MouseEvent.BUTTON3_DOWN_MASK | 
+		    MouseEvent.SHIFT_DOWN_MASK |
+		    MouseEvent.CTRL_DOWN_MASK);
+	
+	
+	int on3  = (MouseEvent.SHIFT_DOWN_MASK |
+		    MouseEvent.CTRL_DOWN_MASK);
+	
+	int off3 = (MouseEvent.BUTTON1_DOWN_MASK |
+		    MouseEvent.BUTTON2_DOWN_MASK | 
+		    MouseEvent.BUTTON3_DOWN_MASK | 
+		    MouseEvent.ALT_DOWN_MASK);
+	
+	/* a rubberband drag has completed */ 
+	if(pRbEnd != null) {
 	  
-	  int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
-		      MouseEvent.BUTTON2_DOWN_MASK | 
-		      MouseEvent.BUTTON3_DOWN_MASK | 
-		      MouseEvent.SHIFT_DOWN_MASK |
-		      MouseEvent.ALT_DOWN_MASK |
-		      MouseEvent.CTRL_DOWN_MASK);
-	  
-	  
-	  int on2  = (MouseEvent.SHIFT_DOWN_MASK);
-	  
-	  int off2 = (MouseEvent.BUTTON1_DOWN_MASK |
-		      MouseEvent.BUTTON2_DOWN_MASK | 
-		      MouseEvent.BUTTON3_DOWN_MASK | 
-		      MouseEvent.SHIFT_DOWN_MASK |
-		      MouseEvent.CTRL_DOWN_MASK);
-	  
-	  
-	  int on3  = (MouseEvent.SHIFT_DOWN_MASK |
-		      MouseEvent.CTRL_DOWN_MASK);
-	  
-	  int off3 = (MouseEvent.BUTTON1_DOWN_MASK |
-		      MouseEvent.BUTTON2_DOWN_MASK | 
-		      MouseEvent.BUTTON3_DOWN_MASK | 
-		      MouseEvent.ALT_DOWN_MASK);
-	  
-	  HashMap<JobPath,ViewerJob> changed = new HashMap<JobPath,ViewerJob>();
+	  /* compute world space bounding box of rubberband drag */ 
+	  BBox2d bbox = null;
+	  {
+	    Point2d rs = new Point2d(pRbStart);
+	    Point2d re = new Point2d(pRbEnd);
+	    
+	    Dimension size = pCanvas.getSize();
+	    Vector2d half = new Vector2d(size.getWidth()*0.5, size.getHeight()*0.5);
+	    
+	    double f = -pCameraPos.z() * pPerspFactor;
+	    Vector2d persp = new Vector2d(f * pAspect, f);
+	    
+	    Vector2d camera = new Vector2d(pCameraPos.x(), pCameraPos.y());
+	    
+	    rs.sub(half).mult(pCanvasToScreen).mult(persp).sub(camera);
+	    re.sub(half).mult(pCanvasToScreen).mult(persp).sub(camera);
+	    
+	    bbox = new BBox2d(rs, re);
+	  }
 	  
 	  /* BUTTON1: replace selection */ 
 	  if((mods & (on1 | off1)) == on1) {
-	    for(ViewerJob vjob : clearSelection()) 
-	      changed.put(vjob.getJobPath(), vjob);
+	    clearSelection();
 	    
-	    if(gpaths != null) {
-	      int wk; 
-	      for(wk=0; wk<gpaths.length; wk++) {
-		Object picked = gpaths[wk].getObject().getUserData();
-		if(picked instanceof ViewerJob) {
-		  ViewerJob svjob = (ViewerJob) picked;
-		  for(ViewerJob vjob : addSelect(svjob))
-		    changed.put(vjob.getJobPath(), vjob);
-		}
-	      }
-
-	      for(wk=0; wk<gpaths.length; wk++) {
-		Object picked = gpaths[wk].getObject().getUserData();
-		if(picked instanceof ViewerJobGroup) {
-		  ViewerJobGroup vgroup = (ViewerJobGroup) picked;
-		  for(ViewerJob vjob : addSelect(vgroup))
-		    changed.put(vjob.getJobPath(), vjob);
-		}
-	      }
+	    for(ViewerJob vjob : pViewerJobs.values()) {
+	      if(vjob.isInsideOf(bbox)) 
+		addSelect(vjob);
+	    }
+	    
+	    for(ViewerJobGroup vgroup : pViewerJobGroups.values()) {
+	      if(vgroup.isInsideOf(bbox)) 
+		addSelect(vgroup);
 	    }
 	  }
 	  
 	  /* BUTTON1+SHIFT: toggle selection */ 
 	  else if((mods & (on2 | off2)) == on2) {
-	    if(gpaths != null) {
-	      int wk; 
-	      for(wk=0; wk<gpaths.length; wk++) {
-		Object picked = gpaths[wk].getObject().getUserData();
-		if(picked instanceof ViewerJob) {
-		  ViewerJob svjob = (ViewerJob) picked;		  
-		  for(ViewerJob vjob : toggleSelect(svjob))
-		    changed.put(vjob.getJobPath(), vjob);
-		}
-	      }
-
-	      for(wk=0; wk<gpaths.length; wk++) {
-		Object picked = gpaths[wk].getObject().getUserData();
-		if(picked instanceof ViewerJobGroup) {
-		  ViewerJobGroup vgroup = (ViewerJobGroup) picked;
-		  for(ViewerJob vjob : toggleSelect(vgroup))
-		    changed.put(vjob.getJobPath(), vjob);
-		}
-	      }
+	    for(ViewerJob vjob : pViewerJobs.values()) {
+	      if(vjob.isInsideOf(bbox)) 
+		toggleSelect(vjob);
+	    }
+	    
+	    for(ViewerJobGroup vgroup : pViewerJobGroups.values()) {
+	      if(vgroup.isInsideOf(bbox)) 
+		toggleSelect(vgroup);
 	    }
 	  }
 	  
 	  /* BUTTON1+SHIFT+CTRL: add to selection */ 
 	  else if((mods & (on3 | off3)) == on3) {
-	    if(gpaths != null) {
-	      int wk; 
-	      for(wk=0; wk<gpaths.length; wk++) {
-		Object picked = gpaths[wk].getObject().getUserData();
-		if(picked instanceof ViewerJob) {
-		  ViewerJob svjob = (ViewerJob) picked;
-		  for(ViewerJob vjob : addSelect(svjob))
-		    changed.put(vjob.getJobPath(), vjob);
-		}
-	      }
-
-	      for(wk=0; wk<gpaths.length; wk++) {
-		Object picked = gpaths[wk].getObject().getUserData();
-		if(picked instanceof ViewerJobGroup) {
-		 ViewerJobGroup vgroup = (ViewerJobGroup) picked;
-		  for(ViewerJob vjob : addSelect(vgroup))
-		    changed.put(vjob.getJobPath(), vjob);
-		}
-	      }
+	    for(ViewerJob vjob : pViewerJobs.values()) {
+	      if(vjob.isInsideOf(bbox)) 
+		addSelect(vjob);
+	    }
+	    
+	    for(ViewerJobGroup vgroup : pViewerJobGroups.values()) {
+	      if(vgroup.isInsideOf(bbox)) 
+		addSelect(vgroup);
 	    }
 	  }
-	  
-	  /* update the appearance of all jobs who's selection state changed */ 
-	  for(ViewerJob vjob : changed.values()) 
-	    vjob.update();
 	}
-
-	/* drag started but never updated: clear the selection */ 
-	else {
-	  for(ViewerJob vjob : clearSelection()) 
-	    vjob.update();
+	
+	/* rubberband drag started but never updated: 
+	   clear the selection unless SHIFT or SHIFT+CTRL are down */ 
+	else if(!(((mods & (on2 | off2)) == on2) || 
+		  ((mods & (on3 | off3)) == on3))) {
+	  clearSelection();
 	}
       }
-      break;
     }
-  }
-
-
-  /*-- MOUSE MOTION LISTNER METHODS --------------------------------------------------------*/
-  
-  /**
-   * Invoked when a mouse button is pressed on a component and then dragged. 
-   */ 
-  public void 	
-  mouseDragged
-  (
-   MouseEvent e
-  )
-  {
-    int mods = e.getModifiersEx();
-    if(pRubberBand.isDragging()) {
-      int on1  = (MouseEvent.BUTTON1_DOWN_MASK);
-      
-      int off1 = (MouseEvent.BUTTON2_DOWN_MASK | 
-		  MouseEvent.BUTTON3_DOWN_MASK | 
-		  MouseEvent.SHIFT_DOWN_MASK |
-		  MouseEvent.ALT_DOWN_MASK |
-		  MouseEvent.CTRL_DOWN_MASK);
-
-      
-      int on2  = (MouseEvent.BUTTON1_DOWN_MASK |
-		  MouseEvent.SHIFT_DOWN_MASK);
-      
-      int off2 = (MouseEvent.BUTTON2_DOWN_MASK | 
-		  MouseEvent.BUTTON3_DOWN_MASK | 
-		  MouseEvent.ALT_DOWN_MASK |
-		  MouseEvent.CTRL_DOWN_MASK);
-
-      
-      int on3  = (MouseEvent.BUTTON1_DOWN_MASK |
-		  MouseEvent.SHIFT_DOWN_MASK | 
-		  MouseEvent.CTRL_DOWN_MASK);
-      
-      int off3 = (MouseEvent.BUTTON2_DOWN_MASK | 
-		  MouseEvent.BUTTON3_DOWN_MASK | 
-		  MouseEvent.ALT_DOWN_MASK);
-
-      /* BUTTON1[+SHIFT[+CTRL]]: update rubber band drag */ 
-      if(((mods & (on1 | off1)) == on1) || 
-	 ((mods & (on2 | off2)) == on2) || 
-	 ((mods & (on3 | off3)) == on3)) {
-	pRubberBand.updateDrag(pCanvas, new Point2d((double) e.getX(), (double) e.getY()));
-      }
-      
-      /* end rubber band drag */ 
-      else {
-	pRubberBand.endDrag();
-      }
-    }
-  }
-
-  /**
-   * Invoked when the mouse cursor has been moved onto a component but no buttons have 
-   * been pushed. 
-   */ 
-  public void 	
-  mouseMoved 
-  (
-   MouseEvent e
-  ) 
-  {
-    pMousePos = e.getPoint();
+   
+    /* reinitialize for the next rubberband drag */ 
+    pRbStart = null;
+    pRbEnd   = null;
+   
+    /* refresh the view */ 
+    pCanvas.setCursor(Cursor.getDefaultCursor());
+    refresh();
   }
 
 
@@ -1713,9 +1403,8 @@ class JQueueJobViewerPanel
       return;
 
     /* local hotkeys */ 
+    Object under = objectAtMousePos();
     UserPrefs prefs = UserPrefs.getInstance();
-    Object under = objectAtMousePos(pMousePos);
-
     boolean undefined = false;
 
     /* job actions */
@@ -1729,8 +1418,8 @@ class JQueueJobViewerPanel
 	break;
 
       default:
-	for(ViewerJob vjob : primarySelect(vunder)) 
-	  vjob.update();
+	primarySelect(vunder); 
+	refresh();
       }
 
       if((prefs.getJobDetails() != null) &&
@@ -1772,8 +1461,8 @@ class JQueueJobViewerPanel
 	break;
 
       default:
-	for(ViewerJob vjob : primarySelect(vunder)) 
-	  vjob.update();
+	primarySelect(vunder); 
+	refresh();
       }
 
       if((prefs.getJobQueueJobs() != null) &&
@@ -1836,8 +1525,8 @@ class JQueueJobViewerPanel
       
       default:
 	Toolkit.getDefaultToolkit().beep();
-	for(ViewerJob vjob : clearSelection()) 
-	  vjob.update();
+	clearSelection();
+	refresh(); 
       }
     }
   }
@@ -1866,8 +1555,8 @@ class JQueueJobViewerPanel
    PopupMenuEvent e
   )
   { 
-    for(ViewerJob vjob : clearSelection()) 
-      vjob.update();
+    clearSelection();
+    refresh();
   }
    
   /**
@@ -1895,8 +1584,6 @@ class JQueueJobViewerPanel
    ActionEvent e
   ) 
   {
-    System.out.print("Action: " + e.getActionCommand() + "\n");
-
     /* panel menu events */ 
     String cmd = e.getActionCommand();
     if(cmd.equals("update"))
@@ -1935,8 +1622,8 @@ class JQueueJobViewerPanel
        doDeleteJobGroups();
 
     else {
-      for(ViewerJob vjob : clearSelection()) 
-	vjob.update();
+      clearSelection();
+      refresh();
     }
   }
 
@@ -1981,7 +1668,7 @@ class JQueueJobViewerPanel
   private void 
   doFrameSelection() 
   {
-    frameJobs(pSelected.values(), !pSelectedGroups.isEmpty());
+    doFrameJobs(pSelected.values(), pSelectedGroups.values());
   }
 
   /**
@@ -1990,93 +1677,21 @@ class JQueueJobViewerPanel
   private void 
   doFrameAll() 
   {
-    frameJobs(pJobPool.getActiveViewerJobs(), true);
+    doFrameJobs(pViewerJobs.values(), pViewerJobGroups.values());
   }
 
   /**
    * Move the camera to frame the given set of jobs.
    */ 
   private void 
-  frameJobs
+  doFrameJobs
   (
    Collection<ViewerJob> vjobs, 
-   boolean frameGroups
+   Collection<ViewerJobGroup> vgroups
   ) 
   {
-    if(vjobs.isEmpty()) 
-      return;
-
-    Point2d minPos = new Point2d(Integer.MAX_VALUE, Integer.MAX_VALUE);
-    Point2d maxPos = new Point2d(Integer.MIN_VALUE, Integer.MIN_VALUE);
-    for(ViewerJob vjob : vjobs) {
-      Point2d minB = vjob.getMinBounds();
-      Point2d maxB = vjob.getMaxCollapsedBounds();
-      
-      minPos.x = Math.min(minPos.x, minB.x);
-      minPos.y = Math.min(minPos.y, minB.y);
-
-      maxPos.x = Math.max(maxPos.x, maxB.x);
-      maxPos.y = Math.max(maxPos.y, maxB.y);
-    }
-
-    if(frameGroups) {
-      minPos.x = 0.0;
-      maxPos.y += 1.25;
-    }
-
-    frameBounds(minPos, maxPos);    
+    doFrameBounds(getJobBounds(vjobs, vgroups));
   }  
-
-  /**
-   * Move the camera to frame the given bounds.
-   */ 
-  private void 
-  frameBounds
-  (
-   Point2d minPos,  
-   Point2d maxPos   
-  ) 
-  {
-    Viewer viewer = pUniverse.getViewer();
-    TransformGroup tg = viewer.getViewingPlatform().getViewPlatformTransform();
-      
-    Transform3D xform = new Transform3D();
-    tg.getTransform(xform);
-    
-    Vector3d trans = new Vector3d();
-    xform.get(trans);
-
-    Vector2d extent = new Vector2d(maxPos);
-    extent.sub(minPos);
-    assert(extent.x >= 0.0);
-    assert(extent.y > 0.0);
-
-    Vector2d center = new Vector2d(minPos);
-    center.add(maxPos);
-    center.scale(0.5);
-
-    trans.x = center.x;
-    trans.y = center.y;
-
-    Vector2d cExtent = new Vector2d((double) pCanvas.getWidth(), 
-				    (double) pCanvas.getHeight());
-
-    Vector2d nExtent = new Vector2d(extent);
-
-    double nRatio = nExtent.x / nExtent.y;
-    double cRatio = cExtent.x / cExtent.y;
-
-    if(nRatio > cRatio) 
-      trans.z = nExtent.x;
-    else 
-      trans.z = nExtent.y * (cExtent.x / cExtent.y);
-
-    trans.z *= 1.25;
-    trans.z = Math.max(((double) pCanvas.getWidth()) / 24.0, trans.z);
-
-    xform.setTranslation(trans);
-    tg.setTransform(xform);
-  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -2087,9 +1702,7 @@ class JQueueJobViewerPanel
   private void
   doAutomaticExpand()
   {
-    for(ViewerJob vjob : clearSelection()) 
-      vjob.update();
-
+    clearSelection();
     pLayoutPolicy = LayoutPolicy.AutomaticExpand;
     updateUniverse();
   }
@@ -2100,9 +1713,7 @@ class JQueueJobViewerPanel
   private void
   doExpandAll()
   {
-    for(ViewerJob vjob : clearSelection()) 
-      vjob.update();
-
+    clearSelection();
     pLayoutPolicy = LayoutPolicy.ExpandAll;
     updateUniverse();
   }
@@ -2113,12 +1724,11 @@ class JQueueJobViewerPanel
   private void
   doCollapseAll()
   {
-    for(ViewerJob vjob : clearSelection()) 
-      vjob.update();
-
+    clearSelection();
     pLayoutPolicy = LayoutPolicy.CollapseAll;
     updateUniverse();
   }
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -2131,8 +1741,8 @@ class JQueueJobViewerPanel
     if((pGroupID > 0) && (pPrimary != null))
       updateJobDetails(pPrimary.getJobStatus().getJobID());
 
-    for(ViewerJob vjob : clearSelection()) 
-      vjob.update();
+    clearSelection();
+    refresh(); 
   }
 
 
@@ -2155,8 +1765,8 @@ class JQueueJobViewerPanel
       task.start();
     }
 
-    for(ViewerJob vjob : clearSelection()) 
-      vjob.update();
+    clearSelection();
+    refresh(); 
   }
 
   /**
@@ -2197,8 +1807,8 @@ class JQueueJobViewerPanel
       task.start();
     }
 
-    for(ViewerJob vjob : clearSelection()) 
-      vjob.update();
+    clearSelection();
+    refresh(); 
   }
 
 
@@ -2216,8 +1826,8 @@ class JQueueJobViewerPanel
       task.start();
     }
 
-    for(ViewerJob vjob : clearSelection()) 
-      vjob.update();
+    clearSelection();
+    refresh(); 
   }
 
   /**
@@ -2251,8 +1861,8 @@ class JQueueJobViewerPanel
       }
     }
 
-    for(ViewerJob vjob : clearSelection()) 
-      vjob.update();
+    clearSelection();
+    refresh(); 
   }
 
   /** 
@@ -2357,8 +1967,8 @@ class JQueueJobViewerPanel
       task.start();
     }
 
-    for(ViewerJob vjob : clearSelection()) 
-      vjob.update();
+    clearSelection();
+    refresh(); 
   }
 
   /**
@@ -2381,8 +1991,8 @@ class JQueueJobViewerPanel
       task.start();
     }
 
-    for(ViewerJob vjob : clearSelection()) 
-      vjob.update();
+    clearSelection();
+    refresh(); 
   }
 
   /**
@@ -2407,8 +2017,8 @@ class JQueueJobViewerPanel
       task.start();
     }
 
-    for(ViewerJob vjob : clearSelection()) 
-      vjob.update();
+    clearSelection();
+    refresh(); 
   }
 
 
@@ -2433,9 +2043,9 @@ class JQueueJobViewerPanel
 	task.start();
       }
     }
-
-    for(ViewerJob vjob : clearSelection()) 
-      vjob.update();
+    
+    clearSelection();
+    refresh(); 
   }
 
 
@@ -2456,22 +2066,6 @@ class JQueueJobViewerPanel
     /* root jobs */ 
     if(!pJobGroups.isEmpty()) 
       encoder.encode("JobGroupIDs", new TreeSet<Long>(pJobGroups.keySet()));
-    
-    /* camera position */ 
-    {
-      Viewer viewer = pUniverse.getViewer();
-      TransformGroup tg = viewer.getViewingPlatform().getViewPlatformTransform();
-      
-      Transform3D xform = new Transform3D();
-      tg.getTransform(xform);
-      
-      Vector3d trans = new Vector3d();
-      xform.get(trans);
-      
-      encoder.encode("CameraX", trans.x);
-      encoder.encode("CameraY", trans.y);
-      encoder.encode("CameraZ", trans.z);
-    }
   }
 
   public synchronized void 
@@ -2484,67 +2078,14 @@ class JQueueJobViewerPanel
     /* job groups */     
     TreeSet<Long> groupIDs = (TreeSet<Long>) decoder.decode("JobGroupIDs");
     if(groupIDs != null) {
-//       pJobGroups = new TreeMap<Long,JobGroup>();
-//       for(Long groupID : groupIDs) 
-// 	pJobGroups.put(groupID, null);
-    }
-
-    /* camera position */ 
-    {
-      Viewer viewer = pUniverse.getViewer();
-      TransformGroup tg = viewer.getViewingPlatform().getViewPlatformTransform();
-    
-      Transform3D xform = new Transform3D();
-      tg.getTransform(xform);
-      
-      Double cx = (Double) decoder.decode("CameraX");
-      Double cy = (Double) decoder.decode("CameraY");
-      Double cz = (Double) decoder.decode("CameraZ");
-
-      if((cx == null) || (cy == null) || (cz == null)) 
-	throw new GlueException("The camera position was incomplete!");
-      Vector3d trans = new Vector3d(cx, cy, cz);
-
-      xform.setTranslation(trans);	    
-      tg.setTransform(xform);
+      pJobGroups = new TreeMap<Long,QueueJobGroup>();
+      for(Long groupID : groupIDs) 
+ 	pJobGroups.put(groupID, null);
     }
 
     super.fromGlue(decoder);
   }
   
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   I N T E R N A L   C L A S S E S                                                      */
-  /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * The expand/collapse policy to use when laying out jobs.
-   */
-  private
-  enum LayoutPolicy
-  {  
-    /**
-     * Preserve the collapse mode of existing jobs and use an AutomaticExpand policy for 
-     * any newly created jobs.
-     */
-    Preserve, 
-
-    /**
-     * Expand all jobs.
-     */ 
-    ExpandAll, 
-
-    /**
-     * Collapse all jobs.
-     */ 
-    CollapseAll, 
-    
-    /**
-     * Expand the first occurance of a job and collapse all subsequence occurances.
-     */
-    AutomaticExpand;
-  }
 
   
   /*----------------------------------------------------------------------------------------*/
@@ -3068,12 +2609,6 @@ class JQueueJobViewerPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The expand/collapse policy to use when laying out jobs.
-   */ 
-  private LayoutPolicy  pLayoutPolicy;
-
-
-  /**
    * All displayed job groups indexed by group ID. 
    */ 
   private TreeMap<Long,QueueJobGroup>  pJobGroups;
@@ -3087,6 +2622,48 @@ class JQueueJobViewerPanel
    * Does the current user have privileged status?
    */ 
   private boolean  pIsPrivileged;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The currently displayed job groups indexed by unique job group ID.
+   */ 
+  private TreeMap<Long,ViewerJobGroup>  pViewerJobGroups;
+
+  /**
+   * The currently displayed jobs indexed by <CODE>JobPath</CODE>.
+   */ 
+  private HashMap<JobPath,ViewerJob>  pViewerJobs; 
+
+  
+
+  /**
+   * The set of currently selected job groups indexed by group ID.
+   */ 
+  private TreeMap<Long,ViewerJobGroup>  pSelectedGroups;
+
+  /**
+   * The primary job group selection.
+   */ 
+  private ViewerJobGroup  pPrimaryGroup;
+
+  
+  /**
+   * The set of currently selected jobs indexed by <CODE>JobPath</CODE>.
+   */ 
+  private HashMap<JobPath,ViewerJob>  pSelected;
+
+  /**
+   * The primary job selection.
+   */ 
+  private ViewerJob  pPrimary;
+
+
+  /**
+   * The ID of the last job sent to the job details panel.
+   */ 
+  private Long  pLastJobID; 
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -3115,79 +2692,5 @@ class JQueueJobViewerPanel
    * The view with group submenu.
    */ 
   private JMenu  pGroupViewWithMenu; 
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The Java3D scene graph.
-   */ 
-  private SimpleUniverse  pUniverse;      
-
-  /**
-   * The 3D canvas used to render the Java3D universe.
-   */ 
-  private Canvas3D  pCanvas;       
-
-  /**
-   * The reuseable collection of ViewerJobs.
-   */ 
-  private ViewerJobPool  pJobPool;
-
-  /**
-   * The reuseable collection of ViewerJobGroups.
-   */ 
-  private ViewerJobGroupPool  pJobGroupPool;
-
-  /**
-   * The selection rubber band geometry.
-   */ 
-  private RubberBand  pRubberBand;
-  
-  /**
-   * The branch containing job geometry.
-   */ 
-  private BranchGroup  pGeomBranch;
-
-
-  /**
-   * The set of currently selected jobs indexed by <CODE>JobPath</CODE>.
-   */ 
-  private HashMap<JobPath,ViewerJob>  pSelected;
-
-  /**
-   * The primary job selection.
-   */ 
-  private ViewerJob  pPrimary;
-
-
-  /**
-   * The set of currently selected job groups indexed by group ID.
-   */ 
-  private TreeMap<Long,ViewerJobGroup>  pSelectedGroups;
-
-  /**
-   * The primary job group selection.
-   */ 
-  private ViewerJobGroup  pPrimaryGroup;
-
-  
-
-  /**
-   * The last known mouse position.
-   */ 
-  private Point pMousePos;
-
-  /**
-   * The bounds of the currently visible jobs.
-   */ 
-  private Point2d  pMinJobBounds;
-  private Point2d  pMaxJobBounds;
-
-
-  /**
-   * The ID of the last job sent to the job details panel.
-   */ 
-  private Long  pLastJobID; 
 
 }
