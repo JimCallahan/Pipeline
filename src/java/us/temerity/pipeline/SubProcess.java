@@ -1,4 +1,4 @@
-// $Id: SubProcess.java,v 1.13 2004/05/29 06:38:06 jim Exp $
+// $Id: SubProcess.java,v 1.14 2004/07/24 18:16:34 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -81,7 +81,7 @@ class SubProcess
    String name,      
    String program,      
    ArrayList<String> args, 
-   Map<String, String> env,      
+   Map<String,String> env,      
    File dir
   )
   {
@@ -129,7 +129,7 @@ class SubProcess
    String name,      
    String program,      
    ArrayList<String> args, 
-   Map<String, String> env,      
+   Map<String,String> env,      
    File dir
   )
   {

@@ -1,4 +1,4 @@
-// $Id: QueueState.java,v 1.8 2004/07/22 00:07:36 jim Exp $
+// $Id: QueueState.java,v 1.9 2004/07/24 18:16:15 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -76,7 +76,7 @@ enum QueueState
 
   /**
    * The last queue job submitted which would have regenerated these primary/secondary files 
-   * was aborted (cancelled) before it had a chance to execute. <P> 
+   * was aborted (cancelled) prematurely by the user. <P> 
    * 
    * This state has precedence over the <CODE>Stale</CODE> state. <P> 
    * 
