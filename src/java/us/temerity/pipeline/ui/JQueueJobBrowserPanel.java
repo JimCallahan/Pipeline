@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.8 2004/10/28 15:55:24 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.9 2004/10/29 16:25:19 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -761,7 +761,7 @@ class JQueueJobBrowserPanel
     }
     
     /* update the groups table, 
-         reselects any of the previously selected job groups which still exist */ 
+         reselects any of the previously selected job groups which still exist */
     {
       JTable table = pGroupsTablePanel.getTable();
       ListSelectionModel smodel = table.getSelectionModel();
@@ -880,7 +880,20 @@ class JQueueJobBrowserPanel
 	  if(group != null) 
 	    sgroups.put(groupID, group);
 	}
+
+	/* if a single job group containing a single job was just selected, 
+  	     get the viewer to update any attached job details panel with this job */ 
+	Long justSelected = pGroupsListSelector.getJustSelected();
+	if(justSelected != null) {
+	  QueueJobGroup group = sgroups.get(justSelected);
+	  if(group != null) {
+	    SortedSet<Long> jobIDs = group.getJobIDs();
+	    if(jobIDs.size() == 1)
+	      panel.enableDetailsUpdate(jobIDs.first());
+	  }
+	}
 	  
+	/* update the viewer */ 
 	panel.updateQueueJobs(pAuthor, pView, sgroups, pJobStatus);
 	panel.updateManagerTitlePanel();
       }
@@ -1601,6 +1614,16 @@ class JQueueJobBrowserPanel
     {}
 
     /**
+     * Gets the ID of the last selected job group if it was the only selection and was 
+     * added to the selection since the last update or <CODE>null</CODE> if not.
+     */ 
+    public Long
+    getJustSelected()
+    {
+      return pJustSelected;
+    }
+
+    /**
      * Called whenever the value of the selection changes.
      */ 
     public void 	
@@ -1612,6 +1635,8 @@ class JQueueJobBrowserPanel
       if(e.getValueIsAdjusting()) 
 	return;
       
+      int numPrevSelected = pSelectedIDs.size();
+
       /* update selected IDs */ 
       {
 	pSelectedIDs.clear(); 
@@ -1622,9 +1647,15 @@ class JQueueJobBrowserPanel
 	  pSelectedIDs.add(groupID);
 	}
       }
-      
+
+      pJustSelected = null;    
+      if((pSelectedIDs.size() == 1) && (numPrevSelected <= 1))
+	pJustSelected = pSelectedIDs.first();
+  
       doUpdate();      
     }
+
+    private Long  pJustSelected; 
   }
 
   private 

@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.17 2004/10/28 15:55:24 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.18 2004/10/29 16:25:19 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -419,6 +419,18 @@ class JQueueJobViewerPanel
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Enable the update of the Job Details panel with the given job ID.
+   */ 
+  public synchronized void 
+  enableDetailsUpdate
+  (
+   long jobID
+  )
+  {
+    pLastJobID = jobID;
+  }
 
   /**
    * Enable the update of the Job Details panel, but clear any last updated job ID.
@@ -2269,8 +2281,6 @@ class JQueueJobViewerPanel
     for(ViewerJob vjob : clearSelection()) 
       vjob.update();
   }
-
-
 
 
 
