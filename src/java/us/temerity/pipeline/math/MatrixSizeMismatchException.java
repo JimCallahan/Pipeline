@@ -1,4 +1,4 @@
-// $Id: MatrixSizeMismatchException.java,v 1.2 2004/12/21 00:20:28 jim Exp $
+// $Id: MatrixSizeMismatchException.java,v 1.3 2004/12/22 00:45:28 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -7,7 +7,7 @@ package us.temerity.pipeline.math;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Thmatrixn to indicate that a matrix operation was attempted between matrix vectors of 
+ * Thrown to indicate that a matrix operation was attempted between matrices of 
  * different sizes.
  */
 public
