@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.7 2004/11/06 23:36:29 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.8 2005/01/15 02:47:11 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -189,6 +189,24 @@ class PackageInfo
   public static final File sQueueDir = new File("@QUEUEDIR@");
 
   
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The hostname which runs the Pipeline plugin server <I>plpluginmgr(1)</I>. <P> 
+   *
+   * Set by the PluginHostname customer profile entry.
+   */
+  public static final String sPluginServer = "@PL_PLUGIN_SERVER@";
+  
+  /**
+   * The port number listened to by the Pipeline plugin manager daemon 
+   * <I>plpluginmgr(1)</I>. <P> 
+   *
+   * Set by the PluginPort customer profile entry.
+   */
+  public static final int sPluginPort = @PL_PLUGIN_PORT@;
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /** 
