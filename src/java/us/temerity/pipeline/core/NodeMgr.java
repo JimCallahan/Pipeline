@@ -1,4 +1,4 @@
-// $Id: NodeMgr.java,v 1.11 2004/04/11 19:24:16 jim Exp $
+// $Id: NodeMgr.java,v 1.12 2004/04/13 20:45:19 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -9,6 +9,7 @@ import us.temerity.pipeline.message.*;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.locks.*;
+import java.util.concurrent.atomic.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   N O D E   M G R                                                                        */
@@ -136,27 +137,53 @@ class NodeMgr
   /** 
    * Construct a new node manager.
    * 
-   * @param dir 
+   * @param nodeDir 
    *   The root node directory.
    * 
+   * @param prodDir 
+   *   The root production directory.
+   * 
    * @param fileHostname 
-   *   The name of the host running the <B>plfilemgr</B><A>(1).
+   *   The name of the host running the <B>plfilemgr</B><A>(1) and <B>plnotify</B><A>(1) 
+   *   daemons.
    * 
    * @param filePort 
-   *   The network port listened to by <B>plfilemgr</B><A>(1).
+   *   The network port listened to by the <B>plfilemgr</B><A>(1) daemon.
+   * 
+   * @param controlPort 
+   *   The network port listened to by the <B>plnotify</B><A>(1) daemon for 
+   *   control connections.
+   * 
+   * @param monitorPort 
+   *   The network port listened to by the <B>plnotify</B><A>(1) daemon for 
+   *   monitor connections.
    */
   public
   NodeMgr
   (
-   File dir, 
+   File nodeDir, 
+   File prodDir, 
    String fileHostname, 
-   int filePort
+   int filePort, 
+   int controlPort, 
+   int monitorPort
   )
   { 
-    init(dir);
+    init(nodeDir, prodDir);
 
-    /* connect to the file manager */ 
+    /* make a connection to the file manager daemon */ 
     pFileMgrClient = new FileMgrClient(fileHostname, filePort);
+
+    /* initialize the monitored directory table */ 
+    pMonitored = new HashMap<File,HashSet<NodeID>>();
+
+    /* make a control connection to the directory notification daemon */ 
+    pNotifyControlClient = new NotifyControlClient(fileHostname, controlPort);
+
+    /* make a monitor connection to the directory notification daemon and 
+        start a task to listen for directory change notifcations */ 
+    pDirtyTask = new DirtyTask(fileHostname, monitorPort);
+    pDirtyTask.start();
   }
 
 
@@ -165,18 +192,26 @@ class NodeMgr
   /**
    * Initialize a new instance.
    * 
-   * @param dir 
+   * @param nodeDir 
    *   The root node directory.
+   * 
+   * @param prodDir 
+   *   The root production directory.
    */ 
   private void 
   init
   (
-   File dir
+   File nodeDir, 
+   File prodDir
   )
   { 
-    if(dir == null)
+    if(nodeDir == null)
       throw new IllegalArgumentException("The root node directory cannot be (null)!");
-    pNodeDir = dir;
+    pNodeDir = nodeDir;
+
+    if(prodDir == null)
+      throw new IllegalArgumentException("The root production directory cannot be (null)!");
+    pProdDir = prodDir;
 
     /* remove the lock file */ 
     {
@@ -423,9 +458,12 @@ class NodeMgr
 
     /* shutdown and restart the server */ 
     {
-      File dir = pNodeDir;
+      File nodeDir = pNodeDir;
+      File prodDir = pProdDir;
+
       shutdown();
-      init(dir);
+
+      init(nodeDir, prodDir);
     }
   }
 
@@ -576,12 +614,14 @@ class NodeMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Perform shutdown tasks for the node manager. <P> 
+   * Shutdown the node manager. <P> 
+   * 
+   * Also sends a shutdown request to the <B>plfilemgr</B>(1) and <B>plnotify<B>(1) 
+   * daemons if there are live network connectins to these daemons. <P> 
    * 
    * It is crucial that this method be called when only a single thread is able to access
-   * this instance!  In other words, after all request threads have already exited.
-   * 
-   * After this method has been called, this instance should never be used again.
+   * this instance!  In other words, after all request threads have already exited or by a 
+   * restart during the construction of this instance.
    */
   public void  
   shutdown() 
@@ -596,21 +636,53 @@ class NodeMgr
     }
 
     /* close the connection to the file manager */ 
-    if(pFileMgrClient != null) 
-      pFileMgrClient.disconnect();
+    if(pFileMgrClient != null) {
+      try {
+	pFileMgrClient.shutdown();
+      }
+      catch(PipelineException ex) {
+	Logs.net.warning(ex.getMessage());
+      }
+    }
 
-    /* make sure this instance can't be used anymore! */ 
+    /* close the control connection to the directory change notification daemon */ 
+    if(pNotifyControlClient != null) {
+      try {
+	pNotifyControlClient.shutdown(); 
+      }
+      catch(PipelineException ex) {
+	Logs.net.warning(ex.getMessage());
+      }
+    }
+      
+    /* shutdown task listening to the monitor connection to the directory change 
+        notification daemon */ 
+    if(pDirtyTask != null) {
+      pDirtyTask.shutdown();
+
+      try {
+	pDirtyTask.join();
+      }
+      catch(InterruptedException ex) {
+	Logs.net.severe("Interrupted while waiting on the DirtyTask to complete!");
+      }
+    }
+
+    /* invalidate the fields */ 
     {
-      pMakeDirLock      = null;
-      pNodeDir          = null;
-      pNodeNames        = null;
-      pCheckedInLocks   = null;
-      pCheckedInBundles = null;
-      pWorkingLocks     = null;
-      pWorkingBundles   = null;
-      pDownstreamLocks  = null;
-      pDownstream       = null;
-      pFileMgrClient    = null;
+      pMakeDirLock         = null;
+      pNodeDir             = null;
+      pNodeNames           = null;
+      pCheckedInLocks      = null;
+      pCheckedInBundles    = null;
+      pWorkingLocks        = null;
+      pWorkingBundles      = null;
+      pDownstreamLocks     = null;
+      pDownstream          = null;
+      pFileMgrClient       = null;
+      pMonitored           = null;
+      pNotifyControlClient = null;
+      pDirtyTask           = null;
     }
   }
 
@@ -1527,15 +1599,19 @@ class NodeMgr
     if(id == null) 
       throw new IllegalArgumentException("The working version ID cannot be (null)!");
       
+
     /* lookup the bundle */ 
     WorkingBundle bundle = null;
     synchronized(pWorkingBundles) {
       bundle = pWorkingBundles.get(id);
     }
 
-    if(bundle != null)
+    if(bundle != null) {
+      monitor(id);
       return bundle;
+    }
 
+    /* read in the bundle from disk */ 
     NodeMod mod = readWorkingVersion(id);
     if(mod == null) 
       throw new PipelineException
@@ -1547,7 +1623,8 @@ class NodeMgr
     synchronized(pWorkingBundles) {
       pWorkingBundles.put(id, bundle);
     }
-
+    
+    monitor(id);
     return bundle;
   }
 
@@ -1591,6 +1668,38 @@ class NodeMgr
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+  /*   I / O   H E L P E R S                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Make sure that the directory containing the files associated with the 
+   * working version is being monitored.
+   */
+  private void
+  monitor
+  (
+   NodeID id
+  )
+    throws PipelineException 
+  { 
+    synchronized(pMonitored) {
+      File dir = new File(pProdDir, id.getWorkingParent().getPath());
+
+      HashSet<NodeID> ids = pMonitored.get(dir);
+      if(ids == null) {
+	ids = new HashSet<NodeID>();
+	pMonitored.put(dir, ids);
+      }
+
+      if(!ids.contains(id)) {
+	ids.add(id);
+	pNotifyControlClient.monitor(dir);
+      }
+    }
+  }
+
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   I / O   H E L P E R S                                                                */
@@ -2152,6 +2261,93 @@ class NodeMgr
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Opens a monitor connection to the <B>plnotify<B>(1) daemon and invalidates the cached
+   * node state information of the <CODE>WorkingBundles</CODE> who's associated files live
+   * in the directories which have been modified.
+   */ 
+  private
+  class DirtyTask
+    extends Thread
+  {
+    DirtyTask
+    (
+     String hostname, 
+     int port
+    ) 
+    {
+      super("NodeMgr:DirtyTask");
+      pClient = new NotifyMonitorClient(hostname, port);
+      pShutdown = new AtomicBoolean(false);
+    }
+    
+    public void 
+    shutdown()
+    {
+      pShutdown.set(true);
+    }
+
+    public void 
+    run() 
+    { 
+      Logs.net.fine("DirtyTask Started.");
+      Logs.flush();
+
+      while(!pShutdown.get()) {
+	try {
+	  HashSet<File> dirs = pClient.watch();
+
+	  HashSet<NodeID> dirty = new HashSet<NodeID>();
+	  for(File dir : dirs) {
+	    synchronized(pMonitored) {
+	      HashSet<NodeID> ids = pMonitored.get(dir);
+	      if(ids != null) {
+		for(NodeID id : ids) 
+		  dirty.add(id);
+	      }
+	    }
+	  }
+	  
+	  for(NodeID id : dirty) {
+	    TaskTimer timer = new TaskTimer("DirtyTask -- Node State Invalidated: " + id);
+	    timer.aquire();
+	    ReentrantReadWriteLock lock = getWorkingLock(id);
+	    lock.writeLock().lock();
+	    try {
+	      timer.resume();	
+
+	      WorkingBundle bundle = getWorkingBundle(id);
+	      bundle.uOverallNodeState  = null;
+	      bundle.uOverallQueueState = null;
+	      bundle.uFileStates        = null;
+	    }
+	    catch(PipelineException ex) {
+	      Logs.net.warning("DirtyTask: " + ex.getMessage());	      
+	    }	    
+	    finally {
+	      lock.writeLock().unlock();
+	    }    	  
+	    
+	    timer.suspend();
+	    Logs.net.finest(timer.toString());
+	  }
+	}
+	catch(PipelineException ex) {
+	  Logs.net.warning("DirtyTask: " + ex.getMessage());
+	}
+      }
+
+      Logs.net.fine("DirtyTask Shutdown.");
+      Logs.flush();
+    }
+
+    private NotifyMonitorClient pClient;
+    private AtomicBoolean       pShutdown;
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
@@ -2227,10 +2423,14 @@ class NodeMgr
 
   
   /**
-   * The connection to the file manager.
+   * The root production directory.
+   */ 
+  private File  pProdDir;
+
+  /**
+   * The connection to the file manager daemon: <B>plfilemgr<B>(1).
    */ 
   private FileMgrClient  pFileMgrClient;
-
 
   /**
    * The set of working versions who's associated files are being monitored indexed 
@@ -2238,7 +2438,18 @@ class NodeMgr
    * 
    * Access to this table should be protected by a synchronized block.
    */
-  //private HashMap<File,HashSet<NodeID>> pMonitored;
+  private HashMap<File,HashSet<NodeID>> pMonitored;
+
+  /** 
+   * The control connection to the directory notification daemon: <B>plnotify<B>(1).
+   */ 
+  private NotifyControlClient  pNotifyControlClient;
+
+  /** 
+   * The task which listens to the monitor connection to the directory notification 
+   * daemon: <B>plnotify<B>(1).
+   */ 
+  private DirtyTask  pDirtyTask;  
 
 }
 

@@ -1,4 +1,4 @@
-// $Id: TestNodeMgrApp.java,v 1.6 2004/03/31 02:01:18 jim Exp $
+// $Id: TestNodeMgrApp.java,v 1.7 2004/04/13 20:45:36 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -29,7 +29,7 @@ class TestNodeMgrApp
     Logs.init();
     Logs.net.setLevel(Level.FINEST);
     Logs.sub.setLevel(Level.FINER);
-    Logs.ops.setLevel(Level.FINER);
+    Logs.ops.setLevel(Level.FINEST);
 
     try {
       TestNodeMgrApp app = new TestNodeMgrApp();
@@ -203,13 +203,21 @@ class TestNodeMgrApp
       proc.join();
     }
 
-    /* start the file manager server */ 
-    FileMgrServer fileServer = new FileMgrServer(prodDir, 53138);
-    fileServer.start();
-
     {
-      /* start the node manager server */ 
-      NodeMgrServer nodeServer = new NodeMgrServer(nodeDir, 53139, "localhost", 53138);
+      /* start the file manager daemon */ 
+      FileMgrServer fileServer = new FileMgrServer(prodDir, 53146);
+      fileServer.start();
+     
+      /* start the directory notification daemon */ 
+      NotifyServer notifyServer = new NotifyServer(53147, 53148);
+      notifyServer.start();
+      
+      /* give the servers a chance to start */ 
+      Thread.currentThread().sleep(1000);
+
+      /* start the node manager daemon */ 
+      NodeMgrServer nodeServer = 
+	new NodeMgrServer(nodeDir, 53145, prodDir, "localhost", 53146, 53147, 53148);
       nodeServer.start();
       
       /* give the server a chance to start */ 
@@ -235,15 +243,32 @@ class TestNodeMgrApp
 	modB = clientB.getNodeMod();
       }
       
-      NodeMgrClient client = new NodeMgrClient("localhost", 53139);
+      NodeMgrClient client = new NodeMgrClient("localhost", 53145);
       client.link("default", modA.getName(), modB.getName(), 
 		  ref, LinkRelationship.None, null);
       modA = client.getWorkingVersion("default", modA.getName());
+
+      /* modify the directory where modA and modB live to see of plnotify(1) notices */ 
+      {
+	File dir = new File(prodDir, "working/jim/default/images");
+	int wk;
+	for(wk=0; wk<5; wk++) {
+	  File tmp = File.createTempFile("dummy", "test", dir);
+	  System.out.print("Touch: " + tmp + "\n");
+	  Thread.currentThread().sleep(2000);
+	}
+      }
+
       client.shutdown();
-      
+
+      /* wait for everything to shutdown */ 
       nodeServer.join();
+      notifyServer.join();
+      fileServer.join();
     }
 
+    /* destroy the downstream links to see if the node manager will 
+         automatically rebuild them... */ 
     {
       ArrayList<String> args = new ArrayList<String>();
       args.add("--force");
@@ -251,20 +276,31 @@ class TestNodeMgrApp
       args.add("downstream");
       
       SubProcess proc = 
-	new SubProcess("RemoveDownstreamLinks", "rm", args, env, nodeDir);
+ 	new SubProcess("RemoveDownstreamLinks", "rm", args, env, nodeDir);
       proc.start();
       
       proc.join();
     }
 
     {
-      /* start the node manager server */ 
-      NodeMgrServer nodeServer = new NodeMgrServer(nodeDir, 53139, "localhost", 53138);
-      nodeServer.start();
+      /* start the file manager daemon */ 
+      FileMgrServer fileServer = new FileMgrServer(prodDir, 53146);
+      fileServer.start();
       
+      /* start the directory notification daemon */ 
+      NotifyServer notifyServer = new NotifyServer(53147, 53148);
+      notifyServer.start();
+      
+      /* give the servers a chance to start */ 
+      Thread.currentThread().sleep(1000);
+      /* start the node manager server */ 
+      NodeMgrServer nodeServer = 
+	new NodeMgrServer(nodeDir, 53145, prodDir, "localhost", 53146, 53147, 53148);
+      nodeServer.start();
+   
       /* give the server a chance to start */ 
       Thread.currentThread().sleep(1000);
-      
+   
       /* run some client tasks */ 
       {
 	ArrayList<ClientTask2> clients = new ArrayList<ClientTask2>();
@@ -283,7 +319,7 @@ class TestNodeMgrApp
       }
 
       {
-	NodeMgrClient client = new NodeMgrClient("localhost", 53139);
+	NodeMgrClient client = new NodeMgrClient("localhost", 53145);
 	client.register("default", fly);
 	client.register("default", dragonfly);
 	client.disconnect();
@@ -302,9 +338,8 @@ class TestNodeMgrApp
 	clientB.join();
       }
 
-
       {
-	NodeMgrClient client = new NodeMgrClient("localhost", 53139);
+	NodeMgrClient client = new NodeMgrClient("localhost", 53145);
 
 	client.link("default", eagle.getName(), snake.getName(), 
 		    new LinkCatagory("Eats", LinkPolicy.Both), LinkRelationship.All, null);
@@ -315,18 +350,46 @@ class TestNodeMgrApp
 
 	client.disconnect();
       }
-      
-      NodeMgrClient client = new NodeMgrClient("localhost", 53139);
+   
+      /* modify the some of the animal directories */ 
+      {
+	File animals = new File(prodDir, "working/jim/default/animals/");
+
+	{
+	  File dir = new File(animals, "insects");
+	  File tmp = File.createTempFile("dummy", "test", dir);
+	  System.out.print("Touch: " + tmp + "\n");
+	  Thread.currentThread().sleep(2000);
+	}
+
+	{
+	  File dir = new File(animals, "amphibians");
+	  File tmp = File.createTempFile("dummy", "test", dir);
+	  System.out.print("Touch: " + tmp + "\n");
+	  Thread.currentThread().sleep(2000);
+	}
+
+	{
+	  File dir = new File(animals, "reptiles");
+	  File tmp = File.createTempFile("dummy", "test", dir);
+	  System.out.print("Touch: " + tmp + "\n");
+	  Thread.currentThread().sleep(2000);
+	}
+
+	{
+	  File dir = new File(animals, "birds");
+	  File tmp = File.createTempFile("dummy", "test", dir);
+	  System.out.print("Touch: " + tmp + "\n");
+	  Thread.currentThread().sleep(2000);
+	}
+      }
+
+      NodeMgrClient client = new NodeMgrClient("localhost", 53145);
       client.shutdown();
 
+      /* wait for everything to shutdown */ 
       nodeServer.join();
-    }
-
-    /* shutdown the file manager server */ 
-    {
-      FileMgrClient client = new FileMgrClient("localhost", 53138);
-      client.shutdown();
-      
+      notifyServer.join();
       fileServer.join();
     }
   }
@@ -369,7 +432,7 @@ class TestNodeMgrApp
       }
 
       try {
-	NodeMgrClient client = new NodeMgrClient("localhost", 53139);
+	NodeMgrClient client = new NodeMgrClient("localhost", 53145);
       
 	client.register("default", pNodeMod);
 	
@@ -448,7 +511,7 @@ class TestNodeMgrApp
       }
 
       try {
-	NodeMgrClient client = new NodeMgrClient("localhost", 53139);
+	NodeMgrClient client = new NodeMgrClient("localhost", 53145);
 	
 	{
 	  int cnt;
@@ -507,7 +570,7 @@ class TestNodeMgrApp
       }
 
       try {
-	NodeMgrClient client = new NodeMgrClient("localhost", 53139);
+	NodeMgrClient client = new NodeMgrClient("localhost", 53145);
 
 	client.register("default", pSalamander);
 	client.register("default", pFrog);
@@ -590,7 +653,7 @@ class TestNodeMgrApp
       }
 
       try {
-	NodeMgrClient client = new NodeMgrClient("localhost", 53139);
+	NodeMgrClient client = new NodeMgrClient("localhost", 53145);
 
 	client.register("default", pSparrow);
 	client.register("default", pEagle);
