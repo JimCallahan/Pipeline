@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.101 2005/03/23 18:24:11 jim Exp $
+// $Id: MasterMgr.java,v 1.102 2005/03/23 20:45:01 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6917,7 +6917,6 @@ class MasterMgr
 	    TreeMap<File,TreeSet<VersionID>> symlinks = 
 	      new TreeMap<File,TreeSet<VersionID>>();
 	    {
-// 	      TreeMap<File,Boolean[]> novelty = noveltyByFile(checkedIn);
 	      for(File file : novelty.keySet()) {
 		Boolean[] isNovel = novelty.get(file);
 
@@ -7042,6 +7041,66 @@ class MasterMgr
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the names and revision numbers of the offline checked-in versions who's names 
+   * match the given criteria. <P> 
+   * 
+   * @param req 
+   *   The query request.
+   * 
+   * @return 
+   *   <CODE>MiscRestoreQueryRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to perform the query.
+   */
+  public Object
+  restoreQuery
+  (
+   MiscRestoreQueryReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();	
+
+      String pattern = req.getPattern();
+
+      /* get versions which match the pattern */ 
+      TreeMap<String,TreeSet<VersionID>> versions = new TreeMap<String,TreeSet<VersionID>>();
+      {
+	timer.aquire();
+	synchronized(pOfflined) {
+	  try {
+	    timer.resume();
+	    
+	    Pattern pat = null;
+	    if(pattern != null) 
+	      pat = Pattern.compile(pattern);
+	    
+	    for(String name : pOfflined.keySet()) {
+	      if((pat == null) || pat.matcher(name).matches()) 
+		versions.put(name, new TreeSet<VersionID>(pOfflined.get(name)));
+	    }
+	  }
+	  catch(PatternSyntaxException ex) {
+	    throw new PipelineException 
+	      ("Illegal Node Name Pattern:\n\n" + ex.getMessage());
+	  }
+	}
+      }
+      
+      return new MiscRestoreQueryRsp(timer, versions);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }    
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }  
+  }
 
   /**
    * Submit a request to restore the given set of checked-in versions.

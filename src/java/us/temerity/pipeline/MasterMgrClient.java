@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.55 2005/03/23 00:35:23 jim Exp $
+// $Id: MasterMgrClient.java,v 1.56 2005/03/23 20:45:01 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -3279,6 +3279,42 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Get the names and revision numbers of the offline checked-in versions who's names 
+   * match the given criteria. <P> 
+   * 
+   * @param pattern
+   *   A regular expression {@link Pattern pattern} used to match the fully resolved 
+   *   names of nodes or <CODE>null</CODE> for all nodes.
+   * 
+   * @return 
+   *   The fully resolved node names and revision numbers of the matching versions.
+   * 
+   * @throws PipelineException 
+   *   If unable to determine which checked-in versions match the criteria.
+   */ 
+  public synchronized TreeMap<String,TreeSet<VersionID>> 
+  restoreQuery
+  (
+   String pattern
+  )
+    throws PipelineException
+  {
+    verifyConnection();
+
+    MiscRestoreQueryReq req = new MiscRestoreQueryReq(pattern);
+
+    Object obj = performTransaction(MasterRequest.RestoreQuery, req);
+    if(obj instanceof MiscRestoreQueryRsp) {
+      MiscRestoreQueryRsp rsp = (MiscRestoreQueryRsp) obj;
+      return rsp.getVersions();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  } 
+
+  /**
    * Submit a request to restore the given set of checked-in versions.
    *
    * @param versions
@@ -3423,7 +3459,7 @@ class MasterMgrClient
     verifyConnection();
 
     MiscRestoreReq req = new MiscRestoreReq(name, versions, archiver);
-    Object obj = performTransaction(MasterRequest.Restore, req);
+    Object obj = performLongTransaction(MasterRequest.Restore, req, 15000, 60000);  
     handleSimpleResponse(obj);    
   }
 

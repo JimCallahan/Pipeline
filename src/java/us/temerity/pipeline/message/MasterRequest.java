@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.32 2005/03/21 08:52:49 jim Exp $
+// $Id: MasterRequest.java,v 1.33 2005/03/23 20:45:01 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -386,6 +386,11 @@ enum MasterRequest
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * An instance of {@link MiscRestoreQueryReq MiscRestoreQueryReq} is next.
+   */
+  RestoreQuery, 
 
   /**
    * An instance of {@link MiscRequestRestoreReq MiscRequestRestoreReq} is next.
