@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.58 2004/11/03 02:55:08 jim Exp $
+// $Id: MasterMgr.java,v 1.59 2004/11/03 15:03:32 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3941,6 +3941,10 @@ class MasterMgr
       Date timestamp = Dates.now(); 
 
       {
+	/* remove the existing working area files before the check-out */ 
+	if(work != null) 
+	  pFileMgrClient.removeAll(nodeID, work.getSequences());	
+
 	/* remove the to be checked-out working files,
 	     if this is a dirty node with an enabled action */ 
 	if(dirty.contains(name) && vsn.isActionEnabled()) {
