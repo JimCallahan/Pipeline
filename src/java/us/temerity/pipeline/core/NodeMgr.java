@@ -1,4 +1,4 @@
-// $Id: NodeMgr.java,v 1.23 2004/05/02 12:07:53 jim Exp $
+// $Id: NodeMgr.java,v 1.24 2004/05/03 04:30:38 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1739,29 +1739,64 @@ class NodeMgr
       NodeMod nwork = new NodeMod(vsn);
       writeWorkingVersion(nodeID, nwork);
 
-      /* update the working bundle */ 
-      working.uVersion        = nwork;
-      working.uFileStates     = null;
-      working.uFileTimeStamps = null;
-
-      /* remove the downstream links from any obsolete upstream nodes */ 
-      for(LinkMod link : work.getSources()) {
-	if(!nwork.getSourceNames().contains(link.getName())) {
-	  String source = link.getName();
-
-	  timer.aquire();
-	  ReentrantReadWriteLock downstreamLock = getDownstreamLock(source);
-	  downstreamLock.writeLock().lock();  
-	  try {
-	    timer.resume();
-
-	    DownstreamLinks links = getDownstreamLinks(source); 
-	    links.removeWorking(new NodeID(nodeID, source), name);
-	  }
-	  finally {
-	    downstreamLock.writeLock().unlock();
-	  }
+      /* initialize new working version */ 
+      if(working == null) {
+	/* register the node name */ 
+	timer.aquire();
+	synchronized(pNodeTreeRoot) {
+	  timer.resume();
+	  addWorkingNodeTreePath(name, nodeID.getAuthor(), nodeID.getView());
 	}
+
+	/* create a new working bundle */ 
+	synchronized(pWorkingBundles) {
+	  pWorkingBundles.put(nodeID, new WorkingBundle(nwork));
+	}
+
+	/* initialize the working downstream links */ 
+	timer.aquire();
+	ReentrantReadWriteLock downstreamLock = getDownstreamLock(name);
+	downstreamLock.writeLock().lock();
+	try {
+	  timer.resume();
+	  
+	  DownstreamLinks links = getDownstreamLinks(name); 
+	  links.createWorking(nodeID);
+	}
+	finally {
+	  downstreamLock.writeLock().unlock();
+	}      
+
+	/* add downstream links to this node to the node's upstream */ 
+	// ????
+      }
+
+      /* update existing working version */ 
+      else {
+	/* update the working bundle */ 
+	working.uVersion        = nwork;
+	working.uFileStates     = null;
+	working.uFileTimeStamps = null;
+
+	/* remove the downstream links from any obsolete upstream nodes */ 
+	for(LinkMod link : work.getSources()) {
+	  if(!nwork.getSourceNames().contains(link.getName())) {
+	    String source = link.getName();
+	    
+	    timer.aquire();
+	    ReentrantReadWriteLock downstreamLock = getDownstreamLock(source);
+	    downstreamLock.writeLock().lock();  
+	    try {
+	      timer.resume();
+	      
+	      DownstreamLinks links = getDownstreamLinks(source); 
+	      links.removeWorking(new NodeID(nodeID, source), name);
+	    }
+	    finally {
+	      downstreamLock.writeLock().unlock();
+	    }
+	  }
+	}  
       }
     }
     finally {
