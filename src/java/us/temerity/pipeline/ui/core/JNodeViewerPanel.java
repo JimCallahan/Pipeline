@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.9 2005/01/10 16:34:08 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.10 2005/01/10 18:53:49 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3996,7 +3996,9 @@ class JNodeViewerPanel
 		  /* the action and parameters */ 
 		  {
 		    PluginMgr mgr = PluginMgr.getInstance();
-		    if((taction == null) || !taction.getName().equals(saction.getName())) 
+		    if((taction == null) || 
+		       !taction.getName().equals(saction.getName()) || 
+		       !taction.getVersionID().equals(saction.getVersionID()))
 		      taction = mgr.newAction(saction.getName(), saction.getVersionID()); 
 		    
 		    for(ActionParam param : saction.getSingleParams()) {
