@@ -1400,6 +1400,34 @@
   </style>
   <bind style="MenuItem" type="region" key="MenuItem"/>
 
+  <style id="CheckBoxMenuItem">
+    <state>
+      <imagePainter path="CheckBoxMenuItem.png"
+                    sourceInsets="17 12 0 0"/>
+    </state>
+    <state value="MOUSE_OVER">
+      <color value="#ffff00" type="TEXT_FOREGROUND"/>
+      <imagePainter path="CheckBoxMenuItem.png"
+                    sourceInsets="17 12 0 0"/>
+    </state>
+    <state value="SELECTED AND MOUSE_OVER">
+      <color value="#ffff00" type="TEXT_FOREGROUND"/>
+      <imagePainter path="CheckBoxMenuItemSelected.png"
+                    sourceInsets="17 12 0 0"/>
+    </state>
+    <state value="SELECTED">
+      <imagePainter path="CheckBoxMenuItemSelected.png"
+                    sourceInsets="17 12 0 0"/>
+    </state>
+    <state value="DISABLED">
+      <color value="#e5e5e5" type="TEXT_FOREGROUND"/>
+      <imagePainter path="CheckBoxMenuItemDisabled.png"
+                    sourceInsets="17 12 0 0"/>
+    </state>    
+    <insets top="4" bottom="4" right="2" left="8"/>
+  </style>
+  <bind style="CheckBoxMenuItem" type="region" key="CheckBoxMenuItem"/>
+
   <style id="PopupMenu">
     <opaque value="false"/>
     <imagePainter path="Panel.png"
