@@ -1,0 +1,44 @@
+
+x	     |	y	
+--------------------------------
+             |
+            b=2
+             |
+0	00	0	00	mirror
+1	01	2	01	mirror
+2	10	1	10	mirror
+3	11	3	11	mirror
+             |
+            b=3
+             |
+0	000	0	000	mirror
+1	001	4	100	mirror
+2	010	2	010	mirror
+3	011	6	110	mirror
+4	100	1	001	mirror
+5       101	3	011	mirror(x+1)
+6       110	5	101	mirror(x-1)
+7       111	7	111	mirror
+             |
+            b=4
+             |
+0	0000	0	0000	mirror
+1	0001	8	1000	mirror
+2	0010	4	0100	mirror
+3	0011	12	1100    mirror
+4	0100	2	0010    mirror
+5       0101	6	0110    mirror(x+1)
+6       0110	10	1010    mirror(x-1)
+7       0111	14	1110    mirror
+8	1000	1	0001    mirror
+9	1001	3	0011    mirror(x+3)
+10	1010	5	0101	mirror
+11	1011	7	0111	mirror(x+3)
+12	1100	9	1001    mirror(x-3)
+13      1101	11	1011    mirror
+14      1110	13	1101    mirror(x-3)
+15      1111	15	1111	mirror
+
+
+What is the function f(x, n) -> y?
+
