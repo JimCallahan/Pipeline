@@ -1,4 +1,4 @@
-// $Id: TestNodeMgrApp.java,v 1.9 2004/04/15 18:32:39 jim Exp $
+// $Id: TestNodeMgrApp.java,v 1.10 2004/04/18 04:08:48 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -28,8 +28,8 @@ class TestNodeMgrApp
   {
     Logs.init();
     Logs.net.setLevel(Level.FINEST);
-    Logs.sub.setLevel(Level.FINER);
-    Logs.ops.setLevel(Level.FINEST);
+//     Logs.sub.setLevel(Level.FINER);
+//     Logs.ops.setLevel(Level.FINEST);
 
     try {
       TestNodeMgrApp app = new TestNodeMgrApp();
@@ -46,7 +46,7 @@ class TestNodeMgrApp
 
   public void 
   run() 
-    throws InterruptedException, PipelineException, IOException
+    throws InterruptedException, PipelineException, GlueException, IOException
   { 
     /* common stuff */ 
     Map<String,String> env = System.getenv();
@@ -244,9 +244,19 @@ class TestNodeMgrApp
       }
       
       NodeMgrClient client = new NodeMgrClient("localhost", 53145);
+
+      printStatus(client.status("default", modA.getName()));
+      printStatus(client.status("default", modB.getName()));
+
+      printStatus(client.status("default", modA.getName()));
+      printStatus(client.status("default", modB.getName()));
+
       client.link("default", modA.getName(), modB.getName(), 
 		  ref, LinkRelationship.None, null);
       modA = client.getWorkingVersion("default", modA.getName());
+
+      printStatus(client.status("default", modA.getName()));
+      printStatus(client.status("default", modA.getName()));
 
       /* modify the directory where modA and modB live to see of plnotify(1) notices */ 
       {
@@ -258,6 +268,9 @@ class TestNodeMgrApp
 	  Thread.currentThread().sleep(2000);
 	}
       }
+
+      printStatus(client.status("default", modA.getName()));
+      printStatus(client.status("default", modA.getName()));
 
       client.shutdown();
 
@@ -341,6 +354,9 @@ class TestNodeMgrApp
       {
 	NodeMgrClient client = new NodeMgrClient("localhost", 53145);
 
+	printStatus(client.status("default", eagle.getName()));
+	printStatus(client.status("default", eagle.getName()));
+
 	client.link("default", eagle.getName(), snake.getName(), 
 		    new LinkCatagory("Eats", LinkPolicy.Both), LinkRelationship.All, null);
 
@@ -354,6 +370,8 @@ class TestNodeMgrApp
       }
    
       /* modify the some of the animal directories */ 
+      NodeMgrClient client = new NodeMgrClient("localhost", 53145);
+
       {
 	File animals = new File(prodDir, "working/jim/default/animals/");
 
@@ -364,6 +382,8 @@ class TestNodeMgrApp
 	  Thread.currentThread().sleep(2000);
 	}
 
+	printStatus(client.status("default", eagle.getName()));
+
 	{
 	  File dir = new File(animals, "amphibians");
 	  File tmp = File.createTempFile("dummy", "test", dir);
@@ -371,12 +391,16 @@ class TestNodeMgrApp
 	  Thread.currentThread().sleep(2000);
 	}
 
+	printStatus(client.status("default", eagle.getName()));
+
 	{
 	  File dir = new File(animals, "reptiles");
 	  File tmp = File.createTempFile("dummy", "test", dir);
 	  System.out.print("Touch: " + tmp + "\n");
 	  Thread.currentThread().sleep(2000);
 	}
+
+	printStatus(client.status("default", eagle.getName()));
 
 	{
 	  File dir = new File(animals, "birds");
@@ -386,7 +410,7 @@ class TestNodeMgrApp
 	}
       }
 
-      NodeMgrClient client = new NodeMgrClient("localhost", 53145);
+      printStatus(client.status("default", eagle.getName()));
       client.shutdown();
 
       /* wait for everything to shutdown */ 
@@ -394,6 +418,134 @@ class TestNodeMgrApp
       notifyServer.join();
       fileServer.join();
     }
+  }
+
+  
+  public void 
+  printStatus
+  (
+   NodeStatus status
+  ) 
+    throws GlueException
+  {
+    StringBuffer buf = new StringBuffer();
+    printStatusHelper(status, 1, buf);
+    System.out.print("NODE STATUS: \n" + 
+		     buf.toString());
+  }
+
+  private void 
+  printStatusShortHelper
+  (
+   NodeStatus status,
+   int level, 
+   StringBuffer buf
+  ) 
+    throws GlueException
+  {
+    int wk;
+    for(wk=0; wk<level; wk++) 
+      buf.append("  ");
+    buf.append(status.getNodeID() + "\n");
+    
+    for(NodeStatus sstatus : status.getSources()) 
+      printStatusShortHelper(sstatus, level+1, buf);
+  }
+  
+  private void 
+  printStatusHelper
+  (
+   NodeStatus status,
+   int level, 
+   StringBuffer buf
+  ) 
+    throws GlueException
+  {
+    String indent = null;
+    {
+      StringBuffer ibuf = new StringBuffer();
+      int wk;
+      for(wk=0; wk<level; wk++) 
+ 	ibuf.append("  ");
+      indent = ibuf.toString();
+    }
+    String indent2 = (indent + "  ");
+
+    NodeDetails details = status.getDetails();
+    
+    buf.append(indent + "NodeStatus {\n" +
+ 	       indent2 + "NodeID = " + status.getNodeID() + "\n" + 
+ 	       indent2 + "TimeStamp = " + details.getTimeStamp() + "\n");
+    
+    printGlue("WorkingVersion", details.getWorkingVersion(), indent, buf);
+    printGlue("BaseVersion", details.getBaseVersion(), indent, buf);
+    printGlue("LatestVersion", details.getLatestVersion(), indent, buf);
+    
+    buf.append(indent2 + "OverallNodeState = " + details.getOverallNodeState() + "\n" +
+ 	       indent2 + "OverallQueueState = " + details.getOverallQueueState() + "\n" +
+ 	       indent2 + "VersionState = " + details.getVersionState() + "\n" +
+  	       indent2 + "PropertyState = " + details.getPropertyState() + "\n" +
+ 	       indent2 + "LinkState = " + details.getLinkState() + "\n");
+    
+    {
+      buf.append(indent2 + "FileStates = {\n");
+      for(FileSeq fseq : details.getFileStateSequences()) {
+ 	buf.append(indent2 + "  " + fseq + " = {\n");
+ 	FileState fs[] = details.getFileState(fseq);
+ 	Date ts[] = details.getFileTimeStamps(fseq);
+	
+ 	int wk = 0;
+ 	for(File file : fseq.getFiles()) {
+ 	  buf.append(indent2 + "    [" + wk + "]: " + file + " = " + 
+ 		     fs[wk] + "  (" + (ts[wk].getTime()) + ")\n");
+ 	  wk++;
+ 	} 
+	
+ 	buf.append(indent2 + "  }\n");
+      }
+      buf.append(indent2 + "}\n");
+    }
+    
+    {
+      buf.append(indent2 + "QueueStates = Not yet...\n");
+    }
+    
+    buf.append(indent2 + "Targets = {\n");
+    for(NodeStatus tstatus : status.getTargets()) 
+      buf.append(indent2 + "  " + tstatus.getNodeID() + "\n");
+    buf.append(indent2 + "}\n");
+    
+    buf.append(indent2 + "Sources = {\n");
+    for(NodeStatus sstatus : status.getSources()) {
+      printStatusHelper(sstatus, level+2, buf);
+    }
+    
+    buf.append(indent2 + "}\n" +
+	       indent + "}\n");
+  }
+
+  private void 
+  printGlue
+  (
+   String title, 
+   Glueable obj, 
+   String indent,
+   StringBuffer buf
+  ) 
+    throws GlueException
+  {
+
+    if(obj == null) {
+      buf.append(indent + "  " + title + " = null\n");
+      return;
+    }
+
+    GlueEncoder ge = new GlueEncoder(title, obj);
+    String text = ge.getText();
+    String lines[] = text.split("\n");
+    int wk;
+    for(wk=0; wk<lines.length; wk++) 
+      buf.append(indent + "  " + lines[wk] + "\n");
   }
 
 
