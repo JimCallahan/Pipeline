@@ -1,4 +1,4 @@
-// $Id: JCollectionField.java,v 1.2 2004/05/29 06:38:06 jim Exp $
+// $Id: JCollectionField.java,v 1.3 2004/06/02 21:53:33 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -200,6 +200,24 @@ class JCollectionField
   }
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   J C O M P O N E N T   O V E R R I D E S                                              */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Sets the foreground color of this component.
+   */ 
+  public void 
+  setForeground
+  (
+   Color fg
+  )
+  {
+    if(pTextField != null) 
+      pTextField.setForeground(fg);
+  }
+          
 
   /*----------------------------------------------------------------------------------------*/
   /*   L I S T E N E R S                                                                    */
