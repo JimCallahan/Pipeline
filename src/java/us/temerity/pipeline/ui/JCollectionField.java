@@ -1,4 +1,4 @@
-// $Id: JCollectionField.java,v 1.4 2004/06/08 02:51:57 jim Exp $
+// $Id: JCollectionField.java,v 1.5 2004/06/14 22:46:26 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -22,6 +22,13 @@ class JCollectionField
   extends JPanel
   implements MouseListener, PopupMenuListener, ActionListener
 {
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O N S T R U C T O R                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Construct a new field.
+   */ 
   public 
   JCollectionField
   (
@@ -36,6 +43,8 @@ class JCollectionField
     addMouseListener(this);
 
     {
+      add(Box.createRigidArea(new Dimension(16, 0)));
+
       {
 	JValueField field = new JValueField(this);
 	pTextField = field;
@@ -49,8 +58,13 @@ class JCollectionField
 	add(field);
       }
     
-      add(new JLabel(sIcon));
-      add(Box.createRigidArea(new Dimension(8, 0)));
+      {
+	JLabel label = new JLabel(sEnabledIcon);
+	pIconLabel = label;
+	add(label);
+      }
+
+      add(Box.createRigidArea(new Dimension(4, 0)));
     }
 
     pPopup = new JPopupMenu(); 
@@ -67,7 +81,7 @@ class JCollectionField
   /*----------------------------------------------------------------------------------------*/
  
   /**
-   * Set collection values. 
+   * Set the collection values. 
    */ 
   public void 
   setValues
@@ -164,6 +178,30 @@ class JCollectionField
   /*----------------------------------------------------------------------------------------*/
   /*   E V E N T S                                                                          */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Sets whether or not this component is enabled.
+   */ 
+  public void 
+  setEnabled
+  (
+   boolean enabled
+  )
+  {
+    if(enabled && !isEnabled()) {
+      addMouseListener(this);
+      pTextField.addMouseListener(this);
+      pIconLabel.setIcon(sEnabledIcon);
+    }
+    else if(!enabled && isEnabled()) {
+      removeMouseListener(this);
+      pTextField.removeMouseListener(this);
+      pIconLabel.setIcon(sDisabledIcon);
+    }
+
+    super.setEnabled(enabled);
+  }
+
 
   /**
    * Adds the specified action listener to receive action events from this collection field.
@@ -277,7 +315,7 @@ class JCollectionField
 
       Dimension size = getSize();
       pPopup.setPopupSize(new Dimension(size.width, 23*pValues.size() + 10));
-      pPopup.show(e.getComponent(), 0, size.height);
+      pPopup.show(this, 0, size.height);
     }
   } 
 
@@ -359,8 +397,11 @@ class JCollectionField
   private static final long serialVersionUID = -3098195836855262214L;
 
 
-  private static Icon sIcon = 
+  private static Icon sEnabledIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("CollectionFieldIcon.png"));
+
+  private static Icon sDisabledIcon = 
+    new ImageIcon(LookAndFeelLoader.class.getResource("CollectionFieldIconDisabled.png"));
 
 
   
@@ -377,6 +418,11 @@ class JCollectionField
    * The value text field.
    */ 
   private JValueField  pTextField;
+
+  /**
+   * The icon.
+   */ 
+  private JLabel  pIconLabel; 
 
 
   /**
