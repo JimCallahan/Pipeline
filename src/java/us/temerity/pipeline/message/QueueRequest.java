@@ -1,4 +1,4 @@
-// $Id: QueueRequest.java,v 1.2 2004/07/24 18:25:44 jim Exp $
+// $Id: QueueRequest.java,v 1.3 2004/07/25 03:07:50 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -20,6 +20,19 @@ package us.temerity.pipeline.message;
 public
 enum QueueRequest
 {
+  /**
+   * Get the names of the privileged users.
+   */
+  GetPrivilegedUsers, 
+
+  /**
+   * An instance {@link MiscSetPrivilegedUsersReq MiscSetPrivilegedUsersReq} is next.
+   */
+  SetPrivilegedUsers,
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Get the names of the license keys.
    */ 
@@ -44,6 +57,29 @@ enum QueueRequest
    * An instance {@link QueueSetTotalLicensesReq QueueSetTotalLicensesReq} is next.
    */
   SetTotalLicenses, 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the names of the selection keys.
+   */ 
+  GetSelectionKeyNames,
+
+  /**
+   * Get the selection keys.
+   */ 
+  GetSelectionKeys,
+
+  /**
+   * An instance {@link QueueAddSelectionKeyReq QueueAddSelectionKeyReq} is next.
+   */
+  AddSelectionKey, 
+  
+  /**
+   * An instance {@link QueueRemoveSelectionKeyReq QueueRemoveSelectionKeyReq} is next.
+   */
+  RemoveSelectionKey, 
 
 
   /*----------------------------------------------------------------------------------------*/
