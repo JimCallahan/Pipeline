@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.48 2004/10/02 15:47:13 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.49 2004/10/02 16:01:27 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1100,9 +1100,9 @@ class JNodeViewerPanel
     }
 
     if(!isRoot) {
-      double vdist  = 0.5*height;
       double offset = ((path.getNumNodes() % 2) == 0) ? prefs.getNodeOffset() : 0.0;
-      vnode.setPosition(new Point2d(anchor.x, anchor.y + vdist + offset*vdist));
+      vnode.setPosition(new Point2d(anchor.x, 
+				    anchor.y + 0.5*height + offset));
     }
 
     return height;
