@@ -1,4 +1,4 @@
-// $Id: FileStateRsp.java,v 1.1 2004/03/09 09:45:31 jim Exp $
+// $Id: FileStateRsp.java,v 1.2 2004/03/10 11:49:00 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -12,7 +12,7 @@ import java.util.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A successful response to a {@link #FileStateReq FileStateReq} request.
+ * A successful response to a {@link FileStateReq FileStateReq} request.
  */
 public
 class FileStateRsp
