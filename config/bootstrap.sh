@@ -9,7 +9,7 @@ pushd $plsrcdir
   sh autogen.sh
 popd
 
-plprofile=$plsrcdir/plconfig/customers/testing/050114
+plprofile=$plsrcdir/plconfig/customers/testing/050214
 
 pushd i686-pc-linux-gnu-dbg
   $plsrcdir/configure \
