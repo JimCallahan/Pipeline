@@ -1,5 +1,8 @@
 
-SUBDIRS = Core
+SUBDIRS = \
+  Core \
+  WinSys
+
 
 
 pack-links:
