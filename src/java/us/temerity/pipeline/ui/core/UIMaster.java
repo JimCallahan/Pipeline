@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.13 2005/01/30 02:05:22 jim Exp $
+// $Id: UIMaster.java,v 1.14 2005/01/30 08:42:02 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1897,6 +1897,8 @@ class UIMaster
 	  if(mpanel != null) 
 	    mpanel.updateUserPrefs();
 	}
+
+	pResourceUsageHistoryDialog.updateUserPrefs();
 
 	{
 	  ToolTipManager mgr = ToolTipManager.sharedInstance();

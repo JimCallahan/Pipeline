@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.9 2005/01/22 06:10:10 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.10 2005/01/30 08:40:55 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -422,7 +422,7 @@ class GenUserPrefsApp
 	 "ShowPanelLabels", "Show Panel Labels:", false)
       };
 
-      pPrefs.put("Panel|Appearance", prefs);
+      pPrefs.put("Panels|Appearance", prefs);
     }
 
     {
@@ -436,7 +436,7 @@ class GenUserPrefsApp
 	 "PrevTab", "Previous Tab:"),
       };
 
-      pPrefs.put("Panel|Hot Keys", prefs);
+      pPrefs.put("Panels|Hot Keys", prefs);
     }
 
     {
@@ -453,7 +453,7 @@ class GenUserPrefsApp
 	 "NodeBrowserNodeFilter", "Node Filter:")	
       };
 
-      pPrefs.put("Panel|Node Browser|Hot Keys", prefs);
+      pPrefs.put("Panels|Node Browser|Hot Keys", prefs);
     }
 
     {
@@ -493,7 +493,7 @@ class GenUserPrefsApp
 	 "DisabledActionSize", "Disabled Action Size:", 0.05, 0.2, 0.15)
       };
 
-      pPrefs.put("Panel|Node Viewer|Node|Appearance", prefs);
+      pPrefs.put("Panels|Node Viewer|Node|Appearance", prefs);
     }
 
     {
@@ -619,7 +619,7 @@ class GenUserPrefsApp
 	 "NodeViewerDelete", "Delete:")
       };
 
-      pPrefs.put("Panel|Node Viewer|Node|Hot Keys", prefs);
+      pPrefs.put("Panels|Node Viewer|Node|Hot Keys", prefs);
     }
 
     {
@@ -675,7 +675,7 @@ class GenUserPrefsApp
 	 "LinkPolicySize", "Link Policy Size:", 0.05, 0.2, 0.15)
       };
 
-      pPrefs.put("Panel|Node Viewer|Links|Appearance", prefs);
+      pPrefs.put("Panels|Node Viewer|Links|Appearance", prefs);
     }
 
 
@@ -692,7 +692,7 @@ class GenUserPrefsApp
 	 false, false, false, 8),  /* Backspace */ 	
       };
 
-      pPrefs.put("Panel|Node Viewer|Links|Hot Keys", prefs);
+      pPrefs.put("Panels|Node Viewer|Links|Hot Keys", prefs);
     }
 
     {
@@ -702,7 +702,7 @@ class GenUserPrefsApp
 	 "ShowDownstream", "Show Downstream:", false)
       };
 
-      pPrefs.put("Panel|Node Viewer|Appearance", prefs);
+      pPrefs.put("Panels|Node Viewer|Appearance", prefs);
     }
 
     {
@@ -759,7 +759,7 @@ class GenUserPrefsApp
 	 "NodeViewerRemoveAllRoots", "Remove All Roots:")
       };
 
-      pPrefs.put("Panel|Node Viewer|Hot Keys", prefs);
+      pPrefs.put("Panels|Node Viewer|Hot Keys", prefs);
     }
 
     {
@@ -804,7 +804,7 @@ class GenUserPrefsApp
 	 "NodeDetailsRemoveFiles", "Remove Files:", "RemoveFiles"), 
       };
 
-      pPrefs.put("Panel|Node Details|Hot Keys", prefs);
+      pPrefs.put("Panels|Node Details|Hot Keys", prefs);
     }
     
     {
@@ -848,7 +848,7 @@ class GenUserPrefsApp
 	 "NodeFilesRemoveFiles", "Remove Files:", "RemoveFiles"), 
       };
 
-      pPrefs.put("Panel|Node Files|Hot Keys", prefs);
+      pPrefs.put("Panels|Node Files|Hot Keys", prefs);
     }
 
     {
@@ -886,7 +886,7 @@ class GenUserPrefsApp
 	 "NodeHistoryRemoveFiles", "Remove Files:", "RemoveFiles"), 
       };
 
-      pPrefs.put("Panel|Node History|Hot Keys", prefs);
+      pPrefs.put("Panels|Node History|Hot Keys", prefs);
     }
 
     {
@@ -971,7 +971,7 @@ class GenUserPrefsApp
 	 "JobBrowserGroupsDeleteCompleted", "Delete Completed:")
       };
 
-      pPrefs.put("Panel|Job Browser|Hot Keys", prefs);
+      pPrefs.put("Panels|Job Browser|Hot Keys", prefs);
     }
 
     {
@@ -1013,7 +1013,7 @@ class GenUserPrefsApp
 	 "ShowNode", "Show Node:"), 
       };      
 
-      pPrefs.put("Panel|Job Viewer|Job|Hot Keys", prefs);
+      pPrefs.put("Panels|Job Viewer|Job|Hot Keys", prefs);
     }
 
     {
@@ -1058,7 +1058,7 @@ class GenUserPrefsApp
 	 "GroupShowNode", "Show Node:", "ShowNode"), 
       };      
 
-      pPrefs.put("Panel|Job Viewer|Job Group|Hot Keys", prefs);
+      pPrefs.put("Panels|Job Viewer|Job Group|Hot Keys", prefs);
     }
 
     {
@@ -1076,7 +1076,7 @@ class GenUserPrefsApp
 	 "JobGroupSpace", "Group Space:", 0.15, 3.0, 0.3)
       };
 
-      pPrefs.put("Panel|Job Viewer|Appearance", prefs);
+      pPrefs.put("Panels|Job Viewer|Appearance", prefs);
     }
 
     {
@@ -1110,7 +1110,7 @@ class GenUserPrefsApp
 	 "JobViewerCollapseAll", "Collapse All:", "CollapseAll"), 
       };
 
-      pPrefs.put("Panel|Job Viewer|Hot Keys", prefs);
+      pPrefs.put("Panels|Job Viewer|Hot Keys", prefs);
     }
 
     {
@@ -1133,7 +1133,55 @@ class GenUserPrefsApp
 	 false, false, false, 69)  /* E */
       };
 
-      pPrefs.put("Panel|Job Details|Hot Keys", prefs);
+      pPrefs.put("Panels|Job Details|Hot Keys", prefs);
+    }
+
+    {
+      BasePref prefs[] = {
+	new DuplicateHotKeyPref
+	("Update the resource usage history graphs.", 
+	 "ResourceUsageHistoryUpdate", "Update History:", "Update"), 
+	
+	new DuplicateHotKeyPref
+	("Move the camera to frame all resource usage history graphs.",
+	 "ResourceUsageFrameAll", "Frame All:", "FrameAll")
+      };
+
+      pPrefs.put("Dialogs|Resource Usage History|Hot Keys", prefs);
+    }
+
+    {
+      BasePref prefs[] = {
+	new ColorPref
+	("The color used to render the system load background.", 
+	 "SystemLoadBgColor", "System Load Background:", new Color(0.0f, 0.27f, 0.45f)), 
+	
+	new ColorPref
+	("The color used to render system load sample values.", 
+	 "SystemLoadFgColor", "System Load Foreground:", new Color(0.0f, 0.59f, 1.0f)),
+	
+	new ColorPref
+	("The color used to render system load sample values which are larger than the " + 
+	 "maximum value which can be shown.", 
+	 "SystemLoadOverflowColor", "System Load Overflow:", new Color(0.5f, 0.79f, 1.0f)), 
+	
+	new BoundedIntegerPref
+	("The range of system load values displayed.", 
+	 "SystemLoadRange", "System Load Range:", 1, 15, 3), 
+
+	new ColorPref
+	("The color used to mark the level of full processor utilization.", 
+	 "FullLoadColor", "Full Load Color:", Color.yellow),
+	
+	new BasePref(),
+
+	
+	// ...
+
+
+      };
+
+      pPrefs.put("Dialogs|Resource Usage History|Appearance", prefs);
     }
 
     /* panel ordering */ 
@@ -1149,28 +1197,31 @@ class GenUserPrefsApp
       pPrefPanels.add("Main Menu|Panel Type|Hot Keys");
       pPrefPanels.add("Main Menu|Panel Layout|Hot Keys");
 
-      pPrefPanels.add("Panel|Appearance");
-      pPrefPanels.add("Panel|Hot Keys");
-      pPrefPanels.add("Panel|Node Browser|Hot Keys");
+      pPrefPanels.add("Panels|Appearance");
+      pPrefPanels.add("Panels|Hot Keys");
+      pPrefPanels.add("Panels|Node Browser|Hot Keys");
 
-      pPrefPanels.add("Panel|Node Viewer|Appearance");
-      pPrefPanels.add("Panel|Node Viewer|Hot Keys");
-      pPrefPanels.add("Panel|Node Viewer|Node|Appearance");
-      pPrefPanels.add("Panel|Node Viewer|Node|Hot Keys");
-      pPrefPanels.add("Panel|Node Viewer|Links|Appearance");
-      pPrefPanels.add("Panel|Node Viewer|Links|Hot Keys");
+      pPrefPanels.add("Panels|Node Viewer|Appearance");
+      pPrefPanels.add("Panels|Node Viewer|Hot Keys");
+      pPrefPanels.add("Panels|Node Viewer|Node|Appearance");
+      pPrefPanels.add("Panels|Node Viewer|Node|Hot Keys");
+      pPrefPanels.add("Panels|Node Viewer|Links|Appearance");
+      pPrefPanels.add("Panels|Node Viewer|Links|Hot Keys");
 
-      pPrefPanels.add("Panel|Node Details|Hot Keys");
-      pPrefPanels.add("Panel|Node Files|Hot Keys");
-      pPrefPanels.add("Panel|Node History|Hot Keys");
+      pPrefPanels.add("Panels|Node Details|Hot Keys");
+      pPrefPanels.add("Panels|Node Files|Hot Keys");
+      pPrefPanels.add("Panels|Node History|Hot Keys");
 
-      pPrefPanels.add("Panel|Job Browser|Hot Keys");
-      pPrefPanels.add("Panel|Job Viewer|Job|Hot Keys");
+      pPrefPanels.add("Panels|Job Browser|Hot Keys");
+      pPrefPanels.add("Panels|Job Viewer|Job|Hot Keys");
 
-      pPrefPanels.add("Panel|Job Viewer|Job Group|Hot Keys");
-      pPrefPanels.add("Panel|Job Viewer|Appearance");
-      pPrefPanels.add("Panel|Job Viewer|Hot Keys");
-      pPrefPanels.add("Panel|Job Details|Hot Keys");
+      pPrefPanels.add("Panels|Job Viewer|Job Group|Hot Keys");
+      pPrefPanels.add("Panels|Job Viewer|Appearance");
+      pPrefPanels.add("Panels|Job Viewer|Hot Keys");
+      pPrefPanels.add("Panels|Job Details|Hot Keys");
+
+      pPrefPanels.add("Dialogs|Resource Usage History|Appearance");
+      pPrefPanels.add("Dialogs|Resource Usage History|Hot Keys");
     }
 
     /* hot key groups */ 
@@ -1446,6 +1497,14 @@ class GenUserPrefsApp
 	group.add("ShowJobOutput");
 	group.add("ShowJobErrors");
       }
+
+      {
+	TreeSet<String> group = new TreeSet<String>();
+	pHotKeyGroups.put("ResourceUsageHistory", group);
+      
+	group.add("Update");
+	group.add("FrameAll");
+      }
     }
   }
 
@@ -1488,7 +1547,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.9 2005/01/22 06:10:10 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.10 2005/01/30 08:40:55 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -1743,7 +1802,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.9 2005/01/22 06:10:10 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.10 2005/01/30 08:40:55 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3099,7 +3158,7 @@ class GenUserPrefsApp
 
       StringBuffer buf = new StringBuffer();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.9 2005/01/22 06:10:10 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.10 2005/01/30 08:40:55 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 
