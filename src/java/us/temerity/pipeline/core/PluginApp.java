@@ -1,4 +1,4 @@
-// $Id: PluginApp.java,v 1.4 2004/10/24 10:56:53 jim Exp $
+// $Id: PluginApp.java,v 1.5 2005/01/15 02:46:46 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -71,16 +71,110 @@ class PluginApp
       handleParseException(ex);
     }
     catch(PipelineException ex) {
-      Logs.plg.severe(ex.getMessage()); 
+      Logs.ops.severe(ex.getMessage()); 
     }
     catch(Exception ex) {
-      Logs.plg.severe(getFullMessage(ex));
+      Logs.ops.severe(getFullMessage(ex));
     }
     finally {
       Logs.cleanup();
     }
 
     System.exit(success ? 0 : 1);
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   O P S                                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * List the installed plugins.
+   */ 
+  public void 
+  listPlugins
+  (
+   PluginMgrControlClient client
+  ) 
+    throws PipelineException 
+  {
+    {
+      TreeMap<String,TreeSet<VersionID>> versions = client.getEditors();
+      if(!versions.isEmpty()) {
+	Logs.ops.info(tbar(80) + "\n" + 
+		      "  E D I T O R S");
+	
+	for(String name : versions.keySet()) {
+	  for(VersionID vid : versions.get(name)) {
+	      BaseEditor plg = client.newEditor(name, vid);
+	      Logs.ops.info(bar(80) + "\n\n" + plg + "\n");
+	  }
+	}
+      }
+    }
+    
+    {
+      TreeMap<String,TreeSet<VersionID>> versions = client.getActions();
+      if(!versions.isEmpty()) {
+	Logs.ops.info(tbar(80) + "\n" + 
+		      "  A C T I O N S");
+	
+	for(String name : versions.keySet()) {
+	  for(VersionID vid : versions.get(name)) {
+	      BaseAction plg = client.newAction(name, vid);
+	      Logs.ops.info(bar(80) + "\n\n" + plg + "\n");
+	  }
+	}
+      }
+    }
+    
+    {
+      TreeMap<String,TreeSet<VersionID>> versions = client.getComparators();
+      if(!versions.isEmpty()) {
+	Logs.ops.info(tbar(80) + "\n" + 
+		      "  C O M P A R A T O R S");
+	
+	for(String name : versions.keySet()) {
+	  for(VersionID vid : versions.get(name)) {
+	      BaseComparator plg = client.newComparator(name, vid);
+	      Logs.ops.info(bar(80) + "\n\n" + plg + "\n");
+	  }
+	}
+      }
+    }
+    
+    {
+      TreeMap<String,TreeSet<VersionID>> versions = client.getTools();
+      if(!versions.isEmpty()) {
+	Logs.ops.info(tbar(80) + "\n" + 
+		      "  T O O L S"); 
+	
+	for(String name : versions.keySet()) {
+	  for(VersionID vid : versions.get(name)) {
+	      BaseTool plg = client.newTool(name, vid);
+	      Logs.ops.info(bar(80) + "\n\n" + plg + "\n");
+	  }
+	}
+      }
+    }
+    
+    {
+      TreeMap<String,TreeSet<VersionID>> versions = client.getArchivers();
+      if(!versions.isEmpty()) {
+	Logs.ops.info(tbar(80) + "\n" + 
+		      "  A R C H I V E R S");
+	
+	for(String name : versions.keySet()) {
+	  for(VersionID vid : versions.get(name)) {
+	      BaseArchiver plg = client.newArchiver(name, vid);
+	      Logs.ops.info(bar(80) + "\n\n" + plg + "\n");
+	  }
+	}
+      }
+    }
+
+    Logs.flush();
   }
 
 
@@ -98,8 +192,7 @@ class PluginApp
     Logs.ops.info(
       "USAGE:\n" +
       "  plplugin [options] --list\n" +  
-      "  plplugin [options] --inspect class-file1 [class-file2 ..]\n" + 
-      "  plplugin [options] [--force] --install class-file1 [class-file2 ..]\n" + 
+      "  plplugin [options] --install class-file1 [class-file2 ..]\n" + 
       "\n" + 
       "  plplugin --help\n" +
       "  plplugin --html-help\n" +

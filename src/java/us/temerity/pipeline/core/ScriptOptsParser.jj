@@ -300,6 +300,8 @@ TOKEN :
 | <EDITOR1:           "editor">           : EDITOR_OPTS
 | <ACTION1:           "action">           : ACTION_OPTS
 | <COMPARATOR:        "comparator">       : COMPARATOR_OPTS
+| <TOOL:              "tool">             : TOOL_OPTS        
+| <ARCHIVER:          "archiver">         : ARCHIVER_OPTS        
 | <SUFFIX_EDITOR:     "suffix-editor">    : SUFFIX_EDITOR_OPTS
 | <VIEW1:             "view">             : VIEW_OPTS
 | <WORKING:           "working">          : WORKING_OPTS
@@ -774,6 +776,44 @@ TOKEN :
 }
 
 
+/* tool arguments */ 
+<TOOL_NAME_SEP> 
+TOKEN :
+{
+  <EQ35:               "=">   : TOOL_NAME_STATE
+| <MISSING_TOOL_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<TOOL_NAME_STATE> 
+TOKEN :
+{
+  <TOOL_NAME:      (["a"-"z","A"-"Z"]) 
+	             (["a"-"z","A"-"Z","0"-"9","_","-"])+>   
+| <COLON8:         ":">                                     : REVISION_NUMBER_STATE
+| <AE42:           ["\0"]>                                  : OPTIONS
+| <ILLEGAL_TOOL:   (~[":","\0"])+>                          : IGNORE_STATE
+}
+
+
+/* archiver arguments */ 
+<ARCHIVER_NAME_SEP> 
+TOKEN :
+{
+  <EQ36:                   "=">     : ARCHIVER_NAME_STATE
+| <MISSING_ARCHIVER_ARG: ~["="]>    : IGNORE_STATE
+}
+
+<ARCHIVER_NAME_STATE> 
+TOKEN :
+{
+  <ARCHIVER_NAME:      (["a"-"z","A"-"Z"]) 
+	                 (["a"-"z","A"-"Z","0"-"9","_","-"])+>   
+| <COLON9:             ":">                                     : REVISION_NUMBER_STATE
+| <AE43:               ["\0"]>                                  : OPTIONS
+| <ILLEGAL_ARCHIVER:   (~[":","\0"])+>                          : IGNORE_STATE
+}
+
+
 /* revision number arguments */ 
 <REVISION_NUMBER_SEP> 
 TOKEN :
@@ -1183,6 +1223,33 @@ TOKEN :
 }
 
 
+/* tool command options */ 
+<TOOL_OPTS> 
+TOKEN :
+{
+  <TOOL_GET:           "--get">                   : OPTIONS
+| <TOOL_GET_INFO:      "--get-info">              : TOOL_NAME_SEP  
+| <TOOL_GET_INFO_ALL:  "--get-info-all">          : OPTIONS
+| <AE33:               ["\0"]>   
+| <UNKNOWN_OPTION10:   "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN10:          ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+}
+
+
+/* archiver command options */ 
+<ARCHIVER_OPTS> 
+TOKEN :
+{
+  <ARCHIVER_GET:            "--get">                   : OPTIONS
+| <ARCHIVER_GET_INFO:       "--get-info">              : ARCHIVER_NAME_SEP  
+| <ARCHIVER_GET_INFO_ALL:   "--get-info-all">          : OPTIONS
+| <AE34:                    ["\0"]>   
+| <UNKNOWN_OPTION11:        "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN11:               ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+}
+
+
+
 /* job server command options */ 
 <SUFFIX_EDITOR_OPTS> 
 TOKEN :
@@ -1193,9 +1260,9 @@ TOKEN :
 | <SUFFIX_EDITOR_SET:            "--set">                   : SUFFIX_SEP 
 | <SUFFIX_EDITOR_REMOVE:         "--remove">                : SUFFIX_SEP
 | <SUFFIX_EDITOR_RESET:          "--reset">                 : OPTIONS
-| <AE33:                         ["\0"]>   
-| <UNKNOWN_OPTION10:             "-" ("-")? (~["\0","="])*> : IGNORE_STATE
-| <UNKNOWN10:                    ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+| <AE35:                         ["\0"]>   
+| <UNKNOWN_OPTION12:             "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN12:                    ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
 }
 
 
@@ -1205,9 +1272,9 @@ TOKEN :
 {
   <VIEW_GET:            "--get">                   : OPTIONS
 | <VIEW_CREATE:         "--create">                : VIEW_NAME_SEP
-| <AE34:                ["\0"]>   
-| <UNKNOWN_OPTION11:    "-" ("-")? (~["\0","="])*> : IGNORE_STATE
-| <UNKNOWN11:           ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+| <AE36:                ["\0"]>   
+| <UNKNOWN_OPTION13:    "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN13:           ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
 }
 
 
@@ -1228,9 +1295,9 @@ TOKEN :
 | <WORKING_EDIT:              "--edit">                  : NODE_NAME_SEP
 | <WORKING_SUBMIT_JOBS:       "--submit-jobs">           : NODE_NAME_SEP
 | <WORKING_REMOVE_FILES:      "--remove-files">          : NODE_NAME_SEP
-| <AE35:                      ["\0"]>   
-| <UNKNOWN_OPTION12:          "-" ("-")? (~["\0","="])*> : IGNORE_STATE
-| <UNKNOWN12:                 ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+| <AE37:                      ["\0"]>   
+| <UNKNOWN_OPTION14:          "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN14:                 ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
 }
 
 /* checked-in command options */ 
@@ -1240,9 +1307,9 @@ TOKEN :
   <CHECKED_IN_GET_INFO:       "--get-info">              : NODE_NAME_SEP
 | <CHECKED_IN_HISTORY:        "--history">               : NODE_NAME_SEP
 | <CHECKED_IN_VIEW:           "--view">                  : NODE_NAME_SEP
-| <AE36:                      ["\0"]>   
-| <UNKNOWN_OPTION13:          "-" ("-")? (~["\0","="])*> : IGNORE_STATE
-| <UNKNOWN13:                 ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+| <AE38:                      ["\0"]>   
+| <UNKNOWN_OPTION15:          "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN15:                 ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
 }
 
 /* node command options */ 
@@ -1253,9 +1320,9 @@ TOKEN :
 | <NODE_CHECK_IN:          "--check-in">              : NODE_NAME_SEP
 | <NODE_CHECK_OUT:         "--check-out">             : NODE_NAME_SEP
 | <NODE_EVOLVE:            "--evolve">                : NODE_NAME_SEP
-| <AE37:                   ["\0"]>   
-| <UNKNOWN_OPTION14:       "-" ("-")? (~["\0","="])*> : IGNORE_STATE
-| <UNKNOWN14:              ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+| <AE39:                   ["\0"]>   
+| <UNKNOWN_OPTION16:       "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN16:              ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
 }
 
 /* job group command options */ 
@@ -1268,9 +1335,9 @@ TOKEN :
 | <JOB_GROUP_RESUME:       "--resume">                : JOB_GROUP_ID_SEP
 | <JOB_GROUP_REMOVE:       "--remove">                : JOB_GROUP_ID_SEP
 | <JOB_GROUP_REMOVE_ALL:   "--remove-all">            : OPTIONS
-| <AE38:                   ["\0"]>   
-| <UNKNOWN_OPTION15:       "-" ("-")? (~["\0","="])*> : IGNORE_STATE
-| <UNKNOWN15:              ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+| <AE40:                   ["\0"]>   
+| <UNKNOWN_OPTION17:       "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN17:              ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
 }
 
 /* job command options */ 
@@ -1281,9 +1348,9 @@ TOKEN :
 | <JOB_KILL:           "--kill">                  : JOB_ID_SEP
 | <JOB_PAUSE:          "--pause">                 : JOB_ID_SEP
 | <JOB_RESUME:         "--resume">                : JOB_ID_SEP
-| <AE39:               ["\0"]>   
-| <UNKNOWN_OPTION16:   "-" ("-")? (~["\0","="])*> : IGNORE_STATE
-| <UNKNOWN16:          ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+| <AE41:               ["\0"]>   
+| <UNKNOWN_OPTION18:   "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN18:          ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
 }
 
 
@@ -1321,7 +1388,7 @@ Commands()
   
   /* initialize the plugins */ 
   try {
-    PluginMgr.init();
+    PluginMgrClient.init();
   }
   catch(PipelineException ex) {
     Logs.plg.severe("Unable to load plugins: " + ex);
@@ -1336,7 +1403,7 @@ Commands()
   (PrivilegedCmds() | AdminCmds() |
    DefaultToolsetCmds() | ActiveToolsetCmds() | ToolsetCmds() |
    LicenseKeyCmds() | SelectionKeyCmds() | JobServerCmds() | 
-   EditorCmds() | ActionCmds() | ComparatorCmds() | 
+   EditorCmds() | ActionCmds() | ComparatorCmds() | ToolCmds() | ArchiverCmds() | 
    SuffixEditorCmds() | ViewCmds() | 
    WorkingCmds() | CheckedInCmds() | NodeCmds()
 
@@ -1369,7 +1436,7 @@ Batch()
   
   /* initialize the plugins */ 
   try {
-    PluginMgr.init();
+    PluginMgrClient.init();
   }
   catch(PipelineException ex) {
     Logs.plg.severe("Unable to load plugins: " + ex);
@@ -1456,7 +1523,7 @@ BatchCommand()
   (PrivilegedCmds() | AdminCmds() |
    DefaultToolsetCmds() | ActiveToolsetCmds() | ToolsetCmds() |
    LicenseKeyCmds() | SelectionKeyCmds() | JobServerCmds() | 
-   EditorCmds() | ActionCmds() | ComparatorCmds() | 
+   EditorCmds() | ActionCmds() | ComparatorCmds() | ToolCmds() | ArchiverCmds() | 
    SuffixEditorCmds() | ViewCmds() | 
    WorkingCmds() | CheckedInCmds() | NodeCmds()
    
@@ -2563,7 +2630,7 @@ EditorGet()
 {
   <EDITOR_GET> AE()
   {
-    TreeMap table = PluginMgr.getInstance().getEditors();
+    TreeMap table = PluginMgrClient.getInstance().getEditors();
     Iterator iter = table.keySet().iterator();
     while(iter.hasNext()) {
       String name      = (String) iter.next();
@@ -2584,13 +2651,15 @@ void
 EditorGetInfo() 
   throws PipelineException : 
 {
-  String ename = null;
+  String name = null;
   VersionID vid = null;
 }
 {
-  <EDITOR_GET_INFO> EQ() ename=EditorName() (COLON() vid=RevisionNumber())? AE()
+  <EDITOR_GET_INFO> EQ() name=EditorName() (COLON() vid=RevisionNumber())? AE()
   {
-    PluginMgr.getInstance().listEditorPlugin(ename, vid);
+    BaseEditor plg = PluginMgrClient.getInstance().newEditor(name, vid);
+    Logs.ops.info(plg.toString());
+    Logs.flush();
   }
 }
 
@@ -2601,7 +2670,7 @@ EditorGetInfoAll()
 {
   <EDITOR_GET_INFO_ALL> AE()
   {
-    PluginMgr.getInstance().listEditorPlugins();
+    pApp.editorGetInfoAll();
   }
 }
 
@@ -2625,7 +2694,7 @@ ActionGet()
 {
   <ACTION_GET> AE()
   {
-    TreeMap table = PluginMgr.getInstance().getActions();
+    TreeMap table = PluginMgrClient.getInstance().getActions();
     Iterator iter = table.keySet().iterator();
     while(iter.hasNext()) {
       String name      = (String) iter.next();
@@ -2646,13 +2715,15 @@ void
 ActionGetInfo() 
   throws PipelineException : 
 {
-  String ename = null;
+  String name = null;
   VersionID vid = null;
 }
 {
-  <ACTION_GET_INFO> EQ() ename=ActionName() (COLON() vid=RevisionNumber())? AE()
+  <ACTION_GET_INFO> EQ() name=ActionName() (COLON() vid=RevisionNumber())? AE()
   {
-    PluginMgr.getInstance().listActionPlugin(ename, vid);
+    BaseAction plg = PluginMgrClient.getInstance().newAction(name, vid);
+    Logs.ops.info(plg.toString());
+    Logs.flush();
   }
 }
 
@@ -2663,7 +2734,7 @@ ActionGetInfoAll()
 {
   <ACTION_GET_INFO_ALL> AE()
   {
-    PluginMgr.getInstance().listActionPlugins();
+    pApp.actionGetInfoAll();
   }
 }
 
@@ -2687,7 +2758,7 @@ ComparatorGet()
 {
   <COMPARATOR_GET> AE()
   {
-    TreeMap table = PluginMgr.getInstance().getComparators();
+    TreeMap table = PluginMgrClient.getInstance().getComparators();
     Iterator iter = table.keySet().iterator();
     while(iter.hasNext()) {
       String name      = (String) iter.next();
@@ -2708,13 +2779,15 @@ void
 ComparatorGetInfo() 
   throws PipelineException : 
 {
-  String ename = null;
+  String name = null;
   VersionID vid = null;
 }
 {
-  <COMPARATOR_GET_INFO> EQ() ename=ComparatorName() (COLON() vid=RevisionNumber())? AE()
+  <COMPARATOR_GET_INFO> EQ() name=ComparatorName() (COLON() vid=RevisionNumber())? AE()
   {
-    PluginMgr.getInstance().listComparatorPlugin(ename, vid);
+    BaseComparator plg = PluginMgrClient.getInstance().newComparator(name, vid);
+    Logs.ops.info(plg.toString());
+    Logs.flush();
   }
 }
 
@@ -2725,7 +2798,135 @@ ComparatorGetInfoAll()
 {
   <COMPARATOR_GET_INFO_ALL> AE()
   {
-    PluginMgr.getInstance().listComparatorPlugins();
+    pApp.comparatorGetInfoAll();
+  }
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
+ToolCmds() 
+  throws PipelineException : 
+{}
+{
+  <TOOL> AE() 
+     (ToolGet() | ToolGetInfo() | ToolGetInfoAll())
+  {}
+}
+
+void 
+ToolGet() 
+  throws PipelineException : 
+{}
+{
+  <TOOL_GET> AE()
+  {
+    TreeMap table = PluginMgrClient.getInstance().getTools();
+    Iterator iter = table.keySet().iterator();
+    while(iter.hasNext()) {
+      String name      = (String) iter.next();
+      TreeSet versions = (TreeSet) table.get(name);
+      
+      Iterator viter = versions.iterator();
+      while(viter.hasNext()) {
+	VersionID vid = (VersionID) viter.next();
+	Logs.ops.info(name + " (v" + vid + ")");
+      }
+    }
+    
+    Logs.flush();
+  }
+}
+
+void 
+ToolGetInfo() 
+  throws PipelineException : 
+{
+  String name = null;
+  VersionID vid = null;
+}
+{
+  <TOOL_GET_INFO> EQ() name=ToolName() (COLON() vid=RevisionNumber())? AE()
+  {
+    BaseTool plg = PluginMgrClient.getInstance().newTool(name, vid);
+    Logs.ops.info(plg.toString());
+    Logs.flush();
+  }
+}
+
+void 
+ToolGetInfoAll() 
+  throws PipelineException : 
+{}
+{
+  <TOOL_GET_INFO_ALL> AE()
+  {
+    pApp.toolGetInfoAll();
+  }
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
+ArchiverCmds() 
+  throws PipelineException : 
+{}
+{
+  <ARCHIVER> AE() 
+     (ArchiverGet() | ArchiverGetInfo() | ArchiverGetInfoAll())
+  {}
+}
+
+void 
+ArchiverGet() 
+  throws PipelineException : 
+{}
+{
+  <ARCHIVER_GET> AE()
+  {
+    TreeMap table = PluginMgrClient.getInstance().getArchivers();
+    Iterator iter = table.keySet().iterator();
+    while(iter.hasNext()) {
+      String name      = (String) iter.next();
+      TreeSet versions = (TreeSet) table.get(name);
+      
+      Iterator viter = versions.iterator();
+      while(viter.hasNext()) {
+	VersionID vid = (VersionID) viter.next();
+	Logs.ops.info(name + " (v" + vid + ")");
+      }
+    }
+    
+    Logs.flush();
+  }
+}
+
+void 
+ArchiverGetInfo() 
+  throws PipelineException : 
+{
+  String name = null;
+  VersionID vid = null;
+}
+{
+  <ARCHIVER_GET_INFO> EQ() name=ArchiverName() (COLON() vid=RevisionNumber())? AE()
+  {
+    BaseArchiver plg = PluginMgrClient.getInstance().newArchiver(name, vid);
+    Logs.ops.info(plg.toString());
+    Logs.flush();
+  }
+}
+
+void 
+ArchiverGetInfoAll() 
+  throws PipelineException : 
+{}
+{
+  <ARCHIVER_GET_INFO_ALL> AE()
+  {
+    pApp.archiverGetInfoAll();
   }
 }
 
@@ -5165,6 +5366,30 @@ ComparatorName() :
 }
 
 String
+ToolName() : 
+{
+  Token t;
+}
+{
+  t=<TOOL_NAME>
+  {
+    return t.image;
+  }
+}
+
+String
+ArchiverName() : 
+{
+  Token t;
+}
+{
+  t=<ARCHIVER_NAME>
+  {
+    return t.image;
+  }
+}
+
+String
 ViewName() : 
 {
   Token t;
@@ -5426,7 +5651,8 @@ AE() :
    t=<AE21> | t=<AE22> | t=<AE23> | t=<AE24> | t=<AE25> | 
    t=<AE26> | t=<AE27> | t=<AE28> | t=<AE29> | t=<AE30> |
    t=<AE31> | t=<AE32> | t=<AE33> | t=<AE34> | t=<AE35> |
-   t=<AE36> | t=<AE37> | t=<AE38> | t=<AE39>)
+   t=<AE36> | t=<AE37> | t=<AE38> | t=<AE39> | t=<AE40> | 
+   t=<AE41> | t=<AE42> | t=<AE43>)
   { 
     return t; 
   }
@@ -5463,7 +5689,7 @@ COLON() :
 }
 {
   (t=<COLON1> | t=<COLON2> | t=<COLON3> | t=<COLON4> | t=<COLON5> | 
-   t=<COLON6> | t=<COLON7>)
+   t=<COLON6> | t=<COLON7> | t=<COLON8> | t=<COLON9>)
   { 
     return t; 
   }
@@ -5494,7 +5720,8 @@ EQ() :
    t=<EQ16> | t=<EQ17> | t=<EQ18> | t=<EQ19> | t=<EQ20> | 
    t=<EQ21> | t=<EQ22> | t=<EQ23> | t=<EQ24> | t=<EQ25> |
    t=<EQ26> | t=<EQ27> | t=<EQ28> | t=<EQ29> | t=<EQ30> | 
-   t=<EQ31> | t=<EQ32> | t=<EQ33> | t=<EQ34>)
+   t=<EQ31> | t=<EQ32> | t=<EQ33> | t=<EQ34> | t=<EQ35> | 
+   t=<EQ36>)
   { 
     return t; 
   }

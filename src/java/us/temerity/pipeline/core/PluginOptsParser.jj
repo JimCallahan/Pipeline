@@ -49,10 +49,7 @@ PluginOptsParser
   init()
   {
     pLogBackups = 10;
-
-    pList  = false;
-    pForce = false; 
-
+    pList       = false;
     pClassFiles = new TreeSet();
   }
  
@@ -89,16 +86,6 @@ PluginOptsParser
   private boolean  pList; 
 
   /**
-   * Whether to list information about the given plugins.
-   */ 
-  private boolean  pInspect; 
-
-  /**
-   * Whether to replace existing plugins when conflicts are detected.
-   */ 
-  private boolean  pForce; 
-
-  /**
    * Whether to install the given plugins. 
    */ 
   private boolean  pInstall;
@@ -130,9 +117,7 @@ TOKEN :
 | <LOG:               "--log">                     : LOG_SEP
 
   /* action options */	
-| <LIST:         "--list">   
-| <INSPECT:      "--inspect">    
-| <FORCE:        "--force">    
+| <LIST:         "--list">     
 | <INSTALL:      "--install">    
 
   /* class files */
@@ -205,11 +190,10 @@ TOKEN :
 TOKEN :
 {
   <LOG_ALL:          "all">       
-| <LOG_ARG: 	     "arg">        
-| <LOG_OPS: 	     "ops">     
+| <LOG_ARG: 	     "arg">     
+| <LOG_OPS: 	     "ops">      
 | <LOG_NET: 	     "net">     
-| <LOG_PLG: 	     "plg">    
-| <LOG_SUB: 	     "sub">     
+| <LOG_PLG: 	     "plg">     
 | <COLON:  	     ":">        : LOG_LEVEL  
 | <ILLEGAL_LOG_TYPE: (~[":"])+>  : IGNORE_STATE    
 }
@@ -252,8 +236,7 @@ Commands()
 {
   (GlobalOpts() AE())* 
   ((List()) | 
-   (Inspect() (ClassFile() AE())+) | 
-   ((Force())? Install() (ClassFile() AE())+))
+   (Install() (ClassFile() AE())+))
   { 
     /* setup the log files */ 
     if(pLogFile != null) {
@@ -267,40 +250,45 @@ Commands()
     }
 
     /* initialize the plugins */ 
+    PluginMgrControlClient client = new PluginMgrControlClient();
     try {
-      PluginMgr.init();
-    }
-    catch(PipelineException ex) {
-      Logs.plg.severe("Unable to load plugins: " + ex);
-      System.exit(1);
-    }
-
-    /* run the program */ 
-    if(pList && pForce)
-      throw new ParseException
-	("The --list and --force options are mutually exclusive!");
-    
-    PluginMgr mgr = PluginMgr.getInstance();
-    if(pList) {
-      mgr.listPlugins();
-    }
-    else if(pInspect) {
-      Iterator iter = pClassFiles.iterator();
-      while(iter.hasNext()) {
-	File file = (File) iter.next();
-	mgr.inspectPlugin(file);
+      try {
+	client.update();
       }
-    } 
-    else if(pInstall) {
-      if(pClassFiles.isEmpty()) 
-	throw new ParseException
-	  ("No plugins where installed, since no Java class files where given!");
-
-      Iterator iter = pClassFiles.iterator();
-      while(iter.hasNext()) {
-	File file = (File) iter.next();
-	mgr.installPlugin(file, pForce);
+      catch(PipelineException ex) {
+	Logs.plg.severe("Unable to load plugins: " + ex);
+	System.exit(1);
       }
+      
+      /* run the program */ 
+      if(pList) {
+	pApp.listPlugins(client);
+      }
+      else if(pInstall) {
+	if(pClassFiles.isEmpty()) 
+	  throw new ParseException
+	    ("No plugins where installed, since no Java class files where given!");
+	
+	File classdir = new File(".");
+	Iterator iter = pClassFiles.iterator();
+	while(iter.hasNext()) {
+	  File classfile = (File) iter.next();
+	  
+	  Logs.ops.info("Installing: " + classfile); 
+	  Logs.flush();
+	  
+	  try {
+	    client.installPlugin(classdir, classfile);
+	  }
+	  catch(PipelineException ex) {
+	    Logs.ops.warning(ex.getMessage());
+	  }
+	}
+      }
+    }
+    finally {
+      client.disconnect();
+      Logs.flush();
     }
   }
 }
@@ -313,26 +301,6 @@ List() :
   <LIST> AE() 
   { 
     pList = true;
-  }
-}
-
-void
-Inspect() :
-{}
-{
-  <INSPECT> AE() 
-  { 
-    pInspect = true;
-  }
-}
-
-void
-Force() :
-{}
-{
-  <FORCE> AE() 
-  { 
-    pForce = true; 
   }
 }
 
@@ -506,7 +474,6 @@ void LoggerAll() :
     Logs.ops.setLevel(v);
     Logs.net.setLevel(v);
     Logs.plg.setLevel(v);
-    Logs.sub.setLevel(v);
   }
 }
 
@@ -527,7 +494,7 @@ Logger Logger() :
   Logger g;
 }
 {
-  (g=ArgLogger() | g=OpsLogger() | g=PlgLogger() | g=SubLogger())
+  (g=ArgLogger() | g=OpsLogger() | g=NetLogger() | g=PlgLogger())
   {
     return g;
   }
@@ -551,6 +518,15 @@ Logger OpsLogger() :
   }
 }
 
+Logger NetLogger() : 
+{}
+{
+  <LOG_NET>
+  {
+    return Logs.net;
+  }
+}
+
 Logger PlgLogger() : 
 {}
 {
@@ -560,14 +536,6 @@ Logger PlgLogger() :
   }
 }
 
-Logger SubLogger() : 
-{}
-{
-  <LOG_SUB>
-  {
-    return Logs.sub;
-  }
-}
 
 
 Level LogLevel() : 
