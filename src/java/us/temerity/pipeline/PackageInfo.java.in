@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.in,v 1.16 2004/07/14 21:02:56 jim Exp $
+// $Id: PackageInfo.java.in,v 1.17 2004/07/21 07:12:39 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -37,11 +37,25 @@ class PackageInfo
   public static final String sRelease = "@RELEASE_STAMP@";  
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The site domain name.
+   */
+  public static final String  sDomain = "@DOMAIN@";
+  
+  /**
+   * The site IP addresses.
+   */
+  public static final String  sIPAddrs = "@IP_ADDRS@";
+
   /**
    * The date and time the license expires.
    */ 
   public static final String sLicenseEnd = "@LICENSE_END@";  
 
+
+  /*----------------------------------------------------------------------------------------*/
 
   /** 
    * The root installation directory. <P>
@@ -66,12 +80,16 @@ class PackageInfo
   public static final File sDocsDir = new File("@ROOT_INST_DIR@", "share/docs"); 
 
 
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * The number milliseconds Pipeline server programs wait for new connections before 
    * checking to see if the server should be shutdown. <P> 
    */
   public static final int sServerTimeOut = 5000;
 
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * The hostname which runs the Pipeline master server <I>plmaster(1)</I>. <P> 
@@ -87,6 +105,15 @@ class PackageInfo
    */
   public static final int sMasterPort = @PL_MASTER_PORT@;
 
+  /** 
+   * The root directory of the persistent node storage area. <P>
+   *
+   * Set by the NodeDirectory customer profile entry.
+   */
+  public static final File sNodeDir = new File("@NODEDIR@");
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * The hostname which runs the Pipeline file server <I>plfilemgr(1)</I>. <P> 
@@ -117,7 +144,6 @@ class PackageInfo
    * Set by the NotifyMonitorPort customer profile entry.
    */
   public static final int sNotifyMonitorPort = @NOTIFY_MONITOR_PORT@;
-
 
   /** 
    * The root directory of the file repository. <P>
@@ -150,12 +176,40 @@ class PackageInfo
    */
   public static final File sCheckSumDir = new File("@PRODDIR@", "working");
 
-  /** 
-   * The root directory of the persistent node storage area. <P>
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The hostname which runs the Pipeline queue server <I>plqueuemgr(1)</I>. <P> 
    *
-   * Set by the NodeDirectory customer profile entry.
+   * Set by the QueueHostname customer profile entry.
    */
-  public static final File sNodeDir = new File("@NODEDIR@");
+  public static final String sQueueServer = "@PL_QUEUE_SERVER@";
+  
+  /**
+   * The port number listened to by the Pipeline queue server <I>plqueuemgr(1)</I>. <P> 
+   *
+   * Set by the QueuePort customer profile entry.
+   */
+  public static final int sQueuePort = @PL_QUEUE_PORT@;
+
+  /**
+   * The port number listened to by the Pipeline job execution daemons 
+   * <I>pljobmgr(1)</I>. <P> 
+   *
+   * Set by the JobPort customer profile entry.
+   */
+  public static final int sJobPort = @PL_JOB_PORT@;
+
+  /** 
+   * The root queue directory. <P>
+   *
+   * Set by the QueueDirectory customer profile entry.
+   */
+  public static final File sQueueDir = new File("@QUEUEDIR@");
+
+  
+  /*----------------------------------------------------------------------------------------*/
 
   /** 
    * The directory which contains the installed toolsets for this site. <P> 
@@ -179,16 +233,7 @@ class PackageInfo
   public static final File sTempDir = new File("@TEMPDIR@");
 
 
-  /**
-   * The site domain name.
-   */
-  public static final String  sDomain = "@DOMAIN@";
-  
-  /**
-   * The site IP addresses.
-   */
-  public static final String  sIPAddrs = "@IP_ADDRS@";
-
+  /*----------------------------------------------------------------------------------------*/
   
   /**
    * The name of operating system.
@@ -231,12 +276,16 @@ class PackageInfo
    */
   public static final String  sJavaHome = "@JAVA_HOME@";
 
+  
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * The location of the <B>bash</B>(1) program.
    */ 
   public static final String   sBash = "@BASH@";
   
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * The copyright notice for Pipeline. 

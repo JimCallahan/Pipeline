@@ -225,8 +225,10 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
     CORE_PARSERS = ToolsetEnvParser \
                    FileMgrOptsParser \
+                   JobMgrOptsParser \
                    GraphicalOptsParser \
                    MasterOptsParser \
+                   QueueMgrOptsParser \
                    NotifyOptsParser \
                    GlueParser
 
