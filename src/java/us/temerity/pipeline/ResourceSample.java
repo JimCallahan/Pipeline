@@ -1,4 +1,4 @@
-// $Id: ResourceSample.java,v 1.1 2004/07/28 19:22:50 jim Exp $
+// $Id: ResourceSample.java,v 1.2 2004/08/01 15:43:40 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -148,15 +148,20 @@ class ResourceSample
       throw new GlueException("The \"NumJobs\" was missing!");
     pNumJobs = jobs;
 
+    Float load = (Float) decoder.decode("Load");
+    if(load == null) 
+      throw new GlueException("The \"Load\" was missing!");
+    pLoad = load;
+
     Long memory = (Long) decoder.decode("Memory");
     if(memory == null) 
       throw new GlueException("The \"Memory\" was missing!");
     pMemory = memory;
 
-    Long disk = (Long) decoder.decode("Memory");
+    Long disk = (Long) decoder.decode("Disk");
     if(disk == null) 
-      throw new GlueException("The \"Memory\" was missing!");
-    pMemory = disk;
+      throw new GlueException("The \"Disk\" was missing!");
+    pDisk = disk;
   }
 
 
