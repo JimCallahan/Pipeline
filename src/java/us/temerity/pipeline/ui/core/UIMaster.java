@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.15 2005/02/09 18:23:45 jim Exp $
+// $Id: UIMaster.java,v 1.16 2005/02/18 23:40:25 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -869,7 +869,7 @@ class UIMaster
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Create or reuse an OpenGL display list.
+   * Create a new OpenGL display list. <P> 
    * 
    * @return 
    *   The OpenGL display list handle.
@@ -884,15 +884,11 @@ class UIMaster
   ) 
     throws GLException 
   {
-    int dl = 0;
-    if(!pDisplayLists.isEmpty()) {
-      dl = pDisplayLists.first(); 
-      pDisplayLists.remove(dl);
-    }
-    else {    
-      dl = gl.glGenLists(1);
-    }
-    
+    for(Integer dl : pDisplayLists) 
+      gl.glDeleteLists(dl, 1);
+    pDisplayLists.clear();
+
+    int dl = gl.glGenLists(1);
     if(dl == 0) 
       throw new GLException("Unable to allocate any new display lists!");
 
@@ -900,12 +896,7 @@ class UIMaster
   }
 
   /**
-   * Return a previously allocated OpenGL display list to the pool of display lists to be 
-   * reused. <P> 
-   * 
-   * This should be used by object which allocate display lists in the shared OpenGL 
-   * context using {@link #getDisplayList getDisplayList} to free the display list resources
-   * when they are finalized. 
+   * Add the given display list to the pool of lists to be freed at the next opportunity. <P> 
    * 
    * @param dl 
    *   The display list handle.

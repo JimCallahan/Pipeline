@@ -1,4 +1,4 @@
-// $Id: ViewerLinks.java,v 1.4 2005/01/22 06:10:10 jim Exp $
+// $Id: ViewerLinks.java,v 1.5 2005/02/18 23:40:25 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -163,9 +163,6 @@ class ViewerLinks
    GL gl
   )
   {
-    if(pLinksDL.get() == 0) 
-      pLinksDL.set(UIMaster.getInstance().getDisplayList(gl));
-
     if(pRefresh) { 
       UserPrefs prefs = UserPrefs.getInstance();
 
@@ -186,6 +183,11 @@ class ViewerLinks
       }
 	
       /* rebuild the link geometry */ 
+      {
+	UIMaster master = UIMaster.getInstance(); 
+	master.freeDisplayList(pLinksDL.getAndSet(master.getDisplayList(gl)));
+      }
+
       gl.glNewList(pLinksDL.get(), GL.GL_COMPILE);
       {
 	pLinkRels.clear();

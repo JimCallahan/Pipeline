@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.13 2005/02/09 18:23:44 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.14 2005/02/18 23:40:25 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1749,13 +1749,15 @@ class JNodeViewerPanel
 
     /* render the scene geometry */ 
     {
-      if(pSceneDL.get() == 0) 
-	pSceneDL.set(UIMaster.getInstance().getDisplayList(gl));
-      
       if(pRefreshScene) {
 	for(ViewerNode vnode : pViewerNodes.values()) 
 	  vnode.rebuild(gl);
 	pViewerLinks.rebuild(gl);
+
+	{
+	  UIMaster master = UIMaster.getInstance(); 
+	  master.freeDisplayList(pSceneDL.getAndSet(master.getDisplayList(gl)));
+	}
 
 	gl.glNewList(pSceneDL.get(), GL.GL_COMPILE_AND_EXECUTE);
 	{

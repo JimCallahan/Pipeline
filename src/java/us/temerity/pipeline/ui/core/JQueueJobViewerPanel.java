@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.9 2005/02/12 16:53:41 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.10 2005/02/18 23:40:25 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1164,15 +1164,17 @@ class JQueueJobViewerPanel
 
     /* render the scene geometry */ 
     {
-      if(pSceneDL.get() == 0) 
-	pSceneDL.set(UIMaster.getInstance().getDisplayList(gl));
-      
       if(pRefreshScene) {
 	for(ViewerJob vjob : pViewerJobs.values()) 
 	  vjob.rebuild(gl);
 
 	for(ViewerJobGroup vgroup : pViewerJobGroups.values()) 
 	  vgroup.rebuild(gl);
+
+	{
+	  UIMaster master = UIMaster.getInstance(); 
+	  master.freeDisplayList(pSceneDL.getAndSet(master.getDisplayList(gl)));
+	}
 
 	gl.glNewList(pSceneDL.get(), GL.GL_COMPILE_AND_EXECUTE);
 	{
