@@ -15,6 +15,32 @@
   <bind style="DefaultFont" type="name" key=".*"/>
 
 
+  <!--  S P L A S H  -->
+
+  <style id="Splash">
+    <imagePainter path="SplashBorder.png" 
+                  sourceInsets="7 7 5 7"
+                  paintCenter="false"/>
+    <insets top="7" bottom="5" right="7" left="7"/>
+  </style>
+  <bind style="Splash" type="name" key="Splash"/>
+
+
+
+  <!--  P R O G R E S S   B A R  -->
+
+  <style id="ProgressBar">
+    <imagePainter path="ProgressBar.png" 
+                  method="progressBarBackground"
+                  sourceInsets="5 7 7 7"/>
+    <imagePainter path="ProgressBarMeter.png" 
+                  method="progressBarForeground"
+                  sourceInsets="7 7 7 7"/>
+  </style>
+  <bind style="ProgressBar" type="region" key="ProgressBar"/>
+
+
+
   <!--  R O O T   P A N E L  -->
 
   <style id="RootPanel">
