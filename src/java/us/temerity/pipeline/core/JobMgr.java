@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.20 2005/01/21 17:27:01 jim Exp $
+// $Id: JobMgr.java,v 1.21 2005/01/21 21:08:02 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -85,8 +85,6 @@ class JobMgr
 	  if(task.isAlive())
 	    numJobs++;
       }
-
-      Logs.ops.finest("GetResources - Num Jobs: " + numJobs);
 
       /* system load (1-minute average) */ 
       float load = 0.0f;

@@ -1,4 +1,4 @@
-// $Id: QueueHost.java,v 1.8 2005/01/21 17:26:05 jim Exp $
+// $Id: QueueHost.java,v 1.9 2005/01/21 21:08:02 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -433,8 +433,7 @@ class QueueHost
   jobStarted() 
   {
     pNumJobsDelta++;
-    Logs.ops.finest("Num Jobs Delta++");
-    Logs.ops.finest("Job Started - Num Jobs Delta = " + pNumJobsDelta);
+    Logs.ops.finest("Job Started - Delta = " + pNumJobsDelta);
   }
 
   /**
@@ -454,12 +453,10 @@ class QueueHost
       return;
 
     ResourceSample sample = getLatestSample();
-    if((sample != null) && (results.getTimeStamp().compareTo(sample.getTimeStamp()) > 0)) {
+    if((sample != null) && (results.getTimeStamp().compareTo(sample.getTimeStamp()) > 0)) 
       pNumJobsDelta--;
-      Logs.ops.finest("Num Jobs Delta--");
-    }
 
-    Logs.ops.finest("Job Finished - Num Jobs Delta = " + pNumJobsDelta);
+    Logs.ops.finest("Job Finished - Delta = " + pNumJobsDelta);
   }
 
   
@@ -592,9 +589,11 @@ class QueueHost
        (sample.getDisk() < jreqs.getMinDisk()))
       return null;
 
-    Logs.ops.finest("Num Jobs = " + sample.getNumJobs() + "  " + 
-		    "Num Jobs Delta = " + pNumJobsDelta + "  " + 
-		    "Job Slots = " + pJobSlots);
+    Logs.ops.finest("Dispatcher - " + 
+		    "Jobs = " + sample.getNumJobs() + "  " + 
+		    "Delta = " + pNumJobsDelta + "  " + 
+		    "Total = " + (sample.getNumJobs() + pNumJobsDelta) + "  " +
+		    "Slots = " + pJobSlots);
 
     int total = 0;
     for(String key : jreqs.getSelectionKeys()) {

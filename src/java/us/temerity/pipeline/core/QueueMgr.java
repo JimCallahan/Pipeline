@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.26 2005/01/21 17:27:20 jim Exp $
+// $Id: QueueMgr.java,v 1.27 2005/01/21 21:08:02 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1837,8 +1837,10 @@ class QueueMgr
     for(String hname : enabled) {
       try {
 	JobMgrControlClient client = new JobMgrControlClient(hname, pJobPort);
+	ResourceSample sample = client.getResources();
+	samples.put(hname, sample);
 
-	samples.put(hname, client.getResources());
+	Logs.ops.finest("Collector - Jobs = " + sample.getNumJobs());
 
  	if(needsTotals.contains(hname)) {
 	  numProcs.put(hname, client.getNumProcessors());
