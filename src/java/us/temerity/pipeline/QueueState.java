@@ -1,4 +1,4 @@
-// $Id: QueueState.java,v 1.4 2004/06/14 22:39:17 jim Exp $
+// $Id: QueueState.java,v 1.5 2004/06/23 22:27:29 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -19,6 +19,14 @@ package us.temerity.pipeline;
 public
 enum QueueState
 {  
+  /**
+   * No working version exists, therefore the state is undefined. <P> 
+   * 
+   * This is the only possible state when the <CODE>VersionState</CODE> is 
+   * {@link VersionState#CheckedIn CheckedIn}.
+   */ 
+  Undefined, 
+
   /**
    * The file associated with the working node exists and is up-to-date. <P>
    * 
