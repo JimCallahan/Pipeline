@@ -1,10 +1,6 @@
-// $Id: GlueDecoder.java,v 1.2 2004/03/23 21:02:53 jim Exp $
+// $Id: GlueDecoder.java,v 1.3 2004/05/08 23:28:49 jim Exp $
 
 package us.temerity.pipeline.glue;
-
-import java.lang.reflect.*;
-import java.util.*;
-import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   G L U E   D E C O D E R                                                                */
@@ -22,107 +18,8 @@ import java.io.*;
  * @see GlueEncoder
  */
 public
-class GlueDecoder
-{     
-  /*----------------------------------------------------------------------------------------*/
-  /*   C O N S T R U C T O R                                                                */
-  /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * Decode objects from a <CODE>String</CODE> containing Glue text.
-   * 
-   * @param text 
-   *   The Glue format text to be decoded.
-   */
-  public 
-  GlueDecoder
-  (
-   String text   
-  ) 
-    throws GlueException
-  {
-    pState = new GlueParserState();
-
-    StringReader in = null;
-    try {
-      in = new StringReader(text);
-      GlueParser parser = new GlueParser(in);
-      pRoot = parser.Decode(this, pState);
-    }
-    catch(ParseException ex) {
-      throw new GlueException(ex);
-    }
-    finally {
-      in.close();
-    }
-  }
-
-  /** 
-   * Decode objects from an input stream of bytes containing Glue text.
-   * 
-   * @param stream 
-   *   The input stream of bytes containing the Glue text to be decoded.
-   */
-  public 
-  GlueDecoder
-  (
-   InputStream stream
-  ) 
-    throws GlueException
-  {
-    pState = new GlueParserState();
-
-    try {
-      GlueParser parser = new GlueParser(stream);
-      pRoot = parser.Decode(this, pState);
-    }
-    catch(ParseException ex) {
-      throw new GlueException(ex);
-    }
-    finally {
-      try {
-	stream.close(); 
-      }
-      catch(IOException ex) {
-	throw new GlueException(ex);
-      }
-    }
-  }
-
-  /** 
-   * Decode objects read from a character stream containing Glue text.
-   * 
-   * @param reader 
-   *   The character stream reader providing the Glue text to be decoded.
-   */
-  public 
-  GlueDecoder
-  (
-   Reader reader
-  ) 
-    throws GlueException
-  {
-    pState = new GlueParserState();
-
-    try {
-      GlueParser parser = new GlueParser(reader);
-      pRoot = parser.Decode(this, pState);
-    }
-    catch(ParseException ex) {
-      throw new GlueException(ex);
-    }
-    finally {
-      try {
-	reader.close();  
-      }
-      catch(IOException ex) {
-	throw new GlueException(ex);
-      }
-    }
-  }
-
-  
-  
+interface GlueDecoder
+{      
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
@@ -134,11 +31,7 @@ class GlueDecoder
    *   The <CODE>Object</CODE> at the highest level scope within the Glue format text.
    */
   public Object 
-  getObject() 
-  {
-    return pRoot;
-  }
-  
+  getObject();  
 
   /** 
    * Lookup an decoded <CODE>Object</CODE> with the given title from the current 
@@ -156,26 +49,8 @@ class GlueDecoder
   decode
   ( 
    String title 
-  ) 
-  {
-    return pState.lookupCurrent(title);
-  }
+  ); 
 
-
-    
-  /*----------------------------------------------------------------------------------------*/
-  /*   I N T E R N A L S                                                                    */
-  /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * The root decoded Object. 
-   */ 
-  private Object pRoot;       
-
-  /** 
-   * The parser helper class which maintains tables of objects used during decoding.  
-   */
-  private GlueParserState pState;
 }
 
 

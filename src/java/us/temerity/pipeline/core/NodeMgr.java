@@ -1,4 +1,4 @@
-// $Id: NodeMgr.java,v 1.26 2004/05/04 17:49:06 jim Exp $
+// $Id: NodeMgr.java,v 1.27 2004/05/08 23:32:11 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3057,7 +3057,7 @@ class NodeMgr
       
       String glue = null;
       try {
-	GlueEncoder ge = new GlueEncoder("NodeVersion", vsn);
+	GlueEncoder ge = new GlueEncoderImpl("NodeVersion", vsn);
 	glue = ge.getText();
       }
       catch(GlueException ex) {
@@ -3128,7 +3128,7 @@ class NodeMgr
       NodeVersion vsn = null;
       try {
 	FileReader in = new FileReader(files[wk]);
-	GlueDecoder gd = new GlueDecoder(in);
+	GlueDecoder gd = new GlueDecoderImpl(in);
 	vsn = (NodeVersion) gd.getObject();
 	in.close();
       }
@@ -3208,7 +3208,7 @@ class NodeMgr
       
       String glue = null;
       try {
-	GlueEncoder ge = new GlueEncoder("NodeMod", mod);
+	GlueEncoder ge = new GlueEncoderImpl("NodeMod", mod);
 	glue = ge.getText();
       }
       catch(GlueException ex) {
@@ -3267,7 +3267,7 @@ class NodeMgr
 
 	try {
 	  FileReader in = new FileReader(file);
-	  GlueDecoder gd = new GlueDecoder(in);
+	  GlueDecoder gd = new GlueDecoderImpl(in);
 	  NodeMod mod = (NodeMod) gd.getObject();
 	  in.close();
 	  
@@ -3284,7 +3284,7 @@ class NodeMgr
 	    NodeMod mod = null;
 	    try {
 	      FileReader in = new FileReader(backup);
-	      GlueDecoder gd = new GlueDecoder(in);
+	      GlueDecoder gd = new GlueDecoderImpl(in);
 	      mod = (NodeMod) gd.getObject();
 	      in.close();
 	    }
@@ -3370,7 +3370,7 @@ class NodeMgr
 
       String glue = null;
       try {
-	GlueEncoder ge = new GlueEncoder("DownstreamLinks", links);
+	GlueEncoder ge = new GlueEncoderImpl("DownstreamLinks", links);
 	glue = ge.getText();
       }
       catch(GlueException ex) {
@@ -3427,7 +3427,7 @@ class NodeMgr
       if(file.exists()) {
 	try {
 	  FileReader in = new FileReader(file);
-	  GlueDecoder gd = new GlueDecoder(in);
+	  GlueDecoder gd = new GlueDecoderImpl(in);
 	  DownstreamLinks links = (DownstreamLinks) gd.getObject();
 	  in.close();
 	  

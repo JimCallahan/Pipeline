@@ -221,17 +221,16 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
                    $(CORE_SOURCES) $(MSG_SOURCES) $(UI_SOURCES)
 
 
-    GLUE_PARSERS = GlueParser
     CORE_PARSERS = ToolsetEnvParser \
                    FileMgrOptsParser \
                    GraphicalOptsParser \
                    MasterOptsParser \
-                   NotifyOptsParser
+                   NotifyOptsParser \
+                   GlueParser
 
 
     JAVA_SOURCES = $(ENUM_SOURCES) $(filter-out $(ENUM_SOURCES),$(ALL_SOURCES)) \
                    $(patsubst %,core/%.java,$(CORE_PARSERS)) \
-                   $(patsubst %,glue/%.java,$(GLUE_PARSERS)) \
                    PackageInfo.java 
 
       BS_SOURCES = $(shell ls $(srcdir)/bootstrap/*.java) \
@@ -245,6 +244,9 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 		   core/FileMgrOptsParser \
 		   core/FileMgrOptsParserTokenManager \
 		   core/FileMgrServer:HandlerTask \
+                   core/GlueParserConstants \
+		   core/GlueParser \
+		   core/GlueParserTokenManager \
                    core/GraphicalOptsParserConstants \
 		   core/GraphicalOptsParser \
 		   core/GraphicalOptsParserTokenManager \
@@ -280,7 +282,10 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
                    ui/UIMaster:SplashFrameTask \
                    ui/UIMaster:StartupTask \
                    ui/UIMaster:BeginOpsTask \
-                   ui/UIMaster:EndOpsTask
+                   ui/UIMaster:EndOpsTask \
+                   ui/UIMaster:ShowSaveLayoutDialogTask \
+                   ui/UIMaster:ShowManageLayoutsDialogTask \
+                   ui/UIMaster:ShowErrorDialogTask
 
 
 
@@ -358,12 +363,6 @@ core/%.java: core/%.jj
 	cp --force $(srcdir)/core/parser/TokenMgrError.java core/
 	(cd core; $(JAVA_CC) $<)
 
-glue/%.java: glue/%.jj
-	-@mkdir glue
-	cp --force $(srcdir)/glue/parser/ParseException.java glue/
-	cp --force $(srcdir)/glue/parser/TokenMgrError.java glue/
-	(cd glue; $(JAVA_CC) $<)
-
 
 textures: laf/scripts/filter-textures
 	$(BASH) laf/scripts/filter-textures $(srcdir)/laf/maya/synth/images
@@ -438,11 +437,8 @@ clean-aux:
 	rm -f core/ParseException.java core/SimpleCharStream.java 
 	rm -f core/Token.java core/TokenMgrError.java
 	rm -f core/PackageInfo.java
-	rm -f glue/ParseException.java glue/SimpleCharStream.java 
-	rm -f glue/Token.java glue/TokenMgrError.java
-	rm -f glue/PackageInfo.java
 
-clean-parser: clean-core-parser clean-glue-parser
+clean-parser: clean-core-parser 
 
 clean-core-parser: 
 	@list='$(CORE_PARSERS)'; \
@@ -459,27 +455,6 @@ clean-core-parser:
             rm -f $$f; \
           fi; \
           f=core/$$p"TokenManager.java"; \
-	  if test -f $$f; then \
-            echo rm -f $$f; \
-            rm -f $$f; \
-          fi; \
-         done	
-
-clean-glue-parser: 
-	@list='$(GLUE_PARSERS)'; \
-         for p in $$list; \
-         do \
-          f=glue/$$p".java"; \
-	  if test -f $$f; then \
-            echo rm -f $$f; \
-            rm -f $$f; \
-          fi; \
-          f=glue/$$p"Constants.java"; \
-	  if test -f $$f; then \
-            echo rm -f $$f; \
-            rm -f $$f; \
-          fi; \
-          f=glue/$$p"TokenManager.java"; \
 	  if test -f $$f; then \
             echo rm -f $$f; \
             rm -f $$f; \

@@ -4,9 +4,10 @@ options {
 
 PARSER_BEGIN(GlueParser)
 
-package us.temerity.pipeline.glue;
+package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.glue.*;
 
 import java.util.*;
 import java.lang.reflect.Array;
@@ -349,7 +350,7 @@ CollectionValues(Class cls, Long objID) :
   Object obj = pState.newInstance(objID, cls);
 }
 {
-  (CollectionValue((Collection) obj))+ 
+  (CollectionValue((Collection) obj))+
   {
     return obj;
   }
