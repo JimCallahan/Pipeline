@@ -1386,15 +1386,6 @@ Commands()
     }
   }
   
-  /* initialize the plugins */ 
-  try {
-    PluginMgrClient.init();
-  }
-  catch(PipelineException ex) {
-    Logs.plg.severe(ex.getMessage());
-    System.exit(1);
-  }
-
   /* create the network clients */ 
   pMasterMgrClient = new MasterMgrClient(pMasterServer, pMasterPort);
   pQueueMgrClient  = new QueueMgrClient(pQueueServer, pQueuePort);
@@ -1405,9 +1396,7 @@ Commands()
    LicenseKeyCmds() | SelectionKeyCmds() | JobServerCmds() | 
    EditorCmds() | ActionCmds() | ComparatorCmds() | ToolCmds() | ArchiverCmds() | 
    SuffixEditorCmds() | ViewCmds() | 
-   WorkingCmds() | CheckedInCmds() | NodeCmds()
-
-   ) 
+   WorkingCmds() | CheckedInCmds() | NodeCmds()) 
   {
     pMasterMgrClient.disconnect();
     pQueueMgrClient.disconnect();

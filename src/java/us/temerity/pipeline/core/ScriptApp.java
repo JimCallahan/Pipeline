@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.26 2005/01/15 02:46:46 jim Exp $
+// $Id: ScriptApp.java,v 1.27 2005/01/15 16:16:38 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -57,27 +57,39 @@ class ScriptApp
     packageArguments(args);
 
     boolean success = false;
-    ScriptOptsParser parser = null;
     try {
-      parser = new ScriptOptsParser(new StringReader(pPackedArgs));
-      parser.setApp(this);
-      parser.CommandLine();   
-      
-      success = true;
-    }
-    catch(ParseException ex) {
-      handleParseException(ex);
+      /* initialize the plugins */ 
+      PluginMgrClient.init();
+
+      /* parse the command line */ 
+      ScriptOptsParser parser = null;
+      try {
+	parser = new ScriptOptsParser(new StringReader(pPackedArgs));
+	parser.setApp(this);
+	parser.CommandLine();   
+	
+	success = true;
+      }
+      catch(ParseException ex) {
+	handleParseException(ex);
+      }
+      catch(PipelineException ex) {
+	Logs.ops.severe(wordWrap(ex.getMessage(), 0, 80));
+      }
+      catch(Exception ex) {
+	Logs.ops.severe(getFullMessage(ex));
+      }
+      finally {
+	if(parser != null)
+	  parser.disconnect();
+	Logs.cleanup();
+      }
     }
     catch(PipelineException ex) {
       Logs.ops.severe(wordWrap(ex.getMessage(), 0, 80));
     }
-    catch(Exception ex) {
-      Logs.ops.severe(getFullMessage(ex));
-    }
     finally {
-      if(parser != null)
-	parser.disconnect();
-      Logs.cleanup();
+      PluginMgrClient.getInstance().disconnect();
     }
 
     System.exit(success ? 0 : 1);
