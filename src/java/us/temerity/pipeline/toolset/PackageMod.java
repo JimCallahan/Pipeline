@@ -1,4 +1,4 @@
-// $Id: PackageMod.java,v 1.5 2004/06/08 20:08:22 jim Exp $
+// $Id: PackageMod.java,v 1.6 2004/10/28 15:55:24 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -228,8 +228,9 @@ class PackageMod
       
       TreeMap<String,String> env = new TreeMap<String,String>();
 
-      SubProcess proc = 
-	new SubProcess("EvalPackage", PackageInfo.sBash, args, env, PackageInfo.sTempDir);
+      SubProcessLight proc = 
+	new SubProcessLight("EvalPackage", PackageInfo.sBash, args, 
+			    env, PackageInfo.sTempDir);
       proc.start();
     
       try {
@@ -244,7 +245,7 @@ class PackageMod
 	  ("Unable to evaluate the shell script (" + script + "):\n\n" + 
 	   proc.getStdErr());
 
-      output = proc.getStdOutLines(0);
+      output = proc.getStdOut().split("\\n");
     }
     
     /* parse the environmental variable output */ 

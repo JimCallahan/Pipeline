@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.10 2004/09/09 17:06:19 jim Exp $
+// $Id: JobMgr.java,v 1.11 2004/10/28 15:55:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -11,7 +11,7 @@ import java.util.*;
 import java.util.concurrent.locks.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   Q U E U E   M G R                                                                      */
+/*   J O B   M G R                                                                          */
 /*------------------------------------------------------------------------------------------*/
 
 /**
@@ -38,6 +38,7 @@ class JobMgr
     {
       pMakeDirLock  = new Object();
       pExecuteTasks = new TreeMap<Long,ExecuteTask>();
+      pFileMonitors = new HashMap<File, FileMonitor>();
     }
 
     try {
@@ -560,8 +561,8 @@ class JobMgr
 
     if(removeFiles) {
       try {
-	SubProcess proc = 
-	  new SubProcess("Remove-JobFiles", "rm", args, env, pJobDir);
+	SubProcessLight proc = 
+	  new SubProcessLight("Remove-JobFiles", "rm", args, env, pJobDir);
 	proc.start();
 	
 	try {
@@ -592,15 +593,50 @@ class JobMgr
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Get current collected lines of captured STDOUT output from the given job starting 
-   * at the given line. <P>
+   * Get the current number of lines of STDOUT output from the given job. <P> 
+   * 
+   * @param req
+   *   The job output request.
+   * 
+   * @return
+   *   <CODE>JobNumLinesRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to get the requested STDOUT of the job.
+   */ 
+  public Object
+  getNumStdOutLines
+  (
+   JobGetNumStdOutLinesReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer(); 
+    try {
+      File file = new File(pJobDir, req.getJobID() + "/stdout");
+      FileMonitor fmon = lookupOrCreateFileMonitor(file, timer);
+
+      timer.aquire();
+      synchronized(fmon) {
+	timer.resume();
+
+	int num = fmon.getNumLines();
+	return new JobGetNumLinesRsp
+	  ("JobMgr.getNumStdOutLines(): " + req.getJobID(), timer, num);
+      }
+    }
+    catch(IOException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }
+  }
+   
+
+  /**
+   * Get the contents of the given region of lines of the STDOUT output from the given job.
    * 
    * @param req
    *   The job output request.
    * 
    * @return
    *   <CODE>JobOutputRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to get the STDOUT of the job.
+   *   <CODE>FailureRsp</CODE> if unable to get the requested STDOUT of the job.
    */ 
   public Object
   getStdOutLines
@@ -609,41 +645,95 @@ class JobMgr
   ) 
   {
     TaskTimer timer = new TaskTimer(); 
-    timer.aquire();
     try {
-      ExecuteTask task = null;
-      synchronized(pExecuteTasks) {
+      File file = new File(pJobDir, req.getJobID() + "/stdout");
+      FileMonitor fmon = lookupOrCreateFileMonitor(file, timer);
+
+      timer.aquire();
+      synchronized(fmon) {
 	timer.resume();
-	task = pExecuteTasks.get(req.getJobID());
-      }
 
-      String lines[] = null;
-      if(task != null) {
-	lines = task.getStdOutLines(req.getStart());
+	String lines = fmon.getLines(req.getStart(), req.getLines());
+	return new JobOutputRsp("JobMgr.getStdOutLines(): " + req.getJobID(), timer, lines);
       }
-      else {
-	File file = new File(pJobDir, req.getJobID() + "/stdout");
-	lines = readOutputFile(file, req.getStart());
-      }
-      assert(lines != null);
-
-      return new JobOutputRsp("JobMgr.getStdOutLines(): " + req.getJobID(), timer, lines);
     }
     catch(IOException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
     }
   }
+
+  /**
+   * Release any server resources associated with monitoring the STDOUT output of the 
+   * given job.
+   * 
+   * @param req
+   *   The job output request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful.
+   */ 
+  public Object
+  closeStdOut
+  (
+   JobCloseStdOutReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer("JobMgr.closeStdOut(): " + req.getJobID()); 
+
+    File file = new File(pJobDir, req.getJobID() + "/stdout");
+    closeFileMonitor(file, timer);
+
+    return new SuccessRsp(timer);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Get current collected lines of captured STDERR output from the given job starting 
-   * at the given line. <P>
-  
+   * Get the current number of lines of STDERR output from the given job. <P> 
+   * 
+   * @param req
+   *   The job output request.
+   * 
+   * @return
+   *   <CODE>JobNumLinesRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to get the requested STDERR of the job.
+   */ 
+  public Object
+  getNumStdErrLines
+  (
+   JobGetNumStdErrLinesReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer(); 
+    try {
+      File file = new File(pJobDir, req.getJobID() + "/stderr");
+      FileMonitor fmon = lookupOrCreateFileMonitor(file, timer);
+
+      timer.aquire();
+      synchronized(fmon) {
+	timer.resume();
+
+	int num = fmon.getNumLines();
+	return new JobGetNumLinesRsp
+	  ("JobMgr.getNumStdErrLines(): " + req.getJobID(), timer, num);
+      }
+    }
+    catch(IOException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }
+  }
+   
+
+  /**
+   * Get the contents of the given region of lines of the STDERR output from the given job.
+   * 
    * @param req
    *   The job output request.
    * 
    * @return
    *   <CODE>JobOutputRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to get the STDERR of the job.
+   *   <CODE>FailureRsp</CODE> if unable to get the requested STDERR of the job.
    */ 
   public Object
   getStdErrLines
@@ -652,31 +742,48 @@ class JobMgr
   ) 
   {
     TaskTimer timer = new TaskTimer(); 
-    timer.aquire();
     try {
-      ExecuteTask task = null;
-      synchronized(pExecuteTasks) {
+      File file = new File(pJobDir, req.getJobID() + "/stderr");
+      FileMonitor fmon = lookupOrCreateFileMonitor(file, timer);
+
+      timer.aquire();
+      synchronized(fmon) {
 	timer.resume();
-	task = pExecuteTasks.get(req.getJobID());
-      }
 
-      String lines[] = null;
-      if(task != null) {
-	lines = task.getStdErrLines(req.getStart());
+	String lines = fmon.getLines(req.getStart(), req.getLines());
+	return new JobOutputRsp("JobMgr.getStdErrLines(): " + req.getJobID(), timer, lines);
       }
-      else {
-	File file = new File(pJobDir, req.getJobID() + "/stderr");
-	lines = readOutputFile(file, req.getStart());
-      }
-      assert(lines != null);
-
-      return new JobOutputRsp("JobMgr.getStdErrLines(): " + req.getJobID(), timer, lines);
     }
     catch(IOException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
     }
   }
-  
+
+  /**
+   * Release any server resources associated with monitoring the STDERR output of the 
+   * given job.
+   * 
+   * @param req
+   *   The job output request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful.
+   */ 
+  public Object
+  closeStdErr
+  (
+   JobCloseStdErrReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer("JobMgr.closeStdErr(): " + req.getJobID()); 
+
+    File file = new File(pJobDir, req.getJobID() + "/stderr");
+    closeFileMonitor(file, timer);
+
+    return new SuccessRsp(timer);
+  }
+
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -684,59 +791,60 @@ class JobMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Read the lines of output from a job previously written to disk.
+   * Lookup (or create a new) file monitor for the given file.
    */ 
-  private String[]
-  readOutputFile
+  private FileMonitor
+  lookupOrCreateFileMonitor
   (
    File file, 
-   int start
-  )
-    throws IOException
+   TaskTimer timer
+  ) 
   {
-    ArrayList<String> lines = new ArrayList<String>();
-    {
-      FileReader reader = new FileReader(file);
+    timer.aquire();
+    synchronized(pFileMonitors) { 
+      timer.resume();
       
-      int cnt = 0;
-      char cs[] = new char[1024];
-      StringBuffer buf = new StringBuffer();
-      while(true) {
-	int n = reader.read(cs);
-	if(n == -1) {
-	  if(buf.length() > 0) {
-	    cnt++;
-	    if(cnt > start) 
-	      lines.add(buf.toString());
-	  }
-	  break;
-	}
-	
-	int wk;
-	for(wk=0; wk<n; wk++) {
-	  if(cs[wk] == '\n') {
-	    cnt++;
-	    if(cnt > start) 
-	      lines.add(buf.toString());
-	    buf = new StringBuffer();
-	  }
-	  else {
-	    if(cnt >= start) 
-	      buf.append(cs[wk]);
-	  }
-	}
+      FileMonitor fmon = pFileMonitors.get(file);
+      if(fmon == null) {
+	fmon = new FileMonitor(file);
+	pFileMonitors.put(file, fmon);
       }
-      
-      reader.close();
-    }
 
-    /* indicates that this is the final line */ 
-    lines.add(null);
-      
-    String[] rtn = new String[lines.size()];
-    return (String[]) lines.toArray(rtn);
+      return fmon;
+    }
   }
 
+  /**
+   * Close and remove any existing file monitor for the given file.
+   */ 
+  private void
+  closeFileMonitor
+  (
+   File file, 
+   TaskTimer timer
+  ) 
+  {
+    timer.aquire();
+    synchronized(pFileMonitors) { 
+      timer.resume();
+      
+      FileMonitor fmon = pFileMonitors.get(file);
+      if(fmon != null) {
+	try {
+	  timer.aquire();
+	  synchronized(fmon) {
+	    timer.resume();
+
+	    fmon.close();
+	  }
+	}
+	catch(IOException ex) {
+	}
+	
+	pFileMonitors.remove(file);
+      }
+    }
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -781,34 +889,6 @@ class JobMgr
       }
     }
 
-    public String[]
-    getStdOutLines 
-    (
-     int start  
-    ) 
-    {
-      synchronized(pLock) {
-	if(pProc != null)
-	  return pProc.getStdOutLines(start);
-	else 
-	  return null;
-      }      
-    }
-
-    public String[]
-    getStdErrLines 
-    (
-     int start  
-    ) 
-    {
-      synchronized(pLock) {
-	if(pProc != null)
-	  return pProc.getStdErrLines(start);
-	else 
-	  return null;
-      }      
-    }
-
     public void 
     run() 
     {
@@ -816,6 +896,8 @@ class JobMgr
 	long jobID = pJob.getJobID();
 	
 	File dir = new File(pJobDir, String.valueOf(jobID));
+	File outFile = new File(dir, "stdout");
+	File errFile = new File(dir, "stderr");
 	try {
 	  Logs.ops.finer("Preparing Job: " + jobID);
 	  
@@ -833,20 +915,26 @@ class JobMgr
 	  }
 	  
 	  synchronized(pLock) {
-	    pProc = pJob.getAction().prep(pJob.getActionAgenda());
+	    pProc = pJob.getAction().prep(pJob.getActionAgenda(), outFile, errFile);
 	  }
 	}
 	catch(Exception ex) {
 	  Logs.ops.severe("Job Prep Failed: " + jobID);
 	  pResults = new QueueJobResults(ex);
 	  
-	  Logs.ops.finest("Writing Exception Stack as STDERR of Job: " + jobID);
-	  {
-	    File file = new File(dir, "stderr"); 
-	    FileWriter out = new FileWriter(file);
+	  Logs.ops.finest
+	    ("Appending the exception stack to the STDERR file (" + outFile + ") of " + 
+	     "job (" + jobID + ")...");
+
+	  try {
+	    FileWriter out = new FileWriter(errFile, true);
 	    out.write("Job Prep Failed!\n\n" + getFullMessage(ex));
 	    out.flush();
 	    out.close();
+	  }
+	  catch(IOException ex2) {
+	    Logs.ops.severe
+	      ("Could not append the Exception message to STDERR file (" + errFile + ")!");
 	  }
 	  
 	  return;
@@ -896,26 +984,6 @@ class JobMgr
 	       "    " + ex.getMessage());
 	  }
 	}
-	
-	{
-	  Logs.ops.finest("Writing STDOUT of Job: " + jobID);
-	  
-	  File file = new File(dir, "stdout"); 
-	  FileWriter out = new FileWriter(file);
-	  out.write(pProc.getStdOut());
-	  out.flush();
-	  out.close();
-	}
-
-	{
-	  Logs.ops.finest("Writing STDERR of Job: " + jobID);
-
-	  File file = new File(dir, "stderr"); 
-	  FileWriter out = new FileWriter(file);
-	  out.write(pProc.getStdErr());
-	  out.flush();
-	  out.close();
-	}
       }
       catch(Exception ex2) {
 	Logs.ops.severe(getFullMessage(ex2));
@@ -944,10 +1012,10 @@ class JobMgr
       return (buf.toString());
     }
 
-    private QueueJob        pJob; 
-    private Object          pLock; 
-    private SubProcess      pProc; 
-    private QueueJobResults pResults; 
+    private QueueJob         pJob; 
+    private Object           pLock; 
+    private SubProcessHeavy  pProc; 
+    private QueueJobResults  pResults; 
   }
 
 
@@ -975,6 +1043,14 @@ class JobMgr
    * Access to this field should be protected by a synchronized block.
    */ 
   private TreeMap<Long,ExecuteTask>  pExecuteTasks; 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * The open output file monitors indexed by filename.
+   */
+  private HashMap<File, FileMonitor>  pFileMonitors; 
   
 }
 

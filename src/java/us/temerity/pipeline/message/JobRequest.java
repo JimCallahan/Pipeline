@@ -1,4 +1,4 @@
-// $Id: JobRequest.java,v 1.3 2004/09/03 01:58:05 jim Exp $
+// $Id: JobRequest.java,v 1.4 2004/10/28 15:55:24 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -70,14 +70,35 @@ enum JobRequest
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * An instance {@link JobGetNumStdOutLinesReq JobGetNumStdOutLinesReq} is next.
+   */ 
+  GetNumStdOutLines, 
+
+  /**
    * An instance {@link JobGetStdOutLinesReq JobGetStdOutLinesReq} is next.
    */ 
   GetStdOutLines, 
 
   /**
+   * An instance {@link JobCloseStdOutReq JobCloseStdOutReq} is next.
+   */ 
+  CloseStdOut, 
+
+
+  /**
+   * An instance {@link JobGetNumStdOutLinesReq JobGetNumStdOutLinesReq} is next.
+   */ 
+  GetNumStdErrLines, 
+
+  /**
    * An instance {@link JobGetStdErrLinesReq JobGetStdErrLinesReq} is next.
    */ 
   GetStdErrLines, 
+
+  /**
+   * An instance {@link JobCloseStdErrReq JobCloseStdErrReq} is next.
+   */ 
+  CloseStdErr, 
 
 
   /*----------------------------------------------------------------------------------------*/

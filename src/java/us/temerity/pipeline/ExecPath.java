@@ -1,4 +1,4 @@
-// $Id: ExecPath.java,v 1.6 2004/09/01 12:17:55 jim Exp $
+// $Id: ExecPath.java,v 1.7 2004/10/28 15:55:23 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -11,8 +11,6 @@ import java.util.*;
 
 /**
  * A list of directories used to resolve the absolute file system path to an executable. <P>
- * 
- * @see SubProcess
  */
 public
 class ExecPath

@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.15 2004/10/14 22:40:27 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.16 2004/10/28 15:55:24 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -2029,7 +2029,7 @@ class JNodeFilesPanel
     public void 
     run() 
     {
-      SubProcess proc = null;
+      SubProcessLight proc = null;
       {
 	UIMaster master = UIMaster.getInstance();
 	if(master.beginPanelOp("Launching Node Editor...")) {
@@ -2157,7 +2157,7 @@ class JNodeFilesPanel
     public void 
     run() 
     {
-      SubProcess proc = null;
+      SubProcessLight proc = null;
       {
 	UIMaster master = UIMaster.getInstance();
 	if(master.beginPanelOp("Launching Node Comparator...")) {

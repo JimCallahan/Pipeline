@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.21 2004/08/23 07:12:16 jim Exp $
+// $Id: FileMgr.java,v 1.22 2004/10/28 15:55:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -235,8 +235,8 @@ class FileMgr
 	  
 	  Map<String,String> env = System.getenv();
 
-	  SubProcess proc = 
-	    new SubProcess(author, "CreateWorkingArea", "mkdir", args, env, pProdDir);
+	  SubProcessLight proc = 
+	    new SubProcessLight(author, "CreateWorkingArea", "mkdir", args, env, pProdDir);
 	  proc.start();
 	  
 	  try {
@@ -639,8 +639,8 @@ class FileMgr
 	    for(File file : copies) 
 	      args.add(file.getPath());
 	    
-	    SubProcess proc = 
-	      new SubProcess("CheckIn-Copy", "cp", args, env, wdir);
+	    SubProcessLight proc = 
+	      new SubProcessLight("CheckIn-Copy", "cp", args, env, wdir);
 	    proc.start();
 	    
 	    try {
@@ -686,8 +686,8 @@ class FileMgr
 	    for(File file : files) 
 	      args.add(file.getPath());
 
-	    SubProcess proc = 
-	      new SubProcess("CheckIn-CopyCheckSums", "cp", args, env, cwdir);
+	    SubProcessLight proc = 
+	      new SubProcessLight("CheckIn-CopyCheckSums", "cp", args, env, cwdir);
 	    proc.start();
 	    
 	    try {
@@ -852,9 +852,9 @@ class FileMgr
 	      for(File dir : dirs)
 		args.add(dir.getPath());
 	      
-	      SubProcess proc = 
-		new SubProcess(req.getNodeID().getAuthor(), 
-			       "CheckOut-MakeDirs", "mkdir", args, env, pProdDir);
+	      SubProcessLight proc = 
+		new SubProcessLight(req.getNodeID().getAuthor(), 
+				    "CheckOut-MakeDirs", "mkdir", args, env, pProdDir);
 	      proc.start();
 	      
 	      try {
@@ -906,9 +906,9 @@ class FileMgr
 	    args.add("--target-directory=" + bwdir);
 	    args.addAll(old);
 
-	    SubProcess proc = 
-	      new SubProcess(req.getNodeID().getAuthor(), 
-			     "CheckOut-Backup", "mv", args, env, wdir);
+	    SubProcessLight proc = 
+	      new SubProcessLight(req.getNodeID().getAuthor(), 
+				  "CheckOut-Backup", "mv", args, env, wdir);
 	    proc.start();
 	    
 	    try {
@@ -934,9 +934,9 @@ class FileMgr
 	  for(File file : files) 
 	    args.add(file.getName());
 
-	  SubProcess proc = 
-	    new SubProcess(req.getNodeID().getAuthor(), 
-			   "CheckOut-Copy", "cp", args, env, rdir);
+	  SubProcessLight proc = 
+	    new SubProcessLight(req.getNodeID().getAuthor(), 
+				"CheckOut-Copy", "cp", args, env, rdir);
 	  proc.start();
 	  
 	  try {
@@ -962,8 +962,8 @@ class FileMgr
 	  for(File file : files) 
 	    args.add(file.getName());
 
-	  SubProcess proc = 
-	    new SubProcess("CheckOut-CopyCheckSums", "cp", args, env, crdir);
+	  SubProcessLight proc = 
+	    new SubProcessLight("CheckOut-CopyCheckSums", "cp", args, env, crdir);
 	  proc.start();
 	  
 	  try {
@@ -989,9 +989,9 @@ class FileMgr
 	    args.add(file.getName());
 
 	  {
-	    SubProcess proc = 
-	      new SubProcess(req.getNodeID().getAuthor(), 
-			     "CheckOut-SetWritable", "chmod", args, env, wdir);
+	    SubProcessLight proc = 
+	      new SubProcessLight(req.getNodeID().getAuthor(), 
+				  "CheckOut-SetWritable", "chmod", args, env, wdir);
 	    proc.start();
 	    
 	    try {
@@ -1010,8 +1010,8 @@ class FileMgr
 	  }
 
 	  {
-	    SubProcess proc = 
-	      new SubProcess("CheckOut-SetWritableCheckSums", "chmod", args, env, cwdir);
+	    SubProcessLight proc = 
+	      new SubProcessLight("CheckOut-SetWritableCheckSums", "chmod", args, env, cwdir);
 	    proc.start();
 	    
 	    try {
@@ -1127,9 +1127,9 @@ class FileMgr
 	      for(File dir : dirs)
 		args.add(dir.getPath());
 	      
-	      SubProcess proc = 
-		new SubProcess(req.getNodeID().getAuthor(), 
-			       "Revert-MakeDirs", "mkdir", args, env, pProdDir);
+	      SubProcessLight proc = 
+		new SubProcessLight(req.getNodeID().getAuthor(), 
+				    "Revert-MakeDirs", "mkdir", args, env, pProdDir);
 	      proc.start();
 	      
 	      try {
@@ -1166,9 +1166,9 @@ class FileMgr
 	    args.add("--target-directory=" + bwdir);
 	    args.addAll(old);
 
-	    SubProcess proc = 
-	      new SubProcess(req.getNodeID().getAuthor(), 
-			     "Revert-Backup", "mv", args, env, wdir);
+	    SubProcessLight proc = 
+	      new SubProcessLight(req.getNodeID().getAuthor(), 
+				  "Revert-Backup", "mv", args, env, wdir);
 	    proc.start();
 	    
 	    try {
@@ -1199,9 +1199,9 @@ class FileMgr
 
 	  File rdir = new File(pProdDir, "repository" + req.getNodeID().getName());
 	    
-	  SubProcess proc = 
-	    new SubProcess(req.getNodeID().getAuthor(), 
-			   "Revert-Copy", "cp", args, env, rdir);
+	  SubProcessLight proc = 
+	    new SubProcessLight(req.getNodeID().getAuthor(), 
+				"Revert-Copy", "cp", args, env, rdir);
 	  proc.start();
 	  
 	  try {
@@ -1228,8 +1228,8 @@ class FileMgr
 
 	  File crdir = new File(pProdDir, "checksum/repository" + req.getNodeID().getName());
 
-	  SubProcess proc = 
-	    new SubProcess("Revert-CopyCheckSums", "cp", args, env, crdir);
+	  SubProcessLight proc = 
+	    new SubProcessLight("Revert-CopyCheckSums", "cp", args, env, crdir);
 	  proc.start();
 	  
 	  try {
@@ -1254,9 +1254,9 @@ class FileMgr
 	  args.addAll(req.getFiles().keySet());
 
 	  {
-	    SubProcess proc = 
-	      new SubProcess(req.getNodeID().getAuthor(), 
-			     "Revert-SetWritable", "chmod", args, env, wdir);
+	    SubProcessLight proc = 
+	      new SubProcessLight(req.getNodeID().getAuthor(), 
+				  "Revert-SetWritable", "chmod", args, env, wdir);
 	    proc.start();
 	    
 	    try {
@@ -1275,8 +1275,8 @@ class FileMgr
 	  }
 
 	  {
-	    SubProcess proc = 
-	      new SubProcess("Revert-SetWritableCheckSums", "chmod", args, env, cwdir);
+	    SubProcessLight proc = 
+	      new SubProcessLight("Revert-SetWritableCheckSums", "chmod", args, env, cwdir);
 	    proc.start();
 	    
 	    try {
@@ -1380,9 +1380,9 @@ class FileMgr
 	  for(File file : files) 
 	    args.add(rdir + "/" + file);
 	  
-	  SubProcess proc = 
-	    new SubProcess(req.getNodeID().getAuthor(), 
-			   "Freeze-Link", "cp", args, env, pProdDir);
+	  SubProcessLight proc = 
+	    new SubProcessLight(req.getNodeID().getAuthor(), 
+				"Freeze-Link", "cp", args, env, pProdDir);
 	  proc.start();
 	  
 	  try {
@@ -1408,8 +1408,8 @@ class FileMgr
 	  for(File file : files) 
 	    args.add(file.getName());
 	  
-	  SubProcess proc = 
-	    new SubProcess("Freeze-CopyCheckSums", "cp", args, env, crdir);
+	  SubProcessLight proc = 
+	    new SubProcessLight("Freeze-CopyCheckSums", "cp", args, env, crdir);
 	  proc.start();
 	  
 	  try {
@@ -1510,9 +1510,9 @@ class FileMgr
 	  for(File file : files) 
 	    args.add(file.getName());
 	  
-	  SubProcess proc = 
-	    new SubProcess(req.getNodeID().getAuthor(), 
-			   "UnFreeze-Copy", "cp", args, env, rdir);
+	  SubProcessLight proc = 
+	    new SubProcessLight(req.getNodeID().getAuthor(), 
+				"UnFreeze-Copy", "cp", args, env, rdir);
 	  proc.start();
 	  
 	  try {
@@ -1537,9 +1537,9 @@ class FileMgr
 	  for(File file : files) 
 	    args.add(file.getName());
 
-	  SubProcess proc = 
-	    new SubProcess(req.getNodeID().getAuthor(), 
-			   "Unfreeze-SetWritable", "chmod", args, env, wdir);
+	  SubProcessLight proc = 
+	    new SubProcessLight(req.getNodeID().getAuthor(), 
+				"Unfreeze-SetWritable", "chmod", args, env, wdir);
 	  proc.start();
 	  
 	  try {
@@ -1565,8 +1565,8 @@ class FileMgr
 	  for(File file : files) 
 	    args.add(file.getName());
 	  
-	  SubProcess proc = 
-	    new SubProcess("UnFreeze-CopyCheckSums", "cp", args, env, crdir);
+	  SubProcessLight proc = 
+	    new SubProcessLight("UnFreeze-CopyCheckSums", "cp", args, env, crdir);
 	  proc.start();
 	  
 	  try {
@@ -1759,9 +1759,9 @@ class FileMgr
 	      for(File dir : dirs)
 		args.add(dir.getPath());
 	      
-	      SubProcess proc = 
-		new SubProcess(req.getNodeID().getAuthor(), 
-			       "Rename-MakeDirs", "mkdir", args, env, pProdDir);
+	      SubProcessLight proc = 
+		new SubProcessLight(req.getNodeID().getAuthor(), 
+				    "Rename-MakeDirs", "mkdir", args, env, pProdDir);
 	      proc.start();
 	      
 	      try {
@@ -1830,9 +1830,9 @@ class FileMgr
 	    args.add("--target-directory=" + bwdir);
 	    args.addAll(old);
 	    
-	    SubProcess proc = 
-	      new SubProcess(req.getNodeID().getAuthor(), 
-			     "Rename-Backup", "mv", args, env, wdir);
+	    SubProcessLight proc = 
+	      new SubProcessLight(req.getNodeID().getAuthor(), 
+				  "Rename-Backup", "mv", args, env, wdir);
 	    proc.start();
 	    
 	    try {
@@ -1865,9 +1865,9 @@ class FileMgr
 	      args.add(opath.getPath());
 	      args.add(file.getName());
 	      
-	      SubProcess proc = 
-		new SubProcess(req.getNodeID().getAuthor(), 
-			       "Rename-Primary", "mv", args, env, wdir);
+	      SubProcessLight proc = 
+		new SubProcessLight(req.getNodeID().getAuthor(), 
+				    "Rename-Primary", "mv", args, env, wdir);
 	      proc.start();
 	      
 	      try {
@@ -1900,9 +1900,9 @@ class FileMgr
 	    args.add("--target-directory=" + wdir);
 	    args.addAll(old);
 	    
-	    SubProcess proc = 
-	      new SubProcess(req.getNodeID().getAuthor(), 
-			     "Rename-Secondary", "mv", args, env, owdir);
+	    SubProcessLight proc = 
+	      new SubProcessLight(req.getNodeID().getAuthor(), 
+				  "Rename-Secondary", "mv", args, env, owdir);
 	    proc.start();
 	    
 	    try {
@@ -1935,9 +1935,9 @@ class FileMgr
 	      args.add(opath.getPath());
 	      args.add(file.getName());
 	      
-	      SubProcess proc = 
-		new SubProcess(req.getNodeID().getAuthor(), 
-			       "Rename-PrimaryCheckSum", "mv", args, env, cwdir);
+	      SubProcessLight proc = 
+		new SubProcessLight(req.getNodeID().getAuthor(), 
+				    "Rename-PrimaryCheckSum", "mv", args, env, cwdir);
 	      proc.start();
 	      
 	      try {
@@ -1970,9 +1970,9 @@ class FileMgr
 	    args.add("--target-directory=" + cwdir);
 	    args.addAll(old);
 
-	    SubProcess proc = 
-	      new SubProcess(req.getNodeID().getAuthor(), 
-			   "Rename-SecondaryCheckSums", "mv", args, env, ocwdir);
+	    SubProcessLight proc = 
+	      new SubProcessLight(req.getNodeID().getAuthor(), 
+				  "Rename-SecondaryCheckSums", "mv", args, env, ocwdir);
 	    proc.start();
 	    
 	    try {
@@ -2107,9 +2107,9 @@ class FileMgr
 	    args.add("--force");
 	    args.addAll(old);
 	    
-	    SubProcess proc = 
-	      new SubProcess(id.getAuthor(), 
-			     "Remove-Files", "rm", args, env, wdir);
+	    SubProcessLight proc = 
+	      new SubProcessLight(id.getAuthor(), 
+				  "Remove-Files", "rm", args, env, wdir);
 	    proc.start();
 	    
 	    try {
@@ -2142,8 +2142,8 @@ class FileMgr
 	    args.add("--force");
 	    args.addAll(old);
 	    
-	    SubProcess proc = 
-	      new SubProcess("Remove-CheckSums", "rm", args, env, cwdir);
+	    SubProcessLight proc = 
+	      new SubProcessLight("Remove-CheckSums", "rm", args, env, cwdir);
 	    proc.start();
 	    
 	    try {

@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.4 2004/09/28 18:03:47 jim Exp $
+// $Id: PluginMgr.java,v 1.5 2004/10/28 15:55:23 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -687,8 +687,8 @@ class PluginMgr
       Map<String,String> env = System.getenv();
       File work = new File(System.getProperty("user.dir"));
       
-      SubProcess proc = 
-	new SubProcess("Install-Plugin", "cp", args, env, work);
+      SubProcessLight proc = 
+	new SubProcessLight("Install-Plugin", "cp", args, env, work);
       proc.start();
       
       try {

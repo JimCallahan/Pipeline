@@ -1,4 +1,4 @@
-// $Id: JSubProcessFailureDialog.java,v 1.1 2004/06/28 00:22:06 jim Exp $
+// $Id: JSubProcessFailureDialog.java,v 1.2 2004/10/28 15:55:24 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -166,7 +166,7 @@ class JSubProcessFailureDialog
   updateProc
   (
    String header, 
-   SubProcess proc
+   SubProcessLight proc
   )
   {
     pHeaderLabel.setText(header);

@@ -11,7 +11,8 @@ noinst_PROGRAMS = \
 
 
 libNative_so_SOURCES = \
-  NativeProcess.cc \
+  NativeProcessHeavy.cc \
+  NativeProcessLight.cc \
   NativeFileSys.cc
 
 libNative_so_LDADD = \
@@ -32,7 +33,8 @@ libDNotify_so_LDFLAGS = \
 
 
 EXTRA_DIST = \
-  NativeProcess.hh \
+  NativeProcessHeavy.hh \
+  NativeProcessLight.hh \
   NativeFileSys.hh
 
 

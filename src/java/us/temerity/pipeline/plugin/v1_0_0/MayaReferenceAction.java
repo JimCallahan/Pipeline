@@ -1,4 +1,4 @@
-// $Id: MayaReferenceAction.java,v 1.2 2004/10/14 22:38:15 jim Exp $
+// $Id: MayaReferenceAction.java,v 1.3 2004/10/28 15:55:24 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -104,23 +104,31 @@ class MayaReferenceAction
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Construct a {@link SubProcess SubProcess} instance which when executed will fulfill
-   * the given action agenda. <P> 
+   * Construct a {@link SubProcessHeavy SubProcessHeavy} instance which when executed will 
+   * fulfill the given action agenda. <P> 
    * 
    * @param agenda
    *   The agenda to be accomplished by the action.
+   * 
+   * @param outFile 
+   *   The file to which all STDOUT output is redirected.
+   * 
+   * @param errFile 
+   *   The file to which all STDERR output is redirected.
    * 
    * @return 
    *   The SubProcess which will fulfill the agenda.
    * 
    * @throws PipelineException 
    *   If unable to prepare a SubProcess due to illegal, missing or imcompatable 
-   *   information in the action agenda.
+   *   information in the action agenda or a general failure of the prep method code.
    */
-  public SubProcess
+  public SubProcessHeavy
   prep
   (
-   ActionAgenda agenda
+   ActionAgenda agenda,
+   File outFile, 
+   File errFile 
   )
     throws PipelineException
   { 
@@ -245,9 +253,10 @@ class MayaReferenceAction
       args.add("-script");
       args.add(script.getPath());
       
-      return new SubProcess(agenda.getNodeID().getAuthor(), 
-			    getName() + "-" + agenda.getJobID(), 
-			    "maya", args, agenda.getEnvironment(), agenda.getWorkingDir());
+      return new SubProcessHeavy
+	(agenda.getNodeID().getAuthor(), getName() + "-" + agenda.getJobID(), 
+	 "maya", args, agenda.getEnvironment(), agenda.getWorkingDir(), 
+	 outFile, errFile);
     }
     catch(Exception ex) {
       throw new PipelineException

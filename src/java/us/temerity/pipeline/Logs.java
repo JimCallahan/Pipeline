@@ -1,4 +1,4 @@
-// $Id: Logs.java,v 1.10 2004/10/24 10:56:53 jim Exp $
+// $Id: Logs.java,v 1.11 2004/10/28 15:55:23 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -102,7 +102,7 @@ class Logs
       throw new IOException
 	("The number of backup log files must be positive!");
     
-    Handler handler = new FileHandler(logfile + ".%g", 1048576, backups, false);
+    Handler handler = new FileHandler(logfile + ".%g", 10485760, backups, false);
     handler.setFormatter(new LogFormatter());
     
     addHandler(handler);
@@ -278,7 +278,8 @@ class Logs
    * The {@link Logger Logger} used for messages related to the launching and monitoring
    * of OS level subprocesses.
    * 
-   * @see SubProcess
+   * @see SubProcessLight
+   * @see SubProcessHeavy
    */
   public static Logger sub;    
 

@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.54 2004/10/25 18:56:47 jim Exp $
+// $Id: UIMaster.java,v 1.55 2004/10/28 15:55:24 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -506,7 +506,7 @@ class UIMaster
   showSubprocessFailureDialog
   (
    String header, 
-   SubProcess proc
+   SubProcessLight proc
   )
   {
     ShowSubprocessFailureDialog task = new ShowSubprocessFailureDialog(header, proc);
@@ -3039,7 +3039,7 @@ class UIMaster
     ShowSubprocessFailureDialog
     (
      String header, 
-     SubProcess proc
+     SubProcessLight proc
     )
     {
       super("UIMaster:ShowSubprocessFailureDialog");
@@ -3055,8 +3055,8 @@ class UIMaster
       pSubProcessFailureDialog.setVisible(true);
     }
 
-    private String      pHeader;
-    private SubProcess  pProc;
+    private String           pHeader;
+    private SubProcessLight  pProc;
   }
 
 
@@ -3131,7 +3131,7 @@ class UIMaster
     public void 
     run() 
     {
-      SubProcess proc = null;
+      SubProcessLight proc = null;
       {
 	UIMaster master = UIMaster.getInstance();
 	if(master.beginPanelOp("Launching Node Editor...")) {

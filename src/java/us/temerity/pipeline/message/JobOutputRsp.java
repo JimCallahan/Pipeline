@@ -1,4 +1,4 @@
-// $Id: JobOutputRsp.java,v 1.1 2004/07/28 19:10:23 jim Exp $
+// $Id: JobOutputRsp.java,v 1.2 2004/10/28 15:55:24 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -36,14 +36,14 @@ class JobOutputRsp
    *   The timing statistics for a task.
    * 
    * @param lines
-   *   The lines of output.
+   *   The requested lines of output.
    */ 
   public
   JobOutputRsp
   (
    String title, 
    TaskTimer timer, 
-   String[] lines
+   String lines
   )
   { 
     super(timer);
@@ -64,9 +64,9 @@ class JobOutputRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the output lines.
+   * Gets requested lines of output.
    */
-  public String[]
+  public String
   getLines() 
   {
     return pLines;
@@ -87,9 +87,9 @@ class JobOutputRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The output lines.
+   * The requested lines of output.
    */ 
-  private String[]  pLines;
+  private String  pLines;
 
 }
   

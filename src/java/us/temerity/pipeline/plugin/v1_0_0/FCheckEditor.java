@@ -1,4 +1,4 @@
-// $Id: FCheckEditor.java,v 1.1 2004/09/08 18:31:28 jim Exp $
+// $Id: FCheckEditor.java,v 1.2 2004/10/28 15:55:24 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -49,14 +49,14 @@ class FCheckEditor
    *   The working directory where the editor is run.
    *
    * @return 
-   *   The controlling <CODE>SubProcess</CODE> instance. 
+   *   The controlling <CODE>SubProcessLight</CODE> instance. 
    * 
    * @throws PipelineException
    *   If unable to launch the editor.
    * 
-   * @see SubProcess
+   * @see SubProcessLight
    */  
-  public SubProcess
+  public SubProcessLight
   launch
   (
    FileSeq fseq,      
@@ -102,7 +102,7 @@ class FCheckEditor
       args.add(pat.toString());
     }
   
-    SubProcess proc = new SubProcess(getName(), getProgram(), args, env, dir);
+    SubProcessLight proc = new SubProcessLight(getName(), getProgram(), args, env, dir);
     proc.start();
     return proc;    
   }

@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.7 2004/10/25 18:56:47 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.8 2004/10/28 15:55:24 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -221,7 +221,7 @@ class JQueueJobBrowserPanel
 	  panel.addMouseListener(this); 
 	  panel.setFocusable(true);
 	  panel.addKeyListener(this);
-	  panel.addMouseListener(new KeyFocuser(this));
+	  panel.addMouseListener(new KeyFocuser(panel));
 	  
 	  {
 	    JLabel label = new JLabel("Job Servers:");

@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.16 2004/10/24 10:56:53 jim Exp $
+// $Id: ScriptApp.java,v 1.17 2004/10/28 15:55:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1510,7 +1510,7 @@ class ScriptApp
     }
 
     /* launch an editor for each file sequence */ 
-    ArrayList<SubProcess> procs = new ArrayList<SubProcess>();
+    ArrayList<SubProcessLight> procs = new ArrayList<SubProcessLight>();
     for(FileSeq fs : editSeqs) {
       Logs.ops.info
 	("Editing: " + fs + " with " + 
@@ -1523,7 +1523,7 @@ class ScriptApp
     if(wait) {
       Logs.ops.info("\n" + 
 		    "Waiting for Editor(s) to exit...");
-      for(SubProcess proc : procs) {
+      for(SubProcessLight proc : procs) {
 	try {
 	  proc.join();
 	  Logs.ops.info

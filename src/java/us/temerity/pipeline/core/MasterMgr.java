@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.49 2004/10/22 17:06:06 jim Exp $
+// $Id: MasterMgr.java,v 1.50 2004/10/28 15:55:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -945,8 +945,8 @@ class MasterMgr
 	args.add("--recursive");
 	args.add("downstream");
 	
-	SubProcess proc = 
-	  new SubProcess("RemoveDownstreamLinks", "rm", args, env, pNodeDir);
+	SubProcessLight proc = 
+	  new SubProcessLight("RemoveDownstreamLinks", "rm", args, env, pNodeDir);
 	proc.start();
 	
 	try {

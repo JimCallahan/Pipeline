@@ -1,4 +1,4 @@
-// $Id: PosixSignal.java,v 1.3 2004/04/11 19:31:58 jim Exp $
+// $Id: PosixSignal.java,v 1.4 2004/10/28 15:55:23 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -11,7 +11,7 @@ package us.temerity.pipeline;
  * signals for the i386 architecture can be obtained by calling the {@link #getCode getCode}
  * method.  See the <I>signal(7)</I> man page for details.
  * 
- * @see SubProcess
+ * @see BaseSubProcess
  * @see NativeProcess
  */
 public

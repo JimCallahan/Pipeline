@@ -1,4 +1,4 @@
-// $Id: BaseComparator.java,v 1.2 2004/09/08 18:33:09 jim Exp $
+// $Id: BaseComparator.java,v 1.3 2004/10/28 15:55:23 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -106,14 +106,14 @@ class BaseComparator
    *   The working directory where the comparator is run.
    *
    * @return 
-   *   The controlling <CODE>SubProcess</CODE> instance. 
+   *   The controlling <CODE>SubProcessLight</CODE> instance. 
    * 
    * @throws PipelineException
    *   If unable to launch the comparator.
    * 
-   * @see SubProcess
+   * @see SubProcessLight
    */  
-  public SubProcess
+  public SubProcessLight
   launch
   (
    File fileA, 
@@ -127,7 +127,7 @@ class BaseComparator
     args.add(fileA.getPath());
     args.add(fileB.getPath());
 
-    SubProcess proc = new SubProcess(getName(), getProgram(), args, env, dir);
+    SubProcessLight proc = new SubProcessLight(getName(), getProgram(), args, env, dir);
     proc.start();
     return proc;
   }

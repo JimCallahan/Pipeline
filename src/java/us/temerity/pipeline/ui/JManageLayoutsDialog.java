@@ -1,4 +1,4 @@
-// $Id: JManageLayoutsDialog.java,v 1.6 2004/10/22 19:31:40 jim Exp $
+// $Id: JManageLayoutsDialog.java,v 1.7 2004/10/28 15:55:24 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -330,8 +330,8 @@ class JManageLayoutsDialog
       args.add("-rf");
       args.add(file.getPath());
       
-      SubProcess proc = 
-	new SubProcess("RemoveLayout", "rm", args, env, dir);
+      SubProcessLight proc = 
+	new SubProcessLight("RemoveLayout", "rm", args, env, dir);
       proc.start();
       
       try {

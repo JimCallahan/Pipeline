@@ -1,4 +1,4 @@
-// $Id: LogFormatter.java,v 1.6 2004/10/21 01:31:45 jim Exp $
+// $Id: LogFormatter.java,v 1.7 2004/10/28 15:55:23 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -40,12 +40,12 @@ class LogFormatter
   format
   (
    LogRecord record  
-  ) 
+  ) // GARBAGE GENERATOR: 71%
   {
-    String parts[] = record.getLoggerName().split("\\.");
+    String parts[] = record.getLoggerName().split("\\.");  // GARBAGE GENERATOR: 38% 
     String name = parts[parts.length-1].toUpperCase();
 
-    String stamp = Dates.format(new Date(record.getMillis()));
+    String stamp = Dates.format(new Date(record.getMillis()));  // GARBAGE GENERATOR: 10% 
 
     if(record.getLevel().equals(Level.SEVERE)) {
       return (stamp + " " + name + "-ERROR: " + sNL +
@@ -61,7 +61,7 @@ class LogFormatter
     else  {
       return (stamp + " " + name + "-DEBUG " + 
 	      "[" + record.getLevel().toString().toLowerCase() + "]: " + 
-	      record.getMessage() + sNL);
+	      record.getMessage() + sNL);  // GARBAGE GENERATOR: 4% (toLowerCase())
     }
   }
   

@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.17 2004/10/14 22:39:28 jim Exp $
+// $Id: BaseAction.java,v 1.18 2004/10/28 15:55:23 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -694,11 +694,17 @@ class BaseAction
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Construct a {@link SubProcess SubProcess} instance which when executed will fulfill
-   * the given action agenda. <P> 
+   * Construct a {@link SubProcessHeavy SubProcessHeavy} instance which when executed will 
+   * fulfill the given action agenda. <P> 
    * 
    * @param agenda
    *   The agenda to be accomplished by the action.
+   * 
+   * @param outFile 
+   *   The file to which all STDOUT output is redirected.
+   * 
+   * @param errFile 
+   *   The file to which all STDERR output is redirected.
    * 
    * @return 
    *   The SubProcess which will fulfill the agenda.
@@ -707,10 +713,12 @@ class BaseAction
    *   If unable to prepare a SubProcess due to illegal, missing or imcompatable 
    *   information in the action agenda or a general failure of the prep method code.
    */
-  public SubProcess
+  public SubProcessHeavy
   prep
   (
-   ActionAgenda agenda
+   ActionAgenda agenda,
+   File outFile, 
+   File errFile 
   )
     throws PipelineException
   {
@@ -847,13 +855,12 @@ class BaseAction
     args.add("--mode=755");
     args.add(dir.getPath());
 
-    SubProcess proc = 
-      new SubProcess(agenda.getNodeID().getAuthor(), 
-		     "MakeWorkingDir-" + agenda.getJobID(), 
-		     "mkdir", args, agenda.getEnvironment(), PackageInfo.sTempDir);
-    proc.start();
-
+    SubProcessLight proc = 
+      new SubProcessLight(agenda.getNodeID().getAuthor(), 
+			  "MakeWorkingDir-" + agenda.getJobID(), 
+			  "mkdir", args, agenda.getEnvironment(), PackageInfo.sTempDir);
     try {
+      proc.start();
       proc.join();
       if(!proc.wasSuccessful()) 
 	throw new PipelineException

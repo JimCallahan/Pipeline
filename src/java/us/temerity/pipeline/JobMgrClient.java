@@ -1,4 +1,4 @@
-// $Id: JobMgrClient.java,v 1.5 2004/10/18 02:34:06 jim Exp $
+// $Id: JobMgrClient.java,v 1.6 2004/10/28 15:55:23 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -101,37 +101,62 @@ class JobMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get current collected lines of captured STDOUT output from the given job starting 
-   * at the given line. <P>
+   * Get the current number of lines of STDOUT output from the given job. <P> 
    * 
-   * By keeping a count of the lines previously retrieved and using this count as the 
-   * <CODE>start</CODE> argument, output can be incrementally retrieved from a running 
-   * job. If no new output is available since the last call, the returned array will 
-   * have zero length.  <P> 
-   * 
-   * If the last line of returned output is <CODE>null</CODE>, then the job has completed
-   * and all output has been retrieved. <P> 
+   * @param jobID
+   *   The unique job identifier. 
+   *    
+   * @throws PipelineException
+   *   If unable to find a job with the given ID.
+   */ 
+  public synchronized int
+  getNumStdOutLines
+  (
+   long jobID
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+    
+    JobGetNumStdOutLinesReq req = new JobGetNumStdOutLinesReq(jobID);
+    Object obj = performTransaction(JobRequest.GetNumStdOutLines, req);
+    if(obj instanceof JobGetNumLinesRsp) {
+      JobGetNumLinesRsp rsp = (JobGetNumLinesRsp) obj;
+      return rsp.getNumLines();
+    }
+    else {
+      handleFailure(obj);
+      return 0;
+    }        
+  }
+    
+  /**
+   * Get the contents of the given region of lines of the STDOUT output from the given job. 
    * 
    * @param jobID
    *   The unique job identifier. 
    * 
-   * @param start 
-   *   The index of the first line of output to return.  
+   * @param start
+   *   The line number of the first line of text.
+   * 
+   * @param lines
+   *   The number of lines of text to retrieve. 
    * 
    * @throws PipelineException
    *   If unable to find a job with the given ID.
    */
-  public synchronized String[] 
+  public synchronized String
   getStdOutLines
   (
    long jobID, 
-   int start
+   int start, 
+   int lines
   ) 
     throws PipelineException  
   {
     verifyConnection();
 
-    JobGetStdOutLinesReq req = new JobGetStdOutLinesReq(jobID, start);
+    JobGetStdOutLinesReq req = new JobGetStdOutLinesReq(jobID, start, lines);
     Object obj = performTransaction(JobRequest.GetStdOutLines, req);
     if(obj instanceof JobOutputRsp) {
       JobOutputRsp rsp = (JobOutputRsp) obj;
@@ -143,9 +168,9 @@ class JobMgrClient
     }        
   }
 
-  /** 
-   * Gets the current collected STDOUT output from the given job as a single 
-   * <CODE>String</CODE>.  <P>
+  /**
+   * Release any server resources associated with monitoring the STDOUT output of the 
+   * given job.
    * 
    * @param jobID
    *   The unique job identifier. 
@@ -153,70 +178,81 @@ class JobMgrClient
    * @throws PipelineException
    *   If unable to find a job with the given ID.
    */
-  public String
-  getStdOut
+  public synchronized void
+  closeStdOut
   (
    long jobID
   ) 
-    throws PipelineException      
+    throws PipelineException  
   {
     verifyConnection();
-
-    JobGetStdOutLinesReq req = new JobGetStdOutLinesReq(jobID, 0);
-    Object obj = performTransaction(JobRequest.GetStdOutLines, req);
-    if(obj instanceof JobOutputRsp) {
-      JobOutputRsp rsp = (JobOutputRsp) obj;
-      String lines[] = rsp.getLines();
-
-      StringBuffer buf = new StringBuffer();
-      int wk;
-      for(wk=0; wk<lines.length; wk++) 
-	if(lines[wk] != null) 
-	  buf.append(lines[wk] + "\n");
-
-      return buf.toString();
-    }
-    else {
-      handleFailure(obj);
-      return null;
-    }        
+    
+    JobCloseStdOutReq req = new JobCloseStdOutReq(jobID);
+    Object obj = performTransaction(JobRequest.CloseStdOut, req);
+    handleSimpleResponse(obj);    
   }
-
   
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get current collected lines of captured STDERR output from the given job starting 
-   * at the given line. <P>
-   * 
-   * By keeping a count of the lines previously retrieved and using this count as the 
-   * <CODE>start</CODE> argument, output can be incrementally retrieved from a running 
-   * job. If no new output is available since the last call, the returned array will 
-   * have zero length.  <P> 
-   * 
-   * If the last line of returned output is <CODE>null</CODE>, then the job has completed
-   * and all output has been retrieved. <P> 
+   * Get the current number of lines of STDERR output from the given job. <P> 
    * 
    * @param jobID
    *   The unique job identifier. 
    * 
-   * @param start 
-   *   The index of the first line of output to return.  
+   * @throws PipelineException
+   *   If unable to find a job with the given ID.
+   */ 
+  public synchronized int
+  getNumStdErrLines
+  (
+   long jobID
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+    
+    JobGetNumStdErrLinesReq req = new JobGetNumStdErrLinesReq(jobID);
+    Object obj = performTransaction(JobRequest.GetNumStdErrLines, req);
+    if(obj instanceof JobGetNumLinesRsp) {
+      JobGetNumLinesRsp rsp = (JobGetNumLinesRsp) obj;
+      return rsp.getNumLines();
+    }
+    else {
+      handleFailure(obj);
+      return 0;
+    }        
+  }
+    
+  /**
+   * Get the contents of the given region of lines of the STDERR output from the given job. 
+   * 
+   * @param jobID
+   *   The unique job identifier. 
+   * 
+   * @param start
+   *   The line number of the first line of text.
+   * 
+   * @param lines
+   *   The number of lines of text to retrieve. 
    * 
    * @throws PipelineException
    *   If unable to find a job with the given ID.
    */
-  public synchronized String[] 
+  public synchronized String
   getStdErrLines
   (
    long jobID, 
-   int start
+   int start, 
+   int lines
   ) 
     throws PipelineException  
   {
     verifyConnection();
 
-    JobGetStdErrLinesReq req = new JobGetStdErrLinesReq(jobID, start);
+    JobGetStdErrLinesReq req = new JobGetStdErrLinesReq(jobID, start, lines);
     Object obj = performTransaction(JobRequest.GetStdErrLines, req);
     if(obj instanceof JobOutputRsp) {
       JobOutputRsp rsp = (JobOutputRsp) obj;
@@ -228,9 +264,9 @@ class JobMgrClient
     }        
   }
 
-  /** 
-   * Gets the current collected STDERR output from the given job a single 
-   * <CODE>String</CODE>.  <P>
+  /**
+   * Release any server resources associated with monitoring the STDERR output of the 
+   * given job.
    * 
    * @param jobID
    *   The unique job identifier. 
@@ -238,33 +274,18 @@ class JobMgrClient
    * @throws PipelineException
    *   If unable to find a job with the given ID.
    */
-  public String
-  getStdErr
+  public synchronized void
+  closeStdErr
   (
    long jobID
   ) 
     throws PipelineException  
   {
     verifyConnection();
-
-    JobGetStdErrLinesReq req = new JobGetStdErrLinesReq(jobID, 0);
-    Object obj = performTransaction(JobRequest.GetStdErrLines, req);
-    if(obj instanceof JobOutputRsp) {
-      JobOutputRsp rsp = (JobOutputRsp) obj;
-      String lines[] = rsp.getLines();
-
-      StringBuffer buf = new StringBuffer();
-      int wk;
-      for(wk=0; wk<lines.length; wk++) 
-	if(lines[wk] != null) 
-	  buf.append(lines[wk] + "\n");
-
-      return buf.toString();
-    }
-    else {
-      handleFailure(obj);
-      return null;
-    }        
+    
+    JobCloseStdErrReq req = new JobCloseStdErrReq(jobID);
+    Object obj = performTransaction(JobRequest.CloseStdErr, req);
+    handleSimpleResponse(obj);    
   }
 
 

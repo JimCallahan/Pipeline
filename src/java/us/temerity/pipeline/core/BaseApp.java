@@ -1,4 +1,4 @@
-// $Id: BaseApp.java,v 1.9 2004/09/26 03:13:55 jim Exp $
+// $Id: BaseApp.java,v 1.10 2004/10/28 15:55:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -125,8 +125,8 @@ class BaseApp
       args.add("-remote");
       args.add("ping()");
       
-      SubProcess proc = 
-	new SubProcess("CheckMozilla", "mozilla", args, env, dir);
+      SubProcessLight proc = 
+	new SubProcessLight("CheckMozilla", "mozilla", args, env, dir);
       proc.start();
 
       try {
@@ -144,8 +144,8 @@ class BaseApp
       args.add("-remote");
       args.add("openURL(" + url + ", new-tab)");
 
-      SubProcess proc = 
-	new SubProcess("RemoteMozilla", "mozilla", args, env, dir);
+      SubProcessLight proc = 
+	new SubProcessLight("RemoteMozilla", "mozilla", args, env, dir);
       proc.start();
 
       try {
@@ -159,8 +159,8 @@ class BaseApp
       ArrayList<String> args = new ArrayList<String>();
       args.add(url.toString());
 
-      SubProcess proc = 
-	new SubProcess("LaunchMozilla", "mozilla", args, env, dir);
+      SubProcessLight proc = 
+	new SubProcessLight("LaunchMozilla", "mozilla", args, env, dir);
       proc.start();
     }
   }

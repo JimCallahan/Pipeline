@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.16 2004/10/25 18:56:47 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.17 2004/10/28 15:55:24 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -2516,7 +2516,7 @@ class JQueueJobViewerPanel
     public void 
     run() 
     {
-      SubProcess proc = null;
+      SubProcessLight proc = null;
       {
 	UIMaster master = UIMaster.getInstance();
 	if(master.beginPanelOp("Launching Node Editor...")) {

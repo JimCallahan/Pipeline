@@ -1,4 +1,4 @@
-// $Id: SingleEditor.java,v 1.6 2004/09/08 18:33:35 jim Exp $
+// $Id: SingleEditor.java,v 1.7 2004/10/28 15:55:23 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -83,10 +83,8 @@ class SingleEditor
    * 
    * @throws PipelineException
    *   If unable to launch the editor.
-   * 
-   * @see SubProcess
    */  
-  public SubProcess
+  public SubProcessLight
   launch
   (
    FileSeq fseq,      

@@ -1,4 +1,4 @@
-// $Id: JobMgrServer.java,v 1.8 2004/10/18 02:34:06 jim Exp $
+// $Id: JobMgrServer.java,v 1.9 2004/10/28 15:55:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -324,6 +324,14 @@ class JobMgrServer
 
 	    
 	  /*-- JOB OUTPUT ------------------------------------------------------------------*/
+	  case GetNumStdOutLines:
+	    {
+	      JobGetNumStdOutLinesReq req = (JobGetNumStdOutLinesReq) objIn.readObject();
+	      objOut.writeObject(pJobMgr.getNumStdOutLines(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
 	  case GetStdOutLines:
 	    {
 	      JobGetStdOutLinesReq req = (JobGetStdOutLinesReq) objIn.readObject();
@@ -332,10 +340,35 @@ class JobMgrServer
 	    }
 	    break;
 
+	  case CloseStdOut:
+	    {
+	      JobCloseStdOutReq req = (JobCloseStdOutReq) objIn.readObject();
+	      objOut.writeObject(pJobMgr.closeStdOut(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+
+	  case GetNumStdErrLines:
+	    {
+	      JobGetNumStdErrLinesReq req = (JobGetNumStdErrLinesReq) objIn.readObject();
+	      objOut.writeObject(pJobMgr.getNumStdErrLines(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
 	  case GetStdErrLines:
 	    {
 	      JobGetStdErrLinesReq req = (JobGetStdErrLinesReq) objIn.readObject();
 	      objOut.writeObject(pJobMgr.getStdErrLines(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case CloseStdErr:
+	    {
+	      JobCloseStdErrReq req = (JobCloseStdErrReq) objIn.readObject();
+	      objOut.writeObject(pJobMgr.closeStdErr(req));
 	      objOut.flush(); 
 	    }
 	    break;

@@ -1,4 +1,4 @@
-// $Id: JBaseMonitorJobOutputDialog.java,v 1.1 2004/09/05 06:54:56 jim Exp $
+// $Id: JBaseMonitorJobOutputDialog.java,v 1.2 2004/10/28 15:55:24 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -71,24 +71,10 @@ class JBaseMonitorJobOutputDialog
       body.add(Box.createRigidArea(new Dimension(0, 4)));
       
       {
-	JTextArea area = new JTextArea(null, 20, 90);
-	pOutputArea = area;
-	area.setName("CodeTextArea");
-	area.setLineWrap(true);
-	area.setWrapStyleWord(true);
-	area.setEditable(false);
-      }
-
-      {
-	JScrollPane scroll = new JScrollPane(pOutputArea);
-	pOutputScroll = scroll;
-	
-	scroll.setHorizontalScrollBarPolicy
-	  (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	scroll.setVerticalScrollBarPolicy
-	  (ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-	
-	body.add(scroll);
+	JobMonitorPanel panel = new JobMonitorPanel();
+	pJobMonitorPanel = panel;
+      
+	body.add(panel);
       }
             
       ActionAgenda agenda = job.getActionAgenda();
@@ -114,8 +100,27 @@ class JBaseMonitorJobOutputDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the current collected lines of captured output from the job server for the given 
-   * job starting at the given line. 
+   * Get the current number of lines of output from the given job. <P> 
+   * 
+   * @param client
+   *   The job manager connection.
+   * 
+   * @param jobID
+   *   The unique job identifier. 
+   *    
+   * @throws PipelineException
+   *   If unable to find a job with the given ID.
+   */ 
+  public abstract int
+  getNumLinesMonitor
+  (
+   JobMgrClient client,
+   long jobID
+  ) 
+    throws PipelineException;
+  
+  /**
+   * Get the contents of the given region of lines of the output from the given job. 
    * 
    * @param client
    *   The job manager connection.
@@ -123,18 +128,46 @@ class JBaseMonitorJobOutputDialog
    * @param jobID
    *   The unique job identifier. 
    * 
-   * @param start 
-   *   The index of the first line of output to return.  
+   * @param start
+   *   The line number of the first line of text.
+   * 
+   * @param lines
+   *   The number of lines of text to retrieve. 
+   * 
+   * @throws PipelineException
+   *   If unable to find a job with the given ID.
    */
-  protected abstract String[]
-  getOutputLines
+  public abstract String
+  getLinesMonitor
   (
    JobMgrClient client,
    long jobID, 
-   int start   
-  )
+   int start, 
+   int lines
+  ) 
     throws PipelineException;
 
+  /**
+   * Release any server resources associated with monitoring the output of the 
+   * given job.
+   * 
+   * @param client
+   *   The job manager connection.
+   * 
+   * @param jobID
+   *   The unique job identifier. 
+   * 
+   * @throws PipelineException
+   *   If unable to find a job with the given ID.
+   */
+  public abstract void
+  closeMonitor
+  (
+   JobMgrClient client,
+   long jobID
+  ) 
+    throws PipelineException;
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   L I S T E N E R S                                                                    */
@@ -236,6 +269,92 @@ class JBaseMonitorJobOutputDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * The output monitor panel.
+   */ 
+  private 
+  class JobMonitorPanel
+    extends JBaseMonitorPanel
+  {
+    public 
+    JobMonitorPanel() 
+    {
+      super(20, 80);
+
+      pLock = new Object();
+    }
+
+    public void
+    setJob
+    (
+     long jobID, 
+     JobMgrClient client
+    ) 
+    {
+      synchronized(pLock) {
+	pJobID  = jobID; 
+	pClient = client;
+      }
+    }    
+
+    /** 
+     * Get the current number of lines which may potentially be viewed.
+     */
+    protected int 
+    getNumLines()
+    {
+      synchronized(pLock) {
+	try {
+	  if(pClient != null)
+	    return getNumLinesMonitor(pClient, pJobID);
+	}
+	catch(PipelineException ex) {
+	  UIMaster.getInstance().showErrorDialog(ex);
+	}
+      }
+
+      return 0;
+    }
+    
+    /** 
+     * Get the current text for the given region of lines. <P> 
+     * 
+     * @param start
+     *   The line number of the first line of text.
+     * 
+     * @param lines
+     *   The number of lines of text to retrieve. 
+     */
+    protected String
+    getLines
+    (
+     int start, 
+     int lines
+    )
+    {
+      synchronized(pLock) {
+	try {
+	  if(pClient != null)
+	    return getLinesMonitor(pClient, pJobID, start, lines);
+	}
+	catch(PipelineException ex) {
+	  UIMaster.getInstance().showErrorDialog(ex);
+	}
+      }
+      
+      return null;
+    } 
+
+    private static final long serialVersionUID = 6630563414902079487L;
+
+    private Object        pLock;
+    private long          pJobID; 
+    private JobMgrClient  pClient; 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Periodically retrieves the output from the job until the job has completed.
    */ 
   private 
@@ -249,7 +368,7 @@ class JBaseMonitorJobOutputDialog
      long jobID
     )
     {
-      super("JMonitorJobStdOutDialog:MonitorTask");
+      super("JMonitorJobOutputDialog:MonitorTask");
 
       pHostname = hostname; 
       pJobID    = jobID; 
@@ -262,31 +381,14 @@ class JBaseMonitorJobOutputDialog
       JobMgrClient client = null;
       try {
 	client = new JobMgrClient(pHostname, master.getJobPort());	
-	
-	int i = 0;
+	pJobMonitorPanel.setJob(pJobID, client);
+
 	boolean done = false;
 	while(!done) {
-	  if(pShouldUpdate.get()) {
-	    String[] lines = getOutputLines(client, pJobID, i);
-	    i += lines.length;
-	    
-	    int wk;
-	    for(wk=0; wk<lines.length; wk++) {
-	      if(lines[wk] == null) {
-		done = true; 
-		break;
-	      }
-	      else {
-		pOutputArea.append(lines[wk] + "\n");
-	      }
-	    }
-	    
-	    if(lines.length > 0) 
-	      SwingUtilities.invokeLater(new ScrollTask());
-	  }
+	  pJobMonitorPanel.updateScrollBar();
 
 	  try {
-	    sleep(2000);
+	    sleep(5000);
 	  }
 	  catch (InterruptedException ex) {
 	    return;
@@ -297,8 +399,16 @@ class JBaseMonitorJobOutputDialog
 	master.showErrorDialog(ex);	
       }
       finally {
-	if(client != null)
+	if(client != null) {
+	  try {
+	    closeMonitor(client, pJobID);
+	  }
+	  catch(PipelineException ex) {
+	    master.showErrorDialog(ex);
+	  }
+
 	  client.disconnect();
+	}
       }
     }
 
@@ -306,27 +416,6 @@ class JBaseMonitorJobOutputDialog
     private long    pJobID; 
   }
 
-  /** 
-   * Scroll to the end of the output.
-   */
-  private
-  class ScrollTask
-    extends Thread
-  {
-    public 
-    ScrollTask() 
-    {
-      super("JBaseMonitorJobOutputDialog:ScrollTask");
-    }
-
-    public void 
-    run()
-    {
-      Dimension size = pOutputArea.getSize();
-      Rectangle rect = new Rectangle(0, size.height-1, 1, size.height);
-      pOutputScroll.getViewport().scrollRectToVisible(rect);
-    }
-  }
 
 
 
@@ -339,17 +428,10 @@ class JBaseMonitorJobOutputDialog
    */ 
   private AtomicBoolean  pShouldUpdate; 
 
-
   /**
-   * The output text area.
+   * The output monitor panel.
    */ 
-  private JTextArea  pOutputArea;
-  
-  /**
-   * The output scroll pane.
-   */ 
-  private JScrollPane  pOutputScroll;
-
+  private JobMonitorPanel  pJobMonitorPanel;
   
   /**
    * The thread monitoring the job.

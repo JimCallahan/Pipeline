@@ -1,4 +1,4 @@
-// $Id: NativeProcess.cc,v 1.8 2004/04/11 19:30:20 jim Exp $
+// $Id: NativeProcessLight.cc,v 1.1 2004/10/28 15:55:24 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -68,14 +68,13 @@
 #  include <sys/resource.h>
 #endif
 
-#include "NativeProcess.hh"
+#include "NativeProcessLight.hh"
 
- 
 
 /* Write the given string data to the STDIN of the native process. */ 
 extern "C" 
 JNIEXPORT jint 
-JNICALL Java_us_temerity_pipeline_NativeProcess_writeToStdIn
+JNICALL Java_us_temerity_pipeline_NativeProcessLight_writeToStdIn
 (
  JNIEnv *env, 
  jobject obj, 
@@ -87,20 +86,20 @@ JNICALL Java_us_temerity_pipeline_NativeProcess_writeToStdIn
   jclass IOException = env->FindClass("java/io/IOException");
   if(IOException == 0) {
     errno = ECANCELED;
-    perror("NativeProcess.writeToStdIn(), unable to lookup \"java/lang/IOException\"");
+    perror("NativeProcessLight.writeToStdIn(), unable to lookup \"java/lang/IOException\"");
     return -1;
   }
   
-  /* get handles for the NativeProcess object's fields */ 
-  jclass NativeProcessClass = env->GetObjectClass(obj);  
-  if(NativeProcessClass == 0) {
-    env->ThrowNew(IOException, "unable to lookup class: NativeProcess");
+  /* get handles for the NativeProcessLight object's fields */ 
+  jclass NativeProcessLightClass = env->GetObjectClass(obj);  
+  if(NativeProcessLightClass == 0) {
+    env->ThrowNew(IOException, "unable to lookup class: NativeProcessLight");
     return -1;
   }
   
-  jfieldID pStdInFileDesc = env->GetFieldID(NativeProcessClass, "pStdInFileDesc", "I");
+  jfieldID pStdInFileDesc = env->GetFieldID(NativeProcessLightClass, "pStdInFileDesc", "I");
   if(pStdInFileDesc == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcess.pStdInFileDesc");
+    env->ThrowNew(IOException, "unable to access: NativeProcessLight.pStdInFileDesc");
     return -1;
   }
 
@@ -128,7 +127,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcess_writeToStdIn
 /* Close the STDIN pipe. */ 
 extern "C"  
 JNIEXPORT void 
-JNICALL Java_us_temerity_pipeline_NativeProcess_closeStdIn
+JNICALL Java_us_temerity_pipeline_NativeProcessLight_closeStdIn
 (
  JNIEnv *env, 
  jobject obj
@@ -139,20 +138,20 @@ JNICALL Java_us_temerity_pipeline_NativeProcess_closeStdIn
   jclass IOException = env->FindClass("java/io/IOException");
   if(IOException == 0) {
     errno = ECANCELED;
-    perror("NativeProcess.closeStdIn(), unable to lookup \"java/lang/IOException\"");
+    perror("NativeProcessLight.closeStdIn(), unable to lookup \"java/lang/IOException\"");
     return;
   }
   
-  /* get handles for the NativeProcess object's fields */ 
-  jclass NativeProcessClass = env->GetObjectClass(obj);  
-  if(NativeProcessClass == 0) {
-    env->ThrowNew(IOException, "unable to lookup class: NativeProcess");
+  /* get handles for the NativeProcessLight object's fields */ 
+  jclass NativeProcessLightClass = env->GetObjectClass(obj);  
+  if(NativeProcessLightClass == 0) {
+    env->ThrowNew(IOException, "unable to lookup class: NativeProcessLight");
     return;
   }
   
-  jfieldID pStdInFileDesc = env->GetFieldID(NativeProcessClass, "pStdInFileDesc", "I");
+  jfieldID pStdInFileDesc = env->GetFieldID(NativeProcessLightClass, "pStdInFileDesc", "I");
   if(pStdInFileDesc == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcess.pStdInFileDesc");
+    env->ThrowNew(IOException, "unable to access: NativeProcessLight.pStdInFileDesc");
     return;
   }
 
@@ -168,12 +167,11 @@ JNICALL Java_us_temerity_pipeline_NativeProcess_closeStdIn
 }
 
 
-
 /* Read up to the given number of characters from the STDOUT of the native process. 
     Returns (null) on EOF.  The size of the String read may be smaller than "size" */ 
 extern "C"  
 JNIEXPORT jstring 
-JNICALL Java_us_temerity_pipeline_NativeProcess_readFromStdOut
+JNICALL Java_us_temerity_pipeline_NativeProcessLight_readFromStdOut
 (
  JNIEnv *env, 
  jobject obj, 
@@ -185,27 +183,25 @@ JNICALL Java_us_temerity_pipeline_NativeProcess_readFromStdOut
   jclass IOException = env->FindClass("java/io/IOException");
   if(IOException == 0) {
     errno = ECANCELED;
-    perror("NativeProcess.readFromStdOut(), unable to lookup \"java/lang/IOException\"");
+    perror("NativeProcessLight.readFromStdOut(), unable to lookup \"java/lang/IOException\"");
     return NULL;
   }
   
-  /* get handles for the NativeProcess object's fields */ 
-  jclass NativeProcessClass = env->GetObjectClass(obj);  
-  if(NativeProcessClass == 0) {
-    env->ThrowNew(IOException, "unable to lookup class: NativeProcess");
+  /* get handles for the NativeProcessLight object's fields */ 
+  jclass NativeProcessLightClass = env->GetObjectClass(obj);  
+  if(NativeProcessLightClass == 0) {
+    env->ThrowNew(IOException, "unable to lookup class: NativeProcessLight");
     return NULL;
   }
 
-  jfieldID pStdOutFileDesc = env->GetFieldID(NativeProcessClass, "pStdOutFileDesc", "I");
+  jfieldID pStdOutFileDesc = env->GetFieldID(NativeProcessLightClass, "pStdOutFileDesc", "I");
   if(pStdOutFileDesc == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcess.pStdOutFileDesc");
+    env->ThrowNew(IOException, "unable to access: NativeProcessLight.pStdOutFileDesc");
     return NULL;
   }
   
   /* get the STDOUT file descriptor */ 
   jint stdout = env->GetIntField(obj, pStdOutFileDesc);
-
-
 
   /* read the STDOUT */ 
   char* buf = new char[size+1];
@@ -227,7 +223,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcess_readFromStdOut
 /* Close the STDOUT pipe. */ 
 extern "C"  
 JNIEXPORT void 
-JNICALL Java_us_temerity_pipeline_NativeProcess_closeStdOut
+JNICALL Java_us_temerity_pipeline_NativeProcessLight_closeStdOut
 (
  JNIEnv *env, 
  jobject obj
@@ -238,20 +234,20 @@ JNICALL Java_us_temerity_pipeline_NativeProcess_closeStdOut
   jclass IOException = env->FindClass("java/io/IOException");
   if(IOException == 0) {
     errno = ECANCELED;
-    perror("NativeProcess.closeStdOut(), unable to lookup \"java/lang/IOException\"");
+    perror("NativeProcessLight.closeStdOut(), unable to lookup \"java/lang/IOException\"");
     return;
   }
   
-  /* get handles for the NativeProcess object's fields */ 
-  jclass NativeProcessClass = env->GetObjectClass(obj);  
-  if(NativeProcessClass == 0) {
-    env->ThrowNew(IOException, "unable to lookup class: NativeProcess");
+  /* get handles for the NativeProcessLight object's fields */ 
+  jclass NativeProcessLightClass = env->GetObjectClass(obj);  
+  if(NativeProcessLightClass == 0) {
+    env->ThrowNew(IOException, "unable to lookup class: NativeProcessLight");
     return;
   }
   
-  jfieldID pStdOutFileDesc = env->GetFieldID(NativeProcessClass, "pStdOutFileDesc", "I");
+  jfieldID pStdOutFileDesc = env->GetFieldID(NativeProcessLightClass, "pStdOutFileDesc", "I");
   if(pStdOutFileDesc == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcess.pStdOutFileDesc");
+    env->ThrowNew(IOException, "unable to access: NativeProcessLight.pStdOutFileDesc");
     return;
   }
 
@@ -271,7 +267,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcess_closeStdOut
      Returns (null) on EOF.  The size of the String read may be smaller than "size" */ 
 extern "C"  
 JNIEXPORT jstring 
-JNICALL Java_us_temerity_pipeline_NativeProcess_readFromStdErr
+JNICALL Java_us_temerity_pipeline_NativeProcessLight_readFromStdErr
 (
  JNIEnv *env, 
  jobject obj, 
@@ -283,20 +279,20 @@ JNICALL Java_us_temerity_pipeline_NativeProcess_readFromStdErr
   jclass IOException = env->FindClass("java/io/IOException");
   if(IOException == 0) {
     errno = ECANCELED;
-    perror("NativeProcess.readFromStdErr(), unable to lookup \"java/lang/IOException\"");
+    perror("NativeProcessLight.readFromStdErr(), unable to lookup \"java/lang/IOException\"");
     return NULL;
   }
   
-  /* get handles for the NativeProcess object's fields */ 
-  jclass NativeProcessClass = env->GetObjectClass(obj);  
-  if(NativeProcessClass == 0) {
-    env->ThrowNew(IOException, "unable to lookup class: NativeProcess");
+  /* get handles for the NativeProcessLight object's fields */ 
+  jclass NativeProcessLightClass = env->GetObjectClass(obj);  
+  if(NativeProcessLightClass == 0) {
+    env->ThrowNew(IOException, "unable to lookup class: NativeProcessLight");
     return NULL;
   }
 
-  jfieldID pStdErrFileDesc = env->GetFieldID(NativeProcessClass, "pStdErrFileDesc", "I");
+  jfieldID pStdErrFileDesc = env->GetFieldID(NativeProcessLightClass, "pStdErrFileDesc", "I");
   if(pStdErrFileDesc == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcess.pStdErrFileDesc");
+    env->ThrowNew(IOException, "unable to access: NativeProcessLight.pStdErrFileDesc");
     return NULL;
   }
   
@@ -323,7 +319,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcess_readFromStdErr
 /* Close the STDERR pipe. */ 
 extern "C"  
 JNIEXPORT void 
-JNICALL Java_us_temerity_pipeline_NativeProcess_closeStdErr
+JNICALL Java_us_temerity_pipeline_NativeProcessLight_closeStdErr
 (
  JNIEnv *env, 
  jobject obj
@@ -334,20 +330,20 @@ JNICALL Java_us_temerity_pipeline_NativeProcess_closeStdErr
   jclass IOException = env->FindClass("java/io/IOException");
   if(IOException == 0) {
     errno = ECANCELED;
-    perror("NativeProcess.closeStdErr(), unable to lookup \"java/lang/IOException\"");
+    perror("NativeProcessLight.closeStdErr(), unable to lookup \"java/lang/IOException\"");
     return;
   }
   
-  /* get handles for the NativeProcess object's fields */ 
-  jclass NativeProcessClass = env->GetObjectClass(obj);  
-  if(NativeProcessClass == 0) {
-    env->ThrowNew(IOException, "unable to lookup class: NativeProcess");
+  /* get handles for the NativeProcessLight object's fields */ 
+  jclass NativeProcessLightClass = env->GetObjectClass(obj);  
+  if(NativeProcessLightClass == 0) {
+    env->ThrowNew(IOException, "unable to lookup class: NativeProcessLight");
     return;
   }
   
-  jfieldID pStdErrFileDesc = env->GetFieldID(NativeProcessClass, "pStdErrFileDesc", "I");
+  jfieldID pStdErrFileDesc = env->GetFieldID(NativeProcessLightClass, "pStdErrFileDesc", "I");
   if(pStdErrFileDesc == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcess.pStdErrFileDesc");
+    env->ThrowNew(IOException, "unable to access: NativeProcessLight.pStdErrFileDesc");
     return;
   }
 
@@ -363,12 +359,42 @@ JNICALL Java_us_temerity_pipeline_NativeProcess_closeStdErr
 }
 
 
+/* Send a signal to a native process. */ 
+extern "C" 
+JNIEXPORT void 
+JNICALL Java_us_temerity_pipeline_NativeProcessLight_signalNative
+(
+ JNIEnv *env, 
+ jobject obj, 
+ jint signal,  /* IN: POSIX signal */ 
+ jint pid      /* IN: POSIX signal */ 
+)
+{
+  /* exception initialization */ 
+  char msg[1024];
+  jclass IOException = env->FindClass("java/io/IOException");
+  if(IOException == 0) {
+    errno = ECANCELED;
+    perror("NativeProcessLight.signalNative(), unable to lookup \"java/lang/IOException\"");
+    return;
+  }
+  
+  /* send the signal */ 
+  if(kill(pid, signal) == -1) {
+    sprintf(msg, "failed send signal (%d) to process (%d): %s\n", 
+	    signal, pid, strerror(errno));
+    env->ThrowNew(IOException, msg);
+    return; 
+  }
+}
+ 
+
 /* Native replacement for Runtime.exec().
      Returns the OS process ID of the started process on success. 
      Throws a PError exception on failure (or returns -1). */ 
 extern "C" 
 JNIEXPORT jint
-JNICALL Java_us_temerity_pipeline_NativeProcess_execNative
+JNICALL Java_us_temerity_pipeline_NativeProcessLight_execNativeLight
 (
  JNIEnv *env, 
  jobject obj, 
@@ -382,79 +408,77 @@ JNICALL Java_us_temerity_pipeline_NativeProcess_execNative
   jclass IOException = env->FindClass("java/io/IOException");
   if(IOException == 0) {
     errno = ECANCELED;
-    perror("NativeProcess.execNative(), unable to lookup \"java/lang/IOException\"");
+    perror("NativeProcessLight.execNative(), unable to lookup \"java/lang/IOException\"");
     return -1;
   }
 
-
-  /* get handles for the NativeProcess object's fields/methods */ 
-  jclass NativeProcessClass = env->GetObjectClass(obj);  
-  if(NativeProcessClass == 0) {
-    env->ThrowNew(IOException, "unable to lookup class: NativeProcess");
+  /* get handles for the NativeProcessLight object's fields/methods */ 
+  jclass NativeProcessLightClass = env->GetObjectClass(obj);  
+  if(NativeProcessLightClass == 0) {
+    env->ThrowNew(IOException, "unable to lookup class: NativeProcessLight");
     return -1;
   }
-    
-  jfieldID pStdInFileDesc = env->GetFieldID(NativeProcessClass, "pStdInFileDesc", "I");
+
+  jfieldID pStdInFileDesc = env->GetFieldID(NativeProcessLightClass, "pStdInFileDesc", "I");
   if(pStdInFileDesc == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcess.pStdInFileDesc");
+    env->ThrowNew(IOException, "unable to access: NativeProcessLight.pStdInFileDesc");
     return -1;
   }
     
-  jfieldID pStdOutFileDesc = env->GetFieldID(NativeProcessClass, "pStdOutFileDesc", "I");
+  jfieldID pStdOutFileDesc = env->GetFieldID(NativeProcessLightClass, "pStdOutFileDesc", "I");
   if(pStdOutFileDesc == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcess.pStdOutFileDesc");
+    env->ThrowNew(IOException, "unable to access: NativeProcessLight.pStdOutFileDesc");
     return -1;
   }
-  
-  jfieldID pStdErrFileDesc = env->GetFieldID(NativeProcessClass, "pStdErrFileDesc", "I");
+
+  jfieldID pStdErrFileDesc = env->GetFieldID(NativeProcessLightClass, "pStdErrFileDesc", "I");
   if(pStdErrFileDesc == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcess.pStdErrFileDesc");
+    env->ThrowNew(IOException, "unable to access: NativeProcessLight.pStdErrFileDesc");
     return -1;
   }
 
-  jfieldID pUserSecs = env->GetFieldID(NativeProcessClass, "pUserSecs", "J");
+  jfieldID pUserSecs = env->GetFieldID(NativeProcessLightClass, "pUserSecs", "J");
   if(pUserSecs == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcess.pUserSecs");
+    env->ThrowNew(IOException, "unable to access: NativeProcessLight.pUserSecs");
     return -1;
   }
 
-  jfieldID pUserMSecs = env->GetFieldID(NativeProcessClass, "pUserMSecs", "J");
+  jfieldID pUserMSecs = env->GetFieldID(NativeProcessLightClass, "pUserMSecs", "J");
   if(pUserMSecs == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcess.pUserMSecs");
+    env->ThrowNew(IOException, "unable to access: NativeProcessLight.pUserMSecs");
     return -1;
   }
 
-  jfieldID pSystemSecs = env->GetFieldID(NativeProcessClass, "pSystemSecs", "J");
+  jfieldID pSystemSecs = env->GetFieldID(NativeProcessLightClass, "pSystemSecs", "J");
   if(pSystemSecs == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcess.pSystemSecs");
+    env->ThrowNew(IOException, "unable to access: NativeProcessLight.pSystemSecs");
     return -1;
   }
 
-  jfieldID pSystemMSecs = env->GetFieldID(NativeProcessClass, "pSystemMSecs", "J");
+  jfieldID pSystemMSecs = env->GetFieldID(NativeProcessLightClass, "pSystemMSecs", "J");
   if(pSystemMSecs == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcess.pSystemMSecs");
+    env->ThrowNew(IOException, "unable to access: NativeProcessLight.pSystemMSecs");
     return -1;
   }
 
-  jfieldID pPageFaults = env->GetFieldID(NativeProcessClass, "pPageFaults", "J");
+  jfieldID pPageFaults = env->GetFieldID(NativeProcessLightClass, "pPageFaults", "J");
   if(pPageFaults == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcess.pPageFaults");
+    env->ThrowNew(IOException, "unable to access: NativeProcessLight.pPageFaults");
     return -1;
   }
   
-  jmethodID setPid = env->GetMethodID(NativeProcessClass, "setPid", "(I)V");
+  jmethodID setPid = env->GetMethodID(NativeProcessLightClass, "setPid", "(I)V");
   if(setPid == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcess.setPid()");
+    env->ThrowNew(IOException, "unable to access: NativeProcessLight.setPid()");
     return -1;
   }
   
-  jmethodID setIsRunning = env->GetMethodID(NativeProcessClass, "setIsRunning", "(Z)V");
+  jmethodID setIsRunning = env->GetMethodID(NativeProcessLightClass, "setIsRunning", "(Z)V");
   if(setIsRunning == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcess.setIsRunning()");
+    env->ThrowNew(IOException, "unable to access: NativeProcessLight.setIsRunning()");
     return -1;
   }
   
-
   /* repackage the arguments */ 
   const char *dir = NULL; 
   char** cmdarray = NULL;
@@ -553,7 +577,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcess_execNative
 	  /* close the default STDIN */ 
 	  if(close(0) == -1) {
 	    sprintf(msg, "%s, unable to close child STDIN (before connecting it to the pipe)",
-		    "NativeProcess.execNative()");
+		    "NativeProcessLight.execNative()");
 	    perror(msg);
 	    exit(EXIT_FAILURE);    
 	  }
@@ -561,7 +585,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcess_execNative
 	  /* hook the READ side of the pipe up to STDIN */ 
 	  if(dup(pipeIn[0]) == -1) {
 	    sprintf(msg, "%s, unable to connect child STDIN to the pipe",
-		    "NativeProcess.execNative()");
+		    "NativeProcessLight.execNative()");
 	    perror(msg);
 	    exit(EXIT_FAILURE);	    
 	  }
@@ -569,7 +593,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcess_execNative
 	  /* close the original pipe, leaving only the STDIN connected */ 
 	  if((close(pipeIn[0]) == -1) || (close(pipeIn[1]) == -1)) {
 	    sprintf(msg, "%s, unable to close down the original child STDIN pipe",
-		    "NativeProcess.execNative()");
+		    "NativeProcessLight.execNative()");
 	    perror(msg);
 	    exit(EXIT_FAILURE);    	    
 	  }
@@ -580,7 +604,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcess_execNative
 	  /* close the default STDOUT */ 
 	  if(close(1) == -1) {
 	    sprintf(msg, "%s, unable to close child STDOUT (%s)",
-		    "NativeProcess.execNative()", "before connecting it to the pipe");
+		    "NativeProcessLight.execNative()", "before connecting it to the pipe");
 	    perror(msg);
 	    exit(EXIT_FAILURE);    
 	  }
@@ -588,7 +612,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcess_execNative
 	  /* hook the WRITE side of the pipe up to STDOUT */ 
 	  if(dup(pipeOut[1]) == -1) {
 	    sprintf(msg, "%s, unable to connect child STDOUT to the pipe",
-		    "NativeProcess.execNative()");
+		    "NativeProcessLight.execNative()");
 	    perror(msg);
 	    exit(EXIT_FAILURE);	    
 	  }
@@ -596,7 +620,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcess_execNative
 	  /* close the original pipe, leaving only the STDOUT connected */ 
 	  if((close(pipeOut[0]) == -1) || (close(pipeOut[1]) == -1)) {
 	    sprintf(msg, "%s, unable to close down the original child STDOUT pipe",
-		    "NativeProcess.execNative()");
+		    "NativeProcessLight.execNative()");
 	    perror(msg);
 	    exit(EXIT_FAILURE);    	    
 	  }
@@ -607,7 +631,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcess_execNative
 	  /* close the default STDERR */ 
 	  if(close(2) == -1) {
 	    sprintf(msg, "%s, unable to close child STDERR (%s)"
-		    "NativeProcess.execNative()", "before connecting it to the pipe");
+		    "NativeProcessLight.execNative()", "before connecting it to the pipe");
 	    perror(msg);
 	    exit(EXIT_FAILURE);    
 	  }
@@ -615,7 +639,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcess_execNative
 	  /* hook the WRITE side of the pipe up to STDERR */ 
 	  if(dup(pipeErr[1]) == -1) {
 	    sprintf(msg, "%s, unable to connect child STDERR to the pipe",
-		    "NativeProcess.execNative()");
+		    "NativeProcessLight.execNative()");
 	    perror(msg);
 	    exit(EXIT_FAILURE);	    
 	  }
@@ -623,7 +647,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcess_execNative
 	  /* close the original pipe, leaving only the STDERR connected */ 
 	  if((close(pipeErr[0]) == -1) || (close(pipeErr[1]) == -1)) {
 	    sprintf(msg, "%s, unable to close down the original child STDERR pipe",
-		    "NativeProcess.execNative()");
+		    "NativeProcessLight.execNative()");
 	    perror(msg);
 	    exit(EXIT_FAILURE);    	    
 	  }
@@ -632,7 +656,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcess_execNative
 	/* change to the working directory */ 
 	if(chdir(dir) == -1) {
 	  sprintf(msg, "%s, unable change directory to \"%s\"", 
-		  "NativeProcess.execNative()", dir);
+		  "NativeProcessLight.execNative()", dir);
 	  perror(msg);
 	  exit(EXIT_FAILURE);    
 	}
@@ -640,7 +664,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcess_execNative
 	/* put this process into its own process group */ 
 	if(setsid() == -1) {
 	  sprintf(msg, "%s, unable to create a new process group for the child process", 
-		  "NativeProcess.execNative()");
+		  "NativeProcessLight.execNative()");
 	  perror(msg);
 	  exit(EXIT_FAILURE);    	    
 	}
@@ -650,7 +674,7 @@ JNICALL Java_us_temerity_pipeline_NativeProcess_execNative
 
 	/* execve() NEVER returns if successful */ 
 	sprintf(msg, "%s, unable to execute \"%s\"", 
-		"NativeProcess.execNative()", cmdarray[0]);
+		"NativeProcessLight.execNative()", cmdarray[0]);
 	perror(msg);
 	exit(EXIT_FAILURE);    
       }
@@ -751,189 +775,3 @@ JNICALL Java_us_temerity_pipeline_NativeProcess_execNative
 }
 
 
-
-/* Resource usage statistics for running native process. 
-       Returns whether the collection was successful. */ 
-JNIEXPORT jboolean 
-JNICALL Java_us_temerity_pipeline_NativeProcess_collectStatsNative
-(
- JNIEnv *env, 
- jobject obj
-)
-{
-  /* exception initialization */ 
-  char msg[1024];
-  jclass IOException = env->FindClass("java/io/IOException");
-  if(IOException == 0) {
-    errno = ECANCELED;
-    perror("NativeProcess.waitNative(), unable to lookup \"java/lang/IOException\"");
-    return false;
-  }
-
-  /* get handles for the NativeProcess object's fields/methods */ 
-  jclass NativeProcessClass = env->GetObjectClass(obj);  
-  if(NativeProcessClass == 0) {
-    env->ThrowNew(IOException, "unable to lookup class: NativeProcess");
-    return false;
-  }
-    
-  jfieldID pAvgVMem = env->GetFieldID(NativeProcessClass, "pAvgVMem", "J");
-  if(pAvgVMem == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcess.pAvgVMem");
-    return false;
-  }
-
-  jfieldID pMaxVMem = env->GetFieldID(NativeProcessClass, "pMaxVMem", "J");
-  if(pMaxVMem == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcess.pMaxVMem");
-    return false;
-  }
-
-  jfieldID pAvgResMem = env->GetFieldID(NativeProcessClass, "pAvgResMem", "J");
-  if(pAvgResMem == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcess.pAvgResMem");
-    return false;
-  }
-
-  jfieldID pMaxResMem = env->GetFieldID(NativeProcessClass, "pMaxResMem", "J");
-  if(pMaxResMem == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcess.pMaxResMem");
-    return false;
-  }
-
-  jfieldID pMemSamples = env->GetFieldID(NativeProcessClass, "pMemSamples", "J");
-  if(pMemSamples == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcess.pMemSamples");
-    return false;
-  }
-
-  jmethodID getPid = env->GetMethodID(NativeProcessClass, "getPid", "()I");
-  if(getPid == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcess.getPid()");
-    return false;
-  }
-
-
-  /* get the process ID */ 
-  jint pid         = env->CallIntMethod(obj, getPid);
-  jlong avgVMem    = env->GetLongField(obj, pAvgVMem);
-  jlong maxVMem    = env->GetLongField(obj, pMaxVMem);
-  jlong avgResMem  = env->GetLongField(obj, pAvgResMem);
-  jlong maxResMem  = env->GetLongField(obj, pMaxResMem);
-  jlong memSamples = env->GetLongField(obj, pMemSamples);
-
-  /* determine the size of memory pages */ 
-  long psize = (long) getpagesize(); 
-  if(psize <= 0) {
-    env->ThrowNew(IOException, "cannot determine the page size!");
-    return false;
-  }
-
-  /* open the statistics psuedo-file for the process */ 
-  {
-    char path[1024];
-    sprintf(path, "/proc/%d/statm", pid);
-    FILE* file = fopen(path, "r");
-    if(file == NULL) 
-      return false;
-
-    long vmem, rss;
-    int matches = 
-      fscanf(file, "%ld %ld %*s %*s %*s %*s %*s", &vmem, &rss);
-    fclose(file);
-    if(matches != 2) {
-      sprintf(msg, "internal error: %s", strerror(errno));
-      env->ThrowNew(IOException, msg);
-      return false;
-    }
-    vmem = vmem / 1024;
-    rss  = rss * (psize / 1024);
-
-    avgVMem += vmem;
-    if(maxVMem < vmem)
-      maxVMem = vmem;
-
-    avgResMem += rss;
-    if(maxResMem < rss)
-      maxResMem = rss;
-
-    memSamples++;
-  }
-
-  /* set statistics fields */ 
-  env->SetLongField(obj, pAvgVMem, avgVMem);
-  env->SetLongField(obj, pMaxVMem, maxVMem);
-  env->SetLongField(obj, pAvgResMem, avgResMem);
-  env->SetLongField(obj, pMaxResMem, maxResMem);
-  env->SetLongField(obj, pMemSamples, memSamples);
-
-  return true;
-}
-
-
-
-/* Send a signal to a native process. */ 
-extern "C" 
-JNIEXPORT void 
-JNICALL Java_us_temerity_pipeline_NativeProcess_signalNative
-(
- JNIEnv *env, 
- jobject obj, 
- jint signal,  /* IN: POSIX signal */ 
- jint pid      /* IN: POSIX signal */ 
-)
-{
-  /* exception initialization */ 
-  char msg[1024];
-  jclass IOException = env->FindClass("java/io/IOException");
-  if(IOException == 0) {
-    errno = ECANCELED;
-    perror("NativeProcess.signalNative(), unable to lookup \"java/lang/IOException\"");
-    return;
-  }
-  
-  /* send the signal */ 
-  if(kill(pid, signal) == -1) {
-    sprintf(msg, "failed send signal (%d) to process (%d): %s\n", 
-	    signal, pid, strerror(errno));
-    env->ThrowNew(IOException, msg);
-    return; 
-  }
-}
-
-
-/* Change file access permissions. */
-extern "C" 
-JNIEXPORT void 
-JNICALL Java_us_temerity_pipeline_NativeProcess_chmodNative
-(
- JNIEnv *env, 
- jclass cls, 
- jint mode,    /* IN: the access mode bitmask */ 
- jstring jfile  /* IN: the fully resolved path to the file to change */ 
-)
-{
-  /* exception initialization */ 
-  char msg[1024];
-  jclass IOException = env->FindClass("java/io/IOException");
-  if(IOException == 0) {
-    errno = ECANCELED;
-    perror("NativeProcess.signalNative(), unable to lookup \"java/lang/IOException\"");
-    return;
-  }
-
-  /* repackage the arguments */ 
-  const char* file = env->GetStringUTFChars(jfile, 0);
-  if((file == NULL) || (strlen(file) == 0)) {
-    env->ThrowNew(IOException,"empty file argument");
-    return;
-  }
-
-  /* change the access permissions */ 
-  if(chmod(file, mode) == -1) {
-    sprintf(msg, "failed to change the permissions of file (%d): %s\n", 
-	    file, strerror(errno));
-    env->ThrowNew(IOException, msg);    
-  }
-}
- 

@@ -1,4 +1,4 @@
-// $Id: JMonitorSubprocessDialog.java,v 1.2 2004/07/14 21:06:42 jim Exp $
+// $Id: JMonitorSubProcessDialog.java,v 1.1 2004/10/28 15:55:24 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -21,7 +21,7 @@ import javax.swing.tree.*;
  * Monitor the output from a running subprocess.
  */ 
 public 
-class JMonitorSubprocessDialog
+class JMonitorSubProcessDialog
   extends JBaseDialog
   implements WindowListener
 {
@@ -42,49 +42,99 @@ class JMonitorSubprocessDialog
    *   The subprocess to monitor.
    */ 
   public 
-  JMonitorSubprocessDialog
+  JMonitorSubProcessDialog
   (
    String title, 
    String header, 
-   SubProcess proc
+   SubProcessHeavy proc
   ) 
   {
     super(title, false);
-
-    pProc = proc;
+    
+    pHeader = header;
+    pProc   = proc;
     
     /* create dialog body components */ 
     {
-      JPanel body = new JPanel();
-
-      body.setName("MainDialogPanel");
-      body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));
-
-      body.add(UIMaster.createPanelLabel("Command Output:"));
-      
-      body.add(Box.createRigidArea(new Dimension(0, 4)));
-
+      JPanel cpanel = new JPanel();
       {
-	JTextArea area = new JTextArea("COMMAND: " + proc.getCommand() + "\n\n", 30, 100);
-	pOutputArea = area;
-	area.setName("CodeTextArea");
-	area.setLineWrap(true);
-	area.setWrapStyleWord(true);
-	area.setEditable(false);
+	cpanel.setName("MainDialogPanel");
+	cpanel.setLayout(new BoxLayout(cpanel, BoxLayout.Y_AXIS));
+
+	cpanel.add(UIMaster.createPanelLabel("Command:"));
+	
+	cpanel.add(Box.createRigidArea(new Dimension(0, 4)));
+
+	{
+	  JTextArea area = new JTextArea(proc.getCommand(), 2, 80);
+	  area.setName("CodeTextArea");
+	  area.setLineWrap(true);
+	  area.setWrapStyleWord(true);
+	  area.setEditable(false);
+	
+	  {
+	    JScrollPane scroll = new JScrollPane(area);
+	    
+	    scroll.setHorizontalScrollBarPolicy
+	      (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+	    scroll.setVerticalScrollBarPolicy
+	      (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+	    
+	    scroll.setMinimumSize(new Dimension(100, 50));
+	    
+	    cpanel.add(scroll);
+	  }	
+	}
       }
 
+      JSplitPane split = null;
       {
-	JScrollPane scroll = new JScrollPane(pOutputArea);
-	pOutputScroll = scroll;
+	JPanel opanel = new JPanel();
+	{
+	  opanel.setName("MainDialogPanel");
+	  opanel.setLayout(new BoxLayout(opanel, BoxLayout.Y_AXIS));
+
+	  opanel.add(UIMaster.createPanelLabel("Output:"));
+	  
+	  opanel.add(Box.createRigidArea(new Dimension(0, 4)));
+	  
+	  {
+	    JFileMonitorPanel panel = new JFileMonitorPanel(proc.getStdOutFile(), 10, 80);
+	    pStdOutPanel = panel;
+	    
+	    opanel.add(panel);
+	  }
+
+	  opanel.setMinimumSize(new Dimension(100, 50));
+	}
 	
-	scroll.setHorizontalScrollBarPolicy
-	  (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	scroll.setVerticalScrollBarPolicy
-	  (ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-	
-	body.add(scroll);
-      }
+	JPanel epanel = new JPanel();
+	{
+	  epanel.setName("MainDialogPanel");
+	  epanel.setLayout(new BoxLayout(epanel, BoxLayout.Y_AXIS));
+	  
+	  epanel.add(UIMaster.createPanelLabel("Errors:"));
+	  
+	  epanel.add(Box.createRigidArea(new Dimension(0, 4)));
+	  
+	  {
+	    JFileMonitorPanel panel = new JFileMonitorPanel(proc.getStdErrFile(), 10, 80);
+	    pStdErrPanel = panel;
+	    
+	    epanel.add(panel);
+	  }
+
+	  epanel.setMinimumSize(new Dimension(100, 50));
+	}
+
+	split = new JVertSplitPanel(opanel, epanel);
+      }  
       
+      JSplitPane body = new JVertSplitPanel(cpanel, split);
+
+      body.setAlignmentX(0.5f);
+      body.setMinimumSize(new Dimension(100, 350));
+
       super.initUI(header, false, body, null, null, null, "Kill");
     }
 
@@ -198,7 +248,7 @@ class JMonitorSubprocessDialog
     public 
     RunTask() 
     {
-      super("JMonitorSubprocessDialog:RunTask");
+      super("JMonitorSubProcessDialog:RunTask");
     }
 
     public void 
@@ -209,48 +259,37 @@ class JMonitorSubprocessDialog
 
       pProc.start();
 
-      PrintStdOutTask outTask = new PrintStdOutTask();
-      outTask.start();
-
-      PrintStdErrTask errTask = new PrintStdErrTask();
-      errTask.start();
+      UpdateTask update = new UpdateTask();
+      update.start();
 
       try {
 	pProc.join();
-	outTask.join();
- 	errTask.join();
-
-	if(pProc.wasSuccessful()) 
-	  pOutputArea.append("\nSUCCESS.\n");
-	else 
-	  pOutputArea.append("\nFAILED: Exit Code = " + pProc.getExitCode() + "\n");
+	update.join();
 
 	SwingUtilities.invokeLater(new DoneTask());
       }
       catch (InterruptedException ex) {
-	outTask.interrupt();
- 	errTask.interrupt();
+	update.interrupt();
       }
     }
   }
 
   /** 
-   * Print the STDOUT output from the test in the output text area.
+   * Update the output monitor panels at regular intervals.
    */
-  private 
-  class PrintStdOutTask
-    extends Thread
-  {
-    public 
-    PrintStdOutTask() 
-    {
-      super("JMonitorSubprocessDialog:PrintStdOutTask");
-    }
+   private 
+   class UpdateTask
+     extends Thread
+   {
+     public 
+     UpdateTask() 
+     {
+       super("JMonitorSubProcessDialog:UpdateTask");
+     }
 
     public void 
     run()
     {
-      int i = 0;
       do {
 	try {
 	  sleep(500);
@@ -259,78 +298,31 @@ class JMonitorSubprocessDialog
 	  return;
 	}
 
-	String lines[] = pProc.getStdOutLines(i);
-	i += lines.length;
-
-	int wk;
-	for(wk=0; wk<lines.length; wk++) 
-	  pOutputArea.append(lines[wk] + "\n");
-
-	if(lines.length > 0) 
-	  SwingUtilities.invokeLater(new ScrollTask());
+	SwingUtilities.invokeLater(new UpdatePanelsTask());
       } 
       while(pProc.isAlive());
     }
   }
   
   /** 
-   * Print the STDERR output from the test in the output text area.
+   * Update the output monitor panels.
    */
-  private 
-  class PrintStdErrTask
-    extends Thread
-  {
-    public 
-    PrintStdErrTask() 
-    {
-      super("JMonitorSubprocessDialog:PrintStdErrTask");
-    }
+   private 
+   class UpdatePanelsTask
+     extends Thread
+   {
+     public 
+     UpdatePanelsTask() 
+     {
+       super("JMonitorSubProcessDialog:UpdatePanelsTask");
+     }
 
     public void 
     run()
     {
-      int i = 0;
-      do {
-	try {
-	  sleep(500);
-	}
-	catch (InterruptedException ex) {
-	  return;
-	}
-
-	String lines[] = pProc.getStdErrLines(i);
-	i += lines.length;
-
-	int wk;
-	for(wk=0; wk<lines.length; wk++) 
-	  pOutputArea.append(lines[wk] + "\n");
-
-	if(lines.length > 0) 
-	  SwingUtilities.invokeLater(new ScrollTask());
-      } 
-      while(pProc.isAlive());
-    }
-  }
-  
-  /** 
-   * Scroll to the end of the output.
-   */
-  private 
-  class ScrollTask
-    extends Thread
-  {
-    public 
-    ScrollTask() 
-    {
-      super("JMonitorSubprocessDialog:ScrollTask");
-    }
-
-    public void 
-    run()
-    {
-      Dimension size = pOutputArea.getSize();
-      Rectangle rect = new Rectangle(0, size.height-1, 1, size.height);
-      pOutputScroll.getViewport().scrollRectToVisible(rect);
+      pHeaderLabel.setText(pHeader + "   (Running)");
+      pStdOutPanel.updateScrollBar();
+      pStdErrPanel.updateScrollBar();
     }
   }
 
@@ -344,12 +336,17 @@ class JMonitorSubprocessDialog
     public 
     DoneTask() 
     {
-      super("JMonitorSubprocessDialog:DoneTask");
+      super("JMonitorSubProcessDialog:DoneTask");
     }
 
     public void 
     run()
     {
+      if(pProc.wasSuccessful()) 
+	pHeaderLabel.setText(pHeader + "   (SUCCESS)");
+      else 
+	pHeaderLabel.setText(pHeader + "   (FAILED: " + pProc.getExitCode() + ")");
+      
       pCancelButton.setText("Close");
     }
   }
@@ -371,7 +368,7 @@ class JMonitorSubprocessDialog
   /**
    * The test process.
    */
-  private SubProcess  pProc;
+  private SubProcessHeavy  pProc;
 
   /**
    * The task monitoring the test process.
@@ -379,13 +376,21 @@ class JMonitorSubprocessDialog
   private RunTask  pRunTask;
 
 
+  /*----------------------------------------------------------------------------------------*/
+
   /**
-   * The test output text area.
+   * The base header text. 
    */ 
-  private JTextArea  pOutputArea;
+  private String  pHeader; 
+
+  /**
+   * The panel monitoring the process STDOUT.
+   */ 
+  private JFileMonitorPanel  pStdOutPanel;
   
   /**
-   * The test output scroll pane.
+   * The panel monitoring the process STDOUT.
    */ 
-  private JScrollPane  pOutputScroll;
+  private JFileMonitorPanel  pStdErrPanel;
+  
 }

@@ -1,4 +1,4 @@
-// $Id: QueueJobInfo.java,v 1.5 2004/08/31 12:42:46 jim Exp $
+// $Id: QueueJobInfo.java,v 1.6 2004/10/28 15:55:23 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -207,7 +207,7 @@ class QueueJobInfo
 
     pCompletedStamp = Dates.now();
 
-    if((pResults != null) && (pResults.getExitCode() == SubProcess.SUCCESS))
+    if((pResults != null) && (pResults.getExitCode() == BaseSubProcess.SUCCESS))
       pState = JobState.Finished;
     else 
       pState = JobState.Failed;

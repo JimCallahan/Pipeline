@@ -1,4 +1,4 @@
-// $Id: JMonitorJobStdOutDialog.java,v 1.1 2004/09/05 06:54:56 jim Exp $
+// $Id: JMonitorJobStdOutDialog.java,v 1.2 2004/10/28 15:55:24 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -48,8 +48,31 @@ class JMonitorJobStdOutDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the current collected lines of captured output from the job server for the given 
-   * job starting at the given line. 
+   * Get the current number of lines of STDOUT output from the given job. <P> 
+   * 
+   * @param client
+   *   The job manager connection.
+   * 
+   * @param jobID
+   *   The unique job identifier. 
+   *    
+   * @throws PipelineException
+   *   If unable to find a job with the given ID.
+   */ 
+  public int
+  getNumLinesMonitor
+  (
+   JobMgrClient client,
+   long jobID
+  ) 
+    throws PipelineException  
+  {
+    return client.getNumStdOutLines(jobID);
+  }
+  
+  
+  /**
+   * Get the contents of the given region of lines of the STDOUT output from the given job. 
    * 
    * @param client
    *   The job manager connection.
@@ -57,21 +80,52 @@ class JMonitorJobStdOutDialog
    * @param jobID
    *   The unique job identifier. 
    * 
-   * @param start 
-   *   The index of the first line of output to return.  
+   * @param start
+   *   The line number of the first line of text.
+   * 
+   * @param lines
+   *   The number of lines of text to retrieve. 
+   * 
+   * @throws PipelineException
+   *   If unable to find a job with the given ID.
    */
-  protected String[]
-  getOutputLines
+  public synchronized String
+  getLinesMonitor
   (
    JobMgrClient client,
    long jobID, 
-   int start   
-  )
-    throws PipelineException
+   int start, 
+   int lines
+  ) 
+    throws PipelineException  
   {
-    return client.getStdOutLines(jobID, start);
+    return client.getStdOutLines(jobID, start, lines);
   }
 
+  /**
+   * Release any server resources associated with monitoring the STDOUT output of the 
+   * given job.
+   * 
+   * @param client
+   *   The job manager connection.
+   * 
+   * @param jobID
+   *   The unique job identifier. 
+   * 
+   * @throws PipelineException
+   *   If unable to find a job with the given ID.
+   */
+  public void
+  closeMonitor
+  (
+   JobMgrClient client,
+   long jobID
+  ) 
+    throws PipelineException  
+  {
+    client.closeStdOut(jobID);
+  }
+  
 
   
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: JTestEnvironmentDialog.java,v 1.2 2004/06/28 00:19:00 jim Exp $
+// $Id: JTestEnvironmentDialog.java,v 1.3 2004/10/28 15:55:24 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -192,11 +192,33 @@ class JTestEnvironmentDialog
       command = buf.toString();
     }
 
+    File outFile = null;
     try {
-      SubProcess proc = new SubProcess("TestEnvironment", program, args, pEnvironment, dir);
+      outFile = File.createTempFile("plui-test-output.", ".tmp", PackageInfo.sTempDir);
+      FileCleaner.add(outFile);
+    }
+    catch(IOException ex) {
+      UIMaster.getInstance().showErrorDialog(ex);
+      return;
+    }
+
+    File errFile = null;
+    try {
+      errFile = File.createTempFile("plui-test-errors.", ".tmp", PackageInfo.sTempDir);
+      FileCleaner.add(errFile);
+    }
+    catch(IOException ex) {
+      UIMaster.getInstance().showErrorDialog(ex);
+      return;
+    }
+
+    try {
+      SubProcessHeavy proc = 
+	new SubProcessHeavy("TestEnvironment", program, args, 
+			    pEnvironment, dir, outFile, errFile);
     
-      JMonitorSubprocessDialog diag = 
-	new JMonitorSubprocessDialog("Test Environmant Output", pHeaderLabel.getText(), proc);
+      JMonitorSubProcessDialog diag = 
+	new JMonitorSubProcessDialog("Test Environmant Output", pHeaderLabel.getText(), proc);
       diag.setVisible(true);
     }
     catch(IllegalArgumentException ex) {
@@ -294,5 +316,4 @@ class JTestEnvironmentDialog
    */ 
   private JTextArea  pCommandArea;
   
-
 }

@@ -1,4 +1,4 @@
-// $Id: GimpDiffComparator.java,v 1.1 2004/09/08 18:31:28 jim Exp $
+// $Id: GimpDiffComparator.java,v 1.2 2004/10/28 15:55:24 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -52,14 +52,14 @@ class GimpDiffComparator
    *   The working directory where the comparator is run.
    *
    * @return 
-   *   The controlling <CODE>SubProcess</CODE> instance. 
+   *   The controlling <CODE>SubProcessLight</CODE> instance. 
    * 
    * @throws PipelineException
    *   If unable to launch the comparator.
    * 
-   * @see SubProcess
+   * @see SubProcessLight
    */  
-  public SubProcess
+  public SubProcessLight
   launch
   (
    File fileA, 
@@ -125,7 +125,7 @@ class GimpDiffComparator
     args.add("-b");
     args.add("(load \"" + script + "\")");
 
-    SubProcess proc = new SubProcess(getName(), getProgram(), args, env, dir);
+    SubProcessLight proc = new SubProcessLight(getName(), getProgram(), args, env, dir);
     proc.start();
 
     return proc;

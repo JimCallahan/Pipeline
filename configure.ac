@@ -820,7 +820,7 @@ then
   prof_base=$with_prof_base
 fi
 
-java_prof_opts="-Xrunyjpagent:tracing,alloc,onexit=both,port="
+java_prof_opts="-Xrunyjpagent:sampling,alloc,onexit=both,port="
 java_prof_dir=",dir=/usr/tmp/pipeline-profile/"
 
 AC_MSG_CHECKING([plmaster])

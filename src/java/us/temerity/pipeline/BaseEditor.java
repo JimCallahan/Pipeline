@@ -1,4 +1,4 @@
-// $Id: BaseEditor.java,v 1.6 2004/09/08 18:33:09 jim Exp $
+// $Id: BaseEditor.java,v 1.7 2004/10/28 15:55:23 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -120,14 +120,14 @@ class BaseEditor
    *   The working directory where the editor is run.
    *
    * @return 
-   *   The controlling <CODE>SubProcess</CODE> instance. 
+   *   The controlling <CODE>SubProcessLight</CODE> instance. 
    * 
    * @throws PipelineException
    *   If unable to launch the editor.
    * 
-   * @see SubProcess
+   * @see SubProcessLight
    */  
-  public SubProcess
+  public SubProcessLight
   launch
   (
    FileSeq fseq,      
@@ -140,7 +140,7 @@ class BaseEditor
     for(File file : fseq.getFiles()) 
       args.add(file.getPath());
 
-    SubProcess proc = new SubProcess(getName(), getProgram(), args, env, dir);
+    SubProcessLight proc = new SubProcessLight(getName(), getProgram(), args, env, dir);
     proc.start();
     return proc;
   }

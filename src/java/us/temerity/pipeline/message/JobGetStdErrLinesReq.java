@@ -1,4 +1,4 @@
-// $Id: JobGetStdErrLinesReq.java,v 1.1 2004/07/28 19:10:23 jim Exp $
+// $Id: JobGetStdErrLinesReq.java,v 1.2 2004/10/28 15:55:24 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -12,7 +12,8 @@ import java.io.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to get current collected lines of captured STDERR output from the given job.
+ * A request to get the contents of the given region of lines of the STDERR output 
+ * from the given job. 
  */
 public
 class JobGetStdErrLinesReq
@@ -28,18 +29,23 @@ class JobGetStdErrLinesReq
    * @param jobID
    *   The unique job identifier. 
    * 
-   * @param start 
-   *   The index of the first line of output to return.  
+   * @param start
+   *   The line number of the first line of text.
+   * 
+   * @param lines
+   *   The number of lines of text to retrieve. 
    */
   public
   JobGetStdErrLinesReq
   (
    long jobID, 
-   int start
+   int start, 
+   int lines
   )
   { 
     pJobID = jobID;
     pStart = start;
+    pLines = lines;
   }
 
 
@@ -66,6 +72,15 @@ class JobGetStdErrLinesReq
     return pStart;
   }
 
+  /**
+   * Gets the number of lines of text to retrieve. 
+   */
+  public int
+  getLines()
+  {
+    return pLines;
+  }
+
   
 
   /*----------------------------------------------------------------------------------------*/
@@ -89,6 +104,11 @@ class JobGetStdErrLinesReq
    * The index of the first line of output.
    */ 
   private int  pStart; 
+
+  /**
+   * The number of lines of text to retrieve. 
+   */
+  private int  pLines; 
 
 }
   
