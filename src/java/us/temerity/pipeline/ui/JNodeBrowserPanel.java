@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.9 2004/05/05 20:59:36 jim Exp $
+// $Id: JNodeBrowserPanel.java,v 1.10 2004/05/07 21:09:04 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -161,6 +161,7 @@ class JNodeBrowserPanel
   }
 
 
+
   /*----------------------------------------------------------------------------------------*/
   /*   U S E R   I N T E R F A C E                                                          */
   /*----------------------------------------------------------------------------------------*/
@@ -202,12 +203,19 @@ class JNodeBrowserPanel
 
     /* get the updated node tree */ 
     NodeTreeComp comp = null;
-    try { 
-      comp = master.getNodeMgrClient().updatePaths(pAuthor, pView, paths); 
-    }
-    catch(PipelineException ex) {
-      master.showErrorDialog(ex);
-      return;
+    {
+      if(!master.beginPanelOp()) 
+	return;
+      try { 
+	comp = master.getNodeMgrClient().updatePaths(pAuthor, pView, paths); 
+      }
+      catch(PipelineException ex) {
+	master.showErrorDialog(ex);
+	return;
+      }
+      finally {
+	master.endPanelOp();
+      }
     }
 
     /* rebuild the tree model based on the updated node tree */ 
@@ -337,11 +345,29 @@ class JNodeBrowserPanel
       case Pending:
       case Working:
       case CheckedIn: 
-	System.out.print("Selected Node: " + comp.getState() + 
-			 "  (" + e.getClickCount() + " clicks)\n" + 
-			 "  Author = " + pAuthor + "\n" +
-			 "    View = " + pView + "\n" + 
-			 "    Name = " + treePathToNodeName(tpath) + "\n");
+	{
+	  UIMaster master = UIMaster.getInstance();
+	    
+	  if(pGroupID == 0) {
+	    Toolkit.getDefaultToolkit().beep();
+	    return;
+	  }
+
+	  JNodeViewerPanel viewer = master.getNodeViewer(pGroupID);
+	  if(viewer == null) {
+	    Toolkit.getDefaultToolkit().beep();
+	    return;
+	  }
+
+	  System.out.print("Selected Node: " + comp.getState() + 
+			   "  (" + e.getClickCount() + " clicks)\n" + 
+			   "  Author = " + pAuthor + "\n" +
+			   "    View = " + pView + "\n" + 
+			   "    Name = " + treePathToNodeName(tpath) + "\n");
+	  
+	  viewer.setFocus(pAuthor, pView, treePathToNodeName(tpath));
+	  viewer.updateManagerTitlePanel();
+	}
       }
     }
   }
