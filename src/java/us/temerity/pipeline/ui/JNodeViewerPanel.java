@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.19 2004/06/19 00:35:06 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.20 2004/06/22 19:42:06 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1384,6 +1384,9 @@ class JNodeViewerPanel
    Point pos
   ) 
   {
+    if(pos == null) 
+      return null;
+
     return objectAtMousePos(pos.x, pos.y);
   }
 
