@@ -1,4 +1,4 @@
-// $Id: JBooleanField.java,v 1.5 2004/06/23 22:30:10 jim Exp $
+// $Id: JBooleanField.java,v 1.6 2005/01/09 16:00:52 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -256,7 +256,7 @@ class JBooleanField
     }    
 
     public JBooleanField
-    getParent()
+    getBooleanField() 
     {
       return pParent;
     }
@@ -307,7 +307,5 @@ class JBooleanField
    * The icon.
    */ 
   private JLabel  pIconLabel; 
-
-
 
 }
