@@ -1,4 +1,4 @@
-// $Id: NodeMgr.java,v 1.25 2004/05/04 11:00:15 jim Exp $
+// $Id: NodeMgr.java,v 1.26 2004/05/04 17:49:06 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -804,9 +804,8 @@ class NodeMgr
 	NodeTreeEntry parentEntry = pNodeTreeRoot;
 	int wk;
 	for(wk=1; wk<comps.length; wk++) {
-	  for(NodeTreeCommon com : parentEntry.values()) {
-	    if(!parentComp.containsKey(com.getName())) {
-	      NodeTreeEntry entry = (NodeTreeEntry) com;
+	  for(NodeTreeEntry entry : parentEntry.values()) {
+	    if(!parentComp.containsKey(entry.getName())) {
 	      NodeTreeComp comp = new NodeTreeComp(entry, req.getAuthor(), req.getView());
 	      parentComp.put(comp.getName(), comp);
 	    }
@@ -826,9 +825,8 @@ class NodeMgr
 	}
 	
 	if((parentEntry != null) && (parentComp != null)) {
-	  for(NodeTreeCommon com : parentEntry.values()) {
-	    if(!parentComp.containsKey(com.getName())) {
-	      NodeTreeEntry entry = (NodeTreeEntry) com;
+	  for(NodeTreeEntry entry : parentEntry.values()) {
+	    if(!parentComp.containsKey(entry.getName())) {
 	      NodeTreeComp comp = new NodeTreeComp(entry, req.getAuthor(), req.getView());
 	      parentComp.put(comp.getName(), comp);
 	    }
@@ -2044,8 +2042,8 @@ class NodeMgr
       }
     }
     else {
-      for(NodeTreeCommon child : entry.values()) 
-	logNodeTreeHelper((NodeTreeEntry) child, indent+1, buf);
+      for(NodeTreeEntry child : entry.values()) 
+	logNodeTreeHelper(child, indent+1, buf);
     }
   }
 
