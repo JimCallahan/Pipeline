@@ -1,4 +1,4 @@
-// $Id: DownstreamLinks.java,v 1.2 2004/04/19 21:05:47 jim Exp $
+// $Id: DownstreamLinks.java,v 1.3 2004/05/08 23:31:39 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -25,11 +25,9 @@ import java.io.*;
  * contained in instances of this class up to date with the <CODE>NodeMod</CODE> and 
  * <CODE>NodeVersion</CODE> instances.  The <CODE>NodeMgr</CODE> class is also responsible 
  * for reading and writing the Glue format text files which store persistant instance of 
- * this class on disk.
+ * this class on disk. <P> 
  * 
- * @see NodeVersion
- * @see NodeMod
- * @see NodeMgr
+ * Users should never insantiate this class directly!
  */
 public
 class DownstreamLinks
@@ -110,9 +108,13 @@ class DownstreamLinks
 	("The working version ID cannot be (null)!");
     assert(id.getName().equals(pName)); 
 
-    TreeSet<String> links = pWorkingLinks.get(id);
-    if(links != null)
-      return new TreeSet<String>(links);
+    if(pWorkingLinks.containsKey(id)) {
+      TreeSet<String> links = pWorkingLinks.get(id);
+      if(links != null)
+	return new TreeSet<String>(links);
+      else 
+	return new TreeSet<String>();
+    }
 
     return null;
   }
@@ -131,10 +133,8 @@ class DownstreamLinks
   ) 
   {
     TreeSet<String> links = pWorkingLinks.get(id);
-    if(links == null) {
-      links = new TreeSet<String>();
-      pWorkingLinks.put(id, links);
-    }
+    if(links == null) 
+      pWorkingLinks.put(id, null);
   }
 
   /** 
@@ -245,9 +245,13 @@ class DownstreamLinks
       throw new IllegalArgumentException
 	("The revision number cannot be (null)!");
     
-    TreeMap<String,VersionID> links = pCheckedInLinks.get(vid);
-    if(links != null)
-      return new TreeMap<String,VersionID>(links);
+    if(pCheckedInLinks.containsKey(vid)) {
+      TreeMap<String,VersionID> links = pCheckedInLinks.get(vid);
+      if(links != null)
+	return new TreeMap<String,VersionID>(links);
+      else 
+	return new TreeMap<String,VersionID>();
+    }
 
     return null;
   }
@@ -268,12 +272,9 @@ class DownstreamLinks
   {
     if(pCheckedInLinks.isEmpty()) 
       return null;
-    
-    TreeMap<String,VersionID> links = pCheckedInLinks.get(pCheckedInLinks.lastKey());
-    if(links != null)
-      return new TreeMap<String,VersionID>(links);
 
-    return null;
+    VersionID vid = pCheckedInLinks.lastKey();
+    return getCheckedIn(vid);
   }
   
   /**
@@ -290,10 +291,8 @@ class DownstreamLinks
   ) 
   { 
     TreeMap<String,VersionID> links = pCheckedInLinks.get(vid);
-    if(links == null) {
-      links = new TreeMap<String,VersionID>();
-      pCheckedInLinks.put(vid, links);
-    }
+    if(links == null) 
+      pCheckedInLinks.put(vid, null);
   }
 
   /** 
