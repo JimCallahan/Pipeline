@@ -1,4 +1,4 @@
-// $Id: FrameRange.java,v 1.4 2004/02/23 23:53:41 jim Exp $
+// $Id: FrameRange.java,v 1.5 2004/02/28 19:58:43 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -24,7 +24,7 @@ import java.io.*;
  */
 public
 class FrameRange
-  implements Glueable
+  implements Cloneable, Glueable, Serializable
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -104,11 +104,16 @@ class FrameRange
       throw new IllegalArgumentException
 	("The frame increment (" + by + ") must be positive!");
 
+    if(((end - start) % by) != 0) 
+      throw new IllegalArgumentException
+	("The frame range (" + (end-start) + ") was no evenly divisible by the frame " +
+	 "increment (" + by + ")!");      
+
     pStart = start;
     pEnd   = end;
     pBy    = by;
 
-    pNumFrames = (int) Math.floor(((double) (pEnd - pStart)) / ((double) pBy)) + 1;
+    pNumFrames = ((end - start) / by) + 1;
   }
 
   /**
@@ -335,6 +340,22 @@ class FrameRange
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   C L O N E A B L E                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Return a deep copy of this object.
+   */
+  public Object 
+  clone()
+    throws CloneNotSupportedException
+  {
+    return super.clone();
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   G L U E A B L E                                                                      */
   /*----------------------------------------------------------------------------------------*/
   
@@ -391,6 +412,14 @@ class FrameRange
       pEnd = pStart;
     }
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static final long serialVersionUID = 7113054792066134471L;
 
 
 

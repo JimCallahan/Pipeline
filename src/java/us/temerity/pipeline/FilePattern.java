@@ -1,4 +1,4 @@
-// $Id: FilePattern.java,v 1.3 2004/02/23 23:53:41 jim Exp $
+// $Id: FilePattern.java,v 1.4 2004/02/28 19:57:17 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -38,7 +38,7 @@ import java.io.*;
  */
 public
 class FilePattern
-implements Glueable
+implements Cloneable, Glueable, Serializable
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -360,6 +360,22 @@ implements Glueable
   }
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C L O N E A B L E                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Return a deep copy of this object.
+   */
+  public Object 
+  clone()
+    throws CloneNotSupportedException
+  {
+    return super.clone();
+  }
+
+
     
   /*----------------------------------------------------------------------------------------*/
   /*   G L U E A B L E                                                                      */
@@ -407,6 +423,14 @@ implements Glueable
       throw new GlueException("The \"Suffix\" was an empty string!");
     pSuffix = suffix;
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static final long serialVersionUID = -3005276181325424333L;
 
 
 
