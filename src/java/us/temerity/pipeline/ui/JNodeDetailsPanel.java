@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.9 2004/07/24 18:27:38 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.10 2004/08/01 15:35:02 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -434,8 +434,49 @@ class JNodeDetailsPanel
 	      }
 	    }
 
+	    UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+
+	    /* action enabled */ 
+	    { 
+	      {
+		JLabel label = 
+		  UIMaster.createFixedLabel("Enabled:", sTSize, JLabel.RIGHT);
+		pActionEnabledTitle = label;
+		tpanel.add(label);
+	      }
+	      
+	      {
+		Box hbox = new Box(BoxLayout.X_AXIS);
+		
+		{
+		  JBooleanField field = UIMaster.createBooleanField(sVSize);
+		  pWorkingActionEnabledField = field;
+		  
+		  field.setValue(null);
+
+		  field.setActionCommand("action-enabled-changed");
+		  field.addActionListener(this);
+
+		  hbox.add(field);
+		}
+		
+		hbox.add(Box.createRigidArea(new Dimension(20, 0)));
+
+		{
+		  JTextField field = UIMaster.createTextField("-", sVSize, JLabel.CENTER);
+		  pCheckedInActionEnabledField = field;
+
+		  hbox.add(field);
+		}
+		
+		vpanel.add(hbox);
+	      }
+	    }
+
+	    UIMaster.addVerticalGlue(tpanel, vpanel);
+
 	    abox.add(comps[2]);
-	  }
+	  }	  
 
 	  {
 	    Box apbox = new Box(BoxLayout.Y_AXIS);
@@ -1460,7 +1501,7 @@ class JNodeDetailsPanel
 	pWorkingActionField.setValues(actions);
 	
 	BaseAction waction = initWorkingAction();
-	if((waction != null) && (actions.contains(waction.getName())))
+	if((waction != null) && (actions.contains(waction.getName()))) 
 	  pWorkingActionField.setSelected(waction.getName());
 	else 
 	  pWorkingActionField.setSelected("-");
@@ -1477,6 +1518,24 @@ class JNodeDetailsPanel
 	  pCheckedInActionField.setText(caction.getName());
 	else 
 	  pCheckedInActionField.setText("-");
+      }
+
+
+      if((work != null) && (getWorkingAction() != null)) {
+	pWorkingActionEnabledField.setValue(work.isActionEnabled()); 
+	pWorkingActionEnabledField.setEnabled(true);
+      }
+      else {
+	pWorkingActionEnabledField.setValue(null);
+	pWorkingActionEnabledField.setEnabled(false);
+      }
+
+      {
+	NodeVersion cvsn = getCheckedInVersion(); 
+	if((cvsn != null) && (cvsn.getAction() != null)) 
+	  pCheckedInActionEnabledField.setText(cvsn.isActionEnabled() ? "YES" : "no");
+	else 
+	  pCheckedInActionEnabledField.setText("-");
       }
 
       pActionParamComponents.clear();
@@ -2466,10 +2525,27 @@ class JNodeDetailsPanel
     pWorkingActionField.setForeground(fg);
     pCheckedInActionField.setForeground(fg);
 
+    updateActionEnabledColors();
+
     if(action != null) {
       for(BaseActionParam param : action.getSingleParams()) 
 	updateActionParamColor(param.getName(), color);
     }
+  }
+
+  /**
+   * Update the color of the action enabled UI components.
+   */ 
+  private void 
+  updateActionEnabledColors()
+  {
+    Color color = Color.white;
+    if(!pWorkingActionEnabledField.getText().equals(pCheckedInActionEnabledField.getText()))
+      color = Color.cyan;
+
+    pActionEnabledTitle.setForeground(color);
+    pWorkingActionEnabledField.setForeground(color);
+    pCheckedInActionEnabledField.setForeground(color);
   }
 
   /**
@@ -2785,6 +2861,8 @@ class JNodeDetailsPanel
       doSetAction();
     else if(cmd.equals("action-changed")) 
       doActionChanged();
+    else if(cmd.equals("action-enabled-changed")) 
+      doActionEnabledChanged();
     else if(cmd.startsWith("set-action-param:")) 
       doSetActionParam(cmd.substring(17));
     else if(cmd.startsWith("action-param-changed:")) 
@@ -2908,6 +2986,13 @@ class JNodeDetailsPanel
 	      }
 
 	      mod.setAction(waction);
+
+	      /* action enabled */ 
+	      {
+		Boolean enabled = pWorkingActionEnabledField.getValue();
+		if(enabled != null) 
+		  mod.setActionEnabled(enabled);
+	      }
 
 	      /* overflow policy */ 
 	      {
@@ -3136,16 +3221,28 @@ class JNodeDetailsPanel
 
     pWorkingActionField.removeActionListener(this);
     {
-      BaseAction action = getCheckedInAction();
+      NodeVersion vsn = getCheckedInVersion();
+      BaseAction action = null;
+      if(vsn != null) 
+	action = vsn.getAction();
+      
       if((action != null) && 
-	 pWorkingActionField.getValues().contains(action.getName()))
+	 pWorkingActionField.getValues().contains(action.getName())) {
 	pWorkingActionField.setSelected(action.getName());
-      else 
+	
+	pWorkingActionEnabledField.setValue(vsn.isActionEnabled());
+	pWorkingActionEnabledField.setEnabled(true);	  
+      }
+      else {
 	pWorkingActionField.setSelected("-");
+	
+	pWorkingActionEnabledField.setValue(null);
+	pWorkingActionEnabledField.setEnabled(false);
+      }
       setWorkingAction(action);
     }
     pWorkingActionField.addActionListener(this);
-      
+
     pActionParamComponents.clear();
     updateActionParams();
     updateActionColors();
@@ -3166,16 +3263,27 @@ class JNodeDetailsPanel
       String aname = pWorkingActionField.getSelected();
       if(aname.equals("-")) {
 	setWorkingAction(null);
+
+	pWorkingActionEnabledField.setValue(null);
+	pWorkingActionEnabledField.setEnabled(false);
+
 	pActionParamComponents.clear();
       }
       else if((pWorkingAction == null) || !pWorkingAction.getName().equals(aname)) {
 	try {
 	  setWorkingAction(Plugins.newAction(aname));
+
+	  if(pWorkingActionEnabledField.getValue() == null) 
+	    pWorkingActionEnabledField.setValue(true);
+	  pWorkingActionEnabledField.setEnabled(true);	  
 	}
 	catch(PipelineException ex) {
 	  UIMaster.getInstance().showErrorDialog(ex);
 
 	  setWorkingAction(null);
+
+	  pWorkingActionEnabledField.setValue(null);
+	  pWorkingActionEnabledField.setEnabled(false);
 
 	  pWorkingActionField.removeActionListener(this);
   	    pWorkingActionField.setSelected("-");
@@ -3192,6 +3300,19 @@ class JNodeDetailsPanel
     updateJobRequirements((oaction == null) && (getWorkingAction() != null));
   }
   
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Update the appearance of the action enabled fields after a change of value.
+   */ 
+  private void 
+  doActionEnabledChanged() 
+  {
+    pApplyButton.setEnabled(true);
+    updateActionEnabledColors();
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -3979,6 +4100,12 @@ class JNodeDetailsPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * The top-level container of the actions drawer.
+   */ 
+  private Box  pActionBox;
+
+
+  /**
    * The action title label.
    */ 
   private JLabel  pActionTitle;
@@ -4000,9 +4127,20 @@ class JNodeDetailsPanel
 
 
   /**
-   * The top-level container of the actions drawer.
+   * The action enabled title label.
    */ 
-  private Box  pActionBox;
+  private JLabel  pActionEnabledTitle;
+
+  /**
+   * The working action enabled field.
+   */ 
+  private JBooleanField pWorkingActionEnabledField;
+
+  /**
+   * The checked-in action enabled field.
+   */ 
+  private JTextField pCheckedInActionEnabledField;
+
 
   /**
    * The action parameters container.
