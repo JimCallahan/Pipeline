@@ -443,6 +443,9 @@ AC_SUBST(SQL_VERSION)
 SQL_VERSION=`postmaster --version | awk '{print $3}'`
 
 case "$SQL_VERSION" in 
+  (7.3.4) \
+    JDBC_JAR=/usr/share/pgsql/pg73jdbc3.jar;;
+
   (7.3.2) \
     JDBC_JAR=/usr/share/pgsql/pg73b1jdbc3.jar;;
 
