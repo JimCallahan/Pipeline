@@ -1,0 +1,173 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>plput</title>
+  <meta http-equiv="content-type"
+ content="text/html; charset=ISO-8859-1">
+</head>
+<body>
+<h3>Name
+</h3>
+<blockquote><b>plput</b> - copies working files into the repository<br>
+</blockquote>
+<h3>Synopsis</h3>
+<blockquote><b>plput</b> [--verbose] <i>filelist</i><b><br>
+  </b><b>plput</b> --help<b><br>
+plput</b> --html-help<b><br>
+plput</b> --version<b><br>
+plput</b> --release-date<b><br>
+plput</b> --copyright</blockquote>
+<h3>Description</h3>
+<blockquote>A utility program used internally by the <a
+ href="file://@datadir@/docs/pipeline.html"><b>pipeline</b></a>(1)
+tool to check-in files associated with nodes.
+&nbsp;The files to be copied/linked are read from a plain text file (<span
+ style="font-style: italic;">filelist</span>). &nbsp;The input should
+consist of lines with one of the two formats below:<br>
+  <div style="margin-left: 40px;"><br>
+  <span style="font-family: courier;">copy </span><span
+ style="font-style: italic; font-family: courier;">from-working-filename
+to-repository-filename<br>
+  </span><span style="font-family: monospace;">link</span><span
+ style="font-style: italic;"><span style="font-family: monospace;"> </span></span><span
+ style="font-style: italic; font-family: courier;">existing-repository-filename
+new-repository-filename</span><span style="font-family: monospace;"><span
+ style="font-style: italic;"><br>
+  </span></span></div>
+  <br>
+All filenames must be absolute filesystem paths and all entries must be
+seperated by whitespace.&nbsp;
+The first form is used to copy files from the user's working area into
+the repository.&nbsp; The second form is to make a symbolic link within
+the repository from a new version to an existing version.&nbsp; The
+second form is used by <a href="file://@datadir@/docs/pipeline.html"><b>pipeline</b></a>(1)
+whenever the file being checked-in is identical to the previous version
+of that file in order to save disk space. <br>
+  <br>
+This utility will either succeed for all of the given files or
+fail to copy/link any of them. &nbsp;Failure can occur if any of the
+source paths
+(<span style="font-style: italic;">from-working-filename</span> or <span
+ style="font-style: italic;">from-repository-filename</span>) do
+not point to readable files/links. &nbsp;Failure can
+also occur if any of the destination paths (<span
+ style="font-style: italic; font-family: courier;">to-repository-filename</span>)
+point to
+previously existing files. &nbsp;In other words, this program will
+never destroy or overwrite repository files.&nbsp; In addition, <a
+ href="file://@datadir@/docs/plput.html"><span
+ style="font-weight: bold;">plput</span></a>(1) will refuse to
+copy/link
+files located outside of the correct working area and/or repository
+directories for the invoking user and the type of operation requested.<br>
+  <br>
+On success, the newly created repository files will owned by the
+"pipeline" user and have read-only (444) permissions regardless of
+which
+user invoked the program or the original permissions of the working
+area files. &nbsp;Also, any missing directories will be
+created in the repository as part of the copy/link and will also be
+owned by
+the "pipeline" user and have read-only access for all other users (755).<br>
+  <br>
+  <span style="color: rgb(153, 0, 0);">Users and system administrators
+are strongly cautioned against any manual tinkering with files/links in
+the the repository as they are likely to cause&nbsp; operational
+problems with </span><a href="file://@datadir@/docs/pipeline.html"
+ style="color: rgb(153, 0, 0);"><b>pipeline</b></a><span
+ style="color: rgb(153, 0, 0);">(1).&nbsp; This tool is always used by </span><a
+ href="file://@datadir@/docs/pipeline.html"><b>pipeline</b></a><span
+ style="color: rgb(153, 0, 0);">(1) do manipulate the repository and
+great care is taken to make sure that the database is always consistent
+with the repository.&nbsp; Any changes made to the repository without
+correct corresponding changes to the database will at minimum cause
+pipeline to behave in a flaky manner and at worse will cause
+irreversable data loss!&nbsp; In other words, this page is provide
+soley to explain what </span><a href="file://@datadir@/docs/plput.html"><span
+ style="font-weight: bold;">plput</span></a><span
+ style="color: rgb(153, 0, 0);">(1)
+is and how </span><a href="file://@datadir@/docs/pipeline.html"><b>pipeline</b></a><span
+ style="color: rgb(153, 0, 0);">(1) uses it, but should never be run
+manually.</span><br>
+</blockquote>
+<h3>Information Options</h3>
+<blockquote><b>--help</b><br>
+  <blockquote>Prints a brief usage message and exits.<br>
+  </blockquote>
+  <b>--html-help</b><br>
+  <blockquote>Opens this page using the <a
+ href="http://www.mozilla.org"><b>mozilla</b></a>(1) web browser.
+&nbsp;Look <a href="http://www.mozilla.org/unix/remote.html">here</a>
+for details about how this works.<br>
+  </blockquote>
+  <b>--version</b><br>
+  <blockquote>Prints the version number of this software and exits.<br>
+  </blockquote>
+  <b>--release-date</b><br>
+  <blockquote> Prints date that this software was released and exits.<b><br>
+    </b></blockquote>
+  <b>--copyright</b><br>
+  <blockquote> Prints copyright notice for this software and exits.<br>
+  </blockquote>
+</blockquote>
+<blockquote> </blockquote>
+<h3>General Options</h3>
+<blockquote><b>--verbose</b><br>
+  <blockquote>Print verbose progress and warning messages.<br>
+  </blockquote>
+  <span style="font-weight: bold;"></span></blockquote>
+<h3>See Also</h3>
+<blockquote><a href="file://@datadir@/docs/pipeline.html"><b>pipeline</b></a>(1),
+  <span style="font-weight: bold;"><a
+ href="file://@datadir@/docs/pipeline.html">plget</a>(1),&nbsp; </span><a
+ href="http://www.mozilla.org"><b>mozilla</b></a>(1)<br>
+  <br>
+</blockquote>
+<blockquote>
+  <blockquote> </blockquote>
+</blockquote>
+<blockquote> </blockquote>
+<blockquote> </blockquote>
+<h3>Author</h3>
+<blockquote>Jim Callahan &lt;jim@polaris.net&gt;<br>
+  <blockquote>Sole designer and author of pipeline. &nbsp;<br>
+  </blockquote>
+</blockquote>
+<h3>Copyright<br>
+</h3>
+<blockquote>
+  <blockquote> <span style="font-weight: bold;">Copyright (c) 2001,
+2002, 2003 James M. Callahan.</span><br style="font-weight: bold;">
+    <br style="font-weight: bold;">
+Permission to use, copy and distribute this software and its
+documentation for any purpose is STRICTLY PROHIBITED without prior
+authorization in writing by James M. Callahan.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
+EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
+WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR
+PURPOSE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+IN NO EVENT SHALL JAMES M. CALLAHAN BE LIABLE FOR ANY SPECIAL,
+INCIDENTAL, INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY
+DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER
+OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF
+LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
+OF THIS SOFTWARE.<br>
+  </blockquote>
+</blockquote>
+<blockquote> </blockquote>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+</body>
+</html>
