@@ -1,4 +1,4 @@
-// $Id: VersionID.java,v 1.11 2004/05/29 06:38:06 jim Exp $
+// $Id: VersionID.java,v 1.12 2004/07/07 13:20:59 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -59,12 +59,12 @@ class VersionID
       throw new IllegalArgumentException
 	("The revision number components cannot be (null)!");
 
-    if(comps.length != 4) 
+    if(comps.length != 3) 
       throw new IllegalArgumentException
-	("There must be exactly (4) revision number components!");
+	("There must be exactly (3) revision number components!");
       
     int wk;
-    for(wk=0; wk<4; wk++) {
+    for(wk=0; wk<3; wk++) {
       if(comps[wk] < 0) 
 	throw new IllegalArgumentException
 	  ("Found a negative version number component (" + comps[wk] + ")!");
@@ -121,7 +121,7 @@ class VersionID
     pIDs[idx]++;
 
     int wk;
-    for(wk=idx+1; wk<4; wk++) 
+    for(wk=idx+1; wk<3; wk++) 
       pIDs[wk] = 0;
 
     buildCache();
@@ -243,7 +243,7 @@ class VersionID
   )
   {
     int wk;
-    for(wk=0; wk<4; wk++)
+    for(wk=0; wk<3; wk++)
       if(pIDs[wk] != vid.pIDs[wk])
  	return (pIDs[wk] - vid.pIDs[wk]);
     
@@ -317,49 +317,37 @@ class VersionID
      * 
      * Examples of incrementing this component level: 
      * <DIV style="margin-left: 40px;">
-     *    1.0.0.0 to 2.0.0.0 <BR>
-     *    1.3.2.5 to 2.0.0.0 <BR>
-     *    2.4.0.2 to 3.0.0.0 <BR>
+     *    1.0.0 to 2.0.0 <BR>
+     *    1.3.2 to 2.0.0 <BR>
+     *    2.4.0 to 3.0.0 <BR>
      * </DIV>
      */
-    Mega,
+    Major,
     
     /**
      * The second component level of the revision number. <P> 
      * 
      * Examples of incrementing this component level: 
      * <DIV style="margin-left: 40px;">
-     *    1.0.0.0 to 1.1.0.0 <BR>
-     *    1.3.2.5 to 1.4.0.0 <BR>
-     *    2.4.0.2 to 2.5.0.0 <BR>
+     *    1.0.0 to 1.1.0 <BR>
+     *    1.3.2 to 1.4.0 <BR>
+     *    2.4.0 to 2.5.0 <BR>
      * </DIV>
      */
-    Major,
+    Minor,
     
     /**
      * The third component level of the revision number. <P> 
      * 
      * Examples of incrementing this component level: 
      * <DIV style="margin-left: 40px;">
-     *    1.0.0.0 to 1.0.1.0 <BR>
-     *    1.3.2.5 to 1.3.3.0 <BR>
-     *    2.4.0.2 to 2.4.1.0 <BR>
-     * </DIV>
-     */
-    Minor,
-    
-    /**
-     * The fourth component level of the revision number. <P> 
-     * 
-     * Examples of incrementing this component level: 
-     * <DIV style="margin-left: 40px;">
-     *    1.0.0.0 to 1.0.0.1 <BR>
-     *    1.3.2.5 to 1.3.2.6 <BR>
-     *    2.4.0.2 to 2.4.0.3 <BR>
+     *    1.0.0 to 1.0.1 <BR>
+     *    1.3.2 to 1.3.3 <BR>
+     *    2.4.0 to 2.4.1 <BR>
      * </DIV>
      */
     Micro;
-
+    
     /**
      * Get the list of all possible values.
      */ 
@@ -402,15 +390,15 @@ class VersionID
 	("The version string cannot be empty!");      
 
     String[] parts = str.split("\\.");
-    if(parts.length != 4)
+    if(parts.length != 3)
       throw new IllegalArgumentException
 	("Found the wrong number (" + parts.length + ") of revision number components " + 
-	 "in (" + str + "), should have been (4)!");
+	 "in (" + str + "), should have been (3)!");
 
-    int ids[] = new int[4];
+    int ids[] = new int[3];
     
     int wk;
-    for(wk=0; wk<4; wk++) {
+    for(wk=0; wk<3; wk++) {
       if(parts[wk].length() == 0) 
 	throw new IllegalArgumentException
 	  ("Found a missing version number component in (" + str + ")!");
@@ -450,9 +438,9 @@ class VersionID
       StringBuffer buf = new StringBuffer();
       
       int wk;
-      for(wk=0; wk<4; wk++) {
+      for(wk=0; wk<3; wk++) {
 	buf.append(pIDs[wk]);
-	if(wk < 3) 
+	if(wk < 2) 
 	  buf.append(".");
       }
       
@@ -479,7 +467,7 @@ class VersionID
   /**
    * The revision number components.
    */
-  private int[] pIDs = { 1, 0, 0, 0 };
+  private int[] pIDs = { 1, 0, 0 };
   
 
   /** 
