@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 1.4.1)
+AM_INIT_AUTOMAKE(Pipeline, 1.5.0)
 
 AC_MSG_RESULT([ ])
 
@@ -599,7 +599,7 @@ then
        CXXFLAGS="$CXXFLAGS -O2";;
   esac
 
-  JAVA_C_FLAGS="-source 1.5 -Xlint:all,-depreciation,-unchecked,-switchcheck"
+  JAVA_C_FLAGS="-source 1.5 -Xlint:all,-depreciation,-unchecked,-fallthrough"
   JAVA_RUNTIME_FLAGS="-disableassertions"
 
   CXXFLAGS="$CXXFLAGS -DNDEBUG"
@@ -621,7 +621,7 @@ else
        CXXFLAGS="$CXXFLAGS -g";;
   esac
 
-  JAVA_C_FLAGS="-g -source 1.5 -Xlint:all,-depreciation,-unchecked,-switchcheck"
+  JAVA_C_FLAGS="-g -source 1.5 -Xlint:all,-depreciation,-unchecked,-fallthrough"
   JAVA_RUNTIME_FLAGS="-enableassertions"
 
   EXTRA_DEBUG_SUBDIRS="tests"
