@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.100 2005/03/23 00:35:23 jim Exp $
+// $Id: MasterMgr.java,v 1.101 2005/03/23 18:24:11 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -4272,6 +4272,43 @@ class MasterMgr
       performUpstreamNodeOp(new NodeOp(), req.getNodeID(), 
 			    new LinkedList<String>(), table, timer);
 
+      /* check whether any of the checked-in versions required are currently offline */ 
+      {
+	TreeMap<String,TreeSet<VersionID>> ovsns = new TreeMap<String,TreeSet<VersionID>>();
+	validateCheckOut(true, nodeID, req.getVersionID(), req.getMode(), req.getMethod(), 
+			 table, ovsns, new LinkedList<String>(), new HashSet<String>(), 
+			 timer);
+	
+	if(!ovsns.isEmpty()) {
+	  StringBuffer buf = new StringBuffer();
+	  {
+	    buf.append
+	      ("Unable to perform check-out because the following checked-in versions " + 
+	       "are currently offline:\n\n");
+	    for(String name : ovsns.keySet()) {
+	      for(VersionID vid : ovsns.get(name)) 
+		buf.append(name + " v" + vid + "\n");
+	    }
+	    buf.append("\n");
+	  }
+
+	  Object obj = requestRestore(new MiscRequestRestoreReq(ovsns));
+	  if(obj instanceof FailureRsp) {
+	    FailureRsp rsp = (FailureRsp) obj;
+	    buf.append
+	      ("The request to restore these offline versions also failed:\n\n" + 
+	       rsp.getMessage());	    
+	  }
+	  else {
+	    buf.append
+	      ("However, requests have been submitted to restore the offline versions " + 
+	       "so that they may be used once they have been brought back online.");
+	  }
+
+	  throw new PipelineException(buf.toString());
+	}
+      }
+
       /* check-out the nodes */ 
       performCheckOut(true, nodeID, req.getVersionID(), req.getMode(), req.getMethod(), 
 		      table, new LinkedList<String>(), new HashSet<String>(), 
@@ -4287,6 +4324,216 @@ class MasterMgr
     finally {
       pDatabaseLock.readLock().unlock();
     } 
+  }
+
+  /**
+   * Recursively check for offline checked-in versions required by the check-out operation. 
+   *
+   * If the <CODE>vid</CODE> argument is <CODE>null</CODE> then check-out the latest 
+   * version. <P> 
+   * 
+   * @param isRoot
+   *   Is this node the root of the check-out tree?
+   * 
+   * @param nodeID
+   *   The unique working version identifier.
+   * 
+   * @param vid 
+   *   The revision number of the node to check-out.
+   * 
+   * @param mode
+   *   The criteria used to determine whether nodes upstream of the root node of the check-out
+   *   should also be checked-out.
+   *
+   * @param method
+   *   The method for creating working area files/links from the checked-in files.
+   *
+   * @param stable
+   *   The current node status indexed by fully resolved node name.
+   * 
+   * @param offlineVersions
+   *   The names and revision numbers of the offline checked-in versions required by 
+   *   the check-out operation.
+   * 
+   * @param branch
+   *   The names of the nodes from the root to this node.
+   * 
+   * @param seen
+   *   The names of the previously processed nodes.
+   * 
+   * @param timer
+   *   The shared task timer for this operation.
+   * 
+   * @throws PipelineException 
+   *   If unable to perform the check-out operation.
+   */
+  private void 
+  validateCheckOut
+  (
+   boolean isRoot, 
+   NodeID nodeID, 
+   VersionID vid, 
+   CheckOutMode mode,
+   CheckOutMethod method, 
+   HashMap<String,NodeStatus> stable,
+   TreeMap<String,TreeSet<VersionID>> offlineVersions, 
+   LinkedList<String> branch, 
+   HashSet<String> seen, 
+   TaskTimer timer   
+  ) 
+    throws PipelineException 
+  {
+    String name = nodeID.getName();
+
+    /* check for circularity */ 
+    checkBranchForCircularity(name, branch);
+
+    /* skip nodes which have already been processed */ 
+    if(seen.contains(name)) 
+      return;
+
+    /* push the current node onto the end of the branch */ 
+    branch.addLast(name);
+
+    /* lookup or compute the node status */ 
+    NodeDetails details = null;
+    {
+      NodeStatus status = stable.get(name);
+      if(status == null) {
+	performUpstreamNodeOp(new NodeOp(), nodeID, 
+			      new LinkedList<String>(), stable, timer);
+	status = stable.get(name);
+      }
+
+      details = status.getDetails();
+      assert(details != null);
+    }
+
+    timer.aquire();
+    ReentrantReadWriteLock workingLock = getWorkingLock(nodeID);
+    workingLock.readLock().lock();
+    ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
+    checkedInLock.readLock().lock();
+    try {
+      timer.resume();	
+      
+      /* lookup versions */ 
+      WorkingBundle working = null;
+      TreeMap<VersionID,CheckedInBundle> checkedIn = null;
+      {
+	try {
+	  working = getWorkingBundle(nodeID);
+	}
+	catch(PipelineException ex) {
+	}
+
+	try {
+	  checkedIn = getCheckedInBundles(name);
+	}
+	catch(PipelineException ex) {
+	  if(isRoot) 
+	    throw new PipelineException
+	      ("There are no checked-in versions of node (" + name + ") to check-out!");
+	  else 
+	    throw new PipelineException
+	      ("Internal Error: " + ex.getMessage());
+	}
+	assert(checkedIn != null);
+      }
+
+      /* extract the working and the checked-in version to be checked-out */ 
+      NodeMod work    = null;
+      NodeVersion vsn = null;
+      {
+	if(working != null)
+	  work = new NodeMod(working.uVersion);
+
+	if(vid != null) {
+	  CheckedInBundle bundle = checkedIn.get(vid);
+	  if(bundle == null) 
+	    throw new PipelineException 
+	      ("Somehow no checked-in version (" + vid + ") of node (" + name + ") exists!"); 
+	  vsn = new NodeVersion(bundle.uVersion);
+	}
+	else {
+	  if(checkedIn.isEmpty())
+	    throw new PipelineException
+	      ("Somehow no checked-in versions of node (" + name + ") exist!"); 
+	  CheckedInBundle bundle = checkedIn.get(checkedIn.lastKey());
+	  vsn = new NodeVersion(bundle.uVersion);
+	}
+	assert(vsn != null);
+      }
+
+      /* mark having seen this node already */ 
+      seen.add(name);
+ 
+      /* determine the check-out method for upstreadm nodes */ 
+      CheckOutMethod checkOutMethod = method;      
+      switch(method) {
+      case PreserveFrozen:
+	if((work != null) && work.isFrozen()) 
+	  checkOutMethod = CheckOutMethod.AllFrozen;
+      }
+
+      /* see if the check-out should be skipped */ 
+      if(work != null) {
+	switch(mode) {
+	case OverwriteAll:
+	  if((details != null) && 
+	     (details.getOverallNodeState() == OverallNodeState.Identical) && 
+	     (details.getOverallQueueState() == OverallQueueState.Finished) && 
+	     work.getWorkingID().equals(vsn.getVersionID())) {
+	    branch.removeLast();
+	    return;
+	  }
+	  break;
+
+	case KeepNewer:
+	  if(!isRoot && (work.getWorkingID().compareTo(vsn.getVersionID()) > 0)) {
+	    branch.removeLast();
+	    return;
+	  }
+	  break;
+
+	case KeepModified:
+	  if(!isRoot && (work.getWorkingID().compareTo(vsn.getVersionID()) >= 0)) {
+	    branch.removeLast();
+	    return;
+	  }
+	}
+      }
+
+      /* process the upstream nodes */
+      for(LinkVersion link : vsn.getSources()) {
+	NodeID lnodeID = new NodeID(nodeID, link.getName());
+	validateCheckOut(false, lnodeID, link.getVersionID(), mode, checkOutMethod, 
+			 stable, offlineVersions, branch, seen, timer);
+      }
+
+      /* check for offline versions */ 
+      timer.aquire();
+      synchronized(pOfflined) {
+	timer.resume();
+	
+	TreeSet<VersionID> offline = pOfflined.get(name);
+	if((offline != null) && offline.contains(vid)) {
+	  TreeSet<VersionID> ovids = offlineVersions.get(name);
+	  if(ovids == null) {
+	    ovids = new TreeSet<VersionID>();
+	    offlineVersions.put(name, ovids);
+	  }
+	  ovids.add(vid);
+	}
+      }
+    }
+    finally {
+      checkedInLock.readLock().unlock();  
+      workingLock.readLock().unlock();
+    }
+
+    /* pop the current node off of the end of the branch */ 
+    branch.removeLast();
   }
 
   /**
@@ -4639,13 +4886,17 @@ class MasterMgr
   ) 
   {
     NodeID nodeID = req.getNodeID();
+    String name = nodeID.getName();
+    TreeMap<String,VersionID> files = req.getFiles();
+
     TaskTimer timer = new TaskTimer("MasterMgr.revertFiles(): " + nodeID);
 
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
       timer.resume();	      
-
+      
+      /* whether the working area files should be modifiable */ 
       boolean writeable = false;
       {
 	timer.aquire(); 
@@ -4671,7 +4922,58 @@ class MasterMgr
 	}
       }
 
-      pFileMgrClient.revert(nodeID, req.getFiles(), writeable);
+      /* check whether the checked-in version is currently online */ 
+      {
+	TreeSet<VersionID> ovids = new TreeSet<VersionID>();
+
+	timer.aquire();
+	synchronized(pOfflined) {
+	  timer.resume();
+
+	  TreeSet<VersionID> offline = pOfflined.get(name);
+	  if(offline != null) {
+	    TreeSet<VersionID> vids = new TreeSet<VersionID>(files.values());
+	    for(VersionID vid : vids) {
+	      if(offline.contains(vid))
+		ovids.add(vid);
+	    }
+	  }
+	}
+
+	if(!ovids.isEmpty()) {
+	  TreeMap<String,TreeSet<VersionID>> vsns = new TreeMap<String,TreeSet<VersionID>>();
+	  vsns.put(name, ovids);
+
+	  StringBuffer buf = new StringBuffer();
+	  {
+	    buf.append
+	      ("Unable to revert files because the following checked-in versions " + 
+	       "of node are currently offline:\n\n");
+	    for(VersionID vid : ovids) 
+	      buf.append(name + " v" + vid + "\n");
+	    buf.append("\n");
+	  }
+	    
+	  Object obj = requestRestore(new MiscRequestRestoreReq(vsns));
+	  if(obj instanceof FailureRsp) {
+	    FailureRsp rsp = (FailureRsp) obj;
+	    buf.append
+	      ("The request to restore these offline versions also failed:\n\n" + 
+	       rsp.getMessage());	    
+	  }
+	  else {
+	    buf.append
+	      ("However, requests have been submitted to restore the offline versions " + 
+	       "so that they may be used once they have been brought back online.");
+	  }
+
+	  throw new PipelineException(buf.toString());
+	}
+      }
+
+      /* revert the files */ 
+      pFileMgrClient.revert(nodeID, files, writeable);
+
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
@@ -4711,10 +5013,9 @@ class MasterMgr
       timer.resume();	
 
       /* verify the checked-in revision number */ 
+      String name = nodeID.getName();
       VersionID vid = req.getVersionID();
       {
-	String name = nodeID.getName();
-
 	timer.aquire();
 	ReentrantReadWriteLock lock = getCheckedInLock(name);
 	lock.readLock().lock();
@@ -4734,6 +5035,41 @@ class MasterMgr
 	finally {
 	  lock.readLock().unlock();
 	}  
+      }
+
+      /* check whether the checked-in version is currently online */ 
+      {
+	timer.aquire();
+	synchronized(pOfflined) {
+	  timer.resume();
+
+	  TreeSet<VersionID> offline = pOfflined.get(name);
+	  if((offline != null) && offline.contains(vid)) {
+	    TreeSet<VersionID> vids = new TreeSet<VersionID>();
+	    vids.add(vid);
+
+	    TreeMap<String,TreeSet<VersionID>> vsns = 
+	      new TreeMap<String,TreeSet<VersionID>>();
+	    vsns.put(name, vids);
+
+	    Object obj = requestRestore(new MiscRequestRestoreReq(vsns));
+	    if(obj instanceof FailureRsp) {
+	      FailureRsp rsp = (FailureRsp) obj;
+	      throw new PipelineException
+		("Unable to evolve to version (" + vid + ") of node (" + name + ") " +
+		 "because the version is currently offline.  The request to restore " + 
+		 "this version also failed:\n\n" + 
+		 rsp.getMessage());
+	    }
+	    else {
+	      throw new PipelineException
+		("Unable to evolve to version (" + vid + ") of node (" + name + ")  " + 
+		 "because the version is currently offline.  However, a request has been " + 
+		 "submitted to restore the version so that it may be used once it has " + 
+		 "been brought back online.");
+	    }
+	  }
+	}
       }
 
       /* change the checked-in version number for the working version */ 
@@ -4759,12 +5095,12 @@ class MasterMgr
 
 	return new SuccessRsp(timer);
       }
-      catch(PipelineException ex) {
-	return new FailureRsp(timer, ex.getMessage());
-      }
       finally {
 	lock.writeLock().unlock();
       }  
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
     }
     finally {
       pDatabaseLock.readLock().unlock();
@@ -7170,19 +7506,23 @@ class MasterMgr
 
 	  // DEBUG 
 	  {
-	    System.out.print("\nRESTORE-MOVE: " + name + "  " + vid + "\n");
-	    for(File file : symlinks.keySet()) {
-	      System.out.print("  " + file + ":  ");
-	      for(VersionID svid : symlinks.get(file)) 
-		System.out.print(svid + "  ");
-	      System.out.print("\n");
+	    if(!symlinks.isEmpty()) {
+	      System.out.print("\nRESTORE-MOVE: " + name + "  " + vid + "\n");
+	      for(File file : symlinks.keySet()) {
+		System.out.print("  " + file + ":  ");
+		for(VersionID svid : symlinks.get(file)) 
+		  System.out.print(svid + "  ");
+		System.out.print("\n");
+	      }
 	    }
 	    
-	    System.out.print("RESTORE-LINK: " + name + "  " + vid + "\n");
-	    for(File file : targets.keySet()) {
-	      VersionID tvid = targets.get(file);
-	      System.out.print("  " + file + ":  " + tvid + "\n");
-	    }	
+	    if(!targets.isEmpty()) {
+	      System.out.print("\nRESTORE-LINK: " + name + "  " + vid + "\n");
+	      for(File file : targets.keySet()) {
+		VersionID tvid = targets.get(file);
+		System.out.print("  " + file + ":  " + tvid + "\n");
+	      }	
+	    }
 	  }
 	  // DEBUG
 	  
