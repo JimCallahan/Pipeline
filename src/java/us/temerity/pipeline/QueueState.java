@@ -1,4 +1,4 @@
-// $Id: QueueState.java,v 1.9 2004/07/24 18:16:15 jim Exp $
+// $Id: QueueState.java,v 1.10 2004/08/22 21:54:54 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -19,8 +19,13 @@ import java.util.*;
  * 
  * The <CODE>QueueState</CODE> is computed within the context of a previously determined
  * {@link FileState FileState} for the primary/secondary files.  The following state 
- * descriptions will frequently refer to this <CODE>FileState</CODE> context. 
+ * descriptions will frequently refer to this <CODE>FileState</CODE> context. <P> 
  * 
+ * Except for the <CODE>Undefined</CODE> and <CODE>Stale</CODE> states, there is a direct
+ * correspondence between the <CODE>QueueState</CODE> of a file and the 
+ * {@link JobState JobState} of the queue job which generates the file.
+ * 
+ * @see JobState
  * @see OverallQueueState
  */
 public
@@ -33,19 +38,6 @@ enum QueueState
    * {@link VersionState#CheckedIn CheckedIn}.
    */ 
   Undefined, 
-
-  /**
-   * The file associated with the working node exists and is up-to-date. <P>
-   * 
-   * If there is a regeneration action associated with the node owning this file, the last 
-   * queue job executing this action has completed successfully.  This state means that none 
-   * of the conditions for any other <CODE>QueueState</CODE> have been met for the file. <P> 
-   * 
-   * If the node owning this file does not have a regeneration action, then this is the 
-   * only possible <CODE>QueueState</CODE> for the file.  Any other <CODE>QueueState</CODE>
-   * therefore implies that the working version of the owning node has a regeneration action.
-   */
-  Finished,
 
   /**
    * The <CODE>FileState</CODE> of one or more of the primary/secondary files is 
@@ -68,15 +60,8 @@ enum QueueState
   Queued,
 
   /**
-   * A queue job is currently running which will regenerate these primary/secondary files.<P> 
-   * 
-   * This state has precedence over the <CODE>Stale</CODE> state.
-   */
-  Running,
-
-  /**
    * The last queue job submitted which would have regenerated these primary/secondary files 
-   * was aborted (cancelled) prematurely by the user. <P> 
+   * was aborted (cancelled) by the user before it began execution. <P> 
    * 
    * This state has precedence over the <CODE>Stale</CODE> state. <P> 
    * 
@@ -86,6 +71,26 @@ enum QueueState
    * time of the job that was aborted.
    */
   Aborted,
+
+  /**
+   * A queue job is currently running which will regenerate these primary/secondary files.<P> 
+   * 
+   * This state has precedence over the <CODE>Stale</CODE> state.
+   */
+  Running,
+
+  /**
+   * The file associated with the working node exists and is up-to-date. <P>
+   * 
+   * If there is a regeneration action associated with the node owning this file, the last 
+   * queue job executing this action has completed successfully.  This state means that none 
+   * of the conditions for any other <CODE>QueueState</CODE> have been met for the file. <P> 
+   * 
+   * If the node owning this file does not have a regeneration action, then this is the 
+   * only possible <CODE>QueueState</CODE> for the file.  Any other <CODE>QueueState</CODE>
+   * therefore implies that the working version of the owning node has a regeneration action.
+   */
+  Finished,
 
   /**
    * The last queue job submitted which would have regenerated these primary/secondary files 

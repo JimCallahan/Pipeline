@@ -1,4 +1,4 @@
-// $Id: QueueJobGroup.java,v 1.1 2004/07/24 18:28:45 jim Exp $
+// $Id: QueueJobGroup.java,v 1.2 2004/08/22 21:52:00 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -28,13 +28,18 @@ class QueueJobGroup
   {}
 
   /**
-   * Construct a new group of jobs.
+   * Construct a new group of jobs. <P> 
+   * 
+   * The <CODE>jobIDs</CODE> argument only contains the IDs of jobs generated during a single
+   * job submission.  However, these jobs may depend on pre-existing jobs outside their job 
+   * group.  In other words, each job belongs to only one job group, but may be an upstream
+   * dependency of jobs outside its job group. <P> 
    * 
    * @param groupID
    *   The unique job group identifier.
    * 
    * @param nodeID
-   *   The unique working version identifier of the root target node of the jobs.
+   *   The unique working version identifier of the root target node of the job group.
    * 
    * @param rootIDs
    *   The unique identifiers of the root jobs of the group.
