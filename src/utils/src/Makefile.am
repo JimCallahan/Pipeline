@@ -12,11 +12,14 @@ instsbindir  = @sbindir@
 instsbin_PROGRAMS = \
   plget \
   plput \
-  plrun
+  plrun \
+  realpath
 
-plget_SOURCES = FB.cc PackageInfo.cc PlGet.cc
-plput_SOURCES = FB.cc PackageInfo.cc PlPut.cc 
-plrun_SOURCES = FB.cc PackageInfo.cc PlRun.cc 
+
+plget_SOURCES    = FB.cc PackageInfo.cc PlGet.cc
+plput_SOURCES    = FB.cc PackageInfo.cc PlPut.cc 
+plrun_SOURCES    = FB.cc PackageInfo.cc PlRun.cc 
+realpath_SOURCES = FB.cc PackageInfo.cc RealPath.cc 
 
 
 EXTRA_DIST = \

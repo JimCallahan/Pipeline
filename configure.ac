@@ -699,6 +699,7 @@ AC_CONFIG_FILES([
   src/utils/docs/plput.html
   src/utils/docs/plget.html
   src/utils/docs/pls.html
+  src/utils/docs/realpath.html
 
   tests/Makefile  
 ])
