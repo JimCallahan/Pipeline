@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.2 2004/06/19 00:34:23 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.3 2004/06/22 19:41:11 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1632,8 +1632,6 @@ class JNodeDetailsPanel
 
 		btn.addActionListener(this);
 		btn.setActionCommand("edit-text-param:" + aparam.getName());
-		
-		btn.setEnabled(!pIsLocked);
 
 		hbox.add(btn);	      
 	      }
@@ -1657,18 +1655,10 @@ class JNodeDetailsPanel
 		  UIMaster.createCollectionField(pLinkActionParamValues, sVSize);
 		pcomps[1] = field;
 
-		String value = null;
-		{
-		  String source = (String) aparam.getValue();
-		  if(source != null) {
-		    NodeStatus status = pStatus.getSource(source);
-		    if(status != null) 
-		      value = status.toString();
-		  }
-		}
-
-		if((value != null) && field.getValues().contains(value)) 
-		  field.setSelected(value);
+		String source = (String) aparam.getValue();
+		int idx = pLinkActionParamNodeNames.indexOf(source);
+		if(idx != -1) 
+		  field.setSelectedIndex(idx);
 		else 
 		  field.setSelected("-");
 			
@@ -1759,8 +1749,132 @@ class JNodeDetailsPanel
 	pActionParamComponents.put(param.getName(), pcomps);
       }
       
-      // per-depend params...
+      /* per-source params */ 
+      if(action.supportsSourceParams()) {
+	
+	UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
 
+	pEditSourceParamsDialog = null;
+	pViewSourceParamsDialog = null;
+
+	pSourceParamComponents = new Component[4];
+
+	{
+	  JLabel label = 
+	    UIMaster.createFixedLabel("Source Parameters:", sTSize, JLabel.RIGHT);
+	   pSourceParamComponents[0] = label;
+	  
+	  tpanel.add(label);
+	}
+	
+	{ 
+	  Box hbox = new Box(BoxLayout.X_AXIS);
+
+	  if((waction != null) && waction.supportsSourceParams()) {
+	    JButton btn = new JButton(pIsLocked ? "View..." : "Edit...");
+	    pSourceParamComponents[1] = btn;
+		
+	    btn.setName("ValuePanelButton");
+	    btn.setRolloverEnabled(false);
+	    btn.setFocusable(false);
+	    
+	    Dimension size = new Dimension(sVSize, 19);
+	    btn.setMinimumSize(size);
+	    btn.setPreferredSize(size);
+	    btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+	    
+	    btn.addActionListener(this);
+	    btn.setActionCommand("edit-source-params");
+	    
+	    hbox.add(btn);
+
+	    {
+	      String title = pStatus.toString();
+
+	      ArrayList<String> snames = new ArrayList<String>(pStatus.getSourceNames()); 
+	      
+	      ArrayList<String> stitles = new ArrayList<String>();
+	      for(String sname : snames) 
+		stitles.add(pStatus.getSource(sname).toString());
+
+	      pEditSourceParamsDialog = 
+		new JSourceParamsDialog(!pIsLocked, title, stitles, snames, waction);
+	    }
+	  }
+	  else {
+	    JTextField field = UIMaster.createTextField("-", sVSize, JLabel.CENTER);
+	    pSourceParamComponents[1] = field;
+	    
+	    hbox.add(field);
+	  }
+
+	  hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+
+	  {
+	    JButton btn = new JButton();		 
+	    pSourceParamComponents[2] = btn;
+	    btn.setName("SmallLeftArrowButton");
+	    
+	    Dimension size = new Dimension(12, 12);
+	    btn.setMinimumSize(size);
+	    btn.setMaximumSize(size);
+	    btn.setPreferredSize(size);
+	    
+	    btn.addActionListener(this);
+	    btn.setActionCommand("set-source-params");
+	    
+	    btn.setEnabled(!pIsLocked && (waction != null) && (caction != null) && 
+			   caction.getName().equals(waction.getName()));
+	    
+	    hbox.add(btn);
+	  } 
+	  
+	  hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+
+	  if((caction != null) && caction.supportsSourceParams()) {
+	    JButton btn = new JButton("View...");
+	    pSourceParamComponents[3] = btn;
+		
+	    btn.setName("ValuePanelButton");
+	    btn.setRolloverEnabled(false);
+	    btn.setFocusable(false);
+	    
+	    Dimension size = new Dimension(sVSize, 19);
+	    btn.setMinimumSize(size);
+	    btn.setPreferredSize(size);
+	    btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+	    
+	    btn.addActionListener(this);
+	    btn.setActionCommand("view-source-params");
+	    
+	    hbox.add(btn);
+
+	    {
+	      NodeVersion vsn = getCheckedInVersion();
+	      String title = (pStatus.toString() + " (v" + vsn.getVersionID() + ")");
+
+	      ArrayList<String> snames = new ArrayList<String>(pStatus.getSourceNames()); 
+	      
+	      ArrayList<String> stitles = new ArrayList<String>();
+	      for(String sname : snames) 
+		stitles.add(pStatus.getSource(sname).toString());
+
+	      pViewSourceParamsDialog = 
+		new JSourceParamsDialog(false, title, stitles, snames, caction);
+	    }
+	  }
+	  else {
+	    JTextField field = UIMaster.createTextField("-", sVSize, JLabel.CENTER);
+	    pSourceParamComponents[3] = field;
+	    
+	    hbox.add(field);
+	  }
+
+	  vpanel.add(hbox);
+
+	  doSourceParamsChanged();
+	}	
+      }
     }
     pActionParamsBox.add(comps[2]);
 
@@ -1885,9 +1999,6 @@ class JNodeDetailsPanel
 	  pWorkingBatchSizeField.addActionListener(this);
 	}
 
-	pSetBatchSizeButton.setEnabled
-	  (!pIsLocked && (waction != null) && (caction != null));
-	
 	if((caction != null) && (vsn.getBatchSize() != null))
 	  pCheckedInBatchSizeField.setText(vsn.getBatchSize().toString());
 	else 
@@ -2270,8 +2381,9 @@ class JNodeDetailsPanel
 
     Color color = Color.white;
     if(hasWorking() && hasCheckedIn()) {
-      if(((waction == null) && (caction != null)) ||
-	 ((waction != null) && !waction.getName().equals(caction.getName())))
+      if(!(((waction == null) && (caction == null)) ||
+	   ((waction != null) && (caction != null) && 
+	    waction.getName().equals(caction.getName())))) 
 	color = Color.cyan;
       else 
 	color = null;
@@ -2319,11 +2431,13 @@ class JNodeDetailsPanel
 	if(aparam != null) {
 	  if(aparam instanceof IntegerActionParam) {
 	    JIntegerField field = (JIntegerField) pcomps[1];
-	    wtext = field.getValue().toString();
+	    if(field.getValue() != null) 
+	      wtext = field.getValue().toString();
 	  }
 	  else if(aparam instanceof DoubleActionParam) {
 	    JDoubleField field = (JDoubleField) pcomps[1];
-	    wtext = field.getValue().toString();
+	    if(field.getValue() != null) 
+	      wtext = field.getValue().toString();
 	  }
 	  else if(aparam instanceof StringActionParam) {
 	    JTextField field = (JTextField) pcomps[1];
@@ -2557,6 +2671,12 @@ class JNodeDetailsPanel
       doEditTextParam(cmd.substring(16));
     else if(cmd.startsWith("view-text-param:"))
       doViewTextParam(cmd.substring(16));
+    else if(cmd.equals("edit-source-params")) 
+      doEditSourceParams();
+    else if(cmd.equals("view-source-params")) 
+      doViewSourceParams();
+    else if(cmd.equals("set-source-params")) 
+      doSetSourceParams();
     else if(cmd.equals("set-overflow-policy")) 
       doSetOverflowPolicy();
     else if(cmd.equals("overflow-policy-changed")) 
@@ -2632,20 +2752,18 @@ class JNodeDetailsPanel
 	  {
 	    BaseAction waction = getWorkingAction();
 	    if(waction != null) {
+
+	      /* single valued parameters */ 
 	      for(BaseActionParam aparam : waction.getSingleParams()) {
 		Component pcomps[] = pActionParamComponents.get(aparam.getName());
 		Comparable value = null;
 		if(aparam instanceof IntegerActionParam) {   
 		  JIntegerField field = (JIntegerField) pcomps[1];
 		  value = field.getValue();
-		  if(value == null) 
-		    value = new Integer(0);
 		}
 		else if(aparam instanceof DoubleActionParam) { 
 		  JDoubleField field = (JDoubleField) pcomps[1];
 		  value = field.getValue();
-		  if(value == null) 
-		    value = new Double(0.0);
 		}
 		else if(aparam instanceof StringActionParam) {
 		  JTextField field = (JTextField) pcomps[1];
@@ -2666,7 +2784,7 @@ class JNodeDetailsPanel
 		
 		waction.setSingleParamValue(aparam.getName(), value);
 	      }
-	      
+
 	      mod.setAction(waction);
 
 	      /* overflow policy */ 
@@ -2885,11 +3003,13 @@ class JNodeDetailsPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Set the working action and parameters fields from the value of the checked-in action..
+   * Set the working action and parameter fields from the value of the checked-in action.
    */ 
   private void 
   doSetAction()
   { 
+    BaseAction oaction = getWorkingAction();
+
     pWorkingActionField.removeActionListener(this);
     {
       BaseAction action = getCheckedInAction();
@@ -2898,11 +3018,15 @@ class JNodeDetailsPanel
 	pWorkingActionField.setSelected(action.getName());
       else 
 	pWorkingActionField.setSelected("-");
+      setWorkingAction(action);
     }
     pWorkingActionField.addActionListener(this);
       
     pActionParamComponents.clear();
-    doActionChanged();
+    updateActionParams();
+
+    updateActionColors();
+    updateJobRequirements((oaction == null) && (getWorkingAction() != null));
   }
 
   /**
@@ -2920,7 +3044,7 @@ class JNodeDetailsPanel
 	setWorkingAction(null);
 	pActionParamComponents.clear();
       }
-      else if((pWorkingAction== null) || !pWorkingAction.getName().equals(aname)) {
+      else if((pWorkingAction == null) || !pWorkingAction.getName().equals(aname)) {
 	try {
 	  setWorkingAction(Plugins.newAction(aname));
 	}
@@ -3072,6 +3196,89 @@ class JNodeDetailsPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Show a dialog for editing the working per-source parameters.
+   */ 
+  private void 
+  doEditSourceParams() 
+  {
+    pEditSourceParamsDialog.setVisible(true);
+
+    if(pEditSourceParamsDialog.wasConfirmed()) {
+      pEditSourceParamsDialog.updateParams(pWorkingAction);
+      doSourceParamsChanged();
+    }
+  }
+
+  /**
+   * Show a dialog for viewing the checked-in per-source parameters.
+   */ 
+  private void 
+  doViewSourceParams() 
+  {
+    pViewSourceParamsDialog.setVisible(true);
+  }  
+
+  /**
+   * Set the working per-source parameters from the checked-in per-source parameters.
+   */ 
+  private void 
+  doSetSourceParams() 
+  {
+    BaseAction waction = getWorkingAction();
+    BaseAction caction = getCheckedInAction();
+    if((waction != null) && (caction != null)) {
+      waction.removeAllSourceParams();
+      waction.setSourceParamValues(caction);
+      
+      {
+	String title = pStatus.toString();
+	
+	ArrayList<String> snames = new ArrayList<String>(pStatus.getSourceNames()); 
+	
+	ArrayList<String> stitles = new ArrayList<String>();
+	for(String sname : snames) 
+	  stitles.add(pStatus.getSource(sname).toString());
+	
+	pEditSourceParamsDialog = 
+	  new JSourceParamsDialog(!pIsLocked, title, stitles, snames, waction);
+      }
+
+      doSourceParamsChanged();
+    }
+  }
+
+  /**
+   * Update the appearance of the edit/view source params button after a change of value.
+   */ 
+  private void 
+  doSourceParamsChanged()
+  {
+    pApplyButton.setEnabled(true);
+
+    Color color = Color.white;
+    if(hasWorking() && hasCheckedIn()) {
+      BaseAction waction = getWorkingAction();
+      BaseAction caction = getCheckedInAction();
+      if(((waction != null) && (caction == null)) ||
+	 ((caction != null) && (waction == null))) {
+	color = Color.cyan;
+      }
+      else if((waction != null) && (caction != null)) {
+	if(!waction.equalSourceParams(caction)) 
+	  color = Color.cyan;
+      }
+    }
+
+    int wk;
+    for(wk=0; wk<pSourceParamComponents.length; wk++)
+      pSourceParamComponents[wk].setForeground(color);
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Set the working overflow policy field from the value of the checked-in field.
    */ 
   private void 
@@ -3129,12 +3336,12 @@ class JNodeDetailsPanel
   {
     pApplyButton.setEnabled(true);
 
-    String cpolicy = null;
+    String cmethod = null;
     Color color = Color.white;
     if(hasWorking() && hasCheckedIn()) {
-      String wpolicy = pWorkingExecutionMethodField.getSelected();
-      cpolicy = pCheckedInExecutionMethodField.getText();      
-      if(!cpolicy.equals(wpolicy))
+      String wmethod = pWorkingExecutionMethodField.getSelected();
+      cmethod = pCheckedInExecutionMethodField.getText();      
+      if(!cmethod.equals(wmethod))
 	color = Color.cyan;
     }
 
@@ -3153,7 +3360,7 @@ class JNodeDetailsPanel
 	pWorkingBatchSizeField.setValue(0);
       pWorkingBatchSizeField.setEnabled(!pIsLocked);
       pSetBatchSizeButton.setEnabled
-	(!pIsLocked && (cpolicy != null) && (cpolicy.equals("Parallel")));
+	(!pIsLocked && (cmethod != null) && (cmethod.equals("Parallel")));
     }
 
     doBatchSizeChanged();
@@ -3185,9 +3392,12 @@ class JNodeDetailsPanel
     
     Color color = Color.white;
     if(hasWorking() && hasCheckedIn()) {
-      String wpolicy = pWorkingBatchSizeField.getText();
-      String cpolicy = pCheckedInBatchSizeField.getText();      
-      if(!cpolicy.equals(wpolicy))
+      String wmethod = pWorkingExecutionMethodField.getSelected();
+      String cmethod = pCheckedInExecutionMethodField.getText();     
+ 
+      String wsize = pWorkingBatchSizeField.getText();
+      String csize = pCheckedInBatchSizeField.getText();      
+      if(!cmethod.equals(wmethod) || !csize.equals(wsize))
 	color = Color.cyan;
     }
 
@@ -3222,9 +3432,9 @@ class JNodeDetailsPanel
     
     Color color = Color.white;
     if(hasWorking() && hasCheckedIn()) {
-      String wpolicy = pWorkingPriorityField.getText();
-      String cpolicy = pCheckedInPriorityField.getText();      
-      if(!cpolicy.equals(wpolicy))
+      String wpriority = pWorkingPriorityField.getText();
+      String cpriority = pCheckedInPriorityField.getText();      
+      if(!cpriority.equals(wpriority))
 	color = Color.cyan;
     }
 
@@ -3259,9 +3469,9 @@ class JNodeDetailsPanel
     
     Color color = Color.white;
     if(hasWorking() && hasCheckedIn()) {
-      String wpolicy = pWorkingMaxLoadField.getText();
-      String cpolicy = pCheckedInMaxLoadField.getText();      
-      if(!cpolicy.equals(wpolicy))
+      String wload = pWorkingMaxLoadField.getText();
+      String cload = pCheckedInMaxLoadField.getText();      
+      if(!cload.equals(wload))
 	color = Color.cyan;
     }
 
@@ -3296,9 +3506,9 @@ class JNodeDetailsPanel
     
     Color color = Color.white;
     if(hasWorking() && hasCheckedIn()) {
-      String wpolicy = pWorkingMinMemoryField.getText();
-      String cpolicy = pCheckedInMinMemoryField.getText();      
-      if(!cpolicy.equals(wpolicy))
+      String wmem = pWorkingMinMemoryField.getText();
+      String cmem = pCheckedInMinMemoryField.getText();      
+      if(!cmem.equals(wmem))
 	color = Color.cyan;
     }
 
@@ -3333,9 +3543,9 @@ class JNodeDetailsPanel
     
     Color color = Color.white;
     if(hasWorking() && hasCheckedIn()) {
-      String wpolicy = pWorkingMinDiskField.getText();
-      String cpolicy = pCheckedInMinDiskField.getText();      
-      if(!cpolicy.equals(wpolicy))
+      String wdisk = pWorkingMinDiskField.getText();
+      String cdisk = pCheckedInMinDiskField.getText();      
+      if(!cdisk.equals(wdisk))
 	color = Color.cyan;
     }
 
@@ -3688,6 +3898,24 @@ class JNodeDetailsPanel
    */ 
   private JTextDialog  pViewTextDialog;
   
+
+  /**
+   * The UI compontents related to per-source action parameters.
+   */ 
+  private Component pSourceParamComponents[]; 
+
+
+  /**
+   * The dialog used to edit/view working per-source parameters.
+   */ 
+  private JSourceParamsDialog  pEditSourceParamsDialog;
+
+  /**
+   * The dialog used to view checked-in per-source parameters.
+   */ 
+  private JSourceParamsDialog  pViewSourceParamsDialog;
+
+
 
   /*----------------------------------------------------------------------------------------*/
 
