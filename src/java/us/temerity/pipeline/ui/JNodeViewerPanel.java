@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.56 2004/10/09 20:15:25 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.57 2004/10/16 23:14:15 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -3122,7 +3122,17 @@ class JNodeViewerPanel
       NodeStatus status = pPrimary.getNodeStatus();
       NodeDetails details = status.getDetails();
       if(details != null) {
-	pCheckOutDialog.updateNameVersions("Check-Out:  " + status, details.getVersionIDs());
+	UIMaster master = UIMaster.getInstance();
+	ArrayList<VersionID> vids = new ArrayList<VersionID>();
+	try {
+	  vids.addAll(master.getMasterMgrClient().getCheckedInVersionIDs(status.getName()));
+	}
+	catch (PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+
+	pCheckOutDialog.updateNameVersions("Check-Out:  " + status, vids);
 	pCheckOutDialog.setVisible(true);
 	
 	if(pCheckOutDialog.wasConfirmed()) {
