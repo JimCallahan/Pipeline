@@ -137,6 +137,30 @@
 
 
 
+  <!--  F R O Z E N   B U T T O N  -->
+
+  <style id="FrozenButton"> 
+    <state>
+      <imagePainter path="UnfrozenButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state> 
+    <state value="PRESSED">
+      <imagePainter path="UnfrozenButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="SELECTED">
+      <imagePainter path="FrozenButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="PRESSED and SELECTED">
+      <imagePainter path="FrozenButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="FrozenButton" type="name" key="FrozenButton"/>
+
+
+
   <!--  B R O W S E   B U T T O N  -->
 
   <style id="BrowseButton"> 
@@ -332,6 +356,17 @@
     </state>
   </style>
   <bind style="RightArrowButton" type="name" key="RightArrowButton"/>
+
+
+
+  <!--  S P A C E R  -->
+
+  <style id="Spacer">
+    <imagePainter path="Spacer.png"
+                  method="panelBackground"
+                  sourceInsets="4 4 4 4"/>
+  </style>
+  <bind style="Spacer" type="name" key="Spacer"/>
 
 
 
