@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 1.7.1)
+AM_INIT_AUTOMAKE(Pipeline, 1.7.2)
 
 AC_MSG_RESULT([ ])
 
@@ -184,7 +184,7 @@ AC_MSG_RESULT([$PLCONFIG_VERSION (OK)])
 
 dnl ------------------------------------------------------------------------------------------
 
-AC_MSG_CHECKING([Customer Host IDs])
+AC_MSG_CHECKING([Server Host IDs])
 
 host_ids=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
                --lookup HostIDs`
@@ -196,6 +196,15 @@ then
 else 
   AC_MSG_ERROR([customer profile was incomplete.])
 fi 
+
+AC_SUBST(PIPELINE_HOST_NAMES)
+PIPELINE_HOST_NAMES=`echo $host_ids | awk '{printf("\"%s\", ",$1)}' \
+                                    | awk '{printf("%s\n",substr($0,0,length($0)-2))}'`
+
+AC_SUBST(PIPELINE_HOST_IDS)
+PIPELINE_HOST_IDS=`echo $host_ids | awk '{printf("\"%s\", ",$2)}' \
+                                  | awk '{printf("%s\n",substr($0,0,length($0)-2))}'`
+
 
 
 AC_MSG_CHECKING([License Valid Until])
@@ -811,6 +820,8 @@ dnl ----------------------------------------------------------------------------
 AC_SUBST(RPM_ROOT)
 RPM_ROOT=`pwd`/rpm
 
+AC_SUBST(RPM_DATE)
+RPM_DATE=`date +"%a %b %d %Y"`
 
 
 dnl ------------------------------------------------------------------------------------------
@@ -878,6 +889,7 @@ AC_PATH_PROG(ID, id, $PATH)
 AC_PATH_PROG(DF, df, $PATH) 
 AC_PATH_PROG(MOZILLA, mozilla, $PATH)
 AC_PATH_PROG(GIMP, gimp, $PATH)
+AC_PATH_PROG(CHECKBOT, checkbot, echo, $PATH)
 
 AC_MSG_RESULT([ ])
 
@@ -1022,6 +1034,7 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/Makefile
   src/java/us/temerity/pipeline/PackageInfo.java.src
   src/java/us/temerity/pipeline/bootstrap/BootStrapLoader.java.in
+  src/java/us/temerity/pipeline/core/VerifiedApp.java
   src/java/us/temerity/pipeline/laf/scripts/filter-fonts
   src/java/us/temerity/pipeline/laf/scripts/filter-textures
   src/java/us/temerity/pipeline/laf/scripts/radial-menu
@@ -1040,12 +1053,20 @@ AC_CONFIG_FILES([
 
   src/java/share/Makefile
 
+  src/standalone/Makefile
+  src/standalone/plnotify/configure.ac
+  src/standalone/plnotify/Makefile.am
+  src/standalone/plnotify/NativeArch.cc
+
   src/utils/Makefile
   src/utils/src/Makefile
   src/utils/src/PackageInfo.cc.src
 
   rpm/Makefile
   rpm/pipeline.spec
+  rpm/plqueuemgr.spec
+  rpm/plmaster.spec
+  rpm/plnotify.spec
   rpm/headerB
   rpm/rpmrc
   rpm/rpmmacros
