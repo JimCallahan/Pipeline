@@ -1,4 +1,4 @@
-// $Id: VersionID.java,v 1.7 2004/03/23 20:41:25 jim Exp $
+// $Id: VersionID.java,v 1.8 2004/04/20 22:00:18 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -102,7 +102,7 @@ class VersionID
    *   The revision number to increment.
    * 
    * @param level  
-   *   The revision number component level to increment..
+   *   The revision number component level to increment.
    */ 
   public 
   VersionID 
