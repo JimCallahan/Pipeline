@@ -1,4 +1,4 @@
-// $Id: DownstreamLinks.java,v 1.5 2004/07/18 21:28:27 jim Exp $
+// $Id: DownstreamLinks.java,v 1.6 2004/09/08 18:34:39 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -71,16 +71,17 @@ class DownstreamLinks
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Are there any working and checked-in downstream links?
+   * Are there any working or checked-in versions of this node existing? <P> 
+   * 
+   * There may not be any downstream links for these nodes, but as long as there are 
+   * working or checked-in versions, the downstream links file should still exist.  This
+   * method is used by @{link MasterMgr#writeDownstreamLinks MasterMgr.writeDownstreamLinks}
+   * to determine if the downstream links file should be updated or destroyed.
    */ 
   public boolean 
   hasLinks() 
   {
-    for(TreeSet<String> names : pWorkingLinks.values()) 
-      if((names != null) && !names.isEmpty())
-	return true;
-
-    return (!pCheckedInLinks.isEmpty());
+    return !(pCheckedInLinks.isEmpty() && pWorkingLinks.isEmpty());
   }
 
 
