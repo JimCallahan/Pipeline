@@ -1,4 +1,4 @@
-// $Id: ViewerLinks.java,v 1.1 2004/05/16 19:21:38 jim Exp $
+// $Id: ViewerLinks.java,v 1.2 2004/05/17 03:14:15 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -48,13 +48,38 @@ class ViewerLinks
       pRoot = new BranchGroup();
       pRoot.setPickable(false);
       
-      /* the link line geometry */ 
+      /* the line visibility switch */ 
       {
-	pShape = new Shape3D();
-	pShape.setCapability(Shape3D.ALLOW_APPEARANCE_WRITE);
-	pShape.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
+	pLineSwitch = new Switch();
+	pLineSwitch.setCapability(Switch.ALLOW_SWITCH_WRITE);
 
-	pRoot.addChild(pShape);
+	pRoot.addChild(pLineSwitch);
+      }
+      
+      /* the line geometry */ 
+      {
+	pLines = new Shape3D();
+	pLines.setCapability(Shape3D.ALLOW_APPEARANCE_WRITE);
+	pLines.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
+
+	pLineSwitch.addChild(pLines);
+      }
+
+      /* the line visibility switch */ 
+      {
+	pTriSwitch = new Switch();
+	pTriSwitch.setCapability(Switch.ALLOW_SWITCH_WRITE);
+
+	pRoot.addChild(pTriSwitch);
+      }
+
+      /* the poluygon geometry */ 
+      {
+	pTris = new Shape3D();
+	pTris.setCapability(Shape3D.ALLOW_APPEARANCE_WRITE);
+	pTris.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
+
+	pTriSwitch.addChild(pTris);
       }
     }    
   }
@@ -171,19 +196,32 @@ class ViewerLinks
 	pLineThickness = prefs.getLinkThickness();
 	pLineColorName = prefs.getLinkColorName();
 
-	Appearance apr = new Appearance();
-
-	apr.setTexture(TextureMgr.getInstance().getSimpleTexture(pLineColorName));
-	apr.setMaterial(null);
-	
 	{
-	  LineAttributes la = new LineAttributes();
-	  la.setLineAntialiasingEnable(pLineAntiAlias);
-	  la.setLineWidth((float) pLineThickness);
-	  apr.setLineAttributes(la);
+	  Appearance apr = new Appearance();
+	  
+	  apr.setTexture(TextureMgr.getInstance().getSimpleTexture(pLineColorName));
+	  apr.setMaterial(null);
+	  
+	  {
+	    LineAttributes la = new LineAttributes();
+	    la.setLineAntialiasingEnable(pLineAntiAlias);
+	    la.setLineWidth((float) pLineThickness);
+	    apr.setLineAttributes(la);
+	  }
+	  
+	  pLines.setAppearance(apr);
 	}
-	
-	pShape.setAppearance(apr);
+
+	{
+	  Appearance apr = new Appearance();
+	  
+	  apr.setTexture(TextureMgr.getInstance().getSimpleTexture(pLineColorName));
+	  apr.setMaterial(null);
+
+	  apr.setPolygonAttributes(new PolygonAttributes());
+	    
+	  pTris.setAppearance(apr);
+	}	
       }
     }
     catch(IOException ex) {
@@ -195,42 +233,234 @@ class ViewerLinks
     
     /* update the line geometry */ 
     if(pLinksChanged) {
-      // DEBUG 
-      {
-	System.out.print("Upstream Links:\n");
-	for(NodePath parent : pUpstreamLinks.keySet()) {
-	  System.out.print("  " + parent + "\n");
-	  for(Link link : pUpstreamLinks.get(parent)) {
-	    System.out.print("    TargetPos: " + link.getTargetPos() + "\n" + 
-			     "    SourcePos: " + link.getSourcePos() + "\n" +
-			     "      Details: " + 
-			     link.getDetails().getCatagory().getName() + " [" + 
-			     link.getDetails().getCatagory().getPolicy() + "] - " + 
-			     link.getDetails().getRelationship() + "\n\n");
+      if(pUpstreamLinks.isEmpty() && pDownstreamLinks.isEmpty()) {
+	pLineSwitch.setWhichChild(Switch.CHILD_NONE);
+	pTriSwitch.setWhichChild(Switch.CHILD_NONE);
+      }
+      else {
+	/* compute the number of vertices */ 
+	int lvCnt = 0;
+	int tvCnt = 0;
+	{
+	  for(NodePath path : pUpstreamLinks.keySet()) {
+	    ArrayList<Link> links = pUpstreamLinks.get(path);
+	    lvCnt += 2*links.size() + 4;
+	    
+ 	    if(prefs.getDrawArrowHeads()) 
+ 	      tvCnt += 3;
+	    
+	    for(Link link : links) {
+	      if(prefs.getDrawLinkPolicy()) {
+		switch(link.getDetails().getCatagory().getPolicy()) {
+		case None:
+		  lvCnt += 2;
+		case NodeStateOnly:
+		  lvCnt += 2;
+		}
+	      }
+	    }
 	  }
-	  System.out.print("\n");
+
+	  for(NodePath path : pDownstreamLinks.keySet()) {
+	    ArrayList<Link> links = pDownstreamLinks.get(path);
+	    lvCnt += 2*links.size() + 4;
+
+	    for(Link link : links) {
+ 	      if(prefs.getDrawArrowHeads())
+		tvCnt += 3;
+	    }
+	  }
 	}
 	
-	System.out.print("Downstream Links:\n");
-	for(NodePath parent : pDownstreamLinks.keySet()) {
-	  System.out.print("  " + parent + "\n");
-	  for(Link link : pDownstreamLinks.get(parent)) {
-	    System.out.print("    TargetPos: " + link.getTargetPos() + "\n" + 
-			     "    SourcePos: " + link.getSourcePos() + "\n\n");
+	/* create a new line array */ 
+	LineArray la = new LineArray(lvCnt, LineArray.COORDINATES);
+	int lvi = 0;
+
+	/* create a new triagle array */ 
+	TriangleArray ta = null;
+	if(prefs.getDrawArrowHeads()) 
+	  ta = new TriangleArray(tvCnt, TriangleArray.COORDINATES);
+	int tvi = 0;
+	
+	/* upstream links */ 
+	{
+	  for(NodePath path : pUpstreamLinks.keySet()) {
+	    ArrayList<Link> links = pUpstreamLinks.get(path);
+	    
+	    double centerX = 0.0;
+	    double minY = 0.0;
+	    double maxY = 0.0;
+	    {
+	      Link link = links.get(0);
+	      Point3d tpos = link.getTargetPos();
+	      Point3d spos = link.getSourcePos();
+	      
+	      centerX = (tpos.x + spos.x) * 0.5;
+	      minY = maxY = tpos.y;
+	      
+	      tpos.x += 0.5 + prefs.getLinkGap();
+
+	      if(prefs.getDrawArrowHeads()) {
+		double hx = prefs.getArrowHeadLength();
+		double hy = prefs.getArrowHeadWidth();
+
+		ta.setCoordinate(tvi, tpos);                                    tvi++;
+		ta.setCoordinate(tvi, new Point3d(tpos.x+hx, tpos.y-hy, 0.0));  tvi++;
+		ta.setCoordinate(tvi, new Point3d(tpos.x+hx, tpos.y+hy, 0.0));  tvi++;
+
+		tpos.x += prefs.getArrowHeadLength();
+	      }
+
+	      la.setCoordinate(lvi, tpos);                               lvi++;
+	      la.setCoordinate(lvi, new Point3d(centerX, tpos.y, 0.0));  lvi++;
+	    }
+	    
+	    for(Link link : links) {
+	      Point3d tpos = link.getTargetPos();
+	      Point3d spos = link.getSourcePos();
+	      
+	      minY = Math.min(minY, spos.y);
+	      maxY = Math.max(maxY, spos.y);
+	      
+	      spos.x -= 0.5 + prefs.getLinkGap();
+
+	      la.setCoordinate(lvi, new Point3d(centerX, spos.y, 0.0));  lvi++;
+	      la.setCoordinate(lvi, spos);                               lvi++;
+
+	      if(prefs.getDrawLinkPolicy()) {
+		double s = prefs.getLinkPolicySize();
+		switch(link.getDetails().getCatagory().getPolicy()) {
+		case None:
+		  la.setCoordinate(lvi, new Point3d(spos.x-s*0.75, spos.y-s, 0.0));  lvi++;
+		  la.setCoordinate(lvi, new Point3d(spos.x-s*0.75, spos.y+s, 0.0));  lvi++;
+		  
+		case NodeStateOnly:
+		  la.setCoordinate(lvi, new Point3d(spos.x, spos.y-s, 0.0));  lvi++;
+		  la.setCoordinate(lvi, new Point3d(spos.x, spos.y+s, 0.0));  lvi++;
+		}
+	      }
+	    }
+	    
+	    la.setCoordinate(lvi, new Point3d(centerX, minY, 0.0));  lvi++;
+	    la.setCoordinate(lvi, new Point3d(centerX, maxY, 0.0));  lvi++;
 	  }
-	  System.out.print("\n");
+	}
+
+	/* downstream links */ 
+	{
+	  for(NodePath path : pDownstreamLinks.keySet()) {
+	    ArrayList<Link> links = pDownstreamLinks.get(path);
+	    
+	    double centerX = 0.0;
+	    double minY = 0.0;
+	    double maxY = 0.0;
+	    {
+	      Link link = links.get(0);
+	      Point3d tpos = link.getTargetPos();
+	      Point3d spos = link.getSourcePos();
+	      
+	      centerX = (tpos.x + spos.x) * 0.5;
+	      minY = maxY = spos.y;
+
+	      spos.x -= 0.5 + prefs.getLinkGap();
+
+	      la.setCoordinate(lvi, spos);                               lvi++;
+	      la.setCoordinate(lvi, new Point3d(centerX, spos.y, 0.0));  lvi++;
+	    }
+	    
+	    for(Link link : links) {
+	      Point3d tpos = link.getTargetPos();
+	      Point3d spos = link.getSourcePos();
+	      
+	      minY = Math.min(minY, tpos.y);
+	      maxY = Math.max(maxY, tpos.y);
+	      
+	      tpos.x += 0.5 + prefs.getLinkGap();
+
+	      if(prefs.getDrawArrowHeads()) {
+		double hx = prefs.getArrowHeadLength();
+		double hy = prefs.getArrowHeadWidth();
+
+		ta.setCoordinate(tvi, tpos);                                    tvi++;
+		ta.setCoordinate(tvi, new Point3d(tpos.x+hx, tpos.y-hy, 0.0));  tvi++;
+		ta.setCoordinate(tvi, new Point3d(tpos.x+hx, tpos.y+hy, 0.0));  tvi++;
+
+		tpos.x += prefs.getArrowHeadLength();
+	      }
+
+	      la.setCoordinate(lvi, new Point3d(centerX, tpos.y, 0.0));  lvi++;
+	      la.setCoordinate(lvi, tpos);                               lvi++;
+	    }
+	    
+	    la.setCoordinate(lvi, new Point3d(centerX, minY, 0.0));  lvi++;
+	    la.setCoordinate(lvi, new Point3d(centerX, maxY, 0.0));  lvi++;
+	  }
+	}
+
+	assert(lvi == lvCnt);
+	pLines.setGeometry(la);
+	pLineSwitch.setWhichChild(Switch.CHILD_ALL);
+
+	if(prefs.getDrawArrowHeads()) {
+	  assert(tvi == tvCnt);
+	  pTris.setGeometry(ta);
+	  pTriSwitch.setWhichChild(Switch.CHILD_ALL);	
+	}
+	else {
+	  pTriSwitch.setWhichChild(Switch.CHILD_NONE);	
 	}
       }
-      // DEBUG 
-      
 	
-			   
-    
-      // ...
-      
       pLinksChanged = false;
     }
   }
+
+
+
+
+
+//       // DEBUG 
+//       {
+// 	System.out.print("Upstream Links:\n");
+// 	for(NodePath parent : pUpstreamLinks.keySet()) {
+// 	  System.out.print("  " + parent + "\n");
+// 	  for(Link link : pUpstreamLinks.get(parent)) {
+// 	    System.out.print("    TargetPos: " + link.getTargetPos() + "\n" + 
+// 			     "    SourcePos: " + link.getSourcePos() + "\n" +
+// 			     "      Details: " + 
+// 			     link.getDetails().getCatagory().getName() + " [" + 
+// 			     link.getDetails().getCatagory().getPolicy() + "] - " + 
+// 			     link.getDetails().getRelationship() + "\n\n");
+// 	  }
+// 	  System.out.print("\n");
+// 	}
+	
+// 	System.out.print("Downstream Links:\n");
+// 	for(NodePath parent : pDownstreamLinks.keySet()) {
+// 	  System.out.print("  " + parent + "\n");
+// 	  for(Link link : pDownstreamLinks.get(parent)) {
+// 	    System.out.print("    TargetPos: " + link.getTargetPos() + "\n" + 
+// 			     "    SourcePos: " + link.getSourcePos() + "\n\n");
+// 	  }
+// 	  System.out.print("\n");
+// 	}
+//       }
+//       // DEBUG 
+      
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  private Point3d
+  to3d
+  (
+   Point2d p
+  ) 
+  {
+    return new Point3d(p.x, p.y, 0.0);
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -255,16 +485,16 @@ class ViewerLinks
       pDetails = details;
     }
 
-    public Point2d
+    public Point3d
     getTargetPos() 
     {
-      return pTarget.getPosition();
+      return to3d(pTarget.getPosition());
     }
 
-    public Point2d
+    public Point3d
     getSourcePos()
     {
-      return pSource.getPosition();
+      return to3d(pSource.getPosition());
     }
     
     public LinkCommon
@@ -321,10 +551,27 @@ class ViewerLinks
    */ 
   private BranchGroup  pRoot;     
 
+
   /**
-   * The link line geometry.
+   * The switch group used to control line visbilty. 
    */ 
-  private Shape3D  pShape;  
+  private Switch  pLineSwitch;   
+
+  /**
+   * The line geometry.
+   */ 
+  private Shape3D  pLines;  
+
+
+  /**
+   * The switch group used to control triangle visbilty. 
+   */ 
+  private Switch  pTriSwitch;   
+
+  /**
+   * The triangle geometry.
+   */ 
+  private Shape3D  pTris;  
 
 
 }
