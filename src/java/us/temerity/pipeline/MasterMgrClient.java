@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.8 2004/06/19 00:25:53 jim Exp $
+// $Id: MasterMgrClient.java,v 1.9 2004/06/28 00:09:55 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -305,7 +305,13 @@ class MasterMgrClient
   }
 
   /**
-   * Get the cooked toolset environment with the given name.
+   * Get the cooked toolset environment specific to the given user and working area.
+   * 
+   * @param author
+   *   The user owning the generated environment.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
    * 
    * @param name
    *   The toolset name.
@@ -316,16 +322,18 @@ class MasterMgrClient
   public synchronized TreeMap<String,String> 
   getToolsetEnvironment
   (
+   String author, 
+   String view,
    String name
   ) 
     throws PipelineException
   {
     verifyConnection();
 
-    MiscGetToolsetEnvironmentReq req = new MiscGetToolsetEnvironmentReq(name);
+    MiscGetToolsetEnvironmentReq req = new MiscGetToolsetEnvironmentReq(author, view, name);
 
     Object obj = performTransaction(MasterRequest.GetToolsetEnvironment, req);
-    if(obj instanceof MiscGetToolsetRsp) {
+    if(obj instanceof MiscGetToolsetEnvironmentRsp) {
       MiscGetToolsetEnvironmentRsp rsp = (MiscGetToolsetEnvironmentRsp) obj;
       return rsp.getEnvironment();
     }
