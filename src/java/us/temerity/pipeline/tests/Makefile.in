@@ -172,14 +172,16 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
 #--------------------------------------------------------------------------------------------#
 
-           TESTS = NodeModVersion
+           TESTS = FileMgr
 
 #            TESTS = CheckSum \
 #                    FileSeq \
+#                    FileMgr \
 #                    Glue \
 #                    NativeFileSys \
 #                    NodeID \
 #                    NodeMod \
+#                    NodeModVersion \
 #                    SubProcess \
 #                    Toolsets \
 #                    VersionID
@@ -221,8 +223,7 @@ java-all: $(JAVA_SOURCES)
 
 check: all check-each 
 
-check-each: $(CLASSES) ../pipeline.jar
-	rm -rf data
+check-each: $(CLASSES) ../pipeline.jar clean-data
 	cp -r $(srcdir)/data data
 	@failed=0; all=0; \
          banner1="========================================================================"; \
@@ -319,6 +320,7 @@ clean-class:
 	rm -f java-all
 
 clean-data:
+	-chmod -fR 777 data
 	rm -rf data
 
 clean-headers:
