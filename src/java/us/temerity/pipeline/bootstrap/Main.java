@@ -1,4 +1,4 @@
-// $Id: Main.java,v 1.3 2004/03/23 07:40:37 jim Exp $
+// $Id: Main.java,v 1.4 2004/04/24 22:34:08 jim Exp $
 
 package us.temerity.pipeline.bootstrap;
 
@@ -88,8 +88,7 @@ class Main
     catch(Exception ex) {
       System.out.print("Unable to start the application!\n");
       ex.printStackTrace(System.out);
+      System.exit(1);
     }
-
-    System.exit(1);
   }
 }
