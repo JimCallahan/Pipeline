@@ -1,4 +1,4 @@
-// $Id: NodeCommon.java,v 1.6 2004/03/15 19:09:04 jim Exp $
+// $Id: NodeCommon.java,v 1.7 2004/03/16 00:04:47 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -313,6 +313,15 @@ class NodeCommon
     return pEditor;
   }
 
+
+  /**
+   * Does this node have a regeneration action?
+   */ 
+  public boolean 
+  hasAction() 
+  {
+    return (pAction != null);
+  }
 
   /** 
    * Get the action plugin instance used to regeneration the files associated with this 
