@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.1 2004/08/25 05:19:59 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.2 2004/08/26 06:05:02 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -10,6 +10,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
+import javax.swing.event.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   J O B   B R O W S E R   P A N E L                                          */
@@ -21,7 +22,7 @@ import javax.swing.*;
 public 
 class JQueueJobBrowserPanel
   extends JTopLevelPanel
-  implements MouseListener, KeyListener, ActionListener
+  implements MouseListener, KeyListener, ListSelectionListener, ActionListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -59,6 +60,13 @@ class JQueueJobBrowserPanel
   private void 
   initUI()
   {
+    /* initialize fields */ 
+    {
+      pJobGroups   = new TreeMap<Long,QueueJobGroup>(); 
+      pJobStatus   = new TreeMap<Long,JobStatus>();
+      pSelectedIDs = new TreeSet<Long>();
+    }
+
     {
       setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));  
       
@@ -117,6 +125,9 @@ class JQueueJobBrowserPanel
 	    new JTablePanel(model, model.getColumnWidths(), 
 			    model.getRenderers(), model.getEditors());
 	  pTablePanel = tpanel;
+
+	  ListSelectionModel smodel = tpanel.getTable().getSelectionModel();
+	  smodel.addListSelectionListener(this);
 
 	  panel.add(tpanel);
 	}
@@ -177,13 +188,32 @@ class JQueueJobBrowserPanel
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Set the author and view.
+   */ 
+  public synchronized void 
+  setAuthorView
+  (
+   String author, 
+   String view 
+  ) 
+  {
+    super.setAuthorView(author, view);    
+
+    if(pJobGroups != null)
+      doUpdate();
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   U S E R   I N T E R F A C E                                                          */
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Update the job groups and states.
+   * Update the job groups and status.
    * 
    * @param author 
    *   The name of the user which owns the working version.
@@ -194,8 +224,8 @@ class JQueueJobBrowserPanel
    * @param groups
    *   The queue job groups indexe by job group ID.
    * 
-   * @param states
-   *   The job states indexed by job ID.
+   * @param status
+   *   The job status indexed by job ID.
    */ 
   public synchronized void
   updateQueueJobs
@@ -203,44 +233,95 @@ class JQueueJobBrowserPanel
    String author, 
    String view, 
    TreeMap<Long,QueueJobGroup> groups, 
-   TreeMap<Long,JobState> states
+   TreeMap<Long,JobStatus> status
   ) 
   {
     if(!pAuthor.equals(author) || !pView.equals(view)) 
       super.setAuthorView(author, view);
 
-    updateQueueJobs(groups, states);
+    updateQueueJobs(groups, status);
   }
 
   /**
-   * Update the job groups and states.
+   * Update the job groups and status.
    * 
    * @param groups
    *   The queue job groups indexe by job group ID.
    * 
-   * @param states
-   *   The job states indexed by job ID.
+   * @param status
+   *   The job status indexed by job ID.
    */ 
   public synchronized void
   updateQueueJobs
   (
    TreeMap<Long,QueueJobGroup> groups, 
-   TreeMap<Long,JobState> states
+   TreeMap<Long,JobStatus>     status
   ) 
   {
-    TreeMap<Long,QueueJobGroup> gs = groups; 
-    if((groups != null) && pFilterViewsButton.isSelected()) {
-      gs = new TreeMap<Long,QueueJobGroup>(); 
-      for(QueueJobGroup group : groups.values()) {
-	NodeID nodeID = group.getNodeID();
-	if(nodeID.getAuthor().equals(pAuthor) && nodeID.getView().equals(pView)) 
-	  gs.put(group.getGroupID(), group);
+    /* update the groups and job status */ 
+    {
+      if((groups != null) && pFilterViewsButton.isSelected()) {
+	pJobGroups = new TreeMap<Long,QueueJobGroup>(); 
+	for(QueueJobGroup group : groups.values()) {
+	  NodeID nodeID = group.getNodeID();
+	  if(nodeID.getAuthor().equals(pAuthor) && nodeID.getView().equals(pView)) 
+	    pJobGroups.put(group.getGroupID(), group);
+	}
       }
+      else {
+	pJobGroups.clear();
+	if(groups != null) 
+	  pJobGroups.putAll(groups);
+      }
+      
+      pJobStatus.clear();
+      if(status != null) 
+	pJobStatus.putAll(status);
+    }
+    
+    /* update the table model, 
+         reselects any of the previously selected job groups which still exist */ 
+    {
+      JTable table = pTablePanel.getTable();
+      ListSelectionModel smodel = table.getSelectionModel();
+
+      smodel.removeListSelectionListener(this);
+      { 
+	pTableModel.setQueueJobGroups(pJobGroups, pJobStatus);
+	
+	TreeSet<Long> selected = new TreeSet<Long>();
+	for(Long groupID : pSelectedIDs) {
+	  int row = pTableModel.getGroupRow(groupID);
+	  if(row != -1) {
+	    table.addRowSelectionInterval(row, row);
+	    selected.add(groupID);
+	  }
+	}
+
+	pSelectedIDs.clear();
+	pSelectedIDs.addAll(selected);
+      }      
+      smodel.addListSelectionListener(this);
     }
 
-    pTableModel.setQueueJobGroups(gs, states);
+    /* update any connected JobViewer */ 
+    if(pGroupID > 0) {
+      UIMaster master = UIMaster.getInstance();
+      PanelGroup<JQueueJobViewerPanel> panels = master.getQueueJobViewerPanels();
+      JQueueJobViewerPanel panel = panels.getPanel(pGroupID);
+      if(panel != null) {
+	TreeMap<Long,QueueJobGroup> sgroups = new TreeMap<Long,QueueJobGroup>();
+	for(Long groupID : pSelectedIDs) {
+	  QueueJobGroup group = pJobGroups.get(groupID);
+	  if(group != null) 
+	    sgroups.put(groupID, group);
+	}
+	  
+	panel.updateQueueJobs(pAuthor, pView, sgroups, pJobStatus);
+	panel.updateManagerTitlePanel();
+      }
+    }
   }
-  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -309,6 +390,18 @@ class JQueueJobBrowserPanel
     if((prefs.getJobBrowserUpdate() != null) &&
        prefs.getJobBrowserUpdate().wasPressed(e))
       doUpdate();
+
+    else {
+      switch(e.getKeyCode()) {
+      case KeyEvent.VK_SHIFT:
+      case KeyEvent.VK_ALT:
+      case KeyEvent.VK_CONTROL:
+	break;
+      
+      default:
+	Toolkit.getDefaultToolkit().beep();
+      }
+    }
   }
 
   /**
@@ -324,6 +417,35 @@ class JQueueJobBrowserPanel
   keyTyped(KeyEvent e) {} 
 
 
+
+  /*-- LIST SELECTION LISTENER METHODS -----------------------------------------------------*/
+
+  /**
+   * Called whenever the value of the selection changes.
+   */ 
+  public void 	
+  valueChanged
+  (
+   ListSelectionEvent e
+  )
+  {
+    if(e.getValueIsAdjusting()) 
+      return;
+
+    /* update selected IDs */ 
+    {
+      pSelectedIDs.clear(); 
+      int rows[] = pTablePanel.getTable().getSelectedRows();
+      int wk;
+      for(wk=0; wk<rows.length; wk++) {
+	Long groupID = (Long) pTableModel.getValueAt(rows[wk], 0);
+	pSelectedIDs.add(groupID);
+      }
+    }
+      
+    doUpdate();      
+  }
+          
 
   /*-- ACTION LISTENER METHODS -------------------------------------------------------------*/
 
@@ -350,7 +472,7 @@ class JQueueJobBrowserPanel
   /**
    * Update the status of all jobs and job groups.
    */ 
-  private void
+  public void
   doUpdate()
   { 
     GetJobsTask task = new GetJobsTask();
@@ -373,6 +495,9 @@ class JQueueJobBrowserPanel
     super.toGlue(encoder);
 
     encoder.encode("FilterView", pFilterViewsButton.isSelected());
+
+    if(!pSelectedIDs.isEmpty())
+      encoder.encode("SelectedIDs", pSelectedIDs);
   }
 
   public synchronized void 
@@ -385,6 +510,10 @@ class JQueueJobBrowserPanel
     Boolean filter = (Boolean) decoder.decode("FilterView");
     if(filter != null) 
       pFilterViewsButton.setSelected(filter);
+
+    TreeSet<Long> selected = (TreeSet<Long>) decoder.decode("SelectedIDs");
+    if(selected != null) 
+      pSelectedIDs.addAll(selected);
 
     super.fromGlue(decoder);
   }
@@ -414,13 +543,13 @@ class JQueueJobBrowserPanel
       UIMaster master = UIMaster.getInstance();
 
       TreeMap<Long,QueueJobGroup> groups = null;
-      TreeMap<Long,JobState> states = null;
+      TreeMap<Long,JobStatus> status = null;
       if(master.beginPanelOp("Updating Jobs...")) {
 	try {
 	  QueueMgrClient client = master.getQueueMgrClient();
-	  
 	  groups = client.getJobGroups(); 
-	  states = client.getAllJobStates();
+	  TreeSet<Long> groupIDs = new TreeSet<Long>(groups.keySet());
+	  status = client.getJobStatus(groupIDs);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -430,7 +559,7 @@ class JQueueJobBrowserPanel
 	}
       }
 	
-      UpdateTask task = new UpdateTask(groups, states);
+      UpdateTask task = new UpdateTask(groups, status);
       SwingUtilities.invokeLater(task);
     }
   }
@@ -446,33 +575,23 @@ class JQueueJobBrowserPanel
     UpdateTask
     (
      TreeMap<Long,QueueJobGroup> groups, 
-     TreeMap<Long,JobState> states
+     TreeMap<Long,JobStatus> status
     ) 
     {
       super("JQueueJobBrowserPanel:UpdateTask");
 
       pGroups = groups;
-      pStates = states; 
+      pStatus = status; 
     }
 
     public void 
     run() 
     {
-      updateQueueJobs(pGroups, pStates);
-
-      //UIMaster master = UIMaster.getInstance(); 
-//       {
-// 	PanelGroup<JQueueJobViewerPanel> panels = master.getQueueJobViewerPanels();
-// 	JQueueJobViewerPanel panel = panels.getPanel(pGroupID);
-// 	if(panel != null) {
-// 	  panel.updateQueueJobs(pAuthor, pView, pJobGroups, pJobStates);
-// 	  panel.updateManagerTitlePanel();
-// 	}
-//       }
+      updateQueueJobs(pGroups, pStatus);
     }
     
     private TreeMap<Long,QueueJobGroup>  pGroups; 
-    private TreeMap<Long,JobState>       pStates; 
+    private TreeMap<Long,JobStatus>      pStatus; 
   }
 
 
@@ -486,6 +605,25 @@ class JQueueJobBrowserPanel
   
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * All job groups indexed by group ID. 
+   */ 
+  private TreeMap<Long,QueueJobGroup>  pJobGroups;
+  
+  /**
+   * The job status of the jobs which make up the job groups indexed by job ID. 
+   */ 
+  private TreeMap<Long,JobStatus>  pJobStatus;
+
+  /**
+   * The IDs of the selected job groups. 
+   */ 
+  private TreeSet<Long>  pSelectedIDs; 
+
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
