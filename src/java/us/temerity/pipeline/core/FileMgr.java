@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.10 2004/04/24 22:35:38 jim Exp $
+// $Id: FileMgr.java,v 1.11 2004/05/03 04:29:30 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -792,7 +792,9 @@ class FileMgr
 		   ") in the location of the working checksum directory!");
 	    }
 	    else {
-	      dirs.add(cwdir);
+	      if(!cwdir.mkdirs())
+		throw new PipelineException
+		  ("Unable to create the working  checksum directory (" + cwdir + ")!");
 	    }
 
 	    if(!dirs.isEmpty()) {
@@ -1406,7 +1408,9 @@ class FileMgr
 		   ") in the location of the working checksum directory!");
 	    }
 	    else {
-	      dirs.add(cwdir);
+	      if(!cwdir.mkdirs())
+		throw new PipelineException
+		  ("Unable to create the working  checksum directory (" + cwdir + ")!");
 	    }
 	    
 	    if(!dirs.isEmpty()) {
