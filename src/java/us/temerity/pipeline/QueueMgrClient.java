@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.3 2004/07/28 19:14:44 jim Exp $
+// $Id: QueueMgrClient.java,v 1.4 2004/08/01 15:43:17 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -675,6 +675,39 @@ class QueueMgrClient
     QueueEditHostsReq req = new QueueEditHostsReq(status, reservations, slots, biases);
     Object obj = performTransaction(QueueRequest.EditHosts, req); 
     handleSimpleResponse(obj);
+  }
+
+  /**
+   * Get the full system resource usage history of the given host.
+   * 
+   * @param hostname
+   *   The fully resolved name of the host.
+   * 
+   * @return 
+   *   The resource usage samples.
+   * 
+   * @throws PipelineException
+   *   If unable to lookup the resource usage.
+   */ 
+  public synchronized ArrayList<ResourceSample>
+  getHostResourceSamples
+  (
+   String hostname
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+    
+    QueueGetHostResourceSamplesReq req = new QueueGetHostResourceSamplesReq(hostname);
+    Object obj = performTransaction(QueueRequest.GetHostResourceSamples, req);
+    if(obj instanceof QueueGetHostResourceSamplesRsp) {
+      QueueGetHostResourceSamplesRsp rsp = (QueueGetHostResourceSamplesRsp) obj;
+      return rsp.getSamples();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
   }
 
 
