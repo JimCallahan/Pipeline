@@ -1,4 +1,4 @@
-// $Id: QueueGetAllJobStatesRsp.java,v 1.1 2004/08/23 04:29:01 jim Exp $
+// $Id: QueueGetAllJobStatesRsp.java,v 1.2 2004/08/23 06:43:21 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -72,7 +72,7 @@ class QueueGetAllJobStatesRsp
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID = 
+  private static final long serialVersionUID = -6054747055753320836L;
 
   
 
