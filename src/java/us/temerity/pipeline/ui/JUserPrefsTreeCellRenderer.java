@@ -1,4 +1,4 @@
-// $Id: JUserPrefsTreeCellRenderer.java,v 1.1 2004/05/13 02:37:41 jim Exp $
+// $Id: JUserPrefsTreeCellRenderer.java,v 1.2 2004/05/13 21:28:20 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -88,7 +88,7 @@ class JUserPrefsTreeCellRenderer
   /*   S T A T I C    I N T E R N A L S                                                     */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID = -5085958176505086517L;
+  private static final long serialVersionUID = -8295715547526149445L;
 
 
   private static Icon sSpacerIcon = 
