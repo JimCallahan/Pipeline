@@ -1,4 +1,4 @@
-// $Id: NodeMgrServer.java,v 1.2 2004/03/26 19:11:08 jim Exp $
+// $Id: NodeMgrServer.java,v 1.3 2004/03/28 00:48:12 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -102,12 +102,14 @@ class NodeMgrServer
   public void 
   run() 
   {
+    ServerSocket server = null;
     try {
-      ServerSocket server = new ServerSocket(pPort, 100);
+      server = new ServerSocket(pPort, 100);
       Logs.net.fine("Listening on Port: " + pPort);
       Logs.flush();
 
-      server.setSoTimeout(15000);
+      server.setSoTimeout(PackageInfo.sServerTimeOut);
+
       while(!pShutdown.get()) {
 	try {
 	  Socket socket = server.accept();
@@ -117,27 +119,43 @@ class NodeMgrServer
 	  task.start();	
 	}
 	catch(SocketTimeoutException ex) {
+	  Logs.net.finest("Timeout: accept()");
 	}
       }
 
       try {
 	Logs.net.finer("Shutting Down -- Waiting for tasks to complete...");
+	Logs.flush();
 	for(HandlerTask task : pTasks) {
 	  task.join();
 	}
       }
       catch(InterruptedException ex) {
+	Logs.net.severe("Interrupted while shutting down!");
+	Logs.flush();
       }
 
       Logs.net.fine("Server Shutdown.");
+      Logs.flush();
     }
     catch (IOException ex) {
       Logs.net.severe("IO problems on port (" + pPort + "):\n" + 
 		      ex.getMessage());
+      Logs.flush();
     }
     catch (SecurityException ex) {
       Logs.net.severe("The Security Manager doesn't allow listening to sockets!\n" + 
 		      ex.getMessage());
+      Logs.flush();
+    }
+    finally {
+      if(server != null) {
+	try {
+	  server.close();
+	}
+	catch (IOException ex) {
+	}
+      }
     }
   }
 
@@ -186,6 +204,14 @@ class NodeMgrServer
 	    {
 	      NodeGetWorkingReq req = (NodeGetWorkingReq) objIn.readObject();
 	      objOut.writeObject(pNodeMgr.getWorkingVersion(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case ModifyProperties:
+	    {
+	      NodeModifyPropertiesReq req = (NodeModifyPropertiesReq) objIn.readObject();
+	      objOut.writeObject(pNodeMgr.modifyProperties(req));
 	      objOut.flush(); 
 	    }
 	    break;
