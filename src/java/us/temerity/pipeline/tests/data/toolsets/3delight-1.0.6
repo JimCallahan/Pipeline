@@ -1,0 +1,86 @@
+# Initialization of 3delight environment variables
+# for bash shell (and derivatives) users.
+#
+# Usage: 1) if the DELIGHT variable (just below) is not
+#           the directory where 3delight is installed, set
+#           the DELIGHT variable in an appropriate manner
+#        2) source this file
+#        3) override the DL_SHADERS_PATH and DL_DISPLAYS_PATH
+#           if you wish so.
+#
+# IRIX note: this script attempt to determine wether
+#            your machine can run mips4 executables.
+#            You can override this script behaviour
+#            by setting DL_PLAT explicitly to
+#            IRIX-mips3 or IRIX-mips4.
+#
+#            I would be glad to know if there is a better way 
+#            to do this (patrick@3delight.com).
+#
+
+if [ ! $DL_PLAT ]; then
+    DL_CLEAR_DLPLAT="1"
+fi
+
+DL_BASE_DIR=/base/apps/i686-pc-linux-gnu-opt/3delight-1.0.6
+
+DL_OS=`uname -s`
+if [ $DL_OS = "IRIX64" ]; then
+    DL_OS="IRIX"
+    if [ ! $DL_PLAT ]; then
+        # mips4 is the default instruction set on IRIX64
+        DL_PLAT="IRIX-mips4"
+        # Fallback to mips3 if mips4 does not exists
+        if [ ! -d "${DL_BASE_DIR}/${DL_PLAT}" ]; then
+            DL_PLAT="IRIX-mips3"
+        fi
+    fi
+fi
+
+if [ $DL_OS = "IRIX" ]; then
+    if [ ! $DL_PLAT ]; then
+        # mips3 is the default instruction set on IRIX
+        DL_PLAT="IRIX-mips3"
+        # Fallback to mips4 if mips3 does not exists
+        if [ ! -d "${DL_BASE_DIR}/${DL_PLAT}" ]; then
+            DL_PLAT="IRIX-mips4"
+        fi
+    fi
+fi
+
+if [ $DL_OS = "Linux" ]; then
+	# This is to determine which version of the lib stdc++ we have
+	DL_LIBSTDCPPVERSION="-libstdc++-`/sbin/ldconfig -vNX 2>/dev/null |grep libstdc++-libc6 |cut -d" " -f1|sort|cut -d"." -f4|tail -n1`"
+	DL_ARCH=`uname -m`
+	DL_PLAT="${DL_OS}-${DL_ARCH}${DL_LIBSTDCPPVERSION}"
+	unset DL_ARCH
+	unset DL_LIBSTDCPPVERSION
+fi
+
+if [ $DL_OS = "Darwin" ]; then
+	DL_PLAT="${DL_OS}-PowerMacintosh"
+fi
+
+if [ ! $DELIGHT ]; then
+    export DELIGHT=${DL_BASE_DIR}/${DL_PLAT}
+fi
+
+export DL_SHADERS_PATH=.:${DELIGHT}/shaders
+export DL_DISPLAYS_PATH=.:${DELIGHT}/displays
+export DL_TEXTURES_PATH=.
+
+
+export INFOPATH=${DELIGHT}/doc/info
+
+export LD_LIBRARY_PATH=${DELIGHT}/lib
+
+export PATH=$DELIGHT/bin
+
+unset DL_BASE_DIR
+unset DL_OS
+
+if [ $DL_CLEAR_DLPLAT = "1" ]; then
+    unset DL_PLAT
+fi
+
+unset DL_CLEAR_DLPLAT

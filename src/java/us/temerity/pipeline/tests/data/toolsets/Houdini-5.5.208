@@ -1,0 +1,25 @@
+#
+#   Environment setup script for Houdini.
+#
+export HFS=/base/apps/i686-pc-linux-gnu-opt/hfs5.5
+
+#
+#  The following are some handy shortcuts:
+#
+export H=${HFS}
+export HB=${H}/bin
+export HDSO=${H}/dsolib
+export HD=${H}/demo
+export HH=${H}/houdini
+export HHC=${HH}/config
+export HT=${H}/toolkit
+export HSB=${HH}/sbin
+export HTB=${HT}/bin
+export PD=/p
+
+
+export LD_LIBRARY_PATH="${HDSO}"
+export PATH="${HB}:${HSB}:${HTB}"
+
+
+

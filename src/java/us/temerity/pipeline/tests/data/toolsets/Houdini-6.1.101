@@ -1,0 +1,38 @@
+#
+#   Environment setup script for Houdini.
+#
+export HFS=/base/apps/i686-pc-linux-gnu-opt/hfs6.1
+
+#
+#  The following is used as the generic /tmp path.  This is also
+# set on Windows to the temporary directory, so can be used for
+# system independent .hip files.
+#
+export TEMP=/tmp
+
+#
+#  The following are some handy shortcuts:
+#
+export H=${HFS}
+export HB=${H}/bin
+export HDSO=${H}/dsolib
+export HD=${H}/demo
+export HH=${H}/houdini
+export HHC=${HH}/config
+export HT=${H}/toolkit
+export HSB=${HH}/sbin
+export HTB=${HT}/bin
+export PD=/p
+
+
+export HOUDINI_MAJOR_RELEASE=6
+export HOUDINI_MINOR_RELEASE=1
+export HOUDINI_BUILD_VERSION=101
+export HOUDINI_VERSION=${HOUDINI_MAJOR_RELEASE}.${HOUDINI_MINOR_RELEASE}.${HOUDINI_BUILD_VERSION}
+
+ 
+export LD_LIBRARY_PATH=${HDSO}
+export PATH="${HB}:${HSB}:${HTB}"
+
+
+

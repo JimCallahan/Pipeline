@@ -1,0 +1,4 @@
+
+export PATH=/usr/java/j2sdk1.5.0/bin
+export PATH="$PATH:/usr/java/javacc-3.0/bin"
+

@@ -1,0 +1,3 @@
+
+export PATH=/usr/java/j2sdk1.5.0/jre/bin
+export LD_LIBRARY_PATH=/usr/java/j2sdk1.5.0/jre/lib/i386/xawt
