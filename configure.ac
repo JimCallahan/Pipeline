@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 1.7.2)
+AM_INIT_AUTOMAKE(Pipeline, 1.7.3)
 
 AC_MSG_RESULT([ ])
 
@@ -139,6 +139,7 @@ AC_MSG_RESULT([$CUSTOMER_PROFILE])
 
 
 
+
 AC_MSG_CHECKING([CryptoApp Directory])
 
 AC_ARG_WITH([crypto-app], 
@@ -225,12 +226,16 @@ AC_MSG_RESULT([$LICENSE_END])
 AC_MSG_CHECKING([Root Installation Directory])
 
 AC_SUBST(ROOT_INST_DIR)
-ROOT_INST_DIR=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
+ROOT_INST_DIR=""
+
+root_inst_dir=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
                     --lookup RootInstallDirectory`
 
-if test "$ROOT_INST_DIR" == "null"
+if test "$root_inst_dir" == "null"
 then
   AC_MSG_ERROR([customer profile was incomplete.])
+else 
+  ROOT_INST_DIR=$root_inst_dir/pipeline-$CUSTOMER-$VERSION-$PROFILE_STAMP
 fi 
 
 AC_MSG_RESULT([$ROOT_INST_DIR])
@@ -345,6 +350,31 @@ fi
 
 AC_MSG_RESULT([$PL_FILE_SERVER])
 
+
+
+AC_MSG_CHECKING([Pipeline Caching Enabled])
+
+AC_SUBST(PL_ENABLE_CACHING)
+PL_ENABLE_CACHING=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
+                        --lookup EnableCaching`
+
+AC_SUBST(PLNOTIFY_RPM_PATH)
+PLNOTIFY_RPM_PATH=""
+
+if test "$PL_ENABLE_CACHING" == "null"
+then
+  AC_MSG_ERROR([customer profile was incomplete.])
+fi 
+
+if test "$PL_ENABLE_CACHING" == "true" 
+then
+  PLNOTIFY_RPM_PATH=$ROOT_INST_DIR/sbin/plnotify
+  AC_MSG_RESULT([yes])
+else 
+  AC_MSG_RESULT([no])
+fi
+
+AM_CONDITIONAL(ENABLE_CACHING_COND, test $PL_ENABLE_CACHING = true)
 
 
 AC_MSG_CHECKING([Pipeline File Server Port])
@@ -735,6 +765,8 @@ fi
 
 dnl ------------------------------------------------------------------------------------------
 
+AC_MSG_CHECKING([Java Debugger Attach])
+
 AC_ARG_ENABLE([attach], 
               [  --enable-attach           Enable Java debugger to attach via sockets.])
 
@@ -765,8 +797,10 @@ then
   PLQUEUEMGR_DEBUG_OPTS=${java_debug_opts}"43004"
   PLJOBMGR_DEBUG_OPTS=${java_debug_opts}"43005"
   PLUI_DEBUG_OPTS=${java_debug_opts}"43006"
+  AC_MSG_RESULT([yes])
+else 
+  AC_MSG_RESULT([no])
 fi
-
 
 
 dnl ------------------------------------------------------------------------------------------
