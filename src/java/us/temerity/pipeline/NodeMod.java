@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.20 2004/05/21 18:07:30 jim Exp $
+// $Id: NodeMod.java,v 1.21 2004/06/19 00:28:14 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -661,7 +661,7 @@ class NodeMod
       pJobReqs   = JobReqs.defaultJobReqs();
       pOverflow  = OverflowPolicy.Abort;
       pExecution = ExecutionMethod.Serial;
-      pBatchSize = new Integer(0);
+      pBatchSize = null;
     }
     else {
       pAction    = null;
@@ -761,6 +761,9 @@ class NodeMod
       throw new IllegalArgumentException
 	("The execution method cannot be (null)!");
     pExecution = execution; 
+
+    if(pExecution == ExecutionMethod.Serial) 
+      pBatchSize = null;    
 
     updateLastMod();
   }
