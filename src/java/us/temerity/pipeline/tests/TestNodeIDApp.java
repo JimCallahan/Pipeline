@@ -1,6 +1,7 @@
-// $Id: TestNodeIDApp.java,v 1.2 2004/03/10 11:49:53 jim Exp $
+// $Id: TestNodeIDApp.java,v 1.3 2004/03/23 20:41:25 jim Exp $
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.glue.*;
 
 import java.io.*; 
 import java.util.*; 

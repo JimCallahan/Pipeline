@@ -170,26 +170,24 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 #   V A R I A B L E S                                                                        #
 #--------------------------------------------------------------------------------------------#
 
- TEST_CLASS_PATH = ".:../api.jar:../plugin/plugins.jar:tests.jar"
+ TEST_CLASS_PATH = ".:../all.jar:../plugin/plugins.jar:tests.jar"
 
     LOGGER_PROPS = $(srcdir)/../../../../share/logger.properties
 
 
 #--------------------------------------------------------------------------------------------#
 
-           TESTS = FileMgr
+#           TESTS = FileMgr
 
-#            TESTS = CheckSum \
-#                    FileSeq \
-#                    FileMgr \
-#                    Glue \
-#                    NativeFileSys \
-#                    NodeID \
-#                    NodeMod \
-#                    NodeModVersion \
-#                    SubProcess \
-#                    Toolsets \
-#                    VersionID
+            TESTS = CheckSum \
+                    FileSeq \
+                    Glue \
+                    NativeFileSys \
+                    NodeID \
+                    NodeModVersion \
+                    SubProcess \
+                    Toolsets \
+                    VersionID
 
          CLASSES = $(patsubst %,Test%App.class,$(TESTS))
 
@@ -228,7 +226,7 @@ java-all: $(JAVA_SOURCES)
 
 check: all check-each 
 
-check-each: $(CLASSES) ../api.jar clean-data
+check-each: $(CLASSES) clean-data
 	cp -r $(srcdir)/data data
 	@failed=0; all=0; \
          banner1="========================================================================"; \

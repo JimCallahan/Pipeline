@@ -1,6 +1,7 @@
-// $Id: NodeTest.java,v 1.1 2004/03/11 14:12:53 jim Exp $
+// $Id: NodeTest.java,v 1.2 2004/03/23 20:41:25 jim Exp $
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.glue.*;
 
 import java.util.*;
 import java.io.*;

@@ -1,4 +1,4 @@
-// $Id: Plugins.java,v 1.2 2004/03/23 07:40:37 jim Exp $
+// $Id: Plugins.java,v 1.3 2004/03/23 20:41:25 jim Exp $
   
 package us.temerity.pipeline.core;
 
@@ -46,7 +46,7 @@ class Plugins
     sActions = new TreeMap<String,Class>();
     sTools   = new TreeMap<String,Class>();
     
-    File dir = new File(PackageInfo.sInstDir + "/jar/us/temerity/pipeline/plugin");
+    File dir = new File(PackageInfo.sInstDir + "/plugins/us/temerity/pipeline/plugin");
     File[] files = dir.listFiles();
     int wk;
     for(wk=0; wk<files.length; wk++) {

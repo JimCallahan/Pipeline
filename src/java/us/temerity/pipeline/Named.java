@@ -1,6 +1,8 @@
-// $Id: Named.java,v 1.7 2004/03/23 07:40:37 jim Exp $
+// $Id: Named.java,v 1.8 2004/03/23 20:41:25 jim Exp $
 
 package us.temerity.pipeline;
+
+import us.temerity.pipeline.glue.*;
 
 import java.io.*;
 import java.util.*;

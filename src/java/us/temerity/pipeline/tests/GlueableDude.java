@@ -1,6 +1,7 @@
-// $Id: GlueableDude.java,v 1.1 2004/02/15 16:17:44 jim Exp $
+// $Id: GlueableDude.java,v 1.2 2004/03/23 20:41:25 jim Exp $
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.glue.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Test class used by TestGlueApp                                                         */

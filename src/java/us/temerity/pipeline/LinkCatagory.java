@@ -1,6 +1,8 @@
-// $Id: LinkCatagory.java,v 1.2 2004/03/23 07:40:37 jim Exp $
+// $Id: LinkCatagory.java,v 1.3 2004/03/23 20:41:25 jim Exp $
 
 package us.temerity.pipeline;
+
+import us.temerity.pipeline.glue.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   L I N K   C A T A G O R Y                                                              */

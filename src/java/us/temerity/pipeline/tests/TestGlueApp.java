@@ -1,6 +1,7 @@
-// $Id: TestGlueApp.java,v 1.3 2004/02/20 22:51:29 jim Exp $
+// $Id: TestGlueApp.java,v 1.4 2004/03/23 20:41:25 jim Exp $
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.glue.*;
 
 import java.lang.reflect.*;
 import java.io.*; 

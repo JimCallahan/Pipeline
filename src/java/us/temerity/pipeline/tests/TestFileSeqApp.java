@@ -1,6 +1,7 @@
-// $Id: TestFileSeqApp.java,v 1.4 2004/03/11 11:01:25 jim Exp $
+// $Id: TestFileSeqApp.java,v 1.5 2004/03/23 20:41:25 jim Exp $
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.glue.*;
 
 import java.io.*; 
 import java.util.*; 
