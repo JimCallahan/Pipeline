@@ -768,6 +768,10 @@ AC_MSG_RESULT([Cooking configurable files:])
 AC_CONFIG_FILES([
   Makefile
 
+  data/Makefile
+
+  data/icons/Makefile
+
   src/Makefile
 
   src/database/Makefile
