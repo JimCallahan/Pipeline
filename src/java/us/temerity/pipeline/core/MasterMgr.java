@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.33 2004/09/08 18:36:05 jim Exp $
+// $Id: MasterMgr.java,v 1.34 2004/09/09 17:07:19 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3724,11 +3724,11 @@ class MasterMgr
 	  int lnumFrames = lwork.getPrimarySequence().numFrames();
 
 	  switch(link.getPolicy()) {
-	  case None:
+	  case Association:
 	    break;
 
-	  case NodeOnly:
-	  case NodeAndQueue:
+	  case Reference:
+	  case Dependency:
 	    switch(link.getRelationship()) {
 	    case None:
 	      break;
@@ -3778,11 +3778,11 @@ class MasterMgr
       {
 	for(LinkMod link : work.getSources()) {
 	  switch(link.getPolicy()) {
-	  case None:
-	  case NodeOnly:
+	  case Association:
+	  case Reference:
 	    break;
 	    
-	  case NodeAndQueue:
+	  case Dependency:
 	    {
 	      TreeSet<Integer> lindices = sourceIndices.get(link.getName());
 	      if((lindices != null) && (!lindices.isEmpty())) {
@@ -3801,11 +3801,11 @@ class MasterMgr
       {
 	for(LinkMod link : work.getSources()) {
 	  switch(link.getPolicy()) {
-	  case None:
-	  case NodeOnly:
+	  case Association:
+	  case Reference:
 	    break;
 	    
-	  case NodeAndQueue:
+	  case Dependency:
 	    {
 	      NodeStatus lstatus = status.getSource(link.getName());
 
@@ -4614,7 +4614,7 @@ class MasterMgr
 
 	  if(anyMissing == null) 
 	    anyMissing = new boolean[fs.length];
-
+	  
 	  if(fileTimeStamps == null) 
 	    fileTimeStamps = new Date[fs.length];
 	}
@@ -4768,7 +4768,7 @@ class MasterMgr
 	      case ModifiedLinks:
 	      case Conflicted:	
 	      case Missing:
-		if(link.getPolicy() != LinkPolicy.None) 
+		if(link.getPolicy() != LinkPolicy.Association) 
 		  overallNodeState = OverallNodeState.ModifiedLinks;
 		break;
 		
@@ -4873,7 +4873,7 @@ class MasterMgr
 		/* check upstream per-file dependencies */ 
 		else {
 		  for(LinkMod link : work.getSources()) {
-		    if(link.getPolicy() == LinkPolicy.NodeAndQueue) {
+		    if(link.getPolicy() == LinkPolicy.Dependency) {
 		      NodeStatus lstatus = status.getSource(link.getName());
 		      NodeDetails ldetails = lstatus.getDetails();
 		      
@@ -4973,6 +4973,72 @@ class MasterMgr
 	  overallQueueState = OverallQueueState.Stale;
 	else 
 	  overallQueueState = OverallQueueState.Finished;
+      }
+
+      /* propagate staleness by updating the last modified time stamps of each file to be 
+	 the newest of its actual time stamp and any upstream file upon which it depends 
+	 through a Reference link or through a Dependency link if the node's action is 
+         disabled or (null) */ 
+      switch(versionState) {
+      case CheckedIn:
+	break;
+
+      default:
+	{
+	  int wk;
+	  for(wk=0; wk<queueStates.length; wk++) {
+	    for(LinkMod link : work.getSources()) {
+	      NodeStatus lstatus = status.getSource(link.getName());
+	      NodeDetails ldetails = lstatus.getDetails();
+	      
+	      QueueState lqs[] = ldetails.getQueueState();
+	      Date lstamps[] = ldetails.getFileTimeStamps();
+	      
+	      switch(link.getRelationship()) {
+	      case OneToOne:
+		{
+		  Integer offset = link.getFrameOffset();
+		  int idx = wk+offset;
+		  if(((idx >= 0) || (idx < lqs.length)) && 
+		     ((lstamps[idx] != null) && 
+		      ((fileTimeStamps[wk] == null) ||
+		       (fileTimeStamps[wk].compareTo(lstamps[idx]) < 0)))) {
+		    switch(link.getPolicy()) {
+		    case Reference:
+		      fileTimeStamps[wk] = lstamps[idx];
+		      break;
+		      
+		    case Dependency:
+		      if(!work.isActionEnabled()) 
+			fileTimeStamps[wk] = lstamps[idx];
+		    }
+		  }
+		}
+		break;
+		
+	      case All:
+		{
+		  int fk;
+		  for(fk=0; fk<lqs.length; fk++) {
+		    if((lstamps[fk] != null) && 
+		       ((fileTimeStamps[wk] == null) ||
+			(fileTimeStamps[wk].compareTo(lstamps[fk]) < 0))) {
+		      switch(link.getPolicy()) {
+		      case Reference:
+			fileTimeStamps[wk] = lstamps[fk];
+			break;
+			
+		      case Dependency:
+			if(!work.isActionEnabled()) 
+			  fileTimeStamps[wk] = lstamps[fk];
+		      }
+		    }
+		  }
+		}
+	      }
+	    }
+	  }
+	}
       }
 
       /* create the node details */
