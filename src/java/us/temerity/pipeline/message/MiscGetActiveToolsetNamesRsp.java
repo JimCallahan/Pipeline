@@ -1,4 +1,4 @@
-// $Id: MiscGetActiveToolsetNamesRsp.java,v 1.1 2004/05/29 06:35:40 jim Exp $
+// $Id: MiscGetActiveToolsetNamesRsp.java,v 1.2 2004/06/08 20:05:10 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -7,6 +7,7 @@ import us.temerity.pipeline.core.*;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M I S C   G E T   A C T I V E   T O O L S E T   N A M E S   R S P                      */
@@ -46,6 +47,8 @@ class MiscGetActiveToolsetNamesRsp
     pNames = names;
 
     Logs.net.finest("MasterMgr.getActiveToolsetNames():\n  " + getTimer());
+    if(Logs.net.isLoggable(Level.FINEST))
+      Logs.flush();
   }
 
 

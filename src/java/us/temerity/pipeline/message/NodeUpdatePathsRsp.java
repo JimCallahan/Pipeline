@@ -1,4 +1,4 @@
-// $Id: NodeUpdatePathsRsp.java,v 1.4 2004/05/23 19:51:29 jim Exp $
+// $Id: NodeUpdatePathsRsp.java,v 1.5 2004/06/08 20:05:11 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -7,6 +7,7 @@ import us.temerity.pipeline.core.*;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   N O D E   U P D A T E   P A T H S   R S P                                              */
@@ -63,6 +64,8 @@ class NodeUpdatePathsRsp
 
     Logs.net.finest("MasterMgr.updatePaths(): " + author + "|" + view + ":\n" +
 		    "  " + getTimer());
+    if(Logs.net.isLoggable(Level.FINEST))
+      Logs.flush();
   }
 
 

@@ -1,4 +1,4 @@
-// $Id: MiscGetEditorForSuffixRsp.java,v 1.1 2004/06/08 02:24:23 jim Exp $
+// $Id: MiscGetEditorForSuffixRsp.java,v 1.2 2004/06/08 20:05:11 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -8,6 +8,7 @@ import us.temerity.pipeline.toolset.*;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M I S C   G E T   S U F F I X   E D I T O R S   R S P                                  */
@@ -31,8 +32,8 @@ class MiscGetEditorForSuffixRsp
    * @param timer 
    *   The timing statistics for a task.
    * 
-   * @param editors
-   *   The suffix editors.
+   * @param editor
+   *   The editor name.
    */ 
   public
   MiscGetEditorForSuffixRsp
@@ -46,6 +47,8 @@ class MiscGetEditorForSuffixRsp
     pEditor = editor;
 
     Logs.net.finest("MasterMgr.getEditorForSuffix():\n  " + getTimer());
+    if(Logs.net.isLoggable(Level.FINEST))
+      Logs.flush();
   }
 
 

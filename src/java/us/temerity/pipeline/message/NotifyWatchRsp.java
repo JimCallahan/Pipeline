@@ -1,4 +1,4 @@
-// $Id: NotifyWatchRsp.java,v 1.1 2004/04/11 19:31:31 jim Exp $
+// $Id: NotifyWatchRsp.java,v 1.2 2004/06/08 20:05:11 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -7,6 +7,7 @@ import us.temerity.pipeline.core.*;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   N O T I F Y   W A T C H   R S P                                                        */
@@ -46,6 +47,8 @@ class NotifyWatchRsp
     pDirs = dirs;
 
     Logs.net.finest("DNotify.watch():\n  " + getTimer());
+    if(Logs.net.isLoggable(Level.FINEST))
+      Logs.flush();
   }
 
 

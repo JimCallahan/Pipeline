@@ -1,9 +1,11 @@
-// $Id: FailureRsp.java,v 1.6 2004/04/11 19:30:20 jim Exp $
+// $Id: FailureRsp.java,v 1.7 2004/06/08 20:05:10 jim Exp $
 
 package us.temerity.pipeline.message;
 
 import us.temerity.pipeline.*; 
 import us.temerity.pipeline.core.*; 
+
+import java.util.logging.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   F A I L U R E   R S P                                                                  */
@@ -43,6 +45,8 @@ class FailureRsp
     pMsg = msg;
   
     Logs.net.finest(getTimer().toString());
+    if(Logs.net.isLoggable(Level.FINEST))
+      Logs.flush();
   }
 
 

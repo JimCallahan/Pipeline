@@ -1,4 +1,4 @@
-// $Id: NodeGetWorkingAreasRsp.java,v 1.3 2004/05/29 06:35:04 jim Exp $
+// $Id: NodeGetWorkingAreasRsp.java,v 1.4 2004/06/08 20:05:11 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -7,6 +7,7 @@ import us.temerity.pipeline.core.*;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   N O D E   G E T   W O R K I N G   A R E A S   R S P                                    */
@@ -46,6 +47,8 @@ class NodeGetWorkingAreasRsp
     pTable = table;
 
     Logs.net.finest("MasterMgr.getWorkingAreas():\n  " + getTimer());
+    if(Logs.net.isLoggable(Level.FINEST))
+      Logs.flush();
   }
 
 

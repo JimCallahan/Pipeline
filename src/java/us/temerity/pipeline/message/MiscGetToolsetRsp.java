@@ -1,4 +1,4 @@
-// $Id: MiscGetToolsetRsp.java,v 1.1 2004/05/29 06:35:40 jim Exp $
+// $Id: MiscGetToolsetRsp.java,v 1.2 2004/06/08 20:05:11 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -8,6 +8,7 @@ import us.temerity.pipeline.toolset.*;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M I S C   G E T   T O O L S E T   R S P                                                */
@@ -47,6 +48,8 @@ class MiscGetToolsetRsp
     pToolset = tset;
 
     Logs.net.finest("MasterMgr.getToolset(): " + pToolset.getName() + "\n  " + getTimer());
+    if(Logs.net.isLoggable(Level.FINEST))
+      Logs.flush();
   }
 
 
