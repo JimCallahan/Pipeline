@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.4 2004/08/01 15:43:17 jim Exp $
+// $Id: QueueMgrClient.java,v 1.5 2004/08/01 19:31:46 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -689,7 +689,7 @@ class QueueMgrClient
    * @throws PipelineException
    *   If unable to lookup the resource usage.
    */ 
-  public synchronized ArrayList<ResourceSample>
+  public synchronized ResourceSampleBlock
   getHostResourceSamples
   (
    String hostname

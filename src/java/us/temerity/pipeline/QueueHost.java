@@ -1,4 +1,4 @@
-// $Id: QueueHost.java,v 1.2 2004/07/28 19:13:12 jim Exp $
+// $Id: QueueHost.java,v 1.3 2004/08/01 19:31:46 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -184,7 +184,7 @@ class QueueHost
    * Set the the number of processors on the host.
    * 
    * @param procs 
-   *   The 
+   *   The number of processors.
    */ 
   public void
   setNumProcessors

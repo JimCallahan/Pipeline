@@ -1,4 +1,4 @@
-// $Id: JBarGraph.java,v 1.2 2004/08/01 15:34:21 jim Exp $
+// $Id: JBarGraph.java,v 1.3 2004/08/01 19:31:46 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -121,11 +121,9 @@ class JBarGraph
 	if(pValues.length > 0)
 	  value = Math.min(height, Math.max(0, (int) (pValues[0] * ((float) height))));
 	
-	if(value > 0) {
-	  gfx.setColor(pHighlightColor);
-	  gfx.drawLine(0, height, 0, height-value);
-	  gfx.drawLine(1, height, 1, height-value);
-	}
+	gfx.setColor(pHighlightColor);
+	gfx.drawLine(0, height, 0, height-value);
+	gfx.drawLine(1, height, 1, height-value);
       }
 
       {

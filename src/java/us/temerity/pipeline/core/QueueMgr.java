@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.5 2004/08/01 15:46:31 jim Exp $
+// $Id: QueueMgr.java,v 1.6 2004/08/01 19:31:46 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -174,8 +174,7 @@ class QueueMgr
     /* write the last interval of samples to disk */ 
     {
       Date now = new Date();
-      TreeMap<String,ArrayList<ResourceSample>> dump = 
-	new TreeMap<String,ArrayList<ResourceSample>>();
+      TreeMap<String,ResourceSampleBlock> dump = new TreeMap<String,ResourceSampleBlock>();
       for(String hname : pHosts.keySet()) {
 	QueueHost host = pHosts.get(hname);
 	if(host != null) {
@@ -188,8 +187,19 @@ class QueueMgr
 		  rs.add(s);
 	      }
 	      
-	      if(!rs.isEmpty()) 
-		dump.put(hname, rs);
+	      if(!rs.isEmpty() && 
+		 (host.getNumProcessors() != null) && 
+		 (host.getTotalMemory() != null) && 
+		 (host.getTotalDisk() != null)) {
+		
+		ResourceSampleBlock block = 
+		  new ResourceSampleBlock(host.getJobSlots(), 
+					  host.getNumProcessors(), 
+					  host.getTotalMemory(), 
+					  host.getTotalDisk(), 
+					  rs);
+		dump.put(hname, block);
+	      }
 	    }
 	  }
 	}
@@ -864,8 +874,54 @@ class QueueMgr
     try {
       timer.resume();
       
-      ArrayList<ResourceSample> samples = readSamples(timer, req.getHostname()); 
-      return new QueueGetHostResourceSamplesRsp(timer, samples);
+      ArrayList<ResourceSampleBlock> all = new ArrayList<ResourceSampleBlock>();
+      {
+	ArrayList<ResourceSampleBlock> blocks = readSamples(timer, req.getHostname()); 
+
+	Date latest = null;
+	if(!blocks.isEmpty()) 
+	  latest = blocks.get(0).getTimeStamp(0);
+	
+	timer.aquire();
+	synchronized(pHosts) {
+	  timer.resume();
+	  
+	  QueueHost host = pHosts.get(req.getHostname());
+	  ArrayList<ResourceSample> samples = new ArrayList<ResourceSample>();
+
+	  if(latest != null) {
+	    for(ResourceSample sample : host.getSamples()) {
+	      if(sample.getTimeStamp().compareTo(latest) > 0) 
+		samples.add(sample);
+	    }
+	  }
+	  else {
+	    samples.addAll(host.getSamples());
+	  }
+	  
+	  if(!samples.isEmpty() && 
+	     (host.getNumProcessors() != null) && 
+	     (host.getTotalMemory() != null) && 
+	     (host.getTotalDisk() != null)) {
+	    
+	    ResourceSampleBlock block = 
+	      new ResourceSampleBlock(host.getJobSlots(), 
+				      host.getNumProcessors(), 
+				      host.getTotalMemory(), 
+				      host.getTotalDisk(), 
+				      samples);
+	    all.add(block);
+	  }	
+	}
+	
+	all.addAll(blocks);
+      }
+
+      if(all.isEmpty()) 
+	throw new PipelineException 
+	  ("No resource usage information exists for host (" + req.getHostname() + ")!");
+
+      return new QueueGetHostResourceSamplesRsp(timer, new ResourceSampleBlock(all));
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
@@ -936,10 +992,10 @@ class QueueMgr
 
     /* should the last interval of samples be written to disk? */ 
     Date now = new Date();
-    TreeMap<String,ArrayList<ResourceSample>> dump = null;
+    TreeMap<String,ResourceSampleBlock> dump = null;
     {
       if((now.getTime() - pLastSampleWrite.getTime()) > QueueHost.getSampleInterval())
-	dump = new TreeMap<String,ArrayList<ResourceSample>>();
+	dump = new TreeMap<String,ResourceSampleBlock>();
     }
 
     /* update the hosts */ 
@@ -969,8 +1025,19 @@ class QueueMgr
 		    rs.add(s);
 		}
 
-		if(!rs.isEmpty()) 
-		  dump.put(hname, rs);
+		if(!rs.isEmpty() && 
+		   (host.getNumProcessors() != null) && 
+		   (host.getTotalMemory() != null) && 
+		   (host.getTotalDisk() != null)) {
+
+		  ResourceSampleBlock block = 
+		    new ResourceSampleBlock(host.getJobSlots(), 
+					    host.getNumProcessors(), 
+					    host.getTotalMemory(), 
+					    host.getTotalDisk(), 
+					    rs);
+		  dump.put(hname, block);
+		}
 	      }
 
 	      Integer procs = numProcs.get(hname);
@@ -1378,7 +1445,7 @@ class QueueMgr
   (
    TaskTimer timer, 
    Date stamp, 
-   TreeMap<String,ArrayList<ResourceSample>> samples
+   TreeMap<String,ResourceSampleBlock> samples
   ) 
     throws PipelineException
   {
@@ -1386,7 +1453,7 @@ class QueueMgr
     synchronized(pSampleFileLock) { 
       timer.resume();
 
-      Logs.ops.finer("Writing Resource Samples: " + stamp);
+      Logs.ops.finer("Writing Resource Samples: " + stamp.getTime());
 
       File dir = new File(pQueueDir, "queue/job-servers/samples");
       timer.aquire();
@@ -1399,56 +1466,53 @@ class QueueMgr
       }
          
       for(String hname : samples.keySet()) {    
-	ArrayList<ResourceSample> hsamples = samples.get(hname);
-	if(!hsamples.isEmpty()) {
-	  File hdir = new File(dir, hname);
-	  synchronized(pMakeDirLock) {
-	    if(!hdir.isDirectory())
-	      if(!hdir.mkdirs()) 
-		throw new PipelineException
-		  ("Unable to create the samples host directory (" + hdir + ")!");
-	  }
+	ResourceSampleBlock hsamples = samples.get(hname);
+	File hdir = new File(dir, hname);
+	synchronized(pMakeDirLock) {
+	  if(!hdir.isDirectory())
+	    if(!hdir.mkdirs()) 
+	      throw new PipelineException
+		("Unable to create the samples host directory (" + hdir + ")!");
+	}
 	  
+	File file = new File(hdir, String.valueOf(stamp.getTime()));
+	if(file.exists()) 
+	  throw new PipelineException
+	    ("Somehow the host resource samples file (" + file + ") already exists!"); 
 	  
-	  File file = new File(hdir, String.valueOf(stamp.getTime()));
-	  if(file.exists()) 
-	    throw new PipelineException
-	      ("Somehow the host resource samples file (" + file + ") already exists!"); 
-	  
+	try {
+	  String glue = null;
 	  try {
-	    String glue = null;
-	    try {
-	      GlueEncoder ge = new GlueEncoderImpl("Samples", hsamples);
-	      glue = ge.getText();
-	    }
-	    catch(GlueException ex) {
-	      Logs.glu.severe
-		("Unable to generate a Glue format representation of the resource samples!");
-	      Logs.flush();
-	      
-	      throw new IOException(ex.getMessage());
-	    }
+	    GlueEncoder ge = new GlueEncoderImpl("Samples", hsamples);
+	    glue = ge.getText();
+	  }
+	  catch(GlueException ex) {
+	    Logs.glu.severe
+	      ("Unable to generate a Glue format representation of the resource samples!");
+	    Logs.flush();
 	    
-	    {
-	      FileWriter out = new FileWriter(file);
-	      out.write(glue);
-	      out.flush();
-	      out.close();
-	    }
+	    throw new IOException(ex.getMessage());
 	  }
-	  catch(IOException ex) {
-	    throw new PipelineException
-	      ("I/O ERROR: \n" + 
+	  
+	  {
+	    FileWriter out = new FileWriter(file);
+	    out.write(glue);
+	    out.flush();
+	    out.close();
+	  }
+	}
+	catch(IOException ex) {
+	  throw new PipelineException
+	    ("I/O ERROR: \n" + 
 	     "  While attempting to write the resource samples file (" + file + ")...\n" + 
-	       "    " + ex.getMessage());
-	  }
+	     "    " + ex.getMessage());
 	}
       }
     }
   }
 
   /**
-   * Read all of the resource samples from disk for the given host.
+   * Read all of the resource sample blocks from disk for the given host.
    * 
    * @param timer
    *   The task timer.
@@ -1459,7 +1523,7 @@ class QueueMgr
    * @throws PipelineException
    *   If unable to read the samples files.
    */ 
-  private ArrayList<ResourceSample>
+  private ArrayList<ResourceSampleBlock>
   readSamples
   (
    TaskTimer timer, 
@@ -1471,46 +1535,43 @@ class QueueMgr
     synchronized(pSampleFileLock) { 
       timer.resume();
 
-      ArrayList<ResourceSample> all = new ArrayList<ResourceSample>();
-      synchronized(pHosts) {
-	File dir = new File(pQueueDir, "queue/job-servers/samples/" + hostname);
-	if(!dir.isDirectory()) 
-	  throw new PipelineException
-	    ("No resource usage samples exist for host (" + hostname + ")!");
+      ArrayList<ResourceSampleBlock> blocks = new ArrayList<ResourceSampleBlock>();
+      File dir = new File(pQueueDir, "queue/job-servers/samples/" + hostname);
+      if(!dir.isDirectory()) 
+	return blocks;
 	
-	File files[] = dir.listFiles(); 
-	int wk;
-	for(wk=files.length-1; wk>=0; wk--) {
-	  File file = files[wk];
-	  if(file.isFile()) {
-	    Logs.ops.finer("Reading Resource Samples: " + 
+      File files[] = dir.listFiles(); 
+      int wk;
+      for(wk=files.length-1; wk>=0; wk--) {
+	File file = files[wk];
+	if(file.isFile()) {
+	  Logs.ops.finer("Reading Resource Samples: " + 
 			 hostname + " [" + file.getName() + "]");
+	  
+	  ResourceSampleBlock block = null;
+	  try {
+	    FileReader in = new FileReader(file);
+	    GlueDecoder gd = new GlueDecoderImpl(in);
+	    block = (ResourceSampleBlock) gd.getObject();
+	    in.close();
+	  }
+	  catch(Exception ex) {
+	    Logs.glu.severe
+	      ("The resource samples file (" + file + ") appears to be corrupted!");
+	    Logs.flush();
 	    
-	    ArrayList<ResourceSample> samples = null;
-	    try {
-	      FileReader in = new FileReader(file);
-	      GlueDecoder gd = new GlueDecoderImpl(in);
-	      samples = (ArrayList<ResourceSample>) gd.getObject();
-	      in.close();
-	    }
-	    catch(Exception ex) {
-	      Logs.glu.severe
-		("The resource samples file (" + file + ") appears to be corrupted!");
-	      Logs.flush();
-	      
 	    throw new PipelineException
 	      ("I/O ERROR: \n" + 
 	       "  While attempting to read the resource samples file (" + file + ")...\n" + 
 	       "    " + ex.getMessage());
-	    }
-	    assert(samples != null);
-	    
-	    all.addAll(samples);
 	  }
+	  assert(block != null);
+	  
+	  blocks.add(block);
 	}
       }
-      
-      return all;
+    
+      return blocks;
     }
   }
 

@@ -1,4 +1,4 @@
-// $Id: JJobServerHistoryDialog.java,v 1.1 2004/08/01 15:48:53 jim Exp $
+// $Id: JJobServerHistoryDialog.java,v 1.2 2004/08/01 19:31:46 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -34,24 +34,24 @@ class JJobServerHistoryDialog
   /**
    * Construct a new dialog.
    * 
-   * @param host
-   *   The job server host.
+   * @param hostname
+   *   The fully resolved name of the job server.
    * 
-   * @param samples
+   * @param block
    *   The resource usage samples.
    */ 
   public 
   JJobServerHistoryDialog
   (
-   QueueHost host, 
-   ArrayList<ResourceSample> samples
+   String hostname, 
+   ResourceSampleBlock block
   ) 
   {
     super("Resource Usage History", false);
 
     {
-      pHost    = host; 
-      pSamples = samples;
+      pHostname = hostname;
+      pBlock    = block; 
 
       pZoom    = Zoom.ThirtySeconds; 
     }
@@ -194,7 +194,7 @@ class JJobServerHistoryDialog
       };
 
       JButton btns[] = 
-	super.initUI("Resource Usage History:  " + pHost.getName(), false, body, 
+	super.initUI("Resource Usage History:  " + pHostname, false, body, 
 		     null, null, extra, "Close");
 
       pZoomInButton  = btns[0];
@@ -226,30 +226,8 @@ class JJobServerHistoryDialog
   private void
   rebuild() 
   {
-    if(pSamples.isEmpty()) {
-      pHeaderViewport.setView(new JPanel());
-      pScrollPane.setViewportView(new JPanel());
-      
-      pStartTime    = 0;
-      pTimeInterval = 0;
-
-      pLoad   = null;
-      pMemory = null;
-      pDisk   = null;
-      pJobs   = null;
-      
-      return;
-    }
-    
-    Date first = null;
-    Date last  = null;
-    for(ResourceSample sample : pSamples) {
-      Date stamp = sample.getTimeStamp();
-      if((first == null) || (first.compareTo(stamp) > 0)) 
-	first = stamp;
-      if((last == null) || (last.compareTo(stamp) < 0)) 
-	last = stamp;
-    }
+    Date first = pBlock.getTimeStamp(pBlock.getNumSamples()-1);
+    Date last  = pBlock.getTimeStamp(0);
 
     /* compute start time */ 
     {
@@ -258,6 +236,7 @@ class JJobServerHistoryDialog
       
       switch(pZoom) {
       case FifteenMinutes: 
+      case SixMinutes:
 	cal.set(Calendar.HOUR_OF_DAY, 0);
 
       case FifteenSeconds: 
@@ -277,6 +256,7 @@ class JJobServerHistoryDialog
       
       switch(pZoom) {
       case FifteenMinutes: 
+      case SixMinutes:
 	cal.set(Calendar.HOUR_OF_DAY, 0);
 
       case FifteenSeconds: 
@@ -293,6 +273,7 @@ class JJobServerHistoryDialog
 	break;
 	
       case FifteenMinutes: 
+      case SixMinutes:
 	cal.add(Calendar.DAY_OF_MONTH, 1);
       }
       
@@ -309,14 +290,18 @@ class JJobServerHistoryDialog
     }
     
     /* accumilate samples */ 
-    for(ResourceSample sample : pSamples) {
-      int idx = 
-	(int) ((sample.getTimeStamp().getTime() - pStartTime) / sInterval[pZoom.ordinal()]);
-
-      pLoad[idx]   += sample.getLoad();
-      pMemory[idx] += (float) sample.getMemory();
-      pDisk[idx]   += (float) sample.getDisk();
-      pJobs[idx]   += (float) sample.getNumJobs();
+    {
+      int wk;
+      for(wk=0; wk<pBlock.getNumSamples(); wk++) {
+	
+	int idx = (int) ((pBlock.getTimeStamp(wk).getTime() - pStartTime) / 
+			 sInterval[pZoom.ordinal()]);
+	
+	pLoad[idx]   += pBlock.getLoad(wk);
+	pMemory[idx] += (float) pBlock.getMemory(wk);
+	pDisk[idx]   += (float) pBlock.getDisk(wk);
+	pJobs[idx]   += (float) pBlock.getNumJobs(wk);
+      }
     }
 
     /* normalize time steps */ 
@@ -326,30 +311,24 @@ class JJobServerHistoryDialog
 	float scale = 15000.0f / ((float) sInterval[pZoom.ordinal()]);
 	
 	{
-	  float v = 0.0f;
-	  if(pHost.getNumProcessors() != null)
-	    v = (pLoad[idx] * scale) / ((float) pHost.getNumProcessors());
+	  float v = (pLoad[idx] * scale) / ((float) pBlock.getNumProcessors());
 	  pLoad[idx] = Math.max(0.0f, Math.min(1.0f, v));
 	}
 	
 	{
-	  float v = 0.0f; 
-	  if(pHost.getTotalMemory() != null) 
-	    v = (pMemory[idx] * scale) / ((float) pHost.getTotalMemory());
+	  float v = (pMemory[idx] * scale) / ((float) pBlock.getTotalMemory());
 	  pMemory[idx] = Math.max(0.0f, Math.min(1.0f, v));
 	}
 	
 	{
-	  float v = 0.0f; 
-	  if(pHost.getTotalDisk() != null) 
-	    v = (pDisk[idx] * scale) / ((float) pHost.getTotalDisk());
+	  float v = (pDisk[idx] * scale) / ((float) pBlock.getTotalDisk());
 	  pDisk[idx] = Math.max(0.0f, Math.min(1.0f, v));
 	}
 	
 	{
 	  float v = 0.0f; 
-	  if(pHost.getJobSlots() > 0) 
-	    v = (pJobs[idx] * scale) / ((float) pHost.getJobSlots());
+	  if(pBlock.getJobSlots() > 0) 
+	    v = (pJobs[idx] * scale) / ((float) pBlock.getJobSlots());
 	  pJobs[idx] = Math.max(0.0f, Math.min(1.0f, v));
 	}
       }
@@ -617,6 +596,7 @@ class JJobServerHistoryDialog
 	String title = null;
 	switch(pZoom) {
 	case FifteenMinutes: 
+	case SixMinutes: 
 	case ThirtySeconds:
 	  title = dformat.format(new Date(time));
 	  break;
@@ -646,22 +626,37 @@ class JJobServerHistoryDialog
 	switch(pZoom) {
 	case FifteenMinutes: 
 	  {
+	    JLabel label = new JLabel();
+	    label.setName("HourBarLabel");
+	    
+	    Dimension size = new Dimension((int) (sChunk[pZoom.ordinal()]), 19);
+	    label.setMinimumSize(size);
+	    label.setMaximumSize(size);
+	    label.setPreferredSize(size);
+	    
+	    hbox.add(label);
+	  }
+	  break;
+	    
+	case SixMinutes: 
+	  {
 	    {
-	      JLabel label = new JLabel("00:");
+	      JLabel label = new JLabel("00:00");
 	      label.setName("HourBarLabel");
 	      
-	      Dimension size = new Dimension((int) (sChunk[pZoom.ordinal()]/2), 19);
+	      Dimension size = new Dimension((int) (sChunk[pZoom.ordinal()]/4), 19);
 	      label.setMinimumSize(size);
 	      label.setMaximumSize(size);
 	      label.setPreferredSize(size);
 	      
 	      hbox.add(label);
 	    }
-    
-	    {
-	      JLabel label = new JLabel("12:");
+	    
+	    int wk;
+	    for(wk=6; wk<24; wk+=6) {
+	      JLabel label = new JLabel(String.valueOf(wk) + ":00");
 	      
-	      Dimension size = new Dimension((int) (sChunk[pZoom.ordinal()]/2), 19);
+	      Dimension size = new Dimension((int) (sChunk[pZoom.ordinal()]/4), 19);
 	      label.setMinimumSize(size);
 	      label.setMaximumSize(size);
 	      label.setPreferredSize(size);
@@ -670,40 +665,21 @@ class JJobServerHistoryDialog
 	    }
 	  }
 	  break;
-	    
+
 	case ThirtySeconds:
 	  {
 	    Date date = new Date(time); 
-
-	    {
-	      String title = hmformat.format(date);
-
-	      JLabel label = new JLabel(title);
-	      label.setName("HourBarLabel");
-	      
-	      Dimension size = new Dimension((int) (sChunk[pZoom.ordinal()]/2), 19);
-	      label.setMinimumSize(size);
-	      label.setMaximumSize(size);
-	      label.setPreferredSize(size);
-	      
-	      hbox.add(label);
-	    }
-
-	    {
-	      Calendar cal = Calendar.getInstance();
-	      cal.setTime(date);
-	      cal.add(Calendar.MINUTE, 30);
-	      String title = hmformat.format(cal.getTime());
-
-	      JLabel label = new JLabel(title);
-	      
-	      Dimension size = new Dimension((int) (sChunk[pZoom.ordinal()]/2), 19);
-	      label.setMinimumSize(size);
-	      label.setMaximumSize(size);
-	      label.setPreferredSize(size);
-	      
-	      hbox.add(label);
-	    }
+	    String title = hmformat.format(date);
+	    
+	    JLabel label = new JLabel(title);
+	    label.setName("HourBarLabel");
+	    
+	    Dimension size = new Dimension((int) (sChunk[pZoom.ordinal()]), 19);
+	    label.setMinimumSize(size);
+	    label.setMaximumSize(size);
+	    label.setPreferredSize(size);
+	    
+	    hbox.add(label);
 	  }
 	  break;
 
@@ -805,50 +781,59 @@ class JJobServerHistoryDialog
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Zoom in.
-   */ 
-  public void 
-  doZoomIn()
-  {
-    switch(pZoom) {
-    case FifteenMinutes:
-      pZoom = Zoom.ThirtySeconds;
-      pZoomOutButton.setEnabled(true);
-      pZoomInButton.setEnabled(true);
-      rebuild();
-      break;
-
-    case ThirtySeconds: 
-      pZoom = Zoom.FifteenSeconds;
-      pZoomOutButton.setEnabled(true);
-      pZoomInButton.setEnabled(false);
-      rebuild();
-    }
-  }
-
-  /**
    * Zoom out.
    */ 
   public void 
   doZoomOut()
   {
     switch(pZoom) {
-    case ThirtySeconds: 
+    case FifteenMinutes:
+      return;
+
+    case SixMinutes:
       pZoom = Zoom.FifteenMinutes;
       pZoomOutButton.setEnabled(false);
-      pZoomInButton.setEnabled(true);
-      rebuild();
       break;
 
-    case FifteenSeconds:
-      pZoom = Zoom.ThirtySeconds;
-      pZoomOutButton.setEnabled(true);
-      pZoomInButton.setEnabled(true);
-      rebuild();
+    case ThirtySeconds:
+      pZoom = Zoom.SixMinutes;
+      break;
+
+    case FifteenSeconds: 
+      pZoom = Zoom.ThirtySeconds; 
     }
+
+    pZoomInButton.setEnabled(true);      
+    rebuild();
   }
 
-  
+  /**
+   * Zoom in.
+   */ 
+  public void 
+  doZoomIn()
+  {
+    switch(pZoom) {
+    case FifteenSeconds: 
+      return;
+
+    case ThirtySeconds: 
+      pZoom = Zoom.FifteenSeconds;
+      pZoomInButton.setEnabled(false);
+      break;
+
+    case SixMinutes:
+      pZoom = Zoom.ThirtySeconds;
+      break;
+
+    case FifteenMinutes: 
+      pZoom = Zoom.SixMinutes; 
+    }
+
+    pZoomOutButton.setEnabled(true);      
+    rebuild();
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L   C L A S S E S                                                      */
@@ -860,7 +845,7 @@ class JJobServerHistoryDialog
   private 
   enum Zoom
   { 
-    FifteenMinutes, ThirtySeconds, FifteenSeconds
+    FifteenMinutes, SixMinutes, ThirtySeconds, FifteenSeconds
   }
   
 
@@ -876,6 +861,7 @@ class JJobServerHistoryDialog
    */ 
   private static Icon sTimeLineIcons[] = {
     new ImageIcon(LookAndFeelLoader.class.getResource("FifteenMinutesTimeLineIcon.png")), 
+    new ImageIcon(LookAndFeelLoader.class.getResource("SixMinutesTimeLineIcon.png")), 
     new ImageIcon(LookAndFeelLoader.class.getResource("ThirtySecondsTimeLineIcon.png")), 
     new ImageIcon(LookAndFeelLoader.class.getResource("FifteenSecondsTimeLineIcon.png"))
   }; 
@@ -885,6 +871,7 @@ class JJobServerHistoryDialog
    */ 
   private final long  sInterval[] = { 
     900000,   /* FifteenMinutes */  
+    360000,   /* SixMinutes */  
     30000,    /* ThirtySeconds */ 
     15000     /* FifteenSeconds */ 
   };
@@ -894,6 +881,7 @@ class JJobServerHistoryDialog
    */ 
   private final int  sChunk[] = { 
     96,   /* FifteenMinutes */  
+    240,  /* SixMinutes */  
     120,  /* ThirtySeconds */ 
     240   /* FifteenSeconds */ 
   };
@@ -905,14 +893,14 @@ class JJobServerHistoryDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The host being displayed.
+   * The fully resolve name of the job server.
    */
-  private QueueHost  pHost; 
-
+  private String pHostname; 
+  
   /**
    * The resource usage samples. 
    */ 
-  private ArrayList<ResourceSample>  pSamples; 
+  private ResourceSampleBlock  pBlock; 
 
   /**
    * The smallest time interval displayed by the graphs.

@@ -1,4 +1,4 @@
-// $Id: QueueGetHostResourceSamplesRsp.java,v 1.1 2004/08/01 15:48:53 jim Exp $
+// $Id: QueueGetHostResourceSamplesRsp.java,v 1.2 2004/08/01 19:31:46 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -30,21 +30,21 @@ class QueueGetHostResourceSamplesRsp
    * @param timer 
    *   The timing statistics for a task.
    * 
-   * @param samples
+   * @param block
    *   The resource usage samples.
    */ 
   public
   QueueGetHostResourceSamplesRsp
   (
    TaskTimer timer, 
-   ArrayList<ResourceSample> samples
+   ResourceSampleBlock block
   )
   { 
     super(timer);
 
-    if(samples == null) 
-      throw new IllegalArgumentException("The samples cannot be (null)!");
-    pSamples = samples;
+    if(block == null) 
+      throw new IllegalArgumentException("The resource samples block cannot be (null)!");
+    pBlock = block;
 
     Logs.net.finest("QueueMgr.getHostResourceSamples():\n  " + getTimer());
     if(Logs.net.isLoggable(Level.FINEST))
@@ -60,10 +60,10 @@ class QueueGetHostResourceSamplesRsp
   /**
    * Gets the resource usage samples.
    */
-  public ArrayList<ResourceSample>
+  public ResourceSampleBlock
   getSamples() 
   {
-    return pSamples;
+    return pBlock; 
   }
   
 
@@ -83,7 +83,7 @@ class QueueGetHostResourceSamplesRsp
   /**
    * The resource usage samples.
    */ 
-  private ArrayList<ResourceSample>  pSamples;
+  private ResourceSampleBlock  pBlock; 
 
 }
   

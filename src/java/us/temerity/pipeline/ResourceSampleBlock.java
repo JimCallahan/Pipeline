@@ -1,4 +1,4 @@
-// $Id: ResourceSampleBlock.java,v 1.1 2004/08/01 15:48:53 jim Exp $
+// $Id: ResourceSampleBlock.java,v 1.2 2004/08/01 19:31:46 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -28,7 +28,19 @@ class ResourceSampleBlock
   {}
 
   /**
-   * Construct a new sample.
+   * Construct a new sample block.
+   * 
+   * @param slots
+   *   The number of job slots.
+   * 
+   * @param procs 
+   *   The number of processors.
+   * 
+   * @param memory 
+   *   The total memory size (in bytes).
+   * 
+   * @param disk 
+   *   The total temporary disk size (in bytes).
    * 
    * @param samples
    *   The resource samples. 
@@ -36,9 +48,18 @@ class ResourceSampleBlock
   public 
   ResourceSampleBlock
   (
-   List<ResourceSample> samples
+   int slots, 
+   int procs, 
+   long memory, 
+   long disk, 
+   Collection<ResourceSample> samples
   ) 
   {
+    pJobSlots      = slots; 
+    pNumProcessors = procs; 
+    pTotalMemory   = memory; 
+    pTotalDisk     = disk; 
+
     int num = samples.size();
     pTimeStamp  = new long[num];
     pNumJobs    = new int[num];
@@ -58,9 +79,106 @@ class ResourceSampleBlock
     }
   }
 
+  /**
+   * Construct a new sample block.
+   * 
+   * @param samples
+   *   The resource sample blocks.
+   */ 
+  public 
+  ResourceSampleBlock
+  (
+   Collection<ResourceSampleBlock> blocks
+  ) 
+  {
+    int num = 0;
+    for(ResourceSampleBlock block : blocks) 
+      num += block.getNumSamples();
+
+    pTimeStamp  = new long[num];
+    pNumJobs    = new int[num];
+    pLoad       = new float[num];
+    pMemory     = new long[num];
+    pDisk       = new long[num];
+
+    boolean first = true;
+    int wk = 0;
+    for(ResourceSampleBlock block : blocks) {
+      if(first) {
+	pJobSlots      = block.pJobSlots; 
+	pNumProcessors = block.pNumProcessors;
+	pTotalMemory   = block.pTotalMemory;
+	pTotalDisk     = block.pTotalDisk;
+
+	first = false;
+      }
+
+      int bk;
+      for(bk=0; bk<block.getNumSamples(); bk++, wk++) {
+	pTimeStamp[wk] = block.pTimeStamp[bk];
+	pNumJobs[wk]   = block.pNumJobs[bk];
+	pLoad[wk]      = block.pLoad[bk];
+	pMemory[wk]    = block.pMemory[bk];
+	pDisk[wk]      = block.pDisk[bk]; 
+      }
+    }
+  }
+
    
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the maximum number jobs the host may be assigned.
+   * 
+   * @return 
+   *   The number of job slots.
+   */ 
+  public int 
+  getJobSlots() 
+  {
+    return pJobSlots;
+  }
+
+  /**
+   * Get the number of processors on the host.
+   * 
+   * @return 
+   *   The number of processors.
+   */ 
+  public int 
+  getNumProcessors() 
+  {
+    return pNumProcessors;
+  }
+
+  /**
+   * Get the total amount of memory (in bytes) on the host.
+   * 
+   * @return 
+   *   The memory size.
+   */ 
+  public long 
+  getTotalMemory() 
+  {
+    return pTotalMemory;
+  }
+  
+  /**
+   * Get the total amount of temporary disk space (in bytes) on the host.
+   * 
+   * @return 
+   *   The disk size.
+   */ 
+  public long 
+  getTotalDisk() 
+  {
+    return pTotalDisk;
+  }
+
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -162,6 +280,11 @@ class ResourceSampleBlock
   ) 
     throws GlueException
   {
+    encoder.encode("JobSlots", pJobSlots); 
+    encoder.encode("NumProcessors", pNumProcessors); 
+    encoder.encode("TotalMemory", pTotalMemory); 
+    encoder.encode("TotalDisk", pTotalDisk); 
+    
     encoder.encode("TimeStamp", pTimeStamp);
     encoder.encode("NumJobs", pNumJobs); 
     encoder.encode("Load", pLoad); 
@@ -176,6 +299,27 @@ class ResourceSampleBlock
   ) 
     throws GlueException
   {
+    Integer slots = (Integer) decoder.decode("JobSlots");
+    if(slots == null) 
+      throw new GlueException("The \"JobSlots\" was missing!");
+    pJobSlots = slots;
+
+    Integer procs = (Integer) decoder.decode("NumProcessors");
+    if(procs == null) 
+      throw new GlueException("The \"NumProcessors\" was missing!");
+    pNumProcessors = procs;
+
+    Long tmemory = (Long) decoder.decode("TotalMemory");
+    if(tmemory == null) 
+      throw new GlueException("The \"TotalMemory\" was missing!");
+    pTotalMemory = tmemory;
+
+    Long tdisk = (Long) decoder.decode("TotalDisk");
+    if(tdisk == null) 
+      throw new GlueException("The \"TotalDisk\" was missing!");
+    pTotalDisk = tdisk;
+
+
     long[] stamp = (long[]) decoder.decode("TimeStamp");
     if(stamp == null) 
       throw new GlueException("The \"TimeStamp\" was missing!");
@@ -208,7 +352,7 @@ class ResourceSampleBlock
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID =
+  private static final long serialVersionUID = -547095830269839260L;
 
 
 
@@ -216,6 +360,29 @@ class ResourceSampleBlock
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * The maximum number jobs the host may be assigned.
+   */ 
+  private int  pJobSlots; 
+
+  /**
+   * The number of processors on the host.
+   */ 
+  private int  pNumProcessors; 
+
+  /**
+   * The total amount of memory (in bytes) on the host.
+   */ 
+  private long  pTotalMemory;
+
+  /**
+   * The total amount of temporary disk space (in bytes) on the host.
+   */ 
+  private long  pTotalDisk;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * The timestamp of when the samples was measured.
    */ 
@@ -241,5 +408,6 @@ class ResourceSampleBlock
    */ 
   private long[]  pDisk;
   
+
 
 }

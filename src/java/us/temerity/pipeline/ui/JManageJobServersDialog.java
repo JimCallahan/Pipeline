@@ -1,4 +1,4 @@
-// $Id: JManageJobServersDialog.java,v 1.2 2004/08/01 15:34:41 jim Exp $
+// $Id: JManageJobServersDialog.java,v 1.3 2004/08/01 19:31:46 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -588,61 +588,16 @@ class JManageJobServersDialog
     run()
     {
       UIMaster master = UIMaster.getInstance();
-      QueueMgrClient client = master.getQueueMgrClient();
-
-      ArrayList<ResourceSample> samples = null;
       try {
-	samples = client.getHostResourceSamples(pHostname);
-      }
-      catch(PipelineException ex) {
-	samples = new ArrayList<ResourceSample>();
-      }
-      
-      TreeMap<String,QueueHost> hosts = null;
-      TreeSet<String> keys = null;
-      boolean isPrivileged = false;
-      try {
-	hosts = client.getHosts(); 
-	keys = client.getSelectionKeyNames();
-	
-	isPrivileged = master.getMasterMgrClient().isPrivileged(false);
-      }
-      catch(PipelineException ex) {
-	master.showErrorDialog(ex);
-      }
-      
-      try {
-	QueueHost host = hosts.get(pHostname);
-	if(host == null)
-	  throw new PipelineException
-	    ("The host (" + pHostname + ") is not a valid job server!"); 
+	QueueMgrClient client = master.getQueueMgrClient();
+	ResourceSampleBlock block = client.getHostResourceSamples(pHostname);
 
-	ArrayList<ResourceSample> allSamples = new ArrayList<ResourceSample>(); 
-	if(samples.isEmpty()) {
-	  allSamples.addAll(host.getSamples());
-	}
-	else {
-	  ResourceSample latest = samples.get(0);
-	  for(ResourceSample sample : host.getSamples()) {
-	    if(sample.getTimeStamp().compareTo(latest.getTimeStamp()) > 0) 
-	      allSamples.add(sample);
-	  }
-	  allSamples.addAll(samples);
-	}
-
-	if(allSamples.isEmpty()) 
-	  throw new PipelineException
-	    ("No resource usage information exists for (" + pHostname + ")!");
-
-	ShowHistoryTask task = new ShowHistoryTask(host, allSamples);
+	ShowHistoryTask task = new ShowHistoryTask(pHostname, block);
 	SwingUtilities.invokeLater(task);
       }
       catch(PipelineException ex) {
 	master.showErrorDialog(ex);
       }
-
-      UpdateTask task = new UpdateTask(hosts, keys, isPrivileged);
-      SwingUtilities.invokeLater(task);
     }
 
     private String  pHostname;
@@ -658,24 +613,23 @@ class JManageJobServersDialog
     public 
     ShowHistoryTask
     (
-     QueueHost host,
-     ArrayList<ResourceSample> samples
+     String hostname,
+     ResourceSampleBlock block 
     ) 
     {
-      pHost    = host; 
-      pSamples = samples; 
+      pHostname = hostname; 
+      pBlock    = block; 
     }
     
     public void
     run()
     {
-      JJobServerHistoryDialog diag = 
-	new JJobServerHistoryDialog(pHost, pSamples);
+      JJobServerHistoryDialog diag = new JJobServerHistoryDialog(pHostname, pBlock);
       diag.setVisible(true);  
     }
 
-    private QueueHost                 pHost;
-    private ArrayList<ResourceSample> pSamples;
+    private String               pHostname; 
+    private ResourceSampleBlock  pBlock;
   }
 
 
