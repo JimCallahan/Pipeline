@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.6 2004/08/04 01:40:31 jim Exp $
+// $Id: QueueMgrClient.java,v 1.7 2004/08/22 21:54:36 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -709,6 +709,128 @@ class QueueMgrClient
     }        
   }
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   J O B S                                                                              */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the job with the given ID.
+   * 
+   * @param jobID
+   *   The unique job identifier.
+   * 
+   * @throws PipelineException
+   *   If no job exists with the given ID.
+   */ 
+  public synchronized QueueJob
+  getJob
+  (
+   long jobID
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    QueueGetJobReq req = new QueueGetJobReq(jobID);
+
+    Object obj = performTransaction(QueueRequest.GetJob, req);
+    if(obj instanceof QueueGetJobRsp) {
+      QueueGetJobRsp rsp = (QueueGetJobRsp) obj;
+      return rsp.getJob();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+
+  /**
+   * Get information about the current status of a job in the queue. <P> 
+   * 
+   * @param jobID
+   *   The unique job identifier.
+   * 
+   * @throws PipelineException
+   *   If no job exists with the given ID.
+   */ 
+  public synchronized QueueJobInfo
+  getJobInfo
+  (
+   long jobID
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    QueueGetJobInfoReq req = new QueueGetJobInfoReq(jobID);
+
+    Object obj = performTransaction(QueueRequest.GetJobInfo, req);
+    if(obj instanceof QueueGetJobInfoRsp) {
+      QueueGetJobInfoRsp rsp = (QueueGetJobInfoRsp) obj;
+      return rsp.getJobInfo();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+
+  /**
+   * Get the job group with the given ID. 
+   * 
+   * @param groupID
+   *   The unique job group identifier.
+   * 
+   * @throws PipelineException
+   *   If no job group exists with the given ID.
+   */ 
+  public synchronized QueueJobGroup
+  getJobGroup
+  (
+   long groupID
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    QueueGetJobGroupReq req = new QueueGetJobGroupReq(groupID);
+
+    Object obj = performTransaction(QueueRequest.GetJobGroup, req);
+    if(obj instanceof QueueGetJobGroupRsp) {
+      QueueGetJobGroupRsp rsp = (QueueGetJobGroupRsp) obj;
+      return rsp.getJobGroup();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+  
+  /**
+   * Get all of the existing job groups.
+   * 
+   * @throws PipelineException
+   *   If no job group exists with the given ID.
+   */ 
+  public synchronized TreeMap<Long,QueueJobGroup>
+  getJobGroups()
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    Object obj = performTransaction(QueueRequest.GetJobGroups, null);
+    if(obj instanceof QueueGetJobGroupsRsp) {
+      QueueGetJobGroupsRsp rsp = (QueueGetJobGroupsRsp) obj;
+      return rsp.getJobGroups();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/
