@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.13 2004/09/03 01:55:35 jim Exp $
+// $Id: QueueMgr.java,v 1.14 2004/09/08 18:36:52 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1868,6 +1868,13 @@ class QueueMgr
 	case Queued:
 	case Paused:
 	  info.aborted();
+	  try {
+	    writeJobInfo(info);
+	  }
+	  catch(PipelineException ex) {
+	    Logs.net.severe(ex.getMessage()); 
+	    Logs.flush();
+	  }
 	  break; 
 
 	case Running:
