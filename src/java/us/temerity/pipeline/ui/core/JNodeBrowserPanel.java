@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.4 2005/01/10 16:02:01 jim Exp $
+// $Id: JNodeBrowserPanel.java,v 1.5 2005/01/10 16:34:08 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -538,6 +538,8 @@ class JNodeBrowserPanel
       (pNodeFilterItem, prefs.getNodeBrowserNodeFilter(), 
        "Show the node filter dialog."); 
   }
+
+
   
   /*----------------------------------------------------------------------------------------*/
   /*   L I S T E N E R S                                                                    */

@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.8 2005/01/10 16:02:01 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.9 2005/01/10 16:34:08 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -586,6 +586,30 @@ class JNodeViewerPanel
     
     updateNodeBrowserSelection();
     updateNodeStatus(); 
+  }
+
+  /**
+   * Add the given node name to the root nodes displayed by the viewer. <P> 
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param name
+   *   The fully resolved node name.
+   */
+  public synchronized void 
+  addRoot
+  (
+   String author, 
+   String view,
+   String name
+  )
+  {
+    super.setAuthorView(author, view);
+    addRoot(name);
   }
 
   /**

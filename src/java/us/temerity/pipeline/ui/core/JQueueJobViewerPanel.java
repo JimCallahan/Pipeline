@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.5 2005/01/10 16:02:01 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.6 2005/01/10 16:34:08 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -186,6 +186,14 @@ class JQueueJobViewerPanel
       item.setActionCommand("kill-jobs");
       item.addActionListener(this);
       pJobPopup.add(item);
+
+      pJobPopup.addSeparator();
+
+      item = new JMenuItem("Show Node");
+      pJobShowNodeItem = item;
+      item.setActionCommand("show-node");
+      item.addActionListener(this);
+      pJobPopup.add(item);
     }
     
     /* job group popup menu */ 
@@ -241,6 +249,14 @@ class JQueueJobViewerPanel
       item = new JMenuItem("Delete Groups");
       pGroupDeleteGroupsItem = item;
       item.setActionCommand("delete-group");
+      item.addActionListener(this);
+      pGroupPopup.add(item);
+
+      pGroupPopup.addSeparator();
+
+      item = new JMenuItem("Show Node");
+      pGroupShowNodeItem = item;
+      item.setActionCommand("show-node");
       item.addActionListener(this);
       pGroupPopup.add(item);
     }
@@ -580,6 +596,9 @@ class JQueueJobViewerPanel
     updateMenuToolTip
       (pJobKillJobsItem, prefs.getKillJobs(), 
        "Kill all jobs associated with the selected jobs.");
+    updateMenuToolTip
+      (pJobShowNodeItem, prefs.getShowNode(), 
+       "Show the node which created the primary selected job in the Node Viewer.");
     
     /* job group menu */ 
     updateMenuToolTip
@@ -602,7 +621,10 @@ class JQueueJobViewerPanel
        "Kill all jobs associated with the selected jobs.");
     updateMenuToolTip
       (pGroupDeleteGroupsItem, prefs.getDeleteJobGroups(), 
-       "Delete the selected completed job groups.");
+       "Delete the selected completed job groups.");  
+    updateMenuToolTip
+      (pGroupShowNodeItem, prefs.getShowNode(), 
+       "Show the node which created the primary selected job group in the Node Viewer.");
   }
 
 
@@ -1548,6 +1570,10 @@ class JQueueJobViewerPanel
 	      prefs.getKillJobs().wasPressed(e))
 	doKillJobs();
 
+      else if((prefs.getShowNode() != null) &&
+	      prefs.getShowNode().wasPressed(e))
+	doShowNode();
+
       else 
 	undefined = true;
     }
@@ -1590,6 +1616,10 @@ class JQueueJobViewerPanel
       else if((prefs.getDeleteJobGroups() != null) &&
 	      prefs.getDeleteJobGroups().wasPressed(e))
 	doDeleteJobGroups();
+
+      else if((prefs.getShowNode() != null) &&
+	      prefs.getShowNode().wasPressed(e))
+	doShowNode();
 
       else 
 	undefined = true;
@@ -1724,8 +1754,10 @@ class JQueueJobViewerPanel
       doResumeJobs();
     else if(cmd.equals("kill-jobs"))
       doKillJobs();
-     else if(cmd.equals("delete-group"))
-       doDeleteJobGroups();
+    else if(cmd.equals("delete-group"))
+      doDeleteJobGroups();
+    else if(cmd.equals("show-node"))
+      doShowNode();
 
     else {
       clearSelection();
@@ -2145,6 +2177,35 @@ class JQueueJobViewerPanel
     refresh(); 
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * "Show the node which created the primary selected job/group in the Node Viewer.", 
+   */ 
+  private void 
+  doShowNode() 
+  {
+    NodeID nodeID = null;
+    if(pPrimaryGroup != null) {
+      QueueJobGroup group = pPrimaryGroup.getGroup();
+      nodeID = group.getNodeID();
+    }
+    else if(pPrimary != null) {
+      JobStatus status = pPrimary.getJobStatus();
+      nodeID = status.getNodeID();
+    }
+
+    if(pGroupID > 0) {
+      PanelGroup<JNodeViewerPanel> panels = UIMaster.getInstance().getNodeViewerPanels();
+      JNodeViewerPanel panel = panels.getPanel(pGroupID);
+      if(panel != null) 
+	panel.addRoot(nodeID.getAuthor(), nodeID.getView(), nodeID.getName());
+    }    
+    
+    clearSelection();
+    refresh(); 
+  }
 
   
 
@@ -2721,6 +2782,7 @@ class JQueueJobViewerPanel
   private JMenuItem  pJobPauseJobsItem;
   private JMenuItem  pJobResumeJobsItem;
   private JMenuItem  pJobKillJobsItem;
+  private JMenuItem  pJobShowNodeItem;
 
   /**
    * The view with submenu.
@@ -2743,6 +2805,7 @@ class JQueueJobViewerPanel
   private JMenuItem  pGroupResumeJobsItem;
   private JMenuItem  pGroupKillJobsItem;
   private JMenuItem  pGroupDeleteGroupsItem;
+  private JMenuItem  pGroupShowNodeItem;
 
   /**
    * The view with group submenu.

@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.5 2005/01/10 16:02:01 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.6 2005/01/10 16:34:08 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -992,6 +992,12 @@ class GenUserPrefsApp
 	new DuplicateHotKeyPref
 	("Kill all selected jobs.", 
 	 "JobKillJobs", "Kill Jobs:", "KillJobs"), 
+
+	new BasePref(),
+
+	new HotKeyPref
+	("Show the node which created the primary selected job in the Node Viewer.", 
+	 "ShowNode", "Show Node:"), 
       };      
 
       pPrefs.put("Panel|Job Viewer|Job|Hot Keys", prefs);
@@ -1031,6 +1037,12 @@ class GenUserPrefsApp
 	("Delete the completed job groups.",
 	 "DeleteJobGroups", "Delete Groups:",
 	 true, false, false, 8),  /* SHIFT + Backspace */ 
+
+	new BasePref(),
+
+	new DuplicateHotKeyPref
+	("Show the node which created the primary selected job group in the Node Viewer.", 
+	 "GroupShowNode", "Show Node:", "ShowNode"), 
       };      
 
       pPrefs.put("Panel|Job Viewer|Job Group|Hot Keys", prefs);
@@ -1252,6 +1264,7 @@ class GenUserPrefsApp
       String edit         = "Edit";
       String applyChanges = "ApplyChanges";
       String removeFiles  = "RemoveFiles";
+      String showNode     = "ShowNode"; 
 
       pHotKeyGroups = new TreeMap<String,TreeSet<String>>();
 
@@ -1394,6 +1407,7 @@ class GenUserPrefsApp
 	group.add(details);
 	group.add(edit);
 	group.addAll(jobs);
+	group.add(showNode);
       }
     
       {
@@ -1404,6 +1418,7 @@ class GenUserPrefsApp
 	group.add(edit);
 	group.addAll(jobs);
 	group.add("DeleteJobGroups");
+	group.add(showNode);
       }
     
       {
@@ -1457,7 +1472,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.5 2005/01/10 16:02:01 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.6 2005/01/10 16:34:08 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -1712,7 +1727,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.5 2005/01/10 16:02:01 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.6 2005/01/10 16:34:08 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3068,7 +3083,7 @@ class GenUserPrefsApp
 
       StringBuffer buf = new StringBuffer();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.5 2005/01/10 16:02:01 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.6 2005/01/10 16:34:08 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 
