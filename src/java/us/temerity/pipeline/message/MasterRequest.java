@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.31 2005/03/21 07:04:36 jim Exp $
+// $Id: MasterRequest.java,v 1.32 2005/03/21 08:52:49 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -392,6 +392,11 @@ enum MasterRequest
    */
   RequestRestore, 
   
+  /**
+   * An instance of {@link MiscDenyRestoreReq MiscDenyRestoreReq} is next.
+   */
+  DenyRestore, 
+
   /**
    * An instance of {@link MiscGetRestoreRequestsReq MiscGetRestoreRequestsReq} is next.
    */
