@@ -1,4 +1,4 @@
-// $Id: MayaRenderAction.java,v 1.7 2004/11/11 00:35:26 jim Exp $
+// $Id: MayaRenderAction.java,v 1.8 2004/11/14 02:02:11 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -13,7 +13,21 @@ import java.io.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Renders a series of images using a single Maya scene source node.
+ * Renders a series of images using a single Maya scene source node. <P> 
+ * 
+ * This action defines the following single valued parameters: <BR>
+ * 
+ * <DIV style="margin-left: 40px;">
+ *   Camera Override <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     Overrides the render camera (if set). <BR> 
+ *   </DIV> <BR>
+ * 
+ *   Processors <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The number of processors to use (0 = all available). <BR> 
+ *   </DIV> 
+ * </DIV> <P> 
  */
 public
 class MayaRenderAction
