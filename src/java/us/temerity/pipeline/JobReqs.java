@@ -1,4 +1,4 @@
-// $Id: JobReqs.java,v 1.1 2004/02/28 19:59:47 jim Exp $
+// $Id: JobReqs.java,v 1.2 2004/03/07 02:46:07 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -266,7 +266,7 @@ implements Cloneable, Glueable, Serializable
   public Set<String>
   getLicenseKeys()
   {
-    return new HashSet<String>(pLicenseKeys);
+    return Collections.unmodifiableSet(pLicenseKeys);
   }
 
   /** 
@@ -347,7 +347,7 @@ implements Cloneable, Glueable, Serializable
   public Set<String>
   getSelectionKeys()
   {
-    return new HashSet<String>(pSelectionKeys);
+    return Collections.unmodifiableSet(pSelectionKeys);
   }
 
   /** 

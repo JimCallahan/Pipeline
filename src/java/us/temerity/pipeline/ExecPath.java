@@ -1,4 +1,4 @@
-// $Id: ExecPath.java,v 1.3 2004/02/25 02:59:28 jim Exp $
+// $Id: ExecPath.java,v 1.4 2004/03/07 02:46:07 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -69,10 +69,10 @@ class ExecPath
   /**
    * Gets the list of directories which make up the execution path. 
    */ 
-  public ArrayList<File>
+  public Collection<File>
   getDirectories() 
   {
-    return new ArrayList<File>(pDirs);
+    return Collections.unmodifiableCollection(pDirs);
   }
   
 

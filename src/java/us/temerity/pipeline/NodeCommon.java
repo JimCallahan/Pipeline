@@ -1,4 +1,4 @@
-// $Id: NodeCommon.java,v 1.1 2004/02/28 20:05:47 jim Exp $
+// $Id: NodeCommon.java,v 1.2 2004/03/07 02:46:07 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -14,7 +14,6 @@ import java.io.*;
  * The superclass of <CODE>NodeVersion</CODE> and <CODE>NodeMod</CODE> which provides
  * the common fields and methods needed by both classes. <P>
  * 
- * @see Node
  * @see NodeVersion
  * @see NodeMod
  */
@@ -172,7 +171,7 @@ class NodeCommon
     super(com.getName());
     
     pPrimarySeq    = com.getPrimarySequence();
-    pSecondarySeqs = (TreeSet) com.getSecondarySequences();
+    pSecondarySeqs = new TreeSet(com.getSecondarySequences());
     
     pToolset = com.getToolset();
     pEditor  = com.getEditor();
@@ -202,10 +201,10 @@ class NodeCommon
   /** 
    * Get the set of secondary file sequences associated with the node.
    */
-  public Set<FileSeq>
+  public SortedSet<FileSeq>
   getSecondarySequences()
   {
-    return new TreeSet<FileSeq>(pSecondarySeqs);
+    return Collections.unmodifiableSortedSet(pSecondarySeqs);
   }
 
   
@@ -326,7 +325,7 @@ class NodeCommon
    Object obj
   )
   {
-    if((obj != null) && (obj instanceof FilePattern)) {
+    if((obj != null) && (obj instanceof NodeCommon)) {
       NodeCommon com = (NodeCommon) obj;
       return (super.equals(obj) && 
 	      pPrimarySeq.equals(com.pPrimarySeq) && 

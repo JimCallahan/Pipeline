@@ -1,4 +1,4 @@
-// $Id: TestVersionIDApp.java,v 1.2 2004/03/01 21:43:48 jim Exp $
+// $Id: TestVersionIDApp.java,v 1.3 2004/03/07 02:47:29 jim Exp $
 
 import us.temerity.pipeline.*;
 
@@ -48,57 +48,111 @@ class TestVersionIDApp
       VersionID vid2 = new VersionID(vid);
       System.out.print("  " + vid + " == " + vid2 + "\n");
       
-      vid2.incTrivial();
-      IDs.add(new VersionID(vid2));
-      compareIDs(vid, vid2);
-      
-      vid2.incTrivial();
-      IDs.add(new VersionID(vid2));
-      compareIDs(vid, vid2);
-      
-      vid.incMinor();
-      IDs.add(new VersionID(vid));
-      compareIDs(vid, vid2);
-      
-      vid.incTrivial();
-      IDs.add(new VersionID(vid));
-      compareIDs(vid, vid2);
-      
-      vid2.incMajor();
-      IDs.add(new VersionID(vid2));
-      compareIDs(vid, vid2);
+      {
+	VersionID v = new VersionID(vid2, VersionID.Level.Micro);
+	IDs.add(v);
+	vid2 = v;
+	compareIDs(vid, vid2);
+      }
 
-      vid.incMajor();
-      IDs.add(new VersionID(vid));
-      compareIDs(vid, vid2);
+      {
+	VersionID v = new VersionID(vid, VersionID.Level.Micro);
+	IDs.add(v);
+	vid = v;
+	compareIDs(vid, vid2);
+      }
       
-      vid2.incTrivial();
-      IDs.add(new VersionID(vid2));
-      compareIDs(vid, vid2);
-      
-      vid.incMinor();
-      IDs.add(new VersionID(vid));
-      compareIDs(vid, vid2);
-      
-      vid2.incMassive();
-      IDs.add(new VersionID(vid2));
-      compareIDs(vid, vid2);
+      {
+	VersionID v = new VersionID(vid, VersionID.Level.Minor);
+	IDs.add(v);
+	vid = v;
+	compareIDs(vid, vid2);
+      }
 
-      vid.incMassive();
-      IDs.add(new VersionID(vid));
-      compareIDs(vid, vid2);
-      
-      vid2.incMinor();
-      IDs.add(new VersionID(vid2));
-      compareIDs(vid, vid2);
-      
-      vid.incMinor();
-      IDs.add(new VersionID(vid));
-      compareIDs(vid, vid2);
-      
-      vid2.incTrivial();
-      IDs.add(new VersionID(vid2));
-      compareIDs(vid, vid2);
+      {
+	VersionID v = new VersionID(vid, VersionID.Level.Micro);
+	IDs.add(v);
+	vid = v;
+	compareIDs(vid, vid2);
+      }
+
+      {
+	VersionID v = new VersionID(vid2, VersionID.Level.Major);
+	IDs.add(v);
+	vid2 = v;
+	compareIDs(vid, vid2);
+      }
+
+      {
+	VersionID v = new VersionID(vid, VersionID.Level.Major);
+	IDs.add(v);
+	vid = v;
+	compareIDs(vid, vid2);
+      }
+
+      {
+	VersionID v = new VersionID(vid2, VersionID.Level.Micro);
+	IDs.add(v);
+	vid2 = v;
+	compareIDs(vid, vid2);
+      }
+
+      {
+	VersionID v = new VersionID(vid, VersionID.Level.Minor);
+	IDs.add(v);
+	vid = v;
+	compareIDs(vid, vid2);
+      }
+
+      {
+	VersionID v = new VersionID(vid2, VersionID.Level.Mega);
+	IDs.add(v);
+	vid2 = v;
+	compareIDs(vid, vid2);
+      }
+
+      {
+	VersionID v = new VersionID(vid, VersionID.Level.Mega);
+	IDs.add(v);
+	vid = v;
+	compareIDs(vid, vid2);
+      }
+
+      {
+	VersionID v = new VersionID(vid2, VersionID.Level.Minor);
+	IDs.add(v);
+	vid2 = v;
+	compareIDs(vid, vid2);
+      }
+
+      {
+	VersionID v = new VersionID(vid, VersionID.Level.Minor);
+	IDs.add(v);
+	vid = v;
+	compareIDs(vid, vid2);
+      }
+
+      {
+	VersionID v = new VersionID(vid2, VersionID.Level.Micro);
+	IDs.add(v);
+	vid2 = v;
+	compareIDs(vid, vid2);
+      }
+
+      {
+	VersionID v = new VersionID(vid2, VersionID.Level.Mega);
+	IDs.add(v);
+	vid2 = v;
+	compareIDs(vid, vid2);
+      }
+
+      {
+	VersionID v = new VersionID(vid, VersionID.Level.Mega);
+	IDs.add(v);
+	vid = v;
+	compareIDs(vid, vid2);
+      }
+
 
       System.out.print("-----------------------------------\n" + 
 		       "Ordered Set:\n");

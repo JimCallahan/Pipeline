@@ -1,4 +1,4 @@
-// $Id: TestFileSeqApp.java,v 1.2 2004/03/03 07:49:27 jim Exp $
+// $Id: TestFileSeqApp.java,v 1.3 2004/03/07 02:47:29 jim Exp $
 
 import us.temerity.pipeline.*;
 
@@ -33,7 +33,7 @@ class TestFileSeqApp
  
     System.exit(0);
   }  
-
+ 
  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */

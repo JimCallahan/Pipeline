@@ -1,4 +1,4 @@
-// $Id: Toolsets.java,v 1.2 2004/02/28 20:02:07 jim Exp $
+// $Id: Toolsets.java,v 1.3 2004/03/07 02:46:07 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -34,6 +34,7 @@ class Toolsets
   private 
   Toolsets() 
   {}
+
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -94,7 +95,7 @@ class Toolsets
    * @throws PipelineException
    *   If unable to find and read a toolset named <CODE>name</CODE>.
    */ 
-  public static TreeMap<String,String> 
+  public static SortedMap<String,String> 
   lookup
   (
    String name, 
@@ -142,7 +143,7 @@ class Toolsets
    * @throws PipelineException
    *   If unable to find and read a toolset named <CODE>name</CODE>.
    */ 
-  public static TreeMap<String,String> 
+  public static SortedMap<String,String> 
   lookup
   (
    String name

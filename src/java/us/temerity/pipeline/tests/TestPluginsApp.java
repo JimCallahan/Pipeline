@@ -1,4 +1,4 @@
-// $Id: TestPluginsApp.java,v 1.4 2004/02/28 20:04:18 jim Exp $
+// $Id: TestPluginsApp.java,v 1.5 2004/03/07 02:47:29 jim Exp $
 
 import us.temerity.pipeline.*;
 
@@ -48,7 +48,7 @@ class TestPluginsApp
   run() 
     throws CloneNotSupportedException, GlueException, PipelineException, InterruptedException
   {
-    TreeMap<String,String> env = Toolsets.lookup(TestInfo.sBuildToolset);
+    SortedMap<String,String> env = Toolsets.lookup(TestInfo.sBuildToolset);
 
     File dir = new File(System.getProperty("user.dir") + "/data");
 
@@ -64,7 +64,7 @@ class TestPluginsApp
   private void
   testEditors
   (
-   TreeMap<String,String> env, 
+   SortedMap<String,String> env, 
    File dir
   ) 
     throws CloneNotSupportedException, GlueException, PipelineException, InterruptedException
@@ -165,7 +165,7 @@ class TestPluginsApp
   (
    BaseEditor editor, 
    FileSeq fseq, 
-   TreeMap<String,String> env, 
+   SortedMap<String,String> env, 
    File dir
   ) 
     throws CloneNotSupportedException, GlueException, PipelineException, InterruptedException
@@ -190,7 +190,7 @@ class TestPluginsApp
   private void
   testActions
   (
-   TreeMap<String,String> env, 
+   SortedMap<String,String> env, 
    File dir
   ) 
     throws CloneNotSupportedException, GlueException, PipelineException, InterruptedException

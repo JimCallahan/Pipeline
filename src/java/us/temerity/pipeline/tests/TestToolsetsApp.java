@@ -1,4 +1,4 @@
-// $Id: TestToolsetsApp.java,v 1.2 2004/02/28 20:04:39 jim Exp $
+// $Id: TestToolsetsApp.java,v 1.3 2004/03/07 02:47:29 jim Exp $
 
 import us.temerity.pipeline.*;
 
@@ -69,7 +69,7 @@ class TestToolsetsApp
   {
     System.out.print("Toolset: " + name + "\n");
 
-    TreeMap<String,String> env = Toolsets.lookup(name);
+    SortedMap<String,String> env = Toolsets.lookup(name);
     for(String key : env.keySet()) {
       String value = env.get(key);
       System.out.print("  " + key + " = " + value + "\n");    

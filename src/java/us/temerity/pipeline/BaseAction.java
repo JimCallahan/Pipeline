@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.3 2004/02/28 19:55:56 jim Exp $
+// $Id: BaseAction.java,v 1.4 2004/03/07 02:46:07 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -131,10 +131,10 @@ class BaseAction
    * @return 
    *   The set of single valued parameters for this action.  
    */ 
-  public ArrayList<ActionParam>
+  public Collection<ActionParam>
   getSingleParams()
   {
-    return (new ArrayList<ActionParam>(pSingleParams.values()));
+    return Collections.unmodifiableCollection(pSingleParams.values());
   }
   
 
@@ -260,10 +260,10 @@ class BaseAction
   /** 
    * Get node names of the dependencies with per-dependency parameters.
    */ 
-  public ArrayList<String>
+  public Set<String>
   getDependNames()
   {
-    return (new ArrayList<String>(pDependParams.keySet()));
+    return Collections.unmodifiableSet(pDependParams.keySet());
   }
 
 
@@ -341,7 +341,7 @@ class BaseAction
    * @return 
    *   The set of parameters for the given dependency.  
    */ 
-  public ArrayList<ActionParam>
+  public Collection<ActionParam>
   getDependParams
   (
    String depend  
@@ -350,13 +350,11 @@ class BaseAction
     if(depend == null)
       throw new IllegalArgumentException("The dependency name cannot be (null)!");
 
-    ArrayList<ActionParam> params = new ArrayList<ActionParam>();
-
     TreeMap<String,ActionParam> table = pDependParams.get(depend);
     if(table != null) 
-      params.addAll(table.values());
-
-    return params;
+      return Collections.unmodifiableCollection(table.values());
+    else 
+      return new ArrayList<ActionParam>();
   }
 
 
