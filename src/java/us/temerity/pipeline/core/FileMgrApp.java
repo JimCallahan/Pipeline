@@ -1,4 +1,4 @@
-// $Id: FileMgrApp.java,v 1.5 2004/04/24 22:35:58 jim Exp $
+// $Id: FileMgrApp.java,v 1.6 2004/05/23 19:50:07 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -33,6 +33,8 @@ class FileMgrApp
   FileMgrApp() 
   {
     super("plfilemgr");
+
+    NativeFileSys.umask(022);
   }
 
   

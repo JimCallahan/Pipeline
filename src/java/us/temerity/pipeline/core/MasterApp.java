@@ -1,4 +1,4 @@
-// $Id: MasterApp.java,v 1.1 2004/04/24 22:44:42 jim Exp $
+// $Id: MasterApp.java,v 1.2 2004/05/23 19:50:07 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -33,6 +33,8 @@ class MasterApp
   MasterApp() 
   {
     super("plmaster");
+
+    NativeFileSys.umask(022);
   }
 
   
