@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.49 2004/10/02 16:01:27 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.50 2004/10/02 17:40:24 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -926,7 +926,18 @@ class JNodeViewerPanel
    */
   private synchronized void 
   updateUniverse()
-  {  
+  { 
+    /* compute the center of the current layout if no pinned node is set */ 
+    if(pPinnedPath == null) {
+      pPinnedPos = null;
+      Point2d bounds[] = pNodePool.getActiveBounds();
+      if(bounds != null) {
+	pPinnedPos = new Point2d();
+	pPinnedPos.add(bounds[0], bounds[1]);
+	pPinnedPos.scale(0.5);
+      }
+    }
+    
     pLinks.updatePrep();
     pNodePool.updatePrep();
 
@@ -966,6 +977,44 @@ class JNodeViewerPanel
 	}
 	
 	anchorHeight += Math.min(uheight, dheight);
+      }
+
+      /* shift entire layout */ 
+      {
+	Vector2d delta = null;
+	/* shift all active nodes so that the pinned node remains stationary */ 
+	if(pPinnedPath != null) {
+	  ViewerNode vnode = pNodePool.getActiveViewerNode(pPinnedPath);
+	  if(vnode != null) {
+	    Point2d npos = vnode.getPosition();
+	    delta = new Vector2d();
+	    delta.sub(pPinnedPos, npos);
+	  }
+	}
+	/* shift all active nodes so that center of the new layout is the same as the 
+	     center of the previous layout */ 
+	else if(pPinnedPos != null) {
+	  Point2d bounds[] = pNodePool.getActiveBounds();
+	  if(bounds != null) {
+	    Point2d npos = new Point2d();
+	    npos.add(bounds[0], bounds[1]);
+	    npos.scale(0.5);
+
+	    delta = new Vector2d();
+	    delta.sub(pPinnedPos, npos);	    
+	  }
+	}
+
+	if(delta != null) {
+	  for(ViewerNode vn : pNodePool.getActiveViewerNodes()) {
+	    Point2d pos = new Point2d();
+	    pos.add(vn.getPosition(), delta);
+	    vn.setPosition(pos);
+	  }
+	}
+
+	pPinnedPos  = null;
+	pPinnedPath = null;
       }
       
       /* preserve the current layout */ 
@@ -1167,7 +1216,7 @@ class JNodeViewerPanel
    *   The path from the root node to the current node.
    * 
    * @param offset
-   *   The table containing sets of child paths indexed by parent path.
+   *   The vertical distance to shift all nodes.
    */ 
   private void
   shiftDownstreamNodes
@@ -1659,6 +1708,10 @@ class JNodeViewerPanel
 	  if((mods & (on1 | off1)) == on1) {
 	    if(vunder.getNodeStatus().hasSources()) {
 	      vunder.setCollapsed(!vunder.isCollapsed());
+
+	      pPinnedPos  = vunder.getPosition();
+	      pPinnedPath = vunder.getNodePath();
+
 	      updateUniverse();
 	    }
 	  }
@@ -2354,10 +2407,11 @@ class JNodeViewerPanel
   private void
   doMakeRoot()
   {
-    String prim = getPrimarySelectionName();
+    pPinnedPos  = pPrimary.getPosition();
+    pPinnedPath = new NodePath(pPrimary.getNodePath().getCurrentName());
 
     TreeSet<String> roots = new TreeSet<String>();
-    roots.add(prim);
+    roots.add(getPrimarySelectionName());
 
     setRoots(roots);
 
@@ -2371,9 +2425,10 @@ class JNodeViewerPanel
   private synchronized void
   doAddRoot()
   {
-    String prim = getPrimarySelectionName();
+    pPinnedPos  = pPrimary.getPosition();
+    pPinnedPath = new NodePath(pPrimary.getNodePath().getCurrentName());
 
-    addRoot(prim);
+    addRoot(getPrimarySelectionName());
 
     for(ViewerNode vnode : clearSelection()) 
       vnode.update();
@@ -2385,12 +2440,12 @@ class JNodeViewerPanel
   private synchronized void
   doReplaceRoot()
   {
-    String prim = getPrimarySelectionName();
-    String root = getPrimarySelectionRootName();
+    pPinnedPos  = pPrimary.getPosition();
+    pPinnedPath = new NodePath(pPrimary.getNodePath().getCurrentName());
 
     TreeSet<String> roots = new TreeSet<String>(pRoots.keySet());
-    roots.remove(root);
-    roots.add(prim);
+    roots.remove(getPrimarySelectionRootName());
+    roots.add(getPrimarySelectionName());
 
     setRoots(roots);
 
@@ -2404,8 +2459,9 @@ class JNodeViewerPanel
   private synchronized void
   doRemoveRoot()
   {
-    String root = getPrimarySelectionRootName();
-    removeRoot(root);
+    // find a nearby node to pin...
+
+    removeRoot(getPrimarySelectionRootName());
 
     for(ViewerNode vnode : clearSelection()) 
       vnode.update();
@@ -3203,7 +3259,7 @@ class JNodeViewerPanel
   private void 
   doFrameAll() 
   {
-    frameNodes(pNodePool.getActiveViewerNodes());
+    frameBounds(pNodePool.getActiveBounds());
   }
 
   /**
@@ -3215,44 +3271,21 @@ class JNodeViewerPanel
    Collection<ViewerNode> vnodes
   ) 
   {
-    if(vnodes.isEmpty()) 
-      return;
-
-    Point2d minPos = new Point2d(Integer.MAX_VALUE, Integer.MAX_VALUE);
-    Point2d maxPos = new Point2d(Integer.MIN_VALUE, Integer.MIN_VALUE);
-    for(ViewerNode vnode : vnodes) {
-      Point2d pos = vnode.getPosition();
-      
-      minPos.x = Math.min(minPos.x, pos.x);
-      minPos.y = Math.min(minPos.y, pos.y);
-
-      maxPos.x = Math.max(maxPos.x, pos.x);
-      maxPos.y = Math.max(maxPos.y, pos.y);
-    }
-
-    {
-      UserPrefs prefs = UserPrefs.getInstance();
-      
-      minPos.x -= prefs.getNodeSpaceX()*0.5;
-      minPos.y -= prefs.getNodeSpaceY()*0.5;
-      
-      maxPos.x += prefs.getNodeSpaceX()*0.5;
-      maxPos.y += prefs.getNodeSpaceY()*0.5;
-    }
-
-    frameBounds(minPos, maxPos);    
+    frameBounds(ViewerNodePool.getBounds(vnodes));
   }  
 
   /**
-   * Move the camera to frame the given bounds.
+   * Move the camera to frame the given bounding box.
    */ 
   private void 
   frameBounds
   (
-   Point2d minPos,  
-   Point2d maxPos   
+   Point2d bbox[]
   ) 
   {
+    if(bbox == null) 
+      return; 
+
     Viewer viewer = pUniverse.getViewer();
     TransformGroup tg = viewer.getViewingPlatform().getViewPlatformTransform();
       
@@ -3262,13 +3295,13 @@ class JNodeViewerPanel
     Vector3d trans = new Vector3d();
     xform.get(trans);
 
-    Vector2d extent = new Vector2d(maxPos);
-    extent.sub(minPos);
+    Vector2d extent = new Vector2d(bbox[1]);
+    extent.sub(bbox[0]);
     assert(extent.x >= 0.0);
     assert(extent.y > 0.0);
 
-    Vector2d center = new Vector2d(minPos);
-    center.add(maxPos);
+    Vector2d center = new Vector2d(bbox[0]);
+    center.add(bbox[1]);
     center.scale(0.5);
 
     trans.x = center.x;
@@ -4922,6 +4955,18 @@ class JNodeViewerPanel
    */ 
   private Point2d  pMinNodeBounds;
   private Point2d  pMaxNodeBounds;
+
+
+  /**
+   * The position of the node which should remain stationary after a relayout of nodes.
+   */ 
+  private Point2d  pPinnedPos; 
+
+  /**
+   * The node path to the viewer node in the new layout which should be positioned at 
+   * pPinnedPos.
+   */ 
+  private NodePath  pPinnedPath; 
 
 
   /**
