@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.6 2004/04/30 08:40:52 jim Exp $
+// $Id: JManagerPanel.java,v 1.7 2004/04/30 11:21:34 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -47,6 +47,7 @@ class JManagerPanel
       pPopup = new JPopupMenu();    
             
       item = new JMenuItem("Add Tab");
+      pAddTabItem = item;
       item.setActionCommand("add-tab");
       item.addActionListener(this);
       pPopup.add(item);  
@@ -54,11 +55,13 @@ class JManagerPanel
       pPopup.addSeparator();
 
       item = new JMenuItem("Add Left");
+      pAddLeftItem = item;
       item.setActionCommand("add-left");
       item.addActionListener(this);
       pPopup.add(item);  
       
       item = new JMenuItem("Add Right");
+      pAddRightItem = item;
       item.setActionCommand("add-right");
       item.addActionListener(this);
       pPopup.add(item);  
@@ -66,11 +69,13 @@ class JManagerPanel
       pPopup.addSeparator();
       
       item = new JMenuItem("Add Above");
+      pAddAboveItem = item;
       item.setActionCommand("add-above");
       item.addActionListener(this);
       pPopup.add(item);  
 	  
       item = new JMenuItem("Add Below");
+      pAddBelowItem = item;
       item.setActionCommand("add-below");
       item.addActionListener(this);
       pPopup.add(item);  
@@ -89,7 +94,8 @@ class JManagerPanel
       panel.setPreferredSize(new Dimension(230, 29));
 
       {
-	JMenuAnchor anchor = new JMenuAnchor(pPopup);
+	JMenuAnchor anchor = new JMenuAnchor(this);
+	pPopup.addPopupMenuListener(anchor);
 	panel.add(anchor);
       }
 
@@ -160,6 +166,8 @@ class JManagerPanel
 	panel.add(btn);
       }
     }
+
+    UIMaster.getInstance().addManager(this);
   }
 
 
@@ -216,6 +224,32 @@ class JManagerPanel
     return old;
   }
 
+
+
+  /**
+   * Show the popup menu.
+   */ 
+  public void 
+  showPopup
+  (
+   MouseEvent e
+  )
+  {
+    /* only enable layout changes if there is enough space */ 
+    {
+      pAddTabItem.setEnabled(getHeight() > 29+20);
+      
+      boolean horz = (getWidth() > (230*2 + 11));
+      pAddLeftItem.setEnabled(horz);
+      pAddRightItem.setEnabled(horz);
+      
+      boolean vert = (getHeight() > (29*2 + 10));
+      pAddAboveItem.setEnabled(vert);
+      pAddBelowItem.setEnabled(vert);
+    }
+
+    pPopup.show(e.getComponent(), e.getX(), e.getY()); 
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -428,6 +462,9 @@ class JManagerPanel
       JManagerPanel liveMgr = (JManagerPanel) live;
       JManagerPanel grandpa = (JManagerPanel) sparent;
       grandpa.setContents(liveMgr.removeContents());
+
+      UIMaster.getInstance().removeManager(liveMgr);
+      UIMaster.getInstance().removeManager(this);
     }
 
     /* remove this tab from the parent tabbed pane */ 
@@ -440,12 +477,14 @@ class JManagerPanel
 	JManagerPanel grandpa = (JManagerPanel) tab.getParent();
 	grandpa.setContents(new JEmptyPanel());
       }
-    }
-    else {
-      System.out.print("Unknown...\n");      
+
+      UIMaster.getInstance().removeManager(this);
     }
 
-    
+    // DEBUG
+    else {
+      System.out.print("Ignoring...\n");      
+    }
   }
 
 
@@ -454,7 +493,8 @@ class JManagerPanel
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
-  //private static final long serialVersionUID = -3122417485809218152L;
+  private static final long serialVersionUID = -3791561567661137439L;
+
 
   static private Icon sTabIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("TabIcon.png"));
@@ -474,8 +514,18 @@ class JManagerPanel
    */ 
   private JComboBox  pSelectorCombo;
 
+
   /**
    * The panel layout popup menu.
    */ 
   private JPopupMenu  pPopup; 
+
+  /**
+   * The popup menu items.
+   */ 
+  private JMenuItem  pAddTabItem; 
+  private JMenuItem  pAddLeftItem; 
+  private JMenuItem  pAddRightItem; 
+  private JMenuItem  pAddAboveItem; 
+  private JMenuItem  pAddBelowItem;   
 }
