@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.52 2004/10/24 05:42:48 jim Exp $
+// $Id: UIMaster.java,v 1.53 2004/10/24 08:43:26 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -2284,7 +2284,7 @@ class UIMaster
 
 	  /* progress bar */ 
 	  {
-	    JProgressBar bar = new JProgressBar(JProgressBar.HORIZONTAL, 0, 294);
+	    JProgressBar bar = new JProgressBar(JProgressBar.HORIZONTAL, 0, 313);
 	    pSplashProgress = bar;
 
 	    bar.setValue(1);
@@ -2474,7 +2474,7 @@ class UIMaster
 	Logs.flush();
 	System.exit(1);
       }
-      
+
       SwingUtilities.invokeLater(new MainFrameTask(pMaster));
     }
 
@@ -2510,6 +2510,7 @@ class UIMaster
     run() 
     {  
       pSplashProgress.setValue(pValue);
+      //System.out.print("Progress = " + pValue + "\n");
     }
 
     private int pValue;
@@ -2535,9 +2536,6 @@ class UIMaster
     public void 
     run() 
     {
-      /* hide the splash screen */ 
-      pSplashFrame.setVisible(false);
-      
       /* create and show the main application frame */ 
       {
 	JFrame frame = new JFrame("plui");
@@ -2629,7 +2627,8 @@ class UIMaster
 
 	pSubProcessFailureDialog = new JSubProcessFailureDialog();
       }
-      
+
+      ArrayList<JFrame> frames = new ArrayList<JFrame>();
       {
 	String layoutName = pOverrideLayoutName;
 	if(layoutName == null) {
@@ -2646,11 +2645,17 @@ class UIMaster
 	  
 	if(layoutName != null) {
 	  setDefaultLayoutName(layoutName);
-	  restoreSavedLayout(layoutName);
+	  frames.addAll(restoreSavedLayout(layoutName));
+	}
+	else {
+	  frames.add(pFrame);
 	}
       }
 
-      pFrame.setVisible(true);
+      pSplashFrame.setVisible(false);
+
+      for(JFrame frame : frames) 
+	frame.setVisible(true);
     }
 
     private UIMaster  pMaster;
@@ -2839,13 +2844,15 @@ class UIMaster
     public void 
     run() 
     {
-      restoreSavedLayout(pName);
+      ArrayList<JFrame> frames = restoreSavedLayout(pName);
+      for(JFrame frame : frames) 
+	frame.setVisible(true);
     }
 
     private String  pName;
   }
 
-  private void 
+  private ArrayList<JFrame>
   restoreSavedLayout
   (
    String name
@@ -2891,19 +2898,22 @@ class UIMaster
       }
     }
     
+    ArrayList<JFrame> frames = new ArrayList<JFrame>();
     if((layouts != null) && !layouts.isEmpty()) {
       boolean first = true;
       for(PanelLayout layout : layouts) {
 	JManagerPanel mpanel = layout.getRoot();
 	
 	if(first) {
+	  first = false;
+
 	  pFrame.setBounds(layout.getBounds());
 	  
 	  pRootPanel.add(mpanel);
 	  pRootPanel.validate();
 	  pRootPanel.repaint();
-	  
-	  first = false;
+
+	  frames.add(pFrame);
 	}
 	else {
 	  JPanelFrame frame = new JPanelFrame(); 
@@ -2911,9 +2921,10 @@ class UIMaster
 	  frame.setBounds(layout.getBounds());
 	  frame.setManagerPanel(mpanel);
 	  frame.setWindowName(layout.getName());
-	  frame.setVisible(true);
 	  
 	  pPanelFrames.add(frame);
+
+	  frames.add(frame);
 	}
       }
       
@@ -2926,7 +2937,11 @@ class UIMaster
       pRootPanel.add(mpanel);
       pRootPanel.validate();
       pRootPanel.repaint();
+
+      frames.add(pFrame);
     }
+
+    return frames;
   }
     
   /**
