@@ -1,3 +1,124 @@
+2004-05-23  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/core/PrivilegedUsers.java, src/java/us/temerity/pipeline/laf/DialogButtonPanel2.png, src/java/us/temerity/pipeline/message/FileCreateWorkingAreaReq.java, src/java/us/temerity/pipeline/message/MiscGetPrivilegedUsersReq.java, src/java/us/temerity/pipeline/message/MiscGetPrivilegedUsersRsp.java, src/java/us/temerity/pipeline/message/MiscGrantPrivilegesReq.java, src/java/us/temerity/pipeline/message/MiscRemovePrivilegesReq.java, src/java/us/temerity/pipeline/message/NodeCreateWorkingAreaReq.java, src/java/us/temerity/pipeline/toolset/package.html, src/java/us/temerity/pipeline/ui/JConfirmDialog.java, src/java/us/temerity/pipeline/ui/JManageToolsetsDialog.java, src/java/us/temerity/pipeline/ui/JManageUsersDialog.java, src/java/us/temerity/pipeline/ui/JNewPrivilegedUserDialog.java, src/java/us/temerity/pipeline/ui/JNewViewDialog.java, src/java/us/temerity/pipeline/ui/JToolsetsDialog.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/ui/UIMaster.java:
+	added Manage Toolsets and Manage Users dialogs, now creates a default working area during startup if none exists, added createListComponents()
+
+	* src/java/us/temerity/pipeline/ui/JOwnerViewDialog.java:
+	added Add View button, moved initialization from JManagerPanel to this class
+
+	* src/java/us/temerity/pipeline/ui/JNodeViewerPanel.java:
+	named pDownstreamItem to pShowHideDownstreamItem
+
+	* src/java/us/temerity/pipeline/ui/JManagerPanel.java:
+	added Admin submenu
+
+	* src/java/us/temerity/pipeline/ui/JBaseUserPrefsDialog.java: comments
+
+	* src/java/us/temerity/pipeline/ui/JBaseDialog.java:
+	made button size flexible
+
+	* src/java/us/temerity/pipeline/toolset/PackageCommon.java, src/java/us/temerity/pipeline/toolset/PackageMod.java, src/java/us/temerity/pipeline/toolset/PackageVersion.java:
+	Packages work!
+
+	* src/java/us/temerity/pipeline/laf/synth.xml: added TitleValuePanel
+
+	* src/java/us/temerity/pipeline/tests/TestNewToolsetsApp.java:
+	renamed init() to loadShellScript()
+
+	* src/java/us/temerity/pipeline/message/NodeUpdatePathsRsp.java:
+	standardized logging message
+
+	* src/java/us/temerity/pipeline/core/GraphicalOptsParser.jj:
+	removed redundant FileCleaner.init()
+
+	* src/java/us/temerity/pipeline/core/FileMgrApp.java, src/java/us/temerity/pipeline/core/MasterApp.java:
+	added umask(022) to startup initialization
+
+	* src/java/us/temerity/pipeline/NativeFileSys.java, src/java/us/temerity/pipeline/native/NativeFileSys.cc, src/java/us/temerity/pipeline/native/NativeFileSys.hh:
+	added umask()
+
+	* src/java/us/temerity/pipeline/core/FileMgr.java, src/java/us/temerity/pipeline/core/FileMgrClient.java, src/java/us/temerity/pipeline/core/FileMgrServer.java, src/java/us/temerity/pipeline/message/FileRequest.java, src/java/us/temerity/pipeline/message/MasterRequest.java:
+	added createWorkingArea()
+
+	* src/java/us/temerity/pipeline/MasterMgrClient.java, src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/core/MasterMgrServer.java:
+	added privileged user methods and createWorkingArea()
+
+	* rpm/pipeline.spec.in:
+	changed ownership of the root production directory to pipeline.pipeline
+
+	* docs/javadoc/Makefile.in: added toolset package
+
+	* configure.ac: version 1.4.0
+
+2004-05-21  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/tests/data/toolsets/3delight-1.0.6, src/java/us/temerity/pipeline/tests/data/toolsets/3delight-2.0.2, src/java/us/temerity/pipeline/tests/data/toolsets/Basics-2.0, src/java/us/temerity/pipeline/tests/data/toolsets/Code-1.0, src/java/us/temerity/pipeline/tests/data/toolsets/Houdini-5.5.208, src/java/us/temerity/pipeline/tests/data/toolsets/Houdini-6.1.101, src/java/us/temerity/pipeline/tests/data/toolsets/HoudiniUtils-1.0, src/java/us/temerity/pipeline/tests/data/toolsets/Java-1.4.2, src/java/us/temerity/pipeline/tests/data/toolsets/Java-1.5.0, src/java/us/temerity/pipeline/tests/data/toolsets/JavaDev-1.4.2, src/java/us/temerity/pipeline/tests/data/toolsets/JavaDev-1.5.0, src/java/us/temerity/pipeline/tests/data/toolsets/JavaDev-1.5.0-01, src/java/us/temerity/pipeline/tests/data/toolsets/Maya-5.0.4, src/java/us/temerity/pipeline/tests/data/toolsets/Pipeline-040402, src/java/us/temerity/pipeline/tests/data/toolsets/PipelineAdmin-040402, src/java/us/temerity/pipeline/tests/data/toolsets/SMLNJ-110.40, src/java/us/temerity/pipeline/toolset/PackageCommon.java, src/java/us/temerity/pipeline/toolset/PackageMod.java, src/java/us/temerity/pipeline/toolset/PackageVersion.java:
+	initial revision
+
+	* ChangeLog, docs/javadoc/Makefile.in, src/java/us/temerity/pipeline/Makefile.in, src/java/us/temerity/pipeline/MasterMgrClient.java, src/java/us/temerity/pipeline/NodeMgrClient.java, src/java/us/temerity/pipeline/PackageInfo.java.in, src/java/us/temerity/pipeline/core/CheckSum.java, src/java/us/temerity/pipeline/core/DownstreamLinks.java, src/java/us/temerity/pipeline/core/FileMgr.java, src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/core/MasterMgrServer.java, src/java/us/temerity/pipeline/core/MasterOptsParser.jj, src/java/us/temerity/pipeline/core/NodeMgr.java, src/java/us/temerity/pipeline/core/NodeMgrServer.java, src/java/us/temerity/pipeline/message/FileRequest.java, src/java/us/temerity/pipeline/message/FileUnfreezeReq.java, src/java/us/temerity/pipeline/message/MasterRequest.java, src/java/us/temerity/pipeline/message/NodeCheckInReq.java, src/java/us/temerity/pipeline/message/NodeCheckOutReq.java, src/java/us/temerity/pipeline/message/NodeGetWorkingAreasReq.java, src/java/us/temerity/pipeline/message/NodeGetWorkingAreasRsp.java, src/java/us/temerity/pipeline/message/NodeGetWorkingReq.java, src/java/us/temerity/pipeline/message/NodeGetWorkingRsp.java, src/java/us/temerity/pipeline/message/NodeLinkReq.java, src/java/us/temerity/pipeline/message/NodeModifyPropertiesReq.java, src/java/us/temerity/pipeline/message/NodeRegisterReq.java, src/java/us/temerity/pipeline/message/NodeRenameReq.java, src/java/us/temerity/pipeline/message/NodeRequest.java, src/java/us/temerity/pipeline/message/NodeRevokeReq.java, src/java/us/temerity/pipeline/message/NodeStatusReq.java, src/java/us/temerity/pipeline/message/NodeStatusRsp.java, src/java/us/temerity/pipeline/message/NodeUnlinkReq.java, src/java/us/temerity/pipeline/message/NodeUpdatePathsReq.java, src/java/us/temerity/pipeline/message/NodeUpdatePathsRsp.java, src/java/us/temerity/pipeline/message/NotifyRequest.java, src/java/us/temerity/pipeline/plugin/Makefile.in, src/java/us/temerity/pipeline/tests/Makefile.in, src/java/us/temerity/pipeline/tests/TestFileSeqApp.java, src/java/us/temerity/pipeline/tests/TestGlueApp.java, src/java/us/temerity/pipeline/tests/TestMasterMgr2App.java, src/java/us/temerity/pipeline/tests/TestMasterMgrApp.java, src/java/us/temerity/pipeline/tests/TestNewToolsetsApp.java, src/java/us/temerity/pipeline/tests/TestNodeIDApp.java, src/java/us/temerity/pipeline/tests/TestNodeMgr2App.java, src/java/us/temerity/pipeline/tests/TestNodeMgrApp.java, src/java/us/temerity/pipeline/tests/TestNodeModVersionApp.java, src/java/us/temerity/pipeline/tests/TestPluginsApp.java, src/java/us/temerity/pipeline/ui/JManagerPanel.java, src/java/us/temerity/pipeline/ui/JNodeBrowserPanel.java, src/java/us/temerity/pipeline/ui/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/UIMaster.java:
+	renamed NodeMgr* classes to MasterMgr* in preparation for supporting toolsets, tasks and job queueing
+
+	* src/java/us/temerity/pipeline/BaseAction.java, src/java/us/temerity/pipeline/FilePattern.java, src/java/us/temerity/pipeline/FileSeq.java, src/java/us/temerity/pipeline/FrameRange.java, src/java/us/temerity/pipeline/JobReqs.java, src/java/us/temerity/pipeline/LogMessage.java, src/java/us/temerity/pipeline/Named.java, src/java/us/temerity/pipeline/NodeCommon.java, src/java/us/temerity/pipeline/NodeID.java, src/java/us/temerity/pipeline/NodeMod.java, src/java/us/temerity/pipeline/NodeVersion.java, src/java/us/temerity/pipeline/VersionID.java:
+	removed uneeded CloneNotSupportedException from clone() methods
+
+	* src/java/us/temerity/pipeline/ui/JNodeViewerPanel.java:
+	hot key support, camera moving menu items and actions
+
+	* src/java/us/temerity/pipeline/ui/UIMaster.java:
+	added addVerticalGlue(), createTitledTextField() and showConfigDialog()
+
+	* src/java/us/temerity/pipeline/ui/RubberBand.java:
+	renamed local variables
+
+	* src/java/us/temerity/pipeline/ui/JManagerPanel.java:
+	disabled uninplemented menu items, site configuration dialog working
+
+	* src/java/us/temerity/pipeline/ui/JHotKeyField.java:
+	changed clear key from BACKSPACE to DELETE
+
+	* src/java/us/temerity/pipeline/ui/JConfigDialog.java: initial revision
+
+	* src/java/us/temerity/pipeline/ui/JAboutDialog.java:
+	now uses UIMaster createTitled*() methods
+
+	* src/java/us/temerity/pipeline/ui/HotKey.java: comments
+
+	* configure.ac: added customer preferences
+
+	* src/java/us/temerity/pipeline/ui/JBaseUserPrefsDialog.java:
+	JUserPrefsDialog and UserPrefs now automatically generated
+
+	* src/java/us/temerity/pipeline/PackageInfo.java.in:
+	added customer preferences
+
+	* src/java/us/temerity/pipeline/Makefile.in, src/java/us/temerity/pipeline/ui/JUserPrefsDialog.java, src/java/us/temerity/pipeline/ui/UserPrefs.java, src/java/us/temerity/pipeline/ui/prefs/GenUserPrefsApp.java:
+	JUserPrefsDialog and UserPrefs now automatically generated
+
+2004-05-19  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/ui/JNodeBrowserPanel.java:
+	custom tree node selection, communication with JNodeViewerPanel to coordinate selected tree nodes with roots in the viewer
+
+	* src/java/us/temerity/pipeline/ui/JNodeBrowserTreeCellRenderer.java:
+	custom tree node selection support
+
+	* src/java/us/temerity/pipeline/ui/JNodeViewerPanel.java:
+	added support for multiple node trees, communication of root changes with JNodeBrowserPanel, fully support for Author/View changes
+
+	* src/java/us/temerity/pipeline/ui/ViewerLinkRelationshipPool.java:
+	removed debugging messages
+
+	* src/java/us/temerity/pipeline/ui/NodePath.java: added getRootName()
+
+	* src/java/us/temerity/pipeline/ui/UIMaster.java:
+	added getNodeBrowser()
+
+	* src/java/us/temerity/pipeline/core/NodeMgr.java:
+	added check for BOTH the working and checked-in bundle missing
+
 2004-05-19  Jim Callahan  <jim@salamander>
 
 	* src/java/us/temerity/pipeline/ui/JNodeBrowserPanel.java:
