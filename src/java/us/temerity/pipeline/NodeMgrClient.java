@@ -1,4 +1,4 @@
-// $Id: NodeMgrClient.java,v 1.4 2004/03/29 08:14:42 jim Exp $
+// $Id: NodeMgrClient.java,v 1.5 2004/03/30 07:11:55 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -111,19 +111,13 @@ class NodeMgrClient
     NodeGetWorkingReq req = new NodeGetWorkingReq(id);
 
     Object obj = performTransaction(NodeRequest.GetWorking, req);
-
     if(obj instanceof NodeGetWorkingRsp) {
       NodeGetWorkingRsp rsp = (NodeGetWorkingRsp) obj;
       return rsp.getNodeMod();      
     }
-    else if(obj instanceof FailureRsp) {
-      FailureRsp rsp = (FailureRsp) obj;
-      throw new PipelineException(rsp.getMessage());	
-    }
     else {
-      disconnect();
-      throw new PipelineException
-	("Illegal response received from the NodeMgrServer instance!");
+      handleFailure(obj);
+      return null;
     }
   }  
 
@@ -170,18 +164,7 @@ class NodeMgrClient
     NodeModifyPropertiesReq req = new NodeModifyPropertiesReq(id, mod);
 
     Object obj = performTransaction(NodeRequest.ModifyProperties, req);
-
-    if(obj instanceof SuccessRsp) {
-    }
-    else if(obj instanceof FailureRsp) {
-      FailureRsp rsp = (FailureRsp) obj;
-      throw new PipelineException(rsp.getMessage());	
-    }
-    else {
-      disconnect();
-      throw new PipelineException
-	("Illegal response received from the NodeMgrServer instance!");
-    }
+    handleSimpleResponse(obj);
   }
 
   /**
@@ -232,18 +215,7 @@ class NodeMgrClient
     NodeLinkReq req = new NodeLinkReq(id, link);
 
     Object obj = performTransaction(NodeRequest.Link, req);
-
-    if(obj instanceof SuccessRsp) {
-    }
-    else if(obj instanceof FailureRsp) {
-      FailureRsp rsp = (FailureRsp) obj;
-      throw new PipelineException(rsp.getMessage());	
-    }
-    else {
-      disconnect();
-      throw new PipelineException
-	("Illegal response received from the NodeMgrServer instance!");
-    }
+    handleSimpleResponse(obj);
   } 
 
   /**
@@ -275,19 +247,8 @@ class NodeMgrClient
     NodeID id = new NodeID(PackageInfo.sUser, view, target);
     NodeUnlinkReq req = new NodeUnlinkReq(id, source);
 
-    Object obj = performTransaction(NodeRequest.Link, req);
-
-    if(obj instanceof SuccessRsp) {
-    }
-    else if(obj instanceof FailureRsp) {
-      FailureRsp rsp = (FailureRsp) obj;
-      throw new PipelineException(rsp.getMessage());	
-    }
-    else {
-      disconnect();
-      throw new PipelineException
-	("Illegal response received from the NodeMgrServer instance!");
-    }
+    Object obj = performTransaction(NodeRequest.Unlink, req);
+    handleSimpleResponse(obj);
   } 
 
 
@@ -330,19 +291,97 @@ class NodeMgrClient
     NodeRegisterReq req = new NodeRegisterReq(id, mod);
 
     Object obj = performTransaction(NodeRequest.Register, req);
-
-    if(obj instanceof SuccessRsp) {
-    }
-    else if(obj instanceof FailureRsp) {
-      FailureRsp rsp = (FailureRsp) obj;
-      throw new PipelineException(rsp.getMessage());	
-    }
-    else {
-      disconnect();
-      throw new PipelineException
-	("Illegal response received from the NodeMgrServer instance!");
-    }
+    handleSimpleResponse(obj);
   }
+
+  /**
+   * Revoke a working version of a node which has never checked-in. <P> 
+   * 
+   * This operation is provided to allow users to remove nodes which they have previously 
+   * registered, but which they no longer want to keep or share with other users. If a 
+   * working version is successfully revoked, all node connections to the revoked node 
+   * will be also be removed. <P> 
+   * 
+   * In addition to removing the working version of the node, this operation can also 
+   * delete the files associated with the working version if the <CODE>removeFiles</CODE>
+   * argument is <CODE>true</CODE>.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   *
+   * @param removeFiles 
+   *   Should the files associated with the working version be deleted?
+   *
+   * @throws PipelineException 
+   *   If unable to revoke the given node.
+   */ 
+  public void 
+  revoke
+  ( 
+   String view, 
+   String name, 
+   boolean removeFiles
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    NodeID id = new NodeID(PackageInfo.sUser, view, name);
+    NodeRevokeReq req = new NodeRevokeReq(id, removeFiles);
+
+    Object obj = performTransaction(NodeRequest.Revoke, req);
+    handleSimpleResponse(obj);
+  } 
+
+  /**
+   * Rename a working version of a node which has never checked-in. <P> 
+   * 
+   * This operation allows a user to change the name of a previously registered node before 
+   * it is checked-in. If a working version is successfully renamed, all node connections 
+   * will be preserved. <P> 
+   * 
+   * In addition to changing the name of the working version, this operation can also 
+   * rename the files which make up the primary file sequence associated with the working
+   * version to match the new node name if the <CODE>renameFiles</CODE> argument is 
+   * <CODE>true</CODE>.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param oldName 
+   *   The current fully resolved node name.
+   * 
+   * @param newName 
+   *   The new fully resolved node name.
+   * 
+   * @param removeFiles 
+   *   Should the primary files associated with the working version be renamed?
+   * 
+   * @throws PipelineException 
+   *   If unable to rename the given node or its associated primary files.
+   */ 
+  public void 
+  rename
+  ( 
+   String view, 
+   String oldName, 
+   String newName,
+   boolean renameFiles
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    NodeID id = new NodeID(PackageInfo.sUser, view, oldName);
+    NodeRenameReq req = new NodeRenameReq(id, newName, renameFiles);
+
+    Object obj = performTransaction(NodeRequest.Rename, req);
+    handleSimpleResponse(obj);
+  } 
+
 
 
 
@@ -492,6 +531,48 @@ class NodeMgrClient
 	 ex.getMessage());  
     }
   }
+
+  /**
+   * Handle the simple Success/Failure response.
+   * 
+   * @param obj
+   *   The response from the server.
+   */ 
+  private void 
+  handleSimpleResponse
+  ( 
+   Object obj
+  )
+    throws PipelineException
+  {
+    if(!(obj instanceof SuccessRsp))
+      handleFailure(obj);
+  }
+
+  /**
+   * Handle non-successful responses.
+   * 
+   * @param obj
+   *   The response from the server.
+   */ 
+  private void 
+  handleFailure
+  ( 
+   Object obj
+  )
+    throws PipelineException
+  {
+    if(obj instanceof FailureRsp) {
+      FailureRsp rsp = (FailureRsp) obj;
+      throw new PipelineException(rsp.getMessage());	
+    }
+    else {
+      disconnect();
+      throw new PipelineException
+	("Illegal response received from the NodeMgrServer instance!");
+    }
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
