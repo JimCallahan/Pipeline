@@ -1,63 +1,7 @@
-// $Id: PlNotify.cc,v 1.1 2004/04/05 05:50:07 jim Exp $
+// $Id: PlNotify.cc,v 1.2 2004/04/05 06:27:55 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
-#endif
-
-#ifdef HAVE_ASSERT_H
-#  include <assert.h>
-#endif
-
-#ifdef HAVE_CSTDLIB
-#  include <cstdlib>
-#else
-#  ifdef HAVE_STDLIB_H
-#    include <stdlib.h>
-#  endif
-#endif
-
-#ifdef HAVE_CLIMITS
-#  include <climits>
-#else
-#  ifdef HAVE_LIMITS_H
-#    include <limits.h>
-#  endif
-#endif
-
-#ifdef HAVE_UNISTD_H
-#  include <unistd.h>
-#endif
-
-#ifdef HAVE_STRING_H
-#  include <string.h>
-#endif
-
-#ifdef HAVE_ERRNO_H
-#  include <errno.h>
-#endif
-
-#ifdef HAVE_SYS_TYPES_H
-#  include <sys/types.h>
-#endif
-
-#ifdef HAVE_SYS_STAT_H
-#  include <sys/stat.h>
-#endif
-
-#ifdef HAVE_SYS_PARAM_H
-#  include <sys/param.h>
-#endif
-
-#ifdef HAVE_FCNTL_H
-#  include <fcntl.h>
-#endif
-
-#ifdef HAVE_SIGNAL_H
-#  include <signal.h>
-#endif
-
-#ifdef HAVE_LIST
-#  include <list>
 #endif
 
 #include <PackageInfo.hh>

@@ -1,4 +1,4 @@
-// $Id: NotifyMgr.hh,v 1.1 2004/04/05 05:50:07 jim Exp $
+// $Id: NotifyMgr.hh,v 1.2 2004/04/05 06:27:55 jim Exp $
 
 #ifndef PIPELINE_NOTIFY_MGR_HH
 #define PIPELINE_NOTIFY_MGR_HH
@@ -7,9 +7,16 @@
 #  include "config.h"
 #endif
 
+#ifdef HAVE_LIST
+#  include <list>
+#endif
+
+#include <Lock.hh>
 #include <NotifyTask.hh>
 
 namespace Pipeline {
+
+class NotifyTask;
 
 /*------------------------------------------------------------------------------------------*/
 /*   N O T I F Y   M G R                                                                    */
@@ -30,7 +37,15 @@ private:
   /*----------------------------------------------------------------------------------------*/
 
   typedef std::list<NotifyTask*> TaskList;
+
   
+private:
+  /*----------------------------------------------------------------------------------------*/
+  /*   F R I E N D S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  friend class NotifyTask;
+
 
 public:
   /*----------------------------------------------------------------------------------------*/
@@ -79,33 +94,7 @@ public:
   addDir
   (
    const char* dir
-  ) 
-  {
-    pLock.lock();
-    {
-      bool added = false;
-      {
-	TaskList::iterator iter;
-	for(iter = pTasks.begin(); iter != pTasks.end(); iter++) {
-	  if((*iter)->addDir(dir)) {
-	    added = true;
-	    break;
-	  }
-	}
-      }
-
-      if(!added) {
-	NotifyTask* task = new NotifyTask(this, pRootDir);
-	pTasks.push_back(task);
-      
-	task->spawn();
-      
-	if(!task->addDir(dir)) 
-	  FB::error("Unable to add a directory to freshly created NotifyTask!");
-      }
-    }
-    pLock.unlock();      
-  }
+  );
   
   /**
    * Remove the given directory from the set of directories monitored for change notification.
@@ -117,17 +106,7 @@ public:
   removeDir
   (
    const char* dir
-  ) 
-  {
-    pLock.lock();
-    {    
-      TaskList::iterator iter;
-      for(iter = pTasks.begin(); iter != pTasks.end(); iter++)
-	(*iter)->removeDir(dir);
-    }
-    pLock.unlock();     
-  }
-  
+  );
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -138,43 +117,32 @@ public:
    * Order the task to exit as soon as possible.
    */ 
   void
-  shutdown()
-  {
-    pLock.lock();
-    {    
-      TaskList::iterator iter;
-      for(iter = pTasks.begin(); iter != pTasks.end(); iter++) 
-	(*iter)->shutdown();
-    }
-    pLock.unlock();  
-  }
+  shutdown();
 
   /**
    * Wait for all tasks to exit.
    */ 
   void
-  wait()
-  {
-    pLock.lock();
-    {    
-      TaskList::iterator iter;
-      for(iter = pTasks.begin(); iter != pTasks.end(); iter++) {
-	int code = (*iter)->wait();
-	
-	// DEBUG 
-	printf("NotifyTask[%d]: Exit Code = %d\n", (*iter)->getPID(), code);
-	// DEBUG 
-
-	delete (*iter);
-      }
-      pTasks.clear();
-    }
-    pLock.unlock();  
-  }
+  wait();
 
 
 
-protected:
+private:
+  /*----------------------------------------------------------------------------------------*/
+  /*   T A S K   H E L P E R S                                                              */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Add the given directory to the list of recently modified directories.
+   */ 
+  void 
+  modified
+  (
+   const char* dir
+  );  
+
+
+private:
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/

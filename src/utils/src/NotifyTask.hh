@@ -1,4 +1,4 @@
-// $Id: NotifyTask.hh,v 1.1 2004/04/05 05:50:07 jim Exp $
+// $Id: NotifyTask.hh,v 1.2 2004/04/05 06:27:55 jim Exp $
 
 #ifndef PIPELINE_NOTIFY_TASK_HH
 #define PIPELINE_NOTIFY_TASK_HH
@@ -7,10 +7,37 @@
 #  include "config.h"
 #endif
 
+#ifdef HAVE_SYS_TYPES_H
+#  include <sys/types.h>
+#endif
+
+#ifdef HAVE_SYS_STAT_H
+#  include <sys/stat.h>
+#endif
+
+#ifdef HAVE_UNISTD_H
+#  include <unistd.h>
+#endif
+
+#ifdef HAVE_FCNTL_H
+#  include <fcntl.h>
+#endif
+
+#ifdef HAVE_SIGNAL_H
+#  include <signal.h>
+#endif
+
+#ifdef HAVE_ERRNO_H
+#  include <errno.h>
+#endif
+
 #include <Task.hh>
 #include <Lock.hh>
+#include <NotifyMgr.hh>
 
 namespace Pipeline {
+
+class NotifyMgr;
 
 /*------------------------------------------------------------------------------------------*/
 /*   N O T I F Y   T A S K                                                                  */
@@ -18,8 +45,6 @@ namespace Pipeline {
 /*    Monitors a set of local directories for file creation, modification, removal and      */
 /*    renaming events which occur within the watched directories.                           */
 /*------------------------------------------------------------------------------------------*/
-
-class NotifyMgr;
 
 class NotifyTask : public Task
 {
@@ -327,18 +352,7 @@ public:
 	  }
 	}
 	else {
-	  pLock.lock();
-	  {
-	    
-	    // DEBUG
-	    printf("[%d]: Modified: %s/%s (%d)\n", 
-		   pPID, pRootDir, pDirs[sinfo.si_fd], sinfo.si_fd);
-	    // DEBUG
-	      
-	    // ... push onto the queue to be sent over the network...
-
-	  }
-	  pLock.unlock();
+	  modified(pDirs[sinfo.si_fd]);
 	}
       }
 
@@ -387,7 +401,7 @@ public:
   }
 
   
-protected:
+private:
   /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S                                                                        */
   /*----------------------------------------------------------------------------------------*/
@@ -446,8 +460,18 @@ protected:
     return -1;
   }
 
+  /**
+   * Report the modified directory to the parent NodeMgr.
+   */ 
+  void
+  modified
+  (
+   const char* dir
+  ); 
 
-protected:
+
+
+private:
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/

@@ -19,7 +19,7 @@ instsbin_PROGRAMS = \
 
 plrun_SOURCES = FB.cc PackageInfo.cc PlRun.cc 
 
-plnotify_SOURCES = FB.cc PackageInfo.cc PlNotify.cc 
+plnotify_SOURCES = FB.cc PackageInfo.cc NotifyTask.cc NotifyMgr.cc PlNotify.cc 
 
 
 
