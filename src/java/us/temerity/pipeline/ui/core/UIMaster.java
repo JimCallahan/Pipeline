@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.12 2005/01/22 06:10:10 jim Exp $
+// $Id: UIMaster.java,v 1.13 2005/01/30 02:05:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -690,7 +690,23 @@ class UIMaster
   showRestoreDialog()
   {
     pRestoreDialog.setVisible(true);
-  }
+  } 
+
+
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Show a dialog which graphs the resource usage history of queue servers.
+   */ 
+  public void 
+  showResourceUsageHistoryDialog
+  (
+   TreeMap<String,ResourceSampleBlock> samples
+  )
+  {
+    pResourceUsageHistoryDialog.updateSamples(samples);
+    pResourceUsageHistoryDialog.setVisible(true);
+  } 
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1430,6 +1446,8 @@ class UIMaster
 
 	pArchiveDialog = new JArchiveDialog();
 	pRestoreDialog = new JRestoreDialog();
+
+	pResourceUsageHistoryDialog = new JResourceUsageHistoryDialog();
       }
 
       pSplashFrame.setVisible(false);
@@ -2765,5 +2783,10 @@ class UIMaster
    * The restore dialog.
    */
   private JRestoreDialog  pRestoreDialog; 
+  
+  /**
+   * The server resource usage history dialog.
+   */
+  private JResourceUsageHistoryDialog  pResourceUsageHistoryDialog;
 
 }

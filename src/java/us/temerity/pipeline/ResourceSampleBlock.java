@@ -1,4 +1,4 @@
-// $Id: ResourceSampleBlock.java,v 1.6 2005/01/25 07:29:07 jim Exp $
+// $Id: ResourceSampleBlock.java,v 1.7 2005/01/30 02:05:22 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -42,7 +42,7 @@ class ResourceSampleBlock
    *   The total temporary disk size (in bytes).
    * 
    * @param samples
-   *   The resource samples (newest to oldest).
+   *   The resource samples.
    */ 
   public 
   ResourceSampleBlock
@@ -51,7 +51,7 @@ class ResourceSampleBlock
    int procs, 
    long memory, 
    long disk, 
-   Collection<ResourceSample> samples
+   ArrayList<ResourceSample> samples
   ) 
   {
     pJobSlots      = slots; 
@@ -59,22 +59,66 @@ class ResourceSampleBlock
     pTotalMemory   = memory; 
     pTotalDisk     = disk; 
 
-    int num = samples.size();
-    pTimeStamp  = new long[num];
-    pNumJobs    = new int[num];
-    pLoad       = new float[num];
-    pMemory     = new long[num];
-    pDisk       = new long[num];
+    /* compute start/end time */ 
+    {
+      Date startStamp = null;
+      Date endStamp   = null;
+      for(ResourceSample sample : samples) {
+	if((startStamp == null) || (sample.getTimeStamp().compareTo(startStamp) < 0))
+	  startStamp = sample.getTimeStamp();
 
-    int wk = num - 1;
-    for(ResourceSample sample : samples) {
-      pTimeStamp[wk]  = sample.getTimeStamp().getTime();
-      pNumJobs[wk]    = sample.getNumJobs();
-      pLoad[wk]       = sample.getLoad();
-      pMemory[wk]     = sample.getMemory();
-      pDisk[wk]       = sample.getDisk();
+	if((endStamp == null) || (sample.getTimeStamp().compareTo(endStamp) > 0))
+	  endStamp = sample.getTimeStamp();
+      }
+
+      {	
+	Calendar cal = Calendar.getInstance();
+	cal.setTime(startStamp);
+	cal.set(Calendar.MILLISECOND, 0);
+	cal.set(Calendar.SECOND, 0);
+	pStartStamp = cal.getTime();
+      }
+
+      {	
+	Calendar cal = Calendar.getInstance();
+	cal.setTime(endStamp);
+	cal.set(Calendar.MILLISECOND, 0);
+	cal.set(Calendar.SECOND, 0);	
+	pEndStamp = cal.getTime();
+      }
+	
+      pLastStamp = endStamp; 
+    }
+
+    /* collate samples */ 
+    {
+      int num = ((int) ((pEndStamp.getTime() - pStartStamp.getTime()) / 60000L)) + 1;
+      pNumJobs = new int[num];
+      pLoad    = new float[num];
+      pMemory  = new long[num];
+      pDisk    = new long[num];
+
+      int cnt[] = new int[num];
+      for(ResourceSample sample : samples) {
+	int idx = (int) ((sample.getTimeStamp().getTime() - pStartStamp.getTime()) / 60000L);
+
+	pNumJobs[idx] += sample.getNumJobs();
+	pLoad[idx]    += sample.getLoad();
+	pMemory[idx]  += sample.getMemory();
+	pDisk[idx]    += sample.getDisk();
+	
+	cnt[idx]++;
+      }
       
-      wk--;
+      int idx;
+      for(idx=0; idx<cnt.length; idx++) {
+	if(cnt[idx] > 1) {
+	  pNumJobs[idx] /= cnt[idx];
+	  pLoad[idx]    /= (float) cnt[idx];
+	  pMemory[idx]  /= (long) cnt[idx];
+	  pDisk[idx]    /= (long) cnt[idx];
+	}
+      }
     }
   }
 
@@ -82,47 +126,77 @@ class ResourceSampleBlock
    * Construct a new sample block.
    * 
    * @param blocks
-   *   The resource sample blocks (oldest to newest).
+   *   The resource sample blocks.
    */ 
   public 
   ResourceSampleBlock
   (
-   Collection<ResourceSampleBlock> blocks
+   ArrayList<ResourceSampleBlock> blocks
   ) 
   {
-    int num = 0;
-    for(ResourceSampleBlock block : blocks) 
-      num += block.getNumSamples();
+    if(blocks.isEmpty()) 
+      throw new IllegalArgumentException
+	("There must be at least one initial resource usage block!");
 
-    pTimeStamp  = new long[num];
-    pNumJobs    = new int[num];
-    pLoad       = new float[num];
-    pMemory     = new long[num];
-    pDisk       = new long[num];
+    /* use the totals from the first block */ 
+    {
+      ResourceSampleBlock block = blocks.get(0);
+      pJobSlots      = block.getJobSlots();
+      pNumProcessors = block.getNumProcessors();
+      pTotalMemory   = block.getTotalMemory();
+      pTotalDisk     = block.getTotalDisk();
+    }
 
-    boolean first = true;
-    int wk = 0;
+    /* compute start/end time */ 
     for(ResourceSampleBlock block : blocks) {
-      if(first) {
-	pJobSlots      = block.pJobSlots; 
-	pNumProcessors = block.pNumProcessors;
-	pTotalMemory   = block.pTotalMemory;
-	pTotalDisk     = block.pTotalDisk;
+      if((pStartStamp == null) || (block.getStartTimeStamp().compareTo(pStartStamp) < 0))
+	pStartStamp = block.getStartTimeStamp();
 
-	first = false;
+      if((pEndStamp == null) || (block.getEndTimeStamp().compareTo(pEndStamp) > 0))
+	pEndStamp = block.getEndTimeStamp();
+
+      if((pLastStamp == null) || (block.getLastTimeStamp().compareTo(pLastStamp) > 0))
+	pLastStamp = block.getLastTimeStamp();
+    }
+
+    /* collate samples */ 
+    {
+      int num = ((int) ((pEndStamp.getTime() - pStartStamp.getTime()) / 60000L)) + 1;
+      pNumJobs = new int[num];
+      pLoad    = new float[num];
+      pMemory  = new long[num];
+      pDisk    = new long[num];
+    
+      int cnt[] = new int[num];
+      for(ResourceSampleBlock block : blocks) {
+	Date startStamp = block.getStartTimeStamp();
+	int offset = (int) ((startStamp.getTime() - pStartStamp.getTime()) / 60000L);
+
+	int i;
+	for(i=0; i<block.getNumSamples(); i++) {
+	  int idx = i+offset;
+
+	  pNumJobs[idx] += block.getNumJobs(i);
+	  pLoad[idx]    += block.getLoad(i);
+	  pMemory[idx]  += block.getMemory(i);
+	  pDisk[idx]    += block.getDisk(i);
+	
+	  cnt[idx]++;
+	}
       }
-
-      int bk;
-      for(bk=0; bk<block.getNumSamples(); bk++, wk++) {
-	pTimeStamp[wk] = block.pTimeStamp[bk];
-	pNumJobs[wk]   = block.pNumJobs[bk];
-	pLoad[wk]      = block.pLoad[bk];
-	pMemory[wk]    = block.pMemory[bk];
-	pDisk[wk]      = block.pDisk[bk]; 
+      
+      int idx;
+      for(idx=0; idx<cnt.length; idx++) {
+	if(cnt[idx] > 1) {
+	  pNumJobs[idx] /= cnt[idx];
+	  pLoad[idx]    /= (float) cnt[idx];
+	  pMemory[idx]  /= (long) cnt[idx];
+	  pDisk[idx]    /= (long) cnt[idx];
+	}
       }
     }
   }
-
+   
    
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
@@ -177,40 +251,56 @@ class ResourceSampleBlock
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the timestamp of the beginning of the first per-minute average sample period.
+   */ 
+  public Date
+  getStartTimeStamp() 
+  {
+    return pStartStamp;
+  }
+
+  /**
+   * Get the timestamp of the beginning of the last per-minute average sample period.
+   */ 
+  public Date
+  getEndTimeStamp() 
+  {
+    return pEndStamp;
+  }
+
+  
+  /**
+   * The timestamp of the last individual sample.
+   */ 
+  public Date
+  getLastTimeStamp() 
+  {
+    return pLastStamp;
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the number of samples.
+   * Get the number of 1-minute sample periods contained in this sample block.
    */ 
   public int
   getNumSamples()
   {
-    if(pTimeStamp != null) 
-      return pTimeStamp.length;
+    if(pNumJobs != null) 
+      return pNumJobs.length;
     return 0;
   }
 
   /**
-   * Get the time stamp of when the samples were recorded.
+   * Get the average number of jobs running on the host during the given per-minute sample
+   * period.
    * 
    * @param idx
-   *   The sample index.
-   */ 
-  public Date
-  getTimeStamp
-  (
-   int idx
-  ) 
-  {
-    return new Date(pTimeStamp[idx]);
-  }
-
-  /**
-   * Get the number of jobs running on the host.
-   * 
-   * @param idx
-   *   The sample index.
+   *   The sample index (in minutes since the first sample period).
    */ 
   public int
   getNumJobs
@@ -222,10 +312,10 @@ class ResourceSampleBlock
   }
 
   /**
-   * Get the system load.
+   * Get the average system load during the given per-minute sample period.
    * 
    * @param idx
-   *   The sample index.
+   *   The sample index (in minutes since the first sample period).
    */ 
   public float 
   getLoad
@@ -237,10 +327,11 @@ class ResourceSampleBlock
   }
   
   /**
-   * Get the amount of available free memory (in bytes).
+   * Get the average amount of available free memory (in bytes) during the given 
+   * per-minute sample period.
    * 
    * @param idx
-   *   The sample index.
+   *   The sample index (in minutes since the first sample period).
    */ 
   public long 
   getMemory
@@ -252,10 +343,11 @@ class ResourceSampleBlock
   }
 
   /**
-   * Get the available free temporary disk space (in bytes).
+   * Get the average available free temporary disk space (in bytes) during the given 
+   * per-minute sample period.
    * 
    * @param idx
-   *   The sample index.
+   *   The sample index (in minutes since the first sample period).
    */ 
   public long 
   getDisk
@@ -284,7 +376,11 @@ class ResourceSampleBlock
     encoder.encode("TotalMemory", pTotalMemory); 
     encoder.encode("TotalDisk", pTotalDisk); 
     
-    encoder.encode("TimeStamp", pTimeStamp);
+    encoder.encode("StartTimeStamp", pStartStamp.getTime());    
+    encoder.encode("EndTimeStamp", pEndStamp.getTime());    
+
+    encoder.encode("LastTimeStamp", pLastStamp.getTime());
+
     encoder.encode("NumJobs", pNumJobs); 
     encoder.encode("Load", pLoad); 
     encoder.encode("Memory", pMemory); 
@@ -318,11 +414,26 @@ class ResourceSampleBlock
       throw new GlueException("The \"TotalDisk\" was missing!");
     pTotalDisk = tdisk;
 
+    {
+      Long stamp = (Long) decoder.decode("StartTimeStamp");
+      if(stamp == null) 
+	throw new GlueException("The \"StartTimeStamp\" was missing!");
+      pStartStamp = new Date(stamp);
+    }
 
-    long[] stamp = (long[]) decoder.decode("TimeStamp");
-    if(stamp == null) 
-      throw new GlueException("The \"TimeStamp\" was missing!");
-    pTimeStamp = stamp;
+    {
+      Long stamp = (Long) decoder.decode("EndTimeStamp");
+      if(stamp == null) 
+	throw new GlueException("The \"EndTimeStamp\" was missing!");
+      pEndStamp = new Date(stamp);
+    }
+
+    {
+      Long stamp = (Long) decoder.decode("LastTimeStamp");
+      if(stamp == null) 
+	throw new GlueException("The \"LastTimeStamp\" was missing!");
+      pLastStamp = new Date(stamp);
+    }
 
     int[] jobs = (int[]) decoder.decode("NumJobs");
     if(jobs == null) 
@@ -383,30 +494,42 @@ class ResourceSampleBlock
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The timestamp of when the samples was measured (oldest to newest).
+   * The timestamp of the beginning of the first per-minute average sample period.
    */ 
-  private long[]  pTimeStamp;
+  private Date  pStartStamp;
   
   /**
-   * The number of currently running jobs (oldest to newest).
+   * The timestamp of the beginning of the last per-minute average sample period.
+   */ 
+  private Date  pEndStamp;
+
+  /**
+   * The timestamp of the last individual sample.
+   */ 
+  private Date  pLastStamp;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The number of currently running jobs per-minute (oldest to newest).
    */ 
   private int[]  pNumJobs; 
 
   /**
-   * The system load on the host (oldest to newest).
+   * The system load on the host per-minute (oldest to newest).
    */ 
   private float[]  pLoad; 
 
   /**
-   * The available free memory (in bytes) on the host (oldest to newest).
+   * The available free memory per-minute (in bytes) on the host (oldest to newest).
    */ 
   private long[]  pMemory;
 
   /**
-   * The available free temporary disk space (in bytes) on the host (oldest to newest).
+   * The available free temporary disk space (in bytes) on the host per-minute 
+   * (oldest to newest).
    */ 
   private long[]  pDisk;
-  
-
 
 }

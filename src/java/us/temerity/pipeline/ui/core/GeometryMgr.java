@@ -1,4 +1,4 @@
-// $Id: GeometryMgr.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: GeometryMgr.java,v 1.2 2005/01/30 02:05:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -105,7 +105,7 @@ class GeometryMgr
   }
 
   /**
-   * Get an OpenGL display list which renders a text string as textures quads. <P> 
+   * Get an OpenGL display list which renders a text string as textured quads. <P> 
    * 
    * Characters in the <CODE>text</CODE> argument which have ASCII character codes outside 
    * the [0, 127] range will be silently ignored.

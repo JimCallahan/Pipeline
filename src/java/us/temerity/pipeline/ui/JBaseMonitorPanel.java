@@ -1,4 +1,4 @@
-// $Id: JBaseMonitorPanel.java,v 1.3 2005/01/22 21:55:12 jim Exp $
+// $Id: JBaseMonitorPanel.java,v 1.4 2005/01/30 02:05:22 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -33,12 +33,6 @@ class JBaseMonitorPanel
   
   /**
    * Construct a new panel.
-   * 
-   * @param rows
-   *   The preferred number of rows of text.
-   * 
-   * @param cols
-   *   The preferred number of columns of text.
    */ 
   public 
   JBaseMonitorPanel()

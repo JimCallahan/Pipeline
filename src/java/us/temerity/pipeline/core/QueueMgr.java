@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.29 2005/01/22 06:10:09 jim Exp $
+// $Id: QueueMgr.java,v 1.30 2005/01/30 02:05:22 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1059,7 +1059,7 @@ class QueueMgr
 	Date latest = null;
 	if(!blocks.isEmpty()) {
 	  ResourceSampleBlock lastBlock = blocks.get(blocks.lastKey());
-	  latest = lastBlock.getTimeStamp(lastBlock.getNumSamples()-1);
+	  latest = lastBlock.getLastTimeStamp();
 	}
 
 	timer.aquire();
@@ -3128,7 +3128,7 @@ class QueueMgr
 	  }
 	  assert(block != null);
 	  
-	  blocks.put(block.getTimeStamp(block.getNumSamples()-1).getTime(), block);
+	  blocks.put(block.getLastTimeStamp().getTime(), block);
 	}
       }
     

@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.7 2005/01/16 01:30:20 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.8 2005/01/30 02:05:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1576,11 +1576,8 @@ class JQueueJobBrowserPanel
   {
     pHostsTablePanel.cancelEditing();
 
-    TreeSet<String> hostnames = getSelectedHostnames();
-    for(String hname : hostnames) {
-      GetHistoryTask task = new GetHistoryTask(hname);
-      task.start();      
-    }
+    GetHistoryTask task = new GetHistoryTask(getSelectedHostnames());
+    task.start();      
   }
 
   /**
@@ -2290,6 +2287,8 @@ class JQueueJobBrowserPanel
      Long jobID
     ) 
     {
+      super("JQueueJobBrowserPanel:GetJobInfoTask");
+
       pGroupID = groupID;
       pJobID   = jobID;
     }
@@ -2501,38 +2500,45 @@ class JQueueJobBrowserPanel
     public 
     GetHistoryTask
     (
-     String hostname
+     TreeSet<String> hostnames
     ) 
     {
-      pHostname = hostname; 
+      super("JQueueJobBrowserPanel:GetHistoryTask");
+
+      pHostnames = hostnames; 
     }
     
     public void
     run()
     {
       UIMaster master = UIMaster.getInstance();
-
-      ResourceSampleBlock block = null;
-      if(master.beginPanelOp("Server History...")) {
+      QueueMgrClient qclient = master.getQueueMgrClient();
+      
+      TreeMap<String,ResourceSampleBlock> samples = new TreeMap<String,ResourceSampleBlock>();
+      if(master.beginPanelOp()) {
 	try {
-	  QueueMgrClient client = master.getQueueMgrClient();
-	  block = client.getHostResourceSamples(pHostname);
-	}
-	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
+	  for(String hname : pHostnames) {
+	    try {
+	      master.updatePanelOp("Getting History: " + hname);
+	      ResourceSampleBlock block = qclient.getHostResourceSamples(hname);
+	      if(block != null) 
+		samples.put(hname, block);
+	    }
+	    catch(PipelineException ex) {
+	      master.showErrorDialog(ex);
+	    }
+	  }
 	}
 	finally {
 	  master.endPanelOp("Done.");
 	}
       }
 	  
-      if(block != null) {
-	ShowHistoryTask task = new ShowHistoryTask(pHostname, block);
-	SwingUtilities.invokeLater(task);
-      }
+      ShowHistoryTask task = new ShowHistoryTask(samples);
+      SwingUtilities.invokeLater(task);
     }
 
-    private String  pHostname;
+    private TreeSet<String>  pHostnames;
   }
 
   /** 
@@ -2545,23 +2551,21 @@ class JQueueJobBrowserPanel
     public 
     ShowHistoryTask
     (
-     String hostname,
-     ResourceSampleBlock block 
+     TreeMap<String,ResourceSampleBlock> samples
     ) 
     {
-      pHostname = hostname; 
-      pBlock    = block; 
+      super("JQueueJobBrowserPanel:ShowHistoryTask");
+
+      pSamples = samples;
     }
     
     public void
     run()
     {
-      JJobServerHistoryDialog diag = new JJobServerHistoryDialog(pHostname, pBlock);
-      diag.setVisible(true);  
+      UIMaster.getInstance().showResourceUsageHistoryDialog(pSamples);
     }
 
-    private String               pHostname; 
-    private ResourceSampleBlock  pBlock;
+    private TreeMap<String,ResourceSampleBlock> pSamples;
   }
 
 
