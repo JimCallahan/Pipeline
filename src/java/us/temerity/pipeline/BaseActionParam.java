@@ -1,4 +1,4 @@
-// $Id: BaseActionParam.java,v 1.2 2004/06/19 00:23:06 jim Exp $
+// $Id: BaseActionParam.java,v 1.3 2004/06/22 19:36:29 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -141,7 +141,9 @@ class BaseActionParam
   public String
   toString() 
   {
-    return pValue.toString();
+    if(pValue != null) 
+      return pValue.toString();
+    return null;
   }
 
 
