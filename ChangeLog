@@ -1,3 +1,125 @@
+2005-04-06  Jim Callahan  <jim@cpe-24-90-80-137.nyc.res.rr.com>
+
+	* src/java/us/temerity/pipeline/plugin/v1_0_0/MayaTextureSyncTool.java:
+	removed debugging comments
+
+2005-04-04  Jim Callahan  <jim@cpe-24-90-80-137.nyc.res.rr.com>
+
+	* src/java/us/temerity/pipeline/core/FileMgr.java:
+	made CheckSum instances local to methods to avoid thread conflicts
+
+	* src/java/us/temerity/pipeline/ui/core/JArchiveVolumesDialog.java:
+	standardized messages
+
+	* src/java/us/temerity/pipeline/core/ScriptApp.java:
+	added --subdivided usage to --help message
+
+	* docs/man/plscript.src.html.in, src/java/us/temerity/pipeline/core/ScriptOptsParser.jj:
+	implemented [Bug #80] - Different Job Execution Order
+
+	* src/java/us/temerity/pipeline/core/ScriptApp.java:
+	fixed NULL pointer bug
+
+	* src/java/us/temerity/pipeline/core/MasterMgr.java:
+	fixed [Bug #293] - Missing Job Dependencies
+
+	* src/java/us/temerity/pipeline/ExecutionMethod.java, src/java/us/temerity/pipeline/NodeMod.java, src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/ui/core/JNodeDetailsPanel.java:
+	implemented [Bug #80] - Different Job Execution Order
+
+	* src/java/us/temerity/pipeline/core/MasterOptsParser.jj:
+	added check for identical file/master manager host when --file-mgr is used
+
+	* docs/man/plmaster.src.html.in, src/java/us/temerity/pipeline/NodeTreeEntry.java, src/java/us/temerity/pipeline/core/MasterApp.java, src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/core/MasterMgrServer.java, src/java/us/temerity/pipeline/core/MasterOptsParser.jj:
+	implemented [Bug #230] - Reduce Startup Time
+
+2005-04-03  Jim Callahan  <jim@cpe-24-90-80-137.nyc.res.rr.com>
+
+	* src/java/us/temerity/pipeline/core/FileMgrClient.java, src/java/us/temerity/pipeline/core/FileMgrDirectClient.java, src/java/us/temerity/pipeline/core/MasterApp.java, src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/core/MasterMgrServer.java, src/java/us/temerity/pipeline/core/MasterOptsParser.jj:
+	implemented [Bug #163] - plfilemgr(1) as a plmaster(1) thread
+
+	* src/java/us/temerity/pipeline/core/MasterMgr.java:
+	implemented [Bug #290] - Multiple File Mgr Connections
+
+	* src/java/us/temerity/pipeline/core/FileMgrClient.java:
+	added shutdown() method to interface
+
+	* src/java/us/temerity/pipeline/core/FileMgrApp.java, src/java/us/temerity/pipeline/core/FileMgrOptsParser.jj, src/java/us/temerity/pipeline/core/FileMgrServer.java, src/java/us/temerity/pipeline/core/GraphicalApp.java, src/java/us/temerity/pipeline/core/GraphicalOptsParser.jj, src/java/us/temerity/pipeline/core/JobMgrApp.java, src/java/us/temerity/pipeline/core/JobMgrControlClient.java, src/java/us/temerity/pipeline/core/JobMgrOptsParser.jj, src/java/us/temerity/pipeline/core/JobMgrServer.java, src/java/us/temerity/pipeline/core/MasterApp.java, src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/core/MasterMgrServer.java, src/java/us/temerity/pipeline/core/MasterOptsParser.jj, src/java/us/temerity/pipeline/core/PluginMgrApp.java, src/java/us/temerity/pipeline/core/PluginMgrOptsParser.jj, src/java/us/temerity/pipeline/core/PluginMgrServer.java, src/java/us/temerity/pipeline/core/QueueMgr.java, src/java/us/temerity/pipeline/core/QueueMgrApp.java, src/java/us/temerity/pipeline/core/QueueMgrControlClient.java, src/java/us/temerity/pipeline/core/QueueMgrOptsParser.jj, src/java/us/temerity/pipeline/core/QueueMgrServer.java, src/java/us/temerity/pipeline/core/ScriptApp.java, src/java/us/temerity/pipeline/core/ScriptOptsParser.jj, src/java/us/temerity/pipeline/ui/core/JBaseMonitorJobOutputDialog.java, src/java/us/temerity/pipeline/ui/core/UIMaster.java, docs/javadoc/Makefile.in, docs/man/plfilemgr.src.html.in, docs/man/pljobmgr.src.html.in, docs/man/plmaster.src.html.in, docs/man/plplugin.src.html.in, docs/man/plpluginmgr.src.html.in, docs/man/plqueuemgr.src.html.in, docs/man/plrestore.src.html.in, docs/man/plscript.src.html.in, docs/man/plui.src.html.in, src/java/us/temerity/pipeline/JobMgrClient.java, src/java/us/temerity/pipeline/MasterMgrClient.java, src/java/us/temerity/pipeline/QueueMgrClient.java, src/java/us/temerity/pipeline/core/FileMgr.java:
+	implemented [Bug #292] - Eliminate Directory and Port Options
+
+	* src/java/us/temerity/pipeline/core/FileMgrNetClient.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/core/FileMgrClient.java:
+	converted to an interface in preparation for internal file manager thread
+
+	* src/java/us/temerity/pipeline/MasterMgrClient.java, src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/core/MasterMgrServer.java, src/java/us/temerity/pipeline/core/ScriptApp.java, src/java/us/temerity/pipeline/message/MasterRequest.java, src/java/us/temerity/pipeline/message/MiscGetArchivedOnRsp.java, src/java/us/temerity/pipeline/message/MiscGetArchivedOutputReq.java, src/java/us/temerity/pipeline/message/MiscGetArchiverOutputRsp.java, src/java/us/temerity/pipeline/message/MiscGetRestoredOnRsp.java, src/java/us/temerity/pipeline/message/MiscGetRestoredOutputReq.java, src/java/us/temerity/pipeline/ui/JErrorDialog.java, src/java/us/temerity/pipeline/ui/JOutputDialog.java, src/java/us/temerity/pipeline/ui/core/ArchiveVolumeSimpleTableModel.java, src/java/us/temerity/pipeline/ui/core/ArchiveVolumeVersionsTableModel.java, src/java/us/temerity/pipeline/ui/core/JArchiveVolumesDialog.java, src/java/us/temerity/pipeline/ui/core/JManagerPanel.java, src/java/us/temerity/pipeline/ui/core/UIMaster.java:
+	implemented [Bug #288] - Archive Volume Browser
+
+	* src/java/us/temerity/pipeline/ui/core/JRestoreDialog.java:
+	now automatically updates the restore requests table when the dialog is made visible
+
+	* src/java/us/temerity/pipeline/plugin/v1_1_0/TarFileArchiver.java:
+	added redirection of STDERR to STDOUT to catch the output of tar(1)
+
+2005-04-02  Jim Callahan  <jim@cpe-24-90-80-137.nyc.res.rr.com>
+
+	* src/java/us/temerity/pipeline/message/MiscGetArchiveIndexRsp.java:
+	renamed to MiscGetArchivedOnRsp
+
+	* configure.ac: v1.9.17
+
+	* docs/misc/execution-order.txt: initial revision
+
+	* src/java/us/temerity/pipeline/ui/core/JRestoreDialog.java, src/java/us/temerity/pipeline/ui/core/JResourceUsageHistoryDialog.java, src/java/us/temerity/pipeline/ui/core/JQueueJobBrowserPanel.java:
+	changed progress messages
+
+	* src/java/us/temerity/pipeline/ui/core/JExportPanel.java:
+	removed uneeded pJobReqsBox field
+
+	* src/java/us/temerity/pipeline/ui/core/JArchiveDialog.java:
+	implemented [Bug #284] - Show Volume Names of Manual Archives
+
+	* src/java/us/temerity/pipeline/plugin/v1_1_0/TarTapeArchiver.java:
+	added isManual()
+
+	* src/java/us/temerity/pipeline/plugin/v1_0_0/CdRomArchiver.java, src/java/us/temerity/pipeline/plugin/v1_0_0/CpioFileArchiver.java:
+	removed underDevelopement()
+
+	* src/java/us/temerity/pipeline/plugin/v1_0_0/CpioTapeArchiver.java, src/java/us/temerity/pipeline/plugin/v1_0_0/TarTapeArchiver.java:
+	added isManual()
+
+	* src/java/us/temerity/pipeline/ui/JMessageDialog.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/ui/core/JOfflineDialog.java:
+	implemented [Bug #285] - Confirm Offline Operation
+
+	* src/java/us/temerity/pipeline/ui/core/JArchiveParamsDialog.java, src/java/us/temerity/pipeline/ui/core/JRestoreParamsDialog.java:
+	fixed bug with EnumParams
+
+	* src/java/us/temerity/pipeline/plugin/v1_1_0/TarTapeArchiver.java:
+	fixed [Bug #287] - TarTapeArchver / TarFileArchiver Max Files, fixed [Bug #286] - TarTapeArchiver TapeDevice Param
+
+	* src/java/us/temerity/pipeline/plugin/v1_1_0/TarFileArchiver.java:
+	implemented [Bug #289] - TarFileArchiver Compression, fixed [Bug #287] - TarTapeArchver / TarFileArchiver Max Files
+
+	* src/java/us/temerity/pipeline/laf/Splash.png, src/java/us/temerity/pipeline/laf/source/Splash.xcf:
+	v1.9.17
+
+2005-04-01  Jim Callahan  <jim@cpe-24-90-80-137.nyc.res.rr.com>
+
+	* src/java/us/temerity/pipeline/plugin/v1_0_0/TarFileArchiver.java, src/java/us/temerity/pipeline/plugin/v1_0_0/TarTapeArchiver.java:
+	removed underDevelopment()
+
+2005-03-31  Jim Callahan  <jim@cpe-24-90-80-137.nyc.res.rr.com>
+
+	* docs/javadoc/Makefile.in: addded UI package
+
+	* ChangeLog: latest
+
+	* src/java/us/temerity/pipeline/core/FileMgrClient.java:
+	fixed [Bug #283] - File Mgr Timeouts
+
 2005-03-31  Jim Callahan  <jim@24-90-80-137.nyc.rr.com>
 
 	* src/java/us/temerity/pipeline/core/FileMgrClient.java:
@@ -138,6 +260,7 @@
 
 	* src/java/us/temerity/pipeline/ui/core/JArchiveDialog.java, src/java/us/temerity/pipeline/ui/core/JArchiverParamsDialog.java:
 	renamed JArchiverParamsDialog to JArchiveParamsDialog
+
 
 2005-03-21  Jim Callahan  <jim@24-90-80-137.nyc.rr.com>
 
