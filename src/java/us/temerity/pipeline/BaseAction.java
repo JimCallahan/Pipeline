@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.16 2004/09/10 15:39:05 jim Exp $
+// $Id: BaseAction.java,v 1.17 2004/10/14 22:39:28 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -826,6 +826,44 @@ class BaseAction
     cleanupLater(tmp);
 
     return tmp;
+  }
+
+  /**
+   * Make sure the target working directory exists. <P> 
+   */ 
+  public void
+  makeTargetDir
+  (
+    ActionAgenda agenda
+  )
+    throws PipelineException
+  {
+    File dir = agenda.getWorkingDir();
+    if(dir.isDirectory()) 
+      return;
+
+    ArrayList<String> args = new ArrayList<String>();
+    args.add("--parents");
+    args.add("--mode=755");
+    args.add(dir.getPath());
+
+    SubProcess proc = 
+      new SubProcess(agenda.getNodeID().getAuthor(), 
+		     "MakeWorkingDir-" + agenda.getJobID(), 
+		     "mkdir", args, agenda.getEnvironment(), PackageInfo.sTempDir);
+    proc.start();
+
+    try {
+      proc.join();
+      if(!proc.wasSuccessful()) 
+	throw new PipelineException
+	  ("Unable to create the working area directory (" + dir + "):\n\n" + 
+	   "  " + proc.getStdErr());
+    }
+    catch(InterruptedException ex) {
+      throw new PipelineException
+	("Interrupted while creating working area directory (" + dir + ")!");
+    }
   }
 
 
