@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.1 2004/09/19 04:50:17 jim Exp $
+// $Id: ScriptApp.java,v 1.2 2004/09/19 23:10:40 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -390,10 +390,14 @@ class ScriptApp
 	   "Available   : " + key.getAvailable() + "\n" + 
 	   "Total       : " + key.getTotal() + "\n" + 
 	   "Description : " + wordWrap(key.getDescription(), 14, 80));
+	Logs.flush();
 
 	return;
       }
     }
+
+    throw new PipelineException
+      ("No license key named (" + kname + ") exists!");
   }
 
   /**
@@ -414,18 +418,166 @@ class ScriptApp
 	  (tbar(80) + "\n" +
 	   "Selection Key : " + key.getName() + "\n" + 
 	   "Description   : " + wordWrap(key.getDescription(), 14, 80));
+	Logs.flush();
 
 	return;
       }
     }
+
+    throw new PipelineException
+      ("No selection key named (" + kname + ") exists!");
   }
 
+  /**
+   * Print a text representation of the given job server host.
+   */ 
+  public void 
+  printHosts
+  (
+   String hname, 
+   QueueMgrClient client
+  ) 
+    throws PipelineException 
+  {
+    TreeMap<String,QueueHost> hosts = client.getHosts();
+    QueueHost host = hosts.get(hname);
+    if(host != null) {
+      StringBuffer buf = new StringBuffer();
+      buf.append
+	(tbar(80) + "\n" +
+	 "Job Server  : " + host.getName() + "\n" + 
+	 "Status      : " + host.getStatus() + "\n" + 
+	 "Reservation : ");
+
+      String reserve = host.getReservation();
+      if(reserve != null) 
+	buf.append(reserve);
+      else 
+	buf.append("-");
+
+      ResourceSample sample = host.getLatestSample();
+      if(sample != null) {
+	buf.append
+	  ("\n" + 
+	   "Jobs        : " + sample.getNumJobs() + " (slots " + host.getJobSlots() + ")\n" + 
+	   "System Load : " + String.format("%1$.2f", sample.getLoad()) + "\n" + 
+	   "Free Memory : " + (formatLong(sample.getMemory()) + 
+			       " (total " + formatLong(host.getTotalMemory()) + ")") + "\n" +
+	   "Free Disk   : " + (formatLong(sample.getDisk()) + 
+			       " (total " + formatLong(host.getTotalDisk()) + ")"));
+      }
+
+      Logs.ops.info(buf.toString());
+      Logs.flush();      
+    }
+  }
+
+  /**
+   * Edit the properties of the given host.
+   */ 
+  public void 
+  editHost
+  (
+   String hname, 
+   QueueHost.Status status, 
+   String reserve, 
+   boolean setReserve, 
+   Integer slots, 
+   TreeMap biases, 
+   TreeSet removes, 
+   QueueMgrClient client
+  )
+    throws PipelineException 
+  {
+    TreeMap<String,QueueHost> hosts = client.getHosts();
+    QueueHost host = hosts.get(hname);
+    if(host != null) {
+      TreeMap<String,QueueHost.Status> statusTable = 
+	new TreeMap<String,QueueHost.Status>();
+      TreeMap<String,String> reserveTable = 
+	new TreeMap<String,String>();
+      TreeMap<String,Integer> slotsTable = 
+	new TreeMap<String,Integer>();
+      TreeMap<String,TreeMap<String,Integer>> biasesTable = 
+	new TreeMap<String,TreeMap<String,Integer>>();
+    
+      if(status != null) 
+	statusTable.put(hname, status);
+
+      if(setReserve) 
+	reserveTable.put(hname, reserve);
+
+      if(slots != null) 
+	slotsTable.put(hname, slots);
+
+      if(!biases.isEmpty() || !removes.isEmpty()) {
+	TreeMap<String,Integer> table = new TreeMap<String,Integer>();
+	for(String kname : host.getSelectionKeys()) {
+	  if(!removes.contains(kname)) 
+	    table.put(kname, host.getSelectionBias(kname));
+	}
+	
+	for(Object obj : biases.keySet()) {
+	  String kname = (String) obj;
+	  Integer bias = (Integer) biases.get(kname);
+	  table.put(kname, bias);
+	}
+	
+	biasesTable.put(hname, table);
+      }
+      
+      client.editHosts(statusTable, reserveTable, slotsTable, biasesTable);
+    }
+  }
   
-  
+  /**
+   * Edit the given host.
+   */ 
+  public void
+  removeHost
+  (
+   String hname,
+   QueueMgrClient client
+  ) 
+    throws PipelineException 
+  {
+    TreeSet<String> hnames = new TreeSet<String>();
+    hnames.add(hname);
+
+    client.removeHosts(hnames);
+  }
+
+
+
   /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S                                                                        */
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Generates a formatted string representation of a large integer number.
+   */ 
+  private String
+  formatLong
+  (
+   Long value
+  ) 
+  {
+    if(value == null) 
+      return "-";
+
+    if(value < 1048576) {
+      return value.toString();
+    }
+    else if(value < 1073741824) {
+      double m = ((double) value) / 1048576.0;
+      return String.format("%1$.2fM", m);
+    }
+    else {
+      double g = ((double) value) / 1073741824.0;
+      return String.format("%1$.2fG", g);
+    }
+  }
+
   /**
    * Generate an explanitory message for the non-literal token.
    */ 
@@ -440,11 +592,24 @@ class ScriptApp
     case ScriptOptsParserConstants.EOF:
       return "EOF";
 
+    case ScriptOptsParserConstants.UNKNOWN1:
+    case ScriptOptsParserConstants.UNKNOWN2:
+    case ScriptOptsParserConstants.UNKNOWN3:
+    case ScriptOptsParserConstants.UNKNOWN4:
+      return "an unknown argument";
+
     case ScriptOptsParserConstants.UNKNOWN_OPTION:
+    case ScriptOptsParserConstants.UNKNOWN_OPTION1:
+    case ScriptOptsParserConstants.UNKNOWN_OPTION2:
+    case ScriptOptsParserConstants.UNKNOWN_OPTION3:
+    case ScriptOptsParserConstants.UNKNOWN_OPTION4:
       return "an unknown option";
 
     case ScriptOptsParserConstants.UNKNOWN_COMMAND:
       return "an unknown command";
+
+    case ScriptOptsParserConstants.PORT_NUMBER:
+      return "a port number";
 
     case ScriptOptsParserConstants.INTEGER:
       return "an integer";
@@ -458,14 +623,24 @@ class ScriptApp
     case ScriptOptsParserConstants.PATH_ARG:
       return "an file system path";
       
-    case ScriptOptsParserConstants.HOSTNAME:
+    case ScriptOptsParserConstants.HOST_NAME:
       return "a hostname";
       
     case ScriptOptsParserConstants.NODE_ARG:
       return "a fully resolved node name";
       
-    case ScriptOptsParserConstants.NAME:
-      return "a name";
+    case ScriptOptsParserConstants.USER_NAME:
+      return "a user name";
+
+    case ScriptOptsParserConstants.TOOLSET_NAME:
+      return "a toolset name";
+
+    case ScriptOptsParserConstants.KEY_BIAS_NAME:
+    case ScriptOptsParserConstants.KEY_NAME:
+      return "a key name";
+
+    case ScriptOptsParserConstants.KEY_BIAS:
+      return "a selection bias";
 
     default: 
       if(printLiteral) { 

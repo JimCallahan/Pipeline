@@ -147,6 +147,19 @@ ScriptOptsParser
    */ 
   private Stack pBatchFiles; 
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * job-server command option temporaries
+   */ 
+  private QueueHost.Status  pJobStatus; 
+
+  private String   pJobReserve;
+  private boolean  pSetJobReserve;
+  private Integer  pJobSlots;
+  private TreeMap  pJobSelectionBiases;
+  private TreeSet  pJobSelectionRemoves;
 }
 
 
@@ -164,12 +177,12 @@ TOKEN :
 | <LICENSE:      "--license">    
 
   /* global options */	
-| <MASTER_HOST:  "--master-host">   : HOSTNAME_SEP
-| <MASTER_PORT:  "--master-port">   : INTEGER_SEP
+| <MASTER_HOST:  "--master-host">   : HOST_NAME_SEP
+| <MASTER_PORT:  "--master-port">   : PORT_NUMBER_SEP
 
-| <QUEUE_HOST:   "--queue-host">    : HOSTNAME_SEP
-| <QUEUE_PORT:   "--queue-port">    : INTEGER_SEP
-| <JOB_PORT:     "--job-port">      : INTEGER_SEP
+| <QUEUE_HOST:   "--queue-host">    : HOST_NAME_SEP
+| <QUEUE_PORT:   "--queue-port">    : PORT_NUMBER_SEP
+| <JOB_PORT:     "--job-port">      : PORT_NUMBER_SEP
 
 | <LOG:          "--log">           : LOG_SEP
 
@@ -177,32 +190,25 @@ TOKEN :
 | <BATCH:        "--batch">         : PATH_SEP
 		   
   /* commands */ 
-| <PRIVILEGED:        "privileged">        
-| <DEFAULT_TOOLSET:   "default-toolset">   
-| <ACTIVE_TOOLSET:    "active-toolset">    
-| <TOOLSET:           "toolset">           
-| <LICENSE_KEY:       "license-key">       
-| <SELECTION_KEY:     "selection-key">     
-| <JOB_SERVER:        "job-server">        
+| <PRIVILEGED:        "privileged">       : PRIVILEGED_OPTS 
+| <DEFAULT_TOOLSET:   "default-toolset">  : TOOLSET_OPTS 
+| <ACTIVE_TOOLSET:    "active-toolset">   : TOOLSET_OPTS 
+| <TOOLSET:           "toolset">          : TOOLSET_OPTS 
+| <LICENSE_KEY:       "license-key">      : KEY_OPTS 
+| <SELECTION_KEY:     "selection-key">    : KEY_OPTS  
+| <JOB_SERVER:        "job-server">       : JOB_SERVER_OPTS
 
   /* command options */ 
-| <GET:            "--get">           
-| <GET_INFO:       "--get-info">        : NAME_SEP  
-| <SET:            "--set">             : NAME_SEP 
-| <ADD:            "--add">             : NAME_SEP 
-| <MSG:            "--msg">             : STRING_SEP
-| <REMOVE:         "--remove">          : NAME_SEP
-| <EXPORT:         "--export">          : NAME_SEP   
+| <MSG:            "--msg">             : STRING_SEP  
 | <TOTAL:          "--total">           : INTEGER_SEP  
 | <SHUTDOWN:       "--shutdown">       
 | <DISABLE:        "--disable">       
 | <ENABLE:         "--enable">  
-| <RESERVE:        "--reserve">         : NAME_SEP            
+| <RESERVE:        "--reserve">         : USER_NAME_SEP            
 | <OPEN:           "--open">  
 | <SLOTS:          "--slots">           : INTEGER_SEP  
-| <LICENSE_BIAS:   "--license-bias">    : INTEGER_SEP 
-| <SELECTION_BIAS: "--selection-bias">  : INTEGER_SEP  
-| <REMOVE_KEY:     "--remove-key">      : NAME_SEP   
+| <SELECTION_BIAS: "--selection-bias">  : KEY_BIAS_SEP  
+| <REMOVE_KEY:     "--remove-key">      : KEY_NAME_SEP   
 
   /* argument end separator */ 
 | <AE1: ("\0")+>
@@ -238,11 +244,28 @@ TOKEN :
 }
 
 
+/* port number arguments */ 
+<PORT_NUMBER_SEP> 
+TOKEN :
+{
+  <EQ2:                       "=">   : PORT_NUMBER_STATE
+| <MISSING_PORT_NUMBER_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<PORT_NUMBER_STATE> 
+TOKEN :
+{
+  <PORT_NUMBER:         (["0"-"9"])+>    : DEFAULT
+| <MISSING_PORT_NUMBER: ["\0"]>          : IGNORE_STATE
+| <ILLEGAL_PORT_NUMBER: (~["\0"])+>      : IGNORE_STATE
+}
+
+
 /* string arguments */   
 <STRING_SEP> 
 TOKEN :
 {
-  <EQ2:                  "=">   : STRING_STATE
+  <EQ3:                  "=">   : STRING_STATE
 | <MISSING_STRING_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -258,7 +281,7 @@ TOKEN :
 <PATH_SEP> 
 TOKEN :
 {
-  <EQ3:                "=">   : PATH_STATE
+  <EQ4:                "=">   : PATH_STATE
 | <MISSING_PATH_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -274,20 +297,20 @@ TOKEN :
 
 
 /* hostname arguments */ 
-<HOSTNAME_SEP> 
+<HOST_NAME_SEP> 
 TOKEN :
 {
-  <EQ4:                    "=">   : HOSTNAME_STATE
-| <MISSING_HOSTNAME_ARG: ~["="]>  : IGNORE_STATE
+  <EQ5:                    "=">   : HOST_NAME_STATE
+| <MISSING_HOST_NAME_ARG: ~["="]>  : IGNORE_STATE
 }
 
-<HOSTNAME_STATE> 
+<HOST_NAME_STATE> 
 TOKEN :
 {
-  <HOSTNAME:         ((["a"-"z","A"-"Z","0"-"9"])+ 
+  <HOST_NAME:         ((["a"-"z","A"-"Z","0"-"9"])+ 
 		      ("." (["a"-"z","A"-"Z","0"-"9"])+)*)>   : DEFAULT
-| <MISSING_HOSTNAME: ["\0"]>                                  : IGNORE_STATE
-| <ILLEGAL_HOSTNAME: (~["\0"])+>                              : IGNORE_STATE
+| <MISSING_HOST_NAME: ["\0"]>                                  : IGNORE_STATE
+| <ILLEGAL_HOST_NAME: (~["\0"])+>                              : IGNORE_STATE
 }
 
 
@@ -295,7 +318,7 @@ TOKEN :
 <NODE_SEP> 
 TOKEN :
 {
-  <EQ5:                "=">   : NODE_STATE
+  <EQ6:                "=">   : NODE_STATE
 | <MISSING_NODE_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -308,32 +331,89 @@ TOKEN :
 }
 
 
+/* toolset name arguments */ 
+<TOOLSET_NAME_SEP> 
+TOKEN :
+{
+  <EQ7:                "=">           : TOOLSET_NAME_STATE
+| <MISSING_TOOLSET_NAME_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<TOOLSET_NAME_STATE> 
+TOKEN :
+{
+  <TRUE1:                  "true">                                   : DEFAULT
+| <FALSE1:                 "false">                                  : DEFAULT
+| <TOOLSET_NAME:           (["a"-"z","A"-"Z"]) 
+		           (["a"-"z","A"-"Z","0"-"9","_","-"])+>  
+| <COLON1:                 ":">                                      
+| <AE2:                    ["\0"]>                                   : DEFAULT
+| <ILLEGAL_TOOLSET_NAME:   (~[":","\0"])+>                           : IGNORE_STATE
+}
+
+
 /* user name arguments */ 
-<NAME_SEP> 
+<USER_NAME_SEP> 
 TOKEN :
 {
-  <EQ6:                "=">   : NAME_STATE
-| <MISSING_NAME_ARG: ~["="]>  : IGNORE_STATE
+  <EQ8:                     "=">   : USER_NAME_STATE
+| <MISSING_USER_NAME_ARG: ~["="]>  : IGNORE_STATE
 }
 
-<NAME_STATE> 
+<USER_NAME_STATE> 
 TOKEN :
 {
-  <TRUE:           "true">                                   : DEFAULT
-| <FALSE:          "false">                                  : DEFAULT
-| <NAME:           (["a"-"z","A"-"Z"]) 
-		     (["a"-"z","A"-"Z","0"-"9","_","-"])+>  
-| <COLON1:         ":">                                      
-| <AE2:            ["\0"]>                                   : DEFAULT
-| <ILLEGAL_NAME:   (~[":","\0"])+>                           : IGNORE_STATE
+  <TRUE:                "true">                                   : DEFAULT
+| <FALSE:               "false">                                  : DEFAULT
+| <USER_NAME:           (["a"-"z","A"-"Z"]) 
+	   	          (["a"-"z","A"-"Z","0"-"9","_","-"])+>  
+| <COLON2:              ":">                                      
+| <AE3:                 ["\0"]>                                   : DEFAULT
+| <ILLEGAL_USER_NAME:   (~[":","\0"])+>                           : IGNORE_STATE
 }
 
+
+/* key name arguments */ 
+<KEY_NAME_SEP> 
+TOKEN :
+{
+  <EQ9:                    "=">   : KEY_NAME_STATE
+| <MISSING_KEY_NAME_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<KEY_NAME_STATE> 
+TOKEN :
+{
+  <KEY_NAME:           (["a"-"z","A"-"Z"]) 
+		         (["a"-"z","A"-"Z","0"-"9","_","-"])+>  
+| <AE4:                ["\0"]>                                   : DEFAULT
+| <ILLEGAL_KEY_NAME:   (~[":","\0"])+>                           : IGNORE_STATE
+}
+
+/* key bias arguments */ 
+<KEY_BIAS_SEP> 
+TOKEN :
+{
+  <EQ10:                   "=">   : KEY_BIAS_STATE
+| <MISSING_KEY_BIAS_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<KEY_BIAS_STATE> 
+TOKEN :
+{
+  <KEY_BIAS_NAME:      (["a"-"z","A"-"Z"]) 
+		         (["a"-"z","A"-"Z","0"-"9","_","-"])+>  
+| <COLON3:             ":">      
+| <KEY_BIAS:           (["0"-"9"])+>                             : DEFAULT  
+| <AE5:                ["\0"]>                                   : DEFAULT
+| <ILLEGAL_KEY_BIAS:   (~[":","\0"])+>                           : IGNORE_STATE
+}
 
 /* --log arguments */ 
 <LOG_SEP> 
 TOKEN :
 {
-  <EQ7:               "=">   : LOG_STATE
+  <EQ11:              "=">   : LOG_STATE
 | <MISSING_LOG_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -346,7 +426,7 @@ TOKEN :
 | <LOG_NET: 	    "net">      
 | <LOG_PLG: 	    "plg">       
 | <LOG_SUB: 	    "sub">     
-| <COLON:  	    ":">       
+| <COLON4:  	    ":">       
 | <SEVERE:  	    "severe">  
 | <WARNING: 	    "warning"> 
 | <INFO:    	    "info">    
@@ -354,8 +434,64 @@ TOKEN :
 | <FINER :  	    "finer">   
 | <FINEST:    	    "finest">  
 | <COMMA:  	    ",">       
-| <AE3:             (["\0"])+>                   : DEFAULT
+| <AE6:             (["\0"])+>                   : DEFAULT
 | <ILLEGAL_LOG_ARG: (~["\0","a"-"z",":",","])+>  : IGNORE_STATE
+}
+
+
+/* privileged command options */ 
+<PRIVILEGED_OPTS> 
+TOKEN :
+{
+  <PRIVILEGED_GET:   "--get">                   : DEFAULT
+| <PRIVILEGED_SET:   "--set">                   : USER_NAME_SEP 
+| <AE7:              ["\0"]>  
+| <UNKNOWN_OPTION1:  "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN1:         ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+}
+
+
+/* toolset command options */ 
+<TOOLSET_OPTS> 
+TOKEN :
+{
+  <TOOLSET_GET:        "--get">                   : DEFAULT
+| <TOOLSET_GET_INFO:   "--get-info">              : TOOLSET_NAME_SEP  
+| <TOOLSET_SET:        "--set">                   : TOOLSET_NAME_SEP 
+| <TOOLSET_EXPORT:     "--export">                : TOOLSET_NAME_SEP
+| <AE8:                ["\0"]>            
+| <UNKNOWN_OPTION2:    "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN2:           ~["-","\0"] (~["\0"])*>    : IGNORE_STATE          
+}
+
+
+/* key command options */ 
+<KEY_OPTS> 
+TOKEN :
+{
+  <KEY_GET:            "--get">                   : DEFAULT
+| <KEY_GET_INFO:       "--get-info">              : KEY_NAME_SEP  
+| <KEY_ADD:            "--add">                   : KEY_NAME_SEP 
+| <KEY_SET:            "--set">                   : KEY_NAME_SEP 
+| <KEY_REMOVE:         "--remove">                : KEY_NAME_SEP 
+| <AE9:                ["\0"]>    
+| <UNKNOWN_OPTION3:    "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN3:           ~["-","\0"] (~["\0"])*>    : IGNORE_STATE           
+}
+
+
+/* job server command options */ 
+<JOB_SERVER_OPTS> 
+TOKEN :
+{
+  <JOB_GET:            "--get">                   : DEFAULT
+| <JOB_GET_INFO:       "--get-info">              : HOST_NAME_SEP  
+| <JOB_SET:            "--set">                   : HOST_NAME_SEP 
+| <JOB_ADD:            "--add">                   : HOST_NAME_SEP 
+| <JOB_REMOVE:         "--remove">                : HOST_NAME_SEP
+| <AE10:               ["\0"]>   
+| <UNKNOWN_OPTION4:    "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN4:           ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
 }
 
 
@@ -393,10 +529,10 @@ Commands()
 }
 {
   (PrivilegedCmds() | 
-    DefaultToolsetCmds() | ActiveToolsetCmds() | ToolsetCmds() |
-    LicenseKeyCmds() | SelectionKeyCmds() 
+   DefaultToolsetCmds() | ActiveToolsetCmds() | ToolsetCmds() |
+   LicenseKeyCmds() | SelectionKeyCmds() | JobServerCmds()
 
-    ) AE()
+   ) 
   {
     pMasterMgrClient.disconnect();
     pQueueMgrClient.disconnect();
@@ -479,7 +615,7 @@ BatchOpt()
       Logs.ops.info
 	("\n" + 
 	 pApp.repeat("*", 80) + "\n" +
-	 "  BATCH: |" + line.replace('\0',' ') + "|\n" +
+	 "  BATCH: " + line.replace('\0',' ') + "\n" +
 	 pApp.repeat("*", 80) + "\n");
       
       ScriptOptsParser parser = new ScriptOptsParser(new StringReader(line));
@@ -498,7 +634,7 @@ BatchCommand()
 {
   (PrivilegedCmds() | 
    DefaultToolsetCmds() | ActiveToolsetCmds() | ToolsetCmds() |
-   LicenseKeyCmds() | SelectionKeyCmds() 
+   LicenseKeyCmds() | SelectionKeyCmds() | JobServerCmds() 
    
    ) (AE())* <EOF>
   {}
@@ -598,12 +734,12 @@ GlobalOpts() :
 void
 MasterHost() :
 {
-  Token t;
+  String hname = null;
 }
 {
-  <MASTER_HOST> EQ() t=<HOSTNAME>
+  <MASTER_HOST> EQ() hname=HostName()
   { 
-    pMasterServer = t.image;
+    pMasterServer = hname;
   }
 }
 
@@ -613,7 +749,7 @@ MasterPort() :
   int port; 
 }
 {
-  <MASTER_PORT> EQ() port=IntegerLiteral() 
+  <MASTER_PORT> EQ() port=PortNumber() 
   { 
     pMasterPort = port;
   }
@@ -622,12 +758,12 @@ MasterPort() :
 void
 QueueHost() :
 {
-  Token t;
+  String hname = null;
 }
 {
-  <QUEUE_HOST> EQ() t=<HOSTNAME>
+  <QUEUE_HOST> EQ() hname=HostName()
   { 
-    pQueueServer = t.image;
+    pQueueServer = hname;
   }
 }
 
@@ -637,7 +773,7 @@ QueuePort() :
   int port; 
 }
 {
-  <QUEUE_PORT> EQ() port=IntegerLiteral() 
+  <QUEUE_PORT> EQ() port=PortNumber()
   { 
     pQueuePort = port;
   }
@@ -649,7 +785,7 @@ JobPort() :
   int port; 
 }
 {
-  <JOB_PORT> EQ() port=IntegerLiteral() 
+  <JOB_PORT> EQ() port=PortNumber()
   { 
     pJobPort = port;
   }
@@ -676,7 +812,7 @@ void LoggerAll() :
   Level v;
 }
 {
-  (<LOG_ALL> <COLON> v=LogLevel())
+  (<LOG_ALL> COLON() v=LogLevel())
   {
     Logs.arg.setLevel(v); 
     Logs.ops.setLevel(v);
@@ -692,7 +828,7 @@ void LoggerPair() :
   Level v;
 }
 {
-  (g=Logger() <COLON> v=LogLevel())
+  (g=Logger() COLON() v=LogLevel())
   {
     g.setLevel(v);
   }
@@ -854,7 +990,7 @@ PrivilegedGet()
   throws PipelineException : 
 {}
 {
-  <GET>
+  <PRIVILEGED_GET> AE()
   {
     TreeSet users = pMasterMgrClient.getPrivilegedUsers(false);
     Iterator iter = users.iterator();
@@ -874,7 +1010,7 @@ PrivilegedSet()
   boolean tf = true;
 }
 {
-  <SET> EQ() user=Name() (COLON() tf=TrueFalse())?
+  <PRIVILEGED_SET> EQ() user=UserName() (COLON() tf=TrueFalse())? AE()
   {
     if(tf) 
       pMasterMgrClient.grantPrivileges(user);
@@ -902,7 +1038,7 @@ DefaultToolsetGet()
   throws PipelineException : 
 {}
 {
-  <GET>
+  <TOOLSET_GET> AE()
   {
     Logs.ops.info(pMasterMgrClient.getDefaultToolsetName());
     Logs.flush();
@@ -916,7 +1052,7 @@ DefaultToolsetSet()
   String tname = null;
 }
 {
-  <SET> EQ() tname=Name()
+  <TOOLSET_SET> EQ() tname=ToolsetName() AE()
   {
     pMasterMgrClient.setDefaultToolsetName(tname);
   }
@@ -939,7 +1075,7 @@ ActiveToolsetGet()
   throws PipelineException : 
 {}
 {
-  <GET>
+  <TOOLSET_GET> AE()
   {
     TreeSet tnames = pMasterMgrClient.getActiveToolsetNames(); 
     Iterator iter = tnames.iterator();
@@ -959,7 +1095,7 @@ ActiveToolsetSet()
   boolean tf = true;
 }
 {
-  <SET> EQ() tname=Name() (COLON() tf=TrueFalse())?
+  <TOOLSET_SET> EQ() tname=ToolsetName() (COLON() tf=TrueFalse())? AE()
   {
     pMasterMgrClient.setToolsetActive(tname, tf);
   }
@@ -982,7 +1118,7 @@ ToolsetGet()
   throws PipelineException : 
 {}
 {
-  <GET>
+  <TOOLSET_GET> AE()
   {
     TreeSet tnames = pMasterMgrClient.getToolsetNames(); 
     Iterator iter = tnames.iterator();
@@ -1001,7 +1137,7 @@ ToolsetGetInfo()
   String tname = null;
 }
 {
-  <GET_INFO> EQ() tname=Name()
+  <TOOLSET_GET_INFO> EQ() tname=ToolsetName() AE()
   {
     pApp.printToolset(tname, pMasterMgrClient);
   }
@@ -1014,7 +1150,7 @@ ToolsetExport()
   String tname = null;
 }
 {
-  <EXPORT> EQ() tname=Name()
+  <TOOLSET_EXPORT> EQ() tname=ToolsetName() AE()
   {
     pApp.exportToolset(tname, pMasterMgrClient);
   }
@@ -1041,7 +1177,7 @@ LicenseKeyGet()
   throws PipelineException : 
 {}
 {
-  <GET>
+  <KEY_GET> AE()
   {
     TreeSet knames = pQueueMgrClient.getLicenseKeyNames();
     Iterator iter = knames.iterator();
@@ -1060,7 +1196,7 @@ LicenseKeyGetInfo()
   String kname = null;
 }
 {
-  <GET_INFO> EQ() kname=Name()
+  <KEY_GET_INFO> EQ() kname=KeyName() AE()
   {
     pApp.printLicenseKey(kname, pQueueMgrClient);
   }
@@ -1075,8 +1211,8 @@ LicenseKeyAdd()
   int total = 0;
 }
 {
-  <ADD> EQ() kname=Name() AE() 
-     ((msg=Msg() AE() total=Total()) | (total=Total() AE() msg=Msg()))
+  <KEY_ADD> EQ() kname=KeyName() AE() 
+     ((msg=Msg() AE() total=Total()) | (total=Total() AE() msg=Msg())) AE()
   {
     LicenseKey key = new LicenseKey(kname, msg, total);
     pQueueMgrClient.addLicenseKey(key);
@@ -1091,7 +1227,7 @@ LicenseKeySet()
   int total = 0;
 }
 {
-  <SET> EQ() kname=Name() AE() total=Total()
+  <KEY_SET> EQ() kname=KeyName() AE() total=Total() AE()
   {
     pQueueMgrClient.setTotalLicenses(kname, total);
   }
@@ -1104,7 +1240,7 @@ LicenseKeyRemove()
   String kname = null;
 }
 {
-  <REMOVE> EQ() kname=Name()
+  <KEY_REMOVE> EQ() kname=KeyName() AE()
   {
     pQueueMgrClient.removeLicenseKey(kname);
   }
@@ -1140,7 +1276,7 @@ SelectionKeyGet()
   throws PipelineException : 
 {}
 {
-  <GET>
+  <KEY_GET> AE()
   {
     TreeSet knames = pQueueMgrClient.getSelectionKeyNames();
     Iterator iter = knames.iterator();
@@ -1159,7 +1295,7 @@ SelectionKeyGetInfo()
   String kname = null;
 }
 {
-  <GET_INFO> EQ() kname=Name()
+  <KEY_GET_INFO> EQ() kname=KeyName() AE()
   {
     pApp.printSelectionKey(kname, pQueueMgrClient);
   }
@@ -1173,7 +1309,7 @@ SelectionKeyAdd()
   String msg = null;
 }
 {
-  <ADD> EQ() kname=Name() AE() msg=Msg()
+  <KEY_ADD> EQ() kname=KeyName() AE() msg=Msg() AE()
   {
     SelectionKey key = new SelectionKey(kname, msg);
     pQueueMgrClient.addSelectionKey(key);
@@ -1187,7 +1323,7 @@ SelectionKeyRemove()
   String kname = null;
 }
 {
-  <REMOVE> EQ() kname=Name()
+  <KEY_REMOVE> EQ() kname=KeyName() AE()
   {
     pQueueMgrClient.removeSelectionKey(kname);
   }
@@ -1196,17 +1332,195 @@ SelectionKeyRemove()
 
 /*------------------------------------------------------------------------------------------*/
 
-// void 
-// JobServerCmds() 
-//   throws PipelineException : 
-// {}
-// {
-//   <SELECTION_KEY> AE() 
-//      (JobServerGet() | JobServerGetInfo() | JobServerAdd() | 
-//       JobServerSet() | JobServerRemove())
-//   {}
-// }
+void 
+JobServerCmds() 
+  throws PipelineException : 
+{}
+{
+  <JOB_SERVER> AE() 
+     (JobServerGet() | JobServerGetInfo() | JobServerAdd() | 
+      JobServerSet() | JobServerRemove())
+  {}
+}
 
+void 
+JobServerGet() 
+  throws PipelineException : 
+{}
+{
+  <JOB_GET> AE()
+  {
+    TreeMap hosts = pQueueMgrClient.getHosts();
+    Iterator iter = hosts.keySet().iterator();
+    while(iter.hasNext()) {
+      String hname = (String) iter.next();
+      Logs.ops.info(hname);
+    }
+    Logs.flush();    
+  }
+}
+
+void 
+JobServerGetInfo() 
+  throws PipelineException : 
+{
+  String hname = null;
+}
+{
+  <JOB_GET_INFO> EQ() hname=HostName() AE()
+  {
+    pApp.printHosts(hname, pQueueMgrClient);
+  }
+}
+
+void 
+JobServerAdd() 
+  throws PipelineException : 
+{
+  String hname = null;
+}
+{
+  <JOB_ADD> EQ() hname=HostName() AE()
+  {
+    pQueueMgrClient.addHost(hname);
+  }
+}
+
+void 
+JobServerSet() 
+  throws PipelineException : 
+{
+  String hname = null;
+
+  pJobStatus           = null;
+  pJobReserve          = null;
+  pSetJobReserve       = false;
+  pJobSlots            = null;
+  pJobSelectionBiases  = new TreeMap();
+  pJobSelectionRemoves = new TreeSet();
+}
+{
+  <JOB_SET> EQ() hname=HostName() AE() (JobServerSetOption())+
+  {
+    pApp.editHost(hname, 
+		  pJobStatus, pJobReserve, pSetJobReserve, pJobSlots, 
+		  pJobSelectionBiases, pJobSelectionRemoves, 
+		  pQueueMgrClient);
+  }
+}
+
+void 
+JobServerSetOption() :
+{}
+{
+  (JobServerShutdown() | JobServerEnable() | JobServerDisable() | 
+   JobServerReserve() | JobServerSlots() | 
+   JobServerSelectionBias() | JobServerSelectionRemoveKey())
+  {}
+}
+
+void 
+JobServerShutdown() :
+{}
+{
+  <SHUTDOWN> AE()
+  {
+    if(pJobStatus != null) 
+      throw new ParseException
+	("The --shutdown, --enable and --disable options are mutually exclusive!");
+    pJobStatus = QueueHost.Status.Shutdown;
+  }
+}
+
+void 
+JobServerEnable() :
+{}
+{
+  <ENABLE> AE()
+  {
+    if(pJobStatus != null) 
+      throw new ParseException
+	("The --shutdown, --enable and --disable options are mutually exclusive!");
+    pJobStatus = QueueHost.Status.Enabled;
+  }
+}
+
+void 
+JobServerDisable() :
+{}
+{
+  <DISABLE> AE()
+  {
+    if(pJobStatus != null) 
+      throw new ParseException
+	("The --shutdown, --enable and --disable options are mutually exclusive!");
+    pJobStatus = QueueHost.Status.Disabled;
+  }
+}
+
+void 
+JobServerReserve() :
+{
+  String name    = null;
+  pSetJobReserve = true;
+}
+{
+  ((<RESERVE> EQ() name=UserName()) | <OPEN>) AE()
+  {
+    pJobReserve = name;
+  }
+}
+
+void
+JobServerSlots() : 
+{
+  Integer slots = null;
+}
+{
+  <SLOTS> EQ() slots=IntegerLiteral() AE()
+  {
+    pJobSlots = slots;
+  }
+}
+
+void 
+JobServerSelectionBias() : 
+{
+  String kname;
+  Integer bias; 
+}
+{
+  <SELECTION_BIAS> EQ() kname=KeyBiasName() COLON() bias=KeyBias() AE()
+  {
+    pJobSelectionBiases.put(kname, bias);
+  }  
+}
+
+void 
+JobServerSelectionRemoveKey() : 
+{
+  String kname;
+}
+{
+  <REMOVE_KEY> EQ() kname=KeyName() AE()
+  {
+    pJobSelectionRemoves.add(kname);
+  }
+}
+  
+
+void 
+JobServerRemove() 
+  throws PipelineException : 
+{
+  String hname = null;
+}
+{
+  <JOB_REMOVE> EQ() hname=KeyName() AE()
+  {
+    pApp.removeHost(hname, pQueueMgrClient);
+  }
+}
 
 
 
@@ -1220,7 +1534,8 @@ AE() :
   Token t;
 }
 {
-  (t=<AE1> | t=<AE2> | t=<AE3>)
+  (t=<AE1> | t=<AE2> | t=<AE3> | t=<AE4> | t=<AE5> | 
+   t=<AE6> | t=<AE7> | t=<AE8> | t=<AE9> | t=<AE10>)
   { 
     return t; 
   }
@@ -1232,7 +1547,7 @@ COLON() :
   Token t;
 }
 {
-  (t=<COLON1>)
+  (t=<COLON1> | t=<COLON2> | t=<COLON3> | t=<COLON4>)
   { 
     return t; 
   }
@@ -1244,12 +1559,16 @@ EQ() :
   Token t;
 }
 {
-  (t=<EQ1> | t=<EQ2> | t=<EQ3> | t=<EQ4> | t=<EQ5> | t=<EQ6> | t=<EQ7>)
+  (t=<EQ1> | t=<EQ2> | t=<EQ3> | t=<EQ4> | t=<EQ5> | 
+   t=<EQ6> | t=<EQ7> | t=<EQ8> | t=<EQ9> | t=<EQ10> | 
+   t=<EQ11>)
   { 
     return t; 
   }
 }
 
+
+/*------------------------------------------------------------------------------------------*/
 
 boolean 
 TrueFalse() : 
@@ -1283,18 +1602,84 @@ False() :
   }
 }
 
+
+/*------------------------------------------------------------------------------------------*/
+
 String
 Name() : 
 {
   Token t;
 }
 {
-  t=<NAME>
+  t=<USER_NAME>
   {
     return t.image;
   }
 }
 
+String
+HostName() : 
+{
+  Token t;
+}
+{
+  t=<HOST_NAME>
+  {
+    return t.image;
+  }
+}
+
+String
+UserName() : 
+{
+  Token t;
+}
+{
+  t=<USER_NAME>
+  {
+    return t.image;
+  }
+}
+
+String
+ToolsetName() : 
+{
+  Token t;
+}
+{
+  t=<TOOLSET_NAME>
+  {
+    return t.image;
+  }
+}
+
+String
+KeyName() : 
+{
+  Token t;
+}
+{
+  t=<KEY_NAME>
+  {
+    return t.image;
+  }
+}
+
+String
+KeyBiasName() : 
+{
+  Token t;
+}
+{
+  t=<KEY_BIAS_NAME>
+  {
+    return t.image;
+  }
+}
+
+
+
+/*------------------------------------------------------------------------------------------*/
 
 int
 IntegerLiteral() :
@@ -1313,6 +1698,43 @@ IntegerLiteral() :
   }
 }
 
+int
+PortNumber() :
+{
+  Token t;
+}
+{
+  t=<PORT_NUMBER>
+  { 
+    try {
+      return Integer.parseInt(t.image);
+    }
+    catch(NumberFormatException ex) {
+      Logs.arg.severe(ex.getMessage());
+    }
+  }
+}
+
+int
+KeyBias() : 
+{
+  Token t;
+}
+{
+  t=<KEY_BIAS>
+  { 
+    try {
+      return Integer.parseInt(t.image);
+    }
+    catch(NumberFormatException ex) {
+      Logs.arg.severe(ex.getMessage());
+    }
+  }
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+
 String
 StringLiteral() : 
 {
@@ -1328,6 +1750,7 @@ StringLiteral() :
 }
 
 
+/*------------------------------------------------------------------------------------------*/
 
 String 
 Msg() : 
