@@ -1,4 +1,4 @@
-// $Id: JBaseViewerPanel.java,v 1.1 2004/12/14 20:33:57 jim Exp $
+// $Id: JBaseViewerPanel.java,v 1.2 2004/12/16 15:39:23 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -77,11 +77,8 @@ implements MouseListener, MouseMotionListener, GLEventListener
 
       pCanvasToScreen = new Vector2d(1.0, 1.0);
 
-      pPanSpeed  = 0.415;
       pZoomSpeed = 0.1;
       pMaxFactor = maxFactor;
-
-      pRubberBand = new RubberBand();
     }
   
     /* initialize the panel components */ 
@@ -140,6 +137,21 @@ implements MouseListener, MouseMotionListener, GLEventListener
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   U S E R   I N T E R F A C E                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Refresh the scene geometry display list.
+   */ 
+  protected void
+  refresh()
+  {
+    pRefreshScene = true;
+    pCanvas.repaint();
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   L I S T E N E R S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
@@ -156,7 +168,7 @@ implements MouseListener, MouseMotionListener, GLEventListener
   )
   {    
     drawable.setGL(new DebugGL(drawable.getGL()));
-    //    drawable.setGL(new TraceGL(drawable.getGL(), System.err));
+    //drawable.setGL(new TraceGL(drawable.getGL(), System.err));
 
     GL  gl  = drawable.getGL();
     GLU glu = drawable.getGLU();
@@ -191,7 +203,40 @@ implements MouseListener, MouseMotionListener, GLEventListener
     }
 
     /* draw rubber band geometry */ 
-    pRubberBand.display(drawable, pCameraPos);
+    if((pRbStart != null) && (pRbEnd != null)) {
+
+      /* compute world coordinates */ 
+      Point2d s = new Point2d(pRbStart);
+      Point2d e = new Point2d(pRbEnd);
+      {
+	Dimension size = drawable.getSize();
+	Vector2d half = new Vector2d(size.getWidth()*0.5, size.getHeight()*0.5);
+	
+	double f = -pCameraPos.z() * pPerspFactor;
+	Vector2d persp = new Vector2d(f * pAspect, f);
+	
+	Vector2d camera = new Vector2d(pCameraPos.x(), pCameraPos.y());
+
+	s.sub(half).mult(pCanvasToScreen).mult(persp).sub(camera);
+	e.sub(half).mult(pCanvasToScreen).mult(persp).sub(camera);
+      }
+	
+      /* render the rubberband */ 
+      {
+	gl.glColor3d(1.0, 1.0, 0.0);
+
+	gl.glBegin(GL.GL_LINE_LOOP);
+	{
+	  gl.glVertex3d(s.x(), s.y(), 0.0);
+	  gl.glVertex3d(e.x(), s.y(), 0.0);
+	  gl.glVertex3d(e.x(), e.y(), 0.0);
+	  gl.glVertex3d(s.x(), e.y(), 0.0);
+	}
+	gl.glEnd();
+
+	gl.glColor3d(1.0, 1.0, 1.0);
+      }
+    }
   }
    
   /**
@@ -276,13 +321,13 @@ implements MouseListener, MouseMotionListener, GLEventListener
    * Invoked when a mouse button has been pressed on a component. 
    */
   public void 
-  mousePressed(MouseEvent e) {}
-
-  /**
-   * Invoked when a mouse button has been released on a component. 
-   */ 
-  public void 
-  mouseReleased(MouseEvent e) {}
+  mousePressed
+  (
+   MouseEvent e 
+  ) 
+  {
+    handleMousePressed(e);
+  }
 
   /**
    * Handle viewer related mouse press events.
@@ -298,76 +343,103 @@ implements MouseListener, MouseMotionListener, GLEventListener
   {
     int mods = e.getModifiersEx();
 
-    /* begin rubber band drag */ 
-    int on1  = (MouseEvent.BUTTON1_DOWN_MASK);
-    
-    int off1 = (MouseEvent.BUTTON2_DOWN_MASK | 
-		MouseEvent.BUTTON3_DOWN_MASK | 
-		MouseEvent.SHIFT_DOWN_MASK |
-		MouseEvent.ALT_DOWN_MASK |
-		MouseEvent.CTRL_DOWN_MASK);
-    
-    int on2  = (MouseEvent.BUTTON1_DOWN_MASK |
-		MouseEvent.SHIFT_DOWN_MASK);
-    
-    int off2 = (MouseEvent.BUTTON2_DOWN_MASK | 
-		MouseEvent.BUTTON3_DOWN_MASK | 
-		MouseEvent.ALT_DOWN_MASK |
-		MouseEvent.CTRL_DOWN_MASK);
-    
-    int on3  = (MouseEvent.BUTTON1_DOWN_MASK |
-		MouseEvent.SHIFT_DOWN_MASK |
-		MouseEvent.CTRL_DOWN_MASK);
-
-    int off3 = (MouseEvent.BUTTON2_DOWN_MASK | 
-		MouseEvent.BUTTON3_DOWN_MASK | 
-		MouseEvent.ALT_DOWN_MASK);
-    
-    /* pan start */ 
-    int on4  = (MouseEvent.BUTTON2_DOWN_MASK |
-		MouseEvent.ALT_DOWN_MASK);
-    
-    int off4 = (MouseEvent.BUTTON1_DOWN_MASK | 
-		MouseEvent.BUTTON3_DOWN_MASK | 
-		MouseEvent.SHIFT_DOWN_MASK |
-		MouseEvent.CTRL_DOWN_MASK);
-    
-    /* zoom start */ 
-    int on5  = (MouseEvent.BUTTON1_DOWN_MASK |
-		MouseEvent.BUTTON2_DOWN_MASK | 
-		MouseEvent.ALT_DOWN_MASK);
-    
-    int off5 = (MouseEvent.BUTTON3_DOWN_MASK | 
-		MouseEvent.SHIFT_DOWN_MASK |
-		MouseEvent.CTRL_DOWN_MASK);
-
-    /* BUTTON1[+SHIFT[+CTRL]]: begin rubber band drag */ 
-    if(((mods & (on1 | off1)) == on1) || 
-       ((mods & (on2 | off2)) == on2) || 
-       ((mods & (on3 | off3)) == on3)) {
-      pRubberBand.beginDrag(new Point2d((double) e.getX(), (double) e.getY()));
-      return true;
+    {
+      Point p = e.getPoint();
+      pMousePos = new Point2d(p.getX(), p.getY());
     }
-    
-    /* <BUTTON2+ALT> (pan start) or <BUTTON1+BUTTON2+ALT> (zoom start) */ 
-    if(((mods & (on4 | off4)) == on4) || ((mods & (on5 | off5)) == on5)) {
 
-      /* set start point of the drag */ 
+    boolean rb   = false;
+    boolean pan  = false;
+    boolean zoom = false;
+    {
+      /* BUTTON1[+SHIFT[+CTRL]]: rubber band start */ 
       {
-	Point p = e.getPoint();
-	pDragStart = new Point2d(p.getX(), p.getY());
+	int on1  = (MouseEvent.BUTTON1_DOWN_MASK);
+	
+	int off1 = (MouseEvent.BUTTON2_DOWN_MASK | 
+		    MouseEvent.BUTTON3_DOWN_MASK | 
+		    MouseEvent.SHIFT_DOWN_MASK |
+		    MouseEvent.ALT_DOWN_MASK |
+		    MouseEvent.CTRL_DOWN_MASK);
+	
+	int on2  = (MouseEvent.BUTTON1_DOWN_MASK |
+		    MouseEvent.SHIFT_DOWN_MASK);
+	
+	int off2 = (MouseEvent.BUTTON2_DOWN_MASK | 
+		    MouseEvent.BUTTON3_DOWN_MASK | 
+		    MouseEvent.ALT_DOWN_MASK |
+		    MouseEvent.CTRL_DOWN_MASK);
+	
+	int on3  = (MouseEvent.BUTTON1_DOWN_MASK |
+		    MouseEvent.SHIFT_DOWN_MASK |
+		    MouseEvent.CTRL_DOWN_MASK);
+	
+	int off3 = (MouseEvent.BUTTON2_DOWN_MASK | 
+		    MouseEvent.BUTTON3_DOWN_MASK | 
+		    MouseEvent.ALT_DOWN_MASK);
+
+	rb = (((mods & (on1 | off1)) == on1) || 
+		   ((mods & (on2 | off2)) == on2) || 
+		   ((mods & (on3 | off3)) == on3));
       }
       
-      /* change cursor */ 
-      if((mods & (on1 | off1)) == on1)
+      /* <BUTTON2+ALT>: pan start */ 
+      {
+	int on1  = (MouseEvent.BUTTON2_DOWN_MASK |
+		    MouseEvent.ALT_DOWN_MASK);
+	
+	int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
+		    MouseEvent.BUTTON3_DOWN_MASK | 
+		    MouseEvent.SHIFT_DOWN_MASK |
+		    MouseEvent.CTRL_DOWN_MASK);
+
+	pan = ((mods & (on1 | off1)) == on1);
+      }
+	
+      /* <BUTTON1+BUTTON2+ALT>: zoom start */ 
+      {
+	int on1  = (MouseEvent.BUTTON1_DOWN_MASK |
+		    MouseEvent.BUTTON2_DOWN_MASK | 
+		    MouseEvent.ALT_DOWN_MASK);
+	
+	int off1 = (MouseEvent.BUTTON3_DOWN_MASK | 
+		    MouseEvent.SHIFT_DOWN_MASK |
+		    MouseEvent.CTRL_DOWN_MASK);
+
+	zoom = ((mods & (on1 | off1)) == on1);
+      }
+    }
+      
+    if(rb) {
+      pRbStart = new Point2d(pMousePos);
+      pRbEnd   = null;
+
+      return true;
+    }
+    else if(pan || zoom) {
+      if(pan) 
 	pCanvas.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
       else 
 	pCanvas.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
       
+      pDragStart = new Point2d(pMousePos);
+
       return true;
     }
 
     return false;
+  }
+
+  /**
+   * Invoked when a mouse button has been released on a component. 
+   */ 
+  public void 
+  mouseReleased
+  (
+   MouseEvent e
+  ) 
+  {
+    handleMouseReleased(e);
   }
 
   /**
@@ -382,18 +454,25 @@ implements MouseListener, MouseMotionListener, GLEventListener
    MouseEvent e
   ) 
   {
-    pCanvas.setCursor(Cursor.getDefaultCursor());
-
-    int mods = e.getModifiersEx();
-    switch(e.getButton()) {
-    case MouseEvent.BUTTON1:
-      if(pRubberBand.isDragging()) {
-	pRubberBand.endDrag();
-	return true;
+    boolean handled = false;
+    {
+      int mods = e.getModifiersEx();
+      switch(e.getButton()) {
+      case MouseEvent.BUTTON1:
+	if((pRbStart != null) && (pRbEnd != null)) {
+	  doRubberBandSelect(pRbStart, pRbEnd);
+	  handled = true;
+	}
       }
     }
 
-    return false;
+    pRbStart = null;
+    pRbEnd   = null;
+
+    pCanvas.setCursor(Cursor.getDefaultCursor());
+    pCanvas.repaint();
+
+    return handled;
   }
 
 
@@ -410,52 +489,43 @@ implements MouseListener, MouseMotionListener, GLEventListener
   {
     int mods = e.getModifiersEx();
 
-    /* rubber band drag */ 
-    if(pRubberBand.isDragging()) {
-      int on1  = (MouseEvent.BUTTON1_DOWN_MASK);
-   
-      int off1 = (MouseEvent.BUTTON2_DOWN_MASK | 
-		  MouseEvent.BUTTON3_DOWN_MASK | 
-		  MouseEvent.SHIFT_DOWN_MASK |
-		  MouseEvent.ALT_DOWN_MASK |
-		  MouseEvent.CTRL_DOWN_MASK);
+    boolean rb   = false;
+    boolean pan  = false;
+    boolean zoom = false;
+    {
+      /* BUTTON1[+SHIFT[+CTRL]]: rubber band start */ 
+      {
+	int on1  = (MouseEvent.BUTTON1_DOWN_MASK);
+	
+	int off1 = (MouseEvent.BUTTON2_DOWN_MASK | 
+		    MouseEvent.BUTTON3_DOWN_MASK | 
+		    MouseEvent.SHIFT_DOWN_MASK |
+		    MouseEvent.ALT_DOWN_MASK |
+		    MouseEvent.CTRL_DOWN_MASK);
+	
+	int on2  = (MouseEvent.BUTTON1_DOWN_MASK |
+		    MouseEvent.SHIFT_DOWN_MASK);
+	
+	int off2 = (MouseEvent.BUTTON2_DOWN_MASK | 
+		    MouseEvent.BUTTON3_DOWN_MASK | 
+		    MouseEvent.ALT_DOWN_MASK |
+		    MouseEvent.CTRL_DOWN_MASK);
+	
+	int on3  = (MouseEvent.BUTTON1_DOWN_MASK |
+		    MouseEvent.SHIFT_DOWN_MASK |
+		    MouseEvent.CTRL_DOWN_MASK);
+	
+	int off3 = (MouseEvent.BUTTON2_DOWN_MASK | 
+		    MouseEvent.BUTTON3_DOWN_MASK | 
+		    MouseEvent.ALT_DOWN_MASK);
 
-   
-      int on2  = (MouseEvent.BUTTON1_DOWN_MASK |
-		  MouseEvent.SHIFT_DOWN_MASK);
-   
-      int off2 = (MouseEvent.BUTTON2_DOWN_MASK | 
-		  MouseEvent.BUTTON3_DOWN_MASK | 
-		  MouseEvent.ALT_DOWN_MASK |
-		  MouseEvent.CTRL_DOWN_MASK);
-
-   
-      int on3  = (MouseEvent.BUTTON1_DOWN_MASK |
-		  MouseEvent.SHIFT_DOWN_MASK | 
-		  MouseEvent.CTRL_DOWN_MASK);
-   
-      int off3 = (MouseEvent.BUTTON2_DOWN_MASK | 
-		  MouseEvent.BUTTON3_DOWN_MASK | 
-		  MouseEvent.ALT_DOWN_MASK);
-
-      /* BUTTON1[+SHIFT[+CTRL]]: update rubber band drag */ 
-      if(((mods & (on1 | off1)) == on1) || 
-	 ((mods & (on2 | off2)) == on2) || 
-	 ((mods & (on3 | off3)) == on3)) {
-	pRubberBand.updateDrag(new Point2d((double) e.getX(), (double) e.getY()));
+	rb = (((mods & (on1 | off1)) == on1) || 
+		   ((mods & (on2 | off2)) == on2) || 
+		   ((mods & (on3 | off3)) == on3));
       }
-   
-      /* end rubber band drag */ 
-      else {
-	pRubberBand.endDrag();
-      }
-
-      pCanvas.repaint();
-    }
-    
-    /* zoom/pan drag */ 
-    else {
-      if(pDragStart != null) {
+      
+      /* <BUTTON2+ALT>: pan start */ 
+      {
 	int on1  = (MouseEvent.BUTTON2_DOWN_MASK |
 		    MouseEvent.ALT_DOWN_MASK);
 	
@@ -463,53 +533,66 @@ implements MouseListener, MouseMotionListener, GLEventListener
 		    MouseEvent.BUTTON3_DOWN_MASK | 
 		    MouseEvent.SHIFT_DOWN_MASK |
 		    MouseEvent.CTRL_DOWN_MASK);
+
+	pan = ((mods & (on1 | off1)) == on1);
+      }
 	
-	
-	int on2  = (MouseEvent.BUTTON1_DOWN_MASK |
+      /* <BUTTON1+BUTTON2+ALT>: zoom start */ 
+      {
+	int on1  = (MouseEvent.BUTTON1_DOWN_MASK |
 		    MouseEvent.BUTTON2_DOWN_MASK | 
 		    MouseEvent.ALT_DOWN_MASK);
 	
-	int off2 = (MouseEvent.BUTTON3_DOWN_MASK | 
+	int off1 = (MouseEvent.BUTTON3_DOWN_MASK | 
 		    MouseEvent.SHIFT_DOWN_MASK |
 		    MouseEvent.CTRL_DOWN_MASK);
-      
-	/* <BUTTON2+ALT> (pan) */ 
-	if((mods & (on1 | off1)) == on1) {
-	  Point p = e.getPoint();
-	  Vector2d delta = new Vector2d(pDragStart, new Point2d(p.getX(), p.getY()));
 
-	  Vector2d persp = new Vector2d(pCameraPos.z() * pPerspFactor * pAspect, 
-					pCameraPos.z() * pPerspFactor);
-	  delta.mult(pCanvasToScreen).mult(persp);
-
-	  pCameraPos.add(new Vector3d(-delta.x(), -delta.y(), 0.0));
-	  
-	  pCanvas.repaint();
-	}
-      
-	/* <BUTTON1+BUTTON2+ALT> (zoom) */ 
-	if((mods & (on2 | off2)) == on2) {
-	  Point p = e.getPoint();
-	  Vector2d delta = new Vector2d(pDragStart, new Point2d(p.getX(), p.getY()));
-
- 	  double zoom = delta.y();
- 	  if(Math.abs(delta.x()) > Math.abs(delta.y())) 
- 	    zoom = -delta.x();
-	  
-	  double dist = -pCameraPos.z();
-	  dist += pZoomSpeed*zoom;
-	  dist = Math.max(((double) pCanvas.getWidth()) / pMaxFactor, dist); 
-	  pCameraPos.z(-dist);
-
-	  pCanvas.repaint();
-	}
-      }
-
-      {
-	Point p = e.getPoint();
-	pDragStart = new Point2d(p.getX(), p.getY());
+	zoom = ((mods & (on1 | off1)) == on1);
       }
     }
+
+    if((pRbStart != null) && rb) {
+      Point p = e.getPoint();
+      pRbEnd = new Point2d(p.getX(), p.getY());
+    }
+    else {
+      pRbStart = null;
+      pRbEnd   = null;
+    }
+
+    if(pDragStart != null) {
+      Point p = e.getPoint();
+      Point2d pos = new Point2d(p.getX(), p.getY());
+
+      if(pan) {
+	double f = -pCameraPos.z() * pPerspFactor;
+	Vector2d persp = new Vector2d(f * pAspect, f);
+
+	Vector2d delta = new Vector2d(pDragStart, pos);	
+	delta.mult(pCanvasToScreen).mult(persp);
+	
+	pCameraPos.add(new Vector3d(delta.x(), delta.y(), 0.0));
+
+	pDragStart = pos;
+      }
+      else if(zoom) {
+	Vector2d delta = new Vector2d(pDragStart, pos);	
+
+	double zm = delta.y();
+	if(Math.abs(delta.x()) > Math.abs(delta.y())) 
+	  zm = -delta.x();
+	
+	double dist = -pCameraPos.z();
+	dist += pZoomSpeed*zm;
+	dist = Math.max(((double) pCanvas.getWidth()) / pMaxFactor, dist); 
+	pCameraPos.z(-dist);
+
+	pDragStart = pos;
+      } 
+    }
+
+    if(rb || pan || zoom) 
+      pCanvas.repaint();     
   }
 
   /**
@@ -533,10 +616,23 @@ implements MouseListener, MouseMotionListener, GLEventListener
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Perform a rubberband selection using the given canvas coordinates.
+   */ 
+  protected abstract void 
+  doRubberBandSelect
+  (
+   Point2d rbStart,
+   Point2d rbEnd
+  ); 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Move the camera to frame the given world space bounding box on the XY plane.
    */ 
   protected void 
-  frameBounds
+  doFrameBounds
   (
    BBox2d bbox
   ) 
@@ -547,6 +643,7 @@ implements MouseListener, MouseMotionListener, GLEventListener
     // ....
     
   }
+
 
 
 
@@ -634,10 +731,27 @@ implements MouseListener, MouseMotionListener, GLEventListener
    */ 
   protected GLCanvas  pCanvas;
 
+
+  /**
+   * The OpenGL display list handle for the scene geometry.
+   */ 
+  protected Integer  pSceneDL; 
+
+  /**
+   * Whether the OpenGL display list for the scene geometry needs to be rebuilt.
+   */ 
+  protected boolean  pRefreshScene;
+
+
   /**
    * The expand/collapse policy to use during layout.
    */ 
   protected LayoutPolicy  pLayoutPolicy;
+
+  /**
+   * The last known mouse position in canvas coordinates.
+   */ 
+  protected Point2d pMousePos;
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -645,46 +759,57 @@ implements MouseListener, MouseMotionListener, GLEventListener
   /**
    * The camera position in world space coordinates.
    */ 
-  private Point3d  pCameraPos; 
+  protected Point3d  pCameraPos; 
 
   /** 
    * The vertical field-of-view in degrees.
    */ 
-  private double pFOV; 
+  protected double pFOV; 
 
   /**
    * The perspective correction factor: tan(FOV / 2)
    */ 
-  private double pPerspFactor; 
+  protected double pPerspFactor; 
 
   /**
    * The canvas aspect ratio: width / height
    */ 
-  private double pAspect;
+  protected double pAspect;
 
   /**
    * The distance to the near clipping plane.
    */ 
-  private double pNear;
+  protected double pNear;
 
   /**
    * The distance to the far clipping plane.
    */ 
-  private double pFar;
+  protected double pFar;
 
   /**
    * Conversion factor from canvas coordinates (in pixels) to normalized screen space 
    * coordinates: [-1.0, 1.0] in both X and Y.
    */ 
-  private Vector2d  pCanvasToScreen;
+  protected Vector2d  pCanvasToScreen;
 
 
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The camera pan speed scale factor. 
+   * The location of the start of a rubberband drag in canvas coordinates.
    */ 
-  private double  pPanSpeed;   
+  private Point2d  pRbStart;  
+
+  /**
+   * The location of the end of a rubberband drag in canvas coordinates.
+   */
+  private Point2d  pRbEnd;  
+
+
+  /**
+   * The location of the start of a mouse drag in canvas coordinates.
+   */ 
+  private Point2d  pDragStart;  
 
   /**
    * The camera zoom speed scale factor. 
@@ -697,21 +822,4 @@ implements MouseListener, MouseMotionListener, GLEventListener
   private double  pMaxFactor; 
 
 
-  /**
-   * The pixel location of start of mouse drag. 
-   */ 
-  protected Point2d  pDragStart;  
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The last known mouse position in canvas coordinates.
-   */ 
-  protected Point2d pMousePos;
-
-  /**
-   * The selection rubberband.
-   */ 
-  protected RubberBand  pRubberBand;
 }

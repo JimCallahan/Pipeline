@@ -1,22 +1,23 @@
-// $Id: JNodeViewerPanel.java,v 1.71 2004/12/07 04:55:17 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.72 2004/12/16 15:39:23 jim Exp $
 
 package us.temerity.pipeline.ui;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*; 
+import us.temerity.pipeline.math.*; 
 import us.temerity.pipeline.glue.*;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.*;
 import java.io.*;
 import java.util.*;
+
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.tree.*;
-import javax.vecmath.*;
-import javax.media.j3d.*;
-import com.sun.j3d.utils.universe.*;
-import com.sun.j3d.utils.geometry.*;
+
+import net.java.games.jogl.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   N O D E   V I E W E R   P A N E L                                                      */
@@ -28,9 +29,8 @@ import com.sun.j3d.utils.geometry.*;
  */ 
 public  
 class JNodeViewerPanel
-  extends JTopLevelPanel
-  implements ComponentListener, MouseListener, MouseMotionListener, KeyListener, 
-             PopupMenuListener, ActionListener
+  extends JBaseViewerPanel
+  implements KeyListener, PopupMenuListener, ActionListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -65,22 +65,24 @@ class JNodeViewerPanel
   /**
    * Initialize the common user interface components.
    */ 
-  private synchronized void 
+  protected synchronized void 
   initUI()
   {  
+    super.initUI(256.0);
+
     /* initialize fields */ 
     {
       pRoots = new TreeMap<String,NodeStatus>();
 
       pShowDownstream   = UserPrefs.getInstance().getShowDownstream();
       pShowAssociations = UserPrefs.getInstance().getShowAssociations();
-      pLayoutPolicy     = LayoutPolicy.AutomaticExpand;
 
+      pViewerNodes = new HashMap<NodePath,ViewerNode>();
       pSelected = new HashMap<NodePath,ViewerNode>();
 
       pRemoveSecondarySeqs = new TreeMap<String,FileSeq>();
     }
-  
+
     /* panel popup menu */ 
     {
       JMenuItem item;
@@ -100,11 +102,6 @@ class JNodeViewerPanel
       pPanelPopup.add(item);  
       
       pPanelPopup.addSeparator();
-
-      item = new JMenuItem("Frame Selection");
-      item.setActionCommand("frame-selection");
-      item.addActionListener(this);
-      pPanelPopup.add(item);  
       
       item = new JMenuItem("Frame All");
       item.setActionCommand("frame-all");
@@ -378,97 +375,6 @@ class JNodeViewerPanel
       item.setActionCommand("link-unlink");
       item.addActionListener(this);
       pLinkPopup.add(item);
-    }
-
-    /* initialize the panel components */ 
-    {
-      setLayout(new BorderLayout());
-      setMinimumSize(new Dimension(50, 50));
-      setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-      
-      /* canvas */ 
-      {
-	pCanvas = new Canvas3D(SimpleUniverse.getPreferredConfiguration());
-	pCanvas.addComponentListener(this); 
-	pCanvas.addMouseListener(this); 
-	pCanvas.addMouseMotionListener(this); 
-	pCanvas.setFocusable(true);
-	pCanvas.addKeyListener(this);
-	
-	add(pCanvas);
-      }
-
-      /* grey backgound */ 
-      BranchGroup background = new BranchGroup();
-      {
-	Point3d origin = new Point3d(0, 0, 0);
-	BoundingSphere bounds = new BoundingSphere(origin, Double.POSITIVE_INFINITY);
-	
- 	Background bg = new Background(0.5f, 0.5f, 0.5f);
-	bg.setApplicationBounds(bounds);
-	
-	background.addChild(bg);
-	background.compile();
-      }
-      
-      /* the universe */ 
-      {
-	pUniverse = new SimpleUniverse(pCanvas);
-	pUniverse.addBranchGraph(background);
-      }
-      
-      /* initialialize camera position */ 
-      {
-	Viewer viewer = pUniverse.getViewer();
-	TransformGroup tg = viewer.getViewingPlatform().getViewPlatformTransform();
-	
-	Transform3D xform = new Transform3D();
-	xform.setTranslation(new Vector3d(0.0, 0.0, 10.0));
-	tg.setTransform(xform);
-	
-	View view = viewer.getView();
-	view.setFrontClipDistance(0.5);
-	view.setBackClipDistance(1000.0); 
-      }
-      
-      /* zoomer-paner */ 
-      {
-	Point3d origin = new Point3d(0, 0, 0);
-	BoundingSphere bounds = new BoundingSphere(origin, Double.POSITIVE_INFINITY);
-	
-	ZoomPanBehavior zp = new ZoomPanBehavior(pUniverse.getViewer(), 64.0);
-	zp.setSchedulingBounds(bounds);
-	
-	BranchGroup branch = new BranchGroup();
-	branch.addChild(zp);
-	
-	pUniverse.addBranchGraph(branch);
-      }
-
-      /* rubber band geometry */ 
-      {
-	pRubberBand = new RubberBand();
-	pUniverse.addBranchGraph(pRubberBand.getBranchGroup());
-      }
-
-      /* the node/link geometry */ 
-      {
-	pGeomBranch = new BranchGroup();
-	
-	/* the node pool */ 
-	{
-	  pNodePool = new ViewerNodePool();
-	  pGeomBranch.addChild(pNodePool.getBranchGroup());
-	}
-	
-	/* the node links */ 
-	{
-	  pLinks = new ViewerLinks();
-	  pGeomBranch.addChild(pLinks.getBranchGroup());
-	}
-
-	pUniverse.addBranchGraph(pGeomBranch);
-      }				 
     }
 
     /* initialize child dialogs */ 
@@ -1000,9 +906,6 @@ class JNodeViewerPanel
   private synchronized void 
   updateNodeStatus()
   {
-    if(pNodePool == null) 
-      return;
-    
     StatusTask task = new StatusTask(this);
     task.start();
   }
@@ -1016,22 +919,26 @@ class JNodeViewerPanel
     /* compute the center of the current layout if no pinned node is set */ 
     if(pPinnedPath == null) {
       pPinnedPos = null;
-      Point2d bounds[] = pNodePool.getActiveBounds();
-      if(bounds != null) {
-	pPinnedPos = new Point2d();
-	pPinnedPos.add(bounds[0], bounds[1]);
-	pPinnedPos.scale(0.5);
-      }
+      BBox2d bbox = getNodeBounds(pViewerNodes.values());
+      if(bbox != null) 
+	pPinnedPos = bbox.getCenter(); 
     }
-    
-    pLinks.updatePrep();
-    pNodePool.updatePrep();
 
+    /* get the paths to the currently collapsed nodes */ 
+    TreeSet<NodePath> wasCollapsed = new TreeSet<NodePath>();
+    for(ViewerNode vnode : pViewerNodes.values()) {
+      if(vnode.isCollapsed()) 
+	wasCollapsed.add(vnode.getNodePath());
+    }
+
+    /* remove all previous nodes */ 
+    pViewerNodes.clear();
+
+    /* rebuild the viewer nodes and links */ 
     if(!pRoots.isEmpty()) {
       double anchorHeight = 0.0;
       for(String name : pRoots.keySet()) {
 	NodeStatus status = pRoots.get(name);
-	
 	assert(status != null) : ("Missing Status for: " + name);
 	
 	NodePath path = new NodePath(name);
@@ -1041,14 +948,14 @@ class JNodeViewerPanel
 	double uheight = 0.0;
 	{
 	  TreeSet<String> seen = new TreeSet<String>();
-	  uheight = layoutNodes(true, true, status, path, anchor, seen);
+	  uheight = layoutNodes(true, true, status, path, anchor, wasCollapsed, seen);
 	}
 	
 	/* layout the downstream nodes */ 
 	double dheight = 0.0;  
 	if(pShowDownstream) {
 	  TreeSet<String> seen = new TreeSet<String>();
-	  dheight = layoutNodes(true, false, status, path, anchor, seen);
+	  dheight = layoutNodes(true, false, status, path, anchor, wasCollapsed, seen);
 	}
 	
 	/* shift the upstream/downstream nodes so that they line up vertically */ 
@@ -1068,47 +975,37 @@ class JNodeViewerPanel
       /* shift entire layout */ 
       {
 	Vector2d delta = null;
+
 	/* shift all active nodes so that the pinned node remains stationary */ 
 	if(pPinnedPath != null) {
-	  ViewerNode vnode = pNodePool.getActiveViewerNode(pPinnedPath);
-	  if(vnode != null) {
-	    Point2d npos = vnode.getPosition();
-	    delta = new Vector2d();
-	    delta.sub(pPinnedPos, npos);
-	  }
+	  ViewerNode vnode = pViewerNodes.get(pPinnedPath);
+	  if(vnode != null) 
+	    delta = new Vector2d(vnode.getPosition(), pPinnedPos);
 	}
+
 	/* shift all active nodes so that center of the new layout is the same as the 
 	     center of the previous layout */ 
 	else if(pPinnedPos != null) {
-	  Point2d bounds[] = pNodePool.getActiveBounds();
-	  if(bounds != null) {
-	    Point2d npos = new Point2d();
-	    npos.add(bounds[0], bounds[1]);
-	    npos.scale(0.5);
-
-	    delta = new Vector2d();
-	    delta.sub(pPinnedPos, npos);	    
-	  }
+	  BBox2d bbox = getNodeBounds(pViewerNodes.values());
+	  if(bbox != null) 
+	    delta = new Vector2d(bbox.getCenter(), pPinnedPos);
 	}
 
 	if(delta != null) {
-	  for(ViewerNode vn : pNodePool.getActiveViewerNodes()) {
-	    Point2d pos = new Point2d();
-	    pos.add(vn.getPosition(), delta);
-	    vn.setPosition(pos);
-	  }
+	  for(ViewerNode vnode : pViewerNodes.values()) 
+	    vnode.movePosition(delta);
 	}
 
 	pPinnedPos  = null;
 	pPinnedPath = null;
       }
-      
+   
       /* preserve the current layout */ 
       pLayoutPolicy = LayoutPolicy.Preserve;
     }
-  
-    pLinks.update();
-    pNodePool.update();
+
+    /* render the changes */ 
+    refresh();
 
     /* update the connected node details panels */ 
     updateSubPanels(true);
@@ -1132,116 +1029,122 @@ class JNodeViewerPanel
    * @param anchor
    *   The upper-left corner of the layout area for the current node.
    * 
+   * @param wasCollapsed
+   *   The node paths of the previously collapsed nodes.
+   * 
    * @param seen
    *   The fully resolved node names of processed nodes.
    * 
    * @return 
    *   The height of the layout area of the viewer node including its children.
    */ 
-  private double
-  layoutNodes
-  (
-   boolean isRoot, 
-   boolean upstream,
-   NodeStatus status, 
-   NodePath path, 
-   Point2d anchor, 
-   TreeSet<String> seen
-  ) 
-  {
-    UserPrefs prefs = UserPrefs.getInstance();
+   private double
+   layoutNodes
+   (
+    boolean isRoot, 
+    boolean upstream,
+    NodeStatus status, 
+    NodePath path, 
+    Point2d anchor, 
+    TreeSet<NodePath> wasCollapsed, 
+    TreeSet<String> seen
+   ) 
+   {
+     UserPrefs prefs = UserPrefs.getInstance();
 
-    ViewerNode vnode = null;
-    if(!isRoot || upstream) 
-      vnode = pNodePool.lookupOrCreateViewerNode(status, path);
-    else 
-      vnode = pNodePool.getActiveViewerNode(path);
-    assert(vnode != null);
+     ViewerNode vnode = null;
+     if(!isRoot || upstream) {
+       vnode = new ViewerNode(status, path);
+       pViewerNodes.put(path, vnode);
+     }
+     else {
+       vnode = pViewerNodes.get(path);
+       assert(vnode != null);
+     }
 
-    if((upstream && status.hasSources()) || 
-       (!upstream && status.hasTargets() && !isRoot)) {
-      switch(pLayoutPolicy) {
-      case Preserve:
-	if(!vnode.isReset()) 
-	  break;
+     if((upstream && status.hasSources()) || 
+        (!upstream && status.hasTargets() && !isRoot)) {
+       switch(pLayoutPolicy) {
+       case Preserve:
+	 vnode.setCollapsed(wasCollapsed.contains(path));
+	 break;
+	 
+       case AutomaticExpand:
+	 vnode.setCollapsed(seen.contains(status.getName()));
+	 break;
 	
-      case AutomaticExpand:
-	vnode.setCollapsed(seen.contains(status.getName()));
-	break;
+//        case ExpandAll:
+// 	 vnode.setCollapsed(false);
+// 	 break;
 	
-      case ExpandAll:
-	vnode.setCollapsed(false);
-	break;
-	
-      case CollapseAll:
-	vnode.setCollapsed(true);
-      }
-    }
-    else if(!isRoot || upstream) {
-      vnode.setCollapsed(false);
-    }
+       case CollapseAll:
+	 vnode.setCollapsed(true);
+       }
+     }
+//      else if(!isRoot || upstream) {
+//        vnode.setCollapsed(false);
+//      }
 
-    seen.add(status.getName());
+     seen.add(status.getName());
 
-    double height = 0.0;
-    if(vnode.isCollapsed() && !(isRoot && !upstream)) {
-      height = -prefs.getNodeSpaceY();
-    }
-    else {      
-      Collection<NodeStatus> children = null;
-      if(upstream && status.hasSources())
-	children = status.getSources();
-      else if(!upstream && status.hasTargets()) 
-	children = status.getTargets();
+     double height = 0.0;
+     if(vnode.isCollapsed() && !(isRoot && !upstream)) {
+       height = -prefs.getNodeSpaceY();
+     }
+     else {      
+       Collection<NodeStatus> children = null;
+       if(upstream && status.hasSources())
+ 	children = status.getSources();
+       else if(!upstream && status.hasTargets()) 
+ 	children = status.getTargets();
 
-      if(children != null) {
-	for(NodeStatus cstatus : children) {
-	  NodePath cpath = new NodePath(path, cstatus.getName());
+       if(children != null) {
+ 	for(NodeStatus cstatus : children) {
+ 	  NodePath cpath = new NodePath(path, cstatus.getName());
 	  
-	  /* layout the child node */ 
-	  {
-	    double sign = upstream ? 1.0 : -1.0;
-	    Point2d canchor = new Point2d(anchor.x + sign*prefs.getNodeSpaceX(), 
-					  anchor.y + height);
-	    
-	    height += layoutNodes(false, upstream, cstatus, cpath, canchor, seen);
-	  }
+ 	  /* layout the child node */ 
+ 	  {
+ 	    double sign = upstream ? 1.0 : -1.0;
+	    Point2d canchor = 
+	      Point2d.add(anchor, new Vector2d(sign*prefs.getNodeSpaceX(), height));
+ 	    height += layoutNodes(false, upstream, cstatus, cpath, canchor, 
+				  wasCollapsed, seen);
+ 	  }
 
-	  /* add a link between this node and the child node */ 
-	  {
-	    ViewerNode cvnode = pNodePool.getActiveViewerNode(cpath);
-	    if(upstream) {
-	      LinkCommon link = null;
-	      {
-		NodeDetails details = status.getDetails();
-		if(details.getWorkingVersion() != null) 
-		  link = details.getWorkingVersion().getSource(cstatus.getName());
-		else if(details.getLatestVersion() != null)
-		link = details.getLatestVersion().getSource(cstatus.getName());
-	      }
-	      assert(link != null);	    
+ 	  /* add a link between this node and the child node */ 
+ // 	  {
+//  	    ViewerNode cvnode = pViewerNodes.get(cpath);
+//  	    if(upstream) {
+//  	      LinkCommon link = null;
+//  	      {
+//  		NodeDetails details = status.getDetails();
+//  		if(details.getWorkingVersion() != null) 
+//  		  link = details.getWorkingVersion().getSource(cstatus.getName());
+//  		else if(details.getLatestVersion() != null)
+//  		link = details.getLatestVersion().getSource(cstatus.getName());
+//  	      }
+//  	      assert(link != null);	    
 	      
-	      pLinks.addUpstreamLink(vnode, cvnode, link, status.isStaleLink(link.getName()));
-	    }
-	    else {
-	      pLinks.addDownstreamLink(cvnode, vnode);
-	    }				   
-	  }      
-	}
-      }
-      else {
-	height = -prefs.getNodeSpaceY();
-      }
-    }
+//  	      pLinks.addUpstreamLink(vnode, cvnode, link, status.isStaleLink(link.getName()));
+//  	    }
+//  	    else {
+//  	      pLinks.addDownstreamLink(cvnode, vnode);
+//  	    }				   
+//  	  }  
+ 	}
+       }
+       else {
+ 	height = -prefs.getNodeSpaceY();
+       }
+     }
 
-    if(!isRoot) {
-      double offset = ((path.getNumNodes() % 2) == 0) ? prefs.getNodeOffset() : 0.0;
-      vnode.setPosition(new Point2d(anchor.x, 
-				    anchor.y + 0.5*height + offset));
-    }
+     if(!isRoot) {
+       double offset = ((path.getNumNodes() % 2) == 0) ? prefs.getNodeOffset() : 0.0;
+       vnode.setPosition(Point2d.add(anchor, new Vector2d(0.0, 0.5*height + offset)));
+     }
 
-    return height;
-  }
+     return height;
+   }
   
   /**
    * Recursively shift the upstream nodes by the given vertical offset.
@@ -1271,17 +1174,14 @@ class JNodeViewerPanel
    double offset
   ) 
   {
-    ViewerNode vnode = pNodePool.getActiveViewerNode(path);
+    ViewerNode vnode = pViewerNodes.get(path);
     if(vnode == null) 
       return;
 
-    if(isRoot) {
+    if(isRoot) 
       vnode.setPosition(new Point2d(0.0, ry));
-    }
-    else {
-      Point2d pos = vnode.getPosition();
-      vnode.setPosition(new Point2d(pos.x, pos.y+offset));
-    }
+    else 
+      vnode.movePosition(new Vector2d(0.0, offset));
 
     for(NodeStatus cstatus : status.getSources()) {
       NodePath cpath = new NodePath(path, cstatus.getName());
@@ -1313,20 +1213,49 @@ class JNodeViewerPanel
    double offset
   ) 
   {
-    ViewerNode vnode = pNodePool.getActiveViewerNode(path);
+    ViewerNode vnode = pViewerNodes.get(path);
     if(vnode == null) 
       return;
 
-    if(!isRoot) {
-      Point2d pos = vnode.getPosition();
-      vnode.setPosition(new Point2d(pos.x, pos.y+offset));
-    }
+    if(!isRoot) 
+      vnode.movePosition(new Vector2d(0.0, offset));
 
     for(NodeStatus cstatus : status.getTargets()) {
       NodePath cpath = new NodePath(path, cstatus.getName());
       shiftDownstreamNodes(false, cstatus, cpath, offset);
     }
   }
+
+  /**
+   * Get the bounding box which contains the given viewer nodes. <P> 
+   * 
+   * @return 
+   *   The bounding box or <CODE>null</CODE> if no nodes are given.
+   */ 
+  private BBox2d
+  getNodeBounds
+  (
+   Collection<ViewerNode> nodes
+  ) 
+  {
+    BBox2d bbox = null;
+    for(ViewerNode vnode : nodes) {
+      if(bbox == null) 
+	bbox = new BBox2d(vnode.getPosition(), vnode.getPosition());
+      else 
+	bbox.grow(vnode.getPosition());
+    }
+
+    if(bbox != null) {
+      UserPrefs prefs = UserPrefs.getInstance();
+      Vector2d margin = new Vector2d(prefs.getNodeSpaceX(), prefs.getNodeSpaceY());
+      margin.mult(0.5);
+      bbox.bloat(margin);
+    }    
+
+    return bbox;
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1413,11 +1342,9 @@ class JNodeViewerPanel
    * @return 
    *   The previously selected nodes.
    */ 
-  public ArrayList<ViewerNode>
+  public void
   clearSelection()
   {
-    ArrayList<ViewerNode> changed = new ArrayList<ViewerNode>(pSelected.values());
-
     for(ViewerNode vnode : pSelected.values()) 
       vnode.setSelectionMode(SelectionMode.Normal);
 
@@ -1425,91 +1352,64 @@ class JNodeViewerPanel
     pPrimary = null;
     
     pSelectedLink = null;
-
-    return changed;
   }
   
   /**
    * Make the given viewer node the primary selection.
-   * 
-   * @return 
-   *   The viewer nodes who's selection state changed.
    */ 
-  public ArrayList<ViewerNode>
+  public void 
   primarySelect
   (
    ViewerNode vnode
   ) 
   {
-    ArrayList<ViewerNode> changed = new ArrayList<ViewerNode>();
-
     switch(vnode.getSelectionMode()) {
     case Normal:
       pSelected.put(vnode.getNodePath(), vnode);
       
     case Selected:
-      if(pPrimary != null) {
+      if(pPrimary != null) 
 	pPrimary.setSelectionMode(SelectionMode.Selected);
-	changed.add(pPrimary);
-      }
       pPrimary = vnode;
       vnode.setSelectionMode(SelectionMode.Primary);
-      changed.add(vnode);
     }
-
-    return changed;
   }
 
   /**
    * Add the given viewer node to the selection.
-   * 
-   * @return 
-   *   The viewer nodes who's selection state changed.
    */ 
-  public ArrayList<ViewerNode>
+  public void 
   addSelect
   (
    ViewerNode vnode
   ) 
   {
-    ArrayList<ViewerNode> changed = new ArrayList<ViewerNode>();
-
     switch(vnode.getSelectionMode()) {
     case Primary:
       if(pPrimary != null) {
 	pPrimary.setSelectionMode(SelectionMode.Selected);
-	changed.add(pPrimary);
 	pPrimary = null;
       }
 
     case Normal:
       vnode.setSelectionMode(SelectionMode.Selected);
       pSelected.put(vnode.getNodePath(), vnode);
-      changed.add(vnode);
     }
-
-    return changed;
   }
 
   /**
    * Toggle the selection of the given viewer node.
-   * 
-   * @return 
-   *   The viewer nodes who's selection state changed.
    */ 
-  public  ArrayList<ViewerNode> 
+  public void 
   toggleSelect
   (
    ViewerNode vnode
   ) 
   {
-    ArrayList<ViewerNode> changed = new ArrayList<ViewerNode>();
-
     switch(vnode.getSelectionMode()) {
     case Primary:
       if(pPrimary != null) {
 	pPrimary.setSelectionMode(SelectionMode.Selected);
-	changed.add(pPrimary);
 	pPrimary = null;
       }
 
@@ -1521,170 +1421,150 @@ class JNodeViewerPanel
     case Normal:
       vnode.setSelectionMode(SelectionMode.Selected);
       pSelected.put(vnode.getNodePath(), vnode);      
-    }
+    }    
+  }
+
+
+//   /**
+//    * Get the user-data of the Java3D object under given mouse position. <P> 
+//    * 
+//    * @return
+//    *   The picked object or <CODE>null</CODE> if no pickable object was under position.
+//    */ 
+//   private Object
+//   objectAtMousePos
+//   (
+//    int x, 
+//    int y
+//   ) 
+//   {
+//     PickRay ray = null;
+//     {
+//       Point3d eyePos = new Point3d();
+//       Point3d pos    = new Point3d();
+
+//       pCanvas.getCenterEyeInImagePlate(eyePos);
+//       pCanvas.getPixelLocationInImagePlate(x, y, pos);
+      
+//       Transform3D motion = new Transform3D();
+//       pCanvas.getImagePlateToVworld(motion);
+//       motion.transform(eyePos);
+//       motion.transform(pos);
+      
+//       Vector3d dir = new Vector3d(pos);
+//       dir.sub(eyePos);
+      
+//       ray = new PickRay(eyePos, dir);
+//     }
     
-    changed.add(vnode);
-    return changed;
-  }
+//     SceneGraphPath gpath = pGeomBranch.pickClosest(ray);
+//     if(gpath != null) 
+//       return gpath.getObject().getUserData();
+//     return null;
+//   }
 
+//   /**
+//    * Get the user-data of the Java3D object under given mouse position. <P> 
+//    * 
+//    * @return
+//    *   The picked object or <CODE>null</CODE> if no pickable object was under position.
+//    */ 
+//   private Object
+//   objectAtMousePos
+//   (
+//    Point pos
+//   ) 
+//   {
+//     if(pos == null) 
+//       return null;
 
-  /**
-   * Get the user-data of the Java3D object under given mouse position. <P> 
-   * 
-   * @return
-   *   The picked object or <CODE>null</CODE> if no pickable object was under position.
-   */ 
-  private Object
-  objectAtMousePos
-  (
-   int x, 
-   int y
-  ) 
-  {
-    PickRay ray = null;
-    {
-      Point3d eyePos = new Point3d();
-      Point3d pos    = new Point3d();
-
-      pCanvas.getCenterEyeInImagePlate(eyePos);
-      pCanvas.getPixelLocationInImagePlate(x, y, pos);
-      
-      Transform3D motion = new Transform3D();
-      pCanvas.getImagePlateToVworld(motion);
-      motion.transform(eyePos);
-      motion.transform(pos);
-      
-      Vector3d dir = new Vector3d(pos);
-      dir.sub(eyePos);
-      
-      ray = new PickRay(eyePos, dir);
-    }
-    
-    SceneGraphPath gpath = pGeomBranch.pickClosest(ray);
-    if(gpath != null) 
-      return gpath.getObject().getUserData();
-    return null;
-  }
-
-  /**
-   * Get the user-data of the Java3D object under given mouse position. <P> 
-   * 
-   * @return
-   *   The picked object or <CODE>null</CODE> if no pickable object was under position.
-   */ 
-  private Object
-  objectAtMousePos
-  (
-   Point pos
-  ) 
-  {
-    if(pos == null) 
-      return null;
-
-    return objectAtMousePos(pos.x, pos.y);
-  }
+//     return objectAtMousePos(pos.x, pos.y);
+//   }
 
 
   /*----------------------------------------------------------------------------------------*/
   /*   L I S T E N E R S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
-  /*-- COMPONENT LISTENER METHODS ----------------------------------------------------------*/
+  /*-- GL EVENT LISTENER METHODS -----------------------------------------------------------*/
 
   /**
-   * Invoked when the component has been made invisible. 
+   * Called by the drawable to initiate OpenGL rendering by the client.
    */ 
-  public void 	
-  componentHidden
+  public void 
+  display
   (
-   ComponentEvent e
-  )
-  {}
-  
-  /**
-   * Invoked when the component's position changes. 
-   */ 
-  public void 	
-  componentMoved
-  (
-   ComponentEvent e
-  )
-  {}
-
-  /**
-   * Invoked when the component's size changes. 
-   */ 
-  public void 	
-  componentResized
-  (
-   ComponentEvent e
+   GLDrawable drawable
   )
   {
-    /* adjust the minimum zoom distance based on the canvas size */ 
+    super.display(drawable); 
+
+    GL  gl  = drawable.getGL();
+    GLU glu = drawable.getGLU();
+
+
+  //   // TEST GEOMETRY... 
+//     if(pTestDL == null) {
+//       int nodeDL = -1;
+//       int textDL = -1;
+//       try {
+// 	GeometryMgr mgr = GeometryMgr.getInstance();
+// 	nodeDL = mgr.getNodeIconDL(gl, "ModifiedLinks-Aborted-Normal");
+// 	textDL = mgr.getTextDL(gl, "CharterBTRoman", "SomeTestNode.#.tif, 1-100x2", 
+// 			       GeometryMgr.TextAlignment.Center, 0.05);
+//       }
+//       catch(IOException ex) {
+// 	Logs.tex.severe(ex.getMessage());
+//       }
+
+//       pTestDL = gl.glGenLists(1);
+//       gl.glNewList(pTestDL, GL.GL_COMPILE);
+//       {
+// 	gl.glPushMatrix();
+
+// 	gl.glCallList(nodeDL);
+
+// 	gl.glScaled(0.35, 0.35, 0.35);
+//  	gl.glTranslated(0.0, 1.5, 0.0);
+// 	gl.glCallList(textDL);
+
+// 	gl.glPopMatrix();
+//       }
+//       gl.glEndList();
+//     }
+ 
+//     gl.glCallList(pTestDL);
+
+
+    /* render the scene geometry */ 
     {
-      Viewer viewer = pUniverse.getViewer();
-      TransformGroup tg = viewer.getViewingPlatform().getViewPlatformTransform();
+      if(pSceneDL == null) 
+	pSceneDL = gl.glGenLists(1);
       
-      Transform3D xform = new Transform3D();
-      tg.getTransform(xform);
-      
-      Vector3d trans = new Vector3d();
-      xform.get(trans);
-      
-      double minZ = ((double) pCanvas.getWidth()) / 64.0;
-      if(minZ > trans.z) {
-	trans.z = minZ;
+      if(pRefreshScene) {
+	for(ViewerNode vnode : pViewerNodes.values()) 
+	  vnode.rebuild(gl);
 	
-	xform.setTranslation(trans);
-	tg.setTransform(xform);
-      }    
+	gl.glNewList(pSceneDL, GL.GL_COMPILE_AND_EXECUTE);
+	{
+	  for(ViewerNode vnode : pViewerNodes.values()) 
+	    vnode.render(gl);
+
+	  // add links here... 
+
+	}
+	gl.glEndList();
+
+	pRefreshScene = false;
+      }
+      else {
+	gl.glCallList(pSceneDL);
+      }
     }
   }
 
-  /**
-   * Invoked when the component has been made visible. 
-   */ 
-  public void 	
-  componentShown
-  (
-   ComponentEvent e
-  )
-  {}
-
-  
 
   /*-- MOUSE LISTENER METHODS --------------------------------------------------------------*/
-
-  /**
-   * Invoked when the mouse button has been clicked (pressed and released) on a component. 
-   */ 
-  public void 
-  mouseClicked(MouseEvent e) {}
-   
-  /**
-   * Invoked when the mouse enters a component. 
-   */
-  public void 
-  mouseEntered
-  (
-   MouseEvent e
-  ) 
-  {
-    pCanvas.requestFocusInWindow();
-    pMousePos = e.getPoint();
-  }
-  
-  /**
-   * Invoked when the mouse exits a component. 
-   */ 
-  public void 
-  mouseExited
-  (
-   MouseEvent e
-  ) 
-  {
-    KeyboardFocusManager.getCurrentKeyboardFocusManager().clearGlobalFocusOwner();
-  }
 
   /**
    * Invoked when a mouse button has been pressed on a component. 
@@ -1695,243 +1575,212 @@ class JNodeViewerPanel
    MouseEvent e
   )
   {
+    int mods = e.getModifiersEx();
+
     /* manager panel popups */ 
     if(pManagerPanel.handleManagerMouseEvent(e)) 
       return;
 
     /* local mouse events */ 
-    pMousePos = e.getPoint();
-    Object under = objectAtMousePos(pMousePos);
 
-    /* mouse press is over a pickable object viewer node */ 
-    int mods = e.getModifiersEx();
-    if(under != null) {
-      switch(e.getButton()) {
-      case MouseEvent.BUTTON1:
-	if(under instanceof ViewerNode) {
-	  ViewerNode vunder = (ViewerNode) under;	
+//     Object under = objectAtMousePos(pMousePos);
 
-	  int on1  = (MouseEvent.BUTTON1_DOWN_MASK);
+//     /* mouse press is over a pickable object viewer node */ 
+//     if(under != null) {
+//       switch(e.getButton()) {
+//       case MouseEvent.BUTTON1:
+// 	if(under instanceof ViewerNode) {
+// 	  ViewerNode vunder = (ViewerNode) under;	
+
+// 	  int on1  = (MouseEvent.BUTTON1_DOWN_MASK);
 	  
-	  int off1 = (MouseEvent.BUTTON2_DOWN_MASK | 
-		      MouseEvent.BUTTON3_DOWN_MASK | 
-		      MouseEvent.SHIFT_DOWN_MASK |
-		      MouseEvent.ALT_DOWN_MASK |
-		      MouseEvent.CTRL_DOWN_MASK);
+// 	  int off1 = (MouseEvent.BUTTON2_DOWN_MASK | 
+// 		      MouseEvent.BUTTON3_DOWN_MASK | 
+// 		      MouseEvent.SHIFT_DOWN_MASK |
+// 		      MouseEvent.ALT_DOWN_MASK |
+// 		      MouseEvent.CTRL_DOWN_MASK);
 	    
 	  
-	  int on2  = (MouseEvent.BUTTON1_DOWN_MASK |
-		      MouseEvent.SHIFT_DOWN_MASK);
+// 	  int on2  = (MouseEvent.BUTTON1_DOWN_MASK |
+// 		      MouseEvent.SHIFT_DOWN_MASK);
 	  
-	  int off2 = (MouseEvent.BUTTON2_DOWN_MASK | 
-		      MouseEvent.BUTTON3_DOWN_MASK | 
-		      MouseEvent.SHIFT_DOWN_MASK |
-		      MouseEvent.CTRL_DOWN_MASK);
+// 	  int off2 = (MouseEvent.BUTTON2_DOWN_MASK | 
+// 		      MouseEvent.BUTTON3_DOWN_MASK | 
+// 		      MouseEvent.SHIFT_DOWN_MASK |
+// 		      MouseEvent.CTRL_DOWN_MASK);
 	  
 	  
-	  int on3  = (MouseEvent.BUTTON1_DOWN_MASK |
-		      MouseEvent.SHIFT_DOWN_MASK |
-		      MouseEvent.CTRL_DOWN_MASK);
+// 	  int on3  = (MouseEvent.BUTTON1_DOWN_MASK |
+// 		      MouseEvent.SHIFT_DOWN_MASK |
+// 		      MouseEvent.CTRL_DOWN_MASK);
 	  
-	  int off3 = (MouseEvent.BUTTON2_DOWN_MASK | 
-		      MouseEvent.BUTTON3_DOWN_MASK | 
-		      MouseEvent.ALT_DOWN_MASK);
+// 	  int off3 = (MouseEvent.BUTTON2_DOWN_MASK | 
+// 		      MouseEvent.BUTTON3_DOWN_MASK | 
+// 		      MouseEvent.ALT_DOWN_MASK);
 
-	  HashMap<NodePath,ViewerNode> changed = new HashMap<NodePath,ViewerNode>();
+// 	  HashMap<NodePath,ViewerNode> changed = new HashMap<NodePath,ViewerNode>();
 	  
-	  if(e.getClickCount() == 1) {
-	    /* BUTTON1: replace selection */ 
-	    if((mods & (on1 | off1)) == on1) {
-	      for(ViewerNode vnode : clearSelection()) 
-		changed.put(vnode.getNodePath(), vnode);
+// 	  if(e.getClickCount() == 1) {
+// 	    /* BUTTON1: replace selection */ 
+// 	    if((mods & (on1 | off1)) == on1) {
+// 	      for(ViewerNode vnode : clearSelection()) 
+// 		changed.put(vnode.getNodePath(), vnode);
 	      
-	      for(ViewerNode vnode : addSelect(vunder))
-		changed.put(vnode.getNodePath(), vnode);
-	    }
+// 	      for(ViewerNode vnode : addSelect(vunder))
+// 		changed.put(vnode.getNodePath(), vnode);
+// 	    }
 	    
-	    /* BUTTON1+SHIFT: toggle selection */ 
-	    else if((mods & (on2 | off2)) == on2) {
-	      for(ViewerNode vnode : toggleSelect(vunder)) 
-		changed.put(vnode.getNodePath(), vnode);
-	    }
+// 	    /* BUTTON1+SHIFT: toggle selection */ 
+// 	    else if((mods & (on2 | off2)) == on2) {
+// 	      for(ViewerNode vnode : toggleSelect(vunder)) 
+// 		changed.put(vnode.getNodePath(), vnode);
+// 	    }
 	    
-	    /* BUTTON1+SHIFT+CTRL: add to the selection */ 
-	    else if((mods & (on3 | off3)) == on3) {
-	      for(ViewerNode vnode : addSelect(vunder))
-	      changed.put(vnode.getNodePath(), vnode);
-	    }
-	  }
-	  else if(e.getClickCount() == 2) {
-	    /* BUTTON1 (double click): send node status details panels */ 
-	    if((mods & (on1 | off1)) == on1) {
-	      for(ViewerNode vnode : primarySelect(vunder)) 
-		vnode.update();
+// 	    /* BUTTON1+SHIFT+CTRL: add to the selection */ 
+// 	    else if((mods & (on3 | off3)) == on3) {
+// 	      for(ViewerNode vnode : addSelect(vunder))
+// 	      changed.put(vnode.getNodePath(), vnode);
+// 	    }
+// 	  }
+// 	  else if(e.getClickCount() == 2) {
+// 	    /* BUTTON1 (double click): send node status details panels */ 
+// 	    if((mods & (on1 | off1)) == on1) {
+// 	      for(ViewerNode vnode : primarySelect(vunder)) 
+// 		vnode.update();
 
-	      doDetails();
-	    }
-	  }
+// 	      doDetails();
+// 	    }
+// 	  }
 	    
-	  /* update the appearance of all nodes who's selection state changed */ 
-	  for(ViewerNode vnode : changed.values()) 
-	    vnode.update();
-	}
-	break;
+// 	  /* update the appearance of all nodes who's selection state changed */ 
+// 	  for(ViewerNode vnode : changed.values()) 
+// 	    vnode.update();
+// 	}
+// 	break;
 
-      case MouseEvent.BUTTON2:
-	if(under instanceof ViewerNode) {
-	  ViewerNode vunder = (ViewerNode) under;
+//       case MouseEvent.BUTTON2:
+// 	if(under instanceof ViewerNode) {
+// 	  ViewerNode vunder = (ViewerNode) under;
 
-	  int on1  = (MouseEvent.BUTTON2_DOWN_MASK);
+// 	  int on1  = (MouseEvent.BUTTON2_DOWN_MASK);
 	  
-	  int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
-		      MouseEvent.BUTTON3_DOWN_MASK | 
-		      MouseEvent.SHIFT_DOWN_MASK |
-		      MouseEvent.ALT_DOWN_MASK |
-		      MouseEvent.CTRL_DOWN_MASK);
+// 	  int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
+// 		      MouseEvent.BUTTON3_DOWN_MASK | 
+// 		      MouseEvent.SHIFT_DOWN_MASK |
+// 		      MouseEvent.ALT_DOWN_MASK |
+// 		      MouseEvent.CTRL_DOWN_MASK);
 	  
-	  /* BUTTON2: expand/collapse a node */ 
-	  if((mods & (on1 | off1)) == on1) {
-	    if(vunder.getNodeStatus().hasSources()) {
-	      vunder.setCollapsed(!vunder.isCollapsed());
+// 	  /* BUTTON2: expand/collapse a node */ 
+// 	  if((mods & (on1 | off1)) == on1) {
+// 	    if(vunder.getNodeStatus().hasSources()) {
+// 	      vunder.setCollapsed(!vunder.isCollapsed());
 
-	      pPinnedPos  = vunder.getPosition();
-	      pPinnedPath = vunder.getNodePath();
+// 	      pPinnedPos  = vunder.getPosition();
+// 	      pPinnedPath = vunder.getNodePath();
 
-	      updateUniverse();
-	    }
-	  }
-	}
-	break;
+// 	      updateUniverse();
+// 	    }
+// 	  }
+// 	}
+// 	break;
 	  
-      case MouseEvent.BUTTON3:
-	{
-	  int on1  = (MouseEvent.BUTTON3_DOWN_MASK);
+//       case MouseEvent.BUTTON3:
+// 	{
+// 	  int on1  = (MouseEvent.BUTTON3_DOWN_MASK);
 	  
-	  int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
-		      MouseEvent.BUTTON2_DOWN_MASK | 
-		      MouseEvent.SHIFT_DOWN_MASK |
-		      MouseEvent.ALT_DOWN_MASK |
-		      MouseEvent.CTRL_DOWN_MASK);
+// 	  int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
+// 		      MouseEvent.BUTTON2_DOWN_MASK | 
+// 		      MouseEvent.SHIFT_DOWN_MASK |
+// 		      MouseEvent.ALT_DOWN_MASK |
+// 		      MouseEvent.CTRL_DOWN_MASK);
 	  
-	  /* BUTTON3: node/link popup menu */ 
-	  if((mods & (on1 | off1)) == on1) {
-	    if(under instanceof ViewerNode) {
-	      ViewerNode vunder = (ViewerNode) under;
+// 	  /* BUTTON3: node/link popup menu */ 
+// 	  if((mods & (on1 | off1)) == on1) {
+// 	    if(under instanceof ViewerNode) {
+// 	      ViewerNode vunder = (ViewerNode) under;
 
-	      for(ViewerNode vnode : primarySelect(vunder)) 
-		vnode.update();
+// 	      for(ViewerNode vnode : primarySelect(vunder)) 
+// 		vnode.update();
 	    
-	      NodeDetails details = pPrimary.getNodeStatus().getDetails();
-	      if(details != null) {
-		if(pIsLocked) {
-		  updateLockedNodeMenu();
-		  pLockedNodePopup.show(e.getComponent(), e.getX(), e.getY());
-		}
-		else if(details.getWorkingVersion() == null) {
-		  updateCheckedInNodeMenu();
-		  pCheckedInNodePopup.show(e.getComponent(), e.getX(), e.getY());
-		}
-		else if(details.getWorkingVersion().isFrozen()) {
-		  updateFrozenNodeMenu();
-		  pFrozenNodePopup.show(e.getComponent(), e.getX(), e.getY());
-		}
-		else {
-		  updateNodeMenu();
-		  pNodePopup.show(e.getComponent(), e.getX(), e.getY());
-		}
-	      }
-	      else {
-		pUndefinedNodePopup.show(e.getComponent(), e.getX(), e.getY());
-	      }
-	    }
-	    else if(under instanceof ViewerLinkRelationship) {
-	      ViewerLinkRelationship lunder = (ViewerLinkRelationship) under;
-	      ViewerNode vunder = lunder.getViewerNode();
-	      NodeDetails details = vunder.getNodeStatus().getDetails();
-	      if(details != null) {
-		NodeMod mod = details.getWorkingVersion();
-		if((mod != null) && !mod.isFrozen()) {
-		  {
-		    HashMap<NodePath,ViewerNode> changed = new HashMap<NodePath,ViewerNode>();
-		    for(ViewerNode vnode : clearSelection()) 
-		      changed.put(vnode.getNodePath(), vnode);
-		    for(ViewerNode vnode : primarySelect(vunder)) 
-		      changed.put(vnode.getNodePath(), vnode);
-		    for(ViewerNode vnode : changed.values()) 
-		      vnode.update();
-		  }
+// 	      NodeDetails details = pPrimary.getNodeStatus().getDetails();
+// 	      if(details != null) {
+// 		if(pIsLocked) {
+// 		  updateLockedNodeMenu();
+// 		  pLockedNodePopup.show(e.getComponent(), e.getX(), e.getY());
+// 		}
+// 		else if(details.getWorkingVersion() == null) {
+// 		  updateCheckedInNodeMenu();
+// 		  pCheckedInNodePopup.show(e.getComponent(), e.getX(), e.getY());
+// 		}
+// 		else if(details.getWorkingVersion().isFrozen()) {
+// 		  updateFrozenNodeMenu();
+// 		  pFrozenNodePopup.show(e.getComponent(), e.getX(), e.getY());
+// 		}
+// 		else {
+// 		  updateNodeMenu();
+// 		  pNodePopup.show(e.getComponent(), e.getX(), e.getY());
+// 		}
+// 	      }
+// 	      else {
+// 		pUndefinedNodePopup.show(e.getComponent(), e.getX(), e.getY());
+// 	      }
+// 	    }
+// 	    else if(under instanceof ViewerLinkRelationship) {
+// 	      ViewerLinkRelationship lunder = (ViewerLinkRelationship) under;
+// 	      ViewerNode vunder = lunder.getViewerNode();
+// 	      NodeDetails details = vunder.getNodeStatus().getDetails();
+// 	      if(details != null) {
+// 		NodeMod mod = details.getWorkingVersion();
+// 		if((mod != null) && !mod.isFrozen()) {
+// 		  {
+// 		    HashMap<NodePath,ViewerNode> changed = new HashMap<NodePath,ViewerNode>();
+// 		    for(ViewerNode vnode : clearSelection()) 
+// 		      changed.put(vnode.getNodePath(), vnode);
+// 		    for(ViewerNode vnode : primarySelect(vunder)) 
+// 		      changed.put(vnode.getNodePath(), vnode);
+// 		    for(ViewerNode vnode : changed.values()) 
+// 		      vnode.update();
+// 		  }
 		  
-		  pSelectedLink = lunder.getLink();
-		  pLinkPopup.show(e.getComponent(), e.getX(), e.getY());
-		}
-	      }
-	      else {
-		Toolkit.getDefaultToolkit().beep();
-	      }
-	    }
-	  }
-	}
-	break;
-      }
-    }
+// 		  pSelectedLink = lunder.getLink();
+// 		  pLinkPopup.show(e.getComponent(), e.getX(), e.getY());
+// 		}
+// 	      }
+// 	      else {
+// 		Toolkit.getDefaultToolkit().beep();
+// 	      }
+// 	    }
+// 	  }
+// 	}
+// 	break;
+//       }
+//     }
     
+
     /* mouse press is over an unused spot on the canvas */ 
-    else {
-      switch(e.getButton()) {
-      case MouseEvent.BUTTON1:
-	{
-	  int on1  = (MouseEvent.BUTTON1_DOWN_MASK);
-
-	  int off1 = (MouseEvent.BUTTON2_DOWN_MASK | 
-		      MouseEvent.BUTTON3_DOWN_MASK | 
-		      MouseEvent.SHIFT_DOWN_MASK |
-		      MouseEvent.ALT_DOWN_MASK |
-		      MouseEvent.CTRL_DOWN_MASK);
-
-
-	  int on2  = (MouseEvent.BUTTON1_DOWN_MASK |
-		      MouseEvent.SHIFT_DOWN_MASK);
-
-	  int off2 = (MouseEvent.BUTTON2_DOWN_MASK | 
-		      MouseEvent.BUTTON3_DOWN_MASK | 
-		      MouseEvent.ALT_DOWN_MASK |
-		      MouseEvent.CTRL_DOWN_MASK);
-
-
-	  int on3  = (MouseEvent.BUTTON1_DOWN_MASK |
-		      MouseEvent.SHIFT_DOWN_MASK |
-		      MouseEvent.CTRL_DOWN_MASK);
-
-	  int off3 = (MouseEvent.BUTTON2_DOWN_MASK | 
-		      MouseEvent.BUTTON3_DOWN_MASK | 
-		      MouseEvent.ALT_DOWN_MASK);
-
-	  /* BUTTON1[+SHIFT[+CTRL]]: begin rubber band drag */ 
-	  if(((mods & (on1 | off1)) == on1) || 
-	     ((mods & (on2 | off2)) == on2) || 
-	     ((mods & (on3 | off3)) == on3)) {
-	    pRubberBand.beginDrag(new Point2d((double) e.getX(), (double) e.getY()));
+//     else {
+    { 
+      if(handleMousePressed(e)) 
+	return;
+      else {
+	switch(e.getButton()) {
+	case MouseEvent.BUTTON3:
+	  {
+	    int on1  = (MouseEvent.BUTTON3_DOWN_MASK);
+	    
+	    int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
+			MouseEvent.BUTTON2_DOWN_MASK | 
+			MouseEvent.SHIFT_DOWN_MASK |
+			MouseEvent.ALT_DOWN_MASK |
+			MouseEvent.CTRL_DOWN_MASK);
+	    
+	    /* BUTTON3: panel popup menu */ 
+	    if((mods & (on1 | off1)) == on1) {
+	      updatePanelMenu();
+	      pPanelPopup.show(e.getComponent(), e.getX(), e.getY());
+	    }
 	  }
 	}
-	break;
-
-      case MouseEvent.BUTTON3:
-	{
-	  int on1  = (MouseEvent.BUTTON3_DOWN_MASK);
-
-	  int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
-		      MouseEvent.BUTTON2_DOWN_MASK | 
-		      MouseEvent.SHIFT_DOWN_MASK |
-		      MouseEvent.ALT_DOWN_MASK |
-		      MouseEvent.CTRL_DOWN_MASK);
-		  
-	  /* BUTTON3: panel popup menu */ 
-	  if((mods & (on1 | off1)) == on1) {
-	    updatePanelMenu();
-	    pPanelPopup.show(e.getComponent(), e.getX(), e.getY());
-	  }
-	}
-	break;
       }
     }
   }
@@ -1945,176 +1794,111 @@ class JNodeViewerPanel
    MouseEvent e
   ) 
   {    
-    int mods = e.getModifiersEx();
+    handleMouseReleased(e); // FOR NOW
 
-    switch(e.getButton()) {
-    case MouseEvent.BUTTON1:
-      if(pRubberBand.isDragging()) {
-	int on1  = 0;
+//     int mods = e.getModifiersEx();
+
+//     switch(e.getButton()) {
+//     case MouseEvent.BUTTON1:
+//       if(pRubberBand.isDragging()) {
+// 	int on1  = 0;
 	
-	int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
-		    MouseEvent.BUTTON2_DOWN_MASK | 
-		    MouseEvent.BUTTON3_DOWN_MASK | 
-		    MouseEvent.SHIFT_DOWN_MASK |
-		    MouseEvent.ALT_DOWN_MASK |
-		    MouseEvent.CTRL_DOWN_MASK);
-	
-	
-	int on2  = (MouseEvent.SHIFT_DOWN_MASK);
-	
-	int off2 = (MouseEvent.BUTTON1_DOWN_MASK |
-		    MouseEvent.BUTTON2_DOWN_MASK | 
-		    MouseEvent.BUTTON3_DOWN_MASK | 
-		    MouseEvent.SHIFT_DOWN_MASK |
-		    MouseEvent.CTRL_DOWN_MASK);
+// 	int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
+// 		    MouseEvent.BUTTON2_DOWN_MASK | 
+// 		    MouseEvent.BUTTON3_DOWN_MASK | 
+// 		    MouseEvent.SHIFT_DOWN_MASK |
+// 		    MouseEvent.ALT_DOWN_MASK |
+// 		    MouseEvent.CTRL_DOWN_MASK);
 	
 	
-	int on3  = (MouseEvent.SHIFT_DOWN_MASK |
-		    MouseEvent.CTRL_DOWN_MASK);
+// 	int on2  = (MouseEvent.SHIFT_DOWN_MASK);
 	
-	int off3 = (MouseEvent.BUTTON1_DOWN_MASK |
-		    MouseEvent.BUTTON2_DOWN_MASK | 
-		    MouseEvent.BUTTON3_DOWN_MASK | 
-		    MouseEvent.ALT_DOWN_MASK);
+// 	int off2 = (MouseEvent.BUTTON1_DOWN_MASK |
+// 		    MouseEvent.BUTTON2_DOWN_MASK | 
+// 		    MouseEvent.BUTTON3_DOWN_MASK | 
+// 		    MouseEvent.SHIFT_DOWN_MASK |
+// 		    MouseEvent.CTRL_DOWN_MASK);
+	
+	
+// 	int on3  = (MouseEvent.SHIFT_DOWN_MASK |
+// 		    MouseEvent.CTRL_DOWN_MASK);
+	
+// 	int off3 = (MouseEvent.BUTTON1_DOWN_MASK |
+// 		    MouseEvent.BUTTON2_DOWN_MASK | 
+// 		    MouseEvent.BUTTON3_DOWN_MASK | 
+// 		    MouseEvent.ALT_DOWN_MASK);
 
 
-	BoundingBox bbox = pRubberBand.endDrag();
-	if(bbox != null) {
-	  SceneGraphPath gpaths[] = pGeomBranch.pickAll(new PickBounds(bbox));
+// 	BoundingBox bbox = pRubberBand.getDragBounds();
+// 	if(bbox != null) {
+// 	  SceneGraphPath gpaths[] = pGeomBranch.pickAll(new PickBounds(bbox));
 	  
-	  HashMap<NodePath,ViewerNode> changed = new HashMap<NodePath,ViewerNode>();
+// 	  HashMap<NodePath,ViewerNode> changed = new HashMap<NodePath,ViewerNode>();
 	  
-	  /* BUTTON1: replace selection */ 
-	  if((mods & (on1 | off1)) == on1) {
-	    for(ViewerNode vnode : clearSelection()) 
-	      changed.put(vnode.getNodePath(), vnode);
+// 	  /* BUTTON1: replace selection */ 
+// 	  if((mods & (on1 | off1)) == on1) {
+// 	    for(ViewerNode vnode : clearSelection()) 
+// 	      changed.put(vnode.getNodePath(), vnode);
 	    
-	    if(gpaths != null) {
-	      int wk; 
-	      for(wk=0; wk<gpaths.length; wk++) {
-		Object picked = gpaths[wk].getObject().getUserData();
-		if(picked instanceof ViewerNode) {
-		  ViewerNode svnode = (ViewerNode) picked;
-		  for(ViewerNode vnode : addSelect(svnode))
-		    changed.put(vnode.getNodePath(), vnode);
-		}
-	      }
-	    }
-	  }
+// 	    if(gpaths != null) {
+// 	      int wk; 
+// 	      for(wk=0; wk<gpaths.length; wk++) {
+// 		Object picked = gpaths[wk].getObject().getUserData();
+// 		if(picked instanceof ViewerNode) {
+// 		  ViewerNode svnode = (ViewerNode) picked;
+// 		  for(ViewerNode vnode : addSelect(svnode))
+// 		    changed.put(vnode.getNodePath(), vnode);
+// 		}
+// 	      }
+// 	    }
+// 	  }
 	  
-	  /* BUTTON1+SHIFT: toggle selection */ 
-	  else if((mods & (on2 | off2)) == on2) {
-	    if(gpaths != null) {
-	      int wk; 
-	      for(wk=0; wk<gpaths.length; wk++) {
-		Object picked = gpaths[wk].getObject().getUserData();
-		if(picked instanceof ViewerNode) {
-		  ViewerNode svnode = (ViewerNode) picked;		  
-		  for(ViewerNode vnode : toggleSelect(svnode))
-		    changed.put(vnode.getNodePath(), vnode);
-		}
-	      }
-	    }
-	  }
+// 	  /* BUTTON1+SHIFT: toggle selection */ 
+// 	  else if((mods & (on2 | off2)) == on2) {
+// 	    if(gpaths != null) {
+// 	      int wk; 
+// 	      for(wk=0; wk<gpaths.length; wk++) {
+// 		Object picked = gpaths[wk].getObject().getUserData();
+// 		if(picked instanceof ViewerNode) {
+// 		  ViewerNode svnode = (ViewerNode) picked;		  
+// 		  for(ViewerNode vnode : toggleSelect(svnode))
+// 		    changed.put(vnode.getNodePath(), vnode);
+// 		}
+// 	      }
+// 	    }
+// 	  }
 	  
-	  /* BUTTON1+SHIFT+CTRL: add to selection */ 
-	  else if((mods & (on3 | off3)) == on3) {
-	    if(gpaths != null) {
-	      int wk; 
-	      for(wk=0; wk<gpaths.length; wk++) {
-		Object picked = gpaths[wk].getObject().getUserData();
-		if(picked instanceof ViewerNode) {
-		  ViewerNode svnode = (ViewerNode) picked;
-		  for(ViewerNode vnode : addSelect(svnode))
-		    changed.put(vnode.getNodePath(), vnode);
-		}
-	      }
-	    }
-	  }
+// 	  /* BUTTON1+SHIFT+CTRL: add to selection */ 
+// 	  else if((mods & (on3 | off3)) == on3) {
+// 	    if(gpaths != null) {
+// 	      int wk; 
+// 	      for(wk=0; wk<gpaths.length; wk++) {
+// 		Object picked = gpaths[wk].getObject().getUserData();
+// 		if(picked instanceof ViewerNode) {
+// 		  ViewerNode svnode = (ViewerNode) picked;
+// 		  for(ViewerNode vnode : addSelect(svnode))
+// 		    changed.put(vnode.getNodePath(), vnode);
+// 		}
+// 	      }
+// 	    }
+// 	  }
 	  
-	  /* update the appearance of all nodes who's selection state changed */ 
-	  for(ViewerNode vnode : changed.values()) 
-	    vnode.update();
-	}
+// 	  /* update the appearance of all nodes who's selection state changed */ 
+// 	  for(ViewerNode vnode : changed.values()) 
+// 	    vnode.update();
+// 	}
 
-	/* drag started but never updated: clear the selection */ 
-	else {
-	  /* ignore if SHIFT or SHIFT+CTRL are down */ 
-	  if(!(((mods & (on2 | off2)) == on2) || 
-	       ((mods & (on3 | off3)) == on3))) 
-	    for(ViewerNode vnode : clearSelection()) 
-	      vnode.update();
-	}
-      }
-      break;
-    }
-  }
-
-
-  /*-- MOUSE MOTION LISTNER METHODS --------------------------------------------------------*/
-  
-  /**
-   * Invoked when a mouse button is pressed on a component and then dragged. 
-   */ 
-  public void 	
-  mouseDragged
-  (
-   MouseEvent e
-  )
-  {
-    int mods = e.getModifiersEx();
-    if(pRubberBand.isDragging()) {
-      int on1  = (MouseEvent.BUTTON1_DOWN_MASK);
-      
-      int off1 = (MouseEvent.BUTTON2_DOWN_MASK | 
-		  MouseEvent.BUTTON3_DOWN_MASK | 
-		  MouseEvent.SHIFT_DOWN_MASK |
-		  MouseEvent.ALT_DOWN_MASK |
-		  MouseEvent.CTRL_DOWN_MASK);
-
-      
-      int on2  = (MouseEvent.BUTTON1_DOWN_MASK |
-		  MouseEvent.SHIFT_DOWN_MASK);
-      
-      int off2 = (MouseEvent.BUTTON2_DOWN_MASK | 
-		  MouseEvent.BUTTON3_DOWN_MASK | 
-		  MouseEvent.ALT_DOWN_MASK |
-		  MouseEvent.CTRL_DOWN_MASK);
-
-      
-      int on3  = (MouseEvent.BUTTON1_DOWN_MASK |
-		  MouseEvent.SHIFT_DOWN_MASK | 
-		  MouseEvent.CTRL_DOWN_MASK);
-      
-      int off3 = (MouseEvent.BUTTON2_DOWN_MASK | 
-		  MouseEvent.BUTTON3_DOWN_MASK | 
-		  MouseEvent.ALT_DOWN_MASK);
-
-      /* BUTTON1[+SHIFT[+CTRL]]: update rubber band drag */ 
-      if(((mods & (on1 | off1)) == on1) || 
-	 ((mods & (on2 | off2)) == on2) || 
-	 ((mods & (on3 | off3)) == on3)) {
-	pRubberBand.updateDrag(pCanvas, new Point2d((double) e.getX(), (double) e.getY()));
-      }
-      
-      /* end rubber band drag */ 
-      else {
-	pRubberBand.endDrag();
-      }
-    }
-  }
-
-  /**
-   * Invoked when the mouse cursor has been moved onto a component but no buttons have 
-   * been pushed. 
-   */ 
-  public void 	
-  mouseMoved 
-  (
-   MouseEvent e
-  ) 
-  {
-    pMousePos = e.getPoint();
+// 	/* drag started but never updated: clear the selection */ 
+// 	else {
+// 	  /* ignore if SHIFT or SHIFT+CTRL are down */ 
+// 	  if(!(((mods & (on2 | off2)) == on2) || 
+// 	       ((mods & (on3 | off3)) == on3))) 
+// 	    for(ViewerNode vnode : clearSelection()) 
+// 	      vnode.update();
+// 	}
+//       }
+//       break;
+//     }
   }
 
 
@@ -2131,7 +1915,7 @@ class JNodeViewerPanel
   {
     /* if the mouse is over a node which has a status, 
          set the name of the node to use when updating new node subpanels */ 
-    Object under = objectAtMousePos(pMousePos);
+    Object under = null; //objectAtMousePos(pMousePos);
     if(under instanceof ViewerNode) {
       ViewerNode vunder = (ViewerNode) under;
       NodeStatus status = vunder.getNodeStatus();
@@ -2158,8 +1942,8 @@ class JNodeViewerPanel
 	break;
 
       default:
-	for(ViewerNode vnode : primarySelect(vunder)) 
-	  vnode.update();
+	primarySelect(vunder);
+	refresh();  
       }
       
       if((prefs.getNodeViewerDetails() != null) &&
@@ -2256,13 +2040,9 @@ class JNodeViewerPanel
       
       default:
 	{
-	  HashMap<NodePath,ViewerNode> changed = new HashMap<NodePath,ViewerNode>();
-	  for(ViewerNode vnode : clearSelection()) 
-	    changed.put(vnode.getNodePath(), vnode);
-	  for(ViewerNode vnode : primarySelect(lunder.getViewerNode())) 
-	    changed.put(vnode.getNodePath(), vnode);
-	  for(ViewerNode vnode : changed.values()) 
-	    vnode.update();
+	  clearSelection();
+	  primarySelect(lunder.getViewerNode());
+	  refresh(); 
 	}
       }
       
@@ -2329,8 +2109,8 @@ class JNodeViewerPanel
       
       default:
 	Toolkit.getDefaultToolkit().beep();
-	for(ViewerNode vnode : clearSelection()) 
-	  vnode.update();
+	clearSelection();
+	refresh(); 
       }
     }
   }
@@ -2359,8 +2139,8 @@ class JNodeViewerPanel
    PopupMenuEvent e
   )
   { 
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();
+    clearSelection();
+    refresh();
   }
    
   /**
@@ -2479,12 +2259,11 @@ class JNodeViewerPanel
     else if(cmd.equals("show-hide-associations"))
       doShowHideAssociations();
 
-
     // ...
 
     else {
-      for(ViewerNode vnode : clearSelection()) 
-	vnode.update();
+      clearSelection();
+      refresh();
     }
   }
 
@@ -2516,8 +2295,8 @@ class JNodeViewerPanel
     if(pPrimary != null) 
       updateSubPanels(pPrimary.getNodeStatus(), false);
 
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();
+    clearSelection();
+    refresh(); 
   }
 
 
@@ -2534,11 +2313,9 @@ class JNodeViewerPanel
 
     TreeSet<String> roots = new TreeSet<String>();
     roots.add(getPrimarySelectionName());
-
     setRoots(roots);
 
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();
+    clearSelection();
   }
 
   /**
@@ -2552,8 +2329,7 @@ class JNodeViewerPanel
 
     addRoot(getPrimarySelectionName());
 
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();
+    clearSelection();
   }
 
   /**
@@ -2568,11 +2344,9 @@ class JNodeViewerPanel
     TreeSet<String> roots = new TreeSet<String>(pRoots.keySet());
     roots.remove(getPrimarySelectionRootName());
     roots.add(getPrimarySelectionName());
-
     setRoots(roots);
 
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();
+    clearSelection();
   }
   
   /**
@@ -2585,8 +2359,7 @@ class JNodeViewerPanel
 
     removeRoot(getPrimarySelectionRootName());
 
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();
+    clearSelection();
   }
 
   /**
@@ -2621,8 +2394,8 @@ class JNodeViewerPanel
       }
     }
 
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();
+    clearSelection();
+    refresh(); 
   }
 
   /**
@@ -2665,8 +2438,8 @@ class JNodeViewerPanel
       }
     }
 
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();
+    clearSelection();
+    refresh(); 
   }
 
 
@@ -2709,8 +2482,8 @@ class JNodeViewerPanel
       }
     }
     
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();    
+    clearSelection();
+    refresh(); 
   }
 
 
@@ -2741,8 +2514,8 @@ class JNodeViewerPanel
       }
     }
 
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();    
+    clearSelection();
+    refresh(); 
   }
 
 
@@ -2773,8 +2546,8 @@ class JNodeViewerPanel
       }
     }
 
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();    
+    clearSelection();
+    refresh(); 
   }
 
   /**
@@ -2800,8 +2573,8 @@ class JNodeViewerPanel
       }
     }
 
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();    
+    clearSelection();
+    refresh(); 
   }
 
 
@@ -2846,8 +2619,8 @@ class JNodeViewerPanel
       }
     }
 
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();
+    clearSelection();
+    refresh(); 
   }
 
   /**
@@ -2881,8 +2654,8 @@ class JNodeViewerPanel
       }
     }
 
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();
+    clearSelection();
+    refresh(); 
   }
 
   /**
@@ -2911,8 +2684,8 @@ class JNodeViewerPanel
       }
     }
     
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();
+    clearSelection();
+    refresh(); 
   }
   
   /**
@@ -2939,8 +2712,8 @@ class JNodeViewerPanel
       }
     }
 
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();
+    clearSelection();
+    refresh(); 
   }
 
   /**
@@ -2992,9 +2765,9 @@ class JNodeViewerPanel
 	task.start();
       }
     }
-
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();
+    
+    clearSelection();
+    refresh(); 
   }
 
   /**
@@ -3031,8 +2804,8 @@ class JNodeViewerPanel
       task.start();
     }
 
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();
+    clearSelection();
+    refresh(); 
   }
 
   /**
@@ -3069,8 +2842,8 @@ class JNodeViewerPanel
       }
     }
 
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();
+    clearSelection();
+    refresh(); 
   }
 
 
@@ -3103,8 +2876,8 @@ class JNodeViewerPanel
       task.start();
     }
 
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();
+    clearSelection();
+    refresh(); 
   }
 
   /**
@@ -3154,8 +2927,8 @@ class JNodeViewerPanel
       }
     }
 
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();
+    clearSelection();
+    refresh(); 
   }
 
   /**
@@ -3189,8 +2962,8 @@ class JNodeViewerPanel
       task.start();
     }
 
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();
+    clearSelection();
+    refresh(); 
   }
 
   /**
@@ -3224,8 +2997,8 @@ class JNodeViewerPanel
       task.start();
     }
 
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();
+    clearSelection();
+    refresh(); 
   }
 
   /**
@@ -3261,8 +3034,8 @@ class JNodeViewerPanel
       task.start();
     }
 
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();
+    clearSelection();
+    refresh(); 
   }
 
 
@@ -3320,8 +3093,8 @@ class JNodeViewerPanel
       }
     }
     finally {
-      for(ViewerNode vnode : clearSelection()) 
-	vnode.update();
+      clearSelection();
+      refresh(); 
     }
   }
       
@@ -3361,8 +3134,8 @@ class JNodeViewerPanel
       }
     }
 
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();
+    clearSelection();
+    refresh(); 
   }
 
   /**
@@ -3392,8 +3165,8 @@ class JNodeViewerPanel
       }
     }
 
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();
+    clearSelection();
+    refresh(); 
   }
 
 
@@ -3430,8 +3203,8 @@ class JNodeViewerPanel
       }
     }
     
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();    
+    clearSelection();
+    refresh(); 
   }
 
   /**
@@ -3456,11 +3229,29 @@ class JNodeViewerPanel
       }
     }
 
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();    
+    clearSelection();
+    refresh(); 
   }
 
- 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Perform a rubberband selection using the given canvas coordinates.
+   */ 
+  protected void 
+  doRubberBandSelect
+  (
+   Point2d rbStart,
+   Point2d rbEnd
+  )
+  {
+    
+    // select nodes... 
+
+  }
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -3478,7 +3269,7 @@ class JNodeViewerPanel
   private void 
   doFrameAll() 
   {
-    frameBounds(pNodePool.getActiveBounds());
+    frameNodes(pViewerNodes.values());
   }
 
   /**
@@ -3490,7 +3281,7 @@ class JNodeViewerPanel
    Collection<ViewerNode> vnodes
   ) 
   {
-    frameBounds(ViewerNodePool.getBounds(vnodes));
+    frameBounds(getNodeBounds(vnodes));
   }  
 
   /**
@@ -3499,51 +3290,25 @@ class JNodeViewerPanel
   private void 
   frameBounds
   (
-   Point2d bbox[]
+   BBox2d bbox
   ) 
   {
     if(bbox == null) 
       return; 
 
-    Viewer viewer = pUniverse.getViewer();
-    TransformGroup tg = viewer.getViewingPlatform().getViewPlatformTransform();
-      
-    Transform3D xform = new Transform3D();
-    tg.getTransform(xform);
+    Point2d center = bbox.getCenter();
+
+    Vector2d hrange = bbox.getRange();
+    hrange.mult(0.5);
     
-    Vector3d trans = new Vector3d();
-    xform.get(trans);
 
-    Vector2d extent = new Vector2d(bbox[1]);
-    extent.sub(bbox[0]);
-    assert(extent.x >= 0.0);
-    assert(extent.y > 0.0);
+    
+    double z = pCameraPos.z(); // FOR NOW 
 
-    Vector2d center = new Vector2d(bbox[0]);
-    center.add(bbox[1]);
-    center.scale(0.5);
 
-    trans.x = center.x;
-    trans.y = center.y;
 
-    Vector2d cExtent = new Vector2d((double) pCanvas.getWidth(), 
-				    (double) pCanvas.getHeight());
-
-    Vector2d nExtent = new Vector2d(extent);
-
-    double nRatio = nExtent.x / nExtent.y;
-    double cRatio = cExtent.x / cExtent.y;
-
-    if(nRatio > cRatio) 
-      trans.z = nExtent.x;
-    else 
-      trans.z = nExtent.y * (cExtent.x / cExtent.y);
-
-    trans.z *= 1.25;
-    trans.z = Math.max(((double) pCanvas.getWidth()) / 64.0, trans.z);
-
-    xform.setTranslation(trans);
-    tg.setTransform(xform);
+    pCameraPos.set(center.x(), center.y(), z);
+    pCanvas.repaint();
   }
 
 
@@ -3555,9 +3320,7 @@ class JNodeViewerPanel
   private void
   doAutomaticExpand()
   {
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();
-
+    clearSelection();
     pLayoutPolicy = LayoutPolicy.AutomaticExpand;
     updateUniverse();
   }
@@ -3568,9 +3331,7 @@ class JNodeViewerPanel
   private void
   doExpandAll()
   {
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();
-
+    clearSelection();
     pLayoutPolicy = LayoutPolicy.ExpandAll;
     updateUniverse();
   }
@@ -3581,9 +3342,7 @@ class JNodeViewerPanel
   private void
   doCollapseAll()
   {
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();
-
+    clearSelection();
     pLayoutPolicy = LayoutPolicy.CollapseAll;
     updateUniverse();
   }
@@ -3595,9 +3354,7 @@ class JNodeViewerPanel
   private void
   doShowHideDownstream()
   {
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();
-
+    clearSelection();
     pShowDownstream = !pShowDownstream;
     updateUniverse();
   }
@@ -3609,9 +3366,7 @@ class JNodeViewerPanel
   private void
   doShowHideAssociations()
   {
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();
-
+    clearSelection();
     pShowAssociations = !pShowAssociations;
     doUpdate();
   }
@@ -3636,20 +3391,20 @@ class JNodeViewerPanel
       encoder.encode("Roots", new TreeSet<String>(pRoots.keySet()));
     
     /* camera position */ 
-    {
-      Viewer viewer = pUniverse.getViewer();
-      TransformGroup tg = viewer.getViewingPlatform().getViewPlatformTransform();
+   //  {
+//       Viewer viewer = pUniverse.getViewer();
+//       TransformGroup tg = viewer.getViewingPlatform().getViewPlatformTransform();
     
-      Transform3D xform = new Transform3D();
-      tg.getTransform(xform);
+//       Transform3D xform = new Transform3D();
+//       tg.getTransform(xform);
       
-      Vector3d trans = new Vector3d();
-      xform.get(trans);
+//       Vector3d trans = new Vector3d();
+//       xform.get(trans);
 
-      encoder.encode("CameraX", trans.x);
-      encoder.encode("CameraY", trans.y);
-      encoder.encode("CameraZ", trans.z);
-    }
+//       encoder.encode("CameraX", trans.x);
+//       encoder.encode("CameraY", trans.y);
+//       encoder.encode("CameraZ", trans.z);
+//     }
   }
 
   public synchronized void 
@@ -3668,24 +3423,24 @@ class JNodeViewerPanel
     }
 
     /* camera position */ 
-    {
-      Viewer viewer = pUniverse.getViewer();
-      TransformGroup tg = viewer.getViewingPlatform().getViewPlatformTransform();
+   //  {
+//       Viewer viewer = pUniverse.getViewer();
+//       TransformGroup tg = viewer.getViewingPlatform().getViewPlatformTransform();
     
-      Transform3D xform = new Transform3D();
-      tg.getTransform(xform);
+//       Transform3D xform = new Transform3D();
+//       tg.getTransform(xform);
       
-      Double cx = (Double) decoder.decode("CameraX");
-      Double cy = (Double) decoder.decode("CameraY");
-      Double cz = (Double) decoder.decode("CameraZ");
+//       Double cx = (Double) decoder.decode("CameraX");
+//       Double cy = (Double) decoder.decode("CameraY");
+//       Double cz = (Double) decoder.decode("CameraZ");
 
-      if((cx == null) || (cy == null) || (cz == null)) 
-	throw new GlueException("The camera position was incomplete!");
-      Vector3d trans = new Vector3d(cx, cy, cz);
+//       if((cx == null) || (cy == null) || (cz == null)) 
+// 	throw new GlueException("The camera position was incomplete!");
+//       Vector3d trans = new Vector3d(cx, cy, cz);
 
-      xform.setTranslation(trans);	    
-      tg.setTransform(xform);
-    }
+//       xform.setTranslation(trans);	    
+//       tg.setTransform(xform);
+//     }
 
     super.fromGlue(decoder);
   }
@@ -3694,39 +3449,6 @@ class JNodeViewerPanel
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L   C L A S S E S                                                      */
-  /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * The expand/collapse policy to use when laying out nodes.
-   */
-  private
-  enum LayoutPolicy
-  {  
-    /**
-     * Preserve the collapse mode of existing nodes and use an AutomaticExpand policy for 
-     * any newly created nodes.
-     */
-    Preserve, 
-
-    /**
-     * Expand all nodes.
-     */ 
-    ExpandAll, 
-
-    /**
-     * Collapse all nodes.
-     */ 
-    CollapseAll, 
-    
-    /**
-     * Expand the first occurance of a node and collapse all subsequence occurances.
-     */
-    AutomaticExpand;
-  }
-
-  
-
-
   /*----------------------------------------------------------------------------------------*/
 
   /** 
@@ -4990,6 +4712,15 @@ class JNodeViewerPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * The status of the root nodes and all of its upstream/downstream connections indexed
+   * by the fully resolved names of the root nodes. <P> 
+   *
+   * If the status is <CODE>null</CODE> for a given root node, then it will be updated
+   * by the <CODE>StatusTask</CODE> the next time it is run.
+   */ 
+  private TreeMap<String,NodeStatus>  pRoots;
+
+  /**
    * Whether to display the downstream tree of nodes.
    */ 
   private boolean  pShowDownstream;
@@ -5000,18 +4731,48 @@ class JNodeViewerPanel
   private boolean  pShowAssociations;
 
   /**
-   * The expand/collapse policy to use when laying out nodes.
+   * The fully resolved name of the node who's status was last sent to the node 
+   * details, links, files and history panels. 
    */ 
-  private LayoutPolicy  pLayoutPolicy;
+  private String  pLastDetailsName;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  private Integer pTestDL; 
 
   /**
-   * The status of the root nodes and all of its upstream/downstream connections indexed
-   * by the fully resolved names of the root nodes. <P> 
-   *
-   * If the status is <CODE>null</CODE> for a given root node, then it will be updated
-   * by the <CODE>StatusTask</CODE> the next time it is run.
+   * The currently displayed nodes indexed by <CODE>NodePath</CODE>.
    */ 
-  private TreeMap<String,NodeStatus>  pRoots;
+  private HashMap<NodePath,ViewerNode>  pViewerNodes; 
+
+  /**
+   * The currently selected nodes indexed by <CODE>NodePath</CODE>.
+   */ 
+  private HashMap<NodePath,ViewerNode>  pSelected;
+
+
+  /**
+   * The primary selection.
+   */ 
+  private ViewerNode  pPrimary;
+
+  /**
+   * The currently selected link.
+   */
+  private LinkCommon  pSelectedLink;
+
+
+  /**
+   * The position of the node which should remain stationary after a relayout of nodes.
+   */ 
+  private Point2d  pPinnedPos; 
+
+  /**
+   * The node path to the viewer node in the new layout which should be positioned at 
+   * pPinnedPos.
+   */ 
+  private NodePath  pPinnedPath; 
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -5075,87 +4836,6 @@ class JNodeViewerPanel
    * The link popup menu.
    */ 
   private JPopupMenu  pLinkPopup;
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The Java3D scene graph.
-   */ 
-  private SimpleUniverse  pUniverse;      
-
-  /**
-   * The 3D canvas used to render the Java3D universe.
-   */ 
-  private Canvas3D  pCanvas;       
-
-  /**
-   * The reuseable collection of ViewerNodes.
-   */ 
-  private ViewerNodePool  pNodePool;
-
-  /**
-   * The links between ViewerNodes.
-   */ 
-  private ViewerLinks  pLinks;
-
-
-  /**
-   * The selection rubber band geometry.
-   */ 
-  private RubberBand  pRubberBand;
-  
-  /**
-   * The branch containing node/link geometry.
-   */ 
-  private BranchGroup  pGeomBranch;
-
-  /**
-   * The set of currently selected nodes indexed by <CODE>NodePath</CODE>.
-   */ 
-  private HashMap<NodePath,ViewerNode>  pSelected;
-
-  /**
-   * The primary selection.
-   */ 
-  private ViewerNode  pPrimary;
-
-  /**
-   * The currently selected link.
-   */
-  private LinkCommon  pSelectedLink;
-
-
-  /**
-   * The last known mouse position.
-   */ 
-  private Point pMousePos;
-
-  /**
-   * The bounds of the currently visible nodes.
-   */ 
-  private Point2d  pMinNodeBounds;
-  private Point2d  pMaxNodeBounds;
-
-
-  /**
-   * The position of the node which should remain stationary after a relayout of nodes.
-   */ 
-  private Point2d  pPinnedPos; 
-
-  /**
-   * The node path to the viewer node in the new layout which should be positioned at 
-   * pPinnedPos.
-   */ 
-  private NodePath  pPinnedPath; 
-
-
-  /**
-   * The fully resolved name of the node who's status was last sent to the node 
-   * details, links, files and history panels. <P> 
-   */ 
-  private String  pLastDetailsName;
 
 
   /*----------------------------------------------------------------------------------------*/
