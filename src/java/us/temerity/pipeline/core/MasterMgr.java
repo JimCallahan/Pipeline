@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.76 2005/01/05 09:43:59 jim Exp $
+// $Id: MasterMgr.java,v 1.77 2005/01/05 14:51:45 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6477,41 +6477,6 @@ class MasterMgr
 	}
       }	
 
-      /* compute link state */
-      LinkState linkState = null;
-      switch(versionState) {
-      case Pending:
-	linkState = LinkState.Pending;
-	break;
-
-      case CheckedIn:
-	linkState = LinkState.CheckedIn;
-	break;
-
-      case Identical:
-      case NeedsCheckOut:
-	if(work.identicalLinks(latest)) {
-	  linkState = LinkState.Identical;
-	}
-	else {
-	  switch(versionState) {
-	  case Identical:
-	    linkState = LinkState.Modified;
-	    break;
-
-	  case NeedsCheckOut:
-	    if(work.identicalLinks(base)) 
-	      linkState = LinkState.NeedsCheckOut;
-	    else 
-	      linkState = LinkState.Conflicted;
-	    break;
-
-	  default:
-	    assert(false);
-	  }
-	}
-      }	
-
       /* add the status stub */ 
       NodeStatus status = new NodeStatus(nodeID);
       table.put(name, status);
@@ -6540,6 +6505,59 @@ class MasterMgr
 
 	  status.addSource(lstatus);
 	  lstatus.addTarget(status);
+	}
+      }
+
+      /* compute link state and 
+	 whether the source node can be ignore when propogating staleness */ 
+      LinkState linkState = null;
+      TreeSet<String> nonIgnoredSources = new TreeSet<String>();
+      switch(versionState) {
+      case Pending:
+	linkState = LinkState.Pending;
+	break;
+	
+      case CheckedIn:
+	linkState = LinkState.CheckedIn;
+	  break;
+	  
+      case Identical:
+      case NeedsCheckOut:
+	{
+	  boolean workEqBase = true;
+	  for(LinkMod link : work.getSources()) {
+	    String lname = link.getName(); 
+	    LinkVersion blink = base.getSource(lname); 
+
+	    if((blink == null) || !link.equals(blink)) {
+	      workEqBase = false;
+	      nonIgnoredSources.add(lname);
+	    }
+	    else {
+	      NodeDetails ldetails = table.get(link.getName()).getDetails();
+	      VersionID lvid = ldetails.getWorkingVersion().getWorkingID();
+	      if(!blink.getVersionID().equals(lvid)) {
+		workEqBase = false;
+		nonIgnoredSources.add(lname);
+	      }
+	    }
+	  }
+
+	  if(work.identicalLinks(latest)) 
+	    linkState = LinkState.Identical;
+	  else {
+	    switch(versionState) {
+	    case Identical:
+	      linkState = LinkState.Modified;
+	      break;
+	      
+	    case NeedsCheckOut:
+	      if(workEqBase) 
+		linkState = LinkState.NeedsCheckOut;
+	      else 
+		linkState = LinkState.Conflicted;
+	    }
+	  }
 	}
       }
 
@@ -6638,7 +6656,6 @@ class MasterMgr
 
       /* compute overall node state */ 
       OverallNodeState overallNodeState = null;
-      TreeSet<String> nonIgnoredSources = new TreeSet<String>();
       switch(versionState) {
       case Pending:
 	{
@@ -6715,8 +6732,31 @@ class MasterMgr
 	    overallNodeState = OverallNodeState.Conflicted;
 	  else if(anyModified) 
 	    overallNodeState = OverallNodeState.Modified;
-	  else if(anyNeedsCheckOut) 
-	    overallNodeState = OverallNodeState.NeedsCheckOut;
+	  else if(anyNeedsCheckOut) {
+	    for(LinkMod link : work.getSources()) {
+	      NodeDetails ldetails = table.get(link.getName()).getDetails();
+	      VersionID lvid = ldetails.getWorkingVersion().getWorkingID();
+
+	      switch(ldetails.getOverallNodeState()) {
+	      case Modified:
+	      case ModifiedLinks:
+	      case Conflicted:	
+	      case Missing:
+		overallNodeState = OverallNodeState.Conflicted;
+
+ 	      case Identical:
+ 	      case NeedsCheckOut:
+		{
+		  LinkVersion blink = base.getSource(link.getName());
+		  if((blink == null) || !blink.getVersionID().equals(lvid)) 
+		    overallNodeState = OverallNodeState.Conflicted;
+		}
+	      }
+	    }
+
+	    if(overallNodeState == null)
+	      overallNodeState = OverallNodeState.NeedsCheckOut;
+	  }
 	  else {
 	    assert(versionState == VersionState.Identical);
 	    assert(propertyState == PropertyState.Identical);
@@ -6739,12 +6779,10 @@ class MasterMgr
 		overallNodeState = OverallNodeState.ModifiedLinks;
 		break;
 		
-	      case Identical:
-	      case NeedsCheckOut:
-		if(!link.getVersionID().equals(lvid)) {
-		  overallNodeState = OverallNodeState.ModifiedLinks;
-		  nonIgnoredSources.add(link.getName());
-		}
+ 	      case Identical:
+ 	      case NeedsCheckOut:
+ 		if(!link.getVersionID().equals(lvid)) 
+ 		  overallNodeState = OverallNodeState.ModifiedLinks;
 	      }
 	    }
 
@@ -7058,6 +7096,24 @@ class MasterMgr
 		status.addStaleLink(link.getName());
 	    }
 	  }
+	}
+      }
+
+      /**
+       * Also mark the changed links as propogating staleness, even though no timestamps 
+       * will be propogated, so that it is clear which of the existing links have been 
+       * modified from the base version.
+       */ 
+      switch(linkState) {
+      case Pending:
+      case CheckedIn:
+	break;
+
+      default:
+	for(LinkMod link : work.getSources()) {
+	  LinkVersion blink = base.getSource(link.getName());
+	  if((blink == null) || !link.equals(blink)) 
+	    status.addStaleLink(link.getName());
 	}
       }
 
