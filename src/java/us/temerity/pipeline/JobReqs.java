@@ -1,4 +1,4 @@
-// $Id: JobReqs.java,v 1.8 2004/05/21 18:07:30 jim Exp $
+// $Id: JobReqs.java,v 1.9 2004/06/19 00:24:49 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -46,7 +46,7 @@ import java.io.*;
  *     the license keys for a job are not available, the job dispatcher leaves the current 
  *     job in the queue and proceeds to test the next job.
  *   </DIV> <BR>
-
+ * 
  *   Dynamic Resources <BR>
  *   <DIV style="margin-left: 40px;">
  *     Each enabled host regularly checks its system load, available memory and temporary 
@@ -72,12 +72,14 @@ import java.io.*;
  *     is assigned the job. <P> 
  *     
  *     Note that two hosts which support the same set of selection keys may have different
- *     biases for the same selection key and therefore different overall biases for a given
- *     job. The per-host selection biases are set by system administrators to control the 
+ *     biases for one or more selection keys and therefore different overall biases for a 
+ *     given job. The per-host selection biases are set by system administrators to control 
  *     the distribution of jobs to hosts.  For instance, a selection key may be associated
  *     with one of several projects in production at a site. A set of hosts may then be
  *     biased to run jobs for a project by giving the project selection key a higher bias 
- *     on those machines. <P>
+ *     on those machines. Another possible use for selection keys is to bias all jobs to 
+ *     run on machines with faster CPU speeds in preference to slower machines if both
+ *     are available. <P> 
  * 
  *     Selection keys can also be used to manage non-floating software licenses.  For
  *     instance, consider a situation where a particular piece of software can only be run 
@@ -88,6 +90,9 @@ import java.io.*;
  *     of running the software. 
  *   </DIV> 
  * </DIV> 
+ * 
+ * @see LicenseKey
+ * @see SelectionKey
  */
 public
 class JobReqs
@@ -158,7 +163,8 @@ class JobReqs
   public static JobReqs
   defaultJobReqs() 
   {
-    return (new JobReqs(0, 2.5f, 128, 64, new HashSet<String>(), new HashSet<String>()));
+    return (new JobReqs(0, 2.5f, 134217728, 67108864, 
+			new HashSet<String>(), new HashSet<String>()));
   }
 
 
@@ -222,58 +228,58 @@ class JobReqs
 
   
   /**
-   * Get the minimum amount of free memory (in MB) required on an eligable host.
+   * Get the minimum amount of free memory (in bytes) required on an eligable host.
    */ 
-  public int 
+  public long 
   getMinMemory() 
   {
     return pMinMemory;
   }
 
   /**
-   * Set the minimum amount of free memory (in MB) required on an eligable host.
+   * Set the minimum amount of free memory (in bytes) required on an eligable host.
    * 
-   * @param megs 
+   * @param bytes
    *    The minimum amount of free memory.
    */ 
   public void 
   setMinMemory
   (
-   int megs
+   long bytes
   ) 
   {
-    if(megs < 0)
+    if(bytes < 0)
       throw new IllegalArgumentException("The minimum free memory cannot be negative!");
-    pMinMemory = megs;
+    pMinMemory = bytes;
   }
   
 
   /** 
-   * Get the minimum amount of free temporary local disk space (in MB) required on an 
+   * Get the minimum amount of free temporary local disk space (in bytes) required on an 
    * eligable host.
    */
-  public int 
+  public long 
   getMinDisk() 
   {
     return pMinDisk;
   }
 
   /** 
-   * Set the minimum amount of free temporary local disk space (in MB) required on an 
+   * Set the minimum amount of free temporary local disk space (in bytes) required on an 
    * eligable host.
    *
-   * @param megs 
+   * @param bytes 
    *    The minimum amount of free temporary local disk space.
    */
   public void 
   setMinDisk
   (
-   int megs
+   long bytes
   ) 
   {
-    if(megs < 0)
+    if(bytes < 0)
       throw new IllegalArgumentException("The minimum free disk space cannot be negative!");
-    pMinDisk = megs;
+    pMinDisk = bytes;
   }
 
 
@@ -537,12 +543,12 @@ class JobReqs
       throw new GlueException("The \"MaxLoad\" was missing!");
     pMaxLoad = load;
     
-    Integer mem = (Integer) decoder.decode("MinMemory");
+    Long mem = (Long) decoder.decode("MinMemory");
     if(mem == null) 
       throw new GlueException("The \"MinMemory\" was missing!");
     pMinMemory = mem;
     
-    Integer disk = (Integer) decoder.decode("MinDisk");
+    Long disk = (Long) decoder.decode("MinDisk");
     if(disk == null) 
       throw new GlueException("The \"MinDisk\" was missing!");
     pMinDisk = disk;
@@ -585,15 +591,15 @@ class JobReqs
   private float  pMaxLoad;    
  
   /**
-   * The minimum amount of free memory (in MB) required on an eligable host.
+   * The minimum amount of free memory (in bytes) required on an eligable host.
    */      
-  private int  pMinMemory;  
+  private long  pMinMemory;  
 
   /**
-   * The minimum amount of free temporary local disk space (in MB) required on an 
+   * The minimum amount of free temporary local disk space (in bytes) required on an 
    * eligable host.
    */       
-  private int  pMinDisk;           
+  private long  pMinDisk;           
 					  
 
   /**
