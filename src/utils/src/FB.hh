@@ -1,4 +1,4 @@
-// $Id: FB.hh,v 1.1 2003/09/22 16:44:37 jim Exp $
+// $Id: FB.hh,v 1.2 2004/04/06 08:57:10 jim Exp $
 
 #ifndef PIPELINE_FB_HH
 #define PIPELINE_FB_HH
@@ -19,6 +19,10 @@
 #  ifdef HAVE_IOSTREAM_H
 #    include <iostream.h>
 #  endif
+#endif
+
+#ifdef HAVE_UNISTD_H
+#  include <unistd.h>
 #endif
 
 #include <Timer.hh>
@@ -204,9 +208,10 @@ public:
     if(sOut) 										    
       (*sOut) << std::flush;
 											    
-    std::cerr << "FATAL ERROR: " << (msg ? msg : "Abort!") << "\n";
+    std::cerr << "FATAL ERROR: " << (msg ? msg : "Abort!") << "\n" << std::flush;
 											    
     if(sExitOnError) {									    
+      sleep(5);
       assert(false);									    
       exit(EXIT_FAILURE);								    
     }											    
