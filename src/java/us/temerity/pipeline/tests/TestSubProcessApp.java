@@ -1,4 +1,4 @@
-// $Id: TestSubProcessApp.java,v 1.4 2004/08/22 22:06:22 jim Exp $
+// $Id: TestSubProcessApp.java,v 1.5 2004/12/29 17:30:32 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -42,7 +42,9 @@ class TestSubProcessApp
 
   public void 
   run() 
-  {
+  { 
+    File cwd = new File(System.getProperty("user.dir"));
+
     /* fast commands */ 
     try {
       int wk;
@@ -57,8 +59,11 @@ class TestSubProcessApp
 	args.add("755");
 	args.add(file.toString());
 	
-	SubProcess proc = 
-	  new SubProcess("Quicky", new File("/bin/chmod"), args);
+	File stdout = new File(cwd, "QuickyStdOut");
+	File stderr = new File(cwd, "QuickyStdErr");
+
+	SubProcessHeavy proc = 
+	  new SubProcessHeavy("Quicky", new File("/bin/chmod"), args, stdout, stderr);
 	proc.start();
 	
 	try {
@@ -75,35 +80,6 @@ class TestSubProcessApp
       Logs.sub.severe(ex.getMessage());
     }
 
-
-    /* incrementally check resource usage statistics  */ 
-    {
-      System.out.print("-----------------------------------\n");
-
-      Logs.sub.setLevel(Level.FINEST);
-
-      ArrayList<String> args = new ArrayList<String>();
-      args.add("vid:" + TestInfo.sSrcDir + 
-	       "/../../../../../../data/maya/images/*.tif");
-      args.add(System.getProperty("user.dir") + "/data/directory.jpg");
-
-      SubProcess proc = 
-	new SubProcess("RuntimeRUsage", TestInfo.sConvert, args);
-      proc.start();
-
-      GetRuntimeStats grs = new GetRuntimeStats(proc);
-      grs.start();
-
-      try {
-	proc.join();
-	grs.join();
-      }
-      catch(InterruptedException ex) {
-	Logs.sub.severe(ex.getMessage());
-      }
-      printAllStats(proc);
-    }
-
     /* check resource usage statistics  */ 
     {
       System.out.print("-----------------------------------\n");
@@ -114,7 +90,11 @@ class TestSubProcessApp
       args.add("--verbose");
       args.add(TestInfo.sSrcDir + "/scripts/factors");
 
-      SubProcess proc = new SubProcess("RUsage", new File("/usr/bin/time"), args);
+      File stdout = new File(cwd, "RUsageStdOut");
+      File stderr = new File(cwd, "RUsageStdErr");
+
+      SubProcessHeavy proc = 
+	new SubProcessHeavy("RUsage", new File("/usr/bin/time"), args, stdout, stderr); 
       proc.start();
 
       try {
@@ -138,8 +118,12 @@ class TestSubProcessApp
       HashMap<String,String> env = new HashMap<String,String>();
       env.put("PATH", "/bin:" + TestInfo.sSrcDir + "/scripts");
 
-      SubProcess proc = 
-	new SubProcess("KillChildren", "child-procs", args, env, new File("/tmp"));
+      File stdout = new File(cwd, "KillChildrenStdOut");
+      File stderr = new File(cwd, "KillChildrenStdErr");
+
+      SubProcessHeavy proc = 
+	new SubProcessHeavy("KillChildren", "child-procs", args, env, new File("/tmp"), 
+			    stdout, stderr); 
       proc.start();
 
       try {
@@ -162,7 +146,11 @@ class TestSubProcessApp
       ArrayList<String> args = new ArrayList<String>();
       args.add("localhost");
 
-      SubProcess proc = new SubProcess("Kill", new File("/bin/ping"), args);
+      File stdout = new File(cwd, "KillStdOut");
+      File stderr = new File(cwd, "KillStdErr");
+
+      SubProcessHeavy proc = 
+	new SubProcessHeavy("Kill", new File("/bin/ping"), args, stdout, stderr); 
       proc.start();
 
       try {
@@ -189,8 +177,11 @@ class TestSubProcessApp
       env.put("PATH", "/bin:/usr/bin");
       env.put("TESTING", "123");
 
-      SubProcess proc = 
-	new SubProcess("WithEnv", "df", args, env, new File("/tmp"));
+      File stdout = new File(cwd, "WithEnvStdOut");
+      File stderr = new File(cwd, "WithEnvStdErr");
+
+      SubProcessHeavy proc = 
+	new SubProcessHeavy("WithEnv", "df", args, env, new File("/tmp"), stdout, stderr); 
       proc.start();
 
       try {
@@ -211,7 +202,11 @@ class TestSubProcessApp
       ArrayList<String> args = new ArrayList<String>();
       args.add("-xyz");
 
-      SubProcess proc = new SubProcess("BadArgs", new File("/bin/ping"), args);
+      File stdout = new File(cwd, "BadArgsStdOut");
+      File stderr = new File(cwd, "BadArgsStdErr");
+
+      SubProcessHeavy proc = 
+	new SubProcessHeavy("BadArgs", new File("/bin/ping"), args, stdout, stderr); 
       proc.start();
 
       try {
@@ -234,7 +229,11 @@ class TestSubProcessApp
       args.add("10");
       args.add("localhost");
 
-      SubProcess proc = new SubProcess("Simple", new File("/bin/ping"), args);
+      File stdout = new File(cwd, "SimpleStdOut");
+      File stderr = new File(cwd, "SimpleStdErr");
+
+      SubProcessHeavy proc = 
+	new SubProcessHeavy("Simple", new File("/bin/ping"), args, stdout, stderr); 
       proc.start();
 
       try {
@@ -245,34 +244,6 @@ class TestSubProcessApp
       }
       printAllStats(proc);
     }
-
-    /* collecting incremental output from another thread */ 
-    {
-      System.out.print("-----------------------------------\n");
-
-      Logs.sub.setLevel(Level.FINE);
-      
-      ArrayList<String> args = new ArrayList<String>();
-      args.add("-c");
-      args.add("10");
-      args.add("localhost");
-
-      SubProcess proc = new SubProcess("IncrmentalOutput", new File("/bin/ping"), args);
-      proc.start();
-
-      GetOutput go = new GetOutput(proc);
-      go.start();
-
-      try {
-	proc.join();
-	go.join();
-      }
-      catch(InterruptedException ex) {
-	Logs.sub.severe(ex.getMessage());
-      }
-      printAllStats(proc);
-    }
-
   }
 
  
@@ -283,30 +254,28 @@ class TestSubProcessApp
   private String
   exitStats
   (
-   SubProcess proc
+   SubProcessHeavy proc
   ) 
   {
-    return ("          User Time: " + proc.getUserSecs() + "\n" + 
-	    "        System Time: " + proc.getSystemSecs() + "\n" + 
+    return ("          User Time: " + proc.getUserTime() + "\n" + 
+	    "        System Time: " + proc.getSystemTime() + "\n" + 
 	    "        Page Faults: " + proc.getPageFaults() + "\n");
   }
 
   private String 
   runtimeStats
   (
-   SubProcess proc
+   SubProcessHeavy proc
   ) 
   {
-    return(" Avg Virtual Memory: " + proc.getAverageVirtualSize() + " kB\n" +
-	   " Max Virtual Memory: " + proc.getMaxVirtualSize() + " kB\n" +
-	   "Avg Resident Memory: " + proc.getAverageResidentSize() + " kB\n" +
-	   "Max Resident Memory: " + proc.getMaxResidentSize() + " kB\n");
+    return("      Virtual Memory: " + proc.getVirtualSize() + " bytes\n" +
+	   "     Resident Memory: " + proc.getResidentSize() + " bytes\n");
   }
 
   private void 
   printAllStats
   (
-   SubProcess proc
+   SubProcessHeavy proc
   ) 
   {
     System.out.print(exitStats(proc) + "\n" + 
@@ -316,7 +285,7 @@ class TestSubProcessApp
   private void 
   printRuntimeStats
   (
-   SubProcess proc
+   SubProcessHeavy proc
   ) 
   {
     System.out.print(runtimeStats(proc));
@@ -329,49 +298,13 @@ class TestSubProcessApp
   /*----------------------------------------------------------------------------------------*/
 
   private class 
-  GetOutput
-    extends Thread
-  {
-    public 
-    GetOutput
-    (
-     SubProcess proc
-    ) 
-    {
-      super("GetOutput");
-
-      pProc    = proc;
-      pLineNum = 0;
-    }
-
-    public void 
-    run() 
-    {
-      while(pProc.isAlive()) {
-	String lines[] = pProc.getStdOutLines(pLineNum);
-	
-	int wk;
-	for(wk=0; wk<lines.length; wk++) {
-	  System.out.print("GetOutput[" + (pLineNum+wk) + "]: " + lines[wk] + "\n");
-	}
-
-	pLineNum += lines.length;
-      }
-    }
-
-    private int        pLineNum; 
-    private SubProcess pProc;
-  } 
-
-
-  private class 
   GetRuntimeStats
     extends Thread
   {
     public 
     GetRuntimeStats
     (
-     SubProcess proc
+     SubProcessHeavy proc
     ) 
     {
       super("GetRuntimeStats");
@@ -393,6 +326,6 @@ class TestSubProcessApp
       }
     }
 
-    private SubProcess pProc;
+    private SubProcessHeavy pProc;
   } 
 }

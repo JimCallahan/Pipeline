@@ -204,7 +204,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
 #--------------------------------------------------------------------------------------------#
 
-           TESTS = Native
+           TESTS = Math
 
 #             TESTS = CheckSum \
 #                     DNotify \
@@ -257,7 +257,7 @@ java-all: $(JAVA_SOURCES)
 check: all check-each 
 
 check-each: $(CLASSES) clean-data
-	cp -r $(srcdir)/data data
+#	cp -r $(srcdir)/data data
 	@failed=0; all=0; \
          banner1="========================================================================"; \
          banner2="------------------------------------------------------------------------"; \

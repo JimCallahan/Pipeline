@@ -1,4 +1,4 @@
-// $Id: TestPluginsApp.java,v 1.11 2004/08/28 19:43:13 jim Exp $
+// $Id: TestPluginsApp.java,v 1.12 2004/12/29 17:30:32 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
@@ -31,7 +31,7 @@ class TestPluginsApp
 
 
     try {
-      Plugins.init();
+      PluginMgr.init();
       FileCleaner.init();
 
       TestPluginsApp app = new TestPluginsApp();
@@ -72,49 +72,49 @@ class TestPluginsApp
     throws CloneNotSupportedException, GlueException, PipelineException, InterruptedException
   {
     {
-      BaseEditor emacs = Plugins.newEditor("Emacs");
+      BaseEditor emacs = PluginMgr.getInstance().newEditor("Emacs", null);
       FileSeq fseq = new FileSeq("sometext", (String) null);
       testEditorHelper(emacs, fseq, env, dir);
     }
   
     {
-      BaseEditor emacs = Plugins.newEditor("EmacsClient");
+      BaseEditor emacs = PluginMgr.getInstance().newEditor("EmacsClient", null);
       FileSeq fseq = new FileSeq("sometext", (String) null);
       testEditorHelper(emacs, fseq, env, dir);
     }
 
     {
-      BaseEditor maya = Plugins.newEditor("Maya");
+      BaseEditor maya = PluginMgr.getInstance().newEditor("Maya", null);
       FileSeq fseq = new FileSeq("sphere", "ma");
       testEditorHelper(maya, fseq, env, dir);
     }
     
     {
-      BaseEditor ivview = Plugins.newEditor("IvView");
+      BaseEditor ivview = PluginMgr.getInstance().newEditor("IvView", null);
       FileSeq fseq = new FileSeq("sphere", "iv");
       testEditorHelper(ivview, fseq, env, dir);
     }
 
     {
-      BaseEditor houdini = Plugins.newEditor("Houdini");
+      BaseEditor houdini = PluginMgr.getInstance().newEditor("Houdini", null);
       FileSeq fseq = new FileSeq("sphere", "hipnc");
       testEditorHelper(houdini, fseq, env, dir);
     }
 
     {
-      BaseEditor gplay = Plugins.newEditor("GPlay");
+      BaseEditor gplay = PluginMgr.getInstance().newEditor("GPlay", null);
       FileSeq fseq = new FileSeq("sphere", "bgeo");
       testEditorHelper(gplay, fseq, env, dir);
     }
 
     {
-      BaseEditor fcheck = Plugins.newEditor("FCheck");
+      BaseEditor fcheck = PluginMgr.getInstance().newEditor("FCheck", null);
       FileSeq fseq = new FileSeq("testimage", "iff");
       testEditorHelper(fcheck, fseq, env, dir);
     }
     
     {
-      BaseEditor fcheck = Plugins.newEditor("FCheck");
+      BaseEditor fcheck = PluginMgr.getInstance().newEditor("FCheck", null);
       FilePattern pat = 
    	new FilePattern("normal", 4, "iff");
       FrameRange range = new FrameRange(0, 18, 2);
@@ -123,13 +123,13 @@ class TestPluginsApp
     }
 
     {
-      BaseEditor mplay = Plugins.newEditor("MPlay");
+      BaseEditor mplay = PluginMgr.getInstance().newEditor("MPlay", null);
       FileSeq fseq = new FileSeq("testimage", "tif");
       testEditorHelper(mplay, fseq, env, dir);
     }
 
     {
-      BaseEditor mplay = Plugins.newEditor("MPlay");
+      BaseEditor mplay = PluginMgr.getInstance().newEditor("MPlay", null);
       FilePattern pat = 
    	new FilePattern("normal", 4, "tif");
       FrameRange range = new FrameRange(0, 18, 2);
@@ -138,25 +138,25 @@ class TestPluginsApp
     }
 
     {
-      BaseEditor acroread = Plugins.newEditor("Acroread");
+      BaseEditor acroread = PluginMgr.getInstance().newEditor("Acroread", null);
       FileSeq fseq = new FileSeq("roadmap", "pdf");
       testEditorHelper(acroread, fseq, env, dir);
     }
 
     {
-      BaseEditor gedit = Plugins.newEditor("GEdit");
+      BaseEditor gedit = PluginMgr.getInstance().newEditor("GEdit", null);
       FileSeq fseq = new FileSeq("sometext", (String) null);
       testEditorHelper(gedit, fseq, env, dir);
     }
     
     {
-      BaseEditor xdvi = Plugins.newEditor("XDvi");
+      BaseEditor xdvi = PluginMgr.getInstance().newEditor("XDvi", null);
       FileSeq fseq = new FileSeq("roadmap", "dvi");
       testEditorHelper(xdvi, fseq, env, dir);
     }
 
     {
-      BaseEditor gimp = Plugins.newEditor("Gimp");
+      BaseEditor gimp = PluginMgr.getInstance().newEditor("Gimp", null);
       FileSeq fseq = new FileSeq("testimage", "tif");
       testEditorHelper(gimp, fseq, env, dir);
     }
@@ -172,7 +172,7 @@ class TestPluginsApp
   ) 
     throws CloneNotSupportedException, GlueException, PipelineException, InterruptedException
   {
-    SubProcess proc = editor.launch(fseq, env, dir);
+    SubProcessLight proc = editor.launch(fseq, env, dir);
     proc.join();
     assert(proc.wasSuccessful());
 
@@ -198,11 +198,11 @@ class TestPluginsApp
     throws CloneNotSupportedException, GlueException, PipelineException, InterruptedException
   {
     {
-      BaseAction script = Plugins.newAction("Script");
+      BaseAction script = PluginMgr.getInstance().newAction("Script", null);
       script.setSingleParamValue("Interpreter", "bash");
       script.setSingleParamValue("ScriptText", "echo 2^123 | bc -l");
 
-      SubProcess proc = null;
+      SubProcessHeavy proc = null;
       {
 	FileSeq primaryTarget = new FileSeq("bob", "txt"); 
 	
@@ -239,15 +239,14 @@ class TestPluginsApp
 				      "/some/node/bob"), 
 			   primaryTarget, secondaryTargets, 
 			   primarySources, secondarySources, 
-			   env, dir);
+			   "DummyToolset", env, dir);
 
-	proc = script.prep(agenda);
+	proc = script.prep(agenda, new File(dir, "stdout"), new File(dir, "stderr"));
       }
 
       proc.start();
       proc.join();
       assert(proc.wasSuccessful());   
-      assert(proc.getStdOut().equals("10633823966279326983230456482242756608\n"));
 
       testGlue("ScriptAction", script);
 

@@ -1,4 +1,4 @@
-// $Id: TestFileMgr2App.java,v 1.4 2004/08/28 19:43:13 jim Exp $
+// $Id: TestFileMgr2App.java,v 1.5 2004/12/29 17:30:32 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -106,7 +106,7 @@ class TestFileMgr2App
 
       args.add(dir.getPath());
 	
-      SubProcess proc = new SubProcess("CopyFiles", "cp", args, env, cwd);
+      SubProcessLight proc = new SubProcessLight("CopyFiles", "cp", args, env, cwd);
       proc.start();
       proc.join();
     }
@@ -222,7 +222,7 @@ class TestFileMgr2App
 	      {
 		TreeMap<FileSeq, FileState[]> states = new TreeMap<FileSeq, FileState[]>();
 		TreeMap<FileSeq, Date[]> timestamps  = new TreeMap<FileSeq, Date[]>();
-		client.states(pNodeID, pNodeMod, vstate, lvid, states, timestamps);
+		client.states(pNodeID, pNodeMod, vstate, false, lvid, states, timestamps);
 		printStates(states, timestamps);
 		
 		/* build the file novelty table */ 
@@ -257,10 +257,10 @@ class TestFileMgr2App
 		TreeMap<String,VersionID> lvids = new TreeMap<String,VersionID>();
 		NodeVersion vsn = 
 		  new NodeVersion(pNodeMod, vid, lvids, isNovel, 
-				  pNodeID.getAuthor(), "Some Message...");
+				  pNodeID.getAuthor(), "Some Message...", null, null);
 		versions.add(vsn);
 		
-		pNodeMod = new NodeMod(vsn, vsn.getTimeStamp());
+		pNodeMod = new NodeMod(vsn, vsn.getTimeStamp(), false);
 	      }
 	      
 	      {
@@ -284,7 +284,8 @@ class TestFileMgr2App
 		    args.add(file.getPath());
 		    args.add(file.getPath());	      
 		    
-		    SubProcess proc = new SubProcess("ScaleImage", "convert", args, env, dir);
+		    SubProcessLight proc = 
+		      new SubProcessLight("ScaleImage", "convert", args, env, dir);
 		    proc.start(); 
 		    
 		    try {
@@ -310,13 +311,13 @@ class TestFileMgr2App
 	    if(latest.equals(vsn.getVersionID())) 
 	      vstate = VersionState.Identical;
 
-	    client.checkOut(pNodeID, vsn);
-	    pNodeMod = new NodeMod(vsn, vsn.getTimeStamp());
+	    client.checkOut(pNodeID, vsn, false);
+	    pNodeMod = new NodeMod(vsn, vsn.getTimeStamp(), false);
 
 	    {
 	      TreeMap<FileSeq, FileState[]> states = new TreeMap<FileSeq, FileState[]>();
 	      TreeMap<FileSeq, Date[]> timestamps  = new TreeMap<FileSeq, Date[]>();
-	      client.states(pNodeID, pNodeMod, vstate, latest, states, timestamps);
+	      client.states(pNodeID, pNodeMod, vstate, false, latest, states, timestamps);
 	      printStates(states, timestamps);
 	    }
 
@@ -338,7 +339,8 @@ class TestFileMgr2App
 		  args.add(file.getPath());
 		  args.add(file.getPath());	      
 		  
-		  SubProcess proc = new SubProcess("ScaleImage", "convert", args, env, dir);
+		  SubProcessLight proc = 
+		    new SubProcessLight("ScaleImage", "convert", args, env, dir);
 		  proc.start(); 
 		  
 		  try {
@@ -354,7 +356,7 @@ class TestFileMgr2App
 	    {
 	      TreeMap<FileSeq, FileState[]> states = new TreeMap<FileSeq, FileState[]>();
 	      TreeMap<FileSeq, Date[]> timestamps  = new TreeMap<FileSeq, Date[]>();
-	      client.states(pNodeID, pNodeMod, vstate, latest, states, timestamps);
+	      client.states(pNodeID, pNodeMod, vstate, false, latest, states, timestamps);
 	      printStates(states, timestamps);
 	    }
 	  }
@@ -364,7 +366,8 @@ class TestFileMgr2App
 	  for(wk=0; wk<count; wk++) {
 	    TreeMap<FileSeq, FileState[]> states = new TreeMap<FileSeq, FileState[]>();
 	    TreeMap<FileSeq, Date[]> timestamps  = new TreeMap<FileSeq, Date[]>();
-	    client.states(pNodeID, pNodeMod, VersionState.Pending, null, states, timestamps);
+	    client.states(pNodeID, pNodeMod, VersionState.Pending, false, 
+			  null, states, timestamps);
 	    printStates(states, timestamps);
 	    
 	    try {

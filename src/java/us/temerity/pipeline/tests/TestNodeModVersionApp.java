@@ -1,4 +1,4 @@
-// $Id: TestNodeModVersionApp.java,v 1.8 2004/08/22 22:06:22 jim Exp $
+// $Id: TestNodeModVersionApp.java,v 1.9 2004/12/29 17:30:32 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
@@ -30,7 +30,7 @@ class TestNodeModVersionApp
     //Logs.sub.setLevel(Level.FINEST);
 
     try {
-      Plugins.init();
+      PluginMgr.init();
       FileCleaner.init();
 
       TestNodeModVersionApp app = new TestNodeModVersionApp();
@@ -215,7 +215,7 @@ class TestNodeModVersionApp
 
       TreeSet<FileSeq> secondary = new TreeSet<FileSeq>();
 
-      BaseAction action = Plugins.newAction("Script");
+      BaseAction action = PluginMgr.getInstance().newAction("Script", null);
       action.setSingleParamValue("Interpreter", "bash");
       action.setSingleParamValue("ScriptText", "echo I'm a snake...");
 
@@ -226,7 +226,7 @@ class TestNodeModVersionApp
       selectionKeys.add("Rush");
       selectionKeys.add("Pentium4");
 
-      JobReqs jreqs = new JobReqs(50, 2.5f, 256, 512, licenseKeys, selectionKeys);
+      JobReqs jreqs = new JobReqs(50, 0, 2.5f, 256, 512, licenseKeys, selectionKeys);
 
       NodeMod mod = 
 	new NodeMod("/organisms/animals/reptiles/snake", 
@@ -247,7 +247,7 @@ class TestNodeModVersionApp
       mod.removeAllSecondarySequences();
       mod.adjustFrameRange(new FrameRange(103, 115, 3));
 
-      BaseAction action = Plugins.newAction("Script");
+      BaseAction action = PluginMgr.getInstance().newAction("Script", null);
       action.setSingleParamValue("Interpreter", "bash");
       action.setSingleParamValue("ScriptText", "echo I'm a mouse...");
       mod.setAction(action);
@@ -321,19 +321,19 @@ class TestNodeModVersionApp
       NodeVersion vsn1 = 
 	new NodeVersion(mod4, new VersionID(), 
 			lvids, isNovel, 
-			author, "Initial revision.");
+			author, "Initial revision.", null, null);
       test(vsn1);
 
       NodeVersion vsn2 = 
 	new NodeVersion(mod5, new VersionID(vsn1.getVersionID(), VersionID.Level.Minor), 
 			lvids, isNovel, 
-			author, "Changes the job requirements.");
+			author, "Changes the job requirements.", null, null);
       test(vsn2);
 
       NodeVersion vsn3 = 
 	new NodeVersion(mod5, new VersionID(vsn2.getVersionID(), VersionID.Level.Major), 
 			lvids, isNovel, 
-			author, "Changed the node properties.");
+			author, "Changed the node properties.", null, null);
       test(vsn3);
 
       TreeMap<VersionID,NodeVersion> table = new TreeMap<VersionID,NodeVersion>();
