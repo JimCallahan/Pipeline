@@ -31,18 +31,19 @@ case "$1" in
   (--license) 
     license_option;;
 
-  (*) 
+  (--*) 
     echo "ERROR: Unknown option \"$1\"!";
     exit 1;;
 esac
 
+backup=$1
 
 
 #--------------------------------------------------------------------------------------------#
 #   S A N I T Y   C H E C K S                                                                #
 #--------------------------------------------------------------------------------------------#
 
-if [ `whoami' != "@PIPELINE_USER@" ]
+if [ `whoami` != "@PIPELINE_USER@" ]
 then 
   echo "Only the Pipeline administration user (@PIPELINE_USER@) may run this script!"
   exit 1
@@ -59,3 +60,42 @@ then
   echo "The plmaster(1) daemon must be shutdown before running this script!"
   exit 1
 fi
+
+if [ ! -f "$backup" ]
+then 
+  echo "ERROR: The backup tarball \"$backup\" does not exist!"
+  exit 1
+fi
+
+if tar -ztvf $backup >& /dev/null 
+then
+    echo "Verified: $backup"
+else
+  echo "ERROR: Database backup file \"$backup\" was corrupted!"
+  exit 1
+fi
+
+for x in downstream etc repository toolset working
+do
+  if rm -rf @NODEDIR@/$x
+  then 
+    echo "Removed: @NODEDIR@/$x"
+  else 
+    echo "ERROR: Unable to remove the existing database directory \"@NODEDIR@/$x\"!"
+    exit 1
+  fi
+done
+
+pushd @NODEDIR@ >& /dev/null
+
+if tar -zxvf $backup >& /dev/null 
+then 
+  echo "Database Restored."
+  popd >& /dev/null
+  exit 0
+else 
+  echo "ERROR: Database restore failed!"
+  popd >& /dev/null
+  exit 1
+fi 
+
