@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.13 2005/02/09 18:23:45 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.14 2005/02/18 23:47:53 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -521,7 +521,7 @@ class GenUserPrefsApp
 
 	new HotKeyPref
 	("Make the current primary selection the only root node.", 
-	 "NodeViewerMakeRoot", "Make Root:"),
+	 "NodeViewerMakeRoot", "Set Root:"),
 
 	new HotKeyPref
 	("Add the current primary selection to the set of root nodes.",
@@ -532,8 +532,8 @@ class GenUserPrefsApp
 	 "NodeViewerReplaceRoot", "Replace Root:"),
 
 	new HotKeyPref
-	("Remove the root node of the current primary selection from the set of roots nodes.",
-	 "NodeViewerRemoveRoot", "Remove Root:"),
+	("Hide the root node of the current primary selection.",
+	 "NodeViewerRemoveRoot", "Hide Root:"),
 
 	new BasePref(),
 	
@@ -1693,7 +1693,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.13 2005/02/09 18:23:45 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.14 2005/02/18 23:47:53 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -1948,7 +1948,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.13 2005/02/09 18:23:45 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.14 2005/02/18 23:47:53 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3304,7 +3304,7 @@ class GenUserPrefsApp
 
       StringBuffer buf = new StringBuffer();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.13 2005/02/09 18:23:45 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.14 2005/02/18 23:47:53 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 
