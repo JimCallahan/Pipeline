@@ -1,8 +1,9 @@
-// $Id: FileFreezeReq.java,v 1.1 2004/03/09 09:45:31 jim Exp $
+// $Id: FileFreezeReq.java,v 1.2 2004/03/22 20:29:16 jim Exp $
 
 package us.temerity.pipeline.message;
 
 import us.temerity.pipeline.*; 
+import us.temerity.pipeline.core.*; 
 
 import java.io.*;
 import java.util.*;

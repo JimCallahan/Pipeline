@@ -1,6 +1,8 @@
-// $Id: TestApp.java,v 1.1 2004/03/22 03:12:34 jim Exp $
+// $Id: TestApp.java,v 1.2 2004/03/22 20:29:16 jim Exp $
 
 package us.temerity.pipeline.core;
+
+import us.temerity.pipeline.*;
 
 import java.io.*; 
 import java.net.*; 
@@ -53,6 +55,11 @@ class TestApp
     packageArguments(args);
 
     System.out.print("ARGS: " + pPackedArgs + "\n");
+
+    FileSeq fseq = new FileSeq(new FilePattern("foo", 4, "txt"), new FrameRange(1, 21, 2));
+
+    System.out.print("FileSeq: " + fseq + "\n");
+
     System.exit(0);
   }
 

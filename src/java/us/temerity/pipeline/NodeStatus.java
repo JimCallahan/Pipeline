@@ -1,6 +1,8 @@
-// $Id: NodeStatus.java,v 1.3 2004/03/07 02:42:14 jim Exp $
+// $Id: NodeStatus.java,v 1.4 2004/03/22 20:29:16 jim Exp $
 
 package us.temerity.pipeline;
+
+import us.temerity.pipeline.core.*;
 
 import java.util.*;
 import java.util.logging.*;
@@ -166,6 +168,7 @@ class NodeStatus
   {
     pSources.put(state.getName(), state);
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
