@@ -1,4 +1,4 @@
-// $Id: NativeProcess.cc,v 1.2 2004/02/20 22:49:34 jim Exp $
+// $Id: NativeProcess.cc,v 1.3 2004/02/21 18:56:29 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -813,14 +813,14 @@ JNICALL Java_us_temerity_pipeline_NativeProcess_collectStatsNative
   /* open the statistics psuedo-file for the process */ 
   {
     char path[1024];
-    sprintf(path, "/proc/%d/stat", pid);
+    sprintf(path, "/proc/%d/statm", pid);
     FILE* file = fopen(path, "r");
     if(file == NULL) 
       return false;
 
     long vmem, rss;
     int matches = 
-      fscanf(file, "%*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %ld %ld", &vmem, &rss);
+      fscanf(file, "%ld %ld %*s %*s %*s %*s %*s", &vmem, &rss);
     fclose(file);
     if(matches != 2) {
       sprintf(msg, "internal error: %s", strerror(errno));
