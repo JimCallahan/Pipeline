@@ -1,4 +1,4 @@
-// $Id: FrameRange.java,v 1.5 2004/02/28 19:58:43 jim Exp $
+// $Id: FrameRange.java,v 1.6 2004/03/03 07:47:47 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -106,7 +106,7 @@ class FrameRange
 
     if(((end - start) % by) != 0) 
       throw new IllegalArgumentException
-	("The frame range (" + (end-start) + ") was no evenly divisible by the frame " +
+	("The frame range (" + (end-start) + ") was not evenly divisible by the frame " +
 	 "increment (" + by + ")!");      
 
     pStart = start;
