@@ -205,7 +205,7 @@ renderFont
        $nl +
        "package us.temerity.pipeline.ui;" + $nl +
        $nl +
-       "import javax.vecmath.*;" + $nl +
+       "import us.temerity.pipeline.math.*;" + $nl +
        $nl +  
        "public" + $nl +
        "class " + $cname + $nl +
