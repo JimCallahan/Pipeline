@@ -1,0 +1,342 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>plmaster(1)</title>
+</head>
+<body>
+<h3><a name="Name"></a>Name</h3>
+<blockquote><b>plmaster</b> - the Pipeline Master daemon<br>
+</blockquote>
+<h3><a name="Synopsis"></a>Synopsis</h3>
+<blockquote><b>plmaster</b> [<a href="#Global_Options"><i>options</i></a>]<i><br>
+  </i><br>
+  <b>plmaster</b> <a style="font-weight: bold;" href="#--help">--help</a><br>
+  <b>plmaster</b> <a style="font-weight: bold;" href="#--html-help">--html-help</a><br>
+  <b>plmaster</b> <a style="font-weight: bold;" href="#--version_">--version</a><br>
+  <b>plmaster</b> <a style="font-weight: bold;" href="#--release-date">--release-date</a><br>
+  <b>plmaster</b> <a style="font-weight: bold;" href="#--copyright">--copyright</a><br>
+  <span style="font-weight: bold;">plmaster <a href="#--license">--license</a></span><br>
+</blockquote>
+<h3><a name="Description"></a>Description<br>
+</h3>
+<blockquote>The master daemon process which manages the node database
+and coordinates the activity of all other Pipeline daemons and client
+programs.&nbsp; <br>
+</blockquote>
+<h3> </h3>
+<h3><a name="Information_Options"></a>Information Options</h3>
+<blockquote>The following options provide information about <b>plmaster</b>(1)
+and then immediately exit:</blockquote>
+<blockquote><b><a name="--help"></a>--help</b><br>
+  <blockquote>Prints a brief usage message and exits.<br>
+  </blockquote>
+  <b><a name="--html-help"></a>--html-help</b><br>
+  <blockquote>Opens this page using the <a
+ href="http://www.mozilla.org"><b>mozilla</b></a>(1) web browser.&nbsp;
+  </blockquote>
+  <b><a name="--version"></a>--version</b><br>
+  <blockquote>Prints the version number of this software and exits.<br>
+  </blockquote>
+  <b><a name="--release-date"></a>--release-date</b><br>
+  <blockquote> Prints date that this software was released and exits.<br>
+  </blockquote>
+  <b><a name="--copyright"></a>--copyright<br>
+  </b><br>
+  <div style="margin-left: 40px;"> Prints the <a href="#Copyright"><span
+ style="font-weight: bold;">copyright notice</span></a> for this
+software and exits.<br>
+  <br>
+  </div>
+  <span style="font-weight: bold;"><a name="--license"></a>--license<br>
+  <br>
+  </span>
+  <div style="margin-left: 40px;">Prints the <a
+ href="#License_Agreement"><span style="font-weight: bold;">license
+agreement</span></a> for this software and exits.<br>
+  </div>
+  <blockquote> </blockquote>
+</blockquote>
+<h3><a name="Global_Options"></a>Global Options</h3>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
+ name="--node-dir"></a>--node-dir</span>=<span
+ style="font-style: italic;">dir<br>
+<br>
+</span>
+<div style="margin-left: 40px;">Use an alternative root node directory
+(dir) under which the persistent copies of Pipeline
+nodes are stored.<br>
+<br>
+The default root node directory is set by the <a
+ href="file:///usr/share/doc/@PLCONFIG_VERSION@/plconfig.html#--node-dir"><span
+ style="font-weight: bold;">--node-dir</span></a>
+option to <a
+ href="file:///usr/share/doc/@PLCONFIG_VERSION@/plconfig.html"><span
+ style="font-weight: bold;">plconfig</span></a>(1).</div>
+</div>
+<h4 style="font-weight: normal; margin-left: 80px;"><span
+ style="font-weight: bold;"></span> <span style="font-weight: bold;"></span><span
+ style="font-weight: bold;"></span></h4>
+<div style="margin-left: 40px;"><b><a name="--master-port"></a>--master-port</b>=<i>num<br>
+<br>
+</i>
+<div style="margin-left: 40px;">Listen for client connections on an
+alternative network port (<i>num</i>).&nbsp; <br>
+<br>
+The
+default port is set by the <a
+ href="../../../../../../../usr/share/doc/@PLCONFIG_VERSION@/plconfig.html#--master-port"><span
+ style="font-weight: bold;">--master-port</span></a>
+option to <a
+ href="file:///usr/share/doc/@PLCONFIG_VERSION@/plconfig.html"><span
+ style="font-weight: bold;">plconfig</span></a>(1). <br>
+<br>
+<span style="text-decoration: underline;"><span
+ style="font-weight: bold;"><br>
+</span></span></div>
+<b><a name="--prod-dir"></a>--prod-dir</b>=<span
+ style="font-style: italic;">dir<br>
+</span>
+<div style="margin-left: 40px;"><br>
+Use an alternative root production directory (<span
+ style="font-style: italic;">dir</span>).&nbsp; <br>
+<br>
+The
+default root production directory is set by the <a
+ href="file:///usr/share/doc/@PLCONFIG_VERSION@/plconfig.html#--prod-dir"><span
+ style="font-weight: bold;">--prod-dir</span></a>
+option to <a
+ href="file:///usr/share/doc/@PLCONFIG_VERSION@/plconfig.html"><span
+ style="font-weight: bold;">plconfig</span></a>(1).
+</div>
+<b><br>
+</b><b><a name="--file-host"></a>--file-host</b><span
+ style="font-weight: normal;">=</span><span style="font-style: italic;"><span
+ style="font-weight: normal;">host<br>
+<br>
+</span></span>
+<div style="margin-left: 40px;">Use an alternative file server (host)
+to run the Pipeline File Manager daemon <a href="plfilemgr.html"><span
+ style="font-weight: bold;">plfilemgr</span></a>(1) and the<span
+ style="font-weight: normal;"> </span>Pipeline Directory Notification<span
+ style="font-weight: normal;"> daemon <a href="plnotify.html"><span
+ style="font-weight: bold;">plnotify</span></a>(1)</span>.</div>
+</div>
+<br>
+<div style="margin-left: 80px;">The
+default file host is set by the <a
+ href="file:///usr/share/doc/@PLCONFIG_VERSION@/plconfig.html#--file-host"><span
+ style="font-weight: bold;">--file-host</span></a>
+option to <a
+ href="file:///usr/share/doc/@PLCONFIG_VERSION@/plconfig.html"><span
+ style="font-weight: bold;">plconfig</span></a>(1).<br>
+</div>
+<span style="font-weight: bold;"></span>
+<h4 style="margin-left: 40px;"><b><a name="--file-port"></a>--file-port</b><span
+ style="font-weight: normal;">=</span><i style="font-weight: normal;">num</i></h4>
+<h4 style="margin-left: 80px;"><span style="font-weight: normal;">Use
+an alternative network port (<span style="font-style: italic;">num</span>)
+to communicate with the Pipeline File Manager daemon <span
+ style="font-weight: bold;">plfilemgr</span>(1).&nbsp; <br>
+</span></h4>
+<div style="margin-left: 80px;">The
+default file port is set by the <a
+ href="file:///usr/share/doc/@PLCONFIG_VERSION@/plconfig.html#--file-port"><span
+ style="font-weight: bold;">--file-port</span></a>
+option to <a
+ href="file:///usr/share/doc/@PLCONFIG_VERSION@/plconfig.html"><span
+ style="font-weight: bold;">plconfig</span></a>(1). </div>
+<h4 style="margin-left: 40px;"><b><a name="--notify-control-port"></a>--notify-control-port</b><span
+ style="font-weight: normal;">=</span><i style="font-weight: normal;">num</i></h4>
+<div style="margin-left: 80px;"><span style="font-weight: normal;">Use
+an alternative network port (<span style="font-style: italic;">num</span>)
+to communicate control requests to the Pipeline </span>Directory
+Notification<span style="font-weight: normal;"> daemon <a
+ href="plnotify.html"><span style="font-weight: bold;">plnotify</span></a>(1)</span>.<br>
+<br>
+The
+default directory notification control port is set by the <a
+ href="file:///usr/share/doc/@PLCONFIG_VERSION@/plconfig.html#--notify-control-port"><span
+ style="font-weight: bold;">--notify-control-port</span></a>
+option to <a
+ href="file:///usr/share/doc/@PLCONFIG_VERSION@/plconfig.html"><span
+ style="font-weight: bold;">plconfig</span></a>(1).<br>
+<span style="font-weight: normal;"></span><span
+ style="font-weight: normal;"></span></div>
+<h4 style="margin-left: 40px;"><b><a name="--notify-monitor-port"></a>--notify-monitor-port</b><span
+ style="font-weight: normal;">=</span><i style="font-weight: normal;">num</i></h4>
+<div style="margin-left: 80px;"><span style="font-weight: normal;">Use
+an alternative network port (<span style="font-style: italic;">num</span>)
+to communicate monitor requests to the Pipeline </span>Directory
+Notification<span style="font-weight: normal;"> daemon <a
+ href="plnotify.html"><span style="font-weight: bold;">plnotify</span></a>(1)</span>.<br>
+</div>
+<br>
+<div style="margin-left: 80px;">The
+default directory notification control port is set by the <a
+ href="file:///usr/share/doc/@PLCONFIG_VERSION@/plconfig.html#--notify-monitor-port"><span
+ style="font-weight: bold;">--notify-monitor-port</span></a>
+option to <a
+ href="file:///usr/share/doc/@PLCONFIG_VERSION@/plconfig.html"><span
+ style="font-weight: bold;">plconfig</span></a>(1).</div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><br>
+<br>
+<a name="--log"></a>--log</span>=<span style="font-style: italic;">logger:level</span>[<span
+ style="font-style: italic;">,logger:level</span>[...]]</div>
+<div style="margin-left: 40px;"><br>
+<div style="margin-left: 40px;">In addition to the normal output, <b>plmaster</b>(1)
+can
+generate
+detailed output tracing the various stages of internal execution.&nbsp;
+The arguments control the several different types
+of logging information (<span style="font-style: italic;">logger</span>)
+and different amounts of information (<span style="font-style: italic;">level</span>)
+of each type to generate.&nbsp; Several loggers can be modified in one
+option.<br>
+<br>
+The (<span style="font-style: italic;">logger</span>) portion of the
+option's argument can be:<br>
+<span style="font-weight: bold;"><br>
+</span>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">all</span><br
+ style="font-weight: bold;">
+</div>
+<div style="margin-left: 80px;">A shortcut for specifying all loggers
+at once.<br>
+</div>
+<div style="margin-left: 40px;"><br>
+<span style="font-weight: bold;">arg</span><br>
+<span style="font-weight: bold;"></span></div>
+<div style="margin-left: 80px;">Logs errors related to parsing the
+command-line options.<br>
+<br>
+</div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">glu<br>
+</span>
+<div style="margin-left: 40px;">Logs the I/O activity related to <a
+ style="font-weight: bold;"
+ href="../javadoc/us/temerity/pipeline/glue/package-summary.html">Glue</a>
+format files.<br>
+</div>
+<span style="font-weight: bold;"><br>
+ops</span><br>
+<span style="font-weight: bold;"></span></div>
+<div style="margin-left: 80px;">Logs node related operations performed
+by the <span style="font-weight: bold;">plmaster</span>(1). <br>
+<br>
+</div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">net</span><br>
+<span style="font-weight: bold;"></span></div>
+<div style="margin-left: 80px;">Logs network connections and activity. <br>
+<br>
+</div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">plg<br>
+</span>
+<div style="margin-left: 40px;">Logs the loading and initialization of
+Action, Editor and Tool plugins.</div>
+<span style="font-weight: bold;"><br>
+sub<br>
+</span>
+<div style="margin-left: 40px;">Logs the launching and monitoring
+of OS level subprocesses.<br>
+<br>
+</div>
+<span style="font-weight: bold;"></span></div>
+<span style="font-weight: bold;"></span>The (<span
+ style="font-style: italic;">level</span>) portion of
+the option's argument can be:<br>
+<br>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">severe</span><br>
+<span style="font-weight: bold;"></span></div>
+<div style="margin-left: 80px;">This level is used for error messages
+and other catastrophic events.<br>
+</div>
+<div style="margin-left: 40px;"><br style="font-weight: bold;">
+<span style="font-weight: bold;">warning</span><br>
+</div>
+<div style="margin-left: 80px;">This level is used for non-fatal error
+messages and advisory information.<br>
+</div>
+<div style="margin-left: 40px;"><br style="font-weight: bold;">
+<span style="font-weight: bold;">info</span><br>
+</div>
+<div style="margin-left: 80px;">This is the default output level for
+all loggers and is used for normal output from <b>plmaster</b>(1). <br>
+</div>
+<div style="margin-left: 40px;"><br style="font-weight: bold;">
+<span style="font-weight: bold;">fine</span><br>
+<span style="font-weight: bold;"></span><span style="font-weight: bold;">finer</span><br>
+<span style="font-weight: bold;"></span><span style="font-weight: bold;">finest</span><br>
+</div>
+<div style="margin-left: 80px;">These three levels are used for
+increasingly more detailed command tracing messages. <br>
+</div>
+<br>
+Logging can also be controlled on a system-wide basis by modifying the <a
+ href="#logger_properties"><span style="font-weight: bold;">logger.properties</span></a>
+file installed as part of the Pipeline distributuion. <span
+ style="font-weight: bold;"></span>See the Java
+API documention for the class<span style="font-weight: bold;">
+java.util.logging.Logger</span> for more information about the format
+of this file.&nbsp; Settings from the <a href="#--log"><span
+ style="font-weight: bold;">--log</span></a> option will override
+settings from the <span style="font-weight: bold;">logger.properties</span>
+file.</div>
+</div>
+<h3><a name="See_Also"></a>See Also</h3>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">Documentation</span>
+<br>
+</div>
+<div style="margin-left: 80px;"><a href="../manuals/index.html"
+ style="font-weight: bold;">Pipeline
+Manual</a><span style="font-weight: bold;">, </span><a
+ href="../javadoc/index.html"><span style="font-weight: bold;">Pipeline
+Java API</span></a><br>
+<br>
+</div>
+<div style="margin-left: 40px;">
+<span style="font-weight: bold;">Pipeline Programs</span><br>
+<div style="margin-left: 40px;"><a href="plui.html"><span
+ style="font-weight: bold;">plui</span></a>(1), <a href="pipeline.html"><span
+ style="font-weight: bold;">pipeline</span></a>(1), <a
+ href="plfilemgr.html"><span style="font-weight: bold;">plfilemgr</span></a>(1),
+<a href="plnotify.html"><span style="font-weight: bold;">plnotify</span></a>(1),
+<a href="file:///usr/share/doc/@PLCONFIG_VERSION@/plconfig.html"><span
+ style="font-weight: bold;">plconfig</span></a>(1)<br>
+<br>
+</div>
+<span style="font-weight: bold;">Other Software</span><br>
+<div style="margin-left: 40px;"><a href="http://www.mozilla.org"><b>mozilla</b></a>(1)<span
+ style="font-weight: bold;"></span><br>
+</div>
+</div>
+<h3><a name="Files"></a>Files</h3>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
+ name="logger_properties"></a><a href="../../logger.properties">logger.properties</a></span><br>
+<div style="margin-left: 40px;"><br>
+The site configuration for output loggers used by Pipeline
+programs.&nbsp;
+See the <a href="#--log"><span style="font-weight: bold;">--log </span></a>option
+for details about the individual loggers.</div>
+</div>
+<h3><a name="Author"></a>Author</h3>
+<div style="margin-left: 40px;">Created by <span
+ style="font-weight: bold;">Jim Callahan</span> of <a
+ href="http://temerity.us/"><span style="font-weight: bold;">Temerity
+Software, Inc</span></a>.</div>
+<span style="font-weight: bold;">
+</span>
+<h3><a name="Copyright"></a>Copyright</h3>
+<div style="margin-left: 40px;">
+@COPYRIGHT@
+<br>
+</div>
+<h3><a name="License_Agreement"></a>License Agreement</h3>
+<div style="margin-left: 40px;">
+@LICENSE@
+</div>
+<br>
+<br>
+</body>
+</html>
