@@ -1,4 +1,4 @@
-// $Id: PluginMenuLayout.java,v 1.2 2005/01/05 17:41:24 jim Exp $
+// $Id: PluginMenuLayout.java,v 1.3 2005/01/05 23:01:56 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -204,7 +204,8 @@ class PluginMenuLayout
 
     LinkedList<PluginMenuLayout> children = 
       (LinkedList<PluginMenuLayout>) decoder.decode("Children"); 
-    addAll(children);
+    if(children != null) 
+      addAll(children);
   }
 
 

@@ -1,9 +1,8 @@
-// $Id: UIFactory.java,v 1.1 2005/01/03 06:56:41 jim Exp $
+// $Id: UIFactory.java,v 1.2 2005/01/05 23:01:56 jim Exp $
 
 package us.temerity.pipeline.ui;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.core.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.laf.LookAndFeelLoader;

@@ -1,4 +1,4 @@
-// $Id: JNewNameDialog.java,v 1.1 2005/01/05 17:41:39 jim Exp $
+// $Id: JNewNameDialog.java,v 1.2 2005/01/05 23:01:56 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -200,7 +200,7 @@ class JNewNameDialog
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID =
+  private static final long serialVersionUID = -1405678737818875962L;
 
 
 

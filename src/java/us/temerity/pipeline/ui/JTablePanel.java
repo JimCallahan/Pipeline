@@ -1,9 +1,8 @@
-// $Id: JTablePanel.java,v 1.10 2005/01/03 06:56:23 jim Exp $
+// $Id: JTablePanel.java,v 1.11 2005/01/05 23:01:56 jim Exp $
 
 package us.temerity.pipeline.ui;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.core.*;
 
 import java.awt.*;
 import java.awt.event.*;

@@ -1,10 +1,9 @@
-// $Id: FileMonitor.java,v 1.1 2004/10/28 15:55:23 jim Exp $
+// $Id: FileMonitor.java,v 1.1 2005/01/05 23:01:56 jim Exp $
 
-package us.temerity.pipeline.core;
+package us.temerity.pipeline;
 
 import us.temerity.pipeline.message.*;
 import us.temerity.pipeline.glue.*;
-import us.temerity.pipeline.*;
 
 import java.io.*;
 import java.nio.*;
@@ -57,7 +56,7 @@ class FileMonitor
   /**
    * Get the current number of lines in the file. <P> 
    * 
-   * @throw IOException 
+   * @throws IOException 
    *   If the file cannot be opened.
    */ 
   public int
@@ -85,7 +84,7 @@ class FileMonitor
    * @param lines
    *   The number of lines of text to retrieve. 
    * 
-   * @throw IOException 
+   * @throws IOException 
    *   If the file does not contain the given lines of text or cannot be read.
    */ 
   public String

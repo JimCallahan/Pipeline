@@ -1,9 +1,8 @@
-// $Id: JFileMonitorPanel.java,v 1.1 2004/10/28 15:55:24 jim Exp $
+// $Id: JFileMonitorPanel.java,v 1.2 2005/01/05 23:01:56 jim Exp $
 
 package us.temerity.pipeline.ui;
 
 import us.temerity.pipeline.*; 
-import us.temerity.pipeline.core.*; 
 
 import java.io.*;
 import javax.swing.*;
