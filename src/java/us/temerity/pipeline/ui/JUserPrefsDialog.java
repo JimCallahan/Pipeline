@@ -1,4 +1,4 @@
-// $Id: JUserPrefsDialog.java,v 1.3 2004/05/14 02:40:50 jim Exp $
+// $Id: JUserPrefsDialog.java,v 1.4 2004/05/16 19:14:28 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -192,20 +192,8 @@ class JUserPrefsDialog
 	  
 	  {
 	    DefaultMutableTreeNode layout = 
-	      new DefaultMutableTreeNode("Layout", false);
-	    nodes.add(layout);
-	  }
-	  
-	  {
-	    DefaultMutableTreeNode layout = 
 	      new DefaultMutableTreeNode("Appearance", false);
 	    nodes.add(layout);
-	  }
-	  
-	  {
-	    DefaultMutableTreeNode keys = 
-	      new DefaultMutableTreeNode("Hot Keys", false);
-	    nodes.add(keys);
 	  }
 	}
 
@@ -218,12 +206,6 @@ class JUserPrefsDialog
 	    DefaultMutableTreeNode layout = 
 	      new DefaultMutableTreeNode("Appearance", false);
 	    links.add(layout);
-	  }
-	  
-	  {
-	    DefaultMutableTreeNode keys = 
-	      new DefaultMutableTreeNode("Hot Keys", false);
-	    links.add(keys);
 	  }
 	}
 	
@@ -282,90 +264,34 @@ class JUserPrefsDialog
     {
       String ntitle = (ptitle + "Nodes - ");
 
-      /* layout */ 
-      {
-	Component comps[] = createCommonPanels();
-	JPanel tpanel = (JPanel) comps[0];
-	JPanel vpanel = (JPanel) comps[1];
-	
-	{
-	  UserPrefs prefs = UserPrefs.getInstance();
-	  
-	  pNodeSpaceX = 
-	    UIMaster.createTitledSlider(tpanel, "Horizontal Space:", 120, 
-					vpanel, 1.0, 5.0, prefs.getNodeSpaceX(), 240);
-	  
-	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
-	  
-	  pNodeSpaceY = 
-	    UIMaster.createTitledSlider(tpanel, "Vertical Space:", 120, 
-					vpanel, 1.0, 5.0, prefs.getNodeSpaceY(), 240);
-
-	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
-	  
-	  pNodeOffset = 
-	    UIMaster.createTitledSlider(tpanel, "Vertical Offset:", 120, 
-					vpanel, 0.0, 1.0, prefs.getNodeOffset(), 240);
-	  
-	  
-	  // ...
-	}
-	
-	tpanel.add(Box.createVerticalGlue());
-	vpanel.add(Box.createVerticalGlue());
-	
-	pCardPanel.add(comps[2], ntitle + "Layout:");
-      }
-      
       /* appearance */ 
       {
 	Component comps[] = createCommonPanels();
 	JPanel tpanel = (JPanel) comps[0];
 	JPanel vpanel = (JPanel) comps[1];
 	
-	{
+	{	  
+	  pNodeSpaceX = 
+	    UIMaster.createTitledSlider(tpanel, "Horizontal Space:", 150, 
+					vpanel, 1.0, 5.0, 210);
+	  
+	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+	  
+	  pNodeSpaceY = 
+	    UIMaster.createTitledSlider(tpanel, "Vertical Space:", 150, 
+					vpanel, 1.0, 5.0, 210);
 
-	  // ...
-
+	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+	  
+	  pNodeOffset = 
+	    UIMaster.createTitledSlider(tpanel, "Vertical Offset:", 150, 
+					vpanel, 0.0, 1.0, 210);
 	}
 	
 	tpanel.add(Box.createVerticalGlue());
 	vpanel.add(Box.createVerticalGlue());
 	
 	pCardPanel.add(comps[2], ntitle + "Appearance:");
-      }
-
-      /* hot keys */ 
-      {
-	Component comps[] = createCommonPanels();
-	JPanel tpanel = (JPanel) comps[0];
-	JPanel vpanel = (JPanel) comps[1];
-	
-	{ 
-	  pCollapseNode = 
-	    UIMaster.createTitledHotKeyField(tpanel, "Collapse Node:", 120, 
-					     vpanel, 240);
-	  
-	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
-
-	  pExpandNode = 
-	    UIMaster.createTitledHotKeyField(tpanel, "Expand Node:", 120, 
-					     vpanel, 240);
-
-	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
-
-	  pExpandAllNodes = 
-	    UIMaster.createTitledHotKeyField(tpanel, "Expand All Nodes:", 120, 
-					     vpanel, 240);
-	  
-	  // ...
-
-	}
-	
-	tpanel.add(Box.createVerticalGlue());
-	vpanel.add(Box.createVerticalGlue());
-	
-	pCardPanel.add(comps[2], ntitle + "Hot Keys:");
       }
     }
 
@@ -380,33 +306,60 @@ class JUserPrefsDialog
 	JPanel vpanel = (JPanel) comps[1];
 	
 	{
+	  {
+	    ArrayList<String> colors = new ArrayList<String>();
+	    colors.add("DarkGrey");
+	    colors.add("LightGrey");
+	    colors.add("White");
+	    colors.add("Yellow");
 
-	  // ...
+	    pLinkColorName = 
+	      UIMaster.createTitledCollectionField(tpanel, "Line Color:", 150, 
+						   vpanel, colors, 210);
+	  }
 
+	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+
+	  pLinkAntiAlias = 
+	    UIMaster.createTitledBooleanField(tpanel, "Antialiased:", 150, 
+					       vpanel, 210);
+
+	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+
+	  pLinkThickness = 
+	    UIMaster.createTitledSlider(tpanel, "Line Thickness:", 150, 
+					vpanel, 1.0, 5.0, 210);
+	  
+	  UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
+
+	  pDrawArrowHeads = 
+	    UIMaster.createTitledBooleanField(tpanel, "Draw Arrowheads:", 150, 
+					       vpanel, 210);
+
+	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+
+
+	  pArrowHeadWidth = 
+	    UIMaster.createTitledSlider(tpanel, "Arrowhead Width:", 150, 
+					vpanel, 1.0, 5.0, 210);
+
+	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+
+	  pArrowHeadLength = 
+	    UIMaster.createTitledSlider(tpanel, "Arrowhead Length:", 150, 
+					vpanel, 1.0, 5.0, 210);
+	  
+	  UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
+	  
+	  pLinkGap = 
+	    UIMaster.createTitledSlider(tpanel, "Node/Link Space:", 150, 
+					vpanel, 1.0, 5.0, 210);
 	}
 	
 	tpanel.add(Box.createVerticalGlue());
 	vpanel.add(Box.createVerticalGlue());
 	
 	pCardPanel.add(comps[2], ltitle + "Appearance:");
-      }
-
-      /* hot keys */ 
-      {
-	Component comps[] = createCommonPanels();
-	JPanel tpanel = (JPanel) comps[0];
-	JPanel vpanel = (JPanel) comps[1];
-	
-	{
-
-	  // ...
-
-	}
-	
-	tpanel.add(Box.createVerticalGlue());
-	vpanel.add(Box.createVerticalGlue());
-	
-	pCardPanel.add(comps[2], ltitle + "Hot Keys:");
       }
     }
 
@@ -416,12 +369,30 @@ class JUserPrefsDialog
       JPanel tpanel = (JPanel) comps[0];
       JPanel vpanel = (JPanel) comps[1];
       
-      {
+      { 	
+	pAutomaticExpandNodes = 
+	  UIMaster.createTitledHotKeyField(tpanel, "Automatic Expand:", 150, 
+					   vpanel, 210);
+
+	UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+
+	pExpandAllNodes = 
+	  UIMaster.createTitledHotKeyField(tpanel, "Expand All:", 150, 
+					   vpanel, 210);
 	
-	// ...
+	UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
 	
+	pCollapseAllNodes = 
+	  UIMaster.createTitledHotKeyField(tpanel, "Collapse All:", 150, 
+					   vpanel, 210);
+	  
+	UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
+
+	pShowHideDownstreamNodes = 
+	  UIMaster.createTitledHotKeyField(tpanel, "Show/Hide Downstream:", 150, 
+					   vpanel, 210);
       }
-      
+	
       tpanel.add(Box.createVerticalGlue());
       vpanel.add(Box.createVerticalGlue());
       
@@ -451,7 +422,7 @@ class JUserPrefsDialog
 	panel.setName("TitlePanel");
 	panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 	
-	Dimension size = new Dimension(136, 240);
+	Dimension size = new Dimension(166, 240);
 	panel.setMinimumSize(size);
 	panel.setMaximumSize(new Dimension(size.width, Integer.MAX_VALUE));
 	panel.setPreferredSize(size);
@@ -466,7 +437,7 @@ class JUserPrefsDialog
 	panel.setName("ValuePanel");
 	panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 	
-	Dimension size = new Dimension(256, 240);
+	Dimension size = new Dimension(226, 240);
 	panel.setMinimumSize(size);
 	panel.setMaximumSize(new Dimension(size.width, Integer.MAX_VALUE));
 	panel.setPreferredSize(size);
@@ -502,15 +473,33 @@ class JUserPrefsDialog
     UIMaster master = UIMaster.getInstance();
     UserPrefs prefs = UserPrefs.getInstance();
 
-    /* node viewer */ 
+    /* panels - node viewer - nodes - appearance */ 
     {
       prefs.setNodeSpaceX(((double) pNodeSpaceX.getValue())/1000.0);
       prefs.setNodeSpaceY(((double) pNodeSpaceY.getValue())/1000.0);
       prefs.setNodeOffset(((double) pNodeOffset.getValue())/1000.0);
-      
-      prefs.setCollapseNode(pCollapseNode.getHotKey());
-      prefs.setExpandNode(pExpandNode.getHotKey());
+    }
+
+    /* panels - node viewer - links - appearance */ 
+    {
+      prefs.setLinkAntiAlias(pLinkAntiAlias.getValue());
+      prefs.setLinkThickness(((double) pLinkThickness.getValue())/1000.0);
+      prefs.setLinkColorName(pLinkColorName.getSelected());
+
+      prefs.setDrawArrowHeads(pDrawArrowHeads.getValue());
+      prefs.setArrowHeadLength(((double) pArrowHeadLength.getValue())/1000.0);
+      prefs.setArrowHeadWidth(((double) pArrowHeadWidth.getValue())/1000.0);
+
+      prefs.setLinkGap(((double) pLinkGap.getValue())/1000.0);
+    }
+
+    /* panels - node viewer - hot keys */ 
+    {      
+      prefs.setAutomaticExpandNodes(pAutomaticExpandNodes.getHotKey());
       prefs.setExpandAllNodes(pExpandAllNodes.getHotKey());
+      prefs.setCollapseAllNodes(pCollapseAllNodes.getHotKey());
+
+      prefs.setShowHideDownstreamNodes(pShowHideDownstreamNodes.getHotKey());      
     }
 
 
@@ -551,15 +540,32 @@ class JUserPrefsDialog
   {
     UserPrefs prefs = UserPrefs.getInstance();
     
-    /* node viewer */ 
+    /* panels - node viewer - nodes - appearance */ 
     {
       pNodeSpaceX.setValue((int) (prefs.getNodeSpaceX()*1000.0));
       pNodeSpaceY.setValue((int) (prefs.getNodeSpaceY()*1000.0));
       pNodeOffset.setValue((int) (prefs.getNodeOffset()*1000.0));
+    }
 
-      pCollapseNode.setHotKey(prefs.getCollapseNode());
-      pExpandNode.setHotKey(prefs.getExpandNode());
+    /* panels - node viewer - links - appearance */ 
+    {
+      pLinkAntiAlias.setValue(prefs.getLinkAntiAlias());
+      pLinkThickness.setValue((int) (prefs.getLinkThickness()*1000.0));
+      pLinkColorName.setSelected(prefs.getLinkColorName());
+
+      pDrawArrowHeads.setValue(prefs.getDrawArrowHeads());
+      pArrowHeadLength.setValue((int) (prefs.getArrowHeadLength()*1000.0));
+      pArrowHeadWidth.setValue((int) (prefs.getArrowHeadWidth()*1000.0));
+
+      pLinkGap.setValue((int) (prefs.getLinkGap()*1000.0));
+    }    
+
+    /* panels - node viewer - hot keys */ 
+    {      
+      pAutomaticExpandNodes.setHotKey(prefs.getAutomaticExpandNodes());
       pExpandAllNodes.setHotKey(prefs.getExpandAllNodes());
+      pCollapseAllNodes.setHotKey(prefs.getCollapseAllNodes());
+      pShowHideDownstreamNodes.setHotKey(prefs.getShowHideDownstreamNodes());
     }
 
 
@@ -687,13 +693,11 @@ class JUserPrefsDialog
 
 
 
-
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
   private static final long serialVersionUID = -4876180050225500742L;
-
 
 
 
@@ -719,14 +723,33 @@ class JUserPrefsDialog
 
 
   /**
-   * Panels - NodeViewer - Nodes - Layout:
+   * Panels - NodeViewer - Nodes - Appearance:
    */ 
   private JSlider  pNodeSpaceX; 
   private JSlider  pNodeSpaceY; 
   private JSlider  pNodeOffset; 
 
-  private JHotKeyField  pCollapseNode;
-  private JHotKeyField  pExpandNode;
+
+  /**
+   * Panels - NodeViewer - Links - Appearance:
+   */ 
+  private JBooleanField     pLinkAntiAlias; 
+  private JSlider           pLinkThickness;
+  private JCollectionField  pLinkColorName;
+
+  private JBooleanField  pDrawArrowHeads;
+  private JSlider        pArrowHeadLength;
+  private JSlider        pArrowHeadWidth;
+
+  private JSlider  pLinkGap;
+  
+
+  /**
+   * Panels - NodeViewer - Hot Keys:
+   */ 
+  private JHotKeyField  pAutomaticExpandNodes;
   private JHotKeyField  pExpandAllNodes;
+  private JHotKeyField  pCollapseAllNodes;
+  private JHotKeyField  pShowHideDownstreamNodes;
 
 }
