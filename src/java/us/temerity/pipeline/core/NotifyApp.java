@@ -1,4 +1,4 @@
-// $Id: NotifyApp.java,v 1.6 2004/08/29 09:22:06 jim Exp $
+// $Id: NotifyApp.java,v 1.7 2004/09/01 12:22:33 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -53,6 +53,11 @@ class NotifyApp
    String[] args
   )
   {
+    if(!PackageInfo.sEnableCaching) {
+      Logs.net.severe("The file notification daemon plnotify(1) is disabled.");
+      System.exit(1);
+    }
+
     packageArguments(args);
 
     boolean success = false;
