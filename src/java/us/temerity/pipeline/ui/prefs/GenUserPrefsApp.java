@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.11 2004/08/30 02:55:32 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.12 2004/08/30 06:52:37 jim Exp $
 
 import java.io.*; 
 import java.util.*;
@@ -327,7 +327,13 @@ class GenUserPrefsApp
 
 	new BoundedDoublePref
 	("the distance between jobs",
-	 "JobSpace", "Space:", 0.0, 0.3, 0.1), 
+	 "JobSpace", "Job Space:", 0.0, 0.3, 0.1), 
+	
+	new BasePref(),
+
+	new BoundedDoublePref
+	("the distance between jobs",
+	 "JobGroupSpace", "Group Space:", 0.25, 1.0, 0.5), 
 	
 	new BasePref(),
 
@@ -347,8 +353,22 @@ class GenUserPrefsApp
       BasePref prefs[] = {
 	new HotKeyPref
 	("update connected job details panels",
-	 "JobDetails", "Details:")
-      };
+	 "JobDetails", "Details:"),
+      
+	new BasePref(),
+	
+	new HotKeyPref
+	("kill all selected jobs", 
+	 "JobKillJobs", "Kill Jobs:"), 
+
+	new HotKeyPref
+	("pause all selected jobs",
+	 "JobPauseJobs", "Pause Jobs:"), 
+
+	new HotKeyPref
+	("resume execution of all selected jobs",
+	 "JobResumeJobs", "Resume Jobs:")
+      };      
 
       pPrefs.put("Panel|Job Viewer|Job|Hot Keys", prefs);
     }
@@ -438,7 +458,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.11 2004/08/30 02:55:32 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.12 2004/08/30 06:52:37 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -691,7 +711,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.11 2004/08/30 02:55:32 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.12 2004/08/30 06:52:37 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
