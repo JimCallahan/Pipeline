@@ -1,4 +1,4 @@
-// $Id: TupleNf.java,v 1.7 2004/12/19 19:28:49 jim Exp $
+// $Id: TupleNf.java,v 1.8 2004/12/21 00:20:07 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -953,11 +953,14 @@ class TupleNf
   {
     StringBuffer buf = new StringBuffer();
 
-    buf.append("(");
+    buf.append("[");
     int i; 
-    for(i=0; i<(pComps.length-1); i++) 
-      buf.append(String.format("%1$.4f", pComps[i]) + ", ");
-    buf.append(String.format("%1$.4f", pComps[i]) + ")");
+    for(i=0; i<pComps.length; i++) {
+      buf.append(String.format("%1$.4f", pComps[i]));
+      if(i<(pComps.length-1))
+	buf.append(" ");
+    }
+    buf.append("]");
 	
     return buf.toString();
   }

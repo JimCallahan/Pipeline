@@ -953,11 +953,14 @@ class TupleNd
   {
     StringBuffer buf = new StringBuffer();
 
-    buf.append("(");
+    buf.append("[");
     int i; 
-    for(i=0; i<(pComps.length-1); i++) 
-      buf.append(String.format("%1$.6f", pComps[i]) + ", ");
-    buf.append(String.format("%1$.6f", pComps[i]) + ")");
+    for(i=0; i<pComps.length; i++) {
+      buf.append(String.format("%1$.6f", pComps[i]));
+      if(i<(pComps.length-1))
+	buf.append(" ");
+    }
+    buf.append("]");
 	
     return buf.toString();
   }

@@ -910,11 +910,14 @@ class TupleNi
   {
     StringBuffer buf = new StringBuffer();
 
-    buf.append("(");
+    buf.append("[");
     int i; 
-    for(i=0; i<(pComps.length-1); i++) 
-      buf.append(pComps[i] + ", ");
-    buf.append(pComps[i] + ")");
+    for(i=0; i<pComps.length; i++) {
+      buf.append(pComps[i]);
+      if(i<(pComps.length-1))
+	buf.append(" ");
+    }
+    buf.append("]");
 	
     return buf.toString();
   }
