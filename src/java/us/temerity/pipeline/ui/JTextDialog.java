@@ -1,4 +1,4 @@
-// $Id: JTextDialog.java,v 1.1 2004/06/14 22:55:00 jim Exp $
+// $Id: JTextDialog.java,v 1.2 2004/06/19 00:35:29 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -52,7 +52,7 @@ class JTextDialog
       body.add(Box.createRigidArea(new Dimension(0, 4)));
 
       {
-	JTextArea area = new JTextArea(null, 50, 80);
+	JTextArea area = new JTextArea(null, 30, 80);
 	pTextArea = area;
 
 	area.setName("CodeTextArea");
@@ -72,11 +72,16 @@ class JTextDialog
 	body.add(scroll);
       }
       
-      String apply = null;
-      if(isEditable) 
-	apply = "Load";
+      String confirm = null;
+      String apply   = null;
+      String cancel  = "Close";
+      if(isEditable) {
+	confirm = "Confirm";
+	apply   = "Load";
+	cancel  = "Cancel";
+      }
 
-      super.initUI("X", true, body, "Confirm", apply, null, "Cancel");
+      super.initUI("X", true, body, confirm, apply, null, cancel);
     }
 
     /* initialize the file loading dialog */ 
