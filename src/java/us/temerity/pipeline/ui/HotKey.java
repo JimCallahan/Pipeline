@@ -1,4 +1,4 @@
-// $Id: HotKey.java,v 1.2 2004/05/21 00:13:37 jim Exp $
+// $Id: HotKey.java,v 1.3 2005/01/09 23:11:44 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -188,7 +188,35 @@ class HotKey
     return (buf.toString());
   }
   
+
   
+  /*----------------------------------------------------------------------------------------*/
+  /*   O B J E C T   O V E R R I D E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Indicates whether some other object is "equal to" this one.
+   * 
+   * @param obj 
+   *   The reference object with which to compare.
+   */
+  public boolean
+  equals
+  (
+   Object obj   
+  )
+  {
+    if((obj != null) && (obj instanceof HotKey)) {
+      HotKey key = (HotKey) obj; 
+      return ((pShiftDown == key.pShiftDown) && 
+	      (pAltDown == key.pAltDown) && 
+	      (pCtrlDown == key.pCtrlDown) && 
+	      (pKeyCode == key.pKeyCode));
+    }
+    return false;
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   G L U E A B L E                                                                      */
