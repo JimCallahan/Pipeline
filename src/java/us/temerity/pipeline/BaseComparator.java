@@ -1,4 +1,4 @@
-// $Id: BaseComparator.java,v 1.3 2004/10/28 15:55:23 jim Exp $
+// $Id: BaseComparator.java,v 1.4 2005/01/15 02:50:46 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -14,7 +14,11 @@ import java.io.*;
  * 
  * New kinds of comparators can be written by subclassing this class.  Due to the way plugins
  * are loaded and communicated between applications, any fields added to a subclass will
- * be reinitialized when the action is stored to disk or when it is sent over the network.
+ * be reinitialized when the action is stored to disk or when it is sent over the network. <P>
+ * 
+ * While new plugin subclass versions are being modified and tested the 
+ * {@link #underDevelopment underDevelopment} method should be called in the subclasses
+ * constructor to enable the plugin to be dynamically reloaded.  
  */
 public
 class BaseComparator
@@ -77,6 +81,17 @@ class BaseComparator
   }
 
    
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Get the name of the catagory of this plugin.
+   */ 
+  public String 
+  getPluginCatagory() 
+  {
+    return "Comparator";
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C T I O N                                                                          */

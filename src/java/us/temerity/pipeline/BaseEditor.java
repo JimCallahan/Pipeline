@@ -1,4 +1,4 @@
-// $Id: BaseEditor.java,v 1.8 2004/11/11 00:41:19 jim Exp $
+// $Id: BaseEditor.java,v 1.9 2005/01/15 02:50:46 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -14,7 +14,11 @@ import java.io.*;
  * 
  * New kinds of editors can be written by subclassing this class.  Due to the way plugins
  * are loaded and communicated between applications, any fields added to a subclass will
- * be reinitialized when the action is stored to disk or when it is sent over the network.
+ * be reinitialized when the action is stored to disk or when it is sent over the network. <P>
+ * 
+ * While new plugin subclass versions are being modified and tested the 
+ * {@link #underDevelopment underDevelopment} method should be called in the subclasses
+ * constructor to enable the plugin to be dynamically reloaded.  
  */
 public
 class BaseEditor
@@ -94,6 +98,18 @@ class BaseEditor
   }
 
    
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the name of the catagory of this plugin.
+   */ 
+  public String 
+  getPluginCatagory() 
+  {
+    return "Editor";
+  }
+    
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C T I O N                                                                          */

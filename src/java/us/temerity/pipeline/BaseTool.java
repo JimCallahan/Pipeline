@@ -1,4 +1,4 @@
-// $Id: BaseTool.java,v 1.1 2005/01/05 09:44:31 jim Exp $
+// $Id: BaseTool.java,v 1.2 2005/01/15 02:50:46 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -16,7 +16,11 @@ import javax.swing.*;
  * 
  * Tool plugins provide a mechanism for extending the functionality of the <B>plui</B>(1) 
  * graphical user interface to Pipeline.  The tool is triggered by a menu item displayed
- * in the Node Viewer panel similar to the built-in operations such as Check-In or Edit.
+ * in the Node Viewer panel similar to the built-in operations such as Check-In or Edit. <P>
+ * 
+ * While new plugin subclass versions are being modified and tested the 
+ * {@link #underDevelopment underDevelopment} method should be called in the subclasses
+ * constructor to enable the plugin to be dynamically reloaded.  
  */
 public  
 class BaseTool
@@ -60,7 +64,19 @@ class BaseTool
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Get the name of the catagory of this plugin.
+   */ 
+  public String 
+  getPluginCatagory() 
+  {
+    return "Tool";
+  }
 
+ 
+  /*----------------------------------------------------------------------------------------*/
+ 
   /**
    * Whether the tool uses a dialog to interactively query the user for input.
    */ 

@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.24 2004/11/21 18:39:56 jim Exp $
+// $Id: BaseAction.java,v 1.25 2005/01/15 02:50:46 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -21,7 +21,13 @@ import java.io.*;
  * are loaded and communicated between applications, any fields added to a subclass will
  * be reinitialized when the action is stored to disk or when it is sent over the network.
  * Any data which must be retained by the action should be stored in an action parameter
- * instead.
+ * instead. <P> 
+ * 
+ * While new plugin subclass versions are being modified and tested the 
+ * {@link #underDevelopment underDevelopment} method should be called in the subclasses
+ * constructor to enable the plugin to be dynamically reloaded.  Nodes which use one of 
+ * these dynamically reloadable Action plugins cannot be Checked-In until the plugin is
+ * no longer under development.  
  */
 public 
 class BaseAction
@@ -88,6 +94,21 @@ class BaseAction
     pSourceParams  = action.pSourceParams; 
     pPresetChoices = action.pPresetChoices;
     pPresetValues  = action.pPresetValues;
+  }
+
+
+   
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the name of the catagory of this plugin.
+   */ 
+  public String 
+  getPluginCatagory() 
+  {
+    return "Action";
   }
 
 
