@@ -2,7 +2,8 @@
 SUBDIRS = \
   src \
   tests \
-  data
+  data \
+  docs
 
 
 EXTRA_DIST = \
@@ -14,11 +15,4 @@ EXTRA_DIST = \
   config/install-sh \
   config/missing \
   config/mkinstalldirs
-
-
-pack-links:
-	(cd ${top_srcdir}; find . -type l -print | tar cvf symlinks.tar -)
-
-unpack-links:
-	(cd ${top_srcdir}; tar -xvf symlinks.tar)
 
