@@ -1,4 +1,4 @@
-// $Id: JReleaseDialog.java,v 1.2 2005/02/21 00:13:06 jim Exp $
+// $Id: JReleaseDialog.java,v 1.3 2005/02/22 02:31:28 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -120,7 +120,7 @@ class JReleaseDialog
   private static final long serialVersionUID = -8701942318291685416L;
 
   private static final int sTSize  = 150;
-  private static final int sVSize  = 300;
+  private static final int sVSize  = 150;
 
 
 
