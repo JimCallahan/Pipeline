@@ -1,4 +1,4 @@
-// $Id: MayaCollateAction.java,v 1.2 2004/09/13 04:04:29 jim Exp $
+// $Id: MayaCollateAction.java,v 1.3 2004/09/13 23:44:09 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -542,7 +542,7 @@ class MayaCollateAction
 		animLength = endFrame - startFrame; 
 		shotEnd = shotStart + ((double) animLength);
 	      }
-	      else if((endFrame - startFrame) != animLength) {
+	      else if(!animLength.equals(endFrame - startFrame)) {
 		throw new PipelineException
 		  ("All animations with the same Shot Order must have the same frame " +
 		   "length. The animation (" + sname + ") in shot (" + order + ") had " + 
@@ -564,14 +564,13 @@ class MayaCollateAction
 		  ("The Shot Gap per-source parameter for source node " + 
 		   "(" + sname + ") must be positive!");
 	      
-	      if(shotGap == null) 
-		shotGap = gap;
-	      else if(shotGap != gap)
+	      if((shotGap != null) && !shotGap.equals(gap))
 		throw new PipelineException
 		  ("All animations with the same Shot Order must have the same Shot Gap. " +
 		   "The animation (" + sname + ") in shot (" + order + ") had a Shot Gap " + 
 		   "of (" + gap + ") frames, but previous animations for this shot had a " + 
 		   "Shot Gap of (" + shotGap + ") frames!");
+	      shotGap = gap;
 
 	      outTangent = (String) getSourceParamValue(sname, "OutTangent");
 	      if((outTangent != null) && outTangent.equals("-")) 
@@ -638,7 +637,7 @@ class MayaCollateAction
 	    
 	  /* advance to the next shot in the sequence */ 
 	  shotStart += shotEnd + shotGap;
-	  maxFrame = Math.max(maxFrame, shotStart);
+	  maxFrame = Math.max(maxFrame, shotEnd);
 	  shotIdx++;
 	}
       }
@@ -657,8 +656,6 @@ class MayaCollateAction
 
       /* set visibility keys on the models */       
       {
-	// ?????
-
 	out.write("// VISIBILITY KEYS\n");
 
 	DecimalFormat fmt = new DecimalFormat("######0.0000");
