@@ -505,6 +505,10 @@
       <imageIcon id="FileCheckedIcon" path="FileCheckIconSelected.png"/>
       <property key="CheckBox.icon" value="FileCheckedIcon"/>   	
     </state>
+    <state value="DISABLED">
+      <imageIcon id="FileCheckedIconDisabled" path="FileCheckIconDisabled.png"/>
+      <property key="CheckBox.icon" value="FileCheckedIconDisabled"/>   	
+    </state>
     <imagePainter path="Grey.png"
                   method="checkBoxBackground"
                   sourceInsets="0 0 0 0"/>
