@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.13 2004/10/04 16:06:53 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.14 2004/10/09 19:07:27 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -994,6 +994,9 @@ class JNodeFilesPanel
 	    hasWorking          = check.hasWorking();
 	  }
 	  else if(source == pHeaderIcon) {
+	    if(pStatus == null) 
+	      return; 
+
 	    NodeDetails details = pStatus.getDetails();
 	    if(details == null) 
 	      return;
