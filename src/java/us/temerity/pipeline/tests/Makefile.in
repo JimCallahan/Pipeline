@@ -177,7 +177,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
 #--------------------------------------------------------------------------------------------#
 
-           TESTS = FileMgr
+           TESTS = NodeMgr
 
 #             TESTS = CheckSum \
 #                     FileSeq \
