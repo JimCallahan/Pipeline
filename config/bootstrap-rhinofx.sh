@@ -9,8 +9,7 @@ pushd $plsrcdir
   sh autogen.sh
 popd
 
-plprofile=$plsrcdir/plconfig/customers/rhinofx/040913
-
+plprofile=$plsrcdir/plconfig/customers/rhinofx/041005
 pushd i686-pc-linux-gnu-dbg
   $plsrcdir/configure \
     --disable-opt \
