@@ -1,4 +1,4 @@
-// $Id: QueueRequest.java,v 1.3 2004/07/25 03:07:50 jim Exp $
+// $Id: QueueRequest.java,v 1.4 2004/07/28 19:09:53 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -81,6 +81,29 @@ enum QueueRequest
    */
   RemoveSelectionKey, 
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the current state of the hosts capable of executing jobs for the Pipeline queue.
+   */ 
+  GetHosts, 
+
+  /**
+   * An instance {@link QueueAddHostReq QueueAddHostReq} is next.
+   */
+  AddHost, 
+
+  /**
+   * An instance {@link QueueRemoveHostsReq QueueRemoveHostsReq} is next.
+   */
+  RemoveHosts, 
+
+  /**
+   * An instance {@link QueueEditHostsReq QueueEditHostsReq} is next.
+   */
+  EditHosts, 
+  
 
   /*----------------------------------------------------------------------------------------*/
 
