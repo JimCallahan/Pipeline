@@ -1,4 +1,4 @@
-// $Id: BaseApp.java,v 1.6 2004/09/19 04:50:59 jim Exp $
+// $Id: BaseApp.java,v 1.7 2004/09/21 23:50:15 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -404,19 +404,19 @@ class BaseApp
 
 
   /**
-   * Generate a string consisting the the given string repeated N number of times.
+   * Generate a string consisting the the given character repeated N number of times.
    */ 
   public String
   repeat
   (
-   String str,
+   char c,
    int size
   ) 
   {
     StringBuffer buf = new StringBuffer();
     int wk;
     for(wk=0; wk<size; wk++) 
-      buf.append(str);
+      buf.append(c);
     return buf.toString();
   }
 
@@ -429,7 +429,7 @@ class BaseApp
    int size
   ) 
   {
-    return repeat("-", size);
+    return repeat('-', size);
   }
 
   /**
@@ -441,7 +441,21 @@ class BaseApp
    int size
   ) 
   {
-    return repeat("=", size);
+    return repeat('=', size);
+  }
+
+  /**
+   * Pad the given string with the given string so that it is at least N characters long.
+   */ 
+  public String
+  pad
+  (
+   String str, 
+   char c,
+   int size
+  ) 
+  {
+    return (str + repeat(c, Math.max(0, size - str.length())));
   }
 
   /**
@@ -454,7 +468,7 @@ class BaseApp
    int size
   ) 
   {
-    return (str + repeat(" ", Math.max(0, size - str.length())));
+    return pad(str, ' ', size);
   }
 
   /**
@@ -483,17 +497,17 @@ class BaseApp
 	  cnt += ws;
 	}
 	else {
-	  buf.append("\n" + repeat(" ", indent) + words[wk]);
+	  buf.append("\n" + repeat(' ', indent) + words[wk]);
 	  cnt = indent + ws;
 	}
 
 	if(wk < (words.length-1)) {
 	  if((size - cnt) > 0) {
-	    buf.append(" ");
+	    buf.append(' ');
 	    cnt++;
 	  }
 	  else {
-	    buf.append("\n" + repeat(" ", indent));
+	    buf.append("\n" + repeat(' ', indent));
 	    cnt = indent;
 	  }
 	}
