@@ -129,6 +129,40 @@ AC_MSG_RESULT([$BASEDIR])
 
 
 
+AC_MSG_CHECKING([PHP Install Directory])
+
+AC_ARG_WITH([phproot], 
+            [  --with-phproot=DIR      Root directory of installed PHP files.])
+
+AC_SUBST(PHPROOT)
+PHPROOT=/var/www/html/pipeline
+
+if test "$with_phproot" 
+then
+  PHPROOT=$with_phproot
+fi
+
+AC_MSG_RESULT([$PHPROOT])
+
+
+
+AC_MSG_CHECKING([Httpd Group])
+
+AC_ARG_WITH([httpd], 
+            [  --with-httpd=GROUP      Group name of httpd(1) process.])
+
+AC_SUBST(HTTPD_GROUP)
+HTTPD_GROUP="apache"
+
+if test "$with_httpd" 
+then
+  HTTPD_GROUP=$with_httpd
+fi
+
+AC_MSG_RESULT([$HTTPD_GROUP])
+
+
+
 AC_MSG_CHECKING([Pipeline Server Hostname])
 
 AC_ARG_WITH([plserver], 
@@ -160,6 +194,9 @@ then
 fi
 
 AC_MSG_RESULT([$PLPORT])
+
+AC_MSG_RESULT([ ])
+
 
 
 AC_MSG_CHECKING([toolset])
@@ -354,7 +391,8 @@ unset BASH
 AC_PATH_PROG(BASH, bash, $PATH)
 AC_PATH_PROG(MAKE, make, $PATH)
 AC_PATH_PROG(CVS, cvs, $PATH)
-AC_PATH_PROG(MD5SUM, md5sum, $PATH)
+AC_PATH_PROG(CHMOD, chmod, $PATH)
+AC_PATH_PROG(CHOWN, chown, $PATH)
 AC_PATH_PROG(DIFF, diff, $PATH)
 AC_PATH_PROG(MOZILLA, mozilla, $PATH)
 
@@ -729,6 +767,14 @@ AC_MSG_RESULT([Cooking configurable files:])
 
 AC_CONFIG_FILES([
   Makefile
+
+  php/Makefile
+
+  php/html/Makefile
+  php/html/config.php
+
+  php/themes/Makefile
+  php/themes/default/Makefile
 
   src/Makefile
 

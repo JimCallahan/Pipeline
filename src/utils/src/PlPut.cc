@@ -1,4 +1,4 @@
-// $Id: PlPut.cc,v 1.6 2003/01/30 01:59:08 jim Exp $
+// $Id: PlPut.cc,v 1.7 2003/02/10 16:11:45 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -183,7 +183,8 @@ main
     }
     else if(strcmp(argv[1], "--html-help") == 0) {
       char buf[1024];
-      sprintf(buf, "openURL(file:%s/plput.html, new-window)", Pipeline::PackageInfo::sDocsDir); 
+      sprintf(buf, "openURL(file:%s/plput.html, new-window)", 
+	      Pipeline::PackageInfo::sDocsDir); 
 
       char* args[4]; 
       args[0] = strdup("mozilla");
