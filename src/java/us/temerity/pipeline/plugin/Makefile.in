@@ -200,14 +200,14 @@ install-classes: $(JAVA_CLASSES)
 	@list='$^'; for p in $$list; do \
           f=`basename $$p`; \
 	  if test -f $$p; then \
-            echo $(INSTALL) -m 444 $$p $(prefix)/plugin/$$f; \
-            $(INSTALL) -m 444 $$p $(prefix)/plugin/$$f; \
+            echo $(INSTALL) -m 444 $$p $(prefix)/jar/us/temerity/pipeline/plugin/$$f; \
+            $(INSTALL) -m 444 $$p $(prefix)/jar/us/temerity/pipeline/plugin/$$f; \
           fi; \
          done
 
 
 installdirs:
-	$(mkinstalldirs) $(prefix)/plugin
+	$(mkinstalldirs) $(prefix)/jar/us/temerity/pipeline/plugin
 
 
 #--------------------------------------------------------------------------------------------#
@@ -218,8 +218,8 @@ uninstall-classes: $(JAVA_CLASSES)
 	@list='$^'; for p in $$list; do \
           f=`basename $$p`; \
 	  if test -f $$p; then \
-            echo rm -f $(prefix)/plugin/$$f; \
-            rm -f $(prefix)/plugin/$$f; \
+            echo rm -f $(prefix)/jar/us/temerity/pipeline/plugin/$$f; \
+            rm -f $(prefix)/jar/us/temerity/pipeline/plugin/$$f; \
           fi; \
          done
 
