@@ -1,4 +1,4 @@
-// $Id: NodeModifyPropertiesReq.java,v 1.4 2004/06/14 22:32:00 jim Exp $
+// $Id: NodeModifyPropertiesReq.java,v 1.5 2004/09/08 18:37:53 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -50,10 +50,6 @@ class NodeModifyPropertiesReq
       throw new IllegalArgumentException
 	("The working version cannot be (null)!");
     pNodeMod = mod;
-    
-    if(mod.hasSources()) 
-      throw new IllegalArgumentException
-	("The working version already has links to upstream nodes!");
   }
 
 
