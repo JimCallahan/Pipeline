@@ -1,4 +1,4 @@
-// $Id: MiscOfflineQueryRsp.java,v 1.1 2005/03/10 08:07:27 jim Exp $
+// $Id: MiscOfflineQueryRsp.java,v 1.2 2005/03/23 20:45:21 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -10,7 +10,7 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   M I S C   A R C H I V E   Q U E R Y   R S P                                            */
+/*   M I S C   O F F L I N E   Q U E R Y   R S P                                            */
 /*------------------------------------------------------------------------------------------*/
 
 /**
