@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.4 2004/07/22 00:07:16 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.5 2004/08/01 15:35:42 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -689,13 +689,13 @@ class JNodeFilesPanel
       body.add(Box.createRigidArea(new Dimension(3, 0)));
 
       /* file version novelty table */ 
-      JViewport headerViewport = null;
       {
 	Box vbox = new Box(BoxLayout.Y_AXIS);
 
 	vbox.add(Box.createRigidArea(new Dimension(0, 3)));
 
   	/* column header */ 
+	JViewport headerViewport = null;
   	{
   	  JPanel panel = new JPanel();
 	  
@@ -1509,46 +1509,6 @@ class JNodeFilesPanel
      * The preferred viewport dimensions.
      */ 
     private Dimension pViewportSize;
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * Links two viewports horizontal position.
-   */ 
-  private 
-  class AdjustLinkage
-    implements AdjustmentListener
-  {
-    public 
-    AdjustLinkage
-    (
-     JViewport source, 
-     JViewport target
-    ) 
-    {
-      pSource = source;
-      pTarget = target; 
-    }
-
-    public void
-    adjustmentValueChanged
-    (
-     AdjustmentEvent e
-    )
-    { 
-      Point spos = pSource.getViewPosition();    
-      Point tpos = pTarget.getViewPosition();
-	
-      if(spos.x != tpos.x) {
-	tpos.x = spos.x;
-	pTarget.setViewPosition(tpos);
-      }
-    }    
-    
-    private JViewport  pSource;
-    private JViewport  pTarget;
   }
 
 
