@@ -1,4 +1,4 @@
-// $Id: JShutdownDialog.java,v 1.2 2005/02/22 06:07:02 jim Exp $
+// $Id: JShutdownDialog.java,v 1.3 2005/03/28 04:17:12 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -50,7 +50,8 @@ class JShutdownDialog
 	  (tpanel, "Job Servers:", sTSize, 
 	   vpanel, sVSize, 
 	   "Shutdown all pljobmgr(1) daemons as well?");
-	
+	pJobMgrsField.setValue(true);
+
 	UIFactory.addVerticalSpacer(tpanel, vpanel, 6);
 
 	pPluginMgrField = 
@@ -58,6 +59,7 @@ class JShutdownDialog
 	  (tpanel, "Plugin Manager:", sTSize, 
 	   vpanel, sVSize, 
 	   "Shutdown the plpluginmgr(1) daemon as well?");
+	pPluginMgrField.setValue(true);
 
 	UIFactory.addVerticalGlue(tpanel, vpanel);
       }
