@@ -1,9 +1,10 @@
-// $Id: NodeMgr.java,v 1.2 2004/03/23 07:40:37 jim Exp $
+// $Id: NodeMgr.java,v 1.3 2004/03/25 02:14:45 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
 
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.locks.*;
 
@@ -74,11 +75,11 @@ import java.util.concurrent.locks.*;
  *     </DIV> 
  *   </DIV> 
  * 
- *   Where (<I>node-dir</I>) is the root of the persistent node storage area set by the 
- *   <CODE>--with-node=DIR</CODE> option to <I>configure(1)</I>. Each of the subdirectories
- *   of this top level node directory contain Glue format text files associated with one
- *   of the runtime classes used to represent nodes. These files are group under directories
- *   named after the (<I>fully-resolved-node-name</I>) or 
+ *   Where (<I>node-dir</I>) is the root of the persistent node storage area set by  
+ *   <I>configure(1)</I> or as an agument to the constructor for this class. Each of the 
+ *   subdirectories of this top level node directory contain Glue format text files associated
+ *   with one of the runtime classes used to represent nodes. These files are group under 
+ *   directories named after the (<I>fully-resolved-node-name</I>) or 
  *   (<I>fully-resolved-node-path</I>/<I>node-name</I>) of the nodes associated with the 
  *   runtime instances. <P> 
  * 
@@ -122,12 +123,46 @@ class NodeMgr
 
   /** 
    * Construct a new node manager.
+   * 
+   * @param dir 
+   *   The root node directory.
    */
-  NodeMgr()
+  public
+  NodeMgr
+  (
+   File dir
+  )
   { 
-    pLock             = new ReentrantReadWriteLock();
-    pWorkingBundles   = new HashMap<NodeID,WorkingBundle>(); 
-    pCheckedInBundles = new TreeMap<String,TreeMap<VersionID,CheckedInBundle>>();
+    init(dir);
+  }
+  
+  /** 
+   * Construct a new node manager using the default root node directory.
+   */
+  public
+  NodeMgr() 
+  { 
+    init(PackageInfo.sNodeDir);
+  }
+
+
+  /*-- CONTRUCTION HELPERS -----------------------------------------------------------------*/
+
+  private synchronized void 
+  init
+  (
+   File dir
+  )
+  { 
+    if(dir == null)
+      throw new IllegalArgumentException("The root node directory cannot be (null)!");
+    pNodeDir = dir;
+
+    pCheckedInLocks   = new HashMap<String,ReentrantReadWriteLock>();
+    pCheckedInBundles = new HashMap<String,TreeMap<VersionID,CheckedInBundle>>();
+
+    pWorkingLocks   = new HashMap<NodeID,ReentrantReadWriteLock>();
+    pWorkingBundles = new HashMap<NodeID,WorkingBundle>(); 
   }
 
 
@@ -159,16 +194,18 @@ class NodeMgr
    String name
   ) 
     throws PipelineException
-  {	
-    pLock.readLock().lock();
+  {	 
+    NodeID id = new NodeID(author, view, name);
+    WorkingBundle bundle = getWorkingBundle(id);
+      
+    ReentrantReadWriteLock lock = getWorkingLock(id);
+    lock.readLock().lock();
     try {
-      NodeID id = new NodeID(author, view, name);
-      WorkingBundle bundle = getWorkingBundle(id);
-      return new NodeMod(bundle.uVersion);
+      return new NodeMod(bundle.uVersion);      
     }
     finally {
-      pLock.readLock().unlock();
-    }	
+      lock.readLock().unlock();
+    }  
   }  
 
 
@@ -215,18 +252,20 @@ class NodeMgr
   ) 
     throws PipelineException
   {
-    pLock.writeLock().lock();
+    NodeID id = new NodeID(author, view, mod.getName());
+    WorkingBundle bundle = getWorkingBundle(id);
+
+    ReentrantReadWriteLock lock = getWorkingLock(id);
+    lock.writeLock().lock();
     try {
-      NodeID id = new NodeID(author, view, mod.getName());
-      WorkingBundle bundle = getWorkingBundle(id);
       if(bundle.uVersion.setProperties(mod)) {
 	bundle.uOverallNodeState = null;
 	bundle.uPropertyState    = null;
       }
     }
     finally {
-      pLock.writeLock().unlock();
-    }    
+      lock.writeLock().unlock();
+    }  
   } 
 
   
@@ -261,15 +300,9 @@ class NodeMgr
   ) 
     throws PipelineException
   {
-    pLock.writeLock().lock();
-    try {
       
-      throw new PipelineException("Not implemented yet.");
-      
-    }
-    finally {
-      pLock.writeLock().unlock();
-    }  
+    throw new PipelineException("Not implemented yet.");
+     
   } 
    
   /**
@@ -305,15 +338,9 @@ class NodeMgr
   ) 
     throws PipelineException
   {
-    pLock.writeLock().lock();
-    try {
 
-      throw new PipelineException("Not implemented yet.");
+    throw new PipelineException("Not implemented yet.");
 
-    }
-    finally {
-      pLock.writeLock().unlock();
-    }  
   } 
    
   
@@ -346,15 +373,9 @@ class NodeMgr
   )
     throws PipelineException
   {
-    pLock.writeLock().lock();
-    try {
+    
+    throw new PipelineException("Not implemented yet.");
 
-      throw new PipelineException("Not implemented yet.");
-
-    }
-    finally {
-      pLock.writeLock().unlock();
-    }  
   } 
 
 
@@ -405,15 +426,9 @@ class NodeMgr
   )
     throws PipelineException
   {
-    pLock.writeLock().lock();
-    try {
-
-      throw new PipelineException("Not implemented yet.");
-
-    }
-    finally {
-      pLock.writeLock().unlock();
-    }  
+    
+    throw new PipelineException("Not implemented yet.");
+      
   } 
 
   /** 
@@ -451,15 +466,9 @@ class NodeMgr
   )
     throws PipelineException
   {
-    pLock.writeLock().lock();
-    try {
 
-      throw new PipelineException("Not implemented yet.");
+    throw new PipelineException("Not implemented yet.");
 
-    }
-    finally {
-      pLock.writeLock().unlock();
-    }  
   } 
 
 
@@ -477,23 +486,22 @@ class NodeMgr
    * @return
    *   The revision numbers in ascending order.
    */
-  public Collection<VersionID>
+  public TreeSet<VersionID>
   getRevisionNumbers
   ( 
    String name
   ) 
     throws PipelineException
   {
-    pLock.readLock().lock();
-    try {
-      TreeMap<VersionID,CheckedInBundle> table = pCheckedInBundles.get(name);
-      if(table == null) 
-	throw new PipelineException("No checked-in versions exist for node: " + name);
+    TreeMap<VersionID,CheckedInBundle> table = getCheckedInBundles(name);
 
-      return Collections.unmodifiableCollection(table.keySet());
+    ReentrantReadWriteLock lock = getCheckedInLock(name);
+    lock.readLock().lock();
+    try {
+      return new TreeSet(table.keySet());
     }
     finally {
-      pLock.readLock().unlock();
+      lock.readLock().unlock();
     }
   } 
 
@@ -513,16 +521,15 @@ class NodeMgr
   )
     throws PipelineException
   {
-    pLock.readLock().lock();
-    try {
-      TreeMap<VersionID,CheckedInBundle> table = pCheckedInBundles.get(name);
-      if(table == null) 
-	throw new PipelineException("No checked-in versions exist for node: " + name);
+    TreeMap<VersionID,CheckedInBundle> table = getCheckedInBundles(name);
 
+    ReentrantReadWriteLock lock = getCheckedInLock(name);
+    lock.readLock().lock();
+    try {
       return table.lastKey();
     }
     finally {
-      pLock.readLock().unlock();
+      lock.readLock().unlock();
     }
   } 
 
@@ -546,12 +553,20 @@ class NodeMgr
   ) 
     throws PipelineException
   {
-    pLock.readLock().lock();
+    TreeMap<VersionID,CheckedInBundle> table = getCheckedInBundles(name);
+
+    ReentrantReadWriteLock lock = getCheckedInLock(name);
+    lock.readLock().lock();
     try {
-      return getCheckedInBundle(name, vid).uVersion;
+      CheckedInBundle bundle = table.get(vid);
+      if(bundle == null) 
+	throw new PipelineException
+ 	  ("No version (" + vid + ") exist for node (" + name + ")!");
+
+      return bundle.uVersion;
     }
     finally {
-      pLock.readLock().unlock();
+      lock.readLock().unlock();
     }
   } 
   
@@ -568,12 +583,20 @@ class NodeMgr
   ) 
     throws PipelineException
   {
-    pLock.readLock().lock();
+    TreeMap<VersionID,CheckedInBundle> table = getCheckedInBundles(name);
+
+    ReentrantReadWriteLock lock = getCheckedInLock(name);
+    lock.readLock().lock();
     try {
-      return getCheckedInBundle(name).uVersion;
+      CheckedInBundle bundle = table.get(table.lastKey());
+      if(bundle == null) 
+	throw new PipelineException
+	  ("No checked-in versions exist for node (" + name + ")!");
+
+      return bundle.uVersion;
     }
     finally {
-      pLock.readLock().unlock();
+      lock.readLock().unlock();
     }
   } 
 
@@ -593,7 +616,7 @@ class NodeMgr
    * @return 
    *   The list of messages in order of message timestamp.
    */
-  public Collection<LogMessage>
+  public ArrayList<LogMessage>
   getChangeComments
   ( 
    String name, 
@@ -601,13 +624,20 @@ class NodeMgr
   ) 
     throws PipelineException
   {
-    pLock.readLock().lock();
+    TreeMap<VersionID,CheckedInBundle> table = getCheckedInBundles(name);
+
+    ReentrantReadWriteLock lock = getCheckedInLock(name);
+    lock.readLock().lock();
     try {
-      CheckedInBundle bundle = getCheckedInBundle(name, vid);
-      return Collections.unmodifiableCollection(bundle.uComments.values());
+      CheckedInBundle bundle = table.get(vid);
+      if(bundle == null) 
+	throw new PipelineException
+ 	  ("No version (" + vid + ") exist for node (" + name + ")!");
+
+      return new ArrayList(bundle.uComments.values());
     }
     finally {
-      pLock.readLock().unlock();
+      lock.readLock().unlock();
     }
   } 
    
@@ -636,15 +666,9 @@ class NodeMgr
   )
     throws PipelineException
   {
-    pLock.writeLock().lock();
-    try {
+   
+    throw new PipelineException("Not implemented yet.");
 
-      throw new PipelineException("Not implemented yet.");
-
-    }
-    finally {
-      pLock.writeLock().unlock();
-    }  
   } 
 
 
@@ -679,15 +703,9 @@ class NodeMgr
   ) 
     throws PipelineException
   {
-    pLock.readLock().lock();
-    try {
+    
+    throw new PipelineException("Not implemented yet.");
 
-      throw new PipelineException("Not implemented yet.");
-
-    }
-    finally {
-      pLock.readLock().unlock();
-    }
   } 
     
   
@@ -730,15 +748,9 @@ class NodeMgr
   ) 
     throws PipelineException
   {
-    pLock.writeLock().lock();
-    try {
+    
+    throw new PipelineException("Not implemented yet.");
 
-      throw new PipelineException("Not implemented yet.");
-
-    }
-    finally {
-      pLock.writeLock().unlock();
-    }  
   } 
 
   /**
@@ -771,15 +783,9 @@ class NodeMgr
   ) 
     throws PipelineException
   {
-    pLock.writeLock().lock();
-    try {
+    
+    throw new PipelineException("Not implemented yet.");
 
-      throw new PipelineException("Not implemented yet.");
-
-    }
-    finally {
-      pLock.writeLock().unlock();
-    }  
   } 
 
   /**
@@ -816,15 +822,9 @@ class NodeMgr
   ) 
     throws PipelineException
   {
-    pLock.writeLock().lock();
-    try {
+    
+    throw new PipelineException("Not implemented yet.");
 
-      throw new PipelineException("Not implemented yet.");
-
-    }
-    finally {
-      pLock.writeLock().unlock();
-    }  
   } 
 
   /** 
@@ -865,15 +865,9 @@ class NodeMgr
   )
     throws PipelineException
   {
-    pLock.writeLock().lock();
-    try {
+    
+    throw new PipelineException("Not implemented yet.");
 
-      throw new PipelineException("Not implemented yet.");
-
-    }
-    finally {
-      pLock.writeLock().unlock();
-    }  
   }  
 
   /** 
@@ -907,15 +901,9 @@ class NodeMgr
   )
     throws PipelineException
   {
-    pLock.writeLock().lock();
-    try {
 
-      throw new PipelineException("Not implemented yet.");
-
-    }
-    finally {
-      pLock.writeLock().unlock();
-    }  
+    throw new PipelineException("Not implemented yet.");
+      
   }  
 
   /** 
@@ -960,15 +948,9 @@ class NodeMgr
   )
     throws PipelineException
   {
-    pLock.writeLock().lock();
-    try {
+    
+    throw new PipelineException("Not implemented yet.");
 
-      throw new PipelineException("Not implemented yet.");
-
-    }
-    finally {
-      pLock.writeLock().unlock();
-    }  
   } 
    
   /** 
@@ -996,23 +978,95 @@ class NodeMgr
   )
     throws PipelineException
   {
-    pLock.writeLock().lock();
-    try {
+    
+    throw new PipelineException("Not implemented yet.");
 
-      throw new PipelineException("Not implemented yet.");
-
-    }
-    finally {
-      pLock.writeLock().unlock();
-    }  
   } 
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   L O C K   H E L P E R S                                                              */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Lookup the lock for the table of checked-in version bundles for the node with the 
+   * given name. 
+   * 
+   * @param name 
+   *   The fully resolved node name
+   */
+  private ReentrantReadWriteLock
+  getCheckedInLock
+  (
+   String name
+  ) 
+  {
+    synchronized(pCheckedInLocks) {
+      ReentrantReadWriteLock lock = pCheckedInLocks.get(name);
+
+      if(lock == null) { 
+	lock = new ReentrantReadWriteLock();
+	pCheckedInLocks.put(name, lock);
+      }
+
+      return lock;
+    }
+  }
+
+  /** 
+   * Lookup the lock for the working bundle with the given node id.
+   * 
+   * @param id 
+   *   The unique working version identifier.
+   */
+  private ReentrantReadWriteLock
+  getWorkingLock
+  (
+   NodeID id
+  ) 
+  {
+    synchronized(pWorkingLocks) {
+      ReentrantReadWriteLock lock = pWorkingLocks.get(id);
+
+      if(lock == null) { 
+	lock = new ReentrantReadWriteLock();
+	pWorkingLocks.put(id, lock);
+      }
+
+      return lock;
+    }
+  }
  
+
+
   /*----------------------------------------------------------------------------------------*/
   /*   B U N D L E   H E L P E R S                                                          */
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Get the table of checked-in bundles for the node with the given name.
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   */
+  private TreeMap<VersionID,CheckedInBundle>
+  getCheckedInBundles
+  ( 
+   String name
+  ) 
+    throws PipelineException
+  {
+    TreeMap<VersionID,CheckedInBundle> table = null;
+    synchronized(pCheckedInBundles) {
+      table = pCheckedInBundles.get(name);
+      if(table == null) 
+	throw new PipelineException("No checked-in versions exist for node: " + name);
+
+      return table;
+    }
+  }
+
   /** 
    * Get the working bundle with the given working version ID.
    * 
@@ -1029,81 +1083,17 @@ class NodeMgr
     if(id == null) 
       throw new IllegalArgumentException("The working version ID cannot be (null)!");
       
-    WorkingBundle bundle = pWorkingBundles.get(id);
-    if(bundle == null)
-      throw new PipelineException
-	("No working version of node (" + id.getName() + ") exists under the view (" + 
-	 id.getView() + ") owned by user (" + id.getAuthor() + ")!");
-    
-    return bundle;
+    /* lookup the bundle */ 
+    synchronized(pWorkingBundles) {
+      WorkingBundle bundle = pWorkingBundles.get(id);
+      if(bundle == null)
+	throw new PipelineException
+	  ("No working version of node (" + id.getName() + ") exists under the view (" + 
+	   id.getView() + ") owned by user (" + id.getAuthor() + ")!");
+
+      return bundle;
+    }
   }
-  
-
-  /** 
-   * Get the checked-in bundle for the node with the given revision number.
-   * 
-   * @param name 
-   *   The fully resolved node name.
-   * 
-   * @param vid 
-   *   The revision number of the checked-in bundle.
-   */
-  private CheckedInBundle
-  getCheckedInBundle
-  (
-   String name, 
-   VersionID vid
-  )
-    throws PipelineException
-  { 
-    if(name == null) 
-      throw new IllegalArgumentException("The node name cannot be (null)!");
-
-    if(vid == null) 
-      throw new IllegalArgumentException("The revision number cannot be (null)!");
-
-    TreeMap<VersionID,CheckedInBundle> table = pCheckedInBundles.get(name);
-    if(table == null) 
-      throw new PipelineException("No checked-in versions exist for node (" + name + ")!");
-      
-    CheckedInBundle bundle = table.get(vid);
-    if(bundle == null)
-      throw new PipelineException("No version (" + vid + ") exist for node (" + name + ")!");
-    
-    return bundle;
-  }
-  
-  /** 
-   * Get the latest checked-in bundle for the node.
-   * 
-   * @param name 
-   *   The fully resolved node name.
-   */
-  private CheckedInBundle
-  getCheckedInBundle
-  (
-   String name
-  )
-    throws PipelineException
-  { 
-    if(name == null) 
-      throw new IllegalArgumentException("The node name cannot be (null)!");
-
-    TreeMap<VersionID,CheckedInBundle> table = pCheckedInBundles.get(name);
-    if(table == null) 
-      throw new PipelineException("No checked-in versions exist for node (" + name + ")!");
-      
-    return (table.get(table.lastKey()));
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   I / O   H E L P E R S                                                                */
-  /*----------------------------------------------------------------------------------------*/
-  
-
-
 
 
 
@@ -1205,6 +1195,7 @@ class NodeMgr
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * The information related to a particular checked-in version of a node.
@@ -1225,7 +1216,6 @@ class NodeMgr
       uTargets  = new TreeMap<String,VersionID>(); 
       uComments = new TreeMap<Date,LogMessage>();
     }
-
 
     /**
      * The checked-in version of a node.
@@ -1252,20 +1242,44 @@ class NodeMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The lock which manages access to the working and checked-in node information tables.
+   * The root node directory.
+   */ 
+  private File  pNodeDir;
+
+
+  /**
+   * The per-node locks indexed by fully resolved node name. <P> 
+   * 
+   * These locks protect the checked-in versions of each node. The per-node read-lock should 
+   * be aquired for operations which will only access the table of checked-in versions of a 
+   * node.  The per-node write-lock should be aquired when adding new checked-in versions to
+   * the table of checked-in versions for a node.  No existing checked-in bundle entries in 
+   * these tables should ever be modified.
    */
-  private ReentrantReadWriteLock  pLock;
-  
+  private HashMap<String,ReentrantReadWriteLock>  pCheckedInLocks;
+
+  /**
+   * The checked-in version related information of nodes indexed by fully resolved node 
+   * name and revision number.
+   */ 
+  private HashMap<String,TreeMap<VersionID,CheckedInBundle>>  pCheckedInBundles;
+
+
+  /**
+   * The per-working version locks indexed by working version node ID. <P> 
+   * 
+   * These locks protect the working version related information of nodes. The per-working
+   * version read-lock should be aquired for operations which will only access this 
+   * information. The per-working version write-lock should be aquired when creating new 
+   * working versions, modifying the information associated with existing working versions 
+   * or removing existing working versions.
+   */
+  private HashMap<NodeID,ReentrantReadWriteLock>  pWorkingLocks;
+
   /**
    * The working version related information of nodes indexed by working version node ID.
    */ 
   private HashMap<NodeID,WorkingBundle>  pWorkingBundles;
  
-  /**
-   * The checked-in version related information of nodes indexed by fully resolved node 
-   * name and revision number.
-   */ 
-  private TreeMap<String,TreeMap<VersionID,CheckedInBundle>>  pCheckedInBundles;
-   
 }
 
