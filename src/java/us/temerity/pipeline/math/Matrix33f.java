@@ -1,4 +1,4 @@
-// $Id: Matrix33f.java,v 1.2 2004/12/21 16:23:44 jim Exp $
+// $Id: Matrix33f.java,v 1.3 2004/12/22 00:45:16 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -380,7 +380,7 @@ class Matrix33f
     
     identity();
     pCols[0].setComp(0, c); pCols[0].setComp(1, -s);
-    pCols[0].setComp(0, s); pCols[0].setComp(1, c);
+    pCols[1].setComp(0, s); pCols[1].setComp(1, c);
   }
 
   /**
