@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.7 2005/01/08 08:32:18 jim Exp $
+// $Id: UIMaster.java,v 1.8 2005/01/08 15:25:17 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1250,6 +1250,27 @@ class UIMaster
 
 	frame.setVisible(true);
       }
+
+      /* create the restore layout splash screen */ 
+      {
+	JFrame frame = new JFrame("plui");
+	pRestoreSplashFrame = frame;
+
+	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	frame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+	frame.setResizable(false);
+	frame.setUndecorated(true);
+	
+	JLabel label = new JLabel(sRestoreSplashIcon);	  
+	frame.setContentPane(label);
+	frame.pack();
+	
+	{
+	  Rectangle bounds = frame.getGraphicsConfiguration().getBounds();
+	  frame.setLocation(bounds.x + bounds.width/2 - frame.getWidth()/2, 
+ 			   bounds.y + bounds.height/2 - frame.getHeight()/2);
+	}
+      }
     }
 
     private UIMaster  pMaster;
@@ -1628,28 +1649,10 @@ class UIMaster
 	pQueueJobDetailsPanels.clear();
       }
       
-      /* restore splash frame */ 
-      JFrame splash = new JFrame("plui");
-      {
-	splash.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	splash.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-	splash.setResizable(false);
-	splash.setUndecorated(true);
-	
-	JLabel label = new JLabel(sRestoreSplashIcon);	  
-	splash.setContentPane(label);
-	splash.pack();
-	
-	{
-	  Rectangle bounds = splash.getGraphicsConfiguration().getBounds();
-	  splash.setLocation(bounds.x + bounds.width/2 - splash.getWidth()/2, 
- 			   bounds.y + bounds.height/2 - splash.getHeight()/2);
-	}
-	
-	splash.setVisible(true);
-      }
+      /* show the splash screen */ 
+      pRestoreSplashFrame.setVisible(true);
       
-      RestoreSavedLayoutRefreshTask task = new RestoreSavedLayoutRefreshTask(pName, splash);
+      RestoreSavedLayoutRefreshTask task = new RestoreSavedLayoutRefreshTask(pName);
       task.start();      
     }
 
@@ -1663,14 +1666,12 @@ class UIMaster
     public 
     RestoreSavedLayoutRefreshTask
     (
-     String name, 
-     JFrame splash
+     String name
     ) 
     {
       super("UIMaster:RestoreSavedLayoutRefreshTask");
       
-      pName   = name;
-      pSplash = splash;
+      pName = name;
     }
 
     public void 
@@ -1682,7 +1683,7 @@ class UIMaster
       catch(InterruptedException ex) {
       }
 
-      SwingUtilities.invokeLater(new RestoreSavedLayoutLoaderTask(pName, pSplash));
+      SwingUtilities.invokeLater(new RestoreSavedLayoutLoaderTask(pName));
     }
 
     private String  pName;
@@ -1696,14 +1697,12 @@ class UIMaster
     public 
     RestoreSavedLayoutLoaderTask
     (
-     String name, 
-     JFrame splash
+     String name
     ) 
     {
       super("UIMaster:RestoreSavedLayoutLoaderTask");
       
-      pName   = name;
-      pSplash = splash;
+      pName = name;
     }
 
     public void 
@@ -1785,14 +1784,15 @@ class UIMaster
 	frames.add(pFrame);
       }
       
+      /* hide the splash screen */ 
+      pRestoreSplashFrame.setVisible(false);
+      
       /* show the restored windows */ 
-      pSplash.setVisible(false);
       for(JFrame frame : frames) 
 	frame.setVisible(true);
     }
 
     private String  pName;
-    private JFrame  pSplash;
   }
 
   /**
@@ -2516,6 +2516,12 @@ class UIMaster
    */ 
   private JProgressBar  pSplashProgress;
   
+  
+  /**
+   * The restore layout splash frame.
+   */ 
+  private JFrame  pRestoreSplashFrame; 
+
 
   /**
    * The main application frame.
