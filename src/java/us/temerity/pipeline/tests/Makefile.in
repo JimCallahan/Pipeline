@@ -166,7 +166,10 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
 #--------------------------------------------------------------------------------------------#
 
-           TESTS = Glue
+           TESTS = Glue \
+                   FileSeq 
+
+
          CLASSES = $(patsubst %,Test%App.class,$(TESTS))
 
 
