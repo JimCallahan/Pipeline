@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.15 2004/10/01 17:09:05 jim Exp $
+// $Id: QueueMgr.java,v 1.16 2004/10/05 17:52:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1001,12 +1001,15 @@ class QueueMgr
       
       ArrayList<ResourceSampleBlock> all = new ArrayList<ResourceSampleBlock>();
       {
-	ArrayList<ResourceSampleBlock> blocks = readSamples(timer, req.getHostname()); 
+	TreeMap<Long,ResourceSampleBlock> blocks = readSamples(timer, req.getHostname()); 
+	all.addAll(blocks.values());
 
 	Date latest = null;
-	if(!blocks.isEmpty()) 
-	  latest = blocks.get(0).getTimeStamp(0);
-	
+	if(!blocks.isEmpty()) {
+	  ResourceSampleBlock lastBlock = blocks.get(blocks.lastKey());
+	  latest = lastBlock.getTimeStamp(lastBlock.getNumSamples()-1);
+	}
+
 	timer.aquire();
 	synchronized(pHosts) {
 	  timer.resume();
@@ -1038,8 +1041,6 @@ class QueueMgr
 	    all.add(block);
 	  }	
 	}
-	
-	all.addAll(blocks);
       }
 
       if(all.isEmpty()) 
@@ -1816,6 +1817,9 @@ class QueueMgr
       
       pLastSampleWrite = now;
     }
+
+    /* cleanup any out-of-date sample files */ 
+    cleanupSamples(timer);
 
     Logs.ops.finest(timer.toString()); 
     if(Logs.ops.isLoggable(Level.FINEST))
@@ -2859,10 +2863,13 @@ class QueueMgr
    * @param hostname
    *   The fully resolved name of the host.
    * 
+   * @return
+   *   The sample blocks indexed by the timestamp of the earliest sample in each block.
+   * 
    * @throws PipelineException
    *   If unable to read the samples files.
    */ 
-  private ArrayList<ResourceSampleBlock>
+  private TreeMap<Long,ResourceSampleBlock>
   readSamples
   (
    TaskTimer timer, 
@@ -2874,7 +2881,7 @@ class QueueMgr
     synchronized(pSampleFileLock) { 
       timer.resume();
 
-      ArrayList<ResourceSampleBlock> blocks = new ArrayList<ResourceSampleBlock>();
+      TreeMap<Long,ResourceSampleBlock> blocks = new TreeMap<Long,ResourceSampleBlock>();
       File dir = new File(pQueueDir, "queue/job-servers/samples/" + hostname);
       if(!dir.isDirectory()) 
 	return blocks;
@@ -2906,11 +2913,62 @@ class QueueMgr
 	  }
 	  assert(block != null);
 	  
-	  blocks.add(block);
+	  blocks.put(block.getTimeStamp(block.getNumSamples()-1).getTime(), block);
 	}
       }
     
       return blocks;
+    }
+  }
+
+  /**
+   * Delete any out-of-date sample files.
+   * 
+   * @param timer
+   *   The task timer.
+   */ 
+  private void 
+  cleanupSamples
+  (
+   TaskTimer timer
+  ) 
+  {
+    if(pLastSampleWrite == null)
+      return;
+    
+    timer.aquire();
+    synchronized(pSampleFileLock) { 
+      timer.resume();
+
+      File sdir = new File(pQueueDir, "queue/job-servers/samples"); 
+      if(!sdir.isDirectory()) 
+	return;
+
+      File sfiles[] = sdir.listFiles(); 
+      int sk;
+      for(sk=0; sk<sfiles.length; sk++) {
+	File dir = sfiles[sk];
+	if(dir.isDirectory()) {
+	  File files[] = dir.listFiles(); 
+	  int wk;
+	  for(wk=0; wk<files.length; wk++) {
+	    File file = files[wk];
+	    try {
+	      Long stamp = new Long(file.getName());
+	      if((pLastSampleWrite.getTime() - stamp) > sSampleCleanupInterval) {
+		Logs.glu.finer("Deleting Resource Sample File: " + file);
+		if(!file.delete()) 
+		  Logs.glu.severe
+		    ("Unable to delete old resource sample file (" + file + ")!");
+	      }
+	    }
+	    catch(NumberFormatException ex) {
+	      Logs.glu.severe
+		("Illegal resource sample file (" + file + ") encountered!");
+	    }
+	  }
+	}
+      }
     }
   }
 
@@ -3586,6 +3644,12 @@ class QueueMgr
    * The minimum time a cycle of the collector loop should take (in milliseconds).
    */ 
   private static final long  sCollectorInterval = 15000;  /* 15-second */ 
+
+  /**
+   * The maximum age of a sample file before it is deleted (in milliseconds).
+   */ 
+  private static final long  sSampleCleanupInterval = 86400000;  /* 24-hours */ 
+
 
   /**
    * The minimum time a cycle of the dispatcher loop should take (in milliseconds).

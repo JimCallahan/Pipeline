@@ -1,4 +1,4 @@
-// $Id: JJobServerHistoryDialog.java,v 1.2 2004/08/01 19:31:46 jim Exp $
+// $Id: JJobServerHistoryDialog.java,v 1.3 2004/10/05 17:52:09 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -226,8 +226,8 @@ class JJobServerHistoryDialog
   private void
   rebuild() 
   {
-    Date first = pBlock.getTimeStamp(pBlock.getNumSamples()-1);
-    Date last  = pBlock.getTimeStamp(0);
+    Date first = pBlock.getTimeStamp(0);
+    Date last  = pBlock.getTimeStamp(pBlock.getNumSamples()-1);
 
     /* compute start time */ 
     {
@@ -296,11 +296,18 @@ class JJobServerHistoryDialog
 	
 	int idx = (int) ((pBlock.getTimeStamp(wk).getTime() - pStartTime) / 
 			 sInterval[pZoom.ordinal()]);
-	
-	pLoad[idx]   += pBlock.getLoad(wk);
-	pMemory[idx] += (float) pBlock.getMemory(wk);
-	pDisk[idx]   += (float) pBlock.getDisk(wk);
-	pJobs[idx]   += (float) pBlock.getNumJobs(wk);
+
+	if((idx < 0) || (idx >= pLoad.length)) {
+	  System.out.print
+	    ("TimeStamp[" + wk + "] = " + pBlock.getTimeStamp(wk).getTime() + "  " +
+	     "Index = " + idx + "\n");
+	}
+	else {
+	  pLoad[idx]   += pBlock.getLoad(wk);
+	  pMemory[idx] += (float) pBlock.getMemory(wk);
+	  pDisk[idx]   += (float) pBlock.getDisk(wk);
+	  pJobs[idx]   += (float) pBlock.getNumJobs(wk);
+	}
       }
     }
 

@@ -1,4 +1,4 @@
-// $Id: ResourceSampleBlock.java,v 1.3 2004/08/04 01:40:45 jim Exp $
+// $Id: ResourceSampleBlock.java,v 1.4 2004/10/05 17:52:09 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -43,7 +43,7 @@ class ResourceSampleBlock
    *   The total temporary disk size (in bytes).
    * 
    * @param samples
-   *   The resource samples. 
+   *   The resource samples (newest to oldest).
    */ 
   public 
   ResourceSampleBlock
@@ -67,7 +67,7 @@ class ResourceSampleBlock
     pMemory     = new long[num];
     pDisk       = new long[num];
 
-    int wk = 0;
+    int wk = num - 1;
     for(ResourceSample sample : samples) {
       pTimeStamp[wk]  = sample.getTimeStamp().getTime();
       pNumJobs[wk]    = sample.getNumJobs();
@@ -75,7 +75,7 @@ class ResourceSampleBlock
       pMemory[wk]     = sample.getMemory();
       pDisk[wk]       = sample.getDisk();
       
-      wk++;
+      wk--;
     }
   }
 
@@ -83,7 +83,7 @@ class ResourceSampleBlock
    * Construct a new sample block.
    * 
    * @param blocks
-   *   The resource sample blocks.
+   *   The resource sample blocks (oldest to newest).
    */ 
   public 
   ResourceSampleBlock
@@ -384,27 +384,27 @@ class ResourceSampleBlock
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The timestamp of when the samples was measured.
+   * The timestamp of when the samples was measured (oldest to newest).
    */ 
   private long[]  pTimeStamp;
   
   /**
-   * The number of currently running jobs.
+   * The number of currently running jobs (oldest to newest).
    */ 
   private int[]  pNumJobs; 
 
   /**
-   * The system load on the host.
+   * The system load on the host (oldest to newest).
    */ 
   private float[]  pLoad; 
 
   /**
-   * The available free memory (in bytes) on the host.
+   * The available free memory (in bytes) on the host (oldest to newest).
    */ 
   private long[]  pMemory;
 
   /**
-   * The available free temporary disk space (in bytes) on the host.
+   * The available free temporary disk space (in bytes) on the host (oldest to newest).
    */ 
   private long[]  pDisk;
   
