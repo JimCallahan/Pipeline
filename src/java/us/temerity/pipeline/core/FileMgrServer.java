@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.5 2004/03/28 00:46:25 jim Exp $
+// $Id: FileMgrServer.java,v 1.6 2004/03/30 22:12:20 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -240,6 +240,22 @@ class FileMgrServer
 	    }
 	    break;
 	    
+	  case Remove:
+	    {
+	      FileRemoveReq req = (FileRemoveReq) objIn.readObject();
+	      objOut.writeObject(pFileMgr.remove(req));
+	      objOut.flush(); 
+	    }
+	    break;
+	    
+	  case Rename:
+	    {
+	      FileRenameReq req = (FileRenameReq) objIn.readObject();
+	      objOut.writeObject(pFileMgr.rename(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
 	  case Disconnect:
 	    live = false;
 	    break;
