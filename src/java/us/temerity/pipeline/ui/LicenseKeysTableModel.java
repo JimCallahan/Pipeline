@@ -1,4 +1,4 @@
-// $Id: LicenseKeysTableModel.java,v 1.1 2004/07/24 18:28:45 jim Exp $
+// $Id: LicenseKeysTableModel.java,v 1.2 2004/07/25 03:09:43 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -71,13 +71,6 @@ class LicenseKeysTableModel
       }
 
       {
-	JCollectionTableCellEditor editor = null;
-	{
-	  ArrayList<String> values = new ArrayList<String>(Plugins.getEditorNames());
-	  values.add("-");
-	  editor = new JCollectionTableCellEditor(values, 130);
-	}
-	
 	TableCellEditor editors[] = {
 	  null, 
 	  null, 
@@ -221,13 +214,7 @@ class LicenseKeysTableModel
       return key.getName();
 
     case 1:
-      {
-	String desc = key.getDescription(); 
-	if(desc == null) 
-	  return "";
-	else 
-	  return desc;
-      }
+      return key.getDescription(); 
 
     case 2:
       {
