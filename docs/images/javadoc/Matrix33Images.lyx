@@ -124,7 +124,7 @@ a_{13} & a_{23} & a_{33}\end{array}\right]$
 \begin_inset Formula $s\rightarrow\left[\begin{array}{ccc}
 s & 0 & 0\\
 0 & s & 0\\
-0 & 0 & s\end{array}\right]$
+0 & 0 & 1\end{array}\right]$
 \end_inset 
 
 
@@ -133,11 +133,32 @@ s & 0 & 0\\
 
 \begin_inset Formula $\left[\begin{array}{c}
 a_{1}\\
-a_{2}\\
-a_{3}\end{array}\right]\rightarrow\left[\begin{array}{ccc}
+a_{2}\end{array}\right]\rightarrow\left[\begin{array}{ccc}
 a_{1} & 0 & 0\\
 0 & a_{2} & 0\\
-0 & 0 & a_{3}\end{array}\right]$
+0 & 0 & 1\end{array}\right]$
+\end_inset 
+
+
+\layout Standard
+
+
+\begin_inset Formula $\left[\begin{array}{c}
+a_{1}\\
+a_{2}\end{array}\right]\rightarrow\left[\begin{array}{ccc}
+1 & 0 & a_{1}\\
+0 & 1 & a_{2}\\
+0 & 0 & 1\end{array}\right]$
+\end_inset 
+
+
+\layout Standard
+
+
+\begin_inset Formula $\theta\rightarrow\left[\begin{array}{ccc}
+\cos\theta & \sin\theta & 0\\
+-\sin\theta & \cos\theta & 0\\
+0 & 0 & 1\end{array}\right]$
 \end_inset 
 
 

@@ -9,11 +9,14 @@ images_DATA = \
   Matrix33MultMatrix.gif \
   Matrix33MultTuple.gif \
   Matrix33NScale.gif \
+  Matrix33Rotate.gif \
+  Matrix33Translate.gif \
   Matrix33Transpose.gif \
   Matrix33UScale.gif \
   Matrix33Zero.gif \
   MatrixArray.gif \
   MatrixArrayIndex.gif \
+  MatrixIdentity.gif \
   MatrixDiagonalScalar.gif \
   MatrixDiagonalTuple.gif \
   MatrixInverse.gif \
