@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.20 2004/05/29 06:38:06 jim Exp $
+// $Id: UIMaster.java,v 1.21 2004/06/08 03:05:59 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -15,6 +15,7 @@ import java.util.concurrent.locks.*;
 import java.text.*;
 import javax.swing.*;
 import javax.swing.event.*;
+import javax.swing.text.*;
 import javax.swing.plaf.basic.*;
 import javax.swing.plaf.synth.*;
 
@@ -358,6 +359,17 @@ class UIMaster
   }
 
   /**
+   * Show the manage users dialog.
+   */ 
+  public void 
+  showManageUsersDialog()
+  {
+    pManageUsersDialog.updateList();
+    pManageUsersDialog.setVisible(true);
+  }
+
+
+  /**
    * Show the manage toolsets dialog.
    */ 
   public void 
@@ -368,13 +380,13 @@ class UIMaster
   }
 
   /**
-   * Show the manage users dialog.
+   * Show the manage editors dialog.
    */ 
   public void 
-  showManageUsersDialog()
+  showManageEditorsDialog()
   {
-    pManageUsersDialog.updateList();
-    pManageUsersDialog.setVisible(true);
+    pManageEditorsDialog.updateEditors();
+    pManageEditorsDialog.setVisible(true);
   }
 
 
@@ -574,7 +586,7 @@ class UIMaster
 
   
   /**
-   * Create a new non-editable text field.
+   * Create a new non-editable text field. <P> 
    * 
    * See {@link JLabel#setHorizontalAlignment JLabel.setHorizontalAlignment} for valid
    * values for the <CODE>align</CODE> argument.
@@ -611,7 +623,7 @@ class UIMaster
   }
 
   /**
-   * Create a new editable text field.
+   * Create a new editable text field. <P> 
    * 
    * See {@link JLabel#setHorizontalAlignment JLabel.setHorizontalAlignment} for valid
    * values for the <CODE>align</CODE> argument.
@@ -642,7 +654,7 @@ class UIMaster
   }
 
   /**
-   * Create a new editable text field which can only contain identifiers.
+   * Create a new editable text field which can only contain identifiers. <P> 
    * 
    * See {@link JLabel#setHorizontalAlignment JLabel.setHorizontalAlignment} for valid
    * values for the <CODE>align</CODE> argument.
@@ -680,7 +692,171 @@ class UIMaster
     return field;
   }
 
-  
+  /**
+   * Create a new editable text field which can only contain identifier paths. <P> 
+   * 
+   * See {@link JLabel#setHorizontalAlignment JLabel.setHorizontalAlignment} for valid
+   * values for the <CODE>align</CODE> argument.
+   * 
+   * @param text
+   *   The initial text.
+   * 
+   * @param width
+   *   The minimum and preferred width.
+   * 
+   * @param align
+   *   The horizontal alignment.
+   */ 
+  public static JPathField
+  createPathField
+  (
+   String text, 
+   int width,
+   int align
+  )
+  {
+    JPathField field = new JPathField();
+    field.setName("EditableTextField");
+
+    Dimension size = new Dimension(width, 19);
+    field.setMinimumSize(size);
+    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+    field.setPreferredSize(size);
+    
+    field.setHorizontalAlignment(align);
+    field.setEditable(true);
+    
+    field.setText(text);
+    
+    return field;
+  }
+
+  /**
+   * Create a new editable text field which can only contain alphanumeric characters. <P> 
+   * 
+   * See {@link JLabel#setHorizontalAlignment JLabel.setHorizontalAlignment} for valid
+   * values for the <CODE>align</CODE> argument.
+   * 
+   * @param text
+   *   The initial text.
+   * 
+   * @param width
+   *   The minimum and preferred width.
+   * 
+   * @param align
+   *   The horizontal alignment.
+   */ 
+  public static JAlphaNumField
+  createAlphaNumField
+  (
+   String text, 
+   int width,
+   int align
+  )
+  {
+    JAlphaNumField field = new JAlphaNumField();
+    field.setName("EditableTextField");
+
+    Dimension size = new Dimension(width, 19);
+    field.setMinimumSize(size);
+    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+    field.setPreferredSize(size);
+    
+    field.setHorizontalAlignment(align);
+    field.setEditable(true);
+    
+    field.setText(text);
+    
+    return field;
+  }
+
+  /**
+   * Create a new editable text field which can only contain integers. <P> 
+   * 
+   * See {@link JLabel#setHorizontalAlignment JLabel.setHorizontalAlignment} for valid
+   * values for the <CODE>align</CODE> argument.
+   * 
+   * @param value
+   *   The initial value.
+   * 
+   * @param width
+   *   The minimum and preferred width.
+   * 
+   * @param align
+   *   The horizontal alignment.
+   */ 
+  public static JIntegerField
+  createIntegerField
+  (
+   Integer value,
+   int width,
+   int align
+  )
+  {
+    JIntegerField field = new JIntegerField();
+    field.setName("EditableTextField");
+
+    Dimension size = new Dimension(width, 19);
+    field.setMinimumSize(size);
+    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+    field.setPreferredSize(size);
+    
+    field.setHorizontalAlignment(align);
+    field.setEditable(true);
+    
+    field.setValue(value);
+
+    return field;
+  }
+
+  /**
+   * Create a new editable text field which can only contain real numbers. <P> 
+   * 
+   * See {@link JLabel#setHorizontalAlignment JLabel.setHorizontalAlignment} for valid
+   * values for the <CODE>align</CODE> argument.
+   * 
+   * @param value
+   *   The initial value.
+   * 
+   * @param width
+   *   The minimum and preferred width.
+   * 
+   * @param align
+   *   The horizontal alignment.
+   */ 
+  public static JFormattedTextField
+  createRealField
+  (
+   double value,  
+   int width,
+   int align
+  )
+  {
+    DecimalFormat format = new DecimalFormat("#0.0#");
+    format.setMinimumIntegerDigits(1);
+    format.setMaximumIntegerDigits(6);
+    format.setMinimumFractionDigits(1);
+    format.setMaximumFractionDigits(6);
+
+    NumberFormatter formatter = new NumberFormatter(format);
+    formatter.setAllowsInvalid(false);
+
+    JFormattedTextField field = new JFormattedTextField(formatter);
+    field.setName("EditableTextField");
+
+    Dimension size = new Dimension(width, 19);
+    field.setMinimumSize(size);
+    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+    field.setPreferredSize(size);
+    
+    field.setHorizontalAlignment(align);
+    field.setEditable(true);
+
+    field.setValue(new Double(value));
+    
+    return field;
+  }
+
   /**
    * Create a new non-editable text area.
    * 
@@ -822,6 +998,190 @@ class UIMaster
     return field;
   }
 
+  /**
+   * Create a new identifier text field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param text
+   *   The initial text.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the identifier field.
+   */ 
+  public static JTextField
+  createTitledIdentifierField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   String text, 
+   int vwidth
+  )
+  {
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT));
+
+    JIdentifierField field = createIdentifierField(text, vwidth, JLabel.CENTER);
+    vpanel.add(field);
+
+    return field;
+  }
+
+  /**
+   * Create a new alphanumeric text field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param text
+   *   The initial text.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the identifier field.
+   */ 
+  public static JAlphaNumField
+  createTitledAlphaNumField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   String text, 
+   int vwidth
+  )
+  {
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT));
+
+    JAlphaNumField field = createAlphaNumField(text, vwidth, JLabel.CENTER);
+    vpanel.add(field);
+
+    return field;
+  }
+
+  /**
+   * Create a new path text field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param text
+   *   The initial text.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the path field.
+   */ 
+  public static JPathField
+  createTitledPathField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   String text, 
+   int vwidth
+  )
+  {
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT));
+
+    JPathField field = createPathField(text, vwidth, JLabel.CENTER);
+    vpanel.add(field);
+
+    return field;
+  }
+
+  /**
+   * Create a new integer text field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param value
+   *   The initial value.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the identifier field.
+   */ 
+  public static JIntegerField
+  createTitledIntegerField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   Integer value, 
+   int vwidth
+  )
+  {
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT));
+
+    JIntegerField field = createIntegerField(value, vwidth, JLabel.CENTER);
+    vpanel.add(field);
+
+    return field;
+  }
+
+  /**
+   * Create a new real number text field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param value
+   *   The initial value.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the identifier field.
+   */ 
+  public static JFormattedTextField
+  createTitledRealField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   double value, 
+   int vwidth
+  )
+  {
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT));
+
+    JFormattedTextField field = createRealField(value, vwidth, JLabel.CENTER);
+    vpanel.add(field);
+
+    return field;
+  }
 
   /**
    * Create a new hot key field with a title and add them to the given panels.
@@ -1450,6 +1810,35 @@ class UIMaster
 	  frame.setContentPane(panel);
 	}
 
+	{
+	  Box hbox = new Box(BoxLayout.X_AXIS);
+
+	  hbox.add(Box.createHorizontalGlue());
+
+	  {
+	    Box vbox = new Box(BoxLayout.Y_AXIS);
+	    
+	    vbox.add(Box.createVerticalGlue());
+
+	    {
+	      JLabel label = new JLabel("version " + PackageInfo.sVersion);
+	      label.setForeground(Color.cyan);
+	      label.setOpaque(false);
+	    
+	      vbox.add(label);
+	    }
+
+	    vbox.add(Box.createRigidArea(new Dimension(0, 26)));
+
+	    hbox.add(vbox);
+	  }
+
+	  hbox.add(Box.createRigidArea(new Dimension(19, 0)));
+	  
+	  frame.setGlassPane(hbox);
+	  frame.getGlassPane().setVisible(true);
+	}
+	
 	frame.pack();
 	frame.setLocationRelativeTo(null);
 
@@ -1708,8 +2097,9 @@ class UIMaster
 	pUserPrefsDialog      = new JUserPrefsDialog();
 	pAboutDialog          = new JAboutDialog();
 	pConfigDialog         = new JConfigDialog();
-	pManageToolsetsDialog = new JManageToolsetsDialog();
 	pManageUsersDialog    = new JManageUsersDialog();
+	pManageToolsetsDialog = new JManageToolsetsDialog();
+	pManageEditorsDialog  = new JManageEditorsDialog();
       }
       
       pFrame.setVisible(true);
@@ -2079,12 +2469,17 @@ class UIMaster
   private JConfigDialog  pConfigDialog;
 
   /**
+   * The manage users dialog.
+   */ 
+  private JManageUsersDialog  pManageUsersDialog;
+
+  /**
    * The manage toolsets dialog.
    */ 
   private JManageToolsetsDialog  pManageToolsetsDialog;
 
   /**
-   * The manage users dialog.
+   * The manage editors dialog.
    */ 
-  private JManageUsersDialog  pManageUsersDialog;
+  private JManageEditorsDialog  pManageEditorsDialog;
 }
