@@ -1,4 +1,4 @@
-// $Id: JobMgrServer.java,v 1.17 2005/02/18 23:37:12 jim Exp $
+// $Id: JobMgrServer.java,v 1.18 2005/03/11 06:34:39 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -25,12 +25,7 @@ import java.util.concurrent.atomic.*;
  * connection.  Each of these threads then listens for requests for job related operations 
  * and dispatches these requests to an underlying instance of the {@link JobMgr JobMgr}
  * class.
- * 
- * @see JobMgr
- * @see JobMgrClient
- * @see JobMgrControlClient
  */
-public
 class JobMgrServer
   extends Thread
 {  

@@ -21,7 +21,7 @@ import javax.swing.*;
 /*    The parser of command-line batch files.                                               */
 /*------------------------------------------------------------------------------------------*/
 
-public class 
+class 
 BatchParser
 {
   private ArrayList     pLines; 

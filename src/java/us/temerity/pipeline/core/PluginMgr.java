@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.3 2005/01/22 01:36:35 jim Exp $
+// $Id: PluginMgr.java,v 1.4 2005/03/11 06:34:39 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -15,13 +15,7 @@ import java.util.concurrent.locks.*;
 
 /**
  * The manager of Pipeline plugin classes. <P> 
- * 
- * @see PluginMgrClient
- * @see PluginMgrServer
- * @see MasterMgr
- * @see CheckSum
  */
-public
 class PluginMgr
 {  
   /*----------------------------------------------------------------------------------------*/

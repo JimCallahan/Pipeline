@@ -1,4 +1,4 @@
-// $Id: PluginMgrServer.java,v 1.3 2005/02/12 16:29:51 jim Exp $
+// $Id: PluginMgrServer.java,v 1.4 2005/03/11 06:34:39 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -25,11 +25,7 @@ import java.util.concurrent.atomic.*;
  * Each of these threads then listens for requests for plugin related operations 
  * and dispatches these requests to an underlying instance of the {@link PluginMgr PluginMgr}
  * class.
- * 
- * @see PluginMgr
- * @see PluginMgrClient
  */
-public
 class PluginMgrServer
   extends Thread
 {  

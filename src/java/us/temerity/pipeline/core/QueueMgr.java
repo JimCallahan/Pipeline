@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.38 2005/03/05 02:29:23 jim Exp $
+// $Id: QueueMgr.java,v 1.39 2005/03/11 06:34:39 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -17,14 +17,8 @@ import java.util.concurrent.atomic.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The manager of queue jobs. <P> 
- * 
- * 
- * 
- * @see QueueMgrClient
- * @see QueueMgrServer
+ * The manager of queue jobs. <P>
  */
-public
 class QueueMgr
 {  
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: JobMgrControlClient.java,v 1.13 2005/02/17 20:14:34 jim Exp $
+// $Id: JobMgrControlClient.java,v 1.14 2005/03/11 06:34:39 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -20,7 +20,6 @@ import java.util.*;
  * <A HREF="../../../../man/plmaster.html"><B>pljobmgr</B><A>(1) running on one of the 
  * hosts which are capable of executing jobs for the Pipeline queue.  <P> 
  */
-public
 class JobMgrControlClient
   extends BaseMgrClient
 {  
@@ -222,7 +221,7 @@ class JobMgrControlClient
    *   The unique job identifier.
    * 
    * @throws PipelineException 
-   *   If unable to determine the results within 15-minutes.
+   *   If unable to determine the results.
    */ 
   public synchronized QueueJobResults
   jobWait
@@ -235,8 +234,7 @@ class JobMgrControlClient
     
     JobWaitReq req = new JobWaitReq(jobID);
     
-    // Object obj = performLongTransaction(JobRequest.Wait, req, 60000, 900000);  
-    Object obj = performLongTransaction(JobRequest.Wait, req, 15000, 60000);  /* 1-minute */ 
+    Object obj = performLongTransaction(JobRequest.Wait, req, 15000, 60000);  
     if(obj instanceof JobWaitRsp) {
       JobWaitRsp rsp = (JobWaitRsp) obj;
       return rsp.getResults();

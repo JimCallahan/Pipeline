@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.25 2005/03/10 08:07:27 jim Exp $
+// $Id: FileMgrClient.java,v 1.26 2005/03/11 06:34:39 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -25,7 +25,6 @@ import java.util.*;
  * @see FileMgr
  * @see FileMgrServer
  */
-public
 class FileMgrClient
   extends BaseMgrClient
 {  

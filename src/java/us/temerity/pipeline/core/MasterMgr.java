@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.94 2005/03/10 08:07:27 jim Exp $
+// $Id: MasterMgr.java,v 1.95 2005/03/11 06:34:39 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -184,13 +184,7 @@ import java.text.*;
  *   Where (<I>node-dir</I>) is the root of the persistent node storage area set by  
  *   <I>configure(1)</I> or as an agument to the constructor for this class. <P> 
  * </DIV>
- * 
- * @see MasterMgrClient
- * @see MasterMgrServer
- * @see DownstreamLinks
- * @see FileMgr
  */
-public
 class MasterMgr
 {  
   /*----------------------------------------------------------------------------------------*/

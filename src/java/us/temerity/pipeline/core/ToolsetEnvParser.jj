@@ -14,7 +14,7 @@ import java.util.*;
 /*    The parser of environmental variable definitions stored in "cooked" toolset files.    */
 /*------------------------------------------------------------------------------------------*/
 
-public class 
+class 
 ToolsetEnvParser
 {
   /*----------------------------------------------------------------------------------------*/

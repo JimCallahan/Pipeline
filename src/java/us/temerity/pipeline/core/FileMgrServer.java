@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.26 2005/03/10 08:07:27 jim Exp $
+// $Id: FileMgrServer.java,v 1.27 2005/03/11 06:34:39 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -25,11 +25,7 @@ import java.util.concurrent.atomic.*;
  * Each of these threads then listens for requests for file system related operations 
  * and dispatches these requests to an underlying instance of the {@link FileMgr FileMgr}
  * class.
- * 
- * @see FileMgr
- * @see FileMgrClient
  */
-public
 class FileMgrServer
   extends Thread
 {  

@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.24 2005/02/07 20:27:54 jim Exp $
+// $Id: JobMgr.java,v 1.25 2005/03/11 06:34:39 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -16,12 +16,7 @@ import java.util.concurrent.locks.*;
 
 /**
  * The manager of queue job execution on a specific host. <P> 
- * 
- * @see JobMgrClient
- * @see JobMgrControlClient
- * @see JobMgrServer
  */
-public
 class JobMgr
 {  
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.33 2005/03/10 08:07:27 jim Exp $
+// $Id: FileMgr.java,v 1.34 2005/03/11 06:34:39 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -144,13 +144,7 @@ import java.util.concurrent.locks.*;
  * Both kinds of checksums are used by Pipeline to optimize the comparison of large data
  * files associated with nodes.  The {@link CheckSum CheckSum} class configured to use 
  * the 128-bit MD5 message digest algorithm generates all checksums. <P> 
- * 
- * @see FileMgrClient
- * @see FileMgrServer
- * @see MasterMgr
- * @see CheckSum
  */
-public
 class FileMgr
 {  
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: CheckSum.java,v 1.7 2005/01/22 06:10:09 jim Exp $
+// $Id: CheckSum.java,v 1.8 2005/03/11 06:34:39 jim Exp $
 
 package us.temerity.pipeline.core;
  
@@ -22,7 +22,6 @@ import java.nio.channels.*;
  * @see MessageDigest
  * @see MasterMgr
  */ 
-public
 class CheckSum
 {  
   /*----------------------------------------------------------------------------------------*/

@@ -13,12 +13,12 @@ import java.text.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   Q U E U E   M G R   O P T S   P A R S E R                                              */
+/*   P L U G I N   O P T S   P A R S E R                                                    */
 /*                                                                                          */
-/*    The parser for the pljobmgr(1) job manager daemon.                                */
+/*    The parser for the plplugin(1) plugin tool.                                           */
 /*------------------------------------------------------------------------------------------*/
 
-public class 
+class 
 PluginOptsParser
 {
   /*----------------------------------------------------------------------------------------*/

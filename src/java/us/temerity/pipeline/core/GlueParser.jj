@@ -18,7 +18,7 @@ import java.lang.reflect.Array;
 /*    The parser for the command-line driven Pipeline client.                               */
 /*------------------------------------------------------------------------------------------*/
 
-public class 
+class 
 GlueParser
 {
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: PluginMgrControlClient.java,v 1.2 2005/01/22 06:10:09 jim Exp $
+// $Id: PluginMgrControlClient.java,v 1.3 2005/03/11 06:34:39 jim Exp $
   
 package us.temerity.pipeline.core;
 
@@ -21,7 +21,6 @@ import java.util.*;
  * This class handles network communication with the Pipeline plugin manager daemon 
  * <A HREF="../../../../man/plpluginmgr.html"><B>plpluginmgr</B><A>(1).  
  */
-public
 class PluginMgrControlClient
   extends BasePluginMgrClient
 {  

@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.22 2005/02/18 23:37:12 jim Exp $
+// $Id: QueueMgrServer.java,v 1.23 2005/03/11 06:34:39 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -25,11 +25,7 @@ import java.util.concurrent.atomic.*;
  * connection.  Each of these threads then listens for requests for queue related operations 
  * and dispatches these requests to an underlying instance of the {@link QueueMgr QueueMgr}
  * class.
- * 
- * @see QueueMgr
- * @see QueueMgrClient
  */
-public
 class QueueMgrServer
   extends Thread
 {  
