@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.21 2004/08/04 01:41:16 jim Exp $
+// $Id: MasterMgr.java,v 1.22 2004/08/22 22:01:45 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -241,7 +241,7 @@ class MasterMgr
   { 
     /* make a connection to the file and queue manager daemons */ 
     pFileMgrClient  = new FileMgrClient(fileHost, filePort);
-    pQueueMgrClient = new QueueMgrClient(queueHost, queuePort);
+    pQueueMgrClient = new QueueMgrControlClient(queueHost, queuePort);
 
     /* create the lock file */ 
     {
@@ -374,7 +374,7 @@ class MasterMgr
       for(File dir : dirs) {
 	if(!dir.isDirectory())
 	  if(!dir.mkdirs()) 
-	    throw new IllegalArgumentException
+	    throw new PipelineException
 	      ("Unable to create the directory (" + dir + ")!");
       }
     }
@@ -1231,35 +1231,74 @@ class MasterMgr
   ) 
   {
     TaskTimer timer = new TaskTimer();
+    try {
+      TreeMap<String,String> env = 
+	getToolsetEnvironment(req.getAuthor(), req.getView(), req.getName(), timer);	
 
+      return new MiscGetToolsetEnvironmentRsp(timer, req.getName(), env);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+  }
+
+  /**
+   * Get the cooked toolset environment specific to the given user and working area. <P> 
+   * 
+   * If the <CODE>author</CODE> argument is not <CODE>null</CODE>, <CODE>HOME</CODE> and 
+   * <CODE>USER</CODE> environmental variables will be added to the cooked environment. <P> 
+   * 
+   * If the <CODE>author</CODE> and <CODE>view</CODE> arguments are both not 
+   * <CODE>null</CODE>, <CODE>HOME</CODE>, <CODE>USER</CODE> and <CODE>WORKING</CODE> 
+   * environmental variables will be added to the cooked environment. <P> 
+   * 
+   * @param author
+   *   The user owning the generated environment.
+   * 
+   * @param view 
+   *   The name of the user's working area view.
+   * 
+   * @param tname
+   *   The toolset name.
+   * 
+   * @param timer
+   *   The task timer.
+   * 
+   * @throws PipelineException
+   *   If unable to find the toolset.
+   */ 
+  private TreeMap<String,String>
+  getToolsetEnvironment
+  (
+   String author, 
+   String view,
+   String tname, 
+   TaskTimer timer 
+  ) 
+    throws PipelineException
+  {
     timer.aquire();
     synchronized(pToolsets) {
       timer.resume();
 
-      Toolset tset = pToolsets.get(req.getName());
-      if(tset == null) {
-	try {
-	  tset = readToolset(req.getName());
-	}
-	catch(PipelineException ex) {
-	  return new FailureRsp(timer, ex.getMessage());
-	}
-      }
+      Toolset tset = pToolsets.get(tname);
+      if(tset == null) 
+	tset = readToolset(tname);
       assert(tset != null);
       
       TreeMap<String,String> env = null;
-      if((req.getAuthor() != null) && (req.getView() != null)) 
-	env = tset.getEnvironment(req.getAuthor(), req.getView());
-      else if(req.getAuthor() != null)
-	env = tset.getEnvironment(req.getAuthor());
+      if((author != null) && (view != null)) 
+	env = tset.getEnvironment(author, view);
+      else if(author != null)
+	env = tset.getEnvironment(author);
       else 
 	env = tset.getEnvironment();
 	
       assert(env != null);
-
-      return new MiscGetToolsetEnvironmentRsp(timer, req.getName(), env);
+      return env;
     }
   }
+  
 
   /**
    * Create a new toolset from the given toolset packages.
@@ -3020,7 +3059,7 @@ class MasterMgr
    *   The node check-in request.
    *
    * @return
-   *   <CODE>NodeStatusRsp</CODE> if successful or 
+   *   <CODE>SuccessRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to the check-in the nodes.
    */ 
   public Object
@@ -3032,10 +3071,10 @@ class MasterMgr
     assert(req != null);
     NodeID nodeID = req.getNodeID();
 
-    TaskTimer timer = new TaskTimer();
+    TaskTimer timer = new TaskTimer("MasterMgr.checkIn(): " + nodeID);
     try {
-      NodeStatus root = performNodeOperation(new NodeCheckInOp(req), nodeID, timer);
-      return new NodeStatusRsp(timer, nodeID, root);
+      performNodeOperation(new NodeCheckInOp(req), nodeID, timer);
+      return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, 
@@ -3054,7 +3093,7 @@ class MasterMgr
    *   The node check-out request.
    *
    * @return
-   *   <CODE>NodeStatusRsp</CODE> if successful or 
+   *   <CODE>SuccessRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to the check-out the nodes.
    */ 
   public Object
@@ -3066,16 +3105,16 @@ class MasterMgr
     assert(req != null);
     NodeID nodeID = req.getNodeID();
 
-    TaskTimer timer = new TaskTimer();
+    TaskTimer timer = new TaskTimer("MasterMgr.checkOut(): " + nodeID);
     try {
       performCheckOut(true, nodeID, req.getVersionID(), req.keepNewer(), 
 		      new LinkedList<String>(), new HashSet<String>(), timer);
-      
-      NodeStatus root = performNodeOperation(new NodeOp(), nodeID, timer);
-      return new NodeStatusRsp(timer, nodeID, root);
+      return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());
+      return new FailureRsp(timer, 
+			    "Check-Out operation aborted!\n\n" +
+			    ex.getMessage());
     }    
   }
 
@@ -3361,12 +3400,36 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
     try {
-      NodeStatus root = performNodeOperation(new NodeOp(), req.getNodeID(), timer);
+      /* get the current status of the nodes */ 
+      NodeStatus status = performNodeOperation(new NodeOp(), req.getNodeID(), timer);
 
       synchronized(pQueueSubmitLock) {
-	//submitJobs(root, req.getFileIndices(), 
-      
-	return null;
+	/* generate jobs */ 
+	TreeMap<NodeID,Long[]>  extJobIDs = new TreeMap<NodeID,Long[]>();
+	TreeMap<NodeID,Long[]> nodeJobIDs = new TreeMap<NodeID,Long[]>();
+	TreeSet<Long>          rootJobIDs = new TreeSet<Long>();
+	TreeMap<Long,QueueJob> jobs       = new TreeMap<Long,QueueJob>();
+
+	submitJobs(status, req.getFileIndices(), true, 
+		   extJobIDs, nodeJobIDs, rootJobIDs, jobs, 
+		   timer);
+
+	if(jobs.isEmpty()) 
+	  throw new PipelineException
+	    ("No new jobs where generated for node (" + status + ") or any node upstream " +
+	     "of this node!");
+	
+	/* submit the jobs */ 
+	for(QueueJob job : jobs.values()) 
+	  pQueueMgrClient.submitJob(job);
+
+	/* group the jobs */ 
+	QueueJobGroup group = 
+	  new QueueJobGroup(pNextJobGroupID++, req.getNodeID(), rootJobIDs, 
+			    new TreeSet<Long>(jobs.keySet()));
+	pQueueMgrClient.groupJobs(group);
+
+	return new NodeSubmitJobsRsp(timer, group);
       }
     }
     catch(PipelineException ex) {
@@ -3374,8 +3437,12 @@ class MasterMgr
     }    
   }
 
+
   /**
-   * Recursively submit jobs to the queue to regenerate the selected files.
+   * Recursively submit jobs to the queue to regenerate the selected files. <P> 
+   * 
+   * The <CODE>rootJobIDs</CODE>, <CODE>existingJobIDs</CODE>, <CODE>generatedJobIDs</CODE> 
+   * and <CODE>jobs</CODE> arguments contain the results of the job submission process. <P>
    * 
    * @param status
    *   The current node status.
@@ -3383,161 +3450,380 @@ class MasterMgr
    * @param indices
    *   The file sequence indices of the files to regenerate.
    * 
+   * @param isRoot
+   *   The this the root node of the job submission tree?
+   * 
+   * @param extJobIDs
+   *   The per-file IDs of pre-existing jobs which will regenerate the files indexed 
+   *   by working version node ID. 
+   * 
    * @param nodeJobIDs
-   *   The table of per-file unique job identifiers indexed by working version node ID.
+   *   The per-file IDs of the jobs generated by the job submission process indexed by 
+   *   working version node ID. 
+   * 
+   * @param rootJobIDs
+   *   The IDs of the jobs generated by the job submission process which are not a source 
+   *   job by any of the other generated jobs.
    * 
    * @param jobs
-   *   The generated QueueJobs indexed by job ID. 
+   *   The table of jobs generated by the job submission process indexed by job ID.
+   * 
+   * @param timer
+   *   The task timer.
    */
-//   private void 
-//   submitJobs
-//   (
-//    NodeStatus status, 
-//    int indices[], 
-//    TreeMap<NodeID,Long[]> nodeJobIDs,
-//    TreeMap<Long,QueueJob> jobs
-//   ) 
-//     throws PipelineException
-//   {
-//     NodeID nodeID = status.getNodeID();
-//     NodeDetails details = status.getDetails();
-//     NodeMod mod = details.getWorkingVersion();
-//     if(mod == null) 
-//       throw new PipelineException 
-// 	("No working version exists for (" + nodeID + ")!");
+  private void 
+  submitJobs
+  (
+   NodeStatus status, 
+   TreeSet<Integer> indices,   
+   boolean isRoot, 
+   TreeMap<NodeID,Long[]> extJobIDs,   
+   TreeMap<NodeID,Long[]> nodeJobIDs,   
+   TreeSet<Long> rootJobIDs,    
+   TreeMap<Long,QueueJob> jobs, 
+   TaskTimer timer 
+  ) 
+    throws PipelineException
+  {
+    NodeID nodeID = status.getNodeID();
+
+    NodeDetails details = status.getDetails();
+    if(details == null) 
+      throw new PipelineException
+	("Cannot generate jobs for the checked-in node (" + status + ")!");
     
-//     Long[] jobIDs = nodeJobIDs.get(nodeID);
-//     if(jobIDs == null) {
-//       jobIDs = pQueueMgrClient.getJobIDs(nodeID, mod.getPrimarySequence()); 
-//       nodeJobIDs.put(nodeID, jobIDs);
-//     }
-//     assert(jobID != null);
+    NodeMod work = details.getWorkingVersion();
+    if(!work.isActionEnabled()) 
+      return;
+    
+    int numFrames = work.getPrimarySequence().numFrames();
 
-//     QueueState[] qs = details.getQueueState();
+    int batchSize = 0; 
+    if(work.getBatchSize() != null) 
+      batchSize = work.getBatchSize();
+    
+    Long[] jobIDs = details.getJobIDs();
+    QueueState[] queueStates = details.getQueueState();
+    assert(jobIDs.length == queueStates.length);
 
-//     switch(mod.getExecutionMethod()) {
-//     case Serial:
-//       {
-// 	/* determine whether new jobs need to be submitted */ 
-// 	boolean regen = false;
-// 	if(indices == null) {
-// 	  regen = true;
-// 	}
-// 	else {
-// 	  int wk;
-// 	  for(wk=0; wk<indices.length; wk++) {
-// 	    int idx = indices[wk];
-// 	    if((idx < 0) || (idx > (jobIDs.length-1))) {
-// 	      switch(mod.getOverflowPolicy()) {
-// 	      case Abort:
-// 		throw new PipelineException 
-// 		  ("The file sequence index (" + idx + ") was outside the valid range " + 
-// 		   "[0," + jobIDs.length + "] for working version (" + nodeID + ")!");
-// 	      }
-// 	    }
-// 	    else {
-// 	      switch(qs[idx]) {
-// 	      case Queued:
-// 	      case Running:
-// 		throw new PipelineException
-// 		  ("There already exists a " + qs[idx] + " job (" + jobIDs[idx] + ") which " +
-// 		   "will regenerate (" + mod.getPrimarySequence().getFile(idx) + ") for " + 
-// 		   "working version (" + nodeID + ")!\n\n" + 
-// 		   "You must either wait for this job to complete or kill it before you " + 
-// 		   "can submit new jobs for this file.");
-// 		  break;
-		  
-// 	      case Stale:
-// 	      case Aborted:
-// 	      case Failed:
-// 		regen = true;
-// 	      }
-// 	    }
-// 	  }
-// 	}
+    /* determine the frame batches */ 
+    ArrayList<TreeSet<Integer>> batches = new ArrayList<TreeSet<Integer>>();
+    switch(work.getExecutionMethod()) {
+    case Serial:
+      {
+	/* does a job already exist or been generated for the node? */ 
+	if((extJobIDs.get(nodeID) != null) || (nodeJobIDs.get(nodeID) != null))
+	  return;
 
-// 	if(regen) {
-// 	  FileSeq primaryTarget = mod.getPrimarySequence();
+	/* are all frames Finished or Running/Queued? */ 
+	{
+	  boolean finished = true;
+	  boolean running  = true; 
 
-// 	  SortedSet<FileSeq> secondaryTargets = mod.getSecondarySequences(); 
-
-// 	  TreeMap<String,FileSeq> primarySources = 
-// 	    new TreeMap<String,FileSeq>();
-
-// 	  TreeMap<String,Set<FileSeq>> secondarySources = 
-// 	    new TreeMap<String,TreeSet<FileSeq>>();
-
-// 	  TreeSet<Long> sourceIDs = new TreeSet<Long>();
-
-// 	  for(LinkMod link : mod.getSources()) {
-// 	    NodeStatus lstatus = status.getSource(link.getName());
-// 	    NodeDetails ldetails = lstate.getDetails();
-
-// 	    /* submit jobs for upstream nodes first */ 
-// 	    switch(link.getPolicy()) {
-// 	    case Both:
-// 	      {
-// 		submitJobs(lstatus, null, nodeJobIDs, jobs);
-
-// 		Long[] ljobIDs = nodeJobIDs.get(lstatus.getNodeID());
-// 		QueueState[] lqs = ldetails.getQueueState();
-		
-// 		/* add upstream job IDs */ 
-// 		int wk;
-// 		for(wk=0; wk<ljobIDs.length; wk++) {
-// 		  if(ljobIDs[wk] != null) {
-// 		    if(jobs.containsKey(ljobIDs[wk]))
-// 		      sourceIDs.add(ljobIDs[wk]);
-// 		    else {
-// 		      switch(lqs[wk]) {
-// 		      case Queued:
-// 		      case Running:
-// 			sourceIDs.add(ljobIDs[wk]);
-// 		      }
-// 		    }
-// 		  }
-// 		}
-// 	      }
-// 	    }
-
-// 	    /* add source file sequences */ 
-// 	    switch(link.getPolicy()) {
-// 	    case NodeStateOnly:
-// 	    case Both:
+	  int idx;
+	  for(idx=0; idx<queueStates.length; idx++) {
+	    switch(queueStates[idx]) {
+	    case Finished:
+	      running = false;
+	      break;
 	      
+	    case Running:
+	    case Queued:
+	      finished = false;
+	      break;
 	      
+	    default:
+	      finished = false;
+	      running  = false;
+	    }
+	  }
 
+	  if(finished) 
+	    return;
 
+	  if(running) {
+	    extJobIDs.put(nodeID, jobIDs);
+	    return;
+	  }
+	}
 
-// 	    }
-// 	  }
+	/* create a single batch for all frames */ 
+	{
+	  TreeSet<Integer> frames = new TreeSet<Integer>(); 
+	  int idx;
+	  for(idx=0; idx<numFrames; idx++) 
+	    frames.add(idx);
+	  
+	  batches.add(frames);
+	}
+      }
+      break; 
+      
+    case Parallel:
+      {
+	/* determine which of the requested frames needs to be regenerated */ 
+	TreeSet<Integer> regen = new TreeSet<Integer>();
+	{
+	  TreeSet<Integer> allIndices = new TreeSet<Integer>();
+	  if(indices != null) 
+	    allIndices.addAll(indices);
+	  else {
+	    int idx;
+	    for(idx=0; idx<numFrames; idx++) 
+	      allIndices.add(idx);
+	  }
 
-// 	  ActionAgenda agenda = 
-// 	    new ActionAgenda(pNextJobID++, nodeID, 
-// 			     primaryTarget, secondaryTargets, 
-// 			     primarySources, secondarySources, 
-// 			     env, dir);
+	  Long[] extIDs  = extJobIDs.get(nodeID);
+	  Long[] njobIDs = nodeJobIDs.get(nodeID);
 
+	  for(Integer idx : allIndices) {
+	    if((idx < 0) || (idx >= numFrames)) 
+	      throw new PipelineException
+		("Illegal frame index (" + idx + ") given for node (" + nodeID + ") " + 
+		 "during job submission!");
 
-// 	  QueueJob job = 
-// 	    new QueueJob(agenda, mod.getAction().getName(), 
-// 			 mod.getJobRequirements(), sourceIDs); 
+	    if((njobIDs == null) || (njobIDs[idx] == null)) {
+	      switch(queueStates[idx]) {
+	      case Finished:
+		break;
+
+	      case Running:
+	      case Queued:
+		{
+		  if(extIDs == null) {
+		    extIDs = new Long[numFrames];
+		    extJobIDs.put(nodeID, extIDs);
+		  }
+
+		  if(extIDs[idx] == null) 
+		    extIDs[idx] = jobIDs[idx];
+		  assert(extIDs[idx] != null);
+		}
+		break;
+
+	      case Stale:
+	      case Aborted:
+	      case Failed:
+		regen.add(idx);
+		break;
+
+	      case Undefined:
+		assert(false);
+	      }
+	    }
+	  }
+	}
+
+	/* group the frames into batches */ 
+	{
+	  TreeSet<Integer> batch = new TreeSet<Integer>();
+	  for(Integer idx : regen) {
+	    if(!batch.isEmpty() && 
+	       (((batchSize > 0) && (batch.size() >= batchSize)) ||
+		(idx > (batch.last()+1)))) {
+	      batches.add(batch);
+	      batch = new TreeSet<Integer>();
+	    }	
+	    
+	    batch.add(idx);
+	  }
+
+	  batches.add(batch);
+	}
+      }
+    }
+    
+    /* generate jobs for each frame batch */ 
+    for(TreeSet<Integer> batch : batches) {
+      assert(!batch.isEmpty());
+      
+      /* determine the frame indices of the source nodes depended on by the 
+	  frames of this batch */
+      TreeMap<String,TreeSet<Integer>> sourceIndices = 
+	new TreeMap<String,TreeSet<Integer>>();
+      {
+	for(LinkMod link : work.getSources()) {
+	  NodeStatus lstatus = status.getSource(link.getName());
+	  NodeDetails ldetails = lstatus.getDetails();
+	  NodeMod lwork = ldetails.getWorkingVersion();
+	  int lnumFrames = lwork.getPrimarySequence().numFrames();
+
+	  switch(link.getPolicy()) {
+	  case None:
+	    break;
+
+	  case NodeOnly:
+	  case NodeAndQueue:
+	    switch(link.getRelationship()) {
+	    case None:
+	      break;
+
+	    case All:
+	      {
+		TreeSet<Integer> frames = new TreeSet<Integer>();
+		int idx; 
+		for(idx=0; idx<lnumFrames; idx++)
+		  frames.add(idx);
+
+		sourceIndices.put(link.getName(), frames);
+	      }
+	      break;
+
+	    case OneToOne:
+	      {
+		TreeSet<Integer> frames = new TreeSet<Integer>();
+		for(Integer idx : batch) {
+		  int lidx = idx + link.getFrameOffset();
+
+		  if((lidx < 0) || (lidx >= lnumFrames)) {
+		    switch(work.getOverflowPolicy()) {
+		    case Ignore:
+		      break;
+
+		    case Abort:
+		      throw new PipelineException
+			("The frame offset (" + link.getFrameOffset() + ") for the link " +
+			 "between target node (" + status + ") and source node (" + lstatus + 
+			 ") overflows the frame range of the source node!");
+		    }
+		  }
+		  else {
+		    frames.add(lidx);
+		  }
+		}
+
+		sourceIndices.put(link.getName(), frames);
+	      }
+	    }
+	  }
+	}
+      }
+      
+      /* generate jobs for the source frames first */ 
+      {
+	for(LinkMod link : work.getSources()) {
+	  switch(link.getPolicy()) {
+	  case None:
+	  case NodeOnly:
+	    break;
+	    
+	  case NodeAndQueue:
+	    {
+	      TreeSet<Integer> lindices = sourceIndices.get(link.getName());
+	      if((lindices != null) && (!lindices.isEmpty())) {
+		NodeStatus lstatus = status.getSource(link.getName());
+		submitJobs(lstatus, lindices, false, 
+			   extJobIDs, nodeJobIDs, rootJobIDs, jobs, 
+			   timer);
+	      }
+	    }
+	  }
+	}
+      }
+
+      /* determine the source job IDs */ 
+      TreeSet<Long> sourceIDs = new TreeSet<Long>();
+      {
+	for(LinkMod link : work.getSources()) {
+	  switch(link.getPolicy()) {
+	  case None:
+	  case NodeOnly:
+	    break;
+	    
+	  case NodeAndQueue:
+	    {
+	      NodeStatus lstatus = status.getSource(link.getName());
+
+	      TreeSet<Integer> lindices = sourceIndices.get(link.getName());
+	      if((lindices != null) && !lindices.isEmpty()) {
+		NodeID lnodeID = lstatus.getNodeID();
+
+		Long[] nIDs = nodeJobIDs.get(lnodeID);
+		Long[] eIDs = extJobIDs.get(lnodeID);
+
+		for(Integer idx : lindices) {
+		  if((nIDs != null) && (nIDs[idx] != null)) 
+		    sourceIDs.add(nIDs[idx]);
+		  else if((eIDs != null) && (eIDs[idx] != null)) 
+		    sourceIDs.add(eIDs[idx]);
+		}
+	      }
+	    }
+	  }
+	}
+      }
+      
+      /* generate a QueueJob for the batch */ 
+      long jobID = pNextJobID++;
+      {
+	FileSeq primaryTarget = 
+	  new FileSeq(work.getPrimarySequence(), batch.first(), batch.last());
+
+	TreeSet<FileSeq> secondaryTargets = new TreeSet<FileSeq>();
+	for(FileSeq fseq : work.getSecondarySequences()) 
+	  secondaryTargets.add(new FileSeq(fseq, batch.first(), batch.last()));
+
+	TreeMap<String,FileSeq> primarySources = new TreeMap<String,FileSeq>();
+	TreeMap<String,Set<FileSeq>> secondarySources = 
+	  new TreeMap<String,Set<FileSeq>>();
+	for(String sname : sourceIndices.keySet()) {
+	  TreeSet<Integer> lindices = sourceIndices.get(sname);
+	  if((lindices != null) && !lindices.isEmpty()) {
+	    NodeStatus lstatus = status.getSource(sname);
+	    NodeDetails ldetails = lstatus.getDetails();
+	    NodeMod lwork = ldetails.getWorkingVersion();
+
+	    {
+	      FileSeq fseq = lwork.getPrimarySequence();
+	      primarySources.put(sname, new FileSeq(fseq, lindices.first(), lindices.last()));
+	    }
+
+	    {
+	      TreeSet<FileSeq> fseqs = new TreeSet<FileSeq>();
+	      for(FileSeq fseq : lwork.getSecondarySequences()) 
+		fseqs.add(new FileSeq(fseq, lindices.first(), lindices.last()));
+
+	      if(!fseqs.isEmpty()) 
+		secondarySources.put(sname, fseqs);
+	    }	    
+	  }
+	}
+
+	TreeMap<String,String> env = 
+	  getToolsetEnvironment(nodeID.getAuthor(), nodeID.getView(), 
+				work.getToolset(), timer);
+
+	File dir = new File(pProdDir, nodeID.getWorkingParent().getPath());
+
+	ActionAgenda agenda = 
+	  new ActionAgenda(jobID, nodeID, 
+			   primaryTarget, secondaryTargets, 
+			   primarySources, secondarySources, 
+			   env, dir);
+
+	QueueJob job = 
+	  new QueueJob(agenda, work.getAction(), work.getJobRequirements(), sourceIDs);
+		       
+	jobs.put(jobID, job);
+      }
+
+      /* if this is the root node, add the job to the set of root jobs */ 
+      if(isRoot) 
+	rootJobIDs.add(jobID);
+
+      /* update the node jobs table entries for the files which make up the batch */ 
+      {
+	Long[] njobIDs = nodeJobIDs.get(nodeID);
+	if(njobIDs == null) {
+	  njobIDs = new Long[numFrames];
+	  nodeJobIDs.put(nodeID, njobIDs);
+	}
 	
-
-// 	}
-//       }
-
-
-//     case Parallel:
-//       {
-
-
-
-//       }
-//     }
-//   }
-   
-
+	for(Integer idx : batch) 
+	  njobIDs[idx] = jobID;
+      }
+    }
+  }
 
   
   /*----------------------------------------------------------------------------------------*/
@@ -3559,13 +3845,20 @@ class MasterMgr
    NodeKillJobGroupReq req
   ) 
   {
-
-
-    return new FailureRsp(new TaskTimer(), "Not Implemented");
+    TaskTimer timer = new TaskTimer("MasterMgr.killJobGroup()");
+    try {
+      QueueJobGroup group = pQueueMgrClient.getJobGroup(req.getGroupID());
+      TreeSet<Long> jobIDs = new TreeSet<Long>(group.getJobIDs());
+      pQueueMgrClient.killJobs(jobIDs);
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }    
   }
 
   /**
-   * Kill the jobs with the given IDs. <P> 
+   * Kill the job with the given IDs. <P> 
    * 
    * @param req 
    *   The submit jobs request.
@@ -3580,30 +3873,16 @@ class MasterMgr
    NodeKillJobsReq req
   ) 
   {
-
-    return new FailureRsp(new TaskTimer(), "Not Implemented");
+    TaskTimer timer = new TaskTimer("MasterMgr.killJobs()");
+    try {
+      pQueueMgrClient.killJobs(req.getJobIDs());
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }    
   }
 
-  /**
-   * Kill all of the jobs associated with the given working version. <P> 
-   * 
-   * @param req 
-   *   The submit jobs request.
-   * 
-   * @return 
-   *   <CODE>SuccessRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to kill the jobs.
-   */ 
-  public Object
-  killNodeJobs
-  (
-   NodeKillNodeJobsReq req
-  ) 
-  {
-
-
-    return new FailureRsp(new TaskTimer(), "Not Implemented");
-  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -4492,11 +4771,15 @@ class MasterMgr
       }
 
       /* determine per-file QueueStates */  
+      Long jobIDs[] = null;
       QueueState queueStates[] = null;
       switch(versionState) {
       case CheckedIn:
 	{
-	  queueStates = new QueueState[latest.getPrimarySequence().numFrames()];
+	  int numFrames = latest.getPrimarySequence().numFrames();
+	  jobIDs      = new Long[numFrames];
+	  queueStates = new QueueState[numFrames];
+
 	  int wk;
 	  for(wk=0; wk<queueStates.length; wk++) 
 	    queueStates[wk] = QueueState.Undefined;
@@ -4506,19 +4789,21 @@ class MasterMgr
       default:
 	{	    
 	  int numFrames = work.getPrimarySequence().numFrames();
+	  jobIDs      = new Long[numFrames];
 	  queueStates = new QueueState[numFrames];
 
-	  QueueState ps[] = null;
+	  JobState js[] = new JobState[numFrames];
 	  {
-	    // "ps[]" should be computed by querying the queue here.  
-	    // 
-	    // The returned QueueState arrays will only contain: Queued, Running, Failed 
-	    // Aborted, Finished or (null).  A (null) value means that no queue job 
-	    // could be found which generates the file.
-	    // 
-	    // The following stub code therefore simple indicates that no jobs exist.
-	    
-	    ps = new QueueState[numFrames];
+	    ArrayList<Long> jIDs          = new ArrayList<Long>();
+	    ArrayList<JobState> jobStates = new ArrayList<JobState>();
+
+	    pQueueMgrClient.getJobStates(nodeID, work.getPrimarySequence(), jIDs, jobStates);
+
+	    assert(jobIDs.length == jIDs.size());
+	    jobIDs = (Long[]) jIDs.toArray(jobIDs);
+
+	    assert(js.length == jobStates.size());
+	    js = (JobState[]) jobStates.toArray(js);
 	  }
 	  
 	  int wk;
@@ -4532,20 +4817,26 @@ class MasterMgr
 	    /* there IS an enabled regeneration action */ 
 	    else {
 	      /* check for active jobs */ 
-	      if(ps[wk] != null) {
-		switch(ps[wk]) {
+	      if(js[wk] != null) {
+		switch(js[wk]) {
 		case Queued:
-		case Running:
-		case Failed:
-		case Aborted:
-		  queueStates[wk] = ps[wk];
-		  break;
-		  
-		case Finished:
+		  queueStates[wk] = QueueState.Queued;
 		  break;
 
-		default:
-		  assert(false);
+		case Aborted:
+		  queueStates[wk] = QueueState.Aborted;
+		  break;
+
+		case Running:
+		  queueStates[wk] = QueueState.Running;
+		  break;
+
+		case Failed:
+		  queueStates[wk] = QueueState.Failed;
+		  break;
+
+		case Finished:
+		  break;
 		}
 	      }
 	      
@@ -4560,7 +4851,7 @@ class MasterMgr
 		/* check upstream per-file dependencies */ 
 		else {
 		  for(LinkMod link : work.getSources()) {
-		    if(link.getPolicy() == LinkPolicy.Both) {
+		    if(link.getPolicy() == LinkPolicy.NodeAndQueue) {
 		      NodeStatus lstatus = status.getSource(link.getName());
 		      NodeDetails ldetails = lstatus.getDetails();
 		      
@@ -4661,7 +4952,8 @@ class MasterMgr
 			work, base, latest, versionIDs, 
 			overallNodeState, overallQueueState, 
 			versionState, propertyState, linkState, 
-			fileStates, fileTimeStamps, queueStates);
+			fileStates, fileTimeStamps, 
+			jobIDs, queueStates);
 
       /* add the details to the node's status */ 
       status.setDetails(details);
@@ -6467,15 +6759,19 @@ class MasterMgr
 	  
 	  /* generate new file/queue states */ 
 	  TreeMap<FileSeq,FileState[]> fileStates = new TreeMap<FileSeq,FileState[]>();
+	  Long[] jobIDs = null;
 	  QueueState[] queueStates = null;
 	  {
 	    for(FileSeq fseq : working.uFileStates.keySet()) {
 	      FileState fs[] = new FileState[fseq.numFrames()];
 	      Date stamps[] = new Date[fseq.numFrames()];
 
+	      if(jobIDs == null) 
+		jobIDs = new Long[fs.length];
+
 	      if(queueStates == null) 
 		queueStates = new QueueState[fs.length];
-	      
+
 	      int wk;
 	      for(wk=0; wk<fs.length; wk++) 
 		fs[wk] = FileState.Identical;
@@ -6512,7 +6808,8 @@ class MasterMgr
 			    OverallNodeState.Identical, OverallQueueState.Finished, 
 			    VersionState.Identical, PropertyState.Identical, 
 			    LinkState.Identical, 
-			    fileStates, working.uFileTimeStamps, queueStates);
+			    fileStates, working.uFileTimeStamps, 
+			    jobIDs, queueStates);
 
 	  status.setDetails(ndetails);
 
@@ -6992,7 +7289,7 @@ class MasterMgr
   /**
    * The connection to the queue manager daemon: <B>plqueuemgr<B>(1).
    */ 
-  private QueueMgrClient  pQueueMgrClient;
+  private QueueMgrControlClient  pQueueMgrClient;
   
 
   /**
