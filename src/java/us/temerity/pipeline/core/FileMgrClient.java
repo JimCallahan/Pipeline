@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.29 2005/03/29 03:48:55 jim Exp $
+// $Id: FileMgrClient.java,v 1.30 2005/03/30 20:37:29 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -321,6 +321,49 @@ class FileMgrClient
     FileRevertReq req = new FileRevertReq(id, files, writeable);
     
     Object obj = performTransaction(FileRequest.Revert, req);
+    handleSimpleResponse(obj);
+  }
+
+  /**
+   * Replace the primary files associated one node with the primary files of another node. <P>
+   * 
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @param sourceID
+   *   The unique working version identifier of the node owning the files being copied. 
+   * 
+   * @param sourceSeq
+   *   The primary file sequence associated with the source node. 
+   * 
+   * @param targetID
+   *   The unique working version identifier of the node owning the files being replaced.
+   * 
+   * @param targetSeq
+   *   The primary file sequence associated with the target node. 
+   * 
+   * @param writeable
+   *   Whether the target node's files should be made writable.
+   * 
+   * @throws PipelineException
+   *   If unable to clone the files.
+   */ 
+  public synchronized void 
+  clone
+  (
+   NodeID sourceID,
+   FileSeq sourceSeq, 
+   NodeID targetID,
+   FileSeq targetSeq, 
+   boolean writeable   
+  )
+    throws PipelineException
+  {
+    verifyConnection();
+
+    FileCloneReq req = new FileCloneReq(sourceID, sourceSeq, targetID, targetSeq, writeable);
+    
+    Object obj = performTransaction(FileRequest.Clone, req);
     handleSimpleResponse(obj);
   }
 

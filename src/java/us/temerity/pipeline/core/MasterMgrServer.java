@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.45 2005/03/28 04:17:33 jim Exp $
+// $Id: MasterMgrServer.java,v 1.46 2005/03/30 20:37:29 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -724,6 +724,14 @@ class MasterMgrServer
 	      {
 		NodeRevertFilesReq req = (NodeRevertFilesReq) objIn.readObject();
 		objOut.writeObject(pMasterMgr.revertFiles(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case CloneFiles:
+	      {
+		NodeCloneFilesReq req = (NodeCloneFilesReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.cloneFiles(req));
 		objOut.flush(); 
 	      }
 	      break;

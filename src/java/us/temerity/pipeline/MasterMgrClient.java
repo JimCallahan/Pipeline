@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.58 2005/03/29 03:48:55 jim Exp $
+// $Id: MasterMgrClient.java,v 1.59 2005/03/30 20:37:29 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -2531,6 +2531,47 @@ class MasterMgrClient
     NodeRevertFilesReq req = new NodeRevertFilesReq(nodeID, files);
     
     Object obj = performTransaction(MasterRequest.RevertFiles, req);
+    handleSimpleResponse(obj);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Replace the primary files associated one node with the primary files of another node. <P>
+   * 
+   * The two nodes must have exactly the same number of files in their primary file sequences
+   * or the operation will fail. <P> 
+   * 
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @param sourceID
+   *   The unique working version identifier of the node owning the files being copied. 
+   * 
+   * @param targetID
+   *   The unique working version identifier of the node owning the files being replaced.
+   * 
+   * @throws PipelineException
+   *   If unable to clone the files.
+   */ 
+  public synchronized void 
+  cloneFiles  
+  ( 
+   NodeID sourceID, 
+   NodeID targetID
+  )
+    throws PipelineException
+  {
+    if(!PackageInfo.sUser.equals(targetID.getAuthor()) && !isPrivileged(false))
+      throw new PipelineException
+	("Only privileged users may clone files owned by another user!");
+    
+    verifyConnection();
+
+    NodeCloneFilesReq req = new NodeCloneFilesReq(sourceID, targetID); 
+    
+    Object obj = performTransaction(MasterRequest.CloneFiles, req);
     handleSimpleResponse(obj);
   }
 

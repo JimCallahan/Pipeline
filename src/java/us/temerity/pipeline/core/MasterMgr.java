@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.106 2005/03/29 03:48:55 jim Exp $
+// $Id: MasterMgr.java,v 1.107 2005/03/30 20:37:29 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -5083,6 +5083,105 @@ class MasterMgr
 
       /* revert the files */ 
       pFileMgrClient.revert(nodeID, files, writeable);
+
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }  
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }  
+  }
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Replace the primary files associated one node with the primary files of another node. <P>
+   * 
+   * The two nodes must have exactly the same number of files in their primary file sequences
+   * or the operation will fail. <P> 
+   * 
+   * @param req 
+   *   The clone files request.
+   *
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to the clone the files.
+   */ 
+  public Object
+  cloneFiles
+  ( 
+   NodeCloneFilesReq req 
+  ) 
+  {
+    NodeID sourceID = req.getSourceID();
+    NodeID targetID = req.getTargetID();
+
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.cloneFiles(): " + sourceID + " to " + targetID);
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();	      
+      
+      FileSeq sourceSeq = null;
+      {
+	timer.aquire(); 
+	ReentrantReadWriteLock lock = getWorkingLock(sourceID);
+	lock.readLock().lock();
+	try {
+	  timer.resume();
+
+	  WorkingBundle bundle = getWorkingBundle(sourceID);
+	  if(bundle == null) 
+	    throw new PipelineException
+	      ("Only nodes with working versions can have their files cloned!");
+
+	  NodeMod mod = bundle.uVersion;
+	  sourceSeq = mod.getPrimarySequence();
+	}
+	finally {
+	  lock.readLock().unlock();
+	}
+      }
+      
+      FileSeq targetSeq = null;
+      boolean writeable = false;
+      {
+	timer.aquire(); 
+	ReentrantReadWriteLock lock = getWorkingLock(targetID);
+	lock.readLock().lock();
+	try {
+	  timer.resume();
+
+	  WorkingBundle bundle = getWorkingBundle(targetID);
+	  if(bundle == null) 
+	    throw new PipelineException
+	      ("Only nodes with working versions can have their files replaced!");
+
+	  NodeMod mod = bundle.uVersion;
+	  if(mod.isFrozen()) 
+	    throw new PipelineException
+	      ("The files associated with frozen node (" + targetID + ") " + 
+	       "cannot be replaced!");
+
+	  targetSeq = mod.getPrimarySequence();
+	  writeable = mod.isActionEnabled();
+	}
+	finally {
+	  lock.readLock().unlock();
+	}
+      }
+
+      if(sourceSeq.numFrames() != targetSeq.numFrames()) 
+	throw new PipelineException
+	  ("Unable to clone the files associated with node (" + sourceID + "), because the " +
+	   "target node (" + targetID + ") did not have the same number of files!");
+
+      /* clone the files */ 
+      pFileMgrClient.clone(sourceID, sourceSeq, targetID, targetSeq, writeable);
 
       return new SuccessRsp(timer);
     }

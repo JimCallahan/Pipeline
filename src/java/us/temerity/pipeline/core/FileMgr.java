@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.40 2005/03/29 03:48:55 jim Exp $
+// $Id: FileMgr.java,v 1.41 2005/03/30 20:37:29 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1334,6 +1334,266 @@ class FileMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Replace the primary files associated one node with the primary files of another node. <P>
+   * 
+   * @param req 
+   *   The clon request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to copy the files.
+   */
+  public Object
+  clone
+  (
+   FileCloneReq req
+  ) 
+  {
+    NodeID sourceID = req.getSourceID();
+    NodeID targetID = req.getTargetID();
+
+    FileSeq sourceSeq = req.getSourceSeq();
+    FileSeq targetSeq = req.getTargetSeq();
+
+    boolean writeable = req.getWritable();
+
+    TaskTimer timer = 
+      new TaskTimer("FileMgr.clone(): " + sourceID + " to " + targetID);
+
+    timer.aquire();
+    try {
+      if(sourceSeq.numFrames() != targetSeq.numFrames()) 
+	throw new PipelineException
+	  ("Unable to clone the files associated with node (" + sourceID + "), because the " +
+	   "target node (" + targetID + ") did not have the same number of files!");
+
+      Object workingLock = getWorkingLock(targetID);
+      synchronized(workingLock) {
+	timer.resume();	
+	
+	Map<String,String> env = System.getenv();
+	
+	/* the source working area file and checksum directories */ 
+	File owdir  = null;
+	File ocwdir = null;
+	{
+	  File wpath = sourceID.getWorkingParent();
+	  owdir  = new File(pProdDir, wpath.getPath());
+	  ocwdir = new File(pProdDir, "checksum/" + wpath);
+	}
+	
+	/* verify (or create) the target working area file and checksum directories */ 
+	File wdir  = null;
+	File cwdir = null;
+	{
+	  File wpath = targetID.getWorkingParent();
+	  wdir  = new File(pProdDir, wpath.getPath());
+	  cwdir = new File(pProdDir, "checksum/" + wpath);
+	  
+	  synchronized(pMakeDirLock) { 
+	    File dir = null;
+	    if(wdir.exists()) {
+	      if(!wdir.isDirectory()) 
+		throw new PipelineException
+		  ("Somehow there exists a non-directory (" + wdir + 
+		   ") in the location of the working directory!");
+	    }
+	    else {
+	      dir = wdir; 
+	    }
+
+	    if(dir != null) {
+	      ArrayList<String> args = new ArrayList<String>();
+	      args.add("--parents");
+	      args.add("--mode=755");
+	      args.add(wdir.getPath());
+
+	      SubProcessLight proc = 
+		new SubProcessLight(targetID.getAuthor(), 
+				    "Clone-MakeDirs", "mkdir", args, env, pProdDir);
+	      try {
+		proc.start();
+		proc.join();
+		if(!proc.wasSuccessful()) 
+		  throw new PipelineException
+		    ("Unable to create directories for working version " + 
+		     "(" + targetID + "):\n\n" + 
+		     proc.getStdErr());	
+	      }
+	      catch(InterruptedException ex) {
+		throw new PipelineException
+		  ("Interrupted while creating directories for working version " + 
+		   "(" + targetID + ")!");
+	      }
+	    }
+
+	    if(cwdir.exists()) {
+	      if(!cwdir.isDirectory()) 
+		throw new PipelineException
+		  ("Somehow there exists a non-directory (" + cwdir + 
+		   ") in the location of the working checksum directory!");
+	    }
+	    else {
+	      if(!cwdir.mkdirs())
+		throw new PipelineException
+		  ("Unable to create the working checksum directory (" + cwdir + ")!");
+	    }
+	  }
+	}
+	
+	/* build the lists of source and target primary file names */ 
+	ArrayList<File> opfiles = sourceSeq.getFiles();
+	ArrayList<File> pfiles  = targetSeq.getFiles();
+      
+	/* copy each primary file */ 
+	{
+	  Iterator<File> oiter = opfiles.iterator();
+	  Iterator<File>  iter = pfiles.iterator();
+	  while(oiter.hasNext() && iter.hasNext()) {
+	    File ofile = oiter.next();
+	    File opath = new File(owdir, ofile.getName());
+	    
+	    File file = iter.next();
+	    
+	    if(opath.isFile()) {
+	      ArrayList<String> args = new ArrayList<String>();
+	      args.add("--force");
+	      args.add(opath.getPath());
+	      args.add(file.getName());
+	      
+	      SubProcessLight proc = 
+		new SubProcessLight(targetID.getAuthor(), 
+				    "Clone-Primary", "cp", args, env, wdir);
+	      try {
+		proc.start();
+		proc.join();
+		if(!proc.wasSuccessful()) 
+		  throw new PipelineException
+		    ("Unable to clone a primary file for version (" + targetID + "):\n\n" + 
+		     proc.getStdErr());	
+	      }
+	      catch(InterruptedException ex) {
+		throw new PipelineException
+		  ("Interrupted while cloning a primary file for version " + 
+		   "(" + targetID + ")!");
+	      }
+	    }
+	  }
+	}
+	
+	/* copy each primary checksum */ 
+	{
+	  Iterator<File> oiter = opfiles.iterator();
+	  Iterator<File>  iter = pfiles.iterator();
+	  while(oiter.hasNext() && iter.hasNext()) {
+	    File ofile = oiter.next();
+	    File opath = new File(ocwdir, ofile.getName());
+	    
+	    File file = iter.next();
+	    
+	    if(opath.isFile()) {
+	      ArrayList<String> args = new ArrayList<String>();
+	      args.add("--force");
+	      args.add(opath.getPath());
+	      args.add(file.getName());
+	      
+	      SubProcessLight proc = 
+		new SubProcessLight("Clone-PrimaryCheckSum", "cp", args, env, cwdir);
+	      try {
+		proc.start();
+		proc.join();
+		if(!proc.wasSuccessful()) 
+		  throw new PipelineException
+		    ("Unable to clone a primary checksum for version " + 
+		     "(" + targetID + "):\n\n" + 
+		     proc.getStdErr());	
+	      }
+	      catch(InterruptedException ex) {
+		throw new PipelineException
+		  ("Interrupted while cloning a primary checksum for version " + 
+		   "(" + targetID + ")!");
+	      }
+	    }
+	  }
+	}
+
+	/* set write permission to the to working files */ 
+        {
+	  ArrayList<String> args = new ArrayList<String>();
+	  if(req.getWritable()) 
+	    args.add("u+w");
+	  else 
+	    args.add("u-w");
+	  for(File file : pfiles) 
+	    args.add(file.getPath()); 
+	  
+	  SubProcessLight proc = 
+	    new SubProcessLight(targetID.getAuthor(), 
+				"Clone-SetWritable", "chmod", args, env, wdir);
+	  try {
+	    proc.start();
+	    proc.join();
+	    if(!proc.wasSuccessful()) 
+	      throw new PipelineException
+		("Unable to set the access permission to the files for " + 
+		 "the working version (" + targetID + "):\n\n" + 
+		 proc.getStdErr());	
+	  }
+	  catch(InterruptedException ex) {
+	    throw new PipelineException
+	      ("Interrupted while setting the access permission to the files for " + 
+	       "the working version (" + targetID + ")!");
+	  }
+	}
+
+	{
+	  ArrayList<String> paths = new ArrayList<String>();
+	  for(File file : pfiles) {
+	    File path = new File(cwdir, file.getName());
+	    if(path.isFile())
+	      paths.add(file.getPath());
+	  }
+	  
+	  if(!paths.isEmpty()) {
+	    ArrayList<String> args = new ArrayList<String>();
+	    args.add("u+w");
+	    for(File file : pfiles) 
+	      args.add(file.getPath()); 
+	    
+	    /* set write permission to the to working filesand checksums */ 
+	    {
+	      SubProcessLight proc = 
+		new SubProcessLight("Clone-SetWritableCheckSums", "chmod", args, env, cwdir);
+	      try {
+		proc.start();
+		proc.join();
+		if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to add write access permission to the checksums for " + 
+		   "the working version (" + targetID + "):\n\n" + 
+		   proc.getStdErr());	
+	      }
+	      catch(InterruptedException ex) {
+		throw new PipelineException
+		  ("Interrupted while adding write access permission to the checksums for " + 
+		   "the working version (" + targetID + ")!");
+	      }
+	    }
+	  }	
+	}
+
+	return new SuccessRsp(timer);
+      }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Remove specific files associated with the given working version.
    * 
    * @param req 
@@ -1448,7 +1708,7 @@ class FileMgr
 	  cwdir = new File(pProdDir, "checksum/" + wpath);
 	  
 	  synchronized(pMakeDirLock) { 
-	    ArrayList<File> dirs = new ArrayList<File>();
+	    File dir = null;
 	    if(wdir.exists()) {
 	      if(!wdir.isDirectory()) 
 		throw new PipelineException
@@ -1456,7 +1716,7 @@ class FileMgr
 		   ") in the location of the working directory!");
 	    }
 	    else {
-	      dirs.add(wdir);
+	      dir = wdir; 
 	    }
 	    
 	    if(cwdir.exists()) {
@@ -1468,15 +1728,14 @@ class FileMgr
 	    else {
 	      if(!cwdir.mkdirs())
 		throw new PipelineException
-		  ("Unable to create the working  checksum directory (" + cwdir + ")!");
+		  ("Unable to create the working checksum directory (" + cwdir + ")!");
 	    }
 	    
-	    if(!dirs.isEmpty()) {
+	    if(dir != null) {
 	      ArrayList<String> args = new ArrayList<String>();
 	      args.add("--parents");
 	      args.add("--mode=755");
-	      for(File dir : dirs)
-		args.add(dir.getPath());
+	      args.add(dir.getPath());
 	      
 	      SubProcessLight proc = 
 		new SubProcessLight(req.getNodeID().getAuthor(), 
@@ -1610,8 +1869,7 @@ class FileMgr
 	      args.add(file.getName());
 	      
 	      SubProcessLight proc = 
-		new SubProcessLight(req.getNodeID().getAuthor(), 
-				    "Rename-PrimaryCheckSum", "mv", args, env, cwdir);
+		new SubProcessLight("Rename-PrimaryCheckSum", "mv", args, env, cwdir);
 	      try {
 		proc.start();
 		proc.join();
@@ -1644,8 +1902,7 @@ class FileMgr
 	    args.addAll(old);
 
 	    SubProcessLight proc = 
-	      new SubProcessLight(req.getNodeID().getAuthor(), 
-				  "Rename-SecondaryCheckSums", "mv", args, env, ocwdir);
+	      new SubProcessLight("Rename-SecondaryCheckSums", "mv", args, env, ocwdir);
 	    try {
 	      proc.start();
 	      proc.join();

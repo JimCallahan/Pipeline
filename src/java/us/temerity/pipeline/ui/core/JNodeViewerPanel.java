@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.27 2005/03/29 03:48:56 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.28 2005/03/30 20:37:29 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -462,6 +462,7 @@ class JNodeViewerPanel
       pRenameDialog       = new JRenameDialog();
       pRenumberDialog     = new JRenumberDialog();
       pRegisterDialog     = new JRegisterDialog();
+      pCloneDialog        = new JCloneDialog();
       pReleaseDialog      = new JReleaseDialog();
       pReleaseViewDialog  = new JReleaseViewDialog();
       pDeleteDialog       = new JDeleteDialog();
@@ -2984,15 +2985,14 @@ class JNodeViewerPanel
       NodeDetails details = pPrimary.getNodeStatus().getDetails();
       if(details != null) {
 
-	NodeCommon com = details.getWorkingVersion();
-	if(com == null) 
-	  com = details.getLatestVersion();
-	assert(com != null);
+	NodeMod mod = details.getWorkingVersion();
+	if(mod == null) 
+	  return; 
 	
-	pRegisterDialog.updateNode(pAuthor, pView, com);
-	pRegisterDialog.setVisible(true);
+	pCloneDialog.updateNode(pAuthor, pView, mod);
+	pCloneDialog.setVisible(true);
 
-	TreeSet<String> names = pRegisterDialog.getRegistered();
+	TreeSet<String> names = pCloneDialog.getRegistered();
 	if(!names.isEmpty()) 
 	  addRoots(names);
       }
@@ -4092,8 +4092,8 @@ class JNodeViewerPanel
 
 	      /* actions */ 
 	      BaseAction taction = tmod.getAction(); 
+	      BaseAction saction = smod.getAction(); 
 	      {
-		BaseAction saction = smod.getAction(); 
 		if((saction != null) && pExportDialog.exportAction()) {
 		  
 		  /* the action and parameters */ 
@@ -4133,7 +4133,7 @@ class JNodeViewerPanel
 		  
 	      if(taction != null) {
 		/* execution details */ 
-		{
+		if(saction != null) {
 		  if(pExportDialog.exportOverflowPolicy()) 
 		    tmod.setOverflowPolicy(smod.getOverflowPolicy());
 		  
@@ -5626,6 +5626,11 @@ class JNodeViewerPanel
    * The register node dialog.
    */ 
   private JRegisterDialog  pRegisterDialog;
+
+  /**
+   * The clone node dialog.
+   */ 
+  private JCloneDialog  pCloneDialog;
 
   /**
    * The release node dialog.

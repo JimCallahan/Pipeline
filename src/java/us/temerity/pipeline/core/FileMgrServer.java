@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.29 2005/03/23 00:35:23 jim Exp $
+// $Id: FileMgrServer.java,v 1.30 2005/03/30 20:37:29 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -289,6 +289,14 @@ class FileMgrServer
 	      {
 		FileRevertReq req = (FileRevertReq) objIn.readObject();
 		objOut.writeObject(pFileMgr.revert(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case Clone:
+	      {
+		FileCloneReq req = (FileCloneReq) objIn.readObject();
+		objOut.writeObject(pFileMgr.clone(req));
 		objOut.flush(); 
 	      }
 	      break;
