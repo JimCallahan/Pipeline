@@ -1,4 +1,4 @@
-// $Id: OverallNodeState.java,v 1.1 2004/03/01 21:45:04 jim Exp $
+// $Id: OverallNodeState.java,v 1.2 2004/04/14 20:59:33 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -8,12 +8,12 @@ package us.temerity.pipeline;
 
 /**
  * A single state computed from the combination of {@link VersionState VersioState}, 
- * {@link PropertyState PropertyState}, {@link DependState DependState} and the individual
+ * {@link PropertyState PropertyState}, {@link LinkState LinkState} and the individual
  * {@link FileState FileState} of each file associated with the node.
  *
  * @see VersionState
  * @see PropertyState
- * @see DependState 
+ * @see LinkState 
  * @see FileState
  * @see NodeStatus
  */
@@ -25,7 +25,7 @@ enum OverallNodeState
    * since no checked-in versions exist yet. <P> 
    * 
    * The <CODE>VersionState</CODE> and therefore the <CODE>PropertyState</CODE>, 
-   * <CODE>DependState</CODE> and individual <CODE>FileState</CODE> of each file associated 
+   * <CODE>LinkState</CODE> and individual <CODE>FileState</CODE> of each file associated 
    * with the node are <CODE>Pending</CODE>. <P> 
    */
   Pending, 
@@ -35,7 +35,7 @@ enum OverallNodeState
    * node do exist. <P> 
    * 
    * The <CODE>VersionState</CODE> and therefore the <CODE>PropertyState</CODE>, 
-   * <CODE>DependState</CODE> and individual <CODE>FileState</CODE> of each file associated 
+   * <CODE>LinkState</CODE> and individual <CODE>FileState</CODE> of each file associated 
    * with the node are <CODE>CheckedIn</CODE>.
    */
   CheckedIn, 
@@ -44,7 +44,7 @@ enum OverallNodeState
    * The working version of the node exists, is based on the latest checked-in version 
    * and is identical to that version. <P>
    * 
-   * The <CODE>VersionState</CODE>, <CODE>PropertyState</CODE>, <CODE>DependState</CODE> 
+   * The <CODE>VersionState</CODE>, <CODE>PropertyState</CODE>, <CODE>LinkState</CODE> 
    * and individual <CODE>FileState</CODE> of each file associated with the node are all 
    * <CODE>Identical</CODE>. <P> 
    * 
@@ -60,7 +60,7 @@ enum OverallNodeState
    * The working version of the node exists, is based on the latest checked-in version 
    * and is identical to that version. <P>
    * 
-   * The <CODE>VersionState</CODE>, <CODE>PropertyState</CODE>, <CODE>DependState</CODE> 
+   * The <CODE>VersionState</CODE>, <CODE>PropertyState</CODE>, <CODE>LinkState</CODE> 
    * and individual <CODE>FileState</CODE> of each file associated with the node are all 
    * <CODE>Identical</CODE>. However, one or more of the upstream node dependencies have 
    * an <CODE>OverallNodeState</CODE> equal to <CODE>Modified</CODE>, 
@@ -77,7 +77,7 @@ enum OverallNodeState
    * to that version. <P> 
    * 
    * The <CODE>VersionState</CODE> is <CODE>Identical</CODE>. One or more of the 
-   * <CODE>PropertyState</CODE>, <CODE>DependState</CODE> or individual <CODE>FileState</CODE>
+   * <CODE>PropertyState</CODE>, <CODE>LinkState</CODE> or individual <CODE>FileState</CODE>
    * of each file associated with the node are <CODE>Modified</CODE> or <CODE>Added</CODE>. 
    * Also, none of these states are <CODE>NeedsCheckOut</CODE> or <CODE>Conflicted</CODE>.
    */
@@ -88,7 +88,7 @@ enum OverallNodeState
    * latest checked-in version. <P> 
    *
    * The <CODE>VersionState</CODE> is <CODE>NeedsCheckOut</CODE>. One or more of the 
-   * <CODE>PropertyState</CODE>, <CODE>DependState</CODE> or individual <CODE>FileState</CODE>
+   * <CODE>PropertyState</CODE>, <CODE>LinkState</CODE> or individual <CODE>FileState</CODE>
    * of each file associated with the node are <CODE>NeedsCheckOut</CODE>. Also, none of 
    * these states are <CODE>Added</CODE>, <CODE>Modified</CODE> or <CODE>Conflicted</CODE>.
    */
@@ -101,7 +101,7 @@ enum OverallNodeState
    * checked-out. <P> 
    * 
    * The <CODE>VersionState</CODE> is <CODE>NeedsCheckOut</CODE>.  One or more of the 
-   * <CODE>PropertyState</CODE>, <CODE>DependState</CODE> or individual <CODE>FileState</CODE>
+   * <CODE>PropertyState</CODE>, <CODE>LinkState</CODE> or individual <CODE>FileState</CODE>
    * of each file associated with the node are <CODE>Conflicted</CODE>. Alternatively, some 
    * of the states are <CODE>Modified</CODE> or <CODE>Added</CODE> at the same time that
    * some of them are <CODE>NeedsCheckOut</CODE>.

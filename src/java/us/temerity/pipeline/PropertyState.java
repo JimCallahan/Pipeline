@@ -1,4 +1,4 @@
-// $Id: PropertyState.java,v 1.2 2004/03/07 02:43:44 jim Exp $
+// $Id: PropertyState.java,v 1.3 2004/04/14 20:59:33 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -31,7 +31,7 @@ package us.temerity.pipeline;
  * frequently refer to this <CODE>VersionState</CODE> context. 
  * 
  * @see VersionState
- * @see DependState 
+ * @see LinkState 
  * @see FileState
  * @see OverallNodeState
  * @see NodeStatus

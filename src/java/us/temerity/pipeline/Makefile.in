@@ -182,7 +182,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
       JAVA_PATHS = -d ../../.. -classpath "../../..:$(srcdir)/../../.."
 
 
-           ENUMS = DependState \
+           ENUMS = LinkState \
                    ExecutionMethod \
                    FileState \
                    LinkPolicy \

@@ -1,4 +1,4 @@
-// $Id: VersionState.java,v 1.1 2004/03/01 21:45:04 jim Exp $
+// $Id: VersionState.java,v 1.2 2004/04/14 20:59:33 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -21,7 +21,7 @@ package us.temerity.pipeline;
  * foundation for determining most of the other node states.
  * 
  * @see PropertyState
- * @see DependState 
+ * @see LinkState 
  * @see FileState
  * @see OverallNodeState
  * @see NodeStatus

@@ -1,4 +1,4 @@
-// $Id: FileState.java,v 1.3 2004/03/10 11:46:07 jim Exp $
+// $Id: FileState.java,v 1.4 2004/04/14 20:59:33 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -17,7 +17,7 @@ package us.temerity.pipeline;
  * 
  * @see VersionState
  * @see PropertyState
- * @see DependState 
+ * @see LinkState 
  * @see OverallNodeState
  * @see NodeStatus
  */

@@ -1,4 +1,4 @@
-// $Id: NodeMgr.java,v 1.13 2004/04/14 20:12:27 jim Exp $
+// $Id: NodeMgr.java,v 1.14 2004/04/14 20:59:33 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -899,7 +899,7 @@ class NodeMgr
 
       /* invalidate states */ 
       bundle.uOverallNodeState = null;
-      bundle.uDependState      = null;
+      bundle.uLinkState      = null;
 
       /* update the downstream links of the source node */ 
       DownstreamLinks links = getDownstreamLinks(source); 
@@ -966,7 +966,7 @@ class NodeMgr
       
       /* invalidate states */ 
       bundle.uOverallNodeState = null;
-      bundle.uDependState      = null;
+      bundle.uLinkState      = null;
 
       /* update the downstream links of the source node */ 
       DownstreamLinks links = getDownstreamLinks(source); 
@@ -1006,6 +1006,20 @@ class NodeMgr
    NodeStatusReq req 
   ) 
   {
+    // first compute status for upstream nodes... 
+    
+
+    // if not already cached... 
+
+    //   compute VersionState
+    //   compute PropertyState
+    //   compute LinkState 
+
+    //   talk to FileMgr to get per-file FileStates
+
+    //   talk to QueueMgr to get per-file QueueStates  (not yet) 
+    
+
     
     return new FailureRsp(new TaskTimer(), "Not implemented yet.");
 
@@ -2203,7 +2217,7 @@ class NodeMgr
      * 
      * May be <CODE>null</CODE> if invalidated.
      */
-    public DependState  uDependState;
+    public LinkState  uLinkState;
     
     /**
      * A table containing the relationship between individual files associated with the 
