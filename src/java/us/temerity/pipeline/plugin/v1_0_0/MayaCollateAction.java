@@ -1,4 +1,4 @@
-// $Id: MayaCollateAction.java,v 1.3 2004/09/13 23:44:09 jim Exp $
+// $Id: MayaCollateAction.java,v 1.4 2004/09/23 20:09:56 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -414,6 +414,8 @@ class MayaCollateAction
     try {      
       FileWriter out = new FileWriter(script);
 
+      out.write("print (\"$WORKING = \" + getenv(\"WORKING\") + \"\\n\");\n"); 
+
       /* a workaround needed in "maya -batch" mode */ 
       out.write("// WORK AROUNDS:\n" + 
 		"lightlink -q;\n\n");
@@ -439,18 +441,24 @@ class MayaCollateAction
 	File path = new File(mname);
 	String nspace = path.getName();
 
+	String format = "";
+	if(file.toString().endsWith("ma")) 
+	  format = "  -type \"mayaAscii\"\n";
+	else if(file.toString().endsWith("mb")) 
+	  format = "  -type \"mayaBinary\"\n";
+
 	out.write
 	  ("// MODEL: " + mname + "\n" + 
 	   "print \"Importing Reference Model: " + file + "\\n\";\n" + 
 	   "file\n" +
 	   "  -reference\n" + 
-	   "  -type \"mayaAscii\"\n" +
+	   format +
 	   "  -namespace \"LOADANIM" + nspace + "\"\n" + 
 	   "  -options \"v=0\"\n" + 
 	   "  \"$WORKING" + file + "\";\n" + 
 	   "file\n" +
 	   "  -reference\n" +
-	   "  -type \"mayaAscii\"\n" +
+	   format +
 	   "  -namespace \"" + nspace + "\"\n" + 
 	   "  -options \"v=0\"\n" + 
 	   "  \"$WORKING" + file + "\";\n" +
