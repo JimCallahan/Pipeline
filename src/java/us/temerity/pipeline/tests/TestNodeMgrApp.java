@@ -1,4 +1,4 @@
-// $Id: TestNodeMgrApp.java,v 1.4 2004/03/29 08:19:39 jim Exp $
+// $Id: TestNodeMgrApp.java,v 1.5 2004/03/30 22:20:11 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -57,6 +57,9 @@ class TestNodeMgrApp
     File nodeDir = new File(cwd, "node");
     nodeDir.mkdirs();
     
+    File prodDir = new File(cwd, "prod");
+    prodDir.mkdirs();
+
     /* test nodes */ 
     NodeMod modA = null;
     {
@@ -200,10 +203,14 @@ class TestNodeMgrApp
       proc.join();
     }
 
+    /* start the file manager server */ 
+    FileMgrServer fileServer = new FileMgrServer(prodDir, 53138);
+    fileServer.start();
+
     {
       /* start the node manager server */ 
-      NodeMgrServer server = new NodeMgrServer(nodeDir, 53139);
-      server.start();
+      NodeMgrServer nodeServer = new NodeMgrServer(nodeDir, 53139, "localhost", 53138);
+      nodeServer.start();
       
       /* give the server a chance to start */ 
       Thread.currentThread().sleep(1000);
@@ -234,7 +241,7 @@ class TestNodeMgrApp
       modA = client.getWorkingVersion("default", modA.getName());
       client.shutdown();
       
-      server.join();
+      nodeServer.join();
     }
 
     {
@@ -252,8 +259,8 @@ class TestNodeMgrApp
 
     {
       /* start the node manager server */ 
-      NodeMgrServer server = new NodeMgrServer(nodeDir, 53139);
-      server.start();
+      NodeMgrServer nodeServer = new NodeMgrServer(nodeDir, 53139, "localhost", 53138);
+      nodeServer.start();
       
       /* give the server a chance to start */ 
       Thread.currentThread().sleep(1000);
@@ -298,17 +305,28 @@ class TestNodeMgrApp
 
       {
 	NodeMgrClient client = new NodeMgrClient("localhost", 53139);
+
 	client.link("default", eagle.getName(), snake.getName(), 
 		    new LinkCatagory("Eats", LinkPolicy.Both), LinkRelationship.All, null);
+
+	client.revoke("default", dragonfly.getName(), true);
+
 	client.disconnect();
       }
       
       NodeMgrClient client = new NodeMgrClient("localhost", 53139);
       client.shutdown();
 
-      server.join();
+      nodeServer.join();
     }
 
+    /* shutdown the file manager server */ 
+    {
+      FileMgrClient client = new FileMgrClient("localhost", 53138);
+      client.shutdown();
+      
+      fileServer.join();
+    }
   }
 
 
@@ -506,6 +524,19 @@ class TestNodeMgrApp
 		    new LinkCatagory("Eats", LinkPolicy.Both), LinkRelationship.All, null);
 	
 	client.link("default", pDragonfly.getName(), pFly.getName(),
+		    new LinkCatagory("Eats", LinkPolicy.Both), LinkRelationship.All, null);
+
+
+	client.unlink("default", pSnake.getName(), pSalamander.getName()); 
+
+	try {
+	  client.unlink("default", pSnake.getName(), pSalamander.getName());
+	}
+	catch(PipelineException ex) {
+	  System.out.print("Caught: " + ex.getMessage() + "\n\n");
+	}
+
+	client.link("default", pSnake.getName(), pSalamander.getName(), 
 		    new LinkCatagory("Eats", LinkPolicy.Both), LinkRelationship.All, null);
 
 	client.disconnect();
