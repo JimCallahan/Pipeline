@@ -1,4 +1,4 @@
-// $Id: ViewerNode.java,v 1.1 2004/05/07 15:08:29 jim Exp $
+// $Id: ViewerNode.java,v 1.2 2004/05/07 18:10:50 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -15,7 +15,19 @@ import com.sun.j3d.utils.geometry.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A Java3D based graphical representation of a Pipeline node. 
+ * A reusable Java3D based graphical representation of the status of a Pipeline node. <P> 
+ * 
+ * Textured geometry is used to visualizing {@link NodeStatus NodeStatus} and associated 
+ * {@link NodeDetails NodeDetails} instances. This class also maintains the 2D layout 
+ * position and the collapsed/expanded state of this geometry.  <P> 
+ * 
+ * A <CODE>ViewerNode</CODE> is associated with a single <CODE>NodeStatus</CODE>.  However, 
+ * a <CODE>NodeStatus</CODE> may be represented by more than one <CODE>ViewerNode</CODE>
+ * if the node is reachable via multiple upstream/downstream paths.  For this reason, each
+ * instance of this class maintains a {@link NodePath NodePath} field in addition to the 
+ * current <CODE>NodeStatus</CODE> to identify the unique path from the focus node of the 
+ * {@link JNodeViewerPanel JNodeViewerPanel} to the <CODE>NodeStatus</CODE> associated
+ * with this <CODE>ViewerNode</CODE> instance.
  */
 public 
 class ViewerNode
@@ -32,6 +44,7 @@ class ViewerNode
   {
     /* initialzie state fields */ 
     {
+      pIsReset     = true;
       pMode        = SelectionMode.Normal;
       pIsVisible   = false;
       pIsCollapsed = false;
@@ -186,21 +199,58 @@ class ViewerNode
   /*----------------------------------------------------------------------------------------*/
   
   /**
+   * Whether this instance is newly created or recycled.
+   */ 
+  public boolean 
+  isReset() 
+  {
+    return pIsReset;
+  }
+  
+  /**
+   * Indicate that this instance has been newly created or recycled.
+   */ 
+  public void
+  reset() 
+  {
+    pIsReset = true;
+
+    System.out.print("ViewerNode.reset(): " + pStatus + " [" + pPath + "]\n");
+  }
+
+
+  /**
    * Get the current node status. 
    */ 
   public NodeStatus
-  getStatus() 
+  getNodeStatus() 
   {
     return pStatus;
   }
 
   /**
-   * Set the current node status. 
+   * Get the path from the focus node to the current node.
+   */ 
+  public NodePath
+  getNodePath() 
+  {
+    return pPath;
+  }
+
+  /**
+   * Set the current node status and path.
+   * 
+   * @param status
+   *   The current node status.
+   * 
+   * @param path
+   *   The path from the focus node to the current node.
    */ 
   public void 
-  setStatus
+  setCurrentState
   (
-   NodeStatus status
+   NodeStatus status, 
+   NodePath path  
   ) 
   {
     if(status == null) 
@@ -211,7 +261,7 @@ class ViewerNode
 
     pStatus = status;
 
-    System.out.print("Status = " + status + "\n");
+    System.out.print("ViewerNode.setCurrentState(): " + status + " [" + path + "]\n");
   }
 
   
@@ -383,7 +433,7 @@ class ViewerNode
 	if(details != null) 
 	  aname = (details.getOverallNodeState() + "-" + details.getOverallQueueState());
 	
-	System.out.print("Node Icon = " + aname + "\n");
+	System.out.print("Updating Node Icon = " + aname + "\n");
 
 	AppearanceMgr mgr = AppearanceMgr.getInstance();
 	Appearance apr = mgr.getNodeAppearance(aname, pMode);
@@ -403,6 +453,9 @@ class ViewerNode
       xform.setTranslation(new Vector3d((details == null) ? -0.8 : 0.8, 0.0, 0.0));
       pCollapsedXform.setTransform(xform);
     } 
+
+    /* no longer reset once it has been updated */ 
+    pIsReset = false;
   }
 
 
@@ -412,9 +465,19 @@ class ViewerNode
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Whether this instance is newly created or recycled.
+   */ 
+  private boolean  pIsReset;
+
+  /**
    * The current node status.
    */ 
   private NodeStatus  pStatus;
+
+  /**
+   * The path from the focus node to the current node.
+   */ 
+  private NodePath  pPath;
 
   /**
    * The UI selection mode.
@@ -440,6 +503,7 @@ class ViewerNode
    * Whether the text label geometry is no longer valid for the current node status.
    */ 
   private boolean  pLabelTextChanged;
+
 
 
 
