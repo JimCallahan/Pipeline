@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.32 2004/08/26 05:59:39 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.33 2004/08/30 02:48:46 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -245,13 +245,18 @@ class JNodeViewerPanel
       item.addActionListener(this);
       pNodePopup.add(item);
 
-      item = new JMenuItem("Kill Jobs");
-      item.setActionCommand("kill-jobs");
+      item = new JMenuItem("Pause Jobs");
+      item.setActionCommand("pause-jobs");
       item.addActionListener(this);
       pNodePopup.add(item);
 
-      item = new JMenuItem("Remove Files");
-      item.setActionCommand("remove-files");
+      item = new JMenuItem("Resume Jobs");
+      item.setActionCommand("resume-jobs");
+      item.addActionListener(this);
+      pNodePopup.add(item);
+
+      item = new JMenuItem("Kill Jobs");
+      item.setActionCommand("kill-jobs");
       item.addActionListener(this);
       pNodePopup.add(item);
 
@@ -279,6 +284,11 @@ class JNodeViewerPanel
       item = new JMenuItem("Release");
       pReleaseItem = item;
       item.setActionCommand("release");
+      item.addActionListener(this);
+      pNodePopup.add(item);
+
+      item = new JMenuItem("Remove Files");
+      item.setActionCommand("remove-files");
       item.addActionListener(this);
       pNodePopup.add(item);
 
@@ -1920,12 +1930,15 @@ class JNodeViewerPanel
       else if((prefs.getNodeQueueJobs() != null) &&
 	      prefs.getNodeQueueJobs().wasPressed(e))
 	doQueueJobs();
+      else if((prefs.getNodePauseJobs() != null) &&
+	      prefs.getNodePauseJobs().wasPressed(e))
+	doPauseJobs();
+      else if((prefs.getNodeResumeJobs() != null) &&
+	      prefs.getNodeResumeJobs().wasPressed(e))
+	doResumeJobs();
       else if((prefs.getNodeKillJobs() != null) &&
 	      prefs.getNodeKillJobs().wasPressed(e))
 	doKillJobs();
-      else if((prefs.getNodeRemoveFiles() != null) &&
-	      prefs.getNodeRemoveFiles().wasPressed(e))
-	doRemoveFiles();
 
       else if((prefs.getNodeCheckIn() != null) &&
 	      prefs.getNodeCheckIn().wasPressed(e))
@@ -1940,6 +1953,9 @@ class JNodeViewerPanel
       else if((prefs.getNodeRelease() != null) &&
 	      prefs.getNodeRelease().wasPressed(e))
 	doRelease();
+      else if((prefs.getNodeRemoveFiles() != null) &&
+	      prefs.getNodeRemoveFiles().wasPressed(e))
+	doRemoveFiles();
 
       else if((prefs.getNodeRename() != null) &&
 	      prefs.getNodeRename().wasPressed(e))
@@ -2089,6 +2105,7 @@ class JNodeViewerPanel
     String cmd = e.getActionCommand();
     if(cmd.equals("details"))
       doDetails();
+
     else if(cmd.equals("make-root"))
       doMakeRoot();
     else if(cmd.equals("add-root"))
@@ -2099,32 +2116,43 @@ class JNodeViewerPanel
       doRemoveRoot();
     else if(cmd.equals("remove-all-roots"))
       doRemoveAllRoots();
+
     else if(cmd.equals("edit"))
       doEdit();
     else if(cmd.startsWith("edit-with:"))
       doEditWith(cmd.substring(10));    
+
     else if(cmd.equals("link")) 
       doLink();    
     else if(cmd.equals("unlink")) 
       doUnlink(); 
+
     else if(cmd.equals("add-secondary")) 
       doAddSecondary();
     else if(cmd.startsWith("remove-secondary:")) 
       doRemoveSecondary(cmd.substring(17)); 
+
     else if(cmd.equals("queue-jobs"))
       doQueueJobs();
+    else if(cmd.equals("pause-jobs"))
+      doPauseJobs();
+    else if(cmd.equals("resume-jobs"))
+      doResumeJobs();
     else if(cmd.equals("kill-jobs"))
       doKillJobs();
-    else if(cmd.equals("remove-files"))
-      doRemoveFiles();
+
     else if(cmd.equals("check-in"))
       doCheckIn();
     else if(cmd.equals("check-out"))
       doCheckOut();
+
     else if(cmd.equals("clone"))
       doClone();
     else if(cmd.equals("release"))
       doRelease();
+    else if(cmd.equals("remove-files"))
+      doRemoveFiles();
+
     else if(cmd.equals("rename"))
       doRename();
     else if(cmd.equals("renumber"))
@@ -2583,64 +2611,6 @@ class JNodeViewerPanel
       vnode.update();
   }
 
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Queue jobs to the queue for the primary selected node and all nodes upstream of it.
-   */ 
-  private void 
-  doQueueJobs() 
-  {
-    if(pPrimary != null) {
-      NodeStatus status = pPrimary.getNodeStatus();
-      NodeDetails details = status.getDetails();
-      if(details != null) {
-	QueueJobsTask task = new QueueJobsTask(status.getName(), null);
-	task.start();
-      }
-    }
-
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();
-  }
-
-  /**
-   * Kill all jobs associated with the selected nodes.
-   */ 
-  private void 
-  doKillJobs() 
-  {
-    TreeSet<Long> dead = new TreeSet<Long>();
-    for(ViewerNode vnode : pSelected.values()) {
-      NodeStatus status = vnode.getNodeStatus();
-      NodeDetails details = status.getDetails();
-      if(details != null) {
-	Long[] jobIDs   = details.getJobIDs();
-	QueueState[] qs = details.getQueueState();
-	assert(jobIDs.length == qs.length);
-
-	int wk;
-	for(wk=0; wk<jobIDs.length; wk++) {
-	  switch(qs[wk]) {
-	  case Queued:
-	  case Running:
-	    assert(jobIDs[wk] != null);
-	    dead.add(jobIDs[wk]);
-	  }
-	}
-      }
-    }
-
-    if(!dead.isEmpty()) {
-      KillJobsTask task = new KillJobsTask(dead);
-      task.start();
-    }
-
-    for(ViewerNode vnode : clearSelection()) 
-      vnode.update();
-  }
-
   /**
    * Remove all primary/secondary files associated with the selected nodes.
    */ 
@@ -2672,6 +2642,135 @@ class JNodeViewerPanel
 
     if(!names.isEmpty()) {
       RemoveFilesTask task = new RemoveFilesTask(names);
+      task.start();
+    }
+
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Queue jobs to the queue for the primary selected node and all nodes upstream of it.
+   */ 
+  private void 
+  doQueueJobs() 
+  {
+    if(pPrimary != null) {
+      NodeStatus status = pPrimary.getNodeStatus();
+      NodeDetails details = status.getDetails();
+      if(details != null) {
+	QueueJobsTask task = new QueueJobsTask(status.getName(), null);
+	task.start();
+      }
+    }
+
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();
+  }
+
+  /**
+   * Pause all waiting jobs associated with the selected nodes.
+   */ 
+  private void 
+  doPauseJobs() 
+  {
+    TreeSet<Long> paused = new TreeSet<Long>();
+    for(ViewerNode vnode : pSelected.values()) {
+      NodeStatus status = vnode.getNodeStatus();
+      NodeDetails details = status.getDetails();
+      if(details != null) {
+	Long[] jobIDs   = details.getJobIDs();
+	QueueState[] qs = details.getQueueState();
+	assert(jobIDs.length == qs.length);
+
+	int wk;
+	for(wk=0; wk<jobIDs.length; wk++) {
+	  switch(qs[wk]) {
+	  case Queued:
+	    assert(jobIDs[wk] != null);
+	    paused.add(jobIDs[wk]);
+	  }
+	}
+      }
+    }
+
+    if(!paused.isEmpty()) {
+      PauseJobsTask task = new PauseJobsTask(paused);
+      task.start();
+    }
+
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();
+  }
+
+  /**
+   * Resume execution of all paused jobs associated with the selected nodes.
+   */ 
+  private void 
+  doResumeJobs() 
+  {
+    TreeSet<Long> resumed = new TreeSet<Long>();
+    for(ViewerNode vnode : pSelected.values()) {
+      NodeStatus status = vnode.getNodeStatus();
+      NodeDetails details = status.getDetails();
+      if(details != null) {
+	Long[] jobIDs   = details.getJobIDs();
+	QueueState[] qs = details.getQueueState();
+	assert(jobIDs.length == qs.length);
+
+	int wk;
+	for(wk=0; wk<jobIDs.length; wk++) {
+	  switch(qs[wk]) {
+	  case Paused:
+	    assert(jobIDs[wk] != null);
+	    resumed.add(jobIDs[wk]);
+	  }
+	}
+      }
+    }
+
+    if(!resumed.isEmpty()) {
+      ResumeJobsTask task = new ResumeJobsTask(resumed);
+      task.start();
+    }
+
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();
+  }
+
+  /**
+   * Kill all jobs associated with the selected nodes.
+   */ 
+  private void 
+  doKillJobs() 
+  {
+    TreeSet<Long> dead = new TreeSet<Long>();
+    for(ViewerNode vnode : pSelected.values()) {
+      NodeStatus status = vnode.getNodeStatus();
+      NodeDetails details = status.getDetails();
+      if(details != null) {
+	Long[] jobIDs   = details.getJobIDs();
+	QueueState[] qs = details.getQueueState();
+	assert(jobIDs.length == qs.length);
+
+	int wk;
+	for(wk=0; wk<jobIDs.length; wk++) {
+	  switch(qs[wk]) {
+	  case Queued:
+	  case Paused:
+	  case Running:
+	    assert(jobIDs[wk] != null);
+	    dead.add(jobIDs[wk]);
+	  }
+	}
+      }
+    }
+
+    if(!dead.isEmpty()) {
+      KillJobsTask task = new KillJobsTask(dead);
       task.start();
     }
 
@@ -3711,6 +3810,88 @@ class JNodeViewerPanel
       if(master.beginPanelOp("Killing Jobs...")) {
 	try {
 	  master.getMasterMgrClient().killJobs(pAuthor, pJobIDs);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	updateRoots();
+      }
+    }
+
+    private TreeSet<Long>  pJobIDs; 
+  }
+
+  /** 
+   * Pause the given jobs.
+   */ 
+  private
+  class PauseJobsTask
+    extends Thread
+  {
+    public 
+    PauseJobsTask
+    (
+     TreeSet<Long> jobIDs
+    ) 
+    {
+      super("JNodeViewerPanel:PauseJobsTask");
+
+      pJobIDs = jobIDs; 
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Pausing Jobs...")) {
+	try {
+	  master.getMasterMgrClient().pauseJobs(pAuthor, pJobIDs);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	updateRoots();
+      }
+    }
+
+    private TreeSet<Long>  pJobIDs; 
+  }
+
+  /** 
+   * Resume execution of the the given paused jobs.
+   */ 
+  private
+  class ResumeJobsTask
+    extends Thread
+  {
+    public 
+    ResumeJobsTask
+    (
+     TreeSet<Long> jobIDs
+    ) 
+    {
+      super("JNodeViewerPanel:ResumeJobsTask");
+
+      pJobIDs = jobIDs; 
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Resuming Paused Jobs...")) {
+	try {
+	  master.getMasterMgrClient().resumeJobs(pAuthor, pJobIDs);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
