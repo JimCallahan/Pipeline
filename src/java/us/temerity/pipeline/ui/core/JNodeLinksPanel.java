@@ -1,4 +1,4 @@
-// $Id: JNodeLinksPanel.java,v 1.3 2005/03/11 06:33:44 jim Exp $
+// $Id: JNodeLinksPanel.java,v 1.4 2005/03/15 19:13:12 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -286,7 +286,7 @@ class JNodeLinksPanel
       addMouseListener(this); 
     }
 
-    updateNodeStatus(null, null, null, null);
+    updateNodeStatus(null, null, null, null, null);
   }
 
 
@@ -373,6 +373,9 @@ class JNodeLinksPanel
    * 
    * @param links
    *   The check-in links. 
+   * 
+   * @param offline
+   *   The revision numbers of the offline checked-in versions.
    */
   public synchronized void 
   updateNodeStatus
@@ -382,13 +385,14 @@ class JNodeLinksPanel
    NodeStatus status,
    TreeMap<String,TreeSet<VersionID>> editorPlugins, 
    PluginMenuLayout editorLayout, 
-   TreeMap<VersionID,TreeMap<String,LinkVersion>> links
+   TreeMap<VersionID,TreeMap<String,LinkVersion>> links,
+   TreeSet<VersionID> offline
   ) 
   {
     if(!pAuthor.equals(author) || !pView.equals(view)) 
       super.setAuthorView(author, view);
 
-    updateNodeStatus(status, editorPlugins, editorLayout, links);
+    updateNodeStatus(status, editorPlugins, editorLayout, links, offline);
   }
 
   /**
@@ -404,7 +408,10 @@ class JNodeLinksPanel
    *   The menu layout for editor plugins.
    * 
    * @param links
-   *   The check-in links. 
+   *   The check-in links.
+   * 
+   * @param offline
+   *   The revision numbers of the offline checked-in versions. 
    */
   public synchronized void 
   updateNodeStatus
@@ -412,10 +419,12 @@ class JNodeLinksPanel
    NodeStatus status,
    TreeMap<String,TreeSet<VersionID>> editorPlugins, 
    PluginMenuLayout editorLayout, 
-   TreeMap<VersionID,TreeMap<String,LinkVersion>> links
+   TreeMap<VersionID,TreeMap<String,LinkVersion>> links,
+   TreeSet<VersionID> offline
   ) 
   {
     pStatus = status;
+    pOffline = offline;
 
     pLinks.clear();
     if(links != null) 
@@ -707,10 +716,14 @@ class JNodeLinksPanel
 		    JButton btn = new JButton("v" + vid);
 		    btn.setName("TableHeaderButton");
 		    
+		    boolean isOffline = pOffline.contains(vid);
+
 		    if((bvid != null) && bvid.equals(vid)) 
 		      btn.setForeground(Color.cyan);
+		    else if(isOffline) 
+		      btn.setForeground(new Color(0.75f, 0.75f, 0.75f));
 		    
-		    if(isModifiable) {
+		    if(isModifiable && !isOffline) {
 		      btn.addActionListener(this);
 		      btn.setActionCommand("version-pressed:" + lname + ":" + vid);
 		    }
@@ -2014,7 +2027,9 @@ class JNodeLinksPanel
 	    LinkVersion link = pLinks.get(vid).get(lname);
 	    if(link != null) {
 	      comps = new JComponent[5];
-	      
+
+	      boolean isOffline = pOffline.contains(vid);
+
 	      { 
 		LinkVersion rlink = null;
 		if((wk+1) < links.size()) 
@@ -2041,7 +2056,7 @@ class JNodeLinksPanel
 		  JLinkCheckBox check = new JLinkCheckBox(link, vid);
 		  comps[0] = check;
 		  
-		  if(isModifiable) {
+		  if(isModifiable && !isOffline) {
 		    check.addActionListener(parent);
 		    check.setActionCommand("link-checked:" + lname);
 		  }
@@ -2654,6 +2669,11 @@ class JNodeLinksPanel
    * The upstream links of all checked-in versions of the given node.
    */ 
   private TreeMap<VersionID,TreeMap<String,LinkVersion>>  pLinks; 
+
+  /**
+   * The revision numbers of the offline checked-in versions.
+   */ 
+  private TreeSet<VersionID>  pOffline; 
 
 
   /*----------------------------------------------------------------------------------------*/
