@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.10 2004/08/26 05:56:30 jim Exp $
+// $Id: QueueMgr.java,v 1.11 2004/08/30 01:41:15 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -80,9 +80,11 @@ class QueueMgr
       pLastSampleWrite = new Date();
       pSampleFileLock  = new Object();
 
+      pHitList   = new ConcurrentLinkedQueue<Long>();
+      pPaused    = new TreeSet<Long>();
+
       pWaiting = new ConcurrentLinkedQueue<Long>();
       pReady   = new TreeMap<Integer,TreeSet<Long>>(Collections.reverseOrder());
-      pHitList = new ConcurrentLinkedQueue<Long>();
 
       pJobFileLocks = new TreeMap<Long,Object>();
       pJobs         = new TreeMap<Long,QueueJob>(); 
@@ -207,6 +209,11 @@ class QueueMgr
 	      /* determine if the job is still active */ 
 	      switch(info.getState()) {
 	      case Queued:
+		pWaiting.add(jobID);
+		break;
+
+	      case Paused:
+		pPaused.add(jobID);
 		pWaiting.add(jobID);
 		break;
 
@@ -1448,7 +1455,7 @@ class QueueMgr
    * Kill the jobs with the given IDs. <P> 
    * 
    * @param req 
-   *   The kill jobs equest.
+   *   The kill jobs request.
    *    
    * @return 
    *   <CODE>SuccessRsp</CODE> if successful or 
@@ -1464,6 +1471,65 @@ class QueueMgr
 
     for(Long jobID : req.getJobIDs())
       pHitList.add(jobID);
+
+    return new SuccessRsp(timer);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Pause the jobs with the given IDs. <P> 
+   * 
+   * @param req 
+   *   The request.
+   *    
+   * @return 
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable pause the jobs. 
+   */ 
+  public Object
+  pauseJobs
+  (
+   QueuePauseJobsReq req
+  )
+  {
+    TaskTimer timer = new TaskTimer("QueueMgr.pauseJobs()");
+
+    timer.aquire();
+    synchronized(pPaused) {
+      timer.resume();
+      for(Long jobID : req.getJobIDs())
+	pPaused.add(jobID);
+    }
+
+    return new SuccessRsp(timer);
+  }
+
+  /**
+   * Resume execution of the jobs with the given IDs. <P> 
+   * 
+   * @param req 
+   *   The request.
+   *    
+   * @return 
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable resume the jobs. 
+   */ 
+  public Object
+  resumeJobs
+  (
+   QueueResumeJobsReq req
+  )
+  {
+    TaskTimer timer = new TaskTimer("QueueMgr.resumeJobs()");
+
+    timer.aquire();
+    synchronized(pPaused) {
+      timer.resume();
+      for(Long jobID : req.getJobIDs())
+	pPaused.remove(jobID);
+    }
 
     return new SuccessRsp(timer);
   }
@@ -1663,6 +1729,7 @@ class QueueMgr
       if(info != null) {
 	switch(info.getState()) {
 	case Queued:
+	case Paused:
 	  info.aborted();
 	  break; 
 
@@ -1701,6 +1768,25 @@ class QueueMgr
 	  switch(info.getState()) {
 	  case Queued:
 	    {
+	      if(pPaused.contains(jobID)) {
+		timer.aquire();
+		synchronized(pJobInfo) {
+		  timer.resume();
+
+		  info.paused();
+		  try {
+		    writeJobInfo(info);
+		  }
+		  catch(PipelineException ex) {
+		    Logs.net.severe(ex.getMessage()); 
+		    Logs.flush();
+		  }
+		}
+
+		waiting.add(jobID);
+		break;
+	      }
+
 	      QueueJob job = null;
 	      try {
 		timer.aquire();
@@ -1732,6 +1818,7 @@ class QueueMgr
 		  if(sinfo != null) {
 		    switch(sinfo.getState()) {
 		    case Queued:
+		    case Paused:
 		    case Running:
 		      waiting.add(jobID);
 		      ready = false;
@@ -1761,6 +1848,28 @@ class QueueMgr
 		  ids.add(jobID);
 		}
 	      }
+	    }
+	    break;
+
+	  case Paused:
+	    {
+	      if(!pPaused.contains(jobID)) {
+		timer.aquire();
+		synchronized(pJobInfo) {
+		  timer.resume();
+
+		  info.resumed();
+		  try {
+		    writeJobInfo(info);
+		  }
+		  catch(PipelineException ex) {
+		    Logs.net.severe(ex.getMessage()); 
+		    Logs.flush();
+		  }
+		}
+	      }
+
+	      waiting.add(jobID);
 	    }
 	  }
 	}
@@ -1812,10 +1921,29 @@ class QueueMgr
 	    else {
 	      switch(info.getState()) {
 	      case Queued:
-		if(dispatchJob(job, info, timer)) 
+		if(pPaused.contains(jobID)) {
+		  timer.aquire();
+		  synchronized(pJobInfo) {
+		    timer.resume();
+
+		    info.paused();
+		    try {
+		      writeJobInfo(info);
+		    }
+		    catch(PipelineException ex) {
+		      Logs.net.severe(ex.getMessage()); 
+		      Logs.flush();
+		    }
+		  }
+
+		  pWaiting.add(jobID);
 		  processed.add(jobID);
+		}
+		else if(dispatchJob(job, info, timer)) {
+		  processed.add(jobID);
+		}
 		break;
-		
+
 	      case Aborted:
 		processed.add(jobID);
 		break;
@@ -1968,7 +2096,7 @@ class QueueMgr
 	  timer.resume();
 	  info.started(bestHost);
 	  writeJobInfo(info);
-	  pJobInfo.put(job.getJobID(), info);
+	  //pJobInfo.put(job.getJobID(), info);  ??? not needed since info is from pJobInfo
 	}
 	
 	timer.aquire();
@@ -3237,6 +3365,13 @@ class QueueMgr
    */
   private ConcurrentLinkedQueue<Long>  pHitList;
   
+  /**
+   * The IDs of jobs which are currently paused.
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */
+  private TreeSet<Long>  pPaused;
+
 
   /**
    * The IDs of jobs waiting on one or more source (upstream) jobs to complete before they 
