@@ -1,4 +1,4 @@
-// $Id: JobMgrControlClient.java,v 1.5 2004/10/18 02:34:06 jim Exp $
+// $Id: JobMgrControlClient.java,v 1.6 2004/10/28 17:05:48 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -82,7 +82,7 @@ class JobMgrControlClient
   {
     verifyConnection();
 
-    Object obj = performTransaction(JobRequest.GetResources, null);
+    Object obj = performTransaction(JobRequest.GetResources, null, 15000);
     if(obj instanceof JobGetResourcesRsp) {
       JobGetResourcesRsp rsp = (JobGetResourcesRsp) obj;
       return rsp.getSample();
@@ -90,7 +90,7 @@ class JobMgrControlClient
     else {
       handleFailure(obj);
       return null;
-    }        
+    } 
   }
 
   /**
