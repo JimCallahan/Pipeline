@@ -354,20 +354,15 @@ The Task State represents the currently state of progress in completing
 
 
 \noun on 
-Unassigned
-\layout Standard
-
-The initial state of the Task.
- The Task has no Owner.
-\layout Subsubsection
-
-
-\noun on 
 Inactive
 \layout Standard
 
-An Artist has been assigned as the Owner of the Task, but no work is currently
- being done to accomplish the Task.
+No work is currently being done to accomplish the Task by the task 
+\noun on 
+Owner
+\noun default 
+ if any exists.
+ This is the initial state.
  
 \layout Subsubsection
 
@@ -376,8 +371,7 @@ An Artist has been assigned as the Owner of the Task, but no work is currently
 Active
 \layout Standard
 
-The Owner of the Task in actively working on the Task.
- 
+The Task has an Owner which is actively working to complete the Task.
 \layout Subsubsection
 
 
@@ -620,7 +614,7 @@ Message
  must be given which outlines the requirements for completion of the Task.
  The new Task will be created with a Task State of
 \noun on 
- Unassigned
+ Inactive
 \noun default 
 .
 \layout Subsubsection
@@ -639,16 +633,14 @@ This Event changes the
 \noun on 
 Owner
 \noun default 
- of the Task and sets the Task State to 
+ of the Task.
+ The Task State is unaffected.
+ An optional
 \noun on 
-Inactive
+ Message
 \noun default 
-.
- An optional 
-\noun on 
-Message
-\noun default 
- may be given for this Event to explain the change of assignment.
+ may be given for this Event to explain the change of assignment and any
+ new direction for completing the task.
 \layout Subsubsection
 
 
