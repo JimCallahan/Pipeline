@@ -1,6 +1,8 @@
-// $Id: LinkRelationship.java,v 1.1 2004/03/13 17:20:13 jim Exp $
+// $Id: LinkRelationship.java,v 1.2 2004/05/18 00:34:55 jim Exp $
 
 package us.temerity.pipeline;
+
+import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   L I N K   R E L A T I O N S H I P                                                      */
@@ -38,4 +40,18 @@ enum LinkRelationship
    * the potential to affect all of the files associated with the target node.
    */
   All;
+
+  /**
+   * Get the list of all possible values.
+   */ 
+  public static ArrayList<LinkRelationship>
+  all() 
+  {
+    ArrayList<LinkRelationship> vals = new ArrayList<LinkRelationship>();
+    vals.add(None);
+    vals.add(OneToOne); 
+    vals.add(All);
+
+    return vals;
+  }
 }
