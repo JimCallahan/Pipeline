@@ -1,4 +1,4 @@
-// $Id: JEmptyPanel.java,v 1.3 2004/05/04 11:01:43 jim Exp $
+// $Id: JEmptyPanel.java,v 1.4 2004/08/25 05:18:21 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -54,10 +54,8 @@ class JEmptyPanel
   initUI()
   {
     setLayout(new BorderLayout());
-    setName("Empty");
+    setName("DarkPanel");
     setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-
-    add(new Label("Empty Panel"));
   }
 
 
