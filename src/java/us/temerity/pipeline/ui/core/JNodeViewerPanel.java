@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.16 2005/02/20 20:53:26 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.17 2005/02/22 02:31:04 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3346,33 +3346,31 @@ class JNodeViewerPanel
   private void 
   doCheckOut() 
   {
-    if(pPrimary != null) {
-      NodeStatus status = pPrimary.getNodeStatus();
-      NodeDetails details = status.getDetails();
-      if(details != null) {
-	UIMaster master = UIMaster.getInstance();
+    UIMaster master = UIMaster.getInstance();
+
+    TreeMap<String,ArrayList<VersionID>> versions = 
+      new TreeMap<String,ArrayList<VersionID>>();
+
+    for(String name : getSelectedRootNames()) {
+      if(!versions.containsKey(name)) {
 	ArrayList<VersionID> vids = new ArrayList<VersionID>();
 	try {
-	  vids.addAll(master.getMasterMgrClient().getCheckedInVersionIDs(status.getName()));
+	  vids.addAll(master.getMasterMgrClient().getCheckedInVersionIDs(name));
+	  versions.put(name, vids);
 	}
 	catch (PipelineException ex) {
-	  master.showErrorDialog(ex);
-	  return;
-	}
-
-	pCheckOutDialog.updateNameVersions("Check-Out:  " + status, vids);
-	pCheckOutDialog.setVisible(true);
-	
-	if(pCheckOutDialog.wasConfirmed()) {
-	  VersionID vid = pCheckOutDialog.getVersionID();
-	  if(vid != null) {
-	    CheckOutTask task = 
-	      new CheckOutTask(status.getName(), vid, 
-			       pCheckOutDialog.getMode(), pCheckOutDialog.getMethod());
-	    task.start();
-	  }
 	}
       }
+    }
+    
+    pCheckOutDialog.updateVersions(versions);
+    pCheckOutDialog.setVisible(true);	
+    if(pCheckOutDialog.wasConfirmed()) {
+      CheckOutTask task = 
+	new CheckOutTask(pCheckOutDialog.getVersionIDs(), 
+			 pCheckOutDialog.getModes(), 
+			 pCheckOutDialog.getMethods());
+      task.start();
     }
 
     clearSelection();
@@ -4497,28 +4495,31 @@ class JNodeViewerPanel
     public 
     CheckOutTask
     (
-     String name, 
-     VersionID vid, 
-     CheckOutMode mode,
-     CheckOutMethod method
+     TreeMap<String,VersionID> versions, 
+     TreeMap<String,CheckOutMode> modes, 
+     TreeMap<String,CheckOutMethod> methods
     ) 
     {
       super("JNodeViewerPanel:CheckOutTask");
-
-      pName      = name; 
-      pVersionID = vid; 
-      pMode      = mode; 
-      pMethod    = method; 
+      
+      pVersions = versions;
+      pModes    = modes; 
+      pMethods  = methods; 
     }
 
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Checking-Out Nodes...")) {
+      if(master.beginPanelOp()) {
 	try {
-	  master.getMasterMgrClient().checkOut(pAuthor, pView, pName, pVersionID, 
-					       pMode, pMethod);
+	  for(String name : pVersions.keySet()) {
+	    master.updatePanelOp("Checking-Out: " + name);
+
+	    master.getMasterMgrClient().checkOut
+	      (pAuthor, pView, name, 
+	       pVersions.get(name), pModes.get(name), pMethods.get(name));
+	  }
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -4532,10 +4533,9 @@ class JNodeViewerPanel
       }
     }
 
-    private String          pName; 
-    private VersionID       pVersionID; 
-    private CheckOutMode    pMode;  
-    private CheckOutMethod  pMethod; 
+    private TreeMap<String,VersionID>       pVersions;
+    private TreeMap<String,CheckOutMode>    pModes;  
+    private TreeMap<String,CheckOutMethod>  pMethods; 
   }
 
   /** 
