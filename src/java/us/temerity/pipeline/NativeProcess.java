@@ -1,4 +1,4 @@
-// $Id: NativeProcess.java,v 1.1 2004/02/20 22:49:34 jim Exp $
+// $Id: NativeProcess.java,v 1.2 2004/02/21 18:54:35 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -84,7 +84,7 @@ class NativeProcess
     pStdOutFileDesc = -1; 
     pStdErrFileDesc = -1;
 
-    pMemLock = new Object();
+    pProcStatsLock = new Object();
   }
 
 
@@ -192,6 +192,44 @@ class NativeProcess
   ) 
   {
     pID.set(id);
+  }
+
+
+  /**
+   * Gets the number of seconds the OS level process ran in user space. 
+   */
+  public double
+  getUserSecs() 
+  {
+    if(pIsRunning.get()) 
+      throw new IllegalStateException("The process is still running!");
+
+    return ((double) pUserSecs) + (((double) pUserMSecs) / 1000000.0);
+  }
+
+  /**
+   * Gets the number of seconds the OS level process ran in system (kernel) space. 
+   */
+  public double
+  getSystemSecs() 
+  {
+    if(pIsRunning.get()) 
+      throw new IllegalStateException("The process is still running!");
+
+    return ((double) pSystemSecs) + (((double) pSystemMSecs) / 1000000.0);
+  }
+
+  /**
+   * Gets the number of hard page faults during execution of the OS level process. 
+   * A hard page fault is a memory fault that required I/O operations.
+   */
+  public long
+  getPageFaults() 
+  {
+    if(pIsRunning.get()) 
+      throw new IllegalStateException("The process is still running!");
+
+    return pPageFaults;
   }
 
 
@@ -362,7 +400,7 @@ class NativeProcess
   ) 
     throws IOException    
   {
-    synchronized(pMemLock) {
+    synchronized(pProcStatsLock) {
       pAvgVMem    = 0;
       pMaxVMem    = 0;
       pAvgResMem  = 0;
@@ -372,7 +410,7 @@ class NativeProcess
 
     try {
       while(true) {
-	synchronized(pMemLock) {
+	synchronized(pProcStatsLock) {
 	  if(!collectStatsNative()) 
 	    break;
 	} 
@@ -385,53 +423,15 @@ class NativeProcess
 
 
   /**
-   * Gets the number of seconds the OS level process was running in user space. 
-   */
-  public long
-  getUserSecs() 
-  {
-    return pUserSecs;
-  }
-
-  /**
-   * Gets the number of milliseconds the OS level process was running in user space. 
-   */
-  public long
-  getUserMSecs() 
-  {
-    return pUserMSecs;
-  }
-
-
-  /**
-   * Gets the number of seconds the OS level process was running in system 
-   * (kernel) space. 
-   */
-  public long
-  getSystemSecs() 
-  {
-    return pSystemSecs;
-  }
-
-  /**
-   * Gets the number of milliseconds the OS level process was running in system 
-   * (kernel) space. 
-   */
-  public long
-  getSystemMSecs() 
-  {
-    return pSystemMSecs;
-  }
-
-
-  /**
    * Gets the average virtual memory size of the OS level process in kilobytes.
    */
   public long
   getAverageVirtualSize() 
   {
-    if(pMemSamples > 0) 
-      return (pAvgVMem / pMemSamples);
+    synchronized(pProcStatsLock) {
+      if(pMemSamples > 0) 
+	return (pAvgVMem / pMemSamples);
+    } 
     return 0;
   }
 
@@ -441,7 +441,9 @@ class NativeProcess
   public long
   getMaxVirtualSize() 
   {
-    return pMaxVMem;
+    synchronized(pProcStatsLock) {
+      return pMaxVMem;
+    }
   }
 
 
@@ -451,8 +453,10 @@ class NativeProcess
   public long
   getAverageResidentSize() 
   {
-    if(pMemSamples > 0) 
-      return (pAvgResMem / pMemSamples);
+    synchronized(pProcStatsLock) {
+      if(pMemSamples > 0) 
+	return (pAvgResMem / pMemSamples);
+    }
     return 0;
   }
 
@@ -462,18 +466,9 @@ class NativeProcess
   public long
   getMaxResidentSize() 
   {
-    return pMaxResMem;
-  }
-
-
-  /**
-   * Gets the number of hard page faults during execution of the OS level process. 
-   * A hard page fault is a memory fault that required I/O operations.
-   */
-  public long
-  getPageFaults() 
-  {
-    return pPageFaults;
+    synchronized(pProcStatsLock) {
+      return pMaxResMem;
+    }
   }
 
 
@@ -609,14 +604,13 @@ class NativeProcess
   private int  pStdErrFileDesc; 
 
 
-
   /**
    * The number of seconds the OS level process was running in user space. 
    */
   private long pUserSecs;  
 
   /**
-   * The number of milliseconds the OS level process was running in user space. 
+   * The number of microseconds the OS level process was running in user space. 
    */      
   private long pUserMSecs;       
 
@@ -626,7 +620,7 @@ class NativeProcess
   private long pSystemSecs;      
 
   /**
-   * The number of milliseconds the OS level process was running in system (kernel) space. 
+   * The number of microseconds the OS level process was running in system (kernel) space. 
    */
   private long pSystemMSecs;     
 
@@ -635,12 +629,14 @@ class NativeProcess
    */
   private long pPageFaults;      
   
-  
+ 
+
+  /*-- PROCESS STATISTICS ------------------------------------------------------------------*/
+
   /**
-   * A synchronization lock for: <CODE>pAvgVMem</CODE>, <CODE>pMaxVMem</CODE>, 
-   * <CODE>pAvgResMem</CODE>, <CODE>pMaxResMem</CODE> and <CODE>pMemSamples</CODE> fields.
+   * A synchronization lock for process statistics.
    */
-  private Object pMemLock;       
+  private Object pProcStatsLock;       
 
   /**
    * The average virtual memory size of the OS level process in kilobytes.
