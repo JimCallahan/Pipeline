@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.31 2004/11/01 00:49:44 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.32 2004/11/02 20:03:29 jim Exp $
 
 import java.io.*; 
 import java.util.*;
@@ -467,6 +467,12 @@ class GenUserPrefsApp
 	 false, false, false, 81),  /* Q */ 
 
 	new HotKeyPref
+	("Submit jobs to the queue for the current primary selection with special job " + 
+	 "requirements.",
+	 "NodeViewerQueueJobsSpecial", "Queue Jobs Special:", 
+	 true, false, false, 81),  /* SHIFT-Q */ 
+
+	new HotKeyPref
 	("Pause all jobs associated with the selected nodes.",
 	 "NodeViewerPauseJobs", "Pause Jobs:",
 	 false, false, false, 45),  /* Minus */ 
@@ -708,6 +714,11 @@ class GenUserPrefsApp
 	 false, false, false, 81),  /* Q */ 
 
 	new HotKeyPref
+	("Submit jobs to the queue for the current node with special job requirements.",
+	 "NodeDetailsQueueJobsSpecial", "Queue Jobs Special:", 
+	 true, false, false, 81),  /* SHIFT-Q */ 
+
+	new HotKeyPref
 	("Pause all jobs associated with the current node.",
 	 "NodeDetailsPauseJobs", "Pause Jobs:",
 	 false, false, false, 45),  /* Minus */ 
@@ -754,6 +765,11 @@ class GenUserPrefsApp
 	 false, false, false, 81),  /* Q */ 
 
 	new HotKeyPref
+	("Submit jobs to the queue for the current node with special job requirements.",
+	 "NodeFilesQueueJobsSpecial", "Queue Jobs Special:", 
+	 true, false, false, 81),  /* SHIFT-Q */ 
+
+	new HotKeyPref
 	("Pause all jobs associated with the current node.",
 	 "NodeFilesPauseJobs", "Pause Jobs:",
 	 false, false, false, 45),  /* Minus */ 
@@ -791,6 +807,11 @@ class GenUserPrefsApp
 	("Submit jobs to the queue for the current node.",
 	 "NodeHistoryQueueJobs", "Queue Jobs:", 
 	 false, false, false, 81),  /* Q */ 
+
+	new HotKeyPref
+	("Submit jobs to the queue for the current node with special job requirements.",
+	 "NodeHistoryQueueJobsSpecial", "Queue Jobs Special:", 
+	 true, false, false, 81),  /* SHIFT-Q */ 
 
 	new HotKeyPref
 	("Pause all jobs associated with the current node.",
@@ -1085,7 +1106,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.31 2004/11/01 00:49:44 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.32 2004/11/02 20:03:29 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -1338,7 +1359,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.31 2004/11/01 00:49:44 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.32 2004/11/02 20:03:29 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 

@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.63 2004/11/01 00:49:44 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.64 2004/11/02 20:03:29 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -235,8 +235,13 @@ class JNodeViewerPanel
 
       pNodePopup.addSeparator();
       
-      item = new JMenuItem("Queue Jobs...");
+      item = new JMenuItem("Queue Jobs");
       item.setActionCommand("queue-jobs");
+      item.addActionListener(this);
+      pNodePopup.add(item);
+
+      item = new JMenuItem("Queue Jobs Special...");
+      item.setActionCommand("queue-jobs-special");
       item.addActionListener(this);
       pNodePopup.add(item);
 
@@ -2121,6 +2126,9 @@ class JNodeViewerPanel
       else if((prefs.getNodeViewerQueueJobs() != null) &&
 	      prefs.getNodeViewerQueueJobs().wasPressed(e))
 	doQueueJobs();
+      else if((prefs.getNodeViewerQueueJobsSpecial() != null) &&
+	      prefs.getNodeViewerQueueJobsSpecial().wasPressed(e))
+	doQueueJobsSpecial();
       else if((prefs.getNodeViewerPauseJobs() != null) &&
 	      prefs.getNodeViewerPauseJobs().wasPressed(e))
 	doPauseJobs();
@@ -2341,6 +2349,8 @@ class JNodeViewerPanel
 
     else if(cmd.equals("queue-jobs"))
       doQueueJobs();
+    else if(cmd.equals("queue-jobs-special"))
+      doQueueJobsSpecial();
     else if(cmd.equals("pause-jobs"))
       doPauseJobs();
     else if(cmd.equals("resume-jobs"))
@@ -2989,6 +2999,34 @@ class JNodeViewerPanel
    */ 
   private void 
   doQueueJobs() 
+  {
+    TreeSet<String> roots = new TreeSet<String>();
+    for(String name : getSelectedRootNames()) {
+      for(ViewerNode vnode : pSelected.values()) {
+	NodeStatus status = vnode.getNodeStatus();
+	if((status != null) && status.getName().equals(name)) {
+	  if(status.getDetails() != null) 
+	    roots.add(name);
+	  break;
+	}
+      }
+    }
+    
+    if(!roots.isEmpty()) {
+      QueueJobsTask task = new QueueJobsTask(roots);
+      task.start();
+    }
+
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();
+  }
+
+  /**
+   * Queue jobs to the queue for the primary selected node and all nodes upstream of it 
+   * with special job requirements.
+   */ 
+  private void 
+  doQueueJobsSpecial() 
   {
     TreeSet<String> roots = new TreeSet<String>();
     for(String name : getSelectedRootNames()) {
@@ -4275,6 +4313,15 @@ class JNodeViewerPanel
   class QueueJobsTask
     extends UIMaster.QueueJobsTask
   {
+    public 
+    QueueJobsTask
+    (
+     TreeSet<String> names
+    ) 
+    {
+      this(names, null, null, null);
+    }
+
     public 
     QueueJobsTask
     (

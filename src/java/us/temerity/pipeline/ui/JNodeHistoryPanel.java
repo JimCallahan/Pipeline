@@ -1,4 +1,4 @@
-// $Id: JNodeHistoryPanel.java,v 1.10 2004/10/30 13:42:20 jim Exp $
+// $Id: JNodeHistoryPanel.java,v 1.11 2004/11/02 20:03:29 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -89,8 +89,13 @@ class JNodeHistoryPanel
       {
 	pWorkingPopup.addSeparator();
 	
-	item = new JMenuItem("Queue Jobs...");
+	item = new JMenuItem("Queue Jobs");
 	item.setActionCommand("queue-jobs");
+	item.addActionListener(this);
+	pWorkingPopup.add(item);
+	
+	item = new JMenuItem("Queue Jobs Special...");
+	item.setActionCommand("queue-jobs-special");
 	item.addActionListener(this);
 	pWorkingPopup.add(item);
 	
@@ -722,6 +727,9 @@ class JNodeHistoryPanel
     else if((prefs.getNodeHistoryQueueJobs() != null) &&
 	    prefs.getNodeHistoryQueueJobs().wasPressed(e))
       doQueueJobs();
+    else if((prefs.getNodeHistoryQueueJobsSpecial() != null) &&
+	    prefs.getNodeHistoryQueueJobsSpecial().wasPressed(e))
+      doQueueJobsSpecial();
     else if((prefs.getNodeHistoryPauseJobs() != null) &&
 	    prefs.getNodeHistoryPauseJobs().wasPressed(e))
 	doPauseJobs();
@@ -781,6 +789,8 @@ class JNodeHistoryPanel
 
     else if(cmd.equals("queue-jobs"))
       doQueueJobs();
+    else if(cmd.equals("queue-jobs-special"))
+      doQueueJobsSpecial();
     else if(cmd.equals("pause-jobs"))
       doPauseJobs();
     else if(cmd.equals("resume-jobs"))
@@ -867,6 +877,22 @@ class JNodeHistoryPanel
    */ 
   private void 
   doQueueJobs() 
+  {
+    if(pStatus != null) {
+      NodeDetails details = pStatus.getDetails();
+      if(details != null) {
+	QueueJobsTask task = new QueueJobsTask(pStatus.getName());
+	task.start();
+      }
+    }
+  }
+
+  /**
+   * Queue jobs to the queue for the primary current node and all nodes upstream of it
+   * with special job requirements.
+   */ 
+  private void 
+  doQueueJobsSpecial() 
   {
     if(pStatus != null) {
       NodeDetails details = pStatus.getDetails();
@@ -1083,6 +1109,15 @@ class JNodeHistoryPanel
   class QueueJobsTask
     extends UIMaster.QueueJobsTask
   {
+    public 
+    QueueJobsTask
+    (
+     String name
+    ) 
+    {
+      this(name, null, null, null);
+    }
+
     public 
     QueueJobsTask
     (

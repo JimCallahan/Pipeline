@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.20 2004/10/29 14:03:52 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.21 2004/11/02 20:03:29 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -123,8 +123,13 @@ class JNodeDetailsPanel
       {
 	pWorkingPopup.addSeparator();
 	
-	item = new JMenuItem("Queue Jobs...");
+	item = new JMenuItem("Queue Jobs");
 	item.setActionCommand("queue-jobs");
+	item.addActionListener(this);
+	pWorkingPopup.add(item);
+
+	item = new JMenuItem("Queue Jobs Special...");
+	item.setActionCommand("queue-jobs-special");
 	item.addActionListener(this);
 	pWorkingPopup.add(item);
 	
@@ -2938,6 +2943,9 @@ class JNodeDetailsPanel
     else if((prefs.getNodeDetailsQueueJobs() != null) &&
 	    prefs.getNodeDetailsQueueJobs().wasPressed(e))
       doQueueJobs();
+    else if((prefs.getNodeDetailsQueueJobsSpecial() != null) &&
+	    prefs.getNodeDetailsQueueJobsSpecial().wasPressed(e))
+      doQueueJobsSpecial();
     else if((prefs.getNodeDetailsPauseJobs() != null) &&
 	    prefs.getNodeDetailsPauseJobs().wasPressed(e))
 	doPauseJobs();
@@ -3104,6 +3112,8 @@ class JNodeDetailsPanel
 
     else if(cmd.equals("queue-jobs"))
       doQueueJobs();
+    else if(cmd.equals("queue-jobs-special"))
+      doQueueJobsSpecial();
     else if(cmd.equals("pause-jobs"))
       doPauseJobs();
     else if(cmd.equals("resume-jobs"))
@@ -4169,6 +4179,22 @@ class JNodeDetailsPanel
   {
     if(pStatus != null) {
       NodeDetails details = pStatus.getDetails();
+      if(details != null) {	  
+	QueueJobsTask task = new QueueJobsTask(pStatus.getName());
+	task.start();
+      }
+    }
+  }
+
+  /**
+   * Queue jobs to the queue for the primary current node and all nodes upstream of it
+   * with special job requirements.
+   */ 
+  private void 
+  doQueueJobsSpecial() 
+  {
+    if(pStatus != null) {
+      NodeDetails details = pStatus.getDetails();
       if(details != null) {
 	JQueueJobsDialog diag = UIMaster.getInstance().showQueueJobsDialog();
 	if(diag.wasConfirmed()) {
@@ -4400,6 +4426,15 @@ class JNodeDetailsPanel
   class QueueJobsTask
     extends UIMaster.QueueJobsTask
   {
+    public 
+    QueueJobsTask
+    (
+     String name
+    ) 
+    {
+      this(name, null, null, null);
+    }
+
     public 
     QueueJobsTask
     (

@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.17 2004/10/29 14:03:52 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.18 2004/11/02 20:03:29 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -104,8 +104,13 @@ class JNodeFilesPanel
       {
 	pWorkingPopup.addSeparator();
 	
-	item = new JMenuItem("Queue Jobs...");
+	item = new JMenuItem("Queue Jobs");
 	item.setActionCommand("queue-jobs");
+	item.addActionListener(this);
+	pWorkingPopup.add(item);
+	
+	item = new JMenuItem("Queue Jobs Special...");
+	item.setActionCommand("queue-jobs-special");
 	item.addActionListener(this);
 	pWorkingPopup.add(item);
 	
@@ -1077,6 +1082,9 @@ class JNodeFilesPanel
     else if((prefs.getNodeFilesQueueJobs() != null) &&
 	    prefs.getNodeFilesQueueJobs().wasPressed(e))
       doQueueJobs();
+    else if((prefs.getNodeFilesQueueJobsSpecial() != null) &&
+	    prefs.getNodeFilesQueueJobsSpecial().wasPressed(e))
+      doQueueJobsSpecial();
     else if((prefs.getNodeFilesPauseJobs() != null) &&
 	    prefs.getNodeFilesPauseJobs().wasPressed(e))
 	doPauseJobs();
@@ -1148,6 +1156,8 @@ class JNodeFilesPanel
 
     else if(cmd.equals("queue-jobs"))
       doQueueJobs();
+    else if(cmd.equals("queue-jobs-special"))
+      doQueueJobsSpecial();
     else if(cmd.equals("pause-jobs"))
       doPauseJobs();
     else if(cmd.equals("resume-jobs"))
@@ -1383,6 +1393,23 @@ class JNodeFilesPanel
    */ 
   private void 
   doQueueJobs() 
+  {
+    TreeSet<Integer> indices = null;
+    if(pTargetFileIdx != null) {
+      indices = new TreeSet<Integer>();
+      indices.add(pTargetFileIdx);
+    }
+
+    QueueJobsTask task = new QueueJobsTask(indices);
+    task.start();
+  }
+
+  /**
+   * Submit jobs to the queue for the node and all nodes upstream of it with special
+   * job requirements.
+   */ 
+  private void 
+  doQueueJobsSpecial() 
   {
     TreeSet<Integer> indices = null;
     if(pTargetFileIdx != null) {
@@ -2325,6 +2352,15 @@ class JNodeFilesPanel
   class QueueJobsTask
     extends Thread
   {
+    public 
+    QueueJobsTask
+    (
+     TreeSet<Integer> indices
+    ) 
+    {
+      this(indices, null, null, null);
+    }
+    
     public 
     QueueJobsTask
     (

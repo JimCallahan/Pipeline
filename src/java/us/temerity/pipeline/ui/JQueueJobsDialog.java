@@ -1,4 +1,4 @@
-// $Id: JQueueJobsDialog.java,v 1.1 2004/10/29 14:03:52 jim Exp $
+// $Id: JQueueJobsDialog.java,v 1.2 2004/11/02 20:03:29 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -34,7 +34,7 @@ class JQueueJobsDialog
   public 
   JQueueJobsDialog() 
   {
-    super("Queue Jobs", true);
+    super("Queue Jobs Special", true);
 
     /* initialize fields */ 
     {
@@ -153,7 +153,7 @@ class JQueueJobsDialog
 	scroll.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE);
       }
 	
-      super.initUI("Queue Jobs:", true, scroll, "Submit", "Reset", null, "Cancel");
+      super.initUI("Queue Jobs Special:", true, scroll, "Submit", "Reset", null, "Cancel");
     }
     
   }
