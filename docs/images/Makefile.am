@@ -1,4 +1,5 @@
 
 SUBDIRS = \
   browser-icons \
-  node-icons
+  node-icons \
+  javadoc
