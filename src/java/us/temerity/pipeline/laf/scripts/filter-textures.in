@@ -3,34 +3,12 @@
 src=$1
 dest=laf/textures
 
-function mipmap {
-  prefix=$1
-  frame=$2
-  type=$3
+tmpfile="filter-textures.scm"
 
-  if [ ! -d $dest/$prefix ] 
-  then
-    mkdir -p $dest/$prefix
-  fi
+rm -f $tmpfile
+echo '(load "'$src/../../../scripts/build-mipmap.scm'")' > $tmpfile
 
-  echo "Generating MipMaps for: $prefix"
-
-  fr=`printf "%04d" $frame`
-
-  size=64
-  while [ $size -ge 1 ]
-  do
-    if [ $src/$type.$fr.tif -nt $dest/$prefix/texture.$size.png ]
-    then 
-      echo "  Filtering ${size}x${size} MipMap"
-      @CONVERT@ -filter Sinc -resize ${size}x${size} \
-        $src/$type.$fr.tif -type TrueColor $dest/$prefix/texture.$size.png
-    fi
-
-    size=$(($size/2))
-  done
-} 
-
+anynewer=0
 for mode in Normal Selected Primary
 do
   frame=0
@@ -38,11 +16,78 @@ do
   do
     for qstate in Stale Queued Running Missing Failed Finished
     do
-      mipmap $nstate-$qstate-$mode $frame $mode
+      simg=`printf "%s.%04d.sgi" $src/$mode $frame`
+      dir=`echo $dest/$nstate-$qstate-$mode`
+
+      if [ ! -d $dir ]
+      then 
+        mkdir -p $dir
+      fi
+
+      filter=0
+      size=128
+      while [ $size -gt 1 ]
+      do
+	size=$(($size / 2)) 
+	
+	dimg=$dir/texture.$size.png
+	if [ $simg -nt $dimg ] 
+	then
+	  filter=1
+        fi
+      done
+
+      if [ $filter -eq 1 ]
+      then 
+        printf '(build-mipmap "%s" "%s/texture" 64)\n' $simg $dir >> $tmpfile
+        anynewer=1
+      fi
+
       frame=$(($frame + 1))	
     done
   done
 
-  mipmap Blank-$mode     42 $mode
-  mipmap Collapsed-$mode 43 $mode
+  for extra in Blank Collapsed
+  do 
+    simg=`printf "%s.%04d.sgi" $src/$mode $frame`
+    dir=`echo $dest/$extra-$mode`
+    dimg=$dir/texture.$size.png
+
+    if [ ! -d $dir ]
+    then 
+      mkdir -p $dir
+    fi
+
+    filter=0
+    size=128
+    while [ $size -gt 1 ]
+    do
+      size=$(($size / 2)) 
+  
+      dimg=$dir/texture.$size.png
+
+      if [ $simg -nt $dimg ] 
+      then
+        filter=1
+      fi
+    done
+
+    if [ $filter -eq 1 ]
+    then 
+      printf '(build-mipmap "%s" "%s/texture" 64)\n' $simg $dir >> $tmpfile
+      anynewer=1
+    fi
+
+    frame=$(($frame + 1))
+  done
 done
+
+if [ $anynewer -eq 1 ]
+then 
+  echo '(gimp-quit 1)' >> $tmpfile
+
+  cat $tmpfile
+  time gimp -i -d -b '(load "'$tmpfile'")'
+fi
+
+rm -f $tmpfile
