@@ -1091,6 +1091,7 @@ AC_CONFIG_FILES([
   docs/man/pljobmgr.src.html
   docs/man/plmaster.src.html
   docs/man/plplugin.src.html
+  docs/man/plpluginmgr.src.html
   docs/man/plqueuemgr.src.html
   docs/man/plrestore.src.html
   docs/man/plscript.src.html
