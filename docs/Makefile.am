@@ -1,3 +1,4 @@
 
 SUBDIRS = \
-  user-manual
+  images \
+  user-manual 

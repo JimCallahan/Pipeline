@@ -156,7 +156,8 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 
 SUBDIRS = \
-  user-manual
+  images \
+  user-manual 
 
 subdir = docs
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
