@@ -8,3 +8,8 @@ instbin_SCRIPTS = \
   plui
 
 
+
+instincdir = @BASEDIR@/pipeline/include
+
+instinc_SCRIPTS = \
+  plutils.bash
