@@ -1,4 +1,4 @@
-// $Id: NodeMgrClient.java,v 1.10 2004/04/20 21:55:28 jim Exp $
+// $Id: NodeMgrClient.java,v 1.11 2004/04/24 22:31:26 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -22,7 +22,6 @@ import java.util.*;
  */
 public
 class NodeMgrClient
-  extends BaseMgrClient
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -44,8 +43,13 @@ class NodeMgrClient
    int port
   ) 
   {
-    super(hostname, port, 
-	  NodeRequest.Disconnect, NodeRequest.Shutdown);
+    if(hostname == null) 
+      throw new IllegalArgumentException("The hostname argument cannot be (null)!");
+    pHostname = hostname;
+
+    if(port < 0) 
+      throw new IllegalArgumentException("Illegal port number (" + port + ")!");
+    pPort = port;
   }
 
   /** 
@@ -58,8 +62,72 @@ class NodeMgrClient
   public
   NodeMgrClient() 
   {
-    super(PackageInfo.sMasterServer, PackageInfo.sMasterPort, 
-	  NodeRequest.Disconnect, NodeRequest.Shutdown);
+    pHostname = PackageInfo.sMasterServer;
+    pPort     = PackageInfo.sMasterPort;
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*  C O N N E C T I O N                                                                   */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Close the network connection if its is still connected.
+   */
+  public synchronized void 
+  disconnect() 
+  {
+    if(pSocket == null)
+      return;
+
+    try {
+      if(pSocket.isConnected()) {
+	OutputStream out = pSocket.getOutputStream();
+	ObjectOutput objOut = new ObjectOutputStream(out);
+	objOut.writeObject(NodeRequest.Disconnect);
+	objOut.flush(); 
+
+	pSocket.close();
+      }
+    }
+    catch (IOException ex) {
+    }
+    finally {
+      pSocket = null;
+    }
+  }
+
+  /**
+   * Order the <B>plmaster</B>(1) daemon to refuse any further requests and then to exit 
+   * as soon as all currently pending requests have be completed. <P> 
+   * 
+   * If successfull, <B>plmaster</B>(1) will also shutdown both the <B>plfilemgr<B>(1) and 
+   * <B>plnotify</B>(1) daemons as part of its shutdown procedure.
+   */
+  public synchronized void 
+  shutdown() 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    try {
+      OutputStream out = pSocket.getOutputStream();
+      ObjectOutput objOut = new ObjectOutputStream(out);
+      objOut.writeObject(NodeRequest.Shutdown);
+      objOut.flush(); 
+
+      pSocket.close();
+    }
+    catch(IOException ex) {
+      disconnect();
+      throw new PipelineException
+	("IO problems on port (" + pPort + "):\n" + 
+	 ex.getMessage());
+    }
+    finally {
+      pSocket = null;
+    }
   }
 
 
@@ -417,12 +485,12 @@ class NodeMgrClient
   } 
 
   /** 
-   * Check-In the given working version and all upstream working versions. <P> 
+   * Check-In the tree of nodes rooted at the given working version. <P> 
    * 
    * The check-in operation proceeds in a depth-first manner checking-in the most upstream
-   * nodes first.  It is possible for the check-in to fail after already succeeding for 
-   * some set of upstream nodes.  The check-in operation aborts at the first failure of a
-   * particular node. <P> 
+   * nodes first.  The check-in operation aborts at the first failure of a particular node. 
+   * It is therefore possible for the overall check-in to fail after already succeeding for 
+   * some set of upstream nodes. <P> 
    * 
    * The returned <CODE>NodeStatus</CODE> instance can be used access the status of all 
    * nodes (both upstream and downstream) linked to the given node.  The status information 
@@ -445,7 +513,7 @@ class NodeMgrClient
    *   The post check-in status of tree of nodes linked to the given node.
    * 
    * @throws PipelineException
-   *   If unable to check-in the node.
+   *   If unable to check-in the nodes.
    */ 
   public NodeStatus
   checkIn
@@ -472,7 +540,208 @@ class NodeMgrClient
       return null;
     }
   } 
+  
+  /** 
+   * Check-Out the tree of nodes rooted at the given working version. <P> 
+   * 
+   * If the <CODE>vid</CODE> argument is <CODE>null</CODE> then check-out the latest 
+   * version. <P>
+   * 
+   * The returned <CODE>NodeStatus</CODE> instance can be used access the status of all 
+   * nodes (both upstream and downstream) linked to the given node.  The status information 
+   * for the upstream nodes will also include detailed state and version information which is 
+   * accessable by calling the {@link NodeStatus#getDetails NodeStatus.getDetails} method.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   * 
+   * @param vid 
+   *   The revision number of the node to check-out.
+   * 
+   * @param keepNewer
+   *   Should upstream nodes which have a newer revision number than the version to be 
+   *   checked-out be skipped? 
+   * 
+   * @return 
+   *   The post check-out status of tree of nodes linked to the given node.
+   * 
+   * @throws PipelineException
+   *   If unable to check-out the nodes.
+   */ 
+  public NodeStatus
+  checkOut
+  ( 
+   String view, 
+   String name, 
+   VersionID vid, 
+   boolean keepNewer
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
 
+    NodeID id = new NodeID(PackageInfo.sUser, view, name);
+    NodeCheckOutReq req = new NodeCheckOutReq(id, vid, keepNewer);
+
+    Object obj = performTransaction(NodeRequest.CheckOut, req);
+    if(obj instanceof NodeStatusRsp) {
+      NodeStatusRsp rsp = (NodeStatusRsp) obj;
+      return rsp.getNodeStatus();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  } 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Make sure the network connection to the server instance has been established.  If the 
+   * connection is down, try to reconnect.
+   * 
+   * @throws PipelineException
+   *   If the connection is down and cannot be reestablished. 
+   */
+  protected synchronized void 
+  verifyConnection() 
+    throws PipelineException 
+  {
+    if((pSocket != null) && pSocket.isConnected())
+      return;
+
+    try {
+      pSocket = new Socket(pHostname, pPort);
+    }
+    catch (IOException ex) {
+      throw new PipelineException
+	("IO problems on port (" + pPort + "):\n" + 
+	 ex.getMessage());
+    }
+    catch (SecurityException ex) {
+      throw new PipelineException
+	("The Security Manager doesn't allow socket connections!\n" + 
+	 ex.getMessage());
+    }
+  }
+
+  /**
+   * Send the given request to the server instance and wait for the response.
+   * 
+   * @param kind 
+   *   The kind of request being sent.
+   * 
+   * @param req 
+   *   The request data or <CODE>null</CODE> if there is no request.
+   * 
+   * @return
+   *   The response from the server instance.
+   * 
+   * @throws PipelineException
+   *   If unable to complete the transaction.
+   */
+  protected synchronized Object
+  performTransaction
+  (
+   Object kind, 
+   Object req
+  ) 
+    throws PipelineException 
+  {
+    try {
+      OutputStream out = pSocket.getOutputStream();
+      ObjectOutput objOut = new ObjectOutputStream(out);
+      objOut.writeObject(kind);
+      if(req != null) 
+	objOut.writeObject(req);
+      objOut.flush(); 
+
+      InputStream in  = pSocket.getInputStream();
+      ObjectInput objIn  = new ObjectInputStream(in);
+      return (objIn.readObject());
+    }
+    catch(IOException ex) {
+      shutdown();
+      throw new PipelineException
+	("IO problems on port (" + pPort + "):\n" + 
+	 ex.getMessage());
+    }
+    catch(ClassNotFoundException ex) {
+      shutdown();
+      throw new PipelineException
+	("Illegal object encountered on port (" + pPort + "):\n" + 
+	 ex.getMessage());  
+    }
+  }
+
+  /**
+   * Handle the simple Success/Failure response.
+   * 
+   * @param obj
+   *   The response from the server.
+   */ 
+  protected void 
+  handleSimpleResponse
+  ( 
+   Object obj
+  )
+    throws PipelineException
+  {
+    if(!(obj instanceof SuccessRsp))
+      handleFailure(obj);
+  }
+
+  /**
+   * Handle non-successful responses.
+   * 
+   * @param obj
+   *   The response from the server.
+   */ 
+  protected void 
+  handleFailure
+  ( 
+   Object obj
+  )
+    throws PipelineException
+  {
+    if(obj instanceof FailureRsp) {
+      FailureRsp rsp = (FailureRsp) obj;
+      throw new PipelineException(rsp.getMessage());	
+    }
+    else {
+      disconnect();
+      throw new PipelineException
+	("Illegal response received from the server instance!");
+    }
+  }
+
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * The name of the host running <B>plfilemgr</B>(1).
+   */
+  private String  pHostname;
+
+  /**
+   * The network port listened to by <B>plfilemgr</B>(1).
+   */
+  private int  pPort;
+
+  /**
+   * The network socket connection.
+   */
+  private Socket  pSocket;
 
 }
 
