@@ -1,4 +1,4 @@
-// $Id: ScriptAction.java,v 1.3 2004/09/12 19:03:45 jim Exp $
+// $Id: ScriptAction.java,v 1.4 2004/09/22 05:40:00 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -212,7 +212,7 @@ class ScriptAction
 	    senv.put("PIPELINE_PRIMARY_SOURCE_" + dk, 
 		     fileList(agenda.getPrimarySource(sname)));
 
-	    SortedSet<FileSeq> fseqs = agenda.getSecondarySource(sname);
+	    SortedSet<FileSeq> fseqs = agenda.getSecondarySources(sname);
 	    if(!fseqs.isEmpty()) {
 	      senv.put("PIPELINE_NUM_SECONDARY_SOURCES_" + dk, String.valueOf(fseqs.size()));
 

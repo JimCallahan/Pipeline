@@ -1,4 +1,4 @@
-// $Id: ActionAgenda.java,v 1.3 2004/09/08 18:32:06 jim Exp $
+// $Id: ActionAgenda.java,v 1.4 2004/09/22 05:38:35 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -197,7 +197,7 @@ class ActionAgenda
    *   The fully resolved node name.
    */ 
   public SortedSet<FileSeq>
-  getSecondarySource
+  getSecondarySources
   (
    String name
   )

@@ -1,4 +1,4 @@
-// $Id: JQueueJobDetailsPanel.java,v 1.4 2004/09/08 18:43:12 jim Exp $
+// $Id: JQueueJobDetailsPanel.java,v 1.5 2004/09/22 05:40:24 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1005,7 +1005,7 @@ class JQueueJobDetailsPanel
 					       vpanel, text, sVSize);
 	      }
 
-	      SortedSet<FileSeq> fseqs = agenda.getSecondarySource(sname);
+	      SortedSet<FileSeq> fseqs = agenda.getSecondarySources(sname);
 	      if(!fseqs.isEmpty()) {
 		UIMaster.addVerticalSpacer(tpanel, vpanel, 9);
 		for(FileSeq fseq : fseqs) {
