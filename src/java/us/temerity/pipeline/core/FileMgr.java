@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.13 2004/05/23 19:48:55 jim Exp $
+// $Id: FileMgr.java,v 1.14 2004/06/28 00:10:26 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -966,28 +966,6 @@ class FileMgr
 	  }
 	}
 
-	/* add write permission to files associated with editable nodes */ 
-	if(req.isEditable()) {
-	  ArrayList<String> args = new ArrayList<String>();
-	  args.add("u+w");
-	  for(File file : files) 
-	    args.add(file.getName());
-
-	  SubProcess proc = 
-	    new SubProcess(req.getNodeID().getAuthor(), 
-			   "CheckOut-SetWritable", "chmod", args, env, wdir);
-	  proc.start();
-	  
-	  try {
-	    proc.join();
-	  }
-	  catch(InterruptedException ex) {
-	    throw new PipelineException
-	      ("Interrupted while adding write access permission to the files for the " + 
-	       "working version (" + req.getNodeID() + ")!");
-	  }
-	}
-	
 	/* overwrite the working checksums with the checked-in checksums */ 
 	{
 	  ArrayList<String> args = new ArrayList<String>();
@@ -1010,6 +988,45 @@ class FileMgr
 	  }
 	}
 
+	/* add write permission to the to working files and checksums */ 
+        {
+	  ArrayList<String> args = new ArrayList<String>();
+	  args.add("u+w");
+	  for(File file : files) 
+	    args.add(file.getName());
+
+	  if(req.isEditable()) {
+	    SubProcess proc = 
+	      new SubProcess(req.getNodeID().getAuthor(), 
+			     "CheckOut-SetWritable", "chmod", args, env, wdir);
+	    proc.start();
+	    
+	    try {
+	      proc.join();
+	    }
+	    catch(InterruptedException ex) {
+	      throw new PipelineException
+		("Interrupted while adding write access permission to the files for " + 
+		 "the working version (" + req.getNodeID() + ")!");
+	    }
+	  }
+
+	  {
+	    SubProcess proc = 
+	      new SubProcess("CheckOut-SetWritableCheckSums", "chmod", args, env, cwdir);
+	    proc.start();
+	    
+	    try {
+	      proc.join();
+	    }
+	    catch(InterruptedException ex) {
+	      throw new PipelineException
+		("Interrupted while adding write access permission to the checksums for " + 
+		 "the working version (" + req.getNodeID() + ")!");
+	    }
+	  }
+	}
+	  
 	return new SuccessRsp(timer);
       }
     }
