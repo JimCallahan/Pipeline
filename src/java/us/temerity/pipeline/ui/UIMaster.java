@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.11 2004/05/13 02:37:41 jim Exp $
+// $Id: UIMaster.java,v 1.12 2004/05/13 21:26:40 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -417,6 +417,18 @@ class UIMaster
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Recursively update all child panels to reflect new user preferences.
+   */ 
+  public void 
+  updateUserPrefs() 
+  {
+    SwingUtilities.invokeLater(new UpdateUserPrefsTask()); 
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   C O M P O N E N T   C R E A T I O N                                                  */
@@ -713,9 +725,15 @@ class UIMaster
 
   /*-- WINDOW LISTENER METHODS -------------------------------------------------------------*/
 
+  /**
+   * Invoked when the Window is set to be the active Window.
+   */
   public void 
   windowActivated(WindowEvent e) {} 
-  
+
+  /**
+   * Invoked when a window has been closed as the result of calling dispose on the window.
+   */ 
   public void 	
   windowClosed(WindowEvent e) {} 
 
@@ -730,17 +748,29 @@ class UIMaster
   {
     doQuit();
   }
-         
+
+  /**
+   * Invoked when a Window is no longer the active Window.
+   */ 
   public void 	
   windowDeactivated(WindowEvent e) {}
 
+  /**
+   * Invoked when a window is changed from a minimized to a normal state.
+   */ 
   public void 	
   windowDeiconified(WindowEvent e) {}
 
+  /**
+   * Invoked when a window is changed from a normal to a minimized state.
+   */ 
   public void 	
   windowIconified(WindowEvent e) {}
 
-  public void 	
+  /**
+   * Invoked the first time a window is made visible.	
+   */ 
+  public void     
   windowOpened(WindowEvent e) {}
 
 
@@ -935,7 +965,7 @@ class UIMaster
 	}
 
 	{
-	  File file = new File("base", "preferences");
+	  File file = new File(base, "preferences");
 	  if(file.isFile()) 	  
 	    UserPrefs.load();
 	}
@@ -1186,10 +1216,7 @@ class UIMaster
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Show the save layout dialog. <P> 
-   * 
-   * The reason for the thread wrapper is to allow the rest of the UI to repaint before
-   * showing the dialog.
+   * Show the save layout dialog.
    */ 
   private
   class ShowSaveLayoutDialogTask
@@ -1302,10 +1329,7 @@ class UIMaster
   }
 
   /**
-   * Show the manage layouts dialog. <P> 
-   * 
-   * The reason for the thread wrapper is to allow the rest of the UI to repaint before
-   * showing the dialog.
+   * Show the manage layouts dialog. 
    */ 
   private
   class ShowManageLayoutsDialogTask
@@ -1317,6 +1341,29 @@ class UIMaster
       try {
 	pManageLayoutsDialog.updateLayouts(pLayoutName);
 	pManageLayoutsDialog.setVisible(true);
+      }
+      catch(Exception ex) {
+	showErrorDialog(ex);
+      }
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Recursively update all child panels to reflect new user preferences.
+   */ 
+  private 
+  class UpdateUserPrefsTask
+    extends Thread
+  {    
+    public void 
+    run() 
+    {
+      try {
+	if(pRootManagerPanel != null) 
+	  pRootManagerPanel.updateUserPrefs();
       }
       catch(Exception ex) {
 	showErrorDialog(ex);

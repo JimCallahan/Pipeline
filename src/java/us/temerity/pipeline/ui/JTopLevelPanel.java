@@ -1,4 +1,4 @@
-// $Id: JTopLevelPanel.java,v 1.4 2004/05/11 19:16:33 jim Exp $
+// $Id: JTopLevelPanel.java,v 1.5 2004/05/13 21:26:40 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -188,6 +188,13 @@ class JTopLevelPanel
     if(pManagerPanel != null) 
       pManagerPanel.updateTitlePanel();
   }
+
+  /**
+   * Update the panel to reflect new user preferences.
+   */ 
+  public void 
+  updateUserPrefs() 
+  {}
 
 
 

@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.8 2004/05/13 02:37:41 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.9 2004/05/13 21:26:40 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -229,6 +229,15 @@ class JNodeViewerPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Update the panel to reflect new user preferences.
+   */ 
+  public void 
+  updateUserPrefs() 
+  {
+    updateUniverse();
+  }
+
+  /**
    * Update the nodes being viewed.
    */ 
   private void 
@@ -247,16 +256,6 @@ class JNodeViewerPanel
   private synchronized void 
   updateUniverse()
   {  
-    
-//     try {
-//       StringBuffer buf = new StringBuffer();
-//       printStatusShortHelper(pStatus, 2, buf);
-//       System.out.print("Node Status: \n" + buf.toString() + "\n");
-//     }
-//     catch(Exception ex) {
-//     }
-
-
     pNodePool.updatePrep();
       
     if(pStatus != null) {
@@ -312,88 +311,19 @@ class JNodeViewerPanel
       height = prefs.getNodeSpaceY();
     }
 
-    vnode.setPosition(new Point2d(anchor.x, anchor.y + 0.5*height));
+    double offset = ((path.getNumNodes() % 2) == 0) ? prefs.getNodeOffset() : 0.0;
+    vnode.setPosition(new Point2d(anchor.x, anchor.y + 0.5*height + offset));
 
     return height;
   }
 
 
 
-
-
-
-
-
-
-
-
-
-  // DEBUG
-  private void 
-  printStatusShortHelper
-  (
-   NodeStatus status,
-   int level, 
-   StringBuffer buf
-  ) 
-    throws GlueException
-  {
-    printStatusShortDownstreamHelper(status, level, buf);
-
-    buf.append("->");
-    int wk;
-    for(wk=0; wk<level; wk++) 
-      buf.append("  ");
-    buf.append("---\n");
-
-    printStatusShortUpstreamHelper(status, level, buf);
-  }
-
-  private void 
-  printStatusShortDownstreamHelper
-  (
-   NodeStatus status,
-   int level, 
-   StringBuffer buf
-  ) 
-    throws GlueException
-  {
-    for(NodeStatus tstatus : status.getTargets()) 
-      printStatusShortDownstreamHelper(tstatus, level+1, buf);
-
-    buf.append("->");
-    int wk;
-    for(wk=0; wk<level; wk++) 
-      buf.append("  ");
-    buf.append(status.getNodeID().getName() + "\n");
-  }
-  
-  private void 
-  printStatusShortUpstreamHelper
-  (
-   NodeStatus status,
-   int level, 
-   StringBuffer buf
-  ) 
-    throws GlueException
-  {
-    buf.append("->");
-    int wk;
-    for(wk=0; wk<level; wk++) 
-      buf.append("  ");
-    buf.append(status.getNodeID().getName() + "\n");
-    
-    for(NodeStatus sstatus : status.getSources()) 
-      printStatusShortUpstreamHelper(sstatus, level+1, buf);
-  }
-  
-
-
   /*----------------------------------------------------------------------------------------*/
   /*   L I S T E N E R S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
-  /*-- COMPONENT LISTNER METHODS -----------------------------------------------------------*/
+  /*-- COMPONENT LISTENER METHODS ----------------------------------------------------------*/
 
   /**
    * Invoked when the component has been made invisible. 
@@ -454,6 +384,47 @@ class JNodeViewerPanel
    ComponentEvent e
   )
   {}
+
+  
+
+  /*-- MOUSE LISTENER METHODS --------------------------------------------------------------*/
+
+  /**
+   * Invoked when the mouse button has been clicked (pressed and released) on a component. 
+   */ 
+  public void 
+  mouseClicked(MouseEvent e) {}
+   
+  /**
+   * Invoked when the mouse enters a component. 
+   */
+  public void 
+  mouseEntered(MouseEvent e) {} 
+  
+  /**
+   * Invoked when the mouse exits a component. 
+   */ 
+  public void 
+  mouseExited(MouseEvent e) {} 
+  
+  /**
+   * Invoked when a mouse button has been pressed on a component. 
+   */
+  public void 
+  mousePressed
+  (
+   MouseEvent e
+  )
+  {
+
+
+  }
+
+  /**
+   * Invoked when a mouse button has been released on a component. 
+   */ 
+  public void 
+  mouseReleased(MouseEvent e) {}
 
 
 
@@ -561,11 +532,79 @@ class JNodeViewerPanel
 	}
       }
 
+//     try {
+//       StringBuffer buf = new StringBuffer();
+//       printStatusShortHelper(pStatus, 2, buf);
+//       System.out.print("Node Status: \n" + buf.toString() + "\n");
+//     }
+//     catch(Exception ex) {
+//     }
+
+
       updateUniverse();
     }
   }
 
 
+  // DEBUG
+  private void 
+  printStatusShortHelper
+  (
+   NodeStatus status,
+   int level, 
+   StringBuffer buf
+  ) 
+    throws GlueException
+  {
+    printStatusShortDownstreamHelper(status, level, buf);
+
+    buf.append("->");
+    int wk;
+    for(wk=0; wk<level; wk++) 
+      buf.append("  ");
+    buf.append("---\n");
+
+    printStatusShortUpstreamHelper(status, level, buf);
+  }
+
+  private void 
+  printStatusShortDownstreamHelper
+  (
+   NodeStatus status,
+   int level, 
+   StringBuffer buf
+  ) 
+    throws GlueException
+  {
+    for(NodeStatus tstatus : status.getTargets()) 
+      printStatusShortDownstreamHelper(tstatus, level+1, buf);
+
+    buf.append("->");
+    int wk;
+    for(wk=0; wk<level; wk++) 
+      buf.append("  ");
+    buf.append(status.getNodeID().getName() + "\n");
+  }
+  
+  private void 
+  printStatusShortUpstreamHelper
+  (
+   NodeStatus status,
+   int level, 
+   StringBuffer buf
+  ) 
+    throws GlueException
+  {
+    buf.append("->");
+    int wk;
+    for(wk=0; wk<level; wk++) 
+      buf.append("  ");
+    buf.append(status.getNodeID().getName() + "\n");
+    
+    for(NodeStatus sstatus : status.getSources()) 
+      printStatusShortUpstreamHelper(sstatus, level+1, buf);
+  }
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */

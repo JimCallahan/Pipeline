@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.17 2004/05/13 02:37:41 jim Exp $
+// $Id: JManagerPanel.java,v 1.18 2004/05/13 21:26:40 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -450,6 +450,51 @@ class JManagerPanel
     pLockedLight.setIcon(pTopLevelPanel.isLocked() ? sLockedLightOnIcon : sLockedLightIcon);
   }
 
+
+  /**
+   * Recursively update all child panels to reflect new user preferences.
+   */ 
+  public void 
+  updateUserPrefs() 
+  {
+    Component comp = getContents();
+    if(comp != null) {
+      if(comp instanceof JHorzSplitPanel) {
+	JHorzSplitPanel panel = (JHorzSplitPanel) comp;
+
+	JManagerPanel left = (JManagerPanel) panel.getLeftComponent();
+	left.updateUserPrefs();
+
+	JManagerPanel right = (JManagerPanel) panel.getRightComponent();
+	right.updateUserPrefs();
+      }
+      else if(comp instanceof JVertSplitPanel) {
+	JVertSplitPanel panel = (JVertSplitPanel) comp;
+
+	JManagerPanel top = (JManagerPanel) panel.getTopComponent();
+	top.updateUserPrefs();
+
+	JManagerPanel bottom = (JManagerPanel) panel.getBottomComponent();
+	bottom.updateUserPrefs();
+      }
+      else if(comp instanceof JTabbedPanel) {
+	JTabbedPanel panel = (JTabbedPanel) comp;
+
+	int wk;
+	for(wk=0; wk<panel.getTabCount(); wk++) {
+	  JManagerPanel tab = (JManagerPanel) panel.getComponentAt(wk);
+	  tab.updateUserPrefs();
+	}
+      }
+      else if(comp instanceof JTopLevelPanel) {
+	JTopLevelPanel panel = (JTopLevelPanel) comp;
+	panel.updateUserPrefs();
+      }
+      else {
+	assert(false);
+      }
+    }
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -931,15 +976,27 @@ class JManagerPanel
 
     /*-- MOUSE LISTENER METHODS ------------------------------------------------------------*/
 
+    /**
+     * Invoked when the mouse button has been clicked (pressed and released) on a component. 
+     */ 
     public void 
     mouseClicked(MouseEvent e) {}
     
+    /**
+     * Invoked when the mouse enters a component. 
+     */
     public void 
     mouseEntered(MouseEvent e) {}
 
+    /**
+     * Invoked when the mouse exits a component. 
+     */ 
     public void 
     mouseExited(MouseEvent e) {}
 
+    /**
+     * Invoked when a mouse button has been pressed on a component. 
+     */
     public void 
     mousePressed
     (
@@ -981,6 +1038,9 @@ class JManagerPanel
       pPopup.show(e.getComponent(), e.getX(), e.getY()); 
     }
 
+    /**
+     * Invoked when a mouse button has been released on a component. 
+     */ 
     public void 
     mouseReleased(MouseEvent e) {}
 
@@ -1095,15 +1155,27 @@ class JManagerPanel
 
     /*-- MOUSE LISTENER METHODS ------------------------------------------------------------*/
 
+    /**
+     * Invoked when the mouse button has been clicked (pressed and released) on a component. 
+     */ 
     public void 
     mouseClicked(MouseEvent e) {}
     
+    /**
+     * Invoked when the mouse enters a component. 
+     */
     public void 
     mouseEntered(MouseEvent e) {}
 
+    /**
+     * Invoked when the mouse exits a component. 
+     */ 
     public void 
     mouseExited(MouseEvent e) {}
 
+    /**
+     * Invoked when a mouse button has been pressed on a component. 
+     */
     public void 
     mousePressed
     (
@@ -1117,6 +1189,9 @@ class JManagerPanel
       pGroupPopup.show(e.getComponent(), e.getX(), e.getY()); 
     }
 
+    /**
+     * Invoked when a mouse button has been released on a component. 
+     */ 
     public void 
     mouseReleased(MouseEvent e) {}
 
