@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.44 2004/10/09 19:17:47 jim Exp $
+// $Id: JManagerPanel.java,v 1.45 2004/10/09 20:03:05 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1374,7 +1374,10 @@ class JManagerPanel
     frame.setSize(532, 752);
 
     JManagerPanel mgr = frame.getManagerPanel();
-    mgr.setContents(new JNodeDetailsPanel(pTopLevelPanel));
+    JNodeDetailsPanel panel = new JNodeDetailsPanel(pTopLevelPanel);
+    mgr.setContents(panel);
+
+    updateNodeSubpanels(panel.getGroupID());
   }
 
   /** 
@@ -1387,7 +1390,10 @@ class JManagerPanel
     frame.setSize(532, 752);
 
     JManagerPanel mgr = frame.getManagerPanel();
-    mgr.setContents(new JNodeFilesPanel(pTopLevelPanel));
+    JNodeFilesPanel panel = new JNodeFilesPanel(pTopLevelPanel);
+    mgr.setContents(panel); 
+    
+    updateNodeSubpanels(panel.getGroupID());
   }
 
   /** 
@@ -1400,7 +1406,10 @@ class JManagerPanel
     frame.setSize(532, 752);
 
     JManagerPanel mgr = frame.getManagerPanel();
-    mgr.setContents(new JNodeHistoryPanel(pTopLevelPanel));
+    JNodeHistoryPanel panel = new JNodeHistoryPanel(pTopLevelPanel);
+    mgr.setContents(panel); 
+
+    updateNodeSubpanels(panel.getGroupID());
   }
 
 
@@ -1509,9 +1518,12 @@ class JManagerPanel
     }
 
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
-    setContents(new JNodeDetailsPanel(dead));
+    JNodeDetailsPanel panel = new JNodeDetailsPanel(dead);
+    setContents(panel);
     dead.setGroupID(0);
     refocusOnChildPanel();
+    
+    updateNodeSubpanels(panel.getGroupID());
   }
 
   /**
@@ -1526,9 +1538,12 @@ class JManagerPanel
     }
 
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
-    setContents(new JNodeFilesPanel(dead));
+    JNodeFilesPanel panel = new JNodeFilesPanel(dead);
+    setContents(panel);
     dead.setGroupID(0);
     refocusOnChildPanel();
+
+    updateNodeSubpanels(panel.getGroupID());
   }
 
   /**
@@ -1543,9 +1558,29 @@ class JManagerPanel
     }
 
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
-    setContents(new JNodeHistoryPanel(dead));
+    JNodeHistoryPanel panel = new JNodeHistoryPanel(dead);
+    setContents(panel);
     dead.setGroupID(0);
     refocusOnChildPanel();
+
+    updateNodeSubpanels(panel.getGroupID());
+  }
+
+  /**
+   * Helper method for updating all node subpanels for the given group.
+   */ 
+  private void 
+  updateNodeSubpanels
+  (
+   int groupID
+  ) 
+  {
+    if(groupID > 0) {
+      PanelGroup<JNodeViewerPanel> panels = UIMaster.getInstance().getNodeViewerPanels();
+      JNodeViewerPanel viewer = panels.getPanel(groupID);
+      if(viewer != null) 
+	viewer.updateSubPanels(false);
+    }    
   }
 
 
