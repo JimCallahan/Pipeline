@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.8 2004/03/13 17:17:47 jim Exp $
+// $Id: NodeMod.java,v 1.9 2004/03/15 19:10:26 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -91,7 +91,7 @@ class NodeMod
    JobReqs jobReqs,  
    OverflowPolicy overflow, 
    ExecutionMethod execution,    
-   int batchSize
+   Integer batchSize
   ) 
   {
     super(name, 
@@ -517,7 +517,8 @@ class NodeMod
 	throw new IllegalArgumentException
 	  ("The new secondary file sequence (" + fseq + ") conflicts with the existing " + 
 	   "secondary file sequence (" + sfseq + ")!");
-    
+
+    validatePrefix(fseq);
     pSecondarySeqs.add(fseq);
 
     updateLastCriticalMod();
