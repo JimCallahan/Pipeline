@@ -1,4 +1,4 @@
-// $Id: JTopLevelPanel.java,v 1.5 2004/05/13 21:26:40 jim Exp $
+// $Id: JTopLevelPanel.java,v 1.6 2004/06/08 03:04:49 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -126,7 +126,7 @@ class JTopLevelPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Is the contents of the panel read-only.
+   * Are the contents of the panel read-only.
    */ 
   public boolean
   isLocked() 
