@@ -1,10 +1,11 @@
-// $Id: JNodeBrowserPanel.java,v 1.7 2004/05/04 11:01:43 jim Exp $
+// $Id: JNodeBrowserPanel.java,v 1.8 2004/05/04 17:50:33 jim Exp $
 
 package us.temerity.pipeline.ui;
 
 import us.temerity.pipeline.*;
 
 import java.awt.*;
+import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.event.*;
@@ -21,7 +22,7 @@ import javax.swing.tree.*;
 public  
 class JNodeBrowserPanel
   extends JTopLevelPanel
-  implements TreeExpansionListener
+  implements TreeExpansionListener, MouseListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -72,8 +73,11 @@ class JNodeBrowserPanel
 
 	tree.setShowsRootHandles(true);
 	tree.setRootVisible(false);
+	tree.setCellRenderer(new JTreeCellRenderer());
+	tree.setSelectionModel(null);
 
 	tree.addTreeExpansionListener(this);
+	tree.addMouseListener(this);
       }
 
       {
@@ -140,6 +144,22 @@ class JNodeBrowserPanel
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Set the author and view.
+   */ 
+  public void 
+  setAuthorView
+  (
+   String author, 
+   String view 
+  ) 
+  {
+    super.setAuthorView(author, view);
+    updateNodeTree();
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   U S E R   I N T E R F A C E                                                          */
@@ -151,6 +171,9 @@ class JNodeBrowserPanel
   private void 
   updateNodeTree()
   {
+    if(pTree == null) 
+      return;
+
     UIMaster master = UIMaster.getInstance();
  
     /* the paths of the currently expanded branch nodes */ 
@@ -161,12 +184,15 @@ class JNodeBrowserPanel
       if(e != null) {
 	while(e.hasMoreElements()) {
 	  TreePath tpath = (TreePath) e.nextElement(); 
-	  Object[] path = tpath.getPath();
-	  StringBuffer buf = new StringBuffer();
-	  int wk;
-	  for(wk=1; wk<path.length; wk++) 
-	    buf.append("/" + path[wk]);
-	  paths.add(buf.toString());
+	  paths.add(treePathToNodeName(tpath));
+
+// 	  Object[] path = tpath.getPath();
+// 	  StringBuffer buf = new StringBuffer();
+// 	  int wk;
+// 	  for(wk=1; wk<path.length; wk++) 
+// 	    buf.append("/" + path[wk]);
+// 	  paths.add(buf.toString());
+
 	}
       }
       
@@ -198,6 +224,23 @@ class JNodeBrowserPanel
     }
   }
 
+  /** 
+   * Convert a Swing tree path into a fully resolved Pipeline node path (or name).
+   */ 
+  private String
+  treePathToNodeName
+  (
+   TreePath tpath
+  ) 
+  {
+    StringBuffer buf = new StringBuffer();
+    Object[] path = tpath.getPath();
+    int wk;
+    for(wk=1; wk<path.length; wk++) 
+      buf.append("/" + path[wk]);
+    return (buf.toString());
+  }
+
   /**
    * Recursively reconstruct the node tree.
    */ 
@@ -208,9 +251,9 @@ class JNodeBrowserPanel
    DefaultMutableTreeNode tnode
   )
   { 
-    for(NodeTreeCommon com : cnode.values()) {
-      NodeTreeComp comp = (NodeTreeComp) com;
-      DefaultMutableTreeNode child = new DefaultMutableTreeNode(comp, !comp.isLeaf());
+    for(NodeTreeComp comp : cnode.values()) {
+      DefaultMutableTreeNode child = 
+	new DefaultMutableTreeNode(comp, (comp.getState() == NodeTreeComp.State.Branch));
       tnode.add(child);
 
       rebuildTreeModel(comp, child);
@@ -267,7 +310,46 @@ class JNodeBrowserPanel
     updateNodeTree();
   }
 
-          
+
+  /*-- MOUSE LISTNER METHODS -------------------------------------------------------------*/
+  
+  public void 
+  mouseClicked(MouseEvent e) {}
+    
+  public void 
+  mouseEntered(MouseEvent e) {}
+
+  public void 
+  mouseExited(MouseEvent e) {}
+
+  public void 
+  mousePressed
+  (
+   MouseEvent e
+  ) 
+  {
+    TreePath tpath = pTree.getPathForLocation(e.getX(), e.getY());
+    if(tpath != null) {
+      DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) tpath.getLastPathComponent();
+      NodeTreeComp comp = (NodeTreeComp) tnode.getUserObject();
+
+      switch(comp.getState()) {
+      case Pending:
+      case Working:
+      case CheckedIn: 
+	System.out.print("Selected Node: " + comp.getState() + 
+			 "  (" + e.getClickCount() + " clicks)\n" + 
+			 "  Author = " + pAuthor + "\n" +
+			 "    View = " + pView + "\n" + 
+			 "    Name = " + treePathToNodeName(tpath) + "\n");
+      }
+    }
+  }
+
+  public void 
+  mouseReleased(MouseEvent e) {}
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
