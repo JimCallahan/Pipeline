@@ -1,4 +1,4 @@
-// $Id: ViewerNodePool.java,v 1.1 2004/05/07 18:11:25 jim Exp $
+// $Id: ViewerNodePool.java,v 1.2 2004/05/08 15:12:47 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -47,7 +47,7 @@ class ViewerNodePool
 
     pActive   = new HashMap<NodePath,ViewerNode>();
     pPrevious = new HashMap<NodePath,ViewerNode>();
-    pReserve  = new Stack<ViewerNode>();
+    pReserve  = new HashMap<String,Stack<ViewerNode>>();
   }
 
 
@@ -77,6 +77,10 @@ class ViewerNodePool
   public synchronized void 
   updatePrep() 
   {
+    /* hide the active nodes */ 
+    for(ViewerNode vnode : pActive.values()) 
+      vnode.setVisible(false);
+
     /* swap node tables */ 
     pPrevious = pActive;
     pActive   = new HashMap<NodePath,ViewerNode>(pPrevious.size());
@@ -110,20 +114,50 @@ class ViewerNodePool
 
     System.out.print("Getting: " + status + " [" + path + "]\n");
 
-    /* lookup or create... */ 
+    /* look up the exact path from the previous viewer nodes */ 
     ViewerNode vnode = pPrevious.remove(path);
     if(vnode == null) {
-      if(!pReserve.empty()) {
-	vnode = pReserve.pop();
-	
-	System.out.print("  Recycled: " + vnode.getNodeStatus() + 
-			 " [" + vnode.getNodePath() + "]\n");
-      }
-      else {
-	vnode = new ViewerNode();
-	pRoot.addChild(vnode.getBranchGroup());
+      String text = status.toString();
 
-	System.out.print("  Created!\n");
+      /* first see if there exists a match with the same label in the reserve */ 
+      {
+	Stack<ViewerNode> vstack = pReserve.get(text);
+	if(vstack != null) {
+	  assert(!vstack.empty());
+
+	  vnode = vstack.pop();
+	  if(vstack.empty()) 
+	    pReserve.remove(text);
+	  
+	  System.out.print("  Recycled (match): " + vnode.getNodeStatus() + 
+			   " [" + vnode.getNodePath() + "]\n");
+	}
+      }
+
+      /* just grab the first available viewer node in the reserve */ 
+      if((vnode == null) && (!pReserve.isEmpty())) {
+	Iterator<String> iter = pReserve.keySet().iterator();
+	if(iter.hasNext()) {
+	  String key = iter.next();
+	  Stack<ViewerNode> vstack = pReserve.get(key);
+	  assert(vstack != null);
+	  assert(!vstack.empty());
+
+	  vnode = vstack.pop();
+	  if(vstack.empty()) 
+	    pReserve.remove(key);
+	  
+	  System.out.print("  Recycled (grab): " + vnode.getNodeStatus() + 
+			   " [" + vnode.getNodePath() + "]\n");
+	}
+      }
+
+      /* the reserve is empty, create a new viewer node */ 
+      if(vnode == null) {
+	vnode = new ViewerNode();
+ 	pRoot.addChild(vnode.getBranchGroup());
+	
+ 	System.out.print("  Created!\n");
       }
     }
     else {
@@ -147,24 +181,39 @@ class ViewerNodePool
   update()
   {
     /* update and show the active nodes */ 
-    for(ViewerNode vnode : pActive.values()) {
+    for(ViewerNode vnode : pActive.values()) 
       vnode.update(); 
+    for(ViewerNode vnode : pActive.values()) 
       vnode.setVisible(true);
-    }
 
     /* hide any previously active nodes which are no longer in use 
         and move them to the reserve */ 
     for(ViewerNode vnode : pPrevious.values()) {
-      vnode.setVisible(false);
       vnode.reset();
-      pReserve.push(vnode);
+
+      String text = vnode.getLabelText();
+      assert(text != null);
+      
+      Stack<ViewerNode> vstack = pReserve.get(text);
+      if(vstack == null) {
+	vstack = new Stack<ViewerNode>();
+	pReserve.put(text, vstack);
+      }
+
+      vstack.push(vnode);
     }
 
     pPrevious = null;
 
-    System.out.print("NodePool: \n" + 
-		     "   Active = " + pActive.size() + "\n" + 
-		     "  Reserve = " + pReserve.size() + "\n");
+    // DEBUG 
+    {
+      System.out.print("NodePool: \n" + 
+		       "   Active = " + pActive.size() + "\n" + 
+		       "  Reserve = " + pReserve.size() + "\n");
+
+      for(String text : pReserve.keySet()) 
+	System.out.print("    [" + text + "]: " + (pReserve.get(text).size()) + "\n");
+    }
   }
 
 
@@ -191,8 +240,11 @@ class ViewerNodePool
   private HashMap<NodePath,ViewerNode>  pPrevious;
 
   /**
-   * The reserve of inactive viewer nodes ready for reuse.
+   * The reserve of inactive viewer nodes ready for reuse indexed by icon title. <P> 
+   * 
+   * They idea behind storing them by title is to minimize title regeneration when 
+   * recycling nodes.
    */ 
-  private Stack<ViewerNode> pReserve;
+  private HashMap<String,Stack<ViewerNode>> pReserve;
 
 }
