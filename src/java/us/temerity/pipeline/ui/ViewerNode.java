@@ -1,4 +1,4 @@
-// $Id: ViewerNode.java,v 1.13 2004/12/30 01:12:12 jim Exp $
+// $Id: ViewerNode.java,v 1.14 2004/12/30 02:47:58 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -257,9 +257,57 @@ class ViewerNode
   {
     GeometryMgr mgr = GeometryMgr.getInstance();
     try {
-      if(pLabelDL == null)
-	pLabelDL = mgr.getTextDL(gl, "CharterBTRoman", pStatus.toString(), 
-				 GeometryMgr.TextAlignment.Center, 0.05);
+      if(pLabelDLs == null) {
+	String text1 = null;
+	String text2 = null;
+	{
+	  UserPrefs prefs = UserPrefs.getInstance();
+	  String style = prefs.getNodeLabelStyle();
+	  if(style.equals("Name Only")) {
+	    File path = new File(pStatus.getNodeID().getName());
+	    text1 = path.getName();
+	    pLabelDLs = new int[1];
+	  }
+	  else if(style.equals("Pattern & Range")) {
+	    text1 = pStatus.toString();
+	    pLabelDLs = new int[1];
+	  }
+	  else if(style.equals("Pattern & Range Below")) {
+	    NodeDetails details = pStatus.getDetails();
+	    if(details == null) {
+	      File path = new File(pStatus.getNodeID().getName());
+	      text1 = path.getName();
+	    }
+	    else {
+	      NodeCommon com = details.getWorkingVersion();
+	      if(com == null) 
+		com = details.getLatestVersion();
+
+	      FileSeq fseq = com.getPrimarySequence();
+	      if(fseq.isSingle()) 
+		text1 = fseq.toString();
+	      else if(fseq.hasFrameNumbers()) {
+		text1 = fseq.getFilePattern().toString();
+		text2 = fseq.getFrameRange().toString();
+	      }
+	    }
+
+	    pLabelDLs = new int[(text2 != null) ? 2 : 1];
+	  }
+	  else {
+	    pLabelDLs = new int[0];
+	  }
+	}
+
+	if(text1 != null) 
+	  pLabelDLs[0] = mgr.getTextDL(gl, "CharterBTRoman", text1, 
+				       GeometryMgr.TextAlignment.Center, 0.05);
+
+	if(text2 != null) 
+	  pLabelDLs[1] = mgr.getTextDL(gl, "CharterBTRoman", text2, 
+				       GeometryMgr.TextAlignment.Center, 0.05);
+      }
+
       if(pIconDL == null) {
 	String name = "Blank";
 	NodeDetails details = pStatus.getDetails();
@@ -340,9 +388,30 @@ class ViewerNode
 	  gl.glColor3d(0.0, 1.0, 1.0);
 	}	
 	
-	gl.glTranslated(0.0, 0.55, 0.0);
-	gl.glScaled(0.35, 0.35, 0.35);
-	gl.glCallList(pLabelDL);
+	switch(pLabelDLs.length) {
+	case 1:
+	  {
+	    gl.glTranslated(0.0, 0.55, 0.0);
+	    gl.glScaled(0.35, 0.35, 0.35);
+	    gl.glCallList(pLabelDLs[0]);
+	  }
+	  break;
+
+	case 2:
+	  {
+	    gl.glPushMatrix();
+	    {
+	      gl.glTranslated(0.0, 1.0, 0.0);
+	      gl.glScaled(0.35, 0.35, 0.35);
+	      gl.glCallList(pLabelDLs[0]);
+	    }
+	    gl.glPopMatrix();
+	    
+	    gl.glTranslated(0.0, 0.55, 0.0);
+	    gl.glScaled(0.35, 0.35, 0.35);
+	    gl.glCallList(pLabelDLs[1]);
+	  }
+	}
       }
     }
     gl.glPopMatrix();
@@ -383,9 +452,9 @@ class ViewerNode
   private Point2d  pPos;         
 
   /**
-   * The OpenGL display list handle for the label geometry.
+   * The OpenGL display list handle(s) for the label geometry.
    */ 
-  private Integer  pLabelDL; 
+  private int  pLabelDLs[]; 
 
   /**
    * The OpenGL display list handles for the icon geometry. <P> 

@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.42 2004/12/30 01:55:41 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.43 2004/12/30 02:47:58 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -406,7 +406,19 @@ class GenUserPrefsApp
     }
 
     {
+      LinkedList<String> styles = new LinkedList();
+      styles.add("None");
+      styles.add("Name Only");
+      styles.add("Pattern & Range");
+      styles.add("Pattern & Range Below");
+
       BasePref prefs[] = {
+	new ChoicePref
+	("The information displayed by the node label.", 
+	 "NodeLabelStyle", "Label Style:", styles, "Range Below"), 
+
+	new BasePref(),
+
 	new BoundedDoublePref
 	("The horizontal distance between nodes.", 
 	 "NodeSpaceX", "Horizontal Space:", 2.5, 4.5, 2.75),
@@ -1129,7 +1141,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.42 2004/12/30 01:55:41 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.43 2004/12/30 02:47:58 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -1383,7 +1395,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.42 2004/12/30 01:55:41 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.43 2004/12/30 02:47:58 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
