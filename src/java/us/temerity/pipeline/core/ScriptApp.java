@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.4 2004/09/20 05:01:24 jim Exp $
+// $Id: ScriptApp.java,v 1.5 2004/09/20 05:39:43 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -781,6 +781,7 @@ class ScriptApp
     case ScriptOptsParserConstants.UNKNOWN5:
     case ScriptOptsParserConstants.UNKNOWN6:
     case ScriptOptsParserConstants.UNKNOWN7:
+    case ScriptOptsParserConstants.UNKNOWN8:
       return "an unknown argument";
 
     case ScriptOptsParserConstants.UNKNOWN_OPTION1:
@@ -790,6 +791,7 @@ class ScriptApp
     case ScriptOptsParserConstants.UNKNOWN_OPTION5:
     case ScriptOptsParserConstants.UNKNOWN_OPTION6:
     case ScriptOptsParserConstants.UNKNOWN_OPTION7:
+    case ScriptOptsParserConstants.UNKNOWN_OPTION8:
       return "an unknown option";
 
     case ScriptOptsParserConstants.PORT_NUMBER:
@@ -831,6 +833,9 @@ class ScriptApp
 
     case ScriptOptsParserConstants.EDITOR_NAME:
       return "an Editor plugin name";
+
+    case ScriptOptsParserConstants.VIEW_NAME:
+      return "a working area view name";
 
     default: 
       if(printLiteral) { 

@@ -199,6 +199,7 @@ TOKEN :
 | <SELECTION_KEY:     "selection-key">    : KEY_OPTS  
 | <JOB_SERVER:        "job-server">       : JOB_SERVER_OPTS
 | <SUFFIX_EDITOR:     "suffix-editor">    : SUFFIX_EDITOR_OPTS
+| <VIEW:              "view">             : VIEW_OPTS
 
   /* argument end separator */ 
 | <AE1: ("\0")+>
@@ -475,6 +476,23 @@ TOKEN :
 }
 
 
+/* view arguments */ 
+<VIEW_NAME_SEP> 
+TOKEN :
+{
+  <EQ14:               "=">     : VIEW_NAME_STATE
+| <MISSING_VIEW_ARG: ~["="]>    : IGNORE_STATE
+}
+
+<VIEW_NAME_STATE> 
+TOKEN :
+{
+  <VIEW_NAME:      (["a"-"z","A"-"Z"]) 
+	             (["a"-"z","A"-"Z","0"-"9","_","-"])+>   
+| <AE10:           ["\0"]>                                  : OPTIONS
+| <ILLEGAL_VIEW:   (~["\0"])+>                              : IGNORE_STATE
+}
+
 
 /*------------------------------------------------------------------------------------------*/
 
@@ -482,7 +500,7 @@ TOKEN :
 <LOG_SEP> 
 TOKEN :
 {
-  <EQ14:              "=">   : LOG_STATE
+  <EQ15:              "=">   : LOG_STATE
 | <MISSING_LOG_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -503,7 +521,7 @@ TOKEN :
 | <FINER :  	    "finer">   
 | <FINEST:    	    "finest">  
 | <COMMA:  	    ",">       
-| <AE10:            (["\0"])+>                   : OPTIONS
+| <AE11:            (["\0"])+>                   : OPTIONS
 | <ILLEGAL_LOG_ARG: (~["\0","a"-"z",":",","])+>  : IGNORE_STATE
 }
 
@@ -517,7 +535,7 @@ TOKEN :
   <PRIVILEGED_GET:    "--get">                   : OPTIONS
 | <PRIVILEGED_GRANT:  "--grant">                 : USER_NAME_SEP 
 | <PRIVILEGED_REVOKE: "--revoke">                : USER_NAME_SEP 
-| <AE11:              ["\0"]>  
+| <AE12:              ["\0"]>  
 | <UNKNOWN_OPTION3:   "-" ("-")? (~["\0","="])*> : IGNORE_STATE
 | <UNKNOWN3:          ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
 }
@@ -534,7 +552,7 @@ TOKEN :
 | <TOOLSET_ADD:           "--add">                   : TOOLSET_NAME_SEP 
 | <TOOLSET_REMOVE:        "--remove">                : TOOLSET_NAME_SEP 
 | <TOOLSET_EXPORT:        "--export">                : TOOLSET_NAME_SEP
-| <AE12:                  ["\0"]>            
+| <AE13:                  ["\0"]>            
 | <UNKNOWN_OPTION4:       "-" ("-")? (~["\0","="])*> : IGNORE_STATE
 | <UNKNOWN4:              ~["-","\0"] (~["\0"])*>    : IGNORE_STATE          
 }
@@ -550,7 +568,7 @@ TOKEN :
 | <KEY_ADD:            "--add">                   : KEY_NAME_SEP 
 | <KEY_SET:            "--set">                   : KEY_NAME_SEP 
 | <KEY_REMOVE:         "--remove">                : KEY_NAME_SEP 
-| <AE13:               ["\0"]>    
+| <AE14:               ["\0"]>    
 | <UNKNOWN_OPTION5:    "-" ("-")? (~["\0","="])*> : IGNORE_STATE
 | <UNKNOWN5:           ~["-","\0"] (~["\0"])*>    : IGNORE_STATE           
 }
@@ -566,7 +584,7 @@ TOKEN :
 | <JOB_SET:            "--set">                   : HOST_NAME_SEP 
 | <JOB_ADD:            "--add">                   : HOST_NAME_SEP 
 | <JOB_REMOVE:         "--remove">                : HOST_NAME_SEP
-| <AE14:               ["\0"]>   
+| <AE15:               ["\0"]>   
 | <UNKNOWN_OPTION6:    "-" ("-")? (~["\0","="])*> : IGNORE_STATE
 | <UNKNOWN6:           ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
 }
@@ -582,9 +600,21 @@ TOKEN :
 | <SUFFIX_EDITOR_SET:            "--set">                   : SUFFIX_SEP 
 | <SUFFIX_EDITOR_REMOVE:         "--remove">                : SUFFIX_SEP
 | <SUFFIX_EDITOR_RESET:          "--reset">                 : OPTIONS
-| <AE15:                         ["\0"]>   
+| <AE16:                         ["\0"]>   
 | <UNKNOWN_OPTION7:              "-" ("-")? (~["\0","="])*> : IGNORE_STATE
 | <UNKNOWN7:                     ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+}
+
+
+/* view command options */ 
+<VIEW_OPTS> 
+TOKEN :
+{
+  <VIEW_GET:            "--get">                   : OPTIONS
+| <VIEW_CREATE:         "--create">                : VIEW_NAME_SEP
+| <AE17:                ["\0"]>   
+| <UNKNOWN_OPTION8:     "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN8:            ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
 }
 
 
@@ -623,7 +653,8 @@ Commands()
 {
   (PrivilegedCmds() | AdminCmds() |
    DefaultToolsetCmds() | ActiveToolsetCmds() | ToolsetCmds() |
-   LicenseKeyCmds() | SelectionKeyCmds() | JobServerCmds() | SuffixEditorCmds() 
+   LicenseKeyCmds() | SelectionKeyCmds() | JobServerCmds() | 
+   SuffixEditorCmds() | ViewCmds() 
 
    ) 
   {
@@ -727,7 +758,8 @@ BatchCommand()
 {
   (PrivilegedCmds() | AdminCmds() |
    DefaultToolsetCmds() | ActiveToolsetCmds() | ToolsetCmds() |
-   LicenseKeyCmds() | SelectionKeyCmds() | JobServerCmds() | SuffixEditorCmds() 
+   LicenseKeyCmds() | SelectionKeyCmds() | JobServerCmds() | 
+   SuffixEditorCmds() | ViewCmds() 
    
    ) (AE())* <EOF>
   {}
@@ -1850,6 +1882,50 @@ SuffixEditorReset()
 
 
   
+/*------------------------------------------------------------------------------------------*/
+/*   V I E W   C O M M A N D S                                                              */
+/*------------------------------------------------------------------------------------------*/
+
+void 
+ViewCmds() 
+  throws PipelineException : 
+{}
+{
+  <VIEW> AE() 
+     (ViewGet() | ViewCreate()) 
+  {}
+}
+
+void 
+ViewGet() 
+  throws PipelineException : 
+{}
+{
+  <VIEW_GET> AE()
+  {
+    TreeMap table = pMasterMgrClient.getWorkingAreas();
+    TreeSet views = (TreeSet) table.get(PackageInfo.sUser);
+    Iterator iter = views.iterator();
+    while(iter.hasNext()) {
+      String vname = (String) iter.next();
+      Logs.ops.info(vname);
+    }
+    Logs.flush();    
+  }
+}
+
+void 
+ViewCreate() 
+  throws PipelineException : 
+{
+  String vname = null;
+}
+{
+  <VIEW_CREATE> EQ() vname=ViewName() AE()
+  {
+    pMasterMgrClient.createWorkingArea(PackageInfo.sUser, vname);
+  }
+}
 
 
 /*------------------------------------------------------------------------------------------*/
@@ -1864,7 +1940,8 @@ AE() :
 {
   (t=<AE1>  | t=<AE2>  | t=<AE3>  | t=<AE4>  | t=<AE5>  | 
    t=<AE6>  | t=<AE7>  | t=<AE8>  | t=<AE9>  | t=<AE10> | 
-   t=<AE11> | t=<AE12> | t=<AE13> | t=<AE14> | t=<AE15>)
+   t=<AE11> | t=<AE12> | t=<AE13> | t=<AE14> | t=<AE15> | 
+   t=<AE16> | t=<AE17>)
   { 
     return t; 
   }
@@ -1890,7 +1967,7 @@ EQ() :
 {
   (t=<EQ1>  | t=<EQ2>  | t=<EQ3>  | t=<EQ4>  | t=<EQ5>  | 
    t=<EQ6>  | t=<EQ7>  | t=<EQ8>  | t=<EQ9>  | t=<EQ10> | 
-   t=<EQ11> | t=<EQ12> | t=<EQ13> | t=<EQ14>)
+   t=<EQ11> | t=<EQ12> | t=<EQ13> | t=<EQ14> | t=<EQ15>)
   { 
     return t; 
   }
@@ -1990,6 +2067,19 @@ EditorName() :
 }
 {
   t=<EDITOR_NAME>
+  {
+    return t.image;
+  }
+}
+
+
+String
+ViewName() : 
+{
+  Token t;
+}
+{
+  t=<VIEW_NAME>
   {
     return t.image;
   }
