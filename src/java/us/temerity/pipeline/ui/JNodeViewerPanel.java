@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.14 2004/05/21 21:17:51 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.15 2004/05/23 19:59:01 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -122,7 +122,7 @@ class JNodeViewerPanel
       pPanelPopup.addSeparator();
 
       item = new JMenuItem();
-      pDownstreamItem = item;
+      pShowHideDownstreamItem = item;
       item.setActionCommand("show-hide-downstream");
       item.addActionListener(this);
       pPanelPopup.add(item);  
@@ -565,7 +565,7 @@ class JNodeViewerPanel
   public void 
   updatePanelMenu() 
   {
-    pDownstreamItem.setText((pShowDownstream ? "Hide" : "Show") + " Downstream");
+    pShowHideDownstreamItem.setText((pShowDownstream ? "Hide" : "Show") + " Downstream");
   }
 
   /**
@@ -2424,7 +2424,7 @@ class JNodeViewerPanel
   /**
    * The panel popup menu items.
    */
-  private JMenuItem  pDownstreamItem;
+  private JMenuItem  pShowHideDownstreamItem;
   
 
   /*----------------------------------------------------------------------------------------*/
