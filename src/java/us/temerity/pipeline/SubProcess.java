@@ -1,4 +1,4 @@
-// $Id: SubProcess.java,v 1.17 2004/09/05 06:43:24 jim Exp $
+// $Id: SubProcess.java,v 1.18 2004/09/23 20:08:24 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -142,8 +142,6 @@ class SubProcess
     }
     else {
       HashMap<String,String> uenv = new HashMap<String,String>(env);
-      uenv.put("WORKING", PackageInfo.sWorkDir + "/" + user);
-
       String val = uenv.get("LD_LIBRARY_PATH");
       if(val != null) 
 	uenv.put("PIPELINE_LD_LIBRARY_PATH", val);
