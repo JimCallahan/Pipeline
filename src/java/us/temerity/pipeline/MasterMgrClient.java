@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.49 2005/02/22 18:18:29 jim Exp $
+// $Id: MasterMgrClient.java,v 1.50 2005/02/23 06:49:52 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1129,20 +1129,57 @@ class MasterMgrClient
   ) 
     throws PipelineException 
   {
-    throw new PipelineException
-      ("This feature is not implemented yet!");
+    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
+      throw new PipelineException
+	("Only privileged users may remove working areas owned by another user!");
 
-//     if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
-//       throw new PipelineException
-// 	("Only privileged users may remove working areas owned by another user!");
+    verifyConnection();
 
-//     verifyConnection();
+    NodeRemoveWorkingAreaReq req = new NodeRemoveWorkingAreaReq(author, view);
 
-//     NodeRemoveWorkingAreaReq req = new NodeRemoveWorkingAreaReq(author, view);
-
-//     Object obj = performTransaction(MasterRequest.RemoveWorkingArea, req);
-//     handleSimpleResponse(obj);
+    Object obj = performTransaction(MasterRequest.RemoveWorkingArea, req);
+    handleSimpleResponse(obj);
   }
+
+  /**
+   * Get the names of the nodes in a working area for which have a name matching the 
+   * given search pattern.
+   * 
+   * @param pattern
+   *   A regular expression {@link Pattern pattern} used to match the fully resolved 
+   *   names of nodes or <CODE>null</CODE> to match all nodes.
+   * 
+   * @return 
+   *   The fully resolved names of the matching working versions. 
+   * 
+   * @throws PipelineException 
+   *   If determine which working versions match the pattern.
+   */ 
+  public synchronized TreeSet<String> 
+  getWorkingNames
+  (
+   String author, 
+   String view, 
+   String pattern
+  )
+    throws PipelineException
+  {
+    verifyConnection();
+
+    NodeGetWorkingNamesReq req = 
+      new NodeGetWorkingNamesReq(author, view, pattern);
+
+    Object obj = performTransaction(MasterRequest.GetWorkingNames, req);
+    if(obj instanceof NodeGetWorkingNamesRsp) {
+      NodeGetWorkingNamesRsp rsp = (NodeGetWorkingNamesRsp) obj;
+      return rsp.getNames();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  } 
+
 
 
   /*----------------------------------------------------------------------------------------*/

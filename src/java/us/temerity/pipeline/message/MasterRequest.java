@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.27 2005/02/22 18:18:30 jim Exp $
+// $Id: MasterRequest.java,v 1.28 2005/02/23 06:49:31 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -184,6 +184,10 @@ enum MasterRequest
    */
   RemoveWorkingArea,  
 
+  /**
+   * An instance of {@link NodeGetWorkingNamesReq NodeGetWorkingNamesReq} is next.
+   */
+  GetWorkingNames, 
 
 
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.91 2005/02/22 18:18:29 jim Exp $
+// $Id: MasterMgr.java,v 1.92 2005/02/23 06:49:31 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2363,25 +2363,28 @@ class MasterMgr
       TreeSet<String> views = pWorkingAreaViews.get(author);
       if((views == null) || !views.contains(view))
 	return new SuccessRsp(timer);
-	
-      /* make sure there are no working versions in the working area */ 
-      TreeSet<String> names = new TreeSet<String>();
-      for(HashMap<NodeID,WorkingBundle> bundles : pWorkingBundles.values()) {
-	for(NodeID nodeID : bundles.keySet()) {
-	  if(author.equals(nodeID.getAuthor()) && view.equals(nodeID.getView())) 
-	    names.add(nodeID.getName());
-	}
-      }
 
-      if(!names.isEmpty()) {
-	StringBuffer buf = new StringBuffer();
-	buf.append
-	  ("The working area view (" + view + " ownned by user (" + author + ") " + 
-	   "cannot be removed because it still contains unreleased nodes!\n\n" + 
-	   "The unreleased node are: ");
-	for(String name : names) 
-	  buf.append("\n  " + name);
-	return new FailureRsp(timer, buf.toString());
+      /* make sure no working versions exist in the view */ 
+      {
+	TreeSet<String> matches = new TreeSet<String>();
+	timer.aquire();
+	synchronized(pNodeTreeRoot) {
+	  timer.resume();
+
+	  for(NodeTreeEntry entry : pNodeTreeRoot.values())
+	    matchingWorkingNodes(author, view, null, "", entry, matches);
+	}
+
+	if(!matches.isEmpty()) {
+	  StringBuffer buf = new StringBuffer();
+	  buf.append
+	    ("The working area view (" + view + " ownned by user (" + author + ") " + 
+	     "cannot be removed because it still contains unreleased nodes!\n\n" + 
+	     "The unreleased node are: ");
+	  for(String name : matches) 
+	    buf.append("\n  " + name);
+	  return new FailureRsp(timer, buf.toString());
+	}
       }
 
       /* remove the working area files directory */ 
@@ -2399,6 +2402,63 @@ class MasterMgr
     }
     finally {
       pDatabaseLock.writeLock().unlock();
+    }
+  }  
+
+  /**
+   * Get the names of the nodes in a working area for which have a name matching the 
+   * given search pattern.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>NodeGetWorkingNamesRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to remove the given working area.
+   */ 
+  public Object 
+  getWorkingNames
+  ( 
+   NodeGetWorkingNamesReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();	
+
+      String author  = req.getAuthor();
+      String view    = req.getView();
+      String pattern = req.getPattern();  
+
+      /* get the node names which match the pattern */ 
+      TreeSet<String> matches = new TreeSet<String>();
+      {
+	timer.aquire();
+	synchronized(pNodeTreeRoot) {
+	  try {
+	    timer.resume();
+	    
+	    Pattern pat = null;
+	    if(pattern != null) 
+	      pat = Pattern.compile(pattern);
+	    
+	    for(NodeTreeEntry entry : pNodeTreeRoot.values())
+	      matchingWorkingNodes(author, view, pat, "", entry, matches);
+	  }
+	  catch(PatternSyntaxException ex) {
+	    return new FailureRsp(timer, 
+				  "Illegal Node Name Pattern:\n\n" + ex.getMessage());
+	  }
+	}
+      }
+                  
+      return new NodeGetWorkingNamesRsp(timer, matches);
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
     }
   }  
 
@@ -5715,7 +5775,7 @@ class MasterMgr
 	      pat = Pattern.compile(pattern);
 	    
 	    for(NodeTreeEntry entry : pNodeTreeRoot.values())
-	      matchingNodes("", entry, pat, matches);
+	      matchingCheckedInNodes(pat, "", entry, matches);
 	  }
 	  catch(PatternSyntaxException ex) {
 	    return new FailureRsp(timer, 
@@ -5860,34 +5920,6 @@ class MasterMgr
     finally {
       pDatabaseLock.readLock().unlock();
     }  
-  }
-
-  /** 
-   * Recursively check the names of all nodes with at least one checked-in versions 
-   * against the given regular expression pattern.
-   */ 
-  private void 
-  matchingNodes
-  (
-   String path,
-   NodeTreeEntry entry, 
-   Pattern pattern, 
-   TreeMap<String,TreeMap<String,TreeSet<String>>> matches
-  ) 
-  {
-    String name = (path + "/" + entry.getName());
-    if(entry.isLeaf() && entry.isCheckedIn()) {
-      if((pattern == null) || pattern.matcher(name).matches()) {
-	TreeMap<String,TreeSet<String>> areas = new TreeMap<String,TreeSet<String>>();
-	for(String author : entry.getWorkingAuthors()) 
-	  areas.put(author, new TreeSet<String>(entry.getWorkingViews(author)));
-	matches.put(name, areas);
-      }
-    }
-    else {
-      for(NodeTreeEntry child : entry.values())
-	matchingNodes(name, child, pattern, matches);
-    }
   }
 
 
@@ -9752,6 +9784,100 @@ class MasterMgr
 	 "    " + ex.getMessage());
     }
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   N O D E   T R E E   H E L P E R S                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Recursively check the names of all nodes in the given working area against the given 
+   * regular expression pattern.
+   * 
+   * @param author
+   *   The name of the user owning the working area.
+   * 
+   * @param view 
+   *   The name of the working area.
+   * 
+   * @param pattern
+   *   The regular expression used to match the fully resolved node name.
+   * 
+   * @param path
+   *   The current partial node name path.
+   * 
+   * @param entry
+   *   The current node tree entry. 
+   * 
+   * @param matches
+   *   The fully resolved names of the matching nodes.
+   * 
+   * @return 
+   *   The names of the working areas indexed by fully resolved node name and author.
+   */ 
+  private void 
+  matchingWorkingNodes
+  (
+   String author, 
+   String view, 
+   Pattern pattern, 
+   String path,
+   NodeTreeEntry entry, 
+   TreeSet<String> matches
+  ) 
+  {
+    String name = (path + "/" + entry.getName());
+    if(entry.isLeaf() && entry.hasWorking(author, view)) {
+      if((pattern == null) || pattern.matcher(name).matches()) 
+	matches.add(name);
+    }
+    else {
+      for(NodeTreeEntry child : entry.values())
+	matchingWorkingNodes(author, view, pattern, name, child, matches);
+    }
+  }
+
+  /** 
+   * Recursively check the names of all nodes with at least one checked-in versions 
+   * against the given regular expression pattern.
+   * 
+   * @param pattern
+   *   The regular expression used to match the fully resolved node name.
+   * 
+   * @param path
+   *   The current partial node name path.
+   * 
+   * @param entry
+   *   The current node tree entry. 
+   * 
+   * @return 
+   *   The names of the working areas indexed by fully resolved node name and author.
+   */ 
+  private void 
+  matchingCheckedInNodes
+  ( 
+   Pattern pattern, 
+   String path,
+   NodeTreeEntry entry,
+   TreeMap<String,TreeMap<String,TreeSet<String>>> matches
+  ) 
+  {
+    String name = (path + "/" + entry.getName());
+    if(entry.isLeaf() && entry.isCheckedIn()) {
+      if((pattern == null) || pattern.matcher(name).matches()) {
+	TreeMap<String,TreeSet<String>> areas = new TreeMap<String,TreeSet<String>>();
+	for(String author : entry.getWorkingAuthors()) 
+	  areas.put(author, new TreeSet<String>(entry.getWorkingViews(author)));
+	matches.put(name, areas);
+      }
+    }
+    else {
+      for(NodeTreeEntry child : entry.values())
+	matchingCheckedInNodes(pattern, name, child, matches);
+    }
+  }
+
+
 
 
   /*----------------------------------------------------------------------------------------*/
