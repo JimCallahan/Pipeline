@@ -1,8 +1,7 @@
-// $Id: SubProcess.java,v 1.3 2004/02/23 23:53:41 jim Exp $
+// $Id: SubProcess.java,v 1.4 2004/02/25 01:29:19 jim Exp $
 
 package us.temerity.pipeline;
 
-import java.lang.*;
 import java.util.*;
 import java.util.logging.*;
 import java.util.concurrent.atomic.*;
@@ -168,7 +167,7 @@ class SubProcess
   {
     if((user != null) && (!sUser.equals("pipeline"))) 
       throw new IllegalArgumentException
-	("Only the \"pipeline\" user is allowed to run processes as another user!");
+	("Only the (pipeline) user is allowed to run processes as another user!");
     pSubstituteUser = user;
 
     /* build environment */ 
@@ -200,20 +199,20 @@ class SubProcess
       if(file.isAbsolute()) {
 	if(!file.exists()) 
 	  throw new IllegalArgumentException
-	    ("The program \"" + prog + "\" does not exist!");
+	    ("The program (" + prog + ") does not exist!");
       }
       else {
 	String path = env.get("PATH");
 	if(path == null) 
 	  throw new IllegalArgumentException
-	    ("The program \"" + prog + "\" was not absolute and no PATH was provided in " +
+	    ("The program (" + prog + ") was not absolute and no PATH was provided in " +
 	     "the environment!");
 	  
 	ExecPath epath = new ExecPath(path);
 	File absolute = epath.which(prog);
 	if(absolute == null) {
 	  StringBuffer buf = new StringBuffer();
-	  buf.append("The program \"" + prog + "\" was not absolute and could not be " +
+	  buf.append("The program (" + prog + ") was not absolute and could not be " +
 		     "found using the PATH of given environment!\n\n" +
 		     "The directories which make up the PATH are: \n");
 	    
@@ -248,7 +247,7 @@ class SubProcess
       assert(dir != null);
       if(!dir.isDirectory()) 
 	throw new IllegalArgumentException
-	  ("The working directory \"" + dir.getPath() + "\" does not exist!");
+	  ("The working directory (" + dir.getPath() + ") does not exist!");
     } 
     
     /* create low-level process */ 
@@ -297,7 +296,7 @@ class SubProcess
       } 
       catch(InterruptedException ex) {
 	throw new IllegalArgumentException
-	  ("Unable to determine the UID for user \"" + user + "\":\n" +  
+	  ("Unable to determine the UID for user (" + user + "):\n" +  
 	   ex.getMessage());
       }
 
@@ -312,12 +311,12 @@ class SubProcess
 	}
 	catch(NumberFormatException ex) {
 	  throw new IllegalArgumentException
-	    ("Illegal UID (" + out + ") found for user \"" + user + "\"!");
+	    ("Illegal UID (" + out + ") found for user (" + user + ")!");
 	}
       }
       else {
 	throw new IllegalArgumentException(
-	  "Unable to determine the UID for user \"" + user + "\"!");
+	  "Unable to determine the UID for user (" + user + ")!");
       }
     }
   }
@@ -331,7 +330,7 @@ class SubProcess
   /** 
    * Gets the OS exit code of the process. <P> 
    * 
-   * This method should only be called after the this thread has finished.
+   * This method should only be called after the SubProcess thread has finished.
    * 
    * @return
    *   The exit code or <CODE>null</CODE> if execution failed.
@@ -343,6 +342,20 @@ class SubProcess
       throw new IllegalStateException("The subprocess still running!");
     return pExitCode;
   }
+
+  /** 
+   * Did the OS level process exit with a {@link #SUCCESS SUCCESS} exit code? <P> 
+   * 
+   * This method should only be called after the SubProcess thread has finished.
+   */
+  public boolean 
+  wasSuccessful() 
+  {
+    if(isAlive())
+      throw new IllegalStateException("The subprocess still running!");
+    return (pExitCode == SUCCESS);
+  }
+
 
   /** 
    * Gets command line arguments of the OS level process.  
