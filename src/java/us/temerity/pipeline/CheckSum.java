@@ -1,4 +1,4 @@
-// $Id: CheckSum.java,v 1.5 2004/03/12 23:07:58 jim Exp $
+// $Id: CheckSum.java,v 1.6 2004/03/15 19:06:39 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -98,6 +98,9 @@ class CheckSum
    File dir
   ) 
   {
+    if(algorithm == null) 
+      throw new IllegalArgumentException("The digest algorithm cannot be (null)!");
+
     try {
       pDigest = MessageDigest.getInstance(algorithm);
     }
@@ -105,6 +108,8 @@ class CheckSum
       throw new IllegalArgumentException
 	("Unknown digest algorithm (" + algorithm + ")!");
     }
+    
+    pBuf = new byte[65536];
 
     if(dir == null) 
       throw new IllegalArgumentException("The root production directory cannot be (null)!");
@@ -177,18 +182,8 @@ class CheckSum
    * regular file or if there already exists a checksum file which is newer than 
    * the given source file. <P> 
    * 
-   * If the source file is larger than <CODE>size</CODE> bytes, it is mapped directly 
-   * into a region of memory to increase I/O performance. Memory-mapping seems to be 
-   * vastly more efficient (more than 100 times faster) for large (>1 MB) files, but 
-   * slightly less efficient (2-3 times slower) for small (<512 bytes) files.  A good 
-   * number for the <CODE>size</CODE> argument is system dependent, but less than (1 Kb) 
-   * seems reasonable.
-   *
    * @param path [<B>in</B>]
    *   The fully resolved node file path.
-   * 
-   * @param size [<B>in</B>]
-   *   The maximum non-memory-mapped source file size.
    * 
    * @throws PipelineException
    *   If unable to generate the checksum file.
@@ -196,8 +191,7 @@ class CheckSum
   public void
   refresh
   (
-   File path, 
-   long size
+   File path
   ) 
     throws PipelineException
   {
@@ -220,10 +214,9 @@ class CheckSum
     {
       File dir = sfile.getParentFile();
 
-      /* try again if the first attempt to create the directory fails...  
-           this can happen if another program creates the directory in between the 
+      /* try multiple times, in case another program creates the directory in between the 
 	   check for existance of the directory and the attempt to create it */ 
-      int tries = 2;
+      int tries = 10;
       int wk;
       for(wk=0; wk<tries; wk++) {
 	if(dir.exists()) {
@@ -246,49 +239,37 @@ class CheckSum
       
       if(wk == tries) 
 	throw new PipelineException
-	  ("Unable to create the checksum directory (" + dir + ") after " + tries + 
-	   " attempts!");
+	  ("Unable to create the checksum directory (" + dir + ") after (" + tries + 
+	   ") attempts!");
     }
 
     /* generate the checksum */ 
+    byte checksum[] = null;
     try {
       FileInputStream in = new FileInputStream(file);
+      
+      try {
+	MessageDigest digest = (MessageDigest) pDigest.clone();
 
-      /* memory-map the source file */  
-      if(file.length() > size) {
-	Logs.sum.finest("Memory-mapping the checksum file.");
+	while(true) {
+	  int num = in.read(pBuf);
+	  if(num == -1) 
+	    break;
+	  digest.update(pBuf, 0, num);
+	}
 
-	FileChannel chan = in.getChannel();
-	
-	try {
-	  MappedByteBuffer buf = chan.map(FileChannel.MapMode.READ_ONLY, 0, chan.size());
-	  pDigest.reset();
-	  pDigest.update(buf);
-	}
-	catch(Exception ex) {
-	  throw new PipelineException
-	    ("Unable to memory-map the source file (" + file + ")!");
-	}
-	finally {
-	  chan.close();
-	}
+	checksum = digest.digest();
       }
-
-      /* read the source file byte-by-byte */ 
-      else {
-	Logs.sum.finest("Reading the checksum file.");
-
-	DigestInputStream din = new DigestInputStream(in, pDigest);
-	try {
-	  while(din.read() != -1);
-	}
-	catch(IOException ex) {
-	  throw new PipelineException
-	    ("Unable to read the source file (" + file + ")!");
-	}
-	finally {
-	  din.close();
-	}
+      catch(IOException ex) {
+	throw new PipelineException
+	  ("Unable to read the source file (" + file + ")!");
+      }
+      catch(CloneNotSupportedException ex) {
+	throw new PipelineException
+	  ("Unable to clone the MessageDigest!");
+      }
+      finally {
+	in.close();
       }
     }
     catch(FileNotFoundException ex) {
@@ -309,7 +290,7 @@ class CheckSum
 
       FileOutputStream out = new FileOutputStream(sfile);	
       try {
-	out.write(pDigest.digest());
+	out.write(checksum);
       }
       catch(IOException ex) {
 	throw new PipelineException
@@ -333,27 +314,6 @@ class CheckSum
     }
 
     Logs.flush();
-  }
-
-  /**
-   * Generate an up-to-date checksum file for the given node file path. <P> 
-   * 
-   * Always memory-maps the source file. 
-   * 
-   * @param path [<B>in</B>]
-   *   The fully resolved node file path.
-   * 
-   * @throws PipelineException
-   *   If unable to generate the checksum file.
-   */ 
-  public void 
-  refresh
-  (
-   File path
-  ) 
-    throws PipelineException
-  {
-    refresh(path, 0);
   }
 
   /**
@@ -465,7 +425,12 @@ class CheckSum
   /**
    * The message digest algorithm. 
    */ 
-  private MessageDigest pDigest;   
+  private MessageDigest pDigest;
+  
+  /**
+   * An I/O buffer.
+   */ 
+  private byte pBuf[];
 
   /**
    * The root production directory.
