@@ -1,4 +1,4 @@
-// $Id: ViewerNode.java,v 1.12 2004/12/17 15:05:33 jim Exp $
+// $Id: ViewerNode.java,v 1.13 2004/12/30 01:12:12 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -326,9 +326,24 @@ class ViewerNode
 	gl.glTranslated(-dx, 0.0, 0.0);
       }
     
-      gl.glTranslated(0.0, 0.55, 0.0);
-      gl.glScaled(0.35, 0.35, 0.35);
-      gl.glCallList(pLabelDL);
+      {
+	switch(pMode) {
+	case Normal:
+	  gl.glColor3d(1.0, 1.0, 1.0);
+	  break;
+	  
+	case Selected:
+	  gl.glColor3d(1.0, 1.0, 0.0);
+	  break;
+	  
+	case Primary:
+	  gl.glColor3d(0.0, 1.0, 1.0);
+	}	
+	
+	gl.glTranslated(0.0, 0.55, 0.0);
+	gl.glScaled(0.35, 0.35, 0.35);
+	gl.glCallList(pLabelDL);
+      }
     }
     gl.glPopMatrix();
   }
