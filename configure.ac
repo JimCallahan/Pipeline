@@ -489,7 +489,7 @@ dnl ----------------------------------------------------------------------------
 
 AC_MSG_RESULT([Locating C system headers:])
 
-AC_CHECK_HEADERS([math.h errno.h pwd.h dlfcn.h libgen.h time.h])         
+AC_CHECK_HEADERS([math.h errno.h pwd.h dlfcn.h libgen.h time.h dirent.h ctype.h])      
 AC_CHECK_HEADERS([sys/time.h sys/param.h sys/utsname.h])  
 
 AC_MSG_RESULT([ ])
@@ -505,7 +505,7 @@ AC_CHECK_HEADERS([cstdio stdio.h], [break])
 AC_CHECK_HEADERS([cstring string.h], [break])
 AC_CHECK_HEADERS([iostream iostream.h], [break])
 AC_CHECK_HEADERS([fstream fstream.h], [break])
-AC_CHECK_HEADERS([strstream strstream.h], [break])
+AC_CHECK_HEADERS([sstream], [break])
 AC_CHECK_HEADERS([iomanip iomanip.h], [break])
 AC_CHECK_HEADERS([iterator])
 AC_CHECK_HEADERS([algorithm algobase algobase.h], [break])
@@ -632,6 +632,7 @@ AC_CONFIG_FILES([
   src/utils/docs/Makefile
   src/utils/docs/plput.html
   src/utils/docs/plget.html
+  src/utils/docs/pls.html
 
   tests/Makefile
   

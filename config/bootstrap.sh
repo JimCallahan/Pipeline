@@ -13,7 +13,7 @@ pushd i686-pc-linux-gnu-dbg
     --with-compiler=GNU \
     --with-javamake=/usr/java/javamake/lib/javamake.jar \
     --prefix=/base/pipeline \
-    --datadir=/usr/share/pipeline \
+    --datadir=/base/pipeline/share \
     --with-prod=/base/prod \
     --with-toolset=/base/toolset \
     --with-sql-server=linuxserv1 \
@@ -26,7 +26,7 @@ pushd i686-pc-linux-gnu-opt
     --with-compiler=GNU \
     --with-javamake=/usr/java/javamake/lib/javamake.jar \
     --prefix=/base/pipeline \
-    --datadir=/usr/share/pipeline \
+    --datadir=/base/pipeline/share \
     --with-prod=/base/prod \
     --with-toolset=/base/toolset \
     --with-sql-server=linuxserv1 \
@@ -40,7 +40,7 @@ pushd i686-pc-linux-gnu-prof
     --with-compiler=GNU \
     --with-javamake=/usr/java/javamake/lib/javamake.jar \
     --prefix=/base/pipeline \
-    --datadir=/usr/share/pipeline \
+    --datadir=/base/pipeline/share \
     --with-prod=/base/prod \
     --with-toolset=/base/toolset \
     --with-sql-server=linuxserv1 \
