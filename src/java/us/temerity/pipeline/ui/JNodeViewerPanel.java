@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.33 2004/08/30 02:48:46 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.34 2004/08/30 06:50:53 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1889,8 +1889,16 @@ class JNodeViewerPanel
     if(under instanceof ViewerNode) {
       ViewerNode vunder = (ViewerNode) under;
       
-      for(ViewerNode vnode : primarySelect(vunder)) 
-	vnode.update();
+      switch(e.getKeyCode()) {
+      case KeyEvent.VK_SHIFT:
+      case KeyEvent.VK_ALT:
+      case KeyEvent.VK_CONTROL:
+	break;
+
+      default:
+	for(ViewerNode vnode : primarySelect(vunder)) 
+	  vnode.update();
+      }
       
       if((prefs.getNodeDetails() != null) &&
 	 prefs.getNodeDetails().wasPressed(e))
@@ -1972,14 +1980,22 @@ class JNodeViewerPanel
     else if(under instanceof ViewerLinkRelationship) {
       ViewerLinkRelationship lunder = (ViewerLinkRelationship) under;
       
-      {
-	HashMap<NodePath,ViewerNode> changed = new HashMap<NodePath,ViewerNode>();
-	for(ViewerNode vnode : clearSelection()) 
-	  changed.put(vnode.getNodePath(), vnode);
-	for(ViewerNode vnode : primarySelect(lunder.getViewerNode())) 
-	  changed.put(vnode.getNodePath(), vnode);
-	for(ViewerNode vnode : changed.values()) 
-	  vnode.update();
+      switch(e.getKeyCode()) {
+      case KeyEvent.VK_SHIFT:
+      case KeyEvent.VK_ALT:
+      case KeyEvent.VK_CONTROL:
+	break;
+      
+      default:
+	{
+	  HashMap<NodePath,ViewerNode> changed = new HashMap<NodePath,ViewerNode>();
+	  for(ViewerNode vnode : clearSelection()) 
+	    changed.put(vnode.getNodePath(), vnode);
+	  for(ViewerNode vnode : primarySelect(lunder.getViewerNode())) 
+	    changed.put(vnode.getNodePath(), vnode);
+	  for(ViewerNode vnode : changed.values()) 
+	    vnode.update();
+	}
       }
       
       pSelectedLink = lunder.getLink();
@@ -3742,6 +3758,49 @@ class JNodeViewerPanel
   }
 
   /** 
+   * Remove the working area files associated with the given nodes.
+   */ 
+  private
+  class RemoveFilesTask
+    extends Thread
+  {
+    public 
+    RemoveFilesTask
+    (
+     TreeSet<String> names
+    ) 
+    {
+      super("JNodeViewerPanel:RemoveFilesTask");
+
+      pNames = names; 
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      for(String name : pNames) {
+	if(master.beginPanelOp("Removing Files: " + name)) {
+	  try {
+	    master.getMasterMgrClient().removeFiles(pAuthor, pView, name);
+	  }
+	  catch(PipelineException ex) {
+	    master.showErrorDialog(ex);
+	    return;
+	  }
+	  finally {
+	    master.endPanelOp("Done.");
+	  }
+	}
+      }
+	
+      updateRoots();
+    }
+
+    private TreeSet<String>  pNames; 
+  }
+
+  /** 
    * Queue jobs to the queue for the given node.
    */ 
   private
@@ -3783,47 +3842,6 @@ class JNodeViewerPanel
 
     private String           pName; 
     private TreeSet<Integer> pIndices; 
-  }
-
-  /** 
-   * Kill the given jobs.
-   */ 
-  private
-  class KillJobsTask
-    extends Thread
-  {
-    public 
-    KillJobsTask
-    (
-     TreeSet<Long> jobIDs
-    ) 
-    {
-      super("JNodeViewerPanel:KillJobsTask");
-
-      pJobIDs = jobIDs; 
-    }
-
-    public void 
-    run() 
-    {
-      UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Killing Jobs...")) {
-	try {
-	  master.getMasterMgrClient().killJobs(pAuthor, pJobIDs);
-	}
-	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
-	  return;
-	}
-	finally {
-	  master.endPanelOp("Done.");
-	}
-
-	updateRoots();
-      }
-    }
-
-    private TreeSet<Long>  pJobIDs; 
   }
 
   /** 
@@ -3909,46 +3927,44 @@ class JNodeViewerPanel
   }
 
   /** 
-   * Remove the working area files associated with the given nodes.
+   * Kill the given jobs.
    */ 
   private
-  class RemoveFilesTask
+  class KillJobsTask
     extends Thread
   {
     public 
-    RemoveFilesTask
+    KillJobsTask
     (
-     TreeSet<String> names
+     TreeSet<Long> jobIDs
     ) 
     {
-      super("JNodeViewerPanel:RemoveFilesTask");
+      super("JNodeViewerPanel:KillJobsTask");
 
-      pNames = names; 
+      pJobIDs = jobIDs; 
     }
 
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      for(String name : pNames) {
-	if(master.beginPanelOp("Removing Files: " + name)) {
-	  try {
-	    master.getMasterMgrClient().removeFiles(pAuthor, pView, name);
-	  }
-	  catch(PipelineException ex) {
-	    master.showErrorDialog(ex);
-	    return;
-	  }
-	  finally {
-	    master.endPanelOp("Done.");
-	  }
+      if(master.beginPanelOp("Killing Jobs...")) {
+	try {
+	  master.getMasterMgrClient().killJobs(pAuthor, pJobIDs);
 	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	updateRoots();
       }
-	
-      updateRoots();
     }
 
-    private TreeSet<String>  pNames; 
+    private TreeSet<Long>  pJobIDs; 
   }
 
   /** 
