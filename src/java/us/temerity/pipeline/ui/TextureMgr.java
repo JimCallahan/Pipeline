@@ -1,4 +1,4 @@
-// $Id: TextureMgr.java,v 1.4 2004/07/07 13:29:02 jim Exp $
+// $Id: TextureMgr.java,v 1.5 2004/12/16 15:42:40 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -9,11 +9,13 @@ import java.util.*;
 import java.awt.*;
 import java.awt.image.*;
 import java.io.*;
+import java.nio.*;
 import java.net.*;
 
 import javax.imageio.*;
 import javax.swing.*;
-import javax.media.j3d.*;
+
+import net.java.games.jogl.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   T E X T U R E   M G R                                                                  */
@@ -23,16 +25,13 @@ import javax.media.j3d.*;
  * Manages a cached set of textures used by {@link JNodeViewerPanel JNodeViewerPanel} to
  * render Pipeline nodes. <P> 
  * 
- * Node textures are cached as {@link Texture2D Texture2D} and {@link ImageIcon ImageIcon} 
+ * Node textures are cached as OpenGL Texture Objects and {@link ImageIcon ImageIcon} 
  * instances loaded from image files which are used to graphicly represent permutations of 
  * {@link OverallNodeState OverallNodeState} and {@link OverallQueueState OverallQueueState}
  * of Pipeline nodes. <P> 
  * 
- * Font textures are also cached as <CODE>Texture2D</CODE> which are used to render node 
+ * Font textures are also cached as OpenGL Texture Objects which are used to render node 
  * and link labels in <CODE>JNodeViewerPanel</CODE> instances. <P> 
- * 
- * Finally, a small cacbe of simple 2x2 unfiltered monocolor textures are also managed by
- * this class for use in rendering lines.
  */ 
 public
 class TextureMgr
@@ -47,12 +46,10 @@ class TextureMgr
   private 
   TextureMgr()
   {
-    pSimpleTextures = new HashMap<String,Texture2D>();
-
-    pFontTextures   = new HashMap<String,Texture2D[]>();
+    pFontTextures   = new HashMap<String,Integer[]>();
     pFontGeometry   = new HashMap<String,FontGeometry>();
 
-    pIconTextures   = new HashMap<String,Texture2D>();
+    pIconTextures   = new HashMap<String,Integer>();
     pIconImages     = new HashMap<String,ImageIcon[]>();
   }
 
@@ -68,77 +65,6 @@ class TextureMgr
   getInstance() 
   {
     return sTextureMgr;
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * Verify that the simple unfiltered 2x2 monocolor texture with the given name is 
-   * currently loaded.
-   * 
-   * If the simple color texture is not currently loaded then read the texture image 
-   * generate the texture.
-   * 
-   * @param name
-   *   The symbolic color name of the texture.
-   * 
-   * @throws IOException
-   *   If unable to load the source images.
-   */ 
-  public synchronized void
-  verifySimpleTexture
-  (
-   String name
-  ) 
-    throws IOException
-  {
-    if(name == null)
-      throw new IllegalArgumentException("The color name cannot be (null)!");
-
-    if(pSimpleTextures.containsKey(name))
-      return;
-
-    /* otherwise, load it */ 
-    Logs.tex.fine("Loading Simple Texture: " + name);
-    Logs.flush();
-    {
-      String path = (name + ".png");
-      URL url = LookAndFeelLoader.class.getResource(path);
-      if(url == null) 
-	throw new IOException("Unable to find: " + path);
-      BufferedImage bi = ImageIO.read(url);
-
-      Texture2D tex = new Texture2D(Texture.BASE_LEVEL, Texture.RGBA, 2, 2);
-      tex.setImage(0, new ImageComponent2D(ImageComponent2D.FORMAT_RGBA, bi));
-      
-      tex.setMinFilter(Texture.FASTEST);
-      tex.setMagFilter(Texture.FASTEST);
-      tex.setBoundaryModeS(Texture.CLAMP_TO_EDGE);
-      tex.setBoundaryModeT(Texture.CLAMP_TO_EDGE);
-
-      pSimpleTextures.put(name, tex);
-    }
-  }
-
-  /**
-   * Get the simple unfiltered 2x2 monocolor texture with the given name. 
-   * 
-   * @param name
-   *   The symbolic color name of the texture.
-   * 
-   * @throws IOException
-   *   If unable to retrieve the texture.
-   */ 
-  public synchronized Texture2D
-  getSimpleTexture
-  (
-   String name  
-  ) 
-    throws IOException 
-  { 
-    verifySimpleTexture(name);
-    return pSimpleTextures.get(name);
   }
 
 
@@ -176,6 +102,9 @@ class TextureMgr
    * If the textures are not currently loaded then read the Mip-Map level images from 
    * disk and used them to generate the textures.
    * 
+   * @param gl
+   *   The OpenGL interface.
+   * 
    * @param name
    *   The name of the font.
    * 
@@ -185,6 +114,7 @@ class TextureMgr
   public synchronized void
   verifyFontTextures
   (
+   GL gl, 
    String name
   ) 
     throws IOException
@@ -204,7 +134,7 @@ class TextureMgr
     
     /* build the texture and icon */ 
     {
-      Texture2D texs[] = new Texture2D[128];
+      Integer texs[] = new Integer[128];
 
       char code;
       for(code=0; code<texs.length; code++) {
@@ -213,9 +143,12 @@ class TextureMgr
 	if(geom.isPrintable(code)) {
 	  Logs.tex.fine("Loading Font Texture: " + name + " \"" + code + "\"");
 
-	  texs[code] = new Texture2D(Texture.MULTI_LEVEL_MIPMAP, Texture.RGBA, 
-				     sMaxFontRes, sMaxFontRes);
+	  int handle[] = new int[1];
+	  gl.glGenTextures(1, handle); 
+	  texs[code] = handle[0];
 
+	  gl.glBindTexture(GL.GL_TEXTURE_2D, handle[0]);
+	  
 	  int level, size; 
 	  for(level=0, size=sMaxFontRes; size>=1; level++, size/=2) {
 	    Logs.tex.finer("Loading MipMap: " + size + "x" + size);
@@ -226,13 +159,34 @@ class TextureMgr
 	    if(url == null) 
 	      throw new IOException("Unable to find: " + path);
 	    BufferedImage bi = ImageIO.read(url);
+
+	    if((bi.getWidth() != size) || (bi.getHeight() != size)) 
+	      throw new IOException
+		("The image size (" + bi.getWidth() + "x" + bi.getHeight() + ") of " + 
+ 	       "texture (" + path + ") does not match the expected size " + 
+		 "(" + size + "x" + size + ")!");
+
+	    if(bi.getType() != BufferedImage.TYPE_CUSTOM) 
+	      throw new IOException
+		("The image format (" + bi.getType() + ") of texture (" + path + ") is " +
+		 "not supported!");	    
 	    
-	    ImageComponent2D img = new ImageComponent2D(ImageComponent2D.FORMAT_RGBA, bi);
-	    texs[code].setImage(level, img);
-	  }
+	    byte[] data = ((DataBufferByte) bi.getRaster().getDataBuffer()).getData();
+	    ByteBuffer buf = ByteBuffer.allocateDirect(data.length);
+	    buf.order(ByteOrder.nativeOrder());
+	    buf.put(data, 0, data.length);
+	    buf.rewind();
 	  
-	  texs[code].setMinFilter(Texture.MULTI_LEVEL_LINEAR);
-	  texs[code].setMagFilter(Texture.BASE_LEVEL_LINEAR);
+	    gl.glTexImage2D(GL.GL_TEXTURE_2D, level, GL.GL_RGBA, size, size, 
+			    0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, buf);
+	  }
+	    
+	  gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP);
+	  gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP);
+	  
+	  gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, 
+			     GL.GL_LINEAR_MIPMAP_LINEAR);
+	  gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
 	}
       }
 
@@ -241,7 +195,10 @@ class TextureMgr
   }
 
   /**
-   * Get the texture for the given character of the given font.
+   * Get the OpenGL texture object handle for the given character of the given font.
+   * 
+   * @param gl
+   *   The OpenGL interface.
    * 
    * @param name
    *   The symbolic name of the font.
@@ -250,14 +207,15 @@ class TextureMgr
    *   The character code.
    * 
    * @return 
-   *   The texture or <CODE>null</CODE> if the given character is unprintable.
+   *   The handle or <CODE>null</CODE> if the given character is unprintable.
    * 
    * @throws IOException
    *   If unable to retrieve the font textures.
    */ 
-  public synchronized Texture2D
+  public synchronized Integer
   getFontTexture
   (
+   GL gl, 
    String name, 
    char code
   ) 
@@ -268,7 +226,7 @@ class TextureMgr
 	("The character code (" + ((int) code) + ") for character " + 
 	 "\"" + code + "\" must be in the [0-127] range!");
 
-    verifyFontTextures(name);
+    verifyFontTextures(gl, name);
     return pFontTextures.get(name)[code];
   }
 
@@ -300,6 +258,9 @@ class TextureMgr
    * If the texture/icon is not currently loaded then read the Mip-Map level images from 
    * disk and used them to generate the texture and icon.
    * 
+   * @param gl
+   *   The OpenGL interface.
+   * 
    * @param name
    *   The name of the texture.
    * 
@@ -309,6 +270,7 @@ class TextureMgr
   public synchronized void
   verifyTexture
   (
+   GL gl, 
    String name
   ) 
     throws IOException
@@ -325,8 +287,10 @@ class TextureMgr
     /* build the texture and icon */ 
     Logs.tex.fine("Loading Texture: " + name);
     {
-      Texture2D tex = 
-	new Texture2D(Texture.MULTI_LEVEL_MIPMAP, Texture.RGBA, sMaxTexRes, sMaxTexRes);
+      int handle[] = new int[1];
+      gl.glGenTextures(1, handle); 
+
+      gl.glBindTexture(GL.GL_TEXTURE_2D, handle[0]);
 
       int level, size; 
       for(level=0, size=sMaxTexRes; size>=1; level++, size/=2) {
@@ -338,11 +302,28 @@ class TextureMgr
 	if(url == null) 
 	  throw new IOException("Unable to find: " + path);
 	BufferedImage bi = ImageIO.read(url);
-	   
-	ImageComponent2D img = new ImageComponent2D(ImageComponent2D.FORMAT_RGBA, bi);
-	tex.setImage(level, img);
-
-	if(size == sIconRes[0]) {
+	
+	if((bi.getWidth() != size) || (bi.getHeight() != size)) 
+	  throw new IOException
+	    ("The image size (" + bi.getWidth() + "x" + bi.getHeight() + ") of " + 
+	     "texture (" + path + ") does not match the expected size " + 
+	     "(" + size + "x" + size + ")!");
+	
+	if(bi.getType() != BufferedImage.TYPE_CUSTOM) 
+	  throw new IOException
+	    ("The image format (" + bi.getType() + ") of texture (" + path + ") is " +
+	     "not supported!");	    
+	
+	byte[] data = ((DataBufferByte) bi.getRaster().getDataBuffer()).getData();
+	ByteBuffer buf = ByteBuffer.allocateDirect(data.length);
+	buf.order(ByteOrder.nativeOrder());
+	buf.put(data, 0, data.length);
+	buf.rewind();
+	
+	gl.glTexImage2D(GL.GL_TEXTURE_2D, level, GL.GL_RGBA, size, size, 
+			0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, buf);
+	
+   	if(size == sIconRes[0]) {
 	  ImageIcon icons[] = pIconImages.get(name);
 	  if(icons == null) {
 	    icons = new ImageIcon[sIconRes.length];
@@ -352,13 +333,38 @@ class TextureMgr
 	  icons[0] = new ImageIcon(bi);
 	}
       }
+	    
+      gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP);
+      gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP);
+      
+      gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, 
+			 GL.GL_LINEAR_MIPMAP_LINEAR);
+      gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
 
-      tex.setMinFilter(Texture.MULTI_LEVEL_LINEAR);
-      tex.setMagFilter(Texture.BASE_LEVEL_LINEAR);
-
-      pIconTextures.put(name, tex);
+      pIconTextures.put(name, handle[0]);
     }
   }
+
+  /** 
+   * Verify that the 32x32 icon with the given name is currently loaded.
+   * 
+   * If the 32x32 icon is not currently loaded then read icon image from disk.
+   * 
+   * @param name
+   *   The name of the texture.
+   * 
+   * @throws IOException
+   *   If unable to load the sourc image.
+   */ 
+  public synchronized void
+  verifyIcon
+  (
+   String name
+  )
+    throws IOException 
+  {
+    verifyIconHelper(name, 0);
+  } 	
 
   /** 
    * Verify that the 21x21 icon with the given name is currently loaded.
@@ -378,15 +384,40 @@ class TextureMgr
   )
     throws IOException 
   {
+    verifyIconHelper(name, 1);
+  } 	
+
+  /** 
+   * Verify that the icon with the given index and name is currently loaded.
+   * 
+   * If the icon is not currently loaded then read icon image from disk.
+   * 
+   * @param name
+   *   The name of the texture.
+   * 
+   * @param index
+   *   The icon resolution index.
+   * 
+   * @throws IOException
+   *   If unable to load the source image.
+   */ 
+  private synchronized void
+  verifyIconHelper
+  (
+   String name, 
+   int idx
+  )
+    throws IOException 
+  {
     if(name == null)
       throw new IllegalArgumentException("The icon name cannot be (null)!");
 
     /* make it hasn't already been loaded */ 
     ImageIcon icons[] = pIconImages.get(name);
-    if((icons != null) && (icons[1] != null))
+    if((icons != null) && (icons[idx] != null))
       return;
 
-    int size = sIconRes[1];
+    int size = sIconRes[idx];
 	  
     Logs.tex.fine("Loading Icon: " + name + " " + size + "x" + size);
     Logs.flush();
@@ -402,12 +433,14 @@ class TextureMgr
       pIconImages.put(name, icons);
     }
 
-    icons[1] = new ImageIcon(bi);
+    icons[idx] = new ImageIcon(bi);
   } 	
 
-
   /**
-   * Get the texture for the given combination of node states. <P> 
+   * Get the OpenGL texture object handle for the given combination of node states. <P> 
+   * 
+   * @param gl
+   *   The OpenGL interface.
    * 
    * @param name
    *   The name of the texture.
@@ -415,14 +448,15 @@ class TextureMgr
    * @throws IOException
    *   If unable to retrieve the texture.
    */ 
-  public synchronized Texture2D
+  public synchronized Integer
   getTexture
   (
+   GL gl, 
    String name   
   ) 
     throws IOException 
   {
-    verifyTexture(name);
+    verifyTexture(gl, name);
     return pIconTextures.get(name);
   }
 
@@ -442,7 +476,7 @@ class TextureMgr
   ) 
     throws IOException 
   {
-    verifyTexture(name);
+    verifyIcon(name);
 
     ImageIcon icons[] = pIconImages.get(name);
     if((icons == null) || (icons[0] == null)) 
@@ -512,15 +546,11 @@ class TextureMgr
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Simple 2x2 unfiltered monocolor textures indexed by texture name.
+   * The OpenGL texture object handles for the per-character font textures indexed by 
+   * font name and ASCII character code.  Per-character entries which are <CODE>null</CODE>
+   * contain unprintable characters without textures.
    */ 
-  private HashMap<String,Texture2D>  pSimpleTextures;
-
-
-  /**
-   * The Mip-Mapped per-character font texturesindexed by font name.
-   */ 
-  private HashMap<String,Texture2D[]>  pFontTextures;
+  private HashMap<String,Integer[]>  pFontTextures;
 
   /**
    * The font geometries indexed by font name.
@@ -529,9 +559,9 @@ class TextureMgr
 
 
   /**
-   * The Mip-Mapped node state textures indexed by texture name.
+   * The OpenGL texture object handles indexed by texture name.
    */ 
-  private HashMap<String,Texture2D>  pIconTextures;
+  private HashMap<String,Integer>  pIconTextures;
 
   /**
    * The node state icons at sIconRes resolutions indexed by texture name.
