@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.43 2004/10/03 19:42:18 jim Exp $
+// $Id: MasterMgr.java,v 1.44 2004/10/09 16:54:40 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2342,6 +2342,42 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /** 
+   * Get the revision numbers of all checked-in versions of the given node. <P> 
+   * 
+   * @param req 
+   *   The get checked-in version request.
+   * 
+   * @return
+   *   <CODE>NodeGetCheckedInVersionIDsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to retrieve the checked-in version.
+   */
+  public Object
+  getCheckedInVersionIDs
+  ( 
+   NodeGetCheckedInVersionIDsReq req
+  ) 
+  {
+    String name = req.getName();
+    TaskTimer timer = new TaskTimer("MasterMgr.getCheckedInVersionIDs(): " + name);
+
+    timer.aquire();
+    ReentrantReadWriteLock lock = getCheckedInLock(name);
+    lock.readLock().lock();
+    try {
+      timer.resume();	
+      TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
+      TreeSet<VersionID> vids = new TreeSet<VersionID>(checkedIn.keySet());
+      return new NodeGetCheckedInVersionIDsRsp(timer, vids);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      lock.readLock().unlock();
+    }  
+  }  
+      
+  /** 
    * Get the checked-in version of the node with the given revision number. <P> 
    * 
    * @param req 
@@ -2357,7 +2393,6 @@ class MasterMgr
    NodeGetCheckedInReq req
   ) 
   {	 
-    assert(req != null);
     TaskTimer timer = new TaskTimer();
 
     String name = req.getName();
@@ -2370,6 +2405,10 @@ class MasterMgr
       timer.resume();	
 
       TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
+
+      if(vid == null) 
+	vid = checkedIn.lastKey();
+
       CheckedInBundle bundle = checkedIn.get(vid);
       if(bundle == null) 
 	throw new PipelineException 

@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.19 2004/10/03 19:42:18 jim Exp $
+// $Id: MasterMgrServer.java,v 1.20 2004/10/09 16:54:40 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -536,6 +536,15 @@ class MasterMgrServer
 	    {
 	      NodeGetCheckedInReq req = (NodeGetCheckedInReq) objIn.readObject();
 	      objOut.writeObject(pMasterMgr.getCheckedInVersion(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case GetCheckedInVersionIDs:
+	    {
+	      NodeGetCheckedInVersionIDsReq req = 
+		(NodeGetCheckedInVersionIDsReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.getCheckedInVersionIDs(req));
 	      objOut.flush(); 
 	    }
 	    break;

@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.29 2004/10/03 19:42:18 jim Exp $
+// $Id: MasterMgrClient.java,v 1.30 2004/10/09 16:55:41 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1526,13 +1526,45 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /** 
+   * Get the revision numbers of all checked-in versions of the given node. <P> 
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   *
+   * @throws PipelineException
+   *   If unable to retrieve the checked-in versions.
+   */
+  public synchronized TreeSet<VersionID>
+  getCheckedInVersionIDs
+  ( 
+   String name
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+	 
+    NodeGetCheckedInVersionIDsReq req = new NodeGetCheckedInVersionIDsReq(name);
+
+    Object obj = performTransaction(MasterRequest.GetCheckedInVersionIDs, req);
+    if(obj instanceof NodeGetCheckedInVersionIDsRsp) {
+      NodeGetCheckedInVersionIDsRsp rsp = (NodeGetCheckedInVersionIDsRsp) obj;
+      return rsp.getVersionIDs();      
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }  
+
+  /** 
    * Get the checked-in version of the node with the given revision number. <P> 
    * 
    * @param name 
    *   The fully resolved node name.
    *
    * @param vid
-   *   The revision number of the checked-in version.
+   *   The revision number of the checked-in version or <CODE>null</CODE> for the latest 
+   *   version.
    * 
    * @throws PipelineException
    *   If unable to retrieve the checked-in version.
