@@ -1,4 +1,4 @@
-// $Id: TestPluginsApp.java,v 1.9 2004/07/14 20:47:16 jim Exp $
+// $Id: TestPluginsApp.java,v 1.10 2004/07/28 19:20:24 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
@@ -206,7 +206,7 @@ class TestPluginsApp
       {
 	FileSeq primaryTarget = new FileSeq("bob", "txt"); 
 	
-	ArrayList<FileSeq> secondaryTargets = new ArrayList<FileSeq>();
+	TreeSet<FileSeq> secondaryTargets = new TreeSet<FileSeq>();
 	secondaryTargets.add(new FileSeq(new FilePattern("huck", 3, "txt"), 
 					 new FrameRange(3, 9, 2)));
 	secondaryTargets.add(new FileSeq(new FilePattern("joe", 0, "txt"), 
@@ -222,9 +222,10 @@ class TestPluginsApp
 			   new FileSeq(new FilePattern("mike", 4, "txt"), 
 				       new FrameRange(2, 5, 1)));
    
-	TreeMap<String,ArrayList> secondarySources = new TreeMap<String,ArrayList>();
+	TreeMap<String,Set<FileSeq>> secondarySources = 
+	  new TreeMap<String,Set<FileSeq>>();
 	{
-	  ArrayList fseqs = new ArrayList();
+	  TreeSet<FileSeq> fseqs = new TreeSet<FileSeq>();
 	  fseqs.add(new FileSeq(new FilePattern("jenny", 0, "txt"), 
 				new FrameRange(33, 39, 2)));
 	  fseqs.add(new FileSeq("jill", "txt"));
@@ -232,10 +233,15 @@ class TestPluginsApp
 	  secondarySources.put("/some/dependency/node/fred", fseqs);
 	}
 
-	proc =script.prep(123, "/some/node/bob", System.getProperty("user.name"), 
-			  primaryTarget, secondaryTargets, 
-			  primarySources, secondarySources, 
-			  env, dir);
+	ActionAgenda agenda = 
+	  new ActionAgenda(123L, 
+			   new NodeID(System.getProperty("user.name"), "default", 
+				      "/some/node/bob"), 
+			   primaryTarget, secondaryTargets, 
+			   primarySources, secondarySources, 
+			   env, dir);
+
+	proc = script.prep(agenda);
       }
 
       proc.start();
