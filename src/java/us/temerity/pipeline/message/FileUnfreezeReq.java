@@ -1,4 +1,4 @@
-// $Id: FileUnfreezeReq.java,v 1.1 2004/03/09 09:45:31 jim Exp $
+// $Id: FileUnfreezeReq.java,v 1.2 2004/03/16 16:13:55 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -35,6 +35,9 @@ class FileUnfreezeReq
    * @param id [<B>in</B>]
    *   The unique working version identifier.
    * 
+   * @param vid [<B>in</B>]
+   *   The revision number of the checked-in version which is the target of the symlinks.
+   * 
    * @param fseqs [<B>in</B>]
    *   The primary and secondary file sequences associated with the working version.
    */
@@ -42,12 +45,17 @@ class FileUnfreezeReq
   FileUnfreezeReq
   (
    NodeID id, 
+   VersionID vid, 
    TreeSet<FileSeq> fseqs
   )
   { 
     if(id == null) 
       throw new IllegalArgumentException("The working version ID cannot be (null)!");
     pNodeID = id;
+
+    if(vid == null) 
+      throw new IllegalArgumentException("The revision number cannot be (null)!");
+    pVersionID = vid;
 
     if(fseqs == null) 
       throw new IllegalArgumentException("The working file sequences cannot (null)!");
@@ -68,6 +76,15 @@ class FileUnfreezeReq
     return pNodeID;
   }
     
+  /**
+   * Gets the revision number of the checked-in version which is the target of the symlinks.
+   */
+  public VersionID
+  getVersionID() 
+  {
+    return pVersionID;
+  }
+
   /**
    * Gets the primary and secondary file sequences associated with the working version.
    */
@@ -95,6 +112,11 @@ class FileUnfreezeReq
    * The unique working version identifier.
    */ 
   private NodeID  pNodeID;
+
+  /**
+   * The revision number of the checked-in version which is the target of the symlinks.
+   */
+  private VersionID  pVersionID;
 
   /** 
    * The primary and secondary file sequences associated with the working version. 

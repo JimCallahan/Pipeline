@@ -1,4 +1,4 @@
-// $Id: TestFileMgrApp.java,v 1.5 2004/03/16 00:04:19 jim Exp $
+// $Id: TestFileMgrApp.java,v 1.6 2004/03/16 16:12:54 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.message.*;
@@ -120,23 +120,23 @@ class TestFileMgrApp
     {
       ArrayList<ClientTask> clients = new ArrayList<ClientTask>();
       {
-//  	{
-//  	  int wk; 
-//  	  for(wk=0; wk<10; wk++) {
-//  	    ClientTask clientA = new ClientTask((new Date()).getTime(), idA, modA);
-//  	    clients.add(clientA);
+  	{
+  	  int wk; 
+  	  for(wk=0; wk<10; wk++) {
+  	    ClientTask clientA = new ClientTask((new Date()).getTime(), idA, modA);
+  	    clients.add(clientA);
 
-//  	    ClientTask clientB = new ClientTask((new Date()).getTime(), idB, modB);
-//  	    clients.add(clientB);
-//  	  }
-//  	}
+  	    ClientTask clientB = new ClientTask((new Date()).getTime(), idB, modB);
+  	    clients.add(clientB);
+  	  }
+  	}
 
 	{
  	  ClientTask clientA = new ClientTask(0, idB, modB);
  	  clients.add(clientA);	
 
-// 	  ClientTask clientB = new ClientTask(0, idA, modA);
-// 	  clients.add(clientB);	
+ 	  ClientTask clientB = new ClientTask(0, idA, modA);
+ 	  clients.add(clientB);	
 	}
       }
       
@@ -195,7 +195,7 @@ class TestFileMgrApp
       try {
 	FileMgrClient client = new FileMgrClient("localhost", 53138);
 
-	int count = 5;
+	int count = 50;
 
 	if(pSeed == 0) {
 	  ArrayList<NodeVersion> versions = new ArrayList<NodeVersion>();
@@ -284,24 +284,37 @@ class TestFileMgrApp
 	      printStates(states);
 	    }
 
-	    for(File file : pNodeMod.getPrimarySequence().getFiles()) {
-	      if(random.nextInt(10) == 0) {
-		int size = random.nextInt(100) + 600;
-		
-		ArrayList<String> args = new ArrayList<String>();
-		args.add("-resize");
-		args.add(size + "x" + size);
-		args.add(file.getPath());
-		args.add(file.getPath());	      
-		
-		SubProcess proc = new SubProcess("ScaleImage", "convert", args, env, dir);
-		proc.start(); 
-		
-		try {
-		  proc.join();
-		}
-		catch(InterruptedException ex) {
-		  assert(false);
+	    client.freeze(pNodeID, pNodeMod); 
+
+	    try {
+	      sleep(2000);
+	    }
+	    catch(InterruptedException ex) {
+	      assert(false);
+	    }
+
+	    client.unfreeze(pNodeID, pNodeMod);
+
+	    if(!vsn.getVersionID().equals(latest)) {
+	      for(File file : pNodeMod.getPrimarySequence().getFiles()) {
+		if(random.nextInt(10) == 0) {
+		  int size = random.nextInt(100) + 600;
+		  
+		  ArrayList<String> args = new ArrayList<String>();
+		  args.add("-resize");
+		  args.add(size + "x" + size);
+		  args.add(file.getPath());
+		  args.add(file.getPath());	      
+		  
+		  SubProcess proc = new SubProcess("ScaleImage", "convert", args, env, dir);
+		  proc.start(); 
+		  
+		  try {
+		    proc.join();
+		  }
+		  catch(InterruptedException ex) {
+		    assert(false);
+		  }
 		}
 	      }
 	    }
@@ -321,7 +334,7 @@ class TestFileMgrApp
 	    
 	    client.refreshCheckSums(pNodeID, pNodeMod.getSequences());
 	    
-	    int sleep2 = random.nextInt(1000);
+	    int sleep2 = 1000 + random.nextInt(1000);
 	    //System.out.print(getName() + ": sleeping for " + sleep2 + " msecs...\n");
 	    try {
 	      sleep(sleep2);
