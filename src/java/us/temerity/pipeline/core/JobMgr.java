@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.15 2004/11/11 00:38:32 jim Exp $
+// $Id: JobMgr.java,v 1.16 2005/01/11 12:52:55 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -564,9 +564,8 @@ class JobMgr
       try {
 	SubProcessLight proc = 
 	  new SubProcessLight("Remove-JobFiles", "rm", args, env, pJobDir);
-	proc.start();
-	
 	try {
+	  proc.start();
 	  proc.join();
 	  if(!proc.wasSuccessful()) 
 	    throw new PipelineException

@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.79 2005/01/07 17:24:39 jim Exp $
+// $Id: MasterMgr.java,v 1.80 2005/01/11 12:52:55 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -984,9 +984,8 @@ class MasterMgr
 	
 	SubProcessLight proc = 
 	  new SubProcessLight("RemoveDownstreamLinks", "rm", args, env, pNodeDir);
-	proc.start();
-	
 	try {
+	  proc.start();
 	  proc.join();
 	}
 	catch(InterruptedException ex2) {

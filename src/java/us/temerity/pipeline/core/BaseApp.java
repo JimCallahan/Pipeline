@@ -1,4 +1,4 @@
-// $Id: BaseApp.java,v 1.10 2004/10/28 15:55:23 jim Exp $
+// $Id: BaseApp.java,v 1.11 2005/01/11 12:52:55 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -127,9 +127,8 @@ class BaseApp
       
       SubProcessLight proc = 
 	new SubProcessLight("CheckMozilla", "mozilla", args, env, dir);
-      proc.start();
-
       try {
+	proc.start();
 	proc.join();
       }
       catch(InterruptedException ex) {
@@ -146,9 +145,8 @@ class BaseApp
 
       SubProcessLight proc = 
 	new SubProcessLight("RemoteMozilla", "mozilla", args, env, dir);
-      proc.start();
-
-      try {
+      try {      
+	proc.start();
 	proc.join();
       }
       catch(InterruptedException ex) {
