@@ -1,4 +1,4 @@
-// $Id: TestFileMgrApp.java,v 1.4 2004/03/15 19:12:53 jim Exp $
+// $Id: TestFileMgrApp.java,v 1.5 2004/03/16 00:04:19 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.message.*;
@@ -26,7 +26,7 @@ class TestFileMgrApp
   {
     Logs.init();
     Logs.net.setLevel(Level.FINEST);
-    Logs.sub.setLevel(Level.FINE);
+    Logs.sub.setLevel(Level.FINER);
     //Logs.sum.setLevel(Level.FINER);
 
     try {
@@ -44,7 +44,7 @@ class TestFileMgrApp
 
   public void 
   run() 
-    throws InterruptedException, PipelineException
+    throws InterruptedException, PipelineException, IOException
   { 
     /* common stuff */ 
     Map<String,String> env = System.getenv();
@@ -120,23 +120,23 @@ class TestFileMgrApp
     {
       ArrayList<ClientTask> clients = new ArrayList<ClientTask>();
       {
- 	{
- 	  int wk; 
- 	  for(wk=0; wk<10; wk++) {
- 	    ClientTask clientA = new ClientTask((new Date()).getTime(), idA, modA);
- 	    clients.add(clientA);
+//  	{
+//  	  int wk; 
+//  	  for(wk=0; wk<10; wk++) {
+//  	    ClientTask clientA = new ClientTask((new Date()).getTime(), idA, modA);
+//  	    clients.add(clientA);
 
- 	    ClientTask clientB = new ClientTask((new Date()).getTime(), idB, modB);
- 	    clients.add(clientB);
- 	  }
- 	}
+//  	    ClientTask clientB = new ClientTask((new Date()).getTime(), idB, modB);
+//  	    clients.add(clientB);
+//  	  }
+//  	}
 
 	{
-	  ClientTask clientA = new ClientTask(0, idB, modB);
-	  clients.add(clientA);	
+ 	  ClientTask clientA = new ClientTask(0, idB, modB);
+ 	  clients.add(clientA);	
 
-	  ClientTask clientB = new ClientTask(0, idA, modA);
-	  clients.add(clientB);	
+// 	  ClientTask clientB = new ClientTask(0, idA, modA);
+// 	  clients.add(clientB);	
 	}
       }
       
@@ -192,50 +192,102 @@ class TestFileMgrApp
 	assert(false);
       }
 
-
       try {
 	FileMgrClient client = new FileMgrClient("localhost", 53138);
 
-	int count = 50;
+	int count = 5;
 
 	if(pSeed == 0) {
-	  VersionID lvid = null;
-	  int rk;
-	  for(rk=0; rk<count; rk++) {
-	    VersionID vid = new VersionID();
-	    VersionState vstate = VersionState.Pending;
+	  ArrayList<NodeVersion> versions = new ArrayList<NodeVersion>();
+
+	  /* create some checked-in in versions */ 
+	  VersionID latest = null;
+	  {
+	    VersionID lvid = null;
+	    int rk;
+	    for(rk=0; rk<count; rk++) {
+	      VersionID vid = new VersionID();
+	      VersionState vstate = VersionState.Pending;
+	      
+	      if(lvid != null) {
+		VersionID.Level levels[] = VersionID.Level.values();
+		vid = new VersionID(lvid, levels[random.nextInt(levels.length)]);
+		vstate = VersionState.Identical;
+	      }
+	      
+	      {
+		TreeMap<FileSeq, FileState[]> states = 
+		  client.computeFileStates(pNodeID, pNodeMod, vstate, lvid);
+		printStates(states);
 		
-	    if(lvid != null) {
-	      VersionID.Level levels[] = VersionID.Level.values();
-	      vid = new VersionID(lvid, levels[random.nextInt(levels.length)]);
-	      vstate = VersionState.Identical;
-	    }
+		client.checkIn(pNodeID, pNodeMod, vid, lvid, states);
+		
+		NodeVersion vsn = new NodeVersion(pNodeMod, vid, "Some Message...");
+		versions.add(vsn);
+		
+		pNodeMod = new NodeMod(vsn);
+	      }
+	      
+	      {
+		FrameRange range = pNodeMod.getPrimarySequence().getFrameRange();
+		int f1 = range.getStart() + random.nextInt(10) - 5;
+		int f2 = range.getEnd() + random.nextInt(10) - 5;
+		int s = Math.min(43, Math.max(0, Math.min(f1, f2)));
+		int e = Math.min(43, Math.max(0, Math.max(f1, f2)));
+		
+		pNodeMod.adjustFrameRange(new FrameRange(s, e, range.getBy()));
+	      }
 	    
+	      if(rk < (count-1)) {
+		for(File file : pNodeMod.getPrimarySequence().getFiles()) {
+		  if(random.nextInt(10) == 0) {
+		    int size = random.nextInt(100) + 600;
+		    
+		    ArrayList<String> args = new ArrayList<String>();
+		    args.add("-resize");
+		    args.add(size + "x" + size);
+		    args.add(file.getPath());
+		    args.add(file.getPath());	      
+		    
+		    SubProcess proc = new SubProcess("ScaleImage", "convert", args, env, dir);
+		    proc.start(); 
+		    
+		    try {
+		    proc.join();
+		    }
+		    catch(InterruptedException ex) {
+		      assert(false);
+		    }
+		  }
+		}
+	      }
+	      
+	      lvid = vid;
+	    }
+
+	    latest = lvid;
+	  }
+
+	  /* check-out the versions */ 
+	  for(NodeVersion vsn : versions) {
+
+	    VersionState vstate = VersionState.NeedsCheckOut;
+	    if(latest.equals(vsn.getVersionID())) 
+	      vstate = VersionState.Identical;
+
+	    client.checkOut(pNodeID, vsn);
+	    pNodeMod = new NodeMod(vsn);
+
 	    {
 	      TreeMap<FileSeq, FileState[]> states = 
-		client.computeFileStates(pNodeID, pNodeMod, vstate, lvid);
+		client.computeFileStates(pNodeID, pNodeMod, vstate, latest);
 	      printStates(states);
-	      
-	      client.checkIn(pNodeID, pNodeMod, vid, lvid, states);
+	    }
 
-	      NodeVersion vsn = new NodeVersion(pNodeMod, vid, "Some Message...");
-	      pNodeMod = new NodeMod(vsn);
-	    }
-	    
-	    {
-	      FrameRange range = pNodeMod.getPrimarySequence().getFrameRange();
-	      int f1 = range.getStart() + random.nextInt(10) - 5;
-	      int f2 = range.getEnd() + random.nextInt(10) - 5;
-	      int s = Math.min(43, Math.max(0, Math.min(f1, f2)));
-	      int e = Math.min(43, Math.max(0, Math.max(f1, f2)));
-	      
-	      pNodeMod.adjustFrameRange(new FrameRange(s, e, range.getBy()));
-	    }
-	    
 	    for(File file : pNodeMod.getPrimarySequence().getFiles()) {
 	      if(random.nextInt(10) == 0) {
 		int size = random.nextInt(100) + 600;
-
+		
 		ArrayList<String> args = new ArrayList<String>();
 		args.add("-resize");
 		args.add(size + "x" + size);
@@ -254,7 +306,11 @@ class TestFileMgrApp
 	      }
 	    }
 
-	    lvid = vid;
+	    {
+	      TreeMap<FileSeq, FileState[]> states = 
+		client.computeFileStates(pNodeID, pNodeMod, vstate, latest);
+	      printStates(states);
+	    }
 	  }
 	}
 	else { 
@@ -290,7 +346,7 @@ class TestFileMgrApp
      TreeMap<FileSeq, FileState[]> states
     ) 
     {
-      if(false) {
+      if(true) {
 	StringBuffer buf = new StringBuffer(); 
 	buf.append(pNodeID + ":\n");
 	

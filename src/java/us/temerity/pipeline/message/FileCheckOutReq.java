@@ -1,4 +1,4 @@
-// $Id: FileCheckOutReq.java,v 1.1 2004/03/09 09:45:31 jim Exp $
+// $Id: FileCheckOutReq.java,v 1.2 2004/03/16 00:04:19 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -38,20 +38,20 @@ class FileCheckOutReq
    * @param vid [<B>in</B>]
    *   The revision number of the checked-in version to check-out.
    * 
-   * @param force [<B>in</B>]
-   *   Forcibly overwrite existing files associated with the working version?
-   * 
    * @param fseqs [<B>in</B>]
    *   The primary and secondary file sequences associated with the checked-in version to 
    *   check-out.
+   * 
+   * @param isEditable [<B>in</B>]
+   *   Should the working files have write permissions after being checked-out?
    */
   public
   FileCheckOutReq
   (
    NodeID id, 
    VersionID vid, 
-   boolean force, 
-   TreeSet<FileSeq> fseqs
+   TreeSet<FileSeq> fseqs, 
+   boolean isEditable
   )
   { 
     if(id == null) 
@@ -62,11 +62,11 @@ class FileCheckOutReq
       throw new IllegalArgumentException("The check-out revision number cannot be (null)!");
     pVersionID = vid;
 
-    pForce = force;
-
     if(fseqs == null) 
       throw new IllegalArgumentException("The check-out file sequences cannot (null)!");
     pFileSeqs = fseqs;
+
+    pIsEditable = isEditable;
   }
 
 
@@ -93,15 +93,6 @@ class FileCheckOutReq
   }
   
   /**
-   * Forcibly overwrite existing files associated with the working version?
-   */
-  public boolean 
-  forceOverwrite() 
-  {
-    return pForce;
-  }
-  
-  /**
    * Gets the primary and secondary file sequences associated with the checked-in version to 
    * check-out.
    */
@@ -111,7 +102,16 @@ class FileCheckOutReq
     return pFileSeqs;
   }
 
-  
+  /**
+   * 
+   */
+  public boolean 
+  isEditable() 
+  {
+    return pIsEditable;
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -135,15 +135,16 @@ class FileCheckOutReq
    */
   private VersionID  pVersionID;
 
-  /**
-   * Forcibly overwrite existing files associated with the working version?
-   */
-  private boolean  pForce;
-
   /** 
    * The primary and secondary file sequences associated with the checked-in version to 
    * check-out.
    */
   private TreeSet<FileSeq>  pFileSeqs;
+
+  /**
+   * Should the working files have write permissions after being checked-out.
+   */
+  private boolean  pIsEditable;
+
 }
   

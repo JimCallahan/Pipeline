@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.4 2004/03/15 19:07:46 jim Exp $
+// $Id: FileMgrClient.java,v 1.5 2004/03/16 00:04:19 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -242,6 +242,50 @@ class FileMgrClient
 	("Illegal response received from the FileMgrServer instance!");
     }
   }
+
+  /**
+   * Overwrite the files associated with the given working version of the node with the 
+   * files associated with the given checked-in version. <P> 
+   * 
+   * @param id [<B>in</B>]
+   *   The unique working version identifier.
+   * 
+   * @param vsn [<B>in</B>]
+   *   The checked-in version to check-out.
+   */ 
+  public synchronized void 
+  checkOut
+  (
+   NodeID id, 
+   NodeVersion vsn
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    FileCheckOutReq req = 
+      new FileCheckOutReq(id, vsn.getVersionID(), vsn.getSequences(), !vsn.hasAction());
+
+    Object obj = performTransaction(FileRequest.CheckOut, req);
+
+    if(obj instanceof SuccessRsp) {
+    }
+    else if(obj instanceof FailureRsp) {
+      FailureRsp rsp = (FailureRsp) obj;
+      throw new PipelineException(rsp.getMessage());	
+    }
+    else {
+      shutdown();
+      throw new PipelineException
+	("Illegal response received from the FileMgrServer instance!");
+    }
+  }
+
+
+
+  // ... 
+  
+
 
   /**
    * Close the network connection if its is still connected.

@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.3 2004/03/15 19:07:03 jim Exp $
+// $Id: FileMgr.java,v 1.4 2004/03/16 00:04:19 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -313,7 +313,7 @@ class FileMgr
 	switch(req.getVersionState()) {
 	case Pending:
 	  if((req.getWorkingVersionID() != null) || (req.getLatestVersionID() != null))
-	    return new FailureRsp(task, "Internal Error", wait, start);
+	    throw new PipelineException("Internal Error");
 
 	  for(FileSeq fseq : req.getFileSequences()) {
 	    FileState fs[] = new FileState[fseq.numFrames()];
@@ -335,11 +335,11 @@ class FileMgr
 	  break;
 	  
 	case CheckedIn:
-	  return new FailureRsp(task, "Internal Error", wait, start);
+	  throw new PipelineException("Internal Error");
 	  
 	case Identical:
 	  if((req.getWorkingVersionID() == null) || (req.getLatestVersionID() == null))
-	    return new FailureRsp(task, "Internal Error", wait, start);
+	    throw new PipelineException("Internal Error");
 
 	  for(FileSeq fseq : req.getFileSequences()) {
 	    FileState fs[] = new FileState[fseq.numFrames()];
@@ -378,7 +378,7 @@ class FileMgr
 	  
 	case NeedsCheckOut:
 	  if((req.getWorkingVersionID() == null) || (req.getLatestVersionID() == null))
-	    return new FailureRsp(task, "Internal Error", wait, start);
+	    throw new PipelineException("Internal Error");
 
 	  for(FileSeq fseq : req.getFileSequences()) {
 	    FileState fs[] = new FileState[fseq.numFrames()];
@@ -425,7 +425,7 @@ class FileMgr
 		      if(work.length() == base.length()) {
 			if(!workRefreshed) 
 			  pCheckSum.refresh(wpath);
-			workEqBase = pCheckSum.compare(wpath, lpath);
+			workEqBase = pCheckSum.compare(wpath, bpath);
 		      }
 
 		      if(workEqBase)
@@ -641,9 +641,9 @@ class FileMgr
 	  /* copy the files */ 
 	  if(!copies.isEmpty()) {	    
 	    ArrayList<String> args = new ArrayList<String>();
+	    args.add("--target-directory=" + rdir);
 	    for(File file : copies) 
 	      args.add(file.getPath());
-	    args.add(rdir.getPath());
 	    
 	    SubProcess proc = 
 	      new SubProcess("CheckIn-Copy", "cp", args, env, wdir);
@@ -689,11 +689,10 @@ class FileMgr
 	  /* copy the checksums */ 
 	  {
 	    ArrayList<String> args = new ArrayList<String>();
-
+	    args.add("--target-directory=" + crdir);
 	    for(FileSeq fseq : req.getFileSequences()) 
 	      for(File file : fseq.getFiles()) 
 		args.add(file.getPath());
-	    args.add(crdir.getPath());
 
 	    SubProcess proc = 
 	      new SubProcess("CheckIn-CopyCheckSums", "cp", args, env, cwdir);
@@ -766,6 +765,243 @@ class FileMgr
       nodeLock.writeLock().unlock();
     }  
   }
+
+  /**
+   * Overwrite the files associated with the working version of the node with a copy of
+   * the files associated with the given checked-in version. 
+   * 
+   * @param req [<B>in</B>]
+   *   The check-out request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to check-out the files.
+   */
+  public Object
+  checkOut
+  (
+   FileCheckOutReq req
+  ) 
+  {
+    if(req == null) 
+      return new FailureRsp("The check-out request cannot be (null)!");
+    
+    String task = null;
+    {
+      StringBuffer buf = new StringBuffer();
+      buf.append("FileMgr.checkOut(): " + req.getNodeID() + " (" + req.getVersionID() + ") ");
+      for(FileSeq fseq : req.getFileSequences()) 
+	buf.append("[" + fseq + "]");
+      task = buf.toString();
+    }
+
+    Date start = new Date();
+    long wait = 0;
+    ReentrantReadWriteLock nodeLock = getNodeLock(req.getNodeID().getName());
+    nodeLock.readLock().lock();
+    try {
+      Object workLock = getWorkLock(req.getNodeID());
+      synchronized(workLock) {
+	wait  = (new Date()).getTime() - start.getTime();
+	start = new Date();
+
+	Map<String,String> env = System.getenv();
+
+	/* verify (or create) the working area file, backup and checksum directories */ 
+	File wdir  = null;
+	File cwdir = null;
+	File bwdir = null;
+	{
+	  File wpath = req.getNodeID().getWorkingDir();
+	  wdir  = new File(pProdDir, wpath.getPath());
+	  cwdir = new File(pProdDir, "checksum/" + wpath);
+
+	  synchronized(pMakeDirLock) { 
+	    ArrayList<File> dirs = new ArrayList<File>();
+	    if(wdir.exists()) {
+	      if(!wdir.isDirectory()) 
+		throw new PipelineException
+		  ("Somehow there exists a non-directory (" + wdir + 
+		   ") in the location of the working directory!");
+	    }
+	    else {
+	      dirs.add(wdir);
+	    }
+
+	    bwdir = new File(wdir, ".backup");
+	    if(bwdir.exists()) {
+	      if(!bwdir.isDirectory()) 
+		throw new PipelineException
+		  ("Somehow there exists a non-directory (" + bwdir + 
+		   ") in the location of the working backup directory!");
+	    }
+	    else {
+	      dirs.add(bwdir);
+	    }
+	    
+	    if(cwdir.exists()) {
+	      if(!cwdir.isDirectory()) 
+		throw new PipelineException
+		  ("Somehow there exists a non-directory (" + cwdir + 
+		   ") in the location of the working checksum directory!");
+	    }
+	    else {
+	      dirs.add(cwdir);
+	    }
+
+	    if(!dirs.isEmpty()) {
+	      ArrayList<String> args = new ArrayList<String>();
+	      args.add("--parents");
+	      args.add("--mode=755");
+	      for(File dir : dirs)
+		args.add(dir.getPath());
+	      
+	      SubProcess proc = 
+		new SubProcess(req.getNodeID().getAuthor(), 
+			       "CheckOut-MakeDirs", "mkdir", args, env, pProdDir);
+	      proc.start();
+	      
+	      try {
+		proc.join();
+	      }
+	      catch(InterruptedException ex) {
+		throw new PipelineException
+		  ("Interrupted while creating directories for working version (" + 
+		   req.getNodeID() + ")!");
+	      }
+	    }
+	  }
+	}
+
+	/* the repository file and checksum directories */ 
+	VersionID rvid = req.getVersionID();
+	File rdir  = null;
+	File crdir = null;
+	{
+	  File rpath = req.getNodeID().getCheckedInDir(rvid);
+	  rdir  = new File(pProdDir, rpath.getPath());
+	  crdir = new File(pProdDir, "checksum/" + rpath);
+	}
+
+	/* build the list of files to copy */ 
+	ArrayList<File> files = new ArrayList<File>();
+	for(FileSeq fseq : req.getFileSequences()) 
+	  files.addAll(fseq.getFiles());
+	
+	/* move any existing working files which would be overwritten into 
+	    the backup directory */ 
+	{
+	  ArrayList<String> old = new ArrayList<String>();
+	  for(File file : files) {
+	    File work = new File(wdir, file.getPath());
+	    if(work.isFile()) 
+	      old.add(file.getName());
+	  }
+	  
+	  if(!old.isEmpty()) {
+	    ArrayList<String> args = new ArrayList<String>();
+	    args.add("--force");
+	    args.add("--update");
+	    args.add("--target-directory=" + bwdir);
+	    args.addAll(old);
+
+	    SubProcess proc = 
+	      new SubProcess(req.getNodeID().getAuthor(), 
+			     "CheckOut-Backup", "mv", args, env, wdir);
+	    proc.start();
+	    
+	    try {
+	      proc.join();
+	    }
+	    catch(InterruptedException ex) {
+	      throw new PipelineException
+		("Interrupted while backing-up the working files for version (" + 
+		 req.getNodeID() + ")!");
+	    }
+	  }
+	}
+
+	/* copy the checked-in files to the working directory */ 
+	{
+	  ArrayList<String> args = new ArrayList<String>();
+	  args.add("--target-directory=" + wdir);
+	  for(File file : files) 
+	    args.add(file.getName());
+
+	  SubProcess proc = 
+	    new SubProcess(req.getNodeID().getAuthor(), 
+			   "CheckOut-Copy", "cp", args, env, rdir);
+	  proc.start();
+	  
+	  try {
+	    proc.join();
+	  }
+	  catch(InterruptedException ex) {
+	    throw new PipelineException
+	      ("Interrupted while copying files from the repository for the " +
+	       "working version (" + req.getNodeID() + ")!");
+	  }
+	}
+
+	/* add write permission for editable nodes */ 
+	if(req.isEditable()) {
+	  ArrayList<String> args = new ArrayList<String>();
+	  args.add("u+w");
+	  for(File file : files) 
+	    args.add(file.getName());
+
+	  SubProcess proc = 
+	    new SubProcess(req.getNodeID().getAuthor(), 
+			   "CheckOut-SetWritable", "chmod", args, env, wdir);
+	  proc.start();
+	  
+	  try {
+	    proc.join();
+	  }
+	  catch(InterruptedException ex) {
+	    throw new PipelineException
+	      ("Interrupted while adding write access permission to the files for the " + 
+	       "working version (" + req.getNodeID() + ")!");
+	  }
+	}
+	
+	/* overwrite the working checksums with the checked-in checksums */ 
+	{
+	  ArrayList<String> args = new ArrayList<String>();
+	  args.add("--force");
+	  args.add("--target-directory=" + cwdir);
+	  for(File file : files) 
+	    args.add(file.getName());
+
+	  SubProcess proc = 
+	    new SubProcess(req.getNodeID().getAuthor(), 
+			   "CheckOut-CopyCheckSums", "cp", args, env, crdir);
+	  proc.start();
+	  
+	  try {
+	    proc.join();
+	  }
+	  catch(InterruptedException ex) {
+	    throw new PipelineException
+	      ("Interrupted while copying checksums from the repository for the " +
+	       "working version (" + req.getNodeID() + ")!");
+	  }
+	}
+
+	return new SuccessRsp(task, wait, start);
+      }
+    }
+    catch(PipelineException ex) {
+      if(wait > 0) 
+	return new FailureRsp(task, ex.getMessage(), wait, start);
+      else 
+	return new FailureRsp(task, ex.getMessage(), start);
+    }
+    finally {
+      nodeLock.readLock().unlock();
+    }  
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -843,12 +1079,22 @@ class FileMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The per-node locks indexed by fully resolved node name.  
+   * The per-node locks indexed by fully resolved node name. <P> 
+   * 
+   * These locks protect the files, symlinks and checksums associated with all checked-in 
+   * versions of each node. The per-node read-lock should be aquired for operations which 
+   * will only access these checked-in file resources.  The per-node write-lock should be 
+   * aquired when creating new files, symlinks or checksums.
    */
   private HashMap<String,ReentrantReadWriteLock>  pNodeLocks;
 
   /**
-   * The per-working version locks indexed by NodeID.
+   * The per-working version locks indexed by NodeID. <P> 
+   * 
+   * These locks protect the files, symlinks and checksums associated with the working 
+   * versions for each user and view of each node.  These locks should be used in a 
+   * <CODE>synchronized()<CODE> statement block wrapping any access or modification of 
+   * these file resources.
    */
   private HashMap<NodeID,Object>  pWorkLocks;
 
