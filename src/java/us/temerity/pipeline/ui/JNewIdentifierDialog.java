@@ -1,4 +1,4 @@
-// $Id: JNewIdentifierDialog.java,v 1.2 2004/05/13 02:37:41 jim Exp $
+// $Id: JNewIdentifierDialog.java,v 1.3 2004/05/13 21:29:16 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -86,6 +86,9 @@ class JNewIdentifierDialog
   
   /*-- DOCUMENT LISTENER METHODS -----------------------------------------------------------*/
 
+  /**
+   * Gives notification that an attribute or set of attributes changed.
+   */ 
   public void 
   changedUpdate(DocumentEvent e) {}
 

@@ -1,4 +1,4 @@
-// $Id: JManageLayoutsDialog.java,v 1.3 2004/05/12 04:00:36 jim Exp $
+// $Id: JManageLayoutsDialog.java,v 1.4 2004/05/13 21:29:16 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -115,15 +115,27 @@ class JManageLayoutsDialog
 
   /*-- MOUSE LISTENER METHODS -----------------------------------------------------------*/
 
+  /**
+   * Invoked when the mouse button has been clicked (pressed and released) on a component. 
+   */ 
   public void 
   mouseClicked(MouseEvent e) {}
   
+  /**
+   * Invoked when the mouse enters a component. 
+   */
   public void 
   mouseEntered(MouseEvent e) {}
 
+  /**
+   * Invoked when the mouse exits a component. 
+   */ 
   public void 
   mouseExited(MouseEvent e) {}
 
+  /**
+   * Invoked when a mouse button has been pressed on a component. 
+   */
   public void 
   mousePressed
   (
@@ -151,6 +163,9 @@ class JManageLayoutsDialog
     }
   }
 
+  /**
+   * Invoked when a mouse button has been released on a component. 
+   */ 
   public void 
   mouseReleased(MouseEvent e) {}
 

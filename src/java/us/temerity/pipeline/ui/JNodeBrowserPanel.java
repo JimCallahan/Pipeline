@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.13 2004/05/12 16:50:19 jim Exp $
+// $Id: JNodeBrowserPanel.java,v 1.14 2004/05/13 21:29:16 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -334,15 +334,27 @@ class JNodeBrowserPanel
 
   /*-- MOUSE LISTNER METHODS -------------------------------------------------------------*/
   
+  /**
+   * Invoked when the mouse button has been clicked (pressed and released) on a component. 
+   */ 
   public void 
   mouseClicked(MouseEvent e) {}
-    
+   
+  /**
+   * Invoked when the mouse enters a component. 
+   */
   public void 
-  mouseEntered(MouseEvent e) {}
-
+  mouseEntered(MouseEvent e) {} 
+  
+  /**
+   * Invoked when the mouse exits a component. 
+   */ 
   public void 
-  mouseExited(MouseEvent e) {}
-
+  mouseExited(MouseEvent e) {} 
+  
+  /**
+   * Invoked when a mouse button has been pressed on a component. 
+   */
   public void 
   mousePressed
   (
@@ -385,6 +397,9 @@ class JNodeBrowserPanel
     }
   }
 
+  /**
+   * Invoked when a mouse button has been released on a component. 
+   */ 
   public void 
   mouseReleased(MouseEvent e) {}
 

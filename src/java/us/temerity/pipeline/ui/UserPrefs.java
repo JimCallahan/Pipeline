@@ -1,4 +1,4 @@
-// $Id: UserPrefs.java,v 1.1 2004/05/13 02:37:41 jim Exp $
+// $Id: UserPrefs.java,v 1.2 2004/05/13 21:29:16 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -50,6 +50,8 @@ class UserPrefs
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   N O D E   V I E W E R                                                                */
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Get the horizontal distance between nodes in the node viewer.
@@ -94,7 +96,29 @@ class UserPrefs
     pNodeSpaceY = space;
   }
 
+
+  /**
+   * Get the vertical offset distance for nodes with an odd depth level in the node viewer.
+   */ 
+  public double 
+  getNodeOffset()
+  {
+    return pNodeOffset;
+  }
+
+  /**
+   * Set the vertical offset distance for nodes with an odd depth level in the node viewer.
+   */ 
+  public void 
+  setNodeOffset
+  (
+   double offset
+  )
+  {
+    pNodeOffset = offset;
+  }
   
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   O P S                                                                                */
@@ -108,6 +132,7 @@ class UserPrefs
   {
     pNodeSpaceX = 2.0;
     pNodeSpaceY = 2.0;
+    pNodeOffset = 0.5;
 
     // ...
 
@@ -135,6 +160,8 @@ class UserPrefs
     File file = new File(PackageInfo.sHomeDir, 
 			 PackageInfo.sUser + "/.pipeline/preferences");
     sUserPrefs = (UserPrefs) LockedGlueFile.load(file);
+
+    System.out.print("Prefs loaded: " + file + "\n");
   }
 
 
@@ -150,8 +177,10 @@ class UserPrefs
   ) 
     throws GlueException
   {
+    /* node viewer */ 
     encoder.encode("NodeSpaceX", pNodeSpaceX);
     encoder.encode("NodeSpaceY", pNodeSpaceY);
+    encoder.encode("NodeOffset", pNodeOffset);
 
     // ...
 
@@ -164,13 +193,20 @@ class UserPrefs
   ) 
     throws GlueException
   {
-    Double spaceX = (Double) decoder.decode("NodeSpaceX");
-    if(spaceX == null)
-      throw new GlueException("The \"NodeSpaceX\" cannot be (null)!");
-
-    Double spaceY = (Double) decoder.decode("NodeSpaceY");
-    if(spaceY == null)
-      throw new GlueException("The \"NodeSpaceY\" cannot be (null)!");
+    /* node viewer */ 
+    {
+      Double spaceX = (Double) decoder.decode("NodeSpaceX");
+      if(spaceX != null)
+	pNodeSpaceX = spaceX;
+      
+      Double spaceY = (Double) decoder.decode("NodeSpaceY");
+      if(spaceY != null)
+	pNodeSpaceY = spaceY;
+      
+      Double offset = (Double) decoder.decode("NodeOffset");
+      if(offset != null)
+	pNodeOffset = offset;
+    }
 
     
     // ...
@@ -195,13 +231,19 @@ class UserPrefs
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Horizontal distance between nodes in the node viewer.
+   * The horizontal distance between nodes in the node viewer.
    */ 
   private double  pNodeSpaceX;
   
   /**
-   * Vertical distance between nodes in the node viewer.
+   * The vertical distance between nodes in the node viewer.
    */ 
   private double  pNodeSpaceY;
+  
+  /**
+   * The vertical offset distance for nodes with an odd depth level in the node viewer.
+   */ 
+  private double  pNodeOffset;
+
   
 }

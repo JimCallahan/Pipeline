@@ -1,4 +1,4 @@
-// $Id: JSelectLayoutDialog.java,v 1.2 2004/05/12 04:03:53 jim Exp $
+// $Id: JSelectLayoutDialog.java,v 1.3 2004/05/13 21:29:16 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -243,6 +243,9 @@ class JSelectLayoutDialog
 
   /*-- DOCUMENT LISTENER METHODS -----------------------------------------------------------*/
 
+  /**
+   * Gives notification that an attribute or set of attributes changed.
+   */ 
   public void 
   changedUpdate(DocumentEvent e) {}
 
