@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.3 2004/07/25 03:06:49 jim Exp $
+// $Id: QueueMgr.java,v 1.4 2004/07/28 19:17:30 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -7,8 +7,10 @@ import us.temerity.pipeline.message.*;
 import us.temerity.pipeline.*;
 
 import java.io.*;
+import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.logging.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   M G R                                                                      */
@@ -73,6 +75,8 @@ class QueueMgr
 
       pLicenseKeys = new TreeMap<String,LicenseKey>();
       pSelectionKeys = new TreeMap<String,SelectionKey>();
+
+      pHosts = new TreeMap<String,QueueHost>();
     }
 
     makeRootDirs();
@@ -110,7 +114,18 @@ class QueueMgr
     catch(PipelineException ex) {
       throw new IllegalArgumentException(ex.getMessage());
     }
-  }
+
+    /* load the hosts if any exist */ 
+    try {
+      readHosts();
+    }
+    catch(PipelineException ex) {
+      throw new IllegalArgumentException(ex.getMessage());
+    }    
+
+    /* initialize the last sample timestamp */ 
+    pLastSampleWrite = new Date();
+  } 
 
   /**
    * Make sure that the root queue directories exist.
@@ -124,10 +139,10 @@ class QueueMgr
     
     ArrayList<File> dirs = new ArrayList<File>();
     dirs.add(new File(pQueueDir, "queue"));
-    dirs.add(new File(pQueueDir, "queue/hosts"));
     dirs.add(new File(pQueueDir, "queue/jobs"));
     dirs.add(new File(pQueueDir, "queue/job-info"));
     dirs.add(new File(pQueueDir, "queue/job-groups"));
+    dirs.add(new File(pQueueDir, "queue/resource-samples"));
 
     synchronized(pMakeDirLock) {
       for(File dir : dirs) {
@@ -147,9 +162,6 @@ class QueueMgr
   /**
    * Shutdown the node manager. <P> 
    * 
-   * Also sends a shutdown request to all of the <B>pljobmgr</B>(1) daemons for which there
-   * are live network connections. <P> 
-   * 
    * It is crucial that this method be called when only a single thread is able to access
    * this instance!  In other words, after all request threads have already exited or by a 
    * restart during the construction of this instance.
@@ -157,8 +169,39 @@ class QueueMgr
   public void  
   shutdown() 
   {
+    /* write the last interval of samples to disk */ 
+    {
+      Date now = new Date();
+      TreeMap<String,ArrayList<ResourceSample>> dump = 
+	new TreeMap<String,ArrayList<ResourceSample>>();
+      for(String hname : pHosts.keySet()) {
+	QueueHost host = pHosts.get(hname);
+	if(host != null) {
+	  switch(host.getStatus()) {
+	  case Enabled:
+	    {
+	      ArrayList<ResourceSample> rs = new ArrayList<ResourceSample>();
+	      for(ResourceSample s : host.getSamples()) {
+		if(s.getTimeStamp().compareTo(pLastSampleWrite) > 0) 
+		  rs.add(s);
+	      }
+	      
+	      if(!rs.isEmpty()) 
+		dump.put(hname, rs);
+	    }
+	  }
+	}
+      }
 
-    // ... 
+      if(!dump.isEmpty()) {
+	try {
+	  writeSamples(now, dump);
+	}
+	catch(PipelineException ex) {
+	  Logs.ops.severe(ex.getMessage());
+	}
+      }
+    }
 
     /* remove the lock file */ 
     {
@@ -166,6 +209,7 @@ class QueueMgr
       file.delete();
     }
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -182,7 +226,7 @@ class QueueMgr
   public Object 
   getPrivilegedUsers()
   {
-    TaskTimer timer = new TaskTimer();
+    TaskTimer timer = new TaskTimer("QueueMgr.getPrivilegedUsers()");
     
     timer.aquire();
     synchronized(pPrivilegedUsers) {
@@ -514,6 +558,475 @@ class QueueMgr
   }  
 
 
+     
+  /*----------------------------------------------------------------------------------------*/
+  /*   J O B   M A N A G E R   H O S T S                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the current state of the hosts capable of executing jobs for the Pipeline queue.
+   * 
+   * @return
+   *   <CODE>QueueGetHostsRsp</CODE> if successful.
+   */ 
+  public Object
+  getHosts() 
+  {
+    TaskTimer timer = new TaskTimer();
+    timer.aquire();
+    synchronized(pHosts) {
+      timer.resume();
+      
+      return new QueueGetHostsRsp(timer, pHosts);
+    }
+  }
+  
+  /**
+   * Add a new execution host to the Pipeline queue. <P> 
+   * 
+   * The host will be added in a <CODE>Shutdown</CODE> state, unreserved and with no 
+   * selection key biases.  If a host already exists with the given name, an exception 
+   * will be thrown instead. <P> 
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to add the host.
+   */ 
+  public Object
+  addHost
+  (
+   QueueAddHostReq req
+  ) 
+  {
+    String hname = req.getHostname();
+    TaskTimer timer = new TaskTimer("QueueMgr.addHost(): " + hname);
+    timer.aquire();
+    try {
+      synchronized(pHosts) {
+	timer.resume();
+	
+	try {
+	  hname = InetAddress.getByName(hname).getCanonicalHostName();
+	}
+	catch(UnknownHostException ex) {
+	  throw new PipelineException
+	    ("The host (" + hname + ") could not be reached or is illegal!");
+	}
+	
+	if(pHosts.containsKey(hname)) 
+	  throw new PipelineException
+	    ("The host (" + hname + ") is already a job server!");
+	pHosts.put(hname, new QueueHost(hname));
+
+	writeHosts();
+
+	return new SuccessRsp(timer);
+      }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }    
+  }
+
+  /**
+   * Remove the given existing execution hosts from the Pipeline queue. <P> 
+   * 
+   * The hosts must be in a <CODE>Shutdown</CODE> state before they can be removed. <P> 
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to remove the hosts.
+   */ 
+  public Object
+  removeHosts
+  (
+   QueueRemoveHostsReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer("QueueMgr.removeHosts():");
+    timer.aquire();
+    try {
+      synchronized(pHosts) {
+	timer.resume();
+	
+	for(String hname : req.getHostnames()) {
+	  QueueHost host = pHosts.get(hname);
+	  if(host != null) {
+	    switch(host.getStatus()) {
+	    case Shutdown:
+	      pHosts.remove(hname);
+	      break;
+
+	    default:
+	      throw new PipelineException
+		("Unable to remove host (" + hname + ") until it is Shutdown!");
+	    }
+	  }
+	}
+
+	writeHosts();
+
+	return new SuccessRsp(timer);
+      }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }    
+  }
+
+  
+  /**
+   * Change the status, user reservations, job slots and/or selection key biases
+   * of the given hosts. <P> 
+   * 
+   * Any of the arguments may be <CODE>null</CODE> if no changes are do be made for
+   * the type of host property the argument controls. <P> 
+   * 
+   * A <B>pljobmgr<B>(1) daemon must be running on a host before its status can be 
+   * changed to <CODE>Disabled</CODE> or <CODE>Enabled</CODE>.  If <B>plqueuemgr<B>(1) cannot
+   * establish a network connection to a <B>pljobmgr<B>(1) daemon running on the host, the 
+   * status will be overridden and changed to <CODE>Shutdown</CODE>.
+   * 
+   * If the new status for a host is <CODE>Shutdown</CODE> and there is a <B>pljobmgr<B>(1) 
+   * daemon running on the host, it will be stopped and any job it is currently running will
+   * be killed. <P> 
+   * 
+   * When a host is reserved, only jobs submitted by the reserving user will be assigned
+   * to the host.  The reservation can be cleared by setting the reserving user name to
+   * <CODE>null</CODE> for the host in the <CODE>reservations</CODE> argument. <P> 
+   * 
+   * Each host has a maximum number of jobs which it can be assigned at any one time 
+   * regardless of the other limits on system resources.  This method allows the number
+   * of slots to be changed for a number of hosts at once.  The number of slots cannot 
+   * be negative and probably should not be set considerably higher than the number of 
+   * CPUs on the host.  A good value is probably (1.5 * number of CPUs). <P>
+   * 
+   * For the given hosts, the selection key biases are set to the values passed in the 
+   * <CODE>biases</CODE> argument and all selection key biases not mentioned will be removed.
+   * Hosts not mention in the <CODE>biases</CODE> argument will be unaltered. <P> 
+   * 
+   * For an detailed explanation of how selection keys are used to determine the assignment
+   * of jobs to hosts, see {@link JobReqs JobReqs}. <P> 
+   * 
+   * @param req 
+   *   The edit hosts request.
+   *    
+   * @return 
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to change the host status.
+   */ 
+  public Object
+  editHosts
+  (
+   QueueEditHostsReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer("QueueMgr.editHosts()");
+
+    TreeSet<String> keys = null;
+    timer.aquire();
+    synchronized(pSelectionKeys) {
+      timer.resume();
+      keys = new TreeSet<String>(pSelectionKeys.keySet());
+    }
+
+    timer.aquire();
+    try {
+      synchronized(pHosts) {
+	timer.resume();
+	
+	boolean modified = false;
+	
+	/* status */ 
+	{
+	  TreeMap<String,QueueHost.Status> table = req.getStatus();
+	  if(table != null) {
+	    for(String hname : table.keySet()) {
+	      QueueHost.Status status = table.get(hname);
+	      QueueHost host = pHosts.get(hname);
+	      if((status != null) && (host != null) && (status != host.getStatus())) {
+		switch(status) {
+		case Disabled:
+		case Enabled:
+		  try {
+		    JobMgrControlClient client = new JobMgrControlClient(hname, pJobPort);
+		    client.verifyConnection();
+		    client.disconnect();
+		  }
+		  catch(PipelineException ex) {
+		    status = QueueHost.Status.Shutdown;
+		  }	    	    
+		}
+		
+		switch(status) {
+		case Shutdown:
+		  try {
+		    JobMgrControlClient client = new JobMgrControlClient(hname, pJobPort);
+		    client.shutdown();
+		  }
+		  catch(PipelineException ex) {
+		  }	    
+		}
+		
+		host.setStatus(status);
+	      }
+	    }
+	  }
+	}
+	
+	/* user reservations */ 
+	{
+	  TreeMap<String,String> table = req.getReservations();
+	  if(table != null) {
+	    for(String hname : table.keySet()) {
+	      QueueHost host = pHosts.get(hname);
+	      if(host != null) {
+		host.setReservation(table.get(hname));
+		modified = true;
+	      }
+	    }
+	  }
+	}
+
+	/* job slots */ 
+	{
+	  TreeMap<String,Integer> table = req.getJobSlots();
+	  if(table != null) {
+	    for(String hname : table.keySet()) {
+	      QueueHost host = pHosts.get(hname);
+	      if(host != null) {
+		host.setJobSlots(table.get(hname));
+		modified = true;
+	      }
+	    }
+	  }
+	}
+	
+	/* selection key biases */ 
+	{
+	  TreeMap<String,TreeMap<String,Integer>> table = req.getBiases();
+	  if(table != null) {
+	    for(String hname : table.keySet()) {
+	      QueueHost host = pHosts.get(hname);
+	      if(host != null) {
+		host.removeAllSelectionKeys();
+		
+		TreeMap<String,Integer> biases = table.get(hname);
+		for(String kname : biases.keySet()) 
+		  if(keys.contains(kname)) 
+		    host.addSelectionKey(kname, biases.get(kname));
+		
+		modified = true;	      
+	      }
+	    }
+	  }
+	}
+      
+	/* write changes to disk */ 
+	if(modified) 
+	  writeHosts();
+      }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }    
+    
+    return new SuccessRsp(timer);
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O L L E C T O R                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Perform one round of collecting per-host system resource usage samples. 
+   */ 
+  public void 
+  collector()
+  {
+    TaskTimer timer = new TaskTimer("QueueMgr.collector()");
+
+    /* get the named of the currently enabled hosts 
+         and the names of those enabled hosts for which total memory/disk isn't known */ 
+    TreeSet<String> enabled = new TreeSet<String>();
+    TreeSet<String> needsTotals = new TreeSet<String>();
+    {
+      timer.aquire();
+      synchronized(pHosts) {
+	timer.resume();
+	for(String hname : pHosts.keySet()) {
+	  QueueHost host = pHosts.get(hname);
+	  switch(host.getStatus()) {
+	  case Enabled:
+	    enabled.add(hname);
+	    
+	    if((host.getNumProcessors() == null) || 
+	       (host.getTotalMemory() == null) ||
+	       (host.getTotalDisk() == null)) 
+	      needsTotals.add(hname);
+	  }
+	}
+      }
+    }
+
+    /* collect system resource usage samples from the enabled hosts */ 
+    TreeSet<String> dead = new TreeSet<String>();
+    TreeMap<String,ResourceSample> samples = new TreeMap<String,ResourceSample>();
+    TreeMap<String,Integer> numProcs = new TreeMap<String,Integer>();
+    TreeMap<String,Long> totalMemory = new TreeMap<String,Long>();
+    TreeMap<String,Long> totalDisk = new TreeMap<String,Long>();
+    for(String hname : enabled) {
+      try {
+	JobMgrControlClient client = new JobMgrControlClient(hname, pJobPort);
+
+	samples.put(hname, client.getResources());
+
+ 	if(needsTotals.contains(hname)) {
+	  numProcs.put(hname, client.getNumProcessors());
+ 	  totalMemory.put(hname, client.getTotalMemory());
+ 	  totalDisk.put(hname, client.getTotalDisk());
+	}
+
+	client.disconnect();
+      }
+      catch(PipelineException ex) {
+	dead.add(hname);
+      }	    
+    }
+
+    /* should the last interval of samples be written to disk? */ 
+    Date now = new Date();
+    TreeMap<String,ArrayList<ResourceSample>> dump = null;
+    {
+      if((now.getTime() - pLastSampleWrite.getTime()) > QueueHost.getSampleInterval())
+	dump = new TreeMap<String,ArrayList<ResourceSample>>();
+    }
+
+    /* update the hosts */ 
+    timer.aquire();
+    synchronized(pHosts) {
+      timer.resume();
+      for(String hname : dead) {
+	QueueHost host = pHosts.get(hname);
+	if(host != null) 
+	  host.setStatus(QueueHost.Status.Shutdown);
+      }
+
+      for(String hname : samples.keySet()) {
+	QueueHost host = pHosts.get(hname);
+	if(host != null) {
+	  switch(host.getStatus()) {
+	  case Enabled:
+	    {
+	      ResourceSample sample = samples.get(hname);
+	      if(sample != null)
+		host.addSample(sample);
+
+	      if(dump != null) {
+		ArrayList<ResourceSample> rs = new ArrayList<ResourceSample>();
+		for(ResourceSample s : host.getSamples()) {
+		  if(s.getTimeStamp().compareTo(pLastSampleWrite) > 0) 
+		    rs.add(s);
+		}
+
+		if(!rs.isEmpty()) 
+		  dump.put(hname, rs);
+	      }
+
+	      Integer procs = numProcs.get(hname);
+	      if(procs != null) 
+		host.setNumProcessors(procs);
+
+	      Long memory = totalMemory.get(hname);
+	      if(memory != null) 
+		host.setTotalMemory(memory);
+
+	      Long disk = totalDisk.get(hname);
+	      if(disk != null) 
+		host.setTotalDisk(disk);
+	    }
+	  }
+	}
+      }
+    }
+
+    /* write the last interval of samples to disk */ 
+    if(dump != null) {
+      try {
+	writeSamples(now, dump);
+      }
+      catch(PipelineException ex) {
+	Logs.ops.severe(ex.getMessage());
+      }
+      
+      pLastSampleWrite = now;
+    }
+
+    Logs.ops.finest(timer.toString()); 
+    if(Logs.ops.isLoggable(Level.FINEST))
+      Logs.flush();
+
+    /* if we're ahead of schedule, take a nap */ 
+    {
+      long nap = sCollectorInterval - timer.getTotalDuration();
+      if(nap > 0) {
+	try {
+	  Thread.sleep(nap);
+	}
+	catch(InterruptedException ex) {
+	}
+      }
+    }
+  }
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   D I S P A T C H E R                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Perform one round of assigning jobs to available hosts. 
+   */ 
+  public void 
+  dispatcher()
+  {
+    TaskTimer timer = new TaskTimer("QueueMgr.dispatcher()");
+
+    timer.aquire();
+    {
+      timer.resume();
+
+
+      // ...
+
+    }
+
+
+    Logs.ops.finest(timer.toString()); 
+    if(Logs.ops.isLoggable(Level.FINEST))
+      Logs.flush();
+
+    /* if we're ahead of schedule, take a nap */ 
+    {
+      long nap = sDispatcherInterval - timer.getTotalDuration();
+      if(nap > 0) {
+	try {
+	  Thread.sleep(nap);
+	}
+	catch(InterruptedException ex) {
+	}
+      }
+    }
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   I / O   H E L P E R S                                                                */
@@ -715,6 +1228,187 @@ class QueueMgr
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write per-host information to disk. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to write the hosts file.
+   */ 
+  private void 
+  writeHosts() 
+    throws PipelineException
+  {
+    synchronized(pHosts) {
+      File file = new File(pQueueDir, "queue/hosts");
+      if(file.exists()) {
+	if(!file.delete())
+	  throw new PipelineException
+	    ("Unable to remove the old hosts file (" + file + ")!");
+      }
+      
+      if(!pHosts.isEmpty()) {
+	Logs.ops.finer("Writing Hosts.");
+
+	try {
+	  String glue = null;
+	  try {
+	    GlueEncoder ge = new GlueEncoderImpl("Hosts", pHosts);
+	    glue = ge.getText();
+	  }
+	  catch(GlueException ex) {
+	    Logs.glu.severe
+	      ("Unable to generate a Glue format representation of the hosts!");
+	    Logs.flush();
+	    
+	    throw new IOException(ex.getMessage());
+	  }
+	  
+	  {
+	    FileWriter out = new FileWriter(file);
+	    out.write(glue);
+	    out.flush();
+	    out.close();
+	  }
+	}
+	catch(IOException ex) {
+	  throw new PipelineException
+	    ("I/O ERROR: \n" + 
+	     "  While attempting to write the hosts file (" + file + ")...\n" + 
+	     "    " + ex.getMessage());
+	}
+      }
+    }
+  }
+  
+  /**
+   * Read the per-host information from disk. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to read the hosts file.
+   */ 
+  private void 
+  readHosts() 
+    throws PipelineException
+  {
+    synchronized(pHosts) {
+      pHosts.clear();
+
+      File file = new File(pQueueDir, "queue/hosts");
+      if(file.isFile()) {
+	Logs.ops.finer("Reading Hosts.");
+
+	TreeMap<String,QueueHost> hosts = null;
+	try {
+	  FileReader in = new FileReader(file);
+	  GlueDecoder gd = new GlueDecoderImpl(in);
+	  hosts = (TreeMap<String,QueueHost>) gd.getObject();
+	  in.close();
+	}
+	catch(Exception ex) {
+	  Logs.glu.severe
+	    ("The hosts file (" + file + ") appears to be corrupted!");
+	  Logs.flush();
+	  
+	  throw new PipelineException
+	    ("I/O ERROR: \n" + 
+	     "  While attempting to read the hosts file (" + file + ")...\n" + 
+	   "    " + ex.getMessage());
+	}
+	assert(hosts != null);
+	
+	pHosts.putAll(hosts);
+      }
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write given interval of system resource samples for the Enabled hosts to disk. <P> 
+   * 
+   * @param stamp
+   *   The timestamp of the end of the sample interval.
+   * 
+   * @param samples 
+   *   The resource usage samples indexed by fully resolved host name.
+   * 
+   * @throws PipelineException
+   *   If unable to write the samples file.
+   */ 
+  private void 
+  writeSamples
+  (
+   Date stamp, 
+   TreeMap<String,ArrayList<ResourceSample>> samples
+  ) 
+    throws PipelineException
+  {
+    Logs.ops.finer("Writing Resource Samples: " + stamp);
+
+    File dir = new File(pQueueDir, "queue/resource-samples");
+    synchronized(pMakeDirLock) {
+      if(!dir.isDirectory())
+	if(!dir.mkdirs()) 
+	  throw new PipelineException
+	    ("Unable to create the samples directory (" + dir + ")!");
+    }
+
+    File file = new File(dir, String.valueOf(stamp.getTime()));
+    if(file.exists()) 
+      throw new PipelineException
+	("Somehow the resource samples file (" + file + ") already exists!"); 
+
+    try {
+      String glue = null;
+      try {
+	GlueEncoder ge = new GlueEncoderImpl("Samples", samples);
+	glue = ge.getText();
+      }
+      catch(GlueException ex) {
+	Logs.glu.severe
+	  ("Unable to generate a Glue format representation of the resource samples!");
+	Logs.flush();
+	
+	throw new IOException(ex.getMessage());
+      }
+	  
+      {
+	FileWriter out = new FileWriter(file);
+	out.write(glue);
+	out.flush();
+	out.close();
+      }
+    }
+    catch(IOException ex) {
+      throw new PipelineException
+	("I/O ERROR: \n" + 
+	 "  While attempting to write the resource samples file (" + file + ")...\n" + 
+	 "    " + ex.getMessage());
+    }
+  }
+
+  
+  // readSamples() ... 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The minimum time a cycle of the collector loop should take (in milliseconds).
+   */ 
+  private static final long  sCollectorInterval = 15000;  /* 15-second */ 
+
+  /**
+   * The minimum time a cycle of the dispatcher loop should take (in milliseconds).
+   */ 
+  private static final long  sDispatcherInterval = 1000;  /* 1-second */ 
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
@@ -845,12 +1539,18 @@ class QueueMgr
 
   
   /**
-   * The per-host resource and selection bias information indexed by fully resolved 
-   * host name.
+   * The per-host information indexed by fully resolved host name. <P> 
    * 
    * Access to this field should be protected by a synchronized block.
    */
   private TreeMap<String,QueueHost>  pHosts; 
+
+  /**
+   * The timestamp of when the last set of resource samples was written to disk. <P> 
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */ 
+  private Date pLastSampleWrite;
 
 }
 
