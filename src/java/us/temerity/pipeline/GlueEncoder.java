@@ -1,4 +1,4 @@
-// $Id: GlueEncoder.java,v 1.6 2004/02/25 06:19:16 jim Exp $
+// $Id: GlueEncoder.java,v 1.7 2004/03/11 10:53:22 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -167,6 +167,7 @@ class GlueEncoder
 
     /* primtive wrapper types */ 
     Class cls = obj.getClass();
+    String cshort = shortName(cls.getName());
     if((cls == sBooleanClass) ||
        (cls == sByteClass) ||
        (cls == sShortClass) ||
@@ -174,14 +175,14 @@ class GlueEncoder
        (cls == sLongClass) ||
        (cls == sFloatClass) ||
        (cls == sDoubleClass)) {
-      pBuf.append(cls.getName() + "> #" + objID + " { " + obj + " }\n");
+      pBuf.append(cshort + "> #" + objID + " { " + obj + " }\n");
     }
     else if(cls == sCharacterClass) {
       Character c = (Character) obj;
-      pBuf.append(cls.getName() + "> #" + objID + " { " + ((int) c.charValue()) + " }\n");
+      pBuf.append(cshort + "> #" + objID + " { " + ((int) c.charValue()) + " }\n");
     }
     else if(cls == sStringClass) {
-      pBuf.append(cls.getName() + "> #" + objID + " { \"");
+      pBuf.append(cshort + "> #" + objID + " { \"");
 
       char cs[] = ((String) obj).toCharArray();
       int wk;
@@ -195,7 +196,7 @@ class GlueEncoder
     }
     else if(cls.isEnum()) {
       Enum e = (Enum) obj;
-      pBuf.append(cls.getName() + "> #" + objID + " { :" + e.name() + ": }\n");
+      pBuf.append(cshort + "> #" + objID + " { :" + e.name() + ": }\n");
     }
       
     /* arrays */ 
@@ -215,7 +216,7 @@ class GlueEncoder
 	  for(depth=0; (cs[depth] == '['); depth++);
 	  
 	  if(cs[depth] == 'L') {
-	    simple = cname.substring(depth+1, cname.length()-1);
+	    simple = shortName(cname.substring(depth+1, cname.length()-1));
 	  }
 	  else {
 	    switch(cs[depth]) {
@@ -334,7 +335,7 @@ class GlueEncoder
       if(isGlueable) {
 	pLevel++;
 	{
-	  pBuf.append(cls.getName() + "> #" + objID + " {\n");
+	  pBuf.append(cshort + "> #" + objID + " {\n");
 	  
 	  Glueable gobj = (Glueable) obj;
 	  gobj.toGlue(this);
@@ -348,7 +349,7 @@ class GlueEncoder
       else if(isCollection) {
 	pLevel++;
 	{
-	  pBuf.append(cls.getName() + "> #" + objID + " {\n");
+	  pBuf.append(cshort + "> #" + objID + " {\n");
 	  
 	  Collection col = (Collection) obj;
 	  Iterator iter = col.iterator();
@@ -365,7 +366,7 @@ class GlueEncoder
       else if(isMap) {
 	pLevel++;
 	{
-	  pBuf.append(cls.getName() + "> #" + objID + " {\n");
+	  pBuf.append(cshort + "> #" + objID + " {\n");
 	  
 	  Map map = (Map) obj;
 	  Iterator iter = map.keySet().iterator();
@@ -507,6 +508,32 @@ class GlueEncoder
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Strips the package prefix off of commonly used class names.
+   * 
+   * @param cname [<B>in</B>]
+   *   The full name of the class.
+   */
+  private String 
+  shortName
+  (
+   String cname
+  ) 
+  {
+    int wk;
+    for(wk=0; wk<sPackages.length; wk++) 
+      if(cname.startsWith(sPackages[wk])) 
+	return cname.substring(sPackages[wk].length() + 1);
+
+    return cname;
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
@@ -528,6 +555,14 @@ class GlueEncoder
 
   private static Class sStringClass;     
 
+  /**
+   * The package prefixes to use when resolving simple class names. 
+   */ 
+  private static final String sPackages[] = {
+    "java.lang", 
+    "java.util", 
+    "us.temerity.pipeline"
+  };
 
 
   /*----------------------------------------------------------------------------------------*/
