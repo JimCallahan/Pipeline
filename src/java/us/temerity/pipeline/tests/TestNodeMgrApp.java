@@ -1,4 +1,4 @@
-// $Id: TestNodeMgrApp.java,v 1.11 2004/04/19 21:07:24 jim Exp $
+// $Id: TestNodeMgrApp.java,v 1.12 2004/04/20 22:09:09 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -28,8 +28,8 @@ class TestNodeMgrApp
   {
     Logs.init();
     Logs.net.setLevel(Level.FINEST);
-//     Logs.sub.setLevel(Level.FINER);
-//     Logs.ops.setLevel(Level.FINEST);
+    Logs.sub.setLevel(Level.FINER);
+    Logs.ops.setLevel(Level.FINEST);
 
     try {
       TestNodeMgrApp app = new TestNodeMgrApp();
@@ -37,7 +37,6 @@ class TestNodeMgrApp
     } 
     catch (Exception ex) {
       ex.printStackTrace();
-      System.exit(1);
     } 
  
     System.exit(0);
@@ -275,6 +274,13 @@ class TestNodeMgrApp
       printStatus(client.status("default", modA.getName()));
       printStatus(client.status("default", modB.getName()));
 
+      printStatus(client.checkIn("default", modA.getName(), "Initial revision.", null));    
+
+      printStatus(client.status("default", modA.getName()));
+
+      modA = client.getWorkingVersion("default", modA.getName());
+      modB = client.getWorkingVersion("default", modB.getName());
+
       client.shutdown();
 
       /* wait for everything to shutdown */ 
@@ -417,6 +423,7 @@ class TestNodeMgrApp
       printStatus(client.status("default", fly.getName()));
       printStatus(client.status("default", "/animals/mammal/bat"));
       printStatus(client.status("default", frog.getName()));
+
       client.shutdown();
 
       /* wait for everything to shutdown */ 
@@ -435,9 +442,20 @@ class TestNodeMgrApp
     throws GlueException
   {
     StringBuffer buf = new StringBuffer();
+
+    buf.append("-----------------------------------------------------------------------\n" +
+	       "  N O D E   S T A T U S: " + status.getNodeID() + "\n" +
+	       "-----------------------------------------------------------------------\n");
+
+    printStatusShortHelper(status, 1, buf);
+
+    buf.append("-----------------------------------------------------------------------\n");
+
     printStatusHelper(status, 1, buf);
-    System.out.print("NODE STATUS: " + status.getNodeID() + "\n" +
-		     buf.toString());
+
+    buf.append("-----------------------------------------------------------------------\n");
+
+    System.out.print(buf.toString());
   }
 
   
@@ -452,7 +470,8 @@ class TestNodeMgrApp
     throws GlueException
   {
     printStatusShortDownstreamHelper(status, level, buf);
-    
+
+    buf.append("->");
     int wk;
     for(wk=0; wk<level; wk++) 
       buf.append("  ");
@@ -473,6 +492,7 @@ class TestNodeMgrApp
     for(NodeStatus tstatus : status.getTargets()) 
       printStatusShortDownstreamHelper(tstatus, level+1, buf);
 
+    buf.append("->");
     int wk;
     for(wk=0; wk<level; wk++) 
       buf.append("  ");
@@ -488,6 +508,7 @@ class TestNodeMgrApp
   ) 
     throws GlueException
   {
+    buf.append("->");
     int wk;
     for(wk=0; wk<level; wk++) 
       buf.append("  ");
@@ -510,6 +531,7 @@ class TestNodeMgrApp
     String indent = null;
     {
       StringBuffer ibuf = new StringBuffer();
+      ibuf.append("->");
       int wk;
       for(wk=0; wk<level; wk++) 
  	ibuf.append("  ");
@@ -583,7 +605,6 @@ class TestNodeMgrApp
   ) 
     throws GlueException
   {
-
     if(obj == null) {
       buf.append(indent + "  " + title + " = null\n");
       return;
@@ -626,25 +647,21 @@ class TestNodeMgrApp
     public void 
     run() 
     {
-      Random random = new Random(pSeed);
       try {
+	Random random = new Random(pSeed);
 	sleep(random.nextInt(2000));
-      }
-      catch(InterruptedException ex) {
-	assert(false);
-      }
-
-      try {
+	
 	NodeMgrClient client = new NodeMgrClient("localhost", 53145);
-      
+	
 	client.register("default", pNodeMod);
 	
 	{
 	  NodeMod mod = client.getWorkingVersion("default", pNodeMod.getName());
-	  assert(pNodeMod.equals(mod));
+	  if(!pNodeMod.equals(mod)) 
+	    throw new PipelineException("Assert Failure!");
 	  pNodeMod = mod;
 	}
-
+	
 	{
 	  try {
 	    NodeMod mod = client.getWorkingVersion("default", "/images/fooy");
@@ -653,7 +670,7 @@ class TestNodeMgrApp
 	    System.out.print("Caught: " + ex.getMessage() + "\n\n");
 	  }
 	}
-
+	
 	{
 	  int cnt;
 	  for(cnt=0; cnt<10; cnt++) {
@@ -670,16 +687,17 @@ class TestNodeMgrApp
 	  
 	  {
 	    NodeMod mod = client.getWorkingVersion("default", pNodeMod.getName());
-	    assert(pNodeMod.equals(mod));
+	    if(!pNodeMod.equals(mod)) 
+	      throw new PipelineException("Assert Failure!");
 	    pNodeMod = mod;
 	  }
 	}
-
+	
 	client.disconnect();
-      }
-      catch(PipelineException ex) {
-	Logs.ops.severe(ex.getMessage());
-      }
+      } 
+      catch (Exception ex) {
+	ex.printStackTrace();
+      } 
     }
 
 
@@ -705,32 +723,27 @@ class TestNodeMgrApp
     public void 
     run() 
     {
-      Random random = new Random(pSeed);
       try {
+	Random random = new Random(pSeed);
 	sleep(random.nextInt(2000));
-      }
-      catch(InterruptedException ex) {
-	assert(false);
-      }
-
-      try {
+	
 	NodeMgrClient client = new NodeMgrClient("localhost", 53145);
 	
 	{
 	  int cnt;
 	  for(cnt=0; cnt<10; cnt++) {	
 	    NodeMod mod = client.getWorkingVersion("default", pNodeMod.getName());
-
-	    assert(pNodeMod.equals(mod));
+	    if(!pNodeMod.equals(mod)) 
+	      throw new PipelineException("Assert Failure!");
 	    pNodeMod = mod;
 	  }
 	}
-
+	
 	client.disconnect();
       }
-      catch(Exception ex) {
-	Logs.ops.severe(ex.getMessage());
-      }
+      catch (Exception ex) {
+	ex.printStackTrace();
+      } 
     }
 
     private long     pSeed; 
@@ -767,12 +780,7 @@ class TestNodeMgrApp
       Random random = new Random(pSeed);
       try {
 	sleep(random.nextInt(1000));
-      }
-      catch(InterruptedException ex) {
-	assert(false);
-      }
-
-      try {
+     
 	NodeMgrClient client = new NodeMgrClient("localhost", 53145);
 
 	client.register("default", pSalamander);
@@ -809,9 +817,9 @@ class TestNodeMgrApp
 
 	client.disconnect();
       }
-      catch(Exception ex) {
-	Logs.ops.severe(ex.getMessage());
-      }
+      catch (Exception ex) {
+	ex.printStackTrace();
+      } 
     }
 
     private long     pSeed; 
@@ -850,12 +858,7 @@ class TestNodeMgrApp
       Random random = new Random(pSeed);
       try {
 	sleep(random.nextInt(1000));
-      }
-      catch(InterruptedException ex) {
-	assert(false);
-      }
-
-      try {
+    
 	NodeMgrClient client = new NodeMgrClient("localhost", 53145);
 
 	client.register("default", pSparrow);
@@ -888,9 +891,9 @@ class TestNodeMgrApp
 
 	client.disconnect();
       }
-      catch(Exception ex) {
-	Logs.ops.severe(ex.getMessage());
-      }
+      catch (Exception ex) {
+	ex.printStackTrace();
+      } 
     }
 
     private long     pSeed; 
