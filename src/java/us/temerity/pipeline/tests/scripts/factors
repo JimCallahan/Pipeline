@@ -1,0 +1,30 @@
+#!/bin/bash
+
+function factors
+{
+  echo -n "Factors of $1 = "
+
+  f=1
+  while [ $f -le $1 ]
+  do 
+    rem=$(($1 % $f))
+
+    if [ $rem -eq 0 ] 
+    then 
+      echo -n "$f " 
+    fi 
+
+    f=$(($f+1))
+  done 
+
+  echo 
+}
+
+x=1
+while [ $x -lt 10 ]
+do  
+  y=$(($x + 100000))
+  factors $y
+
+  x=$(($x+1))
+done
