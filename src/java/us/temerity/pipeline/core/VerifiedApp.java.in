@@ -1,4 +1,4 @@
-// $Id: VerifiedApp.java.in,v 1.5 2005/01/22 06:10:09 jim Exp $
+// $Id: VerifiedApp.java.in,v 1.6 2005/03/11 06:29:44 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -19,7 +19,7 @@ import java.security.*;
  * The common base class for application which must verify the host ID of the machine
  * running the class.
  */
-public abstract
+abstract
 class VerifiedApp
   extends BaseApp
 {  
@@ -78,6 +78,33 @@ class VerifiedApp
 	System.exit(1);
       }
     }
+
+    /* check the license time window */ 
+    try {
+      if(!TimeService.isValid(sLicenseStart, sLicenseEnd)) {
+	SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd"); 
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Severe,  
+	   "The current " + sLicenseType + " license is only valid from: " + 
+	   fmt.format(new Date(sLicenseStart)) + " until " + 
+	   fmt.format(new Date(sLicenseEnd)) + ".\n" + 
+	   "Contact <support@temerity.us> to renew the license.\n");
+	
+	System.exit(1);
+      }
+    }
+    catch(IOException ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Severe,  
+	 "Unable to reliably determine the time!\n" +
+	 "Pipeline was unable to contact any well known Network Time Servers via the " +
+	 "InterNet in order to determine whether the current license has expired.\n" + 
+	 "Contact your system administrator to verify that your connection to the " + 
+	 "InterNet is functioning properly and that NTP packets are not being " + 
+	 "filtered by your firewall.");
+
+      System.exit(1);
+    }      
   }
 
 
@@ -293,5 +320,10 @@ class VerifiedApp
   private static final String[] sHostIDs = {
     @PIPELINE_HOST_IDS@
   };
+
+  private static final String sLicenseType = "@LICENSE_TYPE@";
+
+  private static final long sLicenseStart = @LICENSE_START_STAMP@L;
+  private static final long sLicenseEnd   = @LICENSE_END_STAMP@L;
   
 }

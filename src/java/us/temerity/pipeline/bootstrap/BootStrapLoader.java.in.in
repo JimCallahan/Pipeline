@@ -1,4 +1,4 @@
-// $Id: BootStrapLoader.java.in.in,v 1.8 2004/12/29 17:29:06 jim Exp $
+// $Id: BootStrapLoader.java.in.in,v 1.9 2005/03/11 06:29:44 jim Exp $
 
 package us.temerity.pipeline.bootstrap;
 
@@ -48,7 +48,6 @@ class BootStrapLoader
     /* retrieve the customers private key 
          and the encrypted profile data attached to the key */ 
     PrivateKey privateKey = null;
-    BigInteger encrypted = null;
     try {
       FileReader in = new FileReader(license);
       
@@ -75,20 +74,6 @@ class BootStrapLoader
       }
       catch(Exception ex) {
 	throw new IOException();
-      }
-      
-      {
-	StringBuffer buf = new StringBuffer();
-	char cs[] = new char[1024];
-	while(true) {
-	  int size = in.read(cs);
-	  if(size == -1)
-	    break;
-	  
-	  buf.append(cs, 0, size);
-	}
-	
-	encrypted = new BigInteger(buf.toString());
       }
       
       in.close();
@@ -124,50 +109,6 @@ class BootStrapLoader
 	("The license file (" + license + ") has been corrupted!");
     }
     
-    /* decrypt the profile data attached to the customer's private key 
-         and use it to validate the site */ 
-    {
-      TreeMap<String,Object> profile = null;
-      try {
-	Cipher decipher = Cipher.getInstance("DES/ECB/PKCS5Padding");
-	decipher.init(Cipher.DECRYPT_MODE, key);
-	byte raw[] = decipher.doFinal(encrypted.toByteArray());
-	
-	ByteArrayInputStream bin = new ByteArrayInputStream(raw);
-	
-	ObjectInputStream in = new ObjectInputStream(bin);
-	profile = (TreeMap<String,Object>) in.readObject();
-	in.close();
-      }
-      catch(Exception ex) {
-	throw new LicenseException
-	  ("INTERNAL ERROR: Unable to authorize access to Pipeline...");
-      }
-      
-      /* check the license time window */ 
-      try {
-	Date start = (Date) profile.get("LicenseStart");
-	Date end   = (Date) profile.get("LicenseEnd");
-	if((start == null) || (end == null)) 
-	  throw new LicenseException
-	    ("The license file (" + license + ") has been corrupted!");
-
-	if(!TimeService.isValid(start.getTime(), end.getTime())) 
-	  throw new LicenseException
-	    ("The current license is only valid from " + start + " to " + end + ".\n" + 
-	     "Contact <support@temerity.us> to renew the license.\n");
-      }
-      catch(IOException ex) {
-	throw new LicenseException
-	  ("Unable to reliably determine the time!\n" +
-	   "Pipeline was unable to contact any well known Network Time Servers via the " +
-	   "InterNet in order to determine whether the current license has expired.\n" + 
-	   "Contact your system administrator to verify that your connection to the " + 
-	   "InterNet is functioning properly and that NTP packets are not being " + 
-	   "filtered by your firewall.");
-      }      
-    }
-
     /* shared I/O byte buffer */ 
     byte buf[] = new byte[65536];
 
