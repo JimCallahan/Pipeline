@@ -1,4 +1,4 @@
-// $Id: NodeMgr.java,v 1.10 2004/03/31 08:34:56 jim Exp $
+// $Id: NodeMgr.java,v 1.11 2004/04/11 19:24:16 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -911,6 +911,34 @@ class NodeMgr
     }    
   }
 
+  /*----------------------------------------------------------------------------------------*/
+  /*   N O D E   S T A T U S                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the current overall status of the given node. <P> 
+   * 
+   * The returned <CODE>NodeStatus</CODE> can be used to access the status of all nodes 
+   * reachable through both upstream and downstream connections from the given node.
+   * 
+   * @param req 
+   *   The node status request.
+   *
+   * @return
+   *   <CODE>NodeStatusRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to get the status of the node.
+   */ 
+  public Object
+  status
+  ( 
+   NodeStatusReq req 
+  ) 
+  {
+    
+    return new FailureRsp(new TaskTimer(), "Not implemented yet.");
+
+  } 
+    
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -2202,6 +2230,15 @@ class NodeMgr
    * The connection to the file manager.
    */ 
   private FileMgrClient  pFileMgrClient;
+
+
+  /**
+   * The set of working versions who's associated files are being monitored indexed 
+   * by the parent directory of these files relative to the root node directory. <P> 
+   * 
+   * Access to this table should be protected by a synchronized block.
+   */
+  //private HashMap<File,HashSet<NodeID>> pMonitored;
 
 }
 
