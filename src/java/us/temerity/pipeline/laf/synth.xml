@@ -453,6 +453,26 @@
 
 
 
+  <!--  C O L O R   B U T T O N  -->
+
+  <style id="ColorButton"> 
+    <state>
+      <imagePainter path="ColorButton.png"
+                    sourceInsets="3 3 3 3"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="ColorButtonPressed.png"
+                    sourceInsets="3 3 3 3"/>
+    </state> 
+    <state value="DISABLED">
+      <imagePainter path="ColorButtonDisabled.png"
+                    sourceInsets="3 3 3 3"/>
+    </state>
+  </style>
+  <bind style="ColorButton" type="name" key="ColorButton"/>
+
+
+
   <!--  H O R I Z O N T A L   B A R --> 
 
   <style id="HorizontalBar">

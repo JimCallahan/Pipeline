@@ -1,5 +1,6 @@
-// $Id: GenUserPrefsApp.java,v 1.39 2004/12/01 23:03:10 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.40 2004/12/17 08:13:36 jim Exp $
 
+import java.awt.*; 
 import java.io.*; 
 import java.util.*;
 import java.util.logging.*;
@@ -555,23 +556,15 @@ class GenUserPrefsApp
     }
 
     {
-      LinkedList<String> colors = new LinkedList<String>();
-      colors.add("DarkGrey");
-      colors.add("LightGrey");
-      colors.add("White");
-      colors.add("Yellow");
-      colors.add("Cyan");
-      colors.add("Purple");
-
       BasePref prefs[] = {
-	new ChoicePref
-	("The name of the color to use for link lines.", 
-	 "LinkColorName", "Line Color:", colors, "LightGrey"),
+	new ColorPref
+	("The color to use for non-stale link lines.", 
+	 "LinkColor", "Line Color:", Color.white),
 
-	new ChoicePref
-	("The name of the color to use for stale link lines.", 
-	 "StaleColorName", "Stale Line Color:", colors, "Yellow"),
-
+	new ColorPref
+	("The color to use for stale link lines.", 
+	 "StaleLinkColor", "Stale Line Color:", Color.yellow),
+	
 	new BooleanPref
 	("Whether to anti-alias link lines.", 
 	 "LinkAntiAlias", "Antialiased:", true), 
@@ -1144,12 +1137,13 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.39 2004/12/01 23:03:10 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.40 2004/12/17 08:13:36 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
        "import us.temerity.pipeline.*;\n" + 
        "import us.temerity.pipeline.core.*;\n" + 
+       "import us.temerity.pipeline.math.*;\n" + 
        "import us.temerity.pipeline.glue.*;\n" + 
        "\n" + 
        "import java.io.*;\n" + 
@@ -1397,11 +1391,12 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.39 2004/12/01 23:03:10 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.40 2004/12/17 08:13:36 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
        "import us.temerity.pipeline.*;\n" + 
+       "import us.temerity.pipeline.math.*;\n" + 
        "\n" + 
        "import java.awt.*;\n" + 
        "import java.awt.event.*;\n" + 
@@ -1801,7 +1796,7 @@ class GenUserPrefsApp
     {
       buf.append
 	(indent(level) + "/**\n" +
-	 indent(level) + " * Get " + pDesc + ".\n" + 
+	 indent(level) + " * Get " + pDesc + "\n" + 
 	 indent(level) + " */\n" +
 	 indent(level) + "public " + pAtomicType + "\n" +
 	 indent(level) + "get" + pTitle + "()\n" +
@@ -1810,7 +1805,7 @@ class GenUserPrefsApp
 	 indent(level) + "}\n" + 
 	 "\n" +
 	 indent(level) + "/**\n" +
-	 indent(level) + " * Set " + pDesc + ".\n" + 
+	 indent(level) + " * Set " + pDesc + "\n" + 
 	 indent(level) + " */\n" +
 	 indent(level) + "public void\n" +
 	 indent(level) + "set" + pTitle + "\n" + 
@@ -2281,6 +2276,128 @@ class GenUserPrefsApp
 
     protected double  pMinValue;      
     protected double  pMaxValue;      
+  }
+
+  /**
+   * Color preference.
+   */ 
+  private 
+  class ColorPref
+    extends ValuedPref
+  {
+    public 
+    ColorPref
+    (
+     String desc, 
+     String title, 
+     String label, 
+     Color defaultValue
+    ) 
+    {
+      super(desc, title, label, "Color3d", "Color3d");
+      pDefaultValue = defaultValue;
+    }
+
+    public void 
+    genAccessors
+    (
+     StringBuffer buf,
+     int level
+    ) 
+    {
+      buf.append
+	(indent(level) + "/**\n" +
+	 indent(level) + " * Get " + pDesc + "\n" + 
+	 indent(level) + " */\n" +
+	 indent(level) + "public " + pAtomicType + "\n" +
+	 indent(level) + "get" + pTitle + "()\n" +
+	 indent(level) + "{\n" + 
+	 indent(level+1) + "return new Color3d(p" + pTitle + ");\n" + 
+	 indent(level) + "}\n" + 
+	 "\n" +
+	 indent(level) + "/**\n" +
+	 indent(level) + " * Set " + pDesc + "\n" + 
+	 indent(level) + " */\n" +
+	 indent(level) + "public void\n" +
+	 indent(level) + "set" + pTitle + "\n" + 
+	 indent(level) + "(\n" + 
+	 indent(level) + " " + pAtomicType + " v\n" +
+	 indent(level) + ")\n" + 
+	 indent(level) + "{\n" + 
+	 indent(level+1) + "p" + pTitle + ".set(v);\n" + 
+	 indent(level) + "}\n" +
+	 "\n" + 
+	 "\n");
+    }
+
+    public void 
+    genReset
+    (
+     StringBuffer buf,
+     int level
+    )
+    {      
+      float[] c = pDefaultValue.getColorComponents(null);
+      buf.append
+	(indent(level) + "p" + pTitle + " = " + 
+	 "new Color3d(" + c[0] + ", " + c[1] + ", " + c[2] + ");\n");
+    }
+
+    public void 
+    genUI
+    (
+     StringBuffer buf,
+     int level,
+     boolean isLast
+    )
+    {
+      float[] c = pDefaultValue.getColorComponents(null);
+      buf.append
+	(indent(level) + "p" + pTitle + " =\n" + 
+	 indent(level+1) + "UIMaster.createTitledColorField\n" + 
+	 indent(level+2) + "(tpanel, \"" + pLabel + "\", sTSize,\n" + 
+	 indent(level+2) + " vpanel, " + 
+	 "new Color3d(" + c[0] + ", " + c[1] + ", " + c[2] + "), sVSize,\n" + 
+	 indent(level+2) + " \"" + pDesc + "\");\n" + 
+	 "\n");
+
+      if(!isLast) 
+	buf.append
+	  (indent(level) + "UIMaster.addVerticalSpacer(tpanel, vpanel, 3);\n" + 
+	   "\n");
+    } 
+
+    public void 
+    genSavePrefs
+    (
+     StringBuffer buf,
+     int level
+    )
+    {
+      buf.append(indent(level) + "prefs.set" + pTitle + "(p" + pTitle + ".getValue());\n");
+    } 
+    
+    public void 
+    genUpdatePrefs
+    (
+     StringBuffer buf,
+     int level
+    )
+    {
+      buf.append(indent(level) + "p" + pTitle + ".setValue(prefs.get" + pTitle + "());\n");
+    } 
+
+    public void 
+    genDeclareUI
+    (
+     StringBuffer buf,
+     int level
+    )
+    {
+      buf.append(indent(level) + "private JColorField  p" + pTitle + ";\n");
+    } 
+
+    private Color  pDefaultValue;
   }
 
   /**
