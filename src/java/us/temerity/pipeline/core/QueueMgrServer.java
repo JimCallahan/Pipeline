@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.6 2004/08/04 01:42:12 jim Exp $
+// $Id: QueueMgrServer.java,v 1.7 2004/08/22 22:03:29 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -404,6 +404,70 @@ class QueueMgrServer
 	    break;
 
 
+	  /*-- JOBS ------------------------------------------------------------------------*/
+	  case GetJobStates:
+	    {
+	      QueueGetJobStatesReq req = (QueueGetJobStatesReq) objIn.readObject();
+	      objOut.writeObject(pQueueMgr.getJobStates(req));
+	      objOut.flush(); 
+	    }
+	    break;
+	  
+	  case GetJob:
+	    {
+	      QueueGetJobReq req = (QueueGetJobReq) objIn.readObject();
+	      objOut.writeObject(pQueueMgr.getJob(req));
+	      objOut.flush(); 
+	    }
+	    break;
+	    
+	  case GetJobInfo:
+	    {
+	      QueueGetJobInfoReq req = (QueueGetJobInfoReq) objIn.readObject();
+	      objOut.writeObject(pQueueMgr.getJobInfo(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case GetJobGroup:
+	    {
+	      QueueGetJobGroupReq req = (QueueGetJobGroupReq) objIn.readObject();
+	      objOut.writeObject(pQueueMgr.getJobGroup(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case GetJobGroups:
+	    {
+	      objOut.writeObject(pQueueMgr.getJobGroups());
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case SubmitJob:
+	    {
+	      QueueSubmitJobReq req = (QueueSubmitJobReq) objIn.readObject();
+	      objOut.writeObject(pQueueMgr.submitJob(req));
+	      objOut.flush(); 
+	    }
+	    break;
+	    
+	  case GroupJobs:
+	    {
+	      QueueGroupJobsReq req = (QueueGroupJobsReq) objIn.readObject();
+	      objOut.writeObject(pQueueMgr.groupJobs(req));
+	      objOut.flush(); 
+	    }
+	    break;
+	    
+	  case KillJobs:
+	    {
+	      QueueKillJobsReq req = (QueueKillJobsReq) objIn.readObject();
+	      objOut.writeObject(pQueueMgr.killJobs(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
 	  /*-- NETWORK CONNECTION ----------------------------------------------------------*/
 	  case Disconnect:
 	    live = false;
@@ -459,8 +523,6 @@ class QueueMgrServer
 	  }
 	}
       }
-
-
     }
     
     private Socket pSocket;
