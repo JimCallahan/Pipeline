@@ -1,4 +1,4 @@
-// $Id: JTestEnvironmentDialog.java,v 1.1 2004/06/03 09:30:32 jim Exp $
+// $Id: JTestEnvironmentDialog.java,v 1.2 2004/06/28 00:19:00 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -195,8 +195,8 @@ class JTestEnvironmentDialog
     try {
       SubProcess proc = new SubProcess("TestEnvironment", program, args, pEnvironment, dir);
     
-      JTestEnvironmentOutputDialog diag = 
-	new JTestEnvironmentOutputDialog(pHeaderLabel.getText(), command, proc);
+      JMonitorSubprocessDialog diag = 
+	new JMonitorSubprocessDialog("Test Environmant Output", pHeaderLabel.getText(), proc);
       diag.setVisible(true);
     }
     catch(IllegalArgumentException ex) {
