@@ -1,7 +1,7 @@
 
-iconsdir = @datadir@/docs/images
+imagesdir = @datadir@/docs/images
 
-icons_DATA = \
+images_DATA = \
   checkedin-finished.gif \
   conflicts-finished.gif \
   identical-finished.gif \
