@@ -385,6 +385,7 @@ AC_PATH_PROG(CVS, cvs, $PATH)
 AC_PATH_PROG(CHMOD, chmod, $PATH)
 AC_PATH_PROG(CHOWN, chown, $PATH)
 AC_PATH_PROG(DIFF, diff, $PATH)
+AC_PATH_PROG(XDIFF, xdiff, $PATH)
 AC_PATH_PROG(KILL, kill, $PATH)
 AC_PATH_PROG(SSH, ssh, $PATH)
 AC_PATH_PROG(MOZILLA, mozilla, $PATH)
@@ -759,6 +760,10 @@ AC_CONFIG_FILES([
   src/java/Makefile
 
   src/java/docs/Makefile
+  src/java/docs/pipeline.html 
+  src/java/docs/pleditor.html 
+  src/java/docs/pljob.html 
+  src/java/docs/pltoolset.html
 
   src/java/pipeline/Makefile
   src/java/pipeline/PackageInfo.java
@@ -783,6 +788,8 @@ AC_CONFIG_FILES([
   src/utils/src/PackageInfo.cc
 
   src/utils/docs/Makefile
+  src/utils/docs/plput.html
+  src/utils/docs/plget.html
 
   tests/Makefile
   
