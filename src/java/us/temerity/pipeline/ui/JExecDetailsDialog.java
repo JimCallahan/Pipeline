@@ -1,4 +1,4 @@
-// $Id: JExecDetailsDialog.java,v 1.2 2004/09/08 18:38:55 jim Exp $
+// $Id: JExecDetailsDialog.java,v 1.3 2004/09/11 14:15:38 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -38,12 +38,46 @@ class JExecDetailsDialog
     /* create dialog body components */ 
     {
       JPanel body = new JPanel();
-
-      body.setName("MainDialogPanel");
       body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));
+      
+      {
+	JPanel panel = new JPanel();
+	panel.setName("MainDialogPanel");
+	panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+	/* working directory */ 
+	{
+	  panel.add(UIMaster.createPanelLabel("Working Directory:"));
+	  
+	  panel.add(Box.createRigidArea(new Dimension(0, 4)));
+	  
+	  JTextField field = UIMaster.createTextField(null, 100, JLabel.LEFT);
+	  pWorkingDirField = field;
+	  
+	  panel.add(field);
+	}
+
+	body.add(panel);
+      }
+
+      {
+	JPanel panel = new JPanel();
+	panel.setName("HorizontalBar");
+
+	Dimension size = new Dimension(100, 7);       
+	panel.setPreferredSize(size);
+	panel.setMinimumSize(size);
+	panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+	
+	body.add(panel);
+      }
 
       /* command line */ 
+      JPanel above = new JPanel();
       {
+	above.setName("MainDialogPanel");
+	above.setLayout(new BoxLayout(above, BoxLayout.Y_AXIS));
+
 	{
 	  Box hbox = new Box(BoxLayout.X_AXIS);
 	  
@@ -52,29 +86,29 @@ class JExecDetailsDialog
 	  {
 	    JLabel label = new JLabel("X");
 	    pCommandLineLabel = label;
-
+	    
 	    label.setName("PanelLabel");
-
+	    
 	    hbox.add(label);
 	  }
 	  
 	  hbox.add(Box.createHorizontalGlue());
 	  
-	  body.add(hbox);
+	  above.add(hbox);
 	}
-
-	body.add(Box.createRigidArea(new Dimension(0, 4)));
-
+	
+	above.add(Box.createRigidArea(new Dimension(0, 4)));
+	
 	{
-	  JTextArea area = new JTextArea(null, 4, 70);
+	  JTextArea area = new JTextArea(null, 5, 70);
 	  pCommandLineArea = area; 
-
-	  area.setName("TextArea");
+	  
+	  area.setName("CodeTextArea");
 	  area.setLineWrap(true);
 	  area.setWrapStyleWord(true);
 	  area.setEditable(false);
 	}
-
+	
 	{
 	  JScrollPane scroll = new JScrollPane(pCommandLineArea);
 	  
@@ -82,33 +116,19 @@ class JExecDetailsDialog
 	    (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 	  scroll.setVerticalScrollBarPolicy
 	    (ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-	  
-	  Dimension size = scroll.getPreferredSize();
-	  scroll.setMinimumSize(new Dimension(100, size.height));
-	  scroll.setMaximumSize(new Dimension(Integer.MAX_VALUE, size.height));
+	    
+	  scroll.setMinimumSize(new Dimension(100, 27));
 
-	  body.add(scroll);
+	  above.add(scroll);
 	}
       }
-
-      body.add(Box.createRigidArea(new Dimension(0, 20)));
-
-      /* working directory */ 
-      {
-	body.add(UIMaster.createPanelLabel("Working Directory:"));
-
-	body.add(Box.createRigidArea(new Dimension(0, 4)));
-      
-	JTextField field = UIMaster.createTextField(null, 100, JLabel.LEFT);
-	pWorkingDirField = field;
-
-	body.add(field);
-      }
-
-      body.add(Box.createRigidArea(new Dimension(0, 20)));
-
+        
       /* environment */ 
-      {      
+      JPanel below = new JPanel();
+      {
+	below.setName("MainDialogPanel");
+	below.setLayout(new BoxLayout(below, BoxLayout.Y_AXIS));
+
 	{
 	  Box hbox = new Box(BoxLayout.X_AXIS);
 	  
@@ -125,10 +145,10 @@ class JExecDetailsDialog
 	  
 	  hbox.add(Box.createHorizontalGlue());
 	  
-	  body.add(hbox);
+	  below.add(hbox);
 	}
 
-	body.add(Box.createRigidArea(new Dimension(0, 4)));
+	below.add(Box.createRigidArea(new Dimension(0, 4)));
 
 	Component comps[] = UIMaster.createTitledPanels();
 	{
@@ -151,10 +171,18 @@ class JExecDetailsDialog
 	  scroll.setMinimumSize(new Dimension(100, 50));
 	  scroll.setPreferredSize(new Dimension(100, 300));
   
-	  body.add(scroll);
+	  below.add(scroll);
 	}
       }
-         
+
+      {
+	JVertSplitPanel split = new JVertSplitPanel(above, below);
+	split.setResizeWeight(0.0);
+	split.setAlignmentX(0.5f);
+
+	body.add(split);
+      }
+               
       super.initUI("X", false, body, null, null, null, "Close");
     }
   }
