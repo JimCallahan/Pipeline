@@ -1,4 +1,4 @@
-// $Id: JBaseLinkDialog.java,v 1.3 2004/07/14 21:04:54 jim Exp $
+// $Id: JBaseLinkDialog.java,v 1.4 2004/08/04 01:43:05 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -67,15 +67,21 @@ class JBaseLinkDialog
 	    UIMaster.createTitledCollectionField(tpanel, "Link Policy:", sTSize, 
 						 vpanel, LinkPolicy.titles(), sVSize);
 	  pPolicyField = field;
+
+	  field.addActionListener(this);
+	  field.setActionCommand("policy-changed");
 	}
 	
 	UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
 	
 	{
+	  ArrayList<String> values = new ArrayList<String>();
+	  values.add(LinkRelationship.All.toTitle());
+	  values.add(LinkRelationship.OneToOne.toTitle());
+
 	  JCollectionField field = 
 	    UIMaster.createTitledCollectionField(tpanel, "Link Relationship:", sTSize, 
-						 vpanel, LinkRelationship.titles(), sVSize);
-	
+						 vpanel, values, sVSize);
 	  pRelationshipField = field;
 
 	  field.addActionListener(this);
@@ -118,7 +124,15 @@ class JBaseLinkDialog
   public LinkRelationship
   getRelationship() 
   {
-    return LinkRelationship.values()[pRelationshipField.getSelectedIndex()];
+    if(pRelationshipField.getSelected().equals("-")) 
+      return LinkRelationship.None;
+    else if(pRelationshipField.getSelected().equals("1:1")) 
+      return LinkRelationship.OneToOne;
+    else if(pRelationshipField.getSelected().equals("All")) 
+      return LinkRelationship.All;
+
+    assert(false);
+    return null;
   }
 
   /**
@@ -147,17 +161,23 @@ class JBaseLinkDialog
    Integer offset
   ) 
   {
-    assert(((rel == LinkRelationship.OneToOne) && (offset != null)) || 
-	   ((rel != LinkRelationship.OneToOne) && (offset == null)));
-
     pPolicyField.setSelectedIndex(policy.ordinal());
 
-    pRelationshipField.removeActionListener(this);
-    {
-      pRelationshipField.setSelectedIndex(rel.ordinal());
-      pOffsetField.setValue(offset);    
+    switch(rel) {
+    case None:
+      pRelationshipField.setSelected("-");
+      break;
+      
+    case OneToOne:
+      pRelationshipField.setSelected("1:1");
+      break;
+      
+    case All:
+      pRelationshipField.setSelected("All");
     }
-    pRelationshipField.addActionListener(this);
+    
+    if(offset != null) 
+      pOffsetField.setValue(offset);    
   }
   
 
@@ -180,7 +200,9 @@ class JBaseLinkDialog
     super.actionPerformed(e);
 
     String cmd = e.getActionCommand();
-    if(cmd.equals("relationship-changed")) 
+    if(cmd.equals("policy-changed")) 
+      doPolicyChanged();
+    else if(cmd.equals("relationship-changed")) 
       doRelationshipChanged();
   }
 
@@ -191,19 +213,59 @@ class JBaseLinkDialog
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * The link catagory has been changed.
+   * The link policy has been changed.
+   */ 
+  public void 
+  doPolicyChanged()
+  {
+    LinkRelationship rel = getRelationship();
+    
+    ArrayList<String> values = new ArrayList<String>();
+    switch(getPolicy()) {
+    case None:
+      values.add("-");
+      pRelationshipField.setValues(values);
+      pRelationshipField.setEnabled(false);
+      break;
+
+    default:
+      pRelationshipField.removeActionListener(this);
+      {
+	values.add(LinkRelationship.All.toTitle());
+	values.add(LinkRelationship.OneToOne.toTitle());
+	pRelationshipField.setValues(values);
+	pRelationshipField.setEnabled(true);
+      }
+      pRelationshipField.addActionListener(this);
+
+      switch(rel) {
+      case None:
+	pRelationshipField.setSelected("All");
+	break;
+
+      default:
+	pRelationshipField.setSelected(rel.toTitle());
+      }
+    }
+  }
+
+  /**
+   * The link relationship has been changed.
    */ 
   public void 
   doRelationshipChanged()
   {
-    LinkRelationship rel = getRelationship();
-    if(rel == LinkRelationship.OneToOne) {
-      pOffsetField.setEnabled(true);
-      Integer offset = pOffsetField.getValue();
-      if(offset == null) 
-	pOffsetField.setValue(0);
-    }
-    else {
+    switch(getRelationship()) {
+    case OneToOne:
+      {
+	pOffsetField.setEnabled(true);
+	Integer offset = pOffsetField.getValue();
+	if(offset == null) 
+	  pOffsetField.setValue(0);
+      }
+      break;
+
+    default:
       pOffsetField.setValue(null);
       pOffsetField.setEnabled(false);
     }
