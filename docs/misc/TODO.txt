@@ -51,6 +51,14 @@ USER INTERFACE:
   methodical system needs to replace the current ad hoc system.
 
 
+STATE/JOB BUGS
+
+- Job submission should traverse the entire tree upstream of the root job node and not
+  stop when it encounters a node without an action.  Job dependencies should bridge any 
+  number of nodes without actions between the target job and source job(s).
+
+
+
 
 IMPORTANT UNIMPLEMENTED JOB RELATED ISSUES:
 
