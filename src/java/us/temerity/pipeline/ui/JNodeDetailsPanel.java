@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.6 2004/07/07 13:25:34 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.7 2004/07/14 21:08:31 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -3780,6 +3780,8 @@ class JNodeDetailsPanel
      NodeMod mod
     ) 
     {
+      super("JNodeDetailsPanel:ModifyTask");
+
       pNodeMod = mod;
     }
 

@@ -1,4 +1,4 @@
-// $Id: JMonitorSubprocessDialog.java,v 1.1 2004/06/28 00:22:06 jim Exp $
+// $Id: JMonitorSubprocessDialog.java,v 1.2 2004/07/14 21:06:42 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -195,6 +195,12 @@ class JMonitorSubprocessDialog
   class RunTask 
     extends Thread
   {
+    public 
+    RunTask() 
+    {
+      super("JMonitorSubprocessDialog:RunTask");
+    }
+
     public void 
     run() 
     {
@@ -235,6 +241,12 @@ class JMonitorSubprocessDialog
   class PrintStdOutTask
     extends Thread
   {
+    public 
+    PrintStdOutTask() 
+    {
+      super("JMonitorSubprocessDialog:PrintStdOutTask");
+    }
+
     public void 
     run()
     {
@@ -268,6 +280,12 @@ class JMonitorSubprocessDialog
   class PrintStdErrTask
     extends Thread
   {
+    public 
+    PrintStdErrTask() 
+    {
+      super("JMonitorSubprocessDialog:PrintStdErrTask");
+    }
+
     public void 
     run()
     {
@@ -301,6 +319,12 @@ class JMonitorSubprocessDialog
   class ScrollTask
     extends Thread
   {
+    public 
+    ScrollTask() 
+    {
+      super("JMonitorSubprocessDialog:ScrollTask");
+    }
+
     public void 
     run()
     {
@@ -317,6 +341,12 @@ class JMonitorSubprocessDialog
   class DoneTask
     extends Thread
   {
+    public 
+    DoneTask() 
+    {
+      super("JMonitorSubprocessDialog:DoneTask");
+    }
+
     public void 
     run()
     {
