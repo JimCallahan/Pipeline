@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.2 2005/01/07 08:41:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -351,6 +351,10 @@ class JQueueJobViewerPanel
    boolean isPrivileged
   ) 
   {
+    pIsPrivileged = isPrivileged;
+    if(UIMaster.getInstance().isRestoring())
+      return;
+
     /* update the job groups and status tables */ 
     {
       pJobGroups.clear();
@@ -378,8 +382,6 @@ class JQueueJobViewerPanel
 
     /* update the visualization graphics */ 
     updateUniverse();
-
-    pIsPrivileged = isPrivileged;
   }
 
 
@@ -504,7 +506,6 @@ class JQueueJobViewerPanel
   {
     updateUniverse();
   }
-
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -731,6 +732,7 @@ class JQueueJobViewerPanel
 
     return bbox;
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1640,24 +1642,15 @@ class JQueueJobViewerPanel
   private void
   doUpdate()
   { 
-    if(pGroupID > 0) {
-      UIMaster master = UIMaster.getInstance();    
+    UIMaster master = UIMaster.getInstance();
+    if((pGroupID > 0) && !master.isRestoring()) {
       PanelGroup<JQueueJobBrowserPanel> panels = master.getQueueJobBrowserPanels();
       JQueueJobBrowserPanel panel = panels.getPanel(pGroupID);
       if(panel != null) {
-	panel.doUpdate();
+	panel.updateAll();
 	return; 
       }
-    }
-
-    TreeSet<Long> groupIDs = new TreeSet<Long>(pJobGroups.keySet());
-    if(groupIDs.isEmpty()) {
-      updateQueueJobs(null, null, false);
-    }
-    else {
-      GetJobsTask task = new GetJobsTask(groupIDs);
-      task.start();
-    }
+    }  
   }
   
 
@@ -2052,45 +2045,7 @@ class JQueueJobViewerPanel
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   G L U E A B L E                                                                      */
-  /*----------------------------------------------------------------------------------------*/
-
-  public synchronized void 
-  toGlue
-  ( 
-   GlueEncoder encoder   
-  ) 
-    throws GlueException
-  {
-    super.toGlue(encoder);
-
-    /* root jobs */ 
-    if(!pJobGroups.isEmpty()) 
-      encoder.encode("JobGroupIDs", new TreeSet<Long>(pJobGroups.keySet()));
-  }
-
-  public synchronized void 
-  fromGlue
-  (
-   GlueDecoder decoder 
-  ) 
-    throws GlueException
-  {
-    /* job groups */     
-    if(UIMaster.getInstance().restoreSelections()) {
-      TreeSet<Long> groupIDs = (TreeSet<Long>) decoder.decode("JobGroupIDs");
-      if(groupIDs != null) {
-	pJobGroups = new TreeMap<Long,QueueJobGroup>();
-	for(Long groupID : groupIDs) 
-	  pJobGroups.put(groupID, null);
-      }
-    }
-
-    super.fromGlue(decoder);
-  }
-  
-
-  
+  /*   I N T E R N A L   C L A S S E S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -2317,54 +2272,6 @@ class JQueueJobViewerPanel
 
 
   /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * Get the current job groups and job states.
-   */ 
-  private
-  class GetJobsTask
-    extends Thread
-  {
-    public 
-    GetJobsTask
-    (
-     TreeSet<Long> groupIDs
-    ) 
-    {
-      super("JQueueJobViewerPanel:GetJobsTask");
-      pGroupIDs = groupIDs;
-    }
- 
-    public void 
-    run() 
-    {
-      UIMaster master = UIMaster.getInstance();
-
-      TreeMap<Long,QueueJobGroup> groups = new TreeMap<Long,QueueJobGroup>();
-      TreeMap<Long,JobStatus> status = null;
-      boolean isPrivileged = false;
-      if(master.beginPanelOp("Updating Jobs...")) {
-	try {
-	  QueueMgrClient client = master.getQueueMgrClient();
-	  for(Long groupID : pGroupIDs) 
-	    groups.put(groupID, client.getJobGroup(groupID));
-	  status = client.getJobStatus(pGroupIDs);
-	  isPrivileged = master.getMasterMgrClient().isPrivileged();
-	}
-	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
-	}
-	finally {
-	  master.endPanelOp("Done.");
-	}
-      }
-
-      updateQueueJobs(groups, status, isPrivileged);
-    }
-
-    private TreeSet<Long>  pGroupIDs; 
-  }
-
 
   /** 
    * Resubmit jobs to the queue for the given file sequences.

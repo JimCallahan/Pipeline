@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JNodeBrowserPanel.java,v 1.2 2005/01/07 08:41:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -204,7 +204,7 @@ class JNodeBrowserPanel
       updateNodeTree();
 
       UIMaster master = UIMaster.getInstance();
-      if(pGroupID > 0) {
+      if((pGroupID > 0) && !master.isRestoring()) {
 	PanelGroup<JNodeViewerPanel> panels = master.getNodeViewerPanels();
 	JNodeViewerPanel viewer = panels.getPanel(pGroupID);
 	if(viewer != null) {
@@ -878,9 +878,6 @@ class JNodeBrowserPanel
     if(!expanded.isEmpty()) 
       encoder.encode("ExpandedPaths", expanded);
 
-    if(!pSelected.isEmpty()) 
-      encoder.encode("Selected", pSelected);
-
     encoder.encode("Filter", pFilter);
   }
 
@@ -892,11 +889,6 @@ class JNodeBrowserPanel
     throws GlueException
   {
     super.fromGlue(decoder);
-
-    TreeSet<String> selected = (TreeSet<String>) decoder.decode("Selected");
-    pSelected.clear();
-    if((selected != null) && UIMaster.getInstance().restoreSelections())
-      pSelected.addAll(selected);
 
     TreeSet<String> expanded = (TreeSet<String>) decoder.decode("ExpandedPaths");
     if(expanded != null) 

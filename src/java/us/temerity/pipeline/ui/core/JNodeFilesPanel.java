@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.2 2005/01/07 08:41:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -70,6 +70,17 @@ class JNodeFilesPanel
   private void 
   initUI()
   {
+    /* initialize fields */ 
+    {
+      pEditorPlugins      = PluginMgr.getInstance().getEditors();
+      pEditorMenuLayout   = new PluginMenuLayout();
+      pRefreshEditorMenus = true; 
+
+      pComparatorPlugins     = PluginMgr.getInstance().getComparators();
+      pComparatorMenuLayout  = new PluginMenuLayout();
+      pRefreshComparatorMenu = true; 
+    }
+
     /* initialize the popup menus */ 
     {
       JMenuItem item;
@@ -262,7 +273,7 @@ class JNodeFilesPanel
       addMouseListener(this); 
     }
 
-    updateNodeStatus(null, null);
+    updateNodeStatus(null, null, null, null);
   }
 
 
@@ -341,6 +352,12 @@ class JNodeFilesPanel
    * @param status
    *   The current node status.
    * 
+   * @param editorPlugins
+   *   The names of versions of the loaded editor plugins.   
+   * 
+   * @param editorLayout
+   *   The menu layout for editor plugins.
+   * 
    * @param novelty
    *   The per-file novelty flags.
    */
@@ -350,13 +367,15 @@ class JNodeFilesPanel
    String author, 
    String view, 
    NodeStatus status, 
+   TreeMap<String,TreeSet<VersionID>> editorPlugins, 
+   PluginMenuLayout editorLayout, 
    TreeMap<VersionID,TreeMap<FileSeq,boolean[]>> novelty
   ) 
   {
     if(!pAuthor.equals(author) || !pView.equals(view)) 
       super.setAuthorView(author, view);
 
-    updateNodeStatus(status, novelty);
+    updateNodeStatus(status, editorPlugins, editorLayout, novelty);
   }
 
   /**
@@ -365,6 +384,12 @@ class JNodeFilesPanel
    * @param status
    *   The current node status.
    * 
+   * @param editorPlugins
+   *   The names of versions of the loaded editor plugins.   
+   * 
+   * @param editorLayout
+   *   The menu layout for editor plugins.
+   * 
    * @param novelty
    *   The per-file novelty flags.
    */
@@ -372,6 +397,8 @@ class JNodeFilesPanel
   updateNodeStatus
   (
    NodeStatus status, 
+   TreeMap<String,TreeSet<VersionID>> editorPlugins, 
+   PluginMenuLayout editorLayout, 
    TreeMap<VersionID,TreeMap<FileSeq,boolean[]>> novelty
   ) 
   {
@@ -384,8 +411,30 @@ class JNodeFilesPanel
 
     {
       PluginMgr plg = PluginMgr.getInstance();
-      pEditorPlugins     = plg.getEditors();
       pComparatorPlugins = plg.getComparators();
+
+      if(editorPlugins != null) 
+	pEditorPlugins = editorPlugins;
+      else 
+	pEditorPlugins = plg.getEditors();
+
+      UIMaster master = UIMaster.getInstance(); 
+      try {
+	pComparatorMenuLayout = master.getMasterMgrClient().getComparatorMenuLayout();
+	pRefreshComparatorMenu = true;
+
+	if(editorLayout != null) {
+	  pEditorMenuLayout = editorLayout; 
+	  pRefreshEditorMenus = true;
+	}
+	else {
+	  pEditorMenuLayout = master.getMasterMgrClient().getEditorMenuLayout();
+	  pRefreshEditorMenus = true;
+	}
+      } 
+      catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+      }      
     }
 
     /* header */ 
@@ -872,105 +921,73 @@ class JNodeFilesPanel
     }
   }
 
-  /**
-   * Update the working file menu.
-   */ 
-  public void 
-  updateWorkingMenu() 
-  {
-    rebuildEditorSubmenu(0);
-  }
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Update the frozen file menu.
+   * Update the editor plugin menus.
    */ 
-  public void 
-  updateFrozenMenu() 
+  private synchronized void 
+  updateEditorMenus()
   {
-    rebuildEditorSubmenu(1);
+    if(pRefreshEditorMenus) {
+      int wk;
+      for(wk=0; wk<pEditWithMenus.length; wk++) {
+	pEditWithMenus[wk].removeAll();
+	for(PluginMenuLayout pml : pEditorMenuLayout) 
+	  pEditWithMenus[wk].add(buildPluginMenu(pml, "edit-with", pEditorPlugins));
+      }
+      
+      pRefreshEditorMenus = false;
+    }
   }
-
+  
   /**
-   * Update the checked-in file menu.
+   * Update the comparator plugin menus.
    */ 
-  public void 
-  updateCheckedInMenu() 
+  private synchronized void 
+  updateComparatorMenu()
   {
-    rebuildEditorSubmenu(2);
-    rebuildComparatorSubmenu();
+    if(pRefreshComparatorMenu) {
+      pCompareWithMenu.removeAll();
+      for(PluginMenuLayout pml : pComparatorMenuLayout) 
+	pCompareWithMenu.add(buildPluginMenu(pml, "compare-with", pComparatorPlugins));
+      
+      pRefreshComparatorMenu = false;
+    }
   }
-
+  
   /**
-   * Rebuild the editor submenu.
-   * 
-   * @param idx
-   *   The node menu index: 0=Medium, 1=Long
+   * Recursively update a plugin menu.
    */ 
-  private void 
-  rebuildEditorSubmenu
+  private JMenuItem
+  buildPluginMenu
   (
-   int idx
+   PluginMenuLayout layout, 
+   String prefix, 
+   TreeMap<String,TreeSet<VersionID>> plugins
   ) 
   {
-    pEditWithMenus[idx].removeAll();
-    
-    for(String editor : pEditorPlugins.keySet()) {
-      JMenuItem item = new JMenuItem(editor);
-      item.setActionCommand("edit-with:" + editor);
+    JMenuItem item = null;
+    if(layout.isMenuItem()) {
+      item = new JMenuItem(layout.getTitle());
+      item.setActionCommand(prefix + ":" + layout.getName() + ":" + layout.getVersionID());
       item.addActionListener(this);
-      pEditWithMenus[idx].add(item);
+   
+      TreeSet<VersionID> vids = plugins.get(layout.getName());
+      item.setEnabled((vids != null) && vids.contains(layout.getVersionID()));
     }
-    
-    pEditWithMenus[idx].addSeparator();
-    
-    JMenu sub = new JMenu("All Versions");
-    pEditWithMenus[idx].add(sub);
+    else {
+      JMenu sub = new JMenu(layout.getTitle()); 
+      for(PluginMenuLayout pml : layout) 
+	sub.add(buildPluginMenu(pml, prefix, plugins));
+      item = sub;
+    }
 
-    for(String editor : pEditorPlugins.keySet()) {
-      JMenu esub = new JMenu(editor);
-      sub.add(esub);
-      
-      for(VersionID vid : pEditorPlugins.get(editor)) {
-	JMenuItem item = new JMenuItem(editor + " (v" + vid + ")");
-	item.setActionCommand("edit-with:" + editor + ":" + vid);
-	item.addActionListener(this);
-	esub.add(item);
-      }
-    }
+    return item;
   }
 
-  /**
-   * Rebuild the comparator submenu.
-   */ 
-  private void 
-  rebuildComparatorSubmenu()
-  {
-    pCompareWithMenu.removeAll();
-    
-    for(String comparator : pComparatorPlugins.keySet()) {
-      JMenuItem item = new JMenuItem(comparator);
-      item.setActionCommand("compare-with:" + comparator);
-      item.addActionListener(this);
-      pCompareWithMenu.add(item);
-    }
-    
-    pCompareWithMenu.addSeparator();
-    
-    JMenu sub = new JMenu("All Versions");
-    pCompareWithMenu.add(sub);
-
-    for(String comparator : pComparatorPlugins.keySet()) {
-      JMenu csub = new JMenu(comparator);
-      sub.add(csub);
-      
-      for(VersionID vid : pComparatorPlugins.get(comparator)) {
-	JMenuItem item = new JMenuItem(comparator + " (v" + vid + ")");
-	item.setActionCommand("compare-with:" + comparator + ":" + vid);
-	item.addActionListener(this);
-	csub.add(item);
-      }
-    }
-  }
+  
 
     
 
@@ -1090,16 +1107,17 @@ class JNodeFilesPanel
 	  }
 
 	  if((pTargetVersionID != null) && !checkedInHeader) {
-	    updateCheckedInMenu();
+	    updateEditorMenus();
+	    updateComparatorMenu();
 	    pCompareWithMenu.setEnabled(hasWorking);
 	    pCheckedInPopup.show(e.getComponent(), e.getX(), e.getY());
 	  }
 	  else if(pIsFrozen || checkedInHeader) {
-	    updateFrozenMenu(); 
+	    updateEditorMenus();
 	    pFrozenPopup.show(e.getComponent(), e.getX(), e.getY());
 	  }
 	  else {
-	    updateWorkingMenu();
+	    updateEditorMenus();
 	    pWorkingPopup.show(e.getComponent(), e.getX(), e.getY());
 	  }
 	}
@@ -2738,9 +2756,31 @@ class JNodeFilesPanel
   private TreeMap<String,TreeSet<VersionID>>  pEditorPlugins; 
 
   /**
+   * The menu layout for editor plugins.
+   */ 
+  private PluginMenuLayout  pEditorMenuLayout;
+
+  /**
+   * Whether the Swing editor menus need to be rebuild from the menu layout.
+   */ 
+  private boolean pRefreshEditorMenus; 
+
+
+  /**
    * Cached names and version numbers of the loaded comparator plugins. 
    */
   private TreeMap<String,TreeSet<VersionID>>  pComparatorPlugins; 
+
+  /**
+   * The menu layout for comparator plugins.
+   */ 
+  private PluginMenuLayout  pComparatorMenuLayout;
+
+  /**
+   * Whether the Swing comparator menu need to be rebuild from the menu layout.
+   */ 
+  private boolean pRefreshComparatorMenu; 
+
 
 
   /*----------------------------------------------------------------------------------------*/

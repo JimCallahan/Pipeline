@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.2 2005/01/07 08:41:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -690,7 +690,7 @@ class JQueueJobBrowserPanel
     super.setAuthorView(author, view);    
 
     if(pJobGroups != null)
-      doUpdate();
+      updateAll();
   }
 
 
@@ -753,9 +753,41 @@ class JQueueJobBrowserPanel
   /*----------------------------------------------------------------------------------------*/
   /*   U S E R   I N T E R F A C E                                                          */
   /*----------------------------------------------------------------------------------------*/
-  
+ 
   /**
-   * Update the jobs groups, servers and slots. 
+   * Perform the initial update which restores the selected job groups synchronously.
+   */ 
+  public void 
+  restoreSelection() 
+  { 
+    QueryTask task = new QueryTask();
+    try {
+      task.start();
+      task.join();
+    }
+    catch(InterruptedException ex) {
+      UIMaster.getInstance().showErrorDialog(ex);
+    }
+  }
+ 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Update the current jobs groups, servers and slots asynchronously.
+   */ 
+  public void 
+  updateAll() 
+  {
+    if(UIMaster.getInstance().isRestoring())
+      return;
+
+    QueryTask task = new QueryTask();
+    task.start();
+  }
+
+  /**
+   * Update the jobs groups, servers and slots asynchronously.
    * 
    * @param author 
    *   The name of the user which owns the working version.
@@ -1216,7 +1248,7 @@ class JQueueJobBrowserPanel
     UserPrefs prefs = UserPrefs.getInstance();
     if((prefs.getJobBrowserUpdate() != null) &&
        prefs.getJobBrowserUpdate().wasPressed(e))
-      doUpdate();
+      updateAll();
     else {
       switch(pTab.getSelectedIndex()) {      
       case 0:
@@ -1314,7 +1346,7 @@ class JQueueJobBrowserPanel
   {
     String cmd = e.getActionCommand();
     if(cmd.equals("update")) 
-      doUpdate();
+      updateAll();
 
     else if(cmd.equals("hosts-history")) 
       doHostsHistory();
@@ -1379,36 +1411,6 @@ class JQueueJobBrowserPanel
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C T I O N S                                                                        */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Update the status of all jobs groups, servers and slots. 
-   */ 
-  public void
-  doUpdate()
-  { 
-    /* recheck privileged status */ 
-    {
-      pIsPrivileged = false; 
-      UIMaster master = UIMaster.getInstance();
-      try {
-	pIsPrivileged = master.getMasterMgrClient().isPrivileged();
-      }
-      catch(PipelineException ex) {
-	master.showErrorDialog(ex);
-      }
-    }
-
-    /* enable/disable the DeleteCompleted button */ 
-    pDeleteCompletedButton.setEnabled
-      (pFilterViewsButton.isSelected() ? !pIsLocked : pIsPrivileged);
-    
-    /* update the panels */ 
-    QueryTask task = new QueryTask();
-    task.start();
-  }
-
-
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -1524,7 +1526,7 @@ class JQueueJobBrowserPanel
   doToggleFilterViews() 
   {
     pFilterViewsButton.setSelected(!pFilterViewsButton.isSelected());
-    doUpdate();
+    updateAll();
   }
   
   /**
@@ -1776,6 +1778,8 @@ class JQueueJobBrowserPanel
     super.toGlue(encoder);
 
     encoder.encode("FilterView", pFilterViewsButton.isSelected());
+    
+    encoder.encode("SelectedTabIndex", pTab.getSelectedIndex());
 
     if(!pSelectedIDs.isEmpty())
       encoder.encode("SelectedIDs", pSelectedIDs);
@@ -1791,6 +1795,10 @@ class JQueueJobBrowserPanel
     Boolean filter = (Boolean) decoder.decode("FilterView");
     if(filter != null) 
       pFilterViewsButton.setSelected(filter);
+
+    Integer idx = (Integer) decoder.decode("SelectedTabIndex");
+    if(idx != null) 
+      pTab.setSelectedIndex(idx);    
 
     if(UIMaster.getInstance().restoreSelections()) {
       TreeSet<Long> selected = (TreeSet<Long>) decoder.decode("SelectedIDs");
@@ -1961,7 +1969,7 @@ class JQueueJobBrowserPanel
       if((pSelectedIDs.size() == 1) && (numPrevSelected <= 1))
 	pJustSelected = pSelectedIDs.first();
   
-      doUpdate();      
+      updateAll();      
     }
 
     private Long  pJustSelected; 
@@ -2145,6 +2153,8 @@ class JQueueJobBrowserPanel
 	try {
 	  QueueMgrClient client = master.getQueueMgrClient();
 
+	  pIsPrivileged = client.isPrivileged();
+
 	  groups    = client.getJobGroups(); 
 	  jobStatus = client.getJobStatus(new TreeSet<Long>(groups.keySet()));
 	  jobInfo   = client.getRunningJobInfo();
@@ -2196,6 +2206,11 @@ class JQueueJobBrowserPanel
     public void 
     run() 
     {
+      /* enable/disable the DeleteCompleted button */ 
+      pDeleteCompletedButton.setEnabled
+	(pFilterViewsButton.isSelected() ? !pIsLocked : pIsPrivileged);
+
+      /* update the panels */ 
       updateJobs(pGroups, pStatus, pInfo, pHosts, pKeys);
     }
     
@@ -2472,7 +2487,7 @@ class JQueueJobBrowserPanel
 	  master.endPanelOp("Done.");
 	}
 
-	doUpdate();
+	updateAll();
       }
     }
 
@@ -2520,7 +2535,7 @@ class JQueueJobBrowserPanel
 	  master.endPanelOp("Done.");
 	}
 
-	doUpdate();
+	updateAll();
       }
     }
 
@@ -2564,7 +2579,7 @@ class JQueueJobBrowserPanel
 	  master.endPanelOp("Done.");
 	}
 
-	doUpdate();
+	updateAll();
       }
     }
 
@@ -2608,7 +2623,7 @@ class JQueueJobBrowserPanel
 	  master.endPanelOp("Done.");
 	}
 
-	doUpdate();
+	updateAll();
       }
     }
 
@@ -2649,7 +2664,7 @@ class JQueueJobBrowserPanel
 	  master.endPanelOp("Done.");
 	}
 
-	doUpdate();
+	updateAll();
       }
     }
 
@@ -2693,7 +2708,7 @@ class JQueueJobBrowserPanel
 	  master.endPanelOp("Done.");
 	}
 
-	doUpdate();
+	updateAll();
       }
     }
 

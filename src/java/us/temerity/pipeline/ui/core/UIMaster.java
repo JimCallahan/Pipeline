@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.2 2005/01/05 09:44:31 jim Exp $
+// $Id: UIMaster.java,v 1.3 2005/01/07 08:41:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -13,6 +13,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.atomic.*;
 import java.util.concurrent.locks.*;
 import java.text.*;
 
@@ -101,6 +102,7 @@ class UIMaster
     pOverrideLayoutName = layout;
     pRestoreLayout      = restoreLayout;
     pRestoreSelections  = restoreSelections; 
+    pIsRestoring        = new AtomicBoolean();
 
     SwingUtilities.invokeLater(new SplashFrameTask(this));
   }
@@ -248,6 +250,14 @@ class UIMaster
     return pRestoreSelections;
   }
 
+  /**
+   * Whether the layout restore is in progress.
+   */ 
+  public boolean
+  isRestoring() 
+  {
+    return pIsRestoring.get();
+  }
 
   /**
    * Get the name of the current panel layout.
@@ -502,6 +512,16 @@ class UIMaster
   {
     pManageEditorsDialog.updateMenuLayout();
     pManageEditorsDialog.setVisible(true);
+  }
+
+  /**
+   * Show the manage comparators dialog.
+   */ 
+  public void 
+  showManageComparatorsDialog()
+  {
+    pManageComparatorsDialog.updateMenuLayout();
+    pManageComparatorsDialog.setVisible(true);
   }
 
   /**
@@ -900,108 +920,7 @@ class UIMaster
     }
 
     System.exit(0);
-  }
-  
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Restore the saved panel layout with the given name.
-   * 
-   * @return
-   *   The restored top-level windows.
-   */ 
-  private ArrayList<JFrame>
-  restoreSavedLayout
-  (
-   String name
-  ) 
-  {
-    /* clean up existing panels */ 
-    {
-      pRootPanel.removeAll();
-      
-      for(JPanelFrame frame : pPanelFrames) {
-	frame.removePanels();
-	frame.setVisible(false);
-      }
-      pPanelFrames.clear();
-      
-      pNodeBrowserPanels.clear();
-      pNodeViewerPanels.clear();
-      pNodeDetailsPanels.clear();
-      pNodeHistoryPanels.clear();
-      pNodeFilesPanels.clear();
-      
-      pQueueJobBrowserPanels.clear();
-      pQueueJobViewerPanels.clear();
-      pQueueJobDetailsPanels.clear();
-    }
-    
-    /* restore saved panels */
-    LinkedList<PanelLayout> layouts = null;
-    {
-      File file = new File(PackageInfo.sHomeDir, 
-			   PackageInfo.sUser + "/.pipeline/layouts" + name);
-      try {      
-	if(!file.isFile()) 
-	  throw new GlueException();
-	
-	layouts = (LinkedList<PanelLayout>) LockedGlueFile.load(file);
-      }
-      catch(GlueException ex) {
-	showErrorDialog("Error:", "Unable to load saved layout (" + file + ")!");
-      }
-      catch(Exception ex) {
-	showErrorDialog(ex);
-      }
-    }
-    
-    ArrayList<JFrame> frames = new ArrayList<JFrame>();
-    if((layouts != null) && !layouts.isEmpty()) {
-      boolean first = true;
-      for(PanelLayout layout : layouts) {
-	JManagerPanel mpanel = layout.getRoot();
-	
-	if(first) {
-	  first = false;
-
-	  pFrame.setBounds(layout.getBounds());
-	  
-	  pRootPanel.add(mpanel);
-	  pRootPanel.validate();
-	  pRootPanel.repaint();
-
-	  frames.add(pFrame);
-	}
-	else {
-	  JPanelFrame frame = new JPanelFrame(); 
-	  
-	  frame.setBounds(layout.getBounds());
-	  frame.setManagerPanel(mpanel);
-	  frame.setWindowName(layout.getName());
-	  
-	  pPanelFrames.add(frame);
-
-	  frames.add(frame);
-	}
-      }
-      
-      setLayoutName(name);
-    }
-    else {
-      JManagerPanel mpanel = new JManagerPanel();
-      mpanel.setContents(new JEmptyPanel()); 
-      
-      pRootPanel.add(mpanel);
-      pRootPanel.validate();
-      pRootPanel.repaint();
-
-      frames.add(pFrame);
-    }
-
-    return frames;
-  }
+  }  
 
     
 
@@ -1299,6 +1218,7 @@ class UIMaster
 	pManageUsersDialog         = new JManageUsersDialog();
 	pManageToolsetsDialog      = new JManageToolsetsDialog();
 	pManageEditorsDialog       = new JManageEditorsDialog();
+	pManageComparatorsDialog   = new JManageComparatorsDialog();
 	pManageToolsDialog         = new JManageToolsDialog();
 	pManageLicenseKeysDialog   = new JManageLicenseKeysDialog();
 	pManageSelectionKeysDialog = new JManageSelectionKeysDialog();
@@ -1316,7 +1236,8 @@ class UIMaster
 	pRestoreDialog = new JRestoreDialog();
       }
 
-      ArrayList<JFrame> frames = new ArrayList<JFrame>();
+      pSplashFrame.setVisible(false);
+
       {
 	String layoutName = null;
 	if(pRestoreLayout) {
@@ -1336,17 +1257,12 @@ class UIMaster
 	  
 	if(layoutName != null) {
 	  setDefaultLayoutName(layoutName);
-	  frames.addAll(restoreSavedLayout(layoutName));
+	  SwingUtilities.invokeLater(new RestoreSavedLayoutTask(layoutName));
 	}
 	else {
-	  frames.add(pFrame);
+	  pFrame.setVisible(true);
 	}
       }
-
-      pSplashFrame.setVisible(false);
-
-      for(JFrame frame : frames) 
-	frame.setVisible(true);
     }
 
     private UIMaster  pMaster;
@@ -1535,12 +1451,204 @@ class UIMaster
     public void 
     run() 
     {
-      ArrayList<JFrame> frames = restoreSavedLayout(pName);
+      /* clean up existing panels */ 
+      {
+	pFrame.setVisible(false);
+	pRootPanel.removeAll();
+	
+	for(JPanelFrame frame : pPanelFrames) {
+	  frame.removePanels();
+	  frame.setVisible(false);
+	}
+	pPanelFrames.clear();
+	
+	pNodeBrowserPanels.clear();
+	pNodeViewerPanels.clear();
+	pNodeDetailsPanels.clear();
+	pNodeHistoryPanels.clear();
+	pNodeFilesPanels.clear();
+	
+	pQueueJobBrowserPanels.clear();
+	pQueueJobViewerPanels.clear();
+	pQueueJobDetailsPanels.clear();
+      }
+      
+      /* restore splash frame */ 
+      JFrame splash = new JFrame("plui");
+      {
+	splash.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	splash.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+	splash.setResizable(false);
+	splash.setUndecorated(true);
+	
+	{ 
+	  JPanel panel = new JPanel(); 
+	  panel.setName("RestoreSplashBorder");
+	  panel.setLayout(new BorderLayout());
+	  
+	  {
+	    JLabel label = new JLabel("Restoring Layout...");
+	    panel.add(label);
+	  }
+	  
+	  splash.setContentPane(panel);
+	}
+	
+	splash.pack();
+	
+	{
+	  Rectangle bounds = splash.getGraphicsConfiguration().getBounds();
+	  splash.setLocation(bounds.x + bounds.width/2 - splash.getWidth()/2, 
+ 			   bounds.y + bounds.height/2 - splash.getHeight()/2);
+	}
+	
+	splash.setVisible(true);
+      }
+      
+      RestoreSavedLayoutRefreshTask task = new RestoreSavedLayoutRefreshTask(pName, splash);
+      task.start();      
+    }
+
+    private String  pName;
+  }
+
+  private 
+  class RestoreSavedLayoutRefreshTask
+    extends Thread
+  {
+    public 
+    RestoreSavedLayoutRefreshTask
+    (
+     String name, 
+     JFrame splash
+    ) 
+    {
+      super("UIMaster:RestoreSavedLayoutRefreshTask");
+      
+      pName   = name;
+      pSplash = splash;
+    }
+
+    public void 
+    run() 
+    {
+      try {
+	sleep(100);
+      }
+      catch(InterruptedException ex) {
+      }
+
+      SwingUtilities.invokeLater(new RestoreSavedLayoutLoaderTask(pName, pSplash));
+    }
+
+    private String  pName;
+    private JFrame  pSplash;
+  }
+
+  private 
+  class RestoreSavedLayoutLoaderTask
+    extends Thread
+  {
+    public 
+    RestoreSavedLayoutLoaderTask
+    (
+     String name, 
+     JFrame splash
+    ) 
+    {
+      super("UIMaster:RestoreSavedLayoutLoaderTask");
+      
+      pName   = name;
+      pSplash = splash;
+    }
+
+    public void 
+    run() 
+    {
+      /* restore saved panels */
+      LinkedList<PanelLayout> layouts = null;
+      {
+	pIsRestoring.set(true);
+	
+	File file = new File(PackageInfo.sHomeDir, 
+			     PackageInfo.sUser + "/.pipeline/layouts" + pName);
+	try {      
+	  if(!file.isFile()) 
+	    throw new GlueException();
+	  
+	  layouts = (LinkedList<PanelLayout>) LockedGlueFile.load(file);
+	}
+	catch(GlueException ex) {
+	  showErrorDialog("Error:", "Unable to load saved layout (" + file + ")!");
+	}
+	catch(Exception ex) {
+	  showErrorDialog(ex);
+	}
+	
+	pIsRestoring.set(false);
+      }
+
+      /* restore selections and perform the initial update synchronously */ 
+      if(pRestoreSelections) {
+	for(JNodeViewerPanel panel : pNodeViewerPanels.getPanels()) 
+	  panel.restoreSelection();
+
+ 	for(JQueueJobBrowserPanel panel : pQueueJobBrowserPanels.getPanels()) 
+ 	  panel.restoreSelection();
+      }
+      
+      /* set window titles and placement */ 
+      ArrayList<JFrame> frames = new ArrayList<JFrame>();
+      if((layouts != null) && !layouts.isEmpty()) {
+	boolean first = true;
+	for(PanelLayout layout : layouts) {
+	  JManagerPanel mpanel = layout.getRoot();
+	  
+	  if(first) {
+	    first = false;
+	    
+	    pFrame.setBounds(layout.getBounds());
+	    
+	    pRootPanel.add(mpanel);
+	    pRootPanel.validate();
+	    pRootPanel.repaint();
+	    
+	    frames.add(pFrame);
+	  }
+	  else {
+	    JPanelFrame frame = new JPanelFrame(); 
+	    
+	    frame.setBounds(layout.getBounds());
+	    frame.setManagerPanel(mpanel);
+	    frame.setWindowName(layout.getName());
+	    
+	    pPanelFrames.add(frame);
+	    
+	    frames.add(frame);
+	  }
+	}
+	
+	setLayoutName(pName);
+      }
+      else {
+	JManagerPanel mpanel = new JManagerPanel();
+	mpanel.setContents(new JEmptyPanel()); 
+	
+	pRootPanel.add(mpanel);
+	pRootPanel.validate();
+	pRootPanel.repaint();
+	
+	frames.add(pFrame);
+      }
+      
+      /* show the restored windows */ 
+      pSplash.setVisible(false);
       for(JFrame frame : frames) 
 	frame.setVisible(true);
     }
 
     private String  pName;
+    private JFrame  pSplash;
   }
 
   /**
@@ -2297,6 +2405,11 @@ class UIMaster
   private boolean  pRestoreSelections; 
 
   /**
+   * Whether a layout restore task is in progress.
+   */ 
+  private AtomicBoolean  pIsRestoring;
+
+  /**
    * The parent of the root manager panel.
    */ 
   private JPanel  pRootPanel; 
@@ -2397,6 +2510,11 @@ class UIMaster
    * The manage editors dialog.
    */ 
   private JManageEditorsDialog  pManageEditorsDialog;
+
+  /**
+   * The manage comparators dialog.
+   */ 
+  private JManageComparatorsDialog  pManageComparatorsDialog;
 
   /**
    * The manage tools dialog.

@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.2 2005/01/05 09:44:31 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.3 2005/01/07 08:41:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -83,8 +83,13 @@ class JNodeViewerPanel
 
       pRemoveSecondarySeqs = new TreeMap<String,FileSeq>();
 
-      pEditorPlugins = PluginMgr.getInstance().getEditors();
-      pToolPlugins   = PluginMgr.getInstance().getTools();
+      pEditorPlugins      = PluginMgr.getInstance().getEditors();
+      pEditorMenuLayout   = new PluginMenuLayout();
+      pRefreshEditorMenus = true; 
+
+      pToolPlugins      = PluginMgr.getInstance().getTools();
+      pToolMenuLayout   = new PluginMenuLayout();
+      pRefreshToolMenu  = true; 
     }
 
     /* panel popup menu */ 
@@ -665,6 +670,27 @@ class JNodeViewerPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Perform the initial update which restores the selected nodes.
+   */ 
+  public void 
+  restoreSelection() 
+  {
+    updateNodeBrowserSelection();
+
+    StatusTask task = new StatusTask(this, false);
+    try {
+      task.start();
+      task.join();
+    }
+    catch(InterruptedException ex) {
+      UIMaster.getInstance().showErrorDialog(ex);
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Update the panel menu.
    */ 
   public void 
@@ -674,33 +700,6 @@ class JNodeViewerPanel
 
     pShowHideDownstreamItem.setText
       ((pShowDownstream ? "Hide" : "Show") + " Downstream");
-  }
-
-  /**
-   * Update the locked node menu.
-   */ 
-  public void 
-  updateLockedNodeMenu() 
-  {
-    rebuildEditorSubmenu(0);
-  }
-
-  /**
-   * Update the checked-in node menu.
-   */ 
-  public void 
-  updateCheckedInNodeMenu() 
-  {
-    rebuildEditorSubmenu(1);
-  }
-
-  /**
-   * Update the frozen node menu.
-   */ 
-  public void 
-  updateFrozenNodeMenu() 
-  {
-    rebuildEditorSubmenu(2);
   }
 
   /**
@@ -741,7 +740,7 @@ class JNodeViewerPanel
 
     pRemoveSecondaryMenu.setEnabled(false);
 
-    rebuildEditorSubmenu(3);
+    updateEditorMenus();
 
     /* rebuild remove secondary items */ 
     if(!pIsLocked) {
@@ -768,74 +767,66 @@ class JNodeViewerPanel
   }
 
   /**
-   * Rebuild the editor submenu.
-   * 
-   * @param idx
-   *   The node menu index: 0=Medium, 1=Long
+   * Update the editor plugin menus.
    */ 
-  private void 
-  rebuildEditorSubmenu
-  (
-   int idx
-  ) 
+  private synchronized void 
+  updateEditorMenus()
   {
-    pEditWithMenus[idx].removeAll();
-    
-    for(String editor : pEditorPlugins.keySet()) {
-      JMenuItem item = new JMenuItem(editor);
-      item.setActionCommand("edit-with:" + editor);
-      item.addActionListener(this);
-      pEditWithMenus[idx].add(item);
-    }
-    
-    pEditWithMenus[idx].addSeparator();
-    
-    JMenu sub = new JMenu("All Versions");
-    pEditWithMenus[idx].add(sub);
-
-    for(String editor : pEditorPlugins.keySet()) {
-      JMenu esub = new JMenu(editor);
-      sub.add(esub);
-      
-      for(VersionID vid : pEditorPlugins.get(editor)) {
-	JMenuItem item = new JMenuItem(editor + " (v" + vid + ")");
-	item.setActionCommand("edit-with:" + editor + ":" + vid);
-	item.addActionListener(this);
-	esub.add(item);
+    if(pRefreshEditorMenus) {
+      int wk;
+      for(wk=0; wk<pEditWithMenus.length; wk++) {
+	pEditWithMenus[wk].removeAll();
+	for(PluginMenuLayout pml : pEditorMenuLayout) 
+	  pEditWithMenus[wk].add(buildPluginMenu(pml, "edit-with", pEditorPlugins));
       }
+      
+      pRefreshEditorMenus = false;
     }
   }
 
   /**
-   * Update the tool menu.
+   * Update the tool plugin menus.
    */ 
-  public void 
-  updateToolMenu() 
+  private synchronized void 
+  updateToolMenu()
   {
-    pToolPopup.removeAll();
-    for(String name : pToolPlugins.keySet()) {
-      JMenuItem item = new JMenuItem(name);
-      item.setActionCommand("run-tool:" + name);
-      item.addActionListener(this);
-      pToolPopup.add(item);
-    }
-    
-    pToolPopup.addSeparator();
-    
-    JMenu sub = new JMenu("All Versions");
-    pToolPopup.add(sub);
+    if(pRefreshToolMenu) {
+      pToolPopup.removeAll();
+      for(PluginMenuLayout pml : pToolMenuLayout)
+	pToolPopup.add(buildPluginMenu(pml, "run-tool", pToolPlugins));
 
-    for(String name : pToolPlugins.keySet()) {
-      JMenu tsub = new JMenu(name);
-      sub.add(tsub);
-      
-      for(VersionID vid : pToolPlugins.get(name)) {
-	JMenuItem item = new JMenuItem(name + " (v" + vid + ")");
-	item.setActionCommand("run-tool:" + name + ":" + vid);
-	item.addActionListener(this);
-	tsub.add(item);
-      }
+      pRefreshToolMenu = false;
     }
+  }
+
+  /**
+   * Recursively update a plugin menu.
+   */ 
+  private JMenuItem
+  buildPluginMenu
+  (
+   PluginMenuLayout layout, 
+   String prefix, 
+   TreeMap<String,TreeSet<VersionID>> plugins
+  ) 
+  {
+    JMenuItem item = null;
+    if(layout.isMenuItem()) {
+      item = new JMenuItem(layout.getTitle());
+      item.setActionCommand(prefix + ":" + layout.getName() + ":" + layout.getVersionID());
+      item.addActionListener(this);
+   
+      TreeSet<VersionID> vids = plugins.get(layout.getName());
+      item.setEnabled((vids != null) && vids.contains(layout.getVersionID()));
+    }
+    else {
+      JMenu sub = new JMenu(layout.getTitle()); 
+      for(PluginMenuLayout pml : layout) 
+	sub.add(buildPluginMenu(pml, prefix, plugins));
+      item = sub;
+    }
+
+    return item;
   }
 
 
@@ -850,7 +841,7 @@ class JNodeViewerPanel
   {
     /* update the associated node viewer */ 
     UIMaster master = UIMaster.getInstance();
-    if(pGroupID > 0) {
+    if((pGroupID > 0) && !master.isRestoring()) {
       PanelGroup<JNodeBrowserPanel> panels = master.getNodeBrowserPanels();
       JNodeBrowserPanel browser = panels.getPanel(pGroupID);
       if(browser != null) {
@@ -942,9 +933,12 @@ class JNodeViewerPanel
    * Update the nodes being viewed.
    */ 
   private synchronized void 
-  updateNodeStatus()
+  updateNodeStatus() 
   {
-    StatusTask task = new StatusTask(this);
+    if(UIMaster.getInstance().isRestoring())
+      return;
+
+    StatusTask task = new StatusTask(this, true);
     task.start();
   }
 
@@ -956,7 +950,7 @@ class JNodeViewerPanel
   { 
     updateUniverse(true);
   }
-
+  
   /**
    * Update the visualization graphics.
    * 
@@ -969,10 +963,25 @@ class JNodeViewerPanel
    boolean updateSubPanels
   )
   { 
-    /* refresh the plugins */ 
-    pEditorPlugins = PluginMgr.getInstance().getEditors();
-    pToolPlugins   = PluginMgr.getInstance().getTools();
-    
+    /* refresh the plugins */    
+    {
+      PluginMgr plg = PluginMgr.getInstance();
+      pEditorPlugins = plg.getEditors();
+      pToolPlugins = plg.getTools();
+
+      UIMaster master = UIMaster.getInstance(); 
+      try {
+	pEditorMenuLayout = master.getMasterMgrClient().getEditorMenuLayout();
+	pRefreshEditorMenus = true;
+
+	pToolMenuLayout = master.getMasterMgrClient().getToolMenuLayout();
+	pRefreshToolMenu = true;
+      } 
+      catch(PipelineException ex) {
+	master.showErrorDialog(ex);
+      }
+    }
+
     /* compute the center of the current layout if no pinned node is set */ 
     if(pPinnedPath == null) {
       pPinnedPos = null;
@@ -1697,15 +1706,15 @@ class JNodeViewerPanel
 	      NodeDetails details = pPrimary.getNodeStatus().getDetails();
 	      if(details != null) {
 		if(pIsLocked) {
-		  updateLockedNodeMenu();
+		  updateEditorMenus();
 		  pLockedNodePopup.show(e.getComponent(), e.getX(), e.getY());
 		}
 		else if(details.getWorkingVersion() == null) {
-		  updateCheckedInNodeMenu();
+		  updateEditorMenus();
 		  pCheckedInNodePopup.show(e.getComponent(), e.getX(), e.getY());
 		}
 		else if(details.getWorkingVersion().isFrozen()) {
-		  updateFrozenNodeMenu();
+		  updateEditorMenus();
 		  pFrozenNodePopup.show(e.getComponent(), e.getX(), e.getY());
 		}
 		else {
@@ -3412,17 +3421,16 @@ class JNodeViewerPanel
   ) 
     throws GlueException
   {
+    super.fromGlue(decoder);
+
     /* root nodes */  
     if(UIMaster.getInstance().restoreSelections()) {
       TreeSet<String> roots = (TreeSet<String>) decoder.decode("Roots");
       if(roots != null) {
-	pRoots = new TreeMap<String,NodeStatus>();
 	for(String name : roots) 
 	  pRoots.put(name, null);
       }
     }
-
-    super.fromGlue(decoder);
   }
   
 
@@ -4345,12 +4353,14 @@ class JNodeViewerPanel
     public 
     StatusTask
     (
-     JNodeViewerPanel viewer
+     JNodeViewerPanel viewer, 
+     boolean updateSubPanels 
     ) 
     {
       super("JNodeViewerPanel:StatusTask");
 
       pViewer = viewer;
+      pUpdateSubPanels = updateSubPanels;
     }
  
     public void 
@@ -4381,12 +4391,13 @@ class JNodeViewerPanel
 	    master.endPanelOp("Done.");
 	  }
 	  
-	  updateUniverse();
+	  updateUniverse(pUpdateSubPanels);
 	}
       }
     }
     
     private JNodeViewerPanel  pViewer;
+    private boolean           pUpdateSubPanels;
   }
 
   
@@ -4546,6 +4557,7 @@ class JNodeViewerPanel
 
       UpdateSubPanelComponentsTask task = 
 	new UpdateSubPanelComponentsTask(pGroupID, pAuthor, pView, pStatus, 
+					 pEditorPlugins, pEditorMenuLayout, 
 					 novelty, history, 
 					 pUpdateJobs, jobGroups, jobStatus, jobInfo, 
 					 hosts, keys);
@@ -4573,6 +4585,8 @@ class JNodeViewerPanel
      String author, 
      String view, 
      NodeStatus status, 
+     TreeMap<String,TreeSet<VersionID>> editorPlugins, 
+     PluginMenuLayout editorLayout,
      TreeMap<VersionID,TreeMap<FileSeq,boolean[]>> novelty,
      TreeMap<VersionID,LogMessage> history,
      boolean updateJobs, 
@@ -4589,6 +4603,12 @@ class JNodeViewerPanel
       pAuthor  = author;
       pView    = view;
       pStatus  = status;
+
+      pEditorPlugins = new TreeMap<String,TreeSet<VersionID>>();
+      for(String name : editorPlugins.keySet()) 
+	pEditorPlugins.put(name, new TreeSet<VersionID>(editorPlugins.get(name)));
+
+      pEditorMenuLayout = new PluginMenuLayout(editorLayout);
 
       pNovelty = novelty;
       pHistory = history;
@@ -4610,7 +4630,8 @@ class JNodeViewerPanel
 	PanelGroup<JNodeDetailsPanel> panels = master.getNodeDetailsPanels();
 	JNodeDetailsPanel panel = panels.getPanel(pGroupID);
 	if(panel != null) {
-	  panel.updateNodeStatus(pAuthor, pView, pStatus);
+	  panel.updateNodeStatus(pAuthor, pView, pStatus, 
+				 pEditorPlugins, pEditorMenuLayout);
 	  panel.updateManagerTitlePanel();
 	}
       }
@@ -4619,7 +4640,9 @@ class JNodeViewerPanel
 	PanelGroup<JNodeFilesPanel> panels = master.getNodeFilesPanels();
 	JNodeFilesPanel panel = panels.getPanel(pGroupID);
 	if(panel != null) {
-	  panel.updateNodeStatus(pAuthor, pView, pStatus, pNovelty);
+	  panel.updateNodeStatus(pAuthor, pView, pStatus, 
+				 pEditorPlugins, pEditorMenuLayout, 
+				 pNovelty);
 	  panel.updateManagerTitlePanel();
 	}
       }
@@ -4628,7 +4651,9 @@ class JNodeViewerPanel
 	PanelGroup<JNodeHistoryPanel> panels = master.getNodeHistoryPanels();
 	JNodeHistoryPanel panel = panels.getPanel(pGroupID);
 	if(panel != null) {
-	  panel.updateNodeStatus(pAuthor, pView, pStatus, pHistory);
+	  panel.updateNodeStatus(pAuthor, pView, pStatus, 
+				 pEditorPlugins, pEditorMenuLayout, 
+				 pHistory);
 	  panel.updateManagerTitlePanel();
 	}
       }
@@ -4648,6 +4673,9 @@ class JNodeViewerPanel
     private String      pAuthor;
     private String      pView; 
     private NodeStatus  pStatus;
+
+    private TreeMap<String,TreeSet<VersionID>>  pEditorPlugins; 
+    private PluginMenuLayout  pEditorMenuLayout;
 
     private TreeMap<VersionID,TreeMap<FileSeq,boolean[]>>  pNovelty;
     private TreeMap<VersionID,LogMessage>                  pHistory;
@@ -4703,9 +4731,30 @@ class JNodeViewerPanel
   private TreeMap<String,TreeSet<VersionID>>  pEditorPlugins; 
 
   /**
+   * The menu layout for editor plugins.
+   */ 
+  private PluginMenuLayout  pEditorMenuLayout;
+
+  /**
+   * Whether the Swing editor menus need to be rebuild from the menu layout.
+   */ 
+  private boolean pRefreshEditorMenus; 
+
+
+  /**
    * Cached names and version numbers of the loaded tool plugins. 
    */
   private TreeMap<String,TreeSet<VersionID>>  pToolPlugins; 
+
+  /**
+   * The menu layout for tool plugins.
+   */ 
+  private PluginMenuLayout  pToolMenuLayout;
+
+  /**
+   * Whether the Swing tool menus need to be rebuild from the menu layout.
+   */ 
+  private boolean pRefreshToolMenu; 
 
 
   /*----------------------------------------------------------------------------------------*/
