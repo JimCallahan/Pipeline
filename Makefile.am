@@ -1,9 +1,8 @@
 
 SUBDIRS = \
   src \
-  tests
-
-#  data
+  tests \
+  data
 
 
 EXTRA_DIST = \
