@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 1.5.0)
+AM_INIT_AUTOMAKE(Pipeline, 1.6.0)
 
 AC_MSG_RESULT([ ])
 
@@ -894,6 +894,7 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/bootstrap/BootStrapLoader.java.in
   src/java/us/temerity/pipeline/laf/scripts/filter-fonts
   src/java/us/temerity/pipeline/laf/scripts/filter-textures
+  src/java/us/temerity/pipeline/laf/scripts/radial-menu
   src/java/us/temerity/pipeline/native/Makefile
   src/java/us/temerity/pipeline/plugin/Makefile
   src/java/us/temerity/pipeline/tests/Makefile
