@@ -7,5 +7,6 @@ instbin_SCRIPTS = \
   pljob \
   pltoolset \
   plui \
+  plui-prof \
   texture-tester
 

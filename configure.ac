@@ -769,6 +769,7 @@ AC_CONFIG_FILES([
   src/java/scripts/pljob
   src/java/scripts/pltoolset
   src/java/scripts/plui
+  src/java/scripts/plui-prof
   src/java/scripts/texture-tester
 
   src/java/share/Makefile
