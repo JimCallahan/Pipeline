@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.42 2004/10/01 23:16:28 jim Exp $
+// $Id: JManagerPanel.java,v 1.43 2004/10/09 19:02:28 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1774,10 +1774,12 @@ class JManagerPanel
       JTabbedPanel tab = (JTabbedPanel) parent;
       tab.remove(this);
 
-      /* if empty, remove the tabbed pane as well */ 
-      if(tab.getTabCount() == 0) {
+      /* if only one tab remains, 
+	   remove the tabbed pane and replace it with the contents of the sole tab */ 
+      if(tab.getTabCount() == 1) {
 	JManagerPanel grandpa = (JManagerPanel) tab.getParent();
-	grandpa.setContents(new JEmptyPanel(pTopLevelPanel));
+	JManagerPanel lastMgr = (JManagerPanel) tab.getComponentAt(0);
+	grandpa.setContents(lastMgr.removeContents());
 	grandpa.refocusOnChildPanel();
       } 
       else {
