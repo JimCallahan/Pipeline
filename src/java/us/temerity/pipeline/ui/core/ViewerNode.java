@@ -1,4 +1,4 @@
-// $Id: ViewerNode.java,v 1.3 2005/01/22 06:10:10 jim Exp $
+// $Id: ViewerNode.java,v 1.4 2005/02/09 18:22:33 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -274,14 +274,54 @@ class ViewerNode
     {
       gl.glTranslated(pPos.x(), pPos.y(), 0.0);
       gl.glCallList(pIconDL[pMode.ordinal()]);
-      
-      if(pIsCollapsed) {
-	double dx = (pStatus.getDetails() == null) ? -0.8 : 0.8;
-	gl.glTranslated(dx, 0.0, 0.0);
-	gl.glCallList(pCollapsedDL);
-	gl.glTranslated(-dx, 0.0, 0.0);
+
+      {
+	NodeDetails details = pStatus.getDetails();
+
+	if(pIsCollapsed) {
+	  double dx = (details == null) ? -0.8 : 0.8;
+	  gl.glTranslated(dx, 0.0, 0.0);
+	  gl.glCallList(pCollapsedDL);
+	  gl.glTranslated(-dx, 0.0, 0.0);
+	}
+
+	if(details != null) {
+	  NodeCommon com = null;
+	  boolean hasSources = false;
+	  {
+	    NodeMod mod = details.getWorkingVersion();
+	    if(mod != null) {
+	      com = mod;
+	      hasSources = mod.hasSources();
+	    }
+	    else {
+	      NodeVersion vsn = details.getLatestVersion();
+	      if(vsn != null) {
+		com = vsn;
+		hasSources = vsn.hasSources();
+	      }
+	    }
+	  }
+
+	  UserPrefs prefs = UserPrefs.getInstance();
+	  if((com != null) &&  (com.getAction() != null) && 
+	     (!com.isActionEnabled()) && (prefs.getDrawDisabledAction()) && 
+	     (pIsCollapsed || !hasSources)) {
+	    
+	    gl.glBegin(gl.GL_LINES);
+	    {
+	      Color3d color = prefs.getLinkColor();
+	      gl.glColor3d(color.r(), color.g(), color.b());
+
+	      double s = prefs.getDisabledActionSize();
+	      gl.glVertex2d(0.55, -s);
+	      gl.glVertex2d(0.55,  s);
+	    }
+	    gl.glEnd();
+	  }
+	}
       }
-    
+
       {
 	switch(pMode) {
 	case Normal:
