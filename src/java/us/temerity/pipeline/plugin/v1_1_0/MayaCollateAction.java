@@ -1,4 +1,4 @@
-// $Id: MayaCollateAction.java,v 1.7 2004/11/21 18:39:56 jim Exp $
+// $Id: MayaCollateAction.java,v 1.8 2004/12/01 23:02:21 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_1_0;
 
@@ -652,7 +652,7 @@ class MayaCollateAction
 	  }
 	    
 	  /* advance to the next shot in the sequence */ 
-	  shotStart += shotEnd + shotGap;
+	  shotStart = shotEnd + shotGap;
 	  maxFrame = Math.max(maxFrame, shotEnd);
 	  shotIdx++;
 	}
