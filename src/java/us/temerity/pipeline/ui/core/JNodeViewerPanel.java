@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.5 2005/01/08 08:32:18 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.6 2005/01/08 15:25:54 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -329,12 +329,6 @@ class JNodeViewerPanel
 	pNodePopup.add(item);
 
 	pNodePopup.addSeparator();
-
-	item = new JMenuItem("Import...");
-	item.setActionCommand("import");
-	item.addActionListener(this);
-	item.setEnabled(false);  // FOR NOW...
-	pNodePopup.add(item);
 
 	item = new JMenuItem("Export...");
 	pExportItem = item;
@@ -991,13 +985,6 @@ class JNodeViewerPanel
 	pPinnedPos = bbox.getCenter(); 
     }
 
-//     /* get the paths to the currently collapsed nodes */ 
-//     TreeSet<NodePath> wasCollapsed = new TreeSet<NodePath>();
-//     for(ViewerNode vnode : pViewerNodes.values()) {
-//       if(vnode.isCollapsed()) 
-// 	wasCollapsed.add(vnode.getNodePath());
-//     }
-
     /* remove all previous nodes and links */ 
     pViewerNodes.clear();
     pViewerLinks.clear();
@@ -1057,6 +1044,14 @@ class JNodeViewerPanel
 	  BBox2d bbox = getNodeBounds(pViewerNodes.values());
 	  if(bbox != null) 
 	    delta = new Vector2d(bbox.getCenter(), pPinnedPos);
+	}
+
+	/* this is the first layout, shift all nodes so that they lie in the same position
+	     they did when the layout was saved */ 
+	else if(pInitialCenter != null) {
+	  BBox2d bbox = getNodeBounds(pViewerNodes.values());
+	  delta = new Vector2d(bbox.getCenter(), pInitialCenter);
+	  pInitialCenter = null;
 	}
 
 	if(delta != null) {
@@ -3435,6 +3430,15 @@ class JNodeViewerPanel
     /* root nodes */ 
     if(!pRoots.isEmpty()) 
       encoder.encode("Roots", new TreeSet<String>(pRoots.keySet()));
+
+    /* the initial center of the node layout */ 
+    {
+      BBox2d bbox = getNodeBounds(pViewerNodes.values());
+      encoder.encode("InitialCenter", bbox.getCenter());
+    } 
+
+    /* whether to show the downstram links */
+    encoder.encode("ShowDownstream", pShowDownstream);
   }
 
   public synchronized void 
@@ -3454,6 +3458,14 @@ class JNodeViewerPanel
 	  pRoots.put(name, null);
       }
     }
+
+    /* the initial center of the node layout */ 
+    pInitialCenter = (Point2d) decoder.decode("InitialCenter");
+    
+    /* whether to show the downstram links */    
+    Boolean show = (Boolean) decoder.decode("ShowDownstream");
+    if(show != null) 
+      pShowDownstream = show; 
   }
   
 
@@ -4808,6 +4820,12 @@ class JNodeViewerPanel
    */
   private LinkCommon  pSelectedLink;
 
+
+  /**
+   * The initial center of the node layout.
+   */ 
+  private Point2d  pInitialCenter; 
+  
 
   /**
    * The position of the node which should remain stationary after a relayout of nodes.
