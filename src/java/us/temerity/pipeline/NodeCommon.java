@@ -1,4 +1,4 @@
-// $Id: NodeCommon.java,v 1.15 2004/08/01 15:42:55 jim Exp $
+// $Id: NodeCommon.java,v 1.16 2004/09/08 18:33:09 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -480,6 +480,84 @@ class NodeCommon
     return new NodeCommon(this);
   }
 
+
+ 
+  /*----------------------------------------------------------------------------------------*/
+  /*   S E R I A L I Z A B L E                                                              */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write the serializable fields to the object stream. <P> 
+   * 
+   * This enables the node to convert a dynamically loaded action plugin instance into a 
+   * generic staticly loaded BaseAction instance before serialization.
+   */ 
+  private void 
+  writeObject
+  (
+   java.io.ObjectOutputStream out
+  )
+    throws IOException
+  {
+    out.writeObject(pPrimarySeq);
+    out.writeObject(pSecondarySeqs);
+    out.writeObject(pToolset);
+    out.writeObject(pEditor);
+
+    BaseAction action = null;
+    if(pAction != null) 
+      action = new BaseAction(pAction);
+    out.writeObject(action);
+
+    out.writeBoolean(pIsActionEnabled);
+    out.writeObject(pJobReqs);
+    out.writeObject(pOverflow);
+    out.writeObject(pExecution);
+    out.writeObject(pBatchSize);
+  }
+
+  /**
+   * Read the serializable fields from the object stream. <P> 
+   * 
+   * This enables the node to dynamically instantiate an action plugin instance and copy
+   * its parameters from the generic staticly loaded BaseAction instance in the object 
+   * stream. 
+   */ 
+  private void 
+  readObject
+  (
+    java.io.ObjectInputStream in
+  )
+    throws IOException, ClassNotFoundException
+  {
+    pPrimarySeq = (FileSeq) in.readObject();
+    pSecondarySeqs = (TreeSet<FileSeq>) in.readObject();
+    pToolset = (String) in.readObject();
+    pEditor = (String) in.readObject();
+
+    BaseAction action = (BaseAction) in.readObject();
+    if(action != null) {
+      try {
+	pAction = PluginMgr.getInstance().newAction(action.getName(), action.getVersionID());
+	pAction.setSingleParamValues(action);
+	pAction.setSourceParamValues(action);
+      }
+      catch(PipelineException ex) {
+	throw new IOException("Unable to instantiate action plugin: " + ex.getMessage());
+      }
+    }
+    else {
+      pAction = null;
+    }
+
+    pIsActionEnabled = in.readBoolean();
+    pJobReqs = (JobReqs) in.readObject();
+    pOverflow = (OverflowPolicy) in.readObject();
+    pExecution = (ExecutionMethod) in.readObject();
+    pBatchSize = (Integer) in.readObject();
+  }
+ 
+
   
   /*----------------------------------------------------------------------------------------*/
   /*   G L U E A B L E                                                                      */
@@ -505,7 +583,8 @@ class NodeCommon
       encoder.encode("Editor", pEditor);
     
     if(pAction != null) {
-      encoder.encode("Action", pAction);
+      encoder.encode("Action", new BaseAction(pAction));
+
       encoder.encode("IsActionEnabled", pIsActionEnabled);
 
       assert(pJobReqs != null);
@@ -551,7 +630,14 @@ class NodeCommon
     
     BaseAction action = (BaseAction) decoder.decode("Action");
     if(action != null) {
-      pAction = action;
+      try {
+	pAction = PluginMgr.getInstance().newAction(action.getName(), action.getVersionID());
+	pAction.setSingleParamValues(action);
+	pAction.setSourceParamValues(action);
+      }
+      catch(PipelineException ex) {
+	throw new GlueException("Unable to instantiate action plugin: " + ex.getMessage());
+      }
       
       Boolean enabled = (Boolean) decoder.decode("IsActionEnabled");
       if(enabled == null) 

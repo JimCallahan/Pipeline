@@ -1,10 +1,11 @@
-// $Id: NodeVersion.java,v 1.17 2004/07/07 13:19:59 jim Exp $
+// $Id: NodeVersion.java,v 1.18 2004/09/08 18:33:09 jim Exp $
 
 package us.temerity.pipeline;
 
 import us.temerity.pipeline.glue.*;
 
 import java.util.*;
+import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   N O D E   V E R S I O N                                                                */
@@ -80,6 +81,20 @@ class NodeVersion
     pIsNovel = new TreeMap<FileSeq,boolean[]>();
     for(FileSeq fseq : isNovel.keySet()) 
       pIsNovel.put(fseq, isNovel.get(fseq).clone());
+
+    if(pAction != null) {
+      for(String sname : pAction.getSourceNames()) {
+	if(!pSources.containsKey(sname)) {
+	  Logs.ops.warning
+	    ("While creating checked-in node (" + pName + ") version (" + pVersionID + "), " +
+	     "per-source action parameters for source (" + sname + ") where found for the " + 
+	     "action associated with the working version being checked-in, but there were " + 
+	     "NO upstream links to this source node!  These extra per-source parameters " + 
+	     "were ignored."); 
+	  pAction.removeSourceParams(sname); 
+	}
+      }
+    }
   }
 
   /** 

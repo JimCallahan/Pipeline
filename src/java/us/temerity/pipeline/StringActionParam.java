@@ -1,4 +1,4 @@
-// $Id: StringActionParam.java,v 1.1 2004/06/14 22:43:27 jim Exp $
+// $Id: StringActionParam.java,v 1.2 2004/09/08 18:33:09 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -20,11 +20,17 @@ class StringActionParam
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
     
+  public 
+  StringActionParam() 
+  {
+    super();
+  }
+
   /** 
    * Construct a parameter with the given name, description and default value.
    * 
    * @param name 
-   *   The short name of the editor.  
+   *   The short name of the parameter.  
    * 
    * @param desc 
    *   A short description used in tooltips.

@@ -1,4 +1,4 @@
-// $Id: QueueJob.java,v 1.3 2004/08/22 21:51:42 jim Exp $
+// $Id: QueueJob.java,v 1.4 2004/09/08 18:33:09 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -132,6 +132,71 @@ class QueueJob
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   S E R I A L I Z A B L E                                                              */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write the serializable fields to the object stream. <P> 
+   * 
+   * This enables the node to convert a dynamically loaded action plugin instance into a 
+   * generic staticly loaded BaseAction instance before serialization.
+   */ 
+  private void 
+  writeObject
+  (
+   java.io.ObjectOutputStream out
+  )
+    throws IOException
+  {
+    out.writeObject(pActionAgenda);
+
+    BaseAction action = null;
+    if(pAction != null) 
+      action = new BaseAction(pAction);
+    out.writeObject(action);
+
+    out.writeObject(pJobReqs);
+    out.writeObject(pSourceJobIDs);
+  }
+
+  /**
+   * Read the serializable fields from the object stream. <P> 
+   * 
+   * This enables the node to dynamically instantiate an action plugin instance and copy
+   * its parameters from the generic staticly loaded BaseAction instance in the object 
+   * stream. 
+   */ 
+  private void 
+  readObject
+  (
+    java.io.ObjectInputStream in
+  )
+    throws IOException, ClassNotFoundException
+  {
+    pActionAgenda = (ActionAgenda) in.readObject();
+
+    BaseAction action = (BaseAction) in.readObject();
+    if(action != null) {
+      try {
+	pAction = PluginMgr.getInstance().newAction(action.getName(), action.getVersionID());
+	pAction.setSingleParamValues(action);
+	pAction.setSourceParamValues(action);
+      }
+      catch(PipelineException ex) {
+	throw new IOException("Unable to instantiate action plugin: " + ex.getMessage());
+      }
+    }
+    else {
+      pAction = null;
+    }
+
+    pJobReqs = (JobReqs) in.readObject();
+    pSourceJobIDs = (TreeSet<Long>) in.readObject();
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   G L U E A B L E                                                                      */
   /*----------------------------------------------------------------------------------------*/
   
@@ -143,7 +208,7 @@ class QueueJob
     throws GlueException
   {
     encoder.encode("ActionAgenda", pActionAgenda);
-    encoder.encode("Action", pAction);
+    encoder.encode("Action", new BaseAction(pAction));
     encoder.encode("JobRequirements", pJobReqs);
     
     if(!pSourceJobIDs.isEmpty())
@@ -165,8 +230,15 @@ class QueueJob
     BaseAction action = (BaseAction) decoder.decode("Action");
     if(action == null) 
       throw new GlueException("The \"Action\" was missing!");
-    pAction = action;
-
+    try {
+      pAction = PluginMgr.getInstance().newAction(action.getName(), action.getVersionID());
+      pAction.setSingleParamValues(action);
+      pAction.setSourceParamValues(action);
+    }
+    catch(PipelineException ex) {
+      throw new GlueException("Unable to instantiate action plugin: " + ex.getMessage());
+    }
+    
     JobReqs jreqs = (JobReqs) decoder.decode("JobRequirements");
     if(jreqs == null) 
       throw new GlueException("The \"JobRequirements\" were missing!");

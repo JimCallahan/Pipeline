@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.26 2004/09/05 06:42:24 jim Exp $
+// $Id: NodeMod.java,v 1.27 2004/09/08 18:33:09 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -753,9 +753,8 @@ class NodeMod
    *   The toolset environment under which editors and actions are run. <BR>
    *   The name of the editor plugin used to edit the data files associated with the node.<BR>
    *   The regeneration action and its single and per-dependency parameters. <BR>
-   *   The job requirements. <BR>
-   *   The IgnoreOverflow and IsSerial flags. <BR>
-   *   The job batch size. <P> 
+   *   The overflow policy, execution method and job batch size. <BR> 
+   *   The job requirements. <P>
    * </DIV> 
    * 
    * Note that if the node properties of the given working version are identical to this
@@ -822,6 +821,20 @@ class NodeMod
     
     {
       BaseAction action = mod.getAction(); 
+      if(action != null) {
+	for(String sname : action.getSourceNames()) {
+	  if(!pSources.containsKey(sname)) {
+	    Logs.ops.warning
+	      ("While attempting to modify the properites of working node " + 
+	       "(" + pName + "), per-source action parameters for source (" + sname + ") " + 
+	       "where found for the input action, but the node being modified did NOT " + 
+	       "have any upstream links to this source node!  These extra per-source " + 
+	       "parameters were ignored."); 
+	    action.removeSourceParams(sname); 
+	  }
+	}
+      }
+
       if(!(((pAction == null) && (action == null)) || 
 	   ((pAction != null) && pAction.equals(action)))) {
 	pAction = action;
@@ -962,7 +975,10 @@ class NodeMod
   }
 
   /** 
-   * Remove the link relationship information for the given upstream node.
+   * Remove the link relationship information for the given upstream node. <P> 
+   * 
+   * If there is a regeneration action associated with this node, any per-source action
+   * parameters for the given upstream node will also be removed. <P> 
    * 
    * @param name  
    *   The fully resolved node name of the upstream node.
@@ -983,17 +999,28 @@ class NodeMod
 	 "version (" + pName + ")!");
 
     pSources.remove(name);
+
+    if(pAction != null) 
+      pAction.removeSourceParams(name); 
+
     updateLastCriticalMod();
   }
   
   /** 
    * Remove the link relationship information for all upstream nodes.
+   * 
+   * If there is a regeneration action associated with this node, all per-source action 
+   * parameters will also be removed. <P> 
    */
   public void
   removeAllSources() 
     throws PipelineException
   {
     pSources.clear();
+
+    if(pAction != null) 
+      pAction.removeAllSourceParams(); 
+
     updateLastCriticalMod();
   }
 

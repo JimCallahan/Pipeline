@@ -1,4 +1,4 @@
-// $Id: BaseEditor.java,v 1.5 2004/07/16 22:01:44 jim Exp $
+// $Id: BaseEditor.java,v 1.6 2004/09/08 18:33:09 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -10,12 +10,15 @@ import java.io.*;
 /*------------------------------------------------------------------------------------------*/
 
 /** 
- * The superclass of all Pipeline node editor plugins. <P>
+ * The superclass of all Pipeline editor plugins. <P>
  * 
+ * New kinds of editors can be written by subclassing this class.  Due to the way plugins
+ * are loaded and communicated between applications, any fields added to a subclass will
+ * be reinitialized when the action is stored to disk or when it is sent over the network.
  */
 public
 class BaseEditor
-  extends Described
+  extends BasePlugin
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -28,31 +31,54 @@ class BaseEditor
   }
 
   /** 
-   * Construct with a name and description. 
+   * Construct with the given name, version and description. 
    * 
    * @param name 
    *   The short name of the editor.
    * 
+   * @param vid
+   *   The editor plugin revision number. 
+   * 
    * @param desc 
-   *   A short description used in tooltips.
+   *   A short description of the editor.
    *
    * @param program 
-   *   A name of the editor executable. 
+   *   A name of the editor executable.
    */ 
   protected
   BaseEditor
   (
-   String name,  
+   String name, 
+   VersionID vid,
    String desc, 
    String program
   ) 
   {
-    super(name, desc);
+    super(name, vid, desc);
     
     if(program == null)
       throw new IllegalArgumentException("The program cannot be (null)!");
     pProgram = program;
   }
+
+  /**
+   * Copy constructor. <P> 
+   * 
+   * Used internally to create a generic instances of plugin subclasses.  This constructor
+   * should not be used in end user code! <P> 
+   */ 
+  public 
+  BaseEditor
+  (
+   BaseEditor editor
+  ) 
+  {
+    super(editor.pName, editor.pVersionID, editor.pDescription);
+
+    pVersionID = new VersionID(editor.pVersionID);
+    pProgram   = editor.pProgram;
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -75,7 +101,7 @@ class BaseEditor
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Launch the editor program (obtained with {@link #getName getName}) under the given 
+   * Launch the editor program (obtained with {@link #getProgram getProgram}) under the given 
    * environmant with all of the files which comprise the given file sequence as 
    * arguments. The environment <CODE>env</CODE> consists of a table of environmental 
    * variable name/value pairs.  Typically, this environment is corresponds to a Toolset. <P>
@@ -138,9 +164,9 @@ class BaseEditor
   )
   {
     if((obj != null) && (obj instanceof BaseEditor)) {
-      BaseEditor desc = (BaseEditor) obj;
+      BaseEditor editor = (BaseEditor) obj;
       return (super.equals(obj) && 
-	      pProgram.equals(desc.pProgram));
+	      pProgram.equals(editor.pProgram));
     }
     return false;
   }

@@ -1,4 +1,4 @@
-// $Id: BaseComparator.java,v 1.1 2004/07/18 21:38:18 jim Exp $
+// $Id: BaseComparator.java,v 1.2 2004/09/08 18:33:09 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -12,10 +12,13 @@ import java.io.*;
 /** 
  * The superclass of all Pipeline plugins for comparing revisions of files. <P>
  * 
+ * New kinds of comparators can be written by subclassing this class.  Due to the way plugins
+ * are loaded and communicated between applications, any fields added to a subclass will
+ * be reinitialized when the action is stored to disk or when it is sent over the network.
  */
 public
 class BaseComparator
-  extends Described
+  extends BasePlugin
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -33,8 +36,11 @@ class BaseComparator
    * @param name 
    *   The short name of the comparator.
    * 
+   * @param vid
+   *   The comparator plugin revision number.
+   * 
    * @param desc 
-   *   A short description used in tooltips.
+   *   A short description of the comparator.
    *
    * @param program 
    *   A name of the comparator executable. 
@@ -42,17 +48,19 @@ class BaseComparator
   protected
   BaseComparator
   (
-   String name,  
+   String name, 
+   VersionID vid, 
    String desc, 
    String program
   ) 
   {
-    super(name, desc);
+    super(name, vid, desc);
     
     if(program == null)
       throw new IllegalArgumentException("The program cannot be (null)!");
     pProgram = program;
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -75,8 +83,8 @@ class BaseComparator
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Launch the comparator program (obtained with {@link #getName getName}) under the given 
-   * environmant to compare the two given files. <P> 
+   * Launch the comparator program (obtained with {@link #getProgram getProgram}) under the 
+   * given environmant to compare the two given files. <P> 
    * 
    * The environment <CODE>env</CODE> consists of a table of environmental 
    * variable name/value pairs.  Typically, this environment is corresponds to a Toolset. <P>

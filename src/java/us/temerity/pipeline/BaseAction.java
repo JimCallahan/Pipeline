@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.14 2004/09/05 06:37:25 jim Exp $
+// $Id: BaseAction.java,v 1.15 2004/09/08 18:33:09 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -12,39 +12,77 @@ import java.io.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The abstract superclass of all Pipelin node Actions. <P>
+ * The superclass of all Pipelin node action plugins. <P>
  * 
  * Actions are used by Pipeline to regenerate the files associated with non-leaf nodes
- * in a consistent and reliable manner.
+ * in a consistent and reliable manner. <P> 
+ * 
+ * New kinds of actions can be written by subclassing this class.  Due to the way plugins
+ * are loaded and communicated between applications, any fields added to a subclass will
+ * be reinitialized when the action is stored to disk or when it is sent over the network.
+ * Any data which must be retained by the action should be stored in an action parameter
+ * instead.
  */
-public abstract
+public 
 class BaseAction
-  extends Described
+  extends BasePlugin
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
   
+  public 
+  BaseAction() 
+  {
+    super();
+
+    pSingleParams = new TreeMap<String,BaseActionParam>();
+    pSourceParams = new TreeMap<String,TreeMap<String,BaseActionParam>>();
+  }
+
   /** 
-   * Construct with a name and description. 
+   * Construct with the given name, version and description. 
    * 
    * @param name 
    *   The short name of the action.  
    * 
+   * @param vid
+   *   The action plugin revision number.
+   * 
    * @param desc 
-   *   A short description used in tooltips.
+   *   A short description of the action.
    */ 
   protected
   BaseAction
   (
    String name,  
-   String desc  
+   VersionID vid,
+   String desc
   ) 
   {
-    super(name, desc);
+    super(name, vid, desc);
 
     pSingleParams = new TreeMap<String,BaseActionParam>();
     pSourceParams = new TreeMap<String,TreeMap<String,BaseActionParam>>();
+  }
+
+  /**
+   * Copy constructor. <P> 
+   * 
+   * Used internally to create a generic instances of plugin subclasses.  This constructor
+   * should not be used in end user code! <P> 
+   */ 
+  public 
+  BaseAction
+  (
+   BaseAction action
+  ) 
+  {
+    super(action.pName, action.pVersionID, action.pDescription);
+
+    pVersionID    = action.pVersionID; 
+    pSingleParams = action.pSingleParams;
+    pSourceParams = action.pSourceParams; 
   }
 
 
@@ -177,7 +215,10 @@ class BaseAction
   }
 
   /** 
-   * Copy the values of all of the single valued parameters from the given action.
+   * Copy the values of all of the single valued parameters from the given action. <P> 
+   * 
+   * Note that there is no requirement that the given action be the same plugin type or 
+   * version.  Any incompatible parameters will simply be ignored by the copy operation.
    * 
    * @param action  
    *   The action to use as the source of single valued parameter values.
@@ -188,13 +229,18 @@ class BaseAction
    BaseAction action   
   ) 
   {
-    if(getClass() != action.getClass()) 
-      throw new IllegalArgumentException
-	("Actions of type (" + action.getClass().getName() + ") cannot be used to set the " +
-	 "parameters of Actions of type (" + getClass().getName() + ")!");
-
-    for(BaseActionParam param : action.getSingleParams()) 
-      setSingleParamValue(param.getName(), param.getValue());
+    for(String name : pSingleParams.keySet()) {
+      BaseActionParam aparam = action.getSingleParam(name);
+      if(aparam != null) {
+	BaseActionParam param = pSingleParams.get(name);
+	try {
+	  param.setValue(aparam.getValue());
+	}
+	catch(IllegalArgumentException ex) {
+	  Logs.ops.warning(ex.getMessage());
+	}
+      }
+    }
   }
 
   
@@ -261,8 +307,6 @@ class BaseAction
     return null;
   }
 
-  
-  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -408,7 +452,14 @@ class BaseAction
   }
 
   /** 
-   * Copy the values of all of the per-source parameters from the given action.
+   * Copy the values of all of the per-source parameters from the given action. <P> 
+   * 
+   * For each source, if the given action has parameters for the source then this action will
+   * reinitialize its per-source parameters for that source.  Any parameters are compatable
+   * will then be copied from the given action to this action. <P> 
+   * 
+   * Note that there is no requirement that the given action be the same plugin type or 
+   * version.  Any incompatible parameters will simply be ignored by the copy operation.
    * 
    * @param action  
    *   The action from which to copy per-source parameters.
@@ -419,17 +470,27 @@ class BaseAction
    BaseAction action   
   ) 
   {
-    if(getClass() != action.getClass()) 
-      throw new IllegalArgumentException
-	("Actions of type (" + action.getClass().getName() + ") cannot be used to set the " +
-	 "parameters of Actions of type (" + getClass().getName() + ")!");
+    if(!supportsSourceParams()) 
+      return; 
 
     for(String source : action.getSourceNames()) {
       removeSourceParams(source);
       initSourceParams(source);
 
-      for(BaseActionParam param : action.getSourceParams(source)) 
-	setSourceParamValue(source, param.getName(), param.getValue());
+      TreeMap<String,BaseActionParam> params = pSourceParams.get(source);
+      if(params != null) {
+	for(BaseActionParam aparam : action.getSourceParams(source)) {
+	  BaseActionParam param = params.get(aparam.getName()); 
+	  if(param != null) {
+	    try {
+	      param.setValue(aparam.getValue());
+	    }
+	    catch(IllegalArgumentException ex) {
+	      Logs.ops.warning(ex.getMessage());
+	    }
+	  }
+	}
+      }
     }
   }
 
@@ -481,12 +542,16 @@ class BaseAction
    *   If unable to prepare a SubProcess due to illegal, missing or imcompatable 
    *   information in the action agenda or a general failure of the prep method code.
    */
-  public abstract SubProcess
+  public SubProcess
   prep
   (
    ActionAgenda agenda
   )
-    throws PipelineException;
+    throws PipelineException
+  {
+    throw new PipelineException
+      ("The prep() method was not implemented by the Action (" + pName + ")!");
+  }
 
 
 
@@ -703,32 +768,12 @@ class BaseAction
     throws GlueException
   {
     super.toGlue(encoder);
-
-    {
-      TreeMap<String,Comparable> params = new TreeMap<String,Comparable>();
-      for(BaseActionParam param : getSingleParams()) 
-	params.put(param.getName(), param.getValue());
-
-      if(!params.isEmpty()) 
-	encoder.encode("SingleParams", params);
-    }
-
-    {
-      TreeMap<String,TreeMap<String,Comparable>> dparams = 
-	new TreeMap<String,TreeMap<String,Comparable>>();
-
-      for(String source : getSourceNames()) {
-	TreeMap<String,Comparable> params = new TreeMap<String,Comparable>();
-
-	for(BaseActionParam param : getSourceParams(source)) 
-	  params.put(param.getName(), param.getValue());
-	
-	dparams.put(source, params);
-      }
-
-      if(!dparams.isEmpty()) 
-	encoder.encode("PerSourceParams", dparams);
-    }
+    
+    if(!pSingleParams.isEmpty()) 
+      encoder.encode("SingleParams", pSingleParams);
+    
+    if(!pSourceParams.isEmpty()) 
+      encoder.encode("SourceParams", pSourceParams);
   }
   
   public void 
@@ -740,34 +785,24 @@ class BaseAction
   {
     super.fromGlue(decoder);
 
-    try {
-      {
-	TreeMap<String,Comparable> params = 
-	  (TreeMap<String,Comparable>) decoder.decode("SingleParams");   
-	if(params != null) {
-	  for(String name : params.keySet()) 
-	    setSingleParamValue(name, params.get(name));	
-	}
-      }
-      
-      {
-	TreeMap<String,TreeMap<String,Comparable>> dparams = 
-	  (TreeMap<String,TreeMap<String,Comparable>>) decoder.decode("PerSourceParams");   
-	if(dparams != null) {
-	  for(String source : dparams.keySet()) {
-	    initSourceParams(source);
-	    
-	    TreeMap<String,Comparable> params = dparams.get(source);
-	    for(String name : params.keySet()) 
-	      setSourceParamValue(source, name, params.get(name));	
-	  }
-	}
-      }
-    }
-    catch (IllegalArgumentException ex) {
-      throw new GlueException(ex);
-    }
+    TreeMap<String,BaseActionParam> single = 
+      (TreeMap<String,BaseActionParam>) decoder.decode("SingleParams");   
+    if(single != null) 
+      pSingleParams.putAll(single);
+
+    TreeMap<String,TreeMap<String,BaseActionParam>> source = 
+      (TreeMap<String,TreeMap<String,BaseActionParam>>) decoder.decode("SourceParams");   
+    if(source != null) 
+      pSourceParams.putAll(source);
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static final long serialVersionUID = -8953612926185824947L;
+  
 
 
   /*----------------------------------------------------------------------------------------*/

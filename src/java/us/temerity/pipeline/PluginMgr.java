@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.1 2004/09/07 15:57:04 jim Exp $
+// $Id: PluginMgr.java,v 1.2 2004/09/08 18:33:09 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -75,23 +75,15 @@ class PluginMgr
   
   /**
    * Get the names and version numbers of all available editor plugins. <P> 
-   * 
-   * @param refresh
-   *   Whether to search the plugin directories for newly created plugins.
    */ 
   public synchronized TreeMap<String,TreeSet<VersionID>>
-  getEditors
-  (
-   boolean refresh
-  ) 
+  getEditors() 
   {
-    if(refresh) {
-      try {
-	refresh();
-      }
-      catch(PipelineException ex) {
-	Logs.plg.warning(ex.getMessage());
-      }
+    try {
+      refresh();
+    }
+    catch(PipelineException ex) {
+      Logs.plg.warning(ex.getMessage());
     }
 
     TreeMap<String,TreeSet<VersionID>> table = new TreeMap<String,TreeSet<VersionID>>();
@@ -104,38 +96,16 @@ class PluginMgr
   }
 
   /**
-   * Get the names and version numbers of all available editor plugins. <P> 
-   * 
-   * Always searches the plugin directories for newly created plugins.
-   */ 
-  public synchronized TreeMap<String,TreeSet<VersionID>>
-  getEditors() 
-  {
-    return getEditors(true);
-  }
-  
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
    * Get the names and version numbers of all available action plugins.
-   * 
-   * @param refresh
-   *   Whether to search the plugin directories for newly created plugins.
    */ 
   public synchronized TreeMap<String,TreeSet<VersionID>>
-  getActions
-  (
-   boolean refresh
-  ) 
+  getActions()
   {
-    if(refresh) {
-      try {
-	refresh();
-      }
-      catch(PipelineException ex) {
-	Logs.plg.warning(ex.getMessage());
-      }
+    try {
+      refresh();
+    }
+    catch(PipelineException ex) {
+      Logs.plg.warning(ex.getMessage());
     } 
 
     TreeMap<String,TreeSet<VersionID>> table = new TreeMap<String,TreeSet<VersionID>>();
@@ -148,38 +118,16 @@ class PluginMgr
   }
 
   /**
-   * Get the names and version numbers of all available action plugins. <P> 
-   * 
-   * Always searches the plugin directories for newly created plugins.
-   */ 
-  public synchronized TreeMap<String,TreeSet<VersionID>>
-  getActions() 
-  {
-    return getActions(true);
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
    * Get the names and version numbers of all available comparator plugins.
-   * 
-   * @param refresh
-   *   Whether to search the plugin directories for newly created plugins.
    */ 
   public synchronized TreeMap<String,TreeSet<VersionID>>
-  getComparators
-  (
-   boolean refresh
-  ) 
+  getComparators() 
   {
-    if(refresh) {
-      try {
-	refresh();
-      }
-      catch(PipelineException ex) {
-	Logs.plg.warning(ex.getMessage());
-      }
+    try {
+      refresh();
+    }
+    catch(PipelineException ex) {
+      Logs.plg.warning(ex.getMessage());
     } 
 
     TreeMap<String,TreeSet<VersionID>> table = new TreeMap<String,TreeSet<VersionID>>();
@@ -189,17 +137,6 @@ class PluginMgr
     }
 
     return table;
-  }
-
-  /**
-   * Get the names and version numbers of all available comparator plugins. <P> 
-   * 
-   * Always searches the plugin directories for newly created plugins.
-   */ 
-  public synchronized TreeMap<String,TreeSet<VersionID>>
-  getComparators() 
-  {
-    return getComparators(true);
   }
 
 
@@ -314,77 +251,45 @@ class PluginMgr
     }
 
     StringBuffer buf = new StringBuffer(); 
-    
-    {
-      buf.append("INSTALLED EDITOR PLUGINS:\n\n");
-      for(String name : pEditors.keySet()) {	
-	TreeMap<VersionID,Plugin> plgs = pEditors.get(name);
-	for(VersionID vid : plgs.keySet()) {
-	  BaseEditor editor = 
-	    (BaseEditor) newPluginHelper("Editor", pEditors, name, vid);
-
-	  Plugin plugin = plgs.get(vid);
-	  Date stamp = new Date(plugin.getPluginFile().lastModified());
-
-	  buf.append("  Name        : " + editor.getName() + "\n" + 
-		     "  Version     : " + editor.getVersionID() + "\n" + 
-		     "  Description : " + editor.getDescription() + "\n" + 
-		     "  Class       : " + editor.getClass().getName() + "\n" + 
-		     "  Installed   : " + Dates.format(stamp) + "\n\n");
-	}
-      }
-
-      buf.append("\n");
-    }
-
-    {
-      buf.append("INSTALLED ACTION PLUGINS:\n\n");
-      for(String name : pActions.keySet()) {
-	TreeMap<VersionID,Plugin> plgs = pActions.get(name);
-	for(VersionID vid : plgs.keySet()) {
-	  BaseAction action = 
-	    (BaseAction) newPluginHelper("Action", pActions, name, vid);
-
-	  Plugin plugin = plgs.get(vid);
-	  Date stamp = new Date(plugin.getPluginFile().lastModified());
-
-	  buf.append("  Name        : " + action.getName() + "\n" + 
-		     "  Version     : " + action.getVersionID() + "\n" + 
-		     "  Description : " + action.getDescription() + "\n" + 
-		     "  Class       : " + action.getClass().getName() + "\n" + 
-		     "  Installed   : " + Dates.format(stamp) + "\n\n");
-	}
-      }
-
-      buf.append("\n");
-    }
-
-    {
-      buf.append("INSTALLED COMPARATOR PLUGINS:\n\n");
-      for(String name : pComps.keySet()) {
-	TreeMap<VersionID,Plugin> plgs = pComps.get(name);
-	for(VersionID vid : plgs.keySet()) {
-	  BaseComparator comp = 
-	    (BaseComparator) newPluginHelper("Comparator", pComps, name, vid);
-
-	  Plugin plugin = plgs.get(vid);
-	  Date stamp = new Date(plugin.getPluginFile().lastModified());
-
-	  buf.append("  Name        : " + comp.getName() + "\n" + 
-		     "  Version     : " + comp.getVersionID() + "\n" + 
-		     "  Description : " + comp.getDescription() + "\n" + 
-		     "  Class       : " + comp.getClass().getName() + "\n" + 
-		     "  Installed   : " + Dates.format(stamp) + "\n\n");
-	}
-      }
-
-      buf.append("\n");
-    }
+    printPlugins("Editor", pEditors, buf);
+    printPlugins("Action", pActions, buf);
+    printPlugins("Comparators", pComps, buf);
 
     Logs.plg.info(buf.toString());
     Logs.flush();
   }
-  
+
+  /**
+   * Append information about the given type of plugins to the given string buffer.
+   */ 
+  private synchronized void
+  printPlugins
+  (
+   String ptype,
+   TreeMap<String,TreeMap<VersionID,Plugin>> table,
+   StringBuffer buf
+  ) 
+    throws PipelineException
+  {
+    buf.append(ptype.toUpperCase() + " PLUGINS:\n\n");
+
+    for(String name : table.keySet()) {	
+      TreeMap<VersionID,Plugin> plgs = table.get(name);
+      for(VersionID vid : plgs.keySet()) {
+	BasePlugin plg = newPluginHelper(ptype, table, name, vid);
+
+	Plugin plugin = plgs.get(vid);
+	Date stamp = new Date(plugin.getPluginFile().lastModified());
+	
+	buf.append("  Name        : " + plg.getName() + "\n" + 
+		   "  Version     : " + plg.getVersionID() + "\n" + 
+		   "  Description : " + plg.getDescription() + "\n" + 
+		   "  Class       : " + plg.getClass().getName() + "\n" + 
+		   "  Installed   : " + Dates.format(stamp) + "\n\n");
+      }
+    }
+  }
+
   /**
    * Print information about the Pipeline plugin specified by the given class file.
    */ 
@@ -395,10 +300,23 @@ class PluginMgr
   ) 
     throws PipelineException
   {
-    Logs.plg.info("Inspect: " + file + "\n");
-    Logs.flush();
-
+    BasePlugin plg = verifyPlugin(file);
     
+    String type = null;
+    if(plg instanceof BaseEditor) 
+      type = "EDITOR";
+    else if(plg instanceof BaseAction) 
+      type = "ACTION";
+    else if(plg instanceof BaseComparator) 
+      type = "COMPARATOR";
+    
+    Logs.plg.info
+      (type + " PLUGIN: " + file + "\n\n" + 
+       "  Name        : " + plg.getName() + "\n" + 
+       "  Version     : " + plg.getVersionID() + "\n" + 
+       "  Description : " + plg.getDescription() + "\n" + 
+       "  Class       : " + plg.getClass().getName() + "\n\n");      
+    Logs.flush();
   }
   
   /**
@@ -418,30 +336,204 @@ class PluginMgr
    File file, 
    boolean force
   ) 
-    throws PipelineException
+     throws PipelineException
   {
     if(!PackageInfo.sUser.equals(PackageInfo.sPipelineUser)) 
       throw new PipelineException
 	("Plugins may only be installed by the (" + PackageInfo.sPipelineUser + ") user!");
-
+    
     aquireFileLock();
     try {
-      
-      
-
-
-      Logs.plg.info("Install: " + file + "\n");
-      Logs.flush();
-
+      BasePlugin plg = verifyPlugin(file);
+      if(plg instanceof BaseEditor) 
+	installPluginHelper("Editor", pEditors, plg, file, force);
+      else if(plg instanceof BaseAction) 
+	installPluginHelper("Action", pActions, plg, file, force);
+      else if(plg instanceof BaseComparator) 
+	installPluginHelper("Comparator", pComps, plg, file, force);
     }
     finally {
       releaseFileLock(true);
     }
   }
+  
+  /**
+   * Temporarily instantiate an prospective plugin in order to verify its correctness.
+   * 
+   * @param file
+   *   The plugin class file.
+   */ 
+  private synchronized BasePlugin
+  verifyPlugin
+  (
+   File file
+  )
+    throws PipelineException
+  {
+    String work = null;
+    String cname = null;
+    VersionID vid = null;
+    try {
+      work = new File(System.getProperty("user.dir")).getCanonicalPath();
+      String canon = file.getCanonicalPath();
+      if((canon.length() <= work.length()) || (!canon.startsWith(work)))
+	throw new PipelineException
+	  ("The class file (" + file + ") was not located below the current directory!");
+      
+      String cpath = canon.substring(work.length()+1);
+      if(!cpath.endsWith(".class")) 
+	throw new PipelineException
+	  ("The class file (" + file + ") did not have a \".class\" extension!");
+      
+      cname = cpath.substring(0, cpath.length()-6).replace('/', '.');
 
+      try {
+	String[] parts = cname.split("\\.");
+	if(parts.length < 2)
+	  throw new IOException(); 
+	
+	String vstr = parts[parts.length-2];
+	if(!vstr.startsWith("v")) 
+	  throw new IOException(); 
+	
+	vid = new VersionID(vstr.substring(1).replace('_','.'));
+      }
+      catch(Exception ex) {
+	throw new PipelineException 
+	  ("The class file (" + file + ") must be located in a directory which " + 
+	   "corresponds to the plugin version!");
+      }
+    }
+    catch(IOException ex) {
+      throw new PipelineException
+	("Unable to resolve the path to the class file (" + file + ")!");
+    }
 
+    URL classpath[] = null;
+    try {
+      File path = new File(work);
+      URL url = path.toURI().toURL();      
+      classpath = new URL[]{url};
+    } 
+    catch(MalformedURLException ex) {
+      throw new PipelineException
+	("Unable to construct a proper plugin class path!");
+    }
+    
+    ClassLoader loader = new URLClassLoader(classpath);
+    try {
+      Logs.plg.finer("Loading: " + cname);
+      Class cls = loader.loadClass(cname);
 
+      if(!(BaseEditor.class.isAssignableFrom(cls) || 
+	   BaseAction.class.isAssignableFrom(cls) || 
+	   BaseComparator.class.isAssignableFrom(cls)))
+	throw new PipelineException
+	  ("The class file (" + file + ") does not contain a legal Pipeline plugin!");
+	
+      BasePlugin plg = (BasePlugin) cls.newInstance();
+      
+      if(!plg.getVersionID().equals(vid)) 
+	throw new PipelineException
+	  ("The version (" + plg.getVersionID() + ") of the instantiated plugin does " + 
+	   "not correspond to the location of the class file (" + file + ")!");
 
+      return plg;
+    }
+    catch(LinkageError ex) {
+      throw new PipelineException
+	("Unable to link plugin class (" + cname + "):\n\n" + 
+	 ex.getMessage());
+    }
+    catch(ClassNotFoundException ex) {
+      throw new PipelineException
+	("Unable to find plugin class (" + cname + ") in class file " + file + ")!");
+    }   
+    catch (IllegalAccessException ex) {
+      throw new PipelineException
+	("Unable to access the constructor for plugin class: " + cname + " (v" + vid + ")!");
+    }
+    catch (InstantiationException ex) { 
+      throw new PipelineException
+	("Unable to instantiate the plugin class: " + cname + " (v" + vid + "):\n\n" +
+	 ex.getMessage());
+    } 
+  }
+  
+  /**
+   * Install a previously verified plugin class file.
+   */ 
+  private synchronized void 
+  installPluginHelper
+  ( 
+   String ptype,
+   TreeMap<String,TreeMap<VersionID,Plugin>> table, 
+   BasePlugin plg,
+   File file, 
+   boolean force
+  ) 
+    throws PipelineException 
+  {
+    TreeMap<VersionID,Plugin> versions = table.get(plg.getName());
+    if(versions == null) {
+      versions = new TreeMap<VersionID,Plugin>();
+      table.put(plg.getName(), versions);
+    }
+    
+    if(versions.containsKey(plg.getVersionID()) && !force)
+      throw new PipelineException
+	("An " + ptype + " plugin named (" + plg.getName() + ") version " + 
+	 "(" + plg.getVersionID() + ") already exists!\n" + 
+	 "Use --force to replace it with the new plugin in class file (" + file + ").");
+    
+    {
+      File target = new File(PackageInfo.sInstDir, "plugins/" + 
+			     plg.getClass().getName().replace('.', '/') + ".class");
+	  
+      File dir = target.getParentFile();
+      if(!dir.isDirectory()) 
+	if(!dir.mkdirs()) 
+	  throw new PipelineException
+	    ("Unable to create plugin install directory (" + dir + ")!");
+      
+      ArrayList<String> args = new ArrayList<String>();
+      args.add(file.toString());
+      args.add(target.toString());
+      
+      Map<String,String> env = System.getenv();
+      File work = new File(System.getProperty("user.dir"));
+      
+      SubProcess proc = 
+	new SubProcess("Install-Plugin", "cp", args, env, work);
+      proc.start();
+      
+      try {
+	proc.join();
+	if(!proc.wasSuccessful()) 
+	  throw new PipelineException
+	    ("Unable to install plugin class file (" + file + "):\n\n" + 
+	     proc.getStdErr());
+      }
+      catch(InterruptedException ex) {
+	throw new PipelineException
+	  ("Interrupted while installing plugin class file (" + file + ")!");
+      }
+
+      Plugin plugin = new Plugin(plg.getClass(), file);
+      versions.put(plg.getVersionID(), plugin);  
+
+      Date stamp = new Date(plugin.getPluginFile().lastModified());
+      
+      Logs.net.info
+	("INSTALLED " + ptype.toUpperCase() + " PLUGIN: " + file + "\n\n" +
+	 "  Name        : " + plg.getName() + "\n" + 
+	 "  Version     : " + plg.getVersionID() + "\n" + 
+	 "  Description : " + plg.getDescription() + "\n" + 
+	 "  Class       : " + plg.getClass().getName() + "\n" + 
+	 "  Installed   : " + Dates.format(stamp) + "\n\n");
+      Logs.flush();
+    }	  
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -470,7 +562,7 @@ class PluginMgr
    * @throws  PipelineException
    *   If no plugin can be found for the given <CODE>name</CODE> or instantiation fails.
    */
-  private synchronized Object
+  private synchronized BasePlugin
   newPlugin
   (
    String ptype,
@@ -549,7 +641,7 @@ class PluginMgr
    * @throws  PipelineException
    *   If no plugin can be found for the given <CODE>name</CODE> or instantiation fails.
    */
-  private synchronized Object
+  private synchronized BasePlugin
   newPluginHelper
   (
    String ptype,
@@ -578,7 +670,7 @@ class PluginMgr
     }
 
     try {
-      return plugin.getPluginClass().newInstance();  
+      return (BasePlugin) plugin.getPluginClass().newInstance();  
     }
     catch (IllegalAccessException ex) {
       throw new PipelineException
@@ -725,7 +817,7 @@ class PluginMgr
 	URL classpath[] = null;
 	try {
 	  File path = new File(PackageInfo.sInstDir + "/plugins/");
-	  URL url = path.toURL();      
+	  URL url = path.toURI().toURL();      
 	  classpath = new URL[]{url};
 	} 
 	catch(MalformedURLException ex) {

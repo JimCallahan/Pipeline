@@ -1,4 +1,4 @@
-// $Id: EnumActionParam.java,v 1.1 2004/06/14 22:43:27 jim Exp $
+// $Id: EnumActionParam.java,v 1.2 2004/09/08 18:33:09 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -20,11 +20,19 @@ class EnumActionParam
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
     
+  public
+  EnumActionParam() 
+  {
+    super();
+
+    pValues = new ArrayList<String>();
+  }
+
   /** 
    * Construct a parameter with the given name, description and default value.
    * 
    * @param name 
-   *   The short name of the editor.  
+   *   The short name of the parameter.  
    * 
    * @param desc 
    *   A short description used in tooltips.
@@ -34,18 +42,14 @@ class EnumActionParam
    * 
    * @param values
    *   The complete set of enumerated values.
-   * 
-   * @param titles
-   *   The human friendly titles of each enumerated value.
    */ 
   public
   EnumActionParam
   (
    String name,  
    String desc, 
-   Enum value, 
-   ArrayList values, 
-   ArrayList<String> titles
+   String value, 
+   ArrayList<String> values
   ) 
   {
     super(name, desc, value);
@@ -54,7 +58,6 @@ class EnumActionParam
       throw new IllegalArgumentException("The value cannot be (null)!");
 
     pValues = values;
-    pTitles = titles;
   }
 
 
@@ -66,7 +69,7 @@ class EnumActionParam
   /**
    * Get the enumeration value based on the ordinal index.
    */ 
-  public Comparable
+  public String
   getValueOfIndex
   (
    int idx
@@ -79,21 +82,11 @@ class EnumActionParam
   /**
    * The complete set of enumerated values.
    */ 
-  public ArrayList<Comparable>
+  public Collection<String>
   getValues() 
   {
-    return new ArrayList<Comparable>(pValues);
+    return Collections.unmodifiableCollection(pValues);
   }  
-
-  /**
-   * The human friendly titles of each enumerated value.
-   */ 
-  public ArrayList<String>
-  getTitles() 
-  {
-    return new ArrayList<String>(pTitles);
-  }  
-
 
   /**
    * Sets the value of the parameter. 
@@ -108,13 +101,18 @@ class EnumActionParam
       throw new IllegalArgumentException
 	("The action parameter (" + pName + ") cannot accept (null) values!");
       
-    if(value.getClass() != pValue.getClass()) 
+    if(!(value instanceof String)) 
       throw new IllegalArgumentException
-	("The action parameter (" + pName + ") only accepts " + 
-	 "(" + pValue.getClass() + ") values!");
+	("The action parameter (" + pName + ") only accepts (String) values!");
+
+    if(!pValues.contains(value)) 
+      throw new IllegalArgumentException
+	("The value (" + value + ") was not a member of the enumeration for the " + 
+	 "(" + pName + ") action parameter!");
 
     pValue = value;
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -132,12 +130,7 @@ class EnumActionParam
   /**
    * The complete set of enumerated values.
    */
-  private ArrayList<Comparable>  pValues;
-
-  /**
-   * The human friendly titles of each enumerated value.
-   */
-  private ArrayList<String>  pTitles;
+  private ArrayList<String>  pValues;
 
 }
 

@@ -1,6 +1,8 @@
-// $Id: BaseActionParam.java,v 1.3 2004/06/22 19:36:29 jim Exp $
+// $Id: BaseActionParam.java,v 1.4 2004/09/08 18:33:09 jim Exp $
 
 package us.temerity.pipeline;
+
+import us.temerity.pipeline.glue.*;
 
 import java.util.*;
 import java.io.*;
@@ -20,6 +22,12 @@ class BaseActionParam
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
     
+  protected
+  BaseActionParam() 
+  {
+    super();
+  }
+
   /** 
    * Construct a parameter with the given name, description and default value.
    * 
@@ -127,15 +135,6 @@ class BaseActionParam
   }
 
   /**
-   * Returns a hash code value for the object.
-   */
-  public int 
-  hashCode() 
-  {
-    return pValue.hashCode();
-  }
-
-  /**
    * Returns a string representation of the object. 
    */
   public String
@@ -144,6 +143,35 @@ class BaseActionParam
     if(pValue != null) 
       return pValue.toString();
     return null;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   G L U E A B L E                                                                      */
+  /*----------------------------------------------------------------------------------------*/
+  
+  public void 
+  toGlue
+  ( 
+   GlueEncoder encoder  
+  ) 
+    throws GlueException
+  {
+    super.toGlue(encoder);
+
+    encoder.encode("Value", pValue);
+  }
+  
+  public void 
+  fromGlue
+  (
+   GlueDecoder decoder  
+  ) 
+    throws GlueException
+  {
+    super.fromGlue(decoder);
+
+    pValue = (Comparable) decoder.decode("Value"); 
   }
 
 
