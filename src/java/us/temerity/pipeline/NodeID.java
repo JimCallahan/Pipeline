@@ -1,4 +1,4 @@
-// $Id: NodeID.java,v 1.1 2004/03/08 04:37:06 jim Exp $
+// $Id: NodeID.java,v 1.2 2004/03/10 11:47:00 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -104,25 +104,41 @@ class NodeID
 
   
   /** 
-   * Get the absolute file system path to the directory containing the node.
+   * Get the node path without the last node name component. 
    */ 
   public File
-  getDir() 
+  getParent() 
   {
-    File path = new File(PackageInfo.sWorkDir, pStringRep);
+    File path = new File(pStringRep);
     return path.getParentFile();
   }
+  
 
   /** 
-   * Get the last component of the node name.
-   */ 
-  public String
-  getBase() 
+   * Get the working version directory path relative to the root production directory.
+   */
+  public File
+  getWorkingDir() 
   {
-    File path = new File(pName);
-    return path.getName();
+    File path = new File("/working" + pStringRep);
+    return path.getParentFile();
   }
   
+  /** 
+   * Get the checked-in version directory path relative to the root production directory.
+   * 
+   * @param vid [<B>in</B>]
+   *   The revision number of the checked-in version.
+   */
+  public File
+  getCheckedInDir
+  (
+   VersionID vid
+  ) 
+  {
+    File path = new File("/repository" + pStringRep + "/" + vid);
+    return path;
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -132,7 +148,7 @@ class NodeID
   /** 
    * Indicates whether some other object is "equal to" this one.
    * 
-   * @param obj 
+   * @param obj [<B>in</B>]
    *   The reference object with which to compare.
    */
   public boolean
