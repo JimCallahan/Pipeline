@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.8 2004/07/07 13:22:22 jim Exp $
+// $Id: MasterRequest.java,v 1.9 2004/07/14 20:54:02 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -157,6 +157,11 @@ enum MasterRequest
    * An instance of {@link NodeUnlinkReq NodeUnlinkReq} is next.
    */
   Unlink, 
+
+  /**
+   * An instance of {@link NodeAddSecondaryReq NodeAddSecondaryReq} is next.
+   */
+  AddSecondary, 
 
 
   /*----------------------------------------------------------------------------------------*/

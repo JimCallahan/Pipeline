@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.8 2004/07/07 13:20:00 jim Exp $
+// $Id: MasterMgrServer.java,v 1.9 2004/07/14 20:54:02 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -476,6 +476,14 @@ class MasterMgrServer
 	    }
 	    break;
 
+	  case AddSecondary:
+	    {
+	      NodeAddSecondaryReq req = (NodeAddSecondaryReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.addSecondary(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
 
 	  /*-- CHECKED-IN VERSIONS ---------------------------------------------------------*/
 	  case GetCheckedIn:
@@ -490,6 +498,15 @@ class MasterMgrServer
 	    {
 	      NodeGetHistoryReq req = (NodeGetHistoryReq) objIn.readObject();
 	      objOut.writeObject(pMasterMgr.getHistory(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case GetCheckedInFileNovelty:
+	    {
+	      NodeGetCheckedInFileNoveltyReq req = 
+		(NodeGetCheckedInFileNoveltyReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.getCheckedInFileNovelty(req));
 	      objOut.flush(); 
 	    }
 	    break;
