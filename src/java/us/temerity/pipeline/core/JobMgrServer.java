@@ -1,4 +1,4 @@
-// $Id: JobMgrServer.java,v 1.2 2004/07/24 18:17:59 jim Exp $
+// $Id: JobMgrServer.java,v 1.3 2004/07/28 19:15:45 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -125,6 +125,8 @@ class JobMgrServer
 	}
       }
 
+      pJobMgr.killAll();
+
       try {
 	Logs.net.finer("Shutting Down -- Waiting for tasks to complete...");
 	Logs.flush();
@@ -136,22 +138,17 @@ class JobMgrServer
 	Logs.net.severe("Interrupted while shutting down!");
 	Logs.flush();
       }
-
-      Logs.net.fine("Server Shutdown.");    
-      Logs.flush();  
     }
     catch (IOException ex) {
       Logs.net.severe("IO problems on port (" + pPort + "):\n" + 
-		      ex.getMessage());
-      Logs.flush();
+		      getFullMessage(ex));
     }
     catch (SecurityException ex) {
       Logs.net.severe("The Security Manager doesn't allow listening to sockets!\n" + 
-		      ex.getMessage());
-      Logs.flush();
+		      getFullMessage(ex));
     }
     catch (Exception ex) {
-      Logs.net.severe(ex.getMessage());
+      Logs.net.severe(getFullMessage(ex));
     }
     finally {
       if(server != null) {
@@ -161,8 +158,47 @@ class JobMgrServer
 	catch (IOException ex) {
 	}
       }
-    }
+
+      Logs.net.fine("Server Shutdown.");  
+    }  
+
+    Logs.flush();  
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Generate a string containing both the exception message and stack trace. 
+   * 
+   * @param ex 
+   *   The thrown exception.   
+   */ 
+  private String 
+  getFullMessage
+  (
+   Throwable ex
+  ) 
+  {
+    StringBuffer buf = new StringBuffer();
+     
+    if(ex.getMessage() != null) 
+      buf.append(ex.getMessage() + "\n\n"); 	
+    else if(ex.toString() != null) 
+      buf.append(ex.toString() + "\n\n"); 	
+      
+    buf.append("Stack Trace:\n");
+    StackTraceElement stack[] = ex.getStackTrace();
+    int wk;
+    for(wk=0; wk<stack.length; wk++) 
+      buf.append("  " + stack[wk].toString() + "\n");
+   
+    return (buf.toString());
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -206,9 +242,81 @@ class JobMgrServer
 	  Logs.flush();
 
 	  switch(kind) {
+          /*-- HOST RESOURCES --------------------------------------------------------------*/
+	  case GetResources:
+	    {
+	      objOut.writeObject(pJobMgr.getResources());
+	      objOut.flush(); 
+	    }
+	    break;
 
-	    // ...
+	  case GetNumProcessors:
+	    {
+	      objOut.writeObject(pJobMgr.getNumProcessors());
+	      objOut.flush(); 
+	    }
+	    break;
 
+	  case GetTotalMemory:
+	    {
+	      objOut.writeObject(pJobMgr.getTotalMemory());
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case GetTotalDisk:
+	    {
+	      objOut.writeObject(pJobMgr.getTotalDisk());
+	      objOut.flush(); 
+	    }
+	    break;
+
+	    
+          /*-- JOB EXECUTION ---------------------------------------------------------------*/
+	  case Start:
+	    {
+	      JobStartReq req = (JobStartReq) objIn.readObject();
+	      objOut.writeObject(pJobMgr.start(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case Kill:
+	    {
+	      JobKillReq req = (JobKillReq) objIn.readObject();
+	      objOut.writeObject(pJobMgr.kill(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case Wait:
+	    {
+	      JobWaitReq req = (JobWaitReq) objIn.readObject();
+	      objOut.writeObject(pJobMgr.wait(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	    
+	  /*-- JOB OUTPUT ------------------------------------------------------------------*/
+	  case GetStdOutLines:
+	    {
+	      JobGetStdOutLinesReq req = (JobGetStdOutLinesReq) objIn.readObject();
+	      objOut.writeObject(pJobMgr.getStdOutLines(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case GetStdErrLines:
+	    {
+	      JobGetStdErrLinesReq req = (JobGetStdErrLinesReq) objIn.readObject();
+	      objOut.writeObject(pJobMgr.getStdErrLines(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	    
+	  /*-- NETWORK CONNECTION ----------------------------------------------------------*/
 	  case Disconnect:
 	    live = false;
 	    break;
@@ -226,14 +334,14 @@ class JobMgrServer
       }
       catch (IOException ex) {
 	Logs.net.severe("IO problems on port (" + pPort + "):\n" + 
-			ex.getMessage());
+			getFullMessage(ex));
       }
       catch(ClassNotFoundException ex) {
 	Logs.net.severe("Illegal object encountered on port (" + pPort + "):\n" + 
-			ex.getMessage());	
+			getFullMessage(ex));	
       }
       catch (Exception ex) {
-	Logs.net.severe(ex.getMessage());
+	Logs.net.severe(getFullMessage(ex));	
       }
       finally {
 	try {
@@ -251,6 +359,8 @@ class JobMgrServer
 	  }
 	}
       }
+
+      Logs.flush();
     }
     
     private Socket pSocket;
