@@ -1,4 +1,4 @@
-// $Id: Logs.java,v 1.6 2004/04/11 19:31:58 jim Exp $
+// $Id: Logs.java,v 1.7 2004/04/15 00:19:45 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -213,8 +213,6 @@ class Logs
   /**
    * The {@link Logger Logger} used for messages related to checksum generation and 
    * comparison.
-   * 
-   * @see CheckSum
    */
   public static Logger sum;    
 

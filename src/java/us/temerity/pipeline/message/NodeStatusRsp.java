@@ -1,4 +1,4 @@
-// $Id: NodeStatusRsp.java,v 1.2 2004/04/15 00:10:09 jim Exp $
+// $Id: NodeStatusRsp.java,v 1.3 2004/04/15 00:19:45 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -32,7 +32,7 @@ class NodeStatusRsp
    * @param id 
    *   The unique working version identifier.
    * 
-   * @param status
+   * @param summary
    *   The compact summary of the state of node.
    */
   public

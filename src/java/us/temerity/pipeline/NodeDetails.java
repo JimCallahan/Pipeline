@@ -1,4 +1,4 @@
-// $Id: NodeDetails.java,v 1.2 2004/04/15 00:14:28 jim Exp $
+// $Id: NodeDetails.java,v 1.3 2004/04/15 00:19:45 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -13,6 +13,8 @@ import java.io.*;
 /**
  * A detailed compilation of information related to state of node with respect to a 
  * particular user and view.
+ * 
+ * @see NodeSummary
  */
 public
 class NodeDetails

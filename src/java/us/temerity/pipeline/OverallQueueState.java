@@ -1,4 +1,4 @@
-// $Id: OverallQueueState.java,v 1.1 2004/03/01 21:45:04 jim Exp $
+// $Id: OverallQueueState.java,v 1.2 2004/04/15 00:19:45 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -13,7 +13,6 @@ package us.temerity.pipeline;
  * 
  * @see QueueState
  * @see FileState
- * @see NodeStatus
  */
 public
 enum OverallQueueState
