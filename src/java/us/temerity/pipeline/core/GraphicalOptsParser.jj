@@ -201,8 +201,7 @@ Commands() :
 {
   (GlobalOpts() WS())*
   {
-    UIMain main = new UIMain(pMasterServer, pMasterPort);
-    SwingUtilities.invokeLater(main);
+    UIMaster.init(pMasterServer, pMasterPort);
   }
 }
     
