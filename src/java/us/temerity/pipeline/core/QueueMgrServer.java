@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.2 2004/07/24 18:25:21 jim Exp $
+// $Id: QueueMgrServer.java,v 1.3 2004/07/25 03:06:49 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -26,7 +26,6 @@ import java.util.concurrent.atomic.*;
  * 
  * @see QueueMgr
  * @see QueueMgrClient
- * @see QueueMgrFullClient
  */
 public
 class QueueMgrServer
@@ -223,6 +222,23 @@ class QueueMgrServer
 	  Logs.flush();
 	  
 	  switch(kind) {
+	  /*-- PRIVILEGED USER STATUS ------------------------------------------------------*/
+	  case GetPrivilegedUsers:
+	    {
+	      objOut.writeObject(pQueueMgr.getPrivilegedUsers());
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case SetPrivilegedUsers:
+	    {
+	      MiscSetPrivilegedUsersReq req = (MiscSetPrivilegedUsersReq) objIn.readObject();
+	      objOut.writeObject(pQueueMgr.setPrivilegedUsers(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+
 	  /*-- LICENSE KEYS ----------------------------------------------------------------*/
 	  case GetLicenseKeyNames:
 	    {
@@ -261,6 +277,40 @@ class QueueMgrServer
 	      QueueSetTotalLicensesReq req = 
 		(QueueSetTotalLicensesReq) objIn.readObject();
 	      objOut.writeObject(pQueueMgr.setTotalLicenses(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+
+	  /*-- SELECTION KEYS --------------------------------------------------------------*/
+	  case GetSelectionKeyNames:
+	    {
+	      objOut.writeObject(pQueueMgr.getSelectionKeyNames());
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case GetSelectionKeys:
+	    {
+	      objOut.writeObject(pQueueMgr.getSelectionKeys());
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case AddSelectionKey:
+	    {
+	      QueueAddSelectionKeyReq req = 
+		(QueueAddSelectionKeyReq) objIn.readObject();
+	      objOut.writeObject(pQueueMgr.addSelectionKey(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case RemoveSelectionKey:
+	    {
+	      QueueRemoveSelectionKeyReq req = 
+		(QueueRemoveSelectionKeyReq) objIn.readObject();
+	      objOut.writeObject(pQueueMgr.removeSelectionKey(req));
 	      objOut.flush(); 
 	    }
 	    break;

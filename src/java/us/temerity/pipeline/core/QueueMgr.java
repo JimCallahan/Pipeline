@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.2 2004/07/24 18:24:32 jim Exp $
+// $Id: QueueMgr.java,v 1.3 2004/07/25 03:06:49 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -20,10 +20,7 @@ import java.util.concurrent.*;
  * 
  * 
  * @see QueueMgrClient
- * @see QueueMgrFullClient
  * @see QueueMgrServer
- * @see JobMgrFullClient
- * @see MasterMgr
  */
 public
 class QueueMgr
@@ -70,8 +67,12 @@ class QueueMgr
   { 
     /* initialize the fields */ 
     {
-      pMakeDirLock = new Object();
+      pMakeDirLock = new Object(); 
+
+      pPrivilegedUsers = new TreeSet<String>();
+
       pLicenseKeys = new TreeMap<String,LicenseKey>();
+      pSelectionKeys = new TreeMap<String,SelectionKey>();
     }
 
     makeRootDirs();
@@ -97,6 +98,14 @@ class QueueMgr
     /* load the license keys if any exist */ 
     try {
       readLicenseKeys();
+    }
+    catch(PipelineException ex) {
+      throw new IllegalArgumentException(ex.getMessage());
+    }
+
+    /* load the selection keys if any exist */ 
+    try {
+      readSelectionKeys();
     }
     catch(PipelineException ex) {
       throw new IllegalArgumentException(ex.getMessage());
@@ -157,6 +166,62 @@ class QueueMgr
       file.delete();
     }
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   P R I V I L E G E D   U S E R S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the names of the privileged users. <P> 
+   * 
+   * @return
+   *   <CODE>MiscGetPrivilegedUsersRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the privileged users.
+   */ 
+  public Object 
+  getPrivilegedUsers()
+  {
+    TaskTimer timer = new TaskTimer();
+    
+    timer.aquire();
+    synchronized(pPrivilegedUsers) {
+      timer.resume();	
+
+      TreeSet<String> users = new TreeSet<String>(pPrivilegedUsers);
+      return new MiscGetPrivilegedUsersRsp(timer, users);
+    }
+  }
+  
+  /**
+   * Grant the given user privileged access status. <P> 
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to grant the given user privileged status.
+   */ 
+  public Object 
+  setPrivilegedUsers
+  ( 
+   MiscSetPrivilegedUsersReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer("MasterMgr.setPrivilegedUsers()");
+    
+    timer.aquire();
+    synchronized(pPrivilegedUsers) {
+      timer.resume();	
+
+      pPrivilegedUsers.clear();
+      pPrivilegedUsers.addAll(req.getUsers());
+
+      return new SuccessRsp(timer);
+    }
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -329,6 +394,126 @@ class QueueMgr
 
 
 
+  /*----------------------------------------------------------------------------------------*/
+  /*   L I C E N S E   K E Y S                                                              */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the names of the currently defined selection keys. <P>  
+   * 
+   * @return
+   *   <CODE>QueueGetSelectionKeyNamesRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to get the key names.
+   */
+  public Object
+  getSelectionKeyNames() 
+  {
+    TaskTimer timer = new TaskTimer();
+    timer.aquire();
+    synchronized(pSelectionKeys) {
+      timer.resume();
+      
+      TreeSet<String> names = new TreeSet<String>(pSelectionKeys.keySet());
+      
+      return new QueueGetSelectionKeyNamesRsp(timer, names);
+    }
+  }
+
+  /**
+   * Get the currently defined selection keys. <P>  
+   * 
+   * @return
+   *   <CODE>QueueGetSelectionKeysRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to get the keys.
+   */
+  public Object
+  getSelectionKeys() 
+  {
+    TaskTimer timer = new TaskTimer();
+    timer.aquire();
+    synchronized(pSelectionKeys) {
+      timer.resume();
+      
+      ArrayList<SelectionKey> keys = new ArrayList<SelectionKey>(pSelectionKeys.values());
+      
+      return new QueueGetSelectionKeysRsp(timer, keys);
+    }
+  }
+
+  /**
+   * Add the given selection key to the currently defined selection keys. <P> 
+   * 
+   * If a selection key already exists which has the same name as the given key, it will be 
+   * silently overridden by this operation. <P> 
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to add the key.
+   */ 
+  public Object
+  addSelectionKey
+  (
+   QueueAddSelectionKeyReq req
+  ) 
+  {
+    SelectionKey key = req.getSelectionKey();
+
+    TaskTimer timer = new TaskTimer("QueueMgr.addSelectionKey(): " + key.getName());
+    timer.aquire();
+    try {
+      synchronized(pSelectionKeys) {
+	timer.resume();
+
+	pSelectionKeys.put(key.getName(), key);
+	writeSelectionKeys();
+
+	return new SuccessRsp(timer);
+      }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }
+  }
+
+  /**
+   * Remove the selection key with the given name from currently defined selection keys. <P> 
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to remove the key.
+   */ 
+  public Object
+  removeSelectionKey
+  (
+   QueueRemoveSelectionKeyReq req
+  ) 
+  {
+    String kname = req.getKeyName();
+
+    TaskTimer timer = new TaskTimer("QueueMgr.removeSelectionKey(): " + kname); 
+    timer.aquire();
+    try {
+      synchronized(pSelectionKeys) {
+	timer.resume();
+	
+	pSelectionKeys.remove(kname);
+	writeSelectionKeys();
+
+	return new SuccessRsp(timer);
+      }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }
+  }  
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   I / O   H E L P E R S                                                                */
@@ -358,7 +543,8 @@ class QueueMgr
 	try {
 	  String glue = null;
 	  try {
-	    ArrayList<LicenseKey> keys = new ArrayList<LicenseKey>(pLicenseKeys.values());
+	    ArrayList<LicenseKey> keys = 
+	      new ArrayList<LicenseKey>(pLicenseKeys.values());
 	    GlueEncoder ge = new GlueEncoderImpl("LicenseKeys", keys);
 	    glue = ge.getText();
 	  }
@@ -430,6 +616,104 @@ class QueueMgr
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write the selection keys to disk. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to write the selection keys file.
+   */ 
+  private void 
+  writeSelectionKeys() 
+    throws PipelineException
+  {
+    synchronized(pSelectionKeys) {
+      File file = new File(pQueueDir, "queue/selection-keys");
+      if(file.exists()) {
+	if(!file.delete())
+	  throw new PipelineException
+	    ("Unable to remove the old selection keys file (" + file + ")!");
+      }
+      
+      if(!pSelectionKeys.isEmpty()) {
+	Logs.ops.finer("Writing Selection Keys.");
+
+	try {
+	  String glue = null;
+	  try {
+	    ArrayList<SelectionKey> keys = 
+	      new ArrayList<SelectionKey>(pSelectionKeys.values());
+	    GlueEncoder ge = new GlueEncoderImpl("SelectionKeys", keys);
+	    glue = ge.getText();
+	  }
+	  catch(GlueException ex) {
+	    Logs.glu.severe
+	      ("Unable to generate a Glue format representation of the selection keys!");
+	    Logs.flush();
+	    
+	    throw new IOException(ex.getMessage());
+	  }
+	  
+	  {
+	    FileWriter out = new FileWriter(file);
+	    out.write(glue);
+	    out.flush();
+	    out.close();
+	  }
+	}
+	catch(IOException ex) {
+	  throw new PipelineException
+	    ("I/O ERROR: \n" + 
+	     "  While attempting to write the selection keys file (" + file + ")...\n" + 
+	     "    " + ex.getMessage());
+	}
+      }
+    }
+  }
+  
+  /**
+   * Read the selection keys from disk. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to read the selection keys file.
+   */ 
+  private void 
+  readSelectionKeys() 
+    throws PipelineException
+  {
+    synchronized(pSelectionKeys) {
+      pSelectionKeys.clear();
+
+      File file = new File(pQueueDir, "queue/selection-keys");
+      if(file.isFile()) {
+	Logs.ops.finer("Reading Selection Keys.");
+
+	ArrayList<SelectionKey> keys = null;
+	try {
+	  FileReader in = new FileReader(file);
+	  GlueDecoder gd = new GlueDecoderImpl(in);
+	  keys = (ArrayList<SelectionKey>) gd.getObject();
+	  in.close();
+	}
+	catch(Exception ex) {
+	  Logs.glu.severe
+	    ("The selection keys file (" + file + ") appears to be corrupted!");
+	  Logs.flush();
+	  
+	  throw new PipelineException
+	    ("I/O ERROR: \n" + 
+	     "  While attempting to read the selection keys file (" + file + ")...\n" + 
+	   "    " + ex.getMessage());
+	}
+	assert(keys != null);
+	
+	for(SelectionKey key : keys) 
+	  pSelectionKeys.put(key.getName(), key);
+      }
+    }
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -456,11 +740,31 @@ class QueueMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * The cached names of the privileged users. <P> 
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */ 
+  private TreeSet<String>  pPrivilegedUsers;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * The cached table of license keys indexed by license key name.
    * 
    * Access to this field should be protected by a synchronized block.
    */ 
   private TreeMap<String,LicenseKey>  pLicenseKeys; 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The cached table of selection keys indexed by selection key name.
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */ 
+  private TreeMap<String,SelectionKey>  pSelectionKeys; 
 
 
   /*----------------------------------------------------------------------------------------*/
