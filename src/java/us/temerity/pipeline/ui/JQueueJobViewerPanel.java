@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.12 2004/09/13 04:03:39 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.13 2004/09/23 23:12:46 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -429,13 +429,15 @@ class JQueueJobViewerPanel
    Long jobID
   ) 
   {
-    if(jobID != null) {
-      GetJobInfoTask task = new GetJobInfoTask(jobID);
-      task.start();
-    }
-    else {
-      UpdateDetailsPanelTask task = new UpdateDetailsPanelTask(null, null);
-      SwingUtilities.invokeLater(task);
+    if(pGroupID > 0) {
+      if(jobID != null) {
+	GetJobInfoTask task = new GetJobInfoTask(pGroupID, jobID);
+	task.start();
+      }
+      else {
+	UpdateDetailsPanelTask task = new UpdateDetailsPanelTask(pGroupID, null, null);
+	SwingUtilities.invokeLater(task);
+      }
     }
 
     pLastJobID = jobID;
@@ -2359,10 +2361,12 @@ class JQueueJobViewerPanel
     public 
     GetJobInfoTask
     (
+     int groupID,
      long jobID
     ) 
     {
-      pJobID = jobID;
+      pGroupID = groupID;
+      pJobID   = jobID;
     }
 
     public void 
@@ -2386,10 +2390,11 @@ class JQueueJobViewerPanel
 	}
       }
 
-      UpdateDetailsPanelTask task = new UpdateDetailsPanelTask(job, info);
+      UpdateDetailsPanelTask task = new UpdateDetailsPanelTask(pGroupID, job, info);
       SwingUtilities.invokeLater(task);
     }
 
+    private int   pGroupID;
     private long  pJobID; 
   }
 
@@ -2404,10 +2409,12 @@ class JQueueJobViewerPanel
     public 
     UpdateDetailsPanelTask
     (
+     int groupID, 
      QueueJob job, 
      QueueJobInfo info
     ) 
     {
+      pGroupID = groupID;
       pJob     = job; 
       pJobInfo = info; 
     }
@@ -2425,6 +2432,7 @@ class JQueueJobViewerPanel
       }
     }    
 
+    private int           pGroupID;
     private QueueJob      pJob; 
     private QueueJobInfo  pJobInfo; 
   }
