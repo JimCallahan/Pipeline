@@ -1,4 +1,4 @@
-// $Id: ViewerNode.java,v 1.14 2004/12/30 02:47:58 jim Exp $
+// $Id: ViewerNode.java,v 1.15 2004/12/31 07:40:50 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -31,6 +31,7 @@ import net.java.games.jogl.*;
  */
 public 
 class ViewerNode
+  extends ViewerIcon
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -55,6 +56,8 @@ class ViewerNode
    NodePath path
   ) 
   {
+    super();
+
     if(path == null) 
       throw new IllegalArgumentException("The node path cannot be (null)!");
     pPath = path;
@@ -62,10 +65,6 @@ class ViewerNode
     if(status == null) 
       throw new IllegalArgumentException("The node status cannot be (null)!");
     pStatus = status; 
-
-    pMode = SelectionMode.Normal;
-
-    pPos = new Point2d();
   }
 
   
@@ -89,63 +88,6 @@ class ViewerNode
   getNodePath() 
   {
     return pPath;
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Whether the upstream/downstream nodes are collapsed.
-   */ 
-  public boolean 
-  isCollapsed() 
-  {
-    return pIsCollapsed;
-  }
-
-  /**
-   * Set whether the upstream/downstream nodes are collapsed.
-   */ 
-  public void 
-  setCollapsed
-  (
-   boolean tf
-  ) 
-  {
-    pIsCollapsed = tf;
-  }
-
-  /**
-   * Toggle whether the upstream/downstream nodes are collapsed.
-   */ 
-  public void 
-  toggleCollapsed() 
-  {
-    pIsCollapsed = !pIsCollapsed;
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Get the current selection mode.
-   */ 
-  public SelectionMode
-  getSelectionMode() 
-  {
-    return pMode;
-  }
-
-  /**
-   * Set the current selection mode.
-   */ 
-  public void 
-  setSelectionMode
-  (
-   SelectionMode mode
-  ) 
-  {
-    pMode = mode;
   }
 
   
@@ -199,42 +141,6 @@ class ViewerNode
       else 
 	return true;
     }
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * Get the 2D position of the node (center of icon).
-   */ 
-  public Point2d
-  getPosition()
-  {
-    return new Point2d(pPos);
-  }
-
-  /**
-   * Set the 2D position of the node (center of icon). 
-   */
-  public void 
-  setPosition
-  (
-   Point2d pos    
-  ) 
-  {
-    pPos.set(pos);
-  }
-
-  /**
-   * Move the node position by the given amount.
-   */ 
-  public void 
-  movePosition
-  (
-   Vector2d delta
-  ) 
-  {
-    pPos.add(delta);
   }
 
 
@@ -433,28 +339,13 @@ class ViewerNode
    */ 
   private NodeStatus  pStatus;
 
-  /**
-   * The UI selection mode.
-   */
-  private SelectionMode  pMode;  
-
-  /**
-   * Whether upstream/downstream nodes are collapsed.
-   */
-  private boolean  pIsCollapsed;
-
 
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * The 2D position of the node (center of icon).
-   */ 
-  private Point2d  pPos;         
-
-  /**
    * The OpenGL display list handle(s) for the label geometry.
    */ 
-  private int  pLabelDLs[]; 
+  private int[]  pLabelDLs; 
 
   /**
    * The OpenGL display list handles for the icon geometry. <P> 
