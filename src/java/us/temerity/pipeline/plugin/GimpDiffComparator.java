@@ -1,4 +1,4 @@
-// $Id: GimpDiffComparator.java,v 1.1 2004/07/18 21:38:18 jim Exp $
+// $Id: GimpDiffComparator.java,v 1.2 2004/07/24 18:26:21 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -137,7 +137,7 @@ class GimpDiffComparator
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID = -3650862921762683348L;
+  private static final long serialVersionUID = -1328676955838814605L;
 
 }
 
