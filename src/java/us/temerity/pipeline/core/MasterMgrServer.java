@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.4 2004/06/02 21:29:25 jim Exp $
+// $Id: MasterMgrServer.java,v 1.5 2004/06/08 02:37:46 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -358,6 +358,34 @@ class MasterMgrServer
 	      MiscCreateToolsetPackageReq req = 
 		(MiscCreateToolsetPackageReq) objIn.readObject();
 	      objOut.writeObject(pMasterMgr.createToolsetPackage(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+
+	  /*-- SUFFIX EDITORS --------------------------------------------------------------*/
+	  case GetEditorForSuffix:
+	    {
+	      MiscGetEditorForSuffixReq req = 
+		(MiscGetEditorForSuffixReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.getEditorForSuffix(req));
+	      objOut.flush(); 
+	    }
+	    break;
+	    
+	  case GetSuffixEditors:
+	    {
+	      MiscGetSuffixEditorsReq req = 
+		(MiscGetSuffixEditorsReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.getSuffixEditors(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case SetSuffixEditors:
+	    {
+	      MiscSetSuffixEditorsReq req = (MiscSetSuffixEditorsReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.setSuffixEditors(req));
 	      objOut.flush(); 
 	    }
 	    break;

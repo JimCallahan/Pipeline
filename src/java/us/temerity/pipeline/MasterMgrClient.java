@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.4 2004/06/02 21:29:25 jim Exp $
+// $Id: MasterMgrClient.java,v 1.5 2004/06/08 02:37:46 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -506,6 +506,124 @@ class MasterMgrClient
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get default editor name for the given filename suffix and current user. <P> 
+   * 
+   * @param suffix
+   *   The filename suffix.
+   * 
+   * @return 
+   *   The editor name of <CODE>null</CODE> if undefined.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the editor name.
+   */ 
+  public synchronized String
+  getEditorForSuffix
+  (
+   String suffix
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetEditorForSuffixReq req = 
+      new MiscGetEditorForSuffixReq(PackageInfo.sUser, suffix);
+
+    Object obj = performTransaction(MasterRequest.GetEditorForSuffix, req); 
+    if(obj instanceof MiscGetEditorForSuffixRsp) {
+      MiscGetEditorForSuffixRsp rsp = (MiscGetEditorForSuffixRsp) obj;
+      return rsp.getEditor();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+  
+  /**
+   * Get the filename suffix to default editor mappings for the current user. <P> 
+   * 
+   * @return 
+   *   The suffix/editor mappings.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the mappings.
+   */ 
+  public synchronized TreeSet<SuffixEditor> 
+  getSuffixEditors()
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetSuffixEditorsReq req = new MiscGetSuffixEditorsReq(PackageInfo.sUser);
+
+    Object obj = performTransaction(MasterRequest.GetSuffixEditors, req); 
+    if(obj instanceof MiscGetSuffixEditorsRsp) {
+      MiscGetSuffixEditorsRsp rsp = (MiscGetSuffixEditorsRsp) obj;
+      return rsp.getEditors();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+  
+  /**
+   * Get the site default filename suffix to default editor mappings. <P> 
+   * 
+   * @return 
+   *   The suffix/editor mappings.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the mappings.
+   */ 
+  public synchronized TreeSet<SuffixEditor> 
+  getDefaultSuffixEditors()
+    throws PipelineException  
+  {
+    verifyConnection();
+    
+    MiscGetSuffixEditorsReq req = new MiscGetSuffixEditorsReq("pipeline");
+    
+    Object obj = performTransaction(MasterRequest.GetSuffixEditors, req); 
+    if(obj instanceof MiscGetSuffixEditorsRsp) {
+      MiscGetSuffixEditorsRsp rsp = (MiscGetSuffixEditorsRsp) obj;
+      return rsp.getEditors();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+
+  /**
+   * Set the filename suffix to default editor mappings for the current user. <P> 
+   * 
+   * @param editors
+   *   The suffix/editor mappings.
+   * 
+   * @throws PipelineException
+   *   If unable to set the table.
+   */ 
+  public synchronized void
+  setSuffixEditors
+  (
+   TreeSet<SuffixEditor> editors
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscSetSuffixEditorsReq req = 
+      new MiscSetSuffixEditorsReq(PackageInfo.sUser, editors);
+
+    Object obj = performTransaction(MasterRequest.SetSuffixEditors, req); 
+    handleSimpleResponse(obj);
+  }
+  
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -607,8 +725,7 @@ class MasterMgrClient
    * Is the current user privileged? <P> 
    * 
    * Identical to calling {@link #isPrivileged(String,boolean) isPrivileged}
-   * with the current user as the <CODE>author</CODE> argument and a <CODE>useCache</CODE> 
-   * argument of <CODE>true</CODE>.
+   * with the current user as the <CODE>author</CODE> argument.
    * 
    * @param useCache
    *   Should the local cache be used to determine whether the current user is privileged?
@@ -630,7 +747,8 @@ class MasterMgrClient
    * Is the current user privileged? <P> 
    * 
    * Identical to calling {@link #isPrivileged(String,boolean) isPrivileged}
-   * with the current user as the <CODE>author</CODE> argument.
+   * with the current user as the <CODE>author</CODE> argument and a <CODE>useCache</CODE> 
+   * argument of <CODE>true</CODE>.
    * 
    * @throws PipelineException
    *   If unable to determine the privileged users.
@@ -1164,7 +1282,7 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Register an initial working version of a node. <P> 
+   * Register an initial working version of a node owned by the current user. <P> 
    * 
    * The <CODE>mod</CODE> argument must have a node name which does not already exist and
    * does not match any of the path components of any existing node.  <P> 
@@ -1199,6 +1317,52 @@ class MasterMgrClient
     Object obj = performTransaction(MasterRequest.Register, req);
     handleSimpleResponse(obj);
   }
+
+  /**
+   * Register an initial working version of a node owned by the given user. <P> 
+   * 
+   * The <CODE>mod</CODE> argument must have a node name which does not already exist and
+   * does not match any of the path components of any existing node.  <P> 
+   * 
+   * The working version must be an inital version.  In other words, the 
+   * {@link NodeMod#getWorkingID() NodeMod.getWorkingID} method must return 
+   * <CODE>null</CODE>.  As an intial working version, the <CODE>mod</CODE> argument should
+   * not contain any upstream node link information.
+   *  
+   * @param author 
+   *   The name of the user which owns the new working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   *
+   * @param mod
+   *   The initial working version to register.
+   * 
+   * @throws PipelineException
+   *   If unable to register the given node.
+   */
+  public synchronized void 
+  register
+  ( 
+   String author, 
+   String view, 
+   NodeMod mod
+  ) 
+    throws PipelineException
+  {
+    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
+      throw new PipelineException
+	("New nodes can only be registered for yourself if you are not a privileged user!");
+
+    verifyConnection();
+
+    NodeID id = new NodeID(author, view, mod.getName());
+    NodeRegisterReq req = new NodeRegisterReq(id, mod);
+
+    Object obj = performTransaction(MasterRequest.Register, req);
+    handleSimpleResponse(obj);
+  }
+
 
   /**
    * Revoke a working version of a node which has never checked-in. <P> 

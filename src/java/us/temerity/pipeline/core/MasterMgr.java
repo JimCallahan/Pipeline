@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.4 2004/06/02 21:29:25 jim Exp $
+// $Id: MasterMgr.java,v 1.5 2004/06/08 02:37:46 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -303,6 +303,8 @@ class MasterMgr
       pToolsets           = new TreeMap<String,Toolset>();
       pToolsetPackages    = new TreeMap<String,TreeMap<VersionID,PackageVersion>>();
 
+      pSuffixEditors = new TreeMap<String,TreeMap<String,SuffixEditor>>();
+
       pPrivilegedUsers = new TreeSet<String>();
 
       pWorkingAreaViews = new TreeMap<String,TreeSet<String>>();
@@ -347,6 +349,7 @@ class MasterMgr
     dirs.add(new File(pNodeDir, "toolsets/packages"));
     dirs.add(new File(pNodeDir, "toolsets/toolsets"));
     dirs.add(new File(pNodeDir, "etc"));
+    dirs.add(new File(pNodeDir, "etc/suffix-editors"));
 
     synchronized(pMakeDirLock) {
       for(File dir : dirs) {
@@ -854,6 +857,8 @@ class MasterMgr
       pActiveToolsets      = null;
       pToolsets            = null;
       pToolsetPackages     = null;
+      
+      pSuffixEditors       = null;
 
       pPrivilegedUsers     = null;
 
@@ -1426,6 +1431,146 @@ class MasterMgr
     }
   }
    
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get default editor name for the given filename suffix and user. <P> 
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetEditorForSuffixRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the editor.
+   */ 
+  public Object
+  getEditorForSuffix
+  (
+   MiscGetEditorForSuffixReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+    
+    timer.aquire();
+    synchronized(pSuffixEditors) {
+      timer.resume();
+
+      String author = req.getAuthor();
+
+      TreeMap<String,SuffixEditor> editors = pSuffixEditors.get(author);
+      if(editors == null)
+	editors = pSuffixEditors.get(author);
+
+      if(editors == null) {
+	try {
+	  editors = readSuffixEditors(author);
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
+	}
+      }
+      assert(editors != null);
+
+      String ename = null;
+      SuffixEditor se = editors.get(req.getSuffix());
+      if(se != null) 
+	ename = se.getEditor();
+
+      return new MiscGetEditorForSuffixRsp(timer, ename);
+    }
+  }
+
+  /**
+   * Get the filename suffix to default editor mappings for the given user. <P> 
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetSuffixEditorsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to get the mappings.
+   */ 
+  public Object
+  getSuffixEditors
+  (
+    MiscGetSuffixEditorsReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+    
+    timer.aquire();
+    synchronized(pSuffixEditors) {
+      timer.resume();
+      String author = req.getAuthor();
+
+      TreeMap<String,SuffixEditor> editors = pSuffixEditors.get(author);
+      if(editors == null) 
+	editors = pSuffixEditors.get(author);
+
+      if(editors == null) {
+	try {
+	  editors = readSuffixEditors(author);
+
+	  if((editors == null) && !author.equals("pipeline")) {
+	    editors = pSuffixEditors.get("pipeline");
+	    if(editors == null) 
+	      editors = readSuffixEditors("pipeline");
+	  }
+
+	  if(editors == null) 
+	    editors = new TreeMap<String,SuffixEditor>();
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
+	}
+      }
+      assert(editors != null);
+
+      return new MiscGetSuffixEditorsRsp(timer, new TreeSet<SuffixEditor>(editors.values()));
+    }
+  }
+
+  /**
+   * Set the filename suffix to default editor mappings for the given user. <P> 
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to set the mappings.
+   */ 
+  public Object
+  setSuffixEditors
+  (
+    MiscSetSuffixEditorsReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+    
+    timer.aquire();
+    synchronized(pSuffixEditors) {
+      timer.resume();
+
+      try {
+	writeSuffixEditors(req.getAuthor(), req.getEditors());
+      }
+      catch(PipelineException ex) {
+	return new FailureRsp(timer, ex.getMessage());
+      }
+
+      TreeMap<String,SuffixEditor> editors = new TreeMap<String,SuffixEditor>();
+      for(SuffixEditor se : req.getEditors()) 
+	editors.put(se.getSuffix(), se);
+
+      pSuffixEditors.put(req.getAuthor(), editors);
+
+      return new SuccessRsp(timer);
+    }
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -4294,6 +4439,122 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Write the suffix editor mappings for the given user.
+   * 
+   * @param author
+   *   The owner of suffix/editor mappings.
+   * 
+   * @param editors
+   *   The suffix editors.
+   * 
+   * @throws PipelineException
+   *   If unable to write the suffix editor mappings file.
+   */ 
+  private void 
+  writeSuffixEditors
+  (
+   String author, 
+   TreeSet<SuffixEditor> editors
+  ) 
+    throws PipelineException
+  {
+    synchronized(pSuffixEditors) {
+      File file = new File(pNodeDir, "etc/suffix-editors/" + author); 
+      if(file.exists()) {
+	if(!file.delete())
+	  throw new PipelineException
+	    ("Unable to remove the old suffix editors file (" + file + ")!");
+      }
+
+      Logs.ops.finer("Writing Suffix Editors: " + author);
+
+      try {
+	String glue = null;
+	try {
+	  GlueEncoder ge = new GlueEncoderImpl("SuffixEditors", editors);
+	  glue = ge.getText();
+	}
+	catch(GlueException ex) {
+	  Logs.glu.severe
+	    ("Unable to generate a Glue format representation of the suffix editors " + 
+	     "for user (" + author + ")!");
+	  Logs.flush();
+	  
+	  throw new IOException(ex.getMessage());
+	}
+	  
+	{
+	  FileWriter out = new FileWriter(file);
+	  out.write(glue);
+	  out.flush();
+	  out.close();
+	}
+      }
+      catch(IOException ex) {
+	throw new PipelineException
+	  ("I/O ERROR: \n" + 
+	   "  While attempting to write the suffix editors file (" + file + ")...\n" + 
+	   "    " + ex.getMessage());
+      }
+    }
+  }
+  
+  /**
+   * Read the suffix editor mappings for the given user.
+   * 
+   * @param author
+   *   The owner of suffix/editor mappings.
+   * 
+   * @throws PipelineException
+   *   If unable to read the suffix editor mappings file.
+   */ 
+  private TreeMap<String,SuffixEditor>
+  readSuffixEditors
+  (
+   String author
+  ) 
+    throws PipelineException
+  {
+    synchronized(pSuffixEditors) {
+      File file = new File(pNodeDir, "etc/suffix-editors/" + author); 
+      if(!file.isFile()) 
+	return null;
+
+      Logs.ops.finer("Reading Suffix Editors: " + author);
+
+      TreeSet<SuffixEditor> editors = null;
+      try {
+	FileReader in = new FileReader(file);
+	GlueDecoder gd = new GlueDecoderImpl(in);
+	editors = (TreeSet<SuffixEditor>) gd.getObject();
+	in.close();
+      }
+      catch(Exception ex) {
+	Logs.glu.severe
+	  ("The suffix editors file (" + file + ") appears to be corrupted!");
+	Logs.flush();
+	
+	throw new PipelineException
+	  ("I/O ERROR: \n" + 
+	   "  While attempting to read the suffix editors file (" + file + ")...\n" + 
+	   "    " + ex.getMessage());
+      }
+      assert(editors != null);
+
+      TreeMap<String,SuffixEditor> table = new TreeMap<String,SuffixEditor>();
+      for(SuffixEditor se : editors) 
+	table.put(se.getSuffix(), se);
+
+      pSuffixEditors.put(author, table);
+
+      return table;
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Write the privileged users to disk. <P> 
    * 
    * @throws PipelineException
@@ -5274,6 +5535,16 @@ class MasterMgr
    * Access to this field should be protected by a synchronized block.
    */ 
   private TreeMap<String,TreeMap<VersionID,PackageVersion>>  pToolsetPackages;
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * The cached table of filename suffix to editor mappings indexed by author user name. <P> 
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */ 
+  private TreeMap<String,TreeMap<String,SuffixEditor>>  pSuffixEditors;
 
 
   /*----------------------------------------------------------------------------------------*/
