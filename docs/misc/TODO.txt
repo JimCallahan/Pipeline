@@ -7,6 +7,14 @@ ACTIONS:
 - Add a job server resourecs method similar to the output parsing methods above.
 
 - Port the old Pipeline actions to work with the new Pipeline.
+  + DelightShaderAction
+  + DelightShopAction
+  + DsTableAction
+  + HScriptAction
+  + IConvertAction
+  + MergeTableAction
+  + VexAction
+  + VexTableAction
 
 - Write Action classes for the remaining common CG tasks:
   + Houdini Output OP
@@ -18,6 +26,8 @@ ACTIONS:
 
 
 OPERATIONS/BACKEND: 
+
+- Command-line client program similar to the old pipeline(1).
 
 - Task/Scheduling System
 
@@ -45,21 +55,23 @@ ADMINISTRATION:
 
 USER INTERFACE: 
 
-- File browsers should use double clicks to traverse directories.
+- Check for duplicate hotkeys in the same group when changing a hot key.
 
-- Add simultaneous multiple column field changes in all tables.
+- Sorting the JobBrowser clears the current selection - it should be preserved.
 
-- Add a FrameRunning item to the JQueueJobViewerPanel menu.
+- Add Tooltips for title labels in ALL panels!
 
-- NodeBrowser labels are truncated ("SomeLa...") sometimes. 
+- Add optional hot key reminders in menu item names.
 
 - Implement Import (source links, per-source action parameters) in NodeViewer.
 
 - Thumbnail display options in the NodeViewer
 
-- NodeLinks Panel?
+- File browsers should use double clicks to traverse directories.
 
-- Task/Scheduling Panels
+- Add a FrameRunning item to the JQueueJobViewerPanel menu.
+
+- NodeBrowser labels are truncated ("SomeLa...") sometimes. 
 
 - Improved UI for panel save/restore.  Its sort of clunky but works currently...
 
@@ -69,23 +81,9 @@ USER INTERFACE:
 - NodeBrowser contents are not intialized to the selected nodes in the linked NodeViewer 
   when the panel type is changed to NodeBrowser from some other type of panel.
 
-- Check for duplicate hotkeys in the same group when changing a hot key.
-
 - When layouts are restored, there can be conflicts between multiple update tasks and 
   problems of some components not being instatiated yet at the point of update.  A more
   methodical system needs to replace the current ad hoc system.
-
-- Sorting the JobBrowser clears the current selection - it should be preserved.
-
-- Add Tooltips in JobViewer that display the "[123] PrimaryTarget.#.gif" title. 
-
-- Add Tooltips for title labels in ALL panels!
-
-- The Action Enabled field in the NodeDetails panel is always cyan!  
-
-- Command-line client program similar to the old pipeline(1)?
-
-- Add optional hot key reminders in menu item names.
 
 
 IMPORTANT UNIMPLEMENTED JOB RELATED ISSUES:
