@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.14 2004/09/08 18:39:25 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.15 2004/09/11 14:16:25 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -83,8 +83,6 @@ class JNodeDetailsPanel
 
       pLinkActionParamValues    = new ArrayList<String>();
       pLinkActionParamNodeNames = new ArrayList<String>();
-
-      pTextParamValues = new TreeMap<String,String>();
 
       pSelectionKeyComponents = new TreeMap<String,Component[]>();
       pLicenseKeyComponents   = new TreeMap<String,Component[]>();
@@ -1012,9 +1010,6 @@ class JNodeDetailsPanel
     }
 
     updateNodeStatus(null);
-
-    pEditTextDialog = new JTextDialog(true);
-    pViewTextDialog = new JTextDialog(false);
   }
 
   /**
@@ -1661,187 +1656,165 @@ class JNodeDetailsPanel
 	pLinkActionParamNodeNames.clear();
 	pLinkActionParamNodeNames.addAll(pStatus.getSourceNames());
 	pLinkActionParamNodeNames.add(null);
-
-	pTextParamValues.clear();
       }
 
       UIMaster.addVerticalSpacer(tpanel, vpanel, 9);
 
-      for(BaseActionParam param : action.getSingleParams()) {
-	UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
-
-	Component pcomps[] = new Component[4];
-	
-	{
-	  JLabel label = 
-	    UIMaster.createFixedLabel(param.getNameUI() + ":", sTSize, JLabel.RIGHT);
-	  pcomps[0] = label;
-	  
-	  tpanel.add(label);
+      for(String pname : action.getSingleLayout()) {
+	if(pname == null) {
+	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
 	}
-	
-	{ 
-	  Box hbox = new Box(BoxLayout.X_AXIS);
+	else {
+	  BaseActionParam param = action.getSingleParam(pname);
+
+	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+
+	  Component pcomps[] = new Component[4];
 	  
 	  {
-	    BaseActionParam aparam = null;
-	    if(waction != null) 
-	      aparam = waction.getSingleParam(param.getName());
+	    JLabel label = 
+	      UIMaster.createFixedLabel(param.getNameUI() + ":", sTSize, JLabel.RIGHT);
+	    pcomps[0] = label;
 	    
-	    if(aparam != null) {
-	      if(aparam instanceof IntegerActionParam) {
-		Integer value = (Integer) aparam.getValue();
-		JIntegerField field = 
-		  UIMaster.createIntegerField(value, sVSize, JLabel.CENTER);
-		pcomps[1] = field;
-
-		field.addActionListener(this);
-		field.setActionCommand("action-param-changed:" + aparam.getName());
-
-		field.setEnabled(!pIsLocked);
-
-		hbox.add(field);
-	      }
-	      else if(aparam instanceof DoubleActionParam) {
-		Double value = (Double) aparam.getValue();
-		JDoubleField field = 
-		  UIMaster.createDoubleField(value, sVSize, JLabel.CENTER);
-		pcomps[1] = field;
-		
-		field.addActionListener(this);
-		field.setActionCommand("action-param-changed:" + aparam.getName());
-
-		field.setEnabled(!pIsLocked);
-
-		hbox.add(field);
-	      }
-	      else if(aparam instanceof StringActionParam) {
-		String value = (String) aparam.getValue();
-		JTextField field = 
-		  UIMaster.createEditableTextField(value, sVSize, JLabel.CENTER);
-		pcomps[1] = field;
-		
-		field.addActionListener(this);
-		field.setActionCommand("action-param-changed:" + aparam.getName());
-
-		field.setEnabled(!pIsLocked);
-
-		hbox.add(field);
-	      }
-	      else if(aparam instanceof TextActionParam) {
-		pTextParamValues.put(aparam.getName(), (String) aparam.getValue());
-
-		JButton btn = new JButton(pIsLocked ? "View..." : "Edit...");
-		pcomps[1] = btn;
-		
-		btn.setName("ValuePanelButton");
-		btn.setRolloverEnabled(false);
-		btn.setFocusable(false);
-		  
-		Dimension size = new Dimension(sVSize, 19);
-		btn.setMinimumSize(size);
-		btn.setPreferredSize(size);
-		btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
-
-		btn.addActionListener(this);
-		btn.setActionCommand("edit-text-param:" + aparam.getName());
-
-		hbox.add(btn);	      
-	      }
-	      else if(aparam instanceof EnumActionParam) {
-		EnumActionParam eparam = (EnumActionParam) aparam;
-		JCollectionField field = 
-		  UIMaster.createCollectionField(eparam.getValues(), sVSize);
-		pcomps[1] = field;
-	      
-		field.setSelected((String) eparam.getValue());
-		
-		field.addActionListener(this);
-		field.setActionCommand("action-param-changed:" + aparam.getName());
-
-		field.setEnabled(!pIsLocked);
-
-		hbox.add(field);
-	      }
-	      else if(aparam instanceof LinkActionParam) {
-		JCollectionField field = 
-		  UIMaster.createCollectionField(pLinkActionParamValues, sVSize);
-		pcomps[1] = field;
-
-		String source = (String) aparam.getValue();
-		int idx = pLinkActionParamNodeNames.indexOf(source);
-		if(idx != -1) 
-		  field.setSelectedIndex(idx);
-		else 
-		  field.setSelected("-");
-			
-		field.addActionListener(this);
-		field.setActionCommand("action-param-changed:" + aparam.getName());
-
-		field.setEnabled(!pIsLocked);
-
-		hbox.add(field);
-	      }
-	    }
-	    else {
-	      JLabel label = UIMaster.createLabel("-", sVSize, JLabel.CENTER);
-	      label.setName("TextFieldLabel");
-
-	      pcomps[1] = label;
-	      
-	      hbox.add(label);
-	    }
+	    tpanel.add(label);
 	  }
-
-	  hbox.add(Box.createRigidArea(new Dimension(4, 0)));
-
-	  {
-	    JButton btn = new JButton();		 
-	    pcomps[2] = btn;
-	    btn.setName("SmallLeftArrowButton");
-	    
-	    Dimension size = new Dimension(12, 12);
-	    btn.setMinimumSize(size);
-	    btn.setMaximumSize(size);
-	    btn.setPreferredSize(size);
-	    
-	    btn.addActionListener(this);
-	    btn.setActionCommand("set-action-param:" + param.getName());
-	    
-	    btn.setEnabled(!pIsLocked && (waction != null) && (caction != null) && 
-			   caction.getName().equals(waction.getName()));
-	    
-	    hbox.add(btn);
-	  } 
 	  
-	  hbox.add(Box.createRigidArea(new Dimension(4, 0)));
-
-	  {
-	    BaseActionParam aparam = null;
-	    if((caction != null) && 
-	       ((waction == null) || caction.getName().equals(waction.getName())))
-	      aparam = caction.getSingleParam(param.getName());
+	  { 
+	    Box hbox = new Box(BoxLayout.X_AXIS);
 	    
-	    if(aparam != null) {
-	      if(aparam instanceof TextActionParam) {
-		JButton btn = new JButton("View...");
-		pcomps[3] = btn;
-		
-		btn.setName("ValuePanelButton");
-		btn.setRolloverEnabled(false);
-		btn.setFocusable(false);
-		
-		Dimension size = new Dimension(sVSize, 19);
-		btn.setMinimumSize(size);
-		btn.setPreferredSize(size);
-		btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
-		
-		btn.addActionListener(this);
-		btn.setActionCommand("view-text-param:" + aparam.getName());
-
-		hbox.add(btn);	      
+	    {
+	      BaseActionParam aparam = null;
+	      if(waction != null) 
+		aparam = waction.getSingleParam(param.getName());
+	      
+	      if(aparam != null) {
+		if(aparam instanceof BooleanActionParam) {
+		  Boolean value = (Boolean) aparam.getValue();
+		  JBooleanField field = 
+		    UIMaster.createBooleanField(value, sVSize);
+		  pcomps[1] = field;
+		  
+		  field.addActionListener(this);
+		  field.setActionCommand("action-param-changed:" + aparam.getName());
+		  
+		  field.setEnabled(!pIsLocked);
+		  
+		  hbox.add(field);
+		}
+		else if(aparam instanceof IntegerActionParam) {
+		  Integer value = (Integer) aparam.getValue();
+		  JIntegerField field = 
+		    UIMaster.createIntegerField(value, sVSize, JLabel.CENTER);
+		  pcomps[1] = field;
+		  
+		  field.addActionListener(this);
+		  field.setActionCommand("action-param-changed:" + aparam.getName());
+		  
+		  field.setEnabled(!pIsLocked);
+		  
+		  hbox.add(field);
+		}
+		else if(aparam instanceof DoubleActionParam) {
+		  Double value = (Double) aparam.getValue();
+		  JDoubleField field = 
+		    UIMaster.createDoubleField(value, sVSize, JLabel.CENTER);
+		  pcomps[1] = field;
+		  
+		  field.addActionListener(this);
+		  field.setActionCommand("action-param-changed:" + aparam.getName());
+		  
+		  field.setEnabled(!pIsLocked);
+		  
+		  hbox.add(field);
+		}
+		else if(aparam instanceof StringActionParam) {
+		  String value = (String) aparam.getValue();
+		  JTextField field = 
+		    UIMaster.createEditableTextField(value, sVSize, JLabel.CENTER);
+		  pcomps[1] = field;
+		  
+		  field.addActionListener(this);
+		  field.setActionCommand("action-param-changed:" + aparam.getName());
+		  
+		  field.setEnabled(!pIsLocked);
+		  
+		  hbox.add(field);
+		}
+		else if(aparam instanceof EnumActionParam) {
+		  EnumActionParam eparam = (EnumActionParam) aparam;
+		  JCollectionField field = 
+		    UIMaster.createCollectionField(eparam.getValues(), sVSize);
+		  pcomps[1] = field;
+		  
+		  field.setSelected((String) eparam.getValue());
+		  
+		  field.addActionListener(this);
+		  field.setActionCommand("action-param-changed:" + aparam.getName());
+		  
+		  field.setEnabled(!pIsLocked);
+		  
+		  hbox.add(field);
+		}
+		else if(aparam instanceof LinkActionParam) {
+		  JCollectionField field = 
+		    UIMaster.createCollectionField(pLinkActionParamValues, sVSize);
+		  pcomps[1] = field;
+		  
+		  String source = (String) aparam.getValue();
+		  int idx = pLinkActionParamNodeNames.indexOf(source);
+		  if(idx != -1) 
+		    field.setSelectedIndex(idx);
+		  else 
+		    field.setSelected("-");
+		  
+		  field.addActionListener(this);
+		  field.setActionCommand("action-param-changed:" + aparam.getName());
+		  
+		  field.setEnabled(!pIsLocked);
+		  
+		  hbox.add(field);
+		}
 	      }
 	      else {
+		JLabel label = UIMaster.createLabel("-", sVSize, JLabel.CENTER);
+		label.setName("TextFieldLabel");
+		
+		pcomps[1] = label;
+		
+		hbox.add(label);
+	      }
+	    }
+
+	    hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+
+	    {
+	      JButton btn = new JButton();		 
+	      pcomps[2] = btn;
+	      btn.setName("SmallLeftArrowButton");
+	      
+	      Dimension size = new Dimension(12, 12);
+	      btn.setMinimumSize(size);
+	      btn.setMaximumSize(size);
+	      btn.setPreferredSize(size);
+	      
+	      btn.addActionListener(this);
+	      btn.setActionCommand("set-action-param:" + param.getName());
+	      
+	      btn.setEnabled(!pIsLocked && (waction != null) && (caction != null) && 
+			     caction.getName().equals(waction.getName()));
+	      
+	      hbox.add(btn);
+	    } 
+	    
+	    hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+	    
+	    {
+	      BaseActionParam aparam = null;
+	      if((caction != null) && 
+		 ((waction == null) || caction.getName().equals(waction.getName())))
+		aparam = caction.getSingleParam(param.getName());
+	      
+	      if(aparam != null) {
 		String text = "-";
 		{
 		  if(aparam instanceof LinkActionParam) {
@@ -1856,27 +1829,27 @@ class JNodeDetailsPanel
 		      text = value.toString();
 		  }
 		}
-
+		
 		JTextField field = UIMaster.createTextField(text, sVSize, JLabel.CENTER);
 		pcomps[3] = field;
 		
 		hbox.add(field);
 	      }
+	      else {
+		JLabel label = UIMaster.createLabel("-", sVSize, JLabel.CENTER);
+		label.setName("TextFieldLabel");
+		
+		pcomps[3] = label;
+		
+		hbox.add(label);
+	      }
 	    }
-	    else {
-	      JLabel label = UIMaster.createLabel("-", sVSize, JLabel.CENTER);
-	      label.setName("TextFieldLabel");
-
-	      pcomps[3] = label;
-	      
-	      hbox.add(label);
-	    }
+	    
+	    vpanel.add(hbox);
 	  }
 	  
-	  vpanel.add(hbox);
+	  pActionParamComponents.put(param.getName(), pcomps);
 	}
-	
-	pActionParamComponents.put(param.getName(), pcomps);
       }
       
       /* per-source params */ 
@@ -2601,7 +2574,12 @@ class JNodeDetailsPanel
 	  aparam = waction.getSingleParam(pname);
       
 	if(aparam != null) {
-	  if(aparam instanceof IntegerActionParam) {
+	  if(aparam instanceof BooleanActionParam) {
+	    JBooleanField field = (JBooleanField) pcomps[1];
+	    if(field.getValue() != null) 
+	      wtext = field.getValue().toString();
+	  }
+	  else if(aparam instanceof IntegerActionParam) {
 	    JIntegerField field = (JIntegerField) pcomps[1];
 	    if(field.getValue() != null) 
 	      wtext = field.getValue().toString();
@@ -2614,9 +2592,6 @@ class JNodeDetailsPanel
 	  else if(aparam instanceof StringActionParam) {
 	    JTextField field = (JTextField) pcomps[1];
 	    wtext = field.getText();
-	  }
-	  else if(aparam instanceof TextActionParam) {
-	    wtext = pTextParamValues.get(aparam.getName());
 	  }
 	  else if(aparam instanceof EnumActionParam) {
 	    JCollectionField field = (JCollectionField) pcomps[1];
@@ -2890,10 +2865,6 @@ class JNodeDetailsPanel
       doSetActionParam(cmd.substring(17));
     else if(cmd.startsWith("action-param-changed:")) 
       doActionParamChanged(cmd.substring(21));
-    else if(cmd.startsWith("edit-text-param:"))
-      doEditTextParam(cmd.substring(16));
-    else if(cmd.startsWith("view-text-param:"))
-      doViewTextParam(cmd.substring(16));
     else if(cmd.equals("edit-source-params")) 
       doEditSourceParams();
     else if(cmd.equals("view-source-params")) 
@@ -2980,7 +2951,11 @@ class JNodeDetailsPanel
 	      for(BaseActionParam aparam : waction.getSingleParams()) {
 		Component pcomps[] = pActionParamComponents.get(aparam.getName());
 		Comparable value = null;
-		if(aparam instanceof IntegerActionParam) {   
+		if(aparam instanceof BooleanActionParam) {   
+		  JBooleanField field = (JBooleanField) pcomps[1];
+		  value = field.getValue();
+		}
+		else if(aparam instanceof IntegerActionParam) {   
 		  JIntegerField field = (JIntegerField) pcomps[1];
 		  value = field.getValue();
 		}
@@ -2991,9 +2966,6 @@ class JNodeDetailsPanel
 		else if(aparam instanceof StringActionParam) {
 		  JTextField field = (JTextField) pcomps[1];
 		  value = field.getText();
-		}
-		else if(aparam instanceof TextActionParam) {
-		  value = pTextParamValues.get(aparam.getName()); 
 		}
 		else if(aparam instanceof EnumActionParam) {
 		  JCollectionField field = (JCollectionField) pcomps[1];
@@ -3267,7 +3239,7 @@ class JNodeDetailsPanel
    * Update the appearance of the action fields after a change of value.
    */ 
   private void 
-  doActionChanged() 
+  doActionChanged()
   {
     pApplyButton.setEnabled(true);
 
@@ -3377,7 +3349,11 @@ class JNodeDetailsPanel
       Component pcomps[] = pActionParamComponents.get(pname);
       if(pcomps != null) {
 	Comparable value = cparam.getValue();
-	if(wparam instanceof IntegerActionParam) {
+	if(wparam instanceof BooleanActionParam) {
+	  JBooleanField field = (JBooleanField) pcomps[1];
+	  field.setValue((Boolean) value);
+	}
+	else if(wparam instanceof IntegerActionParam) {
 	  JIntegerField field = (JIntegerField) pcomps[1];
 	  field.setValue((Integer) value);
 	}
@@ -3391,9 +3367,6 @@ class JNodeDetailsPanel
 	    field.setText(value.toString());
 	  else 
 	    field.setText(null);
-	}
-	else if(wparam instanceof TextActionParam) {
-	  pTextParamValues.put(pname, (String) value);
 	}
 	else if(wparam instanceof EnumActionParam) {
 	  JCollectionField field = (JCollectionField) pcomps[1];
@@ -3424,61 +3397,6 @@ class JNodeDetailsPanel
     pApplyButton.setEnabled(true);
   
     updateActionParamColor(pname, null);
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Show a dialog for editing the value of the given working text action parameter.
-   */ 
-  private void 
-  doEditTextParam
-  (
-   String pname
-  ) 
-  {
-    BaseAction waction = getWorkingAction();
-    if(waction != null) {
-      BaseActionParam param = waction.getSingleParam(pname);
-
-      if(pIsLocked) {
-	pViewTextDialog.updateText("View:  " + param.getNameUI(), 
-				   pTextParamValues.get(pname));
-
-	pViewTextDialog.setVisible(true);
-      }
-      else {
-	pEditTextDialog.updateText("Edit:  " + param.getNameUI(), 
-				   pTextParamValues.get(pname)); 
-	
-	pEditTextDialog.setVisible(true);      
-	if(pEditTextDialog.wasConfirmed()) {
-	  pTextParamValues.put(pname, pEditTextDialog.getText());
-	  doActionParamChanged(pname);
-	}
-      }	
-    }
-  }
-
-  /**
-   * Show a dialog for viewing the value of the given checked-in text action parameter.
-   */ 
-  private void 
-  doViewTextParam
-  (
-   String pname
-  ) 
-  {
-    BaseAction caction = getCheckedInAction();
-    if(caction != null) {
-      BaseActionParam param = caction.getSingleParam(pname);
-
-      pViewTextDialog.updateText("View:  " + param.getNameUI(), 
-				 (String) param.getValue());
-
-      pViewTextDialog.setVisible(true);
-    }
   }
 
 
@@ -4213,23 +4131,6 @@ class JNodeDetailsPanel
    */ 
   private ArrayList<String>  pLinkActionParamValues;
   private ArrayList<String>  pLinkActionParamNodeNames;
-
-  /**
-   * The temporary working text action parameter values indexed by action parameter name.
-   */ 
-  private TreeMap<String,String>  pTextParamValues;
-
-
-  /**
-   * The dialog used to edit working text action parameter values.
-   */ 
-  private JTextDialog  pEditTextDialog;
-
-  /**
-   * The dialog used to view checked-in text action parameter values.
-   */ 
-  private JTextDialog  pViewTextDialog;
-  
 
   /**
    * The UI compontents related to per-source action parameters.
