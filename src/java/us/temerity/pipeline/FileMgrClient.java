@@ -1,12 +1,12 @@
-// $Id: FileMgrClient.java,v 1.1 2004/03/10 11:48:12 jim Exp $
+// $Id: FileMgrClient.java,v 1.2 2004/03/12 13:50:34 jim Exp $
 
 package us.temerity.pipeline;
 
 import us.temerity.pipeline.message.*;
 
 import java.io.*;
+import java.net.*;
 import java.util.*;
-import java.util.concurrent.locks.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   F I L E   M G R   C L I E N T                                                          */
@@ -30,12 +30,52 @@ class FileMgrClient
 
   /** 
    * Construct a new file manager client.
+   * 
+   * @param hostname [<B>in</B>]
+   *   The name of the host running the <CODE>FileMgrServer</CODE> instance.
+   * 
+   * @param port [<B>in</B>]
+   *   The network port listened to by the <CODE>FileMgrServer</CODE> instance.
+   */
+  public
+  FileMgrClient
+  ( 
+   String hostname, 
+   int port
+  ) 
+  {
+    init(hostname, port);
+  }
+
+  /** 
+   * Construct a new file manager client.
+   * 
+   * The hostname and port are set by the <CODE>--with-file-server=DIR</CODE> and 
+   * <CODE>--with-file-port=DIR</CODE> options to <I>configure(1)</I>.
    */
   public
   FileMgrClient() 
   {
+    init(PackageInfo.sFileServer, PackageInfo.sFilePort);
+  }
 
 
+  /*-- CONSTRUCTION HELPERS ----------------------------------------------------------------*/
+
+  private synchronized void 
+  init
+  ( 
+   String hostname, 
+   int port
+  ) 
+  {
+    if(hostname == null) 
+      throw new IllegalArgumentException("The hostname argument cannot be (null)!");
+    pHostname = hostname;
+
+    if(port < 0) 
+      throw new IllegalArgumentException("Illegal port number (" + port + ")!");
+    pPort = port;
   }
 
 
@@ -57,7 +97,7 @@ class FileMgrClient
    * @throws PipelineException
    *   If unable to regenerate the checksums.
    */
-  public void 
+  public synchronized void 
   refreshCheckSums
   (
    NodeID id, 
@@ -65,11 +105,23 @@ class FileMgrClient
   ) 
     throws PipelineException 
   {
+    verifyConnection();
+
     FileCheckSumReq req = new FileCheckSumReq(id, fseqs);
 
-    //...
+    Object obj = performTransaction(FileRequest.CheckSum, req);
 
-    throw new PipelineException("Not implemented yet.");
+    if(obj instanceof SuccessRsp) {
+    }
+    else if(obj instanceof FailureRsp) {
+      FailureRsp rsp = (FailureRsp) obj;
+      throw new PipelineException(rsp.getMessage());	
+    }
+    else {
+      shutdown();
+      throw new PipelineException
+	("Illegal response received from the FileMgrServer instance!");
+    }
   }
 
   /**
@@ -96,7 +148,7 @@ class FileMgrClient
    * @throws PipelineException
    *   If unable to compute the file states.
    */ 
-  public TreeMap<FileSeq, FileState[]>
+  public synchronized TreeMap<FileSeq, FileState[]>
   computeFileStates
   (
    NodeID id, 
@@ -106,21 +158,152 @@ class FileMgrClient
   ) 
     throws PipelineException 
   {
+    verifyConnection();
+
     FileStateReq req = 
       new FileStateReq(id, vstate, mod.getWorkingID(), latest, mod.getSequences());
 
-    //...
+    Object obj = performTransaction(FileRequest.State, req);
 
-    throw new PipelineException("Not implemented yet.");
+    if(obj instanceof FileStateRsp) {
+      FileStateRsp rsp = (FileStateRsp) obj;
+      return rsp.getFileStates();
+    }
+    else if(obj instanceof FailureRsp) {
+      FailureRsp rsp = (FailureRsp) obj;
+      throw new PipelineException(rsp.getMessage());	
+    }
+    else {
+      shutdown();
+      throw new PipelineException
+	("Illegal response received from the FileMgrServer instance!");
+    }
   }
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Make sure the network connection to the <CODE>FileMgrServer</CODE> instance has 
+   * been established.  If the connection is down, try to reconnect.
+   * 
+   * @throws PipelineException
+   *   If the connection is down and cannot be reestablished. 
+   */
+  private synchronized void 
+  verifyConnection() 
+    throws PipelineException 
+  {
+    if((pSocket != null) && pSocket.isConnected())
+      return;
+
+    try {
+      pSocket = new Socket(pHostname, pPort);
+    }
+    catch (IOException ex) {
+      throw new PipelineException
+	("IO problems on port (" + pPort + "):\n" + 
+	 ex.getMessage());
+    }
+    catch (SecurityException ex) {
+      throw new PipelineException
+	("The Security Manager doesn't allow socket connections!\n" + 
+	 ex.getMessage());
+    }
+  }
+
+  /**
+   * Send the given file request to the <CODE>FileMgrServer</CODE> instance and 
+   * wait for the response.
+   * 
+   * @param kind [<B>in</B>]
+   *   The kind of request being sent.
+   * 
+   * @param req [<B>in</B>]
+   *   The request data.
+   * 
+   * @return
+   *   The response from the <CODE>FileMgrServer</CODE> instance.
+   * 
+   * @throws PipelineException
+   *   If unable to complete the transaction.
+   */
+  private synchronized Object
+  performTransaction
+  (
+   FileRequest kind, 
+   Object req
+  ) 
+    throws PipelineException 
+  {
+    try {
+      OutputStream out = pSocket.getOutputStream();
+      ObjectOutput objOut = new ObjectOutputStream(out);
+      objOut.writeObject(kind);
+      objOut.writeObject(req);
+      objOut.flush(); 
+
+      InputStream in  = pSocket.getInputStream();
+      ObjectInput objIn  = new ObjectInputStream(in);
+      return (objIn.readObject());
+    }
+    catch(IOException ex) {
+      shutdown();
+      throw new PipelineException
+	("IO problems on port (" + pPort + "):\n" + 
+	 ex.getMessage());
+    }
+    catch(ClassNotFoundException ex) {
+      shutdown();
+      throw new PipelineException
+	("Illegal object encountered on port (" + pPort + "):\n" + 
+	 ex.getMessage());  
+    }
+  }
+
+  /**
+   * Close the network connection if its is still connected.
+   */
+  private synchronized void 
+  shutdown() 
+  {
+    if(pSocket == null)
+      return;
+
+    try {
+      if(pSocket.isConnected()) {
+	pSocket.close();
+      }
+    }
+    catch (IOException ex) {
+    }
+    finally {
+      pSocket = null;
+    }
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * The name of the host running the <CODE>FileMgrServer</CODE> instance.
+   */
+  private String  pHostname;
 
+  /**
+   * The network port listened to by the <CODE>FileMgrServer</CODE> instance.
+   */
+  private int  pPort;
+
+  /**
+   * The network socket connection.
+   */
+  private Socket  pSocket;
 
 }
 
