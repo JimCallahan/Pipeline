@@ -149,27 +149,49 @@
 
 
 
-  <!--  V I E W S   B U T T O N  -->
+  <!--  S I N G L E   V I E W   B U T T O N  -->
 
-  <style id="ViewsButton"> 
+  <style id="SingleViewButton"> 
     <state>
-      <imagePainter path="AllViewsButton.png"
-                    sourceInsets="0 0 0 0"/>
-    </state> 
-    <state value="PRESSED">
-      <imagePainter path="AllViewsButtonPressed.png"
-                    sourceInsets="0 0 0 0"/>
-    </state>
-    <state value="SELECTED">
       <imagePainter path="SingleViewButton.png"
                     sourceInsets="0 0 0 0"/>
     </state>
-    <state value="PRESSED and SELECTED">
+    <state value="PRESSED">
       <imagePainter path="SingleViewButtonPressed.png"
                     sourceInsets="0 0 0 0"/>
     </state>
   </style>
-  <bind style="ViewsButton" type="name" key="ViewsButton"/>
+  <bind style="SingleViewButton" type="name" key="SingleViewButton"/>
+
+
+  <!--  O W N E D   V I E W S   B U T T O N  -->
+
+  <style id="OwnedViewsButton"> 
+    <state>
+      <imagePainter path="OwnedViewsButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="OwnedViewsButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="OwnedViewsButton" type="name" key="OwnedViewsButton"/>
+
+
+  <!--  A L L   V I E W S   B U T T O N  -->
+
+  <style id="AllViewsButton"> 
+    <state>
+      <imagePainter path="AllViewsButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="AllViewsButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="AllViewsButton" type="name" key="AllViewsButton"/>
 
 
 

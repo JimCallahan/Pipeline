@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.6 2005/01/10 16:34:08 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.7 2005/01/10 22:01:05 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2199,8 +2199,10 @@ class JQueueJobViewerPanel
     if(pGroupID > 0) {
       PanelGroup<JNodeViewerPanel> panels = UIMaster.getInstance().getNodeViewerPanels();
       JNodeViewerPanel panel = panels.getPanel(pGroupID);
-      if(panel != null) 
+      if(panel != null) { 
 	panel.addRoot(nodeID.getAuthor(), nodeID.getView(), nodeID.getName());
+	panel.updateManagerTitlePanel();
+      }
     }    
     
     clearSelection();

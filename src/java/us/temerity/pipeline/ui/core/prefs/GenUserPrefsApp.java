@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.6 2005/01/10 16:34:08 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.7 2005/01/10 22:01:05 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -924,9 +924,23 @@ class GenUserPrefsApp
 	new BasePref(),
 
 	new HotKeyPref
-	("Toggle whether to show only the current or all views.", 
-	 "JobBrowserToggleFilterViews", "Toggle Views Filter:"), 
+	("Toggle the view filter between single view, owned views and all views.", 
+	 "JobBrowserToggleViewsFilter", "Toggle Views Filter:"), 
 	
+	new HotKeyPref
+	("Show only job groups owned by the current view.", 
+	 "JobBrowserSingleViewFilter", "Single View Filter:"), 
+	
+	new HotKeyPref
+	("Show job groups from any view owned by the current user.", 
+	 "JobBrowserOwnedViewsFilter", "Single View Filter:"), 
+	
+	new HotKeyPref
+	("Show job groups from all views.", 
+	 "JobBrowserAllViewsFilter", "Single View Filter:"), 
+
+	new BasePref(),
+
 	new DuplicateHotKeyPref
 	("Resubmit aborted and failed jobs to the queue for the selected groups.",
 	 "JobBrowserGroupsQueueJobs", "Queue Jobs:", "QueueJobs"), 
@@ -1384,7 +1398,10 @@ class GenUserPrefsApp
       
 	group.addAll(manager);
 	group.add(update);
-	group.add("JobBrowserToggleFilterViews");
+	group.add("JobBrowserToggleViewsFilter");
+	group.add("JobBrowserSingleViewFilter");
+	group.add("JobBrowserOwnedViewsFilter");
+	group.add("JobBrowserAllViewsFilter");
 	group.addAll(jobs);
 	group.add("JobBrowserGroupsDelete");
 	group.add("JobBrowserGroupsDeleteCompleted");
@@ -1472,7 +1489,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.6 2005/01/10 16:34:08 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.7 2005/01/10 22:01:05 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -1727,7 +1744,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.6 2005/01/10 16:34:08 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.7 2005/01/10 22:01:05 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3083,7 +3100,7 @@ class GenUserPrefsApp
 
       StringBuffer buf = new StringBuffer();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.6 2005/01/10 16:34:08 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.7 2005/01/10 22:01:05 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 
