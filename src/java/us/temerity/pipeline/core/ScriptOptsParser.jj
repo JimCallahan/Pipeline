@@ -160,6 +160,37 @@ ScriptOptsParser
   private Integer  pJobSlots;
   private TreeMap  pJobSelectionBiases;
   private TreeSet  pJobSelectionRemoves;
+
+  
+  /**
+   * working node version command option temporaries
+   */ 
+  private FileSeq  pFileSeq; 
+  private Integer  pPadding; 
+
+  private String   pMsg; 
+  private String   pAuthor; 
+  private String   pView; 
+  private TreeSet  pSections; 
+  private String   pToolset;
+  private String   pEditor;
+
+  private Boolean    pNoAction; 
+  private String     pActionName;
+  private VersionID  pActionVersionID; 
+  private Boolean    pActionEnabled;
+  private TreeMap    pParams;
+  private TreeMap    pSourceParams;
+
+  private OverflowPolicy   pOverflowPolicy;
+  private ExecutionMethod  pExecutionMethod;
+  private Integer          pBatchSize;
+  private Integer          pPriority;
+  private Float            pMaxLoad;
+  private Long             pMinMemory;
+  private Long             pMinDisk;
+  private TreeMap          pLicenseKeys;
+  private TreeMap          pSelectionKeys;
 }
 
 
@@ -171,7 +202,7 @@ TOKEN :
   /* information options */ 
   <HELP:         "--help">         
 | <HTML_HELP:    "--html-help">    
-| <VERSION:      "--version">      
+| <VERSION1:     "--version">      
 | <RELEASE_DATE: "--release-date"> 
 | <COPYRIGHT:    "--copyright">    
 | <LICENSE:      "--license">    
@@ -194,12 +225,13 @@ TOKEN :
 | <ADMIN:             "admin">  
 | <DEFAULT_TOOLSET:   "default-toolset">  : TOOLSET_OPTS 
 | <ACTIVE_TOOLSET:    "active-toolset">   : TOOLSET_OPTS 
-| <TOOLSET:           "toolset">          : TOOLSET_OPTS 
-| <LICENSE_KEY:       "license-key">      : KEY_OPTS 
-| <SELECTION_KEY:     "selection-key">    : KEY_OPTS  
+| <TOOLSET1:          "toolset">          : TOOLSET_OPTS 
+| <LICENSE_KEY1:      "license-key">      : KEY_OPTS 
+| <SELECTION_KEY1:    "selection-key">    : KEY_OPTS  
 | <JOB_SERVER:        "job-server">       : JOB_SERVER_OPTS
 | <SUFFIX_EDITOR:     "suffix-editor">    : SUFFIX_EDITOR_OPTS
-| <VIEW:              "view">             : VIEW_OPTS
+| <VIEW1:             "view">             : VIEW_OPTS
+| <WORKING:           "working">          : WORKING_OPTS
 
   /* argument end separator */ 
 | <AE1: ("\0")+>
@@ -226,6 +258,38 @@ TOKEN :
 | <REMOVE_KEY:     "--remove-key">      : KEY_NAME_SEP   
 | <EDITOR:         "--editor">          : EDITOR_NAME_SEP 
 | <VERSION2:       "--version">         : REVISION_NUMBER_SEP
+| <AUTHOR:         "--author">          : USER_NAME_SEP 
+| <VIEW2:          "--view">            : VIEW_NAME_SEP 
+| <SHOW:           "--show">            : SECTION_SEP   
+| <HIDE:           "--hide">            : SECTION_SEP   
+| <TOOLSET2:       "--toolset">         : TOOLSET_NAME_SEP
+| <NO_ACTION:      "--no-action">       
+| <ACTION1:        "--action">          : ACTION_NAME_SEP
+| <ACTION_ENABLED: "--action-enabled">  : BOOLEAN_SEP
+| <PARAM:          "--param">           : PARAM_SEP 
+| <NO_PARAM:       "--no-param">        : PARAM_SEP 
+| <SOURCE_PARAM:   "--source-param">    : SOURCE_PARAM_SEP 
+| <IGNORE:         "--ignore">           
+| <ABORT:          "--abort">           
+| <SERIAL:         "--serial">           
+| <PARALLEL:       "--parallel">           
+| <BATCH_SIZE:     "--batch-size">      : INTEGER_SEP
+| <PRIORITY:       "--priority">        : INTEGER_SEP
+| <MAX_LOAD:       "--max-load">        : REAL_SEP     
+| <MIN_MEMORY:     "--min-memory">      : BYTE_SIZE_SEP
+| <MIN_DISK:       "--min-disk">        : BYTE_SIZE_SEP
+| <LICENSE_KEY2:   "--license-key">     : KEY_TOGGLE_SEP
+| <SELECTION_KEY2: "--selection-key">   : KEY_TOGGLE_SEP
+| <ASSOC:          "--assoc">           : LINK_PARAM_SEP
+| <REF:            "--ref">             : LINK_PARAM_SEP
+| <DEPEND:         "--depend">          : LINK_PARAM_SEP
+| <SOURCE:         "--source">          : NODE_NAME_SEP
+| <FSEQ:           "--fseq">            : FILE_SEQ_SEP
+| <NAME:           "--name">            : NODE_NAME_SEP      
+| <RENAME_FILES:   "--rename-files">   
+| <REMOVE_FILES:   "--remove-files">    
+| <FRAME:          "--frame">           : FRAME_NUMBERS_SEP
+| <INDEX:          "--index">           : FRAME_INDICES_SEP
 
 
   /* argument end separator */ 
@@ -245,11 +309,29 @@ TOKEN :
 }
 
 
+/* boolean arguments */ 
+<BOOLEAN_SEP> 
+TOKEN :
+{
+  <EQ1:                   "=">   : BOOLEAN_STATE
+| <MISSING_BOOLEAN_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<BOOLEAN_STATE> 
+TOKEN :
+{
+  <TRUE:            ["t","T"] ["r","R"] ["u","U"] ["e","E"]>            : OPTIONS
+| <FALSE:           ["f","F"] ["a","A"] ["l","L"] ["s","S"] ["e","E"]>  : OPTIONS
+| <MISSING_BOOLEAN: ["\0"]>                                             : IGNORE_STATE
+| <ILLEGAL_BOOLEAN: (~["\0"])+>                                         : IGNORE_STATE
+}
+
+
 /* integer arguments */ 
 <INTEGER_SEP> 
 TOKEN :
 {
-  <EQ1:                   "=">   : INTEGER_STATE
+  <EQ2:                   "=">   : INTEGER_STATE
 | <MISSING_INTEGER_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -266,7 +348,7 @@ TOKEN :
 <PORT_NUMBER_SEP> 
 TOKEN :
 {
-  <EQ2:                       "=">   : PORT_NUMBER_STATE
+  <EQ3:                       "=">   : PORT_NUMBER_STATE
 | <MISSING_PORT_NUMBER_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -279,11 +361,49 @@ TOKEN :
 }
 
 
+/* byte size arguments */ 
+<BYTE_SIZE_SEP> 
+TOKEN :
+{
+  <EQ4:                     "=">   : BYTE_SIZE_STATE
+| <MISSING_BYTE_SIZE_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<BYTE_SIZE_STATE> 
+TOKEN :
+{
+  <BYTE_SIZE:         (["0"-"9"])+>   
+| <KILO:              ["k","K"]>                           : OPTIONS
+| <MEGA:              ["m","M"]>                           : OPTIONS
+| <GIGA:              ["g","G"]>                           : OPTIONS
+| <AE3:               ["\0"]>                              : OPTIONS
+| <ILLEGAL_BYTE_SIZE: (~["k","K","m","M","g","G","\0"])+>  : IGNORE_STATE
+}
+
+
+/* real arguments */ 
+<REAL_SEP> 
+TOKEN :
+{
+  <EQ5:                "=">   : REAL_STATE
+| <MISSING_REAL_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<REAL_STATE> 
+TOKEN :
+{
+  <REAL:         ((["0"-"9"])+ "." (["0"-"9"])*) | 
+		 ((["0"-"9"])* "." (["0"-"9"])+)>    : OPTIONS
+| <MISSING_REAL: ["\0"]>                             : IGNORE_STATE
+| <ILLEGAL_REAL: (~["\0"])+>                         : IGNORE_STATE
+}
+
+
 /* string arguments */   
 <STRING_SEP> 
 TOKEN :
 {
-  <EQ3:                  "=">   : STRING_STATE
+  <EQ6:                  "=">   : STRING_STATE
 | <MISSING_STRING_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -299,7 +419,7 @@ TOKEN :
 <PATH_SEP> 
 TOKEN :
 {
-  <EQ4:                "=">   : PATH_STATE
+  <EQ7:                "=">   : PATH_STATE
 | <MISSING_PATH_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -308,7 +428,7 @@ TOKEN :
 {
   <PATH_ARG:       ("/")* ("../")* <PATH_ARG_COMP> 
 		     ("/" (".." | (<PATH_ARG_COMP>)+)?)*>      : OPTIONS
-| <#PATH_ARG_COMP: (["a"-"z","A"-"Z","0"-"9","_","-","."])*>
+| <#PATH_ARG_COMP: (["a"-"z","A"-"Z","0"-"9","_","-","."])+>
 | <MISSING_PATH:   ["\0"]>                                     : IGNORE_STATE
 | <ILLEGAL_PATH:   (~["\0"])+>                                 : IGNORE_STATE
 }
@@ -318,7 +438,7 @@ TOKEN :
 <HOST_NAME_SEP> 
 TOKEN :
 {
-  <EQ5:                    "=">   : HOST_NAME_STATE
+  <EQ8:                    "=">   : HOST_NAME_STATE
 | <MISSING_HOST_NAME_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -333,19 +453,20 @@ TOKEN :
 
 
 /* node name arguments */ 
-<NODE_SEP> 
+<NODE_NAME_SEP> 
 TOKEN :
 {
-  <EQ6:                "=">   : NODE_STATE
-| <MISSING_NODE_ARG: ~["="]>  : IGNORE_STATE
+  <EQ9:                     "=">   : NODE_NAME_STATE
+| <MISSING_NODE_NAME_ARG: ~["="]>  : IGNORE_STATE
 }
 
-<NODE_STATE> 
+<NODE_NAME_STATE> 
 TOKEN :
 {
-  <NODE_ARG:       ("/" (["a"-"z","A"-"Z","0"-"9","_","-"])+)+>  : OPTIONS
-| <MISSING_NODE:   ["\0"]>                                       : IGNORE_STATE
-| <ILLEGAL_NODE:   (~["\0"])+>                                   : IGNORE_STATE
+  <NODE_NAME:           ("/" ["a"-"z","A"-"Z"] 
+		          (["a"-"z","A"-"Z","0"-"9","_","-"])*)+>  : OPTIONS
+| <MISSING_NODE_NAME:   ["\0"]>                                    : IGNORE_STATE
+| <ILLEGAL_NODE_NAME:   (~["\0"])+>                                : IGNORE_STATE
 }
 
 
@@ -353,7 +474,7 @@ TOKEN :
 <TOOLSET_NAME_SEP> 
 TOKEN :
 {
-  <EQ7:                "=">           : TOOLSET_NAME_STATE
+  <EQ10:                       "=">           : TOOLSET_NAME_STATE
 | <MISSING_TOOLSET_NAME_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -361,8 +482,8 @@ TOKEN :
 TOKEN :
 {
   <TOOLSET_NAME:           (["a"-"z","A"-"Z"]) 
-		           (["a"-"z","A"-"Z","0"-"9","_","-"])+>  
-| <AE3:                    ["\0"]>                                   : OPTIONS
+		           (["a"-"z","A"-"Z","0"-"9","_","-"])*>  
+| <AE4:                    ["\0"]>                                   : OPTIONS
 | <ILLEGAL_TOOLSET_NAME:   (~["\0"])+>                               : IGNORE_STATE
 }
 
@@ -371,7 +492,7 @@ TOKEN :
 <USER_NAME_SEP> 
 TOKEN :
 {
-  <EQ8:                     "=">   : USER_NAME_STATE
+  <EQ11:                    "=">   : USER_NAME_STATE
 | <MISSING_USER_NAME_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -380,7 +501,7 @@ TOKEN :
 {
   <USER_NAME:           (["a"-"z","A"-"Z"]) 
 	   	          (["a"-"z","A"-"Z","0"-"9","_","-"])+>  
-| <AE4:                 ["\0"]>                                   : OPTIONS
+| <AE5:                 ["\0"]>                                   : OPTIONS
 | <ILLEGAL_USER_NAME:   (~["\0"])+>                               : IGNORE_STATE
 }
 
@@ -389,16 +510,16 @@ TOKEN :
 <KEY_NAME_SEP> 
 TOKEN :
 {
-  <EQ9:                    "=">   : KEY_NAME_STATE
+  <EQ12:                   "=">   : KEY_NAME_STATE
 | <MISSING_KEY_NAME_ARG: ~["="]>  : IGNORE_STATE
 }
 
 <KEY_NAME_STATE> 
 TOKEN :
 {
-  <KEY_NAME:           (["a"-"z","A"-"Z"]) 
+  <KEY_NAME1:          (["a"-"z","A"-"Z"]) 
 		         (["a"-"z","A"-"Z","0"-"9","_","-"])+>  
-| <AE5:                ["\0"]>                                   : OPTIONS
+| <AE6:                ["\0"]>                                   : OPTIONS
 | <ILLEGAL_KEY_NAME:   (~["\0"])+>                               : IGNORE_STATE
 }
 
@@ -407,7 +528,7 @@ TOKEN :
 <KEY_BIAS_SEP> 
 TOKEN :
 {
-  <EQ10:                   "=">   : KEY_BIAS_STATE
+  <EQ13:                   "=">   : KEY_BIAS_STATE
 | <MISSING_KEY_BIAS_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -418,8 +539,27 @@ TOKEN :
 		         (["a"-"z","A"-"Z","0"-"9","_","-"])+>  
 | <COLON1:             ":">      
 | <KEY_BIAS:           (["0"-"9"])+>                             : OPTIONS  
-| <AE6:                ["\0"]>                                   : OPTIONS
+| <AE7:                ["\0"]>                                   : OPTIONS
 | <ILLEGAL_KEY_BIAS:   (~[":","\0"])+>                           : IGNORE_STATE
+}
+
+
+/* key toggle arguments */ 
+<KEY_TOGGLE_SEP> 
+TOKEN :
+{
+  <EQ14:                     "=">   : KEY_TOGGLE_STATE
+| <MISSING_KEY_TOGGLE_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<KEY_TOGGLE_STATE> 
+TOKEN :
+{
+  <KEY_NAME2:            (["a"-"z","A"-"Z"]) 
+		          (["a"-"z","A"-"Z","0"-"9","_","-"])+>  
+| <COLON2:               ":">                                      : BOOLEAN_STATE
+| <AE8:                  ["\0"]>                                   : OPTIONS
+| <ILLEGAL_KEY_TOGGLE:   (~[":","\0"])+>                           : IGNORE_STATE
 }
 
 
@@ -427,15 +567,15 @@ TOKEN :
 <SUFFIX_SEP> 
 TOKEN :
 {
-  <EQ11:                 "=">   : SUFFIX_STATE
+  <EQ15:                 "=">   : SUFFIX_STATE
 | <MISSING_SUFFIX_ARG: ~["="]>  : IGNORE_STATE
 }
 
 <SUFFIX_STATE> 
 TOKEN :
 {
-  <SUFFIX:           (["a"-"z","A"-"Z","0"-"9"])+>  
-| <AE7:              ["\0"]>                          : OPTIONS
+  <SUFFIX1:          (["a"-"z","A"-"Z","0"-"9"])+>  
+| <AE9:              ["\0"]>                          : OPTIONS
 | <ILLEGAL_SUFFIX:   (~["\0"])+>                      : IGNORE_STATE
 }
 
@@ -444,7 +584,7 @@ TOKEN :
 <EDITOR_NAME_SEP> 
 TOKEN :
 {
-  <EQ12:                 "=">   : EDITOR_NAME_STATE
+  <EQ16:                 "=">   : EDITOR_NAME_STATE
 | <MISSING_EDITOR_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -453,8 +593,28 @@ TOKEN :
 {
   <EDITOR_NAME:      (["a"-"z","A"-"Z"]) 
 	               (["a"-"z","A"-"Z","0"-"9","_","-"])+>   
-| <AE8:              ["\0"]>                                  : OPTIONS
-| <ILLEGAL_EDITOR:   (~["\0"])+>                              : IGNORE_STATE
+| <COLON3:           ":">                                     : REVISION_NUMBER_STATE 
+| <AE10:             ["\0"]>                                  : OPTIONS
+| <ILLEGAL_EDITOR:   (~[":","\0"])+>                          : IGNORE_STATE
+}
+
+
+/* action arguments */ 
+<ACTION_NAME_SEP> 
+TOKEN :
+{
+  <EQ17:                 "=">   : ACTION_NAME_STATE
+| <MISSING_ACTION_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<ACTION_NAME_STATE> 
+TOKEN :
+{
+  <ACTION_NAME:      (["a"-"z","A"-"Z"]) 
+	               (["a"-"z","A"-"Z","0"-"9","_","-"])+>   
+| <COLON4:           ":">                                     : REVISION_NUMBER_STATE
+| <AE11:             ["\0"]>                                  : OPTIONS
+| <ILLEGAL_ACTION:   (~[":","\0"])+>                          : IGNORE_STATE
 }
 
 
@@ -462,25 +622,26 @@ TOKEN :
 <REVISION_NUMBER_SEP> 
 TOKEN :
 {
-  <EQ13:                          "=">   : REVISION_NUMBER_STATE
+  <EQ18:                          "=">   : REVISION_NUMBER_STATE
 | <MISSING_REVISION_NUMBER_ARG: ~["="]>  : IGNORE_STATE
 }
 
 <REVISION_NUMBER_STATE> 
 TOKEN :
 {
-  <REVISION_NUMBER:            (<REVNUM> "." <REVNUM> "." <REVNUM>)>  
-| <#REVNUM:                    ["1"-"9"] (["0"-"9"])*>
-| <AE9:                        ["\0"]>                               : OPTIONS
-| <ILLEGAL_REVISION_NUMBER:    (~["0"-"9","\0"])+>                   : IGNORE_STATE
+  <REVISION_NUMBER:            (<IREVNUM> "." <REVNUM> "." <REVNUM>)>  
+| <#IREVNUM:                   ["1"-"9"] (["0"-"9"])*>
+| <#REVNUM:                    (["0"-"9"])+>
+| <AE12:                       ["\0"]>                       : OPTIONS
+| <ILLEGAL_REVISION_NUMBER:    (~["\0"])+>                   : IGNORE_STATE
 }
 
 
-/* view arguments */ 
+/* view name arguments */ 
 <VIEW_NAME_SEP> 
 TOKEN :
 {
-  <EQ14:               "=">     : VIEW_NAME_STATE
+  <EQ19:               "=">     : VIEW_NAME_STATE
 | <MISSING_VIEW_ARG: ~["="]>    : IGNORE_STATE
 }
 
@@ -489,9 +650,196 @@ TOKEN :
 {
   <VIEW_NAME:      (["a"-"z","A"-"Z"]) 
 	             (["a"-"z","A"-"Z","0"-"9","_","-"])+>   
-| <AE10:           ["\0"]>                                  : OPTIONS
+| <AE13:           ["\0"]>                                  : OPTIONS
 | <ILLEGAL_VIEW:   (~["\0"])+>                              : IGNORE_STATE
 }
+
+
+/* param name arguments */ 
+<PARAM_SEP> 
+TOKEN :
+{
+  <EQ20:                "=">      : PARAM_STATE
+| <MISSING_PARAM_ARG: ~["="]>    : IGNORE_STATE
+}
+
+<PARAM_STATE> 
+TOKEN :
+{
+  <PARAM_NAME:      (["a"-"z","A"-"Z"]) 
+	             (["a"-"z","A"-"Z","0"-"9","_","-"])+>   
+| <COLON5:          ":">                                    : PARAM_VALUE_STATE
+| <AE14:            ["\0"]>                                 : OPTIONS
+| <ILLEGAL_PARAM:   (~[":","\0"])+>                         : IGNORE_STATE
+}
+
+<PARAM_VALUE_STATE> 
+TOKEN :
+{
+  <PARAM_VALUE:         (~["\0"])*>  : OPTIONS
+| <EMPTY_PARAM_VALUE:   "\0">        : OPTIONS
+}
+
+
+/* source param arguments */ 
+<SOURCE_PARAM_SEP> 
+TOKEN :
+{
+  <EQ21:                       "=">   : SOURCE_PARAM_STATE
+| <MISSING_SOURCE_PARAM_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<SOURCE_PARAM_STATE> 
+TOKEN :
+{
+  <SOURCE_NAME:         ("/" ["a"-"z","A"-"Z"] 
+		          (["a"-"z","A"-"Z","0"-"9","_","-"])*)+>  
+| <COMMA1:              ",">                                       : PARAM_STATE
+| <ILLEGAL_SOURCE_NAME: (~[","])+>                                 : IGNORE_STATE
+}
+
+
+/* link param arguments */ 
+<LINK_PARAM_SEP> 
+TOKEN :
+{
+  <EQ22:                     "=">    : LINK_PARAM_STATE
+| <MISSING_LINK_PARAM_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<LINK_PARAM_STATE> 
+TOKEN :
+{
+  <LINK_NAME:         ("/" ["a"-"z","A"-"Z"] 
+		        (["a"-"z","A"-"Z","0"-"9","_","-"])*)+>  
+| <COMMA2:            ",">                                       : LINK_RELATION_STATE
+| <AE15:              "\0">                                      : OPTIONS
+| <ILLEGAL_LINK_NAME: (~[",","\0"])+>                            : IGNORE_STATE
+}
+
+<LINK_RELATION_STATE> 
+TOKEN :
+{
+  <LINK_ALL:          ["a","A"] ["l","L"] ["l","L"]>  : OPTIONS
+| <OFFSET:            (["0"-"9"])+>                   : OPTIONS
+| <MISSING_RELATION:  ["\0"]>                         : IGNORE_STATE
+| <ILLEGAL_RELATION:  (~["\0"])+>                     : IGNORE_STATE
+}
+  
+
+/* file sequence arguments */ 
+<FILE_SEQ_SEP> 
+TOKEN :
+{
+  <EQ23:                   "=">   : FILE_SEQ_STATE
+| <MISSING_FILE_SEQ_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<FILE_SEQ_STATE> 
+TOKEN :
+{
+  <PREFIX:            (["a"-"z","A"-"Z"] 
+		        (["a"-"z","A"-"Z","0"-"9","_","-"])*)+>  
+| <DOT1:              ".">                                       : FILE_SEQ_STATE2
+| <COMMA3:            ",">                                       : FRAME_RANGE_STATE
+| <AE16:              "\0">                                      : OPTIONS
+| <ILLEGAL_FILE_SEQ:  (~[".",",","\0"])+>                        : IGNORE_STATE
+}
+
+<FILE_SEQ_STATE2> 
+TOKEN :
+{
+  <SUFFIX2:           (["a"-"z","A"-"Z","0"-"9"])+>  
+| <DOT2:              ".">                                       
+| <AT:                "@"> 
+| <POUND:             "#"> 
+| <COMMA4:            ",">                          : FRAME_RANGE_STATE
+| <AE17:              "\0">                         : OPTIONS
+| <ILLEGAL_FILE_SEQ2: (~[".","@","#",",","\0"])+>   : IGNORE_STATE
+}
+
+
+/* frame range arguments */ 
+<FRAME_RANGE_SEP> 
+TOKEN :
+{
+  <EQ24:                      "=">   : FRAME_RANGE_STATE
+| <MISSING_FRAME_RANGE_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<FRAME_RANGE_STATE> 
+TOKEN :
+{
+  <FRAME_NUMBER:         (["0"-"9"])+>   
+| <DASH1:                "-"> 
+| <BY:                   "x"> 
+| <AE18:                 "\0">           : OPTIONS
+| <ILLEGAL_FRAME_RANGE:  (~["-","x","\0"])+>     : IGNORE_STATE
+}
+
+  
+/* frame numbers arguments */ 
+<FRAME_NUMBERS_SEP> 
+TOKEN :
+{
+  <EQ25:                        "=">   : FRAME_NUMBERS_STATE
+| <MISSING_FRAME_NUMBERS_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<FRAME_NUMBERS_STATE> 
+TOKEN :
+{
+  <FRAME_NUMBER2:          (["0"-"9"])+>   
+| <DASH2:                  "-"> 
+| <COMMA5:                 ","> 
+| <AE19:                   "\0">                  : OPTIONS
+| <ILLEGAL_FRAME_NUMBERS:  (~["-",",","\0"])+>     : IGNORE_STATE
+}
+  
+
+/* frame indices arguments */ 
+<FRAME_INDICES_SEP> 
+TOKEN :
+{
+  <EQ26:                        "=">   : FRAME_INDICES_STATE
+| <MISSING_FRAME_INDICES_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<FRAME_INDICES_STATE> 
+TOKEN :
+{
+  <FRAME_INDEX:            (["0"-"9"])+>   
+| <DASH3:                  "-"> 
+| <COMMA6:                 ","> 
+| <AE20:                   "\0">                  : OPTIONS
+| <ILLEGAL_FRAME_INDICES:  (~["-",",","\0"])+>     : IGNORE_STATE
+}
+  
+
+/* hide/show section arguments */ 
+<SECTION_SEP> 
+TOKEN :
+{
+  <EQ27:                  "=">   : SECTION_STATE
+| <MISSING_SECTION_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<SECTION_STATE> 
+TOKEN :
+{
+  <ALL:              "all"> 
+| <VERSION3:         "version"> 
+| <PROP:             "prop"> 
+| <ACTION2:          "action"> 
+| <JREQ:             "jreq"> 
+| <KEY:              "key"> 
+| <LINK:             "link"> 
+| <COMMA7:           ","> 
+| <AE21:             "\0">               : OPTIONS
+| <ILLEGAL_SECTION:  (~[",","\0"])+>     : IGNORE_STATE
+}
+
+
 
 
 /*------------------------------------------------------------------------------------------*/
@@ -500,7 +848,7 @@ TOKEN :
 <LOG_SEP> 
 TOKEN :
 {
-  <EQ15:              "=">   : LOG_STATE
+  <EQ28:              "=">   : LOG_STATE
 | <MISSING_LOG_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -513,15 +861,15 @@ TOKEN :
 | <LOG_NET: 	    "net">      
 | <LOG_PLG: 	    "plg">       
 | <LOG_SUB: 	    "sub">     
-| <COLON2:  	    ":">       
+| <COLON6:  	    ":">       
 | <SEVERE:  	    "severe">  
 | <WARNING: 	    "warning"> 
 | <INFO:    	    "info">    
 | <FINE:    	    "fine">    
 | <FINER :  	    "finer">   
 | <FINEST:    	    "finest">  
-| <COMMA:  	    ",">       
-| <AE11:            (["\0"])+>                   : OPTIONS
+| <COMMA8: 	    ",">       
+| <AE22:            (["\0"])+>                   : OPTIONS
 | <ILLEGAL_LOG_ARG: (~["\0","a"-"z",":",","])+>  : IGNORE_STATE
 }
 
@@ -535,7 +883,7 @@ TOKEN :
   <PRIVILEGED_GET:    "--get">                   : OPTIONS
 | <PRIVILEGED_GRANT:  "--grant">                 : USER_NAME_SEP 
 | <PRIVILEGED_REVOKE: "--revoke">                : USER_NAME_SEP 
-| <AE12:              ["\0"]>  
+| <AE23:              ["\0"]>  
 | <UNKNOWN_OPTION3:   "-" ("-")? (~["\0","="])*> : IGNORE_STATE
 | <UNKNOWN3:          ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
 }
@@ -552,7 +900,7 @@ TOKEN :
 | <TOOLSET_ADD:           "--add">                   : TOOLSET_NAME_SEP 
 | <TOOLSET_REMOVE:        "--remove">                : TOOLSET_NAME_SEP 
 | <TOOLSET_EXPORT:        "--export">                : TOOLSET_NAME_SEP
-| <AE13:                  ["\0"]>            
+| <AE24:                  ["\0"]>            
 | <UNKNOWN_OPTION4:       "-" ("-")? (~["\0","="])*> : IGNORE_STATE
 | <UNKNOWN4:              ~["-","\0"] (~["\0"])*>    : IGNORE_STATE          
 }
@@ -568,7 +916,7 @@ TOKEN :
 | <KEY_ADD:            "--add">                   : KEY_NAME_SEP 
 | <KEY_SET:            "--set">                   : KEY_NAME_SEP 
 | <KEY_REMOVE:         "--remove">                : KEY_NAME_SEP 
-| <AE14:               ["\0"]>    
+| <AE25:               ["\0"]>    
 | <UNKNOWN_OPTION5:    "-" ("-")? (~["\0","="])*> : IGNORE_STATE
 | <UNKNOWN5:           ~["-","\0"] (~["\0"])*>    : IGNORE_STATE           
 }
@@ -584,7 +932,7 @@ TOKEN :
 | <JOB_SET:            "--set">                   : HOST_NAME_SEP 
 | <JOB_ADD:            "--add">                   : HOST_NAME_SEP 
 | <JOB_REMOVE:         "--remove">                : HOST_NAME_SEP
-| <AE15:               ["\0"]>   
+| <AE26:               ["\0"]>   
 | <UNKNOWN_OPTION6:    "-" ("-")? (~["\0","="])*> : IGNORE_STATE
 | <UNKNOWN6:           ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
 }
@@ -600,7 +948,7 @@ TOKEN :
 | <SUFFIX_EDITOR_SET:            "--set">                   : SUFFIX_SEP 
 | <SUFFIX_EDITOR_REMOVE:         "--remove">                : SUFFIX_SEP
 | <SUFFIX_EDITOR_RESET:          "--reset">                 : OPTIONS
-| <AE16:                         ["\0"]>   
+| <AE27:                         ["\0"]>   
 | <UNKNOWN_OPTION7:              "-" ("-")? (~["\0","="])*> : IGNORE_STATE
 | <UNKNOWN7:                     ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
 }
@@ -612,9 +960,28 @@ TOKEN :
 {
   <VIEW_GET:            "--get">                   : OPTIONS
 | <VIEW_CREATE:         "--create">                : VIEW_NAME_SEP
-| <AE17:                ["\0"]>   
+| <AE28:                ["\0"]>   
 | <UNKNOWN_OPTION8:     "-" ("-")? (~["\0","="])*> : IGNORE_STATE
 | <UNKNOWN8:            ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+}
+
+
+/* working command options */ 
+<WORKING_OPTS> 
+TOKEN :
+{
+  <WORKING_GET_INFO:          "--get-info">              : NODE_NAME_SEP
+| <WORKING_SET:               "--set">                   : NODE_NAME_SEP
+| <WORKING_LINK:              "--link">                  : NODE_NAME_SEP
+| <WORKING_UNLINK:            "--unlink">                : NODE_NAME_SEP
+| <WORKING_ADD_SECONDARY:     "--add-secondary">         : NODE_NAME_SEP
+| <WORKING_REMOVE_SECONDARY:  "--remove-secondary">      : NODE_NAME_SEP
+| <WORKING_RENAME:            "--rename">                : NODE_NAME_SEP
+| <WORKING_RENUMBER:          "--renumber">              : NODE_NAME_SEP
+| <WORKING_EDIT:              "--edit">                  : NODE_NAME_SEP
+| <AE29:                      ["\0"]>   
+| <UNKNOWN_OPTION9:           "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN9:                  ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
 }
 
 
@@ -654,7 +1021,7 @@ Commands()
   (PrivilegedCmds() | AdminCmds() |
    DefaultToolsetCmds() | ActiveToolsetCmds() | ToolsetCmds() |
    LicenseKeyCmds() | SelectionKeyCmds() | JobServerCmds() | 
-   SuffixEditorCmds() | ViewCmds() 
+   SuffixEditorCmds() | ViewCmds() | WorkingCmds() 
 
    ) 
   {
@@ -738,9 +1105,9 @@ BatchOpt()
 
       Logs.ops.info
 	("\n" + 
-	 pApp.repeat("*", 80) + "\n" +
+	 pApp.repeat('*', 80) + "\n" +
 	 "  BATCH: " + line.replace('\0',' ') + "\n" +
-	 pApp.repeat("*", 80) + "\n");
+	 pApp.repeat('*', 80) + "\n");
       
       ScriptOptsParser parser = new ScriptOptsParser(new StringReader(line));
       parser.init(this);
@@ -759,7 +1126,7 @@ BatchCommand()
   (PrivilegedCmds() | AdminCmds() |
    DefaultToolsetCmds() | ActiveToolsetCmds() | ToolsetCmds() |
    LicenseKeyCmds() | SelectionKeyCmds() | JobServerCmds() | 
-   SuffixEditorCmds() | ViewCmds() 
+   SuffixEditorCmds() | ViewCmds() | WorkingCmds() 
    
    ) (AE())* <EOF>
   {}
@@ -803,7 +1170,7 @@ void
 Version() :
 {}
 {
-  <VERSION> AE()
+  <VERSION1> AE()
   { 
     pApp.version(); 
   }
@@ -846,7 +1213,8 @@ License() :
 /*------------------------------------------------------------------------------------------*/
 
 void
-GlobalOpts() :
+GlobalOpts()
+  throws PipelineException :
 {}
 {
   (MasterHost() | MasterPort() | 
@@ -869,7 +1237,8 @@ MasterHost() :
 }
 
 void
-MasterPort() :
+MasterPort()
+  throws PipelineException :
 {
   int port; 
 }
@@ -893,7 +1262,8 @@ QueueHost() :
 }
 
 void
-QueuePort() :
+QueuePort()
+  throws PipelineException :
 {
   int port; 
 }
@@ -905,7 +1275,8 @@ QueuePort() :
 }
 
 void
-JobPort() :
+JobPort()
+  throws PipelineException :
 {
   int port; 
 }
@@ -921,7 +1292,7 @@ JobPort() :
 void Log() : 
 {}
 {
-  (<LOG> EQ() LoggerArg() (<COMMA> LoggerArg())*)
+  (<LOG> EQ() LoggerArg() (COMMA() LoggerArg())*)
   {}
 }
 
@@ -1291,7 +1662,7 @@ ToolsetCmds()
   throws PipelineException : 
 {}
 {
-  <TOOLSET> AE() (ToolsetGet() | ToolsetGetInfo() | ToolsetGetInfoAll() |  ToolsetExport())
+  <TOOLSET1> AE() (ToolsetGet() | ToolsetGetInfo() | ToolsetGetInfoAll() |  ToolsetExport())
   {}
 }
 
@@ -1359,7 +1730,7 @@ LicenseKeyCmds()
   throws PipelineException : 
 {}
 {
-  <LICENSE_KEY> AE() 
+  <LICENSE_KEY1> AE() 
      (LicenseKeyGet() | LicenseKeyGetInfo() | LicenseKeyGetInfoAll() | 
       LicenseKeyAdd() | LicenseKeySet() | LicenseKeyRemove())
   {}
@@ -1460,7 +1831,8 @@ LicenseKeyRemove()
 }
 
 int 
-Total() : 
+Total()
+  throws PipelineException : 
 {
   int total = 0;
 }
@@ -1479,7 +1851,7 @@ SelectionKeyCmds()
   throws PipelineException : 
 {}
 {
-  <SELECTION_KEY> AE() 
+  <SELECTION_KEY1> AE() 
      (SelectionKeyGet() | SelectionKeyGetInfo() | SelectionKeyGetInfoAll() | 
       SelectionKeyAdd() | SelectionKeyRemove())
   {}
@@ -1658,7 +2030,8 @@ JobServerSet()
 }
 
 void 
-JobServerSetOption() :
+JobServerSetOption()
+  throws PipelineException :
 {}
 {
   (JobServerShutdown() | JobServerEnable() | JobServerDisable() | 
@@ -1720,7 +2093,8 @@ JobServerReserve() :
 }
 
 void
-JobServerSlots() : 
+JobServerSlots()
+  throws PipelineException : 
 {
   Integer slots = null;
 }
@@ -1732,7 +2106,8 @@ JobServerSlots() :
 }
 
 void 
-JobServerSelectionBias() : 
+JobServerSelectionBias()
+  throws PipelineException : 
 {
   String kname;
   Integer bias; 
@@ -1835,20 +2210,21 @@ SuffixEditorSet()
   throws PipelineException : 
 {
   String suffix = null;
-  String msg = null;
-  String editor = null;
+  pEditor = null;
+  pMsg    = null; 
 }
 {
   <SUFFIX_EDITOR_SET> EQ() suffix=Suffix() AE() 
-     ((msg=Msg() AE() editor=Editor()) | (editor=Editor() AE() msg=Msg())) AE()
+     ((Msg() AE() Editor()) | (Editor() AE() Msg())) AE()
   {
-    SuffixEditor se = new SuffixEditor(suffix, msg, editor);
+    SuffixEditor se = new SuffixEditor(suffix, pMsg, pEditor);
     pApp.addSuffixEditor(se, pMasterMgrClient);
 
     Logs.ops.info("Added default editor for suffix (" + suffix + ").");
     Logs.flush();
   }
 }
+
   
 void 
 SuffixEditorRemove() 
@@ -1891,7 +2267,7 @@ ViewCmds()
   throws PipelineException : 
 {}
 {
-  <VIEW> AE() 
+  <VIEW1> AE() 
      (ViewGet() | ViewCreate()) 
   {}
 }
@@ -1929,52 +2305,688 @@ ViewCreate()
 
 
 /*------------------------------------------------------------------------------------------*/
+/*   W O R K I N G   N O D E   V E R S I O N   C O M M A N D S                              */
+/*------------------------------------------------------------------------------------------*/
+
+void 
+WorkingCmds() 
+  throws PipelineException : 
+{}
+{
+  <WORKING> AE() 
+     (WorkingGetInfo() | WorkingSet())
+  {}
+}
+
+void 
+WorkingGetInfo() 
+  throws PipelineException : 
+{
+  String name = null;
+
+  pAuthor   = PackageInfo.sUser;
+  pView     = "default";
+  pSections = new TreeSet();
+}
+{
+  <WORKING_GET_INFO> EQ() name=NodeName() AE() (WorkingGetInfoOpts())*
+  {
+    pApp.printWorkingVersion(new NodeID(pAuthor, pView, name), pSections, 
+			     pMasterMgrClient, pQueueMgrClient);
+  }
+}
+
+void
+WorkingGetInfoOpts() :
+{}
+{
+  (Author() | View() | WorkingGetInfoShow() | WorkingGetInfoHide()) 
+  {}
+}
+
+void 
+WorkingGetInfoShow() : 
+{}
+{
+  <SHOW> EQ() WorkingGetInfoShowSections() (COMMA() WorkingGetInfoShowSections())* AE()  
+  {}
+}
+
+void 
+WorkingGetInfoShowSections() : 
+{}
+{
+  (WorkingGetInfoShowAll() | 
+   ShowVersion() | ShowProp() |  ShowAction() | ShowJReq() | ShowKey() | ShowLink()) 
+  {}
+}
+
+void 
+WorkingGetInfoShowAll() : 
+{}
+{
+  <ALL>
+  {
+    pSections.add("version");
+    pSections.add("prop");
+    pSections.add("action");
+    pSections.add("jreq");
+    pSections.add("key");
+    pSections.add("link");
+  }
+}
+
+void 
+WorkingGetInfoHide() : 
+{}
+{
+  <HIDE> EQ() WorkingGetInfoHideSections() (COMMA() WorkingGetInfoHideSections())* AE()  
+  {}
+}
+
+void 
+WorkingGetInfoHideSections() : 
+{}
+{
+  (WorkingGetInfoHideAll() | 
+   HideVersion() | HideProp() | HideAction() | HideJReq() | HideKey() | HideLink()) 
+  {}
+}
+
+void 
+WorkingGetInfoHideAll() : 
+{}
+{
+  <ALL>
+  {
+    pSections.clear(); 
+  }
+}
+
+
+void 
+WorkingSet() 
+  throws PipelineException : 
+{
+  String name = null;
+
+  pAuthor  = PackageInfo.sUser;
+  pView    = "default";
+  pToolset = null;
+  pEditor  = null;
+
+  pNoAction        = null;
+  pActionName      = null;
+  pActionVersionID = null; 
+  pActionEnabled   = null;
+  pParams          = new TreeMap();
+  pSourceParams    = new TreeMap();
+  pOverflowPolicy  = null;
+  pExecutionMethod = null;
+  pBatchSize       = null;
+  pPriority        = null;
+  pMaxLoad         = null;
+  pMinMemory       = null;
+  pMinDisk         = null;
+  pLicenseKeys     = new TreeMap();
+  pSelectionKeys   = new TreeMap();
+}
+{
+  <WORKING_SET> EQ() name=NodeName() AE() (WorkingSetOpts())*
+  {
+    pApp.workingVersionSet
+    (new NodeID(pAuthor, pView, name), pToolset, pEditor, pNoAction, 
+     pActionName, pActionVersionID, pActionEnabled, pParams, pSourceParams, 
+     pOverflowPolicy, pExecutionMethod, pBatchSize, 
+     pPriority, pMaxLoad, pMinMemory, pMinDisk, 
+     pLicenseKeys, pSelectionKeys,
+     pMasterMgrClient);
+  }
+}
+
+void
+WorkingSetOpts()
+  throws PipelineException : 
+{}
+{
+  (Author() | View() | Toolset() | Editor() | NoAction() | 
+   Action() | ActionEnabled() | Param() | NoParam() | SourceParam() | 
+   Ignore() | Abort() | Serial() | Parallel() | BatchSize() | 
+   Priority() | MaxLoad() | MinMemory() | MinDisk() | 
+   LicenseKey() | SelectionKey()) 
+  {}
+}
+
+
+
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   S H O W   H I D E   S E C T I O N S                                                    */
+/*------------------------------------------------------------------------------------------*/
+
+void
+ShowVersion() : 
+{}
+{
+  <VERSION3> 
+  {
+    pSections.add("version");    
+  }
+}
+
+void
+ShowProp() : 
+{}
+{
+  <PROP> 
+  {
+    pSections.add("prop");    
+  }
+}
+
+void
+ShowAction() : 
+{}
+{
+  <ACTION2>  
+  {
+    pSections.add("action");    
+  }
+}
+
+void
+ShowJReq() : 
+{}
+{
+  <JREQ> 
+  {
+    pSections.add("jreq");    
+  }
+}
+
+void
+ShowKey() : 
+{}
+{
+  <KEY> 
+  {
+    pSections.add("key");    
+  }
+}
+
+void
+ShowLink() : 
+{}
+{
+  <LINK> 
+  {
+    pSections.add("link");    
+  }
+}
+
+
+void
+HideVersion() : 
+{}
+{
+  <VERSION3> 
+  {
+    pSections.add("version");    
+  }
+}
+
+void
+HideProp() : 
+{}
+{
+  <PROP> 
+  {
+    pSections.add("prop");    
+  }
+}
+
+void
+HideAction() : 
+{}
+{
+  <ACTION2>  
+  {
+    pSections.add("action");    
+  }
+}
+
+void
+HideJReq() : 
+{}
+{
+  <JREQ> 
+  {
+    pSections.add("jreq");    
+  }
+}
+
+void
+HideKey() : 
+{}
+{
+  <KEY> 
+  {
+    pSections.add("key");    
+  }
+}
+
+void
+HideLink() : 
+{}
+{
+  <LINK> 
+  {
+    pSections.add("link");    
+  }
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   S H A R E D   O P T I O N S                                                            */
+/*------------------------------------------------------------------------------------------*/
+
+String 
+Msg() : 
+{
+  String msg; 
+}
+{
+  <MSG> EQ() msg=StringLiteral() 
+  {
+    return msg;
+  }
+}
+
+void
+Author() : 
+{
+  String uname = null;
+}
+{
+  <AUTHOR> EQ() uname=UserName() AE()
+  {
+    pAuthor = uname;
+  }
+}
+
+void
+View() : 
+{
+  String vname = null;
+}
+{
+  <VIEW2> EQ() vname=ViewName() AE()
+  {
+    pView = vname;
+  }
+}
+
+void
+FileSeq()
+  throws PipelineException : 
+{
+  String prefix = null;
+  String suffix = null;
+  Integer start = null;
+  Integer end   = null;
+  Integer by    = 1;
+}
+{
+  prefix=Prefix() 
+    (DOT() ((Padding() (DOT() suffix=Suffix())?) | suffix=Suffix()))? 
+    (COMMA() start=FrameNumber() (DASH() end=FrameNumber() (<BY> by=FrameNumber())?)?)?
+  {
+    try {
+      FrameRange range = null;
+      if(start != null) {
+	if(end == null) 
+	  range = new FrameRange(start);
+	else 
+	  range = new FrameRange(start, end, by);
+      }
+
+      FilePattern fpat = null;
+      if(pPadding == null) 
+        fpat = new FilePattern(prefix, suffix);
+      else 
+        fpat = new FilePattern(prefix, pPadding, suffix);
+      
+      pFileSeq = new FileSeq(fpat, range);
+    }
+    catch(IllegalArgumentException ex) {
+      throw new PipelineException(ex.getMessage());
+    }
+  }
+}
+
+void
+Padding() : 
+{
+  pPadding = 0;
+}
+{
+  (PaddingSingle())+ | PaddingFour() 
+  {}
+}
+
+void
+PaddingSingle() : 
+{}
+{
+  <AT>
+  {
+    pPadding++;
+  }
+}
+
+void
+PaddingFour() : 
+{}
+{
+  <POUND>
+  {
+    pPadding = 4;
+  }
+}
+
+
+void
+Toolset() : 
+{
+  String tname = null;
+}
+{
+  <TOOLSET2> EQ() tname=ToolsetName() AE()
+  {
+    pToolset = tname;
+  }
+}
+
+void
+Editor() : 
+{
+  String ename = null;
+}
+{
+  <EDITOR> EQ() ename=EditorName() AE()
+  {
+    pEditor = ename;
+  }
+}
+
+
+void
+NoAction() :
+{}
+{
+  <NO_ACTION> AE()
+  {
+    pNoAction        = true;
+
+    pActionName      = null;
+    pActionVersionID = null; 
+    pActionEnabled   = null;
+    pParams          = new TreeMap();
+    pSourceParams    = new TreeMap();
+    pOverflowPolicy  = null;
+    pExecutionMethod = null;
+    pBatchSize       = null;
+    pPriority        = null;
+    pMaxLoad         = null;
+    pMinMemory       = null;
+    pMinDisk         = null;
+    pLicenseKeys     = new TreeMap();
+    pSelectionKeys   = new TreeMap();
+  }
+}
+
+
+void
+Action()
+  throws PipelineException : 
+{
+  String aname  = null;
+  VersionID vid = null;
+}
+{
+  <ACTION1> EQ() aname=ActionName() (COLON() vid=RevisionNumber())? AE()
+  {
+    pActionName      = aname; 
+    pActionVersionID = vid; 
+  }
+}
+  
+void 
+ActionEnabled() : 
+{
+  boolean enabled;
+}
+{
+  <ACTION_ENABLED> EQ() enabled=BooleanLiteral() AE()
+  {
+    pActionEnabled = enabled;
+  }
+}
+
+void 
+Param() : 
+{
+  String pname  = null;
+  String pvalue = null;
+}
+{
+  <PARAM> EQ() pname=ParamName() COLON() pvalue=ParamValue() AE() 
+  {
+    pParams.put(pname, pvalue);
+  }
+}
+
+void 
+NoParam() : 
+{
+  String sname  = null;
+}
+{
+  <NO_PARAM> EQ() sname=SourceName() AE() 
+  {
+    pSourceParams.put(sname, null);
+  }
+}
+
+void 
+SourceParam() : 
+{
+  String sname  = null;
+  String pname  = null;
+  String pvalue = null;
+}
+{
+  <SOURCE_PARAM> EQ() sname=SourceName() COMMA() 
+     pname=ParamName() COLON() pvalue=ParamValue() AE() 
+  {
+    TreeMap params = (TreeMap) pSourceParams.get(sname);
+    if(params == null) {
+      params = new TreeMap();
+      pSourceParams.put(sname, params);
+    }
+    params.put(pname, pvalue);
+  }
+}
+
+void 
+Ignore() : 
+{}
+{
+  <IGNORE> AE() 
+  {
+    pOverflowPolicy = pOverflowPolicy.Ignore;
+  }
+}
+
+void 
+Abort() : 
+{}
+{
+  <ABORT> AE() 
+  {
+    pOverflowPolicy = pOverflowPolicy.Abort;
+  }
+}
+
+void 
+Serial() : 
+{}
+{
+  <SERIAL> AE() 
+  {
+    pExecutionMethod = pExecutionMethod.Serial;
+  }
+}
+
+void 
+Parallel() : 
+{}
+{
+  <PARALLEL> AE() 
+  {
+    pExecutionMethod = pExecutionMethod.Parallel;
+  }
+}
+
+void 
+BatchSize()
+  throws PipelineException : 
+{
+  int size;
+}
+{
+  <BATCH_SIZE> EQ() size=IntegerLiteral() AE()
+  {
+    pBatchSize = size;
+  }
+}
+
+void 
+Priority()
+  throws PipelineException : 
+{
+  int p; 
+}
+{
+  <PRIORITY> EQ() p=IntegerLiteral() AE()
+  {
+    pPriority = p;
+  }
+}
+
+void 
+MaxLoad()
+  throws PipelineException : 
+{
+  double load;
+}
+{
+  <MAX_LOAD> EQ() load=RealLiteral() AE()
+  {
+    pMaxLoad = (float) load;
+  }
+}
+
+void 
+MinMemory()
+  throws PipelineException : 
+{
+  long size; 
+}
+{
+  <MIN_MEMORY> EQ() size=ByteSize() AE()
+  {
+    pMinMemory = size; 
+  }
+}
+
+void 
+MinDisk()
+  throws PipelineException : 
+{
+  long size; 
+}
+{
+  <MIN_DISK> EQ() size=ByteSize() AE()
+  {
+    pMinDisk = size; 
+  }
+}
+
+void
+LicenseKey() : 
+{
+  String kname; 
+  Boolean add = true;
+}
+{
+  <LICENSE_KEY2> EQ() kname=KeyName() (COLON() add=BooleanLiteral())? AE()
+  {
+    pLicenseKeys.put(kname, add);
+  }
+}
+
+void
+SelectionKey() : 
+{
+  String kname; 
+  Boolean add = true;
+}
+{
+  <SELECTION_KEY2> EQ() kname=KeyName() (COLON() add=BooleanLiteral())? AE()
+  {
+    pSelectionKeys.put(kname, add);
+  }
+}
+
+
+
+/*------------------------------------------------------------------------------------------*/
 /*   S H A R E D   T O K E N S                                                              */
 /*------------------------------------------------------------------------------------------*/
 
-Token
-AE() :
+boolean 
+BooleanLiteral() :
 {
-  Token t;
+  boolean tf;
 }
 {
-  (t=<AE1>  | t=<AE2>  | t=<AE3>  | t=<AE4>  | t=<AE5>  | 
-   t=<AE6>  | t=<AE7>  | t=<AE8>  | t=<AE9>  | t=<AE10> | 
-   t=<AE11> | t=<AE12> | t=<AE13> | t=<AE14> | t=<AE15> | 
-   t=<AE16> | t=<AE17>)
-  { 
-    return t; 
+  (tf=True() | tf=False())
+  {
+    return tf;
   }
 }
 
-Token
-COLON() :
+boolean
+True() : 
+{}
 {
-  Token t;
-}
-{
-  (t=<COLON1> | t=<COLON2>)
-  { 
-    return t; 
+  <TRUE>
+  {
+    return true;
   }
 }
 
-Token
-EQ() :
+boolean
+False() : 
+{}
 {
-  Token t;
-}
-{
-  (t=<EQ1>  | t=<EQ2>  | t=<EQ3>  | t=<EQ4>  | t=<EQ5>  | 
-   t=<EQ6>  | t=<EQ7>  | t=<EQ8>  | t=<EQ9>  | t=<EQ10> | 
-   t=<EQ11> | t=<EQ12> | t=<EQ13> | t=<EQ14> | t=<EQ15>)
-  { 
-    return t; 
+  <FALSE>
+  {
+    return false;
   }
 }
-
-
-/*------------------------------------------------------------------------------------------*/
 
 String
 Name() : 
@@ -2030,7 +3042,7 @@ KeyName() :
   Token t;
 }
 {
-  t=<KEY_NAME>
+  (t=<KEY_NAME1> | t=<KEY_NAME2>)
   {
     return t.image;
   }
@@ -2049,12 +3061,24 @@ KeyBiasName() :
 }
 
 String
+Prefix() : 
+{
+  Token t;
+}
+{
+  t=<PREFIX> 
+  {
+    return t.image;
+  }
+}
+
+String
 Suffix() : 
 {
   Token t;
 }
 {
-  t=<SUFFIX>
+  (t=<SUFFIX1> | t=<SUFFIX2>)
   {
     return t.image;
   }
@@ -2072,6 +3096,17 @@ EditorName() :
   }
 }
 
+String
+ActionName() : 
+{
+  Token t;
+}
+{
+  t=<ACTION_NAME>
+  {
+    return t.image;
+  }
+}
 
 String
 ViewName() : 
@@ -2085,11 +3120,57 @@ ViewName() :
   }
 }
 
+String
+NodeName() : 
+{
+  Token t;
+}
+{
+  t=<NODE_NAME> 
+  {
+    return t.image;
+  }
+}
 
-/*------------------------------------------------------------------------------------------*/
+String
+ParamName() : 
+{
+  Token t;
+}
+{
+  t=<PARAM_NAME> 
+  {
+    return t.image;
+  }
+}
+
+String
+ParamValue() : 
+{
+  Token t;
+}
+{
+  t=<PARAM_VALUE> 
+  {
+    return t.image;
+  }
+}
+
+String
+SourceName() : 
+{
+  Token t;
+}
+{
+  t=<SOURCE_NAME> 
+  {
+    return t.image;
+  }
+}
 
 int
-IntegerLiteral() :
+IntegerLiteral()
+  throws PipelineException :
 {
   Token t;
 }
@@ -2100,47 +3181,96 @@ IntegerLiteral() :
       return Integer.parseInt(t.image);
     }
     catch(NumberFormatException ex) {
-      Logs.arg.severe(ex.getMessage());
+      throw new PipelineException(ex.getMessage());
     }
   }
 }
 
 int
-PortNumber() :
+FrameNumber()
+  throws PipelineException :
 {
   Token t;
 }
 {
-  t=<PORT_NUMBER>
+  t=<FRAME_NUMBER>
   { 
     try {
       return Integer.parseInt(t.image);
     }
     catch(NumberFormatException ex) {
-      Logs.arg.severe(ex.getMessage());
+      throw new PipelineException(ex.getMessage());
     }
   }
 }
 
-int
-KeyBias() : 
+long 
+ByteSize()
+  throws PipelineException : 
+{
+  Token t; 
+  long scale = 1L;
+}
+{
+  t=<BYTE_SIZE> (scale=Kilo() | scale=Mega() | scale=Giga())?
+  {
+    try {
+      return Long.parseLong(t.image) * scale;
+    }
+    catch(NumberFormatException ex) {
+      throw new PipelineException(ex.getMessage());
+    }
+  }
+}
+
+long 
+Kilo() :
+{}
+{
+  <KILO> 
+  {
+    return 1024L;
+  }
+}
+
+long 
+Mega() :
+{}
+{
+  <MEGA> 
+  {
+    return 1048576L;
+  }
+}
+
+long 
+Giga() :
+{}
+{
+  <GIGA> 
+  {
+    return 1073741824L;
+  }
+}
+
+
+double
+RealLiteral()
+  throws PipelineException :
 {
   Token t;
 }
 {
-  t=<KEY_BIAS>
+  t=<REAL>
   { 
     try {
-      return Integer.parseInt(t.image);
+      return Double.parseDouble(t.image);
     }
     catch(NumberFormatException ex) {
-      Logs.arg.severe(ex.getMessage());
+      throw new PipelineException(ex.getMessage());
     }
   }
 }
-
-
-/*------------------------------------------------------------------------------------------*/
 
 String
 StringLiteral() : 
@@ -2156,32 +3286,146 @@ StringLiteral() :
   }
 }
 
-
-/*------------------------------------------------------------------------------------------*/
-
-String 
-Msg() : 
+int
+PortNumber()
+  throws PipelineException :
 {
-  String msg; 
+  Token t;
 }
 {
-  <MSG> EQ() msg=StringLiteral() 
+  t=<PORT_NUMBER>
+  { 
+    try {
+      return Integer.parseInt(t.image);
+    }
+    catch(NumberFormatException ex) {
+      throw new PipelineException(ex.getMessage());
+    }
+  }
+}
+
+int
+KeyBias() 
+  throws PipelineException : 
+{
+  Token t;
+}
+{
+  t=<KEY_BIAS>
+  { 
+    try {
+      return Integer.parseInt(t.image);
+    }
+    catch(NumberFormatException ex) {
+      throw new PipelineException(ex.getMessage());
+    }
+  }
+}
+
+VersionID
+RevisionNumber() 
+  throws PipelineException : 
+{
+  Token t; 
+}
+{
+  t=<REVISION_NUMBER> 
   {
-    return msg;
+    try {
+      return new VersionID(t.image);
+    }
+    catch(IllegalArgumentException ex) {
+      throw new PipelineException(ex.getMessage());
+    }
   }
 }
 
 
 /*------------------------------------------------------------------------------------------*/
+/*   S E P A R A T O R   T O K E N S                                                        */
+/*------------------------------------------------------------------------------------------*/
 
-String 
-Editor() : 
+Token
+AE() :
 {
-  String editor = null;
+  Token t;
 }
 {
-  <EDITOR> EQ() editor=EditorName()
-  {
-    return editor;
+  (t=<AE1>  | t=<AE2>  | t=<AE3>  | t=<AE4>  | t=<AE5>  | 
+   t=<AE6>  | t=<AE7>  | t=<AE8>  | t=<AE9>  | t=<AE10> | 
+   t=<AE11> | t=<AE12> | t=<AE13> | t=<AE14> | t=<AE15> | 
+   t=<AE16> | t=<AE17> | t=<AE18> | t=<AE19> | t=<AE20> | 
+   t=<AE21> | t=<AE22> | t=<AE23> | t=<AE24> | t=<AE25> | 
+   t=<AE26> | t=<AE27> | t=<AE28> | t=<AE29>)
+  { 
+    return t; 
   }
 }
+
+Token
+DOT() :
+{
+  Token t;
+}
+{
+  (t=<DOT1> | t=<DOT2>)
+  { 
+    return t; 
+  }
+}
+
+Token
+DASH() :
+{
+  Token t;
+}
+{
+  (t=<DASH1> | t=<DASH2> | t=<DASH3>)
+  { 
+    return t; 
+  }
+}
+
+Token
+COLON() :
+{
+  Token t;
+}
+{
+  (t=<COLON1> | t=<COLON2> | t=<COLON3> | t=<COLON4> | t=<COLON5> | 
+   t=<COLON6>)
+  { 
+    return t; 
+  }
+}
+
+Token
+COMMA() :
+{
+  Token t;
+}
+{
+  (t=<COMMA1> | t=<COMMA2> | t=<COMMA3> | t=<COMMA4> | t=<COMMA5> | 
+   t=<COMMA6> | t=<COMMA7> | t=<COMMA8>)
+  { 
+    return t; 
+  }
+}
+
+Token
+EQ() :
+{
+  Token t;
+}
+{
+  (t=<EQ1>  | t=<EQ2>  | t=<EQ3>  | t=<EQ4>  | t=<EQ5>  | 
+   t=<EQ6>  | t=<EQ7>  | t=<EQ8>  | t=<EQ9>  | t=<EQ10> | 
+   t=<EQ11> | t=<EQ12> | t=<EQ13> | t=<EQ14> | t=<EQ15> |
+   t=<EQ16> | t=<EQ17> | t=<EQ18> | t=<EQ19> | t=<EQ20> | 
+   t=<EQ21> | t=<EQ22> | t=<EQ23> | t=<EQ24> | t=<EQ25> |
+   t=<EQ26> | t=<EQ27> | t=<EQ28>)
+  { 
+    return t; 
+  }
+}
+
