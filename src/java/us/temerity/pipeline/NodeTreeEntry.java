@@ -1,4 +1,4 @@
-// $Id: NodeTreeEntry.java,v 1.2 2004/05/04 17:48:47 jim Exp $
+// $Id: NodeTreeEntry.java,v 1.3 2004/07/14 21:01:13 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -68,6 +68,7 @@ class NodeTreeEntry
     pIsLeaf      = true;
     pIsCheckedIn = isCheckedIn;
     pWorking     = new TreeMap<String,TreeSet<String>>();
+    pFileSeqs    = new TreeSet<String>();
   }
 
 
@@ -89,6 +90,8 @@ class NodeTreeEntry
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Is this componet the last component of a node path?
    */ 
@@ -98,6 +101,8 @@ class NodeTreeEntry
     return pIsLeaf;
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Does there exist at least one checked-in node version corresponding to this 
@@ -124,6 +129,8 @@ class NodeTreeEntry
     pIsCheckedIn = tf;
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Does there exist a working version under the given view owned by the given user
@@ -249,6 +256,65 @@ class NodeTreeEntry
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Does there exist a file sequence which conflicts with the given file
+   * sequence?
+   */ 
+  public boolean 
+  isSequenceUnused
+  ( 
+   FileSeq fseq
+  ) 
+  {
+    assert(pIsLeaf);
+    FilePattern fpat = fseq.getFilePattern();
+    String sname = (fpat.getPrefix() + "|" + fpat.getSuffix());
+    return (!pFileSeqs.contains(sname));
+  }
+
+  /**
+   * Get the file sequence keys.
+   */ 
+  public Set<String> 
+  getSequences() 
+  {
+    assert(pIsLeaf);
+    return Collections.unmodifiableSet(pFileSeqs);
+  }
+
+  /**
+   * Add the given file sequence to the set of already used file sequences.
+   */ 
+  public void 
+  addSequence
+  ( 
+   FileSeq fseq
+  ) 
+  {
+    assert(pIsLeaf);
+    FilePattern fpat = fseq.getFilePattern();
+    String sname = (fpat.getPrefix() + "|" + fpat.getSuffix());
+    pFileSeqs.add(sname);
+  } 
+
+  /**
+   * Add the given file sequence to the set of already used file sequences.
+   */ 
+  public void 
+  removeSequence
+  ( 
+   FileSeq fseq
+  ) 
+  { 
+    assert(pIsLeaf);
+    FilePattern fpat = fseq.getFilePattern();
+    String sname = (fpat.getPrefix() + "|" + fpat.getSuffix());
+    pFileSeqs.remove(sname);
+  } 
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -263,12 +329,12 @@ class NodeTreeEntry
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The name of the node path component or "root" if this is the root component.
+   * The name of the node path component or "root" if this is the root component. <P> 
    */
   private String  pName;
 
   /**
-   * Is this componet the last component of a node path?
+   * Is this component the last component of a node path?
    */    
   private boolean pIsLeaf;
 
@@ -284,5 +350,11 @@ class NodeTreeEntry
    * Can be <CODE>null</CODE> when this is not a leaf node path component.
    */   
   private TreeMap<String,TreeSet<String>>  pWorking;
+
+  /**
+   * The "prefix|suffix" format names of all file sequences associated with 
+   * the leaf components. 
+   */ 
+  private TreeSet<String> pFileSeqs;
 
 }
