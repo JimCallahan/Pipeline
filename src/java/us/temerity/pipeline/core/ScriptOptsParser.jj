@@ -198,9 +198,22 @@ TOKEN :
 | <LICENSE_KEY:       "license-key">      : KEY_OPTS 
 | <SELECTION_KEY:     "selection-key">    : KEY_OPTS  
 | <JOB_SERVER:        "job-server">       : JOB_SERVER_OPTS
+| <SUFFIX_EDITOR:     "suffix-editor">    : SUFFIX_EDITOR_OPTS
 
+  /* argument end separator */ 
+| <AE1: ("\0")+>
+
+  /* errors */ 
+| <UNKNOWN_OPTION1:  "-" ("-")? (~["\0","="])*>  : IGNORE_STATE
+| <UNKNOWN_COMMAND1: ~["-","\0"] (~["\0"])*>     : IGNORE_STATE
+}
+
+
+<OPTIONS> 
+TOKEN :
+{
   /* command options */ 
-| <MSG:            "--msg">             : STRING_SEP  
+  <MSG:            "--msg">             : STRING_SEP  
 | <TOTAL:          "--total">           : INTEGER_SEP  
 | <SHUTDOWN:       "--shutdown">       
 | <DISABLE:        "--disable">       
@@ -210,13 +223,16 @@ TOKEN :
 | <SLOTS:          "--slots">           : INTEGER_SEP  
 | <SELECTION_BIAS: "--selection-bias">  : KEY_BIAS_SEP  
 | <REMOVE_KEY:     "--remove-key">      : KEY_NAME_SEP   
+| <EDITOR:         "--editor">          : EDITOR_NAME_SEP 
+| <VERSION2:       "--version">         : REVISION_NUMBER_SEP
+
 
   /* argument end separator */ 
-| <AE1: ("\0")+>
+| <AE2: ("\0")+>
 
   /* errors */ 
-| <UNKNOWN_OPTION:  "-" ("-")? (~["\0","="])*>  : IGNORE_STATE
-| <UNKNOWN_COMMAND: ~["-","\0"] (~["\0"])*>     : IGNORE_STATE
+| <UNKNOWN_OPTION2:  "-" ("-")? (~["\0","="])*>  : IGNORE_STATE
+| <UNKNOWN_COMMAND2: ~["-","\0"] (~["\0"])*>     : IGNORE_STATE
 }
 
 
@@ -239,7 +255,7 @@ TOKEN :
 <INTEGER_STATE> 
 TOKEN :
 {
-  <INTEGER:         (["0"-"9"])+>    : DEFAULT
+  <INTEGER:         (["0"-"9"])+>    : OPTIONS
 | <MISSING_INTEGER: ["\0"]>          : IGNORE_STATE
 | <ILLEGAL_INTEGER: (~["\0"])+>      : IGNORE_STATE
 }
@@ -256,7 +272,7 @@ TOKEN :
 <PORT_NUMBER_STATE> 
 TOKEN :
 {
-  <PORT_NUMBER:         (["0"-"9"])+>    : DEFAULT
+  <PORT_NUMBER:         (["0"-"9"])+>    : OPTIONS
 | <MISSING_PORT_NUMBER: ["\0"]>          : IGNORE_STATE
 | <ILLEGAL_PORT_NUMBER: (~["\0"])+>      : IGNORE_STATE
 }
@@ -273,8 +289,8 @@ TOKEN :
 <STRING_STATE>
 TOKEN :
 {
-  <STRING:         (~["\0"])*>  : DEFAULT
-| <EMPTY_STRING:   "\0">        : DEFAULT
+  <STRING:         (~["\0"])*>  : OPTIONS
+| <EMPTY_STRING:   "\0">        : OPTIONS
 }
 
 
@@ -290,7 +306,7 @@ TOKEN :
 TOKEN :
 {
   <PATH_ARG:       ("/")* ("../")* <PATH_ARG_COMP> 
-		     ("/" (".." | (<PATH_ARG_COMP>)+)?)*>      : DEFAULT
+		     ("/" (".." | (<PATH_ARG_COMP>)+)?)*>      : OPTIONS
 | <#PATH_ARG_COMP: (["a"-"z","A"-"Z","0"-"9","_","-","."])*>
 | <MISSING_PATH:   ["\0"]>                                     : IGNORE_STATE
 | <ILLEGAL_PATH:   (~["\0"])+>                                 : IGNORE_STATE
@@ -309,7 +325,7 @@ TOKEN :
 TOKEN :
 {
   <HOST_NAME:         ((["a"-"z","A"-"Z","0"-"9"])+ 
-		      ("." (["a"-"z","A"-"Z","0"-"9"])+)*)>   : DEFAULT
+		      ("." (["a"-"z","A"-"Z","0"-"9"])+)*)>   : OPTIONS
 | <MISSING_HOST_NAME: ["\0"]>                                  : IGNORE_STATE
 | <ILLEGAL_HOST_NAME: (~["\0"])+>                              : IGNORE_STATE
 }
@@ -326,7 +342,7 @@ TOKEN :
 <NODE_STATE> 
 TOKEN :
 {
-  <NODE_ARG:       ("/" (["a"-"z","A"-"Z","0"-"9","_","-"])+)+>  : DEFAULT
+  <NODE_ARG:       ("/" (["a"-"z","A"-"Z","0"-"9","_","-"])+)+>  : OPTIONS
 | <MISSING_NODE:   ["\0"]>                                       : IGNORE_STATE
 | <ILLEGAL_NODE:   (~["\0"])+>                                   : IGNORE_STATE
 }
@@ -345,9 +361,8 @@ TOKEN :
 {
   <TOOLSET_NAME:           (["a"-"z","A"-"Z"]) 
 		           (["a"-"z","A"-"Z","0"-"9","_","-"])+>  
-| <COLON1:                 ":">                                      
-| <AE2:                    ["\0"]>                                   : DEFAULT
-| <ILLEGAL_TOOLSET_NAME:   (~[":","\0"])+>                           : IGNORE_STATE
+| <AE3:                    ["\0"]>                                   : OPTIONS
+| <ILLEGAL_TOOLSET_NAME:   (~["\0"])+>                               : IGNORE_STATE
 }
 
 
@@ -364,9 +379,8 @@ TOKEN :
 {
   <USER_NAME:           (["a"-"z","A"-"Z"]) 
 	   	          (["a"-"z","A"-"Z","0"-"9","_","-"])+>  
-| <COLON2:              ":">                                      
-| <AE3:                 ["\0"]>                                   : DEFAULT
-| <ILLEGAL_USER_NAME:   (~[":","\0"])+>                           : IGNORE_STATE
+| <AE4:                 ["\0"]>                                   : OPTIONS
+| <ILLEGAL_USER_NAME:   (~["\0"])+>                               : IGNORE_STATE
 }
 
 
@@ -383,9 +397,10 @@ TOKEN :
 {
   <KEY_NAME:           (["a"-"z","A"-"Z"]) 
 		         (["a"-"z","A"-"Z","0"-"9","_","-"])+>  
-| <AE4:                ["\0"]>                                   : DEFAULT
-| <ILLEGAL_KEY_NAME:   (~[":","\0"])+>                           : IGNORE_STATE
+| <AE5:                ["\0"]>                                   : OPTIONS
+| <ILLEGAL_KEY_NAME:   (~["\0"])+>                               : IGNORE_STATE
 }
+
 
 /* key bias arguments */ 
 <KEY_BIAS_SEP> 
@@ -400,17 +415,74 @@ TOKEN :
 {
   <KEY_BIAS_NAME:      (["a"-"z","A"-"Z"]) 
 		         (["a"-"z","A"-"Z","0"-"9","_","-"])+>  
-| <COLON3:             ":">      
-| <KEY_BIAS:           (["0"-"9"])+>                             : DEFAULT  
-| <AE5:                ["\0"]>                                   : DEFAULT
+| <COLON1:             ":">      
+| <KEY_BIAS:           (["0"-"9"])+>                             : OPTIONS  
+| <AE6:                ["\0"]>                                   : OPTIONS
 | <ILLEGAL_KEY_BIAS:   (~[":","\0"])+>                           : IGNORE_STATE
 }
+
+
+/* filename suffix arguments */ 
+<SUFFIX_SEP> 
+TOKEN :
+{
+  <EQ11:                 "=">   : SUFFIX_STATE
+| <MISSING_SUFFIX_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<SUFFIX_STATE> 
+TOKEN :
+{
+  <SUFFIX:           (["a"-"z","A"-"Z","0"-"9"])+>  
+| <AE7:              ["\0"]>                          : OPTIONS
+| <ILLEGAL_SUFFIX:   (~["\0"])+>                      : IGNORE_STATE
+}
+
+
+/* editor arguments */ 
+<EDITOR_NAME_SEP> 
+TOKEN :
+{
+  <EQ12:                 "=">   : EDITOR_NAME_STATE
+| <MISSING_EDITOR_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<EDITOR_NAME_STATE> 
+TOKEN :
+{
+  <EDITOR_NAME:      (["a"-"z","A"-"Z"]) 
+	               (["a"-"z","A"-"Z","0"-"9","_","-"])+>   
+| <AE8:              ["\0"]>                                  : OPTIONS
+| <ILLEGAL_EDITOR:   (~["\0"])+>                              : IGNORE_STATE
+}
+
+
+/* revision number arguments */ 
+<REVISION_NUMBER_SEP> 
+TOKEN :
+{
+  <EQ13:                          "=">   : REVISION_NUMBER_STATE
+| <MISSING_REVISION_NUMBER_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<REVISION_NUMBER_STATE> 
+TOKEN :
+{
+  <REVISION_NUMBER:            (<REVNUM> "." <REVNUM> "." <REVNUM>)>  
+| <#REVNUM:                    ["1"-"9"] (["0"-"9"])*>
+| <AE9:                        ["\0"]>                               : OPTIONS
+| <ILLEGAL_REVISION_NUMBER:    (~["0"-"9","\0"])+>                   : IGNORE_STATE
+}
+
+
+
+/*------------------------------------------------------------------------------------------*/
 
 /* --log arguments */ 
 <LOG_SEP> 
 TOKEN :
 {
-  <EQ11:              "=">   : LOG_STATE
+  <EQ14:              "=">   : LOG_STATE
 | <MISSING_LOG_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -423,7 +495,7 @@ TOKEN :
 | <LOG_NET: 	    "net">      
 | <LOG_PLG: 	    "plg">       
 | <LOG_SUB: 	    "sub">     
-| <COLON4:  	    ":">       
+| <COLON2:  	    ":">       
 | <SEVERE:  	    "severe">  
 | <WARNING: 	    "warning"> 
 | <INFO:    	    "info">    
@@ -431,21 +503,23 @@ TOKEN :
 | <FINER :  	    "finer">   
 | <FINEST:    	    "finest">  
 | <COMMA:  	    ",">       
-| <AE6:             (["\0"])+>                   : DEFAULT
+| <AE10:            (["\0"])+>                   : OPTIONS
 | <ILLEGAL_LOG_ARG: (~["\0","a"-"z",":",","])+>  : IGNORE_STATE
 }
 
+
+/*------------------------------------------------------------------------------------------*/
 
 /* privileged command options */ 
 <PRIVILEGED_OPTS> 
 TOKEN :
 {
-  <PRIVILEGED_GET:    "--get">                   : DEFAULT
+  <PRIVILEGED_GET:    "--get">                   : OPTIONS
 | <PRIVILEGED_GRANT:  "--grant">                 : USER_NAME_SEP 
 | <PRIVILEGED_REVOKE: "--revoke">                : USER_NAME_SEP 
-| <AE7:               ["\0"]>  
-| <UNKNOWN_OPTION1:   "-" ("-")? (~["\0","="])*> : IGNORE_STATE
-| <UNKNOWN1:          ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+| <AE11:              ["\0"]>  
+| <UNKNOWN_OPTION3:   "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN3:          ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
 }
 
 
@@ -453,16 +527,16 @@ TOKEN :
 <TOOLSET_OPTS> 
 TOKEN :
 {
-  <TOOLSET_GET:           "--get">                   : DEFAULT
+  <TOOLSET_GET:           "--get">                   : OPTIONS
 | <TOOLSET_GET_INFO:      "--get-info">              : TOOLSET_NAME_SEP  
-| <TOOLSET_GET_INFO_ALL:  "--get-info-all">          : DEFAULT
+| <TOOLSET_GET_INFO_ALL:  "--get-info-all">          : OPTIONS
 | <TOOLSET_SET:           "--set">                   : TOOLSET_NAME_SEP  
 | <TOOLSET_ADD:           "--add">                   : TOOLSET_NAME_SEP 
 | <TOOLSET_REMOVE:        "--remove">                : TOOLSET_NAME_SEP 
 | <TOOLSET_EXPORT:        "--export">                : TOOLSET_NAME_SEP
-| <AE8:                   ["\0"]>            
-| <UNKNOWN_OPTION2:       "-" ("-")? (~["\0","="])*> : IGNORE_STATE
-| <UNKNOWN2:              ~["-","\0"] (~["\0"])*>    : IGNORE_STATE          
+| <AE12:                  ["\0"]>            
+| <UNKNOWN_OPTION4:       "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN4:              ~["-","\0"] (~["\0"])*>    : IGNORE_STATE          
 }
 
 
@@ -470,15 +544,15 @@ TOKEN :
 <KEY_OPTS> 
 TOKEN :
 {
-  <KEY_GET:            "--get">                   : DEFAULT
+  <KEY_GET:            "--get">                   : OPTIONS
 | <KEY_GET_INFO:       "--get-info">              : KEY_NAME_SEP  
-| <KEY_GET_INFO_ALL:   "--get-info-all">          : DEFAULT
+| <KEY_GET_INFO_ALL:   "--get-info-all">          : OPTIONS
 | <KEY_ADD:            "--add">                   : KEY_NAME_SEP 
 | <KEY_SET:            "--set">                   : KEY_NAME_SEP 
 | <KEY_REMOVE:         "--remove">                : KEY_NAME_SEP 
-| <AE9:                ["\0"]>    
-| <UNKNOWN_OPTION3:    "-" ("-")? (~["\0","="])*> : IGNORE_STATE
-| <UNKNOWN3:           ~["-","\0"] (~["\0"])*>    : IGNORE_STATE           
+| <AE13:               ["\0"]>    
+| <UNKNOWN_OPTION5:    "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN5:           ~["-","\0"] (~["\0"])*>    : IGNORE_STATE           
 }
 
 
@@ -486,15 +560,31 @@ TOKEN :
 <JOB_SERVER_OPTS> 
 TOKEN :
 {
-  <JOB_GET:            "--get">                   : DEFAULT
+  <JOB_GET:            "--get">                   : OPTIONS
 | <JOB_GET_INFO:       "--get-info">              : HOST_NAME_SEP  
-| <JOB_GET_INFO_ALL:   "--get-info-all">          : DEFAULT
+| <JOB_GET_INFO_ALL:   "--get-info-all">          : OPTIONS
 | <JOB_SET:            "--set">                   : HOST_NAME_SEP 
 | <JOB_ADD:            "--add">                   : HOST_NAME_SEP 
 | <JOB_REMOVE:         "--remove">                : HOST_NAME_SEP
-| <AE10:               ["\0"]>   
-| <UNKNOWN_OPTION4:    "-" ("-")? (~["\0","="])*> : IGNORE_STATE
-| <UNKNOWN4:           ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+| <AE14:               ["\0"]>   
+| <UNKNOWN_OPTION6:    "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN6:           ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+}
+
+
+/* job server command options */ 
+<SUFFIX_EDITOR_OPTS> 
+TOKEN :
+{
+  <SUFFIX_EDITOR_GET:            "--get">                   : OPTIONS
+| <SUFFIX_EDITOR_GET_INFO:       "--get-info">              : SUFFIX_SEP  
+| <SUFFIX_EDITOR_GET_INFO_ALL:   "--get-info-all">          : OPTIONS
+| <SUFFIX_EDITOR_SET:            "--set">                   : SUFFIX_SEP 
+| <SUFFIX_EDITOR_REMOVE:         "--remove">                : SUFFIX_SEP
+| <SUFFIX_EDITOR_RESET:          "--reset">                 : OPTIONS
+| <AE15:                         ["\0"]>   
+| <UNKNOWN_OPTION7:              "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN7:                     ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
 }
 
 
@@ -533,7 +623,7 @@ Commands()
 {
   (PrivilegedCmds() | AdminCmds() |
    DefaultToolsetCmds() | ActiveToolsetCmds() | ToolsetCmds() |
-   LicenseKeyCmds() | SelectionKeyCmds() | JobServerCmds()
+   LicenseKeyCmds() | SelectionKeyCmds() | JobServerCmds() | SuffixEditorCmds() 
 
    ) 
   {
@@ -637,7 +727,7 @@ BatchCommand()
 {
   (PrivilegedCmds() | AdminCmds() |
    DefaultToolsetCmds() | ActiveToolsetCmds() | ToolsetCmds() |
-   LicenseKeyCmds() | SelectionKeyCmds() | JobServerCmds() 
+   LicenseKeyCmds() | SelectionKeyCmds() | JobServerCmds() | SuffixEditorCmds() 
    
    ) (AE())* <EOF>
   {}
@@ -1652,6 +1742,115 @@ JobServerRemove()
 }
 
 
+/*------------------------------------------------------------------------------------------*/
+/*   U S E R    P R E F E R E N C E S                                                       */
+/*------------------------------------------------------------------------------------------*/
+
+void 
+SuffixEditorCmds() 
+  throws PipelineException : 
+{}
+{
+  <SUFFIX_EDITOR> AE() 
+     (SuffixEditorGet() | SuffixEditorGetInfo() | SuffixEditorGetInfoAll() | 
+      SuffixEditorSet() | SuffixEditorRemove() | SuffixEditorReset())
+  {}
+}
+
+void 
+SuffixEditorGet() 
+  throws PipelineException : 
+{}
+{
+  <SUFFIX_EDITOR_GET> AE()
+  {
+    TreeSet editors = pMasterMgrClient.getSuffixEditors();
+    Iterator iter = editors.iterator();
+    while(iter.hasNext()) {
+      SuffixEditor se = (SuffixEditor) iter.next();
+      Logs.ops.info(se.getSuffix());
+    }
+    Logs.flush();    
+  }
+}
+
+void 
+SuffixEditorGetInfo() 
+  throws PipelineException : 
+{
+  String suffix = null;
+}
+{
+  <SUFFIX_EDITOR_GET_INFO> EQ() suffix=Suffix() AE()
+  {
+    pApp.printSuffixEditor(suffix, pMasterMgrClient);
+  }
+}
+
+void 
+SuffixEditorGetInfoAll() 
+  throws PipelineException : 
+{}
+{
+  <SUFFIX_EDITOR_GET_INFO_ALL> AE()
+  {
+    pApp.printSuffixEditor(null, pMasterMgrClient);
+  }
+}
+
+void 
+SuffixEditorSet() 
+  throws PipelineException : 
+{
+  String suffix = null;
+  String msg = null;
+  String editor = null;
+}
+{
+  <SUFFIX_EDITOR_SET> EQ() suffix=Suffix() AE() 
+     ((msg=Msg() AE() editor=Editor()) | (editor=Editor() AE() msg=Msg())) AE()
+  {
+    SuffixEditor se = new SuffixEditor(suffix, msg, editor);
+    pApp.addSuffixEditor(se, pMasterMgrClient);
+
+    Logs.ops.info("Added default editor for suffix (" + suffix + ").");
+    Logs.flush();
+  }
+}
+  
+void 
+SuffixEditorRemove() 
+  throws PipelineException : 
+{
+  String suffix = null;
+}
+{
+  <SUFFIX_EDITOR_REMOVE> EQ() suffix=Suffix() AE() 
+  {
+    pApp.removeSuffixEditor(suffix, pMasterMgrClient);
+
+    Logs.ops.info("Removed default editor for suffix (" + suffix + ").");
+    Logs.flush();
+  }
+}
+
+void 
+SuffixEditorReset() 
+  throws PipelineException : 
+{}
+{
+  <SUFFIX_EDITOR_RESET> AE() 
+  {
+    pApp.resetSuffixEditors(pMasterMgrClient);
+
+    Logs.ops.info("Reset suffix editors to site defaults.");
+    Logs.flush();
+  }
+}
+
+
+  
+
 
 /*------------------------------------------------------------------------------------------*/
 /*   S H A R E D   T O K E N S                                                              */
@@ -1663,8 +1862,9 @@ AE() :
   Token t;
 }
 {
-  (t=<AE1> | t=<AE2> | t=<AE3> | t=<AE4> | t=<AE5> | 
-   t=<AE6> | t=<AE7> | t=<AE8> | t=<AE9> | t=<AE10>)
+  (t=<AE1>  | t=<AE2>  | t=<AE3>  | t=<AE4>  | t=<AE5>  | 
+   t=<AE6>  | t=<AE7>  | t=<AE8>  | t=<AE9>  | t=<AE10> | 
+   t=<AE11> | t=<AE12> | t=<AE13> | t=<AE14> | t=<AE15>)
   { 
     return t; 
   }
@@ -1676,7 +1876,7 @@ COLON() :
   Token t;
 }
 {
-  (t=<COLON1> | t=<COLON2> | t=<COLON3> | t=<COLON4>)
+  (t=<COLON1> | t=<COLON2>)
   { 
     return t; 
   }
@@ -1688,9 +1888,9 @@ EQ() :
   Token t;
 }
 {
-  (t=<EQ1> | t=<EQ2> | t=<EQ3> | t=<EQ4> | t=<EQ5> | 
-   t=<EQ6> | t=<EQ7> | t=<EQ8> | t=<EQ9> | t=<EQ10> | 
-   t=<EQ11>)
+  (t=<EQ1>  | t=<EQ2>  | t=<EQ3>  | t=<EQ4>  | t=<EQ5>  | 
+   t=<EQ6>  | t=<EQ7>  | t=<EQ8>  | t=<EQ9>  | t=<EQ10> | 
+   t=<EQ11> | t=<EQ12> | t=<EQ13> | t=<EQ14>)
   { 
     return t; 
   }
@@ -1771,6 +1971,29 @@ KeyBiasName() :
   }
 }
 
+String
+Suffix() : 
+{
+  Token t;
+}
+{
+  t=<SUFFIX>
+  {
+    return t.image;
+  }
+}
+
+String
+EditorName() : 
+{
+  Token t;
+}
+{
+  t=<EDITOR_NAME>
+  {
+    return t.image;
+  }
+}
 
 
 /*------------------------------------------------------------------------------------------*/
@@ -1855,5 +2078,20 @@ Msg() :
   <MSG> EQ() msg=StringLiteral() 
   {
     return msg;
+  }
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+
+String 
+Editor() : 
+{
+  String editor = null;
+}
+{
+  <EDITOR> EQ() editor=EditorName()
+  {
+    return editor;
   }
 }

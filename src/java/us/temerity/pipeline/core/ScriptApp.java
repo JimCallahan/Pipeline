@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.3 2004/09/20 03:40:40 jim Exp $
+// $Id: ScriptApp.java,v 1.4 2004/09/20 05:01:24 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -133,12 +133,14 @@ class ScriptApp
       "    toolset\n" + 
       "      --get\n" + 
       "      --get-info=toolset-name\n" + 
+      "      --get-info-all\n" + 
       "      --export=toolset-name\n" + 
       "\n" + 
       "  Queue Administration\n" + 
       "    license-key\n" + 
       "      --get\n" + 
       "      --get-info=key-name\n" +
+      "      --get-info-all\n" + 
       "      --add=key-name\n" + 
       "        --msg=\"key-description\" --total=integer\n" + 
       "      --set=key-name\n" + 
@@ -147,12 +149,14 @@ class ScriptApp
       "    selection-key\n" + 
       "      --get\n" + 
       "      --get-info=key-name\n" + 
+      "      --get-info-all\n" + 
       "      --add=key-name\n" + 
       "        --msg=\"key-description\"\n" + 
       "      --remove=key-name\n" + 
       "    job-server\n" + 
       "      --get\n" + 
       "      --get-info=host-name\n" + 
+      "      --get-info-all\n" + 
       "      --add=host-name\n" + 
       "      --set=host-name\n" + 
       "       [--shutdown | --disable | --enable] [--reserve=user-name | --open]\n" + 
@@ -164,6 +168,7 @@ class ScriptApp
       "    suffix-editor\n" + 
       "      --get\n" + 
       "      --get-info=suffix\n" + 
+      "      --get-info-all\n" + 
       "      --set=suffix\n" + 
       "          --msg=\"suffix-description\" --editor=editor-name[:major.minor.micro]\n" + 
       "      --remove=suffix\n" + 
@@ -626,6 +631,105 @@ class ScriptApp
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   U S E R   P R E F E R E N C E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Print a text representation of the default editor for a filename suffix.
+   */ 
+  public void
+  printSuffixEditor
+  (
+   String suffix,
+   MasterMgrClient client
+  ) 
+    throws PipelineException
+  {
+    StringBuffer buf = new StringBuffer(); 
+    boolean first = true;
+    boolean found = false;
+    TreeSet<SuffixEditor> editors = client.getSuffixEditors();
+    for(SuffixEditor se : editors) {
+      if((suffix == null) || se.getSuffix().equals(suffix)) {
+	if(first) 
+	  buf.append(tbar(80) + "\n");
+	else 
+	  buf.append("\n\n" + bar(80) + "\n");
+	first = false;
+
+	buf.append
+	  ("Filename Suffix : " + se.getSuffix() + "\n" + 
+	   "Description     : " + wordWrap(se.getDescription(), 16, 80) + "\n" +
+	   "Default Editor  : " + se.getEditor());
+
+	if(suffix != null) {
+	  found = true;
+	  break;
+	}
+      }
+    }
+
+    if((suffix != null) && !found) 
+      throw new PipelineException
+	("The filename suffix (" + suffix + ") does not exist!");
+
+    Logs.ops.info(buf.toString());
+    Logs.flush();    
+  }
+  
+  /**
+   * Add or replace the default editor for a filename suffix.
+   */ 
+  public void
+  addSuffixEditor
+  (
+   SuffixEditor se, 
+   MasterMgrClient client
+  ) 
+    throws PipelineException
+  {
+    TreeSet<SuffixEditor> editors = client.getSuffixEditors();
+    editors.add(se);
+    client.setSuffixEditors(editors);
+  }
+
+  /**
+   * Remove the default editor for a filename suffix.
+   */ 
+  public void
+  removeSuffixEditor
+  (
+   String suffix,
+   MasterMgrClient client
+  ) 
+    throws PipelineException
+  {
+    TreeSet<SuffixEditor> old = client.getSuffixEditors();
+    TreeSet<SuffixEditor> editors = new TreeSet<SuffixEditor>();
+    for(SuffixEditor se : old) {
+      if(!se.getSuffix().equals(suffix))
+	editors.add(se);
+    }
+    client.setSuffixEditors(editors);
+  }
+
+  /**
+   * Reset the suffix editors to site defaults.
+   */ 
+  public void
+  resetSuffixEditors
+  (
+   MasterMgrClient client
+  ) 
+    throws PipelineException
+  {
+    TreeSet<SuffixEditor> editors = client.getDefaultSuffixEditors();
+    client.setSuffixEditors(editors);
+  }
+  
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S                                                                        */
   /*----------------------------------------------------------------------------------------*/
   
@@ -668,21 +772,25 @@ class ScriptApp
     case ScriptOptsParserConstants.EOF:
       return "EOF";
 
-    case ScriptOptsParserConstants.UNKNOWN1:
-    case ScriptOptsParserConstants.UNKNOWN2:
+    case ScriptOptsParserConstants.UNKNOWN_COMMAND1:
+    case ScriptOptsParserConstants.UNKNOWN_COMMAND2:
+      return "an unknown command";
+
     case ScriptOptsParserConstants.UNKNOWN3:
     case ScriptOptsParserConstants.UNKNOWN4:
+    case ScriptOptsParserConstants.UNKNOWN5:
+    case ScriptOptsParserConstants.UNKNOWN6:
+    case ScriptOptsParserConstants.UNKNOWN7:
       return "an unknown argument";
 
-    case ScriptOptsParserConstants.UNKNOWN_OPTION:
     case ScriptOptsParserConstants.UNKNOWN_OPTION1:
     case ScriptOptsParserConstants.UNKNOWN_OPTION2:
     case ScriptOptsParserConstants.UNKNOWN_OPTION3:
     case ScriptOptsParserConstants.UNKNOWN_OPTION4:
+    case ScriptOptsParserConstants.UNKNOWN_OPTION5:
+    case ScriptOptsParserConstants.UNKNOWN_OPTION6:
+    case ScriptOptsParserConstants.UNKNOWN_OPTION7:
       return "an unknown option";
-
-    case ScriptOptsParserConstants.UNKNOWN_COMMAND:
-      return "an unknown command";
 
     case ScriptOptsParserConstants.PORT_NUMBER:
       return "a port number";
@@ -717,6 +825,12 @@ class ScriptApp
 
     case ScriptOptsParserConstants.KEY_BIAS:
       return "a selection bias";
+
+    case ScriptOptsParserConstants.SUFFIX:
+      return "a filename suffix";
+
+    case ScriptOptsParserConstants.EDITOR_NAME:
+      return "an Editor plugin name";
 
     default: 
       if(printLiteral) { 
