@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.62 2004/11/03 23:41:12 jim Exp $
+// $Id: MasterMgr.java,v 1.63 2004/11/05 18:19:11 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -4517,17 +4517,13 @@ class MasterMgr
     
     NodeMod work = details.getWorkingVersion();
 
-    /* collect upstream jobs (node without an action) */ 
-    if(work.getAction() == null) {
+    /* collect upstream jobs (nodes without an action or with a disabled action) */ 
+    if(!work.isActionEnabled()) {
       collectNoActionJobs(status, isRoot, 
 			  extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, 
 			  jobs, timer);
       return;
     }
-    
-    /* ignore the tree of nodes below a node with a disable action */ 
-    else if(!work.isActionEnabled()) 
-      return;
     
     /* generate jobs for node */ 
     int numFrames = work.getPrimarySequence().numFrames();
@@ -5693,8 +5689,24 @@ class MasterMgr
       HashMap<String,NodeStatus> table = new HashMap<String,NodeStatus>();
       performUpstreamNodeOp(nodeOp, nodeID, skipAssoc, 
 			    new LinkedList<String>(), table, timer);
+
       root = table.get(nodeID.getName());
       assert(root != null);
+      
+      {
+	boolean isStale = true;
+	NodeDetails details = root.getDetails();
+	if(details != null) {
+	  switch(details.getOverallQueueState()) {
+	  case Finished:
+	  case Running:
+	    isStale = false;
+	    break;
+	  }
+	}
+
+	validateStaleLinks(root, isStale);
+      }
     }
 
     {
@@ -5921,6 +5933,7 @@ class MasterMgr
       table.put(name, status);
 
       /* process the upstream nodes */ 
+      Date missingStamp = new Date();
       switch(versionState) {
       case CheckedIn:
 	for(LinkVersion link : latest.getSources()) {
@@ -6367,39 +6380,56 @@ class MasterMgr
 	      case Reference:
 	      case Dependency:
 		{	      
-		  NodeStatus lstatus = status.getSource(link.getName());
-		  NodeDetails ldetails = lstatus.getDetails();
-		  
-		  QueueState lqs[] = ldetails.getQueueState();
-		  Date lstamps[] = ldetails.getFileTimeStamps();
-		  
 		  boolean staleLink = false;
-		  switch(link.getRelationship()) {
-		  case OneToOne:
-		    {
-		      Integer offset = link.getFrameOffset();
-		      int idx = wk+offset;
-		      if((idx >= 0) && (idx < lqs.length)) {
-			if((lstamps[idx] != null) && 
-			   ((fileTimeStamps[wk] == null) || 
-			    (fileTimeStamps[wk].compareTo(lstamps[idx]) < 0))) 
-			  staleLink = true;
-		      }
-		    }
+		  
+		  switch(overallQueueState) {
+		  case Running:
 		    break;
-		    
-		  case All:
+
+		  default:
 		    {
-		      int fk;
-		      for(fk=0; fk<lqs.length; fk++) {
-			if((lstamps[fk] != null) && 
-			   ((fileTimeStamps[wk] == null) || 
-			    (fileTimeStamps[wk].compareTo(lstamps[fk]) < 0)))
-			  staleLink = true;
+		      NodeStatus lstatus = status.getSource(link.getName());
+		      NodeDetails ldetails = lstatus.getDetails();
+		      switch(ldetails.getOverallQueueState()) {
+		      case Finished:
+			{
+			  QueueState lqs[] = ldetails.getQueueState();
+			  Date lstamps[] = ldetails.getFileTimeStamps();
+			  
+			  switch(link.getRelationship()) {
+			  case OneToOne:
+			    {
+			      Integer offset = link.getFrameOffset();
+			      int idx = wk+offset;
+			      if((idx >= 0) && (idx < lqs.length)) {
+				if((lstamps[idx] == null) || 
+				   ((fileTimeStamps[wk] == null) || 
+				    (fileTimeStamps[wk].compareTo(lstamps[idx]) < 0))) 
+				  staleLink = true;
+			      }
+			    }
+			    break;
+			    
+			  case All:
+			    {
+			      int fk;
+			      for(fk=0; fk<lqs.length; fk++) {
+				if((lstamps[fk] == null) ||
+				   ((fileTimeStamps[wk] == null) || 
+				    (fileTimeStamps[wk].compareTo(lstamps[fk]) < 0)))
+				  staleLink = true;
+			      }
+			    }
+			  }
+			}
+			break;
+			
+		      default:
+			staleLink = true;
 		      }
 		    }
 		  }
-		  
+
 		  if(staleLink) 
 		    status.addStaleLink(link.getName());
 		}
@@ -6414,6 +6444,8 @@ class MasterMgr
        * the newest of:
        * 
        *   + The actual file time stamp.
+       * 
+       *   + If the file is missing, the time stamp of when the file status was computed.
        * 
        *   + The last critical modification timestamp of the current node.
        * 
@@ -6431,6 +6463,9 @@ class MasterMgr
 
 	  int wk;
 	  for(wk=0; wk<queueStates.length; wk++) {
+	    if(fileTimeStamps[wk] == null) 
+	      fileTimeStamps[wk] = missingStamp;
+
 	    for(LinkMod link : work.getSources()) { 
 	      switch(link.getPolicy()) {
 	      case Reference:
@@ -6442,7 +6477,6 @@ class MasterMgr
 		  QueueState lqs[] = ldetails.getQueueState();
 		  Date lstamps[] = ldetails.getFileTimeStamps();
 		  
-		  boolean staleLink = false;
 		  switch(link.getRelationship()) {
 		  case OneToOne:
 		    {
@@ -6453,8 +6487,7 @@ class MasterMgr
 			if((lstamps[idx] != null) && (lstamps[idx].compareTo(critical) > 0)) 
 			  stamp = lstamps[idx];
 			
-			if((fileTimeStamps[wk] == null) ||
-			   (fileTimeStamps[wk].compareTo(stamp) < 0)) 
+			if(fileTimeStamps[wk].compareTo(stamp) < 0) 
 			  fileTimeStamps[wk] = stamp;
 		      }
 		    }
@@ -6468,15 +6501,11 @@ class MasterMgr
 			if((lstamps[fk] != null) && (lstamps[fk].compareTo(critical) > 0)) 
 			  stamp = lstamps[fk];
 			
-			if((fileTimeStamps[wk] == null) ||
-			   (fileTimeStamps[wk].compareTo(stamp) < 0)) 
+			if(fileTimeStamps[wk].compareTo(stamp) < 0)
 			  fileTimeStamps[wk] = stamp;
 		      }
 		    }
 		  }
-		  
-		  if(staleLink) 
-		    status.addStaleLink(link.getName());
 		}
 	      }
 	    }
@@ -6511,6 +6540,35 @@ class MasterMgr
     /* pop the current node off of the end of the branch */ 
     branch.removeLast();
   } 
+
+  /**
+   * Recursively traverse the upstream nodes removing the propogates staleness flag
+   * from all links not rooted at a stale node. <P> 
+   * 
+   * @param status
+   *   The status of the current node.
+   * 
+   * @param isStale
+   *   Whether a stale node exists downstream.
+   */ 
+  private void 
+  validateStaleLinks
+  (
+   NodeStatus status, 
+   boolean isStale
+  )
+  {
+    for(NodeStatus lstatus : status.getSources()) {
+      boolean staleLink = status.isStaleLink(lstatus.getName()); 
+      if(staleLink && !isStale) {
+	status.removeStaleLink(lstatus.getName());
+	validateStaleLinks(lstatus, false);
+      }
+      else {
+	validateStaleLinks(lstatus, staleLink);
+      }
+    }
+  }
 
   /**
    * Recursively compute the state of all nodes downstream of the given node. <P> 
