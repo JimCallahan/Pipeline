@@ -1,4 +1,4 @@
-// $Id: CheckSum.java,v 1.4 2004/03/11 11:00:04 jim Exp $
+// $Id: CheckSum.java,v 1.5 2004/03/12 23:07:58 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -217,23 +217,37 @@ class CheckSum
     Logs.sum.finer("Rebuilding checksum for: " + file);
 
     /* verify (and possibly create) checksum directory */ 
-    File dir = sfile.getParentFile();
-    if(dir.exists()) {
-      if(!dir.isDirectory()) 
-	throw new PipelineException
-	  ("The checksum directory (" + dir + ") exists but is not a directory!");
-    }
-    else {
-      try {
-	if(!dir.mkdirs()) {
-	  throw new PipelineException
-	    ("Unable to create the checksum directory (" + dir + ")!");
+    {
+      File dir = sfile.getParentFile();
+
+      /* try again if the first attempt to create the directory fails...  
+           this can happen if another program creates the directory in between the 
+	   check for existance of the directory and the attempt to create it */ 
+      int tries = 2;
+      int wk;
+      for(wk=0; wk<tries; wk++) {
+	if(dir.exists()) {
+	  if(!dir.isDirectory()) 
+	    throw new PipelineException
+	      ("The checksum directory (" + dir + ") exists but is not a directory!");
+	  break;
+	}
+	else {
+	  try {
+	    if(dir.mkdirs())
+	      break;
+	  }
+	  catch (SecurityException ex) {
+	    throw new PipelineException
+	      ("Unable to create the checksum directory (" + dir + ")!");
+	  }
 	}
       }
-      catch (SecurityException ex) {
+      
+      if(wk == tries) 
 	throw new PipelineException
-	  ("Unable to create the checksum directory (" + dir + ")!");
-      }
+	  ("Unable to create the checksum directory (" + dir + ") after " + tries + 
+	   " attempts!");
     }
 
     /* generate the checksum */ 
