@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.19 2005/01/16 00:38:31 jim Exp $
+// $Id: JobMgr.java,v 1.20 2005/01/21 17:27:01 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -314,7 +314,7 @@ class JobMgr
   ) 
   {
     QueueJob job = req.getJob();
-    TaskTimer timer = new TaskTimer(); 
+    TaskTimer timer = new TaskTimer("JobMgr.start(): " + job.getJobID());
 
     /* create the job scratch directory */ 
     try {	
@@ -335,25 +335,17 @@ class JobMgr
     }
 
     /* start the job execution task */ 
-    int numJobs = 1;
-    {
-      ExecuteTask task = new ExecuteTask(job);
-      timer.aquire();
-      synchronized(pExecuteTasks) {
-	timer.resume();
-	pExecuteTasks.put(job.getJobID(), task); 
-	
-	for(ExecuteTask etask : pExecuteTasks.values()) 
-	if(etask.isAlive())
-	  numJobs++;
-	
-	Logs.ops.finest("JobStart - Num Jobs: " + numJobs);
-      }
+    timer.aquire();
+    synchronized(pExecuteTasks) {
+      timer.resume();
       
+      ExecuteTask task = new ExecuteTask(job);
       task.start();
+
+      pExecuteTasks.put(job.getJobID(), task); 
     }
 
-    return new JobStartRsp(job.getJobID(), timer, numJobs);
+    return new SuccessRsp(timer);
   }
 
   /**

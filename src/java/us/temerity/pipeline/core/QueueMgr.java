@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.25 2005/01/16 00:38:31 jim Exp $
+// $Id: QueueMgr.java,v 1.26 2005/01/21 17:27:20 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2420,7 +2420,7 @@ class QueueMgr
       JobMgrControlClient client = null;
       try {
 	client = new JobMgrControlClient(bestHost, pJobPort);	
-	int numJobs = client.jobStart(job);
+	client.jobStart(job);
 	
 	timer.aquire();
 	synchronized(pJobInfo) {
@@ -2435,8 +2435,6 @@ class QueueMgr
 	  QueueHost host = pHosts.get(bestHost);
 	  host.setHold(job.getJobID(), jreqs.getRampUp());
 	  host.jobStarted();
-	  //ResourceSample sample = host.getLatestSample();
-	  //sample.setNumJobs(numJobs);
 	}
       }
       catch (Exception ex) {

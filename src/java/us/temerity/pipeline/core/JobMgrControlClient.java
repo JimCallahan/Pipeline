@@ -1,4 +1,4 @@
-// $Id: JobMgrControlClient.java,v 1.9 2005/01/16 00:38:31 jim Exp $
+// $Id: JobMgrControlClient.java,v 1.10 2005/01/21 17:27:01 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -173,13 +173,10 @@ class JobMgrControlClient
    * @param job 
    *   The job to execute.
    * 
-   * @return 
-   *   The number of currently running jobs.
-   *    
    * @throws PipelineException 
    *   If unable to start the job.
    */ 
-  public synchronized int
+  public synchronized void
   jobStart
   (
    QueueJob job
@@ -191,14 +188,7 @@ class JobMgrControlClient
     JobStartReq req = new JobStartReq(job);
 
     Object obj = performTransaction(JobRequest.Start, req); 
-    if(obj instanceof JobStartRsp) {
-      JobStartRsp rsp = (JobStartRsp) obj;
-      return rsp.getNumJobs();
-    }
-    else {
-      handleFailure(obj);
-      return 0;
-    } 
+    handleSimpleResponse(obj);
   }
 
   /**
