@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.19 2004/07/21 07:13:18 jim Exp $
+// $Id: FileMgr.java,v 1.20 2004/08/01 15:44:18 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1535,8 +1535,8 @@ class FileMgr
 	  }
 	}
 
-	/* add write permission to files associated with editable nodes */ 
-	if(req.isEditable()) {
+	/* add write permission to the working files */ 
+	{
 	  ArrayList<String> args = new ArrayList<String>();
 	  args.add("u+w");
 	  for(File file : files) 

@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.13 2004/07/18 21:29:29 jim Exp $
+// $Id: FileMgrClient.java,v 1.14 2004/08/01 15:44:39 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -336,7 +336,7 @@ class FileMgrClient
     verifyConnection();
 
     FileUnfreezeReq req = 
-      new FileUnfreezeReq(id, mod.getWorkingID(), mod.getSequences(), !mod.hasAction());
+      new FileUnfreezeReq(id, mod.getWorkingID(), mod.getSequences());
 
     Object obj = performTransaction(FileRequest.Unfreeze, req);
     handleSimpleResponse(obj);
