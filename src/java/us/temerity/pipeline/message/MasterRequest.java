@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.10 2004/07/16 22:03:11 jim Exp $
+// $Id: MasterRequest.java,v 1.11 2004/07/18 21:32:13 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -204,14 +204,19 @@ enum MasterRequest
   Register, 
 
   /**
-   * An instance of {@link NodeRevokeReq NodeRevokeReq} is next.
+   * An instance of {@link NodeReleaseReq NodeReleaseReq} is next.
    */
-  Revoke, 
+  Release, 
 
   /**
    * An instance of {@link NodeRenameReq NodeRenameReq} is next.
    */
   Rename, 
+
+  /**
+   * An instance of {@link NodeRenumberReq NodeRenumberReq} is next.
+   */
+  Renumber, 
 
   /**
    * An instance of {@link NodeCheckInReq NodeCheckInReq} is next.

@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.13 2004/07/16 22:03:10 jim Exp $
+// $Id: MasterMgrClient.java,v 1.14 2004/07/18 21:28:11 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1758,17 +1758,8 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Revoke a working version of a node owned by the given user which has never 
-   * been checked-in  <P> 
-   * 
-   * This operation is provided to allow users to remove nodes which they have previously 
-   * registered, but which they no longer want to keep or share with other users. If a 
-   * working version is successfully revoked, all node connections to the revoked node 
-   * will be also be removed. <P> 
-   * 
-   * In addition to removing the working version of the node, this operation can also 
-   * delete the files associated with the working version if the <CODE>removeFiles</CODE>
-   * argument is <CODE>true</CODE>. <P> 
+   * Release the working version of a node and optionally remove the associated 
+   * working area files. <P> 
    * 
    * If the <CODE>author</CODE> argument is different than the current user, this method 
    * will fail unless the current user has privileged access status.
@@ -1786,10 +1777,10 @@ class MasterMgrClient
    *   Should the files associated with the working version be deleted?
    *
    * @throws PipelineException 
-   *   If unable to revoke the given node.
+   *   If unable to release the given node.
    */ 
   public synchronized void 
-  revoke
+  release
   ( 
    String author, 
    String view, 
@@ -1800,14 +1791,14 @@ class MasterMgrClient
   {
     if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
       throw new PipelineException
-	("Only privileged users may revoke nodes owned by another user!");
+	("Only privileged users may release nodes owned by another user!");
 
     verifyConnection();
 
     NodeID id = new NodeID(author, view, name);
-    NodeRevokeReq req = new NodeRevokeReq(id, removeFiles);
+    NodeReleaseReq req = new NodeReleaseReq(id, removeFiles);
 
-    Object obj = performTransaction(MasterRequest.Revoke, req);
+    Object obj = performTransaction(MasterRequest.Release, req);
     handleSimpleResponse(obj);
   } 
 
@@ -1873,6 +1864,60 @@ class MasterMgrClient
     NodeRenameReq req = new NodeRenameReq(id, newName, renameFiles);
 
     Object obj = performTransaction(MasterRequest.Rename, req);
+    handleSimpleResponse(obj);
+  } 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Renumber the frame ranges of the file sequences associated with the given node. <P> 
+   * 
+   * See {@link NodeMod#adjustFrameRange adjustFrameRange} for the constraints on legal 
+   * values for the given new frame range argument <CODE>range</CODE>.
+   * 
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   * 
+   * @param range 
+   *   The new frame range.
+   * 
+   * @param removeFiles 
+   *   Whether to remove files from the old frame range which are no longer part of the new 
+   *   frame range.
+   * 
+   * @throws PipelineException 
+   *   If unable to renumber the given node or its associated primary files.
+   */ 
+  public synchronized void 
+  renumber
+  ( 
+   String author, 
+   String view, 
+   String name, 
+   FrameRange range, 
+   boolean removeFiles
+  ) 
+    throws PipelineException
+  {
+    if(!PackageInfo.sUser.equals(author) && !isPrivileged(false))
+      throw new PipelineException
+	("Only privileged users may renumber nodes owned by another user!");
+
+    verifyConnection();
+
+    NodeID id = new NodeID(author, view, name);
+    NodeRenumberReq req = new NodeRenumberReq(id, range, removeFiles);
+
+    Object obj = performTransaction(MasterRequest.Renumber, req);
     handleSimpleResponse(obj);
   } 
 

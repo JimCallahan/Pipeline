@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.10 2004/07/16 22:03:11 jim Exp $
+// $Id: MasterMgrServer.java,v 1.11 2004/07/18 21:31:40 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -539,10 +539,10 @@ class MasterMgrServer
 	    }
 	    break;
 	    
-	  case Revoke:
+	  case Release:
 	    {
-	      NodeRevokeReq req = (NodeRevokeReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.revoke(req));
+	      NodeReleaseReq req = (NodeReleaseReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.release(req));
 	      objOut.flush(); 
 	    }
 	    break;
@@ -551,6 +551,14 @@ class MasterMgrServer
 	    {
 	      NodeRenameReq req = (NodeRenameReq) objIn.readObject();
 	      objOut.writeObject(pMasterMgr.rename(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case Renumber:
+	    {
+	      NodeRenumberReq req = (NodeRenumberReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.renumber(req));
 	      objOut.flush(); 
 	    }
 	    break;
