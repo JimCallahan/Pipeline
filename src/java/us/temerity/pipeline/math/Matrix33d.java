@@ -266,7 +266,7 @@ class Matrix33d
   public void 
   scale
   (
-   Vector2f v
+   Vector2d v
   ) 
   {
     diagonal(new Tuple3d(v.x(), v.y(), 1.0));
@@ -285,7 +285,7 @@ class Matrix33d
   public static Matrix33d
   newScale
   (
-   Vector2f v
+   Vector2d v
   ) 
   {
     Matrix33d rtn = new Matrix33d();
@@ -309,7 +309,7 @@ class Matrix33d
   public void 
   translate
   (
-   Vector2f v
+   Vector2d v
   ) 
   {
     identity();
@@ -329,7 +329,7 @@ class Matrix33d
   public static Matrix33d
   newTranslate
   (
-   Vector2f v
+   Vector2d v
   ) 
   {
     Matrix33d rtn = new Matrix33d();
