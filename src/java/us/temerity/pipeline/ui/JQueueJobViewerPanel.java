@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.10 2004/09/08 19:34:45 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.11 2004/09/11 15:10:34 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -517,36 +517,47 @@ class JQueueJobViewerPanel
     pJobPool.updatePrep();
     pJobGroupPool.updatePrep();
 
+    boolean horzLayout = prefs.getJobViewerOrientation().equals("Horizontal");
     if(!pJobGroups.isEmpty()) {
-      double anchorHeight = 0.0;
+      Point2d uanchor = new Point2d();
       for(QueueJobGroup group : pJobGroups.values()) {
-	double groupHeight = anchorHeight;
+	Point2d ganchor = uanchor;
 
 	/* layout the jobs */ 
+	Vector2d gspan = new Vector2d();
 	ArrayList<ViewerJob> created = new ArrayList<ViewerJob>();
 	for(Long jobID : group.getRootIDs()) {
 	  JobStatus status = pJobStatus.get(jobID);
 	  if(status != null) {
 	    JobPath path = new JobPath(jobID);
 	    Point2d anchor = 
-	      new Point2d(prefs.getJobSizeX() + prefs.getJobSpace(), anchorHeight);
+	      new Point2d(ganchor.x + prefs.getJobSizeX() + prefs.getJobSpace(), 
+			  ganchor.y + gspan.y);
 	    
-	    double height = 0.0;
+	    Vector2d span = null; 
 	    {
 	      TreeSet<Long> seen = new TreeSet<Long>();
-	      height = layoutJobs(true, status, path, anchor, 
-				  group.getExternalIDs(), created, seen);
+	      span = layoutJobs(true, status, path, anchor, 
+				group.getExternalIDs(), created, seen);
 	    }
 	    
-	    anchorHeight += height;
+	    gspan.x = Math.max(span.x, gspan.x);
+	    gspan.y += span.y;
 	  }
 	}
 
 	ViewerJobGroup vgroup = pJobGroupPool.lookupOrCreateViewerJobGroup(group, created);
-	vgroup.setBounds(new Point2d(0.0, anchorHeight), 
-			 new Point2d(prefs.getJobSizeX(), groupHeight)); 
-	
-	anchorHeight -= prefs.getJobGroupSpace();
+	vgroup.setBounds(new Point2d(ganchor.x, ganchor.y + gspan.y), 
+			 new Point2d(ganchor.x + prefs.getJobSizeX(), ganchor.y));
+
+	if(horzLayout) {
+	  uanchor.x = ganchor.x + prefs.getJobSizeX() + gspan.x + prefs.getJobGroupSpace();
+	  uanchor.y = ganchor.y;
+	}
+	else {
+	  uanchor.x = ganchor.x; 
+	  uanchor.y = ganchor.y + gspan.y - prefs.getJobGroupSpace();
+	}
       }
 	
       /* preserve the current layout */ 
@@ -585,9 +596,9 @@ class JQueueJobViewerPanel
    *   The IDs of the processed jobs.
    * 
    * @return 
-   *   The height of the layout area of the viewer job including its children.
+   *   The size of the layout area of the viewer job including its children.
    */ 
-  private double
+  private Vector2d
   layoutJobs
   (
    boolean isRoot, 
@@ -629,33 +640,32 @@ class JQueueJobViewerPanel
 
     seen.add(status.getJobID());
 
-    double height = 0.0;
+    Vector2d mspan = new Vector2d(); 
     if(status.hasSources() && !vjob.isExternal() && !vjob.isCollapsed()) {
       for(Long childID : status.getSourceJobIDs()) {
 	JobStatus cstatus = pJobStatus.get(childID);
 	if(cstatus != null) {
 	  JobPath cpath = new JobPath(path, cstatus.getJobID());	  
-	  Point2d canchor = new Point2d(anchor.x + prefs.getJobSizeX(), anchor.y + height);
+	  Point2d canchor = new Point2d(anchor.x + prefs.getJobSizeX(), anchor.y + mspan.y);
 	
-	  height += layoutJobs(false, cstatus, cpath, canchor, external, created, seen);
-	}
-	else {
-
-	  // height += layoutMissing(...); 
-
+	  Vector2d span = layoutJobs(false, cstatus, cpath, canchor, external, created, seen);
+	  mspan.x = Math.max(mspan.x, span.x);
+	  mspan.y += span.y;
 	}
       }
     }
     else {
-      height = -prefs.getJobSizeY();
+      mspan.y = -prefs.getJobSizeY();
     }
 
     vjob.setBounds(new Point2d(anchor.x + prefs.getJobSpace(), 
-			       anchor.y + height + prefs.getJobSpace()), 
+			       anchor.y + mspan.y + prefs.getJobSpace()), 
 		   new Point2d(anchor.x + prefs.getJobSizeX() - prefs.getJobSpace(), 
 			       anchor.y - prefs.getJobSpace()));
+    
+    mspan.x += prefs.getJobSizeX();
 
-    return height;
+    return mspan;
   }
 
 
