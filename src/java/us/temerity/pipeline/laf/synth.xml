@@ -343,6 +343,11 @@
                     method="buttonBackground"	
                     sourceInsets="5 5 5 5"/>
     </state>
+    <state value="DISABLED">
+      <imagePainter path="ValuePanelButtonDisabled.png"
+                    method="buttonBackground"	
+                    sourceInsets="5 5 5 5"/>
+    </state>
     <insets top="2" bottom="2" right="8" left="8"/>
     <property key="Button.textShiftOffset" type="integer" value="1"/>  
   </style>
