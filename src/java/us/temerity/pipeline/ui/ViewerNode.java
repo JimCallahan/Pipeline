@@ -1,4 +1,4 @@
-// $Id: ViewerNode.java,v 1.4 2004/05/16 19:16:05 jim Exp $
+// $Id: ViewerNode.java,v 1.5 2004/07/22 00:07:16 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -285,8 +285,27 @@ class ViewerNode
     {
       String name = "Blank";
       NodeDetails details = pStatus.getDetails();
-      if(details != null) 
-	name = (details.getOverallNodeState() + "-" + details.getOverallQueueState());
+      if(details != null) {
+	if(details.getOverallNodeState() == OverallNodeState.NeedsCheckOut) {
+	  VersionID wvid = details.getWorkingVersion().getWorkingID();
+	  VersionID lvid = details.getLatestVersion().getVersionID();
+	  switch(wvid.compareLevel(lvid)) {
+	  case Major:
+	    name = ("NeedsCheckOutMajor-" + details.getOverallQueueState());
+	    break;
+	    
+	  case Minor:
+	    name = ("NeedsCheckOut-" + details.getOverallQueueState());
+	    break;
+	    
+	  case Micro:
+	    name = ("NeedsCheckOutMicro-" + details.getOverallQueueState());
+	  }
+	}
+	else {
+	  name = (details.getOverallNodeState() + "-" + details.getOverallQueueState());
+	}
+      }
       
       if(!name.equals(pIconAprName)) 
 	pIconAprNameChanged = true;
@@ -436,7 +455,6 @@ class ViewerNode
 	  Transform3D xform = new Transform3D();
 	  xform.setScale(0.35);
 	  
-// 	  System.out.print("Updating Label = " + pLabelText + "\n");
 	  for(SelectionMode mode : SelectionMode.all()) {
 	    TransformGroup label = 
 	      ViewerLabels.createLabelGeometry(pLabelText, "CharterBTRoman", mode, 0.05, pos);
@@ -457,8 +475,6 @@ class ViewerNode
       
       /* update the node icon appearance */ 
       if(pIconAprNameChanged) {
-// 	System.out.print("Updating Node Icon = " + pIconAprName + "-" + pMode + "\n");
-
 	AppearanceMgr mgr = AppearanceMgr.getInstance();
 	Appearance apr = mgr.getNodeAppearance(pIconAprName, pMode);
 	pShape.setAppearance(apr);

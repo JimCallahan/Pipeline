@@ -14,35 +14,39 @@ for mode in Normal Selected Primary
 do
   frame=0
   for nstate in Pending CheckedIn Identical NeedsCheckOut Modified \
-                Conflicted ModifiedLinks Missing
+                Conflicted ModifiedLinks Missing Added Obsolete \
+                NeedsCheckOutMicro NeedsCheckOutMajor 
   do
-    for qstate in Stale Queued Running Missing Failed Finished Undefined
+    for qstate in Stale Queued Running Aborted Failed Finished Undefined
     do
-      simg=`printf "%s.%04d.sgi" $src/$mode $frame`
-      dir=`echo $dest/$nstate-$qstate-$mode`
-
-      if [ ! -d $dir ]
+      if [ "$nstate" != "Added" -a "$nstate" != "Obsolete" ] 
       then 
-        mkdir -p $dir
-      fi
+        simg=`printf "%s.%04d.sgi" $src/$mode $frame`
+        dir=`echo $dest/$nstate-$qstate-$mode`
 
-      filter=0
-      size=128
-      while [ $size -gt 1 ]
-      do
-	size=$(($size / 2)) 
-	
-	dimg=$dir/texture.$size.png
-	if [ $simg -nt $dimg ] 
-	then
-	  filter=1
+        if [ ! -d $dir ]
+        then 
+          mkdir -p $dir
         fi
-      done
 
-      if [ $filter -eq 1 ]
-      then 
-        printf '(build-mipmap "%s" "%s/texture" 64)\n' $simg $dir >> $tmpfile
-        anynewer=1
+        filter=0
+        size=128
+        while [ $size -gt 1 ]
+        do
+  	  size=$(($size / 2)) 
+	
+  	  dimg=$dir/texture.$size.png
+	  if [ $simg -nt $dimg ] 
+	  then
+	    filter=1
+          fi
+        done
+
+        if [ $filter -eq 1 ]
+        then 
+          printf '(build-mipmap "%s" "%s/texture" 64)\n' $simg $dir >> $tmpfile
+          anynewer=1
+        fi
       fi
 
       frame=$(($frame + 1))	
@@ -51,9 +55,10 @@ do
 
   frame=0
   for nstate in Pending CheckedIn Identical NeedsCheckOut Modified \
-                Conflicted ModifiedLinks Missing Added Obsolete 
+                Conflicted ModifiedLinks Missing Added Obsolete \
+                NeedsCheckOutMicro NeedsCheckOutMajor 
   do
-    for qstate in Stale Queued Running Missing Failed Finished Undefined
+    for qstate in Stale Queued Running Aborted Failed Finished Undefined
     do
       simg=`printf "%s.%04d.sgi" $src/$mode $frame`
       dir=`echo $dest/$nstate-$qstate-$mode`
@@ -74,7 +79,7 @@ do
     done
   done
 
-  frame=70
+  frame=84
   for extra in Blank Collapsed
   do 
     simg=`printf "%s.%04d.sgi" $src/$mode $frame`
@@ -109,7 +114,7 @@ do
     frame=$(($frame + 1))
   done
 
-  frame=70
+  frame=84
   for extra in Blank Collapsed
   do 
     simg=`printf "%s.%04d.sgi" $src/$mode $frame`

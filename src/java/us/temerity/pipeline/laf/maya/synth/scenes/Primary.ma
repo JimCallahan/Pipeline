@@ -1,6 +1,6 @@
 //Maya ASCII 5.0 scene
 //Name: Primary.ma
-//Last modified: Mon, Jul 05, 2004 11:04:59 AM
+//Last modified: Wed, Jul 21, 2004 07:43:20 PM
 requires maya "5.0";
 currentUnit -l centimeter -a degree -t film;
 fileInfo "application" "maya";
@@ -42,13 +42,13 @@ createNode camera -s -n "perspShape" -p "persp";
 	setAttr ".dr" yes;
 createNode transform -s -n "top";
 	setAttr ".v" no;
-	setAttr ".t" -type "double3" 0.18758833136609143 100 0.16917134098015088 ;
+	setAttr ".t" -type "double3" 0.22863506963296976 100 0.0025412713374216578 ;
 	setAttr ".r" -type "double3" -89.999999999999986 0 0 ;
 createNode camera -s -n "topShape" -p "top";
 	setAttr -k off ".v" no;
 	setAttr ".rnd" no;
 	setAttr ".coi" 100;
-	setAttr ".ow" 2.4024048178307722;
+	setAttr ".ow" 3.1878379624851463;
 	setAttr ".imn" -type "string" "top";
 	setAttr ".den" -type "string" "top_depth";
 	setAttr ".man" -type "string" "top_mask";
@@ -97,16 +97,16 @@ createNode ambientLight -n "ambientLightShape1" -p "ambientLight1";
 	setAttr ".in" 0.20000000298023224;
 createNode transform -n "persp1";
 	setAttr ".v" no;
-	setAttr ".t" -type "double3" 0.8914214328294201 6.1410518754909305 -1.4530833644508956 ;
-	setAttr ".r" -type "double3" -73.538352727153836 -1290.5999999995258 0 ;
+	setAttr ".t" -type "double3" 0.06411316323531846 0.9683064832377144 0.97105392324896278 ;
+	setAttr ".r" -type "double3" -41.138352726861363 -2511.7999999986159 4.6090749386197031e-16 ;
 createNode camera -n "perspShape2" -p "persp1";
 	setAttr -k off ".v";
 	setAttr ".rnd" no;
-	setAttr ".coi" 5.5864802249098693;
+	setAttr ".coi" 1.1016476888806293;
 	setAttr ".imn" -type "string" "persp1";
 	setAttr ".den" -type "string" "persp1_depth";
 	setAttr ".man" -type "string" "persp1_mask";
-	setAttr ".tp" -type "double3" -1.1258632546678049 1.8122357998731848 -1.3581139900309629 ;
+	setAttr ".tp" -type "double3" -0.057878208033157241 -0.1 0 ;
 	setAttr ".hc" -type "string" "viewSet -p %camera";
 createNode transform -n "orig";
 	setAttr ".v" no;
@@ -1707,6 +1707,77 @@ createNode nurbsCurve -n "curveShape80" -p "curve80";
 		0.44999999999999823 0 0.013333333333333457
 		0.4499999999999999 0 0.02
 		;
+createNode transform -n "needsco_mega_curve";
+	setAttr ".tmp" yes;
+	setAttr ".r" -type "double3" 0 180 0 ;
+	setAttr ".s" -type "double3" -0.917 0.91674907739937816 0.91674907739937816 ;
+createNode transform -n "curve21" -p "needsco_mega_curve";
+	setAttr ".t" -type "double3" -0.025721914891881942 4.4941067921577722e-18 
+		-0.022506675530396696 ;
+createNode nurbsCurve -n "curveShape21" -p "|needsco_mega_curve|curve21";
+	setAttr -k off ".v";
+createNode transform -n "curve23" -p "needsco_mega_curve";
+	setAttr ".t" -type "double3" -0.025721914891881942 4.4941067921577722e-18 
+		-0.022506675530396696 ;
+createNode nurbsCurve -n "curveShape23" -p "|needsco_mega_curve|curve23";
+	setAttr -k off ".v";
+createNode transform -n "curve24" -p "needsco_mega_curve";
+	setAttr ".t" -type "double3" -0.14111492097979236 8.2786177750274737e-18 
+		-0.094658942277218328 ;
+createNode nurbsCurve -n "curveShape24" -p "|needsco_mega_curve|curve24";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 2 0 no 3
+		7 0 0 0 1 1.9087852599999999 1.9087852599999999 1.9087852599999999
+		5
+		0.40000000000000002 0 0.40000000000000002
+		0.44 0 0.40000000000000002
+		0.45785408330334354 6.6224292022409867e-18 0.36161471419520458
+		0.44162855556645286 6.0406315785081954e-19 0.32362947275962461
+		0.13999637388747432 8.1332682292219184e-20 -0.27996434297883926
+		;
+createNode transform -n "curve22detachedCurve2detachedCurve2" -p "needsco_mega_curve";
+	setAttr ".t" -type "double3" 0.058885079020207648 8.2786177750274737e-18 
+		-0.094658942277218328 ;
+createNode nurbsCurve -n "curve22detachedCurve2detachedCurveShape2" -p "|needsco_mega_curve|curve22detachedCurve2detachedCurve2";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 3 0 no 3
+		8 0.1021276594 0.1021276594 0.1021276594 1 2 2.946081242 2.946081242 2.946081242
+		
+		6
+		-0.060003626017622991 0 -0.27996434269824372
+		-0.32391127206242459 0 0.24810067902656985
+		-0.35863829787466667 0 0.3227234042506667
+		-0.32071891677333336 0 0.39856216645333337
+		-0.24427473754047652 0 0.39996123690047652
+		0.20000000023214926 0 0.3999979099418175
+		;
+createNode transform -n "curve25" -p "needsco_mega_curve";
+	setAttr ".t" -type "double3" -0.025721914891881942 4.4941067921577722e-18 
+		-0.013540054946741122 ;
+	setAttr ".s" -type "double3" 0.98418421168389469 0.98418421168389469 0.98418421168389469 ;
+createNode nurbsCurve -n "curveShape25" -p "|needsco_mega_curve|curve25";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		1 6 0 no 3
+		7 0 1 2 3 4 5 6
+		7
+		-0.040642797887970393 0 -0.65939547991051706
+		-0.56899917043158554 0 0.39731726517671323
+		-0.56899917043158554 0 0.47860286095265397
+		0.56899917043158554 0 0.47860286095265397
+		0.56899917043158554 0 0.39731726517671323
+		0.040642797887970393 0 -0.65939547991051706
+		-0.040642797887970393 0 -0.65939547991051706
+		;
+createNode transform -n "nurbsCircle4" -p "needsco_mega_curve";
+	setAttr ".t" -type "double3" -8.5468709536131505e-17 0 0.69811905545140407 ;
+	setAttr ".r" -type "double3" 0 -7.0183980379252408e-15 0 ;
+	setAttr ".s" -type "double3" 2.7262813522355507 2.7270275603570471 -2.7270275603570471 ;
+createNode nurbsCurve -n "nurbsCircleShape4" -p "nurbsCircle4";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
 createNode transform -n "PENDING";
 	setAttr -k off ".tx";
 	setAttr -k off ".ty";
@@ -23905,6 +23976,4202 @@ createNode nurbsSurface -n "buttonShapeOriginal" -p "|OBSOLETE|button";
 		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
 		
 		;
+createNode transform -n "NEEDSCO_MEGA";
+	setAttr -k off ".tx";
+	setAttr -k off ".ty";
+	setAttr -k off ".tz";
+	setAttr -k off ".rx";
+	setAttr -k off ".ry";
+	setAttr -k off ".rz";
+	setAttr -k off ".sx";
+	setAttr -k off ".sy";
+	setAttr -k off ".sz";
+createNode transform -n "button" -p "NEEDSCO_MEGA";
+	setAttr -k off ".tx";
+	setAttr -k off ".ty";
+	setAttr -k off ".tz";
+	setAttr -k off ".rx";
+	setAttr -k off ".ry";
+	setAttr -k off ".rz";
+	setAttr ".s" -type "double3" 0.96676633146284352 0.27552840025363046 0.96676633146284352 ;
+	setAttr -k off ".sx";
+	setAttr -k off ".sy";
+	setAttr -k off ".sz";
+createNode nurbsSurface -n "buttonShape" -p "|NEEDSCO_MEGA|button";
+	addAttr -ci true -sn "nts" -ln "notes" -dt "string";
+	setAttr -k off ".v";
+	setAttr ".io" yes;
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".dvu" 3;
+	setAttr ".dvv" 3;
+	setAttr ".cpr" 15;
+	setAttr ".cps" 4;
+	setAttr ".cc" -type "nurbsSurface" 
+		3 3 0 1 no 
+		9 0 0 0 1 2 3 4 4 4
+		13 0 0 0 1 2 3 4 5 6 7 8 8 8
+		
+		77
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		0.25512228824339334 -0.99999999999999978 -9.7144514654701197e-17
+		0.25512228824339334 -0.99999999999999978 0.066638930278790837
+		0.19991679083637273 -0.99999999999999989 0.19991679083637262
+		8.0740050356176958e-17 -0.99999999999999989 0.28272503694690349
+		-0.19991679083637257 -0.99999999999999989 0.19991679083637273
+		-0.28272503694690365 -0.99999999999999989 9.8208094269332484e-17
+		-0.19991679083637276 -0.99999999999999989 -0.1999167908363727
+		-1.7853193107835544e-16 -0.99999999999999989 -0.28272503694690365
+		0.19991679083637254 -0.99999999999999989 -0.19991679083637301
+		0.25512228824339328 -0.99999999999999978 -0.066638930278791031
+		0.25512228824339334 -0.99999999999999978 -9.7144514654701197e-17
+		0.78665241825139831 -0.78361162489122405 -4.163336342344337e-17
+		0.78665241825139831 -0.78361162489122405 0.20547665989686315
+		0.61642997969058921 -0.78361162489122416 0.61642997969058921
+		9.290196406134138e-17 -0.78361162489122416 0.87176363753180275
+		-0.61642997969058899 -0.78361162489122416 0.61642997969058932
+		-0.87176363753180297 -0.78361162489122405 2.8758228068793687e-16
+		-0.61642997969058932 -0.78361162489122405 -0.61642997969058921
+		-3.9443665154447686e-16 -0.78361162489122405 -0.87176363753180286
+		0.61642997969058888 -0.78361162489122405 -0.61642997969058999
+		0.7866524182513982 -0.78361162489122405 -0.20547665989686323
+		0.78665241825139831 -0.78361162489122405 -4.163336342344337e-17
+		1.106673790874301 9.7211629305805789e-17 8.3266726846886741e-17
+		1.106673790874301 7.9511935518331467e-17 0.28906748249718084
+		0.86720244749154174 4.4112547943382853e-17 0.86720244749154185
+		5.5892633642253459e-17 2.2118188293514839e-17 1.2264094625656801
+		-0.86720244749154141 4.4112547943382847e-17 0.86720244749154196
+		-1.2264094625656805 9.7211629305805764e-17 3.9727172196835625e-16
+		-0.86720244749154185 1.5031071066822873e-16 -0.86720244749154174
+		-4.8009591317811469e-16 1.7230507031809673e-16 -1.2264094625656801
+		0.8672024474915413 1.5031071066822878e-16 -0.86720244749154263
+		1.1066737908743007 1.1491132309328011e-16 -0.28906748249718067
+		1.106673790874301 9.7211629305805789e-17 8.3266726846886741e-17
+		0.78665241825139831 0.78361162489122393 1.5265566588595902e-16
+		0.78665241825139831 0.78361162489122393 0.20547665989686334
+		0.6164299796905891 0.78361162489122393 0.61642997969058944
+		-1.3442098327316464e-17 0.78361162489122393 0.87176363753180286
+		-0.61642997969058899 0.78361162489122393 0.61642997969058932
+		-0.87176363753180297 0.78361162489122393 2.7719979577636597e-16
+		-0.61642997969058921 0.78361162489122405 -0.61642997969058921
+		-2.8809258915581903e-16 0.78361162489122405 -0.87176363753180275
+		0.61642997969058888 0.78361162489122405 -0.61642997969058977
+		0.7866524182513982 0.78361162489122393 -0.20547665989686303
+		0.78665241825139831 0.78361162489122393 1.5265566588595902e-16
+		0.25512228824339317 0.99999999999999978 1.3877787807814457e-16
+		0.25512228824339317 0.99999999999999978 0.066638930278791045
+		0.19991679083637254 0.99999999999999989 0.19991679083637276
+		-5.4970113978636062e-17 0.99999999999999989 0.28272503694690354
+		-0.19991679083637257 0.99999999999999989 0.19991679083637265
+		-0.28272503694690354 0.99999999999999989 8.4958565316757091e-17
+		-0.19991679083637257 0.99999999999999989 -0.19991679083637262
+		-4.2821766743542383e-17 0.99999999999999989 -0.28272503694690337
+		0.19991679083637254 0.99999999999999989 -0.1999167908363727
+		0.25512228824339317 0.99999999999999978 -0.066638930278790767
+		0.25512228824339317 0.99999999999999978 1.3877787807814457e-16
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		
+		;
+	setAttr ".nufa" 3;
+	setAttr ".nvfa" 6;
+	setAttr ".nts" -type "string" "           ";
+createNode curveVarGroup -n "projectionCurve1" -p "|NEEDSCO_MEGA|button|buttonShape";
+	setAttr ".mc" 2;
+createNode curveVarGroup -n "projectionCurve2" -p "|NEEDSCO_MEGA|button|buttonShape";
+	setAttr ".mc" 2;
+createNode curveVarGroup -n "projectionCurve3" -p "|NEEDSCO_MEGA|button|buttonShape";
+	setAttr ".mc" 4;
+createNode curveVarGroup -n "projectionCurve4" -p "|NEEDSCO_MEGA|button|buttonShape";
+	setAttr ".mc" 2;
+createNode curveVarGroup -n "projectionCurve5" -p "|NEEDSCO_MEGA|button|buttonShape";
+	setAttr ".mc" 4;
+createNode curveVarGroup -n "projectionCurve6" -p "|NEEDSCO_MEGA|button|buttonShape";
+	setAttr ".mc" 2;
+createNode curveVarGroup -n "projectionCurve8" -p "|NEEDSCO_MEGA|button|buttonShape";
+	setAttr ".mc" 2;
+createNode curveVarGroup -n "projectionCurve18" -p "|NEEDSCO_MEGA|button|buttonShape";
+	setAttr ".mc" 1;
+createNode transform -n "projectionCurve18_1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve18";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve18_Shape1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve18|projectionCurve18_1";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		1 8 0 no 2
+		9 0 0.77837527070700641 1.5567505414140119 2.3351258121210177 3.1135010828280234
+		 3.8918763535350296 4.6702516242420353 5.4486268949490411 6.2270021656560477
+		
+		9
+		2 8
+		2 7
+		2 6
+		2 5
+		2 4
+		2 3
+		2 2
+		2 0.99999999999999978
+		2 0
+		;
+createNode curveVarGroup -n "projectionCurve143" -p "|NEEDSCO_MEGA|button|buttonShape";
+	setAttr ".mc" 1;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve143_1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve143";
+createNode nurbsCurve -n "projectionCurve143_Shape1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve143|projectionCurve143_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode curveVarGroup -n "projectionCurve144" -p "|NEEDSCO_MEGA|button|buttonShape";
+	setAttr ".mc" 1;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve144_1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve144";
+createNode nurbsCurve -n "projectionCurve144_Shape1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve144|projectionCurve144_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode curveVarGroup -n "projectionCurve145" -p "|NEEDSCO_MEGA|button|buttonShape";
+	setAttr ".mc" 1;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve145_1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve145";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve145_Shape1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve145|projectionCurve145_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode curveVarGroup -n "projectionCurve146" -p "|NEEDSCO_MEGA|button|buttonShape";
+	setAttr ".mc" 1;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve146_1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve146";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve146_Shape1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve146|projectionCurve146_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode curveVarGroup -n "projectionCurve147" -p "|NEEDSCO_MEGA|button|buttonShape";
+	setAttr ".mc" 4;
+	setAttr -s 4 ".l";
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve147_1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve147";
+createNode nurbsCurve -n "projectionCurve147_Shape1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve147|projectionCurve147_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode transform -n "projectionCurve147_2" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve147";
+createNode nurbsCurve -n "projectionCurve147_Shape2" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve147|projectionCurve147_2";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode transform -n "projectionCurve147_3" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve147";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve147_Shape3" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve147|projectionCurve147_3";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode transform -n "projectionCurve147_4" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve147";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve147_Shape4" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve147|projectionCurve147_4";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode curveVarGroup -n "projectionCurve148" -p "|NEEDSCO_MEGA|button|buttonShape";
+	setAttr ".mc" 4;
+	setAttr -s 4 ".l";
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve148_1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve148";
+createNode nurbsCurve -n "projectionCurve148_Shape1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve148|projectionCurve148_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode transform -n "projectionCurve148_2" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve148";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve148_Shape2" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve148|projectionCurve148_2";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode transform -n "projectionCurve148_3" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve148";
+createNode nurbsCurve -n "projectionCurve148_Shape3" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve148|projectionCurve148_3";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode transform -n "projectionCurve148_4" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve148";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve148_Shape4" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve148|projectionCurve148_4";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode curveVarGroup -n "projectionCurve149" -p "|NEEDSCO_MEGA|button|buttonShape";
+	setAttr ".mc" 2;
+	setAttr -s 2 ".l";
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve149_1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve149";
+createNode nurbsCurve -n "projectionCurve149_Shape1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve149|projectionCurve149_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode transform -n "projectionCurve149_2" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve149";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve149_Shape2" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve149|projectionCurve149_2";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode curveVarGroup -n "projectionCurve150" -p "|NEEDSCO_MEGA|button|buttonShape";
+	setAttr ".mc" 2;
+	setAttr -s 2 ".l";
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve150_1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve150";
+createNode nurbsCurve -n "projectionCurve150_Shape1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve150|projectionCurve150_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode transform -n "projectionCurve150_2" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve150";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve150_Shape2" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve150|projectionCurve150_2";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode curveVarGroup -n "projectionCurve151" -p "|NEEDSCO_MEGA|button|buttonShape";
+	setAttr ".mc" 2;
+	setAttr -s 2 ".l";
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve151_1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve151";
+createNode nurbsCurve -n "projectionCurve151_Shape1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve151|projectionCurve151_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode transform -n "projectionCurve151_2" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve151";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve151_Shape2" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve151|projectionCurve151_2";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode curveVarGroup -n "projectionCurve152" -p "|NEEDSCO_MEGA|button|buttonShape";
+	setAttr ".mc" 2;
+	setAttr -s 2 ".l";
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve152_1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve152";
+createNode nurbsCurve -n "projectionCurve152_Shape1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve152|projectionCurve152_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode transform -n "projectionCurve152_2" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve152";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve152_Shape2" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve152|projectionCurve152_2";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode curveVarGroup -n "projectionCurve153" -p "|NEEDSCO_MEGA|button|buttonShape";
+	setAttr ".mc" 2;
+	setAttr -s 2 ".l";
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve153_1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve153";
+createNode nurbsCurve -n "projectionCurve153_Shape1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve153|projectionCurve153_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode transform -n "projectionCurve153_2" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve153";
+createNode nurbsCurve -n "projectionCurve153_Shape2" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve153|projectionCurve153_2";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode curveVarGroup -n "projectionCurve154" -p "|NEEDSCO_MEGA|button|buttonShape";
+	setAttr ".mc" 2;
+	setAttr -s 2 ".l";
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve154_1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve154";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve154_Shape1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve154|projectionCurve154_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode transform -n "projectionCurve154_2" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve154";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve154_Shape2" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve154|projectionCurve154_2";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode curveVarGroup -n "projectionCurve155" -p "|NEEDSCO_MEGA|button|buttonShape";
+	setAttr ".mc" 1;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve155_1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve155";
+createNode nurbsCurve -n "projectionCurve155_Shape1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve155|projectionCurve155_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode curveVarGroup -n "projectionCurve156" -p "|NEEDSCO_MEGA|button|buttonShape";
+	setAttr ".mc" 1;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve156_1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve156";
+createNode nurbsCurve -n "projectionCurve156_Shape1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve156|projectionCurve156_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode curveVarGroup -n "projectionCurve157" -p "|NEEDSCO_MEGA|button|buttonShape";
+	setAttr ".mc" 1;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve157_1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve157";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve157_Shape1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve157|projectionCurve157_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode curveVarGroup -n "projectionCurve158" -p "|NEEDSCO_MEGA|button|buttonShape";
+	setAttr ".mc" 1;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve158_1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve158";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve158_Shape1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve158|projectionCurve158_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode curveVarGroup -n "projectionCurve159" -p "|NEEDSCO_MEGA|button|buttonShape";
+	setAttr ".mc" 4;
+	setAttr -s 4 ".l";
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve159_1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve159";
+createNode nurbsCurve -n "projectionCurve159_Shape1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve159|projectionCurve159_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode transform -n "projectionCurve159_2" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve159";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve159_Shape2" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve159|projectionCurve159_2";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode transform -n "projectionCurve159_3" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve159";
+createNode nurbsCurve -n "projectionCurve159_Shape3" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve159|projectionCurve159_3";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode transform -n "projectionCurve159_4" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve159";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve159_Shape4" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve159|projectionCurve159_4";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode curveVarGroup -n "projectionCurve160" -p "|NEEDSCO_MEGA|button|buttonShape";
+	setAttr ".mc" 4;
+	setAttr -s 4 ".l";
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve160_1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve160";
+createNode nurbsCurve -n "projectionCurve160_Shape1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve160|projectionCurve160_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode transform -n "projectionCurve160_2" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve160";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve160_Shape2" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve160|projectionCurve160_2";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode transform -n "projectionCurve160_3" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve160";
+createNode nurbsCurve -n "projectionCurve160_Shape3" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve160|projectionCurve160_3";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode transform -n "projectionCurve160_4" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve160";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve160_Shape4" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve160|projectionCurve160_4";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode curveVarGroup -n "projectionCurve161" -p "|NEEDSCO_MEGA|button|buttonShape";
+	setAttr ".mc" 2;
+	setAttr -s 2 ".l";
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve161_1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve161";
+createNode nurbsCurve -n "projectionCurve161_Shape1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve161|projectionCurve161_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode transform -n "projectionCurve161_2" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve161";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve161_Shape2" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve161|projectionCurve161_2";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode curveVarGroup -n "projectionCurve162" -p "|NEEDSCO_MEGA|button|buttonShape";
+	setAttr ".mc" 2;
+	setAttr -s 2 ".l";
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve162_1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve162";
+createNode nurbsCurve -n "projectionCurve162_Shape1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve162|projectionCurve162_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode transform -n "projectionCurve162_2" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve162";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve162_Shape2" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve162|projectionCurve162_2";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode curveVarGroup -n "projectionCurve163" -p "|NEEDSCO_MEGA|button|buttonShape";
+	setAttr ".mc" 2;
+	setAttr -s 2 ".l";
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve163_1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve163";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve163_Shape1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve163|projectionCurve163_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode transform -n "projectionCurve163_2" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve163";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve163_Shape2" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve163|projectionCurve163_2";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode curveVarGroup -n "projectionCurve164" -p "|NEEDSCO_MEGA|button|buttonShape";
+	setAttr ".mc" 2;
+	setAttr -s 2 ".l";
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve164_1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve164";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve164_Shape1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve164|projectionCurve164_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode transform -n "projectionCurve164_2" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve164";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve164_Shape2" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve164|projectionCurve164_2";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode curveVarGroup -n "projectionCurve165" -p "|NEEDSCO_MEGA|button|buttonShape";
+	setAttr ".mc" 2;
+	setAttr -s 2 ".l";
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve165_1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve165";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve165_Shape1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve165|projectionCurve165_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode transform -n "projectionCurve165_2" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve165";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve165_Shape2" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve165|projectionCurve165_2";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode curveVarGroup -n "projectionCurve166" -p "|NEEDSCO_MEGA|button|buttonShape";
+	setAttr ".mc" 2;
+	setAttr -s 2 ".l";
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve166_1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve166";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve166_Shape1" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve166|projectionCurve166_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode transform -n "projectionCurve166_2" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve166";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve166_Shape2" -p "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve166|projectionCurve166_2";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode nurbsSurface -n "buttontrimmedSurfaceShape2" -p "|NEEDSCO_MEGA|button";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".tw" yes;
+	setAttr ".dvu" 3;
+	setAttr ".dvv" 3;
+	setAttr ".cpr" 15;
+	setAttr ".cps" 4;
+createNode transform -n "inset" -p "NEEDSCO_MEGA";
+	setAttr ".t" -type "double3" 0 -0.1 0 ;
+	setAttr -k off ".tx";
+	setAttr -k off ".ty";
+	setAttr -k off ".tz";
+	setAttr -k off ".rx";
+	setAttr -k off ".ry";
+	setAttr -k off ".rz";
+	setAttr ".s" -type "double3" 0.96676633146284352 0.27552840025363046 0.96676633146284352 ;
+	setAttr -k off ".sx";
+	setAttr -k off ".sy";
+	setAttr -k off ".sz";
+createNode nurbsSurface -n "insetShape" -p "|NEEDSCO_MEGA|inset";
+	addAttr -ci true -sn "nts" -ln "notes" -dt "string";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".tw" yes;
+	setAttr ".dvu" 3;
+	setAttr ".dvv" 3;
+	setAttr ".cpr" 15;
+	setAttr ".cps" 4;
+	setAttr ".ipo" yes;
+	setAttr ".nufa" 3;
+	setAttr ".nvfa" 6;
+	setAttr ".nts" -type "string" "           ";
+createNode curveVarGroup -n "projectionCurve1" -p "|NEEDSCO_MEGA|inset|insetShape";
+	setAttr ".mc" 2;
+createNode curveVarGroup -n "projectionCurve2" -p "|NEEDSCO_MEGA|inset|insetShape";
+	setAttr ".mc" 2;
+createNode curveVarGroup -n "projectionCurve3" -p "|NEEDSCO_MEGA|inset|insetShape";
+	setAttr ".mc" 4;
+createNode curveVarGroup -n "projectionCurve4" -p "|NEEDSCO_MEGA|inset|insetShape";
+	setAttr ".mc" 2;
+createNode curveVarGroup -n "projectionCurve5" -p "|NEEDSCO_MEGA|inset|insetShape";
+	setAttr ".mc" 4;
+createNode curveVarGroup -n "projectionCurve6" -p "|NEEDSCO_MEGA|inset|insetShape";
+	setAttr ".mc" 2;
+createNode curveVarGroup -n "projectionCurve8" -p "|NEEDSCO_MEGA|inset|insetShape";
+	setAttr ".mc" 2;
+createNode curveVarGroup -n "projectionCurve18" -p "|NEEDSCO_MEGA|inset|insetShape";
+	setAttr ".mc" 1;
+createNode transform -n "projectionCurve18_1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve18";
+createNode nurbsCurve -n "projectionCurve18_Shape1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve18|projectionCurve18_1";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		1 8 0 no 2
+		9 0 0.77837527070700641 1.5567505414140119 2.3351258121210177 3.1135010828280234
+		 3.8918763535350296 4.6702516242420353 5.4486268949490411 6.2270021656560477
+		
+		9
+		2 8
+		2 7
+		2 6
+		2 5
+		2 4
+		2 3
+		2 2
+		2 0.99999999999999978
+		2 0
+		;
+createNode curveVarGroup -n "projectionCurve143" -p "|NEEDSCO_MEGA|inset|insetShape";
+	setAttr ".mc" 1;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve143_1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve143";
+createNode nurbsCurve -n "projectionCurve143_Shape1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve143|projectionCurve143_1";
+	setAttr -k off ".v";
+createNode curveVarGroup -n "projectionCurve144" -p "|NEEDSCO_MEGA|inset|insetShape";
+	setAttr ".mc" 1;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve144_1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve144";
+createNode nurbsCurve -n "projectionCurve144_Shape1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve144|projectionCurve144_1";
+	setAttr -k off ".v";
+createNode curveVarGroup -n "projectionCurve145" -p "|NEEDSCO_MEGA|inset|insetShape";
+	setAttr ".mc" 1;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve145_1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve145";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve145_Shape1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve145|projectionCurve145_1";
+	setAttr -k off ".v";
+createNode curveVarGroup -n "projectionCurve146" -p "|NEEDSCO_MEGA|inset|insetShape";
+	setAttr ".mc" 1;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve146_1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve146";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve146_Shape1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve146|projectionCurve146_1";
+	setAttr -k off ".v";
+createNode curveVarGroup -n "projectionCurve147" -p "|NEEDSCO_MEGA|inset|insetShape";
+	setAttr ".mc" 4;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve147_1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve147";
+createNode nurbsCurve -n "projectionCurve147_Shape1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve147|projectionCurve147_1";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 9 0 no 2
+		14 0 0 0 0.21583127187370088 0.21583127187370088 0.27017045183053995 0.27017045183053995
+		 0.27017045183053995 0.30270757296036133 0.30270757296036133 0.30270757296036133
+		 0.33897968777381277 0.33897968777381277 0.33897968777381277
+		12
+		0.22932732556961336 8
+		0.24773146683951375 7.7941961934851918
+		0.2760414015822667 7.5819967759470934
+		0.36940411296073228 7.3361762213428143
+		0.49083327714773212 7.1457999102208491
+		0.50867942666894062 7.0956813793364599
+		0.51988338693240621 7.0642165511490322
+		0.52502397365358022 7.0335089123872052
+		0.52333249214649624 7
+		0.52151813973115702 6.9640569667061119
+		0.51201046665492866 6.9289369292940419
+		0.50043606079579828 6.8953584566434349
+		;
+createNode transform -n "projectionCurve147_2" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve147";
+createNode nurbsCurve -n "projectionCurve147_Shape2" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve147|projectionCurve147_2";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 7 0 no 2
+		12 0 0 0 0.0023049560175301392 0.0023049560175301392 0.0023049560175301392
+		 0.25734079621860101 0.25734079621860101 0.25734079621860101 0.38434552624877288
+		 0.38434552624877288 0.38434552624877288
+		10
+		0.46705315503710765 2.0038113256536803
+		0.46608730781965646 2.0025441855067321
+		0.46512585814220403 2.0012737527692681
+		0.46416874860361379 2
+		0.24385772264230973 1.7068028599611984
+		0.23523117831610188 1.3284600883983362
+		0.21653962220791842 1
+		0.19878838784991831 0.68806385232658207
+		0.20147087192451352 0.31150403119003373
+		0.22932732556961336 0
+		;
+createNode transform -n "projectionCurve147_3" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve147";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve147_Shape3" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve147|projectionCurve147_3";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 9 0 no 2
+		14 0 0 0 0.21583127187371129 0.21583127187371129 0.27017045183054039 0.27017045183054039
+		 0.27017045183054039 0.30270757296036144 0.30270757296036144 0.30270757296036144
+		 0.33897968777381299 0.33897968777381299 0.33897968777381299
+		12
+		3.7706726744303869 8
+		3.7522685331604868 7.7941961934851962
+		3.7239585984177324 7.581996775947089
+		3.6305958870392723 7.3361762213428259
+		3.5091667228522634 7.1457999102208358
+		3.4913205733310591 7.095681379336459
+		3.4801166130675938 7.064216551149034
+		3.47497602634642 7.0335089123872034
+		3.4766675078535036 7
+		3.4784818602688432 6.9640569667061092
+		3.4879895333450706 6.9289369292940446
+		3.4995639392042017 6.8953584566434341
+		;
+createNode transform -n "projectionCurve147_4" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve147";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve147_Shape4" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve147|projectionCurve147_4";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 7 0 no 2
+		12 0 0 0 0.0023049560175301123 0.0023049560175301123 0.0023049560175301123
+		 0.2573407962186009 0.2573407962186009 0.2573407962186009 0.38434552624877283
+		 0.38434552624877283 0.38434552624877283
+		10
+		3.532946844962892 2.0038113256536798
+		3.5339126921803432 2.0025441855067316
+		3.5348741418577956 2.0012737527692681
+		3.5358312513963859 2
+		3.7561422773576902 1.7068028599611984
+		3.7647688216838979 1.3284600883983364
+		3.7834603777920814 1
+		3.8012116121500816 0.68806385232657696
+		3.7985291280754874 0.31150403119003883
+		3.7706726744303869 0
+		;
+createNode curveVarGroup -n "projectionCurve148" -p "|NEEDSCO_MEGA|inset|insetShape";
+	setAttr ".mc" 4;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve148_1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve148";
+createNode nurbsCurve -n "projectionCurve148_Shape1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve148|projectionCurve148_1";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 9 0 no 2
+		14 0 0 0 0.21583127187370088 0.21583127187370088 0.27017045183053995 0.27017045183053995
+		 0.27017045183053995 0.30270757296036133 0.30270757296036133 0.30270757296036133
+		 0.33897968777381277 0.33897968777381277 0.33897968777381277
+		12
+		0.22932732556961336 8
+		0.24773146683951375 7.7941961934851918
+		0.2760414015822667 7.5819967759470934
+		0.36940411296073228 7.3361762213428143
+		0.49083327714773212 7.1457999102208491
+		0.50867942666894062 7.0956813793364599
+		0.51988338693240621 7.0642165511490322
+		0.52502397365358022 7.0335089123872052
+		0.52333249214649624 7
+		0.52151813973115702 6.9640569667061119
+		0.51201046665492866 6.9289369292940419
+		0.50043606079579828 6.8953584566434349
+		;
+createNode transform -n "projectionCurve148_2" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve148";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve148_Shape2" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve148|projectionCurve148_2";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 7 0 no 2
+		12 0 0 0 0.0023049560175301392 0.0023049560175301392 0.0023049560175301392
+		 0.25734079621860101 0.25734079621860101 0.25734079621860101 0.38434552624877288
+		 0.38434552624877288 0.38434552624877288
+		10
+		0.46705315503710765 2.0038113256536803
+		0.46608730781965646 2.0025441855067321
+		0.46512585814220403 2.0012737527692681
+		0.46416874860361379 2
+		0.24385772264230973 1.7068028599611984
+		0.23523117831610188 1.3284600883983362
+		0.21653962220791842 1
+		0.19878838784991831 0.68806385232658207
+		0.20147087192451352 0.31150403119003373
+		0.22932732556961336 0
+		;
+createNode transform -n "projectionCurve148_3" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve148";
+createNode nurbsCurve -n "projectionCurve148_Shape3" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve148|projectionCurve148_3";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 9 0 no 2
+		14 0 0 0 0.21583127187371129 0.21583127187371129 0.27017045183054039 0.27017045183054039
+		 0.27017045183054039 0.30270757296036144 0.30270757296036144 0.30270757296036144
+		 0.33897968777381299 0.33897968777381299 0.33897968777381299
+		12
+		3.7706726744303869 8
+		3.7522685331604868 7.7941961934851962
+		3.7239585984177324 7.581996775947089
+		3.6305958870392723 7.3361762213428259
+		3.5091667228522634 7.1457999102208358
+		3.4913205733310591 7.095681379336459
+		3.4801166130675938 7.064216551149034
+		3.47497602634642 7.0335089123872034
+		3.4766675078535036 7
+		3.4784818602688432 6.9640569667061092
+		3.4879895333450706 6.9289369292940446
+		3.4995639392042017 6.8953584566434341
+		;
+createNode transform -n "projectionCurve148_4" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve148";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve148_Shape4" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve148|projectionCurve148_4";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 7 0 no 2
+		12 0 0 0 0.0023049560175301123 0.0023049560175301123 0.0023049560175301123
+		 0.2573407962186009 0.2573407962186009 0.2573407962186009 0.38434552624877283
+		 0.38434552624877283 0.38434552624877283
+		10
+		3.532946844962892 2.0038113256536798
+		3.5339126921803432 2.0025441855067316
+		3.5348741418577956 2.0012737527692681
+		3.5358312513963859 2
+		3.7561422773576902 1.7068028599611984
+		3.7647688216838979 1.3284600883983364
+		3.7834603777920814 1
+		3.8012116121500816 0.68806385232657696
+		3.7985291280754874 0.31150403119003883
+		3.7706726744303869 0
+		;
+createNode curveVarGroup -n "projectionCurve149" -p "|NEEDSCO_MEGA|inset|insetShape";
+	setAttr ".mc" 2;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve149_1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve149";
+createNode nurbsCurve -n "projectionCurve149_Shape1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve149|projectionCurve149_1";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 21 0 no 2
+		26 0 0 0 0.23767864910699218 0.23767864910699218 0.23767864910699218 0.46828290235264658
+		 0.46828290235264658 0.46828290235264658 0.49758612512608624 0.49758612512608624
+		 0.49758612512608624 0.55018496572267828 0.55018496572267828 0.55018496572267828
+		 0.63660744131201019 0.63660744131201019 0.77113459761248149 0.77113459761248149
+		 0.77113459761248149 0.89954438008902282 0.89954438008902282 0.89954438008902282
+		 1.1553666554289848 1.1553666554289848 1.1553666554289848
+		24
+		0.5004339828447022 6.8953627636428081
+		0.40398697424419561 6.6156083003513295
+		0.37866795478616644 6.2901681712120077
+		0.37833270094657939 6
+		0.37788957543709134 5.6164669765932285
+		0.44258665747377629 5.4814000765119353
+		0.47794798030539831 5.1041303188243052
+		0.48120452541817471 5.069386257029838
+		0.48199047620684443 5.0348543409957065
+		0.47986301981586454 5
+		0.47637609010377868 4.9428732651214888
+		0.46525485212353157 4.8881734640012695
+		0.44694446103672758 4.8340193753080065
+		0.40964835500162577 4.7237138867707449
+		0.36024856570133346 4.6484178357017267
+		0.2728915624446579 4.36246574547829
+		0.24792155287622855 4.1799213153718666
+		0.23176339285897132 4
+		0.20379357501134202 3.6885557258696329
+		0.2010926240897512 3.3118788789210827
+		0.21908968097587733 3
+		0.23798432472111478 2.6725664453824849
+		0.24780006238683763 2.2958587245263535
+		0.46705315467528757 2.0038113253331664
+		;
+createNode transform -n "projectionCurve149_2" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve149";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve149_Shape2" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve149|projectionCurve149_2";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 21 0 no 2
+		26 0 0 0 0.23767864910699196 0.23767864910699196 0.23767864910699196 0.46828290235264658
+		 0.46828290235264658 0.46828290235264658 0.49758612512608619 0.49758612512608619
+		 0.49758612512608619 0.55018496572267828 0.55018496572267828 0.55018496572267828
+		 0.63660744131201141 0.63660744131201141 0.7711345976124816 0.7711345976124816
+		 0.7711345976124816 0.89954438008902282 0.89954438008902282 0.89954438008902282
+		 1.1553666554289848 1.1553666554289848 1.1553666554289848
+		24
+		3.4995660171552978 6.8953627636428081
+		3.5960130257558043 6.6156083003513295
+		3.6213320452138333 6.2901681712120077
+		3.6216672990534207 6
+		3.622110424562909 5.6164669765932267
+		3.5574133425262238 5.4814000765119362
+		3.5220520196946015 5.1041303188243052
+		3.5187954745818248 5.0693862570298389
+		3.5180095237931552 5.0348543409957056
+		3.5201369801841351 5
+		3.5236239098962208 4.9428732651214924
+		3.5347451478764693 4.888173464001266
+		3.5530555389632723 4.8340193753080065
+		3.5903516449983761 4.7237138867707387
+		3.6397514342986645 4.6484178357017329
+		3.7271084375553438 4.3624657454782847
+		3.7520784471237705 4.1799213153718719
+		3.7682366071410285 4
+		3.7962064249886573 3.6885557258696391
+		3.7989073759102485 3.3118788789210769
+		3.7809103190241227 3
+		3.7620156752788856 2.6725664453824849
+		3.7521999376131623 2.2958587245263531
+		3.5329468453247124 2.003811325333166
+		;
+createNode curveVarGroup -n "projectionCurve150" -p "|NEEDSCO_MEGA|inset|insetShape";
+	setAttr ".mc" 2;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve150_1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve150";
+createNode nurbsCurve -n "projectionCurve150_Shape1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve150|projectionCurve150_1";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 21 0 no 2
+		26 0 0 0 0.23767864910699218 0.23767864910699218 0.23767864910699218 0.46828290235264658
+		 0.46828290235264658 0.46828290235264658 0.49758612512608624 0.49758612512608624
+		 0.49758612512608624 0.55018496572267828 0.55018496572267828 0.55018496572267828
+		 0.63660744131201019 0.63660744131201019 0.77113459761248149 0.77113459761248149
+		 0.77113459761248149 0.89954438008902282 0.89954438008902282 0.89954438008902282
+		 1.1553666554289848 1.1553666554289848 1.1553666554289848
+		24
+		0.5004339828447022 6.8953627636428081
+		0.40398697424419561 6.6156083003513295
+		0.37866795478616644 6.2901681712120077
+		0.37833270094657939 6
+		0.37788957543709134 5.6164669765932285
+		0.44258665747377629 5.4814000765119353
+		0.47794798030539831 5.1041303188243052
+		0.48120452541817471 5.069386257029838
+		0.48199047620684443 5.0348543409957065
+		0.47986301981586454 5
+		0.47637609010377868 4.9428732651214888
+		0.46525485212353157 4.8881734640012695
+		0.44694446103672758 4.8340193753080065
+		0.40964835500162577 4.7237138867707449
+		0.36024856570133346 4.6484178357017267
+		0.2728915624446579 4.36246574547829
+		0.24792155287622855 4.1799213153718666
+		0.23176339285897132 4
+		0.20379357501134202 3.6885557258696329
+		0.2010926240897512 3.3118788789210827
+		0.21908968097587733 3
+		0.23798432472111478 2.6725664453824849
+		0.24780006238683763 2.2958587245263535
+		0.46705315467528757 2.0038113253331664
+		;
+createNode transform -n "projectionCurve150_2" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve150";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve150_Shape2" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve150|projectionCurve150_2";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 21 0 no 2
+		26 0 0 0 0.23767864910699196 0.23767864910699196 0.23767864910699196 0.46828290235264658
+		 0.46828290235264658 0.46828290235264658 0.49758612512608619 0.49758612512608619
+		 0.49758612512608619 0.55018496572267828 0.55018496572267828 0.55018496572267828
+		 0.63660744131201141 0.63660744131201141 0.7711345976124816 0.7711345976124816
+		 0.7711345976124816 0.89954438008902282 0.89954438008902282 0.89954438008902282
+		 1.1553666554289848 1.1553666554289848 1.1553666554289848
+		24
+		3.4995660171552978 6.8953627636428081
+		3.5960130257558043 6.6156083003513295
+		3.6213320452138333 6.2901681712120077
+		3.6216672990534207 6
+		3.622110424562909 5.6164669765932267
+		3.5574133425262238 5.4814000765119362
+		3.5220520196946015 5.1041303188243052
+		3.5187954745818248 5.0693862570298389
+		3.5180095237931552 5.0348543409957056
+		3.5201369801841351 5
+		3.5236239098962208 4.9428732651214924
+		3.5347451478764693 4.888173464001266
+		3.5530555389632723 4.8340193753080065
+		3.5903516449983761 4.7237138867707387
+		3.6397514342986645 4.6484178357017329
+		3.7271084375553438 4.3624657454782847
+		3.7520784471237705 4.1799213153718719
+		3.7682366071410285 4
+		3.7962064249886573 3.6885557258696391
+		3.7989073759102485 3.3118788789210769
+		3.7809103190241227 3
+		3.7620156752788856 2.6725664453824849
+		3.7521999376131623 2.2958587245263531
+		3.5329468453247124 2.003811325333166
+		;
+createNode curveVarGroup -n "projectionCurve151" -p "|NEEDSCO_MEGA|inset|insetShape";
+	setAttr ".mc" 2;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve151_1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve151";
+createNode nurbsCurve -n "projectionCurve151_Shape1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve151|projectionCurve151_1";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 40 0 no 2
+		45 0 0 0 0.39012812317099416 0.39012812317099416 0.39012812317099416 0.46423960439268824
+		 0.46423960439268824 0.46423960439268824 0.53581405837184337 0.53581405837184337
+		 0.53581405837184337 0.95711570651833511 0.95711570651833511 0.95711570651833511
+		 1.3784173546648275 1.3784173546648275 1.3784173546648275 1.4981819135916854
+		 1.4981819135916854 1.4981819135916854 1.5723737710151258 1.5723737710151258
+		 1.5723737710151258 1.9630826296496795 1.9630826296496795 1.9630826296496795
+		 2.2345790318746288 2.2345790318746288 2.2345790318746288 2.6454738438522094
+		 2.6454738438522094 2.6454738438522094 2.7057477624500987 2.7057477624500987
+		 2.7057477624500987 2.7188408387321452 2.7188408387321452 2.7188408387321452
+		 3.1653170739214671 3.1653170739214671 3.1653170739214671 3.4015909058143685
+		 3.4015909058143685 3.4015909058143685
+		43
+		0.42987045900457965 8
+		0.48226966898154305 7.6969718410407779
+		0.5763514887564648 7.4079187383203626
+		0.85406353754330866 7.2173171003529726
+		0.87676485041389662 7.1760029729969901
+		0.9021360934123821 7.1363903915428111
+		0.93056470071825914 7.0987585882150848
+		0.89868783134705787 7.0680412124454364
+		0.86937982612488574 7.0351278201774425
+		0.8424509173203184 7
+		0.62757851901711492 6.7197064677418146
+		0.57545969074559844 6.3284737610115904
+		0.57545969074559844 6
+		0.57545969074559844 5.6715262389884087
+		0.62757851901711481 5.2802935322581863
+		0.84245091732031974 5
+		0.88733316951899321 4.9414526709628053
+		0.93848152885365455 4.8895021615580747
+		0.99642241366142004 4.8438211508665105
+		0.96836579851477211 4.8072266926192082
+		0.94324341860651628 4.768663026169139
+		0.92074767116460687 4.7284334062728464
+		0.66037744130374154 4.5514968242911005
+		0.55411702573266686 4.2872081238497275
+		0.49609366109815273 4
+		0.43418867262286515 3.6935783419503649
+		0.42782444636864114 3.3086917886617013
+		0.46668618505953913 3
+		0.50709409332875488 2.6790264692242474
+		0.59043592223735497 2.3469068000653945
+		0.87131108995087536 2.1261801832998315
+		0.86783644314503294 2.0842624942706882
+		0.86608448275782091 2.0420617760841591
+		0.86608448275782091 2
+		0.86608448275782091 1.9908302902362642
+		0.86616771136248005 1.9816624610938733
+		0.86633363981118749 1.9724942560261463
+		0.51849753479601113 1.7422790335326745
+		0.44386142495836195 1.3628468076615319
+		0.40466910007381401 1
+		0.3712779692098403 0.69086127771465422
+		0.37670025312173844 0.30748688018853099
+		0.42987045900457965 0
+		;
+createNode transform -n "projectionCurve151_2" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve151";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve151_Shape2" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve151|projectionCurve151_2";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 40 0 no 2
+		45 0 0 0 0.3901281231709941 0.3901281231709941 0.3901281231709941 0.4642396043926883
+		 0.4642396043926883 0.4642396043926883 0.53581405837184337 0.53581405837184337
+		 0.53581405837184337 0.95711570651833522 0.95711570651833522 0.95711570651833522
+		 1.3784173546648273 1.3784173546648273 1.3784173546648273 1.4981819135916854
+		 1.4981819135916854 1.4981819135916854 1.5723737710151258 1.5723737710151258
+		 1.5723737710151258 1.9630826296496795 1.9630826296496795 1.9630826296496795
+		 2.2345790318746288 2.2345790318746288 2.2345790318746288 2.6454738438522094
+		 2.6454738438522094 2.6454738438522094 2.7057477624500987 2.7057477624500987
+		 2.7057477624500987 2.7188408387321452 2.7188408387321452 2.7188408387321452
+		 3.1653170739214667 3.1653170739214667 3.1653170739214667 3.4015909058143681
+		 3.4015909058143681 3.4015909058143681
+		43
+		3.5701295409954201 8
+		3.5177303310184564 7.696971841040777
+		3.423648511243536 7.4079187383203635
+		3.1459364624566915 7.2173171003529726
+		3.123235149586105 7.1760029729969927
+		3.0978639065876155 7.1363903915428093
+		3.0694352992817406 7.0987585882150848
+		3.1013121686529415 7.0680412124454373
+		3.1306201738751147 7.0351278201774416
+		3.1575490826796813 7
+		3.3724214809828852 6.7197064677418146
+		3.4245403092544016 6.3284737610115904
+		3.4245403092544016 6
+		3.4245403092544016 5.6715262389884096
+		3.3724214809828847 5.2802935322581863
+		3.1575490826796804 5
+		3.1126668304810057 4.9414526709628035
+		3.0615184711463468 4.8895021615580765
+		3.0035775863385799 4.8438211508665105
+		3.0316342014852316 4.8072266926192029
+		3.0567565813934805 4.7686630261691443
+		3.079252328835393 4.7284334062728464
+		3.3396225586962585 4.5514968242911005
+		3.4458829742673331 4.2872081238497275
+		3.5039063389018472 4
+		3.5658113273771352 3.6935783419503636
+		3.5721755536313591 3.3086917886617027
+		3.533313814940461 3
+		3.4929059066712451 2.6790264692242474
+		3.4095640777626448 2.3469068000653945
+		3.1286889100491244 2.1261801832998315
+		3.1321635568549677 2.0842624942706807
+		3.1339155172421789 2.0420617760841671
+		3.1339155172421789 2
+		3.1339155172421789 1.9908302902362642
+		3.1338322886375196 1.9816624610938733
+		3.1336663601888124 1.9724942560261463
+		3.4815024652039894 1.7422790335326743
+		3.5561385750416377 1.3628468076615323
+		3.5953308999261857 1
+		3.6287220307901595 0.69086127771465278
+		3.6232997468782613 0.30748688018853237
+		3.5701295409954201 0
+		;
+createNode curveVarGroup -n "projectionCurve152" -p "|NEEDSCO_MEGA|inset|insetShape";
+	setAttr ".mc" 2;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve152_1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve152";
+createNode nurbsCurve -n "projectionCurve152_Shape1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve152|projectionCurve152_1";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 40 0 no 2
+		45 0 0 0 0.39012812317099416 0.39012812317099416 0.39012812317099416 0.46423960439268824
+		 0.46423960439268824 0.46423960439268824 0.53581405837184337 0.53581405837184337
+		 0.53581405837184337 0.95711570651833511 0.95711570651833511 0.95711570651833511
+		 1.3784173546648275 1.3784173546648275 1.3784173546648275 1.4981819135916854
+		 1.4981819135916854 1.4981819135916854 1.5723737710151258 1.5723737710151258
+		 1.5723737710151258 1.9630826296496795 1.9630826296496795 1.9630826296496795
+		 2.2345790318746288 2.2345790318746288 2.2345790318746288 2.6454738438522094
+		 2.6454738438522094 2.6454738438522094 2.7057477624500987 2.7057477624500987
+		 2.7057477624500987 2.7188408387321452 2.7188408387321452 2.7188408387321452
+		 3.1653170739214671 3.1653170739214671 3.1653170739214671 3.4015909058143685
+		 3.4015909058143685 3.4015909058143685
+		43
+		0.42987045900457965 8
+		0.48226966898154305 7.6969718410407779
+		0.5763514887564648 7.4079187383203626
+		0.85406353754330866 7.2173171003529726
+		0.87676485041389662 7.1760029729969901
+		0.9021360934123821 7.1363903915428111
+		0.93056470071825914 7.0987585882150848
+		0.89868783134705787 7.0680412124454364
+		0.86937982612488574 7.0351278201774425
+		0.8424509173203184 7
+		0.62757851901711492 6.7197064677418146
+		0.57545969074559844 6.3284737610115904
+		0.57545969074559844 6
+		0.57545969074559844 5.6715262389884087
+		0.62757851901711481 5.2802935322581863
+		0.84245091732031974 5
+		0.88733316951899321 4.9414526709628053
+		0.93848152885365455 4.8895021615580747
+		0.99642241366142004 4.8438211508665105
+		0.96836579851477211 4.8072266926192082
+		0.94324341860651628 4.768663026169139
+		0.92074767116460687 4.7284334062728464
+		0.66037744130374154 4.5514968242911005
+		0.55411702573266686 4.2872081238497275
+		0.49609366109815273 4
+		0.43418867262286515 3.6935783419503649
+		0.42782444636864114 3.3086917886617013
+		0.46668618505953913 3
+		0.50709409332875488 2.6790264692242474
+		0.59043592223735497 2.3469068000653945
+		0.87131108995087536 2.1261801832998315
+		0.86783644314503294 2.0842624942706882
+		0.86608448275782091 2.0420617760841591
+		0.86608448275782091 2
+		0.86608448275782091 1.9908302902362642
+		0.86616771136248005 1.9816624610938733
+		0.86633363981118749 1.9724942560261463
+		0.51849753479601113 1.7422790335326745
+		0.44386142495836195 1.3628468076615319
+		0.40466910007381401 1
+		0.3712779692098403 0.69086127771465422
+		0.37670025312173844 0.30748688018853099
+		0.42987045900457965 0
+		;
+createNode transform -n "projectionCurve152_2" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve152";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve152_Shape2" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve152|projectionCurve152_2";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 40 0 no 2
+		45 0 0 0 0.3901281231709941 0.3901281231709941 0.3901281231709941 0.4642396043926883
+		 0.4642396043926883 0.4642396043926883 0.53581405837184337 0.53581405837184337
+		 0.53581405837184337 0.95711570651833522 0.95711570651833522 0.95711570651833522
+		 1.3784173546648273 1.3784173546648273 1.3784173546648273 1.4981819135916854
+		 1.4981819135916854 1.4981819135916854 1.5723737710151258 1.5723737710151258
+		 1.5723737710151258 1.9630826296496795 1.9630826296496795 1.9630826296496795
+		 2.2345790318746288 2.2345790318746288 2.2345790318746288 2.6454738438522094
+		 2.6454738438522094 2.6454738438522094 2.7057477624500987 2.7057477624500987
+		 2.7057477624500987 2.7188408387321452 2.7188408387321452 2.7188408387321452
+		 3.1653170739214667 3.1653170739214667 3.1653170739214667 3.4015909058143681
+		 3.4015909058143681 3.4015909058143681
+		43
+		3.5701295409954201 8
+		3.5177303310184564 7.696971841040777
+		3.423648511243536 7.4079187383203635
+		3.1459364624566915 7.2173171003529726
+		3.123235149586105 7.1760029729969927
+		3.0978639065876155 7.1363903915428093
+		3.0694352992817406 7.0987585882150848
+		3.1013121686529415 7.0680412124454373
+		3.1306201738751147 7.0351278201774416
+		3.1575490826796813 7
+		3.3724214809828852 6.7197064677418146
+		3.4245403092544016 6.3284737610115904
+		3.4245403092544016 6
+		3.4245403092544016 5.6715262389884096
+		3.3724214809828847 5.2802935322581863
+		3.1575490826796804 5
+		3.1126668304810057 4.9414526709628035
+		3.0615184711463468 4.8895021615580765
+		3.0035775863385799 4.8438211508665105
+		3.0316342014852316 4.8072266926192029
+		3.0567565813934805 4.7686630261691443
+		3.079252328835393 4.7284334062728464
+		3.3396225586962585 4.5514968242911005
+		3.4458829742673331 4.2872081238497275
+		3.5039063389018472 4
+		3.5658113273771352 3.6935783419503636
+		3.5721755536313591 3.3086917886617027
+		3.533313814940461 3
+		3.4929059066712451 2.6790264692242474
+		3.4095640777626448 2.3469068000653945
+		3.1286889100491244 2.1261801832998315
+		3.1321635568549677 2.0842624942706807
+		3.1339155172421789 2.0420617760841671
+		3.1339155172421789 2
+		3.1339155172421789 1.9908302902362642
+		3.1338322886375196 1.9816624610938733
+		3.1336663601888124 1.9724942560261463
+		3.4815024652039894 1.7422790335326743
+		3.5561385750416377 1.3628468076615323
+		3.5953308999261857 1
+		3.6287220307901595 0.69086127771465278
+		3.6232997468782613 0.30748688018853237
+		3.5701295409954201 0
+		;
+createNode curveVarGroup -n "projectionCurve153" -p "|NEEDSCO_MEGA|inset|insetShape";
+	setAttr ".mc" 2;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve153_1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve153";
+createNode nurbsCurve -n "projectionCurve153_Shape1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve153|projectionCurve153_1";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 22 1 no 2
+		27 0 0 0 0.13844975529490267 0.13844975529490267 0.13844975529490267 0.17198269974020447
+		 0.17198269974020447 0.17198269974020447 0.27539672988615549 0.27539672988615549
+		 0.27539672988615549 0.41318294918616405 0.41318294918616405 0.41318294918616405
+		 0.55096916848617239 0.55096916848617239 0.55096916848617239 0.65438319863212335
+		 0.65438319863212335 0.65438319863212335 0.68791614307742543 0.68791614307742543
+		 0.68791614307742543 0.82636589837232743 0.82636589837232743 0.82636589837232743
+		
+		25
+		1.1621386282656494 6
+		1.1621386282656494 6.0772107258085111
+		1.1101409251204024 6.1517607738954174
+		1.0520866054532167 6.1949928926329765
+		1.0359293423430993 6.2070249467721856
+		1.0182852330183898 6.2174520783098615
+		1 6.2258903580868346
+		0.95065284766076352 6.2486631101330694
+		0.88735896472900633 6.2610779930109199
+		0.8338577930016714 6.2362679649181381
+		0.74712030998794998 6.1960453058475116
+		0.71813900372665396 6.0817095794485976
+		0.71813900372665396 6
+		0.71813900372665396 5.9182904205514006
+		0.74712030998794898 5.8039546941524902
+		0.83385779300167173 5.7637320350818637
+		0.88735896472900788 5.7389220069890809
+		0.95065284766076208 5.7513368898669315
+		1 5.7741096419131663
+		1.0182852330183823 5.7825479216901368
+		1.0359293423431064 5.7929750532278197
+		1.052086605453217 5.8050071073670253
+		1.1101409251204031 5.8482392261045852
+		1.1621386282656494 5.9227892741914872
+		1.1621386282656494 6
+		;
+createNode transform -n "projectionCurve153_2" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve153";
+createNode nurbsCurve -n "projectionCurve153_Shape2" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve153|projectionCurve153_2";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 22 1 no 2
+		27 0 0 0 0.13844975529490272 0.13844975529490272 0.13844975529490272 0.17198269974020464
+		 0.17198269974020464 0.17198269974020464 0.27539672988615566 0.27539672988615566
+		 0.27539672988615566 0.41318294918616416 0.41318294918616416 0.41318294918616416
+		 0.55096916848617261 0.55096916848617261 0.55096916848617261 0.65438319863212324
+		 0.65438319863212324 0.65438319863212324 0.68791614307742555 0.68791614307742555
+		 0.68791614307742555 0.82636589837232766 0.82636589837232766 0.82636589837232766
+		
+		25
+		2.8378613717343502 6
+		2.8378613717343502 6.077210725808512
+		2.8898590748795967 6.1517607738954174
+		2.947913394546783 6.1949928926329765
+		2.9640706576568996 6.2070249467721856
+		2.9817147669816109 6.2174520783098615
+		3 6.2258903580868346
+		3.0493471523392373 6.2486631101330694
+		3.1126410352709928 6.2610779930109208
+		3.1661422069983285 6.2362679649181381
+		3.2528796900120502 6.1960453058475116
+		3.281860996273346 6.0817095794485985
+		3.281860996273346 6
+		3.281860996273346 5.9182904205514024
+		3.2528796900120494 5.8039546941524884
+		3.166142206998328 5.7637320350818628
+		3.1126410352709923 5.7389220069890801
+		3.0493471523392373 5.7513368898669315
+		3 5.7741096419131663
+		2.98171476698161 5.7825479216901394
+		2.9640706576568996 5.7929750532278144
+		2.9479133945467826 5.8050071073670244
+		2.8898590748795971 5.8482392261045835
+		2.8378613717343502 5.9227892741914889
+		2.8378613717343502 6
+		;
+createNode curveVarGroup -n "projectionCurve154" -p "|NEEDSCO_MEGA|inset|insetShape";
+	setAttr ".mc" 2;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve154_1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve154";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve154_Shape1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve154|projectionCurve154_1";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 22 1 no 2
+		27 0 0 0 0.13844975529490267 0.13844975529490267 0.13844975529490267 0.17198269974020447
+		 0.17198269974020447 0.17198269974020447 0.27539672988615549 0.27539672988615549
+		 0.27539672988615549 0.41318294918616405 0.41318294918616405 0.41318294918616405
+		 0.55096916848617239 0.55096916848617239 0.55096916848617239 0.65438319863212335
+		 0.65438319863212335 0.65438319863212335 0.68791614307742543 0.68791614307742543
+		 0.68791614307742543 0.82636589837232743 0.82636589837232743 0.82636589837232743
+		
+		25
+		1.1621386282656494 6
+		1.1621386282656494 6.0772107258085111
+		1.1101409251204024 6.1517607738954174
+		1.0520866054532167 6.1949928926329765
+		1.0359293423430993 6.2070249467721856
+		1.0182852330183898 6.2174520783098615
+		1 6.2258903580868346
+		0.95065284766076352 6.2486631101330694
+		0.88735896472900633 6.2610779930109199
+		0.8338577930016714 6.2362679649181381
+		0.74712030998794998 6.1960453058475116
+		0.71813900372665396 6.0817095794485976
+		0.71813900372665396 6
+		0.71813900372665396 5.9182904205514006
+		0.74712030998794898 5.8039546941524902
+		0.83385779300167173 5.7637320350818637
+		0.88735896472900788 5.7389220069890809
+		0.95065284766076208 5.7513368898669315
+		1 5.7741096419131663
+		1.0182852330183823 5.7825479216901368
+		1.0359293423431064 5.7929750532278197
+		1.052086605453217 5.8050071073670253
+		1.1101409251204031 5.8482392261045852
+		1.1621386282656494 5.9227892741914872
+		1.1621386282656494 6
+		;
+createNode transform -n "projectionCurve154_2" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve154";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve154_Shape2" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve154|projectionCurve154_2";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 22 1 no 2
+		27 0 0 0 0.13844975529490272 0.13844975529490272 0.13844975529490272 0.17198269974020464
+		 0.17198269974020464 0.17198269974020464 0.27539672988615566 0.27539672988615566
+		 0.27539672988615566 0.41318294918616416 0.41318294918616416 0.41318294918616416
+		 0.55096916848617261 0.55096916848617261 0.55096916848617261 0.65438319863212324
+		 0.65438319863212324 0.65438319863212324 0.68791614307742555 0.68791614307742555
+		 0.68791614307742555 0.82636589837232766 0.82636589837232766 0.82636589837232766
+		
+		25
+		2.8378613717343502 6
+		2.8378613717343502 6.077210725808512
+		2.8898590748795967 6.1517607738954174
+		2.947913394546783 6.1949928926329765
+		2.9640706576568996 6.2070249467721856
+		2.9817147669816109 6.2174520783098615
+		3 6.2258903580868346
+		3.0493471523392373 6.2486631101330694
+		3.1126410352709928 6.2610779930109208
+		3.1661422069983285 6.2362679649181381
+		3.2528796900120502 6.1960453058475116
+		3.281860996273346 6.0817095794485985
+		3.281860996273346 6
+		3.281860996273346 5.9182904205514024
+		3.2528796900120494 5.8039546941524884
+		3.166142206998328 5.7637320350818628
+		3.1126410352709923 5.7389220069890801
+		3.0493471523392373 5.7513368898669315
+		3 5.7741096419131663
+		2.98171476698161 5.7825479216901394
+		2.9640706576568996 5.7929750532278144
+		2.9479133945467826 5.8050071073670244
+		2.8898590748795971 5.8482392261045835
+		2.8378613717343502 5.9227892741914889
+		2.8378613717343502 6
+		;
+createNode curveVarGroup -n "projectionCurve155" -p "|NEEDSCO_MEGA|inset|insetShape";
+	setAttr ".mc" 1;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve155_1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve155";
+createNode nurbsCurve -n "projectionCurve155_Shape1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve155|projectionCurve155_1";
+	setAttr -k off ".v";
+createNode curveVarGroup -n "projectionCurve156" -p "|NEEDSCO_MEGA|inset|insetShape";
+	setAttr ".mc" 1;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve156_1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve156";
+createNode nurbsCurve -n "projectionCurve156_Shape1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve156|projectionCurve156_1";
+	setAttr -k off ".v";
+createNode curveVarGroup -n "projectionCurve157" -p "|NEEDSCO_MEGA|inset|insetShape";
+	setAttr ".mc" 1;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve157_1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve157";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve157_Shape1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve157|projectionCurve157_1";
+	setAttr -k off ".v";
+createNode curveVarGroup -n "projectionCurve158" -p "|NEEDSCO_MEGA|inset|insetShape";
+	setAttr ".mc" 1;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve158_1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve158";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve158_Shape1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve158|projectionCurve158_1";
+	setAttr -k off ".v";
+createNode curveVarGroup -n "projectionCurve159" -p "|NEEDSCO_MEGA|inset|insetShape";
+	setAttr ".mc" 4;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve159_1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve159";
+createNode nurbsCurve -n "projectionCurve159_Shape1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve159|projectionCurve159_1";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 9 0 no 2
+		14 0 0 0 0.21583127187370088 0.21583127187370088 0.27017045183053995 0.27017045183053995
+		 0.27017045183053995 0.30270757296036133 0.30270757296036133 0.30270757296036133
+		 0.33897968777381277 0.33897968777381277 0.33897968777381277
+		12
+		0.22932732556961336 8
+		0.24773146683951375 7.7941961934851918
+		0.2760414015822667 7.5819967759470934
+		0.36940411296073228 7.3361762213428143
+		0.49083327714773212 7.1457999102208491
+		0.50867942666894062 7.0956813793364599
+		0.51988338693240621 7.0642165511490322
+		0.52502397365358022 7.0335089123872052
+		0.52333249214649624 7
+		0.52151813973115702 6.9640569667061119
+		0.51201046665492866 6.9289369292940419
+		0.50043606079579828 6.8953584566434349
+		;
+createNode transform -n "projectionCurve159_2" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve159";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve159_Shape2" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve159|projectionCurve159_2";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 7 0 no 2
+		12 0 0 0 0.0023049560175301392 0.0023049560175301392 0.0023049560175301392
+		 0.25734079621860101 0.25734079621860101 0.25734079621860101 0.38434552624877288
+		 0.38434552624877288 0.38434552624877288
+		10
+		0.46705315503710765 2.0038113256536803
+		0.46608730781965646 2.0025441855067321
+		0.46512585814220403 2.0012737527692681
+		0.46416874860361379 2
+		0.24385772264230973 1.7068028599611984
+		0.23523117831610188 1.3284600883983362
+		0.21653962220791842 1
+		0.19878838784991831 0.68806385232658207
+		0.20147087192451352 0.31150403119003373
+		0.22932732556961336 0
+		;
+createNode transform -n "projectionCurve159_3" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve159";
+createNode nurbsCurve -n "projectionCurve159_Shape3" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve159|projectionCurve159_3";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 9 0 no 2
+		14 0 0 0 0.21583127187371129 0.21583127187371129 0.27017045183054039 0.27017045183054039
+		 0.27017045183054039 0.30270757296036144 0.30270757296036144 0.30270757296036144
+		 0.33897968777381299 0.33897968777381299 0.33897968777381299
+		12
+		3.7706726744303869 8
+		3.7522685331604868 7.7941961934851962
+		3.7239585984177324 7.581996775947089
+		3.6305958870392723 7.3361762213428259
+		3.5091667228522634 7.1457999102208358
+		3.4913205733310591 7.095681379336459
+		3.4801166130675938 7.064216551149034
+		3.47497602634642 7.0335089123872034
+		3.4766675078535036 7
+		3.4784818602688432 6.9640569667061092
+		3.4879895333450706 6.9289369292940446
+		3.4995639392042017 6.8953584566434341
+		;
+createNode transform -n "projectionCurve159_4" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve159";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve159_Shape4" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve159|projectionCurve159_4";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 7 0 no 2
+		12 0 0 0 0.0023049560175301123 0.0023049560175301123 0.0023049560175301123
+		 0.2573407962186009 0.2573407962186009 0.2573407962186009 0.38434552624877283
+		 0.38434552624877283 0.38434552624877283
+		10
+		3.532946844962892 2.0038113256536798
+		3.5339126921803432 2.0025441855067316
+		3.5348741418577956 2.0012737527692681
+		3.5358312513963859 2
+		3.7561422773576902 1.7068028599611984
+		3.7647688216838979 1.3284600883983364
+		3.7834603777920814 1
+		3.8012116121500816 0.68806385232657696
+		3.7985291280754874 0.31150403119003883
+		3.7706726744303869 0
+		;
+createNode curveVarGroup -n "projectionCurve160" -p "|NEEDSCO_MEGA|inset|insetShape";
+	setAttr ".mc" 4;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve160_1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve160";
+createNode nurbsCurve -n "projectionCurve160_Shape1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve160|projectionCurve160_1";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 9 0 no 2
+		14 0 0 0 0.21583127187370088 0.21583127187370088 0.27017045183053995 0.27017045183053995
+		 0.27017045183053995 0.30270757296036133 0.30270757296036133 0.30270757296036133
+		 0.33897968777381277 0.33897968777381277 0.33897968777381277
+		12
+		0.22932732556961336 8
+		0.24773146683951375 7.7941961934851918
+		0.2760414015822667 7.5819967759470934
+		0.36940411296073228 7.3361762213428143
+		0.49083327714773212 7.1457999102208491
+		0.50867942666894062 7.0956813793364599
+		0.51988338693240621 7.0642165511490322
+		0.52502397365358022 7.0335089123872052
+		0.52333249214649624 7
+		0.52151813973115702 6.9640569667061119
+		0.51201046665492866 6.9289369292940419
+		0.50043606079579828 6.8953584566434349
+		;
+createNode transform -n "projectionCurve160_2" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve160";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve160_Shape2" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve160|projectionCurve160_2";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 7 0 no 2
+		12 0 0 0 0.0023049560175301392 0.0023049560175301392 0.0023049560175301392
+		 0.25734079621860101 0.25734079621860101 0.25734079621860101 0.38434552624877288
+		 0.38434552624877288 0.38434552624877288
+		10
+		0.46705315503710765 2.0038113256536803
+		0.46608730781965646 2.0025441855067321
+		0.46512585814220403 2.0012737527692681
+		0.46416874860361379 2
+		0.24385772264230973 1.7068028599611984
+		0.23523117831610188 1.3284600883983362
+		0.21653962220791842 1
+		0.19878838784991831 0.68806385232658207
+		0.20147087192451352 0.31150403119003373
+		0.22932732556961336 0
+		;
+createNode transform -n "projectionCurve160_3" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve160";
+createNode nurbsCurve -n "projectionCurve160_Shape3" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve160|projectionCurve160_3";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 9 0 no 2
+		14 0 0 0 0.21583127187371129 0.21583127187371129 0.27017045183054039 0.27017045183054039
+		 0.27017045183054039 0.30270757296036144 0.30270757296036144 0.30270757296036144
+		 0.33897968777381299 0.33897968777381299 0.33897968777381299
+		12
+		3.7706726744303869 8
+		3.7522685331604868 7.7941961934851962
+		3.7239585984177324 7.581996775947089
+		3.6305958870392723 7.3361762213428259
+		3.5091667228522634 7.1457999102208358
+		3.4913205733310591 7.095681379336459
+		3.4801166130675938 7.064216551149034
+		3.47497602634642 7.0335089123872034
+		3.4766675078535036 7
+		3.4784818602688432 6.9640569667061092
+		3.4879895333450706 6.9289369292940446
+		3.4995639392042017 6.8953584566434341
+		;
+createNode transform -n "projectionCurve160_4" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve160";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve160_Shape4" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve160|projectionCurve160_4";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 7 0 no 2
+		12 0 0 0 0.0023049560175301123 0.0023049560175301123 0.0023049560175301123
+		 0.2573407962186009 0.2573407962186009 0.2573407962186009 0.38434552624877283
+		 0.38434552624877283 0.38434552624877283
+		10
+		3.532946844962892 2.0038113256536798
+		3.5339126921803432 2.0025441855067316
+		3.5348741418577956 2.0012737527692681
+		3.5358312513963859 2
+		3.7561422773576902 1.7068028599611984
+		3.7647688216838979 1.3284600883983364
+		3.7834603777920814 1
+		3.8012116121500816 0.68806385232657696
+		3.7985291280754874 0.31150403119003883
+		3.7706726744303869 0
+		;
+createNode curveVarGroup -n "projectionCurve161" -p "|NEEDSCO_MEGA|inset|insetShape";
+	setAttr ".mc" 2;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve161_1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve161";
+createNode nurbsCurve -n "projectionCurve161_Shape1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve161|projectionCurve161_1";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 21 0 no 2
+		26 0 0 0 0.23767864910699218 0.23767864910699218 0.23767864910699218 0.46828290235264658
+		 0.46828290235264658 0.46828290235264658 0.49758612512608624 0.49758612512608624
+		 0.49758612512608624 0.55018496572267828 0.55018496572267828 0.55018496572267828
+		 0.63660744131201019 0.63660744131201019 0.77113459761248149 0.77113459761248149
+		 0.77113459761248149 0.89954438008902282 0.89954438008902282 0.89954438008902282
+		 1.1553666554289848 1.1553666554289848 1.1553666554289848
+		24
+		0.5004339828447022 6.8953627636428081
+		0.40398697424419561 6.6156083003513295
+		0.37866795478616644 6.2901681712120077
+		0.37833270094657939 6
+		0.37788957543709134 5.6164669765932285
+		0.44258665747377629 5.4814000765119353
+		0.47794798030539831 5.1041303188243052
+		0.48120452541817471 5.069386257029838
+		0.48199047620684443 5.0348543409957065
+		0.47986301981586454 5
+		0.47637609010377868 4.9428732651214888
+		0.46525485212353157 4.8881734640012695
+		0.44694446103672758 4.8340193753080065
+		0.40964835500162577 4.7237138867707449
+		0.36024856570133346 4.6484178357017267
+		0.2728915624446579 4.36246574547829
+		0.24792155287622855 4.1799213153718666
+		0.23176339285897132 4
+		0.20379357501134202 3.6885557258696329
+		0.2010926240897512 3.3118788789210827
+		0.21908968097587733 3
+		0.23798432472111478 2.6725664453824849
+		0.24780006238683763 2.2958587245263535
+		0.46705315467528757 2.0038113253331664
+		;
+createNode transform -n "projectionCurve161_2" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve161";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve161_Shape2" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve161|projectionCurve161_2";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 21 0 no 2
+		26 0 0 0 0.23767864910699196 0.23767864910699196 0.23767864910699196 0.46828290235264658
+		 0.46828290235264658 0.46828290235264658 0.49758612512608619 0.49758612512608619
+		 0.49758612512608619 0.55018496572267828 0.55018496572267828 0.55018496572267828
+		 0.63660744131201141 0.63660744131201141 0.7711345976124816 0.7711345976124816
+		 0.7711345976124816 0.89954438008902282 0.89954438008902282 0.89954438008902282
+		 1.1553666554289848 1.1553666554289848 1.1553666554289848
+		24
+		3.4995660171552978 6.8953627636428081
+		3.5960130257558043 6.6156083003513295
+		3.6213320452138333 6.2901681712120077
+		3.6216672990534207 6
+		3.622110424562909 5.6164669765932267
+		3.5574133425262238 5.4814000765119362
+		3.5220520196946015 5.1041303188243052
+		3.5187954745818248 5.0693862570298389
+		3.5180095237931552 5.0348543409957056
+		3.5201369801841351 5
+		3.5236239098962208 4.9428732651214924
+		3.5347451478764693 4.888173464001266
+		3.5530555389632723 4.8340193753080065
+		3.5903516449983761 4.7237138867707387
+		3.6397514342986645 4.6484178357017329
+		3.7271084375553438 4.3624657454782847
+		3.7520784471237705 4.1799213153718719
+		3.7682366071410285 4
+		3.7962064249886573 3.6885557258696391
+		3.7989073759102485 3.3118788789210769
+		3.7809103190241227 3
+		3.7620156752788856 2.6725664453824849
+		3.7521999376131623 2.2958587245263531
+		3.5329468453247124 2.003811325333166
+		;
+createNode curveVarGroup -n "projectionCurve162" -p "|NEEDSCO_MEGA|inset|insetShape";
+	setAttr ".mc" 2;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve162_1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve162";
+createNode nurbsCurve -n "projectionCurve162_Shape1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve162|projectionCurve162_1";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 21 0 no 2
+		26 0 0 0 0.23767864910699218 0.23767864910699218 0.23767864910699218 0.46828290235264658
+		 0.46828290235264658 0.46828290235264658 0.49758612512608624 0.49758612512608624
+		 0.49758612512608624 0.55018496572267828 0.55018496572267828 0.55018496572267828
+		 0.63660744131201019 0.63660744131201019 0.77113459761248149 0.77113459761248149
+		 0.77113459761248149 0.89954438008902282 0.89954438008902282 0.89954438008902282
+		 1.1553666554289848 1.1553666554289848 1.1553666554289848
+		24
+		0.5004339828447022 6.8953627636428081
+		0.40398697424419561 6.6156083003513295
+		0.37866795478616644 6.2901681712120077
+		0.37833270094657939 6
+		0.37788957543709134 5.6164669765932285
+		0.44258665747377629 5.4814000765119353
+		0.47794798030539831 5.1041303188243052
+		0.48120452541817471 5.069386257029838
+		0.48199047620684443 5.0348543409957065
+		0.47986301981586454 5
+		0.47637609010377868 4.9428732651214888
+		0.46525485212353157 4.8881734640012695
+		0.44694446103672758 4.8340193753080065
+		0.40964835500162577 4.7237138867707449
+		0.36024856570133346 4.6484178357017267
+		0.2728915624446579 4.36246574547829
+		0.24792155287622855 4.1799213153718666
+		0.23176339285897132 4
+		0.20379357501134202 3.6885557258696329
+		0.2010926240897512 3.3118788789210827
+		0.21908968097587733 3
+		0.23798432472111478 2.6725664453824849
+		0.24780006238683763 2.2958587245263535
+		0.46705315467528757 2.0038113253331664
+		;
+createNode transform -n "projectionCurve162_2" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve162";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve162_Shape2" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve162|projectionCurve162_2";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 21 0 no 2
+		26 0 0 0 0.23767864910699196 0.23767864910699196 0.23767864910699196 0.46828290235264658
+		 0.46828290235264658 0.46828290235264658 0.49758612512608619 0.49758612512608619
+		 0.49758612512608619 0.55018496572267828 0.55018496572267828 0.55018496572267828
+		 0.63660744131201141 0.63660744131201141 0.7711345976124816 0.7711345976124816
+		 0.7711345976124816 0.89954438008902282 0.89954438008902282 0.89954438008902282
+		 1.1553666554289848 1.1553666554289848 1.1553666554289848
+		24
+		3.4995660171552978 6.8953627636428081
+		3.5960130257558043 6.6156083003513295
+		3.6213320452138333 6.2901681712120077
+		3.6216672990534207 6
+		3.622110424562909 5.6164669765932267
+		3.5574133425262238 5.4814000765119362
+		3.5220520196946015 5.1041303188243052
+		3.5187954745818248 5.0693862570298389
+		3.5180095237931552 5.0348543409957056
+		3.5201369801841351 5
+		3.5236239098962208 4.9428732651214924
+		3.5347451478764693 4.888173464001266
+		3.5530555389632723 4.8340193753080065
+		3.5903516449983761 4.7237138867707387
+		3.6397514342986645 4.6484178357017329
+		3.7271084375553438 4.3624657454782847
+		3.7520784471237705 4.1799213153718719
+		3.7682366071410285 4
+		3.7962064249886573 3.6885557258696391
+		3.7989073759102485 3.3118788789210769
+		3.7809103190241227 3
+		3.7620156752788856 2.6725664453824849
+		3.7521999376131623 2.2958587245263531
+		3.5329468453247124 2.003811325333166
+		;
+createNode curveVarGroup -n "projectionCurve163" -p "|NEEDSCO_MEGA|inset|insetShape";
+	setAttr ".mc" 2;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve163_1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve163";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve163_Shape1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve163|projectionCurve163_1";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 40 0 no 2
+		45 0 0 0 0.39012812317099416 0.39012812317099416 0.39012812317099416 0.46423960439268824
+		 0.46423960439268824 0.46423960439268824 0.53581405837184337 0.53581405837184337
+		 0.53581405837184337 0.95711570651833511 0.95711570651833511 0.95711570651833511
+		 1.3784173546648275 1.3784173546648275 1.3784173546648275 1.4981819135916854
+		 1.4981819135916854 1.4981819135916854 1.5723737710151258 1.5723737710151258
+		 1.5723737710151258 1.9630826296496795 1.9630826296496795 1.9630826296496795
+		 2.2345790318746288 2.2345790318746288 2.2345790318746288 2.6454738438522094
+		 2.6454738438522094 2.6454738438522094 2.7057477624500987 2.7057477624500987
+		 2.7057477624500987 2.7188408387321452 2.7188408387321452 2.7188408387321452
+		 3.1653170739214671 3.1653170739214671 3.1653170739214671 3.4015909058143685
+		 3.4015909058143685 3.4015909058143685
+		43
+		0.42987045900457965 8
+		0.48226966898154305 7.6969718410407779
+		0.5763514887564648 7.4079187383203626
+		0.85406353754330866 7.2173171003529726
+		0.87676485041389662 7.1760029729969901
+		0.9021360934123821 7.1363903915428111
+		0.93056470071825914 7.0987585882150848
+		0.89868783134705787 7.0680412124454364
+		0.86937982612488574 7.0351278201774425
+		0.8424509173203184 7
+		0.62757851901711492 6.7197064677418146
+		0.57545969074559844 6.3284737610115904
+		0.57545969074559844 6
+		0.57545969074559844 5.6715262389884087
+		0.62757851901711481 5.2802935322581863
+		0.84245091732031974 5
+		0.88733316951899321 4.9414526709628053
+		0.93848152885365455 4.8895021615580747
+		0.99642241366142004 4.8438211508665105
+		0.96836579851477211 4.8072266926192082
+		0.94324341860651628 4.768663026169139
+		0.92074767116460687 4.7284334062728464
+		0.66037744130374154 4.5514968242911005
+		0.55411702573266686 4.2872081238497275
+		0.49609366109815273 4
+		0.43418867262286515 3.6935783419503649
+		0.42782444636864114 3.3086917886617013
+		0.46668618505953913 3
+		0.50709409332875488 2.6790264692242474
+		0.59043592223735497 2.3469068000653945
+		0.87131108995087536 2.1261801832998315
+		0.86783644314503294 2.0842624942706882
+		0.86608448275782091 2.0420617760841591
+		0.86608448275782091 2
+		0.86608448275782091 1.9908302902362642
+		0.86616771136248005 1.9816624610938733
+		0.86633363981118749 1.9724942560261463
+		0.51849753479601113 1.7422790335326745
+		0.44386142495836195 1.3628468076615319
+		0.40466910007381401 1
+		0.3712779692098403 0.69086127771465422
+		0.37670025312173844 0.30748688018853099
+		0.42987045900457965 0
+		;
+createNode transform -n "projectionCurve163_2" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve163";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve163_Shape2" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve163|projectionCurve163_2";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 40 0 no 2
+		45 0 0 0 0.3901281231709941 0.3901281231709941 0.3901281231709941 0.4642396043926883
+		 0.4642396043926883 0.4642396043926883 0.53581405837184337 0.53581405837184337
+		 0.53581405837184337 0.95711570651833522 0.95711570651833522 0.95711570651833522
+		 1.3784173546648273 1.3784173546648273 1.3784173546648273 1.4981819135916854
+		 1.4981819135916854 1.4981819135916854 1.5723737710151258 1.5723737710151258
+		 1.5723737710151258 1.9630826296496795 1.9630826296496795 1.9630826296496795
+		 2.2345790318746288 2.2345790318746288 2.2345790318746288 2.6454738438522094
+		 2.6454738438522094 2.6454738438522094 2.7057477624500987 2.7057477624500987
+		 2.7057477624500987 2.7188408387321452 2.7188408387321452 2.7188408387321452
+		 3.1653170739214667 3.1653170739214667 3.1653170739214667 3.4015909058143681
+		 3.4015909058143681 3.4015909058143681
+		43
+		3.5701295409954201 8
+		3.5177303310184564 7.696971841040777
+		3.423648511243536 7.4079187383203635
+		3.1459364624566915 7.2173171003529726
+		3.123235149586105 7.1760029729969927
+		3.0978639065876155 7.1363903915428093
+		3.0694352992817406 7.0987585882150848
+		3.1013121686529415 7.0680412124454373
+		3.1306201738751147 7.0351278201774416
+		3.1575490826796813 7
+		3.3724214809828852 6.7197064677418146
+		3.4245403092544016 6.3284737610115904
+		3.4245403092544016 6
+		3.4245403092544016 5.6715262389884096
+		3.3724214809828847 5.2802935322581863
+		3.1575490826796804 5
+		3.1126668304810057 4.9414526709628035
+		3.0615184711463468 4.8895021615580765
+		3.0035775863385799 4.8438211508665105
+		3.0316342014852316 4.8072266926192029
+		3.0567565813934805 4.7686630261691443
+		3.079252328835393 4.7284334062728464
+		3.3396225586962585 4.5514968242911005
+		3.4458829742673331 4.2872081238497275
+		3.5039063389018472 4
+		3.5658113273771352 3.6935783419503636
+		3.5721755536313591 3.3086917886617027
+		3.533313814940461 3
+		3.4929059066712451 2.6790264692242474
+		3.4095640777626448 2.3469068000653945
+		3.1286889100491244 2.1261801832998315
+		3.1321635568549677 2.0842624942706807
+		3.1339155172421789 2.0420617760841671
+		3.1339155172421789 2
+		3.1339155172421789 1.9908302902362642
+		3.1338322886375196 1.9816624610938733
+		3.1336663601888124 1.9724942560261463
+		3.4815024652039894 1.7422790335326743
+		3.5561385750416377 1.3628468076615323
+		3.5953308999261857 1
+		3.6287220307901595 0.69086127771465278
+		3.6232997468782613 0.30748688018853237
+		3.5701295409954201 0
+		;
+createNode curveVarGroup -n "projectionCurve164" -p "|NEEDSCO_MEGA|inset|insetShape";
+	setAttr ".mc" 2;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve164_1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve164";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve164_Shape1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve164|projectionCurve164_1";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 40 0 no 2
+		45 0 0 0 0.39012812317099416 0.39012812317099416 0.39012812317099416 0.46423960439268824
+		 0.46423960439268824 0.46423960439268824 0.53581405837184337 0.53581405837184337
+		 0.53581405837184337 0.95711570651833511 0.95711570651833511 0.95711570651833511
+		 1.3784173546648275 1.3784173546648275 1.3784173546648275 1.4981819135916854
+		 1.4981819135916854 1.4981819135916854 1.5723737710151258 1.5723737710151258
+		 1.5723737710151258 1.9630826296496795 1.9630826296496795 1.9630826296496795
+		 2.2345790318746288 2.2345790318746288 2.2345790318746288 2.6454738438522094
+		 2.6454738438522094 2.6454738438522094 2.7057477624500987 2.7057477624500987
+		 2.7057477624500987 2.7188408387321452 2.7188408387321452 2.7188408387321452
+		 3.1653170739214671 3.1653170739214671 3.1653170739214671 3.4015909058143685
+		 3.4015909058143685 3.4015909058143685
+		43
+		0.42987045900457965 8
+		0.48226966898154305 7.6969718410407779
+		0.5763514887564648 7.4079187383203626
+		0.85406353754330866 7.2173171003529726
+		0.87676485041389662 7.1760029729969901
+		0.9021360934123821 7.1363903915428111
+		0.93056470071825914 7.0987585882150848
+		0.89868783134705787 7.0680412124454364
+		0.86937982612488574 7.0351278201774425
+		0.8424509173203184 7
+		0.62757851901711492 6.7197064677418146
+		0.57545969074559844 6.3284737610115904
+		0.57545969074559844 6
+		0.57545969074559844 5.6715262389884087
+		0.62757851901711481 5.2802935322581863
+		0.84245091732031974 5
+		0.88733316951899321 4.9414526709628053
+		0.93848152885365455 4.8895021615580747
+		0.99642241366142004 4.8438211508665105
+		0.96836579851477211 4.8072266926192082
+		0.94324341860651628 4.768663026169139
+		0.92074767116460687 4.7284334062728464
+		0.66037744130374154 4.5514968242911005
+		0.55411702573266686 4.2872081238497275
+		0.49609366109815273 4
+		0.43418867262286515 3.6935783419503649
+		0.42782444636864114 3.3086917886617013
+		0.46668618505953913 3
+		0.50709409332875488 2.6790264692242474
+		0.59043592223735497 2.3469068000653945
+		0.87131108995087536 2.1261801832998315
+		0.86783644314503294 2.0842624942706882
+		0.86608448275782091 2.0420617760841591
+		0.86608448275782091 2
+		0.86608448275782091 1.9908302902362642
+		0.86616771136248005 1.9816624610938733
+		0.86633363981118749 1.9724942560261463
+		0.51849753479601113 1.7422790335326745
+		0.44386142495836195 1.3628468076615319
+		0.40466910007381401 1
+		0.3712779692098403 0.69086127771465422
+		0.37670025312173844 0.30748688018853099
+		0.42987045900457965 0
+		;
+createNode transform -n "projectionCurve164_2" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve164";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve164_Shape2" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve164|projectionCurve164_2";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 40 0 no 2
+		45 0 0 0 0.3901281231709941 0.3901281231709941 0.3901281231709941 0.4642396043926883
+		 0.4642396043926883 0.4642396043926883 0.53581405837184337 0.53581405837184337
+		 0.53581405837184337 0.95711570651833522 0.95711570651833522 0.95711570651833522
+		 1.3784173546648273 1.3784173546648273 1.3784173546648273 1.4981819135916854
+		 1.4981819135916854 1.4981819135916854 1.5723737710151258 1.5723737710151258
+		 1.5723737710151258 1.9630826296496795 1.9630826296496795 1.9630826296496795
+		 2.2345790318746288 2.2345790318746288 2.2345790318746288 2.6454738438522094
+		 2.6454738438522094 2.6454738438522094 2.7057477624500987 2.7057477624500987
+		 2.7057477624500987 2.7188408387321452 2.7188408387321452 2.7188408387321452
+		 3.1653170739214667 3.1653170739214667 3.1653170739214667 3.4015909058143681
+		 3.4015909058143681 3.4015909058143681
+		43
+		3.5701295409954201 8
+		3.5177303310184564 7.696971841040777
+		3.423648511243536 7.4079187383203635
+		3.1459364624566915 7.2173171003529726
+		3.123235149586105 7.1760029729969927
+		3.0978639065876155 7.1363903915428093
+		3.0694352992817406 7.0987585882150848
+		3.1013121686529415 7.0680412124454373
+		3.1306201738751147 7.0351278201774416
+		3.1575490826796813 7
+		3.3724214809828852 6.7197064677418146
+		3.4245403092544016 6.3284737610115904
+		3.4245403092544016 6
+		3.4245403092544016 5.6715262389884096
+		3.3724214809828847 5.2802935322581863
+		3.1575490826796804 5
+		3.1126668304810057 4.9414526709628035
+		3.0615184711463468 4.8895021615580765
+		3.0035775863385799 4.8438211508665105
+		3.0316342014852316 4.8072266926192029
+		3.0567565813934805 4.7686630261691443
+		3.079252328835393 4.7284334062728464
+		3.3396225586962585 4.5514968242911005
+		3.4458829742673331 4.2872081238497275
+		3.5039063389018472 4
+		3.5658113273771352 3.6935783419503636
+		3.5721755536313591 3.3086917886617027
+		3.533313814940461 3
+		3.4929059066712451 2.6790264692242474
+		3.4095640777626448 2.3469068000653945
+		3.1286889100491244 2.1261801832998315
+		3.1321635568549677 2.0842624942706807
+		3.1339155172421789 2.0420617760841671
+		3.1339155172421789 2
+		3.1339155172421789 1.9908302902362642
+		3.1338322886375196 1.9816624610938733
+		3.1336663601888124 1.9724942560261463
+		3.4815024652039894 1.7422790335326743
+		3.5561385750416377 1.3628468076615323
+		3.5953308999261857 1
+		3.6287220307901595 0.69086127771465278
+		3.6232997468782613 0.30748688018853237
+		3.5701295409954201 0
+		;
+createNode curveVarGroup -n "projectionCurve165" -p "|NEEDSCO_MEGA|inset|insetShape";
+	setAttr ".mc" 2;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve165_1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve165";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve165_Shape1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve165|projectionCurve165_1";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 22 1 no 2
+		27 0 0 0 0.13844975529490267 0.13844975529490267 0.13844975529490267 0.17198269974020447
+		 0.17198269974020447 0.17198269974020447 0.27539672988615549 0.27539672988615549
+		 0.27539672988615549 0.41318294918616405 0.41318294918616405 0.41318294918616405
+		 0.55096916848617239 0.55096916848617239 0.55096916848617239 0.65438319863212335
+		 0.65438319863212335 0.65438319863212335 0.68791614307742543 0.68791614307742543
+		 0.68791614307742543 0.82636589837232743 0.82636589837232743 0.82636589837232743
+		
+		25
+		1.1621386282656494 6
+		1.1621386282656494 6.0772107258085111
+		1.1101409251204024 6.1517607738954174
+		1.0520866054532167 6.1949928926329765
+		1.0359293423430993 6.2070249467721856
+		1.0182852330183898 6.2174520783098615
+		1 6.2258903580868346
+		0.95065284766076352 6.2486631101330694
+		0.88735896472900633 6.2610779930109199
+		0.8338577930016714 6.2362679649181381
+		0.74712030998794998 6.1960453058475116
+		0.71813900372665396 6.0817095794485976
+		0.71813900372665396 6
+		0.71813900372665396 5.9182904205514006
+		0.74712030998794898 5.8039546941524902
+		0.83385779300167173 5.7637320350818637
+		0.88735896472900788 5.7389220069890809
+		0.95065284766076208 5.7513368898669315
+		1 5.7741096419131663
+		1.0182852330183823 5.7825479216901368
+		1.0359293423431064 5.7929750532278197
+		1.052086605453217 5.8050071073670253
+		1.1101409251204031 5.8482392261045852
+		1.1621386282656494 5.9227892741914872
+		1.1621386282656494 6
+		;
+createNode transform -n "projectionCurve165_2" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve165";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve165_Shape2" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve165|projectionCurve165_2";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 22 1 no 2
+		27 0 0 0 0.13844975529490272 0.13844975529490272 0.13844975529490272 0.17198269974020464
+		 0.17198269974020464 0.17198269974020464 0.27539672988615566 0.27539672988615566
+		 0.27539672988615566 0.41318294918616416 0.41318294918616416 0.41318294918616416
+		 0.55096916848617261 0.55096916848617261 0.55096916848617261 0.65438319863212324
+		 0.65438319863212324 0.65438319863212324 0.68791614307742555 0.68791614307742555
+		 0.68791614307742555 0.82636589837232766 0.82636589837232766 0.82636589837232766
+		
+		25
+		2.8378613717343502 6
+		2.8378613717343502 6.077210725808512
+		2.8898590748795967 6.1517607738954174
+		2.947913394546783 6.1949928926329765
+		2.9640706576568996 6.2070249467721856
+		2.9817147669816109 6.2174520783098615
+		3 6.2258903580868346
+		3.0493471523392373 6.2486631101330694
+		3.1126410352709928 6.2610779930109208
+		3.1661422069983285 6.2362679649181381
+		3.2528796900120502 6.1960453058475116
+		3.281860996273346 6.0817095794485985
+		3.281860996273346 6
+		3.281860996273346 5.9182904205514024
+		3.2528796900120494 5.8039546941524884
+		3.166142206998328 5.7637320350818628
+		3.1126410352709923 5.7389220069890801
+		3.0493471523392373 5.7513368898669315
+		3 5.7741096419131663
+		2.98171476698161 5.7825479216901394
+		2.9640706576568996 5.7929750532278144
+		2.9479133945467826 5.8050071073670244
+		2.8898590748795971 5.8482392261045835
+		2.8378613717343502 5.9227892741914889
+		2.8378613717343502 6
+		;
+createNode curveVarGroup -n "projectionCurve166" -p "|NEEDSCO_MEGA|inset|insetShape";
+	setAttr ".mc" 2;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve166_1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve166";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve166_Shape1" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve166|projectionCurve166_1";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 22 1 no 2
+		27 0 0 0 0.13844975529490267 0.13844975529490267 0.13844975529490267 0.17198269974020447
+		 0.17198269974020447 0.17198269974020447 0.27539672988615549 0.27539672988615549
+		 0.27539672988615549 0.41318294918616405 0.41318294918616405 0.41318294918616405
+		 0.55096916848617239 0.55096916848617239 0.55096916848617239 0.65438319863212335
+		 0.65438319863212335 0.65438319863212335 0.68791614307742543 0.68791614307742543
+		 0.68791614307742543 0.82636589837232743 0.82636589837232743 0.82636589837232743
+		
+		25
+		1.1621386282656494 6
+		1.1621386282656494 6.0772107258085111
+		1.1101409251204024 6.1517607738954174
+		1.0520866054532167 6.1949928926329765
+		1.0359293423430993 6.2070249467721856
+		1.0182852330183898 6.2174520783098615
+		1 6.2258903580868346
+		0.95065284766076352 6.2486631101330694
+		0.88735896472900633 6.2610779930109199
+		0.8338577930016714 6.2362679649181381
+		0.74712030998794998 6.1960453058475116
+		0.71813900372665396 6.0817095794485976
+		0.71813900372665396 6
+		0.71813900372665396 5.9182904205514006
+		0.74712030998794898 5.8039546941524902
+		0.83385779300167173 5.7637320350818637
+		0.88735896472900788 5.7389220069890809
+		0.95065284766076208 5.7513368898669315
+		1 5.7741096419131663
+		1.0182852330183823 5.7825479216901368
+		1.0359293423431064 5.7929750532278197
+		1.052086605453217 5.8050071073670253
+		1.1101409251204031 5.8482392261045852
+		1.1621386282656494 5.9227892741914872
+		1.1621386282656494 6
+		;
+createNode transform -n "projectionCurve166_2" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve166";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve166_Shape2" -p "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve166|projectionCurve166_2";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 22 1 no 2
+		27 0 0 0 0.13844975529490272 0.13844975529490272 0.13844975529490272 0.17198269974020464
+		 0.17198269974020464 0.17198269974020464 0.27539672988615566 0.27539672988615566
+		 0.27539672988615566 0.41318294918616416 0.41318294918616416 0.41318294918616416
+		 0.55096916848617261 0.55096916848617261 0.55096916848617261 0.65438319863212324
+		 0.65438319863212324 0.65438319863212324 0.68791614307742555 0.68791614307742555
+		 0.68791614307742555 0.82636589837232766 0.82636589837232766 0.82636589837232766
+		
+		25
+		2.8378613717343502 6
+		2.8378613717343502 6.077210725808512
+		2.8898590748795967 6.1517607738954174
+		2.947913394546783 6.1949928926329765
+		2.9640706576568996 6.2070249467721856
+		2.9817147669816109 6.2174520783098615
+		3 6.2258903580868346
+		3.0493471523392373 6.2486631101330694
+		3.1126410352709928 6.2610779930109208
+		3.1661422069983285 6.2362679649181381
+		3.2528796900120502 6.1960453058475116
+		3.281860996273346 6.0817095794485985
+		3.281860996273346 6
+		3.281860996273346 5.9182904205514024
+		3.2528796900120494 5.8039546941524884
+		3.166142206998328 5.7637320350818628
+		3.1126410352709923 5.7389220069890801
+		3.0493471523392373 5.7513368898669315
+		3 5.7741096419131663
+		2.98171476698161 5.7825479216901394
+		2.9640706576568996 5.7929750532278144
+		2.9479133945467826 5.8050071073670244
+		2.8898590748795971 5.8482392261045835
+		2.8378613717343502 5.9227892741914889
+		2.8378613717343502 6
+		;
+createNode nurbsSurface -n "insetShapeOriginal" -p "|NEEDSCO_MEGA|inset";
+	setAttr -k off ".v";
+	setAttr ".io" yes;
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".dvu" 0;
+	setAttr ".dvv" 0;
+	setAttr ".cpr" 4;
+	setAttr ".cps" 4;
+	setAttr ".cc" -type "nurbsSurface" 
+		3 3 0 1 no 
+		9 0 0 0 1 2 3 4 4 4
+		13 0 0 0 1 2 3 4 5 6 7 8 8 8
+		
+		77
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		0.25512228824339334 -0.99999999999999978 -9.7144514654701197e-17
+		0.25512228824339334 -0.99999999999999978 0.066638930278790837
+		0.19991679083637273 -0.99999999999999989 0.19991679083637262
+		8.0740050356176958e-17 -0.99999999999999989 0.28272503694690349
+		-0.19991679083637257 -0.99999999999999989 0.19991679083637273
+		-0.28272503694690365 -0.99999999999999989 9.8208094269332484e-17
+		-0.19991679083637276 -0.99999999999999989 -0.1999167908363727
+		-1.7853193107835544e-16 -0.99999999999999989 -0.28272503694690365
+		0.19991679083637254 -0.99999999999999989 -0.19991679083637301
+		0.25512228824339328 -0.99999999999999978 -0.066638930278791031
+		0.25512228824339334 -0.99999999999999978 -9.7144514654701197e-17
+		0.78665241825139831 -0.78361162489122405 -4.163336342344337e-17
+		0.78665241825139831 -0.78361162489122405 0.20547665989686315
+		0.61642997969058921 -0.78361162489122416 0.61642997969058921
+		9.290196406134138e-17 -0.78361162489122416 0.87176363753180275
+		-0.61642997969058899 -0.78361162489122416 0.61642997969058932
+		-0.87176363753180297 -0.78361162489122405 2.8758228068793687e-16
+		-0.61642997969058932 -0.78361162489122405 -0.61642997969058921
+		-3.9443665154447686e-16 -0.78361162489122405 -0.87176363753180286
+		0.61642997969058888 -0.78361162489122405 -0.61642997969058999
+		0.7866524182513982 -0.78361162489122405 -0.20547665989686323
+		0.78665241825139831 -0.78361162489122405 -4.163336342344337e-17
+		1.106673790874301 9.7211629305805789e-17 8.3266726846886741e-17
+		1.106673790874301 7.9511935518331467e-17 0.28906748249718084
+		0.86720244749154174 4.4112547943382853e-17 0.86720244749154185
+		5.5892633642253459e-17 2.2118188293514839e-17 1.2264094625656801
+		-0.86720244749154141 4.4112547943382847e-17 0.86720244749154196
+		-1.2264094625656805 9.7211629305805764e-17 3.9727172196835625e-16
+		-0.86720244749154185 1.5031071066822873e-16 -0.86720244749154174
+		-4.8009591317811469e-16 1.7230507031809673e-16 -1.2264094625656801
+		0.8672024474915413 1.5031071066822878e-16 -0.86720244749154263
+		1.1066737908743007 1.1491132309328011e-16 -0.28906748249718067
+		1.106673790874301 9.7211629305805789e-17 8.3266726846886741e-17
+		0.78665241825139831 0.78361162489122393 1.5265566588595902e-16
+		0.78665241825139831 0.78361162489122393 0.20547665989686334
+		0.6164299796905891 0.78361162489122393 0.61642997969058944
+		-1.3442098327316464e-17 0.78361162489122393 0.87176363753180286
+		-0.61642997969058899 0.78361162489122393 0.61642997969058932
+		-0.87176363753180297 0.78361162489122393 2.7719979577636597e-16
+		-0.61642997969058921 0.78361162489122405 -0.61642997969058921
+		-2.8809258915581903e-16 0.78361162489122405 -0.87176363753180275
+		0.61642997969058888 0.78361162489122405 -0.61642997969058977
+		0.7866524182513982 0.78361162489122393 -0.20547665989686303
+		0.78665241825139831 0.78361162489122393 1.5265566588595902e-16
+		0.25512228824339317 0.99999999999999978 1.3877787807814457e-16
+		0.25512228824339317 0.99999999999999978 0.066638930278791045
+		0.19991679083637254 0.99999999999999989 0.19991679083637276
+		-5.4970113978636062e-17 0.99999999999999989 0.28272503694690354
+		-0.19991679083637257 0.99999999999999989 0.19991679083637265
+		-0.28272503694690354 0.99999999999999989 8.4958565316757091e-17
+		-0.19991679083637257 0.99999999999999989 -0.19991679083637262
+		-4.2821766743542383e-17 0.99999999999999989 -0.28272503694690337
+		0.19991679083637254 0.99999999999999989 -0.1999167908363727
+		0.25512228824339317 0.99999999999999978 -0.066638930278790767
+		0.25512228824339317 0.99999999999999978 1.3877787807814457e-16
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		
+		;
+createNode transform -n "sides" -p "NEEDSCO_MEGA";
+createNode transform -n "loftedSurface169" -p "|NEEDSCO_MEGA|sides";
+createNode nurbsSurface -n "loftedSurfaceShape169" -p "loftedSurface169";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".tw" yes;
+	setAttr ".dvu" 3;
+	setAttr ".dvv" 3;
+	setAttr ".cpr" 15;
+	setAttr ".cps" 4;
+createNode transform -n "loftedSurface170" -p "|NEEDSCO_MEGA|sides";
+createNode nurbsSurface -n "loftedSurfaceShape170" -p "loftedSurface170";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".tw" yes;
+	setAttr ".dvu" 3;
+	setAttr ".dvv" 3;
+	setAttr ".cpr" 15;
+	setAttr ".cps" 4;
+createNode transform -n "loftedSurface171" -p "|NEEDSCO_MEGA|sides";
+createNode nurbsSurface -n "loftedSurfaceShape171" -p "loftedSurface171";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".tw" yes;
+	setAttr ".dvu" 3;
+	setAttr ".dvv" 3;
+	setAttr ".cpr" 15;
+	setAttr ".cps" 4;
+createNode transform -n "loftedSurface172" -p "|NEEDSCO_MEGA|sides";
+createNode nurbsSurface -n "loftedSurfaceShape172" -p "loftedSurface172";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".tw" yes;
+	setAttr ".dvu" 3;
+	setAttr ".dvv" 3;
+	setAttr ".cpr" 15;
+	setAttr ".cps" 4;
+createNode transform -n "loftedSurface173" -p "|NEEDSCO_MEGA|sides";
+createNode nurbsSurface -n "loftedSurfaceShape173" -p "loftedSurface173";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".tw" yes;
+	setAttr ".dvu" 3;
+	setAttr ".dvv" 3;
+	setAttr ".cpr" 15;
+	setAttr ".cps" 4;
+createNode transform -n "loftedSurface174" -p "|NEEDSCO_MEGA|sides";
+createNode nurbsSurface -n "loftedSurfaceShape174" -p "loftedSurface174";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".tw" yes;
+	setAttr ".dvu" 3;
+	setAttr ".dvv" 3;
+	setAttr ".cpr" 15;
+	setAttr ".cps" 4;
+createNode transform -n "loftedSurface175" -p "|NEEDSCO_MEGA|sides";
+createNode nurbsSurface -n "loftedSurfaceShape175" -p "loftedSurface175";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".tw" yes;
+	setAttr ".dvu" 3;
+	setAttr ".dvv" 3;
+	setAttr ".cpr" 15;
+	setAttr ".cps" 4;
+createNode transform -n "loftedSurface176" -p "|NEEDSCO_MEGA|sides";
+createNode nurbsSurface -n "loftedSurfaceShape176" -p "loftedSurface176";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".tw" yes;
+	setAttr ".dvu" 3;
+	setAttr ".dvv" 3;
+	setAttr ".cpr" 15;
+	setAttr ".cps" 4;
+createNode transform -n "loftedSurface177" -p "|NEEDSCO_MEGA|sides";
+createNode nurbsSurface -n "loftedSurfaceShape177" -p "loftedSurface177";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".tw" yes;
+	setAttr ".dvu" 3;
+	setAttr ".dvv" 3;
+	setAttr ".cpr" 15;
+	setAttr ".cps" 4;
+createNode transform -n "loftedSurface178" -p "|NEEDSCO_MEGA|sides";
+createNode nurbsSurface -n "loftedSurfaceShape178" -p "loftedSurface178";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".tw" yes;
+	setAttr ".dvu" 3;
+	setAttr ".dvv" 3;
+	setAttr ".cpr" 15;
+	setAttr ".cps" 4;
+createNode transform -n "loftedSurface179" -p "|NEEDSCO_MEGA|sides";
+createNode nurbsSurface -n "loftedSurfaceShape179" -p "loftedSurface179";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".tw" yes;
+	setAttr ".dvu" 3;
+	setAttr ".dvv" 3;
+	setAttr ".cpr" 15;
+	setAttr ".cps" 4;
+createNode transform -n "NEEDSCO_MINOR";
+	setAttr -k off ".tx";
+	setAttr -k off ".ty";
+	setAttr -k off ".tz";
+	setAttr -k off ".rx";
+	setAttr -k off ".ry";
+	setAttr -k off ".rz";
+	setAttr -k off ".sx";
+	setAttr -k off ".sy";
+	setAttr -k off ".sz";
+createNode transform -n "button" -p "NEEDSCO_MINOR";
+	setAttr -k off ".tx";
+	setAttr -k off ".ty";
+	setAttr -k off ".tz";
+	setAttr -k off ".rx";
+	setAttr -k off ".ry";
+	setAttr -k off ".rz";
+	setAttr ".s" -type "double3" 0.96676633146284352 0.27552840025363046 0.96676633146284352 ;
+	setAttr -k off ".sx";
+	setAttr -k off ".sy";
+	setAttr -k off ".sz";
+createNode nurbsSurface -n "buttontrimmedSurfaceShape3" -p "|NEEDSCO_MINOR|button";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".dvu" 3;
+	setAttr ".dvv" 3;
+	setAttr ".cpr" 15;
+	setAttr ".cps" 4;
+	setAttr ".cc" -type "nurbsSurface" 
+		3 3 0 1 no 
+		9 0 0 0 1 2 3 4 4 4
+		13 0 0 0 1 2 3 4 5 6 7 8 8 8
+		
+		77
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		0.25512228824339334 -0.99999999999999978 -9.7144514654701197e-17
+		0.25512228824339334 -0.99999999999999978 0.066638930278790837
+		0.19991679083637273 -0.99999999999999989 0.19991679083637262
+		8.0740050356176958e-17 -0.99999999999999989 0.28272503694690349
+		-0.19991679083637257 -0.99999999999999989 0.19991679083637273
+		-0.28272503694690365 -0.99999999999999989 9.8208094269332484e-17
+		-0.19991679083637276 -0.99999999999999989 -0.1999167908363727
+		-1.7853193107835544e-16 -0.99999999999999989 -0.28272503694690365
+		0.19991679083637254 -0.99999999999999989 -0.19991679083637301
+		0.25512228824339328 -0.99999999999999978 -0.066638930278791031
+		0.25512228824339334 -0.99999999999999978 -9.7144514654701197e-17
+		0.78665241825139831 -0.78361162489122405 -4.163336342344337e-17
+		0.78665241825139831 -0.78361162489122405 0.20547665989686315
+		0.61642997969058921 -0.78361162489122416 0.61642997969058921
+		9.290196406134138e-17 -0.78361162489122416 0.87176363753180275
+		-0.61642997969058899 -0.78361162489122416 0.61642997969058932
+		-0.87176363753180297 -0.78361162489122405 2.8758228068793687e-16
+		-0.61642997969058932 -0.78361162489122405 -0.61642997969058921
+		-3.9443665154447686e-16 -0.78361162489122405 -0.87176363753180286
+		0.61642997969058888 -0.78361162489122405 -0.61642997969058999
+		0.7866524182513982 -0.78361162489122405 -0.20547665989686323
+		0.78665241825139831 -0.78361162489122405 -4.163336342344337e-17
+		1.106673790874301 9.7211629305805789e-17 8.3266726846886741e-17
+		1.106673790874301 7.9511935518331467e-17 0.28906748249718084
+		0.86720244749154174 4.4112547943382853e-17 0.86720244749154185
+		5.5892633642253459e-17 2.2118188293514839e-17 1.2264094625656801
+		-0.86720244749154141 4.4112547943382847e-17 0.86720244749154196
+		-1.2264094625656805 9.7211629305805764e-17 3.9727172196835625e-16
+		-0.86720244749154185 1.5031071066822873e-16 -0.86720244749154174
+		-4.8009591317811469e-16 1.7230507031809673e-16 -1.2264094625656801
+		0.8672024474915413 1.5031071066822878e-16 -0.86720244749154263
+		1.1066737908743007 1.1491132309328011e-16 -0.28906748249718067
+		1.106673790874301 9.7211629305805789e-17 8.3266726846886741e-17
+		0.78665241825139831 0.78361162489122393 1.5265566588595902e-16
+		0.78665241825139831 0.78361162489122393 0.20547665989686334
+		0.6164299796905891 0.78361162489122393 0.61642997969058944
+		-1.3442098327316464e-17 0.78361162489122393 0.87176363753180286
+		-0.61642997969058899 0.78361162489122393 0.61642997969058932
+		-0.87176363753180297 0.78361162489122393 2.7719979577636597e-16
+		-0.61642997969058921 0.78361162489122405 -0.61642997969058921
+		-2.8809258915581903e-16 0.78361162489122405 -0.87176363753180275
+		0.61642997969058888 0.78361162489122405 -0.61642997969058977
+		0.7866524182513982 0.78361162489122393 -0.20547665989686303
+		0.78665241825139831 0.78361162489122393 1.5265566588595902e-16
+		0.25512228824339317 0.99999999999999978 1.3877787807814457e-16
+		0.25512228824339317 0.99999999999999978 0.066638930278791045
+		0.19991679083637254 0.99999999999999989 0.19991679083637276
+		-5.4970113978636062e-17 0.99999999999999989 0.28272503694690354
+		-0.19991679083637257 0.99999999999999989 0.19991679083637265
+		-0.28272503694690354 0.99999999999999989 8.4958565316757091e-17
+		-0.19991679083637257 0.99999999999999989 -0.19991679083637262
+		-4.2821766743542383e-17 0.99999999999999989 -0.28272503694690337
+		0.19991679083637254 0.99999999999999989 -0.1999167908363727
+		0.25512228824339317 0.99999999999999978 -0.066638930278790767
+		0.25512228824339317 0.99999999999999978 1.3877787807814457e-16
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		
+		;
+	setAttr -s 2 ".tf";
+	setAttr ".tf[0]" -type "nurbsTrimface" no 1
+		0 10
+		0 0 0 0 0 0 9 0 7 0 
+		1
+		
+		1 1 0 no 3
+		2 2.1095122925092227 2.1682032147291301
+		2
+		-0.049870992809328878 0.86085868023079282 0.50258463812608545
+		0.010834472503263718 0.86227548480015015 0.50258463812608545
+		
+		0.001 1 -1
+		2
+		
+		3 1 0 no 2
+		6 -2.1682032147291301 -2.1682032147291301 -2.1682032147291301 -2.1577287812420161
+		 -2.1577287812420161 -2.1577287812420161
+		4
+		3.3260579344793832 1.9724942560261463
+		3.3261775328295728 1.981662641890926
+		3.3262375266144928 1.9908308323839856
+		3.3262375266144928 2
+		
+		3 1 0 no 2
+		6 -2.1577287812420161 -2.1577287812420161 -2.1577287812420161 -2.1095122925092227
+		 -2.1095122925092227 -2.1095122925092227
+		4
+		3.3262375266144928 2
+		3.3262375266144928 2.0420367812699292
+		3.3249761928115169 2.0842181533560837
+		3.3224733869841487 2.1261801832998315
+		
+		1 0.001
+		
+		1
+		
+		3 7 0 no 3
+		12 1.2535630292874049 1.2535630292874049 1.2535630292874049 1.5022767430357533
+		 1.5022767430357533 1.6863132083077672 1.6863132083077672 1.8568181177892198
+		 1.8568181177892198 2.1095122925092227 2.1095122925092227 2.1095122925092227
+		
+		10
+		-0.4444565173411803 0.84656808941104156 -0.28637046671518973
+		-0.40922068061548256 0.88820233829754869 -0.2159180767267958
+		-0.37042290496784525 0.91934462057196897 -0.14322044940861794
+		-0.30433797507707033 0.9527443334432506 -0.0066766981156513739
+		-0.2752778394006396 0.96026750725542587 0.051579978139390928
+		-0.21840027396848063 0.96177573570145714 0.16541659911639642
+		-0.1901911970044442 0.95673391049120637 0.21996425756275476
+		-0.12057640927104724 0.92984956488528214 0.3522951554504678
+		-0.086199798399391084 0.90053649066352826 0.42994690855637779
+		-0.049870992809328878 0.86085868023079282 0.50258463812608545
+		
+		0.001 1 -1
+		2
+		
+		3 4 0 no 2
+		9 -2.1095122925092227 -2.1095122925092227 -2.1095122925092227 -1.7819030632228636
+		 -1.7819030632228636 -1.7819030632228636 -1.6926765425298558 -1.6926765425298558
+		 -1.6926765425298558
+		7
+		3.3224733869841487 2.1261801832998315
+		3.5457057072324023 2.3699843373745515
+		3.5990135179614753 2.6991887210860557
+		3.6286832490790886 3
+		3.6412239410886307 3.1271457967348022
+		3.6477790708669824 3.2666333512138044
+		3.6477790708669824 3.408224917483361
+		
+		3 4 0 no 2
+		9 -1.6926765425298558 -1.6926765425298558 -1.6926765425298558 -1.564759174908132
+		 -1.564759174908132 -1.564759174908132 -1.2535630292874049 -1.2535630292874049
+		 -1.2535630292874049
+		7
+		3.6477790708669824 3.408224917483361
+		3.6477790708669824 3.6112141217464586
+		3.6343064401911844 3.8185276605002758
+		3.6056829472111027 4
+		3.5642498428591152 4.2626850044026297
+		3.4937503351226908 4.5297986881438028
+		3.2872158366361339 4.7284334062728464
+		
+		1 0.001
+		
+		1
+		
+		1 1 0 no 3
+		2 1.1945614604538803 1.2535630292874049
+		2
+		-0.44445651734118025 0.82405163296156081 -0.34705932093374953
+		-0.4444565173411803 0.84656808941104156 -0.28637046671518973
+		
+		0.001 1 -1
+		1
+		
+		3 1 0 no 2
+		6 -1.2535630292874049 -1.2535630292874049 -1.2535630292874049 -1.1945614604538803
+		 -1.1945614604538803 -1.1945614604538803
+		4
+		3.2872158366361339 4.7284334062728464
+		3.2716670882702688 4.7677863463185508
+		3.2542382464653077 4.8063310063124431
+		3.2345879083477951 4.8438211508665105
+		
+		1 0.001
+		
+		1
+		
+		3 7 0 no 3
+		12 0.36998373449574906 0.36998373449574906 0.36998373449574906 0.60269446333201937
+		 0.60269446333201937 0.77393563346628558 0.77393563346628558 0.95736452727026489
+		 0.95736452727026489 1.1945614604538803 1.1945614604538803 1.1945614604538803
+		
+		10
+		0.40541999703511544 0.84368676558266587 -0.34705932093374925
+		0.33012969228510425 0.87940958935996638 -0.34705932093374958
+		0.24711533469401464 0.90639662539771682 -0.34568109828548044
+		0.10471365353904399 0.93223019483551295 -0.34490925147618146
+		0.046167659106018145 0.93624347951444931 -0.3475870821835868
+		-0.080679791112843582 0.93455126535195965 -0.3463296596413965
+		-0.14176381865054941 0.92758252986258227 -0.34481149420509644
+		-0.28857515249395949 0.89396771128125552 -0.34667577629474744
+		-0.3694529844329798 0.86396871472785253 -0.34705932093374925
+		-0.44445651734118025 0.82405163296156081 -0.34705932093374953
+		
+		0.001 1 -1
+		2
+		
+		3 4 0 no 2
+		9 -1.1945614604538803 -1.1945614604538803 -1.1945614604538803 -1.0995779519689477
+		 -1.0995779519689477 -1.0995779519689477 -0.76320753587364343 -0.76320753587364343
+		 -0.76320753587364343
+		7
+		3.2345879083477951 4.8438211508665105
+		3.2764760837003215 4.8921280392874991
+		3.312269214606959 4.9442065600509109
+		3.3433403294247133 5
+		3.5085923955636189 5.2967380244533553
+		3.5440480339055869 5.6772427946577642
+		3.5440480339055869 6
+		
+		3 4 0 no 2
+		9 -0.76320753587364343 -0.76320753587364343 -0.76320753587364343 -0.42683711977833949
+		 -0.42683711977833949 -0.42683711977833949 -0.36998373449574906 -0.36998373449574906
+		 -0.36998373449574906
+		7
+		3.5440480339055869 6
+		3.5440480339055869 6.322757207774429
+		3.508592396808905 6.7032619733105232
+		3.3433403294247142 7
+		3.3242934608961363 7.034201872758687
+		3.3033902666900699 7.0671353505388614
+		3.2802927510948097 7.0987585882150848
+		
+		1 0.001
+		
+		1
+		
+		1 1 0 no 3
+		2 0.31099529980397861 0.36998373449574906
+		2
+		0.40541999703511561 0.86574952207731859 -0.28637046671518973
+		0.40541999703511544 0.84368676558266587 -0.34705932093374925
+		
+		0.001 1 -1
+		1
+		
+		3 1 0 no 2
+		6 -0.36998373449574906 -0.36998373449574906 -0.36998373449574906 -0.31099529980397861
+		 -0.31099529980397861 -0.31099529980397861
+		4
+		3.2802927510948097 7.0987585882150848
+		3.3007521285764261 7.1372376501935992
+		3.3188225085397938 7.1768378044562038
+		3.3349200755353703 7.2173171003529726
+		
+		1 0.001
+		
+		1
+		
+		3 3 0 no 3
+		8 0 0 0 0.11116734803696415 0.11116734803696415 0.31099529980397861 0.31099529980397861
+		 0.31099529980397861
+		6
+		0.26219557257058568 0.96321564170295615 1.1058514447072251e-16
+		0.28009603247106607 0.9582131179367166 -0.035791123443380195
+		0.29533915239897357 0.95140450226043005 -0.071131365171244729
+		0.34456706132004333 0.9235909464920542 -0.16889386012734281
+		0.37639007600559815 0.89807920840154809 -0.22832651181707209
+		0.40541999703511561 0.86574952207731859 -0.28637046671518973
+		
+		0.001 1 -1
+		1
+		
+		3 1 0 no 2
+		6 -0.31099529980397861 -0.31099529980397861 -0.31099529980397861 0 0 0
+		
+		4
+		3.3349200755353703 7.2173171003529726
+		3.5589436045388325 7.4297641181606116
+		3.6196449815048277 7.7210505662659328
+		3.6575852889795182 8
+		
+		1 0.001
+		
+		1
+		
+		3 2 0 no 3
+		7 2 2 2 3 3.6575852889795182 3.6575852889795182 3.6575852889795182
+		5
+		1 5.5511151231257827e-17 7.4014868308343778e-17
+		1 0.26120387496374137 1.0639637319324417e-16
+		0.82317909352708141 0.69417157552808439 1.4473573471626511e-16
+		0.42779947043304717 0.91693540982932531 1.4176710116715857e-16
+		0.26219557257058568 0.96321564170295615 1.1058514447072251e-16
+		
+		0 1 1
+		1
+		
+		1 1 0 no 2
+		2 -3.6575852889795182 -2
+		2
+		3.6575852889795182 8
+		2 8
+		
+		1 0
+		
+		1
+		
+		3 8 1 no 3
+		13 0 0 0 0.77837527070700441 1.5567505414140106 2.3351258121210154 3.1135010828280221
+		 3.8918763535350287 4.6702516242420362 5.4486268949490428 6.2270021656560477
+		 6.2270021656560477 6.2270021656560477
+		11
+		1 2.7755575615628914e-17 7.4014868308343765e-17
+		1 2.7755575615628914e-17 -0.2612038749637412
+		0.78361162489122371 8.3266726846886704e-17 -0.78361162489122549
+		2.2204460492503131e-16 8.3266726846886765e-17 -1.1081941875543873
+		-0.78361162489122604 8.3266726846886691e-17 -0.78361162489122349
+		-1.108194187554387 2.7755575615628889e-17 6.6613381477509392e-16
+		-0.78361162489122449 -2.7755575615628926e-17 0.78361162489122493
+		9.9920072216264089e-16 -5.5511151231257839e-17 1.1081941875543879
+		0.78361162489122427 -2.7755575615628892e-17 0.78361162489122393
+		1 2.7755575615628914e-17 0.26120387496374126
+		1 2.7755575615628914e-17 7.4014868308343765e-17
+		
+		0.001 0 -1
+		1
+		
+		1 8 0 no 2
+		9 0 0.77837527070700641 1.5567505414140119 2.3351258121210177 3.1135010828280234
+		 3.8918763535350296 4.6702516242420353 5.4486268949490411 6.2270021656560477
+		
+		9
+		2 8
+		2 7
+		2 6
+		2 5
+		2 4
+		2 3
+		2 2
+		2 0.99999999999999978
+		2 0
+		
+		1 0.001
+		
+		0
+		
+		0 0 1
+		1
+		
+		1 1 0 no 2
+		2 2 3.6575852889795182
+		2
+		2 0
+		3.6575852889795182 0
+		
+		1 0
+		
+		1
+		
+		3 5 0 no 3
+		10 2.1682032147291301 2.1682032147291301 2.1682032147291301 2.368217906112521
+		 2.368217906112521 2.4805183679301419 2.4805183679301419 2.7131246102190323
+		 2.7131246102190323 2.7131246102190323
+		8
+		0.010834472503263718 0.86227548480015015 0.50258463812608545
+		0.039300603965239822 0.8946354644512291 0.44566795381878788
+		0.06680612163074727 0.92035645441724723 0.38566139382286718
+		0.11258107818537541 0.94949032300528358 0.28824521248256174
+		0.12942936340716421 0.95714451221835106 0.25453687665452407
+		0.19068334637457199 0.97240309364065436 0.14858522224051346
+		0.22528240308795927 0.97353152233678886 0.073806137550893075
+		0.26219557257058568 0.96321564170295615 1.1058514447072251e-16
+		
+		0.001 1 -1
+		2
+		
+		3 1 0 no 2
+		6 -2.7131246102190323 -2.7131246102190323 -2.7131246102190323 -2.6018515235845938
+		 -2.6018515235845938 -2.6018515235845938
+		4
+		3.6575852889795182 0
+		3.6823252046784627 0.18189587629074486
+		3.6939634436929518 0.38881960386953462
+		3.6939634436929518 0.59150589718085278
+		
+		3 4 0 no 2
+		9 -2.6018515235845938 -2.6018515235845938 -2.6018515235845938 -2.5241392769603133
+		 -2.5241392769603133 -2.5241392769603133 -2.1682032147291301 -2.1682032147291301
+		 -2.1682032147291301
+		7
+		3.6939634436929518 0.59150589718085278
+		3.6939634436929518 0.7330604068074017
+		3.6882868745726318 0.87254810130133742
+		3.6774322444297596 1
+		3.6488490784877388 1.3356151911377312
+		3.6084121595496454 1.7132208954325057
+		3.3260579344793832 1.9724942560261463
+		
+		1 0.001
+		;
+	setAttr ".tf[1]" -type "nurbsTrimface" no 1
+		0 6
+		0 4 0 2 0 0 
+		1
+		
+		3 5 0 no 3
+		10 0 0 0 0.12110565767845242 0.12110565767845242 0.18178139114173625 0.18178139114173625
+		 0.30731051620612032 0.30731051620612032 0.30731051620612032
+		8
+		-0.00084877402141521504 0.95680461414598483 0.2841932243222845
+		0.017328329187239123 0.96785621670067734 0.24782911747597139
+		0.032898606736653416 0.97655660791626253 0.21042909718373112
+		0.058031911630057241 0.98573731715060886 0.15319403122386768
+		0.066479155653076633 0.9878432325517108 0.13602813022736987
+		0.10307759496193172 0.99163098924687254 0.082326957693949432
+		0.12162899180927975 0.99218317081707474 0.0388124739414311
+		0.14088876564572816 0.98927752930473722 8.23692198298783e-17
+		
+		0.001 0 -1
+		2
+		
+		3 7 0 no 2
+		12 0 0 0 0.0018407070126114863 0.0018407070126114863 0.0018407070126114863
+		 0.20571171745221772 0.20571171745221772 0.20571171745221772 0.24789551656390804
+		 0.24789551656390804 0.24789551656390804
+		10
+		3.6283957451143896 2.0038113256536798
+		3.6291530206169837 2.0025431895458428
+		3.6299063749923985 2.0012727524075378
+		3.6306558657723191 2
+		3.810533431724243 1.6945397978723706
+		3.8119973419506046 1.3259123517241607
+		3.8267997887278495 1
+		3.8327132338500522 0.86980092983468404
+		3.8358100908439146 0.72933938054169423
+		3.8358100908439146 0.58715703094819327
+		
+		3 1 0 no 2
+		6 0.24789551656390804 0.24789551656390804 0.24789551656390804 0.30731051620612032
+		 0.30731051620612032 0.30731051620612032
+		4
+		3.8358100908439146 0.58715703094819327
+		3.8358100908439146 0.38689616236545699
+		3.829666504470048 0.18322154710364635
+		3.81659621575022 0
+		
+		1 0.001
+		
+		0
+		
+		0 0 1
+		1
+		
+		1 1 0 no 2
+		2 3.81659621575022 4
+		2
+		3.81659621575022 0
+		4 0
+		
+		1 0
+		
+		0
+		
+		0 0 -1
+		1
+		
+		1 1 0 no 2
+		2 0 8
+		2
+		4 0
+		4 8
+		
+		1 0
+		
+		1
+		
+		3 1 0 no 3
+		6 3.81659621575022 3.81659621575022 3.81659621575022 4 4 4
+		4
+		0.14088876564572816 0.98927752930473722 8.23692198298783e-17
+		0.093938776749896216 0.99636067773098447 6.9242023012768535e-17
+		0.046790393110301566 0.99999999999999978 5.3338762718987038e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		
+		0 1 1
+		1
+		
+		1 1 0 no 2
+		2 -4 -3.81659621575022
+		2
+		4 8
+		3.81659621575022 8
+		
+		1 0
+		
+		1
+		
+		3 5 0 no 3
+		10 0 0 0 0.077406665082920753 0.077406665082920753 0.18261151682223545
+		 0.18261151682223545 0.27095669699594543 0.27095669699594543 0.27095669699594543
+		
+		8
+		0.14088876564572816 0.98927752930473722 8.23692198298783e-17
+		0.15365215291144674 0.98735197045901868 -0.025720895783189712
+		0.16571211731880509 0.98420306408723324 -0.05115139534410975
+		0.19594157654591343 0.97355049725767062 -0.11101125391933396
+		0.21845986246613727 0.96438708389127692 -0.14234398912341931
+		0.23916445036559827 0.94623858781162296 -0.21069222033140203
+		0.23254955914369269 0.94309264374275525 -0.23163498673848326
+		0.19644673980511246 0.95065407835757043 -0.23163498673848368
+		
+		0.001 0 -1
+		2
+		
+		3 6 0 no 2
+		11 0 0 0 0.16201237373746016 0.16201237373746016 0.21594585725802753 0.21594585725802753
+		 0.21594585725802753 0.23868582201120098 0.23868582201120098 0.23868582201120098
+		
+		9
+		3.81659621575022 8
+		3.8019730275100336 7.795009641302701
+		3.780044956396396 7.5848372109316564
+		3.700279297464049 7.3195506644209916
+		3.6144638762104928 7.1626910132982333
+		3.5958645149882638 7.095681379336459
+		3.5881410892019083 7.0678554809794738
+		3.58420849831383 7.040831898835898
+		3.58420849831383 7.0123822242769762
+		
+		3 4 0 no 2
+		9 0.23868582201120098 0.23868582201120098 0.23868582201120098 0.24195948446069579
+		 0.24195948446069579 0.24195948446069579 0.27095669699594543 0.27095669699594543
+		 0.27095669699594543
+		7
+		3.58420849831383 7.0123822242769762
+		3.58420849831383 7.0082865877043261
+		3.5842900000739548 7.004161395796463
+		3.5844534265293224 7
+		3.5858516099783597 6.9643974733806893
+		3.5931110741597454 6.929497645627972
+		3.6022935829167104 6.8953584566434341
+		
+		1 0.001
+		
+		1
+		
+		3 20 0 no 3
+		25 0 0 0 0.12876374815045352 0.12876374815045352 0.2135413880991088 0.2135413880991088
+		 0.32967692540414412 0.32967692540414412 0.49102139749309431 0.49102139749309431
+		 0.55660908765587358 0.55660908765587358 0.60321298330499318 0.60321298330499318
+		 0.70060282958998565 0.70060282958998565 0.74137450959993145 0.74137450959993145
+		 0.77712626040818877 0.77712626040818877 0.82996770100318151 0.92385754408650134
+		 0.92385754408650134 0.92385754408650134
+		23
+		0.19644673980511246 0.95065407835757043 -0.23163498673848368
+		0.1530976762009984 0.9597342741510414 -0.23163058048728938
+		0.10962398352945178 0.96611810509940999 -0.23032942730543476
+		0.036279573606088779 0.97114548277981605 -0.23093254763744084
+		-0.010295626560655175 0.97192897511281551 -0.23053129970855454
+		-0.079446441010001104 0.96741194121965091 -0.23669233041416943
+		-0.11456117757201909 0.96206572117834843 -0.24363647949472902
+		-0.21197501322602227 0.95204479074003712 -0.21949290194736934
+		-0.22850515273045147 0.95463934458289135 -0.18947644511791628
+		-0.20011059976458018 0.97185137822702972 -0.11372513584470249
+		-0.18599803518585153 0.97738616157516012 -0.089375098085190938
+		-0.16838146504217252 0.98332859834812658 -0.05329206008186102
+		-0.16089579977820959 0.98538978503969876 -0.038364487454887714
+		-0.13833846817743156 0.99028995291805255 0.0083463591784031441
+		-0.12249617688684521 0.99166591340693866 0.039625515488394492
+		-0.1004833406471089 0.99079065631286833 0.084502740799031278
+		-0.09468507462173277 0.99014026358634821 0.097467671388498212
+		-0.079071174171132477 0.98884736703966014 0.12059816730622927
+		-0.072732435900161388 0.98814114722648161 0.12964428561561731
+		-0.057198488827392514 0.98496001466202165 0.15797140623797412
+		-0.036424404568862381 0.97729551921535296 0.20760123288915361
+		-0.015645832270661394 0.96577217080802147 0.25459320743527364
+		-0.00084877402141521504 0.95680461414598483 0.2841932243222845
+		
+		0.001 0 -1
+		4
+		
+		3 4 0 no 2
+		9 0 0 0 0.19005899676750629 0.19005899676750629 0.19005899676750629 0.19061011766004393
+		 0.19061011766004393 0.19061011766004393
+		7
+		3.6022935829167104 6.8953584566434341
+		3.6788725024717635 6.6107084267322724
+		3.6979567914450402 6.2910318831905272
+		3.6982225369671378 6
+		3.6982234918593138 5.9989542474090962
+		3.6982239682186502 5.9979098383060574
+		3.6982239682186502 5.9968667647564704
+		
+		3 4 0 no 2
+		9 0.19061011766004393 0.19061011766004393 0.19061011766004393 0.37449110922219059
+		 0.37449110922219059 0.37449110922219059 0.38911834332234546 0.38911834332234546
+		 0.38911834332234546
+		7
+		3.6982239682186502 5.9968667647564704
+		3.6982239682186502 5.648846210341893
+		3.6451948256309357 5.4495017687359883
+		3.6198656701323171 5.1041303188243043
+		3.6182748302785077 5.0824386889190958
+		3.6174384105095609 5.0608341226347431
+		3.6174384105095609 5.0391915834697958
+		
+		3 12 0 no 2
+		17 0.38911834332234546 0.38911834332234546 0.38911834332234546 0.39793214785144687
+		 0.39793214785144687 0.39793214785144687 0.43999044399477938 0.43999044399477938
+		 0.43999044399477938 0.50621407985562383 0.50621407985562383 0.61663691887887395
+		 0.61663691887887395 0.61663691887887395 0.67658651400798664 0.67658651400798664
+		 0.67658651400798664
+		15
+		3.6174384105095609 5.0391915834697958
+		3.6174384105095609 5.0261506279202264
+		3.617742097853982 5.0130958851746863
+		3.6183674122680434 5
+		3.6210723072096109 4.9433517079283513
+		3.6296188792767143 4.8888197504924573
+		3.6441672724081045 4.8340193753080065
+		3.6719042755578748 4.7295406081086169
+		3.7141063039896993 4.64178861292765
+		3.7821976046528558 4.3608073032144796
+		3.8018065447268663 4.1793384277884975
+		3.814653033746382 4
+		3.8277455963195632 3.8172263577986234
+		3.8339168708563691 3.6139544416294727
+		3.8339168708563691 3.4140550247115633
+		
+		3 4 0 no 2
+		9 0.67658651400798664 0.67658651400798664 0.67658651400798664 0.71935962672286158
+		 0.71935962672286158 0.71935962672286158 0.92385754408650134 0.92385754408650134
+		 0.92385754408650134
+		7
+		3.8339168708563691 3.4140550247115633
+		3.8339168708563691 3.2714298698118047
+		3.8307753201743551 3.130521520291492
+		3.82476462870962 3
+		3.8098060534898939 2.6751761439547774
+		3.8073525988812862 2.3080761121638647
+		3.6283957451143896 2.0038113256536798
+		
+		1 0.001
+		;
+createNode transform -n "inset" -p "NEEDSCO_MINOR";
+	setAttr ".t" -type "double3" 0 -0.1 0 ;
+	setAttr -k off ".tx";
+	setAttr -k off ".ty";
+	setAttr -k off ".tz";
+	setAttr -k off ".rx";
+	setAttr -k off ".ry";
+	setAttr -k off ".rz";
+	setAttr ".s" -type "double3" 0.96676633146284352 0.27552840025363046 0.96676633146284352 ;
+	setAttr -k off ".sx";
+	setAttr -k off ".sy";
+	setAttr -k off ".sz";
+createNode nurbsSurface -n "insetShape" -p "|NEEDSCO_MINOR|inset";
+	addAttr -ci true -sn "nts" -ln "notes" -dt "string";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".dvu" 3;
+	setAttr ".dvv" 3;
+	setAttr ".cpr" 15;
+	setAttr ".cps" 4;
+	setAttr ".cc" -type "nurbsSurface" 
+		3 3 0 1 no 
+		9 0 0 0 1 2 3 4 4 4
+		13 0 0 0 1 2 3 4 5 6 7 8 8 8
+		
+		77
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		9.5961577477086916e-17 -0.99999999999999978 -2.5315347264529309e-16
+		0.25512228824339334 -0.99999999999999978 -9.7144514654701197e-17
+		0.25512228824339334 -0.99999999999999978 0.066638930278790837
+		0.19991679083637273 -0.99999999999999989 0.19991679083637262
+		8.0740050356176958e-17 -0.99999999999999989 0.28272503694690349
+		-0.19991679083637257 -0.99999999999999989 0.19991679083637273
+		-0.28272503694690365 -0.99999999999999989 9.8208094269332484e-17
+		-0.19991679083637276 -0.99999999999999989 -0.1999167908363727
+		-1.7853193107835544e-16 -0.99999999999999989 -0.28272503694690365
+		0.19991679083637254 -0.99999999999999989 -0.19991679083637301
+		0.25512228824339328 -0.99999999999999978 -0.066638930278791031
+		0.25512228824339334 -0.99999999999999978 -9.7144514654701197e-17
+		0.78665241825139831 -0.78361162489122405 -4.163336342344337e-17
+		0.78665241825139831 -0.78361162489122405 0.20547665989686315
+		0.61642997969058921 -0.78361162489122416 0.61642997969058921
+		9.290196406134138e-17 -0.78361162489122416 0.87176363753180275
+		-0.61642997969058899 -0.78361162489122416 0.61642997969058932
+		-0.87176363753180297 -0.78361162489122405 2.8758228068793687e-16
+		-0.61642997969058932 -0.78361162489122405 -0.61642997969058921
+		-3.9443665154447686e-16 -0.78361162489122405 -0.87176363753180286
+		0.61642997969058888 -0.78361162489122405 -0.61642997969058999
+		0.7866524182513982 -0.78361162489122405 -0.20547665989686323
+		0.78665241825139831 -0.78361162489122405 -4.163336342344337e-17
+		1.106673790874301 9.7211629305805789e-17 8.3266726846886741e-17
+		1.106673790874301 7.9511935518331467e-17 0.28906748249718084
+		0.86720244749154174 4.4112547943382853e-17 0.86720244749154185
+		5.5892633642253459e-17 2.2118188293514839e-17 1.2264094625656801
+		-0.86720244749154141 4.4112547943382847e-17 0.86720244749154196
+		-1.2264094625656805 9.7211629305805764e-17 3.9727172196835625e-16
+		-0.86720244749154185 1.5031071066822873e-16 -0.86720244749154174
+		-4.8009591317811469e-16 1.7230507031809673e-16 -1.2264094625656801
+		0.8672024474915413 1.5031071066822878e-16 -0.86720244749154263
+		1.1066737908743007 1.1491132309328011e-16 -0.28906748249718067
+		1.106673790874301 9.7211629305805789e-17 8.3266726846886741e-17
+		0.78665241825139831 0.78361162489122393 1.5265566588595902e-16
+		0.78665241825139831 0.78361162489122393 0.20547665989686334
+		0.6164299796905891 0.78361162489122393 0.61642997969058944
+		-1.3442098327316464e-17 0.78361162489122393 0.87176363753180286
+		-0.61642997969058899 0.78361162489122393 0.61642997969058932
+		-0.87176363753180297 0.78361162489122393 2.7719979577636597e-16
+		-0.61642997969058921 0.78361162489122405 -0.61642997969058921
+		-2.8809258915581903e-16 0.78361162489122405 -0.87176363753180275
+		0.61642997969058888 0.78361162489122405 -0.61642997969058977
+		0.7866524182513982 0.78361162489122393 -0.20547665989686303
+		0.78665241825139831 0.78361162489122393 1.5265566588595902e-16
+		0.25512228824339317 0.99999999999999978 1.3877787807814457e-16
+		0.25512228824339317 0.99999999999999978 0.066638930278791045
+		0.19991679083637254 0.99999999999999989 0.19991679083637276
+		-5.4970113978636062e-17 0.99999999999999989 0.28272503694690354
+		-0.19991679083637257 0.99999999999999989 0.19991679083637265
+		-0.28272503694690354 0.99999999999999989 8.4958565316757091e-17
+		-0.19991679083637257 0.99999999999999989 -0.19991679083637262
+		-4.2821766743542383e-17 0.99999999999999989 -0.28272503694690337
+		0.19991679083637254 0.99999999999999989 -0.1999167908363727
+		0.25512228824339317 0.99999999999999978 -0.066638930278790767
+		0.25512228824339317 0.99999999999999978 1.3877787807814457e-16
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		1.2304236793376832e-16 0.99999999999999978 3.4149527234437498e-17
+		
+		;
+	setAttr ".tf[0]" -type "nurbsTrimface" no 1
+		0 12
+		5 0 0 0 1 0 0 0 0 0 0 0 
+		0
+		
+		0 0 1
+		1
+		
+		1 1 0 no 2
+		2 3.6575852889795182 3.81659621575022
+		2
+		3.6575852889795182 0
+		3.81659621575022 0
+		
+		1 0
+		
+		1
+		
+		3 5 0 no 3
+		10 0 0 0 0.12110565767845231 0.12110565767845231 0.18178139114173614 0.18178139114173614
+		 0.30731051620612032 0.30731051620612032 0.30731051620612032
+		8
+		-0.00084877402141521504 0.95680461414598483 0.2841932243222845
+		0.017328329187239089 0.96785621670067734 0.24782911747597144
+		0.03289860673665345 0.97655660791626253 0.21042909718373104
+		0.058031911630057227 0.98573731715060886 0.15319403122386771
+		0.066479155653076646 0.9878432325517108 0.13602813022736984
+		0.10307759496193172 0.99163098924687254 0.082326957693949432
+		0.12162899180927975 0.99218317081707474 0.0388124739414311
+		0.14088876564572816 0.98927752930473722 8.23692198298783e-17
+		
+		0.001 1 -1
+		2
+		
+		3 1 0 no 2
+		6 -0.30731051620612032 -0.30731051620612032 -0.30731051620612032 -0.24789551656390804
+		 -0.24789551656390804 -0.24789551656390804
+		4
+		3.81659621575022 0
+		3.829666504470048 0.18322154710364635
+		3.8358100908439146 0.38689616236545699
+		3.8358100908439146 0.58715703094819327
+		
+		3 7 0 no 2
+		12 -0.24789551656390804 -0.24789551656390804 -0.24789551656390804 -0.20571171745221772
+		 -0.20571171745221772 -0.20571171745221772 -0.0018407070126114863 -0.0018407070126114863
+		 -0.0018407070126114863 0 0 0
+		10
+		3.8358100908439146 0.58715703094819327
+		3.8358100908439146 0.72933938054169423
+		3.8327132338500522 0.86980092983468404
+		3.8267997887278495 1
+		3.8119973419506046 1.3259123517241607
+		3.810533431724243 1.6945397978723706
+		3.6306558657723191 2
+		3.6299063749923985 2.0012727524075378
+		3.6291530206169837 2.0025431895458428
+		3.6283957451143896 2.0038113256536798
+		
+		1 0.001
+		
+		1
+		
+		3 19 0 no 3
+		24 0 0 0 0.12876374641896116 0.12876374641896116 0.21354138522760899 0.21354138522760899
+		 0.32967692097096346 0.32967692097096346 0.49102139089030639 0.49102139089030639
+		 0.55660908017112487 0.55660908017112487 0.60321298761671749 0.7006028325921031
+		 0.7006028325921031 0.74137451205379012 0.74137451205379012 0.77712626238129179
+		 0.77712626238129179 0.82996770226572303 0.92385754408650134 0.92385754408650134
+		 0.92385754408650134
+		22
+		0.19644673980511246 0.95065407835757043 -0.23163498673848368
+		0.15309767620099832 0.9597342741510414 -0.23163058048728938
+		0.10962398352945188 0.96611810509940999 -0.23032942730543476
+		0.036279573606088175 0.97114548277981605 -0.23093254763744087
+		-0.010295626560654567 0.97192897511281562 -0.23053129970855449
+		-0.079446441010000965 0.96741194121965091 -0.23669233041416943
+		-0.11456117757201921 0.96206572117834843 -0.243636479494729
+		-0.21197501322602227 0.95204479074003712 -0.21949290194736934
+		-0.22850515273045147 0.95463934458289135 -0.18947644511791628
+		-0.20011059976458015 0.97185137822702972 -0.11372513584470242
+		-0.18599803518585156 0.97738616157516012 -0.089375098085191007
+		-0.16838146309146085 0.98332859900614233 -0.05329205608632713
+		-0.14591947087046611 0.98963151532336235 -0.0066216378033717134
+		-0.12249617688684512 0.99166591340693866 0.039625515488394658
+		-0.10048334064710887 0.99079065631286833 0.08450274079903132
+		-0.094685074621732798 0.99014026358634821 0.09746767138849817
+		-0.079071174171132491 0.98884736703966014 0.12059816730622924
+		-0.072732435900161374 0.98814114722648161 0.12964428561561733
+		-0.057198488827392514 0.98496001466202165 0.15797140623797412
+		-0.036431542262492893 0.97730988247260753 0.20736016062719939
+		-0.015645832270661429 0.96577217080802158 0.25459320743527358
+		-0.00084877402141521504 0.95680461414598483 0.2841932243222845
+		
+		0.001 1 -1
+		4
+		
+		3 4 0 no 2
+		9 -0.92385754408650134 -0.92385754408650134 -0.92385754408650134 -0.71935962672286158
+		 -0.71935962672286158 -0.71935962672286158 -0.67658651400798664 -0.67658651400798664
+		 -0.67658651400798664
+		7
+		3.6283957451143896 2.0038113256536798
+		3.8073525988812862 2.3080761121638647
+		3.8098060534898939 2.6751761439547774
+		3.82476462870962 3
+		3.8307753201743551 3.130521520291492
+		3.8339168708563691 3.2714298698118047
+		3.8339168708563691 3.4140550247115633
+		
+		3 12 0 no 2
+		17 -0.67658651400798664 -0.67658651400798664 -0.67658651400798664 -0.61663691887887395
+		 -0.61663691887887395 -0.61663691887887395 -0.50621407985562383 -0.50621407985562383
+		 -0.43999044399477938 -0.43999044399477938 -0.43999044399477938 -0.39793214785144687
+		 -0.39793214785144687 -0.39793214785144687 -0.38911834332234546 -0.38911834332234546
+		 -0.38911834332234546
+		15
+		3.8339168708563691 3.4140550247115633
+		3.8339168708563691 3.6139544416294727
+		3.8277455963195632 3.8172263577986234
+		3.814653033746382 4
+		3.8018065447268663 4.1793384277884975
+		3.7821976046528558 4.3608073032144796
+		3.7141063039896993 4.64178861292765
+		3.6719042755578748 4.7295406081086169
+		3.6441672724081045 4.8340193753080065
+		3.6296188792767143 4.8888197504924573
+		3.6210723072096109 4.9433517079283513
+		3.6183674122680434 5
+		3.617742097853982 5.0130958851746863
+		3.6174384105095609 5.0261506279202264
+		3.6174384105095609 5.0391915834697958
+		
+		3 4 0 no 2
+		9 -0.38911834332234546 -0.38911834332234546 -0.38911834332234546 -0.37449110922219059
+		 -0.37449110922219059 -0.37449110922219059 -0.19061011766004393 -0.19061011766004393
+		 -0.19061011766004393
+		7
+		3.6174384105095609 5.0391915834697958
+		3.6174384105095609 5.0608341226347431
+		3.6182748302785077 5.0824386889190958
+		3.6198656701323171 5.1041303188243043
+		3.6451948256309357 5.4495017687359883
+		3.6982239682186502 5.648846210341893
+		3.6982239682186502 5.9968667647564704
+		
+		3 4 0 no 2
+		9 -0.19061011766004393 -0.19061011766004393 -0.19061011766004393 -0.19005899676750629
+		 -0.19005899676750629 -0.19005899676750629 0 0 0
+		7
+		3.6982239682186502 5.9968667647564704
+		3.6982239682186502 5.9979098383060574
+		3.6982234918593138 5.9989542474090962
+		3.6982225369671378 6
+		3.6979567914450402 6.2910318831905272
+		3.6788725024717635 6.6107084267322724
+		3.6022935829167104 6.8953584566434341
+		
+		1 0.001
+		
+		1
+		
+		3 5 0 no 3
+		10 0 0 0 0.077406665082920462 0.077406665082920462 0.18261151682223528
+		 0.18261151682223528 0.27095669699594543 0.27095669699594543 0.27095669699594543
+		
+		8
+		0.14088876564572816 0.98927752930473722 8.23692198298783e-17
+		0.15365215291144665 0.98735197045901868 -0.025720895783189566
+		0.16571211731880517 0.98420306408723324 -0.051151395344109896
+		0.19594157654591343 0.97355049725767062 -0.11101125391933393
+		0.21845986246613727 0.96438708389127692 -0.14234398912341933
+		0.23916445036559827 0.94623858781162296 -0.21069222033140203
+		0.23254955914369269 0.94309264374275525 -0.23163498673848326
+		0.19644673980511246 0.95065407835757043 -0.23163498673848368
+		
+		0.001 1 -1
+		2
+		
+		3 4 0 no 2
+		9 -0.27095669699594543 -0.27095669699594543 -0.27095669699594543 -0.24195948446069579
+		 -0.24195948446069579 -0.24195948446069579 -0.23868582201120098 -0.23868582201120098
+		 -0.23868582201120098
+		7
+		3.6022935829167104 6.8953584566434341
+		3.5931110741597454 6.929497645627972
+		3.5858516099783597 6.9643974733806893
+		3.5844534265293224 7
+		3.5842900000739548 7.004161395796463
+		3.58420849831383 7.0082865877043261
+		3.58420849831383 7.0123822242769762
+		
+		3 6 0 no 2
+		11 -0.23868582201120098 -0.23868582201120098 -0.23868582201120098 -0.21594585725802753
+		 -0.21594585725802753 -0.21594585725802753 -0.16201237373746016 -0.16201237373746016
+		 0 0 0
+		9
+		3.58420849831383 7.0123822242769762
+		3.58420849831383 7.040831898835898
+		3.5881410892019083 7.0678554809794738
+		3.5958645149882638 7.095681379336459
+		3.6144638762104928 7.1626910132982333
+		3.700279297464049 7.3195506644209916
+		3.780044956396396 7.5848372109316564
+		3.8019730275100336 7.795009641302701
+		3.81659621575022 8
+		
+		1 0.001
+		
+		1
+		
+		3 1 0 no 3
+		6 3.6575852889795182 3.6575852889795182 3.6575852889795182 3.81659621575022
+		 3.81659621575022 3.81659621575022
+		4
+		0.26219557257058568 0.96321564170295626 1.105851444707225e-16
+		0.22215083659905022 0.9744066806217393 1.0304502470843472e-16
+		0.18159436655106692 0.98313644557345459 9.3750488435258975e-17
+		0.14088876564572816 0.98927752930473722 8.23692198298783e-17
+		
+		0 1 1
+		1
+		
+		1 1 0 no 2
+		2 -3.81659621575022 -3.6575852889795182
+		2
+		3.81659621575022 8
+		3.6575852889795182 8
+		
+		1 0
+		
+		1
+		
+		3 3 0 no 3
+		8 0 0 0 0.11116734803696401 0.11116734803696401 0.31099529980397861 0.31099529980397861
+		 0.31099529980397861
+		6
+		0.26219557257058568 0.96321564170295615 1.1058514447072251e-16
+		0.28009603247106601 0.9582131179367166 -0.035791123443380105
+		0.29533915239897363 0.95140450226043016 -0.071131365171244826
+		0.34456706132004333 0.9235909464920542 -0.16889386012734281
+		0.37639007600559815 0.89807920840154809 -0.22832651181707209
+		0.40541999703511561 0.86574952207731859 -0.28637046671518973
+		
+		0.001 0 -1
+		1
+		
+		3 1 0 no 2
+		6 0 0 0 0.31099529980397861 0.31099529980397861 0.31099529980397861
+		4
+		3.6575852889795182 8
+		3.6196449815048277 7.7210505662659328
+		3.5589436045388325 7.4297641181606116
+		3.3349200755353703 7.2173171003529726
+		
+		1 0.001
+		
+		1
+		
+		1 1 0 no 3
+		2 0.31099529980397861 0.36998373449574906
+		2
+		0.40541999703511561 0.86574952207731859 -0.28637046671518973
+		0.40541999703511544 0.84368676558266587 -0.34705932093374925
+		
+		0.001 0 -1
+		1
+		
+		3 1 0 no 2
+		6 0.31099529980397861 0.31099529980397861 0.31099529980397861 0.36998373449574906
+		 0.36998373449574906 0.36998373449574906
+		4
+		3.3349200755353703 7.2173171003529726
+		3.3188225085397938 7.1768378044562038
+		3.3007521285764261 7.1372376501935992
+		3.2802927510948097 7.0987585882150848
+		
+		1 0.001
+		
+		1
+		
+		3 7 0 no 3
+		12 0.36998373449574906 0.36998373449574906 0.36998373449574906 0.60269446333201893
+		 0.60269446333201893 0.77393563346628602 0.77393563346628602 0.95736452727026511
+		 0.95736452727026511 1.1945614604538803 1.1945614604538803 1.1945614604538803
+		
+		10
+		0.40541999703511544 0.84368676558266587 -0.34705932093374925
+		0.33012969228510419 0.87940958935996649 -0.34705932093374958
+		0.24711533469401467 0.90639662539771682 -0.34568109828548044
+		0.10471365353904354 0.93223019483551306 -0.34490925147618146
+		0.046167659106018603 0.93624347951444931 -0.3475870821835868
+		-0.080679791112843652 0.93455126535195965 -0.3463296596413965
+		-0.14176381865054935 0.92758252986258227 -0.34481149420509644
+		-0.2885751524939596 0.89396771128125552 -0.34667577629474744
+		-0.36945298443297969 0.86396871472785264 -0.34705932093374925
+		-0.44445651734118025 0.82405163296156081 -0.34705932093374953
+		
+		0.001 0 -1
+		2
+		
+		3 4 0 no 2
+		9 0.36998373449574906 0.36998373449574906 0.36998373449574906 0.42683711977833949
+		 0.42683711977833949 0.42683711977833949 0.76320753587364343 0.76320753587364343
+		 0.76320753587364343
+		7
+		3.2802927510948097 7.0987585882150848
+		3.3033902666900699 7.0671353505388614
+		3.3242934608961363 7.034201872758687
+		3.3433403294247142 7
+		3.508592396808905 6.7032619733105232
+		3.5440480339055869 6.322757207774429
+		3.5440480339055869 6
+		
+		3 4 0 no 2
+		9 0.76320753587364343 0.76320753587364343 0.76320753587364343 1.0995779519689477
+		 1.0995779519689477 1.0995779519689477 1.1945614604538803 1.1945614604538803
+		 1.1945614604538803
+		7
+		3.5440480339055869 6
+		3.5440480339055869 5.6772427946577642
+		3.5085923955636189 5.2967380244533553
+		3.3433403294247133 5
+		3.312269214606959 4.9442065600509109
+		3.2764760837003215 4.8921280392874991
+		3.2345879083477951 4.8438211508665105
+		
+		1 0.001
+		
+		1
+		
+		1 1 0 no 3
+		2 1.1945614604538803 1.2535630292874049
+		2
+		-0.44445651734118025 0.82405163296156081 -0.34705932093374953
+		-0.4444565173411803 0.84656808941104156 -0.28637046671518973
+		
+		0.001 0 -1
+		1
+		
+		3 1 0 no 2
+		6 1.1945614604538803 1.1945614604538803 1.1945614604538803 1.2535630292874049
+		 1.2535630292874049 1.2535630292874049
+		4
+		3.2345879083477951 4.8438211508665105
+		3.2542382464653077 4.8063310063124431
+		3.2716670882702688 4.7677863463185508
+		3.2872158366361339 4.7284334062728464
+		
+		1 0.001
+		
+		1
+		
+		3 7 0 no 3
+		12 1.2535630292874049 1.2535630292874049 1.2535630292874049 1.5022767430357531
+		 1.5022767430357531 1.6863132083077677 1.6863132083077677 1.8568181177892202
+		 1.8568181177892202 2.1095122925092227 2.1095122925092227 2.1095122925092227
+		
+		10
+		-0.4444565173411803 0.84656808941104156 -0.28637046671518973
+		-0.40922068061548256 0.88820233829754869 -0.2159180767267958
+		-0.37042290496784525 0.91934462057196897 -0.14322044940861794
+		-0.30433797507707022 0.9527443334432506 -0.0066766981156510504
+		-0.27527783940063977 0.96026750725542587 0.051579978139390595
+		-0.21840027396848063 0.96177573570145714 0.16541659911639642
+		-0.1901911970044442 0.95673391049120637 0.21996425756275476
+		-0.12057640927104724 0.92984956488528214 0.3522951554504678
+		-0.086199798399391084 0.90053649066352826 0.42994690855637779
+		-0.049870992809328878 0.86085868023079282 0.50258463812608545
+		
+		0.001 0 -1
+		2
+		
+		3 4 0 no 2
+		9 1.2535630292874049 1.2535630292874049 1.2535630292874049 1.564759174908132
+		 1.564759174908132 1.564759174908132 1.6926765425298558 1.6926765425298558
+		 1.6926765425298558
+		7
+		3.2872158366361339 4.7284334062728464
+		3.4937503351226908 4.5297986881438028
+		3.5642498428591152 4.2626850044026297
+		3.6056829472111027 4
+		3.6343064401911844 3.8185276605002758
+		3.6477790708669824 3.6112141217464586
+		3.6477790708669824 3.408224917483361
+		
+		3 4 0 no 2
+		9 1.6926765425298558 1.6926765425298558 1.6926765425298558 1.7819030632228636
+		 1.7819030632228636 1.7819030632228636 2.1095122925092227 2.1095122925092227
+		 2.1095122925092227
+		7
+		3.6477790708669824 3.408224917483361
+		3.6477790708669824 3.2666333512138044
+		3.6412239410886307 3.1271457967348022
+		3.6286832490790886 3
+		3.5990135179614753 2.6991887210860557
+		3.5457057072324023 2.3699843373745515
+		3.3224733869841487 2.1261801832998315
+		
+		1 0.001
+		
+		1
+		
+		1 1 0 no 3
+		2 2.1095122925092227 2.1682032147291301
+		2
+		-0.049870992809328878 0.86085868023079282 0.50258463812608545
+		0.010834472503263718 0.86227548480015015 0.50258463812608545
+		
+		0.001 0 -1
+		2
+		
+		3 1 0 no 2
+		6 2.1095122925092227 2.1095122925092227 2.1095122925092227 2.1577287812420161
+		 2.1577287812420161 2.1577287812420161
+		4
+		3.3224733869841487 2.1261801832998315
+		3.3249761928115169 2.0842181533560837
+		3.3262375266144928 2.0420367812699292
+		3.3262375266144928 2
+		
+		3 1 0 no 2
+		6 2.1577287812420161 2.1577287812420161 2.1577287812420161 2.1682032147291301
+		 2.1682032147291301 2.1682032147291301
+		4
+		3.3262375266144928 2
+		3.3262375266144928 1.9908308323839856
+		3.3261775328295728 1.981662641890926
+		3.3260579344793832 1.9724942560261463
+		
+		1 0.001
+		
+		1
+		
+		3 5 0 no 3
+		10 2.1682032147291301 2.1682032147291301 2.1682032147291301 2.368217906112521
+		 2.368217906112521 2.4805183679301424 2.4805183679301424 2.7131246102190323
+		 2.7131246102190323 2.7131246102190323
+		8
+		0.010834472503263718 0.86227548480015015 0.50258463812608545
+		0.039300603965239954 0.89463546445122932 0.4456679538187876
+		0.066806121630747117 0.92035645441724712 0.38566139382286746
+		0.11258107818537558 0.94949032300528369 0.28824521248256135
+		0.12942936340716402 0.95714451221835106 0.2545368766545244
+		0.19068334637457204 0.97240309364065436 0.14858522224051338
+		0.22528240308795922 0.97353152233678886 0.073806137550893172
+		0.26219557257058568 0.96321564170295615 1.1058514447072251e-16
+		
+		0.001 0 -1
+		2
+		
+		3 4 0 no 2
+		9 2.1682032147291301 2.1682032147291301 2.1682032147291301 2.5241392769603133
+		 2.5241392769603133 2.5241392769603133 2.6018515235845938 2.6018515235845938
+		 2.6018515235845938
+		7
+		3.3260579344793832 1.9724942560261463
+		3.6084121595496454 1.7132208954325057
+		3.6488490784877388 1.3356151911377312
+		3.6774322444297596 1
+		3.6882868745726318 0.87254810130133742
+		3.6939634436929518 0.7330604068074017
+		3.6939634436929518 0.59150589718085278
+		
+		3 1 0 no 2
+		6 2.6018515235845938 2.6018515235845938 2.6018515235845938 2.7131246102190323
+		 2.7131246102190323 2.7131246102190323
+		4
+		3.6939634436929518 0.59150589718085278
+		3.6939634436929518 0.38881960386953462
+		3.6823252046784627 0.18189587629074486
+		3.6575852889795182 0
+		
+		1 0.001
+		;
+	setAttr ".nufa" 3;
+	setAttr ".nvfa" 6;
+	setAttr ".nts" -type "string" "           ";
+createNode curveVarGroup -n "projectionCurve1" -p "|NEEDSCO_MINOR|inset|insetShape";
+	setAttr ".mc" 2;
+createNode curveVarGroup -n "projectionCurve2" -p "|NEEDSCO_MINOR|inset|insetShape";
+	setAttr ".mc" 2;
+createNode curveVarGroup -n "projectionCurve3" -p "|NEEDSCO_MINOR|inset|insetShape";
+	setAttr ".mc" 4;
+createNode curveVarGroup -n "projectionCurve4" -p "|NEEDSCO_MINOR|inset|insetShape";
+	setAttr ".mc" 2;
+createNode curveVarGroup -n "projectionCurve5" -p "|NEEDSCO_MINOR|inset|insetShape";
+	setAttr ".mc" 4;
+createNode curveVarGroup -n "projectionCurve6" -p "|NEEDSCO_MINOR|inset|insetShape";
+	setAttr ".mc" 2;
+createNode curveVarGroup -n "projectionCurve8" -p "|NEEDSCO_MINOR|inset|insetShape";
+	setAttr ".mc" 2;
+createNode curveVarGroup -n "projectionCurve18" -p "|NEEDSCO_MINOR|inset|insetShape";
+	setAttr ".mc" 1;
+createNode curveVarGroup -n "projectionCurve167" -p "|NEEDSCO_MINOR|inset|insetShape";
+	setAttr ".mc" 1;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve167_1" -p "projectionCurve167";
+createNode nurbsCurve -n "projectionCurve167_Shape1" -p "projectionCurve167_1";
+	setAttr -k off ".v";
+createNode curveVarGroup -n "projectionCurve168" -p "|NEEDSCO_MINOR|inset|insetShape";
+	setAttr ".mc" 1;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve168_1" -p "projectionCurve168";
+createNode nurbsCurve -n "projectionCurve168_Shape1" -p "projectionCurve168_1";
+	setAttr -k off ".v";
+createNode curveVarGroup -n "projectionCurve169" -p "|NEEDSCO_MINOR|inset|insetShape";
+	setAttr ".mc" 1;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve169_1" -p "projectionCurve169";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve169_Shape1" -p "projectionCurve169_1";
+	setAttr -k off ".v";
+createNode curveVarGroup -n "projectionCurve170" -p "|NEEDSCO_MINOR|inset|insetShape";
+	setAttr ".mc" 1;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve170_1" -p "projectionCurve170";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve170_Shape1" -p "projectionCurve170_1";
+	setAttr -k off ".v";
+createNode curveVarGroup -n "projectionCurve171" -p "|NEEDSCO_MINOR|inset|insetShape";
+	setAttr ".mc" 4;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve171_3" -p "projectionCurve171";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve171_Shape3" -p "projectionCurve171_3";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 9 0 no 2
+		14 0 0 0 0.16201237373746016 0.16201237373746016 0.21594585725802753 0.21594585725802753
+		 0.21594585725802753 0.24195948446069579 0.24195948446069579 0.24195948446069579
+		 0.27095669699594543 0.27095669699594543 0.27095669699594543
+		12
+		3.81659621575022 8
+		3.8019730275100336 7.795009641302701
+		3.780044956396396 7.5848372109316564
+		3.700279297464049 7.3195506644209916
+		3.6144638762104928 7.1626910132982333
+		3.5958645149882638 7.095681379336459
+		3.5870292190098176 7.0638496436985694
+		3.5831547847326912 7.0330678561281257
+		3.5844534265293224 7
+		3.5858516099783597 6.9643974733806893
+		3.5931110741597454 6.929497645627972
+		3.6022935829167104 6.8953584566434341
+		;
+createNode transform -n "projectionCurve171_4" -p "projectionCurve171";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve171_Shape4" -p "projectionCurve171_4";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 7 0 no 2
+		12 0 0 0 0.0018407070126114863 0.0018407070126114863 0.0018407070126114863
+		 0.20571171745221772 0.20571171745221772 0.20571171745221772 0.30731051620612032
+		 0.30731051620612032 0.30731051620612032
+		10
+		3.6283957451143896 2.0038113256536798
+		3.6291530206169837 2.0025431895458428
+		3.6299063749923985 2.0012727524075378
+		3.6306558657723191 2
+		3.810533431724243 1.6945397978723706
+		3.8119973419506046 1.3259123517241607
+		3.8267997887278495 1
+		3.8410421977465865 0.68641825994270611
+		3.8389462223360611 0.31330622239601397
+		3.81659621575022 0
+		;
+createNode curveVarGroup -n "projectionCurve172" -p "|NEEDSCO_MINOR|inset|insetShape";
+	setAttr ".mc" 4;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve172_2" -p "projectionCurve172";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve172_Shape2" -p "projectionCurve172_2";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 7 0 no 2
+		12 0 0 0 0.0018407070126116119 0.0018407070126116119 0.0018407070126116119
+		 0.20571171745221775 0.20571171745221775 0.20571171745221775 0.30731051620612049
+		 0.30731051620612049 0.30731051620612049
+		10
+		0.37160425488561044 2.0038113256536803
+		0.37084697938301631 2.0025431895458432
+		0.37009362500760129 2.0012727524075378
+		0.3693441342276807 2
+		0.18946656827575706 1.6945397978723706
+		0.18800265804939545 1.3259123517241609
+		0.17320021127215063 1
+		0.15895780225341369 0.68641825994270389
+		0.16105377766393908 0.31330622239601619
+		0.18340378424978021 0
+		;
+createNode transform -n "projectionCurve172_4" -p "projectionCurve172";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve172_Shape4" -p "projectionCurve172_4";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 7 0 no 2
+		12 0 0 0 0.0018407070126114863 0.0018407070126114863 0.0018407070126114863
+		 0.20571171745221772 0.20571171745221772 0.20571171745221772 0.30731051620612032
+		 0.30731051620612032 0.30731051620612032
+		10
+		3.6283957451143896 2.0038113256536798
+		3.6291530206169837 2.0025431895458428
+		3.6299063749923985 2.0012727524075378
+		3.6306558657723191 2
+		3.810533431724243 1.6945397978723706
+		3.8119973419506046 1.3259123517241607
+		3.8267997887278495 1
+		3.8410421977465865 0.68641825994270611
+		3.8389462223360611 0.31330622239601397
+		3.81659621575022 0
+		;
+createNode curveVarGroup -n "projectionCurve173" -p "|NEEDSCO_MINOR|inset|insetShape";
+	setAttr ".mc" 2;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve173_2" -p "projectionCurve173";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve173_Shape2" -p "projectionCurve173_2";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 21 0 no 2
+		26 0 0 0 0.19005899676750629 0.19005899676750629 0.19005899676750629 0.37449110922219059
+		 0.37449110922219059 0.37449110922219059 0.39793214785144687 0.39793214785144687
+		 0.39793214785144687 0.43999044399477938 0.43999044399477938 0.43999044399477938
+		 0.50621407985562383 0.50621407985562383 0.61663691887887395 0.61663691887887395
+		 0.61663691887887395 0.71935962672286158 0.71935962672286158 0.71935962672286158
+		 0.92385754408650134 0.92385754408650134 0.92385754408650134
+		24
+		3.6022952043749261 6.8953627636428081
+		3.6788725024717635 6.6107084267322724
+		3.6979567914450402 6.2910318831905272
+		3.6982225369671378 6
+		3.6985420907775444 5.650039833261741
+		3.6452707411818963 5.4505369024935089
+		3.6198656701323171 5.1041303188243043
+		3.6173162518205042 5.0693681531914905
+		3.6167043371128091 5.0348295845738953
+		3.6183674122680434 5
+		3.6210723072096109 4.9433517079283513
+		3.6296188792767143 4.8888197504924573
+		3.6441672724081045 4.8340193753080065
+		3.6719042755578748 4.7295406081086169
+		3.7141063039896993 4.64178861292765
+		3.7821976046528558 4.3608073032144796
+		3.8018065447268663 4.1793384277884975
+		3.814653033746382 4
+		3.8370869380494472 3.6868201793690512
+		3.8391997367502282 3.3134568224115561
+		3.82476462870962 3
+		3.8098060534898939 2.6751761439547774
+		3.8073525988812862 2.3080761121638647
+		3.628395745397853 2.003811325333166
+		;
+createNode curveVarGroup -n "projectionCurve174" -p "|NEEDSCO_MINOR|inset|insetShape";
+	setAttr ".mc" 2;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve174_2" -p "projectionCurve174";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve174_Shape2" -p "projectionCurve174_2";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 21 0 no 2
+		26 0 0 0 0.19005899676750629 0.19005899676750629 0.19005899676750629 0.37449110922219059
+		 0.37449110922219059 0.37449110922219059 0.39793214785144687 0.39793214785144687
+		 0.39793214785144687 0.43999044399477938 0.43999044399477938 0.43999044399477938
+		 0.50621407985562383 0.50621407985562383 0.61663691887887395 0.61663691887887395
+		 0.61663691887887395 0.71935962672286158 0.71935962672286158 0.71935962672286158
+		 0.92385754408650134 0.92385754408650134 0.92385754408650134
+		24
+		3.6022952043749261 6.8953627636428081
+		3.6788725024717635 6.6107084267322724
+		3.6979567914450402 6.2910318831905272
+		3.6982225369671378 6
+		3.6985420907775444 5.650039833261741
+		3.6452707411818963 5.4505369024935089
+		3.6198656701323171 5.1041303188243043
+		3.6173162518205042 5.0693681531914905
+		3.6167043371128091 5.0348295845738953
+		3.6183674122680434 5
+		3.6210723072096109 4.9433517079283513
+		3.6296188792767143 4.8888197504924573
+		3.6441672724081045 4.8340193753080065
+		3.6719042755578748 4.7295406081086169
+		3.7141063039896993 4.64178861292765
+		3.7821976046528558 4.3608073032144796
+		3.8018065447268663 4.1793384277884975
+		3.814653033746382 4
+		3.8370869380494472 3.6868201793690512
+		3.8391997367502282 3.3134568224115561
+		3.82476462870962 3
+		3.8098060534898939 2.6751761439547774
+		3.8073525988812862 2.3080761121638647
+		3.628395745397853 2.003811325333166
+		;
+createNode curveVarGroup -n "projectionCurve175" -p "|NEEDSCO_MINOR|inset|insetShape";
+	setAttr ".mc" 2;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve175_1" -p "projectionCurve175";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve175_Shape1" -p "projectionCurve175_1";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 40 0 no 2
+		45 0 0 0 0.3109952998039785 0.3109952998039785 0.3109952998039785 0.36998373449574906
+		 0.36998373449574906 0.36998373449574906 0.42683711977833971 0.42683711977833971
+		 0.42683711977833971 0.76320753587364343 0.76320753587364343 0.76320753587364343
+		 1.0995779519689477 1.0995779519689477 1.0995779519689477 1.1945614604538801
+		 1.1945614604538801 1.1945614604538801 1.2535630292874047 1.2535630292874047
+		 1.2535630292874047 1.564759174908132 1.564759174908132 1.564759174908132
+		 1.7819030632228636 1.7819030632228636 1.7819030632228636 2.1095122925092227
+		 2.1095122925092227 2.1095122925092227 2.1577287812420161 2.1577287812420161
+		 2.1577287812420161 2.1682032147291301 2.1682032147291301 2.1682032147291301
+		 2.5241392769603133 2.5241392769603133 2.5241392769603133 2.7131246102190323
+		 2.7131246102190323 2.7131246102190323
+		43
+		0.34241471102048188 8
+		0.38035501849517184 7.7210505662659354
+		0.44105639546116987 7.4297641181606089
+		0.66507992446462949 7.2173171003529726
+		0.68117749146020501 7.1768378044562064
+		0.69924787142357503 7.1372376501935966
+		0.71970724890519044 7.0987585882150848
+		0.69660973330992992 7.0671353505388614
+		0.67570653910386358 7.0342018727586879
+		0.65665967057528563 7
+		0.49140760319109467 6.7032619733105232
+		0.45595196609441285 6.3227572077744298
+		0.45595196609441285 6
+		0.45595196609441285 5.6772427946577624
+		0.49140760443638054 5.2967380244533571
+		0.65665967057528674 5
+		0.68773078539304033 4.9442065600509135
+		0.72352391629967927 4.8921280392874982
+		0.76541209165220481 4.8438211508665105
+		0.74576175353468688 4.8063310063124325
+		0.72833291172973569 4.7677863463185615
+		0.71278416336386607 4.7284334062728464
+		0.5062496648773086 4.5297986881438028
+		0.43575015714088478 4.2626850044026297
+		0.39431705278889723 4
+		0.34572774331198097 3.6919448066108469
+		0.34079740976584505 3.3094251851516292
+		0.37131675092091138 3
+		0.40098648203852444 2.6991887210860557
+		0.45429429276759742 2.3699843373745519
+		0.67752661301585104 2.1261801832998315
+		0.67502380718848398 2.0842181533561011
+		0.67376247338550732 2.0420367812699118
+		0.67376247338550732 2
+		0.67376247338550732 1.9908308323839856
+		0.67382246717042715 1.981662641890926
+		0.67394206552061664 1.9724942560261463
+		0.39158784045035389 1.7132208954325057
+		0.35115092151226096 1.3356151911377314
+		0.32256775557024031 1
+		0.29617081063479533 0.69005477776912649
+		0.30039663320335636 0.30893052254518688
+		0.34241471102048188 0
+		;
+createNode transform -n "projectionCurve175_2" -p "projectionCurve175";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve175_Shape2" -p "projectionCurve175_2";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 40 0 no 2
+		45 0 0 0 0.31099529980397861 0.31099529980397861 0.31099529980397861 0.36998373449574906
+		 0.36998373449574906 0.36998373449574906 0.42683711977833949 0.42683711977833949
+		 0.42683711977833949 0.76320753587364343 0.76320753587364343 0.76320753587364343
+		 1.0995779519689477 1.0995779519689477 1.0995779519689477 1.1945614604538803
+		 1.1945614604538803 1.1945614604538803 1.2535630292874049 1.2535630292874049
+		 1.2535630292874049 1.564759174908132 1.564759174908132 1.564759174908132
+		 1.7819030632228636 1.7819030632228636 1.7819030632228636 2.1095122925092227
+		 2.1095122925092227 2.1095122925092227 2.1577287812420161 2.1577287812420161
+		 2.1577287812420161 2.1682032147291301 2.1682032147291301 2.1682032147291301
+		 2.5241392769603133 2.5241392769603133 2.5241392769603133 2.7131246102190323
+		 2.7131246102190323 2.7131246102190323
+		43
+		3.6575852889795182 8
+		3.6196449815048277 7.7210505662659328
+		3.5589436045388325 7.4297641181606116
+		3.3349200755353703 7.2173171003529726
+		3.3188225085397938 7.1768378044562038
+		3.3007521285764261 7.1372376501935992
+		3.2802927510948097 7.0987585882150848
+		3.3033902666900699 7.0671353505388614
+		3.3242934608961363 7.034201872758687
+		3.3433403294247142 7
+		3.508592396808905 6.7032619733105232
+		3.5440480339055869 6.322757207774429
+		3.5440480339055869 6
+		3.5440480339055869 5.6772427946577642
+		3.5085923955636189 5.2967380244533553
+		3.3433403294247133 5
+		3.312269214606959 4.9442065600509109
+		3.2764760837003215 4.8921280392874991
+		3.2345879083477951 4.8438211508665105
+		3.2542382464653077 4.8063310063124431
+		3.2716670882702688 4.7677863463185508
+		3.2872158366361339 4.7284334062728464
+		3.4937503351226908 4.5297986881438028
+		3.5642498428591152 4.2626850044026297
+		3.6056829472111027 4
+		3.6542722566880186 3.6919448066108496
+		3.6592025902341545 3.3094251851516265
+		3.6286832490790886 3
+		3.5990135179614753 2.6991887210860557
+		3.5457057072324023 2.3699843373745515
+		3.3224733869841487 2.1261801832998315
+		3.3249761928115169 2.0842181533560837
+		3.3262375266144928 2.0420367812699292
+		3.3262375266144928 2
+		3.3262375266144928 1.9908308323839856
+		3.3261775328295728 1.981662641890926
+		3.3260579344793832 1.9724942560261463
+		3.6084121595496454 1.7132208954325057
+		3.6488490784877388 1.3356151911377312
+		3.6774322444297596 1
+		3.7038291893652047 0.69005477776912449
+		3.6996033667966439 0.30893052254518888
+		3.6575852889795182 0
+		;
+createNode curveVarGroup -n "projectionCurve176" -p "|NEEDSCO_MINOR|inset|insetShape";
+	setAttr ".mc" 2;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve176_1" -p "projectionCurve176";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve176_Shape1" -p "projectionCurve176_1";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 40 0 no 2
+		45 0 0 0 0.3109952998039785 0.3109952998039785 0.3109952998039785 0.36998373449574906
+		 0.36998373449574906 0.36998373449574906 0.42683711977833971 0.42683711977833971
+		 0.42683711977833971 0.76320753587364343 0.76320753587364343 0.76320753587364343
+		 1.0995779519689477 1.0995779519689477 1.0995779519689477 1.1945614604538801
+		 1.1945614604538801 1.1945614604538801 1.2535630292874047 1.2535630292874047
+		 1.2535630292874047 1.564759174908132 1.564759174908132 1.564759174908132
+		 1.7819030632228636 1.7819030632228636 1.7819030632228636 2.1095122925092227
+		 2.1095122925092227 2.1095122925092227 2.1577287812420161 2.1577287812420161
+		 2.1577287812420161 2.1682032147291301 2.1682032147291301 2.1682032147291301
+		 2.5241392769603133 2.5241392769603133 2.5241392769603133 2.7131246102190323
+		 2.7131246102190323 2.7131246102190323
+		43
+		0.34241471102048188 8
+		0.38035501849517184 7.7210505662659354
+		0.44105639546116987 7.4297641181606089
+		0.66507992446462949 7.2173171003529726
+		0.68117749146020501 7.1768378044562064
+		0.69924787142357503 7.1372376501935966
+		0.71970724890519044 7.0987585882150848
+		0.69660973330992992 7.0671353505388614
+		0.67570653910386358 7.0342018727586879
+		0.65665967057528563 7
+		0.49140760319109467 6.7032619733105232
+		0.45595196609441285 6.3227572077744298
+		0.45595196609441285 6
+		0.45595196609441285 5.6772427946577624
+		0.49140760443638054 5.2967380244533571
+		0.65665967057528674 5
+		0.68773078539304033 4.9442065600509135
+		0.72352391629967927 4.8921280392874982
+		0.76541209165220481 4.8438211508665105
+		0.74576175353468688 4.8063310063124325
+		0.72833291172973569 4.7677863463185615
+		0.71278416336386607 4.7284334062728464
+		0.5062496648773086 4.5297986881438028
+		0.43575015714088478 4.2626850044026297
+		0.39431705278889723 4
+		0.34572774331198097 3.6919448066108469
+		0.34079740976584505 3.3094251851516292
+		0.37131675092091138 3
+		0.40098648203852444 2.6991887210860557
+		0.45429429276759742 2.3699843373745519
+		0.67752661301585104 2.1261801832998315
+		0.67502380718848398 2.0842181533561011
+		0.67376247338550732 2.0420367812699118
+		0.67376247338550732 2
+		0.67376247338550732 1.9908308323839856
+		0.67382246717042715 1.981662641890926
+		0.67394206552061664 1.9724942560261463
+		0.39158784045035389 1.7132208954325057
+		0.35115092151226096 1.3356151911377314
+		0.32256775557024031 1
+		0.29617081063479533 0.69005477776912649
+		0.30039663320335636 0.30893052254518688
+		0.34241471102048188 0
+		;
+createNode transform -n "projectionCurve176_2" -p "projectionCurve176";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve176_Shape2" -p "projectionCurve176_2";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 40 0 no 2
+		45 0 0 0 0.31099529980397861 0.31099529980397861 0.31099529980397861 0.36998373449574906
+		 0.36998373449574906 0.36998373449574906 0.42683711977833949 0.42683711977833949
+		 0.42683711977833949 0.76320753587364343 0.76320753587364343 0.76320753587364343
+		 1.0995779519689477 1.0995779519689477 1.0995779519689477 1.1945614604538803
+		 1.1945614604538803 1.1945614604538803 1.2535630292874049 1.2535630292874049
+		 1.2535630292874049 1.564759174908132 1.564759174908132 1.564759174908132
+		 1.7819030632228636 1.7819030632228636 1.7819030632228636 2.1095122925092227
+		 2.1095122925092227 2.1095122925092227 2.1577287812420161 2.1577287812420161
+		 2.1577287812420161 2.1682032147291301 2.1682032147291301 2.1682032147291301
+		 2.5241392769603133 2.5241392769603133 2.5241392769603133 2.7131246102190323
+		 2.7131246102190323 2.7131246102190323
+		43
+		3.6575852889795182 8
+		3.6196449815048277 7.7210505662659328
+		3.5589436045388325 7.4297641181606116
+		3.3349200755353703 7.2173171003529726
+		3.3188225085397938 7.1768378044562038
+		3.3007521285764261 7.1372376501935992
+		3.2802927510948097 7.0987585882150848
+		3.3033902666900699 7.0671353505388614
+		3.3242934608961363 7.034201872758687
+		3.3433403294247142 7
+		3.508592396808905 6.7032619733105232
+		3.5440480339055869 6.322757207774429
+		3.5440480339055869 6
+		3.5440480339055869 5.6772427946577642
+		3.5085923955636189 5.2967380244533553
+		3.3433403294247133 5
+		3.312269214606959 4.9442065600509109
+		3.2764760837003215 4.8921280392874991
+		3.2345879083477951 4.8438211508665105
+		3.2542382464653077 4.8063310063124431
+		3.2716670882702688 4.7677863463185508
+		3.2872158366361339 4.7284334062728464
+		3.4937503351226908 4.5297986881438028
+		3.5642498428591152 4.2626850044026297
+		3.6056829472111027 4
+		3.6542722566880186 3.6919448066108496
+		3.6592025902341545 3.3094251851516265
+		3.6286832490790886 3
+		3.5990135179614753 2.6991887210860557
+		3.5457057072324023 2.3699843373745515
+		3.3224733869841487 2.1261801832998315
+		3.3249761928115169 2.0842181533560837
+		3.3262375266144928 2.0420367812699292
+		3.3262375266144928 2
+		3.3262375266144928 1.9908308323839856
+		3.3261775328295728 1.981662641890926
+		3.3260579344793832 1.9724942560261463
+		3.6084121595496454 1.7132208954325057
+		3.6488490784877388 1.3356151911377312
+		3.6774322444297596 1
+		3.7038291893652047 0.69005477776912449
+		3.6996033667966439 0.30893052254518888
+		3.6575852889795182 0
+		;
+createNode transform -n "sides" -p "NEEDSCO_MINOR";
+createNode transform -n "loftedSurface180" -p "|NEEDSCO_MINOR|sides";
+createNode nurbsSurface -n "loftedSurfaceShape180" -p "loftedSurface180";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".tw" yes;
+	setAttr ".dvu" 3;
+	setAttr ".dvv" 3;
+	setAttr ".cpr" 15;
+	setAttr ".cps" 4;
+createNode transform -n "loftedSurface181" -p "|NEEDSCO_MINOR|sides";
+createNode nurbsSurface -n "loftedSurfaceShape181" -p "loftedSurface181";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".tw" yes;
+	setAttr ".dvu" 3;
+	setAttr ".dvv" 3;
+	setAttr ".cpr" 15;
+	setAttr ".cps" 4;
+createNode transform -n "loftedSurface182" -p "|NEEDSCO_MINOR|sides";
+createNode nurbsSurface -n "loftedSurfaceShape182" -p "loftedSurface182";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".tw" yes;
+	setAttr ".dvu" 3;
+	setAttr ".dvv" 3;
+	setAttr ".cpr" 15;
+	setAttr ".cps" 4;
+createNode transform -n "loftedSurface183" -p "|NEEDSCO_MINOR|sides";
+createNode nurbsSurface -n "loftedSurfaceShape183" -p "loftedSurface183";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".tw" yes;
+	setAttr ".dvu" 3;
+	setAttr ".dvv" 3;
+	setAttr ".cpr" 15;
+	setAttr ".cps" 4;
+createNode transform -n "loftedSurface184" -p "|NEEDSCO_MINOR|sides";
+createNode nurbsSurface -n "loftedSurfaceShape184" -p "loftedSurface184";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".tw" yes;
+	setAttr ".dvu" 3;
+	setAttr ".dvv" 3;
+	setAttr ".cpr" 15;
+	setAttr ".cps" 4;
+createNode transform -n "loftedSurface185" -p "|NEEDSCO_MINOR|sides";
+createNode nurbsSurface -n "loftedSurfaceShape185" -p "loftedSurface185";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".tw" yes;
+	setAttr ".dvu" 3;
+	setAttr ".dvv" 3;
+	setAttr ".cpr" 15;
+	setAttr ".cps" 4;
+createNode transform -n "loftedSurface186" -p "|NEEDSCO_MINOR|sides";
+createNode nurbsSurface -n "loftedSurfaceShape186" -p "loftedSurface186";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".tw" yes;
+	setAttr ".dvu" 3;
+	setAttr ".dvv" 3;
+	setAttr ".cpr" 15;
+	setAttr ".cps" 4;
+createNode transform -n "loftedSurface187" -p "|NEEDSCO_MINOR|sides";
+createNode nurbsSurface -n "loftedSurfaceShape187" -p "loftedSurface187";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".tw" yes;
+	setAttr ".dvu" 3;
+	setAttr ".dvv" 3;
+	setAttr ".cpr" 15;
+	setAttr ".cps" 4;
+createNode transform -n "loftedSurface188" -p "|NEEDSCO_MINOR|sides";
+createNode nurbsSurface -n "loftedSurfaceShape188" -p "loftedSurface188";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".tw" yes;
+	setAttr ".dvu" 3;
+	setAttr ".dvv" 3;
+	setAttr ".cpr" 15;
+	setAttr ".cps" 4;
+createNode transform -n "loftedSurface189" -p "|NEEDSCO_MINOR|sides";
+createNode nurbsSurface -n "loftedSurfaceShape189" -p "loftedSurface189";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".tw" yes;
+	setAttr ".dvu" 3;
+	setAttr ".dvv" 3;
+	setAttr ".cpr" 15;
+	setAttr ".cps" 4;
+createNode transform -n "needsco_minor_curve";
+	setAttr ".tmp" yes;
+	setAttr ".s" -type "double3" 0.8 0.8 0.8 ;
+createNode transform -n "group" -p "needsco_minor_curve";
+	setAttr ".r" -type "double3" 0 180 0 ;
+	setAttr ".s" -type "double3" -0.917 0.91674907739937816 0.91674907739937816 ;
+createNode transform -n "curve21" -p "group";
+	setAttr ".t" -type "double3" -0.025721914891881942 4.4941067921577722e-18 
+		-0.022506675530396696 ;
+createNode nurbsCurve -n "curveShape21" -p "|needsco_minor_curve|group|curve21";
+	setAttr -k off ".v";
+createNode transform -n "curve23" -p "group";
+	setAttr ".t" -type "double3" -0.025721914891881942 4.4941067921577722e-18 
+		-0.022506675530396696 ;
+createNode nurbsCurve -n "curveShape23" -p "|needsco_minor_curve|group|curve23";
+	setAttr -k off ".v";
+createNode transform -n "curve24" -p "group";
+	setAttr ".t" -type "double3" -0.14111492097979236 8.2786177750274737e-18 
+		-0.094658942277218328 ;
+createNode nurbsCurve -n "curveShape24" -p "|needsco_minor_curve|group|curve24";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 2 0 no 3
+		7 0 0 0 1 1.9087852599999999 1.9087852599999999 1.9087852599999999
+		5
+		0.40000000000000002 0 0.40000000000000002
+		0.44 0 0.40000000000000002
+		0.45785408330334354 6.6224292022409867e-18 0.36161471419520458
+		0.44162855556645286 6.0406315785081954e-19 0.32362947275962461
+		0.13999637388747432 8.1332682292219184e-20 -0.27996434297883926
+		;
+createNode transform -n "curve22detachedCurve2detachedCurve2" -p "group";
+	setAttr ".t" -type "double3" 0.058885079020207648 8.2786177750274737e-18 
+		-0.094658942277218328 ;
+createNode nurbsCurve -n "curve22detachedCurve2detachedCurveShape2" -p "|needsco_minor_curve|group|curve22detachedCurve2detachedCurve2";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 3 0 no 3
+		8 0.1021276594 0.1021276594 0.1021276594 1 2 2.946081242 2.946081242 2.946081242
+		
+		6
+		-0.060003626017622991 0 -0.27996434269824372
+		-0.32391127206242459 0 0.24810067902656985
+		-0.35863829787466667 0 0.3227234042506667
+		-0.32071891677333336 0 0.39856216645333337
+		-0.24427473754047652 0 0.39996123690047652
+		0.20000000023214926 0 0.3999979099418175
+		;
+createNode transform -n "curve25" -p "group";
+	setAttr ".t" -type "double3" -0.025721914891881942 4.4941067921577722e-18 
+		-0.013540054946741122 ;
+	setAttr ".s" -type "double3" 0.98418421168389469 0.98418421168389469 0.98418421168389469 ;
+createNode nurbsCurve -n "curveShape25" -p "|needsco_minor_curve|group|curve25";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		1 6 0 no 3
+		7 0 1 2 3 4 5 6
+		7
+		-0.040642797887970393 0 -0.65939547991051706
+		-0.56899917043158554 0 0.39731726517671323
+		-0.56899917043158554 0 0.47860286095265397
+		0.56899917043158554 0 0.47860286095265397
+		0.56899917043158554 0 0.39731726517671323
+		0.040642797887970393 0 -0.65939547991051706
+		-0.040642797887970393 0 -0.65939547991051706
+		;
 createNode lightLinker -n "lightLinker1";
 	setAttr ".ihi" 0;
 	setAttr -s 19 ".lnk";
@@ -24995,7 +29262,7 @@ createNode lambert -n "white";
 	setAttr ".c" -type "float3" 1 1 1 ;
 createNode shadingEngine -n "lambert3SG";
 	setAttr ".ihi" 0;
-	setAttr -s 33 ".dsm";
+	setAttr -s 56 ".dsm";
 	setAttr ".ro" yes;
 createNode materialInfo -n "materialInfo5";
 createNode shadingEngine -n "lambert6SG";
@@ -25067,7 +29334,7 @@ createNode materialInfo -n "materialInfo10";
 createNode animCurveTU -n "rim_visibility";
 	setAttr ".tan" 9;
 	setAttr ".wgt" no;
-	setAttr -s 3 ".ktv[0:2]"  0 1 49 1 71 0;
+	setAttr -s 3 ".ktv[0:2]"  0 1 49 1 85 0;
 	setAttr -s 3 ".kot[0:2]"  5 5 5;
 createNode shadingEngine -n "surfaceSG";
 	setAttr ".ihi" 0;
@@ -25358,7 +29625,7 @@ createNode animCurveTU -n "loftedSurface88_visibility";
 createNode animCurveTU -n "repo_visibility";
 	setAttr ".tan" 9;
 	setAttr ".wgt" no;
-	setAttr -s 3 ".ktv[0:2]"  69 0 70 1 71 0;
+	setAttr -s 3 ".ktv[0:2]"  83 0 84 1 85 0;
 	setAttr -s 3 ".kot[0:2]"  5 5 5;
 createNode lambert -n "select";
 	setAttr ".c" -type "float3" 0 1 1 ;
@@ -25387,25 +29654,27 @@ createNode shadingEngine -n "prefix_surfaceSG1";
 createNode animCurveTU -n "surface_colorR";
 	setAttr ".tan" 2;
 	setAttr ".wgt" no;
-	setAttr -s 8 ".ktv[0:7]"  0 0.69999998807907104 1 0 2 0 3 0.80000001192092896 
+	setAttr -s 8 ".ktv[0:7]"  0 0.69999998807907104 1 0 2 0 3 0.89999997615814209 
 		4 0.87999999523162842 5 0 6 0.5 7 0.69999998807907104;
+	setAttr -s 8 ".kot[0:7]"  5 5 5 5 5 5 5 5;
 	setAttr ".pst" 3;
 createNode animCurveTU -n "surface_colorG";
 	setAttr ".tan" 2;
 	setAttr ".wgt" no;
-	setAttr -s 8 ".ktv[0:7]"  0 0 1 0.75 2 0.75 3 0.80000001192092896 4 0 5 
-		0 6 0.5 7 0;
+	setAttr -s 8 ".ktv[0:7]"  0 0 1 0.75 2 0.75 3 0.5625 4 0 5 0 6 0.5 7 0;
+	setAttr -s 8 ".kot[0:7]"  5 5 5 5 5 5 5 5;
 	setAttr ".pst" 3;
 createNode animCurveTU -n "surface_colorB";
 	setAttr ".tan" 2;
 	setAttr ".wgt" no;
 	setAttr -s 8 ".ktv[0:7]"  0 0.69999998807907104 1 0.75 2 0.004125058650970459 
 		3 0 4 0.0027866745367646217 5 1 6 0.5 7 0.69999998807907104;
+	setAttr -s 8 ".kot[0:7]"  5 5 5 5 5 5 5 5;
 	setAttr ".pst" 3;
 createNode lambert -n "surface";
 createNode shadingEngine -n "surfaceSG1";
 	setAttr ".ihi" 0;
-	setAttr -s 9 ".dsm";
+	setAttr -s 12 ".dsm";
 	setAttr ".ro" yes;
 createNode materialInfo -n "materialInfo13";
 createNode animCurveTA -n "NEEDSCO_MODIFIED_rotateY";
@@ -25421,7 +29690,7 @@ createNode animCurveTU -n "NEEDSCO_MODIFIED_scaleX";
 createNode animCurveTU -n "collapsed_visibility";
 	setAttr ".tan" 9;
 	setAttr ".wgt" no;
-	setAttr -s 3 ".ktv[0:2]"  70 0 71 1 72 0;
+	setAttr -s 3 ".ktv[0:2]"  84 0 85 1 86 0;
 	setAttr -s 3 ".kot[0:2]"  5 5 5;
 createNode animCurveTU -n "PENDING_visibility";
 	setAttr ".tan" 9;
@@ -25962,8 +30231,519 @@ createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd50";
 	setAttr ".f" 1;
 	setAttr ".b" 1;
 	setAttr ".e" 8;
+createNode makeNurbCircle -n "makeNurbCircle1";
+	setAttr ".nr" -type "double3" 0 1 0 ;
+	setAttr ".r" 0.05;
+	setAttr ".s" 6;
+createNode projectCurve -n "projectCurve23";
+	setAttr ".d" -type "double3" 0 -1 -1.7932703932910243e-16 ;
+createNode projectCurve -n "projectCurve24";
+	setAttr ".d" -type "double3" 0 -1 -1.7932703932910243e-16 ;
+createNode projectCurve -n "projectCurve25";
+	setAttr ".d" -type "double3" 0 -1 -1.7932703932910243e-16 ;
+createNode projectCurve -n "projectCurve26";
+	setAttr ".d" -type "double3" 0 -1 -1.7932703932910243e-16 ;
+createNode projectCurve -n "projectCurve27";
+	setAttr ".d" -type "double3" 0 -1 -1.7932703932910243e-16 ;
+createNode projectCurve -n "projectCurve28";
+	setAttr ".d" -type "double3" 0 -1 -1.7932703932910243e-16 ;
+createNode projectCurve -n "projectCurve29";
+	setAttr ".d" -type "double3" 0 -1 -1.7932703932910243e-16 ;
+createNode projectCurve -n "projectCurve30";
+	setAttr ".d" -type "double3" 0 -1 -1.7932703932910243e-16 ;
+createNode projectCurve -n "projectCurve31";
+	setAttr ".d" -type "double3" 0 -1 -1.7932703932910243e-16 ;
+createNode projectCurve -n "projectCurve32";
+	setAttr ".d" -type "double3" 0 -1 -1.7932703932910243e-16 ;
+createNode projectCurve -n "projectCurve33";
+	setAttr ".d" -type "double3" 0 -1 -1.7932703932910243e-16 ;
+createNode projectCurve -n "projectCurve34";
+	setAttr ".d" -type "double3" 0 -1 -1.7932703932910243e-16 ;
+createNode projectCurve -n "projectCurve35";
+	setAttr ".d" -type "double3" 0 -1 -1.7932703932910243e-16 ;
+createNode projectCurve -n "projectCurve36";
+	setAttr ".d" -type "double3" 0 -1 -1.7932703932910243e-16 ;
+createNode projectCurve -n "projectCurve37";
+	setAttr ".d" -type "double3" 0 -1 -1.7932703932910243e-16 ;
+createNode projectCurve -n "projectCurve38";
+	setAttr ".d" -type "double3" 0 -1 -1.7932703932910243e-16 ;
+createNode projectCurve -n "projectCurve39";
+	setAttr ".d" -type "double3" 0 -1 -1.7932703932910243e-16 ;
+createNode projectCurve -n "projectCurve40";
+	setAttr ".d" -type "double3" 0 -1 -1.7932703932910243e-16 ;
+createNode projectCurve -n "projectCurve41";
+	setAttr ".d" -type "double3" 0 -1 -1.7932703932910243e-16 ;
+createNode projectCurve -n "projectCurve42";
+	setAttr ".d" -type "double3" 0 -1 -1.7932703932910243e-16 ;
+createNode projectCurve -n "projectCurve43";
+	setAttr ".d" -type "double3" 0 -1 -1.7932703932910243e-16 ;
+createNode projectCurve -n "projectCurve44";
+	setAttr ".d" -type "double3" 0 -1 -1.7932703932910243e-16 ;
+createNode projectCurve -n "projectCurve45";
+	setAttr ".d" -type "double3" 0 -1 -1.7932703932910243e-16 ;
+createNode projectCurve -n "projectCurve46";
+	setAttr ".d" -type "double3" 0 -1 -1.7932703932910243e-16 ;
+createNode trim -n "trim7";
+	setAttr -s 49 ".ic";
+	setAttr -s 2 ".lu[0:1]"  3.1394388703288718 3.7238379603991563;
+	setAttr -s 2 ".lv[0:1]"  5.4525522111510094 6.8434297026832605;
+createNode trim -n "trim8";
+	setAttr -s 49 ".ic";
+	setAttr -s 2 ".lu[0:1]"  3.4042952501197363 3.0841799051718528;
+	setAttr -s 2 ".lv[0:1]"  4.910584810457709 6.0633896780863132;
+createNode loft -n "loft26";
+	setAttr -s 2 ".ic";
+	setAttr ".u" yes;
+	setAttr -s 2 ".r[0:1]" no no;
+	setAttr ".rsn" yes;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd51";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 1;
+	setAttr ".b" 1;
+	setAttr ".e" 5;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd52";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 2;
+	setAttr ".b" 1;
+	setAttr ".e" 2;
+createNode loft -n "loft27";
+	setAttr -s 2 ".ic";
+	setAttr ".u" yes;
+	setAttr -s 2 ".r[0:1]" no no;
+	setAttr ".rsn" yes;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd53";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 2;
+	setAttr ".b" 2;
+	setAttr ".e" 9;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd54";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 2;
+	setAttr ".b" 1;
+	setAttr ".e" 11;
+createNode loft -n "loft28";
+	setAttr -s 2 ".ic";
+	setAttr ".u" yes;
+	setAttr -s 2 ".r[0:1]" no no;
+	setAttr ".rsn" yes;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd55";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 2;
+	setAttr ".b" 2;
+	setAttr ".e" 5;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd56";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 2;
+	setAttr ".b" 1;
+	setAttr ".e" 5;
+createNode loft -n "loft29";
+	setAttr -s 2 ".ic";
+	setAttr ".u" yes;
+	setAttr -s 2 ".r[0:1]" no no;
+	setAttr ".rsn" yes;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd57";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 2;
+	setAttr ".b" 2;
+	setAttr ".e" 4;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd58";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 2;
+	setAttr ".b" 1;
+	setAttr ".e" 6;
+createNode loft -n "loft30";
+	setAttr -s 2 ".ic";
+	setAttr ".u" yes;
+	setAttr -s 2 ".r[0:1]" no no;
+	setAttr ".rsn" yes;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd59";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 2;
+	setAttr ".b" 2;
+	setAttr ".e" 3;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd60";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 2;
+	setAttr ".b" 1;
+	setAttr ".e" 7;
+createNode loft -n "loft31";
+	setAttr -s 2 ".ic";
+	setAttr ".u" yes;
+	setAttr -s 2 ".r[0:1]" no no;
+	setAttr ".rsn" yes;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd61";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 2;
+	setAttr ".b" 1;
+	setAttr ".e" 1;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd62";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 1;
+	setAttr ".b" 1;
+	setAttr ".e" 1;
+createNode loft -n "loft32";
+	setAttr -s 2 ".ic";
+	setAttr ".u" yes;
+	setAttr -s 2 ".r[0:1]" no no;
+	setAttr ".rsn" yes;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd63";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 2;
+	setAttr ".b" 2;
+	setAttr ".e" 10;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd64";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 2;
+	setAttr ".b" 1;
+	setAttr ".e" 10;
+createNode loft -n "loft33";
+	setAttr -s 2 ".ic";
+	setAttr ".u" yes;
+	setAttr -s 2 ".r[0:1]" no no;
+	setAttr ".rsn" yes;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd65";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 2;
+	setAttr ".b" 2;
+	setAttr ".e" 1;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd66";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 2;
+	setAttr ".b" 1;
+	setAttr ".e" 9;
+createNode loft -n "loft34";
+	setAttr -s 2 ".ic";
+	setAttr ".u" yes;
+	setAttr -s 2 ".r[0:1]" no no;
+	setAttr ".rsn" yes;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd67";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 2;
+	setAttr ".b" 2;
+	setAttr ".e" 2;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd68";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 2;
+	setAttr ".b" 1;
+	setAttr ".e" 8;
+createNode loft -n "loft35";
+	setAttr -s 2 ".ic";
+	setAttr ".u" yes;
+	setAttr -s 2 ".r[0:1]" no no;
+	setAttr ".rsn" yes;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd69";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 1;
+	setAttr ".b" 1;
+	setAttr ".e" 6;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd70";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 2;
+	setAttr ".b" 1;
+	setAttr ".e" 1;
+createNode loft -n "loft36";
+	setAttr -s 2 ".ic";
+	setAttr ".u" yes;
+	setAttr -s 2 ".r[0:1]" no no;
+	setAttr ".rsn" yes;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd71";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 1;
+	setAttr ".b" 1;
+	setAttr ".e" 4;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd72";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 2;
+	setAttr ".b" 1;
+	setAttr ".e" 3;
+createNode animCurveTU -n "NEEDSCO_MEGA_visibility";
+	setAttr ".tan" 9;
+	setAttr ".wgt" no;
+	setAttr -s 4 ".ktv[0:3]"  76 0 77 1 83 1 84 0;
+	setAttr -s 4 ".kot[0:3]"  5 5 5 5;
+createNode loft -n "loft37";
+	setAttr -s 2 ".ic";
+	setAttr ".u" yes;
+	setAttr -s 2 ".r[0:1]" no no;
+	setAttr ".rsn" yes;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd73";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 2;
+	setAttr ".b" 1;
+	setAttr ".e" 3;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd74";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 1;
+	setAttr ".b" 1;
+	setAttr ".e" 7;
+createNode loft -n "loft38";
+	setAttr -s 2 ".ic";
+	setAttr ".u" yes;
+	setAttr -s 2 ".r[0:1]" no no;
+	setAttr ".rsn" yes;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd75";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 2;
+	setAttr ".b" 1;
+	setAttr ".e" 4;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd76";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 1;
+	setAttr ".b" 1;
+	setAttr ".e" 6;
+createNode loft -n "loft39";
+	setAttr -s 2 ".ic";
+	setAttr ".u" yes;
+	setAttr -s 2 ".r[0:1]" no no;
+	setAttr ".rsn" yes;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd77";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 2;
+	setAttr ".b" 1;
+	setAttr ".e" 5;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd78";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 1;
+	setAttr ".b" 1;
+	setAttr ".e" 5;
+createNode loft -n "loft40";
+	setAttr -s 2 ".ic";
+	setAttr ".u" yes;
+	setAttr -s 2 ".r[0:1]" no no;
+	setAttr ".rsn" yes;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd79";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 2;
+	setAttr ".b" 1;
+	setAttr ".e" 9;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd80";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 1;
+	setAttr ".b" 1;
+	setAttr ".e" 11;
+createNode loft -n "loft41";
+	setAttr -s 2 ".ic";
+	setAttr ".u" yes;
+	setAttr -s 2 ".r[0:1]" no no;
+	setAttr ".rsn" yes;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd81";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 2;
+	setAttr ".b" 1;
+	setAttr ".e" 10;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd82";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 1;
+	setAttr ".b" 1;
+	setAttr ".e" 10;
+createNode loft -n "loft42";
+	setAttr -s 2 ".ic";
+	setAttr ".u" yes;
+	setAttr -s 2 ".r[0:1]" no no;
+	setAttr ".rsn" yes;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd83";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 2;
+	setAttr ".b" 1;
+	setAttr ".e" 1;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd84";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 1;
+	setAttr ".b" 1;
+	setAttr ".e" 9;
+createNode loft -n "loft43";
+	setAttr -s 2 ".ic";
+	setAttr ".u" yes;
+	setAttr -s 2 ".r[0:1]" no no;
+	setAttr ".rsn" yes;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd85";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 2;
+	setAttr ".b" 1;
+	setAttr ".e" 2;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd86";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 1;
+	setAttr ".b" 1;
+	setAttr ".e" 8;
+createNode loft -n "loft44";
+	setAttr -s 2 ".ic";
+	setAttr ".u" yes;
+	setAttr -s 2 ".r[0:1]" no no;
+	setAttr ".rsn" yes;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd87";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 1;
+	setAttr ".b" 1;
+	setAttr ".e" 6;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd88";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 1;
+	setAttr ".b" 1;
+	setAttr ".e" 1;
+createNode loft -n "loft45";
+	setAttr -s 2 ".ic";
+	setAttr ".u" yes;
+	setAttr -s 2 ".r[0:1]" no no;
+	setAttr ".rsn" yes;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd89";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 1;
+	setAttr ".b" 1;
+	setAttr ".e" 4;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd90";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 1;
+	setAttr ".b" 1;
+	setAttr ".e" 3;
+createNode loft -n "loft46";
+	setAttr -s 2 ".ic";
+	setAttr ".u" yes;
+	setAttr -s 2 ".r[0:1]" no no;
+	setAttr ".rsn" yes;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd91";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 1;
+	setAttr ".b" 1;
+	setAttr ".e" 5;
+createNode curveFromSurfaceBnd -n "curveFromSurfaceBnd92";
+	setAttr ".ihi" 1;
+	setAttr ".min" 0;
+	setAttr ".max" 1;
+	setAttr ".r" yes;
+	setAttr ".f" 1;
+	setAttr ".b" 1;
+	setAttr ".e" 2;
+createNode animCurveTU -n "NEEDSCO_MINOR_visibility";
+	setAttr ".tan" 9;
+	setAttr ".wgt" no;
+	setAttr -s 4 ".ktv[0:3]"  69 0 70 1 76 1 77 0;
+	setAttr -s 4 ".kot[0:3]"  5 5 5 5;
 select -ne :time1;
-	setAttr ".o" 52;
+	setAttr ".o" 85;
 select -ne :renderPartition;
 	setAttr -s 19 ".st";
 select -ne :renderGlobalsList1;
@@ -25980,11 +30760,11 @@ select -ne :initialParticleSE;
 select -ne :defaultRenderGlobals;
 	addAttr -ci true -sn "currentRenderer" -ln "currentRenderer" -dt "string";
 	setAttr ".outf" 5;
-	setAttr ".top" 127;
-	setAttr ".rght" 127;
+	setAttr ".top" 124;
+	setAttr ".rght" 124;
 	setAttr ".an" yes;
 	setAttr ".fs" 0;
-	setAttr ".ef" 71;
+	setAttr ".ef" 85;
 	setAttr ".ep" 4;
 	setAttr ".pff" yes;
 	setAttr ".currentRenderer" -type "string" "mayaSoftware";
@@ -26005,6 +30785,7 @@ select -ne :defaultLightSet;
 select -ne :hardwareRenderGlobals;
 	setAttr ".fn" -type "string" "default-%4n";
 connectAttr "rim_visibility.o" "rim.v";
+connectAttr "makeNurbCircle1.oc" "nurbsCircleShape4.cr";
 connectAttr "PENDING_visibility.o" "PENDING.v";
 connectAttr "button_visibility4.o" "|PENDING|button.v";
 connectAttr "inset_visibility4.o" "|PENDING|inset.v";
@@ -26239,6 +31020,175 @@ connectAttr "|OBSOLETE|inset|insetShape->|projectionCurve142.l[1]" "|OBSOLETE|in
 		;
 connectAttr "trim5.os" "|OBSOLETE|inset|insettrimmedSurfaceShape.cr";
 connectAttr "trim6.os" "|OBSOLETE|button|buttonShape.cr";
+connectAttr "NEEDSCO_MEGA_visibility.o" "NEEDSCO_MEGA.v";
+connectAttr "projectCurve23.oc" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve143.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve143.l[0]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve143|projectionCurve143_1|projectionCurve143_Shape1.cr"
+		;
+connectAttr "projectCurve24.oc" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve144.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve144.l[0]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve144|projectionCurve144_1|projectionCurve144_Shape1.cr"
+		;
+connectAttr "projectCurve25.oc" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve145.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve145.l[0]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve145|projectionCurve145_1|projectionCurve145_Shape1.cr"
+		;
+connectAttr "projectCurve26.oc" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve146.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve146.l[0]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve146|projectionCurve146_1|projectionCurve146_Shape1.cr"
+		;
+connectAttr "projectCurve27.oc" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve147.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve147.l[0]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve147|projectionCurve147_1|projectionCurve147_Shape1.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve147.l[1]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve147|projectionCurve147_2|projectionCurve147_Shape2.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve147.l[2]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve147|projectionCurve147_3|projectionCurve147_Shape3.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve147.l[3]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve147|projectionCurve147_4|projectionCurve147_Shape4.cr"
+		;
+connectAttr "projectCurve28.oc" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve148.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve148.l[0]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve148|projectionCurve148_1|projectionCurve148_Shape1.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve148.l[1]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve148|projectionCurve148_2|projectionCurve148_Shape2.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve148.l[2]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve148|projectionCurve148_3|projectionCurve148_Shape3.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve148.l[3]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve148|projectionCurve148_4|projectionCurve148_Shape4.cr"
+		;
+connectAttr "projectCurve29.oc" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve149.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve149.l[0]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve149|projectionCurve149_1|projectionCurve149_Shape1.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve149.l[1]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve149|projectionCurve149_2|projectionCurve149_Shape2.cr"
+		;
+connectAttr "projectCurve30.oc" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve150.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve150.l[0]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve150|projectionCurve150_1|projectionCurve150_Shape1.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve150.l[1]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve150|projectionCurve150_2|projectionCurve150_Shape2.cr"
+		;
+connectAttr "projectCurve31.oc" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve151.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve151.l[0]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve151|projectionCurve151_1|projectionCurve151_Shape1.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve151.l[1]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve151|projectionCurve151_2|projectionCurve151_Shape2.cr"
+		;
+connectAttr "projectCurve32.oc" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve152.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve152.l[0]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve152|projectionCurve152_1|projectionCurve152_Shape1.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve152.l[1]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve152|projectionCurve152_2|projectionCurve152_Shape2.cr"
+		;
+connectAttr "projectCurve33.oc" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve153.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve153.l[0]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve153|projectionCurve153_1|projectionCurve153_Shape1.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve153.l[1]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve153|projectionCurve153_2|projectionCurve153_Shape2.cr"
+		;
+connectAttr "projectCurve34.oc" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve154.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve154.l[0]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve154|projectionCurve154_1|projectionCurve154_Shape1.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve154.l[1]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve154|projectionCurve154_2|projectionCurve154_Shape2.cr"
+		;
+connectAttr "projectCurve35.oc" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve155.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve155.l[0]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve155|projectionCurve155_1|projectionCurve155_Shape1.cr"
+		;
+connectAttr "projectCurve36.oc" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve156.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve156.l[0]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve156|projectionCurve156_1|projectionCurve156_Shape1.cr"
+		;
+connectAttr "projectCurve37.oc" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve157.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve157.l[0]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve157|projectionCurve157_1|projectionCurve157_Shape1.cr"
+		;
+connectAttr "projectCurve38.oc" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve158.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve158.l[0]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve158|projectionCurve158_1|projectionCurve158_Shape1.cr"
+		;
+connectAttr "projectCurve39.oc" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve159.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve159.l[0]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve159|projectionCurve159_1|projectionCurve159_Shape1.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve159.l[1]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve159|projectionCurve159_2|projectionCurve159_Shape2.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve159.l[2]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve159|projectionCurve159_3|projectionCurve159_Shape3.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve159.l[3]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve159|projectionCurve159_4|projectionCurve159_Shape4.cr"
+		;
+connectAttr "projectCurve40.oc" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve160.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve160.l[0]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve160|projectionCurve160_1|projectionCurve160_Shape1.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve160.l[1]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve160|projectionCurve160_2|projectionCurve160_Shape2.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve160.l[2]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve160|projectionCurve160_3|projectionCurve160_Shape3.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve160.l[3]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve160|projectionCurve160_4|projectionCurve160_Shape4.cr"
+		;
+connectAttr "projectCurve41.oc" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve161.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve161.l[0]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve161|projectionCurve161_1|projectionCurve161_Shape1.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve161.l[1]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve161|projectionCurve161_2|projectionCurve161_Shape2.cr"
+		;
+connectAttr "projectCurve42.oc" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve162.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve162.l[0]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve162|projectionCurve162_1|projectionCurve162_Shape1.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve162.l[1]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve162|projectionCurve162_2|projectionCurve162_Shape2.cr"
+		;
+connectAttr "projectCurve43.oc" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve163.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve163.l[0]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve163|projectionCurve163_1|projectionCurve163_Shape1.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve163.l[1]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve163|projectionCurve163_2|projectionCurve163_Shape2.cr"
+		;
+connectAttr "projectCurve44.oc" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve164.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve164.l[0]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve164|projectionCurve164_1|projectionCurve164_Shape1.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve164.l[1]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve164|projectionCurve164_2|projectionCurve164_Shape2.cr"
+		;
+connectAttr "projectCurve45.oc" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve165.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve165.l[0]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve165|projectionCurve165_1|projectionCurve165_Shape1.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve165.l[1]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve165|projectionCurve165_2|projectionCurve165_Shape2.cr"
+		;
+connectAttr "projectCurve46.oc" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve166.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve166.l[0]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve166|projectionCurve166_1|projectionCurve166_Shape1.cr"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve166.l[1]" "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve166|projectionCurve166_2|projectionCurve166_Shape2.cr"
+		;
+connectAttr "trim7.os" "buttontrimmedSurfaceShape2.cr";
+connectAttr "trim8.os" "|NEEDSCO_MEGA|inset|insetShape.cr";
+connectAttr "loft26.os" "loftedSurfaceShape169.cr";
+connectAttr "loft27.os" "loftedSurfaceShape170.cr";
+connectAttr "loft28.os" "loftedSurfaceShape171.cr";
+connectAttr "loft29.os" "loftedSurfaceShape172.cr";
+connectAttr "loft30.os" "loftedSurfaceShape173.cr";
+connectAttr "loft31.os" "loftedSurfaceShape174.cr";
+connectAttr "loft32.os" "loftedSurfaceShape175.cr";
+connectAttr "loft33.os" "loftedSurfaceShape176.cr";
+connectAttr "loft34.os" "loftedSurfaceShape177.cr";
+connectAttr "loft35.os" "loftedSurfaceShape178.cr";
+connectAttr "loft36.os" "loftedSurfaceShape179.cr";
+connectAttr "NEEDSCO_MINOR_visibility.o" "NEEDSCO_MINOR.v";
+connectAttr "loft37.os" "loftedSurfaceShape180.cr";
+connectAttr "loft38.os" "loftedSurfaceShape181.cr";
+connectAttr "loft39.os" "loftedSurfaceShape182.cr";
+connectAttr "loft40.os" "loftedSurfaceShape183.cr";
+connectAttr "loft41.os" "loftedSurfaceShape184.cr";
+connectAttr "loft42.os" "loftedSurfaceShape185.cr";
+connectAttr "loft43.os" "loftedSurfaceShape186.cr";
+connectAttr "loft44.os" "loftedSurfaceShape187.cr";
+connectAttr "loft45.os" "loftedSurfaceShape188.cr";
+connectAttr "loft46.os" "loftedSurfaceShape189.cr";
 connectAttr ":defaultLightSet.msg" "lightLinker1.lnk[0].llnk";
 connectAttr ":initialShadingGroup.msg" "lightLinker1.lnk[0].olnk";
 connectAttr ":defaultLightSet.msg" "lightLinker1.lnk[1].llnk";
@@ -26320,6 +31270,29 @@ connectAttr "loftedSurfaceShape167.iog" "lambert3SG.dsm" -na;
 connectAttr "loftedSurfaceShape166.iog" "lambert3SG.dsm" -na;
 connectAttr "loftedSurfaceShape165.iog" "lambert3SG.dsm" -na;
 connectAttr "loftedSurfaceShape164.iog" "lambert3SG.dsm" -na;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape.iog" "lambert3SG.dsm" -na;
+connectAttr "loftedSurfaceShape179.iog" "lambert3SG.dsm" -na;
+connectAttr "loftedSurfaceShape178.iog" "lambert3SG.dsm" -na;
+connectAttr "loftedSurfaceShape177.iog" "lambert3SG.dsm" -na;
+connectAttr "loftedSurfaceShape176.iog" "lambert3SG.dsm" -na;
+connectAttr "loftedSurfaceShape175.iog" "lambert3SG.dsm" -na;
+connectAttr "loftedSurfaceShape174.iog" "lambert3SG.dsm" -na;
+connectAttr "loftedSurfaceShape173.iog" "lambert3SG.dsm" -na;
+connectAttr "loftedSurfaceShape172.iog" "lambert3SG.dsm" -na;
+connectAttr "loftedSurfaceShape171.iog" "lambert3SG.dsm" -na;
+connectAttr "loftedSurfaceShape170.iog" "lambert3SG.dsm" -na;
+connectAttr "loftedSurfaceShape169.iog" "lambert3SG.dsm" -na;
+connectAttr "|NEEDSCO_MINOR|inset|insetShape.iog" "lambert3SG.dsm" -na;
+connectAttr "loftedSurfaceShape189.iog" "lambert3SG.dsm" -na;
+connectAttr "loftedSurfaceShape188.iog" "lambert3SG.dsm" -na;
+connectAttr "loftedSurfaceShape187.iog" "lambert3SG.dsm" -na;
+connectAttr "loftedSurfaceShape186.iog" "lambert3SG.dsm" -na;
+connectAttr "loftedSurfaceShape185.iog" "lambert3SG.dsm" -na;
+connectAttr "loftedSurfaceShape184.iog" "lambert3SG.dsm" -na;
+connectAttr "loftedSurfaceShape183.iog" "lambert3SG.dsm" -na;
+connectAttr "loftedSurfaceShape182.iog" "lambert3SG.dsm" -na;
+connectAttr "loftedSurfaceShape181.iog" "lambert3SG.dsm" -na;
+connectAttr "loftedSurfaceShape180.iog" "lambert3SG.dsm" -na;
 connectAttr "lambert3SG.msg" "materialInfo5.sg";
 connectAttr "lambert6SG.msg" "materialInfo6.sg";
 connectAttr "lambert5SG.msg" "materialInfo7.sg";
@@ -26553,6 +31526,9 @@ connectAttr "|MODIFIED_DEPEND|button|buttonShape.iog" "surfaceSG1.dsm" -na
 connectAttr "|MISSING|button|buttonShape.iog" "surfaceSG1.dsm" -na;
 connectAttr "buttontrimmedSurfaceShape1.iog" "surfaceSG1.dsm" -na;
 connectAttr "|OBSOLETE|button|buttonShape.iog" "surfaceSG1.dsm" -na;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape.iog" "surfaceSG1.dsm" -na;
+connectAttr "buttontrimmedSurfaceShape2.iog" "surfaceSG1.dsm" -na;
+connectAttr "buttontrimmedSurfaceShape3.iog" "surfaceSG1.dsm" -na;
 connectAttr "surfaceSG1.msg" "materialInfo13.sg";
 connectAttr "curveShape41.ws" "projectCurve7.ic";
 connectAttr "|ADDED|button|buttonShape.ws" "projectCurve7.is";
@@ -26646,7 +31622,7 @@ connectAttr "|ADDED|inset|insetShape->|projectionCurve137|projectionCurve137_2|p
 		;
 connectAttr "|ADDED|inset|insetShape->|projectionCurve138|projectionCurve138_2|projectionCurve138_Shape2.ws" "trim4.ic[26]"
 		;
-connectAttr "insetShapeOriginal.l" "trim4.is";
+connectAttr "|ADDED|inset|insetShapeOriginal.l" "trim4.is";
 connectAttr "curveFromSurfaceBnd15.oc" "loft8.ic[0]";
 connectAttr "curveFromSurfaceBnd16.oc" "loft8.ic[1]";
 connectAttr "buttontrimmedSurfaceShape1.ws" "curveFromSurfaceBnd15.is";
@@ -26786,6 +31762,377 @@ connectAttr "curveFromSurfaceBnd50.oc" "loft25.ic[1]";
 connectAttr "|OBSOLETE|button|buttonShape.ws" "curveFromSurfaceBnd49.is"
 		;
 connectAttr "|OBSOLETE|inset|insettrimmedSurfaceShape.ws" "curveFromSurfaceBnd50.is"
+		;
+connectAttr "|needsco_mega_curve|curve21|curveShape21.ws" "projectCurve23.ic"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape.ws" "projectCurve23.is";
+connectAttr "|needsco_mega_curve|curve21|curveShape21.ws" "projectCurve24.ic"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape.ws" "projectCurve24.is";
+connectAttr "|needsco_mega_curve|curve23|curveShape23.ws" "projectCurve25.ic"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape.ws" "projectCurve25.is";
+connectAttr "|needsco_mega_curve|curve23|curveShape23.ws" "projectCurve26.ic"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape.ws" "projectCurve26.is";
+connectAttr "|needsco_mega_curve|curve24|curveShape24.ws" "projectCurve27.ic"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape.ws" "projectCurve27.is";
+connectAttr "|needsco_mega_curve|curve24|curveShape24.ws" "projectCurve28.ic"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape.ws" "projectCurve28.is";
+connectAttr "|needsco_mega_curve|curve22detachedCurve2detachedCurve2|curve22detachedCurve2detachedCurveShape2.ws" "projectCurve29.ic"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape.ws" "projectCurve29.is";
+connectAttr "|needsco_mega_curve|curve22detachedCurve2detachedCurve2|curve22detachedCurve2detachedCurveShape2.ws" "projectCurve30.ic"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape.ws" "projectCurve30.is";
+connectAttr "|needsco_mega_curve|curve25|curveShape25.ws" "projectCurve31.ic"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape.ws" "projectCurve31.is";
+connectAttr "|needsco_mega_curve|curve25|curveShape25.ws" "projectCurve32.ic"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape.ws" "projectCurve32.is";
+connectAttr "nurbsCircleShape4.ws" "projectCurve33.ic";
+connectAttr "|NEEDSCO_MEGA|button|buttonShape.ws" "projectCurve33.is";
+connectAttr "nurbsCircleShape4.ws" "projectCurve34.ic";
+connectAttr "|NEEDSCO_MEGA|button|buttonShape.ws" "projectCurve34.is";
+connectAttr "|needsco_mega_curve|curve21|curveShape21.ws" "projectCurve35.ic"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape.ws" "projectCurve35.is";
+connectAttr "|needsco_mega_curve|curve21|curveShape21.ws" "projectCurve36.ic"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape.ws" "projectCurve36.is";
+connectAttr "|needsco_mega_curve|curve23|curveShape23.ws" "projectCurve37.ic"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape.ws" "projectCurve37.is";
+connectAttr "|needsco_mega_curve|curve23|curveShape23.ws" "projectCurve38.ic"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape.ws" "projectCurve38.is";
+connectAttr "|needsco_mega_curve|curve24|curveShape24.ws" "projectCurve39.ic"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape.ws" "projectCurve39.is";
+connectAttr "|needsco_mega_curve|curve24|curveShape24.ws" "projectCurve40.ic"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape.ws" "projectCurve40.is";
+connectAttr "|needsco_mega_curve|curve22detachedCurve2detachedCurve2|curve22detachedCurve2detachedCurveShape2.ws" "projectCurve41.ic"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape.ws" "projectCurve41.is";
+connectAttr "|needsco_mega_curve|curve22detachedCurve2detachedCurve2|curve22detachedCurve2detachedCurveShape2.ws" "projectCurve42.ic"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape.ws" "projectCurve42.is";
+connectAttr "|needsco_mega_curve|curve25|curveShape25.ws" "projectCurve43.ic"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape.ws" "projectCurve43.is";
+connectAttr "|needsco_mega_curve|curve25|curveShape25.ws" "projectCurve44.ic"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape.ws" "projectCurve44.is";
+connectAttr "nurbsCircleShape4.ws" "projectCurve45.ic";
+connectAttr "|NEEDSCO_MEGA|button|buttonShape.ws" "projectCurve45.is";
+connectAttr "nurbsCircleShape4.ws" "projectCurve46.ic";
+connectAttr "|NEEDSCO_MEGA|button|buttonShape.ws" "projectCurve46.is";
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve18|projectionCurve18_1|projectionCurve18_Shape1.ws" "trim7.ic[0]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve143|projectionCurve143_1|projectionCurve143_Shape1.ws" "trim7.ic[1]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve144|projectionCurve144_1|projectionCurve144_Shape1.ws" "trim7.ic[2]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve145|projectionCurve145_1|projectionCurve145_Shape1.ws" "trim7.ic[3]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve146|projectionCurve146_1|projectionCurve146_Shape1.ws" "trim7.ic[4]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve147|projectionCurve147_1|projectionCurve147_Shape1.ws" "trim7.ic[5]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve147|projectionCurve147_2|projectionCurve147_Shape2.ws" "trim7.ic[6]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve147|projectionCurve147_3|projectionCurve147_Shape3.ws" "trim7.ic[7]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve147|projectionCurve147_4|projectionCurve147_Shape4.ws" "trim7.ic[8]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve148|projectionCurve148_1|projectionCurve148_Shape1.ws" "trim7.ic[9]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve148|projectionCurve148_2|projectionCurve148_Shape2.ws" "trim7.ic[10]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve148|projectionCurve148_3|projectionCurve148_Shape3.ws" "trim7.ic[11]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve148|projectionCurve148_4|projectionCurve148_Shape4.ws" "trim7.ic[12]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve149|projectionCurve149_1|projectionCurve149_Shape1.ws" "trim7.ic[13]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve149|projectionCurve149_2|projectionCurve149_Shape2.ws" "trim7.ic[14]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve150|projectionCurve150_1|projectionCurve150_Shape1.ws" "trim7.ic[15]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve150|projectionCurve150_2|projectionCurve150_Shape2.ws" "trim7.ic[16]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve151|projectionCurve151_1|projectionCurve151_Shape1.ws" "trim7.ic[17]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve151|projectionCurve151_2|projectionCurve151_Shape2.ws" "trim7.ic[18]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve152|projectionCurve152_1|projectionCurve152_Shape1.ws" "trim7.ic[19]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve152|projectionCurve152_2|projectionCurve152_Shape2.ws" "trim7.ic[20]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve153|projectionCurve153_1|projectionCurve153_Shape1.ws" "trim7.ic[21]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve153|projectionCurve153_2|projectionCurve153_Shape2.ws" "trim7.ic[22]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve154|projectionCurve154_1|projectionCurve154_Shape1.ws" "trim7.ic[23]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve154|projectionCurve154_2|projectionCurve154_Shape2.ws" "trim7.ic[24]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve155|projectionCurve155_1|projectionCurve155_Shape1.ws" "trim7.ic[25]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve156|projectionCurve156_1|projectionCurve156_Shape1.ws" "trim7.ic[26]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve157|projectionCurve157_1|projectionCurve157_Shape1.ws" "trim7.ic[27]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve158|projectionCurve158_1|projectionCurve158_Shape1.ws" "trim7.ic[28]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve159|projectionCurve159_1|projectionCurve159_Shape1.ws" "trim7.ic[29]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve159|projectionCurve159_2|projectionCurve159_Shape2.ws" "trim7.ic[30]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve159|projectionCurve159_3|projectionCurve159_Shape3.ws" "trim7.ic[31]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve159|projectionCurve159_4|projectionCurve159_Shape4.ws" "trim7.ic[32]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve160|projectionCurve160_1|projectionCurve160_Shape1.ws" "trim7.ic[33]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve160|projectionCurve160_2|projectionCurve160_Shape2.ws" "trim7.ic[34]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve160|projectionCurve160_3|projectionCurve160_Shape3.ws" "trim7.ic[35]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve160|projectionCurve160_4|projectionCurve160_Shape4.ws" "trim7.ic[36]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve161|projectionCurve161_1|projectionCurve161_Shape1.ws" "trim7.ic[37]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve161|projectionCurve161_2|projectionCurve161_Shape2.ws" "trim7.ic[38]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve162|projectionCurve162_1|projectionCurve162_Shape1.ws" "trim7.ic[39]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve162|projectionCurve162_2|projectionCurve162_Shape2.ws" "trim7.ic[40]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve163|projectionCurve163_1|projectionCurve163_Shape1.ws" "trim7.ic[41]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve163|projectionCurve163_2|projectionCurve163_Shape2.ws" "trim7.ic[42]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve164|projectionCurve164_1|projectionCurve164_Shape1.ws" "trim7.ic[43]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve164|projectionCurve164_2|projectionCurve164_Shape2.ws" "trim7.ic[44]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve165|projectionCurve165_1|projectionCurve165_Shape1.ws" "trim7.ic[45]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve165|projectionCurve165_2|projectionCurve165_Shape2.ws" "trim7.ic[46]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve166|projectionCurve166_1|projectionCurve166_Shape1.ws" "trim7.ic[47]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape->|projectionCurve166|projectionCurve166_2|projectionCurve166_Shape2.ws" "trim7.ic[48]"
+		;
+connectAttr "|NEEDSCO_MEGA|button|buttonShape.l" "trim7.is";
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve18|projectionCurve18_1|projectionCurve18_Shape1.ws" "trim8.ic[0]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve143|projectionCurve143_1|projectionCurve143_Shape1.ws" "trim8.ic[1]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve144|projectionCurve144_1|projectionCurve144_Shape1.ws" "trim8.ic[2]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve145|projectionCurve145_1|projectionCurve145_Shape1.ws" "trim8.ic[3]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve146|projectionCurve146_1|projectionCurve146_Shape1.ws" "trim8.ic[4]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve147|projectionCurve147_1|projectionCurve147_Shape1.ws" "trim8.ic[5]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve147|projectionCurve147_2|projectionCurve147_Shape2.ws" "trim8.ic[6]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve147|projectionCurve147_3|projectionCurve147_Shape3.ws" "trim8.ic[7]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve147|projectionCurve147_4|projectionCurve147_Shape4.ws" "trim8.ic[8]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve148|projectionCurve148_1|projectionCurve148_Shape1.ws" "trim8.ic[9]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve148|projectionCurve148_2|projectionCurve148_Shape2.ws" "trim8.ic[10]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve148|projectionCurve148_3|projectionCurve148_Shape3.ws" "trim8.ic[11]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve148|projectionCurve148_4|projectionCurve148_Shape4.ws" "trim8.ic[12]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve149|projectionCurve149_1|projectionCurve149_Shape1.ws" "trim8.ic[13]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve149|projectionCurve149_2|projectionCurve149_Shape2.ws" "trim8.ic[14]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve150|projectionCurve150_1|projectionCurve150_Shape1.ws" "trim8.ic[15]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve150|projectionCurve150_2|projectionCurve150_Shape2.ws" "trim8.ic[16]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve151|projectionCurve151_1|projectionCurve151_Shape1.ws" "trim8.ic[17]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve151|projectionCurve151_2|projectionCurve151_Shape2.ws" "trim8.ic[18]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve152|projectionCurve152_1|projectionCurve152_Shape1.ws" "trim8.ic[19]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve152|projectionCurve152_2|projectionCurve152_Shape2.ws" "trim8.ic[20]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve153|projectionCurve153_1|projectionCurve153_Shape1.ws" "trim8.ic[21]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve153|projectionCurve153_2|projectionCurve153_Shape2.ws" "trim8.ic[22]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve154|projectionCurve154_1|projectionCurve154_Shape1.ws" "trim8.ic[23]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve154|projectionCurve154_2|projectionCurve154_Shape2.ws" "trim8.ic[24]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve155|projectionCurve155_1|projectionCurve155_Shape1.ws" "trim8.ic[25]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve156|projectionCurve156_1|projectionCurve156_Shape1.ws" "trim8.ic[26]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve157|projectionCurve157_1|projectionCurve157_Shape1.ws" "trim8.ic[27]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve158|projectionCurve158_1|projectionCurve158_Shape1.ws" "trim8.ic[28]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve159|projectionCurve159_1|projectionCurve159_Shape1.ws" "trim8.ic[29]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve159|projectionCurve159_2|projectionCurve159_Shape2.ws" "trim8.ic[30]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve159|projectionCurve159_3|projectionCurve159_Shape3.ws" "trim8.ic[31]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve159|projectionCurve159_4|projectionCurve159_Shape4.ws" "trim8.ic[32]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve160|projectionCurve160_1|projectionCurve160_Shape1.ws" "trim8.ic[33]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve160|projectionCurve160_2|projectionCurve160_Shape2.ws" "trim8.ic[34]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve160|projectionCurve160_3|projectionCurve160_Shape3.ws" "trim8.ic[35]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve160|projectionCurve160_4|projectionCurve160_Shape4.ws" "trim8.ic[36]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve161|projectionCurve161_1|projectionCurve161_Shape1.ws" "trim8.ic[37]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve161|projectionCurve161_2|projectionCurve161_Shape2.ws" "trim8.ic[38]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve162|projectionCurve162_1|projectionCurve162_Shape1.ws" "trim8.ic[39]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve162|projectionCurve162_2|projectionCurve162_Shape2.ws" "trim8.ic[40]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve163|projectionCurve163_1|projectionCurve163_Shape1.ws" "trim8.ic[41]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve163|projectionCurve163_2|projectionCurve163_Shape2.ws" "trim8.ic[42]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve164|projectionCurve164_1|projectionCurve164_Shape1.ws" "trim8.ic[43]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve164|projectionCurve164_2|projectionCurve164_Shape2.ws" "trim8.ic[44]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve165|projectionCurve165_1|projectionCurve165_Shape1.ws" "trim8.ic[45]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve165|projectionCurve165_2|projectionCurve165_Shape2.ws" "trim8.ic[46]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve166|projectionCurve166_1|projectionCurve166_Shape1.ws" "trim8.ic[47]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShape->|projectionCurve166|projectionCurve166_2|projectionCurve166_Shape2.ws" "trim8.ic[48]"
+		;
+connectAttr "|NEEDSCO_MEGA|inset|insetShapeOriginal.l" "trim8.is";
+connectAttr "curveFromSurfaceBnd51.oc" "loft26.ic[0]";
+connectAttr "curveFromSurfaceBnd52.oc" "loft26.ic[1]";
+connectAttr "buttontrimmedSurfaceShape2.ws" "curveFromSurfaceBnd51.is";
+connectAttr "|NEEDSCO_MEGA|inset|insetShape.ws" "curveFromSurfaceBnd52.is"
+		;
+connectAttr "curveFromSurfaceBnd53.oc" "loft27.ic[0]";
+connectAttr "curveFromSurfaceBnd54.oc" "loft27.ic[1]";
+connectAttr "buttontrimmedSurfaceShape2.ws" "curveFromSurfaceBnd53.is";
+connectAttr "|NEEDSCO_MEGA|inset|insetShape.ws" "curveFromSurfaceBnd54.is"
+		;
+connectAttr "curveFromSurfaceBnd55.oc" "loft28.ic[0]";
+connectAttr "curveFromSurfaceBnd56.oc" "loft28.ic[1]";
+connectAttr "buttontrimmedSurfaceShape2.ws" "curveFromSurfaceBnd55.is";
+connectAttr "|NEEDSCO_MEGA|inset|insetShape.ws" "curveFromSurfaceBnd56.is"
+		;
+connectAttr "curveFromSurfaceBnd57.oc" "loft29.ic[0]";
+connectAttr "curveFromSurfaceBnd58.oc" "loft29.ic[1]";
+connectAttr "buttontrimmedSurfaceShape2.ws" "curveFromSurfaceBnd57.is";
+connectAttr "|NEEDSCO_MEGA|inset|insetShape.ws" "curveFromSurfaceBnd58.is"
+		;
+connectAttr "curveFromSurfaceBnd59.oc" "loft30.ic[0]";
+connectAttr "curveFromSurfaceBnd60.oc" "loft30.ic[1]";
+connectAttr "buttontrimmedSurfaceShape2.ws" "curveFromSurfaceBnd59.is";
+connectAttr "|NEEDSCO_MEGA|inset|insetShape.ws" "curveFromSurfaceBnd60.is"
+		;
+connectAttr "curveFromSurfaceBnd61.oc" "loft31.ic[0]";
+connectAttr "curveFromSurfaceBnd62.oc" "loft31.ic[1]";
+connectAttr "buttontrimmedSurfaceShape2.ws" "curveFromSurfaceBnd61.is";
+connectAttr "|NEEDSCO_MEGA|inset|insetShape.ws" "curveFromSurfaceBnd62.is"
+		;
+connectAttr "curveFromSurfaceBnd63.oc" "loft32.ic[0]";
+connectAttr "curveFromSurfaceBnd64.oc" "loft32.ic[1]";
+connectAttr "buttontrimmedSurfaceShape2.ws" "curveFromSurfaceBnd63.is";
+connectAttr "|NEEDSCO_MEGA|inset|insetShape.ws" "curveFromSurfaceBnd64.is"
+		;
+connectAttr "curveFromSurfaceBnd65.oc" "loft33.ic[0]";
+connectAttr "curveFromSurfaceBnd66.oc" "loft33.ic[1]";
+connectAttr "buttontrimmedSurfaceShape2.ws" "curveFromSurfaceBnd65.is";
+connectAttr "|NEEDSCO_MEGA|inset|insetShape.ws" "curveFromSurfaceBnd66.is"
+		;
+connectAttr "curveFromSurfaceBnd67.oc" "loft34.ic[0]";
+connectAttr "curveFromSurfaceBnd68.oc" "loft34.ic[1]";
+connectAttr "buttontrimmedSurfaceShape2.ws" "curveFromSurfaceBnd67.is";
+connectAttr "|NEEDSCO_MEGA|inset|insetShape.ws" "curveFromSurfaceBnd68.is"
+		;
+connectAttr "curveFromSurfaceBnd69.oc" "loft35.ic[0]";
+connectAttr "curveFromSurfaceBnd70.oc" "loft35.ic[1]";
+connectAttr "buttontrimmedSurfaceShape2.ws" "curveFromSurfaceBnd69.is";
+connectAttr "|NEEDSCO_MEGA|inset|insetShape.ws" "curveFromSurfaceBnd70.is"
+		;
+connectAttr "curveFromSurfaceBnd71.oc" "loft36.ic[0]";
+connectAttr "curveFromSurfaceBnd72.oc" "loft36.ic[1]";
+connectAttr "buttontrimmedSurfaceShape2.ws" "curveFromSurfaceBnd71.is";
+connectAttr "|NEEDSCO_MEGA|inset|insetShape.ws" "curveFromSurfaceBnd72.is"
+		;
+connectAttr "curveFromSurfaceBnd73.oc" "loft37.ic[0]";
+connectAttr "curveFromSurfaceBnd74.oc" "loft37.ic[1]";
+connectAttr "buttontrimmedSurfaceShape3.ws" "curveFromSurfaceBnd73.is";
+connectAttr "|NEEDSCO_MINOR|inset|insetShape.ws" "curveFromSurfaceBnd74.is"
+		;
+connectAttr "curveFromSurfaceBnd75.oc" "loft38.ic[0]";
+connectAttr "curveFromSurfaceBnd76.oc" "loft38.ic[1]";
+connectAttr "buttontrimmedSurfaceShape3.ws" "curveFromSurfaceBnd75.is";
+connectAttr "|NEEDSCO_MINOR|inset|insetShape.ws" "curveFromSurfaceBnd76.is"
+		;
+connectAttr "curveFromSurfaceBnd77.oc" "loft39.ic[0]";
+connectAttr "curveFromSurfaceBnd78.oc" "loft39.ic[1]";
+connectAttr "buttontrimmedSurfaceShape3.ws" "curveFromSurfaceBnd77.is";
+connectAttr "|NEEDSCO_MINOR|inset|insetShape.ws" "curveFromSurfaceBnd78.is"
+		;
+connectAttr "curveFromSurfaceBnd79.oc" "loft40.ic[0]";
+connectAttr "curveFromSurfaceBnd80.oc" "loft40.ic[1]";
+connectAttr "buttontrimmedSurfaceShape3.ws" "curveFromSurfaceBnd79.is";
+connectAttr "|NEEDSCO_MINOR|inset|insetShape.ws" "curveFromSurfaceBnd80.is"
+		;
+connectAttr "curveFromSurfaceBnd81.oc" "loft41.ic[0]";
+connectAttr "curveFromSurfaceBnd82.oc" "loft41.ic[1]";
+connectAttr "buttontrimmedSurfaceShape3.ws" "curveFromSurfaceBnd81.is";
+connectAttr "|NEEDSCO_MINOR|inset|insetShape.ws" "curveFromSurfaceBnd82.is"
+		;
+connectAttr "curveFromSurfaceBnd83.oc" "loft42.ic[0]";
+connectAttr "curveFromSurfaceBnd84.oc" "loft42.ic[1]";
+connectAttr "buttontrimmedSurfaceShape3.ws" "curveFromSurfaceBnd83.is";
+connectAttr "|NEEDSCO_MINOR|inset|insetShape.ws" "curveFromSurfaceBnd84.is"
+		;
+connectAttr "curveFromSurfaceBnd85.oc" "loft43.ic[0]";
+connectAttr "curveFromSurfaceBnd86.oc" "loft43.ic[1]";
+connectAttr "buttontrimmedSurfaceShape3.ws" "curveFromSurfaceBnd85.is";
+connectAttr "|NEEDSCO_MINOR|inset|insetShape.ws" "curveFromSurfaceBnd86.is"
+		;
+connectAttr "curveFromSurfaceBnd87.oc" "loft44.ic[0]";
+connectAttr "curveFromSurfaceBnd88.oc" "loft44.ic[1]";
+connectAttr "buttontrimmedSurfaceShape3.ws" "curveFromSurfaceBnd87.is";
+connectAttr "|NEEDSCO_MINOR|inset|insetShape.ws" "curveFromSurfaceBnd88.is"
+		;
+connectAttr "curveFromSurfaceBnd89.oc" "loft45.ic[0]";
+connectAttr "curveFromSurfaceBnd90.oc" "loft45.ic[1]";
+connectAttr "buttontrimmedSurfaceShape3.ws" "curveFromSurfaceBnd89.is";
+connectAttr "|NEEDSCO_MINOR|inset|insetShape.ws" "curveFromSurfaceBnd90.is"
+		;
+connectAttr "curveFromSurfaceBnd91.oc" "loft46.ic[0]";
+connectAttr "curveFromSurfaceBnd92.oc" "loft46.ic[1]";
+connectAttr "buttontrimmedSurfaceShape3.ws" "curveFromSurfaceBnd91.is";
+connectAttr "|NEEDSCO_MINOR|inset|insetShape.ws" "curveFromSurfaceBnd92.is"
 		;
 connectAttr "anisotropic1SG.pa" ":renderPartition.st" -na;
 connectAttr "blinn1SG.pa" ":renderPartition.st" -na;

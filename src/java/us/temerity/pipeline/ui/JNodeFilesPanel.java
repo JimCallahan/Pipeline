@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.3 2004/07/18 21:35:06 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.4 2004/07/22 00:07:16 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -370,9 +370,28 @@ class JNodeFilesPanel
       {
 	String name = "Blank-Normal";
 	if(pStatus != null) {
-	  if(details != null) 
-	    name = (details.getOverallNodeState() + "-" + 
-		    details.getOverallQueueState() + "-Normal");
+	  if(details != null) {
+	    if(details.getOverallNodeState() == OverallNodeState.NeedsCheckOut) {
+	      VersionID wvid = details.getWorkingVersion().getWorkingID();
+	      VersionID lvid = details.getLatestVersion().getVersionID();
+	      switch(wvid.compareLevel(lvid)) {
+	      case Major:
+		name = ("NeedsCheckOutMajor-" + details.getOverallQueueState() + "-Normal");
+		break;
+		
+	      case Minor:
+		name = ("NeedsCheckOut-" + details.getOverallQueueState() + "-Normal");
+		break;
+		
+	      case Micro:
+		name = ("NeedsCheckOutMicro-" + details.getOverallQueueState() + "-Normal");
+	      }
+	    }
+	    else {
+	      name = (details.getOverallNodeState() + "-" + 
+		      details.getOverallQueueState() + "-Normal");
+	    }
+	  }
 	  
 	  pHeaderLabel.setText(pStatus.toString());
 	  pNodeNameField.setText(pStatus.getName());

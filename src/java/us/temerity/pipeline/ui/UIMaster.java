@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.29 2004/07/14 21:11:49 jim Exp $
+// $Id: UIMaster.java,v 1.30 2004/07/22 00:07:16 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1954,7 +1954,7 @@ class UIMaster
 
 	  /* progress bar */ 
 	  {
-	    JProgressBar bar = new JProgressBar(JProgressBar.HORIZONTAL, 0, 200);
+	    JProgressBar bar = new JProgressBar(JProgressBar.HORIZONTAL, 0, 272);
 	    pSplashProgress = bar;
 
 	    bar.setValue(1);
@@ -2084,15 +2084,19 @@ class UIMaster
 	      update();
 	    }
 
-	    {
-	      mgr.verifyIcon21("Added-" + qstate + "-" + mode);
-	      update();	      
-	    }
+	    mgr.verifyTexture("NeedsCheckOutMajor-" + qstate + "-" + mode);
+	    mgr.verifyIcon21("NeedsCheckOutMajor-" + qstate + "-" + mode);
+	    update();	      
 
-	    {
-	      mgr.verifyIcon21("Obsolete-" + qstate + "-" + mode);
-	      update();	      
-	    }
+	    mgr.verifyTexture("NeedsCheckOutMicro-" + qstate + "-" + mode);
+	    mgr.verifyIcon21("NeedsCheckOutMicro-" + qstate + "-" + mode);
+	    update();	      
+
+	    mgr.verifyIcon21("Added-" + qstate + "-" + mode);
+	    update();	      
+
+	    mgr.verifyIcon21("Obsolete-" + qstate + "-" + mode);
+	    update();	      
 	  }
 	}
 
@@ -2134,6 +2138,7 @@ class UIMaster
     private void
     update()
     {
+      //System.out.print("Update = " + pCnt + "\n");
       SwingUtilities.invokeLater(new UpdateStartupProgress(pCnt++));
     }
 
