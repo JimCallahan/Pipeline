@@ -1,4 +1,4 @@
-// $Id: NodeDetails.java,v 1.6 2004/04/17 19:49:01 jim Exp $
+// $Id: NodeDetails.java,v 1.7 2004/04/18 04:07:31 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -66,10 +66,13 @@ class NodeDetails
    * @param fileStates
    *   The files states associated with each file sequence. 
    * 
+   * @param fileTimeStamps
+   *   The last modification timestamps associated with each file sequence. 
+   * 
    * @param queueStates
    *   The queue states associated with each file sequence. 
    */
-  protected 
+  public 
   NodeDetails
   (
    String name, 
@@ -82,6 +85,7 @@ class NodeDetails
    PropertyState propertyState, 
    LinkState linkState, 
    TreeMap<FileSeq,FileState[]> fileStates, 
+   TreeMap<FileSeq, Date[]> fileTimeStamps, 
    TreeMap<FileSeq,QueueState[]> queueStates
   ) 
   {
@@ -122,6 +126,10 @@ class NodeDetails
     for(FileSeq fseq : fileStates.keySet()) 
       pFileStates.put(fseq, fileStates.get(fseq).clone());
     
+    pFileTimeStamps = new TreeMap<FileSeq, Date[]>();
+    for(FileSeq fseq : fileTimeStamps.keySet()) 
+      pFileTimeStamps.put(fseq, fileTimeStamps.get(fseq).clone());
+
     pQueueStates = new TreeMap<FileSeq,QueueState[]>(); 
     for(FileSeq fseq : queueStates.keySet()) 
       pQueueStates.put(fseq, queueStates.get(fseq).clone());
@@ -279,6 +287,19 @@ class NodeDetails
     return pFileStates.get(fseq);
   }
 
+  /**
+   * Get the last modification timestamps associated with each file sequence. 
+   */
+  public Date[] 
+  getFileTimeStamps
+  ( 
+   FileSeq fseq
+  ) 
+  {
+    return pFileTimeStamps.get(fseq);
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -384,6 +405,11 @@ class NodeDetails
    * versions of a node.
    */   
   private TreeMap<FileSeq,FileState[]> pFileStates;
+
+  /**
+   * The last modification timestamps associated with each file sequence. 
+   */
+  private TreeMap<FileSeq,Date[]> pFileTimeStamps;
 
   /** 
    * The status of individual files associated with a node with respect to the queue jobs
