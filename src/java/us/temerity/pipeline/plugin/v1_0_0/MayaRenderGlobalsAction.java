@@ -1,4 +1,4 @@
-// $Id: MayaRenderGlobalsAction.java,v 1.3 2004/11/20 15:20:32 jim Exp $
+// $Id: MayaRenderGlobalsAction.java,v 1.4 2004/11/21 03:42:36 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -16,9 +16,10 @@ import java.io.*;
  * Creates a MEL script which when executed by Maya will set many of the most useful global 
  * rendering parameters of the Maya scene. <P> 
  * 
- * This generated MEL script can then be used as the Pre Render script of a 
- * {@link MayaRenderAction MayaRender} action to allow control over rendering parameters
- * directly from Pipeline without the need to reopen Maya. <P> 
+ * This generated MEL script can then be used as the PreRenderMEL script of a 
+ * {@link us.temerity.pipeline.plugin.v1_2_0.MayaRenderAction MayaRender} action to allow 
+ * control over rendering parameters directly from Pipeline without the need to reopen 
+ * the Maya scene. <P> 
  * 
  * This action defines the following single valued parameters: <BR>
  * 
@@ -36,141 +37,150 @@ import java.io.*;
  *   Pixel Aspect Ratio <BR>
  *   <DIV style="margin-left: 40px;">
  *     Ratio of pixel height to pixel width. <BR>
- *   </DIV> <BR>
+ *   </DIV> <BR> <BR>
  * 
- *   Edge Anti Aliasing <BR>
+ *   <I>Render Quality Parameters</I> <BR>
  *   <DIV style="margin-left: 40px;">
- *     The quality of edge anti-aliasing. <BR>
+ *     Edge Anti Aliasing <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The quality of edge anti-aliasing. <BR>
+ *     </DIV> <BR>
+ *   
+ *     Shading Samples <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The minimum number of shading samples. <BR>
+ *     </DIV> <BR>
+ *   
+ *     Max Shading Samples <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The maximum number of shading samples. <BR>
+ *     </DIV> <BR>
+ *   
+ *     Particle Samples <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The number of particle shading samples. <BR>
+ *     </DIV> <BR>
+ *   
+ *     Use Multi Pixel Filtering <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Whether to enable multi-pixel filtering. <BR>
+ *     </DIV> <BR>
+ *   
+ *     Pixel Filter Type <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The type of filter used to integrate pixels. <BR>
+ *     </DIV> <BR>
+ *   
+ *     Pixel Filter Width X <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The horizontal pixel filter width. <BR>
+ *     </DIV> <BR>
+ *   
+ *     Pixel Filter Width Y <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The vertical pixel filter width. <BR>
+ *     </DIV> <BR>
+ *   
+ *     Red Threshold <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The red contrast threshold. <BR>
+ *     </DIV> <BR>
+ *   
+ *     Green Threshold <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The green contrast threshold. <BR>
+ *     </DIV> <BR>
+ *   
+ *     Blue Threshold <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The blue contrast threshold. <BR>
+ *     </DIV> <BR>
+ *   
+ *     Coverage Threshold <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The alpha coverage threshold. <BR>
+ *     </DIV> <BR>
  *   </DIV> <BR>
- * 
- *   Shading Samples <BR>
+ *   
+ *   <I>Raytracing Quality Parameters</I> <BR>
  *   <DIV style="margin-left: 40px;">
- *     The minimum number of shading samples. <BR>
+ *     Use Raytracing <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Whether to enable raytracing. <BR>
+ *     </DIV> <BR>
+ *   
+ *     Reflections <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The reflection ray depth. <BR>
+ *     </DIV> <BR>
+ *   
+ *     Refractions <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The refraction ray depth. <BR>
+ *     </DIV> <BR>
+ *   
+ *     Shadows <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The shadow ray depth. <BR>
+ *     </DIV> <BR>
+ *   
+ *     Bias <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Distance a shadow ray travels before testing for intersections. <BR>
+ *     </DIV> <BR>
  *   </DIV> <BR>
- * 
- *   Max Shading Samples <BR>
+ *   
+ *   <I>Motion Blur Parameters</I> <BR>
  *   <DIV style="margin-left: 40px;">
- *     The maximum number of shading samples. <BR>
- *   </DIV> <BR>
- * 
- *   Particle Samples <BR>
- *   <DIV style="margin-left: 40px;">
- *     The number of particle shading samples. <BR>
- *   </DIV> <BR>
- * 
- *   Use Multi Pixel Filtering <BR>
- *   <DIV style="margin-left: 40px;">
- *     Whether to enable multi-pixel filtering. <BR>
- *   </DIV> <BR>
- * 
- *   Pixel Filter Type <BR>
- *   <DIV style="margin-left: 40px;">
- *     The type of filter used to integrate pixels. <BR>
- *   </DIV> <BR>
- * 
- *   Pixel Filter Width X <BR>
- *   <DIV style="margin-left: 40px;">
- *     The horizontal pixel filter width. <BR>
- *   </DIV> <BR>
- * 
- *   Pixel Filter Width Y <BR>
- *   <DIV style="margin-left: 40px;">
- *     The vertical pixel filter width. <BR>
- *   </DIV> <BR>
- * 
- *   Red Threshold <BR>
- *   <DIV style="margin-left: 40px;">
- *     The red contrast threshold. <BR>
- *   </DIV> <BR>
- * 
- *   Green Threshold <BR>
- *   <DIV style="margin-left: 40px;">
- *     The green contrast threshold. <BR>
- *   </DIV> <BR>
- * 
- *   Blue Threshold <BR>
- *   <DIV style="margin-left: 40px;">
- *     The blue contrast threshold. <BR>
- *   </DIV> <BR>
- * 
- *   Coverage Threshold <BR>
- *   <DIV style="margin-left: 40px;">
- *     The alpha coverage threshold. <BR>
- *   </DIV> <BR>
- * 
- *   Use Raytracing <BR>
- *   <DIV style="margin-left: 40px;">
- *     Whether to enable raytracing. <BR>
- *   </DIV> <BR>
- * 
- *   Reflections <BR>
- *   <DIV style="margin-left: 40px;">
- *     The reflection ray depth. <BR>
- *   </DIV> <BR>
- * 
- *   Refractions <BR>
- *   <DIV style="margin-left: 40px;">
- *     The refraction ray depth. <BR>
- *   </DIV> <BR>
- * 
- *   Shadows <BR>
- *   <DIV style="margin-left: 40px;">
- *     The shadow ray depth. <BR>
- *   </DIV> <BR>
- * 
- *   Bias <BR>
- *   <DIV style="margin-left: 40px;">
- *     Distance a shadow ray travels before testing for intersections. <BR>
- *   </DIV> <BR>
- * 
- *   Use Motion Blur <BR>
- *   <DIV style="margin-left: 40px;">
- *     Whether to enable motion blur. <BR>
- *   </DIV> <BR>
- * 
- *   Motion Blur Type<BR>
- *   <DIV style="margin-left: 40px;">
- *     The motion blur technique (2D or 3D). <BR>
- *   </DIV> <BR>
- * 
- *   Blur By Frame <BR>
- *   <DIV style="margin-left: 40px;">
- *     The amount moving objects are blurred. <BR>
- *   </DIV> <BR>
- * 
- *   Blur Length <BR>
- *   <DIV style="margin-left: 40px;">
- *     Scales the amount that moving objects are blurred. <BR>
- *   </DIV> <BR>
- * 
- *   Blur Sharpness <BR>
- *   <DIV style="margin-left: 40px;">
- *     The sharpness of motion blurred objects. <BR>
- *   </DIV> <BR>
- * 
- *   Smooth <BR>
- *   <DIV style="margin-left: 40px;">
- *     Anti-aliasing hack (Alpha or Color). <BR>
- *   </DIV> <BR>
- * 
- *   Smooth Value <BR>
- *   <DIV style="margin-left: 40px;">
- *     The amount Maya blurs motion blur edges. <BR>
- *   </DIV> <BR>
- * 
- *   Keep Motion Vectors <BR>
- *   <DIV style="margin-left: 40px;">
- *     Whehter to save the motion vectors for external 2D blur. <BR>
- *   </DIV> <BR>
- * 
- *   Use 2d Blur Memory Limit <BR>
- *   <DIV style="margin-left: 40px;">
- *     Whether to limit 2D blur memory. <BR>
- *   </DIV> <BR>
- * 
- *   2d Blur Memory Limit<BR>
- *   <DIV style="margin-left: 40px;">
- *     The maximum amount of memory used by the 2d blur operation. <BR>
+ *     Use Motion Blur <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Whether to enable motion blur. <BR>
+ *     </DIV> <BR>
+ *   
+ *     Motion Blur Type<BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The motion blur technique (2D or 3D). <BR>
+ *     </DIV> <BR>
+ *   
+ *     Blur By Frame <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The amount moving objects are blurred. <BR>
+ *     </DIV> <BR>
+ *   
+ *     Blur Length <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Scales the amount that moving objects are blurred. <BR>
+ *     </DIV> <BR>
+ *   
+ *     Blur Sharpness <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The sharpness of motion blurred objects. <BR>
+ *     </DIV> <BR>
+ *   
+ *     Smooth <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Anti-aliasing hack (Alpha or Color). <BR>
+ *     </DIV> <BR>
+ *   
+ *     Smooth Value <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The amount Maya blurs motion blur edges. <BR>
+ *     </DIV> <BR>
+ *   
+ *     Keep Motion Vectors <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Whehter to save the motion vectors for external 2D blur. <BR>
+ *     </DIV> <BR>
+ *   
+ *     Use 2d Blur Memory Limit <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Whether to limit 2D blur memory. <BR>
+ *     </DIV> <BR>
+ *   
+ *     2d Blur Memory Limit<BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The maximum amount of memory used by the 2d blur operation. <BR>
+ *     </DIV> 
  *   </DIV> 
  * </DIV> <P> 
  * 
