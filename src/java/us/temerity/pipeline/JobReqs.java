@@ -1,4 +1,4 @@
-// $Id: JobReqs.java,v 1.3 2004/03/11 11:01:02 jim Exp $
+// $Id: JobReqs.java,v 1.4 2004/03/11 14:09:09 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -97,7 +97,10 @@ implements Cloneable, Glueable, Serializable
 
   public 
   JobReqs()
-  {}
+  {
+    pLicenseKeys   = new HashSet<String>();
+    pSelectionKeys = new HashSet<String>();
+  }
 
   /**
    * Construct a new set of job requirements. <P> 
