@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.43 2004/09/27 04:54:35 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.44 2004/09/27 16:32:26 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -430,7 +430,7 @@ class JNodeViewerPanel
       pExportDialog   = new JExportDialog();
       pRenameDialog   = new JRenameDialog();
       pRenumberDialog = new JRenumberDialog();
-      pRegisterDialog = new JRegisterDialog();
+      pRegisterDialog = new JRegisterDialog(this);
       pReleaseDialog  = new JReleaseDialog();
       pCheckInDialog  = new JCheckInDialog();
       pCheckOutDialog = new JCheckOutDialog();
@@ -2683,14 +2683,6 @@ class JNodeViewerPanel
 	
 	pRegisterDialog.updateNode(pAuthor, pView, com);
 	pRegisterDialog.setVisible(true);
-	
-	if(pRegisterDialog.wasConfirmed()) {
-	  NodeMod mod = pRegisterDialog.getWorkingVersion();
-	  if(mod != null) {
-	    RegisterTask task = new RegisterTask(mod);
-	    task.start();
-	  }
-	}
       }
     }
 
@@ -2706,14 +2698,6 @@ class JNodeViewerPanel
   {
     pRegisterDialog.updateNode(pAuthor, pView, null);
     pRegisterDialog.setVisible(true);
-    
-    if(pRegisterDialog.wasConfirmed()) {
-      NodeMod mod = pRegisterDialog.getWorkingVersion();
-      if(mod != null) {
-	RegisterTask task = new RegisterTask(mod);
-	task.start();
-      }
-    }
   }
 
   /**
@@ -3983,47 +3967,6 @@ class JNodeViewerPanel
     private String      pName; 
     private FrameRange  pFrameRange; 
     private boolean     pRemoveFiles; 
-  }
-
-  /** 
-   * Register a new node.
-   */ 
-  private
-  class RegisterTask
-    extends Thread
-  {
-    public 
-    RegisterTask
-    (
-     NodeMod mod 
-    ) 
-    {
-      super("JNodeViewerPanel:RegisterTask");
-
-      pNodeMod = mod;
-    }
-
-    public void 
-    run() 
-    {
-      UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Registering New Node...")) {
-	try {
-	  master.getMasterMgrClient().register(pAuthor, pView, pNodeMod);
-	}
-	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
-	  return;
-	}
-	finally {
-	  master.endPanelOp("Done.");
-	}
-      }
-
-      addRoot(pNodeMod.getName());
-    }
-
-    private NodeMod  pNodeMod;
   }
 
 

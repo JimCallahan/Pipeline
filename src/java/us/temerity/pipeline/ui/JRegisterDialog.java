@@ -1,4 +1,4 @@
-// $Id: JRegisterDialog.java,v 1.6 2004/09/08 19:23:23 jim Exp $
+// $Id: JRegisterDialog.java,v 1.7 2004/09/27 16:32:26 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -32,9 +32,15 @@ class JRegisterDialog
    * Construct a new dialog.
    */ 
   public 
-  JRegisterDialog() 
+  JRegisterDialog
+  (
+   JNodeViewerPanel viewer
+  ) 
   {
     super("Register Node", true);
+
+    assert(viewer != null);
+    pViewer = viewer;
 
     /* create dialog body components */ 
     {
@@ -202,7 +208,11 @@ class JRegisterDialog
 	UIMaster.addVerticalGlue(tpanel, vpanel);
       }
 
-      super.initUI("Register New Node:", true, body, "Register", "Browse", null, "Cancel");
+      String extra[][] = {
+	{ "Browse",  "browse" }
+      };
+
+      super.initUI("Register New Node:", true, body, "Confirm", "Apply", extra, "Cancel");
 
       pack();
       setResizable(false);
@@ -211,23 +221,6 @@ class JRegisterDialog
     doUpdateFrameFields();
 
     pFileSeqDialog = new JFileSeqSelectDialog(this);
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   A C C E S S                                                                          */
-  /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * Get the working node version described by the current dialog configuration. <P> 
-   * 
-   * @return 
-   *   The working version or <CODE>null</CODE> if not fully specified.
-   */
-  public NodeMod
-  getWorkingVersion()
-  {
-    return pNodeMod;
   }
 
 
@@ -250,6 +243,9 @@ class JRegisterDialog
    NodeCommon node
   )
   {  
+    pAuthor = author; 
+    pView   = view; 
+
     String defaultToolset = null;
     {
       String toolset = pToolsetField.getSelected();
@@ -422,7 +418,9 @@ class JRegisterDialog
     super.actionPerformed(e);
 
     String cmd = e.getActionCommand();
-    if(cmd.equals("update-frame-fields")) 
+    if(cmd.equals("browse")) 
+      doBrowse();
+    else if(cmd.equals("update-frame-fields")) 
       doUpdateFrameFields();
     else if(cmd.equals("update-editor")) 
       updateEditor();
@@ -440,15 +438,35 @@ class JRegisterDialog
   public void 
   doConfirm()
   {
-    if(generateNodeMod() != null) 
-      super.doConfirm();
+    NodeMod mod = generateNodeMod();
+    if(mod == null) 
+      return; 
+    
+    RegisterTask task = new RegisterTask(pAuthor, pView, mod);
+    task.start();
+
+    super.doConfirm();
+  }
+  
+  /**
+   * Apply changes. 
+   */ 
+  public void 
+  doApply()
+  {
+    NodeMod mod = generateNodeMod();
+    if(mod == null) 
+      return; 
+    
+    RegisterTask task = new RegisterTask(pAuthor, pView, mod);
+    task.start();
   }
 
   /**
    * Browse for file sequences to use to fill in the frame range fields.
    */ 
   public void 
-  doApply() 
+  doBrowse() 
   {
     pFileSeqDialog.setRootDir(pRootDir);
 
@@ -656,6 +674,59 @@ class JRegisterDialog
    
 
   /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L   C L A S S E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /** 
+   * Register a new node.
+   */ 
+  private
+  class RegisterTask
+    extends Thread
+  {
+    public 
+    RegisterTask
+    (
+     String author, 
+     String view, 
+     NodeMod mod 
+    ) 
+    {
+      super("JRegisterDialog:RegisterTask");
+
+      pAuthor  = author; 
+      pView    = view; 
+      pNodeMod = mod;
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Registering New Node...")) {
+	try {
+	  master.getMasterMgrClient().register(pAuthor, pView, pNodeMod);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+      }
+
+      pViewer.addRoot(pNodeMod.getName());
+    }
+
+    private String   pAuthor; 
+    private String   pView; 
+    private NodeMod  pNodeMod;
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
@@ -682,6 +753,23 @@ class JRegisterDialog
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The parent node viewer.
+   */ 
+  private JNodeViewerPanel  pViewer; 
+
+
+  /**
+   * The owner of the current working area.
+   */ 
+  private String   pAuthor; 
+
+  /** 
+   * The name of the current working area. 
+   */ 
+  private String   pView; 
+
 
   /**
    * The filename prefix.
