@@ -1,4 +1,4 @@
-// $Id: JBaseLinkDialog.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JBaseLinkDialog.java,v 1.2 2005/02/10 00:17:52 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -100,7 +100,6 @@ class JBaseLinkDialog
 
       super.initUI(header, true, body, confirm, null, null, "Cancel");
       pack();
-      setResizable(false);
     }  
   }
 
