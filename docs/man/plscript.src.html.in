@@ -100,7 +100,7 @@ Users</a></li>
  style="font-weight: bold;">--auto-start</span>]<br>
           </span></li>
         <li style="font-weight: bold;"><span
- style="font-weight: normal;"><a style="color: rgb(153, 0, 0);"
+ style="font-weight: normal;"><a style="color: rgb(0, 0, 0);"
  href="#admin_--offline"><span style="font-weight: bold;">--offline</span></a>
           </span><span style="font-weight: normal;"> [<span
  style="font-weight: bold;">--pattern</span>=<span
@@ -114,8 +114,8 @@ Users</a></li>
  style="font-weight: bold;">--min-archives</span>=<span
  style="font-style: italic;">integer</span>]</span></li>
         <li style="font-weight: bold;"><span
- style="font-weight: normal;"><a href="#admin_--restore"><span
- style="font-weight: bold;">--restore</span></a>=<span
+ style="font-weight: normal;"><a style="color: rgb(0, 0, 0);"
+ href="#admin_--restore"><span style="font-weight: bold;">--restore</span></a>=<span
  style="font-style: italic;">archive-name</span> </span><span
  style="font-weight: normal;">[<a href="#--param"><span
  style="font-weight: bold;">--param</span></a>=<span
@@ -1812,7 +1812,8 @@ printed when the backup is complete.<br>
 </span></span>
 <div style="margin-left: 40px;"><br>
 Create an archive volume containing the files associated with the
-checked-in versions which match the a search criteria using the given
+checked-in versions which match the given search criteria using the
+given
 Archiver plugin.&nbsp; The name of the archive volume is constructed
 from a prefix (archive-prefix) and a serial number based on the
 creation time stamp.&nbsp; <br>
@@ -1940,7 +1941,52 @@ option is ignored.</span><br>
  style="font-style: italic;">integer</span>]<br>
 </span>
 <div style="margin-left: 40px;"><br>
-<span style="font-style: italic;">Not yet implemented...</span><br>
+<span style="font-style: italic;"></span>Remove the repository files
+associated with the given checked-in versions which match the given
+search criteria.&nbsp; A checked-in version cannot be selected for
+offlining if there exists
+one or more working versions based upon the checked-in version.&nbsp;
+In addition, the latest checked-in version cannot be offlined as long
+as any working versions of the noce exist.<br>
+<br>
+The selection of the checked-in versions to be archived is based on the
+follow options:<br>
+<br>
+<span style="font-weight: normal;"><span style="font-weight: bold;">--pattern</span>=<span
+ style="font-style: italic;"></span></span><span
+ style="font-weight: normal;"><span style="font-style: italic;">'node-regex</span>'<br>
+</span><span style="font-style: italic;"></span><span
+ style="font-weight: normal;"><br>
+</span>
+<div style="margin-left: 40px;">A <a
+ href="file://@java_home@/docs/api/java/util/regex/Pattern.html#sum">regular
+expression</a> (<span style="font-style: italic;">node-regex</span>)
+used to select the checked-in versions based on fully resolved node
+name.&nbsp; If this option is not specified, all node versions will be
+selected.<br>
+<br>
+</div>
+<span style="font-weight: normal;"><span style="font-weight: bold;">--exclude-latest</span>=<span
+ style="font-style: italic;">integer<br>
+</span></span><><br>
+</>
+<div style="margin-left: 40px;"><>This opion is used to exclude the
+latest (integer) number of checked-in versions of a node from those
+selected for offlining.&nbsp; By default, all versions are
+selected.&nbsp; However, some versions may be excluded due to the
+existance of working versions mentioned above.</><br>
+<></></div>
+<><br>
+</><span style="font-weight: normal;"><span style="font-weight: bold;">--min-archives</span>=<span
+ style="font-style: italic;">integer<br>
+<br>
+</span></span>
+<div style="margin-left: 40px;">A checked-in version cannot be selected
+unless it has prevously been included in at least one archive
+volume.&nbsp;&nbsp; This option provides a way of excluding versions
+which have not been included in a higher number (integer) of archive
+volumes.&nbsp; By default, the minimum number of archives is (2).<br>
+</div>
 </div>
 <span style="font-weight: normal;"></span><br>
 <span style="font-weight: normal;"></span><span
