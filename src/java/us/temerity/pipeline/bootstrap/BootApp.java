@@ -1,4 +1,4 @@
-// $Id: BootApp.java,v 1.2 2004/03/23 07:40:37 jim Exp $
+// $Id: BootApp.java,v 1.3 2004/08/29 09:22:20 jim Exp $
 
 package us.temerity.pipeline.bootstrap;  
 
@@ -28,6 +28,7 @@ class BootApp
   {}
 
   
+
   /*----------------------------------------------------------------------------------------*/
   /*   R U N                                                                                */
   /*----------------------------------------------------------------------------------------*/
@@ -42,8 +43,7 @@ class BootApp
    * @param args 
    *   The command-line arguments.
    */ 
-  public abstract
-  void 
+  public abstract void 
   run
   (
    String[] args
