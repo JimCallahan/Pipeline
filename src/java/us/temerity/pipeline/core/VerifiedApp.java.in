@@ -1,4 +1,4 @@
-// $Id: VerifiedApp.java.in,v 1.1 2004/08/29 09:19:03 jim Exp $
+// $Id: VerifiedApp.java.in,v 1.2 2004/09/01 12:22:59 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -42,89 +42,55 @@ class VerifiedApp
   {
     super(name);
 
-    /* verify the hardware ID */ 
-    BigInteger hostID = null;
+    TreeMap<String,BigInteger> IDs = null;
     try {
-      MessageDigest md = MessageDigest.getInstance("MD5");
-      
-      /* get the network card MAC addresses */ 
-      {
-	FileReader reader = new FileReader("/proc/net/arp");
-	boolean done = false;
-	while(true) {
-	  /* read a line */ 
-	  StringBuffer buf = new StringBuffer();
-	  while(true) {
-	    int next = reader.read();
-	    if(next == -1) {
-	      done = true;
-	      break;
-	    }
-	    
-	    char c = (char) next;
-	    if(c == '\n') 
-	      break;
-	    
-	    buf.append(c);
-	  }
-
-	  if(done) 
-	    break;
-	  
-	  String addr = null;
-
-	  String[] fields = buf.toString().split(" ");
-	  int wk, cnt;
-	  for(wk=0, cnt=0; wk<fields.length; wk++) {
-	    if(fields[wk].length() > 0) {
-	      if((cnt == 3) && (!fields[wk].equals("00:00:00:00:00:00"))) {
-		addr = fields[wk];
-	      }
-	      else if((cnt == 5) && (fields[wk].equals("eth0")) && (addr != null)) {
-		md.update(addr.getBytes());
-		break;
-	      }
-
-	      cnt++;
-	    }
-	  }
-	}
-
-	reader.close();
-      }
-      
-      /* get the CPU, PCI amd SCSCI info */ 
-      {
-	String[] files = {
-	  "/proc/cpuinfo"
-	};
-	  
-	byte[] buf = new byte[4096];
-	int wk;
-	for(wk=0; wk<files.length; wk++) {
-	  FileInputStream in = new FileInputStream(files[wk]);
-	    
-	  while(true) {
-	    int cnt = in.read(buf);
-	    if(cnt == -1) 
-	      break;
-	    
-	    md.update(buf, 0, cnt);
-	  }
-	  
-	  in.close();
-	}
-      }  
-
-      hostID = new BigInteger(md.digest());
+      IDs = generateIDs();
     }
-    catch(Exception ex) {
-      Logs.net.severe("Unable to determine the hardware ID for this machine!");
+    catch(IOException ex) {
+      Logs.net.severe(ex.getMessage());
       System.exit(1);
     }
-    
-    /* lookup the names this machine is known by */ 
-    TreeSet<String> hosts = new TreeSet<String>(); 
+
+    /* verify the hostID for this machine */ 
+    {
+      assert(!IDs.isEmpty());
+      assert(sHostNames.length == sHostIDs.length);
+
+      boolean verified = false;
+      int wk;
+      for(wk=0; wk<sHostNames.length; wk++) {
+	BigInteger id = IDs.get(sHostNames[wk]);
+	if(id != null) {
+	  BigInteger big = new BigInteger(sHostIDs[wk]);
+	  if(big.equals(id)) {
+	    verified = true; 
+	    break;
+	  }
+	}
+      }
+      
+      if(!verified) {
+	Logs.net.severe("Pipeline is not licensed for this machine!");
+	System.exit(1);
+      }
+    }
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Generate the hardware IDs for the local machine.
+   */
+  private TreeMap<String,BigInteger>
+  generateIDs() 
+    throws IOException 
+  {
+    /* the names of this host indexed by IP address */ 
+    TreeMap<String,String> hostnames = new TreeMap<String,String>();
     try {
       Enumeration nets = NetworkInterface.getNetworkInterfaces();  
       while(nets.hasMoreElements()) {
@@ -133,44 +99,159 @@ class VerifiedApp
 	while(addrs.hasMoreElements()) {
 	  InetAddress addr = (InetAddress) addrs.nextElement();
 	  String ip = addr.getHostAddress();
-	  if(!ip.equals("127.0.0.1")) {
-	    hosts.add(addr.getCanonicalHostName());
-	  }	    
+	  if(!ip.equals("127.0.0.1")) 
+	    hostnames.put(ip, addr.getCanonicalHostName());
 	}
       }
-
-      if(hosts.isEmpty())
-	throw new IOException();
     }
     catch(Exception ex) {
-      Logs.net.severe("Could not determine the name of this machine!");
-      System.exit(1);
+      throw new IOException 
+	("Could not determine the name of this machine!");
     }
 
-    /* verify the hostID for this machine */ 
-    {
-      assert(hostID != null);
-      assert(!hosts.isEmpty());
-      assert(sHostNames.length == sHostIDs.length);
+    if(hostnames.isEmpty()) 
+      throw new IOException 
+	("Could not determine the name of this machine!");
 
-      boolean verified = false;
-      int wk;
-      for(wk=0; wk<sHostNames.length; wk++) {
-	if(hosts.contains(sHostNames[wk])) {
-	  BigInteger big = new BigInteger(sHostIDs[wk]);
-	  if(big.equals(hostID)) {
-	    verified = true; 
-	    break;
+    /* determine the hardware IDs */ 
+    TreeMap<String,BigInteger> IDs = new TreeMap<String,BigInteger>();
+    try {
+      MessageDigest md = MessageDigest.getInstance("MD5");
+      
+      /* get the network card MAC addresses */ 
+      TreeSet<String> found = new TreeSet<String>();
+      {
+	String str = null;
+	try {
+	  String args[] = new String[1];
+	  args[0] = "/sbin/ifconfig";
+	  
+	  String env[] = new String[0];
+	  
+	  Process proc = Runtime.getRuntime().exec(args, env);
+	  
+	  StringBuffer buf = new StringBuffer();
+	  InputStreamReader in = new InputStreamReader(proc.getInputStream());
+	  char cs[] = new char[1024];
+	  while(true) {
+	    int cnt = in.read(cs);
+	    if(cnt == -1) 
+	      break;
+	    
+	    buf.append(cs, 0, cnt);
+	  }
+
+	  int exitCode = proc.waitFor();
+	  if(exitCode != 0)
+	    throw new IOException();
+
+	  str = buf.toString();
+	}
+	catch(Exception ex) {
+	  throw new IOException();
+	}      
+	
+	if(str == null)
+	  throw new IOException();
+	
+	{
+	  boolean hwNext = false;
+	  boolean ipNext = false;
+
+	  String hw = null;
+
+	  String tok[] = str.split(" ");
+	  int wk; 
+	  for(wk=0; wk<tok.length; wk++) {
+	    if(tok[wk].length() > 0) {
+	      if(hwNext) {
+		String[] hex = tok[wk].split(":");
+		if(hex.length != 6) 
+		  throw new IOException();
+
+		int i;
+		for(i=0; i<hex.length; i++) 
+		  if(hex[i].length() != 2)
+		    throw new IOException();
+		
+		hw = tok[wk];
+		hwNext = false;
+	      }
+	      else if(ipNext) {
+		if(tok[wk].startsWith("addr:")) {
+		  String addr = tok[wk].substring(5);
+		  String hname = hostnames.get(addr);
+		  if(hname != null) {
+		    String s = ("IP=" + addr + " HWaddr=" + hw);
+		    md.update(s.getBytes());
+		    found.add(hname);
+		  }
+		}
+		else {
+		  throw new IOException();
+		}
+		
+		hw     = null;
+		ipNext = false;
+	      }
+	      else if(tok[wk].equals("HWaddr")) {
+		hwNext = true;
+	      }
+	      else if(tok[wk].equals("inet")) {
+		ipNext = true;
+	      }
+	      else {
+		hwNext = false;
+		ipNext = false;
+	      }
+	    }
 	  }
 	}
-      }
 
-      if(!verified) {
-	Logs.net.severe("Pipeline is not licensed for this machine!");
-	System.exit(1);
+	if(found.isEmpty()) 
+	  throw new IOException();
       }
+      
+      /* get the CPU, PCI amd SCSCI info */ 
+      {
+	String[] files = {
+	  "/proc/cpuinfo",
+	  "/proc/pci", 
+	  "/proc/scsi/scsi"
+	};
+	  
+	byte[] buf = new byte[4096];
+	int wk;
+	for(wk=0; wk<files.length; wk++) {
+	  try {
+	    FileInputStream in = new FileInputStream(files[wk]);
+	    
+	    while(true) {
+	      int cnt = in.read(buf);
+	      if(cnt == -1) 
+		break;
+	      
+	      md.update(buf, 0, cnt);
+	    }
+	    
+	    in.close();
+	  }
+	  catch(IOException ex) {
+	  }    
+	}
+      }  
+
+      BigInteger hardwareID = new BigInteger(md.digest());
+      for(String host : found) 
+	IDs.put(host, hardwareID);
     }
+    catch(Exception ex) {
+      throw new IOException("Unable to determine local host ID.");
+    }      
+
+    return IDs;
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
