@@ -799,7 +799,10 @@ Operations</span></span></a></li>
  style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
  style="font-style: italic;">micro</span>]</span><span
- style="font-weight: normal;"> [<span style="font-weight: bold;">--keep-newer</span>]</span></li>
+ style="font-weight: normal;"> [<span style="font-weight: bold;">--always</span>
+| <span style="font-weight: bold;">--keep-newer</span> | <span
+ style="font-weight: bold;">--keep-modified</span>]<br>
+          </span></li>
         <li style="font-weight: bold;"><span
  style="font-weight: normal;"><span
  style="font-weight: bold; color: rgb(153, 0, 0);"></span></span><span
@@ -3409,8 +3412,11 @@ target node prior to checking-in the target node. <br>
  href="#--version"><span style="font-weight: bold;">--version</span></a>=<span
  style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span>] [<span
- style="font-weight: bold;">--keep-newer</span>]<br>
+ style="font-style: italic;">micro</span>] </span><span
+ style="font-weight: normal;">[<span style="font-weight: bold;">--always</span>
+| <span style="font-weight: bold;">--keep-newer</span> | <span
+ style="font-weight: bold;">--keep-modified</span>]</span><span
+ style="font-weight: normal;"><br>
 <br>
 </span>
 <div style="margin-left: 40px;">Replace the target working node version
@@ -3423,9 +3429,16 @@ given checked-in version (<span style="font-weight: normal;"><span
  style="font-style: italic;">micro</span>).&nbsp; If no <span
  style="font-weight: bold;">--version</span> option is specified, the
 latest version will be checked-out.&nbsp; Also checks-out the versions
-of all upstream nodes of the checked-in version.&nbsp; If the <span
- style="font-weight: bold;">--keep-newer</span> option is specified,
-newer versions of these upstream nodes will not be replaced.<br>
+of all upstream nodes of the checked-in version.&nbsp; <br>
+<br>
+If the <span style="font-weight: bold;">--keep-newer</span> option is
+specified,
+newer versions of these upstream nodes will not be checked-out.&nbsp;
+If the <span style="font-weight: bold;">--keep-modified</span> option
+is specified, the check-out will be skipped if there exists a working
+version which is based on the version being checked-out or on a version
+which is newer than the version being checked-out.&nbsp; Otherwise, all
+upstream nodes will be checked-out.<br>
 </span></div>
 <span style="font-weight: normal;"></span><span
  style="font-weight: normal;"><span style="font-weight: bold;"></span></span></div>
