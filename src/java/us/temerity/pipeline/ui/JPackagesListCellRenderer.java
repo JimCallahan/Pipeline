@@ -1,4 +1,4 @@
-// $Id: JPackagesListCellRenderer.java,v 1.1 2004/05/29 06:38:43 jim Exp $
+// $Id: JPackagesListCellRenderer.java,v 1.2 2004/06/03 09:29:16 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -16,12 +16,12 @@ import javax.swing.border.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The renderer used for the {@link JList JList} cells.
+ * The renderer used for the {@link JList JList} cells containing 
+ * {@link PackageCommon PackageCommon} values.
  */ 
 public
 class JPackagesListCellRenderer
-  extends JPanel 
-  implements ListCellRenderer 
+  extends JExtraListCellRenderer
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -29,25 +29,19 @@ class JPackagesListCellRenderer
 
   /**
    * Construct a new renderer.
+   * 
+   * @param dialog
+   *   The parent dialog.
    */
   public 
-  JPackagesListCellRenderer() 
+  JPackagesListCellRenderer
+  (
+   JManageToolsetsDialog dialog
+  )
   {
     super();
-    
-    setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-    
-    pPackageLabel = new JLabel();
-    pPackageLabel.setHorizontalAlignment(JLabel.LEFT);
-    add(pPackageLabel);
-    
-    add(Box.createRigidArea(new Dimension(8, 0)));
-    add(Box.createHorizontalGlue());
-    
-    pVersionLabel = new JLabel();
-    add(pVersionLabel);
-    
-    add(Box.createRigidArea(new Dimension(8, 0)));
+
+    pDialog = dialog;
   }
 
 
@@ -69,37 +63,41 @@ class JPackagesListCellRenderer
    boolean cellHasFocus
   )
   {
-    PackageVersion pkg = (PackageVersion) value;
+    super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 
-    pPackageLabel.setText(pkg.getName());
-    pVersionLabel.setText("(v" + pkg.getVersionID().toString() + ")");
+    PackageCommon pkg = (PackageCommon) value;
+    pLabel.setText(pkg.getName());
+    if(pkg instanceof PackageVersion) 
+      pExtraLabel.setText("(v" + ((PackageVersion) pkg).getVersionID().toString() + ")");
+    else 
+      pExtraLabel.setText("(working)");
 
-    if(isSelected) {
-      pPackageLabel.setForeground(Color.yellow);
-      pPackageLabel.setIcon(sSelectedIcon);
+    String tname = pDialog.getSelectedToolsetName();
+    if(pDialog.isWorkingToolset(tname)) {
+      if(pDialog.hasPackageConflicts(tname, index)) {
+	pLabel.setForeground(isSelected ? Color.yellow : Color.cyan);
+
+	pExtraLabel.setIcon(isSelected ? sConflictSelectedIcon : sConflictIcon);
+	pExtraLabel.setForeground(isSelected ? Color.yellow : Color.cyan);
+      }
+      else {
+	pExtraLabel.setIcon(isSelected ? sCheckSelectedIcon : sCheckIcon);
+      }
     }
     else {
-      pPackageLabel.setForeground(Color.white);
-      pPackageLabel.setIcon(sNormalIcon); 
+      pExtraLabel.setIcon(sBlankIcon);
     }
 
     return this;
   }
 
 
-
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C    I N T E R N A L S                                                     */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 5009178842357406649L;
-
-
-  private static Icon sNormalIcon = 
-    new ImageIcon(LookAndFeelLoader.class.getResource("ListCellNormalIcon.png"));
-
-  private static Icon sSelectedIcon = 
-    new ImageIcon(LookAndFeelLoader.class.getResource("ListCellSelectedIcon.png"));
+  private static final long serialVersionUID = -805464928141235995L;
 
 
 
@@ -108,13 +106,8 @@ class JPackagesListCellRenderer
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The package label.
+   * The parent dialog.
    */
-  private JLabel  pPackageLabel;
+  private JManageToolsetsDialog  pDialog;
 
-  /**
-   * The version label.
-   */
-  private JLabel  pVersionLabel;
-  
 }
