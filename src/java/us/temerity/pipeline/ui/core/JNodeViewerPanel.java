@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.17 2005/02/22 02:31:04 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.18 2005/02/22 18:19:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -111,7 +111,13 @@ class JNodeViewerPanel
       item.setActionCommand("register");
       item.addActionListener(this);
       pPanelPopup.add(item);  
-      
+
+      item = new JMenuItem("Release View...");
+      pReleaseViewItem = item;
+      item.setActionCommand("release-view");
+      item.addActionListener(this);
+      pPanelPopup.add(item);  
+
       pPanelPopup.addSeparator();
       
       item = new JMenuItem("Frame Selection");
@@ -153,8 +159,6 @@ class JNodeViewerPanel
       item.setActionCommand("show-hide-downstream");
       item.addActionListener(this);
       pPanelPopup.add(item);  
-
-      pPanelPopup.addSeparator();
 
       item = new JMenuItem("Hide All Roots");
       pRemoveAllRootsItem = item;
@@ -259,7 +263,7 @@ class JNodeViewerPanel
 	if(wk == 3) {
 	  menus[wk].addSeparator();
 	  
-	  item = new JMenuItem("Release");
+	  item = new JMenuItem("Release...");
 	  pReleaseItems[0] = item;
 	  item.setActionCommand("release");
 	  item.addActionListener(this);
@@ -327,6 +331,7 @@ class JNodeViewerPanel
 	item.addActionListener(this);
 	pNodePopup.add(item);
 
+
 	pNodePopup.addSeparator();
 
 	item = new JMenuItem("Check-In...");
@@ -348,26 +353,12 @@ class JNodeViewerPanel
 	pNodePopup.add(item);
 
 	pNodePopup.addSeparator();
-      
+
 	item = new JMenuItem("Clone...");
 	pCloneItem = item;
 	item.setActionCommand("clone");
 	item.addActionListener(this);
 	pNodePopup.add(item);
-
-	item = new JMenuItem("Release");
-	pReleaseItems[1] = item;
-	item.setActionCommand("release");
-	item.addActionListener(this);
-	pNodePopup.add(item);
-
-	item = new JMenuItem("Remove Files");
-	pRemoveFilesItem = item;
-	item.setActionCommand("remove-files");
-	item.addActionListener(this);
-	pNodePopup.add(item);
-
-	pNodePopup.addSeparator();
 
 	item = new JMenuItem("Export...");
 	pExportItem = item;
@@ -384,6 +375,20 @@ class JNodeViewerPanel
 	item = new JMenuItem("Renumber...");
 	pRenumberItem = item;
 	item.setActionCommand("renumber");
+	item.addActionListener(this);
+	pNodePopup.add(item);
+
+	item = new JMenuItem("Remove Files");
+	pRemoveFilesItem = item;
+	item.setActionCommand("remove-files");
+	item.addActionListener(this);
+	pNodePopup.add(item);
+
+	pNodePopup.addSeparator();
+
+	item = new JMenuItem("Release...");
+	pReleaseItems[1] = item;
+	item.setActionCommand("release");
 	item.addActionListener(this);
 	pNodePopup.add(item);
 
@@ -435,19 +440,18 @@ class JNodeViewerPanel
     /* initialize child dialogs */ 
     {
       pAddSecondaryDialog = new JAddSecondaryDialog();
-
-      pExportDialog   = new JExportDialog();
-      pRenameDialog   = new JRenameDialog();
-      pRenumberDialog = new JRenumberDialog();
-      pRegisterDialog = new JRegisterDialog();
-      pReleaseDialog  = new JReleaseDialog();
-      pDeleteDialog   = new JDeleteDialog();
-      pCheckInDialog  = new JCheckInDialog();
-      pCheckOutDialog = new JCheckOutDialog();
-      pEvolveDialog   = new JEvolveDialog();
-      
-      pCreateLinkDialog = new JCreateLinkDialog();
-      pEditLinkDialog   = new JEditLinkDialog();
+      pExportDialog       = new JExportDialog();
+      pRenameDialog       = new JRenameDialog();
+      pRenumberDialog     = new JRenumberDialog();
+      pRegisterDialog     = new JRegisterDialog();
+      pReleaseDialog      = new JReleaseDialog();
+      pReleaseViewDialog  = new JReleaseViewDialog();
+      pDeleteDialog       = new JDeleteDialog();
+      pCheckInDialog      = new JCheckInDialog();
+      pCheckOutDialog     = new JCheckOutDialog();
+      pEvolveDialog       = new JEvolveDialog();
+      pCreateLinkDialog   = new JCreateLinkDialog();
+      pEditLinkDialog     = new JEditLinkDialog();
     }
   }
 
@@ -747,6 +751,10 @@ class JNodeViewerPanel
       (pRegisterItem, prefs.getNodeViewerRegisterNewNode(), 
        "Register a new node.");
     updateMenuToolTip
+      (pReleaseViewItem, prefs.getNodeViewerReleaseView(), 
+       "Release nodes from the current working area view.");
+    
+    updateMenuToolTip
       (pFrameSelectionItem, prefs.getFrameSelection(), 
        "Move the camera to frame the bounds of the currently selected nodes.");
     updateMenuToolTip
@@ -761,12 +769,13 @@ class JNodeViewerPanel
     updateMenuToolTip
       (pCollapseAllItem, prefs.getCollapseAll(), 
        "Collapse all nodes.");
+
     updateMenuToolTip
       (pShowHideDownstreamItem, prefs.getNodeViewerShowHideDownstreamNodes(), 
        "Show/hide nodes downstream of the focus node.");
     updateMenuToolTip
       (pRemoveAllRootsItem, prefs.getNodeViewerRemoveAllRoots(), 
-       "Remove all of the roots nodes.");
+       "Hide all of the root nodes.");
 
     /* node menus */ 
     int wk;
@@ -899,6 +908,7 @@ class JNodeViewerPanel
   updatePanelMenu() 
   {
     pRegisterItem.setEnabled(!pIsLocked);
+    pReleaseViewItem.setEnabled(!pIsLocked);
 
     pShowHideDownstreamItem.setText
       ((pShowDownstream ? "Hide" : "Show") + " Downstream");
@@ -2251,13 +2261,6 @@ class JNodeViewerPanel
       else if((prefs.getNodeViewerClone() != null) &&
 	      prefs.getNodeViewerClone().wasPressed(e))
 	doClone();
-      else if((prefs.getNodeViewerRelease() != null) &&
-	      prefs.getNodeViewerRelease().wasPressed(e))
-	doRelease();
-      else if((prefs.getRemoveFiles() != null) &&
-	      prefs.getRemoveFiles().wasPressed(e))
-	doRemoveFiles();
-
       else if((prefs.getNodeViewerExport() != null) &&
 	      prefs.getNodeViewerExport().wasPressed(e))
 	doExport();
@@ -2267,10 +2270,20 @@ class JNodeViewerPanel
       else if((prefs.getNodeViewerRenumber() != null) &&
 	      prefs.getNodeViewerRenumber().wasPressed(e))
 	doRenumber();
+      else if((prefs.getRemoveFiles() != null) &&
+	      prefs.getRemoveFiles().wasPressed(e))
+	doRemoveFiles();
+
+      else if((prefs.getNodeViewerRelease() != null) &&
+	      prefs.getNodeViewerRelease().wasPressed(e))
+	doRelease();
+      else if((prefs.getNodeViewerReleaseView() != null) &&
+	      prefs.getNodeViewerReleaseView().wasPressed(e))
+	doReleaseView();
       else if((prefs.getNodeViewerDelete() != null) &&
 	      prefs.getNodeViewerDelete().wasPressed(e))
 	doDelete();
-      
+
       else 
 	undefined = true;
     }
@@ -2462,17 +2475,19 @@ class JNodeViewerPanel
 
     else if(cmd.equals("clone"))
       doClone();
-    else if(cmd.equals("release"))
-      doRelease();
-    else if(cmd.equals("remove-files"))
-      doRemoveFiles();
-
     else if(cmd.equals("export"))
       doExport();
     else if(cmd.equals("rename"))
       doRename();
     else if(cmd.equals("renumber"))
       doRenumber();
+    else if(cmd.equals("remove-files"))
+      doRemoveFiles();
+
+    else if(cmd.equals("release"))
+      doRelease();
+    else if(cmd.equals("release-view"))
+      doReleaseView();
     else if(cmd.equals("delete"))
       doDelete();
 
@@ -3000,13 +3015,50 @@ class JNodeViewerPanel
 
       pReleaseDialog.updateHeader(header);
       pReleaseDialog.setVisible(true);
-      
       if(pReleaseDialog.wasConfirmed()) {
-	ReleaseTask task = new ReleaseTask(names, pReleaseDialog.removeFiles());
-	task.start();
+
+	boolean wasConfirmed = false;
+	if(names.size() == 1) {
+	  JConfirmDialog confirm = new JConfirmDialog("Are you sure?");
+	  confirm.setVisible(true);
+	  wasConfirmed = confirm.wasConfirmed();
+	}
+	else {
+	  JConfirmListDialog confirm = 
+	    new JConfirmListDialog("Are you sure?", "Nodes to Release:", names);
+	  confirm.setVisible(true);
+	  wasConfirmed = confirm.wasConfirmed();
+	}
+
+	if(wasConfirmed) {
+	  ReleaseTask task = 
+	    new ReleaseTask(pAuthor, pView, names, pReleaseDialog.removeFiles(), false);
+	  task.start();
+	}
       }
     }
     
+    clearSelection();
+    refresh(); 
+  }
+
+  /**
+   * Release nodes from the current working area view.
+   */ 
+  private void 
+  doReleaseView() 
+  {
+    pReleaseViewDialog.setVisible(true);
+    if(pReleaseViewDialog.wasConfirmed()) {
+      
+      // ...
+
+//       ReleaseTask task = 
+// 	new ReleaseTask(pAuthor, pView, pReleaseViewDialog.getNames(), 
+// 			pReleaseViewDialog.removeFiles(), pReleaseViewDialog.removeArea());
+//       task.start();
+    }
+ 
     clearSelection();
     refresh(); 
   }
@@ -4202,14 +4254,20 @@ class JNodeViewerPanel
     public 
     ReleaseTask
     (
+     String author, 
+     String view, 
      TreeSet<String> names, 
-     boolean removeFiles
+     boolean removeFiles,
+     boolean removeArea
     ) 
     {
       super("JNodeViewerPanel:ReleaseTask");
 
+      pAuthor      = author; 
+      pView        = view; 
       pNames       = names; 
       pRemoveFiles = removeFiles;
+      pRemoveArea  = removeArea;
     }
 
     public void 
@@ -4217,11 +4275,15 @@ class JNodeViewerPanel
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp()) {
+	MasterMgrClient client = master.getMasterMgrClient();
 	try {
 	  for(String name : pNames) {
 	    master.updatePanelOp("Releasing Node: " + name);	
-	    master.getMasterMgrClient().release(pAuthor, pView, name, pRemoveFiles);
+	    client.release(pAuthor, pView, name, pRemoveFiles);
 	  }
+
+	  if(pRemoveArea)
+	    client.removeWorkingArea(pAuthor, pView);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -4235,8 +4297,11 @@ class JNodeViewerPanel
       }
     }
 
+    private String           pAuthor; 
+    private String           pView; 
     private TreeSet<String>  pNames; 
     private boolean          pRemoveFiles; 
+    private boolean          pRemoveArea; 
   }
 
   /** 
@@ -5129,6 +5194,7 @@ class JNodeViewerPanel
    */
   private JMenuItem  pUpdateItem;
   private JMenuItem  pRegisterItem;
+  private JMenuItem  pReleaseViewItem;
   private JMenuItem  pFrameAllItem;
   private JMenuItem  pFrameSelectionItem;
   private JMenuItem  pAutomaticExpandItem;
@@ -5249,6 +5315,11 @@ class JNodeViewerPanel
    * The release node dialog.
    */ 
   private JReleaseDialog  pReleaseDialog;
+
+  /**
+   * The release view dialog.
+   */ 
+  private JReleaseViewDialog  pReleaseViewDialog;
 
   /**
    * The delete node dialog.
