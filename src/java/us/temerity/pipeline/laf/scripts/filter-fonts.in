@@ -48,7 +48,7 @@ then
   echo '(gimp-quit 1)' >> $tmpfile
 
   cat $tmpfile
-  time gimp -i -d -b '(load "'$tmpfile'")'
+  time @GIMP@ -i -d -b '(load "'$tmpfile'")'
 fi
 
 rm -f $tmpfile
