@@ -171,7 +171,8 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
       JAVA_PATHS = -d ../../.. -classpath "../../..:$(srcdir)/../../.."
 
-    JAVA_SOURCES = $(shell ls *.java $(srcdir)/*.java) $(patsubst %,%.java,$(PARSERS))
+    JAVA_SOURCES = $(shell ls *.java $(srcdir)/*.java $(srcdir)/message/*.java) \
+                   $(patsubst %,%.java,$(PARSERS))
 
 
 #--------------------------------------------------------------------------------------------#
@@ -185,7 +186,8 @@ all: Makefile PackageInfo.java $(TARGET)
 
 $(TARGET): java-all
 	(cd ../../..; \
-         $(JAR) cvf us/temerity/pipeline/$@ us/temerity/pipeline/*.class)
+         $(JAR) cvf us/temerity/pipeline/$@ \
+                    us/temerity/pipeline/*.class us/temerity/pipeline/message/*.class)
 
 java-all: $(JAVA_SOURCES)
 	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(JAVA_SOURCES)
@@ -241,7 +243,7 @@ clean-jar:
 	rm -f $(TARGET)
 
 clean-class:
-	rm -f *.class
+	rm -f *.class message/*.class
 	rm -f java-all
 
 clean-aux:
