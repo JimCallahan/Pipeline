@@ -1,4 +1,4 @@
-// $Id: NativeProcess.cc,v 1.1 2004/02/12 15:50:12 jim Exp $
+// $Id: NativeProcess.cc,v 1.2 2004/02/20 22:49:34 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -58,12 +58,12 @@
 
 #include "NativeProcess.hh"
 
-
+ 
 
 /* Write the given string data to the STDIN of the native process. */ 
 extern "C" 
 JNIEXPORT jint 
-JNICALL Java_pipeline_NativeProcess_writeToStdIn
+JNICALL Java_us_temerity_pipeline_NativeProcess_writeToStdIn
 (
  JNIEnv *env, 
  jobject obj, 
@@ -75,7 +75,7 @@ JNICALL Java_pipeline_NativeProcess_writeToStdIn
   jclass IOException = env->FindClass("java/io/IOException");
   if(IOException == 0) {
     errno = ECANCELED;
-    perror("pipeline.NativeProcess.writeToStdIn(), unable to lookup \"java/lang/IOException\"");
+    perror("NativeProcess.writeToStdIn(), unable to lookup \"java/lang/IOException\"");
     return -1;
   }
   
@@ -116,7 +116,7 @@ JNICALL Java_pipeline_NativeProcess_writeToStdIn
 /* Close the STDIN pipe. */ 
 extern "C"  
 JNIEXPORT void 
-JNICALL Java_pipeline_NativeProcess_closeStdIn
+JNICALL Java_us_temerity_pipeline_NativeProcess_closeStdIn
 (
  JNIEnv *env, 
  jobject obj
@@ -127,7 +127,7 @@ JNICALL Java_pipeline_NativeProcess_closeStdIn
   jclass IOException = env->FindClass("java/io/IOException");
   if(IOException == 0) {
     errno = ECANCELED;
-    perror("pipeline.NativeProcess.closeStdIn(), unable to lookup \"java/lang/IOException\"");
+    perror("NativeProcess.closeStdIn(), unable to lookup \"java/lang/IOException\"");
     return;
   }
   
@@ -161,7 +161,7 @@ JNICALL Java_pipeline_NativeProcess_closeStdIn
     Returns (null) on EOF.  The size of the String read may be smaller than "size" */ 
 extern "C"  
 JNIEXPORT jstring 
-JNICALL Java_pipeline_NativeProcess_readFromStdOut
+JNICALL Java_us_temerity_pipeline_NativeProcess_readFromStdOut
 (
  JNIEnv *env, 
  jobject obj, 
@@ -173,7 +173,7 @@ JNICALL Java_pipeline_NativeProcess_readFromStdOut
   jclass IOException = env->FindClass("java/io/IOException");
   if(IOException == 0) {
     errno = ECANCELED;
-    perror("pipeline.NativeProcess.readFromStdOut(), unable to lookup \"java/lang/IOException\"");
+    perror("NativeProcess.readFromStdOut(), unable to lookup \"java/lang/IOException\"");
     return NULL;
   }
   
@@ -215,7 +215,7 @@ JNICALL Java_pipeline_NativeProcess_readFromStdOut
 /* Close the STDOUT pipe. */ 
 extern "C"  
 JNIEXPORT void 
-JNICALL Java_pipeline_NativeProcess_closeStdOut
+JNICALL Java_us_temerity_pipeline_NativeProcess_closeStdOut
 (
  JNIEnv *env, 
  jobject obj
@@ -226,7 +226,7 @@ JNICALL Java_pipeline_NativeProcess_closeStdOut
   jclass IOException = env->FindClass("java/io/IOException");
   if(IOException == 0) {
     errno = ECANCELED;
-    perror("pipeline.NativeProcess.closeStdOut(), unable to lookup \"java/lang/IOException\"");
+    perror("NativeProcess.closeStdOut(), unable to lookup \"java/lang/IOException\"");
     return;
   }
   
@@ -259,7 +259,7 @@ JNICALL Java_pipeline_NativeProcess_closeStdOut
      Returns (null) on EOF.  The size of the String read may be smaller than "size" */ 
 extern "C"  
 JNIEXPORT jstring 
-JNICALL Java_pipeline_NativeProcess_readFromStdErr
+JNICALL Java_us_temerity_pipeline_NativeProcess_readFromStdErr
 (
  JNIEnv *env, 
  jobject obj, 
@@ -271,7 +271,7 @@ JNICALL Java_pipeline_NativeProcess_readFromStdErr
   jclass IOException = env->FindClass("java/io/IOException");
   if(IOException == 0) {
     errno = ECANCELED;
-    perror("pipeline.NativeProcess.readFromStdErr(), unable to lookup \"java/lang/IOException\"");
+    perror("NativeProcess.readFromStdErr(), unable to lookup \"java/lang/IOException\"");
     return NULL;
   }
   
@@ -311,7 +311,7 @@ JNICALL Java_pipeline_NativeProcess_readFromStdErr
 /* Close the STDERR pipe. */ 
 extern "C"  
 JNIEXPORT void 
-JNICALL Java_pipeline_NativeProcess_closeStdErr
+JNICALL Java_us_temerity_pipeline_NativeProcess_closeStdErr
 (
  JNIEnv *env, 
  jobject obj
@@ -322,7 +322,7 @@ JNICALL Java_pipeline_NativeProcess_closeStdErr
   jclass IOException = env->FindClass("java/io/IOException");
   if(IOException == 0) {
     errno = ECANCELED;
-    perror("pipeline.NativeProcess.closeStdErr(), unable to lookup \"java/lang/IOException\"");
+    perror("NativeProcess.closeStdErr(), unable to lookup \"java/lang/IOException\"");
     return;
   }
   
@@ -356,7 +356,7 @@ JNICALL Java_pipeline_NativeProcess_closeStdErr
      Throws a PError exception on failure (or returns -1). */ 
 extern "C" 
 JNIEXPORT jint
-JNICALL Java_pipeline_NativeProcess_execNative
+JNICALL Java_us_temerity_pipeline_NativeProcess_execNative
 (
  JNIEnv *env, 
  jobject obj, 
@@ -370,7 +370,7 @@ JNICALL Java_pipeline_NativeProcess_execNative
   jclass IOException = env->FindClass("java/io/IOException");
   if(IOException == 0) {
     errno = ECANCELED;
-    perror("pipeline.NativeProcess.execNative(), unable to lookup \"java/lang/IOException\"");
+    perror("NativeProcess.execNative(), unable to lookup \"java/lang/IOException\"");
     return -1;
   }
 
@@ -379,12 +379,6 @@ JNICALL Java_pipeline_NativeProcess_execNative
   jclass NativeProcessClass = env->GetObjectClass(obj);  
   if(NativeProcessClass == 0) {
     env->ThrowNew(IOException, "unable to lookup class: NativeProcess");
-    return -1;
-  }
-  
-  jfieldID pID = env->GetFieldID(NativeProcessClass, "pID", "I");
-  if(pID == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcess.pID");
     return -1;
   }
     
@@ -433,6 +427,12 @@ JNICALL Java_pipeline_NativeProcess_execNative
   jfieldID pPageFaults = env->GetFieldID(NativeProcessClass, "pPageFaults", "J");
   if(pPageFaults == 0) {
     env->ThrowNew(IOException, "unable to access: NativeProcess.pPageFaults");
+    return -1;
+  }
+  
+  jmethodID setPid = env->GetMethodID(NativeProcessClass, "setPid", "(I)V");
+  if(setPid == 0) {
+    env->ThrowNew(IOException, "unable to access: NativeProcess.setPid()");
     return -1;
   }
   
@@ -542,7 +542,7 @@ JNICALL Java_pipeline_NativeProcess_execNative
 	  /* close the default STDIN */ 
 	  if(close(0) == -1) {
 	    sprintf(msg, "%s, unable to close child STDIN (before connecting it to the pipe)",
-		    "pipeline.NativeProcess.execNative()");
+		    "NativeProcess.execNative()");
 	    perror(msg);
 	    exit(EXIT_FAILURE);    
 	  }
@@ -550,7 +550,7 @@ JNICALL Java_pipeline_NativeProcess_execNative
 	  /* hook the READ side of the pipe up to STDIN */ 
 	  if(dup(pipeIn[0]) == -1) {
 	    sprintf(msg, "%s, unable to connect child STDIN to the pipe",
-		    "pipeline.NativeProcess.execNative()");
+		    "NativeProcess.execNative()");
 	    perror(msg);
 	    exit(EXIT_FAILURE);	    
 	  }
@@ -558,7 +558,7 @@ JNICALL Java_pipeline_NativeProcess_execNative
 	  /* close the original pipe, leaving only the STDIN connected */ 
 	  if((close(pipeIn[0]) == -1) || (close(pipeIn[1]) == -1)) {
 	    sprintf(msg, "%s, unable to close down the original child STDIN pipe",
-		    "pipeline.NativeProcess.execNative()");
+		    "NativeProcess.execNative()");
 	    perror(msg);
 	    exit(EXIT_FAILURE);    	    
 	  }
@@ -568,8 +568,8 @@ JNICALL Java_pipeline_NativeProcess_execNative
 	{
 	  /* close the default STDOUT */ 
 	  if(close(1) == -1) {
-	    sprintf(msg, "%s, unable to close child STDOUT (before connecting it to the pipe)",
-		    "pipeline.NativeProcess.execNative()");
+	    sprintf(msg, "%s, unable to close child STDOUT (%s)",
+		    "NativeProcess.execNative()", "before connecting it to the pipe");
 	    perror(msg);
 	    exit(EXIT_FAILURE);    
 	  }
@@ -577,7 +577,7 @@ JNICALL Java_pipeline_NativeProcess_execNative
 	  /* hook the WRITE side of the pipe up to STDOUT */ 
 	  if(dup(pipeOut[1]) == -1) {
 	    sprintf(msg, "%s, unable to connect child STDOUT to the pipe",
-		    "pipeline.NativeProcess.execNative()");
+		    "NativeProcess.execNative()");
 	    perror(msg);
 	    exit(EXIT_FAILURE);	    
 	  }
@@ -585,7 +585,7 @@ JNICALL Java_pipeline_NativeProcess_execNative
 	  /* close the original pipe, leaving only the STDOUT connected */ 
 	  if((close(pipeOut[0]) == -1) || (close(pipeOut[1]) == -1)) {
 	    sprintf(msg, "%s, unable to close down the original child STDOUT pipe",
-		    "pipeline.NativeProcess.execNative()");
+		    "NativeProcess.execNative()");
 	    perror(msg);
 	    exit(EXIT_FAILURE);    	    
 	  }
@@ -595,8 +595,8 @@ JNICALL Java_pipeline_NativeProcess_execNative
 	{
 	  /* close the default STDERR */ 
 	  if(close(2) == -1) {
-	    sprintf(msg, "%s, unable to close child STDERR (before connecting it to the pipe)",
-		    "pipeline.NativeProcess.execNative()");
+	    sprintf(msg, "%s, unable to close child STDERR (%s)"
+		    "NativeProcess.execNative()", "before connecting it to the pipe");
 	    perror(msg);
 	    exit(EXIT_FAILURE);    
 	  }
@@ -604,7 +604,7 @@ JNICALL Java_pipeline_NativeProcess_execNative
 	  /* hook the WRITE side of the pipe up to STDERR */ 
 	  if(dup(pipeErr[1]) == -1) {
 	    sprintf(msg, "%s, unable to connect child STDERR to the pipe",
-		    "pipeline.NativeProcess.execNative()");
+		    "NativeProcess.execNative()");
 	    perror(msg);
 	    exit(EXIT_FAILURE);	    
 	  }
@@ -612,7 +612,7 @@ JNICALL Java_pipeline_NativeProcess_execNative
 	  /* close the original pipe, leaving only the STDERR connected */ 
 	  if((close(pipeErr[0]) == -1) || (close(pipeErr[1]) == -1)) {
 	    sprintf(msg, "%s, unable to close down the original child STDERR pipe",
-		    "pipeline.NativeProcess.execNative()");
+		    "NativeProcess.execNative()");
 	    perror(msg);
 	    exit(EXIT_FAILURE);    	    
 	  }
@@ -621,7 +621,7 @@ JNICALL Java_pipeline_NativeProcess_execNative
 	/* change to the working directory */ 
 	if(chdir(dir) == -1) {
 	  sprintf(msg, "%s, unable change directory to \"%s\"", 
-		  "pipeline.NativeProcess.execNative()", dir);
+		  "NativeProcess.execNative()", dir);
 	  perror(msg);
 	  exit(EXIT_FAILURE);    
 	}
@@ -631,7 +631,7 @@ JNICALL Java_pipeline_NativeProcess_execNative
 
 	/* execve() NEVER returns if successful */ 
 	sprintf(msg, "%s, unable to execute \"%s\"", 
-		"pipeline.NativeProcess.execNative()", cmdarray[0]);
+		"NativeProcess.execNative()", cmdarray[0]);
 	perror(msg);
 	exit(EXIT_FAILURE);    
       }
@@ -667,7 +667,7 @@ JNICALL Java_pipeline_NativeProcess_execNative
       }
 
       /* set the process ID */ 
-      env->SetIntField(obj, pID, pid);
+      env->CallVoidMethod(obj, setPid, pid);
 
       /* set IO fields for the parent ends of the pipes */ 
       env->SetIntField(obj, pStdInFileDesc, pipeIn[1]);
@@ -687,15 +687,10 @@ JNICALL Java_pipeline_NativeProcess_execNative
 	ru.ru_stime.tv_usec = -1;
 	ru.ru_majflt        = -1;
 	
-	//printf("PID: %d\n", pid);
-  
 	pid_t epid = wait4(pid, &status, 0, &ru);
-	//pid_t epid = waitpid(pid, &status, 0);
 
 	/* let Java know that the process has exited */ 
 	env->CallVoidMethod(obj, setIsRunning, false);
-	
-	//printf("EPID: %d\n", epid);
 	
 	if(epid == -1) {
 	  sprintf(msg, "wait failed for child process (%d): %s\n", 
@@ -741,11 +736,10 @@ JNICALL Java_pipeline_NativeProcess_execNative
 /* Resource usage statistics for running native process. 
        Returns whether the collection was successful. */ 
 JNIEXPORT jboolean 
-JNICALL Java_pipeline_NativeProcess_collectStatsNative
+JNICALL Java_us_temerity_pipeline_NativeProcess_collectStatsNative
 (
  JNIEnv *env, 
- jobject obj, 
- jint rate
+ jobject obj
 )
 {
   /* exception initialization */ 
@@ -753,23 +747,17 @@ JNICALL Java_pipeline_NativeProcess_collectStatsNative
   jclass IOException = env->FindClass("java/io/IOException");
   if(IOException == 0) {
     errno = ECANCELED;
-    perror("pipeline.NativeProcess.waitNative(), unable to lookup \"java/lang/IOException\"");
+    perror("NativeProcess.waitNative(), unable to lookup \"java/lang/IOException\"");
     return false;
   }
 
-  /* get handles for the NativeProcess object's fields */ 
+  /* get handles for the NativeProcess object's fields/methods */ 
   jclass NativeProcessClass = env->GetObjectClass(obj);  
   if(NativeProcessClass == 0) {
     env->ThrowNew(IOException, "unable to lookup class: NativeProcess");
     return false;
   }
-  
-  jfieldID pID = env->GetFieldID(NativeProcessClass, "pID", "I");
-  if(pID == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcess.pID");
-    return false;
-  }
-  
+    
   jfieldID pAvgVMem = env->GetFieldID(NativeProcessClass, "pAvgVMem", "J");
   if(pAvgVMem == 0) {
     env->ThrowNew(IOException, "unable to access: NativeProcess.pAvgVMem");
@@ -800,8 +788,15 @@ JNICALL Java_pipeline_NativeProcess_collectStatsNative
     return false;
   }
 
+  jmethodID getPid = env->GetMethodID(NativeProcessClass, "getPid", "()I");
+  if(getPid == 0) {
+    env->ThrowNew(IOException, "unable to access: NativeProcess.getPid()");
+    return false;
+  }
+
+
   /* get the process ID */ 
-  jint pid         = env->GetIntField(obj, pID);
+  jint pid         = env->CallIntMethod(obj, getPid);
   jlong avgVMem    = env->GetLongField(obj, pAvgVMem);
   jlong maxVMem    = env->GetLongField(obj, pMaxVMem);
   jlong avgResMem  = env->GetLongField(obj, pAvgResMem);
@@ -834,8 +829,6 @@ JNICALL Java_pipeline_NativeProcess_collectStatsNative
     }
     vmem = vmem / 1024;
     rss  = rss * (psize / 1024);
-    
-    //printf("RSS: %ld  VMEM: %ld\n", rss, vmem);
 
     avgVMem += vmem;
     if(maxVMem < vmem)
@@ -863,11 +856,12 @@ JNICALL Java_pipeline_NativeProcess_collectStatsNative
 /* Send a signal to a native process. */ 
 extern "C" 
 JNIEXPORT void 
-JNICALL Java_pipeline_NativeSystem_killNative
+JNICALL Java_us_temerity_pipeline_NativeProcess_signalNative
 (
  JNIEnv *env, 
  jobject obj, 
- jint signal   /* IN: POSIX signal */ 
+ jint signal,  /* IN: POSIX signal */ 
+ jint pid      /* IN: POSIX signal */ 
 )
 {
   /* exception initialization */ 
@@ -875,27 +869,11 @@ JNICALL Java_pipeline_NativeSystem_killNative
   jclass IOException = env->FindClass("java/io/IOException");
   if(IOException == 0) {
     errno = ECANCELED;
-    perror("pipeline.NativeProcess.killNative(), unable to lookup \"java/lang/IOException\"");
+    perror("NativeProcess.signalNative(), unable to lookup \"java/lang/IOException\"");
     return;
   }
   
-  /* get handles for the NativeProcess object's fields */ 
-  jclass NativeProcessClass = env->GetObjectClass(obj);  
-  if(NativeProcessClass == 0) {
-    env->ThrowNew(IOException, "unable to lookup class: NativeProcess");
-    return;
-  }
-  
-  jfieldID pID = env->GetFieldID(NativeProcessClass, "pID", "I");
-  if(pID == 0) {
-    env->ThrowNew(IOException, "unable to access: NativeProcess.pID");
-    return; 
-  }
-
-  /* get the process ID */ 
-  jint pid = env->GetIntField(obj, pID);
-
-  /* kill it */ 
+  /* send the signal */ 
   if(kill(pid, signal) == -1) {
     sprintf(msg, "failed send signal (%d) to process (%d): %s\n", 
 	    signal, pid, strerror(errno));
