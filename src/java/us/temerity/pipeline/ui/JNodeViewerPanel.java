@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.54 2004/10/09 18:44:02 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.55 2004/10/09 20:00:41 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -841,7 +841,7 @@ class JNodeViewerPanel
   /**
    * Update the connected node subpanels with the given node status.
    */ 
-  private synchronized void
+  public synchronized void
   updateSubPanels
   (
    NodeStatus status, 
@@ -863,7 +863,7 @@ class JNodeViewerPanel
   /**
    * Update the connected node subpanels.
    */ 
-  private synchronized void
+  public synchronized void
   updateSubPanels
   (
    boolean updateJobs
@@ -2035,14 +2035,22 @@ class JNodeViewerPanel
    KeyEvent e
   )
   {
+    /* if the mouse is over a node which has a status, 
+         set the name of the node to use when updating new node subpanels */ 
+    Object under = objectAtMousePos(pMousePos);
+    if(under instanceof ViewerNode) {
+      ViewerNode vunder = (ViewerNode) under;
+      NodeStatus status = vunder.getNodeStatus();
+      if(status != null) 
+	pLastDetailsName = status.getName();
+    }
+
     /* manager panel hotkeys */ 
     if(pManagerPanel.handleManagerKeyEvent(e)) 
       return;
 
     /* local hotkeys */ 
     UserPrefs prefs = UserPrefs.getInstance();
-    Object under = objectAtMousePos(pMousePos);
-
     boolean undefined = false;
 
     /* node actions */
