@@ -1,4 +1,4 @@
-// $Id: JobReqs.java,v 1.2 2004/03/07 02:46:07 jim Exp $
+// $Id: JobReqs.java,v 1.3 2004/03/11 11:01:02 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -128,8 +128,8 @@ implements Cloneable, Glueable, Serializable
    float maxLoad,              
    int minMemory,              
    int minDisk,                
-   Collection<String> licenseKeys,
-   Collection<String> selectionKeys
+   Set<String> licenseKeys,
+   Set<String> selectionKeys
   )
   {
     setPriority(priority);
