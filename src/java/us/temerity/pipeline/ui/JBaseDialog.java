@@ -1,4 +1,4 @@
-// $Id: JBaseDialog.java,v 1.2 2004/05/03 04:28:25 jim Exp $
+// $Id: JBaseDialog.java,v 1.3 2004/05/08 15:06:13 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -108,19 +108,17 @@ class JBaseDialog
    String cancel
   ) 
   {
-    String prefix = modal ? "Modal" : "";
-
     JPanel root = new JPanel();
     root.setLayout(new BoxLayout(root, BoxLayout.Y_AXIS));  
 
     {
       JPanel panel = new JPanel();
-      panel.setName(prefix + "DialogHeader");	
+      panel.setName(modal ? "ModalDialogHeader" : "DialogHeader");	
       panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
       
       {
 	JLabel label = new JLabel(title);
-	label.setName(prefix + "DialogHeaderLabel");
+	label.setName("DialogHeaderLabel");
 	
 	panel.add(label);	  
       }
@@ -181,7 +179,7 @@ class JBaseDialog
 	panel.add(Box.createRigidArea(new Dimension(40, 0)));
      
       if(cancel != null) {
-	JButton btn = new JButton("Cancel");
+	JButton btn = new JButton(cancel);
 	pCancelButton = btn;
 	btn.setName("RaisedCancelButton");
 
