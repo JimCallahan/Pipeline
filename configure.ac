@@ -727,6 +727,7 @@ AC_CONFIG_FILES([
   src/java/pipeline/scripts/dbstop
   src/java/pipeline/scripts/pipeline
   src/java/pipeline/scripts/pleditor
+  src/java/pipeline/scripts/pltoolset
   src/java/pipeline/share/dbinit.sql
   src/java/pipeline/share/postgresql.conf
 
