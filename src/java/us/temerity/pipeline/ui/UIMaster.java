@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.51 2004/10/22 14:02:45 jim Exp $
+// $Id: UIMaster.java,v 1.52 2004/10/24 05:42:48 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -2630,8 +2630,6 @@ class UIMaster
 	pSubProcessFailureDialog = new JSubProcessFailureDialog();
       }
       
-      pFrame.setVisible(true);
-
       {
 	String layoutName = pOverrideLayoutName;
 	if(layoutName == null) {
@@ -2648,9 +2646,11 @@ class UIMaster
 	  
 	if(layoutName != null) {
 	  setDefaultLayoutName(layoutName);
-	  SwingUtilities.invokeLater(new RestoreSavedLayoutTask(layoutName));
+	  restoreSavedLayout(layoutName);
 	}
       }
+
+      pFrame.setVisible(true);
     }
 
     private UIMaster  pMaster;
@@ -2839,87 +2839,96 @@ class UIMaster
     public void 
     run() 
     {
-      /* clean up existing panels */ 
-      {
-	pRootPanel.removeAll();
-
-	for(JPanelFrame frame : pPanelFrames) {
-	  frame.removePanels();
-	  frame.setVisible(false);
-	}
-	pPanelFrames.clear();
-
-	pNodeBrowserPanels.clear();
-	pNodeViewerPanels.clear();
-	pNodeDetailsPanels.clear();
-	pNodeHistoryPanels.clear();
-	pNodeFilesPanels.clear();
-
-	pQueueJobBrowserPanels.clear();
-	pQueueJobViewerPanels.clear();
-	pQueueJobDetailsPanels.clear();
-      }
-
-      /* restore saved panels */
-      LinkedList<PanelLayout> layouts = null;
-      {
-	File file = new File(PackageInfo.sHomeDir, 
-			     PackageInfo.sUser + "/.pipeline/layouts" + pName);
-	try {      
-	  if(!file.isFile()) 
-	    throw new GlueException();
-
-	  layouts = (LinkedList<PanelLayout>) LockedGlueFile.load(file);
-	}
-	catch(GlueException ex) {
-	  showErrorDialog("Error:", "Unable to load saved layout (" + file + ")!");
-	}
-	catch(Exception ex) {
-	  showErrorDialog(ex);
-	}
-      }
-
-      if((layouts != null) && !layouts.isEmpty()) {
-	boolean first = true;
-	for(PanelLayout layout : layouts) {
-	  JManagerPanel mpanel = layout.getRoot();
-
-	  if(first) {
-	    pFrame.setBounds(layout.getBounds());
-
-	    pRootPanel.add(mpanel);
-	    pRootPanel.validate();
-	    pRootPanel.repaint();
-
-	    first = false;
-	  }
-	  else {
-	    JPanelFrame frame = new JPanelFrame(); 
-	    
-	    frame.setBounds(layout.getBounds());
-	    frame.setManagerPanel(mpanel);
-	    frame.setWindowName(layout.getName());
-	    frame.setVisible(true);
-
-	    pPanelFrames.add(frame);
-	  }
-	}
-
-	setLayoutName(pName);
-      }
-      else {
-	JManagerPanel mpanel = new JManagerPanel();
-	mpanel.setContents(new JEmptyPanel()); 
-
-	pRootPanel.add(mpanel);
-	pRootPanel.validate();
-	pRootPanel.repaint();
-      }
+      restoreSavedLayout(pName);
     }
 
     private String  pName;
   }
 
+  private void 
+  restoreSavedLayout
+  (
+   String name
+  ) 
+  {
+    /* clean up existing panels */ 
+    {
+      pRootPanel.removeAll();
+      
+      for(JPanelFrame frame : pPanelFrames) {
+	frame.removePanels();
+	frame.setVisible(false);
+      }
+      pPanelFrames.clear();
+      
+      pNodeBrowserPanels.clear();
+      pNodeViewerPanels.clear();
+      pNodeDetailsPanels.clear();
+      pNodeHistoryPanels.clear();
+      pNodeFilesPanels.clear();
+      
+      pQueueJobBrowserPanels.clear();
+      pQueueJobViewerPanels.clear();
+      pQueueJobDetailsPanels.clear();
+    }
+    
+    /* restore saved panels */
+    LinkedList<PanelLayout> layouts = null;
+    {
+      File file = new File(PackageInfo.sHomeDir, 
+			   PackageInfo.sUser + "/.pipeline/layouts" + name);
+      try {      
+	if(!file.isFile()) 
+	  throw new GlueException();
+	
+	layouts = (LinkedList<PanelLayout>) LockedGlueFile.load(file);
+      }
+      catch(GlueException ex) {
+	showErrorDialog("Error:", "Unable to load saved layout (" + file + ")!");
+      }
+      catch(Exception ex) {
+	showErrorDialog(ex);
+      }
+    }
+    
+    if((layouts != null) && !layouts.isEmpty()) {
+      boolean first = true;
+      for(PanelLayout layout : layouts) {
+	JManagerPanel mpanel = layout.getRoot();
+	
+	if(first) {
+	  pFrame.setBounds(layout.getBounds());
+	  
+	  pRootPanel.add(mpanel);
+	  pRootPanel.validate();
+	  pRootPanel.repaint();
+	  
+	  first = false;
+	}
+	else {
+	  JPanelFrame frame = new JPanelFrame(); 
+	  
+	  frame.setBounds(layout.getBounds());
+	  frame.setManagerPanel(mpanel);
+	  frame.setWindowName(layout.getName());
+	  frame.setVisible(true);
+	  
+	  pPanelFrames.add(frame);
+	}
+      }
+      
+      setLayoutName(name);
+    }
+    else {
+      JManagerPanel mpanel = new JManagerPanel();
+      mpanel.setContents(new JEmptyPanel()); 
+      
+      pRootPanel.add(mpanel);
+      pRootPanel.validate();
+      pRootPanel.repaint();
+    }
+  }
+    
   /**
    * Show the manage layouts dialog. 
    */ 
