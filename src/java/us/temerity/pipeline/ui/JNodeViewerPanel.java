@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.4 2004/05/07 21:11:18 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.5 2004/05/08 15:07:31 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -249,20 +249,58 @@ class JNodeViewerPanel
     pNodePool.updatePrep();
       
     if(pStatus != null) {
-      
-      // DEBUG 
-      NodePath path = new NodePath(pStatus.getName());
-      ViewerNode vnode = pNodePool.getViewerNode(pStatus, path);
-      vnode.setPosition(new Point2d(0.0, 0.0));
-      // DEBUG 
-      
-      
-      // do layout of nodes...
-      
+
+      /* layout the upstream nodes */ 
+      {
+	NodePath path = new NodePath(pStatus.getName());
+	HashMap<NodePath,ViewerNode> upstream = new HashMap<NodePath,ViewerNode>();
+	layoutUpstreamNodes(pStatus, path, new Point2d(0.0, 0.0), upstream);
+
+	/* shift the nodes so that the root node is at the origin */ 
+	{
+	  ViewerNode root = upstream.get(path);
+	  double offset = -root.getPosition().y;
+	  for(ViewerNode vnode : upstream.values()) {
+	    Point2d pos = vnode.getPosition();
+	    vnode.setPosition(new Point2d(pos.x, pos.y+offset));
+	  }
+	}
+      }
     }
     
     pNodePool.update();
   }
+  
+  private double
+  layoutUpstreamNodes
+  (
+   NodeStatus status, 
+   NodePath path, 
+   Point2d anchor, 
+   HashMap<NodePath,ViewerNode> table
+  ) 
+  {
+    assert(!table.containsKey(path));
+    ViewerNode vnode = pNodePool.getViewerNode(status, path);
+    table.put(path, vnode);
+
+    double height = 0.0;
+    if(status.hasSources()) {
+      for(NodeStatus ustatus : status.getSources()) {
+	NodePath upath = new NodePath(path, ustatus.getName());
+	Point2d uanchor = new Point2d(anchor.x + 2.0, anchor.y + height);
+	height += layoutUpstreamNodes(ustatus, upath, uanchor, table);
+      }      
+    }
+    else {
+      height = 2.0;
+    }
+
+    vnode.setPosition(new Point2d(anchor.x, anchor.y + 0.5*height));
+
+    return height;
+  }
+
 
 
 
