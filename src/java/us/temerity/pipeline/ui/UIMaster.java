@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.30 2004/07/22 00:07:16 jim Exp $
+// $Id: UIMaster.java,v 1.31 2004/07/24 18:28:11 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -38,20 +38,36 @@ class UIMaster
   /** 
    * Construct the sole instance.
    * 
-   * @param hostname
+   * @param masterHost
    *   The hostname running <B>plmaster</B>(1).
    * 
-   * @param port
-   *   The port number listened to by <B>plmaster</B>(1) for incoming connections.
+   * @param masterPort
+   *   The port number listened to by the <B>plmaster</B>(1) daemon for incoming connections.
+   * 
+   * @param queueHost
+   *   The hostname running <B>plqueuemgr</B>(1).
+   * 
+   * @param queuePort
+   *   The port number listened to by the <B>plqueuemgr</B>(1) daemon for incoming 
+   *   connections.
+   * 
+   * @param jobPort
+   *   The port number listened to by <B>pljobmgr</B>(1) daemons for incoming connections.
    */ 
   private 
   UIMaster
   (
-   String hostname, 
-   int port
+   String masterHost, 
+   int masterPort, 
+   String queueHost, 
+   int queuePort, 
+   int jobPort
   ) 
   {
-    pMasterMgrClient = new MasterMgrClient(hostname, port);
+    pMasterMgrClient = new MasterMgrClient(masterHost, masterPort);
+    pQueueMgrClient  = new QueueMgrClient(queueHost, queuePort);
+
+    // pJobPort = jobPort;
 
     pOpsLock = new ReentrantLock();
 
@@ -73,21 +89,34 @@ class UIMaster
   /** 
    * Initialize the user interface and connection to <B>plmaster<B>(1).
    * 
-   * @param hostname
+   * @param masterHost
    *   The hostname running <B>plmaster</B>(1).
    * 
-   * @param port
-   *   The port number listened to by <B>plmaster</B>(1) for incoming connections.
+   * @param masterPort
+   *   The port number listened to by the <B>plmaster</B>(1) daemon for incoming connections.
+   * 
+   * @param queueHost
+   *   The hostname running <B>plqueuemgr</B>(1).
+   * 
+   * @param queuePort
+   *   The port number listened to by the <B>plqueuemgr</B>(1) daemon for incoming 
+   *   connections.
+   * 
+   * @param jobPort
+   *   The port number listened to by <B>pljobmgr</B>(1) daemons for incoming connections.
    */ 
   public static void 
   init
   (
-   String hostname, 
-   int port
+   String masterHost, 
+   int masterPort, 
+   String queueHost, 
+   int queuePort, 
+   int jobPort
   ) 
   {
     assert(sMaster == null);
-    sMaster = new UIMaster(hostname, port);
+    sMaster = new UIMaster(masterHost, masterPort, queueHost, queuePort, jobPort);
   }
 
 
@@ -115,6 +144,15 @@ class UIMaster
   getMasterMgrClient() 
   {
     return pMasterMgrClient;
+  }
+
+  /**
+   * Get the network connection to <B>plqueuemgr</B>(1).
+   */ 
+  public QueueMgrClient
+  getQueueMgrClient() 
+  {
+    return pQueueMgrClient;
   }
 
 
@@ -305,6 +343,16 @@ class UIMaster
   {
     pManageToolsetsDialog.updateAll();
     pManageToolsetsDialog.setVisible(true);
+  }
+
+  /**
+   * Show the manage license keys dialog.
+   */ 
+  public void 
+  showManageLicenseKeysDialog()
+  {
+    pManageLicenseKeysDialog.updateLicenseKeys();
+    pManageLicenseKeysDialog.setVisible(true);
   }
 
   /**
@@ -1864,6 +1912,9 @@ class UIMaster
     if(pMasterMgrClient != null) 
       pMasterMgrClient.disconnect();
 
+    if(pQueueMgrClient != null) 
+      pQueueMgrClient.disconnect();
+
     System.exit(0);
   }
   
@@ -2279,8 +2330,9 @@ class UIMaster
 
 	pDefaultEditorsDialog = new JDefaultEditorsDialog(); 
 
-	pManageUsersDialog    = new JManageUsersDialog();
-	pManageToolsetsDialog = new JManageToolsetsDialog();
+	pManageUsersDialog       = new JManageUsersDialog();
+	pManageToolsetsDialog    = new JManageToolsetsDialog();
+	pManageLicenseKeysDialog = new JManageLicenseKeysDialog();
 
 	pSubProcessFailureDialog = new JSubProcessFailureDialog();
       }
@@ -2621,6 +2673,11 @@ class UIMaster
    */ 
   private MasterMgrClient  pMasterMgrClient;
 
+  /**
+   * The network interface to the <B>plqueuemgr</B>(1) daemon.
+   */ 
+  private QueueMgrClient  pQueueMgrClient;
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -2751,6 +2808,11 @@ class UIMaster
    * The manage toolsets dialog.
    */ 
   private JManageToolsetsDialog  pManageToolsetsDialog;
+
+  /**
+   * The manage license keys dialog.
+   */ 
+  private JManageLicenseKeysDialog  pManageLicenseKeysDialog;
 
   /**
    * The dialog giving details of the failure of a subprocess.
