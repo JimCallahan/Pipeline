@@ -1,4 +1,4 @@
-// $Id: BaseMgrClient.java,v 1.1 2004/03/30 22:10:25 jim Exp $
+// $Id: BaseMgrClient.java,v 1.2 2004/04/11 19:29:34 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -166,7 +166,7 @@ class BaseMgrClient
    *   The kind of request being sent.
    * 
    * @param req 
-   *   The request data.
+   *   The request data or <CODE>null</CODE> if there is no request.
    * 
    * @return
    *   The response from the server instance.
@@ -186,7 +186,8 @@ class BaseMgrClient
       OutputStream out = pSocket.getOutputStream();
       ObjectOutput objOut = new ObjectOutputStream(out);
       objOut.writeObject(kind);
-      objOut.writeObject(req);
+      if(req != null) 
+	objOut.writeObject(req);
       objOut.flush(); 
 
       InputStream in  = pSocket.getInputStream();
