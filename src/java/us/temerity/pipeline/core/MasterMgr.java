@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.17 2004/07/24 18:22:34 jim Exp $
+// $Id: MasterMgr.java,v 1.18 2004/07/25 03:05:57 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -239,11 +239,30 @@ class MasterMgr
    int queuePort
   )
   { 
-    init(nodeDir, prodDir);
-
     /* make a connection to the file and queue manager daemons */ 
     pFileMgrClient  = new FileMgrClient(fileHost, filePort);
-    pQueueMgrClient = new QueueMgrFullClient(queueHost, queuePort);
+    pQueueMgrClient = new QueueMgrClient(queueHost, queuePort);
+
+    /* create the lock file */ 
+    {
+      File file = new File(nodeDir, "lock");
+      if(file.exists()) 
+	throw new IllegalStateException
+	  ("Another node manager is already running!\n" + 
+	   "If you are certain this is not the case, remove the lock file (" + file + ")!");
+
+      try {
+	FileWriter out = new FileWriter(file);
+	out.close();
+      }
+      catch(IOException ex) {
+	throw new IllegalStateException
+	  ("Unable to create lock file (" + file + ")!");
+      }
+    }
+
+    /* startup initialization */ 
+    init(nodeDir, prodDir);
 
     /* initialize the monitored directory table */ 
     pMonitored = new HashMap<File,HashSet<NodeID>>();
@@ -283,24 +302,6 @@ class MasterMgr
     if(prodDir == null)
       throw new IllegalArgumentException("The root production directory cannot be (null)!");
     pProdDir = prodDir;
-
-    /* create the lock file */ 
-    {
-      File file = new File(pNodeDir, "lock");
-      if(file.exists()) 
-	throw new IllegalStateException
-	  ("Another node manager is already running!\n" + 
-	   "If you are certain this is not the case, remove the lock file (" + file + ")!");
-
-      try {
-	FileWriter out = new FileWriter(file);
-	out.close();
-      }
-      catch(IOException ex) {
-	throw new IllegalStateException
-	  ("Unable to create lock file (" + file + ")!");
-      }
-    }
 
     /* initialize the fields */ 
     {
@@ -431,7 +432,8 @@ class MasterMgr
   initPrivilegedUsers()
   {
     try {
-      readPrivilegedUsers();
+      readPrivilegedUsers();	 
+      pQueueMgrClient.setPrivilegedUsers(pPrivilegedUsers);
     }
     catch(PipelineException ex) {
       throw new IllegalArgumentException(ex.getMessage());
@@ -651,8 +653,37 @@ class MasterMgr
       File nodeDir = pNodeDir;
       File prodDir = pProdDir;
 
-      shutdown();
+      /* write cached downstream links */ 
+      writeAllDownstreamLinks();
+      
+      /* invalidate the fields */ 
+      {
+	pMakeDirLock         = null;
+	
+	pDefaultToolsetLock  = null;
+	pDefaultToolset      = null;
+	pActiveToolsets      = null;
+	pToolsets            = null;
+	pToolsetPackages     = null;
+	
+	pSuffixEditors       = null;
+	
+	pPrivilegedUsers     = null;
+	
+	pNodeTreeRoot        = null;
+	pWorkingAreaViews    = null;
 
+	pCheckedInLocks      = null;
+	pCheckedInBundles    = null;
+	
+	pWorkingLocks        = null;
+	pWorkingBundles      = null;
+	
+	pDownstreamLocks     = null;
+	pDownstream          = null;
+      }
+      
+      /* reinitialize */ 
       init(nodeDir, prodDir);
     }
   }
@@ -694,7 +725,6 @@ class MasterMgr
 
     if(allFiles) {
       String name = dir.getPath().substring(prefix.length());
-
       
       TreeMap<VersionID,CheckedInBundle> table = null;
       try {
@@ -830,9 +860,6 @@ class MasterMgr
   public void  
   shutdown() 
   {
-    /* write cached downstream links */ 
-    writeAllDownstreamLinks();
-
     /* remove the lock file */ 
     {
       File file = new File(pNodeDir, "lock");
@@ -880,41 +907,6 @@ class MasterMgr
       catch(InterruptedException ex) {
 	Logs.net.severe("Interrupted while waiting on the DirtyDirTask to complete!");
       }
-    }
-
-    /* invalidate the fields */ 
-    {
-      pMakeDirLock         = null;
-      pNodeDir             = null;
-
-      pDefaultToolsetLock  = null;
-      pDefaultToolset      = null;
-      pActiveToolsets      = null;
-      pToolsets            = null;
-      pToolsetPackages     = null;
-      
-      pSuffixEditors       = null;
-      
-      pPrivilegedUsers     = null;
-
-      pNodeTreeRoot        = null;
-      pWorkingAreaViews    = null;
-
-      pCheckedInLocks      = null;
-      pCheckedInBundles    = null;
-
-      pWorkingLocks        = null;
-      pWorkingBundles      = null;
-
-      pDownstreamLocks     = null;
-      pDownstream          = null;
-
-      pFileMgrClient       = null;
-      pMonitored           = null;
-      pNotifyControlClient = null;
-      pDirtyDirTask        = null;
-
-      pQueueMgrClient      = null;
     }
   }
 
@@ -1623,114 +1615,6 @@ class MasterMgr
   }
 
 
-  /*----------------------------------------------------------------------------------------*/
-  /*   L I C E N S E   K E Y S                                                              */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Add the given license key to the currently defined license keys. <P> 
-   * 
-   * If a license key already exists which has the same name as the given key, it will be 
-   * silently overridden by this operation. <P> 
-   * 
-   * @param req
-   *   The request.
-   * 
-   * @return
-   *   <CODE>SuccessRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to add the key.
-   */ 
-  public Object
-  addLicenseKey
-  (
-   QueueAddLicenseKeyReq req
-  ) 
-  {
-    LicenseKey key = req.getLicenseKey();
-
-    TaskTimer timer = new TaskTimer("MasterMgr.addLicenseKey(): " + key.getName());
-    timer.aquire();
-    try {
-      timer.resume();
-      pQueueMgrClient.addLicenseKey(key);
-      return new SuccessRsp(timer);
-    }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());	  
-    }
-  }
-
-  /**
-   * Remove the license key with the given name from currently defined license keys. <P> 
-   * 
-   * @param req
-   *   The request.
-   * 
-   * @return
-   *   <CODE>SuccessRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to remove the key.
-   */ 
-  public Object
-  removeLicenseKey
-  (
-   QueueRemoveLicenseKeyReq req
-  ) 
-  {
-    String kname = req.getKeyName();
-
-    TaskTimer timer = new TaskTimer("MasterMgr.removeLicenseKey(): " + kname); 
-    timer.aquire();
-    try {
-      timer.resume();
-      pQueueMgrClient.removeLicenseKey(kname);
-      return new SuccessRsp(timer);
-    }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());	  
-    }
-  }  
-  
-  /**
-   * Set the total number of licenses associated with the named license key. <P> 
-   * 
-   * @param req
-   *   The request.
-   * 
-   * @return
-   *   <CODE>SuccessRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to set the total licenses.
-   */ 
-  public Object
-  setTotalLicenses
-  (
-   QueueSetTotalLicensesReq req
-  ) 
-  {
-    String kname = req.getKeyName();
-    int total = req.getTotal();
-
-    TaskTimer timer = 
-      new TaskTimer("MasterMgr.setTotalLicenses(): " + kname + "[" + total + "]"); 
-    timer.aquire();
-    try {
-      timer.resume();
-      pQueueMgrClient.setTotalLicenses(kname, total);
-      return new SuccessRsp(timer);
-    }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());	  
-    }   
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   S E L E C T I O N   K E Y S                                                          */
-  /*----------------------------------------------------------------------------------------*/
-
-  // ...
-
-
 
   /*----------------------------------------------------------------------------------------*/
   /*   P R I V I L E G E D   U S E R S                                                      */
@@ -1784,6 +1668,7 @@ class MasterMgr
 	pPrivilegedUsers.add(req.getAuthor());
 	try {
 	  writePrivilegedUsers();
+	  pQueueMgrClient.setPrivilegedUsers(pPrivilegedUsers);
 	}
 	catch(PipelineException ex) {
 	  return new FailureRsp(timer, ex.getMessage());
@@ -1821,6 +1706,7 @@ class MasterMgr
 	pPrivilegedUsers.remove(req.getAuthor());
 	try {
 	  writePrivilegedUsers();
+	  pQueueMgrClient.setPrivilegedUsers(pPrivilegedUsers);
 	}
 	catch(PipelineException ex) {
 	  return new FailureRsp(timer, ex.getMessage());
@@ -6746,7 +6632,7 @@ class MasterMgr
   /**
    * The connection to the queue manager daemon: <B>plqueuemgr<B>(1).
    */ 
-  private QueueMgrFullClient  pQueueMgrClient;
+  private QueueMgrClient  pQueueMgrClient;
   
 
 }
