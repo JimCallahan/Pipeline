@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 1.7.3)
+AM_INIT_AUTOMAKE(Pipeline, 1.8.0)
 
 AC_MSG_RESULT([ ])
 
@@ -765,6 +765,9 @@ PLFILEMGR_DEBUG_OPTS=""
 AC_SUBST(PLNOTIFY_DEBUG_OPTS)
 PLNOTIFY_DEBUG_OPTS=""
 
+AC_SUBST(PLPLUGIN_DEBUG_OPTS)
+PLPLUGIN_DEBUG_OPTS=""
+
 AC_SUBST(PLQUEUEMGR_DEBUG_OPTS)
 PLQUEUEMGR_DEBUG_OPTS=""
 
@@ -780,9 +783,10 @@ then
   PLMASTERMGR_DEBUG_OPTS=${java_debug_opts}"43001"
   PLFILEMGR_DEBUG_OPTS=${java_debug_opts}"43002"
   PLNOTIFY_DEBUG_OPTS=${java_debug_opts}"43003"
-  PLQUEUEMGR_DEBUG_OPTS=${java_debug_opts}"43004"
-  PLJOBMGR_DEBUG_OPTS=${java_debug_opts}"43005"
-  PLUI_DEBUG_OPTS=${java_debug_opts}"43006"
+  PLPLUGIN_DEBUG_OPTS=${java_debug_opts}"43004"
+  PLQUEUEMGR_DEBUG_OPTS=${java_debug_opts}"43005"
+  PLJOBMGR_DEBUG_OPTS=${java_debug_opts}"43006"
+  PLUI_DEBUG_OPTS=${java_debug_opts}"43007"
   AC_MSG_RESULT([yes])
 else 
   AC_MSG_RESULT([no])
@@ -1046,6 +1050,7 @@ AC_CONFIG_FILES([
   docs/man/pljobmgr.src.html
   docs/man/plmaster.src.html
   docs/man/plnotify.src.html
+  docs/man/plplugin.src.html
   docs/man/plqueuemgr.src.html
   docs/man/plui.src.html
   docs/manuals/Makefile
@@ -1071,6 +1076,7 @@ AC_CONFIG_FILES([
   src/java/scripts/plfilemgr
   src/java/scripts/pljobmgr
   src/java/scripts/plmaster
+  src/java/scripts/plplugin
   src/java/scripts/plqueuemgr
   src/java/scripts/plui
 
