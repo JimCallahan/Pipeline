@@ -791,7 +791,7 @@ dnl ----------------------------------------------------------------------------
 AC_MSG_RESULT([Locating C system headers:])
 
 AC_CHECK_HEADERS([math.h errno.h pwd.h dlfcn.h libgen.h time.h dirent.h ctype.h])
-AC_CHECK_HEADERS([fcntl.h fam.h select.h signal.h])      
+AC_CHECK_HEADERS([fcntl.h fam.h select.h signal.h utime.h])      
 AC_CHECK_HEADERS([sys/time.h sys/param.h sys/utsname.h sys/wait.h sys/resource.h])  
 AC_CHECK_HEADERS([sys/ipc.h sys/sem.h linux/sem.h])
 AC_CHECK_HEADERS([sys/socket.h netdb.h netinet/in.h arpa/inet.h])
@@ -879,10 +879,10 @@ AC_CONFIG_FILES([
   docs/images/Makefile
   docs/javadoc/Makefile
   docs/man/Makefile
-  docs/man/plfilemgr.html.src
-  docs/man/plmaster.html.src
-  docs/man/plnotify.html.src
-  docs/man/plui.html.src
+  docs/man/plfilemgr.src.html
+  docs/man/plmaster.src.html
+  docs/man/plnotify.src.html
+  docs/man/plui.src.html
   docs/manuals/Makefile
 
   src/Makefile
@@ -895,6 +895,7 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/laf/scripts/filter-fonts
   src/java/us/temerity/pipeline/laf/scripts/filter-textures
   src/java/us/temerity/pipeline/laf/scripts/radial-menu
+  src/java/us/temerity/pipeline/laf/scripts/build-web-icons
   src/java/us/temerity/pipeline/native/Makefile
   src/java/us/temerity/pipeline/plugin/Makefile
   src/java/us/temerity/pipeline/tests/Makefile
