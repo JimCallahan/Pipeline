@@ -1,6 +1,8 @@
-// $Id: FileMgrApp.java,v 1.3 2004/03/23 07:40:37 jim Exp $
+// $Id: FileMgrApp.java,v 1.4 2004/04/11 19:20:01 jim Exp $
 
 package us.temerity.pipeline.core;
+
+import us.temerity.pipeline.*;
 
 import java.io.*; 
 import java.net.*; 
@@ -93,6 +95,7 @@ class FileMgrApp
       "  plfilemgr --version\n" + 
       "  plfilemgr --release-date\n" + 
       "  plfilemgr --copyright\n" + 
+      "  plfilemgr --license\n" + 
       "\n" + 
       "GLOBAL OPTIONS:\n" +
       "  [--prod=...][--port=...][--log=...]\n" +
