@@ -1,4 +1,4 @@
-// $Id: JPackageDetailsDialog.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JPackageDetailsDialog.java,v 1.2 2005/01/09 17:32:07 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -438,9 +438,8 @@ class JPackageDetailsDialog
       doSetValue(field.getVariableName(), field.getText());
     }
     else if(cmd.startsWith("set-policy:")) {
-      JCollectionField.JValueField field = (JCollectionField.JValueField) e.getSource();
-      JCollectionField cfield = field.getParent();
-      doSetPolicy(cmd.substring(11), MergePolicy.valueOf(cfield.getSelected()));
+      JCollectionField field = (JCollectionField) e.getSource();
+      doSetPolicy(cmd.substring(11), MergePolicy.valueOf(field.getSelected()));
     }
     else if(cmd.startsWith("remove-entry:")) 
       doRemoveEntry(cmd.substring(13));

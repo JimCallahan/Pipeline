@@ -1,4 +1,4 @@
-// $Id: JCollectionField.java,v 1.9 2005/01/09 16:01:11 jim Exp $
+// $Id: JCollectionField.java,v 1.10 2005/01/09 17:31:42 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -56,21 +56,23 @@ class JCollectionField
     addMouseListener(this);
 
     {
-      add(Box.createRigidArea(new Dimension(16, 0)));
+      add(Box.createRigidArea(new Dimension(18, 0)));
+      add(Box.createHorizontalGlue());
 
       {
-	JValueField field = new JValueField(this);
-	pTextField = field;
+	JLabel label = new JLabel("-");
+	pLabel = label;
 
-	field.setName("CollectionValueTextField");
-	field.setHorizontalAlignment(JLabel.CENTER);
-	field.setEditable(false);
-	field.setHighlighter(null);
-	field.addMouseListener(this);
+	label.setName("CollectionValueTextField");
+	label.setHorizontalAlignment(JLabel.CENTER);
+	label.addMouseListener(this);
 
-	add(field);
+	add(label);
       }
     
+      add(Box.createHorizontalGlue());
+      add(Box.createRigidArea(new Dimension(2, 0)));
+	
       {
 	JLabel label = new JLabel(sEnabledIcon);
 	pIconLabel = label;
@@ -125,6 +127,9 @@ class JCollectionField
       }
     }
 
+    pListenerList  = new EventListenerList();
+    pActionCommand = "value-changed";
+    
     setValues(values);
     setSelectedIndex(0);
   }
@@ -209,11 +214,11 @@ class JCollectionField
     pSelectedIdx = idx;
 
     if(pSelectedIdx >= 0) 
-      pTextField.setText(pValues.get(idx));
+      pLabel.setText(pValues.get(idx));
     else 
-      pTextField.setText(null);
+      pLabel.setText(null);
 
-    pTextField.fireActionPerformed2();
+    fireActionPerformed();
   }
  
   /**
@@ -235,31 +240,7 @@ class JCollectionField
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Sets whether or not this component is enabled.
-   */ 
-  public void 
-  setEnabled
-  (
-   boolean enabled
-  )
-  {
-    if(enabled && !isEnabled()) {
-      addMouseListener(this);
-      pTextField.addMouseListener(this);
-      pIconLabel.setIcon(sEnabledIcon);
-    }
-    else if(!enabled && isEnabled()) {
-      removeMouseListener(this);
-      pTextField.removeMouseListener(this);
-      pIconLabel.setIcon(sDisabledIcon);
-    }
-
-    super.setEnabled(enabled);
-  }
-
-
-  /**
-   * Adds the specified action listener to receive action events from this collection field.
+   * Adds the specified action listener to receive action events from this field.
    */ 
   public void
   addActionListener
@@ -267,12 +248,12 @@ class JCollectionField
    ActionListener l
   )
   {
-    pTextField.addActionListener(l);
+    pListenerList.add(ActionListener.class, l);
   }
 
   /**
    * Removes the specified action listener so that it no longer receives action events
-   * from this collection field.
+   * from this field.
    */ 
   public void 	
   removeActionListener
@@ -280,7 +261,7 @@ class JCollectionField
    ActionListener l
   )
   {
-    pTextField.removeActionListener(l);
+    pListenerList.remove(ActionListener.class, l);
   }
           
   /**
@@ -292,7 +273,27 @@ class JCollectionField
    String command
   )
   {
-    pTextField.setActionCommand(command);
+    pActionCommand = command; 
+  }
+
+  /**
+   * Notifies all listeners that have registered interest for notification of action events.
+   */
+  protected void 
+  fireActionPerformed() 
+  {
+    ActionEvent event = null;
+
+    Object[] listeners = pListenerList.getListenerList();
+    int i;
+    for(i=listeners.length-2; i>=0; i-=2) {
+      if(listeners[i]==ActionListener.class) {
+	if(event == null) 
+	  event = new ActionEvent(this, pEventID++, pActionCommand);
+
+	((ActionListener)listeners[i+1]).actionPerformed(event);
+      }
+    }
   }
 
 
@@ -300,6 +301,29 @@ class JCollectionField
   /*----------------------------------------------------------------------------------------*/
   /*   J C O M P O N E N T   O V E R R I D E S                                              */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Sets whether or not this component is enabled.
+   */ 
+  public void 
+  setEnabled
+  (
+   boolean enabled
+  )
+  {
+    if(enabled && !isEnabled()) {
+      addMouseListener(this);
+      pLabel.addMouseListener(this);
+      pIconLabel.setIcon(sEnabledIcon);
+    }
+    else if(!enabled && isEnabled()) {
+      removeMouseListener(this);
+      pLabel.removeMouseListener(this);
+      pIconLabel.setIcon(sDisabledIcon);
+    }
+
+    super.setEnabled(enabled);
+  }
 
   /**
    * Sets the foreground color of this component.
@@ -311,10 +335,10 @@ class JCollectionField
   )
   {
     pFieldForegroundColor = fg;
-    if(pTextField != null) 
-      pTextField.setForeground(fg);
+    if(pLabel != null) 
+      pLabel.setForeground(fg);
   }
-          
+       
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -332,7 +356,7 @@ class JCollectionField
    ActionEvent e
   ) 
   {
-    pTextField.setForeground(pFieldForegroundColor);
+    pLabel.setForeground(pFieldForegroundColor);
     setSelected(e.getActionCommand());
   }
 
@@ -367,7 +391,7 @@ class JCollectionField
   ) 
   {
     if((pValues.size() > 0) && (pSelectedIdx >= 0)) {
-      pTextField.setForeground(Color.yellow);
+      pLabel.setForeground(Color.yellow);
       Dimension size = getSize();
 
       if(pValues.size() < sItemLimit) {
@@ -430,7 +454,7 @@ class JCollectionField
    PopupMenuEvent e
   )
   { 
-    pTextField.setForeground(pFieldForegroundColor);
+    pLabel.setForeground(pFieldForegroundColor);
   }
    
   /**
@@ -473,36 +497,6 @@ class JCollectionField
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L   C L A S S E S                                                      */
   /*----------------------------------------------------------------------------------------*/
-
-  public
-  class JValueField
-    extends JTextField
-  {
-    public 
-    JValueField
-    (
-     JCollectionField parent
-    ) 
-    {
-      pParent = parent;
-    }    
-
-    public JCollectionField
-    getCollectionField() 
-    {
-      return pParent;
-    }
-
-    public void 
-    fireActionPerformed2()
-    {
-      fireActionPerformed();
-    }
-
-    private static final long serialVersionUID = -5299266041553415611L;
-
-    private JCollectionField  pParent;
-  }
 
   public 
   class CloseDialogListener
@@ -566,9 +560,9 @@ class JCollectionField
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The value text field.
+   * The value. 
    */ 
-  private JValueField  pTextField;
+  private JLabel  pLabel;
 
   /**
    * The icon.
@@ -586,8 +580,27 @@ class JCollectionField
    */ 
   private ArrayList<String>  pValues;
 
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * The selected index.
    */
   private int  pSelectedIdx;
+
+  /**
+   * The action listeners registered to this object.
+   */ 
+  private EventListenerList pListenerList;
+
+  /**
+   * The command string passed to generated action events. 
+   */ 
+  private String  pActionCommand; 
+
+  /**
+   * The unique event ID.
+   */ 
+  private int pEventID; 
+
 }

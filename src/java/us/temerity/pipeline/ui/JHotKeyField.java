@@ -1,4 +1,4 @@
-// $Id: JHotKeyField.java,v 1.4 2004/10/12 23:21:38 jim Exp $
+// $Id: JHotKeyField.java,v 1.5 2005/01/09 17:31:42 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -7,6 +7,7 @@ import us.temerity.pipeline.glue.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import javax.swing.event.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   H O T   K E Y   F I E L D                                                              */
@@ -32,17 +33,21 @@ class JHotKeyField
   {
     super();  
 
-    setHorizontalAlignment(JLabel.CENTER);
-    setAlignmentX(0.5f);
+    {
+      setHorizontalAlignment(JLabel.CENTER);
+      setAlignmentX(0.5f);
+      
+      setFocusable(true);
+      addFocusListener(this);
+      addMouseListener(this);
+      addKeyListener(this);
 
-    setFocusable(true);
-    addFocusListener(this);
-    addMouseListener(this);
-    addKeyListener(this);
+      setText("-"); 
+    }
 
-    
-    setText("-");
+    pListenerList = new EventListenerList();
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -60,6 +65,7 @@ class JHotKeyField
   {
     pHotKey = key;
     setText((key != null) ? key.toString() : "-");
+    fireActionPerformed(); 
   }
 
   /**
@@ -72,6 +78,57 @@ class JHotKeyField
   getHotKey() 
   {
     return pHotKey;
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   E V E N T S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Adds the specified action listener to receive action events from this field.
+   */ 
+  public void
+  addActionListener
+  (
+   ActionListener l
+  )
+  {
+    pListenerList.add(ActionListener.class, l);
+  }
+
+  /**
+   * Removes the specified action listener so that it no longer receives action events
+   * from this field.
+   */ 
+  public void 	
+  removeActionListener
+  (
+   ActionListener l
+  )
+  {
+    pListenerList.remove(ActionListener.class, l);
+  }
+    
+  /**
+   * Notifies all listeners that have registered interest for notification of action events.
+   */
+  protected void 
+  fireActionPerformed() 
+  {
+    ActionEvent event = null;
+
+    Object[] listeners = pListenerList.getListenerList();
+    int i;
+    for(i=listeners.length-2; i>=0; i-=2) {
+      if(listeners[i]==ActionListener.class) {
+	if(event == null) 
+	  event = new ActionEvent(this, pEventID++, "hot-key-changed"); 
+
+	((ActionListener)listeners[i+1]).actionPerformed(event);
+      }
+    }
   }
 
 
@@ -203,5 +260,18 @@ class JHotKeyField
    * The hot key being displayed.
    */ 
   private HotKey  pHotKey;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The action listeners registered to this object.
+   */ 
+  private EventListenerList pListenerList;
+
+  /**
+   * The unique event ID.
+   */ 
+  private int pEventID; 
 
 }

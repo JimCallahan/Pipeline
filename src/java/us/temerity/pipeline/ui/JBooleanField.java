@@ -1,4 +1,4 @@
-// $Id: JBooleanField.java,v 1.6 2005/01/09 16:00:52 jim Exp $
+// $Id: JBooleanField.java,v 1.7 2005/01/09 17:31:42 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -7,6 +7,7 @@ import us.temerity.pipeline.laf.LookAndFeelLoader;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import javax.swing.event.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   B O O L E A N   F I E L D                                                              */
@@ -31,37 +32,46 @@ class JBooleanField
   JBooleanField()
   {
     super();  
-    setName("BooleanField");
-
-    setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-    addMouseListener(this);
 
     {
-      add(Box.createRigidArea(new Dimension(16, 0)));
-      
-      {
-	JValueField field = new JValueField(this);
-	pTextField = field;
-
-	field.setName("BooleanValueTextField");
-	field.setHorizontalAlignment(JLabel.CENTER);
-	field.setEditable(false);
-	field.addMouseListener(this);
-
-	add(field);
-      }
+      setName("BooleanField");
+      setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+      addMouseListener(this);
 
       {
-	JLabel label = new JLabel(sEnabledIcon);
-	pIconLabel = label;
-	add(label);
-      }
+	add(Box.createRigidArea(new Dimension(18, 0)));
+	add(Box.createHorizontalGlue());
+	
+	{
+	  JLabel label = new JLabel();
+	  pLabel = label;
+	  
+	  label.setName("BooleanValueTextField");
+	  label.setHorizontalAlignment(JLabel.CENTER);
+	  label.addMouseListener(this);
+	  
+	  add(label);
+	}
+	
+	add(Box.createHorizontalGlue());
+	add(Box.createRigidArea(new Dimension(3, 0)));
 
-      add(Box.createRigidArea(new Dimension(4, 0)));
+	{
+	  JLabel label = new JLabel(sEnabledIcon);
+	  pIconLabel = label;
+	  add(label);
+	}
+	
+	add(Box.createRigidArea(new Dimension(3, 0)));
+      }
     }
-      
+
+    pListenerList  = new EventListenerList();
+    pActionCommand = "value-changed";
+
     setValue(false);
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -79,11 +89,11 @@ class JBooleanField
   {
     pValue = value;
     if(pValue != null) 
-      pTextField.setText(pValue ? "YES" : "no");
+      pLabel.setText(pValue ? "YES" : "no");
     else 
-      pTextField.setText("-");
+      pLabel.setText("-");
 
-    pTextField.fireActionPerformed2();
+    fireActionPerformed();
   }
 
   /**
@@ -102,7 +112,7 @@ class JBooleanField
   public String
   getText() 
   {
-    return pTextField.getText();
+    return pLabel.getText();
   }
 
 
@@ -112,33 +122,7 @@ class JBooleanField
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Sets whether or not this component is enabled.
-   */ 
-  public void 
-  setEnabled
-  (
-   boolean enabled
-  )
-  {
-    if(enabled && !isEnabled()) {
-      addMouseListener(this);
-      pTextField.addMouseListener(this);
-      
-      pIconLabel.setIcon(sEnabledIcon);
-    }
-    else if(!enabled && isEnabled()) {
-      removeMouseListener(this);
-      pTextField.removeMouseListener(this);
-
-      pIconLabel.setIcon(sDisabledIcon);
-    }
-
-    super.setEnabled(enabled);
-  }
-
-
-  /**
-   * Adds the specified action listener to receive action events from this collection field.
+   * Adds the specified action listener to receive action events from this field.
    */ 
   public void
   addActionListener
@@ -146,12 +130,12 @@ class JBooleanField
    ActionListener l
   )
   {
-    pTextField.addActionListener(l);
+    pListenerList.add(ActionListener.class, l);
   }
 
   /**
    * Removes the specified action listener so that it no longer receives action events
-   * from this collection field.
+   * from this field.
    */ 
   public void 	
   removeActionListener
@@ -159,7 +143,7 @@ class JBooleanField
    ActionListener l
   )
   {
-    pTextField.removeActionListener(l);
+    pListenerList.remove(ActionListener.class, l);
   }
           
   /**
@@ -171,7 +155,27 @@ class JBooleanField
    String command
   )
   {
-    pTextField.setActionCommand(command);
+    pActionCommand = command; 
+  }
+
+  /**
+   * Notifies all listeners that have registered interest for notification of action events.
+   */
+  protected void 
+  fireActionPerformed() 
+  {
+    ActionEvent event = null;
+
+    Object[] listeners = pListenerList.getListenerList();
+    int i;
+    for(i=listeners.length-2; i>=0; i-=2) {
+      if(listeners[i]==ActionListener.class) {
+	if(event == null) 
+	  event = new ActionEvent(this, pEventID++, pActionCommand);
+
+	((ActionListener)listeners[i+1]).actionPerformed(event);
+      }
+    }
   }
 
 
@@ -179,6 +183,31 @@ class JBooleanField
   /*----------------------------------------------------------------------------------------*/
   /*   J C O M P O N E N T   O V E R R I D E S                                              */
   /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Sets whether or not this component is enabled.
+   */ 
+  public void 
+  setEnabled
+  (
+   boolean enabled
+  )
+  {
+    if(enabled && !isEnabled()) {
+      addMouseListener(this);
+      pLabel.addMouseListener(this);
+
+      pIconLabel.setIcon(sEnabledIcon);
+    }
+    else if(!enabled && isEnabled()) {
+      removeMouseListener(this);
+      pLabel.removeMouseListener(this);
+
+      pIconLabel.setIcon(sDisabledIcon);
+    }
+
+    super.setEnabled(enabled);
+  }
 
   /**
    * Sets the foreground color of this component.
@@ -189,10 +218,11 @@ class JBooleanField
    Color fg
   )
   {
-    if(pTextField != null) 
-      pTextField.setForeground(fg);
+    if(pLabel != null) 
+      pLabel.setForeground(fg);
   }
-          
+   
+     
 
   
   /*----------------------------------------------------------------------------------------*/
@@ -238,40 +268,6 @@ class JBooleanField
   mouseReleased(MouseEvent e) {}
   
 
-  /*----------------------------------------------------------------------------------------*/
-  /*   I N T E R N A L   C L A S S E S                                                      */
-  /*----------------------------------------------------------------------------------------*/
-
-  public
-  class JValueField
-    extends JTextField
-  {
-    public 
-    JValueField
-    (
-     JBooleanField parent
-    ) 
-    {
-      pParent = parent;
-    }    
-
-    public JBooleanField
-    getBooleanField() 
-    {
-      return pParent;
-    }
-
-    public void 
-    fireActionPerformed2()
-    {
-      fireActionPerformed();
-    }
-
-    private static final long serialVersionUID = 133532305819177444L;
-
-    private JBooleanField  pParent;
-  }
-
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -298,14 +294,34 @@ class JBooleanField
   private Boolean  pValue;
 
 
+  /*----------------------------------------------------------------------------------------*/
+
   /**
-   * The value text field.
+   * The value.
    */ 
-  private JValueField  pTextField;
+  private JLabel  pLabel; 
 
   /**
    * The icon.
    */ 
   private JLabel  pIconLabel; 
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The action listeners registered to this object.
+   */ 
+  private EventListenerList pListenerList;
+
+  /**
+   * The command string passed to generated action events. 
+   */ 
+  private String  pActionCommand; 
+
+  /**
+   * The unique event ID.
+   */ 
+  private int pEventID; 
+  
 }
