@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.4 2005/01/10 10:27:59 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.5 2005/01/10 16:02:01 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -43,6 +43,12 @@ class GenUserPrefsApp
 	new BasePref(),
 
 	new HotKeyPref
+	("Rename the current window.", 
+	 "ManagerRenameWindow", "Rename Window:"), 
+
+	new BasePref(),
+
+	new HotKeyPref
 	("Change the working area view of the panel.", 
 	 "ManagerChangeOwnerView", "Change Owner|View:",
 	 false, true, false, 86), /* ALT+V */ 
@@ -53,6 +59,10 @@ class GenUserPrefsApp
 	("Save the current panel layout.",
 	 "SaveLayout", "Save Layout:",
 	 false, true, false, 83),  /* ALT+S */ 
+	
+	new HotKeyPref
+	("Save the current panel layout with a new name.",
+	 "SaveLayoutAs", "Save Layout As:"),
 	
 	new HotKeyPref
 	("Manage the saved panel layouts.",
@@ -83,7 +93,7 @@ class GenUserPrefsApp
 	 false, false, true, 81)  /* CTRL+Q */ 
       };
 
-      pPrefs.put("Main Menu|Top Level|Hot Keys", prefs);
+      pPrefs.put("Main Menu|Hot Keys", prefs);
     }
 
     {
@@ -134,10 +144,14 @@ class GenUserPrefsApp
 	("Display the node state quick reference page.", 
 	 "ShowQuickReference", "Quick Reference:"),  
 
+	new HotKeyPref
+	("Display the Pipeline User Manual.", 
+	 "ShowUserManual", "User Manual:"), 
+
 	new BasePref(),
 	
 	new HotKeyPref
-	("Display the Pipeline Home Page.", 
+	("Display the Pipeline Home page.", 
 	 "ShowHomePage", "Home Page:"),   
 
 	new HotKeyPref
@@ -151,8 +165,12 @@ class GenUserPrefsApp
 	new BasePref(),
 
 	new HotKeyPref
-	("The local site configuration information.", 
-	 "ShowConfig", "Site Configuration:")
+	("Display the local site configuration information.", 
+	 "ShowConfig", "Site Configuration:"), 
+
+	new HotKeyPref
+	("Display the Pipeline license agreement.", 
+	 "ShowLicenseAgreement", "License Agreement:"), 
       };
 
       pPrefs.put("Main Menu|Help|Hot Keys", prefs);
@@ -269,7 +287,7 @@ class GenUserPrefsApp
 	new BasePref(),
 
 	new HotKeyPref
-	("Create a new empty top-level window.", 
+	("Create a new window containing an empty panel.", 
 	 "ManagerEmptyWindow", "None:",
 	 false, true, false, 120),  /* ALT+F9 */ 	
       };
@@ -280,51 +298,51 @@ class GenUserPrefsApp
     {
       BasePref prefs[] = {
 	new HotKeyPref
-	("Change to a Node Browser panel.", 
+	("Change the panel type to a Node Browser panel.", 
 	 "ManagerNodeBrowserPanel", "Node Browser:",
 	 false, false, false, 112),  /* F1 */ 
 
 	new HotKeyPref
-	("Change to a Node Viewer panel.", 
+	("Change the panel type to a Node Viewer panel.", 
 	 "ManagerNodeViewerPanel", "Node Viewer:",
 	 false, false, false, 113),  /* F2 */ 
 
 	new HotKeyPref
-	("Change to a Node Details panel.", 
+	("Change the panel type to a Node Details panel.", 
 	 "ManagerNodeDetailsPanel", "Node Details:",
 	 false, false, false, 114),  /* F3 */ 
 
 	new HotKeyPref
-	("Change to a Node Files panel.", 
+	("Change the panel type to a Node Files panel.", 
 	 "ManagerNodeFilesPanel", "Node Files:",
 	 false, false, false, 115),  /* F4 */ 
 
 	new HotKeyPref
-	("Change to a Node History panel.", 
+	("Change the panel type to a Node History panel.", 
 	 "ManagerNodeHistoryPanel", "Node History:",
 	 false, false, false, 116),  /* F5 */ 
 
 	new BasePref(),
 
 	new HotKeyPref
-	("Change to a Job Browser panel.",
+	("Change the panel type to a Job Browser panel.",
 	 "ManagerJobBrowserPanel", "Job Browser:",
 	 false, false, false, 117),  /* F6 */ 
 	
 	new HotKeyPref
-	("Change to a Job Viewer panel.", 
+	("Change the panel type to a Job Viewer panel.", 
 	 "ManagerJobViewerPanel", "Job Viewer:",
 	 false, false, false, 118),  /* F7 */ 
 	
 	new HotKeyPref
-	("Change to a Job Details panel.", 
+	("Change the panel type to a Job Details panel.", 
 	 "ManagerJobDetailsPanel", "Job Details:",
 	 false, false, false, 119),  /* F8 */ 
 	
 	new BasePref(),
 
 	new HotKeyPref
-	("Change to an empty panel.", 
+	("Change the panel type to an empty panel.", 
 	 "ManagerEmptyPanel", "None:",
 	 false, false, false, 120),  /* F9 */ 
       };
@@ -377,9 +395,15 @@ class GenUserPrefsApp
     {
       BasePref prefs[] = {      
 	new BooleanPref
-	("Whether to show tool tips.", 
-	 "ShowToolTips", "Show Tool Tips:", true), 
+	("Whether to show tool tips for editable fields.", 
+	 "ShowToolTips", "Show Field Tool Tips:", true), 
+	    
+	new BooleanPref
+	("Whether to show tool tool tips for menu items.", 
+	 "ShowMenuToolTips", "Show Menu Tool Tips:", true), 
 	
+	new BasePref(),
+
 	new BoundedIntegerPref
 	("The initial delay before showing the tool tip.", 
 	 "ToolTipDelay", "Tool Tip Delay:", 0, 4000, 1000), 
@@ -578,6 +602,10 @@ class GenUserPrefsApp
 	 "RemoveFiles", "Remove Files:"), 
 
 	new BasePref(),
+
+	new HotKeyPref
+	("Export the node properties from the primary selection to the selected nodes.",
+	 "NodeViewerExport", "Export:"), 
 
 	new HotKeyPref
 	("Rename the current primary selection.",
@@ -940,7 +968,7 @@ class GenUserPrefsApp
 	 "JobDetails", "Details:", "Details"), 
       
 	new DuplicateHotKeyPref
-	("View the target files of the primary selected job or job group.", 
+	("View the target files of the primary selected job.", 
 	 "JobView", "View:", "Edit"), 
 
 	new BasePref(),
@@ -971,6 +999,12 @@ class GenUserPrefsApp
 
     {
       BasePref prefs[] = {	
+	new DuplicateHotKeyPref
+	("View the target files of the primary selected job group.", 
+	 "JobGroupView", "View:", "Edit"), 
+
+	new BasePref(),
+
 	new DuplicateHotKeyPref
 	("Resubmit all aborted and failed selected jobs.",
 	 "JobGroupQueueJobs", "Queue Jobs:", "QueueJobs"), 
@@ -1082,7 +1116,7 @@ class GenUserPrefsApp
       pPrefPanels = new LinkedList<String>();
       
       pPrefPanels.add("Main Menu|Tool Tips");
-      pPrefPanels.add("Main Menu|Top Level|Hot Keys");
+      pPrefPanels.add("Main Menu|Hot Keys");
       pPrefPanels.add("Main Menu|Admin|Hot Keys");
       pPrefPanels.add("Main Menu|Help|Hot Keys");
       pPrefPanels.add("Main Menu|Panel Group|Hot Keys");
@@ -1129,6 +1163,8 @@ class GenUserPrefsApp
 	manager.add("ManagerJobDetailsWindow");
 	manager.add("ManagerEmptyWindow");
 	
+	manager.add("ManagerRenameWindow");
+
 	/* panels */ 
 	manager.add("ManagerNodeBrowserPanel");
 	manager.add("ManagerNodeViewerPanel");
@@ -1165,6 +1201,7 @@ class GenUserPrefsApp
 	
 	/* UIMaster */ 
 	manager.add("SaveLayout");
+	manager.add("SaveLayoutAs");
 	manager.add("ShowManageLayouts");
 	manager.add("ShowUserPrefs");
 	manager.add("ShowDefaultEditors");
@@ -1180,10 +1217,12 @@ class GenUserPrefsApp
 	/* help */ 
 	manager.add("ShowAbout");
 	manager.add("ShowQuickReference");
+	manager.add("ShowUserManual");
 	manager.add("ShowHomePage");
 	manager.add("ShowSupportForums");
 	manager.add("ShowBugDatabase");
 	manager.add("ShowConfig");
+	manager.add("ShowLicenseAgreement");
 
 	/* misc */ 
 	manager.add("NextTab");
@@ -1258,6 +1297,7 @@ class GenUserPrefsApp
 	group.add("NodeViewerClone");
 	group.add("NodeViewerRelease");
 	group.add(removeFiles);
+	group.add("NodeViewerExport");
 	group.add("NodeViewerRename");
 	group.add("NodeViewerRenumber");
 	group.add("NodeViewerDelete");
@@ -1361,6 +1401,7 @@ class GenUserPrefsApp
 	pHotKeyGroups.put("JobViewerGroup", group);
       
 	group.addAll(manager);
+	group.add(edit);
 	group.addAll(jobs);
 	group.add("DeleteJobGroups");
       }
@@ -1416,7 +1457,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.4 2005/01/10 10:27:59 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.5 2005/01/10 16:02:01 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -1671,7 +1712,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.4 2005/01/10 10:27:59 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.5 2005/01/10 16:02:01 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3027,7 +3068,7 @@ class GenUserPrefsApp
 
       StringBuffer buf = new StringBuffer();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.4 2005/01/10 10:27:59 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.5 2005/01/10 16:02:01 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.4 2005/01/09 23:23:09 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.5 2005/01/10 16:02:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -99,6 +99,7 @@ class JQueueJobBrowserPanel
 	pHostsPopup = new JPopupMenu();
 
 	item = new JMenuItem("Update");
+	pHostsUpdateItem = item;
 	item.setActionCommand("update");
 	item.addActionListener(this);
 	pHostsPopup.add(item);
@@ -136,6 +137,7 @@ class JQueueJobBrowserPanel
 	pSlotsPopup = new JPopupMenu();
 
 	item = new JMenuItem("Update");
+	pSlotsUpdateItem = item;
 	item.setActionCommand("update");
 	item.addActionListener(this);
 	pSlotsPopup.add(item);
@@ -153,6 +155,7 @@ class JQueueJobBrowserPanel
 	pGroupsPopup = new JPopupMenu();
 
 	item = new JMenuItem("Update");
+	pGroupsUpdateItem = item;
 	item.setActionCommand("update");
 	item.addActionListener(this);
 	pGroupsPopup.add(item);
@@ -208,7 +211,9 @@ class JQueueJobBrowserPanel
 	item.setActionCommand("delete-completed");
 	item.addActionListener(this);
 	pGroupsPopup.add(item);
-      }      
+      }    
+
+      updateMenuToolTips();  
     }
 
     
@@ -1142,6 +1147,80 @@ class JQueueJobBrowserPanel
 
     return false;
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Update the panel to reflect new user preferences.
+   */ 
+  public void 
+  updateUserPrefs() 
+  {
+    updateMenuToolTips();
+  }
+
+  /**
+   * Update the menu item tool tips.
+   */ 
+  private void 
+  updateMenuToolTips() 
+  {
+    UserPrefs prefs = UserPrefs.getInstance();
+       
+    updateMenuToolTip
+      (pHostsUpdateItem, prefs.getUpdate(),
+       "Update the job servers, slots and groups.");
+    updateMenuToolTip
+      (pHostsHistoryItem, prefs.getJobBrowserHostsHistory(),
+       "Show the resource usage history for the selected servers.");
+    updateMenuToolTip
+      (pHostsApplyItem, prefs.getApplyChanges(),
+       "Apply the changes to job server properties.");
+    updateMenuToolTip
+      (pHostsAddItem, prefs.getJobBrowserHostsAdd(),
+       "Add a new job server.");
+    updateMenuToolTip
+      (pHostsRemoveItem, prefs.getJobBrowserHostsRemove(),
+       "Remove the selected job servers.");
+       
+    updateMenuToolTip
+      (pSlotsUpdateItem, prefs.getUpdate(),
+       "Update the job servers, slots and groups.");
+    updateMenuToolTip
+      (pSlotsKillItem, prefs.getJobBrowserSlotsKillJobs(), 
+       "Kill all jobs associated with the selected groups.");
+
+    updateMenuToolTip
+      (pGroupsUpdateItem, prefs.getUpdate(),
+       "Update the job servers, slots and groups.");
+    updateMenuToolTip
+      (pGroupsFilterViewsItem, prefs.getJobBrowserToggleFilterViews(),
+       "Toggle whether to show only the current or all views.");
+    updateMenuToolTip
+      (pGroupsQueueItem, prefs.getQueueJobs(), 
+       "Resubmit aborted and failed jobs to the queue for the selected groups.");
+    updateMenuToolTip
+      (pGroupsQueueSpecialItem, prefs.getQueueJobsSpecial(), 
+       "Resubmit aborted and failed jobs to the queue for the selected groups with " + 
+       "special job requirements.");
+    updateMenuToolTip
+      (pGroupsPauseItem, prefs.getPauseJobs(), 
+       "Pause all jobs associated with the selected groups.");
+    updateMenuToolTip
+      (pGroupsResumeItem, prefs.getResumeJobs(), 
+       "Resume execution of all jobs associated with the selected groups.");
+    updateMenuToolTip
+      (pGroupsKillItem, prefs.getKillJobs(), 
+       "Kill all jobs associated with the selected groups.");
+    updateMenuToolTip
+      (pGroupsDeleteItem, prefs.getJobBrowserGroupsDelete(),
+       "Delete the selected completed job groups.");
+    updateMenuToolTip
+      (pGroupsDeleteCompletedItem, prefs.getJobBrowserGroupsDeleteCompleted(),
+       "Delete all completed job groups.");
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -2806,6 +2885,7 @@ class JQueueJobBrowserPanel
   /**
    * The hosts popup menu items.
    */ 
+  private JMenuItem  pHostsUpdateItem;
   private JMenuItem  pHostsHistoryItem;
   private JMenuItem  pHostsApplyItem;
   private JMenuItem  pHostsAddItem;
@@ -2861,6 +2941,7 @@ class JQueueJobBrowserPanel
   /**
    * The slots popup menu items.
    */ 
+  private JMenuItem  pSlotsUpdateItem;
   private JMenuItem  pSlotsKillItem;
 
 
@@ -2895,6 +2976,7 @@ class JQueueJobBrowserPanel
   /**
    * The groups popup menu items.
    */ 
+  private JMenuItem  pGroupsUpdateItem; 
   private JMenuItem  pGroupsFilterViewsItem; 
   private JMenuItem  pGroupsQueueItem; 
   private JMenuItem  pGroupsQueueSpecialItem; 

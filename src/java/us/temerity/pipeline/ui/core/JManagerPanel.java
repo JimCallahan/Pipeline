@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.7 2005/01/10 10:27:59 jim Exp $
+// $Id: JManagerPanel.java,v 1.8 2005/01/10 16:02:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -71,26 +71,31 @@ class JManagerPanel
 	pPopup.add(sub);  
    
 	item = new JMenuItem("Node Browser");
+	pNodeBrowserWindowItem = item;
 	item.setActionCommand("node-browser-window");
 	item.addActionListener(this);
 	sub.add(item);  
 	
 	item = new JMenuItem("Node Viewer");
+	pNodeViewerWindowItem = item;
 	item.setActionCommand("node-viewer-window");
 	item.addActionListener(this);
 	sub.add(item);  
 
 	item = new JMenuItem("Node Details");
+	pNodeDetailsWindowItem = item;
 	item.setActionCommand("node-details-window");
 	item.addActionListener(this);
 	sub.add(item);  
 
 	item = new JMenuItem("Node Files");
+	pNodeFilesWindowItem = item;
 	item.setActionCommand("node-files-window");
 	item.addActionListener(this);
 	sub.add(item);  
 
 	item = new JMenuItem("Node History");
+	pNodeHistoryWindowItem = item;
 	item.setActionCommand("node-history-window");
 	item.addActionListener(this);
 	sub.add(item);  
@@ -98,37 +103,27 @@ class JManagerPanel
 	sub.addSeparator();
 
 	item = new JMenuItem("Job Browser");
+	pJobBrowserWindowItem = item;
 	item.setActionCommand("job-browser-window");
 	item.addActionListener(this);
 	sub.add(item);  
 
 	item = new JMenuItem("Job Viewer");
+	pJobViewerWindowItem = item;
 	item.setActionCommand("job-viewer-window");
 	item.addActionListener(this);
 	sub.add(item);  
 
 	item = new JMenuItem("Job Details");
+	pJobDetailsWindowItem = item;
 	item.setActionCommand("job-details-window");
 	item.addActionListener(this);
 	sub.add(item);  
 
 	sub.addSeparator();
 
-// 	item = new JMenuItem("Task Timeline");
-// 	item.setActionCommand("task-timeline-window");
-// 	item.addActionListener(this);
-// 	item.setEnabled(false); // FOR NOW 
-// 	sub.add(item);  
-
-// 	item = new JMenuItem("Task Details");
-// 	item.setActionCommand("task-details-window");
-// 	item.addActionListener(this);
-// 	item.setEnabled(false); // FOR NOW    
-// 	sub.add(item);  
-
-// 	sub.addSeparator();
-
 	item = new JMenuItem("None");
+	pEmptyWindowItem = item;
 	item.setActionCommand("none-window");
 	item.addActionListener(this);
 	sub.add(item);
@@ -147,26 +142,31 @@ class JManagerPanel
 	pPopup.add(sub);  
    
 	item = new JMenuItem("Node Browser");
+	pNodeBrowserPanelItem = item;
 	item.setActionCommand("node-browser");
 	item.addActionListener(this);
 	sub.add(item);  
 	
 	item = new JMenuItem("Node Viewer");
+	pNodeViewerPanelItem = item;
 	item.setActionCommand("node-viewer");
 	item.addActionListener(this);
 	sub.add(item);  
 
 	item = new JMenuItem("Node Details");
+	pNodeDetailsPanelItem = item;
 	item.setActionCommand("node-details");
 	item.addActionListener(this);
 	sub.add(item);  
 
 	item = new JMenuItem("Node Files");
+	pNodeFilesPanelItem = item;
 	item.setActionCommand("node-files");
 	item.addActionListener(this);
 	sub.add(item);  
 
 	item = new JMenuItem("Node History");
+	pNodeHistoryPanelItem = item;
 	item.setActionCommand("node-history");
 	item.addActionListener(this);
 	sub.add(item);  
@@ -174,37 +174,27 @@ class JManagerPanel
 	sub.addSeparator();
 
 	item = new JMenuItem("Job Browser");
+	pJobBrowserPanelItem = item;
 	item.setActionCommand("job-browser");
 	item.addActionListener(this);
 	sub.add(item);  
 
 	item = new JMenuItem("Job Viewer");
+	pJobViewerPanelItem = item;
 	item.setActionCommand("job-viewer");
 	item.addActionListener(this);
 	sub.add(item);  
 
 	item = new JMenuItem("Job Details");
+	pJobDetailsPanelItem = item;
 	item.setActionCommand("job-details");
 	item.addActionListener(this);
 	sub.add(item);  
 
 	sub.addSeparator();
 
-// 	item = new JMenuItem("Task Timeline");
-// 	item.setActionCommand("task-timeline");
-// 	item.addActionListener(this);
-// 	item.setEnabled(false); // FOR NOW 
-// 	sub.add(item);  
-
-// 	item = new JMenuItem("Task Details");
-// 	item.setActionCommand("task-details");
-// 	item.addActionListener(this);
-// 	item.setEnabled(false); // FOR NOW    
-// 	sub.add(item);  
-
-// 	sub.addSeparator();
-
 	item = new JMenuItem("None");
+	pEmptyPanelItem = item;
 	item.setActionCommand("none");
 	item.addActionListener(this);
 	sub.add(item);
@@ -264,6 +254,7 @@ class JManagerPanel
       pPopup.add(item);  
       
       item = new JMenuItem("Save Layout As...");
+      pSaveLayoutAsItem = item;
       item.setActionCommand("save-layout-as");
       item.addActionListener(this);
       pPopup.add(item);  
@@ -283,6 +274,7 @@ class JManagerPanel
       }
 
       item = new JMenuItem("Manage Layouts...");
+      pManageLayoutsItem = item;
       item.setActionCommand("manage-layouts");
       item.addActionListener(this);
       pPopup.add(item);  
@@ -290,11 +282,13 @@ class JManagerPanel
       pPopup.addSeparator();
 
       item = new JMenuItem("Preferences...");
+      pPreferencesItem = item;
       item.setActionCommand("preferences");
       item.addActionListener(this);
       pPopup.add(item);  
 
       item = new JMenuItem("Default Editors...");
+      pDefaultEditorsItem = item;
       item.setActionCommand("default-editors");
       item.addActionListener(this);
       pPopup.add(item);  
@@ -306,11 +300,13 @@ class JManagerPanel
 	pPopup.add(sub);  
 
 	item = new JMenuItem("Users...");
+	pManagerUsersItem = item;
 	item.setActionCommand("manage-users");
 	item.addActionListener(this);
 	sub.add(item);  
 
 	item = new JMenuItem("Toolsets...");
+	pManageToolsetsItem = item;
 	item.setActionCommand("manage-toolsets");
 	item.addActionListener(this);
 	sub.add(item);  
@@ -318,16 +314,19 @@ class JManagerPanel
 	sub.addSeparator();
 
 	item = new JMenuItem("Editor Menus...");
+	pManageEditorMenusItem = item;
 	item.setActionCommand("manage-editor-menus");
 	item.addActionListener(this);
 	sub.add(item);  
 
 	item = new JMenuItem("Comparator Menus...");
+	pManageComparatorMenusItem = item;
 	item.setActionCommand("manage-comparator-menus");
 	item.addActionListener(this);
 	sub.add(item);  
 
 	item = new JMenuItem("Tool Menus...");
+	pManageToolMenusItem = item;
 	item.setActionCommand("manage-tool-menus");
 	item.addActionListener(this);
 	sub.add(item);  
@@ -335,11 +334,13 @@ class JManagerPanel
 	sub.addSeparator();
 
 	item = new JMenuItem("License Keys...");
+	pLicenseKeysItem = item;
 	item.setActionCommand("manage-license-keys");
 	item.addActionListener(this);
 	sub.add(item);  
 
 	item = new JMenuItem("Selection Keys...");
+	pSelectionKeysItem = item;
 	item.setActionCommand("manage-selection-keys");
 	item.addActionListener(this);
 	sub.add(item);  
@@ -381,16 +382,19 @@ class JManagerPanel
 	pPopup.add(sub);  
 	
 	item = new JMenuItem("About Pipeline...");
+	pAboutPipelineItem = item;
 	item.setActionCommand("about");
 	item.addActionListener(this);
 	sub.add(item);  
 
 	item = new JMenuItem("Quick Reference...");
+	pQuickReferenceItem = item;
 	item.setActionCommand("quick-reference");
 	item.addActionListener(this);
 	sub.add(item);  
 	  
 	item = new JMenuItem("User Manual...");
+	pUserManualItem = item;
 	item.setEnabled(false);
 	item.setActionCommand("user-anual");
 	item.addActionListener(this);
@@ -399,16 +403,19 @@ class JManagerPanel
 	sub.addSeparator();
 	
 	item = new JMenuItem("Home Page...");
+	pHomePageItem = item;
 	item.setActionCommand("home-page");
 	item.addActionListener(this);
 	sub.add(item);  
 
 	item = new JMenuItem("Support Forums...");
+	pSupportFormumsItem = item;
 	item.setActionCommand("support-forums");
 	item.addActionListener(this);
 	sub.add(item);  
 	  
 	item = new JMenuItem("Bug Database...");
+	pBugDatabaseItem = item;
 	item.setActionCommand("bug-database");
 	item.addActionListener(this);
 	sub.add(item);  
@@ -416,11 +423,13 @@ class JManagerPanel
 	sub.addSeparator();
 	
 	item = new JMenuItem("Site Configuration...");
+	pSiteConfigurationItem = item;
 	item.setActionCommand("site-configuration");
 	item.addActionListener(this);
 	sub.add(item);  
 
 	item = new JMenuItem("License Agreement...");
+	pLicenseAgreementItem = item;
 	item.setEnabled(false);
 	item.setActionCommand("license-agreement");
 	item.addActionListener(this);
@@ -431,6 +440,7 @@ class JManagerPanel
       pPopup.addSeparator();
       
       item = new JMenuItem("Quit...");
+      pQuitItem = item;
       item.setActionCommand("quit");
       item.addActionListener(this);
       pPopup.add(item);  
@@ -457,6 +467,9 @@ class JManagerPanel
 	pGroupPopup.add(item);  
       }
     }
+    
+    /* set the initial tool tips */ 
+    updateMenuToolTips();
     
     /* panel title bar */ 
     {
@@ -851,7 +864,250 @@ class JManagerPanel
 	assert(false);
       }
     }
+
+    updateMenuToolTips();
   }
+
+  /**
+   * Update the menu item tool tips.
+   */ 
+  private void 
+  updateMenuToolTips() 
+  {
+    UserPrefs prefs = UserPrefs.getInstance();
+
+    /* windows */
+    updateMenuToolTip
+      (pNodeBrowserWindowItem, prefs.getManagerNodeBrowserWindow(), 
+       "Create a new window containing a Node Browser panel.");
+    updateMenuToolTip
+      (pNodeViewerWindowItem, prefs.getManagerNodeViewerWindow(), 
+       "Create a new window containing a Node Viewer panel.");
+    updateMenuToolTip
+      (pNodeDetailsWindowItem, prefs.getManagerNodeDetailsWindow(), 
+       "Create a new window containing a Node Details panel.");
+    updateMenuToolTip
+      (pNodeFilesWindowItem, prefs.getManagerNodeFilesWindow(), 
+       "Create a new window containing a Node Files panel.");
+    updateMenuToolTip
+      (pNodeHistoryWindowItem, prefs.getManagerNodeHistoryWindow(), 
+       "Create a new window containing a Node History panel.");
+    updateMenuToolTip
+      (pJobBrowserWindowItem, prefs.getManagerJobBrowserWindow(), 
+       "Create a new window containing a Job Browser panel.");
+    updateMenuToolTip
+      (pJobViewerWindowItem, prefs.getManagerJobViewerWindow(), 
+       "Create a new window containing a Job Viewer panel.");
+    updateMenuToolTip
+      (pJobDetailsWindowItem, prefs.getManagerJobDetailsWindow(), 
+       "Create a new window containing a Job Details panel.");
+    updateMenuToolTip
+      (pEmptyWindowItem, prefs.getManagerEmptyWindow(), 
+       "Create a new window containing an empty panel.");
+
+    updateMenuToolTip
+      (pRenameWindowItem, prefs.getManagerRenameWindow(), 
+       "Rename the current window.");
+
+    /* panel type */ 
+    updateMenuToolTip
+      (pNodeBrowserPanelItem, prefs.getManagerNodeBrowserPanel(), 
+       "Change the panel type to a Node Browser panel.");
+    updateMenuToolTip
+      (pNodeViewerPanelItem, prefs.getManagerNodeViewerPanel(), 
+       "Change the panel type to a Node Viewer panel.");
+    updateMenuToolTip
+      (pNodeDetailsPanelItem, prefs.getManagerNodeDetailsPanel(), 
+       "Change the panel type to a Node Details panel.");
+    updateMenuToolTip
+      (pNodeFilesPanelItem, prefs.getManagerNodeFilesPanel(), 
+       "Change the panel type to a Node Files panel.");
+    updateMenuToolTip
+      (pNodeHistoryPanelItem, prefs.getManagerNodeHistoryPanel(), 
+       "Change the panel type to a Node History panel.");
+    updateMenuToolTip
+      (pJobBrowserPanelItem, prefs.getManagerJobBrowserPanel(), 
+       "Change the panel type to a Job Browser panel.");
+    updateMenuToolTip
+      (pJobViewerPanelItem, prefs.getManagerJobViewerPanel(), 
+       "Change the panel type to a Job Viewer panel.");
+    updateMenuToolTip
+      (pJobDetailsPanelItem, prefs.getManagerJobDetailsPanel(), 
+       "Change the panel type to a Job Details panel.");
+    updateMenuToolTip
+      (pEmptyPanelItem, prefs.getManagerEmptyPanel(), 
+       "Change the panel type to an empty panel.");
+
+    /* panel layout */ 
+    updateMenuToolTip
+      (pAddTabItem, prefs.getManagerAddTab(), 
+       "Add a tabbed panel.");
+    updateMenuToolTip
+      (pAddLeftItem, prefs.getManagerAddLeft(), 
+       "Split the panel horizontally adding a new panel left.");
+    updateMenuToolTip
+      (pAddRightItem, prefs.getManagerAddRight(), 
+       "Split the panel horizontally adding a new panel right.");
+    updateMenuToolTip
+      (pAddAboveItem, prefs.getManagerAddAbove(), 
+       "Split the panel vertically adding a new panel above.");
+    updateMenuToolTip
+      (pAddBelowItem, prefs.getManagerAddBelow(), 
+       "Split the panel vertically adding a new panel below.");
+ 
+    updateMenuToolTip
+      (pOwnerViewItem, prefs.getManagerChangeOwnerView(), 
+       "Change the working area view of the panel.");
+    
+    /* layouts */ 
+    updateMenuToolTip
+      (pSaveLayoutItem, prefs.getSaveLayout(), 
+       "Save the current panel layout.");
+    updateMenuToolTip
+      (pSaveLayoutAsItem, prefs.getSaveLayoutAs(), 
+       "Save the current panel layout with a new name.");
+    updateMenuToolTip
+      (pManageLayoutsItem, prefs.getShowManageLayouts(), 
+       "Manage the saved panel layouts."); 
+   
+    /* admin */ 
+    updateMenuToolTip
+      (pPreferencesItem, prefs.getShowUserPrefs(), 
+       "Edit the user preferences.");
+    updateMenuToolTip
+      (pDefaultEditorsItem, prefs.getShowDefaultEditors(), 
+       "Manage the default editor for filename suffix.");
+
+    updateMenuToolTip
+      (pManagerUsersItem, prefs.getShowManageUsers(), 
+       "Manage the privileged users.");
+    updateMenuToolTip
+      (pManageToolsetsItem, prefs.getShowManageToolsets(), 
+       "Manage the toolset environments.");
+    updateMenuToolTip
+      (pManageEditorMenusItem, prefs.getShowManageEditorMenus(), 
+       "Manage the editor plugin menu layout.");
+    updateMenuToolTip
+      (pManageComparatorMenusItem, prefs.getShowManageComparatorMenus(), 
+       "Manage the comparator plugin menu layout.");
+    updateMenuToolTip
+      (pManageToolMenusItem, prefs.getShowManageToolMenus(), 
+       "Manage the tool plugin menu layout.");
+    updateMenuToolTip
+      (pLicenseKeysItem, prefs.getShowManageLicenseKeys(), 
+       "Manage the license keys.");
+    updateMenuToolTip
+      (pSelectionKeysItem, prefs.getShowManageSelectionKeys(), 
+       "Manage the selection keys.");
+
+    updateMenuToolTip
+      (pBackupDatabaseItem, null, 
+       "Backup the node database.");
+    updateMenuToolTip
+      (pArchiveItem, null, 
+       "Create a new node archive.");
+    updateMenuToolTip
+      (pRestoreItem, null, 
+       "Restore nodes from a previously created archive.");
+    updateMenuToolTip
+      (pShutdownServerItem, null, 
+       "Shutdown the Pipeline server daemons.");
+
+    /* help */ 
+    updateMenuToolTip
+      (pAboutPipelineItem, prefs.getShowAbout(), 
+       "Information about Pipeline.");
+    updateMenuToolTip
+      (pQuickReferenceItem, prefs.getShowQuickReference(), 
+       "Display the node state quick reference page.");
+    updateMenuToolTip
+      (pUserManualItem, prefs.getShowUserManual(), 
+       "Display the Pipeline User Manual.");
+    updateMenuToolTip
+      (pHomePageItem, prefs.getShowHomePage(), 
+       "Display the Pipeline Home page.");
+    updateMenuToolTip
+      (pSupportFormumsItem, prefs.getShowSupportForums(), 
+       "Display the Support Forums page.");
+    updateMenuToolTip
+      (pBugDatabaseItem, prefs.getShowBugDatabase(), 
+       "Display the Bug Database page.");
+    
+    updateMenuToolTip
+      (pSiteConfigurationItem, prefs.getShowConfig(), 
+       "The local site configuration information.");
+    updateMenuToolTip
+      (pLicenseAgreementItem, prefs.getShowLicenseAgreement(), 
+       "Display the Pipeline license agreement.");
+
+    updateMenuToolTip
+       (pQuitItem, prefs.getQuit(), 
+	"Quit.");
+    
+    /* panel groups */ 
+    updateMenuToolTip
+      (pGroupItems[0], prefs.getManagerGroup0(), 
+       "No panel group.");
+    updateMenuToolTip
+      (pGroupItems[1], prefs.getManagerGroup1(), 
+       "Set the panel group to (1).");
+    updateMenuToolTip
+      (pGroupItems[2], prefs.getManagerGroup2(), 
+       "Set the panel group to (2).");
+    updateMenuToolTip
+      (pGroupItems[3], prefs.getManagerGroup3(), 
+       "Set the panel group to (3).");
+    updateMenuToolTip
+      (pGroupItems[4], prefs.getManagerGroup4(), 
+       "Set the panel group to (4).");
+    updateMenuToolTip
+      (pGroupItems[5], prefs.getManagerGroup5(), 
+       "Set the panel group to (5).");
+    updateMenuToolTip
+      (pGroupItems[6], prefs.getManagerGroup6(), 
+       "Set the panel group to (6).");
+    updateMenuToolTip
+      (pGroupItems[7], prefs.getManagerGroup7(), 
+       "Set the panel group to (7).");
+    updateMenuToolTip
+      (pGroupItems[8], prefs.getManagerGroup8(), 
+       "Set the panel group to (8).");
+    updateMenuToolTip
+      (pGroupItems[9], prefs.getManagerGroup9(), 
+       "Set the panel group to (9).");
+  }
+
+  /**
+   * Update the tool tip for the given menu item.
+   */   
+  private void 
+  updateMenuToolTip
+  (
+   JMenuItem item, 
+   HotKey key,
+   String desc
+  ) 
+  {
+    String text = null;
+    if(UserPrefs.getInstance().getShowMenuToolTips()) {
+      if(desc != null) {
+	if(key != null) 
+	  text = (desc + " <P>Hot Key = " + key);
+	else 
+	  text = desc;
+      }
+      else {
+	text = ("Hot Key = " + key);
+      }
+    }
+    
+    if(text != null) 
+      item.setToolTipText(UIFactory.formatToolTip(text));
+    else 
+      item.setToolTipText(null);
+  }
+  
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1153,6 +1409,12 @@ class JManagerPanel
       return true;
     }
 
+    else if((prefs.getManagerRenameWindow() != null) &&
+	    prefs.getManagerRenameWindow().wasPressed(e)) {
+      doRenameWindow();
+      return true;
+    }
+
     /* panels */ 
     else if((prefs.getManagerNodeBrowserPanel() != null) &&
 	    prefs.getManagerNodeBrowserPanel().wasPressed(e)) {
@@ -1203,6 +1465,11 @@ class JManagerPanel
     }
 
     /* layout */ 
+    else if((prefs.getManagerAddTab() != null) &&
+	    prefs.getManagerAddTab().wasPressed(e)) {
+      doAddTab();
+      return true;
+    }
     else if((prefs.getManagerAddLeft() != null) &&
 	    prefs.getManagerAddLeft().wasPressed(e)) {
       doAddLeft();
@@ -1221,11 +1488,6 @@ class JManagerPanel
     else if((prefs.getManagerAddBelow() != null) &&
 	    prefs.getManagerAddBelow().wasPressed(e)) {
       doAddBelow();
-      return true;
-    }
-    else if((prefs.getManagerAddTab() != null) &&
-	    prefs.getManagerAddTab().wasPressed(e)) {
-      doAddTab();
       return true;
     }
     else if((prefs.getManagerClosePanel() != null) &&
@@ -1297,6 +1559,11 @@ class JManagerPanel
     else if((prefs.getSaveLayout() != null) &&
 	    prefs.getSaveLayout().wasPressed(e)) {
       UIMaster.getInstance().doSaveLayout();
+      return true;
+    }
+    else if((prefs.getSaveLayoutAs() != null) &&
+	    prefs.getSaveLayoutAs().wasPressed(e)) {
+      UIMaster.getInstance().showSaveLayoutDialog();
       return true;
     }
     else if((prefs.getShowManageLayouts() != null) &&
@@ -1374,6 +1641,11 @@ class JManagerPanel
       BaseApp.showURL("file:///" + PackageInfo.sDocsDir + "/manuals/quick-reference.html");
       return true;
     }
+    else if((prefs.getShowUserManual() != null) &&
+	    prefs.getShowUserManual().wasPressed(e)) {
+      BaseApp.showURL("file:///" + PackageInfo.sDocsDir + "/manuals/user-manual.html");
+      return true;
+    }
 
     else if((prefs.getShowHomePage() != null) &&
 	    prefs.getShowHomePage().wasPressed(e)) {
@@ -1388,6 +1660,11 @@ class JManagerPanel
     else if((prefs.getShowBugDatabase() != null) &&
 	    prefs.getShowBugDatabase().wasPressed(e)) {
       BaseApp.showURL("http://www.temerity.us/bugs");  
+      return true;
+    }
+    else if((prefs.getShowLicenseAgreement() != null) &&
+	    prefs.getShowLicenseAgreement().wasPressed(e)) {
+      BaseApp.showURL("file:///" + PackageInfo.sDocsDir + "/license-agreement.html");
       return true;
     }
     
@@ -1540,6 +1817,8 @@ class JManagerPanel
       UIMaster.getInstance().showAboutDialog();
     else if(cmd.equals("quick-reference"))
       BaseApp.showURL("file:///" + PackageInfo.sDocsDir + "/manuals/quick-reference.html");
+    else if(cmd.equals("user-manual"))
+      BaseApp.showURL("file:///" + PackageInfo.sDocsDir + "/manuals/user-manual.html");
 
     else if(cmd.equals("home-page"))
       BaseApp.showURL("http://www.temerity.us");
@@ -1549,7 +1828,9 @@ class JManagerPanel
       BaseApp.showURL("http://www.temerity.us/bugs");  
 
     else if(cmd.equals("site-configuration"))
-      UIMaster.getInstance().showConfigDialog();
+      UIMaster.getInstance().showConfigDialog(); 
+    else if(cmd.equals("license-agreement"))
+      BaseApp.showURL("file:///" + PackageInfo.sDocsDir + "/license-agreement.html");
 
     else if(cmd.equals("quit"))
       UIMaster.getInstance().doQuit();    
@@ -2770,28 +3051,67 @@ class JManagerPanel
   /**
    * The panel layout popup menu items.
    */ 
-  private JMenuItem  pRenameWindowItem; 
-  
-  private JMenuItem  pAddTabItem; 
+  private JMenuItem  pNodeBrowserWindowItem;
+  private JMenuItem  pNodeViewerWindowItem;
+  private JMenuItem  pNodeDetailsWindowItem;
+  private JMenuItem  pNodeFilesWindowItem;
+  private JMenuItem  pNodeHistoryWindowItem;
+  private JMenuItem  pJobBrowserWindowItem;
+  private JMenuItem  pJobViewerWindowItem;
+  private JMenuItem  pJobDetailsWindowItem;
+  private JMenuItem  pEmptyWindowItem;
 
+  private JMenuItem  pRenameWindowItem;
+
+  private JMenuItem  pNodeBrowserPanelItem;
+  private JMenuItem  pNodeViewerPanelItem;
+  private JMenuItem  pNodeDetailsPanelItem;
+  private JMenuItem  pNodeFilesPanelItem;
+  private JMenuItem  pNodeHistoryPanelItem;
+  private JMenuItem  pJobBrowserPanelItem;
+  private JMenuItem  pJobViewerPanelItem;
+  private JMenuItem  pJobDetailsPanelItem;
+  private JMenuItem  pEmptyPanelItem;
+
+  private JMenuItem  pAddTabItem; 
   private JMenuItem  pAddLeftItem; 
   private JMenuItem  pAddRightItem; 
   private JMenuItem  pAddAboveItem; 
-  private JMenuItem  pAddBelowItem; 
+  private JMenuItem  pAddBelowItem;        
 
   private JMenuItem  pOwnerViewItem;
+
+  private JMenuItem  pSaveLayoutItem;
+  private JMenuItem  pSaveLayoutAsItem;
+  private JMenuItem  pManageLayoutsItem;       
+  private JMenu      pRestoreLayoutMenu;
+  private JMenu      pRestoreLayoutNoSelectMenu;
+
+  private JMenuItem  pPreferencesItem;
+  private JMenuItem  pDefaultEditorsItem;
+
+  private JMenuItem  pManagerUsersItem;
+  private JMenuItem  pManageToolsetsItem;
+  private JMenuItem  pManageEditorMenusItem;
+  private JMenuItem  pManageComparatorMenusItem;
+  private JMenuItem  pManageToolMenusItem;
+  private JMenuItem  pLicenseKeysItem;
+  private JMenuItem  pSelectionKeysItem;
 
   private JMenuItem  pBackupDatabaseItem;
   private JMenuItem  pArchiveItem;
   private JMenuItem  pRestoreItem;
   private JMenuItem  pShutdownServerItem;
 
-  /**
-   * The load layout submenu.
-   */ 
-  private JMenuItem  pSaveLayoutItem;
-  private JMenu      pRestoreLayoutMenu;
-  private JMenu      pRestoreLayoutNoSelectMenu;
+  private JMenuItem  pAboutPipelineItem;
+  private JMenuItem  pQuickReferenceItem;
+  private JMenuItem  pUserManualItem;
+  private JMenuItem  pHomePageItem;
+  private JMenuItem  pSupportFormumsItem;
+  private JMenuItem  pBugDatabaseItem;
+  private JMenuItem  pSiteConfigurationItem;
+  private JMenuItem  pLicenseAgreementItem;
+  private JMenuItem  pQuitItem;
 
 
   /**

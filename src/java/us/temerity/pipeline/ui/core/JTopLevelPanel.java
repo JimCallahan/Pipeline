@@ -1,8 +1,9 @@
-// $Id: JTopLevelPanel.java,v 1.2 2005/01/08 08:32:18 jim Exp $
+// $Id: JTopLevelPanel.java,v 1.3 2005/01/10 16:02:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.ui.*;
 import us.temerity.pipeline.glue.*;
 
 import java.awt.*;
@@ -225,6 +226,38 @@ class JTopLevelPanel
   public void 
   updateUserPrefs() 
   {}
+
+  /**
+   * Update the tool tip for the given menu item.
+   */   
+  protected void 
+  updateMenuToolTip
+  (
+   JMenuItem item, 
+   HotKey key,
+   String desc
+  ) 
+  {
+    String text = null;
+    if(UserPrefs.getInstance().getShowMenuToolTips()) {
+      if(desc != null) {
+	if(key != null) 
+	  text = (desc + "<P>Hot Key = " + key);
+	else 
+	  text = desc;
+      }
+      else {
+	text = ("Hot Key = " + key);
+      }
+    }
+    
+    if(text != null) 
+      item.setToolTipText(UIFactory.formatToolTip(text));
+    else 
+      item.setToolTipText(null);
+  }
+
+  
 
 
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.4 2005/01/09 23:23:09 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.5 2005/01/10 16:02:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -91,6 +91,7 @@ class JQueueJobViewerPanel
       pPanelPopup.addPopupMenuListener(this);
 
       item = new JMenuItem("Update");
+      pUpdateItem = item;
       item.setActionCommand("update");
       item.addActionListener(this);
       pPanelPopup.add(item);  
@@ -98,11 +99,13 @@ class JQueueJobViewerPanel
       pPanelPopup.addSeparator();
 
       item = new JMenuItem("Frame Selection");
+      pFrameSelectionItem = item;
       item.setActionCommand("frame-selection");
       item.addActionListener(this);
       pPanelPopup.add(item);  
       
       item = new JMenuItem("Frame All");
+      pFrameAllItem = item;
       item.setActionCommand("frame-all");
       item.addActionListener(this);
       pPanelPopup.add(item);  
@@ -110,16 +113,19 @@ class JQueueJobViewerPanel
       pPanelPopup.addSeparator();
        
       item = new JMenuItem("Automatic Expand");
+      pAutomaticExpandItem = item;
       item.setActionCommand("automatic-expand");
       item.addActionListener(this);
       pPanelPopup.add(item);  
 
       item = new JMenuItem("Expand All");
+      pExpandAllItem = item;
       item.setActionCommand("expand-all");
       item.addActionListener(this);
       pPanelPopup.add(item);  
 
       item = new JMenuItem("Collapse All");
+      pCollapseAllItem = item;
       item.setActionCommand("collapse-all");
       item.addActionListener(this);
       pPanelPopup.add(item);  
@@ -133,6 +139,7 @@ class JQueueJobViewerPanel
       pJobPopup.addPopupMenuListener(this);
       
       item = new JMenuItem("Update Details");
+      pUpdateDetailsItem = item;
       item.setActionCommand("details");
       item.addActionListener(this);
       pJobPopup.add(item);
@@ -140,6 +147,7 @@ class JQueueJobViewerPanel
       pJobPopup.addSeparator();
 
       item = new JMenuItem("View");
+      pJobViewItem = item;
       item.setActionCommand("view");
       item.addActionListener(this);
       pJobPopup.add(item);
@@ -150,26 +158,31 @@ class JQueueJobViewerPanel
       pJobPopup.addSeparator();
 
       item = new JMenuItem("Queue Jobs");
+      pJobQueueJobsItem = item;
       item.setActionCommand("queue-jobs");
       item.addActionListener(this);
       pJobPopup.add(item);
       
       item = new JMenuItem("Queue Jobs Special...");
+      pJobQueueJobsSpecialItem = item;
       item.setActionCommand("queue-jobs-special");
       item.addActionListener(this);
       pJobPopup.add(item);
 
       item = new JMenuItem("Pause Jobs");
+      pJobPauseJobsItem = item;
       item.setActionCommand("pause-jobs");
       item.addActionListener(this);
       pJobPopup.add(item);
       
       item = new JMenuItem("Resume Jobs");
+      pJobResumeJobsItem = item;
       item.setActionCommand("resume-jobs");
       item.addActionListener(this);
       pJobPopup.add(item);
       
       item = new JMenuItem("Kill Jobs");
+      pJobKillJobsItem = item;
       item.setActionCommand("kill-jobs");
       item.addActionListener(this);
       pJobPopup.add(item);
@@ -183,6 +196,7 @@ class JQueueJobViewerPanel
       pGroupPopup.addPopupMenuListener(this);
       
       item = new JMenuItem("View");
+      pGroupViewItem = item;
       item.setActionCommand("view");
       item.addActionListener(this);
       pGroupPopup.add(item);
@@ -193,26 +207,31 @@ class JQueueJobViewerPanel
       pGroupPopup.addSeparator();
 
       item = new JMenuItem("Queue Jobs");
+      pGroupQueueJobsItem = item;
       item.setActionCommand("queue-jobs");
       item.addActionListener(this);
       pGroupPopup.add(item);
       
       item = new JMenuItem("Queue Jobs Special...");
+      pGroupQueueJobsSpecialItem = item;
       item.setActionCommand("queue-jobs-special");
       item.addActionListener(this);
       pGroupPopup.add(item);
 
       item = new JMenuItem("Pause Jobs");
+      pGroupPauseJobsItem = item;
       item.setActionCommand("pause-jobs");
       item.addActionListener(this);
       pGroupPopup.add(item);
       
       item = new JMenuItem("Resume Jobs");
+      pGroupResumeJobsItem = item;
       item.setActionCommand("resume-jobs");
       item.addActionListener(this);
       pGroupPopup.add(item);
       
       item = new JMenuItem("Kill Jobs");
+      pGroupKillJobsItem = item;
       item.setActionCommand("kill-jobs");
       item.addActionListener(this);
       pGroupPopup.add(item);
@@ -220,10 +239,13 @@ class JQueueJobViewerPanel
       pGroupPopup.addSeparator();
       
       item = new JMenuItem("Delete Groups");
+      pGroupDeleteGroupsItem = item;
       item.setActionCommand("delete-group");
       item.addActionListener(this);
       pGroupPopup.add(item);
     }
+
+    updateMenuToolTips();
 
     /* initialize the panel components */ 
     {
@@ -505,6 +527,82 @@ class JQueueJobViewerPanel
   updateUserPrefs() 
   {
     updateUniverse();
+    updateMenuToolTips();
+  }
+
+  /**
+   * Update the menu item tool tips.
+   */ 
+  private void 
+  updateMenuToolTips() 
+  {
+    UserPrefs prefs = UserPrefs.getInstance();
+  
+    /* panel menu */ 
+    updateMenuToolTip
+      (pUpdateItem, prefs.getUpdate(), 
+       "Update the status of all jobs.");
+    updateMenuToolTip
+      (pFrameSelectionItem, prefs.getFrameSelection(), 
+       "Move the camera to frame the bounds of the currently selected jobs.");
+    updateMenuToolTip
+      (pFrameAllItem, prefs.getFrameAll(), 
+       "Move the camera to frame all active jobs.");
+    updateMenuToolTip
+      (pAutomaticExpandItem, prefs.getAutomaticExpand(), 
+       "Automatically expand the first occurance of a job.");
+    updateMenuToolTip
+      (pExpandAllItem, prefs.getExpandAll(), 
+       "Expand all jobs.");
+    updateMenuToolTip
+      (pCollapseAllItem, prefs.getCollapseAll(), 
+       "Collapse all jobs.");
+
+    /* job menu */ 
+    updateMenuToolTip
+      (pUpdateDetailsItem, prefs.getDetails(), 
+       "Update connected job details panels.");
+    updateMenuToolTip
+      (pJobViewItem, prefs.getEdit(), 
+       "View the target files of the primary selected job.");
+    updateMenuToolTip
+      (pJobQueueJobsItem, prefs.getQueueJobs(), 
+       "Resubmit all aborted and failed selected jobs.");
+    updateMenuToolTip
+      (pJobQueueJobsSpecialItem, prefs.getQueueJobsSpecial(), 
+       "Resubmit all aborted and failed selected with special job requirements.");
+    updateMenuToolTip
+      (pJobPauseJobsItem, prefs.getPauseJobs(), 
+       "Pause all jobs associated with the selected jobs.");
+    updateMenuToolTip
+      (pJobResumeJobsItem, prefs.getResumeJobs(), 
+       "Resume execution of all jobs associated with the selected jobs.");
+    updateMenuToolTip
+      (pJobKillJobsItem, prefs.getKillJobs(), 
+       "Kill all jobs associated with the selected jobs.");
+    
+    /* job group menu */ 
+    updateMenuToolTip
+      (pGroupViewItem, prefs.getEdit(), 
+       "View the target files of the primary selected job group.");
+    updateMenuToolTip
+      (pGroupQueueJobsItem, prefs.getQueueJobs(), 
+       "Resubmit all aborted and failed selected jobs.");
+    updateMenuToolTip
+      (pGroupQueueJobsSpecialItem, prefs.getQueueJobsSpecial(), 
+       "Resubmit all aborted and failed selected with special job requirements.");
+    updateMenuToolTip
+      (pGroupPauseJobsItem, prefs.getPauseJobs(), 
+       "Pause all jobs associated with the selected jobs.");
+    updateMenuToolTip
+      (pGroupResumeJobsItem, prefs.getResumeJobs(), 
+       "Resume execution of all jobs associated with the selected jobs.");
+    updateMenuToolTip
+      (pGroupKillJobsItem, prefs.getKillJobs(), 
+       "Kill all jobs associated with the selected jobs.");
+    updateMenuToolTip
+      (pGroupDeleteGroupsItem, prefs.getDeleteJobGroups(), 
+       "Delete the selected completed job groups.");
   }
 
 
@@ -1469,8 +1567,12 @@ class JQueueJobViewerPanel
 	refresh();
       }
 
-      if((prefs.getQueueJobs() != null) &&
-	      prefs.getQueueJobs().wasPressed(e))
+      if((prefs.getEdit() != null) &&
+	 prefs.getEdit().wasPressed(e)) 
+	doView();
+
+      else if((prefs.getQueueJobs() != null) &&
+	 prefs.getQueueJobs().wasPressed(e))
 	doQueueJobs();
       else if((prefs.getQueueJobsSpecial() != null) &&
 	      prefs.getQueueJobsSpecial().wasPressed(e))
@@ -2594,19 +2696,53 @@ class JQueueJobViewerPanel
   private JPopupMenu  pPanelPopup; 
 
   /**
+   * The panel popup menu items.
+   */
+  private JMenuItem  pUpdateItem;
+  private JMenuItem  pFrameAllItem;
+  private JMenuItem  pFrameSelectionItem;
+  private JMenuItem  pAutomaticExpandItem;
+  private JMenuItem  pExpandAllItem;
+  private JMenuItem  pCollapseAllItem;
+
+
+  /**
    * The job popup menu.
    */ 
   private JPopupMenu  pJobPopup; 
+
+  /**
+   * The job popup menu items.
+   */ 
+  private JMenuItem  pUpdateDetailsItem;
+  private JMenuItem  pJobViewItem;
+  private JMenuItem  pJobQueueJobsItem;
+  private JMenuItem  pJobQueueJobsSpecialItem;
+  private JMenuItem  pJobPauseJobsItem;
+  private JMenuItem  pJobResumeJobsItem;
+  private JMenuItem  pJobKillJobsItem;
 
   /**
    * The view with submenu.
    */ 
   private JMenu  pViewWithMenu; 
 
+
   /**
    * The job group popup menu.
    */ 
   private JPopupMenu  pGroupPopup; 
+
+  /**
+   * The group popup menu items.
+   */ 
+  private JMenuItem  pGroupViewItem;
+  private JMenuItem  pGroupQueueJobsItem;
+  private JMenuItem  pGroupQueueJobsSpecialItem;
+  private JMenuItem  pGroupPauseJobsItem;
+  private JMenuItem  pGroupResumeJobsItem;
+  private JMenuItem  pGroupKillJobsItem;
+  private JMenuItem  pGroupDeleteGroupsItem;
 
   /**
    * The view with group submenu.

@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.3 2005/01/09 23:23:09 jim Exp $
+// $Id: JNodeBrowserPanel.java,v 1.4 2005/01/10 16:02:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -81,9 +81,12 @@ class JNodeBrowserPanel
       pPanelPopup = new JPopupMenu(); 
       
       item = new JMenuItem("Node Filter...");
+      pNodeFilterItem = item;
       item.setActionCommand("node-filter");
       item.addActionListener(this);
       pPanelPopup.add(item);  
+
+      updateMenuToolTips();
     }
 
     /* initialize the panel components */ 
@@ -511,6 +514,30 @@ class JNodeBrowserPanel
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Update the panel to reflect new user preferences.
+   */ 
+  public void 
+  updateUserPrefs() 
+  {
+    updateMenuToolTips();
+  }
+
+
+  /**
+   * Update the menu item tool tips.
+   */ 
+  private void 
+  updateMenuToolTips() 
+  {
+    UserPrefs prefs = UserPrefs.getInstance();
+
+    updateMenuToolTip
+      (pNodeFilterItem, prefs.getNodeBrowserNodeFilter(), 
+       "Show the node filter dialog."); 
+  }
   
   /*----------------------------------------------------------------------------------------*/
   /*   L I S T E N E R S                                                                    */
@@ -772,8 +799,6 @@ class JNodeBrowserPanel
        prefs.getNodeBrowserNodeFilter().wasPressed(e)) 
       doNodeFilter();
 
-    // .. toggle individual filters hot keys
-
     else {
       switch(e.getKeyCode()) {
       case KeyEvent.VK_SHIFT:
@@ -934,6 +959,11 @@ class JNodeBrowserPanel
    * The panel popup menu.
    */ 
   private JPopupMenu  pPanelPopup; 
+
+  /**
+   * The panel layout popup menu items.
+   */ 
+  private JMenuItem  pNodeFilterItem;
 
 
   /**

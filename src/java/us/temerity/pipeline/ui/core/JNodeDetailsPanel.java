@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.3 2005/01/09 23:23:09 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.4 2005/01/10 16:02:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -115,12 +115,14 @@ class JNodeDetailsPanel
 	pWorkingPopup.addSeparator();
       }
 
+      pEditItems     = new JMenuItem[2];
       pEditWithMenus = new JMenu[2];
 
       JPopupMenu menus[] = { pWorkingPopup, pCheckedInPopup };
       int wk;
       for(wk=0; wk<menus.length; wk++) {
-	item = new JMenuItem((wk == 1) ? "View" : "Edit");
+	item = new JMenuItem((wk == 1) ? "View" : "Edit"); 
+	pEditItems[wk] = item;
 	item.setActionCommand("edit");
 	item.addActionListener(this);
 	menus[wk].add(item);
@@ -133,26 +135,31 @@ class JNodeDetailsPanel
 	pWorkingPopup.addSeparator();
 	
 	item = new JMenuItem("Queue Jobs");
+	pQueueJobsItem = item;
 	item.setActionCommand("queue-jobs");
 	item.addActionListener(this);
 	pWorkingPopup.add(item);
 
 	item = new JMenuItem("Queue Jobs Special...");
+	pQueueJobsSpecialItem = item;
 	item.setActionCommand("queue-jobs-special");
 	item.addActionListener(this);
 	pWorkingPopup.add(item);
 	
 	item = new JMenuItem("Pause Jobs");
+	pPauseJobsItem = item;
 	item.setActionCommand("pause-jobs");
 	item.addActionListener(this);
 	pWorkingPopup.add(item);
       
 	item = new JMenuItem("Resume Jobs");
+	pResumeJobsItem = item;
 	item.setActionCommand("resume-jobs");
 	item.addActionListener(this);
 	pWorkingPopup.add(item);
 	
 	item = new JMenuItem("Kill Jobs");
+	pKillJobsItem = item;
 	item.setActionCommand("kill-jobs");
 	item.addActionListener(this);
 	pWorkingPopup.add(item);
@@ -160,10 +167,13 @@ class JNodeDetailsPanel
 	pWorkingPopup.addSeparator();
 
 	item = new JMenuItem("Remove Files");
+	pRemoveFilesItem = item;
 	item.setActionCommand("remove-files");
 	item.addActionListener(this);
 	pWorkingPopup.add(item);
-      }
+      } 
+
+      updateMenuToolTips();
     }
 
     /* initialize the panel components */ 
@@ -218,7 +228,8 @@ class JNodeDetailsPanel
 	  btn.setActionCommand("apply");
 	  btn.addActionListener(this);
 	  
-	  btn.setToolTipText(UIFactory.formatToolTip("Apply the changes to node properties."));
+	  btn.setToolTipText(UIFactory.formatToolTip
+			     ("Apply the changes to node properties."));
 
 	  panel.add(btn);
 	} 
@@ -456,7 +467,8 @@ class JNodeDetailsPanel
 	  }
 	  
 	  JDrawer drawer = new JDrawer("Properties:", (JComponent) comps[2], true);
-	  drawer.setToolTipText(UIFactory.formatToolTip("Node property related information."));
+	  drawer.setToolTipText(UIFactory.formatToolTip
+				("Node property related information."));
 	  pPropertyDrawer = drawer;
 	  vbox.add(drawer);
 	}
@@ -3079,6 +3091,59 @@ class JNodeDetailsPanel
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Update the panel to reflect new user preferences.
+   */ 
+  public void 
+  updateUserPrefs() 
+  {
+    updateMenuToolTips();
+  }
+
+  /**
+   * Update the menu item tool tips.
+   */ 
+  private void 
+  updateMenuToolTips() 
+  {
+    UserPrefs prefs = UserPrefs.getInstance();
+       
+    updateMenuToolTip
+      (pApplyItem, prefs.getApplyChanges(),
+       "Apply the changes to the working version.");
+
+    int wk;
+    for(wk=0; wk<pEditItems.length; wk++) {
+      updateMenuToolTip
+	(pEditItems[wk], prefs.getEdit(), 
+	 "Edit primary file sequences of the current primary selection.");
+    }
+
+    updateMenuToolTip
+      (pQueueJobsItem, prefs.getQueueJobs(), 
+       "Submit jobs to the queue for the current primary selection.");
+    updateMenuToolTip
+      (pQueueJobsSpecialItem, prefs.getQueueJobsSpecial(), 
+       "Submit jobs to the queue for the current primary selection with special job " + 
+       "requirements.");
+    updateMenuToolTip
+      (pPauseJobsItem, prefs.getPauseJobs(), 
+       "Pause all jobs associated with the selected nodes.");
+    updateMenuToolTip
+      (pResumeJobsItem, prefs.getResumeJobs(), 
+       "Resume execution of all jobs associated with the selected nodes.");
+    updateMenuToolTip
+      (pKillJobsItem, prefs.getKillJobs(), 
+       "Kill all jobs associated with the selected nodes.");
+
+    updateMenuToolTip
+      (pRemoveFilesItem, prefs.getRemoveFiles(), 
+       "Remove all the primary/secondary files associated with the selected nodes.");
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   G L U E A B L E                                                                      */
@@ -5167,9 +5232,15 @@ class JNodeDetailsPanel
   private JPopupMenu  pWorkingPopup; 
   
   /**
-   * The menu item used to apply changes to the working version of the node.
+   * The working file popup menu items.
    */ 
   private JMenuItem  pApplyItem;
+  private JMenuItem  pQueueJobsItem;
+  private JMenuItem  pQueueJobsSpecialItem;
+  private JMenuItem  pPauseJobsItem;
+  private JMenuItem  pResumeJobsItem;
+  private JMenuItem  pKillJobsItem;
+  private JMenuItem  pRemoveFilesItem;  
 
   /**
    * The checked-in file popup menu.
@@ -5179,7 +5250,8 @@ class JNodeDetailsPanel
   /**
    * The edit with submenus.
    */ 
-  private JMenu[]  pEditWithMenus; 
+  private JMenuItem[]  pEditItems;
+  private JMenu[]      pEditWithMenus; 
 
 
   /*----------------------------------------------------------------------------------------*/

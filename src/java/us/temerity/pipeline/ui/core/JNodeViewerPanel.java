@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.7 2005/01/09 23:23:09 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.8 2005/01/10 16:02:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -101,6 +101,7 @@ class JNodeViewerPanel
       pPanelPopup.addPopupMenuListener(this);
 
       item = new JMenuItem("Update");
+      pUpdateItem = item;
       item.setActionCommand("update");
       item.addActionListener(this);
       pPanelPopup.add(item);  
@@ -113,7 +114,14 @@ class JNodeViewerPanel
       
       pPanelPopup.addSeparator();
       
+      item = new JMenuItem("Frame Selection");
+      pFrameSelectionItem = item;
+      item.setActionCommand("frame-selection");
+      item.addActionListener(this);
+      pPanelPopup.add(item);  
+      
       item = new JMenuItem("Frame All");
+      pFrameAllItem = item;
       item.setActionCommand("frame-all");
       item.addActionListener(this);
       pPanelPopup.add(item);  
@@ -121,16 +129,19 @@ class JNodeViewerPanel
       pPanelPopup.addSeparator();
        
       item = new JMenuItem("Automatic Expand");
+      pAutomaticExpandItem = item;
       item.setActionCommand("automatic-expand");
       item.addActionListener(this);
       pPanelPopup.add(item);  
 
       item = new JMenuItem("Expand All");
+      pExpandAllItem = item;
       item.setActionCommand("expand-all");
       item.addActionListener(this);
       pPanelPopup.add(item);  
 
       item = new JMenuItem("Collapse All");
+      pCollapseAllItem = item;
       item.setActionCommand("collapse-all");
       item.addActionListener(this);
       pPanelPopup.add(item);  
@@ -146,6 +157,7 @@ class JNodeViewerPanel
       pPanelPopup.addSeparator();
 
       item = new JMenuItem("Remove All Roots");
+      pRemoveAllRootsItem = item;
       item.setActionCommand("remove-all-roots");
       item.addActionListener(this);
       pPanelPopup.add(item);  
@@ -178,9 +190,19 @@ class JNodeViewerPanel
 	pFrozenNodePopup, pNodePopup 
       };
 
+      pUpdateDetailsItems = new JMenuItem[5];
+      pMakeRootItems      = new JMenuItem[5];
+      pAddRootItems       = new JMenuItem[5];
+      pReplaceRootItems   = new JMenuItem[5];
+      pRemoveRootItems    = new JMenuItem[5];
+      pEditItems          = new JMenuItem[4];
+      pCheckOutItems      = new JMenuItem[3];
+      pReleaseItems       = new JMenuItem[2];
+
       int wk;
       for(wk=0; wk<menus.length; wk++) {
 	item = new JMenuItem("Update Details");
+	pUpdateDetailsItems[wk] = item;
 	item.setActionCommand("details");
 	item.addActionListener(this);
 	menus[wk].add(item);  
@@ -188,21 +210,25 @@ class JNodeViewerPanel
 	menus[wk].addSeparator();
 
 	item = new JMenuItem("Make Root");
+	pMakeRootItems[wk] = item;
 	item.setActionCommand("make-root");
 	item.addActionListener(this);
 	menus[wk].add(item);  
 	
 	item = new JMenuItem("Add Root");
+	pAddRootItems[wk] = item;
 	item.setActionCommand("add-root");
 	item.addActionListener(this);
 	menus[wk].add(item);  
 	
 	item = new JMenuItem("Replace Root");
+	pReplaceRootItems[wk] = item;
 	item.setActionCommand("replace-root");
 	item.addActionListener(this);
 	menus[wk].add(item);  
 	
 	item = new JMenuItem("Remove Root");
+	pRemoveRootItems[wk] = item;
 	item.setActionCommand("remove-root");
 	item.addActionListener(this);
 	menus[wk].add(item);  
@@ -211,6 +237,7 @@ class JNodeViewerPanel
 	  menus[wk].addSeparator();
 	  
 	  item = new JMenuItem((wk < 4) ? "View" : "Edit");
+	  pEditItems[wk-1] = item;
 	  item.setActionCommand("edit");
 	  item.addActionListener(this);
 	  menus[wk].add(item);
@@ -223,6 +250,7 @@ class JNodeViewerPanel
 	  menus[wk].addSeparator();
 	  
 	  item = new JMenuItem("Check-Out...");
+	  pCheckOutItems[wk-2] = item;
 	  item.setActionCommand("check-out");
 	  item.addActionListener(this);
 	  menus[wk].add(item);
@@ -232,6 +260,7 @@ class JNodeViewerPanel
 	  menus[wk].addSeparator();
 	  
 	  item = new JMenuItem("Release");
+	  pReleaseItems[0] = item;
 	  item.setActionCommand("release");
 	  item.addActionListener(this);
 	  menus[wk].add(item);
@@ -256,6 +285,7 @@ class JNodeViewerPanel
 	pNodePopup.addSeparator();
 	
 	item = new JMenuItem("Add Secondary...");
+	pAddSecondaryItem = item;
 	item.setActionCommand("add-secondary");
 	item.addActionListener(this);
 	pNodePopup.add(item);
@@ -268,26 +298,31 @@ class JNodeViewerPanel
 	pNodePopup.addSeparator();
       
 	item = new JMenuItem("Queue Jobs");
+	pQueueJobsItem = item;
 	item.setActionCommand("queue-jobs");
 	item.addActionListener(this);
 	pNodePopup.add(item);
 
 	item = new JMenuItem("Queue Jobs Special...");
+	pQueueJobsSpecialItem = item;
 	item.setActionCommand("queue-jobs-special");
 	item.addActionListener(this);
 	pNodePopup.add(item);
 
 	item = new JMenuItem("Pause Jobs");
+	pPauseJobsItem = item;
 	item.setActionCommand("pause-jobs");
 	item.addActionListener(this);
 	pNodePopup.add(item);
 
 	item = new JMenuItem("Resume Jobs");
+	pResumeJobsItem = item;
 	item.setActionCommand("resume-jobs");
 	item.addActionListener(this);
 	pNodePopup.add(item);
 
 	item = new JMenuItem("Kill Jobs");
+	pKillJobsItem = item;
 	item.setActionCommand("kill-jobs");
 	item.addActionListener(this);
 	pNodePopup.add(item);
@@ -295,12 +330,13 @@ class JNodeViewerPanel
 	pNodePopup.addSeparator();
 
 	item = new JMenuItem("Check-In...");
+	pCheckInItem = item;
 	item.setActionCommand("check-in");
 	item.addActionListener(this);
 	pNodePopup.add(item);
   
 	item = new JMenuItem("Check-Out...");
-	pCheckOutItem = item;
+	pCheckOutItems[2] = item;
 	item.setActionCommand("check-out");
 	item.addActionListener(this);
 	pNodePopup.add(item);
@@ -314,16 +350,19 @@ class JNodeViewerPanel
 	pNodePopup.addSeparator();
       
 	item = new JMenuItem("Clone...");
+	pCloneItem = item;
 	item.setActionCommand("clone");
 	item.addActionListener(this);
 	pNodePopup.add(item);
 
 	item = new JMenuItem("Release");
+	pReleaseItems[1] = item;
 	item.setActionCommand("release");
 	item.addActionListener(this);
 	pNodePopup.add(item);
 
 	item = new JMenuItem("Remove Files");
+	pRemoveFilesItem = item;
 	item.setActionCommand("remove-files");
 	item.addActionListener(this);
 	pNodePopup.add(item);
@@ -365,11 +404,13 @@ class JNodeViewerPanel
       pLinkPopup.addPopupMenuListener(this);
        
       item = new JMenuItem("Edit Link...");
+      pLinkEditItem = item;
       item.setActionCommand("link-edit");
       item.addActionListener(this);
       pLinkPopup.add(item);
 
       item = new JMenuItem("Unlink");
+      pLinkUnlinkItem = item;
       item.setActionCommand("link-unlink");
       item.addActionListener(this);
       pLinkPopup.add(item);
@@ -383,6 +424,8 @@ class JNodeViewerPanel
       pToolPopup = new JPopupMenu();  
       pToolPopup.addPopupMenuListener(this);
     }
+
+    updateMenuToolTips();
 
     /* initialize components */ 
     {
@@ -661,7 +704,145 @@ class JNodeViewerPanel
   updateUserPrefs() 
   {
     updateUniverse();
+    updateMenuToolTips();
   }
+
+  /**
+   * Update the menu item tool tips.
+   */ 
+  private void 
+  updateMenuToolTips() 
+  {
+    UserPrefs prefs = UserPrefs.getInstance();
+  
+    /* panel menu */ 
+    updateMenuToolTip
+      (pUpdateItem, prefs.getUpdate(), 
+       "Update the status of all nodes.");
+    updateMenuToolTip
+      (pRegisterItem, prefs.getNodeViewerRegisterNewNode(), 
+       "Register a new node.");
+    updateMenuToolTip
+      (pFrameSelectionItem, prefs.getFrameSelection(), 
+       "Move the camera to frame the bounds of the currently selected nodes.");
+    updateMenuToolTip
+      (pFrameAllItem, prefs.getFrameAll(), 
+       "Move the camera to frame all active nodes.");
+    updateMenuToolTip
+      (pAutomaticExpandItem, prefs.getAutomaticExpand(), 
+       "Automatically expand the first occurance of a node.");
+    updateMenuToolTip
+      (pExpandAllItem, prefs.getExpandAll(), 
+       "Expand all nodes.");
+    updateMenuToolTip
+      (pCollapseAllItem, prefs.getCollapseAll(), 
+       "Collapse all nodes.");
+    updateMenuToolTip
+      (pShowHideDownstreamItem, prefs.getNodeViewerShowHideDownstreamNodes(), 
+       "Show/hide nodes downstream of the focus node.");
+    updateMenuToolTip
+      (pRemoveAllRootsItem, prefs.getNodeViewerRemoveAllRoots(), 
+       "Remove all of the roots nodes.");
+
+    /* node menus */ 
+    int wk;
+    for(wk=0; wk<5; wk++) {
+      updateMenuToolTip
+	(pUpdateDetailsItems[wk], prefs.getDetails(), 
+	 "Update connected node details panels.");
+      updateMenuToolTip
+	(pMakeRootItems[wk], prefs.getNodeViewerMakeRoot(), 
+	 "Make the current primary selection the only root node.");
+      updateMenuToolTip
+	(pAddRootItems[wk], prefs.getNodeViewerAddRoot(), 
+	 "Add the current primary selection to the set of root nodes.");
+      updateMenuToolTip
+	(pReplaceRootItems[wk], prefs.getNodeViewerReplaceRoot(), 
+	 "Replace the root node of the current primary selection with the " +
+	 "primary selection.");
+      updateMenuToolTip
+	(pRemoveRootItems[wk], prefs.getNodeViewerRemoveRoot(), 
+	 "Remove the root node of the current primary selection from the set " +
+	 "of roots nodes.");
+    }
+
+    for(wk=0; wk<4; wk++) {
+      updateMenuToolTip
+	(pEditItems[wk], prefs.getEdit(), 
+	 "Edit primary file sequences of the current primary selection.");
+    }
+
+    for(wk=0; wk<3; wk++) {
+      updateMenuToolTip
+	(pCheckOutItems[wk], prefs.getNodeViewerCheckOut(), 
+	 "Check-out the current primary selection.");
+    }
+
+    for(wk=0; wk<2; wk++) {
+      updateMenuToolTip
+	(pReleaseItems[wk], prefs.getNodeViewerRelease(), 
+	 "Release the current primary selection.");
+    }
+
+    updateMenuToolTip
+      (pLinkItem, prefs.getNodeViewerLink(), 
+       "Link the secondary selected nodes to the current primary selection.");
+    updateMenuToolTip
+      (pUnlinkItem, prefs.getNodeViewerUnlink(), 
+       "Unlink the secondary selected nodes from the current primary selection.");
+    updateMenuToolTip
+      (pAddSecondaryItem, prefs.getNodeViewerAddSecondary(), 
+       "Add a secondary file sequence to the current primary selection.");
+    updateMenuToolTip
+      (pQueueJobsItem, prefs.getQueueJobs(), 
+       "Submit jobs to the queue for the current primary selection.");
+    updateMenuToolTip
+      (pQueueJobsSpecialItem, prefs.getQueueJobsSpecial(), 
+       "Submit jobs to the queue for the current primary selection with special job " + 
+       "requirements.");
+    updateMenuToolTip
+      (pPauseJobsItem, prefs.getPauseJobs(), 
+       "Pause all jobs associated with the selected nodes.");
+    updateMenuToolTip
+      (pResumeJobsItem, prefs.getResumeJobs(), 
+       "Resume execution of all jobs associated with the selected nodes.");
+    updateMenuToolTip
+      (pKillJobsItem, prefs.getKillJobs(), 
+       "Kill all jobs associated with the selected nodes.");
+    updateMenuToolTip
+      (pCheckInItem, prefs.getNodeViewerCheckIn(), 
+       "Check-in the current primary selection.");
+    updateMenuToolTip
+      (pEvolveItem, prefs.getNodeViewerEvolve(), 
+       "Evolve the current primary selection.");
+    updateMenuToolTip
+      (pCloneItem, prefs.getNodeViewerClone(), 
+       "Register a new node which is a clone of the current primary selection.");
+    updateMenuToolTip
+      (pRemoveFilesItem, prefs.getRemoveFiles(), 
+       "Remove all the primary/secondary files associated with the selected nodes.");
+    updateMenuToolTip
+      (pExportItem, prefs.getNodeViewerExport(), 
+       "Export the node properties from the primary selection to the selected nodes.");
+    updateMenuToolTip
+      (pRenameItem, prefs.getNodeViewerRename(), 
+       "Rename the current primary selection.");
+    updateMenuToolTip
+      (pRenumberItem, prefs.getNodeViewerRenumber(), 
+       "Renumber the current primary selection.");
+    updateMenuToolTip
+      (pDeleteItem, prefs.getNodeViewerDelete(), 
+       "Delete the current primary selection.");
+
+    /* link menu */ 
+    updateMenuToolTip
+      (pLinkEditItem, prefs.getNodeViewerLinkEdit(), 
+       "Edit the properties of the selected link.");
+    updateMenuToolTip
+      (pLinkUnlinkItem, prefs.getNodeViewerLinkUnlink(), 
+       "Remove the selected link.");
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -721,7 +902,7 @@ class JNodeViewerPanel
     pRenameItem.setEnabled(!hasCheckedIn);
     pRenumberItem.setEnabled(mod.getPrimarySequence().hasFrameNumbers());
     
-    pCheckOutItem.setEnabled(hasCheckedIn);
+    pCheckOutItems[2].setEnabled(hasCheckedIn);
     pEvolveItem.setEnabled(hasCheckedIn);
     
     {
@@ -812,7 +993,7 @@ class JNodeViewerPanel
       item = new JMenuItem(layout.getTitle());
       item.setActionCommand(prefix + ":" + layout.getName() + ":" + layout.getVersionID());
       item.addActionListener(this);
-   
+
       TreeSet<VersionID> vids = plugins.get(layout.getName());
       item.setEnabled((vids != null) && vids.contains(layout.getVersionID()));
     }
@@ -2049,6 +2230,9 @@ class JNodeViewerPanel
 	      prefs.getRemoveFiles().wasPressed(e))
 	doRemoveFiles();
 
+      else if((prefs.getNodeViewerExport() != null) &&
+	      prefs.getNodeViewerExport().wasPressed(e))
+	doExport();
       else if((prefs.getNodeViewerRename() != null) &&
 	      prefs.getNodeViewerRename().wasPressed(e))
 	doRename();
@@ -4851,8 +5035,15 @@ class JNodeViewerPanel
   /**
    * The panel popup menu items.
    */
+  private JMenuItem  pUpdateItem;
   private JMenuItem  pRegisterItem;
+  private JMenuItem  pFrameAllItem;
+  private JMenuItem  pFrameSelectionItem;
+  private JMenuItem  pAutomaticExpandItem;
+  private JMenuItem  pExpandAllItem;
+  private JMenuItem  pCollapseAllItem;
   private JMenuItem  pShowHideDownstreamItem;
+  private JMenuItem  pRemoveAllRootsItem;
   
 
   /*----------------------------------------------------------------------------------------*/
@@ -4877,13 +5068,30 @@ class JNodeViewerPanel
   /**
    * The node popup menu items.
    */ 
+  private JMenuItem[]  pUpdateDetailsItems;
+  private JMenuItem[]  pMakeRootItems;
+  private JMenuItem[]  pAddRootItems;
+  private JMenuItem[]  pReplaceRootItems;
+  private JMenuItem[]  pRemoveRootItems;
+  private JMenuItem[]  pEditItems;
+  private JMenuItem[]  pCheckOutItems;
+  private JMenuItem[]  pReleaseItems;
+
   private JMenuItem  pLinkItem;
   private JMenuItem  pUnlinkItem;
+  private JMenuItem  pAddSecondaryItem;
+  private JMenuItem  pQueueJobsItem;
+  private JMenuItem  pQueueJobsSpecialItem;
+  private JMenuItem  pPauseJobsItem;
+  private JMenuItem  pResumeJobsItem;
+  private JMenuItem  pKillJobsItem;
+  private JMenuItem  pCheckInItem;
+  private JMenuItem  pEvolveItem;
+  private JMenuItem  pCloneItem;
+  private JMenuItem  pRemoveFilesItem;
   private JMenuItem  pExportItem;
   private JMenuItem  pRenameItem;
   private JMenuItem  pRenumberItem;
-  private JMenuItem  pCheckOutItem;
-  private JMenuItem  pEvolveItem;
   private JMenuItem  pDeleteItem;
 
   /**
@@ -4909,6 +5117,12 @@ class JNodeViewerPanel
    * The link popup menu.
    */ 
   private JPopupMenu  pLinkPopup;
+
+  /**
+   * The link popup menu items.
+   */ 
+  private JMenuItem  pLinkEditItem;
+  private JMenuItem  pLinkUnlinkItem;
 
 
   /*----------------------------------------------------------------------------------------*/
