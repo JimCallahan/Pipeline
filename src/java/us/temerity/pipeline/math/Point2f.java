@@ -1,4 +1,4 @@
-// $Id: Point2f.java,v 1.4 2004/12/16 21:34:49 jim Exp $
+// $Id: Point2f.java,v 1.5 2004/12/19 19:28:48 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -234,7 +234,7 @@ class Point2f
    Vector2f t 
   ) 
   {
-    super.add(t);
+    addTuple(t);
     return this;
   }
 
@@ -250,7 +250,7 @@ class Point2f
    Vector2f t
   ) 
   {
-    super.sub(t);
+    subTuple(t);
     return this;
   }
 
@@ -266,7 +266,7 @@ class Point2f
    Vector2f t
   ) 
   {
-    super.mult(t);
+    multTuple(t);
     return this;
   }
 

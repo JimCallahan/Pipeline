@@ -207,7 +207,7 @@ class Point3i
    Vector3i t 
   ) 
   {
-    super.add(t);
+    addTuple(t);
     return this;
   }
 
@@ -223,7 +223,7 @@ class Point3i
    Vector3i t
   ) 
   {
-    super.sub(t);
+    subTuple(t);
     return this;
   }
 
@@ -239,9 +239,10 @@ class Point3i
    Vector3i t
   ) 
   {
-    super.mult(t);
+    multTuple(t);
     return this;
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/

@@ -685,51 +685,8 @@ class TupleNi
     return len;
   }
   
-  					    
-  /*----------------------------------------------------------------------------------------*/
-  /*   V E C T O R   O P S                                                                  */
-  /*----------------------------------------------------------------------------------------*/
-						
-  /**
-   * The inner product of the this tuple and the given tuple.
-   * 
-   * @throws TupleSizeMismatchException
-   *   If the given tuple is not the same size as this tuple.
-   */ 
-  public int 
-  dot
-  (
-   TupleNi t
-  ) 
-  {
-    if(pComps.length != t.size()) 
-      throw new TupleSizeMismatchException(pComps.length, t.size());
-    
-    int rtn = 0;
-    int i; 
-    for(i=0; i<pComps.length; i++) 
-      rtn += pComps[i] * t.pComps[i];
-    return rtn;
-  }
-
-  /**
-   * The inner product of the given tuples.
-   * 
-   * @throws TupleSizeMismatchException
-   *   If the given tuples are not the same size.
-   */ 
-  public static int
-  dot
-  (
-   TupleNi a,
-   TupleNi b
-  ) 
-  {
-    return a.dot(b);
-  }
-  
-
-									    
+	
+								    
   /*----------------------------------------------------------------------------------------*/
   /*   S C A L A R   O P S                                                                  */
   /*----------------------------------------------------------------------------------------*/
@@ -791,6 +748,49 @@ class TupleNi
   }
 
 
+  					    
+  /*----------------------------------------------------------------------------------------*/
+  /*   V E C T O R   O P S                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+						
+  /**
+   * The inner product of the this tuple and the given tuple.
+   * 
+   * @throws TupleSizeMismatchException
+   *   If the given tuple is not the same size as this tuple.
+   */ 
+  public int 
+  dot
+  (
+   TupleNi t
+  ) 
+  {
+    if(pComps.length != t.size()) 
+      throw new TupleSizeMismatchException(pComps.length, t.size());
+    
+    int rtn = 0;
+    int i; 
+    for(i=0; i<pComps.length; i++) 
+      rtn += pComps[i] * t.pComps[i];
+    return rtn;
+  }
+
+  /**
+   * The inner product of the given tuples.
+   * 
+   * @throws TupleSizeMismatchException
+   *   If the given tuples are not the same size.
+   */ 
+  public static int
+  dot
+  (
+   TupleNi a,
+   TupleNi b
+  ) 
+  {
+    return a.dot(b);
+  }
+  
 
 										    
   /*----------------------------------------------------------------------------------------*/
@@ -803,8 +803,8 @@ class TupleNi
    * @throws TupleSizeMismatchException
    *   If the given tuple is not the same size as this tuple.
    */ 
-  protected void 
-  add
+  public void 
+  addTuple
   (
    TupleNi t
   ) 
@@ -823,8 +823,8 @@ class TupleNi
    * @throws TupleSizeMismatchException
    *   If the given tuple is not the same size as this tuple.
    */ 
-  protected void 
-  sub
+  public void 
+  subTuple
   (
    TupleNi t
   ) 
@@ -843,8 +843,8 @@ class TupleNi
    * @throws TupleSizeMismatchException
    *   If the given tuple is not the same size as this tuple.
    */ 
-  protected void 
-  mult
+  public void 
+  multTuple
   (
    TupleNi t
   ) 
@@ -863,8 +863,8 @@ class TupleNi
    * @throws TupleSizeMismatchException
    *   If the given tuple is not the same size as this tuple.
    */ 
-  protected void 
-  div
+  public void 
+  divTuple
   (
    TupleNi t
   ) 
@@ -918,6 +918,7 @@ class TupleNi
 	
     return buf.toString();
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/

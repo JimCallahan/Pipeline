@@ -196,7 +196,7 @@ class Vector4l
    Vector4l t
   ) 
   {
-    super.add(t);
+    addTuple(t);
     return this;
   }
 
@@ -212,7 +212,7 @@ class Vector4l
    Vector4l t
   ) 
   {
-    super.sub(t);
+    subTuple(t);
     return this;
   }
 
@@ -228,7 +228,7 @@ class Vector4l
    Vector4l t
   ) 
   {
-    super.mult(t);
+    multTuple(t);
     return this;
   }
 
@@ -244,9 +244,10 @@ class Vector4l
    Vector4l t
   ) 
   {
-    super.div(t);
+    divTuple(t);
     return this;
   }
+
 
   /*----------------------------------------------------------------------------------------*/
 

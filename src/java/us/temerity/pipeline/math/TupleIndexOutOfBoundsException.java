@@ -1,4 +1,4 @@
-// $Id: TupleIndexOutOfBoundsException.java,v 1.2 2004/12/17 21:23:55 jim Exp $
+// $Id: TupleIndexOutOfBoundsException.java,v 1.3 2004/12/19 19:28:49 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -37,6 +37,7 @@ class TupleIndexOutOfBoundsException
   )
   {
     super("The tuple index (" + idx + ") was out-of-bounds.");
+    pIdx = idx;
   }
     
   /**
@@ -50,13 +51,41 @@ class TupleIndexOutOfBoundsException
   {
     super(msg);
   }
+
           
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The illagal index or <CODE>null</CODE> if unknown.
+   */ 
+  public Integer
+  getIllegalIndex() 
+  {
+    return pIdx;
+  }
+  
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
   private static final long serialVersionUID = 2476265770478464111L;
+
+
+  
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The illegal index.
+   */ 
+  public Integer  pIdx; 
 
 }
   

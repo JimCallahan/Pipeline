@@ -728,51 +728,8 @@ class TupleNd
     return len;
   }
   
-  					    
-  /*----------------------------------------------------------------------------------------*/
-  /*   V E C T O R   O P S                                                                  */
-  /*----------------------------------------------------------------------------------------*/
-						
-  /**
-   * The inner product of the this tuple and the given tuple.
-   * 
-   * @throws TupleSizeMismatchException
-   *   If the given tuple is not the same size as this tuple.
-   */ 
-  public double 
-  dot
-  (
-   TupleNd t
-  ) 
-  {
-    if(pComps.length != t.size()) 
-      throw new TupleSizeMismatchException(pComps.length, t.size());
-    
-    double rtn = 0.0;
-    int i; 
-    for(i=0; i<pComps.length; i++) 
-      rtn += pComps[i] * t.pComps[i];
-    return rtn;
-  }
-
-  /**
-   * The inner product of the given tuples.
-   * 
-   * @throws TupleSizeMismatchException
-   *   If the given tuples are not the same size.
-   */ 
-  public static double
-  dot
-  (
-   TupleNd a,
-   TupleNd b
-  ) 
-  {
-    return a.dot(b);
-  }
-  
-
-									    
+	
+								    
   /*----------------------------------------------------------------------------------------*/
   /*   S C A L A R   O P S                                                                  */
   /*----------------------------------------------------------------------------------------*/
@@ -834,6 +791,49 @@ class TupleNd
   }
 
 
+  					    
+  /*----------------------------------------------------------------------------------------*/
+  /*   V E C T O R   O P S                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+						
+  /**
+   * The inner product of the this tuple and the given tuple.
+   * 
+   * @throws TupleSizeMismatchException
+   *   If the given tuple is not the same size as this tuple.
+   */ 
+  public double 
+  dot
+  (
+   TupleNd t
+  ) 
+  {
+    if(pComps.length != t.size()) 
+      throw new TupleSizeMismatchException(pComps.length, t.size());
+    
+    double rtn = 0.0;
+    int i; 
+    for(i=0; i<pComps.length; i++) 
+      rtn += pComps[i] * t.pComps[i];
+    return rtn;
+  }
+
+  /**
+   * The inner product of the given tuples.
+   * 
+   * @throws TupleSizeMismatchException
+   *   If the given tuples are not the same size.
+   */ 
+  public static double
+  dot
+  (
+   TupleNd a,
+   TupleNd b
+  ) 
+  {
+    return a.dot(b);
+  }
+  
 
 										    
   /*----------------------------------------------------------------------------------------*/
@@ -846,8 +846,8 @@ class TupleNd
    * @throws TupleSizeMismatchException
    *   If the given tuple is not the same size as this tuple.
    */ 
-  protected void 
-  add
+  public void 
+  addTuple
   (
    TupleNd t
   ) 
@@ -866,8 +866,8 @@ class TupleNd
    * @throws TupleSizeMismatchException
    *   If the given tuple is not the same size as this tuple.
    */ 
-  protected void 
-  sub
+  public void 
+  subTuple
   (
    TupleNd t
   ) 
@@ -886,8 +886,8 @@ class TupleNd
    * @throws TupleSizeMismatchException
    *   If the given tuple is not the same size as this tuple.
    */ 
-  protected void 
-  mult
+  public void 
+  multTuple
   (
    TupleNd t
   ) 
@@ -906,8 +906,8 @@ class TupleNd
    * @throws TupleSizeMismatchException
    *   If the given tuple is not the same size as this tuple.
    */ 
-  protected void 
-  div
+  public void 
+  divTuple
   (
    TupleNd t
   ) 
@@ -961,6 +961,7 @@ class TupleNd
 	
     return buf.toString();
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: Vector3f.java,v 1.4 2004/12/14 14:08:43 jim Exp $
+// $Id: Vector3f.java,v 1.5 2004/12/19 19:28:49 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -256,7 +256,7 @@ class Vector3f
    Vector3f t
   ) 
   {
-    super.add(t);
+    addTuple(t);
     return this;
   }
 
@@ -272,7 +272,7 @@ class Vector3f
    Vector3f t
   ) 
   {
-    super.sub(t);
+    subTuple(t);
     return this;
   }
 
@@ -288,7 +288,7 @@ class Vector3f
    Vector3f t
   ) 
   {
-    super.mult(t);
+    multTuple(t);
     return this;
   }
 
@@ -304,7 +304,7 @@ class Vector3f
    Vector3f t
   ) 
   {
-    super.div(t);
+    divTuple(t);
     return this;
   }
 

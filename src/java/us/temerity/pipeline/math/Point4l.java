@@ -208,7 +208,7 @@ class Point4l
    Vector4l t 
   ) 
   {
-    super.add(t);
+    addTuple(t);
     return this;
   }
 
@@ -224,7 +224,7 @@ class Point4l
    Vector4l t
   ) 
   {
-    super.sub(t);
+    subTuple(t);
     return this;
   }
 
@@ -240,7 +240,7 @@ class Point4l
    Vector4l t
   ) 
   {
-    super.mult(t);
+    multTuple(t);
     return this;
   }
 
