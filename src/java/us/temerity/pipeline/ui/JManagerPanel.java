@@ -1,13 +1,15 @@
-// $Id: JManagerPanel.java,v 1.4 2004/04/28 23:23:51 jim Exp $
+// $Id: JManagerPanel.java,v 1.5 2004/04/29 04:53:29 jim Exp $
 
 package us.temerity.pipeline.ui;
+
+import us.temerity.pipeline.laf.LookAndFeelLoader;
 
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   S T E M   P A N E L                                                                    */
+/*   M A N A G E R   P A N E L                                                              */
 /*------------------------------------------------------------------------------------------*/
 
 /**
@@ -35,6 +37,8 @@ class JManagerPanel
   JManagerPanel()
   {
     super();
+
+    setName("Manager");
     setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));   
 
     /* panel layout popup menu */ 
@@ -42,7 +46,14 @@ class JManagerPanel
       JMenuItem item;
       
       pPopup = new JPopupMenu();    
+            
+      item = new JMenuItem("Add Tab");
+      item.setActionCommand("add-tab");
+      item.addActionListener(this);
+      pPopup.add(item);  
       
+      pPopup.addSeparator();
+
       item = new JMenuItem("Add Left");
       item.setActionCommand("add-left");
       item.addActionListener(this);
@@ -64,13 +75,6 @@ class JManagerPanel
       item.setActionCommand("add-below");
       item.addActionListener(this);
       pPopup.add(item);  
-      
-      pPopup.addSeparator();
-      
-      item = new JMenuItem("Add Tab");
-      item.setActionCommand("add-tab");
-      item.addActionListener(this);
-      pPopup.add(item);  
     }
 
     /* panel title bar */ 
@@ -84,23 +88,6 @@ class JManagerPanel
       panel.setMinimumSize(new Dimension(200, 29));
       panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 29));
       panel.setPreferredSize(new Dimension(200, 29));
-
-    //   {
-// 	JButton btn = new JButton();
-// 	pMenuButton = btn;
-
-// 	btn.setName("PanelMenuButton");
-
-// 	Dimension size = new Dimension(14, 19);
-// 	btn.setMinimumSize(size);
-// 	btn.setMaximumSize(size);
-// 	btn.setPreferredSize(size);
-	
-// 	btn.setActionCommand("show-panel-menu");
-//         btn.addActionListener(this);
-
-// 	panel.add(btn);
-//       }
 
       {
 	JMenuAnchor anchor = new JMenuAnchor(pPopup);
@@ -133,7 +120,7 @@ class JManagerPanel
 	combo.addItem("Job Details");
 	combo.addItem("Task Timeline");
 	combo.addItem("Task Details");
-	combo.addItem("- None -");
+	combo.addItem("Empty");
 	
 	panel.add(combo);
       }
@@ -180,7 +167,8 @@ class JManagerPanel
 
     removeContents();
 
-    if(!(child instanceof JSplitPanel)) {
+    if(!((child instanceof JSplitPanel) ||
+	 (child instanceof JTabbedPane))) {
       add(pTitlePanel);
     }
     
@@ -230,11 +218,7 @@ class JManagerPanel
     System.out.print("Action: " + e.getActionCommand() + "\n");
 
     /* dispatch event */ 
-    if(e.getActionCommand().equals("show-panel-menu")) {
-      Component comp = (Component) e.getSource();
-      pPopup.show(comp, 0, 0);
-    }
-    else if(e.getActionCommand().equals("select-panel-type")) 
+    if(e.getActionCommand().equals("select-panel-type")) 
       System.out.print("Select Panel: " + pSelectorCombo.getSelectedItem() + "\n");
     else if(e.getActionCommand().equals("add-left"))
       doAddLeft();
@@ -267,11 +251,8 @@ class JManagerPanel
   {
     JManagerPanel left = null;
     {
-      JPanel panel = new JPanel();
-      panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-
       left = new JManagerPanel();
-      left.setContents(panel);
+      left.setContents(new JEmptyPanel());
     }
 
     JManagerPanel right = null;
@@ -297,11 +278,8 @@ class JManagerPanel
 
     JManagerPanel right = null;
     {    
-      JPanel panel = new JPanel();
-      panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-
       right = new JManagerPanel();
-      right.setContents(panel);
+      right.setContents(new JEmptyPanel());
     }
 
     setContents(new JSplitPanel(JSplitPane.HORIZONTAL_SPLIT, left, right));
@@ -315,11 +293,8 @@ class JManagerPanel
   {
     JManagerPanel above = null;
     {
-      JPanel panel = new JPanel();
-      panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-
       above = new JManagerPanel();
-      above.setContents(panel);
+      above.setContents(new JEmptyPanel());
     }
 
     JManagerPanel below = null;
@@ -345,11 +320,8 @@ class JManagerPanel
 
     JManagerPanel below = null;
     {    
-      JPanel panel = new JPanel();
-      panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-
       below = new JManagerPanel();
-      below.setContents(panel);
+      below.setContents(new JEmptyPanel());
     }
 
     setContents(new JSplitPanel(JSplitPane.VERTICAL_SPLIT, above, below));
@@ -363,50 +335,42 @@ class JManagerPanel
    */ 
   private void 
   doAddTab()
-  {
+  { 
+    Container parent = getParent();
+    assert(parent != null);
 
-    JTabbedPane tabbed = null;
-    {
-      Component child = getComponent(0);
-      if(child instanceof JTabbedPane) {
-	tabbed = (JTabbedPane) child;
-      }
-      else {
-	tabbed = new JTabbedPane();
-	tabbed.addTab("Previous", removeContents());
-
-	setContents(tabbed);
-      }
-    }
-    assert(tabbed != null);
-
-    {    
-      JPanel panel = new JPanel();
-      panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-
+    /* if the parent is already a tabbed pane, simply add another tab */ 
+    if(parent instanceof JTabbedPane) {
       JManagerPanel mgr = new JManagerPanel();
-      mgr.setContents(panel);
+      mgr.setContents(new JEmptyPanel());
 
-      tabbed.addTab("Empty", mgr);
+      JTabbedPane tab = (JTabbedPane) parent;
+      tab.addTab(null, sTabIcon, mgr);
+    }
+    
+    /* create a new tabbed panel with the contents of this panel as its only tab */ 
+    else {
+      Component comp = removeContents();
+      if(comp != null) {
+	JManagerPanel mgr = new JManagerPanel();
+	mgr.setContents(comp);
+
+	JTabbedPane tab = new JTabbedPane();
+	tab.addTab(null, sTabIcon, mgr);
+
+	setContents(tab);
+      }
     }
   }
 
-  // ...
-
-
   /**
-   * 
+   * Close this panel.
    */ 
   private void 
   doClosePanel()
   {
     Container parent = getParent();
-
-    if(parent == null) {
-      System.out.print("Parent: (null)\n");
-      return;
-    }
-    System.out.print("Parent: " + parent.getClass().getName() + "\n");
+    assert(parent != null);
 
     /* replace the parent split pane with the other child */ 
     if(parent instanceof JSplitPanel) {
@@ -443,6 +407,18 @@ class JManagerPanel
       JManagerPanel grandpa = (JManagerPanel) split.getParent();
       grandpa.setContents(liveMgr.removeContents());
     }
+
+    /* remove this tab from the parent tabbed pane */ 
+    else if(parent instanceof JTabbedPane) {
+      JTabbedPane tab = (JTabbedPane) parent;
+      tab.remove(this);
+
+      /* if empty, remove the tabbed pane as well */ 
+      if(tab.getTabCount() == 0) {
+	JManagerPanel grandpa = (JManagerPanel) tab.getParent();
+	grandpa.setContents(new JEmptyPanel());
+      }
+    }
     else {
       System.out.print("Unknown...\n");      
     }
@@ -458,6 +434,8 @@ class JManagerPanel
   
   //private static final long serialVersionUID = -3122417485809218152L;
 
+  static private Icon sTabIcon = 
+    new ImageIcon(LookAndFeelLoader.class.getResource("TabIcon.png"));
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -468,11 +446,6 @@ class JManagerPanel
    * The title bar. 
    */ 
   private JPanel  pTitlePanel;
-
-  /**
-   * The panel menu button.
-   */ 
-  private JButton  pMenuButton;
 
   /**
    * The combo box used to select the panel type.

@@ -1,4 +1,4 @@
-// $Id: JSplitPanel.java,v 1.1 2004/04/26 23:20:10 jim Exp $
+// $Id: JSplitPanel.java,v 1.2 2004/04/29 04:53:29 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -6,9 +6,13 @@ import java.awt.*;
 import javax.swing.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   S P L I T   P L A N E   P L                                                            */
+/*   S P L I T   P L A N E L                                                                */
 /*------------------------------------------------------------------------------------------*/
 
+/**
+ * A <CODE>JSplitPane</CODE> which names its one-touch buttons so that the Synth 
+ * look-and-feel can properly assign icons to these buttons.
+ */ 
 public 
 class JSplitPanel
   extends JSplitPane
@@ -39,6 +43,7 @@ class JSplitPanel
   )
   {
     super(newOrientation, true, newLeftComponent, newRightComponent);
+    setName("Split");
 
     setOneTouchExpandable(true);
     setResizeWeight(0.5);

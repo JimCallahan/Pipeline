@@ -1,4 +1,4 @@
-// $Id: UIMain.java,v 1.4 2004/04/28 23:23:51 jim Exp $
+// $Id: UIMain.java,v 1.5 2004/04/29 04:54:06 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -68,24 +68,24 @@ class UIMain
 //     }
 
     /* load the Pipeline look-and-feel */ 
-    {
-      try {
-	SynthLookAndFeel synth = new SynthLookAndFeel();
-	synth.load(LookAndFeelLoader.class.getResourceAsStream("synth.xml"),
-		   LookAndFeelLoader.class);
-	UIManager.setLookAndFeel(synth);
-      }
-      catch(ParseException ex) {
-	Logs.ops.severe("Unable to parse the look-and-feel XML file (synth.xml):\n" + 
-			"  " + ex.getMessage());
-	System.exit(1);
-      }
-      catch(UnsupportedLookAndFeelException ex) {
-	Logs.ops.severe("Unable to load the Pipeline look-and-feel:\n" + 
-			"  " + ex.getMessage());
-	System.exit(1);
-      }
-    }
+  //   {
+//       try {
+// 	SynthLookAndFeel synth = new SynthLookAndFeel();
+// 	synth.load(LookAndFeelLoader.class.getResourceAsStream("synth.xml"),
+// 		   LookAndFeelLoader.class);
+// 	UIManager.setLookAndFeel(synth);
+//       }
+//       catch(ParseException ex) {
+// 	Logs.ops.severe("Unable to parse the look-and-feel XML file (synth.xml):\n" + 
+// 			"  " + ex.getMessage());
+// 	System.exit(1);
+//       }
+//       catch(UnsupportedLookAndFeelException ex) {
+// 	Logs.ops.severe("Unable to load the Pipeline look-and-feel:\n" + 
+// 			"  " + ex.getMessage());
+// 	System.exit(1);
+//       }
+//     }
 
     /* application wide UI settings */ 
     {

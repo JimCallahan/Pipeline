@@ -1,4 +1,4 @@
-// $Id: JMenuAnchor.java,v 1.1 2004/04/28 23:23:51 jim Exp $
+// $Id: JMenuAnchor.java,v 1.2 2004/04/29 04:53:29 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -14,7 +14,7 @@ import javax.swing.event.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * 
+ * A iconic anchor which shows a popup menu when pressed.
  */ 
 public 
 class JMenuAnchor
