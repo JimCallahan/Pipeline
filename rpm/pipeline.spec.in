@@ -76,9 +76,6 @@ The core features of Pipeline include:
 @ROOT_INST_DIR@/sbin/debug-profile/plmaster
 @ROOT_INST_DIR@/sbin/debug-profile/plqueuemgr
 
-%defattr(500,root,root)
-@ROOT_INST_DIR@/sbin/plcleandirs
-
 %defattr(775,@PIPELINE_USER@,@PIPELINE_GROUP@)
 %dir @PRODDIR@/working
 %dir @ROOT_INST_DIR@/logs

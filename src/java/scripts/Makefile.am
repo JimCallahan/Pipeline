@@ -15,8 +15,7 @@ instsbin_SCRIPTS = \
   pljobmgr \
   plmaster \
   plqueuemgr \
-  plrestore \
-  plcleandirs
+  plrestore
 
 
 SUBDIRS = \
