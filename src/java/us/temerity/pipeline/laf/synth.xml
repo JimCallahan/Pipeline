@@ -116,6 +116,22 @@
 
 
 
+  <!--  B R O W S E   B U T T O N  -->
+
+  <style id="BrowseButton"> 
+    <state>
+      <imagePainter path="BrowseButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="BrowseButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="BrowseButton" type="name" key="BrowseButton"/>
+
+
+
   <!--  F O L D E R   B U T T O N  -->
 
   <style id="FolderButton"> 
@@ -129,6 +145,22 @@
     </state>
   </style>
   <bind style="FolderButton" type="name" key="FolderButton"/>
+
+
+
+  <!--  H O M E   B U T T O N  -->
+
+  <style id="HomeButton"> 
+    <state>
+      <imagePainter path="HomeButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="HomeButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="HomeButton" type="name" key="HomeButton"/>
 
 
 
@@ -201,6 +233,46 @@
   <bind style="RaisedCancelButton" type="name" key="RaisedCancelButton"/>
 
 
+  <!--  L E F T   A R R O W   B U T T O N  -->
+
+  <style id="LeftArrowButton"> 
+    <state>
+      <imagePainter path="LeftArrowButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="LeftArrowButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="DISABLED">
+      <imagePainter path="LeftArrowButtonDisabled.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="LeftArrowButton" type="name" key="LeftArrowButton"/>
+
+
+
+  <!--  R I G H T   A R R O W   B U T T O N  -->
+
+  <style id="RightArrowButton"> 
+    <state>
+      <imagePainter path="RightArrowButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="RightArrowButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state> 
+    <state value="DISABLED">
+      <imagePainter path="RightArrowButtonDisabled.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="RightArrowButton" type="name" key="RightArrowButton"/>
+
+
+
   <!--  T I T L E   P A N E L  -->
 
   <style id="TitlePanel">
@@ -262,6 +334,49 @@
 
 
 
+  <!--  T E X T   A R E A  -->
+
+  <style id="TextArea">
+    <state value="SELECTED">
+       <color value="#ffff00" type="TEXT_FOREGROUND"/>
+       <color value="#727272" type="TEXT_BACKGROUND"/>
+    </state>
+    <imagePainter path="ValuePanel.png"
+                  method="textAreaBackground"
+                  sourceInsets="3 3 3 3"/>
+    <insets top="2" bottom="2" right="8" left="8"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="TextArea" type="name" key="TextArea"/>
+
+  <style id="EditableTextArea">
+    <state value="SELECTED">
+       <color value="#ffff00" type="TEXT_FOREGROUND"/>
+       <color value="#727272" type="TEXT_BACKGROUND"/>
+    </state>
+    <imagePainter path="EditableValuePanel.png"
+                  method="textAreaBackground"
+                  sourceInsets="3 3 3 3"/> 
+    <insets top="2" bottom="2" right="8" left="8"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="EditableTextArea" type="name" key="EditableTextArea"/>
+
+  <style id="CodeTextArea">
+    <state value="SELECTED">
+       <color value="#ffff00" type="TEXT_FOREGROUND"/>
+       <color value="#727272" type="TEXT_BACKGROUND"/>
+    </state>
+    <imagePainter path="DarkGrey.png"
+                  method="textAreaBackground"
+                  sourceInsets="0 0 0 0"/>
+    <insets top="2" bottom="2" right="8" left="8"/>
+    <font name="Courier" size="16"/>
+  </style>
+  <bind style="CodeTextArea" type="name" key="CodeTextArea"/>
+
+
+
   <!--  H O T   K E Y   F I E L D  -->
 
   <style id="HotKeyField">
@@ -305,17 +420,17 @@
   </style>
   <bind style="CollectionField" type="name" key="CollectionField"/>
 
-
-
-  <!--  T E X T   A R E A  -->
-
-  <style id="TextArea">
+  <style id="CollectionTextField">
+    <state value="SELECTED">
+       <color value="#ffffff" type="TEXT_FOREGROUND"/>
+       <color value="#727272" type="TEXT_BACKGROUND"/>
+    </state>
     <imagePainter path="DarkGrey.png"
-                  method="textAreaBackground"
+                  method="textFieldBackgroud"
                   sourceInsets="0 0 0 0"/>
-    <insets top="3" bottom="3" right="3" left="3"/>
+    <font name="Lucida Sans Bold" size="12"/>
   </style>
-  <bind style="TextArea" type="region" key="TextArea"/>
+  <bind style="CollectionTextField" type="name" key="CollectionTextField"/>
 
 
 
@@ -376,6 +491,7 @@
     <imagePainter path="DarkGrey.png"
                   method="listBackground"
                   sourceInsets="0 0 0 0"/>
+    <insets top="0" bottom="0" right="4" left="4"/>
   </style>
   <bind style="List" type="region" key="List"/>
 
@@ -417,28 +533,28 @@
   <!--  S C R O L L   B A R  -->
 
   <style id="ScrollBar">
-    <imagePainter path="Panel.png"
-                  sourceInsets="5 5 5 5"
-                  paintCenter="false"/>
-    <insets top="5" bottom="5" right="5" left="5"/>
+    <state>
+      <imagePainter path="ScrollBar.png"
+                    method="scrollBarBackground"
+                    sourceInsets="0 2 0 0"/>
+    <insets top="0" bottom="0" right="0" left="3"/>
+    <property key="ScrollBar.allowsAbsolutePositioning" type="boolean" value="true"/>
+    <property key="ScrollBar.squareButtons" type="boolean" value="true"/>
+    </state>
   </style>
   <bind style="ScrollBar" type="region" key="ScrollBar"/>
 
   <style id="ScrollBarThumb">
     <state>
       <imagePainter path="ScrollBarThumb.png"
-                    sourceInsets="7 6 7 6"/>
-    </state>
-    <state value="SELECTED">
-      <imagePainter path="ScrollBarThumbPressed.png"
-                    sourceInsets="7 6 7 6"/>
+                    sourceInsets="3 4 3 4"/>
     </state>
   </style>
   <bind style="ScrollBarThumb" type="region" key="ScrollBarThumb"/>
 
   <style id="ScrollBarTrack"> 
     <imagePainter path="ScrollBarTrack.png"
-                  sourceInsets="7 6 7 6"/>
+                  sourceInsets="2 6 2 6"/>
   </style>
   <bind style="ScrollBarTrack" type="region" key="ScrollBarTrack"/>
    
