@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.18 2004/06/14 22:50:51 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.19 2004/06/19 00:35:06 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -270,7 +270,6 @@ class JNodeViewerPanel
       item = new JMenuItem("Check-In...");
       item.setActionCommand("check-in");
       item.addActionListener(this);
-      item.setEnabled(false);  // FOR NOW...
       pNodePopup.add(item);
   
       item = new JMenuItem("Check-Out...");
@@ -438,6 +437,7 @@ class JNodeViewerPanel
       pRenameDialog   = new JRenameDialog();
       pRegisterDialog = new JRegisterDialog();
       pRevokeDialog   = new JRevokeDialog();
+      pCheckInDialog  = new JCheckInDialog();
     }
   }
 
@@ -2083,6 +2083,8 @@ class JNodeViewerPanel
       doClone();
     else if(cmd.equals("revoke"))
       doRevoke();
+    else if(cmd.equals("check-in"))
+      doCheckIn();
 
 
     // ...
@@ -2306,6 +2308,43 @@ class JNodeViewerPanel
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Check-in the primary selected node.
+   */ 
+  public void 
+  doCheckIn() 
+  {
+    if(pPrimary != null) {
+      NodeStatus status = pPrimary.getNodeStatus();
+      NodeDetails details = status.getDetails();
+      if(details != null) {
+	VersionID latest = null;
+	if(details.getLatestVersion() != null) 
+	  latest = details.getLatestVersion().getVersionID();
+
+	pCheckInDialog.updateNameVersion("Check-In:  " + status, latest);
+	pCheckInDialog.setVisible(true);
+	
+	if(pCheckInDialog.wasConfirmed()) {
+	  String desc = pCheckInDialog.getDescription();
+	  assert((desc != null) && (desc.length() > 0));
+
+	  VersionID.Level level = pCheckInDialog.getLevel();
+
+	  CheckInTask task = new CheckInTask(status.getName(), desc, level);
+	  task.start();
+	}
+      }
+    }
+
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();
+  }
+
+
+ 
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -2762,6 +2801,51 @@ class JNodeViewerPanel
     private boolean pRemoveFiles; 
   }
 
+  /** 
+   * Check-in a given node.
+   */ 
+  private
+  class CheckInTask
+    extends Thread
+  {
+    public 
+    CheckInTask
+    (
+     String name, 
+     String desc,
+     VersionID.Level level
+    ) 
+    {
+      pName        = name; 
+      pDescription = desc;
+      pLevel       = level;
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Checking-in Node...")) {
+	try {
+	  master.getMasterMgrClient().checkIn(pAuthor, pView, pName, pDescription, pLevel);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	updateRoots();
+      }
+    }
+
+    private String  pName; 
+    private String  pDescription;  
+    private VersionID.Level  pLevel;
+  }
+
 
   /** 
    * Get the status of the root nodes.
@@ -3104,5 +3188,10 @@ class JNodeViewerPanel
    * The revoke node dialog.
    */ 
   private JRevokeDialog  pRevokeDialog;
+
+  /** 
+   * The check-in node dialog.
+   */ 
+  private JCheckInDialog  pCheckInDialog;
 
 }
