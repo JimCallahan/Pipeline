@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.41 2004/09/11 14:18:25 jim Exp $
+// $Id: UIMaster.java,v 1.42 2004/09/27 04:32:38 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1834,6 +1834,9 @@ class UIMaster
 
     return field;
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Add vertical space into the given panels.
