@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.6 2004/08/25 05:19:59 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.7 2004/09/03 11:02:59 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -101,16 +101,31 @@ class JNodeFilesPanel
       {
 	pWorkingPopup.addSeparator();
 	
-	item = new JMenuItem("Make");
-	item.setActionCommand("make");
+	item = new JMenuItem("Queue Jobs");
+	item.setActionCommand("queue-jobs");
 	item.addActionListener(this);
-	item.setEnabled(false);  // FOR NOW...
 	pWorkingPopup.add(item);
 	
-	item = new JMenuItem("Queue");
-	item.setActionCommand("queue");
+	item = new JMenuItem("Pause Jobs");
+	item.setActionCommand("pause-jobs");
 	item.addActionListener(this);
-	item.setEnabled(false);  // FOR NOW...
+	pWorkingPopup.add(item);
+      
+	item = new JMenuItem("Resume Jobs");
+	item.setActionCommand("resume-jobs");
+	item.addActionListener(this);
+	pWorkingPopup.add(item);
+	
+	item = new JMenuItem("Kill Jobs");
+	item.setActionCommand("kill-jobs");
+	item.addActionListener(this);
+	pWorkingPopup.add(item);
+
+	pWorkingPopup.addSeparator();
+
+	item = new JMenuItem("Remove Files");
+	item.setActionCommand("remove-files");
+	item.addActionListener(this);
 	pWorkingPopup.add(item);
       }
       
@@ -568,230 +583,242 @@ class JNodeFilesPanel
     }
       
     /* the drawer body */ 
-    Box body = null;
     {
-      body = new Box(BoxLayout.X_AXIS);
-      
-      body.add(Box.createRigidArea(new Dimension(3, 0)));
-	
-      /* file state/name labels */ 
+      Box left = new Box(BoxLayout.X_AXIS);
       {
-	String path = null;
-	{
-	  File file = new File(pStatus.getName());
-	  path = (PackageInfo.sWorkDir + "/" + 
-		  pAuthor + "/" + pView + file.getParent());
-	}
-
-	Box vbox = new Box(BoxLayout.Y_AXIS);
+	left.add(Box.createRigidArea(new Dimension(3, 0)));
 	
-	vbox.add(Box.createRigidArea(new Dimension(0, 4)));
-	
+	/* file state/name labels */ 
 	{
-	  JFileLabel label = new JFileLabel(new FileSeq(path, fseq), fseq.toString());
-	  label.setName("TextFieldLabel");
+	  String path = null;
+	  {
+	    File file = new File(pStatus.getName());
+	    path = (PackageInfo.sWorkDir + "/" + 
+		    pAuthor + "/" + pView + file.getParent());
+	  }
 	  
-	  label.setHorizontalAlignment(JLabel.CENTER);
-	  label.setAlignmentX(0.5f);
-
-	  Dimension size = new Dimension(174, 27);
-	  label.setMaximumSize(size);
-	  label.setMaximumSize(size);
-	  label.setPreferredSize(size);
-		  
-	  if((details != null) && (details.getWorkingVersion() != null) && 
-	     details.getWorkingVersion().getSequences().contains(fseq))
-	    label.addMouseListener(this);
+	  Box vbox = new Box(BoxLayout.Y_AXIS);
+	  vbox.setAlignmentY(0.0f);
 	  
-	  vbox.add(label);
-	}
-
-	vbox.add(Box.createRigidArea(new Dimension(0, 4)));
-
-	{
-	  TreeMap<String,JFileLabel> labels = new TreeMap<String,JFileLabel>();
-	  pFileLabels.put(fseq.toString(), labels);
-
-	  TextureMgr mgr = TextureMgr.getInstance();
-	  try {
-	    for(FileSeq sfseq : singles) {
-	      FileState fstate  = fstates.get(sfseq);
-	      QueueState qstate = qstates.get(sfseq);
-
-	      String name = "Blank-Normal";
-	      FileSeq pfseq = null;
-	      if((fstate != null) && (qstate != null)) {
+	  vbox.add(Box.createRigidArea(new Dimension(0, 4)));
+	  
+	  {
+	    JFileLabel label = new JFileLabel(fseq.toString(), new FileSeq(path, fseq), null);
+	    label.setName("TextFieldLabel");
+	    
+	    label.setHorizontalAlignment(JLabel.CENTER);
+	    label.setAlignmentX(0.5f);
+	    
+	    Dimension size = new Dimension(164, 27);
+	    label.setMinimumSize(size);
+	    label.setMaximumSize(new Dimension(Integer.MAX_VALUE, 27));
+	    
+	    if((details != null) && (details.getWorkingVersion() != null) && 
+	       details.getWorkingVersion().getSequences().contains(fseq))
+	      label.addMouseListener(this);
+	    
+	    vbox.add(label);
+	  }
+	  
+	  vbox.add(Box.createRigidArea(new Dimension(0, 4)));
+	  
+	  {
+	    TreeMap<String,JFileLabel> labels = new TreeMap<String,JFileLabel>();
+	    pFileLabels.put(fseq.toString(), labels);
+	    
+	    TextureMgr mgr = TextureMgr.getInstance();
+	    try {
+	      int idx = 0;
+	      for(FileSeq sfseq : singles) {
+		FileState fstate  = fstates.get(sfseq);
+		QueueState qstate = qstates.get(sfseq);
+		
+		String name = "Blank-Normal";
+		FileSeq pfseq = null;
+		if((fstate != null) && (qstate != null)) {
 		name = (fstate + "-" + qstate + "-Normal");
-
+		
 		if(enabled.contains(sfseq))
 		  pfseq = new FileSeq(path, sfseq);
+		}
+		
+		String fname = sfseq.getFile(0).toString();
+		
+		ImageIcon icon = mgr.getIcon21(name);
+		
+		{
+		  Box hbox = new Box(BoxLayout.X_AXIS);
+		  
+		  {
+		    JLabel label = new JLabel(icon);
+		    hbox.add(label); 
+		  }
+		  
+		  hbox.add(Box.createRigidArea(new Dimension(3, 0)));
+		  
+		  {
+		    JFileLabel label = new JFileLabel(fname, pfseq, idx);
+		    label.setName("TextFieldLabel");
+		    
+		    if((fstate != null) && (fstate != FileState.Identical))
+		      label.setForeground(Color.cyan);
+		    
+		    label.setHorizontalAlignment(JLabel.CENTER);
+		    
+		    Dimension size = new Dimension(140, 19);
+		    label.setMinimumSize(size);
+		    label.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+		    
+		    if(pfseq != null) 
+		      label.addMouseListener(this);
+		    
+		    labels.put(fname, label);
+		    
+		    hbox.add(label);
+		  }
+		  
+		  vbox.add(hbox);
+		}
+		
+		vbox.add(Box.createRigidArea(new Dimension(0, 1)));
+		
+		idx++;
 	      }
-	      
-	      String fname = sfseq.getFile(0).toString();
+	    }
+	    catch(IOException ex) {
+	      Logs.tex.severe("Internal Error:\n" + 
+			      "  " + ex.getMessage());
+	      Logs.flush();
+	      System.exit(1);
+	    }
+	  }
+	  
+	  vbox.add(Box.createRigidArea(new Dimension(0, 18)));
+	  
+	  left.add(vbox);
+	}
 
-	      ImageIcon icon = mgr.getIcon21(name);
+	left.add(Box.createRigidArea(new Dimension(3, 0)));
+      }
+
+      Box right = new Box(BoxLayout.X_AXIS);
+      {
+	right.add(Box.createRigidArea(new Dimension(3, 0)));
+
+	/* file version novelty table */ 
+	{
+	  Box vbox = new Box(BoxLayout.Y_AXIS);
+	  
+	  vbox.add(Box.createRigidArea(new Dimension(0, 3)));
+	  
+	  /* column header */ 
+	  JViewport headerViewport = null;
+	  {
+	    JPanel panel = new JPanel();
+	    
+	    panel.setName("TitleValuePanel");
+	    panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+	    
+	    {
+	      JViewport view = new JViewport();
+	      headerViewport = view; 
 	      
 	      {
 		Box hbox = new Box(BoxLayout.X_AXIS);
-	      
-		{
-		  JLabel label = new JLabel(icon);
-		  hbox.add(label); 
-		}
-	      
-		hbox.add(Box.createRigidArea(new Dimension(3, 0)));
 		
-		{
-		  JFileLabel label = new JFileLabel(pfseq, fname);
-		  label.setName("TextFieldLabel");
-
-		  if((fstate != null) && (fstate != FileState.Identical))
-		    label.setForeground(Color.cyan);
-
-		  label.setHorizontalAlignment(JLabel.CENTER);
-
-		  Dimension size = new Dimension(150, 19);
-		  label.setMaximumSize(size);
-		  label.setMaximumSize(size);
-		  label.setPreferredSize(size);
+		ArrayList<VersionID> vids = new ArrayList<VersionID>(pNovelty.keySet());
+		Collections.reverse(vids);
+		
+		VersionID bvid = null;
+		if(details.getBaseVersion() != null) 
+		  bvid = details.getBaseVersion().getVersionID();
+		
+		for(VersionID vid : vids) {
+		  JButton btn = new JButton("v" + vid.toString());
+		  btn.setName("TableHeaderButton");
 		  
-		  if(pfseq != null) 
-		    label.addMouseListener(this);
-
-		  labels.put(fname, label);
+		  if((bvid != null) && bvid.equals(vid)) 
+		    btn.setForeground(Color.cyan);
 		  
-		  hbox.add(label);
+		  btn.addActionListener(this);
+		  btn.setActionCommand
+		    ("version-pressed:" + fseq.toString() + ":" + vid.toString());
+		  
+		  btn.setFocusable(false);
+		  
+		  Dimension size = new Dimension(70, 23);
+		  btn.setMinimumSize(size);
+		  btn.setMaximumSize(size);
+		  btn.setPreferredSize(size);
+		  
+		  hbox.add(btn);
 		}
 		
-		vbox.add(hbox);
+		Dimension size = new Dimension(70*pNovelty.size(), 23); 
+		hbox.setMinimumSize(size);
+		hbox.setMaximumSize(size);
+		hbox.setPreferredSize(size);
+		
+		view.setView(hbox);
 	      }
-
-	      vbox.add(Box.createRigidArea(new Dimension(0, 1)));
+	      
+	      panel.add(view);
 	    }
-	  }
-	  catch(IOException ex) {
-	    Logs.tex.severe("Internal Error:\n" + 
-			    "  " + ex.getMessage());
-	    Logs.flush();
-	    System.exit(1);
-	  }
-	}
-	
-  	vbox.add(Box.createRigidArea(new Dimension(0, 18)));
-
- 	Dimension size = vbox.getPreferredSize();
- 	vbox.setMinimumSize(size);
- 	vbox.setMaximumSize(size);
-	
-	body.add(vbox);
-      }
-
-      body.add(Box.createRigidArea(new Dimension(3, 0)));
-
-      /* file version novelty table */ 
-      {
-	Box vbox = new Box(BoxLayout.Y_AXIS);
-
-	vbox.add(Box.createRigidArea(new Dimension(0, 3)));
-
-  	/* column header */ 
-	JViewport headerViewport = null;
-  	{
-  	  JPanel panel = new JPanel();
 	  
-  	  panel.setName("TitleValuePanel");
-  	  panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
-	  
-  	  {
-  	    JViewport view = new JViewport();
-	    headerViewport = view; 
-
-  	    {
-  	      Box hbox = new Box(BoxLayout.X_AXIS);
-	      
-  	      ArrayList<VersionID> vids = new ArrayList<VersionID>(pNovelty.keySet());
-  	      Collections.reverse(vids);
-	      
-	      VersionID bvid = null;
-	      if(details.getBaseVersion() != null) 
-		bvid = details.getBaseVersion().getVersionID();
-
-  	      for(VersionID vid : vids) {
-  		JButton btn = new JButton("v" + vid.toString());
-  		btn.setName("TableHeaderButton");
-
-		if((bvid != null) && bvid.equals(vid)) 
-		  btn.setForeground(Color.cyan);
-
-		btn.addActionListener(this);
-		btn.setActionCommand
-		  ("version-pressed:" + fseq.toString() + ":" + vid.toString());
-		  
-		btn.setFocusable(false);
-
-		Dimension size = new Dimension(70, 23);
-		btn.setMinimumSize(size);
-		btn.setMaximumSize(size);
-		btn.setPreferredSize(size);
-		
-  		hbox.add(btn);
-  	      }
-	      
-  	      Dimension size = new Dimension(70*pNovelty.size(), 23); 
-  	      hbox.setMinimumSize(size);
-  	      hbox.setMaximumSize(size);
-  	      hbox.setPreferredSize(size);
-	      
-  	      view.setView(hbox);
-  	    }
+	    panel.setMinimumSize(new Dimension(70, 29));
+	    panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 29));
+	    panel.setPreferredSize(new Dimension(70, 29));
 	    
-  	    panel.add(view);
-  	  }
+	    vbox.add(panel);	    
+	  }
 	  
-	  panel.setMinimumSize(new Dimension(70, 29));
-	  panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 29));
-	  panel.setPreferredSize(new Dimension(70, 29));
-
-  	  vbox.add(panel);	    
-  	}
-
-	/* table contents */ 
-	{
- 	  JFileSeqPanel panel = 
-	    new JFileSeqPanel(this, fseq, singles, enabled, novel, pNovelty.size());
-
+	  /* table contents */ 
 	  {
-	    JScrollPane scroll = new JScrollPane(panel);
-	    
-	    scroll.setHorizontalScrollBarPolicy
-	      (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-	    scroll.setVerticalScrollBarPolicy
-	      (ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-
-	    scroll.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE);
-
-	    Dimension size = new Dimension(70, 21);
- 	    scroll.setMinimumSize(size);
+	    JFileSeqPanel panel = 
+	      new JFileSeqPanel(this, fseq, singles, enabled, novel, pNovelty.size());
 
 	    {
-	      AdjustLinkage linkage = 
-		new AdjustLinkage(scroll.getViewport(), headerViewport);
-	      scroll.getHorizontalScrollBar().addAdjustmentListener(linkage);
+	      JScrollPane scroll = new JScrollPane(panel);
+	      
+	      scroll.setHorizontalScrollBarPolicy
+		(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+	      scroll.setVerticalScrollBarPolicy
+		(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+	      
+	      scroll.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE);
+	      
+	      Dimension size = new Dimension(70, 21);
+	      scroll.setMinimumSize(size);
+	      
+	      {
+		AdjustLinkage linkage = 
+		  new AdjustLinkage(scroll.getViewport(), headerViewport);
+		scroll.getHorizontalScrollBar().addAdjustmentListener(linkage);
+	      }
+	      
+	      vbox.add(scroll);
 	    }
-
-	    vbox.add(scroll);
 	  }
+	  
+	  vbox.add(Box.createRigidArea(new Dimension(0, 3)));
+	  
+	  right.add(vbox);
 	}
 
-	vbox.add(Box.createRigidArea(new Dimension(0, 3)));
-
-	body.add(vbox);
+	right.add(Box.createRigidArea(new Dimension(3, 0)));
       }
 
-      body.add(Box.createRigidArea(new Dimension(3, 0)));
-    }
+     
+      JHorzSplitPanel split = new JHorzSplitPanel(left, right);
 
-    pFileSeqBox.add(body);
+      split.setResizeWeight(0.0);
+
+      Dimension size = split.getPreferredSize();
+      split.setMinimumSize(new Dimension(200, size.height));
+      split.setMaximumSize(new Dimension(Integer.MAX_VALUE, size.height));
+
+      pFileSeqBox.add(split);
+    }
 
     if(!isLast) {
       JPanel spanel = new JPanel();
@@ -838,6 +865,18 @@ class JNodeFilesPanel
       doEditWith(cmd.substring(10)); 
     else if(cmd.startsWith("compare-with:"))
       doCompareWith(cmd.substring(13)); 
+
+    else if(cmd.equals("queue-jobs"))
+      doQueueJobs();
+    else if(cmd.equals("pause-jobs"))
+      doPauseJobs();
+    else if(cmd.equals("resume-jobs"))
+      doResumeJobs();
+    else if(cmd.equals("kill-jobs"))
+      doKillJobs();
+
+    else if(cmd.equals("remove-files"))
+      doRemoveFiles();    
   }
 
 
@@ -889,12 +928,14 @@ class JNodeFilesPanel
 	  if(source instanceof JFileLabel) {
 	    JFileLabel label  = (JFileLabel) source;
 	    pTargetFileSeq    = label.getFileSeq();
+	    pTargetFileIdx    = label.getFileIdx();	    
 	    pTargetVersionID  = label.getVersionID();
 	    hasWorking        = label.hasWorking();
 	  }
 	  else if(source instanceof JFileCheckBox) {
 	    JFileCheckBox check = (JFileCheckBox) source;
 	    pTargetFileSeq      = check.getFileSeq();
+	    pTargetFileIdx      = null;
 	    pTargetVersionID    = check.getVersionID();
 	    hasWorking          = check.hasWorking();
 	  }
@@ -903,8 +944,9 @@ class JNodeFilesPanel
 	    pCompareWithMenu.setEnabled(hasWorking);
 	    pCheckedInPopup.show(e.getComponent(), e.getX(), e.getY());
 	  }
-	  else 
+	  else {
 	    pWorkingPopup.show(e.getComponent(), e.getX(), e.getY());
+	  }
 	}
       }
       break;
@@ -1058,8 +1100,10 @@ class JNodeFilesPanel
   private void 
   doEdit() 
   {
-    EditTask task = new EditTask(null);
-    task.start();
+    if(pTargetFileSeq != null) {
+      EditTask task = new EditTask(null, pTargetFileSeq, pTargetVersionID);
+      task.start();
+    }
   }
 
   /**
@@ -1071,8 +1115,10 @@ class JNodeFilesPanel
    String editor
   ) 
   {
-    EditTask task = new EditTask(editor);
-    task.start();
+    if(pTargetFileSeq != null) {
+      EditTask task = new EditTask(editor, pTargetFileSeq, pTargetVersionID);
+      task.start();
+    }
   }
 
 
@@ -1088,10 +1134,194 @@ class JNodeFilesPanel
    String comparator
   ) 
   {
-    CompareTask task = new CompareTask(comparator);
+    if(pTargetFileSeq != null) {
+      CompareTask task = new CompareTask(comparator, pTargetFileSeq, pTargetVersionID);
+      task.start();
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Submit jobs to the queue for the node and all nodes upstream of it.
+   */ 
+  private void 
+  doQueueJobs() 
+  {
+    TreeSet<Integer> indices = null;
+    if(pTargetFileIdx != null) {
+      indices = new TreeSet<Integer>();
+      indices.add(pTargetFileIdx);
+    }
+
+    QueueJobsTask task = new QueueJobsTask(indices);
     task.start();
   }
 
+  /**
+   * Pause waiting jobs associated with the node.
+   */ 
+  private void 
+  doPauseJobs() 
+  {
+    TreeSet<Long> paused = new TreeSet<Long>();
+    {
+      NodeDetails details = pStatus.getDetails();
+      if(details != null) {
+	Long[] jobIDs   = details.getJobIDs();
+	QueueState[] qs = details.getQueueState();
+	assert(jobIDs.length == qs.length);
+
+	if(pTargetFileIdx != null) {
+	  switch(qs[pTargetFileIdx]) {
+	  case Queued:
+	    assert(jobIDs[pTargetFileIdx] != null);
+	    paused.add(jobIDs[pTargetFileIdx]);
+	  }
+	}
+	else {
+	  int wk;
+	  for(wk=0; wk<jobIDs.length; wk++) {
+	    switch(qs[wk]) {
+	    case Queued:
+	      assert(jobIDs[wk] != null);
+	      paused.add(jobIDs[wk]);
+	    }
+	  }
+	}
+      }
+    }
+
+    if(!paused.isEmpty()) {
+      PauseJobsTask task = new PauseJobsTask(paused);
+      task.start();
+    }
+  }
+
+  /**
+   * Resume execution of paused jobs associated with the node.
+   */ 
+  private void 
+  doResumeJobs() 
+  {
+    TreeSet<Long> resumed = new TreeSet<Long>();
+    {
+      NodeDetails details = pStatus.getDetails();
+      if(details != null) {
+	Long[] jobIDs   = details.getJobIDs();
+	QueueState[] qs = details.getQueueState();
+	assert(jobIDs.length == qs.length);
+	
+	if(pTargetFileIdx != null) {
+	  switch(qs[pTargetFileIdx]) {
+	  case Paused:
+	    assert(jobIDs[pTargetFileIdx] != null);
+	    resumed.add(jobIDs[pTargetFileIdx]);
+	  }
+	}
+	else {
+	  int wk;
+	  for(wk=0; wk<jobIDs.length; wk++) {
+	    switch(qs[wk]) {
+	    case Paused:
+	      assert(jobIDs[wk] != null);
+	      resumed.add(jobIDs[wk]);
+	    }
+	  }
+	}
+      }
+    }
+    
+    if(!resumed.isEmpty()) {
+      ResumeJobsTask task = new ResumeJobsTask(resumed);
+      task.start();
+    }
+  }
+
+  /**
+   * Kill jobs associated with the selected node.
+   */ 
+  private void 
+  doKillJobs() 
+  {
+    TreeSet<Long> dead = new TreeSet<Long>();
+    {
+      NodeDetails details = pStatus.getDetails();
+      if(details != null) {
+	Long[] jobIDs   = details.getJobIDs();
+	QueueState[] qs = details.getQueueState();
+	assert(jobIDs.length == qs.length);
+     
+	if(pTargetFileIdx != null) { 
+	  switch(qs[pTargetFileIdx]) {
+	  case Queued:
+	  case Paused:
+	  case Running:
+	    assert(jobIDs[pTargetFileIdx] != null);
+	    dead.add(jobIDs[pTargetFileIdx]);
+	  }
+	}
+	else {
+	  int wk;
+	  for(wk=0; wk<jobIDs.length; wk++) {
+	    switch(qs[wk]) {
+	    case Queued:
+	    case Paused:
+	    case Running:
+	      assert(jobIDs[wk] != null);
+	      dead.add(jobIDs[wk]);
+	    }
+	  }
+	}
+      }
+    }
+    
+    if(!dead.isEmpty()) {
+      KillJobsTask task = new KillJobsTask(dead);
+      task.start();
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Remove primary/secondary files associated with the node.
+   */ 
+  private void 
+  doRemoveFiles() 
+  {
+    TreeSet<Integer> indices = null;
+    if(pTargetFileIdx != null) {
+      indices = new TreeSet<Integer>();
+      indices.add(pTargetFileIdx);
+    }
+
+    boolean confirmed = false;
+    {
+      NodeDetails details = pStatus.getDetails();
+      if(details != null) {
+	NodeMod work = details.getWorkingVersion();
+	if(work != null) {
+	  if(work.isActionEnabled()) {
+	    confirmed = true;
+	  }
+	  else {
+	    JConfirmDialog confirm = 
+	      new JConfirmDialog("Remove from Node without enabled Actions?");
+	    confirm.setVisible(true);
+	    confirmed = confirm.wasConfirmed(); 
+	  }
+	}
+      }
+    }
+    
+    if(confirmed) {
+      RemoveFilesTask task = new RemoveFilesTask(indices);
+      task.start();
+    }
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1108,7 +1338,7 @@ class JNodeFilesPanel
     public 
     JFileLabel
     (
-     FileSeq fseq, 
+     FileSeq fseq,
      VersionID vid, 
      boolean hasWorking
     ) 
@@ -1122,19 +1352,26 @@ class JNodeFilesPanel
     public 
     JFileLabel
     (
+     String text,
      FileSeq fseq,
-     String text 
+     Integer idx
     ) 
     {
       super(text);
       pFileSeq = fseq;
+      pFileIdx = idx; 
     }
-
 
     public FileSeq
     getFileSeq() 
     {
       return pFileSeq;
+    }
+
+    public Integer
+    getFileIdx() 
+    {
+      return pFileIdx;
     }
 
     public VersionID
@@ -1153,6 +1390,7 @@ class JNodeFilesPanel
     private static final long serialVersionUID = 1637624990297368379L;
 
     private FileSeq    pFileSeq;
+    private Integer    pFileIdx; 
     private VersionID  pVersionID;
     private boolean    pHasWorking;
   }
@@ -1526,12 +1764,16 @@ class JNodeFilesPanel
     public 
     EditTask
     (
-     String ename
+     String ename, 
+     FileSeq fseq, 
+     VersionID vid
     ) 
     {
       super("JNodeFilesPanel:EditTask");
 
       pEditorName = ename;
+      pFileSeq    = fseq; 
+      pVersionID  = vid; 
     }
 
     public void 
@@ -1552,8 +1794,8 @@ class JNodeFilesPanel
 	    NodeMod mod = details.getWorkingVersion();
 
 	    NodeVersion vsn = null;
-	    if(pTargetVersionID != null) 
-	      vsn = client.getCheckedInVersion(name, pTargetVersionID);
+	    if(pVersionID != null) 
+	      vsn = client.getCheckedInVersion(name, pVersionID);
 	    else 
 	      vsn = details.getLatestVersion();
 
@@ -1597,7 +1839,7 @@ class JNodeFilesPanel
 	    }
 	    
 	    /* start the editor */ 
-	    proc = editor.launch(pTargetFileSeq, env, PackageInfo.sTempDir);	   
+	    proc = editor.launch(pFileSeq, env, PackageInfo.sTempDir);	   
 	  }
 	  catch(PipelineException ex) {
 	    master.showErrorDialog(ex);
@@ -1620,7 +1862,9 @@ class JNodeFilesPanel
       }
     }
 
-    private String  pEditorName;
+    private String     pEditorName;
+    private FileSeq    pFileSeq; 
+    private VersionID  pVersionID; 
   }
 
 
@@ -1637,12 +1881,16 @@ class JNodeFilesPanel
     public 
     CompareTask
     (
-     String ename
+     String ename,
+     FileSeq fseq, 
+     VersionID vid
     ) 
     {
       super("JNodeFilesPanel:CompareTask");
 
       pComparatorName = ename;
+      pFileSeq        = fseq; 
+      pVersionID      = vid; 
     }
 
     public void 
@@ -1663,8 +1911,8 @@ class JNodeFilesPanel
 	    NodeMod mod = details.getWorkingVersion();
 
 	    NodeVersion vsn = null;
-	    if(pTargetVersionID != null) 
-	      vsn = client.getCheckedInVersion(name, pTargetVersionID);
+	    if(pVersionID != null) 
+	      vsn = client.getCheckedInVersion(name, pVersionID);
 	    else 
 	      vsn = details.getLatestVersion();
 
@@ -1678,7 +1926,7 @@ class JNodeFilesPanel
 	    BaseComparator comparator = Plugins.newComparator(pComparatorName);
 
 	    /* the checked-in file */ 
-	    File fileB = new File(pTargetFileSeq.toString());
+	    File fileB = new File(pFileSeq.toString());
 
 	    /* the working file */ 
 	    File fileA = null;
@@ -1733,7 +1981,9 @@ class JNodeFilesPanel
       }
     }
 
-    private String  pComparatorName;
+    private String     pComparatorName;
+    private FileSeq    pFileSeq; 
+    private VersionID  pVersionID; 
   }
 
 
@@ -1783,6 +2033,243 @@ class JNodeFilesPanel
     }
 
     private TreeMap<String,VersionID>  pFiles;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Queue jobs to the queue for the given file sequence index.
+   */ 
+  private
+  class QueueJobsTask
+    extends Thread
+  {
+    public 
+    QueueJobsTask
+    (
+     TreeSet<Integer> indices
+    ) 
+    {
+      super("JNodeFilesPanel:QueueJobsTask");
+
+      pIndices = indices; 
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Submitting Jobs to the Queue...")) {
+	try {
+	  master.getMasterMgrClient().submitJobs(pAuthor, pView, pStatus.getName(), pIndices);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	if(pGroupID > 0) {
+	  PanelGroup<JNodeViewerPanel> panels = master.getNodeViewerPanels();
+	  JNodeViewerPanel viewer = panels.getPanel(pGroupID);
+	  if(viewer != null) 
+	    viewer.updateRoots();
+	}
+      }
+    }
+
+    private TreeSet<Integer> pIndices; 
+  }
+
+  /** 
+   * Pause the given jobs.
+   */ 
+  private
+  class PauseJobsTask
+    extends Thread
+  {
+    public 
+    PauseJobsTask
+    (
+     TreeSet<Long> jobIDs
+    ) 
+    {
+      super("JNodeFilesPanel:PauseJobsTask");
+
+      pJobIDs = jobIDs; 
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Pausing Jobs...")) {
+	try {
+	  master.getQueueMgrClient().pauseJobs(pAuthor, pJobIDs);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	if(pGroupID > 0) {
+	  PanelGroup<JNodeViewerPanel> panels = master.getNodeViewerPanels();
+	  JNodeViewerPanel viewer = panels.getPanel(pGroupID);
+	  if(viewer != null) 
+	    viewer.updateRoots();
+	}
+      }
+    }
+
+    private TreeSet<Long>  pJobIDs; 
+  }
+
+  /** 
+   * Resume execution of the the given paused jobs.
+   */ 
+  private
+  class ResumeJobsTask
+    extends Thread
+  {
+    public 
+    ResumeJobsTask
+    (
+     TreeSet<Long> jobIDs
+    ) 
+    {
+      super("JNodeFilesPanel:ResumeJobsTask");
+
+      pJobIDs = jobIDs; 
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Resuming Paused Jobs...")) {
+	try {
+	  master.getQueueMgrClient().resumeJobs(pAuthor, pJobIDs);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	if(pGroupID > 0) {
+	  PanelGroup<JNodeViewerPanel> panels = master.getNodeViewerPanels();
+	  JNodeViewerPanel viewer = panels.getPanel(pGroupID);
+	  if(viewer != null) 
+	    viewer.updateRoots();
+	}
+      }
+    }
+
+    private TreeSet<Long>  pJobIDs; 
+  }
+
+  /** 
+   * Kill the given jobs.
+   */ 
+  private
+  class KillJobsTask
+    extends Thread
+  {
+    public 
+    KillJobsTask
+    (
+     TreeSet<Long> jobIDs
+    ) 
+    {
+      super("JNodeFilesPanel:KillJobsTask");
+
+      pJobIDs = jobIDs; 
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Killing Jobs...")) {
+	try {
+	  master.getQueueMgrClient().killJobs(pAuthor, pJobIDs);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	if(pGroupID > 0) {
+	  PanelGroup<JNodeViewerPanel> panels = master.getNodeViewerPanels();
+	  JNodeViewerPanel viewer = panels.getPanel(pGroupID);
+	  if(viewer != null) 
+	    viewer.updateRoots();
+	}
+      }
+    }
+
+    private TreeSet<Long>  pJobIDs; 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Remove the working area files associated with the given nodes.
+   */ 
+  private
+  class RemoveFilesTask
+    extends Thread
+  {
+    public 
+    RemoveFilesTask
+    (
+     TreeSet<Integer> indices
+    ) 
+    {
+      super("JNodeViewerPanel:RemoveFilesTask");
+
+      pIndices = indices; 
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Removing Files: " + pStatus.getName())) {
+	try {
+	  MasterMgrClient client = master.getMasterMgrClient();
+	  client.removeFiles(pAuthor, pView, pStatus.getName(), pIndices);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+	
+	if(pGroupID > 0) {
+	  PanelGroup<JNodeViewerPanel> panels = master.getNodeViewerPanels();
+	  JNodeViewerPanel viewer = panels.getPanel(pGroupID);
+	  if(viewer != null) 
+	    viewer.updateRoots();
+	}
+      }
+    }
+
+    private TreeSet<Integer> pIndices; 
   }
 
 
@@ -1852,6 +2339,11 @@ class JNodeFilesPanel
    * The file which is the target of the menu operation.
    */ 
   private FileSeq  pTargetFileSeq; 
+
+  /**
+   * The file sequence index of the targer of the menu operation.
+   */ 
+  private Integer  pTargetFileIdx; 
 
   /**
    * The revision number of the checked-in version which is the target of the menu operation.
