@@ -1,4 +1,4 @@
-// $Id: FileSeq.java,v 1.13 2004/07/07 13:15:20 jim Exp $
+// $Id: FileSeq.java,v 1.14 2004/08/22 21:47:28 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -126,6 +126,61 @@ class FileSeq
     else 
       pFrameRange = null;
 
+    buildCache();
+  }
+
+  /** 
+   * Construct a <CODE>FileSeq</CODE> which contains a subset of the frames from the 
+   * given file sequence.
+   * 
+   * @param fseq  
+   *   The original file sequence.
+   * 
+   * @param startIdx   
+   *   The frame index of the first file.
+   * 
+   * @param endIdx
+   *   The frame index of the last file.
+   */ 
+  public
+  FileSeq
+  (
+   FileSeq fseq, 
+   int startIdx, 
+   int endIdx
+  ) 
+  {
+    pFilePattern = fseq.getFilePattern();
+
+    if(endIdx < startIdx) 
+      throw new IllegalArgumentException
+	("The end index (" + endIdx + ") cannot be less than the start index " + 
+	 "(" + startIdx + ")!");
+
+    FrameRange range = fseq.getFrameRange();
+    if((range == null) || (range.isSingle())) {
+      if((startIdx != 0) || (endIdx != 0)) 
+	throw new IllegalArgumentException
+	  ("Illegal frame indices [" + startIdx + "," + endIdx + "] specified when " +
+	   "the file sequence contains only a single frame!");
+
+      pFrameRange = range; 
+    }
+    else {
+      if(startIdx < 0) 
+	throw new IllegalArgumentException
+	  ("The start frame index (" + startIdx + ") cannot be negative!");
+      
+      if(endIdx >= range.numFrames()) 
+	throw new IllegalArgumentException
+	  ("The end frame index (" + endIdx + ") was greater than the largest frame " + 
+	   "index (" + (range.numFrames()-1) + ") of the file sequence!"); 
+
+      pFrameRange = new FrameRange(range.indexToFrame(startIdx), 
+				   range.indexToFrame(endIdx), 
+				   range.getBy());
+    }
+    
     buildCache();
   }
 
