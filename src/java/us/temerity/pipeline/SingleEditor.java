@@ -1,4 +1,4 @@
-// $Id: SingleEditor.java,v 1.2 2004/02/25 01:28:15 jim Exp $
+// $Id: SingleEditor.java,v 1.3 2004/02/28 20:01:07 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -94,6 +94,15 @@ class SingleEditor
 
     return super.launch(fseq, env, dir);
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static final long serialVersionUID = 3940846614355631531L;
+
 }
 
 
