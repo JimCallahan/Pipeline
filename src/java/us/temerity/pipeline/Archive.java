@@ -1,4 +1,4 @@
-// $Id: Archive.java,v 1.3 2005/01/22 06:10:09 jim Exp $
+// $Id: Archive.java,v 1.4 2005/02/07 14:48:56 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -307,7 +307,7 @@ class Archive
 
     encoder.encode("TimeStamp", pTimeStamp.getTime());
     encoder.encode("Files", pFiles);
-    encoder.encode("Archiver", pArchiver);
+    encoder.encode("Archiver", new BaseArchiver(pArchiver));
 
     if(pOutput != null)
       encoder.encode("Output", pOutput);
@@ -341,7 +341,15 @@ class Archive
       BaseArchiver archiver = (BaseArchiver) decoder.decode("Archiver");
       if(archiver == null) 
  	throw new GlueException("The \"Archiver\" was missing!");
-      pArchiver = archiver;   
+
+      try {
+	PluginMgrClient client = PluginMgrClient.getInstance();
+	pArchiver = client.newArchiver(archiver.getName(), archiver.getVersionID());
+	pArchiver.setParamValues(archiver);
+      }
+      catch(PipelineException ex) {
+	throw new GlueException(ex.getMessage());
+      }
     }
       
     pOutput = (String) decoder.decode("Output");
