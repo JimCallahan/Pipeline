@@ -1,4 +1,4 @@
-// $Id: AppearanceMgr.java,v 1.1 2004/05/07 15:08:29 jim Exp $
+// $Id: AppearanceMgr.java,v 1.2 2004/05/16 19:09:30 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -234,12 +234,14 @@ class AppearanceMgr
   ) 
     throws IOException
   { 
-    Appearance apr = pNodeApprs.get(name);
+    String aname = (name + "-" + mode);
+      
+    Appearance apr = pNodeApprs.get(aname);
     if(apr != null) 
       return apr;
 
     apr = new Appearance();
-    apr.setTexture(TextureMgr.getInstance().getTexture(name + "-" + mode));
+    apr.setTexture(TextureMgr.getInstance().getTexture(aname));
 	  
     {
       RenderingAttributes attr = new RenderingAttributes();
@@ -253,7 +255,7 @@ class AppearanceMgr
       apr.setTransparencyAttributes(attr);
     }
     
-    pNodeApprs.put(name, apr);
+    pNodeApprs.put(aname, apr);
 
     return apr;
   }
