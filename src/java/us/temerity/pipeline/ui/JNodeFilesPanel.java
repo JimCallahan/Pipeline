@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.23 2004/12/08 07:37:15 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.24 2004/12/08 09:54:17 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -654,6 +654,13 @@ class JNodeFilesPanel
 	    
 	    TextureMgr mgr = TextureMgr.getInstance();
 	    try {
+	      String texSuffix = "-Normal";
+	      if(details != null) {
+		NodeMod mod = details.getWorkingVersion();
+		if((mod != null) && mod.isFrozen()) 
+		  texSuffix = "-Frozen-Normal";
+	      }
+
 	      int idx = 0;
 	      for(FileSeq sfseq : singles) {
 		FileState fstate  = fstates.get(sfseq);
@@ -662,7 +669,7 @@ class JNodeFilesPanel
 		String name = "Blank-Normal";
 		FileSeq pfseq = null;
 		if((fstate != null) && (qstate != null)) {
-		  name = (fstate + "-" + qstate + "-Normal");
+		  name = (fstate + "-" + qstate + texSuffix);
 		
 		  if(enabled.contains(sfseq))
 		    pfseq = new FileSeq(path, sfseq);
