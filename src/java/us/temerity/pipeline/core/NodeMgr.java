@@ -1,4 +1,4 @@
-// $Id: NodeMgr.java,v 1.7 2004/03/29 08:17:20 jim Exp $
+// $Id: NodeMgr.java,v 1.8 2004/03/30 22:15:50 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -138,23 +138,25 @@ class NodeMgr
    * 
    * @param dir 
    *   The root node directory.
+   * 
+   * @param fileHostname 
+   *   The name of the host running the <B>plfilemgr</B><A>(1).
+   * 
+   * @param filePort 
+   *   The network port listened to by <B>plfilemgr</B><A>(1).
    */
   public
   NodeMgr
   (
-   File dir
+   File dir, 
+   String fileHostname, 
+   int filePort
   )
   { 
     init(dir);
-  }
-  
-  /** 
-   * Construct a new node manager using the default root node directory.
-   */
-  public
-  NodeMgr() 
-  { 
-    init(PackageInfo.sNodeDir);
+
+    /* connect to the file manager */ 
+    pFileMgrClient = new FileMgrClient(fileHostname, filePort);
   }
 
 
@@ -593,6 +595,10 @@ class NodeMgr
       file.delete();
     }
 
+    /* close the connection to the file manager */ 
+    if(pFileMgrClient != null) 
+      pFileMgrClient.disconnect();
+
     /* make sure this instance can't be used anymore! */ 
     {
       pMakeDirLock      = null;
@@ -604,6 +610,7 @@ class NodeMgr
       pWorkingBundles   = null;
       pDownstreamLocks  = null;
       pDownstream       = null;
+      pFileMgrClient    = null;
     }
   }
 
@@ -752,15 +759,20 @@ class NodeMgr
       /* set the node properties */ 
       WorkingBundle bundle = getWorkingBundle(req.getNodeID());
       NodeMod mod = new NodeMod(bundle.uVersion);
+      Date critical = mod.getLastCriticalModification();
       if(mod.setProperties(req.getNodeMod())) {
 
 	/* write the new working version to disk */ 
 	writeWorkingVersion(req.getNodeID(), mod);
 
 	/* update the bundle */ 
-	bundle.uVersion          = mod;
+	bundle.uVersion = mod;
+
+	/* invalidate states */ 
 	bundle.uOverallNodeState = null;
-	bundle.uPropertyState    = null;
+	bundle.uPropertyState    = null;	
+	if(critical.compareTo(mod.getLastCriticalModification()) < 0) 
+	  bundle.uQueueStates = null;
       }
 
       return new SuccessRsp(task, wait, start);
@@ -827,9 +839,11 @@ class NodeMgr
       writeWorkingVersion(req.getTargetID(), mod);
       
       /* update the bundle */ 
-      bundle.uVersion          = mod;
+      bundle.uVersion = mod;
+
+      /* invalidate states */ 
       bundle.uOverallNodeState = null;
-      bundle.uPropertyState    = null;
+      bundle.uDependState      = null;
 
       /* update the downstream links of the source node */ 
       DownstreamLinks links = getDownstreamLinks(source); 
@@ -865,9 +879,61 @@ class NodeMgr
    NodeUnlinkReq req 
   ) 
   {
+    if(req == null) 
+      return new FailureRsp("The node unlink request cannot be (null)!");
+    
+    NodeID targetID = req.getTargetID();
+    String source   = req.getSourceName();
+    NodeID sourceID = new NodeID(targetID.getAuthor(), targetID.getView(), source);
 
-    return new FailureRsp("Not implemented yet!");
+    String task = ("NodeMgr.unlink(): " + targetID + " from " + sourceID);
 
+    Date start = new Date();
+    long wait = 0;
+    ReentrantReadWriteLock targetLock = getWorkingLock(targetID);
+    targetLock.writeLock().lock();
+    ReentrantReadWriteLock downstreamLock = getDownstreamLock(source);
+    downstreamLock.writeLock().lock();
+    try {
+      wait  = (new Date()).getTime() - start.getTime();
+      start = new Date();
+
+      WorkingBundle bundle = getWorkingBundle(targetID);
+      if(bundle == null) 
+	throw new PipelineException
+	  ("Only working versions of nodes can be unlinked!\n" + 
+	   "No working version (" + targetID + ") exists for the downstream node.");
+
+      /* remove the link */ 
+      NodeMod mod = new NodeMod(bundle.uVersion);
+      mod.removeSource(source);
+      
+      /* write the new working version to disk */ 
+      writeWorkingVersion(req.getTargetID(), mod);
+      
+      /* update the bundle */ 
+      bundle.uVersion = mod;
+      
+      /* invalidate states */ 
+      bundle.uOverallNodeState = null;
+      bundle.uDependState      = null;
+
+      /* update the downstream links of the source node */ 
+      DownstreamLinks links = getDownstreamLinks(source); 
+      links.removeWorking(sourceID, targetID.getName());
+
+      return new SuccessRsp(task, wait, start);
+    }
+    catch(PipelineException ex) {
+      if(wait > 0) 
+	return new FailureRsp(task, ex.getMessage(), wait, start);
+      else 
+	return new FailureRsp(task, ex.getMessage(), start);
+    }
+    finally {
+      downstreamLock.writeLock().unlock();
+      targetLock.writeLock().unlock();
+    }    
   }
 
 
@@ -958,6 +1024,170 @@ class NodeMgr
       lock.writeLock().unlock();
     }  
   } 
+
+  /**
+   * Revoke a working version of a node which has never checked-in. <P> 
+   * 
+   * This operation is provided to allow users to remove nodes which they have previously 
+   * registered, but which they no longer want to keep or share with other users.  If a 
+   * working version is successfully revoked, all node connections to the revoked node 
+   * will be also be removed.
+   * 
+   * @param req 
+   *   The node revoke request.
+   *
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to revoke the working version.
+   */
+  public Object
+  revoke
+  (
+   NodeRevokeReq req
+  ) 
+  {
+    if(req == null) 
+      return new FailureRsp("The node revoke request cannot be (null)!");
+    
+    NodeID id = req.getNodeID();
+    
+    String task = ("NodeMgr.revoke(): " + id);
+
+    Date start = new Date();
+    long wait = 0;
+    ReentrantReadWriteLock lock = getWorkingLock(id);
+    lock.writeLock().lock();
+    try {
+      wait  = (new Date()).getTime() - start.getTime();
+      start = new Date();
+
+      WorkingBundle bundle = getWorkingBundle(id);
+      if(bundle == null) 
+	throw new PipelineException
+	  ("No working version (" + id + ") exists to be revoked.");
+      
+      NodeMod mod = bundle.uVersion;
+      if(mod.getWorkingID() != null) 
+	throw new PipelineException
+	  ("The working version (" + id + ") cannot be revoked because checked-in versions " +
+	   "of the node already exist!");
+
+      /* remove the bundle */ 
+      synchronized(pWorkingBundles) {
+	pWorkingBundles.remove(id);
+      }
+
+      /* remove the working version file(s) */ 
+      {
+	File file   = new File(pNodeDir, id.getWorkingPath().getPath());
+	File backup = new File(file + ".backup");
+
+	if(file.isFile()) {
+	  if(!file.delete())
+	    throw new PipelineException
+	      ("Unable to remove the working version file (" + file + ")!");
+	}
+	else {
+	  throw new PipelineException
+	    ("Somehow the working version file (" + file + ") did not exist!");
+	}
+
+	if(backup.isFile()) {
+	  if(!backup.delete())
+	    throw new PipelineException      
+	      ("Unable to remove the backup working version file (" + backup + ")!");
+	}
+      }
+
+      /* unlink the downstream working versions from the revoked working version */ 
+      {
+	ReentrantReadWriteLock downstreamLock = getDownstreamLock(id.getName());
+	downstreamLock.writeLock().lock();
+	try {
+	  DownstreamLinks links = getDownstreamLinks(id.getName()); 
+	  for(String target : links.getWorking(id)) {
+	    NodeID targetID = new NodeID(id.getAuthor(), id.getView(), target);
+	    unlink(new NodeUnlinkReq(targetID, id.getName()));
+	  }
+	}
+	finally {
+	  downstreamLock.writeLock().unlock();
+	}
+      }
+
+      /* remove the downstream links of the revoked node */ 
+      synchronized(pDownstream) {
+	pDownstream.remove(id.getName());
+      }
+
+      /* remove the downstream link file */ 
+      {
+	File file = new File(pNodeDir, "downstream/" + id.getName());
+	if(file.isFile()) {
+	  if(!file.delete())
+	    throw new PipelineException
+	      ("Unable to remove the downstream links file (" + file + ")!");
+	}
+      }
+
+      /* update the downstream links of the source nodes */ 
+      for(LinkMod link : mod.getSources()) {
+	String source = link.getName();
+	ReentrantReadWriteLock downstreamLock = getDownstreamLock(source);
+	downstreamLock.writeLock().lock();
+	try {
+	  NodeID sourceID = new NodeID(id.getAuthor(), id.getView(), source);
+	  DownstreamLinks links = getDownstreamLinks(source); 
+	  links.removeWorking(sourceID, id.getName());
+ 	}  
+	finally {
+	  downstreamLock.writeLock().unlock();
+	}    
+      }
+
+      /* remove the associated files */ 
+      if(req.removeFiles()) {
+	pFileMgrClient.remove(id, mod);	
+      }
+
+      return new SuccessRsp(task, wait, start);
+    }
+    catch(PipelineException ex) {
+      if(wait > 0) 
+	return new FailureRsp(task, ex.getMessage(), wait, start);
+      else 
+	return new FailureRsp(task, ex.getMessage(), start);
+    }
+    finally {
+      lock.writeLock().unlock();
+    }    
+  }
+
+  /**
+   * Rename a working version of a node which has never checked-in. <P> 
+   * 
+   * This operation allows a user to change the name of a previously registered node before 
+   * it is checked-in. If a working version is successfully renamed, all node connections 
+   * will be preserved.
+   * 
+   * @param req 
+   *   The node rename request.
+   *
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to rename the working version.
+   */
+  public Object
+  rename
+  (
+   NodeRenameReq req
+  ) 
+  {
+    
+    return new FailureRsp("Not implemented yet...");
+
+  }
+
 
 
 
@@ -1731,7 +1961,9 @@ class NodeMgr
      * A table containing the relationship between individual files associated with the 
      * working and checked-in versions of this node indexed by working file sequence. <P> 
      * 
-     * May be <CODE>null</CODE> if invalidated.
+     * May be <CODE>null</CODE> if invalidated.  If the entry for a file sequence is missing
+     * from this table, then the <CODE>FileState</CODE> for that file sequence has been
+     * invalidated.
      */
     public TreeMap<FileSeq,FileState[]>  uFileStates;
 
@@ -1739,7 +1971,9 @@ class NodeMgr
      * The status of individual files associated with the working version of the node 
      * with respect to the queue jobs which generate them. <P> 
      * 
-     * May be <CODE>null</CODE> if invalidated.
+     * May be <CODE>null</CODE> if invalidated.  If the entry for a file sequence is missing
+     * from this table, then the <CODE>QueueState</CODE> for that file sequence has been
+     * invalidated.
      */
     public TreeMap<FileSeq,QueueState[]>  uQueueStates;
   }
@@ -1851,5 +2085,12 @@ class NodeMgr
    * Access to this table should be protected by a synchronized block.
    */
   private HashMap<String,DownstreamLinks>  pDownstream;
+
+  
+  /**
+   * The connection to the file manager.
+   */ 
+  private FileMgrClient  pFileMgrClient;
+
 }
 
