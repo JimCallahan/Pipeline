@@ -1,4 +1,4 @@
-// $Id: CheckSum.java,v 1.4 2004/05/21 21:17:51 jim Exp $
+// $Id: CheckSum.java,v 1.5 2004/07/14 20:48:14 jim Exp $
 
 package us.temerity.pipeline.core;
  
@@ -207,7 +207,7 @@ class CheckSum
 
     /* abort early if the checksum file is up-to-date */ 
     File sfile = checkSumFile(path);    
-    if(sfile.isFile() && (sfile.lastModified() > file.lastModified())) 
+    if(sfile.isFile() && (sfile.lastModified() >= file.lastModified())) 
       return;
 
     Logs.sum.finer("Rebuilding checksum for: " + file);
