@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.2 2004/03/12 13:50:34 jim Exp $
+// $Id: FileMgrClient.java,v 1.3 2004/03/12 23:10:08 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -181,6 +181,32 @@ class FileMgrClient
   }
 
 
+  /**
+   * Close the network connection if its is still connected.
+   */
+  public synchronized void 
+  shutdown() 
+  {
+    if(pSocket == null)
+      return;
+
+    try {
+      if(pSocket.isConnected()) {
+	OutputStream out = pSocket.getOutputStream();
+	ObjectOutput objOut = new ObjectOutputStream(out);
+	objOut.writeObject(FileRequest.Shutdown);
+	objOut.flush(); 
+
+	pSocket.close();
+      }
+    }
+    catch (IOException ex) {
+    }
+    finally {
+      pSocket = null;
+    }
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S                                                                        */
@@ -261,27 +287,6 @@ class FileMgrClient
       throw new PipelineException
 	("Illegal object encountered on port (" + pPort + "):\n" + 
 	 ex.getMessage());  
-    }
-  }
-
-  /**
-   * Close the network connection if its is still connected.
-   */
-  private synchronized void 
-  shutdown() 
-  {
-    if(pSocket == null)
-      return;
-
-    try {
-      if(pSocket.isConnected()) {
-	pSocket.close();
-      }
-    }
-    catch (IOException ex) {
-    }
-    finally {
-      pSocket = null;
     }
   }
 
