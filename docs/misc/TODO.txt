@@ -1,8 +1,6 @@
 
 ACTIONS:
 
-- Add a job server resourecs method similar to the output parsing methods above.
-
 - Port the old Pipeline actions to work with the new Pipeline.
   + DelightShaderAction
   + DelightShopAction
@@ -19,65 +17,8 @@ ACTIONS:
   + Maya Simulation: particle systems, dynamics, cloth, fluid dynamics.    
   + Add 3Delight Render.  
 
-- Add thumbnail generation method?
 
 
-OPERATIONS/BACKEND: 
-
-- Task/Scheduling System
-
-- Would caching of checksums improve the performance of the FileMgr?
-
-
-ADMINISTRATION: 
-
-- Automated Backup of Node/Queue database and production working areas.
-
-- Node and File Online/Offline System
-
-
-USER INTERFACE: 
-
-- Improved UI for panel save/restore.  Its sort of clunky but works currently...
-
-- NodeViewer contents are not intialized to the selected nodes in the linked NodeBrowser 
-  when the panel type is changed to NodeViewer from some other type of panel.
-
-- NodeBrowser contents are not intialized to the selected nodes in the linked NodeViewer 
-  when the panel type is changed to NodeBrowser from some other type of panel.
-
-- When layouts are restored, there can be conflicts between multiple update tasks and 
-  problems of some components not being instatiated yet at the point of update.  A more
-  methodical system needs to replace the current ad hoc system.
-
-
-STATE/JOB BUGS
-
-- Job submission should traverse the entire tree upstream of the root job node and not
-  stop when it encounters a node without an action.  Job dependencies should bridge any 
-  number of nodes without actions between the target job and source job(s).
-
-
-
-
-IMPORTANT UNIMPLEMENTED JOB RELATED ISSUES:
-
-+ The Edit/Edit With operations should generate a warning when a job is Queue/Running for
-  the target file(s).
-
-+ When critical modifications are performed on a node, any running jobs associated with the
-  node should immediately be killed/aborted.  Ideally, a dialog should give the user the 
-  choice of killing the jobs or cancelling the operation.
-
-  Critical modifications can come from Link/Unlink, Add/Remove Secondary, Check-Out, Rename, 
-  as well as from the modifyProperties() method.
-
-+ The Renumber operation should kill any running jobs which generate frames which will be 
-  obsolete in the new frame range.  If the Execution Method is Serial, all running jobs should
-  be killed.
-
-+ The Release/RemoveFiles operations should also kill any running jobs associated with 
-  the node.
 
 
 ----------------------------------------------------------------------------------------------
