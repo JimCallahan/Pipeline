@@ -1,4 +1,4 @@
-// $Id: FileCloneReq.java,v 1.1 2005/03/30 20:37:29 jim Exp $
+// $Id: FileCloneReq.java,v 1.2 2005/03/30 22:42:10 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -29,14 +29,11 @@ class FileCloneReq
    * @param sourceID
    *   The unique working version identifier of the node owning the files being copied. 
    * 
-   * @param sourceSeq
-   *   The primary file sequence associated with the source node. 
-   * 
    * @param targetID
    *   The unique working version identifier of the node owning the files being replaced.
    * 
-   * @param targetSeq
-   *   The primary file sequence associated with the taret node. 
+   * @param files
+   *   The target files to copy indexed by corresponding source files.
    * 
    * @param writeable
    *   Whether the target node's files should be made writable.
@@ -44,10 +41,9 @@ class FileCloneReq
   public
   FileCloneReq
   (
-   NodeID sourceID,
-   FileSeq sourceSeq, 
+   NodeID sourceID, 
    NodeID targetID,
-   FileSeq targetSeq, 
+   TreeMap<File,File> files, 
    boolean writeable   
   )
   { 
@@ -56,20 +52,15 @@ class FileCloneReq
 	("The source node ID cannot be (null)!");
     pSourceID = sourceID;
 
-    if(sourceSeq == null) 
-      throw new IllegalArgumentException
-	("The source file sequence cannot be (null)!");
-    pSourceSeq = sourceSeq;
-
     if(targetID == null) 
       throw new IllegalArgumentException
 	("The target node ID cannot be (null)!");
     pTargetID = targetID;
 
-    if(targetSeq == null) 
+    if(files == null) 
       throw new IllegalArgumentException
-	("The target file sequence cannot be (null)!");
-    pTargetSeq = targetSeq;
+	("The files cannot be (null)!");
+    pFiles = files; 
 
     pWritable = writeable;
   }
@@ -90,15 +81,6 @@ class FileCloneReq
   }
 
   /**
-   * Gets the primary file sequence associated with the source node. 
-   */
-  public FileSeq
-  getSourceSeq() 
-  {
-    return pSourceSeq; 
-  }
-
-  /**
    * Gets the unique working version identifier of the node owning the files being replaced. 
    */
   public NodeID
@@ -108,12 +90,12 @@ class FileCloneReq
   }
 
   /**
-   * Gets primary file sequence associated with the target node. 
+   * Gets the target files to copy indexed by corresponding source files.
    */
-  public FileSeq
-  getTargetSeq() 
+  public TreeMap<File,File> 
+  getFiles() 
   {
-    return pTargetSeq; 
+    return pFiles; 
   }
 
 
@@ -146,19 +128,14 @@ class FileCloneReq
   private NodeID  pSourceID;
 
   /**
-   * The primary file sequence associated with the source node. 
-   */ 
-  private FileSeq  pSourceSeq; 
-
-  /**
    * The unique working version identifier of the node owning the files being replaced. 
    */ 
   private NodeID  pTargetID;
 
   /**
-   * The primary file sequence associated with the target node. 
+   * The target files to copy indexed by corresponding source files.
    */ 
-  private FileSeq  pTargetSeq; 
+  private TreeMap<File,File>  pFiles; 
 
 
   /**

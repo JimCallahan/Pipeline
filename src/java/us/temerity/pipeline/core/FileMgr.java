@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.41 2005/03/30 20:37:29 jim Exp $
+// $Id: FileMgr.java,v 1.42 2005/03/30 22:42:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1351,10 +1351,7 @@ class FileMgr
   {
     NodeID sourceID = req.getSourceID();
     NodeID targetID = req.getTargetID();
-
-    FileSeq sourceSeq = req.getSourceSeq();
-    FileSeq targetSeq = req.getTargetSeq();
-
+    TreeMap<File,File> files = req.getFiles();
     boolean writeable = req.getWritable();
 
     TaskTimer timer = 
@@ -1362,11 +1359,6 @@ class FileMgr
 
     timer.aquire();
     try {
-      if(sourceSeq.numFrames() != targetSeq.numFrames()) 
-	throw new PipelineException
-	  ("Unable to clone the files associated with node (" + sourceID + "), because the " +
-	   "target node (" + targetID + ") did not have the same number of files!");
-
       Object workingLock = getWorkingLock(targetID);
       synchronized(workingLock) {
 	timer.resume();	
@@ -1441,78 +1433,62 @@ class FileMgr
 	  }
 	}
 	
-	/* build the lists of source and target primary file names */ 
-	ArrayList<File> opfiles = sourceSeq.getFiles();
-	ArrayList<File> pfiles  = targetSeq.getFiles();
-      
 	/* copy each primary file */ 
-	{
-	  Iterator<File> oiter = opfiles.iterator();
-	  Iterator<File>  iter = pfiles.iterator();
-	  while(oiter.hasNext() && iter.hasNext()) {
-	    File ofile = oiter.next();
-	    File opath = new File(owdir, ofile.getName());
+	for(File ofile : files.keySet()) {
+	  File opath = new File(owdir, ofile.getName());
+	  if(opath.isFile()) {
+	    File file = files.get(ofile);
+
+	    ArrayList<String> args = new ArrayList<String>();
+	    args.add("--force");
+	    args.add(opath.getPath());
+	    args.add(file.getName());
 	    
-	    File file = iter.next();
-	    
-	    if(opath.isFile()) {
-	      ArrayList<String> args = new ArrayList<String>();
-	      args.add("--force");
-	      args.add(opath.getPath());
-	      args.add(file.getName());
-	      
-	      SubProcessLight proc = 
-		new SubProcessLight(targetID.getAuthor(), 
-				    "Clone-Primary", "cp", args, env, wdir);
-	      try {
-		proc.start();
-		proc.join();
-		if(!proc.wasSuccessful()) 
-		  throw new PipelineException
-		    ("Unable to clone a primary file for version (" + targetID + "):\n\n" + 
-		     proc.getStdErr());	
-	      }
-	      catch(InterruptedException ex) {
+	    SubProcessLight proc = 
+	      new SubProcessLight(targetID.getAuthor(), 
+				  "Clone-Primary", "cp", args, env, wdir);
+	    try {
+	      proc.start();
+	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to clone a primary file for version (" + targetID + "):\n\n" + 
+		   proc.getStdErr());	
+	    }
+	    catch(InterruptedException ex) {
 		throw new PipelineException
 		  ("Interrupted while cloning a primary file for version " + 
 		   "(" + targetID + ")!");
-	      }
 	    }
 	  }
 	}
 	
 	/* copy each primary checksum */ 
-	{
-	  Iterator<File> oiter = opfiles.iterator();
-	  Iterator<File>  iter = pfiles.iterator();
-	  while(oiter.hasNext() && iter.hasNext()) {
-	    File ofile = oiter.next();
-	    File opath = new File(ocwdir, ofile.getName());
+	for(File ofile : files.keySet()) {
+	  File opath = new File(ocwdir, ofile.getName());
+	  if(opath.isFile()) {
+	    File file = files.get(ofile);
+
+	    ArrayList<String> args = new ArrayList<String>();
+	    args.add("--force");
+	    args.add(opath.getPath());
+	    args.add(file.getName());
 	    
-	    File file = iter.next();
-	    
-	    if(opath.isFile()) {
-	      ArrayList<String> args = new ArrayList<String>();
-	      args.add("--force");
-	      args.add(opath.getPath());
-	      args.add(file.getName());
-	      
-	      SubProcessLight proc = 
-		new SubProcessLight("Clone-PrimaryCheckSum", "cp", args, env, cwdir);
-	      try {
-		proc.start();
-		proc.join();
-		if(!proc.wasSuccessful()) 
-		  throw new PipelineException
-		    ("Unable to clone a primary checksum for version " + 
-		     "(" + targetID + "):\n\n" + 
-		     proc.getStdErr());	
-	      }
-	      catch(InterruptedException ex) {
+	    SubProcessLight proc = 
+	      new SubProcessLight("Clone-PrimaryCheckSum", "cp", args, env, cwdir);
+	    try {
+	      proc.start();
+	      proc.join();
+	      if(!proc.wasSuccessful()) 
 		throw new PipelineException
-		  ("Interrupted while cloning a primary checksum for version " + 
-		   "(" + targetID + ")!");
-	      }
+		  ("Unable to clone a primary checksum for version " + 
+		   "(" + targetID + "):\n\n" + 
+		     proc.getStdErr());	
+	    }
+	    catch(InterruptedException ex) {
+	      throw new PipelineException
+		("Interrupted while cloning a primary checksum for version " + 
+		 "(" + targetID + ")!");
 	    }
 	  }
 	}
@@ -1524,64 +1500,65 @@ class FileMgr
 	    args.add("u+w");
 	  else 
 	    args.add("u-w");
-	  for(File file : pfiles) 
-	    args.add(file.getPath()); 
-	  
-	  SubProcessLight proc = 
-	    new SubProcessLight(targetID.getAuthor(), 
-				"Clone-SetWritable", "chmod", args, env, wdir);
-	  try {
-	    proc.start();
-	    proc.join();
-	    if(!proc.wasSuccessful()) 
-	      throw new PipelineException
-		("Unable to set the access permission to the files for " + 
-		 "the working version (" + targetID + "):\n\n" + 
-		 proc.getStdErr());	
+
+	  for(File file : files.values()) {
+	    File path = new File(wdir, file.getName());
+	    if(path.isFile()) 
+	      args.add(file.getPath()); 
 	  }
-	  catch(InterruptedException ex) {
-	    throw new PipelineException
-	      ("Interrupted while setting the access permission to the files for " + 
+	  
+	  if(args.size() > 1) {
+	    SubProcessLight proc = 
+	      new SubProcessLight(targetID.getAuthor(), 
+				  "Clone-SetWritable", "chmod", args, env, wdir);
+	    try {
+	      proc.start();
+	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to set the access permission to the files for " + 
+		   "the working version (" + targetID + "):\n\n" + 
+		   proc.getStdErr());	
+	    }
+	    catch(InterruptedException ex) {
+	      throw new PipelineException
+		("Interrupted while setting the access permission to the files for " + 
 	       "the working version (" + targetID + ")!");
+	    }
 	  }
 	}
 
+	/* set write permission to the to working filesand checksums */ 
 	{
-	  ArrayList<String> paths = new ArrayList<String>();
-	  for(File file : pfiles) {
+	  ArrayList<String> args = new ArrayList<String>();
+	  args.add("u+w");
+
+	  for(File file : files.values()) {
 	    File path = new File(cwdir, file.getName());
-	    if(path.isFile())
-	      paths.add(file.getPath());
-	  }
-	  
-	  if(!paths.isEmpty()) {
-	    ArrayList<String> args = new ArrayList<String>();
-	    args.add("u+w");
-	    for(File file : pfiles) 
+	    if(path.isFile()) 
 	      args.add(file.getPath()); 
+	  }
 	    
-	    /* set write permission to the to working filesand checksums */ 
-	    {
-	      SubProcessLight proc = 
-		new SubProcessLight("Clone-SetWritableCheckSums", "chmod", args, env, cwdir);
-	      try {
-		proc.start();
-		proc.join();
-		if(!proc.wasSuccessful()) 
+	  if(args.size() > 1) {
+	    SubProcessLight proc = 
+	      new SubProcessLight("Clone-SetWritableCheckSums", "chmod", args, env, cwdir);
+	    try {
+	      proc.start();
+	      proc.join();
+	      if(!proc.wasSuccessful()) 
 		throw new PipelineException
 		  ("Unable to add write access permission to the checksums for " + 
 		   "the working version (" + targetID + "):\n\n" + 
 		   proc.getStdErr());	
-	      }
-	      catch(InterruptedException ex) {
-		throw new PipelineException
-		  ("Interrupted while adding write access permission to the checksums for " + 
-		   "the working version (" + targetID + ")!");
-	      }
 	    }
-	  }	
-	}
-
+	    catch(InterruptedException ex) {
+	      throw new PipelineException
+		("Interrupted while adding write access permission to the checksums for " + 
+		 "the working version (" + targetID + ")!");
+	    }
+	  }
+	}	
+      
 	return new SuccessRsp(timer);
       }
     }

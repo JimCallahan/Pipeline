@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.30 2005/03/30 20:37:29 jim Exp $
+// $Id: FileMgrClient.java,v 1.31 2005/03/30 22:42:10 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -333,14 +333,11 @@ class FileMgrClient
    * @param sourceID
    *   The unique working version identifier of the node owning the files being copied. 
    * 
-   * @param sourceSeq
-   *   The primary file sequence associated with the source node. 
-   * 
    * @param targetID
    *   The unique working version identifier of the node owning the files being replaced.
    * 
-   * @param targetSeq
-   *   The primary file sequence associated with the target node. 
+   * @param files
+   *   The target files to copy indexed by corresponding source files.
    * 
    * @param writeable
    *   Whether the target node's files should be made writable.
@@ -352,16 +349,15 @@ class FileMgrClient
   clone
   (
    NodeID sourceID,
-   FileSeq sourceSeq, 
    NodeID targetID,
-   FileSeq targetSeq, 
+   TreeMap<File,File> files, 
    boolean writeable   
   )
     throws PipelineException
   {
     verifyConnection();
 
-    FileCloneReq req = new FileCloneReq(sourceID, sourceSeq, targetID, targetSeq, writeable);
+    FileCloneReq req = new FileCloneReq(sourceID, targetID, files, writeable);
     
     Object obj = performTransaction(FileRequest.Clone, req);
     handleSimpleResponse(obj);

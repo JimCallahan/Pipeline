@@ -1,4 +1,4 @@
-// $Id: JCloneDialog.java,v 1.1 2005/03/30 20:37:29 jim Exp $
+// $Id: JCloneDialog.java,v 1.2 2005/03/30 22:42:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -53,9 +53,86 @@ class JCloneDialog
 	
 	UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
 	
-	pFrameRangeField =
-	  UIFactory.createTitledTextField(tpanel, "Frame Range:", sTSize, 
+	pFileModeField = 
+	  UIFactory.createTitledTextField(tpanel, "File Mode:", sTSize, 
 					  vpanel, "", sVSize);
+	
+	UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+	
+	pFrameNumbersField = 
+	  UIFactory.createTitledTextField(tpanel, "Frame Numbers:", sTSize, 
+					  vpanel, "", sVSize);
+
+	UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+
+	{
+	  tpanel.add(UIFactory.createFixedLabel("Frame Range:", sTSize, JLabel.RIGHT));
+
+	  {
+	    Box hbox = new Box(BoxLayout.X_AXIS);
+
+	    {
+	      JIntegerField field = 
+		UIFactory.createIntegerField(null, sVSize1, JLabel.CENTER);
+	      pStartFrameField = field;
+
+	      hbox.add(field);
+	    }
+	    
+	    hbox.add(Box.createHorizontalGlue());
+	    hbox.add(Box.createRigidArea(new Dimension(8, 0)));
+
+	    {
+	      JLabel label = new JLabel("to");
+	      pToLabel = label;
+
+	      label.setName("DisableLabel");
+
+	      hbox.add(label);
+	    }
+
+	    hbox.add(Box.createRigidArea(new Dimension(8, 0)));
+	    hbox.add(Box.createHorizontalGlue());
+
+	    {
+	      JIntegerField field = 
+		UIFactory.createIntegerField(null, sVSize1, JLabel.CENTER);
+	      pEndFrameField = field;
+
+	      hbox.add(field);
+	    }
+
+	    hbox.add(Box.createHorizontalGlue());
+	    hbox.add(Box.createRigidArea(new Dimension(8, 0)));
+
+	    {
+	      JLabel label = new JLabel("by");
+	      pByLabel = label;
+
+	      label.setName("DisableLabel");
+
+	      hbox.add(label);
+	    }
+
+	    hbox.add(Box.createRigidArea(new Dimension(8, 0)));
+	    hbox.add(Box.createHorizontalGlue());
+
+	    {
+	      JIntegerField field = 
+		UIFactory.createIntegerField(null, sVSize1, JLabel.CENTER);
+	      pByFrameField = field;
+
+	      hbox.add(field);
+	    }
+	    
+	    Dimension size = new Dimension(sVSize+1, 19);
+	    hbox.setMinimumSize(size);
+	    hbox.setMaximumSize(size);
+	    hbox.setPreferredSize(size);
+
+	    vpanel.add(hbox);
+	  }
+	}
 
 	UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 	
@@ -63,7 +140,7 @@ class JCloneDialog
 	  UIFactory.createTitledIntegerField(tpanel, "Frame Padding:", sTSize, 
 					     vpanel, null, sVSize);
 
-	UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+	UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
 
 	{
 	  JAlphaNumField field = 
@@ -75,7 +152,7 @@ class JCloneDialog
 	  field.setActionCommand("update-editor");
 	}
 
-	UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
+	UIFactory.addVerticalSpacer(tpanel, vpanel, 16);
 
 	pCopyFilesField = 
 	  UIFactory.createTitledBooleanField(tpanel, "Copy Primary Files:", sTSize, 
@@ -111,7 +188,7 @@ class JCloneDialog
 	scroll.setVerticalScrollBarPolicy
 	  (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 	
-	Dimension size = new Dimension(sTSize+sVSize+52, 300);
+	Dimension size = new Dimension(sTSize+sVSize+52, 312);
 	scroll.setMinimumSize(size);
 	scroll.setPreferredSize(size);
 
@@ -181,27 +258,73 @@ class JCloneDialog
     pPrefixField.setText(pNodeMod.getName() + "-clone");
 
     FileSeq fseq = pNodeMod.getPrimarySequence();
-    FilePattern fpat = fseq.getFilePattern();
     if(fseq.hasFrameNumbers()) {
-      pFrameRangeField.setText(fseq.getFrameRange().toString());
+      pFrameNumbersField.setText("YES");
+      
+      pStartFrameField.setEnabled(true);
+      if(fseq.isSingle()) {
+	pEndFrameField.setEnabled(false);
+	pByFrameField.setEnabled(false);
+      }
+      else {
+	pEndFrameField.setEnabled(true);
+	pByFrameField.setEnabled(true);
+      }
 
       pFramePaddingField.setEnabled(true);
-      pFramePaddingField.setValue(fpat.getPadding());
     }
     else {
-      pFrameRangeField.setText(null);
+      pFrameNumbersField.setText("no");
+
+      pStartFrameField.setValue(null);
+      pStartFrameField.setEnabled(false);
+      pEndFrameField.setValue(null);
+      pEndFrameField.setEnabled(false);
+      pByFrameField.setValue(null);
+      pByFrameField.setEnabled(false);
 
       pFramePaddingField.setValue(null);
       pFramePaddingField.setEnabled(false);
     }
 
-    pSuffixField.setText(fpat.getSuffix());
+    pFileModeField.setText(fseq.isSingle() ? "Single File" : "File Sequence");
+    pFrameNumbersField.setText(fseq.hasFrameNumbers() ? "YES" : "no");
+
+    updateFileSeq(pNodeMod.getPrimarySequence());
 
     pCopyFilesField.setValue(true);
-
     pExportPanel.updateNode(mod);
 
     pack();
+  }
+
+  /**
+   * Update the file sequences related fields.
+   */ 
+  private void 
+  updateFileSeq
+  (
+   FileSeq fseq
+  ) 
+  {
+    FilePattern fpat = fseq.getFilePattern();
+    FrameRange frange = fseq.getFrameRange();
+    
+    FileSeq ofseq = pNodeMod.getPrimarySequence();
+    if(fseq.hasFrameNumbers() && ofseq.hasFrameNumbers()) {
+      if(fseq.isSingle() && ofseq.isSingle()) {
+	pStartFrameField.setValue(frange.getStart());
+      }
+      else if(!fseq.isSingle() && !ofseq.isSingle()) {
+	pStartFrameField.setValue(frange.getStart());
+	pEndFrameField.setValue(frange.getEnd());
+	pByFrameField.setValue(frange.getBy());
+      }
+
+      pFramePaddingField.setValue(fpat.getPadding());
+    }
+
+    pSuffixField.setText(fpat.getSuffix());
   }
 
     
@@ -304,14 +427,8 @@ class JCloneDialog
       if(dir != null) {
 	FileSeq fseq = pFileSeqDialog.getSelectedFileSeq();
 	if(fseq != null) {
-	  FilePattern fpat = fseq.getFilePattern();
-
-	  pPrefixField.setText(dir + "/" + fpat.getPrefix());
-
-	  if(fseq.hasFrameNumbers() && pNodeMod.getPrimarySequence().hasFrameNumbers()) 
-	    pFramePaddingField.setValue(fpat.getPadding());
-
-	  pSuffixField.setText(fpat.getSuffix());
+	  pPrefixField.setText(dir + "/" +  fseq.getFilePattern().getPrefix());
+	  updateFileSeq(fseq);
 	}
 	else {
 	  pPrefixField.setText(dir.toString());
@@ -319,6 +436,7 @@ class JCloneDialog
       }
     }
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -370,7 +488,51 @@ class JCloneDialog
 	fpat = new FilePattern(prefix, suffix);
       }
 
-      FileSeq primary = new FileSeq(fpat, ofseq.getFrameRange());
+      FrameRange frange = null;
+      if(ofseq.hasFrameNumbers()) {
+	Integer startFrame = pStartFrameField.getValue();
+	if(startFrame == null) 
+	  throw new PipelineException
+	    ("Unable to register node (" + name + ") which has frame numbers but an " + 
+	     "unspecified start frame!");
+
+	if(ofseq.isSingle()) {
+	  frange = new FrameRange(startFrame);
+	}
+	else {
+	  Integer endFrame = pEndFrameField.getValue();
+	  if(endFrame == null) 
+	    throw new PipelineException
+	      ("Unable to register node (" + name + ") which has frame numbers but an " + 
+	       "unspecified end frame!");
+	  
+	  if(startFrame > endFrame) {
+	    Integer tmp = endFrame;
+	    endFrame = startFrame;
+	    startFrame = tmp;
+	    
+	    pStartFrameField.setValue(startFrame);
+	    pEndFrameField.setValue(endFrame);
+	  }
+
+	  Integer byFrame = pByFrameField.getValue();
+	  if(byFrame == null) 
+	    throw new PipelineException
+	      ("Unable to register node (" + name + ") which has frame numbers but an " + 
+	       "unspecified frame increment!");  
+	  
+	  try {
+	    frange = new FrameRange(startFrame, endFrame, byFrame);
+	  }
+	  catch(IllegalArgumentException ex) {
+	    throw new PipelineException
+	      ("Unable to register node (" + name + "):\n\n" + 
+	       ex.getMessage());
+	  }
+	}
+      }
+
+      FileSeq primary = new FileSeq(fpat, frange);
 
       UIMaster master = UIMaster.getInstance();
 
@@ -608,6 +770,7 @@ class JCloneDialog
   
   private static final int sTSize  = 150;
   private static final int sVSize  = 300;
+  private static final int sVSize1 = 80;
 
 
 
@@ -649,11 +812,43 @@ class JCloneDialog
    */ 
   private JPathField  pPrefixField;
   
-  /**
-   * The frame range field.
-   */ 
-  private JTextField  pFrameRangeField;
   
+  /**
+   * The single/sequence file mode.
+   */ 
+  private JTextField  pFileModeField;
+  
+  /**
+   * The frame numbers field.
+   */ 
+  private JTextField  pFrameNumbersField;
+  
+  /**
+   * The start frame.
+   */ 
+  private JIntegerField  pStartFrameField;
+
+  /**
+   * The "to" label.
+   */ 
+  private JLabel pToLabel;
+  
+  /**
+   * The end frame.
+   */ 
+  private JIntegerField  pEndFrameField;
+
+  /**
+   * The "by" label.
+   */ 
+  private JLabel pByLabel;
+  
+  /**
+   * The by frame.
+   */ 
+  private JIntegerField  pByFrameField;
+
+
   /**
    * The frame number padding.
    */ 

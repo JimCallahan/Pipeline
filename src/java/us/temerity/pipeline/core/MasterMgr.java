@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.107 2005/03/30 20:37:29 jim Exp $
+// $Id: MasterMgr.java,v 1.108 2005/03/30 22:42:10 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -5175,13 +5175,33 @@ class MasterMgr
 	}
       }
 
-      if(sourceSeq.numFrames() != targetSeq.numFrames()) 
+      if(sourceSeq.hasFrameNumbers() != targetSeq.hasFrameNumbers()) 
 	throw new PipelineException
-	  ("Unable to clone the files associated with node (" + sourceID + "), because the " +
-	   "target node (" + targetID + ") did not have the same number of files!");
+	  ("Unable to clone the files associated with node (" + sourceID + "), because " +
+	   "the file sequence associated with the node (" + sourceSeq + ") " + 
+	   (sourceSeq.hasFrameNumbers() ? "has" : "does NOT have") + 
+	   " frame numbers and the target file sequence (" + targetSeq + ") " +
+	   (targetSeq.hasFrameNumbers() ? "has" : "does NOT have") + " frame numbers!");
 
+      /* map the overlapping source to target files */ 
+      TreeMap<File,File> files = new TreeMap<File,File>();
+      if(sourceSeq.hasFrameNumbers()) {
+	FrameRange sourceRange = sourceSeq.getFrameRange();
+	FilePattern sourcePat = sourceSeq.getFilePattern();
+	FilePattern targetPat = targetSeq.getFilePattern();
+	int frames[] = targetSeq.getFrameRange().getFrameNumbers();
+	int wk;
+	for(wk=0; wk<frames.length; wk++) {
+	  if(sourceRange.isValid(frames[wk])) 
+	    files.put(sourcePat.getFile(frames[wk]), targetPat.getFile(frames[wk]));
+	}
+      }
+      else {
+	files.put(sourceSeq.getFile(0), targetSeq.getFile(0));
+      }
+      
       /* clone the files */ 
-      pFileMgrClient.clone(sourceID, sourceSeq, targetID, targetSeq, writeable);
+      pFileMgrClient.clone(sourceID, targetID, files, writeable);
 
       return new SuccessRsp(timer);
     }
