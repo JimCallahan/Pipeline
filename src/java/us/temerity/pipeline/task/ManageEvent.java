@@ -1,4 +1,4 @@
-// $Id: ManageEvent.java,v 1.1 2004/10/12 23:21:13 jim Exp $
+// $Id: ManageEvent.java,v 1.2 2004/10/13 03:23:56 jim Exp $
 
 package us.temerity.pipeline.task;
 
@@ -147,7 +147,7 @@ class ManageEvent
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID = ;
+  private static final long serialVersionUID = -5832548208127748394L;
 
 
 
