@@ -1,4 +1,4 @@
-// $Id: TestCheckSumApp.java,v 1.1 2004/03/09 05:02:37 jim Exp $
+// $Id: TestCheckSumApp.java,v 1.2 2004/03/09 06:24:07 jim Exp $
 
 import us.temerity.pipeline.*;
 
@@ -60,57 +60,95 @@ class TestCheckSumApp
   run() 
     throws PipelineException, IOException
   {
-    long size = 64*1024*1024;
-
     /* generate some test paths */ 
-    File pathA = null;
-    File pathB = null;
-    File pathC = null;
-    File pathD = null;
-    File pathE = null;
-    File pathF = null;
+    TreeMap<Integer,ArrayList<File>> table = new TreeMap<Integer,ArrayList<File>>();
     {
-      System.out.print("Generating: \n");
+      System.out.print("-----------------------------------\n" + 
+		       "Generating Data Files: \n");
 
-      pathA = new File("/working/jim/default/testA");
-      genTestFile(pathA, 123, size);
-      
-      pathB = new File("/working/jim/default/testB");
-      genTestFile(pathB, 456, size);
-      
-      pathC = new File("/working/jim/default/testC");
-      genTestFile(pathC, 456, size);
-      
-      pathD = new File("/working/jim/default/testD");
-      genTestFile(pathD, 123, size);
-      
-      pathE = new File("/working/jim/default/testE");
-      genTestFile(pathE, 456, size);
-      
-      pathF = new File("/working/jim/default/testF");
-      genTestFile(pathF, 456, size);
-      
+      int wk;
+      for(wk=4; wk<21; wk++) {
+	ArrayList<File> paths = new ArrayList<File>();
+	
+	int size = 2 << wk;
+
+	String names[] = { "testA", "testB", "testC", "testD", "testE", "testF" };
+	long seeds[] = { 123, 123, 456, 789, 789, 012 };
+	int fk;
+	for(fk=0; fk<names.length; fk++) {
+	  File file = new File("/working/jim/default/" + names[fk] + "-" + size);
+	  genTestFile(file, seeds[fk], size);
+	  paths.add(file);
+	}
+
+	table.put(size, paths);
+      }
+
       System.out.print("\n");
     }
 
       
     /* tests */ 
     {
-      refresh(pathA, Long.MAX_VALUE);
-      refresh(pathB, Long.MAX_VALUE);
-      refresh(pathC, Long.MAX_VALUE);
+      System.out.print("-----------------------------------\n" + 
+		       "Rebuilding CheckSums: \n\n");
+      for(Integer size : table.keySet()) {
+	ArrayList<File> paths = table.get(size);
 
-      System.out.print("---\n");
+	long mtotal = 0;
+	{
+	  System.out.print("  Memory Mapped [" + size + "]:\n");
+	  mtotal += refresh(paths.get(0), 0);
+	  mtotal += refresh(paths.get(1), 0);
+	  mtotal += refresh(paths.get(2), 0);
 
-      refresh(pathD, 0);
-      refresh(pathE, 0);
-      refresh(pathF, 0);
+	  double rate = (((double) size) / ((double) (mtotal))) * (3000.0 / (1024.0*1024.0));
+	  System.out.print("   TOTAL = " + mtotal + " msec\n" + 
+			   "    RATE = " + ((float) rate) + " MB/sec\n\n");
+	}
+	
+	long stotal = 0;
+	{
+	  System.out.print("  Stream I/O [" + size + "]:\n");
+	  stotal += refresh(paths.get(3), Long.MAX_VALUE);
+	  stotal += refresh(paths.get(4), Long.MAX_VALUE);
+	  stotal += refresh(paths.get(5), Long.MAX_VALUE);
 
-      System.out.print("---\n");
+	  double rate = (((double) size) / ((double) (stotal))) * (3000.0 / (1024.0*1024.0));
+	  System.out.print("   TOTAL = " + stotal + " msec\n" + 
+			   "    RATE = " + ((float) rate) + " MB/sec\n\n");
+	}
 
-      test(pathA, pathB, false);
-      test(pathB, pathC, true);
-      test(pathC, pathA, false);
+	if(mtotal < stotal) {
+	  float factor = ((float) stotal) / ((float) mtotal);
+	  System.out.print("  Memory Mapped: " + factor + " (times faster)\n\n\n");
+	}
+	else {
+	  float factor = ((float) mtotal) / ((float) stotal);
+	  System.out.print("  Stream I/O: " + factor + " (times faster)\n\n\n");
+	}
+      }
+    }
+
+    {
+      System.out.print("-----------------------------------\n" + 
+		       "Comparing with CheckSums: \n\n");
+
+      Date start = new Date();
+      for(Integer size : table.keySet()) {
+	ArrayList<File> paths = table.get(size);
+
+	test(paths.get(0), paths.get(1), true);
+	test(paths.get(1), paths.get(2), false);
+	test(paths.get(2), paths.get(3), false);
+	test(paths.get(3), paths.get(4), true);
+	test(paths.get(4), paths.get(5), false);
+      }
+
+      long time = (new Date()).getTime() - start.getTime();
+      float rate = ((float) (table.keySet().size() * 5000)) / ((float) time);
+      System.out.print("    Time = " + time + " msec\n" + 
+		       "    Rate = " + rate + " files/sec\n\n");
     }
 
     System.exit(0);
@@ -121,7 +159,7 @@ class TestCheckSumApp
   /*   H E L P E R S                                                                        */
   /*----------------------------------------------------------------------------------------*/
 
-  private void 
+  private long 
   refresh
   (
    File path, 
@@ -133,7 +171,9 @@ class TestCheckSumApp
     pCheckSum.refresh(path, size); 
     long time = (new Date()).getTime() - start.getTime();
    
-    System.out.print("Time = " + time + " msec\n");
+    System.out.print("    Time = " + time + " msec\n");
+
+    return time;
   }
 
 
@@ -148,10 +188,10 @@ class TestCheckSumApp
   {
     boolean result = pCheckSum.compare(pathA, pathB);
     
-    System.out.print("Comparing: \n" +
-		     "  FileA: " + pathA + "\n" + 
-		     "  FileB: " + pathB + "\n" + 
-		     "  Equal: " + result + " (" + expect + ")\n\n");
+    System.out.print("  Comparing: \n" +
+		     "    FileA: " + pathA + "\n" + 
+		     "    FileB: " + pathB + "\n" + 
+		     "    Equal: " + result + " (" + expect + ")\n\n");
 
     assert(expect == result);
   }
@@ -162,7 +202,7 @@ class TestCheckSumApp
   (
    File path,    /* IN: path to file */ 
    long seed,    /* IN: random seed */ 
-   long size     /* IN: size of file */ 
+   int size      /* IN: size of file */ 
   ) 
     throws IOException
   {
@@ -170,15 +210,16 @@ class TestCheckSumApp
     if(file.isFile()) 
       return;
 
-    System.out.print("  " + file.toString() + "\n");
+    System.out.print("  " + file.getName() + "\n");
 
     file.getParentFile().mkdirs();
-    FileWriter out = new FileWriter(file);
+    FileOutputStream out = new FileOutputStream(file);
     
     Random rand = new Random(seed);
-    long wk;
-    for(wk=0; wk<size; wk++) 
-      out.write(String.valueOf(rand.nextInt(9)), 0, 1);
+    byte[] bytes = new byte[size];
+    rand.nextBytes(bytes);
+
+    out.write(bytes);
     
     out.flush();
     out.close();
