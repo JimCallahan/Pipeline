@@ -297,7 +297,9 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
   MAIN_PACKAGES = us.temerity.pipeline \
                   us.temerity.pipeline.glue \
                   us.temerity.pipeline.math \
-                  us.temerity.pipeline.toolset
+                  us.temerity.pipeline.toolset \
+                  us.temerity.pipeline.ui
+
 
        PACKAGES = $(MAIN_PACKAGES) $(PLUGIN_PACKAGES)
 
