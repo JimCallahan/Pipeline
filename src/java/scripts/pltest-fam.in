@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cd `pwd`
+exec java @JAVA_RUNTIME_FLAGS@ -cp @prefix@/jar/testbed.jar \
+          testbed/TestFAMApp "$@"

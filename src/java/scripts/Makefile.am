@@ -11,8 +11,9 @@ instsbindir = @sbindir@
 instsbin_SCRIPTS = \
   pldispatcher \
   plserver \
-  pltest
-
+  pltest-dnotify \
+  pltest-fam \
+  pltest-rwlock
 
 
 
