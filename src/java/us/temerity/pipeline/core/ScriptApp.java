@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.2 2004/09/19 23:10:40 jim Exp $
+// $Id: ScriptApp.java,v 1.3 2004/09/20 03:40:40 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -115,7 +115,12 @@ class ScriptApp
       "  Privileged Users:\n" +
       "    privileged\n" + 
       "      --get\n" + 
-      "      --set=user-name[:true|false]\n" + 
+      "      --grant=user-name\n" + 
+      "      --revoke=user-name\n" + 
+      "\n" + 
+      "  Administration\n" +
+      "    admin\n" + 
+      "      --shutdown\n" + 
       "\n" + 
       "  Toolset Administration\n" + 
       "    default-toolset\n" + 
@@ -123,7 +128,8 @@ class ScriptApp
       "      --set=toolset-name\n" + 
       "    active-toolset\n" + 
       "      --get\n" + 
-      "      --set=toolset-name[:true|false]\n" + 
+      "      --add=toolset-name\n" + 
+      "      --remove=toolset-name\n" + 
       "    toolset\n" + 
       "      --get\n" + 
       "      --get-info=toolset-name\n" + 
@@ -297,37 +303,52 @@ class ScriptApp
   ) 
     throws PipelineException
   {
-    Toolset tset = client.getToolset(tname);
+    ArrayList<Toolset> selected = new ArrayList<Toolset>();
+    if(tname == null) {
+      TreeSet<String> tnames = client.getToolsetNames();
+      for(String name : tnames) 
+	selected.add(client.getToolset(name));
+    }
+    else {
+      selected.add(client.getToolset(tname));
+    }
 
     StringBuffer buf = new StringBuffer();
-    buf.append
-      (tbar(80) + "\n" +
-       "Toolset     : " + tset.getName() + "\n" + 
-       "Created     : " + (Dates.format(tset.getTimeStamp()) + " by (" + 
-			   tset.getAuthor()) + ")\n" +
-       "Description : " + wordWrap(tset.getDescription(), 14, 80) + "\n" + 
-       bar(80) + "\n");
-    
-    int wk;
-    for(wk=0; wk<tset.getNumPackages(); wk++) {
-      String pname = tset.getPackageName(wk);
-      VersionID vid = tset.getPackageVersionID(wk);
-
-      buf.append("Package     : " + pname + " (v" + vid + ")");
-      try {
-	PackageVersion pkg = client.getToolsetPackage(pname, vid);
-	buf.append
-	  ("\n" + 
-	   "Created     : " + (Dates.format(pkg.getTimeStamp()) + " by (" + 
-			       pkg.getAuthor()) + ")\n" +
-	   "Description : " + wordWrap(pkg.getDescription(), 14, 80));
-      }
-      catch(PipelineException ex) {
-	Logs.ops.warning(ex.getMessage());
-      }
-
-      if(wk < (tset.getNumPackages()-1)) 
+    boolean first = true;
+    for(Toolset tset : selected) {
+      if(!first) 
 	buf.append("\n\n");
+      first = false;
+
+      buf.append
+	(tbar(80) + "\n" +
+	 "Toolset     : " + tset.getName() + "\n" + 
+	 "Created     : " + (Dates.format(tset.getTimeStamp()) + " by (" + 
+			     tset.getAuthor()) + ")\n" +
+	 "Description : " + wordWrap(tset.getDescription(), 14, 80) + "\n" + 
+	 bar(80) + "\n");
+    
+      int wk;
+      for(wk=0; wk<tset.getNumPackages(); wk++) {
+	String pname = tset.getPackageName(wk);
+	VersionID vid = tset.getPackageVersionID(wk);
+	
+	buf.append("Package     : " + pname + " (v" + vid + ")");
+	try {
+	  PackageVersion pkg = client.getToolsetPackage(pname, vid);
+	  buf.append
+	    ("\n" + 
+	     "Created     : " + (Dates.format(pkg.getTimeStamp()) + " by (" + 
+				 pkg.getAuthor()) + ")\n" +
+	     "Description : " + wordWrap(pkg.getDescription(), 14, 80));
+	}
+	catch(PipelineException ex) {
+	  Logs.ops.warning(ex.getMessage());
+	}
+	
+	if(wk < (tset.getNumPackages()-1)) 
+	  buf.append("\n\n");
+      }
     }
 
     Logs.ops.info(buf.toString());
@@ -381,23 +402,37 @@ class ScriptApp
   ) 
     throws PipelineException
   {
+    StringBuffer buf = new StringBuffer(); 
+    boolean first = true;
+    boolean found = false;
     ArrayList<LicenseKey> keys = client.getLicenseKeys();
     for(LicenseKey key : keys) {
-      if(key.getName().equals(kname)) {
-	Logs.ops.info
-	  (tbar(80) + "\n" +
-	   "License Key : " + key.getName() + "\n" + 
+      if((kname == null) || key.getName().equals(kname)) {
+	if(first) 
+	  buf.append(tbar(80) + "\n");
+	else 
+	  buf.append("\n\n" + bar(80) + "\n");
+	first = false;
+
+	buf.append
+	  ("License Key : " + key.getName() + "\n" + 
 	   "Available   : " + key.getAvailable() + "\n" + 
 	   "Total       : " + key.getTotal() + "\n" + 
 	   "Description : " + wordWrap(key.getDescription(), 14, 80));
-	Logs.flush();
 
-	return;
+	if(kname != null) {
+	  found = true;
+	  break;
+	}
       }
     }
 
-    throw new PipelineException
-      ("No license key named (" + kname + ") exists!");
+    if((kname != null) && !found) 
+      throw new PipelineException
+	("No license key named (" + kname + ") exists!");
+
+    Logs.ops.info(buf.toString());
+    Logs.flush();
   }
 
   /**
@@ -411,21 +446,35 @@ class ScriptApp
   ) 
     throws PipelineException
   {
+    StringBuffer buf = new StringBuffer(); 
+    boolean first = true;
+    boolean found = false;
     ArrayList<SelectionKey> keys = client.getSelectionKeys();
     for(SelectionKey key : keys) {
-      if(key.getName().equals(kname)) {
-	Logs.ops.info
-	  (tbar(80) + "\n" +
-	   "Selection Key : " + key.getName() + "\n" + 
-	   "Description   : " + wordWrap(key.getDescription(), 14, 80));
-	Logs.flush();
+      if((kname == null) || key.getName().equals(kname)) {
+	if(first) 
+	  buf.append(tbar(80) + "\n");
+	else 
+	  buf.append("\n\n" + bar(80) + "\n");
+	first = false;
 
-	return;
+	buf.append
+	  ("Selection Key : " + key.getName() + "\n" + 
+	   "Description   : " + wordWrap(key.getDescription(), 16, 80));
+
+	if(kname != null) {
+	  found = true;
+	  break;
+	}
       }
     }
 
-    throw new PipelineException
-      ("No selection key named (" + kname + ") exists!");
+    if((kname != null) && !found) 
+      throw new PipelineException
+	("No selection key named (" + kname + ") exists!");
+
+    Logs.ops.info(buf.toString());
+    Logs.flush();    
   }
 
   /**
@@ -440,15 +489,26 @@ class ScriptApp
     throws PipelineException 
   {
     TreeMap<String,QueueHost> hosts = client.getHosts();
-    QueueHost host = hosts.get(hname);
-    if(host != null) {
-      StringBuffer buf = new StringBuffer();
-      buf.append
-	(tbar(80) + "\n" +
-	 "Job Server  : " + host.getName() + "\n" + 
-	 "Status      : " + host.getStatus() + "\n" + 
-	 "Reservation : ");
+    ArrayList<QueueHost> selected = new ArrayList<QueueHost>();
+    if(hname == null)
+      selected.addAll(hosts.values());
+    else 
+      selected.add(hosts.get(hname));
 
+    StringBuffer buf = new StringBuffer();
+    boolean first = true;
+    for(QueueHost host : selected) {
+      if(first) 
+	buf.append(tbar(80) + "\n");
+      else 
+	buf.append("\n\n" + bar(80) + "\n");
+      first = false;
+
+      buf.append
+	("Job Server     : " + host.getName() + "\n" + 
+	 "Status         : " + host.getStatus() + "\n" + 
+	 "Reservation    : ");
+      
       String reserve = host.getReservation();
       if(reserve != null) 
 	buf.append(reserve);
@@ -459,17 +519,33 @@ class ScriptApp
       if(sample != null) {
 	buf.append
 	  ("\n" + 
-	   "Jobs        : " + sample.getNumJobs() + " (slots " + host.getJobSlots() + ")\n" + 
-	   "System Load : " + String.format("%1$.2f", sample.getLoad()) + "\n" + 
-	   "Free Memory : " + (formatLong(sample.getMemory()) + 
-			       " (total " + formatLong(host.getTotalMemory()) + ")") + "\n" +
-	   "Free Disk   : " + (formatLong(sample.getDisk()) + 
-			       " (total " + formatLong(host.getTotalDisk()) + ")"));
+	   "Jobs           : " + (sample.getNumJobs() + 
+				  " (slots " + host.getJobSlots() + ")") + "\n" + 
+	   "System Load    : " + (String.format("%1$.2f", sample.getLoad()) + 
+				  " (procs " + host.getNumProcessors()) + ")\n" +
+	   "Free Memory    : " + (formatLong(sample.getMemory()) + " (total " + 
+				  formatLong(host.getTotalMemory()) + ")") + "\n" +
+	   "Free Disk      : " + (formatLong(sample.getDisk()) + " (total " +
+				  formatLong(host.getTotalDisk()) + ")"));
       }
 
-      Logs.ops.info(buf.toString());
-      Logs.flush();      
+
+      buf.append("\n" + 
+		 "Selection Bias :");
+      Set<String> keys = host.getSelectionKeys();
+      if(keys.isEmpty()) {
+	buf.append(" -");
+      }
+      else {
+	StringBuffer kbuf = new StringBuffer();
+	for(String kname : keys) 
+	  kbuf.append(" " + kname + "[" + host.getSelectionBias(kname) + "]");
+	buf.append(wordWrap(kbuf.toString(), 17, 80));
+      }
     }
+
+    Logs.ops.info(buf.toString());
+    Logs.flush();      
   }
 
   /**

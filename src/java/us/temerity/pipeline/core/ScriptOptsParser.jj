@@ -191,6 +191,7 @@ TOKEN :
 		   
   /* commands */ 
 | <PRIVILEGED:        "privileged">       : PRIVILEGED_OPTS 
+| <ADMIN:             "admin">  
 | <DEFAULT_TOOLSET:   "default-toolset">  : TOOLSET_OPTS 
 | <ACTIVE_TOOLSET:    "active-toolset">   : TOOLSET_OPTS 
 | <TOOLSET:           "toolset">          : TOOLSET_OPTS 
@@ -342,9 +343,7 @@ TOKEN :
 <TOOLSET_NAME_STATE> 
 TOKEN :
 {
-  <TRUE1:                  "true">                                   : DEFAULT
-| <FALSE1:                 "false">                                  : DEFAULT
-| <TOOLSET_NAME:           (["a"-"z","A"-"Z"]) 
+  <TOOLSET_NAME:           (["a"-"z","A"-"Z"]) 
 		           (["a"-"z","A"-"Z","0"-"9","_","-"])+>  
 | <COLON1:                 ":">                                      
 | <AE2:                    ["\0"]>                                   : DEFAULT
@@ -363,9 +362,7 @@ TOKEN :
 <USER_NAME_STATE> 
 TOKEN :
 {
-  <TRUE:                "true">                                   : DEFAULT
-| <FALSE:               "false">                                  : DEFAULT
-| <USER_NAME:           (["a"-"z","A"-"Z"]) 
+  <USER_NAME:           (["a"-"z","A"-"Z"]) 
 	   	          (["a"-"z","A"-"Z","0"-"9","_","-"])+>  
 | <COLON2:              ":">                                      
 | <AE3:                 ["\0"]>                                   : DEFAULT
@@ -443,11 +440,12 @@ TOKEN :
 <PRIVILEGED_OPTS> 
 TOKEN :
 {
-  <PRIVILEGED_GET:   "--get">                   : DEFAULT
-| <PRIVILEGED_SET:   "--set">                   : USER_NAME_SEP 
-| <AE7:              ["\0"]>  
-| <UNKNOWN_OPTION1:  "-" ("-")? (~["\0","="])*> : IGNORE_STATE
-| <UNKNOWN1:         ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+  <PRIVILEGED_GET:    "--get">                   : DEFAULT
+| <PRIVILEGED_GRANT:  "--grant">                 : USER_NAME_SEP 
+| <PRIVILEGED_REVOKE: "--revoke">                : USER_NAME_SEP 
+| <AE7:               ["\0"]>  
+| <UNKNOWN_OPTION1:   "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN1:          ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
 }
 
 
@@ -455,13 +453,16 @@ TOKEN :
 <TOOLSET_OPTS> 
 TOKEN :
 {
-  <TOOLSET_GET:        "--get">                   : DEFAULT
-| <TOOLSET_GET_INFO:   "--get-info">              : TOOLSET_NAME_SEP  
-| <TOOLSET_SET:        "--set">                   : TOOLSET_NAME_SEP 
-| <TOOLSET_EXPORT:     "--export">                : TOOLSET_NAME_SEP
-| <AE8:                ["\0"]>            
-| <UNKNOWN_OPTION2:    "-" ("-")? (~["\0","="])*> : IGNORE_STATE
-| <UNKNOWN2:           ~["-","\0"] (~["\0"])*>    : IGNORE_STATE          
+  <TOOLSET_GET:           "--get">                   : DEFAULT
+| <TOOLSET_GET_INFO:      "--get-info">              : TOOLSET_NAME_SEP  
+| <TOOLSET_GET_INFO_ALL:  "--get-info-all">          : DEFAULT
+| <TOOLSET_SET:           "--set">                   : TOOLSET_NAME_SEP  
+| <TOOLSET_ADD:           "--add">                   : TOOLSET_NAME_SEP 
+| <TOOLSET_REMOVE:        "--remove">                : TOOLSET_NAME_SEP 
+| <TOOLSET_EXPORT:        "--export">                : TOOLSET_NAME_SEP
+| <AE8:                   ["\0"]>            
+| <UNKNOWN_OPTION2:       "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN2:              ~["-","\0"] (~["\0"])*>    : IGNORE_STATE          
 }
 
 
@@ -471,6 +472,7 @@ TOKEN :
 {
   <KEY_GET:            "--get">                   : DEFAULT
 | <KEY_GET_INFO:       "--get-info">              : KEY_NAME_SEP  
+| <KEY_GET_INFO_ALL:   "--get-info-all">          : DEFAULT
 | <KEY_ADD:            "--add">                   : KEY_NAME_SEP 
 | <KEY_SET:            "--set">                   : KEY_NAME_SEP 
 | <KEY_REMOVE:         "--remove">                : KEY_NAME_SEP 
@@ -486,6 +488,7 @@ TOKEN :
 {
   <JOB_GET:            "--get">                   : DEFAULT
 | <JOB_GET_INFO:       "--get-info">              : HOST_NAME_SEP  
+| <JOB_GET_INFO_ALL:   "--get-info-all">          : DEFAULT
 | <JOB_SET:            "--set">                   : HOST_NAME_SEP 
 | <JOB_ADD:            "--add">                   : HOST_NAME_SEP 
 | <JOB_REMOVE:         "--remove">                : HOST_NAME_SEP
@@ -528,7 +531,7 @@ Commands()
   pQueueMgrClient  = new QueueMgrClient(pQueueServer, pQueuePort);
 }
 {
-  (PrivilegedCmds() | 
+  (PrivilegedCmds() | AdminCmds() |
    DefaultToolsetCmds() | ActiveToolsetCmds() | ToolsetCmds() |
    LicenseKeyCmds() | SelectionKeyCmds() | JobServerCmds()
 
@@ -632,7 +635,7 @@ BatchCommand()
   throws PipelineException : 
 {}
 {
-  (PrivilegedCmds() | 
+  (PrivilegedCmds() | AdminCmds() |
    DefaultToolsetCmds() | ActiveToolsetCmds() | ToolsetCmds() |
    LicenseKeyCmds() | SelectionKeyCmds() | JobServerCmds() 
    
@@ -971,9 +974,8 @@ Level FinestLevel() :
 }
 
 
-
 /*------------------------------------------------------------------------------------------*/
-/*   P R I V I L E G E D   U S E R S                                                        */
+/*   P R I V I L E G E D   U S E R   C O M M A N D S                                        */
 /*------------------------------------------------------------------------------------------*/
 
 void 
@@ -981,7 +983,7 @@ PrivilegedCmds()
   throws PipelineException : 
 {}
 {
-  <PRIVILEGED> AE() (PrivilegedGet() |  PrivilegedSet())
+  <PRIVILEGED> AE() (PrivilegedGet() | PrivilegedGrant() | PrivilegedRevoke())
   {}
 }
 
@@ -1003,25 +1005,65 @@ PrivilegedGet()
 }
 
 void 
-PrivilegedSet() 
+PrivilegedGrant() 
   throws PipelineException : 
 {
   String user = null;
-  boolean tf = true;
 }
 {
-  <PRIVILEGED_SET> EQ() user=UserName() (COLON() tf=TrueFalse())? AE()
+  <PRIVILEGED_GRANT> EQ() user=UserName() AE()
   {
-    if(tf) 
-      pMasterMgrClient.grantPrivileges(user);
-    else 
-      pMasterMgrClient.removePrivileges(user);
+    pMasterMgrClient.grantPrivileges(user);
+    Logs.ops.info("Granted privilged status to (" + user + ").");
+    Logs.flush();
+  }
+}
+
+void 
+PrivilegedRevoke() 
+  throws PipelineException : 
+{
+  String user = null;
+}
+{
+  <PRIVILEGED_REVOKE> EQ() user=UserName() AE()
+  {
+    pMasterMgrClient.removePrivileges(user);
+    Logs.ops.info("Revoked privilged status of (" + user + ").");
+    Logs.flush();
   }
 }
 
 
 /*------------------------------------------------------------------------------------------*/
-/*   T O O L S E T                                                                          */
+/*   A D M I N   C O M M A N D S                                                            */
+/*------------------------------------------------------------------------------------------*/
+
+void 
+AdminCmds() 
+  throws PipelineException : 
+{}
+{
+  <ADMIN> AE() AdminShutdown()
+  {}
+}
+
+void 
+AdminShutdown() 
+  throws PipelineException : 
+{}
+{
+  <SHUTDOWN> AE()
+  {
+    pMasterMgrClient.shutdown();
+    Logs.ops.info("Shutting Down...");
+    Logs.flush();
+  }
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   T O O L S E T   C O M M A N D S                                                        */
 /*------------------------------------------------------------------------------------------*/
 
 void 
@@ -1055,6 +1097,8 @@ DefaultToolsetSet()
   <TOOLSET_SET> EQ() tname=ToolsetName() AE()
   {
     pMasterMgrClient.setDefaultToolsetName(tname);
+    Logs.ops.info("Default toolset set to (" + tname + ").");
+    Logs.flush();
   }
 }
 
@@ -1066,7 +1110,7 @@ ActiveToolsetCmds()
   throws PipelineException : 
 {}
 {
-  <ACTIVE_TOOLSET> AE() (ActiveToolsetGet() |  ActiveToolsetSet())
+  <ACTIVE_TOOLSET> AE() (ActiveToolsetGet() | ActiveToolsetAdd() | ActiveToolsetRemove())
   {}
 }
 
@@ -1088,16 +1132,32 @@ ActiveToolsetGet()
 }
 
 void 
-ActiveToolsetSet() 
+ActiveToolsetAdd() 
   throws PipelineException : 
 {
   String tname = null;
-  boolean tf = true;
 }
 {
-  <TOOLSET_SET> EQ() tname=ToolsetName() (COLON() tf=TrueFalse())? AE()
+  <TOOLSET_ADD> EQ() tname=ToolsetName() AE()
   {
-    pMasterMgrClient.setToolsetActive(tname, tf);
+    pMasterMgrClient.setToolsetActive(tname, true);
+    Logs.ops.info("Toolset (" + tname + ") is now active.");
+    Logs.flush();
+  }
+}
+
+void 
+ActiveToolsetRemove() 
+  throws PipelineException : 
+{
+  String tname = null;
+}
+{
+  <TOOLSET_REMOVE> EQ() tname=ToolsetName() AE()
+  {
+    pMasterMgrClient.setToolsetActive(tname, false);
+    Logs.ops.info("Toolset (" + tname + ") is now inactive.");
+    Logs.flush();
   }
 }
 
@@ -1109,7 +1169,7 @@ ToolsetCmds()
   throws PipelineException : 
 {}
 {
-  <TOOLSET> AE() (ToolsetGet() |  ToolsetGetInfo() |  ToolsetExport())
+  <TOOLSET> AE() (ToolsetGet() | ToolsetGetInfo() | ToolsetGetInfoAll() |  ToolsetExport())
   {}
 }
 
@@ -1144,6 +1204,17 @@ ToolsetGetInfo()
 }
 
 void 
+ToolsetGetInfoAll() 
+  throws PipelineException : 
+{}
+{
+  <TOOLSET_GET_INFO_ALL> AE()
+  {
+    pApp.printToolset(null, pMasterMgrClient);
+  }
+}
+
+void 
 ToolsetExport() 
   throws PipelineException : 
 {
@@ -1158,7 +1229,7 @@ ToolsetExport()
 
 
 /*------------------------------------------------------------------------------------------*/
-/*   Q U E U E   A D M I N I S T R A T I O N                                                */
+/*   Q U E U E   A D M I N I S T R A T I O N   C O M M A N D S                              */
 /*------------------------------------------------------------------------------------------*/
 
 void 
@@ -1167,8 +1238,8 @@ LicenseKeyCmds()
 {}
 {
   <LICENSE_KEY> AE() 
-     (LicenseKeyGet() | LicenseKeyGetInfo() | LicenseKeyAdd() | 
-      LicenseKeySet() | LicenseKeyRemove())
+     (LicenseKeyGet() | LicenseKeyGetInfo() | LicenseKeyGetInfoAll() | 
+      LicenseKeyAdd() | LicenseKeySet() | LicenseKeyRemove())
   {}
 }
 
@@ -1203,6 +1274,17 @@ LicenseKeyGetInfo()
 }
 
 void 
+LicenseKeyGetInfoAll() 
+  throws PipelineException : 
+{}
+{
+  <KEY_GET_INFO_ALL> AE()
+  {
+    pApp.printLicenseKey(null, pQueueMgrClient);
+  }
+}
+
+void 
 LicenseKeyAdd() 
   throws PipelineException : 
 {
@@ -1216,6 +1298,9 @@ LicenseKeyAdd()
   {
     LicenseKey key = new LicenseKey(kname, msg, total);
     pQueueMgrClient.addLicenseKey(key);
+
+    Logs.ops.info("Added license key (" + kname + ").");
+    Logs.flush();
   }
 }
  
@@ -1230,6 +1315,9 @@ LicenseKeySet()
   <KEY_SET> EQ() kname=KeyName() AE() total=Total() AE()
   {
     pQueueMgrClient.setTotalLicenses(kname, total);
+
+    Logs.ops.info("License key (" + kname + ") now has (" + total + ") total licenses.");
+    Logs.flush();
   }
 }
  
@@ -1243,6 +1331,9 @@ LicenseKeyRemove()
   <KEY_REMOVE> EQ() kname=KeyName() AE()
   {
     pQueueMgrClient.removeLicenseKey(kname);
+
+    Logs.ops.info("Removed license key (" + kname + ").");
+    Logs.flush();
   }
 }
 
@@ -1267,7 +1358,8 @@ SelectionKeyCmds()
 {}
 {
   <SELECTION_KEY> AE() 
-     (SelectionKeyGet() | SelectionKeyGetInfo() | SelectionKeyAdd() | SelectionKeyRemove())
+     (SelectionKeyGet() | SelectionKeyGetInfo() | SelectionKeyGetInfoAll() | 
+      SelectionKeyAdd() | SelectionKeyRemove())
   {}
 }
 
@@ -1302,6 +1394,17 @@ SelectionKeyGetInfo()
 }
 
 void 
+SelectionKeyGetInfoAll() 
+  throws PipelineException : 
+{}
+{
+  <KEY_GET_INFO_ALL> AE()
+  {
+    pApp.printSelectionKey(null, pQueueMgrClient);
+  }
+}
+
+void 
 SelectionKeyAdd() 
   throws PipelineException : 
 {
@@ -1313,6 +1416,9 @@ SelectionKeyAdd()
   {
     SelectionKey key = new SelectionKey(kname, msg);
     pQueueMgrClient.addSelectionKey(key);
+    
+    Logs.ops.info("Added selection key (" + kname + ").");
+    Logs.flush();
   }
 }
  
@@ -1326,6 +1432,9 @@ SelectionKeyRemove()
   <KEY_REMOVE> EQ() kname=KeyName() AE()
   {
     pQueueMgrClient.removeSelectionKey(kname);
+
+    Logs.ops.info("Removed selection key (" + kname + ").");
+    Logs.flush();
   }
 }
 
@@ -1338,8 +1447,8 @@ JobServerCmds()
 {}
 {
   <JOB_SERVER> AE() 
-     (JobServerGet() | JobServerGetInfo() | JobServerAdd() | 
-      JobServerSet() | JobServerRemove())
+     (JobServerGet() | JobServerGetInfo() | JobServerGetInfoAll() | 
+      JobServerAdd() | JobServerSet() | JobServerRemove())
   {}
 }
 
@@ -1374,6 +1483,17 @@ JobServerGetInfo()
 }
 
 void 
+JobServerGetInfoAll() 
+  throws PipelineException : 
+{}
+{
+  <JOB_GET_INFO_ALL> AE()
+  {
+    pApp.printHosts(null, pQueueMgrClient);
+  }
+}
+
+void 
 JobServerAdd() 
   throws PipelineException : 
 {
@@ -1383,6 +1503,9 @@ JobServerAdd()
   <JOB_ADD> EQ() hname=HostName() AE()
   {
     pQueueMgrClient.addHost(hname);
+
+    Logs.ops.info("Added job server (" + hname + ").");
+    Logs.flush();
   }
 }
 
@@ -1406,6 +1529,9 @@ JobServerSet()
 		  pJobStatus, pJobReserve, pSetJobReserve, pJobSlots, 
 		  pJobSelectionBiases, pJobSelectionRemoves, 
 		  pQueueMgrClient);
+
+    Logs.ops.info("Modified properties of job server (" + hname + ").");
+    Logs.flush();
   }
 }
 
@@ -1519,6 +1645,9 @@ JobServerRemove()
   <JOB_REMOVE> EQ() hname=KeyName() AE()
   {
     pApp.removeHost(hname, pQueueMgrClient);
+
+    Logs.ops.info("Removed job server (" + hname + ").");
+    Logs.flush();
   }
 }
 
@@ -1564,41 +1693,6 @@ EQ() :
    t=<EQ11>)
   { 
     return t; 
-  }
-}
-
-
-/*------------------------------------------------------------------------------------------*/
-
-boolean 
-TrueFalse() : 
-{
-  boolean tf; 
-}
-{
-  (tf=True() | tf=False()) 
-  { 
-    return tf; 
-  }
-}
-
-boolean 
-True() : 
-{}
-{
-  <TRUE>
-  { 
-    return true; 
-  }
-}
-
-boolean 
-False() : 
-{}
-{
-  <FALSE>
-  { 
-    return false; 
   }
 }
 
