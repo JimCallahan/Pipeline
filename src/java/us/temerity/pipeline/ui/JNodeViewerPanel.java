@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.26 2004/07/18 21:36:23 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.27 2004/08/01 15:36:27 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -2304,7 +2304,7 @@ class JNodeViewerPanel
 	TreeSet<String> sources = new TreeSet<String>(); 
 	for(ViewerNode vnode : pSelected.values()) {
 	  NodeDetails sdetails = vnode.getNodeStatus().getDetails();
-	  if(sdetails.getWorkingVersion() != null) 
+	  if((sdetails != null) && (sdetails.getWorkingVersion() != null)) 
 	    sources.add(sdetails.getName());
 	}
 	sources.remove(details.getName());
