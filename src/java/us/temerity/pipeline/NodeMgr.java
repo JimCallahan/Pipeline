@@ -1,4 +1,4 @@
-// $Id: NodeMgr.java,v 1.4 2004/03/09 05:05:08 jim Exp $
+// $Id: NodeMgr.java,v 1.5 2004/03/09 09:44:04 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1303,7 +1303,7 @@ class NodeMgr
      * 
      * May be <CODE>null</CODE> if invalidated.
      */
-    public HashMap<FileSeq,FileState[]>  uFileStates;
+    public TreeMap<FileSeq,FileState[]>  uFileStates;
 
     /**
      * The status of individual files associated with the working version of the node 
@@ -1311,7 +1311,7 @@ class NodeMgr
      * 
      * May be <CODE>null</CODE> if invalidated.
      */
-    public HashMap<FileSeq,QueueState[]>  uQueueStates;
+    public TreeMap<FileSeq,QueueState[]>  uQueueStates;
   }
 
 
