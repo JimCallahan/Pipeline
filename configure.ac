@@ -1052,6 +1052,7 @@ AC_CONFIG_FILES([
   docs/man/plnotify.src.html
   docs/man/plplugin.src.html
   docs/man/plqueuemgr.src.html
+  docs/man/plscript.src.html
   docs/man/plui.src.html
   docs/manuals/Makefile
 
