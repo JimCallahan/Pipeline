@@ -192,6 +192,19 @@ do
   mkicon $frame $mode $nstate $qstate 1
 
 
+  nstate=Conflicted
+
+  qstate=Finished
+  frame=45
+  mkmipmaps $frame $mode $nstate $qstate 1
+  mkicon $frame $mode $nstate $qstate 1
+
+  qstate=Stale
+  frame=40
+  mkmipmaps $frame $mode $nstate $qstate 1
+  mkicon $frame $mode $nstate $qstate 1
+
+
   nstate=NeedsCheckOutMicro
 
   qstate=Finished
