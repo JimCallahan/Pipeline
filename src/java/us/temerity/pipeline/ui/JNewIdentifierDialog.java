@@ -1,4 +1,4 @@
-// $Id: JNewIdentifierDialog.java,v 1.6 2005/01/03 06:56:23 jim Exp $
+// $Id: JNewIdentifierDialog.java,v 1.7 2005/01/05 17:41:31 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -184,10 +184,7 @@ class JNewIdentifierDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the name of the new folder. <P>
-   * 
-   * @return
-   *   The folder name.
+   * Get the new identifier name. 
    */ 
   public String
   getName() 
