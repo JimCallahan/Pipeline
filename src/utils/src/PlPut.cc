@@ -1,4 +1,4 @@
-// $Id: PlPut.cc,v 1.9 2003/07/10 00:52:05 jim Exp $
+// $Id: PlPut.cc,v 1.10 2003/07/10 20:51:26 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -249,7 +249,7 @@ main
   FB::stageBegin("Working...");
   char msg[1024];
   
-  /* read in the file list from stdin */ 
+  /* read in the file list */ 
   typedef std::list<PathPair*> Pairs;
   Pairs pairs;
   FB::stageBegin("Reading File List: ");
