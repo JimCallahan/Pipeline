@@ -1,4 +1,4 @@
-// $Id: TestSubProcessApp.java,v 1.3 2004/03/22 03:11:08 jim Exp $
+// $Id: TestSubProcessApp.java,v 1.4 2004/08/22 22:06:22 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -43,6 +43,39 @@ class TestSubProcessApp
   public void 
   run() 
   {
+    /* fast commands */ 
+    try {
+      int wk;
+      for(wk=0; wk<1000; wk++) {
+	File file = File.createTempFile("quicky", "test", new File("/usr/tmp"));
+
+	System.out.print("-----------------------------------\n");
+	  
+	Logs.sub.setLevel(Level.FINEST);
+	
+	ArrayList<String> args = new ArrayList<String>();
+	args.add("755");
+	args.add(file.toString());
+	
+	SubProcess proc = 
+	  new SubProcess("Quicky", new File("/bin/chmod"), args);
+	proc.start();
+	
+	try {
+	  proc.join();
+	}
+	catch(InterruptedException ex) {
+	    Logs.sub.severe(ex.getMessage());
+	}
+
+	printAllStats(proc);
+      }
+    }
+    catch(IOException ex) {
+      Logs.sub.severe(ex.getMessage());
+    }
+
+
     /* incrementally check resource usage statistics  */ 
     {
       System.out.print("-----------------------------------\n");

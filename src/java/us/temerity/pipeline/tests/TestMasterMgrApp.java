@@ -1,4 +1,4 @@
-// $Id: TestMasterMgrApp.java,v 1.3 2004/07/28 19:19:41 jim Exp $
+// $Id: TestMasterMgrApp.java,v 1.4 2004/08/22 22:06:22 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -371,7 +371,7 @@ class TestMasterMgrApp
 	printStatus(client.status(author, "default", eagle.getName()));
 
 	client.link(author, "default", eagle.getName(), snake.getName(), 
-		    LinkPolicy.Both, LinkRelationship.All, null);
+		    LinkPolicy.NodeAndQueue, LinkRelationship.All, null);
 
 	//client.revoke(author, "default", dragonfly.getName(), true);
 	
@@ -866,19 +866,19 @@ class TestMasterMgrApp
 	client.register(author, "default", pSnake);
 
 	client.link(author, "default", pSnake.getName(), pFrog.getName(), 
-		    LinkPolicy.Both, LinkRelationship.All, null);
+		    LinkPolicy.NodeAndQueue, LinkRelationship.All, null);
 
 	client.link(author, "default", pFrog.getName(), pDragonfly.getName(), 
-		    LinkPolicy.Both, LinkRelationship.All, null);
+		    LinkPolicy.NodeAndQueue, LinkRelationship.All, null);
 
 	client.link(author, "default", pSnake.getName(), pSalamander.getName(), 
-		    LinkPolicy.Both, LinkRelationship.All, null);
+		    LinkPolicy.NodeAndQueue, LinkRelationship.All, null);
 
 	client.link(author, "default", pFrog.getName(), pFly.getName(), 
-		    LinkPolicy.Both, LinkRelationship.All, null);
+		    LinkPolicy.NodeAndQueue, LinkRelationship.All, null);
 	
 	client.link(author, "default", pDragonfly.getName(), pFly.getName(),
-		    LinkPolicy.Both, LinkRelationship.All, null);
+		    LinkPolicy.NodeAndQueue, LinkRelationship.All, null);
 
 
 	client.unlink(author, "default", pSnake.getName(), pSalamander.getName()); 
@@ -891,7 +891,7 @@ class TestMasterMgrApp
 	}
 
 	client.link(author, "default", pSnake.getName(), pSalamander.getName(), 
-		    LinkPolicy.Both, LinkRelationship.All, null);
+		    LinkPolicy.NodeAndQueue, LinkRelationship.All, null);
 
 	client.disconnect();
       }
@@ -945,17 +945,17 @@ class TestMasterMgrApp
 	client.register(author, "default", pEagle);
 
 	client.link(author, "default", pEagle.getName(), pSparrow.getName(), 
-		    LinkPolicy.Both, LinkRelationship.All, null);
+		    LinkPolicy.NodeAndQueue, LinkRelationship.All, null);
 
 	client.link(author, "default", pSparrow.getName(), pDragonfly.getName(), 
-		    LinkPolicy.Both, LinkRelationship.All, null);
+		    LinkPolicy.NodeAndQueue, LinkRelationship.All, null);
 
 	client.link(author, "default", pSparrow.getName(), pFly.getName(), 
-		    LinkPolicy.Both, LinkRelationship.All, null);
+		    LinkPolicy.NodeAndQueue, LinkRelationship.All, null);
 
 	try {
 	  client.link(author, "default", pFly.getName(), pFly.getName(), 
-		      LinkPolicy.Both, LinkRelationship.All, null);
+		      LinkPolicy.NodeAndQueue, LinkRelationship.All, null);
 	} 
 	catch(PipelineException ex) {
 	  System.out.print("Caught: " + ex.getMessage() + "\n\n");
@@ -963,7 +963,7 @@ class TestMasterMgrApp
 
 	try {
 	  client.link(author, "default", pFly.getName(), pEagle.getName(), 
-		      LinkPolicy.Both, LinkRelationship.All, null);
+		      LinkPolicy.NodeAndQueue, LinkRelationship.All, null);
 	} 
 	catch(PipelineException ex) {
 	  System.out.print("Caught: " + ex.getMessage() + "\n\n");

@@ -183,7 +183,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
 #--------------------------------------------------------------------------------------------#
 
-           TESTS = NativeFileSys
+           TESTS = SubProcess
 
 #             TESTS = CheckSum \
 #                     DNotify \

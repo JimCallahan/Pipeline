@@ -1,4 +1,4 @@
-// $Id: TestNodeModVersionApp.java,v 1.7 2004/07/14 20:47:16 jim Exp $
+// $Id: TestNodeModVersionApp.java,v 1.8 2004/08/22 22:06:22 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
@@ -232,7 +232,7 @@ class TestNodeModVersionApp
 	new NodeMod("/organisms/animals/reptiles/snake", 
 		    primary, secondary, 
 		    TestInfo.sBuildToolset, "Emacs", 
-		    action, jreqs, OverflowPolicy.Abort, ExecutionMethod.Serial, 0);
+		    action, true, jreqs, OverflowPolicy.Abort, ExecutionMethod.Serial, 0);
 
       test(mod);
 
