@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.27 2004/06/28 23:39:01 jim Exp $
+// $Id: UIMaster.java,v 1.28 2004/07/07 13:27:18 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -55,9 +55,10 @@ class UIMaster
 
     pOpsLock = new ReentrantLock();
 
-    pNodeBrowsers  = new JNodeBrowserPanel[10];
-    pNodeViewers   = new JNodeViewerPanel[10];
-    pNodeDetails   = new JNodeDetailsPanel[10];
+    pNodeBrowserPanels = new PanelGroup<JNodeBrowserPanel>();
+    pNodeViewerPanels  = new PanelGroup<JNodeViewerPanel>();
+    pNodeDetailsPanels = new PanelGroup<JNodeDetailsPanel>();
+    pNodeHistoryPanels = new PanelGroup<JNodeHistoryPanel>();
 
     SwingUtilities.invokeLater(new SplashFrameTask(this));
   }
@@ -162,183 +163,39 @@ class UIMaster
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Assign the given node browser to the given group.
+   * Get the node browsers panel group.
    */ 
-  public synchronized void 
-  assignNodeBrowserGroup
-  (
-   JNodeBrowserPanel panel, 
-   int groupID
-  ) 
+  public PanelGroup<JNodeBrowserPanel>
+  getNodeBrowserPanels() 
   {
-    assert((groupID > 0) && (groupID < 10));
-    assert(pNodeBrowsers[groupID] == null);
-    pNodeBrowsers[groupID] = panel;
+    return pNodeBrowserPanels;
   }
 
   /**
-   * Make the given node browser group available.
+   * Get the node viewers panel group.
    */ 
-  public synchronized void 
-  releaseNodeBrowserGroup 
-  (
-   int groupID
-  ) 
+  public PanelGroup<JNodeViewerPanel>
+  getNodeViewerPanels() 
   {
-    assert((groupID > 0) && (groupID < 10));
-    assert(pNodeBrowsers[groupID] != null);
-    pNodeBrowsers[groupID] = null;
+    return pNodeViewerPanels;
   }
 
   /**
-   * Is the given node browser group currently unused.
+   * Get the node details panel group.
    */ 
-  public synchronized boolean
-  isNodeBrowserGroupUnused
-  (
-   int groupID
-  ) 
+  public PanelGroup<JNodeDetailsPanel>
+  getNodeDetailsPanels() 
   {
-    assert((groupID > 0) && (groupID < 10));
-    return (pNodeBrowsers[groupID] == null);      
+    return pNodeDetailsPanels;
   }
 
   /**
-   * Get the node browser belonging to the given group.
-   * 
-   * @return 
-   *   The node browser or <CODE>null</CODE> if no browser exists for the group.
+   * Get the node history panel group.
    */ 
-  public synchronized JNodeBrowserPanel
-  getNodeBrowser
-  (
-   int groupID
-  ) 
+  public PanelGroup<JNodeHistoryPanel>
+  getNodeHistoryPanels() 
   {
-    assert((groupID > 0) && (groupID < 10));
-    return pNodeBrowsers[groupID];
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Assign the given node viewer to the given group.
-   */ 
-  public synchronized void 
-  assignNodeViewerGroup
-  (
-   JNodeViewerPanel panel, 
-   int groupID
-  ) 
-  {
-    assert((groupID > 0) && (groupID < 10));
-    assert(pNodeViewers[groupID] == null);
-    pNodeViewers[groupID] = panel;
-  }
-
-  /**
-   * Make the given node viewer group available.
-   */ 
-  public synchronized void 
-  releaseNodeViewerGroup 
-  (
-   int groupID
-  ) 
-  {
-    assert((groupID > 0) && (groupID < 10));
-    assert(pNodeViewers[groupID] != null);
-    pNodeViewers[groupID] = null;
-  }
-
-  /**
-   * Is the given node viewer group currently unused.
-   */ 
-  public synchronized boolean
-  isNodeViewerGroupUnused
-  (
-   int groupID
-  ) 
-  {
-    assert((groupID > 0) && (groupID < 10));
-    return (pNodeViewers[groupID] == null);      
-  }
-
-  /**
-   * Get the node viewer belonging to the given group.
-   * 
-   * @return 
-   *   The node viewer or <CODE>null</CODE> if no viewer exists for the group.
-   */ 
-  public synchronized JNodeViewerPanel
-  getNodeViewer
-  (
-   int groupID
-  ) 
-  {
-    assert((groupID > 0) && (groupID < 10));
-    return pNodeViewers[groupID];
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Assign the given node details panel to the given group.
-   */ 
-  public synchronized void 
-  assignNodeDetailsGroup
-  (
-   JNodeDetailsPanel panel, 
-   int groupID
-  ) 
-  {
-    assert((groupID > 0) && (groupID < 10));
-    assert(pNodeDetails[groupID] == null);
-    pNodeDetails[groupID] = panel;
-  }
-
-  /**
-   * Make the given node details panel group available.
-   */ 
-  public synchronized void 
-  releaseNodeDetailsGroup 
-  (
-   int groupID
-  ) 
-  {
-    assert((groupID > 0) && (groupID < 10));
-    assert(pNodeDetails[groupID] != null);
-    pNodeDetails[groupID] = null;
-  }
-
-  /**
-   * Is the given node details panel group currently unused.
-   */ 
-  public synchronized boolean
-  isNodeDetailsGroupUnused
-  (
-   int groupID
-  ) 
-  {
-    assert((groupID > 0) && (groupID < 10));
-    return (pNodeDetails[groupID] == null);      
-  }
-
-  /**
-   * Get the node details panel belonging to the given group.
-   * 
-   * @return 
-   *   The node details panel or <CODE>null</CODE> if no details panel exists for the group.
-   */ 
-  public synchronized JNodeDetailsPanel
-  getNodeDetails
-  (
-   int groupID
-  ) 
-  {
-    assert((groupID > 0) && (groupID < 10));
-    return pNodeDetails[groupID];
+    return pNodeHistoryPanels;
   }
 
 
@@ -438,16 +295,6 @@ class UIMaster
   {
     pManageToolsetsDialog.updateAll();
     pManageToolsetsDialog.setVisible(true);
-  }
-
-  /**
-   * Show the manage link catagories dialog.
-   */ 
-  public void 
-  showManageLinkCatagoriesDialog()
-  {
-    pManageLinkCatagoriesDialog.updateAll();
-    pManageLinkCatagoriesDialog.setVisible(true);
   }
 
   /**
@@ -1028,11 +875,6 @@ class UIMaster
     JTextArea area = new JTextArea(text, rows, 0);
     area.setName("TextArea");
 
-    Dimension size = new Dimension(width, 19*rows);
-    area.setMinimumSize(size);
-    area.setMaximumSize(new Dimension(Integer.MAX_VALUE, size.height));
-    area.setPreferredSize(size);
-
     area.setLineWrap(true);
     area.setWrapStyleWord(true);
 
@@ -1527,14 +1369,34 @@ class UIMaster
    JPanel vpanel, 
    String text, 
    int vwidth,
-   int rows
+   int rows, 
+   boolean isScrolled
   )
   {
     tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT));
     tpanel.add(Box.createRigidArea(new Dimension(0, 19*(rows-1))));
 
     JTextArea area = createTextArea(text, vwidth, rows);
-    vpanel.add(area);
+    if(isScrolled) {
+      area.setName("ScrolledTextArea");
+
+      JScrollPane scroll = new JScrollPane(area);
+	
+      scroll.setHorizontalScrollBarPolicy
+	(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+      scroll.setVerticalScrollBarPolicy
+	(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+      
+      vpanel.add(scroll);
+    }
+    else {
+      Dimension size = new Dimension(vwidth, 19*rows);
+      area.setMinimumSize(size);
+      area.setMaximumSize(new Dimension(Integer.MAX_VALUE, size.height));
+      area.setPreferredSize(size);
+
+      vpanel.add(area);
+    }
 
     return area;
   }
@@ -1569,14 +1431,34 @@ class UIMaster
    JPanel vpanel, 
    String text, 
    int vwidth,
-   int rows
+   int rows, 
+   boolean isScrolled
   )
   {
     tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT));
     tpanel.add(Box.createRigidArea(new Dimension(0, 19*(rows-1))));
 
     JTextArea area = createEditableTextArea(text, vwidth, rows);
-    vpanel.add(area);
+    if(isScrolled) {
+      area.setName("ScrolledTextArea");
+
+      JScrollPane scroll = new JScrollPane(area);
+      
+      scroll.setHorizontalScrollBarPolicy
+	(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+      scroll.setVerticalScrollBarPolicy
+	    (ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+      
+      vpanel.add(scroll);
+    }
+    else {
+      Dimension size = new Dimension(vwidth, 19*rows);
+      area.setMinimumSize(size);
+      area.setMaximumSize(new Dimension(Integer.MAX_VALUE, size.height));
+      area.setPreferredSize(size);
+
+      vpanel.add(area);
+    }
 
     return area;
   }
@@ -2060,7 +1942,7 @@ class UIMaster
 
 	  /* progress bar */ 
 	  {
-	    JProgressBar bar = new JProgressBar(JProgressBar.HORIZONTAL, 0, 153);
+	    JProgressBar bar = new JProgressBar(JProgressBar.HORIZONTAL, 0, 234);
 	    pSplashProgress = bar;
 
 	    bar.setValue(1);
@@ -2180,11 +2062,27 @@ class UIMaster
       try {
 	TextureMgr mgr = TextureMgr.getInstance();
 
-	for(OverallNodeState nstate : OverallNodeState.all()) {
+	for(SelectionMode mode : SelectionMode.all()) {
 	  for(OverallQueueState qstate : OverallQueueState.all()) {
-	    for(SelectionMode mode : SelectionMode.all()) {
+	    for(OverallNodeState nstate : OverallNodeState.all()) {
 	      mgr.verifyTexture(nstate + "-" + qstate + "-" + mode);
+	      mgr.verifyIcon21(nstate + "-" + qstate + "-" + mode);
 	      update();
+	    }
+
+	    {
+	      mgr.verifyIcon21("Missing-" + qstate + "-" + mode);
+	      update();	      
+	    }
+
+	    {
+	      mgr.verifyIcon21("Added-" + qstate + "-" + mode);
+	      update();	      
+	    }
+
+	    {
+	      mgr.verifyIcon21("Obsolete-" + qstate + "-" + mode);
+	      update();	      
 	    }
 	  }
 	}
@@ -2364,7 +2262,6 @@ class UIMaster
 
 	pManageUsersDialog    = new JManageUsersDialog();
 	pManageToolsetsDialog = new JManageToolsetsDialog();
-	pManageLinkCatagoriesDialog = new JManageLinkCatagoriesDialog();
 
 	pSubProcessFailureDialog = new JSubProcessFailureDialog();
       }
@@ -2508,12 +2405,10 @@ class UIMaster
 	pRootManagerPanel = null;
 	pRootPanel.removeAll();
 	
-	int wk;
-	for(wk=1; wk<10; wk++) {
-	  pNodeBrowsers[wk] = null;
-	  pNodeViewers[wk]  = null;
-	  pNodeDetails[wk]  = null;
-	}
+	pNodeBrowserPanels.clear();
+	pNodeViewerPanels.clear();
+	pNodeDetailsPanels.clear();
+	pNodeHistoryPanels.clear();
       }
 
       /* restore saved panels */ 
@@ -2726,29 +2621,24 @@ class UIMaster
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The table of active node browsers indexed by assigned group: [1-9]. <P> 
-   * 
-   * If no node browser is assigned to the group, the element will be <CODE>null</CODE>. 
-   * The (0) element is always <CODE>null</CODE>, because the (0) group ID means unassinged.
+   * The active node browser panels. <P> 
    */ 
-  private JNodeBrowserPanel[]  pNodeBrowsers;
+  private PanelGroup<JNodeBrowserPanel>  pNodeBrowserPanels;
 
   /**
-   * The table of active node viewers indexed by assigned group: [1-9]. <P> 
-   * 
-   * If no node viewer is assigned to the group, the element will be <CODE>null</CODE>. 
-   * The (0) element is always <CODE>null</CODE>, because the (0) group ID means unassinged.
+   * The active node viewer panels. <P> 
    */ 
-  private JNodeViewerPanel[]  pNodeViewers;
+  private PanelGroup<JNodeViewerPanel>  pNodeViewerPanels;
 
   /**
-   * The table of active node details panels indexed by assigned group: [1-9]. <P> 
-   * 
-   * If no node details panel is assigned to the group, the element will be 
-   * <CODE>null</CODE>.  The (0) element is always <CODE>null</CODE>, because the (0) 
-   * group ID means unassinged.
+   * The active node detail panels. <P> 
    */ 
-  private JNodeDetailsPanel[]  pNodeDetails;
+  private PanelGroup<JNodeDetailsPanel>  pNodeDetailsPanels;
+
+  /**
+   * The active node history panels. <P> 
+   */ 
+  private PanelGroup<JNodeHistoryPanel>  pNodeHistoryPanels;
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -2797,11 +2687,6 @@ class UIMaster
    * The manage toolsets dialog.
    */ 
   private JManageToolsetsDialog  pManageToolsetsDialog;
-
-  /**
-   * The manage linkCatagories dialog.
-   */ 
-  private JManageLinkCatagoriesDialog  pManageLinkCatagoriesDialog;
 
   /**
    * The dialog giving details of the failure of a subprocess.
