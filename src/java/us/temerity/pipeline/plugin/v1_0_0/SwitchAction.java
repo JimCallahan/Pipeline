@@ -1,4 +1,4 @@
-// $Id: SwitchAction.java,v 1.3 2004/10/28 15:55:24 jim Exp $
+// $Id: SwitchAction.java,v 1.4 2004/11/11 00:35:26 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -44,7 +44,7 @@ class SwitchAction
 	  "Copies the files associated with a selected source node.");
     
     {
-      BaseActionParam param = 
+      ActionParam param = 
 	new LinkActionParam
 	("Source", 
 	 "The source node which contains the files to copy.", 
@@ -88,8 +88,6 @@ class SwitchAction
   )
     throws PipelineException
   {
-    makeTargetDir(agenda);
-
     /* sanity checks */ 
     {
       FileSeq target = agenda.getPrimaryTarget();

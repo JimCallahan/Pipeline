@@ -1,4 +1,4 @@
-// $Id: ScriptAction.java,v 1.6 2004/10/28 15:55:24 jim Exp $
+// $Id: ScriptAction.java,v 1.7 2004/11/11 00:35:26 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -118,7 +118,7 @@ class ScriptAction
 	  "Interprets an arbitrary script.");
 
     {
-      BaseActionParam param = 
+      ActionParam param = 
 	new LinkActionParam
 	("Script", 
 	 "The node containing the script to execute.",
@@ -161,8 +161,6 @@ class ScriptAction
   )
     throws PipelineException
   {
-    makeTargetDir(agenda);
-
     /* get the name of the executable script file */ 
     File script = null;
     {

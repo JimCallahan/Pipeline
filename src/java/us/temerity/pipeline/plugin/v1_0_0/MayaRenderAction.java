@@ -1,4 +1,4 @@
-// $Id: MayaRenderAction.java,v 1.6 2004/10/28 15:55:24 jim Exp $
+// $Id: MayaRenderAction.java,v 1.7 2004/11/11 00:35:26 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -30,7 +30,7 @@ class MayaRenderAction
 	  "Renders a Maya scene.");
     
     {
-      BaseActionParam param = 
+      ActionParam param = 
 	new StringActionParam
 	("CameraOverride",
 	 "Overrides the render camera (if set).", 
@@ -39,7 +39,7 @@ class MayaRenderAction
     }
 
     {
-      BaseActionParam param = 
+      ActionParam param = 
 	new IntegerActionParam
 	("Processors", 
 	 "The number of processors to use (0 = all available).", 
@@ -83,8 +83,6 @@ class MayaRenderAction
   )
     throws PipelineException
   {
-    makeTargetDir(agenda);
-
     /* sanity checks */ 
     File scene = null;
     {

@@ -1,4 +1,4 @@
-// $Id: PatchAction.java,v 1.3 2004/10/28 15:55:24 jim Exp $
+// $Id: PatchAction.java,v 1.4 2004/11/11 00:35:26 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -53,7 +53,7 @@ class PatchAction
 	  "Applies a series of diff(1) generated patches to original file.");
     
     {
-      BaseActionParam param = 
+      ActionParam param = 
 	new LinkActionParam
 	("Original", 
 	 "The original file to patch.", 
@@ -80,13 +80,13 @@ class PatchAction
   /**
    * Get an initial set of action parameters associated with an upstream node. 
    */ 
-  public TreeMap<String,BaseActionParam>
+  public TreeMap<String,ActionParam>
   getInitialSourceParams()
   {
-    TreeMap<String,BaseActionParam> params = new TreeMap<String,BaseActionParam>();
+    TreeMap<String,ActionParam> params = new TreeMap<String,ActionParam>();
     
     {
-      BaseActionParam param = 
+      ActionParam param = 
 	new IntegerActionParam
 	("Order", 
 	 "The order patches are applied",
@@ -132,8 +132,6 @@ class PatchAction
   )
     throws PipelineException
   { 
-    makeTargetDir(agenda);
-
     /* sanity checks */ 
     File origFile = null;
     TreeMap<Integer,LinkedList<File>> patchFiles = 

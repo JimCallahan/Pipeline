@@ -1,4 +1,4 @@
-// $Id: CatSequenceAction.java,v 1.1 2004/11/05 20:14:12 jim Exp $
+// $Id: CatSequenceAction.java,v 1.2 2004/11/11 00:35:26 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -61,13 +61,13 @@ class CatSequenceAction
   /**
    * Get an initial set of action parameters associated with an upstream node. 
    */ 
-  public TreeMap<String,BaseActionParam>
+  public TreeMap<String,ActionParam>
   getInitialSourceParams()
   {
-    TreeMap<String,BaseActionParam> params = new TreeMap<String,BaseActionParam>();
+    TreeMap<String,ActionParam> params = new TreeMap<String,ActionParam>();
     
     {
-      BaseActionParam param = 
+      ActionParam param = 
 	new IntegerActionParam
 	("Order", 
 	 "Concatenates the file sequences in this order.",
@@ -113,7 +113,6 @@ class CatSequenceAction
   )
     throws PipelineException
   { 
-    makeTargetDir(agenda);
     NodeID nodeID = agenda.getNodeID();
 
     /* sanity checks */ 

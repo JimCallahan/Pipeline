@@ -1,4 +1,4 @@
-// $Id: MayaCollateAction.java,v 1.5 2004/10/28 15:55:24 jim Exp $
+// $Id: MayaCollateAction.java,v 1.6 2004/11/11 00:35:26 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -143,7 +143,7 @@ class MayaCollateAction
 	  "Builds a Maya scene from component scenes and animation files.");
     
     {
-      BaseActionParam param = 
+      ActionParam param = 
 	new LinkActionParam
 	("InitialMEL",
 	 "The MEL script to evaluate after scene creation and before importing models.",
@@ -152,7 +152,7 @@ class MayaCollateAction
     }
     
     {
-      BaseActionParam param = 
+      ActionParam param = 
 	new LinkActionParam
 	("ModelMEL",
 	 "The MEL script to evaluate after importing models but before animation.",
@@ -161,7 +161,7 @@ class MayaCollateAction
     }
     
     {
-      BaseActionParam param = 
+      ActionParam param = 
 	new LinkActionParam
 	("AnimMEL",
 	 "The MEL script to evaluate after applying animation but before saving the scene.",
@@ -170,7 +170,7 @@ class MayaCollateAction
     }
     
     {
-      BaseActionParam param = 
+      ActionParam param = 
 	new LinkActionParam
 	("FinalMEL",
 	 "The MEL script to evaluate after saving the scene.", 
@@ -179,7 +179,7 @@ class MayaCollateAction
     }
 
     {
-      BaseActionParam param = 
+      ActionParam param = 
 	new IntegerActionParam
 	("BeginFrame",
 	 "The start frame of animation in the generated Maya scene.", 
@@ -188,7 +188,7 @@ class MayaCollateAction
     }
 
     {
-      BaseActionParam param = 
+      ActionParam param = 
 	new DoubleActionParam
 	("KeyDelta",
 	 "The frame distance from the shot boundries to add extra shape preserving " +
@@ -241,13 +241,13 @@ class MayaCollateAction
   /**
    * Get an initial set of action parameters associated with an upstream node. 
    */ 
-  public TreeMap<String,BaseActionParam>
+  public TreeMap<String,ActionParam>
   getInitialSourceParams()
   {
-    TreeMap<String,BaseActionParam> params = new TreeMap<String,BaseActionParam>();
+    TreeMap<String,ActionParam> params = new TreeMap<String,ActionParam>();
 
     {
-      BaseActionParam param = 
+      ActionParam param = 
 	new IntegerActionParam
 	("ShotOrder", 
 	 "The order in which to apply the imported animation.",
@@ -256,7 +256,7 @@ class MayaCollateAction
     }
     
     {
-      BaseActionParam param = 
+      ActionParam param = 
 	new IntegerActionParam
 	("StartFrame", 
 	 "The frame number of the first imported keyframe within the source animation file.",
@@ -265,7 +265,7 @@ class MayaCollateAction
     }
 
     {
-      BaseActionParam param = 
+      ActionParam param = 
 	new IntegerActionParam
 	("EndFrame", 
 	 "The frame number of the last imported keyframe within the source animation file.",
@@ -274,7 +274,7 @@ class MayaCollateAction
     }
 
     {
-      BaseActionParam param = 
+      ActionParam param = 
 	new StringActionParam
 	("RootDAGNode",
 	 "The root Maya DAG node to which animation will be applied.", 
@@ -283,7 +283,7 @@ class MayaCollateAction
     }
 
     {
-      BaseActionParam param = 
+      ActionParam param = 
 	new IntegerActionParam
 	("ShotGap", 
 	 "The number of frames from the last frame of this animation to the first " +
@@ -304,7 +304,7 @@ class MayaCollateAction
       tangent.add("Fixed");
       tangent.add("Clamped");
 		  
-      BaseActionParam param = 
+      ActionParam param = 
 	new EnumActionParam
 	("OutTangent", 
 	 "Overrides the out-tangent of the last keyframes of this animation.",

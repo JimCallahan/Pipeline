@@ -1,4 +1,4 @@
-// $Id: ImgCvtAction.java,v 1.5 2004/11/03 19:54:33 jim Exp $
+// $Id: ImgCvtAction.java,v 1.6 2004/11/11 00:35:26 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -40,7 +40,7 @@ class ImgCvtAction
 	  "Converts images files from another format.");
     
     {
-      BaseActionParam param = 
+      ActionParam param = 
 	new LinkActionParam
 	("ImageSource",
 	 "The source node containing the images to convert.",
@@ -84,7 +84,6 @@ class ImgCvtAction
   )
     throws PipelineException
   {
-    makeTargetDir(agenda);
     NodeID nodeID = agenda.getNodeID();
 
     /* sanity checks */ 

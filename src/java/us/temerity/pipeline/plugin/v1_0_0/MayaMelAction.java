@@ -1,4 +1,4 @@
-// $Id: MayaMelAction.java,v 1.7 2004/10/28 15:55:24 jim Exp $
+// $Id: MayaMelAction.java,v 1.8 2004/11/11 00:35:26 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -61,7 +61,7 @@ class MayaMelAction
 	  "Opens a Maya scene, runs the MEL script(s) and optionally saves the scene.");
     
     {
-      BaseActionParam param = 
+      ActionParam param = 
 	new LinkActionParam
 	("MayaScene",
 	 "The source Maya scene node.", 
@@ -70,7 +70,7 @@ class MayaMelAction
     }
 
     {
-      BaseActionParam param = 
+      ActionParam param = 
 	new BooleanActionParam
 	("SaveResult",
 	 "Whether to save the post-MEL Maya scene.",
@@ -96,13 +96,13 @@ class MayaMelAction
   /**
    * Get an initial set of action parameters associated with an upstream node. 
    */ 
-  public TreeMap<String,BaseActionParam>
+  public TreeMap<String,ActionParam>
   getInitialSourceParams()
   {
-    TreeMap<String,BaseActionParam> params = new TreeMap<String,BaseActionParam>();
+    TreeMap<String,ActionParam> params = new TreeMap<String,ActionParam>();
     
     {
-      BaseActionParam param = 
+      ActionParam param = 
 	new IntegerActionParam
 	("Order", 
 	 "Evaluates the MEL script in this order.",
@@ -148,7 +148,6 @@ class MayaMelAction
   )
     throws PipelineException
   { 
-    makeTargetDir(agenda);
     NodeID nodeID = agenda.getNodeID();
 
     /* sanity checks */ 

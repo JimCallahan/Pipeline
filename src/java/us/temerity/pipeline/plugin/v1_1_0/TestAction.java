@@ -1,4 +1,4 @@
-// $Id: TestAction.java,v 1.4 2004/10/28 15:55:24 jim Exp $
+// $Id: TestAction.java,v 1.5 2004/11/11 00:35:26 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_1_0;
 
@@ -29,7 +29,7 @@ class TestAction
 	  "A test action with at lease one of each type of parameter.");
 
     {
-      BaseActionParam param = 
+      ActionParam param = 
 	new DoubleActionParam("SomeDouble", 
 			      "An double parameter.",
 			      123.456);
@@ -37,7 +37,7 @@ class TestAction
     }
 
     {
-      BaseActionParam param = 
+      ActionParam param = 
 	new BooleanActionParam("SomeBoolean", 
 			       "An boolean parameter.",
 			       false);
@@ -45,7 +45,7 @@ class TestAction
     }
 
     {
-      BaseActionParam param = 
+      ActionParam param = 
 	new StringActionParam("SomeString",
 			      "A short string parameter.",
 			      "test");
@@ -53,7 +53,7 @@ class TestAction
     }
 
     {
-      BaseActionParam param = 
+      ActionParam param = 
 	new StringActionParam("ExtraString",
 			      "An extra short string parameter.",
 			      "extra");
@@ -69,7 +69,7 @@ class TestAction
       colors.add("Blue");
       colors.add("Purple");
 
-      BaseActionParam param = 
+      ActionParam param = 
 	new EnumActionParam("SomeEnum",
 			    "An enum parameter.",
 			    "Purple", colors);
@@ -95,13 +95,13 @@ class TestAction
   /**
    * Get an initial set of action parameters associated with an upstream node. 
    */ 
-  public TreeMap<String,BaseActionParam>
+  public TreeMap<String,ActionParam>
   getInitialSourceParams()
   {
-    TreeMap<String,BaseActionParam> params = new TreeMap<String,BaseActionParam>();
+    TreeMap<String,ActionParam> params = new TreeMap<String,ActionParam>();
     
     {
-      BaseActionParam param = 
+      ActionParam param = 
 	new IntegerActionParam("AnotherInteger", 
 			       "An integer parameter.",
 			       123);
@@ -109,7 +109,7 @@ class TestAction
     }
 
     {
-      BaseActionParam param = 
+      ActionParam param = 
 	new DoubleActionParam("AnotherDouble", 
 			      "An double parameter.",
 			      123.456);
@@ -125,7 +125,7 @@ class TestAction
       colors.add("Blue");
       colors.add("Purple");
 
-      BaseActionParam param = 
+      ActionParam param = 
 	new EnumActionParam("AnotherEnum",
 			    "An enum parameter.",
 			    "Cyan", colors);
@@ -133,7 +133,7 @@ class TestAction
     }
 
     {
-      BaseActionParam param = 
+      ActionParam param = 
 	new IntegerActionParam("SecondInteger", 
 			       "A second integer parameter.",
 			       2);
@@ -141,7 +141,7 @@ class TestAction
     }
     
     {
-      BaseActionParam param = 
+      ActionParam param = 
 	new BooleanActionParam("AnotherBoolean", 
 			       "A boolean parameter.",
 			       true);
@@ -149,7 +149,7 @@ class TestAction
     }
     
     {
-      BaseActionParam param = 
+      ActionParam param = 
 	new LinkActionParam("AnotherLink",
 			    "An upstream link parameter.",
 			    null);

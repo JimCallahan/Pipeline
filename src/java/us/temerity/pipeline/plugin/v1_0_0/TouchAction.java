@@ -1,4 +1,4 @@
-// $Id: TouchAction.java,v 1.2 2004/11/05 20:13:48 jim Exp $
+// $Id: TouchAction.java,v 1.3 2004/11/11 00:35:26 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -65,8 +65,6 @@ class TouchAction
   )
     throws PipelineException
   { 
-    makeTargetDir(agenda);
-
     /* create the process to run the action */ 
     try {
       ArrayList<String> args = new ArrayList<String>();

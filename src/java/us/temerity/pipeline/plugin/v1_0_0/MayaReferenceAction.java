@@ -1,4 +1,4 @@
-// $Id: MayaReferenceAction.java,v 1.3 2004/10/28 15:55:24 jim Exp $
+// $Id: MayaReferenceAction.java,v 1.4 2004/11/11 00:35:26 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -61,7 +61,7 @@ class MayaReferenceAction
 	  "Builds a Maya scene from component scenes.");
     
     {
-      BaseActionParam param = 
+      ActionParam param = 
 	new LinkActionParam
 	("InitialMEL",
 	 "The MEL script to evaluate after scene creation and before importing models.",
@@ -70,7 +70,7 @@ class MayaReferenceAction
     }
     
     {
-      BaseActionParam param = 
+      ActionParam param = 
 	new LinkActionParam
 	("ModelMEL",
 	 "The MEL script to evaluate after importing models but before saving the scene.",
@@ -79,7 +79,7 @@ class MayaReferenceAction
     }
     
     {
-      BaseActionParam param = 
+      ActionParam param = 
 	new LinkActionParam
 	("FinalMEL",
 	 "The MEL script to evaluate after saving the scene.", 
@@ -132,8 +132,6 @@ class MayaReferenceAction
   )
     throws PipelineException
   { 
-    makeTargetDir(agenda);
-
     /* sanity checks */ 
     File initialMel = null;
     File modelMel = null;
