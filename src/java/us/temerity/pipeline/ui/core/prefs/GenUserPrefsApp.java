@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.7 2005/01/10 22:01:05 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.8 2005/01/21 17:25:21 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -473,7 +473,7 @@ class GenUserPrefsApp
 
 	new BoundedDoublePref
 	("The horizontal distance between nodes.", 
-	 "NodeSpaceX", "Horizontal Space:", 2.5, 4.5, 3.5),
+	 "NodeSpaceX", "Horizontal Space:", 2.5, 12.0, 3.5),
 
 	new BoundedDoublePref
 	("The vertical distance between nodes.", 
@@ -1489,7 +1489,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.7 2005/01/10 22:01:05 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.8 2005/01/21 17:25:21 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -1744,7 +1744,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.7 2005/01/10 22:01:05 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.8 2005/01/21 17:25:21 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3100,7 +3100,7 @@ class GenUserPrefsApp
 
       StringBuffer buf = new StringBuffer();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.7 2005/01/10 22:01:05 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.8 2005/01/21 17:25:21 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 
