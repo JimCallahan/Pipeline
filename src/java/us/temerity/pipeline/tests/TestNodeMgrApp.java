@@ -1,7 +1,8 @@
-// $Id: TestNodeMgrApp.java,v 1.2 2004/03/26 19:13:17 jim Exp $
+// $Id: TestNodeMgrApp.java,v 1.3 2004/03/28 00:50:37 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
+import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.message.*;
 
 import java.io.*; 
@@ -119,22 +120,59 @@ class TestNodeMgrApp
       server.start();
       
       /* give the server a chance to start */ 
-      Thread.currentThread().sleep(2000);
+      Thread.currentThread().sleep(1000);
       
       /* run some client tasks */ 
       {
-	ArrayList<ClientTask> clients = new ArrayList<ClientTask>();
+ 	ArrayList<ClientTask1> clients = new ArrayList<ClientTask1>();
 	
-	ClientTask clientA = new ClientTask(123, modA);
+ 	ClientTask1 clientA = new ClientTask1(123, modA);
+ 	clients.add(clientA);
+	
+ 	ClientTask1 clientB = new ClientTask1(456, modB);
+ 	clients.add(clientB);
+	
+ 	for(ClientTask1 client : clients) 
+ 	  client.start();
+	
+ 	for(ClientTask1 client : clients) 
+ 	  client.join();
+
+	modA = clientA.getNodeMod();
+	modB = clientB.getNodeMod();
+      }
+      
+      NodeMgrClient client = new NodeMgrClient("localhost", 53139);
+      client.shutdown();
+      
+      server.join();
+    }
+
+    /* port a change to be released */ 
+    Thread.currentThread().sleep(5000);
+
+    {
+      /* start the node manager server */ 
+      NodeMgrServer server = new NodeMgrServer(nodeDir, 53139);
+      server.start();
+      
+      /* give the server a chance to start */ 
+      Thread.currentThread().sleep(1000);
+      
+      /* run some client tasks */ 
+      {
+	ArrayList<ClientTask2> clients = new ArrayList<ClientTask2>();
+	
+	ClientTask2 clientA = new ClientTask2(123, modA);
 	clients.add(clientA);
 	
-	ClientTask clientB = new ClientTask(456, modB);
+	ClientTask2 clientB = new ClientTask2(456, modB);
 	clients.add(clientB);
 	
-	for(ClientTask client : clients) 
+	for(ClientTask2 client : clients) 
 	  client.start();
 	
-	for(ClientTask client : clients) 
+	for(ClientTask2 client : clients) 
 	  client.join();
       }
       
@@ -142,13 +180,6 @@ class TestNodeMgrApp
       client.shutdown();
 
       server.join();
-    }
-
-    {
-      
-
-
-
     }
 
   }
@@ -159,11 +190,11 @@ class TestNodeMgrApp
   /*----------------------------------------------------------------------------------------*/
 
   private 
-  class ClientTask
+  class ClientTask1
     extends Thread
   {
     public 
-    ClientTask
+    ClientTask1
     (
      long seed, 
      NodeMod mod
@@ -171,6 +202,12 @@ class TestNodeMgrApp
     {
       pSeed    = seed;
       pNodeMod = mod;
+    }
+
+    public NodeMod
+    getNodeMod()
+    {
+      return pNodeMod;
     }
 
     public void 
@@ -189,11 +226,48 @@ class TestNodeMgrApp
       
 	client.register("default", pNodeMod);
 	
-	NodeMod mod = client.getWorkingVersion("default", pNodeMod.getName());
-	assert(mod.equals(pNodeMod));
+	{
+	  NodeMod mod = client.getWorkingVersion("default", pNodeMod.getName());
+	  assert(pNodeMod.equals(mod));
+	  pNodeMod = mod;
+	}
+
+	{
+	  try {
+	    NodeMod mod = client.getWorkingVersion("default", "/images/fooy");
+	  }
+	  catch(PipelineException ex) {
+	    System.out.print("Caught: " + ex.getMessage() + "\n\n");
+	  }
+	}
+
+	{
+	  int cnt;
+	  for(cnt=0; cnt<10; cnt++) {
+	    FrameRange range = pNodeMod.getPrimarySequence().getFrameRange();
+	    int f1 = range.getStart() + random.nextInt(10) - 5;
+	    int f2 = range.getEnd() + random.nextInt(10) - 5;
+	    int s = Math.min(43, Math.max(0, Math.min(f1, f2)));
+	    int e = Math.min(43, Math.max(0, Math.max(f1, f2)));
+	    FrameRange range2 = new FrameRange(s, e, range.getBy());
+	    
+	    pNodeMod.adjustFrameRange(range2);	    
+	    client.modifyProperties("default", pNodeMod);
+	  }
+	  
+	  {
+	    NodeMod mod = client.getWorkingVersion("default", pNodeMod.getName());
+	    assert(pNodeMod.equals(mod));
+	    pNodeMod = mod;
+	  }
+	}
+
+
 
 	// ...
       
+
+
 	client.disconnect();
       }
       catch(PipelineException ex) {
@@ -201,7 +275,66 @@ class TestNodeMgrApp
       }
     }
 
+
     private long     pSeed; 
     private NodeMod  pNodeMod;
   }
+
+  private 
+  class ClientTask2
+    extends Thread
+  {
+    public 
+    ClientTask2
+    (
+     long seed, 
+     NodeMod mod
+    ) 
+    {
+      pSeed = seed;
+      pNodeMod = mod;
+    }
+
+    public void 
+    run() 
+    {
+      Random random = new Random(pSeed);
+      try {
+	sleep(random.nextInt(2000));
+      }
+      catch(InterruptedException ex) {
+	assert(false);
+      }
+
+      try {
+	NodeMgrClient client = new NodeMgrClient("localhost", 53139);
+	
+	{
+	  int cnt;
+	  for(cnt=0; cnt<10; cnt++) {	
+	    NodeMod mod = client.getWorkingVersion("default", pNodeMod.getName());
+
+	    assert(pNodeMod.equals(mod));
+	    pNodeMod = mod;
+	  }
+	}
+
+
+	// ...
+      
+
+
+	client.disconnect();
+      }
+      catch(Exception ex) {
+	Logs.ops.severe(ex.getMessage());
+      }
+    }
+
+    private long     pSeed; 
+    private String   pName;
+    private NodeMod  pNodeMod;
+  }
+
+
 }
