@@ -204,41 +204,45 @@ Administration</span></span></a><br>
  style="font-style: italic;">host-name</span></span></li>
       </ul>
     </ul>
-    <li style="font-weight: bold; color: rgb(153, 0, 0);">Plugins</li>
+    <li style="font-weight: bold; color: rgb(0, 0, 0);"><a
+ href="#Plugins">Plugins</a></li>
     <ul>
-      <li style="font-weight: bold; color: rgb(153, 0, 0);">editor</li>
-      <ul style="color: rgb(153, 0, 0);">
-        <li style="font-weight: bold;">--get</li>
-        <li style="font-weight: bold;">--get-info<span
+      <li style="font-weight: bold; color: rgb(0, 0, 0);">editor</li>
+      <ul style="color: rgb(0, 0, 0);">
+        <li style="font-weight: bold;"><a href="#editor_--get">--get</a></li>
+        <li style="font-weight: bold;"><a href="#editor_--get-info">--get-info</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">editor-name</span>[:<span
  style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
  style="font-style: italic;">micro</span>]</span></li>
-        <li style="font-weight: bold;">--get-info-all<br>
+        <li style="font-weight: bold;"><a href="#editor_--get-info-all">--get-info-all</a><br>
         </li>
       </ul>
-      <li style="font-weight: bold; color: rgb(153, 0, 0);">action</li>
-      <ul style="color: rgb(153, 0, 0);">
-        <li style="font-weight: bold;">--get</li>
-        <li style="font-weight: bold;">--get-info<span
+      <li style="font-weight: bold; color: rgb(0, 0, 0);">action</li>
+      <ul style="color: rgb(0, 0, 0);">
+        <li style="font-weight: bold;"><a href="#action_--get">--get</a></li>
+        <li style="font-weight: bold;"><a href="#action_--get-info">--get-info</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">action-name</span>[:<span
  style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
  style="font-style: italic;">micro</span>]</span></li>
-        <li style="font-weight: bold;">--get-info-all<br>
+        <li style="font-weight: bold;"><a href="#action_--get-info-all">--get-info-all</a><br>
         </li>
       </ul>
-      <li style="font-weight: bold; color: rgb(153, 0, 0);">comparator</li>
+      <li style="font-weight: bold; color: rgb(0, 0, 0);">comparator</li>
       <ul>
-        <li style="font-weight: bold; color: rgb(153, 0, 0);">--get</li>
-        <li style="font-weight: bold; color: rgb(153, 0, 0);">--get-info<span
+        <li style="font-weight: bold; color: rgb(0, 0, 0);"><a
+ href="#comparator_--get">--get</a></li>
+        <li style="font-weight: bold; color: rgb(0, 0, 0);"><a
+ href="#comparator_--get-info">--get-info</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">comparator-name</span>[:<span
  style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
  style="font-style: italic;">micro</span>]</span></li>
-        <li style="font-weight: bold;"><span
- style="color: rgb(153, 0, 0);">--get-info-all</span><br>
-        </li>
+        <li style="font-weight: bold; color: rgb(0, 0, 0);"><span
+ style="font-weight: normal;"><a href="#comparator_--get-info-all"><span
+ style="font-weight: bold;">--get-info-all</span></a><br>
+          </span></li>
       </ul>
     </ul>
     <li style="font-weight: bold;"><a href="#User_Preferences">User
@@ -2118,7 +2122,116 @@ daemon, it will be shutdown immeadiately.<span
 <br>
 This command requires privileged user status.</span></div>
 </div>
-<h3><a name="User_Preferences"></a>User Preferences</h3>
+<h3><a name="Plugins"></a>Plugins</h3>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
+ name="editor_--get"></a>editor --get</span><br>
+<br>
+<div style="margin-left: 40px;">Prints the names and versions of the
+Editor plugins.<br>
+</div>
+<br>
+<span style="font-weight: bold;"><a name="editor_--get-info"></a>editor
+--get-info</span><span style="font-weight: normal;">=<span
+ style="font-style: italic;">editor-name</span>[:<span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>]<br>
+<br>
+</span>
+<div style="margin-left: 40px;">Prints a summary of information about
+the given version (<span style="font-weight: normal;"><span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>) of an Editor plugin.&nbsp;
+The information includes a description of the plugin, the name of the
+associated Java class and the timestamp of when the plugin was
+installed.<br>
+</span></div>
+<br>
+<span style="font-weight: bold;"><a name="editor_--get-info-all"></a>editor
+--get-info-all</span><br>
+<br>
+<div style="margin-left: 40px;">Prints a summary of information for all
+Editor plugins.&nbsp; Equivalent to performing a <a
+ href="#editor_--get-info"><span style="font-weight: bold;">editor
+--get-info</span></a> for each Editor plugin.<br>
+<br>
+<br>
+</div>
+</div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
+ name="action_--get"></a>action --get</span><br>
+<br>
+<div style="margin-left: 40px;">Prints the names and versions of the
+Action plugins.<br>
+</div>
+<br>
+<span style="font-weight: bold;"><a name="action_--get-info"></a>action
+--get-info</span><span style="font-weight: normal;">=<span
+ style="font-style: italic;">action-name</span>[:<span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>]<br>
+<br>
+</span>
+<div style="margin-left: 40px;">Prints a summary of information about
+the given version (<span style="font-weight: normal;"><span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>) of an Action plugin.&nbsp;
+The information includes a description of the plugin, the name of the
+associated Java class and the timestamp of when the plugin was
+installed.<br>
+</span></div>
+<br>
+<span style="font-weight: bold;"><a name="action_--get-info-all"></a>action
+--get-info-all</span><br>
+<br>
+<div style="margin-left: 40px;">Prints a summary of information for all
+Action plugins.&nbsp; Equivalent to performing a <a
+ href="#action_--get-info"><span style="font-weight: bold;">action
+--get-info</span></a> for each Action plugin.<br>
+<br>
+<br>
+</div>
+</div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
+ name="comparator_--get"></a>comparator --get</span><br>
+<br>
+<div style="margin-left: 40px;">Prints the names and versions of the
+Comparator plugins.<br>
+</div>
+<br>
+<span style="font-weight: bold;"><a name="comparator_--get-info"></a>comparator
+--get-info</span><span style="font-weight: normal;">=<span
+ style="font-style: italic;">comparator-name</span>[:<span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>]<br>
+<br>
+</span>
+<div style="margin-left: 40px;">Prints a summary of information about
+the given version (<span style="font-weight: normal;"><span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>) of an Comparator
+plugin.&nbsp; The information includes a description of the plugin, the
+name of the
+associated Java class and the timestamp of when the plugin was
+installed.<br>
+</span></div>
+<br>
+<span style="font-weight: bold;"><a name="comparator_--get-info-all"></a>comparator
+--get-info-all</span><br>
+<br>
+<div style="margin-left: 40px;">Prints a summary of information for all
+Comparator plugins.&nbsp; Equivalent to performing a <a
+ href="#comparator_--get-info"><span style="font-weight: bold;">comparator
+--get-info</span></a> for each Comparator plugin.<br>
+</div>
+</div>
+<h3><a name="User_Preferences"></a><span style="font-weight: bold;"></span>User
+Preferences</h3>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
  name="suffix-editor_--get"></a>suffix-editor</span>
 <span style="font-weight: bold;">--get<br>

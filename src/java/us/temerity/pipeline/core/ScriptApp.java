@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.12 2004/09/26 03:13:56 jim Exp $
+// $Id: ScriptApp.java,v 1.13 2004/09/28 18:04:01 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1645,6 +1645,9 @@ class ScriptApp
     case ScriptOptsParserConstants.UNKNOWN11:
     case ScriptOptsParserConstants.UNKNOWN12:
     case ScriptOptsParserConstants.UNKNOWN13:
+    case ScriptOptsParserConstants.UNKNOWN14:
+    case ScriptOptsParserConstants.UNKNOWN15:
+    case ScriptOptsParserConstants.UNKNOWN16:
       return "an unknown argument";
 
     case ScriptOptsParserConstants.UNKNOWN_OPTION1:
@@ -1660,6 +1663,9 @@ class ScriptApp
     case ScriptOptsParserConstants.UNKNOWN_OPTION11:
     case ScriptOptsParserConstants.UNKNOWN_OPTION12:
     case ScriptOptsParserConstants.UNKNOWN_OPTION13:
+    case ScriptOptsParserConstants.UNKNOWN_OPTION14:
+    case ScriptOptsParserConstants.UNKNOWN_OPTION15:
+    case ScriptOptsParserConstants.UNKNOWN_OPTION16:
       return "an unknown option";
 
     case ScriptOptsParserConstants.TRUE:
@@ -1723,6 +1729,9 @@ class ScriptApp
 
     case ScriptOptsParserConstants.ACTION_NAME:
       return "an Action plugin name";
+
+    case ScriptOptsParserConstants.COMPARATOR_NAME:
+      return "an Comparator plugin name";
 
     case ScriptOptsParserConstants.REVISION_NUMBER:
       return "a revision number";
@@ -1802,6 +1811,10 @@ class ScriptApp
     case ScriptOptsParserConstants.AE33:
     case ScriptOptsParserConstants.AE34:
     case ScriptOptsParserConstants.AE35:
+    case ScriptOptsParserConstants.AE36:
+    case ScriptOptsParserConstants.AE37:
+    case ScriptOptsParserConstants.AE38:
+    case ScriptOptsParserConstants.AE39:
       return null;
 
     default: 

@@ -243,6 +243,9 @@ TOKEN :
 | <LICENSE_KEY1:      "license-key">      : KEY_OPTS 
 | <SELECTION_KEY1:    "selection-key">    : KEY_OPTS  
 | <JOB_SERVER:        "job-server">       : JOB_SERVER_OPTS
+| <EDITOR1:           "editor">           : EDITOR_OPTS
+| <ACTION1:           "action">           : ACTION_OPTS
+| <COMPARATOR:        "comparator">       : COMPARATOR_OPTS
 | <SUFFIX_EDITOR:     "suffix-editor">    : SUFFIX_EDITOR_OPTS
 | <VIEW1:             "view">             : VIEW_OPTS
 | <WORKING:           "working">          : WORKING_OPTS
@@ -274,7 +277,7 @@ TOKEN :
 | <SLOTS:          "--slots">           : INTEGER_SEP  
 | <SELECTION_BIAS: "--selection-bias">  : KEY_BIAS_SEP  
 | <REMOVE_KEY:     "--remove-key">      : KEY_NAME_SEP   
-| <EDITOR:         "--editor">          : EDITOR_NAME_SEP 
+| <EDITOR2:        "--editor">          : EDITOR_NAME_SEP 
 | <VERSION2:       "--version">         : REVISION_NUMBER_SEP
 | <AUTHOR:         "--author">          : USER_NAME_SEP 
 | <VIEW2:          "--view">            : VIEW_NAME_SEP 
@@ -282,7 +285,7 @@ TOKEN :
 | <HIDE:           "--hide">            : SECTION_SEP   
 | <TOOLSET2:       "--toolset">         : TOOLSET_NAME_SEP
 | <NO_ACTION:      "--no-action">       
-| <ACTION1:        "--action">          : ACTION_NAME_SEP
+| <ACTION2:        "--action">          : ACTION_NAME_SEP
 | <ACTION_ENABLED: "--action-enabled">  : BOOLEAN_SEP
 | <PARAM:          "--param">           : PARAM_SEP 
 | <NO_PARAM:       "--no-param">        : LINK_PARAM_SEP 
@@ -639,11 +642,30 @@ TOKEN :
 }
 
 
+/* comparator arguments */ 
+<COMPARATOR_NAME_SEP> 
+TOKEN :
+{
+  <EQ18:                     "=">   : COMPARATOR_NAME_STATE
+| <MISSING_COMPARATOR_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<COMPARATOR_NAME_STATE> 
+TOKEN :
+{
+  <COMPARATOR_NAME:      (["a"-"z","A"-"Z"]) 
+	                   (["a"-"z","A"-"Z","0"-"9","_","-"])+>   
+| <COLON5:               ":">                                     : REVISION_NUMBER_STATE
+| <AE12:                 ["\0"]>                                  : OPTIONS
+| <ILLEGAL_COMPARATOR:   (~[":","\0"])+>                          : IGNORE_STATE
+}
+
+
 /* revision number arguments */ 
 <REVISION_NUMBER_SEP> 
 TOKEN :
 {
-  <EQ18:                          "=">   : REVISION_NUMBER_STATE
+  <EQ19:                          "=">   : REVISION_NUMBER_STATE
 | <MISSING_REVISION_NUMBER_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -653,7 +675,7 @@ TOKEN :
   <REVISION_NUMBER:            (<IREVNUM> "." <REVNUM> "." <REVNUM>)>  
 | <#IREVNUM:                   ["1"-"9"] (["0"-"9"])*>
 | <#REVNUM:                    (["0"-"9"])+>
-| <AE12:                       ["\0"]>                       : OPTIONS
+| <AE13:                       ["\0"]>                       : OPTIONS
 | <ILLEGAL_REVISION_NUMBER:    (~["\0"])+>                   : IGNORE_STATE
 }
 
@@ -662,7 +684,7 @@ TOKEN :
 <VIEW_NAME_SEP> 
 TOKEN :
 {
-  <EQ19:               "=">     : VIEW_NAME_STATE
+  <EQ20:               "=">     : VIEW_NAME_STATE
 | <MISSING_VIEW_ARG: ~["="]>    : IGNORE_STATE
 }
 
@@ -671,7 +693,7 @@ TOKEN :
 {
   <VIEW_NAME:      (["a"-"z","A"-"Z"]) 
 	             (["a"-"z","A"-"Z","0"-"9","_","-"])+>   
-| <AE13:           ["\0"]>                                  : OPTIONS
+| <AE14:           ["\0"]>                                  : OPTIONS
 | <ILLEGAL_VIEW:   (~["\0"])+>                              : IGNORE_STATE
 }
 
@@ -680,7 +702,7 @@ TOKEN :
 <PARAM_SEP> 
 TOKEN :
 {
-  <EQ20:                "=">      : PARAM_STATE
+  <EQ21:                "=">      : PARAM_STATE
 | <MISSING_PARAM_ARG: ~["="]>    : IGNORE_STATE
 }
 
@@ -689,8 +711,8 @@ TOKEN :
 {
   <PARAM_NAME:      (["a"-"z","A"-"Z"]) 
 	             (["a"-"z","A"-"Z","0"-"9","_","-"])+>   
-| <COLON5:          ":">                                    : PARAM_VALUE_STATE
-| <AE14:            ["\0"]>                                 : OPTIONS
+| <COLON6:          ":">                                    : PARAM_VALUE_STATE
+| <AE15:            ["\0"]>                                 : OPTIONS
 | <ILLEGAL_PARAM:   (~[":","\0"])+>                         : IGNORE_STATE
 }
 
@@ -706,7 +728,7 @@ TOKEN :
 <SOURCE_PARAM_SEP> 
 TOKEN :
 {
-  <EQ21:                       "=">   : SOURCE_PARAM_STATE
+  <EQ22:                       "=">   : SOURCE_PARAM_STATE
 | <MISSING_SOURCE_PARAM_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -725,7 +747,7 @@ TOKEN :
 <LINK_PARAM_SEP> 
 TOKEN :
 {
-  <EQ22:                     "=">    : LINK_PARAM_STATE
+  <EQ23:                     "=">    : LINK_PARAM_STATE
 | <MISSING_LINK_PARAM_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -736,7 +758,7 @@ TOKEN :
 		      ("/" ["a"-"z","A"-"Z"] 
 		        (["a"-"z","A"-"Z","0"-"9","_","-"])*)+> 
 | <COMMA2:            ",">                                       : LINK_RELATION_STATE
-| <AE15:              "\0">                                      : OPTIONS
+| <AE16:              "\0">                                      : OPTIONS
 | <ILLEGAL_LINK_NAME: (~[",","\0"])+>                            : IGNORE_STATE
 }
 
@@ -754,7 +776,7 @@ TOKEN :
 <FILE_SEQ_SEP> 
 TOKEN :
 {
-  <EQ23:                   "=">   : FILE_SEQ_STATE
+  <EQ24:                   "=">   : FILE_SEQ_STATE
 | <MISSING_FILE_SEQ_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -765,7 +787,7 @@ TOKEN :
 		        (["a"-"z","A"-"Z","0"-"9","_","-"])*)+>  
 | <DOT1:              ".">                                       : FILE_SEQ_STATE2
 | <COMMA3:            ",">                                       : FRAME_RANGE_STATE
-| <AE16:              "\0">                                      : OPTIONS
+| <AE17:              "\0">                                      : OPTIONS
 | <ILLEGAL_FILE_SEQ:  (~[".",",","\0"])+>                        : IGNORE_STATE
 }
 
@@ -777,7 +799,7 @@ TOKEN :
 | <AT:                "@"> 
 | <POUND:             "#"> 
 | <COMMA4:            ",">                          : FRAME_RANGE_STATE
-| <AE17:              "\0">                         : OPTIONS
+| <AE18:              "\0">                         : OPTIONS
 | <ILLEGAL_FILE_SEQ2: (~[".","@","#",",","\0"])+>   : IGNORE_STATE
 }
 
@@ -786,7 +808,7 @@ TOKEN :
 <FRAME_RANGE_SEP> 
 TOKEN :
 {
-  <EQ24:                      "=">   : FRAME_RANGE_STATE
+  <EQ25:                      "=">   : FRAME_RANGE_STATE
 | <MISSING_FRAME_RANGE_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -796,7 +818,7 @@ TOKEN :
   <FRAME_NUMBER:         (["0"-"9"])+>   
 | <DASH1:                "-"> 
 | <BY:                   "x"> 
-| <AE18:                 "\0">           : OPTIONS
+| <AE19:                 "\0">           : OPTIONS
 | <ILLEGAL_FRAME_RANGE:  (~["-","x","\0"])+>     : IGNORE_STATE
 }
 
@@ -805,7 +827,7 @@ TOKEN :
 <FRAME_NUMBERS_SEP> 
 TOKEN :
 {
-  <EQ25:                        "=">   : FRAME_NUMBERS_STATE
+  <EQ26:                        "=">   : FRAME_NUMBERS_STATE
 | <MISSING_FRAME_NUMBERS_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -815,7 +837,7 @@ TOKEN :
   <FRAME_NUMBER2:          (["0"-"9"])+>   
 | <DASH2:                  "-"> 
 | <COMMA5:                 ","> 
-| <AE19:                   "\0">                  : OPTIONS
+| <AE20:                   "\0">                  : OPTIONS
 | <ILLEGAL_FRAME_NUMBERS:  (~["-",",","\0"])+>     : IGNORE_STATE
 }
   
@@ -824,7 +846,7 @@ TOKEN :
 <FRAME_INDICES_SEP> 
 TOKEN :
 {
-  <EQ26:                        "=">   : FRAME_INDICES_STATE
+  <EQ27:                        "=">   : FRAME_INDICES_STATE
 | <MISSING_FRAME_INDICES_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -834,7 +856,7 @@ TOKEN :
   <FRAME_INDEX:            (["0"-"9"])+>   
 | <DASH3:                  "-"> 
 | <COMMA6:                 ","> 
-| <AE20:                   "\0">                  : OPTIONS
+| <AE21:                   "\0">                  : OPTIONS
 | <ILLEGAL_FRAME_INDICES:  (~["-",",","\0"])+>     : IGNORE_STATE
 }
   
@@ -843,7 +865,7 @@ TOKEN :
 <SECTION_SEP> 
 TOKEN :
 {
-  <EQ27:                  "=">   : SECTION_STATE
+  <EQ28:                  "=">   : SECTION_STATE
 | <MISSING_SECTION_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -866,7 +888,7 @@ TOKEN :
 | <ERR:              "err"> 
 | <FILE:             "file"> 
 | <COMMA7:           ","> 
-| <AE21:             "\0">               : OPTIONS
+| <AE22:             "\0">               : OPTIONS
 | <ILLEGAL_SECTION:  (~[",","\0"])+>     : IGNORE_STATE
 }
 
@@ -875,7 +897,7 @@ TOKEN :
 <JOB_GROUP_ID_SEP>  
 TOKEN :
 {
-  <EQ28:                       "=">   : JOB_GROUP_ID_STATE
+  <EQ29:                       "=">   : JOB_GROUP_ID_STATE
 | <MISSING_JOB_GROUP_ID_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -884,7 +906,7 @@ TOKEN :
 {
   <JOB_GROUP_ID:          (["0"-"9"])+> 
 | <COMMA8:                ","> 
-| <AE22:                  "\0">             : OPTIONS
+| <AE23:                  "\0">             : OPTIONS
 | <ILLEGAL_JOB_GROUP_ID:  (~[",","\0"])+>   : IGNORE_STATE
 }
 
@@ -892,7 +914,7 @@ TOKEN :
 <JOB_ID_SEP>  
 TOKEN :
 {
-  <EQ29:                       "=">   : JOB_ID_STATE
+  <EQ30:                       "=">   : JOB_ID_STATE
 | <MISSING_JOB_ID_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -901,7 +923,7 @@ TOKEN :
 {
   <JOB_ID:          (["0"-"9"])+> 
 | <COMMA9:          ","> 
-| <AE23:            "\0">             : OPTIONS
+| <AE24:            "\0">             : OPTIONS
 | <ILLEGAL_JOB_ID:  (~[",","\0"])+>   : IGNORE_STATE
 }
 
@@ -914,7 +936,7 @@ TOKEN :
 <LOG_SEP> 
 TOKEN :
 {
-  <EQ30:              "=">   : LOG_STATE
+  <EQ31:              "=">   : LOG_STATE
 | <MISSING_LOG_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -927,7 +949,7 @@ TOKEN :
 | <LOG_NET: 	    "net">      
 | <LOG_PLG: 	    "plg">       
 | <LOG_SUB: 	    "sub">     
-| <COLON6:  	    ":">       
+| <COLON7:  	    ":">       
 | <SEVERE:  	    "severe">  
 | <WARNING: 	    "warning"> 
 | <INFO:    	    "info">    
@@ -935,7 +957,7 @@ TOKEN :
 | <FINER :  	    "finer">   
 | <FINEST:    	    "finest">  
 | <COMMA10: 	    ",">       
-| <AE24:            (["\0"])+>                   : OPTIONS
+| <AE25:            (["\0"])+>                   : OPTIONS
 | <ILLEGAL_LOG_ARG: (~["\0","a"-"z",":",","])+>  : IGNORE_STATE
 }
 
@@ -949,7 +971,7 @@ TOKEN :
   <PRIVILEGED_GET:    "--get">                   : OPTIONS
 | <PRIVILEGED_GRANT:  "--grant">                 : USER_NAME_SEP 
 | <PRIVILEGED_REVOKE: "--revoke">                : USER_NAME_SEP 
-| <AE25:              ["\0"]>  
+| <AE26:              ["\0"]>  
 | <UNKNOWN_OPTION3:   "-" ("-")? (~["\0","="])*> : IGNORE_STATE
 | <UNKNOWN3:          ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
 }
@@ -966,7 +988,7 @@ TOKEN :
 | <TOOLSET_ADD:           "--add">                   : TOOLSET_NAME_SEP 
 | <TOOLSET_REMOVE:        "--remove">                : TOOLSET_NAME_SEP 
 | <TOOLSET_EXPORT:        "--export">                : TOOLSET_NAME_SEP
-| <AE26:                  ["\0"]>            
+| <AE27:                  ["\0"]>            
 | <UNKNOWN_OPTION4:       "-" ("-")? (~["\0","="])*> : IGNORE_STATE
 | <UNKNOWN4:              ~["-","\0"] (~["\0"])*>    : IGNORE_STATE          
 }
@@ -982,7 +1004,7 @@ TOKEN :
 | <KEY_ADD:            "--add">                   : KEY_NAME_SEP 
 | <KEY_SET:            "--set">                   : KEY_NAME_SEP 
 | <KEY_REMOVE:         "--remove">                : KEY_NAME_SEP 
-| <AE27:               ["\0"]>    
+| <AE28:               ["\0"]>    
 | <UNKNOWN_OPTION5:    "-" ("-")? (~["\0","="])*> : IGNORE_STATE
 | <UNKNOWN5:           ~["-","\0"] (~["\0"])*>    : IGNORE_STATE           
 }
@@ -998,9 +1020,47 @@ TOKEN :
 | <JOB_SET:            "--set">                   : HOST_NAME_SEP 
 | <JOB_ADD:            "--add">                   : HOST_NAME_SEP 
 | <JOB_REMOVE:         "--remove">                : HOST_NAME_SEP
-| <AE28:               ["\0"]>   
+| <AE29:               ["\0"]>   
 | <UNKNOWN_OPTION6:    "-" ("-")? (~["\0","="])*> : IGNORE_STATE
 | <UNKNOWN6:           ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+}
+
+/* editor command options */ 
+<EDITOR_OPTS> 
+TOKEN :
+{
+  <EDITOR_GET:            "--get">                   : OPTIONS
+| <EDITOR_GET_INFO:       "--get-info">              : EDITOR_NAME_SEP  
+| <EDITOR_GET_INFO_ALL:   "--get-info-all">          : OPTIONS
+| <AE30:                  ["\0"]>   
+| <UNKNOWN_OPTION7:       "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN7:              ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+}
+
+
+/* action command options */ 
+<ACTION_OPTS> 
+TOKEN :
+{
+  <ACTION_GET:            "--get">                   : OPTIONS
+| <ACTION_GET_INFO:       "--get-info">              : ACTION_NAME_SEP  
+| <ACTION_GET_INFO_ALL:   "--get-info-all">          : OPTIONS
+| <AE31:                  ["\0"]>   
+| <UNKNOWN_OPTION8:       "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN8:              ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+}
+
+
+/* comparator command options */ 
+<COMPARATOR_OPTS> 
+TOKEN :
+{
+  <COMPARATOR_GET:            "--get">                   : OPTIONS
+| <COMPARATOR_GET_INFO:       "--get-info">              : COMPARATOR_NAME_SEP  
+| <COMPARATOR_GET_INFO_ALL:   "--get-info-all">          : OPTIONS
+| <AE32:                      ["\0"]>   
+| <UNKNOWN_OPTION9:           "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN9:                  ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
 }
 
 
@@ -1014,9 +1074,9 @@ TOKEN :
 | <SUFFIX_EDITOR_SET:            "--set">                   : SUFFIX_SEP 
 | <SUFFIX_EDITOR_REMOVE:         "--remove">                : SUFFIX_SEP
 | <SUFFIX_EDITOR_RESET:          "--reset">                 : OPTIONS
-| <AE29:                         ["\0"]>   
-| <UNKNOWN_OPTION7:              "-" ("-")? (~["\0","="])*> : IGNORE_STATE
-| <UNKNOWN7:                     ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+| <AE33:                         ["\0"]>   
+| <UNKNOWN_OPTION10:             "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN10:                    ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
 }
 
 
@@ -1026,9 +1086,9 @@ TOKEN :
 {
   <VIEW_GET:            "--get">                   : OPTIONS
 | <VIEW_CREATE:         "--create">                : VIEW_NAME_SEP
-| <AE30:                ["\0"]>   
-| <UNKNOWN_OPTION8:     "-" ("-")? (~["\0","="])*> : IGNORE_STATE
-| <UNKNOWN8:            ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+| <AE34:                ["\0"]>   
+| <UNKNOWN_OPTION11:    "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN11:           ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
 }
 
 
@@ -1049,9 +1109,9 @@ TOKEN :
 | <WORKING_EDIT:              "--edit">                  : NODE_NAME_SEP
 | <WORKING_SUBMIT_JOBS:       "--submit-jobs">           : NODE_NAME_SEP
 | <WORKING_REMOVE_FILES:      "--remove-files">          : NODE_NAME_SEP
-| <AE31:                      ["\0"]>   
-| <UNKNOWN_OPTION9:           "-" ("-")? (~["\0","="])*> : IGNORE_STATE
-| <UNKNOWN9:                  ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+| <AE35:                      ["\0"]>   
+| <UNKNOWN_OPTION12:          "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN12:                 ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
 }
 
 /* checked-in command options */ 
@@ -1061,9 +1121,9 @@ TOKEN :
   <CHECKED_IN_GET_INFO:       "--get-info">              : NODE_NAME_SEP
 | <CHECKED_IN_HISTORY:        "--history">               : NODE_NAME_SEP
 | <CHECKED_IN_NOVELTY:        "--novelty">               : NODE_NAME_SEP
-| <AE32:                      ["\0"]>   
-| <UNKNOWN_OPTION10:          "-" ("-")? (~["\0","="])*> : IGNORE_STATE
-| <UNKNOWN10:                 ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+| <AE36:                      ["\0"]>   
+| <UNKNOWN_OPTION13:          "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN13:                 ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
 }
 
 /* node command options */ 
@@ -1073,9 +1133,9 @@ TOKEN :
   <NODE_STATUS:            "--status">                : NODE_NAME_SEP
 | <NODE_CHECK_IN:          "--check-in">              : NODE_NAME_SEP
 | <NODE_CHECK_OUT:         "--check-out">             : NODE_NAME_SEP
-| <AE33:                   ["\0"]>   
-| <UNKNOWN_OPTION11:       "-" ("-")? (~["\0","="])*> : IGNORE_STATE
-| <UNKNOWN11:              ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+| <AE37:                   ["\0"]>   
+| <UNKNOWN_OPTION14:       "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN14:              ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
 }
 
 /* job group command options */ 
@@ -1088,9 +1148,9 @@ TOKEN :
 | <JOB_GROUP_RESUME:       "--resume">                : JOB_GROUP_ID_SEP
 | <JOB_GROUP_REMOVE:       "--remove">                : JOB_GROUP_ID_SEP
 | <JOB_GROUP_REMOVE_ALL:   "--remove-all">            : OPTIONS
-| <AE34:                   ["\0"]>   
-| <UNKNOWN_OPTION12:       "-" ("-")? (~["\0","="])*> : IGNORE_STATE
-| <UNKNOWN12:              ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+| <AE38:                   ["\0"]>   
+| <UNKNOWN_OPTION15:       "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN15:              ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
 }
 
 /* job command options */ 
@@ -1101,9 +1161,9 @@ TOKEN :
 | <JOB_KILL:           "--kill">                  : JOB_ID_SEP
 | <JOB_PAUSE:          "--pause">                 : JOB_ID_SEP
 | <JOB_RESUME:         "--resume">                : JOB_ID_SEP
-| <AE35:               ["\0"]>   
-| <UNKNOWN_OPTION13:   "-" ("-")? (~["\0","="])*> : IGNORE_STATE
-| <UNKNOWN13:          ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+| <AE39:               ["\0"]>   
+| <UNKNOWN_OPTION16:   "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN16:          ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
 }
 
 
@@ -1143,6 +1203,7 @@ Commands()
   (PrivilegedCmds() | AdminCmds() |
    DefaultToolsetCmds() | ActiveToolsetCmds() | ToolsetCmds() |
    LicenseKeyCmds() | SelectionKeyCmds() | JobServerCmds() | 
+   EditorCmds() | ActionCmds() | ComparatorCmds() | 
    SuffixEditorCmds() | ViewCmds() | WorkingCmds() 
 
    ) 
@@ -1248,6 +1309,7 @@ BatchCommand()
   (PrivilegedCmds() | AdminCmds() |
    DefaultToolsetCmds() | ActiveToolsetCmds() | ToolsetCmds() |
    LicenseKeyCmds() | SelectionKeyCmds() | JobServerCmds() | 
+   EditorCmds() | ActionCmds() | ComparatorCmds() | 
    SuffixEditorCmds() | ViewCmds() | WorkingCmds() 
    
    ) (AE())* <EOF>
@@ -2269,6 +2331,195 @@ JobServerRemove()
     Logs.flush();
   }
 }
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   P L U G I N S                                                                          */
+/*------------------------------------------------------------------------------------------*/
+
+void 
+EditorCmds() 
+  throws PipelineException : 
+{}
+{
+  <EDITOR1> AE() 
+     (EditorGet() | EditorGetInfo() | EditorGetInfoAll())
+  {}
+}
+
+void 
+EditorGet() 
+  throws PipelineException : 
+{}
+{
+  <EDITOR_GET> AE()
+  {
+    TreeMap table = PluginMgr.getInstance().getEditors();
+    Iterator iter = table.keySet().iterator();
+    while(iter.hasNext()) {
+      String name      = (String) iter.next();
+      TreeSet versions = (TreeSet) table.get(name);
+      
+      Iterator viter = versions.iterator();
+      while(viter.hasNext()) {
+	VersionID vid = (VersionID) viter.next();
+	Logs.ops.info(name + " (v" + vid + ")");
+      }
+    }
+    
+    Logs.flush();
+  }
+}
+
+void 
+EditorGetInfo() 
+  throws PipelineException : 
+{
+  String ename = null;
+  VersionID vid = null;
+}
+{
+  <EDITOR_GET_INFO> EQ() ename=EditorName() (COLON() vid=RevisionNumber())? AE()
+  {
+    PluginMgr.getInstance().listEditorPlugin(ename, vid);
+  }
+}
+
+void 
+EditorGetInfoAll() 
+  throws PipelineException : 
+{}
+{
+  <EDITOR_GET_INFO_ALL> AE()
+  {
+    PluginMgr.getInstance().listEditorPlugins();
+  }
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
+ActionCmds() 
+  throws PipelineException : 
+{}
+{
+  <ACTION1> AE() 
+     (ActionGet() | ActionGetInfo() | ActionGetInfoAll())
+  {}
+}
+
+void 
+ActionGet() 
+  throws PipelineException : 
+{}
+{
+  <ACTION_GET> AE()
+  {
+    TreeMap table = PluginMgr.getInstance().getActions();
+    Iterator iter = table.keySet().iterator();
+    while(iter.hasNext()) {
+      String name      = (String) iter.next();
+      TreeSet versions = (TreeSet) table.get(name);
+      
+      Iterator viter = versions.iterator();
+      while(viter.hasNext()) {
+	VersionID vid = (VersionID) viter.next();
+	Logs.ops.info(name + " (v" + vid + ")");
+      }
+    }
+    
+    Logs.flush();
+  }
+}
+
+void 
+ActionGetInfo() 
+  throws PipelineException : 
+{
+  String ename = null;
+  VersionID vid = null;
+}
+{
+  <ACTION_GET_INFO> EQ() ename=ActionName() (COLON() vid=RevisionNumber())? AE()
+  {
+    PluginMgr.getInstance().listActionPlugin(ename, vid);
+  }
+}
+
+void 
+ActionGetInfoAll() 
+  throws PipelineException : 
+{}
+{
+  <ACTION_GET_INFO_ALL> AE()
+  {
+    PluginMgr.getInstance().listActionPlugins();
+  }
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
+ComparatorCmds() 
+  throws PipelineException : 
+{}
+{
+  <COMPARATOR> AE() 
+     (ComparatorGet() | ComparatorGetInfo() | ComparatorGetInfoAll())
+  {}
+}
+
+void 
+ComparatorGet() 
+  throws PipelineException : 
+{}
+{
+  <COMPARATOR_GET> AE()
+  {
+    TreeMap table = PluginMgr.getInstance().getComparators();
+    Iterator iter = table.keySet().iterator();
+    while(iter.hasNext()) {
+      String name      = (String) iter.next();
+      TreeSet versions = (TreeSet) table.get(name);
+      
+      Iterator viter = versions.iterator();
+      while(viter.hasNext()) {
+	VersionID vid = (VersionID) viter.next();
+	Logs.ops.info(name + " (v" + vid + ")");
+      }
+    }
+    
+    Logs.flush();
+  }
+}
+
+void 
+ComparatorGetInfo() 
+  throws PipelineException : 
+{
+  String ename = null;
+  VersionID vid = null;
+}
+{
+  <COMPARATOR_GET_INFO> EQ() ename=ComparatorName() (COLON() vid=RevisionNumber())? AE()
+  {
+    PluginMgr.getInstance().listComparatorPlugin(ename, vid);
+  }
+}
+
+void 
+ComparatorGetInfoAll() 
+  throws PipelineException : 
+{}
+{
+  <COMPARATOR_GET_INFO_ALL> AE()
+  {
+    PluginMgr.getInstance().listComparatorPlugins();
+  }
+}
+
 
 
 /*------------------------------------------------------------------------------------------*/
@@ -3677,7 +3928,7 @@ Editor() :
   String ename = null;
 }
 {
-  <EDITOR> EQ() ename=EditorName() AE()
+  <EDITOR2> EQ() ename=EditorName() AE()
   {
     pEditorName = ename;
   }
@@ -3691,7 +3942,7 @@ EditorVersion()
   VersionID vid = null;
 }
 {
-  <EDITOR> EQ() ename=EditorName() (COLON() vid=RevisionNumber())? AE()
+  <EDITOR2> EQ() ename=EditorName() (COLON() vid=RevisionNumber())? AE()
   {
     pEditorName      = ename; 
     pEditorVersionID = vid; 
@@ -3731,7 +3982,7 @@ Action()
   VersionID vid = null;
 }
 {
-  <ACTION1> EQ() aname=ActionName() (COLON() vid=RevisionNumber())? AE()
+  <ACTION2> EQ() aname=ActionName() (COLON() vid=RevisionNumber())? AE()
   {
     pActionName      = aname; 
     pActionVersionID = vid; 
@@ -4106,6 +4357,18 @@ ActionName() :
 }
 
 String
+ComparatorName() : 
+{
+  Token t;
+}
+{
+  t=<COMPARATOR_NAME>
+  {
+    return t.image;
+  }
+}
+
+String
 ViewName() : 
 {
   Token t;
@@ -4366,7 +4629,8 @@ AE() :
    t=<AE16> | t=<AE17> | t=<AE18> | t=<AE19> | t=<AE20> | 
    t=<AE21> | t=<AE22> | t=<AE23> | t=<AE24> | t=<AE25> | 
    t=<AE26> | t=<AE27> | t=<AE28> | t=<AE29> | t=<AE30> |
-   t=<AE31> | t=<AE32> | t=<AE33> | t=<AE34> | t=<AE35>)
+   t=<AE31> | t=<AE32> | t=<AE33> | t=<AE34> | t=<AE35> |
+   t=<AE36> | t=<AE37> | t=<AE38> | t=<AE39>)
   { 
     return t; 
   }
@@ -4403,7 +4667,7 @@ COLON() :
 }
 {
   (t=<COLON1> | t=<COLON2> | t=<COLON3> | t=<COLON4> | t=<COLON5> | 
-   t=<COLON6>)
+   t=<COLON6> | t=<COLON7>)
   { 
     return t; 
   }
@@ -4433,7 +4697,8 @@ EQ() :
    t=<EQ11> | t=<EQ12> | t=<EQ13> | t=<EQ14> | t=<EQ15> |
    t=<EQ16> | t=<EQ17> | t=<EQ18> | t=<EQ19> | t=<EQ20> | 
    t=<EQ21> | t=<EQ22> | t=<EQ23> | t=<EQ24> | t=<EQ25> |
-   t=<EQ26> | t=<EQ27> | t=<EQ28> | t=<EQ29> | t=<EQ30>)
+   t=<EQ26> | t=<EQ27> | t=<EQ28> | t=<EQ29> | t=<EQ30> | 
+   t=<EQ31>)
   { 
     return t; 
   }
