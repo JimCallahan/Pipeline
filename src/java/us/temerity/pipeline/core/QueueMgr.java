@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.34 2005/02/17 20:14:34 jim Exp $
+// $Id: QueueMgr.java,v 1.35 2005/03/03 03:56:33 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -91,7 +91,7 @@ class QueueMgr
       pPaused    = new TreeSet<Long>();
 
       pWaiting = new ConcurrentLinkedQueue<Long>();
-      pReady   = new TreeMap<Integer,TreeSet<Long>>(Collections.reverseOrder());
+      pReady   = new TreeSet<Long>();
 
       pJobFileLocks = new TreeMap<Long,Object>();
       pJobs         = new TreeMap<Long,QueueJob>(); 
@@ -2030,11 +2030,6 @@ class QueueMgr
   dispatcher()
   {
     TaskTimer timer = new TaskTimer("QueueMgr.dispatcher()");
-    
-    //LogMgr.getInstance().log
-    //(LogMgr.Kind.Ops, LogMgr.Level.Finest,
-    // "-------------------------------------------------------------------"); 
-    //logJobLists("Pre-Dispatch:");
 
     /* kill/abort the jobs in the hit list */ 
     while(true) {
@@ -2074,8 +2069,6 @@ class QueueMgr
       }
     }
 
-    //logJobLists("After Kills:");
-
     /* process the waiting jobs: sorting jobs into killed/aborted, ready and waiting */ 
     {
       LinkedList<Long> waiting = new LinkedList<Long>();
@@ -2095,6 +2088,7 @@ class QueueMgr
 	  switch(info.getState()) {
 	  case Queued:
 	    {
+	      /* pause waiting jobs marked to be paused */  
 	      if(pPaused.contains(jobID)) {
 		timer.aquire();
 		synchronized(pJobInfo) {
@@ -2115,7 +2109,7 @@ class QueueMgr
 		waiting.add(jobID);
 		break;
 	      }
-
+	      
 	      QueueJob job = null;
 	      timer.aquire();
 	      synchronized(pJobs) {
@@ -2123,6 +2117,7 @@ class QueueMgr
 		job = pJobs.get(jobID);
 	      }
 
+	      /* determine whether the job is ready for execution */ 
 	      if(job != null) {
 		boolean ready = true;
 		boolean done = false;
@@ -2155,22 +2150,15 @@ class QueueMgr
 		  if(done) 
 		    break;
 		}
-
-		if(ready) {
-		  int priority = job.getJobRequirements().getPriority();
-		  TreeSet<Long> ids = pReady.get(priority);
-		  if(ids == null) {
-		    ids = new TreeSet<Long>();
-		    pReady.put(priority, ids);
-		  }
-		    
-		  ids.add(jobID);
-		}
+		
+		if(ready) 
+		  pReady.add(jobID);
 	      }
 	    }
 	    break;
 
 	  case Paused:
+	    /* resume previously paused jobs marked to be resumed */ 
 	    {
 	      if(!pPaused.contains(jobID)) {
 		timer.aquire();
@@ -2199,82 +2187,228 @@ class QueueMgr
       pWaiting.addAll(waiting);      
     }
 
-    //logJobLists("After Sort:");
-
-    /* process the ready jobs from highest to lowest priority */ 
+    /* process the available job server slots from highest to lowest order */ 
     {
-      TreeSet<Integer> empty = new TreeSet<Integer>();
-      for(Integer priority : pReady.keySet()) {
-	TreeSet<Long> jobIDs = pReady.get(priority);
-	if(jobIDs == null) {
-	  empty.add(priority);
-	}
-	else {
-	  TreeSet<Long> processed = new TreeSet<Long>();
-	  for(Long jobID : jobIDs) {
-	    QueueJob job = null;
-	    timer.aquire();
-	    synchronized(pJobs) {
-	      timer.resume();
-	      job = pJobs.get(jobID);
-	    }
+      TreeSet<String> keys = new TreeSet<String>();
+      timer.aquire();
+      synchronized(pSelectionKeys) {
+	timer.resume();
+	keys.addAll(pSelectionKeys.keySet());
+      }
 
-	    QueueJobInfo info = null;
-	    timer.aquire();
-	    synchronized(pJobInfo) {
-	      timer.resume();
-	      info = pJobInfo.get(jobID);
-	    }
-
-	    if((job == null) || (info == null)) {
-	      processed.add(jobID);
-	    }
-	    else {
-	      switch(info.getState()) {
-	      case Queued:
-		if(pPaused.contains(jobID)) {
-		  timer.aquire();
-		  synchronized(pJobInfo) {
-		    timer.resume();
-
-		    info.paused();
-		    try {
-		      writeJobInfo(info);
+      timer.aquire();
+      synchronized(pHosts) {
+	timer.resume();
+	for(String hostname : pHosts.keySet()) {
+	  QueueHost host = pHosts.get(hostname);
+	  switch(host.getStatus()) {
+	  case Enabled:
+	    {
+	      int slots = host.getAvailableSlots();
+	      while(slots > 0) {
+		/* rank job IDs by selection score, priority and submission stamp */
+		ArrayList<Long> rankedJobIDs = new ArrayList<Long>();
+		{
+		  TreeMap<Integer,TreeMap<Integer,TreeMap<Date,Long>>> byScore = 
+		    new TreeMap<Integer,TreeMap<Integer,TreeMap<Date,Long>>>();
+		  for(Long jobID : pReady) {
+		    /* selection score */ 
+		    TreeMap<Integer,TreeMap<Date,Long>> byPriority = null;	
+		    {
+		      Integer score = null;
+		      timer.aquire();
+		      synchronized(pJobs) {
+			timer.resume();
+			QueueJob job = pJobs.get(jobID);
+			if(job != null) {
+			  String author = job.getActionAgenda().getNodeID().getAuthor();
+			  JobReqs jreqs = job.getJobRequirements();
+			  score = host.computeSelectionScore(author, jreqs, keys);
+			}
+		      }
+		    
+		      if(score != null) {
+			byPriority = byScore.get(score);
+			if(byPriority == null) {
+			  byPriority = new TreeMap<Integer,TreeMap<Date,Long>>();
+			  byScore.put(score, byPriority);
+			}
+		      }
 		    }
-		    catch(PipelineException ex) {
-		      LogMgr.getInstance().log
-			(LogMgr.Kind.Net, LogMgr.Level.Severe,
-			 ex.getMessage()); 
-		      LogMgr.getInstance().flush();
+		  
+		    /* job priority */ 
+		    TreeMap<Date,Long> byAge = null;
+		    if(byPriority != null) {
+		      Integer priority = null;
+		      timer.aquire();
+		      synchronized(pJobs) {
+			timer.resume();
+			QueueJob job = pJobs.get(jobID);
+			if(job != null) 
+			  priority = job.getJobRequirements().getPriority();
+		      }
+
+		      if(priority != null) {
+			byAge = byPriority.get(priority);
+			if(byAge == null) {
+			  byAge = new TreeMap<Date,Long>();
+			  byPriority.put(priority, byAge);
+			}
+		      }
+		    }
+
+		    /* submission date */
+		    if(byAge != null) {
+		      Date stamp = null;
+		      timer.aquire();
+		      synchronized(pJobInfo) {
+			timer.resume();
+			QueueJobInfo info = pJobInfo.get(jobID);
+			if(info != null) 
+			  stamp = info.getSubmittedStamp();
+		      }
+		      
+		      if(stamp != null) 
+			byAge.put(stamp, jobID);
 		    }
 		  }
 
-		  pWaiting.add(jobID);
-		  processed.add(jobID);
+		  LinkedList<Integer> scores = new LinkedList<Integer>(byScore.keySet());
+		  Collections.reverse(scores);
+		  for(Integer score : scores) {
+		    TreeMap<Integer,TreeMap<Date,Long>> byPriority = byScore.get(score);
+		    LinkedList<Integer> priorities = 
+		      new LinkedList<Integer>(byPriority.keySet());
+		    Collections.reverse(priorities);
+		    for(Integer priority : priorities) {
+		      for(Long jobID : byPriority.get(priority).values()) 
+			rankedJobIDs.add(jobID);
+		    }
+		  }
 		}
-		else if(dispatchJob(job, info, timer)) {
-		  processed.add(jobID);
-		}
-		break;
 
-	      case Aborted:
-		processed.add(jobID);
-		break;
-		
-	      default:
-		assert(false);
+		/* attempt to dispatch a job to the slot:
+		     in order of selection score, job priority and age */ 
+		TreeSet<Long> processed = new TreeSet<Long>();
+		for(Long jobID : rankedJobIDs) {
+		  QueueJob job = null;
+		  {
+		    timer.aquire();
+		    synchronized(pJobs) {
+		      timer.resume();
+		      job = pJobs.get(jobID);
+		    }
+		  }
+
+		  QueueJobInfo info = null;
+		  {
+		    timer.aquire();
+		    synchronized(pJobInfo) {
+		      timer.resume();
+		      info = pJobInfo.get(jobID);
+		    }
+		  }
+		  
+		  if((job == null) || (info == null)) {
+		    processed.add(jobID);
+		  }
+		  else {
+		    switch(info.getState()) {
+		    case Queued:
+		      /* pause ready jobs marked to be paused */ 
+		      if(pPaused.contains(jobID)) {
+			timer.aquire();
+			synchronized(pJobInfo) {
+			  timer.resume();
+			  
+			  info.paused();
+			  try {
+			    writeJobInfo(info);
+			  }
+			  catch(PipelineException ex) {
+			    LogMgr.getInstance().log
+			      (LogMgr.Kind.Net, LogMgr.Level.Severe,
+			       ex.getMessage()); 
+			    LogMgr.getInstance().flush();
+			  }
+			}
+
+			pWaiting.add(jobID);
+			processed.add(jobID);
+		      }
+
+		      /* try to dispatch the job */ 
+		      else if(dispatchJob(job, info, host, timer)) {
+			processed.add(jobID);
+		      }
+		      break;
+		    
+		    /* skip aborted jobs */ 
+		    case Aborted:
+		      processed.add(jobID);
+		      break;
+		      
+		    default:
+		      assert(false);
+		    }
+		  }
+		}
+
+		for(Long jobID : processed) 
+		  pReady.remove(jobID);
+
+		/* next slot, if any are available */ 
+		slots = Math.min(slots-1, host.getAvailableSlots());
 	      }
 	    }
 	  }
+	}
+      }
+    }
+
+    /* filter any jobs not ready for execution from the ready list */ 
+    {
+      TreeSet<Long> processed = new TreeSet<Long>();
+      for(Long jobID : pReady) {
+	timer.aquire();
+	synchronized(pJobInfo) {
+	  timer.resume();
+
+	  QueueJobInfo info = pJobInfo.get(jobID);
+	  if(info == null) {
+	    processed.add(jobID);
+	  }
+	  else {
+	    switch(info.getState()) {
+	    case Queued:
+	      /* pause ready jobs marked to be paused */ 
+	      if(pPaused.contains(jobID)) {
+		info.paused();
+		try {
+		  writeJobInfo(info);
+		}
+		catch(PipelineException ex) {
+		  LogMgr.getInstance().log
+		    (LogMgr.Kind.Net, LogMgr.Level.Severe,
+		     ex.getMessage()); 
+		  LogMgr.getInstance().flush();
+		}
+		
+		pWaiting.add(jobID);
+		processed.add(jobID);
+	      }
+	      break;
 	  
-	  jobIDs.removeAll(processed);
-	  if(jobIDs.isEmpty()) 
-	    empty.add(priority);
+	    /* strip any not ready */ 
+	    default:
+	      processed.add(jobID);
+	    }
+	  }
 	}
       }
 
-      for(Integer priority : empty) 
-	pReady.remove(priority);
+      for(Long jobID : processed) 
+	pReady.remove(jobID);
     }
 
     /* check for newly completed job groups */ 
@@ -2332,11 +2466,6 @@ class QueueMgr
       }
     }
 
-    //logJobLists("Post-Dispatch:");
-    //LogMgr.getInstance().log
-    //(LogMgr.Kind.Ops, LogMgr.Level.Finest,
-    // "-------------------------------------------------------------------"); 
-
     /* perform garbage collection of jobs at regular intervals */ 
     pDispatcherCycles++;
     if(pDispatcherCycles > sGarbageCollectAfter) {
@@ -2371,9 +2500,9 @@ class QueueMgr
   }
 
   /**
-   * Attempt to find a job server which meets the requirements of the given job. <P> 
+   * Attempt to dispatch the job on the given server. <P> 
    * 
-   * If a suitable job server is found, the job will be started on that server and a task
+   * If all license keys can be obtained, the job will be started on the server and a task
    * will be started to monitor the jobs progress. <P> 
    * 
    * This should only be called from the dispatcher() method!
@@ -2384,22 +2513,26 @@ class QueueMgr
    * @param info
    *   The job information.
    * 
+   * @param host
+   *   The job server.
+   * 
    * @param timer
    *   The task timer.
    * 
    * @return 
-   *   Whether the job assigned to a server and started.
+   *   Whether the job was started. 
    */ 
   private boolean
   dispatchJob
   (
    QueueJob job, 
    QueueJobInfo info, 
+   QueueHost host, 
    TaskTimer timer
   ) 
   {
     JobReqs jreqs = job.getJobRequirements();
-
+    
     /* aquire the jobs license keys, 
          aborts early if unable to aquire all keys required by the job */ 
     TreeSet<String> aquiredLicenseKeys = new TreeSet<String>();
@@ -2407,70 +2540,28 @@ class QueueMgr
       boolean available = true;
       timer.aquire();
       synchronized(pLicenseKeys) {
-	timer.resume();
-	for(String kname : jreqs.getLicenseKeys()) {
-	  LicenseKey key = pLicenseKeys.get(kname);
-	  if(key == null) {
-	    available = false; 
-	    break;
-	  }
-	  else {
-	    if(key.aquire()) 
-	      aquiredLicenseKeys.add(kname);
-	    else {
-	      available = false; 
-	      break;
-	    }
-	  }
-	}
-
-	if(!available) {
-	  for(String kname : aquiredLicenseKeys) 
-	    pLicenseKeys.get(kname).release();
-	  return false;
-	}
-      }
-    }
-
-    /* determine the name of the job server which meets the dynamic resource requirements
-         and has the highest selection bias */ 
-    String bestHost = null;
-    {
-      TreeSet<String> keys = new TreeSet<String>();
-      timer.aquire();
-      synchronized(pSelectionKeys) {
-	timer.resume();
-	keys.addAll(pSelectionKeys.keySet());
-      }
-
-      int maxBias = -1;
-      timer.aquire();
-      synchronized(pHosts) {
-	timer.resume();
-	for(String hostname : pHosts.keySet()) {
-	  QueueHost host = pHosts.get(hostname);
-	  switch(host.getStatus()) {
-	  case Enabled:
-	    {
-	      String author = job.getActionAgenda().getNodeID().getAuthor();
-	      Integer bias = host.computeJobBias(author, jreqs, keys);
-	      if((bias != null) && (bias > maxBias)) {
-		bestHost = hostname; 
-		maxBias  = bias;
-	      }
-	    }
-	  }
-	}
-      }
-
-      if(bestHost == null) {
-	timer.aquire();
-	synchronized(pLicenseKeys) {
-	  timer.resume();
-	  for(String kname : aquiredLicenseKeys) 
-	    pLicenseKeys.get(kname).release();
-	}
-	return false;
+ 	timer.resume();
+ 	for(String kname : jreqs.getLicenseKeys()) {
+ 	  LicenseKey key = pLicenseKeys.get(kname);
+ 	  if(key == null) {
+ 	    available = false; 
+ 	    break;
+ 	  }
+ 	  else {
+ 	    if(key.aquire()) 
+ 	      aquiredLicenseKeys.add(kname);
+ 	    else {
+ 	      available = false; 
+ 	      break;
+ 	    }
+ 	  }
+ 	}
+	
+ 	if(!available) {
+ 	  for(String kname : aquiredLicenseKeys) 
+ 	    pLicenseKeys.get(kname).release();
+ 	  return false;
+ 	}
       }
     }
 
@@ -2478,65 +2569,53 @@ class QueueMgr
     {
       JobMgrControlClient client = null;
       try {
-	client = new JobMgrControlClient(bestHost, pJobPort);	
-	client.jobStart(job);
+ 	client = new JobMgrControlClient(host.getName(), pJobPort);	
+ 	client.jobStart(job);
 	
-	timer.aquire();
-	synchronized(pJobInfo) {
-	  timer.resume();
-	  info.started(bestHost);
-	  writeJobInfo(info);
-	}
+ 	timer.aquire();
+ 	synchronized(pJobInfo) {
+ 	  timer.resume();
+ 	  info.started(host.getName());
+ 	  writeJobInfo(info);
+ 	}
 	
-	timer.aquire();
-	synchronized(pHosts) {
-	  timer.resume();
-	  QueueHost host = pHosts.get(bestHost);
-	  host.setHold(job.getJobID(), jreqs.getRampUp());
-	  host.jobStarted();
-	}
+	host.setHold(job.getJobID(), jreqs.getRampUp());
+	host.jobStarted();
       }
       catch (Exception ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
 	   ex.getMessage()); 
 	LogMgr.getInstance().flush();
-
+	
 	Throwable cause = ex.getCause();
 	if(cause instanceof SocketTimeoutException) {
-	  timer.aquire();
-	  synchronized(pHosts) {
-	    timer.resume();
-	    QueueHost host = pHosts.get(bestHost);
-	    if(host != null) {
-	      Date now = new Date();
-	      Date lastHung = host.getLastHung();
-	      if((lastHung == null) || 
-		 ((lastHung.getTime()+sDisableInterval) < now.getTime())) 
-		host.setStatus(QueueHost.Status.Hung);
-	      else 
-		host.setStatus(QueueHost.Status.Disabled);
-	    }
-	  }
-	}	
-
-	timer.aquire();
-	synchronized(pLicenseKeys) {
-	  timer.resume();
-	  for(String kname : aquiredLicenseKeys) 
-	    pLicenseKeys.get(kname).release();
+	  Date now = new Date();
+	  Date lastHung = host.getLastHung();
+	  if((lastHung == null) || 
+	     ((lastHung.getTime()+sDisableInterval) < now.getTime())) 
+	    host.setStatus(QueueHost.Status.Hung);
+	  else 
+	    host.setStatus(QueueHost.Status.Disabled);
 	}
-	return false;
+      
+ 	timer.aquire();
+ 	synchronized(pLicenseKeys) {
+ 	  timer.resume();
+ 	  for(String kname : aquiredLicenseKeys) 
+ 	    pLicenseKeys.get(kname).release();
+ 	}
+ 	return false;
       }
       finally {
-	if(client != null)
-	  client.disconnect();
+ 	if(client != null)
+ 	  client.disconnect();
       }
     }
 
     /* start a task to collect the results of the execution */ 
     {
-      WaitTask task = new WaitTask(bestHost, job.getJobID());
+      WaitTask task = new WaitTask(host.getName(), job.getJobID());
       task.start();
     }
 
@@ -2658,13 +2737,9 @@ class QueueMgr
 
     synchronized(pReady) {
       buf.append("  Ready:\n");
-      for(Integer priority : pReady.keySet()) {
-	buf.append("    [" + priority + "]: ");
-	TreeSet<Long> ids = pReady.get(priority);
-	for(Long jobID : ids) 
-	  buf.append(jobID + " ");
-	buf.append("\n");
-      }
+      for(Long jobID : pReady) 
+	buf.append(jobID + " ");
+      buf.append("\n");
     }
     
     synchronized(pJobInfo) {
@@ -4084,13 +4159,14 @@ class QueueMgr
   private ConcurrentLinkedQueue<Long>  pWaiting;
 
   /**
-   * The IDs of the jobs which are ready to be run indexed by decending job priority. 
+   * The IDs of the jobs which are ready to be run <P> 
+   * . 
    * If a ready job has any source (upstream) jobs, they all must have a JobState of 
    * Finished before the job will be added to this table. <P> 
    * 
    * No locking is required, since this field is only accessed by the dispather() method.
    */ 
-  private TreeMap<Integer,TreeSet<Long>>  pReady;
+  private TreeSet<Long>  pReady;
 
   /**
    * The number of dispatcher cycles since the last garbage collection of jobs.

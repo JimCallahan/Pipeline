@@ -1,4 +1,4 @@
-// $Id: JobReqs.java,v 1.12 2005/02/01 23:23:43 jim Exp $
+// $Id: JobReqs.java,v 1.13 2005/03/03 03:56:33 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -14,22 +14,31 @@ import java.io.*;
 /**
  * The requirements that a server must meet in order to be eligable to run a job. <P>
  *
- * Pipeline determines assignment of jobs to available hosts based on a flexible selection 
- * criteria which compares job requirements with available host resources.  The job dispatcher
- * processes jobs in the order of their priority and in order of their submission among jobs
- * of equal priority. Each job has a set of requirements which a prospective host must satisfy
- * in order for the job to be run on the host. The job dispatcher compares each job 
- * against the enabled hosts and the host which best satisfies the requirements is assigned 
- * the job and the job is removed from the queue. The dispatcher then proceeds to the next 
- * job in the queue.  <P> 
+ * Pipeline determines assignment of jobs to available hosts using a flexible selection 
+ * criteria which selects the best job to run on each available job server slot.  Job servers
+ * are considered in descending value of the Order parameter of each server.  <P> 
  * 
- * If no hosts satisfy the requirements for a job, the job is left in the queue and the 
- * dispatcher goes on to process the next job.  Once the job dispatcher reaches the end of 
- * the queue, it starts again at the head of the queue and tries again to find a host which 
- * satisfies each job's requirements. <P> 
+ * For each available job server slot, all pending jobs in the queue are considered for 
+ * execution. Each job maintaines a set of requirements which must be met before the job 
+ * can be executed on a given host.  All jobs which have requirements not met by the current
+ * job server are excluded from consideration.  Among the jobs which are not excluded, the
+ * jobs are ranked according to selection score, job priority and finally age in the queue. 
+ * See the Selection Key section for a description of how selection scores are computed. 
+ * In other words, if more than one job shares the highest selection score, job priority 
+ * is used to rank these jobs.  If more than one job also shares the highest priority then
+ * the oldest job among these highest priority jobs will be selected to run on the 
+ * available server slot. <P> 
  * 
- * The criteria used by the job dispatcher to evaluate whether a host meets the job's
- * requirements is composed of the following three phases: <BR> 
+ * Note that it is possible that none of the jobs in the queue have requirements which can
+ * be met by the current available server slot.  When this occurs the slot is ignored during
+ * the current dispatch cycle and the next slot is considered instead.  As mentioned before,
+ * the Order parameter of job servers is used to determine the order in which job servers are
+ * considered for dispatch.  If there are fewer jobs in the queue than available server slots
+ * the servers with higher Order will always be busier than those of lower Order.  This can 
+ * be used to prefer servers with faster CPU speeds to reduce per-job execution times. <P> 
+ * 
+ * The criteria used by the job dispatcher to evaluate whether a server meets the requirements
+ * of each job is composed of the following three phases: <BR> 
  * 
  * <DIV style="margin-left: 40px;">
  *   License Keys <BR>
@@ -43,8 +52,8 @@ import java.io.*;
  *     the number of available licenses for each license key.  If there is at least one 
  *     license available for each key required by the job, all of the required keys for the 
  *     job are reserved and the dispatcher proceeds to the next phase of tests.  If any of 
- *     the license keys for a job are not available, the job dispatcher leaves the current 
- *     job in the queue and proceeds to test the next job.
+ *     the license keys for a job are not available, the job dispatcher excludes the job from 
+ *     consideration for the current server slot. 
  *   </DIV> <BR>
  * 
  *   Dynamic Resources <BR>
@@ -53,11 +62,9 @@ import java.io.*;
  *     local disk space and communicates this information to the job dispatcher.  Each job
  *     has a maximum allowable load, minimun available memory and minimun disk space it 
  *     requires in order to run. The job dispatcher compares the job requirements with the 
- *     last known state of these dynamic resources for the host.  If all of the dynamic
- *     requirements are met, the job dispatcher adds the server to its list of candidate 
- *     hosts for the job.  If after all hosts are processed, there are no candidate hosts
- *     which meet the dynamic requirements, the current job is left in the queue and the 
- *     dispatcher proceeds the next job. <P> 
+ *     last known state of these dynamic resources for the host.  If any of the dynamic
+ *     requirements are not met, the job dispatcher excludes the job from consideration for 
+ *     the current server slot. <P> 
  * 
  *     Some jobs may take a fair amount of time to consume a majority of the system 
  *     resources which will be used by the job over its lifetime.  In these cases, the 
@@ -72,32 +79,30 @@ import java.io.*;
  *   
  *   Selection Keys <BR>
  *   <DIV style="margin-left: 40px;">
- *     This last phase selects a single host from the list of candidate hosts to run 
- *     the job.  Each job maintains a set of selection keys.  Each hosts maintains a 
- *     table of integer biases associated with each selection key it supports.  Any host
- *     which does not support all of the selection keys for the job is eliminated from 
- *     the list of candidate hosts.  For each remaining host, the selection biases 
- *     associated with each selection key held by the job are summed to compute an 
- *     overall selection bias.  The host which has the highest overall selection bias
- *     is assigned the job. <P> 
+ *     For each job which has not be excluded from consideration a selection score is
+ *     computed.  Each server maintains a table of integer biases associated with each 
+ *     selection key it supports.  If the server does not support all of the selection keys 
+ *     for a given job, this job is eliminated from consideration.  For each remaining job, 
+ *     the selection bias for each selection key required by the job are summed to compute 
+ *     the selection score of the jobs for the current server. <P> 
  *     
- *     Note that two hosts which support the same set of selection keys may have different
- *     biases for one or more selection keys and therefore different overall biases for a 
- *     given job. The per-host selection biases are set by system administrators to control 
- *     the distribution of jobs to hosts.  For instance, a selection key may be associated
- *     with one of several projects in production at a site. A set of hosts may then be
- *     biased to run jobs for a project by giving the project selection key a higher bias 
- *     on those machines. Another possible use for selection keys is to bias all jobs to 
- *     run on machines with faster CPU speeds in preference to slower machines if both
- *     are available. <P> 
+ *     Note that job may require different selection keys and that keys not required by a job
+ *     to not contribute to the jobs selection score.  This can be used by system 
+ *     administrators to control the the distribution of jobs to servers.  For instance, a 
+ *     selection key may be associated with one of several projects in production at a site. 
+ *     A set of servers may then be biased to run jobs for a project by giving the project 
+ *     selection key a higher bias on those machines.  Jobs which do not require this 
+ *     project selection key will still be considered for the server, but will have a lower
+ *     selection score since the bias for the project key will not contribute to this
+ *     score.  Selection biases can also be negative. <P> 
  * 
- *     Selection keys can also be used to manage non-floating software licenses.  For
- *     instance, consider a situation where a particular piece of software can only be run 
+ *     Selection keys can be used to manage non-floating software licenses.  For instance, 
+ *     consider a situation where a particular software application can only be run 
  *     on a few specific hosts.  A site could create a zero-biased selection key for this 
  *     software and add it only to those hosts which are capable of running the software.
  *     Jobs which use the software could then add this key to their job requirements. This
- *     type of selection key would limit the jobs to running only on hosts which are capable
- *     of running the software. 
+ *     type of selection key would limit the jobs to running only on hosts which contain
+ *     the application selection key.
  *   </DIV> 
  * </DIV> 
  * 

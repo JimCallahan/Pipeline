@@ -1,4 +1,4 @@
-// $Id: QueueHost.java,v 1.13 2005/02/17 01:07:07 jim Exp $
+// $Id: QueueHost.java,v 1.14 2005/03/03 03:56:33 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -156,6 +156,36 @@ class QueueHost
     pReservation = author;
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get job dispatching order for this host.
+   * 
+   * @return 
+   *   The dispatch order.
+   */ 
+  public int 
+  getOrder() 
+  {
+    return pOrder;
+  }
+
+  /**
+   * Set job dispatching order for this host.
+   * 
+   * @param order
+   *   The dispatch order.
+   */ 
+  public void 
+  setOrder
+  (
+   int order
+  ) 
+  {
+    pOrder = order;
+  }
+  
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -567,19 +597,53 @@ class QueueHost
   /*----------------------------------------------------------------------------------------*/
   /*   J O B   S E L E C T I O N                                                            */
   /*----------------------------------------------------------------------------------------*/
- 
+  
+  /** 
+   * Get the number of slots currently available. <P> 
+   * 
+   * This method may return zero, even when unused slots exist for the following reasons: <P> 
+   * 
+   * <DIV style="margin-left: 40px;">
+   *   There are no system resource samples newer than the sample interval.<P>
+   *   If the server is currently on hold due to job run-up. <P>
+   * </DIV>
+   */
+  public int 
+  getAvailableSlots() 
+  {
+    ResourceSample sample = getLatestSample();
+    if(sample == null) 
+      return 0;
+
+    Date now = Dates.now();
+    if(((now.getTime() - sample.getTimeStamp().getTime()) > sSampleInterval) ||
+       (getHold().compareTo(now) > 0))
+      return 0;
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Finest,
+       "Dispatcher - " + 
+       "Jobs = " + sample.getNumJobs() + "  " + 
+       "Delta = " + pNumJobsDelta + "  " + 
+       "Total = " + (sample.getNumJobs() + pNumJobsDelta) + "  " +
+       "Slots = " + pJobSlots);
+
+    return (pJobSlots - (sample.getNumJobs() + pNumJobsDelta));
+  }
+
+
   /**
-   * Get the combined bias for a job with the given job requirements. <P> 
+   * Get the selection score for a job with the given job requirements. <P> 
    * 
    * This method will return <CODE>null</CODE> under the following conditions: <P> 
    * 
    * <DIV style="margin-left: 40px;">
-   *   The host is reserved for another user.
-   *   All of the slots are already filled by running jobs.<P>
-   *   There are no system resource samples newer than the sample interval.<P>
-   *   The host is unable to provide the system resourses specified by the job 
-   *   requirements. <P>
+   *   The host is reserved for another user. <P>
+   *   The host has a higher system load than the job requires.<P> 
+   *   The host has less than the requiremed amount of free memory.<P>
+   *   The host has less than the requiremed amount of free temporary disk space.<P>
    *   The host does not support all of the selection keys required.<P>
+   * </DIV>
    * 
    * @param author
    *   The name of the user submitting the job.
@@ -594,36 +658,24 @@ class QueueHost
    *   The combined selection bias or <CODE>null</CODE> if the host fails the requirements.
    */ 
   public Integer
-  computeJobBias
+  computeSelectionScore
   (
    String author, 
    JobReqs jreqs, 
    TreeSet<String> keys
   )
   {
+    if((pReservation != null) && (!pReservation.equals(author)))
+      return null;
+
     ResourceSample sample = getLatestSample();
     if(sample == null) 
       return null;
 
-    if((pReservation != null) && (!pReservation.equals(author)))
-      return null;
-
-    Date now = Dates.now();
-    if((getHold().compareTo(now) > 0) ||
-       ((now.getTime() - sample.getTimeStamp().getTime()) > sSampleInterval) ||
-       ((sample.getNumJobs() + pNumJobsDelta) >= pJobSlots) ||
-       (sample.getLoad() > jreqs.getMaxLoad()) ||
+    if((sample.getLoad() > jreqs.getMaxLoad()) ||
        (sample.getMemory() < jreqs.getMinMemory()) || 
        (sample.getDisk() < jreqs.getMinDisk()))
       return null;
-
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Ops, LogMgr.Level.Finest,
-       "Dispatcher - " + 
-       "Jobs = " + sample.getNumJobs() + "  " + 
-       "Delta = " + pNumJobsDelta + "  " + 
-       "Total = " + (sample.getNumJobs() + pNumJobsDelta) + "  " +
-       "Slots = " + pJobSlots);
 
     int total = 0;
     for(String key : jreqs.getSelectionKeys()) {
@@ -656,6 +708,7 @@ class QueueHost
     if(pReservation != null) 
       encoder.encode("Reservation", pReservation);
      
+    encoder.encode("Order", pOrder);
     encoder.encode("JobSlots", pJobSlots);
 
     if(!pSelectionBiases.isEmpty()) 
@@ -674,6 +727,12 @@ class QueueHost
     String author = (String) decoder.decode("Reservation"); 
     if(author != null) 
       pReservation = author;
+
+    Integer order = (Integer) decoder.decode("Order"); 
+    if(order == null) 
+      pOrder = 0;   // REPLACE THIS WITH AN EXECEPTION in v1.9.16
+    else 
+      pOrder = order;
 
     Integer slots = (Integer) decoder.decode("JobSlots"); 
     if(slots == null) 
@@ -798,13 +857,18 @@ class QueueHost
    */ 
   private String  pReservation;
 
-
-  /*----------------------------------------------------------------------------------------*/
+  /**
+   * The order in which job servers are processed by the dispatcher. 
+   */ 
+  private int  pOrder; 
 
   /**
    * The maximum number jobs the host may be assigned.
    */ 
   private int  pJobSlots; 
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * The number of processors on the host.
