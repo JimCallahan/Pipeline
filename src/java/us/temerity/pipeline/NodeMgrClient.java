@@ -1,4 +1,4 @@
-// $Id: NodeMgrClient.java,v 1.13 2004/05/04 11:00:15 jim Exp $
+// $Id: NodeMgrClient.java,v 1.14 2004/05/07 21:04:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -392,6 +392,49 @@ class NodeMgrClient
    * upstream nodes will also include detailed state and version information which is 
    * accessable by calling the {@link NodeStatus#getDetails NodeStatus.getDetails} method.
    * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the status of the node.
+   */ 
+  public NodeStatus
+  status
+  ( 
+   String author, 
+   String view, 
+   String name   
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+ 
+    NodeID id = new NodeID(author, view, name);
+    NodeStatusReq req = new NodeStatusReq(id);
+
+    Object obj = performTransaction(NodeRequest.Status, req);
+    if(obj instanceof NodeStatusRsp) {
+      NodeStatusRsp rsp = (NodeStatusRsp) obj;
+      return rsp.getNodeStatus();
+    }
+    else {
+      handleFailure(obj);
+       return null;
+    }
+  } 
+
+  /**
+   * Get the status of the tree of nodes rooted at the given node. <P> 
+   * 
+   * Identical to the {@link NodeStatus(String,String,String) NodeStatus} method which 
+   * takes an author name except that the current user is used as the author.
+   * 
    * @param view 
    *   The name of the user's working area view. 
    * 
@@ -409,20 +452,7 @@ class NodeMgrClient
   ) 
     throws PipelineException
   {
-    verifyConnection();
-
-    NodeID id = new NodeID(PackageInfo.sUser, view, name);
-    NodeStatusReq req = new NodeStatusReq(id);
-
-    Object obj = performTransaction(NodeRequest.Status, req);
-    if(obj instanceof NodeStatusRsp) {
-      NodeStatusRsp rsp = (NodeStatusRsp) obj;
-      return rsp.getNodeStatus();
-    }
-    else {
-      handleFailure(obj);
-      return null;
-    }
+    return status(PackageInfo.sUser, view, name);
   } 
 
 
