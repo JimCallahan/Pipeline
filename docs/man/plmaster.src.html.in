@@ -92,6 +92,7 @@ option to <a
  href="file:///usr/share/doc/@PLCONFIG_VERSION@/plconfig.html"><span
  style="font-weight: bold;">plconfig</span></a>(1). <br>
 <br>
+<br>
 <span style="text-decoration: underline;"><span
  style="font-weight: bold;"><br>
 </span></span></div>
@@ -182,7 +183,43 @@ option to <a
  style="font-weight: bold;">plconfig</span></a>(1).</div>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><br>
 <br>
-<a name="--log"></a>--log</span>=<span style="font-style: italic;">logger:level</span>[<span
+<br>
+</span><b style="color: rgb(255, 0, 0);"><a name="--queue-host"></a>--queue-host</b><span
+ style="color: rgb(255, 0, 0);">=</span><i
+ style="color: rgb(255, 0, 0);">hostname</i><br
+ style="color: rgb(255, 0, 0);">
+<blockquote style="color: rgb(255, 0, 0);">
+  <blockquote>Communicate with the <a href="plqueuemgr.html"><span
+ style="font-weight: bold;">plqueuemgr</span></a>(1) daemon running on
+the given host (<i>hostname</i>). <br>
+    <br>
+The default hostname is set by the <a
+ href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--queue-host"><span
+ style="font-weight: bold;">--queue-host</span></a>
+option to <a
+ href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
+ style="font-weight: bold;">plconfig</span></a>(1).<br>
+  </blockquote>
+</blockquote>
+<b style="color: rgb(255, 0, 0);"><a name="--queue-port"></a>--queue-port</b><span
+ style="color: rgb(255, 0, 0);">=</span><i
+ style="color: rgb(255, 0, 0);">num</i><br>
+<blockquote style="color: rgb(255, 0, 0);">
+  <blockquote>Communicate with the <a href="plqueuemgr.html"><span
+ style="font-weight: bold;">plqueuemgr</span></a>(1) daemon using the
+given port (<i>num</i>).<br>
+    <br>
+The default port is set by the <a
+ href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--queue-port"><span
+ style="font-weight: bold;">--queue-port</span></a>
+option to <a
+ href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
+ style="font-weight: bold;">plconfig</span></a>(1).</blockquote>
+</blockquote>
+<br>
+<br>
+<span style="font-weight: bold;"><a name="--log"></a>--log</span>=<span
+ style="font-style: italic;">logger:level</span>[<span
  style="font-style: italic;">,logger:level</span>[...]]</div>
 <div style="margin-left: 40px;"><br>
 <div style="margin-left: 40px;">In addition to the normal output, <b>plmaster</b>(1)
@@ -302,6 +339,7 @@ Java API</span></a><br>
  style="font-weight: bold;">pipeline</span></a>(1), <a
  href="plfilemgr.html"><span style="font-weight: bold;">plfilemgr</span></a>(1),
 <a href="plnotify.html"><span style="font-weight: bold;">plnotify</span></a>(1),
+<a href="pljobmgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1),
 <a href="file:///usr/share/doc/@PLCONFIG_VERSION@/plconfig.html"><span
  style="font-weight: bold;">plconfig</span></a>(1)<br>
 <br>

@@ -111,7 +111,70 @@ option to <a
  href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
  style="font-weight: bold;">plconfig</span></a>(1).<br>
     <br>
+    <br>
   </blockquote>
+</blockquote>
+<div style="margin-left: 40px;"><a href="pljobmgr.html"><span
+ style="font-weight: bold;"></span></a><b style="color: rgb(255, 0, 0);"><a
+ name="--queue-host"></a>--queue-host</b><span
+ style="color: rgb(255, 0, 0);">=</span><i
+ style="color: rgb(255, 0, 0);">hostname</i><br
+ style="color: rgb(255, 0, 0);">
+</div>
+<blockquote style="color: rgb(255, 0, 0);">
+  <blockquote>Communicate with the <a href="plqueuemgr.html"><span
+ style="font-weight: bold;">plqueuemgr</span></a>(1) daemon running on
+the given host (<i>hostname</i>). <br>
+    <br>
+The default hostname is set by the <a
+ href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--queue-host"><span
+ style="font-weight: bold;">--queue-host</span></a>
+option to <a
+ href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
+ style="font-weight: bold;">plconfig</span></a>(1).<br>
+  </blockquote>
+  <b><a name="--queue-port"></a>--queue-port</b>=<i>num</i><br>
+  <blockquote>Communicate with the <a href="plqueuemgr.html"><span
+ style="font-weight: bold;">plqueuemgr</span></a>(1) daemon using the
+given port (<i>num</i>).<br>
+    <br>
+The default port is set by the <a
+ href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--queue-port"><span
+ style="font-weight: bold;">--queue-port</span></a>
+option to <a
+ href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
+ style="font-weight: bold;">plconfig</span></a>(1).</blockquote>
+</blockquote>
+<br>
+<br style="color: rgb(255, 0, 0);">
+<div style="margin-left: 40px; color: rgb(255, 0, 0);"><b><a
+ name="--job-port"></a>--job-port</b>=<i>num<br>
+<br>
+</i></div>
+<div style="margin-left: 80px;"><span style="color: rgb(255, 0, 0);">Contact
+</span><a style="color: rgb(255, 0, 0);" href="pljobmgr.html"><span
+ style="font-weight: bold;">pljobmgr</span></a><span
+ style="color: rgb(255, 0, 0);">(1) daemons on an
+alternative network port (</span><i style="color: rgb(255, 0, 0);">num</i><span
+ style="color: rgb(255, 0, 0);">). </span><br
+ style="color: rgb(255, 0, 0);">
+<br style="color: rgb(255, 0, 0);">
+<span style="color: rgb(255, 0, 0);">The
+default port is set by the </span><a style="color: rgb(255, 0, 0);"
+ href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--job-port"><span
+ style="font-weight: bold;">--job-port</span></a><span
+ style="color: rgb(255, 0, 0);">
+option to </span><a style="color: rgb(255, 0, 0);"
+ href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
+ style="font-weight: bold;">plconfig</span></a><span
+ style="color: rgb(255, 0, 0);">(1). </span><br
+ style="color: rgb(255, 0, 0);">
+<br>
+<br>
+</div>
+<a href="pljobmgr.html"><span style="font-weight: bold;"></span></a>
+<blockquote>
+  <blockquote> </blockquote>
 </blockquote>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
  name="--logging"></a>--log</span>=<span style="font-style: italic;">logger:level</span>[<span
@@ -245,7 +308,11 @@ Java API</span></a><span style="font-weight: bold;"></span></div>
   <div style="margin-left: 40px;"><a href="pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1), <a
  href="plmaster.html"><span style="font-weight: bold;">plmaster</span></a>(1),
-  <a
+  <a href="plqueuemgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1),
+  <a href="pljobmgr.html"><span style="font-weight: bold;">pljobmgr</span></a>(1),
+  <span style="text-decoration: underline;"><span
+ style="font-weight: bold;"></span></span><a href="pljobmgr.html"><span
+ style="font-weight: bold;"></span></a><a
  href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
  style="font-weight: bold;">plconfig</span></a>(1)<br>
   <br>

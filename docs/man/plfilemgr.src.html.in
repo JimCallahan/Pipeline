@@ -88,8 +88,10 @@ default port is set by the <a
  style="font-weight: bold;">--file-port</span></a>
 option to <a
  href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1).&nbsp;<code></code><span
- style="font-weight: bold;"><a
+ style="font-weight: bold;">plconfig</span></a>(1). <br>
+  <br>
+  <br>
+  <code></code><span style="font-weight: bold;"><a
  href="http://www.gnu.org/software/autoconf/"><span
  style="font-weight: bold;"></span></a></span><span
  style="font-weight: bold;"> </span></blockquote>
