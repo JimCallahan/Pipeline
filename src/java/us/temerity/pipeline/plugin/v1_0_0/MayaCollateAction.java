@@ -1,4 +1,4 @@
-// $Id: MayaCollateAction.java,v 1.6 2004/11/11 00:35:26 jim Exp $
+// $Id: MayaCollateAction.java,v 1.7 2004/11/18 09:16:58 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -198,28 +198,28 @@ class MayaCollateAction
     }
 
     {
-      ArrayList<String> layout = new ArrayList<String>();
-      layout.add("InitialMEL");
-      layout.add("ModelMEL");
-      layout.add("AnimMEL");
-      layout.add("FinalMEL");
-      layout.add(null);
-      layout.add("BeginFrame");
-      layout.add("KeyDelta");
+      ParamGroup group = new ParamGroup("ActionParameters", true);
+      group.addParamName("InitialMEL");
+      group.addParamName("ModelMEL");
+      group.addParamName("AnimMEL");
+      group.addParamName("FinalMEL");
+      group.addParamName(null);
+      group.addParamName("BeginFrame");
+      group.addParamName("KeyDelta");
 
-      setSingleLayout(layout);
+      setSingleGroup(group);
     }
     
     {
-      ArrayList<String> layout = new ArrayList<String>();
-      layout.add("ShotOrder");
-      layout.add("StartFrame");
-      layout.add("EndFrame");
-      layout.add("RootDAGNode");
-      layout.add("ShotGap");
-      layout.add("OutTangent");
+      ParamGroup group = new ParamGroup();
+      group.addParamName("ShotOrder");
+      group.addParamName("StartFrame");
+      group.addParamName("EndFrame");
+      group.addParamName("RootDAGNode");
+      group.addParamName("ShotGap");
+      group.addParamName("OutTangent");
 
-      setSourceLayout(layout);
+      setSourceGroup(group);
     }
   }
 

@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.21 2004/11/11 00:41:19 jim Exp $
+// $Id: BaseAction.java,v 1.22 2004/11/18 09:16:58 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -527,165 +527,162 @@ class BaseAction
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Set the layout of single valued parameters in the user interface. <P> 
+   * Specifies the grouping of single valued parameters used to layout components which 
+   * represent the parameters in the user interface. <P> 
    * 
-   * The <CODE>layout</CODE> argument must contain the name of each single valued parameter
-   * exactly once, but may also contain <CODE>null</CODE> values.  The order of the parameter
-   * names in this layout list determines that order that the parameters are listed in the 
-   * user interface.  Extra space will be added between parameters for each <CODE>null</CODE>
-   * value encountered.  In this way parameters can be grouped by inserting <CODE>null</CODE>
-   * entries between parameter names. <P> 
+   * The specified grouping must contain an entry for all single valued parameters defined 
+   * for the action exactly once.  A collapsible drawer component will be created for each
+   * group which contains a field for each parameter which is a member of the group in the 
+   * order specified by the group.  All <CODE>null</CODE> parameter name entries will cause 
+   * additional space to be added between parameter fields. Each subgroup will be represented
+   * by its own drawer nested within the parent groups drawer. <P> 
    * 
    * This method should be called by subclasses in their constructor after intializing all 
    * single valued parameters with the {@link #addSingleParam addSingleParam} method.
    * 
-   * @param layout
-   *   The names of the single valued parameters.
+   * @param group
+   *   The parameter group.
    */
   protected void
-  setSingleLayout
+  setSingleGroup
   (
-   Collection<String> layout
+   ParamGroup group
   ) 
   {
-    for(String name : layout)
-      if((name != null) && !pSingleParams.containsKey(name)) 
+    TreeSet<String> pnames = new TreeSet<String>();
+    collectParamNames(group, pnames);
+    
+    for(String name : pnames) {
+      if(!pSingleParams.containsKey(name))
 	throw new IllegalArgumentException
-	  ("There is no single valued parameter (" + name + ") defined for this Action!");
-
-    for(String pname : pSingleParams.keySet()) {
-      int cnt = 0;
-      for(String name : layout) 
-	if((name != null) && name.equals(pname)) 
-	  cnt++;
-      
-      switch(cnt) {
-      case 0:
-	throw new IllegalArgumentException
-	  ("The single valued parameter (" + pname + ") was not specified in the layout!");
-	
-      case 1:
-	break;
-
-      default:
-	throw new IllegalArgumentException
-	  ("The single valued parameter (" + pname + ") was specified (" + cnt + ") times " +
-	   "by the layout!  Each parameter may only be specified once.");
-      }
+	  ("The single valued parameter (" + name + ") specified by the parameter group " + 
+	   "was not defined for this Action!");
     }
 
-    pSingleLayout = new ArrayList<String>(layout);    
+    for(String name : pSingleParams.keySet()) {
+      if(!pnames.contains(name))
+	throw new IllegalArgumentException
+	  ("The single valued parameter (" + name + ") defined by this Action was not " + 
+	   "specified by the parameter group!");
+    }
+
+    pSingleGroup = group; 
   }
 
   /**
-   * Get the layout of single valued parameters in the user interface. <P> 
-   * 
-   * The returned parameter names will include all single valued parameters exactly 
-   * once.  The returned names may also contain <CODE>null</CODE> values, which should
-   * be interpreted as delimeters between groupings of parameters.
-   * 
-   * @return 
-   *   The names of each single valued parameter in the order of layout.
+   * Recursively search the parameter groups to collect the parameter names and verify
+   * that no parameter is specified more than once.
    */ 
-  public Collection<String> 
-  getSingleLayout() 
+  private void 
+  collectParamNames
+  (
+   ParamGroup group, 
+   TreeSet<String> pnames
+  ) 
   {
-    if(pSingleLayout == null) 
-      pSingleLayout = new ArrayList<String>(pSingleParams.keySet());
-    
-    return Collections.unmodifiableCollection(pSingleLayout);
+    for(String name : group.getParamNames()) {
+      if(name != null) {
+	if(pnames.contains(name)) 
+	  throw new IllegalArgumentException
+	    ("The single valued parameter (" + name + ") was specified more than once " +
+	     "in the given parameter group!");
+	pnames.add(name);
+      }
+    }
+      
+    for(ParamGroup sgroup : group.getSubGroups()) 
+      collectParamNames(sgroup, pnames);
   }
 
-  
+  /**
+   * Get the grouping of single valued parameters used to layout components which represent 
+   * the parameters in the user interface. <P> 
+   * 
+   * If no single valued parameter group has been previously specified, a group will 
+   * be created which contains all single valued parameters in alphabetical order.
+   */ 
+  public ParamGroup
+  getSingleGroup()
+  {
+    if(pSingleGroup == null) {
+      pSingleGroup = new ParamGroup("ActionParameters", true);
+      for(String name : pSingleParams.keySet()) 
+	pSingleGroup.addParamName(name);
+    }
+    
+    return pSingleGroup; 
+  }
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Set the layout of per-source parameters in the user interface. <P> 
+   * Specifies the grouping of per-source parameters used to layout components which 
+   * represent the parameters in the user interface. <P> 
    * 
-   * The <CODE>layout</CODE> argument must contain the name of each per-source parameter
-   * exactly once.  The order of the parameter names in this layout list determines that 
-   * order that the parameters are listed in the user interface. <P> 
+   * The specified grouping must contain an entry for all per-source parameters defined 
+   * for the action exactly once.  A table will be constructed for the per-source parameters
+   * with a row for each source node and a column for each per-source parameter.  The order
+   * of the parameters within the group will determine the ordering of the columns from 
+   * left to right.  Parameter entries may not be <CODE>null</CODE> for per-source parameters.
+   * Parameter subgroups are also not allowed for per-source parameters. <P> 
    * 
    * This method should be called by subclasses in their constructor if they have overriden
    * the {@link #supportsSourceParams supportsSourceParams} to return <CODE>true</CODE> and
    * have implemented the {@link #getInitialSourceParams getInitialSourceParams} method. 
-   * All parameters defined by the <CODE>getInitialSourceParams</CODE> method must be
-   * a member of the <CODE>layout</CODE> argument.
    * 
-   * @param layout
-   *   The names of the per-source parameters.
+   * @param group
+   *   The parameter group.
    */
   protected void
-  setSourceLayout
+  setSourceGroup
   (
-   Collection<String> layout
+   ParamGroup group
   ) 
   {
     if(!supportsSourceParams()) 
       throw new IllegalArgumentException
-	("This action does not have per-source parameters!");
-    
+	("This action does not support per-source parameters!");
+
+    List<String> pnames = group.getParamNames();
     TreeMap<String,ActionParam> params = getInitialSourceParams();
-    if(params == null) 
-      throw new IllegalArgumentException
-	("This action does not have per-source parameters!");
 
-    for(String name : layout)
-      if((name != null) && !params.containsKey(name)) 
+    for(String name : pnames) {
+      if(!params.containsKey(name))
 	throw new IllegalArgumentException
-	  ("There is no per-source parameter (" + name + ") defined for this Action!");
-
-    for(String pname : params.keySet()) {
-      int cnt = 0;
-      for(String name : layout) 
-	if((name != null) && name.equals(pname)) 
-	  cnt++;
-      
-      switch(cnt) {
-      case 0:
-	throw new IllegalArgumentException
-	  ("The per-source parameter (" + pname + ") was not specified in the layout!");
-	
-      case 1:
-	break;
-
-      default:
-	throw new IllegalArgumentException
-	  ("The per-source parameter (" + pname + ") was specified (" + cnt + ") times " +
-	   "by the layout!  Each parameter may only be specified once.");
-      }
+	  ("The per-source parameter (" + name + ") specified by the parameter group " + 
+	   "was not defined for this Action!");
     }
 
-    pSourceLayout = new ArrayList<String>(layout);    
+    for(String name : params.keySet()) {
+      if(!pnames.contains(name))
+	throw new IllegalArgumentException
+	  ("The per-source parameter (" + name + ") defined by this Action was not " + 
+	   "specified by the parameter group!");
+    }
+
+    pSourceGroup = group; 
   }
 
   /**
-   * Get the layout of per-source parameters in the user interface. <P> 
+   * Get the grouping of per-source parameters used to layout components which represent 
+   * the parameters in the user interface. <P>
    * 
-   * The returned parameter names will include all per-source parameters exactly 
-   * once. 
-   * 
-   * @return 
-   *   The names of each per-source parameter in the order of layout.
+   * If no per-source parameter group has been previously specified, a group will 
+   * be created which contains all per-source parameters in alphabetical order.
    */ 
-  public Collection<String> 
-  getSourceLayout() 
+  public ParamGroup
+  getSourceGroup()
   {
-    if(!supportsSourceParams()) 
-      throw new IllegalArgumentException
-	("This action does not have per-source parameters!");
-
-    if(pSourceLayout == null) {
-      TreeMap<String,ActionParam> params = getInitialSourceParams();
-      if(params == null) 
-	throw new IllegalArgumentException
-	  ("This action does not have per-source parameters!");
-      
-      pSourceLayout = new ArrayList<String>(params.keySet());
+    if(pSourceGroup == null) {
+      pSourceGroup = new ParamGroup();
+      for(String name : pSourceParams.keySet()) 
+	pSourceGroup.addParamName(name);
     }
     
-    return Collections.unmodifiableCollection(pSourceLayout);
+    return pSourceGroup; 
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -968,6 +965,7 @@ class BaseAction
   }
 
 
+
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
@@ -994,16 +992,16 @@ class BaseAction
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Used to determing the order and grouping of single valued parameters in the 
-   * graphical user interface. 
+   * Specifies the grouping of single valued parameters used layout components which 
+   * represent the parameters in the user interface. 
    */ 
-  private ArrayList<String>  pSingleLayout;
+  private ParamGroup  pSingleGroup;
 
   /**
-   * Used to determing the order and grouping of per-source parameters in the 
-   * graphical user interface. 
+   * Specifies the grouping of per-source parameters used to layout components which 
+   * represent the parameters in the user interface. <P> 
    */ 
-  private ArrayList<String>  pSourceLayout;
+  private ParamGroup  pSourceGroup;  
 
 }
 

@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.23 2004/11/17 13:33:51 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.24 2004/11/18 09:16:58 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -81,6 +81,7 @@ class JNodeDetailsPanel
       pCheckedInVersions = new TreeMap<VersionID,NodeVersion>();
 
       pActionParamComponents = new TreeMap<String,Component[]>();
+      pActionParamGroupsOpen = new TreeMap<String,Boolean>();
 
       pLinkActionParamValues    = new ArrayList<String>();
       pLinkActionParamNodeNames = new ArrayList<String>();
@@ -1729,25 +1730,197 @@ class JNodeDetailsPanel
     JPanel vpanel = (JPanel) comps[1];
     vpanel.setName("BottomValuePanel");
 
-    if((action == null) || (!action.hasSingleParams() && !action.supportsSourceParams())) {
+    /* per-source params */ 
+    if((action != null) && action.supportsSourceParams()) {
+      UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
+
+      pEditSourceParamsDialog = null;
+      pViewSourceParamsDialog = null;
+      
+      pSourceParamComponents = new Component[4];
+      
+      {
+	JLabel label = 
+	  UIMaster.createFixedLabel("Source Parameters:", sTSize, JLabel.RIGHT);
+	pSourceParamComponents[0] = label;
+	
+	tpanel.add(label);
+      }
+      
+      { 
+	Box hbox = new Box(BoxLayout.X_AXIS);
+	
+	if((waction != null) && waction.supportsSourceParams()) {
+	  JButton btn = new JButton((pIsLocked || pIsFrozen) ? "View..." : "Edit...");
+	  pSourceParamComponents[1] = btn;
+	  
+	  btn.setName("ValuePanelButton");
+	  btn.setRolloverEnabled(false);
+	  btn.setFocusable(false);
+	  
+	  Dimension size = new Dimension(sVSize, 19);
+	  btn.setMinimumSize(size);
+	  btn.setPreferredSize(size);
+	  btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+	  
+	  btn.addActionListener(this);
+	  btn.setActionCommand("edit-source-params");
+	  
+	  hbox.add(btn);
+	  
+	  {
+	    String title = pStatus.toString();
+	    
+	    ArrayList<String> snames = new ArrayList<String>(pStatus.getSourceNames()); 
+	    
+	    ArrayList<String> stitles = new ArrayList<String>();
+	    for(String sname : snames) 
+	      stitles.add(pStatus.getSource(sname).toString());
+	    
+	    pEditSourceParamsDialog = 
+	      new JSourceParamsDialog(!pIsLocked && !pIsFrozen, title, stitles, 
+				      snames, waction);
+	  }
+	}
+	else {
+	  JTextField field = UIMaster.createTextField("-", sVSize, JLabel.CENTER);
+	  pSourceParamComponents[1] = field;
+	  
+	  hbox.add(field);
+	}
+	
+	hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+	
+	{
+	  JButton btn = new JButton();		 
+	  pSourceParamComponents[2] = btn;
+	  btn.setName("SmallLeftArrowButton");
+	  
+	  Dimension size = new Dimension(12, 12);
+	  btn.setMinimumSize(size);
+	  btn.setMaximumSize(size);
+	  btn.setPreferredSize(size);
+	  
+	  btn.addActionListener(this);
+	  btn.setActionCommand("set-source-params");
+	  
+	  btn.setEnabled(!pIsLocked && !pIsFrozen && 
+			 (waction != null) && (caction != null) && 
+			 caction.getName().equals(waction.getName()));
+	  
+	  hbox.add(btn);
+	} 
+	
+	hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+	
+	if((caction != null) && caction.supportsSourceParams()) {
+	  JButton btn = new JButton("View...");
+	  pSourceParamComponents[3] = btn;
+		
+	  btn.setName("ValuePanelButton");
+	  btn.setRolloverEnabled(false);
+	  btn.setFocusable(false);
+	  
+	  Dimension size = new Dimension(sVSize, 19);
+	  btn.setMinimumSize(size);
+	  btn.setPreferredSize(size);
+	  btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+	  
+	  btn.addActionListener(this);
+	  btn.setActionCommand("view-source-params");
+	    
+	  hbox.add(btn);
+	  
+	  {
+	    NodeVersion vsn = getCheckedInVersion();
+	    String title = (pStatus.toString() + " (v" + vsn.getVersionID() + ")");
+	    
+	    ArrayList<String> snames = new ArrayList<String>(pStatus.getSourceNames()); 
+	    
+	    ArrayList<String> stitles = new ArrayList<String>();
+	    for(String sname : snames) 
+	      stitles.add(pStatus.getSource(sname).toString());
+
+	    pViewSourceParamsDialog = 
+	      new JSourceParamsDialog(false, title, stitles, snames, caction);
+	  }
+	}
+	else {
+	  JTextField field = UIMaster.createTextField("-", sVSize, JLabel.CENTER);
+	  pSourceParamComponents[3] = field;
+	  
+	  hbox.add(field);
+	}
+	
+	vpanel.add(hbox);
+	
+	doSourceParamsChanged();
+      }	
+    }
+    else {
       tpanel.add(Box.createRigidArea(new Dimension(sTSize, 0)));
       vpanel.add(Box.createHorizontalGlue());
     }
-    else {
+    pActionParamsBox.add(comps[2]);
+
+    /* single valued parameters */ 
+    if((action != null) && action.hasSingleParams()) {
+      pLinkActionParamValues.clear();
+      for(String sname : pStatus.getSourceNames()) 
+	pLinkActionParamValues.add(pStatus.getSource(sname).toString());
+      pLinkActionParamValues.add("-");
+      
+      pLinkActionParamNodeNames.clear();
+      pLinkActionParamNodeNames.addAll(pStatus.getSourceNames());
+      pLinkActionParamNodeNames.add(null);
+
       {
-	pLinkActionParamValues.clear();
-	for(String sname : pStatus.getSourceNames()) 
-	  pLinkActionParamValues.add(pStatus.getSource(sname).toString());
-	pLinkActionParamValues.add("-");
+	Box hbox = new Box(BoxLayout.X_AXIS);
+	hbox.addComponentListener(this);
+
+	{
+	  JPanel spanel = new JPanel();
+	  spanel.setName("Spacer");
+	  
+	  spanel.setMinimumSize(new Dimension(7, 0));
+	  spanel.setMaximumSize(new Dimension(7, Integer.MAX_VALUE));
+	  spanel.setPreferredSize(new Dimension(7, 0));
+	  
+	  hbox.add(spanel);
+	}
+
+	updateSingleActionParams(action, waction, caction, action.getSingleGroup(), hbox, 1);
 	
-	pLinkActionParamNodeNames.clear();
-	pLinkActionParamNodeNames.addAll(pStatus.getSourceNames());
-	pLinkActionParamNodeNames.add(null);
+	pActionParamsBox.add(hbox);
       }
+    }
 
-      UIMaster.addVerticalSpacer(tpanel, vpanel, 9);
+    pActionBox.revalidate();
+    pActionBox.repaint();
+  }
 
-      for(String pname : action.getSingleLayout()) {
+  /**
+   * Recursively create drawers containing the working and checked-in single valued 
+   * action parameters.
+   */ 
+  private void 
+  updateSingleActionParams
+  (
+   BaseAction action, 
+   BaseAction waction, 
+   BaseAction caction, 
+   ParamGroup group, 
+   Box sbox, 
+   int level
+  ) 
+  {
+    Box dbox = new Box(BoxLayout.Y_AXIS);    
+    {
+      Component comps[] = createCommonPanels();
+      JPanel tpanel = (JPanel) comps[0];
+      JPanel vpanel = (JPanel) comps[1];
+
+      for(String pname : group.getParamNames()) {
 	if(pname == null) {
 	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
 	}
@@ -1757,48 +1930,49 @@ class JNodeDetailsPanel
 	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
 
 	  Component pcomps[] = new Component[4];
-	  
+
 	  {
 	    JLabel label = 
-	      UIMaster.createFixedLabel(param.getNameUI() + ":", sTSize, JLabel.RIGHT);
+	      UIMaster.createFixedLabel(param.getNameUI() + ":", 
+					sTSize-7*level, JLabel.RIGHT);
 	    pcomps[0] = label;
-	    
+
 	    tpanel.add(label);
 	  }
-	  
+
 	  { 
 	    Box hbox = new Box(BoxLayout.X_AXIS);
-	    
+
 	    {
 	      ActionParam aparam = null;
 	      if(waction != null) 
 		aparam = waction.getSingleParam(param.getName());
-	      
+
 	      if(aparam != null) {
 		if(aparam instanceof BooleanActionParam) {
 		  Boolean value = (Boolean) aparam.getValue();
 		  JBooleanField field = 
 		    UIMaster.createBooleanField(value, sVSize);
 		  pcomps[1] = field;
-		  
-		  field.addActionListener(this);
-		  field.setActionCommand("action-param-changed:" + aparam.getName());
-		  
-		  field.setEnabled(!pIsLocked && !pIsFrozen);
-		  
-		  hbox.add(field);
+
+		field.addActionListener(this);
+		field.setActionCommand("action-param-changed:" + aparam.getName());
+
+		field.setEnabled(!pIsLocked && !pIsFrozen);
+
+		hbox.add(field);
 		}
 		else if(aparam instanceof IntegerActionParam) {
 		  Integer value = (Integer) aparam.getValue();
 		  JIntegerField field = 
 		    UIMaster.createIntegerField(value, sVSize, JLabel.CENTER);
 		  pcomps[1] = field;
-		  
+
 		  field.addActionListener(this);
 		  field.setActionCommand("action-param-changed:" + aparam.getName());
-		  
+
 		  field.setEnabled(!pIsLocked && !pIsFrozen);
-		  
+
 		  hbox.add(field);
 		}
 		else if(aparam instanceof DoubleActionParam) {
@@ -1806,12 +1980,12 @@ class JNodeDetailsPanel
 		  JDoubleField field = 
 		    UIMaster.createDoubleField(value, sVSize, JLabel.CENTER);
 		  pcomps[1] = field;
-		  
+
 		  field.addActionListener(this);
 		  field.setActionCommand("action-param-changed:" + aparam.getName());
-		  
+
 		  field.setEnabled(!pIsLocked && !pIsFrozen);
-		  
+
 		  hbox.add(field);
 		}
 		else if(aparam instanceof StringActionParam) {
@@ -1819,12 +1993,12 @@ class JNodeDetailsPanel
 		  JTextField field = 
 		    UIMaster.createEditableTextField(value, sVSize, JLabel.CENTER);
 		  pcomps[1] = field;
-		  
+
 		  field.addActionListener(this);
 		  field.setActionCommand("action-param-changed:" + aparam.getName());
-		  
+
 		  field.setEnabled(!pIsLocked && !pIsFrozen);
-		  
+
 		  hbox.add(field);
 		}
 		else if(aparam instanceof EnumActionParam) {
@@ -1832,42 +2006,42 @@ class JNodeDetailsPanel
 		  JCollectionField field = 
 		    UIMaster.createCollectionField(eparam.getValues(), sVSize);
 		  pcomps[1] = field;
-		  
+
 		  field.setSelected((String) eparam.getValue());
-		  
+
 		  field.addActionListener(this);
 		  field.setActionCommand("action-param-changed:" + aparam.getName());
-		  
+
 		  field.setEnabled(!pIsLocked && !pIsFrozen);
-		  
+
 		  hbox.add(field);
 		}
 		else if(aparam instanceof LinkActionParam) {
 		  JCollectionField field = 
 		    UIMaster.createCollectionField(pLinkActionParamValues, sVSize);
 		  pcomps[1] = field;
-		  
+
 		  String source = (String) aparam.getValue();
 		  int idx = pLinkActionParamNodeNames.indexOf(source);
 		  if(idx != -1) 
 		    field.setSelectedIndex(idx);
 		  else 
 		    field.setSelected("-");
-		  
+
 		  field.addActionListener(this);
 		  field.setActionCommand("action-param-changed:" + aparam.getName());
-		  
+
 		  field.setEnabled(!pIsLocked && !pIsFrozen);
-		  
+
 		  hbox.add(field);
 		}
 	      }
 	      else {
 		JLabel label = UIMaster.createLabel("-", sVSize, JLabel.CENTER);
 		label.setName("TextFieldLabel");
-		
+
 		pcomps[1] = label;
-		
+
 		hbox.add(label);
 	      }
 	    }
@@ -1878,30 +2052,30 @@ class JNodeDetailsPanel
 	      JButton btn = new JButton();		 
 	      pcomps[2] = btn;
 	      btn.setName("SmallLeftArrowButton");
-	      
+
 	      Dimension size = new Dimension(12, 12);
 	      btn.setMinimumSize(size);
 	      btn.setMaximumSize(size);
 	      btn.setPreferredSize(size);
-	      
+
 	      btn.addActionListener(this);
 	      btn.setActionCommand("set-action-param:" + param.getName());
-	      
+
 	      btn.setEnabled(!pIsLocked && !pIsFrozen && 
 			     (waction != null) && (caction != null) && 
 			     caction.getName().equals(waction.getName()));
-	      
+
 	      hbox.add(btn);
 	    } 
-	    
+
 	    hbox.add(Box.createRigidArea(new Dimension(4, 0)));
-	    
+
 	    {
 	      ActionParam aparam = null;
 	      if((caction != null) && 
 		 ((waction == null) || caction.getName().equals(waction.getName())))
 		aparam = caction.getSingleParam(param.getName());
-	      
+
 	      if(aparam != null) {
 		String text = "-";
 		{
@@ -1914,167 +2088,75 @@ class JNodeDetailsPanel
 		  else {
 		    Comparable value = aparam.getValue();
 		    if(value != null)
-		      text = value.toString();
+		    text = value.toString();
 		  }
 		}
-		
+
 		JTextField field = UIMaster.createTextField(text, sVSize, JLabel.CENTER);
 		pcomps[3] = field;
-		
+
 		hbox.add(field);
 	      }
 	      else {
 		JLabel label = UIMaster.createLabel("-", sVSize, JLabel.CENTER);
 		label.setName("TextFieldLabel");
-		
+
 		pcomps[3] = label;
-		
+
 		hbox.add(label);
 	      }
 	    }
-	    
+
 	    vpanel.add(hbox);
 	  }
-	  
+
 	  pActionParamComponents.put(param.getName(), pcomps);
 	}
       }
-      
-      /* per-source params */ 
-      if(action.supportsSourceParams()) {
-	
-	UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
 
-	pEditSourceParamsDialog = null;
-	pViewSourceParamsDialog = null;
-
-	pSourceParamComponents = new Component[4];
-
-	{
-	  JLabel label = 
-	    UIMaster.createFixedLabel("Source Parameters:", sTSize, JLabel.RIGHT);
-	   pSourceParamComponents[0] = label;
-	  
-	  tpanel.add(label);
-	}
-	
-	{ 
-	  Box hbox = new Box(BoxLayout.X_AXIS);
-
-	  if((waction != null) && waction.supportsSourceParams()) {
-	    JButton btn = new JButton((pIsLocked || pIsFrozen) ? "View..." : "Edit...");
-	    pSourceParamComponents[1] = btn;
-		
-	    btn.setName("ValuePanelButton");
-	    btn.setRolloverEnabled(false);
-	    btn.setFocusable(false);
-	    
-	    Dimension size = new Dimension(sVSize, 19);
-	    btn.setMinimumSize(size);
-	    btn.setPreferredSize(size);
-	    btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
-	    
-	    btn.addActionListener(this);
-	    btn.setActionCommand("edit-source-params");
-	    
-	    hbox.add(btn);
-
-	    {
-	      String title = pStatus.toString();
-
-	      ArrayList<String> snames = new ArrayList<String>(pStatus.getSourceNames()); 
-	      
-	      ArrayList<String> stitles = new ArrayList<String>();
-	      for(String sname : snames) 
-		stitles.add(pStatus.getSource(sname).toString());
-
-	      pEditSourceParamsDialog = 
-		new JSourceParamsDialog(!pIsLocked && !pIsFrozen, title, stitles, 
-					snames, waction);
-	    }
-	  }
-	  else {
-	    JTextField field = UIMaster.createTextField("-", sVSize, JLabel.CENTER);
-	    pSourceParamComponents[1] = field;
-	    
-	    hbox.add(field);
-	  }
-
-	  hbox.add(Box.createRigidArea(new Dimension(4, 0)));
-
-	  {
-	    JButton btn = new JButton();		 
-	    pSourceParamComponents[2] = btn;
-	    btn.setName("SmallLeftArrowButton");
-	    
-	    Dimension size = new Dimension(12, 12);
-	    btn.setMinimumSize(size);
-	    btn.setMaximumSize(size);
-	    btn.setPreferredSize(size);
-	    
-	    btn.addActionListener(this);
-	    btn.setActionCommand("set-source-params");
-	    
-	    btn.setEnabled(!pIsLocked && !pIsFrozen && 
-			   (waction != null) && (caction != null) && 
-			   caction.getName().equals(waction.getName()));
-	    
-	    hbox.add(btn);
-	  } 
-	  
-	  hbox.add(Box.createRigidArea(new Dimension(4, 0)));
-
-	  if((caction != null) && caction.supportsSourceParams()) {
-	    JButton btn = new JButton("View...");
-	    pSourceParamComponents[3] = btn;
-		
-	    btn.setName("ValuePanelButton");
-	    btn.setRolloverEnabled(false);
-	    btn.setFocusable(false);
-	    
-	    Dimension size = new Dimension(sVSize, 19);
-	    btn.setMinimumSize(size);
-	    btn.setPreferredSize(size);
-	    btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
-	    
-	    btn.addActionListener(this);
-	    btn.setActionCommand("view-source-params");
-	    
-	    hbox.add(btn);
-
-	    {
-	      NodeVersion vsn = getCheckedInVersion();
-	      String title = (pStatus.toString() + " (v" + vsn.getVersionID() + ")");
-
-	      ArrayList<String> snames = new ArrayList<String>(pStatus.getSourceNames()); 
-	      
-	      ArrayList<String> stitles = new ArrayList<String>();
-	      for(String sname : snames) 
-		stitles.add(pStatus.getSource(sname).toString());
-
-	      pViewSourceParamsDialog = 
-		new JSourceParamsDialog(false, title, stitles, snames, caction);
-	    }
-	  }
-	  else {
-	    JTextField field = UIMaster.createTextField("-", sVSize, JLabel.CENTER);
-	    pSourceParamComponents[3] = field;
-	    
-	    hbox.add(field);
-	  }
-
-	  vpanel.add(hbox);
-
-	  doSourceParamsChanged();
-	}	
-      }
+      dbox.add(comps[2]);
     }
-    pActionParamsBox.add(comps[2]);
+    
+    if(!group.getSubGroups().isEmpty())  {
+      Box hbox = new Box(BoxLayout.X_AXIS);
+      hbox.addComponentListener(this);
 
-    pActionBox.revalidate();
-    pActionBox.repaint();
+      {
+	JPanel spanel = new JPanel();
+	spanel.setName("Spacer");
+	
+	spanel.setMinimumSize(new Dimension(7, 0));
+	spanel.setMaximumSize(new Dimension(7, Integer.MAX_VALUE));
+	spanel.setPreferredSize(new Dimension(7, 0));
+	
+	hbox.add(spanel);
+      }
+
+      {
+	Box vbox = new Box(BoxLayout.Y_AXIS);
+	for(ParamGroup sgroup : group.getSubGroups()) 
+	  updateSingleActionParams(action, waction, caction, sgroup, vbox, level+1);
+
+	hbox.add(vbox);
+      }
+
+      dbox.add(hbox);
+    }
+
+    {
+      JDrawer drawer = new JDrawer(group.getNameUI() + ":", dbox, true);
+      drawer.addActionListener(new UpdateParamGroupsOpen(group.getName(), drawer));
+      sbox.add(drawer);
+      
+      Boolean isOpen = pActionParamGroupsOpen.get(group.getName());
+      if(isOpen == null) {
+	isOpen = group.isOpen();
+	pActionParamGroupsOpen.put(group.getName(), isOpen);
+      }
+      drawer.setIsOpen(isOpen);
+    }
   }
-
+      
 
   /**
    * Update the UI components associated with the working and checked-in job requirements.
@@ -3503,6 +3585,7 @@ class JNodeDetailsPanel
 	pWorkingActionEnabledField.setEnabled(false);
 
 	pActionParamComponents.clear();
+	pActionParamGroupsOpen.clear();
       }
       else {
 	VersionID vid = null;
@@ -3548,6 +3631,7 @@ class JNodeDetailsPanel
 	  }
 
 	  pActionParamComponents.clear();
+	  pActionParamGroupsOpen.clear();
 	}
       }
 
@@ -4383,7 +4467,45 @@ class JNodeDetailsPanel
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L   C L A S S E S                                                      */
   /*----------------------------------------------------------------------------------------*/
-  
+
+  /** 
+   * Update the table of whether each parameter group is open when the drawer is opened
+   * or closed.
+   */ 
+  private
+  class UpdateParamGroupsOpen
+    implements ActionListener
+  {
+    public 
+    UpdateParamGroupsOpen
+    (
+     String name, 
+     JDrawer drawer
+    ) 
+    {
+      pName   = name;
+      pDrawer = drawer;
+    }
+
+    /** 
+     * Invoked when an action occurs. 
+     */ 
+    public void 
+    actionPerformed
+    (
+     ActionEvent e
+    ) 
+    {
+      pActionParamGroupsOpen.put(pName, pDrawer.isOpen());
+    }
+    
+    private String   pName;
+    private JDrawer  pDrawer;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
   /** 
    * Modify the properties of the given working version of a node.
    */ 
@@ -4875,6 +4997,12 @@ class JNodeDetailsPanel
    * action parameter name.
    */ 
   private TreeMap<String,Component[]>  pActionParamComponents;
+
+  /**
+   * Whether the drawers containing the single valued action parameter components are
+   * open indexed by parameter group name.
+   */ 
+  private TreeMap<String,Boolean>  pActionParamGroupsOpen; 
 
   /**
    * The JCollectionField values and corresponding fully resolved names of the 

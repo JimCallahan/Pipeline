@@ -1,4 +1,4 @@
-// $Id: MayaReferenceAction.java,v 1.4 2004/11/11 00:35:26 jim Exp $
+// $Id: MayaReferenceAction.java,v 1.5 2004/11/18 09:16:58 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -88,12 +88,12 @@ class MayaReferenceAction
     }
 
     {
-      ArrayList<String> layout = new ArrayList<String>();
-      layout.add("InitialMEL");
-      layout.add("ModelMEL");
-      layout.add("FinalMEL");
+      ParamGroup group = new ParamGroup("ActionParameters", true);
+      group.addParamName("InitialMEL");
+      group.addParamName("ModelMEL");
+      group.addParamName("FinalMEL");
 
-      setSingleLayout(layout);
+      setSingleGroup(group);
     }
   }
 
