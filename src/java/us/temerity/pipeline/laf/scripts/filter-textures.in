@@ -37,7 +37,7 @@ function mkmipmaps {
   while [ $size -gt 1 ]
   do
     size=$(($size / 2)) 
-  	
+
     dimg=$dir/texture.$size.png
     if [ $simg -nt $dimg ] 
     then
@@ -111,8 +111,6 @@ do
       dir=`echo $dest/$extra-$mode`
     fi
 
-    dimg=$dir/texture.$size.png
-
     if [ ! -d $dir ]
     then 
       mkdir -p $dir
@@ -123,7 +121,7 @@ do
     while [ $size -gt 1 ]
     do
       size=$(($size / 2)) 
-  
+
       dimg=$dir/texture.$size.png
 
       if [ $simg -nt $dimg ] 
@@ -164,7 +162,7 @@ do
       printf '(scale-convert "%s" "%s" 21)\n' $simg $dimg >> $tmpfile
       anynewer=1
     fi
-    
+
     frame=$(($frame + 1))	
   done  
 
@@ -238,7 +236,6 @@ for rel in None OneToOne All
 do
   simg=`printf "%s/LinkIcons-painted.%04d.sgi" $src $frame`
   dir=`echo $dest/LinkRelationship-$rel`
-  dimg=$dir/texture.$size.png
 
   if [ ! -d $dir ]
   then 
@@ -250,7 +247,7 @@ do
   while [ $size -gt 1 ]
   do
     size=$(($size / 2)) 
-  
+
     dimg=$dir/texture.$size.png
 
     if [ $simg -nt $dimg ] 
@@ -266,6 +263,37 @@ do
   fi
 
   frame=$(($frame + 1))
+done
+
+for extra in ColorCircle
+do
+  simg=`echo $src/$extra.sgi`
+  dir=`echo $dest/$extra`
+
+  if [ ! -d $dir ]
+  then 
+    mkdir -p $dir
+  fi
+
+  filter=0
+  size=128
+  while [ $size -gt 1 ]
+  do
+    size=$(($size / 2)) 
+
+    dimg=$dir/texture.$size.png
+
+    if [ $simg -nt $dimg ] 
+    then
+      filter=1
+    fi
+  done
+
+  if [ $filter -eq 1 ]
+  then 
+    printf '(build-mipmap "%s" "%s/texture" 64)\n' $simg $dir >> $tmpfile
+    anynewer=1
+  fi
 done
 
 if [ $anynewer -eq 1 ]
