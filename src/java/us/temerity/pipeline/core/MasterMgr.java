@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.18 2004/07/25 03:05:57 jim Exp $
+// $Id: MasterMgr.java,v 1.19 2004/07/28 19:16:26 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -908,6 +908,13 @@ class MasterMgr
 	Logs.net.severe("Interrupted while waiting on the DirtyDirTask to complete!");
       }
     }
+
+    /* give the sockets time to disconnect cleanly */ 
+    try {
+      Thread.sleep(500);
+    }
+    catch(InterruptedException ex) {
+    }
   }
 
   /**
@@ -1630,7 +1637,7 @@ class MasterMgr
   public Object 
   getPrivilegedUsers()
   {
-    TaskTimer timer = new TaskTimer();
+    TaskTimer timer = new TaskTimer("MasterMgr.getPrivilegedUsers()");
     
     timer.aquire();
     synchronized(pPrivilegedUsers) {
@@ -5787,7 +5794,6 @@ class MasterMgr
   ) 
     throws PipelineException
   {
-
     File file = new File(pNodeDir, "downstream/" + links.getName());
     File dir  = file.getParentFile();
 
