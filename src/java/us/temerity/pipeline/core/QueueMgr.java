@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.32 2005/02/16 02:02:35 jim Exp $
+// $Id: QueueMgr.java,v 1.33 2005/02/17 01:07:07 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -197,7 +197,6 @@ class QueueMgr
 	    Long jobID = new Long(files[wk].getName());
 	    QueueJob job = readJob(jobID);
 	    QueueJobInfo info = readJobInfo(jobID);
-	    assert((job != null) && (info != null));
 
 	    /* initialize the table of working area files to the jobs which create them */ 
 	    {
@@ -1906,8 +1905,14 @@ class QueueMgr
 
       for(String hname : hung) {
 	QueueHost host = pHosts.get(hname);
-	if(host != null) 
-	  host.setStatus(QueueHost.Status.Hung);
+	if(host != null) {
+	  Date lastHung = host.getLastHung();
+	  if((lastHung == null) || 
+	     ((lastHung.getTime()+sDisableInterval) < now.getTime())) 
+	    host.setStatus(QueueHost.Status.Hung);
+	  else 
+	    host.setStatus(QueueHost.Status.Disabled);
+	}
       }
 
       for(QueueHost host : pHosts.values()) {
@@ -2503,7 +2508,15 @@ class QueueMgr
 	  synchronized(pHosts) {
 	    timer.resume();
 	    QueueHost host = pHosts.get(bestHost);
-	    host.setStatus(QueueHost.Status.Hung);
+	    if(host != null) {
+	      Date now = new Date();
+	      Date lastHung = host.getLastHung();
+	      if((lastHung == null) || 
+		 ((lastHung.getTime()+sDisableInterval) < now.getTime())) 
+		host.setStatus(QueueHost.Status.Hung);
+	      else 
+		host.setStatus(QueueHost.Status.Disabled);
+	    }
 	  }
 	}	
 
@@ -3340,9 +3353,11 @@ class QueueMgr
 	
 	return job;
       }
+      else {
+	throw new PipelineException
+	  ("Somehow for job (" + jobID + "), no job file (" + file + ") exists!");
+      }
     }
-
-    return null;
   }
 
   /**
@@ -3509,9 +3524,11 @@ class QueueMgr
 	
 	return info;
       }
+      else {
+	throw new PipelineException
+	  ("Somehow for job (" + jobID + "), no job info file (" + file + ") exists!");
+      }
     }
-
-    return null;
   }
 
   /**
@@ -3918,9 +3935,14 @@ class QueueMgr
   private static final long  sSampleCleanupInterval = 86400000L;  /* 24-hours */ 
 
   /**
-   * The interval between attempts to recontact Hung job servers. 
+   * The interval between attempts to automatically enable Hung job servers. 
    */ 
-  private static final long  sUnhangInterval = 60000L; //600000L;  /* 10-minutes */ 
+  private static final long  sUnhangInterval = 600000L; //600000L;  /* 10-minutes */ 
+
+  /**
+   * Job servers Hung more than once within this interval will be Disabled.
+   */ 
+  private static final long  sDisableInterval = 3600000L; //3600000L;  /* 60-minutes */ 
 
   /**
    * The minimum time a cycle of the dispatcher loop should take (in milliseconds).

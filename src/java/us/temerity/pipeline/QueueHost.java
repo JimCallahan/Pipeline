@@ -1,4 +1,4 @@
-// $Id: QueueHost.java,v 1.12 2005/02/07 19:42:23 jim Exp $
+// $Id: QueueHost.java,v 1.13 2005/02/17 01:07:07 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -93,6 +93,10 @@ class QueueHost
     case Shutdown:
     case Disabled:
       pSamples.clear();
+      break;
+
+    case Hung:
+      pLastHung = pLastModified;
     }
   }
 
@@ -103,6 +107,16 @@ class QueueHost
   getLastModified()
   {
     return pLastModified;
+  }
+
+  /**
+   * Get the timestamp of when the status was last changed to Hung or <CODE>null</CODE> if 
+   * the state has never been Hung since the server was started.
+   */ 
+  public Date
+  getLastHung()
+  {
+    return pLastHung; 
   }
 
 
@@ -772,6 +786,12 @@ class QueueHost
    * The timestamp of when the status was last modified.
    */ 
   private Date  pLastModified; 
+
+  /**
+   * The timestamp of when the status was last changed to Hung or <CODE>null</CODE> if 
+   * the state has never been Hung since the server was started.
+   */ 
+  private Date  pLastHung; 
 
   /**
    * The name of the reserving user or <CODE>null</CODE> if the host is not reserved.
