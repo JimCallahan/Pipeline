@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.in,v 1.1 2004/03/22 03:12:34 jim Exp $
+// $Id: PackageInfo.java.in,v 1.2 2004/03/28 00:48:38 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -55,6 +55,13 @@ class PackageInfo
    * entry.
    */ 
   public static final File sDocsDir = new File("@ROOT_INST_DIR@", "share/docs"); 
+
+
+  /**
+   * The number milliseconds Pipeline server programs wait for new connections before 
+   * checking to see if the server should be shutdown. <P> 
+   */
+  public static final int sServerTimeOut = 5000;
 
 
   /**
