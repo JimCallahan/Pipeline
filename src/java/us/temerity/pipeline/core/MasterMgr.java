@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.63 2004/11/05 18:19:11 jim Exp $
+// $Id: MasterMgr.java,v 1.64 2004/11/05 19:41:56 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -5692,21 +5692,8 @@ class MasterMgr
 
       root = table.get(nodeID.getName());
       assert(root != null);
-      
-      {
-	boolean isStale = true;
-	NodeDetails details = root.getDetails();
-	if(details != null) {
-	  switch(details.getOverallQueueState()) {
-	  case Finished:
-	  case Running:
-	    isStale = false;
-	    break;
-	  }
-	}
 
-	validateStaleLinks(root, isStale);
-      }
+      validateStaleLinks(root);
     }
 
     {
@@ -6542,31 +6529,30 @@ class MasterMgr
   } 
 
   /**
-   * Recursively traverse the upstream nodes removing the propogates staleness flag
-   * from all links not rooted at a stale node. <P> 
+   * Recursively traverse the upstream nodes removing the propagate staleness flags
+   * from any links for which all downstream links also have the propagate staleness flag.
    * 
    * @param status
    *   The status of the current node.
-   * 
-   * @param isStale
-   *   Whether a stale node exists downstream.
    */ 
   private void 
   validateStaleLinks
   (
-   NodeStatus status, 
-   boolean isStale
+   NodeStatus status
   )
   {
+    boolean nonStale = false;
+    for(NodeStatus tstatus : status.getTargets()) {
+      if(!tstatus.isStaleLink(status.getName())) {
+	nonStale = true;
+	break;
+      }
+    }
+
     for(NodeStatus lstatus : status.getSources()) {
-      boolean staleLink = status.isStaleLink(lstatus.getName()); 
-      if(staleLink && !isStale) {
+      if(nonStale) 
 	status.removeStaleLink(lstatus.getName());
-	validateStaleLinks(lstatus, false);
-      }
-      else {
-	validateStaleLinks(lstatus, staleLink);
-      }
+      validateStaleLinks(lstatus);
     }
   }
 
