@@ -1,8 +1,7 @@
-// $Id: BaseMgrClient.java,v 1.1 2004/04/24 22:42:46 jim Exp $
+// $Id: BaseMgrClient.java,v 1.4 2004/07/24 18:17:23 jim Exp $
 
-package us.temerity.pipeline.core;
+package us.temerity.pipeline;
 
-import us.temerity.pipeline.*;
 import us.temerity.pipeline.message.*;
 
 import java.io.*;
@@ -24,7 +23,7 @@ class BaseMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Construct a new file manager client.
+   * Construct a new manager client.
    * 
    * @param hostname 
    *   The name of the host running the server.
