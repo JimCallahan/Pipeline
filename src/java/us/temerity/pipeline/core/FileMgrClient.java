@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.4 2004/03/28 00:45:31 jim Exp $
+// $Id: FileMgrClient.java,v 1.5 2004/03/30 07:13:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -137,14 +137,9 @@ class FileMgrClient
       FileStateRsp rsp = (FileStateRsp) obj;
       return rsp.getFileStates();
     }
-    else if(obj instanceof FailureRsp) {
-      FailureRsp rsp = (FailureRsp) obj;
-      throw new PipelineException(rsp.getMessage());	
-    }
     else {
-      disconnect();
-      throw new PipelineException
-	("Illegal response received from the FileMgrServer instance!");
+      handleFailure(obj);
+      return null;
     }
   }
 
@@ -191,18 +186,7 @@ class FileMgrClient
       new FileCheckInReq(id, vid, latest, mod.getSequences(), states); 
 
     Object obj = performTransaction(FileRequest.CheckIn, req);
-
-    if(obj instanceof SuccessRsp) {
-    }
-    else if(obj instanceof FailureRsp) {
-      FailureRsp rsp = (FailureRsp) obj;
-      throw new PipelineException(rsp.getMessage());	
-    }
-    else {
-      disconnect();
-      throw new PipelineException
-	("Illegal response received from the FileMgrServer instance!");
-    }
+    handleSimpleResponse(obj);
   }
 
   /**
@@ -229,18 +213,7 @@ class FileMgrClient
       new FileCheckOutReq(id, vsn.getVersionID(), vsn.getSequences(), !vsn.hasAction());
 
     Object obj = performTransaction(FileRequest.CheckOut, req);
-
-    if(obj instanceof SuccessRsp) {
-    }
-    else if(obj instanceof FailureRsp) {
-      FailureRsp rsp = (FailureRsp) obj;
-      throw new PipelineException(rsp.getMessage());	
-    }
-    else {
-      disconnect();
-      throw new PipelineException
-	("Illegal response received from the FileMgrServer instance!");
-    }
+    handleSimpleResponse(obj);
   }
 
   /**
@@ -272,18 +245,7 @@ class FileMgrClient
       new FileFreezeReq(id, mod.getWorkingID(), mod.getSequences());
 
     Object obj = performTransaction(FileRequest.Freeze, req);
-
-    if(obj instanceof SuccessRsp) {
-    }
-    else if(obj instanceof FailureRsp) {
-      FailureRsp rsp = (FailureRsp) obj;
-      throw new PipelineException(rsp.getMessage());	
-    }
-    else {
-      disconnect();
-      throw new PipelineException
-	("Illegal response received from the FileMgrServer instance!");
-    }
+    handleSimpleResponse(obj);
   }
 
   /**
@@ -314,19 +276,37 @@ class FileMgrClient
       new FileUnfreezeReq(id, mod.getWorkingID(), mod.getSequences(), !mod.hasAction());
 
     Object obj = performTransaction(FileRequest.Unfreeze, req);
-
-    if(obj instanceof SuccessRsp) {
-    }
-    else if(obj instanceof FailureRsp) {
-      FailureRsp rsp = (FailureRsp) obj;
-      throw new PipelineException(rsp.getMessage());	
-    }
-    else {
-      disconnect();
-      throw new PipelineException
-	("Illegal response received from the FileMgrServer instance!");
-    }
+    handleSimpleResponse(obj);
   }
+
+  /**
+   * Remove the files associated with the given working version.
+   *
+   * @param id 
+   *   The unique working version identifier.
+   * 
+   * @param mod 
+   *   The working version of the node.
+   */  
+  public synchronized void 
+  remove 
+  (
+   NodeID id, 
+   NodeMod mod
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    FileRemoveReq req = 
+      new FileRemoveReq(id, mod.getSequences());
+
+    Object obj = performTransaction(FileRequest.Unfreeze, req);
+    handleSimpleResponse(obj);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Close the network connection if its is still connected.
@@ -465,6 +445,49 @@ class FileMgrClient
 	 ex.getMessage());  
     }
   }
+
+  /**
+   * Handle the simple Success/Failure response.
+   * 
+   * @param obj
+   *   The response from the server.
+   */ 
+  private void 
+  handleSimpleResponse
+  ( 
+   Object obj
+  )
+    throws PipelineException
+  {
+    if(!(obj instanceof SuccessRsp))
+      handleFailure(obj);
+  }
+
+  /**
+   * Handle non-successful responses.
+   * 
+   * @param obj
+   *   The response from the server.
+   */ 
+  private void 
+  handleFailure
+  ( 
+   Object obj
+  )
+    throws PipelineException
+  {
+    if(obj instanceof FailureRsp) {
+      FailureRsp rsp = (FailureRsp) obj;
+      throw new PipelineException(rsp.getMessage());	
+    }
+    else {
+      disconnect();
+      throw new PipelineException
+	("Illegal response received from the FileMgrServer instance!");
+    }
+  }
+
+
 
 
   /*----------------------------------------------------------------------------------------*/
