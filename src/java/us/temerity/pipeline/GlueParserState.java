@@ -1,4 +1,4 @@
-// $Id: GlueParserState.java,v 1.1 2004/02/14 22:15:53 jim Exp $
+// $Id: GlueParserState.java,v 1.2 2004/02/15 16:16:42 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -115,6 +115,12 @@ class GlueParserState
    * @param cls [<B>in</B>]
    *   The class to instantiate.
    * 
+   * @param size [<B>in</B>]
+   *   The number of elements in the array. 
+   * 
+   * @param depth [<B>in</B>]
+   *   The number of levels of indirection.
+   * 
    * @return 
    *   The newly instantiated array.
    */
@@ -123,20 +129,61 @@ class GlueParserState
   (
    Long objID,
    Class cls,
-   int size
+   int size, 
+   int depth
   ) 
     throws ParseException
   {
+    if(pMasterTable.containsKey(objID))
+      throw new ParseException("Duplicate object ID (" + objID + " encountered!");
+
     Object obj = null;
     try {
-      obj = Array.newInstance(cls, size);
+      if(depth == 1) {
+	obj = Array.newInstance(cls, size);
+      }
+      else if(depth > 1) {
+	StringBuffer buf = new StringBuffer();
+
+	int wk;
+	for(wk=1; wk<depth; wk++) 
+	  buf.append("[");
+
+	if(cls.isPrimitive()) {
+	  if(cls == Boolean.TYPE) 
+	    buf.append("Z");
+	  else if(cls == Byte.TYPE) 
+	    buf.append("B");
+	  else if(cls == Short.TYPE) 
+	    buf.append("S");
+	  else if(cls == Integer.TYPE) 
+	    buf.append("I");
+	  else if(cls == Long.TYPE) 
+	    buf.append("J");
+	  else if(cls == Float.TYPE) 
+	    buf.append("F");
+	  else if(cls == Double.TYPE) 
+	    buf.append("D");
+	  else if(cls == Character.TYPE) 
+	    buf.append("C");
+	  else 
+	    assert(false);
+	}
+	else {
+	  buf.append("L" + cls.getName() + ";");
+	}
+
+	Class acls = Class.forName(buf.toString());
+	obj = Array.newInstance(acls, size);
+      }
+      else {
+	throw new NegativeArraySizeException("Array depth (" + depth + ") must be positive!");
+      }
     }
     catch(Exception ex) {
       throw new ParseException(ex.toString());
     }
     
-    if(pMasterTable.containsKey(objID))
-      throw new ParseException("Duplicate object ID (" + objID + " encountered!");
     pMasterTable.put(objID, obj);
 
     return obj;
