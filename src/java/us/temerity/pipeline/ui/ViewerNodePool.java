@@ -1,4 +1,4 @@
-// $Id: ViewerNodePool.java,v 1.2 2004/05/08 15:12:47 jim Exp $
+// $Id: ViewerNodePool.java,v 1.3 2004/05/16 19:18:27 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -65,6 +65,39 @@ class ViewerNodePool
     return pRoot;
   }
 
+
+  /**
+   * Get the node paths of the active viewer nodes.
+   */ 
+  public synchronized Set
+  getActiveNodePaths() 
+  {
+    return pActive.keySet();
+  }
+
+  /**
+   * Get the active viewer node reachable by the given {@link NodePath NodePath}.
+   * 
+   * @param path
+   *   The path from the focus node to the current node.
+   */ 
+  public synchronized ViewerNode
+  getActiveViewerNode
+  (
+   NodePath path  
+  ) 
+  {
+    return pActive.get(path);
+  }
+
+  /** 
+   * Get all of the active viewer nodes.
+   */ 
+  public synchronized Collection
+  getActiveViewerNodes()
+  {
+    return pActive.values();
+  }
   
 
   /*----------------------------------------------------------------------------------------*/
@@ -87,7 +120,7 @@ class ViewerNodePool
   }
 
   /**
-   * Get an existing or create a new {@link ViewerNode ViewerNode} instance to represent 
+   * Lookup an existing or create a new {@link ViewerNode ViewerNode} instance to represent 
    * the given {@link NodeStatus NodeStatus} reachable by the given {@link NodePath NodePath}.
    * 
    * @param status
@@ -97,7 +130,7 @@ class ViewerNodePool
    *   The path from the focus node to the current node.
    */ 
   public synchronized ViewerNode
-  getViewerNode
+  lookupOrCreateViewerNode
   (
    NodeStatus status, 
    NodePath path  
@@ -112,7 +145,7 @@ class ViewerNodePool
     assert(status.getName().equals(path.getCurrentName()));
     assert(!pActive.containsKey(path));
 
-    System.out.print("Getting: " + status + " [" + path + "]\n");
+//     System.out.print("Getting: " + status + " [" + path + "]\n");
 
     /* look up the exact path from the previous viewer nodes */ 
     ViewerNode vnode = pPrevious.remove(path);
@@ -129,8 +162,8 @@ class ViewerNodePool
 	  if(vstack.empty()) 
 	    pReserve.remove(text);
 	  
-	  System.out.print("  Recycled (match): " + vnode.getNodeStatus() + 
-			   " [" + vnode.getNodePath() + "]\n");
+// 	  System.out.print("  Recycled (match): " + vnode.getNodeStatus() + 
+// 			   " [" + vnode.getNodePath() + "]\n");
 	}
       }
 
@@ -147,8 +180,8 @@ class ViewerNodePool
 	  if(vstack.empty()) 
 	    pReserve.remove(key);
 	  
-	  System.out.print("  Recycled (grab): " + vnode.getNodeStatus() + 
-			   " [" + vnode.getNodePath() + "]\n");
+// 	  System.out.print("  Recycled (grab): " + vnode.getNodeStatus() + 
+// 			   " [" + vnode.getNodePath() + "]\n");
 	}
       }
 
@@ -157,13 +190,13 @@ class ViewerNodePool
 	vnode = new ViewerNode();
  	pRoot.addChild(vnode.getBranchGroup());
 	
- 	System.out.print("  Created!\n");
+//  	System.out.print("  Created!\n");
       }
     }
-    else {
-      System.out.print("  Reused: " + vnode.getNodeStatus() + 
-		       " [" + vnode.getNodePath() + "]\n");
-    }
+//     else {
+//       System.out.print("  Reused: " + vnode.getNodeStatus() + 
+// 		       " [" + vnode.getNodePath() + "]\n");
+//     }
     pActive.put(path, vnode);
 
     /* update state */ 
@@ -206,14 +239,14 @@ class ViewerNodePool
     pPrevious = null;
 
     // DEBUG 
-    {
-      System.out.print("NodePool: \n" + 
-		       "   Active = " + pActive.size() + "\n" + 
-		       "  Reserve = " + pReserve.size() + "\n");
+//     {
+//       System.out.print("NodePool: \n" + 
+// 		       "   Active = " + pActive.size() + "\n" + 
+// 		       "  Reserve = " + pReserve.size() + "\n");
 
-      for(String text : pReserve.keySet()) 
-	System.out.print("    [" + text + "]: " + (pReserve.get(text).size()) + "\n");
-    }
+//       for(String text : pReserve.keySet()) 
+// 	System.out.print("    [" + text + "]: " + (pReserve.get(text).size()) + "\n");
+//     }
   }
 
 
