@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.7 2004/08/22 22:03:29 jim Exp $
+// $Id: QueueMgrServer.java,v 1.8 2004/08/23 04:29:01 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -409,6 +409,13 @@ class QueueMgrServer
 	    {
 	      QueueGetJobStatesReq req = (QueueGetJobStatesReq) objIn.readObject();
 	      objOut.writeObject(pQueueMgr.getJobStates(req));
+	      objOut.flush(); 
+	    }
+	    break; 
+
+	  case GetAllJobStates:
+	    {
+	      objOut.writeObject(pQueueMgr.getAllJobStates());
 	      objOut.flush(); 
 	    }
 	    break;

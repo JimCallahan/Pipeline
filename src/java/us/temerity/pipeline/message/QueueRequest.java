@@ -1,4 +1,4 @@
-// $Id: QueueRequest.java,v 1.6 2004/08/22 22:04:34 jim Exp $
+// $Id: QueueRequest.java,v 1.7 2004/08/23 04:29:01 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -117,6 +117,11 @@ enum QueueRequest
    * An instance {@link QueueGetJobStatesReq QueueGetJobStatesReq} is next.
    */
   GetJobStates, 
+
+  /**
+   * Get the JobStates of all existing jobs.
+   */
+  GetAllJobStates, 
 
   /**
    * An instance {@link QueueGetJobReq QueueGetJobReq} is next.

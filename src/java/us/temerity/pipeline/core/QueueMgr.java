@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.8 2004/08/23 03:05:52 jim Exp $
+// $Id: QueueMgr.java,v 1.9 2004/08/23 04:29:01 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -212,11 +212,6 @@ class QueueMgr
 
 	      case Running:
 		running.put(jobID, info.getHostname());
-		break;
-		
-	      default:
-		job  = null;
-		info = null;
 	      }
 
 	      synchronized(pJobs) {
@@ -1104,6 +1099,36 @@ class QueueMgr
 	}
 	
 	return new QueueGetJobStatesRsp(timer, nodeID, jobIDs, states);
+      }
+      catch(PipelineException ex) {
+	return new FailureRsp(timer, ex.getMessage());	  
+      }  
+    }
+  }
+
+  /**
+   * Get the JobStates of all existing jobs.
+   * 
+   * @return 
+   *   <CODE>QueueGetAllJobStatesRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the job states.
+   */ 
+  public Object
+  getAllJobStates() 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();  
+    synchronized(pJobInfo) {
+      timer.resume();
+      try {
+	TreeMap<Long,JobState> states = new TreeMap<Long,JobState>();
+	for(Long jobID : pJobInfo.keySet()) {
+	  QueueJobInfo info = lookupJobInfo(jobID);	    
+	  states.put(jobID, info.getState());
+	}
+	
+	return new QueueGetAllJobStatesRsp(timer, states);
       }
       catch(PipelineException ex) {
 	return new FailureRsp(timer, ex.getMessage());	  
