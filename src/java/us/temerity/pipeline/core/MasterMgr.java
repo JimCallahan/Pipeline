@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.75 2005/01/03 06:57:12 jim Exp $
+// $Id: MasterMgr.java,v 1.76 2005/01/05 09:43:59 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -301,6 +301,10 @@ class MasterMgr
 
       pSuffixEditors = new TreeMap<String,TreeMap<String,SuffixEditor>>();
 
+      pPluginMenuLayoutLock = new Object();
+      pEditorMenuLayout     = new PluginMenuLayout();
+      pToolMenuLayout       = new PluginMenuLayout();
+
       pPrivilegedUsers = new TreeSet<String>();
 
       pWorkingAreaViews = new TreeMap<String,TreeSet<String>>();
@@ -323,6 +327,7 @@ class MasterMgr
       makeRootDirs();
       initArchives();
       initToolsets();
+      initPluginMenuLayouts();
       initPrivilegedUsers();
       rebuildDownstreamLinks();
       initNodeTree();
@@ -457,6 +462,20 @@ class MasterMgr
     }
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Load the plugin menu layouts.
+   */ 
+  private void 
+  initPluginMenuLayouts()
+    throws PipelineException
+  {
+    readEditorMenuLayout(); 
+    readToolMenuLayout(); 
+  }
+  
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -700,7 +719,11 @@ class MasterMgr
 	pToolsetPackages    = null;
 	
 	pSuffixEditors = null;
-	
+
+	pPluginMenuLayoutLock = null; 
+	pEditorMenuLayout     = null;
+	pToolMenuLayout       = null;
+
 	pPrivilegedUsers = null;
 	
 	pNodeTreeRoot     = null;
@@ -1762,6 +1785,153 @@ class MasterMgr
 	
 	pSuffixEditors.put(req.getAuthor(), editors);
 	
+	return new SuccessRsp(timer);
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   P L U G I N   M E N U   L A Y O U T                                                  */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get layout of the editor plugin selection menu.
+   *
+   * @return
+   *   <CODE>MiscGetPluginMenuLayoutRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the menu layout.
+   */ 
+  public Object 
+  getEditorMenuLayout() 
+  {
+    TaskTimer timer = new TaskTimer("MasterMgr.getEditorMenuLayout()");
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pPluginMenuLayoutLock) {
+	timer.resume();	
+	
+	PluginMenuLayout layout = new PluginMenuLayout(pEditorMenuLayout);
+	return new MiscGetPluginMenuLayoutRsp(timer, layout);
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Set the layout of the editor plugin selection menu.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to set the menu layout.
+   */ 
+  public Object 
+  setEditorMenuLayout
+  ( 
+   MiscSetPluginMenuLayoutReq req 
+  ) 
+  {
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.setEditorMenuLayout()");
+    
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pPluginMenuLayoutLock) {
+	timer.resume();	
+	    
+	pEditorMenuLayout = req.getLayout();
+
+	try {
+	  writeEditorMenuLayout();
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
+	}      
+
+	return new SuccessRsp(timer);
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get layout of the tool plugin selection menu.
+   *
+   * @return
+   *   <CODE>MiscGetPluginMenuLayoutRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the menu layout.
+   */ 
+  public Object 
+  getToolMenuLayout() 
+  {
+    TaskTimer timer = new TaskTimer("MasterMgr.getToolMenuLayout()");
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pPluginMenuLayoutLock) {
+	timer.resume();	
+	
+	PluginMenuLayout layout = new PluginMenuLayout(pToolMenuLayout);
+	return new MiscGetPluginMenuLayoutRsp(timer, layout);
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Set the layout of the tool plugin selection menu.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to set the menu layout.
+   */ 
+  public Object 
+  setToolMenuLayout
+  ( 
+   MiscSetPluginMenuLayoutReq req 
+  ) 
+  {
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.setToolMenuLayout()");
+    
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pPluginMenuLayoutLock) {
+	timer.resume();	
+	    
+	pToolMenuLayout = req.getLayout();
+
+	try {
+	  writeToolMenuLayout();
+	}
+	catch(PipelineException ex) {
+	  return new FailureRsp(timer, ex.getMessage());
+	}      
+
 	return new SuccessRsp(timer);
       }
     }
@@ -8156,6 +8326,197 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Write the layout of the editor plugin selection menu to disk. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to write the menu layout file.
+   */ 
+  private void 
+  writeEditorMenuLayout() 
+    throws PipelineException
+  {
+    synchronized(pPluginMenuLayoutLock) {
+      File file = new File(pNodeDir, "etc/editor-menu-layout");
+      if(file.exists()) {
+	if(!file.delete())
+	  throw new PipelineException
+	    ("Unable to remove the old editor menu layout file (" + file + ")!");
+      }
+      
+      Logs.glu.finer("Writing Editor Menu Layout.");
+
+      try {
+	String glue = null;
+	try {
+	  GlueEncoder ge = new GlueEncoderImpl("EditorMenuLayout", pEditorMenuLayout);
+	  glue = ge.getText();
+	}
+	catch(GlueException ex) {
+	  Logs.glu.severe
+	    ("Unable to generate a Glue format representation of the editor menu layout!");
+	  Logs.flush();
+	  
+	  throw new IOException(ex.getMessage());
+	}
+	
+	{
+	  FileWriter out = new FileWriter(file);
+	  out.write(glue);
+	  out.flush();
+	  out.close();
+	}
+      }
+      catch(IOException ex) {
+	throw new PipelineException
+	  ("I/O ERROR: \n" + 
+	   "  While attempting to write the editor menu layout file (" + file + ")...\n" + 
+	   "    " + ex.getMessage());
+      }
+    }
+  }
+  
+  /**
+   * Read the layout of the editor plugin selection menu from disk. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to read the menu layout file.
+   */ 
+  private void 
+  readEditorMenuLayout () 
+    throws PipelineException
+  {
+    synchronized(pPluginMenuLayoutLock) {
+      File file = new File(pNodeDir, "etc/editor-menu-layout");
+      if(file.isFile()) {
+	Logs.glu.finer("Reading Editor Menu Layout.");
+
+	PluginMenuLayout layout = null;
+	try {
+	  FileReader in = new FileReader(file);
+	  GlueDecoder gd = new GlueDecoderImpl(in);
+	  layout = (PluginMenuLayout) gd.getObject();
+	  in.close();
+	}
+	catch(Exception ex) {
+	  Logs.glu.severe
+	    ("The editor menu layout file (" + file + ") appears to be corrupted!");
+	  Logs.flush();
+	  
+	  throw new PipelineException
+	    ("I/O ERROR: \n" + 
+	     "  While attempting to read the editor menu layout file (" + file + ")...\n" + 
+	   "    " + ex.getMessage());
+	}
+	assert(layout != null);
+	
+	pEditorMenuLayout = layout;
+      }
+      else {
+	pEditorMenuLayout = new PluginMenuLayout();
+      }
+    }
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write the layout of the tool plugin selection menu to disk. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to write the menu layout file.
+   */ 
+  private void 
+  writeToolMenuLayout() 
+    throws PipelineException
+  {
+    synchronized(pPluginMenuLayoutLock) {
+      File file = new File(pNodeDir, "etc/tool-menu-layout");
+      if(file.exists()) {
+	if(!file.delete())
+	  throw new PipelineException
+	    ("Unable to remove the old tool menu layout file (" + file + ")!");
+      }
+      
+      Logs.glu.finer("Writing Tool Menu Layout.");
+
+      try {
+	String glue = null;
+	try {
+	  GlueEncoder ge = new GlueEncoderImpl("ToolMenuLayout", pToolMenuLayout);
+	  glue = ge.getText();
+	}
+	catch(GlueException ex) {
+	  Logs.glu.severe
+	    ("Unable to generate a Glue format representation of the tool menu layout!");
+	  Logs.flush();
+	  
+	  throw new IOException(ex.getMessage());
+	}
+	
+	{
+	  FileWriter out = new FileWriter(file);
+	  out.write(glue);
+	  out.flush();
+	  out.close();
+	}
+      }
+      catch(IOException ex) {
+	throw new PipelineException
+	  ("I/O ERROR: \n" + 
+	   "  While attempting to write the tool menu layout file (" + file + ")...\n" + 
+	   "    " + ex.getMessage());
+      }
+    }
+  }
+  
+  /**
+   * Read the layout of the tool plugin selection menu from disk. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to read the menu layout file.
+   */ 
+  private void 
+  readToolMenuLayout () 
+    throws PipelineException
+  {
+    synchronized(pPluginMenuLayoutLock) {
+      File file = new File(pNodeDir, "etc/tool-menu-layout");
+      if(file.isFile()) {
+	Logs.glu.finer("Reading Tool Menu Layout.");
+
+	PluginMenuLayout layout = null;
+	try {
+	  FileReader in = new FileReader(file);
+	  GlueDecoder gd = new GlueDecoderImpl(in);
+	  layout = (PluginMenuLayout) gd.getObject();
+	  in.close();
+	}
+	catch(Exception ex) {
+	  Logs.glu.severe
+	    ("The tool menu layout file (" + file + ") appears to be corrupted!");
+	  Logs.flush();
+	  
+	  throw new PipelineException
+	    ("I/O ERROR: \n" + 
+	     "  While attempting to read the tool menu layout file (" + file + ")...\n" + 
+	   "    " + ex.getMessage());
+	}
+	assert(layout != null);
+	
+	pToolMenuLayout = layout;
+      }
+      else {
+	pEditorMenuLayout = new PluginMenuLayout();
+      }
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Write the privileged users to disk. <P> 
    * 
    * @throws PipelineException
@@ -9277,7 +9638,7 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The name of the default toolset.<P> <P> 
+   * The name of the default toolset.<P> 
    * 
    * Access to the <CODE>pDefaultToolset</CODE> field should be protected by a synchronized 
    * block on the <CODE>pDefaultToolsetLock</CODE> field.
@@ -9322,6 +9683,28 @@ class MasterMgr
    */ 
   private TreeMap<String,TreeMap<String,SuffixEditor>>  pSuffixEditors;
 
+
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * The plugin menu layouts lock.
+   * 
+   * Access to the <CODE>pEditorMenuLayout</CODE> and <CODE>pToolMenuLayout</CODE> fields 
+   * should be protected by a synchronized block on this field.
+   */ 
+  private Object pPluginMenuLayoutLock; 
+
+  /**
+   * The cached layout of the editor plugin selection menu or <CODE>null</CODE> if none 
+   * is defined.
+   */ 
+  private PluginMenuLayout  pEditorMenuLayout;
+   
+  /**
+   * The cached layout of the tool plugin selection menu or <CODE>null</CODE> if none 
+   * is defined.
+   */ 
+  private PluginMenuLayout  pToolMenuLayout;
 
 
   /*----------------------------------------------------------------------------------------*/

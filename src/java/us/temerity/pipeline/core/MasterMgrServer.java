@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.26 2004/12/08 10:26:48 jim Exp $
+// $Id: MasterMgrServer.java,v 1.27 2005/01/05 09:44:00 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -409,6 +409,41 @@ class MasterMgrServer
 	    {
 	      MiscSetSuffixEditorsReq req = (MiscSetSuffixEditorsReq) objIn.readObject();
 	      objOut.writeObject(pMasterMgr.setSuffixEditors(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+
+	  /*-- PLUGIN MENU LAYOUTS ---------------------------------------------------------*/
+	  case GetEditorMenuLayout:
+	    {
+	      objOut.writeObject(pMasterMgr.getEditorMenuLayout());
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case SetEditorMenuLayout:
+	    {
+	      MiscSetPluginMenuLayoutReq req = 
+		(MiscSetPluginMenuLayoutReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.setEditorMenuLayout(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+
+	  case GetToolMenuLayout:
+	    {
+	      objOut.writeObject(pMasterMgr.getToolMenuLayout());
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case SetToolMenuLayout:
+	    {
+	      MiscSetPluginMenuLayoutReq req = 
+		(MiscSetPluginMenuLayoutReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.setToolMenuLayout(req));
 	      objOut.flush(); 
 	    }
 	    break;

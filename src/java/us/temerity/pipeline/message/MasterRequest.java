@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.22 2004/11/16 03:56:36 jim Exp $
+// $Id: MasterRequest.java,v 1.23 2005/01/05 09:44:00 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -94,6 +94,30 @@ enum MasterRequest
    * An instance of {@link MiscSetSuffixEditorsReq MiscSetSuffixEditorsReq} is next.
    */
   SetSuffixEditors, 
+
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get layout of the editor plugin selection menu.
+   */
+  GetEditorMenuLayout, 
+  
+  /**
+   * Set layout of the editor plugin selection menu.
+   */
+  SetEditorMenuLayout, 
+  
+
+  /**
+   * Get layout of the tool plugin selection menu.
+   */
+  GetToolMenuLayout, 
+  
+  /**
+   * Set layout of the tool plugin selection menu.
+   */
+  SetToolMenuLayout, 
   
 
   /*----------------------------------------------------------------------------------------*/

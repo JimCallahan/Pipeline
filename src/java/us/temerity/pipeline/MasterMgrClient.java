@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.41 2005/01/03 00:05:31 jim Exp $
+// $Id: MasterMgrClient.java,v 1.42 2005/01/05 09:44:00 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -613,6 +613,116 @@ class MasterMgrClient
   }
   
 
+  /*----------------------------------------------------------------------------------------*/
+  /*   P L U G I N   M E N U   L A Y O U T                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get layout of the editor plugin selection menu.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the editor menu layout.
+   */ 
+  public synchronized PluginMenuLayout
+  getEditorMenuLayout() 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    Object obj = performTransaction(MasterRequest.GetEditorMenuLayout, null); 
+    if(obj instanceof MiscGetPluginMenuLayoutRsp) {
+      MiscGetPluginMenuLayoutRsp rsp = (MiscGetPluginMenuLayoutRsp) obj;
+      return rsp.getLayout();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+  
+  /**
+   * Set the layout of the editor plugin selection menu.
+   * 
+   * @param layout
+   *   The heirarchical set of menus for selection of a specific editor plugin version.
+   * 
+   * @throws PipelineException
+   *   If unable to set the editor menu layout.
+   */ 
+  public synchronized void 
+  setEditorMenuLayout
+  (
+   PluginMenuLayout layout
+  ) 
+    throws PipelineException  
+  {
+    if(!isPrivileged(false)) 
+      throw new PipelineException
+	("Only privileged users may set the editor menu layout!");
+
+    verifyConnection();
+
+    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(layout);
+
+    Object obj = performTransaction(MasterRequest.SetEditorMenuLayout, req); 
+    handleSimpleResponse(obj);    
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get layout of the tool plugin selection menu.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the tool menu layout.
+   */ 
+  public synchronized PluginMenuLayout
+  getToolMenuLayout() 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    Object obj = performTransaction(MasterRequest.GetToolMenuLayout, null); 
+    if(obj instanceof MiscGetPluginMenuLayoutRsp) {
+      MiscGetPluginMenuLayoutRsp rsp = (MiscGetPluginMenuLayoutRsp) obj;
+      return rsp.getLayout();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+  
+  /**
+   * Set the layout of the tool plugin selection menu.
+   * 
+   * @param layout
+   *   The heirarchical set of menus for selection of a specific tool plugin version.
+   * 
+   * @throws PipelineException
+   *   If unable to set the tool menu layout.
+   */ 
+  public synchronized void 
+  setToolMenuLayout
+  (
+   PluginMenuLayout layout
+  ) 
+    throws PipelineException  
+  {
+    if(!isPrivileged(false)) 
+      throw new PipelineException
+	("Only privileged users may set the tool menu layout!");
+
+    verifyConnection();
+
+    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(layout);
+
+    Object obj = performTransaction(MasterRequest.SetToolMenuLayout, req); 
+    handleSimpleResponse(obj);    
+  }
+
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   P R I V I L E G E D   U S E R S                                                      */
