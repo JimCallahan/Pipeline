@@ -1,3 +1,2431 @@
+2003-12-15  Jim Callahan  <jim@salamander>
+
+	* configure.ac: v1.0.1
+
+	* src/java/pipeline/JRegisterDialog.java, src/java/pipeline/PFileSeq.java, src/java/pipeline/PMod.java, src/java/pipeline/PState.java, src/java/pipeline/PVersion.java, src/java/pipeline/Pipeline.java:
+	native queue support
+
+	* src/java/scripts/Makefile.am: removed plui-prof and texture-tester
+
+	* src/java/pipeline/SubProcess.java: added KILLED enum
+
+	* src/java/pipeline/JTextEditorDialog.java:
+	renamed Confirm button to Ok
+
+	* src/java/pipeline/JQueueJobDetailsDialog.java, src/java/pipeline/JQueueJobDialog.java, src/java/pipeline/QueueJob.java, src/java/pipeline/JPropertiesDialog.java:
+	native queue support
+
+	* src/java/pipeline/JPrefsDialog.java: YES/no capitalization
+
+	* src/java/pipeline/JNodeViewer.java: native queue support
+
+	* src/java/pipeline/JFocusedDialog.java:
+	added a more flexible toggleBgColors() method
+
+	* src/java/pipeline/JFilesDialog.java, src/java/pipeline/JFileMerger.java:
+	native queue support
+
+	* src/java/pipeline/JExportDialog.java, src/java/pipeline/JDependParamsViewerDialog.java:
+	YES/no capitalization
+
+	* src/java/pipeline/JDependParamsTable.java:
+	removed redundant UI initialization, column sorting now used e.getPoint()
+
+	* src/java/pipeline/JDependParamsEditorDialog.java, src/java/pipeline/JConfirmDialog.java:
+	YES/no capitalization
+
+	* src/java/pipeline/JCheckOutDialog.java: comments
+
+	* src/java/pipeline/JBaseDialog.java:
+	generalized addHeader() to include toolbar right-justified components
+
+	* src/java/pipeline/GraphicalApp.java: native queue support
+
+	* src/java/pipeline/DependParamsTableModel.java:
+	alternating ascending/desending column sorting support
+
+	* src/java/pipeline/ClientOptsParser.jj:
+	added --prevent-regress option, native queue support
+
+	* src/java/pipeline/ClientApp.java: added --prevent-regress option
+
+	* src/java/pipeline/JobReqs.java, src/java/pipeline/LicenseKey.java, src/java/pipeline/QueueJobTableModel.java, src/java/pipeline/QueueServer.java, src/java/pipeline/QueueServerTableModel.java, src/java/pipeline/SelectKey.java, src/java/pipeline/BaseKey.java, src/java/pipeline/BaseQueueTableModel.java, src/java/pipeline/BitString.java, src/java/pipeline/JAboutDialog.java, src/java/pipeline/JQueueServerDialog.java, src/java/pipeline/JQueueTable.java:
+	initial revision
+
+	* src/java/pipeline/BaseAction.java: comments
+
+	* src/java/pipeline/BaseAction.java:
+	removed Author=sUser criteria for sLookupForModSt
+
+	* src/java/docs/TODO.txt: latest
+
+	* src/java/docs/pipeline.html.in:
+	added the --prevent-regress option to checkout, native pipeline queue support
+
+	* docs/Makefile.in: never should have been commited
+
+	* configure.ac:
+	removed --with-pbs option, added checks for pipeline UID/GID
+
+	* src/database/share/dbinit.sql.in: resurected
+
+	* src/utils/src/Makefile.am: added plrun
+
+	* src/utils/src/PlRun.cc: initial revision
+
+	* src/java/pipeline/PackageInfo.java.in, src/utils/src/PackageInfo.cc.in, src/utils/src/PackageInfo.hh:
+	added the UID/GID for the pipeline user
+
+2003-12-14  Jim Callahan  <jim@salamander>
+
+	* configure.ac: added --max-keys, v0.9.2
+
+	* src/database/share/dbinit.sql, src/java/pipeline/JQueueJobTable.java, src/java/pipeline/QueueTableModel.java:
+	obsolete
+
+	* data/icons/all.gif, data/icons/flat.gif, data/icons/job.gif, data/icons/keys.gif, data/icons/nested.gif, data/icons/nojob.gif, data/icons/nokeys.gif, data/icons/noreqs.gif, data/icons/noserver.gif, data/icons/notiming.gif, data/icons/reqs.gif, data/icons/server.gif, data/icons/single.gif, data/icons/timing.gif:
+	initial revision
+
+	* data/icons/Makefile.am: added new queue/server related icons
+
+2003-12-12  Jim Callahan  <jim@salamander>
+
+	* config/bootstrap.sh, configure.ac, src/java/pipeline/ClientOptsParser.jj, src/java/pipeline/JCheckOutDialog.java, src/java/pipeline/JNodeViewer.java, src/java/pipeline/Pipeline.java:
+	added the Prevent Regression option to Check-Out
+
+2003-12-01  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/DependParamsTableModel.java:
+	fixed bug which caused nodes without dependencies to crash
+
+2003-11-13  Jim Callahan  <jim@salamander>
+
+	* src/java/docs/TODO.txt: latest
+
+	* src/database/scripts/pipelinedb: initial revision
+
+	* src/java/pipeline/JQueueJobDetailsDialog.java, src/java/pipeline/JQueueJobDialog.java:
+	added a Update button which updates QueueJobs only and avoids the longer Node/Mod status cycle
+
+	* src/java/pipeline/JCheckOutDialog.java:
+	now resets the Local Mods combo back to Abort on every update()
+
+	* src/database/scripts/Makefile.am: added pipelinedb init.d script
+
+	* src/java/pipeline/plugin/MayaCollateAction.java:
+	added stage MEL script parameters, added stage messages
+
+	* docs/user-manual/quick-reference.html: fixed image paths
+
+	* src/java/pipeline/JQueueJobDetailsDialog.java:
+	added QueueJob update button without doing a full node update
+
+2003-11-12  Jim Callahan  <jim@salamander>
+
+	* docs/images/.cvsignore, docs/images/Makefile.am, docs/images/checkedin-finished.gif, docs/images/conflicts-finished.gif, docs/images/identical-finished.gif, docs/images/moddep-finished.gif, docs/images/modified-error.gif, docs/images/modified-finished.gif, docs/images/modified-missing.gif, docs/images/modified-queued.gif, docs/images/modified-running.gif, docs/images/modified-stale.gif, docs/images/needsco-finished.gif, docs/images/pending-finished.gif, configure.ac, docs/.cvsignore, docs/user-manual/quick-reference.html, src/database/scripts/dbarchive.in:
+	initial revision
+
+	* src/database/scripts/Makefile.am: added dbarchive
+
+	* docs/Makefile.am, docs/Makefile.in, docs/user-manual/Makefile.am, src/java/pipeline/GraphicalApp.java:
+	added quick reference docs
+
+2003-11-09  Jim Callahan  <jim@salamander>
+
+	* src/utils/src/PlGet.cc:
+	now removes the target working area file before copying the repository file to its location -- fixed a problem where the last modified timestamp was not being updated if the file already existed
+
+	* src/java/pipeline/PState.java: improved log messages
+
+	* src/java/pipeline/PMod.java: comments
+
+	* src/java/pipeline/PFileSeq.java:
+	fixed bug related to empty string suffixes
+
+2003-11-06  Jim Callahan  <jim@salamander>
+
+	* config/bootstrap.sh: the 031027 release
+
+	* src/java/pipeline/ClientOptsParser.jj, src/java/pipeline/JFilesDialog.java, src/java/pipeline/JPropertiesDialog.java, src/java/pipeline/Pipeline.java, src/java/pipeline/plugin/MayaCollateAction.java:
+	extended the Modify command to support partial replacement of per-dependency paramaters
+
+	* src/java/pipeline/plugin/MayaRenderAction.java:
+	added CameraOverride and Processors action parameters
+
+	* src/java/pipeline/BaseAction.java:
+	added replaceParams() and replaceDependParams()
+
+	* src/java/pipeline/plugin/MayaMELAction.java, src/java/pipeline/plugin/MayaPresetAction.java, src/java/pipeline/plugin/MayaRenderAction.java, src/java/pipeline/plugin/SwitchAction.java:
+	initial revision
+
+	* src/java/pipeline/plugin/Makefile.in: new maya action plugins
+
+	* src/java/pipeline/plugin/MayaCollateAction.java:
+	added the sceneNodeName Maya attribute to the PipelineMayaCollate node
+
+	* src/java/pipeline/plugin/MayaCollateAction.java:
+	now sorts the PipelineMayaCollate attributes by node name within each shot, added numberOfElements and numberOfShots Maya attributes to the PipelineMayaCollate node
+
+2003-11-05  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/plugin/HScriptAction.java: error messages
+
+	* src/java/pipeline/QueueJob.java:
+	now supports (null) being returned from BaseAction.prep()
+
+	* src/java/pipeline/PState.java: improved timestamp logging messages
+
+	* src/java/pipeline/PMod.java:
+	fixed a bug in the updating of file timestamps after a new version is checked-in
+
+	* src/java/pipeline/JDirTree.java: removed debugging print
+
+	* src/java/pipeline/DependParameter.java:
+	fixed limitation in lookupShortName()
+
+2003-11-04  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JDirTree.java:
+	fixed expansion bug in setCurrentWorkingDir()
+
+	* src/java/scripts/pipeline.in, src/java/scripts/pljob.in, src/java/scripts/plui.in:
+	added cd's to the current directory to get around the stale NFS problem
+
+2003-11-03  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/plugin/MayaCollateAction.java: fully functional
+
+	* src/java/pipeline/BaseParameter.java: improved getNameUI()
+
+	* src/java/pipeline/JPropertiesDialog.java:
+	fixed a bug in updatePropertiesPanelLook()
+
+2003-11-01  Jim Callahan  <jim@salamander>
+
+	* src/java/docs/TODO.txt: latest
+
+	* src/java/pipeline/JPropertiesDialog.java:
+	added per-cell comparison between table models
+
+	* src/java/pipeline/plugin/MayaCollateAction.java: comments
+
+	* src/java/pipeline/Pipeline.java: error messages
+
+	* src/java/pipeline/JFilesDialog.java, src/java/pipeline/JFocusedDialog.java:
+	remove pRefresh
+
+	* src/java/pipeline/JDependParamsTable.java:
+	added per-cell coloring to comparison between models
+
+	* src/java/pipeline/JDependParamsEditorDialog.java:
+	moved common code into JDependParamsBaseDialog
+
+	* src/java/pipeline/JBaseDialog.java: removed the Release button
+
+	* src/java/pipeline/DependParamsTableModel.java:
+	added comparison to another model
+
+	* src/java/pipeline/JDependParamsBaseDialog.java, src/java/pipeline/JDependParamsViewerDialog.java:
+	initial revision
+
+2003-10-31  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/Pipeline.java, src/java/pipeline/JDirTree.java, src/java/pipeline/DoubleParameter.java, src/java/pipeline/IntegerParameter.java, src/java/pipeline/StringParameter.java, src/java/pipeline/TextParameter.java, src/java/pipeline/DependParamsTableModel.java, src/java/pipeline/DependParameter.java:
+	removed debugging prints
+
+	* src/java/pipeline/ClientOptsParser.jj:
+	--depend-param/--nodepend-param options
+
+	* src/java/pipeline/ClientApp.java: --help message
+
+	* src/java/pipeline/BaseAction.java: comments
+
+	* src/java/docs/pipeline.html.in:
+	added export and --depend-param/--nodepend-param options
+
+	* src/java/docs/TODO.txt: latest
+
+2003-10-30  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/tests/Makefile.in: added TestLang
+
+	* src/java/pipeline/plugin/TestDependParamsAction.java:
+	added missing DependParameter case
+
+	* src/java/pipeline/TextParamCellEditor.java: changed button color
+
+	* src/java/pipeline/Pipeline.java: added the export() command
+
+	* src/java/pipeline/PState.java:
+	turned pTargets/pSources into TreeMaps to deal with bug in hiding nodes referenced by another visible node, added removeSource() and removeTarget() for same reason, added getDepend(), getAction(), ignoreOverflow() amd isSerial() to help with the Export command
+
+	* src/java/pipeline/PDepend.java: fixed a bug in equals()
+
+	* src/java/pipeline/JPropertiesDialog.java:
+	disabled the Refresh button, now always refreshes on update
+
+	* src/java/pipeline/JNodeViewer.java:
+	added support for the Export command
+
+	* src/java/pipeline/JFocusedDialog.java:
+	now updates state with override always on
+
+	* src/java/pipeline/JDependParamsEditorDialog.java:
+	added Link/Unlink buttons and support methods, Integer/Double/StringParameter cells can now be edited with a single click
+
+	* src/java/pipeline/JCheckInDialog.java:
+	renamed Confirm button to Check-In
+
+	* src/java/pipeline/GraphicalApp.java:
+	added Export dialog, now updates state with override always on
+
+	* src/java/pipeline/DependParamsTableModel.java:
+	added link/unlinkParams()
+
+	* src/java/pipeline/BaseAction.java, src/java/pipeline/BaseParameter.java, src/java/pipeline/DependParameter.java, src/java/pipeline/DoubleParameter.java, src/java/pipeline/IntegerParameter.java, src/java/pipeline/JDependParamsTable.java, src/java/pipeline/StringParameter.java, src/java/pipeline/TextParameter.java, src/database/share/dbinit.sql:
+	reorginized action parameters to allow per-dependency linking
+
+	* src/java/pipeline/JExportDialog.java, src/java/pipeline/tests/TestLangApp.java:
+	initial revision
+
+2003-10-28  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JDependParamsTable.java: added per cell selection
+
+	* src/java/pipeline/plugin/MayaCollateAction.java:
+	replaced Next with Order parameter
+
+	* src/java/docs/TODO.txt: latest
+
+	* src/java/pipeline/DirTreeNode.java, src/java/pipeline/JDirTree.java:
+	initial revision
+
+	* src/java/pipeline/JWorkingDirNode.java, src/java/pipeline/JWorkingDirTree.java:
+	obsolete
+
+	* src/java/pipeline/JBrowseDialog.java:
+	changed to lazy directory tree node creation with JDirTree
+
+2003-10-27  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/DependParamsTableModel.java, src/java/pipeline/JDependParamsEditorDialog.java, src/java/pipeline/JDependParamsTable.java, src/java/pipeline/plugin/Makefile.in, src/java/pipeline/plugin/MayaCollateAction.java:
+	added table sorting for per-dependency parameters
+
+2003-10-26  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/DependParamCellEditor.java, src/java/pipeline/JTextParamEditorDialog.java:
+	initial revision
+
+	* src/java/pipeline/DependParamsTableModel.java, src/java/pipeline/JDependParamsEditorDialog.java, src/java/pipeline/JDependParamsTable.java, src/java/pipeline/JPropertiesDialog.java, src/java/pipeline/TextParamCellEditor.java:
+	per-dependency dialog now fully functional
+
+	* src/java/pipeline/plugin/TestDependParamsAction.java:
+	initial revision
+
+	* src/java/pipeline/plugin/MayaCollateAction.java: actual parameters
+
+	* src/java/pipeline/JTextEditorDialog.java, src/java/pipeline/JBaseDialog.java:
+	added constructor with added owner parameter
+
+	* src/java/pipeline/GraphicalApp.java: commented debuggin prints
+
+	* src/java/pipeline/DoubleParameter.java, src/java/pipeline/IntegerParameter.java, src/java/pipeline/StringParameter.java, src/java/pipeline/TextParameter.java:
+	added PError exception to lookup()
+
+	* src/java/pipeline/DependParameter.java: added short dependency name
+
+	* src/java/pipeline/BaseParameter.java:
+	added per-dependency insert() and modify()
+
+	* src/java/pipeline/BaseApp.java:
+	fixed bug in checkLicense() which was rejecting salamander
+
+	* src/java/pipeline/BaseAction.java:
+	getInitialDependParams() now returns a TreeMap instead of an Array, fixed bugs in the insert* methods
+
+2003-10-24  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/TextParamCellEditor.java: initial revision
+
+	* src/java/pipeline/plugin/MayaCollateAction.java, config/bootstrap.sh, src/java/pipeline/DependParamsTableModel.java, src/java/pipeline/JBaseTable.java, src/java/pipeline/JDependParamsEditorDialog.java, src/java/pipeline/JDependParamsTable.java, src/java/pipeline/JFileMerger.java, src/java/pipeline/JFileSeq.java, src/java/pipeline/JNodeViewer.java, src/java/pipeline/JPropertiesDialog.java, src/java/pipeline/JQueueJobDialog.java, src/java/pipeline/JQueueJobTable.java, src/java/pipeline/JTextEditorDialog.java, src/java/pipeline/PFileSeq.java, src/java/pipeline/QueueJob.java, src/java/pipeline/ZoomPanBehavior.java:
+	latest
+
+	* src/java/pipeline/BaseAction.java: added getInitialDependParams()
+
+2003-10-23  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/DependParamsTableModel.java, src/java/pipeline/JBaseTable.java, src/java/pipeline/JDependParamsEditorDialog.java, src/java/pipeline/JDependParamsTable.java:
+	initial revision
+
+	* src/java/pipeline/plugin/MayaCollateAction.java:
+	added supportsDependParams()
+
+	* src/java/pipeline/JQueueJobTable.java:
+	moved CenteredRenderer stuff into the base class JBaseTable
+
+	* src/java/pipeline/JTextEditorDialog.java, src/java/pipeline/JTextMergerDialog.java:
+	added blue banner headers
+
+	* src/java/pipeline/JPropertiesDialog.java:
+	added per-dependency editor buttons
+
+	* src/java/pipeline/BaseAction.java:
+	added supportsDependParams() and removeAllDependParams()
+
+2003-10-22  Jim Callahan  <jim@salamander>
+
+	* src/database/share/dbinit.sql:
+	reoganized to support seperate ParameterType information and per-dependency parameters
+
+	* src/java/pipeline/plugin/Makefile.in: added MayaCollateAction
+
+	* src/java/pipeline/plugin/HScriptAction.java:
+	renamed SceneNode parameter to SceneDepend
+
+	* src/java/pipeline/Pipeline.java:
+	added BaseParameter.prepareStatements()
+
+	* src/java/pipeline/JPropertiesDialog.java:
+	improved the DependParameter handling
+
+	* src/java/pipeline/JFocusedDialog.java: comments
+
+	* src/java/pipeline/JBaseDialog.java:
+	added addFixedObjectField(), renamed the Reset button to Refresh
+
+	* src/java/pipeline/BaseParameter.java, src/java/pipeline/DependParameter.java, src/java/pipeline/DoubleParameter.java, src/java/pipeline/IntegerParameter.java, src/java/pipeline/StringParameter.java, src/java/pipeline/TextParameter.java, src/java/pipeline/BaseAction.java:
+	added per-dependency parameters
+
+	* src/java/pipeline/NodeItem.java, src/java/pipeline/plugin/MayaCollateAction.java:
+	initial revision
+
+2003-10-20  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/PMod.java: error message
+
+	* src/java/pipeline/DependParameter.java, src/java/pipeline/DoubleParameter.java, src/java/pipeline/IntegerParameter.java:
+	more assertions
+
+	* src/java/pipeline/ClientOptsParser.jj:
+	now converts DependParameter arguments into full node paths
+
+	* src/java/pipeline/BaseApp.java, src/java/pipeline/ClientApp.java, src/java/pipeline/GraphicalApp.java:
+	added checkLicense()
+
+	* src/database/share/dbinit.sql: updated default toolset
+
+2003-10-17  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JPrefsDialog.java: renamed Cancel button to Close
+
+	* src/utils/src/Pls.cc:
+	removed overly restrictive check for regular file type
+
+	* src/java/pipeline/plugin/HScriptAction.java:
+	implemented the action body
+
+	* src/java/pipeline/plugin/ScriptAction.java:
+	added parameter descriptions
+
+	* src/java/pipeline/Pipeline.java:
+	added better plugin loading error messages
+
+	* src/java/pipeline/PState.java:
+	fixed a bug in compQueueStates() for multiple file sequences
+
+	* src/java/pipeline/JPropertiesDialog.java, src/java/pipeline/JBaseDialog.java:
+	renamed Cancel button to Close
+
+	* src/java/pipeline/ClientOptsParser.jj:
+	fixed bug in parsing of string values for --action parameters
+
+	* src/java/pipeline/ClientApp.java:
+	fixed message bug in handleSecondary()
+
+	* src/java/docs/TODO.txt: latest
+
+	* src/java/pipeline/BaseParameter.java, src/java/pipeline/DependParameter.java, src/java/pipeline/DoubleParameter.java, src/java/pipeline/IntegerParameter.java, src/java/pipeline/StringParameter.java, src/java/pipeline/TextParameter.java:
+	added descriptions to parameters
+
+	* src/database/share/dbinit.sql:
+	added Description to Parameter tables, added all rhino users
+
+	* src/database/scripts/dbinit.in:
+	fixed path to sbin directory in messages
+
+2003-10-11  Jim Callahan  <jim@salamander>
+
+	* src/utils/docs/pls.html.in, src/utils/src/FileSeq.hh, src/utils/src/Pls.cc:
+	added --fcheck-exec option
+
+	* config.h.in, config/bootstrap.sh, configure.ac, src/utils/docs/Makefile.am, src/utils/src/Makefile.am:
+	added support for pls
+
+	* src/utils/docs/pls.html.in, src/utils/src/FileSeq.hh, src/utils/src/Pls.cc:
+	initial revision
+
+2003-10-09  Jim Callahan  <jim@salamander>
+
+	* src/database/share/dbinit.sql: changed default tree layout to DOWN
+
+	* tests/Makefile.am: added checkout and release tests
+
+	* tests/checkout-animals, tests/release-animals: initial revision
+
+	* src/java/pipeline/GraphicalApp.java, src/java/pipeline/JobApp.java:
+	removed --alt-working from the usage message
+
+	* src/java/docs/pipeline.html.in, src/java/pipeline/ClientApp.java, src/java/pipeline/ClientOptsParser.jj, src/java/pipeline/Pipeline.java:
+	added kill command
+
+	* src/java/docs/TODO.txt: latest
+
+	* src/utils/src/PlGet.cc, src/utils/src/PlPut.cc:
+	cleaned up command-line parsing
+
+	* src/java/pipeline/Pipeline.java:
+	added log messages for creation of plput/get list files, now passes Logger/Level state onto the pljobs run by make
+
+	* src/java/pipeline/Logs.java: added levelString()
+
+	* src/java/pipeline/JobApp.java: standardized with ClientApp
+
+	* src/java/pipeline/GraphicalApp.java: minor run() fixes, help message
+
+	* src/java/pipeline/Editor.java:
+	removed error when reseting a editor which hasn't been user overridden
+
+	* src/java/pipeline/GraphicalOptsParser.jj, src/java/pipeline/JobOptsParser.jj:
+	massing reorgainization of token parsing
+
+	* src/java/pipeline/ClientOptsParser.jj:
+	massing reorgainization of token parsing, batch file processing added
+
+	* src/java/pipeline/ClientApp.java:
+	added SQLException handling to run()
+
+2003-10-08  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/BaseApp.java:
+	added quoting of string arguments to options
+
+	* src/java/docs/pipeline.html.in:
+	added the --threads option to the make command
+
+	* src/java/docs/pipeline.html.in, src/java/docs/pljob.html.in, src/java/docs/plui.html.in:
+	remove --alt-working option
+
+	* src/java/docs/TODO.txt: latest
+
+	* src/database/share/dbinit.sql: added ido as a user
+
+	* tests/checkin-batch, tests/data/checkin.batch, tests/data/editor.batch, tests/data/pending.batch, tests/data/toolset.batch, tests/editor-batch, tests/editor-list, tests/editor-reset, tests/editor-reset-all, tests/editor-reset-none, tests/editor-set, tests/make-animals, tests/pending-batch, tests/toolset-batch, tests/toolset-dump, tests/toolset-get, tests/toolset-list, tests/toolset-reset, tests/toolset-set:
+	initial revision
+
+	* tests/add-bear, tests/add-berry, tests/add-dragonfly, tests/add-fish, tests/add-fly, tests/add-frog, tests/add-monkeyA, tests/add-monkeyB, tests/add-monkeyC, tests/add-multiA, tests/add-multiB, tests/add-simpleA, tests/add-simpleB, tests/add-simpleC, tests/add-simpleD, tests/add-simpleE, tests/add-snake, tests/add-tadpole, tests/data/animals/bear, tests/data/animals/dragonfly, tests/data/animals/fish, tests/data/animals/frog, tests/data/animals/snake, tests/data/animals/tadpole, tests/mod-bear, tests/mod-bear2, tests/mod-multiA, tests/mod-simpleD, tests/mod-simpleE, tests/sec-multiA, tests/sec-multiA2, tests/sec-multiA3:
+	removed --alt-working option
+
+	* tests/Makefile.am: moved tests to user working area
+
+2003-10-06  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/PMod.java:
+	added lookupDependentMods(), added a overloaded remove() methods which alows finer control over deleting PDepends
+
+	* src/java/pipeline/PDepend.java:
+	added removeTargetForMod() and removeSourceForMod() methods
+
+	* src/java/pipeline/JCheckOutDialog.java:
+	reordered Local Mods combo box items, added tooltips
+
+	* src/java/pipeline/JCheckInDialog.java:
+	changed combo box and window width
+
+	* src/java/pipeline/GraphicalApp.java: added release dialog
+
+	* src/java/docs/pipeline.html.in: release command implemented
+
+	* src/java/pipeline/JReleaseDialog.java: initial revision
+
+	* src/java/docs/TODO.txt, src/java/pipeline/ClientApp.java, src/java/pipeline/ClientOptsParser.jj, src/java/pipeline/JNodeViewer.java, src/java/pipeline/Pipeline.java:
+	release command implemented
+
+	* src/java/pipeline/JCheckInDialog.java, src/java/pipeline/JNodeViewer.java:
+	added version increment mode
+
+	* src/java/pipeline/PMod.java: reordered version mode enumerations
+
+2003-10-03  Jim Callahan  <jim@salamander>
+
+	* src/java/docs/TODO.txt: latest
+
+	* docs/user-manual/bits.html: intial revision
+
+	* src/java/pipeline/UtopiaBoldFontGeometry.java: obsolete
+
+	* src/java/share/logger.properties: removed rsp logger
+
+	* src/java/pipeline/SubProcess.java:
+	made all log messages one level finer
+
+	* src/java/pipeline/Pipeline.java:
+	added diff(), edit() for command-line, added version increment mode to checkIn(), added makeFrame(), added wait parameter to make() methods, added merge(), added queueFrame(), added release() stub
+
+	* src/java/pipeline/PVersion.java: comments and error messages
+
+	* src/java/pipeline/ClientApp.java: fixed bug in log/comment printing
+
+	* src/java/pipeline/PState.java:
+	added reconnectTree() and abreviated state strings, renamed state symbols
+
+	* src/java/pipeline/PMod.java:
+	added version increment mode to insertAsVersion()
+
+	* src/java/pipeline/PFileSeq.java:
+	renamed fromIndex() to indexToFrame()
+
+	* src/java/pipeline/Makefile.in:
+	removed parsers for pleditor and pltoolset
+
+	* src/java/pipeline/Logs.java: removed rsp logger
+
+	* src/java/pipeline/JobApp.java: changed logger from rsp to cmd
+
+	* src/java/pipeline/JPropertiesDialog.java: added a Reset button
+
+	* src/java/pipeline/JNodeViewer.java:
+	added version increment mode to Pipeline.checkIn()
+
+	* src/java/pipeline/JFileSeq.java:
+	renamed fromIndex() to indexToFrame()
+
+	* src/java/pipeline/JFileMerger.java:
+	added wait argument to Pipeline.make()
+
+	* src/java/pipeline/GraphicalApp.java: removed commented rebuildTree()
+
+	* src/java/pipeline/JBaseDialog.java: added a Reset button
+
+	* src/java/pipeline/GraphicalApp.java:
+	moved rebuildTree() to PState.reconnectTree()
+
+	* src/java/pipeline/FrameRange.java:
+	added frameToIndex(), renamed fromIndex() to indexToFrame()
+
+	* src/java/pipeline/Editor.java: fixed an SQL bug in the sInserEditorSt
+
+	* src/java/pipeline/tests/Makefile.in, src/java/pipeline/tests/TestCheckSumApp.java, src/java/pipeline/tests/TestDataDependApp.java, src/java/pipeline/tests/TestDataNodeApp.java, src/java/pipeline/tests/TestDataVersionApp.java, src/java/pipeline/tests/TestDynamicLoad.java, src/java/pipeline/tests/TestFileDiff2App.java, src/java/pipeline/tests/TestFileDiffApp.java, src/java/pipeline/tests/TestFramePatternApp.java, src/java/pipeline/tests/TestLogMessageApp.java, src/java/pipeline/tests/TestProcDependApp.java, src/java/pipeline/tests/TestProcNodeApp.java, src/java/pipeline/tests/TestProcVersionApp.java, src/java/pipeline/tests/TestSubProcessApp.java, src/java/pipeline/tests/TestVersionIDApp.java:
+	resurected tests
+
+	* src/java/pipeline/EditorApp.java, src/java/pipeline/EditorOptsParser.jj, src/java/pipeline/ToolsetApp.java, src/java/pipeline/ToolsetOptsParser.jj:
+	now incorperated in pipeline(1)
+
+	* src/java/pipeline/ClientApp.java, src/java/pipeline/ClientOptsParser.jj:
+	complete overhaul to make pipeline functionally equivalent to plui
+
+	* src/java/pipeline/BaseApp.java:
+	added repeat(), center() and lead() -- removed sep()
+
+	* src/java/docs/plui.html.in: added --log option
+
+	* src/java/docs/pipeline.html.in:
+	complete overhaul to make pipeline functionally equivalent to plui
+
+	* src/java/docs/TODO.txt: latest
+
+	* src/java/pipeline/DiffResult.java, src/java/pipeline/IllegalFrameException.java:
+	initial revision
+
+	* src/java/pipeline/tests/TestCheckSumApp.java, src/java/pipeline/tests/TestDataDependApp.java, src/java/pipeline/tests/TestDataNodeApp.java, src/java/pipeline/tests/TestDataVersionApp.java, src/java/pipeline/tests/TestDynamicLoad.java, src/java/pipeline/tests/TestFileDiff2App.java, src/java/pipeline/tests/TestFileDiffApp.java, src/java/pipeline/tests/TestFramePatternApp.java, src/java/pipeline/tests/TestLogMessageApp.java, src/java/pipeline/tests/TestProcDependApp.java, src/java/pipeline/tests/TestProcNodeApp.java, src/java/pipeline/tests/TestProcVersionApp.java, src/java/pipeline/tests/TestSubProcessApp.java, src/java/pipeline/tests/TestVersionIDApp.java:
+	obsolete
+
+	* configure.ac, src/java/docs/Makefile.am, src/java/docs/pleditor.html.in, src/java/docs/pltoolset.html.in:
+	pleditor and pltoolset now obsolete
+
+	* src/java/scripts/Makefile.am, src/java/scripts/pleditor.in, src/java/scripts/pltoolset.in:
+	pleditor and pltoolset obsolete
+
+2003-09-24  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JTextMergerDialog.java, src/java/pipeline/Logs.java, src/java/pipeline/Pipeline.java, src/java/pipeline/plugin/DsTableAction.java, src/java/pipeline/plugin/IConvertAction.java, src/java/pipeline/plugin/MergeTableAction.java, src/java/pipeline/plugin/ScriptAction.java, src/java/pipeline/plugin/VexTableAction.java:
+	removed unecessary extra args to FileWriter.write()
+
+	* src/java/pipeline/tests/Makefile.in: initial revision
+
+2003-09-23  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/Pipeline.java, src/database/share/dbinit.sql, src/java/pipeline/JQueueJobDetailsDialog.java, src/java/pipeline/QueueJob.java:
+	now differentiated Make from PBS when running jobs
+
+2003-09-22  Jim Callahan  <jim@salamander>
+
+	* config/bootstrap.sh: reworked configure options
+
+	* src/utils/src/Makefile.am, src/utils/src/PlGet.cc, src/utils/src/PlPut.cc:
+	moved needed Phoenix::Core classes here and removed dependence on the Phoenix libararies
+
+	* src/java/pipeline/SingleEditor.java, src/java/pipeline/SubProcessMgr.java, src/java/pipeline/UserPreferences.java, src/java/pipeline/QueueJob.java:
+	added extra newlines to error messages
+
+	* src/java/pipeline/Pipeline.java:
+	added new overloaded launchEditor() and getQueueJob() methods
+
+	* src/java/pipeline/PackageInfo.java.in, src/utils/src/PackageInfo.cc.in:
+	reorganized TOOLSETDIR path
+
+	* src/java/pipeline/PVersion.java:
+	added extra newlines to error messages
+
+	* src/java/pipeline/PState.java:
+	added check that lastest and base files are NOT the same file
+
+	* src/java/pipeline/JTextMergerDialog.java:
+	overloaded generateSections() to take Files as well as Strings
+
+	* src/java/pipeline/JNodeViewer.java:
+	added extra newlines to error messages
+
+	* src/java/pipeline/JFileSeq.java:
+	Edit/Edit With... split into working and repository version items
+
+	* src/java/pipeline/JFileMerger.java: added menu items now working
+
+	* src/java/pipeline/JAddFilesDialog.java:
+	added extra newlines to error messages
+
+	* src/java/pipeline/GraphicalOptsParser.jj:
+	fixed bug where UI got launched for information options
+
+	* src/java/pipeline/GraphicalApp.java: fixed exit code, messages...
+
+	* src/java/pipeline/FontMgr.java: removed UtopiaBold
+
+	* src/java/docs/pipeline.html.in: unified description with plui(1)
+
+	* src/java/docs/Makefile.am: added plui.html.in
+
+	* data/fonts/Makefile.am: removed UtopiaBold
+
+	* config.h.in: latest
+
+	* configure.ac: cleaned up uneeded tests, added more docs
+
+	* Makefile.am: added docs
+
+	* docs/Makefile.am, docs/Makefile.in, docs/user-manual/.cvsignore, docs/user-manual/Makefile.am, docs/user-manual/index.html, src/java/docs/plui.html.in, src/utils/src/AtomicTypes.hh, src/utils/src/FB.cc, src/utils/src/FB.hh, src/utils/src/Timer.hh:
+	initial revision
+
+2003-09-18  Jim Callahan  <jim@salamander>
+
+	* config/bootstrap.sh, configure.ac, src/java/pipeline/JCollapsePanel.java, src/java/pipeline/JFileMerger.java, src/java/pipeline/JFileSeq.java, src/java/pipeline/Makefile.in, src/java/pipeline/PState.java, src/java/pipeline/PackageInfo.java.in, src/java/pipeline/Pipeline.java, src/java/pipeline/plugin/Makefile.in, src/java/pipeline/tests/Makefile.in, src/utils/src/PackageInfo.cc.in:
+	latest
+
+2003-09-15  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/PVersion.java: added setVersionID()
+
+	* src/java/pipeline/PState.java: overhaul of computeFileStates()
+
+	* src/java/pipeline/JPropertiesDialog.java:
+	added change of working version to modifyNode()
+
+	* src/java/pipeline/JFilesDialog.java:
+	now properly handles PFileSeqs missing from both the working and latested versions, but present in the selected version
+
+	* src/java/pipeline/JFileSeq.java: added pIsEnabled and pIsPrimary
+
+	* src/java/pipeline/JFileMerger.java: added pIsEnabled
+
+	* src/java/pipeline/ClientOptsParser.jj, src/java/pipeline/Pipeline.java:
+	added the ability to change the VersionID in Pipeline.modify()
+
+2003-09-13  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JFileSeq.java, src/java/pipeline/JFilesDialog.java, src/java/pipeline/JStateBar.java, src/java/pipeline/PState.java, src/java/pipeline/Pipeline.java:
+	file and queue state overhaul, not yet completed...
+
+2003-09-12  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JFilesDialog.java: added secondary sequence support
+
+	* src/java/pipeline/JFileSeq.java: removed override code
+
+2003-09-11  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JQueueJobDetailsDialog.java:
+	fixed width of dialog window
+
+	* src/java/pipeline/Pipeline.java: made launchPlGet() public
+
+	* src/java/pipeline/PState.java: Capitalized In/Out in state names
+
+	* src/java/pipeline/JNodeViewer.java:
+	removed references to obsolete JDetailsDialog
+
+	* src/java/pipeline/JDetailsDepend.java, src/java/pipeline/JFileBox.java, src/java/pipeline/JFileSeqBox.java:
+	obsoleted by JPreferencesDialog, JHistoryDialog and JFilesDialog
+
+	* src/java/pipeline/JPropertiesDialog.java:
+	added size parameters to addVersionsPanel() so that the JPreferencesDialog can have different sizes than the JFilesDialog
+
+	* src/java/pipeline/JDetailsDialog.java:
+	obsoleted by JPreferencesDialog, JHistoryDialog and JFilesDialog
+
+	* src/java/pipeline/JNodeViewer.java: JDetailsDialog now obsolete
+
+	* src/java/pipeline/JNodeDialog.java:
+	added size parameters to addVersionsPanel() so that the JPreferencesDialog can have different sizes than the JFilesDialog
+
+	* src/java/pipeline/JHistoryDialog.java:
+	now locks down version panel heights
+
+	* src/java/pipeline/JFocusedDialog.java:
+	now overrides during setState() when a node changes from CHECKED_IN to a non-CHECKED_IN overall node state
+
+	* src/java/pipeline/JFilesDialog.java:
+	GetOrder generation, spawing of plget to move files for Confirm and Apply
+
+	* src/java/pipeline/JFileSeq.java:
+	added enabling/disabling, per-file comparison, one-buton check of all work or repo files check boxes, GetOrder generation
+
+	* src/java/pipeline/JFileMerger.java:
+	added enabling/disabling, proper comparison colors, popup menu stubs, GetOrder generation
+
+	* src/java/pipeline/JBaseDialog.java:
+	added ivars for the Confirm, Apply and Cancel buttons
+
+	* src/java/pipeline/FocusedDialogMgr.java: fixed a bug in showDialog()
+
+	* data/icons/check.gif, data/icons/clone.gif, data/icons/defocus.gif, data/icons/focus.gif, data/icons/locked.gif, data/icons/unlocked.gif:
+	initial revision
+
+	* data/icons/Makefile.am: added check.gif
+
+	* src/java/pipeline/Pipeline.java:
+	getPrimary() now properly handles PENDING nodes
+
+	* src/java/pipeline/PNode.java: renamed variables in lookupPrimary()
+
+	* src/java/pipeline/PMod.java: added lookupPrimary()
+
+	* src/java/pipeline/JPropertiesDialog.java: proper enable/disabling
+
+	* src/java/pipeline/JNodeViewer.java:
+	improved error handling of History dialogs for PENDING nodes
+
+	* src/java/pipeline/JNodeDialog.java: proper enable/disabling
+
+	* src/java/pipeline/JHistoryDialog.java:
+	fully functional, TextArea components still have a problem with getting oversized though
+
+	* src/java/pipeline/JFilesDialog.java:
+	primary file sequences mostly working...
+
+	* src/java/pipeline/JErrorDialog.java: made default window size larger
+
+	* src/java/pipeline/JFileMerger.java, src/java/pipeline/JFileSeq.java:
+	initial revision
+
+2003-09-10  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JNodeViewer.java: added files and history dialogs
+
+	* src/java/pipeline/JFocusedDialog.java, src/java/pipeline/JPropertiesDialog.java:
+	moved setFgColors() and getBgColors() from JPropertiesDialog to JFocusedDialog
+
+	* src/java/pipeline/JBaseDialog.java: comments
+
+	* src/java/pipeline/GraphicalApp.java: added files and history dialogs
+
+	* src/java/pipeline/FilesDialogMgr.java, src/java/pipeline/HistoryDialogMgr.java, src/java/pipeline/JFilesDialog.java, src/java/pipeline/JHistoryDialog.java, src/java/pipeline/JNodeDialog.java:
+	initial revision
+
+2003-09-09  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/FocusedDialogMgr.java, src/java/pipeline/JFocusedDialog.java, src/java/pipeline/PropertiesDialogMgr.java:
+	initial revision
+
+	* src/java/pipeline/JBaseDialog.java: added addCheckBox()
+
+	* src/java/pipeline/GraphicalApp.java, src/java/pipeline/JPropertiesDialog.java:
+	extracted focus behavior for JPropertiesDialogs into PropertiesDialogMgr, FocusedDialogMgr and FocusedDialog
+
+	* src/java/pipeline/JAddFilesDialog.java, src/java/pipeline/JBaseDialog.java, src/java/pipeline/JBrowseDialog.java, src/java/pipeline/JCheckInDialog.java, src/java/pipeline/JCheckOutDialog.java, src/java/pipeline/JCommentEditorDialog.java, src/java/pipeline/JConfirmDialog.java, src/java/pipeline/JConnectDialog.java, src/java/pipeline/JErrorDialog.java, src/java/pipeline/JPrefsDialog.java, src/java/pipeline/JPropertiesDialog.java, src/java/pipeline/JQueueJobDetailsDialog.java, src/java/pipeline/JQueueJobDialog.java:
+	new color coded headers, unified common UI code
+
+2003-09-08  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JTextMergerDialog.java: fixed layout bug
+
+	* src/java/pipeline/JTextMergerSection.java: added selection hilighting
+
+	* src/java/pipeline/JDetailsDialog.java:
+	disabled connection to GraphicalApp is preparation for obsoleting this class
+
+	* src/java/pipeline/GraphicalApp.java:
+	replaced JDetailsDialog with JPropertiesDialog, added focusing for JPropertiedDialog
+
+	* src/java/pipeline/JPropertiesDialog.java:
+	added focusing, updating by GraphicalApp... now FULLY functional
+
+	* src/java/pipeline/JNodeViewer.java:
+	remapped BUTTON2 to only do collapse/expand and NOT show a JDetialsDialog
+
+	* src/java/pipeline/JPropertiesDialog.java:
+	added modifyNode(), fixed an update bug for toolset/editor repository fields
+
+	* src/java/pipeline/Pipeline.java: improved error messages for modify()
+
+	* src/java/pipeline/JDepend.java: added getLinked()
+
+2003-09-06  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JPropertiesDialog.java:
+	now reuses values for changeable fields unless the node name is changed
+
+	* src/java/pipeline/JDepend.java: added copy constructor
+
+2003-09-05  Jim Callahan  <jim@salamander>
+
+	* src/java/docs/TODO.txt: latest
+
+	* src/database/share/dbinit.sql: added DependParameter table
+
+	* src/java/pipeline/Pipeline.java:
+	added getPrimary(), fixed bug in checkOutHelper() where dependencies of nodes where sometimes missed
+
+	* src/java/pipeline/PNode.java: added lookupPrimary()
+
+	* src/java/pipeline/JNodeViewer.java, src/java/pipeline/GraphicalApp.java:
+	renamed JMergedPropsDialog to JPropertiesDialog
+
+	* src/java/pipeline/JDepend.java, src/java/pipeline/JPropertiesDialog.java:
+	initial revision
+
+	* src/java/pipeline/JMergePropsDialog.java: obsolete
+
+2003-09-04  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JMergePropsDialog.java:
+	fixed sStateSize, version state now updates
+
+	* src/java/pipeline/JMergePropsDialog.java:
+	now has full editing support for node properties just like JDetailsDialog
+
+	* src/java/pipeline/JComboBoxCellRenderer.java:
+	added support for hilight foreground and background colors
+
+	* src/java/pipeline/JNodeViewer.java:
+	removed restrictions to showing a JMergePropsDialog with no PMod
+
+2003-09-03  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JCompareDialog.java: obsolete
+
+	* src/java/pipeline/SubProcess.java: added better error checking
+
+	* src/java/pipeline/JNodeViewer.java:
+	replaced Compare with Merge Properties
+
+	* src/java/pipeline/JFileBox.java: removed Diff menu item
+
+	* src/java/pipeline/JDetailsDialog.java:
+	fixed indexing and other bugs related to DependParameter
+
+	* src/java/pipeline/JBaseDialog.java:
+	added missing setText() in addTextArea()
+
+	* src/java/pipeline/GraphicalApp.java: added MergeProps dialogs
+
+	* src/java/pipeline/FileDiff.java, src/java/pipeline/FileDiff2.java:
+	obsolete
+
+	* src/java/pipeline/BaseAction.java:
+	added DepenedParameters to database ops
+
+	* src/java/pipeline/FileSections.java, src/java/pipeline/JMergePropsDialog.java, src/java/pipeline/JTextMergerDialog.java, src/java/pipeline/JTextMergerSection.java, src/java/pipeline/JTextViewerDialog.java:
+	initial revision
+
+2003-09-02  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JCheckOutDialog.java, src/java/pipeline/JCommentEditorDialog.java, src/java/pipeline/JCompareDialog.java, src/java/pipeline/JVersionChoiceDialog.java:
+	prep for Merge
+
+2003-08-28  Jim Callahan  <jim@salamander>
+
+	* src/java/docs/TODO.txt: latest
+
+	* src/java/pipeline/GraphicalApp.java: added compare dialog
+
+	* src/java/pipeline/JNodeViewer.java:
+	combined Diff and Merge items into Compare
+
+	* src/java/pipeline/JCompareDialog.java: initial revision
+
+	* src/java/pipeline/JCommentEditorDialog.java:
+	added size argument to addVersionChoice()
+
+	* src/java/pipeline/JVersionChoiceDialog.java:
+	renamed pFieldSize to pFieldSize1, added addWorkVersionChoice()
+
+	* src/java/pipeline/JCheckOutDialog.java:
+	renamed pFieldSize to pFieldSize1
+
+	* src/java/pipeline/JQueueJobDetailsDialog.java:
+	minor changes to support parent class now being GraphicalApp, collapse panels now open at first
+
+	* src/java/pipeline/JCheckOutDialog.java:
+	options panel now inside scrolled area and at top of list
+
+	* src/java/pipeline/JNodeViewer.java:
+	jobs update now in its own task, single jobs show details dialog directly
+
+	* src/java/pipeline/JDetailsDialog.java:
+	renamed GraphicalApp.removeDetailsDialog() to removeNodeDetailsDialog()
+
+	* src/java/pipeline/GraphicalApp.java, src/java/pipeline/JQueueJobDialog.java:
+	moved jobs details dialogs to GraphicalApp from JQueueJobDialog
+
+2003-08-27  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/plugin/Makefile.in: added EmacsClientEditor
+
+	* src/java/pipeline/JFileBox.java: make and queue items now work
+
+	* src/java/pipeline/Pipeline.java: comments
+
+	* src/java/pipeline/plugin/EmacsClientEditor.java: initial revision
+
+	* src/java/pipeline/plugin/FcheckEditor.java:
+	launch() now returns the jobID
+
+2003-08-26  Jim Callahan  <jim@salamander>
+
+	* src/java/docs/TODO.txt: latest
+
+	* src/java/pipeline/Pipeline.java:
+	when a job errors, depedent jobs are automatically killed
+
+	* src/java/pipeline/Pipeline.java:
+	added checks for missing or incorrect working area directory in checkOut(), checkOut() now completed, added extra error checking for launchEditor()
+
+	* src/java/pipeline/QueueJob.java: removed commented debugging code
+
+	* src/java/pipeline/PVersion.java:
+	fixed bug in sLookupBaseIdSt where Author was not being checked against the current user
+
+	* src/java/pipeline/PState.java:
+	MOD_DEPEND is now also caused by a dependency with NEEDS_CO and differing versions from the dependency
+
+	* src/java/pipeline/BaseEditor.java, src/java/pipeline/NoneEditor.java, src/java/pipeline/SingleEditor.java:
+	now returns procID from launch()
+
+	* src/java/docs/TODO.txt: latest
+
+	* config/bootstrap.sh: replaced /code with /home/jim/code
+
+2003-08-24  Jim Callahan  <jim@salamander>
+
+	* rpm/RPMS/javacc-3.0-01.i386.rpm, rpm/RPMS/javamake-1.0-01.i386.rpm, rpm/SPECS/javacc-3.0-01.spec, rpm/SPECS/javamake-1.0-01.spec, rpm/SRPMS/javacc-3.0-01.src.rpm, rpm/SRPMS/javamake-1.0-01.src.rpm:
+	initial revision
+
+2003-08-21  Jim Callahan  <jim@salamander>
+
+	* configure.ac: added HTML files
+
+	* src/java/pipeline/PState.java:
+	now checks to see if the versions of dependencies change
+
+	* src/java/pipeline/JNodeViewer.java:
+	added version choice to check-out task
+
+	* src/java/pipeline/JDetailsDialog.java: fixed size
+
+	* data/icons/next.gif, data/icons/prev.gif: added extra space
+
+2003-08-20  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JVersionChoiceDialog.java:
+	reworked addVersionChoice()
+
+	* src/java/pipeline/JSecondaryDialog.java: now reusable
+
+	* src/java/pipeline/JRegisterDialog.java: fixed dimensions
+
+	* src/java/pipeline/JNodeViewer.java:
+	reuses JSecondaryDialog from GraphicalApp, now passes force optio to check-out task
+
+	* src/java/pipeline/JCommentEditorDialog.java: added options panel
+
+	* src/java/pipeline/JCheckOutDialog.java: added force overwrite option
+
+	* src/java/pipeline/JCheckInDialog.java:
+	previous messages now fully functional
+
+	* src/java/pipeline/JBaseDialog.java: added doCancel()
+
+	* src/java/pipeline/GraphicalApp.java:
+	added node name to checkInDialog()
+
+	* src/java/pipeline/JCheckInDialog.java: fixed prev/next icon sizes
+
+	* src/java/pipeline/JAddFilesDialog.java: fixed header layout
+
+	* src/java/pipeline/GraphicalApp.java: added the Add Secondary Dialog
+
+	* src/java/docs/Makefile.am: latest
+
+	* src/java/pipeline/GraphicalApp.java, src/java/pipeline/JBaseDialog.java, src/java/pipeline/JCheckOutDialog.java, src/java/pipeline/JCommentEditorDialog.java, src/java/pipeline/JConfirmDialog.java, src/java/pipeline/JErrorDialog.java, src/java/pipeline/JNodeViewer.java, src/java/pipeline/JTextEditorDialog.java:
+	UI resize bug fixes
+
+	* src/database/share/dbinit.sql: removed primary key of Name for PMod
+
+	* src/utils/docs/Makefile.am, src/utils/src/Makefile.am: latest
+
+	* src/utils/src/PlPut.cc: upgraded to share common stuff with PlGet
+
+	* src/java/pipeline/JCheckInDialog.java: initial revision
+
+	* src/java/docs/pipeline.html, src/java/docs/pleditor.html, src/java/docs/pljob.html, src/java/docs/pltoolset.html, src/utils/docs/plput.html:
+	obsolete
+
+	* src/java/docs/pipeline.html.in, src/java/docs/pleditor.html.in, src/java/docs/pljob.html.in, src/java/docs/pltoolset.html.in, src/utils/docs/plget.html.in, src/utils/docs/plput.html.in, src/utils/src/PlCommon.hh, src/utils/src/PlGet.cc:
+	initial revision
+
+	* data/icons/Makefile.am: added prev/next icons
+
+	* data/icons/next.gif, data/icons/prev.gif: initial revision
+
+2003-08-18  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JWorkingDirTree.java, src/java/pipeline/JFileSeqLister.java:
+	replaced local calls with a static one for determining username
+
+	* src/java/pipeline/JNodeChooserNodeRenderer.java, src/java/pipeline/JNodeViewer.java, src/java/pipeline/JDetailsDialog.java:
+	replaced Class.isInstance() with instaceof operator
+
+	* src/java/pipeline/GetOrder.java: initial checkin
+
+	* src/java/pipeline/Toolset.java:
+	replaced local calls with a static one for determining username
+
+	* src/java/pipeline/QueueTableModel.java:
+	replaced Class.isInstance() with instaceof operator
+
+	* src/java/pipeline/QueueJob.java:
+	replaced local calls with a static one for determining username
+
+	* src/java/pipeline/Pipeline.java: check-out mostly working
+
+	* src/java/pipeline/PVersion.java:
+	replaced Class.isInstance() with instaceof operator
+
+	* src/java/pipeline/PState.java:
+	fixed several bugs related to repository directory name, added check for version Needs Checkout to computeOverallNodeState()
+
+	* src/java/pipeline/PMod.java:
+	added version ID checking to hasModifiedProps(), added writing of Version to insert() and modify()
+
+	* src/java/pipeline/Editor.java, src/java/pipeline/Glue.java, src/java/pipeline/GraphicalApp.java, src/java/pipeline/PDepend.java, src/java/pipeline/Database.java, src/java/pipeline/BaseApp.java:
+	replaced local calls with a static one for determining username
+
+	* src/java/pipeline/BaseAction.java, src/java/pipeline/BaseEditor.java, src/java/pipeline/VersionID.java:
+	replaced Class.isInstance() with instaceof operator
+
+2003-08-14  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/Pipeline.java: added checkOut() stubs
+
+	* src/java/pipeline/JNodeViewer.java:
+	added check-out menu item, dialog and task
+
+	* src/java/pipeline/JDetailsDialog.java:
+	moved addMessage() to JBaseDialog, fixed a bug in loading icons
+
+	* src/java/pipeline/JDetailsDepend.java:
+	fixed a bug in loading the icon image
+
+	* src/java/pipeline/JBaseDialog.java:
+	moved addMessage() here from JDetailsDialog
+
+	* src/java/pipeline/IconTextureMgr.java: added support for 32x32 icons
+
+	* src/java/pipeline/GraphicalApp.java: adde getCheckOutDialog()
+
+	* src/java/pipeline/JCheckOutDialog.java: initial revision
+
+	* src/java/docs/TODO.txt: latest
+
+	* src/java/pipeline/LogMessage.java: added more assertions
+
+	* src/java/pipeline/JCommentEditorDialog.java:
+	moved version choice code into a new base class JVersionChoiceDialog
+
+	* src/java/pipeline/JVersionChoiceDialog.java: initial revision
+
+	* src/java/pipeline/PVersion.java:
+	fixed bug in SQL command for sInsertCommentSt, added more assertions
+
+	* src/java/pipeline/PState.java: fixed bug in computeFileStates()
+
+2003-08-13  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JSecondaryDialog.java:
+	moved actual adding functionality to JNodeViewer
+
+	* src/java/pipeline/JNodeViewer.java:
+	resurected dependency and secondary file sequence add/remove items
+
+	* src/java/pipeline/JConfirmDialog.java:
+	made dialog height a little taller
+
+	* src/java/pipeline/GraphicalApp.java: added getNodeViewer()
+
+2003-08-12  Jim Callahan  <jim@salamander>
+
+	* rpm/SPECS/j2sdk_docs-1.4.2-01.spec, rpm/SRPMS/j2sdk_docs-1.4.2-01.src.rpm, rpm/RPMS/jai_sdk-1.1.1-01.i386.rpm, rpm/RPMS/java3d_sdk-1.1.1-01.i386.rpm, rpm/RPMS/j2sdk_docs-1.4.2-01.i386.rpm:
+	now works with j2sdk-1.4.2
+
+	* src/java/share/logger.properties: latest
+
+	* src/java/pipeline/PState.java: fixed bug in computeOverallNodeState()
+
+	* src/java/pipeline/JNodeViewer.java:
+	added better error checking in doEdit() and doEditWith()
+
+	* src/java/pipeline/PFileSeq.java: fixed bug in insertHelper()
+
+	* src/java/pipeline/JErrorDialog.java: made window taller
+
+	* src/java/pipeline/JConfirmDialog.java: added informational messages
+
+	* src/java/pipeline/Pipeline.java:
+	added Modified Depend to check-in action
+
+	* src/java/pipeline/PState.java:
+	made Modified Depend state propogate downstream
+
+	* rpm/SRPMS/java3d-1.1.1-01.src.rpm, rpm/SRPMS/java3d_sdk-1.1.1-01.src.rpm, rpm/SRPMS/jai-1.1.1-01.src.rpm, rpm/SRPMS/jai_sdk-1.1.1-01.src.rpm, rpm/SPECS/jai-1.1.1-01.spec, rpm/SPECS/jai_sdk-1.1.1-01.spec, rpm/SPECS/java3d_sdk-1.3-fcs.spec, rpm/RPMS/jai-1.1.1-01.i386.rpm, rpm/RPMS/java3d-1.1.1-01.i386.rpm:
+	rebuilt RPMS for JavaSDK-1.4.2
+
+	* data/maya/images/normal.0038.tif, data/maya/images/normal.0039.tif, data/maya/images/normal.0040.tif, data/maya/images/normal.0041.tif, data/maya/images/normal.0042.tif, data/maya/images/normal.0043.tif, data/maya/images/primary.0038.tif, data/maya/images/primary.0039.tif, data/maya/images/primary.0040.tif, data/maya/images/primary.0041.tif, data/maya/images/primary.0042.tif, data/maya/images/primary.0043.tif, data/maya/images/selected.0038.tif, data/maya/images/selected.0039.tif, data/maya/images/selected.0040.tif, data/maya/images/selected.0041.tif, data/maya/images/selected.0042.tif, data/maya/images/selected.0043.tif:
+	initial revision
+
+	* src/java/pipeline/BaseApp.java, src/java/pipeline/ClientOptsParser.jj, src/java/pipeline/Database.java, src/java/pipeline/DependParameter.java, src/java/pipeline/DoubleParameter.java, src/java/pipeline/Editor.java, src/java/pipeline/EditorOptsParser.jj, src/java/pipeline/GraphicalApp.java, src/java/pipeline/GraphicalOptsParser.jj, src/java/pipeline/IntegerParameter.java, src/java/pipeline/JDetailsDialog.java, src/java/pipeline/JFileBox.java, src/java/pipeline/JNodeChooser.java, src/java/pipeline/JNodeViewer.java, src/java/pipeline/JPrefsDialog.java, src/java/pipeline/JQueueJobDetailsDialog.java, src/java/pipeline/JQueueJobDialog.java, src/java/pipeline/JRegisterDialog.java, src/java/pipeline/JSecondaryDialog.java, src/java/pipeline/JobOptsParser.jj, src/java/pipeline/PTask.java, src/java/pipeline/PVersion.java, src/java/pipeline/Pipeline.java, src/java/pipeline/QueueJob.java, src/java/pipeline/SqlString.java, src/java/pipeline/StringParameter.java, src/java/pipeline/TextParameter.java, src/java/pipeline/Toolset.java, src/java/pipeline/ToolsetOptsParser.jj, src/java/pipeline/plugin/ScriptAction.java, src/java/pipeline/tests/TestSubProcessApp.java, src/java/share/logger.properties:
+	replaced the remaining Statements with PreparedStatements
+
+	* src/java/pipeline/PState.java: added new Modified Depend state
+
+	* data/icons/clean-icons.bash, data/icons/gen-icons.bash.in, data/icons/install-icons.bash.in, data/maya/images/normal.0000.tif, data/maya/images/normal.0001.tif, data/maya/images/normal.0002.tif, data/maya/images/normal.0003.tif, data/maya/images/normal.0004.tif, data/maya/images/normal.0005.tif, data/maya/images/normal.0006.tif, data/maya/images/normal.0007.tif, data/maya/images/normal.0008.tif, data/maya/images/normal.0009.tif, data/maya/images/normal.0010.tif, data/maya/images/normal.0011.tif, data/maya/images/normal.0012.tif, data/maya/images/normal.0013.tif, data/maya/images/normal.0014.tif, data/maya/images/normal.0015.tif, data/maya/images/normal.0016.tif, data/maya/images/normal.0017.tif, data/maya/images/normal.0018.tif, data/maya/images/normal.0019.tif, data/maya/images/normal.0020.tif, data/maya/images/normal.0021.tif, data/maya/images/normal.0022.tif, data/maya/images/normal.0023.tif, data/maya/images/normal.0024.tif, data/maya/images/normal.0025.tif, data/maya/images/normal.0026.tif, data/maya/images/normal.0027.tif, data/maya/images/normal.0028.tif, data/maya/images/normal.0029.tif, data/maya/images/normal.0030.tif, data/maya/images/normal.0031.tif, data/maya/images/normal.0032.tif, data/maya/images/normal.0033.tif, data/maya/images/normal.0034.tif, data/maya/images/normal.0035.tif, data/maya/images/normal.0036.tif, data/maya/images/normal.0037.tif, data/maya/images/primary.0000.tif, data/maya/images/primary.0001.tif, data/maya/images/primary.0002.tif, data/maya/images/primary.0003.tif, data/maya/images/primary.0004.tif, data/maya/images/primary.0005.tif, data/maya/images/primary.0006.tif, data/maya/images/primary.0007.tif, data/maya/images/primary.0008.tif, data/maya/images/primary.0009.tif, data/maya/images/primary.0010.tif, data/maya/images/primary.0011.tif, data/maya/images/primary.0012.tif, data/maya/images/primary.0013.tif, data/maya/images/primary.0014.tif, data/maya/images/primary.0015.tif, data/maya/images/primary.0016.tif, data/maya/images/primary.0017.tif, data/maya/images/primary.0018.tif, data/maya/images/primary.0019.tif, data/maya/images/primary.0020.tif, data/maya/images/primary.0021.tif, data/maya/images/primary.0022.tif, data/maya/images/primary.0023.tif, data/maya/images/primary.0024.tif, data/maya/images/primary.0025.tif, data/maya/images/primary.0026.tif, data/maya/images/primary.0027.tif, data/maya/images/primary.0028.tif, data/maya/images/primary.0029.tif, data/maya/images/primary.0030.tif, data/maya/images/primary.0031.tif, data/maya/images/primary.0032.tif, data/maya/images/primary.0033.tif, data/maya/images/primary.0034.tif, data/maya/images/primary.0035.tif, data/maya/images/primary.0036.tif, data/maya/images/primary.0037.tif, data/maya/images/selected.0000.tif, data/maya/images/selected.0001.tif, data/maya/images/selected.0002.tif, data/maya/images/selected.0003.tif, data/maya/images/selected.0004.tif, data/maya/images/selected.0005.tif, data/maya/images/selected.0006.tif, data/maya/images/selected.0007.tif, data/maya/images/selected.0008.tif, data/maya/images/selected.0009.tif, data/maya/images/selected.0010.tif, data/maya/images/selected.0011.tif, data/maya/images/selected.0012.tif, data/maya/images/selected.0013.tif, data/maya/images/selected.0014.tif, data/maya/images/selected.0015.tif, data/maya/images/selected.0016.tif, data/maya/images/selected.0017.tif, data/maya/images/selected.0018.tif, data/maya/images/selected.0019.tif, data/maya/images/selected.0020.tif, data/maya/images/selected.0021.tif, data/maya/images/selected.0022.tif, data/maya/images/selected.0023.tif, data/maya/images/selected.0024.tif, data/maya/images/selected.0025.tif, data/maya/images/selected.0026.tif, data/maya/images/selected.0027.tif, data/maya/images/selected.0028.tif, data/maya/images/selected.0029.tif, data/maya/images/selected.0030.tif, data/maya/images/selected.0031.tif, data/maya/images/selected.0032.tif, data/maya/images/selected.0033.tif, data/maya/images/selected.0034.tif, data/maya/images/selected.0035.tif, data/maya/images/selected.0036.tif, data/maya/images/selected.0037.tif, data/maya/scenes/normal.ma, data/maya/scenes/primary.ma, data/maya/scenes/selected.ma:
+	new Modified Depend state
+
+2003-08-11  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/DoubleParameter.java: initial revision
+
+	* src/java/pipeline/BaseAction.java, src/java/pipeline/BaseEditor.java, src/java/pipeline/BaseParameter.java, src/java/pipeline/ClientOptsParser.jj, src/java/pipeline/DependParameter.java, src/java/pipeline/Editor.java, src/java/pipeline/IntegerParameter.java, src/java/pipeline/JDetailsDialog.java, src/java/pipeline/LogMessage.java, src/java/pipeline/PDepend.java, src/java/pipeline/PFileSeq.java, src/java/pipeline/PMod.java, src/java/pipeline/PNode.java, src/java/pipeline/PState.java, src/java/pipeline/PTask.java, src/java/pipeline/PVersion.java, src/java/pipeline/Pipeline.java, src/java/pipeline/QueueJob.java, src/java/pipeline/StringParameter.java, src/java/pipeline/TextParameter.java, src/java/pipeline/UserPreferences.java:
+	conversion to PreparedStatements -- compiles but is untested
+
+	* src/database/share/dbinit.sql:
+	renamed RealParameter to DoubleParameter
+
+	* configure.ac: support for PostgreSQL 7.3.4
+
+2003-08-10  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/StringBaseParameter.java, src/java/pipeline/RealParameter.java:
+	obsolete
+
+	* src/java/pipeline/UserPreferences.java, src/java/pipeline/JPrefsDialog.java, src/java/pipeline/Pipeline.java:
+	UserPreferences now used PreparedStatements for SQL commands
+
+	* src/java/pipeline/GraphicalApp.java:
+	now uses 64x64 icons and 32x32 fonts
+
+	* src/java/pipeline/Database.java:
+	txnRollback() and txnCommit() now accept null as an argument
+
+	* src/java/pipeline/JNodeViewer.java, src/java/pipeline/FontMgr.java, src/java/pipeline/IconAppearanceMgr.java, src/java/pipeline/ZoomPanBehavior.java:
+	now uses 64x64 icons and 32x32 fonts
+
+2003-08-09  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/GraphicalApp.java, src/java/pipeline/JNodeChooser.java, src/java/pipeline/JNodeViewer.java, src/java/pipeline/PTask.java:
+	fixed minor PTask related bugs related to the status message and cursor appearance
+
+	* src/java/pipeline/GraphicalApp.java, src/java/pipeline/GraphicalOptsParser.jj:
+	database connection initialization is now performed in a InitDbTask so that the UI can be updated properly
+
+	* src/java/pipeline/Database.java, src/java/pipeline/GraphicalApp.java, src/java/pipeline/GraphicalOptsParser.jj, src/java/pipeline/JErrorDialog.java, src/java/pipeline/JNodeChooser.java, src/java/pipeline/JNodeChooserNodeRenderer.java, src/java/pipeline/JNodeViewer.java:
+	better startup handing and runtime handing of broken database connections
+
+	* rpm/SPECS/jai-1.1.1-01.spec, rpm/SPECS/java3d_sdk-1.3-fcs.spec, rpm/SRPMS/jai-1.1.1-01.src.rpm, rpm/SRPMS/java3d-1.1.1-01.src.rpm, rpm/RPMS/java3d-1.1.1-01.i386.rpm, rpm/RPMS/jai-1.1.1-01.i386.rpm, rpm/RPMS/j2sdk-1_4_2-linux-i586.rpm:
+	intial revision
+
+2003-08-08  Jim Callahan  <jim@salamander>
+
+	* src/java/scripts/plui.in: removed incremental GC
+
+	* configure.ac, src/java/scripts/Makefile.am: added plui-prof
+
+	* src/java/scripts/plui-prof.in: initial revision
+
+	* data/splash/pipeline.gif, data/splash/pipeline.tiff, data/splash/pipeline.xcf:
+	lightened shadows
+
+	* src/java/pipeline/JNodeChooser.java, src/java/pipeline/JNodeChooserNodeRenderer.java, src/java/pipeline/JNodeViewer.java, src/java/pipeline/JQueueJobDetailsDialog.java, src/java/pipeline/JQueueJobDialog.java, src/java/pipeline/PTask.java:
+	added thread names
+
+	* src/java/pipeline/ZoomPanBehavior.java:
+	made zooming work for both X and Y drags
+
+	* src/java/pipeline/GraphicalApp.java: added thread names
+
+	* src/java/pipeline/FontMgr.java, src/java/pipeline/GraphicalApp.java, src/java/pipeline/IconTextureMgr.java, src/java/pipeline/JNodeViewer.java, src/java/pipeline/TextureTesterApp.java:
+	replaced TextureLoader with ImageIO -- now MUCH faster
+
+	* data/maya/images/primary.0000.tif, data/maya/images/primary.0001.tif, data/maya/images/primary.0002.tif, data/maya/images/primary.0003.tif, data/maya/images/primary.0004.tif, data/maya/images/primary.0005.tif, data/maya/images/primary.0006.tif, data/maya/images/primary.0007.tif, data/maya/images/primary.0008.tif, data/maya/images/primary.0009.tif, data/maya/images/primary.0010.tif, data/maya/images/primary.0011.tif, data/maya/images/primary.0012.tif, data/maya/images/primary.0013.tif, data/maya/images/primary.0014.tif, data/maya/images/primary.0015.tif, data/maya/images/primary.0016.tif, data/maya/images/primary.0017.tif, data/maya/images/primary.0018.tif, data/maya/images/primary.0019.tif, data/maya/images/primary.0020.tif, data/maya/images/primary.0021.tif, data/maya/images/primary.0022.tif, data/maya/images/primary.0023.tif, data/maya/images/primary.0024.tif, data/maya/images/primary.0025.tif, data/maya/images/primary.0026.tif, data/maya/images/primary.0027.tif, data/maya/images/primary.0028.tif, data/maya/images/primary.0029.tif, data/maya/images/primary.0030.tif, data/maya/images/primary.0031.tif, data/maya/images/primary.0032.tif, data/maya/images/primary.0033.tif, data/maya/images/primary.0034.tif, data/maya/images/primary.0035.tif, data/maya/images/primary.0036.tif, data/maya/images/primary.0037.tif, data/maya/scenes/primary.ma:
+	initial revision
+
+	* data/icons/clean-icons.bash, data/icons/gen-icons.bash.in, data/icons/install-icons.bash.in, data/icons/zoom.gif:
+	added PRIMARY selection mode
+
+	* data/splash/pipeline.gif, data/splash/pipeline.tiff, data/splash/pipeline.xcf:
+	color corrected the P and E in Pipeline
+
+	* data/maya/images/normal.0012.tif, data/maya/images/normal.0013.tif, data/maya/images/normal.0014.tif, data/maya/images/normal.0015.tif, data/maya/images/normal.0016.tif, data/maya/images/normal.0017.tif, data/maya/images/normal.0018.tif, data/maya/images/normal.0019.tif, data/maya/images/normal.0020.tif, data/maya/images/normal.0021.tif, data/maya/images/normal.0022.tif, data/maya/images/normal.0023.tif, data/maya/images/normal.0024.tif, data/maya/images/normal.0025.tif, data/maya/images/normal.0026.tif, data/maya/images/normal.0027.tif, data/maya/images/normal.0028.tif, data/maya/images/normal.0029.tif, data/maya/images/normal.0030.tif, data/maya/images/normal.0031.tif, data/maya/images/normal.0032.tif, data/maya/images/normal.0033.tif, data/maya/images/normal.0034.tif, data/maya/images/normal.0035.tif, data/maya/images/normal.0036.tif, data/maya/images/normal.0037.tif, data/maya/images/selected.0000.tif, data/maya/images/selected.0001.tif, data/maya/images/selected.0002.tif, data/maya/images/selected.0003.tif, data/maya/images/selected.0004.tif, data/maya/images/selected.0005.tif, data/maya/images/selected.0006.tif, data/maya/images/selected.0007.tif, data/maya/images/selected.0008.tif, data/maya/images/selected.0009.tif, data/maya/images/selected.0010.tif, data/maya/images/selected.0011.tif, data/maya/images/selected.0012.tif, data/maya/images/selected.0013.tif, data/maya/images/selected.0014.tif, data/maya/images/selected.0015.tif, data/maya/images/selected.0016.tif, data/maya/images/selected.0017.tif, data/maya/images/selected.0018.tif, data/maya/images/selected.0019.tif, data/maya/images/selected.0020.tif, data/maya/images/selected.0021.tif, data/maya/images/selected.0022.tif, data/maya/images/selected.0023.tif, data/maya/images/selected.0024.tif, data/maya/images/selected.0025.tif, data/maya/images/selected.0026.tif, data/maya/images/selected.0027.tif, data/maya/images/selected.0028.tif, data/maya/images/selected.0029.tif, data/maya/images/selected.0030.tif, data/maya/images/selected.0031.tif, data/maya/images/selected.0032.tif, data/maya/images/selected.0033.tif, data/maya/images/selected.0034.tif, data/maya/images/selected.0035.tif, data/maya/images/selected.0036.tif, data/maya/images/selected.0037.tif, data/maya/scenes/normal.ma, data/maya/scenes/selected.ma, data/maya/images/normal.0000.tif, data/maya/images/normal.0001.tif, data/maya/images/normal.0002.tif, data/maya/images/normal.0003.tif, data/maya/images/normal.0004.tif, data/maya/images/normal.0005.tif, data/maya/images/normal.0006.tif, data/maya/images/normal.0007.tif, data/maya/images/normal.0008.tif, data/maya/images/normal.0009.tif, data/maya/images/normal.0010.tif, data/maya/images/normal.0011.tif:
+	new color scheme
+
+	* src/java/docs/TODO.txt: latest
+
+	* src/java/pipeline/JNodeViewer.java, src/java/pipeline/ZoomPanBehavior.java:
+	added PRIMARY selection mode, changed mouse bindings to Maya-like setting
+
+	* src/java/pipeline/JDetailsDepend.java, src/java/pipeline/JDetailsDialog.java, src/java/pipeline/JNodeChooser.java, src/java/pipeline/JNodeChooserNodeRenderer.java, src/java/pipeline/PState.java, src/java/pipeline/ViewerNode.java:
+	added PRIMARY selection mode
+
+	* src/java/pipeline/GraphicalApp.java:
+	added PRIMARY selection mode, applicaiton popup menu items are now appended to the JNodeChooser/Viewer panel menus
+
+	* src/java/pipeline/FontMgr.java: added PRIMARY selection mode
+
+2003-08-06  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JDetailsDialog.java: added field for scroll pane
+
+	* src/java/pipeline/JCommentEditorDialog.java: initial revision
+
+	* src/java/pipeline/GraphicalApp.java, src/java/pipeline/JDetailsDialog.java, src/java/pipeline/JNodeViewer.java, src/java/pipeline/PVersion.java, src/java/pipeline/Pipeline.java:
+	change comment dialog now remembers previous message, handles checked-in nodes properly
+
+	* config/bootstrap.sh, data/icons/Makefile.am, src/java/pipeline/JDetailsDialog.java, src/java/pipeline/JErrorDialog.java, src/java/pipeline/JNodeViewer.java, src/java/pipeline/JTextEditorDialog.java, src/java/pipeline/PVersion.java, src/java/pipeline/Pipeline.java:
+	change comments now work
+
+2003-08-05  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JDetailsDepend.java, src/java/pipeline/JDetailsDialog.java:
+	now correctly disables editing and clears the editable fields when node status is CHECKED_IN
+
+	* src/java/pipeline/ZoomPanBehavior.java: added zoom and pan cursors
+
+	* src/java/pipeline/GraphicalApp.java, src/java/pipeline/JNodeChooser.java, src/java/pipeline/JNodeViewer.java, src/java/pipeline/JSplashFrame.java, src/java/pipeline/JWaitDialog.java:
+	wait cursors
+
+	* data/maya/images/normal.0000.tif, data/maya/images/normal.0001.tif, data/maya/images/normal.0002.tif, data/maya/images/normal.0003.tif, data/maya/images/normal.0004.tif, data/maya/images/normal.0005.tif, data/maya/images/normal.0006.tif, data/maya/images/normal.0007.tif, data/maya/images/normal.0008.tif, data/maya/images/normal.0009.tif, data/maya/images/normal.0010.tif, data/maya/images/normal.0011.tif, data/maya/images/normal.0012.tif, data/maya/images/normal.0013.tif, data/maya/images/normal.0014.tif, data/maya/images/normal.0015.tif, data/maya/images/normal.0016.tif, data/maya/images/normal.0017.tif, data/maya/images/normal.0018.tif, data/maya/images/normal.0019.tif, data/maya/images/normal.0020.tif, data/maya/images/normal.0021.tif, data/maya/images/normal.0022.tif, data/maya/images/normal.0023.tif, data/maya/images/normal.0024.tif, data/maya/images/normal.0025.tif, data/maya/images/normal.0026.tif, data/maya/images/normal.0027.tif, data/maya/images/normal.0028.tif, data/maya/images/normal.0029.tif, data/maya/images/normal.0030.tif, data/maya/images/normal.0031.tif, data/maya/images/normal.0032.tif, data/maya/images/normal.0033.tif, data/maya/images/normal.0034.tif, data/maya/images/normal.0035.tif, data/maya/images/normal.0036.tif, data/maya/images/normal.0037.tif, data/maya/images/selected.0000.tif, data/maya/images/selected.0001.tif, data/maya/images/selected.0002.tif, data/maya/images/selected.0003.tif, data/maya/images/selected.0004.tif, data/maya/images/selected.0005.tif, data/maya/images/selected.0006.tif, data/maya/images/selected.0007.tif, data/maya/images/selected.0008.tif, data/maya/images/selected.0009.tif, data/maya/images/selected.0010.tif, data/maya/images/selected.0011.tif, data/maya/images/selected.0012.tif, data/maya/images/selected.0013.tif, data/maya/images/selected.0014.tif, data/maya/images/selected.0015.tif, data/maya/images/selected.0016.tif, data/maya/images/selected.0017.tif, data/maya/images/selected.0018.tif, data/maya/images/selected.0019.tif, data/maya/images/selected.0020.tif, data/maya/images/selected.0021.tif, data/maya/images/selected.0022.tif, data/maya/images/selected.0023.tif, data/maya/images/selected.0024.tif, data/maya/images/selected.0025.tif, data/maya/images/selected.0026.tif, data/maya/images/selected.0027.tif, data/maya/images/selected.0028.tif, data/maya/images/selected.0029.tif, data/maya/images/selected.0030.tif, data/maya/images/selected.0031.tif, data/maya/images/selected.0032.tif, data/maya/images/selected.0033.tif, data/maya/images/selected.0034.tif, data/maya/images/selected.0035.tif, data/maya/images/selected.0036.tif, data/maya/images/selected.0037.tif, data/maya/scenes/normal.ma, data/maya/scenes/selected.ma:
+	new Pending and CheckedIn icons
+
+	* src/java/pipeline/Pipeline.java:
+	fixed bug in getNodeNames(), better error handling
+
+	* src/java/pipeline/PState.java: added getToolset() and getEditor()
+
+	* src/java/pipeline/JRegisterDialog.java:
+	now works for both checked in and checked out nodes
+
+	* src/java/pipeline/JNodeViewer.java:
+	replaced node popup item disabling in favor of better error messages for inappropriate ops
+
+	* src/java/pipeline/JErrorDialog.java:
+	replaced JScrollPane with word wrapping in the TextArea
+
+2003-08-02  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JNodeViewer.java:
+	added doRevoke(), fixed bug in doHide()
+
+	* src/java/pipeline/ViewerNodePool.java: added getActiveNode()
+
+	* src/java/pipeline/Pipeline.java: added multi-node make() and queue()
+
+	* src/java/pipeline/NodePath.java: added getParent()
+
+	* src/java/pipeline/JRegisterDialog.java:
+	fixed bug in setting default values during cloning
+
+	* src/java/pipeline/JQueueJobDialog.java:
+	added support for multiple node selection
+
+	* src/java/pipeline/JNodeViewer.java:
+	most node menu items working again, added zooming and centering during node collapse/expand
+
+	* src/java/pipeline/GraphicalApp.java:
+	removed updateStates() calls from clearNode(), fixed bug in passing defaults to JRegisterDialog during cloning
+
+	* src/java/scripts/pljob.in: added plugin directory to classpath
+
+2003-08-01  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/ViewerNodeBase.java, src/java/pipeline/ViewerNodeCollapsed.java, src/java/pipeline/ViewerNodeCollapsedPool.java:
+	intial revision
+
+	* src/java/pipeline/ViewerNodePool.java: comments
+
+	* src/java/pipeline/ViewerNode.java:
+	now used common based class ViewerNodeBase
+
+	* src/java/pipeline/JNodeViewer.java: node used ViewerNodeCollapsedPool
+
+	* src/java/pipeline/ViewerCollapsedLink.java: obsolete
+
+	* src/java/pipeline/ViewerNodePool.java: removed debugging prints
+
+	* src/java/scripts/plui.in: raised memory limits
+
+	* src/java/pipeline/JNodeViewer.java:
+	now used ViewerNodePool to resue ViewerNodes
+
+	* src/java/pipeline/ViewerNode.java:
+	now supports complete resuability by ViewerNodePool
+
+	* src/java/pipeline/ViewerNodePool.java, data/icons/darkgrey.tiff, data/icons/white.tiff, data/icons/yellow.tiff:
+	initial revision
+
+2003-07-31  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JNodeViewer.java, src/java/pipeline/ViewerLink.java:
+	fixed line drawing bug by using simple texture maps for all lines
+
+	* src/java/pipeline/JPrefsDialog.java: better preference limits
+
+	* src/java/pipeline/IconTextureMgr.java: added simple textures
+
+	* src/java/pipeline/GraphicalApp.java:
+	added loading of simple textures during splash
+
+	* src/database/share/dbinit.sql: better default preferences
+
+	* data/icons/Makefile.am: added simple color textures
+
+	* src/java/pipeline/JNodeViewer.java:
+	speculative attempt to fix disappearing lines bug
+
+	* src/java/pipeline/GraphicalApp.java:
+	added pregeneration of selected label appearances to splash
+
+	* src/java/pipeline/ViewerNode.java:
+	label color now changes when selected
+
+	* src/java/pipeline/FontMgr.java: added selection color
+
+	* src/java/pipeline/JNodeViewer.java:
+	simplfied layout into one method -- topDownLayout()
+
+	* src/java/pipeline/ViewerNode.java:
+	simplified to not need pointers to ViewerLink objects, rearranged selection method
+
+2003-07-30  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JNodeViewer.java: rubberband selection works
+
+	* src/java/pipeline/ViewerNode.java:
+	added modifiable appearances to support selection
+
+	* src/java/pipeline/ViewerCollapsedLink.java:
+	fixed bug where userdata and pickable was being set
+
+	* src/java/pipeline/ZoomPanBehavior.java: removed debugging print
+
+2003-07-29  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/ZoomPanBehavior.java:
+	added camera Z limit which adapts to the canvas size
+
+	* src/java/pipeline/ViewerNode.java: TextureFilter preference
+
+	* src/java/pipeline/ViewerLink.java: removed obsolete swing/awt imports
+
+	* src/java/pipeline/TextureTesterApp.java: latest
+
+	* src/java/pipeline/JNodeViewer.java:
+	reordered mouse button mappings, added camera Home/ViewAll, added ViewerCollapsedLinks
+
+	* src/java/pipeline/GraphicalApp.java:
+	now explicitly used BUTTON3 for popups, TextureFilter preference
+
+	* data/splash/Makefile.am: removed pipeline-2 images
+
+	* src/java/pipeline/JSplashFrame.java:
+	fixed progress bar color, new splash image
+
+	* src/java/pipeline/JNodeChooser.java, src/java/pipeline/JFileBox.java, src/java/pipeline/JFileSeqBox.java:
+	now explicitly used BUTTON3 for popups
+
+	* src/java/pipeline/FontMgr.java, src/java/pipeline/IconAppearanceMgr.java, src/java/pipeline/IconTextureMgr.java, src/database/share/dbinit.sql, src/java/pipeline/JPrefsDialog.java, src/java/pipeline/UserPreferences.java:
+	added TextureFilter preference
+
+	* data/fonts/CharterBTRoman/Makefile.am: fixed clean-fonts path
+
+	* data/fonts/Makefile.am: added clean-fonts.bash.in
+
+	* data/splash/text.xcf: initial revision
+
+	* data/splash/pipeline.gif, data/splash/pipeline.tiff, data/splash/pipeline.xcf:
+	moved title text to the bottom-right corner
+
+	* data/splash/pipeline-2.xcf, data/splash/pipeline-2.gif, data/splash/pipeline-2.tiff:
+	obsolete
+
+	* src/java/pipeline/ViewerCollapsedLink.java: initial revision
+
+	* src/java/pipeline/JSplashFrame.java: new image
+
+	* src/java/pipeline/JNodeViewer.java: node menus work again
+
+	* data/splash/Makefile.am, data/splash/pipeline-2.gif, data/splash/pipeline-2.tiff, data/splash/pipeline-2.xcf:
+	initial revision
+
+2003-07-28  Jim Callahan  <jim@salamander>
+
+	* config/bootstrap.sh: latest
+
+	* configure.ac:
+	fixed bug in --with-code=PATH and --with-base=PATH options
+
+	* src/java/pipeline/FontMgr.java, src/java/pipeline/GraphicalApp.java, src/java/pipeline/IconTextureMgr.java, src/java/pipeline/JSplashFrame.java, src/java/pipeline/PackageInfo.java.in, src/java/docs/Makefile.am, src/java/pipeline/Makefile.in, src/java/pipeline/plugin/Makefile.in, src/java/pipeline/tests/Makefile.in, src/java/scripts/Makefile.am, src/java/scripts/pipeline.in, src/java/scripts/pleditor.in, src/java/scripts/pljob.in, src/java/scripts/pltoolset.in, src/java/scripts/plui.in, src/java/scripts/texture-tester.in, src/java/share/Makefile.am, src/utils/docs/Makefile.am, src/utils/src/Makefile.am, src/utils/src/PackageInfo.cc.in, src/database/scripts/Makefile.am, src/database/scripts/dbinit.in, src/database/scripts/dbstart.in, src/database/scripts/dbstop.in, src/database/share/Makefile.am, src/database/share/dbinit.sql.in, config.h.in, config/bootstrap.sh, configure.ac, data/fonts/CharterBTRoman/Makefile.am, data/fonts/Makefile.am, data/fonts/UtopiaBold/Makefile.am, data/fonts/clean-fonts.bash, data/fonts/gen-fonts.bash.in, data/icons/Makefile.am, data/icons/gen-icons.bash.in, data/splash/Makefile.am:
+	reworked installation directories
+
+	* src/database/share/dbinit.sql, data/fonts/clean-fonts.bash.in:
+	initial revision
+
+	* src/java/pipeline/ViewerLink.java: replaced BezierCurve with Spline
+
+	* src/java/pipeline/JNodeViewer.java, src/java/pipeline/ZoomPanBehavior.java:
+	moved camera init from ZoomPanBehavior to JNodeViewer
+
+	* src/java/pipeline/JPrefsDialog.java: set new smoothness range
+
+	* src/java/pipeline/Spline.java: initial revision
+
+	* src/java/pipeline/BezierCurve.java: obsolete
+
+2003-07-26  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JNodeViewer.java: links now work
+
+	* src/java/pipeline/GraphicalApp.java:
+	fixed resize bug for the NodeViewer
+
+	* src/database/share/dbinit.sql.in, src/java/pipeline/JPrefsDialog.java, src/java/pipeline/UserPreferences.java:
+	removed NodeMargin -- added LinkThickness, LinkSmoothness and LinkAntiAlias
+
+	* src/java/pipeline/BezierCurve.java, src/java/pipeline/ViewerLink.java, src/java/pipeline/ViewerNode.java:
+	initial revision
+
+2003-07-25  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/PViewerLink.java, src/java/pipeline/PViewerNode.java:
+	renamed
+
+2003-07-24  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/IconAppearanceMgr.java, src/java/pipeline/IconTextureMgr.java, src/java/pipeline/JNodeViewer.java, src/java/pipeline/JPrefsDialog.java, src/java/pipeline/PViewerNode.java, src/java/pipeline/UtopiaBoldFont.java, src/java/pipeline/ZoomPanBehavior.java:
+	MipMapped labels now work
+
+	* data/maya/data/CharterBTRoman.txt, data/maya/mel/CharterBTRoman.mel, data/maya/mel/UtopiaRegular.mel, data/maya/mel/renderFont.mel, src/java/pipeline/CharterBTRomanFontGeometry.java, src/java/pipeline/FontGeometry.java, src/java/pipeline/FontMgr.java, src/java/pipeline/UtopiaBoldFontGeometry.java:
+	initial revision
+
+	* configure.ac: moved install/gen/clean up to fonts directory
+
+	* data/fonts/CharterBTRoman/.cvsignore, data/fonts/CharterBTRoman/Makefile.am, data/fonts/clean-fonts.bash, data/fonts/gen-fonts.bash.in, data/fonts/install-fonts.bash.in:
+	initial revision
+
+	* data/fonts/Makefile.am, data/fonts/UtopiaBold/Makefile.am:
+	moved install/gen/clean up to fonts directory
+
+	* data/fonts/UtopiaBold/clean-fonts.bash, data/fonts/UtopiaBold/gen-fonts.bash.in, data/fonts/UtopiaBold/install-fonts.bash.in:
+	moved up a directory
+
+	* data/maya/images/CharterBTRoman.0000.tif, data/maya/images/CharterBTRoman.0001.tif, data/maya/images/CharterBTRoman.0002.tif, data/maya/images/CharterBTRoman.0003.tif, data/maya/images/CharterBTRoman.0004.tif, data/maya/images/CharterBTRoman.0005.tif, data/maya/images/CharterBTRoman.0006.tif, data/maya/images/CharterBTRoman.0007.tif, data/maya/images/CharterBTRoman.0008.tif, data/maya/images/CharterBTRoman.0009.tif, data/maya/images/CharterBTRoman.0010.tif, data/maya/images/CharterBTRoman.0011.tif, data/maya/images/CharterBTRoman.0012.tif, data/maya/images/CharterBTRoman.0013.tif, data/maya/images/CharterBTRoman.0014.tif, data/maya/images/CharterBTRoman.0015.tif, data/maya/images/CharterBTRoman.0016.tif, data/maya/images/CharterBTRoman.0017.tif, data/maya/images/CharterBTRoman.0018.tif, data/maya/images/CharterBTRoman.0019.tif, data/maya/images/CharterBTRoman.0020.tif, data/maya/images/CharterBTRoman.0021.tif, data/maya/images/CharterBTRoman.0022.tif, data/maya/images/CharterBTRoman.0023.tif, data/maya/images/CharterBTRoman.0024.tif, data/maya/images/CharterBTRoman.0025.tif, data/maya/images/CharterBTRoman.0026.tif, data/maya/images/CharterBTRoman.0027.tif, data/maya/images/CharterBTRoman.0028.tif, data/maya/images/CharterBTRoman.0029.tif, data/maya/images/CharterBTRoman.0030.tif, data/maya/images/CharterBTRoman.0031.tif, data/maya/images/CharterBTRoman.0032.tif, data/maya/images/CharterBTRoman.0033.tif, data/maya/images/CharterBTRoman.0034.tif, data/maya/images/CharterBTRoman.0035.tif, data/maya/images/CharterBTRoman.0036.tif, data/maya/images/CharterBTRoman.0037.tif, data/maya/images/CharterBTRoman.0038.tif, data/maya/images/CharterBTRoman.0039.tif, data/maya/images/CharterBTRoman.0040.tif, data/maya/images/CharterBTRoman.0041.tif, data/maya/images/CharterBTRoman.0042.tif, data/maya/images/CharterBTRoman.0043.tif, data/maya/images/CharterBTRoman.0044.tif, data/maya/images/CharterBTRoman.0045.tif, data/maya/images/CharterBTRoman.0046.tif, data/maya/images/CharterBTRoman.0047.tif, data/maya/images/CharterBTRoman.0048.tif, data/maya/images/CharterBTRoman.0049.tif, data/maya/images/CharterBTRoman.0050.tif, data/maya/images/CharterBTRoman.0051.tif, data/maya/images/CharterBTRoman.0052.tif, data/maya/images/CharterBTRoman.0053.tif, data/maya/images/CharterBTRoman.0054.tif, data/maya/images/CharterBTRoman.0055.tif, data/maya/images/CharterBTRoman.0056.tif, data/maya/images/CharterBTRoman.0057.tif, data/maya/images/CharterBTRoman.0058.tif, data/maya/images/CharterBTRoman.0059.tif, data/maya/images/CharterBTRoman.0060.tif, data/maya/images/CharterBTRoman.0061.tif, data/maya/images/CharterBTRoman.0062.tif, data/maya/images/CharterBTRoman.0063.tif, data/maya/images/CharterBTRoman.0064.tif, data/maya/images/CharterBTRoman.0065.tif, data/maya/images/CharterBTRoman.0066.tif, data/maya/images/CharterBTRoman.0067.tif, data/maya/images/CharterBTRoman.0068.tif, data/maya/images/CharterBTRoman.0069.tif, data/maya/images/CharterBTRoman.0070.tif, data/maya/images/CharterBTRoman.0071.tif, data/maya/images/CharterBTRoman.0072.tif, data/maya/images/CharterBTRoman.0073.tif, data/maya/images/CharterBTRoman.0074.tif, data/maya/images/CharterBTRoman.0075.tif, data/maya/images/CharterBTRoman.0076.tif, data/maya/images/CharterBTRoman.0077.tif, data/maya/images/CharterBTRoman.0078.tif, data/maya/images/CharterBTRoman.0079.tif, data/maya/images/CharterBTRoman.0080.tif, data/maya/images/CharterBTRoman.0081.tif, data/maya/images/CharterBTRoman.0082.tif, data/maya/images/CharterBTRoman.0083.tif, data/maya/images/CharterBTRoman.0084.tif, data/maya/images/CharterBTRoman.0085.tif, data/maya/images/CharterBTRoman.0086.tif, data/maya/images/CharterBTRoman.0087.tif, data/maya/images/CharterBTRoman.0088.tif, data/maya/images/CharterBTRoman.0089.tif, data/maya/images/CharterBTRoman.0090.tif, data/maya/images/CharterBTRoman.0091.tif, data/maya/images/CharterBTRoman.0092.tif, data/maya/images/CharterBTRoman.0093.tif, data/maya/images/CharterBTRoman.0094.tif, data/maya/images/CharterBTRoman.0095.tif, data/maya/images/CharterBTRoman.0096.tif, data/maya/images/CharterBTRoman.0097.tif, data/maya/images/CharterBTRoman.0098.tif, data/maya/images/CharterBTRoman.0099.tif, data/maya/images/CharterBTRoman.0100.tif, data/maya/images/CharterBTRoman.0101.tif, data/maya/images/CharterBTRoman.0102.tif, data/maya/images/CharterBTRoman.0103.tif, data/maya/images/CharterBTRoman.0104.tif, data/maya/images/CharterBTRoman.0105.tif, data/maya/images/CharterBTRoman.0106.tif, data/maya/images/CharterBTRoman.0107.tif, data/maya/images/CharterBTRoman.0108.tif, data/maya/images/CharterBTRoman.0109.tif, data/maya/images/CharterBTRoman.0110.tif, data/maya/images/CharterBTRoman.0111.tif, data/maya/images/CharterBTRoman.0112.tif, data/maya/images/CharterBTRoman.0113.tif, data/maya/images/CharterBTRoman.0114.tif, data/maya/images/CharterBTRoman.0115.tif, data/maya/images/CharterBTRoman.0116.tif, data/maya/images/CharterBTRoman.0117.tif, data/maya/images/CharterBTRoman.0118.tif, data/maya/images/CharterBTRoman.0119.tif, data/maya/images/CharterBTRoman.0120.tif, data/maya/images/CharterBTRoman.0121.tif, data/maya/images/CharterBTRoman.0122.tif, data/maya/images/CharterBTRoman.0123.tif, data/maya/images/CharterBTRoman.0124.tif, data/maya/images/CharterBTRoman.0125.tif, data/maya/images/CharterBTRoman.0126.tif, data/maya/images/CharterBTRoman.0127.tif, data/maya/scenes/CharterBTRoman.ma, data/maya/scenes/UtopiaBold.ma:
+	initial revision
+
+2003-07-23  Jim Callahan  <jim@salamander>
+
+	* data/maya/scenes/.cvsignore, src/java/pipeline/IconAppearanceMgr.java, src/java/pipeline/IconTextureMgr.java, src/java/pipeline/PViewerLink.java, src/java/pipeline/PViewerNode.java, src/java/pipeline/UtopiaBoldFont.java:
+	initial revision
+
+	* data/splash/.cvsignore: latest
+
+	* src/java/pipeline/JViewerNode.java: obsolete
+
+	* src/java/pipeline/ZoomPanBehavior.java: added pZoomSpeed
+
+	* src/java/pipeline/Vectors.java: added double versions of ops
+
+	* src/java/pipeline/TextureTesterApp.java:
+	renamed TextureMgr to IconTextureMgr
+
+	* src/java/pipeline/PState.java:
+	changed getIconDirectory() to getIconName()
+
+	* src/java/pipeline/JLinksPane.java, src/java/pipeline/JViewerCollapsed.java, src/java/pipeline/JViewerLink.java:
+	obsolete
+
+	* src/java/pipeline/JPrefsDialog.java, src/java/pipeline/UserPreferences.java:
+	changed scalar prefs from floats to doubles
+
+	* src/java/pipeline/JNodeViewer.java:
+	minimal functionality working under Java3d
+
+	* src/java/pipeline/JNodeChooserNodeRenderer.java:
+	now uses the IconTextureMgr to get node icons
+
+	* src/database/share/dbinit.sql.in:
+	fixed node layout Preferences to work with new Java3d sizes
+
+	* data/icons/clean-icons.bash, data/icons/gen-icons.bash.in, data/icons/install-icons.bash.in:
+	added blank-* icons
+
+	* data/icons/Makefile.am: added dependencies on generated scripts
+
+	* data/Makefile.am, configure.ac: added MipMapped fonts
+
+	* data/maya/data/UtopiaBold.txt, data/maya/images/UtopiaBold.0000.tif, data/maya/images/UtopiaBold.0001.tif, data/maya/images/UtopiaBold.0002.tif, data/maya/images/UtopiaBold.0003.tif, data/maya/images/UtopiaBold.0004.tif, data/maya/images/UtopiaBold.0005.tif, data/maya/images/UtopiaBold.0006.tif, data/maya/images/UtopiaBold.0007.tif, data/maya/images/UtopiaBold.0008.tif, data/maya/images/UtopiaBold.0009.tif, data/maya/images/UtopiaBold.0010.tif, data/maya/images/UtopiaBold.0011.tif, data/maya/images/UtopiaBold.0012.tif, data/maya/images/UtopiaBold.0013.tif, data/maya/images/UtopiaBold.0014.tif, data/maya/images/UtopiaBold.0015.tif, data/maya/images/UtopiaBold.0016.tif, data/maya/images/UtopiaBold.0017.tif, data/maya/images/UtopiaBold.0018.tif, data/maya/images/UtopiaBold.0019.tif, data/maya/images/UtopiaBold.0020.tif, data/maya/images/UtopiaBold.0021.tif, data/maya/images/UtopiaBold.0022.tif, data/maya/images/UtopiaBold.0023.tif, data/maya/images/UtopiaBold.0024.tif, data/maya/images/UtopiaBold.0025.tif, data/maya/images/UtopiaBold.0026.tif, data/maya/images/UtopiaBold.0027.tif, data/maya/images/UtopiaBold.0028.tif, data/maya/images/UtopiaBold.0029.tif, data/maya/images/UtopiaBold.0030.tif, data/maya/images/UtopiaBold.0031.tif, data/maya/images/UtopiaBold.0032.tif, data/maya/images/UtopiaBold.0033.tif, data/maya/images/UtopiaBold.0034.tif, data/maya/images/UtopiaBold.0035.tif, data/maya/images/UtopiaBold.0036.tif, data/maya/images/UtopiaBold.0037.tif, data/maya/images/UtopiaBold.0038.tif, data/maya/images/UtopiaBold.0039.tif, data/maya/images/UtopiaBold.0040.tif, data/maya/images/UtopiaBold.0041.tif, data/maya/images/UtopiaBold.0042.tif, data/maya/images/UtopiaBold.0043.tif, data/maya/images/UtopiaBold.0044.tif, data/maya/images/UtopiaBold.0045.tif, data/maya/images/UtopiaBold.0046.tif, data/maya/images/UtopiaBold.0047.tif, data/maya/images/UtopiaBold.0048.tif, data/maya/images/UtopiaBold.0049.tif, data/maya/images/UtopiaBold.0050.tif, data/maya/images/UtopiaBold.0051.tif, data/maya/images/UtopiaBold.0052.tif, data/maya/images/UtopiaBold.0053.tif, data/maya/images/UtopiaBold.0054.tif, data/maya/images/UtopiaBold.0055.tif, data/maya/images/UtopiaBold.0056.tif, data/maya/images/UtopiaBold.0057.tif, data/maya/images/UtopiaBold.0058.tif, data/maya/images/UtopiaBold.0059.tif, data/maya/images/UtopiaBold.0060.tif, data/maya/images/UtopiaBold.0061.tif, data/maya/images/UtopiaBold.0062.tif, data/maya/images/UtopiaBold.0063.tif, data/maya/images/UtopiaBold.0064.tif, data/maya/images/UtopiaBold.0065.tif, data/maya/images/UtopiaBold.0066.tif, data/maya/images/UtopiaBold.0067.tif, data/maya/images/UtopiaBold.0068.tif, data/maya/images/UtopiaBold.0069.tif, data/maya/images/UtopiaBold.0070.tif, data/maya/images/UtopiaBold.0071.tif, data/maya/images/UtopiaBold.0072.tif, data/maya/images/UtopiaBold.0073.tif, data/maya/images/UtopiaBold.0074.tif, data/maya/images/UtopiaBold.0075.tif, data/maya/images/UtopiaBold.0076.tif, data/maya/images/UtopiaBold.0077.tif, data/maya/images/UtopiaBold.0078.tif, data/maya/images/UtopiaBold.0079.tif, data/maya/images/UtopiaBold.0080.tif, data/maya/images/UtopiaBold.0081.tif, data/maya/images/UtopiaBold.0082.tif, data/maya/images/UtopiaBold.0083.tif, data/maya/images/UtopiaBold.0084.tif, data/maya/images/UtopiaBold.0085.tif, data/maya/images/UtopiaBold.0086.tif, data/maya/images/UtopiaBold.0087.tif, data/maya/images/UtopiaBold.0088.tif, data/maya/images/UtopiaBold.0089.tif, data/maya/images/UtopiaBold.0090.tif, data/maya/images/UtopiaBold.0091.tif, data/maya/images/UtopiaBold.0092.tif, data/maya/images/UtopiaBold.0093.tif, data/maya/images/UtopiaBold.0094.tif, data/maya/images/UtopiaBold.0095.tif, data/maya/images/UtopiaBold.0096.tif, data/maya/images/UtopiaBold.0097.tif, data/maya/images/UtopiaBold.0098.tif, data/maya/images/UtopiaBold.0099.tif, data/maya/images/UtopiaBold.0100.tif, data/maya/images/UtopiaBold.0101.tif, data/maya/images/UtopiaBold.0102.tif, data/maya/images/UtopiaBold.0103.tif, data/maya/images/UtopiaBold.0104.tif, data/maya/images/UtopiaBold.0105.tif, data/maya/images/UtopiaBold.0106.tif, data/maya/images/UtopiaBold.0107.tif, data/maya/images/UtopiaBold.0108.tif, data/maya/images/UtopiaBold.0109.tif, data/maya/images/UtopiaBold.0110.tif, data/maya/images/UtopiaBold.0111.tif, data/maya/images/UtopiaBold.0112.tif, data/maya/images/UtopiaBold.0113.tif, data/maya/images/UtopiaBold.0114.tif, data/maya/images/UtopiaBold.0115.tif, data/maya/images/UtopiaBold.0116.tif, data/maya/images/UtopiaBold.0117.tif, data/maya/images/UtopiaBold.0118.tif, data/maya/images/UtopiaBold.0119.tif, data/maya/images/UtopiaBold.0120.tif, data/maya/images/UtopiaBold.0121.tif, data/maya/images/UtopiaBold.0122.tif, data/maya/images/UtopiaBold.0123.tif, data/maya/images/UtopiaBold.0124.tif, data/maya/images/UtopiaBold.0125.tif, data/maya/images/UtopiaBold.0126.tif, data/maya/images/UtopiaBold.0127.tif, data/maya/mel/UtopiaBold.mel, data/maya/mel/renderFont.mel, data/maya/scenes/font.ma, data/maya/scenes/normal.ma, data/maya/workspace.mel, data/fonts/.cvsignore, data/fonts/Makefile.am, data/fonts/UtopiaBold/.cvsignore, data/fonts/UtopiaBold/Makefile.am, data/fonts/UtopiaBold/clean-fonts.bash, data/fonts/UtopiaBold/gen-fonts.bash.in, data/fonts/UtopiaBold/install-fonts.bash.in:
+	initial revision
+
+	* src/java/pipeline/TextureMgr.java: renamed to IconTextureMgr
+
+2003-07-21  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/TextureTesterApp.java: picking works
+
+	* src/java/pipeline/ZoomPanBehavior.java: panning now works
+
+	* src/java/pipeline/GraphicalApp.java:
+	window is now placed in the center of screen on startup
+
+	* src/java/pipeline/TextureMgr.java, src/java/pipeline/TextureTesterApp.java:
+	added support for multiple texture quality modes
+
+2003-07-17  Jim Callahan  <jim@salamander>
+
+	* src/java/share/logger.properties: added texure log
+
+	* src/java/scripts/Makefile.am: added texture-tester
+
+	* src/java/pipeline/PState.java:
+	enamed PState.getIconName() to PState.getIconFilename()
+
+	* src/java/pipeline/Logs.java: added texure log
+
+	* src/java/pipeline/JViewerNode.java, src/java/pipeline/JNodeChooserNodeRenderer.java, src/java/pipeline/JDetailsDialog.java, src/java/pipeline/JDetailsDepend.java:
+	renamed PState.getIconName() to PState.getIconFilename()
+
+	* src/java/docs/TODO.txt, data/icons/Makefile.am, data/icons/gen-icons.bash.in:
+	latest
+
+	* data/icons/install-icons.bash.in, data/icons/clean-icons.bash:
+	initial revision
+
+2003-07-16  Jim Callahan  <jim@salamander>
+
+	* data/splash/.cvsignore, data/splash/Makefile.am, data/splash/pipeline.gif, data/splash/pipeline.tiff, data/splash/pipeline.xcf:
+	initial revision
+
+	* data/Makefile.am: added splash
+
+	* configure.ac: switched PPM to ImageMajick
+
+	* src/java/scripts/texture-tester.in, src/java/pipeline/JSplashFrame.java, src/java/pipeline/TextureMgr.java, src/java/pipeline/TextureTesterApp.java, src/java/pipeline/ZoomPanBehavior.java:
+	initial revision
+
+	* data/maya/images/normal.0000.tif, data/maya/images/normal.0001.tif, data/maya/images/normal.0002.tif, data/maya/images/normal.0003.tif, data/maya/images/normal.0004.tif, data/maya/images/normal.0005.tif, data/maya/images/normal.0006.tif, data/maya/images/normal.0007.tif, data/maya/images/normal.0008.tif, data/maya/images/normal.0009.tif, data/maya/images/normal.0010.tif, data/maya/images/normal.0011.tif, data/maya/images/normal.0012.tif, data/maya/images/normal.0013.tif, data/maya/images/normal.0014.tif, data/maya/images/normal.0015.tif, data/maya/images/normal.0016.tif, data/maya/images/normal.0017.tif, data/maya/images/normal.0018.tif, data/maya/images/normal.0019.tif, data/maya/images/normal.0020.tif, data/maya/images/normal.0021.tif, data/maya/images/normal.0022.tif, data/maya/images/normal.0023.tif, data/maya/images/normal.0024.tif, data/maya/images/normal.0025.tif, data/maya/images/normal.0026.tif, data/maya/images/normal.0027.tif, data/maya/images/normal.0028.tif, data/maya/images/normal.0029.tif, data/maya/images/normal.0030.tif, data/maya/images/normal.0031.tif, data/maya/images/normal.0032.tif, data/maya/images/normal.0033.tif, data/maya/images/normal.0034.tif, data/maya/images/normal.0035.tif, data/maya/images/normal.0036.tif, data/maya/images/normal.0037.tif, data/maya/images/selected.0000.tif, data/maya/images/selected.0001.tif, data/maya/images/selected.0002.tif, data/maya/images/selected.0003.tif, data/maya/images/selected.0004.tif, data/maya/images/selected.0005.tif, data/maya/images/selected.0006.tif, data/maya/images/selected.0007.tif, data/maya/images/selected.0008.tif, data/maya/images/selected.0009.tif, data/maya/images/selected.0010.tif, data/maya/images/selected.0011.tif, data/maya/images/selected.0012.tif, data/maya/images/selected.0013.tif, data/maya/images/selected.0014.tif, data/maya/images/selected.0015.tif, data/maya/images/selected.0016.tif, data/maya/images/selected.0017.tif, data/maya/images/selected.0018.tif, data/maya/images/selected.0019.tif, data/maya/images/selected.0020.tif, data/maya/images/selected.0021.tif, data/maya/images/selected.0022.tif, data/maya/images/selected.0023.tif, data/maya/images/selected.0024.tif, data/maya/images/selected.0025.tif, data/maya/images/selected.0026.tif, data/maya/images/selected.0027.tif, data/maya/images/selected.0028.tif, data/maya/images/selected.0029.tif, data/maya/images/selected.0030.tif, data/maya/images/selected.0031.tif, data/maya/images/selected.0032.tif, data/maya/images/selected.0033.tif, data/maya/images/selected.0034.tif, data/maya/images/selected.0035.tif, data/maya/images/selected.0036.tif, data/maya/images/selected.0037.tif:
+	latest
+
+	* data/maya/images/normal.0000.sgi, data/maya/images/normal.0001.sgi, data/maya/images/normal.0002.sgi, data/maya/images/normal.0003.sgi, data/maya/images/normal.0004.sgi, data/maya/images/normal.0005.sgi, data/maya/images/normal.0006.sgi, data/maya/images/normal.0007.sgi, data/maya/images/normal.0008.sgi, data/maya/images/normal.0009.sgi, data/maya/images/normal.0010.sgi, data/maya/images/normal.0011.sgi, data/maya/images/normal.0012.sgi, data/maya/images/normal.0013.sgi, data/maya/images/normal.0014.sgi, data/maya/images/normal.0015.sgi, data/maya/images/normal.0016.sgi, data/maya/images/normal.0017.sgi, data/maya/images/normal.0018.sgi, data/maya/images/normal.0019.sgi, data/maya/images/normal.0020.sgi, data/maya/images/normal.0021.sgi, data/maya/images/normal.0022.sgi, data/maya/images/normal.0023.sgi, data/maya/images/normal.0024.sgi, data/maya/images/normal.0025.sgi, data/maya/images/normal.0026.sgi, data/maya/images/normal.0027.sgi, data/maya/images/normal.0028.sgi, data/maya/images/normal.0029.sgi, data/maya/images/normal.0030.sgi, data/maya/images/normal.0031.sgi, data/maya/images/normal.0032.sgi, data/maya/images/normal.0033.sgi, data/maya/images/normal.0034.sgi, data/maya/images/normal.0035.sgi, data/maya/images/normal.0036.sgi, data/maya/images/normal.0037.sgi, data/maya/images/selected.0000.sgi, data/maya/images/selected.0001.sgi, data/maya/images/selected.0002.sgi, data/maya/images/selected.0003.sgi, data/maya/images/selected.0004.sgi, data/maya/images/selected.0005.sgi, data/maya/images/selected.0006.sgi, data/maya/images/selected.0007.sgi, data/maya/images/selected.0008.sgi, data/maya/images/selected.0009.sgi, data/maya/images/selected.0010.sgi, data/maya/images/selected.0011.sgi, data/maya/images/selected.0012.sgi, data/maya/images/selected.0013.sgi, data/maya/images/selected.0014.sgi, data/maya/images/selected.0015.sgi, data/maya/images/selected.0016.sgi, data/maya/images/selected.0017.sgi, data/maya/images/selected.0018.sgi, data/maya/images/selected.0019.sgi, data/maya/images/selected.0020.sgi, data/maya/images/selected.0021.sgi, data/maya/images/selected.0022.sgi, data/maya/images/selected.0023.sgi, data/maya/images/selected.0024.sgi, data/maya/images/selected.0025.sgi, data/maya/images/selected.0026.sgi, data/maya/images/selected.0027.sgi, data/maya/images/selected.0028.sgi, data/maya/images/selected.0029.sgi, data/maya/images/selected.0030.sgi, data/maya/images/selected.0031.sgi, data/maya/images/selected.0032.sgi, data/maya/images/selected.0033.sgi, data/maya/images/selected.0034.sgi, data/maya/images/selected.0035.sgi, data/maya/images/selected.0036.sgi, data/maya/images/selected.0037.sgi:
+	obsolete
+
+	* data/maya/scenes/normal.ma, data/maya/scenes/selected.ma:
+	TIFF output images
+
+2003-07-14  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JLinksPane.java, src/java/pipeline/JNodeViewer.java, src/java/pipeline/JViewerLink.java:
+	added basic rubber band drawing
+
+	* data/icons/gen-icons.bash.in: progress messages
+
+	* src/java/pipeline/SubProcess.java: improved exception handling
+
+	* src/java/pipeline/Pipeline.java: added make command
+
+	* src/java/pipeline/Makefile.in: cleaned up code indentation
+
+	* src/java/pipeline/JViewerNode.java:
+	added the "make" menu item and support code
+
+	* src/java/pipeline/JNodeChooser.java:
+	added extra error checking in doPress() to handle the case of NO nodes
+
+	* src/java/pipeline/QueueJob.java: removed debugging prints
+
+	* src/java/pipeline/GraphicalApp.java, src/java/pipeline/JQueueJobDialog.java:
+	now only shows jobs for the viewed nodes
+
+	* data/icons/gen-icons.bash.in: fixed bug with collapsed node icon
+
+	* configure.ac: added PNM image tools
+
+2003-07-12  Jim Callahan  <jim@salamander>
+
+	* data/icons/gen-icons.bash.in, data/maya/workspace.mel:
+	initial revision
+
+	* data/icons/build-icon.scm, data/icons/gen-list.bash.in, data/icons/gen-scm.bash.in:
+	obsolete
+
+	* data/icons/Makefile.am: now used PPM
+
+	* data/maya/images/normal.0036.sgi, data/maya/images/normal.0037.sgi, data/maya/images/selected.0000.sgi, data/maya/images/selected.0001.sgi, data/maya/images/selected.0002.sgi, data/maya/images/selected.0003.sgi, data/maya/images/selected.0004.sgi, data/maya/images/selected.0005.sgi, data/maya/images/selected.0006.sgi, data/maya/images/selected.0007.sgi, data/maya/images/selected.0008.sgi, data/maya/images/selected.0009.sgi, data/maya/images/selected.0010.sgi, data/maya/images/selected.0011.sgi, data/maya/images/selected.0012.sgi, data/maya/images/selected.0013.sgi, data/maya/images/selected.0014.sgi, data/maya/images/selected.0015.sgi, data/maya/images/selected.0016.sgi, data/maya/images/selected.0017.sgi, data/maya/images/selected.0018.sgi, data/maya/images/selected.0019.sgi, data/maya/images/selected.0020.sgi, data/maya/images/selected.0021.sgi, data/maya/images/selected.0022.sgi, data/maya/images/selected.0023.sgi, data/maya/images/selected.0024.sgi, data/maya/images/selected.0025.sgi, data/maya/images/selected.0026.sgi, data/maya/images/selected.0027.sgi, data/maya/images/selected.0028.sgi, data/maya/images/selected.0029.sgi, data/maya/images/selected.0030.sgi, data/maya/images/selected.0031.sgi, data/maya/images/selected.0032.sgi, data/maya/images/selected.0033.sgi, data/maya/images/selected.0034.sgi, data/maya/images/selected.0035.sgi, data/maya/images/selected.0036.sgi, data/maya/images/selected.0037.sgi, data/maya/images/normal.0000.sgi, data/maya/images/normal.0001.sgi, data/maya/images/normal.0002.sgi, data/maya/images/normal.0003.sgi, data/maya/images/normal.0004.sgi, data/maya/images/normal.0005.sgi, data/maya/images/normal.0006.sgi, data/maya/images/normal.0007.sgi, data/maya/images/normal.0008.sgi, data/maya/images/normal.0009.sgi, data/maya/images/normal.0010.sgi, data/maya/images/normal.0011.sgi, data/maya/images/normal.0012.sgi, data/maya/images/normal.0013.sgi, data/maya/images/normal.0014.sgi, data/maya/images/normal.0015.sgi, data/maya/images/normal.0016.sgi, data/maya/images/normal.0017.sgi, data/maya/images/normal.0018.sgi, data/maya/images/normal.0019.sgi, data/maya/images/normal.0020.sgi, data/maya/images/normal.0021.sgi, data/maya/images/normal.0022.sgi, data/maya/images/normal.0023.sgi, data/maya/images/normal.0024.sgi, data/maya/images/normal.0025.sgi, data/maya/images/normal.0026.sgi, data/maya/images/normal.0027.sgi, data/maya/images/normal.0028.sgi, data/maya/images/normal.0029.sgi, data/maya/images/normal.0030.sgi, data/maya/images/normal.0031.sgi, data/maya/images/normal.0032.sgi, data/maya/images/normal.0033.sgi, data/maya/images/normal.0034.sgi, data/maya/images/normal.0035.sgi, data/maya/scenes/normal.ma, data/maya/scenes/selected.ma:
+	latest
+
+	* data/maya/scenes/normal.ma, data/maya/scenes/selected.ma: mistake
+
+	* data/maya/images/normal.0037.tif, data/maya/images/normal.0038.tif, data/maya/images/selected.0037.tif, data/maya/images/selected.0038.tif, data/maya/images/normal.0024.tif, data/maya/images/normal.0025.tif, data/maya/images/normal.0026.tif, data/maya/images/normal.0027.tif, data/maya/images/normal.0028.tif, data/maya/images/normal.0029.tif, data/maya/images/normal.0030.tif, data/maya/images/normal.0031.tif, data/maya/images/normal.0032.tif, data/maya/images/normal.0033.tif, data/maya/images/normal.0034.tif, data/maya/images/normal.0035.tif, data/maya/images/normal.0036.tif, data/maya/images/selected.0025.tif, data/maya/images/selected.0026.tif, data/maya/images/selected.0027.tif, data/maya/images/selected.0028.tif, data/maya/images/selected.0029.tif, data/maya/images/selected.0030.tif, data/maya/images/selected.0031.tif, data/maya/images/selected.0032.tif, data/maya/images/selected.0033.tif, data/maya/images/selected.0034.tif, data/maya/images/selected.0035.tif, data/maya/images/selected.0036.tif, data/maya/images/normal.0013.tif, data/maya/images/normal.0014.tif, data/maya/images/normal.0015.tif, data/maya/images/normal.0016.tif, data/maya/images/normal.0017.tif, data/maya/images/normal.0018.tif, data/maya/images/normal.0019.tif, data/maya/images/normal.0020.tif, data/maya/images/normal.0021.tif, data/maya/images/normal.0022.tif, data/maya/images/normal.0023.tif, data/maya/images/selected.0013.tif, data/maya/images/selected.0014.tif, data/maya/images/selected.0015.tif, data/maya/images/selected.0016.tif, data/maya/images/selected.0017.tif, data/maya/images/selected.0018.tif, data/maya/images/selected.0019.tif, data/maya/images/selected.0020.tif, data/maya/images/selected.0021.tif, data/maya/images/selected.0022.tif, data/maya/images/selected.0023.tif, data/maya/images/selected.0024.tif, data/maya/images/normal.0004.tif, data/maya/images/normal.0005.tif, data/maya/images/normal.0006.tif, data/maya/images/normal.0007.tif, data/maya/images/normal.0008.tif, data/maya/images/normal.0009.tif, data/maya/images/normal.0010.tif, data/maya/images/normal.0011.tif, data/maya/images/normal.0012.tif, data/maya/images/selected.0004.tif, data/maya/images/selected.0005.tif, data/maya/images/selected.0006.tif, data/maya/images/selected.0007.tif, data/maya/images/selected.0008.tif, data/maya/images/selected.0009.tif, data/maya/images/selected.0010.tif, data/maya/images/selected.0011.tif, data/maya/images/selected.0012.tif, data/maya/images/normal.0000.tif, data/maya/images/normal.0001.tif, data/maya/images/normal.0002.tif, data/maya/images/normal.0003.tif, data/maya/images/selected.0000.tif, data/maya/images/selected.0001.tif, data/maya/images/selected.0002.tif, data/maya/images/selected.0003.tif:
+	obsolete
+
+2003-07-11  Jim Callahan  <jim@salamander>
+
+	* src/java/docs/TODO.txt: latest
+
+	* src/java/pipeline/Pipeline.java:
+	added test to propogate MODIFIED dependency state downstream in statusTree()
+
+	* src/java/pipeline/PVersion.java:
+	fixed bug in equalDepends(), added equivalentDepends()
+
+	* src/java/pipeline/PState.java:
+	changed PVersion.equalDepends() to PVersion.equivalentDepends()
+
+	* src/java/pipeline/PMod.java: improved error messages
+
+	* src/java/pipeline/PDepend.java: added equivalent()
+
+2003-07-10  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/PMod.java:
+	removed obsolete updateVersionStamp(), now updated the VersionID and sets the last modified time of the files to match the Mod in insertAsVersion()
+
+	* src/utils/src/PlPut.cc: comments
+
+	* src/java/pipeline/SubProcess.java:
+	now launches threads to read the stdout/stderr so that the process won't sleep
+
+	* src/java/pipeline/Pipeline.java:
+	added a check for FINISHED queue status in checkIn(), removed incorrect calls to replaceWithVersion() in checkIn()
+
+	* src/java/pipeline/PVersion.java:
+	converted the HashMap to a TreeMap in lookup() so that the versions would be sorted
+
+	* src/java/pipeline/PTask.java:
+	better error reporting in HandleException class
+
+	* src/java/pipeline/PState.java:
+	added isNewerThan(), added queue state color names
+
+	* config/bootstrap.sh, configure.ac:
+	renamed PLPORT/PLSERVER to SQL_PORT/SQL_SERVER
+
+	* src/java/pipeline/BaseAction.java, src/java/pipeline/BaseEditor.java, src/java/pipeline/JDetailsDialog.java, src/java/pipeline/JViewerNode.java, src/java/pipeline/PDepend.java, src/java/pipeline/PMod.java, src/java/pipeline/PNode.java, src/java/pipeline/PState.java, src/java/pipeline/PVersion.java, src/java/pipeline/Pipeline.java, src/java/share/logger.properties:
+	on the road to checkin working, still not fully done though
+
+	* src/utils/src/PlPut.cc:
+	improved error messages, now uses copy/link keywords instead of 0/1
+
+	* src/database/share/pg_hba.conf: upgraded to PostgreSQL 7.3.2
+
+	* src/database/scripts/dbinit.in, src/database/share/dbinit.sql.in, src/database/share/postgresql.conf.in, src/java/pipeline/Makefile.in, src/java/pipeline/PackageInfo.java.in, src/java/pipeline/plugin/Makefile.in, src/java/pipeline/tests/Makefile.in, src/utils/src/PackageInfo.cc.in:
+	renamed PLPORT/PLSERVER to SQL_PORT/SQL_SERVER
+
+2003-07-08  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JViewerNode.java, src/java/pipeline/PMod.java, src/java/pipeline/PState.java, src/java/pipeline/Pipeline.java, src/java/pipeline/PutOrder.java:
+	checkin partially complete
+
+	* src/database/share/dbinit.sql.in, src/java/pipeline/GraphicalApp.java, src/java/pipeline/JNodeChooser.java, src/java/pipeline/JNodeViewer.java, src/java/pipeline/Pipeline.java, src/java/share/logger.properties:
+	added saving/loading of the collapsed state of nodes in the JNodeViewer
+
+2003-07-07  Jim Callahan  <jim@salamander>
+
+	* src/database/share/dbinit.sql.in, src/java/docs/TODO.txt, src/java/pipeline/GraphicalApp.java, src/java/pipeline/JNodeChooser.java, src/java/pipeline/Pipeline.java, src/java/share/logger.properties:
+	now saved expanded/collapsed state of nodes in the JNodeChooser between status updates and between plui startup/exits
+
+	* src/java/pipeline/plugin/MergeTableAction.java, src/java/pipeline/plugin/DelightShaderAction.java, src/java/pipeline/plugin/DelightShopAction.java, src/java/pipeline/plugin/DsTableAction.java:
+	intial revision
+
+	* src/java/pipeline/plugin/Makefile.in: added new plugins
+
+	* src/java/pipeline/plugin/VexTableAction.java:
+	relaxed suffix restriction, comments
+
+	* src/java/pipeline/JNodeChooser.java:
+	halfway there on saving directory collapsed state
+
+	* src/java/pipeline/ClientOptsParser.jj:
+	now allows first digit of directory and node named to be a digit
+
+	* src/java/docs/TODO.txt: latest
+
+	* src/database/share/dbinit.sql.in:
+	added more editors, updated default toolset
+
+2003-07-05  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JNodeViewer.java, src/java/pipeline/JPrefsDialog.java, src/java/pipeline/JViewerLink.java, src/java/pipeline/JViewerNode.java, src/java/pipeline/UserPreferences.java:
+	converted from using Vec2D to Vector2f from java3d
+
+	* src/java/pipeline/Vectors.java: intial revision
+
+	* src/java/pipeline/Vec2D.java: obsolete
+
+	* src/utils/src/Makefile.am: modernized
+
+	* src/utils/src/PackageInfo.cc.in, src/utils/src/PackageInfo.hh:
+	updated to match java PackageInfo
+
+2003-07-04  Jim Callahan  <jim@salamander>
+
+	* src/utils/src/SuperPipeline.cc: obsolete
+
+	* src/java/pipeline/plugin/Makefile.in:
+	added HScriptAction and IConvertAction
+
+	* src/java/pipeline/plugin/FcheckEditor.java:
+	renamed temp directory to the standard .pipeline dir
+
+	* src/java/pipeline/JDetailsDialog.java: added DependParameter's
+
+	* src/java/pipeline/IntegerParameter.java, src/java/pipeline/RealParameter.java, src/java/pipeline/StringParameter.java, src/java/pipeline/TextParameter.java, src/java/pipeline/BaseParameter.java:
+	reorganized to better integrate string values parameters and clean up overall code
+
+	* src/java/pipeline/DependParameter.java, src/java/pipeline/StringBaseParameter.java, src/java/pipeline/plugin/HScriptAction.java:
+	initial revision
+
+2003-07-03  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/plugin/VexTableAction.java, src/java/pipeline/plugin/ScriptAction.java:
+	renamed primarySource to primarySources
+
+	* src/java/pipeline/plugin/IConvertAction.java:
+	fixed several bugs in the sanity checks section
+
+	* src/java/pipeline/PTask.java: commented debugging prints
+
+	* src/java/pipeline/JobApp.java:
+	Logs and FileCleaner initialization to JBasApp
+
+	* src/java/pipeline/JQueueJobDialog.java:
+	now automatically scrolls to the selected jobs
+
+	* src/java/pipeline/JDetailsDialog.java:
+	secondary files panel now open by default
+
+	* src/java/pipeline/BaseApp.java, src/java/pipeline/ClientApp.java, src/java/pipeline/EditorApp.java, src/java/pipeline/GraphicalApp.java, src/java/pipeline/ToolsetApp.java:
+	cleaned up application init, added check to make sure /base/prod/working/jim/jim exists
+
+	* src/java/pipeline/plugin/IConvertAction.java: initial revision
+
+	* src/java/docs/TODO.txt: latest
+
+	* src/java/pipeline/GraphicalApp.java: added refocusKeys()
+
+	* src/java/pipeline/JNodeChooser.java:
+	now sets the keyboard focus back to the JFrame as once a node is selected
+
+	* src/java/pipeline/JPrefsDialog.java:
+	added a Globals panel, added tooltips to all items
+
+	* src/java/pipeline/PTask.java: added delayed showing of a wait dialog
+
+	* src/java/pipeline/UserPreferences.java:
+	added WaitDelay, made accessors thread safe
+
+	* src/database/share/dbinit.sql.in: added WaitDelay to Preferences
+
+2003-07-02  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JNodeChooser.java, src/java/pipeline/JQueueJobDetailsDialog.java, src/java/pipeline/JQueueJobDialog.java, src/java/pipeline/JViewerNode.java, src/java/pipeline/JWaitDialog.java:
+	now uses new PTask class
+
+	* src/java/pipeline/GraphicalApp.java:
+	improved spacebar invocation of doUpdate(), now uses new PTask class
+
+	* src/java/pipeline/PTask.java: initial revision
+
+	* src/java/pipeline/JWaitTask.java: replaced by PTask
+
+	* src/java/pipeline/GraphicalApp.java, src/java/pipeline/JBaseDialog.java, src/java/pipeline/JNodeChooser.java, src/java/pipeline/JViewerNode.java, src/java/pipeline/JWaitDialog.java, src/java/pipeline/JWaitTask.java, src/java/pipeline/plugin/VexTableAction.java:
+	latest attempt at fixing the wait dialog bug... still broken.
+
+2003-07-01  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/UserPreferences.java:
+	added name getters for enumerations, implemented SQL methods
+
+	* src/java/pipeline/Pipeline.java:
+	implemented database operations for user preferences
+
+	* src/java/pipeline/JPrefsDialog.java:
+	set better slider ranges, fixed bug in doReset()
+
+	* src/java/pipeline/JNodeViewer.java:
+	now adds arrow head length and node space to spanX to avoid ugly links
+
+	* src/java/pipeline/GraphicalApp.java, src/java/pipeline/GraphicalOptsParser.jj:
+	now loads user preferences from the database on startup
+
+	* src/database/share/dbinit.sql.in: added Preferences table
+
+	* data/icons/Makefile.am: added slider-thumb.gif
+
+	* src/java/pipeline/Vec2D.java:
+	added more constructors and add() methods
+
+	* src/java/pipeline/Pipeline.java: added resetPreferences() stub
+
+	* src/java/pipeline/JPrefsDialog.java, src/java/pipeline/UserPreferences.java:
+	added layout preferences
+
+	* src/java/pipeline/JBaseDialog.java: added addIntegerSlider()
+
+	* src/java/pipeline/GraphicalApp.java:
+	added slider prefs and doRepaint()
+
+	* src/java/pipeline/JLinksPane.java, src/java/pipeline/JNodeViewer.java, src/java/pipeline/JViewerCollapsed.java, src/java/pipeline/JViewerLink.java, src/java/pipeline/JViewerNode.java:
+	new abstract layout prepass in preparation for radial layout
+
+	* data/icons/slider-thumb.gif: initial revision
+
+2003-06-30  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/Pipeline.java:
+	added loadPreferences and savePreferences()
+
+	* src/java/pipeline/JViewerLink.java:
+	now uses rendering constants fron UserPreferences
+
+	* src/java/pipeline/JDetailsDialog.java: made layout constants static
+
+	* src/java/pipeline/GraphicalApp.java: added prefs dialog
+
+	* src/java/pipeline/JPrefsDialog.java, src/java/pipeline/UserPreferences.java:
+	initial revision
+
+	* configure.ac:
+	fixed bug related to --with-pl-server=..., --with-pl-port=... and --with-pbs-server=...
+
+	* src/java/pipeline/BaseApp.java, src/java/pipeline/ClientApp.java, src/java/pipeline/Database.java, src/java/pipeline/Editor.java, src/java/pipeline/EditorApp.java, src/java/pipeline/FileCleaner.java, src/java/pipeline/GraphicalApp.java, src/java/pipeline/JobApp.java, src/java/pipeline/Pipeline.java, src/java/pipeline/Toolset.java, src/java/pipeline/ToolsetApp.java:
+	thread synchronization to protect apps and database ops
+
+	* src/java/pipeline/JViewerNode.java:
+	now used the new JSecondaryDialog class
+
+	* src/java/pipeline/JAddFilesDialog.java, src/java/pipeline/JRegisterDialog.java, src/java/pipeline/JSecondaryDialog.java:
+	extracted the common parts of JRegisterDialog and JSecondaryDialog and put them in a shared base class JAddFilesDialog
+
+	* src/java/pipeline/JNodeChooser.java: comments
+
+	* src/java/pipeline/JBrowseDialog.java, src/java/pipeline/JWorkingDirTree.java:
+	added setCurrentDir()
+
+	* src/java/pipeline/GraphicalApp.java: added getNodeChooser()
+
+	* src/java/pipeline/FrameRange.java:
+	now initialized pBy to 1 for single file ranges
+
+	* src/java/pipeline/JWorkingDirTree.java, src/java/pipeline/JobOptsParser.jj, src/java/pipeline/ToolsetOptsParser.jj:
+	removed pUser and replaced with local var user when needed
+
+	* src/java/pipeline/JNodeViewer.java:
+	made layout constants static and added accessors for them
+
+	* src/java/pipeline/EditorOptsParser.jj, src/java/pipeline/JFileSeqLister.java, src/java/pipeline/JNodeChooser.java, src/java/pipeline/JNodePane.java:
+	removed pUser and replaced with local var user when needed
+
+2003-06-29  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/BaseApp.java, src/java/pipeline/Editor.java, src/java/pipeline/GraphicalApp.java, src/java/pipeline/Pipeline.java, src/java/pipeline/Toolset.java:
+	removed sUser from BaseApp and subclasses
+
+	* config/bootstrap.sh:
+	added javamake support, commented opt and profiling builds for now
+
+	* configure.ac: added javamake support, comments
+
+	* src/java/pipeline/Vec2D.java: added scalar methods
+
+	* src/java/pipeline/JNodeViewer.java, src/java/pipeline/JLinksPane.java:
+	added redraw of selected links so that they are on top
+
+	* src/java/pipeline/JViewerLink.java:
+	added user settable link style and arrow sizes
+
+	* src/java/pipeline/Makefile.in:
+	now uses javamake to rebuild class files
+
+	* src/java/pipeline/plugin/Makefile.in: added JAVAMAKE config var
+
+	* src/java/pipeline/JRegisterDialog.java:
+	fixed bug in doEditorChanged()
+
+	* src/java/pipeline/JViewerNode.java:
+	replaced absolute/relative node names with Primary file toString() names
+
+	* src/java/pipeline/JNodeChooser.java, src/java/pipeline/JNodeViewer.java:
+	added spacebar doUpdate() and application popup menu
+
+	* src/java/pipeline/GraphicalApp.java:
+	replaced absolute/relative node names with Primary file toString() names, removed menubar, added spacebar doUpdate()
+
+	* src/java/pipeline/JDetailsDepend.java, src/java/pipeline/JDetailsDialog.java:
+	replaced absolute/relative node names with Primary file toString() names
+
+	* src/java/pipeline/JSelector.java: obsolete
+
+2003-06-28  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/ClientApp.java, src/java/pipeline/ClientOptsParser.jj, src/java/pipeline/Editor.java, src/java/pipeline/FilePattern.java, src/java/pipeline/FileSequence.java, src/java/pipeline/JFileSeqLister.java, src/java/pipeline/JRegisterDialog.java, src/java/pipeline/NoneEditor.java, src/java/pipeline/PFileSeq.java, src/java/pipeline/PNode.java:
+	filename suffixes can now be NULL
+
+	* src/java/pipeline/Pipeline.java:
+	jobs are now submitted with a hold until all jobs have beed submitted and then the hold is released
+
+	* src/database/share/dbinit.sql.in: filename suffixes can now be NULL
+
+2003-06-27  Jim Callahan  <jim@salamander>
+
+	* src/java/docs/TODO.txt, src/java/docs/pipeline.html: latest
+
+	* src/java/pipeline/plugin/VexAction.java, src/java/pipeline/plugin/VexTableAction.java:
+	simplified sanity check messages
+
+	* src/java/pipeline/QueueJob.java:
+	improved exception handling during job prep and execution
+
+	* src/java/pipeline/JQueueJobDialog.java:
+	hides no longer relevant details dialogs when jobs are updated
+
+	* src/java/pipeline/JQueueJobDetailsDialog.java:
+	now revalidates the output panels if the job is updated, removes itself from the JQueueDialog's list when hidden
+
+	* src/java/pipeline/JDetailsDialog.java:
+	now revalidates properties panel if the action is changed
+
+	* src/java/pipeline/GraphicalApp.java:
+	cleaned up top-level exception handling
+
+	* src/java/pipeline/FilePattern.java:
+	now omits Padding from toGlue() when it is -1
+
+	* configure.ac, config/bootstrap.sh: improved server --with options
+
+	* src/java/docs/TODO.txt: latest
+
+	* src/java/pipeline/JViewerNode.java: disabled "Kill All" menu item
+
+	* src/java/pipeline/BaseEditor.java: comments
+
+	* src/java/pipeline/ClientOptsParser.jj:
+	fixed bug in NAME and NAME_ARG which prevented paths prefixed with "./"
+
+	* src/java/pipeline/JDetailsDialog.java:
+	added tooltip descriptions for actions
+
+	* src/java/pipeline/Pipeline.java:
+	relaxed requirement that --editor is given in register()
+
+	* src/java/pipeline/plugin/Makefile.in: added VexTableAction
+
+	* src/java/pipeline/BaseAction.java, src/java/pipeline/plugin/ScriptAction.java, src/java/pipeline/plugin/VexAction.java:
+	added tooltip descriptions for actions
+
+	* src/java/pipeline/plugin/VexTableAction.java: initial revision
+
+	* src/database/share/dbinit.sql.in: added editor for "vex" suffix
+
+	* src/java/docs/TODO.txt: initial revision
+
+	* src/java/pipeline/GraphicalApp.java, src/java/pipeline/JNodeChooser.java, src/java/pipeline/JQueueJobDetailsDialog.java, src/java/pipeline/JQueueJobDialog.java, src/java/pipeline/JRegisterDialog.java, src/java/pipeline/JViewerNode.java, src/java/pipeline/JWaitDialog.java, src/java/pipeline/Makefile.in, src/java/pipeline/Pipeline.java, src/java/pipeline/QueueJob.java, src/java/pipeline/plugin/Makefile.in:
+	improved progress dialogs and tasks
+
+	* src/java/pipeline/JWaitTask.java, src/java/pipeline/plugin/VexAction.java:
+	initial revision
+
+2003-06-26  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/SwingWorker.java: obsolete
+
+2003-06-25  Jim Callahan  <jim@salamander>
+
+	* config/bootstrap.sh: added --with-pbsserver
+
+	* src/java/pipeline/Makefile.in: added JWaitDialog and SwingWorker
+
+	* src/java/pipeline/Toolset.java: comments
+
+	* src/java/pipeline/PackageInfo.java.in: added sPbsServer
+
+	* src/java/pipeline/Pipeline.java:
+	now retries job and queue transactions in the case of a concurrent update conflicts
+
+	* src/java/pipeline/JQueueJobDetailsDialog.java:
+	added progress bar dialog, added job history panel -- tracejob(1)
+
+	* src/java/pipeline/JQueueJobDialog.java, src/java/pipeline/JViewerNode.java:
+	added progress bar dialog
+
+	* src/java/pipeline/JCollapsePanel.java:
+	added addCollapseActionListener()
+
+	* src/java/pipeline/GraphicalApp.java: added progress bar dialog
+
+	* src/java/pipeline/JWaitDialog.java, src/java/pipeline/SwingWorker.java:
+	initial revision
+
+	* configure.ac: added --with-pbsserver
+
+	* src/java/pipeline/DbError.java, src/java/pipeline/SubProcessError.java, src/java/pipeline/PError.java:
+	initial revision
+
+	* src/java/pipeline/BaseAction.java, src/java/pipeline/BaseApp.java, src/java/pipeline/BaseEditor.java, src/java/pipeline/ClientApp.java, src/java/pipeline/ClientOptsParser.jj, src/java/pipeline/Database.java, src/java/pipeline/EditorApp.java, src/java/pipeline/EditorOptsParser.jj, src/java/pipeline/GraphicalApp.java, src/java/pipeline/GraphicalOptsParser.jj, src/java/pipeline/JDetailsDialog.java, src/java/pipeline/JFileBox.java, src/java/pipeline/JFileSeqBox.java, src/java/pipeline/JNodeChooser.java, src/java/pipeline/JQueueJobDetailsDialog.java, src/java/pipeline/JQueueJobDialog.java, src/java/pipeline/JRegisterDialog.java, src/java/pipeline/JViewerNode.java, src/java/pipeline/JobApp.java, src/java/pipeline/JobOptsParser.jj, src/java/pipeline/LogMessage.java, src/java/pipeline/Makefile.in, src/java/pipeline/NoneAction.java, src/java/pipeline/NoneEditor.java, src/java/pipeline/PMod.java, src/java/pipeline/PNode.java, src/java/pipeline/PState.java, src/java/pipeline/PVersion.java, src/java/pipeline/Pipeline.java, src/java/pipeline/QueueJob.java, src/java/pipeline/SingleEditor.java, src/java/pipeline/SubProcess.java, src/java/pipeline/SubProcessMgr.java, src/java/pipeline/SubProcessThread.java, src/java/pipeline/ToolsetApp.java, src/java/pipeline/ToolsetOptsParser.jj, src/java/pipeline/plugin/FcheckEditor.java, src/java/pipeline/plugin/ScriptAction.java, src/java/pipeline/tests/TestSubProcessApp.java:
+	reorganized exceptions
+
+	* src/java/pipeline/Editor.java, src/java/pipeline/Toolset.java:
+	now retries transaction in the case of a concurrent update conflict
+
+	* src/java/pipeline/SubProcessException.java:
+	renamed to SubProcessError
+
+	* src/java/pipeline/DatabaseException.java:
+	split into DbError and PError exceptions
+
+2003-06-24  Jim Callahan  <jim@salamander>
+
+	* tests/data/animals/bear, tests/data/animals/dragonfly, tests/data/animals/fish, tests/data/animals/frog, tests/data/animals/snake, tests/data/animals/tadpole:
+	added delays in action scripts to make debugging easier
+
+	* src/java/pipeline/plugin/ScriptAction.java:
+	renamed tmpdir for scripts to .pipeline from .scripts
+
+	* src/java/pipeline/QueueJob.java:
+	readded Hostname, added methods for getting the temporary files created by PBS for pljobs
+
+	* src/java/pipeline/Pipeline.java: implemented killJobHelper()
+
+	* src/java/pipeline/JQueueJobDetailsDialog.java:
+	added stdout/err panels for actions and jobs
+
+	* src/java/docs/pipeline.html: removed the Make command
+
+	* src/database/share/dbinit.sql.in: readded Hostname to QueueJob table
+
+2003-06-20  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/Pipeline.java: added chmod of queue script
+
+	* src/java/pipeline/BaseAction.java, src/java/pipeline/JobApp.java, src/java/pipeline/JobOptsParser.jj, src/java/pipeline/PackageInfo.java.in, src/java/pipeline/Pipeline.java, src/java/pipeline/QueueJob.java, src/java/pipeline/SubProcess.java, src/java/share/logger.properties:
+	PBS job submission done, still tested though
+
+	* src/java/pipeline/Pipeline.java, src/java/pipeline/QueueJob.java:
+	reorganized job prep and launching methods
+
+2003-06-19  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JViewerNode.java:
+	remove Make command, Queue command now works
+
+	* src/java/pipeline/JQueueJobDialog.java:
+	renamed Pipeline.killJob() to killJobs()
+
+	* src/java/pipeline/JQueueJobDetailsDialog.java:
+	replaced Hostname and ProcessID with QueueID
+
+	* src/java/pipeline/ClientOptsParser.jj:
+	remove Make command, Queue command now works
+
+	* src/database/share/dbinit.sql.in:
+	replaced Hostname and ProcessID with QueueID for table QueueJob
+
+	* src/java/pipeline/JobApp.java, src/java/pipeline/JobOptsParser.jj, src/java/scripts/pljob.in:
+	initial revision
+
+	* config/bootstrap.sh, configure.ac, src/java/pipeline/Makefile.in, src/java/scripts/Makefile.am, src/java/share/logger.properties:
+	added pljob related stuff
+
+	* src/java/pipeline/plugin/ScriptAction.java:
+	fixed bug in name of ScriptText parameter, added more logging
+
+	* src/java/pipeline/SubProcess.java: reorganized exception handling
+
+	* src/java/pipeline/QueueJob.java: error messages
+
+	* src/java/pipeline/Pipeline.java: job prep and execution seems to work
+
+	* src/java/pipeline/PState.java: fixed a bug in computeQueueStates()
+
+	* src/java/pipeline/GraphicalApp.java: resurected Jobs menu item
+
+	* src/java/pipeline/ClientApp.java: added init of FileCleaner
+
+	* src/java/docs/pljob.html: all done
+
+2003-06-18  Jim Callahan  <jim@salamander>
+
+	* src/database/share/dbinit.sql.in, src/java/pipeline/GraphicalApp.java, src/java/pipeline/JQueueJobDialog.java, src/java/pipeline/JViewerNode.java, src/java/pipeline/PFileSeq.java, src/java/pipeline/PState.java, src/java/pipeline/PackageInfo.java.in, src/java/pipeline/Pipeline.java, src/java/pipeline/QueueJob.java, src/java/pipeline/QueueTableModel.java, src/java/share/logger.properties, configure.ac:
+	latest queue stuff
+
+2003-06-17  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/Pipeline.java:
+	reworked job preparation methods, now complete yet untested
+
+	* src/java/pipeline/PFileSeq.java:
+	made toString() convert single file sequences to literal filenames
+
+	* src/java/pipeline/JQueueJobDetailsDialog.java:
+	fixed bug in updateState()
+
+	* src/java/pipeline/QueueJob.java: error messages
+
+2003-06-16  Jim Callahan  <jim@salamander>
+
+	* src/database/share/dbinit.sql.in, src/java/pipeline/JQueueJobDialog.java, src/java/pipeline/PFileSeq.java, src/java/pipeline/Pipeline.java, src/java/pipeline/QueueJob.java, src/java/pipeline/QueueTableModel.java:
+	fixed more queue job bugs
+
+2003-06-13  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/Makefile.in: added JQueueJobDetailsDialog
+
+	* src/java/pipeline/QueueTableModel.java: added sorting of rows
+
+	* src/java/pipeline/QueueJob.java:
+	added getStateString() and accessors for file sequences
+
+	* src/java/pipeline/Pipeline.java: comments
+
+	* src/java/pipeline/JTextEditorDialog.java:
+	changed to fixed width font in editor
+
+	* src/java/pipeline/JQueueJobTable.java: comments
+
+	* src/java/pipeline/JQueueJobDialog.java: added job details dialogs
+
+	* src/java/pipeline/JNodeViewer.java:
+	added more error checking in select() and deselect()
+
+	* src/java/pipeline/JBaseDialog.java, src/java/pipeline/JDetailsDialog.java:
+	moved addSpacer() from JDetailsDialog to BaseDialog
+
+	* src/java/pipeline/JQueueJobDetailsDialog.java: intial revision
+
+	* src/java/pipeline/JViewerNode.java: removed debugging comment
+
+	* src/java/pipeline/NodePath.java: initial revision
+
+	* src/java/pipeline/GraphicalApp.java, src/java/pipeline/JLinksPane.java, src/java/pipeline/JNodeViewer.java, src/java/pipeline/JViewerLink.java, src/java/pipeline/JViewerNode.java, src/java/pipeline/Makefile.in:
+	added independent collapsing based on node paths, focuse highlighting of nodes and links
+
+	* src/java/pipeline/VersionID.java: improved equals()
+
+2003-06-12  Jim Callahan  <jim@salamander>
+
+	* src/java/docs/pid-workaround.txt, src/java/pipeline/JQueueJobDialog.java, src/java/pipeline/JQueueJobTable.java, src/java/pipeline/Makefile.in, src/java/pipeline/QueueTableModel.java:
+	initial revision
+
+	* src/java/pipeline/JQueueJobListerDialog.java: obsolete
+
+	* src/java/pipeline/QueueJob.java:
+	added pHostname and pProcessID, reworked database methods to fix bug in conflicting job error checking
+
+	* src/java/pipeline/Pipeline.java:
+	added getAllQueueJobs(), moved error checking for conflicting jobs into QueueJob.removeCompleted()
+
+	* src/java/pipeline/PState.java:
+	fixed a bug in computeQueueStates() which improperly gave MISSING a higher priority than QUEUED, RUNNING or ERROR
+
+	* src/java/pipeline/PFileSeq.java: fixed a bug in insertQueueHelper()
+
+	* src/java/pipeline/GraphicalApp.java:
+	added job dialog and JTable look-and-feel
+
+	* src/java/docs/pipeline.html:
+	added description of filename arguments to action parameters
+
+	* src/database/share/dbinit.sql.in:
+	added Hostname and ProcessID to QueueJob, removed Author from QueueTarget
+
+2003-06-11  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JQueueJobListerDialog.java: initial revision
+
+	* src/java/share/logger.properties: latest
+
+	* src/java/pipeline/QueueJob.java:
+	fixed bugs in getExitCode() and toGlue(), converted lookup() to use a File instead of a String for the filename parameter
+
+	* src/java/pipeline/Pipeline.java:
+	partial implementation of "make" command
+
+	* src/java/pipeline/PState.java: added getCanonicalPath()
+
+	* src/java/pipeline/PFileSeq.java:
+	added Author to QueueTarget, fixed Name/SourceName bug in QueueTarget database methods
+
+	* src/java/pipeline/Makefile.in: added JQueueJobListerDialog
+
+	* src/java/pipeline/JViewerNode.java: enabled Make menu item
+
+	* src/java/pipeline/GraphicalApp.java: added Job Lister dialog
+
+	* src/database/share/dbinit.sql.in:
+	added Author to QueueTarget, gave Queue tables delete permission
+
+2003-06-10  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/GraphicalApp.java, src/java/pipeline/JDetailsDialog.java, src/java/pipeline/JFileBox.java, src/java/pipeline/JFileSeqBox.java, src/java/pipeline/JStateBar.java, src/java/pipeline/PState.java, src/java/pipeline/Pipeline.java:
+	reorganized filenames, file/queue states into arrays indexed by both sequence and file index
+
+	* src/java/pipeline/plugin/ScriptAction.java:
+	changed to used new non-space seperated action parameter names
+
+	* src/java/pipeline/Pipeline.java:
+	reorganized sections, no functional changes
+
+	* src/java/pipeline/JStateBar.java: fixed typo
+
+	* src/java/pipeline/JRegisterDialog.java:
+	silently replaces padding of 1 with 0
+
+	* src/java/pipeline/JDetailsDialog.java:
+	update to use getNameUI() for action parameter names
+
+	* src/java/pipeline/ClientOptsParser.jj:
+	added "secondary" command, action related options now fully implemented
+
+	* src/java/pipeline/ClientApp.java: added handleSecondary()
+
+	* src/java/pipeline/BaseParameter.java: added getNameUI()
+
+	* src/java/docs/pipeline.html: improved action related stuff
+
+	* tests/data/basics/multiC.10.txt, tests/data/basics/multiC.15.txt, tests/data/basics/multiC.20.txt, tests/mod-multiA, tests/sec-multiA, tests/sec-multiA2, tests/sec-multiA3:
+	initial revision
+
+	* tests/Makefile.am, tests/add-bear, tests/add-dragonfly, tests/add-fish, tests/add-frog, tests/add-multiA, tests/add-multiB, tests/add-snake, tests/add-tadpole, tests/data/animals/bear, tests/data/animals/dragonfly, tests/data/animals/fish, tests/data/animals/frog, tests/data/animals/snake, tests/data/animals/tadpole:
+	updated to use Actions
+
+2003-06-09  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/JNodeViewer.java, src/java/pipeline/JStateBar.java, src/java/pipeline/JViewerNode.java:
+	state bars fully functional
+
+	* ChangeLog: latest
+
+	* src/java/pipeline/JStateBar.java: intial revision
+
+	* src/java/pipeline/PState.java: sStateColors now public
+
+	* src/java/pipeline/Makefile.in: added JStateBar
+
+	* src/java/pipeline/JViewerNode.java: now uses JStateBar
+
+2003-06-06  Jim Callahan  <jim@salamander>
+
+	* tests/add-monkeyA, tests/add-monkeyB, tests/add-monkeyC:
+	initial revision
+
+	* src/java/docs/pipeline.html: added editor related stuff
+
+	* tests/add-multiA: changed --pad to 0, was 1
+
+	* tests/Makefile.am: added monkey nodes
+
+	* src/java/share/logger.properties: latest
+
+	* src/java/pipeline/QueueJob.java:
+	fixed a bug in lookup(), was missing a end quote in the SQL statement
+
+	* src/java/pipeline/Pipeline.java:
+	fixed multiple bugs where SQL transactions where getting nested when state() was called from within a transaction block
+
+	* src/java/pipeline/PState.java:
+	computeQueueStates() now fully implemented, although not fully tested
+
+	* src/java/pipeline/PMod.java:
+	added missing remove of the editor in remove(), cleaned up modify()
+
+	* src/java/pipeline/PDepend.java:
+	fixed bug in removeAllForMod(), both targetID and sourceID are now matched
+
+	* src/java/pipeline/JViewerNode.java:
+	now removes nodes from the root list if they are revoked
+
+	* src/java/pipeline/GraphicalApp.java: added removeRoot()
+
+	* src/java/pipeline/Database.java:
+	added assertions to check for bad nesting of SQL transactions
+
+	* tests/data/images/per-frame.tif: initial revision
+
+2003-06-05  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/Makefile.in: added FileCleaner and QueueJob
+
+	* src/java/pipeline/QueueJob.java: initial revision
+
+	* src/java/pipeline/FileCleaner.java: intial revision
+
+	* src/java/pipeline/plugin/ScriptAction.java:
+	prep() implemented, but not tested
+
+	* src/java/pipeline/plugin/FcheckEditor.java:
+	now used FileCleaner to remove temporary files
+
+	* src/java/pipeline/Toolset.java: make dumpToolset() static
+
+	* src/java/pipeline/Pipeline.java, src/java/pipeline/PVersion.java, src/java/pipeline/PState.java, src/java/pipeline/PNode.java, src/java/pipeline/PMod.java:
+	improved error messages
+
+	* src/java/pipeline/PFileSeq.java:
+	added QueueJob related database methods
+
+	* src/java/pipeline/PDepend.java:
+	merged PModDepend and PDepend SQL tables
+
+	* src/java/pipeline/NoneAction.java: renamed launch() to prep()
+
+	* src/java/pipeline/LogMessage.java: improved error messages
+
+	* src/java/pipeline/GraphicalApp.java:
+	improved error messages, added FileCleaner init(), fixed bug in exit code returned from doCleanup()
+
+	* src/java/pipeline/Database.java, src/java/pipeline/BaseEditor.java:
+	improved error messages
+
+	* src/java/pipeline/BaseAction.java: renamed doAction() to prep()
+
+	* src/database/share/dbinit.sql.in:
+	reorganized file, updated Queue tables to match new runtime classes
+
 2003-06-05  Jim Callahan  <jim@salamander>
 
 	* src/java/pipeline/Makefile.in: added FileCleaner and QueueJob
