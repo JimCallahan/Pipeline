@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.31 2004/09/03 11:01:42 jim Exp $
+// $Id: MasterMgr.java,v 1.32 2004/09/05 06:43:38 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1983,9 +1983,8 @@ class MasterMgr
    *   The toolset environment under which editors and actions are run. <BR>
    *   The name of the editor plugin used to edit the data files associated with the node.<BR>
    *   The regeneration action and its single and per-dependency parameters. <BR>
-   *   The job requirements. <BR>
-   *   The IgnoreOverflow and IsSerial flags. <BR>
-   *   The job batch size. <P> 
+   *   The overflow policy, execution method and job batch size. <BR> 
+   *   The job requirements. <P>
    * </DIV> 
    * 
    * Note that any existing upstream dependency relationship information contain in the
