@@ -1,4 +1,4 @@
-// $Id: JAboutDialog.java,v 1.2 2004/05/08 23:38:38 jim Exp $
+// $Id: JAboutDialog.java,v 1.3 2004/05/21 00:14:18 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -36,67 +36,44 @@ class JAboutDialog
     {
       Box body = new Box(BoxLayout.X_AXIS);
       {
+	JPanel tpanel = null;
 	{
-	  JPanel panel = new JPanel();
-	  pTitlePanel = panel;
+	  tpanel = new JPanel();
+	  tpanel.setName("TitlePanel");
+	  tpanel.setLayout(new BoxLayout(tpanel, BoxLayout.Y_AXIS));
 
-	  panel.setName("TitlePanel");
-	  panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-
-	  body.add(panel);
+	  body.add(tpanel);
 	}
 
+	JPanel vpanel = null;
 	{
-	  JPanel panel = new JPanel();
-	  pValuePanel = panel;
+	  vpanel = new JPanel();
+	  vpanel.setName("ValuePanel");
+	  vpanel.setLayout(new BoxLayout(vpanel, BoxLayout.Y_AXIS));
 
-	  panel.setName("ValuePanel");
-	  panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-
-	  body.add(panel);
+	  body.add(vpanel);
 	}
+
+	UIMaster.createTitledTextField(tpanel, "Created By:", 120, 
+				       vpanel, "Temerity Software, Inc.", 240);
+
+	UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
+
+	UIMaster.createTitledTextField(tpanel, "Version:", 120, 
+				       vpanel, PackageInfo.sVersion, 240);
+
+	UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+
+	UIMaster.createTitledTextField(tpanel, "Release Date:", 120, 
+				       vpanel, PackageInfo.sRelease, 240);
+	
+	UIMaster.addVerticalGlue(tpanel, vpanel);
       }
-
-      addTitleValue("Created By:", "Temerity Software, Inc.");
-      addSpacer(12);
-      addTitleValue("Version:", PackageInfo.sVersion);
-      addSpacer(3);
-      addTitleValue("Release Date:", PackageInfo.sRelease);
-
-      pTitlePanel.add(Box.createVerticalGlue());
-      pValuePanel.add(Box.createVerticalGlue());
 
       super.initUI("About Pipeline:", false, body, null, null, null, "Close");
     }  
 
     setResizable(false);
-  }
-
-  /**
-   * Add a title|value line.
-   */ 
-  private void 
-  addTitleValue
-  (
-   String title, 
-   String value
-  ) 
-  {
-    pTitlePanel.add(UIMaster.createLabel(title, 120, JLabel.RIGHT));
-    pValuePanel.add(UIMaster.createTextField(value, 240, JLabel.CENTER));
-  }
-
-  /**
-   * Add vertical spacer.
-   */ 
-  private void 
-  addSpacer
-  (
-   int height
-  ) 
-  {
-    pTitlePanel.add(Box.createRigidArea(new Dimension(0, height)));
-    pValuePanel.add(Box.createRigidArea(new Dimension(0, height)));
   }
 
 
@@ -106,22 +83,5 @@ class JAboutDialog
   /*----------------------------------------------------------------------------------------*/
 
   private static final long serialVersionUID = -1936228713351253885L;
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   I N T E R N A L S                                                                    */
-  /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * The panel containing title labels.
-   */ 
-  private JPanel  pTitlePanel;
-  
-  /**
-   * The panel containing value text fields.
-   */
-  private JPanel  pValuePanel;
-
 
 }
