@@ -28,6 +28,7 @@ The core features of Pipeline include:
 %defattr(555,root,root)
 @ROOT_INST_DIR@/bin/pls
 @ROOT_INST_DIR@/bin/realpath
+@ROOT_INST_DIR@/bin/pltest
 
 %defattr(6550,root,pipeline)
 @ROOT_INST_DIR@/sbin/plrun
@@ -42,14 +43,9 @@ The core features of Pipeline include:
 %dir @PRODDIR@/repository
 %dir @PRODDIR@/checksum
 
-%defattr(444,root,root)
-@ROOT_INST_DIR@/jar/pipeline.jar
-@ROOT_INST_DIR@/jar/pldata.jar
-@ROOT_INST_DIR@/jar/testbed.jar
-
 %defattr(-,root,root)
-@ROOT_INST_DIR@/jar/us
 @ROOT_INST_DIR@/lib
+@ROOT_INST_DIR@/plugins
 @ROOT_INST_DIR@/share/docs
 @ROOT_INST_DIR@/share/logger.properties
 
