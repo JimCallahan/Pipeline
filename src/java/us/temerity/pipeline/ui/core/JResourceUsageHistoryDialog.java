@@ -1,4 +1,4 @@
-// $Id: JResourceUsageHistoryDialog.java,v 1.8 2005/02/18 23:40:25 jim Exp $
+// $Id: JResourceUsageHistoryDialog.java,v 1.9 2005/03/04 11:04:51 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -847,16 +847,33 @@ class JResourceUsageHistoryDialog
 		  /* graph */ 
 		  {
 		    Color3d fg = prefs.getJobCountFgColor();
+		    Color3d oc = prefs.getJobCountOverflowColor();
+
+		    boolean over = false;		    
 		    gl.glColor3d(fg.r(), fg.g(), fg.b());
 
 		    int wk;
 		    for(wk=0; wk<block.getNumSamples(); wk++) {
 		      double jobs = ((double) block.getNumJobs(wk)) / totalJobs;
-
-		      gl.glVertex2d((double) wk,     0.0);
-		      gl.glVertex2d((double) (wk+1), 0.0);
-		      gl.glVertex2d((double) (wk+1), jobs);
-		      gl.glVertex2d((double) wk,     jobs);
+		      if(jobs > 0.0) {
+			if(jobs > 1.0) {
+			  if(!over) {
+			    gl.glColor3d(oc.r(), oc.g(), oc.b());
+			    over = true;
+			  }
+			}
+			else if(over) {
+			  gl.glColor3d(fg.r(), fg.g(), fg.b());
+			  over = false;
+			}
+			
+			jobs = Math.min(jobs, 1.0);
+		      
+			gl.glVertex2d((double) wk,     0.0);
+			gl.glVertex2d((double) (wk+1), 0.0);
+			gl.glVertex2d((double) (wk+1), jobs);
+			gl.glVertex2d((double) wk,     jobs);
+		      }
 		    }
 		  }
 		}
