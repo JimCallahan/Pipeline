@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.17 2004/06/08 20:12:50 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.18 2004/06/14 22:50:51 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -153,6 +153,13 @@ class JNodeViewerPanel
       JPopupMenu menus[] = { pShortNodePopup, pMediumNodePopup, pNodePopup };
       int wk;
       for(wk=0; wk<menus.length; wk++) {
+	item = new JMenuItem("Details...");
+	item.setActionCommand("details");
+	item.addActionListener(this);
+	menus[wk].add(item);  
+	
+	menus[wk].addSeparator();
+
 	item = new JMenuItem("Make Root");
 	item.setActionCommand("make-root");
 	item.addActionListener(this);
@@ -504,6 +511,19 @@ class JNodeViewerPanel
   /*----------------------------------------------------------------------------------------*/
   
   /**
+   * Update the state of all currently displayed roots.
+   */
+  public synchronized void 
+  updateRoots()
+  {
+    for(String name : pRoots.keySet()) 
+      pRoots.put(name, null);
+    
+    updateNodeBrowserSelection();
+    updateNodeStatus(); 
+  }
+
+  /**
    * Set the root nodes displayed by the viewer. <P> 
    * 
    * @param author 
@@ -792,9 +812,75 @@ class JNodeViewerPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Update the node details panels with the given node status.
+   */ 
+  private synchronized void
+  updateDetails
+  (
+   NodeStatus status
+  ) 
+  {
+    if(pGroupID > 0) 
+      SwingUtilities.invokeLater(new UpdateNodeDetailsTask(pGroupID, pAuthor, pView, status));
+    
+    if(status != null) 
+      pLastDetailsName = status.getName();
+    else 
+      pLastDetailsName = null;
+  }
+
+  /**
+   * Update the node details panels.
+   */ 
+  private synchronized void
+  updateDetails() 
+  {
+    NodeStatus status = null;
+    if(pLastDetailsName != null) {
+      for(NodeStatus root : pRoots.values()) {
+	status = updateDetailsHelper(root, pLastDetailsName);
+	if(status != null) 
+	  break;
+      }
+    }
+
+    updateDetails(status);
+  }
+  
+  /**
+   * Recursively search the given node status and all upstream nodes for a node status 
+   * with the given name.
+   * 
+   * @return 
+   *   The found node status or <CODE>null</CODE> if not found.
+   */ 
+  private NodeStatus
+  updateDetailsHelper
+  (
+   NodeStatus root, 
+   String name
+  ) 
+  {
+    if(root.getName().equals(name)) 
+      return root;
+
+    for(NodeStatus status : root.getSources()) {
+      NodeStatus found = updateDetailsHelper(status, name);
+      if(found != null) 
+	return found;
+    }
+
+    return null;
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Update the nodes being viewed.
    */ 
-  private void 
+  private synchronized void 
   updateNodeStatus()
   {
     if(pNodePool == null) 
@@ -857,6 +943,9 @@ class JNodeViewerPanel
   
     pLinks.update();
     pNodePool.update();
+
+    /* update the connected node details panels */ 
+    updateDetails();
   }
   
   /**
@@ -1391,8 +1480,14 @@ class JNodeViewerPanel
    * Invoked when the mouse exits a component. 
    */ 
   public void 
-  mouseExited(MouseEvent e) {} 
-  
+  mouseExited
+  (
+   MouseEvent e
+  ) 
+  {
+    KeyboardFocusManager.getCurrentKeyboardFocusManager().clearGlobalFocusOwner();
+  }
+
   /**
    * Invoked when a mouse button has been pressed on a component. 
    */
@@ -1438,33 +1533,44 @@ class JNodeViewerPanel
 		      MouseEvent.BUTTON3_DOWN_MASK | 
 		      MouseEvent.ALT_DOWN_MASK);
 
-	  
 	  HashMap<NodePath,ViewerNode> changed = new HashMap<NodePath,ViewerNode>();
-	    
-	  /* BUTTON1: replace selection */ 
-	  if((mods & (on1 | off1)) == on1) {
-	    for(ViewerNode vnode : clearSelection()) 
-	      changed.put(vnode.getNodePath(), vnode);
-	    
-	    for(ViewerNode vnode : addSelect(vunder))
-	      changed.put(vnode.getNodePath(), vnode);
-	  }
 	  
-	  /* BUTTON1+SHIFT: toggle selection */ 
-	  else if((mods & (on2 | off2)) == on2) {
-	    for(ViewerNode vnode : toggleSelect(vunder)) 
-	      changed.put(vnode.getNodePath(), vnode);
-	  }
+	  if(e.getClickCount() == 1) {
+	    /* BUTTON1: replace selection */ 
+	    if((mods & (on1 | off1)) == on1) {
+	      for(ViewerNode vnode : clearSelection()) 
+		changed.put(vnode.getNodePath(), vnode);
+	      
+	      for(ViewerNode vnode : addSelect(vunder))
+		changed.put(vnode.getNodePath(), vnode);
+	    }
 	    
-	  /* BUTTON1+SHIFT+CTRL: add to the selection */ 
-	  else if((mods & (on3 | off3)) == on3) {
-	    for(ViewerNode vnode : addSelect(vunder))
+	    /* BUTTON1+SHIFT: toggle selection */ 
+	    else if((mods & (on2 | off2)) == on2) {
+	      for(ViewerNode vnode : toggleSelect(vunder)) 
+		changed.put(vnode.getNodePath(), vnode);
+	    }
+	    
+	    /* BUTTON1+SHIFT+CTRL: add to the selection */ 
+	    else if((mods & (on3 | off3)) == on3) {
+	      for(ViewerNode vnode : addSelect(vunder))
 	      changed.put(vnode.getNodePath(), vnode);
+	    }
+	  }
+	  else if(e.getClickCount() == 2) {
+	    /* BUTTON1 (double click): send node status details panels */ 
+	    if((mods & (on1 | off1)) == on1) {
+	      for(ViewerNode vnode : primarySelect(vunder)) 
+		vnode.update();
+
+	      doDetails();
+	    }
 	  }
 	    
 	  /* update the appearance of all nodes who's selection state changed */ 
 	  for(ViewerNode vnode : changed.values()) 
 	    vnode.update();
+
 	}
 	break;
 
@@ -1786,7 +1892,7 @@ class JNodeViewerPanel
   /*-- KEY LISTENER METHODS ----------------------------------------------------------------*/
 
   /**
-   * voked when a key has been pressed.
+   * invoked when a key has been pressed.
    */   
   public void 
   keyPressed
@@ -1804,7 +1910,11 @@ class JNodeViewerPanel
       for(ViewerNode vnode : primarySelect(vunder)) 
 	vnode.update();
       
-      if((prefs.getNodeMakeRoot() != null) &&
+      if((prefs.getNodeDetails() != null) &&
+	 prefs.getNodeDetails().wasPressed(e))
+	doDetails();
+
+      else if((prefs.getNodeMakeRoot() != null) &&
 	 prefs.getNodeMakeRoot().wasPressed(e))
 	doMakeRoot();
       else if((prefs.getNodeAddRoot() != null) &&
@@ -1820,7 +1930,16 @@ class JNodeViewerPanel
 	 prefs.getNodeRemoveAllRoots().wasPressed(e))
 	doRemoveAllRoots();
 
-      // ...
+      else if((prefs.getNodeRename() != null) &&
+	 prefs.getNodeRename().wasPressed(e))
+	doRename();
+      else if((prefs.getNodeClone() != null) &&
+	 prefs.getNodeClone().wasPressed(e))
+	doClone();
+
+      else if((prefs.getNodeRevoke() != null) &&
+	 prefs.getNodeRevoke().wasPressed(e))
+	doRevoke();
 
       else {
 	for(ViewerNode vnode : clearSelection()) 
@@ -1854,7 +1973,11 @@ class JNodeViewerPanel
     
     /* panel actions */
     else {
-      if((prefs.getCameraCenter() != null) &&
+      if((prefs.getRegisterNewNode() != null) &&
+	 prefs.getRegisterNewNode().wasPressed(e))
+	doRegister();
+
+      else if((prefs.getCameraCenter() != null) &&
 	 prefs.getCameraCenter().wasPressed(e))
 	doCenter();
       else if((prefs.getCameraFrameSelection() != null) &&
@@ -1942,7 +2065,9 @@ class JNodeViewerPanel
 
     /* node menu events */ 
     String cmd = e.getActionCommand();
-    if(cmd.equals("make-root"))
+    if(cmd.equals("details"))
+      doDetails();
+    else if(cmd.equals("make-root"))
       doMakeRoot();
     else if(cmd.equals("add-root"))
       doAddRoot();
@@ -1992,6 +2117,22 @@ class JNodeViewerPanel
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C T I O N S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Update the node details panels with the current primary selected node status.
+   */ 
+  private void
+  doDetails()
+  {
+    if(pPrimary != null) 
+      updateDetails(pPrimary.getNodeStatus());
+
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();
+  }
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -2741,6 +2882,48 @@ class JNodeViewerPanel
   
 
   /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Update the node status being displayed by the connected node details panel.
+   */
+  private 
+  class UpdateNodeDetailsTask
+    extends Thread
+  {
+    public 
+    UpdateNodeDetailsTask
+    (
+     int groupID, 
+     String author, 
+     String view, 
+     NodeStatus status
+    )
+    {      
+      pGroupID = groupID;
+      pAuthor  = author;
+      pView    = view;
+      pStatus  = status;
+    }
+
+    public void 
+    run()
+    {
+      JNodeDetailsPanel details = UIMaster.getInstance().getNodeDetails(pGroupID);
+      if(details != null) {
+	details.updateNodeStatus(pAuthor, pView, pStatus);
+	details.updateManagerTitlePanel();
+      }
+    }
+    
+    private int         pGroupID;
+    private String      pAuthor;
+    private String      pView; 
+    private NodeStatus  pStatus;
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
@@ -2896,6 +3079,13 @@ class JNodeViewerPanel
    */ 
   private Point2d  pMinNodeBounds;
   private Point2d  pMaxNodeBounds;
+
+
+  /**
+   * The fully resolved name of the node who's status was last sent to the node 
+   * details, links, files and history panels. <P> 
+   */ 
+  private String  pLastDetailsName;
 
 
   /*----------------------------------------------------------------------------------------*/
