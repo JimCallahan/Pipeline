@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.38 2004/08/30 02:55:05 jim Exp $
+// $Id: UIMaster.java,v 1.39 2004/08/31 08:17:43 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -79,6 +79,7 @@ class UIMaster
 
     pQueueJobBrowserPanels = new PanelGroup<JQueueJobBrowserPanel>();
     pQueueJobViewerPanels  = new PanelGroup<JQueueJobViewerPanel>();
+    pQueueJobDetailsPanels = new PanelGroup<JQueueJobDetailsPanel>();
 
     SwingUtilities.invokeLater(new SplashFrameTask(this));
   }
@@ -289,12 +290,21 @@ class UIMaster
   }
 
   /**
-   * Get the job broswer panel group.
+   * Get the job viewer panel group.
    */ 
   public PanelGroup<JQueueJobViewerPanel>
   getQueueJobViewerPanels() 
   {
     return pQueueJobViewerPanels;
+  }
+
+  /**
+   * Get the job details panel group.
+   */ 
+  public PanelGroup<JQueueJobDetailsPanel>
+  getQueueJobDetailsPanels() 
+  {
+    return pQueueJobDetailsPanels;
   }
 
 
@@ -2613,6 +2623,7 @@ class UIMaster
 
 	pQueueJobBrowserPanels.clear();
 	pQueueJobViewerPanels.clear();
+	pQueueJobDetailsPanels.clear();
       }
 
       /* restore saved panels */
@@ -2914,6 +2925,11 @@ class UIMaster
    * The active job viewer panels. <P> 
    */ 
   private PanelGroup<JQueueJobViewerPanel>  pQueueJobViewerPanels;
+
+  /**
+   * The active job details panels. <P> 
+   */ 
+  private PanelGroup<JQueueJobDetailsPanel>  pQueueJobDetailsPanels;
 
 
   /*----------------------------------------------------------------------------------------*/
