@@ -1,4 +1,4 @@
-// $Id: ViewerLinks.java,v 1.3 2004/05/18 00:34:31 jim Exp $
+// $Id: ViewerLinks.java,v 1.4 2004/07/07 13:29:46 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -34,6 +34,8 @@ class ViewerLinks
     {
       pUpstreamLinks   = new HashMap<NodePath,ArrayList<Link>>();
       pDownstreamLinks = new HashMap<NodePath,ArrayList<Link>>();
+
+      pAppearanceChanged = true;
 
       pLineAntiAlias = true;
       pLineThickness = 1.0;
@@ -203,7 +205,8 @@ class ViewerLinks
 
     /* update the link appearance */ 
     try {  
-      if((pLineAntiAlias != prefs.getLinkAntiAlias()) || 
+      if(pAppearanceChanged || 
+	 (pLineAntiAlias != prefs.getLinkAntiAlias()) || 
 	 (pLineThickness != prefs.getLinkThickness()) ||
 	 (!pLineColorName.equals(prefs.getLinkColorName()))) {
 
@@ -237,6 +240,8 @@ class ViewerLinks
 	    
 	  pTris.setAppearance(apr);
 	}	
+
+	pAppearanceChanged = false;
       }
     }
     catch(IOException ex) {
@@ -266,7 +271,7 @@ class ViewerLinks
 	    
 	    for(Link link : links) {
 	      if(prefs.getDrawLinkPolicy()) {
-		switch(link.getLink().getCatagory().getPolicy()) {
+		switch(link.getLink().getPolicy()) {
 		case None:
 		  lvCnt += 2;
 		case NodeStateOnly:
@@ -368,7 +373,7 @@ class ViewerLinks
 
 	      if(prefs.getDrawLinkPolicy()) {
 		double s = prefs.getLinkPolicySize();
-		switch(link.getLink().getCatagory().getPolicy()) {
+		switch(link.getLink().getPolicy()) {
 		case None:
 		  la.setCoordinate(lvi, new Point3d(spos.x-s*0.75, spos.y-s, 0.0));  lvi++;
 		  la.setCoordinate(lvi, new Point3d(spos.x-s*0.75, spos.y+s, 0.0));  lvi++;
@@ -458,37 +463,6 @@ class ViewerLinks
 
 
 
-
-
-//       // DEBUG 
-//       {
-// 	System.out.print("Upstream Links:\n");
-// 	for(NodePath parent : pUpstreamLinks.keySet()) {
-// 	  System.out.print("  " + parent + "\n");
-// 	  for(Link link : pUpstreamLinks.get(parent)) {
-// 	    System.out.print("    TargetPos: " + link.getTargetPos() + "\n" + 
-// 			     "    SourcePos: " + link.getSourcePos() + "\n" +
-// 			     "      Details: " + 
-// 			     link.getLink().getCatagory().getName() + " [" + 
-// 			     link.getLink().getCatagory().getPolicy() + "] - " + 
-// 			     link.getLink().getRelationship() + "\n\n");
-// 	  }
-// 	  System.out.print("\n");
-// 	}
-	
-// 	System.out.print("Downstream Links:\n");
-// 	for(NodePath parent : pDownstreamLinks.keySet()) {
-// 	  System.out.print("  " + parent + "\n");
-// 	  for(Link link : pDownstreamLinks.get(parent)) {
-// 	    System.out.print("    TargetPos: " + link.getTargetPos() + "\n" + 
-// 			     "    SourcePos: " + link.getSourcePos() + "\n\n");
-// 	  }
-// 	  System.out.print("\n");
-// 	}
-//       }
-//       // DEBUG 
-      
-
   /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S                                                                        */
   /*----------------------------------------------------------------------------------------*/
@@ -571,6 +545,11 @@ class ViewerLinks
    */ 
   private HashMap<NodePath,ArrayList<Link>>  pDownstreamLinks;
 
+
+  /**
+   * Whether the line appearance has been changed.
+   */ 
+  private boolean  pAppearanceChanged; 
 
   /**
    * Whether to anti-alias link lines.
