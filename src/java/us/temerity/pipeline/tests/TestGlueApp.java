@@ -1,12 +1,10 @@
-// $Id: TestGlueApp.java,v 1.2 2004/02/15 16:17:26 jim Exp $
+// $Id: TestGlueApp.java,v 1.3 2004/02/20 22:51:29 jim Exp $
 
 import us.temerity.pipeline.*;
 
-import java.lang.*;
 import java.lang.reflect.*;
 import java.io.*; 
 import java.util.*; 
-
 
 /*------------------------------------------------------------------------------------------*/
 /*   T E S T   o f   G L U E                                                                */
