@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.25 2004/06/28 00:15:03 jim Exp $
+// $Id: JManagerPanel.java,v 1.26 2004/06/28 23:05:08 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -239,6 +239,11 @@ class JManagerPanel
 
 	item = new JMenuItem("Manage Toolsets...");
 	item.setActionCommand("manage-toolsets");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	item = new JMenuItem("Manage Link Catagories...");
+	item.setActionCommand("manage-link-catagories");
 	item.addActionListener(this);
 	sub.add(item);  
 
@@ -661,6 +666,8 @@ class JManagerPanel
       UIMaster.getInstance().showManageUsersDialog();
     else if(cmd.equals("manage-toolsets"))
       UIMaster.getInstance().showManageToolsetsDialog();
+    else if(cmd.equals("manage-link-catagories"))
+      UIMaster.getInstance().showManageLinkCatagoriesDialog();
     else if(cmd.equals("default-editors"))
       UIMaster.getInstance().showDefaultEditorsDialog();
     else if(cmd.equals("shutdown"))
