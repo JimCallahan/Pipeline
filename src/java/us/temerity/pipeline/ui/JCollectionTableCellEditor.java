@@ -1,4 +1,4 @@
-// $Id: JCollectionTableCellEditor.java,v 1.1 2004/06/08 03:06:36 jim Exp $
+// $Id: JCollectionTableCellEditor.java,v 1.2 2004/06/22 19:39:55 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -20,7 +20,7 @@ import javax.swing.table.*;
 public
 class JCollectionTableCellEditor
   extends AbstractCellEditor
-  implements TableCellEditor
+  implements TableCellEditor, ActionListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -48,6 +48,8 @@ class JCollectionTableCellEditor
     pField.setMinimumSize(size);
     pField.setMaximumSize(size);
     pField.setPreferredSize(size);
+
+    pField.addActionListener(this);
   }
 
 
@@ -81,6 +83,26 @@ class JCollectionTableCellEditor
     pField.setSelected((String) value);
     
     return pField;
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   L I S T E N E R S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /*-- ACTION LISTENER METHODS -------------------------------------------------------------*/
+
+  /** 
+   * Invoked when an action occurs. 
+   */ 
+  public void 
+  actionPerformed
+  (
+   ActionEvent e
+  ) 
+  {
+    fireEditingStopped();
   }
 
 
