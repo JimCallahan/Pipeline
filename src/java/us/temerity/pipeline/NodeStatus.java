@@ -1,4 +1,4 @@
-// $Id: NodeStatus.java,v 1.12 2004/08/26 05:55:16 jim Exp $
+// $Id: NodeStatus.java,v 1.13 2004/10/12 23:20:23 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -234,6 +234,7 @@ class NodeStatus
   {
     pTargets.put(status.getName(), status);
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
