@@ -1,4 +1,4 @@
-// $Id: TupleNf.java,v 1.5 2004/12/17 20:07:37 jim Exp $
+// $Id: TupleNf.java,v 1.6 2004/12/17 21:23:31 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -181,15 +181,6 @@ class TupleNf
     if(pComps.length != values.length) 
       throw new TupleSizeMismatchException(pComps.length, values.length);
     pComps = (float[]) values.clone();
-  }
-
-  /**
-   * Returns the mutable underlying array representation of the components.
-   */
-  public float[]
-  getRaw()
-  {
-    return pComps;
   }
 
   /**

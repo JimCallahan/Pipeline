@@ -184,15 +184,6 @@ class TupleNd
   }
 
   /**
-   * Returns the mutable underlying array representation of the components.
-   */
-  public double[]
-  getRaw()
-  {
-    return pComps;
-  }
-
-  /**
    * Returns an array containing a copy of the component values.
    */
   public double[]

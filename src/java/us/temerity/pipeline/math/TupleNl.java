@@ -184,15 +184,6 @@ class TupleNl
   }
 
   /**
-   * Returns the mutable underlying array representation of the components.
-   */
-  public long[]
-  getRaw()
-  {
-    return pComps;
-  }
-
-  /**
    * Returns an array containing a copy of the component values.
    */
   public long[]

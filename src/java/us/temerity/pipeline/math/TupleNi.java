@@ -184,15 +184,6 @@ class TupleNi
   }
 
   /**
-   * Returns the mutable underlying array representation of the components.
-   */
-  public int[]
-  getRaw()
-  {
-    return pComps;
-  }
-
-  /**
    * Returns an array containing a copy of the component values.
    */
   public int[]
