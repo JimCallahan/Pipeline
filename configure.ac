@@ -249,7 +249,7 @@ then
        CXXFLAGS="$CXXFLAGS -O2";;
   esac
 
-  JAVA_C_FLAGS="-source 1.5 -deprecation -Xlint:all,-serial,-depreciation"
+  JAVA_C_FLAGS="-source 1.5 -Xlint:all,-serial,-depreciation,-unchecked"
   JAVA_RUNTIME_FLAGS="-disableassertions"
 
   CXXFLAGS="$CXXFLAGS -DNDEBUG"
@@ -271,7 +271,7 @@ else
        CXXFLAGS="$CXXFLAGS -g";;
   esac
 
-  JAVA_C_FLAGS="-g -source 1.5 -deprecation -Xlint:all"
+  JAVA_C_FLAGS="-g -source 1.5 -Xlint:all,-depreciation,-unchecked"
   JAVA_RUNTIME_FLAGS="-enableassertions"
 
   EXTRA_DEBUG_SUBDIRS="tests"
