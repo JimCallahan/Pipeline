@@ -49,7 +49,7 @@ The core features of Pipeline include:
 %dir @NODEDIR@
 
 %defattr(644,@PIPELINE_USER@,@PIPELINE_GROUP@)
-@NODEDIR@/etc/suffix-editors/@PIPELINE_USER@
+%config @NODEDIR@/etc/suffix-editors/@PIPELINE_USER@
 
 %defattr(-,root,root)
 @ROOT_INST_DIR@/lib
