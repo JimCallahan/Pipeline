@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.8 2004/09/03 02:01:41 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.9 2004/09/05 06:51:50 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -138,6 +138,25 @@ class JQueueJobViewerPanel
       item.setActionCommand("details");
       item.addActionListener(this);
       pJobPopup.add(item);
+
+      pJobPopup.addSeparator();
+
+      item = new JMenuItem("View");
+      item.setActionCommand("view");
+      item.addActionListener(this);
+      pJobPopup.add(item);
+      
+      {
+	sub = new JMenu("View With");
+	pJobPopup.add(sub);
+	
+	for(String editor : Plugins.getEditorNames()) {
+	  item = new JMenuItem(editor);
+	  item.setActionCommand("view-with:" + editor);
+	  item.addActionListener(this);
+	  sub.add(item);
+	}
+      }
 
       pJobPopup.addSeparator();
 
@@ -380,15 +399,66 @@ class JQueueJobViewerPanel
    TreeMap<Long,JobStatus>     status
   ) 
   {
-    pJobGroups.clear();
-    if(groups != null) 
-      pJobGroups.putAll(groups);
+    /* update the job groups and status tables */ 
+    {
+      pJobGroups.clear();
+      if(groups != null) 
+	pJobGroups.putAll(groups);
+      
+      pJobStatus.clear();
+      if(status != null) 
+	pJobStatus.putAll(status);
+    }
 
-    pJobStatus.clear();
-    if(status != null) 
-      pJobStatus.putAll(status);
+    /* clear the job details panel if the job is no longer a member of a visible group */ 
+    if(pLastJobID != null) {
+      boolean found = false;
+      for(QueueJobGroup group : pJobGroups.values()) {
+	if(group.getAllJobIDs().contains(pLastJobID)) {
+	  found = true;
+	  break;
+	}
+      }
 
+      if(!found) 
+	pLastJobID = null;
+    }
+
+    /* update the visualization graphics */ 
     updateUniverse();
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Update the connected job details panel with the given job.
+   */ 
+  private synchronized void 
+  updateJobDetails
+  (
+   Long jobID
+  ) 
+  {
+    if(jobID != null) {
+      GetJobInfoTask task = new GetJobInfoTask(jobID);
+      task.start();
+    }
+    else {
+      UpdateDetailsPanelTask task = new UpdateDetailsPanelTask(null, null);
+      SwingUtilities.invokeLater(task);
+    }
+
+    pLastJobID = jobID;
+  }
+
+  /**
+   * Update the connected job details panel.
+   */ 
+  private synchronized void 
+  updateJobDetails() 
+  {
+    updateJobDetails(pLastJobID);
   }
 
 
@@ -460,9 +530,7 @@ class JQueueJobViewerPanel
     pJobPool.update();
 
     /* update the connected job details panels */ 
-    {
-      // ...
-    }
+    updateJobDetails();
   }
   
   /**
@@ -1212,7 +1280,6 @@ class JQueueJobViewerPanel
 	      for(ViewerJob vjob : primarySelect(vunder)) 
 		changed.put(vjob.getJobPath(), vjob);
 
-	      //updateJobMenu();
 	      pJobPopup.show(e.getComponent(), e.getX(), e.getY());
 	    }
 	    else if(under instanceof ViewerJobGroup) {
@@ -1224,7 +1291,6 @@ class JQueueJobViewerPanel
 	      for(ViewerJob vjob : primarySelect(vunder)) 
 		changed.put(vjob.getJobPath(), vjob);
 	      
-	      //updateGroupMenu();
 	      pGroupPopup.show(e.getComponent(), e.getX(), e.getY());
 	    }
 	  }
@@ -1358,6 +1424,15 @@ class JQueueJobViewerPanel
 		    changed.put(vjob.getJobPath(), vjob);
 		}
 	      }
+
+	      for(wk=0; wk<gpaths.length; wk++) {
+		Object picked = gpaths[wk].getObject().getUserData();
+		if(picked instanceof ViewerJobGroup) {
+		  ViewerJobGroup vgroup = (ViewerJobGroup) picked;
+		  for(ViewerJob vjob : addSelect(vgroup))
+		    changed.put(vjob.getJobPath(), vjob);
+		}
+	      }
 	    }
 	  }
 	  
@@ -1373,6 +1448,15 @@ class JQueueJobViewerPanel
 		    changed.put(vjob.getJobPath(), vjob);
 		}
 	      }
+
+	      for(wk=0; wk<gpaths.length; wk++) {
+		Object picked = gpaths[wk].getObject().getUserData();
+		if(picked instanceof ViewerJobGroup) {
+		  ViewerJobGroup vgroup = (ViewerJobGroup) picked;
+		  for(ViewerJob vjob : toggleSelect(vgroup))
+		    changed.put(vjob.getJobPath(), vjob);
+		}
+	      }
 	    }
 	  }
 	  
@@ -1385,6 +1469,15 @@ class JQueueJobViewerPanel
 		if(picked instanceof ViewerJob) {
 		  ViewerJob svjob = (ViewerJob) picked;
 		  for(ViewerJob vjob : addSelect(svjob))
+		    changed.put(vjob.getJobPath(), vjob);
+		}
+	      }
+
+	      for(wk=0; wk<gpaths.length; wk++) {
+		Object picked = gpaths[wk].getObject().getUserData();
+		if(picked instanceof ViewerJobGroup) {
+		 ViewerJobGroup vgroup = (ViewerJobGroup) picked;
+		  for(ViewerJob vjob : addSelect(vgroup))
 		    changed.put(vjob.getJobPath(), vjob);
 		}
 	      }
@@ -1672,6 +1765,12 @@ class JQueueJobViewerPanel
     /* job/group events */ 
     else if(cmd.equals("details"))
       doDetails();
+
+    else if(cmd.equals("view"))
+      doView();
+    else if(cmd.startsWith("view-with:"))
+      doViewWith(cmd.substring(10));    
+
     else if(cmd.equals("pause-jobs"))
       doPauseJobs();
     else if(cmd.equals("resume-jobs"))
@@ -1930,11 +2029,43 @@ class JQueueJobViewerPanel
   private void
   doDetails()
   {
-    if(pGroupID > 0) {
-      if(pPrimary != null) {
-	GetJobInfoTask task = new GetJobInfoTask(pPrimary.getJobStatus().getJobID());
-	task.start();
-      }
+    if((pGroupID > 0) && (pPrimary != null))
+      updateJobDetails(pPrimary.getJobStatus().getJobID());
+
+    for(ViewerJob vjob : clearSelection()) 
+      vjob.update();
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * View the target files of the primary selected job.
+   */ 
+  private void 
+  doView() 
+  {
+    if(pPrimary != null) {
+      ViewTask task = new ViewTask(pPrimary.getJobStatus(), null);
+      task.start();
+    }
+
+    for(ViewerJob vjob : clearSelection()) 
+      vjob.update();
+  }
+
+  /**
+   * View the target files of the primary selected job with the given editor.
+   */ 
+  private void 
+  doViewWith
+  (
+   String editor
+  ) 
+  {
+    if(pPrimary != null) {
+      ViewTask task = new ViewTask(pPrimary.getJobStatus(), editor);
+      task.start();
     }
 
     for(ViewerJob vjob : clearSelection()) 
@@ -2199,6 +2330,7 @@ class JQueueJobViewerPanel
     private long  pJobID; 
   }
 
+
   /**
    * Update the job details panel.
    */
@@ -2233,6 +2365,114 @@ class JQueueJobViewerPanel
     private QueueJob      pJob; 
     private QueueJobInfo  pJobInfo; 
   }
+
+ 
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * View the target files of the job with the given editor.
+   */ 
+  private
+  class ViewTask
+    extends Thread
+  {
+    public 
+    ViewTask
+    (
+     JobStatus jstatus,
+     String ename
+    ) 
+    {
+      super("JQueueJobViewerPanel:ViewTask");
+
+      pJobStatus  = jstatus;
+      pEditorName = ename;
+    }
+
+    public void 
+    run() 
+    {
+      SubProcess proc = null;
+      {
+	UIMaster master = UIMaster.getInstance();
+	if(master.beginPanelOp("Launching Node Editor...")) {
+	  try {
+	    MasterMgrClient client = master.getMasterMgrClient();
+
+	    NodeID nodeID = pJobStatus.getNodeID();
+	    NodeMod mod = client.getWorkingVersion(nodeID);
+
+	    /* create an editor plugin instance */ 
+	    BaseEditor editor = null;
+	    {
+	      String ename = pEditorName;
+	      if(ename == null) 
+		ename = mod.getEditor();
+	      if(ename == null) 
+		throw new PipelineException
+		  ("No editor was specified for node (" + mod.getName() + ")!");
+	      
+	      editor = Plugins.newEditor(ename);
+	    }
+
+	    /* lookup the toolset environment */ 
+	    TreeMap<String,String> env = null;
+	    {
+	      String tname = mod.getToolset();
+	      if(tname == null) 
+		throw new PipelineException
+		  ("No toolset was specified for node (" + mod.getName() + ")!");
+
+	      /* passes pAuthor so that WORKING will correspond to the current view */ 
+	      env = client.getToolsetEnvironment(nodeID.getAuthor(), nodeID.getView(), tname);
+
+	      /* override these since the editor will be run as the current user */ 
+	      env.put("HOME", PackageInfo.sHomeDir + "/" + PackageInfo.sUser);
+	      env.put("USER", PackageInfo.sUser);
+	    }
+	    
+	    /* get the primary file sequence */ 
+	    FileSeq fseq = null;
+	    {
+	      String path = null;
+	      {
+		File wpath = 
+		  new File(PackageInfo.sWorkDir, 
+			   nodeID.getAuthor() + "/" + nodeID.getView() + "/" + mod.getName());
+		path = wpath.getParent();
+	      }
+
+	      fseq = new FileSeq(path, pJobStatus.getTargetSequence());
+	    }
+	    
+	    /* start the editor */ 
+	    proc = editor.launch(fseq, env, PackageInfo.sTempDir);	   
+	  }
+	  catch(PipelineException ex) {
+	    master.showErrorDialog(ex);
+	    return;
+	  }
+	  finally {
+	    master.endPanelOp("Done.");
+	  }
+	}
+
+	/* wait for the editor to exit */ 
+	try {
+	  proc.join();
+	  if(!proc.wasSuccessful()) 
+	    master.showSubprocessFailureDialog("Editor Failure:", proc);
+	}
+	catch(InterruptedException ex) {
+	  master.showErrorDialog(ex);
+	}
+      }
+    }
+ 
+    private JobStatus  pJobStatus; 
+    private String     pEditorName;
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -2563,5 +2803,10 @@ class JQueueJobViewerPanel
   private Point2d  pMinJobBounds;
   private Point2d  pMaxJobBounds;
 
+
+  /**
+   * The ID of the last job sent to the job details panel.
+   */ 
+  private Long  pLastJobID; 
 
 }
