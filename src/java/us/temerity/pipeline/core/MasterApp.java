@@ -1,4 +1,4 @@
-// $Id: MasterApp.java,v 1.15 2005/04/03 21:54:41 jim Exp $
+// $Id: MasterApp.java,v 1.16 2005/04/04 03:58:14 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -120,7 +120,8 @@ class MasterApp
        "  plmaster --license\n" + 
        "\n" + 
        "GLOBAL OPTIONS:\n" +
-       "  [--log-file=...][--log-backups=...][--log=...]\n" +
+       "  [--rebuild] [--file-mgr]\n" + 
+       "  [--log-file=...] [--log-backups=...] [--log=...]\n" +
        "\n" + 
        "\n" +  
        "Use \"plmaster --html-help\" to browse the full documentation.\n");

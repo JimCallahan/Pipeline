@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.112 2005/04/03 21:54:41 jim Exp $
+// $Id: MasterMgr.java,v 1.113 2005/04/04 03:58:14 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -194,6 +194,9 @@ class MasterMgr
   /** 
    * Construct a new node manager.
    * 
+   * @param rebuildCache
+   *   Whether to rebuild cache files and ignore existing lock files.
+   * 
    * @param internalFileMgr
    *   Whether the file manager should be run as a thread of plmaster(1).
    * 
@@ -203,11 +206,14 @@ class MasterMgr
   public
   MasterMgr
   (
+   boolean rebuildCache, 
    boolean internalFileMgr
   )
     throws PipelineException 
   {
-    pInternalFileMgr   = internalFileMgr;
+    pRebuildCache    = rebuildCache;
+    pInternalFileMgr = internalFileMgr;
+
     pShutdownJobMgrs   = new AtomicBoolean(false);
     pShutdownPluginMgr = new AtomicBoolean(false);
 
@@ -247,47 +253,33 @@ class MasterMgr
        "Initializing...");
     LogMgr.getInstance().flush();
 
-    /* create the lock file */ 
-    {
-      File file = new File(PackageInfo.sNodeDir, "lock");
-      if(file.exists()) 
-	throw new PipelineException 
-	  ("Another node manager is already running!\n" + 
-	   "If you are certain this is not the case, remove the lock file (" + file + ")!");
+    /* Make sure that the root node directories exist. */ 
+    makeRootDirs();
 
-      try {
-	FileWriter out = new FileWriter(file);
-	out.close();
-      }
-      catch(IOException ex) {
-	throw new PipelineException 
-	  ("Unable to create lock file (" + file + ")!");
-      }
+    /* validate startup state */ 
+    if(pRebuildCache) {
+      removeLockFile();
+      removeDownstreamLinksCache(); 
+      removeNodeTreeCache();
+      removeArchivesCache();
     }
+    else {
+      File lock  = new File(PackageInfo.sNodeDir, "lock");
+      File dwns  = new File(PackageInfo.sNodeDir, "downstream");
+      File ntree = new File(PackageInfo.sNodeDir, "etc/node-tree");
+      if(lock.exists() || !dwns.exists() || !ntree.exists())
+	throw new PipelineException 
+	  ("Another plmaster(1) process may already running or was improperly shutdown!\n" + 
+	   "If you are certain no other plmaster(1) process is running, you may restart " +
+	   "plmaster(1) using the --rebuild option.");
+    }
+      
+    /* create the lock file */ 
+    createLockFile();
 
-    /* startup initialization */ 
-    init();
-   }
-
-
-  /*-- CONSTRUCTION HELPERS ----------------------------------------------------------------*/
-
-  /**
-   * Initialize a new instance.
-   * 
-   * @param nodeDir 
-   *   The root node directory.
-   * 
-   * @param prodDir 
-   *   The root production directory.
-   */ 
-  private void 
-  init()
-  { 
     /* initialize the fields */ 
     {
       pDatabaseLock = new ReentrantReadWriteLock();
-      pMakeDirLock  = new Object();
 
       pArchiveFileLock = new Object();
       pArchivedIn      = new TreeMap<String,TreeMap<VersionID,TreeSet<String>>>();
@@ -328,12 +320,12 @@ class MasterMgr
 
     /* perform startup I/O operations */ 
     try {
-      makeRootDirs();
       initArchives();
       initToolsets();
       initPluginMenuLayouts();
       initPrivilegedUsers();
-      rebuildDownstreamLinks();
+      initWorkingAreas();
+      initDownstreamLinks();
       initNodeTree();
       readNextIDs();
     }
@@ -372,6 +364,7 @@ class MasterMgr
     dirs.add(new File(PackageInfo.sNodeDir, "archives/output/archive"));
     dirs.add(new File(PackageInfo.sNodeDir, "archives/output/restore"));
 
+    pMakeDirLock = new Object();
     synchronized(pMakeDirLock) {
       for(File dir : dirs) {
 	if(!dir.isDirectory())
@@ -386,81 +379,151 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Remove archive related cache files.
+   */ 
+  private void 
+  removeArchivesCache()
+  {
+    File archivedIn = new File(PackageInfo.sNodeDir, "archives/archived-in");
+    if(archivedIn.exists())
+      archivedIn.delete();
+
+    File archivedOn = new File(PackageInfo.sNodeDir, "archives/archived-on");
+    if(archivedOn.exists())
+      archivedOn.delete();
+    
+    File restoredOn = new File(PackageInfo.sNodeDir, "archives/restored-on");
+    if(restoredOn.exists())
+      restoredOn.delete();
+    
+    File offlined = new File(PackageInfo.sNodeDir, "archives/offlined");
+    if(offlined.exists())
+      offlined.delete();
+  }
+
+  /**
    * Load the archives.
    */ 
   private void 
   initArchives()
     throws PipelineException
   {
-    /* scan archive volume GLUE files */ 
-    {
-      File dir = new File(PackageInfo.sNodeDir, "archives/manifests");
-      File files[] = dir.listFiles(); 
-      int wk;
-      for(wk=0; wk<files.length; wk++) {
-	ArchiveVolume archive = readArchive(files[wk].getName());
-	
-	for(String name : archive.getNames()) {
-	  TreeMap<VersionID,TreeSet<String>> versions = pArchivedIn.get(name);
-	  if(versions == null) {
-	    versions = new TreeMap<VersionID,TreeSet<String>>();
-	    pArchivedIn.put(name, versions);
-	  }
+    if(pRebuildCache) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Fine,
+	 "Rebuilding Archive Caches...");   
+
+      /* scan archive volume GLUE files */ 
+      {
+	File dir = new File(PackageInfo.sNodeDir, "archives/manifests");
+	File files[] = dir.listFiles(); 
+	int wk;
+	for(wk=0; wk<files.length; wk++) {
+	  ArchiveVolume archive = readArchive(files[wk].getName());
 	  
-	  for(VersionID vid : archive.getVersionIDs(name)) { 
-	    TreeSet<String> anames = versions.get(vid);
-	    if(anames == null) {
-	      anames = new TreeSet<String>();
-	      versions.put(vid, anames);
+	  for(String name : archive.getNames()) {
+	    TreeMap<VersionID,TreeSet<String>> versions = pArchivedIn.get(name);
+	    if(versions == null) {
+	      versions = new TreeMap<VersionID,TreeSet<String>>();
+	      pArchivedIn.put(name, versions);
 	    }
 	    
-	    anames.add(archive.getName());
-	  }
-	}
-	
-	pArchivedOn.put(archive.getName(), archive.getTimeStamp());
-      }
-    }
-
-    /* scan restore output files */ 
-    {
-      File dir = new File(PackageInfo.sNodeDir, "archives/output/restore");
-      File files[] = dir.listFiles(); 
-      int wk;
-      for(wk=0; wk<files.length; wk++) {
-	String fname = files[wk].getName();
-	for(String aname : pArchivedOn.keySet()) {
-	  if(fname.startsWith(aname)) {
-	    try {
-	      Date stamp = new Date(Long.parseLong(fname.substring(aname.length()+1)));
-	      TreeSet<Date> stamps = pRestoredOn.get(aname);
-	      if(stamps == null) {
-		stamps = new TreeSet<Date>();
-		pRestoredOn.put(aname, stamps);
+	    for(VersionID vid : archive.getVersionIDs(name)) { 
+	      TreeSet<String> anames = versions.get(vid);
+	      if(anames == null) {
+		anames = new TreeSet<String>();
+		versions.put(vid, anames);
 	      }
-	      stamps.add(stamp);
+	      
+	      anames.add(archive.getName());
 	    }
-	    catch(NumberFormatException ex) {
-	    }
-	    break;
 	  }
+	  
+	  pArchivedOn.put(archive.getName(), archive.getTimeStamp());
 	}
-      }    
+      }
+      
+      /* scan restore output files */ 
+      {
+	File dir = new File(PackageInfo.sNodeDir, "archives/output/restore");
+	File files[] = dir.listFiles(); 
+	int wk;
+	for(wk=0; wk<files.length; wk++) {
+	  String fname = files[wk].getName();
+	  for(String aname : pArchivedOn.keySet()) {
+	    if(fname.startsWith(aname)) {
+	      try {
+		Date stamp = new Date(Long.parseLong(fname.substring(aname.length()+1)));
+		TreeSet<Date> stamps = pRestoredOn.get(aname);
+		if(stamps == null) {
+		  stamps = new TreeSet<Date>();
+		  pRestoredOn.put(aname, stamps);
+		}
+		stamps.add(stamp);
+	      }
+	      catch(NumberFormatException ex) {
+	      }
+	      break;
+	    }
+	  }
+	}    
+      }
+      
+      {
+	FileMgrClient fclient = getFileMgrClient();
+	try {
+	  pOfflined = fclient.getOfflined();
+	}
+	finally {
+	  freeFileMgrClient(fclient);
+	}
+      }
     }
+    else {
+      readArchivedIn();
+      readArchivedOn();
+      readRestoredOn();
+      readOfflined();
 
-    {
-      FileMgrClient fclient = getFileMgrClient();
-      try {
-	pOfflined = fclient.getOfflined();
-      }
-      finally {
-	freeFileMgrClient(fclient);
-      }
+      removeArchivesCache();
     }
 
     readRestoreReqs();
   }
   
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Create the lock file 
+   */ 
+  private void 
+  createLockFile()
+    throws PipelineException 
+  {
+    File file = new File(PackageInfo.sNodeDir, "lock");
+    try {
+      FileWriter out = new FileWriter(file);
+      out.close();
+    }
+    catch(IOException ex) {
+      throw new PipelineException 
+	  ("Unable to create lock file (" + file + ")!");
+    }
+  }
+
+  /**
+   * Remove the lock file.
+   */
+  private void 
+  removeLockFile() 
+  {
+    File file = new File(PackageInfo.sNodeDir, "lock");
+    if(file.exists())
+      file.delete();
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -542,46 +605,90 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Initialize the table of working area views.
+   */ 
+  private void 
+  initWorkingAreas() 
+  {
+    File dir = new File(PackageInfo.sNodeDir, "working");
+    File authors[] = dir.listFiles(); 
+    int ak;
+    for(ak=0; ak<authors.length; ak++) {
+      assert(authors[ak].isDirectory());
+      String author = authors[ak].getName();
+      
+      File views[] = authors[ak].listFiles();  
+      int vk;
+      for(vk=0; vk<views.length; vk++) {
+	assert(views[vk].isDirectory());
+	String view = views[vk].getName();
+	
+	synchronized(pWorkingAreaViews) {
+	  TreeSet<String> vs = pWorkingAreaViews.get(author);
+	  if(vs == null) {
+	    vs = new TreeSet<String>();
+	    pWorkingAreaViews.put(author, vs);
+	  }
+	  vs.add(view);
+	}
+      }
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Remove any existing node tree cache file.
+   */ 
+  private void 
+  removeNodeTreeCache()
+  {
+    File file = new File(PackageInfo.sNodeDir, "etc/node-tree");
+    if(file.exists())
+      file.delete();
+  }
+
+  /**
    * Build the initial node name tree by searching the file system for node related files.
    */
   private void 
   initNodeTree()
     throws PipelineException 
   {
-    {
-      File dir = new File(PackageInfo.sNodeDir, "repository");
-      initCheckedInNodeTree(dir.getPath(), dir); 
-    }
-
-    {
-      File dir = new File(PackageInfo.sNodeDir, "working");
-      File authors[] = dir.listFiles(); 
-      int ak;
-      for(ak=0; ak<authors.length; ak++) {
-	assert(authors[ak].isDirectory());
-	String author = authors[ak].getName();
-	
-	File views[] = authors[ak].listFiles();  
-	int vk;
-	for(vk=0; vk<views.length; vk++) {
-	  assert(views[vk].isDirectory());
-	  String view = views[vk].getName();
-
-	  /* add all of the nodes in working area */ 
-	  initWorkingNodeTree(views[vk].getPath(), author, view, views[vk]);
-
-	  /* make sure empty working areas are added */ 
-	  synchronized(pWorkingAreaViews) {
-	    TreeSet<String> vs = pWorkingAreaViews.get(author);
-	    if(vs == null) {
-	      vs = new TreeSet<String>();
-	      pWorkingAreaViews.put(author, vs);
-	    }
-	    vs.add(view);
+    if(pRebuildCache) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Fine,
+	 "Rebuilding Node Tree Cache...");   
+      
+      {
+	File dir = new File(PackageInfo.sNodeDir, "repository");
+	initCheckedInNodeTree(dir.getPath(), dir); 
+      }
+      
+      {
+	File dir = new File(PackageInfo.sNodeDir, "working");
+	File authors[] = dir.listFiles(); 
+	int ak;
+	for(ak=0; ak<authors.length; ak++) {
+	  assert(authors[ak].isDirectory());
+	  String author = authors[ak].getName();
+	  
+	  File views[] = authors[ak].listFiles();  
+	  int vk;
+	  for(vk=0; vk<views.length; vk++) {
+	    assert(views[vk].isDirectory());
+	    String view = views[vk].getName();
+	    
+	    initWorkingNodeTree(views[vk].getPath(), author, view, views[vk]);
 	  }
 	}
-      }
-    } 
+      } 
+    }
+    else {
+      readNodeTree();
+      removeNodeTreeCache();
+    }
 
     logNodeTree();
   }
@@ -687,22 +794,59 @@ class MasterMgr
 
   /*----------------------------------------------------------------------------------------*/
 
-  /** 
-   * If the downstream links directory is missing, rebuild the downstream links from 
-   * the working and checked-in version of ALL nodes! 
+  /**
+   * Remove any existing downstream link files.
    */ 
   private void 
-  rebuildDownstreamLinks()
+  removeDownstreamLinksCache() 
     throws PipelineException 
   {
+    File dir = new File(PackageInfo.sNodeDir, "downstream");
+    if(dir.exists()) {
+      ArrayList<String> args = new ArrayList<String>();
+      args.add("--recursive");
+      args.add("--force");
+      args.add("downstream");
+      
+      Map<String,String> env = System.getenv();
+      
+      SubProcessLight proc = 
+	new SubProcessLight("RemoveDownstreamLinks", "rm", 
+			    args, env, PackageInfo.sNodeDir);
+      try {
+	proc.start();
+	proc.join();
+	if(!proc.wasSuccessful()) 
+	  throw new PipelineException
+	    ("Unable to remove downstream links directory (" + dir + "):\n\n" + 
+	     proc.getStdErr());
+      }
+      catch(InterruptedException ex) {
+	throw new PipelineException
+	  ("Interrupted while removing the downstream links directory (" + dir + ")!");
+      }
+    }
+  }
+
+  /** 
+   * Rebuild the downstream links from the working and checked-in version of ALL nodes! 
+   */ 
+  private void 
+  initDownstreamLinks()
+    throws PipelineException 
+  {
+    if(!pRebuildCache) 
+      return; 
+
     {
       File dir = new File(PackageInfo.sNodeDir, "downstream");
       if(dir.isDirectory()) 
-	return;
+	throw new PipelineException
+	  ("Somehow the downstream links directory (" + dir + ") already exitsts!");
 
       if(!dir.mkdir()) 
 	throw new IllegalArgumentException
-	  ("Unable to create the directory (" + dir + ")!");
+	  ("Unable to create the downstream links directory (" + dir + ")!");
     }
 
     LogMgr.getInstance().log
@@ -745,55 +889,8 @@ class MasterMgr
 	 buf.toString());
     }
 
-    /* shutdown and restart the server */ 
-    {
-      /* write cached downstream links */ 
-      writeAllDownstreamLinks();
-      
-      /* invalidate the fields */ 
-      {
-	pDatabaseLock = null;
-	pMakeDirLock  = null;
-
-	pArchiveFileLock = null;
-	pArchivedIn      = null;
-	pArchivedOn      = null;
-	pOfflined        = null;
-	pRestoreReqs     = null;
-
-	pDefaultToolsetLock = null;
-	pDefaultToolset     = null;
-	pActiveToolsets     = null;
-	pToolsets           = null;
-	pToolsetPackages    = null;
-	
-	pSuffixEditors = null;
-
-	pPluginMenuLayoutLock = null; 
-	pEditorMenuLayout     = null;
-	pComparatorMenuLayout = null;
-	pToolMenuLayout       = null;
-
-	pPrivilegedUsers = null;
-	
-	pNodeTreeRoot     = null;
-	pWorkingAreaViews = null;
-
-	pCheckedInLocks   = null;
-	pCheckedInBundles = null;
-	
-	pWorkingLocks   = null;
-	pWorkingBundles = null;
-	
-	pDownstreamLocks = null;
-	pDownstream      = null;
-
-	pQueueSubmitLock = null; 
-      }
-      
-      /* reinitialize */ 
-      init();
-    }
+    /* write cached downstream links */ 
+    writeAllDownstreamLinks();
   }
 
   /**
@@ -973,12 +1070,6 @@ class MasterMgr
   public void  
   shutdown() 
   {
-    /* remove the lock file */ 
-    {
-      File file = new File(PackageInfo.sNodeDir, "lock");
-      file.delete();
-    }
-
     /* close the connection to the file manager */ 
     if(!pInternalFileMgr && (pFileMgrNetClients != null)) {
       while(!pFileMgrNetClients.isEmpty()) {
@@ -1032,9 +1123,32 @@ class MasterMgr
     catch(InterruptedException ex) {
     }
 
+    /* write the cache files */ 
+    try {
+      writeArchivedIn();
+      writeArchivedOn();
+      writeRestoredOn();
+      writeOfflined();
 
-    /* write cached downstream links */ 
-    writeAllDownstreamLinks();
+      for(DownstreamLinks links : pDownstream.values()) 
+	writeDownstreamLinks(links);
+
+      writeNodeTree();
+    }
+    catch(Exception ex) {
+      removeArchivesCache();
+       
+      try {
+	removeDownstreamLinksCache();
+      }
+      catch(Exception ex2) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	   ex2.getMessage());	
+      }
+
+      removeNodeTreeCache();      
+    }
 
     /* write the job/group ID files */ 
     try {
@@ -1046,6 +1160,9 @@ class MasterMgr
 	 ex.getMessage());
       LogMgr.getInstance().flush();
     }
+
+    /* remove the lock file */ 
+    removeLockFile();
   }
 
   /**
@@ -1070,33 +1187,13 @@ class MasterMgr
 	 ex.getMessage());
       
       /* remove the entire downstream directory */ 
-      {
-	Map<String,String> env = System.getenv();
-	
-	ArrayList<String> args = new ArrayList<String>();
-	args.add("--force");
-	args.add("--recursive");
-	args.add("downstream");
-	
-	SubProcessLight proc = 
-	  new SubProcessLight("RemoveDownstreamLinks", "rm", args, env, PackageInfo.sNodeDir);
-	try {
-	  proc.start();
-	  proc.join();
-	}
-	catch(InterruptedException ex2) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	     "Interrupted while removing the downstream directory " + 
-	     "(" + PackageInfo.sNodeDir + "/downstream)!");
-	}
-	
-	if(!proc.wasSuccessful()) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	     "Unable to removing the downstream directory " + 
-	     "(" + PackageInfo.sNodeDir + "/downstream)!");
-	}
+      try {
+	removeDownstreamLinksCache();
+      }
+      catch(Exception ex2) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	   ex2.getMessage());	
       }
     }
   }
@@ -10344,6 +10441,415 @@ class MasterMgr
   }
    
 
+
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Write the cached names of the archive volumes indexed by the fully resolved node 
+   * names and revision numbers of the checked-in versions contained in the archive. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to write the cache file. 
+   */ 
+  private void 
+  writeArchivedIn() 
+    throws PipelineException
+  {
+    synchronized(pArchivedIn) {
+      if(pArchivedIn.isEmpty()) 
+	return;
+
+      File file = new File(PackageInfo.sNodeDir, "archives/archived-in");
+
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	 "Writing Archived In Cache...");
+      
+      try {
+	String glue = null;
+	try {
+	  GlueEncoder ge = new GlueEncoderImpl("ArchivedIn", pArchivedIn);
+	  glue = ge.getText();
+	}
+	catch(GlueException ex) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	     "Unable to generate a Glue format representation of the archived in cache!");
+	  LogMgr.getInstance().flush();
+	  
+	  throw new IOException(ex.getMessage());
+	}
+	
+	{
+	  FileWriter out = new FileWriter(file);
+	  out.write(glue);
+	  out.flush();
+	  out.close();
+	}
+      }
+      catch(IOException ex) {
+	throw new PipelineException
+	("I/O ERROR: \n" + 
+	 "  While attempting to write the archive cache file...\n" + 
+	 "    " + ex.getMessage());
+      }
+    }
+  }
+  
+  /**
+   * Read the cached names of the archive volumes indexed by the fully resolved node 
+   * names and revision numbers of the checked-in versions contained in the archive. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to read the cache file.
+   */ 
+  private void
+  readArchivedIn()
+    throws PipelineException
+  {
+    synchronized(pArchivedIn) {
+      File file = new File(PackageInfo.sNodeDir, "archives/archived-in");
+      if(!file.isFile()) 
+	return;
+
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	 "Reading Archived In Cache...");
+
+      try {
+	FileReader in = new FileReader(file);
+	GlueDecoder gd = new GlueDecoderImpl(in);
+	pArchivedIn.putAll
+	  ((TreeMap<String,TreeMap<VersionID,TreeSet<String>>>) gd.getObject());
+	in.close();
+      }
+      catch(Exception ex) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	   "The archived in cache file (" + file + ") appears to be corrupted!");
+	LogMgr.getInstance().flush();
+	
+	throw new PipelineException
+	  ("I/O ERROR: \n" + 
+	   "  While attempting to read the archived in cache file...\n" +
+	   "    " + ex.getMessage());
+      }
+    }
+  }
+   
+
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Write the cached timestamps of when each archive volume was created indexed by unique 
+   * archive volume name.
+   * 
+   * @throws PipelineException
+   *   If unable to write the cache file. 
+   */ 
+  private void 
+  writeArchivedOn() 
+    throws PipelineException
+  {
+    synchronized(pArchivedOn) {
+      if(pArchivedOn.isEmpty()) 
+	return;
+
+      File file = new File(PackageInfo.sNodeDir, "archives/archived-on");
+
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	 "Writing Archived On Cache...");
+      
+      try {
+	String glue = null;
+	try {
+	  TreeMap<String,Long> archivedOn = new TreeMap<String,Long>();
+	  for(String aname : pArchivedOn.keySet()) 
+	    archivedOn.put(aname, pArchivedOn.get(aname).getTime());
+
+	  GlueEncoder ge = new GlueEncoderImpl("ArchivedOn", archivedOn);
+	  glue = ge.getText();
+	}
+	catch(GlueException ex) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	     "Unable to generate a Glue format representation of the archived on cache!");
+	  LogMgr.getInstance().flush();
+	  
+	  throw new IOException(ex.getMessage());
+	}
+	
+	{
+	  FileWriter out = new FileWriter(file);
+	  out.write(glue);
+	  out.flush();
+	  out.close();
+	}
+      }
+      catch(IOException ex) {
+	throw new PipelineException
+	("I/O ERROR: \n" + 
+	 "  While attempting to write the archived on cache file...\n" + 
+	 "    " + ex.getMessage());
+      }
+    }
+  }
+  
+  /**
+   * Read the cached timestamps of when each archive volume was created indexed by unique 
+   * archive volume name.
+   * 
+   * @throws PipelineException
+   *   If unable to read the cache file.
+   */ 
+  private void
+  readArchivedOn()
+    throws PipelineException
+  {
+    synchronized(pArchivedOn) {
+      File file = new File(PackageInfo.sNodeDir, "archives/archived-on");
+      if(!file.isFile()) 
+	return;
+
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	 "Reading Archived On Cache...");
+
+      try {
+	FileReader in = new FileReader(file);
+	GlueDecoder gd = new GlueDecoderImpl(in);
+	
+	TreeMap<String,Long> archivedOn = (TreeMap<String,Long>) gd.getObject();
+	for(String aname : archivedOn.keySet()) 
+	  pArchivedOn.put(aname, new Date(archivedOn.get(aname)));	
+
+	in.close();
+      }
+      catch(Exception ex) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	   "The archived on cache file (" + file + ") appears to be corrupted!");
+	LogMgr.getInstance().flush();
+	
+	throw new PipelineException
+	  ("I/O ERROR: \n" + 
+	   "  While attempting to read the archived on cache file...\n" +
+	   "    " + ex.getMessage());
+      }
+    }
+  }
+
+   
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Write the cached timestamps of when each archive volume was created indexed by unique 
+   * archive volume name.
+   * 
+   * @throws PipelineException
+   *   If unable to write the cache file. 
+   */ 
+  private void 
+  writeRestoredOn() 
+    throws PipelineException
+  {
+    synchronized(pRestoredOn) {
+      if(pRestoredOn.isEmpty()) 
+	return;
+
+      File file = new File(PackageInfo.sNodeDir, "archives/restored-on");
+
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	 "Writing Restored On Cache...");
+      
+      try {
+	String glue = null;
+	try {
+	  TreeMap<String,TreeSet<Long>> restoredOn = new TreeMap<String,TreeSet<Long>>();
+	  for(String aname : pRestoredOn.keySet()) {
+	    TreeSet<Long> stamps = new TreeSet<Long>();
+	    restoredOn.put(aname, stamps);
+	    for(Date stamp : pRestoredOn.get(aname)) 
+	      stamps.add(stamp.getTime());
+	  }
+	      
+	  GlueEncoder ge = new GlueEncoderImpl("RestoredOn", restoredOn);
+	  glue = ge.getText();
+	}
+	catch(GlueException ex) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	     "Unable to generate a Glue format representation of the restored on cache!");
+	  LogMgr.getInstance().flush();
+	  
+	  throw new IOException(ex.getMessage());
+	}
+	
+	{
+	  FileWriter out = new FileWriter(file);
+	  out.write(glue);
+	  out.flush();
+	  out.close();
+	}
+      }
+      catch(IOException ex) {
+	throw new PipelineException
+	("I/O ERROR: \n" + 
+	 "  While attempting to write the restored on cache file...\n" + 
+	 "    " + ex.getMessage());
+      }
+    }
+  }
+  
+  /**
+   * Read the cached timestamps of when each archive volume was created indexed by unique 
+   * archive volume name.
+   * 
+   * @throws PipelineException
+   *   If unable to read the cache file.
+   */ 
+  private void
+  readRestoredOn()
+    throws PipelineException
+  {
+    synchronized(pRestoredOn) {
+      File file = new File(PackageInfo.sNodeDir, "archives/restored-on");
+      if(!file.isFile()) 
+	return;
+
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	 "Reading Restored On Cache...");
+
+      try {
+	FileReader in = new FileReader(file);
+	GlueDecoder gd = new GlueDecoderImpl(in);
+
+	TreeMap<String,TreeSet<Long>> restoredOn = 
+	  (TreeMap<String,TreeSet<Long>>) gd.getObject();
+
+	for(String aname : restoredOn.keySet()) {
+	  TreeSet<Date> stamps = new TreeSet<Date>();
+	  pRestoredOn.put(aname, stamps);
+	  for(Long stamp : restoredOn.get(aname)) 
+	    stamps.add(new Date(stamp));
+	}
+
+	in.close();
+      }
+      catch(Exception ex) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	   "The restored on cache file (" + file + ") appears to be corrupted!");
+	LogMgr.getInstance().flush();
+	
+	throw new PipelineException
+	  ("I/O ERROR: \n" + 
+	   "  While attempting to read the restored on cache file...\n" +
+	   "    " + ex.getMessage());
+      }
+    }
+  }
+   
+
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Write the cached fully resolved node names and revision numbers of the checked-in 
+   * versions which are currently offline. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to write the cache file. 
+   */ 
+  private void 
+  writeOfflined() 
+    throws PipelineException
+  {
+    synchronized(pOfflined) {
+      if(pOfflined.isEmpty()) 
+	return;
+
+      File file = new File(PackageInfo.sNodeDir, "archives/offlined");
+
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	 "Writing Offlined Cache...");
+      
+      try {
+	String glue = null;
+	try {
+	  GlueEncoder ge = new GlueEncoderImpl("Offlined", pOfflined);
+	  glue = ge.getText();
+	}
+	catch(GlueException ex) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	     "Unable to generate a Glue format representation of the offlined cache!");
+	  LogMgr.getInstance().flush();
+	  
+	  throw new IOException(ex.getMessage());
+	}
+	
+	{
+	  FileWriter out = new FileWriter(file);
+	  out.write(glue);
+	  out.flush();
+	  out.close();
+	}
+      }
+      catch(IOException ex) {
+	throw new PipelineException
+	("I/O ERROR: \n" + 
+	 "  While attempting to write the offlined cache file...\n" + 
+	 "    " + ex.getMessage());
+      }
+    }
+  }
+  
+  /**
+   * Read the cached fully resolved node names and revision numbers of the checked-in 
+   * versions which are currently offline. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to read the cache file.
+   */ 
+  private void
+  readOfflined()
+    throws PipelineException
+  {
+    synchronized(pOfflined) {
+      File file = new File(PackageInfo.sNodeDir, "archives/offlined");
+      if(!file.isFile()) 
+	return;
+
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	 "Reading Offlined Cache...");
+
+      try {
+	FileReader in = new FileReader(file);
+	GlueDecoder gd = new GlueDecoderImpl(in);
+	pOfflined.putAll((TreeMap<String,TreeSet<VersionID>>) gd.getObject());
+	in.close();
+      }
+      catch(Exception ex) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	   "The offlined cache file (" + file + ") appears to be corrupted!");
+	LogMgr.getInstance().flush();
+	
+	throw new PipelineException
+	  ("I/O ERROR: \n" + 
+	   "  While attempting to read the offlined cache file...\n" +
+	   "    " + ex.getMessage());
+      }
+    }
+  }
+   
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -12013,6 +12519,94 @@ class MasterMgr
   }
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write the node tree to disk. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to write the node tree file.
+   */ 
+  private void 
+  writeNodeTree() 
+    throws PipelineException
+  {
+    File file = new File(PackageInfo.sNodeDir, "etc/node-tree");
+    try {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	 "Writing Node Tree Cache...");
+      
+      String glue = null;
+      try {
+	GlueEncoder ge = new GlueEncoderImpl("NodeTree", pNodeTreeRoot);
+	glue = ge.getText();
+      }
+      catch(GlueException ex) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	   "Unable to generate a Glue format representation of the node tree!");
+	LogMgr.getInstance().flush();
+	
+	throw new IOException(ex.getMessage());
+      }
+      
+      {
+	FileWriter out = new FileWriter(file);
+	out.write(glue);
+	out.flush();
+	out.close();
+      }
+    }
+    catch(IOException ex) {
+      throw new PipelineException
+	("I/O ERROR: \n" + 
+	 "  While attempting to write the node tree cache...\n" +
+	 "    " + ex.getMessage());
+    }
+  }
+
+  /**
+   * Read the node tree from disk. <P> 
+   * 
+   * @throws PipelineException
+   *   If the node tree cache file is corrupted in some manner.
+   */ 
+  private void 
+  readNodeTree() 
+    throws PipelineException
+  {
+    File file = new File(PackageInfo.sNodeDir, "etc/node-tree");
+    try {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	 "Reading Node Tree Cache...");
+      
+      try {
+	FileReader in = new FileReader(file);
+	GlueDecoder gd = new GlueDecoderImpl(in);
+	pNodeTreeRoot = (NodeTreeEntry) gd.getObject();
+	in.close();
+      }
+      catch(Exception ex) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,  
+	   "The node tree cache file (" + file + ") appears to be corrupted!");
+	LogMgr.getInstance().flush();
+	
+	throw ex;
+      }
+    }
+    catch(Exception ex) {
+      throw new PipelineException
+	("I/O ERROR: \n" + 
+	 "  While attempting to read the node tree cache file...\n" +
+	 "    " + ex.getMessage());
+    }
+  }
+
+
   /*----------------------------------------------------------------------------------------*/
   /*   N O D E   T R E E   H E L P E R S                                                    */
   /*----------------------------------------------------------------------------------------*/
@@ -12575,6 +13169,11 @@ class MasterMgr
    */
   private Object  pMakeDirLock;
 
+  /**
+   * Whether to rebuild cache files and ignore existing lock files.
+   */
+  private boolean  pRebuildCache; 
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -12587,8 +13186,7 @@ class MasterMgr
    * The cached names of the archive volumes indexed by the fully resolved node names and 
    * revision numbers of the checked-in versions contained in the archive. <P> 
    * 
-   * This table is rebuilt by scanning the archive GLUE files upon startup but is not itself
-   * written to disk. <P> 
+   * This table is rebuilt by scanning the archive GLUE files. <P> 
    * 
    * Access to this field should be protected by a synchronized block.
    */
@@ -12598,8 +13196,9 @@ class MasterMgr
    * The timestamps of when each archive volume was created indexed by unique archive 
    * volume name.
    *	 
-   * This table is rebuilt by scanning the archive GLUE files upon startup but is not itself
-   * written to disk. <P> 
+   * This table is rebuilt by scanning the archive GLUE files. <P> 
+
+   * Access to this field should be protected by a synchronized block.
    */
   private TreeMap<String,Date>  pArchivedOn;
 
@@ -12607,14 +13206,17 @@ class MasterMgr
    * The timestamps of when versions from each archive volume was was created indexed by 
    * unique archive volume name.
    *	 
-   * This table is rebuilt by scanning the restore output filenames upon startup but is 
-   * not itself written to disk. <P> 
+   * This table is rebuilt by scanning the restore output filenames. <P> 
+
+   * Access to this field should be protected by a synchronized block.
    */
   private TreeMap<String,TreeSet<Date>>  pRestoredOn;
 
   /**
    * The fully resolved node names and revision numbers of the checked-in versions which
    * are currently offline. <P> 
+   * 
+   * This table is rebuild by scanning the repository for empty directories. <P> 
    * 
    * Access to this field should be protected by a synchronized block.
    */ 

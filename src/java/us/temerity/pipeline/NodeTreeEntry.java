@@ -1,6 +1,8 @@
-// $Id: NodeTreeEntry.java,v 1.5 2005/03/28 04:15:46 jim Exp $
+// $Id: NodeTreeEntry.java,v 1.6 2005/04/04 03:58:14 jim Exp $
 
 package us.temerity.pipeline;
+
+import us.temerity.pipeline.glue.*;
 
 import java.util.*;
 
@@ -14,6 +16,7 @@ import java.util.*;
 public
 class NodeTreeEntry
   extends TreeMap<String,NodeTreeEntry>
+  implements Glueable
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -313,6 +316,75 @@ class NodeTreeEntry
     String sname = (fpat.getPrefix() + "|" + fpat.getSuffix());
     pFileSeqs.remove(sname);
   } 
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   G L U E A B L E                                                                      */
+  /*----------------------------------------------------------------------------------------*/
+  
+  public void 
+  toGlue
+  ( 
+   GlueEncoder encoder  
+  ) 
+    throws GlueException
+  {
+    encoder.encode("Name", pName);
+    encoder.encode("IsLeaf", pIsLeaf);
+    encoder.encode("IsCheckedIn", pIsCheckedIn);
+
+    if(pIsLeaf) {
+      if(!pWorking.isEmpty()) 
+	encoder.encode("Working", pWorking);
+      
+      if(!pFileSeqs.isEmpty()) 
+	encoder.encode("FileSeqs", pFileSeqs);
+    }
+
+    if(!isEmpty()) 
+      encoder.encode("Children", new LinkedList<NodeTreeEntry>(values()));
+  }
+  
+  public void 
+  fromGlue
+  (
+   GlueDecoder decoder  
+  ) 
+    throws GlueException
+  {
+    String name = (String) decoder.decode("Name"); 
+    if(name == null) 
+      throw new GlueException("The \"Name\" was missing!");
+    pName = name;
+
+    Boolean isLeaf = (Boolean) decoder.decode("IsLeaf"); 
+    if(isLeaf == null) 
+      throw new GlueException("The \"IsLeaf\" was missing!");
+    pIsLeaf = isLeaf;
+
+    Boolean isCheckedIn = (Boolean) decoder.decode("IsCheckedIn"); 
+    if(isCheckedIn == null) 
+      throw new GlueException("The \"IsCheckedIn\" was missing!");
+    pIsCheckedIn = isCheckedIn;
+
+    if(pIsLeaf) {
+      pWorking = (TreeMap<String,TreeSet<String>>) decoder.decode("Working"); 
+      if(pWorking == null) 
+	pWorking = new TreeMap<String,TreeSet<String>>();
+      
+      pFileSeqs = (TreeSet<String>) decoder.decode("FileSeqs"); 
+      if(pFileSeqs == null)
+	pFileSeqs = new TreeSet<String>();
+    }
+
+    LinkedList<NodeTreeEntry> children = 
+      (LinkedList<NodeTreeEntry>) decoder.decode("Children"); 
+    if(children != null) {
+      for(NodeTreeEntry entry : children)
+	put(entry.getName(), entry);
+    }
+  }
 
 
 

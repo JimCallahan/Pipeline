@@ -62,6 +62,11 @@ MasterOptsParser
   private MasterApp  pApp;
 
   /**
+   * Whether to rebuild cache files and ignore existing lock files.
+   */ 
+  private boolean  pRebuildCache; 
+
+  /**
    * Whether the file manager should be run as a thread of plmaster(1).
    */ 
   private boolean  pInternalFileMgr; 
@@ -96,6 +101,7 @@ TOKEN :
 | <LICENSE:      "--license">    
 
   /* global options */	
+| <REBUILD:           "--rebuild"> 
 | <FILE_MGR:          "--file-mgr">   
 | <LOG_FILE:          "--log-file">                : PATH_SEP
 | <STANDARD_LOG_FILE: "--standard-log-file"> 
@@ -252,7 +258,7 @@ Commands()
     }
 
     /* create the server */ 
-    return (new MasterMgrServer(pInternalFileMgr));
+    return (new MasterMgrServer(pRebuildCache, pInternalFileMgr));
   }
 }
     
@@ -340,8 +346,17 @@ void
 GlobalOpts() :
 {}
 {
-  (FileMgr() | Log() | LogFile() | StandardLogFile() | LogBackups())
+  (Rebuild() | FileMgr() | Log() | LogFile() | StandardLogFile() | LogBackups())
   {}
+}
+
+void Rebuild() : 
+{}
+{
+  <REBUILD>
+  { 
+    pRebuildCache = true; 
+  }
 }
 
 void FileMgr() : 

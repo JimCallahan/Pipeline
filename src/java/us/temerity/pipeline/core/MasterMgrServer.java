@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.49 2005/04/03 21:54:41 jim Exp $
+// $Id: MasterMgrServer.java,v 1.50 2005/04/04 03:58:14 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -36,6 +36,9 @@ class MasterMgrServer
   /** 
    * Construct a new master manager server.
    * 
+   * @param rebuildCache
+   *   Whether to rebuild cache files and ignore existing lock files.
+   * 
    * @param internalFileMgr
    *   Whether the file manager should be run as a thread of plmaster(1).
    * 
@@ -45,13 +48,14 @@ class MasterMgrServer
   public
   MasterMgrServer
   (
+   boolean rebuildCache, 
    boolean internalFileMgr
   )
     throws PipelineException 
   { 
     super("MasterMgrServer");
 
-    pMasterMgr = new MasterMgr(internalFileMgr);
+    pMasterMgr = new MasterMgr(rebuildCache, internalFileMgr);
 
     pShutdown = new AtomicBoolean(false);
     pTasks    = new HashSet<HandlerTask>();

@@ -61,7 +61,23 @@ agreement</span></a> for this software and exits.<br>
 <h3><a name="Global_Options"></a>Global Options<br>
 </h3>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="--file-mgr"></a>--file-mgr</span><br>
+ name="--rebuild"></a>--rebuild<br>
+</span>
+<div style="margin-left: 40px;"><br>
+When <span style="font-weight: bold;">plmaster</span>(1) is properly
+shutdown, it saves some cached information to disk which is read during
+the next startup to reduce startup time.&nbsp; If <span
+ style="font-weight: bold;">plmaster</span>(1) fails to write these
+cache files due to a system crash or some other catastrophic failure,
+they can be rebuilt using this option.&nbsp; Note that <span
+ style="font-weight: bold;">plmaster</span>(1) will not start unless
+these cache files exist or this option is given.&nbsp; This means that
+the first time <span style="font-weight: bold;">plmaster</span>(1) is
+started, this option must be given.<br>
+<br>
+</div>
+<span style="font-weight: bold;"><br>
+<a name="--file-mgr"></a>--file-mgr</span><br>
 <div style="margin-left: 40px;"><br>
 Run the Pipeline file manager as an internal thread of <span
  style="font-weight: bold;">plmaster</span>(1) instead of running the
