@@ -1,4 +1,4 @@
-// $Id: JResourceSamplesTableCellRenderer.java,v 1.1 2004/07/28 19:22:50 jim Exp $
+// $Id: JResourceSamplesTableCellRenderer.java,v 1.2 2004/08/01 15:36:56 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -195,7 +195,7 @@ class JResourceSamplesTableCellRenderer
 	  }
 	}
 	
-	pBarGraph.setValues(vs);
+	pBarGraph.setValues(vs, true);
       }
 
       return pPanel;
