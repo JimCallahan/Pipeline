@@ -479,7 +479,7 @@ class Matrix33d
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID = 
+  private static final long serialVersionUID = 6205146094960282336L;
 
 
 }

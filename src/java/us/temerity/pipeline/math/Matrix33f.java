@@ -1,4 +1,4 @@
-// $Id: Matrix33f.java,v 1.3 2004/12/22 00:45:16 jim Exp $
+// $Id: Matrix33f.java,v 1.4 2004/12/29 22:27:22 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -479,7 +479,7 @@ class Matrix33f
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID = 
+  private static final long serialVersionUID = -6713766254194327700L;
 
 
 }
