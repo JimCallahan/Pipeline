@@ -1,4 +1,4 @@
-// $Id: NodeStyles.java,v 1.4 2004/08/25 05:21:53 jim Exp $
+// $Id: NodeStyles.java,v 1.5 2004/08/25 05:22:19 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -90,7 +90,7 @@ class NodeStyles
     new Color(0.00f, 0.49f, 0.49f),  /* Queued */ 
     new Color(0.00f, 0.49f, 0.00f),  /* Running */ 
     new Color(0.75f, 0.49f, 0.00f),  /* Aborted */ 
-    new Color(0.00f, 0.00f, 0.65f)   /* Failed */ 
+    new Color(0.65f, 0.00f, 0.00f)   /* Failed */ 
   };
 
   /**
