@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.22 2004/12/07 04:55:17 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.23 2004/12/08 07:37:15 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -392,21 +392,26 @@ class JNodeFilesPanel
 	      VersionID lvid = details.getLatestVersion().getVersionID();
 	      switch(wvid.compareLevel(lvid)) {
 	      case Major:
-		name = ("NeedsCheckOutMajor-" + details.getOverallQueueState() + "-Normal");
+		name = ("NeedsCheckOutMajor-" + details.getOverallQueueState());
 		break;
 		
 	      case Minor:
-		name = ("NeedsCheckOut-" + details.getOverallQueueState() + "-Normal");
+		name = ("NeedsCheckOut-" + details.getOverallQueueState());
 		break;
 		
 	      case Micro:
-		name = ("NeedsCheckOutMicro-" + details.getOverallQueueState() + "-Normal");
+		name = ("NeedsCheckOutMicro-" + details.getOverallQueueState());
 	      }
 	    }
 	    else {
-	      name = (details.getOverallNodeState() + "-" + 
-		      details.getOverallQueueState() + "-Normal");
+	      name = (details.getOverallNodeState() + "-" + details.getOverallQueueState());
 	    }
+	    
+	    NodeMod mod = details.getWorkingVersion();
+	    if((mod != null) && mod.isFrozen()) 
+	    name = (name + "-Frozen-Normal");
+	    else 
+	      name = (name + "-Normal");
 	  }
 	  
 	  pHeaderLabel.setText(pStatus.toString());

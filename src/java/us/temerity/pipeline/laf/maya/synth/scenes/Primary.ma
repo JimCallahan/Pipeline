@@ -1,14 +1,15 @@
-//Maya ASCII 5.0 scene
+//Maya ASCII 6.0 scene
 //Name: Primary.ma
-//Last modified: Sun, Aug 29, 2004 06:55:19 PM
+//Last modified: Tue, Dec 07, 2004 05:23:02 PM
+file -rdi 1 -rpr "Normal" -rfn "NormalRN" "/home/jim/code/src/pipeline/src/java/us/temerity/pipeline/laf/maya/synth//scenes/Normal.ma";
 file -r -rpr "Normal" -rfn "NormalRN" "/home/jim/code/src/pipeline/src/java/us/temerity/pipeline/laf/maya/synth//scenes/Normal.ma";
-requires maya "5.0";
+requires maya "6.0";
 currentUnit -l centimeter -a degree -t film;
 fileInfo "application" "maya";
-fileInfo "product" "Maya Unlimited 5.0";
-fileInfo "version" "5.0";
-fileInfo "cutIdentifier" "200304010002";
-fileInfo "osv" "Linux 2.4.20-18.8smp #1 SMP Thu May 29 07:20:32 EDT 2003 i686";
+fileInfo "product" "Maya Unlimited 6.0";
+fileInfo "version" "6.0.1";
+fileInfo "cutIdentifier" "200407140010-624907";
+fileInfo "osv" "Linux 2.4.20-31.9smp #1 SMP Tue Apr 13 17:40:10 EDT 2004 i686";
 createNode transform -s -n "persp";
 	setAttr -l on ".v" no;
 	setAttr ".t" -type "double3" 0 1.8003966942148764 0 ;
@@ -85,9 +86,25 @@ createNode camera -s -n "sideShape" -p "side";
 	setAttr ".o" yes;
 createNode renderLayer -s -n "globalRender";
 createNode lightLinker -n "lightLinker1";
-	setAttr ".ihi" 0;
 	setAttr -s 2 ".lnk";
 createNode brush -n "brush1";
+	setAttr ".lcl[0]"  0 0.5 1;
+	setAttr ".pcl[0]"  0 0.5 1;
+	setAttr ".wsc[0]"  0 1 1;
+	setAttr ".lws[0]"  0 1 1;
+	setAttr ".pws[0]"  0 1 1;
+	setAttr ".tls[0]"  0 1 1;
+	setAttr -s 3 ".env";
+	setAttr ".env[0].envp" 0.20000000298023224;
+	setAttr ".env[0].envc" -type "float3" 0 0 0.15000001 ;
+	setAttr ".env[0].envi" 2;
+	setAttr ".env[1].envp" 0.5;
+	setAttr ".env[1].envc" -type "float3" 0.47999999 0.55000001 0.69999999 ;
+	setAttr ".env[1].envi" 2;
+	setAttr ".env[2].envp" 1;
+	setAttr ".env[2].envc" -type "float3" 0 0.1 0.44999999 ;
+	setAttr ".env[2].envi" 2;
+	setAttr ".rro[0]"  0 1 1;
 createNode displayLayerManager -n "layerManager";
 createNode displayLayer -n "defaultLayer";
 createNode renderLayerManager -n "renderLayerManager";
@@ -143,6 +160,23 @@ createNode script -n "uiConfigurationScriptNode";
 		+ "                -fogEnd 100\n"
 		+ "                -fogDensity 0.1\n"
 		+ "                -fogColor 0.5 0.5 0.5 1 \n"
+		+ "                -maxConstantTransparency 1\n"
+		+ "                -rendererName \"base_OpenGL_Renderer\" \n"
+		+ "                -colorResolution 256 256 \n"
+		+ "                -bumpResolution 512 512 \n"
+		+ "                -textureCompression 0\n"
+		+ "                -transparencyAlgorithm \"frontAndBackCull\" \n"
+		+ "                -transpInShadows 0\n"
+		+ "                -cullingOverride \"none\" \n"
+		+ "                -lowQualityLighting 0\n"
+		+ "                -maximumNumHardwareLights 1\n"
+		+ "                -occlusionCulling 0\n"
+		+ "                -useBaseRenderer 0\n"
+		+ "                -useReducedRenderer 0\n"
+		+ "                -smallObjectCulling 0\n"
+		+ "                -smallObjectThreshold -1 \n"
+		+ "                -interactiveDisableShadows 0\n"
+		+ "                -interactiveBackFaceCull 0\n"
 		+ "                -sortTransparent 1\n"
 		+ "                -nurbsCurves 1\n"
 		+ "                -nurbsSurfaces 1\n"
@@ -159,6 +193,8 @@ createNode script -n "uiConfigurationScriptNode";
 		+ "                -deformers 1\n"
 		+ "                -dynamics 1\n"
 		+ "                -fluids 1\n"
+		+ "                -hairSystems 1\n"
+		+ "                -follicles 1\n"
 		+ "                -locators 1\n"
 		+ "                -dimensions 1\n"
 		+ "                -handles 1\n"
@@ -198,6 +234,23 @@ createNode script -n "uiConfigurationScriptNode";
 		+ "            -fogEnd 100\n"
 		+ "            -fogDensity 0.1\n"
 		+ "            -fogColor 0.5 0.5 0.5 1 \n"
+		+ "            -maxConstantTransparency 1\n"
+		+ "            -rendererName \"base_OpenGL_Renderer\" \n"
+		+ "            -colorResolution 256 256 \n"
+		+ "            -bumpResolution 512 512 \n"
+		+ "            -textureCompression 0\n"
+		+ "            -transparencyAlgorithm \"frontAndBackCull\" \n"
+		+ "            -transpInShadows 0\n"
+		+ "            -cullingOverride \"none\" \n"
+		+ "            -lowQualityLighting 0\n"
+		+ "            -maximumNumHardwareLights 1\n"
+		+ "            -occlusionCulling 0\n"
+		+ "            -useBaseRenderer 0\n"
+		+ "            -useReducedRenderer 0\n"
+		+ "            -smallObjectCulling 0\n"
+		+ "            -smallObjectThreshold -1 \n"
+		+ "            -interactiveDisableShadows 0\n"
+		+ "            -interactiveBackFaceCull 0\n"
 		+ "            -sortTransparent 1\n"
 		+ "            -nurbsCurves 1\n"
 		+ "            -nurbsSurfaces 1\n"
@@ -214,6 +267,8 @@ createNode script -n "uiConfigurationScriptNode";
 		+ "            -deformers 1\n"
 		+ "            -dynamics 1\n"
 		+ "            -fluids 1\n"
+		+ "            -hairSystems 1\n"
+		+ "            -follicles 1\n"
 		+ "            -locators 1\n"
 		+ "            -dimensions 1\n"
 		+ "            -handles 1\n"
@@ -257,6 +312,23 @@ createNode script -n "uiConfigurationScriptNode";
 		+ "                -fogEnd 100\n"
 		+ "                -fogDensity 0.1\n"
 		+ "                -fogColor 0.5 0.5 0.5 1 \n"
+		+ "                -maxConstantTransparency 1\n"
+		+ "                -rendererName \"base_OpenGL_Renderer\" \n"
+		+ "                -colorResolution 256 256 \n"
+		+ "                -bumpResolution 512 512 \n"
+		+ "                -textureCompression 0\n"
+		+ "                -transparencyAlgorithm \"frontAndBackCull\" \n"
+		+ "                -transpInShadows 0\n"
+		+ "                -cullingOverride \"none\" \n"
+		+ "                -lowQualityLighting 0\n"
+		+ "                -maximumNumHardwareLights 1\n"
+		+ "                -occlusionCulling 0\n"
+		+ "                -useBaseRenderer 0\n"
+		+ "                -useReducedRenderer 0\n"
+		+ "                -smallObjectCulling 0\n"
+		+ "                -smallObjectThreshold -1 \n"
+		+ "                -interactiveDisableShadows 0\n"
+		+ "                -interactiveBackFaceCull 0\n"
 		+ "                -sortTransparent 1\n"
 		+ "                -nurbsCurves 1\n"
 		+ "                -nurbsSurfaces 1\n"
@@ -273,6 +345,8 @@ createNode script -n "uiConfigurationScriptNode";
 		+ "                -deformers 1\n"
 		+ "                -dynamics 1\n"
 		+ "                -fluids 1\n"
+		+ "                -hairSystems 1\n"
+		+ "                -follicles 1\n"
 		+ "                -locators 1\n"
 		+ "                -dimensions 1\n"
 		+ "                -handles 1\n"
@@ -312,6 +386,23 @@ createNode script -n "uiConfigurationScriptNode";
 		+ "            -fogEnd 100\n"
 		+ "            -fogDensity 0.1\n"
 		+ "            -fogColor 0.5 0.5 0.5 1 \n"
+		+ "            -maxConstantTransparency 1\n"
+		+ "            -rendererName \"base_OpenGL_Renderer\" \n"
+		+ "            -colorResolution 256 256 \n"
+		+ "            -bumpResolution 512 512 \n"
+		+ "            -textureCompression 0\n"
+		+ "            -transparencyAlgorithm \"frontAndBackCull\" \n"
+		+ "            -transpInShadows 0\n"
+		+ "            -cullingOverride \"none\" \n"
+		+ "            -lowQualityLighting 0\n"
+		+ "            -maximumNumHardwareLights 1\n"
+		+ "            -occlusionCulling 0\n"
+		+ "            -useBaseRenderer 0\n"
+		+ "            -useReducedRenderer 0\n"
+		+ "            -smallObjectCulling 0\n"
+		+ "            -smallObjectThreshold -1 \n"
+		+ "            -interactiveDisableShadows 0\n"
+		+ "            -interactiveBackFaceCull 0\n"
 		+ "            -sortTransparent 1\n"
 		+ "            -nurbsCurves 1\n"
 		+ "            -nurbsSurfaces 1\n"
@@ -328,6 +419,8 @@ createNode script -n "uiConfigurationScriptNode";
 		+ "            -deformers 1\n"
 		+ "            -dynamics 1\n"
 		+ "            -fluids 1\n"
+		+ "            -hairSystems 1\n"
+		+ "            -follicles 1\n"
 		+ "            -locators 1\n"
 		+ "            -dimensions 1\n"
 		+ "            -handles 1\n"
@@ -371,6 +464,23 @@ createNode script -n "uiConfigurationScriptNode";
 		+ "                -fogEnd 100\n"
 		+ "                -fogDensity 0.1\n"
 		+ "                -fogColor 0.5 0.5 0.5 1 \n"
+		+ "                -maxConstantTransparency 1\n"
+		+ "                -rendererName \"base_OpenGL_Renderer\" \n"
+		+ "                -colorResolution 256 256 \n"
+		+ "                -bumpResolution 512 512 \n"
+		+ "                -textureCompression 0\n"
+		+ "                -transparencyAlgorithm \"frontAndBackCull\" \n"
+		+ "                -transpInShadows 0\n"
+		+ "                -cullingOverride \"none\" \n"
+		+ "                -lowQualityLighting 0\n"
+		+ "                -maximumNumHardwareLights 1\n"
+		+ "                -occlusionCulling 0\n"
+		+ "                -useBaseRenderer 0\n"
+		+ "                -useReducedRenderer 0\n"
+		+ "                -smallObjectCulling 0\n"
+		+ "                -smallObjectThreshold -1 \n"
+		+ "                -interactiveDisableShadows 0\n"
+		+ "                -interactiveBackFaceCull 0\n"
 		+ "                -sortTransparent 1\n"
 		+ "                -nurbsCurves 1\n"
 		+ "                -nurbsSurfaces 1\n"
@@ -387,6 +497,8 @@ createNode script -n "uiConfigurationScriptNode";
 		+ "                -deformers 1\n"
 		+ "                -dynamics 1\n"
 		+ "                -fluids 1\n"
+		+ "                -hairSystems 1\n"
+		+ "                -follicles 1\n"
 		+ "                -locators 1\n"
 		+ "                -dimensions 1\n"
 		+ "                -handles 1\n"
@@ -426,6 +538,23 @@ createNode script -n "uiConfigurationScriptNode";
 		+ "            -fogEnd 100\n"
 		+ "            -fogDensity 0.1\n"
 		+ "            -fogColor 0.5 0.5 0.5 1 \n"
+		+ "            -maxConstantTransparency 1\n"
+		+ "            -rendererName \"base_OpenGL_Renderer\" \n"
+		+ "            -colorResolution 256 256 \n"
+		+ "            -bumpResolution 512 512 \n"
+		+ "            -textureCompression 0\n"
+		+ "            -transparencyAlgorithm \"frontAndBackCull\" \n"
+		+ "            -transpInShadows 0\n"
+		+ "            -cullingOverride \"none\" \n"
+		+ "            -lowQualityLighting 0\n"
+		+ "            -maximumNumHardwareLights 1\n"
+		+ "            -occlusionCulling 0\n"
+		+ "            -useBaseRenderer 0\n"
+		+ "            -useReducedRenderer 0\n"
+		+ "            -smallObjectCulling 0\n"
+		+ "            -smallObjectThreshold -1 \n"
+		+ "            -interactiveDisableShadows 0\n"
+		+ "            -interactiveBackFaceCull 0\n"
 		+ "            -sortTransparent 1\n"
 		+ "            -nurbsCurves 1\n"
 		+ "            -nurbsSurfaces 1\n"
@@ -442,6 +571,8 @@ createNode script -n "uiConfigurationScriptNode";
 		+ "            -deformers 1\n"
 		+ "            -dynamics 1\n"
 		+ "            -fluids 1\n"
+		+ "            -hairSystems 1\n"
+		+ "            -follicles 1\n"
 		+ "            -locators 1\n"
 		+ "            -dimensions 1\n"
 		+ "            -handles 1\n"
@@ -485,6 +616,23 @@ createNode script -n "uiConfigurationScriptNode";
 		+ "                -fogEnd 100\n"
 		+ "                -fogDensity 0.1\n"
 		+ "                -fogColor 0.5 0.5 0.5 1 \n"
+		+ "                -maxConstantTransparency 1\n"
+		+ "                -rendererName \"base_OpenGL_Renderer\" \n"
+		+ "                -colorResolution 256 256 \n"
+		+ "                -bumpResolution 512 512 \n"
+		+ "                -textureCompression 0\n"
+		+ "                -transparencyAlgorithm \"frontAndBackCull\" \n"
+		+ "                -transpInShadows 0\n"
+		+ "                -cullingOverride \"none\" \n"
+		+ "                -lowQualityLighting 0\n"
+		+ "                -maximumNumHardwareLights 1\n"
+		+ "                -occlusionCulling 0\n"
+		+ "                -useBaseRenderer 0\n"
+		+ "                -useReducedRenderer 0\n"
+		+ "                -smallObjectCulling 0\n"
+		+ "                -smallObjectThreshold -1 \n"
+		+ "                -interactiveDisableShadows 0\n"
+		+ "                -interactiveBackFaceCull 0\n"
 		+ "                -sortTransparent 1\n"
 		+ "                -nurbsCurves 1\n"
 		+ "                -nurbsSurfaces 1\n"
@@ -501,6 +649,8 @@ createNode script -n "uiConfigurationScriptNode";
 		+ "                -deformers 1\n"
 		+ "                -dynamics 1\n"
 		+ "                -fluids 1\n"
+		+ "                -hairSystems 1\n"
+		+ "                -follicles 1\n"
 		+ "                -locators 1\n"
 		+ "                -dimensions 1\n"
 		+ "                -handles 1\n"
@@ -540,6 +690,23 @@ createNode script -n "uiConfigurationScriptNode";
 		+ "            -fogEnd 100\n"
 		+ "            -fogDensity 0.1\n"
 		+ "            -fogColor 0.5 0.5 0.5 1 \n"
+		+ "            -maxConstantTransparency 1\n"
+		+ "            -rendererName \"base_OpenGL_Renderer\" \n"
+		+ "            -colorResolution 256 256 \n"
+		+ "            -bumpResolution 512 512 \n"
+		+ "            -textureCompression 0\n"
+		+ "            -transparencyAlgorithm \"frontAndBackCull\" \n"
+		+ "            -transpInShadows 0\n"
+		+ "            -cullingOverride \"none\" \n"
+		+ "            -lowQualityLighting 0\n"
+		+ "            -maximumNumHardwareLights 1\n"
+		+ "            -occlusionCulling 0\n"
+		+ "            -useBaseRenderer 0\n"
+		+ "            -useReducedRenderer 0\n"
+		+ "            -smallObjectCulling 0\n"
+		+ "            -smallObjectThreshold -1 \n"
+		+ "            -interactiveDisableShadows 0\n"
+		+ "            -interactiveBackFaceCull 0\n"
 		+ "            -sortTransparent 1\n"
 		+ "            -nurbsCurves 1\n"
 		+ "            -nurbsSurfaces 1\n"
@@ -556,6 +723,8 @@ createNode script -n "uiConfigurationScriptNode";
 		+ "            -deformers 1\n"
 		+ "            -dynamics 1\n"
 		+ "            -fluids 1\n"
+		+ "            -hairSystems 1\n"
+		+ "            -follicles 1\n"
 		+ "            -locators 1\n"
 		+ "            -dimensions 1\n"
 		+ "            -handles 1\n"
@@ -656,6 +825,9 @@ createNode script -n "uiConfigurationScriptNode";
 		+ "\t\tif (!$useSceneConfig) {\n"
 		+ "\t\t\tpanel -e -l $label $panelName;\n"
 		+ "\t\t}\n"
+		+ "\t}\n"
+		+ "\tif ($useSceneConfig) {\n"
+		+ "\t\toutlinerPanel -e -to $panelName;\n"
 		+ "\t}\n"
 		+ "\t$panelName = `sceneUIReplacement -getNextScriptedPanel \"graphEditor\" \"Graph Editor\"`;\n"
 		+ "\tif (\"\" == $panelName) {\n"
@@ -842,6 +1014,7 @@ createNode script -n "uiConfigurationScriptNode";
 		+ "                -showSummary 1\n"
 		+ "                -showScene 0\n"
 		+ "                -hierarchyBelow 1\n"
+		+ "                -showTicks 0\n"
 		+ "                $editorName;\n"
 		+ "\t\t}\n"
 		+ "\t} else {\n"
@@ -902,6 +1075,7 @@ createNode script -n "uiConfigurationScriptNode";
 		+ "                -showSummary 1\n"
 		+ "                -showScene 0\n"
 		+ "                -hierarchyBelow 1\n"
+		+ "                -showTicks 0\n"
 		+ "                $editorName;\n"
 		+ "\t\tif (!$useSceneConfig) {\n"
 		+ "\t\t\tpanel -e -l $label $panelName;\n"
@@ -911,19 +1085,35 @@ createNode script -n "uiConfigurationScriptNode";
 		+ "\tif (\"\" == $panelName) {\n"
 		+ "\t\tif ($useSceneConfig) {\n"
 		+ "\t\t\t$panelName = `scriptedPanel -unParent  -type \"clipEditorPanel\" -l \"Trax Editor\" -mbv $menusOkayInPanels `;\n"
-		+ "\t\t\t$editorName = ($panelName+\"ClipEditor\");\n"
+		+ "\t\t\t$editorName = clipEditorNameFromPanel($panelName);\n"
 		+ "            clipEditor -e \n"
-		+ "                -characterOutline \"clipEditorPanel1OutlineEditor\" \n"
-		+ "                -menuContext \"track\" \n"
+		+ "                -mainListConnection \"lockedList1\" \n"
+		+ "                -highlightConnection \"clipEditorPanel1HighlightConnection\" \n"
+		+ "                -displayKeys 0\n"
+		+ "                -displayTangents 0\n"
+		+ "                -displayActiveKeys 0\n"
+		+ "                -displayActiveKeyTangents 0\n"
+		+ "                -displayInfinities 0\n"
+		+ "                -autoFit 0\n"
+		+ "                -snapTime \"none\" \n"
+		+ "                -snapValue \"none\" \n"
 		+ "                $editorName;\n"
 		+ "\t\t}\n"
 		+ "\t} else {\n"
 		+ "\t\t$label = `panel -q -label $panelName`;\n"
 		+ "\t\tscriptedPanel -edit -l \"Trax Editor\" -mbv $menusOkayInPanels  $panelName;\n"
-		+ "\t\t\t$editorName = ($panelName+\"ClipEditor\");\n"
+		+ "\t\t\t$editorName = clipEditorNameFromPanel($panelName);\n"
 		+ "            clipEditor -e \n"
-		+ "                -characterOutline \"clipEditorPanel1OutlineEditor\" \n"
-		+ "                -menuContext \"track\" \n"
+		+ "                -mainListConnection \"lockedList1\" \n"
+		+ "                -highlightConnection \"clipEditorPanel1HighlightConnection\" \n"
+		+ "                -displayKeys 0\n"
+		+ "                -displayTangents 0\n"
+		+ "                -displayActiveKeys 0\n"
+		+ "                -displayActiveKeyTangents 0\n"
+		+ "                -displayInfinities 0\n"
+		+ "                -autoFit 0\n"
+		+ "                -snapTime \"none\" \n"
+		+ "                -snapValue \"none\" \n"
 		+ "                $editorName;\n"
 		+ "\t\tif (!$useSceneConfig) {\n"
 		+ "\t\t\tpanel -e -l $label $panelName;\n"
@@ -950,6 +1140,7 @@ createNode script -n "uiConfigurationScriptNode";
 		+ "                -graphType \"DAG\" \n"
 		+ "                -updateSelection 1\n"
 		+ "                -updateNodeAdded 1\n"
+		+ "                -useDrawOverrideColor 0\n"
 		+ "                $editorName;\n"
 		+ "\t\t}\n"
 		+ "\t} else {\n"
@@ -972,6 +1163,7 @@ createNode script -n "uiConfigurationScriptNode";
 		+ "                -graphType \"DAG\" \n"
 		+ "                -updateSelection 1\n"
 		+ "                -updateNodeAdded 1\n"
+		+ "                -useDrawOverrideColor 0\n"
 		+ "                $editorName;\n"
 		+ "\t\tif (!$useSceneConfig) {\n"
 		+ "\t\t\tpanel -e -l $label $panelName;\n"
@@ -1124,6 +1316,18 @@ createNode script -n "uiConfigurationScriptNode";
 		+ "\t\t\tpanel -e -l $label $panelName;\n"
 		+ "\t\t}\n"
 		+ "\t}\n"
+		+ "\t$panelName = `sceneUIReplacement -getNextScriptedPanel \"webBrowserPanel\" \"Web Browser\"`;\n"
+		+ "\tif (\"\" == $panelName) {\n"
+		+ "\t\tif ($useSceneConfig) {\n"
+		+ "\t\t\t$panelName = `scriptedPanel -unParent  -type \"webBrowserPanel\" -l \"Web Browser\" -mbv $menusOkayInPanels `;\n"
+		+ "\t\t}\n"
+		+ "\t} else {\n"
+		+ "\t\t$label = `panel -q -label $panelName`;\n"
+		+ "\t\tscriptedPanel -edit -l \"Web Browser\" -mbv $menusOkayInPanels  $panelName;\n"
+		+ "\t\tif (!$useSceneConfig) {\n"
+		+ "\t\t\tpanel -e -l $label $panelName;\n"
+		+ "\t\t}\n"
+		+ "\t}\n"
 		+ "\tif ($useSceneConfig) {\n"
 		+ "        string $configName = `getPanel -cwl \"Current Layout\"`;\n"
 		+ "        if (\"\" != $configName) {\n"
@@ -1136,8 +1340,8 @@ createNode script -n "uiConfigurationScriptNode";
 		+ "\t\t\t\t-ap false\n"
 		+ "\t\t\t\t\t\"Persp View\"\n"
 		+ "\t\t\t\t\t\"modelPanel\"\n"
-		+ "\t\t\t\t\t\"$panelName = `modelPanel -unParent -l \\\"Persp View\\\" -mbv $menusOkayInPanels `;\\n$editorName = $panelName;\\nmodelEditor -e \\n    -cam `findStartUpCamera persp` \\n    -useInteractiveMode 0\\n    -displayLights \\\"default\\\" \\n    -displayAppearance \\\"smoothShaded\\\" \\n    -activeOnly 0\\n    -wireframeOnShaded 0\\n    -bufferMode \\\"double\\\" \\n    -twoSidedLighting 1\\n    -backfaceCulling 0\\n    -xray 0\\n    -displayTextures 0\\n    -smoothWireframe 0\\n    -textureAnisotropic 0\\n    -textureHilight 1\\n    -textureSampling 2\\n    -textureDisplay \\\"modulate\\\" \\n    -textureMaxSize 2048\\n    -fogging 0\\n    -fogSource \\\"fragment\\\" \\n    -fogMode \\\"linear\\\" \\n    -fogStart 0\\n    -fogEnd 100\\n    -fogDensity 0.1\\n    -fogColor 0.5 0.5 0.5 1 \\n    -sortTransparent 1\\n    -nurbsCurves 1\\n    -nurbsSurfaces 1\\n    -polymeshes 1\\n    -subdivSurfaces 1\\n    -planes 1\\n    -lights 1\\n    -cameras 1\\n    -controlVertices 1\\n    -hulls 1\\n    -grid 1\\n    -joints 1\\n    -ikHandles 1\\n    -deformers 1\\n    -dynamics 1\\n    -fluids 1\\n    -locators 1\\n    -dimensions 1\\n    -handles 1\\n    -pivots 1\\n    -textures 1\\n    -strokes 1\\n    -shadows 0\\n    $editorName;\\nmodelEditor -e -viewSelected 0 $editorName\"\n"
-		+ "\t\t\t\t\t\"modelPanel -edit -l \\\"Persp View\\\" -mbv $menusOkayInPanels  $panelName;\\n$editorName = $panelName;\\nmodelEditor -e \\n    -cam `findStartUpCamera persp` \\n    -useInteractiveMode 0\\n    -displayLights \\\"default\\\" \\n    -displayAppearance \\\"smoothShaded\\\" \\n    -activeOnly 0\\n    -wireframeOnShaded 0\\n    -bufferMode \\\"double\\\" \\n    -twoSidedLighting 1\\n    -backfaceCulling 0\\n    -xray 0\\n    -displayTextures 0\\n    -smoothWireframe 0\\n    -textureAnisotropic 0\\n    -textureHilight 1\\n    -textureSampling 2\\n    -textureDisplay \\\"modulate\\\" \\n    -textureMaxSize 2048\\n    -fogging 0\\n    -fogSource \\\"fragment\\\" \\n    -fogMode \\\"linear\\\" \\n    -fogStart 0\\n    -fogEnd 100\\n    -fogDensity 0.1\\n    -fogColor 0.5 0.5 0.5 1 \\n    -sortTransparent 1\\n    -nurbsCurves 1\\n    -nurbsSurfaces 1\\n    -polymeshes 1\\n    -subdivSurfaces 1\\n    -planes 1\\n    -lights 1\\n    -cameras 1\\n    -controlVertices 1\\n    -hulls 1\\n    -grid 1\\n    -joints 1\\n    -ikHandles 1\\n    -deformers 1\\n    -dynamics 1\\n    -fluids 1\\n    -locators 1\\n    -dimensions 1\\n    -handles 1\\n    -pivots 1\\n    -textures 1\\n    -strokes 1\\n    -shadows 0\\n    $editorName;\\nmodelEditor -e -viewSelected 0 $editorName\"\n"
+		+ "\t\t\t\t\t\"$panelName = `modelPanel -unParent -l \\\"Persp View\\\" -mbv $menusOkayInPanels `;\\n$editorName = $panelName;\\nmodelEditor -e \\n    -cam `findStartUpCamera persp` \\n    -useInteractiveMode 0\\n    -displayLights \\\"default\\\" \\n    -displayAppearance \\\"smoothShaded\\\" \\n    -activeOnly 0\\n    -wireframeOnShaded 0\\n    -bufferMode \\\"double\\\" \\n    -twoSidedLighting 1\\n    -backfaceCulling 0\\n    -xray 0\\n    -displayTextures 0\\n    -smoothWireframe 0\\n    -textureAnisotropic 0\\n    -textureHilight 1\\n    -textureSampling 2\\n    -textureDisplay \\\"modulate\\\" \\n    -textureMaxSize 2048\\n    -fogging 0\\n    -fogSource \\\"fragment\\\" \\n    -fogMode \\\"linear\\\" \\n    -fogStart 0\\n    -fogEnd 100\\n    -fogDensity 0.1\\n    -fogColor 0.5 0.5 0.5 1 \\n    -maxConstantTransparency 1\\n    -rendererName \\\"base_OpenGL_Renderer\\\" \\n    -colorResolution 256 256 \\n    -bumpResolution 512 512 \\n    -textureCompression 0\\n    -transparencyAlgorithm \\\"frontAndBackCull\\\" \\n    -transpInShadows 0\\n    -cullingOverride \\\"none\\\" \\n    -lowQualityLighting 0\\n    -maximumNumHardwareLights 1\\n    -occlusionCulling 0\\n    -useBaseRenderer 0\\n    -useReducedRenderer 0\\n    -smallObjectCulling 0\\n    -smallObjectThreshold -1 \\n    -interactiveDisableShadows 0\\n    -interactiveBackFaceCull 0\\n    -sortTransparent 1\\n    -nurbsCurves 1\\n    -nurbsSurfaces 1\\n    -polymeshes 1\\n    -subdivSurfaces 1\\n    -planes 1\\n    -lights 1\\n    -cameras 1\\n    -controlVertices 1\\n    -hulls 1\\n    -grid 1\\n    -joints 1\\n    -ikHandles 1\\n    -deformers 1\\n    -dynamics 1\\n    -fluids 1\\n    -hairSystems 1\\n    -follicles 1\\n    -locators 1\\n    -dimensions 1\\n    -handles 1\\n    -pivots 1\\n    -textures 1\\n    -strokes 1\\n    -shadows 0\\n    $editorName;\\nmodelEditor -e -viewSelected 0 $editorName\"\n"
+		+ "\t\t\t\t\t\"modelPanel -edit -l \\\"Persp View\\\" -mbv $menusOkayInPanels  $panelName;\\n$editorName = $panelName;\\nmodelEditor -e \\n    -cam `findStartUpCamera persp` \\n    -useInteractiveMode 0\\n    -displayLights \\\"default\\\" \\n    -displayAppearance \\\"smoothShaded\\\" \\n    -activeOnly 0\\n    -wireframeOnShaded 0\\n    -bufferMode \\\"double\\\" \\n    -twoSidedLighting 1\\n    -backfaceCulling 0\\n    -xray 0\\n    -displayTextures 0\\n    -smoothWireframe 0\\n    -textureAnisotropic 0\\n    -textureHilight 1\\n    -textureSampling 2\\n    -textureDisplay \\\"modulate\\\" \\n    -textureMaxSize 2048\\n    -fogging 0\\n    -fogSource \\\"fragment\\\" \\n    -fogMode \\\"linear\\\" \\n    -fogStart 0\\n    -fogEnd 100\\n    -fogDensity 0.1\\n    -fogColor 0.5 0.5 0.5 1 \\n    -maxConstantTransparency 1\\n    -rendererName \\\"base_OpenGL_Renderer\\\" \\n    -colorResolution 256 256 \\n    -bumpResolution 512 512 \\n    -textureCompression 0\\n    -transparencyAlgorithm \\\"frontAndBackCull\\\" \\n    -transpInShadows 0\\n    -cullingOverride \\\"none\\\" \\n    -lowQualityLighting 0\\n    -maximumNumHardwareLights 1\\n    -occlusionCulling 0\\n    -useBaseRenderer 0\\n    -useReducedRenderer 0\\n    -smallObjectCulling 0\\n    -smallObjectThreshold -1 \\n    -interactiveDisableShadows 0\\n    -interactiveBackFaceCull 0\\n    -sortTransparent 1\\n    -nurbsCurves 1\\n    -nurbsSurfaces 1\\n    -polymeshes 1\\n    -subdivSurfaces 1\\n    -planes 1\\n    -lights 1\\n    -cameras 1\\n    -controlVertices 1\\n    -hulls 1\\n    -grid 1\\n    -joints 1\\n    -ikHandles 1\\n    -deformers 1\\n    -dynamics 1\\n    -fluids 1\\n    -hairSystems 1\\n    -follicles 1\\n    -locators 1\\n    -dimensions 1\\n    -handles 1\\n    -pivots 1\\n    -textures 1\\n    -strokes 1\\n    -shadows 0\\n    $editorName;\\nmodelEditor -e -viewSelected 0 $editorName\"\n"
 		+ "\t\t\t\t$configName;\n"
 		+ "            setNamedPanelLayout \"Current Layout\";\n"
 		+ "        }\n"
@@ -1153,26 +1357,62 @@ createNode script -n "sceneConfigurationScriptNode";
 	setAttr ".b" -type "string" "playbackOptions -min 0 -max 150 -ast 0 -aet 500 ";
 	setAttr ".st" 6;
 createNode brush -n "brush2";
+	setAttr ".lcl[0]"  0 0.5 1;
+	setAttr ".pcl[0]"  0 0.5 1;
+	setAttr ".wsc[0]"  0 1 1;
+	setAttr ".lws[0]"  0 1 1;
+	setAttr ".pws[0]"  0 1 1;
+	setAttr ".tls[0]"  0 1 1;
+	setAttr -s 3 ".env";
+	setAttr ".env[0].envp" 0.20000000298023224;
+	setAttr ".env[0].envc" -type "float3" 0 0 0.15000001 ;
+	setAttr ".env[0].envi" 2;
+	setAttr ".env[1].envp" 0.5;
+	setAttr ".env[1].envc" -type "float3" 0.47999999 0.55000001 0.69999999 ;
+	setAttr ".env[1].envi" 2;
+	setAttr ".env[2].envp" 1;
+	setAttr ".env[2].envc" -type "float3" 0 0.1 0.44999999 ;
+	setAttr ".env[2].envi" 2;
+	setAttr ".rro[0]"  0 1 1;
 createNode brush -n "brush3";
+	setAttr ".lcl[0]"  0 0.5 1;
+	setAttr ".pcl[0]"  0 0.5 1;
+	setAttr ".wsc[0]"  0 1 1;
+	setAttr ".lws[0]"  0 1 1;
+	setAttr ".pws[0]"  0 1 1;
+	setAttr ".tls[0]"  0 1 1;
+	setAttr -s 3 ".env";
+	setAttr ".env[0].envp" 0.20000000298023224;
+	setAttr ".env[0].envc" -type "float3" 0 0 0.15000001 ;
+	setAttr ".env[0].envi" 2;
+	setAttr ".env[1].envp" 0.5;
+	setAttr ".env[1].envc" -type "float3" 0.47999999 0.55000001 0.69999999 ;
+	setAttr ".env[1].envi" 2;
+	setAttr ".env[2].envp" 1;
+	setAttr ".env[2].envc" -type "float3" 0 0.1 0.44999999 ;
+	setAttr ".env[2].envi" 2;
+	setAttr ".rro[0]"  0 1 1;
 createNode reference -n "NormalRN";
 select -ne :time1;
 	setAttr ".o" 94;
 select -ne :renderPartition;
-	setAttr -s 19 ".st";
+	setAttr -s 6 ".st";
 select -ne :renderGlobalsList1;
 select -ne :defaultShaderList1;
-	setAttr -s 7 ".s";
+	setAttr -s 6 ".s";
 select -ne :postProcessList1;
 	setAttr -s 2 ".p";
 select -ne :lightList1;
 	setAttr -s 2 ".l";
 	setAttr -s 2 ".ln";
+select -ne :lambert1;
+	setAttr ".miic" -type "float3" 3.1415927 3.1415927 3.1415927 ;
 select -ne :initialShadingGroup;
 	setAttr ".ro" yes;
 select -ne :initialParticleSE;
 	setAttr ".ro" yes;
 select -ne :defaultRenderGlobals;
-	addAttr -ci true -sn "currentRenderer" -ln "currentRenderer" -dt "string";
+	setAttr ".mcfr" 48;
 	setAttr ".outf" 5;
 	setAttr ".top" 124;
 	setAttr ".rght" 124;
@@ -1181,7 +1421,6 @@ select -ne :defaultRenderGlobals;
 	setAttr ".ef" 97;
 	setAttr ".ep" 4;
 	setAttr ".pff" yes;
-	setAttr ".currentRenderer" -type "string" "mayaSoftware";
 select -ne :defaultRenderQuality;
 	setAttr ".rfl" 10;
 	setAttr ".rfr" 10;
@@ -1197,7 +1436,13 @@ select -ne :defaultResolution;
 select -ne :defaultLightSet;
 	setAttr -s 2 ".dsm";
 select -ne :hardwareRenderGlobals;
-	setAttr ".fn" -type "string" "default-%4n";
+	addAttr -ci true -sn "ani" -ln "animation" -bt "ANIM" -min 0 -max 1 -at "bool";
+	setAttr ".fn" -type "string" "default-%4n.%e";
+	setAttr ".hwfr" 48;
+	setAttr -k on ".ani" yes;
+select -ne :defaultHardwareRenderGlobals;
+	setAttr ".fn" -type "string" "im";
+	setAttr ".res" -type "string" "ntsc_4d 646 485 1.333";
 select -ne Normal_white;
 select -ne Normal_grey;
 select -ne Normal_select;

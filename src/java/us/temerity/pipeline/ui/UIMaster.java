@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.62 2004/12/07 04:55:17 jim Exp $
+// $Id: UIMaster.java,v 1.63 2004/12/08 07:37:15 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -3091,7 +3091,7 @@ class UIMaster
 
 	  /* progress bar */ 
 	  {
-	    JProgressBar bar = new JProgressBar(JProgressBar.HORIZONTAL, 0, 313);
+	    JProgressBar bar = new JProgressBar(JProgressBar.HORIZONTAL, 0, 338);
 	    pSplashProgress = bar;
 
 	    bar.setValue(1);
@@ -3233,8 +3233,48 @@ class UIMaster
 	    update();	      
 
 	    mgr.verifyIcon21("Obsolete-" + qstate + "-" + mode);
-	    update();	      
+	    update();	      	      
 	  }
+
+	  mgr.verifyTexture("Identical-Finished-Frozen-" + mode);
+	  mgr.verifyIcon21("Identical-Finished-Frozen-" + mode);
+	  update();	      
+
+	  mgr.verifyTexture("Identical-Stale-Frozen-" + mode);
+	  mgr.verifyIcon21("Identical-Stale-Frozen-" + mode);
+	  update();	      
+	  
+	  mgr.verifyTexture("ModifiedLinks-Finished-Frozen-" + mode);
+	  mgr.verifyIcon21("ModifiedLinks-Finished-Frozen-" + mode);
+	  update();	      
+
+	  mgr.verifyTexture("ModifiedLinks-Stale-Frozen-" + mode);
+	  mgr.verifyIcon21("ModifiedLinks-Stale-Frozen-" + mode);
+	  update();	      
+
+	  mgr.verifyTexture("NeedsCheckOutMicro-Finished-Frozen-" + mode);
+	  mgr.verifyIcon21("NeedsCheckOutMicro-Finished-Frozen-" + mode);
+	  update();	      
+
+	  mgr.verifyTexture("NeedsCheckOutMicro-Stale-Frozen-" + mode);
+	  mgr.verifyIcon21("NeedsCheckOutMicro-Stale-Frozen-" + mode);
+	  update();
+
+	  mgr.verifyTexture("NeedsCheckOut-Finished-Frozen-" + mode);
+	  mgr.verifyIcon21("NeedsCheckOut-Finished-Frozen-" + mode);
+	  update();	      
+
+	  mgr.verifyTexture("NeedsCheckOut-Stale-Frozen-" + mode);
+	  mgr.verifyIcon21("NeedsCheckOut-Stale-Frozen-" + mode);
+	  update();
+
+	  mgr.verifyTexture("NeedsCheckOutMajor-Finished-Frozen-" + mode);
+	  mgr.verifyIcon21("NeedsCheckOutMajor-Finished-Frozen-" + mode);
+	  update();	      
+
+	  mgr.verifyTexture("NeedsCheckOutMajor-Stale-Frozen-" + mode);
+	  mgr.verifyIcon21("NeedsCheckOutMajor-Stale-Frozen-" + mode);
+	  update();	      
 	}
 
 	for(SelectionMode mode : SelectionMode.all()) {
@@ -3318,7 +3358,7 @@ class UIMaster
     run() 
     {  
       pSplashProgress.setValue(pValue);
-      //System.out.print("Progress = " + pValue + "\n");
+      //System.out.print("Progress = " + pValue + "\n"); 
     }
 
     private int pValue;

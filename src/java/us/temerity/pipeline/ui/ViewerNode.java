@@ -1,4 +1,4 @@
-// $Id: ViewerNode.java,v 1.8 2004/09/28 11:06:35 jim Exp $
+// $Id: ViewerNode.java,v 1.9 2004/12/08 07:37:15 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -303,6 +303,10 @@ class ViewerNode
 	else {
 	  name = (details.getOverallNodeState() + "-" + details.getOverallQueueState());
 	}
+
+	NodeMod mod = details.getWorkingVersion();
+	if((mod != null) && mod.isFrozen()) 
+	  name = (name + "-Frozen");
       }
       
       if(!name.equals(pIconAprName)) 
