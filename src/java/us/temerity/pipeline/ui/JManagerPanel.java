@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.10 2004/05/04 11:01:43 jim Exp $
+// $Id: JManagerPanel.java,v 1.11 2004/05/05 20:59:19 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -28,7 +28,7 @@ import javax.swing.event.*;
 public 
 class JManagerPanel
   extends JPanel
-  implements ActionListener
+  implements ComponentListener, ActionListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -162,7 +162,7 @@ class JManagerPanel
 	item.setActionCommand("add-right");
 	item.addActionListener(this);
 	sub.add(item);  
-	
+
 	sub.addSeparator();
 	
 	item = new JMenuItem("Add Above");
@@ -218,9 +218,9 @@ class JManagerPanel
       panel.setName("PanelBar");
       panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS)); 
 
-      panel.setMinimumSize(new Dimension(214, 29));
+      panel.setMinimumSize(new Dimension(222, 29));
       panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 29));
-      panel.setPreferredSize(new Dimension(214, 29));
+      panel.setPreferredSize(new Dimension(222, 29));
 
       {
 	PopupMenuAnchor anchor = new PopupMenuAnchor(this);
@@ -284,6 +284,8 @@ class JManagerPanel
       } 
     }
 
+    addComponentListener(this); 
+
     UIMaster.getInstance().addManager(this);
   }
 
@@ -294,7 +296,19 @@ class JManagerPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Set sole child component of the panel.
+   * Get body component of the panel.
+   */ 
+  public Component
+  getContents() 
+  {
+    int idx = getComponentCount()-1;
+    if(idx == -1) 
+      return null;
+    return getComponent(idx);
+  }
+
+  /**
+   * Set body component of the panel.
    * 
    * @param child
    *   The new child component.
@@ -331,7 +345,7 @@ class JManagerPanel
   }
     
   /**
-   * Remove the sole child component of the panel.
+   * Remove the body component of the panel.
    * 
    * @return 
    *   The removed child or <CODE>null</CODE> if there was no child.
@@ -339,13 +353,9 @@ class JManagerPanel
   public Component
   removeContents() 
   { 
-    int idx = getComponentCount()-1;
-    if(idx == -1) 
-      return null;
-    
-    Component old = getComponent(idx);
+    Component body = getContents();
     removeAll();
-    return old;
+    return body;
   }
 
 
@@ -393,6 +403,69 @@ class JManagerPanel
   /*   L I S T E N E R S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
+  /*-- COMPONENT LISTNER METHODS -----------------------------------------------------------*/
+
+  /**
+   * Invoked when the component has been made invisible. 
+   */ 
+  public void 	
+  componentHidden
+  (
+   ComponentEvent e
+  )
+  {}
+  
+  /**
+   * Invoked when the component's position changes. 
+   */ 
+  public void 	
+  componentMoved
+  (
+   ComponentEvent e
+  )
+  {}
+
+  /**
+   * Invoked when the component's size changes. <P> 
+   * 
+   * This method is used to hide the body component when the panel collapsed by a parent
+   * {@link JSplitPanel JSplitPanel}.  This is required to get around a rendering problem 
+   * where heavyweight body components of this panel are incorrectly rendered over
+   * lightweight components still visible.  
+   */ 
+  public void 	
+  componentResized
+  (
+   ComponentEvent e
+  )
+  {
+    Component body = getContents();
+    if(body != null) {
+      if(body.isVisible()) {
+	if((getWidth() == 0) || (getHeight() == 0)) {
+	  body.setVisible(false);
+	}
+      }
+      else {
+	if((getWidth() > 0) && (getHeight() > 0)) {
+	  body.setVisible(true);
+	  validate();
+	}
+      }
+    }
+  }
+
+  /**
+   * Invoked when the component has been made visible. 
+   */ 
+  public void 	
+  componentShown
+  (
+   ComponentEvent e
+  )
+  {}
+
+
   /*-- ACTION LISTENER METHODS -------------------------------------------------------------*/
 
   /** 
@@ -409,6 +482,8 @@ class JManagerPanel
     /* dispatch event */ 
     if(e.getActionCommand().equals("node-browser"))
       doNodeBrowserPanel();
+    else if(e.getActionCommand().equals("node-viewer"))
+      doNodeViewerPanel();
 
     // ...
 
@@ -453,6 +528,17 @@ class JManagerPanel
   {
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     setContents(new JNodeBrowserPanel(dead));
+    dead.setGroupID(0);
+  }
+
+  /**
+   * Change the contents of this panel to a JNodeViewerPanel. 
+   */ 
+  private void 
+  doNodeViewerPanel()
+  {
+    JTopLevelPanel dead = (JTopLevelPanel) removeContents();
+    setContents(new JNodeViewerPanel(dead));
     dead.setGroupID(0);
   }
 
@@ -786,7 +872,7 @@ class JManagerPanel
       {
 	pAddTabItem.setEnabled(pPanel.getHeight() > 29+20);
 	
-	boolean horz = (pPanel.getWidth() > (214*2 + 11));
+	boolean horz = (pPanel.getWidth() > (222*2 + 11));
 	pAddLeftItem.setEnabled(horz);
 	pAddRightItem.setEnabled(horz);
 	
@@ -983,11 +1069,11 @@ class JManagerPanel
   private JMenuItem  pNoneItem;
 
   private JMenuItem  pAddTabItem; 
+
   private JMenuItem  pAddLeftItem; 
   private JMenuItem  pAddRightItem; 
   private JMenuItem  pAddAboveItem; 
   private JMenuItem  pAddBelowItem; 
-
   private JMenuItem  pOwnerViewItem;
 
 
