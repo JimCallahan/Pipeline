@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.51 2004/10/29 14:03:52 jim Exp $
+// $Id: MasterMgr.java,v 1.52 2004/10/30 13:42:19 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3288,7 +3288,34 @@ class MasterMgr
 
     TaskTimer timer = new TaskTimer("MasterMgr.checkIn(): " + nodeID);
     try {
-      performNodeOperation(new NodeCheckInOp(req), nodeID, timer);
+      /* determine the revision number of the to be created version of the root node */ 
+      VersionID rootVersionID = null;
+      {      
+	String name = nodeID.getName();
+
+	timer.aquire();
+	ReentrantReadWriteLock lock = getCheckedInLock(name);
+	lock.readLock().lock();
+	try {
+	  timer.resume();
+	  TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
+	  VersionID latestID = checkedIn.lastKey();
+	  
+	  VersionID.Level level = req.getLevel();
+	  if(level == null) 
+	    level = VersionID.Level.Minor;
+	  rootVersionID = new VersionID(latestID, level);
+	}
+	catch(PipelineException ex) {
+	  rootVersionID = new VersionID();
+	}
+	finally {
+	  lock.readLock().unlock();
+	}
+      }
+
+      /* check-in the tree of nodes */ 
+      performNodeOperation(new NodeCheckInOp(req, rootVersionID), nodeID, timer);
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
@@ -7334,12 +7361,14 @@ class MasterMgr
     public
     NodeCheckInOp
     ( 
-     NodeCheckInReq req
+     NodeCheckInReq req, 
+     VersionID rootVersionID
     ) 
     {
       super();
       
-      pRequest = req;
+      pRequest       = req;
+      pRootVersionID = rootVersionID; 
     }
 
 
@@ -7469,7 +7498,8 @@ class MasterMgr
 	  /* create a new checked-in version and write it disk */ 
 	  NodeVersion vsn = 
 	    new NodeVersion(work, vid, lvids, isNovel, 
-			    pRequest.getNodeID().getAuthor(), pRequest.getMessage());
+			    pRequest.getNodeID().getAuthor(), pRequest.getMessage(), 
+			    pRequest.getNodeID().getName(), pRootVersionID);
 
 	  writeCheckedInVersion(vsn);
 
@@ -7590,6 +7620,12 @@ class MasterMgr
      * The node check-in request.
      */ 
     private NodeCheckInReq  pRequest;
+
+    /**
+     * The revision number of the new version of the root node created by the check-in 
+     * operation.
+     */ 
+    private VersionID  pRootVersionID; 
   }
   
 

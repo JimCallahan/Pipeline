@@ -1,4 +1,4 @@
-// $Id: Toolset.java,v 1.2 2004/06/02 21:33:11 jim Exp $
+// $Id: Toolset.java,v 1.3 2004/10/30 13:42:20 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -54,7 +54,7 @@ class Toolset
 
     if(desc == null) 
       throw new IllegalArgumentException("The package description cannot be (null)!");
-    pMessage = new LogMessage(author, desc);
+    pMessage = new SimpleLogMessage(author, desc);
 
     init(packages);
   }
@@ -572,7 +572,7 @@ class Toolset
       throw new GlueException("The \"Versions\" was missing or (null)!");
     pVersionIDs = versions;
 
-    LogMessage msg = (LogMessage) decoder.decode("Message");
+    SimpleLogMessage msg = (SimpleLogMessage) decoder.decode("Message");
     if(msg == null) 
       throw new GlueException("The \"Message\" was missing!");
     pMessage = msg;    
@@ -626,7 +626,7 @@ class Toolset
    * The timestamp and author of the message are also the timestamp and author of the 
    * toolset. <P> 
    */
-  private LogMessage  pMessage;    
+  private SimpleLogMessage  pMessage;    
 
   /**
    * The cooked toolset environment.

@@ -581,7 +581,6 @@
 
 
 
-
   <!--  P A N E L   L A B E L  -->
 
   <style id="PanelLabel">
@@ -802,6 +801,31 @@
   </style>
   <bind style="ScrolledTextArea" type="name" key="ScrolledTextArea"/>
 
+  <style id="HistoryTextArea">
+    <state value="SELECTED">
+       <color value="#ffff00" type="TEXT_FOREGROUND"/>
+       <color value="#727272" type="TEXT_BACKGROUND"/>
+    </state>
+    <imagePainter path="ValuePanel.png"
+                  method="textAreaBackground"
+                  sourceInsets="3 3 3 3"/>
+    <insets top="8" bottom="8" right="8" left="8"/>
+    <font name="Lucida Sans Bold" size="13"/>
+  </style>
+  <bind style="HistoryTextArea" type="name" key="HistoryTextArea"/>
+
+  <style id="HistoryTextAreaDark">
+    <state value="SELECTED">
+       <color value="#ffff00" type="TEXT_FOREGROUND"/>
+       <color value="#666666" type="TEXT_BACKGROUND"/>
+    </state>
+    <imagePainter path="ValuePanelDark.png"
+                  method="textAreaBackground"
+                  sourceInsets="3 3 3 3"/>
+    <insets top="8" bottom="8" right="8" left="8"/>
+    <font name="Lucida Sans Bold" size="13"/>
+  </style>
+  <bind style="HistoryTextAreaDark" type="name" key="HistoryTextAreaDark"/>
 
 
   <!--  H O T   K E Y   F I E L D  -->

@@ -1,4 +1,4 @@
-// $Id: JNodeHistoryPanel.java,v 1.9 2004/10/29 14:03:52 jim Exp $
+// $Id: JNodeHistoryPanel.java,v 1.10 2004/10/30 13:42:20 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -183,7 +183,9 @@ class JNodeHistoryPanel
       {
 	Box vbox = new Box(BoxLayout.Y_AXIS);
 	pMessageBox = vbox;
-	
+
+	pTextAreas = new ArrayList<JTextArea>();
+
 	{
 	  JScrollPane scroll = new JScrollPane(vbox);
 	  pScroll = scroll;
@@ -367,6 +369,7 @@ class JNodeHistoryPanel
     /* check-in message history */ 
     {
       pMessageBox.removeAll();
+      pTextAreas.clear();
 
       if(pHistory != null) {
 	VersionID initial = new VersionID();
@@ -381,9 +384,14 @@ class JNodeHistoryPanel
 	for(VersionID vid : vids) {
 	  LogMessage msg = pHistory.get(vid);
 	  
-	  Color color = Color.white;
-	  if((wvid != null) && wvid.equals(vid))
-	    color = Color.cyan;
+	  Color color  = Color.white;
+	  if((wvid != null) && wvid.equals(vid)) 
+	    color  = Color.cyan;
+
+	  String rootName = msg.getRootName();
+	  
+	  boolean isLeaf = ((rootName == null) || 
+			    ((rootName != null) && (!rootName.equals(pStatus.getName()))));
 
 	  {
 	    JPanel panel = new JPanel();
@@ -393,14 +401,14 @@ class JNodeHistoryPanel
 	    panel.addKeyListener(this);
 	    panel.addMouseListener(this); 
 	  
-	    panel.add(Box.createRigidArea(new Dimension(0, 4)));
+	    panel.add(Box.createRigidArea(new Dimension(0, 3)));
 	  
 	    {
 	      Box hbox = new Box(BoxLayout.X_AXIS);
 	      
 	      {
 		Box hbox2 = new Box(BoxLayout.X_AXIS);
-		hbox2.add(Box.createRigidArea(new Dimension(6, 0)));
+		hbox2.add(Box.createRigidArea(new Dimension(10, 0)));
 		
 		{
 		  JLabel label = new JLabel("v" + vid);
@@ -417,8 +425,8 @@ class JNodeHistoryPanel
 		  hbox2.add(label);
 		}
 		
-		hbox2.add(Box.createHorizontalGlue());
 		hbox2.add(Box.createRigidArea(new Dimension(4, 0)));
+		hbox2.add(Box.createHorizontalGlue());
 		
 		{
 		  JLabel label = new JLabel(Dates.format(msg.getTimeStamp()));
@@ -426,7 +434,7 @@ class JNodeHistoryPanel
 		  hbox2.add(label);
 		}
 		
-		hbox2.add(Box.createRigidArea(new Dimension(6, 0)));
+		hbox2.add(Box.createRigidArea(new Dimension(10, 0)));
 		
 		Dimension size = new Dimension(sSize, 19);
 		hbox2.setMinimumSize(size);
@@ -441,7 +449,7 @@ class JNodeHistoryPanel
 	      panel.add(hbox);
 	    }
 	    
-	    panel.add(Box.createRigidArea(new Dimension(0, 4)));
+	    panel.add(Box.createRigidArea(new Dimension(0, 3)));
 	    
 	    {
 	      Box hbox = new Box(BoxLayout.X_AXIS);
@@ -449,9 +457,10 @@ class JNodeHistoryPanel
 	      hbox.add(Box.createRigidArea(new Dimension(4, 0)));
 	      
 	      {
-		JTextArea area = new JTextArea(msg.getMessage(), 2, 42);
-		area.setName("TextArea");
+		JTextArea area = new JTextArea(msg.getMessage(), 0, 39);
+		pTextAreas.add(area);
 		
+		area.setName(isLeaf ? "HistoryTextArea" : "HistoryTextAreaDark");
 		area.setForeground(color);
 		
 		area.setLineWrap(true);
@@ -463,10 +472,6 @@ class JNodeHistoryPanel
 		area.addKeyListener(this);
 		area.addMouseListener(this); 
 		
-		Dimension size = area.getPreferredSize();
-		area.setMinimumSize(size);
-		area.setMaximumSize(size);
-		
 		hbox.add(area);
 	      }
 	      
@@ -476,11 +481,52 @@ class JNodeHistoryPanel
 	      panel.add(hbox);
 	    }
 	    
-	    panel.add(Box.createRigidArea(new Dimension(0, 4)));
+	    panel.add(Box.createRigidArea(new Dimension(0, 3)));
 
+	    {
+	      Box hbox = new Box(BoxLayout.X_AXIS);
+	      
+	      {
+		Box hbox2 = new Box(BoxLayout.X_AXIS);
+		
+		hbox2.add(Box.createRigidArea(new Dimension(10, 0)));
+		hbox2.add(Box.createHorizontalGlue());
+		
+		{
+		  String text = null;
+		  if(rootName == null)
+		    text = "???";
+		  else if(rootName.equals(pStatus.getName())) 
+		    text = "Check-In Root"; 
+		  else 
+		    text = (rootName + "  v" + msg.getRootVersionID());
+		  
+		  JLabel label = new JLabel(text);
+		  label.setForeground(new Color(0.75f, 0.75f, 0.75f));
+		  
+		  hbox2.add(label);
+		}
+		
+		hbox2.add(Box.createRigidArea(new Dimension(10, 0)));
+		
+		Dimension size = new Dimension(sSize, 19);
+		hbox2.setMinimumSize(size);
+		hbox2.setMaximumSize(size);
+		hbox2.setPreferredSize(size);
+		
+		hbox.add(hbox2);
+	      }
+	      
+	      hbox.add(Box.createHorizontalGlue());
+	      
+	      panel.add(hbox);
+	    }
+	  
+	    panel.add(Box.createRigidArea(new Dimension(0, 3)));
+	    
 	    pMessageBox.add(panel);
 	  }
-
+	
 	  if(!vid.equals(initial)) {
 	    JPanel spanel = new JPanel();
 	    spanel.setName("Spacer");
@@ -981,6 +1027,14 @@ class JNodeHistoryPanel
     public void 
     run() 
     {    
+      for(JTextArea area : pTextAreas) {
+	area.setRows(area.getLineCount());		
+	
+	Dimension size = area.getPreferredSize();
+	area.setMinimumSize(size);
+	area.setMaximumSize(size);
+      }
+
       pScroll.getViewport().setViewPosition(new Point());
     }
   }
@@ -1246,6 +1300,11 @@ class JNodeHistoryPanel
    * The log message container.
    */ 
   private Box  pMessageBox;
+
+  /**
+   * The log message text areas.
+   */
+  private ArrayList<JTextArea>  pTextAreas; 
 
   /**
    * The scroll panel containing the messages.

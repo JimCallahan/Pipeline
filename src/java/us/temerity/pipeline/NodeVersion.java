@@ -1,4 +1,4 @@
-// $Id: NodeVersion.java,v 1.18 2004/09/08 18:33:09 jim Exp $
+// $Id: NodeVersion.java,v 1.19 2004/10/30 13:42:19 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -50,6 +50,13 @@ class NodeVersion
    * 
    * @param msg 
    *   The check-in log message.
+   * 
+   * @param rootName
+   *   The fully resolved name of the root node of the check-in operation.
+   * 
+   * @param rootVersionID
+   *   The revision number of the new version of the root node created by the check-in 
+   *   operation.
    */
   public 
   NodeVersion
@@ -59,7 +66,9 @@ class NodeVersion
    TreeMap<String,VersionID> lvids,
    TreeMap<FileSeq,boolean[]> isNovel,
    String author, 
-   String msg
+   String msg, 
+   String rootName, 
+   VersionID rootVersionID 
   ) 
   {
     super(mod);
@@ -70,7 +79,7 @@ class NodeVersion
 
     if(msg == null) 
       throw new IllegalArgumentException("The check-in message cannot be (null)!");
-    pMessage = new LogMessage(author, msg);
+    pMessage = new LogMessage(author, msg, rootName, rootVersionID);
 
     pSources = new TreeMap<String,LinkVersion>();
     for(LinkMod link : mod.getSources()) 

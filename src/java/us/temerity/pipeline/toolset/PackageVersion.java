@@ -1,4 +1,4 @@
-// $Id: PackageVersion.java,v 1.3 2004/05/29 06:37:41 jim Exp $
+// $Id: PackageVersion.java,v 1.4 2004/10/30 13:42:20 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -60,7 +60,7 @@ class PackageVersion
 
     if(desc == null) 
       throw new IllegalArgumentException("The package description cannot be (null)!");
-    pMessage = new LogMessage(author, desc);
+    pMessage = new SimpleLogMessage(author, desc);
   }
   
   /** 
@@ -78,7 +78,7 @@ class PackageVersion
     super(vsn);
 
     pVersionID = vsn.getVersionID();
-    pMessage   = new LogMessage(vsn.pMessage);
+    pMessage   = new SimpleLogMessage(vsn.pMessage);
   }
 
 
@@ -172,7 +172,7 @@ class PackageVersion
       throw new GlueException("The \"VersionID\" was missing!");
     pVersionID = vid;
 
-    LogMessage msg = (LogMessage) decoder.decode("Message");
+    SimpleLogMessage msg = (SimpleLogMessage) decoder.decode("Message");
     if(msg == null) 
       throw new GlueException("The \"Message\" was missing!");
     pMessage = msg;
@@ -203,6 +203,6 @@ class PackageVersion
    * The timestamp and author of the message are also the timestamp and author of the 
    * package version. <P> 
    */
-  private LogMessage  pMessage;        
+  private SimpleLogMessage  pMessage;        
 
 }

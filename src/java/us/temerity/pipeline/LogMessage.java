@@ -1,4 +1,4 @@
-// $Id: LogMessage.java,v 1.7 2004/10/12 23:20:11 jim Exp $
+// $Id: LogMessage.java,v 1.8 2004/10/30 13:42:19 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -12,11 +12,11 @@ import java.io.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**                                                                                   
- * A text message with automaticly records who wrote the text and when.                  
+ * A node check-in message.
  */
 public 
 class LogMessage 
-  implements Cloneable, Glueable, Serializable
+  extends SimpleLogMessage
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -24,31 +24,39 @@ class LogMessage
 
   public 
   LogMessage() 
-  {}
-
+  {
+    super();
+  }
+  
   /**
-   * Construct a new message owned by the given author (recording the time). 
+   * Construct a new check-in message owned by the given author (recording the time). 
    * 
    * @param author
    *   The name of the user creating the message.
    * 
    * @param msg 
    *   The message text.
+   * 
+   * @param rootName
+   *   The fully resolved name of the root node of the check-in operation.
+   * 
+   * @param rootVersionID
+   *   The revision number of the new version of the root node created by the check-in 
+   *   operation.
    */ 
   public 
   LogMessage
   (
    String author, 
-   String msg  
+   String msg, 
+   String rootName, 
+   VersionID rootVersionID 
   ) 
   {
-    pTimeStamp = Dates.now();
+    super(author, msg);
 
-    if(author == null) 
-      throw new IllegalArgumentException("The author cannot be (null)!");
-    pAuthor = author;
-
-    pMessage = msg;
+    pRootName      = rootName;
+    pRootVersionID = rootVersionID;
   }
 
   /**
@@ -56,16 +64,26 @@ class LogMessage
    * 
    * @param msg 
    *   The message text.
+   * 
+   * @param rootName
+   *   The fully resolved name of the root node of the check-in operation.
+   * 
+   * @param rootVersionID
+   *   The revision number of the new version of the root node created by the check-in 
+   *   operation.
    */ 
   public 
   LogMessage
   (
-   String msg  
+   String msg, 
+   String rootName, 
+   VersionID rootVersionID  
   ) 
   {
-    pTimeStamp = Dates.now();
-    pAuthor    = PackageInfo.sUser;
-    pMessage   = msg;
+    super(msg);
+
+    pRootName      = rootName;
+    pRootVersionID = rootVersionID;
   }
 
   /**
@@ -74,12 +92,13 @@ class LogMessage
   public 
   LogMessage
   (
-   LogMessage msg  
+   LogMessage log
   ) 
   {
-    pTimeStamp = msg.getTimeStamp();
-    pAuthor    = msg.getAuthor();
-    pMessage   = msg.getMessage();
+    super(log);
+    
+    pRootName      = log.getRootName();
+    pRootVersionID = log.getRootVersionID();
   }
 
 
@@ -89,33 +108,24 @@ class LogMessage
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get when the message was written. 
+   * Get the fully resolved name of the root node of the check-in operation.
    */ 
-  public Date
-  getTimeStamp() 
+  public String
+  getRootName() 
   {
-    assert(pTimeStamp != null);
-    return (Date) pTimeStamp.clone();
+    return pRootName;
   }
 
   /**
-   * Get the name of the user who wrote the message. 
+   * Get the revision number of the new version of the root node created by the check-in 
+   * operation.
    */ 
-  public String
-  getAuthor() 
+  public VersionID
+  getRootVersionID() 
   {
-    assert(pAuthor != null);
-    return pAuthor;
+    return pRootVersionID; 
   }
 
-  /**
-   * Get the message text. 
-   */ 
-  public String
-  getMessage() 
-  {
-    return pMessage;
-  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -137,36 +147,19 @@ class LogMessage
     if((obj != null) && (obj instanceof LogMessage)) {
       LogMessage log = (LogMessage) obj;
 
-      if(pTimeStamp.equals(log.pTimeStamp) && 
-	 pAuthor.equals(log.pAuthor) &&
-	 pMessage.equals(log.pMessage));
+      if(getTimeStamp().equals(log.getTimeStamp()) && 
+	 getAuthor().equals(log.getAuthor()) &&
+	 getMessage().equals(log.getMessage()) &&
+	 (((pRootName == null) && (log.pRootName == null)) ||
+	  ((pRootName != null) && pRootName.equals(log.pRootName))) && 
+	 (((pRootVersionID == null) && (log.pRootVersionID == null)) ||
+	  ((pRootVersionID != null) && pRootVersionID.equals(log.pRootVersionID))))
 	return true;
     }
     return false;
   }
 
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   C L O N E A B L E                                                                    */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Return a deep copy of this object.
-   */
-  public Object 
-  clone()
-  {
-    try {
-      return super.clone();
-    }
-    catch(CloneNotSupportedException ex) {
-      assert(false);
-      return null;
-    }
-  }
-
-
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   G L U E A B L E                                                                      */
@@ -179,9 +172,13 @@ class LogMessage
   ) 
     throws GlueException
   {
-    encoder.encode("TimeStamp", pTimeStamp.getTime());
-    encoder.encode("Author",    pAuthor);
-    encoder.encode("Message",   pMessage);
+    super.toGlue(encoder);
+
+    if(pRootName != null) 
+      encoder.encode("RootName", pRootName);
+
+    if(pRootVersionID != null) 
+      encoder.encode("RootVersionID", pRootVersionID);
   }
 
   public void 
@@ -191,20 +188,15 @@ class LogMessage
   ) 
     throws GlueException
   {
-    Long stamp = (Long) decoder.decode("TimeStamp");
-    if(stamp == null) 
-      throw new GlueException("The \"TimeStamp\" was missing!");
-    pTimeStamp = new Date(stamp);
+    super.fromGlue(decoder);
 
-    String author = (String) decoder.decode("Author");
-    if(author == null) 
-      throw new GlueException("The \"Author\" was missing!");
-    pAuthor = author;
+    String name = (String) decoder.decode("RootName");
+    if(name != null) 
+      pRootName = name;
 
-    String message = (String) decoder.decode("Message");
-    if(message == null) 
-      throw new GlueException("The \"Message\" was missing!");
-    pMessage = message;
+    VersionID vid = (VersionID) decoder.decode("RootVersionID");
+    if(vid != null) 
+      pRootVersionID = vid;
   }
 
 
@@ -222,20 +214,16 @@ class LogMessage
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * When the message was written. 
+   * The fully resolved name of the root node of the check-in operation.
    */ 
-  private Date  pTimeStamp; 
+  private String  pRootName; 
   
   /**
-   * The name of the user who wrote the message. 
+   * The revision number of the new version of the root node created by the check-in 
+   * operation.
    */ 
-  private String  pAuthor;  
-  
-  /**
-   * The message text. 
-   */ 
-  private String  pMessage;    
-  
+  private VersionID  pRootVersionID; 
+
 }
 
 

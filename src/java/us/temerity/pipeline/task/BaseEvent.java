@@ -1,4 +1,4 @@
-// $Id: BaseEvent.java,v 1.1 2004/10/18 04:00:00 jim Exp $
+// $Id: BaseEvent.java,v 1.2 2004/10/30 13:42:20 jim Exp $
 
 package us.temerity.pipeline.task;
 
@@ -16,7 +16,7 @@ import java.util.*;
  */
 public abstract
 class BaseEvent
-  extends LogMessage
+  extends SimpleLogMessage
 {     
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
