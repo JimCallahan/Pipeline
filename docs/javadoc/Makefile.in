@@ -219,11 +219,13 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 #                  us.temerity.pipeline.glue \
 #                  us.temerity.pipeline.message \
 #                  us.temerity.pipeline.ui \
-#                  us.temerity.pipeline.toolset
+#                  us.temerity.pipeline.toolset \
+#                  us.temerity.pipeline.task
 
   MAIN_PACKAGES = us.temerity.pipeline \
                   us.temerity.pipeline.glue \
-                  us.temerity.pipeline.toolset
+                  us.temerity.pipeline.toolset \
+                  us.temerity.pipeline.task
 
        PACKAGES = $(MAIN_PACKAGES) $(PLUGIN_PACKAGES)
 
@@ -233,7 +235,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
    JAVADOC_OPTS = -sourcepath $(top_srcdir)/src/java \
                   -classpath $(top_builddir)/src/java \
-                  -d javadoc -source 1.5 -use $(EXTERNAL_URLS) 
+                  -d javadoc -source 1.5 -use $(LOCAL_URLS) #$(EXTERNAL_URLS) 
 
 #--------------------------------------------------------------------------------------------#
 #   R U L E S                                                                                #
