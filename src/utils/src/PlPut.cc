@@ -1,4 +1,4 @@
-// $Id: PlPut.cc,v 1.10 2003/07/10 20:51:26 jim Exp $
+// $Id: PlPut.cc,v 1.11 2003/08/20 00:11:47 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -43,6 +43,7 @@
 #endif
 
 #include <PackageInfo.hh>
+#include <PlCommon.hh>
 
 using namespace Phoenix;
 using namespace Phoenix::Core;
@@ -53,53 +54,6 @@ using namespace Phoenix::Core;
 /*     A utility program used internally by the pipeline(1) tool to copy files from a       */
 /*     usr's working area into the repository.                                              */
 /*------------------------------------------------------------------------------------------*/
-
-class PathPair
-{
-public:
-  PathPair
-  (
-   bool isLink, 
-   char* work,
-   char* repo
-  ) : 
-    uIsLink(isLink), 
-    uWork(strdup(work)),
-    uRepo(strdup(repo))
-  {
-    assert(uWork);
-    assert(uRepo);
-  }
-
-  ~PathPair()
-  {
-    assert(uWork);
-    delete[] uWork;
-
-    assert(uRepo);
-    delete[] uRepo;
-  }
-
-public:
-  const bool uIsLink;         /* create a symbilic link instead of copying */ 
-  const char* uWork;          /* absolute path to working area (or previous repo) file */ 
-  const char* uRepo;          /* absolute path to repository file */ 
-};
-
-
-struct StringCmp
-{
-  bool operator()
-  (
-   const char* a, 
-   const char* b
-  ) const
-  {
-    return strcmp(a, b) < 0;
-  }
-};
-
-
 
 /* usage message */ 
 void
@@ -250,7 +204,9 @@ main
   char msg[1024];
   
   /* read in the file list */ 
-  typedef std::list<PathPair*> Pairs;
+  int workDirSize = strlen(Pipeline::PackageInfo::sWorkDir);
+  int repoDirSize = strlen(Pipeline::PackageInfo::sRepoDir);
+  typedef std::list<Pipeline::PathPair*> Pairs;
   Pairs pairs;
   FB::stageBegin("Reading File List: ");
   {
@@ -282,7 +238,28 @@ main
 	FB::error(msg);
       }
 
-      pairs.push_back(new PathPair(isLink, work, repo));
+      if(isLink) {
+	if(strncmp(work, Pipeline::PackageInfo::sRepoDir, repoDirSize) != 0) {
+	  char msg[1024];
+	  sprintf(msg, "Illegal repository filename \"%s\" encountered!", work);
+	  FB::error(msg);	
+	}
+      }
+      else {
+	if(strncmp(work, Pipeline::PackageInfo::sWorkDir, workDirSize) != 0) {
+	  char msg[1024];
+	  sprintf(msg, "Illegal working area filename \"%s\" encountered!", work);
+	  FB::error(msg);	
+	}
+      }
+	  
+      if(strncmp(repo, Pipeline::PackageInfo::sRepoDir, repoDirSize) != 0) {
+	char msg[1024];
+	sprintf(msg, "Illegal repository filename \"%s\" encountered!", repo);
+	FB::error(msg);	
+      }
+
+      pairs.push_back(new Pipeline::PathPair(isLink, work, repo));
 
       sprintf(msg, "%s: %s to %s", mode, work, repo);
       FB::stageMsg(msg);
@@ -311,7 +288,7 @@ main
   /* make sure the repository files DO NOT already exist */ 
   FB::stageBegin("Verifying Target Files:");
   {
-    std::list<PathPair*>::iterator iter;
+    std::list<Pipeline::PathPair*>::iterator iter;
     for(iter=pairs.begin(); iter != pairs.end(); iter++) {
       const char* repo = (*iter)->uRepo;
       FB::stageMsg(repo);
@@ -347,7 +324,7 @@ main
   FB::stageBegin("Creating Repository Directories:");
   {
     /* build a list of unique directories needed by all paths */ 
-    typedef std::set<const char*, StringCmp> DirSet;
+    typedef std::set<const char*, Pipeline::StringCmp> DirSet;
     DirSet dirs;
     {
       Pairs::iterator iter;
