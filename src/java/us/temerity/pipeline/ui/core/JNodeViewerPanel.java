@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.25 2005/03/23 20:47:21 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.26 2005/03/23 21:07:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -4941,8 +4941,6 @@ class JNodeViewerPanel
 	finally {
 	  master.endPanelOp("Done.");
 	}
-
-	updateRoots();
       }
     }
 
