@@ -1,4 +1,4 @@
-// $Id: ViewerJob.java,v 1.2 2004/08/30 02:55:55 jim Exp $
+// $Id: ViewerJob.java,v 1.3 2004/09/05 06:54:07 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -138,8 +138,7 @@ class ViewerJob
 
 	pBorderLines = new Shape3D(la, apr);
 	pBorderLines.setCapability(Shape3D.ALLOW_APPEARANCE_WRITE);
-	pBorderLines.setPickable(true);
-	pBorderLines.setUserData(this);
+	pBorderLines.setPickable(false);
 
 	pXform.addChild(pBorderLines);
       }
