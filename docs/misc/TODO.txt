@@ -26,11 +26,21 @@ USER INTERFACE:
 
 - NodeLinks Panel?
 
-- Queue/Job Panels
+- JobViewer and JobDetails Panels
 
 - Task/Scheduling Panels
 
 - Improved UI for panel save/restore.  Its sort of clunky but works currently...
+
+- NodeViewer contents are not intialized to the selected nodes in the linked NodeBrowser 
+  when the panel type is changed to NodeViewer from some other type of panel.
+
+- NodeBrowser contents are not intialized to the selected nodes in the linked NodeViewer 
+  when the panel type is changed to NodeBrowser from some other type of panel.
+
+- The keyboard focus is grabbed by Table header buttons when pressed.
+
+- Give JEmptyPanel a better appearance.
 
 
 BACKEND: 
@@ -60,7 +70,8 @@ IMPORTANT UNIMPLEMENTED JOB RELATED ISSUES:
   obsolete in the new frame range.  If the Execution Method is Serial, all running jobs should
   be killed.
 
-+ The Release operation should also kill any running jobs associated with the released node.
++ The Release/RemoveFiles operations should also kill any running jobs associated with 
+  the node.
 
 
 ----------------------------------------------------------------------------------------------
