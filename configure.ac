@@ -301,7 +301,7 @@ then
 
     (sgi | SGI) \
        CFLAGS="$CFLAGS -64 -mips4 -TARG:platform=IP30";
-x       CXXFLAGS="$CXXFLAGS -64 -mips4 -TARG:platform=IP30";;
+       CXXFLAGS="$CXXFLAGS -64 -mips4 -TARG:platform=IP30";;
 
     (gnu | GNU) \
        AC_MSG_ERROR([no 64bit support for gcc]);;
