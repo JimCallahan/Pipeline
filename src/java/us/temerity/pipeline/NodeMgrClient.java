@@ -1,4 +1,4 @@
-// $Id: NodeMgrClient.java,v 1.14 2004/05/07 21:04:16 jim Exp $
+// $Id: NodeMgrClient.java,v 1.15 2004/05/11 19:10:25 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -203,7 +203,6 @@ class NodeMgrClient
       return null;
     }
   }
-
 
 
 
@@ -432,7 +431,7 @@ class NodeMgrClient
   /**
    * Get the status of the tree of nodes rooted at the given node. <P> 
    * 
-   * Identical to the {@link NodeStatus(String,String,String) NodeStatus} method which 
+   * Identical to the {@link #status(String,String,String) status} method which 
    * takes an author name except that the current user is used as the author.
    * 
    * @param view 
