@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.3 2004/08/30 06:51:36 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.4 2004/08/30 07:01:29 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1525,7 +1525,7 @@ class JQueueJobViewerPanel
     
     /* group actions */
     else if(under instanceof ViewerJobGroup) {
-      ViewerJobGroup vunder = (ViewerJob) under;
+      ViewerJobGroup vunder = (ViewerJobGroup) under;
       
       switch(e.getKeyCode()) {
       case KeyEvent.VK_SHIFT:
