@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.21 2004/06/28 00:18:01 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.22 2004/06/28 23:37:38 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -87,6 +87,11 @@ class JNodeViewerPanel
       pPanelPopup = new JPopupMenu();  
       pPanelPopup.addPopupMenuListener(this);
 
+      item = new JMenuItem("Update");
+      item.setActionCommand("update");
+      item.addActionListener(this);
+      pPanelPopup.add(item);  
+      
       item = new JMenuItem("Register...");
       pRegisterItem = item;
       item.setActionCommand("register");
@@ -209,15 +214,16 @@ class JNodeViewerPanel
 
       pNodePopup.addSeparator();
 
-      sub = new JMenu("Link");
-      pLinkMenu = sub;
-      sub.setEnabled(false);
-      pNodePopup.add(sub);
+      item = new JMenuItem("Link...");
+      pLinkItem = item;
+      item.setActionCommand("link");
+      item.addActionListener(this);
+      pNodePopup.add(item);
 
       item = new JMenuItem("Unlink");
+      pUnlinkItem = item;
       item.setActionCommand("unlink");
       item.addActionListener(this);
-      item.setEnabled(false);  // FOR NOW...
       pNodePopup.add(item);
       
       pNodePopup.addSeparator();
@@ -250,6 +256,7 @@ class JNodeViewerPanel
       pNodePopup.addSeparator();
       
       item = new JMenuItem("Rename...");
+      pRenameItem = item;
       item.setActionCommand("rename");
       item.addActionListener(this);
       pNodePopup.add(item);
@@ -274,11 +281,13 @@ class JNodeViewerPanel
       pNodePopup.addSeparator();
       
       item = new JMenuItem("Check-In...");
+      pCheckInItem = item;
       item.setActionCommand("check-in");
       item.addActionListener(this);
       pNodePopup.add(item);
   
       item = new JMenuItem("Check-Out...");
+      pCheckOutItem = item;
       item.setActionCommand("check-out");
       item.addActionListener(this);
       pNodePopup.add(item);
@@ -292,6 +301,7 @@ class JNodeViewerPanel
       pNodePopup.add(item);
       
       item = new JMenuItem("Revoke");
+      pRevokeItem = item;
       item.setActionCommand("revoke");
       item.addActionListener(this);
       pNodePopup.add(item);
@@ -312,33 +322,10 @@ class JNodeViewerPanel
       pLinkPopup = new JPopupMenu();  
       pLinkPopup.addPopupMenuListener(this);
        
-      sub = new JMenu("Link Catagory");
-      pLinkCatagoryMenu = sub;
-      sub.setEnabled(false);
-      pLinkPopup.add(sub);
-
-      {
-	sub = new JMenu("Link Relationship");
-	pLinkPopup.add(sub);
-
-	item = new JMenuItem("None");
-	pLinkNoneRelationshipItem = item;
-	item.setActionCommand("link-relationship:None");
-	item.addActionListener(this);
-	sub.add(item);
-
-	item = new JMenuItem("One-to-One");
-	pLinkOneToOneRelationshipItem = item;
-	item.setActionCommand("link-relationship:OneToOne");
-	item.addActionListener(this);
-	sub.add(item);
-
-	item = new JMenuItem("All");
-	pLinkAllRelationshipItem = item;
-	item.setActionCommand("link-relationship:All");
-	item.addActionListener(this);
-	sub.add(item);
-      }
+      item = new JMenuItem("Edit Link...");
+      item.setActionCommand("link-edit");
+      item.addActionListener(this);
+      pLinkPopup.add(item);
 
       item = new JMenuItem("Unlink");
       item.setActionCommand("link-unlink");
@@ -444,6 +431,9 @@ class JNodeViewerPanel
       pRevokeDialog   = new JRevokeDialog();
       pCheckInDialog  = new JCheckInDialog();
       pCheckOutDialog = new JCheckOutDialog();
+      
+      pCreateLinkDialog = new JCreateLinkDialog();
+      pEditLinkDialog   = new JEditLinkDialog();
     }
   }
 
@@ -515,7 +505,7 @@ class JNodeViewerPanel
 
 
   /*----------------------------------------------------------------------------------------*/
-  
+
   /**
    * Update the state of all currently displayed roots.
    */
@@ -698,7 +688,24 @@ class JNodeViewerPanel
   public void 
   updateNodeMenu() 
   {
-    pLinkMenu.setEnabled(false);
+    NodeDetails details = null;
+    if(pPrimary != null) 
+      details = pPrimary.getNodeStatus().getDetails();
+
+    boolean hasWorking   = (details.getWorkingVersion() != null);
+    boolean hasCheckedIn = (details.getLatestVersion() != null);
+    boolean multiple     = (getSelectedNames().size() >= 2);
+
+    pLinkItem.setEnabled(hasWorking && multiple);
+    pUnlinkItem.setEnabled(hasWorking && multiple);
+
+    pRenameItem.setEnabled(hasWorking);
+
+    pCheckInItem.setEnabled(hasWorking);
+    pCheckOutItem.setEnabled(hasCheckedIn);
+    
+    pRevokeItem.setEnabled(hasWorking && !hasCheckedIn);
+
     pRemoveSecondaryMenu.setEnabled(false);
     pDestroyItem.setEnabled(false);
 
@@ -709,37 +716,24 @@ class JNodeViewerPanel
 	
 	/* clear existing items */ 
 	{
-	  pLinkMenu.removeAll();
-	  
 	  pRemoveSecondaryMenu.removeAll();
 	  pRemoveSecondarySeqs.clear();
 	}
 	
 	/* rebuild items */ 
 	{
-	  for(String catagory : master.getMasterMgrClient().getLinkCatagories().keySet()) {
-	    item = new JMenuItem(catagory);
-	    item.setActionCommand("link:" + catagory);
-	    item.addActionListener(this);
-	    pLinkMenu.add(item);
-	  }
-	  pLinkMenu.setEnabled(pLinkMenu.getItemCount() > 0);
-	
-	  if(pPrimary != null) {
-	    NodeDetails details = pPrimary.getNodeStatus().getDetails();
-	    if(details != null) {
-	      NodeMod mod = details.getWorkingVersion();
-	      if(mod != null) {
-		for(FileSeq fseq : mod.getSecondarySequences()) {
-		  String fname = fseq.toString();
-		  
-		  item = new JMenuItem(fname);
-		  item.setActionCommand("remove-secondary:" + fname);
-		  item.addActionListener(this);
-		  pRemoveSecondaryMenu.add(item);
-		  
-		  pRemoveSecondarySeqs.put(fname, fseq);
-		}
+	  if(details != null) {
+	    NodeMod mod = details.getWorkingVersion();
+	    if(mod != null) {
+	      for(FileSeq fseq : mod.getSecondarySequences()) {
+		String fname = fseq.toString();
+		
+		item = new JMenuItem(fname);
+		item.setActionCommand("remove-secondary:" + fname);
+		item.addActionListener(this);
+		pRemoveSecondaryMenu.add(item);
+		
+		pRemoveSecondarySeqs.put(fname, fseq);
 	      }
 	    }
 	  }
@@ -755,39 +749,6 @@ class JNodeViewerPanel
       catch(PipelineException ex) {
 	master.showErrorDialog(ex);
       }
-    }
-  }
-
-  /**
-   * Update the link menu.
-   */ 
-  public void 
-  updateLinkMenu() 
-  {
-    UIMaster master = UIMaster.getInstance(); 
-    try {
-      pLinkCatagoryMenu.removeAll();
-      pLinkCatagoryMenu.setEnabled(false);
-    
-      for(String catagory : master.getMasterMgrClient().getLinkCatagories().keySet()) {
-	JMenuItem item = new JMenuItem(catagory);
-	item.setActionCommand("link-catagory:" + catagory);
-	item.addActionListener(this);
-	item.setEnabled(!pSelectedLink.getCatagory().getName().equals(catagory));
-
-	pLinkCatagoryMenu.add(item);
-      }
-      pLinkCatagoryMenu.setEnabled(pLinkCatagoryMenu.getItemCount() > 0);
-    }
-    catch(PipelineException ex) {
-      master.showErrorDialog(ex);
-    }
-    
-    {
-      LinkRelationship relationship = pSelectedLink.getRelationship();
-      pLinkNoneRelationshipItem.setEnabled(relationship != LinkRelationship.None);
-      pLinkOneToOneRelationshipItem.setEnabled(relationship != LinkRelationship.OneToOne);
-      pLinkAllRelationshipItem.setEnabled(relationship != LinkRelationship.All);
     }
   }
 
@@ -1483,6 +1444,7 @@ class JNodeViewerPanel
   ) 
   {
     pCanvas.requestFocusInWindow();
+    pMousePos = e.getPoint();
   }
   
   /**
@@ -1507,7 +1469,9 @@ class JNodeViewerPanel
   )
   {
     int mods = e.getModifiersEx();
-    Object under = objectAtMousePos(e.getX(), e.getY());
+
+    pMousePos = e.getPoint();
+    Object under = objectAtMousePos(pMousePos);
 
     /* mouse press is over a pickable object viewer node */ 
     if(under != null) {
@@ -1638,20 +1602,25 @@ class JNodeViewerPanel
 	    }
 	    else if(under instanceof ViewerLinkRelationship) {
 	      ViewerLinkRelationship lunder = (ViewerLinkRelationship) under;
+	      ViewerNode vunder = lunder.getViewerNode();
+	      NodeDetails details = vunder.getNodeStatus().getDetails();
+	      if((details != null) && (details.getWorkingVersion() != null)) {
+		{
+		  HashMap<NodePath,ViewerNode> changed = new HashMap<NodePath,ViewerNode>();
+		  for(ViewerNode vnode : clearSelection()) 
+		    changed.put(vnode.getNodePath(), vnode);
+		  for(ViewerNode vnode : primarySelect(vunder)) 
+		    changed.put(vnode.getNodePath(), vnode);
+		  for(ViewerNode vnode : changed.values()) 
+		    vnode.update();
+		}
 
-	      {
-		HashMap<NodePath,ViewerNode> changed = new HashMap<NodePath,ViewerNode>();
-		for(ViewerNode vnode : clearSelection()) 
-		  changed.put(vnode.getNodePath(), vnode);
-		for(ViewerNode vnode : primarySelect(lunder.getViewerNode())) 
-		  changed.put(vnode.getNodePath(), vnode);
-		for(ViewerNode vnode : changed.values()) 
-		  vnode.update();
+		pSelectedLink = lunder.getLink();
+		pLinkPopup.show(e.getComponent(), e.getX(), e.getY());
 	      }
-
-	      pSelectedLink = lunder.getLink();
-	      updateLinkMenu();
-	      pLinkPopup.show(e.getComponent(), e.getX(), e.getY());
+	      else {
+		Toolkit.getDefaultToolkit().beep();
+	      }
 	    }
 	  }
 	}
@@ -1912,50 +1881,68 @@ class JNodeViewerPanel
     UserPrefs prefs = UserPrefs.getInstance();
     Object under = objectAtMousePos(pMousePos);
 
+    boolean undefined = false;
+
     /* node actions */
     if(under instanceof ViewerNode) {
       ViewerNode vunder = (ViewerNode) under;
-
+      
       for(ViewerNode vnode : primarySelect(vunder)) 
 	vnode.update();
       
       if((prefs.getNodeDetails() != null) &&
 	 prefs.getNodeDetails().wasPressed(e))
 	doDetails();
-
+      
       else if((prefs.getNodeMakeRoot() != null) &&
-	 prefs.getNodeMakeRoot().wasPressed(e))
+	      prefs.getNodeMakeRoot().wasPressed(e))
 	doMakeRoot();
       else if((prefs.getNodeAddRoot() != null) &&
-	 prefs.getNodeAddRoot().wasPressed(e))
+	      prefs.getNodeAddRoot().wasPressed(e))
 	doAddRoot();
       else if((prefs.getNodeReplaceRoot() != null) &&
-	 prefs.getNodeReplaceRoot().wasPressed(e))
+	      prefs.getNodeReplaceRoot().wasPressed(e))
 	doReplaceRoot();
       else if((prefs.getNodeRemoveRoot() != null) &&
-	 prefs.getNodeRemoveRoot().wasPressed(e))
+	      prefs.getNodeRemoveRoot().wasPressed(e))
 	doRemoveRoot();
       else if((prefs.getNodeRemoveAllRoots() != null) &&
-	 prefs.getNodeRemoveAllRoots().wasPressed(e))
+	      prefs.getNodeRemoveAllRoots().wasPressed(e))
 	doRemoveAllRoots();
+      
+      else if((prefs.getNodeEdit() != null) &&
+	      prefs.getNodeEdit().wasPressed(e))
+	doEdit();
 
+      else if((prefs.getNodeLink() != null) &&
+	      prefs.getNodeLink().wasPressed(e))
+	doLink();
+      else if((prefs.getNodeUnlink() != null) &&
+	      prefs.getNodeUnlink().wasPressed(e))
+	doUnlink();
+      
       else if((prefs.getNodeRename() != null) &&
-	 prefs.getNodeRename().wasPressed(e))
+	      prefs.getNodeRename().wasPressed(e))
 	doRename();
       else if((prefs.getNodeClone() != null) &&
-	 prefs.getNodeClone().wasPressed(e))
+	      prefs.getNodeClone().wasPressed(e))
 	doClone();
-
+      
+      else if((prefs.getNodeCheckIn() != null) &&
+	      prefs.getNodeCheckIn().wasPressed(e))
+	doCheckIn();
+      else if((prefs.getNodeCheckOut() != null) &&
+	      prefs.getNodeCheckOut().wasPressed(e))
+	doCheckOut();
+      
       else if((prefs.getNodeRevoke() != null) &&
-	 prefs.getNodeRevoke().wasPressed(e))
+	      prefs.getNodeRevoke().wasPressed(e))
 	doRevoke();
-
-      else {
-	for(ViewerNode vnode : clearSelection()) 
-	  vnode.update();
-      }
+      
+      else 
+	undefined = true;
     }
-
+    
     /* link actions */
     else if(under instanceof ViewerLinkRelationship) {
       ViewerLinkRelationship lunder = (ViewerLinkRelationship) under;
@@ -1971,46 +1958,63 @@ class JNodeViewerPanel
       }
       
       pSelectedLink = lunder.getLink();
-
-      // ...
-
-//       else {
-// 	for(ViewerNode vnode : clearSelection()) 
-// 	  vnode.update();
-//       }
+      
+      if((prefs.getLinkEdit() != null) &&
+	 prefs.getLinkEdit().wasPressed(e))
+	doLinkEdit();
+      else if((prefs.getLinkUnlink() != null) &&
+	 prefs.getLinkUnlink().wasPressed(e))
+	doLinkUnlink();
+      else 
+	undefined = true;
     }
     
     /* panel actions */
     else {
-      if((prefs.getRegisterNewNode() != null) &&
-	 prefs.getRegisterNewNode().wasPressed(e))
+      if((prefs.getUpdateNodes() != null) &&
+	 prefs.getUpdateNodes().wasPressed(e))
+	doUpdate();
+      else if((prefs.getRegisterNewNode() != null) &&
+	      prefs.getRegisterNewNode().wasPressed(e))
 	doRegister();
-
+      
       else if((prefs.getCameraCenter() != null) &&
-	 prefs.getCameraCenter().wasPressed(e))
+	      prefs.getCameraCenter().wasPressed(e))
 	doCenter();
       else if((prefs.getCameraFrameSelection() != null) &&
-	 prefs.getCameraFrameSelection().wasPressed(e))
+		prefs.getCameraFrameSelection().wasPressed(e))
 	doFrameSelection();
       else if((prefs.getCameraFrameAll() != null) &&
-	 prefs.getCameraFrameAll().wasPressed(e))
+	      prefs.getCameraFrameAll().wasPressed(e))
 	doFrameAll();
-
+      
       else if((prefs.getAutomaticExpandNodes() != null) &&
-	 prefs.getAutomaticExpandNodes().wasPressed(e))
+	      prefs.getAutomaticExpandNodes().wasPressed(e))
 	doAutomaticExpand();
       else if((prefs.getCollapseAllNodes() != null) &&
-	 prefs.getCollapseAllNodes().wasPressed(e))
+	      prefs.getCollapseAllNodes().wasPressed(e))
 	doCollapseAll();
       else if((prefs.getExpandAllNodes() != null) &&
-	 prefs.getExpandAllNodes().wasPressed(e))
+	      prefs.getExpandAllNodes().wasPressed(e))
 	doExpandAll();
-
+      
       else if((prefs.getShowHideDownstreamNodes() != null) &&
-	 prefs.getShowHideDownstreamNodes().wasPressed(e))
+		prefs.getShowHideDownstreamNodes().wasPressed(e))
 	doShowHideDownstream();
+      
+      else
+	undefined = true;
+    } 
 
-      else {
+    if(undefined) {
+      switch(e.getKeyCode()) {
+      case KeyEvent.VK_SHIFT:
+      case KeyEvent.VK_ALT:
+      case KeyEvent.VK_CONTROL:
+	break;
+      
+      default:
+	Toolkit.getDefaultToolkit().beep();
 	for(ViewerNode vnode : clearSelection()) 
 	  vnode.update();
       }
@@ -2089,22 +2093,31 @@ class JNodeViewerPanel
     else if(cmd.equals("edit"))
       doEdit();
     else if(cmd.startsWith("edit-with:"))
-      doEditWith(cmd.substring(10));
+      doEditWith(cmd.substring(10));    
+    else if(cmd.equals("link")) 
+      doLink();    
+    else if(cmd.equals("unlink")) 
+      doUnlink(); 
     else if(cmd.equals("rename"))
       doRename();
     else if(cmd.equals("clone"))
       doClone();
-    else if(cmd.equals("revoke"))
-      doRevoke();
     else if(cmd.equals("check-in"))
       doCheckIn();
     else if(cmd.equals("check-out"))
       doCheckOut();
+    else if(cmd.equals("revoke"))
+      doRevoke();
 
+    /* link menu events */ 
+    else if(cmd.equals("link-edit")) 
+      doLinkEdit(); 
+    else if(cmd.equals("link-unlink"))
+      doLinkUnlink();
 
-    // ...
-    
     /* panel menu events */ 
+    else if(cmd.equals("update"))
+      doUpdate();
     else if(cmd.equals("register"))
       doRegister();
     else if(cmd.equals("center"))
@@ -2134,6 +2147,19 @@ class JNodeViewerPanel
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C T I O N S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Update the status of all nodes.
+   */ 
+  private void
+  doUpdate()
+  { 
+    clearSelection();
+    updateRoots();
+  }
+  
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -2218,7 +2244,7 @@ class JNodeViewerPanel
   /**
    * Edit/View the primary selected node with the editor specified by the node version.
    */ 
-  public void 
+  private void 
   doEdit() 
   {
     if(pPrimary != null) {
@@ -2242,7 +2268,7 @@ class JNodeViewerPanel
   /**
    * Edit/View the primary selected node with the given editor.
    */ 
-  public void 
+  private void 
   doEditWith
   (
    String editor
@@ -2266,13 +2292,84 @@ class JNodeViewerPanel
       vnode.update();
   }
 
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Create (or modify) a link from the secondary selected nodes to the primary selected node.
+   */ 
+  private void 
+  doLink() 
+  {
+    if(pPrimary != null) {
+      NodeDetails details = pPrimary.getNodeStatus().getDetails();
+      if(details.getWorkingVersion() != null) {
+	
+	TreeSet<String> sources = new TreeSet<String>(); 
+	for(ViewerNode vnode : pSelected.values()) {
+	  NodeDetails sdetails = vnode.getNodeStatus().getDetails();
+	  if(sdetails.getWorkingVersion() != null) 
+	    sources.add(sdetails.getName());
+	}
+	sources.remove(details.getName());
+	
+	if(!sources.isEmpty()) {  
+	  pCreateLinkDialog.updateLink();
+	  pCreateLinkDialog.setVisible(true);
+	  
+	  if(pCreateLinkDialog.wasConfirmed()) {
+	    LinkCatagory lcat = pCreateLinkDialog.getLinkCatagory();
+	    LinkRelationship rel = pCreateLinkDialog.getLinkRelationship();
+	    Integer offset = pCreateLinkDialog.getFrameOffset();
+	    
+	    LinkTask task = 
+	      new LinkTask(details.getName(), sources, lcat, rel, offset);
+	    task.start();
+	  }
+    	}
+      }
+    }
+    
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();    
+  }
+
+
+  /**
+   * Unlink the secondary selected nodes from the primary selected node.
+   */ 
+  private void 
+  doUnlink()
+  {
+    if(pPrimary != null) {
+      NodeDetails details = pPrimary.getNodeStatus().getDetails();
+      if(details.getWorkingVersion() != null) {
+	
+	TreeSet<String> sources = new TreeSet<String>(); 
+	for(ViewerNode vnode : pSelected.values()) {
+	  NodeDetails sdetails = vnode.getNodeStatus().getDetails();
+	  if(sdetails.getWorkingVersion() != null) 
+	    sources.add(sdetails.getName());
+	}
+	sources.remove(details.getName());
+	
+	if(!sources.isEmpty()) {    
+	  UnlinkTask task = new UnlinkTask(details.getName(), sources);
+	  task.start();
+	}
+      }
+    }
+
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();    
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
 
   /**
    * Rename the primary seleted node.
    */ 
-  public void 
+  private void 
   doRename() 
   {
     if(pPrimary != null) {
@@ -2301,7 +2398,7 @@ class JNodeViewerPanel
   /**
    * Register a new node based on the primary selected node.
    */ 
-  public void 
+  private void 
   doClone() 
   {
     if(pPrimary != null) {
@@ -2333,7 +2430,7 @@ class JNodeViewerPanel
   /**
    * Register a new node.
    */ 
-  public void 
+  private void 
   doRegister() 
   {
     pRegisterDialog.updateNode(pAuthor, pView, null);
@@ -2351,7 +2448,7 @@ class JNodeViewerPanel
   /**
    * Revoke the primary selected node.
    */ 
-  public void 
+  private void 
   doRevoke() 
   {
     if(pPrimary != null) {
@@ -2381,7 +2478,7 @@ class JNodeViewerPanel
   /**
    * Check-in the primary selected node.
    */ 
-  public void 
+  private void 
   doCheckIn() 
   {
     if(pPrimary != null) {
@@ -2414,7 +2511,7 @@ class JNodeViewerPanel
   /**
    * Check-out the primary selected node.
    */ 
-  public void 
+  private void 
   doCheckOut() 
   {
     if(pPrimary != null) {
@@ -2440,34 +2537,97 @@ class JNodeViewerPanel
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Edit an existing link.
+   */ 
+  private void 
+  doLinkEdit()
+  {
+    if(pPrimary != null) {
+      NodeDetails details = pPrimary.getNodeStatus().getDetails();
+      if(details.getWorkingVersion() != null) {
+	if((pSelectedLink != null) && (pSelectedLink instanceof LinkMod)) {
+	  LinkMod link = (LinkMod) pSelectedLink;
+	  pEditLinkDialog.updateLink(link);
+	  pEditLinkDialog.setVisible(true);
+	  
+	  if(pEditLinkDialog.wasConfirmed()) {
+	    LinkCatagory lcat = pEditLinkDialog.getLinkCatagory();
+	    LinkRelationship rel = pEditLinkDialog.getLinkRelationship();
+	    Integer offset = pEditLinkDialog.getFrameOffset();
+	    
+	    TreeSet<String> sources = new TreeSet<String>();
+	    sources.add(link.getName());
+	    
+	    LinkTask task = 
+	      new LinkTask(details.getName(), sources, lcat, rel, offset);
+	    task.start();
+	  }
+	}
+      }
+    }
+    
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();    
+  }
+
+  /**
+   * Unlink nodes of the currently selected link.
+   */ 
+  private void 
+  doLinkUnlink()
+  {
+    if(pPrimary != null) {
+      NodeDetails details = pPrimary.getNodeStatus().getDetails();
+      if(details.getWorkingVersion() != null) {
+	if((pSelectedLink != null) && (pSelectedLink instanceof LinkMod)) {
+	  LinkMod link = (LinkMod) pSelectedLink;
+	  
+	  TreeSet<String> sources = new TreeSet<String>();
+	  sources.add(link.getName());
+
+	  UnlinkTask task = new UnlinkTask(details.getName(), sources);
+	  task.start();
+	}
+      }
+    }
+
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();    
+  }
+
  
   /*----------------------------------------------------------------------------------------*/
 
   /**
    * Move the camera so that it is centered on current mouse position.
    */ 
-  public void 
+  private void 
   doCenter() 
   {
-    Point3d eyePos = new Point3d();
-    Point3d pos    = new Point3d();
-
-    pCanvas.getCenterEyeInImagePlate(eyePos);
-    pCanvas.getPixelLocationInImagePlate(pMousePos.x, pMousePos.y, pos);
-
-    Transform3D xform = new Transform3D();
-    pCanvas.getImagePlateToVworld(xform);
-    xform.transform(eyePos);
-    xform.transform(pos);
-
-    Vector3d dir = new Vector3d(pos);
-    dir.sub(eyePos);
-    dir.scale((eyePos.z-1.0) / dir.z);
-
-    Point3d p = new Point3d(eyePos);
-    p.sub(dir);
-
-    centerOnPos(new Point2d(p.x, p.y));
+    if(pMousePos != null) {
+      Point3d eyePos = new Point3d();
+      Point3d pos    = new Point3d();
+      
+      pCanvas.getCenterEyeInImagePlate(eyePos);
+      pCanvas.getPixelLocationInImagePlate(pMousePos.x, pMousePos.y, pos);
+      
+      Transform3D xform = new Transform3D();
+      pCanvas.getImagePlateToVworld(xform);
+      xform.transform(eyePos);
+      xform.transform(pos);
+      
+      Vector3d dir = new Vector3d(pos);
+      dir.sub(eyePos);
+      dir.scale((eyePos.z-1.0) / dir.z);
+    
+      Point3d p = new Point3d(eyePos);
+      p.sub(dir);
+      
+      centerOnPos(new Point2d(p.x, p.y));
+    }
   }
 
   /**
@@ -2499,7 +2659,7 @@ class JNodeViewerPanel
   /**
    * Move the camera to frame the bounds of the currently selected nodes.
    */ 
-  public void 
+  private void 
   doFrameSelection() 
   {
     frameNodes(pSelected.values());
@@ -2508,7 +2668,7 @@ class JNodeViewerPanel
   /**
    * Move the camera to frame all active nodes.
    */ 
-  public void 
+  private void 
   doFrameAll() 
   {
     frameNodes(pNodePool.getActiveViewerNodes());
@@ -2797,7 +2957,14 @@ class JNodeViewerPanel
 	UIMaster master = UIMaster.getInstance();
 	if(master.beginPanelOp("Launching Node Editor...")) {
 	  try {
-	    
+	    NodeMod mod = null;
+	    if(pNodeCommon instanceof NodeMod) 
+	      mod = (NodeMod) pNodeCommon;
+
+	    NodeVersion vsn = null;
+	    if(pNodeCommon instanceof NodeVersion) 
+	      vsn = (NodeVersion) pNodeCommon;
+
 	    /* create an editor plugin instance */ 
 	    BaseEditor editor = null;
 	    {
@@ -2810,7 +2977,7 @@ class JNodeViewerPanel
 	      
 	      editor = Plugins.newEditor(ename);
 	    }
-	    
+
 	    /* lookup the toolset environment */ 
 	    TreeMap<String,String> env = null;
 	    {
@@ -2820,14 +2987,38 @@ class JNodeViewerPanel
 		  ("No toolset was specified for node (" + pNodeCommon.getName() + ")!");
 
 	      MasterMgrClient client = master.getMasterMgrClient();
-	      env = client.getToolsetEnvironment(pAuthor, pView, tname);
+	      
+	      String view = null;
+	      if(mod != null)
+		view = pView; 
+
+	      /* passes pAuthor so that WORKING will correspond to the current view */ 
+	      env = client.getToolsetEnvironment(pAuthor, view, tname);
+
+	      /* override these since the editor will be run as the current user */ 
+	      env.put("HOME", PackageInfo.sHomeDir + "/" + PackageInfo.sUser);
+	      env.put("USER", PackageInfo.sUser);
 	    }
 	    
 	    /* get the primary file sequence */ 
-	    File path = new File(PackageInfo.sWorkDir, 
-				 pAuthor + "/" + pView + "/" + pNodeCommon.getName());
-	    FileSeq fseq = new FileSeq(path.getParent(), 
-				       pNodeCommon.getPrimarySequence());
+	    FileSeq fseq = null;
+	    {
+	      String path = null;
+	      if(mod != null) {
+		File wpath = new File(PackageInfo.sWorkDir, 
+				      pAuthor + "/" + pView + "/" + pNodeCommon.getName());
+		path = wpath.getParent();
+	      }
+	      else if(vsn != null) {
+		path = (PackageInfo.sRepoDir + "/" + 
+			vsn.getName() + "/" + vsn.getVersionID());
+	      }
+	      else {
+		assert(false);
+	      }
+	  
+	      fseq = new FileSeq(path, pNodeCommon.getPrimarySequence());
+	    }
 	    
 	    /* start the editor */ 
 	    proc = editor.launch(fseq, env, PackageInfo.sTempDir);	   
@@ -2857,6 +3048,107 @@ class JNodeViewerPanel
     private String      pEditorName;
   }
 
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  /** 
+   * Create (or modify) a link from the given source nodes to the target node.
+   */ 
+  private
+  class LinkTask
+    extends Thread
+  {
+    public 
+    LinkTask
+    (
+     String target, 
+     TreeSet<String> sources, 
+     LinkCatagory lcat, 
+     LinkRelationship rel, 
+     Integer offset
+    ) 
+    {
+      pTarget = target;
+      pSources = sources;
+      pCatagory = lcat; 
+      pRelationship = rel;
+      pFrameOffset = offset;
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Linking Nodes...")) {
+	try {
+	  for(String source : pSources) {
+	    master.getMasterMgrClient().link(pAuthor, pView, pTarget, source, 
+					     pCatagory, pRelationship, pFrameOffset);
+	  }
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	updateRoots();
+      }
+    }
+    
+    private String pTarget;
+    private TreeSet<String> pSources;
+    private LinkCatagory pCatagory; 
+    private LinkRelationship pRelationship; 
+    private Integer pFrameOffset;
+  }
+  
+  /** 
+   * Unlink the given source nodes from the target node.
+   */ 
+  private
+  class UnlinkTask
+    extends Thread
+  {
+    public 
+    UnlinkTask
+    (
+     String target, 
+     TreeSet<String> sources
+    ) 
+    {
+      pTarget = target;
+      pSources = sources;
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Unlinking Nodes...")) {
+	try {
+	  for(String source : pSources) {
+	    master.getMasterMgrClient().unlink(pAuthor, pView, pTarget, source);
+	  }
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	updateRoots();
+      }
+    }
+    
+    private String pTarget;
+    private TreeSet<String> pSources;
+  }
+  
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -3297,13 +3589,14 @@ class JNodeViewerPanel
   /**
    * The node popup menu items.
    */ 
+  private JMenuItem  pLinkItem;
+  private JMenuItem  pUnlinkItem;
+  private JMenuItem  pRenameItem;
+  private JMenuItem  pCheckInItem;
+  private JMenuItem  pCheckOutItem;
+  private JMenuItem  pRevokeItem;
   private JMenuItem  pDestroyItem;
 
-  /**
-   * The link node submenu.
-   */ 
-  private JMenu  pLinkMenu;
-  
   /**
    * The remove secondary node submenu.
    */ 
@@ -3327,13 +3620,6 @@ class JNodeViewerPanel
    * The link type submenu.
    */ 
   private JMenu  pLinkCatagoryMenu;
-
-  /**
-   * The link relationship items.
-   */ 
-  private JMenuItem  pLinkNoneRelationshipItem;
-  private JMenuItem  pLinkOneToOneRelationshipItem;
-  private JMenuItem  pLinkAllRelationshipItem;
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -3430,5 +3716,16 @@ class JNodeViewerPanel
    * The check-out node dialog.
    */ 
   private JCheckOutDialog  pCheckOutDialog;
+
+
+  /**
+   * The link creation dialog.
+   */ 
+  private JCreateLinkDialog  pCreateLinkDialog;
+
+  /**
+   * The link editor dialog.
+   */ 
+  private JEditLinkDialog  pEditLinkDialog;
 
 }
