@@ -1,4 +1,4 @@
-// $Id: JResourceUsageHistoryDialog.java,v 1.1 2005/01/30 02:05:22 jim Exp $
+// $Id: JResourceUsageHistoryDialog.java,v 1.2 2005/01/30 03:08:57 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -52,13 +52,14 @@ class JResourceUsageHistoryDialog
     {
       pSamples = new TreeMap<String,ResourceSampleBlock>();
 
-      pRefreshGraph = true;
+      pRefreshTimeScale = true;
+      pRefreshGraph     = true;
 
       pLoadDLs   = new TreeMap<String,Integer>();
       pLoadSpans = new TreeMap<String,Vector2d>();
 
       pTranslate = new Point2d();
-      pMinScale  = new Vector2d(0.1, 1.0);
+      pMinScale  = new Vector2d(0.1, 25.0);
       pScale     = new Vector2d(pMinScale);
 
       pBorder = new Vector2d(200.0, 56.0);
@@ -146,16 +147,8 @@ class JResourceUsageHistoryDialog
     pSamples.clear();
     pSamples.putAll(samples);
 
-    refresh();
-  }
-
-  /**
-   * Refresh the graph geometry display list.
-   */ 
-  private void
-  refresh()
-  {
-    pRefreshGraph = true;
+    pRefreshTimeScale = true;
+    pRefreshGraph     = true;
     pCanvas.repaint();
   }
 
@@ -468,340 +461,377 @@ class JResourceUsageHistoryDialog
     }
 
     /* render the time scale */ 
+    gl.glPushMatrix();
     {
-      Point2d a = new Point2d(-pGraphArea.x(), pGraphArea.y());
-      Point2d b = new Point2d(pGraphArea.x(), pGraphArea.y()+pBorder.y());
-      Vector2d s = new Vector2d(a, b);
-
-      gl.glBegin(gl.GL_QUADS);
+      /* background */ 
       {
-	gl.glColor3d(0.4, 0.4, 0.4);
+	Point2d a = new Point2d(-pGraphArea.x(), pGraphArea.y());
+	Point2d b = new Point2d(pGraphArea.x(), pGraphArea.y()+pBorder.y());
+	Vector2d s = new Vector2d(a, b);
 	
-	gl.glVertex2d(a.x(), b.y()); 
-	gl.glVertex2d(b.x(), b.y()); 
-	gl.glVertex2d(b.x(), a.y()); 
-	gl.glVertex2d(a.x(), a.y()); 
-      }
-      gl.glEnd();
-
-      gl.glBegin(gl.GL_LINES);
-      {
-	gl.glColor3d(1.0, 1.0, 1.0);
-
- 	gl.glVertex2d(a.x(), a.y());
- 	gl.glVertex2d(b.x(), a.y());
-      }
-      gl.glEnd();
-
-      /* offset and range of tick mark geometry */ 
-      double offset = ((double) (pStartDay.getTime() - pMinTime.getTime())) / 60000.0;
-      double range  = ((double) (pEndDay.getTime() - pStartDay.getTime())) / 60000.0;
-
-      /* scale of tick marks */ 
-      boolean sized = false;
-      double sfive    = 0.25;
-      double sfifteen = 0.5;
-      double shour    = 0.5;
-      double sthree   = 0.5;
-      double ssix     = 0.5;
-      double stwelve  = 0.5;
-
-      /* compute the level of detail for tick marks and labels */ 
-      TickLevel level = TickLevel.OneDay;
-      int binc = 1440;
-      if(pScale.x() > (10.0/1.0)) {
-	level = TickLevel.OneMinute;
-	binc = 15;
-      }
-      else if(pScale.x() > (10.0/2.5)) {
-	level = TickLevel.FiveMinutes;
-	binc = 30;	  
-      }
-      else if(pScale.x() > (10.0/5.0)) {
-	level = TickLevel.FiveMinutes;
-	binc = 60;
-      }
-      else if(pScale.x() > (10.0/15.0)) {
-	level = TickLevel.FifteenMinutes;
-	binc = 180;
-      }
-      else if(pScale.x() > (10.0/60.0)) {
-	level = TickLevel.OneHour;
-	binc = 360;
-      }
-      else if(pScale.x() > (10.0/180.0)) {
-	level = TickLevel.ThreeHours;
-	binc = 720;
-      }
-
-      /* tick marks and graph bars */ 
-      gl.glPushMatrix();
-      {
-	gl.glTranslated(pTranslate.x(), pGraphArea.y(), 0.0);
-
-	Point2d center = pBBox.getCenter();
-	gl.glScaled(pScale.x(), pBorder.y(), 1.0);
-	gl.glTranslated(-center.x(), 0.0, 0.0);
-	
-	int mins = ((int) range) + 1440;
-
-	/* graph time bars */ 
- 	{	  
- 	  gl.glColor3d(0.8, 0.8, 0.8);
- 	  gl.glBegin(gl.GL_LINES);
- 	  {
- 	    double y = (pGraphArea.y() * -2.0) / pBorder.y();
-
- 	    int wk;
- 	    for(wk=0; wk<=mins; wk+=binc) {
- 	      double x = ((double) wk) + offset;
- 	      gl.glVertex2d(x, 0.0);
- 	      gl.glVertex2d(x, y);
- 	    }
- 	  }
- 	  gl.glEnd();
- 	}
-
-	switch(level) {
-	/* 1-minute tick marks */ 
-	case OneMinute:     
-	  {
-	    sized = true;
-
-	    gl.glPushMatrix();
-	    {
-	      gl.glScaled(1.0, 0.125, 1.0);
-	      gl.glTranslated(offset, 0.0, 0.0);
-	      
-	      int wk;
-	      for(wk=0; wk<mins; wk+=60) {
-		gl.glCallList(pOneMinDL);
-		gl.glTranslated(60.0, 0.0, 0.0);
-	      }
-	    }
-	    gl.glPopMatrix();
-	  }
-
-	/* 5-minute tick marks */ 
-	case FiveMinutes:
-	  {
-	    if(!sized) {
-	      sfive    = 0.125;
-	      sfifteen = 0.25;
-	    }
-
-	    sized = true;
-
-	    gl.glPushMatrix();
-	    {
-	      gl.glScaled(1.0, sfive, 1.0);
-	      gl.glTranslated(offset, 0.0, 0.0);
-	      
-	      int wk;
-	      for(wk=0; wk<mins; wk+=60) {
-		gl.glCallList(pFiveMinDL);
-		gl.glTranslated(60.0, 0.0, 0.0);
-	      }
-	    }
-	    gl.glPopMatrix();
-	  }
-	
-	/* 15-minute tick marks */ 
-	case FifteenMinutes:
-	  {   
-	    if(!sized) {
-	      sfifteen = 0.125;
-	      shour    = 0.25;
-	    }
-
-	    sized = true;
-
-	    gl.glPushMatrix();
-	    {
-	      gl.glScaled(1.0, sfifteen, 1.0);
-	      gl.glTranslated(offset, 0.0, 0.0);
-	      
-	      int wk;
-	      for(wk=0; wk<mins; wk+=60) {
-		gl.glCallList(pFifteenMinDL);
-		gl.glTranslated(60.0, 0.0, 0.0);
-	      }
-	    }
-	    gl.glPopMatrix();
-	  }	  
-
-	/* 1-hour tick marks */ 
-	case OneHour:
-	case ThreeHours:
-	  {
-	    int hinc = 60;
-	    if(!sized) {
-	      switch(level) {
-	      case OneHour:
-		shour   = 0.125;
-		sthree  = 0.25;
-		hinc    = 60;
-		break;
-
-	      case ThreeHours:
-		shour   = 0.125;
-		sthree  = 0.125;
-		ssix    = 0.25;
-		hinc    = 180;
-	      }
-	    }
-	    
-	    sized = true;
-	    
-	    gl.glBegin(gl.GL_LINES);
-	    {
-	      gl.glColor3d(1.0, 1.0, 1.0);
-
-	      int wk;
-	      for(wk=0; wk<mins; wk+=hinc) {
-		int hour = wk / 60;
-		
-		double y = shour;
-		if((hour % 12) == 0) 
-		  y = stwelve;
-		else if((hour % 6) == 0) 
-		  y = ssix;
-		else if((hour % 3) == 0) 
-		  y = sthree;
-
-		double x = ((double) wk) + offset;
-		gl.glVertex2d(x, 0.0);
-		gl.glVertex2d(x, y);
-	      }
-	    }
-	    gl.glEnd();
-	  }
-	}
-
-	/* 1-day tick marks */ 
+	gl.glBegin(gl.GL_QUADS);
 	{
-	  gl.glLineWidth(2.0f);
-	  gl.glBegin(gl.GL_LINES);
-	  {
-	    gl.glColor3d(1.0, 1.0, 1.0);
-
-	    int wk;
-	    for(wk=0; wk<=mins; wk+=1440) {
-	      double x = ((double) wk) + offset;
-	      gl.glVertex2d(x, 0.0);
-	      gl.glVertex2d(x, 1.0);
-	    }
-	  }
-	  gl.glEnd();
-	  gl.glLineWidth(1.0f);
-	}
-      }
-      gl.glPopMatrix();
-
-      /* time scale labels */
-      gl.glPushMatrix();
-      try {
-	GeometryMgr mgr = GeometryMgr.getInstance();
-
-	Date endDate = null;
-	{
-	  Calendar cal = Calendar.getInstance();
-	  cal.setTime(pEndDay);
-	  cal.add(Calendar.DAY_OF_YEAR, 1);
-	  endDate = cal.getTime();
-	}
-
-	gl.glTranslated(pTranslate.x(), pGraphArea.y(), 0.0);
-
-	Point2d center = pBBox.getCenter();
- 	gl.glScaled(pScale.x(), pBorder.y(), 1.0);
-	gl.glTranslated(-center.x(), 0.0, 0.0);
-	
-	/* date labels */ 
-	gl.glPushMatrix();
-	{
-	  Calendar cal = Calendar.getInstance();
-	  cal.setTime(pStartDay);
+	  gl.glColor3d(0.4, 0.4, 0.4);
 	  
-	  gl.glTranslated(offset, 0.775, 0.0);
+	  gl.glVertex2d(a.x(), b.y()); 
+	  gl.glVertex2d(b.x(), b.y()); 
+	  gl.glVertex2d(b.x(), a.y()); 
+	  gl.glVertex2d(a.x(), a.y()); 
+	}
+	gl.glEnd();
+	
+	gl.glBegin(gl.GL_LINES);
+	{
+	  gl.glColor3d(1.0, 1.0, 1.0);
 	  
-	  while(cal.getTime().compareTo(endDate) < 0) {
-	    String text = sDateFormat.format(cal.getTime());
-	    int dl = mgr.getTextDL(gl,  "CharterBTRoman", text, 
-				   GeometryMgr.TextAlignment.Left, 0.05);
-	    
-	    gl.glPushMatrix();
-	    {
-	      double ts = 0.275*pBorder.y();
-	      gl.glScaled(ts/pScale.x(), ts/pBorder.y(), 1.0);
-	      gl.glCallList(dl);
-	    }
-	    gl.glPopMatrix();
-	    
-	    gl.glTranslated(1440.0, 0.0, 0.0);
-	    
+	  gl.glVertex2d(a.x(), a.y());
+	  gl.glVertex2d(b.x(), a.y());
+	}
+	gl.glEnd();
+      }
+
+      gl.glTranslated(pTranslate.x(), pGraphArea.y(), 0.0);
+      
+      if(pRefreshTimeScale) {
+	/* offset and range of tick mark geometry */ 
+	double offset = ((double) (pStartDay.getTime() - pMinTime.getTime())) / 60000.0;
+	double range  = ((double) (pEndDay.getTime() - pStartDay.getTime())) / 60000.0;
+	
+	/* scale of tick marks */ 
+	boolean sized = false;
+	double sfive    = 0.25;
+	double sfifteen = 0.5;
+	double shour    = 0.5;
+	double sthree   = 0.5;
+	double ssix     = 0.5;
+	double stwelve  = 0.5;
+	
+	/* compute the level of detail for tick marks and labels */ 
+	TickLevel level = TickLevel.OneDay;
+	int binc = 1440;
+	if(pScale.x() > (10.0/1.0)) {
+	  level = TickLevel.OneMinute;
+	  binc = 15;
+	}
+	else if(pScale.x() > (10.0/2.5)) {
+	  level = TickLevel.FiveMinutes;
+	  binc = 30;	  
+	}
+	else if(pScale.x() > (10.0/5.0)) {
+	  level = TickLevel.FiveMinutes;
+	  binc = 60;
+	}
+	else if(pScale.x() > (10.0/15.0)) {
+	  level = TickLevel.FifteenMinutes;
+	  binc = 180;
+	}
+	else if(pScale.x() > (10.0/60.0)) {
+	  level = TickLevel.OneHour;
+	  binc = 360;
+	}
+	else if(pScale.x() > (10.0/180.0)) {
+	  level = TickLevel.ThreeHours;
+	  binc = 720;
+	}
+	
+	/* build label display lists */ 
+	ArrayList<Integer> dateLabelDLs = new ArrayList<Integer>();
+	ArrayList<Integer> timeLabelDLs = new ArrayList<Integer>();
+	double timeLabelInc = 0.0;
+	try {
+	  GeometryMgr mgr = GeometryMgr.getInstance();
+
+	  Date endDate = null;
+	  {
+	    Calendar cal = Calendar.getInstance();
+	    cal.setTime(pEndDay);
 	    cal.add(Calendar.DAY_OF_YEAR, 1);
+	    endDate = cal.getTime();
 	  }
-	}
-	gl.glPopMatrix();
-
-	/* time labels */ 
-	{
-	  int minc;
-	  switch(level) {
-	  case OneMinute: 
-	    minc = 15;
-	    break;
-
-	  case FiveMinutes: 
-	    minc = 60;
-	    break;
-	    
-	  case FifteenMinutes:
-	    minc = 180;
-	    break;
-
-	  case OneHour:
-	    minc = 360;
-	    break;
-
-	  default:
-	    minc = 720;
-	  }
-
-	  gl.glPushMatrix();
+	  
+	  /* date labels */ 
 	  {
 	    Calendar cal = Calendar.getInstance();
 	    cal.setTime(pStartDay);
 	    
-	    gl.glTranslated(offset, 0.525, 0.0);
+	    while(cal.getTime().compareTo(endDate) < 0) {
+	      String text = sDateFormat.format(cal.getTime());
+	      int dl = mgr.getTextDL(gl, "CharterBTRoman", text, 
+				     GeometryMgr.TextAlignment.Left, 0.05);
+	      dateLabelDLs.add(dl);
+	      cal.add(Calendar.DAY_OF_YEAR, 1);
+	    }
+	  } 
+
+	  /* time labels */ 
+	  {
+	    int minc;
+	    switch(level) {
+	    case OneMinute: 
+	      minc = 15;
+	      break;
+	      
+	    case FiveMinutes: 
+	      minc = 60;
+	      break;
+	      
+	    case FifteenMinutes:
+	      minc = 180;
+	      break;
+	      
+	    case OneHour:
+	      minc = 360;
+	      break;
+	      
+	    default:
+	      minc = 720;
+	    }
+	    
+	    timeLabelInc = (double) minc;
+
+	    Calendar cal = Calendar.getInstance();
+	    cal.setTime(pStartDay);
 	    
 	    while(cal.getTime().compareTo(endDate) < 0) {
 	      String text = sTimeFormat.format(cal.getTime());
-	      int dl = mgr.getTextDL(gl,  "CharterBTRoman", text, 
+	      int dl = mgr.getTextDL(gl, "CharterBTRoman", text, 
 				     GeometryMgr.TextAlignment.Left, 0.05);
+	      timeLabelDLs.add(dl);
+	      cal.add(Calendar.MINUTE, minc);
+	    }
+	  }
+	}
+	catch(IOException ex) {
+	  UIMaster.getInstance().showErrorDialog(ex);
+	}
+	
+	if(pTimeScaleDL == null) 
+	  pTimeScaleDL = UIMaster.getInstance().getDisplayList(gl);
+
+	gl.glNewList(pTimeScaleDL, GL.GL_COMPILE_AND_EXECUTE);
+	{
+	  /* tick marks and graph bars */ 
+	  gl.glPushMatrix();
+	  {
+	    Point2d center = pBBox.getCenter();
+	    gl.glScaled(pScale.x(), pBorder.y(), 1.0);
+	    gl.glTranslated(-center.x(), 0.0, 0.0);
+	
+	    int mins = ((int) range) + 1440;
+
+	    /* graph time bars */ 
+	    {	  
+	      gl.glColor3d(0.8, 0.8, 0.8);
+	      gl.glBegin(gl.GL_LINES);
+	      {
+		double y = (pGraphArea.y() * -2.0) / pBorder.y();
+
+		int wk;
+		for(wk=0; wk<=mins; wk+=binc) {
+		  double x = ((double) wk) + offset;
+		  gl.glVertex2d(x, 0.0);
+		  gl.glVertex2d(x, y);
+		}
+	      }
+	      gl.glEnd();
+	    }
+
+	    switch(level) {
+	      /* 1-minute tick marks */ 
+	    case OneMinute:     
+	      {
+		sized = true;
+
+		gl.glPushMatrix();
+		{
+		  gl.glScaled(1.0, 0.125, 1.0);
+		  gl.glTranslated(offset, 0.0, 0.0);
 	      
+		  int wk;
+		  for(wk=0; wk<mins; wk+=60) {
+		    gl.glCallList(pOneMinDL);
+		    gl.glTranslated(60.0, 0.0, 0.0);
+		  }
+		}
+		gl.glPopMatrix();
+	      }
+
+	      /* 5-minute tick marks */ 
+	    case FiveMinutes:
+	      {
+		if(!sized) {
+		  sfive    = 0.125;
+		  sfifteen = 0.25;
+		}
+
+		sized = true;
+
+		gl.glPushMatrix();
+		{
+		  gl.glScaled(1.0, sfive, 1.0);
+		  gl.glTranslated(offset, 0.0, 0.0);
+	      
+		  int wk;
+		  for(wk=0; wk<mins; wk+=60) {
+		    gl.glCallList(pFiveMinDL);
+		    gl.glTranslated(60.0, 0.0, 0.0);
+		  }
+		}
+		gl.glPopMatrix();
+	      }
+	
+	      /* 15-minute tick marks */ 
+	    case FifteenMinutes:
+	      {   
+		if(!sized) {
+		  sfifteen = 0.125;
+		  shour    = 0.25;
+		}
+
+		sized = true;
+
+		gl.glPushMatrix();
+		{
+		  gl.glScaled(1.0, sfifteen, 1.0);
+		  gl.glTranslated(offset, 0.0, 0.0);
+	      
+		  int wk;
+		  for(wk=0; wk<mins; wk+=60) {
+		    gl.glCallList(pFifteenMinDL);
+		    gl.glTranslated(60.0, 0.0, 0.0);
+		  }
+		}
+		gl.glPopMatrix();
+	      }	  
+
+	      /* 1-hour tick marks */ 
+	    case OneHour:
+	    case ThreeHours:
+	      {
+		int hinc = 60;
+		if(!sized) {
+		  switch(level) {
+		  case OneHour:
+		    shour   = 0.125;
+		    sthree  = 0.25;
+		    hinc    = 60;
+		    break;
+
+		  case ThreeHours:
+		    shour   = 0.125;
+		    sthree  = 0.125;
+		    ssix    = 0.25;
+		    hinc    = 180;
+		  }
+		}
+	    
+		sized = true;
+	    
+		gl.glBegin(gl.GL_LINES);
+		{
+		  gl.glColor3d(1.0, 1.0, 1.0);
+
+		  int wk;
+		  for(wk=0; wk<mins; wk+=hinc) {
+		    int hour = wk / 60;
+		
+		    double y = shour;
+		    if((hour % 12) == 0) 
+		      y = stwelve;
+		    else if((hour % 6) == 0) 
+		      y = ssix;
+		    else if((hour % 3) == 0) 
+		      y = sthree;
+
+		    double x = ((double) wk) + offset;
+		    gl.glVertex2d(x, 0.0);
+		    gl.glVertex2d(x, y);
+		  }
+		}
+		gl.glEnd();
+	      }
+	    }
+
+	    /* 1-day tick marks */ 
+	    {
+	      gl.glLineWidth(2.0f);
+	      gl.glBegin(gl.GL_LINES);
+	      {
+		gl.glColor3d(1.0, 1.0, 1.0);
+
+		int wk;
+		for(wk=0; wk<=mins; wk+=1440) {
+		  double x = ((double) wk) + offset;
+		  gl.glVertex2d(x, 0.0);
+		  gl.glVertex2d(x, 1.0);
+		}
+	      }
+	      gl.glEnd();
+	      gl.glLineWidth(1.0f);
+	    }
+	  }
+	  gl.glPopMatrix();
+
+	  /* time scale labels */
+	  gl.glPushMatrix();
+	  {
+	    Point2d center = pBBox.getCenter();
+	    gl.glScaled(pScale.x(), pBorder.y(), 1.0);
+	    gl.glTranslated(-center.x(), 0.0, 0.0);
+	
+	    /* date labels */ 
+	    if(!dateLabelDLs.isEmpty()) {
 	      gl.glPushMatrix();
 	      {
-		double ts = 0.275*pBorder.y();
-		gl.glScaled(ts/pScale.x(), ts/pBorder.y(), 1.0);
-		gl.glCallList(dl);
+		gl.glTranslated(offset, 0.775, 0.0);
+		
+		for(Integer dl : dateLabelDLs) {
+		  gl.glPushMatrix();
+		  {
+		    double ts = 0.275*pBorder.y();
+		    gl.glScaled(ts/pScale.x(), ts/pBorder.y(), 1.0);
+		    gl.glCallList(dl);
+		  }
+		  gl.glPopMatrix();
+		  
+		  gl.glTranslated(1440.0, 0.0, 0.0);
+		}
 	      }
 	      gl.glPopMatrix();
-	      
-	      gl.glTranslated((double) minc, 0.0, 0.0);
-	      
-	      cal.add(Calendar.MINUTE, minc);
+	    }
+
+	    /* time labels */ 
+	    if(!timeLabelDLs.isEmpty()) {
+	      gl.glPushMatrix();
+	      {
+		gl.glTranslated(offset, 0.525, 0.0);
+		
+		for(Integer dl : timeLabelDLs) {
+		  gl.glPushMatrix();
+		  {
+		    double ts = 0.275*pBorder.y();
+		    gl.glScaled(ts/pScale.x(), ts/pBorder.y(), 1.0);
+		    gl.glCallList(dl);
+		  }
+		  gl.glPopMatrix();
+		
+		  gl.glTranslated(timeLabelInc, 0.0, 0.0);
+		}
+	      }
+	      gl.glPopMatrix();
 	    }
 	  }
 	  gl.glPopMatrix();
 	}
+	gl.glEndList();
+
+	pRefreshTimeScale = false;
       }
-      catch(IOException ex) {
-	UIMaster.getInstance().showErrorDialog(ex);
+      else {
+	gl.glCallList(pTimeScaleDL);
       }
-      gl.glPopMatrix();
     }
+    gl.glPopMatrix();
 
     /* corner area */ 
     {
@@ -810,7 +840,6 @@ class JResourceUsageHistoryDialog
 
       gl.glBegin(gl.GL_QUADS);
       {
-	//gl.glColor3d(1.0, 1.0, 0.0);
 	gl.glColor3d(0.4, 0.4, 0.4);
 	
 	gl.glVertex2d(a.x(), b.y()); 
@@ -825,7 +854,6 @@ class JResourceUsageHistoryDialog
     {
       gl.glBegin(gl.GL_QUADS);
       {
-	//gl.glColor3d(1.0, 0.0, 0.0);
 	gl.glColor3d(0.4, 0.4, 0.4);
 	
 	gl.glVertex2d(-pGraphArea.x()-pBorder.x(),  pGraphArea.y());
@@ -877,6 +905,8 @@ class JResourceUsageHistoryDialog
     gl.glMatrixMode(GL.GL_PROJECTION);
     gl.glLoadIdentity();
     gl.glOrtho(bl.x(), tr.x(), bl.y(), tr.y(), -1.0, 1.0);
+
+    pRefreshTimeScale = true;
   }
  
   /** 
@@ -1051,6 +1081,7 @@ class JResourceUsageHistoryDialog
 	pTranslate.mult(factor);
 
 	pScale = scale;
+	pRefreshTimeScale = true;
 
 	pDragStart = pos;
       } 
@@ -1103,7 +1134,7 @@ class JResourceUsageHistoryDialog
       
       default:
 	Toolkit.getDefaultToolkit().beep();
-	refresh(); 
+	pCanvas.repaint();
       }
     }
   }
@@ -1136,7 +1167,7 @@ class JResourceUsageHistoryDialog
     if(cmd.equals("update")) 
       doUpdate();
     else {
-      refresh();
+      pCanvas.repaint();
     }
   }
 
@@ -1169,10 +1200,11 @@ class JResourceUsageHistoryDialog
       Vector2d area = Vector2d.mult(pGraphArea, new Vector2d(2.0, 2.0));
       area.sub(new Vector2d(20.0, 20.0));
       pScale = Vector2d.max(pMinScale,  Vector2d.div(area, pBBox.getRange()));
+      pRefreshTimeScale = true;
       
       pTranslate.set(0.0, 0.0);
 
-      refresh();
+      pCanvas.repaint();   
     }
   }
 
@@ -1306,9 +1338,20 @@ class JResourceUsageHistoryDialog
    */ 
   private Integer  pFifteenMinDL;
 
+  /**
+   * Whether the OpenGL display list for time scale geometry need to be rebuilt.
+   */ 
+  private boolean  pRefreshTimeScale;
 
   /**
-   * Whether the OpenGL display lists for graph geometry need to be rebuilt.
+   * The OpenGL display list handle for time scale geometry.
+   */ 
+  private Integer  pTimeScaleDL;
+
+  
+
+  /**
+   * Whether the OpenGL display lists for graph geometry needs to be rebuilt.
    */ 
   private boolean  pRefreshGraph;
 
