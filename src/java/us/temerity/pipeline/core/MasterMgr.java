@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.28 2004/08/31 12:43:13 jim Exp $
+// $Id: MasterMgr.java,v 1.29 2004/09/01 12:22:02 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -263,17 +263,19 @@ class MasterMgr
 
     /* startup initialization */ 
     init(nodeDir, prodDir);
-
-    /* initialize the monitored directory table */ 
-    pMonitored = new HashMap<File,HashSet<NodeID>>();
-
-    /* make a control connection to the directory notification daemon */ 
-    pNotifyControlClient = new NotifyControlClient(fileHost, controlPort);
-
-    /* make a monitor connection to the directory notification daemon and 
-        start a task to listen for directory change notifcations */ 
-    pDirtyDirTask = new DirtyDirTask(fileHost, monitorPort);
-    pDirtyDirTask.start();
+ 
+    if(PackageInfo.sEnableCaching) {
+      /* initialize the monitored directory table */ 
+      pMonitored = new HashMap<File,HashSet<NodeID>>();
+      
+      /* make a control connection to the directory notification daemon */ 
+      pNotifyControlClient = new NotifyControlClient(fileHost, controlPort);
+      
+      /* make a monitor connection to the directory notification daemon and 
+	  start a task to listen for directory change notifcations */
+      pDirtyDirTask = new DirtyDirTask(fileHost, monitorPort);
+      pDirtyDirTask.start();
+    }
   }
 
 
@@ -868,26 +870,28 @@ class MasterMgr
       }
     }
 
-    /* close the control connection to the directory change notification daemon */ 
-    if(pNotifyControlClient != null) {
-      try {
-	pNotifyControlClient.shutdown(); 
+    if(PackageInfo.sEnableCaching) {
+      /* close the control connection to the directory change notification daemon */ 
+      if(pNotifyControlClient != null) {
+	try {
+	  pNotifyControlClient.shutdown(); 
+	}
+	catch(PipelineException ex) {
+	  Logs.net.warning(ex.getMessage());
+	}
       }
-      catch(PipelineException ex) {
-	Logs.net.warning(ex.getMessage());
-      }
-    }
       
-    /* shutdown task listening to the monitor connection to the directory change 
-        notification daemon */ 
-    if(pDirtyDirTask != null) {
-      pDirtyDirTask.shutdown();
-
-      try {
-	pDirtyDirTask.join();
-      }
-      catch(InterruptedException ex) {
-	Logs.net.severe("Interrupted while waiting on the DirtyDirTask to complete!");
+      /* shutdown task listening to the monitor connection to the directory change 
+	 notification daemon */ 
+      if(pDirtyDirTask != null) {
+	pDirtyDirTask.shutdown();
+	
+	try {
+	  pDirtyDirTask.join();
+	}
+	catch(InterruptedException ex) {
+	  Logs.net.severe("Interrupted while waiting on the DirtyDirTask to complete!");
+	}
       }
     }
 
@@ -4722,7 +4726,8 @@ class MasterMgr
 
       default:
 	{
-	  if((working.uFileStates == null) || (working.uFileTimeStamps == null)) {
+ 	  if(!PackageInfo.sEnableCaching || 
+	     (working.uFileStates == null) || (working.uFileTimeStamps == null)) {
 	    VersionID vid = null;
 	    if(latest != null) 
 	      vid = latest.getVersionID();
@@ -5446,18 +5451,20 @@ class MasterMgr
   )
     throws PipelineException 
   { 
-    synchronized(pMonitored) {
-      File dir = id.getWorkingParent();
-
-      HashSet<NodeID> ids = pMonitored.get(dir);
-      if(ids == null) {
-	ids = new HashSet<NodeID>();
-	pMonitored.put(dir, ids);
-      }
-
-      if(!ids.contains(id)) {
-	ids.add(id);
-	pNotifyControlClient.monitor(dir);
+    if(PackageInfo.sEnableCaching) {
+      synchronized(pMonitored) {
+	File dir = id.getWorkingParent();
+	
+	HashSet<NodeID> ids = pMonitored.get(dir);
+	if(ids == null) {
+	  ids = new HashSet<NodeID>();
+	  pMonitored.put(dir, ids);
+	}
+	
+	if(!ids.contains(id)) {
+	  ids.add(id);
+	  pNotifyControlClient.monitor(dir);
+	}
       }
     }
   }
@@ -5475,14 +5482,16 @@ class MasterMgr
   )
     throws PipelineException 
   { 
-    synchronized(pMonitored) {
-      File dir = id.getWorkingParent();
-
-      HashSet<NodeID> ids = pMonitored.get(dir);
-      if(ids != null) {
-	ids.remove(id);
-	if(ids.isEmpty()) 
-	  pNotifyControlClient.unmonitor(dir);
+    if(PackageInfo.sEnableCaching) {
+      synchronized(pMonitored) {
+	File dir = id.getWorkingParent();
+	
+	HashSet<NodeID> ids = pMonitored.get(dir);
+	if(ids != null) {
+	  ids.remove(id);
+	  if(ids.isEmpty()) 
+	    pNotifyControlClient.unmonitor(dir);
+	}
       }
     }
   }
@@ -6825,7 +6834,11 @@ class MasterMgr
 	  else {
 	    checkedIn = getCheckedInBundles(name);
 	    latestID = checkedIn.lastKey();
-	    vid = new VersionID(latestID, pRequest.getLevel());
+
+	    VersionID.Level level = pRequest.getLevel();
+	    if(level == null) 
+	      level = VersionID.Level.Minor;
+	    vid = new VersionID(latestID, level);
 	  }
 
 	  WorkingBundle working = getWorkingBundle(nodeID);
@@ -6840,8 +6853,9 @@ class MasterMgr
 	  
 	  /* build the file novelty table */ 
 	  TreeMap<FileSeq,boolean[]> isNovel = new TreeMap<FileSeq,boolean[]>();
-	  for(FileSeq fseq : working.uFileStates.keySet()) {
-	    FileState[] states = working.uFileStates.get(fseq);
+
+ 	  for(FileSeq fseq : details.getFileStateSequences()) {
+ 	    FileState[] states = details.getFileState(fseq);
 	    boolean flags[] = new boolean[states.length];
 
 	    int wk;
@@ -6890,7 +6904,7 @@ class MasterMgr
 	  Long[] jobIDs = null;
 	  QueueState[] queueStates = null;
 	  {
-	    for(FileSeq fseq : working.uFileStates.keySet()) {
+	    for(FileSeq fseq : details.getFileStateSequences()) {
 	      FileState fs[] = new FileState[fseq.numFrames()];
 	      Date stamps[] = new Date[fseq.numFrames()];
 
@@ -6923,7 +6937,7 @@ class MasterMgr
 	  working.uFileStates = fileStates;
 
 	  /* invalidate the cached node state for all other working versions */ 
-	  {
+	  if(PackageInfo.sEnableCaching) {
 	    DirtyNodeTask task = new DirtyNodeTask(name, nodeID);
 	    task.start();
 	  }
@@ -6936,7 +6950,7 @@ class MasterMgr
 			    OverallNodeState.Identical, OverallQueueState.Finished, 
 			    VersionState.Identical, PropertyState.Identical, 
 			    LinkState.Identical, 
-			    fileStates, working.uFileTimeStamps, 
+			    fileStates, details.getFileTimeStamps(), 
 			    jobIDs, queueStates);
 
 	  status.setDetails(ndetails);
@@ -7391,6 +7405,14 @@ class MasterMgr
    * The connection to the file manager daemon: <B>plfilemgr<B>(1).
    */ 
   private FileMgrClient  pFileMgrClient;
+
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The following fields will be <CODE>null</CODE> and never referenced if caching
+   * is disabled (PackageInfo.sEnableCaching == false).
+   */ 
 
   /**
    * The set of working versions who's associated files are being monitored indexed 
