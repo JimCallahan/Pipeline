@@ -1,4 +1,4 @@
-// $Id: JErrorDialog.java,v 1.5 2004/05/29 06:38:06 jim Exp $
+// $Id: JErrorDialog.java,v 1.6 2004/06/08 20:08:42 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -43,7 +43,7 @@ class JErrorDialog
       body.setMinimumSize(new Dimension(300, 180));
 
       {
-	JTextArea area = new JTextArea(8, 25); 
+	JTextArea area = new JTextArea(8, 35); 
 	pMessageArea = area;
 
 	area.setLineWrap(true);
@@ -60,7 +60,7 @@ class JErrorDialog
       }
 
       super.initUI("Error:", true, body, null, null, null, "Close");
-      setSize(520, 350);
+      pack();
     }  
   }
 
