@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.2 2004/07/25 03:04:51 jim Exp $
+// $Id: QueueMgrClient.java,v 1.3 2004/07/28 19:14:44 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -14,11 +14,10 @@ import java.util.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A non-privileged connection to the Pipeline queue server daemon. <P> 
+ * A connection to the Pipeline queue server daemon. <P> 
  * 
  * This class handles network communication with the Pipeline queue server daemon 
- * <A HREF="../../../../man/plmaster.html"><B>plqueuemgr</B><A>(1).  No operations provided 
- * by this class require that the calling user to have privileged status.
+ * <A HREF="../../../../man/plmaster.html"><B>plqueuemgr</B><A>(1).  
  */
 public
 class QueueMgrClient
@@ -516,6 +515,175 @@ class QueueMgrClient
     Object obj = performTransaction(QueueRequest.RemoveSelectionKey, req); 
     handleSimpleResponse(obj);
   }  
+
+
+   
+  /*----------------------------------------------------------------------------------------*/
+  /*   J O B   M A N A G E R   H O S T S                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the current state of the hosts capable of executing jobs for the Pipeline queue. <P> 
+   * 
+   * In other words, the hosts which run the <B>pljobmgr</B>(1) daemon.
+   * 
+   * @return 
+   *   The per-host information indexed by fully resolved host name.
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the host information.
+   */
+  public synchronized TreeMap<String,QueueHost>
+  getHosts()
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    Object obj = performTransaction(QueueRequest.GetHosts, null);
+    if(obj instanceof QueueGetHostsRsp) {
+      QueueGetHostsRsp rsp = (QueueGetHostsRsp) obj;
+      return rsp.getHosts();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+
+  /**
+   * Add a new execution host to the Pipeline queue. <P> 
+   * 
+   * The host will be added in a <CODE>Shutdown</CODE> state, unreserved and with no 
+   * selection key biases.  If a host already exists with the given name, an exception 
+   * will be thrown instead. <P> 
+   * 
+   * This method will fail if the current user does not have privileged access status.
+   * 
+   * @param hostname
+   *   The fully resolved name of the host.
+   * 
+   * @throws PipelineException
+   *   If unable to add the host.
+   */ 
+  public synchronized void 
+  addHost
+  (
+   String hostname
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+    
+    QueueAddHostReq req = new QueueAddHostReq(hostname);
+    Object obj = performTransaction(QueueRequest.AddHost, req);
+    handleSimpleResponse(obj);
+  }
+
+  /**
+   * Remove the given existing execution hosts from the Pipeline queue. <P> 
+   * 
+   * The hosts must be in a <CODE>Shutdown</CODE> state before they can be removed. <P> 
+   * 
+   * This method will fail if the current user does not have privileged access status.
+   * 
+   * @param hostnames
+   *   The fully resolved names of the hosts.
+   * 
+   * @throws PipelineException
+   *   If unable to remove the hosts.
+   */ 
+  public synchronized void 
+  removeHosts
+  (
+   TreeSet<String> hostnames
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+    
+    QueueRemoveHostsReq req = new QueueRemoveHostsReq(hostnames);
+    Object obj = performTransaction(QueueRequest.RemoveHosts, req);
+    handleSimpleResponse(obj);
+  }
+
+  /**
+   * Change the status, user reservations, job slots and/or selection key biases
+   * of the given hosts. <P> 
+   * 
+   * Any of the arguments may be <CODE>null</CODE> if no changes are do be made for
+   * the type of host property the argument controls. <P> 
+   * 
+   * A <B>pljobmgr<B>(1) daemon must be running on a host before its status can be 
+   * changed to <CODE>Disabled</CODE> or <CODE>Enabled</CODE>.  If <B>plqueuemgr<B>(1) cannot
+   * establish a network connection to a <B>pljobmgr<B>(1) daemon running on the host, the 
+   * status will be overridden and changed to <CODE>Shutdown</CODE>.
+   * 
+   * If the new status for a host is <CODE>Shutdown</CODE> and there is a <B>pljobmgr<B>(1) 
+   * daemon running on the host, it will be stopped and any job it is currently running will
+   * be killed. <P> 
+   * 
+   * When a host is reserved, only jobs submitted by the reserving user will be assigned
+   * to the host.  The reservation can be cleared by setting the reserving user name to
+   * <CODE>null</CODE> for the host in the <CODE>reservations</CODE> argument. <P> 
+   * 
+   * Each host has a maximum number of jobs which it can be assigned at any one time 
+   * regardless of the other limits on system resources.  This method allows the number
+   * of slots to be changed for a number of hosts at once.  The number of slots cannot 
+   * be negative and probably should not be set considerably higher than the number of 
+   * CPUs on the host.  A good value is probably (1.5 * number of CPUs). <P>
+   * 
+   * For the given hosts, the selection key biases are set to the values passed in the 
+   * <CODE>biases</CODE> argument and all selection key biases not mentioned will be removed.
+   * Hosts not mention in the <CODE>biases</CODE> argument will be unaltered. <P> 
+   * 
+   * For an detailed explanation of how selection keys are used to determine the assignment
+   * of jobs to hosts, see {@link JobReqs JobReqs}. <P> 
+   * 
+   * This method will fail if the current user does not have privileged access status.
+   * 
+   * @param status
+   *   The new host status indexed by fully resolved names of the hosts.
+   * 
+   * @param reservations
+   *   The names of reserving users indexed by fully resolved names of the hosts.
+   * 
+   * @param slots 
+   *   The number of job slots indexed by fully resolved names of the hosts.
+   * 
+   * @param biases
+   *   The selection key biases indexed by fully resolved host name and selection key name.
+   * 
+   * @throws PipelineException 
+   *   If unable to change the status of the hosts.
+   */
+  public synchronized void
+  editHosts
+  (
+   TreeMap<String,QueueHost.Status> status, 
+   TreeMap<String,String> reservations, 
+   TreeMap<String,Integer> slots, 
+   TreeMap<String,TreeMap<String,Integer>> biases
+  ) 
+    throws PipelineException  
+  {
+    if(!isPrivileged()) 
+      throw new PipelineException
+	("Only privileged users may edit the properties of the job server hosts!");
+    
+    verifyConnection();
+
+    QueueEditHostsReq req = new QueueEditHostsReq(status, reservations, slots, biases);
+    Object obj = performTransaction(QueueRequest.EditHosts, req); 
+    handleSimpleResponse(obj);
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   J O B S                                                                              */
+  /*----------------------------------------------------------------------------------------*/
+
+  // submit(), kill(), etc.. 
 
 
   /*----------------------------------------------------------------------------------------*/
