@@ -1,4 +1,4 @@
-// $Id: QueueJobGroup.java,v 1.2 2004/08/22 21:52:00 jim Exp $
+// $Id: QueueJobGroup.java,v 1.3 2004/08/23 04:28:40 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -73,7 +73,6 @@ class QueueJobGroup
     if(jobIDs != null) 
       pJobIDs.addAll(jobIDs);
 
-    pState = QueueState.Queued;
     pSubmittedStamp = Dates.now();
   }
 
@@ -99,15 +98,6 @@ class QueueJobGroup
   getNodeID() 
   {
     return pNodeID;
-  }
-
-  /**
-   * Get the overall queue state of the jobs associated with the group.
-   */
-  public QueueState
-  getState() 
-  {
-    return pState;
   }
 
 
@@ -161,29 +151,13 @@ class QueueJobGroup
   /*   S T A G E S                                                                          */
   /*----------------------------------------------------------------------------------------*/
   
-  /**
-   * Updates current overall queue state of the jobs of the group.
-   */ 
-  public void 
-  update
-  (
-   QueueState state
-  ) 
-  {
-    pState = state;
-  }
-
   /** 
-   * Records that all jobs of the group have completed and the final overall queue state.
+   * Records that all jobs of the group have completed.
    */ 
   public void 
-  completed
-  (
-   QueueState state
-  ) 
+  completed() 
   {
     pCompletedStamp = Dates.now();
-    pState = state;
   }
 
 
@@ -263,10 +237,6 @@ class QueueJobGroup
    */
   private NodeID  pNodeID;
 
-  /**
-   * The overall queue status of the jobs associated with the group.
-   */
-  private QueueState  pState;
 
 
   /*----------------------------------------------------------------------------------------*/
