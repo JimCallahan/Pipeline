@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.9 2005/03/11 06:33:44 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.10 2005/04/04 08:35:59 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3608,8 +3608,8 @@ class JNodeDetailsPanel
 		int idx = pWorkingExecutionMethodField.getSelectedIndex();
 		mod.setExecutionMethod(ExecutionMethod.values()[idx]);
 		
-		/* batch size */ 
-		if(idx == 1) {
+		/* batch size (Parallel) */ 
+		if(idx == 2) {
 		  Integer size = pWorkingBatchSizeField.getValue();
 		  if((size == null) || (size < 0)) {
 		    pWorkingBatchSizeField.setValue(0);
@@ -4186,7 +4186,7 @@ class JNodeDetailsPanel
     pCheckedInExecutionMethodField.setForeground(color);
 
     if((getWorkingAction() == null) || 
-       (pWorkingExecutionMethodField.getSelectedIndex() == 0)) {
+       (pWorkingExecutionMethodField.getSelectedIndex() < 2)) {
       pWorkingBatchSizeField.setValue(null);
       pWorkingBatchSizeField.setEnabled(false);
       pSetBatchSizeButton.setEnabled(false);

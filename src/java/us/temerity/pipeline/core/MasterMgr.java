@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.113 2005/04/04 03:58:14 jim Exp $
+// $Id: MasterMgr.java,v 1.114 2005/04/04 08:35:59 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -5930,6 +5930,7 @@ class MasterMgr
       }
       break; 
       
+    case Subdivided:
     case Parallel:
       {
 	/* determine which of the requested frames needs to be regenerated */ 
@@ -5988,19 +5989,59 @@ class MasterMgr
 
 	/* group the frames into batches */ 
 	if(!regen.isEmpty()) {
-	  TreeSet<Integer> batch = new TreeSet<Integer>();
-	  for(Integer idx : regen) {
-	    if(!batch.isEmpty() && 
-	       (((bsize > 0) && (batch.size() >= bsize)) ||
-		(idx > (batch.last()+1)))) {
-	      batches.add(batch);
-	      batch = new TreeSet<Integer>();
-	    }	
-	    
-	    batch.add(idx);
-	  }
+	  switch(work.getExecutionMethod()) {
+	  case Subdivided:
+	    {
+	      int maxIdx = regen.last();
+	      if(maxIdx == 0) {
+		TreeSet<Integer> batch = new TreeSet<Integer>();
+		batch.add(maxIdx);
+		batches.add(batch);
+	      }
+	      else {
+		ArrayList<Integer> sindices = new ArrayList<Integer>();
+		if(regen.contains(0)) 
+		  sindices.add(0);
+		
+		{
+		  int e = (int) Math.floor(Math.log((double) maxIdx) / Math.log(2.0));
+		  for(; e>=0; e--) {
+		    int si = (int) Math.pow(2.0, (double) e);
+		    int inc = si * 2;
+		    int i;
+		    for(i=si; i<=maxIdx; i+=inc) {
+		      if(regen.contains(i)) 
+			sindices.add(i);
+		    }
+		  }
+		}
 
-	  batches.add(batch);
+		for(Integer i : sindices) {
+		  TreeSet<Integer> batch = new TreeSet<Integer>();
+		  batch.add(i);
+		  batches.add(batch);
+		}
+	      }
+	    }
+	    break;
+	    
+	  case Parallel:
+	    {
+	      TreeSet<Integer> batch = new TreeSet<Integer>();
+	      for(Integer idx : regen) {
+		if(!batch.isEmpty() && 
+		   (((bsize > 0) && (batch.size() >= bsize)) ||
+		    (idx > (batch.last()+1)))) {
+		  batches.add(batch);
+		  batch = new TreeSet<Integer>();
+		}	
+		
+		batch.add(idx);
+	      }
+	    
+	      batches.add(batch);
+	    }
+	  }
 	}
       }
     }

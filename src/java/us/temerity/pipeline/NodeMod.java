@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.37 2005/03/29 03:48:55 jim Exp $
+// $Id: NodeMod.java,v 1.38 2005/04/04 08:35:59 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -848,8 +848,11 @@ class NodeMod
 	("The execution method cannot be (null)!");
     pExecution = execution; 
 
-    if(pExecution == ExecutionMethod.Serial) 
+    switch(pExecution) {
+    case Serial:
+    case Subdivided:
       pBatchSize = null;    
+    }
 
     updateLastMod();
   }
@@ -873,9 +876,12 @@ class NodeMod
 	("The batch size cannot be set for working version (" + pName + ") because it " +
 	 "has no regeneration action!");
 
-    if(pExecution == ExecutionMethod.Serial) 
+    switch(pExecution) {
+    case Serial:
+    case Subdivided:
       throw new IllegalArgumentException
-	("The batch size cannot be set for nodes with serial execution!");
+	("The batch size can only be set for nodes with Parallel execution!");
+    }
 
     pBatchSize = size;
 
