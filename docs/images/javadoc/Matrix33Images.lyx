@@ -1,0 +1,144 @@
+#LyX 1.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 221
+\textclass article
+\language english
+\inputencoding auto
+\fontscheme default
+\graphics default
+\paperfontsize default
+\papersize Default
+\paperpackage a4
+\use_geometry 0
+\use_amsmath 0
+\use_natbib 0
+\use_numerical_citations 0
+\paperorientation portrait
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\defskip medskip
+\quotes_language english
+\quotes_times 2
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+
+\layout Standard
+
+
+\begin_inset Formula $\left[\begin{array}{ccc}
+0 & 0 & 0\\
+0 & 0 & 0\\
+0 & 0 & 0\end{array}\right]$
+\end_inset 
+
+ 
+\layout Standard
+
+
+\begin_inset Formula $\left[\begin{array}{ccc}
+a_{11} & a_{12} & a_{13}\\
+a_{21} & a_{22} & a_{23}\\
+a_{31} & a_{32} & a_{33}\end{array}\right]$
+\end_inset 
+
+ 
+\layout Standard
+
+
+\begin_inset Formula $\left[\begin{array}{ccc}
+a_{00} & a_{01} & a_{02}\\
+a_{10} & a_{11} & a_{12}\\
+a_{20} & a_{21} & a_{22}\end{array}\right]$
+\end_inset 
+
+
+\layout Standard
+
+
+\begin_inset Formula $\left[\begin{array}{ccc}
+a[0][0] & a[0][1] & a[0][2]\\
+a[1][0] & a[1][1] & a[1][2]\\
+a[2][0] & a[2][1] & a[2][2]\end{array}\right]$
+\end_inset 
+
+
+\layout Standard
+
+
+\begin_inset Formula $\left[\begin{array}{ccc}
+a_{11} & a_{12} & a_{13}\\
+a_{21} & a_{22} & a_{23}\\
+a_{31} & a_{32} & a_{33}\end{array}\right]\left[\begin{array}{c}
+b_{1}\\
+b_{2}\\
+b_{3}\end{array}\right]=\left[\begin{array}{c}
+c_{1}\\
+c_{2}\\
+c_{3}\end{array}\right]$
+\end_inset 
+
+ 
+\layout Standard
+
+
+\begin_inset Formula $\left[\begin{array}{ccc}
+a_{11} & a_{12} & a_{13}\\
+a_{21} & a_{22} & a_{23}\\
+a_{31} & a_{32} & a_{33}\end{array}\right]\left[\begin{array}{ccc}
+b_{11} & b_{12} & b_{13}\\
+b_{21} & b_{22} & b_{23}\\
+b_{31} & b_{32} & b_{33}\end{array}\right]=\left[\begin{array}{ccc}
+c_{11} & c_{12} & c_{13}\\
+c_{21} & c_{22} & c_{23}\\
+c_{31} & c_{32} & c_{33}\end{array}\right]$
+\end_inset 
+
+ 
+\layout Standard
+
+
+\begin_inset Formula $\left[\begin{array}{ccc}
+a_{11} & a_{12} & a_{13}\\
+a_{21} & a_{22} & a_{23}\\
+a_{31} & a_{32} & a_{33}\end{array}\right]\rightarrow\left[\begin{array}{ccc}
+a_{11} & a_{21} & a_{31}\\
+a_{12} & a_{22} & a_{32}\\
+a_{13} & a_{23} & a_{33}\end{array}\right]$
+\end_inset 
+
+
+\layout Standard
+
+
+\begin_inset Formula $\left[\begin{array}{ccc}
+1 & 0 & 0\\
+0 & 1 & 0\\
+0 & 0 & 1\end{array}\right]$
+\end_inset 
+
+ 
+\layout Standard
+
+
+\begin_inset Formula $s\rightarrow\left[\begin{array}{ccc}
+s & 0 & 0\\
+0 & s & 0\\
+0 & 0 & s\end{array}\right]$
+\end_inset 
+
+
+\layout Standard
+
+
+\begin_inset Formula $\left[\begin{array}{c}
+a_{1}\\
+a_{2}\\
+a_{3}\end{array}\right]\rightarrow\left[\begin{array}{ccc}
+a_{1} & 0 & 0\\
+0 & a_{2} & 0\\
+0 & 0 & a_{3}\end{array}\right]$
+\end_inset 
+
+
+\the_end
