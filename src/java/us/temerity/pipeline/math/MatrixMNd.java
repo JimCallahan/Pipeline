@@ -819,7 +819,7 @@ class MatrixMNd
   /*----------------------------------------------------------------------------------------*/
 				
   /**
-   * Zero all components of this matrix.
+   * Zero all components of this matrix. <P> 
    * 
    * <DIV style="margin-left: 40px;">
    *   <IMG alt="" src="../../../../images/MatrixIdentity.gif">
@@ -1103,8 +1103,8 @@ class MatrixMNd
       buf.append("[");
       int j;
       for(j=0; j<(cols()-1); j++) 
-	buf.append(String.format("%1$.4f", pCols[j].getComp(i)) + " ");
-      buf.append(String.format("%1$.4f", pCols[j].getComp(i)) + "]\n");
+	buf.append(String.format("%1$.6f", pCols[j].getComp(i)) + " ");
+      buf.append(String.format("%1$.6f", pCols[j].getComp(i)) + "]\n");
     }
 	
     return buf.toString();

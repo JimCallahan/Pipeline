@@ -1,4 +1,4 @@
-// $Id: MatrixMNf.java,v 1.1 2004/12/21 00:20:28 jim Exp $
+// $Id: MatrixMNf.java,v 1.2 2004/12/21 15:45:14 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -819,7 +819,7 @@ class MatrixMNf
   /*----------------------------------------------------------------------------------------*/
 				
   /**
-   * Zero all components of this matrix.
+   * Zero all components of this matrix. <P> 
    * 
    * <DIV style="margin-left: 40px;">
    *   <IMG alt="" src="../../../../images/MatrixIdentity.gif">
