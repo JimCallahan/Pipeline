@@ -1,4 +1,4 @@
-// $Id: QueueJobResults.java,v 1.1 2004/07/28 19:22:50 jim Exp $
+// $Id: QueueJobResults.java,v 1.2 2004/08/22 21:54:05 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -26,6 +26,19 @@ class QueueJobResults
   public
   QueueJobResults()
   {}
+
+  /**
+   * Construct a special job results in the event of an exception during job preparation.
+   */ 
+  public
+  QueueJobResults
+  (
+   Exception ex
+  )
+  {
+    pCommand  = ("Job Prep Failed: " + ex);
+    pExitCode = 666;
+  }
 
   /**
    * Construct a new job results.
