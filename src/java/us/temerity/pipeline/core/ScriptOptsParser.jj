@@ -1049,29 +1049,35 @@ TOKEN :
 <LOG_SEP> 
 TOKEN :
 {
-  <EQ33:              "=">   : LOG_STATE
+  <EQ33:               "=">   : LOG_TYPE
 | <MISSING_LOG_ARG: ~["="]>  : IGNORE_STATE
 }
 
-<LOG_STATE> 
+<LOG_TYPE> 
 TOKEN :
 {
-  <LOG_ALL:         "all">       
-| <LOG_ARG: 	    "arg">        
-| <LOG_OPS: 	    "ops">     
-| <LOG_NET: 	    "net">      
-| <LOG_PLG: 	    "plg">       
-| <LOG_SUB: 	    "sub">     
-| <COLON7:  	    ":">       
-| <SEVERE:  	    "severe">  
-| <WARNING: 	    "warning"> 
-| <INFO:    	    "info">    
-| <FINE:    	    "fine">    
-| <FINER :  	    "finer">   
-| <FINEST:    	    "finest">  
-| <COMMA10: 	    ",">       
-| <AE25:            (["\0"])+>                   : DEFAULT
-| <ILLEGAL_LOG_ARG: (~["\0","a"-"z",":",","])+>  : IGNORE_STATE
+  <LOG_ALL:          "all">       
+| <LOG_ARG: 	     "arg">        
+| <LOG_OPS: 	     "ops">     
+| <LOG_NET: 	     "net">       
+| <LOG_PLG: 	     "plg">     
+| <LOG_SUB: 	     "sub"> 
+| <COLON7:  	     ":">        : LOG_LEVEL  
+| <ILLEGAL_LOG_TYPE: (~[":"])+>  : IGNORE_STATE    
+}
+
+<LOG_LEVEL> 
+TOKEN : 
+{
+  <SEVERE:  	      "severe">  
+| <WARNING: 	      "warning"> 
+| <INFO:    	      "info">    
+| <FINE:    	      "fine">    
+| <FINER :  	      "finer">   
+| <FINEST:    	      "finest">  
+| <COMMA10:  	      ",">             : LOG_TYPE
+| <AE25:              (["\0"])+>       : DEFAULT
+| <ILLEGAL_LOG_LEVEL: (~["\0",","])+>  : IGNORE_STATE
 }
 
 
