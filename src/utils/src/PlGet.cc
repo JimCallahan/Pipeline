@@ -1,4 +1,4 @@
-// $Id: PlGet.cc,v 1.3 2003/10/09 00:26:42 jim Exp $
+// $Id: PlGet.cc,v 1.4 2003/11/09 02:14:23 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -89,6 +89,7 @@ copyFileToWorking
   }
   
   /* create/open working file */ 
+  unlink(work);
   ofstream out(work);
   if(!in) {
     sprintf(msg, "Unable to open working file: %s", work);
