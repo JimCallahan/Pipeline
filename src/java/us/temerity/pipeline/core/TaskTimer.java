@@ -1,4 +1,4 @@
-// $Id: TaskTimer.java,v 1.1 2004/03/31 08:34:03 jim Exp $
+// $Id: TaskTimer.java,v 1.2 2004/04/11 19:25:13 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -193,7 +193,7 @@ class TaskTimer
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID = -7351749431473465787L;
+  private static final long serialVersionUID = -1450470433454399228L;
 
 
 
