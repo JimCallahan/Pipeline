@@ -1,4 +1,4 @@
-// $Id: TestMasterMgrApp.java,v 1.2 2004/07/14 20:47:16 jim Exp $
+// $Id: TestMasterMgrApp.java,v 1.3 2004/07/28 19:19:41 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -215,7 +215,9 @@ class TestMasterMgrApp
 
       /* start the node manager daemon */ 
       MasterMgrServer nodeServer = 
-	new MasterMgrServer(nodeDir, 53145, prodDir, "localhost", 53146, 53147, 53148);
+	new MasterMgrServer(nodeDir, 53145, 
+			    prodDir, "localhost", 53146, 53147, 53148, 
+			    "localhost", 53149);
       nodeServer.start();
       
       /* give the server a chance to start */ 
@@ -317,7 +319,9 @@ class TestMasterMgrApp
       Thread.currentThread().sleep(1000);
       /* start the node manager server */ 
       MasterMgrServer nodeServer = 
-	new MasterMgrServer(nodeDir, 53145, prodDir, "localhost", 53146, 53147, 53148);
+	new MasterMgrServer(nodeDir, 53145, 
+			    prodDir, "localhost", 53146, 53147, 53148, 
+			    "localhost", 53149);
       nodeServer.start();
    
       /* give the server a chance to start */ 
