@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.19 2004/11/02 23:06:44 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.20 2004/11/03 19:55:43 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -183,6 +183,16 @@ class JQueueJobViewerPanel
       pGroupPopup = new JPopupMenu();  
       pGroupPopup.addPopupMenuListener(this);
       
+      item = new JMenuItem("View");
+      item.setActionCommand("view");
+      item.addActionListener(this);
+      pGroupPopup.add(item);
+
+      pGroupViewWithMenu = new JMenu("View With");
+      pGroupPopup.add(pGroupViewWithMenu);
+
+      pGroupPopup.addSeparator();
+
       item = new JMenuItem("Queue Jobs");
       item.setActionCommand("queue-jobs");
       item.addActionListener(this);
@@ -521,27 +531,30 @@ class JQueueJobViewerPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Update the jobs menu.
+   * Update the given view with menu. 
    */ 
   private void 
-  updateJobsMenu() 
+  updateViewMenu
+  (
+   JMenu menu
+  ) 
   {
     TreeMap<String,TreeSet<VersionID>> editors = PluginMgr.getInstance().getEditors();
     
-    pViewWithMenu.removeAll();
+    menu.removeAll();
     
     for(String editor : editors.keySet()) {
       JMenuItem item = new JMenuItem(editor);
       item.setActionCommand("view-with:" + editor);
       item.addActionListener(this);
-      pViewWithMenu.add(item);
+      menu.add(item);
     }
     
-    pViewWithMenu.addSeparator();
+    menu.addSeparator();
     
     JMenu sub = new JMenu("All Versions");
-    pViewWithMenu.add(sub);
-
+    menu.add(sub);
+    
     for(String editor : editors.keySet()) {
       JMenu esub = new JMenu(editor);
       sub.add(esub);
@@ -1388,7 +1401,7 @@ class JQueueJobViewerPanel
 	      for(ViewerJob vjob : primarySelect(vunder)) 
 		changed.put(vjob.getJobPath(), vjob);
 
-	      updateJobsMenu();
+	      updateViewMenu(pViewWithMenu);
 	      pJobPopup.show(e.getComponent(), e.getX(), e.getY());
 	    }
 	    else if(under instanceof ViewerJobGroup) {
@@ -1400,6 +1413,7 @@ class JQueueJobViewerPanel
 	      for(ViewerJob vjob : primarySelect(vunder)) 
 		changed.put(vjob.getJobPath(), vjob);
 	      
+	      updateViewMenu(pGroupViewWithMenu);
 	      pGroupPopup.show(e.getComponent(), e.getX(), e.getY());
 	    }
 	  }
@@ -2184,7 +2198,13 @@ class JQueueJobViewerPanel
   doView() 
   {
     if(pPrimary != null) {
-      ViewTask task = new ViewTask(pPrimary.getJobStatus());
+      JobStatus status = pPrimary.getJobStatus();
+      ViewTask task = new ViewTask(status.getNodeID(), status.getTargetSequence());
+      task.start();
+    }
+    else if(pPrimaryGroup != null) {
+      QueueJobGroup group = pPrimaryGroup.getGroup();
+      ViewTask task = new ViewTask(group.getNodeID(), group.getRootSequence());
       task.start();
     }
 
@@ -2219,7 +2239,14 @@ class JQueueJobViewerPanel
     }
 
     if(pPrimary != null) {
-      ViewTask task = new ViewTask(pPrimary.getJobStatus(), ename, evid);
+      JobStatus status = pPrimary.getJobStatus();
+      ViewTask task = new ViewTask(status.getNodeID(), status.getTargetSequence(), 
+				   ename, evid);
+      task.start();
+    }
+    else if(pPrimaryGroup != null) {
+      QueueJobGroup group = pPrimaryGroup.getGroup();
+      ViewTask task = new ViewTask(group.getNodeID(), group.getRootSequence(), ename, evid);
       task.start();
     }
 
@@ -2669,7 +2696,7 @@ class JQueueJobViewerPanel
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * View the target files of the job with the given editor.
+   * View the given working file sequence with the given editor.
    */ 
   private
   class ViewTask
@@ -2678,25 +2705,26 @@ class JQueueJobViewerPanel
     public 
     ViewTask
     (
-     JobStatus jstatus
+     NodeID nodeID, 
+     FileSeq fseq
     ) 
     {
-      super("JQueueJobViewerPanel:ViewTask");
-
-      pJobStatus  = jstatus;
+      this(nodeID, fseq, null, null);
     }
 
     public 
     ViewTask
     (
-     JobStatus jstatus,
+     NodeID nodeID, 
+     FileSeq fseq,
      String ename,
      VersionID evid
     ) 
     {
       super("JQueueJobViewerPanel:ViewTask");
 
-      pJobStatus     = jstatus;
+      pNodeID        = nodeID;
+      pFileSeq       = fseq; 
       pEditorName    = ename;
       pEditorVersion = evid; 
     }
@@ -2711,8 +2739,9 @@ class JQueueJobViewerPanel
 	  try {
 	    MasterMgrClient client = master.getMasterMgrClient();
 
-	    NodeID nodeID = pJobStatus.getNodeID();
-	    NodeMod mod = client.getWorkingVersion(nodeID);
+	    NodeMod mod = client.getWorkingVersion(pNodeID);
+	    String author = pNodeID.getAuthor();
+	    String view = pNodeID.getView();
 
 	    /* create an editor plugin instance */ 
 	    BaseEditor editor = null;
@@ -2736,7 +2765,7 @@ class JQueueJobViewerPanel
 		  ("No toolset was specified for node (" + mod.getName() + ")!");
 
 	      /* passes pAuthor so that WORKING will correspond to the current view */ 
-	      env = client.getToolsetEnvironment(nodeID.getAuthor(), nodeID.getView(), tname);
+	      env = client.getToolsetEnvironment(author, view, tname);
 
 	      /* override these since the editor will be run as the current user */ 
 	      env.put("HOME", PackageInfo.sHomeDir + "/" + PackageInfo.sUser);
@@ -2749,13 +2778,12 @@ class JQueueJobViewerPanel
 	    {
 	      String path = null;
 	      {
-		File wpath = 
-		  new File(PackageInfo.sWorkDir, 
-			   nodeID.getAuthor() + "/" + nodeID.getView() + "/" + mod.getName());
+		File wpath = new File(PackageInfo.sWorkDir, 
+				      author + "/" + view + "/" + mod.getName());
 		path = wpath.getParent();
 	      }
 
-	      fseq = new FileSeq(path, pJobStatus.getTargetSequence());
+	      fseq = new FileSeq(path, pFileSeq);
 	      dir = new File(path);
 	    }
 	    
@@ -2785,7 +2813,8 @@ class JQueueJobViewerPanel
       }
     }
  
-    private JobStatus  pJobStatus; 
+    private NodeID     pNodeID;
+    private FileSeq    pFileSeq;
     private String     pEditorName;
     private VersionID  pEditorVersion; 
   }
@@ -3126,6 +3155,11 @@ class JQueueJobViewerPanel
    * The job group popup menu.
    */ 
   private JPopupMenu  pGroupPopup; 
+
+  /**
+   * The view with group submenu.
+   */ 
+  private JMenu  pGroupViewWithMenu; 
 
 
   /*----------------------------------------------------------------------------------------*/

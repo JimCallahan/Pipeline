@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.60 2004/11/03 18:16:31 jim Exp $
+// $Id: MasterMgr.java,v 1.61 2004/11/03 19:55:42 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -4373,11 +4373,44 @@ class MasterMgr
 	  ("No new jobs where generated for node (" + status + ") or any node upstream " +
 	   "of this node!");
       
-      /* generate the root file pattern */ 
-      String rootPattern = null;
+      /* generate the root target file sequence for the job group */ 
+      FileSeq targetSeq = null;
       {
-	QueueJob job = jobs.get(rootJobIDs.first());
-	rootPattern = job.getActionAgenda().getPrimaryTarget().getFilePattern().toString();
+	FilePattern fpat = null;
+	TreeSet<Integer> frames = new TreeSet<Integer>();
+	{
+	  for(Long jobID : rootJobIDs) {
+	    QueueJob job = jobs.get(jobID);
+	    FileSeq fseq = job.getActionAgenda().getPrimaryTarget();
+
+	    if(fpat == null) 
+	      fpat = fseq.getFilePattern();
+
+	    FrameRange range = fseq.getFrameRange();
+	    if(range != null) {
+	      int fnums[] = range.getFrameNumbers();
+	      int wk;
+	      for(wk=0; wk<fnums.length; wk++) 
+		frames.add(fnums[wk]);
+	    }
+	  }
+	}
+
+	if(frames.isEmpty()) 
+	  targetSeq = new FileSeq(fpat, null);
+	else {
+	  int step = Integer.MAX_VALUE;
+	  {
+	    Integer last = null;
+	    for(Integer frame : frames) {
+	      if(last != null) 
+		step = Math.min(step, frame - last);
+	      last = frame;
+	    }
+	  }
+
+	  targetSeq = new FileSeq(fpat, new FrameRange(frames.first(), frames.last(), step));
+	}
       }
       
       /* generate the list of external job IDs */ 
@@ -4390,7 +4423,7 @@ class MasterMgr
       /* group the jobs */ 
       QueueJobGroup group = 
 	new QueueJobGroup(pNextJobGroupID++, status.getNodeID(), 
-			  rootPattern, rootJobIDs, externalIDs, 
+			  targetSeq, rootJobIDs, externalIDs, 
 			  new TreeSet<Long>(jobs.keySet()));
       pQueueMgrClient.groupJobs(group);
       

@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.17 2004/10/28 15:55:23 jim Exp $
+// $Id: ScriptApp.java,v 1.18 2004/11/03 19:55:42 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1566,8 +1566,7 @@ class ScriptApp
 
     Logs.ops.info
       ("Submitted Job Group: [" + group.getGroupID() + "] " + group.getRootPattern());
-    Logs.flush();    
-    
+    Logs.flush();        
   }  
   
   /**

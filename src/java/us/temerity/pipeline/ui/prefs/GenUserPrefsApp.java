@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.34 2004/11/03 02:52:42 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.35 2004/11/03 19:55:43 jim Exp $
 
 import java.io.*; 
 import java.util.*;
@@ -958,7 +958,7 @@ class GenUserPrefsApp
 	 false, false, false, 68),  /* D */
       
 	new HotKeyPref
-	("View the target files of the primary selected job.", 
+	("View the target files of the primary selected job or job group.", 
 	 "JobView", "View:",
 	 false, false, false, 10),  /* Enter */ 
 
@@ -1126,7 +1126,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.34 2004/11/03 02:52:42 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.35 2004/11/03 19:55:43 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -1379,7 +1379,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.34 2004/11/03 02:52:42 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.35 2004/11/03 19:55:43 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
