@@ -1,4 +1,4 @@
-// $Id: JBooleanTableCellRenderer.java,v 1.1 2004/09/12 19:04:04 jim Exp $
+// $Id: JBooleanTableCellRenderer.java,v 1.2 2005/03/20 22:48:44 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -61,15 +61,10 @@ class JBooleanTableCellRenderer
    boolean isSelected, 
    boolean hasFocus, 
    int row, 
-   int column
+   int col
   )
   {
-    BooleanActionParam param = (BooleanActionParam) value; 
-
-    Boolean tf = null;
-    if(param != null) 
-      tf = param.getBooleanValue();
-
+    Boolean tf = (Boolean) value; 
     if(tf != null) 
       setText(tf ? "YES" : "no");
     else 
