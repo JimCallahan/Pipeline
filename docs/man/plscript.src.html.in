@@ -346,8 +346,7 @@ Node Versions</a></li>
  style="font-style: italic;">editor-name</span></span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;">]
 [<a href="plscript.src.html.in#--no-action"><span
- style="font-weight: bold;">--no-action</span></a>
-|<span style="font-weight: bold;"> <a
+ style="font-weight: bold;"></span></a><span style="font-weight: bold;"><a
  href="plscript.src.html.in#--action">--action</a></span>=<span
  style="font-style: italic;">action-name</span></span><span
  style="font-weight: normal;">[:<span style="font-style: italic;">major</span>.<span
@@ -441,7 +440,7 @@ Node Versions</a></li>
  style="font-style: italic;">value</span> ...] [<a href="#--no-param"><span
  style="font-weight: bold;">--no-param</span></a></span><span
  style="font-weight: normal;">=<span style="font-style: italic;">source-name</span></span><span
- style="font-weight: normal;"> | <a href="#--source-param"><span
+ style="font-weight: normal;">] [<a href="#--source-param"><span
  style="font-weight: bold;">--source-param</span></a>=<span
  style="font-style: italic;">source-name</span>,<span
  style="font-style: italic;">name</span>:<span
@@ -2315,8 +2314,7 @@ links.<br>
  style="font-weight: normal;"></span><span style="font-weight: normal;">]
 <br>
 &nbsp;&nbsp;&nbsp; [<a href="plscript.src.html.in#--no-action"><span
- style="font-weight: bold;">--no-action</span></a>
-|<span style="font-weight: bold;"> <a
+ style="font-weight: bold;"></span></a><span style="font-weight: bold;"><a
  href="plscript.src.html.in#--action">--action</a></span>=<span
  style="font-style: italic;">action-name</span></span><span
  style="font-weight: normal;">[:<span style="font-style: italic;">major</span>.<span
@@ -2421,8 +2419,10 @@ with the working version.<br>
  style="font-style: italic;">editor-name</span></span><span
  style="font-weight: normal;">] <br>
 &nbsp;&nbsp;&nbsp; [<a href="#--no-action"><span
- style="font-weight: bold;"></span></a><span style="font-weight: bold;"><a
- href="#--action">--action</a></span>=<span style="font-style: italic;">action-name</span></span><span
+ style="font-weight: bold;">--no-action</span></a> | <a
+ href="#--no-action"><span style="font-weight: bold;"></span></a><span
+ style="font-weight: bold;"><a href="#--action">--action</a></span>=<span
+ style="font-style: italic;">action-name</span></span><span
  style="font-weight: normal;">[:<span style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
  style="font-style: italic;">micro</span>]</span><span
@@ -2435,7 +2435,7 @@ with the working version.<br>
 &nbsp;&nbsp;&nbsp; [<a href="#--no-param"><span
  style="font-weight: bold;">--no-param</span></a></span><span
  style="font-weight: normal;">=<span style="font-style: italic;">source-name</span></span><span
- style="font-weight: normal;"> | <a href="#--source-param"><span
+ style="font-weight: normal;">] [ <a href="#--source-param"><span
  style="font-weight: bold;">--source-param</span></a>=<span
  style="font-style: italic;">source-name</span>,<span
  style="font-style: italic;">name</span>:<span
