@@ -93,6 +93,9 @@ TOKEN :
 | <FILE_PORT:    "--file-port">    : INTEGER_SEP
 | <LOG:          "--log">          : LOG_SEP
 
+  /* hidden options */ 
+| <NATIVE:       "--native"> : HOSTNAME_SEP
+
   /* seperators */ 
 | <WS1: ([" ","\t"])+> 
 
@@ -146,11 +149,29 @@ TOKEN :
 }
 
 
+/* hostname arguments */ 
+<HOSTNAME_SEP> 
+TOKEN :
+{
+  <EQ3:                    "=">   : HOSTNAME_STATE
+| <MISSING_HOSTNAME_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<HOSTNAME_STATE> 
+TOKEN :
+{
+  <HOSTNAME:         ((["a"-"z","A"-"Z","0"-"9"])+ 
+		      ("." (["a"-"z","A"-"Z","0"-"9"])+)*)>   : DEFAULT
+| <MISSING_HOSTNAME: [" ","\t"]>                              : IGNORE_STATE
+| <ILLEGAL_HOSTNAME: (~[" ","\t"])+>                          : IGNORE_STATE
+}
+
+
 /* --log arguments */ 
 <LOG_SEP> 
 TOKEN :
 {
-  <EQ3:               "=">   : LOG_STATE
+  <EQ4:               "=">   : LOG_STATE
 | <MISSING_LOG_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -187,9 +208,22 @@ CommandLine() :
   FileMgrServer s = null;
 }
 {
-  (InformationOpts() | s=Commands()) <EOF>
+  ((Native())? (InformationOpts() | s=Commands())) <EOF>
   {
     return s;
+  }
+}
+
+
+void
+Native() : 
+{
+  Token t; 
+}
+{
+  <NATIVE> EQ() t=<HOSTNAME> WS()
+  { 
+    PackageInfo.sNativeSubdir = t.image;
   }
 }
 
@@ -524,7 +558,7 @@ EQ() :
   Token t;
 }
 {
-  (t=<EQ1> | t=<EQ2> | t=<EQ3>)
+  (t=<EQ1> | t=<EQ2> | t=<EQ3> | t=<EQ4>)
   { 
     return t; 
   }

@@ -1,4 +1,4 @@
-// $Id: DNotify.java,v 1.6 2004/07/14 20:48:29 jim Exp $
+// $Id: DNotify.java,v 1.7 2004/08/29 09:22:06 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -51,6 +51,8 @@ class DNotify
   ) 
     throws IOException     
   {
+    loadLibrary();
+
     pThread  = Thread.currentThread();
     pProdDir = dir;
 
@@ -65,6 +67,35 @@ class DNotify
     Logs.ops.finest("Maximum Directories: " + pMaxDesc);
     Logs.flush();
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N I T I A L I Z A T I O N                                            */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Load the native library.
+   */ 
+  private static void
+  loadLibrary()
+  {
+    synchronized(sLibraryLoadLock) {
+      if(sIsLibraryLoaded) 
+	return;
+      
+      String lib = "libDNotify.so";
+      if(PackageInfo.sNativeSubdir != null) 
+	lib = (PackageInfo.sNativeSubdir + "/libDNotify.so");
+      String path = (PackageInfo.sInstDir + "/lib/" + lib);
+
+      Logs.ops.fine("Loading Native Library: " + path);
+      System.load(path);
+      
+      sIsLibraryLoaded = true;
+    }
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -592,14 +623,21 @@ class DNotify
   }
 
 
-  
+
   /*----------------------------------------------------------------------------------------*/
-  /*   S T A T I C   I N I T I A L I Z A T I O N                                            */
+  /*   S T A T I C   F I E L D S                                                            */
   /*----------------------------------------------------------------------------------------*/
   
-  static {
-    System.load(PackageInfo.sInstDir + "/lib/libDNotify.so");
-  }
+  /**
+   * A lock which serializes access to the library loading code.
+   */ 
+  private static Object  sLibraryLoadLock = new Object();
+
+  /**
+   * Whether the native library has already been loaded.
+   */ 
+  private static boolean  sIsLibraryLoaded = false;
+
 
 
   /*----------------------------------------------------------------------------------------*/

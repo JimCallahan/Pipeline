@@ -1,4 +1,4 @@
-// $Id: FileMgrApp.java,v 1.8 2004/07/24 18:17:59 jim Exp $
+// $Id: FileMgrApp.java,v 1.9 2004/08/29 09:22:06 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -20,7 +20,7 @@ import java.text.*;
  */
 public
 class FileMgrApp
-  extends BaseApp
+  extends VerifiedApp
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */

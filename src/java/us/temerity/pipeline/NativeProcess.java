@@ -1,4 +1,4 @@
-// $Id: NativeProcess.java,v 1.7 2004/04/11 19:31:58 jim Exp $
+// $Id: NativeProcess.java,v 1.8 2004/08/29 09:22:06 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -62,6 +62,8 @@ class NativeProcess
    File dir          
   )
   {
+    loadLibrary();
+
     if(cmd == null)
       throw new IllegalArgumentException("The command line arguments cannot be (null)!");
     if(cmd.length == 0) 

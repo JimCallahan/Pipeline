@@ -1,4 +1,4 @@
-// $Id: Native.java,v 1.3 2004/04/11 19:31:58 jim Exp $
+// $Id: Native.java,v 1.4 2004/08/29 09:22:06 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -15,20 +15,45 @@ package us.temerity.pipeline;
 class Native
 {  
   /*----------------------------------------------------------------------------------------*/
-  /*   C O N S T R U C T O R                                                                */
-  /*----------------------------------------------------------------------------------------*/
-
-  protected
-  Native()
-  {}
-
-
-
-  /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N I T I A L I Z A T I O N                                            */
   /*----------------------------------------------------------------------------------------*/
   
-  static {
-    System.load(PackageInfo.sInstDir + "/lib/libNative.so");
+  /**
+   * Load the native library.
+   */ 
+  protected static void
+  loadLibrary()
+  {
+    synchronized(sLibraryLoadLock) {
+      if(sIsLibraryLoaded) 
+	return;
+      
+      String lib = "libNative.so";
+      if(PackageInfo.sNativeSubdir != null) 
+	lib = (PackageInfo.sNativeSubdir + "/libNative.so");
+      String path = (PackageInfo.sInstDir + "/lib/" + lib);
+
+      Logs.ops.fine("Loading Native Library: " + path);
+      System.load(path);
+            
+      sIsLibraryLoaded = true;
+    }
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   F I E L D S                                                            */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * A lock which serializes access to the library loading code.
+   */ 
+  private static Object  sLibraryLoadLock = new Object();
+
+  /**
+   * Whether the native library has already been loaded.
+   */ 
+  private static boolean  sIsLibraryLoaded = false;
+
 }

@@ -1,4 +1,4 @@
-// $Id: NativeFileSys.java,v 1.5 2004/07/28 19:12:03 jim Exp $
+// $Id: NativeFileSys.java,v 1.6 2004/08/29 09:22:06 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -16,15 +16,6 @@ public
 class NativeFileSys
   extends Native
 {  
-  /*----------------------------------------------------------------------------------------*/
-  /*   C O N S T R U C T O R                                                                */
-  /*----------------------------------------------------------------------------------------*/
-
-  private
-  NativeFileSys()
-  {}
-
- 
   /*----------------------------------------------------------------------------------------*/
   /*   O P S                                                                                */
   /*----------------------------------------------------------------------------------------*/
@@ -55,6 +46,7 @@ class NativeFileSys
       throw new IOException
 	("The file argument (" + file + ") must be an absolute path!");
 
+    loadLibrary();
     chmodNative(mode, file.getPath());
   }
 
@@ -73,6 +65,7 @@ class NativeFileSys
    int mask
   ) 
   {
+    loadLibrary();
     umaskNative(mask);
   }
   
@@ -101,6 +94,7 @@ class NativeFileSys
       throw new IOException
 	("The link argument (" + link + ") must be an absolute path!");
     
+    loadLibrary();
     symlinkNative(file.getPath(), link.getPath());
   }
   
@@ -131,6 +125,7 @@ class NativeFileSys
   ) 
     throws IOException
   {
+    loadLibrary();
     return new File(realpathNative(path.getPath()));
   }
 
@@ -157,6 +152,7 @@ class NativeFileSys
   ) 
     throws IOException
   {
+    loadLibrary();
     return freeDiskSpaceNative(path.getPath());
   }
 
@@ -180,6 +176,7 @@ class NativeFileSys
   ) 
     throws IOException
   {
+    loadLibrary();
     return totalDiskSpaceNative(path.getPath());
   }
 
