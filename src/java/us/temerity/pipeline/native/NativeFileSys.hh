@@ -17,6 +17,14 @@ JNIEXPORT void JNICALL Java_us_temerity_pipeline_NativeFileSys_chmodNative
 
 /*
  * Class:     us_temerity_pipeline_NativeFileSys
+ * Method:    umaskNative
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_us_temerity_pipeline_NativeFileSys_umaskNative
+  (JNIEnv *, jclass, jint);
+
+/*
+ * Class:     us_temerity_pipeline_NativeFileSys
  * Method:    symlinkNative
  * Signature: (Ljava/lang/String;Ljava/lang/String;)V
  */

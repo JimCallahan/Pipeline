@@ -1,4 +1,4 @@
-// $Id: NativeFileSys.java,v 1.3 2004/04/11 19:31:58 jim Exp $
+// $Id: NativeFileSys.java,v 1.4 2004/05/23 19:49:22 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -57,7 +57,25 @@ class NativeFileSys
 
     chmodNative(mode, file.getPath());
   }
+
    
+  /**
+   * Set the file creation mask. <P> 
+   * 
+   * See the manpage for umask(2) for details about the legal values for <CODE>mask</CODE>.
+   *
+   * @param mask
+   *   The file creation bitmask.
+   */
+  public static void 
+  umask
+  (
+   int mask
+  ) 
+  {
+    umaskNative(mask);
+  }
+  
   
   /** 
    * Create a symbolic link which points to the given file. <P> 
@@ -140,6 +158,20 @@ class NativeFileSys
    String file
   ) 
     throws IOException;
+
+  /**
+   * Set the file creation mask. <P> 
+   * 
+   * See the manpage for umask(2) for details about the legal values for <CODE>mask</CODE>.
+   *
+   * @param mask
+   *   The file creation bitmask.
+   */
+  public static native void 
+  umaskNative
+  (
+   int mask
+  );
 
   /** 
    * Create a symbolic link which points to the given file. <P> 

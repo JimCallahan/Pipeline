@@ -1,4 +1,4 @@
-// $Id: NativeFileSys.cc,v 1.3 2004/04/11 19:30:20 jim Exp $
+// $Id: NativeFileSys.cc,v 1.4 2004/05/23 19:49:22 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -84,6 +84,20 @@ JNICALL Java_us_temerity_pipeline_NativeFileSys_chmodNative
 	    file, strerror(errno));
     env->ThrowNew(IOException, msg);    
   }
+}
+ 
+/* Set the file creation mask. */
+extern "C" 
+JNIEXPORT void 
+JNICALL Java_us_temerity_pipeline_NativeFileSys_umaskNative
+(
+ JNIEnv *env, 
+ jclass cls, 
+ jint mask     /* IN: the file creation bitmask */ 
+)
+{
+  /* change the file creation mask (always succeeds) */ 
+  umask(mask);
 }
  
 /* Create a symbolic link which points to the given file. */
