@@ -1,4 +1,4 @@
-// $Id: JFileSelectDialog.java,v 1.3 2004/06/03 09:25:53 jim Exp $
+// $Id: JFileSelectDialog.java,v 1.4 2004/06/08 03:00:51 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -21,8 +21,7 @@ import javax.swing.tree.*;
  */ 
 public 
 class JFileSelectDialog
-  extends JBaseDialog
-  implements ListSelectionListener, DocumentListener
+  extends JBaseFileSelectDialog
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -60,7 +59,7 @@ class JFileSelectDialog
    String confirm
   ) 
   {
-    super(owner, title, true);
+    super(owner, title);
     initUI(title, header, fieldTitle, fieldTitleSize, confirm);
   }
 
@@ -89,7 +88,7 @@ class JFileSelectDialog
    String confirm
   ) 
   {
-    super(owner, title, true);
+    super(owner, title);
     initUI(title, header, null, 0, confirm);
   }
 
@@ -128,143 +127,11 @@ class JFileSelectDialog
    int fieldTitleSize, 
    String confirm
   ) 
-  {
-    /* create dialog body components */ 
-    {
-      JPanel body = new JPanel();
-
-      body.setName("MainDialogPanel");
-      body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));
-
-      {
-	Box hbox = new Box(BoxLayout.X_AXIS);
-	
-	hbox.add(Box.createRigidArea(new Dimension(4, 0)));
-	
-	{
-	  JLabel label = UIMaster.createLabel("Directory:", 60, JLabel.LEFT);
-	  
-	  Dimension size = label.getPreferredSize();
-	  label.setMaximumSize(new Dimension(60, size.height));
-	  
-	  hbox.add(label);
-	}
-	  
-	{
-	  JTextField field = UIMaster.createEditableTextField(null, 60, JLabel.LEFT);
-	  pDirField = field;
-
-	  field.addActionListener(this);
-	  field.setActionCommand("jump-dir");
-
-	  field.getDocument().addDocumentListener(this);
-
-	  hbox.add(field);
-	}
-	
-	hbox.add(Box.createRigidArea(new Dimension(4, 0)));
-	
-	{
-	  JButton btn = new JButton();
-	  btn.setName("FolderButton");
-	  
-	  Dimension size = new Dimension(24, 19);
-	  btn.setMinimumSize(size);
-	  btn.setMaximumSize(size);
-	  btn.setPreferredSize(size);
-	  
-	  btn.setActionCommand("new-folder");
-	  btn.addActionListener(this);
-	  
-	  hbox.add(btn);
-	} 
-
-	hbox.add(Box.createRigidArea(new Dimension(4, 0)));
-	
-	{
-	  JButton btn = new JButton();
-	  btn.setName("HomeButton");
-	  
-	  Dimension size = new Dimension(24, 19);
-	  btn.setMinimumSize(size);
-	  btn.setMaximumSize(size);
-	  btn.setPreferredSize(size);
-	  
-	  btn.setActionCommand("jump-home");
-	  btn.addActionListener(this);
-	  
-	  hbox.add(btn);
-	} 
-
-	body.add(hbox);
-      }
-      
-      body.add(Box.createRigidArea(new Dimension(0, 8)));
-
-      {
-	JList lst = new JList();
-	pFileList = lst;
-
-	lst.setModel(new DefaultListModel());
-	lst.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-	lst.setCellRenderer(new JFileListCellRenderer());
-	lst.addListSelectionListener(this);
-
-	{
-	  JScrollPane scroll = new JScrollPane(lst);
-	  
-	  Dimension size = new Dimension(690, 120);
-	  scroll.setMinimumSize(size);
-	  scroll.setPreferredSize(size);
-	  
-	  scroll.setHorizontalScrollBarPolicy
-	    (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	  scroll.setVerticalScrollBarPolicy
-	    (ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-	  
-	  body.add(scroll);
-	}
-      }
-
-      if(fieldTitle != null) {
-	body.add(Box.createRigidArea(new Dimension(0, 8)));
-      
-	{
-	  Box hbox = new Box(BoxLayout.X_AXIS);
-	  
-	  hbox.add(Box.createRigidArea(new Dimension(4, 0)));
-	  
-	  {
-	    JLabel label = UIMaster.createLabel(fieldTitle, fieldTitleSize, JLabel.LEFT);
-	    
-	    Dimension size = label.getPreferredSize();
-	    label.setMaximumSize(new Dimension(fieldTitleSize, size.height));
-	    
-	    hbox.add(label);
-	  }
-	  
-	  {
-	    JIdentifierField field = UIMaster.createIdentifierField(null, 60, JLabel.LEFT);
-	    pFileField = field;
-
-	    field.addActionListener(this);
-	    field.setActionCommand("confirm");
-
-	    field.getDocument().addDocumentListener(this);
-
-	    hbox.add(field);
-	  }
-	  
-	  body.add(hbox);
-	}  
-      }
-
-      super.initUI(header, true, body, confirm, null, null, "Close");
-
-      pack();
-    }    
+  {    
+    JFileListCellRenderer renderer = new JFileListCellRenderer();
+    JIdentifierField field = UIMaster.createIdentifierField(null, 60, JLabel.LEFT);
+    super.initUI(header, renderer, fieldTitle, fieldTitleSize, field, confirm);
   }
-
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -273,6 +140,9 @@ class JFileSelectDialog
   
   /**
    * Get the name of the selected file (or directory).
+   * 
+   * @return 
+   *   The file or <CODE>null</CODE> if none is selected.
    */ 
   public File
   getSelectedFile() 
@@ -325,15 +195,15 @@ class JFileSelectDialog
   }
 
   /**
-   * Update target file or directory. 
+   * Update target file or directory.
    */ 
   public void 
   updateTargetFile
   (
    File target
-  )
-  { 
-    /* determine the canonical path to the target directory */ 
+  ) 
+  {
+    /* determine the canonical path to the target */ 
     File canon = null;
     {
       if(target != null) {
@@ -347,14 +217,15 @@ class JFileSelectDialog
       if(canon == null) {
 	try {
 	  File dir = new File(System.getProperty("user.dir"));
-	  canon = dir.getCanonicalFile();
+	  if(dir.getPath().startsWith(pRootDir.getPath())) 
+	    canon = dir.getCanonicalFile();
 	}
 	catch(IOException ex) {
 	}
       }
       
       if(canon == null) 
-	canon = new File("/");
+	canon = pRootDir;
     }
 
     /* determine the target directory and file name */ 
@@ -371,7 +242,7 @@ class JFileSelectDialog
 	Toolkit.getDefaultToolkit().beep();
 
 	File file = canon;
-	while(file.getPath().length() > 1) {
+	while(file.getPath().startsWith(pRootDir.getPath())) {
 	  if(file.isDirectory()) {
 	    dir = file;
 	    break;
@@ -379,6 +250,9 @@ class JFileSelectDialog
 
 	  file = file.getParentFile();
 	}
+
+	if(dir == null) 
+	  return;
       }
     }
 
@@ -400,7 +274,7 @@ class JFileSelectDialog
 	    dirs.add(fs[wk]);
 	}
 	
-	if(!dir.getPath().equals("/")) 
+	if(!dir.equals(pRootDir)) 
 	  model.addElement(new File(dir, ".."));
 	
 	for(File file : dirs) 
@@ -420,29 +294,6 @@ class JFileSelectDialog
     if((pFileField != null) && (name != null))
       pFileField.setText(name);
   }
-
-  /**
-   * Update the enabled status of the confirm button.
-   */ 
-  private void 
-  updateConfirmButton()
-  {
-    boolean enabled = true;
-    
-    String dir = pDirField.getText();
-    if((dir == null) || (dir.length() == 0))
-      enabled = false;
-
-    if(pFileField != null) {
-      String file = pFileField.getText();
-      if((file == null) || (file.length() == 0))
-	enabled = false;
-    }
-
-    pConfirmButton.setEnabled(enabled);
-  }
-
-
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -469,71 +320,14 @@ class JFileSelectDialog
   }
 
 
-  /*-- DOCUMENT LISTENER METHODS -----------------------------------------------------------*/
-
-  /**
-   * Gives notification that an attribute or set of attributes changed.
-   */ 
-  public void 
-  changedUpdate(DocumentEvent e) {}
-
-  /**
-   * Gives notification that there was an insert into the document.
-   */
-  public void
-  insertUpdate
-  (
-   DocumentEvent e
-  )
-  {
-    updateConfirmButton();
-  }
-  
-  /**
-   * Gives notification that a portion of the document has been removed.
-   */
-  public void 
-  removeUpdate
-  (
-   DocumentEvent e
-  )
-  {
-    updateConfirmButton();    
-  }
-
-
-  /*-- ACTION LISTENER METHODS -------------------------------------------------------------*/
-
-  /** 
-   * Invoked when an action occurs. 
-   */ 
-  public void 
-  actionPerformed
-  (
-   ActionEvent e
-  ) 
-  {
-    super.actionPerformed(e);
-
-    if(e.getActionCommand().equals("jump-dir")) 
-      doJumpDir();
-    else if(e.getActionCommand().equals("jump-home")) 
-      doJumpHome();
-    else if(e.getActionCommand().equals("new-folder")) 
-      doNewFolder();
-  }
-
-
-
   /*----------------------------------------------------------------------------------------*/
   /*   A C T I O N S                                                                        */
   /*----------------------------------------------------------------------------------------*/
 
-
   /**
    * Jump to the directory named by the directory field.
    */ 
-  public void 
+  protected void 
   doJumpDir()
   {
     File dir = new File(pDirField.getText());
@@ -546,7 +340,7 @@ class JFileSelectDialog
   /**
    * Jump to the user's home directory.
    */ 
-  public void 
+  protected void 
   doJumpHome()
   { 
     updateTargetFile(new File(PackageInfo.sHomeDir, PackageInfo.sUser));
@@ -555,7 +349,7 @@ class JFileSelectDialog
   /**
    * Create a new directory under the current working directory and jump to it.
    */ 
-  public void 
+  protected void 
   doNewFolder()
   {
     File dir = new File(pDirField.getText());
@@ -580,34 +374,10 @@ class JFileSelectDialog
   }
 
 
-
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
   private static final long serialVersionUID = 257228426004498837L;
-  
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   I N T E R N A L S                                                                    */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The current directory field.
-   */ 
-  private JTextField  pDirField;
-
-  /**
-   * The file listing.
-   */ 
-  private JList  pFileList;
-
-  /**
-   * The selected file field. <P> 
-   * 
-   * May be <CODE>null</CODE> if this a directory only dialog.
-   */ 
-  private JTextField  pFileField;
 
 }
