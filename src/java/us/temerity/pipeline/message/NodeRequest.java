@@ -1,4 +1,4 @@
-// $Id: NodeRequest.java,v 1.4 2004/03/29 08:18:53 jim Exp $
+// $Id: NodeRequest.java,v 1.5 2004/03/30 22:17:55 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -53,6 +53,16 @@ enum NodeRequest
    * An instance of {@link NodeRegisterReq NodeRegisterReq} is next.
    */
   Register, 
+
+  /**
+   * An instance of {@link NodeRevokeReq NodeRevokeReq} is next.
+   */
+  Revoke, 
+
+  /**
+   * An instance of {@link NodeRenameReq NodeRenameReq} is next.
+   */
+  Rename, 
 
   // ...
 

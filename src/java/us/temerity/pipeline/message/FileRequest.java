@@ -1,4 +1,4 @@
-// $Id: FileRequest.java,v 1.7 2004/03/26 19:13:17 jim Exp $
+// $Id: FileRequest.java,v 1.8 2004/03/30 22:18:16 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -21,6 +21,8 @@ package us.temerity.pipeline.message;
  * @see FileFreezeReq
  * @see FileUnfreezeReq
  * @see FileStateReq
+ * @see FileRemoveReq
+ * @see FileRenameReq
  */
 public
 enum FileRequest
@@ -49,6 +51,16 @@ enum FileRequest
    * An instance of {@link FileStateReq FileStateReq} is next.
    */
   State, 
+
+  /**
+   * An instance of {@link FileRemoveReq FileRemoveReq} is next.
+   */
+  Remove, 
+
+  /**
+   * An instance of {@link FileRenameReq FileRenameReq} is next.
+   */
+  Rename, 
 
   /**
    * No more requests will be send over this connection.
