@@ -128,11 +128,12 @@ fi
 AC_MSG_RESULT([$BASEDIR])
 
 
+dnl ------------------------------------------------------------------------------------------
 
 AC_MSG_CHECKING([Pipeline Server Hostname])
 
 AC_ARG_WITH([plserver], 
-            [  --with-plserver=HOST    Port number to use for Pipeline server.])
+            [  --with-plserver=HOST    Hostname of PostGreSQL server.])
 
 AC_SUBST(PLSERVER)
 PLSERVER="localhost"
@@ -161,9 +162,29 @@ fi
 
 AC_MSG_RESULT([$PLPORT])
 
+
+dnl ------------------------------------------------------------------------------------------
+
+AC_MSG_CHECKING([PBS Server Hostname])
+
+AC_ARG_WITH([pbsserver], 
+            [  --with-pbsserver=HOST   Hostname of PBS server.])
+
+AC_SUBST(PBS_SERVER)
+PBS_SERVER="localhost"
+
+if test "$with_plserver" 
+then
+  PBS_SERVER=$with_plserver
+fi
+
+AC_MSG_RESULT([$PBS_SERVER])
+
+
 AC_MSG_RESULT([ ])
 
 
+dnl ------------------------------------------------------------------------------------------
 
 AC_MSG_CHECKING([toolset])
 AC_MSG_RESULT([$TOOLSET])
@@ -176,7 +197,7 @@ AC_MSG_RESULT([$PATH])
 AC_MSG_RESULT([ ])
 
 
-dnl -------------------------------------------------------------------------------------------
+dnl ------------------------------------------------------------------------------------------
 
 AC_SUBST(JAVA_C_FLAGS)
 JAVA_C_FLAGS=""
