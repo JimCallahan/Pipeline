@@ -1,4 +1,4 @@
-// $Id: JColorEditorDialog.java,v 1.1 2004/12/17 15:06:51 jim Exp $
+// $Id: JColorEditorDialog.java,v 1.2 2004/12/29 17:31:45 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -7,6 +7,7 @@ import us.temerity.pipeline.math.*;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.*;
 import javax.swing.*;
 import javax.swing.event.*;
 
@@ -38,7 +39,20 @@ class JColorEditorDialog
     
     /* initialize fields */ 
     {
-      pColor = new Color3d();
+      pHSV = new Tuple3d(0.0, 1.0, 1.0);
+
+      /* the space of the color triangle */ 
+      {
+	double theta = Math.PI / 6.0;
+	double x = Math.cos(theta);
+	double y = Math.sin(theta);
+	
+	Point2d origin = new Point2d(-x, y);
+	Vector2d bx = new Vector2d(origin, new Point2d(x, y));
+        Vector2d by = new Vector2d(origin, new Point2d(-x, -1.0));
+	
+	pTriSpace = new CoordSys2d(bx, by, origin);
+      }
     }
 
     /* create dialog body components */ 
@@ -47,7 +61,7 @@ class JColorEditorDialog
 
       {
 	pCanvas = UIMaster.getInstance().createGLCanvas(); 
-	pCanvas.setSize(500, 250);
+	pCanvas.setSize(520, 250);
 	
 	pCanvas.addGLEventListener(this);
 	pCanvas.addMouseListener(this);
@@ -67,7 +81,21 @@ class JColorEditorDialog
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Set header title.
+   */ 
+  public void 
+  setHeaderTitle
+  (
+   String title
+  ) 
+  {
+    pHeaderLabel.setText(title);
+  }
 
+  /*----------------------------------------------------------------------------------------*/
+ 
   /**
    * Set the current color.
    */ 
@@ -77,7 +105,7 @@ class JColorEditorDialog
    Color3d color
   ) 
   {
-    pColor.set(color);
+    pHSV = color.toHSV();
     pCanvas.repaint();
   }
 
@@ -87,7 +115,9 @@ class JColorEditorDialog
   public Color3d
   getColor() 
   {
-    return new Color3d(pColor);
+    Color3d color = new Color3d();
+    color.fromHSV(pHSV);
+    return color;
   }
 
 
@@ -134,13 +164,86 @@ class JColorEditorDialog
 
     gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
     
-    Color3d c = new Color3d();
-
-    double r1a = 0.45; 
-    double r2a = 0.55; 
+    double r1a = sInnerRadius; 
+    double r2a = sOuterRadius; 
 
     double r1 = r1a+0.002;
     double r2 = r2a-0.002;
+
+    Color3d c = new Color3d();
+
+    /* build the color circle display lists */ 
+    if((pWhiteDL == null) || (pBlackDL == null)) {
+      Integer texID = null;
+      try {
+	texID = TextureMgr.getInstance().getTexture(gl, "ColorCircle");
+      }
+      catch(IOException ex) {
+	Logs.tex.severe(ex.getMessage());
+      }
+	
+      /* the white color circle */ 
+      if(pWhiteDL == null) {
+	pWhiteDL = gl.glGenLists(1);
+	
+	gl.glNewList(pWhiteDL, GL.GL_COMPILE);
+	{
+	  gl.glEnable(GL.GL_TEXTURE_2D);
+	  gl.glBindTexture(GL.GL_TEXTURE_2D, texID);
+	  
+	  gl.glColor3d(1.0, 1.0, 1.0);
+	  gl.glBegin(GL.GL_QUADS);
+	  {
+	    gl.glTexCoord2d(0.0, 1.0);
+	    gl.glVertex3d(-0.5, -0.5, 0.0);
+	    
+	    gl.glTexCoord2d(1.0, 1.0);
+	    gl.glVertex3d(0.5, -0.5, 0.0);
+	    
+	    gl.glTexCoord2d(1.0, 0.0);	
+	    gl.glVertex3d(0.5, 0.5, 0.0);
+	    
+	    gl.glTexCoord2d(0.0, 0.0);
+	    gl.glVertex3d(-0.5, 0.5, 0.0);
+	  }
+	  gl.glEnd();
+
+	  gl.glDisable(GL.GL_TEXTURE_2D); 
+	}
+	gl.glEndList();
+      }
+      
+      /* the black color circle */ 
+      if(pBlackDL == null) {
+	pBlackDL = gl.glGenLists(1);
+	
+	gl.glNewList(pBlackDL, GL.GL_COMPILE);
+	{
+	  gl.glEnable(GL.GL_TEXTURE_2D);
+	  gl.glBindTexture(GL.GL_TEXTURE_2D, texID);
+
+	  gl.glColor3d(0.0, 0.0, 0.0);
+	  gl.glBegin(GL.GL_QUADS);
+	  {
+	    gl.glTexCoord2d(0.0, 1.0);
+	    gl.glVertex3d(-0.5, -0.5, 0.0);
+	    
+	    gl.glTexCoord2d(1.0, 1.0);
+	    gl.glVertex3d(0.5, -0.5, 0.0);
+	    
+	    gl.glTexCoord2d(1.0, 0.0);	
+	    gl.glVertex3d(0.5, 0.5, 0.0);
+	    
+	    gl.glTexCoord2d(0.0, 0.0);
+	    gl.glVertex3d(-0.5, 0.5, 0.0);
+	  }
+	  gl.glEnd();
+
+	  gl.glDisable(GL.GL_TEXTURE_2D); 
+	}
+	gl.glEndList();
+      }
+    }
 
     /* the hue ring */ 
     if(pRingDL == null) {
@@ -202,10 +305,26 @@ class JColorEditorDialog
       gl.glCallList(pRingDL);
     }
 
+    /* the hue ring color circle */ 
+    {
+      gl.glPushMatrix();
+      {
+	double r = (sInnerRadius+sOuterRadius)*0.5;
+	Point2d p = polarToRing(new Point2d(pHSV.x(), r));
+	p.add(0.5);
+	gl.glTranslated(p.x(), p.y(), 0.0);
+
+ 	double s = (sOuterRadius - sInnerRadius) * 0.65;
+ 	gl.glScaled(s, s, s);
+	
+	gl.glCallList(((pHSV.x() > 30.0) && (pHSV.x() < 210.0)) ? pBlackDL : pWhiteDL);
+      }
+      gl.glPopMatrix();
+    }
+
     /* the HSV triangle */ 
     {
-      Tuple3d hsv = pColor.toHSV();
-      c.fromHSV(new Tuple3d(hsv.x(), 1.0, 1.0));
+      c.fromHSV(new Tuple3d(pHSV.x(), 1.0, 1.0));
 
       double theta = Math.PI / 6.0;
       double x = Math.cos(theta);
@@ -216,7 +335,7 @@ class JColorEditorDialog
       gl.glPushMatrix();
       {
       	gl.glTranslated(0.5, 0.5, 0.0);
-	gl.glRotated(hsv.x(), 0.0, 0.0, 1.0);
+	gl.glRotated(pHSV.x(), 0.0, 0.0, 1.0);
 
 	gl.glBegin(GL.GL_TRIANGLES);
 	{
@@ -241,6 +360,23 @@ class JColorEditorDialog
  	}
  	gl.glEnd();
       }
+
+      /* the HSV triangle color circle */ 
+      {
+	Point2d p = Point2d.lerp(new Point2d(-x*r1a, y*r1a), 
+				 Point2d.lerp(new Point2d(x*r1a, y*r1a), 
+					      new Point2d(0.0, -r1a), 
+					      pHSV.y()), 
+				 pHSV.z());
+	
+	gl.glTranslated(p.x(), p.y(), 0.0);
+	
+	double s = (sOuterRadius - sInnerRadius) * 0.65;
+	gl.glScaled(s, s, s);
+	  
+	gl.glCallList((pHSV.z() > 0.5) ? pBlackDL : pWhiteDL);
+      }
+
       gl.glPopMatrix();
     }
 
@@ -250,11 +386,12 @@ class JColorEditorDialog
 
       gl.glPushMatrix();
       {
-	gl.glTranslated(1.75, 0.5, 0.0);
+	gl.glTranslated(1.8, 0.5, 0.0);
 	
 	gl.glBegin(GL.GL_QUADS);
 	{
-	  gl.glColor3d(pColor.r(), pColor.g(), pColor.b());
+	  c = getColor();
+	  gl.glColor3d(c.r(), c.g(), c.b());
 	  gl.glVertex2d( s,  s);
 	  gl.glVertex2d( s, -s);
 	  gl.glVertex2d(-s, -s);
@@ -313,25 +450,13 @@ class JColorEditorDialog
    * Invoked when the mouse enters a component. 
    */
   public void 
-  mouseEntered
-  (
-   MouseEvent e
-  ) 
-  {
-
-  }
+  mouseEntered(MouseEvent e) {}
   
   /**
    * Invoked when the mouse exits a component. 
    */ 
   public void 
-  mouseExited
-  (
-   MouseEvent e
-  ) 
-  {
-
-  }
+  mouseExited(MouseEvent e) {}
 
   /**
    * Invoked when a mouse button has been pressed on a component. 
@@ -342,7 +467,48 @@ class JColorEditorDialog
    MouseEvent e 
   ) 
   {
+    Point2d p  = canvasToRing(e.getPoint());
+    Point2d hr = ringToPolar(p);
 
+    System.out.print("Press: C = " + e.getPoint() + 
+		     "  Pos = " + p + "  Hue/Radius = " + hr + "\n\n");
+
+    if((hr.y() > 1.0) && (hr.y() < (sOuterRadius/sInnerRadius))) {
+      pHSV.x(hr.x()); 
+      pCanvas.repaint();
+      pEditingHue = true;
+    }
+    else {
+      //CoordSys2d space = pTriSpace.mult(CoordSys2d.newRotate(Math.toRadians(pHSV.x())));
+      CoordSys2d rot = CoordSys2d.newRotate(Math.toRadians(-pHSV.x()));
+      CoordSys2d space = rot.mult(pTriSpace);
+      CoordSys2d inv = space.inverse(0.000001);
+      
+      System.out.print("Tri:\n" + pTriSpace + "\n" + 
+		       "Rot:\n" + rot + "\n" + 
+		       "Space:\n" + space + "\n" + 
+		       "Inv:\n" + inv + "\n\n");		       
+
+      if(inv != null) {
+	Point2d tp = inv.xform(p);
+	System.out.print("  WP = " + p + "  TP = " + tp + "\n");
+
+	Point2d tb = new Point2d(0.0, 0.0);
+	Point2d wb = space.xform(tb);
+	Point2d tb2 = inv.xform(wb);
+	System.out.print("  TB = " + tb + "  WB = " + wb + "  TB2 = " + tb2 +"\n");
+
+	Point2d ts = new Point2d(0.5, 1.0);
+	Point2d ws = space.xform(ts);      
+	Point2d ts2 = inv.xform(ws);
+	System.out.print("  TS = " + ts + "  WS = " + ws + "  TS2 = " + ts2 + "\n");
+	
+	Point2d tw = new Point2d(1.0, 0.0);
+	Point2d ww = space.xform(tw);
+	Point2d tw2 = inv.xform(ww);
+	System.out.print("  TW = " + tw + "  WW = " + ww + "  TW2 = " + tw2 + "\n\n");
+      }
+    }
   }
 
   /**
@@ -354,7 +520,14 @@ class JColorEditorDialog
    MouseEvent e
   ) 
   {
+    Point2d p  = canvasToRing(e.getPoint());
+    Point2d hr = ringToPolar(p);
 
+    if(pEditingHue) {
+      pHSV.x(hr.x()); 
+      pCanvas.repaint();
+      pEditingHue = false;
+    }
   }
 
   /**
@@ -362,13 +535,7 @@ class JColorEditorDialog
    * been pushed. 
    */ 
   public void 	
-  mouseMoved 
-  (
-   MouseEvent e
-  ) 
-  {
-
-  }
+  mouseMoved(MouseEvent e) {}
 
 
   /*-- MOUSE MOTION LISTNER METHODS --------------------------------------------------------*/
@@ -382,7 +549,13 @@ class JColorEditorDialog
    MouseEvent e
   )
   {
-
+    Point2d p = canvasToRing(e.getPoint());
+    Point2d hr = ringToPolar(p);
+    
+    if(pEditingHue) {
+      pHSV.x(hr.x()); 
+      pCanvas.repaint();
+    }
   }
 
 
@@ -403,10 +576,60 @@ class JColorEditorDialog
   }
 
 
-
   /*----------------------------------------------------------------------------------------*/
   /*   A C T I O N S                                                                        */
   /*----------------------------------------------------------------------------------------*/
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Convert from canvas coordinates to color ring coordinates. 
+   */ 
+  private Point2d
+  canvasToRing
+  (
+   Point p
+  ) 
+  {
+    Vector2d v = new Vector2d(new Point2d(125.0, 125.0), new Point2d(p.getX(), p.getY()));
+    v.div((sInnerRadius/1.2)*250.0); 
+    return new Point2d(v);
+  }
+
+  /**
+   * Convert ring coordinates to polar coordinates [hue, radius].
+   */ 
+  private Point2d
+  ringToPolar
+  (
+   Point2d p
+  ) 
+  {
+    double hue = Math.toDegrees(Math.atan2(p.x(), -p.y()));
+    if(hue < 0) 
+      hue += 360.0;
+    Vector2d v = new Vector2d(p);
+    return new Point2d(hue, v.length());
+  }
+
+  /**
+   * Convert polar coordinates [hue, radius] to ring coordinates.
+   */ 
+  private Point2d
+  polarToRing
+  (
+   Point2d p
+  ) 
+  {
+    double theta = Math.toRadians(p.x());
+    Point2d pos = new Point2d(Math.sin(theta), -Math.cos(theta));
+    pos.mult(p.y());
+    return pos;
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -415,6 +638,16 @@ class JColorEditorDialog
 
   private static final long serialVersionUID = -8078376863798514480L;
 
+  /**
+   * The inner radius of the hue ring.
+   */ 
+  private static final  double  sInnerRadius = 0.45;
+
+  /**
+   * The outer radius of the hue ring.
+   */ 
+  private static final  double  sOuterRadius = 0.55; 
+
   
 
   /*----------------------------------------------------------------------------------------*/
@@ -422,9 +655,9 @@ class JColorEditorDialog
   /*----------------------------------------------------------------------------------------*/
  
   /**
-   * The current color.
+   * The current color in HSV representation.
    */ 
-  private Color3d  pColor;
+  private Tuple3d  pHSV;
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -439,4 +672,31 @@ class JColorEditorDialog
    */ 
   private Integer  pRingDL; 
 
+  /**
+   * The OpenGL display list handle for white color circle.
+   */
+  private Integer  pWhiteDL;  
+
+  /**
+   * The OpenGL display list handle for black color circle.
+   */ 
+  private Integer  pBlackDL; 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether a mouse drag which changes the hue is currently in progress.
+   */ 
+  private boolean  pEditingHue; 
+
+  /**
+   * The affine space defined by the color triangle. <P> 
+   * 
+   * The origin is at the black corner. <BR> 
+   * The X basis vector is from the black corner to the white corner. <BR> 
+   * The Y basis vector is from the black corner to the saturated corner. 
+   */ 
+  private CoordSys2d  pTriSpace; 
+  
 }
