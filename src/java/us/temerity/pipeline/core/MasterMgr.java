@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.26 2004/08/27 23:34:40 jim Exp $
+// $Id: MasterMgr.java,v 1.27 2004/08/30 01:40:44 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2763,7 +2763,55 @@ class MasterMgr
     }    
   }
 
+    
+  /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Remove the working area files associated with the given node. <P>  
+   * 
+   * @param req 
+   *   The submit jobs request.
+   * 
+   * @return 
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to kill the jobs.
+   */ 
+  public Object
+  removeFiles
+  (
+   NodeRemoveFilesReq req
+  ) 
+  {
+    NodeID nodeID = req.getNodeID();
+    TaskTimer timer = new TaskTimer("MasterMgr.removeFiles(): " + nodeID);
+
+    TreeSet<FileSeq> fseqs = null;
+    timer.aquire();
+    ReentrantReadWriteLock lock = getWorkingLock(nodeID);
+    lock.readLock().lock();
+    try {
+      timer.resume();
+      WorkingBundle bundle = getWorkingBundle(nodeID);
+      fseqs = bundle.uVersion.getSequences();
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }    
+    finally {
+      lock.readLock().unlock();
+    }    
+    assert(fseqs != null);
+
+    try {
+      pFileMgrClient.removeAll(nodeID, fseqs);
+      return new SuccessRsp(timer);  
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }    
+  }
+
+     
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -3530,7 +3578,7 @@ class MasterMgr
 	if((extJobIDs.get(nodeID) != null) || (nodeJobIDs.get(nodeID) != null))
 	  return;
 
-	/* are all frames Finished or Running/Queued? */ 
+	/* are all frames Finished or Running/Queued/Paused? */ 
 	{
 	  boolean finished = true;
 	  boolean running  = true; 
@@ -3544,6 +3592,7 @@ class MasterMgr
 	      
 	    case Running:
 	    case Queued:
+	    case Paused:
 	      finished = false;
 	      break;
 	      
@@ -3604,6 +3653,7 @@ class MasterMgr
 
 	      case Running:
 	      case Queued:
+	      case Paused:
 		{
 		  if(extIDs == null) {
 		    extIDs = new Long[numFrames];
@@ -3873,7 +3923,7 @@ class MasterMgr
   }
 
   /**
-   * Kill the job with the given IDs. <P> 
+   * Kill the jobs with the given IDs. <P> 
    * 
    * @param req 
    *   The submit jobs request.
@@ -3899,51 +3949,57 @@ class MasterMgr
   }
 
   /**
-   * Remove the working area files associated with the given node. <P>  
+   * Pause the jobs with the given IDs. <P> 
    * 
    * @param req 
    *   The submit jobs request.
    * 
    * @return 
    *   <CODE>SuccessRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to kill the jobs.
+   *   <CODE>FailureRsp</CODE> if unable to pause the jobs.
    */ 
   public Object
-  removeFiles
+  pauseJobs
   (
-   NodeRemoveFilesReq req
+   NodePauseJobsReq req
   ) 
   {
-    NodeID nodeID = req.getNodeID();
-    TaskTimer timer = new TaskTimer("MasterMgr.removeFiles(): " + nodeID);
-
-    TreeSet<FileSeq> fseqs = null;
-    timer.aquire();
-    ReentrantReadWriteLock lock = getWorkingLock(nodeID);
-    lock.readLock().lock();
+    TaskTimer timer = new TaskTimer("MasterMgr.pauseJobs()");
     try {
-      timer.resume();
-      WorkingBundle bundle = getWorkingBundle(nodeID);
-      fseqs = bundle.uVersion.getSequences();
-    }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());
-    }    
-    finally {
-      lock.readLock().unlock();
-    }    
-    assert(fseqs != null);
-
-    try {
-      pFileMgrClient.removeAll(nodeID, fseqs);
-      return new SuccessRsp(timer);  
+      pQueueMgrClient.pauseJobs(req.getJobIDs());
+      return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
     }    
   }
 
-     
+  /**
+   * Resume execution of the paused jobs with the given IDs. <P> 
+   * 
+   * @param req 
+   *   The submit jobs request.
+   * 
+   * @return 
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to resume the jobs.
+   */ 
+  public Object
+  resumeJobs
+  (
+   NodeResumeJobsReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer("MasterMgr.resumeJobs()");
+    try {
+      pQueueMgrClient.resumeJobs(req.getJobIDs());
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }    
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -4884,6 +4940,10 @@ class MasterMgr
 		  queueStates[wk] = QueueState.Queued;
 		  break;
 
+		case Paused:
+		  queueStates[wk] = QueueState.Paused;
+		  break;
+
 		case Aborted:
 		  queueStates[wk] = QueueState.Aborted;
 		  break;
@@ -4964,6 +5024,7 @@ class MasterMgr
       OverallQueueState overallQueueState = OverallQueueState.Undefined; 
       if(versionState != VersionState.CheckedIn) {
 	boolean anyStale = false;
+	boolean anyPaused = false;
 	boolean anyQueued = false;
 	boolean anyRunning = false; 
 	boolean anyAborted = false;
@@ -4978,6 +5039,10 @@ class MasterMgr
 	    
 	  case Queued:
 	    anyQueued = true;
+	    break;
+
+	  case Paused:
+	    anyPaused = true;
 	    break;
 	    
 	  case Running:
@@ -4999,6 +5064,8 @@ class MasterMgr
 	  overallQueueState = OverallQueueState.Aborted;
 	else if(anyRunning) 
 	  overallQueueState = OverallQueueState.Running;
+	else if(anyPaused) 
+	  overallQueueState = OverallQueueState.Paused;
 	else if(anyQueued) 
 	  overallQueueState = OverallQueueState.Queued;
 	else if(anyStale) 
