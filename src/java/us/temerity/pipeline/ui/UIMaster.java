@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.25 2004/06/23 22:34:22 jim Exp $
+// $Id: UIMaster.java,v 1.26 2004/06/28 00:21:10 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -445,13 +445,25 @@ class UIMaster
    * Show the manage editors dialog.
    */ 
   public void 
-  showManageEditorsDialog()
+  showDefaultEditorsDialog()
   {
-    pManageEditorsDialog.updateEditors();
-    pManageEditorsDialog.setVisible(true);
+    pDefaultEditorsDialog.updateEditors();
+    pDefaultEditorsDialog.setVisible(true);
   }
 
-
+  /**
+   * Show an dialog giving details of the failure of the given subprocess.
+   */ 
+  public void 
+  showSubprocessFailureDialog
+  (
+   String header, 
+   SubProcess proc
+  )
+  {
+    ShowSubprocessFailureDialog task = new ShowSubprocessFailureDialog(header, proc);
+    SwingUtilities.invokeLater(task);
+  }
 
 
 
@@ -2333,13 +2345,17 @@ class UIMaster
       {
 	pSaveLayoutDialog     = new JSaveLayoutDialog();
 	pManageLayoutsDialog  = new JManageLayoutsDialog();
-	pErrorDialog          = new JErrorDialog();
-	pUserPrefsDialog      = new JUserPrefsDialog();
-	pAboutDialog          = new JAboutDialog();
-	pConfigDialog         = new JConfigDialog();
+
+	pErrorDialog     = new JErrorDialog();
+	pUserPrefsDialog = new JUserPrefsDialog();
+	pAboutDialog     = new JAboutDialog();
+	pConfigDialog    = new JConfigDialog();
+
 	pManageUsersDialog    = new JManageUsersDialog();
 	pManageToolsetsDialog = new JManageToolsetsDialog();
-	pManageEditorsDialog  = new JManageEditorsDialog();
+	pDefaultEditorsDialog = new JDefaultEditorsDialog(); 
+
+	pSubProcessFailureDialog = new JSubProcessFailureDialog();
       }
       
       pFrame.setVisible(true);
@@ -2484,7 +2500,8 @@ class UIMaster
 	int wk;
 	for(wk=1; wk<10; wk++) {
 	  pNodeBrowsers[wk] = null;
-	  pNodeViewers[wk] = null;
+	  pNodeViewers[wk]  = null;
+	  pNodeDetails[wk]  = null;
 	}
       }
 
@@ -2577,6 +2594,34 @@ class UIMaster
     }
   }
   
+  /**
+   * Show an dialog giving details of the failure of the given subprocess.
+   */ 
+  private
+  class ShowSubprocessFailureDialog
+    extends Thread
+  { 
+    ShowSubprocessFailureDialog
+    (
+     String header, 
+     SubProcess proc
+    )
+    {
+      pHeader = header;
+      pProc = proc;
+    }
+
+    public void 
+    run() 
+    {
+      pSubProcessFailureDialog.updateProc(pHeader, pProc);
+      pSubProcessFailureDialog.setVisible(true);
+    }
+
+    private String      pHeader;
+    private SubProcess  pProc;
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -2740,5 +2785,10 @@ class UIMaster
   /**
    * The manage editors dialog.
    */ 
-  private JManageEditorsDialog  pManageEditorsDialog;
+  private JDefaultEditorsDialog  pDefaultEditorsDialog;
+
+  /**
+   * The dialog giving details of the failure of a subprocess.
+   */ 
+  private JSubProcessFailureDialog  pSubProcessFailureDialog; 
 }
