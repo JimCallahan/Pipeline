@@ -1,4 +1,4 @@
-// $Id: NodeMgr.java,v 1.3 2004/03/07 02:40:14 jim Exp $
+// $Id: NodeMgr.java,v 1.4 2004/03/09 05:05:08 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -28,29 +28,29 @@ import java.util.concurrent.locks.*;
  *   <DIV style="margin-left: 20px;">
  *     <I>fully-resolved-node-path</I>/ <BR>
  *     <DIV style="margin-left: 20px;">
- *       <I>node-file</I> <BR>
+ *       <I>node-name</I> <BR>
  *       ... <BR>
  *     </DIV> 
  *     ... <P>
  *   </DIV> 
  *   
- *   Where <I>prod-dir</I> is the root of the production file system hierarchy set by
- *   the <CODE>--with-prod=DIR</CODE> option to <I>configure(1)</I>.  The <I>author</I>
- *   is the name of the user owning the working version of the node.  The <I>view</I> is
+ *   Where (<I>prod-dir</I>) is the root of the production file system hierarchy set by
+ *   the <CODE>--with-prod=DIR</CODE> option to <I>configure(1)</I>.  The (<I>author</I>)
+ *   is the name of the user owning the working version of the node.  The (<I>view</I>) is
  *   the name of the particular working area view of which the working version is a 
  *   member.  In practice the environmental variable <CODE>$WORKING</CODE> is set to 
  *   contain the full path to this particular view. <P> 
  * 
- *   The <I>fully-resolved-node-path</I> is all but the last component of the fully resolved 
- *   name of the node.  The last component of this name is the prefix of the files which 
- *   make up the primary file sequence of the node.  The <I>node-file(s)</I> are one or more
- *   files which make up the primary and secondary file sequences associated with the node. 
- *   <P> 
+ *   The (<I>fully-resolved-node-path</I>) is all but the last component of the fully  
+ *   resolved name of the node.  The last component of this name is the prefix of the files 
+ *   which make up the primary file sequence of the node.  The (<I>node-name)</I> files are 
+ *   one or more files which make up the primary and secondary file sequences associated 
+ *   with the node. <P> 
  * 
  *   If the working version of a node has been frozen (see {@link #freeze freeze}), the 
- *   <I>node-file(s)</I> will not be regular files. Instead, they will be symbolic links to 
- *   the respective read-only file associated with the checked-in version upon which the 
- *   working version is based.
+ *   (<I>node-name)</I> files will not be regular files. Instead, they will be symbolic 
+ *   links to the respective read-only file associated with the checked-in version upon 
+ *   which the working version is based.
  * </DIV> <P> 
  * 
  * The location of files associated with checked-in versions: <P> 
@@ -62,11 +62,7 @@ import java.util.concurrent.locks.*;
  *     <DIV style="margin-left: 20px;">
  *       <I>revision-number</I> <BR>
  *       <DIV style="margin-left: 20px;">
- *         <I>node-file</I> <BR>
- *         ... <BR>
- *       </DIV> 
- *       <I>revision-number</I> <BR>
- *       <DIV style="margin-left: 20px;">
+ *         <I>node-name</I> <BR>
  *         ... <BR>
  *       </DIV> 
  *       ... <BR>
@@ -75,7 +71,7 @@ import java.util.concurrent.locks.*;
  *   </DIV> 
  * 
  *   The files associated with each checked-in version of the node are grouped under the 
- *   <I>revision-number</I> of their respective versions.  The other components have the 
+ *   (<I>revision-number</I>) of their respective versions.  The other components have the 
  *   same meaning described above for the working version files.  All checked-in files 
  *   have read-only file access permissions. <P> 
  * 
@@ -90,27 +86,70 @@ import java.util.concurrent.locks.*;
  *   to regular files. 
  * </DIV> <P> 
  * 
+ * The location of checksum files for the working and checked-in versions: <P> 
+ * 
+ * <DIV style="margin-left: 40px;">
+ *   <I>prod-dir</I>/checksum/ <BR> 
+ *   <DIV style="margin-left: 20px;">
+ *     working/<I>author</I>/<I>view</I>/ <BR>
+ *     <DIV style="margin-left: 20px;">
+ *       <I>fully-resolved-node-path</I>/ <BR>
+ *       <DIV style="margin-left: 20px;">
+ *         <I>node-name</I> <BR>
+ *         ... <BR>
+ *       </DIV> 
+ *       ... <P>
+ *     </DIV> 
+ * 
+ *     repository/ <BR>
+ *     <DIV style="margin-left: 20px;">
+ *       <I>fully-resolved-node-path</I>/ <BR>
+ *       <DIV style="margin-left: 20px;">
+ *         <I>revision-number</I> <BR>
+ *         <DIV style="margin-left: 20px;">
+ *           <I>node-name</I> <BR>
+ *           ... <BR>
+ *         </DIV> 
+ *         ... <BR>
+ *       </DIV> 
+ *       ... <P> 
+ *     </DIV> 
+ *   </DIV>
+ * </DIV>
+ * 
+ * Each file associated with a checked-in version of a node has a corresponding checksum 
+ * file with the same name as the checked-in file but located under the 
+ * (<I>prod-dir</I>/checksum) directory.  These checksum files are generated at 
+ * the time of check-in if no working checksum file already exists. <P> 
+ * 
+ * The files associated with working versions of nodes may also have generated checksum 
+ * files.  The working checksum files are generated as a post process after successfully 
+ * completing a job which regenerates a working file.  They may also be generated for files 
+ * associated with leaf nodes during node status computations.  These working leaf node 
+ * checksum files are only generated when the working and checked-in versions of a file 
+ * are exactly the same size. <P>
+ * 
+ * Both kinds of checksums are used by Pipeline to optimize the comparison of large data
+ * files associated with nodes.  The {@link CheckSum CheckSum} class configured to use 
+ * the 128-bit MD5 message digest algorithm generates all checksums. <P> 
+ * 
  * The persistent storage of nodes: <P> 
  * 
  * <DIV style="margin-left: 40px;">
  *   <I>node-dir</I>/ <BR>
  *     <DIV style="margin-left: 20px;">
- *     mods/ <BR>
+ *     working/<I>author</I>/<I>view</I>/ <BR>
  *       <DIV style="margin-left: 20px;">
- *       <I>fully-resolved-node-name</I>/ <BR>
+ *       <I>fully-resolved-node-path</I>/ <BR>
  *         <DIV style="margin-left: 20px;">
- *           <I>author</I>/ <BR>
- *           <DIV style="margin-left: 20px;">
- *             <I>view</I> <BR>
- *             [<I>view</I>.backup] <BR>
- *             ... <BR> 
- *           </DIV> 
- *           ... <BR> 
- *         </DIV> 
- *         ... <P> 
+ *         <I>node-name</I> <BR>
+ *         [<I>node-name</I>.backup] <BR>
+ *         ... <BR>
  *       </DIV> 
+ *       ... <P>
+ *     </DIV> 
  * 
- *     versions/ <BR>
+ *     repository/ <BR>
  *     <DIV style="margin-left: 20px;">
  *       <I>fully-resolved-node-name</I>/ <BR>
  *       <DIV style="margin-left: 20px;">
@@ -119,7 +158,7 @@ import java.util.concurrent.locks.*;
  *       </DIV> 
  *       ... <P> 
  *     </DIV> 
- * 
+ *
  *     comments/ <BR>
  *     <DIV style="margin-left: 20px;">
  *       <I>fully-resolved-node-name</I>/ <BR>
@@ -136,48 +175,50 @@ import java.util.concurrent.locks.*;
  *  
  *     downstream/ <BR>
  *     <DIV style="margin-left: 20px;">
- *       <I>fully-resolved-node-name</I>/ <BR>
+ *       <I>fully-resolved-node-path</I>/ <BR>
  *         <DIV style="margin-left: 20px;">
- *           mod-links <BR> 
- *           version-links <BR>
- *         </DIV> 
+ *           <I>node-name</I> <BR>
+ *         ... <BR> 
+ *         </DIV>
  *         ... <P> 
  *     </DIV> 
  *   </DIV> 
  * 
- *   Where <I>node-dir</I> is the root of the persistent node storage area set by the 
+ *   Where (<I>node-dir</I>) is the root of the persistent node storage area set by the 
  *   <CODE>--with-node=DIR</CODE> option to <I>configure(1)</I>. Each of the subdirectories
  *   of this top level node directory contain Glue format text files associated with one
  *   of the runtime classes used to represent nodes. These files are group under directories
- *   named after the <I>fully-resolved-node-name</I> of the nodes associated with the 
+ *   named after the (<I>fully-resolved-node-name</I>) or 
+ *   (<I>fully-resolved-node-path</I>/<I>node-name</I>) of the nodes associated with the 
  *   runtime instances. <P> 
  * 
- *   The <CODE>mods</CODE> subdirectory contains Glue translations of <CODE>NodeMod</CODE> 
- *   instances saved in files (<I>view</I>) named after the working area view owning the 
- *   working version.  There may also exist a backup files (<I>view</I>.backup) containing the
- *   previously saved state of the <CODE>NodeMod</CODE> instances. <P> 
+ *   The (<CODE>working</CODE>) subdirectory contains Glue translations of 
+ *   {@link NodeMod NodeMod} instances saved in files (<I>view</I>) named after the working 
+ *   area view owning the working version.  There may also exist a backup files 
+ *   (<I>view</I>.backup) containing the previously saved state of the <CODE>NodeMod</CODE> 
+ *   instances. <P> 
  * 
- *   The <CODE>versions</CODE> subdirectory contains Glue translations of 
- *   <CODE>NodeVersion</CODE> instances saved in files (<I>revision-number</I>) named after 
- *   the revision numbers of the respective checked-in versions. <P> 
+ *   The (<CODE>repository</CODE>) subdirectory contains Glue translations of 
+ *   {@link NodeVersion NodeVersion} instances saved in files (<I>revision-number</I>) 
+ *   named after the revision numbers of the respective checked-in versions. <P> 
  * 
- *   The <CODE>comments</CODE> subdirectory contains Glue translations of 
- *   <CODE>LogMessage</CODE> instances saved in files (<I>time-stamp</I>) named for the 
+ *   The (<CODE>comments</CODE>) subdirectory contains Glue translations of 
+ *   {@link LogMessage LogMessage} instances saved in files (<I>time-stamp</I>) named for the 
  *   time stamp of when the respective change comment was written. <P> 
  *  
- *   Finally, the <CODE>downstream</CODE> subdirectory contains Glue translations of 
+ *   Finally, the (<CODE>downstream</CODE>) subdirectory contains Glue translations of 
  *   tables containing downstream node connection information.  The downstream connections 
- *   of the working versions are stored in a file named <CODE>mod-links</CODE>.  The 
- *   downstream connections of the checked-in versions are stored in a file named 
- *   <CODE>version-links</CODE>. Both of these files contain cached node connection 
+ *   of both working version and checked-in versions are stored in a file (<I>node-name</I>) 
+     named after the node. These files contain cached node connection 
  *   information that can be regenerated at any time from the <CODE>NodeMod</CODE> and 
  *   <CODE>NodeVersion</CODE> data. The purpose of these files is to prevent having to 
  *   load all of the nodes in order to determine downstream connection information. This
  *   is more efficient in terms of memory usage, disk I/O and processor cycles. 
- *   Node that these files are only read the first time a node is accessed and written only 
+ *   Note that these files are only read the first time a node is accessed and written only 
  *   upon shutdown of the server. <P> 
  * </DIV> 
  * 
+ * @see CheckSum
  * @see NodeMod
  * @see NodeVersion
  * @see LogMessage
@@ -195,7 +236,7 @@ class NodeMgr
   NodeMgr()
   { 
     pLock             = new ReentrantReadWriteLock();
-    pWorkingBundles   = new TreeMap<String,TreeMap<String,TreeMap<String,WorkingBundle>>>(); 
+    pWorkingBundles   = new HashMap<NodeID,WorkingBundle>(); 
     pCheckedInBundles = new TreeMap<String,TreeMap<VersionID,CheckedInBundle>>();
   }
 
@@ -206,18 +247,17 @@ class NodeMgr
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Get the working version of the node under the given view owned by the given
-   * user. 
+   * Get the working version of the node.
    * 
    * @param author [<B>in</B>]
-   *   The of the user which owns the working version.
+   *   The name of the user which owns the working version.
    * 
    * @param view [<B>in</B>]
    *   The name of the user's working area view. 
    * 
    * @param name [<B>in</B>]
    *   The fully resolved node name.
-   * 
+   *
    * @throws PipelineException
    *   If unable to retrieve the working version.
    */
@@ -226,27 +266,26 @@ class NodeMgr
   ( 
    String author, 
    String view, 
-   String name   
+   String name
   ) 
     throws PipelineException
   {	
     pLock.readLock().lock();
     try {
-
-      throw new PipelineException("Not implemented yet.");
-
+      NodeID id = new NodeID(author, view, name);
+      WorkingBundle bundle = getWorkingBundle(id);
+      return new NodeMod(bundle.uVersion);
     }
     finally {
       pLock.readLock().unlock();
-    }
-  } 
+    }	
+  }  
 
 
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Set the node properties of the working version of the node under the given view owned 
-   * by the given user based on the given node version. <P> 
+   * Set the node properties of the working version of the node. <P> 
    * 
    * Node properties include: <BR>
    * 
@@ -266,7 +305,7 @@ class NodeMgr
    * between working node versions.
    * 
    * @param author [<B>in</B>]
-   *   The of the user which owns the working version.
+   *   The name of the user which owns the working version.
    * 
    * @param view [<B>in</B>]
    *   The name of the user's working area view. 
@@ -288,16 +327,19 @@ class NodeMgr
   {
     pLock.writeLock().lock();
     try {
-
-      throw new PipelineException("Not implemented yet.");
-
+      NodeID id = new NodeID(author, view, mod.getName());
+      WorkingBundle bundle = getWorkingBundle(id);
+      if(bundle.uVersion.setProperties(mod)) {
+	bundle.uOverallNodeState = null;
+	bundle.uPropertyState    = null;
+      }
     }
     finally {
       pLock.writeLock().unlock();
     }    
   } 
 
-
+  
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -305,7 +347,7 @@ class NodeMgr
    * versions of the given nodes under the given view owned by the given user. 
    * 
    * @param author [<B>in</B>]
-   *   The of the user which owns the working versions.
+   *   The name of the user which owns the working versions.
    * 
    * @param view [<B>in</B>]
    *   The name of the user's working area view. 
@@ -331,9 +373,9 @@ class NodeMgr
   {
     pLock.writeLock().lock();
     try {
-
+      
       throw new PipelineException("Not implemented yet.");
-
+      
     }
     finally {
       pLock.writeLock().unlock();
@@ -345,7 +387,7 @@ class NodeMgr
    * versions of the given nodes under the given view owned by the given user.
    * 
    * @param author [<B>in</B>]
-   *   The of the user which owns the working versions.
+   *   The name of the user which owns the working versions.
    * 
    * @param view [<B>in</B>]
    *   The name of the user's working area view. 
@@ -390,7 +432,7 @@ class NodeMgr
    * given nodes under the given view owned by the given user.
    * 
    * @param author [<B>in</B>]
-   *   The of the user which owns the working versions.
+   *   The name of the user which owns the working versions.
    * 
    * @param view [<B>in</B>]
    *   The name of the user's working area view. 
@@ -453,7 +495,7 @@ class NodeMgr
    * files can be performed on the node.
    * 
    * @param author [<B>in</B>]
-   *   The of the user which owns the working version being frozen.
+   *   The name of the user which owns the working version being frozen.
    * 
    * @param view [<B>in</B>]
    *   The name of the user's working area view. 
@@ -499,7 +541,7 @@ class NodeMgr
    * user editing. 
    * 
    * @param author [<B>in</B>]
-   *   The of the user which owns the working version being unfrozen.
+   *   The name of the user which owns the working version being unfrozen.
    * 
    * @param view [<B>in</B>]
    *   The name of the user's working area view. 
@@ -730,7 +772,7 @@ class NodeMgr
    * the given node.
    * 
    * @param author [<B>in</B>]
-   *   The of the user which owns the working version.
+   *   The name of the user which owns the working version.
    * 
    * @param view [<B>in</B>]
    *   The name of the user's working area view. 
@@ -760,19 +802,6 @@ class NodeMgr
     
   
 
-//   public FullNodeStatus
-//   fullStatus
-//   ( 
-//    String author, 
-//    String view, 
-//    String name   
-//   ) 
-//     throws PipelineException
-//   {
-//     throw new PipelineException("Not implemented yet.");
-//   } 
-  
-
 
   /*----------------------------------------------------------------------------------------*/
   /*   R E V I S I O N   C O N T R O L                                                      */
@@ -791,7 +820,7 @@ class NodeMgr
    * not contain any upstream dependency relationship information.
    *  
    * @param author [<B>in</B>]
-   *   The of the user which will own the working version.
+   *   The name of the user which will own the working version.
    * 
    * @param view [<B>in</B>]
    *   The name of the user's working area view. 
@@ -832,7 +861,7 @@ class NodeMgr
    * files associated with the nodes and should therefore be used with caution.
    * 
    * @param author [<B>in</B>]
-   *   The of the user which owns the working version.
+   *   The name of the user which owns the working version.
    * 
    * @param view [<B>in</B>]
    *   The name of the user's working area view. 
@@ -873,7 +902,7 @@ class NodeMgr
    * with the node to match the new node name.
    * 
    * @param author [<B>in</B>]
-   *   The of the user which owns the working version.
+   *   The name of the user which owns the working version.
    * 
    * @param view [<B>in</B>]
    *   The name of the user's working area view. 
@@ -917,7 +946,7 @@ class NodeMgr
    * file repository.
    * 
    * @param author [<B>in</B>]
-   *   The of the user which owns the working version.
+   *   The name of the user which owns the working version.
    * 
    * @param view [<B>in</B>]
    *   The name of the user's working area view. 
@@ -963,7 +992,7 @@ class NodeMgr
    * version. <P> 
    * 
    * @param author [<B>in</B>]
-   *   The of the user which owns the working version being created (or updated).
+   *   The name of the user which owns the working version being created (or updated).
    * 
    * @param view [<B>in</B>]
    *   The name of the user's working area view. 
@@ -1017,7 +1046,7 @@ class NodeMgr
    * to free up node database and file system resources.  
    * 
    * @param author [<B>in</B>]
-   *   The of the user which owns the working version being released.
+   *   The name of the user which owns the working version being released.
    * 
    * @param view [<B>in</B>]
    *   The name of the user's working area view. 
@@ -1087,11 +1116,39 @@ class NodeMgr
       pLock.writeLock().unlock();
     }  
   } 
+
+
  
   /*----------------------------------------------------------------------------------------*/
-  /*   H E L P E R S                                                                        */
+  /*   B U N D L E   H E L P E R S                                                          */
   /*----------------------------------------------------------------------------------------*/
   
+  /** 
+   * Get the working bundle with the given working version ID.
+   * 
+   * @param id [<B>in</B>]
+   *   The unique working version identifier.
+   */
+  private WorkingBundle
+  getWorkingBundle
+  (
+   NodeID id
+  )
+    throws PipelineException
+  { 
+    if(id == null) 
+      throw new IllegalArgumentException("The working version ID cannot be (null)!");
+      
+    WorkingBundle bundle = pWorkingBundles.get(id);
+    if(bundle == null)
+      throw new PipelineException
+	("No working version of node (" + id.getName() + ") exists under the view (" + 
+	 id.getView() + ") owned by user (" + id.getAuthor() + ")!");
+    
+    return bundle;
+  }
+  
+
   /** 
    * Get the checked-in bundle for the node with the given revision number.
    * 
@@ -1109,13 +1166,19 @@ class NodeMgr
   )
     throws PipelineException
   { 
+    if(name == null) 
+      throw new IllegalArgumentException("The node name cannot be (null)!");
+
+    if(vid == null) 
+      throw new IllegalArgumentException("The revision number cannot be (null)!");
+
     TreeMap<VersionID,CheckedInBundle> table = pCheckedInBundles.get(name);
     if(table == null) 
-      throw new PipelineException("No checked-in versions exist for node: " + name);
+      throw new PipelineException("No checked-in versions exist for node (" + name + ")!");
       
     CheckedInBundle bundle = table.get(vid);
     if(bundle == null)
-      throw new PipelineException("No version (" + vid + ") exist for node: " + name);
+      throw new PipelineException("No version (" + vid + ") exist for node (" + name + ")!");
     
     return bundle;
   }
@@ -1133,12 +1196,24 @@ class NodeMgr
   )
     throws PipelineException
   { 
+    if(name == null) 
+      throw new IllegalArgumentException("The node name cannot be (null)!");
+
     TreeMap<VersionID,CheckedInBundle> table = pCheckedInBundles.get(name);
     if(table == null) 
-      throw new PipelineException("No checked-in versions exist for node: " + name);
+      throw new PipelineException("No checked-in versions exist for node (" + name + ")!");
       
     return (table.get(table.lastKey()));
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I / O   H E L P E R S                                                                */
+  /*----------------------------------------------------------------------------------------*/
+  
+
+
 
 
 
@@ -1178,24 +1253,23 @@ class NodeMgr
     public TreeSet<String>  uTargets;
 
 
-    /** 
-     * When the following node state information was last computed. <P> 
-     * 
-     * May be <CODE>null</CODE> if no node state information has ever been computed.
-     */
-    public Date uLastStatus;
-    
+    /*--------------------------------------------------------------------------------------*/
+    /* The following are the cached node states for this working version.  States with a    */
+    /* value of (null) have either never been computed or have been invalidated since the   */
+    /* last time they were computed for the associated working version.                     */
+    /*--------------------------------------------------------------------------------------*/
+
     /** 
      * The overall revision control state of the working version of the node. <P> 
      * 
-     * May be <CODE>null</CODE> if no node state information has ever been computed.
+     * May be <CODE>null</CODE> if invalidated.
      */
     public OverallNodeState uOverallNodeState;
     
     /** 
      * The overall file and job queue state of this working version of the node.<P> 
      * 
-     * May be <CODE>null</CODE> if no node state information has ever been computed.
+     * May be <CODE>null</CODE> if invalidated.
      */
     public OverallQueueState uOverallQueueState;
 
@@ -1203,7 +1277,7 @@ class NodeMgr
      * The relationship between the revision numbers of this working version and 
      * the checked-in versions of the node.<P> 
      * 
-     * May be <CODE>null</CODE> if no node state information has ever been computed.
+     * May be <CODE>null</CODE> if invalidated.
      */
     public VersionState  uVersionState;
 
@@ -1211,7 +1285,7 @@ class NodeMgr
      * The relationship between the values of the node properties associated with this 
      * working version and the checked-in versions of the node. <P> 
      * 
-     * May be <CODE>null</CODE> if no node state information has ever been computed.
+     * May be <CODE>null</CODE> if invalidated.
      */
     public PropertyState  uPropertyState;
 
@@ -1219,7 +1293,7 @@ class NodeMgr
      * A comparison of the dependency information (upstream node connections) of this 
      * working version and the latest checked-in version of the node. <P> 
      * 
-     * May be <CODE>null</CODE> if no node state information has ever been computed.
+     * May be <CODE>null</CODE> if invalidated.
      */
     public DependState  uDependState;
     
@@ -1227,7 +1301,7 @@ class NodeMgr
      * A table containing the relationship between individual files associated with the 
      * working and checked-in versions of this node indexed by working file sequence. <P> 
      * 
-     * May be <CODE>null</CODE> if no node state information has ever been computed.
+     * May be <CODE>null</CODE> if invalidated.
      */
     public HashMap<FileSeq,FileState[]>  uFileStates;
 
@@ -1235,7 +1309,7 @@ class NodeMgr
      * The status of individual files associated with the working version of the node 
      * with respect to the queue jobs which generate them. <P> 
      * 
-     * May be <CODE>null</CODE> if no node state information has ever been computed.
+     * May be <CODE>null</CODE> if invalidated.
      */
     public HashMap<FileSeq,QueueState[]>  uQueueStates;
   }
@@ -1293,10 +1367,9 @@ class NodeMgr
   private ReentrantReadWriteLock  pLock;
   
   /**
-   * The working version related information of nodes indexed by fully resolved node name, 
-   * user name and view.
+   * The working version related information of nodes indexed by working version node ID.
    */ 
-  private TreeMap<String,TreeMap<String,TreeMap<String,WorkingBundle>>>  pWorkingBundles;
+  private HashMap<NodeID,WorkingBundle>  pWorkingBundles;
  
   /**
    * The checked-in version related information of nodes indexed by fully resolved node 
