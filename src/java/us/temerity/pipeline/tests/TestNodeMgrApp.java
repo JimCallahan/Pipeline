@@ -1,4 +1,4 @@
-// $Id: TestNodeMgrApp.java,v 1.13 2004/05/03 04:31:01 jim Exp $
+// $Id: TestNodeMgrApp.java,v 1.14 2004/05/04 11:03:16 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -424,12 +424,30 @@ class TestNodeMgrApp
       printStatus(client.status("default", "/animals/mammal/bat"));
       printStatus(client.status("default", frog.getName()));
 
-      printNodePath(client.updatePath("jim", "default", eagle.getName()));
-      printNodePath(client.updatePath("jim", "default", "/animals/insects"));
-      printNodePath(client.updatePath("jim", "default", "/images"));
-      printNodePath(client.updatePath("jim", "default", "/animals/fungus"));
-      printNodePath(client.updatePath("jim", "default", "/"));
-      printNodePath(client.updatePath("jim", "fooy", "/animals/insects"));
+      {
+	TreeSet<String> paths = new TreeSet<String>();
+	paths.add(eagle.getName());
+	printNodePath(client.updatePaths("jim", "default", paths));
+      }
+      
+      {
+	TreeSet<String> paths = new TreeSet<String>();
+	paths.add("/images");
+	paths.add("/animals/fungus");
+	printNodePath(client.updatePaths("jim", "default", paths));
+      }
+	
+      {
+	TreeSet<String> paths = new TreeSet<String>();
+	paths.add("/");
+	printNodePath(client.updatePaths("jim", "default", paths));
+      }	  
+
+      {
+	TreeSet<String> paths = new TreeSet<String>();
+	paths.add("/animals/insects");
+	printNodePath(client.updatePaths("jim", "fooy", paths));
+      } 
 
       client.shutdown();
 
