@@ -1,6 +1,8 @@
-// $Id: NodeTreeComp.java,v 1.1 2004/05/02 12:15:34 jim Exp $
+// $Id: NodeTreeComp.java,v 1.2 2004/05/04 17:48:47 jim Exp $
 
 package us.temerity.pipeline;
+
+import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   N O D E   T R E E   C O M P                                                            */
@@ -11,7 +13,7 @@ package us.temerity.pipeline;
  */
 public
 class NodeTreeComp
-  extends NodeTreeCommon
+  extends TreeMap<String,NodeTreeComp>
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -23,7 +25,8 @@ class NodeTreeComp
   public 
   NodeTreeComp() 
   {
-    super();
+    pName  = "root";
+    pState = State.Branch;
   }  
 
   /**
@@ -46,16 +49,35 @@ class NodeTreeComp
    String view 
   ) 
   {
-    super(entry.getName());
+    if(entry == null) 
+      throw new IllegalArgumentException("The entry name cannot be (null)!");
+
+    pName = entry.getName();
     
     if(entry.isLeaf()) {
-      pIsLeaf = true;
-
-      pIsCheckedIn = entry.isCheckedIn();
-      pIsWorking   = entry.hasWorking();
-      pIsLocal     = entry.hasWorking(author, view);
+      if(entry.isCheckedIn()) {
+	if(entry.hasWorking()) {
+	  if(entry.hasWorking(author, view)) 
+	    pState = State.Working;
+	  else 
+	    pState = State.OtherWorking;
+	}
+	else {
+	  pState = State.CheckedIn;
+	}
+      }
+      else {
+	if(entry.hasWorking(author, view)) 
+	  pState = State.Pending;
+	else 
+	  pState = State.OtherPending;
+      }
+    }
+    else {
+      pState = State.Branch;
     }
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -63,23 +85,88 @@ class NodeTreeComp
   /*----------------------------------------------------------------------------------------*/
  
   /**
-   * Does there exist at least one working node version corresponding to this component?
+   * Gets the name of this node path component.
+   * 
+   * @return 
+   *   The component name or <CODE>null</CODE> if this is the root component.
    */ 
-  public boolean
-  isWorking() 
+  public String
+  getName() 
   {
-    assert(pIsLeaf);
-    return pIsWorking;
+    return pName;
   }
-  
+
   /**
-   * Does there exist a working node version within the local view?
+   * Get the node path component state.
    */ 
-  public boolean
-  isLocal()
+  public State
+  getState() 
   {
-    assert(pIsLeaf);
-    return pIsLocal;
+    return pState;
+  }
+
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O N V E R S I O N                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Convert to a string representation.
+   */ 
+  public String
+  toString() 
+  {
+    return pName;
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   P U B L I C    C L A S S E S                                                         */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Component state.
+   */
+  public
+  enum State
+  { 
+    /**
+     * This is not the last component of a node path.
+     */ 
+    Branch, 
+    
+    /**
+     * This leaf node path component is only associated with a working version in the 
+     * current working area view.  
+     */ 
+    Pending, 
+
+    /**
+     * This leaf node path component is only associated with a working version in a  
+     * working area view other than the current one.
+     */ 
+    OtherPending, 
+
+    /**
+     * This leaf node path component is only associated with a checked-in version and is
+     * not checked-out in any working area view.
+     */ 
+    CheckedIn, 
+
+    /**
+     * This leaf node path component is associated with a checked-in version, a working
+     * version in the current working area view and possibly working versions in other 
+     * views as well.
+     */ 
+    Working,
+
+    /**
+     * This leaf node path component is associated with a checked-in version and at least
+     * one working version in a working area view other than the current one.
+     */ 
+    OtherWorking;
   }
 
 
@@ -97,13 +184,13 @@ class NodeTreeComp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Does there exist at least one working node version corresponding to this component?
-   */   
-  private boolean pIsWorking;
+   * The name of the node path component or "root" if this is the root component.
+   */
+  private String  pName;
 
   /**
-   * Does there exist a working node version within the local view?
-   */    
-  private boolean pIsLocal;
+   * The node path component state.
+   */   
+  private State  pState;
 
 }

@@ -1,4 +1,4 @@
-// $Id: NodeTreeEntry.java,v 1.1 2004/05/02 12:15:34 jim Exp $
+// $Id: NodeTreeEntry.java,v 1.2 2004/05/04 17:48:47 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -13,7 +13,7 @@ import java.util.*;
  */
 public
 class NodeTreeEntry
-  extends NodeTreeCommon
+  extends TreeMap<String,NodeTreeEntry>
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -25,7 +25,7 @@ class NodeTreeEntry
   public 
   NodeTreeEntry() 
   {
-    super();
+    pName = "root";
   }  
 
   /**
@@ -40,7 +40,9 @@ class NodeTreeEntry
    String name
   ) 
   {
-    super(name);
+    if(name == null) 
+      throw new IllegalArgumentException("The component name cannot be (null)!");
+    pName = name;
   }
 
   /**
@@ -59,8 +61,13 @@ class NodeTreeEntry
    boolean isCheckedIn
   ) 
   {
-    super(name, isCheckedIn);
-    pWorking = new TreeMap<String,TreeSet<String>>();
+    if(name == null) 
+      throw new IllegalArgumentException("The component name cannot be (null)!");
+    pName = name;
+
+    pIsLeaf      = true;
+    pIsCheckedIn = isCheckedIn;
+    pWorking     = new TreeMap<String,TreeSet<String>>();
   }
 
 
@@ -68,6 +75,40 @@ class NodeTreeEntry
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Gets the name of this node path component.
+   * 
+   * @return 
+   *   The component name or <CODE>null</CODE> if this is the root component.
+   */ 
+  public String
+  getName() 
+  {
+    return pName;
+  }
+
+
+  /**
+   * Is this componet the last component of a node path?
+   */ 
+  public boolean
+  isLeaf() 
+  {
+    return pIsLeaf;
+  }
+
+
+  /**
+   * Does there exist at least one checked-in node version corresponding to this 
+   * leaf component?
+   */ 
+  public boolean
+  isCheckedIn() 
+  {
+    assert(pIsLeaf);
+    return pIsCheckedIn;
+  }
 
   /**
    * Set whether there exists at least one checked-in node version corresponding to this 
@@ -220,6 +261,21 @@ class NodeTreeEntry
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The name of the node path component or "root" if this is the root component.
+   */
+  private String  pName;
+
+  /**
+   * Is this componet the last component of a node path?
+   */    
+  private boolean pIsLeaf;
+
+  /**
+   * Does there exist at least one checked-in node version corresponding to this component?
+   */    
+  private boolean pIsCheckedIn;
 
   /**
    * The table of working area view names indexed by owning author associated with this 
