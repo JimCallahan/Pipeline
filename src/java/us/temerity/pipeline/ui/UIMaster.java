@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.57 2004/10/30 17:38:22 jim Exp $
+// $Id: UIMaster.java,v 1.58 2004/10/31 20:03:03 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -511,6 +511,25 @@ class UIMaster
   {
     ShowSubprocessFailureDialog task = new ShowSubprocessFailureDialog(header, proc);
     SwingUtilities.invokeLater(task);
+  }
+
+  /**
+   * Show a dialog for selecting the name of the database backup file.
+   */ 
+  public void 
+  showBackupDialog()
+  {
+    SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd.HHmmss");
+    pBackupDialog.updateTargetName("pipeline-db." + format.format(new Date()) + ".tgz");
+
+    pBackupDialog.setVisible(true);
+    if(pBackupDialog.wasConfirmed()) {
+      File file = pBackupDialog.getSelectedFile();
+      if(file != null) {
+	BackupTask task = new BackupTask(file);
+	task.start();	
+      }
+    }
   }
 
 
@@ -2628,6 +2647,11 @@ class UIMaster
 	pQueueJobsDialog = new JQueueJobsDialog();
 	
 	pSubProcessFailureDialog = new JSubProcessFailureDialog();
+
+	pBackupDialog = 
+	  new JFileSelectDialog("Backup Database", "Backup Database File:",
+				"Backup As:", 64, "Backup"); 
+	pBackupDialog.updateTargetFile(PackageInfo.sTempDir);
       }
 
       ArrayList<JFrame> frames = new ArrayList<JFrame>();
@@ -3511,6 +3535,48 @@ class UIMaster
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Backup the Pipeline database.
+   */ 
+  public 
+  class BackupTask
+    extends Thread
+  {
+    public 
+    BackupTask
+    (
+     File file
+    ) 
+    {
+      super("UIMaster:BackupTask");
+
+      pBackupFile = file;
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Database Backup...")) {
+	try {
+	  master.getMasterMgrClient().backupDatabase(pBackupFile);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+      }
+    }
+
+    private File  pBackupFile; 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
@@ -3727,5 +3793,10 @@ class UIMaster
   /**
    * The dialog giving details of the failure of a subprocess.
    */ 
-  private JSubProcessFailureDialog  pSubProcessFailureDialog; 
+  private JSubProcessFailureDialog  pSubProcessFailureDialog;
+
+  /**
+   * The database backup dialog.
+   */
+  private JFileSelectDialog  pBackupDialog; 
 }

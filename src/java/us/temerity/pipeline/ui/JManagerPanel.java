@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.49 2004/10/25 18:56:46 jim Exp $
+// $Id: JManagerPanel.java,v 1.50 2004/10/31 20:03:03 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -325,6 +325,14 @@ class JManagerPanel
 	sub.add(item);  
 
 	sub.addSeparator();
+	sub.addSeparator();
+
+	item = new JMenuItem("Backup Database...");
+	pBackupDatabaseItem = item;
+	item.setActionCommand("backup-database");
+	item.addActionListener(this);
+	sub.add(item);  
+
 	sub.addSeparator();
 
 	item = new JMenuItem("Shutdown Server...");
@@ -1419,6 +1427,8 @@ class JManagerPanel
       UIMaster.getInstance().showManageLicenseKeysDialog();
     else if(cmd.equals("manage-selection-keys"))
       UIMaster.getInstance().showManageSelectionKeysDialog();
+    else if(cmd.equals("backup-database"))
+      UIMaster.getInstance().showBackupDialog();
     else if(cmd.equals("shutdown"))
       doShutdownServer();
 
@@ -2219,7 +2229,9 @@ class JManagerPanel
       {
 	UIMaster master = UIMaster.getInstance();
 	try {
-	  pShutdownServerItem.setEnabled(master.getMasterMgrClient().isPrivileged(true));
+	  boolean isPrivileged = master.getMasterMgrClient().isPrivileged(true);
+	  pBackupDatabaseItem.setEnabled(isPrivileged);
+	  pShutdownServerItem.setEnabled(isPrivileged);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -2586,6 +2598,7 @@ class JManagerPanel
 
   private JMenuItem  pOwnerViewItem;
 
+  private JMenuItem  pBackupDatabaseItem;
   private JMenuItem  pShutdownServerItem;
 
   /**
