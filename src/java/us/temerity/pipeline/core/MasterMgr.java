@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.70 2004/12/04 21:16:40 jim Exp $
+// $Id: MasterMgr.java,v 1.71 2004/12/04 22:01:54 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6891,8 +6891,6 @@ class MasterMgr
 
 			  boolean nonIgnored = nonIgnoredSources.contains(link.getName());
 
-			  // THIS WAS ALREADY COMPUTED ABOVE!  MODIFY THIS TO REUSE THE 
-			  // PREVIOUS RESULTS INSTEAD OF RECOMPUTING THEM HERE.
 			  boolean lanyMissing[] = null;
 			  for(FileSeq lfseq : ldetails.getFileStateSequences()) {
 			    FileState lfs[] = ldetails.getFileState(lfseq);
@@ -6984,8 +6982,11 @@ class MasterMgr
 	    if(critical.compareTo(fileStamps[wk]) > 0)
 	      fileStamps[wk] = critical;
 
-	    if(overallNodeState == OverallNodeState.Identical) 
+	    switch(overallNodeState) {
+	    case Identical:
+	    case NeedsCheckOut:
 	      ignoreStamps[wk] = true;
+	    }
 
 	    for(LinkMod link : work.getSources()) { 
 	      switch(link.getPolicy()) {
