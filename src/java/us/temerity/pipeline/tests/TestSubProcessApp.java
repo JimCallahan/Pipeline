@@ -1,4 +1,4 @@
-// $Id: TestSubProcessApp.java,v 1.1 2004/02/20 22:49:34 jim Exp $
+// $Id: TestSubProcessApp.java,v 1.2 2004/02/21 18:58:12 jim Exp $
 
 import us.temerity.pipeline.*;
 
@@ -41,32 +41,71 @@ class TestSubProcessApp
 
   public void 
   run() 
-    throws SubProcessException
   {
-    /* posix signals */ 
+    /* incrementally check resource usage statistics  */ 
     {
-      System.out.print("\nTest PosixSignals:\n");
-      
-      PosixSignal kill = PosixSignal.SIGKILL;
-      switch(kill) {
-      case SIGKILL: 
-	System.out.print("  SIGKILL = " + kill.getCode() + "\n");
-	break;
-	
-      default:
-	assert(false);
-      }      
-      System.out.print("\n");
+      System.out.print("-----------------------------------\n");
+
+      Logs.sub.setLevel(Level.FINEST);
+
+      ArrayList<String> args = new ArrayList<String>();
+      args.add("vid:" + TestInfo.sSrcDir + 
+	       "/../../../../../../data/maya/images/*.tif");
+      args.add(System.getProperty("user.dir") + "/data/directory.jpg");
+
+      SubProcess proc = 
+	new SubProcess("RuntimeRUsage", TestInfo.sConvert, args);
+      proc.start();
+
+      GetRuntimeStats grs = new GetRuntimeStats(proc);
+      grs.start();
+
+      try {
+	proc.join();
+	grs.join();
+      }
+      catch(InterruptedException ex) {
+	Logs.sub.severe(ex.getMessage());
+      }
+      printAllStats(proc);
     }
-    
+
+    /* check resource usage statistics  */ 
+    {
+      System.out.print("-----------------------------------\n");
+
+      Logs.sub.setLevel(Level.FINEST);
+
+      ArrayList<String> args = new ArrayList<String>();
+      args.add("--verbose");
+      args.add(TestInfo.sSrcDir + "/scripts/factors");
+
+      SubProcess proc = new SubProcess("RUsage", new File("/usr/bin/time"), args);
+      proc.start();
+
+      try {
+	proc.join();
+      }
+      catch(InterruptedException ex) {
+	Logs.sub.severe(ex.getMessage());
+      }
+      printAllStats(proc);
+    }
+
     /* killing a running subprocess with child processes */ 
     {
       System.out.print("-----------------------------------\n");
 
       Logs.sub.setLevel(Level.FINEST);
 
-      File script = new File(TestInfo.sSrcDir + "/scripts/child-procs");
-      SubProcess proc = new SubProcess("KillChildren", script, new ArrayList<String>());
+      ArrayList<String> args = new ArrayList<String>();
+      args.add("5");
+
+      HashMap<String,String> env = new HashMap<String,String>();
+      env.put("PATH", "/bin:" + TestInfo.sSrcDir + "/scripts");
+
+      SubProcess proc = 
+	new SubProcess("KillChildren", "child-procs", args, env, new File("/tmp"));
       proc.start();
 
       try {
@@ -77,6 +116,7 @@ class TestSubProcessApp
       catch(InterruptedException ex) {
 	Logs.sub.severe(ex.getMessage());
       }
+      printAllStats(proc);
     }
 
     /* killing a running subprocess */ 
@@ -99,6 +139,7 @@ class TestSubProcessApp
       catch(InterruptedException ex) {
 	Logs.sub.severe(ex.getMessage());
       }
+      printAllStats(proc);
     }
 
     /* a subprocess who's path is looked up from the environment */ 
@@ -124,6 +165,7 @@ class TestSubProcessApp
       catch(InterruptedException ex) {
 	Logs.sub.severe(ex.getMessage());
       }
+      printAllStats(proc);
     }
 
     /* a failure due to passing illegal command line arguments */ 
@@ -144,6 +186,7 @@ class TestSubProcessApp
       catch(InterruptedException ex) {
 	Logs.sub.severe(ex.getMessage());
       }
+      printAllStats(proc);
     }
 
     /* a subprocess who's path is absolute and needs no environment */
@@ -166,6 +209,7 @@ class TestSubProcessApp
       catch(InterruptedException ex) {
 	Logs.sub.severe(ex.getMessage());
       }
+      printAllStats(proc);
     }
 
     /* collecting incremental output from another thread */ 
@@ -192,9 +236,58 @@ class TestSubProcessApp
       catch(InterruptedException ex) {
 	Logs.sub.severe(ex.getMessage());
       }
+      printAllStats(proc);
     }
 
   }
+
+ 
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  private String
+  exitStats
+  (
+   SubProcess proc
+  ) 
+  {
+    return ("          User Time: " + proc.getUserSecs() + "\n" + 
+	    "        System Time: " + proc.getSystemSecs() + "\n" + 
+	    "        Page Faults: " + proc.getPageFaults() + "\n");
+  }
+
+  private String 
+  runtimeStats
+  (
+   SubProcess proc
+  ) 
+  {
+    return(" Avg Virtual Memory: " + proc.getAverageVirtualSize() + " kB\n" +
+	   " Max Virtual Memory: " + proc.getMaxVirtualSize() + " kB\n" +
+	   "Avg Resident Memory: " + proc.getAverageResidentSize() + " kB\n" +
+	   "Max Resident Memory: " + proc.getMaxResidentSize() + " kB\n");
+  }
+
+  private void 
+  printAllStats
+  (
+   SubProcess proc
+  ) 
+  {
+    System.out.print(exitStats(proc) + "\n" + 
+		     runtimeStats(proc));
+  }
+
+  private void 
+  printRuntimeStats
+  (
+   SubProcess proc
+  ) 
+  {
+    System.out.print(runtimeStats(proc));
+  }
+
 
  
   /*----------------------------------------------------------------------------------------*/
@@ -233,6 +326,39 @@ class TestSubProcessApp
     }
 
     private int        pLineNum; 
+    private SubProcess pProc;
+  } 
+
+
+  private class 
+  GetRuntimeStats
+    extends Thread
+  {
+    public 
+    GetRuntimeStats
+    (
+     SubProcess proc
+    ) 
+    {
+      super("GetRuntimeStats");
+      pProc = proc;
+    }
+
+    public void 
+    run() 
+    {
+      while(pProc.isAlive()) {
+	printRuntimeStats(pProc);
+	System.out.print("----\n");
+
+	try {
+	  sleep(3000);
+	}
+	catch(InterruptedException ex) {
+	}
+      }
+    }
+
     private SubProcess pProc;
   } 
 }
