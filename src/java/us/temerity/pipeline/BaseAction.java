@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.2 2004/02/25 06:21:00 jim Exp $
+// $Id: BaseAction.java,v 1.3 2004/02/28 19:55:56 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -18,7 +18,6 @@ import java.io.*;
 public abstract
 class BaseAction
   extends Described
-  implements Glueable
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -538,44 +537,53 @@ class BaseAction
     if((obj != null) && (getClass() == obj.getClass())) {
       BaseAction action = (BaseAction) obj;
 
-      if(!getName().equals(action.getName()))
-	 return false;
-      
-      {
-	ArrayList<ActionParam> params = action.getSingleParams();
-	if(params.size() != pSingleParams.size())
-	  return false;
-
-	for(ActionParam param : params) {
-	  if(!param.equals(getSingleParam(param.getName())))
-	    return false;
-	}
-      }
-      
-      if(supportsDependParams()) {
-	ArrayList<String> names = action.getDependNames();
-	if(names.size() != getDependNames().size()) 
-	  return false;
-
-	for(String depend : names) {
-	  ArrayList<ActionParam> params = action.getDependParams(depend);
-	  if(params.size() != getDependParams(depend).size()) 
-	    return false;
-	  
-	  for(ActionParam param : params) {
-	    if(!param.equals(getDependParam(depend, param.getName())))
-	      return false;
-	  }
-	}
-      }
-      
-      return true;
+      if(super.equals(obj) && 
+	 pSingleParams.equals(action.pSingleParams) && 
+	 pDependParams.equals(action.pDependParams))
+	return true;
     }
 
     return false;
   }
 
   
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C L O N E A B L E                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Return a deep copy of this object.
+   */
+  public Object 
+  clone()
+    throws CloneNotSupportedException
+  {
+    BaseAction clone = (BaseAction) super.clone();
+    
+    clone.pSingleParams = new TreeMap<String,ActionParam>();
+    for(ActionParam param : pSingleParams.values()) {
+      ActionParam pclone = (ActionParam) param.clone();
+      clone.pSingleParams.put(pclone.getName(), pclone);
+    }
+
+    clone.pDependParams = new TreeMap<String,TreeMap<String,ActionParam>>();
+    for(String depend : pDependParams.keySet()) {
+      TreeMap<String,ActionParam> params = new TreeMap<String,ActionParam>();
+
+      for(ActionParam param : pDependParams.get(depend).values()) {
+	ActionParam pclone = (ActionParam) param.clone();
+	params.put(pclone.getName(), pclone);
+      }
+
+      clone.pDependParams.put(depend, params);
+    }
+
+    return clone;
+  }
+
+
+
   /*----------------------------------------------------------------------------------------*/
   /*   G L U E A B L E                                                                      */
   /*----------------------------------------------------------------------------------------*/
