@@ -130,7 +130,13 @@ server.<br>
 activity. <br>
 </div>
 </div>
-<div style="margin-left: 40px;"><br>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><br>
+plg</span><br>
+<div style="margin-left: 40px;">Logs the loading and
+initialization of
+Action, Editor and Tool plugins.<br>
+<span style="font-weight: bold;"></span><br>
+<span style="font-weight: bold;"></span></div>
 <span style="font-weight: bold;">sub</span><br>
 <div style="margin-left: 40px;">Logs the launching and monitoring
 of OS level subprocesses.</div>

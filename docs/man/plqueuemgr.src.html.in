@@ -144,7 +144,15 @@ at once.<br>
 command-line options.<br>
 <br>
 </div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">ops</span><br>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">glu<br>
+</span>
+<div style="margin-left: 40px;">Logs the I/O activity related to <a
+ style="font-weight: bold;"
+ href="../javadoc/us/temerity/pipeline/glue/package-summary.html">Glue</a>
+format files.<br>
+</div>
+<span style="font-weight: bold;"><br>
+</span><span style="font-weight: bold;">ops</span><br>
 <span style="font-weight: bold;"></span></div>
 <div style="margin-left: 80px;">Logs queue related activity of
 the
@@ -156,10 +164,16 @@ server.<br>
 <div style="margin-left: 40px;">
 <div style="margin-left: 40px;">Logs network connections and
 activity. <br>
+<br>
 </div>
 </div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">plg<br>
+</span>
+<div style="margin-left: 40px;">Logs the loading and initialization of
+Action, Editor and Tool plugins.<br>
 <br>
-<br>
+</div>
+</div>
 <span style="font-weight: bold;"></span>The (<span
  style="font-style: italic;">level</span>) portion of
 the option's argument can be:<br>
