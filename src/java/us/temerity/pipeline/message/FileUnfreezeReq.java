@@ -1,4 +1,4 @@
-// $Id: FileUnfreezeReq.java,v 1.4 2004/03/23 07:40:37 jim Exp $
+// $Id: FileUnfreezeReq.java,v 1.5 2004/03/26 04:41:31 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -41,13 +41,17 @@ class FileUnfreezeReq
    * 
    * @param fseqs 
    *   The primary and secondary file sequences associated with the working version.
+   * 
+   * @param isEditable 
+   *   Should the working files have write permissions after being unfrozen?
    */
   public
   FileUnfreezeReq
   (
    NodeID id, 
    VersionID vid, 
-   TreeSet<FileSeq> fseqs
+   TreeSet<FileSeq> fseqs, 
+   boolean isEditable
   )
   { 
     if(id == null) 
@@ -61,6 +65,8 @@ class FileUnfreezeReq
     if(fseqs == null) 
       throw new IllegalArgumentException("The working file sequences cannot (null)!");
     pFileSeqs = fseqs;
+
+    pIsEditable = isEditable;
   }
 
 
@@ -95,6 +101,14 @@ class FileUnfreezeReq
     return pFileSeqs;
   }
 
+  /**
+   * Should the working files have write permissions after being unfrozen?
+   */
+  public boolean 
+  isEditable() 
+  {
+    return pIsEditable;
+  }
   
 
   /*----------------------------------------------------------------------------------------*/
@@ -123,5 +137,10 @@ class FileUnfreezeReq
    * The primary and secondary file sequences associated with the working version. 
    */
   private TreeSet<FileSeq>  pFileSeqs;
-}
-  
+
+  /**
+   * Should the working files have write permissions after being unfrozen?
+   */
+  private boolean  pIsEditable;
+
+}  

@@ -1,4 +1,4 @@
-// $Id: TestFileMgrApp.java,v 1.8 2004/03/22 03:11:08 jim Exp $
+// $Id: TestFileMgrApp.java,v 1.9 2004/03/26 04:42:05 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -193,7 +193,7 @@ class TestFileMgrApp
       try {
 	FileMgrClient client = new FileMgrClient("localhost", 53138);
 
-	int count = 50;
+	int count = 5;
 
 	if(pSeed == 0) {
 	  ArrayList<NodeVersion> versions = new ArrayList<NodeVersion>();
