@@ -1,4 +1,4 @@
-// $Id: LinkCommon.java,v 1.5 2004/03/31 08:34:24 jim Exp $
+// $Id: LinkCommon.java,v 1.6 2004/04/20 21:53:54 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -168,7 +168,7 @@ class LinkCommon
 	      (pCatagory.equals(link.pCatagory)) &&
 	      (pRelationship == link.pRelationship) &&
 	      (((pFrameOffset == null) && (link.pFrameOffset == null)) ||
-	       pFrameOffset.equals(link.pFrameOffset)));
+	       ((pFrameOffset != null) && pFrameOffset.equals(link.pFrameOffset))));
     }
     return false;
   }
