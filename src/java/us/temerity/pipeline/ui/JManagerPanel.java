@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.48 2004/10/22 14:02:45 jim Exp $
+// $Id: JManagerPanel.java,v 1.49 2004/10/25 18:56:46 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -291,10 +291,10 @@ class JManagerPanel
       item.addActionListener(this);
       pPopup.add(item);  
 
-      item = new JMenuItem("Job Servers");
-      item.setActionCommand("manage-job-servers");
-      item.addActionListener(this);
-      pPopup.add(item);  
+//       item = new JMenuItem("Job Servers");
+//       item.setActionCommand("manage-job-servers");
+//       item.addActionListener(this);
+//       pPopup.add(item);  
 
       pPopup.addSeparator();
 
@@ -1242,11 +1242,11 @@ class JManagerPanel
       UIMaster.getInstance().showDefaultEditorsDialog();
       return true;
     }
-    else if((prefs.getShowManageJobServers() != null) &&
-	    prefs.getShowManageJobServers().wasPressed(e)) {
-      UIMaster.getInstance().showManageJobServersDialog();
-      return true;
-    }
+//     else if((prefs.getShowManageJobServers() != null) &&
+// 	    prefs.getShowManageJobServers().wasPressed(e)) {
+//       UIMaster.getInstance().showManageJobServersDialog();
+//       return true;
+//     }
 
     else if((prefs.getShowManageUsers() != null) &&
 	    prefs.getShowManageUsers().wasPressed(e)) {
@@ -1408,8 +1408,8 @@ class JManagerPanel
       UIMaster.getInstance().showUserPrefsDialog();
     else if(cmd.equals("default-editors"))
       UIMaster.getInstance().showDefaultEditorsDialog();
-    else if(cmd.equals("manage-job-servers"))
-      UIMaster.getInstance().showManageJobServersDialog();
+//     else if(cmd.equals("manage-job-servers"))
+//       UIMaster.getInstance().showManageJobServersDialog();
 
     else if(cmd.equals("manage-users"))
       UIMaster.getInstance().showManageUsersDialog();

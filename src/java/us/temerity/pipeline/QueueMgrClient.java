@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.16 2004/10/18 02:34:06 jim Exp $
+// $Id: QueueMgrClient.java,v 1.17 2004/10/25 18:56:46 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -643,11 +643,11 @@ class QueueMgrClient
    * the type of host property the argument controls. <P> 
    * 
    * A <B>pljobmgr</B>(1) daemon must be running on a host before its status can be 
-   * changed to <CODE>Disabled</CODE> or <CODE>Enabled</CODE>.  If <B>plqueuemgr<B>(1) cannot
-   * establish a network connection to a <B>pljobmgr<B>(1) daemon running on the host, the 
+   * changed to <CODE>Disabled</CODE> or <CODE>Enabled</CODE>.  If <B>plqueuemgr</B>(1) cannot
+   * establish a network connection to a <B>pljobmgr</B>(1) daemon running on the host, the 
    * status will be overridden and changed to <CODE>Shutdown</CODE>.
    * 
-   * If the new status for a host is <CODE>Shutdown</CODE> and there is a <B>pljobmgr<B>(1) 
+   * If the new status for a host is <CODE>Shutdown</CODE> and there is a <B>pljobmgr</B>(1) 
    * daemon running on the host, it will be stopped and any job it is currently running will
    * be killed. <P> 
    * 
@@ -804,6 +804,29 @@ class QueueMgrClient
   }
 
   /**
+   * Get the JobStatus of all currently running jobs. <P>
+   * 
+   * @throws PipelineException
+   *   If unable to determine the job status.
+   */ 
+  public synchronized TreeMap<Long,JobStatus>
+  getRunningJobStatus() 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    Object obj = performTransaction(QueueRequest.GetRunningJobStatus, null);
+    if(obj instanceof QueueGetJobStatusRsp) {
+      QueueGetJobStatusRsp rsp = (QueueGetJobStatusRsp) obj;
+      return rsp.getStatus();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+
+  /**
    * Get the job with the given ID.
    * 
    * @param jobID
@@ -857,6 +880,32 @@ class QueueMgrClient
     Object obj = performTransaction(QueueRequest.GetJobInfo, req);
     if(obj instanceof QueueGetJobInfoRsp) {
       QueueGetJobInfoRsp rsp = (QueueGetJobInfoRsp) obj;
+      return rsp.getJobInfo();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+
+  /**
+   * Get information about the currently running jobs. <P> 
+   * 
+   * @return 
+   *   The information about running jobs indexed by job ID.
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the job information.
+   */ 
+  public synchronized TreeMap<Long,QueueJobInfo>
+  getRunningJobInfo() 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    Object obj = performTransaction(QueueRequest.GetRunningJobInfo, null);
+    if(obj instanceof QueueGetRunningJobInfoRsp) {
+      QueueGetRunningJobInfoRsp rsp = (QueueGetRunningJobInfoRsp) obj;
       return rsp.getJobInfo();
     }
     else {

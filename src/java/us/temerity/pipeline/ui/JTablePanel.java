@@ -1,4 +1,4 @@
-// $Id: JTablePanel.java,v 1.6 2004/09/14 02:21:17 jim Exp $
+// $Id: JTablePanel.java,v 1.7 2004/10/25 18:56:47 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -238,6 +238,15 @@ class JTablePanel
   getTable()
   {
     return pTable;
+  }
+
+  /**
+   * Get the table scroll pane.
+   */ 
+  public JScrollPane
+  getTableScroll()
+  {
+    return pTableScroll;
   }
 
   /**

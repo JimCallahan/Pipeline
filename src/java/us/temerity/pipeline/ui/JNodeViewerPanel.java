@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.59 2004/10/22 17:07:37 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.60 2004/10/25 18:56:46 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -4551,10 +4551,13 @@ class JNodeViewerPanel
       UIMaster master = UIMaster.getInstance();
 
       TreeMap<VersionID,TreeMap<FileSeq,boolean[]>> novelty = null;
-      TreeMap<VersionID,LogMessage>                 history = null;
+      TreeMap<VersionID,LogMessage> history = null;
 
       TreeMap<Long,QueueJobGroup> jobGroups = null; 
-      TreeMap<Long,JobStatus>     jobStatus = null; 
+      TreeMap<Long,JobStatus> jobStatus = null; 
+      TreeMap<Long,QueueJobInfo> jobInfo = null;
+      TreeMap<String,QueueHost> hosts = null;
+      TreeSet<String> keys = null;
       
       if(pStatus != null) {
 	{
@@ -4605,9 +4608,12 @@ class JNodeViewerPanel
 	  if(master.beginPanelOp("Updating Jobs...")) {
 	    try {
 	      QueueMgrClient client = master.getQueueMgrClient();
+
 	      jobGroups = client.getJobGroups(); 
-	      TreeSet<Long> groupIDs = new TreeSet<Long>(jobGroups.keySet());
-	      jobStatus = client.getJobStatus(groupIDs);
+	      jobStatus = client.getJobStatus(new TreeSet<Long>(jobGroups.keySet()));
+	      jobInfo   = client.getRunningJobInfo();
+	      hosts     = client.getHosts(); 
+	      keys      = client.getSelectionKeyNames();
 	    }
 	    catch(PipelineException ex) {
 	      master.showErrorDialog(ex);
@@ -4622,7 +4628,8 @@ class JNodeViewerPanel
       UpdateSubPanelComponentsTask task = 
 	new UpdateSubPanelComponentsTask(pGroupID, pAuthor, pView, pStatus, 
 					 novelty, history, 
-					 jobGroups, jobStatus, pUpdateJobs);
+					 pUpdateJobs, jobGroups, jobStatus, jobInfo, 
+					 hosts, keys);
       SwingUtilities.invokeLater(task);
     }
     
@@ -4649,9 +4656,12 @@ class JNodeViewerPanel
      NodeStatus status, 
      TreeMap<VersionID,TreeMap<FileSeq,boolean[]>> novelty,
      TreeMap<VersionID,LogMessage> history,
+     boolean updateJobs, 
      TreeMap<Long,QueueJobGroup> jobGroups, 
      TreeMap<Long,JobStatus> jobStatus,
-     boolean updateJobs
+     TreeMap<Long,QueueJobInfo> jobInfo, 
+     TreeMap<String,QueueHost> hosts, 
+     TreeSet<String> keys
     )
     {      
       super("JNodeViewerPanel:UpdateSubPanelComponentsTask");
@@ -4664,9 +4674,12 @@ class JNodeViewerPanel
       pNovelty = novelty;
       pHistory = history;
 
+      pUpdateJobs = updateJobs; 
       pJobGroups  = jobGroups; 
       pJobStatus  = jobStatus;
-      pUpdateJobs = updateJobs; 
+      pJobInfo    = jobInfo;
+      pHosts      = hosts; 
+      pKeys       = keys;
     }
 
     public void 
@@ -4705,7 +4718,8 @@ class JNodeViewerPanel
 	PanelGroup<JQueueJobBrowserPanel> panels = master.getQueueJobBrowserPanels();
 	JQueueJobBrowserPanel panel = panels.getPanel(pGroupID);
 	if(panel != null) {
-	  panel.updateQueueJobs(pAuthor, pView, pJobGroups, pJobStatus);
+	  panel.updateJobs(pAuthor, pView, 
+			   pJobGroups, pJobStatus, pJobInfo, pHosts, pKeys);
 	  panel.updateManagerTitlePanel();
 	}
       }
@@ -4719,9 +4733,12 @@ class JNodeViewerPanel
     private TreeMap<VersionID,TreeMap<FileSeq,boolean[]>>  pNovelty;
     private TreeMap<VersionID,LogMessage>                  pHistory;
 
-    private TreeMap<Long,QueueJobGroup>  pJobGroups;
-    private TreeMap<Long,JobStatus>      pJobStatus;
     private boolean                      pUpdateJobs; 
+    private TreeMap<Long,QueueJobGroup>  pJobGroups;
+    private TreeMap<Long,JobStatus>      pJobStatus; 
+    private TreeMap<Long,QueueJobInfo>   pJobInfo; 
+    private TreeMap<String,QueueHost>    pHosts;
+    private TreeSet<String>              pKeys;
   }
 
 

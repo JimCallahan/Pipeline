@@ -1,4 +1,4 @@
-// $Id: QueueJobGroupsTableModel.java,v 1.4 2004/08/31 08:17:24 jim Exp $
+// $Id: QueueJobGroupsTableModel.java,v 1.5 2004/10/25 18:56:47 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -48,14 +48,14 @@ class QueueJobGroupsTableModel
 
       {
 	String names[] = {
-	  "ID", "Status", "Target Files", "Submitted", "Completed", 
+	  "Group ID", "Status", "Target Files", "Submitted", "Completed", 
 	  "Target Node", "Owner|View", 
 	};
 	pColumnNames = names;
       }
 
       {
-	int widths[] = { 60, 120, 180, 180, 180, 360, 180 };
+	int widths[] = { 80, 140, 180, 180, 180, 360, 180 };
 	pColumnWidths = widths;
       }
 

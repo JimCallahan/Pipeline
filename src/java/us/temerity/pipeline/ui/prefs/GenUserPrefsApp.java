@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.28 2004/10/24 03:52:03 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.29 2004/10/25 18:56:47 jim Exp $
 
 import java.io.*; 
 import java.util.*;
@@ -73,10 +73,10 @@ class GenUserPrefsApp
 	 "ShowDefaultEditors", "Default Editors:",
 	 false, true, false, 69),  /* ALT+E */ 
 
-	new HotKeyPref
-	("Manage the job servers.", 
-	 "ShowManageJobServers", "Job Servers:",
-	 false, true, false, 74),  /* ALT+J */ 
+// 	new HotKeyPref
+// 	("Manage the job servers.", 
+// 	 "ShowManageJobServers", "Job Servers:",
+// 	 false, true, false, 74),  /* ALT+J */ 
 
 	new BasePref(),
 	new BasePref(),
@@ -810,9 +810,65 @@ class GenUserPrefsApp
     {
       BasePref prefs[] = {
 	new HotKeyPref
-	("update the status of all jobs and job groups.", 
-	 "JobBrowserUpdate", "Update Jobs:",
-	 false, false, false, 32)  /* Space */ 
+	("Update the job servers, slots and groups.", 
+	 "JobBrowserUpdate", "Update:",
+	 false, false, false, 32),  /* Space */ 
+	
+	new BasePref(),
+
+	new HotKeyPref
+	("Show the resource usage history for the selected servers.", 
+	 "JobBrowserHostsHistory", "History:"), 
+
+	new HotKeyPref
+	("Apply the changes to job server properties.", 
+	 "JobBrowserHostsApply", "Apply Changes:", 
+	 false, false, false, 155),   /* Insert */ 
+	
+	new HotKeyPref
+	("Add a new job server.", 
+	 "JobBrowserHostsAdd", "Add Server:"), 
+
+	new HotKeyPref
+	("Remove the selected job servers.", 
+	 "JobBrowserHostsRemove", "Remove Server:"), 
+	
+	new BasePref(),
+	
+	new HotKeyPref
+	("Kill the jobs running on the selected job server slots.", 
+	 "JobBrowserSlotsKillJobs", "Kill Slot Jobs:", 
+	 false, false, false, 8),  /* Backspace */
+	
+	new BasePref(),
+
+	new HotKeyPref
+	("Toggle whether to show only the current or all views.", 
+	 "JobBrowserToggleFilterViews", "Toggle Views Filter:"), 
+	
+	new HotKeyPref
+	("Pause all jobs associated with the selected groups.",
+	 "JobBrowserGroupsPauseJobs", "Pause Jobs:",
+	 false, false, false, 45),  /* Minus */ 
+
+	new HotKeyPref
+	("Resume execution of all jobs associated with the selected groups.",
+	 "JobBrowserGroupsResumeJobs", "Resume Jobs:", 
+	 false, false, false, 61),  /* Equals */ 
+
+	new HotKeyPref
+	("Kill all jobs associated with the selected groups.",
+	 "JobBrowserGroupsKillJobs", "Kill Jobs:", 
+	 false, false, false, 8),  /* Backspace */ 
+
+	new HotKeyPref
+	("Delete the selected completed job groups.",
+	 "JobBrowserGroupsDelete", "Delete Groups:",
+	 true, false, false, 8),  /* SHIFT + Backspace */ 
+
+	new HotKeyPref
+	("Delete all completed job groups.", 
+	 "JobBrowserGroupsDeleteCompleted", "Delete Completed:")
       };
 
       pPrefs.put("Panel|Job Browser|Hot Keys", prefs);
@@ -1019,7 +1075,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.28 2004/10/24 03:52:03 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.29 2004/10/25 18:56:47 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -1272,7 +1328,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.28 2004/10/24 03:52:03 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.29 2004/10/25 18:56:47 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 

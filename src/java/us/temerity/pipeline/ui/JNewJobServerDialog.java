@@ -1,4 +1,4 @@
-// $Id: JNewJobServerDialog.java,v 1.1 2004/07/28 19:22:50 jim Exp $
+// $Id: JNewJobServerDialog.java,v 1.2 2004/10/25 18:56:46 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -31,12 +31,9 @@ class JNewJobServerDialog
    * Construct a new dialog.
    */ 
   public 
-  JNewJobServerDialog
-  (
-   Dialog owner        
-  )
+  JNewJobServerDialog() 
   {
-    super(owner, "New Job Server", "New Job Server:", null, "Add");
+    super("New Job Server", "New Job Server:", null, "Add");
   }
 
 

@@ -1,4 +1,4 @@
-// $Id: JNewIdentifierDialog.java,v 1.4 2004/10/22 14:02:45 jim Exp $
+// $Id: JNewIdentifierDialog.java,v 1.5 2004/10/25 18:56:46 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -29,7 +29,35 @@ class JNewIdentifierDialog
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Construct a new dialog.
+   * Construct a new dialog owned by the main application frame. <P> 
+   * 
+   * @param title
+   *   The title of the dialog.
+   * 
+   * @param fieldTitle
+   *   The title of the text field.
+   * 
+   * @param name
+   *   The initial identifier name. 
+   * 
+   * @param confirm
+   *   The title of the confirm button.
+   */ 
+  public 
+  JNewIdentifierDialog
+  (      
+   String title,  
+   String fieldTitle, 
+   String name, 
+   String confirm
+  )
+  {
+    super(title, true);
+    initUI(fieldTitle, name, confirm);
+  }
+
+  /**
+   * Construct a new dialog owned by another dialog. <P> 
    * 
    * @param owner
    *   The parent dialog.
@@ -39,6 +67,12 @@ class JNewIdentifierDialog
    * 
    * @param fieldTitle
    *   The title of the text field.
+   * 
+   * @param name
+   *   The initial identifier name. 
+   * 
+   * @param confirm
+   *   The title of the confirm button.
    */ 
   public 
   JNewIdentifierDialog
@@ -51,7 +85,32 @@ class JNewIdentifierDialog
   )
   {
     super(owner, title, true);
+    initUI(fieldTitle, name, confirm);
+  }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Initialize the common user interface components. <P> 
+   ( 
+   * @param fieldTitle
+   *   The title of the text field.
+   * 
+   * @param name
+   *   The initial identifier name. 
+   * 
+   * @param confirm
+   *   The title of the confirm button.
+   */ 
+  private void 
+  initUI
+  (      
+   String fieldTitle, 
+   String name, 
+   String confirm
+  ) 
+  {
     /* create dialog body components */ 
     {
       JPanel body = new JPanel();

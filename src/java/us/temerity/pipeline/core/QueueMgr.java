@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.18 2004/10/21 07:08:15 jim Exp $
+// $Id: QueueMgr.java,v 1.19 2004/10/25 18:56:46 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1132,7 +1132,7 @@ class QueueMgr
    *   The job status request.
    * 
    * @return 
-   *   <CODE>QueueAllJobStatusRsp</CODE> if successful or 
+   *   <CODE>QueueGetJobStatusRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to lookup the job status.
    */ 
   public Object
@@ -1181,6 +1181,48 @@ class QueueMgr
       }
       
       return new QueueGetJobStatusRsp(timer, status);
+    }
+  }
+
+  /**
+   * Get the JobStatus of all currently running jobs. <P> 
+   * 
+   * @return
+   *   <CODE>QueueGetJobStatusRsp</CODE> if successful.
+   */ 
+  public Object
+  getRunningJobStatus() 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    TreeSet<Long> jobIDs = new TreeSet<Long>();
+    timer.aquire();  
+    synchronized(pJobInfo) {
+      timer.resume();
+      for(Long jobID : pJobInfo.keySet()) {
+	QueueJobInfo info = pJobInfo.get(jobID);
+	switch(info.getState()) {
+	case Running:
+	  jobIDs.add(jobID);
+	}
+      }
+    }
+	
+    timer.aquire();  
+    synchronized(pJobs) {
+      timer.resume();
+      TreeMap<Long,JobStatus> running = new TreeMap<Long,JobStatus>();
+      for(Long jobID : jobIDs) {
+	QueueJob job = pJobs.get(jobID);	
+	if(job != null) {
+	  JobStatus status = 
+	    new JobStatus(jobID, job.getNodeID(), JobState.Running, 
+			  job.getActionAgenda().getPrimaryTarget(), job.getSourceJobIDs());
+	  running.put(jobID, status);
+	}
+      }
+      
+      return new QueueGetJobStatusRsp(timer, running);
     }
   }
 
@@ -1252,6 +1294,35 @@ class QueueMgr
 	return new FailureRsp(timer, ex.getMessage());	  
       }   
     }
+  }
+
+  /**
+   * Get information about the currently running jobs. <P> 
+   * 
+   * @return
+   *   <CODE>QueueGetRunningJobInfoRsp</CODE> if successful.
+   */ 
+  public Object
+  getRunningJobInfo() 
+  {
+    TaskTimer timer = new TaskTimer();
+    TreeMap<Long,QueueJobInfo> running = new TreeMap<Long,QueueJobInfo>();
+
+    timer.aquire();  
+    synchronized(pJobInfo) {
+      timer.resume();
+      for(Long jobID : pJobInfo.keySet()) {
+	QueueJobInfo info = pJobInfo.get(jobID);
+	if(info != null) {
+	  switch(info.getState()) {
+	  case Running:
+	    running.put(jobID, info);
+	  }
+	}
+      }
+    }
+
+    return new QueueGetRunningJobInfoRsp(timer, running);
   }
 
 

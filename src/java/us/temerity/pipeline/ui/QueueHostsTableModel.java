@@ -1,4 +1,4 @@
-// $Id: QueueHostsTableModel.java,v 1.6 2004/09/28 14:31:29 jim Exp $
+// $Id: QueueHostsTableModel.java,v 1.7 2004/10/25 18:56:47 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -29,19 +29,30 @@ class QueueHostsTableModel
 
   /**
    * Construct a table model.
-   * 
-   * @param parent
-   *   The parent dialog. 
    */
   public 
   QueueHostsTableModel
   (
-   JManageJobServersDialog parent
+   JQueueJobBrowserPanel parent, 
+   TreeSet<String> localHostnames
   ) 
   {
     super();
     
-    pParent = parent;
+    /* initialize the fields */ 
+    {
+      pParent = parent;
+
+      pQueueHosts    = new ArrayList<QueueHost>();
+      pSelectionKeys = new ArrayList<String>();
+      
+      pEditedStatusIndices  = new TreeSet<Integer>();
+      pEditedReserveIndices = new TreeSet<Integer>();
+      pEditedSlotsIndices   = new TreeSet<Integer>();
+      pEditedBiasesIndices  = new TreeSet<Integer>();  
+
+      pLocalHostnames = localHostnames;
+    }
 
     /* initialize the columns */ 
     { 
@@ -107,35 +118,6 @@ class QueueHostsTableModel
 	};
 	pEditors = editors;
       }
-    }
-
-    pQueueHosts    = new ArrayList<QueueHost>();
-    pSelectionKeys = new ArrayList<String>();
-
-    pEditedStatusIndices  = new TreeSet<Integer>();
-    pEditedReserveIndices = new TreeSet<Integer>();
-    pEditedSlotsIndices   = new TreeSet<Integer>();
-    pEditedBiasesIndices  = new TreeSet<Integer>();  
-
-    /* the canonical names of this host */ 
-    pLocalHostnames = new TreeSet<String>();
-    try {
-      Enumeration nets = NetworkInterface.getNetworkInterfaces();  
-      while(nets.hasMoreElements()) {
-	NetworkInterface net = (NetworkInterface) nets.nextElement();
-	Enumeration addrs = net.getInetAddresses();
-	while(addrs.hasMoreElements()) {
-	  InetAddress addr = (InetAddress) addrs.nextElement();
-	  String ip = addr.getHostAddress();
-	  if(!ip.equals("127.0.0.1")) 
-	    pLocalHostnames.add(addr.getCanonicalHostName());
-	}
-      }
-    }
-    catch(Exception ex) {
-      UIMaster.getInstance().showErrorDialog
-	("Warning:",      
-	 "Could not determine the name of this machine!");
     }
   }
 
@@ -313,6 +295,11 @@ class QueueHostsTableModel
 
     pIsPrivileged = isPrivileged;
     
+    pEditedStatusIndices.clear();
+    pEditedReserveIndices.clear();
+    pEditedSlotsIndices.clear();
+    pEditedBiasesIndices.clear();
+
     sort();
   }
 
@@ -516,7 +503,7 @@ class QueueHostsTableModel
       
     if(edited) {
       fireTableDataChanged();
-      pParent.doEdited(); 
+      pParent.doHostsEdited(); 
     }
   }
 
@@ -596,6 +583,14 @@ class QueueHostsTableModel
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * The parent panel.
+   */ 
+  private JQueueJobBrowserPanel pParent;
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Does the current user have privileged status?
    */ 
   private boolean  pIsPrivileged;
@@ -609,11 +604,9 @@ class QueueHostsTableModel
    * The names of the valid selection keys.
    */ 
   private ArrayList<String>  pSelectionKeys; 
+ 
 
-  /**
-   * The parent dialog.
-   */ 
-  private JManageJobServersDialog  pParent;
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * The indices of host which have had their status edited.
@@ -635,6 +628,8 @@ class QueueHostsTableModel
    */ 
   private TreeSet<Integer>  pEditedBiasesIndices; 
 
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * The canonical names of this host.

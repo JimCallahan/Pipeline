@@ -1,4 +1,4 @@
-// $Id: JTabbedPanel.java,v 1.1 2004/05/11 19:17:03 jim Exp $
+// $Id: JTabbedPanel.java,v 1.2 2004/10/25 18:56:47 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -47,6 +47,18 @@ class JTabbedPanel
   ) 
   {
     addTab(null, sTabIcon, mgr);
+  }
+
+  /**
+   * Add the given panel as a tab.
+   */ 
+  public void 
+  addTab
+  (
+   JPanel panel
+  ) 
+  {
+    addTab(null, sTabIcon, panel);
   }
 
 

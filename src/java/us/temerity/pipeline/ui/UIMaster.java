@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.53 2004/10/24 08:43:26 jim Exp $
+// $Id: UIMaster.java,v 1.54 2004/10/25 18:56:47 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -479,15 +479,15 @@ class UIMaster
     pManageSelectionKeysDialog.setVisible(true);
   }
 
-  /**
-   * Show the manage job servers dialog.
-   */ 
-  public void 
-  showManageJobServersDialog()
-  {
-    pManageJobServersDialog.updateJobServers();
-    pManageJobServersDialog.setVisible(true);
-  }
+//   /**
+//    * Show the manage job servers dialog.
+//    */ 
+//   public void 
+//   showManageJobServersDialog()
+//   {
+//     pManageJobServersDialog.updateJobServers();
+//     pManageJobServersDialog.setVisible(true);
+//   }
 
   /**
    * Show the manage editors dialog.
@@ -2623,7 +2623,7 @@ class UIMaster
 	pManageToolsetsDialog      = new JManageToolsetsDialog();
 	pManageLicenseKeysDialog   = new JManageLicenseKeysDialog();
 	pManageSelectionKeysDialog = new JManageSelectionKeysDialog();
-	pManageJobServersDialog    = new JManageJobServersDialog();
+	//	pManageJobServersDialog    = new JManageJobServersDialog();
 
 	pSubProcessFailureDialog = new JSubProcessFailureDialog();
       }
@@ -3702,7 +3702,7 @@ class UIMaster
   /**
    * The manage job servers dialog.
    */ 
-  private JManageJobServersDialog  pManageJobServersDialog;
+  ///  private JManageJobServersDialog  pManageJobServersDialog;
 
   /**
    * The dialog giving details of the failure of a subprocess.
