@@ -1,4 +1,4 @@
-// $Id: PackageInfo.cc.in,v 1.3 2003/07/05 16:00:55 jim Exp $
+// $Id: PackageInfo.cc.in,v 1.4 2003/07/10 00:49:53 jim Exp $
 
 #include <PackageInfo.hh>
 
@@ -22,10 +22,10 @@ const char* PackageInfo::sRelease = "@RELEASE_STAMP@";
 
 
 /* server hostname */ 
-const char* PackageInfo::sServer = "@PLSERVER@";
+const char* PackageInfo::sServer = "@SQL_SERVER@";
 
 /* server port number */ 
-const int PackageInfo::sPort = @PLPORT@;
+const int PackageInfo::sPort = @SQL_PORT@;
 
 
 /* PBS server hostname */ 
