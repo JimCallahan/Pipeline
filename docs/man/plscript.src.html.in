@@ -203,6 +203,8 @@ Administration</span></span></a><br>
  style="font-weight: bold;">--reserve</span>=<span
  style="font-style: italic;">user-name</span> | <span
  style="font-weight: bold;">--open</span>] [<span
+ style="font-weight: bold;">--order</span>=<span
+ style="font-style: italic;">integer</span>] [<span
  style="font-weight: bold;">--slots</span>=<span
  style="font-style: italic;">integer</span>] [<span
  style="font-weight: bold;">--selection-bias</span>=<span
@@ -2051,7 +2053,9 @@ This command requires privileged user status.</span></div>
  style="font-weight: bold;">--enable</span>] [<span
  style="font-weight: bold;">--reserve</span>=<span
  style="font-style: italic;">user-name</span> | <span
- style="font-weight: bold;">--open</span>]<br>
+ style="font-weight: bold;">--open</span>] [<span
+ style="font-weight: bold;">--order</span>=<span
+ style="font-style: italic;">integer</span>]<br>
 &nbsp;&nbsp;&nbsp; [<span style="font-weight: bold;">--slots</span>=<span
  style="font-style: italic;">integer</span>] [<span
  style="font-weight: bold;">--selection-bias</span>=<span
@@ -2107,10 +2111,20 @@ the job server is reserved for the exclusive use of the given
 user.&nbsp; The <span style="font-weight: bold;">--open</span> option
 removes any previous reservation so that all jobs may be potentially
 dispatched to the job server.<br>
+<br>
 </div>
-<span style="font-weight: bold;"><br>
-</span><span style="font-weight: normal;"><span
- style="font-weight: bold;">--slots</span>=<span
+<span style="font-weight: normal;"><span style="font-weight: bold;">--order</span>=<span
+ style="font-style: italic;">integer<br>
+<br>
+</span></span>
+<div style="margin-left: 40px;">The order (<span
+ style="font-style: italic;">integer</span>) which job server slots are
+processes when dispatching jobs.&nbsp; Job servers with lower dispacher
+order will dispatched jobs in preference to those with higher dispatch
+order.<br>
+</div>
+<br>
+<span style="font-weight: normal;"><span style="font-weight: bold;">--slots</span>=<span
  style="font-style: italic;">integer<br>
 <br>
 </span></span>
