@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.4 2004/06/23 22:33:45 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.5 2004/06/28 00:17:13 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -228,7 +228,8 @@ class JNodeDetailsPanel
 	    }
 	  }
 	
-	  JDrawer drawer = new JDrawer("Versions:", (JComponent) comps[2], true);	
+	  JDrawer drawer = new JDrawer("Versions:", (JComponent) comps[2], true);
+	  pVersionDrawer = drawer;
 	  vbox.add(drawer);
 	}
 
@@ -362,6 +363,7 @@ class JNodeDetailsPanel
 	  }
 	  
 	  JDrawer drawer = new JDrawer("Properties:", (JComponent) comps[2], true);
+	  pPropertyDrawer = drawer;
 	  vbox.add(drawer);
 	}
 	
@@ -879,6 +881,7 @@ class JNodeDetailsPanel
 
 		JDrawer drawer = 
 		  new JDrawer("Job Requirements:", (JComponent) comps[2], true);
+		pJobReqsDrawer = drawer;
 		dbox.add(drawer);
 	      }
 
@@ -888,6 +891,7 @@ class JNodeDetailsPanel
 		pSelectionKeysBox = box;
 
 		JDrawer drawer = new JDrawer("Selection Keys:", box, false);
+		pSelectionDrawer = drawer;
 		dbox.add(drawer);
 	      }
 
@@ -897,6 +901,7 @@ class JNodeDetailsPanel
 		pLicenseKeysBox = box;
 
 		JDrawer drawer = new JDrawer("License Keys:", box, false);
+		pLicenseDrawer = drawer;
 		dbox.add(drawer);
 	      }
 
@@ -907,6 +912,7 @@ class JNodeDetailsPanel
 	  }
 	  
 	  JDrawer drawer = new JDrawer("Regeneration Action:", abox, true);
+	  pActionDrawer = drawer;
 	  vbox.add(drawer);
 	}
 	
@@ -1735,9 +1741,22 @@ class JNodeDetailsPanel
 		hbox.add(btn);	      
 	      }
 	      else {
-		Comparable value = aparam.getValue();
-		String str = ((value != null) ? value.toString() : "-");
-		JTextField field = UIMaster.createTextField(str, sVSize, JLabel.CENTER);
+		String text = "-";
+		{
+		  if(aparam instanceof LinkActionParam) {
+		    String source = (String) aparam.getValue();
+		    int idx = pLinkActionParamNodeNames.indexOf(source);
+		    if(idx != -1) 
+		      text = pLinkActionParamValues.get(idx);
+		  }
+		  else {
+		    Comparable value = aparam.getValue();
+		    if(value != null)
+		      text = value.toString();
+		  }
+		}
+
+		JTextField field = UIMaster.createTextField(text, sVSize, JLabel.CENTER);
 		pcomps[3] = field;
 		
 		hbox.add(field);
@@ -2520,7 +2539,12 @@ class JNodeDetailsPanel
   {
     super.toGlue(encoder);
   
-    //...
+    encoder.encode("VersionDrawerOpen",   pVersionDrawer.isOpen());
+    encoder.encode("PropertyDrawerOpen",  pPropertyDrawer.isOpen());
+    encoder.encode("ActionDrawerOpen",    pActionDrawer.isOpen());
+    encoder.encode("JobReqsDrawerOpen",   pJobReqsDrawer.isOpen());
+    encoder.encode("SelectionDrawerOpen", pSelectionDrawer.isOpen());
+    encoder.encode("LicenseDrawerOpen",   pLicenseDrawer.isOpen());
   }
 
   public void 
@@ -2530,9 +2554,43 @@ class JNodeDetailsPanel
   ) 
     throws GlueException
   {
-    super.fromGlue(decoder);
+    {
+      Boolean open = (Boolean) decoder.decode("VersionDrawerOpen");
+      if(open != null) 
+	pVersionDrawer.setIsOpen(open);
+    }
 
-    // ...
+    {
+      Boolean open = (Boolean) decoder.decode("PropertyDrawerOpen");
+      if(open != null) 
+	pPropertyDrawer.setIsOpen(open);
+    }
+
+    {
+      Boolean open = (Boolean) decoder.decode("ActionDrawerOpen");
+      if(open != null) 
+	pActionDrawer.setIsOpen(open);
+    }
+
+    {
+      Boolean open = (Boolean) decoder.decode("JobReqsDrawerOpen");
+      if(open != null) 
+	pJobReqsDrawer.setIsOpen(open);
+    }
+
+    {
+      Boolean open = (Boolean) decoder.decode("SelectionDrawerOpen");
+      if(open != null) 
+	pSelectionDrawer.setIsOpen(open);
+    }
+
+    {
+      Boolean open = (Boolean) decoder.decode("LicenseDrawerOpen");
+      if(open != null) 
+	pLicenseDrawer.setIsOpen(open);
+    }
+
+    super.fromGlue(decoder);
   }
 
 
@@ -2601,8 +2659,13 @@ class JNodeDetailsPanel
     UserPrefs prefs = UserPrefs.getInstance();
 
     if((prefs.getNodeDetailsApplyChanges() != null) &&
-       prefs.getNodeDetailsApplyChanges().wasPressed(e))
+       prefs.getNodeDetailsApplyChanges().wasPressed(e) && 
+       pApplyButton.isEnabled())
       doApply();    
+    else if((prefs.getNodeDetailsToggleFrozen() != null) &&
+       prefs.getNodeDetailsToggleFrozen().wasPressed(e) && 
+       pFrozenButton.isEnabled())
+      doToggleFrozen();    
   }
 
   /**
@@ -3815,6 +3878,11 @@ class JNodeDetailsPanel
    */ 
   private JCollectionField pCheckedInVersionField;
 
+  /**
+   * The drawer containing the version components.
+   */ 
+  private JDrawer  pVersionDrawer;
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -3864,6 +3932,11 @@ class JNodeDetailsPanel
    * The checked-in editor field.
    */ 
   private JTextField pCheckedInEditorField;
+
+  /**
+   * The drawer containing the property components.
+   */ 
+  private JDrawer  pPropertyDrawer;
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -3950,6 +4023,10 @@ class JNodeDetailsPanel
    */ 
   private JSourceParamsDialog  pViewSourceParamsDialog;
 
+  /**
+   * The drawer containing the action components.
+   */ 
+  private JDrawer  pActionDrawer;
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -4111,6 +4188,12 @@ class JNodeDetailsPanel
    */ 
   private JTextField pCheckedInMinDiskField;
 
+  /**
+   * The drawer containing the job requirements components.
+   */ 
+  private JDrawer  pJobReqsDrawer;
+
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -4125,6 +4208,11 @@ class JNodeDetailsPanel
    */ 
   private TreeMap<String,Component[]>  pSelectionKeyComponents;
   
+  /**
+   * The drawer containing the selection key components.
+   */ 
+  private JDrawer  pSelectionDrawer;
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -4139,4 +4227,9 @@ class JNodeDetailsPanel
    */ 
   private TreeMap<String,Component[]>  pLicenseKeyComponents;
   
+  /**
+   * The drawer containing the licence key components.
+   */ 
+  private JDrawer  pLicenseDrawer;
+
 }
