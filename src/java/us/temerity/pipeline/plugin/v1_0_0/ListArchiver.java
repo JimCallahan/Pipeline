@@ -1,4 +1,4 @@
-// $Id: ListArchiver.java,v 1.1 2005/02/07 14:52:15 jim Exp $
+// $Id: ListArchiver.java,v 1.2 2005/02/20 20:52:03 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -228,7 +228,7 @@ class ListArchiver
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID = -6725655154336418175L;
+  private static final long serialVersionUID = -5644507467020746013L;
 
 }
 
