@@ -95,17 +95,17 @@ AC_MSG_RESULT([$RELEASE_STAMP])
 
 dnl ------------------------------------------------------------------------------------------
 
-AC_MSG_CHECKING([Code Install Directory])
+AC_MSG_CHECKING([Code Development Directory])
 
-AC_ARG_WITH([codedir], 
+AC_ARG_WITH([code], 
             [  --with-code=PATH        Root directory for code development.])
 
 AC_SUBST(CODEDIR)
 CODEDIR=$HOME/code
 
-if test "$with_codedir" 
+if test "$with_code" 
 then
-  CODEDIR=$with_codedir
+  CODEDIR=$with_code
 fi
 
 AC_MSG_RESULT([$CODEDIR])
@@ -114,15 +114,15 @@ AC_MSG_RESULT([$CODEDIR])
 
 AC_MSG_CHECKING([Base Install Directory])
 
-AC_ARG_WITH([basedir], 
+AC_ARG_WITH([base], 
             [  --with-base=PATH        Root of installed production heirarchy.])
 
 AC_SUBST(BASEDIR)
 BASEDIR=/base
 
-if test "$with_basedir" 
+if test "$with_base" 
 then
-  BASEDIR=$with_basedir
+  BASEDIR=$with_base
 fi
 
 AC_MSG_RESULT([$BASEDIR])
