@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.14 2004/07/18 21:31:10 jim Exp $
+// $Id: MasterMgr.java,v 1.15 2004/07/22 00:08:07 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -4217,8 +4217,8 @@ class MasterMgr
 	    // "ps[]" should be computed by querying the queue here.  
 	    // 
 	    // The returned QueueState arrays will only contain: Queued, Running, Failed 
-	    // or (null).  A (null) value means either that no queue job could be found
-	    // which generates the file or the last job has completed successfully.
+	    // Aborted or (null).  A (null) value means either that no queue job could be 
+	    // found which generates the file or the last job has completed successfully.
 	    // 
 	    // The following stub code therefore simple indicates that no jobs exist.
 	    
@@ -4241,6 +4241,7 @@ class MasterMgr
 		case Queued:
 		case Running:
 		case Failed:
+		case Aborted:
 		  queueStates[wk] = ps[wk];
 		  break;
 		  
@@ -4314,6 +4315,7 @@ class MasterMgr
 	boolean anyStale = false;
 	boolean anyQueued = false;
 	boolean anyRunning = false; 
+	boolean anyAborted = false;
 	boolean anyFailed = false;
 	
 	int wk;
@@ -4330,6 +4332,10 @@ class MasterMgr
 	  case Running:
 	    anyRunning = true;
 	    break;
+
+	  case Aborted:
+	    anyAborted = true;
+	    break;
 	    
 	  case Failed:
 	    anyFailed = true;
@@ -4338,6 +4344,8 @@ class MasterMgr
 	
 	if(anyFailed) 
 	  overallQueueState = OverallQueueState.Failed;
+	else if(anyAborted) 
+	  overallQueueState = OverallQueueState.Aborted;
 	else if(anyRunning) 
 	  overallQueueState = OverallQueueState.Running;
 	else if(anyQueued) 

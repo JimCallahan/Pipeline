@@ -1,4 +1,4 @@
-// $Id: QueueState.java,v 1.7 2004/07/14 21:02:27 jim Exp $
+// $Id: QueueState.java,v 1.8 2004/07/22 00:07:36 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -76,13 +76,27 @@ enum QueueState
 
   /**
    * The last queue job submitted which would have regenerated these primary/secondary files 
+   * was aborted (cancelled) before it had a chance to execute. <P> 
+   * 
+   * This state has precedence over the <CODE>Stale</CODE> state. <P> 
+   * 
+   * Note that when a new job is queued it clears the <CODE>Failed</CODE> or 
+   * <CODE>Aborted</CODE> state of any previous jobs for the same file.  Therefore a state 
+   * of <CODE>Aborted</CODE> means that no job has been resubmitted for the file since the 
+   * time of the job that was aborted.
+   */
+  Aborted,
+
+  /**
+   * The last queue job submitted which would have regenerated these primary/secondary files 
    * failed to execute successfully. <P> 
    * 
    * This state has precedence over the <CODE>Stale</CODE> state. <P> 
    * 
-   * Note that when a new job is queued it clears the <CODE>Failed</CODE> state of any 
-   * previous jobs for the same file.  Therefore a state of <CODE>Failed</CODE> means that 
-   * no job has been resubmitted for the file since the time of the last job failure.
+   * Note that when a new job is queued it clears the <CODE>Failed</CODE> or 
+   * <CODE>Aborted</CODE> state of any previous jobs for the same file.  Therefore a state 
+   * of <CODE>Failed</CODE> means that no job has been resubmitted for the file since the 
+   * time of the job that failed.
    */
   Failed;
 
