@@ -179,6 +179,11 @@ ScriptOptsParser
 
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * admin --shutdown options. 
+   */ 
+  private boolean  pShutdownJobMgrs;
+  private boolean  pShutdownPluginMgr;
 
   /**
    * job-server command option temporaries
@@ -323,7 +328,11 @@ TOKEN :
   /* command options */ 
   <MSG:             "--msg">             : STRING_SEP  
 | <TOTAL:           "--total">           : INTEGER_SEP  
-| <SHUTDOWN:        "--shutdown">       
+
+| <SHUTDOWN:           "--shutdown">       
+| <SHUTDOWN_JOBMGRS:   "--shutdown-jobmgrs">       
+| <SHUTDOWN_PLUGINMGR: "--shutdown-pluginmgr">       
+
 | <BACKUP:          "--backup">          : PATH_SEP
 | <DISABLE:         "--disable">       
 | <ENABLE:          "--enable">  
@@ -1963,13 +1972,48 @@ AdminCmds()
 void 
 AdminShutdown() 
   throws PipelineException : 
-{}
 {
-  <SHUTDOWN> AE()
+  pShutdownJobMgrs   = false;
+  pShutdownPluginMgr = false;
+}
+{
+  <SHUTDOWN> AE() (ShutdownOpts())* 
   {
-    pMasterMgrClient.shutdown();
+    if(pShutdownJobMgrs || pShutdownPluginMgr) 
+      pMasterMgrClient.shutdown(pShutdownJobMgrs, pShutdownPluginMgr);
+    else 
+      pMasterMgrClient.shutdown();
+
     Logs.ops.info("Shutting Down...");
     Logs.flush();
+  }
+}
+
+void 
+ShutdownOpts() : 
+{}
+{
+  (ShutdownJobMgrs() | ShutdownPluginMgr())
+  {}
+}
+
+void 
+ShutdownJobMgrs() :
+{}
+{
+  <SHUTDOWN_JOBMGRS> AE()
+  {
+    pShutdownJobMgrs = true;
+  }
+}
+
+void 
+ShutdownPluginMgr() : 
+{}
+{
+  <SHUTDOWN_PLUGINMGR> AE()
+  {
+    pShutdownPluginMgr = true;
   }
 }
 

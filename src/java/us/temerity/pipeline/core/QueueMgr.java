@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.23 2005/01/15 16:16:52 jim Exp $
+// $Id: QueueMgr.java,v 1.24 2005/01/15 21:15:54 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -10,6 +10,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.*;
 import java.util.logging.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -47,6 +48,8 @@ class QueueMgr
    int jobPort
   )
   { 
+    pShutdownJobMgrs = new AtomicBoolean(false);
+
     Logs.net.info("Initializing...");
     Logs.flush();
 
@@ -290,6 +293,21 @@ class QueueMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Set the shutdown options.
+   * 
+   * @param shutdownJobMgrs
+   *   Whether to shutdown all job servers before exiting.
+   */ 
+  public void 
+  setShutdownOptions
+  (
+   boolean shutdownJobMgrs
+  ) 
+  {
+    pShutdownJobMgrs.set(shutdownJobMgrs);
+  }
+
+  /**
    * Shutdown the node manager. <P> 
    * 
    * It is crucial that this method be called when only a single thread is able to access
@@ -299,6 +317,22 @@ class QueueMgr
   public void  
   shutdown() 
   {
+    /* shutdown all job servers */ 
+    if(pShutdownJobMgrs.get()) { 
+      for(String hname : pHosts.keySet()) {
+	QueueHost host = pHosts.get(hname);
+	if(host != null) {
+	  try {
+	    JobMgrControlClient client = new JobMgrControlClient(hname, pJobPort);
+	    client.shutdown();
+	  }
+	  catch(PipelineException ex) {
+	    Logs.net.warning(ex.getMessage());
+	  }
+	}
+      }
+    }
+
     /* write the last interval of samples to disk */ 
     {
       Date now = new Date();
@@ -3771,6 +3805,14 @@ class QueueMgr
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Whether to shutdown all job servers before exiting.
+   */ 
+  private AtomicBoolean  pShutdownJobMgrs; 
+   
+
+  /*----------------------------------------------------------------------------------------*/
+  
   /**
    * The file system directory creation lock.
    */

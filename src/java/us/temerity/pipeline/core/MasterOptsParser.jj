@@ -276,7 +276,8 @@ TOKEN :
 /*------------------------------------------------------------------------------------------*/
 
 MasterMgrServer
-CommandLine() :
+CommandLine() 
+  throws PipelineException :
 {
   MasterMgrServer s = null;
 }
@@ -289,7 +290,8 @@ CommandLine() :
 
 
 MasterMgrServer
-Commands() :
+Commands() 
+  throws PipelineException :
 {
   init();
 }
@@ -307,22 +309,10 @@ Commands() :
       }
     }
 
-    Logs.net.info("Establishing Network Connections...");
-    Logs.flush();
-
-    try {
-      /* initialize the plugins */ 
-      PluginMgrClient.init();
-
-      /* create the server */ 
-      return (new MasterMgrServer(pNodeDir, pMasterPort, 
-				  pProdDir, pFileServer, pFilePort, 
-				  pQueueServer, pQueuePort));
-    }
-    catch(PipelineException ex) {
-      Logs.plg.severe(ex.getMessage());
-      System.exit(1);
-    }
+    /* create the server */ 
+    return (new MasterMgrServer(pNodeDir, pMasterPort, 
+				pProdDir, pFileServer, pFilePort, 
+				pQueueServer, pQueuePort));
   }
 }
     

@@ -1,4 +1,4 @@
-// $Id: MasterApp.java,v 1.9 2004/10/24 10:56:53 jim Exp $
+// $Id: MasterApp.java,v 1.10 2005/01/15 21:15:54 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -70,6 +70,9 @@ class MasterApp
       }
       
       success = true;
+    }
+    catch(PipelineException ex) {
+      Logs.ops.severe(ex.getMessage());
     }
     catch(ParseException ex) {
       handleParseException(ex);

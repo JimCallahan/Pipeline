@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.27 2005/01/15 16:16:38 jim Exp $
+// $Id: ScriptApp.java,v 1.28 2005/01/15 21:15:54 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -133,7 +133,7 @@ class ScriptApp
       "\n" + 
       "  Administration\n" +
       "    admin\n" + 
-      "      --shutdown\n" + 
+      "      --shutdown [--shutdown-jobmgrs] [--shutdown-pluginmgr]\n" + 
       "      --backup=dir\n" +
       "\n" + 
       "  Toolset Administration\n" + 

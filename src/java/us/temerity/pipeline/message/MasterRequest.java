@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.24 2005/01/07 07:07:51 jim Exp $
+// $Id: MasterRequest.java,v 1.25 2005/01/15 21:15:54 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -381,6 +381,11 @@ enum MasterRequest
    * No more requests will be send over this connection.
    */
   Disconnect,
+
+  /**
+   * An instance of {@link MiscShutdownOptionsReq MiscShutdownOptionsReq} is next.
+   */
+  ShutdownOptions, 
 
   /**
    * Order the server to refuse any further requests and then to exit as soon as all

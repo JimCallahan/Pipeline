@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.31 2005/01/15 16:16:52 jim Exp $
+// $Id: MasterMgrServer.java,v 1.32 2005/01/15 21:15:54 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -208,7 +208,6 @@ class MasterMgrServer
 	}
       }
 
-      PluginMgrClient.getInstance().disconnect();
       pMasterMgr.shutdown();
 
       Logs.net.info("Server Shutdown.");
@@ -753,6 +752,12 @@ class MasterMgrServer
 	  case Disconnect:
 	    live = false;
 	    break;
+
+	  case ShutdownOptions:
+	    {
+	      MiscShutdownOptionsReq req = (MiscShutdownOptionsReq) objIn.readObject();
+	      pMasterMgr.setShutdownOptions(req.shutdownJobMgrs(), req.shutdownPluginMgr());
+	    }
 
 	  case Shutdown:
 	    Logs.net.warning("Shutdown Request Received: " + pSocket.getInetAddress());

@@ -58,7 +58,12 @@ Users</a></li>
     <ul>
       <li style="font-weight: bold;">admin</li>
       <ul>
-        <li style="font-weight: bold;"><a href="#admin_--shutdown">--shutdown</a></li>
+        <li style="font-weight: bold;"><a href="#admin_--shutdown">--shutdown</a>
+          <span style="font-weight: bold;"></span><span
+ style="font-weight: normal;">[<span style="font-weight: bold;">--shutdown-jobmgrs</span>]
+[<span style="font-weight: bold;">--shutdown-pluginmgr</span>]</span><span
+ style="font-weight: normal;"></span><a href="#admin_--shutdown"><br>
+          </a></li>
         <li style="font-weight: bold;"><a href="#admin_--backup">--backup</a><span
  style="font-weight: normal;">=</span><span
  style="font-style: italic; font-weight: normal;">dir</span></li>
@@ -1660,15 +1665,33 @@ command can only be run by the (@PIPELINE_USER@) user.
 privileged user status.<br>
 <br>
 <span style="font-weight: bold;"><a name="admin_--shutdown"></a>admin
---shutdown</span><br>
+--shutdown </span><span style="font-weight: normal;">[<span
+ style="font-weight: bold;">--shutdown-jobmgrs</span>] [<span
+ style="font-weight: bold;">--shutdown-pluginmgr</span>]</span><br>
 <br>
 <div style="margin-left: 40px;">Causes any running <a
  href="plmaster.html"><span style="font-weight: bold;">plmaster</span></a>(1),
 <a href="plqueuemgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1)
 and <a href="plfilemgr.html"><span style="font-weight: bold;">plfilemgr</span></a>(1)
 daemons to perform shutdown tasks and exit as soon as possible.&nbsp;
-The <a href="pljobmgr.html"><span style="font-weight: bold;">pljobmgr</span></a>(1)
-daemons are not affected by this command.<br>
+<br>
+<br>
+If the <span style="font-weight: normal;"><span
+ style="font-weight: bold;">--shutdown-jobmgrs</span> option is given,
+all </span><a href="pljobmgr.html"><span style="font-weight: bold;">pljobmgr</span></a>(1)
+daemons which are registered with the <a href="plqueuemgr.html"><span
+ style="font-weight: bold;">plqueuemgr</span></a>(1) daemon will be
+shutdown as well.&nbsp; By default, the <a href="pljobmgr.html"><span
+ style="font-weight: bold;">pljobmgr</span></a>(1)
+daemons are not affected by this command.&nbsp; <br>
+<br>
+If the <span style="font-weight: normal;"><span
+ style="font-weight: bold;">--shutdown-pluginmgr</span> option is
+given, the </span><a href="plpluginmgr.html"><span
+ style="font-weight: bold;">plpluginmgr</span></a>(1) daemon will also
+be shutdown. By default, the <a href="plpluginmgr.html"><span
+ style="font-weight: bold;">plpluginmgr</span></a>(1)
+daemon is not affected by this command.&nbsp; <br>
 <br>
 </div>
 </div>

@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.18 2005/01/15 15:06:24 jim Exp $
+// $Id: QueueMgrServer.java,v 1.19 2005/01/15 21:15:54 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -526,6 +526,12 @@ class QueueMgrServer
 	  case Disconnect:
 	    live = false;
 	    break;
+
+	  case ShutdownOptions:
+	    {
+	      QueueShutdownOptionsReq req = (QueueShutdownOptionsReq) objIn.readObject();
+	      pQueueMgr.setShutdownOptions(req.shutdownJobMgrs());
+	    }
 
 	  case Shutdown:
 	    Logs.net.warning("Shutdown Request Received: " + pSocket.getInetAddress());

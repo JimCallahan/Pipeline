@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.45 2005/01/15 15:06:24 jim Exp $
+// $Id: MasterMgrClient.java,v 1.46 2005/01/15 21:15:54 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -69,6 +69,35 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
   /*  C O N N E C T I O N                                                                   */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Order the server to refuse any further requests and then to exit as soon as all
+   * currently pending requests have be completed.
+   * 
+   * @param shutdownJobMgrs
+   *   Whether to command the queue manager to shutdown all job servers before exiting.
+   * 
+   * @param shutdownPluginMgr
+   *   Whether to shutdown the plugin manager before exiting.
+   */
+  public synchronized void 
+  shutdown
+  (
+   boolean shutdownJobMgrs,
+   boolean shutdownPluginMgr
+  ) 
+    throws PipelineException 
+  {
+    if(!isPrivileged(false)) 
+      throw new PipelineException
+	("Only privileged users may shutdown the servers!");
+
+    verifyConnection();
+
+    MiscShutdownOptionsReq req = 
+      new MiscShutdownOptionsReq(shutdownJobMgrs, shutdownPluginMgr);
+    shutdownTransaction(MasterRequest.ShutdownOptions, req); 
+  }
 
   /**
    * Order the server to refuse any further requests and then to exit as soon as all

@@ -1,4 +1,4 @@
-// $Id: QueueRequest.java,v 1.11 2004/10/25 18:56:46 jim Exp $
+// $Id: QueueRequest.java,v 1.12 2005/01/15 21:15:54 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -202,6 +202,11 @@ enum QueueRequest
    * No more requests will be send over this connection.
    */
   Disconnect,
+
+  /**
+   * An instance of {@link QueueShutdownOptionsReq QueueShutdownOptionsReq} is next.
+   */
+  ShutdownOptions, 
 
   /**
    * Order the server to refuse any further requests and then to exit as soon as all

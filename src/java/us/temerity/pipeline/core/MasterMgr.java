@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.83 2005/01/15 16:16:51 jim Exp $
+// $Id: MasterMgr.java,v 1.84 2005/01/15 21:15:54 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -233,11 +233,21 @@ class MasterMgr
   )
     throws PipelineException 
   { 
-    /* make a connection to the file and queue manager daemons */ 
+    pShutdownJobMgrs   = new AtomicBoolean(false);
+    pShutdownPluginMgr = new AtomicBoolean(false);
+
+    Logs.net.info("Establishing Network Connections...");
+    Logs.flush();
+
     {
+      /* initialize the plugins */ 
+      PluginMgrClient.init();
+
+      /* make a connection to the file manager */ 
       pFileMgrClient = new FileMgrClient(fileHost, filePort);
       pFileMgrClient.waitForConnection(1000, 5000);
       
+      /* make a connection to the queue manager */ 
       pQueueMgrClient = new QueueMgrControlClient(queueHost, queuePort);
       pQueueMgrClient.waitForConnection(1000, 5000);
     }
@@ -906,6 +916,26 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Set the shutdown options.
+   * 
+   * @param shutdownJobMgrs
+   *   Whether to command the queue manager to shutdown all job servers before exiting.
+   * 
+   * @param shutdownPluginMgr
+   *   Whether to shutdown the plugin manager before exiting.
+   */ 
+  public void 
+  setShutdownOptions
+  (
+   boolean shutdownJobMgrs, 
+   boolean shutdownPluginMgr
+  ) 
+  {
+    pShutdownJobMgrs.set(shutdownJobMgrs);
+    pShutdownPluginMgr.set(shutdownPluginMgr);
+  }
+
+  /**
    * Shutdown the node manager. <P> 
    * 
    * Also sends a shutdown request to the <B>plfilemgr</B>(1) and <B>plqueuemgr</B>(1) 
@@ -937,11 +967,25 @@ class MasterMgr
     /* close the connection to the queue manager */ 
     if(pQueueMgrClient != null) {
       try {
-	pQueueMgrClient.shutdown();
+	if(pShutdownJobMgrs.get()) 
+	  pQueueMgrClient.shutdown(true);
+	else 
+	  pQueueMgrClient.shutdown();
       }
       catch(PipelineException ex) {
 	Logs.net.warning(ex.getMessage());
       }
+    }
+    
+    /* close the connection to the plugin manager */ 
+    try {
+      if(pShutdownPluginMgr.get()) 
+	PluginMgrClient.getInstance().shutdown();
+      else 
+	PluginMgrClient.getInstance().disconnect();
+    }
+    catch(PipelineException ex) {
+      Logs.net.warning(ex.getMessage());
     }
 
     /* give the sockets time to disconnect cleanly */ 
@@ -9828,7 +9872,20 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Whether to command the queue manager to shutdown all job servers before exiting.
+   */ 
+  private AtomicBoolean  pShutdownJobMgrs; 
+    
+  /**
+   * Whether to shutdown the plugin manager before exiting.
+   */ 
+  private AtomicBoolean  pShutdownPluginMgr;
 
+
+  /*----------------------------------------------------------------------------------------*/
+  
   /**
    * The master database lock. <P> 
    * 

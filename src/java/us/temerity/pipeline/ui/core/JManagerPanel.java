@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.8 2005/01/10 16:02:01 jim Exp $
+// $Id: JManagerPanel.java,v 1.9 2005/01/15 21:15:54 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2508,16 +2508,20 @@ class JManagerPanel
   private void 
   doShutdownServer() 
   {
-    JConfirmDialog confirm = new JConfirmDialog("Are you sure?");
-    confirm.setVisible(true);
+    JShutdownDialog diag = new JShutdownDialog();
+    diag.setVisible(true);
 
-    if(confirm.wasConfirmed()) {
+    if(diag.wasConfirmed()) {
       UIMaster master = UIMaster.getInstance();
-
       master.getQueueMgrClient().disconnect();
 
       try {
-	master.getMasterMgrClient().shutdown();
+	boolean jobMgrs   = diag.shutdownJobMgrs();
+	boolean pluginMgr = diag.shutdownPluginMgr();
+	if(jobMgrs || pluginMgr) 
+	  master.getMasterMgrClient().shutdown(jobMgrs, pluginMgr);
+	else 
+	  master.getMasterMgrClient().shutdown();
       }
       catch(PipelineException ex) {
       }

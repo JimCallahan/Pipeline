@@ -1,4 +1,4 @@
-// $Id: BaseMgrClient.java,v 1.10 2005/01/15 15:06:24 jim Exp $
+// $Id: BaseMgrClient.java,v 1.11 2005/01/15 21:15:54 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -191,6 +191,46 @@ class BaseMgrClient
       throw new PipelineException
 	("IO problems on port (" + pPort + "):\n" + 
 	 ex.getMessage());
+    }
+    finally {
+      pSocket = null;
+    }
+  }
+
+  /**
+   * Send the given request to the server instance, then close the connection
+   * without waiting for a response.
+   * 
+   * @param kind 
+   *   The kind of request being sent.
+   * 
+   * @param req 
+   *   The request data or <CODE>null</CODE> if there is no request.
+   */ 
+  protected synchronized void 
+  shutdownTransaction
+  (
+   Object kind, 
+   Object req
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+    try {
+      OutputStream out = pSocket.getOutputStream();
+      ObjectOutput objOut = new ObjectOutputStream(out);
+      objOut.writeObject(kind);
+      if(req != null) 
+	objOut.writeObject(req);
+      objOut.flush(); 
+
+      pSocket.close();
+    }
+    catch(IOException ex) {
+      disconnect();
+      throw new PipelineException
+	("IO problems on port (" + pPort + "):\n" + 
+	 ex.getMessage(), ex);
     }
     finally {
       pSocket = null;

@@ -1,4 +1,4 @@
-// $Id: QueueMgrControlClient.java,v 1.8 2005/01/15 02:53:20 jim Exp $
+// $Id: QueueMgrControlClient.java,v 1.9 2005/01/15 21:15:54 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -58,6 +58,32 @@ class QueueMgrControlClient
   {
     this(PackageInfo.sQueueServer, PackageInfo.sQueuePort);
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*  C O N N E C T I O N                                                                   */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Order the server to refuse any further requests and then to exit as soon as all
+   * currently pending requests have be completed.
+   * 
+   * @param shutdownJobMgrs
+   *   Whether to shutdown all job servers before exiting.
+   */
+  public synchronized void 
+  shutdown
+  (
+   boolean shutdownJobMgrs
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+
+    QueueShutdownOptionsReq req = new QueueShutdownOptionsReq(shutdownJobMgrs);
+    shutdownTransaction(QueueRequest.ShutdownOptions, req); 
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
