@@ -1,8 +1,9 @@
-// $Id: JobMgr.java,v 1.3 2004/07/28 19:15:08 jim Exp $
+// $Id: JobMgr.java,v 1.4 2004/08/22 21:55:19 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.message.*;
+import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.*;
 
 import java.io.*;
@@ -33,13 +34,40 @@ class JobMgr
   public
   JobMgr()
   {
-    File dir = new File(PackageInfo.sTempDir, "pljobmgr");
-    if(!dir.isDirectory())
-      if(!dir.mkdirs()) 
-	throw new IllegalArgumentException
-	  ("Unable to create the temporary directory (" + dir + ")!");
+    /* initialize the fields */ 
+    {
+      pMakeDirLock  = new Object();
+      pExecuteTasks = new TreeMap<Long,ExecuteTask>();
+    }
 
-    pExecuteTasks = new TreeMap<Long,ExecuteTask>();
+    try {
+      /* make sure that the root job directory exists */ 
+      makeRootDir();
+    }
+    catch(Exception ex) {
+      Logs.ops.severe(ex.getMessage());
+      Logs.flush();
+      System.exit(1);
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Make sure that the root job directory exists.
+   */ 
+  private void 
+  makeRootDir() 
+    throws PipelineException
+  {
+    synchronized(pMakeDirLock) {
+      pJobDir = new File(PackageInfo.sTempDir, "pljobmgr");
+      if(!pJobDir.isDirectory())
+	if(!pJobDir.mkdirs()) 
+	  throw new PipelineException
+	    ("Unable to create the temporary directory (" + pJobDir + ")!");
+    }
   }
 
 
@@ -296,26 +324,18 @@ class JobMgr
     QueueJob job = req.getJob();
 
     TaskTimer timer = new TaskTimer("JobMgr.start(): " + job.getJobID()); 
+
+    ExecuteTask task = new ExecuteTask(job);
+
     timer.aquire();
-    try {
+    synchronized(pExecuteTasks) {
       timer.resume();
-
-      BaseAction action = Plugins.newAction(job.getActionName());
-      ExecuteTask task = new ExecuteTask(job, action);
-
-      timer.aquire();
-      synchronized(pExecuteTasks) {
-	timer.resume();
-	pExecuteTasks.put(job.getJobID(), task);
-      }
-
-      task.start();
-
-      return new SuccessRsp(timer);
+      pExecuteTasks.put(job.getJobID(), task);
     }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());	  
-    }
+
+    task.start();
+
+    return new SuccessRsp(timer);
   }
 
   /**
@@ -388,24 +408,57 @@ class JobMgr
 	task = pExecuteTasks.get(req.getJobID());
       }
 
-      if(task == null)
-	throw new PipelineException("No job (" + req.getJobID() + ") exists on the server!");
-      else {
+      QueueJobResults results = null;
+
+      /* the execution task still exists */ 
+      if(task != null) {
 	try {
 	  task.join();
 	}
 	catch(InterruptedException ex) {
 	  throw new PipelineException(ex);
 	}
-      }
       
-      timer.aquire();
-      synchronized(pExecuteTasks) {
-	timer.resume();
-	pExecuteTasks.remove(req.getJobID());
+	results = task.getResults();
+
+	timer.aquire();
+	synchronized(pExecuteTasks) {
+	  timer.resume();
+	  pExecuteTasks.remove(req.getJobID());
+	}
       }
 
-      return new JobWaitRsp(req.getJobID(), timer, task.getResults());
+      /* job server may have been restarted, see if a results file exists */ 
+      else {
+	File file = new File(pJobDir, req.getJobID() + "/results");
+	if(file.isFile()) {
+	  Logs.ops.finer("Reading Job Results: " + req.getJobID());
+	  
+	  try {
+	    FileReader in = new FileReader(file);
+	    GlueDecoder gd = new GlueDecoderImpl(in);
+	    results = (QueueJobResults) gd.getObject();
+	    in.close();
+	  }
+	  catch(Exception ex) {
+	    Logs.glu.severe
+	      ("The job results file (" + file + ") appears to be corrupted!");
+	    Logs.flush();
+	  
+	    throw new PipelineException
+	      ("I/O ERROR: \n" + 
+	       "  While attempting to read the job results file (" + file + ")...\n" + 
+	       "    " + ex.getMessage());
+	  }
+	}
+	else {
+	  throw new PipelineException
+	    ("No job (" + req.getJobID() + ") exists on the server!");
+	}
+      }
+      
+      assert(results != null);
+      return new JobWaitRsp(req.getJobID(), timer, results);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
@@ -427,7 +480,7 @@ class JobMgr
    * 
    * @return
    *   <CODE>JobOutputRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to start the job.
+   *   <CODE>FailureRsp</CODE> if unable to get the STDOUT of the job.
    */ 
   public Object
   getStdOutLines
@@ -449,9 +502,7 @@ class JobMgr
 	lines = task.getStdOutLines(req.getStart());
       }
       else {
-	File file = new File(PackageInfo.sTempDir, 
-			     "pljobmgr/" + req.getJobID() + ".out");
-
+	File file = new File(pJobDir, req.getJobID() + "/stdout");
 	lines = readOutputFile(file, req.getStart());
       }
       assert(lines != null);
@@ -472,7 +523,7 @@ class JobMgr
    * 
    * @return
    *   <CODE>JobOutputRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to start the job.
+   *   <CODE>FailureRsp</CODE> if unable to get the STDERR of the job.
    */ 
   public Object
   getStdErrLines
@@ -494,9 +545,7 @@ class JobMgr
 	lines = task.getStdErrLines(req.getStart());
       }
       else {
-	File file = new File(PackageInfo.sTempDir, 
-			     "pljobmgr/" + req.getJobID() + ".err");
-
+	File file = new File(pJobDir, req.getJobID() + "/stderr");
 	lines = readOutputFile(file, req.getStart());
       }
       assert(lines != null);
@@ -581,25 +630,19 @@ class JobMgr
     public 
     ExecuteTask
     (
-     QueueJob job, 
-     BaseAction action
+     QueueJob job
     ) 
     {
       super("JobMgr:ExecuteTask[Job" + job.getJobID() + "]");
 
       pJob = job;
-      pAction = action;
       pLock = new Object();
     }
 
     public QueueJobResults
     getResults()
-      throws PipelineException
     {
       synchronized(pLock) {
-	if(pException != null) 
-	  throw new PipelineException(pException);
-	
 	assert(!isAlive());
 	return pResults;
       }
@@ -649,15 +692,48 @@ class JobMgr
       try {
 	long jobID = pJob.getJobID();
 	
-	Logs.ops.finer("Started Job: " + jobID);
-
-	synchronized(pLock) {
-	  pProc = pAction.prep(pJob.getActionAgenda());
+	File dir = new File(pJobDir, String.valueOf(jobID));
+	try {
+	  Logs.ops.finer("Preparing Job: " + jobID);
+	  
+	  File scratch = new File(dir, "scratch");
+	  synchronized(pMakeDirLock) {
+	    if(dir.exists() || scratch.exists())
+	      throw new IOException
+		("Somehow the job directory (" + dir + ") already exists!");
+	    
+	    if(!scratch.mkdirs()) 
+	      throw new IOException
+		("Unable to create the job directory (" + dir + ")!");
+	    
+	    NativeFileSys.chmod(0777, scratch);	      
+	  }
+	  
+	  synchronized(pLock) {
+	    pProc = pJob.getAction().prep(pJob.getActionAgenda());
+	  }
+	}
+	catch(Exception ex) {
+	  Logs.ops.severe("Job Prep Failed: " + jobID);
+	  pResults = new QueueJobResults(ex);
+	  
+	  Logs.ops.finest("Writing Exception Stack as STDERR of Job: " + jobID);
+	  {
+	    File file = new File(dir, "stderr"); 
+	    FileWriter out = new FileWriter(file);
+	    out.write("Job Prep Failed!\n\n" + getFullMessage(ex));
+	    out.flush();
+	    out.close();
+	  }
+	  
+	  return;
 	}
 
-	pProc.start();
-	pProc.join();
-
+	Logs.ops.finer("Started Job: " + jobID);
+	{
+	  pProc.start();
+	  pProc.join();
+	}
 	Logs.ops.finer("Finished Job: " + jobID);
 
 	synchronized(pLock) {
@@ -667,13 +743,41 @@ class JobMgr
 				pProc.getAverageResidentSize(), pProc.getMaxResidentSize(), 
 				pProc.getAverageVirtualSize(), pProc.getMaxVirtualSize(), 
 				pProc.getPageFaults());
-	}
 
+	  File file = new File(dir, "results");
+	  try {
+	    String glue = null;
+	    try {
+	      GlueEncoder ge = new GlueEncoderImpl("Results", pResults);
+	      glue = ge.getText();
+	    }
+	    catch(GlueException ex) {
+	      Logs.glu.severe
+		("Unable to generate a Glue format representation of the job results!");
+	      Logs.flush();
+	      
+	      throw new IOException(ex.getMessage());
+	    }
+	  
+	    {
+	      FileWriter out = new FileWriter(file);
+	      out.write(glue);
+	      out.flush();
+	      out.close();
+	    }
+	  }
+	  catch(IOException ex) {
+	    throw new PipelineException
+	      ("I/O ERROR: \n" + 
+	       "  While attempting to write the job results file (" + file + ")...\n" + 
+	       "    " + ex.getMessage());
+	  }
+	}
+	
 	{
 	  Logs.ops.finest("Writing STDOUT of Job: " + jobID);
-
-	  File file = new File(PackageInfo.sTempDir, 
-			       "pljobmgr/" + jobID + ".out");
+	  
+	  File file = new File(dir, "stdout"); 
 	  FileWriter out = new FileWriter(file);
 	  out.write(pProc.getStdOut());
 	  out.flush();
@@ -683,28 +787,44 @@ class JobMgr
 	{
 	  Logs.ops.finest("Writing STDERR of Job: " + jobID);
 
-	  File file = new File(PackageInfo.sTempDir, 
-			       "pljobmgr/" + jobID + ".err");
+	  File file = new File(dir, "stderr"); 
 	  FileWriter out = new FileWriter(file);
 	  out.write(pProc.getStdErr());
 	  out.flush();
 	  out.close();
 	}
       }
-      catch(Exception ex) {
-	synchronized(pLock) {
-	  pException = ex; 
-	}
+      catch(Exception ex2) {
+	Logs.ops.severe(getFullMessage(ex2));
       }
     }
-      
-    private QueueJob        pJob; 
-    private BaseAction      pAction; 
 
+    private String 
+    getFullMessage
+    (
+     Throwable ex
+     ) 
+    {
+      StringBuffer buf = new StringBuffer();
+      
+      if(ex.getMessage() != null) 
+	buf.append(ex.getMessage() + "\n\n"); 	
+      else if(ex.toString() != null) 
+      buf.append(ex.toString() + "\n\n"); 	
+      
+      buf.append("Stack Trace:\n");
+      StackTraceElement stack[] = ex.getStackTrace();
+      int wk;
+      for(wk=0; wk<stack.length; wk++) 
+	buf.append("  " + stack[wk].toString() + "\n");
+      
+      return (buf.toString());
+    }
+
+    private QueueJob        pJob; 
     private Object          pLock; 
     private SubProcess      pProc; 
     private QueueJobResults pResults; 
-    private Exception       pException; 
   }
 
 
@@ -713,6 +833,19 @@ class JobMgr
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * The file system directory creation lock.
+   */
+  private Object pMakeDirLock;
+ 
+  /**
+   * The root job directory.
+   */ 
+  private File  pJobDir;
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
   /**
    * The job execution threads indexed by job ID. <P> 
    * 
