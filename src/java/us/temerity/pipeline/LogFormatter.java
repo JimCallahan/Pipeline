@@ -1,4 +1,4 @@
-// $Id: LogFormatter.java,v 1.4 2004/04/11 19:31:58 jim Exp $
+// $Id: LogFormatter.java,v 1.5 2004/07/14 20:57:43 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -45,8 +45,7 @@ class LogFormatter
     String parts[] = record.getLoggerName().split("\\.");
     String name = parts[parts.length-1].toUpperCase();
 
-    SimpleDateFormat fmt = new SimpleDateFormat("E MMM dd HH:mm:ss z yyyy");
-    String stamp = fmt.format(new Date(record.getMillis()));
+    String stamp = Dates.format(new Date(record.getMillis()));
 
     if(record.getLevel().equals(Level.SEVERE)) {
       return (name + "-ERROR: " + stamp + sNL +
