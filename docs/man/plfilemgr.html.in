@@ -7,7 +7,8 @@
 </head>
 <body>
 <h3><a name="Name"></a>Name</h3>
-<blockquote><b>plfilemgr</b> - the Pipeline file system server</blockquote>
+<blockquote><b>plfilemgr</b> - the Pipeline File Manager<br>
+</blockquote>
 <h3><a name="Synopsis"></a>Synopsis</h3>
 <blockquote><b>plfilemgr</b> [<a href="#Global_Options"><i>options</i></a>]<i><br>
   </i><br>
@@ -16,6 +17,7 @@
   <b>plfilemgr</b> <a style="font-weight: bold;" href="#--version_">--version</a><br>
   <b>plfilemgr</b> <a style="font-weight: bold;" href="#--release-date">--release-date</a><br>
   <b>plfilemgr</b> <a style="font-weight: bold;" href="#--copyright">--copyright</a><br>
+  <span style="font-weight: bold;">plfilemgr <a href="#--license">--license</a></span><br>
 </blockquote>
 <h3><a name="Description"></a>Description<br>
 </h3>
@@ -44,8 +46,18 @@ and then immediately exit:</blockquote>
   </blockquote>
   <b><a name="--copyright"></a>--copyright<br>
   </b><br>
-  <div style="margin-left: 40px;"> Prints copyright notice for this
-software and exits.</div>
+  <div style="margin-left: 40px;"> Prints the <a href="#Copyright"><span
+ style="font-weight: bold;">copyright notice</span></a> for this
+software and exits.<br>
+  <br>
+  </div>
+  <span style="font-weight: bold;"><a name="--license"></a>--license<br>
+  <br>
+  </span>
+  <div style="margin-left: 40px;">Prints the <a
+ href="#License_Agreement"><span style="font-weight: bold;">license
+agreement</span></a> for this software and exits.<br>
+  </div>
   <blockquote> </blockquote>
 </blockquote>
 <h3><a name="Global_Options"></a>Global Options</h3>
@@ -54,21 +66,24 @@ software and exits.</div>
 </span>
 <div style="margin-left: 40px;"><br>
 Use an alternative root production directory (<span
- style="font-style: italic;">dir</span>).&nbsp; The
-default root production directory is set by the <code>--with-prod=DIR</code>
-option to <a href="http://www.gnu.org/software/autoconf/"><span
- style="font-weight: bold;">configure</span></a>(1) during the Pipeline
-build process.<br>
+ style="font-style: italic;">dir</span>).&nbsp; <br>
+<br>
+The
+default root production directory is set by the <span
+ style="font-weight: bold;">--prod-dir</span> <code
+ style="font-weight: bold;"></code>option to <span
+ style="font-weight: bold;">plconfig</span>(1).
 </div>
 <b><br>
 <a name="--port"></a>--port</b>=<i>num</i><br>
 </div>
 <blockquote style="margin-left: 80px;">Listen for connections on an
-alternative network port (<i>num</i>). The
-default port&nbsp; is set by the <code>--with-file-port=DIR</code>
-option to <a href="http://www.gnu.org/software/autoconf/"><span
- style="font-weight: bold;">configure</span></a>(1) during the Pipeline
-build process.<span style="font-weight: bold;"><a
+alternative network port (<i>num</i>). <br>
+  <br>
+The
+default port is set by the&nbsp; <span style="font-weight: bold;">--file-port</span>
+option to <span style="font-weight: bold;">plconfig</span>(1). <code></code><span
+ style="font-weight: bold;"><a
  href="http://www.gnu.org/software/autoconf/"><span
  style="font-weight: bold;"></span></a></span><span
  style="font-weight: bold;"> </span></blockquote>
@@ -167,26 +182,20 @@ of this file.&nbsp; Settings from the <a href="#--log"><span
 settings from the <span style="font-weight: bold;">logger.properties</span>
 file.</div>
 </div>
-<h3><a name="See_Also"></a>See Also<br>
-</h3>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"></span><span
- style="font-weight: bold;">Pipeline
-Java API</span><br>
-<div style="margin-left: 40px;"><a style="font-weight: bold;"
- href="../javadoc/us/temerity/pipeline/FileMgr.html">FileMgr</a>, <a
+<h3><a name="See_Also"></a>See Also<a
  href="../javadoc/us/temerity/pipeline/FileMgrClient.html"><span
- style="font-weight: bold;">FileMgrClient</span></a><br>
-<br>
-</div>
+ style="font-weight: bold;"></span></a><br>
+</h3>
+<div style="margin-left: 40px;">
 <span style="font-weight: bold;">Pipeline Programs</span><br>
 <div style="margin-left: 40px;"><a href="plmaster.html"><span
- style="font-weight: bold;">plmaster</span></a>(1)<br>
+ style="font-weight: bold;">plmaster</span></a>(1), <a
+ href="plnotify.html"><span style="font-weight: bold;">plnotify</span></a>(1),
+<span style="font-weight: bold;">plconfig</span>(1)<br>
 <br>
 </div>
 <span style="font-weight: bold;">Other Software</span><br>
-<div style="margin-left: 40px;"><a href="http://www.mozilla.org"><b>mozilla</b></a>(1),
-<a href="http://www.gnu.org/software/autoconf/"><span
- style="font-weight: bold;">configure</span></a>(1)<span
+<div style="margin-left: 40px;"><a href="http://www.mozilla.org"><b>mozilla</b></a>(1)<span
  style="font-weight: bold;"></span><br>
 </div>
 </div>
@@ -199,42 +208,126 @@ programs.&nbsp;
 See the <a href="#--log"><span style="font-weight: bold;">--log </span></a>option
 for details about the individual loggers.</div>
 </div>
-<h3><a name="Author"></a>Author </h3>
-<blockquote><span style="font-weight: bold;"> Jim Callahan &lt;</span><a
- style="font-weight: bold;" href="mailto:jim@polaris.net">jim@polaris.net</a><span
- style="font-weight: bold;">&gt;</span>
-  <blockquote>Sole designer and author of <b>plfilemgr</b>(1).<br>
-  </blockquote>
-</blockquote>
-<h3><a name="Copyright"></a>Copyright<br>
-</h3>
+<h3><a name="Author"></a>Author</h3>
+<div style="margin-left: 40px;">Created by <span
+ style="font-weight: bold;">Jim Callahan</span> of <a
+ href="http://temerity.us/"><span style="font-weight: bold;">Temerity
+Software, Inc</span></a>.</div>
+<h3><a name="Copyright"></a>Copyright</h3>
 <div style="margin-left: 40px;"><span style="font-weight: bold;">Copyright
-(c) 2002, 2003, 2004 James M. Callahan.</span><br
+(c) 2002, 2003, 2004 Temerity Software, Inc.</span><br
  style="font-weight: bold;">
 </div>
-<br style="font-weight: bold;">
-<div style="margin-left: 40px;"> Permission to use, copy and distribute
-this software and its documentation for any purpose is STRICTLY
-PROHIBITED without prior authorization in writing by James M. Callahan.<br>
-</div>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+<p>
+</p>
 <div style="margin-left: 40px;"> THE SOFTWARE IS PROVIDED "AS-IS" AND
 WITHOUT WARRANTY OF ANY KIND, EXPRESS, IMPLIED OR OTHERWISE, INCLUDING
 WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY OR FITNESS FOR A
-PARTICULAR PURPOSE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+PARTICULAR PURPOSE.
+<p> </p>
+</div>
+<div style="margin-left: 40px;"> IN NO EVENT SHALL TEMERITY SOFTWARE,
+INC. BE
+LIABLE FOR ANY SPECIAL, INCIDENTAL, INDIRECT OR CONSEQUENTIAL DAMAGES
+OF ANY KIND, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA
+OR
+PROFITS, WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON
+ANY THEORY OF LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE
+OR
+PERFORMANCE OF THIS SOFTWARE.</div>
+<h3><a name="License_Agreement"></a>License Agreement<br>
+</h3>
+<div style="margin-left: 40px;">
+<div style="text-align: center;"><span style="font-weight: bold;">Temerity
+Software, Inc.</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">License Agreement</span><br
+ style="font-weight: bold;">
+<span style="font-weight: bold;">PIPELINE, VERSION @VERSION@</span><br>
+</div>
 <br>
 </div>
-<div style="margin-left: 40px;"> IN NO EVENT SHALL JAMES M. CALLAHAN BE
-LIABLE FOR ANY SPECIAL, INCIDENTAL, INDIRECT OR CONSEQUENTIAL DAMAGES
-OF
-ANY KIND, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
-PROFITS, WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON
-ANY
-THEORY OF LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-PERFORMANCE OF THIS SOFTWARE.</div>
-<blockquote> </blockquote>
-<blockquote> </blockquote>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">1.
+DEFINITIONS. </span>"Temerity" means Temerity Software, Inc.&nbsp;
+"Software" means Pipeline, Version @VERSION@, software
+in binary and/or source code forms, any other machine readable
+materials (including, but not limited to, libraries, source files,
+header files, and data files), any user manuals, programming guides and
+other documentation provided to Licensee by Temerity under this
+Agreement.<br>
+<br>
+<span style="font-weight: bold;">2. LICENSE TO USE.</span> Temerity
+grants you a non-exclusive and non-transferable license only for the
+internal use of Software, by the number of users and the class of
+computer hardware for which the corresponding fee has been paid.<br>
+<br>
+<span style="font-weight: bold;">3. RESTRICTIONS.</span> Software is
+confidential and copyrighted. Title to Software and all associated
+intellectual property rights is retained by Temerity. You may not make
+copies of Software, other than a single copy of Software for archival
+purposes. Unless enforcement is prohibited by applicable law, you may
+not modify, decompile, or reverse engineer Software. You acknowledge
+that Software is not designed, licensed or intended for use in the
+design, construction, operation or maintenance of any nuclear facility.
+Temerity disclaims any express or implied warranty of fitness for such
+uses. No right, title or interest in or to any trademark, service mark,
+logo or trade name of Temerity or its
+licensors is granted under this Agreement.<br>
+<br>
+<span style="font-weight: bold;">4. LIMITED WARRANTY.</span> Temerity
+warrants to you that for a period of ninety (90) days from the date of
+purchase, as evidenced by a copy of the receipt, the media on which
+Software is furnished (if any) will be free of defects in materials and
+workmanship under normal use. Except for the foregoing, Software is
+provided "AS IS". Your exclusive remedy and Temerity's entire liability
+under this limited warranty will be at Temerity's option to replace
+Software media or refund the fee paid for Software.<br>
+<br>
+<span style="font-weight: bold;">5. DISCLAIMER OF WARRANTY.</span>
+UNLESS SPECIFIED IN THIS AGREEMENT, ALL EXPRESS OR IMPLIED CONDITIONS,
+REPRESENTATIONS AND WARRANTIES, INCLUDING ANY IMPLIED WARRANTY OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE OR NON-INFRINGEMENT,
+ARE DISCLAIMED, EXCEPT TO THE EXTENT THAT THESE DISCLAIMERS ARE HELD TO
+BE LEGALLY INVALID.<br>
+<br>
+<span style="font-weight: bold;">6. LIMITATION OF LIABILITY.</span> TO
+THE EXTENT NOT PROHIBITED BY LAW, IN NO EVENTWILL TEMERITY BE LIABLE
+FOR ANY LOST REVENUE, PROFIT OR DATA, OR FOR SPECIAL, INDIRECT,
+CONSEQUENTIAL, INCIDENTAL OR PUNITIVE DAMAGES, HOWEVER CAUSED
+REGARDLESS OF THE THEORY OF LIABILITY, ARISING OUT OF OR RELATED TO THE
+USE OF OR INABILITY TO USE SOFTWARE, EVEN IF TEMERITY HAS BEEN ADVISED
+OF THE POSSIBILITY OF SUCH DAMAGES. In no event will Temerity's
+liability to you, whether in contract, tort (including negligence), or
+otherwise, exceed the amount paid by you for Software under this
+Agreement. The foregoing limitations will apply even if the above
+stated warranty fails of its essential purpose.<br>
+<br>
+<span style="font-weight: bold;">7. SEVERABILITY.</span> If any
+provision of this Agreement is held to be unenforceable, this Agreement
+will remain in effect with the provision omitted, unless omission would
+frustrate the intent of the parties. In which event, the parties'
+obligations under the remaining terms of the Agreement will be
+conformed to accomplish the parties' original intent from the overall
+Agreement.<br>
+<br>
+<span style="font-weight: bold;">8. INTEGRATION.</span> This Agreement
+is the entire agreement between you and Temerity relating to its
+subject matter. It supersedes all prior or contemporaneous oral or
+written communications, proposals, representations and warranties and
+prevails over any conflicting or additional terms of any quote, order,
+acknowledgment, or other communication between the parties relating to
+its subject matter during the term of this Agreement. No modification
+of this Agreement will be binding, unless in writing and signed by an
+authorized representative of each party.<br>
+<br>
+For inquiries please contact: <br>
+<br>
+<div style="margin-left: 40px;">Temerity Software, Inc.<br>
+<font color="#000000">
+<div>475 Central Avenue, Suite 300</div>
+<div>St. Petersburg, Florida&nbsp; 33701</div>
+</font></div>
+<br>
+</div>
 <br>
 <br>
 </body>
