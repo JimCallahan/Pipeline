@@ -92,11 +92,15 @@ for details about how this works.<br>
 </blockquote>
 <blockquote> </blockquote>
 <h3>Options</h3>
-<blockquote><b>--fcheck</b><br>
-  <blockquote>Alternative output format which prints a set of <span
+<blockquote><b>--fcheck<br>
+--fcheck-exec<br>
+  </b>
+  <blockquote>The <span style="font-weight: bold;">--fcheck</span>
+option prints an alternative output format consisting of a set of <span
  style="font-weight: bold;">fcheck</span>(1) command lines which which
-display the file sequences if they are legal image files.<br>
-  </blockquote>
+display the file sequences (if they are legal image files).&nbsp; The <b>--fcheck-exec</b>
+option will execute these fcheck command lines in addition to printing
+them. </blockquote>
   <span style="font-weight: bold;">--zero</span><br>
   <span style="font-weight: bold;">--size</span>=<span
  style="font-style: italic;">bytes<br>

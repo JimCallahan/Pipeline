@@ -1,4 +1,4 @@
-// $Id: FileSeq.hh,v 1.1 2003/10/11 02:50:07 jim Exp $
+// $Id: FileSeq.hh,v 1.2 2003/10/11 04:16:07 jim Exp $
 
 #ifndef PIPELINE_FILE_SEQ_HH
 #define PIPELINE_FILE_SEQ_HH
@@ -333,7 +333,6 @@ public:
 	out += "@";
 
       out += pSuffix;
-      out += ";";
     }    
   }
 

@@ -1,4 +1,4 @@
-// $Id: Pls.cc,v 1.1 2003/10/11 02:50:07 jim Exp $
+// $Id: Pls.cc,v 1.2 2003/10/11 04:16:07 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -56,7 +56,7 @@ usage()
 	    << "       pls --copyright\n" 
 	    << "\n" 
 	    << "OPTIONS:\n" 
-	    << "  [--fcheck][--zero][--size=bytes]\n" 
+	    << "  [--fcheck][--fcheck-exec][--zero][--size=bytes]\n" 
 	    << "\n"
 	    << "\n"
 	    << "Use \"pls --html-help\" to browse the full documentation.\n" 
@@ -78,6 +78,7 @@ main
   FB::setStageStats(false);
 
   bool fcheck = false;
+  bool exec = false;
   long int minSize = -1;
   char* dir = NULL;
   switch(argc) {
@@ -92,7 +93,7 @@ main
       }
       else if(strcmp(argv[1], "--html-help") == 0) {
 	char buf[1024];
-	sprintf(buf, "openURL(file:%s/plget.html, new-window)", 
+	sprintf(buf, "openURL(file:%s/pls.html, new-window)", 
 		PackageInfo::sDocsDir); 
 	
 	char* args[4]; 
@@ -117,6 +118,10 @@ main
       }
       else if(strcmp(argv[1], "--fcheck") == 0) 
 	fcheck = true;
+      else if(strcmp(argv[1], "--fcheck-exec") == 0) {
+	fcheck = true;
+	exec = true;
+      }
       else if(strcmp(argv[1], "--zero") == 0) 
 	minSize = 0;
       else if(strncmp(argv[1], "--size=", 7) == 0) 
@@ -134,6 +139,10 @@ main
     {
       if(strcmp(argv[1], "--fcheck") == 0)
 	fcheck = true;
+      else if(strcmp(argv[1], "--fcheck-exec") == 0) {
+	fcheck = true;
+	exec = true;
+      }
       else if(strcmp(argv[1], "--zero") == 0) 
 	minSize = 0;
       else if(strncmp(argv[1], "--size=", 7) == 0) 
@@ -154,7 +163,9 @@ main
 
 
   /* if no directory was given, determine the current directory */ 
+  bool isCwd = false;
   if(dir == NULL) {
+    isCwd = true;
     dir = new char[2048];
     if(getcwd(dir, 2048) == NULL) { 
       switch(errno) {
@@ -188,8 +199,10 @@ main
 
     while(n--) {
       string file;
-      file += dir;
-      file += "/";
+      if(!isCwd) {
+	file += dir;
+	file += "/";
+      }
       file += namelist[n]->d_name;
 
       if(access(file.c_str(), F_OK) == -1) {  
@@ -291,12 +304,20 @@ main
       FileSeq* fseq = (*iter);
 
       string str;
-      if(fcheck) 
+      if(fcheck) {
 	fseq->toFcheckCommand(str);
-      else
+	if(exec) {
+	  std::cout << "EXEC: " << str << "\n";
+	  system(str.c_str());
+	}
+	else {
+	  std::cout << str << "\n";
+	}
+      }
+      else {
 	fseq->toString(str);
-
-      std::cout << str << "\n";
+	std::cout << str << "\n";
+      }
     }
   }
 
