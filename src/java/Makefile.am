@@ -1,3 +1,4 @@
 
 SUBDIRS = \
-  pipeline
+  pipeline \
+  plutils
