@@ -1,4 +1,4 @@
-// $Id: NodeMgrClient.java,v 1.2 2004/03/26 19:10:06 jim Exp $
+// $Id: NodeMgrClient.java,v 1.3 2004/03/28 00:44:58 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -48,9 +48,11 @@ class NodeMgrClient
   }
 
   /** 
-   * Construct a new node manager client.
+   * Construct a new node manager client. <P> 
    * 
-   * The hostname and port are set by <B>plconfig</B>(1).
+   * The hostname and port used are those specified by the 
+   * <CODE><B>--master-host</B>=<I>host</I></CODE> and 
+   * <CODE><B>--master-port</B>=<I>num</I></CODE> options to <B>plconfig</B>(1).
    */
   public
   NodeMgrClient() 
@@ -125,8 +127,64 @@ class NodeMgrClient
     }
   }  
 
+  /** 
+   * Set the node properties of the working version of the node. <P> 
+   * 
+   * Node properties include: <BR>
+   * 
+   * <DIV style="margin-left: 40px;">
+   *   The file patterns and frame ranges of primary and secondary file sequences. <BR>
+   *   The toolset environment under which editors and actions are run. <BR>
+   *   The name of the editor plugin used to edit the data files associated with the node.<BR>
+   *   The regeneration action and its single and per-dependency parameters. <BR>
+   *   The job requirements. <BR>
+   *   The IgnoreOverflow and IsSerial flags. <BR>
+   *   The job batch size. <P> 
+   * </DIV> 
+   * 
+   * Note that any existing upstream node link information contained in the
+   * <CODE>mod</CODE> argument will be ignored.  The {@link #linkNodes linkNodes} and
+   * {@link #unlinkNodes unlinkNodes} methods must be used to alter the connections 
+   * between working node versions.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param mod 
+   *   The working version containing the node property information to copy.
+   * 
+   * @throws PipelineException
+   *   If unable to set the node properties.
+   */
+  public void 
+  modifyProperties
+  ( 
+   String view, 
+   NodeMod mod   
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
 
-  // ...
+    NodeID id = new NodeID(PackageInfo.sUser, view, mod.getName());
+    NodeModifyPropertiesReq req = new NodeModifyPropertiesReq(id, mod);
+
+    Object obj = performTransaction(NodeRequest.ModifyProperties, req);
+
+    if(obj instanceof SuccessRsp) {
+    }
+    else if(obj instanceof FailureRsp) {
+      FailureRsp rsp = (FailureRsp) obj;
+      throw new PipelineException(rsp.getMessage());	
+    }
+    else {
+      disconnect();
+      throw new PipelineException
+	("Illegal response received from the NodeMgrServer instance!");
+    }
+  }
+
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -142,7 +200,7 @@ class NodeMgrClient
    * The working version must be an inital version.  In other words, the 
    * {@link NodeMod#getWorkingID() NodeMod.getWorkingID} method must return 
    * <CODE>null</CODE>.  As an intial working version, the <CODE>mod</CODE> argument should
-   * not contain any upstream dependency relationship information.
+   * not contain any upstream node link information.
    *  
    * @param view 
    *   The name of the user's working area view. 
@@ -282,7 +340,7 @@ class NodeMgrClient
   }
 
   /**
-   * Send the given file request to <B>plmaster</B>(1) and 
+   * Send the given node request to <B>plmaster</B>(1) and 
    * wait for the response.
    * 
    * @param kind 
