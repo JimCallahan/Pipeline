@@ -12,26 +12,26 @@ pushd i686-pc-linux-gnu-dbg
     --disable-opt \
     --with-compiler=GNU \
     --with-base=/base \
-    --with-pl-server=localhost \
-    --with-pb-sserver=localhost \
+    --with-sql-server=linuxserv1 \
+    --with-pbs-server=linuxserv1 \
     --with-javamake=/usr/java/javamake/lib/javamake.jar
 popd
 
 # pushd i686-pc-linux-gnu-opt
 #   /home/$USER/code/src/pipeline/configure \
-#     --enable-opt \
 #     --with-compiler=GNU \
+#     --enable-opt \
 #     --with-base=/base \
-#     --with-pl-server=localhost \
-#     --with-pbs-server=localhost
+#     --with-sql-server=linuxserv1 \
+#     --with-pbs-server=linuxserv1
 # popd
 
 # pushd i686-pc-linux-gnu-prof
 #   /home/$USER/code/src/pipeline/configure \
+#     --with-compiler=GNU \
 #     --disable-opt \
 #     --enable-prof \
-#     --with-compiler=GNU \
 #     --with-base=/base \
-#     --with-pl-server=localhost \
-#     --with-pbs-server=localhost 
+#     --with-sql-server=linuxserv1 \
+#     --with-pbs-server=linuxserv1 
 # popd

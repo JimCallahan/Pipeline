@@ -130,37 +130,37 @@ AC_MSG_RESULT([$BASEDIR])
 
 dnl ------------------------------------------------------------------------------------------
 
-AC_MSG_CHECKING([Pipeline Server Hostname])
+AC_MSG_CHECKING([PostgreSQL Server Hostname])
 
-AC_ARG_WITH([pl-server], 
-            [  --with-pl-server=HOST   Hostname of PostGreSQL server.])
+AC_ARG_WITH([sql-server], 
+            [  --with-sql-server=HOST  Hostname of PostgreSQL server.])
 
-AC_SUBST(PLSERVER)
-PLSERVER="localhost"
+AC_SUBST(SQL_SERVER)
+SQL_SERVER="localhost"
 
-if test "$with_pl_server" 
+if test "$with_sql_server" 
 then
-  PLSERVER=$with_pl_server
+  SQL_SERVER=$with_sql_server
 fi
 
-AC_MSG_RESULT([$PLSERVER])
+AC_MSG_RESULT([$SQL_SERVER])
 
 
 
-AC_MSG_CHECKING([Pipeline Server Port])
+AC_MSG_CHECKING([PostgreSQL Server Port])
 
-AC_ARG_WITH([pl-port], 
-            [  --with-pl-port=NUM      Port number to use for Pipeline server.])
+AC_ARG_WITH([sql-port], 
+            [  --with-sql-port=NUM      Port number to use for PostgreSQL server.])
 
-AC_SUBST(PLPORT)
-PLPORT=53135
+AC_SUBST(SQL_PORT)
+SQL_PORT=53135
 
-if test "$with_pl_port" 
+if test "$with_sql_port" 
 then
-  PLPORT=$with_pl_port
+  SQL_PORT=$with_sql_port
 fi
 
-AC_MSG_RESULT([$PLPORT])
+AC_MSG_RESULT([$SQL_PORT])
 
 
 dnl ------------------------------------------------------------------------------------------
@@ -436,6 +436,9 @@ AC_SUBST(SQL_VERSION)
 SQL_VERSION=`postmaster --version | awk '{print $3}'`
 
 case "$SQL_VERSION" in 
+  (7.3.2) \
+    JDBC_JAR=/usr/share/pgsql/pg73b1jdbc3.jar;;
+
   (7.2.3) \
     JDBC_JAR=/usr/share/pgsql/jdbc7.2dev-1.2.jar;;
 
