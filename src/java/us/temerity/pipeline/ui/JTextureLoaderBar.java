@@ -1,4 +1,4 @@
-// $Id: JTextureLoaderBar.java,v 1.3 2004/12/29 17:33:48 jim Exp $
+// $Id: JTextureLoaderBar.java,v 1.4 2004/12/31 07:40:06 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -149,6 +149,25 @@ class JTextureLoaderBar
 
       for(LinkRelationship rel : LinkRelationship.all())
 	pTextures.add("LinkRelationship-" + rel);
+
+      for(SelectionMode mode : SelectionMode.all()) {
+	pTextures.add("Job-Queued-" + mode);
+	pTextures.add("Job-Running-" + mode);
+	pTextures.add("Job-Aborted-" + mode);
+	pTextures.add("Job-Failed-" + mode);
+	pTextures.add("Job-Finished-" + mode);
+	pTextures.add("Job-Paused-" + mode);
+	pTextures.add("Job-Undefined-" + mode);
+      }
+
+      for(SelectionMode mode : SelectionMode.all()) {
+	pTextures.add("ExternalJob-Queued-" + mode);
+	pTextures.add("ExternalJob-Running-" + mode);
+	pTextures.add("ExternalJob-Aborted-" + mode);
+	pTextures.add("ExternalJob-Failed-" + mode);
+	pTextures.add("ExternalJob-Finished-" + mode);
+	pTextures.add("ExternalJob-Paused-" + mode);
+      }
     }
 
     pInc = 1.0 / ((double) (20 + pTextures.size()*3 + pIcon21s.size()));
