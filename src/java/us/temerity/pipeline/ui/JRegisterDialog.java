@@ -1,4 +1,4 @@
-// $Id: JRegisterDialog.java,v 1.1 2004/06/08 03:06:36 jim Exp $
+// $Id: JRegisterDialog.java,v 1.2 2004/06/08 20:10:37 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -30,9 +30,6 @@ class JRegisterDialog
   
   /**
    * Construct a new dialog.
-   * 
-   * @param owner
-   *   The parent dialog.
    */ 
   public 
   JRegisterDialog() 
@@ -205,7 +202,7 @@ class JRegisterDialog
 	UIMaster.addVerticalGlue(tpanel, vpanel);
       }
 
-      super.initUI("Register New Node:", true, body, "Register", "Browse", null, "Close");
+      super.initUI("Register New Node:", true, body, "Register", "Browse", null, "Cancel");
 
       pack();
       setResizable(false);
@@ -341,7 +338,7 @@ class JRegisterDialog
       } 
     }
     
-    pFramePaddingField.setValue((frange != null) ? new Integer(4) : null);
+    pFramePaddingField.setValue(fpat.hasFrameNumbers() ? fpat.getPadding() : null);
     pSuffixField.setText(fpat.getSuffix());
   }
 
@@ -562,12 +559,13 @@ class JRegisterDialog
 	Integer padding = pFramePaddingField.getValue();
 	if(padding == null) 
 	  throw new PipelineException
-	    ("Unable to register node which has Frame Numbers but an unspecified " + 
-	     "Frame Padding!");
+	    ("Unable to register node (" + name + ") which has frame numbers but an " + 
+	     "unspecified frame padding!");
 	
 	if(padding < 0) 
 	  throw new PipelineException
-	    ("Unable to register node with a negative (" + padding + ") Frame Padding!");
+	    ("Unable to register node (" + name + ") with a negative (" + padding + ") " + 
+	     "frame padding!");
 	
 	fpat = new FilePattern(prefix, padding, suffix);
       }
@@ -580,11 +578,8 @@ class JRegisterDialog
 	Integer startFrame = pStartFrameField.getValue();
 	if(startFrame == null) 
 	  throw new PipelineException
-	    ("Unable to register node which has Frame Numbers but an unspecified " + 
-	     "Start Frame!");	  
-	if(startFrame < 0) 
-	  throw new PipelineException
-	    ("Unable to register node with a negative (" + startFrame + ") Start Frame!");
+	    ("Unable to register node (" + name + ") which has frame numbers but an " + 
+	     "unspecified start frame!");
 
 	if(pFileModeField.getSelectedIndex() == 0) {
 	  frange = new FrameRange(startFrame);
@@ -593,11 +588,8 @@ class JRegisterDialog
 	  Integer endFrame = pEndFrameField.getValue();
 	  if(endFrame == null) 
 	    throw new PipelineException
-	      ("Unable to register node which has Frame Numbers but an unspecified " + 
-	       "End Frame!");	  
-	  if(endFrame < 0) 
-	    throw new PipelineException
-	      ("Unable to register node with a negative (" + endFrame + ") End Frame!");
+	      ("Unable to register node (" + name + ") which has frame numbers but an " + 
+	       "unspecified end frame!");
 	  
 	  if(startFrame > endFrame) {
 	    Integer tmp = endFrame;
@@ -610,14 +602,17 @@ class JRegisterDialog
 
 	  Integer byFrame = pByFrameField.getValue();
 	  if(byFrame == null) 
-	  throw new PipelineException
-	    ("Unable to register node which has Frame Numbers but an unspecified " + 
-	     "Frame Step!");  
-	  if(endFrame < 1) 
 	    throw new PipelineException
-	      ("Unable to register node with a non-positive (" + endFrame + ") Frame Step!");
+	      ("Unable to register node (" + name + ") which has frame numbers but an " + 
+	       "unspecified frame increment!");  
 	  
-	  frange = new FrameRange(startFrame, endFrame, byFrame);
+	  try {
+	    frange = new FrameRange(startFrame, endFrame, byFrame);
+	  }
+	  catch(IllegalArgumentException ex) {
+	    throw new PipelineException
+	      ("Unable to register node (" + name + ").  " + ex.getMessage());
+	  }
 	}
       }
 
@@ -626,7 +621,7 @@ class JRegisterDialog
       String toolset = pToolsetField.getSelected();
       if(toolset == null) 
 	throw new PipelineException
-	  ("Unable to register node with an unspecified Toolset!");
+	  ("Unable to register node (" + name + ") with an unspecified toolset!");
 
       String editor = pEditorField.getSelected();
       if((editor != null) || editor.equals("-"))
