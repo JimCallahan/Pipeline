@@ -1,4 +1,4 @@
-// $Id: MRayRenderGlobalsAction.java,v 1.1 2004/11/21 03:43:30 jim Exp $
+// $Id: MRayRenderGlobalsAction.java,v 1.2 2004/11/21 18:39:56 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -1721,7 +1721,7 @@ class MRayRenderGlobalsAction
 
     /* layout */ 
     {
-      LayoutGroup layout = new LayoutGroup("ActionParameters", true);
+      LayoutGroup layout = new LayoutGroup(true);
       layout.addEntry("ImageResolution");
       layout.addEntry("ImageWidth");
       layout.addEntry("ImageHeight");
@@ -1729,11 +1729,13 @@ class MRayRenderGlobalsAction
       layout.addEntry("PixelAspectRatio");
       
       {
-	LayoutGroup aaq = new LayoutGroup("RenderQuality", false);
+	LayoutGroup aaq = new LayoutGroup
+	  ("RenderQuality", "The overall rendering quality controls.", false);
 	aaq.addEntry("Quality");
 	
 	{
-	  LayoutGroup nos = new LayoutGroup("NumberOfSamples", true);
+	  LayoutGroup nos = new LayoutGroup
+	    ("NumberOfSamples", "The ray sampling controls.", true);
 	  nos.addEntry("MinSampleLevel");
 	  nos.addEntry("MaxSampleLevel");
 
@@ -1741,7 +1743,8 @@ class MRayRenderGlobalsAction
 	}
 
 	{ 
-	  LayoutGroup mpf = new LayoutGroup("MultiPixelFiltering", true);
+	  LayoutGroup mpf = new LayoutGroup
+	    ("MultiPixelFiltering", "Output pixel filtering controls.", true);
 	  mpf.addEntry("PixelFilterType");
 	  mpf.addEntry("PixelFilterWidthX");
 	  mpf.addEntry("PixelFilterWidthY");
@@ -1750,7 +1753,8 @@ class MRayRenderGlobalsAction
 	}
 	  
 	{ 
-	  LayoutGroup ct = new LayoutGroup("ContrastThreshold", true);
+	  LayoutGroup ct = new LayoutGroup
+	    ("ContrastThreshold", "Controls of oversampling due to sample contrast.", true);
 	  ct.addEntry("RedThreshold");
 	  ct.addEntry("GreenThreshold");
 	  ct.addEntry("BlueThreshold");
@@ -1761,7 +1765,8 @@ class MRayRenderGlobalsAction
 	}
 
 	{ 
-	  LayoutGroup so = new LayoutGroup("SampleOptions", true);
+	  LayoutGroup so = new LayoutGroup
+	    ("SampleOptions", "Overall sampling controls.", true);
 	  so.addEntry("SampleLock");
 	  so.addEntry("Jitter");
 
@@ -1772,7 +1777,8 @@ class MRayRenderGlobalsAction
       }
 
       {
-	LayoutGroup rq = new LayoutGroup("RaytracingQuality", false);
+	LayoutGroup rq = new LayoutGroup
+	  ("RaytracingQuality", "Overall raytracing quality controls.", false);
 	rq.addEntry("UseRaytracing");
 	rq.addSeparator(); 
 	rq.addEntry("Reflections");
@@ -1787,7 +1793,8 @@ class MRayRenderGlobalsAction
       }
 
       {
-	LayoutGroup mb = new LayoutGroup("MotionBlur", false);
+	LayoutGroup mb = new LayoutGroup
+	  ("MotionBlur", "Motion blur specific quality controls.", false);
 	mb.addEntry("MotionBlur");
 	mb.addSeparator(); 
 	mb.addEntry("MotionBlurBy");
@@ -1806,7 +1813,8 @@ class MRayRenderGlobalsAction
       }
 
       {
-	LayoutGroup cs = new LayoutGroup("Caustics", false);
+	LayoutGroup cs = new LayoutGroup
+	  ("Caustics", "Caustic specific quality controls.", false);
 	cs.addEntry("UseCaustics");
 	cs.addSeparator(); 
 	cs.addEntry("CausticsAccuracy");
@@ -1818,7 +1826,8 @@ class MRayRenderGlobalsAction
       }
 
       {
-	LayoutGroup gi = new LayoutGroup("GlobalIllumination", false);
+	LayoutGroup gi = new LayoutGroup
+	  ("GlobalIllumination", "Global illumination specific quality controls.", false);
 	gi.addEntry("UseGlobalIllum");
 	gi.addSeparator(); 
 	gi.addEntry("GlobalIllumAccuracy");
@@ -1839,7 +1848,8 @@ class MRayRenderGlobalsAction
       }
 
       {
-	LayoutGroup fg = new LayoutGroup("FinalGather", false);
+	LayoutGroup fg = new LayoutGroup
+	  ("FinalGather", "Final gathering specific quality controls.", false);
 	fg.addEntry("UseFinalGather");
 	fg.addSeparator(); 
 	fg.addEntry("PrecompPhotonLookup");
@@ -1863,7 +1873,8 @@ class MRayRenderGlobalsAction
       }
 
       {
-	LayoutGroup fb = new LayoutGroup("FramebufferAttributes", false);
+	LayoutGroup fb = new LayoutGroup
+	  ("FramebufferAttributes", "Output framebuffer controls.", false);
 	fb.addEntry("DataType");
 	fb.addEntry("Gamma");
 	fb.addEntry("ColorClip");
@@ -1877,7 +1888,8 @@ class MRayRenderGlobalsAction
       }
 
       {
-	LayoutGroup tn = new LayoutGroup("Translation", false);
+	LayoutGroup tn = new LayoutGroup
+	  ("Translation", "Controls over the Maya to Mental Ray translation.", false);
 	tn.addEntry("ExportVerbosity");
 	tn.addEntry("ExportExactHierarchy");
 	tn.addEntry("ExportFullDagpath");

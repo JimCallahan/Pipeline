@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.59 2004/11/11 00:39:25 jim Exp $
+// $Id: UIMaster.java,v 1.60 2004/11/21 18:39:56 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -689,6 +689,36 @@ class UIMaster
    int align
   )
   {
+    return createLabel(text, width, align, null);
+  }
+  
+  /**
+   * Create a new label with a tooltip. <P> 
+   * 
+   * See {@link JLabel#setHorizontalAlignment JLabel.setHorizontalAlignment} for valid
+   * values for the <CODE>align</CODE> argument.
+   * 
+   * @param text
+   *   The label text.
+   * 
+   * @param width
+   *   The minimum and preferred width.
+   * 
+   * @param align
+   *   The horizontal alignment.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   */ 
+  public static JLabel
+  createLabel
+  (
+   String text, 
+   int width,
+   int align, 
+   String tooltip
+  )
+  {
     JLabel label = new JLabel(text);
 
     Dimension size = new Dimension(width, 19);
@@ -697,10 +727,16 @@ class UIMaster
     label.setPreferredSize(size);
     
     label.setHorizontalAlignment(align);
+
+    if(tooltip != null) 
+      label.setToolTipText(formatToolTip(tooltip));
     
     return label;
   }
-  
+
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Create a new fixed size label. <P> 
    * 
@@ -724,12 +760,48 @@ class UIMaster
    int align
   )
   {
+    return createFixedLabel(text, width, align, null);
+  }
+  
+  /**
+   * Create a new fixed size label with a tooltip. <P> 
+   * 
+   * See {@link JLabel#setHorizontalAlignment JLabel.setHorizontalAlignment} for valid
+   * values for the <CODE>align</CODE> argument.
+   * 
+   * @param text
+   *   The label text.
+   * 
+   * @param width
+   *   The fixed width.
+   * 
+   * @param align
+   *   The horizontal alignment.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   */ 
+  public static JLabel
+  createFixedLabel
+  (
+   String text, 
+   int width,
+   int align,
+   String tooltip
+  )
+  {
     JLabel label = createLabel(text, width, align);
     label.setMaximumSize(new Dimension(width, 19));
+    
+    if(tooltip != null) 
+      label.setToolTipText(formatToolTip(tooltip));
     
     return label;
   }
   
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Create a new panel title label. <P> 
    * 
@@ -749,7 +821,7 @@ class UIMaster
     {
       JLabel label = new JLabel(text);
       label.setName("PanelLabel");
-      
+
       hbox.add(label);
     }
     
@@ -759,6 +831,8 @@ class UIMaster
   }
 
   
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Create a new non-editable text field. <P> 
    * 
@@ -1267,6 +1341,9 @@ class UIMaster
     return comps;
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Create a new non-editable text field with a title and add them to the given panels.
    * 
@@ -1296,13 +1373,52 @@ class UIMaster
    int vwidth
   )
   {
-    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT));
+    return createTitledTextField(tpanel, title, twidth, vpanel, text, vwidth, null);
+  }
+
+  /**
+   * Create a new non-editable text field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param text
+   *   The initial text.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the text field.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   */ 
+  public static JTextField
+  createTitledTextField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   String text, 
+   int vwidth, 
+   String tooltip
+  )
+  {
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
 
     JTextField field = createTextField(text, vwidth, JLabel.CENTER);
     vpanel.add(field);
 
     return field;
   }
+    
+    
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Create a new editable text field with a title and add them to the given panels.
@@ -1333,13 +1449,52 @@ class UIMaster
    int vwidth
   )
   {
-    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT));
+    return createTitledEditableTextField(tpanel, title, twidth, vpanel, text, vwidth, null);
+  }
+
+  /**
+   * Create a new editable text field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param text
+   *   The initial text.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the text field.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   */ 
+  public static JTextField
+  createTitledEditableTextField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   String text, 
+   int vwidth, 
+   String tooltip
+  )
+  {
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
 
     JTextField field = createEditableTextField(text, vwidth, JLabel.CENTER);
     vpanel.add(field);
 
     return field;
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Create a new identifier text field with a title and add them to the given panels.
@@ -1370,7 +1525,43 @@ class UIMaster
    int vwidth
   )
   {
-    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT));
+    return createTitledIdentifierField(tpanel, title, twidth, vpanel, text, vwidth, null);
+  }
+
+  /**
+   * Create a new identifier text field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param text
+   *   The initial text.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the identifier field.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   */ 
+  public static JIdentifierField
+  createTitledIdentifierField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   String text, 
+   int vwidth, 
+   String tooltip
+  )
+  {
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
 
     JIdentifierField field = createIdentifierField(text, vwidth, JLabel.CENTER);
     vpanel.add(field);
@@ -1378,6 +1569,9 @@ class UIMaster
     return field;
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+  
   /**
    * Create a new alphanumeric text field with a title and add them to the given panels.
    * 
@@ -1407,13 +1601,52 @@ class UIMaster
    int vwidth
   )
   {
-    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT));
+    return createTitledAlphaNumField(tpanel, title, twidth, vpanel, text, vwidth, null);
+  }
+
+  /**
+   * Create a new alphanumeric text field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param text
+   *   The initial text.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the identifier field.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   */ 
+  public static JAlphaNumField
+  createTitledAlphaNumField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   String text, 
+   int vwidth, 
+   String tooltip
+  )
+  {
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
 
     JAlphaNumField field = createAlphaNumField(text, vwidth, JLabel.CENTER);
     vpanel.add(field);
 
     return field;
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Create a new path text field with a title and add them to the given panels.
@@ -1443,14 +1676,53 @@ class UIMaster
    String text, 
    int vwidth
   )
+  {    
+    return createTitledPathField(tpanel, title, twidth, vpanel, text, vwidth, null);
+  }
+
+  /**
+   * Create a new path text field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param text
+   *   The initial text.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the path field.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   */ 
+  public static JPathField
+  createTitledPathField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   String text, 
+   int vwidth, 
+   String tooltip
+  )
   {
-    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT));
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
 
     JPathField field = createPathField(text, vwidth, JLabel.CENTER);
     vpanel.add(field);
 
     return field;
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Create a new integer text field with a title and add them to the given panels.
@@ -1481,13 +1753,52 @@ class UIMaster
    int vwidth
   )
   {
-    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT));
+    return createTitledIntegerField(tpanel, title, twidth, vpanel, value, vwidth, null);
+  }
+
+  /**
+   * Create a new integer text field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param value
+   *   The initial value.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the identifier field.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   */ 
+  public static JIntegerField
+  createTitledIntegerField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   Integer value, 
+   int vwidth, 
+   String tooltip
+  )
+  {
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
 
     JIntegerField field = createIntegerField(value, vwidth, JLabel.CENTER);
     vpanel.add(field);
 
     return field;
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Create a new byte size text field with a title and add them to the given panels.
@@ -1518,13 +1829,52 @@ class UIMaster
    int vwidth
   )
   {
-    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT));
+    return createTitledByteSizeField(tpanel, title, twidth, vpanel, value, vwidth, null);
+  }
+
+  /**
+   * Create a new byte size text field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param value
+   *   The initial value.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the identifier field.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   */ 
+  public static JByteSizeField
+  createTitledByteSizeField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   Long value, 
+   int vwidth, 
+   String tooltip
+  )
+  {
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
 
     JByteSizeField field = createByteSizeField(value, vwidth, JLabel.CENTER);
     vpanel.add(field);
 
     return field;
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Create a new float text field with a title and add them to the given panels.
@@ -1555,13 +1905,52 @@ class UIMaster
    int vwidth
   )
   {
-    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT));
+    return createTitledFloatField(tpanel, title, twidth, vpanel, value, vwidth, null);
+  }
+
+  /**
+   * Create a new float text field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param value
+   *   The initial value.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the identifier field.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   */ 
+  public static JFloatField
+  createTitledFloatField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   Float value, 
+   int vwidth, 
+   String tooltip
+  )
+  {
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
 
     JFloatField field = createFloatField(value, vwidth, JLabel.CENTER);
     vpanel.add(field);
 
     return field;
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Create a new double text field with a title and add them to the given panels.
@@ -1592,13 +1981,52 @@ class UIMaster
    int vwidth
   )
   {
-    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT));
+    return createTitledDoubleField(tpanel, title, twidth, vpanel, value, vwidth, null);
+  }
+  
+  /**
+   * Create a new double text field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param value
+   *   The initial value.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the identifier field.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   */ 
+  public static JDoubleField
+  createTitledDoubleField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   Double value, 
+   int vwidth, 
+   String tooltip
+  )
+  {
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
 
     JDoubleField field = createDoubleField(value, vwidth, JLabel.CENTER);
     vpanel.add(field);
 
     return field;
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Create a new hot key field with a title and add them to the given panels.
@@ -1625,7 +2053,39 @@ class UIMaster
    int vwidth
   )
   {
-    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT));
+    return createTitledHotKeyField(tpanel, title, twidth, vpanel, vwidth, null);
+  }
+  
+  /**
+   * Create a new hot key field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the hot key field.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   */ 
+  public static JHotKeyField
+  createTitledHotKeyField
+  (
+   JPanel tpanel, 
+   String title, 
+   int twidth,
+   JPanel vpanel, 
+   int vwidth, 
+   String tooltip
+  )
+  {
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
 
     JHotKeyField field = new JHotKeyField();
     field.setName("HotKeyField"); 
@@ -1640,6 +2100,9 @@ class UIMaster
     return field;
   }
 
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Create a new non-editable text area with a title and add them to the given panels.
@@ -1675,7 +2138,49 @@ class UIMaster
    boolean isScrolled
   )
   {
-    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT));
+    return createTitledTextArea
+      (tpanel, title, twidth, vpanel, text, vwidth, rows, isScrolled, null);
+  }
+  
+  /**
+   * Create a new non-editable text area with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param text
+   *   The initial text.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the text area.
+   * 
+   * @param rows
+   *   The initial number of rows.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   */ 
+  public static JTextArea
+  createTitledTextArea
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   String text, 
+   int vwidth,
+   int rows, 
+   boolean isScrolled, 
+   String tooltip
+  )
+  {
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
     tpanel.add(Box.createRigidArea(new Dimension(0, 19*(rows-1))));
 
     JTextArea area = createTextArea(text, vwidth, rows);
@@ -1702,6 +2207,9 @@ class UIMaster
 
     return area;
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Create a new editable text area with a title and add them to the given panels.
@@ -1737,7 +2245,49 @@ class UIMaster
    boolean isScrolled
   )
   {
-    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT));
+    return createTitledEditableTextArea
+      (tpanel, title, twidth, vpanel, text, vwidth, rows, isScrolled, null);
+  }
+
+  /**
+   * Create a new editable text area with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param text
+   *   The initial text.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the text area.
+   * 
+   * @param rows
+   *   The initial number of rows.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   */ 
+  public static JTextArea
+  createTitledEditableTextArea
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   String text, 
+   int vwidth,
+   int rows, 
+   boolean isScrolled, 
+   String tooltip
+  )
+  {
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
     tpanel.add(Box.createRigidArea(new Dimension(0, 19*(rows-1))));
 
     JTextArea area = createEditableTextArea(text, vwidth, rows);
@@ -1765,6 +2315,8 @@ class UIMaster
     return area;
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Create a slider with a title and add them to the given panels.
@@ -1802,7 +2354,50 @@ class UIMaster
    int vwidth
   ) 
   {
-    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT));
+    return createTitledSlider(tpanel, title, twidth, vpanel, vmin, vmax, vwidth, null);
+  }
+  
+  /**
+   * Create a slider with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param title
+   *   The title text.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param vmin
+   *   The minimum slider value.
+   * 
+   * @param vmax
+   *   The maximum slider value.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the value field.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   */ 
+  public static JSlider 
+  createTitledSlider
+  (
+   JPanel tpanel, 
+   String title, 
+   int twidth,
+   JPanel vpanel, 
+   int vmin, 
+   int vmax,
+   int vwidth, 
+   String tooltip
+  ) 
+  {
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
 
     JSlider slider = new JSlider(vmin, vmax, vmin);
       
@@ -1820,6 +2415,8 @@ class UIMaster
     return slider;
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Create a floating-point slider with a title and add them to the given panels.
@@ -1857,10 +2454,56 @@ class UIMaster
    int vwidth
   ) 
   {
-    return createTitledSlider(tpanel, title, twidth, 
-			      vpanel, (int)(vmin*1000.0), (int)(vmax*1000.0), vwidth);
+    return createTitledSlider(tpanel, title, twidth, vpanel, vmin, vmax, vwidth, null);
   }
 
+  /**
+   * Create a floating-point slider with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param title
+   *   The title text.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param vmin
+   *   The minimum slider value.
+   * 
+   * @param vmax
+   *   The maximum slider value.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the value field.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   */ 
+  public static JSlider 
+  createTitledSlider
+  (
+   JPanel tpanel, 
+   String title, 
+   int twidth,
+   JPanel vpanel, 
+   double vmin, 
+   double vmax,
+   int vwidth, 
+   String tooltip
+  ) 
+  {
+    return createTitledSlider(tpanel, title, twidth, 
+			      vpanel, (int)(vmin*1000.0), (int)(vmax*1000.0), vwidth, 
+			      tooltip);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Create a tree set field with a title and add them to the given panels.
@@ -1894,13 +2537,55 @@ class UIMaster
    int vwidth
   ) 
   {
-    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT));
+    return createTitledCollectionField(tpanel, title, twidth, vpanel, values, vwidth, null);
+  }
+
+  /**
+   * Create a tree set field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param title
+   *   The title text.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param values
+   *   The initial collection values.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the value field.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   */ 
+  public static JCollectionField
+  createTitledCollectionField
+  (
+   JPanel tpanel, 
+   String title, 
+   int twidth,
+   JPanel vpanel,
+   Collection<String> values,
+   int vwidth, 
+   String tooltip
+  ) 
+  {
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
     
     JCollectionField field = createCollectionField(values, vwidth);
     vpanel.add(field);
 
     return field;
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Create a boolean field with a title and add them to the given panels.
@@ -1930,7 +2615,42 @@ class UIMaster
    int vwidth
   ) 
   {
-    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT));
+    return createTitledBooleanField(tpanel, title, twidth, vpanel, vwidth, null);
+  }
+
+  /**
+   * Create a boolean field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param title
+   *   The title text.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the value field.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   */ 
+  public static JBooleanField
+  createTitledBooleanField
+  (
+   JPanel tpanel, 
+   String title, 
+   int twidth,
+   JPanel vpanel, 
+   int vwidth, 
+   String tooltip
+  ) 
+  {
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
 
     JBooleanField field = createBooleanField(vwidth);
     vpanel.add(field);
@@ -2063,7 +2783,57 @@ class UIMaster
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O M P O N E N T   U T I L I T I E S                                                */
+  /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Formats tool tip text as HTML, breaking up long tool tips into multiple lines. 
+   * 
+   * @param text 
+   *   The unformatted tool tip text.
+   */ 
+  public static String
+  formatToolTip
+  (
+   String text
+  ) 
+  {
+    if(text == null) 
+      return null;
+
+    int line = 85;
+    if(text.length() < line) {
+      return ("<html><font color=\"#000000\">" + text + "</font></html>");
+    }
+    else {
+      StringBuffer buf = new StringBuffer();
+      buf.append("<html><font color=\"#000000\">");
+      int wk, cnt;
+      String words[] = text.split("\\s");
+      for(wk=0, cnt=0; wk<words.length; wk++) {
+	int wlen = words[wk].length();
+	if(wlen > 0) {
+	  if(cnt == 0) { 
+	    buf.append(words[wk]);
+	    cnt = wlen;
+	  }
+	  else if((cnt+wlen+1) < line) {
+	    buf.append(" " + words[wk]);
+	    cnt += wlen + 1;
+	  }
+	  else {
+	    buf.append("<br>" + words[wk]);
+	    cnt = wlen;
+	  }
+	}
+      }
+      buf.append("</font></html>");
+
+      return buf.toString();
+    }
+  }
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   L I S T E N E R S                                                                    */
@@ -2236,7 +3006,6 @@ class UIMaster
   
   
 
-
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L   C L A S S E S                                                      */
   /*----------------------------------------------------------------------------------------*/
@@ -2284,6 +3053,7 @@ class UIMaster
       /* application wide UI settings */ 
       {
 	JPopupMenu.setDefaultLightWeightPopupEnabled(false);
+	ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
       }
       
       /* show the splash screen and do application startup tasks */ 
@@ -3041,6 +3811,14 @@ class UIMaster
 	  JManagerPanel mpanel = (JManagerPanel) pRootPanel.getComponent(0);
 	  if(mpanel != null) 
 	    mpanel.updateUserPrefs();
+	}
+
+	{
+	  ToolTipManager mgr = ToolTipManager.sharedInstance();
+	  UserPrefs prefs = UserPrefs.getInstance();
+	  mgr.setEnabled(prefs.getShowToolTips());
+	  mgr.setInitialDelay(prefs.getToolTipDelay());
+	  mgr.setDismissDelay(prefs.getToolTipDuration());
 	}
       }
       catch(Exception ex) {

@@ -1,4 +1,4 @@
-// $Id: LicenseKeysTableModel.java,v 1.4 2004/09/14 02:22:28 jim Exp $
+// $Id: LicenseKeysTableModel.java,v 1.5 2004/11/21 18:39:56 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -53,6 +53,16 @@ class LicenseKeysTableModel
       {
 	String names[] = {"Key", "Description", "Available", "Total" };
 	pColumnNames = names;
+      }
+
+      {
+	String desc[] = {
+	  "The name of the license key.", 
+	  "A short description of the use of the key.", 
+	  "The number of available license keys.", 
+	  "The total number of license keys."
+	};
+	pColumnDescriptions = desc;
       }
 
       {

@@ -1,4 +1,4 @@
-// $Id: JManageLayoutsDialog.java,v 1.7 2004/10/28 15:55:24 jim Exp $
+// $Id: JManageLayoutsDialog.java,v 1.8 2004/11/21 18:39:56 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -72,9 +72,19 @@ class JManageLayoutsDialog
       };
 
       JButton[] extraBtns = super.initUI("Manage Saved Layouts:", null, null, extra, "Close");
+
       pRenameButton  = extraBtns[0];
       pDeleteButton  = extraBtns[1];
       pDefaultButton = extraBtns[2];
+      
+      pRenameButton.setToolTipText(UIMaster.formatToolTip
+	("Rename the selected panel layout."));
+      pDeleteButton.setToolTipText(UIMaster.formatToolTip
+        ("Delete the selected panel layout."));
+      pDefaultButton.setToolTipText(UIMaster.formatToolTip
+        ("Make selected panel layout the initial layout when plui(1) is restarted."));
+      pCancelButton.setToolTipText(UIMaster.formatToolTip 				  
+        ("Close the dialog."));
     }
 
     pTree.addTreeSelectionListener(this);

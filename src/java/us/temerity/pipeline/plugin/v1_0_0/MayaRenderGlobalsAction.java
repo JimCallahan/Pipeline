@@ -1,4 +1,4 @@
-// $Id: MayaRenderGlobalsAction.java,v 1.4 2004/11/21 03:42:36 jim Exp $
+// $Id: MayaRenderGlobalsAction.java,v 1.5 2004/11/21 18:39:56 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -777,7 +777,7 @@ class MayaRenderGlobalsAction
 
     /* layout */ 
     {
-      LayoutGroup layout = new LayoutGroup("ActionParameters", true);
+      LayoutGroup layout = new LayoutGroup(true);
       layout.addEntry("ImageResolution");
       layout.addEntry("ImageWidth");
       layout.addEntry("ImageHeight");
@@ -785,12 +785,14 @@ class MayaRenderGlobalsAction
       layout.addEntry("PixelAspectRatio");
       
       {
-	LayoutGroup aaq = new LayoutGroup("AntiAliasingQuality", false);
+	LayoutGroup aaq = new LayoutGroup
+	  ("AntiAliasingQuality", "Overall anti-aliasing quality controls.", false);
 	aaq.addEntry("Quality");
 	aaq.addEntry("EdgeAntiAliasing");
 	
 	{
-	  LayoutGroup nos = new LayoutGroup("NumberOfSamples", true);
+	  LayoutGroup nos = new LayoutGroup
+	    ("NumberOfSamples", "Sampling controls.", true);
 	  nos.addEntry("ShadingSamples");
 	  nos.addEntry("MaxShadingSamples");
 	  nos.addSeparator(); 
@@ -800,7 +802,8 @@ class MayaRenderGlobalsAction
 	}
 
 	{ 
-	  LayoutGroup mpf = new LayoutGroup("MultiPixelFiltering", true);
+	  LayoutGroup mpf = new LayoutGroup
+	    ("MultiPixelFiltering", "Output pixel filtering controls.", true);
 	  mpf.addEntry("UseMultiPixelFiltering");
 	  mpf.addSeparator(); 
 	  mpf.addEntry("PixelFilterType");
@@ -811,7 +814,8 @@ class MayaRenderGlobalsAction
 	}
 	  
 	{ 
-	  LayoutGroup ct = new LayoutGroup("ContrastThreshold", true);
+	  LayoutGroup ct = new LayoutGroup
+	    ("ContrastThreshold", "Controls of oversampling due to sample contrast.", true);
 	  ct.addEntry("RedThreshold");
 	  ct.addEntry("GreenThreshold");
 	  ct.addEntry("BlueThreshold");
@@ -825,7 +829,8 @@ class MayaRenderGlobalsAction
       }
 
       {
-	LayoutGroup rq = new LayoutGroup("RaytracingQuality", false);
+	LayoutGroup rq = new LayoutGroup
+	  ("RaytracingQuality", "Overall raytracing quality controls.", false);
 	rq.addEntry("UseRaytracing");
 	rq.addSeparator(); 
 	rq.addEntry("Reflections");
@@ -837,7 +842,8 @@ class MayaRenderGlobalsAction
       }
 
       {
-	LayoutGroup mb = new LayoutGroup("MotionBlur", false);
+	LayoutGroup mb = new LayoutGroup
+	  ("MotionBlur", "Motion blur specific quality controls.", false);
 	mb.addEntry("UseMotionBlur");
 	mb.addSeparator(); 
 	mb.addEntry("MotionBlurType");

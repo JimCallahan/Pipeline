@@ -1,4 +1,4 @@
-// $Id: JDefaultEditorsDialog.java,v 1.1 2004/06/28 00:22:06 jim Exp $
+// $Id: JDefaultEditorsDialog.java,v 1.2 2004/11/21 18:39:56 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -63,8 +63,21 @@ class JDefaultEditorsDialog
 	{ "Reset",  "reset" },
       };
 
-      super.initUI("Default Editors:", false, body, 
-		   "Confirm", "Apply", extra, "Close");
+      JButton btns[] = 
+	super.initUI("Default Editors:", false, body, "Confirm", "Apply", extra, "Close");
+      
+      pConfirmButton.setToolTipText(UIMaster.formatToolTip
+        ("Save the current editor settings and close the dialog."));
+      pApplyButton.setToolTipText(UIMaster.formatToolTip
+        ("Save the current editor settings."));
+      btns[1].setToolTipText(UIMaster.formatToolTip 				  
+        ("Add a default editor for a new filename suffix."));
+      btns[2].setToolTipText(UIMaster.formatToolTip 				  
+        ("Remove the default editors for the selected filename suffixes."));
+      btns[3].setToolTipText(UIMaster.formatToolTip 				  
+        ("Reset all default editors to the factory defaults."));
+      pCancelButton.setToolTipText(UIMaster.formatToolTip 				  
+        ("Close the dialog."));
 
       updateEditors();
       pack();

@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.23 2004/11/19 06:45:56 jim Exp $
+// $Id: BaseAction.java,v 1.24 2004/11/21 18:39:56 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -774,7 +774,7 @@ class BaseAction
   getSingleLayout()
   {
     if(pSingleLayout == null) {
-      pSingleLayout = new LayoutGroup("ActionParameters", true);
+      pSingleLayout = new LayoutGroup(true);
       for(String name : pSingleParams.keySet()) 
 	pSingleLayout.addEntry(name);
     }

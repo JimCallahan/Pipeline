@@ -1,4 +1,4 @@
-// $Id: JBaseFileSelectDialog.java,v 1.5 2004/10/31 20:02:39 jim Exp $
+// $Id: JBaseFileSelectDialog.java,v 1.6 2004/11/21 18:39:56 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -148,7 +148,9 @@ implements ListSelectionListener, DocumentListener, MouseListener
 	  
 	  btn.setActionCommand("new-folder");
 	  btn.addActionListener(this);
-	  
+
+	  btn.setToolTipText(UIMaster.formatToolTip("Creates a new folder."));
+
 	  hbox.add(btn);
 	} 
 

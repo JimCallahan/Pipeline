@@ -1,4 +1,4 @@
-// $Id: NodeVersionTableModel.java,v 1.1 2004/11/16 03:56:36 jim Exp $
+// $Id: NodeVersionTableModel.java,v 1.2 2004/11/21 18:39:56 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -49,6 +49,15 @@ class NodeVersionTableModel
 	  "Node Name", "Version", "Size"
 	};
 	pColumnNames = names;
+      }
+
+      {
+	String desc[] = {
+	  "The fully resolved name of the node.", 
+	  "The revision number of the checked-in version.", 
+	  "The size (in bytes) of the files associated with the checked-in version."
+	};
+	pColumnDescriptions = desc;
       }
 
       {

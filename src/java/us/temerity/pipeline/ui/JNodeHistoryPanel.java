@@ -1,4 +1,4 @@
-// $Id: JNodeHistoryPanel.java,v 1.12 2004/11/17 13:33:51 jim Exp $
+// $Id: JNodeHistoryPanel.java,v 1.13 2004/11/21 18:39:56 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -425,6 +425,8 @@ class JNodeHistoryPanel
 		{
 		  JLabel label = new JLabel("v" + vid);
 		  label.setForeground(color);
+		  label.setToolTipText(UIMaster.formatToolTip
+                    ("The revision number of the checked-in version."));
 		  hbox2.add(label);
 		}
 		
@@ -434,6 +436,8 @@ class JNodeHistoryPanel
 		{
 		  JLabel label = new JLabel(msg.getAuthor());
 		  label.setForeground(color);
+		  label.setToolTipText(UIMaster.formatToolTip
+                    ("The name of the user who created the version."));
 		  hbox2.add(label);
 		}
 		
@@ -443,6 +447,8 @@ class JNodeHistoryPanel
 		{
 		  JLabel label = new JLabel(Dates.format(msg.getTimeStamp()));
 		  label.setForeground(color);
+		  label.setToolTipText(UIMaster.formatToolTip
+                    ("When the version was checked-in."));
 		  hbox2.add(label);
 		}
 		
@@ -506,16 +512,25 @@ class JNodeHistoryPanel
 		
 		{
 		  String text = null;
-		  if(rootName == null)
+		  String tooltip = null;
+		  if(rootName == null) {
 		    text = "???";
-		  else if(rootName.equals(pStatus.getName())) 
+		    tooltip = "The root check-in node is unknown.";
+		  }
+		  else if(rootName.equals(pStatus.getName())) {
 		    text = "Check-In Root"; 
-		  else 
+		    tooltip = "This node was the root of the check-in.";
+		  }
+		  else {
 		    text = (rootName + "  v" + msg.getRootVersionID());
+		    tooltip = "The name and revision number of the root check-in node.";
+		  }
 		  
 		  JLabel label = new JLabel(text);
 		  label.setForeground(new Color(0.75f, 0.75f, 0.75f));
-		  
+
+		  label.setToolTipText(UIMaster.formatToolTip(tooltip));                    
+
 		  hbox2.add(label);
 		}
 		
@@ -1306,8 +1321,8 @@ class JNodeHistoryPanel
   /*----------------------------------------------------------------------------------------*/
   
   private static final long serialVersionUID = 7763696064974680919L;
-
-  private static final int  sSize = 484;
+  
+  private static final int  sSize = 564;
 
 
   /*----------------------------------------------------------------------------------------*/

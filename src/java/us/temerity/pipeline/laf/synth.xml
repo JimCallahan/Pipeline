@@ -40,6 +40,20 @@
   <bind style="ProgressBar" type="region" key="ProgressBar"/>
 
 
+  <!-- T O O L  T I P  -->
+
+  <style id="ToolTip">
+    <state>
+       <color value="#000000" type="TEXT_FOREGROUND"/>
+       <color value="#fefed9" type="TEXT_BACKGROUND"/>
+    </state>
+    <imagePainter path="ToolTip.png" 
+                  method="toolTipBackground"
+                  sourceInsets="2 2 2 2"/>
+    <insets top="4" bottom="4" right="6" left="6"/>     
+  </style>
+  <bind style="ToolTip" type="region" key="ToolTip"/>
+
 
   <!--  R O O T   P A N E L  -->
 

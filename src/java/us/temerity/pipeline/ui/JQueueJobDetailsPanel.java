@@ -1,4 +1,4 @@
-// $Id: JQueueJobDetailsPanel.java,v 1.10 2004/11/16 03:56:36 jim Exp $
+// $Id: JQueueJobDetailsPanel.java,v 1.11 2004/11/21 18:39:56 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -136,49 +136,54 @@ class JQueueJobDetailsPanel
 	    JPanel vpanel = (JPanel) comps[1];
 	    
 	    /* job state */ 
-	    pJobStateField = 
-	      UIMaster.createTitledTextField(tpanel, "Job State:", sTSize, 
-					     vpanel, "-", sVSize);
+	    pJobStateField = UIMaster.createTitledTextField
+	      (tpanel, "Job State:", sTSize, 
+	       vpanel, "-", sVSize, 
+	       "The current execution state of the job.");
 	    
 	    UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
 
 	    /* time waiting */ 
-	    pWaitingField = 
-	      UIMaster.createTitledTextField(tpanel, "Time Waiting:", sTSize, 
-					     vpanel, "-", sVSize);
+	    pWaitingField = UIMaster.createTitledTextField
+	      (tpanel, "Time Waiting:", sTSize, 
+	       vpanel, "-", sVSize, 
+	       "How long the job has been waiting to execute.");
 
 	    UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
 
 	    /* time running */ 
-	    pRunningField = 
-	      UIMaster.createTitledTextField(tpanel, "Time Running:", sTSize, 
-					     vpanel, "-", sVSize);
+	    pRunningField = UIMaster.createTitledTextField
+	      (tpanel, "Time Running:", sTSize, 
+	       vpanel, "-", sVSize, 
+	       "How long the job has been running so far.");
 
 	    UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
 	    
 	    /* submitted stamp */ 
-	    pSubmittedField = 
-	      UIMaster.createTitledTextField(tpanel, "Submitted:", sTSize, 
-					     vpanel, "-", sVSize);
+	    pSubmittedField = UIMaster.createTitledTextField
+	      (tpanel, "Submitted:", sTSize, 
+	       vpanel, "-", sVSize, 
+	       "When the job was submitted for execution.");
 	    
 	    UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
 
 	    /* started stamp */ 
-	    pStartedField = 
-	      UIMaster.createTitledTextField(tpanel, "Started:", sTSize, 
-					     vpanel, "-", sVSize);
+	    pStartedField = UIMaster.createTitledTextField
+	      (tpanel, "Started:", sTSize, 
+	       vpanel, "-", sVSize, 
+	       "When the job began execution.");
 	    
 	    UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
 
 	    /* completed stamp */ 
-	    pCompletedField = 
-	      UIMaster.createTitledTextField(tpanel, "Completed:", sTSize, 
-					     vpanel, "-", sVSize);
-
-	    
+	    pCompletedField = UIMaster.createTitledTextField
+	      (tpanel, "Completed:", sTSize, 
+	       vpanel, "-", sVSize, 
+	       "When the job completed execution.");	    
 	  }
 	  
 	  JDrawer drawer = new JDrawer("Summary:", (JComponent) comps[2], true);
+	  drawer.setToolTipText(UIMaster.formatToolTip("Summary of current job status."));
 	  pSummaryDrawer = drawer;
 	  vbox.add(drawer);
 	}
@@ -193,8 +198,10 @@ class JQueueJobDetailsPanel
 	    /* execution details */ 
 	    {
 	      {
-		JLabel label = 
-		  UIMaster.createFixedLabel("Execution Details:", sTSize, JLabel.RIGHT);
+		JLabel label = UIMaster.createFixedLabel
+		  ("Execution Details:", sTSize, JLabel.RIGHT, 
+		   "The job process working directory, command-line and environment.");
+					    
 		tpanel.add(label);
 	      }
 		
@@ -224,18 +231,20 @@ class JQueueJobDetailsPanel
 
 	    /* hostname */ 
 	    { 
-	      pHostnameField =
-		UIMaster.createTitledTextField(tpanel, "Hostname:", sTSize, 
-					       vpanel, null, sVSize);
+	      pHostnameField =UIMaster.createTitledTextField
+		(tpanel, "Hostname:", sTSize, 
+		 vpanel, null, sVSize, 
+		 "The fully resolved name of the host where the job was executed.");
 	    }
 	    
 	    UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
 	    
 	    /* exit code */ 
 	    { 
-	      pExitCodeField =
-		UIMaster.createTitledTextField(tpanel, "Exit Code:", sTSize, 
-					       vpanel, null, sVSize);
+	      pExitCodeField = UIMaster.createTitledTextField
+		(tpanel, "Exit Code:", sTSize, 
+		 vpanel, null, sVSize, 
+		 "The job process exit code.");
 	    }
 	    
 	    UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
@@ -243,8 +252,9 @@ class JQueueJobDetailsPanel
 	    /* logs */ 
 	    {
 	      {
-		JLabel label = 
-		  UIMaster.createFixedLabel("Logs:", sTSize, JLabel.RIGHT);
+		JLabel label = UIMaster.createFixedLabel
+		  ("Logs:", sTSize, JLabel.RIGHT, 
+		   "The job process STDOUT and STDERR output.");
 		tpanel.add(label);
 	      }
 	      
@@ -299,59 +309,69 @@ class JQueueJobDetailsPanel
 	      
 	    /* user time */ 
 	    {
-	      pUserTimeField = 
-		UIMaster.createTitledTextField(tpanel, "User Time:", sTSize, 
-					       vpanel, "-", sVSize);
+	      pUserTimeField = UIMaster.createTitledTextField
+		(tpanel, "User Time:", sTSize, 
+		 vpanel, "-", sVSize, 
+		 "The user space execution time of the job process.");
 	    }
 	    
 	    UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
 	    
 	    /* system time */ 
 	    {
-	      pSystemTimeField = 
-		UIMaster.createTitledTextField(tpanel, "System Time:", sTSize, 
-					       vpanel, "-", sVSize);
+	      pSystemTimeField = UIMaster.createTitledTextField
+		(tpanel, "System Time:", sTSize, 
+		 vpanel, "-", sVSize, 
+		 "The kernel space execution time of the job process.");
 	    }
 	    
 	    UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
 
 	    /* resident memory */ 
 	    {
-	      pResidentField = 
-		UIMaster.createTitledTextField(tpanel, "Resident Memory:", sTSize, 
-					       vpanel, "-", sVSize);
+	      pResidentField = UIMaster.createTitledTextField
+		(tpanel, "Resident Memory:", sTSize, 
+		 vpanel, "-", sVSize, 
+		 "The maximum amount of resident memory used by the job process and any " +
+		 "child processes.");
 	    }
 	    
 	    UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
 
 	    /* virtual memory */ 
 	    {
-	      pVirtualField = 
-		UIMaster.createTitledTextField(tpanel, "Virtual Memory:", sTSize, 
-					       vpanel, "-", sVSize);
+	      pVirtualField = UIMaster.createTitledTextField
+		(tpanel, "Virtual Memory:", sTSize, 
+		 vpanel, "-", sVSize,  
+		 "The maximum amount of virtual memory used by the job process and any " +
+		 "child processes.");
 	    }
 	    
 	    UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
 
 	    /* swapped memory */ 
 	    {
-	      pSwappedField = 
-		UIMaster.createTitledTextField(tpanel, "Swapped Memory:", sTSize, 
-					       vpanel, "-", sVSize);
+	      pSwappedField = UIMaster.createTitledTextField
+		(tpanel, "Swapped Memory:", sTSize, 
+		 vpanel, "-", sVSize,  
+		 "The maximum amount of swap space used by the job process and any " +
+		 "child processes.");
 	    }
 	    
 	    UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
 
 	    /* page faults */ 
 	    {
-	      pPageFaultsField = 
-		UIMaster.createTitledTextField(tpanel, "Page Faults:", sTSize, 
-					       vpanel, null, sVSize);
+	      pPageFaultsField = UIMaster.createTitledTextField
+		(tpanel, "Page Faults:", sTSize, 
+		 vpanel, null, sVSize, 
+		 "The number of major memory page faults by the job process.");
 	      pPageFaultsField.setEditable(false);
 	    }
 	  }
 	  
 	  JDrawer drawer = new JDrawer("Process Details:", (JComponent) comps[2], false);
+	  drawer.setToolTipText(UIMaster.formatToolTip("Job process execution details."));
 	  pProcessDrawer = drawer;
 	  vbox.add(drawer);
 	} 
@@ -368,9 +388,10 @@ class JQueueJobDetailsPanel
 	      
 	      /* priority */ 
 	      {
-		pPriorityField = 
-		  UIMaster.createTitledIntegerField(tpanel, "Priority:", sTSize, 
-						    vpanel, null, sVSize);
+		pPriorityField = UIMaster.createTitledIntegerField
+		  (tpanel, "Priority:", sTSize, 
+		   vpanel, null, sVSize, 
+		   "The relative priority of this job.");
 		pPriorityField.setEditable(false);
 	      }
 	      
@@ -378,9 +399,10 @@ class JQueueJobDetailsPanel
 	      
 	      /* maximum load */ 
 	      { 
-		pMaxLoadField =
-		  UIMaster.createTitledFloatField(tpanel, "Maximum Load:", sTSize, 
-						  vpanel, null, sVSize);
+		pMaxLoadField = UIMaster.createTitledFloatField
+		  (tpanel, "Maximum Load:", sTSize, 
+		   vpanel, null, sVSize, 
+		   "The maxmimum system load allowed on an eligable host.");
 		pMaxLoadField.setEditable(false);
 	      }
 	      
@@ -388,9 +410,10 @@ class JQueueJobDetailsPanel
 	      
 	      /* minimum memory */ 
 	      { 
-		pMinMemoryField = 
-		  UIMaster.createTitledByteSizeField(tpanel, "Minimum Memory:", sTSize, 
-						     vpanel, null, sVSize);
+		pMinMemoryField = UIMaster.createTitledByteSizeField
+		  (tpanel, "Minimum Memory:", sTSize, 
+		   vpanel, null, sVSize, 
+		   "The minimum amount of free memory required on an eligable host.");
 		pMinMemoryField.setEditable(false);
 	      }
 
@@ -398,9 +421,11 @@ class JQueueJobDetailsPanel
 	      
 	      /* minimum disk */ 
 	      { 
-		pMinDiskField = 
-		  UIMaster.createTitledByteSizeField(tpanel, "Minimum Disk:", sTSize, 
-						     vpanel, null, sVSize);
+		pMinDiskField = UIMaster.createTitledByteSizeField
+		  (tpanel, "Minimum Disk:", sTSize, 
+		   vpanel, null, sVSize, 
+		   "The minimum amount of free temporary local disk space required " +
+		   "on an eligable host.");
 		pMinDiskField.setEditable(false);
 	      }
 	    }
@@ -431,6 +456,9 @@ class JQueueJobDetailsPanel
 	      /* selection keys */ 
 	      {
 		JDrawer drawer = new JDrawer("Selection Keys:",  new JPanel(), false);
+		drawer.setToolTipText(UIMaster.formatToolTip
+		  ("The set of selection keys a server must have in order to be eligable " + 
+		   "to run jobs associated with this node."));
 		pSelectionDrawer = drawer;
 		dbox.add(drawer);
 	      }
@@ -438,6 +466,9 @@ class JQueueJobDetailsPanel
 	      /* license keys */ 
 	      {
 		JDrawer drawer = new JDrawer("License Keys:", new JPanel(), false);
+		drawer.setToolTipText(UIMaster.formatToolTip
+		  ("The set of license keys which are required in order to run jobs " + 
+		   "associated with this node."));
 		pLicenseDrawer = drawer;
 		dbox.add(drawer);
 	      }
@@ -449,6 +480,9 @@ class JQueueJobDetailsPanel
 	  }
 
 	  JDrawer drawer = new JDrawer("Job Requirements:", jrbox, false);
+	  drawer.setToolTipText(UIMaster.formatToolTip
+	    ("The requirements that a server must meet in order to be eligable " +
+	     "to run jobs associated with this node."));
 	  pJobReqsDrawer = drawer;
 	  vbox.add(drawer);
 	}
@@ -477,6 +511,8 @@ class JQueueJobDetailsPanel
 	    /* target files panel */ 
 	    {
 	      JDrawer drawer = new JDrawer("Targets:", new JPanel(), true);
+	      drawer.setToolTipText(UIMaster.formatToolTip
+		("The target files created by the job."));
 	      pTargetFilesDrawer = drawer;
 	      dbox.add(drawer);
 	    }
@@ -484,6 +520,8 @@ class JQueueJobDetailsPanel
 	    /* source files panel */ 
 	    {
 	      JDrawer drawer = new JDrawer("Sources:", new JPanel(), true);
+	      drawer.setToolTipText(UIMaster.formatToolTip
+		("The source files used by the job."));
 	      pSourceFilesDrawer = drawer;
 	      dbox.add(drawer);
 	    }
@@ -492,6 +530,8 @@ class JQueueJobDetailsPanel
 	  }
 
 	  JDrawer drawer = new JDrawer("File Sequences:", fbox, false);
+	  drawer.setToolTipText(UIMaster.formatToolTip
+	    ("The file sequences associated with the job."));
 	  pFilesDrawer = drawer;
 	  vbox.add(drawer);
 	}
@@ -850,10 +890,11 @@ class JQueueJobDetailsPanel
 
       /* selection keys */ 
       {
-	TreeSet<String> knames = new TreeSet<String>();
+	TreeMap<String,String> keys = new TreeMap<String,String>();
 	if(pJob != null) {
 	  try {
-	    knames.addAll(master.getQueueMgrClient().getSelectionKeyNames());
+	    for(SelectionKey key : master.getQueueMgrClient().getSelectionKeys())
+	      keys.put(key.getName(), key.getDescription());
 	  }
 	  catch(PipelineException ex) {
 	    master.showErrorDialog(ex);
@@ -864,7 +905,7 @@ class JQueueJobDetailsPanel
 	JPanel tpanel = (JPanel) comps[0];
 	JPanel vpanel = (JPanel) comps[1];
 
-	if(knames.isEmpty()) {
+	if(keys.isEmpty()) {
 	  tpanel.add(Box.createRigidArea(new Dimension(sTSize-7, 0)));
 	  vpanel.add(Box.createHorizontalGlue());
 	}
@@ -872,7 +913,7 @@ class JQueueJobDetailsPanel
 	  JobReqs jreqs = pJob.getJobRequirements();
 
 	  boolean first = true; 
-	  for(String kname : knames) {
+	  for(String kname : keys.keySet()) {
 	
 	    if(!first) 
 	      UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
@@ -882,7 +923,7 @@ class JQueueJobDetailsPanel
 
 	    JTextField field = 
 	      UIMaster.createTitledTextField(tpanel, kname + ":", sTSize-7, 
-					     vpanel, value, sVSize);
+					     vpanel, value, sVSize, keys.get(kname));
 	  }
 	}
 
@@ -891,10 +932,11 @@ class JQueueJobDetailsPanel
 
       /* license keys */ 
       {
-	TreeSet<String> knames = new TreeSet<String>();
+	TreeMap<String,String> keys = new TreeMap<String,String>();
 	if(pJob != null) {
 	  try {
-	    knames.addAll(master.getQueueMgrClient().getLicenseKeyNames());
+	    for(LicenseKey key : master.getQueueMgrClient().getLicenseKeys())
+	      keys.put(key.getName(), key.getDescription());
 	  }
 	  catch(PipelineException ex) {
 	    master.showErrorDialog(ex);
@@ -905,7 +947,7 @@ class JQueueJobDetailsPanel
 	JPanel tpanel = (JPanel) comps[0];
 	JPanel vpanel = (JPanel) comps[1];
 
-	if(knames.isEmpty()) {
+	if(keys.isEmpty()) {
 	  tpanel.add(Box.createRigidArea(new Dimension(sTSize-7, 0)));
 	  vpanel.add(Box.createHorizontalGlue());
 	}
@@ -913,7 +955,7 @@ class JQueueJobDetailsPanel
 	  JobReqs jreqs = pJob.getJobRequirements();
 
 	  boolean first = true; 
-	  for(String kname : knames) {
+	  for(String kname : keys.keySet()) {
 	
 	    if(!first) 
 	      UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
@@ -923,7 +965,7 @@ class JQueueJobDetailsPanel
 
 	    JTextField field = 
 	      UIMaster.createTitledTextField(tpanel, kname + ":", sTSize-7, 
-					     vpanel, value, sVSize);
+					     vpanel, value, sVSize, keys.get(kname));
 	  }
 	}
 
@@ -948,8 +990,10 @@ class JQueueJobDetailsPanel
 	    if(agenda != null) 
 	      text = agenda.getPrimaryTarget().toString();
 
-	    UIMaster.createTitledTextField(tpanel, "Primary Target:", sTSize-7, 
-					   vpanel, text, sVSize);
+	    UIMaster.createTitledTextField
+	      (tpanel, "Primary Target:", sTSize-7, 
+	       vpanel, text, sVSize, 
+	       "The primary files created by this job.");
 	  }
 
 	  if(agenda != null) {
@@ -958,9 +1002,10 @@ class JQueueJobDetailsPanel
 	      UIMaster.addVerticalSpacer(tpanel, vpanel, 9);
 	      for(FileSeq fseq : fseqs) {
 		UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
-		UIMaster.createTitledTextField(tpanel, "Secondary Target:", sTSize-7, 
-					       vpanel, fseq.toString(), sVSize);
-
+		UIMaster.createTitledTextField
+		  (tpanel, "Secondary Target:", sTSize-7, 
+		   vpanel, fseq.toString(), sVSize, 
+		   "The secondary files created by this job.");
 	      }
 	    }
 	  }	
@@ -997,8 +1042,10 @@ class JQueueJobDetailsPanel
 
 	      {
 		String text = agenda.getPrimarySource(sname).toString();
-		UIMaster.createTitledTextField(tpanel, "Primary Source:", sTSize-14, 
-					       vpanel, text, sVSize);
+		UIMaster.createTitledTextField
+		  (tpanel, "Primary Source:", sTSize-14, 
+		   vpanel, text, sVSize, 
+		   "The primary files associated with the node used by this job.");
 	      }
 
 	      SortedSet<FileSeq> fseqs = agenda.getSecondarySources(sname);
@@ -1006,14 +1053,16 @@ class JQueueJobDetailsPanel
 		UIMaster.addVerticalSpacer(tpanel, vpanel, 9);
 		for(FileSeq fseq : fseqs) {
 		  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
-		  UIMaster.createTitledTextField(tpanel, "Secondary Source:", sTSize-14, 
-						 vpanel, fseq.toString(), sVSize);
-
+		  UIMaster.createTitledTextField
+		    (tpanel, "Secondary Source:", sTSize-14, 
+		     vpanel, fseq.toString(), sVSize, 
+		     "The secondary files associated with the node used by this job.");
 		}
 	      }
 	    }
 
 	    JDrawer drawer = new JDrawer(sname, (JComponent) comps[2], true);
+	    drawer.setToolTipText(UIMaster.formatToolTip("The source node name."));
 	    vbox.add(drawer);
 	  }
 

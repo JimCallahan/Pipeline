@@ -1,4 +1,4 @@
-// $Id: SourceParamsTableModel.java,v 1.8 2004/11/19 06:45:56 jim Exp $
+// $Id: SourceParamsTableModel.java,v 1.9 2004/11/21 18:39:56 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -69,12 +69,13 @@ class SourceParamsTableModel
       {
 	pNumColumns = params.size() + 1;
 
-	pColumnClasses = new Class[pNumColumns];
-	pColumnNames   = new String[pNumColumns];
-	pParamNames    = new String[pNumColumns];
-	pColumnWidths  = new int[pNumColumns];
-	pRenderers     = new TableCellRenderer[pNumColumns];
-	pEditors       = new TableCellEditor[pNumColumns];
+	pColumnClasses      = new Class[pNumColumns];
+	pColumnNames        = new String[pNumColumns];
+	pColumnDescriptions = new String[pNumColumns];
+	pParamNames         = new String[pNumColumns];
+	pColumnWidths       = new int[pNumColumns];
+	pRenderers          = new TableCellRenderer[pNumColumns];
+	pEditors            = new TableCellEditor[pNumColumns];
       }
 
       /* source node name */ 
@@ -89,9 +90,10 @@ class SourceParamsTableModel
       for(String pname : pAction.getSourceLayout()) {
 	ActionParam aparam = params.get(pname);
 
-	pColumnClasses[col] = aparam.getClass();
-	pColumnNames[col]   = aparam.getNameUI();
-	pParamNames[col]    = aparam.getName(); 
+	pColumnClasses[col]      = aparam.getClass();
+	pColumnNames[col]        = aparam.getNameUI();
+	pColumnDescriptions[col] = aparam.getDescription();
+	pParamNames[col]         = aparam.getName(); 
 
 	if(aparam instanceof BooleanActionParam) {
 	  pColumnWidths[col]  = 160;

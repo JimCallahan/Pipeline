@@ -1,4 +1,4 @@
-// $Id: ArchiveCandidateTableModel.java,v 1.1 2004/11/16 03:56:36 jim Exp $
+// $Id: ArchiveCandidateTableModel.java,v 1.2 2004/11/21 18:39:56 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -52,6 +52,21 @@ class ArchiveCandidateTableModel
 	  "Archived On", "Archives", "Unused"
 	};
 	pColumnNames = names;
+      }
+
+      {
+	String desc[] = {
+	  "The fully resolved name of the node.", 
+	  "The revision number of the checked-in version.", 
+	  "When the checked-in version was created.", 
+	  "When the checked-in version was last checked-out.", 
+	  "The number of working versions based on the checked-in version existing in " +
+	  "all working areas.", 
+	  "When the checked-in version was last archived.", 
+	  "The number of archives which contain the checked-in version.", 
+	  "Whether the checked-in version can be offlined."
+	};
+	pColumnDescriptions = desc;
       }
 
       {

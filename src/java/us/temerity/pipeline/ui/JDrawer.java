@@ -1,4 +1,4 @@
-// $Id: JDrawer.java,v 1.3 2004/08/31 08:14:37 jim Exp $
+// $Id: JDrawer.java,v 1.4 2004/11/21 18:39:56 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -241,6 +241,23 @@ class JDrawer
   )
   {
     pHeader.setActionCommand(cmd);
+  }
+
+   
+  /*----------------------------------------------------------------------------------------*/
+  /*   J C O M P O N E N T   O V E R R I D E S                                              */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Registers the text to display in a tool tip.
+   */
+  public void 	
+  setToolTipText
+  (
+   String text
+  )
+  {
+    pHeader.setToolTipText(text);
   }
 
 

@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.10 2004/11/02 23:06:44 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.11 2004/11/21 18:39:56 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -328,6 +328,9 @@ class JQueueJobBrowserPanel
 		
 		btn.setFocusable(false);
 		
+		btn.setToolTipText
+		  (UIMaster.formatToolTip(pHostsTableModel.getColumnDescription(wk)));
+
 		hbox.add(btn);
 	      }
 	      
@@ -703,7 +706,7 @@ class JQueueJobBrowserPanel
    *   The job server hosts indexex by fully resolved hostnames.
    * 
    * @param keys
-   *   The valid selection keys.
+   *   The valid selection key descriptions indexed by key name.
    */ 
   public synchronized void
   updateJobs
@@ -714,7 +717,7 @@ class JQueueJobBrowserPanel
    TreeMap<Long,JobStatus> jobStatus, 
    TreeMap<Long,QueueJobInfo> jobInfo, 
    TreeMap<String,QueueHost> hosts, 
-   TreeSet<String> keys
+   TreeMap<String,String> keys
   ) 
   {
     if(!pAuthor.equals(author) || !pView.equals(view)) 
@@ -739,7 +742,7 @@ class JQueueJobBrowserPanel
    *   The job server hosts indexex by fully resolved hostnames.
    * 
    * @param keys
-   *   The valid selection keys.
+   *   The valid selection key descriptions indexed by key name.
    */ 
   public synchronized void
   updateJobs
@@ -748,7 +751,7 @@ class JQueueJobBrowserPanel
    TreeMap<Long,JobStatus> jobStatus, 
    TreeMap<Long,QueueJobInfo> jobInfo, 
    TreeMap<String,QueueHost> hosts, 
-   TreeSet<String> keys
+   TreeMap<String,String> keys
   ) 
   {
     /* update the groups and job status */ 
@@ -822,7 +825,7 @@ class JQueueJobBrowserPanel
 	}
 	  
 	wk = 8;
-	for(String kname : keys) {
+	for(String kname : keys.keySet()) {
 	  TableColumn tcol = cmodel.getColumn(wk);
 	  
 	  tcol.setCellRenderer(new JSelectionBiasTableCellRenderer());
@@ -840,7 +843,7 @@ class JQueueJobBrowserPanel
 	pSelectionKeyHeaderBox.removeAll();
 	
 	int wk = 8;
-	for(String kname : keys) {
+	for(String kname : keys.keySet()) {
 	  JButton btn = new JButton(kname);
 	  btn.setName("PurpleTableHeaderButton");
 	  
@@ -856,6 +859,9 @@ class JQueueJobBrowserPanel
 	  
 	  btn.setFocusable(false);
 	  
+	  btn.setToolTipText
+	    (UIMaster.formatToolTip(pHostsTableModel.getColumnDescription(wk)));
+
 	  pSelectionKeyHeaderBox.add(btn);
 	  
 	  wk++;
@@ -1932,7 +1938,7 @@ class JQueueJobBrowserPanel
       TreeMap<Long,JobStatus> jobStatus = null;
       TreeMap<Long,QueueJobInfo> jobInfo = null;
       TreeMap<String,QueueHost> hosts = null;
-      TreeSet<String> keys = null;
+      TreeMap<String,String> keys = null;
 
       if(master.beginPanelOp("Updating...")) {
 	try {
@@ -1942,7 +1948,10 @@ class JQueueJobBrowserPanel
 	  jobStatus = client.getJobStatus(new TreeSet<Long>(groups.keySet()));
 	  jobInfo   = client.getRunningJobInfo();
 	  hosts     = client.getHosts(); 
-	  keys      = client.getSelectionKeyNames();
+
+	  keys = new TreeMap<String,String>();
+	  for(SelectionKey key : client.getSelectionKeys()) 
+	    keys.put(key.getName(), key.getDescription());
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -1971,7 +1980,7 @@ class JQueueJobBrowserPanel
      TreeMap<Long,JobStatus> jobStatus, 
      TreeMap<Long,QueueJobInfo> jobInfo, 
      TreeMap<String,QueueHost> hosts, 
-     TreeSet<String> keys
+     TreeMap<String,String> keys
     ) 
     {
       super("JQueueJobBrowserPanel:UpdateTask");
@@ -1993,7 +2002,7 @@ class JQueueJobBrowserPanel
     private TreeMap<Long,JobStatus>      pStatus; 
     private TreeMap<Long,QueueJobInfo>   pInfo; 
     private TreeMap<String,QueueHost>    pHosts;
-    private TreeSet<String>              pKeys;
+    private TreeMap<String,String>       pKeys;
   }
 
   

@@ -1,4 +1,4 @@
-// $Id: SuffixEditorTableModel.java,v 1.7 2004/09/14 02:22:28 jim Exp $
+// $Id: SuffixEditorTableModel.java,v 1.8 2004/11/21 18:39:56 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -48,6 +48,15 @@ class SuffixEditorTableModel
       {
 	String names[] = {"Suffix", "Format Description", "Editor" };
 	pColumnNames = names;
+      }
+
+      {
+	String desc[] = {
+	  "The filename suffix.", 
+	  "A short description of the file format.", 
+	  "The name of the default Editor plugin for this file format."
+	};
+	pColumnDescriptions = desc;
       }
 
       {

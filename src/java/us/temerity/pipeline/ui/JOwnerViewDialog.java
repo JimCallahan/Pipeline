@@ -1,4 +1,4 @@
-// $Id: JOwnerViewDialog.java,v 1.7 2004/05/23 19:59:41 jim Exp $
+// $Id: JOwnerViewDialog.java,v 1.8 2004/11/21 18:39:56 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -74,6 +74,13 @@ class JOwnerViewDialog
 	super.initUI("Change Owner|View", true, body, "Confirm", null, extra, "Cancel");
 
       pAddViewButton = btns[0];
+
+      pConfirmButton.setToolTipText(UIMaster.formatToolTip
+        ("Change the working area associated with the panel to the selected Owner|View."));
+      pAddViewButton.setToolTipText(UIMaster.formatToolTip
+        ("Create a new working area for the selected Owner."));
+      pCancelButton.setToolTipText(UIMaster.formatToolTip 				  
+        ("Cancel the change of working area."));
     }
 
     {

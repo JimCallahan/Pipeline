@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.37 2004/11/14 02:01:07 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.38 2004/11/21 18:39:56 jim Exp $
 
 import java.io.*; 
 import java.util.*;
@@ -73,11 +73,6 @@ class GenUserPrefsApp
 	 "ShowDefaultEditors", "Default Editors:",
 	 false, true, false, 69),  /* ALT+E */ 
 
-// 	new HotKeyPref
-// 	("Manage the job servers.", 
-// 	 "ShowManageJobServers", "Job Servers:",
-// 	 false, true, false, 74),  /* ALT+J */ 
-
 	new BasePref(),
 	new BasePref(),
 	
@@ -87,7 +82,7 @@ class GenUserPrefsApp
 	 false, false, true, 81)  /* CTRL+Q */ 
       };
 
-      pPrefs.put("Panel|Universal|Main|Hot Keys", prefs);
+      pPrefs.put("Global|Main|Hot Keys", prefs);
     }
 
     {
@@ -111,7 +106,7 @@ class GenUserPrefsApp
 	 "ShowManageSelectionKeys", "Selection Keys:")
       };
 
-      pPrefs.put("Panel|Universal|Admin|Hot Keys", prefs);
+      pPrefs.put("Global|Admin|Hot Keys", prefs);
     }
 
     {
@@ -145,7 +140,7 @@ class GenUserPrefsApp
 	 "ShowConfig", "Site Configuration:")
       };
 
-      pPrefs.put("Panel|Universal|Help|Hot Keys", prefs);
+      pPrefs.put("Global|Help|Hot Keys", prefs);
     }
 
     {
@@ -209,7 +204,7 @@ class GenUserPrefsApp
 	 false, false, true, 57)  /* CTRL+9 */ 
       };
 
-      pPrefs.put("Panel|Universal|Panel Group|Hot Keys", prefs);
+      pPrefs.put("Global|Panel Group|Hot Keys", prefs);
     }
 
     {
@@ -264,7 +259,7 @@ class GenUserPrefsApp
 	 false, true, false, 120),  /* ALT+F9 */ 	
       };
 
-      pPrefs.put("Panel|Universal|Panel Window|Hot Keys", prefs);
+      pPrefs.put("Global|Panel Window|Hot Keys", prefs);
     }
 
     {
@@ -319,7 +314,7 @@ class GenUserPrefsApp
 	 false, false, false, 120),  /* F9 */ 
       };
 
-      pPrefs.put("Panel|Universal|Panel Type|Hot Keys", prefs);
+      pPrefs.put("Global|Panel Type|Hot Keys", prefs);
     }
 
     {
@@ -361,7 +356,25 @@ class GenUserPrefsApp
 	 false, true, false, 88)   /* ALT+X */ 
       };
 
-      pPrefs.put("Panel|Universal|Panel Layout|Hot Keys", prefs);
+      pPrefs.put("Global|Panel Layout|Hot Keys", prefs);
+    }
+
+    {
+      BasePref prefs[] = {      
+	new BooleanPref
+	("Whether to show tool tips.", 
+	 "ShowToolTips", "Show Tool Tips:", true), 
+	
+	new BoundedIntegerPref
+	("The initial delay before showing the tool tip.", 
+	 "ToolTipDelay", "Tool Tip Delay:", 0, 4000, 1000), 
+
+	new BoundedIntegerPref
+	("The amount of time the tool tip is visible.", 
+	 "ToolTipDuration", "Tool Tip Duration:", 1000, 10000, 4000)
+      };
+
+      pPrefs.put("Global|Tool Tips", prefs);
     }
 
     {
@@ -376,8 +389,6 @@ class GenUserPrefsApp
 	new HotKeyPref
 	("Show the node filter dialog.", 
 	 "NodeBrowserNodeFilter", "Node Filter:")	
-
-	// .. toggle individual filters hot keys
       };
 
       pPrefs.put("Panel|Node Browser|Hot Keys", prefs);
@@ -1123,7 +1134,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.37 2004/11/14 02:01:07 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.38 2004/11/21 18:39:56 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -1376,7 +1387,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.37 2004/11/14 02:01:07 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.38 2004/11/21 18:39:56 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -1897,7 +1908,8 @@ class GenUserPrefsApp
       buf.append
 	(indent(level) + "p" + pTitle + " =\n" + 
 	 indent(level+1) + "UIMaster.createTitledBooleanField\n" + 
-	 indent(level+2) + "(tpanel, \"" + pLabel + "\", sTSize, vpanel, sVSize);\n" + 
+	 indent(level+2) + "(tpanel, \"" + pLabel + "\", sTSize, vpanel, sVSize,\n" + 
+	 indent(level+2) + " \"" + pDesc + "\");\n" + 
 	 "\n");
 
       if(!isLast) 
@@ -2055,7 +2067,8 @@ class GenUserPrefsApp
 	(indent(level) + "p" + pTitle + " =\n" + 
 	 indent(level+1) + "UIMaster.createTitledSlider\n" + 
 	 indent(level+2) + "(tpanel, \"" + pLabel + "\", sTSize,\n" + 
-	 indent(level+2) + " vpanel, " + pMinValue + ", " + pMaxValue + ", sVSize);\n" + 
+	 indent(level+2) + " vpanel, " + pMinValue + ", " + pMaxValue + ", sVSize,\n" + 
+	 indent(level+2) + " \"" + pDesc + "\");\n" + 
 	 "\n");
 
       if(!isLast) 
@@ -2214,7 +2227,8 @@ class GenUserPrefsApp
 	(indent(level) + "p" + pTitle + " =\n" + 
 	 indent(level+1) + "UIMaster.createTitledSlider\n" + 
 	 indent(level+2) + "(tpanel, \"" + pLabel + "\", sTSize,\n" + 
-	 indent(level+2) + " vpanel, " + pMinValue + ", " + pMaxValue + ", sVSize);\n" + 
+	 indent(level+2) + " vpanel, " + pMinValue + ", " + pMaxValue + ", sVSize,\n" + 
+	 indent(level+2) + " \"" + pDesc + "\");\n" + 
 	 "\n");
 
       if(!isLast) 
@@ -2312,7 +2326,8 @@ class GenUserPrefsApp
 	 indent(level+1) + "p" + pTitle + " =\n" + 
 	 indent(level+2) + "UIMaster.createTitledCollectionField\n" + 
 	 indent(level+3) + "(tpanel, \"" + pLabel + "\", sTSize,\n" + 
-	 indent(level+3) + " vpanel, values, sVSize);\n" + 
+	 indent(level+3) + " vpanel, values, sVSize,\n" + 
+	 indent(level+3) + " \"" + pDesc + "\");\n" + 
 	 indent(level) + "}\n" + 
 	 "\n");
 
@@ -2424,7 +2439,8 @@ class GenUserPrefsApp
 	(indent(level) + "p" + pTitle + " =\n" + 
 	 indent(level+1) + "UIMaster.createTitledHotKeyField\n" + 
 	 indent(level+2) + "(tpanel, \"" + pLabel + "\", sTSize,\n" + 
-	 indent(level+2) + " vpanel, sVSize);\n" + 
+	 indent(level+2) + " vpanel, sVSize,\n" + 
+	 indent(level+2) + " \"" + pDesc + "\");\n" + 
 	 "\n");
 
       if(!isLast) 

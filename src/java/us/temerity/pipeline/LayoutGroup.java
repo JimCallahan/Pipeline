@@ -1,4 +1,4 @@
-// $Id: LayoutGroup.java,v 1.1 2004/11/19 06:45:56 jim Exp $
+// $Id: LayoutGroup.java,v 1.2 2004/11/21 18:39:56 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -17,7 +17,7 @@ import java.io.*;
  */
 public 
 class LayoutGroup
-  extends Named
+  extends Described
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -26,15 +26,12 @@ class LayoutGroup
   public 
   LayoutGroup() 
   {
-    pEntries = new LinkedList<String>();
-    pSubGroups  = new LinkedList<LayoutGroup>();
+    pEntries   = new LinkedList<String>();
+    pSubGroups = new LinkedList<LayoutGroup>();
   }
 
   /**
-   * Construct a new layout group..
-   * 
-   * @param name
-   *   The name of the group.
+   * Construct a new default layout group.
    * 
    * @param isOpen
    *   Whether the group is initially open.
@@ -42,14 +39,41 @@ class LayoutGroup
   public 
   LayoutGroup
   (
-   String name,  
    boolean isOpen
   ) 
   {
-    super(name);
-    pIsOpen     = isOpen;
-    pEntries = new LinkedList<String>();
-    pSubGroups  = new LinkedList<LayoutGroup>();
+    super("ActionParameters", "The single valued Action plugin parameters."); 
+
+    pIsOpen    = isOpen;
+    pEntries   = new LinkedList<String>();
+    pSubGroups = new LinkedList<LayoutGroup>();
+  }
+
+  /**
+   * Construct a new layout group.
+   * 
+   * @param name
+   *   The name of the group.
+   * 
+   * @param desc 
+   *   A short description of the layout group.
+   * 
+   * @param isOpen
+   *   Whether the group is initially open.
+   */ 
+  public 
+  LayoutGroup
+  (
+   String name,   
+   String desc, 
+   boolean isOpen
+  ) 
+  {
+    super(name, desc);
+
+    pIsOpen    = isOpen;
+    pEntries   = new LinkedList<String>();
+    pSubGroups = new LinkedList<LayoutGroup>();
   }
 
 

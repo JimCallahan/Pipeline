@@ -1,4 +1,4 @@
-// $Id: QueueHostsTableModel.java,v 1.7 2004/10/25 18:56:47 jim Exp $
+// $Id: QueueHostsTableModel.java,v 1.8 2004/11/21 18:39:56 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -43,8 +43,9 @@ class QueueHostsTableModel
     {
       pParent = parent;
 
-      pQueueHosts    = new ArrayList<QueueHost>();
-      pSelectionKeys = new ArrayList<String>();
+      pQueueHosts            = new ArrayList<QueueHost>();
+      pSelectionKeys         = new ArrayList<String>();
+      pSelectionDescriptions = new ArrayList<String>();
       
       pEditedStatusIndices  = new TreeSet<Integer>();
       pEditedReserveIndices = new TreeSet<Integer>();
@@ -74,6 +75,20 @@ class QueueHostsTableModel
 	  "Jobs", "Slots" 
 	};
 	pColumnNames = names;
+      }
+
+      {
+	String desc[] = {
+	  "The fully resolved host name.", 
+	  "The current status of the job server.", 
+	  "The name of the user holding the server reservation.", 
+	  "The system load of the server.", 
+	  "The amount of unused system memory (in GB).", 
+	  "The amount of available temporary disk space (in GB).", 
+	  "The number of job running on the server.", 
+	  "The maximum number of simultaneous jobs allowed to on the server."
+	};
+	pColumnDescriptions = desc;
       }
 
       {
@@ -268,6 +283,21 @@ class QueueHostsTableModel
       return pSelectionKeys.get(col-8);
   }
 
+  /**
+   * Returns the description of the column columnIndex used in tool tips.
+   */ 
+  public String 	
+  getColumnDescription
+  (
+   int col
+  ) 
+  {
+    if(col < 8)
+      return pColumnDescriptions[col];
+    else 
+      return pSelectionDescriptions.get(col-8);
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -281,7 +311,7 @@ class QueueHostsTableModel
   setQueueHosts
   (
    TreeMap<String,QueueHost> hosts, 
-   TreeSet<String> keys, 
+   TreeMap<String,String> keys, 
    boolean isPrivileged
   ) 
   {
@@ -291,7 +321,11 @@ class QueueHostsTableModel
 
     pSelectionKeys.clear();
     if(keys != null) 
-      pSelectionKeys.addAll(keys);
+      pSelectionKeys.addAll(keys.keySet());
+
+    pSelectionDescriptions.clear();
+    if(keys != null) 
+      pSelectionDescriptions.addAll(keys.values());
 
     pIsPrivileged = isPrivileged;
     
@@ -604,7 +638,12 @@ class QueueHostsTableModel
    * The names of the valid selection keys.
    */ 
   private ArrayList<String>  pSelectionKeys; 
- 
+  
+  /**
+   * The descriptions of the valid selection keys.
+   */ 
+  private ArrayList<String>  pSelectionDescriptions; 
+
 
   /*----------------------------------------------------------------------------------------*/
 

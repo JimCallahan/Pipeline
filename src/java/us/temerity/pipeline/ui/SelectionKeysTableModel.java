@@ -1,4 +1,4 @@
-// $Id: SelectionKeysTableModel.java,v 1.2 2004/08/30 02:54:30 jim Exp $
+// $Id: SelectionKeysTableModel.java,v 1.3 2004/11/21 18:39:56 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -48,6 +48,14 @@ class SelectionKeysTableModel
       {
 	String names[] = {"Key", "Description" };
 	pColumnNames = names;
+      }
+
+      {
+	String desc[] = {
+	  "The name of the selection key.", 
+	  "A short description of the use of the key.", 
+	};
+	pColumnDescriptions = desc;
       }
 
       {

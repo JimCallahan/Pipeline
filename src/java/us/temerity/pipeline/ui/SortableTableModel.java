@@ -1,4 +1,4 @@
-// $Id: SortableTableModel.java,v 1.3 2004/09/14 02:20:52 jim Exp $
+// $Id: SortableTableModel.java,v 1.4 2004/11/21 18:39:56 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -172,6 +172,17 @@ class SortableTableModel
     return pColumnNames[col];
   }
 
+  /**
+   * Returns the description of the column columnIndex used in tool tips.
+   */ 
+  public String 	
+  getColumnDescription
+  (
+   int col
+  ) 
+  {
+    return pColumnDescriptions[col];
+  }
 
 
 
@@ -219,6 +230,11 @@ class SortableTableModel
    * The UI names of the columns
    */ 
   protected String  pColumnNames[]; 
+
+  /**
+   * The description of the columns used in tool tips.
+   */ 
+  protected String  pColumnDescriptions[];
 
 
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.53 2004/11/16 03:56:36 jim Exp $
+// $Id: JManagerPanel.java,v 1.54 2004/11/21 18:39:56 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -456,6 +456,7 @@ class JManagerPanel
 	pPopupMenuAnchor = anchor; 
 	
 	anchor.addMouseListener(this);
+	anchor.setToolTipText(UIMaster.formatToolTip("The main menu."));
 	panel.add(anchor);
       }
 
@@ -466,6 +467,7 @@ class JManagerPanel
 	pGroupMenuAnchor = anchor;
 
 	anchor.addMouseListener(this);
+	anchor.setToolTipText(UIMaster.formatToolTip("The panel group selector."));
 	panel.add(anchor);	
       }
 
@@ -476,6 +478,8 @@ class JManagerPanel
 	pOwnerViewField = field;
 
 	field.addMouseListener(this);
+	field.setToolTipText(UIMaster.formatToolTip
+	  ("The working area Owner|View associated with the panel."));
 	panel.add(field);
       }
 
@@ -491,6 +495,8 @@ class JManagerPanel
 	label.setPreferredSize(size);
 
 	label.addMouseListener(this);
+	label.setToolTipText(UIMaster.formatToolTip
+	  ("Indicator of whether the panel is locked (read-only)."));
 
 	panel.add(label);
       }
@@ -508,8 +514,9 @@ class JManagerPanel
 	
 	btn.setActionCommand("close-panel");
         btn.addActionListener(this);
-
 	btn.addMouseListener(this);
+
+	btn.setToolTipText(UIMaster.formatToolTip("Closes the panel."));
 
 	panel.add(btn);
       } 
@@ -1503,7 +1510,7 @@ class JManagerPanel
   doNodeDetailsWindow() 
   {
     JPanelFrame frame = UIMaster.getInstance().createWindow();
-    frame.setSize(532, 752);
+    frame.setSize(612, 752);
 
     JManagerPanel mgr = frame.getManagerPanel();
     JNodeDetailsPanel panel = new JNodeDetailsPanel(pTopLevelPanel);
@@ -1519,7 +1526,7 @@ class JManagerPanel
   doNodeFilesWindow() 
   {
     JPanelFrame frame = UIMaster.getInstance().createWindow();
-    frame.setSize(532, 752);
+    frame.setSize(612, 752);
 
     JManagerPanel mgr = frame.getManagerPanel();
     JNodeFilesPanel panel = new JNodeFilesPanel(pTopLevelPanel);
@@ -1535,7 +1542,7 @@ class JManagerPanel
   doNodeHistoryWindow() 
   {
     JPanelFrame frame = UIMaster.getInstance().createWindow();
-    frame.setSize(532, 752);
+    frame.setSize(612, 752);
 
     JManagerPanel mgr = frame.getManagerPanel();
     JNodeHistoryPanel panel = new JNodeHistoryPanel(pTopLevelPanel);

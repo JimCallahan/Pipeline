@@ -1,4 +1,4 @@
-// $Id: MayaRenderAction.java,v 1.1 2004/11/19 11:50:17 jim Exp $
+// $Id: MayaRenderAction.java,v 1.2 2004/11/21 18:39:56 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_2_0;
 
@@ -155,7 +155,7 @@ class MayaRenderAction
     }
 
     {
-      LayoutGroup layout = new LayoutGroup("ActionParameters", true);
+      LayoutGroup layout = new LayoutGroup(true);
       layout.addEntry("Renderer");
       layout.addSeparator();
       layout.addEntry("CameraOverride");
@@ -165,7 +165,10 @@ class MayaRenderAction
       layout.addEntry("MayaScene");
 
       {
-	LayoutGroup mel = new LayoutGroup("MEL Scripts", true);
+	LayoutGroup mel = new LayoutGroup
+	  ("MEL Scripts", 
+	   "MEL scripts run at various stages of the rendering process.", 
+	   true);
 	mel.addEntry("PreRenderMEL"); 
 	mel.addEntry("PostRenderMEL");
 	mel.addSeparator();

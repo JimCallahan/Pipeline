@@ -1,4 +1,4 @@
-// $Id: TestAction.java,v 1.7 2004/11/19 06:45:56 jim Exp $
+// $Id: TestAction.java,v 1.8 2004/11/21 18:39:56 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -77,11 +77,11 @@ class TestAction
     }
 
     {
-      LayoutGroup layout = new LayoutGroup("ActionParameters", true);
+      LayoutGroup layout = new LayoutGroup(true);
       layout.addEntry("SomeString");
 
       {
-	LayoutGroup nlayout = new LayoutGroup("Numbers", false);
+	LayoutGroup nlayout = new LayoutGroup("Numbers", "Test tooltip.", false);
 	nlayout.addEntry("SomeDouble");
 	nlayout.addEntry("SomeInteger");
 
@@ -89,7 +89,7 @@ class TestAction
       }
 
       {
-	LayoutGroup mlayout = new LayoutGroup("Miscellaneous", true);
+	LayoutGroup mlayout = new LayoutGroup("Miscellaneous", "Test tooltip.", true);
 	mlayout.addEntry("SomeLink");
 	mlayout.addSeparator();
 	mlayout.addSeparator();

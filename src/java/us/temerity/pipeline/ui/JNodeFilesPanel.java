@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.19 2004/11/17 13:33:51 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.20 2004/11/21 18:39:56 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -198,7 +198,10 @@ class JNodeFilesPanel
 	  
 	  btn.setActionCommand("apply");
 	  btn.addActionListener(this);
-	  
+
+	  btn.setToolTipText(UIMaster.formatToolTip
+	    ("Replace the working area files with the selected checked-in files."));
+
 	  panel.add(btn);
 	} 
 

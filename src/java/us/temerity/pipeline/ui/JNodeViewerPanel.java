@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.68 2004/11/17 13:33:51 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.69 2004/11/21 18:39:56 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -4770,7 +4770,7 @@ class JNodeViewerPanel
       TreeMap<Long,JobStatus> jobStatus = null; 
       TreeMap<Long,QueueJobInfo> jobInfo = null;
       TreeMap<String,QueueHost> hosts = null;
-      TreeSet<String> keys = null;
+      TreeMap<String,String> keys = null;
       
       if(pStatus != null) {
 	{
@@ -4826,7 +4826,10 @@ class JNodeViewerPanel
 	      jobStatus = client.getJobStatus(new TreeSet<Long>(jobGroups.keySet()));
 	      jobInfo   = client.getRunningJobInfo();
 	      hosts     = client.getHosts(); 
-	      keys      = client.getSelectionKeyNames();
+
+	      keys = new TreeMap<String,String>();
+	      for(SelectionKey key : client.getSelectionKeys()) 
+		keys.put(key.getName(), key.getDescription());
 	    }
 	    catch(PipelineException ex) {
 	      master.showErrorDialog(ex);
@@ -4874,7 +4877,7 @@ class JNodeViewerPanel
      TreeMap<Long,JobStatus> jobStatus,
      TreeMap<Long,QueueJobInfo> jobInfo, 
      TreeMap<String,QueueHost> hosts, 
-     TreeSet<String> keys
+     TreeMap<String,String> keys
     )
     {      
       super("JNodeViewerPanel:UpdateSubPanelComponentsTask");
@@ -4951,7 +4954,7 @@ class JNodeViewerPanel
     private TreeMap<Long,JobStatus>      pJobStatus; 
     private TreeMap<Long,QueueJobInfo>   pJobInfo; 
     private TreeMap<String,QueueHost>    pHosts;
-    private TreeSet<String>              pKeys;
+    private TreeMap<String,String>       pKeys;
   }
 
 

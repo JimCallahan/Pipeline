@@ -1,4 +1,4 @@
-// $Id: MayaRenderAction.java,v 1.7 2004/11/19 06:45:56 jim Exp $
+// $Id: MayaRenderAction.java,v 1.8 2004/11/21 18:39:56 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_1_0;
 
@@ -78,7 +78,7 @@ class MayaRenderAction
     }
 
     {
-      LayoutGroup layout = new LayoutGroup("ActionParameters", true);
+      LayoutGroup layout = new LayoutGroup(true);
       layout.addEntry("Renderer");
       layout.addSeparator();
       layout.addEntry("CameraOverride");

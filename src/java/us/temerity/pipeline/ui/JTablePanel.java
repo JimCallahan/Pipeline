@@ -1,4 +1,4 @@
-// $Id: JTablePanel.java,v 1.7 2004/10/25 18:56:47 jim Exp $
+// $Id: JTablePanel.java,v 1.8 2004/11/21 18:39:56 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -104,6 +104,9 @@ class JTablePanel
 		btn.setActionCommand("sort-column:" + wk);	  
 
 		btn.setFocusable(false);
+
+		btn.setToolTipText
+		  (UIMaster.formatToolTip(pTableModel.getColumnDescription(wk)));
 
 		hbox.add(btn);
 	      }

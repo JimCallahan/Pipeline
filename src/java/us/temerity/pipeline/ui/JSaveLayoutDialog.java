@@ -1,4 +1,4 @@
-// $Id: JSaveLayoutDialog.java,v 1.4 2004/10/13 03:34:02 jim Exp $
+// $Id: JSaveLayoutDialog.java,v 1.5 2004/11/21 18:39:56 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -108,6 +108,8 @@ class JSaveLayoutDialog
 	  btn.setActionCommand("new-folder");
 	  btn.addActionListener(this);
 	  
+	  btn.setToolTipText(UIMaster.formatToolTip("Creates a new folder."));
+
 	  hbox.add(btn);
 	} 
 	
@@ -115,6 +117,11 @@ class JSaveLayoutDialog
       }
 	  
       super.initUI("Save Layout:", vbox, "Save", null, "Cancel");
+
+      pConfirmButton.setToolTipText(UIMaster.formatToolTip
+	("Save the current panel layout as the selected name."));
+      pCancelButton.setToolTipText(UIMaster.formatToolTip 				  
+        ("Cancel saving the layout."));
     }  
 
     pTree.addTreeSelectionListener(this);

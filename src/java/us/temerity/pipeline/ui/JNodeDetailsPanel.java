@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.27 2004/11/19 12:54:47 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.28 2004/11/21 18:39:56 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -210,6 +210,8 @@ class JNodeDetailsPanel
 	  
 	  btn.setActionCommand("apply");
 	  btn.addActionListener(this);
+	  
+	  btn.setToolTipText(UIMaster.formatToolTip("Apply the changes to node properties."));
 
 	  panel.add(btn);
 	} 
@@ -255,16 +257,23 @@ class JNodeDetailsPanel
 	    
 	    /* version state */ 
 	    {
-	      pVersionStateField = 
-		UIMaster.createTitledTextField(tpanel, "Version State:", sTSize, 
-					       vpanel, "-", sSSize);
+	      pVersionStateField = UIMaster.createTitledTextField
+		(tpanel, "Version State:", sTSize, 
+		 vpanel, "-", sSSize, 
+		 "The relationship between working and checked-in revision numbers.");
 	    }
 
 	    UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
 
 	    /* revision number */ 
 	    { 
-	      tpanel.add(UIMaster.createFixedLabel("Revision Number:", sTSize, JLabel.RIGHT));
+	      {
+		JLabel label = UIMaster.createFixedLabel
+		  ("Revision Number:", sTSize, JLabel.RIGHT, 
+		   "The revision number of the checked-in version upon which the working " + 
+		   "the working version is based.");
+		tpanel.add(label);
+	      }
 
 	      {
 		Box hbox = new Box(BoxLayout.X_AXIS);
@@ -297,6 +306,7 @@ class JNodeDetailsPanel
 	  }
 	
 	  JDrawer drawer = new JDrawer("Versions:", (JComponent) comps[2], true);
+	  drawer.setToolTipText(UIMaster.formatToolTip("Node revision information."));
 	  pVersionDrawer = drawer;
 	  vbox.add(drawer);
 	}
@@ -310,9 +320,11 @@ class JNodeDetailsPanel
 	    
 	    /* property state */ 
 	    {
-	      pPropertyStateField = 
-		UIMaster.createTitledTextField(tpanel, "Property State:", sTSize, 
-					       vpanel, "-", sSSize);
+	      pPropertyStateField = UIMaster.createTitledTextField
+		(tpanel, "Property State:", sTSize, 
+		 vpanel, "-", sSSize, 
+		 "The relationship between the values of the node properties associated " + 
+		 "with the working and checked-in versions of a node."); 
 	    }
 
 	    UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
@@ -320,7 +332,10 @@ class JNodeDetailsPanel
 	    /* toolset */ 
 	    { 
 	      {
-		JLabel label = UIMaster.createFixedLabel("Toolset:", sTSize, JLabel.RIGHT);
+		JLabel label = UIMaster.createFixedLabel
+		  ("Toolset:", sTSize, JLabel.RIGHT, 
+		   "The name of the shell environment used to run Editors and Actions " + 
+		   "associated with the node.");
 		pToolsetTitle = label;
 		tpanel.add(label);
 	      }
@@ -377,7 +392,10 @@ class JNodeDetailsPanel
 	    /* editor */ 
 	    { 
 	      {
-		JLabel label = UIMaster.createFixedLabel("Editor:", sTSize, JLabel.RIGHT);
+		JLabel label = UIMaster.createFixedLabel
+		  ("Editor:", sTSize, JLabel.RIGHT, 
+		   "The name of the Editor plugin used to edit/view the files associated " +
+		   "with the node.");
 		pEditorTitle = label;
 		tpanel.add(label);
 	      }
@@ -431,6 +449,7 @@ class JNodeDetailsPanel
 	  }
 	  
 	  JDrawer drawer = new JDrawer("Properties:", (JComponent) comps[2], true);
+	  drawer.setToolTipText(UIMaster.formatToolTip("Node property related information."));
 	  pPropertyDrawer = drawer;
 	  vbox.add(drawer);
 	}
@@ -450,7 +469,10 @@ class JNodeDetailsPanel
 	    /* action */ 
 	    { 
 	      {
-		JLabel label = UIMaster.createFixedLabel("Action:", sTSize, JLabel.RIGHT);
+		JLabel label = UIMaster.createFixedLabel
+		  ("Action:", sTSize, JLabel.RIGHT, 
+		   "The name of the Action plugin used to regenerate the files associated " +
+		   "with the node.");
 		pActionTitle = label;
 		tpanel.add(label);
 	      }
@@ -507,8 +529,9 @@ class JNodeDetailsPanel
 	    /* action version */ 
 	    { 
 	      {
-		JLabel label = 
-		  UIMaster.createFixedLabel("Version:", sTSize, JLabel.RIGHT);
+		JLabel label = UIMaster.createFixedLabel
+		  ("Version:", sTSize, JLabel.RIGHT, 
+		   "The revision number of the Action plugin.");
 		pActionVersionTitle = label;
 		tpanel.add(label);
 	      }
@@ -547,8 +570,9 @@ class JNodeDetailsPanel
 	    /* action enabled */ 
 	    { 
 	      {
-		JLabel label = 
-		  UIMaster.createFixedLabel("Enabled:", sTSize, JLabel.RIGHT);
+		JLabel label = UIMaster.createFixedLabel
+		  ("Enabled:", sTSize, JLabel.RIGHT, 
+		   "Whether the Action plugin is currently enabled.");
 		pActionEnabledTitle = label;
 		tpanel.add(label);
 	      }
@@ -623,8 +647,9 @@ class JNodeDetailsPanel
 		  /* overflow policy */ 
 		  { 
 		    {
-		      JLabel label = 
-			UIMaster.createFixedLabel("Overflow Policy:", sTSize-7, JLabel.RIGHT);
+		      JLabel label = UIMaster.createFixedLabel
+			("Overflow Policy:", sTSize-7, JLabel.RIGHT, 
+			 "The frame range overflow policy.");
 		      pOverflowPolicyTitle = label;
 		      tpanel.add(label);
 		    }
@@ -683,9 +708,10 @@ class JNodeDetailsPanel
 		  /* execution method */ 
 		  { 
 		    {
-		      JLabel label = 
-			UIMaster.createFixedLabel("Execution Method:", 
-						  sTSize-7, JLabel.RIGHT);
+		      JLabel label = UIMaster.createFixedLabel
+			("Execution Method:", sTSize-7, JLabel.RIGHT, 
+			 "The methodology for regenerating the files associated with nodes " +
+			 "with enabled Action plugins.");
 		      pExecutionMethodTitle = label;
 		      tpanel.add(label);
 		    }
@@ -744,8 +770,11 @@ class JNodeDetailsPanel
 		  /* batch size */ 
 		  { 
 		    {
-		      JLabel label = 
-			UIMaster.createFixedLabel("Batch Size:", sTSize-7, JLabel.RIGHT);
+		      JLabel label = UIMaster.createFixedLabel
+			("Batch Size:", sTSize-7, JLabel.RIGHT, 
+			 "For parallel jobs, this is the maximum number of frames assigned " +
+			 "to each job.  A value of (0) means to assign as many frames as " + 
+			 "possible to each job.");
 		      pBatchSizeTitle = label;
 		      tpanel.add(label);
 		    }
@@ -801,8 +830,9 @@ class JNodeDetailsPanel
 		  /* priority */ 
 		  { 
 		    {
-		      JLabel label = 
-			UIMaster.createFixedLabel("Priority:", sTSize-7, JLabel.RIGHT);
+		      JLabel label = UIMaster.createFixedLabel
+			("Priority:", sTSize-7, JLabel.RIGHT, 
+			 "The relative priority of jobs submitted for this node.");
 		      pPriorityTitle = label;
 		      tpanel.add(label);
 		    }
@@ -858,8 +888,9 @@ class JNodeDetailsPanel
 		  /* maximum load */ 
 		  { 
 		    {
-		      JLabel label = 
-			UIMaster.createFixedLabel("Maximum Load:", sTSize-7, JLabel.RIGHT);
+		      JLabel label = UIMaster.createFixedLabel
+			("Maximum Load:", sTSize-7, JLabel.RIGHT, 
+			 "The maxmimum system load allowed on an eligable host.");
 		      pMaxLoadTitle = label;
 		      tpanel.add(label);
 		    }
@@ -915,8 +946,9 @@ class JNodeDetailsPanel
 		  /* minimum memory */ 
 		  { 
 		    {
-		      JLabel label = 
-			UIMaster.createFixedLabel("Minimum Memory:", sTSize-7, JLabel.RIGHT);
+		      JLabel label = UIMaster.createFixedLabel
+			("Minimum Memory:", sTSize-7, JLabel.RIGHT, 
+			 "The minimum amount of free memory required on an eligable host.");
 		      pMinMemoryTitle = label;
 		      tpanel.add(label);
 		    }
@@ -971,8 +1003,10 @@ class JNodeDetailsPanel
 		  /* minimum disk */ 
 		  { 
 		    {
-		      JLabel label = 
-			UIMaster.createFixedLabel("Minimum Disk:", sTSize-7, JLabel.RIGHT);
+		      JLabel label = UIMaster.createFixedLabel
+			("Minimum Disk:", sTSize-7, JLabel.RIGHT, 
+			 "The minimum amount of free temporary local disk space required " +
+			 "on an eligable host.");
 		      pMinDiskTitle = label;
 		      tpanel.add(label);
 		    }
@@ -1026,6 +1060,9 @@ class JNodeDetailsPanel
 
 		JDrawer drawer = 
 		  new JDrawer("Job Requirements:", (JComponent) comps[2], true);
+		drawer.setToolTipText(UIMaster.formatToolTip
+		  ("The requirements that a server must meet in order to be eligable " +
+		   "to run jobs associated with this node."));
 		pJobReqsDrawer = drawer;
 		dbox.add(drawer);
 	      }
@@ -1036,6 +1073,9 @@ class JNodeDetailsPanel
 		pSelectionKeysBox = box;
 
 		JDrawer drawer = new JDrawer("Selection Keys:", box, false);
+		drawer.setToolTipText(UIMaster.formatToolTip
+		  ("The set of selection keys a server must have in order to be eligable " + 
+		   "to run jobs associated with this node."));
 		pSelectionDrawer = drawer;
 		dbox.add(drawer);
 	      }
@@ -1046,6 +1086,9 @@ class JNodeDetailsPanel
 		pLicenseKeysBox = box;
 
 		JDrawer drawer = new JDrawer("License Keys:", box, false);
+		drawer.setToolTipText(UIMaster.formatToolTip
+		  ("The set of license keys which are required in order to run jobs " + 
+		   "associated with this node."));
 		pLicenseDrawer = drawer;
 		dbox.add(drawer);
 	      }
@@ -1057,6 +1100,7 @@ class JNodeDetailsPanel
 	  }
 	  
 	  JDrawer drawer = new JDrawer("Regeneration Action:", abox, true);
+	  drawer.setToolTipText(UIMaster.formatToolTip("Action plugin information."));
 	  pActionDrawer = drawer;
 	  vbox.add(drawer);
 	}
@@ -1740,8 +1784,9 @@ class JNodeDetailsPanel
       pSourceParamComponents = new Component[4];
       
       {
-	JLabel label = 
-	  UIMaster.createFixedLabel("Source Parameters:", sTSize, JLabel.RIGHT);
+	JLabel label = UIMaster.createFixedLabel
+	  ("Source Parameters:", sTSize, JLabel.RIGHT, 
+	   "The Action plugin parameters associated with each source node.");
 	pSourceParamComponents[0] = label;
 	
 	tpanel.add(label);
@@ -1931,11 +1976,12 @@ class JNodeDetailsPanel
 	  ActionParam param = action.getSingleParam(pname);
 	  if(param != null) {
 	    Component pcomps[] = new Component[4];
-	    
+
 	    {
-	      JLabel label = 
-		UIMaster.createFixedLabel(param.getNameUI() + ":", 
-					  sTSize-7*level, JLabel.RIGHT);
+	      JLabel label = UIMaster.createFixedLabel
+		(param.getNameUI() + ":", sTSize-7*level, JLabel.RIGHT, 
+		 param.getDescription());
+
 	      pcomps[0] = label;
 	      
 	      tpanel.add(label);
@@ -2040,7 +2086,6 @@ class JNodeDetailsPanel
 		else {
 		  JLabel label = UIMaster.createLabel("-", sVSize, JLabel.CENTER);
 		  label.setName("TextFieldLabel");
-
 		  pcomps[1] = label;
 
 		  hbox.add(label);
@@ -2133,14 +2178,17 @@ class JNodeDetailsPanel
 
 	    String tname = presetNameUI(pname);
 	    if(choices != null) {
-	      JCollectionField field = 
-		UIMaster.createTitledCollectionField(tpanel, tname + ":", sTSize-7*level,
-						     vpanel, choices, sSSize);
+	      JCollectionField field = UIMaster.createTitledCollectionField
+		(tpanel, tname + ":", sTSize-7*level,
+		 vpanel, choices, sSSize, 
+		 "Action plugin parameter presets.");
 	      field.addActionListener(new PresetChoice(pname, field));
 	    }
 	    else {
-	      UIMaster.createTitledTextField(tpanel, tname + ":", sTSize-7*level,
-					     vpanel, "-", sSSize);
+	      UIMaster.createTitledTextField
+		(tpanel, tname + ":", sTSize-7*level,
+		 vpanel, "-", sSSize, 
+		 "Action plugin parameter presets.");		 
 	    }
 	  }
 	}
@@ -2178,6 +2226,7 @@ class JNodeDetailsPanel
     {
       JDrawer drawer = new JDrawer(group.getNameUI() + ":", dbox, true);
       drawer.addActionListener(new UpdateParamGroupsOpen(group.getName(), drawer));
+      drawer.setToolTipText(UIMaster.formatToolTip(group.getDescription()));
       sbox.add(drawer);
       
       Boolean isOpen = pActionParamGroupsOpen.get(group.getName());
@@ -2450,30 +2499,14 @@ class JNodeDetailsPanel
 
       /* selection keys */ 
       {
-	TreeSet<String> previous = new TreeSet<String>();
-	if(!refresh) {
-	  for(String kname : pSelectionKeyComponents.keySet()) {
-	    Component pcomps[] = pSelectionKeyComponents.get(kname);
-	    JBooleanField field = (JBooleanField) pcomps[1];
-	    Boolean value = field.getValue();
-	    if((value != null) && value) 
-	      previous.add(kname);
-	  }
+	TreeMap<String,String> keys = new TreeMap<String,String>();
+	UIMaster master = UIMaster.getInstance();
+	try {
+	  for(SelectionKey key : master.getQueueMgrClient().getSelectionKeys())
+	    keys.put(key.getName(), key.getDescription());
 	}
-
-	TreeSet<String> knames = new TreeSet<String>();
-	if(refresh) {
-	  knames.clear();
-	  UIMaster master = UIMaster.getInstance();
-	  try {
-	    knames.addAll(master.getQueueMgrClient().getSelectionKeyNames());
-	  }
-	  catch(PipelineException ex) {
-	    master.showErrorDialog(ex);
-	  }
-	}
-	else {
-	  knames.addAll(pSelectionKeyComponents.keySet());
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
 	}
 
 	pSelectionKeysBox.removeAll();
@@ -2483,19 +2516,15 @@ class JNodeDetailsPanel
 	JPanel tpanel = (JPanel) comps[0];
 	JPanel vpanel = (JPanel) comps[1];
     
-	if(knames.isEmpty()) {
+	if(keys.isEmpty()) {
 	  tpanel.add(Box.createRigidArea(new Dimension(sTSize-7, 0)));
 	  vpanel.add(Box.createHorizontalGlue());
 	}
 	else {
 	  boolean first = true; 
-	  for(String kname : knames) {
-	    boolean hasWorkingKey = false;
-	    if(refresh) 
-	      hasWorkingKey = (wjreq != null) && wjreq.getSelectionKeys().contains(kname);
-	    else 
-	      hasWorkingKey = previous.contains(kname);
-
+	  for(String kname : keys.keySet()) {
+	    boolean hasWorkingKey = 
+	      (wjreq != null) && wjreq.getSelectionKeys().contains(kname);
 	    boolean hasCheckedInKey = 
 	      (cjreq != null) && cjreq.getSelectionKeys().contains(kname);
 
@@ -2506,8 +2535,8 @@ class JNodeDetailsPanel
 	    Component pcomps[] = new Component[4];
 
 	    {
-	      JLabel label = 
-		UIMaster.createFixedLabel(kname + ":", sTSize-7, JLabel.RIGHT);
+	      JLabel label = UIMaster.createFixedLabel
+		(kname + ":", sTSize-7, JLabel.RIGHT, keys.get(kname));
 	      pcomps[0] = label;
 
 	      tpanel.add(label);
@@ -2581,30 +2610,14 @@ class JNodeDetailsPanel
 
       /* license keys */ 
       {
-	TreeSet<String> previous = new TreeSet<String>();
-	if(!refresh) {
-	  for(String kname : pLicenseKeyComponents.keySet()) {
-	    Component pcomps[] = pLicenseKeyComponents.get(kname);
-	    JBooleanField field = (JBooleanField) pcomps[1];
-	    Boolean value = field.getValue();
-	    if((value != null) && value) 
-	      previous.add(kname);
-	  }
+	TreeMap<String,String> keys = new TreeMap<String,String>();
+	UIMaster master = UIMaster.getInstance();
+	try {
+	  for(LicenseKey key : master.getQueueMgrClient().getLicenseKeys())
+	    keys.put(key.getName(), key.getDescription());
 	}
-
-	TreeSet<String> knames = new TreeSet<String>();
-	if(refresh) {
-	  knames.clear();
-	  UIMaster master = UIMaster.getInstance();
-	  try {
-	    knames.addAll(master.getQueueMgrClient().getLicenseKeyNames());
-	  }
-	  catch(PipelineException ex) {
-	    master.showErrorDialog(ex);
-	  }
-	}
-	else {
-	  knames.addAll(pLicenseKeyComponents.keySet());
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
 	}
 
 	pLicenseKeysBox.removeAll();
@@ -2614,19 +2627,15 @@ class JNodeDetailsPanel
 	JPanel tpanel = (JPanel) comps[0];
 	JPanel vpanel = (JPanel) comps[1];
 
-	if(knames.isEmpty()) {
+	if(keys.isEmpty()) {
 	  tpanel.add(Box.createRigidArea(new Dimension(sTSize-7, 0)));
 	  vpanel.add(Box.createHorizontalGlue());
 	}
 	else {
 	  boolean first = true; 
-	  for(String kname : knames) {
-	    boolean hasWorkingKey = false;
-	    if(refresh) 
-	      hasWorkingKey = (wjreq != null) && wjreq.getLicenseKeys().contains(kname);
-	    else 
-	      hasWorkingKey = previous.contains(kname);
-	    
+	  for(String kname : keys.keySet()) {
+	    boolean hasWorkingKey = 
+	      (wjreq != null) && wjreq.getLicenseKeys().contains(kname);
 	    boolean hasCheckedInKey = 
 	      (cjreq != null) && cjreq.getLicenseKeys().contains(kname);
 	    
@@ -2637,8 +2646,8 @@ class JNodeDetailsPanel
 	    Component pcomps[] = new Component[4];
 	    
 	    {
-	      JLabel label = 
-		UIMaster.createFixedLabel(kname + ":", sTSize-7, JLabel.RIGHT);
+	      JLabel label = UIMaster.createFixedLabel
+		(kname + ":", sTSize-7, JLabel.RIGHT, keys.get(kname));
 	      pcomps[0] = label;
 	      
 	      tpanel.add(label);
@@ -4907,8 +4916,8 @@ class JNodeDetailsPanel
 
 
   private static final int  sTSize = 180;
-  private static final int  sVSize = 150;
-  private static final int  sSSize = 323;
+  private static final int  sVSize = 160;
+  private static final int  sSSize = 343;
 
 
   private static Icon sFrozenIcon = 

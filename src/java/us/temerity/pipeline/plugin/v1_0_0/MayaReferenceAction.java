@@ -1,4 +1,4 @@
-// $Id: MayaReferenceAction.java,v 1.6 2004/11/19 06:45:56 jim Exp $
+// $Id: MayaReferenceAction.java,v 1.7 2004/11/21 18:39:56 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -88,7 +88,7 @@ class MayaReferenceAction
     }
 
     {
-      LayoutGroup layout = new LayoutGroup("ActionParameters", true);
+      LayoutGroup layout = new LayoutGroup(true);
       layout.addEntry("InitialMEL");
       layout.addEntry("ModelMEL");
       layout.addEntry("FinalMEL");
