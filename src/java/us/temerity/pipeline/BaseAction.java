@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.9 2004/05/21 18:07:30 jim Exp $
+// $Id: BaseAction.java,v 1.10 2004/06/14 22:38:28 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -43,8 +43,8 @@ class BaseAction
   {
     super(name, desc);
 
-    pSingleParams = new TreeMap<String,ActionParam>();
-    pDependParams = new TreeMap<String,TreeMap<String,ActionParam>>();
+    pSingleParams = new TreeMap<String,BaseActionParam>();
+    pSourceParams = new TreeMap<String,TreeMap<String,BaseActionParam>>();
   }
 
 
@@ -56,9 +56,18 @@ class BaseAction
   /*-- SINGLE VALUED PARAMETERS ------------------------------------------------------------*/
   
   /**
+   * Does the action have any single valued parameters?
+   */ 
+  public boolean 
+  hasSingleParams()
+  {
+    return (!pSingleParams.isEmpty());
+  }
+
+  /**
    * Add a single valued parameter to this Action. <P>
    *
-   * This method is used by subclasses in thier constructors initialize the set of 
+   * This method is used by subclasses in their constructors initialize the set of 
    * single valued parameters that they support.
    *
    * @param param  
@@ -67,7 +76,7 @@ class BaseAction
   protected void 
   addSingleParam
   (
-    ActionParam param 
+    BaseActionParam param 
   ) 
   {
     if(pSingleParams.containsKey(param.getName())) 
@@ -97,7 +106,7 @@ class BaseAction
   ) 
     throws PipelineException
   {
-    ActionParam param = getSingleParam(name); 
+    BaseActionParam param = getSingleParam(name); 
     if(param == null)
       throw new PipelineException
 	("Unable to determine the value of the (" + name + ") parameter!");
@@ -113,7 +122,7 @@ class BaseAction
    * @return 
    *   The action parameter or <CODE>null</CODE> if no parameter with the given name exists.
    */ 
-  public ActionParam
+  public BaseActionParam
   getSingleParam
   (
    String name   
@@ -133,7 +142,7 @@ class BaseAction
    * @return 
    *   The set of single valued parameters for this action.  
    */ 
-  public Collection<ActionParam>
+  public Collection<BaseActionParam>
   getSingleParams()
   {
     return Collections.unmodifiableCollection(pSingleParams.values());
@@ -159,10 +168,10 @@ class BaseAction
     if(name == null)
       throw new IllegalArgumentException("The parameter name cannot be (null)!");
 
-    if(value == null)
-      throw new IllegalArgumentException("The parameter value cannot be (null)!");
+//     if(value == null)
+//       throw new IllegalArgumentException("The parameter value cannot be (null)!");
 
-    ActionParam param = pSingleParams.get(name);
+    BaseActionParam param = pSingleParams.get(name);
     if(param == null) 
       throw new IllegalArgumentException
 	("No parameter named (" + param.getName() + ") exists for this action!");
@@ -187,70 +196,70 @@ class BaseAction
 	("Actions of type (" + action.getClass().getName() + ") cannot be used to set the " +
 	 "parameters of Actions of type (" + getClass().getName() + ")!");
 
-    for(ActionParam param : action.getSingleParams()) 
+    for(BaseActionParam param : action.getSingleParams()) 
       setSingleParamValue(param.getName(), param.getValue());
   }
 
   
 
-  /*-- PER DEPENDENCY PARAMETERS -----------------------------------------------------------*/
+  /*-- PER-SOURCE PARAMETERS ---------------------------------------------------------------*/
   
   /**
-   * Does this action support per-dependency parameters?  <P> 
+   * Does this action support per-source parameters?  <P> 
    * 
-   * Subclasses MUST override this method to return <CODE>true</CODE> if per-dependency 
+   * Subclasses MUST override this method to return <CODE>true</CODE> if per-source 
    * paramters are allowed to be added to the action. 
    */ 
   public boolean 
-  supportsDependParams()
+  supportsSourceParams()
   {
     return false;
   }
 
   /** 
-   * Does this action have per-dependency parameters for the given node? 
+   * Does this action have per-source parameters for the given node? 
    * 
-   * @param depend  
+   * @param source  
    *   The fully resolved dependency node name.
    */ 
   public boolean 
-  hasDependParams
+  hasSourceParams
   (
-   String depend      
+   String source      
   ) 
   {
-    return pDependParams.containsKey(depend);
+    return pSourceParams.containsKey(source);
   }
 
   /**
-   * Initialize a new set of parameters for the given dependency. 
+   * Initialize a new set of parameters for the given upstream node.
    * 
-   * @param depend  
-   *   The fully resolved dependency node name.
+   * @param source  
+   *   The fully resolved node name of the upstream node.
    */ 
   protected void
-  initDependParams
+  initSourceParams
   (
-   String depend      
+   String source      
   ) 
   {
-    if(depend == null)
-      throw new IllegalArgumentException("The dependency name cannot be (null)!");
+    if(source == null)
+      throw new IllegalArgumentException("The upstream node name cannot be (null)!");
 
-    TreeMap<String,ActionParam> params = getInitialDependParams();
+    TreeMap<String,BaseActionParam> params = getInitialSourceParams();
     assert(params != null);
     
-    pDependParams.put(depend, params);
+    pSourceParams.put(source, params);
   }
 
   /**
-   * Get an initial set of action parameters associated with a dependency. <P> 
+   * Get an initial set of action parameters associated with an upstream node. <P> 
    * 
-   * Subclasses which support per-dependency parameters MUST override this method
+   * Subclasses which support per-source parameters MUST override this method
    * to provide a means for initializing parameters for dependencies.  
    */ 
-  protected TreeMap<String,ActionParam>
-  getInitialDependParams()
+  protected TreeMap<String,BaseActionParam>
+  getInitialSourceParams()
   {
     return null;
   }
@@ -260,20 +269,20 @@ class BaseAction
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Get node names of the dependencies with per-dependency parameters.
+   * Get node names of the upstream nodes with per-source parameters.
    */ 
   public Set<String>
-  getDependNames()
+  getSourceNames()
   {
-    return Collections.unmodifiableSet(pDependParams.keySet());
+    return Collections.unmodifiableSet(pSourceParams.keySet());
   }
 
 
   /**
-   * Get the value of the named parameter for the given dependency. 
+   * Get the value of the named parameter for the given upstream node. 
    *
-   * @param depend  
-   *   The fully resolved dependency node name.
+   * @param source  
+   *   The fully resolved node name of the upstream node.
    * 
    * @param name  
    *   The name of the parameter. 
@@ -282,49 +291,49 @@ class BaseAction
    *   The action parameter value.
    * 
    * @throws PipelineException 
-   *   If no parameter with the given name exists for the given dependency.
+   *   If no parameter with the given name exists for the given upstream node.
    */ 
   public Comparable
-  getDependParamValue
+  getSourceParamValue
   (
-   String depend,
+   String source,
    String name  
   ) 
     throws PipelineException	
   {
-    ActionParam param = getDependParam(depend, name);
+    BaseActionParam param = getSourceParam(source, name);
     if(param == null)
       throw new PipelineException
-	("Unable to determine the value of the (" + name + ") parameter for the (" + 
-	 depend + ") dependency !");
+	("Unable to determine the value of the (" + name + ") parameter for the upstream " + 
+	 "node (" + source + ")!");
 
     return param.getValue();
   }
 
   /**
-   * Get the named parameter for the given dependency. 
+   * Get the named parameter for the given upstream node.
    *
-   * @param depend  
-   *   The fully resolved dependency node name.
+   * @param source  
+   *   The fully resolved node name of the upstream node.
    * 
    * @param name  
    *   The name of the parameter. 
    * 
    * @return 
    *   The action parameter or <CODE>null</CODE> if no parameter with the given name exists
-   *   for the given dependency.
+   *   for the given source.
    */ 
-  public ActionParam
-  getDependParam
+  public BaseActionParam
+  getSourceParam
   (
-   String depend,
+   String source,
    String name  
   )
   {
-    if(depend == null)
-      throw new IllegalArgumentException("The dependency name cannot be (null)!");
+    if(source == null)
+      throw new IllegalArgumentException("The upstream node name cannot be (null)!");
 
-    TreeMap<String,ActionParam> table = pDependParams.get(depend);
+    TreeMap<String,BaseActionParam> table = pSourceParams.get(source);
     if(table == null) 
       return null;
 
@@ -332,39 +341,39 @@ class BaseAction
   }
 
   /**
-   * Get all of the parameters for the given dependency.  <P> 
+   * Get all of the per-source parameters for the given upstream node.  <P> 
    * 
-   * The returned ArrayList may be empty if the given dependency does not have any
+   * The returned ArrayList may be empty if the given upstream node does not have any
    * parameters.
    * 
-   * @param depend  
-   *   The fully resolved dependency node name. 
+   * @param source  
+   *   The fully resolved node name of the upstream node.
    * 
    * @return 
-   *   The set of parameters for the given dependency.  
+   *   The set of parameters for the given upstream node.  
    */ 
-  public Collection<ActionParam>
-  getDependParams
+  public Collection<BaseActionParam>
+  getSourceParams
   (
-   String depend  
+   String source  
   ) 
   {    
-    if(depend == null)
-      throw new IllegalArgumentException("The dependency name cannot be (null)!");
+    if(source == null)
+      throw new IllegalArgumentException("The upstream node name cannot be (null)!");
 
-    TreeMap<String,ActionParam> table = pDependParams.get(depend);
+    TreeMap<String,BaseActionParam> table = pSourceParams.get(source);
     if(table != null) 
       return Collections.unmodifiableCollection(table.values());
     else 
-      return new ArrayList<ActionParam>();
+      return new ArrayList<BaseActionParam>();
   }
 
 
   /**
-   * Set the value of parameter for the given dependency.
+   * Set the value of a per-source parameter for the given upstream node.
    *
-   * @param depend  
-   *   The fully resolved dependency node name. 
+   * @param source  
+   *   The fully resolved node name of the upstream node.
    * 
    * @param name  
    *   The name of the parameter. 
@@ -373,43 +382,43 @@ class BaseAction
    *   The new value of the parameter. 
    */ 
   public void 
-  setDependParamValue
+  setSourceParamValue
   (
-   String depend,
+   String source,
    String name, 
    Comparable value      
   ) 
   {
-    if(depend == null)
-      throw new IllegalArgumentException("The dependency name cannot be (null)!");
+    if(source == null)
+      throw new IllegalArgumentException("The upstream node name cannot be (null)!");
 
     if(name == null)
       throw new IllegalArgumentException("The parameter name cannot be (null)!");
 
-    if(value == null)
-      throw new IllegalArgumentException("The parameter value cannot be (null)!");
+//     if(value == null)
+//       throw new IllegalArgumentException("The parameter value cannot be (null)!");
 
-    TreeMap<String,ActionParam> table = pDependParams.get(depend);
+    TreeMap<String,BaseActionParam> table = pSourceParams.get(source);
     if(table == null) 
-      throw new IllegalArgumentException("The dependency does not have parameters!");
+      throw new IllegalArgumentException("The upstream node does not have parameters!");
 
-    ActionParam param = table.get(name);
+    BaseActionParam param = table.get(name);
     if(param == null) 
       throw new IllegalArgumentException
-	("No parameter named (" + param.getName() + ") exists for the dependency (" +
-	 depend + ")!");
+	("No parameter named (" + param.getName() + ") exists for the upstream node (" +
+	 source + ")!");
     
     param.setValue(value);    
   }
 
   /** 
-   * Copy the values of all of the per-dependency parameters from the given action.
+   * Copy the values of all of the per-source parameters from the given action.
    * 
    * @param action  
-   *   The action to use as the source of single valued parameter values.
+   *   The action from which to copy per-source parameters.
    */
   public void 
-  setDependParamValues
+  setSourceParamValues
   (
    BaseAction action   
   ) 
@@ -419,41 +428,41 @@ class BaseAction
 	("Actions of type (" + action.getClass().getName() + ") cannot be used to set the " +
 	 "parameters of Actions of type (" + getClass().getName() + ")!");
 
-    for(String depend : action.getDependNames()) {
-      removeDependParams(depend);
-      initDependParams(depend);
+    for(String source : action.getSourceNames()) {
+      removeSourceParams(source);
+      initSourceParams(source);
 
-      for(ActionParam param : action.getDependParams(depend)) 
-	setDependParamValue(depend, param.getName(), param.getValue());
+      for(BaseActionParam param : action.getSourceParams(source)) 
+	setSourceParamValue(source, param.getName(), param.getValue());
     }
   }
 
 
   /**
-   * Remove all of the per-dependency parameters associated with the given dependency. 
+   * Remove all of the per-source parameters associated with the given upstream node.
    * 
-   * @param depend  
-   *   The fully resolved dependency node name. 
+   * @param source 
+   *   The fully resolved node name of the upstream node.
    */ 
   public void 
-  removeDependParams
+  removeSourceParams
   (
-   String depend        /* IN: the fully resolved dependency node name */ 
+   String source        
   ) 
   {
-    if(depend == null)
-      throw new IllegalArgumentException("The dependency name cannot be (null)!");
+    if(source == null)
+      throw new IllegalArgumentException("The upstream node name cannot be (null)!");
 
-    pDependParams.remove(depend);
+    pSourceParams.remove(source);
   }   
 
   /**
-   * Remove all per-dependency parameters from this action.
+   * Remove all per-source parameters from this action.
    */ 
   public void 
-  removeAllDependParams()
+  removeAllSourceParams()
   {
-    pDependParams.clear();
+    pSourceParams.clear();
   }  
 
 
@@ -482,10 +491,10 @@ class BaseAction
    *   The secondary file sequences to generate
    *
    * @param primarySources  
-   *   A table of primary file sequences associated with each dependency.
+   *   A table of primary file sequences associated with each source.
    *
    * @param secondarySources  
-   *   The table of secondary file sequences associated with each dependency.
+   *   The table of secondary file sequences associated with each source.
    *
    * @param env  
    *   The environment under which the action is run.  
@@ -594,7 +603,7 @@ class BaseAction
 
       if(super.equals(obj) && 
 	 pSingleParams.equals(action.pSingleParams) && 
-	 pDependParams.equals(action.pDependParams))
+	 pSourceParams.equals(action.pSourceParams))
 	return true;
     }
 
@@ -615,22 +624,22 @@ class BaseAction
   {
     BaseAction clone = (BaseAction) super.clone();
     
-    clone.pSingleParams = new TreeMap<String,ActionParam>();
-    for(ActionParam param : pSingleParams.values()) {
-      ActionParam pclone = (ActionParam) param.clone();
+    clone.pSingleParams = new TreeMap<String,BaseActionParam>();
+    for(BaseActionParam param : pSingleParams.values()) {
+      BaseActionParam pclone = (BaseActionParam) param.clone();
       clone.pSingleParams.put(pclone.getName(), pclone);
     }
 
-    clone.pDependParams = new TreeMap<String,TreeMap<String,ActionParam>>();
-    for(String depend : pDependParams.keySet()) {
-      TreeMap<String,ActionParam> params = new TreeMap<String,ActionParam>();
+    clone.pSourceParams = new TreeMap<String,TreeMap<String,BaseActionParam>>();
+    for(String source : pSourceParams.keySet()) {
+      TreeMap<String,BaseActionParam> params = new TreeMap<String,BaseActionParam>();
 
-      for(ActionParam param : pDependParams.get(depend).values()) {
-	ActionParam pclone = (ActionParam) param.clone();
+      for(BaseActionParam param : pSourceParams.get(source).values()) {
+	BaseActionParam pclone = (BaseActionParam) param.clone();
 	params.put(pclone.getName(), pclone);
       }
 
-      clone.pDependParams.put(depend, params);
+      clone.pSourceParams.put(source, params);
     }
 
     return clone;
@@ -653,7 +662,7 @@ class BaseAction
 
     {
       TreeMap<String,Comparable> params = new TreeMap<String,Comparable>();
-      for(ActionParam param : getSingleParams()) 
+      for(BaseActionParam param : getSingleParams()) 
 	params.put(param.getName(), param.getValue());
 
       if(!params.isEmpty()) 
@@ -664,17 +673,17 @@ class BaseAction
       TreeMap<String,TreeMap<String,Comparable>> dparams = 
 	new TreeMap<String,TreeMap<String,Comparable>>();
 
-      for(String depend : getDependNames()) {
+      for(String source : getSourceNames()) {
 	TreeMap<String,Comparable> params = new TreeMap<String,Comparable>();
 
-	for(ActionParam param : getDependParams(depend)) 
+	for(BaseActionParam param : getSourceParams(source)) 
 	  params.put(param.getName(), param.getValue());
 	
-	dparams.put(depend, params);
+	dparams.put(source, params);
       }
 
       if(!dparams.isEmpty()) 
-	encoder.encode("DependParams", dparams);
+	encoder.encode("PerSourceParams", dparams);
     }
   }
   
@@ -699,14 +708,14 @@ class BaseAction
       
       {
 	TreeMap<String,TreeMap<String,Comparable>> dparams = 
-	  (TreeMap<String,TreeMap<String,Comparable>>) decoder.decode("DependParams");   
+	  (TreeMap<String,TreeMap<String,Comparable>>) decoder.decode("PerSourceParams");   
 	if(dparams != null) {
-	  for(String depend : dparams.keySet()) {
-	    initDependParams(depend);
+	  for(String source : dparams.keySet()) {
+	    initSourceParams(source);
 	    
-	    TreeMap<String,Comparable> params = dparams.get(depend);
+	    TreeMap<String,Comparable> params = dparams.get(source);
 	    for(String name : params.keySet()) 
-	      setDependParamValue(depend, name, params.get(name));	
+	      setSourceParamValue(source, name, params.get(name));	
 	  }
 	}
       }
@@ -724,12 +733,12 @@ class BaseAction
   /** 
    * The table of single valued action parameters.
    */
-  private TreeMap<String,ActionParam>  pSingleParams;    
+  private TreeMap<String,BaseActionParam>  pSingleParams;    
 
   /** 
-   * The table of per-dependency action parameters.
+   * The table of action parameters associated with each linked upstream node.
    */
-  private TreeMap<String,TreeMap<String,ActionParam>>  pDependParams;    
+  private TreeMap<String,TreeMap<String,BaseActionParam>>  pSourceParams;    
 
 }
 
