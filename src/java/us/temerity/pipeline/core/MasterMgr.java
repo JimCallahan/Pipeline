@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.56 2004/11/02 19:11:56 jim Exp $
+// $Id: MasterMgr.java,v 1.57 2004/11/02 23:06:44 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -4191,51 +4191,10 @@ class MasterMgr
       /* get the current status of the nodes */ 
       NodeStatus status = performNodeOperation(new NodeOp(), req.getNodeID(), timer);
 
-      synchronized(pQueueSubmitLock) {
-	/* generate jobs */ 
-	TreeMap<NodeID,Long[]> extJobIDs = new TreeMap<NodeID,Long[]>();
-	TreeMap<NodeID,Long[]> nodeJobIDs = new TreeMap<NodeID,Long[]>();
-	TreeMap<NodeID,TreeSet<Long>> upsJobIDs = new TreeMap<NodeID,TreeSet<Long>>();
-	TreeSet<Long> rootJobIDs = new TreeSet<Long>();
-	TreeMap<Long,QueueJob> jobs = new TreeMap<Long,QueueJob>();
-
-	submitJobs(status, req.getFileIndices(), 
-		   true, req.getBatchSize(), req.getPriority(), req.getSelectionKeys(), 
-		   extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, jobs, 
-		   timer);
-
-	if(jobs.isEmpty()) 
-	  throw new PipelineException
-	    ("No new jobs where generated for node (" + status + ") or any node upstream " +
-	     "of this node!");
-
-	/* generate the root file pattern */ 
-	String rootPattern = null;
-	{
-	  QueueJob job = jobs.get(rootJobIDs.first());
-	  rootPattern = job.getActionAgenda().getPrimaryTarget().getFilePattern().toString();
-	}
-
-	/* generate the list of external job IDs */ 
-	TreeSet<Long> externalIDs = new TreeSet<Long>();
-	for(QueueJob job : jobs.values()) 
-	  for(Long jobID : job.getSourceJobIDs()) 
-	    if(!jobs.containsKey(jobID)) 
-	      externalIDs.add(jobID);
-
-	/* group the jobs */ 
-	QueueJobGroup group = 
-	  new QueueJobGroup(pNextJobGroupID++, req.getNodeID(), 
-			    rootPattern, rootJobIDs, externalIDs, 
-			    new TreeSet<Long>(jobs.keySet()));
-	pQueueMgrClient.groupJobs(group);
-	
-	/* submit the jobs */ 
-	for(QueueJob job : jobs.values()) 
-	  pQueueMgrClient.submitJob(job);
-
-	return new NodeSubmitJobsRsp(timer, group);
-      }
+      /* submit the jobs */ 
+      return submitJobsCommon(status, req.getFileIndices(),
+			      req.getBatchSize(), req.getPriority(), req.getSelectionKeys(), 
+			      timer);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
@@ -4245,6 +4204,163 @@ class MasterMgr
     }    
   }
 
+  /**
+   * Resubmit the group of jobs needed to regenerate the selected 
+   * {@link QueueState#Stale Stale} primary file sequences for the tree of nodes rooted at 
+   * the given node. <P> 
+   * 
+   * This method is typically used to resubmit aborted or failed jobs.  The selected files
+   * to regenerate are provided as target primary file sequences instead of file indices. 
+   * The correct indices for each file defined by these target sequences will be computed
+   * and new job batches will be submitted for these files. <P> 
+   *
+   * @param req 
+   *   The submit jobs request.
+   * 
+   * @return 
+   *   <CODE>NodeSubmitJobsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to submit the jobs.
+   */ 
+  public Object
+  resubmitJobs
+  ( 
+   NodeResubmitJobsReq req
+  )
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();	
+
+      /* get the current status of the nodes */ 
+      NodeStatus status = performNodeOperation(new NodeOp(), req.getNodeID(), timer);
+
+      /* compute the file indices of the given target file sequences */ 
+      TreeSet<Integer> indices = new TreeSet<Integer>();      
+      {
+	NodeDetails details = status.getDetails();
+	if(details == null) 
+	  throw new PipelineException
+	    ("Cannot generate jobs for the checked-in node (" + status + ")!");
+	
+	TreeMap<File,Integer> fileIndices = new TreeMap<File,Integer>();
+	{
+	  NodeMod work = details.getWorkingVersion();
+	  FileSeq fseq = work.getPrimarySequence(); 
+	  int wk = 0;
+	  for(File file : fseq.getFiles()) {
+	    fileIndices.put(file, wk);
+	    wk++;
+	  }
+	}
+
+	for(FileSeq fseq : req.getTargetFileSequences()) {
+	  for(File file : fseq.getFiles()) {
+	    Integer idx = fileIndices.get(file);
+	    if(idx != null) 
+	      indices.add(idx);
+	  }
+	}
+      }
+
+      /* submit the jobs */ 
+      return submitJobsCommon(status, indices, 
+			      req.getBatchSize(), req.getPriority(), req.getSelectionKeys(), 
+			      timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }    
+  }
+
+  /**
+   * Common code used by {@link #submitJobs submitJobs} and {@link #resubmitJobs resubmitJobs}
+   * methods.
+   * 
+   * @param status
+   *   The status of the tree of nodes. 
+   * 
+   * @param indices
+   *   The file sequence indices of the files to regenerate.
+   * 
+   * @param batchSize 
+   *   For parallel jobs, this overrides the maximum number of frames assigned to each job
+   *   associated with the root node of the job submission.  
+   * 
+   * @param priority 
+   *   Overrides the priority of jobs associated with the root node of the job submission 
+   *   relative to other jobs.  
+   * 
+   * @param selectionKeys 
+   *   Overrides the set of selection keys an eligable host is required to have for jobs 
+   *   associated with the root node of the job submission.
+   * 
+   * @param timer
+   *   The task timer.
+   */ 
+  private NodeSubmitJobsRsp
+  submitJobsCommon
+  (
+   NodeStatus status, 
+   TreeSet<Integer> indices,
+   Integer batchSize, 
+   Integer priority, 
+   Set<String> selectionKeys, 
+   TaskTimer timer 
+  )
+    throws PipelineException 
+  {
+    synchronized(pQueueSubmitLock) {
+      /* generate jobs */ 
+      TreeMap<NodeID,Long[]> extJobIDs = new TreeMap<NodeID,Long[]>();
+      TreeMap<NodeID,Long[]> nodeJobIDs = new TreeMap<NodeID,Long[]>();
+      TreeMap<NodeID,TreeSet<Long>> upsJobIDs = new TreeMap<NodeID,TreeSet<Long>>();
+      TreeSet<Long> rootJobIDs = new TreeSet<Long>();
+      TreeMap<Long,QueueJob> jobs = new TreeMap<Long,QueueJob>();
+      
+      submitJobs(status, indices, 
+		 true, batchSize, priority, selectionKeys, 
+		 extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, jobs, 
+		 timer);
+      
+      if(jobs.isEmpty()) 
+	throw new PipelineException
+	  ("No new jobs where generated for node (" + status + ") or any node upstream " +
+	   "of this node!");
+      
+      /* generate the root file pattern */ 
+      String rootPattern = null;
+      {
+	QueueJob job = jobs.get(rootJobIDs.first());
+	rootPattern = job.getActionAgenda().getPrimaryTarget().getFilePattern().toString();
+      }
+      
+      /* generate the list of external job IDs */ 
+      TreeSet<Long> externalIDs = new TreeSet<Long>();
+      for(QueueJob job : jobs.values()) 
+	for(Long jobID : job.getSourceJobIDs()) 
+	  if(!jobs.containsKey(jobID)) 
+	    externalIDs.add(jobID);
+      
+      /* group the jobs */ 
+      QueueJobGroup group = 
+	new QueueJobGroup(pNextJobGroupID++, status.getNodeID(), 
+			  rootPattern, rootJobIDs, externalIDs, 
+			  new TreeSet<Long>(jobs.keySet()));
+      pQueueMgrClient.groupJobs(group);
+      
+      /* submit the jobs */ 
+      for(QueueJob job : jobs.values()) 
+	pQueueMgrClient.submitJob(job);
+      
+      return new NodeSubmitJobsRsp(timer, group);
+    }
+  }  
 
   /**
    * Recursively submit jobs to the queue to regenerate the selected files. <P> 

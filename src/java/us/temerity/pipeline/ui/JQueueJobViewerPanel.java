@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.18 2004/10/29 16:25:19 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.19 2004/11/02 23:06:44 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -150,6 +150,16 @@ class JQueueJobViewerPanel
 
       pJobPopup.addSeparator();
 
+      item = new JMenuItem("Queue Jobs");
+      item.setActionCommand("queue-jobs");
+      item.addActionListener(this);
+      pJobPopup.add(item);
+      
+      item = new JMenuItem("Queue Jobs Special...");
+      item.setActionCommand("queue-jobs-special");
+      item.addActionListener(this);
+      pJobPopup.add(item);
+
       item = new JMenuItem("Pause Jobs");
       item.setActionCommand("pause-jobs");
       item.addActionListener(this);
@@ -173,6 +183,16 @@ class JQueueJobViewerPanel
       pGroupPopup = new JPopupMenu();  
       pGroupPopup.addPopupMenuListener(this);
       
+      item = new JMenuItem("Queue Jobs");
+      item.setActionCommand("queue-jobs");
+      item.addActionListener(this);
+      pGroupPopup.add(item);
+      
+      item = new JMenuItem("Queue Jobs Special...");
+      item.setActionCommand("queue-jobs-special");
+      item.addActionListener(this);
+      pGroupPopup.add(item);
+
       item = new JMenuItem("Pause Jobs");
       item.setActionCommand("pause-jobs");
       item.addActionListener(this);
@@ -355,6 +375,9 @@ class JQueueJobViewerPanel
    * 
    * @param status
    *   The job status indexed by job ID.
+   * 
+   * @param isPrivileged
+   *   Does the current user have privileged status?
    */ 
   public synchronized void
   updateQueueJobs
@@ -362,13 +385,14 @@ class JQueueJobViewerPanel
    String author, 
    String view, 
    TreeMap<Long,QueueJobGroup> groups, 
-   TreeMap<Long,JobStatus> status
+   TreeMap<Long,JobStatus> status, 
+   boolean isPrivileged
   ) 
   {
     if(!pAuthor.equals(author) || !pView.equals(view)) 
       super.setAuthorView(author, view);
 
-    updateQueueJobs(groups, status);
+    updateQueueJobs(groups, status, isPrivileged);
   }
 
 
@@ -380,12 +404,16 @@ class JQueueJobViewerPanel
    * 
    * @param status
    *   The job status indexed by job ID.
+   * 
+   * @param isPrivileged
+   *   Does the current user have privileged status?
    */ 
   public synchronized void
   updateQueueJobs
   (
    TreeMap<Long,QueueJobGroup> groups, 
-   TreeMap<Long,JobStatus>     status
+   TreeMap<Long,JobStatus> status, 
+   boolean isPrivileged
   ) 
   {
     /* update the job groups and status tables */ 
@@ -415,6 +443,8 @@ class JQueueJobViewerPanel
 
     /* update the visualization graphics */ 
     updateUniverse();
+
+    pIsPrivileged = isPrivileged;
   }
 
 
@@ -1690,6 +1720,12 @@ class JQueueJobViewerPanel
 	 prefs.getJobView().wasPressed(e)) 
 	doView();
 
+      else if((prefs.getJobQueueJobs() != null) &&
+	      prefs.getJobQueueJobs().wasPressed(e))
+	doQueueJobs();
+      else if((prefs.getJobQueueJobsSpecial() != null) &&
+	      prefs.getJobQueueJobsSpecial().wasPressed(e))
+	doQueueJobsSpecial();
       else if((prefs.getJobPauseJobs() != null) &&
 	      prefs.getJobPauseJobs().wasPressed(e))
 	doPauseJobs();
@@ -1719,7 +1755,13 @@ class JQueueJobViewerPanel
 	  vjob.update();
       }
 
-      if((prefs.getJobPauseJobs() != null) &&
+      if((prefs.getJobQueueJobs() != null) &&
+	      prefs.getJobQueueJobs().wasPressed(e))
+	doQueueJobs();
+      else if((prefs.getJobQueueJobsSpecial() != null) &&
+	      prefs.getJobQueueJobsSpecial().wasPressed(e))
+	doQueueJobsSpecial();
+      else if((prefs.getJobPauseJobs() != null) &&
 	 prefs.getJobPauseJobs().wasPressed(e))
 	doPauseJobs();
       else if((prefs.getJobResumeJobs() != null) &&
@@ -1863,6 +1905,10 @@ class JQueueJobViewerPanel
     else if(cmd.startsWith("view-with:"))
       doViewWith(cmd.substring(10));    
 
+    else if(cmd.equals("queue-jobs")) 
+      doQueueJobs();
+    else if(cmd.equals("queue-jobs-special")) 
+      doQueueJobsSpecial();
     else if(cmd.equals("pause-jobs"))
       doPauseJobs();
     else if(cmd.equals("resume-jobs"))
@@ -1902,7 +1948,7 @@ class JQueueJobViewerPanel
 
     TreeSet<Long> groupIDs = new TreeSet<Long>(pJobGroups.keySet());
     if(groupIDs.isEmpty()) {
-      updateQueueJobs(null, null);
+      updateQueueJobs(null, null, false);
     }
     else {
       GetJobsTask task = new GetJobsTask(groupIDs);
@@ -2183,6 +2229,138 @@ class JQueueJobViewerPanel
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Resubmit all aborted and failed selected jobs.
+   */ 
+  private void 
+  doQueueJobs() 
+  {
+    TreeMap<NodeID,TreeSet<FileSeq>> targets = getQueuedFileSeqs();
+    if(!targets.isEmpty()) {    
+      QueueJobsTask task = new QueueJobsTask(targets);
+      task.start();
+    }
+
+    for(ViewerJob vjob : clearSelection()) 
+      vjob.update();
+  }
+
+  /**
+   * Resubmit all aborted and failed selected jobs with special job requirements.
+   */ 
+  private void 
+  doQueueJobsSpecial() 
+  {
+    TreeMap<NodeID,TreeSet<FileSeq>> targets = getQueuedFileSeqs();
+    if(!targets.isEmpty()) {    
+      JQueueJobsDialog diag = UIMaster.getInstance().showQueueJobsDialog();
+      if(diag.wasConfirmed()) {
+	Integer batchSize = null;
+	if(diag.overrideBatchSize()) 
+	  batchSize = diag.getBatchSize();
+	
+	Integer priority = null;
+	if(diag.overridePriority()) 
+	  priority = diag.getPriority();
+	
+	TreeSet<String> keys = null;
+	if(diag.overrideSelectionKeys()) 
+	  keys = diag.getSelectionKeys();
+
+	QueueJobsTask task = new QueueJobsTask(targets, batchSize, priority, keys);
+	task.start();
+      }
+    }
+
+    for(ViewerJob vjob : clearSelection()) 
+      vjob.update();
+  }
+
+  /** 
+   * Get the target file sequences of the aborted and failed selected root jobs.
+   */ 
+  private TreeMap<NodeID,TreeSet<FileSeq>> 
+  getQueuedFileSeqs() 
+  {
+    /* get the aborted and failed selected jobs */ 
+    TreeMap<Long,JobStatus> failed = new TreeMap<Long,JobStatus>();
+    for(ViewerJob vjob : pSelected.values()) {
+      JobStatus status = vjob.getJobStatus();
+      if(status != null) {
+	switch(status.getState()) {
+	case Aborted:
+	case Failed:
+	  failed.put(status.getJobID(), status);
+	}
+      }
+    }
+
+    /* elimenate the non-root jobs */ 
+    {
+      TreeSet<Long> sourceIDs = new TreeSet<Long>();
+      for(Long jobID : failed.keySet()) {
+	boolean isSource = false;
+	for(JobStatus status : failed.values()) {
+	  if(status.getJobID() != jobID) {
+	    if(isMemberJob(jobID, status)) {
+	      isSource = true;
+	      break;
+	    }
+	  }
+	}
+	
+	if(isSource) 
+	  sourceIDs.add(jobID);
+      }
+      
+      for(Long jobID : sourceIDs) 
+	failed.remove(jobID);
+    }
+
+    /* group the jobs by target node */ 
+    TreeMap<NodeID,TreeSet<FileSeq>> targets = new TreeMap<NodeID,TreeSet<FileSeq>>();
+    if(!failed.isEmpty()) {
+      for(JobStatus status : failed.values()) {
+	NodeID targetID = status.getNodeID();
+	if(pIsPrivileged || targetID.getAuthor().equals(PackageInfo.sUser)) {
+	  TreeSet<FileSeq> fseqs = targets.get(targetID);
+	  if(fseqs == null) {
+	    fseqs = new TreeSet<FileSeq>();
+	    targets.put(targetID, fseqs);
+	  }
+	  
+	  fseqs.add(status.getTargetSequence());
+	}
+      }
+    }
+
+    return targets; 
+  }
+
+  /**
+   * Is the given jobID a member of the given tree of jobs.
+   */ 
+  private boolean
+  isMemberJob
+  (
+   Long jobID, 
+   JobStatus status
+  ) 
+  {
+    if(jobID.equals(status.getJobID()))
+      return true;
+
+    for(Long sourceID : status.getSourceJobIDs()) {
+      JobStatus sstatus = pJobStatus.get(sourceID);
+      if(sstatus != null) {
+	if(isMemberJob(jobID, sstatus)) 
+	  return true;
+      }
+    }
+
+    return false;
+  }
 
   /**
    * Pause all waiting selected jobs.
@@ -2640,12 +2818,14 @@ class JQueueJobViewerPanel
 
       TreeMap<Long,QueueJobGroup> groups = new TreeMap<Long,QueueJobGroup>();
       TreeMap<Long,JobStatus> status = null;
+      boolean isPrivileged = false;
       if(master.beginPanelOp("Updating Jobs...")) {
 	try {
 	  QueueMgrClient client = master.getQueueMgrClient();
 	  for(Long groupID : pGroupIDs) 
 	    groups.put(groupID, client.getJobGroup(groupID));
 	  status = client.getJobStatus(pGroupIDs);
+	  isPrivileged = master.getMasterMgrClient().isPrivileged();
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -2655,12 +2835,75 @@ class JQueueJobViewerPanel
 	}
       }
 
-      updateQueueJobs(groups, status);
+      updateQueueJobs(groups, status, isPrivileged);
     }
 
     private TreeSet<Long>  pGroupIDs; 
   }
 
+
+  /** 
+   * Resubmit jobs to the queue for the given file sequences.
+   */ 
+  private
+  class QueueJobsTask
+    extends Thread
+  {
+    public 
+    QueueJobsTask
+    (
+     TreeMap<NodeID,TreeSet<FileSeq>> targets
+    ) 
+    {
+      this(targets, null, null, null);
+    }
+    
+    public 
+    QueueJobsTask
+    (
+     TreeMap<NodeID,TreeSet<FileSeq>> targets,
+     Integer batchSize, 
+     Integer priority, 
+     TreeSet<String> selectionKeys
+    ) 
+    {
+      super("JQueueJobsViewerPanel:QueueJobsTask");
+
+      pTargets       = targets;
+      pBatchSize     = batchSize;
+      pPriority      = priority; 
+      pSelectionKeys = selectionKeys;
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp()) {
+	try {
+	  for(NodeID nodeID : pTargets.keySet()) {
+	    master.updatePanelOp("Resubmitting Jobs to the Queue: " + nodeID.getName());
+	    master.getMasterMgrClient().resubmitJobs(nodeID, pTargets.get(nodeID), 
+						     pBatchSize, pPriority, pSelectionKeys);
+	  }
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	doUpdate();
+      }
+    }
+
+    private TreeMap<NodeID,TreeSet<FileSeq>>  pTargets;
+    private Integer                           pBatchSize;
+    private Integer                           pPriority;
+    private TreeSet<String>                   pSelectionKeys;
+  }
 
   /** 
    * Pause the given jobs.
@@ -2855,6 +3098,11 @@ class JQueueJobViewerPanel
    * The job status of the jobs which make up the displayed job groups indexed by job ID. 
    */ 
   private TreeMap<Long,JobStatus>  pJobStatus;
+
+  /**
+   * Does the current user have privileged status?
+   */ 
+  private boolean  pIsPrivileged;
 
 
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: JQueueJobsDialog.java,v 1.2 2004/11/02 20:03:29 jim Exp $
+// $Id: JQueueJobsDialog.java,v 1.3 2004/11/02 23:06:44 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -156,6 +156,7 @@ class JQueueJobsDialog
       super.initUI("Queue Jobs Special:", true, scroll, "Submit", "Reset", null, "Cancel");
     }
     
+    setSize(new Dimension(419, 342));
   }
 
 

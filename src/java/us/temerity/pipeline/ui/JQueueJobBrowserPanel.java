@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.9 2004/10/29 16:25:19 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.10 2004/11/02 23:06:44 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -163,6 +163,18 @@ class JQueueJobBrowserPanel
 	pGroupsPopup.add(item);
 
 	pGroupsPopup.addSeparator();
+
+	item = new JMenuItem("Queue Jobs");
+	pGroupsQueueItem = item;
+	item.setActionCommand("groups-queue-jobs");
+	item.addActionListener(this);
+	pGroupsPopup.add(item);
+
+	item = new JMenuItem("Queue Jobs Special...");
+	pGroupsQueueSpecialItem = item;
+	item.setActionCommand("groups-queue-jobs-special");
+	item.addActionListener(this);
+	pGroupsPopup.add(item);
 
 	item = new JMenuItem("Pause Jobs");
 	pGroupsPauseItem = item;
@@ -894,7 +906,7 @@ class JQueueJobBrowserPanel
 	}
 	  
 	/* update the viewer */ 
-	panel.updateQueueJobs(pAuthor, pView, sgroups, pJobStatus);
+	panel.updateQueueJobs(pAuthor, pView, sgroups, pJobStatus, pIsPrivileged);
 	panel.updateManagerTitlePanel();
       }
     }
@@ -935,6 +947,8 @@ class JQueueJobBrowserPanel
       (pFilterViewsButton.isSelected() ? "Show All Views" : "Show This View");
     
     boolean selected = (pGroupsTablePanel.getTable().getSelectedRowCount() > 0);
+    pGroupsQueueItem.setEnabled(selected); 
+    pGroupsQueueSpecialItem.setEnabled(selected); 
     pGroupsPauseItem.setEnabled(selected); 
     pGroupsResumeItem.setEnabled(selected);
     pGroupsKillItem.setEnabled(selected);
@@ -1126,6 +1140,12 @@ class JQueueJobBrowserPanel
 	if((prefs.getJobBrowserToggleFilterViews() != null) &&
 	   prefs.getJobBrowserToggleFilterViews().wasPressed(e))
 	  doToggleFilterViews();
+	else if((prefs.getJobBrowserGroupsQueueJobs() != null) &&
+		prefs.getJobBrowserGroupsQueueJobs().wasPressed(e))
+	  doGroupsQueueJobs();
+	else if((prefs.getJobBrowserGroupsQueueJobsSpecial() != null) &&
+		prefs.getJobBrowserGroupsQueueJobsSpecial().wasPressed(e))
+	  doGroupsQueueJobsSpecial();
 	else if((prefs.getJobBrowserGroupsPauseJobs() != null) &&
 		prefs.getJobBrowserGroupsPauseJobs().wasPressed(e))
 	  doGroupsPauseJobs();
@@ -1202,12 +1222,20 @@ class JQueueJobBrowserPanel
 
     else if(cmd.equals("toggle-filter-views")) 
       doToggleFilterViews();
+
+    else if(cmd.equals("groups-queue-jobs")) 
+      doGroupsQueueJobs();
+    else if(cmd.equals("groups-queue-jobs-special")) 
+      doGroupsQueueJobsSpecial();
+    else if(cmd.equals("groups-pause-jobs")) 
+      doGroupsPauseJobs();
     else if(cmd.equals("groups-pause-jobs")) 
       doGroupsPauseJobs();
     else if(cmd.equals("groups-resume-jobs")) 
       doGroupsResumeJobs();
     else if(cmd.equals("groups-kill-jobs")) 
       doGroupsKillJobs();
+
     else if(cmd.equals("delete-group")) 
       doGroupsDelete();
     else if(cmd.equals("delete-completed")) 
@@ -1366,6 +1394,86 @@ class JQueueJobBrowserPanel
     doUpdate();
   }
   
+  /**
+   * Resubmit all aborted and failed jobs associated with the selected job groups.
+   */ 
+  public void 
+  doGroupsQueueJobs()
+  {
+    TreeMap<NodeID,TreeSet<FileSeq>> targets = getQueuedFileSeqs();
+    if(!targets.isEmpty()) {
+      QueueJobsTask task = new QueueJobsTask(targets);
+      task.start();
+    }
+  }
+
+  /**
+   * Resubmit all aborted and failed jobs associated with the selected job groups with
+   * special job requirements.
+   */ 
+  public void 
+  doGroupsQueueJobsSpecial()
+  {
+    TreeMap<NodeID,TreeSet<FileSeq>> targets = getQueuedFileSeqs();
+    if(!targets.isEmpty()) {
+      JQueueJobsDialog diag = UIMaster.getInstance().showQueueJobsDialog();
+      if(diag.wasConfirmed()) {
+	Integer batchSize = null;
+	if(diag.overrideBatchSize()) 
+	  batchSize = diag.getBatchSize();
+	
+	Integer priority = null;
+	if(diag.overridePriority()) 
+	  priority = diag.getPriority();
+	
+	TreeSet<String> keys = null;
+	if(diag.overrideSelectionKeys()) 
+	  keys = diag.getSelectionKeys();
+	
+	QueueJobsTask task = new QueueJobsTask(targets, batchSize, priority, keys);
+	task.start();
+      }
+    }
+  }
+
+  /** 
+   * Get the target file sequences of the aborted and failed selected root jobs.
+   */ 
+  private TreeMap<NodeID,TreeSet<FileSeq>> 
+  getQueuedFileSeqs() 
+  {
+    TreeMap<NodeID,TreeSet<FileSeq>> targets = new TreeMap<NodeID,TreeSet<FileSeq>>();
+    for(Long groupID : getSelectedGroupIDs()) {
+      QueueJobGroup group = pJobGroups.get(groupID);
+      if(group != null) {
+	for(Long jobID : group.getRootIDs()) {
+	  JobStatus status = pJobStatus.get(jobID);
+	  NodeID targetID = null;
+	  if(status != null) {
+	    switch(status.getState()) {
+	    case Aborted:
+	    case Failed:
+	      targetID = status.getNodeID();
+	    }
+	  }
+      
+	  if((targetID != null) && 
+	     (pIsPrivileged || targetID.getAuthor().equals(PackageInfo.sUser))) {
+	    TreeSet<FileSeq> fseqs = targets.get(targetID);
+	    if(fseqs == null) {
+	      fseqs = new TreeSet<FileSeq>();
+	      targets.put(targetID, fseqs);
+	    }
+
+	    fseqs.add(status.getTargetSequence());
+	  }
+	}
+      }
+    }
+
+    return targets;
+  }
+
   /**
    * Pause all waiting jobs associated with the selected job groups.
    */ 
@@ -2099,6 +2207,69 @@ class JQueueJobBrowserPanel
   /*----------------------------------------------------------------------------------------*/
 
   /** 
+   * Resubmit jobs to the queue for the given file sequences.
+   */ 
+  private
+  class QueueJobsTask
+    extends Thread
+  {
+    public 
+    QueueJobsTask
+    (
+     TreeMap<NodeID,TreeSet<FileSeq>> targets
+    ) 
+    {
+      this(targets, null, null, null);
+    }
+    
+    public 
+    QueueJobsTask
+    (
+     TreeMap<NodeID,TreeSet<FileSeq>> targets,
+     Integer batchSize, 
+     Integer priority, 
+     TreeSet<String> selectionKeys
+    ) 
+    {
+      super("JQueueJobsBrowserPanel:QueueJobsTask");
+
+      pTargets       = targets;
+      pBatchSize     = batchSize;
+      pPriority      = priority; 
+      pSelectionKeys = selectionKeys;
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp()) {
+	try {
+	  for(NodeID nodeID : pTargets.keySet()) {
+	    master.updatePanelOp("Resubmitting Jobs to the Queue: " + nodeID.getName());
+	    master.getMasterMgrClient().resubmitJobs(nodeID, pTargets.get(nodeID), 
+						     pBatchSize, pPriority, pSelectionKeys);
+	  }
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	doUpdate();
+      }
+    }
+
+    private TreeMap<NodeID,TreeSet<FileSeq>>  pTargets;
+    private Integer                           pBatchSize;
+    private Integer                           pPriority;
+    private TreeSet<String>                   pSelectionKeys;
+  }
+
+  /** 
    * Pause the given jobs.
    */ 
   private
@@ -2443,6 +2614,8 @@ class JQueueJobBrowserPanel
    * The groups popup menu items.
    */ 
   private JMenuItem  pGroupsFilterViewsItem; 
+  private JMenuItem  pGroupsQueueItem; 
+  private JMenuItem  pGroupsQueueSpecialItem; 
   private JMenuItem  pGroupsPauseItem; 
   private JMenuItem  pGroupsResumeItem; 
   private JMenuItem  pGroupsKillItem;

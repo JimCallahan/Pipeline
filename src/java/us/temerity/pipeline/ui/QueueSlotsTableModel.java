@@ -1,4 +1,4 @@
-// $Id: QueueSlotsTableModel.java,v 1.1 2004/10/25 18:56:47 jim Exp $
+// $Id: QueueSlotsTableModel.java,v 1.2 2004/11/02 23:06:44 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -205,6 +205,9 @@ class QueueSlotsTableModel
    * 
    * @param jobInfo
    *   The information about all running jobs indexed by job ID.
+   * 
+   * @param isPrivileged
+   *   Does the current user have privileged status?
    */ 
   public void
   setSlots

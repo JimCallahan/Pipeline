@@ -1,4 +1,4 @@
-// $Id: NodeSubmitJobsReq.java,v 1.4 2004/11/02 23:06:44 jim Exp $
+// $Id: NodeResubmitJobsReq.java,v 1.1 2004/11/02 23:06:44 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -13,14 +13,14 @@ import java.util.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to submit the group of jobs needed to regenerate the selected 
- * {@link QueueState#Stale Stale} files associated with the tree of nodes rooted at the 
- * given node. <P> 
+ * A request to reesubmit the group of jobs needed to regenerate the selected 
+ * {@link QueueState#Stale Stale} primary file sequences for the tree of nodes rooted at 
+ * the given node. <P> 
  * 
  * @see MasterMgr
  */
 public
-class NodeSubmitJobsReq
+class NodeResubmitJobsReq
   implements Serializable
 {
   /*----------------------------------------------------------------------------------------*/
@@ -33,9 +33,8 @@ class NodeSubmitJobsReq
    * @param id 
    *   The unique working version identifier.
    * 
-   * @param indices
-   *   The file sequence indices of the files to regenerate or <CODE>null</CODE> to 
-   *   regenerate all <CODE>Stale</CODE> or <CODE>Missing</CODE> files.
+   * @param targetSeqs
+   *   The target primary file sequences to regenerate.
    * 
    * @param batchSize 
    *   For parallel jobs, this overrides the maximum number of frames assigned to each job
@@ -50,10 +49,10 @@ class NodeSubmitJobsReq
    *   associated with the root node of the job submission.
    */
   public
-  NodeSubmitJobsReq
+  NodeResubmitJobsReq
   (
    NodeID id, 
-   TreeSet<Integer> indices,
+   TreeSet<FileSeq> targetSeqs, 
    Integer batchSize, 
    Integer priority, 
    Set<String> selectionKeys  
@@ -65,7 +64,7 @@ class NodeSubmitJobsReq
 	("The working version ID cannot be (null)!");
     pNodeID = id;
 
-    pFileIndices   = indices; 
+    pTargetSeqs    = targetSeqs;
     pBatchSize     = batchSize;
     pPriority      = priority;
     pSelectionKeys = selectionKeys;
@@ -87,13 +86,12 @@ class NodeSubmitJobsReq
   }
   
   /**
-   * Gets the file sequence indices of the files to regenerate or <CODE>null</CODE> to 
-   * regenerate all <CODE>Stale</CODE> or <CODE>Missing</CODE> files.
+   * Gets the target primary file sequences to regenerate.
    */
-  public TreeSet<Integer>
-  getFileIndices() 
+  public TreeSet<FileSeq>
+  getTargetFileSequences() 
   {
-    return pFileIndices; 
+    return pTargetSeqs; 
   }
 
 
@@ -143,7 +141,7 @@ class NodeSubmitJobsReq
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 6307564113360285494L;
+  private static final long serialVersionUID = 3721204159915554667L;
 
   
 
@@ -155,6 +153,11 @@ class NodeSubmitJobsReq
    * The unique working version identifier.
    */ 
   private NodeID  pNodeID;
+
+  /**
+   * The target primary file sequences to regenerate.
+   */
+  private TreeSet<FileSeq>  pTargetSeqs; 
 
   /**
    * The file sequence indices of the files to regenerate or <CODE>null</CODE> to 

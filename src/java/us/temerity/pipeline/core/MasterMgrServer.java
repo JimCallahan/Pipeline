@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.22 2004/10/31 20:01:55 jim Exp $
+// $Id: MasterMgrServer.java,v 1.23 2004/11/02 23:06:44 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -680,6 +680,13 @@ class MasterMgrServer
 	    }
 	    break;  
 
+	  case ResubmitJobs: 
+	    {
+	      NodeResubmitJobsReq req = (NodeResubmitJobsReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.resubmitJobs(req));
+	      objOut.flush(); 
+	    }
+	    break;  
 
 	  /*-- ADMINISTRATION --------------------------------------------------------------*/
 	  case BackupDatabase: 

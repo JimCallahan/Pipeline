@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.32 2004/11/02 20:03:29 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.33 2004/11/02 23:06:44 jim Exp $
 
 import java.io.*; 
 import java.util.*;
@@ -878,6 +878,17 @@ class GenUserPrefsApp
 	 "JobBrowserToggleFilterViews", "Toggle Views Filter:"), 
 	
 	new HotKeyPref
+	("Resubmit aborted and failed jobs to the queue for the selected groups.",
+	 "JobBrowserGroupsQueueJobs", "Queue Jobs:", 
+	 false, false, false, 81),  /* Q */ 
+
+	new HotKeyPref
+	("Resubmit aborted and failed jobs to the queue for the selected groups with " + 
+	 "special job requirements.",
+	 "JobBrowserGroupsQueueJobsSpecial", "Queue Jobs Special:", 
+	 true, false, false, 81),  /* SHIFT-Q */ 
+
+	new HotKeyPref
 	("Pause all jobs associated with the selected groups.",
 	 "JobBrowserGroupsPauseJobs", "Pause Jobs:",
 	 false, false, false, 45),  /* Minus */ 
@@ -954,10 +965,19 @@ class GenUserPrefsApp
 	new BasePref(),
 	
 	new HotKeyPref
+	("Resubmit all aborted and failed selected jobs.",
+	 "JobQueueJobs", "Queue Jobs:", 
+	 false, false, false, 81),  /* Q */ 
+
+	new HotKeyPref
+	("Resubmit all aborted and failed selected with special job requirements.",
+	 "JobQueueJobsSpecial", "Queue Jobs Special:", 
+	 true, false, false, 81),  /* SHIFT-Q */ 
+
+	new HotKeyPref
 	("Pause all selected jobs.",
 	 "JobPauseJobs", "Pause Jobs:",
 	 false, false, false, 45),  /* Minus */ 
-
 
 	new HotKeyPref
 	("Resume execution of all selected jobs.",
@@ -1106,7 +1126,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.32 2004/11/02 20:03:29 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.33 2004/11/02 23:06:44 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -1359,7 +1379,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.32 2004/11/02 20:03:29 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.33 2004/11/02 23:06:44 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 

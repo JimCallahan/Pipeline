@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.35 2004/11/01 00:49:44 jim Exp $
+// $Id: MasterMgrClient.java,v 1.36 2004/11/02 23:06:44 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -2455,6 +2455,80 @@ class MasterMgrClient
       new NodeSubmitJobsReq(nodeID, indices, batchSize, priority, selectionKeys);
 
     Object obj = performTransaction(MasterRequest.SubmitJobs, req);
+    if(obj instanceof NodeSubmitJobsRsp) {
+      NodeSubmitJobsRsp rsp = (NodeSubmitJobsRsp) obj;
+      return rsp.getJobGroup();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
+
+  /**
+   * Resubmit the group of jobs needed to regenerate the selected 
+   * {@link QueueState#Stale Stale} primary file sequences for the tree of nodes rooted at 
+   * the given node. <P> 
+   * 
+   * This method is typically used to resubmit aborted or failed jobs.  The selected files
+   * to regenerate are provided as target primary file sequences instead of file indices. 
+   * The correct indices for each file defined by these target sequences will be computed
+   * and new job batches will be submitted for these files. <P> 
+   * 
+   * The <CODE>batchSize</CODE>, <CODE>priority</CODE> or <CODE>selectionKeys</CODE> 
+   * parameters (if not <CODE>null</CODE>) will override the settings when creating jobs 
+   * associated with the root node of this submisssion.  However, the node will not be 
+   * modified by this operation and all jobs associated with nodes upstream of the root node
+   * of the submission will be unaffected. <P>
+   * 
+   * If the <CODE>nodeID</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   *
+   * @param nodeID 
+   *   The unique working version identifier. 
+   *
+   * @param targetSeqs
+   *   The target primary file sequences to regenerate.
+   * 
+   * @param batchSize 
+   *   For parallel jobs, this overrides the maximum number of frames assigned to each job
+   *   associated with the root node of the job submission.  
+   * 
+   * @param priority 
+   *   Overrides the priority of jobs associated with the root node of the job submission 
+   *   relative to other jobs.  
+   * 
+   * @param selectionKeys 
+   *   Overrides the set of selection keys an eligable host is required to have for jobs 
+   *   associated with the root node of the job submission.
+   * 
+   * @return 
+   *   The submitted job group.
+   * 
+   * @throws PipelineException
+   *   If unable to generate or submit the jobs.
+   */ 
+  public synchronized QueueJobGroup
+  resubmitJobs
+  ( 
+   NodeID nodeID,
+   TreeSet<FileSeq> targetSeqs, 
+   Integer batchSize, 
+   Integer priority, 
+   Set<String> selectionKeys   
+  ) 
+    throws PipelineException
+  {
+    if(!PackageInfo.sUser.equals(nodeID.getAuthor()) && !isPrivileged(false))
+      throw new PipelineException
+	("Only privileged users may submit jobs for nodes owned by another user!");
+
+    verifyConnection();
+
+    NodeResubmitJobsReq req = 
+      new NodeResubmitJobsReq(nodeID, targetSeqs, batchSize, priority, selectionKeys);
+
+    Object obj = performTransaction(MasterRequest.ResubmitJobs, req);
     if(obj instanceof NodeSubmitJobsRsp) {
       NodeSubmitJobsRsp rsp = (NodeSubmitJobsRsp) obj;
       return rsp.getJobGroup();
