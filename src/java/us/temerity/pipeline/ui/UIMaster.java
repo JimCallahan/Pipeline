@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.39 2004/08/31 08:17:43 jim Exp $
+// $Id: UIMaster.java,v 1.40 2004/09/05 06:53:34 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -67,7 +67,7 @@ class UIMaster
     pMasterMgrClient = new MasterMgrClient(masterHost, masterPort);
     pQueueMgrClient  = new QueueMgrClient(queueHost, queuePort);
 
-    // pJobPort = jobPort;
+    pJobPort = jobPort;
 
     pOpsLock = new ReentrantLock();
 
@@ -159,18 +159,18 @@ class UIMaster
     return pQueueMgrClient;
   }
 
-
-  /*----------------------------------------------------------------------------------------*/
-
   /**
-   * Get the main application frame.
-   */
-  public JFrame
-  getFrame()
+   * Get the port number used by <B>pljobmgr</B>(1) daemons.
+   */ 
+  public int
+  getJobPort() 
   {
-    return pFrame;
+    return pJobPort; 
   }
 
+
+ 
+  /*----------------------------------------------------------------------------------------*/
   
   /**
    * Create and show a new secondary panel frame.
@@ -1101,6 +1101,44 @@ class UIMaster
 
 
   /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Create the title/value panels.
+   * 
+   * @return 
+   *   The title panel, value panel and containing box.
+   */   
+  public static Component[]
+  createTitledPanels()
+  {
+    Component comps[] = new Component[3];
+    
+    Box body = new Box(BoxLayout.X_AXIS);
+    comps[2] = body;
+    {
+      {
+	JPanel panel = new JPanel();
+	comps[0] = panel;
+	
+	panel.setName("TitlePanel");
+	panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+      
+	body.add(panel);
+      }
+      
+      {
+	JPanel panel = new JPanel();
+	comps[1] = panel;
+	
+	panel.setName("ValuePanel");
+	panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+	body.add(panel);
+      }
+    }
+
+    return comps;
+  }
 
   /**
    * Create a new non-editable text field with a title and add them to the given panels.
@@ -2831,6 +2869,11 @@ class UIMaster
    * The network interface to the <B>plqueuemgr</B>(1) daemon.
    */ 
   private QueueMgrClient  pQueueMgrClient;
+
+  /**
+   * The port number to use when contacting <B>pljobmgr</B>(1) daemons.
+   */ 
+  private int  pJobPort; 
 
 
   /*----------------------------------------------------------------------------------------*/
