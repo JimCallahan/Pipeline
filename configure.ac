@@ -768,33 +768,52 @@ AC_MSG_RESULT([Cooking configurable files:])
 AC_CONFIG_FILES([
   Makefile
 
-  php/Makefile
-
-  php/html/Makefile
-  php/html/config.php
-
-  php/themes/Makefile
-  php/themes/default/Makefile
-
   src/Makefile
 
-  src/pipeline/Makefile
-  src/pipeline/tests/Makefile
-  src/pipeline/PackageInfo.java
-  src/pipeline/scripts/dbinit
-  src/pipeline/scripts/dbstart
-  src/pipeline/scripts/dbstop
-  src/pipeline/scripts/pipeline
-  src/pipeline/scripts/pleditor
-  src/pipeline/scripts/pltoolset
-  src/pipeline/scripts/plui
-  src/pipeline/share/dbinit.sql
-  src/pipeline/share/postgresql.conf
+  src/database/Makefile
 
-  src/plutils/Makefile
-  src/plutils/src/Makefile
-  src/plutils/src/PackageInfo.cc
-  src/plutils/docs/Makefile
+  src/database/scripts/Makefile
+  src/database/scripts/dbinit
+  src/database/scripts/dbstart
+  src/database/scripts/dbstop
+
+  src/database/share/Makefile
+  src/database/share/dbinit.sql
+  src/database/share/postgresql.conf
+
+  src/java/Makefile
+
+  src/java/docs/Makefile
+
+  src/java/jgo/Makefile
+
+  src/java/pipeline/Makefile
+  src/java/pipeline/PackageInfo.java
+
+  src/java/pipeline/tests/Makefile
+
+  src/java/scripts/Makefile
+  src/java/scripts/pipeline
+  src/java/scripts/pleditor
+  src/java/scripts/pltoolset
+  src/java/scripts/plui
+
+  src/java/share/Makefile
+
+  src/php/Makefile
+
+  src/php/html/Makefile
+  src/php/html/config.php
+
+  src/php/themes/Makefile
+  src/php/themes/default/Makefile
+
+  src/utils/Makefile
+
+  src/utils/src/Makefile
+  src/utils/src/PackageInfo.cc
+
+  src/utils/docs/Makefile
 ])
 
 AC_OUTPUT

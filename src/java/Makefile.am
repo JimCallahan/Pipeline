@@ -1,4 +1,7 @@
 
 SUBDIRS = \
+  docs \
+  jgo \
   pipeline \
-  plutils
+  scripts \
+  share

@@ -15,9 +15,9 @@ plput_SOURCES = PlPut.cc PackageInfo.cc
 plput_LDADD = \
   @PHOENIX_CORE_LIB@
 
-super_pipeline_SOURCES = SuperPipeline.cc PackageInfo.cc
-super_pipeline_LDADD = \
-  @PHOENIX_CORE_LIB@
+# super_pipeline_SOURCES = SuperPipeline.cc PackageInfo.cc
+# super_pipeline_LDADD = \
+#   @PHOENIX_CORE_LIB@
 
 
 INCLUDES = \
