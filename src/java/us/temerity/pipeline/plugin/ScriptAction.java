@@ -1,4 +1,4 @@
-// $Id: ScriptAction.java,v 1.4 2004/03/23 07:40:37 jim Exp $
+// $Id: ScriptAction.java,v 1.5 2004/06/14 22:30:09 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -121,18 +121,18 @@ class ScriptAction
 	  "Interprets an arbitrary script.");
 
     {
-      ActionParam param = 
-	new ActionParam("Interpreter", 
-			"The program which will interpret the script.", 
-			"bash");
+      BaseActionParam param = 
+	new StringActionParam("Interpreter", 
+			      "The program which will interpret the script.", 
+			      "bash");
       addSingleParam(param);
     }
 
     {
-      ActionParam param = 
-	new ActionParam("ScriptText", 
-			"The script text to execute.",
-			"# put your script text here...");
+      BaseActionParam param = 
+	new TextActionParam("ScriptText", 
+			    "The script text to execute.",
+			    "# put your script text here...");
       addSingleParam(param);
     }
   }
