@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.12 2004/07/24 18:14:11 jim Exp $
+// $Id: BaseAction.java,v 1.13 2004/08/22 21:46:51 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -479,7 +479,7 @@ class BaseAction
    * 
    * @throws PipelineException 
    *   If unable to prepare a SubProcess due to illegal, missing or imcompatable 
-   *   information in the action agenda.
+   *   information in the action agenda or a general failure of the prep method code.
    */
   public abstract SubProcess
   prep
@@ -536,12 +536,66 @@ class BaseAction
   }
 
   /**
-   * Get the directory used to store temporary files. 
+   * Get the root directory used to store temporary files created by the job. <P> 
+   * 
+   * @param agenda 
+   *   The jobs action agenda.
    */
-  protected File
-  getTempDir()
+  public File
+  getTempDir
+  (
+   ActionAgenda agenda
+  )
   {
-    return PackageInfo.sTempDir;
+    return new File(PackageInfo.sTempDir, "pljobmgr/" + agenda.getJobID() + "/scratch");
+  }
+
+  /** 
+   * Create a unique temporary file for the job with the given suffix and access 
+   * permissions. <P> 
+   * 
+   * If successful, the temporary file will be added to the set of files which will be 
+   * removed upon termination of the Java runtime (see @{link #cleanupLater cleanupLater}).
+   * 
+   * @param agenda 
+   *   The jobs action agenda.
+   * 
+   * @param mode 
+   *   The access mode bitmask.
+   * 
+   * @param suffix
+   *   The filename suffix of the temporary file.
+   * 
+   * @return 
+   *   The temporary file.
+   * 
+   * @throws IOException 
+   *   If unable to create the temporary file.
+   */ 
+  public File
+  createTemp
+  (
+   ActionAgenda agenda, 
+   int mode, 
+   String suffix
+  ) 
+    throws PipelineException 
+  {
+    File tmp = null;
+    try {
+      tmp = File.createTempFile(pName + "-" + agenda.getJobID(), "." + suffix, 
+				getTempDir(agenda));
+      chmod(mode, tmp);
+    }
+    catch(Exception ex) {
+      throw new PipelineException
+	("Unable to create temporary file for Job (" + agenda.getJobID() + "):\n\n" + 
+	 ex.getMessage());
+    }
+
+    cleanupLater(tmp);
+
+    return tmp;
   }
 
 
