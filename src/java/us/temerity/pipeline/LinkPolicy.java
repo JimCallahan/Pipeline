@@ -1,4 +1,4 @@
-// $Id: LinkPolicy.java,v 1.4 2004/07/14 20:55:43 jim Exp $
+// $Id: LinkPolicy.java,v 1.5 2004/08/22 21:48:37 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -22,7 +22,10 @@ enum LinkPolicy
   /** 
    * Neither the <CODE>OverallNodeState</CODE> or the <CODE>OverallQueueState</CODE> of 
    * the source node are considered when computing the state of the target 
-   * node.
+   * node. <P> 
+   *
+   * If the target node has a regeneration action (see {@link BaseAction BaseAction}), the 
+   * source node and its associated files will be omitted during action execution.
    */
   None,
 
@@ -30,13 +33,13 @@ enum LinkPolicy
    * Only the <CODE>OverallNodeState</CODE> is considered when computing the 
    * state of the target node.
    */
-  NodeStateOnly, 
+  NodeOnly, 
 
   /**
    * Both the <CODE>OverallNodeState</CODE> and the per-file <CODE>QueueState</CODE> of the 
    * source node are considered when computing the state of the target node.
    */
-  Both;
+  NodeAndQueue;
 
 
 

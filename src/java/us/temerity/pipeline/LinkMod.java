@@ -1,4 +1,4 @@
-// $Id: LinkMod.java,v 1.4 2004/08/04 01:39:42 jim Exp $
+// $Id: LinkMod.java,v 1.5 2004/08/22 21:48:37 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -129,8 +129,8 @@ class LinkMod
     switch(relationship) {
     case None:
       switch(pPolicy) {
-      case NodeStateOnly:
-      case Both:
+      case NodeOnly:
+      case NodeAndQueue:
 	throw new IllegalArgumentException
 	  ("The link relationship cannot be (None) when the link policy is " + 
 	   "(" + pPolicy.toTitle() + ")!");
