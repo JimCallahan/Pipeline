@@ -21,7 +21,7 @@ dnl ----------------------------------------------------------------------------
 AC_MSG_CHECKING([C++ compiler vendor (version)])
 
 AC_ARG_WITH([compiler], 
-            [  --with-compiler=TYPE    C/C++ compiler type: GNU, SGI or KAI.])
+            [  --with-compiler=TYPE        C/C++ compiler type: GNU, SGI or KAI.])
 
 AR="ar"
 
@@ -100,7 +100,7 @@ dnl ----------------------------------------------------------------------------
 AC_MSG_CHECKING([Root Production Directory])
 
 AC_ARG_WITH([prod], 
-            [  --with-prod=DIR         Root of installed production heirarchy.])
+            [  --with-prod=DIR             Root of installed production heirarchy.])
 
 AC_SUBST(PRODDIR)
 PRODDIR=/base/prod
@@ -116,7 +116,7 @@ AC_MSG_RESULT([$PRODDIR])
 AC_MSG_CHECKING([Root Node Storage Directory])
 
 AC_ARG_WITH([node], 
-            [  --with-node=DIR         Root of the persistent node storage area.])
+            [  --with-node=DIR             Root of the persistent node storage area.])
 
 AC_SUBST(NODEDIR)
 NODEDIR=/base/node
@@ -133,7 +133,7 @@ AC_MSG_RESULT([$NODEDIR])
 AC_MSG_CHECKING([Installed Toolsets Directory])
 
 AC_ARG_WITH([toolset], 
-            [  --with-toolset=DIR      Installed toolsets directory.])
+            [  --with-toolset=DIR          Installed toolsets directory.])
 
 AC_SUBST(TOOLSETDIR)
 TOOLSETDIR=/base/toolset/toolsets
@@ -150,7 +150,7 @@ AC_MSG_RESULT([$TOOLSETDIR])
 AC_MSG_CHECKING([User Home Directory])
 
 AC_ARG_WITH([home], 
-            [  --with-home=DIR         User home directory.])
+            [  --with-home=DIR             User home directory.])
 
 AC_SUBST(HOMEDIR)
 HOMEDIR=/home
@@ -167,7 +167,7 @@ AC_MSG_RESULT([$HOMEDIR])
 AC_MSG_CHECKING([Temporary Directory])
 
 AC_ARG_WITH([temp], 
-            [  --with-temp=DIR         Temporary directory.])
+            [  --with-temp=DIR             Temporary directory.])
 
 AC_SUBST(TEMPDIR)
 TEMPDIR=/usr/tmp
@@ -183,38 +183,73 @@ AC_MSG_RESULT([$TEMPDIR])
 
 dnl ------------------------------------------------------------------------------------------
 
-AC_MSG_CHECKING([Pipeline Server Hostname])
+AC_MSG_CHECKING([Pipeline Master Server Hostname])
 
-AC_ARG_WITH([pl-server], 
-            [  --with-pl-server=HOST   Hostname of Pipeline server.])
+AC_ARG_WITH([master-server], 
+            [  --with-master-server=HOST   Hostname which runs plmaster(1).])
 
-AC_SUBST(PL_SERVER)
-PL_SERVER="localhost"
+AC_SUBST(PL_MASTER_SERVER)
+PL_MASTER_SERVER="localhost"
 
 if test "$with_server" 
 then
-  PL_SERVER=$with_server
+  PL_MASTER_SERVER=$with_server
 fi
 
-AC_MSG_RESULT([$PL_SERVER])
+AC_MSG_RESULT([$PL_MASTER_SERVER])
 
 
 
-AC_MSG_CHECKING([Pipeline Server Port])
+AC_MSG_CHECKING([Pipeline Master Server Port])
 
-AC_ARG_WITH([pl-port], 
-            [  --with-pl-port=NUM      Port number to use for PostgreSQL server.])
+AC_ARG_WITH([master-port], 
+            [  --with-master-port=NUM      Port number used by plmaster(1).])
 
-AC_SUBST(PL_PORT)
-PL_PORT=53135
+AC_SUBST(PL_MASTER_PORT)
+PL_MASTER_PORT=53135
 
-if test "$with_pl_port" 
+if test "$with_master_port" 
 then
-  PL_PORT=$with_pl_port
+  PL_MASTER_PORT=$with_master_port
 fi
 
-AC_MSG_RESULT([$PL_PORT])
+AC_MSG_RESULT([$PL_MASTER_PORT])
 
+
+
+dnl ------------------------------------------------------------------------------------------
+
+AC_MSG_CHECKING([Pipeline File Server Hostname])
+
+AC_ARG_WITH([file-server], 
+            [  --with-file-server=HOST     Hostname which runs plfs(1).])
+
+AC_SUBST(PL_FILE_SERVER)
+PL_FILE_SERVER="localhost"
+
+if test "$with_server" 
+then
+  PL_FILE_SERVER=$with_server
+fi
+
+AC_MSG_RESULT([$PL_FILE_SERVER])
+
+
+
+AC_MSG_CHECKING([Pipeline File Server Port])
+
+AC_ARG_WITH([file-port], 
+            [  --with-file-port=NUM        Port number used by plfs(1).])
+
+AC_SUBST(PL_FILE_PORT)
+PL_FILE_PORT=53136
+
+if test "$with_file_port" 
+then
+  PL_FILE_PORT=$with_file_port
+fi
+
+AC_MSG_RESULT([$PL_FILE_PORT])
 
 
 
@@ -283,7 +318,7 @@ AC_SUBST(BUILD_MODE)
 BUILD_MODE="dbg"
 
 AC_ARG_ENABLE([opt], 
-              [  --enable-opt            Use optimization options.])
+              [  --enable-opt              Use optimization options.])
 
 if test "$enable_opt" = "yes" 
 then 
@@ -335,7 +370,7 @@ fi
 dnl ------------------------------------------------------------------------------------------
 
 AC_ARG_ENABLE([prof], 
-              [  --enable-prof           Use profiling options.])
+              [  --enable-prof             Use profiling options.])
 
 if test "$enable_prof" = "yes" 
 then 
@@ -353,7 +388,7 @@ fi
 dnl ------------------------------------------------------------------------------------------
 
 AC_ARG_ENABLE([64], 
-              [  --enable-64             Generate 64 bit objects and executables.])
+              [  --enable-64               Generate 64 bit objects and executables.])
 
 if test "$enable_64" = "yes" 
 then 
@@ -387,7 +422,7 @@ AC_SUBST(PTHREAD_LIB)
 PTHREAD_LIB=""
 
 AC_ARG_ENABLE([threads], 
-              [  --enable-threads        Multitask with Posix threads.])
+              [  --enable-threads          Multitask with Posix threads.])
 
 if test "$enable_threads" = "yes" 
 then  
