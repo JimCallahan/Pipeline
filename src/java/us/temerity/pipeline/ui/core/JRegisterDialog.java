@@ -1,4 +1,4 @@
-// $Id: JRegisterDialog.java,v 1.5 2005/03/11 06:33:44 jim Exp $
+// $Id: JRegisterDialog.java,v 1.6 2005/03/18 16:33:53 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -427,8 +427,6 @@ class JRegisterDialog
    ActionEvent e
   ) 
   {
-    super.actionPerformed(e);
-
     String cmd = e.getActionCommand();
     if(cmd.equals("browse")) 
       doBrowse();
@@ -436,6 +434,8 @@ class JRegisterDialog
       doUpdateFrameFields();
     else if(cmd.equals("update-editor")) 
       updateEditor();
+    else 
+      super.actionPerformed(e);
   }
   
 

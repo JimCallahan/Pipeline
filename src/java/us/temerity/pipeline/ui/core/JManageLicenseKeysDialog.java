@@ -1,4 +1,4 @@
-// $Id: JManageLicenseKeysDialog.java,v 1.3 2005/03/11 06:33:44 jim Exp $
+// $Id: JManageLicenseKeysDialog.java,v 1.4 2005/03/18 16:33:53 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -118,8 +118,6 @@ class JManageLicenseKeysDialog
    ActionEvent e
   ) 
   {
-    super.actionPerformed(e);
-
     String cmd = e.getActionCommand();
     if(cmd.equals("add")) 
       doAdd();
@@ -127,6 +125,8 @@ class JManageLicenseKeysDialog
       doRemove();
     else if(cmd.equals("update")) 
       doUpdate();
+    else 
+      super.actionPerformed(e);
   }
 
 

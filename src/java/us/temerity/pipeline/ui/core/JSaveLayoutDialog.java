@@ -1,4 +1,4 @@
-// $Id: JSaveLayoutDialog.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JSaveLayoutDialog.java,v 1.2 2005/03/18 16:33:53 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -206,10 +206,10 @@ class JSaveLayoutDialog
    ActionEvent e
   ) 
   { 
-    super.actionPerformed(e);
-
     if(e.getActionCommand().equals("new-folder")) 
       doNewFolder();
+    else 
+      super.actionPerformed(e);
   }
 
 

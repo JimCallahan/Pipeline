@@ -1,4 +1,4 @@
-// $Id: JBaseCreateDialog.java,v 1.2 2005/02/20 20:51:45 jim Exp $
+// $Id: JBaseCreateDialog.java,v 1.3 2005/03/18 16:33:53 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -361,13 +361,13 @@ class JBaseCreateDialog
    ActionEvent e
   ) 
   {
-    super.actionPerformed(e);
-
     String cmd = e.getActionCommand();
     if(cmd.equals("prev-desc"))
       doPrevDesc();
     else if(cmd.equals("next-desc"))
       doNextDesc();
+    else 
+      super.actionPerformed(e);
   }
   
 

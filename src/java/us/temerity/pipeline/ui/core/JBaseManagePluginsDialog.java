@@ -1,4 +1,4 @@
-// $Id: JBaseManagePluginsDialog.java,v 1.4 2005/01/07 16:18:22 jim Exp $
+// $Id: JBaseManagePluginsDialog.java,v 1.5 2005/03/18 16:33:53 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -567,19 +567,19 @@ class JBaseManagePluginsDialog
    ActionEvent e
   ) 
   {
-    super.actionPerformed(e);
-
     String cmd = e.getActionCommand();
     if(cmd.equals("new-menu")) 
       doNewMenu();
-    if(cmd.equals("rename-menu")) 
+    else if(cmd.equals("rename-menu")) 
       doRenameMenu();
-    if(cmd.equals("delete-menu")) 
+    else if(cmd.equals("delete-menu")) 
       doDeleteMenu();
-    if(cmd.equals("set-plugin"))
+    else if(cmd.equals("set-plugin"))
       doSetPlugin();
-    if(cmd.equals("clear-plugin"))
+    else if(cmd.equals("clear-plugin"))
       doClearPlugin();
+    else     
+      super.actionPerformed(e);
   }
 
 

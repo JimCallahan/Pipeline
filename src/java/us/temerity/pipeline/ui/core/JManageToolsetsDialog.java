@@ -1,4 +1,4 @@
-// $Id: JManageToolsetsDialog.java,v 1.2 2005/01/05 09:44:31 jim Exp $
+// $Id: JManageToolsetsDialog.java,v 1.3 2005/03/18 16:33:53 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1363,8 +1363,6 @@ class JManageToolsetsDialog
    ActionEvent e
   ) 
   {
-    super.actionPerformed(e);
-
     if(e.getActionCommand().equals("toolset-details")) 
       doToolsetDetails();
     else if(e.getActionCommand().equals("test-toolset")) 
@@ -1407,6 +1405,8 @@ class JManageToolsetsDialog
       doIncludePackage();
     else if(e.getActionCommand().equals("exclude-package")) 
       doExcludePackage();
+    else 
+      super.actionPerformed(e);
   }
 
 

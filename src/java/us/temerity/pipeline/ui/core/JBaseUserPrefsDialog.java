@@ -1,4 +1,4 @@
-// $Id: JBaseUserPrefsDialog.java,v 1.2 2005/02/01 14:52:47 jim Exp $
+// $Id: JBaseUserPrefsDialog.java,v 1.3 2005/03/18 16:33:53 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -289,10 +289,10 @@ class JBaseUserPrefsDialog
    ActionEvent e
   ) 
   {
-    super.actionPerformed(e);
-
     if(e.getActionCommand().equals("reset"))
       doReset();
+    else 
+      super.actionPerformed(e);
   }
 
 

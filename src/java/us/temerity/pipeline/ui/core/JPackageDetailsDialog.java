@@ -1,4 +1,4 @@
-// $Id: JPackageDetailsDialog.java,v 1.3 2005/02/22 05:56:44 jim Exp $
+// $Id: JPackageDetailsDialog.java,v 1.4 2005/03/18 16:33:53 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -428,8 +428,6 @@ class JPackageDetailsDialog
    ActionEvent e
   ) 
   {
-    super.actionPerformed(e);
-
     String cmd = e.getActionCommand();
     if(cmd.equals("add-entry")) 
       doAddEntry();
@@ -449,6 +447,8 @@ class JPackageDetailsDialog
       doLoadScript();
     else if(cmd.equals("test-package"))
       doTestPackage();
+    else 
+      super.actionPerformed(e);
   }
 
 

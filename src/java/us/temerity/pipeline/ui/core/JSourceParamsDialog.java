@@ -1,4 +1,4 @@
-// $Id: JSourceParamsDialog.java,v 1.3 2005/03/11 06:33:44 jim Exp $
+// $Id: JSourceParamsDialog.java,v 1.4 2005/03/18 16:33:53 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -149,13 +149,13 @@ class JSourceParamsDialog
    ActionEvent e
   ) 
   {
-    super.actionPerformed(e);
-
     String cmd = e.getActionCommand();
     if(cmd.equals("add")) 
       doAdd();
     else if(cmd.equals("remove")) 
       doRemove();
+    else 
+      super.actionPerformed(e);
   }
 
 

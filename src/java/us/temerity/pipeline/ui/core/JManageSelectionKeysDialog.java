@@ -1,4 +1,4 @@
-// $Id: JManageSelectionKeysDialog.java,v 1.3 2005/03/11 06:33:44 jim Exp $
+// $Id: JManageSelectionKeysDialog.java,v 1.4 2005/03/18 16:33:53 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -117,8 +117,6 @@ class JManageSelectionKeysDialog
    ActionEvent e
   ) 
   {
-    super.actionPerformed(e);
-
     String cmd = e.getActionCommand();
     if(cmd.equals("add")) 
       doAdd();
@@ -126,6 +124,8 @@ class JManageSelectionKeysDialog
       doRemove();
     else if(cmd.equals("update")) 
       doUpdate();
+    else 
+      super.actionPerformed(e);
   }
 
 

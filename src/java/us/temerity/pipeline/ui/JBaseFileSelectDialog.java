@@ -1,4 +1,4 @@
-// $Id: JBaseFileSelectDialog.java,v 1.8 2005/02/20 20:52:18 jim Exp $
+// $Id: JBaseFileSelectDialog.java,v 1.9 2005/03/18 16:33:53 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -416,14 +416,14 @@ class JBaseFileSelectDialog
    ActionEvent e
   ) 
   {
-    super.actionPerformed(e);
-
     if(e.getActionCommand().equals("jump-dir")) 
       doJumpDir();
     else if(e.getActionCommand().equals("jump-home")) 
       doJumpHome();
     else if(e.getActionCommand().equals("new-folder")) 
       doNewFolder();
+    else 
+      super.actionPerformed(e);
   }
 
 

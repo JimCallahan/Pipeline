@@ -1,4 +1,4 @@
-// $Id: JTestEnvironmentDialog.java,v 1.2 2005/02/04 09:25:53 jim Exp $
+// $Id: JTestEnvironmentDialog.java,v 1.3 2005/03/18 16:33:53 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -149,10 +149,10 @@ class JTestEnvironmentDialog
    ActionEvent e
   ) 
   {
-    super.actionPerformed(e);
-
     if(e.getActionCommand().equals("browse"))
       doBrowse();
+    else 
+      super.actionPerformed(e);
   }
 
 

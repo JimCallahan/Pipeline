@@ -1,4 +1,4 @@
-// $Id: JManageUsersDialog.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JManageUsersDialog.java,v 1.2 2005/03/18 16:33:53 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -107,12 +107,12 @@ class JManageUsersDialog
    ActionEvent e
   ) 
   {
-    super.actionPerformed(e);
-
     if(e.getActionCommand().equals("add-user")) 
       doAddUser();
     else if(e.getActionCommand().equals("remove-user")) 
       doRemoveUser();
+    else 
+      super.actionPerformed(e);
   }
 
 

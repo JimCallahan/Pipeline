@@ -1,4 +1,4 @@
-// $Id: JColorEditorDialog.java,v 1.9 2005/01/22 06:10:10 jim Exp $
+// $Id: JColorEditorDialog.java,v 1.10 2005/03/18 16:33:53 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -604,23 +604,6 @@ class JColorEditorDialog
       pHSV.x(hr.x()); 
       pCanvas.repaint();
     }
-  }
-
-
-  /*-- ACTION LISTENER METHODS -------------------------------------------------------------*/
-
-  /** 
-   * Invoked when an action occurs. 
-   */ 
-  public void 
-  actionPerformed
-  (
-   ActionEvent e
-  ) 
-  {
-    super.actionPerformed(e);
-
-
   }
 
 

@@ -1,4 +1,4 @@
-// $Id: JBaseLinkDialog.java,v 1.3 2005/02/22 06:07:02 jim Exp $
+// $Id: JBaseLinkDialog.java,v 1.4 2005/03/18 16:33:53 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -178,13 +178,13 @@ class JBaseLinkDialog
    ActionEvent e
   ) 
   {
-    super.actionPerformed(e);
-
     String cmd = e.getActionCommand();
     if(cmd.equals("policy-changed")) 
       doPolicyChanged();
     else if(cmd.equals("relationship-changed")) 
       doRelationshipChanged();
+    else 
+      super.actionPerformed(e);
   }
 
 
