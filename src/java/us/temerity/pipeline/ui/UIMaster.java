@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.23 2004/06/14 22:53:24 jim Exp $
+// $Id: UIMaster.java,v 1.24 2004/06/19 00:36:09 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -872,6 +872,84 @@ class UIMaster
   }
 
   /**
+   * Create a new editable text field which can only contain integer byte sizes. <P> 
+   * 
+   * See {@link JLabel#setHorizontalAlignment JLabel.setHorizontalAlignment} for valid
+   * values for the <CODE>align</CODE> argument.
+   * 
+   * @param value
+   *   The initial value.
+   * 
+   * @param width
+   *   The minimum and preferred width.
+   * 
+   * @param align
+   *   The horizontal alignment.
+   */ 
+  public static JByteSizeField
+  createByteSizeField
+  (
+   Long value,
+   int width,
+   int align
+  )
+  {
+    JByteSizeField field = new JByteSizeField();
+    field.setName("EditableTextField");
+
+    Dimension size = new Dimension(width, 19);
+    field.setMinimumSize(size);
+    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+    field.setPreferredSize(size);
+    
+    field.setHorizontalAlignment(align);
+    field.setEditable(true);
+    
+    field.setValue(value);
+
+    return field;
+  }
+
+  /**
+   * Create a new editable text field which can only contain float values. <P> 
+   * 
+   * See {@link JLabel#setHorizontalAlignment JLabel.setHorizontalAlignment} for valid
+   * values for the <CODE>align</CODE> argument.
+   * 
+   * @param value
+   *   The initial value.
+   * 
+   * @param width
+   *   The minimum and preferred width.
+   * 
+   * @param align
+   *   The horizontal alignment.
+   */ 
+  public static JFloatField
+  createFloatField
+  (
+   Float value,  
+   int width,
+   int align
+  )
+  {
+    JFloatField field = new JFloatField();
+    field.setName("EditableTextField");
+
+    Dimension size = new Dimension(width, 19);
+    field.setMinimumSize(size);
+    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+    field.setPreferredSize(size);
+    
+    field.setHorizontalAlignment(align);
+    field.setEditable(true);
+    
+    field.setValue(value);
+
+    return field;
+  }
+
+  /**
    * Create a new editable text field which can only contain double values. <P> 
    * 
    * See {@link JLabel#setHorizontalAlignment JLabel.setHorizontalAlignment} for valid
@@ -889,7 +967,7 @@ class UIMaster
   public static JDoubleField
   createDoubleField
   (
-   double value,  
+   Double value,  
    int width,
    int align
   )
@@ -995,7 +1073,6 @@ class UIMaster
     Dimension size = new Dimension(width, 19);
     field.setMinimumSize(size);
     field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
-    //field.setMaximumSize(size);
     field.setPreferredSize(size);
 
     return field;
@@ -1018,7 +1095,6 @@ class UIMaster
     Dimension size = new Dimension(width, 19);
     field.setMinimumSize(size);
     field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
-    //field.setMaximumSize(size);
     field.setPreferredSize(size);
 
     return field;
@@ -1251,6 +1327,80 @@ class UIMaster
   }
 
   /**
+   * Create a new byte size text field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param value
+   *   The initial value.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the identifier field.
+   */ 
+  public static JByteSizeField
+  createTitledByteSizeField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   Long value, 
+   int vwidth
+  )
+  {
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT));
+
+    JByteSizeField field = createByteSizeField(value, vwidth, JLabel.CENTER);
+    vpanel.add(field);
+
+    return field;
+  }
+
+  /**
+   * Create a new float text field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param value
+   *   The initial value.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the identifier field.
+   */ 
+  public static JFloatField
+  createTitledFloatField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   Float value, 
+   int vwidth
+  )
+  {
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT));
+
+    JFloatField field = createFloatField(value, vwidth, JLabel.CENTER);
+    vpanel.add(field);
+
+    return field;
+  }
+
+  /**
    * Create a new double text field with a title and add them to the given panels.
    * 
    * @param tpanel
@@ -1275,7 +1425,7 @@ class UIMaster
    String title,  
    int twidth,
    JPanel vpanel, 
-   double value, 
+   Double value, 
    int vwidth
   )
   {
