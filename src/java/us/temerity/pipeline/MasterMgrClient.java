@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.24 2004/09/05 06:41:44 jim Exp $
+// $Id: MasterMgrClient.java,v 1.25 2004/09/08 18:33:22 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1015,10 +1015,9 @@ class MasterMgrClient
    *   The job requirements. <P>
    * </DIV> 
    * 
-   * Note that any existing upstream node link information contained in the
-   * <CODE>mod</CODE> argument will be ignored.  The {@link #link link} and
-   * {@link #unlink unlink} methods must be used to alter the connections 
-   * between working node versions. <P> 
+   * Note that any links to upstream nodes contain in the <CODE>mod</CODE> argument will be 
+   * ignored.  The {@link #link link} and {@link #unlink unlink} methods must be used to 
+   * alter the connections between working node versions. <P> 
    * 
    * If the <CODE>author</CODE> argument is different than the current user, this method 
    * will fail unless the current user has privileged access status.
