@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.34 2004/09/09 17:07:19 jim Exp $
+// $Id: MasterMgr.java,v 1.35 2004/09/11 14:13:49 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -4119,8 +4119,8 @@ class MasterMgr
 	  if(!seqsOnly && (entry != null)) 
 	    return false;
 
-	  for(NodeTreeEntry leaf : parent.values()) {
-	    if(!leaf.isSequenceUnused(fseq)) 
+	  for(NodeTreeEntry child : parent.values()) {
+	    if(child.isLeaf() && !child.isSequenceUnused(fseq)) 
 	      return false;	      
 	  }
 
