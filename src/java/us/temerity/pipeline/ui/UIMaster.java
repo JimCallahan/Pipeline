@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.49 2004/10/18 03:15:09 jim Exp $
+// $Id: UIMaster.java,v 1.50 2004/10/21 01:24:07 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -3179,6 +3179,10 @@ class UIMaster
 	    
 	    /* start the editor */ 
 	    proc = editor.launch(fseq, env, dir);
+	  }
+	  catch(IllegalArgumentException ex) {
+	    master.showErrorDialog("Error:", ex.getMessage());	    
+	    return;
 	  }
 	  catch(PipelineException ex) {
 	    master.showErrorDialog(ex);
