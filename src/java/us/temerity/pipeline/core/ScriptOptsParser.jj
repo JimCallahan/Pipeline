@@ -88,6 +88,20 @@ ScriptOptsParser
   }
 
 
+  /**
+   * Close the network connections to the plqueuemgr(1) and plmaster(1) daemons.
+   */ 
+  public void
+  disconnect()
+  {
+    if(pMasterMgrClient != null)
+      pMasterMgrClient.disconnect();
+    
+    if(pQueueMgrClient != null)
+      pQueueMgrClient.disconnect();
+  }
+  
+
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
@@ -150,6 +164,7 @@ ScriptOptsParser
 
   /*----------------------------------------------------------------------------------------*/
 
+
   /**
    * job-server command option temporaries
    */ 
@@ -161,6 +176,8 @@ ScriptOptsParser
   private TreeMap  pJobSelectionBiases;
   private TreeSet  pJobSelectionRemoves;
 
+  private String   pMessage;
+  private Integer  pTotal;
   
   /**
    * working node version command option temporaries
@@ -171,7 +188,6 @@ ScriptOptsParser
   private Integer    pPadding; 
   private Boolean    pWait; 
 
-  private String    pMsg; 
   private String    pAuthor; 
   private String    pView; 
   private TreeSet   pSections; 
@@ -205,6 +221,24 @@ ScriptOptsParser
   private LinkPolicy        pLinkPolicy;      
   private LinkRelationship  pLinkRelationship;
   private Integer           pLinkFrameOffset; 
+
+
+  /**
+   * checked-in node version command option temporaries
+   */  
+  private TreeSet  pVersionIDs; 
+  private boolean  pLatest; 
+
+
+  /**
+   * node command option temporaries
+   */  
+  private boolean          pBrief;
+  private boolean          pUpstream;
+  private boolean          pLinkGraph; 
+  private VersionID.Level  pLevel; 
+  private boolean          pKeepNewer;
+
 }
 
 
@@ -279,6 +313,7 @@ TOKEN :
 | <REMOVE_KEY:     "--remove-key">      : KEY_NAME_SEP   
 | <EDITOR2:        "--editor">          : EDITOR_NAME_SEP 
 | <VERSION2:       "--version">         : REVISION_NUMBER_SEP
+| <LATEST:         "--latest"> 		    
 | <AUTHOR:         "--author">          : USER_NAME_SEP 
 | <VIEW2:          "--view">            : VIEW_NAME_SEP 
 | <SHOW:           "--show">            : SECTION_SEP   
@@ -313,7 +348,13 @@ TOKEN :
 | <FRAME:          "--frame">           : FRAME_NUMBERS_SEP
 | <INDEX:          "--index">           : FRAME_INDICES_SEP
 | <WAIT:           "--wait">
-
+| <MAJOR:          "--major">
+| <MINOR:          "--minor">
+| <MICRO:          "--micro">
+| <KEEP_NEWER:     "--keep-newer">
+| <BRIEF:          "--brief">
+| <UPSTREAM:       "--upstream">
+| <LINK_GRAPH:     "--link-graph">
 
   /* argument end separator */ 
 | <AE2: ("\0")+>
@@ -1120,7 +1161,7 @@ TOKEN :
 {
   <CHECKED_IN_GET_INFO:       "--get-info">              : NODE_NAME_SEP
 | <CHECKED_IN_HISTORY:        "--history">               : NODE_NAME_SEP
-| <CHECKED_IN_NOVELTY:        "--novelty">               : NODE_NAME_SEP
+| <CHECKED_IN_VIEW:           "--view">                  : NODE_NAME_SEP
 | <AE36:                      ["\0"]>   
 | <UNKNOWN_OPTION13:          "-" ("-")? (~["\0","="])*> : IGNORE_STATE
 | <UNKNOWN13:                 ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
@@ -1133,6 +1174,7 @@ TOKEN :
   <NODE_STATUS:            "--status">                : NODE_NAME_SEP
 | <NODE_CHECK_IN:          "--check-in">              : NODE_NAME_SEP
 | <NODE_CHECK_OUT:         "--check-out">             : NODE_NAME_SEP
+| <NODE_EVOLVE:            "--evolve">                : NODE_NAME_SEP
 | <AE37:                   ["\0"]>   
 | <UNKNOWN_OPTION14:       "-" ("-")? (~["\0","="])*> : IGNORE_STATE
 | <UNKNOWN14:              ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
@@ -1204,7 +1246,8 @@ Commands()
    DefaultToolsetCmds() | ActiveToolsetCmds() | ToolsetCmds() |
    LicenseKeyCmds() | SelectionKeyCmds() | JobServerCmds() | 
    EditorCmds() | ActionCmds() | ComparatorCmds() | 
-   SuffixEditorCmds() | ViewCmds() | WorkingCmds() 
+   SuffixEditorCmds() | ViewCmds() | 
+   WorkingCmds() | CheckedInCmds() | NodeCmds()
 
    ) 
   {
@@ -1310,7 +1353,8 @@ BatchCommand()
    DefaultToolsetCmds() | ActiveToolsetCmds() | ToolsetCmds() |
    LicenseKeyCmds() | SelectionKeyCmds() | JobServerCmds() | 
    EditorCmds() | ActionCmds() | ComparatorCmds() | 
-   SuffixEditorCmds() | ViewCmds() | WorkingCmds() 
+   SuffixEditorCmds() | ViewCmds() | 
+   WorkingCmds() | CheckedInCmds() | NodeCmds()
    
    ) (AE())* <EOF>
   {}
@@ -1966,14 +2010,19 @@ LicenseKeyAdd()
   throws PipelineException : 
 {
   String kname = null;
-  String msg = null;
-  int total = 0;
+  pMessage     = null;
+  pTotal       = null; 
 }
 {
-  <KEY_ADD> EQ() kname=KeyName() AE() 
-     ((msg=Msg() AE() total=Total()) | (total=Total() AE() msg=Msg())) AE()
+  <KEY_ADD> EQ() kname=KeyName() AE() (LicenseKeyAddOpts())* 
   {
-    LicenseKey key = new LicenseKey(kname, msg, total);
+    if(pMessage == null) 
+      throw new PipelineException("The --msg option is required!");
+
+    if(pTotal == null) 
+      throw new PipelineException("The --total option is required!");
+
+    LicenseKey key = new LicenseKey(kname, pMessage, pTotal);
     pQueueMgrClient.addLicenseKey(key);
 
     Logs.ops.info("Added license key (" + kname + ").");
@@ -1981,19 +2030,31 @@ LicenseKeyAdd()
   }
 }
  
+void
+LicenseKeyAddOpts() 
+  throws PipelineException : 
+{}
+{
+  (Msg() | Total())
+  {}
+}
+
 void 
 LicenseKeySet() 
   throws PipelineException : 
 {
   String kname = null;
-  int total = 0;
+  pTotal       = null; 
 }
 {
-  <KEY_SET> EQ() kname=KeyName() AE() total=Total() AE()
+  <KEY_SET> EQ() kname=KeyName() AE() Total() AE()
   {
-    pQueueMgrClient.setTotalLicenses(kname, total);
+    if(pTotal == null) 
+      throw new PipelineException("The --total option is required!");
 
-    Logs.ops.info("License key (" + kname + ") now has (" + total + ") total licenses.");
+    pQueueMgrClient.setTotalLicenses(kname, pTotal);
+
+    Logs.ops.info("License key (" + kname + ") now has (" + pTotal + ") total licenses.");
     Logs.flush();
   }
 }
@@ -2014,19 +2075,6 @@ LicenseKeyRemove()
   }
 }
 
-int 
-Total()
-  throws PipelineException : 
-{
-  int total = 0;
-}
-{
-  <TOTAL> EQ() total=IntegerLiteral() 
-  {
-    return total;
-  }
-}
-      
 
 /*------------------------------------------------------------------------------------------*/
 
@@ -2087,12 +2135,15 @@ SelectionKeyAdd()
   throws PipelineException : 
 {
   String kname = null;
-  String msg = null;
+  pMessage     = null;
 }
 {
-  <KEY_ADD> EQ() kname=KeyName() AE() msg=Msg() AE()
+  <KEY_ADD> EQ() kname=KeyName() AE() Msg()
   {
-    SelectionKey key = new SelectionKey(kname, msg);
+    if(pMessage == null) 
+      throw new PipelineException("The --msg option is required!");
+
+    SelectionKey key = new SelectionKey(kname, pMessage);
     pQueueMgrClient.addSelectionKey(key);
     
     Logs.ops.info("Added selection key (" + kname + ").");
@@ -2585,13 +2636,18 @@ SuffixEditorSet()
   String suffix = null;
 
   pEditorName = null;
-  pMsg        = null; 
+  pMessage    = null; 
 }
 {
-  <SUFFIX_EDITOR_SET> EQ() suffix=Suffix() AE() 
-     ((Msg() AE() Editor()) | (Editor() AE() Msg())) AE()
+  <SUFFIX_EDITOR_SET> EQ() suffix=Suffix() AE() (SuffixEditorSetOpts())* 
   {
-    SuffixEditor se = new SuffixEditor(suffix, pMsg, pEditorName);
+    if(pEditorName == null) 
+      throw new PipelineException("The --editor option is required!");
+
+    if(pMessage == null) 
+      throw new PipelineException("The --msg option is required!");
+
+    SuffixEditor se = new SuffixEditor(suffix, pMessage, pEditorName);
     pApp.addSuffixEditor(se, pMasterMgrClient);
 
     Logs.ops.info("Added default editor for suffix (" + suffix + ").");
@@ -2599,6 +2655,14 @@ SuffixEditorSet()
   }
 }
 
+void
+SuffixEditorSetOpts() 
+  throws PipelineException : 
+{}
+{
+  (Msg() | Editor())
+  {}
+}
   
 void 
 SuffixEditorRemove() 
@@ -3401,13 +3465,499 @@ WorkingRemoveFilesOpts()
 /*   C H E C K E D - I N   N O D E   V E R S I O N   C O M M A N D S                        */
 /*------------------------------------------------------------------------------------------*/
 
+void 
+CheckedInCmds() 
+  throws PipelineException : 
+{}
+{
+  <CHECKED_IN> AE() 
+     (CheckedInGetInfo() | CheckedInHistory() | CheckedInView()) 
+  {}
+}
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
+CheckedInGetInfo() 
+  throws PipelineException : 
+{
+  String name = null;
+
+  pSections   = new TreeSet();
+  pVersionIDs = new TreeSet();
+  pLatest     = false;
+}
+{
+  <CHECKED_IN_GET_INFO> EQ() name=NodeName() AE() (CheckedInGetInfoOpts())*
+  {
+    pApp.printCheckedInVersion(name, pVersionIDs, pLatest, pSections, 
+			       pMasterMgrClient, pQueueMgrClient);
+  }
+}
+
+void
+CheckedInGetInfoOpts() 
+  throws PipelineException : 
+{}
+{
+  (VersionOption() | Latest() | CheckedInGetInfoShow() | CheckedInGetInfoHide()) 
+  {}
+}
+
+void 
+CheckedInGetInfoShow() : 
+{}
+{
+  <SHOW> EQ() CheckedInGetInfoShowSections() (COMMA() CheckedInGetInfoShowSections())* AE()  
+  {}
+}
+
+void 
+CheckedInGetInfoShowSections() : 
+{}
+{
+  (CheckedInGetInfoShowAll() | 
+   ShowVsn() | ShowProp() |  ShowAct() | ShowJReq() | ShowKey() | ShowLink()) 
+  {}
+}
+
+void 
+CheckedInGetInfoShowAll() : 
+{}
+{
+  <ALL>
+  {
+    pSections.add("vsn");
+    pSections.add("prop");
+    pSections.add("act");
+    pSections.add("jreq");
+    pSections.add("key");
+    pSections.add("link");
+  }
+}
+
+void 
+CheckedInGetInfoHide() : 
+{}
+{
+  <HIDE> EQ() CheckedInGetInfoHideSections() (COMMA() CheckedInGetInfoHideSections())* AE()  
+  {}
+}
+
+void 
+CheckedInGetInfoHideSections() : 
+{}
+{
+  (CheckedInGetInfoHideAll() | 
+   HideVsn() | HideProp() | HideAct() | HideJReq() | HideKey() | HideLink()) 
+  {}
+}
+
+void 
+CheckedInGetInfoHideAll() : 
+{}
+{
+  <ALL>
+  {
+    pSections.clear(); 
+  }
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
+CheckedInHistory() 
+  throws PipelineException : 
+{
+  String name = null;
+
+  pVersionIDs = new TreeSet();
+  pLatest     = false;
+}
+{
+  <CHECKED_IN_HISTORY> EQ() name=NodeName() AE() (CheckedInHistoryOpts())*
+  {
+    pApp.printCheckedInHistory(name, pVersionIDs, pLatest, pMasterMgrClient);
+  }
+}
+
+void
+CheckedInHistoryOpts() 
+  throws PipelineException : 
+{}
+{
+  (VersionOption() | Latest()) 
+  {}
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
+CheckedInView() 
+  throws PipelineException : 
+{
+  String name = null;
+  
+  pVersionIDs      = new TreeSet();
+  pEditorName      = null;
+  pEditorVersionID = null;
+  pFrames          = new ArrayList();
+  pIndices         = new ArrayList();
+  pFileSeq         = null;  
+  pWait            = false;
+}
+{
+  <CHECKED_IN_VIEW> EQ() name=NodeName() AE() (CheckedInViewOpts())* 
+  {
+    if((!pFrames.isEmpty() && !pIndices.isEmpty()) || 
+       (pFileSeq != null) && ((!pFrames.isEmpty() || !pIndices.isEmpty())))
+      throw new PipelineException
+        ("The --frame, --index and --fseq options are mutually exclusive!");
+
+    VersionID vid = null;
+    if(!pVersionIDs.isEmpty()) {
+      if((pVersionIDs.size() > 1))
+	throw new PipelineException
+	  ("Only one version of a node may viewed by the --view option!");
+	
+      vid = (VersionID) pVersionIDs.first();
+    }
+
+    pApp.checkedInView(name, vid, pEditorName, pEditorVersionID, 
+		       pFrames, pIndices, pFileSeq, pWait, pMasterMgrClient);
+  }
+}
+
+void
+CheckedInViewOpts()
+  throws PipelineException : 
+{}
+{
+  (VersionOption() | EditorVersion() | Frame() | Index() | FSeq() | Wait())
+  {}
+}
+
 
 
 /*------------------------------------------------------------------------------------------*/
 /*   N O D E   O P E R A T I O N   C O M M A N D S                                          */
 /*------------------------------------------------------------------------------------------*/
 
+void 
+NodeCmds() 
+  throws PipelineException : 
+{}
+{
+  <NODE> AE() 
+     (NodeStatus() | NodeCheckIn() | NodeCheckOut() | NodeEvolve()) 
+  {}
+}
 
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
+NodeStatus() 
+  throws PipelineException : 
+{
+  String name = null;
+
+  pAuthor    = PackageInfo.sUser;
+  pView      = "default";
+  pBrief     = false;
+  pUpstream  = false;
+  pLinkGraph = false;
+  pSections  = new TreeSet();
+}
+{
+  <NODE_STATUS> EQ() name=NodeName() AE() (NodeStatusOpts())*
+  {
+    if(pBrief && !pSections.isEmpty()) 
+      throw new PipelineException
+        ("The --brief and --show options are mutually exclusive!");
+
+    pApp.printNodeStatus(new NodeID(pAuthor, pView, name), 
+			 pBrief, pUpstream, pLinkGraph, pSections, 
+			 pMasterMgrClient, pQueueMgrClient);
+  }
+}
+
+void
+NodeStatusOpts() :
+{}
+{
+  (Author() | View() | Brief() | Upstream() | LinkGraph() | 
+   NodeStatusShow() | NodeStatusHide()) 
+  {}
+}
+
+void 
+Brief() : 
+{}
+{
+  <BRIEF> AE() 
+  {
+    pBrief = true;
+  }
+}
+
+void 
+Upstream() : 
+{}
+{
+  <UPSTREAM> AE() 
+  {
+    pUpstream = true;
+  }
+}
+
+void 
+LinkGraph() : 
+{}
+{
+  <LINK_GRAPH> AE() 
+  {
+    pLinkGraph = true;
+  }
+}
+
+void 
+NodeStatusShow() : 
+{}
+{
+  <SHOW> EQ() NodeStatusShowSections() (COMMA() NodeStatusShowSections())* AE()  
+  {}
+}
+
+void 
+NodeStatusShowSections() : 
+{}
+{
+  (NodeStatusShowAll() | 
+   ShowVsn() | ShowProp() |  ShowAct() | ShowJReq() | ShowKey() | ShowLink() | ShowFile()) 
+  {}
+}
+
+void 
+NodeStatusShowAll() : 
+{}
+{
+  <ALL>
+  {
+    pSections.add("vsn");
+    pSections.add("prop");
+    pSections.add("act");
+    pSections.add("jreq");
+    pSections.add("key");
+    pSections.add("link");
+    pSections.add("file");
+  }
+}
+
+void 
+NodeStatusHide() : 
+{}
+{
+  <HIDE> EQ() NodeStatusHideSections() (COMMA() NodeStatusHideSections())* AE()  
+  {}
+}
+
+void 
+NodeStatusHideSections() : 
+{}
+{
+  (NodeStatusHideAll() | 
+   HideVsn() | HideProp() | HideAct() | HideJReq() | HideKey() | HideLink() | HideFile()) 
+  {}
+}
+
+void 
+NodeStatusHideAll() : 
+{}
+{
+  <ALL>
+  {
+    pSections.clear(); 
+  }
+}
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
+NodeCheckIn() 
+  throws PipelineException : 
+{
+  String name = null;
+
+  pAuthor  = PackageInfo.sUser;
+  pView    = "default";
+  pMessage = null;
+  pLevel   = null;
+}
+{
+  <NODE_CHECK_IN> EQ() name=NodeName() AE() (NodeCheckInOpts())*
+  {
+    if(pMessage == null) 
+      throw new PipelineException
+        ("The --msg option is required!");
+
+    if(pLevel == null) 
+      pLevel = VersionID.Level.Minor;
+
+    pMasterMgrClient.checkIn(new NodeID(pAuthor, pView, name), pMessage, pLevel);
+
+    Logs.ops.info("Checked-In: " + name);
+    Logs.flush();
+  }
+}
+
+void
+NodeCheckInOpts() 
+  throws PipelineException : 
+{}
+{
+  (Author() | View() | Msg() | Major() | Minor() | Micro()) 
+  {}
+}
+
+void
+Major() 
+  throws PipelineException : 
+{}
+{
+  <MAJOR> AE()
+  {
+    if(pLevel != null) 
+      throw new PipelineException
+	("The --major, --minor and --micro options are mutually exclusive!");
+
+    pLevel = VersionID.Level.Major;
+  }
+}
+
+void
+Minor() 
+  throws PipelineException : 
+{}
+{
+  <MINOR> AE()
+  {
+    if(pLevel != null) 
+      throw new PipelineException
+	("The --major, --minor and --micro options are mutually exclusive!");
+
+    pLevel = VersionID.Level.Minor;
+  }
+}
+
+void
+Micro() 
+  throws PipelineException : 
+{}
+{
+  <MICRO> AE()
+  {
+    if(pLevel != null) 
+      throw new PipelineException
+	("The --major, --minor and --micro options are mutually exclusive!");
+
+    pLevel = VersionID.Level.Micro;
+  }
+}
+      
+/*------------------------------------------------------------------------------------------*/
+
+void 
+NodeCheckOut() 
+  throws PipelineException : 
+{
+  String name = null;
+
+  pAuthor     = PackageInfo.sUser;
+  pView       = "default";
+  pVersionIDs = new TreeSet();
+  pKeepNewer  = false;
+}
+{
+  <NODE_CHECK_OUT> EQ() name=NodeName() AE() (NodeCheckOutOpts())*
+  {
+    VersionID vid = null;
+    if(!pVersionIDs.isEmpty()) {
+      if((pVersionIDs.size() > 1))
+	throw new PipelineException
+	  ("Only one version of a node may checked-out!");
+	
+      vid = (VersionID) pVersionIDs.first();
+    }
+
+    pMasterMgrClient.checkOut(new NodeID(pAuthor, pView, name), vid, pKeepNewer);
+
+    Logs.ops.info("Checked-Out: " + name);
+    Logs.flush();
+  }
+}
+
+void
+NodeCheckOutOpts() 
+  throws PipelineException : 
+{}
+{
+  (Author() | View() | VersionOption() | KeepNewer()) 
+  {}
+}
+
+void
+KeepNewer() : 
+{}
+{
+  <KEEP_NEWER> AE()
+  {
+    pKeepNewer = true;
+  }
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
+NodeEvolve() 
+  throws PipelineException : 
+{
+  String name = null;
+
+  pAuthor     = PackageInfo.sUser;
+  pView       = "default";
+  pVersionIDs = new TreeSet();
+}
+{
+  <NODE_EVOLVE> EQ() name=NodeName() AE() (NodeEvolveOpts())*
+  {
+    VersionID vid = null;
+    if(!pVersionIDs.isEmpty()) {
+      if((pVersionIDs.size() > 1))
+	throw new PipelineException
+	  ("Only one version of a node may evolved!");
+	
+      vid = (VersionID) pVersionIDs.first();
+    }
+
+    pMasterMgrClient.evolve(new NodeID(pAuthor, pView, name), vid);
+
+    Logs.ops.info("Evolved: " + name);
+    Logs.flush();
+  }
+}
+
+void
+NodeEvolveOpts() 
+  throws PipelineException : 
+{}
+{
+  (Author() | View() | VersionOption()) 
+  {}
+}
 
 
 /*------------------------------------------------------------------------------------------*/
@@ -3569,7 +4119,7 @@ HideVsn() :
 {
   <VSN> 
   {
-    pSections.add("vsn");    
+    pSections.remove("vsn");    
   }
 }
 
@@ -3579,7 +4129,7 @@ HideProp() :
 {
   <PROP> 
   {
-    pSections.add("prop");    
+    pSections.remove("prop");    
   }
 }
 
@@ -3589,7 +4139,7 @@ HideAct() :
 {
   <ACT>  
   {
-    pSections.add("act");    
+    pSections.remove("act");    
   }
 }
 
@@ -3599,7 +4149,7 @@ HideJReq() :
 {
   <JREQ> 
   {
-    pSections.add("jreq");    
+    pSections.remove("jreq");    
   }
 }
 
@@ -3609,7 +4159,7 @@ HideKey() :
 {
   <KEY> 
   {
-    pSections.add("key");    
+    pSections.remove("key");    
   }
 }
 
@@ -3619,7 +4169,7 @@ HideLink() :
 {
   <LINK> 
   {
-    pSections.add("link");    
+    pSections.remove("link");    
   }
 }
 
@@ -3629,7 +4179,7 @@ HideTime() :
 {
   <TIME> 
   {
-    pSections.add("time");    
+    pSections.remove("time");    
   }
 }
 
@@ -3639,7 +4189,7 @@ HideProc() :
 {
   <PROC> 
   {
-    pSections.add("proc");    
+    pSections.remove("proc");    
   }
 }
 
@@ -3649,7 +4199,7 @@ HideWkdir() :
 {
   <WKDIR> 
   {
-    pSections.add("wkdir");    
+    pSections.remove("wkdir");    
   }
 }
 
@@ -3659,7 +4209,7 @@ HideCmd() :
 {
   <CMD> 
   {
-    pSections.add("cmd");    
+    pSections.remove("cmd");    
   }
 }
 
@@ -3669,7 +4219,7 @@ HideEnv() :
 {
   <ENV> 
   {
-    pSections.add("env");    
+    pSections.remove("env");    
   }
 }
 
@@ -3679,7 +4229,7 @@ HideOut() :
 {
   <OUT> 
   {
-    pSections.add("out");    
+    pSections.remove("out");    
   }
 }
 
@@ -3689,7 +4239,7 @@ HideErr() :
 {
   <ERR> 
   {
-    pSections.add("err");    
+    pSections.remove("err");    
   }
 }
 
@@ -3699,7 +4249,7 @@ HideFile() :
 {
   <FILE> 
   {
-    pSections.add("file");    
+    pSections.remove("file");    
   }
 }
 
@@ -3708,18 +4258,31 @@ HideFile() :
 /*   S H A R E D   O P T I O N S                                                            */
 /*------------------------------------------------------------------------------------------*/
 
-String 
+void 
 Msg() : 
 {
   String msg; 
 }
 {
-  <MSG> EQ() msg=StringLiteral() 
+  <MSG> EQ() msg=StringLiteral() AE()
   {
-    return msg;
+    pMessage = msg;
   }
 }
 
+void  
+Total()
+  throws PipelineException : 
+{
+  int total;
+}
+{
+  <TOTAL> EQ() total=IntegerLiteral() AE()
+  {
+    pTotal = total; 
+  }
+}
+      
 void
 Author() : 
 {
@@ -4197,7 +4760,28 @@ RenameFiles() :
   }
 }
 
+void 
+VersionOption() 
+  throws PipelineException : 
+{
+  VersionID vid = null; 
+}
+{
+  <VERSION2> EQ() vid=RevisionNumber() AE()
+  {
+    pVersionIDs.add(vid);
+  }
+}
 
+void 
+Latest() :
+{}
+{
+  <LATEST> AE()
+  {
+    pLatest = true;
+  }
+}
 
 
 /*------------------------------------------------------------------------------------------*/

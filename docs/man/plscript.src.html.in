@@ -644,8 +644,7 @@ Node Versions</a></li>
     <li style="font-weight: bold;"><a href="#Checked-In_Node_Versions">Checked-In
 Node Versions</a></li>
     <ul>
-      <li style="font-weight: bold;"><span
- style="color: rgb(153, 0, 0);">checked-in</span><br>
+      <li style="font-weight: bold;"><span style="color: rgb(0, 0, 0);">checked-in</span><br>
       </li>
     </ul>
   </ul>
@@ -669,8 +668,9 @@ Node Versions</a></li>
  style="font-weight: normal;"><span style="font-weight: bold;">--hide</span>=<span
  style="font-style: italic;">section</span>[,<span
  style="font-style: italic;">section</span> ...]]</span></li>
-        <li style="font-weight: bold;"><a href="#checked-in_--history"><span
- style="font-weight: bold;">--history</span></a><span
+        <li style="font-weight: bold;"><span
+ style="font-weight: bold; color: rgb(153, 0, 0);"></span><a
+ href="#checked-in_--history"><span style="font-weight: bold;">--history</span></a><span
  style="font-weight: normal;">=<span style="font-style: italic;">node-name</span>
 [</span><span style="font-weight: normal;"></span><a href="#--version"><span
  style="font-weight: bold;">--version</span></a><span
@@ -685,22 +685,7 @@ Node Versions</a></li>
  style="font-weight: bold;"></span></span><span
  style="font-weight: normal;"> ...]</span></li>
         <li style="font-weight: bold;"><span
- style="font-weight: normal;"><a href="#checked-in_--novelty"><span
- style="font-weight: bold;">--novelty</span></a>=</span><span
- style="font-weight: normal;"><span style="font-style: italic;">node-name
-          </span></span><span style="font-weight: normal;">[<span
- style="font-weight: bold;"></span></span><span
- style="font-weight: normal;"></span><a href="#--version"><span
- style="font-weight: bold;">--version</span></a><span
- style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
- style="font-style: italic;">major</span>.<span
- style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span> | </span><span
- style="font-weight: normal;"><a href="#--latest"><span
- style="font-weight: bold;">--latest</span></a></span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
- style="font-weight: normal;"> ...]</span></li>
-        <li style="font-weight: bold;"><span
+ style="font-weight: bold; color: rgb(153, 0, 0);"></span><span
  style="font-weight: normal;"><a href="#checked-in_--view"><span
  style="font-weight: bold;">--view</span></a>=</span><span
  style="font-weight: normal;"><span style="font-style: italic;">node-name</span>
@@ -709,15 +694,14 @@ Node Versions</a></li>
  style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
  style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span> | <span
- style="font-weight: bold;"></span></span><span
+ style="font-style: italic;">micro</span></span><span
  style="font-weight: normal;"><a href="#--latest"><span
- style="font-weight: bold;">--latest</span></a></span><span
+ style="font-weight: bold;"></span></a></span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;"><span
  style="font-weight: bold;"></span></span><span
- style="font-weight: normal;"> ...]</span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
- style="font-weight: normal;"><span style="font-weight: bold;"> </span></span><span
+ style="font-weight: normal;">]</span><span style="font-weight: normal;"></span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"><span
+ style="font-weight: bold;"> </span></span><span
  style="font-weight: normal;">[<a href="#--editor"><span
  style="font-weight: bold;">--editor</span></a>=<span
  style="font-style: italic;">editor-name</span></span><span
@@ -749,14 +733,15 @@ Node Versions</a></li>
 Operations</span></span></a></li>
     <ul>
       <li style="font-weight: bold;"><span style="font-weight: normal;"><span
- style="font-weight: bold;"><span style="color: rgb(153, 0, 0);">node</span><br>
+ style="font-weight: bold;"><span style="color: rgb(0, 0, 0);">node</span><br>
         </span></span></li>
     </ul>
     <ul>
       <ul>
         <li style="font-weight: bold;"><span
- style="font-weight: normal;"><a href="#node_--status"><span
- style="font-weight: bold;">--status</span></a>=<span
+ style="font-weight: normal;"><span
+ style="font-weight: bold; color: rgb(153, 0, 0);"></span><a
+ href="#node_--status"><span style="font-weight: bold;">--status</span></a>=<span
  style="font-style: italic;">node-name</span> </span><span
  style="font-weight: normal;">[</span><a href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
@@ -778,8 +763,10 @@ Operations</span></span></a></li>
  style="font-weight: bold;"></span></span>
       <ul>
         <li style="font-weight: bold;"><span
- style="font-weight: normal;"><a href="#node_--check-in"><span
- style="font-weight: bold;">--check-in</span></a>=<span
+ style="font-weight: normal;"><span
+ style="font-weight: bold; color: rgb(153, 0, 0);"></span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span><a
+ href="#node_--check-in"><span style="font-weight: bold;">--check-in</span></a>=<span
  style="font-style: italic;">node-name</span> </span><span
  style="font-weight: normal;">[</span><a href="#--author">--author</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
@@ -796,6 +783,8 @@ Operations</span></span></a></li>
 | <a href="#--minor"><span style="font-weight: bold;">--minor</span></a>
 | <a href="#--micro"><span style="font-weight: bold;">--micro</span></a>]</span></li>
         <li style="font-weight: bold;"><span
+ style="font-weight: normal;"><span
+ style="font-weight: bold; color: rgb(153, 0, 0);"></span></span><span
  style="font-weight: normal;"><a href="#node_--check-out"><span
  style="font-weight: bold;">--check-out</span></a>=<span
  style="font-style: italic;">node-name </span></span><span
@@ -810,7 +799,10 @@ Operations</span></span></a></li>
  style="font-style: italic;">minor</span>.<span
  style="font-style: italic;">micro</span>]</span><span
  style="font-weight: normal;"> [<span style="font-weight: bold;">--keep-newer</span>]</span></li>
-        <li style="font-weight: bold;"><a href="#node_--evolve"><span
+        <li style="font-weight: bold;"><span
+ style="font-weight: normal;"><span
+ style="font-weight: bold; color: rgb(153, 0, 0);"></span></span><span
+ style="font-weight: bold;"></span><a href="#node_--evolve"><span
  style="font-weight: bold;">--evolve</span></a><span
  style="font-weight: normal;">=<span style="font-style: italic;">node-name
           </span></span><span style="font-weight: normal;">[</span><a
@@ -3148,37 +3140,8 @@ If no <span style="font-weight: bold;">--version</span> or <span
  style="font-weight: bold;">--latest</span> options are specified, the
 log messages of all checked-in versions will be printed.<br>
 </div>
-<span style="font-weight: normal;"><br>
-</span><span style="font-weight: bold;"><a name="checked-in_--novelty"></a>checked-in
-</span><span style="font-weight: normal;"><span
- style="font-weight: bold;">--novelty</span>=</span><span
- style="font-weight: normal;"><span style="font-style: italic;">node-name
-</span></span><span style="font-weight: normal;"><br>
-&nbsp;&nbsp;&nbsp; [<span style="font-weight: bold;"></span></span><span
- style="font-weight: normal;"></span><a href="#--version"><span
- style="font-weight: bold;">--version</span></a><span
- style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
- style="font-style: italic;">major</span>.<span
- style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span> | </span><span
- style="font-weight: normal;"><a href="#--latest"><span
- style="font-weight: bold;">--latest</span></a></span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
- style="font-weight: normal;"> ...]<br>
-<br>
-</span>
-<div style="margin-left: 40px;">Prints a table containing information
-about when each file associated with the given versions (<span
- style="font-weight: normal;"><span style="font-style: italic;">major</span>.<span
- style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span></span><span
- style="font-weight: normal;"><span style="font-style: italic;"></span></span>)
-of the target checked-in node (<span style="font-style: italic;">node-name</span>)
-was modified with respect the the previous version.&nbsp; If no <span
- style="font-weight: bold;">--version</span> or <span
- style="font-weight: bold;">--latest</span> options are specified, file
-novelty information for all checked-in versions will be printed.</div>
-<span style="font-weight: normal;"></span></div>
+<span style="font-weight: normal;"></span><span
+ style="font-weight: normal;"></span></div>
 <span style="font-weight: normal;">
 </span><br>
 <div style="margin-left: 40px;"><span style="font-weight: normal;"><span
@@ -3190,15 +3153,10 @@ novelty information for all checked-in versions will be printed.</div>
  style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span
  style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span> | <span
- style="font-weight: bold;"></span></span><span
- style="font-weight: normal;"><a href="#--latest"><span
- style="font-weight: bold;">--latest</span></a></span><span
+ style="font-style: italic;">micro</span></span><span
+ style="font-weight: normal;">]</span><span style="font-weight: normal;"></span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;"><span
- style="font-weight: bold;"></span></span><span
- style="font-weight: normal;"> ...]</span><span
- style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
- style="font-weight: normal;"><span style="font-weight: bold;">&nbsp; </span></span><span
+ style="font-weight: bold;">&nbsp; </span></span><span
  style="font-weight: normal;"><br>
 &nbsp;&nbsp;&nbsp; [<a href="#--editor"><span style="font-weight: bold;">--editor</span></a>=<span
  style="font-style: italic;">editor-name</span></span><span
@@ -3233,7 +3191,8 @@ with the given version (<span style="font-weight: normal;"><span
  style="font-weight: normal;"><span style="font-style: italic;"></span></span>)
 of the target checked-in node (<span style="font-style: italic;">node-name</span>).
 &nbsp;
-<br>
+If no <span style="font-weight: bold;">--version</span> option is
+specified, the latest checked-in version will be viewed.<br>
 <br>
 The <span style="font-weight: bold;">--frame</span>, <span
  style="font-weight: bold;">--index</span> and <span
@@ -3276,7 +3235,7 @@ Operations</span></span></h3>
  style="font-style: italic;">view-name</span>]</span><span
  style="font-weight: normal;"><br>
 &nbsp;&nbsp;&nbsp; </span><span style="font-weight: normal;">[<span
- style="font-weight: bold;">--single | --tree</span>] [<span
+ style="font-weight: bold;">--tree</span>] [<span
  style="font-weight: bold;">--link-graph</span>] <br>
 &nbsp;&nbsp;&nbsp; <span style="font-weight: bold;"></span>[<span
  style="font-weight: bold;">--show</span>=<span
@@ -3291,10 +3250,21 @@ Operations</span></span></h3>
 status of the target working node version (<span
  style="font-style: italic;">node-name</span>) in the working area (<span
  style="font-style: italic;">view-name</span>) owned by the user (<span
- style="font-style: italic;">user-name</span>).&nbsp; The <span
- style="font-weight: bold;">--show</span> and <span
+ style="font-style: italic;">user-name</span>).&nbsp; By default, only
+the status of the given node is printed&nbsp; If the <span
+ style="font-weight: bold;">--tree</span> option is specified, the
+status for all nodes upstream of the given node will also be
+displayed.&nbsp; The nodes will be printed in alphabetical order.&nbsp;
+<br>
+<br>
+The <span style="font-weight: bold;">--link-graph</span> option cause
+a heirarchical nested list of node names which describes the link
+relationships for all nodes upstream of the given node to be printed in
+addition to any status information.<br>
+<br>
+The <span style="font-weight: bold;">--show</span> and <span
  style="font-weight: bold;">--hide</span> options control the kinds of
-information (<span style="font-style: italic;">section</span>)
+node status information (<span style="font-style: italic;">section</span>)
 printed.&nbsp; The following sections are supported by these options: <br>
 <br>
 <span style="font-weight: bold;">all<br>
@@ -3320,7 +3290,7 @@ environment and default editor for the working version and the
 checked-in version upon which the working version is based.<br>
 </div>
 <br>
-<span style="font-weight: bold;">action</span><br>
+<span style="font-weight: bold;">act</span><br>
 <br>
 <div style="margin-left: 40px;">Prints the name, version, single and
 per-source parameters of the Action plugin associated with the working
@@ -3404,8 +3374,12 @@ target working node version (<span style="font-style: italic;">node-name</span>)
 in the working area (<span style="font-style: italic;">view-name</span>)
 owned by the user (<span style="font-style: italic;">user-name</span>).&nbsp;
 The check-in message (<span style="font-style: italic;">log-message</span>)
-is required.&nbsp; Also checks in all modified nodes upstream of the
-target node prior to checking-in the target node.<br>
+is required.&nbsp; If no <span style="font-weight: bold;">--major</span>,
+<span style="font-weight: bold;">--minor</span> or <span
+ style="font-weight: bold;">--micro</span> options are specified, this
+command behaves as if <span style="font-weight: bold;">--minor</span>
+was specified.&nbsp; Also checks in all modified nodes upstream of the
+target node prior to checking-in the target node. <br>
 </div>
 <span style="font-weight: normal;"></span><br>
 <span style="font-weight: normal;"></span><span

@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.13 2004/09/28 18:04:01 jim Exp $
+// $Id: ScriptApp.java,v 1.14 2004/10/09 16:56:47 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -57,10 +57,9 @@ class ScriptApp
     packageArguments(args);
 
     boolean success = false;
+    ScriptOptsParser parser = null;
     try {
-      ScriptOptsParser parser = 
-	new ScriptOptsParser(new StringReader(pPackedArgs));
-      
+      parser = new ScriptOptsParser(new StringReader(pPackedArgs));
       parser.setApp(this);
       parser.CommandLine();   
       
@@ -76,6 +75,8 @@ class ScriptApp
       Logs.ops.severe(getFullMessage(ex));
     }
     finally {
+      if(parser != null)
+	parser.disconnect();
       Logs.cleanup();
     }
 
@@ -164,6 +165,20 @@ class ScriptApp
       "       [--remove-key=key-name]\n" + 
       "      --remove=host-name\n" + 
       "\n" + 
+      "  Plugins\n" + 
+      "    editor\n" + 
+      "      --get\n" + 
+      "      --get-info=editor-name[:major.minor.micro]\n" + 
+      "      --get-info-all\n" + 
+      "    action\n" + 
+      "      --get\n" + 
+      "      --get-info=action-name[:major.minor.micro]\n" + 
+      "      --get-info-all\n" + 
+      "    comparator\n" + 
+      "      --get\n" + 
+      "      --get-info=comparator-name[:major.minor.micro]\n" + 
+      "      --get-info-all\n" + 
+      "\n" + 
       "  User Preferences\n" + 
       "    suffix-editor\n" + 
       "      --get\n" + 
@@ -184,6 +199,21 @@ class ScriptApp
       "      --get-info=node-name\n" +
       "        [--author=user-name] [--view=view-name]\n" +
       "        [--show=section[,section ...]] [--hide=section[,section ...]]\n" +
+      "      --register=node-name\n" +
+      "        [--author=user-name] [--view=view-name]\n" +
+      "        --fseq=prefix[.#|@...][.suffix][,start[-end[xby]]]\n" +
+      "        [--toolset=toolset-name] [--editor=editor-name[:major.minor.micro]]\n" +
+      "        [--no-action | --action=action-name[:major.minor.micro]]\n" +
+      "        [--action-enabled=true|false] [--param=name:value ...]\n" +
+      "        [--source-param=source-name,name:value ...]\n" +
+      "        [--ignore | --abort] [--serial | --parallel] [--batch-size=integer]\n" +
+      "        [--priority=integer] [--max-load=real]\n" +
+      "        [--min-memory=bytes[K|M|G]] [--min-disk=bytes[K|M|G]]\n" +
+      "        [--license-key=key-name[:true|false] ...]\n" +
+      "        [--selection-key=key-name[:true|false] ...]\n" +
+      "      --release=node-name\n" +
+      "        [--author=user-name] [--view=view-name]\n" +
+      "        [--remove-files]\n" +
       "      --set=node-name\n" +
       "        [--author=user-name] [--view=view-name]\n" +
       "        [--toolset=toolset-name] [--editor=editor-name[:major.minor.micro]]\n" +
@@ -220,6 +250,12 @@ class ScriptApp
       "        [--editor=editor-name[:major.minor.micro]]\n" +
       "        [--frame=single|start-end[,...] ...] [--index=single|start-end[,...] ...]\n" +
       "        [--fseq=prefix[.#|@...][.suffix][,start[-end[xby]]]]\n" +
+      "      --submit-jobs=node-name\n" +
+      "        [--author=user-name] [--view=view-name]\n" +
+      "        [--frame=single|start-end[,...] ...] [--index=single|start-end[,...] ...]\n" +
+      "      --remove-files=node-name\n" +
+      "        [--author=user-name] [--view=view-name]\n" +
+      "        [--frame=single|start-end[,...] ...] [--index=single|start-end[,...] ...]\n" +
       "\n" +
       "  Checked-In Node Versions\n" +
       "    checked-in\n" +
@@ -228,42 +264,27 @@ class ScriptApp
       "        [--show=section[,section ...]] [--hide=section[,section ...]]\n" +
       "      --history=node-name\n" +
       "        [--version=major.minor.micro | --latest ...]\n" +
-      "      --novelty=node-name\n" +
-      "        [--version=major.minor.micro | --latest ...]\n" + 
+      "      --view=node-name\n" +
+      "        [--version=major.minor.micro]\n" +
+      "        [--editor=editor-name[:major.minor.micro]]\n" +
+      "        [--frame=single|start-end[,...] ...] [--index=single|start-end[,...] ...]\n" +
+      "        [--fseq=prefix[.#|@...][.suffix][,start[-end[xby]]]]\n" +
       "\n" + 
       "  Node Operations\n" +
       "    node\n" +
       "      --status=node-name\n" +
       "        [--author=user-name] [--view=view-name]\n" +
-      "        [--single | --tree] [--link-graph]\n" +
+      "        [--brief] [--upstream] [--link-graph]\n" +
       "        [--show=section[,section ...]] [--hide=section[,section ...]]\n" +
-      "      --register=node-name\n" +
-      "        [--author=user-name] [--view=view-name]\n" +
-      "        --fseq=prefix[.#|@...][.suffix][,start[-end[xby]]]\n" +
-      "        [--toolset=toolset-name] [--editor=editor-name[:major.minor.micro]]\n" +
-      "        [--no-action | --action=action-name[:major.minor.micro]]\n" +
-      "        [--action-enabled=true|false] [--param=name:value ...]\n" +
-      "        [--source-param=source-name,name:value ...]\n" +
-      "        [--ignore | --abort] [--serial | --parallel] [--batch-size=integer]\n" +
-      "        [--priority=integer] [--max-load=real]\n" +
-      "        [--min-memory=bytes[K|M|G]] [--min-disk=bytes[K|M|G]]\n" +
-      "        [--license-key=key-name[:true|false] ...]\n" +
-      "        [--selection-key=key-name[:true|false] ...]\n" +
-      "      --release=node-name\n" +
-      "        [--author=user-name] [--view=view-name]\n" +
-      "        [--remove-files]\n" +
       "      --check-in=node-name\n" +
       "        [--author=user-name] [--view=view-name]\n" +
       "        --msg=\"log-message\" [--major | --minor | --micro]\n" +
       "      --check-out=node-name\n" +
       "        [--author=user-name] [--view=view-name]\n" +
       "        [--version=major.minor.micro] [--keep-newer]\n" +
-      "      --submit-jobs=node-name\n" +
+      "      --evolve=node-name\n" +
       "        [--author=user-name] [--view=view-name]\n" +
-      "        [--frame=single|start-end[,...] ...] [--index=single|start-end[,...] ...]\n" +
-      "      --remove-files=node-name\n" +
-      "        [--author=user-name] [--view=view-name]\n" +
-      "        [--frame=single|start-end[,...] ...] [--index=single|start-end[,...] ...]\n" +
+      "        [--version=major.minor.micro]\n" +
       "\n" +
       "  Queue Operations\n" +
       "    job-group\n" +
@@ -747,131 +768,14 @@ class ScriptApp
     throws PipelineException
   {
     NodeMod mod = mclient.getWorkingVersion(nodeID);
-    BaseAction action = mod.getAction();
-    JobReqs jreqs = mod.getJobRequirements();
-    
-    StringBuffer buf = new StringBuffer(); 
-    
+    VersionID vid = mod.getWorkingID();
+
+    StringBuffer buf = new StringBuffer();
     buf.append
       (tbar(80) + "\n" +
-       "Working Node      : " + mod.getName() + "\n" + 
-       "Primary Files     : " + mod.getPrimarySequence());
+       "Working Node      : " + mod.getName() + "\n");
 
-    for(FileSeq fseq : mod.getSecondarySequences()) {
-      buf.append
-	("\n" + 
-	 "Secondary Files   : " + fseq);
-    }
-    
-    if(sections.contains("version")) {
-      String vstr = "(pending)";
-      if(mod.getWorkingID() != null) 
-	vstr = mod.getWorkingID().toString();
-      
-      buf.append
-	("\n\n" + 
-	 pad("-- Versions ", '-', 80) + "\n" +
-	 "Revision Number   : " + vstr);
-    }
-    
-    if(sections.contains("prop")) {
-      buf.append
-	("\n\n" + 
-	 pad("-- Properties ", '-', 80) + "\n" +
-	 "Toolset           : " + mod.getToolset() + "\n" +
-	 "Editor            : " + mod.getEditor());
-    }
-       
-    if(sections.contains("action")) {
-      buf.append
-	("\n\n" + 
-	 pad("-- Regeneration Action ", '-', 80) + "\n");
-
-      if(action != null) {
-	buf.append
-	  ("Action            : " + action.getName() + "\n" +
-	   "Version           : v" + action.getVersionID() + "\n" + 
-	   "Enabled           : " + (mod.isActionEnabled() ? "YES" : "no"));
-	
-	if(action.hasSingleParams()) {
-	  buf.append("\n\n" +
-		     pad("-- Action Parameters ", '-', 80));
-	  for(String pname : action.getSingleLayout()) {
-	    buf.append("\n");	 
-	    if(pname != null) 
-	      buf.append(pad(pname, 18) + ": " + action.getSingleParamValue(pname));
-	  }
-	}
-
-	if(action.supportsSourceParams() && (action.getSourceNames().size() > 0)) {
-	  buf.append("\n\n" +
-		     pad("-- Per-Source Action Parameters ", '-', 80) + "\n");
-
-	  boolean first = true;
-	  for(String sname : action.getSourceNames()) {
-	    buf.append((first ? "" : "\n\n") + 
-		       "Source Node       : " + sname);
-	    first = false;
-
-	    for(String pname : action.getSourceLayout()) {
-	      buf.append
-		("\n" + 
-		 pad(pname, 18) + ": " + action.getSourceParamValue(sname, pname));
-	    }
-	  }
-	}
-      }
-      else {
-	buf.append
-	  ("Action            : (none)");	
-      }	 
-    }
-
-    if(sections.contains("jreq") && (action != null)) {
-      String batchSize = "-";
-      if(mod.getBatchSize() != null) 
-	batchSize = mod.getBatchSize().toString();
-
-      buf.append
-	("\n\n" +
-	 pad("-- Job Requirements ", '-', 80) + "\n" +
-	 "Overflow Policy   : " + mod.getOverflowPolicy() + "\n" + 
-	 "Execution Method  : " + mod.getExecutionMethod() + "\n" + 
-	 "Batch Size        : " + batchSize + "\n" + 
-	 "\n" + 
-	 "Priority          : " + jreqs.getPriority() + "\n" + 
-	 "Maximum Load      : " + String.format("%1$.2f", jreqs.getMaxLoad()) + "\n" +
-	 "Minimum Memory    : " + formatLong(jreqs.getMinMemory()) + "\n" +
-	 "Minimum Disk      : " + formatLong(jreqs.getMinDisk()));
-    }
-
-    if(sections.contains("key") && (action != null)) {
-      {
-	buf.append
-	  ("\n\n" +
-	   pad("-- License Keys ", '-', 80));
-
-	Set<String> keys = jreqs.getLicenseKeys();
-	for(String kname : qclient.getLicenseKeyNames()) {
-	  buf.append
-	    ("\n" + 
-	     pad(kname, 18) + ": " + (keys.contains(kname) ? "YES" : "no"));
-	}
-      }
-
-      {
-	buf.append
-	  ("\n\n" +
-	   pad("-- Selection Keys ", '-', 80));
-
-	Set<String> keys = jreqs.getSelectionKeys();
-	for(String kname : qclient.getSelectionKeyNames()) {
-	  buf.append
-	    ("\n" + 
-	     pad(kname, 18) + ": " + (keys.contains(kname) ? "YES" : "no"));
-	}
-      }
-    }
+    printCommon(buf, mod, vid, sections, qclient);
 
     if(sections.contains("link") && mod.hasSources()) {
       buf.append
@@ -909,6 +813,144 @@ class ScriptApp
 
     Logs.ops.info(buf.toString());
     Logs.flush();    
+  }
+
+  
+  /**
+   * Print a text representation of the given working version.
+   */ 
+  public void
+  printCommon
+  (
+   StringBuffer buf, 
+   NodeCommon com,
+   VersionID vid, 
+   TreeSet sections, 
+   QueueMgrClient qclient
+  ) 
+    throws PipelineException
+  {
+    BaseAction action = com.getAction();
+    JobReqs jreqs = com.getJobRequirements();
+    
+    buf.append
+      ("Primary Files     : " + com.getPrimarySequence());
+
+    for(FileSeq fseq : com.getSecondarySequences()) {
+      buf.append
+	("\n" + 
+	 "Secondary Files   : " + fseq);
+    }
+    
+    if(sections.contains("vsn")) {
+      String vstr = "(pending)";
+      if(vid != null) 
+	vstr = vid.toString();
+      
+      buf.append
+	("\n\n" + 
+	 pad("-- Versions ", '-', 80) + "\n" +
+	 "Revision Number   : " + vstr);
+    }
+    
+    if(sections.contains("prop")) {
+      buf.append
+	("\n\n" + 
+	 pad("-- Properties ", '-', 80) + "\n" +
+	 "Toolset           : " + com.getToolset() + "\n" +
+	 "Editor            : " + com.getEditor());
+    }
+       
+    if(sections.contains("act")) {
+      buf.append
+	("\n\n" + 
+	 pad("-- Regeneration Action ", '-', 80) + "\n");
+
+      if(action != null) {
+	buf.append
+	  ("Action            : " + action.getName() + "\n" +
+	   "Version           : " + action.getVersionID() + "\n" + 
+	   "Enabled           : " + (com.isActionEnabled() ? "YES" : "no"));
+	
+	if(action.hasSingleParams()) {
+	  buf.append("\n\n" +
+		     pad("-- Action Parameters ", '-', 80));
+	  for(String pname : action.getSingleLayout()) {
+	    buf.append("\n");	 
+	    if(pname != null) 
+	      buf.append(pad(pname, 18) + ": " + action.getSingleParamValue(pname));
+	  }
+	}
+
+	if(action.supportsSourceParams() && (action.getSourceNames().size() > 0)) {
+	  buf.append("\n\n" +
+		     pad("-- Per-Source Action Parameters ", '-', 80) + "\n");
+
+	  boolean first = true;
+	  for(String sname : action.getSourceNames()) {
+	    buf.append((first ? "" : "\n\n") + 
+		       "Source Node       : " + sname);
+	    first = false;
+
+	    for(String pname : action.getSourceLayout()) {
+	      buf.append
+		("\n" + 
+		 pad(pname, 18) + ": " + action.getSourceParamValue(sname, pname));
+	    }
+	  }
+	}
+      }
+      else {
+	buf.append
+	  ("Action            : (none)");	
+      }	 
+    }
+
+    if(sections.contains("jreq") && (action != null)) {
+      String batchSize = "-";
+      if(com.getBatchSize() != null) 
+	batchSize = com.getBatchSize().toString();
+
+      buf.append
+	("\n\n" +
+	 pad("-- Job Requirements ", '-', 80) + "\n" +
+	 "Overflow Policy   : " + com.getOverflowPolicy() + "\n" + 
+	 "Execution Method  : " + com.getExecutionMethod() + "\n" + 
+	 "Batch Size        : " + batchSize + "\n" + 
+	 "\n" + 
+	 "Priority          : " + jreqs.getPriority() + "\n" + 
+	 "Maximum Load      : " + String.format("%1$.2f", jreqs.getMaxLoad()) + "\n" +
+	 "Minimum Memory    : " + formatLong(jreqs.getMinMemory()) + "\n" +
+	 "Minimum Disk      : " + formatLong(jreqs.getMinDisk()));
+    }
+
+    if(sections.contains("key") && (action != null)) {
+      {
+	buf.append
+	  ("\n\n" +
+	   pad("-- License Keys ", '-', 80));
+
+	Set<String> keys = jreqs.getLicenseKeys();
+	for(String kname : qclient.getLicenseKeyNames()) {
+	  buf.append
+	    ("\n" + 
+	     pad(kname, 18) + ": " + (keys.contains(kname) ? "YES" : "no"));
+	}
+      }
+
+      {
+	buf.append
+	  ("\n\n" +
+	   pad("-- Selection Keys ", '-', 80));
+
+	Set<String> keys = jreqs.getSelectionKeys();
+	for(String kname : qclient.getSelectionKeyNames()) {
+	  buf.append
+	    ("\n" + 
+	     pad(kname, 18) + ": " + (keys.contains(kname) ? "YES" : "no"));
+	}
+      }
+    }
   }
 
   /**
@@ -1308,14 +1350,35 @@ class ScriptApp
     throws PipelineException
   {
     NodeMod mod = client.getWorkingVersion(nodeID);
-    FileSeq primary = mod.getPrimarySequence();
+    editCommon(nodeID, mod, editorName, editorVersionID, frames, indices, fseq, wait, client);
+  }  
+
+  /**
+   * Launch the editor program for the given node version.
+   */ 
+  private void 
+  editCommon
+  (
+   NodeID nodeID, 
+   NodeCommon com, 
+   String editorName, 
+   VersionID editorVersionID, 
+   ArrayList frames, 
+   ArrayList indices, 
+   FileSeq fseq, 
+   boolean wait, 
+   MasterMgrClient client
+  ) 
+    throws PipelineException
+  {
+    FileSeq primary = com.getPrimarySequence();
     
     /* build the file sequences to edit */ 
     TreeSet<FileSeq> editSeqs = new TreeSet<FileSeq>();
     if(fseq != null) {
       boolean found = false;
       ArrayList<File> fs = fseq.getFiles();
-      for(FileSeq nfseq : mod.getSequences()) {
+      for(FileSeq nfseq : com.getSequences()) {
 	if(nfseq.getFiles().containsAll(fs)) {
 	  editSeqs.add(fseq);
 	  found = true;
@@ -1326,12 +1389,12 @@ class ScriptApp
       if(!found) 
 	throw new PipelineException
 	  ("The given file sequence (" + fseq + ") does not match any of the primary or " +
-	   "secondary file sequences of node (" + mod.getName() + ")!");
+	   "secondary file sequences of node (" + com.getName() + ")!");
     }
     else if(!indices.isEmpty()) {
       if(!primary.hasFrameNumbers()) 
 	throw new PipelineException
-	  ("The primary file sequence (" + primary + ") of node (" + mod.getName() + ") " +
+	  ("The primary file sequence (" + primary + ") of node (" + com.getName() + ") " +
 	   "does not have frame numbers, therefore the --index option cannot be used!");
 	   
       for(int[] idx : (ArrayList<int[]>) indices) {
@@ -1356,7 +1419,7 @@ class ScriptApp
     else if(!frames.isEmpty()) {
       if(!primary.hasFrameNumbers()) 
 	throw new PipelineException
-	  ("The primary file sequence (" + primary + ") of node (" + mod.getName() + ") " +
+	  ("The primary file sequence (" + primary + ") of node (" + com.getName() + ") " +
 	   "does not have frame numbers, therefore the --frame option cannot be used!");
 
       FrameRange range = primary.getFrameRange();
@@ -1386,41 +1449,64 @@ class ScriptApp
     }
     assert(!editSeqs.isEmpty());
 
+    NodeMod mod = null;
+    if(com instanceof NodeMod) 
+      mod = (NodeMod) com;
+    
+    NodeVersion vsn = null;
+    if(com instanceof NodeVersion) 
+      vsn = (NodeVersion) com;
+    
     /* create an editor plugin instance */ 
     BaseEditor editor = null;
     {
       String ename = editorName;
       if(ename == null) 
-	ename = mod.getEditor();
-      
+	ename = com.getEditor();
       if(ename == null) 
 	throw new PipelineException
-	  ("No editor was specified for node (" + mod.getName() + ")!");
-     
+	  ("No editor was specified for node (" + com.getName() + ")!");
+      
       editor = PluginMgr.getInstance().newEditor(ename, editorVersionID);
     }
-
+    
     /* lookup the toolset environment */ 
     TreeMap<String,String> env = null;
     {
-      String tname = mod.getToolset();
+      String tname = com.getToolset();
       if(tname == null) 
 	throw new PipelineException
-	  ("No toolset was specified for node (" + mod.getName() + ")!");
+	  ("No toolset was specified for node (" + com.getName() + ")!");
 
-      env = client.getToolsetEnvironment(nodeID.getAuthor(), nodeID.getView(), tname);
+      String author = null;
+      String view   = null;
+      if(mod != null) {
+	author = nodeID.getAuthor();
+	view   = nodeID.getView();
+      }
+      env = client.getToolsetEnvironment(author, view, tname);
       
       /* override these since the editor will be run as the current user */ 
       env.put("HOME", PackageInfo.sHomeDir + "/" + PackageInfo.sUser);
       env.put("USER", PackageInfo.sUser);
     }
-	    
-    /* the working directory */ 
-    File dir = null;
+    
+    /* get the directory containing the files */ 
+    File dir = null; 
     {
-      File path = new File(PackageInfo.sWorkDir, 
-			   nodeID.getAuthor() + "/" + nodeID.getView() + "/" + mod.getName());
-      dir = path.getParentFile();
+      if(mod != null) {
+	File wpath = 
+	  new File(PackageInfo.sWorkDir, 
+		   nodeID.getAuthor() + "/" + nodeID.getView() + "/" + mod.getName());
+	dir = wpath.getParentFile();
+      }
+      else if(vsn != null) {
+	dir = new File(PackageInfo.sRepoDir + "/" + 
+		       vsn.getName() + "/" + vsn.getVersionID());
+      }
+      else {
+	assert(false);
+      }
     }
 
     /* launch an editor for each file sequence */ 
@@ -1586,6 +1672,755 @@ class ScriptApp
   }
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C H E C K E D - I N   N O D E   V E R S I O N   C O M M A N D S                      */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Print a text representation of the given checked-in version.
+   */ 
+  public void
+  printCheckedInVersion
+  (
+   String name, 
+   TreeSet<VersionID> vids, 
+   boolean latest, 
+   TreeSet sections, 
+   MasterMgrClient mclient, 
+   QueueMgrClient qclient
+  ) 
+    throws PipelineException
+  {
+    ArrayList<NodeVersion> versions = new ArrayList<NodeVersion>();
+    {
+      TreeSet<VersionID> avids = mclient.getCheckedInVersionIDs(name);
+      TreeSet<VersionID> svids = new TreeSet<VersionID>();
+      
+      if(!vids.isEmpty()) {
+	for(VersionID vid : vids) {
+	  if(avids.contains(vid)) 
+	    svids.add(vid);
+	  else 
+	    throw new PipelineException
+	      ("No checked-in version (" + vid + ") of node (" + name + ") exists!");
+	}
+      }
+      
+      if(latest) 
+	svids.add(avids.last());
+      else if(svids.isEmpty()) 
+	svids.addAll(avids);
+      
+      for(VersionID vid : svids) {
+	NodeVersion vsn = mclient.getCheckedInVersion(name, vid);
+	versions.add(vsn);
+      }		
+    }
+
+    StringBuffer buf = new StringBuffer();
+    boolean first = true;
+    for(NodeVersion vsn : versions) {
+      if(!first) 
+	buf.append("\n\n");
+      first = false;
+
+      buf.append
+	(tbar(80) + "\n" +
+	 "Checked-In Node   : " + vsn.getName() + " (v" + vsn.getVersionID() + ")\n");
+
+      printCommon(buf, vsn, vsn.getVersionID(), sections, qclient);
+
+      if(sections.contains("link") && vsn.hasSources()) {
+	buf.append
+	  ("\n\n" +
+	   pad("-- Upstream Links ", '-', 80));
+	
+	int wk = vsn.getSourceNames().size();
+	for(String sname : vsn.getSourceNames()) {
+	  LinkVersion link = vsn.getSource(sname);
+	  buf.append
+	    ("\n" +
+	     "Source Node       : " + sname + " (v" + link.getVersionID() + ")\n" +
+	     "Link Policy       : " + link.getPolicy());
+	  
+	  switch(link.getPolicy()) {
+	  case Reference:
+	  case Dependency:
+	    buf.append
+	      ("\n" + 
+	       "Link Relationship : " + link.getRelationship());
+	  }
+	  
+	  switch(link.getRelationship()) {
+	  case OneToOne:
+	    buf.append
+	      ("\n" + 
+	       "Frame Offset      : " + link.getFrameOffset()); 
+	  }
+	  
+	  if(wk > 0) 
+	    buf.append("\n");
+	  wk--;
+	}
+      }
+    }
+      
+    Logs.ops.info(buf.toString());
+    Logs.flush();    
+  }
+  
+  /**
+   * Print a text representation of the given checked-in version.
+   */ 
+  public void
+  printCheckedInHistory
+  (
+   String name, 
+   TreeSet<VersionID> vids, 
+   boolean latest, 
+   MasterMgrClient mclient
+  ) 
+    throws PipelineException
+  {
+    TreeMap<VersionID,LogMessage> logs = new TreeMap<VersionID,LogMessage>();
+    {
+      TreeSet<VersionID> avids = mclient.getCheckedInVersionIDs(name);
+      TreeSet<VersionID> svids = new TreeSet<VersionID>();
+      
+      if(!vids.isEmpty()) {
+	for(VersionID vid : vids) {
+	  if(avids.contains(vid)) 
+	    svids.add(vid);
+	  else 
+	    throw new PipelineException
+	      ("No checked-in version (" + vid + ") of node (" + name + ") exists!");
+	}
+      }
+      
+      if(latest) 
+	svids.add(avids.last());
+      else if(svids.isEmpty()) 
+	svids.addAll(avids);
+      
+      TreeMap<VersionID,LogMessage> history = mclient.getHistory(name);
+      for(VersionID vid : svids) {
+	LogMessage msg = history.get(vid);
+	if(msg != null) 
+	  logs.put(vid, msg);
+      }		
+    }
+
+    StringBuffer buf = new StringBuffer();
+    buf.append
+      (tbar(80) + "\n" +
+       "Checked-In Node  : " + name);
+    
+    for(VersionID vid : logs.keySet()) {
+      LogMessage msg = logs.get(vid);
+      buf.append
+	("\n\n" + 
+	 bar(80) + "\n" +
+	 "Revision Number  : " + vid + "\n" + 
+	 "Created          : " + (Dates.format(msg.getTimeStamp()) + " by (" + 
+				   msg.getAuthor()) + ")\n" +
+	 "Check-In Message : " + wordWrap(msg.getMessage(), 20, 80));
+    }
+      
+    Logs.ops.info(buf.toString());
+    Logs.flush();  
+  }
+
+  /**
+   * Launch the editor program for the given working version.
+   */ 
+  public void 
+  checkedInView
+  (
+   String name, 
+   VersionID vid, 
+   String editorName, 
+   VersionID editorVersionID, 
+   ArrayList frames, 
+   ArrayList indices, 
+   FileSeq fseq, 
+   boolean wait, 
+   MasterMgrClient client
+  ) 
+    throws PipelineException
+  { 
+    NodeVersion vsn = client.getCheckedInVersion(name, vid);
+    editCommon(null, vsn, editorName, editorVersionID, frames, indices, fseq, wait, client);
+  }  
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   N O D E   C O M M A N D S                                                            */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Print a text representation of the node status.
+   */ 
+  public void
+  printNodeStatus
+  (
+   NodeID nodeID, 
+   boolean briefFormat, 
+   boolean printUpstream,
+   boolean printLinkGraph, 
+   TreeSet sections, 
+   MasterMgrClient mclient, 
+   QueueMgrClient qclient
+  ) 
+    throws PipelineException
+  {
+
+    NodeStatus root = null;
+    TreeMap<String,NodeStatus> table = new TreeMap<String,NodeStatus>();
+    {
+      root = mclient.status(nodeID);
+      if(printUpstream) 
+	unpackStatus(root, table); 
+      else 
+	table.put(root.getName(), root);
+    }
+
+    StringBuffer buf = new StringBuffer();
+    boolean first = true;
+    for(String name : table.keySet()) {
+      NodeStatus status = table.get(name);
+      NodeDetails details = status.getDetails();
+      if(briefFormat) {
+	if(!first) 
+	  buf.append("\n");
+	first = false;
+
+	buf.append(details.getOverallNodeState().toSymbol() + " " + 
+		   details.getOverallQueueState().toSymbol() + " " + status.getName()); 
+      }
+      else {
+	NodeMod mod = details.getWorkingVersion();
+	NodeVersion vsn = details.getLatestVersion();
+
+	if(!first) 
+	  buf.append("\n\n");
+	first = false;
+	
+	buf.append
+	  (tbar(80) + "\n" +
+	   "Node Name         : " + name + "\n");
+	
+	{
+	  String mstr = "-";
+	  if(mod != null) 
+	    mstr = mod.getPrimarySequence().toString();
+	  
+	  String vstr = "-";
+	  if(vsn != null)
+	    vstr = vsn.getPrimarySequence().toString();
+	  
+	  buf.append
+	    ("Primary Files     : " + pad(mstr, ' ', 30) + " : " + vstr); 
+	}
+	
+	{
+	  TreeSet<FileSeq> mseqs = new TreeSet<FileSeq>();
+	  TreeSet<FileSeq> vseqs = new TreeSet<FileSeq>();
+	  TreeSet<FileSeq> aseqs = new TreeSet<FileSeq>();
+	  
+	  if(mod != null) 
+	    mseqs.addAll(mod.getSecondarySequences());
+	  
+	  if(vsn != null)
+	    vseqs.addAll(vsn.getSecondarySequences());
+
+	  aseqs.addAll(mseqs);
+	  aseqs.addAll(vseqs);
+	  
+	  for(FileSeq fseq : aseqs) {
+	    buf.append
+	      ("\n" + 
+	       "Secondary Files   : " + 
+	       pad(mseqs.contains(fseq) ? fseq.toString() : "-", ' ', 30) + " : " + 
+	       (vseqs.contains(fseq) ? fseq.toString() : "-"));
+	  }
+	}
+	
+	buf.append
+	  ("\n\n" + 
+	   pad("-- Overall State ", '-', 80) + "\n" +
+	   "Node State        : " + details.getOverallNodeState().toTitle() + "\n" + 
+	   "Queue State       : " + details.getOverallQueueState().toTitle()); 
+	
+	if(sections.contains("vsn")) {
+	  String mstr = null;
+	  String vstr = null;
+	  switch(details.getVersionState()) {
+	  case Pending:
+	    mstr = "-";
+	    vstr = "-";
+	    break;
+	    
+	  case CheckedIn:
+	    mstr = ("-");
+	    vstr = vsn.getVersionID().toString();
+	    break;
+	    
+	  case Identical:
+	  case NeedsCheckOut:
+	    mstr = mod.getWorkingID().toString();
+	    vstr = vsn.getVersionID().toString();
+	  }
+	  
+	  buf.append
+	    ("\n\n" + 
+	     pad("-- Versions ", '-', 80) + "\n" +
+	     "Version State     : " + details.getVersionState().toTitle() + "\n" +
+	     "Revision Number   : " + 
+	     pad(mstr + " (working)", ' ', 30) + " : " + vstr + " (latest)"); 
+	}
+      
+	if(sections.contains("prop")) {
+	  String mToolset = "-";
+	  String mEditor  = "-";
+	  if(mod != null) {
+	    mToolset = mod.getToolset();
+	    mEditor  = mod.getEditor();
+	  }
+
+	  String vToolset = "-";
+	  String vEditor  = "-";
+	  if(vsn != null) {
+	    vToolset = vsn.getToolset();
+	    vEditor  = vsn.getEditor();
+	  }
+
+	  buf.append
+	    ("\n\n" + 
+	     pad("-- Properties ", '-', 80) + "\n" +
+	     "Property State    : " + details.getPropertyState().toTitle() + "\n" +
+	     "Toolset           : " + pad(mToolset, ' ', 30) + " : " + vToolset + "\n" +
+	     "Editor            : " + pad(mEditor, ' ', 30) + " : " + vEditor);
+	}
+
+
+	BaseAction mAction = null;
+	if(mod != null) 
+	  mAction = mod.getAction();
+	
+	BaseAction vAction = null;
+	if(vsn != null) 
+	  vAction = vsn.getAction();
+
+	if(sections.contains("act")) {
+	  buf.append
+	    ("\n\n" + 
+	     pad("-- Regeneration Action ", '-', 80) + "\n");
+	  
+	  if((mAction != null) || (vAction != null)) {
+	    String mname    = "-";
+	    String mvstr    = "-";
+	    String menabled = "-";
+	    if(mAction != null) {
+	      mname = mAction.getName();
+	      mvstr = mAction.getVersionID().toString();
+
+	      if(mod != null) 
+		menabled = (mod.isActionEnabled() ? "YES" : "no");
+	    }
+
+	    String vname    = "-";
+	    String vvstr    = "-";
+	    String venabled = "-";
+	    if(vAction != null) {
+	      vname = vAction.getName();
+	      vvstr = vAction.getVersionID().toString();
+
+	      if(vsn != null) 
+		venabled = (vsn.isActionEnabled() ? "YES" : "no");
+	    }
+
+	    buf.append
+	      ("Action            : " + pad(mname, ' ', 30) + " : " + vname + "\n" +
+	       "Version           : " + pad(mvstr, ' ', 30) + " : " + vvstr + "\n" +
+	       "Enabled           : " + pad(menabled, ' ', 30) + " : "  + venabled);
+	    
+	    if(((mAction != null) && mAction.hasSingleParams()) || 
+	       ((vAction != null) && vAction.hasSingleParams())) {
+	      
+	      buf.append("\n\n" +
+			 pad("-- Action Parameters ", '-', 80));
+
+	      if((mAction != null) && mAction.hasSingleParams()) {
+		for(String pname : mAction.getSingleLayout()) {
+		  buf.append("\n");
+		  if(pname != null) {
+		    String mstr = "-";
+		    if(mAction.getSingleParamValue(pname) != null) 
+		      mstr = mAction.getSingleParamValue(pname).toString();
+		    
+		    String vstr = "-";
+		    if((vAction != null) && 
+		       vAction.getName().equals(mAction.getName()) && 
+		       vAction.getVersionID().equals(mAction.getVersionID()) && 
+		       (vAction.getSingleParamValue(pname) != null))
+		      vstr = vAction.getSingleParamValue(pname).toString();
+		    
+		    buf.append(pad(pname, 18) + ": " + pad(mstr, ' ', 30) + " : " + vstr);
+		  }
+		}
+	      }
+	      else if((vAction != null) && vAction.hasSingleParams()) {
+		for(String pname : vAction.getSingleLayout()) {
+		  buf.append("\n");
+		  if(pname != null) {
+		    String vstr = "-"; 
+		    if(vAction.getSingleParamValue(pname) != null) 
+		      vstr = vAction.getSingleParamValue(pname).toString();
+
+		    buf.append(pad(pname, 18) + ": " + pad("-", ' ', 30) + " : " + vstr);
+		  }
+		}
+	      }
+	    }
+	    
+	    if(((mAction != null) && mAction.supportsSourceParams() && 
+		(mAction.getSourceNames().size() > 0)) || 
+	       ((vAction != null) && vAction.supportsSourceParams() && 
+		(vAction.getSourceNames().size() > 0))) {
+
+	      buf.append("\n\n" +
+			 pad("-- Per-Source Action Parameters ", '-', 80) + "\n");
+	      
+	      boolean afirst = true;
+	      if((mAction != null) && mAction.supportsSourceParams() && 
+		 (mAction.getSourceNames().size() > 0)) {
+
+		for(String sname : mAction.getSourceNames()) {
+		  buf.append((afirst ? "" : "\n\n") + 
+			     "Source Node       : " + sname);
+		  afirst = false;
+		
+		  for(String pname : mAction.getSourceLayout()) {
+		    String mstr = "-";
+		    if(mAction.getSourceParamValue(sname, pname) != null) 
+		      mstr = mAction.getSourceParamValue(sname, pname).toString();
+		    
+		    String vstr = "-";
+		    if((vAction != null) && 
+		       vAction.getName().equals(mAction.getName()) && 
+		       vAction.getVersionID().equals(mAction.getVersionID()) && 
+		       (vAction.getSourceParamValue(sname, pname) != null))
+		      vstr = vAction.getSourceParamValue(sname, pname).toString();
+
+		    buf.append
+		      ("\n" + 
+		       pad(pname, 18) + ": " + pad(mstr, ' ', 30) + " : " + vstr);
+		  }
+		}
+	      }
+	      else if((vAction != null) && vAction.supportsSourceParams() && 
+		      (vAction.getSourceNames().size() > 0)) {
+		
+		for(String sname : vAction.getSourceNames()) {
+		  buf.append((afirst ? "" : "\n\n") + 
+			     "Source Node       : " + sname);
+		  afirst = false;
+		
+		  for(String pname : vAction.getSourceLayout()) {
+		    String vstr = "-";
+		    if(vAction.getSourceParamValue(sname, pname) != null)
+		      vstr = vAction.getSourceParamValue(sname, pname).toString();
+
+		    buf.append
+		      ("\n" + 
+		       pad(pname, 18) + ": " + pad("-", ' ', 30) + " : " + vstr);
+		  }
+		}		
+	      }
+	    }
+	  }
+	  else {
+	    buf.append
+	      ("Action            : (none)");	
+	  }	 
+	}
+
+
+	JobReqs mjreqs = null;
+	if(mAction != null) 
+	  mjreqs = mod.getJobRequirements();
+
+	JobReqs vjreqs = null;
+	if(vAction != null) 
+	  vjreqs = vsn.getJobRequirements();
+
+	if(sections.contains("jreq") && ((mAction != null) || (vAction != null))) {
+	  String mop = "-";
+	  String mem = "-";
+	  String mbs = "-";
+	  String mp  = "-";
+	  String mml = "-";
+	  String mmm = "-";
+	  String mmd = "-";
+	  if(mAction != null) {
+	    mop = mod.getOverflowPolicy().toString();
+	    mem = mod.getExecutionMethod().toString();
+
+	    if(mod.getBatchSize() != null) 
+	      mbs = mod.getBatchSize().toString();
+	    
+	    mp  = String.valueOf(mjreqs.getPriority());
+	    mml = String.format("%1$.2f", mjreqs.getMaxLoad());
+	    mmm = formatLong(mjreqs.getMinMemory()); 
+	    mmd = formatLong(mjreqs.getMinDisk());
+	  }
+	
+	  String vop = "-";
+	  String vem = "-";
+	  String vbs = "-";
+	  String vp  = "-";
+	  String vml = "-";
+	  String vmm = "-";
+	  String vmd = "-";
+	  if(vAction != null) {
+	    vop = vsn.getOverflowPolicy().toString();
+	    vem = vsn.getExecutionMethod().toString();
+
+	    if(vsn.getBatchSize() != null) 
+	      vbs = vsn.getBatchSize().toString();
+	    
+	    vp  = String.valueOf(vjreqs.getPriority());
+	    vml = String.format("%1$.2f", vjreqs.getMaxLoad());
+	    vmm = formatLong(vjreqs.getMinMemory()); 
+	    vmd = formatLong(vjreqs.getMinDisk());
+	  }
+	  
+	  buf.append
+	    ("\n\n" +
+	     pad("-- Job Requirements ", '-', 80) + "\n" +
+	     "Overflow Policy   : " + pad(mop, ' ', 30) + " : " + vop + "\n" +
+	     "Execution Method  : " + pad(mem, ' ', 30) + " : " + vem + "\n" +
+	     "Batch Size        : " + pad(mbs, ' ', 30) + " : " + vbs + "\n" +
+	     "\n" + 
+	     "Priority          : " + pad(mp, ' ', 30) + " : " + vp + "\n" +
+	     "Maximum Load      : " + pad(mml, ' ', 30) + " : " + vml + "\n" +
+	     "Minimum Memory    : " + pad(mmm, ' ', 30) + " : " + vmm + "\n" +
+	     "Minimum Disk      : " + pad(mmd, ' ', 30) + " : " + vmd);
+	}
+	
+	
+	if(sections.contains("key") &&  ((mAction != null) || (vAction != null))) {
+	  {
+	    buf.append
+	      ("\n\n" +
+	       pad("-- License Keys ", '-', 80));
+
+	    Set<String> mkeys = null;
+	    if(mjreqs != null) 
+	      mkeys = mjreqs.getLicenseKeys();
+ 
+	    Set<String> vkeys = null;
+	    if(vjreqs != null) 
+	      vkeys = vjreqs.getLicenseKeys();
+ 
+	    for(String kname : qclient.getLicenseKeyNames()) {
+	      String mstr = "-";
+	      if(mkeys != null) 
+		mstr = (mkeys.contains(kname) ? "YES" : "no");
+
+	      String vstr = "-";
+	      if(vkeys != null) 
+		vstr = (vkeys.contains(kname) ? "YES" : "no");
+
+	      buf.append
+		("\n" + 
+		 pad(kname, 18) + ": " + pad(mstr, ' ', 30) + " : " + vstr);
+	    }
+	  }
+	
+	  {
+	    buf.append
+	      ("\n\n" +
+	       pad("-- Selection Keys ", '-', 80));
+
+	    Set<String> mkeys = null;
+	    if(mjreqs != null) 
+	      mkeys = mjreqs.getSelectionKeys();
+ 
+	    Set<String> vkeys = null;
+	    if(vjreqs != null) 
+	      vkeys = vjreqs.getSelectionKeys();
+ 
+	    for(String kname : qclient.getSelectionKeyNames()) {
+	      String mstr = "-";
+	      if(mkeys != null) 
+		mstr = (mkeys.contains(kname) ? "YES" : "no");
+
+	      String vstr = "-";
+	      if(vkeys != null) 
+		vstr = (vkeys.contains(kname) ? "YES" : "no");
+
+	      buf.append
+		("\n" + 
+		 pad(kname, 18) + ": " + pad(mstr, ' ', 30) + " : " + vstr);
+	    }
+	  }
+	}
+
+	if(sections.contains("link") && 
+	   ((mod != null) && mod.hasSources()) || ((vsn != null) && (vsn.hasSources()))) {
+	  
+	  buf.append
+	    ("\n\n" +
+	     pad("-- Upstream Links ", '-', 80));
+	  
+	  TreeSet<String> snames = new TreeSet<String>();
+	  if(mod != null)
+	    snames.addAll(mod.getSourceNames());
+	  if(vsn != null) 
+	    snames.addAll(vsn.getSourceNames());
+
+	  int wk = vsn.getSourceNames().size();
+	  for(String sname : snames) {
+	    String mname = "-";
+	    String mp = "-";
+	    String mr = "-";
+	    String mo = "-";
+	    if(mod != null) {
+	      LinkMod link = mod.getSource(sname);
+	      if(link != null) {
+		mname = sname;
+		mp = link.getPolicy().toTitle();
+
+		switch(link.getPolicy()) {
+		case Reference:
+		case Dependency:
+		  mr = link.getRelationship().toTitle();
+		}
+		
+		switch(link.getRelationship()) {
+		case OneToOne:
+		  mo = link.getFrameOffset().toString();
+		}
+	      }
+	    }
+
+	    String vname = "-";
+	    String vp = "-";
+	    String vr = "-";
+	    String vo = "-";
+	    if(vsn != null) {
+	      LinkVersion link = vsn.getSource(sname);
+	      if(link != null) {
+		vname = (sname + " (v" + link.getVersionID() + ")");
+		vp = link.getPolicy().toTitle();
+
+		switch(link.getPolicy()) {
+		case Reference:
+		case Dependency:
+		  vr = link.getRelationship().toTitle();
+		}
+		
+		switch(link.getRelationship()) {
+		case OneToOne:
+		  vo = link.getFrameOffset().toString();
+		}
+	      }
+	    }
+
+	    buf.append
+	      ("\n" +
+	       "Source Node       : " + pad(mname, ' ', 30) + " : " + vname + "\n" +
+	       "Link Policy       : " + pad(mp, ' ', 30) + " : " + vp);
+	  
+	    if(!mr.equals("-") || !vr.equals("-")) 
+	      buf.append
+		("\n" + 
+		 "Link Relationship : " + pad(mr, ' ', 30) + " : " + vr);
+	    
+	    if(!mo.equals("-") || !vo.equals("-")) 
+	      buf.append
+		("\n" + 
+		 "Frame Offset      : " + pad(mo, ' ', 30) + " : " + vo);
+
+	    if(wk > 0) 
+	      buf.append("\n");
+	    wk--;
+	  }
+	}
+
+	if(sections.contains("file")) {
+	  buf.append
+	    ("\n\n" +
+	     pad("-- File Sequences ", '-', 80));
+
+	  boolean ffirst = true;
+	  QueueState qs[] = details.getQueueState();
+	  for(FileSeq fseq : details.getFileStateSequences()) {
+	    if(!ffirst) 
+	      buf.append("\n");
+	    ffirst = false;
+
+	    FileState fs[] = details.getFileState(fseq);
+	    int wk = 0;
+	    for(File file : fseq.getFiles()) {
+	      buf.append("\n" + 
+			 pad(file.toString(), ' ', 48) + " : " +
+			 pad((fs[wk] != null) ? fs[wk].toTitle() : "-", 16) + " : " +
+			 ((qs[wk] != null) ? qs[wk].toTitle() : "-"));
+	      wk++;
+	    }
+	  }
+	}
+      }
+    }
+      
+    if(printLinkGraph) {
+      buf.append
+	("\n\n" +
+	 pad("-- Link Graph ", '-', 80));
+      
+      printGraph(buf, root, 2);
+    }
+
+    Logs.ops.info(buf.toString());
+    Logs.flush();  
+  }
+
+  private void 
+  unpackStatus
+  (
+   NodeStatus status,
+   TreeMap<String,NodeStatus> table
+  ) 
+  {
+    if(table.containsKey(status.getName())) 
+      return;
+
+    table.put(status.getName(), status);
+    
+    for(NodeStatus lstatus : status.getSources())
+      unpackStatus(lstatus, table);
+  }
+
+  private void 
+  printGraph
+  (
+   StringBuffer buf, 
+   NodeStatus status, 
+   int indent
+  ) 
+  {
+    buf.append
+      ("\n" + 
+       repeat(' ', indent) + status.getName());
+
+    for(NodeStatus source : status.getSources())
+      printGraph(buf, source, indent+2);
+  }
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S                                                                        */
