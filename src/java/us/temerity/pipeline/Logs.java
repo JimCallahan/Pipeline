@@ -1,4 +1,4 @@
-// $Id: Logs.java,v 1.3 2004/02/23 23:53:41 jim Exp $
+// $Id: Logs.java,v 1.4 2004/03/12 13:52:30 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -34,23 +34,23 @@ class Logs
   /**
    * Initialize all {@link Logger Logger} instances and message handlers.
    */
-  public static void 
+  public static synchronized void 
   init() 
   {
     assert(sHandler == null);
 
     /* init loggers */  
-    arg = Logger.getLogger("pipeline.arg");
-    glu = Logger.getLogger("pipeline.glu");
-    plg = Logger.getLogger("pipeline.plg");
-    tex = Logger.getLogger("pipeline.tex");
-    sum = Logger.getLogger("pipeline.sum");
+    arg = Logger.getLogger("us.temerity.pipeline.arg");
+    glu = Logger.getLogger("us.temerity.pipeline.glu");
+    plg = Logger.getLogger("us.temerity.pipeline.plg");
+    tex = Logger.getLogger("us.temerity.pipeline.tex");
+    sum = Logger.getLogger("us.temerity.pipeline.sum");
 
-    sub = Logger.getLogger("pipeline.sub");
-    net = Logger.getLogger("pipeline.net");
+    sub = Logger.getLogger("us.temerity.pipeline.sub");
+    net = Logger.getLogger("us.temerity.pipeline.net");
 
-    ops = Logger.getLogger("pipeline.ops");
-    job = Logger.getLogger("pipeline.job");
+    ops = Logger.getLogger("us.temerity.pipeline.ops");
+    job = Logger.getLogger("us.temerity.pipeline.job");
 
     /* attach response handlers to stdout (instead of stderr) */ 
     {
@@ -90,11 +90,11 @@ class Logs
   /** 
    * Flush any cached messages to the output stream. 
    */ 
-  public static void 
+  public static synchronized void 
   flush() 
   {
-    assert(sHandler != null); 
-    sHandler.flush();
+    if(sHandler != null)
+      sHandler.flush();
   }
 
 
@@ -103,7 +103,7 @@ class Logs
    * 
    * Flushes any cached messages and closes down the output stream.
    */ 
-  public static void
+  public static synchronized void
   cleanup()
   {
     assert(sHandler != null); 
