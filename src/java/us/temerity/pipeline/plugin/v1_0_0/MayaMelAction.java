@@ -1,4 +1,4 @@
-// $Id: MayaMelAction.java,v 1.3 2004/09/12 19:03:18 jim Exp $
+// $Id: MayaMelAction.java,v 1.4 2004/09/12 20:14:50 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -9,7 +9,7 @@ import java.util.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   M A Y A   M E L                                                                        */
+/*   M A Y A   M E L   A C T I O N                                                          */
 /*------------------------------------------------------------------------------------------*/
 
 /** 

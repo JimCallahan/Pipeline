@@ -1,4 +1,4 @@
-// $Id: MayaRenderAction.java,v 1.3 2004/09/11 14:14:26 jim Exp $
+// $Id: MayaRenderAction.java,v 1.4 2004/09/12 20:14:50 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -9,7 +9,7 @@ import java.util.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   M A Y A   R E N D E R                                                                  */
+/*   M A Y A   R E N D E R   A C T I O N                                                    */
 /*------------------------------------------------------------------------------------------*/
 
 /**
