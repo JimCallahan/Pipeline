@@ -1,4 +1,4 @@
-// $Id: TestDNotifyApp.java,v 1.2 2004/04/11 19:30:20 jim Exp $
+// $Id: TestDNotifyApp.java,v 1.3 2004/04/12 22:39:31 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -66,8 +66,8 @@ class TestDNotifyApp
   run() 
     throws Exception 
   {
-//     NotifyServer server = new NotifyServer(53148, 53149);
-//     server.start();
+    //    NotifyServer server = new NotifyServer(53148, 53149);
+    //   server.start();
 
     Thread.currentThread().sleep(2000);
 
@@ -84,7 +84,7 @@ class TestDNotifyApp
 
       File root = new File("/usr/tmp/data/notify");
       int wk;
-      for(wk=0; wk<300; wk++) {
+      for(wk=0; wk<30; wk++) {
 	File dir = new File(root, String.valueOf(random.nextInt(1000000)));
 	dir.mkdirs();
 
@@ -100,18 +100,18 @@ class TestDNotifyApp
       }
     }
 
-    control.disconnect();
+    //control.disconnect();
+    control.shutdown();
 
-//     for(File dir : dirs) {
-//       try {
-// 	control.unmonitor(dir);
-//       }
-//       catch(PipelineException ex) {
-// 	System.out.print(ex.getMessage() + "\n");
-// 	break;
-//       }
-//     }
-
+    for(File dir : dirs) {
+      try {
+ 	control.unmonitor(dir);
+      }
+      catch(PipelineException ex) {
+	System.out.print(ex.getMessage() + "\n");
+	break;
+      }
+    }
 
     monitor.join();
 //     server.join();
