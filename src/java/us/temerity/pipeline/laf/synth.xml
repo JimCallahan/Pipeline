@@ -15,7 +15,6 @@
   <bind style="DefaultFont" type="name" key=".*"/>
 
 
-
   <!--  S P L A S H  -->
 
   <style id="Splash">
@@ -154,6 +153,14 @@
     </state>
     <state value="PRESSED and SELECTED">
       <imagePainter path="FrozenButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="DISABLED">
+      <imagePainter path="UnfrozenButtonDisabled.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="DISABLED and SELECTED">
+      <imagePainter path="FrozenButtonDisabled.png"
                     sourceInsets="0 0 0 0"/>
     </state>
   </style>
@@ -511,6 +518,35 @@
     <font name="Lucida Sans Bold" size="12"/>
   </style>
   <bind style="EditableTextField" type="name" key="EditableTextField"/>
+
+  <style id="WarningTextField">
+    <state value="DISABLED"> 
+      <color value="#00ffff" type="TEXT_FOREGROUND"/>
+      <color value="#727272" type="TEXT_BACKGROUND"/>
+      <imagePainter path="ValuePanel.png"
+                    method="textFieldBackground"
+                    sourceInsets="3 3 3 3"/>
+    </state>
+    <state> 
+      <color value="#00ffff" type="TEXT_FOREGROUND"/>
+      <color value="#727272" type="TEXT_BACKGROUND"/>
+      <imagePainter path="EditableValuePanel.png"
+                    method="textFieldBackground"
+                    sourceInsets="3 3 3 3"/> 
+    </state>
+    <insets top="2" bottom="2" right="8" left="8"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="WarningTextField" type="name" key="WarningTextField"/>
+   
+  <style id="TextFieldLabel">
+    <imagePainter path="ValuePanel.png"
+                  method="labelBackground"
+                  sourceInsets="3 3 3 3"/>
+    <insets top="2" bottom="2" right="8" left="8"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="TextFieldLabel" type="name" key="TextFieldLabel"/>
 
 
 
