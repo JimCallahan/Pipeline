@@ -1,4 +1,4 @@
-// $Id: NodePath.java,v 1.1 2004/05/07 18:11:25 jim Exp $
+// $Id: NodePath.java,v 1.2 2004/05/13 21:28:40 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -83,6 +83,15 @@ class NodePath
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Get the number of nodes in the path. 
+   */ 
+  public int 
+  getNumNodes() 
+  {
+    return pNames.size();
+  }
+
   /** 
    * Get the names of the nodes on the path from the focus node to the current node.
    */ 
