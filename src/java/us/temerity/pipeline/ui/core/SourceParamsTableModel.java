@@ -1,4 +1,4 @@
-// $Id: SourceParamsTableModel.java,v 1.2 2005/03/04 09:20:30 jim Exp $
+// $Id: SourceParamsTableModel.java,v 1.3 2005/03/20 22:56:08 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -102,7 +102,7 @@ class SourceParamsTableModel
 
 	if(aparam instanceof BooleanActionParam) {
 	  pColumnWidths[col]  = 160;
-	  pRenderers[col]     = new JBooleanTableCellRenderer(JLabel.CENTER);
+	  pRenderers[col]     = new JBooleanParamTableCellRenderer(JLabel.CENTER);
 	  pEditors[col]       = new JBooleanParamTableCellEditor(160, JLabel.CENTER);
 	}
 	else if(aparam instanceof IntegerActionParam) {
