@@ -589,7 +589,7 @@ Node Versions</a></li>
           </span></li>
         <li style="font-weight: bold;"><a href="#working_--submit-jobs"><span
  style="font-weight: normal;"><span
- style="font-weight: bold; color: rgb(153, 0, 0);">X</span></span></a><span
+ style="font-weight: bold; color: rgb(153, 0, 0);"></span></span></a><span
  style="font-weight: normal;"><a href="#working_--submit-jobs"><span
  style="font-weight: bold;">--submit-jobs</span></a>=node-name </span><span
  style="font-weight: normal;">[</span><a href="#--author">--author</a><span
@@ -613,7 +613,7 @@ Node Versions</a></li>
  style="font-style: italic;">end</span>[,...] ...]</span></li>
         <li style="font-weight: bold;"><a href="#working_--remove-files"><span
  style="font-weight: normal;"><span
- style="font-weight: bold; color: rgb(153, 0, 0);">X</span></span></a><span
+ style="font-weight: bold; color: rgb(153, 0, 0);"></span></span></a><span
  style="font-weight: normal;"><a href="#working_--remove-files"><span
  style="font-weight: bold;">--remove-files</span></a>=<span
  style="font-style: italic;">node-name</span> </span><span

@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.10 2004/09/23 20:09:30 jim Exp $
+// $Id: ScriptApp.java,v 1.11 2004/09/23 23:12:30 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1360,7 +1360,6 @@ class ScriptApp
 	   "does not have frame numbers, therefore the --frame option cannot be used!");
 
       FrameRange range = primary.getFrameRange();
-      int[] valid = range.getFrameNumbers();
       for(int[] frm : (ArrayList<int[]>) frames) {
 	try {
 	  if(frm.length == 1) {
@@ -1459,6 +1458,133 @@ class ScriptApp
       }
     }
   }  
+
+  /**
+   * Submit the group of jobs needed to regenerate the selected {@link QueueState#Stale Stale}
+   * files associated with the tree of nodes rooted at the given node. <P> 
+   */ 
+  public void 
+  workingSubmitJobs
+  (
+   NodeID nodeID, 
+   ArrayList frames, 
+   ArrayList indices, 
+   MasterMgrClient client
+  ) 
+    throws PipelineException
+  { 
+    NodeMod mod = client.getWorkingVersion(nodeID);
+    TreeSet<Integer> frameIndices = 
+      buildFrameIndices(mod, (ArrayList<int[]>) frames, (ArrayList<int[]>) indices);
+    QueueJobGroup group = client.submitJobs(nodeID, frameIndices);
+
+    Logs.ops.info
+      ("Submitted Job Group: [" + group.getGroupID() + "] " + group.getRootPattern());
+    Logs.flush();    
+    
+  }  
+  
+  /**
+   * Remove the working area files associated with the given node. <P>  
+   */ 
+  public void 
+  workingRemoveFiles
+  (
+   NodeID nodeID, 
+   ArrayList frames, 
+   ArrayList indices, 
+   MasterMgrClient client
+  ) 
+    throws PipelineException
+  { 
+    NodeMod mod = client.getWorkingVersion(nodeID);
+    TreeSet<Integer> frameIndices = 
+      buildFrameIndices(mod, (ArrayList<int[]>) frames, (ArrayList<int[]>) indices);
+    client.removeFiles(nodeID, frameIndices);
+  }  
+  
+  /**
+   * Generate a set of individual frame indices from list of frame ranges or index ranges. 
+   */ 
+  private TreeSet<Integer>
+  buildFrameIndices
+  (
+    NodeMod mod, 
+    ArrayList<int[]> frames, 
+    ArrayList<int[]> indices
+  ) 
+    throws PipelineException
+  {
+    TreeSet<Integer> frameIndices = null;
+
+    FileSeq primary = mod.getPrimarySequence();
+    if(!indices.isEmpty()) {
+      if(!primary.hasFrameNumbers()) 
+	throw new PipelineException
+	  ("The primary file sequence (" + primary + ") of node (" + mod.getName() + ") " +
+	   "does not have frame numbers, therefore the --index option cannot be used!");
+	   
+      frameIndices = new TreeSet<Integer>();
+      for(int[] idx : indices) {
+	if(idx.length == 1) {
+	  if((idx[0] >= 0) && (idx[0] < primary.numFrames()))
+	     frameIndices.add(idx[0]); 
+	  else
+	    throw new PipelineException
+	     ("The given frame index (" + idx[0] + ") was not valid for the range: " + 
+	      "[0," + primary.numFrames() + ")!"); 
+	}
+	else if(idx.length == 2) {
+	  int wk;
+	  for(wk=idx[0]; wk<=idx[1]; wk++) {
+	    if((idx[0] >= 0) && (idx[0] < primary.numFrames()))
+	      frameIndices.add(wk); 
+	    else
+	      throw new PipelineException
+		("The given frame index (" + wk + ") was not valid for the range: " + 
+		 "[0," + primary.numFrames() + ")!"); 
+	  }
+	}
+	else {
+	  assert(false);
+	}
+      }
+    }
+    else if(!frames.isEmpty()) {
+      if(!primary.hasFrameNumbers()) 
+	throw new PipelineException
+	  ("The primary file sequence (" + primary + ") of node (" + mod.getName() + ") " +
+	   "does not have frame numbers, therefore the --frame option cannot be used!");
+
+      frameIndices = new TreeSet<Integer>();
+      FrameRange range = primary.getFrameRange();
+      for(int[] frm : frames) {
+	try {
+	  if(frm.length == 1) {
+	    frameIndices.add(range.frameToIndex(frm[0]));
+	  }
+	  else if(frm.length == 2) {
+	    int s = range.frameToIndex(frm[0]);
+	    int e = range.frameToIndex(frm[1]);
+	    int wk;
+	    for(wk=s; wk<=e; wk++) 
+	      frameIndices.add(wk);
+	  }
+	  else {
+	    assert(false);
+	  }
+	}
+	catch(IllegalArgumentException ex) {
+	  throw new PipelineException
+	    ("Illegal --frame arguments!\n" + 
+	     ex.getMessage());
+	}
+      }
+    }
+
+    return frameIndices;
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/

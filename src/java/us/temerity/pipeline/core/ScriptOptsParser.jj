@@ -2439,7 +2439,8 @@ WorkingCmds()
   <WORKING> AE() 
      (WorkingGetInfo() | WorkingRegister() | WorkingRelease() | WorkingSet() | 
       WorkingLink() | WorkingUnlink() | WorkingAddSecondary() | WorkingRemoveSecondary() |
-      WorkingRename() | WorkingRenumber() | WorkingEdit()) 
+      WorkingRename() | WorkingRenumber() | WorkingEdit() | WorkingSubmitJobs() | 
+      WorkingRemoveFiles()) 
   {}
 }
 
@@ -2575,6 +2576,9 @@ WorkingRegister()
        pPriority, pMaxLoad, pMinMemory, pMinDisk, 
        pLicenseKeys, pSelectionKeys,
        pMasterMgrClient);
+
+    Logs.ops.info("Registered Node: " + name);
+    Logs.flush();
   }
 }
 
@@ -2608,6 +2612,9 @@ WorkingRelease()
   <WORKING_RELEASE> EQ() name=NodeName() AE() (WorkingReleaseOpts())* 
   {
     pMasterMgrClient.release(new NodeID(pAuthor, pView, name), pRemoveFiles);
+
+    Logs.ops.info("Released Node: " + name);
+    Logs.flush();
   }
 }
 
@@ -2660,6 +2667,9 @@ WorkingSet()
        pPriority, pMaxLoad, pMinMemory, pMinDisk, 
        pLicenseKeys, pSelectionKeys,
        pMasterMgrClient);
+
+    Logs.ops.info("Node Properties Set: " + name);
+    Logs.flush();
   }
 }
 
@@ -2699,6 +2709,9 @@ WorkingLink()
 
     pMasterMgrClient.link(pAuthor, pView, name, 
 			  pLinkSourceName, pLinkPolicy, pLinkRelationship, pLinkFrameOffset);
+
+    Logs.ops.info("Linked Nodes: " + pLinkSourceName + " to " + name);
+    Logs.flush();
   }
 }
 
@@ -2824,6 +2837,9 @@ WorkingUnlink()
         ("No link source node was specified with the --source option!");
 
     pMasterMgrClient.unlink(pAuthor, pView, name, pLinkSourceName);
+
+    Logs.ops.info("Unlinked Nodes: " + pLinkSourceName + " from " + name);
+    Logs.flush();
   }
 }
 
@@ -2869,6 +2885,9 @@ WorkingAddSecondary()
         ("The --fseq option is required!");
 
     pMasterMgrClient.addSecondary(new NodeID(pAuthor, pView, name), pFileSeq);
+
+    Logs.ops.info("Added Secondary: " + pFileSeq + " to " + name);
+    Logs.flush();
   }
 }
 
@@ -2890,6 +2909,9 @@ WorkingRemoveSecondary()
         ("The --fseq option is required!");
 
     pMasterMgrClient.removeSecondary(new NodeID(pAuthor, pView, name), pFileSeq);
+
+    Logs.ops.info("Removed Secondary: " + pFileSeq + " from " + name);
+    Logs.flush();
   }
 }
 
@@ -2924,6 +2946,9 @@ WorkingRename()
         ("The --name option is required!");
 
     pMasterMgrClient.rename(new NodeID(pAuthor, pView, name), pNewName, pRenameFiles);
+
+    Logs.ops.info("Renamed: " + name + " to " + pNewName);
+    Logs.flush();    
   }
 }
 
@@ -2970,6 +2995,9 @@ WorkingRenumber()
         ("The --range option is required!");
 
     pMasterMgrClient.renumber(new NodeID(pAuthor, pView, name), pFrameRange, pRemoveFiles);
+
+    Logs.ops.info("Renumbered: " + name);
+    Logs.flush();    
   }
 }
 
@@ -3043,6 +3071,80 @@ WorkingEditOpts()
   (Author() | View() | EditorVersion() | Frame() | Index() | FSeq() | Wait())
   {}
 }
+
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
+WorkingSubmitJobs() 
+  throws PipelineException : 
+{
+  String name = null;
+  
+  pAuthor          = PackageInfo.sUser;
+  pView            = "default";
+  pFrames          = new ArrayList();
+  pIndices         = new ArrayList();
+}
+{
+  <WORKING_SUBMIT_JOBS> EQ() name=NodeName() AE() (WorkingSubmitJobsOpts())* 
+  {
+    if(!pFrames.isEmpty() && !pIndices.isEmpty())
+      throw new PipelineException
+        ("The --frame and --index options are mutually exclusive!");
+
+    pApp.workingSubmitJobs(new NodeID(pAuthor, pView, name), 
+			   pFrames, pIndices, pMasterMgrClient);
+  }
+}
+
+void
+WorkingSubmitJobsOpts()
+  throws PipelineException : 
+{}
+{
+  (Author() | View() | Frame() | Index())
+  {}
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
+WorkingRemoveFiles() 
+  throws PipelineException : 
+{
+  String name = null;
+  
+  pAuthor          = PackageInfo.sUser;
+  pView            = "default";
+  pFrames          = new ArrayList();
+  pIndices         = new ArrayList();
+}
+{
+  <WORKING_REMOVE_FILES> EQ() name=NodeName() AE() (WorkingRemoveFilesOpts())* 
+  {
+    if(!pFrames.isEmpty() && !pIndices.isEmpty())
+      throw new PipelineException
+        ("The --frame and --index options are mutually exclusive!");
+
+    pApp.workingRemoveFiles(new NodeID(pAuthor, pView, name), 
+			    pFrames, pIndices, pMasterMgrClient);
+
+    Logs.ops.info("Removed Files: " + name);
+    Logs.flush();    
+  }
+}
+
+void
+WorkingRemoveFilesOpts()
+  throws PipelineException : 
+{}
+{
+  (Author() | View() | Frame() | Index())
+  {}
+}
+
 
 /*------------------------------------------------------------------------------------------*/
 /*   C H E C K E D - I N   N O D E   V E R S I O N   C O M M A N D S                        */
