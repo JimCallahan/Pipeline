@@ -1,0 +1,5 @@
+%_topdir	@RPM_ROOT@
+%_signature 	gpg
+%_gpg_path 	/home/jim/.gnupg
+%_gpg_name 	James Michael Callahan <jim@polaris.net>
+%_gpgbin 	/usr/bin/gpg

@@ -1,0 +1,61 @@
+Summary: The Pipeline production visualization/automation system.
+Name: pipeline-@DOMAIN@
+Version: @VERSION@
+Release: 1
+URL: http://us.temerity/pipeline
+License: Commercial
+Vendor: Temerity Software, Inc
+Group: Applications/Productivity
+BuildRoot: @RPM_ROOT@/BUILD
+
+%description
+Pipeline consists of a suite of programs which use a high-level node based representation of 
+the production process to peform a wide range of visualization, automation and administrative
+services.
+
+The core features of Pipeline include: 
+  + Graphical tools to visualize and control the production process.
+  + Advanced revision control of production data files, processes and dependencies.
+  + Modeling of arbitrarily complex production pipeline's.
+  + Automatic generation of jobs needed to complete a production process.
+  + Execution of jobs both locally and by a distributed execution queue.
+  + Automation of data archiving and restoration.
+  + Command-line based scripting of all functionality.
+  + Rich Java based plugin API allowing almost unlimited customization and extension.
+
+%files
+
+%defattr(555,root,root)
+@ROOT_INST_DIR@/bin/pls
+@ROOT_INST_DIR@/bin/realpath
+
+%defattr(6550,root,pipeline)
+@ROOT_INST_DIR@/sbin/plrun
+
+%defattr(500,pipeline,pipeline)
+@ROOT_INST_DIR@/sbin/plfilemgr
+
+%defattr(755,root,root)
+%dir @PRODDIR@/working
+
+%defattr(755,pipeline,pipeline)
+%dir @PRODDIR@/repository
+%dir @PRODDIR@/checksum
+
+%defattr(444,root,root)
+@ROOT_INST_DIR@/jar/pipeline.jar
+@ROOT_INST_DIR@/jar/pldata.jar
+@ROOT_INST_DIR@/jar/testbed.jar
+
+%defattr(-,root,root)
+@ROOT_INST_DIR@/jar/us
+@ROOT_INST_DIR@/lib
+@ROOT_INST_DIR@/share/docs
+@ROOT_INST_DIR@/share/logger.properties
+
+
+%changelog
+* Thu Mar 18 2004 Jim Callahan <jim@salamander>
+- Initial build.
+
+

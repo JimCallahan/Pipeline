@@ -1,0 +1,142 @@
+#!/bin/sh
+PATH=/bin:/usr/bin
+more <<EOF
+                           Temerity Software, Inc.
+                        Binary Code License Agreement
+                           PIPELINE, VERSION @VERSION@
+
+READ THE TERMS OF THIS AGREEMENT AND ANY PROVIDED SUPPLEMENTAL LICENSE TERMS
+(COLLECTIVELY "AGREEMENT") CAREFULLY BEFORE INSTALLING THE ATTACHED SOFTWARE.
+INDICATE YOUR ACCEPTANCE OF THESE TERMS BY ANSWERING "YES" AT THE END OF THIS 
+AGREEMENT. IF YOU DO NOT AGREE TO ALL THESE TERMS ANSWER "NO" AT THE END OF 
+THIS AGREEMENT.
+
+1. LICENSE TO USE. Temerity Software grants you a non-exclusive and 
+non-transferable license for the internal use only of the accompanying 
+software and documentation and any error corrections provided by Temerity 
+Software (collectively "Software"), by the number of users and the class of 
+computer hardware for which the corresponding fee has been paid.
+
+2. RESTRICTIONS. Software is confidential and copyrighted. Title to Software
+and all associated intellectual property rights is retained by Temerity 
+Software. Except as specifically authorized in any Supplemental License
+Terms, you may not make copies of Software, other than a single copy of
+Software for archival purposes. Unless enforcement is prohibited by
+applicable law, you may not modify, decompile, or reverse engineer Software.
+You acknowledge that Software is not designed, licensed or intended for use
+in the design, construction, operation or maintenance of any nuclear
+facility. Temerity Software disclaims any express or implied warranty of 
+fitness for such uses. No right, title or interest in or to any trademark, 
+service mark, logo or trade name of Temerity Software or its licensors is 
+granted under this Agreement.
+
+3. LIMITED WARRANTY. Temerity Software warrants to you that for a period of 
+ninety (90) days from the date of purchase, as evidenced by a copy of the 
+receipt, the media on which Software is furnished (if any) will be free of 
+defects in materials and workmanship under normal use. Except for the 
+foregoing, Software is provided "AS IS". Your exclusive remedy and Temerity 
+Software's entire liability under this limited warranty will be at Temerity 
+Software's option to replace Software media or refund the fee paid for 
+Software.
+
+4. DISCLAIMER OF WARRANTY. UNLESS SPECIFIED IN THIS AGREEMENT, ALL EXPRESS
+OR IMPLIED CONDITIONS, REPRESENTATIONS AND WARRANTIES, INCLUDING ANY IMPLIED
+WARRANTY OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE OR 
+NON-INFRINGEMENT ARE DISCLAIMED, EXCEPT TO THE EXTENT THAT THESE DISCLAIMERS
+ARE HELD TO BE LEGALLY INVALID.
+
+5. LIMITATION OF LIABILITY. TO THE EXTENT NOT PROHIBITED BY LAW, IN NO EVENT
+WILL TEMERITY SOFTWARE BE LIABLE FOR ANY LOST REVENUE, PROFIT OR DATA, OR
+FOR SPECIAL, INDIRECT, CONSEQUENTIAL, INCIDENTAL OR PUNITIVE DAMAGES,
+HOWEVER CAUSED REGARDLESS OF THE THEORY OF LIABILITY, ARISING OUT OF OR
+RELATED TO THE USE OF OR INABILITY TO USE SOFTWARE, EVEN IF TEMERITY 
+SOFTWARE HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES. In no event 
+will Temerity Software's liability to you, whether in contract, tort 
+(including negligence), or otherwise, exceed the amount paid by you for 
+Software under this Agreement. The foregoing limitations will apply even if 
+the above stated warranty fails of its essential purpose.
+
+6. Termination. This Agreement is effective until terminated. You may
+terminate this Agreement at any time by destroying all copies of Software.
+This Agreement will terminate immediately without notice from Temerity 
+Software if you fail to comply with any provision of this Agreement. Upon 
+Termination, you must destroy all copies of Software.
+
+7. Severability. If any provision of this Agreement is held to be
+unenforceable, this Agreement will remain in effect with the provision
+omitted, unless omission would frustrate the intent of the parties, in which
+case this Agreement will immediately terminate.
+
+8. Integration. This Agreement is the entire agreement between you and 
+Temerity Software relating to its subject matter. It supersedes all prior 
+or contemporaneous oral or written communications, proposals, 
+representations and warranties and prevails over any conflicting or 
+additional terms of any quote, order, acknowledgment, or other communication
+between the parties relating to its subject matter during the term of this
+Agreement. No modification of this Agreement will be binding, unless in 
+writing and signed by an authorized representative of each party.
+
+For inquiries please contact: 
+
+  Temerity Software, Inc.
+  76 First Place, #2
+  Brooklyn, NY  11231
+
+  Temerity Support <support@temerity.us>
+EOF
+
+agreed=0
+while [ $agreed != 1 ] 
+do
+  echo
+  echo "Do you agree to the above license terms? [yes/no] "
+
+  read reply leftover
+  case "$reply" in
+    ("yes" | "Yes" | "YES")
+      agreed=1;;
+    ("no" | "No" | "NO") 
+      echo "If you don't agree to the license you can't install this sofware.";
+      exit 1;;
+  esac
+done
+
+if [ ! -w `pwd` ] 
+then
+    echo "You do not have write permission for (`pwd`)!"
+    echo 
+    echo "Pipeline installation failed."
+    exit 1
+fi
+
+rpm=pipeline-@DOMAIN@-@VERSION@-1.i686.rpm
+
+if [ -x /usr/bin/md5sum ]
+then
+  echo "Unpacking..."
+  tail +143 $0 > $rpm
+
+  echo -n "Verifying Software Integrity... "
+  if echo "@CHECKSUM@" | /usr/bin/md5sum --check --status - 
+  then 
+    echo "OK"
+  else 
+    echo "CORRUPTED"
+    echo 
+    echo "Installation failed."
+    exit 1
+  fi
+else
+  echo "Unable to locate (/usr/bin/md5sum) needed to verify software integrity."
+  echo 
+  echo "Installation failed."
+  exit 1
+fi
+
+echo "Install the RPM now? [yes/no]"
+read reply leftover
+case "$reply" in
+  ("yes" | "Yes" | "YES")
+    rpm -Uvh $rpm;;
+esac
+exit 0
