@@ -1,4 +1,4 @@
-// $Id: JBaseCreateDialog.java,v 1.2 2004/06/02 21:52:09 jim Exp $
+// $Id: JBaseCreateDialog.java,v 1.3 2004/06/19 00:30:48 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -49,7 +49,44 @@ class JBaseCreateDialog
   ) 
   {
     super(owner, title, true);
+    initUI(confirm);
+  }
 
+  /**
+   * Construct a new dialog.
+   * 
+   * @param title
+   *   The title of the dialog.
+   * 
+   * @param confirm
+   *   The name of the confirm button.
+   */ 
+  public 
+  JBaseCreateDialog
+  (
+   String title, 
+   String confirm
+  ) 
+  {
+    super(title, true);
+    initUI(confirm);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Initialize the common user interface components.
+   * 
+   * @param confirm
+   *   The name of the confirm button.
+   */ 
+  private void 
+  initUI
+  (
+   String confirm
+  ) 
+  {
     /* create dialog body components */ 
     {
       Box body = new Box(BoxLayout.X_AXIS);
