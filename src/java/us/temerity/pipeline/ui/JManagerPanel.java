@@ -1,8 +1,9 @@
-// $Id: JManagerPanel.java,v 1.12 2004/05/07 21:05:47 jim Exp $
+// $Id: JManagerPanel.java,v 1.13 2004/05/08 15:07:07 jim Exp $
 
 package us.temerity.pipeline.ui;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.core.BaseApp;
 import us.temerity.pipeline.laf.LookAndFeelLoader;
 
 import java.awt.*;
@@ -178,11 +179,67 @@ class JManagerPanel
 	sub.add(item);  
       }
 
-      pPopup.addSeparator();
-
       item = new JMenuItem("Change Owner|View...");
       pOwnerViewItem = item;
       item.setActionCommand("change-owner-view");
+      item.addActionListener(this);
+      pPopup.add(item);  
+	
+      pPopup.addSeparator();
+
+      item = new JMenuItem("Preferences...");
+      item.setActionCommand("preferences");
+      item.addActionListener(this);
+      pPopup.add(item);  
+      
+      {
+	JMenu sub = new JMenu("Help");   
+	pPopup.add(sub);  
+	
+	item = new JMenuItem("About Pipeline...");
+	item.setActionCommand("about");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	item = new JMenuItem("User Manual...");
+	item.setActionCommand("user-anual");
+	item.addActionListener(this);
+	sub.add(item);  
+	  
+	sub.addSeparator();
+	
+	item = new JMenuItem("Home Page...");
+	item.setActionCommand("home-page");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	item = new JMenuItem("Support Forums...");
+	item.setActionCommand("support-forums");
+	item.addActionListener(this);
+	sub.add(item);  
+	  
+	item = new JMenuItem("Bug Database...");
+	item.setActionCommand("bug-database");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	sub.addSeparator();
+	
+	item = new JMenuItem("Configuration...");
+	item.setActionCommand("configuration");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	item = new JMenuItem("License...");
+	item.setActionCommand("license");
+	item.addActionListener(this);
+	sub.add(item);  
+      }
+      
+      pPopup.addSeparator();
+      
+      item = new JMenuItem("Quit...");
+      item.setActionCommand("quit");
       item.addActionListener(this);
       pPopup.add(item);  
     }
@@ -238,18 +295,8 @@ class JManagerPanel
       panel.add(Box.createRigidArea(new Dimension(4, 0)));
 
       {
-	JTextField field = new JTextField();
-	pOwnerViewField = field;
-
-	Dimension size = new Dimension(120, 19);
-	field.setMinimumSize(size);
-	field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
-	field.setPreferredSize(size);
-
-	field.setHorizontalAlignment(JLabel.CENTER);
-	field.setEditable(false);
-	
-	panel.add(field);
+	pOwnerViewField = UIMaster.createTextField(null, 120, JLabel.CENTER);
+	panel.add(pOwnerViewField);
       }
 
       panel.add(Box.createRigidArea(new Dimension(4, 0)));
@@ -489,6 +536,24 @@ class JManagerPanel
     /* group */ 
     else if(e.getActionCommand().startsWith("group-")) 
       doGroup(e.getActionCommand());
+    
+    /* UIMaster */ 
+    else if(e.getActionCommand().equals("about"))
+      UIMaster.getInstance().showAboutDialog();
+
+    //...
+
+    else if(e.getActionCommand().equals("home-page"))
+      BaseApp.showURL("http://www.temerity.us");
+    else if(e.getActionCommand().equals("support-forums"))
+      BaseApp.showURL("http://www.temerity.us");  // FOR NOW...
+    else if(e.getActionCommand().equals("bug-database"))
+      BaseApp.showURL("http://www.temerity.us");  // FOR NOW...
+
+    //...
+
+    else if(e.getActionCommand().equals("quit"))
+      UIMaster.getInstance().doQuit();    
   }
 
 
