@@ -205,6 +205,26 @@ Administration</span></span></a><br>
  style="font-style: italic;">host-name</span></span></li>
       </ul>
     </ul>
+    <li style="font-weight: bold; color: rgb(153, 0, 0);">Plugins</li>
+    <ul>
+      <li style="font-weight: bold; color: rgb(153, 0, 0);">editor</li>
+      <ul style="color: rgb(153, 0, 0);">
+        <li style="font-weight: bold;">--get</li>
+        <li style="font-weight: bold;">--get-info</li>
+      </ul>
+      <li style="font-weight: bold; color: rgb(153, 0, 0);">action</li>
+      <ul style="color: rgb(153, 0, 0);">
+        <li style="font-weight: bold;">--get</li>
+        <li style="font-weight: bold;">--get-info</li>
+      </ul>
+      <li style="font-weight: bold; color: rgb(153, 0, 0);">comparator</li>
+      <ul>
+        <li style="font-weight: bold; color: rgb(153, 0, 0);">--get</li>
+        <li style="font-weight: bold;"><span
+ style="color: rgb(153, 0, 0);">--get-info</span><br>
+        </li>
+      </ul>
+    </ul>
     <li style="font-weight: bold;"><a href="#User_Preferences">User
 Preferences</a><br>
     </li>
@@ -266,7 +286,7 @@ Area Views</a><br>
     <li style="font-weight: bold;"><a href="#Working_Node_Versions">Working
 Node Versions</a></li>
     <ul>
-      <li style="font-weight: bold;">working</li>
+      <li style="font-weight: bold; color: rgb(153, 0, 0);">working</li>
       <ul>
         <li style="font-weight: bold;"><a href="#working_--get-info">--get-info</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">node-name</span></span>
@@ -295,9 +315,14 @@ Node Versions</a></li>
  style="font-weight: bold;">--editor</span></a>=<span
  style="font-style: italic;">editor-name</span></span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;">]
-[<a href="#--no-action"><span style="font-weight: bold;">--no-action</span></a>
-|<span style="font-weight: bold;"> <a href="#--action">--action</a></span>=<span
- style="font-style: italic;">action-name</span></span><span
+[<a href="#--no-action"><span style="font-weight: bold;"></span></a><span
+ style="font-weight: bold;"></span></span><a href="#--action"><span
+ style="font-weight: normal;"><a href="#--no-action"><span
+ style="font-weight: bold;">--no-action</span></a></span></a><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span> |</span><a
+ href="#--action"><span style="font-weight: normal;"> </span></a><span
+ style="font-weight: normal;"><span style="font-weight: bold;"><a
+ href="#--action">--action</a></span>=<span style="font-style: italic;">action-name</span></span><span
  style="font-weight: normal;">[:<span style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
  style="font-style: italic;">micro</span>]</span><span
@@ -468,7 +493,8 @@ Node Versions</a></li>
     <li style="font-weight: bold;"><a href="#Checked-In_Node_Versions">Checked-In
 Node Versions</a></li>
     <ul>
-      <li style="font-weight: bold;">checked-in<br>
+      <li style="font-weight: bold;"><span
+ style="color: rgb(153, 0, 0);">checked-in</span><br>
       </li>
     </ul>
   </ul>
@@ -530,7 +556,7 @@ Node Versions</a></li>
 Operations</span></span></a></li>
     <ul>
       <li style="font-weight: bold;"><span style="font-weight: normal;"><span
- style="font-weight: bold;">node<br>
+ style="font-weight: bold;"><span style="color: rgb(153, 0, 0);">node</span><br>
         </span></span></li>
     </ul>
     <ul>
@@ -716,7 +742,8 @@ Operations</span></span></a></li>
  style="font-weight: normal;"><span style="font-weight: bold;">Queue
 Operations</span></span></a></li>
     <ul>
-      <li style="font-weight: bold;"><span style="font-weight: normal;"><span
+      <li style="font-weight: bold;"><span
+ style="font-weight: normal; color: rgb(153, 0, 0);"><span
  style="font-weight: bold;">job-group</span></span><br>
       </li>
       <ul>
@@ -778,7 +805,7 @@ Operations</span></span></a></li>
  style="font-weight: normal;"></span></li>
       </ul>
       <li style="font-weight: bold;"><span style="font-weight: normal;"><span
- style="font-weight: bold;">job</span><br>
+ style="font-weight: bold; color: rgb(153, 0, 0);">job</span><br>
         </span></li>
       <ul>
         <li style="font-weight: bold;"><span
@@ -2158,7 +2185,14 @@ printed.&nbsp; The following sections are supported by these options: <br>
 <div style="margin-left: 40px;">A shortcut for speciying all of the
 sections at once.</div>
 <span style="font-weight: bold;"></span><br>
-<span style="font-weight: bold;">props</span><br>
+<span style="font-weight: bold;">version<br>
+<br>
+</span>
+<div style="margin-left: 40px;">Prints the revision number of the
+checked-in version upon which the working version is based.<br>
+</div>
+<span style="font-weight: bold;"><br>
+prop</span><br>
 <br>
 <div style="margin-left: 40px;">Prints the name of the toolset
 environment and default editor for the working version.<br>
@@ -2171,23 +2205,30 @@ per-source parameters of the Action plugin associated with the working
 version. <br>
 </div>
 <br>
-<span style="font-weight: bold;">jobreqs</span><br>
+<span style="font-weight: bold;">jreq</span><br>
 <br>
 <div style="margin-left: 40px;">Prints the job requirements and job
-execution related properties of the working version.<br>
+execution related properties of the working version. This section will
+be skipped if there is no Action plugin associated with the working
+version. <br>
 <br>
 </div>
-<span style="font-weight: bold;">keys</span> <br>
+<span style="font-weight: bold;">key</span><br>
 <br>
 <div style="margin-left: 40px;">Prints the names of the license and
-selection keys required by jobs associated with the working version.<br>
+selection keys required by jobs associated with the working version.&nbsp;
+This section will be skipped if there is no Action plugin associated
+with the working
+version.
 </div>
 <br>
-<span style="font-weight: bold;">links</span><br>
+<span style="font-weight: bold;">link</span><br>
 <span style="font-weight: bold;"><br>
 </span>
 <div style="margin-left: 40px;">Prints the names of the upstream nodes
-linked to the working version and the properties of these links.<br>
+linked to the working version and the properties of these links.&nbsp;
+This section will be skipped if the working version has no upstream
+links.<br>
 </div>
 </div>
 <span style="font-weight: normal;"> </span><br>
@@ -2209,9 +2250,8 @@ linked to the working version and the properties of these links.<br>
  style="font-style: italic;">editor-name</span></span><span
  style="font-weight: normal;">] <br>
 &nbsp;&nbsp;&nbsp; [<a href="#--no-action"><span
- style="font-weight: bold;">--no-action</span></a>
-|<span style="font-weight: bold;"> <a href="#--action">--action</a></span>=<span
- style="font-style: italic;">action-name</span></span><span
+ style="font-weight: bold;"></span></a><span style="font-weight: bold;"><a
+ href="#--action">--action</a></span>=<span style="font-style: italic;">action-name</span></span><span
  style="font-weight: normal;">[:<span style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
  style="font-style: italic;">micro</span>]</span><span
@@ -2600,8 +2640,15 @@ printed.&nbsp; The following sections are supported by these options: <br>
 </span>
 <div style="margin-left: 40px;">A shortcut for speciying all of the
 sections at once.</div>
+<br>
+<span style="font-weight: bold;">version<br>
+<br>
+</span>
+<div style="margin-left: 40px;">Prints the revision number of the
+checked-in version.<br>
+</div>
 <span style="font-weight: bold;"></span><br>
-<span style="font-weight: bold;">props</span><br>
+<span style="font-weight: bold;">prop</span><br>
 <br>
 <div style="margin-left: 40px;">Prints the name of the toolset
 environment and default editor for the checked-in version.<br>
@@ -2614,24 +2661,31 @@ per-source parameters of the Action plugin associated with the
 checked-in version. <br>
 </div>
 <br>
-<span style="font-weight: bold;">jobreqs</span><br>
+<span style="font-weight: bold;">jreq</span><br>
 <br>
 <div style="margin-left: 40px;">Prints the job requirements and job
-execution related properties of the checked-in version.<br>
+execution related properties of the checked-in version.&nbsp; This
+section will be skipped if there is no Action plugin associated with
+the checked-in
+version.<br>
 <br>
 </div>
-<span style="font-weight: bold;">keys</span> <br>
+<span style="font-weight: bold;">key</span> <br>
 <br>
 <div style="margin-left: 40px;">Prints the names of the license and
-selection keys required by jobs associated with the checked-in version.<br>
+selection keys required by jobs associated with the checked-in version.&nbsp;
+This section will be skipped if there is no Action plugin associated
+with the checked-in
+version.
 </div>
 <br>
-<span style="font-weight: bold;">links</span><br>
+<span style="font-weight: bold;">link</span><br>
 <span style="font-weight: bold;"><br>
 </span>
 <div style="margin-left: 40px;">Prints the names and versions of the
 upstream nodes linked to the checked-in version and the properties of
-these links.<br>
+these links. This section will be skipped if the checked-in version has
+no upstream links.
 </div>
 </div>
 <span style="font-weight: normal;"><br>
@@ -2740,11 +2794,21 @@ printed.&nbsp; The following sections are supported by these options: <br>
 <br>
 </span>
 <div style="margin-left: 40px;">A shortcut for speciying all of the
-sections at once.</div>
-<span style="font-weight: bold;"></span><br>
-<span style="font-weight: bold;">props</span><br>
+sections at once.<br>
 <br>
-<div style="margin-left: 40px;">Prints the name of the toolset
+</div>
+<span style="font-weight: bold;"></span><span style="font-weight: bold;">version<br>
+<br>
+</span>
+<div style="margin-left: 40px;">Prints the version state and revision
+number of the checked-in version upon which the working version is
+based.<br>
+</div>
+<br>
+<span style="font-weight: bold;">prop</span><br>
+<br>
+<div style="margin-left: 40px;">Prints the property state, name of the
+toolset
 environment and default editor for the working version and the
 checked-in version upon which the working version is based.<br>
 </div>
@@ -2757,26 +2821,35 @@ version and the checked-in version upon which the working version is
 based.
 </div>
 <br>
-<span style="font-weight: bold;">jobreqs</span><br>
+<span style="font-weight: bold;">jreq</span><br>
 <br>
 <div style="margin-left: 40px;">Prints the job requirements and job
 execution related properties of the working version and the checked-in
-version upon which the working version is based.<br>
+version upon which the working version is based.&nbsp; This section
+will be skipped if there is no Action plugin associated with either the
+working or checked-in
+version.<br>
 <br>
 </div>
-<span style="font-weight: bold;">keys</span> <br>
+<span style="font-weight: bold;">key</span> <br>
 <br>
 <div style="margin-left: 40px;">Prints the names of the license and
 selection keys required by jobs associated with the working version and
-the checked-in version upon which the working version is based.
+the checked-in version upon which the working version is based.&nbsp;
+This section will be skipped if there is no Action plugin associated
+with either the working or checked-in
+version.
 </div>
 <br>
-<span style="font-weight: bold;">links</span><br>
+<span style="font-weight: bold;">link</span><br>
 <span style="font-weight: bold;"><br>
 </span>
-<div style="margin-left: 40px;">Prints the names and versions of the
-upstream nodes linked to the checked-in version and the properties of
-these links.
+<div style="margin-left: 40px;">Prints the link state, the names and
+versions of the
+upstream nodes linked to the working and checked-in versions and the
+properties of
+these links. This section will be skipped if neither the working nor
+checked-in versions have upstream links.
 </div>
 </div>
 <span style="font-weight: normal;"> </span></div>
