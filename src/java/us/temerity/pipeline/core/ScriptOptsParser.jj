@@ -164,16 +164,19 @@ ScriptOptsParser
   
   /**
    * working node version command option temporaries
-   */ 
+   */   
+  private TreeSet  pFrames; 
+  private TreeSet  pIndices; 
   private FileSeq  pFileSeq; 
   private Integer  pPadding; 
 
-  private String   pMsg; 
-  private String   pAuthor; 
-  private String   pView; 
-  private TreeSet  pSections; 
-  private String   pToolset;
-  private String   pEditor;
+  private String    pMsg; 
+  private String    pAuthor; 
+  private String    pView; 
+  private TreeSet   pSections; 
+  private String    pToolset;
+  private String    pEditorName;
+  private VersionID pEditorVersionID;
 
   private Boolean    pNoAction; 
   private String     pActionName;
@@ -192,8 +195,10 @@ ScriptOptsParser
   private TreeMap          pLicenseKeys;
   private TreeMap          pSelectionKeys;
 
-  private Boolean   pRemoveFiles;
-  private Boolean   pRenameFiles;
+  private Boolean     pRemoveFiles;
+  private Boolean     pRenameFiles;
+  private String      pNewName; 
+  private FrameRange  pFrameRange; 
 
   private String            pLinkSourceName;  
   private LinkPolicy        pLinkPolicy;      
@@ -297,9 +302,10 @@ TOKEN :
 | <DEPEND:         "--depend">          : LINK_PARAM_SEP
 | <SOURCE:         "--source">          : LINK_PARAM_SEP
 | <FSEQ:           "--fseq">            : FILE_SEQ_SEP
-| <NAME:           "--name">            : NODE_NAME_SEP      
+| <NAME:           "--name">            : NODE_NAME_SEP  
 | <RENAME_FILES:   "--rename-files">   
 | <REMOVE_FILES:   "--remove-files">    
+| <RANGE:          "--range">           : FRAME_RANGE_SEP
 | <FRAME:          "--frame">           : FRAME_NUMBERS_SEP
 | <INDEX:          "--index">           : FRAME_INDICES_SEP
 
@@ -458,7 +464,7 @@ TOKEN :
 TOKEN :
 {
   <HOST_NAME:         ((["a"-"z","A"-"Z","0"-"9"])+ 
-		      ("." (["a"-"z","A"-"Z","0"-"9"])+)*)>   : OPTIONS
+		      ("." (["a"-"z","A"-"Z","0"-"9"])+)*)>    : OPTIONS
 | <MISSING_HOST_NAME: ["\0"]>                                  : IGNORE_STATE
 | <ILLEGAL_HOST_NAME: (~["\0"])+>                              : IGNORE_STATE
 }
@@ -475,7 +481,8 @@ TOKEN :
 <NODE_NAME_STATE> 
 TOKEN :
 {
-  <NODE_NAME:           ("/" ["a"-"z","A"-"Z"] 
+  <NODE_NAME:           ("/" (["a"-"z","A"-"Z","0"-"9"])+)* 
+			("/" ["a"-"z","A"-"Z"] 
 		          (["a"-"z","A"-"Z","0"-"9","_","-"])*)+>  : OPTIONS
 | <MISSING_NODE_NAME:   ["\0"]>                                    : IGNORE_STATE
 | <ILLEGAL_NODE_NAME:   (~["\0"])+>                                : IGNORE_STATE
@@ -704,8 +711,9 @@ TOKEN :
 <SOURCE_PARAM_STATE> 
 TOKEN :
 {
-  <SOURCE_NAME:         ("/" ["a"-"z","A"-"Z"] 
-		          (["a"-"z","A"-"Z","0"-"9","_","-"])*)+>  
+  <SOURCE_NAME:         ("/" (["a"-"z","A"-"Z","0"-"9"])+)* 
+			("/" ["a"-"z","A"-"Z"] 
+		          (["a"-"z","A"-"Z","0"-"9","_","-"])*)+> 
 | <COMMA1:              ",">                                       : PARAM_STATE
 | <ILLEGAL_SOURCE_NAME: (~[","])+>                                 : IGNORE_STATE
 }
@@ -722,8 +730,9 @@ TOKEN :
 <LINK_PARAM_STATE> 
 TOKEN :
 {
-  <LINK_NAME:         ("/" ["a"-"z","A"-"Z"] 
-		        (["a"-"z","A"-"Z","0"-"9","_","-"])*)+>  
+  <LINK_NAME:         ("/" (["a"-"z","A"-"Z","0"-"9"])+)* 
+		      ("/" ["a"-"z","A"-"Z"] 
+		        (["a"-"z","A"-"Z","0"-"9","_","-"])*)+> 
 | <COMMA2:            ",">                                       : LINK_RELATION_STATE
 | <AE15:              "\0">                                      : OPTIONS
 | <ILLEGAL_LINK_NAME: (~[",","\0"])+>                            : IGNORE_STATE
@@ -2321,14 +2330,15 @@ SuffixEditorSet()
   throws PipelineException : 
 {
   String suffix = null;
-  pEditor = null;
-  pMsg    = null; 
+
+  pEditorName = null;
+  pMsg        = null; 
 }
 {
   <SUFFIX_EDITOR_SET> EQ() suffix=Suffix() AE() 
      ((Msg() AE() Editor()) | (Editor() AE() Msg())) AE()
   {
-    SuffixEditor se = new SuffixEditor(suffix, pMsg, pEditor);
+    SuffixEditor se = new SuffixEditor(suffix, pMsg, pEditorName);
     pApp.addSuffixEditor(se, pMasterMgrClient);
 
     Logs.ops.info("Added default editor for suffix (" + suffix + ").");
@@ -2426,7 +2436,8 @@ WorkingCmds()
 {
   <WORKING> AE() 
      (WorkingGetInfo() | WorkingRegister() | WorkingRelease() | WorkingSet() | 
-      WorkingLink() | WorkingUnlink())
+      WorkingLink() | WorkingUnlink() | WorkingAddSecondary() | WorkingRemoveSecondary() |
+      WorkingRename() | WorkingRenumber() | WorkingEdit()) 
   {}
 }
 
@@ -2526,11 +2537,11 @@ WorkingRegister()
 {
   String name = null;
 
-  pAuthor  = PackageInfo.sUser;
-  pView    = "default";
-  pFileSeq = null;
-  pToolset = null;
-  pEditor  = null;
+  pAuthor     = PackageInfo.sUser;
+  pView       = "default";
+  pFileSeq    = null;
+  pToolset    = null;
+  pEditorName = null;
 
   pNoAction        = null;
   pActionName      = null;
@@ -2556,7 +2567,7 @@ WorkingRegister()
         ("The --fseq option is required!");
 
     pApp.workingVersionRegister
-      (new NodeID(pAuthor, pView, name), pFileSeq, pToolset, pEditor, pNoAction, 
+      (new NodeID(pAuthor, pView, name), pFileSeq, pToolset, pEditorName, pNoAction, 
        pActionName, pActionVersionID, pActionEnabled, pParams, pSourceParams, 
        pOverflowPolicy, pExecutionMethod, pBatchSize, 
        pPriority, pMaxLoad, pMinMemory, pMinDisk, 
@@ -2616,10 +2627,10 @@ WorkingSet()
 {
   String name = null;
 
-  pAuthor  = PackageInfo.sUser;
-  pView    = "default";
-  pToolset = null;
-  pEditor  = null;
+  pAuthor      = PackageInfo.sUser;
+  pView        = "default";
+  pToolset     = null;
+  pEditorName  = null;
 
   pNoAction        = null;
   pActionName      = null;
@@ -2641,7 +2652,7 @@ WorkingSet()
   <WORKING_SET> EQ() name=NodeName() AE() (WorkingSetOpts())*
   {
     pApp.workingVersionSet
-      (new NodeID(pAuthor, pView, name), pToolset, pEditor, pNoAction, 
+      (new NodeID(pAuthor, pView, name), pToolset, pEditorName, pNoAction, 
        pActionName, pActionVersionID, pActionEnabled, pParams, pSourceParams, 
        pOverflowPolicy, pExecutionMethod, pBatchSize, 
        pPriority, pMaxLoad, pMinMemory, pMinDisk, 
@@ -2835,6 +2846,195 @@ LinkSource() :
   }
 }
 
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
+WorkingAddSecondary() 
+  throws PipelineException : 
+{
+  String name = null;
+  
+  pAuthor  = PackageInfo.sUser;
+  pView    = "default";
+  pFileSeq = null; 
+}
+{
+  <WORKING_ADD_SECONDARY> EQ() name=NodeName() AE() (WorkingSecondaryOpts())* 
+  {
+    if(pFileSeq == null) 
+      throw new PipelineException
+        ("The --fseq option is required!");
+
+    pMasterMgrClient.addSecondary(new NodeID(pAuthor, pView, name), pFileSeq);
+  }
+}
+
+void 
+WorkingRemoveSecondary() 
+  throws PipelineException : 
+{
+  String name = null;
+  
+  pAuthor  = PackageInfo.sUser;
+  pView    = "default";
+  pFileSeq = null; 
+}
+{
+  <WORKING_REMOVE_SECONDARY> EQ() name=NodeName() AE() (WorkingSecondaryOpts())* 
+  {
+    if(pFileSeq == null) 
+      throw new PipelineException
+        ("The --fseq option is required!");
+
+    pMasterMgrClient.removeSecondary(new NodeID(pAuthor, pView, name), pFileSeq);
+  }
+}
+
+void
+WorkingSecondaryOpts()
+  throws PipelineException : 
+{}
+{
+  (Author() | View() | FSeq()) 
+  {}
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
+WorkingRename() 
+  throws PipelineException : 
+{
+  String name = null;
+  
+  pAuthor      = PackageInfo.sUser;
+  pView        = "default";
+  pNewName     = null;
+  pRenameFiles = false;
+}
+{
+  <WORKING_RENAME> EQ() name=NodeName() AE() (WorkingRenameOpts())* 
+  {
+    if(pNewName == null) 
+      throw new PipelineException
+        ("The --name option is required!");
+
+    pMasterMgrClient.rename(new NodeID(pAuthor, pView, name), pNewName, pRenameFiles);
+  }
+}
+
+void
+WorkingRenameOpts()
+  throws PipelineException : 
+{}
+{
+  (Author() | View() | NewName() | RenameFiles())
+  {}
+}
+
+void 
+NewName() : 
+{
+  String name;
+}
+{
+  <NAME> EQ() name=NodeName() AE()
+  {
+    pNewName = name;
+  }
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
+WorkingRenumber() 
+  throws PipelineException : 
+{
+  String name = null;
+  
+  pAuthor      = PackageInfo.sUser;
+  pView        = "default";
+  pFrameRange  = null;
+  pRemoveFiles = false;
+}
+{
+  <WORKING_RENUMBER> EQ() name=NodeName() AE() (WorkingRenumberOpts())* 
+  {
+    if(pFrameRange == null) 
+      throw new PipelineException
+        ("The --range option is required!");
+
+    pMasterMgrClient.renumber(new NodeID(pAuthor, pView, name), pFrameRange, pRemoveFiles);
+  }
+}
+
+void
+WorkingRenumberOpts()
+  throws PipelineException : 
+{}
+{
+  (Author() | View() | Range() | RemoveFiles())
+  {}
+}
+
+void 
+Range()
+  throws PipelineException : 
+{
+  Integer start = null;
+  Integer end   = null;
+  Integer by    = 1;
+}
+{
+  <RANGE> EQ() start=FrameNumber() (DASH() end=FrameNumber() (<BY> by=FrameNumber())?)? AE()
+  {
+    try {
+      if(end == null) 
+        pFrameRange = new FrameRange(start);
+      else 
+        pFrameRange = new FrameRange(start, end, by);
+    }
+    catch(IllegalArgumentException ex) {
+      throw new PipelineException(ex.getMessage());
+    }
+  }
+}
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
+WorkingEdit() 
+  throws PipelineException : 
+{
+  String name = null;
+  
+  pAuthor          = PackageInfo.sUser;
+  pView            = "default";
+  pEditorName      = null;
+  pEditorVersionID = null;
+  pFrames          = new TreeSet();
+  pIndices         = new TreeSet();
+  pFileSeq         = null;  
+}
+{
+  <WORKING_EDIT> EQ() name=NodeName() AE() (WorkingEditOpts())* 
+  {
+//     pApp.workingEdit(new NodeID(pAuthor, pView, name), pEditorName, pEditorVersionID, 
+// 		     pFrames, pIndices, pFileSeq);
+  }
+}
+
+void
+WorkingEditOpts()
+  throws PipelineException : 
+{}
+{
+  (Author() | View() | EditorVersion() | Frame() | Index() | FSeq())
+  {}
+}
 
 /*------------------------------------------------------------------------------------------*/
 /*   C H E C K E D - I N   N O D E   V E R S I O N   C O M M A N D S                        */
@@ -3251,6 +3451,70 @@ PaddingFour() :
   }
 }
 
+void 
+Frame() : 
+{}
+{
+  <FRAME> EQ() FrameNumbers() (COMMA() FrameNumbers())* AE()
+  {
+  }
+}
+
+void 
+FrameNumbers() : 
+{
+  Token s, e;
+}
+{
+  s=<FRAME_NUMBER2> (DASH() e=<FRAME_NUMBER2>)
+  {
+//     try {
+//       if(e == null) {
+//         pFrames.add(new Integer(s.image));
+//       }
+//       else {
+	
+
+//       } 
+//     }
+//     catch(NumberFormatException ex) {
+//       throw new PipelineException(ex.getMessage());
+//     }    
+  }
+}
+
+void 
+Index() : 
+{}
+{
+  <INDEX> EQ() FrameIndices() (COMMA() FrameIndices())* AE()
+  {
+  }
+}
+
+void 
+FrameIndices() : 
+{
+  Token s, e;
+}
+{
+  s=<FRAME_INDEX> (DASH() e=<FRAME_INDEX>)
+  {
+//     try {
+//       if(e == null) {
+//         pFrames.add(new Integer(s.image));
+//       }
+//       else {
+	
+
+//       } 
+//     }
+//     catch(NumberFormatException ex) {
+//       throw new PipelineException(ex.getMessage());
+//     }    
+  }
+}
+
 
 void
 Toolset() : 
@@ -3272,10 +3536,24 @@ Editor() :
 {
   <EDITOR> EQ() ename=EditorName() AE()
   {
-    pEditor = ename;
+    pEditorName = ename;
   }
 }
 
+void
+EditorVersion()
+  throws PipelineException : 
+{
+  String ename  = null;
+  VersionID vid = null;
+}
+{
+  <EDITOR> EQ() ename=EditorName() (COLON() vid=RevisionNumber())? AE()
+  {
+    pEditorName      = ename; 
+    pEditorVersionID = vid; 
+  }
+}
 
 void
 NoAction() :
@@ -3301,7 +3579,6 @@ NoAction() :
     pSelectionKeys   = new TreeMap();
   }
 }
-
 
 void
 Action()

@@ -1,4 +1,4 @@
-// $Id: NodeCommon.java,v 1.16 2004/09/08 18:33:09 jim Exp $
+// $Id: NodeCommon.java,v 1.17 2004/09/22 23:13:24 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -726,9 +726,9 @@ class NodeCommon
  	  ("The node name (" + name + ") cannot contain repeated (/) characters!");
       
       char cs[] = parts[wk].toCharArray();
-      if(!Character.isLetter(cs[0]))
+      if((wk == (parts.length-1)) && !Character.isLetter(cs[0]))
  	throw new IllegalArgumentException
- 	  ("The first character the node name component (" + parts[wk] + ") was not " + 
+ 	  ("The first character the last node name component (" + parts[wk] + ") was not " + 
  	   "a letter!");
       
       int ck;
