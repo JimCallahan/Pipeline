@@ -1,4 +1,4 @@
-// $Id: JBaseFileSelectDialog.java,v 1.3 2004/10/22 19:18:22 jim Exp $
+// $Id: JBaseFileSelectDialog.java,v 1.4 2004/10/22 19:41:20 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -231,7 +231,7 @@ implements ListSelectionListener, DocumentListener, MouseListener
   /**
    * Update the enabled status of the confirm button.
    */ 
-  private void 
+  protected void 
   updateConfirmButton()
   {
     boolean enabled = true;

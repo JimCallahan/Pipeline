@@ -1,4 +1,4 @@
-// $Id: JFileSeqSelectDialog.java,v 1.2 2004/10/22 19:18:22 jim Exp $
+// $Id: JFileSeqSelectDialog.java,v 1.3 2004/10/22 19:41:20 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -54,11 +54,8 @@ class JFileSeqSelectDialog
   {
     pRenderer = new JFileSeqListCellRenderer();
     JTextField field = UIMaster.createTextField(null, 60, JLabel.LEFT);
-
     super.initUI("Select File Sequence:", pRenderer, 
 		 "File Sequence:", 90, field, "Select");
-
-//     pConfirmButton.setEnabled(true);
   }
 
 
@@ -83,9 +80,19 @@ class JFileSeqSelectDialog
   }
 
 
+
   /*----------------------------------------------------------------------------------------*/
   /*   U S E R   I N T E R F A C E                                                          */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Update the enabled status of the confirm button.
+   */ 
+  protected void 
+  updateConfirmButton()
+  {
+    pConfirmButton.setEnabled(true);
+  }
 
   /**
    * Update the header label for the current working area.
@@ -111,6 +118,7 @@ class JFileSeqSelectDialog
   {
     updateTargetDir(target);
     pFileField.setText(null);
+    pFileSeq = null;
   }
 
   /**
