@@ -1,4 +1,4 @@
-// $Id: CheckSum.java,v 1.2 2004/03/09 06:23:24 jim Exp $
+// $Id: CheckSum.java,v 1.3 2004/03/10 11:45:38 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -65,21 +65,17 @@ class CheckSum
    * @param algorithm [<B>in</B>]
    *   The digest algorithm.
    * 
-   * @param pdir [<B>in</B>]
+   * @param dir [<B>in</B>]
    *   The root production directory.
-   * 
-   * @param csdir [<B>in</B>]
-   *   The root checksum directory. 
    */ 
   public
   CheckSum
   (
    String algorithm, 
-   File pdir,
-   File csdir
+   File dir
   ) 
   {
-    init(algorithm, pdir, csdir);
+    init(algorithm, dir);
   }
 
   /** 
@@ -89,7 +85,7 @@ class CheckSum
   public
   CheckSum() 
   {
-    init("MD5", PackageInfo.sProdDir, PackageInfo.sCheckSumDir);
+    init("MD5", PackageInfo.sProdDir);
   }
   
 
@@ -99,8 +95,7 @@ class CheckSum
   init
   (
    String algorithm,
-   File pdir,
-   File csdir
+   File dir
   ) 
   {
     try {
@@ -111,19 +106,14 @@ class CheckSum
 	("Unknown digest algorithm (" + algorithm + ")!");
     }
 
-    if(pdir == null) 
+    if(dir == null) 
       throw new IllegalArgumentException("The root production directory cannot be (null)!");
-    if(!pdir.isDirectory()) 
+    if(!dir.isDirectory()) 
       throw new IllegalArgumentException 
-	("The root production directory (" + pdir + ") was not valid!");
-    pProdDir = pdir;
+	("The root production directory (" + dir + ") was not valid!");
+    pProdDir = dir;
 
-    if(csdir == null) 
-      throw new IllegalArgumentException("The root checksum directory cannot be (null)!");
-    if(!csdir.isDirectory()) 
-      throw new IllegalArgumentException 
-	("The root checksum directory (" + csdir + ") was not valid!");
-    pCheckSumDir = csdir;
+    pCheckSumDir = new File(dir, "checksum");
   }
 
 
@@ -183,8 +173,9 @@ class CheckSum
   /**
    * Generate an up-to-date checksum file for the given node file path. <P> 
    *
-   * If there already exists a checksum file which is newer than the given source 
-   * file, no action will be taken. <P> 
+   * No action will be taken if the source file is missing, if the source file is not a 
+   * regular file or if there already exists a checksum file which is newer than 
+   * the given source file. <P> 
    * 
    * If the source file is larger than <CODE>size</CODE> bytes, it is mapped directly 
    * into a region of memory to increase I/O performance. Memory-mapping seems to be 
@@ -213,11 +204,12 @@ class CheckSum
     if(path == null) 
       throw new IllegalArgumentException("The source node file path cannot be (null)!");
 
+    /* abort early if the source file is missing or is not a regular file */ 
     File file = new File(pProdDir, path.getPath());
     if(!file.isFile()) 
-      throw new PipelineException
-	("The source file (" + file + ") did not exist!");
+      return;
 
+    /* abort early if the checksum file is up-to-date */ 
     File sfile = checkSumFile(path);    
     if(sfile.isFile() && (sfile.lastModified() > file.lastModified())) 
       return;
