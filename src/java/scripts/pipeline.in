@@ -1,7 +1,5 @@
 #!/bin/sh
 
-
-
 exec java -Djava.util.logging.config.file=@PLROOT@/pipeline/share/logger.properties \
           -cp @PLROOT@/pipeline/share/pipeline.jar:@JDBC_JAR@ \
           pipeline/ClientApp "$@"
