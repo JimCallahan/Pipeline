@@ -1,4 +1,4 @@
-// $Id: JBaseViewerPanel.java,v 1.5 2004/12/31 07:39:13 jim Exp $
+// $Id: JBaseViewerPanel.java,v 1.6 2004/12/31 22:28:24 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -590,9 +590,10 @@ implements MouseListener, MouseMotionListener, GLEventListener
 
     Vector2d hrange = bbox.getRange();
     hrange.mult(0.5);
-    
-    double distX = hrange.x() / Math.tan(Math.toRadians(pFOV)*pAspect*0.5);
-    double distY = hrange.y() / Math.tan(Math.toRadians(pFOV)*0.5);
+
+    double ftan = Math.tan(Math.toRadians(pFOV)*0.5);
+    double distX = hrange.x() / (pAspect * ftan);
+    double distY = hrange.y() / ftan;
     double z = Math.max(((double) pCanvas.getWidth()) / pMaxFactor, Math.max(distX, distY));
 
     Point2d center = bbox.getCenter();
