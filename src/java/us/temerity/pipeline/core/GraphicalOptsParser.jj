@@ -201,6 +201,15 @@ Commands() :
 {
   (GlobalOpts() WS())*
   {
+    try {
+      Plugins.init();
+    }
+    catch(PipelineException ex) {
+      Logs.plg.severe("Unable to load plugins: " + ex);
+      System.exit(1);
+    }
+
+    FileCleaner.init();
     UIMaster.init(pMasterServer, pMasterPort);
   }
 }
