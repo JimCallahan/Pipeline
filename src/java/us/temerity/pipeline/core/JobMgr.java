@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.16 2005/01/11 12:52:55 jim Exp $
+// $Id: JobMgr.java,v 1.17 2005/01/12 13:08:57 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -37,14 +37,17 @@ class JobMgr
   {
     /* initialize the fields */ 
     {
-      pMakeDirLock  = new Object(); 
       pExecuteTasks = new TreeMap<Long,ExecuteTask>();
       pFileMonitors = new HashMap<File, FileMonitor>();
     }
 
+    /* make sure that the root job directory exists */ 
     try {
-      /* make sure that the root job directory exists */ 
-      makeRootDir();
+      pJobDir = new File(PackageInfo.sTempDir, "pljobmgr");
+      if(!pJobDir.isDirectory())
+	if(!pJobDir.mkdirs()) 
+	  throw new PipelineException
+	    ("Unable to create the temporary directory (" + pJobDir + ")!");
     }
     catch(Exception ex) {
       Logs.ops.severe(ex.getMessage());
@@ -52,26 +55,6 @@ class JobMgr
       System.exit(1);
     }
   }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Make sure that the root job directory exists.
-   */ 
-  private void 
-  makeRootDir() 
-    throws PipelineException
-  {
-    synchronized(pMakeDirLock) {
-      pJobDir = new File(PackageInfo.sTempDir, "pljobmgr");
-      if(!pJobDir.isDirectory())
-	if(!pJobDir.mkdirs()) 
-	  throw new PipelineException
-	    ("Unable to create the temporary directory (" + pJobDir + ")!");
-    }
-  }
-
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -330,21 +313,42 @@ class JobMgr
     QueueJob job = req.getJob();
     TaskTimer timer = new TaskTimer(); 
 
-    ExecuteTask task = new ExecuteTask(job);
-    int numJobs = 1;
-    timer.aquire();
-    synchronized(pExecuteTasks) {
-      timer.resume();
-      pExecuteTasks.put(job.getJobID(), task); 
-
-      for(ExecuteTask etask : pExecuteTasks.values()) 
-	if(etask.isAlive())
-	  numJobs++;
-
-      Logs.ops.finest("JobStart - Num Jobs: " + numJobs);
+    /* create the job scratch directory */ 
+    try {	
+      File dir = new File(pJobDir, String.valueOf(job.getJobID()));
+      File scratch = new File(dir, "scratch");
+      if(dir.exists() || scratch.exists())
+	throw new IOException
+	  ("Somehow the job directory (" + dir + ") already exists!");
+      
+      if(!scratch.mkdirs()) 
+	throw new IOException
+	  ("Unable to create the job directory (" + dir + ")!");
+	
+      NativeFileSys.chmod(0777, scratch);	      
+    }
+    catch(IOException ex) {
+      return new FailureRsp(timer, ex.getMessage());
     }
 
-    task.start();
+    /* start the job execution task */ 
+    int numJobs = 1;
+    {
+      ExecuteTask task = new ExecuteTask(job);
+      timer.aquire();
+      synchronized(pExecuteTasks) {
+	timer.resume();
+	pExecuteTasks.put(job.getJobID(), task); 
+	
+	for(ExecuteTask etask : pExecuteTasks.values()) 
+	if(etask.isAlive())
+	  numJobs++;
+	
+	Logs.ops.finest("JobStart - Num Jobs: " + numJobs);
+      }
+      
+      task.start();
+    }
 
     return new JobStartRsp(job.getJobID(), timer, numJobs);
   }
@@ -423,13 +427,25 @@ class JobMgr
 
       /* the execution task still exists */ 
       if(task != null) {
-	try {
-	  task.join();
-	}
-	catch(InterruptedException ex) {
-	  throw new PipelineException(ex);
+	int cycles = 0; 
+	while(task.isAlive()) {
+	  try {
+	    task.join(15000);
+	    cycles++;
+	  }
+	  catch(InterruptedException ex) {
+	    throw new PipelineException(ex);
+	  }
+	  
+	  Logs.ops.finest
+	    ("Job (" + req.getJobID() + "): " + 
+	     "WAITING for (" + cycles + ") loops...");
 	}
       
+	Logs.ops.finest
+	  ("Job (" + req.getJobID() + "): " + 
+	   "COMPLETED after (" + cycles + ") loops...");
+	
 	results = task.getResults();
 
 	timer.aquire();
@@ -900,26 +916,21 @@ class JobMgr
       super("JobMgr:ExecuteTask[Job" + job.getJobID() + "]");
 
       pJob = job;
-      pLock = new Object();
     }
 
     public QueueJobResults
     getResults()
     {
-      synchronized(pLock) {
-	assert(!isAlive());
-	return pResults;
-      }
+      return pResults;
     }
 
     public void 
     kill() 
     {
       Logs.ops.finer("Killing Job: " + pJob.getJobID());
-      synchronized(pLock) {
-	if(pProc != null) 
-	  pProc.kill();
-      }
+      SubProcessHeavy proc = pProc;
+      if(proc != null) 
+	proc.kill();
     }
 
     public void 
@@ -933,25 +944,12 @@ class JobMgr
 	SortedMap<String,String> env = agenda.getEnvironment();
 	
 	File dir = new File(pJobDir, String.valueOf(jobID));
+	File scratch = new File(dir, "scratch");
 	File outFile = new File(dir, "stdout");
 	File errFile = new File(dir, "stderr");
 	try {
 	  Logs.ops.finer("Preparing Job: " + jobID);
 
-	  /* create the job scratch directory */ 
-	  File scratch = new File(dir, "scratch");
-	  synchronized(pMakeDirLock) {
-	    if(dir.exists() || scratch.exists())
-	      throw new IOException
-		("Somehow the job directory (" + dir + ") already exists!");
-	    
-	    if(!scratch.mkdirs()) 
-	      throw new IOException
-		("Unable to create the job directory (" + dir + ")!");
-	    
-	    NativeFileSys.chmod(0777, scratch);	      
-	  }
-	  
 	  /* make sure the target directory exists */ 
 	  if(!wdir.isDirectory()) {
 	    ArrayList<String> args = new ArrayList<String>();
@@ -1015,9 +1013,7 @@ class JobMgr
 	  }
 	  
 	  /* create the job execution process */ 
-	  synchronized(pLock) {
-	    pProc = pJob.getAction().prep(pJob.getActionAgenda(), outFile, errFile);
-	  }
+	  pProc = pJob.getAction().prep(pJob.getActionAgenda(), outFile, errFile);
 	}
 	catch(Exception ex) {
 	  Logs.ops.severe("Job Prep Failed: " + jobID);
@@ -1043,10 +1039,29 @@ class JobMgr
 
 	/* run the job */ 
 	Logs.ops.finer("Started Job: " + jobID);
-	{
+        {
 	  pProc.start();
-	  pProc.join();
+	  
+	  int cycles = 0; 
+	  while(pProc.isAlive()) {
+	    try {
+	      pProc.join(15000);
+	      cycles++;
+	    }
+	    catch(InterruptedException ex) {
+	      throw new PipelineException(ex);
+	    }
+
+	    Logs.ops.finest
+	      ("Process for Job (" + jobID + "): " + 
+	       "WAITING for (" + cycles + ") loops...");
+	  }
+
+	  Logs.ops.finest
+	    ("Process for Job (" + jobID + "): " + 
+	     "COMPLETED after (" + cycles + ") loops...");
 	}
+
 	Logs.ops.finer("Finished Job: " + jobID);
 
 	/* make any existing target primary and secondary files read-only */ 
@@ -1089,8 +1104,8 @@ class JobMgr
 	}
 
 	/* record the results */ 
-	synchronized(pLock) {
-	  pResults = 
+	{
+	  QueueJobResults results = 
 	    new QueueJobResults(pProc.getCommand(), pProc.getExitCode(), 
 				pProc.getUserTime(), pProc.getSystemTime(), 
 				pProc.getVirtualSize(), pProc.getResidentSize(), 
@@ -1100,7 +1115,7 @@ class JobMgr
 	  try {
 	    String glue = null;
 	    try {
-	      GlueEncoder ge = new GlueEncoderImpl("Results", pResults);
+	      GlueEncoder ge = new GlueEncoderImpl("Results", results);
 	      glue = ge.getText();
 	    }
 	    catch(GlueException ex) {
@@ -1124,6 +1139,8 @@ class JobMgr
 	       "  While attempting to write the job results file (" + file + ")...\n" + 
 	       "    " + ex.getMessage());
 	  }
+
+	  pResults = results;
 	}
       }
       catch(Exception ex2) {
@@ -1154,7 +1171,6 @@ class JobMgr
     }
 
     private QueueJob         pJob; 
-    private Object           pLock; 
     private SubProcessHeavy  pProc; 
     private QueueJobResults  pResults; 
   }
@@ -1176,11 +1192,6 @@ class JobMgr
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The file system directory creation lock.
-   */
-  private Object pMakeDirLock;
  
   /**
    * The root job directory.
