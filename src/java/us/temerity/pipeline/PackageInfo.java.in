@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.in,v 1.2 2004/02/14 18:47:55 jim Exp $
+// $Id: PackageInfo.java.in,v 1.3 2004/02/20 22:50:32 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -31,11 +31,19 @@ class PackageInfo
    */ 
   public static final String sRelease = "@RELEASE_STAMP@";  
 
+
   /** 
    * The root installation directory. <P>
    * Set by the <CODE>--prefix=DIR</CODE> option to <I>configure(1)</I>.
    */ 
   public static final File sInstDir = new File("@prefix@");
+
+  /**
+   * The installed read-only architecture-independent data directory. <P>
+   * Set by the <CODE>--datadir=DIR</CODE> option to <I>configure(1)</I>.
+   */ 
+  public static final File sDataDir = new File("@datadir@"); 
+
 
   /**
    * The hostname which runs the Pipeline server. <P> 
@@ -48,6 +56,7 @@ class PackageInfo
    * Set by the <CODE>--pl-port=NUM</CODE> option to <I>configure(1)</I>.   
    */
   public static final int sPipelinePort = @PL_PORT@;
+
 
   /** 
    * The root directory of the file repository. <P>
@@ -70,11 +79,6 @@ class PackageInfo
    */ 
   public static final File sToolsetDir = new File("@TOOLSETDIR@", "toolsets");
 
-  /**
-   * The installed read-only architecture-independent data directory. <P>
-   * Set by the <CODE>--datadir=DIR</CODE> option to <I>configure(1)</I>.
-   */ 
-  public static final File sDataDir = new File("@datadir@"); 
   
   /**
    * The root installed documentation directory. <P>
@@ -88,17 +92,18 @@ class PackageInfo
    */ 
   public static final File sMozilla = new File("@MOZILLA@");
 
+
   /** 
    * The location of <A HREF="http://www.gnu.org/software/bash"><I>bash(1)</I></A>,
    * the GNU Bourne Again SHell.
    */ 
   public static final File sBash = new File("@BASH@");
 
-  /**
-   * The location of <A HREF="http://www.gnu.org/software/make"><I>make(1)</I></A>, 
-   * the GNU make utility. 
+  /** 
+   * The location of <A HREF="http://www.gnu.org/software/coreutils"><I>df(1)</I></A>, 
+   * the GNU filesystem disk space usage program.
    */ 
-  public static final File sMake = new File("@MAKE@");
+  public static final File sDf = new File("@DF@");
 
   /**
    * The location of <A HREF="http://www.gnu.org/software/diffutils"><I>diff(1)</I></A>, 
@@ -106,11 +111,23 @@ class PackageInfo
    */ 
   public static final File sDiff = new File("@DIFF@");
 
+  /**
+   * The location of <A HREF="http://www.gnu.org/software/coreutils"><I>id(1)</I></A>, 
+   * the GNU utility which prints real and effective UIDs and GIDs.
+   */ 
+  public static final File sId = new File("@ID@");
+
   /** 
    * The location of <A HREF="http://www.gnu.org/software/coreutils"><I>kill(1)</I></A>, 
-   * the process signal sending program. 
+   * the GNU process signal sending program. 
    */
   public static final File sKill = new File("@KILL@");
+
+  /**
+   * The location of <A HREF="http://www.gnu.org/software/make"><I>make(1)</I></A>, 
+   * the GNU make utility. 
+   */ 
+  public static final File sMake = new File("@MAKE@");
 
   /** 
    * The location of <A HREF="http://www.openssh.com"><I>ssh(1)</I></A>, 
@@ -118,17 +135,6 @@ class PackageInfo
    */
   public static final File sSsh = new File("@SSH@");
 
-  /**
-   * The location of <A HREF="http://www.linux-nis.org"><I>ssh(1)</I></A>, 
-   * the NIS database lookup program. 
-   */ 
-  public static final File sYpCat = new File("@YPCAT@");
-
-  /** 
-   * The location of <A HREF="http://www.gnu.org/software/coreutils"><I>df(1)</I></A>, 
-   * the filesystem disk space usage program.
-   */ 
-  public static final File sDf = new File("@DF@");
   
   /**
    * The copyright notice for Pipeline. 
