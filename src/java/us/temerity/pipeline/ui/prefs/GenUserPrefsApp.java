@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.41 2004/12/29 17:34:48 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.42 2004/12/30 01:55:41 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -565,10 +565,6 @@ class GenUserPrefsApp
 	("The color to use for stale link lines.", 
 	 "StaleLinkColor", "Stale Line Color:", Color.yellow),
 	
-	new BooleanPref
-	("Whether to anti-alias link lines.", 
-	 "LinkAntiAlias", "Antialiased:", true), 
-	
 	new BoundedDoublePref
 	("The thickness of link lines.", 
 	 "LinkThickness", "Line Thickness:", 0.25, 3.0, 1.0),
@@ -954,10 +950,6 @@ class GenUserPrefsApp
 	 "JobSpace", "Job Space:", 0.0, 0.3, 0.1), 	
 	
 	new BasePref(),
-
-	new BooleanPref
-	("Whether to anti-alias lines.", 
-	 "JobViewerLineAntiAlias", "Antialiased Lines:", true), 
 	
 	new BoundedDoublePref
 	("The thickness of lines.", 
@@ -1137,7 +1129,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.41 2004/12/29 17:34:48 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.42 2004/12/30 01:55:41 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -1391,7 +1383,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.41 2004/12/29 17:34:48 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.42 2004/12/30 01:55:41 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
