@@ -1,4 +1,4 @@
-// $Id: PackageInfo.cc.in,v 1.17 2004/07/14 20:43:43 jim Exp $
+// $Id: PackageInfo.cc.in,v 1.18 2004/07/21 07:18:06 jim Exp $
 
 #include <PackageInfo.hh>
 
@@ -51,6 +51,11 @@ const char* PackageInfo::sJavaHome = "@JAVA_HOME@";
  * The runtime options to be passed to Java.
  */ 
 const char* PackageInfo::sJavaRuntimeFlags = "@JAVA_RUNTIME_FLAGS@";
+
+/**
+ * The extra runtime options if in debugging mode.
+ */ 
+const char* PackageInfo::sPlNotifyDebugOpts = "@PLNOTIFY_DEBUG_OPTS@";
 
  
 /** 	

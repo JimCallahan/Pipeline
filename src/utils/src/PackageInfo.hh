@@ -1,4 +1,4 @@
-// $Id: PackageInfo.hh,v 1.12 2004/07/14 20:43:43 jim Exp $
+// $Id: PackageInfo.hh,v 1.13 2004/07/21 07:18:06 jim Exp $
 
 #ifndef PIPELINE_PACKAGE_INFO_HH
 #define PIPELINE_PACKAGE_INFO_HH
@@ -59,6 +59,11 @@ public:
    * The runtime options to be passed to Java.
    */ 
   static const char* sJavaRuntimeFlags;
+  
+  /**
+   * The extra runtime options if in debugging mode.
+   */ 
+  static const char* sPlNotifyDebugOpts;
   
 
   /** 	
