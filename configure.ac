@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 1.3.2)
+AM_INIT_AUTOMAKE(Pipeline, 1.3.4)
 
 AC_MSG_RESULT([ ])
 
@@ -673,6 +673,7 @@ AC_MSG_RESULT([ ])
 
 AC_MSG_RESULT([Locating Basic C++ headers:])
 
+AC_CHECK_HEADERS([stdexcept])
 AC_CHECK_HEADERS([float.h])
 AC_CHECK_HEADERS([cassert assert.h], [break])
 AC_CHECK_HEADERS([climits limits.h], [break])
@@ -764,23 +765,15 @@ AC_CONFIG_FILES([
   docs/images/Makefile
   docs/javadoc/Makefile
   docs/man/Makefile
-  docs/man/plfilemgr.html
-  docs/man/plnotify.html
-  docs/man/pls.html
-  docs/man/realpath.html
   docs/manuals/Makefile
 
   src/Makefile
   src/java/Makefile
-  src/java/testbed/Makefile
-  src/java/testbed/PackageInfo.java
-  src/java/testbed/native/Makefile
-
   src/java/us/Makefile
   src/java/us/temerity/Makefile
   src/java/us/temerity/pipeline/Makefile
+  src/java/us/temerity/pipeline/PackageInfo.java
   src/java/us/temerity/pipeline/bootstrap/BootStrapLoader.java.in
-  src/java/us/temerity/pipeline/core/PackageInfo.java
   src/java/us/temerity/pipeline/native/Makefile
   src/java/us/temerity/pipeline/plugin/Makefile
   src/java/us/temerity/pipeline/tests/Makefile
