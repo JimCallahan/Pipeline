@@ -1,4 +1,4 @@
-// $Id: TestNodeModVersionApp.java,v 1.4 2004/03/23 20:41:25 jim Exp $
+// $Id: TestNodeModVersionApp.java,v 1.5 2004/04/20 22:03:23 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
@@ -135,14 +135,14 @@ class TestNodeModVersionApp
 	try {
 	  mod.adjustFrameRange(new FrameRange(2, 20, 1));
 	}
-	catch(IllegalArgumentException ex) {
+	catch(PipelineException ex) {
 	  System.out.print("Caught: " + ex.getMessage() + "\n");
 	}
 
 	try {
 	  mod.adjustFrameRange(new FrameRange(1, 11, 2));
 	}
-	catch(IllegalArgumentException ex) {
+	catch(PipelineException ex) {
 	  System.out.print("Caught: " + ex.getMessage() + "\n");
 	}
 
@@ -168,7 +168,7 @@ class TestNodeModVersionApp
 	try {
 	  mod.addSecondarySequence(new FileSeq(new FilePattern("bad", "txt"), null));
 	}
-	catch(IllegalArgumentException ex) {
+	catch(PipelineException ex) {
 	  System.out.print("Caught: " + ex.getMessage() + "\n");
 	}
       }
@@ -181,7 +181,7 @@ class TestNodeModVersionApp
 	try {
 	  mod.removeSecondarySequence(new FileSeq(new FilePattern("bad", "txt"), null));
 	}
-	catch(IllegalArgumentException ex) {
+	catch(PipelineException ex) {
 	  System.out.print("Caught: " + ex.getMessage() + "\n");
 	}
       }
@@ -314,19 +314,21 @@ class TestNodeModVersionApp
     }
 
     {
+      TreeMap<String,VersionID> lvids = new TreeMap<String,VersionID>();
+
       NodeVersion vsn1 = 
 	new NodeVersion(mod4, new VersionID(), 
-			"Initial revision.");
+			lvids, "Initial revision.");
       test(vsn1);
 
       NodeVersion vsn2 = 
 	new NodeVersion(mod5, new VersionID(vsn1.getVersionID(), VersionID.Level.Minor), 
-			"Changes the job requirements.");
+			lvids, "Changes the job requirements.");
       test(vsn2);
 
       NodeVersion vsn3 = 
 	new NodeVersion(mod5, new VersionID(vsn2.getVersionID(), VersionID.Level.Major), 
-			"Changed the node properties.");
+			lvids, "Changed the node properties.");
       test(vsn3);
 
       TreeMap<VersionID,NodeVersion> table = new TreeMap<VersionID,NodeVersion>();

@@ -1,4 +1,4 @@
-// $Id: TestFileMgrApp.java,v 1.11 2004/04/17 19:49:02 jim Exp $
+// $Id: TestFileMgrApp.java,v 1.12 2004/04/20 22:03:23 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -222,8 +222,9 @@ class TestFileMgrApp
 		printStates(states, timestamps);
 		
 		client.checkIn(pNodeID, pNodeMod, vid, lvid, states);
-		
-		NodeVersion vsn = new NodeVersion(pNodeMod, vid, "Some Message...");
+
+		TreeMap<String,VersionID> lvids = new TreeMap<String,VersionID>();
+		NodeVersion vsn = new NodeVersion(pNodeMod, vid, lvids, "Some Message...");
 		versions.add(vsn);
 		
 		pNodeMod = new NodeMod(vsn);
