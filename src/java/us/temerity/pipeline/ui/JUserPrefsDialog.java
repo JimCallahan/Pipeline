@@ -1,4 +1,4 @@
-// $Id: JUserPrefsDialog.java,v 1.5 2004/05/17 03:13:57 jim Exp $
+// $Id: JUserPrefsDialog.java,v 1.6 2004/05/18 00:33:10 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -273,13 +273,13 @@ class JUserPrefsDialog
 	{	  
 	  pNodeSpaceX = 
 	    UIMaster.createTitledSlider(tpanel, "Horizontal Space:", 150, 
-					vpanel, 1.0, 5.0, 210);
+					vpanel, 2.5, 4.5, 210);
 	  
 	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
 	  
 	  pNodeSpaceY = 
 	    UIMaster.createTitledSlider(tpanel, "Vertical Space:", 150, 
-					vpanel, 1.0, 5.0, 210);
+					vpanel, 1.5, 3.0, 210);
 
 	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
 	  
@@ -333,8 +333,14 @@ class JUserPrefsDialog
 	  UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
 
 	  pLinkGap = 
-	    UIMaster.createTitledSlider(tpanel, "Node/Link Space:", 150, 
-					vpanel, 0.0, 1.0, 210);
+	    UIMaster.createTitledSlider(tpanel, "Node/Link Gap:", 150, 
+					vpanel, 0.0, 0.2, 210);
+	  
+	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+	  
+	  pLinkVerticalCrossbar = 
+	    UIMaster.createTitledSlider(tpanel, "Vertical Crossbar:", 150, 
+					vpanel, 0.35, 0.55, 210);
 
 	  UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
 
@@ -346,15 +352,21 @@ class JUserPrefsDialog
 
 	  pArrowHeadWidth = 
 	    UIMaster.createTitledSlider(tpanel, "Arrowhead Width:", 150, 
-					vpanel, 0.0, 1.0, 210);
+					vpanel, 0.04, 0.2, 210);
 
 	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
 
 	  pArrowHeadLength = 
 	    UIMaster.createTitledSlider(tpanel, "Arrowhead Length:", 150, 
-					vpanel, 0.0, 1.0, 210);
+					vpanel, 0.08, 0.4, 210);
 	  
 	  UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
+
+	  pDrawLinkRelationship = 
+	    UIMaster.createTitledBooleanField(tpanel, "Draw Link Relationship:", 150, 
+					       vpanel, 210);
+
+	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
 
 	  pDrawLinkPolicy = 
 	    UIMaster.createTitledBooleanField(tpanel, "Draw Link Policy:", 150, 
@@ -364,7 +376,7 @@ class JUserPrefsDialog
 
 	  pLinkPolicySize = 
 	    UIMaster.createTitledSlider(tpanel, "Link Policy Size:", 150, 
-					vpanel, 0.0, 1.0, 210);
+					vpanel, 0.05, 0.2, 210);
 	}
 	
 	tpanel.add(Box.createVerticalGlue());
@@ -502,6 +514,9 @@ class JUserPrefsDialog
       prefs.setArrowHeadWidth(((double) pArrowHeadWidth.getValue())/1000.0);
 
       prefs.setLinkGap(((double) pLinkGap.getValue())/1000.0);
+      prefs.setLinkVerticalCrossbar(((double) pLinkVerticalCrossbar.getValue())/1000.0);
+
+      prefs.setDrawLinkRelationship(pDrawLinkRelationship.getValue());
 
       prefs.setDrawLinkPolicy(pDrawLinkPolicy.getValue());
       prefs.setLinkPolicySize(((double) pLinkPolicySize.getValue())/1000.0);      
@@ -572,6 +587,9 @@ class JUserPrefsDialog
       pArrowHeadWidth.setValue((int) (prefs.getArrowHeadWidth()*1000.0));
 
       pLinkGap.setValue((int) (prefs.getLinkGap()*1000.0));
+      pLinkVerticalCrossbar.setValue((int) (prefs.getLinkVerticalCrossbar()*1000.0));
+
+      pDrawLinkRelationship.setValue(prefs.getDrawLinkRelationship());
 
       pDrawLinkPolicy.setValue(prefs.getDrawLinkPolicy());
       pLinkPolicySize.setValue((int) (prefs.getLinkPolicySize()*1000.0));
@@ -759,6 +777,9 @@ class JUserPrefsDialog
   private JSlider        pArrowHeadWidth;
 
   private JSlider  pLinkGap;
+  private JSlider  pLinkVerticalCrossbar;
+  
+  private JBooleanField  pDrawLinkRelationship;  
   
   private JBooleanField  pDrawLinkPolicy;  
   private JSlider        pLinkPolicySize;

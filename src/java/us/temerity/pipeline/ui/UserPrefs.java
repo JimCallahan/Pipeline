@@ -1,4 +1,4 @@
-// $Id: UserPrefs.java,v 1.5 2004/05/17 03:13:57 jim Exp $
+// $Id: UserPrefs.java,v 1.6 2004/05/18 00:33:10 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -275,7 +275,29 @@ class UserPrefs
   }
 
 
-  
+  /**
+   * Get the position of the vertical crossbar as a percentage of the horizontal node space.
+   */ 
+  public double 
+  getLinkVerticalCrossbar()
+  {
+    return pLinkVerticalCrossbar;
+  }
+
+  /**
+   * Set the position of the vertical crossbar as a percentage of the horizontal node space.
+   */
+  public void 
+  setLinkVerticalCrossbar
+  (
+   double v
+  )
+  {
+    pLinkVerticalCrossbar = v;
+  }
+
+
+
   /**
    * Get whether to draw graphics representating {@link LinkPolicy LinkPolicy}.
    */ 
@@ -320,6 +342,28 @@ class UserPrefs
   }
 
 
+  /**
+   * Get whether to draw graphics representating {@link LinkRelationship LinkRelationship}.
+   */ 
+  public boolean
+  getDrawLinkRelationship()
+  {
+    return pDrawLinkRelationship;
+  }
+
+  /**
+   * Set whether to draw graphics representating {@link LinkRelationship LinkRelationship}.
+   */ 
+  public void 
+  setDrawLinkRelationship
+  (
+   boolean tf
+  )
+  {
+    pDrawLinkRelationship = tf;
+  }
+
+  
 
   /*-- PANEL - NODE VIEWER - HOT KEYS ------------------------------------------------------*/
  
@@ -424,9 +468,9 @@ class UserPrefs
   {
     /* panel - node viewer - nodes - appearance */ 
     {
-      pNodeSpaceX = 2.0;
+      pNodeSpaceX = 2.75;
       pNodeSpaceY = 2.0;
-      pNodeOffset = 0.5;
+      pNodeOffset = 0.45;
     }
     
     /* panel - node viewer - links - appearance */ 
@@ -436,13 +480,15 @@ class UserPrefs
       pLinkColorName = "LightGrey";
       
       pDrawArrowHeads = true;
-      pArrowHeadLength    = 0.15;
-      pArrowHeadWidth     = 0.05;
+      pArrowHeadLength    = 0.2;
+      pArrowHeadWidth     = 0.08;
   
-      pLinkGap = 0.1;
+      pLinkGap              = 0.05;
+      pLinkVerticalCrossbar = 0.45;
 
-      pDrawLinkPolicy = true;
-      pLinkPolicySize = 0.075;
+      pDrawLinkRelationship = true;
+      pDrawLinkPolicy       = true;
+      pLinkPolicySize       = 0.15;
     }
      
     /* panel - node viewer - hot keys */ 
@@ -520,9 +566,12 @@ class UserPrefs
       encoder.encode("ArrowHeadWidth",  pArrowHeadWidth);
 
       encoder.encode("LinkGap", pLinkGap);      
+      encoder.encode("LinkVerticalCrossbar", pLinkVerticalCrossbar);      
 
       encoder.encode("DrawLinkPolicy", pDrawLinkPolicy);
-      encoder.encode("LinkPolicySize", pLinkPolicySize);      
+      encoder.encode("LinkPolicySize", pLinkPolicySize);     
+
+      encoder.encode("DrawLinkRelationship", pDrawLinkRelationship);
     }
     
     /* panel - node viewer - hot keys */ 
@@ -593,6 +642,10 @@ class UserPrefs
       if(linkGap != null)
 	pLinkGap = linkGap;
 
+      Double linkCrossbar = (Double) decoder.decode("LinkVerticalCrossbar");
+      if(linkCrossbar != null)
+	pLinkVerticalCrossbar = linkCrossbar;
+
 
       Boolean drawPolicy = (Boolean) decoder.decode("DrawLinkPolicy");
       if(drawPolicy != null)
@@ -601,6 +654,11 @@ class UserPrefs
       Double policySize = (Double) decoder.decode("LinkPolicySize");
       if(policySize != null)
 	pLinkPolicySize = policySize;
+
+
+      Boolean drawRel = (Boolean) decoder.decode("DrawLinkRelationship");
+      if(drawRel != null)
+	pDrawLinkRelationship = drawRel;
     }
     
     /* panel - node viewer - hot keys */ 
@@ -703,6 +761,11 @@ class UserPrefs
    */ 
   private double  pLinkGap;
 
+  /**
+   * The position of the vertical crossbar as a percentage of the horizontal node space.
+   */ 
+  private double  pLinkVerticalCrossbar;
+
 
   /**
    * Whether to draw graphics representating {@link LinkPolicy LinkPolicy}.
@@ -713,6 +776,12 @@ class UserPrefs
    * The size of {@link LinkPolicy LinkPolicy} graphics.
    */ 
   private double  pLinkPolicySize;
+
+
+  /**
+   * Whether to draw graphics representating {@link LinkRelationship LinkRelationship}.
+   */ 
+  private boolean  pDrawLinkRelationship;
 
 
 
