@@ -1,4 +1,4 @@
-// $Id: LogFormatter.java,v 1.1 2004/02/14 18:49:03 jim Exp $
+// $Id: LogFormatter.java,v 1.2 2004/03/12 13:51:50 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -42,21 +42,25 @@ class LogFormatter
    LogRecord record  
   ) 
   {
+    String parts[] = record.getLoggerName().split("\\.");
+    String name = parts[parts.length-1].toUpperCase();
+
     SimpleDateFormat fmt = new SimpleDateFormat("E MMM dd HH:mm:ss z yyyy");
     String stamp = fmt.format(new Date(record.getMillis()));
+
     if(record.getLevel().equals(Level.SEVERE)) {
-      return ("ERROR: " + stamp + sNL +
+      return (name + "-ERROR: " + stamp + sNL +
 	      record.getMessage() + sNL);
     }
     else if(record.getLevel().equals(Level.WARNING)) {
-      return ("WARNING: " + stamp + sNL +
+      return (name + "-WARNING: " + stamp + sNL +
 	      record.getMessage() + sNL);
     }
     else if(record.getLevel().equals(Level.INFO)) {
       return (record.getMessage() + sNL);
     }
     else  {
-      return ("DEBUG [" + record.getLevel().toString().toLowerCase() + "]: " + 
+      return (name + "-DEBUG [" + record.getLevel().toString().toLowerCase() + "]: " + 
 	      record.getMessage() + sNL);
     }
   }
