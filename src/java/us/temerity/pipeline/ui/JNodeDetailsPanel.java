@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.12 2004/08/31 08:15:19 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.13 2004/09/05 06:47:50 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -475,7 +475,6 @@ class JNodeDetailsPanel
 
 	    {
 	      JPanel spanel = new JPanel();
-	      pJobReqsSpacer = spanel;
 	      spanel.setName("Spacer");
 
 	      spanel.setMinimumSize(new Dimension(7, 0));
@@ -988,34 +987,13 @@ class JNodeDetailsPanel
   private Component[]
   createCommonPanels()
   {
-    Component comps[] = new Component[3];
-    
-    Box body = new Box(BoxLayout.X_AXIS);
-    comps[2] = body;
+    Component comps[] = UIMaster.createTitledPanels();
+
     {
-      {
-	JPanel panel = new JPanel();
-	comps[0] = panel;
-	
-	panel.setName("TitlePanel");
-	panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-      
-	panel.setFocusable(true);
-	panel.addKeyListener(this);
-	panel.addMouseListener(this); 
-
-	body.add(panel);
-      }
-      
-      {
-	JPanel panel = new JPanel();
-	comps[1] = panel;
-	
-	panel.setName("ValuePanel");
-	panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-
-	body.add(panel);
-      }
+      JPanel panel = (JPanel) comps[0];
+      panel.setFocusable(true);
+      panel.addKeyListener(this);
+      panel.addMouseListener(this); 
     }
 
     return comps;
@@ -2779,12 +2757,14 @@ class JNodeDetailsPanel
    ComponentEvent e
   )
   {
-    Box box = (Box) pJobReqsSpacer.getParent();
+    Box box = (Box) e.getComponent();
+    
     Dimension size = box.getComponent(1).getSize();
 
-    pJobReqsSpacer.setMaximumSize(new Dimension(7, size.height));
-    pJobReqsSpacer.revalidate();
-    pJobReqsSpacer.repaint();
+    JPanel spacer = (JPanel) box.getComponent(0);
+    spacer.setMaximumSize(new Dimension(7, size.height));
+    spacer.revalidate();
+    spacer.repaint();
   }
   
   /**
@@ -4156,11 +4136,6 @@ class JNodeDetailsPanel
    */ 
   private Box  pJobReqsBox;
 
-  /**
-   * The job requirements spacer.
-   */ 
-  private JPanel  pJobReqsSpacer;
-  
 
   /**
    * The overflow policy title label.
