@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.11 2004/05/05 20:59:19 jim Exp $
+// $Id: JManagerPanel.java,v 1.12 2004/05/07 21:05:47 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -372,29 +372,6 @@ class JManagerPanel
     pGroupMenuAnchor.setIcon(sGroupIcons[pTopLevelPanel.getGroupID()]);
     pOwnerViewField.setText(pTopLevelPanel.getAuthor() + " | " + pTopLevelPanel.getView());
     pLockedLight.setIcon(pTopLevelPanel.isLocked() ? sLockedLightOnIcon : sLockedLightIcon);
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Disable new client/server operations until the current operation is complete.
-   */ 
-  public void 
-  disableOps() 
-  {
-    if(pTopLevelPanel != null) 
-      pTopLevelPanel.disableOps();
-  }
-
-  /**
-   * Reenable client/server operations.
-   */ 
-  public void 
-  enableOps() 
-  {
-    if(pTopLevelPanel != null) 
-      pTopLevelPanel.enableOps();
   }
 
 

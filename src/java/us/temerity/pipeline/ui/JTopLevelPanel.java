@@ -1,4 +1,4 @@
-// $Id: JTopLevelPanel.java,v 1.2 2004/05/05 21:00:06 jim Exp $
+// $Id: JTopLevelPanel.java,v 1.3 2004/05/07 21:05:47 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -188,23 +188,6 @@ class JTopLevelPanel
   }
 
 
- 
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Disable new client/server operations until the current operation is complete.
-   */ 
-  public void 
-  disableOps() 
-  {}
-
-  /**
-   * Reenable client/server operations.
-   */ 
-  public void 
-  enableOps() 
-  {}
-
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -229,6 +212,7 @@ class JTopLevelPanel
    * The group ID of this panel or (0) if unassigned.
    */ 
   protected int pGroupID;
+
 
 
   /** 
