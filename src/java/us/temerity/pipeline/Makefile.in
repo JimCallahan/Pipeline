@@ -237,7 +237,6 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
 
           LOCKED = $(patsubst $(srcdir)/core/%.java,core/%,$(CORE_SOURCES)) \
-                   $(patsubst $(srcdir)/message/%.java,message/%,$(MSG_SOURCES)) \
                    $(patsubst $(srcdir)/ui/%.java,ui/%,$(UI_SOURCES)) \
                    core/DNotify:DirEntry \
                    core/FileMgrOptsParserConstants \
@@ -303,7 +302,8 @@ $(API_JAR): java-all
          $(JAR) cvf us/temerity/pipeline/$(API_JAR) \
                     us/temerity/pipeline/*.class \
                     us/temerity/pipeline/glue/*.class \
-                    us/temerity/pipeline/laf/*.class)
+                    us/temerity/pipeline/laf/*.class \
+                    us/temerity/pipeline/message/*.class)
 
 bootstrap-jar: bootstrap-all
 	(cd ../../..; \
