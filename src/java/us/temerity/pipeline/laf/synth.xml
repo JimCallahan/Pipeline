@@ -469,6 +469,30 @@
   </style>
   <bind style="BottomValuePanel" type="name" key="BottomValuePanel"/>
 
+  <style id="BlueValuePanel">
+    <imagePainter path="BlueValuePanel.png"
+                  sourceInsets="3 3 3 3"/>
+    <insets top="2" bottom="2" right="2" left="2"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="BlueValuePanel" type="name" key="BlueValuePanel"/>
+
+  <style id="GreenValuePanel">
+    <imagePainter path="GreenValuePanel.png"
+                  sourceInsets="3 3 3 3"/>
+    <insets top="2" bottom="2" right="2" left="2"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="GreenValuePanel" type="name" key="GreenValuePanel"/>
+
+  <style id="PurpleValuePanel">
+    <imagePainter path="PurpleValuePanel.png"
+                  sourceInsets="3 3 3 3"/>
+    <insets top="2" bottom="2" right="2" left="2"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="PurpleValuePanel" type="name" key="PurpleValuePanel"/>
+
 
 
   <!--  P A N E L   L A B E L  -->
@@ -794,6 +818,55 @@
   </style>
   <bind style="TableHeaderButton" type="name" key="TableHeaderButton"/>
 
+  <style id="BlueTableHeaderButton">
+    <state>
+      <imagePainter path="BlueTableHeaderButton.png"
+                    method="buttonBackground"
+                    sourceInsets="4 4 4 4"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="BlueTableHeaderButtonPressed.png"
+                    method="buttonBackground"	
+                    sourceInsets="4 4 4 4"/>
+    </state>
+    <insets top="3" bottom="3" right="10" left="10"/> 
+    <property key="Button.textShiftOffset" type="integer" value="1"/>  
+  </style>
+  <bind style="BlueTableHeaderButton" type="name" key="BlueTableHeaderButton"/>
+
+  <style id="GreenTableHeaderButton">
+    <state>
+      <imagePainter path="GreenTableHeaderButton.png"
+                    method="buttonBackground"
+                    sourceInsets="4 4 4 4"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="GreenTableHeaderButtonPressed.png"
+                    method="buttonBackground"	
+                    sourceInsets="4 4 4 4"/>
+    </state>
+    <insets top="3" bottom="3" right="10" left="10"/> 
+    <property key="Button.textShiftOffset" type="integer" value="1"/>  
+  </style>
+  <bind style="GreenTableHeaderButton" type="name" key="GreenTableHeaderButton"/>
+
+  <style id="PurpleTableHeaderButton">
+    <state>
+      <imagePainter path="PurpleTableHeaderButton.png"
+                    method="buttonBackground"
+                    sourceInsets="4 4 4 4"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="PurpleTableHeaderButtonPressed.png"
+                    method="buttonBackground"	
+                    sourceInsets="4 4 4 4"/>
+    </state>
+    <insets top="3" bottom="3" right="10" left="10"/> 
+    <property key="Button.textShiftOffset" type="integer" value="1"/>  
+  </style>
+  <bind style="PurpleTableHeaderButton" type="name" key="PurpleTableHeaderButton"/>
+
+
   <style id="SimpleTableCellRenderer">
     <imagePainter path="ValuePanel.png"
                   method="labelBackground"
@@ -803,6 +876,32 @@
   </style>
   <bind style="SimpleTableCellRenderer" type="name" key="SimpleTableCellRenderer"/>
 
+  <style id="BlueTableCellRenderer">
+    <imagePainter path="BlueValuePanel.png"
+                  method="labelBackground"
+                  sourceInsets="3 3 3 3"/>
+    <insets top="2" bottom="2" right="8" left="8"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="BlueTableCellRenderer" type="name" key="BlueTableCellRenderer"/>
+
+  <style id="GreenTableCellRenderer">
+    <imagePainter path="GreenValuePanel.png"
+                  method="labelBackground"
+                  sourceInsets="3 3 3 3"/>
+    <insets top="2" bottom="2" right="8" left="8"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="GreenTableCellRenderer" type="name" key="GreenTableCellRenderer"/>
+
+  <style id="PurpleTableCellRenderer">
+    <imagePainter path="PurpleValuePanel.png"
+                  method="labelBackground"
+                  sourceInsets="3 3 3 3"/>
+    <insets top="2" bottom="2" right="8" left="8"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="PurpleTableCellRenderer" type="name" key="PurpleTableCellRenderer"/>
 
 
   <!--  L I S T  -->
