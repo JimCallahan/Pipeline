@@ -202,15 +202,17 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
      API_SOURCES = $(shell ls $(srcdir)/*.java)
 
-
     GLUE_SOURCES = $(shell ls $(srcdir)/glue/*.java) 
 
     CORE_SOURCES = $(shell ls $(srcdir)/core/*.java) 
 
-
      MSG_SOURCES = $(shell ls $(srcdir)/message/*.java)
 
-     ALL_SOURCES = $(API_SOURCES) $(GLUE_SOURCES) $(CORE_SOURCES) $(MSG_SOURCES)
+      UI_SOURCES = $(shell ls $(srcdir)/ui/*.java) 
+
+
+     ALL_SOURCES = $(API_SOURCES) $(GLUE_SOURCES) \
+                   $(CORE_SOURCES) $(MSG_SOURCES) $(UI_SOURCES)
 
 
     GLUE_PARSERS = GlueParser
@@ -230,6 +232,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
           LOCKED = $(patsubst $(srcdir)/core/%.java,core/%,$(CORE_SOURCES)) \
                    $(patsubst $(srcdir)/message/%.java,message/%,$(MSG_SOURCES)) \
+                   $(patsubst $(srcdir)/ui/%.java,ui/%,$(UI_SOURCES)) \
                    core/FileMgrOptsParserConstants \
 		   core/FileMgrOptsParser \
 		   core/FileMgrOptsParserTokenManager \
