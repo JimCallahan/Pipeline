@@ -1,4 +1,4 @@
-// $Id: TarballArchiver.java,v 1.3 2005/03/10 08:07:27 jim Exp $
+// $Id: TarballArchiver.java,v 1.4 2005/03/15 19:10:01 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -180,8 +180,15 @@ class TarballArchiver
     for(File file : files) 
       args.add(file.getPath().substring(1));
 
-    return new SubProcessHeavy
-      ("TarballArchive", "tar", args, env, dir, outFile, errFile);
+    try {
+      return new SubProcessHeavy
+	(getName(), "tar", args, env, dir, outFile, errFile);
+    }
+    catch(Exception ex) {
+      throw new PipelineException
+	("Unable to generate the SubProcess to perform the archive operation!\n" +
+	 ex.getMessage());
+    }     
   }
 
   /** 
@@ -248,8 +255,15 @@ class TarballArchiver
     for(File file : files) 
       args.add(file.getPath().substring(1));
 
-    return new SubProcessHeavy
-      ("TarballArchive", "tar", args, env, dir, outFile, errFile);
+    try {
+      return new SubProcessHeavy
+	(getName(), "tar", args, env, dir, outFile, errFile);
+    }
+    catch(Exception ex) {
+      throw new PipelineException
+	("Unable to generate the SubProcess to perform the restore operation!\n" +
+	 ex.getMessage());
+    }     
   }
 
 
