@@ -1,4 +1,4 @@
-// $Id: Toolsets.java,v 1.1 2004/02/23 23:50:55 jim Exp $
+// $Id: Toolsets.java,v 1.2 2004/02/28 20:02:07 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -37,7 +37,36 @@ class Toolsets
   
   
   /*----------------------------------------------------------------------------------------*/
-  /*   O P S                                                                                */
+  /*   P R E D I C A T E S                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Does the given toolset exist?
+   */
+  public static boolean 
+  exists
+  (
+   String name
+  ) 
+  {
+    synchronized(sEnvironments) {
+      if(sEnvironments.containsKey(name)) 
+	return true;
+
+      try {
+	parseToolset(name);
+	return true;
+      }
+      catch (PipelineException ex) {
+	return false;
+      }
+    }
+  }
+
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
   
   /**
@@ -65,7 +94,7 @@ class Toolsets
    * @throws PipelineException
    *   If unable to find and read a toolset named <CODE>name</CODE>.
    */ 
-  public static synchronized TreeMap<String,String> 
+  public static TreeMap<String,String> 
   lookup
   (
    String name, 
@@ -83,56 +112,12 @@ class Toolsets
     if(view == null) 
       throw new IllegalArgumentException("The view cannot be (null)!");
     
-
-    /* if the toolset has already been parsed, make a copy of it */ 
     TreeMap<String,String> env = null;
-    {
-      TreeMap<String,String> cenv = sEnvironments.get(name);
-      if(cenv != null) 
-	env = new TreeMap<String,String>(cenv);
-    }
-
-    /* otherwise, parse the installed toolset shell script */ 
-    if(env == null) {
-      FileReader in = null;
-      try {
-	File file = new File(PackageInfo.sToolsetDir, name);
-	in = new FileReader(file);   
-	
-	ToolsetEnvParser parser = new ToolsetEnvParser(in);
-	TreeMap penv = parser.Env();
-	
-	TreeMap<String,String> cenv = new TreeMap<String,String>();
-	for(Object key : penv.keySet()) 
-	  cenv.put((String) key, (String) penv.get(key));      
-	
-	cenv.remove("USER");
-	cenv.remove("HOME");
-	cenv.remove("WORKING");
-	
-	sEnvironments.put(name, env);
-
-	env = new TreeMap<String,String>(cenv);
-      }
-      catch (FileNotFoundException ex) {
-	throw new PipelineException
-	  ("Unable to find any toolset named: " + name);
-      }
-      catch(ParseException ex) {
-	throw new PipelineException
-	  ("Unable to parse the environment in toolset: " + name + "\n\n" +
-	   ex.getMessage());
-      }
-      finally {
-	if(in != null) {
-	  try {
-	    in.close();  
-	  }
-	  catch(IOException ex) {
-	    throw new PipelineException(ex);
-	  }
-	}
-      }
+    synchronized(sEnvironments) {
+      if(!sEnvironments.containsKey(name)) 
+	parseToolset(name);
+      
+      env = new TreeMap<String,String>(sEnvironments.get(name));
     }
 
     /* set the runtime variables */ 
@@ -157,7 +142,7 @@ class Toolsets
    * @throws PipelineException
    *   If unable to find and read a toolset named <CODE>name</CODE>.
    */ 
-  public static synchronized TreeMap<String,String> 
+  public static TreeMap<String,String> 
   lookup
   (
    String name
@@ -165,6 +150,64 @@ class Toolsets
     throws PipelineException
   {
     return lookup(name, System.getProperty("user.name"), "default");    
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /** 
+   * Parse the shell script containing the environmental variable name/value pairs 
+   * which make up the given named Toolset and cache the results.
+   */
+  private static void 
+  parseToolset
+  (
+   String name
+  ) 
+    throws PipelineException
+  {
+    FileReader in = null;
+    try {
+      File file = new File(PackageInfo.sToolsetDir, name);
+      in = new FileReader(file);   
+      
+      ToolsetEnvParser parser = new ToolsetEnvParser(in);
+      TreeMap env = parser.Env();
+      
+      TreeMap<String,String> cenv = new TreeMap<String,String>();
+      for(Object key : env.keySet()) 
+	cenv.put((String) key, (String) env.get(key));      
+      
+      cenv.remove("USER");
+      cenv.remove("HOME");
+      cenv.remove("WORKING");
+      
+      synchronized(sEnvironments) {
+	sEnvironments.put(name, cenv);
+      }
+    }
+    catch (FileNotFoundException ex) {
+      throw new PipelineException
+	("Unable to find any toolset named: " + name);
+    }
+    catch(ParseException ex) {
+      throw new PipelineException
+	("Unable to parse the environment in toolset: " + name + "\n\n" +
+	 ex.getMessage());
+    }
+    finally {
+      if(in != null) {
+	try {
+	  in.close();  
+	}
+	catch(IOException ex) {
+	  throw new PipelineException(ex);
+	}
+      }
+    }
   }
 
 
