@@ -1,4 +1,4 @@
-// $Id: ViewerJobGroup.java,v 1.1 2004/08/30 06:52:46 jim Exp $
+// $Id: ViewerJobGroup.java,v 1.2 2004/08/30 14:29:52 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -58,6 +58,31 @@ class ViewerJobGroup
 	pRoot.addChild(pSwitch);
       }
       
+      /* the transform group used to position the job icon */ 
+      {
+	pLabelXform = new TransformGroup();
+	pLabelXform.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+	
+	pSwitch.addChild(pLabelXform);
+      } 
+
+      /* the text label */ 
+      {
+	pLabelSwitch = new Switch(0);
+	pLabelSwitch.setCapability(Switch.ALLOW_SWITCH_WRITE);
+	pLabelSwitch.setCapability(Switch.ALLOW_CHILDREN_WRITE);
+	pLabelSwitch.setPickable(false);
+
+	for(SelectionMode mode : SelectionMode.all()) {
+	  BranchGroup group = new BranchGroup();
+	  group.setCapability(BranchGroup.ALLOW_DETACH);
+
+	  pLabelSwitch.addChild(group);
+	}
+
+	pLabelXform.addChild(pLabelSwitch);
+      }
+
       /* the transform group used to position the job icon */ 
       {
 	pXform = new TransformGroup();
@@ -190,6 +215,15 @@ class ViewerJobGroup
     if(vjobs == null) 
       throw new IllegalArgumentException("The viewer jobs cannot be (null)!");
     pViewerJobs = vjobs;
+
+    {
+      String text = ("[" + group.getGroupID() + "]  " + group.getRootPattern());
+
+      if(!text.equals(pLabelText))
+	pLabelTextChanged = true;
+
+      pLabelText = text;
+    }
   }
 
   
@@ -311,11 +345,42 @@ class ViewerJobGroup
 	new Vector3d((pMinBounds.x + pMaxBounds.x) * 0.5, 
 		     (pMinBounds.y + pMaxBounds.y) * 0.5, 0.0);
       xform.setTranslation(center);
-
+      
       pXform.setTransform(xform);
     }
 
+    /* move the label to the top of the bounds */ 
+    {
+      Transform3D xform = new Transform3D();
+
+      Vector3d center = new Vector3d(0.0, pMaxBounds.y+0.5, 0.0);
+      xform.setTranslation(center);
+      
+      pLabelXform.setTransform(xform);
+    }
+
     try { 
+      /* update the label */ 
+      {
+	if(pLabelTextChanged) {	  	  
+	  for(SelectionMode mode : SelectionMode.all()) {
+	    TransformGroup label = 
+	      ViewerLabels.createLabelGeometry(pLabelText, "CharterBTRoman", mode, 0.05, 
+					       new Point3d(), TextAlign.Left);
+
+	    BranchGroup group = new BranchGroup();
+	    group.setCapability(BranchGroup.ALLOW_DETACH);
+	    group.addChild(label);
+
+	    pLabelSwitch.setChild(group, mode.ordinal());
+	  }
+	  
+	  pLabelTextChanged = false;
+	}
+	
+	pLabelSwitch.setWhichChild(pMode.ordinal());
+      }
+
       /* have the line preferences changed? */ 
       boolean lineAprChanged = false;
       if((pLineAntiAlias != prefs.getJobViewerLineAntiAlias()) ||
@@ -357,6 +422,7 @@ class ViewerJobGroup
 
 	pBorderLines.setAppearance(apr);
       }
+
     }
     catch(IOException ex) {
       Logs.tex.severe("Internal Error:\n" + 
@@ -400,6 +466,18 @@ class ViewerJobGroup
   private Point2d   pMinBounds; 
   private Point2d   pMaxBounds; 
 
+
+  /**
+   * The text being used for the label geometry.
+   */ 
+  private String  pLabelText;
+
+  /**
+   * Whether the text label geometry is no longer valid for the current node status.
+   */ 
+  private boolean  pLabelTextChanged;
+
+
   /**
    * Whether the mode border color no longer valid for the current job status.
    */ 
@@ -428,7 +506,17 @@ class ViewerJobGroup
   private Switch  pSwitch;   
 
   /** 
-   * The transform group used to position the job as a whole.
+   * The transform group used to position the label.
+   */ 
+  private TransformGroup  pLabelXform;      
+
+  /**
+   * The switch group which contains the label branch groups.
+   */ 
+  private Switch  pLabelSwitch;     
+
+  /** 
+   * The transform group used to position the box.
    */ 
   private TransformGroup  pXform;      
 
