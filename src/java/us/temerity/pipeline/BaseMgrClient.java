@@ -1,4 +1,4 @@
-// $Id: BaseMgrClient.java,v 1.5 2004/07/28 19:11:30 jim Exp $
+// $Id: BaseMgrClient.java,v 1.6 2004/09/05 06:38:32 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -58,8 +58,6 @@ class BaseMgrClient
       throw new IllegalArgumentException("The disconnect request cannot be (null)!");
     pDisconnect = disconnect;
 
-    if(shutdown == null) 
-      throw new IllegalArgumentException("The shutdown request cannot be (null)!");
     pShutdown = shutdown;
   }
 
