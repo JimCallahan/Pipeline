@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.44 2004/09/27 16:32:26 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.45 2004/09/28 10:23:35 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1221,13 +1221,41 @@ class JNodeViewerPanel
   getSelectedNames() 
   {
     TreeSet<String> names = new TreeSet<String>();
-
     for(ViewerNode vnode : pSelected.values()) 
       names.add(vnode.getNodeStatus().getName());
 
     return names;
   }
   
+  /**
+   * Get the fully resolved names of the most downstream selected nodes. <P> 
+   * 
+   * Any nodes which are selected and are upstream of another selected node will be 
+   * omitted from the returned names.
+   */ 
+  public TreeSet<String>
+  getSelectedRootNames() 
+  {
+    TreeSet<String> all = new TreeSet<String>();
+    for(ViewerNode vnode : pSelected.values()) 
+      all.add(vnode.getNodeStatus().getName());
+   
+    TreeSet<String> names = new TreeSet<String>();
+    for(ViewerNode vnode : pSelected.values()) {
+      String name = vnode.getNodeStatus().getName();
+
+      Collection<String> downstream = vnode.getNodePath().getNames();
+      for(String dname : downstream) {
+	if(dname.equals(name)) 
+	  names.add(name);
+	else if(all.contains(dname)) 
+	  break;
+      }
+    }
+
+    return names;
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -2903,32 +2931,49 @@ class JNodeViewerPanel
   private void 
   doCheckIn() 
   {
-    if(pPrimary != null) {
-      NodeStatus status = pPrimary.getNodeStatus();
-      NodeDetails details = status.getDetails();
-      if(details != null) {
-	VersionID latest = null;
+    TreeSet<String> roots = getSelectedRootNames();
+    if(!roots.isEmpty()) {
+      String header    = null;
+      VersionID latest = null;
+      boolean multiple = false; 
+
+      if(roots.size() > 1) {
+	header = "Check-In:  Multiple Nodes";
+	multiple = true;
+      }
+      else {
+	NodeStatus status = pRoots.get(roots.first());
+	NodeDetails details = status.getDetails();
+	if(details == null) {
+	  for(ViewerNode vnode : clearSelection()) 
+	    vnode.update();
+	  return;
+	}
+	
+	header = ("Check-In:  " + status);
+	
 	if(details.getLatestVersion() != null) 
 	  latest = details.getLatestVersion().getVersionID();
-
-	pCheckInDialog.updateNameVersion("Check-In:  " + status, latest);
-	pCheckInDialog.setVisible(true);
+      }
+      
+      pCheckInDialog.updateNameVersion(header, latest, multiple);
+      pCheckInDialog.setVisible(true);
+      
+      if(pCheckInDialog.wasConfirmed()) {
+	String desc = pCheckInDialog.getDescription();
+	assert((desc != null) && (desc.length() > 0));
 	
-	if(pCheckInDialog.wasConfirmed()) {
-	  String desc = pCheckInDialog.getDescription();
-	  assert((desc != null) && (desc.length() > 0));
-
-	  VersionID.Level level = pCheckInDialog.getLevel();
-
-	  CheckInTask task = new CheckInTask(status.getName(), desc, level);
-	  task.start();
-	}
+	VersionID.Level level = pCheckInDialog.getLevel();
+	
+	CheckInTask task = new CheckInTask(roots, desc, level);
+	task.start();
       }
     }
 
     for(ViewerNode vnode : clearSelection()) 
       vnode.update();
   }
+      
 
   /**
    * Check-out the primary selected node.
@@ -4240,14 +4285,14 @@ class JNodeViewerPanel
     public 
     CheckInTask
     (
-     String name, 
+     TreeSet<String> names, 
      String desc,
      VersionID.Level level
     ) 
     {
       super("JNodeViewerPanel:CheckInTask");
 
-      pName        = name; 
+      pNames       = names; 
       pDescription = desc;
       pLevel       = level;
     }
@@ -4256,9 +4301,12 @@ class JNodeViewerPanel
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Checking-In Nodes...")) {
+      if(master.beginPanelOp()) {
 	try {
-	  master.getMasterMgrClient().checkIn(pAuthor, pView, pName, pDescription, pLevel);
+	  for(String name : pNames) {
+	    master.updatePanelOp("Checking-In: " + name);
+	    master.getMasterMgrClient().checkIn(pAuthor, pView, name, pDescription, pLevel);
+	  }
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -4272,7 +4320,7 @@ class JNodeViewerPanel
       }
     }
 
-    private String           pName; 
+    private TreeSet<String>  pNames; 
     private String           pDescription;  
     private VersionID.Level  pLevel;
   }
