@@ -111,21 +111,39 @@ fi
 AC_MSG_RESULT([$CODEDIR])
 
 
+dnl ------------------------------------------------------------------------------------------
 
-AC_MSG_CHECKING([Base Install Directory])
+AC_MSG_CHECKING([Root Production Directory])
 
-AC_ARG_WITH([base], 
-            [  --with-base=PATH        Root of installed production heirarchy.])
+AC_ARG_WITH([prod], 
+            [  --with-prod=PATH        Root of installed production heirarchy.])
 
-AC_SUBST(BASEDIR)
-BASEDIR=/base
+AC_SUBST(PRODDIR)
+PRODDIR=/base/prod
 
-if test "$with_base" 
+if test "$with_prod" 
 then
-  BASEDIR=$with_base
+  PRODDIR=$with_prod
 fi
 
-AC_MSG_RESULT([$BASEDIR])
+AC_MSG_RESULT([$PRODDIR])
+
+
+
+AC_MSG_CHECKING([Installed Toolsets Directory])
+
+AC_ARG_WITH([toolset], 
+            [  --with-toolset=PATH     Installed toolsets directory.])
+
+AC_SUBST(TOOLSETDIR)
+TOOLSETDIR=/base/toolset/toolsets
+
+if test "$with_toolset" 
+then
+  TOOLSETDIR=$with_toolset
+fi
+
+AC_MSG_RESULT([$TOOLSETDIR])
 
 
 dnl ------------------------------------------------------------------------------------------
@@ -393,9 +411,9 @@ AC_PATH_PROG(MOZILLA, mozilla, $PATH)
 AC_MSG_RESULT([ ])
 
 
-dnl -- COMMON SUPPORT TOOLS ------------------------------------------------------------------
+dnl -- IMAGE MAJICK --------------------------------------------------------------------------
 
-AC_MSG_RESULT([Locating ImageMagick tools:])
+AC_MSG_RESULT([Locating Image tools:])
 AC_PATH_PROG(CONVERT, convert, $PATH)
 
 AC_MSG_RESULT([ ])
@@ -707,17 +725,6 @@ AC_SUBST(BUILD_NAME)
 BUILD_NAME="${host}-${BUILD_MODE}"
 AC_DEFINE_UNQUOTED(BUILD_NAME, "$BUILD_NAME", 
                    [Define a unique host architecture and build mode string.])
-
-# AC_SUBST(INST_BIN_DIR)
-# INST_BIN_DIR="/base/apps/${host}-${BUILD_MODE}/${PACKAGE}-${VERSION}/bin"
-# AC_DEFINE_UNQUOTED(INST_BIN_DIR, "$INST_BIN_DIR", 
-#                    [Name of directory where installed binaries live.])
-
-# AC_SUBST(HTML_DOCS_DIR)
-# HTML_DOCS_DIR="/base/apps/${host}-${BUILD_MODE}/${PACKAGE}-${VERSION}/share/doc/html"
-# AC_DEFINE_UNQUOTED(HTML_DOCS_DIR, "$HTML_DOCS_DIR",
-#                    [Name of HTML documentation directory.])
-
 
 
 dnl ------------------------------------------------------------------------------------------

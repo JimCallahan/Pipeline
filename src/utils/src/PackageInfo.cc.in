@@ -1,4 +1,4 @@
-// $Id: PackageInfo.cc.in,v 1.5 2003/07/28 21:55:43 jim Exp $
+// $Id: PackageInfo.cc.in,v 1.6 2003/09/18 05:24:05 jim Exp $
 
 #include <PackageInfo.hh>
 
@@ -32,19 +32,15 @@ const int PackageInfo::sPort = @SQL_PORT@;
 const char* PackageInfo::sPbsServer = "@PBS_SERVER@";
 
 
-/* root directory of the production heirarchy */ 
-const char* PackageInfo::sBaseDir = "@BASEDIR@"; 
-
-
 /* base repository directory */ 
-const char* PackageInfo::sRepoDir = "@BASEDIR@/prod/repository";
+const char* PackageInfo::sRepoDir = "@PRODDIR@/repository";
 
 /* base working area directory */ 
-const char* PackageInfo::sWorkDir = "@BASEDIR@/prod/working";
+const char* PackageInfo::sWorkDir = "@PRODDIR@/working";
 
 
 /* installed toolset directory */ 
-const char* PackageInfo::sToolsetDir = "@BASEDIR@/toolset/toolsets";
+const char* PackageInfo::sToolsetDir = "@TOOLSETDIR@";
 
 
 /* installed documentation directory */ 

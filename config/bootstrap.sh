@@ -13,10 +13,10 @@ pushd i686-pc-linux-gnu-dbg
     --datadir=/usr/share/pipeline \
     --disable-opt \
     --with-compiler=GNU \
-    --with-base=/base \
     --with-code=$HOME/code \
-    --with-sql-server=localhost \
-    --with-pbs-server=localhost \
+    --with-toolset=/base/toolset/toolsets \
+    --with-sql-server=linuxserv1 \
+    --with-pbs-server=linuxserv1 \
     --with-javamake=/usr/java/javamake/lib/javamake.jar
 popd
 
@@ -26,10 +26,10 @@ pushd i686-pc-linux-gnu-opt
     --datadir=/usr/share/pipeline \
     --enable-opt \
     --with-compiler=GNU \
-    --with-base=/base \
     --with-code=$HOME/code \
-    --with-sql-server=localhost \
-    --with-pbs-server=localhost \
+    --with-toolset=/base/toolset/toolsets \
+    --with-sql-server=linuxserv1 \
+    --with-pbs-server=linuxserv1 \
     --with-javamake=/usr/java/javamake/lib/javamake.jar
 popd
 
@@ -40,10 +40,10 @@ pushd i686-pc-linux-gnu-prof
     --enable-opt \
     --enable-prof \
     --with-compiler=GNU \
-    --with-base=/base \
     --with-code=$HOME/code \
-    --with-sql-server=localhost \
-    --with-pbs-server=localhost \
+    --with-toolset=/base/toolset/toolsets \
+    --with-sql-server=linuxserv1 \
+    --with-pbs-server=linuxserv1 \
     --with-javamake=/usr/java/javamake/lib/javamake.jar
 popd
 
