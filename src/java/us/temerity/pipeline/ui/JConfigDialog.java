@@ -1,4 +1,4 @@
-// $Id: JConfigDialog.java,v 1.2 2004/06/28 23:37:14 jim Exp $
+// $Id: JConfigDialog.java,v 1.3 2004/07/21 07:17:02 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -154,6 +154,30 @@ class JConfigDialog
 	UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
 
 	{
+	  UIMaster.createTitledTextField(tpanel, "Queue Server Hostname:", sTSize, 
+					 vpanel, PackageInfo.sQueueServer, sVSize);
+	  
+	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+	  
+	  UIMaster.createTitledTextField
+	    (tpanel, "Queue Server Port:", sTSize, 
+	     vpanel, String.valueOf(PackageInfo.sQueuePort), sVSize);
+	  
+	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+
+	  UIMaster.createTitledTextField
+	    (tpanel, "Job Server Port:", sTSize, 
+	     vpanel, String.valueOf(PackageInfo.sJobPort), sVSize);
+	  
+	  UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+	  
+	  UIMaster.createTitledTextField(tpanel, "Queue Directory:", sTSize, 
+					 vpanel, PackageInfo.sQueueDir.toString(), sVSize);
+	}
+
+	UIMaster.addVerticalSpacer(tpanel, vpanel, 12);
+
+	{
 	  UIMaster.createTitledTextField(tpanel, "Install Directory:", sTSize, 
 					 vpanel, PackageInfo.sInstDir.toString(), sVSize);
 	  
@@ -177,10 +201,20 @@ class JConfigDialog
 	UIMaster.addVerticalGlue(tpanel, vpanel);
       }
 
-      super.initUI("Site Configuration:", false, body, null, null, null, "Close");
-    }  
+      JScrollPane scroll = null;
+      {
+	scroll = new JScrollPane(body);
+	
+	scroll.setMinimumSize(new Dimension(sTSize+sVSize+19, 120));
+	
+	scroll.setHorizontalScrollBarPolicy
+	  (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+	scroll.setVerticalScrollBarPolicy
+	  (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+      }
 
-    setResizable(false);
+      super.initUI("Site Configuration:", false, scroll, null, null, null, "Close");
+    }  
   }
 
 
