@@ -1,4 +1,4 @@
-// $Id: JobReqs.java,v 1.4 2004/03/11 14:09:09 jim Exp $
+// $Id: JobReqs.java,v 1.5 2004/03/13 17:17:10 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -143,6 +143,20 @@ implements Cloneable, Glueable, Serializable
 
     pLicenseKeys   = new HashSet<String>(licenseKeys);
     pSelectionKeys = new HashSet<String>(selectionKeys);
+  }
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   F A C T O R Y   M E T H O D S                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Construct a new set of job requirements with default settings.
+   */ 
+  public static JobReqs
+  defaultJobReqs() 
+  {
+    return (new JobReqs(0, 2.5f, 128, 64, new HashSet<String>(), new HashSet<String>()));
   }
 
 
