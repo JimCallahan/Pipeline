@@ -1,23 +1,73 @@
 <synth>
-  <style id="default">
-    <opaque value="true"/>
+  <style id="Default">
     <state>
       <color value="#ffffff" type="FOREGROUND"/>
       <color value="#7f7f7f" type="BACKGROUND"/>
     </state>
     <font name="Lucida Sans Bold" size="12"/>
   </style>
-  <bind style="default" type="region" key=".*"/>
+  <bind style="Default" type="region" key=".*"/>
 
 
-  <!-- 
-  <style id="SplitPane">
+  <!--  R O O T   P A N E L -->
+
+  <style id="RootPanel">
     <imagePainter path="BorderIn.png" 
-                  sourceInsets="6 6 6 6"/>
-    <insets top="6" bottom="6" right="6" left="6"/>
+                  sourceInsets="7 7 7 7"/>
+    <insets top="7" bottom="7" right="7" left="7"/>
   </style>
-  <bind style="SplitPane" type="region" key="SplitPane"/>
-  -->
+  <bind style="RootPanel" type="name" key="RootPanel"/>
+
+
+  <!--  M E N U S  -->
+
+  <style id="Menu">
+    <imageIcon id="MenuIcon" path="MenuIcon.png"/>
+    <property key="Menu.arrowIcon" value="MenuIcon"/>
+    <state value="">
+      <imagePainter path="MenuItem.png"
+                    sourceInsets="5 4 5 0"/>
+      <insets top="5" bottom="5" right="0" left="4"/>
+    </state>
+    <state value="SELECTED">
+      <imagePainter path="MenuItemSelected.png"
+                    sourceInsets="5 4 5 0"/>
+      <insets top="5" bottom="5" right="0" left="4"/>
+    </state>
+  </style>
+  <bind style="Menu" type="region" key="Menu"/>
+
+  <style id="MenuItem">
+    <state value="">
+      <imagePainter path="MenuItem.png"
+                    sourceInsets="5 4 5 0"/>
+      <insets top="5" bottom="5" right="0" left="4"/>
+    </state>
+    <state value="MOUSE_OVER">
+      <imagePainter path="MenuItemSelected.png"
+                    sourceInsets="5 4 5 0"/>
+      <insets top="5" bottom="5" right="0" left="4"/>
+    </state>
+  </style>
+  <bind style="MenuItem" type="region" key="MenuItem"/>
+
+  <style id="PopupMenu">
+    <opaque value="false"/>
+    <imagePainter path="PopupMenu.png"
+                  sourceInsets="5 5 5 5"/>
+    <insets top="5" bottom="5" right="5" left="5"/>
+  </style>
+  <bind style="PopupMenu" type="region" key="PopupMenu"/>
+
+  <style id="PopupMenuSeparator">
+    <imagePainter path="Separator.png"
+                  sourceInsets="2 4 2 4"/>
+    <insets top="2" bottom="2" right="4" left="4"/>
+  </style>
+  <bind style="PopupMenuSeparator" type="region" key="PopupMenuSeparator"/>
+
+
+  <!--  S P L I T   P A N E -->
 
   <style id="SplitPaneHorizontalDivider">
     <imagePainter path="SplitPaneHorizontalDivider.png"
