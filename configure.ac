@@ -93,22 +93,6 @@ AC_SUBST(RELEASE_STAMP)
 RELEASE_STAMP=`date`
 AC_MSG_RESULT([$RELEASE_STAMP])
 
-dnl ------------------------------------------------------------------------------------------
-
-AC_MSG_CHECKING([Code Development Directory])
-
-AC_ARG_WITH([code], 
-            [  --with-code=PATH        Root directory for code development.])
-
-AC_SUBST(CODEDIR)
-CODEDIR=$HOME/code
-
-if test "$with_code" 
-then
-  CODEDIR=$with_code
-fi
-
-AC_MSG_RESULT([$CODEDIR])
 
 
 dnl ------------------------------------------------------------------------------------------
@@ -498,106 +482,6 @@ dnl ----------------------------------------------------------------------------
 dnl   Checks for libraries.	
 dnl ------------------------------------------------------------------------------------------
 
-AC_MSG_RESULT([Locating support libraries:])
-
-
-dnl -- MATH LIBARAY --------------------------------------------------------------------------
-
-AC_CHECK_LIB(m, [sin], [has_libm=yes])
-if test "$has_libm" = "yes"
-then
-  LIBS="-lm $LIBS"
-else 
-  AC_MSG_ERROR([could not find the Math library.])
-fi
-
-
-dnl -- IMAGE LIBARIES ------------------------------------------------------------------------
-
-has_libtiff=no
-AC_CHECK_LIB(tiff, [TIFFOpen], [has_libtiff=yes])
-LIBTIFF=""
-if test "$has_libtiff" = "yes"
-then
-  LIBTIFF="-ltiff"
-else 
-  AC_MSG_ERROR([could not find the TIFF library.])
-fi
-
-has_libjpeg=no
-AC_CHECK_LIB(jpeg, [jpeg_start_compress], [has_libjpeg=yes])
-LIBJPEG=""
-if test "$has_libjpeg" = "yes"
-then
-  LIBJPEG="-ljpeg"
-else 
-  AC_MSG_ERROR([could not find the JPEG library.])
-fi
-has_libz=no
-AC_CHECK_LIB(z, [deflate], [has_libz=yes])
-LIBZ=""
-if test "$has_libz" = "yes" 
-then
-  LIBZ="-lz"
-else 
-  AC_MSG_ERROR([could not find the Z library.])
-fi
-
-AC_SUBST(TIFF_LIB)
-TIFF_LIB="${LIBTIFF} ${LIBJPEG} ${LIBZ}"
-
-
-
-dnl -- OPEN INVENTOR LIBARAY -----------------------------------------------------------------
-
-has_libInventor=no
-AC_CHECK_LIB(Inventor, [main], [has_libInventor=yes])
-INVENTOR_LIB=""
-if test "$has_libInventor" = "yes"
-then
-  INVENTOR_LIB="-lInventor -lInventorXt"
-  AC_DEFINE(HAVE_OPEN_INVENTOR, 1, 
-            [Define if OpenInventor is available.])  
-fi
-AC_SUBST(INVENTOR_LIB)
-
-
-dnl -- OPEN GL LIBARAY -----------------------------------------------------------------------
-
-has_libGL=no
-AC_CHECK_LIB(GL, [main], [has_libGL=yes])
-OPEN_GL_LIB=""
-if test "$has_libGL" = "yes"
-then
-  OPEN_GL_LIB="-lGL -L/usr/X11R6/lib -lX11"
-  AC_DEFINE(HAVE_OPEN_GL, 1, 
-            [Define if OpenGL is available.])  
-fi
-AC_SUBST(OPEN_GL_LIB)
-
-AC_MSG_RESULT([])
-
-
-
-dnl -- PHOENIX LIBRARIES ---------------------------------------------------------------------
-
-AC_MSG_RESULT([Locating Phoenix Libraries:])
-
-
-PHOENIX_CORE_INC="-I${CODEDIR}/src/phoenix/src/libs/core/src" 
-AC_SUBST(PHOENIX_CORE_LIB)
-AC_MSG_RESULT([Core Include: $PHOENIX_CORE_INC])
-
-
-PHOENIX_CORE_LIB="$CODEDIR/build/phoenix/${host}-${BUILD_MODE}/src/libs/core/src/libPhoenixCore.a"
-AC_SUBST(PHOENIX_CORE_INC)
-AC_MSG_RESULT([Core Library: $PHOENIX_CORE_LIB])
-
-AC_DEFINE(HAVE_PHOENIX, 1, 
-          [Define if Phoenix is available.]) 
-
-AC_MSG_RESULT([])
-
 
 dnl ------------------------------------------------------------------------------------------
 dnl   Checks for header files.
@@ -607,13 +491,6 @@ AC_MSG_RESULT([Locating C system headers:])
 
 AC_CHECK_HEADERS([math.h errno.h pwd.h dlfcn.h libgen.h time.h])         
 AC_CHECK_HEADERS([sys/time.h sys/param.h sys/utsname.h])  
-
-AC_MSG_RESULT([ ])
-
-
-AC_MSG_RESULT([Locating image support headers:])
-
-AC_CHECK_HEADERS([tiff.h tiffio.h jpeglib.h zlib.h])
 
 AC_MSG_RESULT([ ])
 
@@ -664,54 +541,10 @@ dnl ----------------------------------------------------------------------------
 dnl   Checks for library functions.
 dnl ------------------------------------------------------------------------------------------
 
-AC_MSG_RESULT([Testing functions supported by your math library:])
-
-dnl -- TRIGONOMETRY --------------------------------------------------------------------------
-
-AC_CHECK_FUNCS([acos acosf facos acosl])
-AC_CHECK_FUNCS([asin asinf fasin asinl])
-AC_CHECK_FUNCS([atan atanf fatan atanl])
-AC_CHECK_FUNCS([atan2 atan2f fatan2 atan2l])
-
-AC_CHECK_FUNCS([cos cosf fcos cosl])
-AC_CHECK_FUNCS([sin sinf fsin sinl])
-AC_CHECK_FUNCS([tan tanf ftan tanl])
-
-AC_CHECK_FUNCS([cosh coshf fcosh coshl])
-AC_CHECK_FUNCS([sinh sinhf fsinh sinhl])
-AC_CHECK_FUNCS([tanh tanhf ftanh tanhl])
-
-
-dnl -- EXPONENTIALS --------------------------------------------------------------------------
-										       
-AC_CHECK_FUNCS([exp expf fexp expl])
-AC_CHECK_FUNCS([log logf flog logl])
-AC_CHECK_FUNCS([log10 log10f flog10 log10l])
-AC_CHECK_FUNCS([pow powf fpow powl])
-AC_CHECK_FUNCS([sqrt sqrtf fsqrt sqrtl])
-										       
-										       
-dnl -- MISC MATH -----------------------------------------------------------------------------
-
-AC_CHECK_FUNCS([floor floorf ffloor floorl])
-AC_CHECK_FUNCS([ceil ceilf fceil ceill])
-AC_CHECK_FUNCS([copysign copysignf fcopysign copysignl])
-AC_CHECK_FUNCS([drem dremf fdrem dreml])
-AC_CHECK_FUNCS([trunc truncf ftrunc truncl])
-AC_CHECK_FUNCS([fmod fmodf ffmod fmodl])
-AC_CHECK_FUNCS([abs labs llabs])
-AC_CHECK_FUNCS([fabs fabsf fabsl])
-AC_CHECK_FUNCS([rint rintf frint rintl])
-
-
-AC_MSG_RESULT([ ])
-
-
 
 dnl ------------------------------------------------------------------------------------------
 dnl   Checks for system services.
 dnl ------------------------------------------------------------------------------------------
-
 
 
 dnl ------------------------------------------------------------------------------------------
@@ -752,6 +585,10 @@ AC_CONFIG_FILES([
   data/fonts/CharterBTRoman/Makefile
   data/fonts/UtopiaBold/Makefile
 
+  docs/Makefile 
+ 
+  docs/user-manual/Makefile
+
   src/Makefile
 
   src/database/Makefile
@@ -767,10 +604,12 @@ AC_CONFIG_FILES([
   src/java/Makefile
 
   src/java/docs/Makefile
+
   src/java/docs/pipeline.html 
   src/java/docs/pleditor.html 
   src/java/docs/pljob.html 
   src/java/docs/pltoolset.html
+  src/java/docs/plui.html
 
   src/java/pipeline/Makefile
   src/java/pipeline/PackageInfo.java
