@@ -1,8 +1,8 @@
-// $Id: FontGeometry.java,v 1.1 2004/05/06 11:22:07 jim Exp $
+// $Id: FontGeometry.java,v 1.2 2004/12/15 15:38:06 jim Exp $
 
 package us.temerity.pipeline.ui;
 
-import javax.vecmath.*;
+import us.temerity.pipeline.math.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   F O N T   G E O M E T R Y                                                              */

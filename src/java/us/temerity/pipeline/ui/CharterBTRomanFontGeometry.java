@@ -3,7 +3,7 @@
 
 package us.temerity.pipeline.ui;
 
-import javax.vecmath.*;
+import us.temerity.pipeline.math.*;
 
 public
 class CharterBTRomanFontGeometry
