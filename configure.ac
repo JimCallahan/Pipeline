@@ -195,6 +195,20 @@ else
 fi 
 
 
+AC_MSG_CHECKING([License Valid Until])
+
+AC_SUBST(LICENSE_END)
+LICENSE_END=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
+                  --lookup LicenseEnd`
+
+if test "$LICENSE_END" == "null"
+then
+  AC_MSG_ERROR([customer profile was incomplete.])
+fi 
+
+AC_MSG_RESULT([$LICENSE_END])
+
+
 
 AC_MSG_CHECKING([Root Installation Directory])
 
@@ -424,6 +438,106 @@ then
 fi 
 
 AC_MSG_RESULT([$JAVA_HOME])
+
+
+AC_MSG_CHECKING([Java Vendor])
+
+AC_SUBST(JAVA_VENDOR)
+JAVA_VENDOR=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
+                  --lookup JavaVendor`
+
+if test "$JAVA_VENDOR" == "null"
+then
+  AC_MSG_ERROR([customer profile was incomplete.])
+fi 
+
+AC_MSG_RESULT([$JAVA_VENDOR])
+
+
+AC_MSG_CHECKING([Java Name])
+
+AC_SUBST(JAVA_NAME)
+JAVA_NAME=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
+                --lookup JavaName`
+
+if test "$JAVA_NAME" == "null"
+then
+  AC_MSG_ERROR([customer profile was incomplete.])
+fi 
+
+AC_MSG_RESULT([$JAVA_NAME])
+
+
+AC_MSG_CHECKING([Java Version])
+
+AC_SUBST(JAVA_VERSION)
+JAVA_VERSION=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
+                   --lookup JavaVersion`
+
+if test "$JAVA_VERSION" == "null"
+then
+  AC_MSG_ERROR([customer profile was incomplete.])
+fi 
+
+AC_MSG_RESULT([$JAVA_VERSION])
+
+
+AC_MSG_CHECKING([Java ClassVersion])
+
+AC_SUBST(JAVA_CLASS_VERSION)
+JAVA_CLASS_VERSION=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
+                         --lookup JavaClassVersion`
+
+if test "$JAVA_CLASS_VERSION" == "null"
+then
+  AC_MSG_ERROR([customer profile was incomplete.])
+fi 
+
+AC_MSG_RESULT([$JAVA_CLASS_VERSION])
+
+
+dnl ------------------------------------------------------------------------------------------
+
+AC_MSG_CHECKING([OS Name])
+
+AC_SUBST(OS_NAME)
+OS_NAME=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
+                --lookup OS-Name`
+
+if test "$OS_NAME" == "null"
+then
+  AC_MSG_ERROR([customer profile was incomplete.])
+fi 
+
+AC_MSG_RESULT([$OS_NAME])
+
+
+AC_MSG_CHECKING([OS Version])
+
+AC_SUBST(OS_VERSION)
+OS_VERSION=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
+                   --lookup OS-Version`
+
+if test "$OS_VERSION" == "null"
+then
+  AC_MSG_ERROR([customer profile was incomplete.])
+fi 
+
+AC_MSG_RESULT([$OS_VERSION])
+
+
+AC_MSG_CHECKING([OS Architecture])
+
+AC_SUBST(OS_ARCH)
+OS_ARCH=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
+                   --lookup OS-Arch`
+
+if test "$OS_ARCH" == "null"
+then
+  AC_MSG_ERROR([customer profile was incomplete.])
+fi 
+
+AC_MSG_RESULT([$OS_ARCH])
 
 
 

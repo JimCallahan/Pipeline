@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.in,v 1.13 2004/04/11 19:31:58 jim Exp $
+// $Id: PackageInfo.java.in,v 1.14 2004/05/21 00:12:30 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -35,6 +35,12 @@ class PackageInfo
    * The date and time when this version of Pipeline was released.
    */ 
   public static final String sRelease = "@RELEASE_STAMP@";  
+
+
+  /**
+   * The date and time the license expires.
+   */ 
+  public static final String sLicenseEnd = "@LICENSE_END@";  
 
 
   /** 
@@ -172,8 +178,60 @@ class PackageInfo
    */ 
   public static final File sTempDir = new File("@TEMPDIR@");
 
+
+  /**
+   * The site domain name.
+   */
+  public static final String  sDomain = "@DOMAIN@";
   
+  /**
+   * The site IP addresses.
+   */
+  public static final String  sIPAddrs = "@IP_ADDRS@";
+
   
+  /**
+   * The name of operating system.
+   */
+  public static final String  sOsName = "@OS_NAME@";
+  
+  /**
+   * The operating system version.
+   */
+  public static final String  sOsVersion = "@OS_VERSION@";
+
+  /**
+   * The operating system architecture.
+   */
+  public static final String  sOsArch = "@OS_ARCH@";
+
+
+  /**
+   * The name of the vendor of the java runtime.
+   */
+  public static final String  sJavaVendor = "@JAVA_VENDOR@";
+  
+  /**
+   * The name of the java runtime.
+   */
+  public static final String  sJavaName = "@JAVA_NAME@";
+  
+  /**
+   * The java runtime version.
+   */
+  public static final String  sJavaVersion = "@JAVA_VERSION@";
+    
+  /**
+   * The java runtime class version.
+   */
+  public static final String  sJavaClassVersion = "@JAVA_CLASS_VERSION@";
+  
+  /**
+   * The directory where the java runtime is installed.
+   */
+  public static final String  sJavaHome = "@JAVA_HOME@";
+
+
   /**
    * The copyright notice for Pipeline. 
    */
