@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.15 2004/09/08 19:24:08 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.16 2004/09/11 14:18:51 jim Exp $
 
 import java.io.*; 
 import java.util.*;
@@ -327,26 +327,22 @@ class GenUserPrefsApp
     {
       BasePref prefs[] = {
 	new BoundedDoublePref
+	("the job group label size",
+	 "JobLabelSize", "Label Size:", 0.1, 2.0, 0.65),
+
+	new BasePref(),
+
+	new BoundedDoublePref
 	("the width of a job", 
 	 "JobSizeX", "Width:", 1.0, 4.0, 2.0),
 
 	new BoundedDoublePref
 	("the height of a job", 
-	 "JobSizeY", "Height:", 0.5, 2.0, 1.0),
+	 "JobSizeY", "Height:", 0.5, 2.0, 0.7),
 
 	new BoundedDoublePref
 	("the distance between jobs",
-	 "JobSpace", "Job Space:", 0.0, 0.3, 0.1), 
-	
-	new BasePref(),
-
-	new BoundedDoublePref
-	("the job group label size",
-	 "JobLabelSize", "Label Size:", 0.1, 2.0, 1.0), 
-
-	new BoundedDoublePref
-	("the distance between job groups",
-	 "JobGroupSpace", "Group Space:", 2.25, 5.0, 2.75), 
+	 "JobSpace", "Job Space:", 0.0, 0.3, 0.1), 	
 	
 	new BasePref(),
 
@@ -401,6 +397,24 @@ class GenUserPrefsApp
       };      
 
       pPrefs.put("Panel|Job Viewer|Job|Hot Keys", prefs);
+    }
+
+    {
+      LinkedList<String> orient = new LinkedList<String>();
+      orient.add("Horizontal");
+      orient.add("Vertical");
+
+      BasePref prefs[] = {
+	new ChoicePref
+	("the orientation of job group layuot", 
+	 "JobViewerOrientation", "Orientation:", orient, "Horizontal"),
+	
+	new BoundedDoublePref
+	("the distance between job groups",
+	 "JobGroupSpace", "Group Space:", 2.25, 5.0, 2.75)
+      };
+
+      pPrefs.put("Panel|Job Viewer|Appearance", prefs);
     }
 
     {
@@ -511,7 +525,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.15 2004/09/08 19:24:08 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.16 2004/09/11 14:18:51 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -764,7 +778,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.15 2004/09/08 19:24:08 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.16 2004/09/11 14:18:51 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
