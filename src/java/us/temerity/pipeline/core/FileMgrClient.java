@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.9 2004/05/23 19:48:55 jim Exp $
+// $Id: FileMgrClient.java,v 1.10 2004/07/07 13:19:59 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -191,12 +191,12 @@ class FileMgrClient
    * @param latest 
    *   The revision number of the latest checked-in version.
    * 
+   * @param isNovel
+   *   Whether each file associated with the version contains new data not present in the
+   *   previous checked-in version.
+   * 
    * @throws PipelineException
    *   If unable to check-in the working files.
-   * 
-   * @param states 
-   *   The <CODE>FileState</CODE> of each the primary and secondary file associated with 
-   *   the working version indexed by file sequence.
    */
   public synchronized void 
   checkIn
@@ -205,14 +205,14 @@ class FileMgrClient
    NodeMod mod, 
    VersionID vid,
    VersionID latest, 
-   TreeMap<FileSeq,FileState[]> states
+   TreeMap<FileSeq,boolean[]> isNovel
   ) 
     throws PipelineException 
   {
     verifyConnection();
 
     FileCheckInReq req = 
-      new FileCheckInReq(id, vid, latest, mod.getSequences(), states); 
+      new FileCheckInReq(id, vid, latest, mod.getSequences(), isNovel); 
 
     Object obj = performTransaction(FileRequest.CheckIn, req);
     handleSimpleResponse(obj);

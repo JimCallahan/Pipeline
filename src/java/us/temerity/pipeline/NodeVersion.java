@@ -1,4 +1,4 @@
-// $Id: NodeVersion.java,v 1.16 2004/05/21 18:07:30 jim Exp $
+// $Id: NodeVersion.java,v 1.17 2004/07/07 13:19:59 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -40,6 +40,13 @@ class NodeVersion
    * @param lvids
    *   The revision numbers of the checked-in upstream node versions.
    * 
+   * @param isNovel
+   *   Whether each file associated with the version contains new data not present in the
+   *   previous checked-in version.
+   * 
+   * @param author
+   *   The name of the user creating the version.
+   * 
    * @param msg 
    *   The check-in log message.
    */
@@ -49,6 +56,8 @@ class NodeVersion
    NodeMod mod, 
    VersionID vid, 
    TreeMap<String,VersionID> lvids,
+   TreeMap<FileSeq,boolean[]> isNovel,
+   String author, 
    String msg
   ) 
   {
@@ -60,11 +69,17 @@ class NodeVersion
 
     if(msg == null) 
       throw new IllegalArgumentException("The check-in message cannot be (null)!");
-    pMessage = new LogMessage(msg);
+    pMessage = new LogMessage(author, msg);
 
     pSources = new TreeMap<String,LinkVersion>();
     for(LinkMod link : mod.getSources()) 
       pSources.put(link.getName(), new LinkVersion(link, lvids.get(link.getName())));
+
+    if(isNovel == null) 
+      throw new IllegalArgumentException("The file novelty table cannot be (null)!");      
+    pIsNovel = new TreeMap<FileSeq,boolean[]>();
+    for(FileSeq fseq : isNovel.keySet()) 
+      pIsNovel.put(fseq, isNovel.get(fseq).clone());
   }
 
   /** 
@@ -88,6 +103,10 @@ class NodeVersion
     pSources = new TreeMap<String,LinkVersion>();
     for(LinkVersion link : vsn.getSources()) 
       pSources.put(link.getName(), new LinkVersion(link));
+
+    pIsNovel = new TreeMap<FileSeq,boolean[]>();
+    for(FileSeq fseq : vsn.getSequences()) 
+      pIsNovel.put(fseq, vsn.isNovel(fseq).clone());
   }
 
 
@@ -105,6 +124,8 @@ class NodeVersion
     return pVersionID;
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Get when the version was checked-in.
@@ -131,6 +152,15 @@ class NodeVersion
   getMessage() 
   {
     return pMessage.getMessage();
+  }
+
+  /**
+   * Get the check-in log message.
+   */ 
+  public LogMessage
+  getLogMessage() 
+  {
+    return pMessage;
   }
 
   
@@ -192,7 +222,30 @@ class NodeVersion
     return links;
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Get whether each file associated with the given file sequence contains new data not 
+   * present in the previous checked-in version. <P> 
+   * 
+   * @param fseq
+   *   The file sequence to lookup.
+   * 
+   * @return
+   *   The per-file novelty flags for the given file sequence.
+   */ 
+  public boolean[] 
+  isNovel
+  (
+   FileSeq fseq
+  ) 
+  {
+    return pIsNovel.get(fseq);
+  }
+
+
+
   /*----------------------------------------------------------------------------------------*/
   /*   C O M P A R I S O N                                                                  */
   /*----------------------------------------------------------------------------------------*/
@@ -292,6 +345,8 @@ class NodeVersion
 
     if(!pSources.isEmpty())
       encoder.encode("Sources", pSources);
+
+    encoder.encode("IsNovel", pIsNovel);
   }
 
 
@@ -318,6 +373,12 @@ class NodeVersion
       (TreeMap<String,LinkVersion>) decoder.decode("Sources"); 
     if(sources != null) 
       pSources = sources;
+
+    TreeMap<FileSeq,boolean[]> isNovel = 
+      (TreeMap<FileSeq,boolean[]>) decoder.decode("IsNovel");
+    if(isNovel == null) 
+      throw new GlueException("The \"IsNovel\" was missing!");
+    pIsNovel = isNovel;
   }
 
 
@@ -352,6 +413,16 @@ class NodeVersion
    * node indexed by the fully resolved names of the upstream nodes.
    */ 
   private TreeMap<String,LinkVersion>  pSources;
- 
+
+
+  /**
+   * Whether each file associated with this version contains new data not present in the
+   * previous checked-in version. <P> 
+   * 
+   * All files of the initial version will be novel.  In subsequent versions, only those 
+   * files which have been added or modified since the previous version will be marked as 
+   * novel.
+   */
+  private TreeMap<FileSeq,boolean[]>  pIsNovel;
 }
 

@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.7 2004/06/28 23:02:01 jim Exp $
+// $Id: MasterMgrServer.java,v 1.8 2004/07/07 13:20:00 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -391,39 +391,6 @@ class MasterMgrServer
 	    break;
 
 
-	  /*-- LINK CATAGORIES -------------------------------------------------------------*/
-	  case GetLinkCatagoryDesc:
-	    {
-	      objOut.writeObject(pMasterMgr.getLinkCatagoryDesc());
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case GetActiveLinkCatagoryNames :
-	    {
-	      objOut.writeObject(pMasterMgr.getActiveLinkCatagoryNames());
-	      objOut.flush(); 
-	    }
-	    break;
-	    
-	  case CreateLinkCatagory: 
-	    {
-	      MiscCreateLinkCatagoryReq req = (MiscCreateLinkCatagoryReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.createLinkCatagory(req));
-	      objOut.flush(); 
-	    }
-	    break;
-	    
-	  case SetLinkCatagoryActive: 
-	    {
-	      MiscSetLinkCatagoryActiveReq req = 
-		(MiscSetLinkCatagoryActiveReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.setLinkCatagoryActive(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-
 	  /*-- PRIVILEGED USER STATUS ------------------------------------------------------*/
 	  case GetPrivilegedUsers:
 	    {
@@ -515,6 +482,14 @@ class MasterMgrServer
 	    {
 	      NodeGetCheckedInReq req = (NodeGetCheckedInReq) objIn.readObject();
 	      objOut.writeObject(pMasterMgr.getCheckedInVersion(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case GetHistory:
+	    {
+	      NodeGetHistoryReq req = (NodeGetHistoryReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.getHistory(req));
 	      objOut.flush(); 
 	    }
 	    break;

@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.14 2004/06/28 00:10:26 jim Exp $
+// $Id: FileMgr.java,v 1.15 2004/07/07 13:19:59 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -608,54 +608,84 @@ class FileMgr
 	  cwdir = new File(pProdDir, "checksum/" + wpath);
 	}
 	
-
 	/* process the files */ 
 	ArrayList<File> copies = new ArrayList<File>();
 	ArrayList<File> links  = new ArrayList<File>();
 	{
-	  TreeMap<FileSeq, FileState[]> stable = req.getFileStates();
+	  TreeMap<FileSeq,boolean[]> isNovel = req.getIsNovel();
 	  for(FileSeq fseq : req.getFileSequences()) {
-	    FileState[] states = stable.get(fseq);
+	    boolean flags[] = isNovel.get(fseq);
 	    int wk = 0;
 	    for(File file : fseq.getFiles()) {
 	      File work = new File(wdir, file.getPath());
 
-	      switch(states[wk]) {
-	      case Pending:
-	      case Modified:
-	      case Added:
+	      if(flags[wk]) {
 		copies.add(file);	
-		break;
-
-	      case Identical:
-		{
+	      }
+	      else {
+		assert(ldir != null);
+		File latest = new File(ldir, file.getPath());
+		try {
 		  assert(ldir != null);
-		  File latest = new File(ldir, file.getPath());
-		  try {
-		    assert(ldir != null);
-		    String source = NativeFileSys.realpath(latest).getPath();
-		    assert(source.startsWith(rbase));
-		    links.add(new File(".." + source.substring(rbase.length())));
-		  }
-		  catch(IOException ex) {
-		    throw new PipelineException
-		      ("Unable to resolve the real path to the repository " + 
-		       "file (" + latest + ")!");
-		  }
+		  String source = NativeFileSys.realpath(latest).getPath();
+		  assert(source.startsWith(rbase));
+		  links.add(new File(".." + source.substring(rbase.length())));
 		}
-		break;
-		  
-	      case Obsolete:
-		break;
-
-	      default:
-		throw new PipelineException
-		  ("Somehow the working file (" + work + ") with a file state of (" + 
-		   states[wk].name() + ") was erroneously submitted for check-in!");
+		catch(IOException ex) {
+		  throw new PipelineException
+		    ("Unable to resolve the real path to the repository " + 
+		     "file (" + latest + ")!");
+		}
 	      }
 
 	      wk++;
 	    }
+
+
+// 	  TreeMap<FileSeq, FileState[]> stable = req.getFileStates();
+// 	  for(FileSeq fseq : req.getFileSequences()) {
+// 	    FileState[] states = stable.get(fseq);
+// 	    int wk = 0;
+// 	    for(File file : fseq.getFiles()) {
+// 	      File work = new File(wdir, file.getPath());
+
+// 	      switch(states[wk]) {
+// 	      case Pending:
+// 	      case Modified:
+// 	      case Added:
+// 		copies.add(file);	
+// 		break;
+
+// 	      case Identical:
+// 		{
+// 		  assert(ldir != null);
+// 		  File latest = new File(ldir, file.getPath());
+// 		  try {
+// 		    assert(ldir != null);
+// 		    String source = NativeFileSys.realpath(latest).getPath();
+// 		    assert(source.startsWith(rbase));
+// 		    links.add(new File(".." + source.substring(rbase.length())));
+// 		  }
+// 		  catch(IOException ex) {
+// 		    throw new PipelineException
+// 		      ("Unable to resolve the real path to the repository " + 
+// 		       "file (" + latest + ")!");
+// 		  }
+// 		}
+// 		break;
+		  
+// 	      case Obsolete:
+// 		break;
+
+// 	      default:
+// 		throw new PipelineException
+// 		  ("Somehow the working file (" + work + ") with a file state of (" + 
+// 		   states[wk].name() + ") was erroneously submitted for check-in!");
+// 	      }
+
+// 	      wk++;
+// 	    }
+
 	  }
 	}
 

@@ -1,4 +1,4 @@
-// $Id: FileCheckInReq.java,v 1.5 2004/03/30 22:17:17 jim Exp $
+// $Id: FileCheckInReq.java,v 1.6 2004/07/07 13:21:45 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -54,9 +54,9 @@ class FileCheckInReq
    * @param fseqs 
    *   The primary and secondary file sequences associated with the working version.
    * 
-   * @param states 
-   *   The <CODE>FileState</CODE> of each the primary and secondary file associated with 
-   *   the working version indexed by file sequence.
+   * @param isNovel
+   *   Whether each file associated with the version contains new data not present in the
+   *   previous checked-in version.
    */
   public
   FileCheckInReq
@@ -65,7 +65,7 @@ class FileCheckInReq
    VersionID vid, 
    VersionID latest, 
    TreeSet<FileSeq> fseqs, 
-   TreeMap<FileSeq,FileState[]> states
+   TreeMap<FileSeq,boolean[]> isNovel
   )
   { 
     if(id == null) 
@@ -82,9 +82,9 @@ class FileCheckInReq
       throw new IllegalArgumentException("The working file sequences cannot (null)!");
     pFileSeqs = fseqs;
     
-    if(states == null) 
+    if(isNovel == null) 
       throw new IllegalArgumentException("The working file states cannot (null)!");
-    pStates = states;
+    pIsNovel = isNovel;
   }
 
 
@@ -129,13 +129,13 @@ class FileCheckInReq
   }
 
   /**
-   * Gets the <CODE>FileState</CODE> of each the primary and secondary file associated with 
-   * the working version indexed by file sequence.
+   * Gets whether each file associated with the version contains new data not present in the
+   * previous checked-in version.
    */
-  public TreeMap<FileSeq, FileState[]>
-  getFileStates() 
+  public TreeMap<FileSeq,boolean[]> 
+  getIsNovel()
   {
-    return pStates;
+    return pIsNovel;
   }
   
 
@@ -172,10 +172,10 @@ class FileCheckInReq
   private TreeSet<FileSeq>  pFileSeqs;
 
   /** 
-   * The <CODE>FileState</CODE> of each the primary and secondary file associated with 
-   * the working version indexed by file sequence.
+   * Whether each file associated with the version contains new data not present in the
+   * previous checked-in version.
    */
-  private TreeMap<FileSeq, FileState[]>  pStates; 
+  private TreeMap<FileSeq,boolean[]>  pIsNovel;
 
 }
   

@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.10 2004/06/28 23:01:27 jim Exp $
+// $Id: MasterMgrClient.java,v 1.11 2004/07/07 13:19:59 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -655,124 +655,6 @@ class MasterMgrClient
     handleSimpleResponse(obj);
   }
   
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Get the table of all currently defined link catagory descriptions indexed by 
-   * link catagory name.
-   * 
-   * @throws PipelineException
-   *   If unable to lookup the link catagories.
-   */ 
-  public synchronized TreeMap<String,LinkCatagoryDesc>
-  getLinkCatagoryDesc() 
-    throws PipelineException
-  {
-    verifyConnection();
-
-    Object obj = performTransaction(MasterRequest.GetLinkCatagoryDesc, null);
-    if(obj instanceof MiscGetLinkCatagoryDescRsp) {
-      MiscGetLinkCatagoryDescRsp rsp = (MiscGetLinkCatagoryDescRsp) obj;
-      return rsp.getTable();
-    }
-    else {
-      handleFailure(obj);
-      return null;
-    }    
-  }
-
-  /**
-   * Get the names of the currently active link catagories.
-   * 
-   * @throws PipelineException
-   *   If unable to lookup the link catagories.
-   */ 
-  public synchronized TreeSet<String>
-  getActiveLinkCatagoryNames() 
-    throws PipelineException
-  {
-    verifyConnection();
-
-    Object obj = performTransaction(MasterRequest.GetActiveLinkCatagoryNames, null);
-    if(obj instanceof MiscGetActiveLinkCatagoryNamesRsp) {
-      MiscGetActiveLinkCatagoryNamesRsp rsp = (MiscGetActiveLinkCatagoryNamesRsp) obj;
-      return rsp.getNames();
-    }
-    else {
-      handleFailure(obj);
-      return null;
-    }    
-  }
-  
-  /**
-   * Create a new link catagory.
-   * 
-   * @param name 
-   *   The name of the link catagory.
-   * 
-   * @param policy 
-   *   The node state propogation policy.
-   * 
-   * @param desc
-   *   A short description of the link catagory.
-   * 
-   * @throws PipelineException
-   *   If unable to create the link catagory.
-   */ 
-  public synchronized void 
-  createLinkCatagory
-  (
-   String name,  
-   LinkPolicy policy, 
-   String desc
-  )
-    throws PipelineException
-  {
-    if(!isPrivileged(false)) 
-      throw new PipelineException
-	("Only privileged users may create new link catagories!");
-
-    verifyConnection();
-
-    MiscCreateLinkCatagoryReq req = new MiscCreateLinkCatagoryReq(name, policy, desc);
-
-    Object obj = performTransaction(MasterRequest.CreateLinkCatagory, req); 
-    handleSimpleResponse(obj);
-  }
-  
-  /**
-   * Set the active/inactive state of the link catagory with the given name. <P> 
-   *
-   * @param name
-   *   The name of the link catagory.
-   *
-   * @param isActive
-   *   Whether the toolset should be active.
-   * 
-   * @throws PipelineException
-   *   If unable to change the active state of the link catagory.
-   */ 
-  public synchronized void 
-  setLinkCatagoryActive
-  (
-   String name, 
-   boolean isActive
-  ) 
-    throws PipelineException
-  {
-    if(!isPrivileged(false)) 
-      throw new PipelineException
-	("Only privileged users may change the active status of a link catagory!");
-
-    verifyConnection();
-
-    MiscSetLinkCatagoryActiveReq req = new MiscSetLinkCatagoryActiveReq(name, isActive);
-
-    Object obj = performTransaction(MasterRequest.SetLinkCatagoryActive, req); 
-    handleSimpleResponse(obj);    
-  }
-
 
   /*----------------------------------------------------------------------------------------*/
   
@@ -1506,8 +1388,8 @@ class MasterMgrClient
    * @param source 
    *   The fully resolved name of the upstream node to connect.
    * 
-   * @param catagory 
-   *   The named classification of the link's node state propogation policy.
+   * @param policy 
+   *   The node state propogation policy.
    * 
    * @param relationship 
    *   The nature of the relationship between files associated with the source and 
@@ -1526,7 +1408,7 @@ class MasterMgrClient
    String view, 
    String target, 
    String source,
-   LinkCatagory catagory,   
+   LinkPolicy policy,
    LinkRelationship relationship,  
    Integer offset
   ) 
@@ -1535,7 +1417,7 @@ class MasterMgrClient
     verifyConnection();
 
     NodeID id = new NodeID(author, view, target);
-    LinkMod link = new LinkMod(source, catagory, relationship, offset);
+    LinkMod link = new LinkMod(source, policy, relationship, offset);
     NodeLinkReq req = new NodeLinkReq(id, link);
 
     Object obj = performTransaction(MasterRequest.Link, req);
@@ -1619,7 +1501,75 @@ class MasterMgrClient
     }
   }  
 
+  /** 
+   * Get the log messages associated with all checked-in versions of the given node.
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   *
+   * @return 
+   *   The log messages indexed by revision number.
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the log messages.
+   */
+  public synchronized TreeMap<VersionID,LogMessage> 
+  getHistory
+  ( 
+   String name
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+	 
+    NodeGetHistoryReq req = new NodeGetHistoryReq(name);
 
+    Object obj = performTransaction(MasterRequest.GetHistory, req);
+    if(obj instanceof NodeGetHistoryRsp) {
+      NodeGetHistoryRsp rsp = (NodeGetHistoryRsp) obj;
+      return rsp.getHistory();      
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }  
+
+  /**
+   * Get whether each file associated with each checked-in version of the given node 
+   * contains new data not present in the previous checked-in versions. <P> 
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   *
+   * @return 
+   *   The table of per-file novelty flags indexed by revision number and file sequence.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the file revision history.
+   */
+  public synchronized TreeMap<VersionID,TreeMap<FileSeq,boolean[]>>
+  getCheckedInFileNovelty
+  ( 
+   String name
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+    
+    NodeGetCheckedInFileNoveltyReq req = new NodeGetCheckedInFileNoveltyReq(name);
+    
+    Object obj = performTransaction(MasterRequest.GetCheckedInFileNovelty, req);
+    if(obj instanceof NodeGetCheckedInFileNoveltyRsp) {
+      NodeGetCheckedInFileNoveltyRsp rsp = (NodeGetCheckedInFileNoveltyRsp) obj;
+      return rsp.getFileNovelty();      
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }    
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   N O D E   S T A T U S                                                                */
