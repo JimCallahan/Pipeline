@@ -1,4 +1,4 @@
-// $Id: NativeProcess.cc,v 1.4 2004/02/23 23:46:31 jim Exp $
+// $Id: NativeProcess.cc,v 1.5 2004/02/25 01:27:09 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -888,3 +888,40 @@ JNICALL Java_us_temerity_pipeline_NativeProcess_signalNative
     return; 
   }
 }
+
+
+/* Change file access permissions. */
+extern "C" 
+JNIEXPORT void 
+JNICALL Java_us_temerity_pipeline_NativeProcess_chmodNative
+(
+ JNIEnv *env, 
+ jclass cls, 
+ jint mode,    /* IN: the access mode bitmask */ 
+ jstring jfile  /* IN: the fully resolved path to the file to change */ 
+)
+{
+  /* exception initialization */ 
+  char msg[1024];
+  jclass IOException = env->FindClass("java/io/IOException");
+  if(IOException == 0) {
+    errno = ECANCELED;
+    perror("NativeProcess.signalNative(), unable to lookup \"java/lang/IOException\"");
+    return;
+  }
+
+  /* repackage the arguments */ 
+  const char* file = env->GetStringUTFChars(jfile, 0);
+  if((file == NULL) || (strlen(file) == 0)) {
+    env->ThrowNew(IOException,"empty file argument");
+    return;
+  }
+
+  /* change the access permissions */ 
+  if(chmod(file, mode) == -1) {
+    sprintf(msg, "failed to change the permissions of file (%d): %s\n", 
+	    file, strerror(errno));
+    env->ThrowNew(IOException, msg);    
+  }
+}
+ 
