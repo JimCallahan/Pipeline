@@ -1,4 +1,4 @@
-// $Id: JFileListCellRenderer.java,v 1.1 2004/05/29 06:38:43 jim Exp $
+// $Id: JFileListCellRenderer.java,v 1.2 2004/06/08 02:56:53 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -21,7 +21,7 @@ import javax.swing.border.*;
  */ 
 public
 class JFileListCellRenderer
-  extends JPanel 
+  extends JPanel
   implements ListCellRenderer 
 {
   /*----------------------------------------------------------------------------------------*/
@@ -145,16 +145,16 @@ class JFileListCellRenderer
   private static final long serialVersionUID = 9144374790563937303L;
 
 
-  private static Icon sNormalIcon = 
+  protected static Icon sNormalIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("ListCellNormalIcon.png"));
 
-  private static Icon sSelectedIcon = 
+  protected static Icon sSelectedIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("ListCellSelectedIcon.png"));
 
-  private static Icon sDirNormalIcon = 
+  protected static Icon sDirNormalIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("DirectoryNormalIcon.png"));
 
-  private static Icon sDirSelectedIcon = 
+  protected static Icon sDirSelectedIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("DirectorySelectedIcon.png"));
 
   
@@ -166,21 +166,21 @@ class JFileListCellRenderer
   /**
    * The file/directory name label.
    */
-  private JLabel  pNameLabel;
+  protected JLabel  pNameLabel;
 
   /**
    * The file size label.
    */
-  private JLabel  pSizeLabel;
+  protected JLabel  pSizeLabel;
 
   /**
    * The last modified timestamp label.
    */
-  private JLabel  pDateLabel;
+  protected JLabel  pDateLabel;
 
   /**
    * The size formatter.
    */
-  private DecimalFormat  pFormat;
+  protected DecimalFormat  pFormat;
 
 }
