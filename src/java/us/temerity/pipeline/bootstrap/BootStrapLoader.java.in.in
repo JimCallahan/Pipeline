@@ -1,4 +1,4 @@
-// $Id: BootStrapLoader.java.in.in,v 1.6 2004/08/29 09:23:10 jim Exp $
+// $Id: BootStrapLoader.java.in.in,v 1.7 2004/09/01 12:19:33 jim Exp $
 
 package us.temerity.pipeline.bootstrap;
 
@@ -37,7 +37,7 @@ class BootStrapLoader
   {
     super();
     
-    File license = new File("@ROOT_INST_DIR@", "config/temerity-software.key");
+    File license = new File("@ROOT_INST_DIR@", "plconfig/temerity-software.key");
     if(!license.isFile()) 
       throw new LicenseException("The license file (" + license + ") was missing!");
 
