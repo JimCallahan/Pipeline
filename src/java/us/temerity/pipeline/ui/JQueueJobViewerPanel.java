@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.2 2004/08/30 02:50:59 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.3 2004/08/30 06:51:36 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -75,7 +75,8 @@ class JQueueJobViewerPanel
 
       pLayoutPolicy = LayoutPolicy.AutomaticExpand;
 
-      pSelected = new HashMap<JobPath,ViewerJob>();
+      pSelected       = new HashMap<JobPath,ViewerJob>();
+      pSelectedGroups = new TreeMap<Long,ViewerJobGroup>();
     }
 
     /* panel popup menu */ 
@@ -123,6 +124,70 @@ class JQueueJobViewerPanel
       item.setActionCommand("collapse-all");
       item.addActionListener(this);
       pPanelPopup.add(item);  
+    }
+    
+    /* job popup menu */ 
+    {
+      JMenuItem item;
+      JMenu sub;
+      
+      pJobPopup = new JPopupMenu();  
+      pJobPopup.addPopupMenuListener(this);
+      
+      item = new JMenuItem("Update Details");
+      item.setActionCommand("details");
+      item.addActionListener(this);
+      item.setEnabled(false);  // FOR NOW!!
+      pJobPopup.add(item);
+
+      pJobPopup.addSeparator();
+
+      item = new JMenuItem("Pause Jobs");
+      item.setActionCommand("pause-jobs");
+      item.addActionListener(this);
+      pJobPopup.add(item);
+      
+      item = new JMenuItem("Resume Jobs");
+      item.setActionCommand("resume-jobs");
+      item.addActionListener(this);
+      pJobPopup.add(item);
+      
+      item = new JMenuItem("Kill Jobs");
+      item.setActionCommand("kill-jobs");
+      item.addActionListener(this);
+      pJobPopup.add(item);
+    }
+    
+    /* job group popup menu */ 
+    {
+      JMenuItem item;
+      JMenu sub;
+      
+      pGroupPopup = new JPopupMenu();  
+      pGroupPopup.addPopupMenuListener(this);
+      
+      item = new JMenuItem("Pause Jobs");
+      item.setActionCommand("pause-jobs");
+      item.addActionListener(this);
+      pGroupPopup.add(item);
+      
+      item = new JMenuItem("Resume Jobs");
+      item.setActionCommand("resume-jobs");
+      item.addActionListener(this);
+      pGroupPopup.add(item);
+      
+      item = new JMenuItem("Kill Jobs");
+      item.setActionCommand("kill-jobs");
+      item.addActionListener(this);
+      pGroupPopup.add(item);
+      
+      pGroupPopup.addSeparator();
+      
+      item = new JMenuItem("Delete");
+      item.setActionCommand("delete-group");
+      item.addActionListener(this);
+      item.setEnabled(false);  // FOR NOW!!
+      pGroupPopup.add(item);
     }
 
     /* initialize the panel components */ 
@@ -204,6 +269,12 @@ class JQueueJobViewerPanel
 	{
 	  pJobPool = new ViewerJobPool();
 	  pGeomBranch.addChild(pJobPool.getBranchGroup());
+	}
+
+	/* the job group pool */ 
+	{
+	  pJobGroupPool = new ViewerJobGroupPool();
+	  pGeomBranch.addChild(pJobGroupPool.getBranchGroup());
 	}
 
 	pUniverse.addBranchGraph(pGeomBranch);
@@ -346,34 +417,46 @@ class JQueueJobViewerPanel
   private synchronized void 
   updateUniverse()
   {  
+    UserPrefs prefs = UserPrefs.getInstance();
+
     pJobPool.updatePrep();
+    pJobGroupPool.updatePrep();
 
     if(!pJobGroups.isEmpty()) {
       double anchorHeight = 0.0;
       for(QueueJobGroup group : pJobGroups.values()) {
+	double groupHeight = anchorHeight;
+
+	/* layout the jobs */ 
+	ArrayList<ViewerJob> created = new ArrayList<ViewerJob>();
 	for(Long jobID : group.getRootIDs()) {
 	  JobStatus status = pJobStatus.get(jobID);
-	
-	  assert(status != null) : ("Missing Status for: " + jobID);
-	
 	  JobPath path = new JobPath(jobID);
-	  Point2d anchor = new Point2d(0.0, anchorHeight);
+	  Point2d anchor = 
+	    new Point2d(prefs.getJobSizeX() + prefs.getJobSpace(), anchorHeight);
 	
-	  /* layout the jobs */ 
 	  double height = 0.0;
 	  {
 	    TreeSet<Long> seen = new TreeSet<Long>();
-	    height = layoutJobs(true, status, path, anchor, group.getExternalIDs(), seen);
+	    height = layoutJobs(true, status, path, anchor, 
+				group.getExternalIDs(), created, seen);
 	  }
 
 	  anchorHeight += height;
 	}
+
+	ViewerJobGroup vgroup = pJobGroupPool.lookupOrCreateViewerJobGroup(group, created);
+	vgroup.setBounds(new Point2d(0.0, anchorHeight), 
+			 new Point2d(prefs.getJobSizeX(), groupHeight)); 
+	
+	anchorHeight -= prefs.getJobGroupSpace();
       }
 	
       /* preserve the current layout */ 
       pLayoutPolicy = LayoutPolicy.Preserve;
     }
       
+    pJobGroupPool.update();
     pJobPool.update();
 
     /* update the connected job details panels */ 
@@ -400,6 +483,9 @@ class JQueueJobViewerPanel
    * @param external
    *   The IDs of the jobs which are external to the group.
    * 
+   * @param created
+   *   The created viewer jobs. 
+   * 
    * @param seen
    *   The IDs of the processed jobs.
    * 
@@ -414,6 +500,7 @@ class JQueueJobViewerPanel
    JobPath path, 
    Point2d anchor, 
    SortedSet<Long> external, 
+   ArrayList<ViewerJob> created, 
    TreeSet<Long> seen
   ) 
   {
@@ -421,6 +508,7 @@ class JQueueJobViewerPanel
 
     ViewerJob vjob = pJobPool.lookupOrCreateViewerJob(status, path);
     vjob.setExternal(external.contains(status.getJobID()));    
+    created.add(vjob);
 
     if(status.hasSources() && !vjob.isExternal()) {
       switch(pLayoutPolicy) {
@@ -454,7 +542,7 @@ class JQueueJobViewerPanel
 	  JobPath cpath = new JobPath(path, cstatus.getJobID());	  
 	  Point2d canchor = new Point2d(anchor.x + prefs.getJobSizeX(), anchor.y + height);
 	
-	  height += layoutJobs(false, cstatus, cpath, canchor, external, seen);
+	  height += layoutJobs(false, cstatus, cpath, canchor, external, created, seen);
 	}
 	else {
 
@@ -496,7 +584,22 @@ class JQueueJobViewerPanel
   }
 
   /**
-   * Get the job IDs of all selected nodes.
+   * Get the ID of the primary job group selection.
+   * 
+   * @return 
+   *   The groupID or <CODE>null</CODE> if there is no primary selection.
+   */ 
+  public Long
+  getPrimarySelectionGroupID() 
+  {
+    if(pPrimaryGroup != null) 
+      return pPrimaryGroup.getGroup().getGroupID();
+    return null;
+  }
+
+
+  /**
+   * Get the job IDs of all selected jobs.
    */ 
   public TreeSet<Long> 
   getSelectedJobIDs() 
@@ -507,8 +610,20 @@ class JQueueJobViewerPanel
 
     return jobIDs;
   }
-  
 
+  /**
+   * Get the group IDs of all selected job groups.
+   */ 
+  public TreeSet<Long> 
+  getSelectedGroupIDs() 
+  {
+    TreeSet<Long> groupIDs = new TreeSet<Long>();
+    for(ViewerJobGroup vgroup : pSelectedGroups.values()) 
+      groupIDs.add(vgroup.getGroup().getGroupID());
+
+    return groupIDs;
+  }
+  
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -523,15 +638,28 @@ class JQueueJobViewerPanel
   {
     ArrayList<ViewerJob> changed = new ArrayList<ViewerJob>(pSelected.values());
 
-    for(ViewerJob vjob : pSelected.values()) 
-      vjob.setSelectionMode(SelectionMode.Normal);
+    {
+      for(ViewerJob vjob : pSelected.values()) 
+	vjob.setSelectionMode(SelectionMode.Normal);
+      
+      pSelected.clear();
+      pPrimary = null;
+    }
 
-    pSelected.clear();
-    pPrimary = null;
+    {
+      for(ViewerJobGroup vgroup : pSelectedGroups.values()) {
+	vgroup.setSelectionMode(SelectionMode.Normal);
+	vgroup.update();
+      }
+      
+      pSelectedGroups.clear();
+      pPrimaryGroup = null;
+    }
 
     return changed;
   }
   
+
   /**
    * Make the given viewer job the primary selection.
    * 
@@ -560,8 +688,54 @@ class JQueueJobViewerPanel
       changed.add(vjob);
     }
 
+    if(pPrimaryGroup != null) {
+      pPrimaryGroup.setSelectionMode(SelectionMode.Selected);
+      pPrimaryGroup.update();
+    }
+
     return changed;
   }
+
+  /**
+   * Make the given viewer job group the primary selection.
+   * 
+   * @return 
+   *   The viewer jobs who's selection state changed.
+   */ 
+  public ArrayList<ViewerJob>
+  primarySelect
+  (
+   ViewerJobGroup vgroup
+  ) 
+  {
+    ArrayList<ViewerJob> changed = new ArrayList<ViewerJob>();
+
+    switch(vgroup.getSelectionMode()) {
+    case Normal:
+      pSelectedGroups.put(vgroup.getGroup().getGroupID(), vgroup);
+
+      for(ViewerJob vjob : vgroup.getViewerJobs()) 
+	changed.addAll(addSelect(vjob));
+	
+    case Selected:
+      if(pPrimaryGroup != null) {
+	pPrimaryGroup.setSelectionMode(SelectionMode.Selected);
+	pPrimaryGroup.update();
+      }
+
+      pPrimaryGroup = vgroup;
+      vgroup.setSelectionMode(SelectionMode.Primary);
+      vgroup.update();
+    }
+
+    if(pPrimary != null) {
+      pPrimary.setSelectionMode(SelectionMode.Selected);
+      changed.add(pPrimary);
+    }
+
+    return changed;
+  }
+
 
   /**
    * Add the given viewer job to the selection.
@@ -593,6 +767,42 @@ class JQueueJobViewerPanel
 
     return changed;
   }
+
+  /**
+   * Add the given viewer job group to the selection.
+   * 
+   * @return 
+   *   The viewer jobs who's selection state changed.
+   */ 
+  public ArrayList<ViewerJob>
+  addSelect
+  (
+   ViewerJobGroup vgroup
+  ) 
+  {
+    ArrayList<ViewerJob> changed = new ArrayList<ViewerJob>();
+
+    switch(vgroup.getSelectionMode()) {
+    case Primary:
+      if(pPrimaryGroup != null) {
+	pPrimaryGroup.setSelectionMode(SelectionMode.Selected);
+	pPrimaryGroup.update();
+	pPrimaryGroup = null;
+      }
+
+    case Normal:
+      vgroup.setSelectionMode(SelectionMode.Selected);
+      vgroup.update();
+
+      pSelectedGroups.put(vgroup.getGroup().getGroupID(), vgroup);
+      
+      for(ViewerJob vjob : vgroup.getViewerJobs()) 
+	changed.addAll(addSelect(vjob));
+    }
+
+    return changed;
+  }
+
 
   /**
    * Toggle the selection of the given viewer job.
@@ -630,6 +840,56 @@ class JQueueJobViewerPanel
     return changed;
   }
 
+  /**
+   * Toggle the selection of the given viewer job group.
+   * 
+   * @return 
+   *   The viewer jobs who's selection state changed.
+   */ 
+  public  ArrayList<ViewerJob> 
+  toggleSelect
+  (
+   ViewerJobGroup vgroup
+  ) 
+  {
+    ArrayList<ViewerJob> changed = new ArrayList<ViewerJob>();
+
+    switch(vgroup.getSelectionMode()) {
+    case Primary:
+      if(pPrimaryGroup != null) {
+	pPrimaryGroup.setSelectionMode(SelectionMode.Selected);
+	pPrimaryGroup.update();
+	pPrimaryGroup = null;
+      }
+
+    case Selected:
+      vgroup.setSelectionMode(SelectionMode.Normal);
+      vgroup.update();
+
+      pSelectedGroups.remove(vgroup.getGroup().getGroupID());
+
+      for(ViewerJob vjob : vgroup.getViewerJobs()) {
+	vjob.setSelectionMode(SelectionMode.Normal);
+	pSelected.remove(vjob.getJobPath());	
+	changed.add(vjob);
+      }
+      break;
+
+    case Normal:
+      vgroup.setSelectionMode(SelectionMode.Selected);
+      vgroup.update();
+
+      pSelectedGroups.put(vgroup.getGroup().getGroupID(), vgroup);
+      
+      for(ViewerJob vjob : vgroup.getViewerJobs()) 
+	changed.addAll(addSelect(vjob));
+    }
+
+    return changed;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Get the user-data of the Java3D object under given mouse position. <P> 
@@ -807,8 +1067,7 @@ class JQueueJobViewerPanel
     if(under != null) {
       switch(e.getButton()) {
       case MouseEvent.BUTTON1:
-	if(under instanceof ViewerJob) {
-	  ViewerJob vunder = (ViewerJob) under;	
+	if((under instanceof ViewerJob) || (under instanceof ViewerJobGroup)) {
 
 	  int on1  = (MouseEvent.BUTTON1_DOWN_MASK);
 	  
@@ -841,32 +1100,64 @@ class JQueueJobViewerPanel
 	  if(e.getClickCount() == 1) {
 	    /* BUTTON1: replace selection */ 
 	    if((mods & (on1 | off1)) == on1) {
-	      for(ViewerJob vjob : clearSelection()) 
-		changed.put(vjob.getJobPath(), vjob);
-	      
-	      for(ViewerJob vjob : addSelect(vunder))
-		changed.put(vjob.getJobPath(), vjob);
+	      if(under instanceof ViewerJob) {
+		ViewerJob vunder = (ViewerJob) under;	
+
+		for(ViewerJob vjob : clearSelection()) 
+		  changed.put(vjob.getJobPath(), vjob);
+		
+		for(ViewerJob vjob : addSelect(vunder))
+		  changed.put(vjob.getJobPath(), vjob);
+	      }
+	      else if(under instanceof ViewerJobGroup) {
+		ViewerJobGroup vunder = (ViewerJobGroup) under;	
+		
+		for(ViewerJob vjob : clearSelection()) 
+		  changed.put(vjob.getJobPath(), vjob);
+		
+		for(ViewerJob vjob : addSelect(vunder))
+		  changed.put(vjob.getJobPath(), vjob);		
+	      }
 	    }
 	    
 	    /* BUTTON1+SHIFT: toggle selection */ 
 	    else if((mods & (on2 | off2)) == on2) {
-	      for(ViewerJob vjob : toggleSelect(vunder)) 
-		changed.put(vjob.getJobPath(), vjob);
+	      if(under instanceof ViewerJob) {
+		ViewerJob vunder = (ViewerJob) under;
+		for(ViewerJob vjob : toggleSelect(vunder)) 
+		  changed.put(vjob.getJobPath(), vjob);
+	      }
+	      else if(under instanceof ViewerJobGroup) {
+		ViewerJobGroup vunder = (ViewerJobGroup) under;	
+		for(ViewerJob vjob : toggleSelect(vunder)) 
+		  changed.put(vjob.getJobPath(), vjob);
+	      }
 	    }
 	    
 	    /* BUTTON1+SHIFT+CTRL: add to the selection */ 
 	    else if((mods & (on3 | off3)) == on3) {
-	      for(ViewerJob vjob : addSelect(vunder))
-	      changed.put(vjob.getJobPath(), vjob);
+	      if(under instanceof ViewerJob) {
+		ViewerJob vunder = (ViewerJob) under;
+		for(ViewerJob vjob : addSelect(vunder))
+		  changed.put(vjob.getJobPath(), vjob);
+	      }
+	      else if(under instanceof ViewerJobGroup) {
+		ViewerJobGroup vunder = (ViewerJobGroup) under;	
+		for(ViewerJob vjob : addSelect(vunder))
+		  changed.put(vjob.getJobPath(), vjob);
+	      }
 	    }
 	  }
 	  else if(e.getClickCount() == 2) {
 	    /* BUTTON1 (double click): send job status details panels */ 
-	    if((mods & (on1 | off1)) == on1) {
-	      for(ViewerJob vjob : primarySelect(vunder)) 
-		vjob.update();
-
-	      doDetails();
+	    if(under instanceof ViewerJob) {
+	      ViewerJob vunder = (ViewerJob) under;
+	      if((mods & (on1 | off1)) == on1) {
+		for(ViewerJob vjob : primarySelect(vunder)) 
+		  vjob.update();
+		
+		doDetails();
+	      }
 	    }
 	  }
 	    
@@ -908,21 +1199,39 @@ class JQueueJobViewerPanel
 		      MouseEvent.ALT_DOWN_MASK |
 		      MouseEvent.CTRL_DOWN_MASK);
 	  
+	  HashMap<JobPath,ViewerJob> changed = new HashMap<JobPath,ViewerJob>();
+
 	  /* BUTTON3: job popup menu */ 
 	  if((mods & (on1 | off1)) == on1) {
 	    if(under instanceof ViewerJob) {
 	      ViewerJob vunder = (ViewerJob) under;
 
 	      for(ViewerJob vjob : addSelect(vunder))
-		vjob.update();
+		changed.put(vjob.getJobPath(), vjob);
 	    
 	      for(ViewerJob vjob : primarySelect(vunder)) 
-		vjob.update();
+		changed.put(vjob.getJobPath(), vjob);
 
 	      //updateJobMenu();
-	      //pJobPopup.show(e.getComponent(), e.getX(), e.getY());
+	      pJobPopup.show(e.getComponent(), e.getX(), e.getY());
+	    }
+	    else if(under instanceof ViewerJobGroup) {
+	      ViewerJobGroup vunder = (ViewerJobGroup) under;	
+
+	      for(ViewerJob vjob : addSelect(vunder))
+		changed.put(vjob.getJobPath(), vjob);
+	    
+	      for(ViewerJob vjob : primarySelect(vunder)) 
+		changed.put(vjob.getJobPath(), vjob);
+	      
+	      //updateGroupMenu();
+	      pGroupPopup.show(e.getComponent(), e.getX(), e.getY());
 	    }
 	  }
+
+	  /* update the appearance of all jobs who's selection state changed */ 
+	  for(ViewerJob vjob : changed.values()) 
+	    vjob.update();
 	}
 	break;
       }
@@ -1185,13 +1494,60 @@ class JQueueJobViewerPanel
     if(under instanceof ViewerJob) {
       ViewerJob vunder = (ViewerJob) under;
       
-      for(ViewerJob vjob : primarySelect(vunder)) 
-	vjob.update();
-      
+      switch(e.getKeyCode()) {
+      case KeyEvent.VK_SHIFT:
+      case KeyEvent.VK_ALT:
+      case KeyEvent.VK_CONTROL:
+	break;
+
+      default:
+	for(ViewerJob vjob : primarySelect(vunder)) 
+	  vjob.update();
+      }
+
       if((prefs.getJobDetails() != null) &&
-	 prefs.getJobDetails().wasPressed(e))
+	 prefs.getJobDetails().wasPressed(e)) 
 	doDetails();
+
+      else if((prefs.getJobPauseJobs() != null) &&
+	      prefs.getJobPauseJobs().wasPressed(e))
+	doPauseJobs();
+      else if((prefs.getJobResumeJobs() != null) &&
+	      prefs.getJobResumeJobs().wasPressed(e))
+	doResumeJobs();
+      else if((prefs.getJobKillJobs() != null) &&
+	      prefs.getJobKillJobs().wasPressed(e))
+	doKillJobs();
+
+      else 
+	undefined = true;
+    }
+    
+    /* group actions */
+    else if(under instanceof ViewerJobGroup) {
+      ViewerJobGroup vunder = (ViewerJob) under;
       
+      switch(e.getKeyCode()) {
+      case KeyEvent.VK_SHIFT:
+      case KeyEvent.VK_ALT:
+      case KeyEvent.VK_CONTROL:
+	break;
+
+      default:
+	for(ViewerJob vjob : primarySelect(vunder)) 
+	  vjob.update();
+      }
+
+      if((prefs.getJobPauseJobs() != null) &&
+	 prefs.getJobPauseJobs().wasPressed(e))
+	doPauseJobs();
+      else if((prefs.getJobResumeJobs() != null) &&
+	      prefs.getJobResumeJobs().wasPressed(e))
+	doResumeJobs();
+      else if((prefs.getJobKillJobs() != null) &&
+	      prefs.getJobKillJobs().wasPressed(e))
+	doKillJobs();
+
       else 
 	undefined = true;
     }
@@ -1317,6 +1673,16 @@ class JQueueJobViewerPanel
     else if(cmd.equals("collapse-all"))
       doCollapseAll();
 
+    /* job/group events */ 
+    else if(cmd.equals("pause-jobs"))
+      doPauseJobs();
+    else if(cmd.equals("resume-jobs"))
+      doResumeJobs();
+    else if(cmd.equals("kill-jobs"))
+      doKillJobs();
+//     else if(cmd.equals("delete-group"))
+//       doDeleteGroup();
+
     else {
       for(ViewerJob vjob : clearSelection()) 
 	vjob.update();
@@ -1355,26 +1721,6 @@ class JQueueJobViewerPanel
     }
   }
   
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Update the job details panels with the current primary selected job status.
-   */ 
-  private void
-  doDetails()
-  {
-
-    System.out.print("doDetails(): " + 
-		     pPrimary.getJobStatus() + 
-		     " [" + pPrimary.getJobStatus().getJobID() + "]\n"); 
-
-    // ...
-
-    for(ViewerJob vjob : clearSelection()) 
-      vjob.update();
-  }
-
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -1439,7 +1785,7 @@ class JQueueJobViewerPanel
   private void 
   doFrameSelection() 
   {
-    frameJobs(pSelected.values());
+    frameJobs(pSelected.values(), false);
   }
 
   /**
@@ -1448,7 +1794,7 @@ class JQueueJobViewerPanel
   private void 
   doFrameAll() 
   {
-    frameJobs(pJobPool.getActiveViewerJobs());
+    frameJobs(pJobPool.getActiveViewerJobs(), true);
   }
 
   /**
@@ -1457,7 +1803,8 @@ class JQueueJobViewerPanel
   private void 
   frameJobs
   (
-   Collection<ViewerJob> vjobs
+   Collection<ViewerJob> vjobs, 
+   boolean frameGroups
   ) 
   {
     if(vjobs.isEmpty()) 
@@ -1475,6 +1822,9 @@ class JQueueJobViewerPanel
       maxPos.x = Math.max(maxPos.x, maxB.x);
       maxPos.y = Math.max(maxPos.y, maxB.y);
     }
+
+    if(frameGroups) 
+      minPos.x = 0.0;
 
     frameBounds(minPos, maxPos);    
   }  
@@ -1571,6 +1921,101 @@ class JQueueJobViewerPanel
     pLayoutPolicy = LayoutPolicy.CollapseAll;
     updateUniverse();
   }
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Update the job details panels with the current primary selected job status.
+   */ 
+  private void
+  doDetails()
+  {
+
+    System.out.print("doDetails(): " + 
+		     pPrimary.getJobStatus() + 
+		     " [" + pPrimary.getJobStatus().getJobID() + "]\n"); 
+
+    // ...
+
+    for(ViewerJob vjob : clearSelection()) 
+      vjob.update();
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Pause all waiting selected jobs.
+   */ 
+  private void 
+  doPauseJobs() 
+  {
+    TreeSet<Long> paused = new TreeSet<Long>();
+    for(ViewerJob vjob : pSelected.values()) {
+      JobStatus status = vjob.getJobStatus();
+      paused.add(status.getJobID());
+    }
+
+    if(!paused.isEmpty()) {
+      PauseJobsTask task = new PauseJobsTask(paused);
+      task.start();
+    }
+
+    for(ViewerJob vjob : clearSelection()) 
+      vjob.update();
+  }
+
+  /**
+   * Resume execution of all paused jobs associated with the selected nodes.
+   */ 
+  private void 
+  doResumeJobs() 
+  {
+    TreeSet<Long> resumed = new TreeSet<Long>();
+    for(ViewerJob vjob : pSelected.values()) {
+      JobStatus status = vjob.getJobStatus();
+      switch(status.getState()) {
+      case Paused:
+	resumed.add(status.getJobID());
+      }
+    }
+
+    if(!resumed.isEmpty()) {
+      ResumeJobsTask task = new ResumeJobsTask(resumed);
+      task.start();
+    }
+
+    for(ViewerJob vjob : clearSelection()) 
+      vjob.update();
+  }
+
+  /**
+   * Kill all jobs associated with the selected nodes.
+   */ 
+  private void 
+  doKillJobs() 
+  {
+    TreeSet<Long> dead = new TreeSet<Long>();
+    for(ViewerJob vjob : pSelected.values()) {
+      JobStatus status = vjob.getJobStatus();
+      switch(status.getState()) {
+      case Queued:
+      case Paused:
+      case Running:
+	dead.add(status.getJobID());
+      }
+    }
+
+    if(!dead.isEmpty()) {
+      KillJobsTask task = new KillJobsTask(dead);
+      task.start();
+    }
+
+    for(ViewerJob vjob : clearSelection()) 
+      vjob.update();
+  }
+
+
 
 
 
@@ -1729,6 +2174,130 @@ class JQueueJobViewerPanel
   }
 
 
+  /** 
+   * Pause the given jobs.
+   */ 
+  private
+  class PauseJobsTask
+    extends Thread
+  {
+    public 
+    PauseJobsTask
+    (
+     TreeSet<Long> jobIDs
+    ) 
+    {
+      super("JQueueJobsViewerPanel:PauseJobsTask");
+
+      pJobIDs = jobIDs; 
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Pausing Jobs...")) {
+	try {
+	  master.getMasterMgrClient().pauseJobs(pAuthor, pJobIDs);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	doUpdate();
+      }
+    }
+
+    private TreeSet<Long>  pJobIDs; 
+  }
+
+  /** 
+   * Resume execution of the the given paused jobs.
+   */ 
+  private
+  class ResumeJobsTask
+    extends Thread
+  {
+    public 
+    ResumeJobsTask
+    (
+     TreeSet<Long> jobIDs
+    ) 
+    {
+      super("JQueueJobsViewerPanel:ResumeJobsTask");
+
+      pJobIDs = jobIDs; 
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Resuming Paused Jobs...")) {
+	try {
+	  master.getMasterMgrClient().resumeJobs(pAuthor, pJobIDs);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	doUpdate();
+      }
+    }
+
+    private TreeSet<Long>  pJobIDs; 
+  }
+
+  /** 
+   * Kill the given jobs.
+   */ 
+  private
+  class KillJobsTask
+    extends Thread
+  {
+    public 
+    KillJobsTask
+    (
+     TreeSet<Long> jobIDs
+    ) 
+    {
+      super("JQueueJobsViewerPanel:KillJobsTask");
+
+      pJobIDs = jobIDs; 
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Killing Jobs...")) {
+	try {
+	  master.getMasterMgrClient().killJobs(pAuthor, pJobIDs);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	doUpdate();
+      }
+    }
+
+    private TreeSet<Long>  pJobIDs; 
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -1766,6 +2335,16 @@ class JQueueJobViewerPanel
    */ 
   private JPopupMenu  pPanelPopup; 
 
+  /**
+   * The job popup menu.
+   */ 
+  private JPopupMenu  pJobPopup; 
+
+  /**
+   * The job group popup menu.
+   */ 
+  private JPopupMenu  pGroupPopup; 
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -1785,6 +2364,11 @@ class JQueueJobViewerPanel
   private ViewerJobPool  pJobPool;
 
   /**
+   * The reuseable collection of ViewerJobGroups.
+   */ 
+  private ViewerJobGroupPool  pJobGroupPool;
+
+  /**
    * The selection rubber band geometry.
    */ 
   private RubberBand  pRubberBand;
@@ -1794,16 +2378,29 @@ class JQueueJobViewerPanel
    */ 
   private BranchGroup  pGeomBranch;
 
+
   /**
    * The set of currently selected jobs indexed by <CODE>JobPath</CODE>.
    */ 
   private HashMap<JobPath,ViewerJob>  pSelected;
 
   /**
-   * The primary selection.
+   * The primary job selection.
    */ 
   private ViewerJob  pPrimary;
 
+
+  /**
+   * The set of currently selected job groups indexed by group ID.
+   */ 
+  private TreeMap<Long,ViewerJobGroup>  pSelectedGroups;
+
+  /**
+   * The primary job group selection.
+   */ 
+  private ViewerJobGroup  pPrimaryGroup;
+
+  
 
   /**
    * The last known mouse position.
