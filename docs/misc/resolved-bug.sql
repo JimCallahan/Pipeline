@@ -9,5 +9,5 @@ SELECT bug_id, title, version_name, resolution_name FROM
   AND phpbt_status.status_id = phpbt_bug.status_id 
   AND phpbt_resolution.resolution_id = phpbt_bug.resolution_id
   AND status_name = "Closed" 
-  AND version_name = "1.8.9"
+  AND version_name = "1.8.11"
   ORDER BY resolution_name,phpbt_bug.created_date
