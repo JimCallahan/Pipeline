@@ -1,4 +1,4 @@
-// $Id: TestNodeMgrApp.java,v 1.1 2004/03/26 04:38:06 jim Exp $
+// $Id: TestNodeMgrApp.java,v 1.2 2004/03/26 19:13:17 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -113,34 +113,44 @@ class TestNodeMgrApp
       proc.join();
     }
     
-
-    /* start the node manager server */ 
-    NodeMgrServer server = new NodeMgrServer(nodeDir, 53139);
-    server.start();
-
-    /* give the server a chance to start */ 
-    Thread.currentThread().sleep(2000);
-
-
-    /* run some client tasks */ 
     {
-      ArrayList<ClientTask> clients = new ArrayList<ClientTask>();
+      /* start the node manager server */ 
+      NodeMgrServer server = new NodeMgrServer(nodeDir, 53139);
+      server.start();
       
-      ClientTask clientA = new ClientTask(modA);
-      clients.add(clientA);
+      /* give the server a chance to start */ 
+      Thread.currentThread().sleep(2000);
       
-      ClientTask clientB = new ClientTask(modB);
-      clients.add(clientB);
+      /* run some client tasks */ 
+      {
+	ArrayList<ClientTask> clients = new ArrayList<ClientTask>();
+	
+	ClientTask clientA = new ClientTask(123, modA);
+	clients.add(clientA);
+	
+	ClientTask clientB = new ClientTask(456, modB);
+	clients.add(clientB);
+	
+	for(ClientTask client : clients) 
+	  client.start();
+	
+	for(ClientTask client : clients) 
+	  client.join();
+      }
       
-      for(ClientTask client : clients) 
-	client.start();
+      NodeMgrClient client = new NodeMgrClient("localhost", 53139);
+      client.shutdown();
 
-      for(ClientTask client : clients) 
- 	client.join();
+      server.join();
     }
 
-    /* give the server a chance to shutdown */ 
-    Thread.currentThread().sleep(1000);    
+    {
+      
+
+
+
+    }
+
   }
 
 
@@ -155,29 +165,43 @@ class TestNodeMgrApp
     public 
     ClientTask
     (
+     long seed, 
      NodeMod mod
     ) 
     {
+      pSeed    = seed;
       pNodeMod = mod;
     }
 
     public void 
     run() 
     {
+      Random random = new Random(pSeed);
+      try {
+	sleep(random.nextInt(2000));
+      }
+      catch(InterruptedException ex) {
+	assert(false);
+      }
+
       try {
 	NodeMgrClient client = new NodeMgrClient("localhost", 53139);
       
-
 	client.register("default", pNodeMod);
 	
+	NodeMod mod = client.getWorkingVersion("default", pNodeMod.getName());
+	assert(mod.equals(pNodeMod));
+
+	// ...
       
-	client.shutdown();
+	client.disconnect();
       }
       catch(PipelineException ex) {
 	Logs.ops.severe(ex.getMessage());
       }
     }
 
+    private long     pSeed; 
     private NodeMod  pNodeMod;
   }
 }

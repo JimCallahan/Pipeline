@@ -1,4 +1,4 @@
-// $Id: FileStateRsp.java,v 1.5 2004/03/23 07:40:37 jim Exp $
+// $Id: FileStateRsp.java,v 1.6 2004/03/26 19:13:17 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -64,7 +64,7 @@ class FileStateRsp
       buf.append("FileMgr.computeFileStates(): " + id + " ");
       for(FileSeq fseq : states.keySet()) 
 	buf.append("[" + fseq + "]");
-      Logs.net.finest("FileMgr.computeFileStates(): " + buf.toString() + ": " +
+      Logs.net.finest(buf.toString() + ": " +
 		      pWait + "/" + pActive + " (msec) wait/active");
     }
   }

@@ -1,4 +1,4 @@
-// $Id: TestFileMgrApp.java,v 1.9 2004/03/26 04:42:05 jim Exp $
+// $Id: TestFileMgrApp.java,v 1.10 2004/03/26 19:13:17 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -148,8 +148,10 @@ class TestFileMgrApp
  	client.join();
     }
 
-    /* give the server a chance to shutdown */ 
-    Thread.currentThread().sleep(1000);
+    FileMgrClient client = new FileMgrClient("localhost", 53138);
+    client.shutdown();
+    
+    server.join();
   }
 
  
@@ -339,7 +341,7 @@ class TestFileMgrApp
 	  }
 	}
 
-	client.shutdown();
+	client.disconnect();
       }
       catch(PipelineException ex) {
 	Logs.ops.severe(ex.getMessage());

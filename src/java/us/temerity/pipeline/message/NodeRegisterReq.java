@@ -1,4 +1,4 @@
-// $Id: NodeRegisterReq.java,v 1.1 2004/03/26 04:38:06 jim Exp $
+// $Id: NodeRegisterReq.java,v 1.2 2004/03/26 19:13:17 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -51,6 +51,7 @@ class NodeRegisterReq
   }
 
 
+
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
@@ -72,13 +73,14 @@ class NodeRegisterReq
   {
     return pNodeMod;
   }
+
     
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID = -2246398459232737354L;
+  private static final long serialVersionUID = -3527421380050702980L;
 
   
 

@@ -1,4 +1,4 @@
-// $Id: NodeRequest.java,v 1.1 2004/03/26 04:38:06 jim Exp $
+// $Id: NodeRequest.java,v 1.2 2004/03/26 19:13:17 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -16,11 +16,17 @@ package us.temerity.pipeline.message;
  * make testing for which request is being send more efficient and cleaner on the 
  * <CODE>NodeMgrServer</CODE> side of the connection.
  * 
+ * @see NodeGetWorkingReq
  * @see NodeRegisterReq
  */
 public
 enum NodeRequest
 {  
+  /**
+   * An instance of {@link NodeGetWorkingReq NodeGetWorkingReq} is next.
+   */
+  GetWorking, 
+
   /**
    * An instance of {@link NodeRegisterReq NodeRegisterReq} is next.
    */
@@ -31,5 +37,12 @@ enum NodeRequest
   /**
    * No more requests will be send over this connection.
    */
+  Disconnect,
+
+  /**
+   * Order the server to refuse any further requests and then to exit as soon as all
+   * currently pending requests have be completed.
+   */
   Shutdown;
+ 
 }

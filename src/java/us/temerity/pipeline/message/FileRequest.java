@@ -1,4 +1,4 @@
-// $Id: FileRequest.java,v 1.6 2004/03/22 03:11:08 jim Exp $
+// $Id: FileRequest.java,v 1.7 2004/03/26 19:13:17 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -53,5 +53,12 @@ enum FileRequest
   /**
    * No more requests will be send over this connection.
    */
+  Disconnect,
+
+  /**
+   * Order the server to refuse any further requests and then to exit as soon as all
+   * currently pending requests have be completed.
+   */
   Shutdown;
+ 
 }
