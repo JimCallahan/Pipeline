@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.4 2004/03/16 00:04:19 jim Exp $
+// $Id: FileMgr.java,v 1.5 2004/03/16 16:11:33 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -943,7 +943,7 @@ class FileMgr
 	  }
 	}
 
-	/* add write permission for editable nodes */ 
+	/* add write permission to files associated with editable nodes */ 
 	if(req.isEditable()) {
 	  ArrayList<String> args = new ArrayList<String>();
 	  args.add("u+w");
@@ -974,8 +974,7 @@ class FileMgr
 	    args.add(file.getName());
 
 	  SubProcess proc = 
-	    new SubProcess(req.getNodeID().getAuthor(), 
-			   "CheckOut-CopyCheckSums", "cp", args, env, crdir);
+	    new SubProcess("CheckOut-CopyCheckSums", "cp", args, env, crdir);
 	  proc.start();
 	  
 	  try {
@@ -985,6 +984,256 @@ class FileMgr
 	    throw new PipelineException
 	      ("Interrupted while copying checksums from the repository for the " +
 	       "working version (" + req.getNodeID() + ")!");
+	  }
+	}
+
+	return new SuccessRsp(task, wait, start);
+      }
+    }
+    catch(PipelineException ex) {
+      if(wait > 0) 
+	return new FailureRsp(task, ex.getMessage(), wait, start);
+      else 
+	return new FailureRsp(task, ex.getMessage(), start);
+    }
+    finally {
+      nodeLock.readLock().unlock();
+    }  
+  }
+
+  /**
+   * Replaces the files associated with a working version of a node with symlinks to  
+   * the respective files associated with the checked-in version upon which the working 
+   * version is based.
+   * 
+   * @param req [<B>in</B>]
+   *   The freeze request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to freeze the files.
+   */
+  public Object
+  freeze
+  (
+   FileFreezeReq req
+  ) 
+  {
+    if(req == null) 
+      return new FailureRsp("The freeze request cannot be (null)!");
+    
+    String task = null;
+    {
+      StringBuffer buf = new StringBuffer();
+      buf.append("FileMgr.freeze(): " + req.getNodeID() + " ");
+      for(FileSeq fseq : req.getFileSequences()) 
+	buf.append("[" + fseq + "]");
+      task = buf.toString();
+    }
+
+    Date start = new Date();
+    long wait = 0;
+    ReentrantReadWriteLock nodeLock = getNodeLock(req.getNodeID().getName());
+    nodeLock.readLock().lock();
+    try {
+      Object workLock = getWorkLock(req.getNodeID());
+      synchronized(workLock) {
+	wait  = (new Date()).getTime() - start.getTime();
+	start = new Date();
+
+	Map<String,String> env = System.getenv();
+
+	/* verify (or create) the working area file, backup and checksum directories */ 
+	File wdir  = null;
+	File cwdir = null;
+	{
+	  File wpath = req.getNodeID().getWorkingDir();
+	  wdir  = new File(pProdDir, wpath.getPath());
+	  cwdir = new File(pProdDir, "checksum/" + wpath);
+	}
+
+	/* the repository file and checksum directories */ 
+	VersionID rvid = req.getVersionID();
+	File rdir  = null;
+	File crdir = null;
+	{
+	  File rpath = req.getNodeID().getCheckedInDir(rvid);
+	  rdir  = new File(pProdDir, rpath.getPath());
+	  crdir = new File(pProdDir, "checksum/" + rpath);
+	}
+
+	/* build the list of files to freeze */ 
+	ArrayList<File> files = new ArrayList<File>();
+	for(FileSeq fseq : req.getFileSequences()) 
+	  files.addAll(fseq.getFiles());
+	
+	/* replace working files with links to the repository files */ 
+	{ 
+	  ArrayList<String> args = new ArrayList<String>();
+	  args.add("--symbolic-link");
+	  args.add("--remove-destination");
+	  args.add("--target-directory=" + wdir);
+	  for(File file : files) 
+	    args.add(rdir + "/" + file);
+	  
+	  SubProcess proc = 
+	    new SubProcess(req.getNodeID().getAuthor(), 
+			   "Freeze-Link", "cp", args, env, pProdDir);
+	  proc.start();
+	  
+	  try {
+	    proc.join();
+	  }
+	  catch(InterruptedException ex) {
+	    throw new PipelineException
+	      ("Interrupted while freezing the working files for version (" + 
+	       req.getNodeID() + ")!");
+	  }
+	}
+
+	/* overwrite working checksums with the repository checksums */ 
+	{ 
+	  ArrayList<String> args = new ArrayList<String>();
+	  args.add("--remove-destination");
+	  args.add("--target-directory=" + cwdir);
+	  for(File file : files) 
+	    args.add(file.getName());
+	  
+	  SubProcess proc = 
+	    new SubProcess("Freeze-CopyCheckSums", "cp", args, env, crdir);
+	  proc.start();
+	  
+	  try {
+	    proc.join();
+	  }
+	  catch(InterruptedException ex) {
+	    throw new PipelineException
+	      ("Interrupted while unfreezing the working checksums for version (" + 
+	       req.getNodeID() + ")!");
+	  }
+	}
+
+	return new SuccessRsp(task, wait, start);
+      }
+    }
+    catch(PipelineException ex) {
+      if(wait > 0) 
+	return new FailureRsp(task, ex.getMessage(), wait, start);
+      else 
+	return new FailureRsp(task, ex.getMessage(), start);
+    }
+    finally {
+      nodeLock.readLock().unlock();
+    }  
+  }
+
+  /**
+   * Replace the symlinks associated with the a working version of a node with copies 
+   * of the respective checked-in files which are the current targets of the symlinks. 
+   * 
+   * @param req [<B>in</B>]
+   *   The unfreeze request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to unfreeze the files.
+   */
+  public Object
+  unfreeze
+  (
+   FileUnfreezeReq req
+  ) 
+  {
+    if(req == null) 
+      return new FailureRsp("The unfreeze request cannot be (null)!");
+    
+    String task = null;
+    {
+      StringBuffer buf = new StringBuffer();
+      buf.append("FileMgr.unfreeze(): " + req.getNodeID() + " ");
+      for(FileSeq fseq : req.getFileSequences()) 
+	buf.append("[" + fseq + "]");
+      task = buf.toString();
+    }
+
+    Date start = new Date();
+    long wait = 0;
+    ReentrantReadWriteLock nodeLock = getNodeLock(req.getNodeID().getName());
+    nodeLock.readLock().lock();
+    try {
+      Object workLock = getWorkLock(req.getNodeID());
+      synchronized(workLock) {
+	wait  = (new Date()).getTime() - start.getTime();
+	start = new Date();
+
+	Map<String,String> env = System.getenv();
+
+	/* verify (or create) the working area file, backup and checksum directories */ 
+	File wdir  = null;
+	File cwdir = null;
+	{
+	  File wpath = req.getNodeID().getWorkingDir();
+	  wdir  = new File(pProdDir, wpath.getPath());
+	  cwdir = new File(pProdDir, "checksum/" + wpath);
+	}
+
+	/* the repository file and checksum directories */ 
+	VersionID rvid = req.getVersionID();
+	File rdir  = null;
+	File crdir = null;
+	{
+	  File rpath = req.getNodeID().getCheckedInDir(rvid);
+	  rdir  = new File(pProdDir, rpath.getPath());
+	  crdir = new File(pProdDir, "checksum/" + rpath);
+	}
+
+	/* build the list of files to unfreeze */ 
+	ArrayList<File> files = new ArrayList<File>();
+	for(FileSeq fseq : req.getFileSequences()) 
+	  files.addAll(fseq.getFiles());
+	
+	/* replace working links with copies of repository files */ 
+	{ 
+	  ArrayList<String> args = new ArrayList<String>();
+	  args.add("--remove-destination");
+	  args.add("--target-directory=" + wdir);
+	  for(File file : files) 
+	    args.add(file.getName());
+	  
+	  SubProcess proc = 
+	    new SubProcess(req.getNodeID().getAuthor(), 
+			   "UnFreeze-Copy", "cp", args, env, rdir);
+	  proc.start();
+	  
+	  try {
+	    proc.join();
+	  }
+	  catch(InterruptedException ex) {
+	    throw new PipelineException
+	      ("Interrupted while unfreezing the working files for version (" + 
+	       req.getNodeID() + ")!");
+	  }
+	}
+
+	/* overwrite working checksums with the repository checksums */ 
+	{ 
+	  ArrayList<String> args = new ArrayList<String>();
+	  args.add("--remove-destination");
+	  args.add("--target-directory=" + cwdir);
+	  for(File file : files) 
+	    args.add(file.getName());
+	  
+	  SubProcess proc = 
+	    new SubProcess("UnFreeze-CopyCheckSums", "cp", args, env, crdir);
+	  proc.start();
+	  
+	  try {
+	    proc.join();
+	  }
+	  catch(InterruptedException ex) {
+	    throw new PipelineException
+	      ("Interrupted while unfreezing the working checksums for version (" + 
+	       req.getNodeID() + ")!");
 	  }
 	}
 

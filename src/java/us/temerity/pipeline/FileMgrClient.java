@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.5 2004/03/16 00:04:19 jim Exp $
+// $Id: FileMgrClient.java,v 1.6 2004/03/16 16:11:34 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -281,11 +281,90 @@ class FileMgrClient
     }
   }
 
+  /**
+   * Replaces the files associated with the given working version with symlinks to the 
+   * respective files associated with the checked-in version upon which the working 
+   * version is based.
+   * 
+   * @param id [<B>in</B>]
+   *   The unique working version identifier.
+   * 
+   * @param mod [<B>in</B>]
+   *   The working version of the node.
+   */
+  public synchronized void 
+  freeze
+  (
+   NodeID id, 
+   NodeMod mod
+  ) 
+    throws PipelineException 
+  {
+    if(mod.isFrozen()) 
+      throw new IllegalArgumentException
+	("Cannot freeze an already frozen working version!");
 
+    verifyConnection();
 
-  // ... 
-  
+    FileFreezeReq req = 
+      new FileFreezeReq(id, mod.getWorkingID(), mod.getSequences());
 
+    Object obj = performTransaction(FileRequest.Freeze, req);
+
+    if(obj instanceof SuccessRsp) {
+    }
+    else if(obj instanceof FailureRsp) {
+      FailureRsp rsp = (FailureRsp) obj;
+      throw new PipelineException(rsp.getMessage());	
+    }
+    else {
+      shutdown();
+      throw new PipelineException
+	("Illegal response received from the FileMgrServer instance!");
+    }
+  }
+
+  /**
+   * Replace the symlinks associated with the given working version with copies of the 
+   * respective checked-in files which are the current targets of the symlinks. 
+   * 
+   * @param id [<B>in</B>]
+   *   The unique working version identifier.
+   * 
+   * @param mod [<B>in</B>]
+   *   The working version of the node.
+   */  
+  public synchronized void 
+  unfreeze
+  (
+   NodeID id, 
+   NodeMod mod
+  ) 
+    throws PipelineException 
+  {
+    if(mod.isFrozen()) 
+      throw new IllegalArgumentException
+	("Cannot unfreeze a working version which is not currently frozen!");
+
+    verifyConnection();
+
+    FileUnfreezeReq req = 
+      new FileUnfreezeReq(id, mod.getWorkingID(), mod.getSequences());
+
+    Object obj = performTransaction(FileRequest.Unfreeze, req);
+
+    if(obj instanceof SuccessRsp) {
+    }
+    else if(obj instanceof FailureRsp) {
+      FailureRsp rsp = (FailureRsp) obj;
+      throw new PipelineException(rsp.getMessage());	
+    }
+    else {
+      shutdown();
+      throw new PipelineException
+	("Illegal response received from the FileMgrServer instance!");
+    }
+  }
 
   /**
    * Close the network connection if its is still connected.
@@ -312,6 +391,7 @@ class FileMgrClient
       pSocket = null;
     }
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/

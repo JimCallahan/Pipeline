@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.5 2004/03/16 00:04:19 jim Exp $
+// $Id: FileMgrServer.java,v 1.6 2004/03/16 16:11:34 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -186,7 +186,19 @@ class FileMgrServer
 	    break;
 	    
 	  case Freeze:
+	    {
+	      FileFreezeReq req = (FileFreezeReq) objIn.readObject();
+	      objOut.writeObject(pFileMgr.freeze(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
 	  case Unfreeze:
+	    {
+	      FileUnfreezeReq req = (FileUnfreezeReq) objIn.readObject();
+	      objOut.writeObject(pFileMgr.unfreeze(req));
+	      objOut.flush(); 
+	    }
 	    break;
 	    
 	  case State:
