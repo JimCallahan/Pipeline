@@ -303,6 +303,66 @@
 
 
 
+  <!--  D S P   B U T T O N  -->
+
+  <style id="DspButton"> 
+    <state>
+      <imagePainter path="DspButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="DspButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="SELECTED">
+      <imagePainter path="DspButtonSelected.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="DspButton" type="name" key="DspButton"/>
+
+
+
+  <!--  D Y N   B U T T O N  -->
+
+  <style id="DynButton"> 
+    <state>
+      <imagePainter path="DynButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="DynButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="SELECTED">
+      <imagePainter path="DynButtonSelected.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="DynButton" type="name" key="DynButton"/>
+
+
+
+  <!--  K E Y   B U T T O N  -->
+
+  <style id="KeyButton"> 
+    <state>
+      <imagePainter path="KeyButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="KeyButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="SELECTED">
+      <imagePainter path="KeyButtonSelected.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="KeyButton" type="name" key="KeyButton"/>
+
+
+
   <!--  C P U   B U T T O N  -->
 
   <style id="CpuButton"> 
