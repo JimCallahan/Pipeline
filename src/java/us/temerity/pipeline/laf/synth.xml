@@ -124,6 +124,10 @@
       <imagePainter path="CloseButtonPressed.png"
                     sourceInsets="0 0 0 0"/>
     </state>
+    <state value="DISABLED">
+      <imagePainter path="CloseButtonDisabled.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
   </style>
   <bind style="CloseButton" type="name" key="CloseButton"/>
 
