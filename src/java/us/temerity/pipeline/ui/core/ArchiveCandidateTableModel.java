@@ -1,4 +1,4 @@
-// $Id: ArchiveCandidateTableModel.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: ArchiveCandidateTableModel.java,v 1.2 2005/02/07 14:52:59 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -244,6 +244,28 @@ class ArchiveCandidateTableModel
     return table;
   }
   
+  /**
+   * Get the node names and revision numbers for all rows. 
+   */ 
+  public TreeMap<String,TreeSet<VersionID>>
+  getVersions() 
+  {
+    TreeMap<String,TreeSet<VersionID>> table = new TreeMap<String,TreeSet<VersionID>>();
+
+    int idx;
+    for(idx=0; idx<pNames.size(); idx++) {
+      String name = pNames.get(idx);
+      TreeSet<VersionID> versions = table.get(name);
+      if(versions == null) {
+	versions = new TreeSet<VersionID>();
+	table.put(name, versions);
+      }
+      versions.add(pVersionIDs.get(idx));
+    }
+
+    return table;
+  }
+
   /**
    * Get the node names and revision numbers for the given offlinable rows.
    */ 
