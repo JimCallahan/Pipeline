@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.33 2005/01/03 00:05:31 jim Exp $
+// $Id: NodeMod.java,v 1.34 2005/01/10 00:15:44 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -933,6 +933,7 @@ class NodeMod
     {
       BaseAction action = mod.getAction(); 
       if(action != null) {
+	TreeSet<String> dead = new TreeSet<String>();
 	for(String sname : action.getSourceNames()) {
 	  if(!pSources.containsKey(sname)) {
 	    Logs.ops.warning
@@ -941,9 +942,12 @@ class NodeMod
 	       "where found for the input action, but the node being modified did NOT " + 
 	       "have any upstream links to this source node!  These extra per-source " + 
 	       "parameters were ignored."); 
-	    action.removeSourceParams(sname); 
+	    dead.add(sname);
 	  }
 	}
+	
+	for(String sname : dead) 
+	  action.removeSourceParams(sname); 
       }
 
       if(!(((pAction == null) && (action == null)) || 
