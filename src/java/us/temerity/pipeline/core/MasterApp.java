@@ -1,4 +1,4 @@
-// $Id: MasterApp.java,v 1.5 2004/07/24 18:20:39 jim Exp $
+// $Id: MasterApp.java,v 1.6 2004/08/29 09:23:37 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -20,7 +20,7 @@ import java.text.*;
  */
 public
 class MasterApp
-  extends BaseApp
+  extends VerifiedApp
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */

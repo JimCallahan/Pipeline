@@ -1,4 +1,4 @@
-// $Id: QueueMgrApp.java,v 1.2 2004/07/24 18:24:50 jim Exp $
+// $Id: QueueMgrApp.java,v 1.3 2004/08/29 09:23:49 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -20,7 +20,7 @@ import java.text.*;
  */
 public
 class QueueMgrApp
-  extends BaseApp
+  extends VerifiedApp
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
