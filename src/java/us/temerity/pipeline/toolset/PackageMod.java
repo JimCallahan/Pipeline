@@ -1,4 +1,4 @@
-// $Id: PackageMod.java,v 1.3 2004/05/29 06:37:41 jim Exp $
+// $Id: PackageMod.java,v 1.4 2004/06/08 02:38:32 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -13,7 +13,7 @@ import java.util.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A modifiable version of a Toolset Package. <P> 
+ * A modifiable version of a toolset package. <P> 
  */
 public
 class PackageMod
@@ -30,7 +30,7 @@ class PackageMod
   }
 
   /**
-   * Construct an empty modifiable Package.
+   * Construct an empty modifiable package.
    * 
    * @param name 
    *   The name of the package
@@ -45,33 +45,18 @@ class PackageMod
   }
   
   /** 
-   * Construct a new modifiable version based on a read-only version of the Package.
+   * Construct a new modifiable version based another package.
    * 
-   * @param vsn 
-   *   The read-only version of the Package.
+   * @param com 
+   *   The package to copy.
    */ 
   public 
   PackageMod
   (
-   PackageVersion vsn
+   PackageCommon com 
   ) 
   {
-    super(vsn);
-  }
-
-  /** 
-   * Copy constructor. 
-   * 
-   * @param vsn 
-   *   The <CODE>PackageMod</CODE> to copy.
-   */ 
-  public 
-  PackageMod
-  (
-   PackageMod vsn
-  ) 
-  {
-    super(vsn);
+    super(com);
   }
 
 
@@ -111,7 +96,7 @@ class PackageMod
    *   The value of the environmental variable.
    * 
    * @param policy
-   *   The Package combine policy for this entry.
+   *   The package combine policy for this entry.
    */ 
   public void 
   setEntry
@@ -155,7 +140,7 @@ class PackageMod
    *   The name of the environmental variable.
    * 
    * @param policy
-   *   The new Package combine policy for this entry.
+   *   The new package combine policy for this entry.
    */ 
   public void 
   setMergePolicy
@@ -206,7 +191,7 @@ class PackageMod
 
   /**
    * Evaluate the given <B>bash</B>(1) shell script and use the results to set the 
-   * environmental variable entries of the Package. <P> 
+   * environmental variable entries of the package. <P> 
    * 
    * The policies of the created variables will be set to the default policy for each 
    * variable name (see {@lin MergePolicy#getDefaultPolicy getDefaultPolicy} for 
