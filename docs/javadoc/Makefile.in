@@ -64,6 +64,7 @@ EXEEXT = @EXEEXT@
 EXPORT_DYNAMIC = @EXPORT_DYNAMIC@
 EXTRA_DEBUG_SUBDIRS = @EXTRA_DEBUG_SUBDIRS@
 GEN_LIB = @GEN_LIB@
+ID = @ID@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
@@ -111,7 +112,6 @@ STRIP = @STRIP@
 TOOLSETDIR = @TOOLSETDIR@
 VERSION = @VERSION@
 XDIFF = @XDIFF@
-YPCAT = @YPCAT@
 YXXFLAGS = @YXXFLAGS@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
@@ -189,7 +189,7 @@ docs-all:
 #--------------------------------------------------------------------------------------------#
 
 install: installdirs
-	(cd $(datadir)/docs; tar -xvf $(top_builddir)/docs/javadoc/javadoc.tar)
+	(docdir=`pwd`; cd $(datadir)/docs; tar -xvf $$docdir/javadoc.tar)
 
 PHONY: installdirs
 installdirs:
