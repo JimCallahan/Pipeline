@@ -270,7 +270,9 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 		   core/TokenMgrError \
 		   core/ToolsetEnvParserConstants \
 		   core/ToolsetEnvParser \
-		   core/ToolsetEnvParserTokenManager
+		   core/ToolsetEnvParserTokenManager \
+                   ui/UIMaster:InitUITask
+
 
 
 
@@ -292,7 +294,9 @@ $(ALL_JAR): java-all
                     us/temerity/pipeline/glue/*.class \
                     us/temerity/pipeline/laf/*.class \
                     us/temerity/pipeline/core/*.class \
-                    us/temerity/pipeline/message/*.class)
+                    us/temerity/pipeline/message/*.class \
+                    us/temerity/pipeline/ui/*.class)
+
 
 $(API_JAR): java-all
 	(cd ../../..; \
@@ -300,7 +304,6 @@ $(API_JAR): java-all
                     us/temerity/pipeline/*.class \
                     us/temerity/pipeline/glue/*.class \
                     us/temerity/pipeline/laf/*.class)
-
 
 bootstrap-jar: bootstrap-all
 	(cd ../../..; \
@@ -330,6 +333,8 @@ BootStrapFields $(VAULT): java-all
 laf-jar: 
 	(bdir=`pwd`; \
          cd $(srcdir)/../../..; \
+         $(JAR) uvf $$bdir/$(ALL_JAR) \
+                    us/temerity/pipeline/laf/*.xml us/temerity/pipeline/laf/*.png; \
          $(JAR) uvf $$bdir/$(API_JAR) \
                     us/temerity/pipeline/laf/*.xml us/temerity/pipeline/laf/*.png)
 
@@ -402,8 +407,10 @@ clean-class:
 	rm -f *.class 
 	rm -f bootstrap/*.class
 	rm -f glue/*.class
+	rm -f laf/*.class
 	rm -f message/*.class
 	rm -f core/*.class
+	rm -f ui/*.class
 	rm -f java-all bootstrap-all
 
 clean-aux:
