@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.31 2004/07/25 03:09:22 jim Exp $
+// $Id: JManagerPanel.java,v 1.32 2004/07/28 19:21:24 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -101,12 +101,6 @@ class JManagerPanel
 	sub.add(item);  
 	
 	sub.addSeparator();
-
-	item = new JMenuItem("Queue Servers");
-	item.setActionCommand("queue-servers");
-	item.addActionListener(this);
-	item.setEnabled(false); // FOR NOW 
-	sub.add(item);  
 
 	item = new JMenuItem("Job Browser");
 	item.setActionCommand("job-browser");
@@ -246,6 +240,8 @@ class JManagerPanel
 	item.addActionListener(this);
 	sub.add(item);  
 
+	sub.addSeparator();
+
 	item = new JMenuItem("License Keys...");
 	item.setActionCommand("manage-license-keys");
 	item.addActionListener(this);
@@ -253,6 +249,11 @@ class JManagerPanel
 
 	item = new JMenuItem("Selection Keys...");
 	item.setActionCommand("manage-selection-keys");
+	item.addActionListener(this);
+	sub.add(item);  
+
+	item = new JMenuItem("Job Servers");
+	item.setActionCommand("manage-job-servers");
 	item.addActionListener(this);
 	sub.add(item);  
 
@@ -496,7 +497,7 @@ class JManagerPanel
       return; 
 
     pGroupMenuAnchor.setIcon(sGroupIcons[pTopLevelPanel.getGroupID()]);
-    pOwnerViewField.setText(pTopLevelPanel.getAuthor() + " | " + pTopLevelPanel.getView());
+    pOwnerViewField.setText(pTopLevelPanel.getTitle());
     pLockedLight.setIcon(pTopLevelPanel.isLocked() ? sLockedLightOnIcon : sLockedLightIcon);
   }
 
@@ -635,15 +636,10 @@ class JManagerPanel
       doNodeViewerPanel();
     else if(cmd.equals("node-details"))
       doNodeDetailsPanel();
-
-    // ...
-
     else if(cmd.equals("node-files"))
       doNodeFilesPanel();
     else if(cmd.equals("node-history"))
       doNodeHistoryPanel();
-
-    // ...
 
     else if(cmd.equals("none"))
       doEmptyPanel();
@@ -690,6 +686,8 @@ class JManagerPanel
       UIMaster.getInstance().showManageLicenseKeysDialog();
     else if(cmd.equals("manage-selection-keys"))
       UIMaster.getInstance().showManageSelectionKeysDialog();
+    else if(cmd.equals("manage-job-servers"))
+      UIMaster.getInstance().showManageJobServersDialog();
     else if(cmd.equals("shutdown"))
       doShutdownServer();
     else if(cmd.equals("preferences"))
@@ -1027,7 +1025,7 @@ class JManagerPanel
   /*----------------------------------------------------------------------------------------*/
  
   /**
-   * Shutdown the <B>plfilemgr</B>(1), <B>plnotify</B>(1) and <B>plmaster</B>(1) daemons.
+   * Shutdown the server daemons, close the network connections and exit.
    */ 
   private void 
   doShutdownServer() 
@@ -1037,12 +1035,22 @@ class JManagerPanel
 
     if(confirm.wasConfirmed()) {
       UIMaster master = UIMaster.getInstance();
+
+      master.getQueueMgrClient().disconnect();
+
       try {
 	master.getMasterMgrClient().shutdown();
       }
       catch(PipelineException ex) {
       }
 
+      /* give the sockets time to disconnect cleanly */ 
+      try {
+	Thread.sleep(500);
+      }
+      catch(InterruptedException ex) {
+      }
+      
       System.exit(0);
     }
   }
