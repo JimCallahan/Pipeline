@@ -1,3 +1,212 @@
+2003-01-26  Jim Callahan  <jim@salamander>
+
+	* src/java/plutils/src/PlPut.cc:
+	added std:: prefixes to list, set, vector, cout, ios, min and max symbols -- standardized includes -- add typename and typedefs where needed by gcc 3.2
+
+	* src/java/pipeline/tests/Makefile.in:
+	removed FileDiff and FileDiff2 tests since they are not setup to work properly
+
+	* src/cxx/libs/image/tests/TestImageGn.cc, src/cxx/libs/vornoi/src/Flock2.hh, src/cxx/libs/vornoi/src/Kite2Gn.hh, src/cxx/libs/vornoi/src/Mesh2Gn.hh, src/cxx/libs/vornoi/src/Tri2Gn.hh, src/cxx/libs/vornoi/src/Vert2Gn.hh, src/cxx/libs/vornoi/tests/TestFlock2.cc, src/cxx/libs/vornoi/tests/TestInterp.cc, src/cxx/libs/vornoi/tests/TestMesh2Gn.cc, src/cxx/utils/src/IVPlay.cc, src/cxx/libs/core/src/SpaceTreeBBoxGn.hh, src/cxx/libs/core/src/SpaceTreeGn.hh, src/cxx/libs/core/src/TypeInfo.cc, src/cxx/libs/core/src/VecGn.hh, src/cxx/libs/core/tests/TestFrustumClipping.cc, src/cxx/libs/core/tests/TestFrustumXforms.cc, src/cxx/libs/core/tests/TestMatrixGn.cc, src/cxx/libs/core/tests/TestProcInfo.cc, src/cxx/libs/core/tests/TestSearchPath.cc, src/cxx/libs/core/tests/TestSpaceGn.cc, src/cxx/libs/core/tests/TestSpaceTreeBBoxGn.cc, src/cxx/libs/core/tests/TestSpaceTreeGn.cc, src/cxx/libs/image/src/ImageGn.cc, src/cxx/libs/image/src/ImageGn.hh, src/cxx/libs/image/src/TiffHelpers.hh:
+	added std:: prefixes to list, set, vector, cout, ios, min and max symbols -- standardized includes -- add typename and typedefs where needed by gcc 3.2
+
+	* aclocal.m4, configure.ac: rearraged C system header checks
+
+2003-01-25  Jim Callahan  <jim@salamander>
+
+	* src/java/plutils/src/PackageInfo.cc.in, src/java/plutils/src/PackageInfo.hh:
+	initial revision
+
+	* aclocal.m4, config.h.in, configure.ac, src/cxx/libs/core/src/FB.hh, src/java/plutils/docs/Makefile.am, src/java/plutils/docs/plput.html, src/java/plutils/src/Makefile.am, src/java/plutils/src/PlPut.cc:
+	added MD5 support
+
+	* src/java/pipeline/ClientApp.java, src/java/pipeline/ClientOptsParser.jj, src/java/pipeline/DataDepend.java, src/java/pipeline/DataMod.java, src/java/pipeline/DataVersion.java, src/java/pipeline/FileDiff2.java, src/java/pipeline/PackageInfo.java.in, src/java/pipeline/Pipeline.java, src/java/pipeline/ProcDepend.java, src/java/pipeline/ProcMod.java, src/java/pipeline/ProcVersion.java, src/java/pipeline/docs/pipeline.html, src/java/pipeline/docs/pleditor.html, src/java/pipeline/docs/pltoolset.html, src/java/pipeline/share/logger.properties, src/java/pipeline/tests/TestDataDependApp.java, src/java/pipeline/tests/TestDataNodeApp.java, src/java/pipeline/tests/TestDataVersionApp.java, src/java/pipeline/tests/TestProcDependApp.java, src/java/pipeline/tests/TestProcNodeApp.java, src/java/pipeline/tests/TestProcVersionApp.java, src/java/pipeline/BaseDepend.java:
+	added dependency versioning
+
+2003-01-24  Jim Callahan  <jim@salamander>
+
+	* config/bootstrap.sh:
+	added personal-edition of houdini and maya4.5 supported toolsets for salamander
+
+2003-01-14  Jim Callahan  <jim@salamander>
+
+	* src/cxx/libs/core/tests/TestBBoxGn.cc, src/cxx/libs/core/tests/TestDict.cc, src/cxx/libs/core/tests/TestEdgeSort.cc, src/cxx/libs/core/tests/TestFB.cc, src/cxx/libs/core/tests/TestFrustum.cc, src/cxx/libs/core/tests/TestFrustumClipping.cc, src/cxx/libs/thread/src/Makefile.am:
+	autoconf-2.53 upgrade
+
+	* src/cxx/libs/core/src/DictGn.hh:
+	added ::hash to sgi namespace for pre 3.0 gcc versions
+
+	* config.h.in, configure.ac: added check for iterator header
+
+	* src/cxx/libs/core/src/DictGn.hh: more libstdc++ 3.2 extension fixes
+
+	* src/cxx/libs/core/src/DictGn.hh:
+	proper handling of libstdc++ 3.2 extensions
+
+	* config.h.in, configure.ac: added time.h header check
+
+	* src/cxx/libs/core/src/AtomicTypes.hh, src/cxx/libs/core/src/ByteSwap.hh, src/cxx/libs/core/src/CoordSysGn.hh, src/cxx/libs/core/src/DictGn.hh, src/cxx/libs/core/src/FB.hh, src/cxx/libs/core/src/FramePattern.hh, src/cxx/libs/core/src/MatrixGn.hh, src/cxx/libs/core/src/PointGn.hh, src/cxx/libs/core/src/ProcInfo.hh, src/cxx/libs/core/src/SearchPath.hh, src/cxx/libs/core/src/SpaceAtomicGn.hh, src/cxx/libs/core/src/SpaceFullGn.hh, src/cxx/libs/core/src/SpaceGn.hh, src/cxx/libs/core/src/SpaceTreeBBoxGn.hh, src/cxx/libs/core/src/SpaceTreeGn.hh, src/cxx/libs/core/src/Timer.hh, src/cxx/libs/core/src/VecGn.hh, src/cxx/libs/core/src/VectorGn.hh:
+	support for new autoconf-2.53 defines, silenced gcc-3.2 warnings about implicit typenames
+
+2003-01-13  Jim Callahan  <jim@salamander>
+
+	* configure.ac:
+	reorganized tests, added better reporting of SML and JAVA vars
+
+	* aclocal.m4, config.h.in, configure.ac:
+	full detection of headers and libraries under autoconf-2.53
+
+	* src/cxx/libs/vornoi/src/Makefile.am: renamed class files
+
+	* .cvsignore: added autom4te-2.53.cache
+
+	* acinclude.m4: obsolete
+
+2003-01-10  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/ClientApp.java, src/java/pipeline/ClientOptsParser.jj, src/java/pipeline/Pipeline.java, src/java/pipeline/docs/pipeline.html:
+	added support for the revoke command
+
+	* src/java/pipeline/ClientApp.java, src/java/pipeline/ClientOptsParser.jj, src/java/pipeline/DataVersion.java, src/java/pipeline/PackageInfo.java.in, src/java/pipeline/Pipeline.java, src/java/pipeline/docs/pipeline.html, src/java/pipeline/share/logger.properties, src/java/plutils/src/PlPut.cc:
+	fixed bug in plput, standardized and robustified all UNIX sub-processes
+
+	* src/java/pipeline/MakeRsp.java: initial revision
+
+2003-01-09  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/Pipeline.java:
+	added better progress messages inside generated makefile
+
+2003-01-07  Jim Callahan  <jim@salamander>
+
+	* config.h.in, configure.ac, src/cxx/libs/core/src/ExtraMath.hh:
+	autoconf-2.57 port
+
+	* aclocal.m4: initial revision
+
+2002-12-20  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/ClientApp.java, src/java/pipeline/ClientOptsParser.jj, src/java/pipeline/DataDepend.java, src/java/pipeline/DataMod.java, src/java/pipeline/DataVersion.java, src/java/pipeline/Pipeline.java, src/java/pipeline/docs/pipeline.html, src/java/pipeline/share/dbinit.sql.in, src/java/pipeline/share/logger.properties, src/java/pipeline/tests/TestDataDependApp.java, src/java/pipeline/tests/TestDataNodeApp.java, src/java/pipeline/tests/TestDataVersionApp.java:
+	make commands working
+
+2002-12-18  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/MakeRsp.java: osolete
+
+	* src/java/pipeline/docs/pipeline.html, src/java/pipeline/share/logger.properties:
+	make command almost complete
+
+	* src/java/pipeline/ProcNode.java: fixed indentation bug in toGlue()
+
+	* src/java/pipeline/Pipeline.java: make command almost complete
+
+	* src/java/pipeline/PackageInfo.java.in: added sToolsetExec global
+
+2002-12-16  Jim Callahan  <jim@salamander>
+
+	* Makefile.am: added config dir files to distribution
+
+2002-12-14  Jim Callahan  <jim@salamander>
+
+	* config/depcomp, configure.ac, src/java/pipeline/MakeRsp.java:
+	initial revision
+
+	* config.h.in: math stuff is broken in this version\!\!\!
+
+	* .cvsignore: added autom4te.cache to ignore list
+
+	* COPYING: fixed gramatical error in copyright notice
+
+	* autogen.sh: removed --verbose option to automake
+
+	* acconfig.h, configure.in: obsolete
+
+	* config/install-sh, config/missing, config/mkinstalldirs:
+	new automake-1.7.2 scripts
+
+	* src/java/pipeline/tests/TestProcNodeApp.java, src/java/pipeline/tests/TestProcVersionApp.java:
+	added support for the Ignore node property
+
+	* src/java/pipeline/share/logger.properties:
+	uncommented SQL debugging log levels
+
+	* src/java/pipeline/share/dbinit.sql.in:
+	added support for the Ignore node property
+
+	* src/java/pipeline/docs/pipeline.html, src/java/pipeline/docs/pleditor.html, src/java/pipeline/docs/pltoolset.html:
+	added --copyright option, added --ignore/--abort options
+
+	* src/java/pipeline/Pipeline.java: started on "make" command
+
+	* src/java/pipeline/ProcNode.java, src/java/pipeline/ProcVersion.java:
+	added support for the Ignore node property
+
+	* src/java/pipeline/PackageInfo.java.in, src/java/pipeline/EditorApp.java, src/java/pipeline/EditorOptsParser.jj, src/java/pipeline/ToolsetApp.java, src/java/pipeline/ToolsetOptsParser.jj:
+	added the --copyright option
+
+	* src/java/pipeline/DataMod.java, src/java/pipeline/ProcMod.java:
+	due to new Ignore property, updateBasics() was moved to both DataMod and ProcMod subclasses
+
+	* src/java/pipeline/ClientOptsParser.jj, src/java/pipeline/ClientApp.java:
+	added support for the Ignore node property
+
+	* src/java/pipeline/BaseMod.java:
+	due to new Ignore property, updateBasics() was moved to both DataMod and ProcMod subclasses
+
+2002-12-08  Jim Callahan  <jim@salamander>
+
+	* aclocal.m4: confusion over new autoconf naming...
+
+2002-12-04  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/ClientApp.java, src/java/pipeline/ClientOptsParser.jj:
+	added support for log/comment suboptions to --show/--hide
+
+	* src/java/pipeline/ClientApp.java:
+	finished printing code for log messages and change comments in handleStatusLongHelper()
+
+	* src/java/pipeline/ClientApp.java, src/java/pipeline/ClientOptsParser.jj, src/java/pipeline/docs/pipeline.html:
+	added ClientApp.handleList(), added fine grain controlls for "status"
+
+2002-12-03  Jim Callahan  <jim@salamander>
+
+	* configure.in, src/java/pipeline/BaseMod.java, src/java/pipeline/BaseNode.java, src/java/pipeline/BaseVersion.java, src/java/pipeline/ClientApp.java, src/java/pipeline/ClientOptsParser.jj, src/java/pipeline/DataMod.java, src/java/pipeline/DataNode.java, src/java/pipeline/DataVersion.java, src/java/pipeline/GlueParser.jj, src/java/pipeline/Makefile.in, src/java/pipeline/Pipeline.java, src/java/pipeline/ProcMod.java, src/java/pipeline/ProcNode.java, src/java/pipeline/ProcVersion.java, src/java/pipeline/docs/pipeline.html, src/java/pipeline/share/dbinit.sql.in, src/java/pipeline/tests/Makefile.in, src/java/pipeline/tests/TestGlueParserApp.java:
+	the "comment" command now appears to work
+
+2002-11-28  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/Pipeline.java, src/java/pipeline/docs/pipeline.html, src/java/pipeline/ClientApp.java:
+	added custom differ
+
+2002-11-26  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/DiffRsp.java: initial revision
+
+	* src/java/pipeline/docs/pltoolset.html, src/java/pipeline/DataNode.java, src/java/pipeline/Makefile.in, src/java/pipeline/Pipeline.java, src/java/pipeline/ProcNode.java, src/java/pipeline/docs/pipeline.html, src/java/pipeline/docs/pleditor.html:
+	added hasVersion() method, cut & pasted filename generation methods from Mod classes
+
+	* ChangeLog:
+	added hasVersion() method, cut & pasted filename generation methods from Mod classesphoenix/src/java/pipeline/DataNode.java phoenix/src/java/pipeline/ProcNode.java
+
+	* src/java/pipeline/ClientOptsParser.jj:
+	fixed buggy --date option, added extra stuff to make the diff command work
+
+	* src/java/pipeline/ClientApp.java: added diff command handlers
+
+	* src/cxx/libs/image/src/ImageGn.hh, src/cxx/libs/image/src/TiffInfo.hh:
+	fixed some comments
+
+2002-11-21  Jim Callahan  <jim@salamander>
+
+	* src/java/pipeline/Pipeline.java: changed the format of --date options
+
+	* src/java/pipeline/ClientOptsParser.jj: fixed a bug in --date options
+
+	* src/java/pipeline/ClientApp.java:
+	changed formatting of timestamps to match the arguments to the --date option to pipeline
+
+	* src/java/pipeline/Pipeline.java:
+	fixed a bug in both checkIn() and spawnPlPut(), checkin of trees now works
+
 2002-11-21  Jim Callahan  <jim@wrkstn17.rhinofx.com>
 
 	* src/java/pipeline/Pipeline.java:
