@@ -1,4 +1,4 @@
-// $Id: VersionID.java,v 1.2 2004/03/01 21:43:29 jim Exp $
+// $Id: VersionID.java,v 1.3 2004/03/07 02:44:58 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -16,15 +16,13 @@ import java.io.*;
  * components: <BR> 
  * 
  * <DIV style="margin-left: 40px;">
- *   <I>Massive</I>.<I>Major</I>.<I>Minor</I>.<I>Trivial</I> <BR>
+ *   <I>Mega</I>.<I>Major</I>.<I>Minor</I>.<I>Micro</I> <BR>
  * </DIV> <BR> 
  * 
  * The component numbers are arranged left-to-right from most-to-least imporant.  The intial
  * revision number of a node is always (1.0.0.0).  The importance of subsequent revisions
  * can be determined by which component have been inremented as compared to the previous 
  * revision.
- * 
- * @see IncMethod
  */
 public
 class VersionID 
@@ -42,6 +40,40 @@ class VersionID
   {}
 
   /**
+   * Construct from revision number components. 
+   * 
+   * @param comps [<B>in</B>]
+   *   The revision number components.
+   */ 
+  public 
+  VersionID
+  (
+   int[] comps
+  ) 
+  {
+    if(comps == null) 
+      throw new IllegalArgumentException
+	("The revision number components cannot be (null)!");
+
+    if(comps.length != 4) 
+      throw new IllegalArgumentException
+	("There must be exactly (4) revision number components!");
+      
+    int wk;
+    for(wk=0; wk<4; wk++) {
+      if(comps[wk] < 0) 
+	throw new IllegalArgumentException
+	  ("Found a negative version number component (" + comps[wk] + ")!");
+
+      if((wk == 0) && (comps[wk] < 1)) 
+	throw new IllegalArgumentException
+	  ("The first version number component (" + comps[wk] + ") must be positive!");
+    }
+
+    pIDs = comps.clone();
+  }
+
+  /**
    * Construct from the given string representation. 
    * 
    * @param str [<B>in</B>]
@@ -53,7 +85,38 @@ class VersionID
    String str 
   ) 
   {
-    fromString(str);
+    init(str);
+  }
+
+  /**
+   * Construct a new revision number by incrementing the specified level of the 
+   * given revision number.
+   * 
+   * @param vid [<B>in</B>]
+   *   The revision number to increment.
+   * 
+   * @param level  [<B>in</B>]
+   *   The revision number component level to increment..
+   */ 
+  public 
+  VersionID 
+  (
+   VersionID vid, 
+   Level level
+  ) 
+  {
+    if(vid == null)
+      throw new IllegalArgumentException
+	("The revision number cannot be (null)!");
+
+    pIDs = vid.pIDs.clone();
+
+    int idx = level.ordinal();
+    pIDs[idx]++;
+
+    int wk;
+    for(wk=idx+1; wk<4; wk++) 
+      pIDs[wk] = 0;
   }
 
   /**
@@ -83,83 +146,7 @@ class VersionID
     return pIDs.clone();
   }
 
-  
 
-  /*----------------------------------------------------------------------------------------*/
-  /*   I N C R E M E N T I N G                                                              */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Increment the fourth component of the revision number. <P> 
-   * 
-   * Examples include: 
-   * <DIV style="margin-left: 40px;">
-   *    1.0.0.0 to 1.0.0.1 <BR>
-   *    1.3.2.5 to 1.3.2.6 <BR>
-   *    2.4.0.2 to 2.4.0.3 <BR>
-   * </DIV>
-   */
-  public void 
-  incTrivial() 
-  {
-    pIDs[3]++;
-  }
-
-  /**
-   * Increment the third component of the revision number. <P> 
-   * 
-   * Examples include: 
-   * <DIV style="margin-left: 40px;">
-   *    1.0.0.0 to 1.0.1.0 <BR>
-   *    1.3.2.5 to 1.3.3.0 <BR>
-   *    2.4.0.2 to 2.4.1.0 <BR>
-   * </DIV>
-   */
-  public void 
-  incMinor() 
-  {
-    pIDs[2]++;
-    pIDs[3] = 0;
-  }
-
-  /**
-   * Increment the second component of the revision number. <P> 
-   * 
-   * Examples include: 
-   * <DIV style="margin-left: 40px;">
-   *    1.0.0.0 to 1.1.0.0 <BR>
-   *    1.3.2.5 to 1.4.0.0 <BR>
-   *    2.4.0.2 to 2.5.0.0 <BR>
-   * </DIV>
-   */
-  public void 
-  incMajor() 
-  {
-    pIDs[1]++;
-    pIDs[2] = 0;
-    pIDs[3] = 0;
-  }
-
-  /**
-   * Increment the first component of the revision number. <P> 
-   * 
-   * Examples include: 
-   * <DIV style="margin-left: 40px;">
-   *    1.0.0.0 to 2.0.0.0 <BR>
-   *    1.3.2.5 to 2.0.0.0 <BR>
-   *    2.4.0.2 to 3.0.0.0 <BR>
-   * </DIV>
-   */
-  public void 
-  incMassive() 
-  {
-    pIDs[0]++;
-    pIDs[1] = 0;
-    pIDs[2] = 0;
-    pIDs[3] = 0;
-  }
-
-  
 
   /*----------------------------------------------------------------------------------------*/
   /*   O B J E C T   O V E R R I D E S                                                      */
@@ -209,60 +196,6 @@ class VersionID
     }
 
     return buf.toString();
-  }
-
-  /**
-   * Convert from a string representation. 
-   */ 
-  public void 
-  fromString
-  (
-   String str    
-  ) 
-  {
-    if(str == null) 
-      throw new IllegalArgumentException
-	("The version string cannot be (null)!");
-
-    if(str.length() == 0) 
-      throw new IllegalArgumentException
-	("The version string cannot be empty!");      
-
-    String[] parts = str.split("\\.");
-    if(parts.length != 4)
-      throw new IllegalArgumentException
-	("Found the wrong number (" + parts.length + ") of revision number compoents " + 
-	 "in (" + str + "), should have been (4)!");
-
-    int ids[] = new int[4];
-    
-    int wk;
-    for(wk=0; wk<4; wk++) {
-      if(parts[wk].length() == 0) 
-	throw new IllegalArgumentException
-	  ("Found a missing version number component in (" + str + ")!");
-
-      int num = 0;
-      try {
-	num = Integer.parseInt(parts[wk]);
-      }
-      catch (NumberFormatException e) {
-	throw new IllegalArgumentException
-	  ("Illegal version number component (" + parts[wk] + ") found in (" + str + ")!");
-      }
-
-      if(num < 0) 
-	throw new IllegalArgumentException
-	  ("Negative version number component(" + num + ") found in (" + str + ")!");
-
-      if((wk == 0) && (num < 1)) 
-	throw new IllegalArgumentException
-	  ("The first version number component (" + num + ") must be positive!");
-      
-      ids[wk] = num;
-    }
-
-    pIDs = ids;
   }
 
 
@@ -332,6 +265,126 @@ class VersionID
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Initialize from a string representation. 
+   */ 
+  protected void 
+  init
+  (
+   String str    
+  ) 
+  {
+    if(str == null) 
+      throw new IllegalArgumentException
+	("The version string cannot be (null)!");
+
+    if(str.length() == 0) 
+      throw new IllegalArgumentException
+	("The version string cannot be empty!");      
+
+    String[] parts = str.split("\\.");
+    if(parts.length != 4)
+      throw new IllegalArgumentException
+	("Found the wrong number (" + parts.length + ") of revision number compoents " + 
+	 "in (" + str + "), should have been (4)!");
+
+    int ids[] = new int[4];
+    
+    int wk;
+    for(wk=0; wk<4; wk++) {
+      if(parts[wk].length() == 0) 
+	throw new IllegalArgumentException
+	  ("Found a missing version number component in (" + str + ")!");
+
+      int num = 0;
+      try {
+	num = Integer.parseInt(parts[wk]);
+      }
+      catch (NumberFormatException e) {
+	throw new IllegalArgumentException
+	  ("Illegal version number component (" + parts[wk] + ") found in (" + str + ")!");
+      }
+
+      if(num < 0) 
+	throw new IllegalArgumentException
+	  ("Negative version number component (" + num + ") found in (" + str + ")!");
+
+      if((wk == 0) && (num < 1)) 
+	throw new IllegalArgumentException
+	  ("The first version number component (" + num + ") must be positive!");
+      
+      ids[wk] = num;
+    }
+
+    pIDs = ids;
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   P U B L I C   C L A S S E S                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Identifiers for the level components of a revision number.
+   */
+  public
+  enum Level
+  {  
+    /**
+     * The first component level of the revision number. <P> 
+     * 
+     * Examples of incrementing this component level: 
+     * <DIV style="margin-left: 40px;">
+     *    1.0.0.0 to 2.0.0.0 <BR>
+     *    1.3.2.5 to 2.0.0.0 <BR>
+     *    2.4.0.2 to 3.0.0.0 <BR>
+     * </DIV>
+     */
+    Mega,
+    
+    /**
+     * The second component level of the revision number. <P> 
+     * 
+     * Examples of incrementing this component level: 
+     * <DIV style="margin-left: 40px;">
+     *    1.0.0.0 to 1.1.0.0 <BR>
+     *    1.3.2.5 to 1.4.0.0 <BR>
+     *    2.4.0.2 to 2.5.0.0 <BR>
+     * </DIV>
+     */
+    Major,
+    
+    /**
+     * The third component level of the revision number. <P> 
+     * 
+     * Examples of incrementing this component level: 
+     * <DIV style="margin-left: 40px;">
+     *    1.0.0.0 to 1.0.1.0 <BR>
+     *    1.3.2.5 to 1.3.3.0 <BR>
+     *    2.4.0.2 to 2.4.1.0 <BR>
+     * </DIV>
+     */
+    Minor,
+    
+    /**
+     * The fourth component level of the revision number. <P> 
+     * 
+     * Examples of incrementing this component level: 
+     * <DIV style="margin-left: 40px;">
+     *    1.0.0.0 to 1.0.0.1 <BR>
+     *    1.3.2.5 to 1.3.2.6 <BR>
+     *    2.4.0.2 to 2.4.0.3 <BR>
+     * </DIV>
+     */
+    Micro;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
@@ -346,7 +399,7 @@ class VersionID
   /**
    * The revision number components.
    */
-  private int[] pIDs = { 1, 0, 0, 0 };
+  protected int[] pIDs = { 1, 0, 0, 0 };
   
 }
 
