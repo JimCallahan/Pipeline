@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.30 2005/01/15 15:06:24 jim Exp $
+// $Id: MasterMgrServer.java,v 1.31 2005/01/15 16:16:52 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -756,12 +756,8 @@ class MasterMgrServer
 
 	  case Shutdown:
 	    Logs.net.warning("Shutdown Request Received: " + pSocket.getInetAddress());
-
-	    // DEBUG 
-	    pMasterMgr.logNodeTree();
-	    // DEBUG
-      
 	    Logs.flush();
+
 	    pShutdown.set(true);
 	    break;	    
 

@@ -250,6 +250,9 @@ Commands() :
       }
     }
 
+    Logs.net.info("Establishing Network Connections...");
+    Logs.flush();
+
     /* initialize the plugins */ 
     try {
       PluginMgrClient.init();

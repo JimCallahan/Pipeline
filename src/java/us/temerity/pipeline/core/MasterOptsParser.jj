@@ -307,13 +307,16 @@ Commands() :
       }
     }
 
+    Logs.net.info("Establishing Network Connections...");
+    Logs.flush();
+
     try {
       /* initialize the plugins */ 
       PluginMgrClient.init();
 
       /* create the server */ 
       return (new MasterMgrServer(pNodeDir, pMasterPort, 
-				pProdDir, pFileServer, pFilePort, 
+				  pProdDir, pFileServer, pFilePort, 
 				  pQueueServer, pQueuePort));
     }
     catch(PipelineException ex) {

@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.1 2005/01/15 02:56:32 jim Exp $
+// $Id: PluginMgr.java,v 1.2 2005/01/15 16:16:52 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -34,6 +34,9 @@ class PluginMgr
   public
   PluginMgr() 
   {
+    Logs.net.info("Initializing...");
+    Logs.flush();
+
     pMakeDirLock = new Object();
 
     {

@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.17 2005/01/12 13:08:57 jim Exp $
+// $Id: JobMgr.java,v 1.18 2005/01/15 16:16:51 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -35,6 +35,9 @@ class JobMgr
   public
   JobMgr()
   {
+    Logs.net.info("Initializing...");
+    Logs.flush();
+
     /* initialize the fields */ 
     {
       pExecuteTasks = new TreeMap<Long,ExecuteTask>();

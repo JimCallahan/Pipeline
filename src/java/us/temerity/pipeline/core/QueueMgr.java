@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.22 2004/12/07 04:55:16 jim Exp $
+// $Id: QueueMgr.java,v 1.23 2005/01/15 16:16:52 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -47,6 +47,9 @@ class QueueMgr
    int jobPort
   )
   { 
+    Logs.net.info("Initializing...");
+    Logs.flush();
+
     if(dir == null)
       throw new IllegalArgumentException("The root queue directory cannot be (null)!");
     pQueueDir = dir;

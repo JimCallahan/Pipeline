@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.82 2005/01/15 15:06:24 jim Exp $
+// $Id: MasterMgr.java,v 1.83 2005/01/15 16:16:51 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -241,6 +241,9 @@ class MasterMgr
       pQueueMgrClient = new QueueMgrControlClient(queueHost, queuePort);
       pQueueMgrClient.waitForConnection(1000, 5000);
     }
+
+    Logs.net.info("Initializing...");
+    Logs.flush();
 
     /* create the lock file */ 
     {
