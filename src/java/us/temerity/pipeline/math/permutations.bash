@@ -27,12 +27,29 @@ do
          | sed -e 's/4f/4l/g' | sed -e 's/4 F/4 L/g' > $l
 done
 
+
+
 for f in Color*f.java
 do 
   d=`echo $f | sed -e 's/f.java/d.java/g'`
 
   cat $f | sed -e 's/float/double/g' | sed -e 's/0.0f/0.0/g' \
          | sed -e 's/Nf/Nd/g' | sed -e 's/N F/N D/g' \
+         | sed -e 's/2f/2d/g' | sed -e 's/2 F/2 D/g' \
+         | sed -e 's/3f/3d/g' | sed -e 's/3 F/3 D/g' \
+         | sed -e 's/4f/4d/g' | sed -e 's/4 F/4 D/g' > $d
+done
+
+
+
+cat BBox2f.java | sed -e 's/2f/3f/g' | sed -e 's/2 F/3 F/g' > BBox3f.java
+cat BBox2f.java | sed -e 's/2f/4f/g' | sed -e 's/2 F/4 F/g' > BBox4f.java
+
+for f in BBox*f.java
+do 
+  d=`echo $f | sed -e 's/f.java/d.java/g'`
+
+  cat $f | sed -e 's/float/double/g' | sed -e 's/0.0f/0.0/g' \
          | sed -e 's/2f/2d/g' | sed -e 's/2 F/2 D/g' \
          | sed -e 's/3f/3d/g' | sed -e 's/3 F/3 D/g' \
          | sed -e 's/4f/4d/g' | sed -e 's/4 F/4 D/g' > $d
