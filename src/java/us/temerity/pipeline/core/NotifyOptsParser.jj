@@ -187,16 +187,20 @@ TOKEN :
 /*   T O P   L E V E L                                                                      */
 /*------------------------------------------------------------------------------------------*/
 
-void
+NotifyServer
 CommandLine() :
-{}
 {
-  (InformationOpts() | Commands()) <EOF>
-  {}
+  NotifyServer s = null;
+}
+{
+  (InformationOpts() | s=Commands()) <EOF>
+  {
+    return s;
+  }
 }
 
 
-void 
+NotifyServer
 Commands() :
 {
   init();
@@ -204,14 +208,7 @@ Commands() :
 {
   (GlobalOpts() WS())*
   { 
-    try {
-      NotifyServer server = new NotifyServer(pProdDir, pControlPort, pMonitorPort);
-      server.start();
-      server.join();
-    }
-    catch (InterruptedException ex) {
-      Logs.net.severe(ex.getMessage());
-    }
+    return (new NotifyServer(pProdDir, pControlPort, pMonitorPort));
   }
 }
     

@@ -245,16 +245,20 @@ TOKEN :
 /*   T O P   L E V E L                                                                      */
 /*------------------------------------------------------------------------------------------*/
 
-void
+MasterMgrServer
 CommandLine() :
-{}
 {
-  (InformationOpts() | Commands()) <EOF>
-  {}
+  MasterMgrServer s = null;
+}
+{
+  (InformationOpts() | s=Commands()) <EOF>
+  {
+    return s;
+  }
 }
 
 
-void 
+MasterMgrServer
 Commands() :
 {
   init();
@@ -262,16 +266,9 @@ Commands() :
 {
   (GlobalOpts() WS())*
   { 
-    try {
-      MasterMgrServer server = 
-	new MasterMgrServer(pNodeDir, pMasterPort, 
-			    pProdDir, pFileServer, pFilePort, pControlPort, pMonitorPort);
-      server.start();
-      server.join();
-    }
-    catch (Exception ex) {
-      Logs.net.severe(ex.getMessage());
-    }
+    return (new MasterMgrServer(pNodeDir, pMasterPort, 
+				pProdDir, pFileServer, pFilePort, 
+				pControlPort, pMonitorPort));
   }
 }
     

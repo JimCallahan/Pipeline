@@ -181,16 +181,20 @@ TOKEN :
 /*   T O P   L E V E L                                                                      */
 /*------------------------------------------------------------------------------------------*/
 
-void
+FileMgrServer
 CommandLine() :
-{}
 {
-  (InformationOpts() | Commands()) <EOF>
-  {}
+  FileMgrServer s = null;
+}
+{
+  (InformationOpts() | s=Commands()) <EOF>
+  {
+    return s;
+  }
 }
 
 
-void 
+FileMgrServer
 Commands() :
 {
   init();
@@ -198,14 +202,7 @@ Commands() :
 {
   (GlobalOpts() WS())*
   { 
-    try {
-      FileMgrServer server = new FileMgrServer(pProdDir, pFilePort);
-      server.start();
-      server.join();
-    }
-    catch (InterruptedException ex) {
-      Logs.net.severe(ex.getMessage());
-    }
+    return (new FileMgrServer(pProdDir, pFilePort));
   }
 }
     

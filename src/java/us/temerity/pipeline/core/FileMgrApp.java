@@ -1,4 +1,4 @@
-// $Id: FileMgrApp.java,v 1.6 2004/05/23 19:50:07 jim Exp $
+// $Id: FileMgrApp.java,v 1.7 2004/07/21 07:14:32 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -63,11 +63,19 @@ class FileMgrApp
 	new FileMgrOptsParser(new StringReader(pPackedArgs));
       
       parser.setApp(this);
-      parser.CommandLine();
+      FileMgrServer server = parser.CommandLine();
+      if(server != null) {
+	server.start();
+	server.join();
+      }
+
       success = true;
     }
     catch(ParseException ex) {
       handleParseException(ex);
+    }
+    catch (InterruptedException ex) {
+      Logs.net.severe(ex.getMessage());
     }
     finally {
       Logs.cleanup();

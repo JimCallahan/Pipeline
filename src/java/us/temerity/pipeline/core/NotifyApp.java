@@ -1,4 +1,4 @@
-// $Id: NotifyApp.java,v 1.3 2004/04/24 22:41:59 jim Exp $
+// $Id: NotifyApp.java,v 1.4 2004/07/21 07:14:32 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -61,11 +61,19 @@ class NotifyApp
 	new NotifyOptsParser(new StringReader(pPackedArgs));
       
       parser.setApp(this);
-      parser.CommandLine();
+      NotifyServer server = parser.CommandLine();
+      if(server != null) {
+	server.start();
+	server.join();
+      }
+
       success = true;
     }
     catch(ParseException ex) {
       handleParseException(ex);
+    }
+    catch (InterruptedException ex) {
+      Logs.net.severe(ex.getMessage());
     }
     finally {
       Logs.cleanup();

@@ -1,4 +1,4 @@
-// $Id: MasterApp.java,v 1.2 2004/05/23 19:50:07 jim Exp $
+// $Id: MasterApp.java,v 1.3 2004/07/21 07:14:32 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -63,11 +63,19 @@ class MasterApp
 	new MasterOptsParser(new StringReader(pPackedArgs));
       
       parser.setApp(this);
-      parser.CommandLine();
+      MasterMgrServer server = parser.CommandLine();   
+      if(server != null) {
+	server.start();
+	server.join();
+      }
+      
       success = true;
     }
     catch(ParseException ex) {
       handleParseException(ex);
+    }
+    catch (InterruptedException ex) {
+      Logs.net.severe(ex.getMessage());
     }
     finally {
       Logs.cleanup();
