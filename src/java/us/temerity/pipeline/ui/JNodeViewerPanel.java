@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.53 2004/10/04 16:06:53 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.54 2004/10/09 18:44:02 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -191,11 +191,6 @@ class JNodeViewerPanel
 	
 	item = new JMenuItem("Remove Root");
 	item.setActionCommand("remove-root");
-	item.addActionListener(this);
-	menus[wk].add(item);  
-	
-	item = new JMenuItem("Remove All Roots");
-	item.setActionCommand("remove-all-roots");
 	item.addActionListener(this);
 	menus[wk].add(item);  
 	
@@ -2081,9 +2076,6 @@ class JNodeViewerPanel
       else if((prefs.getNodeViewerRemoveRoot() != null) &&
 	      prefs.getNodeViewerRemoveRoot().wasPressed(e))
 	doRemoveRoot();
-      else if((prefs.getNodeViewerRemoveAllRoots() != null) &&
-	      prefs.getNodeViewerRemoveAllRoots().wasPressed(e))
-	doRemoveAllRoots();
       
       else if((prefs.getNodeViewerEdit() != null) &&
 	      prefs.getNodeViewerEdit().wasPressed(e))
