@@ -1,4 +1,4 @@
-// $Id: JErrorDialog.java,v 1.3 2004/05/12 03:59:08 jim Exp $
+// $Id: JErrorDialog.java,v 1.4 2004/05/16 19:10:18 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -98,7 +98,7 @@ class JErrorDialog
     else if((ex instanceof GlueException) || 
 	    (ex instanceof GlueLockException)) {
       pHeaderLabel.setText("Glue Error:");
-      pMessageArea.setText(ex.getMessage());
+      pMessageArea.setText(getStackTrace(ex));
     }
     else if(ex instanceof IOException) {
       pHeaderLabel.setText("I/O Error:");
@@ -106,23 +106,30 @@ class JErrorDialog
     }
     else {
       pHeaderLabel.setText("Internal Error:");
-
-      StringBuffer buf = new StringBuffer();
-      {
-	if(ex.getMessage() != null) 
-	  buf.append(ex.getMessage() + "\n\n"); 	
-	else if(ex.toString() != null) 
-	  buf.append(ex.toString() + "\n\n"); 	
-	
-	buf.append("Stack Trace:\n");
-	StackTraceElement stack[] = ex.getStackTrace();
-	int wk;
-	for(wk=0; wk<stack.length; wk++) 
-	  buf.append("  " + stack[wk].toString() + "\n");
-      }
-	
-      pMessageArea.setText(buf.toString());
+      pMessageArea.setText(getStackTrace(ex));
     }
+  }
+
+  private String
+  getStackTrace
+  (
+   Exception ex
+  ) 
+  {
+    StringBuffer buf = new StringBuffer();
+
+    if(ex.getMessage() != null) 
+      buf.append(ex.getMessage() + "\n\n"); 	
+    else if(ex.toString() != null) 
+      buf.append(ex.toString() + "\n\n"); 	
+    
+    buf.append("Stack Trace:\n");
+    StackTraceElement stack[] = ex.getStackTrace();
+    int wk;
+    for(wk=0; wk<stack.length; wk++) 
+      buf.append("  " + stack[wk].toString() + "\n");
+
+    return buf.toString();
   }
 
 
