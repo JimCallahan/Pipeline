@@ -1,4 +1,4 @@
-// $Id: MayaTextureSyncTool.java,v 1.6 2005/03/25 21:59:09 jim Exp $
+// $Id: MayaTextureSyncTool.java,v 1.7 2005/03/28 04:18:03 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -37,6 +37,7 @@ class MayaTextureSyncTool
     pPhase = 1; 
 
     pTextureFormats = new ArrayList<String>(); 
+    pTextureFormats.add("bmp");
     pTextureFormats.add("iff");
     pTextureFormats.add("gif");
     pTextureFormats.add("jpg");
@@ -56,13 +57,16 @@ class MayaTextureSyncTool
 
     pWorkingPathFields = new TreeMap<File,JPathField>();
 
-    pNodeTextures  = new TreeMap<NodeID,String>();
+    pNodeTextures  = new TreeMap<NodeID,TreeSet<String>>();
     pCheckOutNodes = new TreeSet<NodeID>();      
     pRegisterNodes = new TreeSet<NodeID>();      
+    pRenumberNodes = new TreeMap<NodeID,FrameRange>();      
     pLinkNodes     = new TreeSet<NodeID>();       
     pUnlinkNodes   = new TreeSet<NodeID>();       
+    pInvalidNodes  = new TreeMap<String,String>();
 
     pRegisterFields = new TreeMap<NodeID,JBooleanField>();
+    pRenumberFields = new TreeMap<NodeID,JBooleanField>();
     pCheckOutFields = new TreeMap<NodeID,JBooleanField>(); 
     pLinkFields     = new TreeMap<NodeID,JBooleanField>(); 
     pUnlinkFields   = new TreeMap<NodeID,JBooleanField>(); 
@@ -269,6 +273,12 @@ class MayaTextureSyncTool
 
 	  if(pInvalidShaders.isEmpty()) {
 	    Component comps[] = UIFactory.createTitledPanels();
+	    JPanel tpanel = (JPanel) comps[0];
+	    JPanel vpanel = (JPanel) comps[1];
+	    
+	    tpanel.add(Box.createRigidArea(new Dimension(sTSize-7, 0)));
+	    vpanel.add(Box.createHorizontalGlue());
+
 	    ibox.add(comps[2]);
 	  }
 	  else {
@@ -338,7 +348,7 @@ class MayaTextureSyncTool
 	{
 	  Box ibox = new Box(BoxLayout.Y_AXIS);
 
-	  if(pInvalidShaders.isEmpty()) {
+	  if(pTextureFiles.isEmpty()) {
 	    Component comps[] = UIFactory.createTitledPanels();
 	    ibox.add(comps[2]);
 	  }
@@ -365,8 +375,14 @@ class MayaTextureSyncTool
 	      UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
 	      
 	      {
-		tpanel.add(UIFactory.createFixedLabel
-			   ("Maya Shaders:", sTSize-7, JLabel.RIGHT));
+		{
+		  JLabel label = 
+		    UIFactory.createFixedLabel
+		    ("Maya Shaders:", sTSize-7, JLabel.RIGHT, 
+		     "The names of the Maya shaders which use the texture file!");
+		  tpanel.add(label);
+		}
+
 		tpanel.add(Box.createVerticalGlue());
 	      
 		boolean first = true;
@@ -469,95 +485,238 @@ class MayaTextureSyncTool
     {
       Box vbox = new Box(BoxLayout.Y_AXIS);
 
-      for(NodeID nodeID : pNodeTextures.keySet()) {
-	Component comps[] = UIFactory.createTitledPanels();
-	JPanel tpanel = (JPanel) comps[0];
-	JPanel vpanel = (JPanel) comps[1];
-	
-	UIFactory.createTitledTextField
-	  (tpanel, "Texture:", sTSize, 
-	   vpanel, pNodeTextures.get(nodeID), sVSize2, 
-	   "The name of the texture file associated with the Pipeline node.");
-	
-	boolean registerNode = pRegisterNodes.contains(nodeID);
-	boolean checkOutNode = pCheckOutNodes.contains(nodeID);
-	boolean linkNode     = pLinkNodes.contains(nodeID);
-	if(registerNode || checkOutNode || linkNode) {
-	  UIFactory.addVerticalSpacer(tpanel, vpanel, 9);
+      /* invalid nodes */ 
+      {
+	Box hbox = new Box(BoxLayout.X_AXIS);
+	hbox.addComponentListener(this);
 
-	  if(registerNode) {
-	    UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
-
-	    JBooleanField field = 
-	      UIFactory.createTitledBooleanField
-	      (tpanel, "Register Node:", sTSize, 
-	       vpanel, sVSize2, 
-	       "Whether to register a node node for the texture.");
-	    field.setValue(true);
-
-	    field.addActionListener(this);
-	    field.setActionCommand("register-changed:" + nodeID.getName());
-
-	    pRegisterFields.put(nodeID, field);
-	  }
+	{
+	  JPanel spanel = new JPanel();
+	  spanel.setName("Spacer");
 	  
-	  if(checkOutNode) {
-	    UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
-
-	    JBooleanField field = 
-	      UIFactory.createTitledBooleanField
-	      (tpanel, "CheckOut Node:", sTSize, 
-	       vpanel, sVSize2, 
-	       "Whether to check-out the latest version of the node associated with the " + 
-	       "texture.");
-	    field.setValue(true);
-
-	    field.addActionListener(this);
-	    field.setActionCommand("check-out-changed:" + nodeID.getName());
-
-	    pCheckOutFields.put(nodeID, field);
-	  }
+	  spanel.setMinimumSize(new Dimension(7, 0));
+	  spanel.setMaximumSize(new Dimension(7, Integer.MAX_VALUE));
+	  spanel.setPreferredSize(new Dimension(7, 0));
 	  
-	  if(linkNode) {
-	    UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
-
-	    JBooleanField field = 
-	      UIFactory.createTitledBooleanField
-	      (tpanel, "Link Node:", sTSize, 
-	       vpanel, sVSize2, 
-	       "Whether to link the node associated with the texture to the Target Link " + 
-	       "Node.");
-	    field.setValue(true);
-
-	    pLinkFields.put(nodeID, field);
-	  }
+	  hbox.add(spanel);
 	}
 
-	JDrawer drawer = 
-	  new JDrawer("Node: " + nodeID.getName(), (JComponent) comps[2], true);
+	{
+	  Box ibox = new Box(BoxLayout.Y_AXIS);
+
+	  if(pInvalidNodes.isEmpty()) {
+	    Component comps[] = UIFactory.createTitledPanels();
+	    JPanel tpanel = (JPanel) comps[0];
+	    JPanel vpanel = (JPanel) comps[1];
+	    
+	    tpanel.add(Box.createRigidArea(new Dimension(sTSize-7, 0)));
+	    vpanel.add(Box.createHorizontalGlue());
+
+	    ibox.add(comps[2]);
+	  }
+	  else {
+	    for(String name : pInvalidNodes.keySet()) {
+	      JPanel panel = new JPanel();
+	      panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));  
+
+	      panel.add(Box.createRigidArea(new Dimension(0, 4)));
+
+	      {
+		Box mbox = new Box(BoxLayout.X_AXIS);
+		
+		mbox.add(Box.createRigidArea(new Dimension(4, 0)));
+		
+		{
+		  JTextArea area = new JTextArea(pInvalidNodes.get(name), 0, 45);
+		  area.setName("HistoryTextArea");
+		  
+		  area.setLineWrap(true);
+		  area.setWrapStyleWord(true);
+		
+		  area.setEditable(false);
+
+		  Dimension size = area.getPreferredSize();
+		  size.height = Integer.MAX_VALUE;
+		  area.setMaximumSize(size);
+		  
+		  mbox.add(area);
+		}
+		
+		mbox.add(Box.createRigidArea(new Dimension(4, 0)));
+		mbox.add(Box.createHorizontalGlue());
+		
+		panel.add(mbox);
+	      }
+	      
+	      panel.add(Box.createRigidArea(new Dimension(0, 4)));
+
+	      JDrawer drawer = new JDrawer("Node: " + name, panel, true);
+	      ibox.add(drawer);
+	    }
+	  }
+
+	  hbox.add(ibox);
+	}
+
+	JDrawer drawer = new JDrawer("Invalid Pipeline Nodes:", hbox, false);
+	vbox.add(drawer);
+      }
+
+      /* nodes */ 
+      {
+	Box hbox = new Box(BoxLayout.X_AXIS);
+	hbox.addComponentListener(this);
+
+	{
+	  JPanel spanel = new JPanel();
+	  spanel.setName("Spacer");
+	  
+	  spanel.setMinimumSize(new Dimension(7, 0));
+	  spanel.setMaximumSize(new Dimension(7, Integer.MAX_VALUE));
+	  spanel.setPreferredSize(new Dimension(7, 0));
+	  
+	  hbox.add(spanel);
+	}
+
+	{
+	  Box ibox = new Box(BoxLayout.Y_AXIS);
+
+	  if(pNodeTextures.isEmpty()) {
+	    Component comps[] = UIFactory.createTitledPanels();
+	    ibox.add(comps[2]);
+	  }
+	  else {
+	    for(NodeID nodeID : pNodeTextures.keySet()) {
+	      Component comps[] = UIFactory.createTitledPanels();
+	      JPanel tpanel = (JPanel) comps[0];
+	      JPanel vpanel = (JPanel) comps[1];
+	      
+	      {
+		{
+		  JLabel label = 
+		    UIFactory.createFixedLabel
+		    ("Textures:", sTSize-7, JLabel.RIGHT, 
+		     "The name of the texture file associated with the Pipeline node.");
+		  tpanel.add(label);
+		}
+		
+		tpanel.add(Box.createVerticalGlue());
+		
+		boolean first = true;
+		for(String texture : pNodeTextures.get(nodeID)) {
+		  if(!first) 
+		    vpanel.add(Box.createRigidArea(new Dimension(0, 3)));
+		  first = false;
+		  
+		  vpanel.add(UIFactory.createTextField(texture, sVSize2, JLabel.CENTER));
+		}
+	      }
+	      
+	      boolean registerNode = pRegisterNodes.contains(nodeID);
+	      boolean renumberNode = pRenumberNodes.containsKey(nodeID);
+	      boolean checkOutNode = pCheckOutNodes.contains(nodeID);
+	      boolean linkNode     = pLinkNodes.contains(nodeID);
+	      if(registerNode || renumberNode || checkOutNode || linkNode) {
+		UIFactory.addVerticalSpacer(tpanel, vpanel, 9);
+		
+		if(registerNode) {
+		  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+		  
+		  JBooleanField field = 
+		    UIFactory.createTitledBooleanField
+		    (tpanel, "Register Node:", sTSize-7, 
+		     vpanel, sVSize2, 
+		     "Whether to register a new node for the texture.");
+		  field.setValue(true);
+		  
+		  field.addActionListener(this);
+		  field.setActionCommand("register-changed:" + nodeID.getName());
+		  
+		  pRegisterFields.put(nodeID, field);
+		}
+
+		if(renumberNode) {
+		  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+		  
+		  JBooleanField field = 
+		    UIFactory.createTitledBooleanField
+		    (tpanel, "Renumber Node:", sTSize-7, 
+		     vpanel, sVSize2, 
+		     "Whether to change the texture file sequences associated " +
+		     "with the node node.");
+		  field.setValue(true);
+		  
+		  field.addActionListener(this);
+		  field.setActionCommand("renumber-changed:" + nodeID.getName());
+		  
+		  pRenumberFields.put(nodeID, field);
+		}
+		
+		if(checkOutNode) {
+		  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+		  
+		  JBooleanField field = 
+		    UIFactory.createTitledBooleanField
+		    (tpanel, "CheckOut Node:", sTSize-7, 
+		     vpanel, sVSize2, 
+		     "Whether to check-out the latest version of the node associated with " + 
+		     "the texture.");
+		  field.setValue(true);
+		  
+		  field.addActionListener(this);
+		  field.setActionCommand("check-out-changed:" + nodeID.getName());
+		  
+		  pCheckOutFields.put(nodeID, field);
+		}
+		
+		if(linkNode) {
+		  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+		  
+		  JBooleanField field = 
+		    UIFactory.createTitledBooleanField
+		    (tpanel, "Link Node:", sTSize-7, 
+		     vpanel, sVSize2, 
+		     "Whether to link the node associated with the texture to the Target " + 
+		     "Link Node.");
+		  field.setValue(true);
+		  
+		  pLinkFields.put(nodeID, field);
+		}
+	      }
+	      
+	      JDrawer drawer = 
+		new JDrawer("Node: " + nodeID.getName(), (JComponent) comps[2], true);
+	      ibox.add(drawer);
+	    }
+	    
+	    for(NodeID nodeID : pUnlinkNodes) {
+	      Component comps[] = UIFactory.createTitledPanels();
+	      JPanel tpanel = (JPanel) comps[0];
+	      JPanel vpanel = (JPanel) comps[1];
+	
+	      JBooleanField field = 
+		UIFactory.createTitledBooleanField
+		(tpanel, "Unlink Node:", sTSize-7, 
+		 vpanel, sVSize2, 
+		 "Whether to unlink the node not associated with any texture referenced " + 
+		 "by the Maya scene from the Target Link Node.");
+	      field.setValue(true);
+	      
+	      pUnlinkFields.put(nodeID, field);
+	      
+	      JDrawer drawer = 
+		new JDrawer("Node: " + nodeID.getName(), (JComponent) comps[2], true);
+	      ibox.add(drawer);
+	    }
+	  }
+
+	  hbox.add(ibox);
+	}
+
+	JDrawer drawer = new JDrawer("Pipeline Nodes:", hbox, true);
 	vbox.add(drawer);
       }
       
-      for(NodeID nodeID : pUnlinkNodes) {
-	Component comps[] = UIFactory.createTitledPanels();
-	JPanel tpanel = (JPanel) comps[0];
-	JPanel vpanel = (JPanel) comps[1];
-	
-	JBooleanField field = 
-	  UIFactory.createTitledBooleanField
-	  (tpanel, "Unlink Node:", sTSize, 
-	   vpanel, sVSize2, 
-	   "Whether to unlink the node not associated with any texture referenced by " + 
-	   "the Maya scene from the Target Link Node.");
-	field.setValue(true);
-	
-	pUnlinkFields.put(nodeID, field);
-
-	JDrawer drawer = 
-	  new JDrawer("Node: " + nodeID.getName(), (JComponent) comps[2], true);
-	vbox.add(drawer);
-      }
-
       {
 	JPanel spanel = new JPanel();
 	spanel.setName("Spacer");
@@ -568,7 +727,7 @@ class MayaTextureSyncTool
 	
 	vbox.add(spanel);
       }
-
+      
       {
 	scroll = new JScrollPane(vbox);
 	
@@ -576,11 +735,11 @@ class MayaTextureSyncTool
 	  (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 	scroll.setVerticalScrollBarPolicy
 	  (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-		
+	
 	Dimension size = new Dimension(sTSize+sVSize2+52, 500);
 	scroll.setMinimumSize(size);
 	scroll.setPreferredSize(size);
-
+	
 	scroll.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE);
       }
     }    
@@ -603,6 +762,13 @@ class MayaTextureSyncTool
 	Boolean value = field.getValue();
 	if((value == null) || !value) 
 	  pCheckOutNodes.remove(nodeID);
+      }
+
+      for(NodeID nodeID : pRenumberFields.keySet()) {
+	JBooleanField field = pRenumberFields.get(nodeID);
+	Boolean value = field.getValue();
+	if((value == null) || !value) 
+	  pRenumberNodes.remove(nodeID);
       }
 
       for(NodeID nodeID : pLinkFields.keySet()) {
@@ -865,10 +1031,31 @@ class MayaTextureSyncTool
 	  File file = null;
 	  if(!texture.startsWith("/")) {
 	    file = new File(PackageInfo.sProdDir, 
-			    pTargetSceneID.getWorkingParent().getPath());
+			    pTargetSceneID.getWorkingParent().getPath() + "/" + texture);
 	  }
 	  else {
 	    file = new File(texture);
+	  }
+
+	  if(!file.isFile()) {
+	    boolean hasOwningNode = false;
+	    if(file.getPath().startsWith(workRoot)) {
+	      String path = file.getPath().substring(workRoot.length());
+	      String name = mclient.getNodeOwning(path);
+	      if(name != null) {
+		try {
+		  NodeID nodeID = new NodeID(PackageInfo.sUser, pView, name);
+		  mclient.status(nodeID);
+		  hasOwningNode = true;
+		}
+		catch(PipelineException ex) {
+		}
+	      }
+	    }
+
+	    if(!hasOwningNode)
+	      throw new PipelineException 
+		("The texture image does not exist:\n\n" + tex);
 	  }
 
 	  File canon = null;
@@ -887,19 +1074,15 @@ class MayaTextureSyncTool
 	    String parts[] = canon.getName().split("\\.");
 	    switch(parts.length) {
 	    case 2:
+	    case 3:
 	      prefix = parts[0];
-	      suffix = parts[1];
+	      suffix = parts[parts.length-1];
 	      break;
-
-	    case 1:
-	      throw new PipelineException 
-		("The texture image filename did not a have a format suffix:\n\n" + 
-		 tex);
 	    
 	    default:
 	      throw new PipelineException 
 		("The texture image filename did not conform to the " +
-		 "\"texture-name.suffix\" file naming convention:\n\n" + 
+		 "(texture-name[.frame].suffix) file naming convention:\n\n" + 
 		 tex);
 	    }
 	  }
@@ -908,23 +1091,6 @@ class MayaTextureSyncTool
 	    throw new PipelineException 
 	      ("The texture image filename did not have a supported image file suffix:\n\n" + 
 	       tex);
-	    
-	  if(!file.isFile()) {
-	    if(file.getPath().startsWith(workRoot)) {
-	      String name = (file.getParent().substring(workRoot.length()) + "/" + prefix);
-	      try {
-		mclient.status(new NodeID(PackageInfo.sUser, pView, name));
-	      }
-	      catch(PipelineException ex) {
-		throw new PipelineException 
-		  ("The texture image does not exist:\n\n" + tex);
-	      }
-	    }
-	    else {
-	      throw new PipelineException 
-		("The texture image does not exist:\n\n" + tex);
-	    }
-	  }
 
 	  TreeSet<String> shaders = pFileShaders.get(canon);
 	  if(shaders == null) {
@@ -974,38 +1140,126 @@ class MayaTextureSyncTool
    QueueMgrClient qclient
   ) 
     throws PipelineException
-  {    
+  { 
+    String workRoot = (PackageInfo.sWorkDir + "/" + PackageInfo.sUser + "/" + pView);
+    
+    /* determine which Pipeline nodes are associated with the textures */ 
+    TreeMap<NodeID,TreeSet<String>> nodeTextures = new TreeMap<NodeID,TreeSet<String>>();
     for(File canon : pTextureFiles.keySet()) {
       File texture = pTextureFiles.get(canon);
       
       NodeID nodeID = null;
-      String suffix = null;
       {
-	String parts[] = texture.getName().split("\\.");
-	if(parts.length == 2) {
-	  nodeID = new NodeID(PackageInfo.sUser, pView, texture.getParent() + "/" + parts[0]);
-	  suffix = parts[parts.length-1];
+	String prefix = null;
+	{
+	  String parts[] = texture.getName().split("\\.");
+	  switch(parts.length) {
+	  case 2:
+	  case 3:
+	    prefix = parts[0];
+	    break;
+	    
+	  default:
+	    throw new PipelineException 
+	      ("The texture image filename did not conform to the " +
+	       "(texture-name[.frame].suffix) file naming convention:\n\n" + 
+	       texture);
+	  }
+	}
+
+	String name = mclient.getNodeOwning(texture.getPath());
+	if(name == null) {
+	  nodeID = new NodeID(PackageInfo.sUser, pView, texture.getParent() + "/" + prefix);
+
+	  TreeSet<String> textures = nodeTextures.get(nodeID);
+	  if(textures == null) {
+	    textures = new TreeSet<String>();
+	    nodeTextures.put(nodeID, textures);
+	  }
+	  textures.add(texture.getName());
 	}
 	else {
-	  throw new PipelineException 
-	    ("The texture image filename did not conform to the " +
-	     "\"texture-name.suffix\" file naming convention:\n\n" + 
-	     texture);
+	  nodeID = new NodeID(PackageInfo.sUser, pView, name);
+
+	  TreeSet<String> textures = pNodeTextures.get(nodeID);
+	  if(textures == null) {
+	    textures = new TreeSet<String>();
+	    pNodeTextures.put(nodeID, textures);
+	  }
+	  textures.add(texture.getName());
 	}
-
-	pNodeTextures.put(nodeID, texture.getName());
       }
+    }
 
+    /* check whether textures not associated with existing nodes can be registered */ 
+    for(NodeID nodeID : nodeTextures.keySet()) {
+      TreeSet<String> textures = nodeTextures.get(nodeID);
+
+      TreeSet<File> files = new TreeSet<File>(); 
+      for(String texture : textures) 
+	files.add(new File(texture));
+
+      try {
+	TreeSet<FileSeq> fseqs = FileSeq.collate(files, false);
+	if(fseqs.size() != 1) {
+	  StringBuffer buf = new StringBuffer();
+	  buf.append
+	    ("Unable to register node for the following texture files because they cannot " + 
+	     "be members of the same file sequence:\n\n");
+	  for(File file : files) 
+	    buf.append("  " + file + "\n");
+	  throw new PipelineException(buf.toString()); 
+	}
+	
+	pNodeTextures.put(nodeID, textures);
+      }
+      catch(PipelineException ex) {
+	pInvalidNodes.put(nodeID.getName(), ex.getMessage());
+      }
+    }
+
+    /* determine which node operations need to be performed */ 
+    for(NodeID nodeID : pNodeTextures.keySet()) {
       try {
 	NodeStatus status = mclient.status(nodeID); 
 	NodeDetails details = status.getDetails(); 
+	NodeCommon com = null;
 	if(details.getOverallNodeState() == OverallNodeState.CheckedIn) {
 	  pCheckOutNodes.add(nodeID);
+	  com = details.getLatestVersion();
 	  pLinkNodes.add(nodeID);
 	}
 	else {
 	  if(!pTargetLinkMod.getSourceNames().contains(nodeID.getName())) 
 	    pLinkNodes.add(nodeID);
+	  com = details.getWorkingVersion();
+	}
+
+	{
+	  TreeSet<String> textures = pNodeTextures.get(nodeID);
+
+	  TreeSet<File> files = new TreeSet<File>(); 
+	  for(String texture : textures) 
+	    files.add(new File(texture));
+
+	  TreeSet<FileSeq> tfseqs = FileSeq.collate(files, false);
+	  assert(tfseqs.size() == 1);
+	  FileSeq tfseq = tfseqs.first();
+	  
+	  for(FileSeq fseq : com.getSequences()) {
+	    if(tfseq.similarTo(fseq)) {
+	      files.addAll(fseq.getFiles());
+	      
+	      TreeSet<FileSeq> afseqs = FileSeq.collate(files, false);
+	      assert(afseqs.size() == 1);
+	      FileSeq afseq = afseqs.first();
+
+	      if(!afseq.equals(fseq)) 
+		pRenumberNodes.put(nodeID, afseq.getFrameRange());
+	      
+	      break;
+	    }
+	  }
 	}
       }
       catch(PipelineException ex) {
@@ -1055,44 +1309,172 @@ class MayaTextureSyncTool
   ) 
     throws PipelineException
   {            
-    System.out.print("Register:\n");
-    for(NodeID nodeID : pRegisterNodes) 
-      System.out.print("  " + nodeID + "\n");
-    System.out.print("\n");
+    /* register nodes */ 
+    {
+      String toolset = mclient.getDefaultToolsetName();
+      for(NodeID nodeID : pRegisterNodes) {
+	
+	TreeSet<File> files = new TreeSet<File>(); 
+	for(String texture : pNodeTextures.get(nodeID)) 
+	  files.add(new File(texture));
 
-    System.out.print("CheckOut:\n");
-    for(NodeID nodeID : pCheckOutNodes) 
-      System.out.print("  " + nodeID + "\n");
-    System.out.print("\n");
+	FileSeq primary = null;
+	{
+	  TreeSet<FileSeq> fseqs = FileSeq.collate(files, false);
+	  if(fseqs.size() != 1) {
+	    StringBuffer buf = new StringBuffer();
+	    buf.append
+	      ("Unable to register node (" + nodeID.getName() + ") for the following " +
+	       "texture files because they cannot be members of the same file sequence:\n\n");
+	    for(File file : files) 
+	      buf.append("  " + file + "\n");
+	    throw new PipelineException(buf.toString()); 
+	  }
 
-    System.out.print("Link:\n");
-    for(NodeID nodeID : pLinkNodes) 
-      System.out.print("  " + nodeID + "\n");
-    System.out.print("\n");
-
-    System.out.print("Unlink:\n");
-    for(NodeID nodeID : pUnlinkNodes) 
-      System.out.print("  " + nodeID + "\n");
-    System.out.print("\n");
-
-    String workRoot = (PackageInfo.sWorkDir + "/" + PackageInfo.sUser + "/" + pView);
-
-    System.out.print("Copy Textures:\n");
-    for(File canon: pTextureFiles.keySet()) {
-      File texture = new File(workRoot + pTextureFiles.get(canon).getPath());
-      if(!canon.equals(texture)) 
-	System.out.print("  " + canon + " -> " + texture + "\n");
-    }
-    System.out.print("\n");
-
-    System.out.print("Maya Shader Attributes:\n");
-    for(File canon : pFileShaders.keySet()) {
-      String value = ("$WORKING" + pTextureFiles.get(canon));
-      for(String shader : pFileShaders.get(canon)) {
-	System.out.print("  setAttr " + shader + ".fileTextureName \"" + value + "\";\n");
+	  primary = fseqs.first();
+	}
+	
+	String editor = mclient.getEditorForSuffix(primary.getFilePattern().getSuffix());
+ 	NodeMod mod = new NodeMod(nodeID.getName(), primary, null, toolset, editor);
+ 	mclient.register(PackageInfo.sUser, pView, mod);
       }
     }
-    System.out.print("\n");
+
+    /* check-out nodes */ 
+    for(NodeID nodeID : pCheckOutNodes) 
+      mclient.checkOut(nodeID, null, CheckOutMode.KeepModified, CheckOutMethod.Modifiable);
+
+    /* renumber nodes */ 
+    for(NodeID nodeID : pRenumberNodes.keySet()) 
+      mclient.renumber(nodeID, pRenumberNodes.get(nodeID), false);
+
+    /* link nodes */ 
+    for(NodeID nodeID : pLinkNodes) 
+      mclient.link(PackageInfo.sUser, pView, pTargetLink, nodeID.getName(), 
+		   LinkPolicy.Dependency, LinkRelationship.All, null);
+
+    /* unlink nodes */      
+    for(NodeID nodeID : pUnlinkNodes) 
+      mclient.unlink(PackageInfo.sUser, pView, pTargetLink, nodeID.getName());
+
+    /* copy textures */ 
+    {
+      String workRoot = (PackageInfo.sWorkDir + "/" + PackageInfo.sUser + "/" + pView);
+
+      System.out.print("Copy Textures:\n");
+      for(File canon: pTextureFiles.keySet()) {
+	File texture = new File(workRoot + pTextureFiles.get(canon).getPath());
+	if(!canon.equals(texture)) 
+	  System.out.print("  " + canon + " -> " + texture + "\n");
+      }
+      System.out.print("\n");
+
+      Map<String,String> env = System.getenv();
+      for(File canon: pTextureFiles.keySet()) {
+	File texture = new File(workRoot + pTextureFiles.get(canon).getPath());
+	if(!canon.equals(texture)) {
+	  ArrayList<String> args = new ArrayList<String>();
+	  args.add("--force");
+	  args.add(canon.getPath());
+	  args.add(texture.getPath());
+	  
+	  SubProcessLight proc = 
+	    new SubProcessLight("CopyTextures", "cp", args, env, PackageInfo.sTempDir);
+	  try {	    
+	    proc.start();
+	    proc.join();
+	    if(!proc.wasSuccessful()) 
+	      throw new PipelineException
+		("Unable to copying the texture file (" + canon + ") to the " + 
+		 "working area location (" + texture + "):\n\n" + 
+		 proc.getStdErr());
+	  }
+	  catch(InterruptedException ex) {
+	    throw new PipelineException
+	      ("Interrupted while copying texture files!");
+	  }
+	}
+      }      
+    }
+
+    /* fix texture paths in the Maya scene */  
+    {
+      System.out.print("Maya Shader Attributes:\n");
+      for(File canon : pFileShaders.keySet()) {
+	String value = ("$WORKING" + pTextureFiles.get(canon));
+	for(String shader : pFileShaders.get(canon)) {
+	  System.out.print("  setAttr " + shader + ".fileTextureName \"" + value + "\";\n");
+	}
+      }
+      System.out.print("\n");
+      
+      File script = null;
+      try {
+	script = File.createTempFile("MayaTextureSyncTool-FixPaths.", ".mel", 
+				     PackageInfo.sTempDir);
+	FileCleaner.add(script);
+      }
+      catch(IOException ex) {
+	throw new PipelineException
+	  ("Unable to create the temporary MEL script used to fix the " + 
+	   "texture filename paths in the Maya scene!");
+      }
+      
+      try {
+	FileWriter out = new FileWriter(script);
+	
+	for(File canon : pFileShaders.keySet()) {
+	  String value = ("$WORKING" + pTextureFiles.get(canon));
+	  for(String shader : pFileShaders.get(canon)) {
+	    out.write
+	      ("setAttr -type \"string\" " + shader + ".fileTextureName " + 
+	       "\"" + value + "\";\n");
+	    
+	    out.write("file -save;\n");
+	  }
+	}
+	  
+	out.close();
+      }
+      catch(IOException ex) {
+	throw new PipelineException
+	  ("Unable to write the temporary MEL script (" + script + ") used to fix the " + 
+	   "texture filename paths in the Maya scene!");
+      }
+      
+      /* run Maya to fix the texture paths and save the scene */ 
+      {
+	ArrayList<String> args = new ArrayList<String>();
+	args.add("-batch");
+	args.add("-script");
+	args.add(script.getPath());
+	args.add("-file");
+	args.add(pTargetSceneFile.getPath());
+	
+	TreeMap<String,String> env = 
+	  mclient.getToolsetEnvironment(PackageInfo.sUser, pView, 
+					pTargetSceneMod.getToolset());
+	
+	File wdir = new File(PackageInfo.sProdDir.getPath() + 
+			     pTargetSceneID.getWorkingParent());
+
+	SubProcessLight proc = 
+	  new SubProcessLight("MayaTextureSync-FixPaths", "maya", args, env, wdir);
+	try {
+	  proc.start();
+	  proc.join();
+	  if(!proc.wasSuccessful()) {
+	    throw new PipelineException
+	      ("Failed to fix the texture filename paths due to a Maya failure!\n\n" +
+	       proc.getStdOut() + "\n\n" + 
+	       proc.getStdErr());
+	    }
+	}
+	catch(InterruptedException ex) {
+	  throw new PipelineException(ex);
+	}
+      }
+    }
 
     return false;
   }
@@ -1161,6 +1543,8 @@ class MayaTextureSyncTool
       doTextureBrowse(cmd.substring(15));
     else if(cmd.startsWith("register-changed:")) 
       doRegisterChanged(cmd.substring(17));
+    else if(cmd.startsWith("renumber-changed:")) 
+      doRenumberChanged(cmd.substring(17));
     else if(cmd.startsWith("check-out-changed:")) 
       doCheckOutChanged(cmd.substring(18));
   }
@@ -1257,6 +1641,31 @@ class MayaTextureSyncTool
   }
 
   /**
+   * Update the link field based on the value of the renumber field.
+   */ 
+  private void 
+  doRenumberChanged
+  (
+   String name
+  )  
+  {
+    NodeID nodeID = new NodeID(PackageInfo.sUser, pView, name);
+
+    JBooleanField rfield = pRenumberFields.get(nodeID);
+    JBooleanField lfield = pLinkFields.get(nodeID);
+    
+    Boolean value = rfield.getValue();
+    if((value == null) || !value) {
+      lfield.setValue(null);
+      lfield.setEnabled(false);
+    }
+    else {
+      lfield.setValue(true);
+      lfield.setEnabled(true);
+    }
+  }
+
+  /**
    * Update the link field based on the value of the check-out field.
    */ 
   private void 
@@ -1269,15 +1678,22 @@ class MayaTextureSyncTool
 
     JBooleanField rfield = pCheckOutFields.get(nodeID);
     JBooleanField lfield = pLinkFields.get(nodeID);
+    JBooleanField ufield = pRenumberFields.get(nodeID);
     
     Boolean value = rfield.getValue();
     if((value == null) || !value) {
       lfield.setValue(null);
       lfield.setEnabled(false);
+
+      ufield.setValue(null);
+      ufield.setEnabled(false);
     }
     else {
       lfield.setValue(true);
       lfield.setEnabled(true);
+
+      ufield.setValue(true);
+      ufield.setEnabled(true);
     }
   }
 
@@ -1420,12 +1836,17 @@ class MayaTextureSyncTool
   /**
    * The texture filenames indexed by unique working area IDs of the parent nodes.
    */ 
-  private TreeMap<NodeID,String>  pNodeTextures; 
+  private TreeMap<NodeID,TreeSet<String>>  pNodeTextures; 
 
   /**
    * The unique working area IDs of the nodes which need to be registered.
    */ 
   private TreeSet<NodeID>  pRegisterNodes; 
+
+  /**
+   * The new frame ranges indexed by the unique working area IDs.
+   */ 
+  private TreeMap<NodeID,FrameRange>  pRenumberNodes; 
 
   /**
    * The unique working area IDs of the nodes which need to be checked-out.
@@ -1444,6 +1865,12 @@ class MayaTextureSyncTool
    */ 
   private TreeSet<NodeID>  pUnlinkNodes; 
 
+  /**
+   * Error messages for the Pipeline nodes which could not be validated indexed 
+   * by the names of the nodes.
+   */
+  private TreeMap<String,String>  pInvalidNodes;
+
 
 
   /*-- THIRD PHASE: UI --------------------------------------------------------------------*/
@@ -1452,6 +1879,11 @@ class MayaTextureSyncTool
    * The register flags indexed by the unique working area IDs of the node.
    */ 
   private TreeMap<NodeID,JBooleanField>  pRegisterFields; 
+
+  /**
+   * The renumber flags indexed by the unique working area IDs of the node.
+   */ 
+  private TreeMap<NodeID,JBooleanField>  pRenumberFields; 
 
   /**
    * The check-out flags indexed by the unique working area IDs of the node.
