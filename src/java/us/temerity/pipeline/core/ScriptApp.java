@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.6 2004/09/21 23:50:54 jim Exp $
+// $Id: ScriptApp.java,v 1.7 2004/09/22 05:39:38 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -908,6 +908,77 @@ class ScriptApp
   }
 
   /**
+   * Register a new working version.
+   */ 
+  public void 
+  workingVersionRegister
+  (
+   NodeID nodeID, 
+   FileSeq primary, 
+   String toolset, 
+   String editor, 
+   Boolean noAction, 
+   String actionName, 
+   VersionID actionVersionID, 
+   Boolean actionEnabled, 
+   TreeMap params, 
+   TreeMap sourceParams, 
+   OverflowPolicy overflowPolicy,
+   ExecutionMethod executionMethod,
+   Integer batchSize,
+   Integer priority,
+   Float maxLoad,
+   Long minMemory,
+   Long minDisk,
+   TreeMap licenseKeys,
+   TreeMap selectionKeys,
+   MasterMgrClient client
+  ) 
+    throws PipelineException
+  {
+    NodeMod mod = null;
+    try {
+      if((toolset != null) && 
+	 (!client.getToolsetNames().contains(toolset)))
+	throw new PipelineException 
+	  ("No toolset named (" + toolset + ") exists!");
+
+      String tset = toolset;
+      if(tset == null) 
+	tset = client.getDefaultToolsetName();
+
+      if((editor != null) &&
+	 (!PluginMgr.getInstance().getEditors().keySet().contains(editor)))
+	throw new PipelineException 
+	  ("No Editor plugin named (" + editor + ") exists!");
+
+      String edit = editor;
+      if(edit == null) {
+	String suffix = primary.getFilePattern().getSuffix();
+	if(suffix != null) 
+	  edit = client.getEditorForSuffix(suffix);
+      }
+
+      mod = new NodeMod(nodeID.getName(), primary, new TreeSet<FileSeq>(), tset, edit);
+
+      setActionProperties
+	(mod, noAction, actionName, actionVersionID, actionEnabled, 
+	 (TreeMap<String,String>) params, 
+	 (TreeMap<String,TreeMap<String,String>>) sourceParams, 
+	 overflowPolicy, executionMethod, batchSize,
+	 priority, maxLoad, minMemory, minDisk,
+	 (TreeMap<String,Boolean>) licenseKeys, (TreeMap<String,Boolean>) selectionKeys,
+	 null, null, null, null, 
+	 client);
+    }
+    catch(IllegalArgumentException ex) {
+      throw new PipelineException(ex.getMessage());
+    }
+
+    client.register(nodeID.getAuthor(), nodeID.getView(), mod);
+  }
+
+  /**
    * Set the properties of the given working version.
    */ 
   public void 
@@ -960,94 +1031,143 @@ class ScriptApp
       ExecutionMethod prevExecutionMethod = mod.getExecutionMethod();
       Integer prevBatchSize = mod.getBatchSize(); 
 
-      /* actions */ 
-      if((noAction != null) && noAction) {
-	mod.setAction(null);	
+      /* actions and related properties */ 
+      setActionProperties
+	(mod, noAction, actionName, actionVersionID, actionEnabled, 
+	 (TreeMap<String,String>) params, 
+	 (TreeMap<String,TreeMap<String,String>>) sourceParams, 
+	 overflowPolicy, executionMethod, batchSize,
+	 priority, maxLoad, minMemory, minDisk,
+	 (TreeMap<String,Boolean>) licenseKeys, (TreeMap<String,Boolean>) selectionKeys,
+	 prevJobReqs, prevOverflowPolicy, prevExecutionMethod, prevBatchSize, 
+	 client);
+    }
+    catch(IllegalArgumentException ex) {
+      throw new PipelineException(ex.getMessage());
+    }
+
+    client.modifyProperties(nodeID.getAuthor(), nodeID.getView(), mod);
+  }
+
+  /** 
+   * Set the Action plugin and action related parameters of the given working version.
+   */
+  private void
+  setActionProperties
+  (
+   NodeMod mod, 
+   Boolean noAction, 
+   String actionName, 
+   VersionID actionVersionID, 
+   Boolean actionEnabled, 
+   TreeMap<String,String> params, 
+   TreeMap<String,TreeMap<String,String>> sourceParams, 
+   OverflowPolicy overflowPolicy,
+   ExecutionMethod executionMethod,
+   Integer batchSize,
+   Integer priority,
+   Float maxLoad,
+   Long minMemory,
+   Long minDisk,
+   TreeMap<String,Boolean> licenseKeys,
+   TreeMap<String,Boolean> selectionKeys,
+   JobReqs prevJobReqs,
+   OverflowPolicy prevOverflowPolicy,
+   ExecutionMethod prevExecutionMethod,
+   Integer prevBatchSize,
+   MasterMgrClient client
+  ) 
+    throws PipelineException
+  {
+    /* actions */ 
+    if((noAction != null) && noAction) {
+      mod.setAction(null);	
+    }
+    else {
+      if(actionName != null) {
+	TreeSet<VersionID> table = PluginMgr.getInstance().getActions().get(actionName);
+	if(table == null) 
+	  throw new PipelineException 
+	    ("No Action plugin named (" + actionName + ") exists!");
+	
+	if((actionVersionID != null) && !table.contains(actionVersionID)) 
+	  throw new PipelineException 
+	    ("No version (v" + actionVersionID + ") of Action plugin " + 
+	     "(" + actionName + ") exists!");
+	
+	BaseAction action = PluginMgr.getInstance().newAction(actionName, actionVersionID);
+	mod.setAction(action);
       }
-      else {
-	if(actionName != null) {
-	  TreeSet<VersionID> table = PluginMgr.getInstance().getActions().get(actionName);
-	  if(table == null) 
-	    throw new PipelineException 
-	      ("No Action plugin named (" + actionName + ") exists!");
-	  
-	  if((actionVersionID != null) && !table.contains(actionVersionID)) 
-	    throw new PipelineException 
-	      ("No version (v" + actionVersionID + ") of Action plugin " + 
-	       "(" + actionName + ") exists!");
-
-	  BaseAction action = PluginMgr.getInstance().newAction(actionName, actionVersionID);
-	  mod.setAction(action);
-	}
 	
-	if(actionEnabled != null) 
-	  mod.setActionEnabled(actionEnabled);
+      if(actionEnabled != null) 
+	mod.setActionEnabled(actionEnabled);
+      
+      /* action parameters */ 
+      if(!params.isEmpty() || !sourceParams.isEmpty()) {
+	BaseAction action = mod.getAction();
+	if(action == null) 
+	  throw new PipelineException
+	    ("No node (" + mod.getName() + ") has no Action plugin and therefore " + 
+	     "cannot have its parameters set!");
 	
-	/* action parameters */ 
-	if(!params.isEmpty() || !sourceParams.isEmpty()) {
-	  BaseAction action = mod.getAction();
-	  if(action == null) 
-	    throw new PipelineException
-	      ("No node (" + nodeID.getName() + ") has no Action plugin and therefore " + 
-	       "cannot have its parameters set!");
-	  
-	  TreeMap<String,String> pparams = (TreeMap<String,String>) params;
-	  for(String pname : pparams.keySet()) {
-	    String value = pparams.get(pname);
-	    try {
-	      BaseActionParam aparam = action.getSingleParam(pname);
-	      if(aparam == null)
-		throw new PipelineException 
-		  ("No parameter named (" + pname + ") exists for Action " + 
-		   "(" + action.getName() + ")!");
-
-	      if(aparam instanceof BooleanActionParam) {
-		action.setSingleParamValue(pname, new Boolean(value));
-	      }
-	      else if(aparam instanceof IntegerActionParam) {
-		action.setSingleParamValue(pname, new Integer(value));
-	      }
-	      else if(aparam instanceof DoubleActionParam) {
-		action.setSingleParamValue(pname, new Double(value));
-	      }
-	      else if(aparam instanceof StringActionParam) {
-		action.setSingleParamValue(pname, value);
-	      }
-	      else if(aparam instanceof LinkActionParam) {
-		if(!mod.getSourceNames().contains(value))
-		  throw new PipelineException
-		    ("The node (" + value + ") is not an upstream source of node " + 
-		     "(" + nodeID.getName() + ") and is therefore not legal for the value " + 
-		     "of parameter (" + pname + ")!");
-		
-		action.setSingleParamValue(pname, value);
-	      }
-	      else if(aparam instanceof EnumActionParam) {
-		EnumActionParam eparam = (EnumActionParam) aparam;
-		if(!eparam.getValues().contains(value))
-		  throw new PipelineException
-		    ("The value (" + value + ") is not one of the enumerations of " +
-		     "parameter (" + pname + ")!");
-		
-		action.setSingleParamValue(pname, value);
-	      }
+	for(String pname : params.keySet()) {
+	  String value = params.get(pname);
+	  try {
+	    BaseActionParam aparam = action.getSingleParam(pname);
+	    if(aparam == null)
+	      throw new PipelineException 
+		("No parameter named (" + pname + ") exists for Action " + 
+		 "(" + action.getName() + ")!");
+	    
+	    if(aparam instanceof BooleanActionParam) {
+	      action.setSingleParamValue(pname, new Boolean(value));
 	    }
-	    catch(NumberFormatException ex) {
-	      throw new PipelineException
-		("The value (" + value + ") is not legal for parameter (" + pname + ")!");
+	    else if(aparam instanceof IntegerActionParam) {
+	      action.setSingleParamValue(pname, new Integer(value));
+	    }
+	    else if(aparam instanceof DoubleActionParam) {
+	      action.setSingleParamValue(pname, new Double(value));
+	    }
+	    else if(aparam instanceof StringActionParam) {
+	      action.setSingleParamValue(pname, value);
+	    }
+	    else if(aparam instanceof LinkActionParam) {
+	      if(!mod.getSourceNames().contains(value))
+		throw new PipelineException
+		  ("The node (" + value + ") is not an upstream source of node " + 
+		   "(" + mod.getName() + ") and is therefore not legal for the value " + 
+		   "of parameter (" + pname + ")!");
+	      
+	      action.setSingleParamValue(pname, value);
+	    }
+	    else if(aparam instanceof EnumActionParam) {
+	      EnumActionParam eparam = (EnumActionParam) aparam;
+	      if(!eparam.getValues().contains(value))
+		throw new PipelineException
+		  ("The value (" + value + ") is not one of the enumerations of " +
+		   "parameter (" + pname + ")!");
+	      
+	      action.setSingleParamValue(pname, value);
 	    }
 	  }
+	  catch(NumberFormatException ex) {
+	    throw new PipelineException
+	      ("The value (" + value + ") is not legal for parameter (" + pname + ")!");
+	  }
+	}
+	
+	for(String sname : sourceParams.keySet()) {
+	  if(!mod.getSourceNames().contains(sname)) 
+	    throw new PipelineException
+	      ("The node (" + sname + ") is not an upstream source of node " + 
+	       "(" + mod.getName() + ") and therefore cannot have per-source " + 
+	       "parameters!");
 	  
-	  TreeMap<String,TreeMap<String,String>> ssourceParams = 
-	    (TreeMap<String,TreeMap<String,String>>) sourceParams;
-	  for(String sname : ssourceParams.keySet()) {
-	    if(!mod.getSourceNames().contains(sname)) 
-	      throw new PipelineException
-		("The node (" + sname + ") is not an upstream source of node " + 
-		 "(" + nodeID.getName() + ") and therefore cannot have per-source " + 
-		 "parameters!");
-	    
-	    TreeMap<String,String> sparams = ssourceParams.get(sname);
+	  TreeMap<String,String> sparams = sourceParams.get(sname);
+	  if(sparams == null) {
+	    action.removeSourceParams(sname);
+	  }
+	  else {
 	    for(String pname : sparams.keySet()) {
 	      if(!action.hasSourceParams(sname)) 
 		action.initSourceParams(sname);
@@ -1055,6 +1175,11 @@ class ScriptApp
 	      String value = sparams.get(pname);
 	      try {
 		BaseActionParam aparam = action.getSourceParam(sname, pname);
+		if(aparam == null)
+		  throw new PipelineException 
+		    ("No per-source parameter named (" + pname + ") exists for Action " + 
+		     "(" + action.getName() + ")!");
+
 		if(aparam instanceof BooleanActionParam) {
 		  action.setSourceParamValue(sname, pname, new Boolean(value));
 		}
@@ -1071,7 +1196,7 @@ class ScriptApp
 		  if(!mod.getSourceNames().contains(value))
 		    throw new PipelineException
 		      ("The node (" + value + ") is not an upstream source of node " + 
-		       "(" + nodeID.getName() + ") and is therefore not legal for the " + 
+		       "(" + mod.getName() + ") and is therefore not legal for the " + 
 		       "value of per-source parameter (" + pname + ")!");
 		  
 		  action.setSourceParamValue(sname, pname, value);
@@ -1093,35 +1218,37 @@ class ScriptApp
 	      }
 	    }
 	  }
-	  
-	  mod.setAction(action);
 	}
 	
-	/* job requirements */ 
-	{
-	  if(overflowPolicy != null) 
-	    mod.setOverflowPolicy(overflowPolicy);
-	  else if(prevOverflowPolicy != null)
-	    mod.setOverflowPolicy(prevOverflowPolicy);
-	  
-	  if(executionMethod != null) 
-	    mod.setExecutionMethod(executionMethod);
-	  else if(prevExecutionMethod != null)
-	    mod.setExecutionMethod(prevExecutionMethod);
+	mod.setAction(action);
+      }
+      
+      /* job requirements */ 
+      {
+	if(overflowPolicy != null) 
+	  mod.setOverflowPolicy(overflowPolicy);
+	else if(prevOverflowPolicy != null)
+	  mod.setOverflowPolicy(prevOverflowPolicy);
+	
+	if(executionMethod != null) 
+	  mod.setExecutionMethod(executionMethod);
+	else if(prevExecutionMethod != null)
+	  mod.setExecutionMethod(prevExecutionMethod);
+	
+	if(batchSize != null) 
+	  mod.setBatchSize(batchSize);
+	else if((prevBatchSize != null) && 
+		(mod.getExecutionMethod() == ExecutionMethod.Parallel))
+	  mod.setBatchSize(prevBatchSize);
+	
+	JobReqs jreqs = mod.getJobRequirements();
+	if(prevJobReqs != null) 
+	  jreqs = prevJobReqs;
 
-	  if(batchSize != null) 
-	    mod.setBatchSize(batchSize);
-	  else if((prevBatchSize != null) && 
-		  (mod.getExecutionMethod() == ExecutionMethod.Parallel))
-	    mod.setBatchSize(prevBatchSize);
-	  
-	  JobReqs jreqs = mod.getJobRequirements();
-	  if(prevJobReqs != null) 
-	    jreqs = prevJobReqs;
-	  
+	if(jreqs != null) {
 	  if(priority != null) 
 	    jreqs.setPriority(priority);
-
+	  
 	  if(maxLoad != null) 
 	    jreqs.setMaxLoad(maxLoad);
 	  
@@ -1138,7 +1265,7 @@ class ScriptApp
 	      if(hasKey) 
 		jreqs.addLicenseKey(kname);
 	      else 
-	      jreqs.removeLicenseKey(kname);
+		jreqs.removeLicenseKey(kname);
 	    }
 	  }
 	  
@@ -1149,24 +1276,16 @@ class ScriptApp
 	      if(hasKey) 
 		jreqs.addSelectionKey(kname);
 	      else 
-	      jreqs.removeSelectionKey(kname);
+		jreqs.removeSelectionKey(kname);
 	    }
 	  }
-	  
+
 	  mod.setJobRequirements(jreqs);
 	}
       }
     }
-    catch(IllegalArgumentException ex) {
-      throw new PipelineException(ex.getMessage());
-    }
-
-    client.modifyProperties(nodeID.getAuthor(), nodeID.getView(), mod);
   }
 
-  /**
-   *
-   */ 
   
 
 
@@ -1224,6 +1343,10 @@ class ScriptApp
     case ScriptOptsParserConstants.UNKNOWN7:
     case ScriptOptsParserConstants.UNKNOWN8:
     case ScriptOptsParserConstants.UNKNOWN9:
+    case ScriptOptsParserConstants.UNKNOWN10:
+    case ScriptOptsParserConstants.UNKNOWN11:
+    case ScriptOptsParserConstants.UNKNOWN12:
+    case ScriptOptsParserConstants.UNKNOWN13:
       return "an unknown argument";
 
     case ScriptOptsParserConstants.UNKNOWN_OPTION1:
@@ -1235,6 +1358,10 @@ class ScriptApp
     case ScriptOptsParserConstants.UNKNOWN_OPTION7:
     case ScriptOptsParserConstants.UNKNOWN_OPTION8:
     case ScriptOptsParserConstants.UNKNOWN_OPTION9:
+    case ScriptOptsParserConstants.UNKNOWN_OPTION10:
+    case ScriptOptsParserConstants.UNKNOWN_OPTION11:
+    case ScriptOptsParserConstants.UNKNOWN_OPTION12:
+    case ScriptOptsParserConstants.UNKNOWN_OPTION13:
       return "an unknown option";
 
     case ScriptOptsParserConstants.TRUE:
@@ -1335,6 +1462,12 @@ class ScriptApp
 
     case ScriptOptsParserConstants.FRAME_INDEX:
       return "a frame index";
+
+    case ScriptOptsParserConstants.JOB_GROUP_ID:
+      return "a job group ID";
+
+    case ScriptOptsParserConstants.JOB_ID:
+      return "a job ID";
 
     default: 
       if(printLiteral) { 
