@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.11 2004/09/03 01:51:48 jim Exp $
+// $Id: QueueMgrClient.java,v 1.12 2004/09/13 23:42:09 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -921,29 +921,6 @@ class QueueMgrClient
   
 
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Notify the queue that a set of previously submitted jobs make up a job group.
-   * 
-   * @param group
-   *   The queue job group.
-   * 
-   * @throws PipelineException
-   *   If unable to group the jobs.
-   */ 
-  public synchronized void 
-  groupJobs
-  (
-   QueueJobGroup group
-  ) 
-    throws PipelineException  
-  {
-    verifyConnection();
-
-    QueueGroupJobsReq req = new QueueGroupJobsReq(group);
-    Object obj = performTransaction(QueueRequest.GroupJobs, req); 
-    handleSimpleResponse(obj);
-  }
 
   /**
    * Get the job group with the given ID. 
