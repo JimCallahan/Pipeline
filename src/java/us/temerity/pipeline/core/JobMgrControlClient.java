@@ -1,4 +1,4 @@
-// $Id: JobMgrControlClient.java,v 1.10 2005/01/21 17:27:01 jim Exp $
+// $Id: JobMgrControlClient.java,v 1.11 2005/02/07 19:00:39 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -104,7 +104,7 @@ class JobMgrControlClient
   {
     verifyConnection();
 
-    Object obj = performTransaction(JobRequest.GetNumProcessors, null);
+    Object obj = performTransaction(JobRequest.GetNumProcessors, null, 15000);
     if(obj instanceof JobGetNumProcessorsRsp) {
       JobGetNumProcessorsRsp rsp = (JobGetNumProcessorsRsp) obj;
       return rsp.getProcessors();
@@ -127,7 +127,7 @@ class JobMgrControlClient
   {
     verifyConnection();
 
-    Object obj = performTransaction(JobRequest.GetTotalMemory, null);
+    Object obj = performTransaction(JobRequest.GetTotalMemory, null, 15000);
     if(obj instanceof JobGetTotalMemoryRsp) {
       JobGetTotalMemoryRsp rsp = (JobGetTotalMemoryRsp) obj;
       return rsp.getMemory();
@@ -150,7 +150,7 @@ class JobMgrControlClient
   {
     verifyConnection();
 
-    Object obj = performTransaction(JobRequest.GetTotalDisk, null);
+    Object obj = performTransaction(JobRequest.GetTotalDisk, null, 15000);
     if(obj instanceof JobGetTotalDiskRsp) {
       JobGetTotalDiskRsp rsp = (JobGetTotalDiskRsp) obj;
       return rsp.getDisk();
@@ -187,7 +187,7 @@ class JobMgrControlClient
 
     JobStartReq req = new JobStartReq(job);
 
-    Object obj = performTransaction(JobRequest.Start, req); 
+    Object obj = performTransaction(JobRequest.Start, req, 60000); 
     handleSimpleResponse(obj);
   }
 
@@ -211,7 +211,7 @@ class JobMgrControlClient
     
     JobKillReq req = new JobKillReq(jobID);
     
-    Object obj = performTransaction(JobRequest.Kill, req); 
+    Object obj = performTransaction(JobRequest.Kill, req, 60000); 
     handleSimpleResponse(obj);
   }
   
@@ -235,7 +235,7 @@ class JobMgrControlClient
     
     JobWaitReq req = new JobWaitReq(jobID);
     
-    Object obj = performTransaction(JobRequest.Wait, req); 
+    Object obj = performTransaction(JobRequest.Wait, req, 0); 
     if(obj instanceof JobWaitRsp) {
       JobWaitRsp rsp = (JobWaitRsp) obj;
       return rsp.getResults();
