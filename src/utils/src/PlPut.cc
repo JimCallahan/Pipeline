@@ -1,4 +1,4 @@
-// $Id: PlPut.cc,v 1.8 2003/02/11 21:46:37 jim Exp $
+// $Id: PlPut.cc,v 1.9 2003/07/10 00:52:05 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -129,7 +129,7 @@ linkRepo
     return false;
 
   char msg[1024];
-  sprintf(msg, "linked: %s to %s", prev, repo);
+  sprintf(msg, "Linked: %s to %s", prev, repo);
   FB::stageMsg(msg);
 
   return true;
@@ -151,7 +151,7 @@ copyFileToRepo
   /* open work file */ 
   ifstream in(work);
   if(!in) {
-    sprintf(msg, "unable to open working file: %s", work);
+    sprintf(msg, "Unable to open working file: %s", work);
     FB::warn(msg);
     return false;
   }
@@ -159,7 +159,7 @@ copyFileToRepo
   /* create/open repository file */ 
   ofstream out(repo);
   if(!in) {
-    sprintf(msg, "unable to open repository file: %s", repo);
+    sprintf(msg, "Unable to open repository file: %s", repo);
     FB::warn(msg);
     return false;
   }
@@ -173,13 +173,13 @@ copyFileToRepo
   
   /* chmod 444 */ 
   if(chmod(repo, 0444) != 0) {
-    sprintf(msg, "unable change mode of repository file: %s", repo);
+    sprintf(msg, "Unable change mode of repository file: %s", repo);
     FB::warn(msg);
     return false;
   }
 
   /* success! */ 
-  sprintf(msg, "copied: %s to %s", work, repo);
+  sprintf(msg, "Copied: %s to %s", work, repo);
   FB::stageMsg(msg);
 
   return true;
@@ -255,7 +255,7 @@ main
   FB::stageBegin("Reading File List: ");
   {
     FB::stageMsg(flist);
-    int tf;
+    char mode[1024];
     char work[1024];
     char repo[1024];
 
@@ -267,12 +267,24 @@ main
     }
 
     while(in) {
-      in >> tf >> work >> repo;
+      in >> mode >> work >> repo;
       if(!in)
 	break;
-      pairs.push_back(new PathPair((bool) tf, work, repo));
 
-      sprintf(msg, "%s: %s to %s", (tf ? "link" : "copy"), work, repo);
+      bool isLink;
+      if(strcmp(mode, "link") == 0)
+	isLink = true;
+      else if(strcmp(mode, "copy") == 0)
+	isLink = false;
+      else {
+	char msg[1024];
+	sprintf(msg, "Illegal mode \"%s\" encountered!", mode);
+	FB::error(msg);
+      }
+
+      pairs.push_back(new PathPair(isLink, work, repo));
+
+      sprintf(msg, "%s: %s to %s", mode, work, repo);
       FB::stageMsg(msg);
     }
     in.close();
@@ -281,14 +293,14 @@ main
 
 
   /* make sure the working area files DO exist */ 
-  FB::stageBegin("Checking Source Files:");
+  FB::stageBegin("Verifying Source Files:");
   {
     Pairs::iterator iter;
     for(iter=pairs.begin(); iter != pairs.end(); iter++) {
       const char* work = (*iter)->uWork;
       FB::stageMsg(work);
       if(access(work, F_OK) != 0) {
-	sprintf(msg, "missing source file: %s", work);
+	sprintf(msg, "Missing source file: %s", work);
 	FB::error(msg);
       }
     }
@@ -297,7 +309,7 @@ main
   
 
   /* make sure the repository files DO NOT already exist */ 
-  FB::stageBegin("Checking Target Files:");
+  FB::stageBegin("Verifying Target Files:");
   {
     std::list<PathPair*>::iterator iter;
     for(iter=pairs.begin(); iter != pairs.end(); iter++) {
@@ -308,19 +320,20 @@ main
 	struct stat buf;
 	if(stat(repo, &buf) == 0) {
 	  if(S_ISREG(buf.st_mode)) {
-	    sprintf(msg, "attempted to overwrite repository file: %s", repo);
+	    sprintf(msg, "Attempted to overwrite repository file: %s", repo);
 	    FB::error(msg);
 	  }
 	  else if(S_ISDIR(buf.st_mode)) {
-	    sprintf(msg, "bad path, directory exists with the name: %s", repo);
+	    sprintf(msg, "Bad path, directory exists with the name: %s", repo);
 	    FB::error(msg);	    
 	  }
 	  else if(S_ISLNK(buf.st_mode)) {
-	    sprintf(msg, "attempted to overwrite repository symlink: %s", repo);
+	    sprintf(msg, "Attempted to overwrite repository symlink: %s", repo);
 	    FB::error(msg);	    
 	  }	
 	  else {
-	    sprintf(msg, "somehow the repostory file exists and is NOT a regular file: %s", repo);
+	    sprintf(msg, "Somehow the repostory file exists and is NOT a regular file: %s", 
+		    repo);
 	    FB::error(msg);	    
 	  }
 	}
@@ -369,7 +382,7 @@ main
   	if(stat(dir, &buf) != 0) {
   	  switch(errno) {
   	  case EBADF:
-  	    sprintf(msg, "illegal path: %s", dir);
+  	    sprintf(msg, "Illegal path: %s", dir);
   	    FB::error(msg);
   	    break;
 	    
@@ -378,34 +391,34 @@ main
   	    break;
 
   	  case ENOTDIR:
-  	    sprintf(msg, "bad directory path, file exists with the name: %s", dir);
+  	    sprintf(msg, "Bad directory path, file exists with the name: %s", dir);
   	    FB::error(msg);
   	    break;
 	    
   	  case ELOOP:
-  	    sprintf(msg, "encountered too many symbolic links for: %s", dir);
+  	    sprintf(msg, "Encountered too many symbolic links for: %s", dir);
   	    FB::error(msg);
   	    break;
 	    
   	  default:
-  	    sprintf(msg, "internal error in stat(2): %s", dir);
+  	    sprintf(msg, "Internal error in stat(2): %s", dir);
   	    FB::error(msg);
   	  }
   	}
   	else {
   	  if(!S_ISDIR(buf.st_mode)) {
-  	    sprintf(msg, "bad path, file exists with the name: %s", dir);
+  	    sprintf(msg, "Bad path, file exists with the name: %s", dir);
   	    FB::error(msg);	    
   	  }
   	}
 
   	if(create) {
   	  if(mkdir(dir, 0755) == 0) {
-  	    sprintf(msg, "created: %s", dir);
+  	    sprintf(msg, "Created: %s", dir);
   	    FB::stageMsg(msg);
   	  }
   	  else {
-  	    sprintf(msg, "failed to create: %s", dir);
+  	    sprintf(msg, "Failed to create: %s", dir);
   	    FB::error(msg);	    
   	  }
   	}	
@@ -447,7 +460,7 @@ main
 	for(citer=created.begin(); citer!=created.end() && !aborted; citer++) {
 	  const char* file = *citer;
 	  if(unlink(file) != 0) {
-	    sprintf(msg, "unable to remove: %s", file);
+	    sprintf(msg, "Unable to remove: %s", file);
 	    FB::warn(msg);
 	  }
 	}
