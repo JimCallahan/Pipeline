@@ -1,4 +1,4 @@
-// $Id: ScriptAction.java,v 1.2 2004/09/11 14:15:08 jim Exp $
+// $Id: ScriptAction.java,v 1.3 2004/09/12 19:03:45 jim Exp $
 
 package us.temerity.pipeline.plugin.v1_0_0;
 
@@ -167,7 +167,6 @@ class ScriptAction
 	  throw new PipelineException
 	    ("Somehow the Script node (" + sname + ") was not one of the source nodes!");
 	
-	String suffix = fseq.getFilePattern().getSuffix();
 	if(!fseq.isSingle()) 
 	  throw new PipelineException
 	    ("The Script Action requires that the source node specified by the Script " +
