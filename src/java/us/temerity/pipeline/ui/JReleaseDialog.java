@@ -1,4 +1,4 @@
-// $Id: JReleaseDialog.java,v 1.1 2004/07/18 21:38:18 jim Exp $
+// $Id: JReleaseDialog.java,v 1.2 2004/09/28 11:09:21 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -98,16 +98,16 @@ class JReleaseDialog
   /**
    * Update the UI components based on the given node working version.
    * 
-   * @param mod 
-   *   The working version to release.
+   * @param header
+   *   The dialog header text. 
    */ 
   public void 
-  updateNode
+  updateHeader
   (
-   NodeMod mod
+   String header
   )
   {  
-    pHeaderLabel.setText("Release Node:  " + mod.getPrimarySequence());
+    pHeaderLabel.setText(header);
     pRemoveFilesField.setValue(true);
   }
 
