@@ -58,6 +58,9 @@ GraphicalOptsParser
     pQueueServer = PackageInfo.sQueueServer; 
     pQueuePort   = PackageInfo.sQueuePort;
     pJobPort     = PackageInfo.sJobPort;
+
+    pRestoreLayout     = true;
+    pRestoreSelections = true;
   }
  
 
@@ -115,10 +118,24 @@ GraphicalOptsParser
    */
   private int  pJobPort;
 
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * The name of the override panel layout or <CODE>null</CODE> to use the default layout.
    */ 
   private String  pLayout;
+
+  /** 
+   * Whether to restore the panel layout.
+   */
+  private boolean  pRestoreLayout;
+
+  /**
+   * Whether the restored layout should include node and/or job group selections.
+   */ 
+  private boolean  pRestoreSelections; 
+
 }
 
 
@@ -148,7 +165,9 @@ TOKEN :
 | <LOG_BACKUPS:       "--log-backups">        : INTEGER_SEP
 | <LOG:               "--log">                : LOG_SEP
 
-| <LAYOUT:       "--layout">        : LAYOUT_SEP
+| <LAYOUT:         "--layout">        : LAYOUT_SEP
+| <NO_LAYOUT:      "--no-layout">     
+| <NO_SELECTIONS:  "--no-selections">     
 
 
   /* seperators */ 
@@ -315,7 +334,9 @@ Commands() :
     }
 
     /* start the application */ 
-    UIMaster.init(pMasterServer, pMasterPort, pQueueServer, pQueuePort, pJobPort, pLayout);
+    UIMaster.init(pMasterServer, pMasterPort, 
+		  pQueueServer, pQueuePort, pJobPort, 
+		  pLayout, pRestoreLayout, pRestoreSelections);
   }
 }
     
@@ -406,7 +427,7 @@ GlobalOpts() :
   (MasterHost() | MasterPort() | 
    QueueHost() | QueuePort() | JobPort() | 
    Log() | LogFile() | StandardLogFile() | LogBackups() |
-   Layout()) 
+   Layout() | NoLayout() | NoSelections())
   {}
 }
 
@@ -700,6 +721,24 @@ void Layout() :
   <LAYOUT> EQ() t=<LAYOUT_NAME>
   {
     pLayout = t.image;
+  }
+}
+
+void NoLayout() : 
+{}
+{
+  <NO_LAYOUT> 
+  {
+    pRestoreLayout = false;
+  }
+}
+
+void NoSelections() : 
+{}
+{
+  <NO_SELECTIONS> 
+  {
+    pRestoreSelections = false;
   }
 }
 

@@ -345,13 +345,30 @@ file.<br>
 <blockquote>
   <blockquote> </blockquote>
 </blockquote>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">--layout</span>=<span
+<div style="margin-left: 40px;"><span style="font-weight: bold;">--no-layout</span><span
+ style="font-style: italic;"><br>
+</span>
+<br>
+<div style="margin-left: 40px;">Ignore the user's default
+panel layout and start with a single empty panel.<br>
+</div>
+<br>
+<span style="font-weight: bold;">--layout</span>=<span
  style="font-style: italic;">layout-name<br>
 </span>
-<div style="margin-left: 40px;"><br>
-Uses the given panel layout (layout-name) as the initial layout instead
+<br>
+<div style="margin-left: 40px;">Uses the given panel layout
+(layout-name) as the initial layout instead
 of the user's default
 layout.<br>
+</div>
+<br>
+<span style="font-weight: bold;">--no-selections<br>
+</span>
+<div style="margin-left: 40px;"><br>
+Normally, the intial panel layout restrores the selected nodes and/or
+job groups at the time the layout was saved.&nbsp; This option causes
+the layout to be restored without selections.<br>
 </div>
 </div>
 <h3><a name="See_Also"></a>See
