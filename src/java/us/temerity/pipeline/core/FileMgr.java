@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.43 2005/04/03 06:10:11 jim Exp $
+// $Id: FileMgr.java,v 1.44 2005/04/04 23:37:22 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -165,8 +165,6 @@ class FileMgr
     pCheckedInLocks = new HashMap<String,ReentrantReadWriteLock>();
     pWorkingLocks   = new HashMap<NodeID,Object>();
     pMakeDirLock    = new Object();
-
-    pCheckSum = new CheckSum("MD5", PackageInfo.sProdDir);
   }
 
 
@@ -343,6 +341,8 @@ class FileMgr
       synchronized(workingLock) {
 	timer.resume();
 
+	CheckSum checkSum = new CheckSum("MD5", PackageInfo.sProdDir);
+
 	NodeID id = req.getNodeID();
 	TreeMap<FileSeq, FileState[]> states = new TreeMap<FileSeq, FileState[]>();
 
@@ -400,8 +400,8 @@ class FileMgr
 		else if(NativeFileSys.realpath(work).equals(NativeFileSys.realpath(latest)))
 		  fs[wk] = FileState.Identical;
 		else {
-		  pCheckSum.refresh(wpath);
-		  if(pCheckSum.compare(wpath, lpath))
+		  checkSum.refresh(wpath);
+		  if(checkSum.compare(wpath, lpath))
 		    fs[wk] = FileState.Identical;
 		  else 
 		    fs[wk] = FileState.Modified;
@@ -450,9 +450,9 @@ class FileMgr
 		  if(NativeFileSys.realpath(work).equals(NativeFileSys.realpath(latest)))
 		    workEqLatest = true;
 		  else if(work.length() == latest.length()) {
-		    pCheckSum.refresh(wpath);
+		    checkSum.refresh(wpath);
 		    workRefreshed = true;
-		    workEqLatest = pCheckSum.compare(wpath, lpath);
+		    workEqLatest = checkSum.compare(wpath, lpath);
 		  }
 
 		  if(workEqLatest) {
@@ -467,8 +467,8 @@ class FileMgr
 			workEqBase = true;
 		      else if(work.length() == base.length()) {
 			if(!workRefreshed) 
-			  pCheckSum.refresh(wpath);
-			workEqBase = pCheckSum.compare(wpath, bpath);
+			  checkSum.refresh(wpath);
+			workEqBase = checkSum.compare(wpath, bpath);
 		      }
 
 		      if(workEqBase)
@@ -561,11 +561,13 @@ class FileMgr
       synchronized(workingLock) {
 	timer.resume();
 
+	CheckSum checkSum = new CheckSum("MD5", PackageInfo.sProdDir);
+
 	/* refresh the working checksums */ 
 	for(FileSeq fseq : req.getFileSequences()) {
 	  for(File file : fseq.getFiles()) {
 	    File work = new File(req.getNodeID().getWorkingParent(), file.getPath());
-	    pCheckSum.refresh(work);
+	    checkSum.refresh(work);
 	  }
 	}
 
@@ -2817,10 +2819,13 @@ class FileMgr
       }
       
       /* verify that all files where restored and that their checksums are correct */ 
-      for(File file : files) {
-	if(!pCheckSum.validateRestore(restoreDir, file))
-	  throw new PipelineException
-	    ("The restored file (" + file + ") has been corrupted!");
+      {
+	CheckSum checkSum = new CheckSum("MD5", PackageInfo.sProdDir);
+	for(File file : files) {
+	  if(!checkSum.validateRestore(restoreDir, file))
+	    throw new PipelineException
+	      ("The restored file (" + file + ") has been corrupted!");
+	}
       }
       
       return new FileArchiverRsp(timer, output);
@@ -3392,11 +3397,6 @@ class FileMgr
    */
   private Object pMakeDirLock;
  
-  /**
-   * The checksum generator. 
-   */ 
-  private CheckSum  pCheckSum; 
-
   /**
    * The per-node locks indexed by fully resolved node name. <P> 
    * 
