@@ -395,7 +395,7 @@ Node Versions</a></li>
  style="font-style: italic;">key-name</span>[:true|false] ...]</span></li>
         <li style="font-weight: bold;"><a href="#working_--release"><span
  style="font-weight: normal;"><span
- style="font-weight: bold; color: rgb(153, 0, 0);">X</span></span><span
+ style="font-weight: bold; color: rgb(153, 0, 0);"></span></span><span
  style="font-weight: normal;"><span style="font-weight: bold;">--</span></span><span
  style="font-weight: normal;"><span style="font-weight: bold;">release</span></span></a><span
  style="font-weight: normal;"><span style="font-weight: bold;"></span>=<span

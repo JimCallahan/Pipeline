@@ -192,6 +192,9 @@ ScriptOptsParser
   private TreeMap          pLicenseKeys;
   private TreeMap          pSelectionKeys;
 
+  private Boolean   pRemoveFiles;
+  private Boolean   pRenameFiles;
+
   private String            pLinkSourceName;  
   private LinkPolicy        pLinkPolicy;      
   private LinkRelationship  pLinkRelationship;
@@ -2422,7 +2425,8 @@ WorkingCmds()
 {}
 {
   <WORKING> AE() 
-     (WorkingGetInfo() | WorkingRegister() | WorkingSet() | WorkingLink() | WorkingUnlink())
+     (WorkingGetInfo() | WorkingRegister() | WorkingRelease() | WorkingSet() | 
+      WorkingLink() | WorkingUnlink())
   {}
 }
 
@@ -2571,6 +2575,35 @@ WorkingRegisterOpts()
    Ignore() | Abort() | Serial() | Parallel() | BatchSize() | 
    Priority() | MaxLoad() | MinMemory() | MinDisk() | 
    LicenseKey() | SelectionKey()) 
+  {}
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
+WorkingRelease() 
+  throws PipelineException : 
+{
+  String name = null;
+  
+  pAuthor      = PackageInfo.sUser;
+  pView        = "default";
+  pRemoveFiles = false;
+}
+{
+  <WORKING_RELEASE> EQ() name=NodeName() AE() (WorkingReleaseOpts())* 
+  {
+    pMasterMgrClient.release(new NodeID(pAuthor, pView, name), pRemoveFiles);
+  }
+}
+
+void
+WorkingReleaseOpts()
+  throws PipelineException : 
+{}
+{
+  (Author() | View() | RemoveFiles()) 
   {}
 }
 
@@ -3472,6 +3505,27 @@ SelectionKey() :
     pSelectionKeys.put(kname, add);
   }
 }
+
+void 
+RemoveFiles() : 
+{}
+{
+  <REMOVE_FILES> AE() 
+  {
+    pRemoveFiles = true;
+  }
+}
+
+void 
+RenameFiles() : 
+{}
+{
+  <RENAME_FILES> AE() 
+  {
+    pRenameFiles = true;
+  }
+}
+
 
 
 
