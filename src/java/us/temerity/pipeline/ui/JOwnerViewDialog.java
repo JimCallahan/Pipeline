@@ -1,8 +1,11 @@
-// $Id: JOwnerViewDialog.java,v 1.6 2004/05/13 02:37:41 jim Exp $
+// $Id: JOwnerViewDialog.java,v 1.7 2004/05/23 19:59:41 jim Exp $
 
 package us.temerity.pipeline.ui;
 
+import us.temerity.pipeline.*;
+
 import java.awt.*;
+import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.event.*;
@@ -18,7 +21,7 @@ import javax.swing.event.*;
 public 
 class JOwnerViewDialog
   extends JBaseDialog
-  implements ListSelectionListener
+  implements ActionListener, ListSelectionListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -32,16 +35,12 @@ class JOwnerViewDialog
    *
    * @param view
    *   The current name of the working area view.
-   * 
-   * @param table
-   *   The table of valid working area view names indexed by author user name.
    */ 
   public 
   JOwnerViewDialog
   (
    String author, 
-   String view, 
-   TreeMap<String,TreeSet<String>> table
+   String view
   )
   {
     super("Change Owner|View", true);
@@ -52,18 +51,6 @@ class JOwnerViewDialog
     if(view == null)
       throw new IllegalArgumentException("The view cannot be (null)!");
 
-    if(table == null)
-      throw new IllegalArgumentException("The table cannot be (null)!");
-    pTable = table;
-
-    if(!pTable.containsKey(author)) 
-      throw new IllegalArgumentException
-	("The author (" + author + ") was not listed in the table!");
-      
-    if(!pTable.containsKey(author)) 
-      throw new IllegalArgumentException
-	("The author (" + author + ") had no view (" + view + ") listed in the table!");
-
 
     /* create dialog body components */ 
     {
@@ -71,94 +58,95 @@ class JOwnerViewDialog
       {
 	body.add(Box.createRigidArea(new Dimension(20, 0)));
 
-	pAuthorList = addListComponents(body, "Owner:");
+	Dimension size = new Dimension(200, 200);
+	pAuthorList = UIMaster.createListComponents(body, "Owner:", size);
 
 	body.add(Box.createRigidArea(new Dimension(20, 0)));
 
-	pViewList = addListComponents(body, "View:");
+	pViewList = UIMaster.createListComponents(body, "View:", size);
 
 	body.add(Box.createRigidArea(new Dimension(20, 0)));
       }
 
-      super.initUI("Change Owner|View", true, body, "Confirm", null, null, "Cancel");
+      String extra[][] = { { "Add View", "add-view" } };
+
+      JButton[] btns = 
+	super.initUI("Change Owner|View", true, body, "Confirm", null, extra, "Cancel");
+
+      pAddViewButton = btns[0];
     }
 
-      
-    /* initialize lists */ 
     {
+      pViewList.addListSelectionListener(this);
+      pAuthorList.addListSelectionListener(this);
+      updateWorkingAreas(author, view);
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Update the owner/view lists.
+   * 
+   * @param author
+   *   The current owner of the working area view.
+   *
+   * @param view
+   *   The current name of the working area view.
+   */
+  private void 
+  updateWorkingAreas
+  (
+   String author, 
+   String view
+  )
+  {
+    UIMaster master = UIMaster.getInstance();
+
+    try {
+      pTable = master.getMasterMgrClient().getWorkingAreas(); 
+      pIsPrivileged = master.getMasterMgrClient().isPrivileged(false);
+    }
+    catch(PipelineException ex) {
+      master.showErrorDialog(ex);
+      setVisible(false);
+      return;
+    }
+      
+    /* rebuild the lists */ 
+    {
+      pViewList.removeListSelectionListener(this);
+      pAuthorList.removeListSelectionListener(this);
+
       {
 	DefaultListModel model = (DefaultListModel) pAuthorList.getModel();
+	model.clear();
+
 	for(String name : pTable.keySet())
 	  model.addElement(name);
-	pAuthorList.setSelectedValue(author, true);
-      } 
+	  
+	if(author != null) 
+	  pAuthorList.setSelectedValue(author, true);
+      }
       
       {
 	DefaultListModel model = (DefaultListModel) pViewList.getModel();
-	for(String name : pTable.get(author))
-	  model.addElement(name);
-	pViewList.setSelectedValue(view, true);
-      } 
-    }
+	model.clear();
 
-    /* add selection listeners */ 
-    pAuthorList.addListSelectionListener(this);
-    pViewList.addListSelectionListener(this);
-  }
-     
-  /**
-   * Add the list panel components.
-   * 
-   * @param box
-   *   The parent horizontal box.
-   * 
-   * @param title
-   *   The title of the list.
-   */ 
-  private JList 
-  addListComponents
-  (
-   Box box, 
-   String title
-  ) 
-  {
-    Box vbox = new Box(BoxLayout.Y_AXIS);	
-
-    vbox.add(Box.createRigidArea(new Dimension(0, 20)));
-    
-    vbox.add(UIMaster.createPanelLabel(title));
-    
-    vbox.add(Box.createRigidArea(new Dimension(0, 4)));
-
-    JList lst = null;
-    {
-      lst = new JList(new DefaultListModel());
-      lst.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-      lst.setCellRenderer(new JListCellRenderer());
-
-      {
-	JScrollPane scroll = new JScrollPane(lst);
-	
-	scroll.setMinimumSize(new Dimension(120, 120));
-	scroll.setPreferredSize(new Dimension(200, 200));
-	
-	scroll.setHorizontalScrollBarPolicy
-	  (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	scroll.setVerticalScrollBarPolicy
-	  (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-	
-	vbox.add(scroll);
+	if(view != null) {
+	  for(String name : pTable.get(author))
+	    model.addElement(name);
+	  
+	  pViewList.setSelectedValue(view, true);
+	} 
       }
+
+      pViewList.addListSelectionListener(this);
+      pAuthorList.addListSelectionListener(this);
     }
-
-    vbox.add(Box.createRigidArea(new Dimension(0, 20)));
-
-    box.add(vbox);
-
-    return lst;
   }
-
-
+  
   
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
@@ -219,8 +207,70 @@ class JOwnerViewDialog
 
     String view = (String) pViewList.getSelectedValue();
     pConfirmButton.setEnabled((author != null) && (view != null));
+
+    pAddViewButton.setEnabled((author != null) && 
+			      (pIsPrivileged || author.equals(PackageInfo.sUser)));
   }
 
+
+  /*-- ACTION LISTENER METHODS -------------------------------------------------------------*/
+
+  /** 
+   * Invoked when an action occurs. 
+   */ 
+  public void 
+  actionPerformed
+  (
+   ActionEvent e
+  ) 
+  {
+    super.actionPerformed(e);
+
+    if(e.getActionCommand().equals("add-view")) 
+      doAddView();
+  }
+  
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C T I O N S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Create a new working area view for the currently selected user.
+   */ 
+  public void 
+  doAddView() 
+  { 
+    String author = getAuthor();
+    if(author != null) {
+      JNewViewDialog diag = new JNewViewDialog(this);
+      diag.setVisible(true);
+    
+      if(diag.wasConfirmed()) {
+
+	String view = diag.getName();
+	if(view != null) {
+	  UIMaster master = UIMaster.getInstance();
+
+	  if(master.beginPanelOp("Creating New Working Area...")) {
+	    try {
+	      master.getMasterMgrClient().createWorkingArea(author, view);
+	    }
+	    catch(PipelineException ex) {
+	      master.showErrorDialog(ex);
+	      setVisible(false);
+	      return;
+	    }
+	    finally {
+	      master.endPanelOp("Done.");
+	    }
+	  
+	    updateWorkingAreas(author, view);
+	  }
+	}      
+      }
+    }
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -250,5 +300,16 @@ class JOwnerViewDialog
    * The list of working area views.
    */ 
   private JList  pViewList;
+
+
+  /**
+   * Does the current user have privileged status?
+   */ 
+  private boolean  pIsPrivileged;
+
+  /**
+   * The add view button.
+   */ 
+  private JButton  pAddViewButton;
 
 }
