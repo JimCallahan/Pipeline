@@ -1,4 +1,4 @@
-// $Id: FileSeq.java,v 1.14 2004/08/22 21:47:28 jim Exp $
+// $Id: FileSeq.java,v 1.15 2004/10/09 16:55:21 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -497,7 +497,7 @@ class FileSeq
    * sequence. <P> 
    * 
    * The similarity of file sequences is independent of whether they have any frame numbers 
-   * in common.  In other words, there is no requuirement that they share any literal files.
+   * in common.  In other words, there is no requirement that they share any literal files.
    */ 
   public boolean 
   similarTo
