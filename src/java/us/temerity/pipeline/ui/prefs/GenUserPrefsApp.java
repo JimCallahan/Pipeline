@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.2 2004/06/14 22:54:42 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.3 2004/06/28 00:21:36 jim Exp $
 
 import java.io.*; 
 import java.util.*;
@@ -204,7 +204,12 @@ class GenUserPrefsApp
       BasePref prefs[] = {
 	new HotKeyPref
 	("apply the changes to the working version", 
-	 "NodeDetailsApplyChanges", "Apply Changes:"),	
+	 "NodeDetailsApplyChanges", "Apply Changes:",
+	 false, false, false, 155),  /* Insert */ 
+
+	new HotKeyPref
+	("apply the changes to the working version", 
+	 "NodeDetailsToggleFrozen", "Toggle Frozen:"),	
       };
 
       pPrefs.put("Panel|Node Details|Hot Keys", prefs);
@@ -249,7 +254,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.2 2004/06/14 22:54:42 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.3 2004/06/28 00:21:36 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -502,7 +507,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.2 2004/06/14 22:54:42 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.3 2004/06/28 00:21:36 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
