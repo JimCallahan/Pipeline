@@ -32,4 +32,5 @@ rpm-install:
 
 clean:
 	rm -rf BUILD RPMS SPECS
-
+	rm -f header pipeline-@DOMAIN@-@VERSION@-i686-rpm.bin
+	DESTDIR=`pwd`/BUILD $(MAKE) -C .. clean
