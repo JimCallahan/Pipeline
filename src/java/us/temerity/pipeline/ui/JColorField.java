@@ -1,4 +1,4 @@
-// $Id: JColorField.java,v 1.1 2004/12/17 08:13:08 jim Exp $
+// $Id: JColorField.java,v 1.2 2004/12/17 15:06:17 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -181,12 +181,29 @@ class JColorField
    ActionEvent e
   ) 
   {
-
-    // ....
-
+    String cmd = e.getActionCommand();
+    if(cmd.equals("edit-color")) 
+      doEditColor();
   }
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C T I O N S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Edit the field color using a color editor dialog.
+   */ 
+  private void 
+  doEditColor() 
+  {
+    JColorEditorDialog diag = UIMaster.getInstance().showColorEditorDialog(pValue);
+    if(diag.wasConfirmed()) 
+      setValue(diag.getColor());
+  }
+   
+ 
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
