@@ -157,7 +157,7 @@ TOKEN :
 | <QUEUE_HOST:           "--queue-host">           : HOSTNAME_SEP
 | <QUEUE_PORT:           "--queue-port">           : INTEGER_SEP
 
-| <LOG:          "--log">           : LOG_SEP
+| <LOG:          "--log"> : LOG_SEP
 
   /* seperators */ 
 | <WS1: ([" ","\t"])+> 
@@ -431,7 +431,7 @@ FileHost() :
   Token t;
 }
 {
-  <FILE_HOST> EQ() t=<PATH_ARG>
+  <FILE_HOST> EQ() t=<HOSTNAME>
   { 
     pFileServer = t.image;
   }
@@ -480,7 +480,7 @@ QueueHost() :
   Token t;
 }
 {
-  <QUEUE_HOST> EQ() t=<PATH_ARG>
+  <QUEUE_HOST> EQ() t=<HOSTNAME>
   { 
     pQueueServer = t.image;
   }
