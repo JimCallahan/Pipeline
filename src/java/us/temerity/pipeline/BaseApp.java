@@ -1,4 +1,4 @@
-// $Id: BaseApp.java,v 1.1 2004/03/12 13:49:09 jim Exp $
+// $Id: BaseApp.java,v 1.2 2004/03/21 00:58:02 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -151,7 +151,7 @@ class BaseApp
   htmlHelp()
   {
     Map<String,String> env = System.getenv();
-    File dir = new File("/usr/tmp");
+    File dir = PackageInfo.sTempDir;
 
     boolean isRunning = false;
     {
@@ -160,7 +160,7 @@ class BaseApp
       args.add("ping()");
       
       SubProcess proc = 
-	new SubProcess("CheckMozilla", PackageInfo.sMozilla.getPath(), args, env, dir);
+	new SubProcess("CheckMozilla", "mozilla", args, env, dir);
       proc.start();
 
       try {
@@ -181,7 +181,7 @@ class BaseApp
 	       ", new-tab)");
 
       SubProcess proc = 
-	new SubProcess("RemoteMozilla", PackageInfo.sMozilla.getPath(), args, env, dir);
+	new SubProcess("RemoteMozilla", "mozilla", args, env, dir);
       proc.start();
 
       try {
@@ -196,7 +196,7 @@ class BaseApp
       args.add("file://" + PackageInfo.sDocsDir + "/man/" + pName + ".html");
 
       SubProcess proc = 
-	new SubProcess("LaunchMozilla", PackageInfo.sMozilla.getPath(), args, env, dir);
+	new SubProcess("LaunchMozilla", "mozilla", args, env, dir);
       proc.start();
     }
   }

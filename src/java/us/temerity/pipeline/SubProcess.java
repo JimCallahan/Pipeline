@@ -1,4 +1,4 @@
-// $Id: SubProcess.java,v 1.6 2004/03/11 10:54:31 jim Exp $
+// $Id: SubProcess.java,v 1.7 2004/03/21 00:58:02 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -49,7 +49,7 @@ class SubProcess
   )
   {
     super(name);
-    init(null, program.getPath(), args, new HashMap<String,String>(), new File("/usr/tmp"));
+    init(null, program.getPath(), args, new HashMap<String,String>(), PackageInfo.sTempDir);
   }
 
   /**
@@ -289,7 +289,8 @@ class SubProcess
       args.add("--user");
       args.add(user);
 
-      SubProcess proc = new SubProcess("LookupUserID", PackageInfo.sId, args);
+      SubProcess proc = 
+	new SubProcess("LookupUserID", "id", args, System.getenv(), PackageInfo.sTempDir);
       proc.start();
       try {
 	proc.join();
@@ -750,6 +751,7 @@ class SubProcess
       throw new IllegalStateException("The subprocess has not been started!");
 
     /* search out all descendent processes of (pid) and kill them */ 
+    Map<String,String> env = System.getenv();
     for(Integer dpid : buildHitList(pid)) {
       assert(dpid > 0);
       boolean wasSignalled = false;
@@ -762,8 +764,7 @@ class SubProcess
 	
 	SubProcess killProc = 
 	  new SubProcess(pSubstituteUser, "SignalSubProcess", 
-			 PackageInfo.sKill.getPath(), args,
-			 new HashMap<String, String>(), new File("/usr/tmp"));
+			 "kill", args, env, PackageInfo.sTempDir);
 	killProc.start(); 
 	try {
 	  killProc.join();

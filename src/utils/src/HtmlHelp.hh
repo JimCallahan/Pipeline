@@ -1,4 +1,4 @@
-// $Id: HtmlHelp.hh,v 1.1 2004/03/12 15:14:29 jim Exp $
+// $Id: HtmlHelp.hh,v 1.2 2004/03/21 00:58:41 jim Exp $
 
 #ifndef PIPELINE_HTML_HELP_HH
 #define PIPELINE_HTML_HELP_HH 
@@ -56,12 +56,12 @@ public:
     sprintf(buf, "openURL(file:%s/man/%s.html, new-tab)", PackageInfo::sDocsDir, name); 
     
     char* args[4]; 
-    args[0] = strdup("mozilla");
-    args[1] = strdup("-remote");
-    args[2] = strdup(buf);
+    args[0] = "mozilla";
+    args[1] = "-remote";
+    args[2] = buf;
     args[3] = NULL;
     
-    execv(PackageInfo::sMozilla, args);
+    execv("mozilla", args);
   }											    
 											    
 };
