@@ -1,4 +1,4 @@
-// $Id: Vector2d.java,v 1.1 2004/12/13 12:56:48 jim Exp $
+// $Id: Vector2d.java,v 1.2 2004/12/14 12:25:59 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -258,6 +258,22 @@ class Vector2d
     return this;
   }
 
+  /**
+   * Divide the given vector by this vector componentwise.
+   * 
+   * @return 
+   *   This vector to allow method chaining.
+   */ 
+  public Vector2d 
+  div
+  (
+   Vector2d t
+  ) 
+  {
+    super.div(t);
+    return this;
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -303,4 +319,17 @@ class Vector2d
     return rtn.mult(b);
   }
   
+  /**
+   * Create a new vector by componentwise division of the first vector by the second vector.
+   */ 
+  public static Vector2d
+  div
+  (
+   Vector2d a, 
+   Vector2d b
+  ) 
+  {
+    Vector2d rtn = new Vector2d(a);
+    return rtn.div(b);
+  }
 }
