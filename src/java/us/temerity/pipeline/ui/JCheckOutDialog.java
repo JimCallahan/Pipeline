@@ -1,4 +1,4 @@
-// $Id: JCheckOutDialog.java,v 1.3 2004/10/21 01:23:26 jim Exp $
+// $Id: JCheckOutDialog.java,v 1.4 2004/11/17 13:33:51 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -80,6 +80,12 @@ class JCheckOutDialog
 	  UIMaster.createTitledCollectionField(tpanel, "Check-Out Mode:", sTSize, 
 					       vpanel, CheckOutMode.titles(), sVSize);
 
+	UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+
+	pMethodField = 
+	  UIMaster.createTitledCollectionField(tpanel, "Check-Out Method:", sTSize, 
+					       vpanel, CheckOutMethod.titles(), sVSize);
+
 	UIMaster.addVerticalGlue(tpanel, vpanel);
       }
 
@@ -109,13 +115,22 @@ class JCheckOutDialog
   }
     
   /**
-   * The criteria used to determine whether nodes upstream of the root node of the check-out
-   * should also be checked-out.
+   * Get the criteria used to determine whether nodes upstream of the root node of 
+   * the check-out should also be checked-out.
    */ 
   public CheckOutMode
   getMode() 
   {
     return CheckOutMode.values()[pModeField.getSelectedIndex()];
+  }
+
+  /**
+   * Get the method for creating working area files/links from the checked-in files.
+   */ 
+  public CheckOutMethod
+  getMethod() 
+  {
+    return CheckOutMethod.values()[pMethodField.getSelectedIndex()];
   }
   
 
@@ -170,6 +185,7 @@ class JCheckOutDialog
     }
 
     pModeField.setSelectedIndex(0);
+    pMethodField.setSelectedIndex(0);
   }
 
 
@@ -210,5 +226,10 @@ class JCheckOutDialog
    * should also be checked-out.
    */ 
   private JCollectionField  pModeField;
+
+  /**
+   * The method for creating working area files/links from the checked-in files.
+   */
+  private JCollectionField  pMethodField;
 
 }

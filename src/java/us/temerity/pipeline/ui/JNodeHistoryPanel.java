@@ -1,4 +1,4 @@
-// $Id: JNodeHistoryPanel.java,v 1.11 2004/11/02 20:03:29 jim Exp $
+// $Id: JNodeHistoryPanel.java,v 1.12 2004/11/17 13:33:51 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -371,6 +371,13 @@ class JNodeHistoryPanel
       }
     }
 
+    /* frozen node? */
+    {
+      pIsFrozen = false;
+      if((details != null) && (details.getWorkingVersion() != null))
+	pIsFrozen = details.getWorkingVersion().isFrozen();
+    }
+
     /* check-in message history */ 
     {
       pMessageBox.removeAll();
@@ -685,7 +692,7 @@ class JNodeHistoryPanel
 
       NodeMod work = details.getWorkingVersion();
       NodeVersion latest = details.getLatestVersion();
-      if(work != null) {
+      if((work != null) && !pIsFrozen) {
 	updateWorkingMenu();
 	pWorkingPopup.show(e.getComponent(), e.getX(), e.getY());
       }
@@ -878,6 +885,9 @@ class JNodeHistoryPanel
   private void 
   doQueueJobs() 
   {
+    if(pIsFrozen) 
+      return;
+
     if(pStatus != null) {
       NodeDetails details = pStatus.getDetails();
       if(details != null) {
@@ -894,6 +904,9 @@ class JNodeHistoryPanel
   private void 
   doQueueJobsSpecial() 
   {
+    if(pIsFrozen) 
+      return;
+
     if(pStatus != null) {
       NodeDetails details = pStatus.getDetails();
       if(details != null) {
@@ -925,6 +938,9 @@ class JNodeHistoryPanel
   private void 
   doPauseJobs() 
   {
+    if(pIsFrozen) 
+      return;
+
     TreeSet<Long> paused = new TreeSet<Long>();
     if(pStatus != null) {
       NodeDetails details = pStatus.getDetails();
@@ -956,6 +972,9 @@ class JNodeHistoryPanel
   private void 
   doResumeJobs() 
   {
+    if(pIsFrozen) 
+      return;
+
     TreeSet<Long> resumed = new TreeSet<Long>();
     if(pStatus != null) {
       NodeDetails details = pStatus.getDetails();
@@ -987,6 +1006,9 @@ class JNodeHistoryPanel
   private void 
   doKillJobs() 
   {
+    if(pIsFrozen) 
+      return;
+
     TreeSet<Long> dead = new TreeSet<Long>();
     if(pStatus != null) {
       NodeDetails details = pStatus.getDetails();
@@ -1023,6 +1045,9 @@ class JNodeHistoryPanel
   private void 
   doRemoveFiles() 
   {
+    if(pIsFrozen) 
+      return;
+
     if(pStatus != null) {
       NodeDetails details = pStatus.getDetails();
       if(details != null) {
@@ -1330,6 +1355,11 @@ class JNodeHistoryPanel
    * The fully resolved node name field.
    */ 
   private JTextField pNodeNameField;
+
+  /**
+   * Whether the working version is frozen.
+   */
+  private boolean  pIsFrozen; 
 
   /**
    * The log message container.

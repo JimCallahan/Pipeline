@@ -1,4 +1,4 @@
-// $Id: FileStateReq.java,v 1.4 2004/03/23 07:40:37 jim Exp $
+// $Id: FileStateReq.java,v 1.5 2004/11/17 13:33:50 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -36,6 +36,10 @@ class FileStateReq
    *   The relationship between the revision numbers of working and checked-in versions 
    *   of the node.
    * 
+   * @param isFrozen
+   *   Whether the files associated with the working version are symlinks to the 
+   *   checked-in files instead of copies.
+   * 
    * @param working 
    *   The revision number of the checked-in version upon which the working version 
    *   is based.
@@ -51,6 +55,7 @@ class FileStateReq
   (
    NodeID id, 
    VersionState vstate, 
+   boolean isFrozen, 
    VersionID working, 
    VersionID latest, 
    TreeSet<FileSeq> fseqs
@@ -63,6 +68,8 @@ class FileStateReq
     if(vstate == null) 
       throw new IllegalArgumentException("The version state cannot be (null)!");
     pVersionState = vstate;
+
+    pIsFrozen = isFrozen;
 
     switch(vstate) {
     case Pending:
@@ -126,6 +133,16 @@ class FileStateReq
   }
   
   /**
+   * Get whether the files associated with the working version are symlinks to the 
+   * checked-in files instead of copies.
+   */ 
+  public boolean 
+  isFrozen() 
+  {
+    return pIsFrozen; 
+  }
+
+  /**
    * Gets the revision number of the checked-in version upon which the working version 
    * is based.
    */
@@ -177,6 +194,12 @@ class FileStateReq
    * of the node.
    */
   private VersionState  pVersionState;
+
+  /**
+   * Whether the files associated with the working version are symlinks to the 
+   * checked-in files instead of copies.
+   */ 
+  private boolean pIsFrozen; 
 
   /**
    * The revision number of the checked-in version upon which the working version  is based.  

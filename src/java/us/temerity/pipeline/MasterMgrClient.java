@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.38 2004/11/16 03:56:36 jim Exp $
+// $Id: MasterMgrClient.java,v 1.39 2004/11/17 13:33:50 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -2051,6 +2051,9 @@ class MasterMgrClient
    *   The criteria used to determine whether nodes upstream of the root node of the check-out
    *   should also be checked-out.
    * 
+   * @param method
+   *   The method for creating working area files/links from the checked-in files.
+   * 
    * @throws PipelineException
    *   If unable to check-out the nodes.
    */ 
@@ -2061,11 +2064,12 @@ class MasterMgrClient
    String view, 
    String name, 
    VersionID vid, 
-   CheckOutMode mode
+   CheckOutMode mode,
+   CheckOutMethod method
   ) 
     throws PipelineException
   {
-    checkOut(new NodeID(author, view, name), vid, mode);
+    checkOut(new NodeID(author, view, name), vid, mode, method);
   } 
 
   /** 
@@ -2093,6 +2097,9 @@ class MasterMgrClient
    *   The criteria used to determine whether nodes upstream of the root node of the check-out
    *   should also be checked-out.
    * 
+   * @param method
+   *   The method for creating working area files/links from the checked-in files.
+   * 
    * @throws PipelineException
    *   If unable to check-out the nodes.
    */ 
@@ -2101,7 +2108,8 @@ class MasterMgrClient
   ( 
    NodeID nodeID,
    VersionID vid, 
-   CheckOutMode mode
+   CheckOutMode mode,
+   CheckOutMethod method
   ) 
     throws PipelineException
   {
@@ -2111,7 +2119,7 @@ class MasterMgrClient
 
     verifyConnection();
 
-    NodeCheckOutReq req = new NodeCheckOutReq(nodeID, vid, mode);
+    NodeCheckOutReq req = new NodeCheckOutReq(nodeID, vid, mode, method);
 
     Object obj = performTransaction(MasterRequest.CheckOut, req);
     handleSimpleResponse(obj);
@@ -2249,7 +2257,7 @@ class MasterMgrClient
    *   checked-in version.
    * 
    * @throws PipelineException
-   *   If unable to revert the files.
+   *   If unable to evolve the node. 
    */ 
   public synchronized void 
   evolve
@@ -2271,6 +2279,8 @@ class MasterMgrClient
     handleSimpleResponse(obj);
   }
 
+
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   J O B   Q U E U E                                                                    */

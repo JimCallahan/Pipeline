@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.20 2004/11/16 03:56:36 jim Exp $
+// $Id: FileMgrClient.java,v 1.21 2004/11/17 13:33:50 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -127,6 +127,10 @@ class FileMgrClient
    *   The relationship between the revision numbers of working and checked-in versions 
    *   of the node.
    * 
+   * @param isFrozen
+   *   Whether the files associated with the working version are symlinks to the 
+   *   checked-in files instead of copies.
+   * 
    * @param latest 
    *   The revision number of the latest checked-in version.
    * 
@@ -149,6 +153,7 @@ class FileMgrClient
    NodeID id, 
    NodeMod mod, 
    VersionState vstate, 
+   boolean isFrozen, 
    VersionID latest, 
    TreeMap<FileSeq, FileState[]> states, 
    TreeMap<FileSeq, Date[]> timestamps
@@ -158,14 +163,15 @@ class FileMgrClient
     verifyConnection();
 
     FileStateReq req = 
-      new FileStateReq(id, vstate, mod.getWorkingID(), latest, mod.getSequences());
+      new FileStateReq(id, vstate, isFrozen, mod.getWorkingID(), latest, mod.getSequences());
 
     Object obj = performTransaction(FileRequest.State, req);
 
     if(obj instanceof FileStateRsp) {
       FileStateRsp rsp = (FileStateRsp) obj;
       states.putAll(rsp.getFileStates());
-      timestamps.putAll(rsp.getTimeStamps());
+      if(rsp.getTimeStamps() != null) 
+	timestamps.putAll(rsp.getTimeStamps());
     }
     else {
       handleFailure(obj);
@@ -228,6 +234,10 @@ class FileMgrClient
    * @param vsn 
    *   The checked-in version to check-out.
    * 
+   * @param isFrozen
+   *   Whether the files associated with the working version should be symlinks to the 
+   *   checked-in files instead of copies.
+   * 
    * @throws PipelineException
    *   If unable to check-out the files.
    */ 
@@ -235,14 +245,16 @@ class FileMgrClient
   checkOut
   (
    NodeID id, 
-   NodeVersion vsn
+   NodeVersion vsn, 
+   boolean isFrozen
   ) 
     throws PipelineException 
   {
     verifyConnection();
 
     FileCheckOutReq req = 
-      new FileCheckOutReq(id, vsn.getVersionID(), vsn.getSequences(), !vsn.isActionEnabled());
+      new FileCheckOutReq(id, vsn.getVersionID(), vsn.getSequences(), 
+			  isFrozen, !vsn.isActionEnabled());
 
     Object obj = performTransaction(FileRequest.CheckOut, req);
     handleSimpleResponse(obj);

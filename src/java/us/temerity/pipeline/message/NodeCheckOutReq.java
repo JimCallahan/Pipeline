@@ -1,4 +1,4 @@
-// $Id: NodeCheckOutReq.java,v 1.3 2004/10/21 01:23:26 jim Exp $
+// $Id: NodeCheckOutReq.java,v 1.4 2004/11/17 13:33:50 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -40,13 +40,17 @@ class NodeCheckOutReq
    * @param mode
    *   The criteria used to determine whether nodes upstream of the root node of the check-out
    *   should also be checked-out.
+   * 
+   * @param method
+   *   The method for creating working area files/links from the checked-in files.
    */
   public
   NodeCheckOutReq
   (
    NodeID id, 
    VersionID vid, 
-   CheckOutMode mode
+   CheckOutMode mode, 
+   CheckOutMethod method
   )
   { 
     if(id == null) 
@@ -56,6 +60,7 @@ class NodeCheckOutReq
 
     pVersionID = vid;
     pMode      = mode;
+    pMethod    = method;
   }
 
 
@@ -86,13 +91,22 @@ class NodeCheckOutReq
   }
 
   /**
-   * The criteria used to determine whether nodes upstream of the root node of the check-out
-   * should also be checked-out.
+   * Get the criteria used to determine whether nodes upstream of the root node of 
+   * the check-out should also be checked-out.
    */ 
   public CheckOutMode 
   getMode()
   {
     return pMode;
+  }
+
+  /**
+   * Get the method for creating working area files/links from the checked-in files.
+   */ 
+  public CheckOutMethod
+  getMethod()
+  {
+    return pMethod;
   }
 
 
@@ -124,6 +138,11 @@ class NodeCheckOutReq
    * should also be checked-out.
    */ 
   private CheckOutMode  pMode; 
+
+  /**
+   * The method for creating working area files/links from the checked-in files.
+   */ 
+  private CheckOutMethod  pMethod; 
 
 }
   

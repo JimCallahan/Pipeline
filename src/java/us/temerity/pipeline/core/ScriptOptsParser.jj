@@ -253,6 +253,7 @@ ScriptOptsParser
   private boolean          pLinkGraph; 
   private VersionID.Level  pLevel; 
   private CheckOutMode     pCheckOutMode; 
+  private CheckOutMethod   pCheckOutMethod; 
 
 }
 
@@ -317,63 +318,66 @@ TOKEN :
 TOKEN :
 {
   /* command options */ 
-  <MSG:            "--msg">             : STRING_SEP  
-| <TOTAL:          "--total">           : INTEGER_SEP  
-| <SHUTDOWN:       "--shutdown">       
-| <BACKUP:         "--backup">          : PATH_SEP
-| <DISABLE:        "--disable">       
-| <ENABLE:         "--enable">  
-| <RESERVE:        "--reserve">         : USER_NAME_SEP            
-| <OPEN:           "--open">  
-| <SLOTS:          "--slots">           : INTEGER_SEP  
-| <SELECTION_BIAS: "--selection-bias">  : KEY_BIAS_SEP  
-| <REMOVE_KEY:     "--remove-key">      : KEY_NAME_SEP   
-| <EDITOR2:        "--editor">          : EDITOR_NAME_SEP 
-| <VERSION2:       "--version">         : REVISION_NUMBER_SEP
-| <LATEST:         "--latest"> 		    
-| <AUTHOR:         "--author">          : USER_NAME_SEP 
-| <VIEW2:          "--view">            : VIEW_NAME_SEP 
-| <SHOW:           "--show">            : SECTION_SEP   
-| <HIDE:           "--hide">            : SECTION_SEP   
-| <TOOLSET2:       "--toolset">         : TOOLSET_NAME_SEP
-| <NO_ACTION:      "--no-action">       
-| <ACTION2:        "--action">          : ACTION_NAME_SEP
-| <ACTION_ENABLED: "--action-enabled">  : BOOLEAN_SEP
-| <PARAM:          "--param">           : PARAM_SEP 
-| <NO_PARAM:       "--no-param">        : LINK_PARAM_SEP 
-| <SOURCE_PARAM:   "--source-param">    : SOURCE_PARAM_SEP 
-| <IGNORE:         "--ignore">           
-| <ABORT:          "--abort">           
-| <SERIAL:         "--serial">           
-| <PARALLEL:       "--parallel">           
-| <BATCH_SIZE:     "--batch-size">      : INTEGER_SEP
-| <PRIORITY:       "--priority">        : INTEGER_SEP
-| <MAX_LOAD:       "--max-load">        : REAL_SEP     
-| <MIN_MEMORY:     "--min-memory">      : BYTE_SIZE_SEP
-| <MIN_DISK:       "--min-disk">        : BYTE_SIZE_SEP
-| <LICENSE_KEY2:   "--license-key">     : KEY_TOGGLE_SEP
-| <SELECTION_KEY2: "--selection-key">   : KEY_TOGGLE_SEP
-| <ASSOC:          "--assoc">           : LINK_PARAM_SEP
-| <REF:            "--ref">             : LINK_PARAM_SEP
-| <DEPEND:         "--depend">          : LINK_PARAM_SEP
-| <SOURCE:         "--source">          : LINK_PARAM_SEP
-| <FSEQ:           "--fseq">            : FILE_SEQ_SEP
-| <NAME:           "--name">            : NODE_NAME_SEP  
-| <RENAME_FILES:   "--rename-files">   
-| <REMOVE_FILES:   "--remove-files">    
-| <RANGE:          "--range">           : FRAME_RANGE_SEP
-| <FRAME:          "--frame">           : FRAME_NUMBERS_SEP
-| <INDEX:          "--index">           : FRAME_INDICES_SEP
-| <WAIT:           "--wait">
-| <MAJOR:          "--major">
-| <MINOR:          "--minor">
-| <MICRO:          "--micro">
-| <OVERWRITE_ALL:  "--overwrite-all">
-| <KEEP_NEWER:     "--keep-newer">
-| <KEEP_MODIFIED:  "--keep-modified">
-| <BRIEF:          "--brief">
-| <UPSTREAM:       "--upstream">
-| <LINK_GRAPH:     "--link-graph">
+  <MSG:             "--msg">             : STRING_SEP  
+| <TOTAL:           "--total">           : INTEGER_SEP  
+| <SHUTDOWN:        "--shutdown">       
+| <BACKUP:          "--backup">          : PATH_SEP
+| <DISABLE:         "--disable">       
+| <ENABLE:          "--enable">  
+| <RESERVE:         "--reserve">         : USER_NAME_SEP            
+| <OPEN:            "--open">  
+| <SLOTS:           "--slots">           : INTEGER_SEP  
+| <SELECTION_BIAS:  "--selection-bias">  : KEY_BIAS_SEP  
+| <REMOVE_KEY:      "--remove-key">      : KEY_NAME_SEP   
+| <EDITOR2:         "--editor">          : EDITOR_NAME_SEP 
+| <VERSION2:        "--version">         : REVISION_NUMBER_SEP
+| <LATEST:          "--latest"> 		    
+| <AUTHOR:          "--author">          : USER_NAME_SEP 
+| <VIEW2:           "--view">            : VIEW_NAME_SEP 
+| <SHOW:            "--show">            : SECTION_SEP   
+| <HIDE:            "--hide">            : SECTION_SEP   
+| <TOOLSET2:        "--toolset">         : TOOLSET_NAME_SEP
+| <NO_ACTION:       "--no-action">       
+| <ACTION2:         "--action">          : ACTION_NAME_SEP
+| <ACTION_ENABLED:  "--action-enabled">  : BOOLEAN_SEP
+| <PARAM:           "--param">           : PARAM_SEP 
+| <NO_PARAM:        "--no-param">        : LINK_PARAM_SEP 
+| <SOURCE_PARAM:    "--source-param">    : SOURCE_PARAM_SEP 
+| <IGNORE:          "--ignore">           
+| <ABORT:           "--abort">           
+| <SERIAL:          "--serial">           
+| <PARALLEL:        "--parallel">           
+| <BATCH_SIZE:      "--batch-size">      : INTEGER_SEP
+| <PRIORITY:        "--priority">        : INTEGER_SEP
+| <MAX_LOAD:        "--max-load">        : REAL_SEP     
+| <MIN_MEMORY:      "--min-memory">      : BYTE_SIZE_SEP
+| <MIN_DISK:        "--min-disk">        : BYTE_SIZE_SEP
+| <LICENSE_KEY2:    "--license-key">     : KEY_TOGGLE_SEP
+| <SELECTION_KEY2:  "--selection-key">   : KEY_TOGGLE_SEP
+| <ASSOC:           "--assoc">           : LINK_PARAM_SEP
+| <REF:             "--ref">             : LINK_PARAM_SEP
+| <DEPEND:          "--depend">          : LINK_PARAM_SEP
+| <SOURCE:          "--source">          : LINK_PARAM_SEP
+| <FSEQ:            "--fseq">            : FILE_SEQ_SEP
+| <NAME:            "--name">            : NODE_NAME_SEP  
+| <RENAME_FILES:    "--rename-files">   
+| <REMOVE_FILES:    "--remove-files">    
+| <RANGE:           "--range">           : FRAME_RANGE_SEP
+| <FRAME:           "--frame">           : FRAME_NUMBERS_SEP
+| <INDEX:           "--index">           : FRAME_INDICES_SEP
+| <WAIT:            "--wait">
+| <MAJOR:           "--major">
+| <MINOR:           "--minor">
+| <MICRO:           "--micro">
+| <OVERWRITE_ALL:   "--overwrite-all">
+| <KEEP_NEWER:      "--keep-newer">
+| <KEEP_MODIFIED:   "--keep-modified">
+| <MODIFIABLE:      "--modifiable">
+| <FROZEN_UPSTREAM: "--frozen-upstream">
+| <ALL_FROZEN:      "--all-frozen">
+| <BRIEF:           "--brief">
+| <UPSTREAM:        "--upstream">
+| <LINK_GRAPH:      "--link-graph">
 
   /* argument end separator */ 
 | <AE2: ("\0")+>
@@ -4024,10 +4028,11 @@ NodeCheckOut()
 {
   String name = null;
 
-  pAuthor       = PackageInfo.sUser;
-  pView         = "default";
-  pVersionIDs   = new TreeSet();
-  pCheckOutMode = CheckOutMode.OverwriteAll; 
+  pAuthor         = PackageInfo.sUser;
+  pView           = "default";
+  pVersionIDs     = new TreeSet();
+  pCheckOutMode   = CheckOutMode.OverwriteAll; 
+  pCheckOutMethod = CheckOutMethod.Modifiable;
 }
 {
   <NODE_CHECK_OUT> EQ() name=NodeName() AE() (NodeCheckOutOpts())*
@@ -4041,7 +4046,8 @@ NodeCheckOut()
       vid = (VersionID) pVersionIDs.first();
     }
 
-    pMasterMgrClient.checkOut(new NodeID(pAuthor, pView, name), vid, pCheckOutMode);
+    pMasterMgrClient.checkOut(new NodeID(pAuthor, pView, name), vid, 
+			      pCheckOutMode, pCheckOutMethod);
 
     Logs.ops.info("Checked-Out: " + name);
     Logs.flush();
@@ -4053,9 +4059,12 @@ NodeCheckOutOpts()
   throws PipelineException : 
 {}
 {
-  (Author() | View() | VersionOption() | OverwriteAll() | KeepNewer() | KeepModified())
+  (Author() | View() | VersionOption() | 
+   OverwriteAll() | KeepNewer() | KeepModified() | 
+   Modifiable() | FrozenUpstream() | AllFrozen())
   {}
 }
+
 
 void
 OverwriteAll() : 
@@ -4084,6 +4093,37 @@ KeepModified() :
   <KEEP_MODIFIED> AE()
   {
     pCheckOutMode = CheckOutMode.KeepModified; 
+  }
+}
+
+
+void
+Modifiable() : 
+{}
+{
+  <MODIFIABLE> AE()
+  {
+    pCheckOutMethod = CheckOutMethod.Modifiable;
+  }
+}
+
+void
+FrozenUpstream() : 
+{}
+{
+  <FROZEN_UPSTREAM> AE()
+  {
+    pCheckOutMethod = CheckOutMethod.FrozenUpstream;
+  }
+}
+
+void
+AllFrozen() : 
+{}
+{
+  <ALL_FROZEN> AE()
+  {
+    pCheckOutMethod = CheckOutMethod.AllFrozen;
   }
 }
 

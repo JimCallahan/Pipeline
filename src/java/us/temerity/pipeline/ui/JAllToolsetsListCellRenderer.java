@@ -1,8 +1,6 @@
-// $Id: JAllToolsetsListCellRenderer.java,v 1.2 2004/06/02 21:34:00 jim Exp $
+// $Id: JAllToolsetsListCellRenderer.java,v 1.3 2004/11/17 13:33:51 jim Exp $
 
 package us.temerity.pipeline.ui;
-
-import us.temerity.pipeline.laf.LookAndFeelLoader;
 
 import java.awt.*;
 import java.awt.event.*;

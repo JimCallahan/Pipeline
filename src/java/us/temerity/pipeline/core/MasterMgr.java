@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.67 2004/11/16 03:56:36 jim Exp $
+// $Id: MasterMgr.java,v 1.68 2004/11/17 13:33:50 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2181,9 +2181,14 @@ class MasterMgr
     try {
       timer.resume();
 
-      /* set the node properties */ 
+      /* get the working version */ 
       WorkingBundle bundle = getWorkingBundle(nodeID);
       NodeMod mod = new NodeMod(bundle.uVersion);
+      if(mod.isFrozen()) 
+	throw new PipelineException
+	  ("The node properties of frozen node (" + nodeID + ") cannot be modified!");
+
+      /* set the node properties */ 
       Date critical = mod.getLastCriticalModification();
       boolean wasActionEnabled = mod.isActionEnabled();
       if(mod.setProperties(req.getNodeMod())) {
@@ -2255,7 +2260,11 @@ class MasterMgr
 	throw new PipelineException
 	  ("Only working versions of nodes can be linked!\n" + 
 	   "No working version (" + targetID + ") exists for the downstream node.");
+
       NodeMod mod = new NodeMod(bundle.uVersion);
+      if(mod.isFrozen()) 
+	throw new PipelineException
+	  ("The upstream links of frozen node (" + targetID + ") cannot be modified!");
 
       /* make sure there are no active jobs */ 
       if(hasActiveJobs(targetID, mod.getTimeStamp(), mod.getPrimarySequence()))
@@ -2329,7 +2338,11 @@ class MasterMgr
 	throw new PipelineException
 	  ("Only working versions of nodes can be unlinked!\n" + 
 	   "No working version (" + targetID + ") exists for the downstream node.");
+
       NodeMod mod = new NodeMod(bundle.uVersion);
+      if(mod.isFrozen()) 
+	throw new PipelineException
+	  ("The upstream links of frozen node (" + targetID + ") cannot be modified!");
 
       /* make sure there are no active jobs */ 
       if(hasActiveJobs(targetID, mod.getTimeStamp(), mod.getPrimarySequence()))
@@ -2419,7 +2432,11 @@ class MasterMgr
 	  throw new PipelineException
 	    ("Secondary file sequences can only be added to working versions of nodes!\n" + 
 	     "No working version (" + nodeID + ") exists.");
+
 	NodeMod mod = new NodeMod(bundle.uVersion);
+	if(mod.isFrozen()) 
+	  throw new PipelineException
+	    ("The secondary sequences of frozen node (" + nodeID + ") cannot be modified!");
 	
 	/* make sure there are no active jobs */ 
 	if(hasActiveJobs(nodeID, mod.getTimeStamp(), mod.getPrimarySequence()))
@@ -2487,7 +2504,11 @@ class MasterMgr
 	throw new PipelineException
 	  ("Secondary file sequences can only be remove from working versions of nodes!\n" + 
 	   "No working version (" + nodeID + ") exists.");
+
       NodeMod mod = new NodeMod(bundle.uVersion);
+      if(mod.isFrozen()) 
+	throw new PipelineException
+	  ("The secondary sequences of frozen node (" + nodeID + ") cannot be modified!");
 
       /* make sure there are no active jobs */ 
       if(hasActiveJobs(nodeID, mod.getTimeStamp(), mod.getPrimarySequence()))
@@ -3231,6 +3252,9 @@ class MasterMgr
 	
 	WorkingBundle bundle = getWorkingBundle(nodeID);
 	NodeMod mod = bundle.uVersion;
+	if(mod.isFrozen()) 
+	  throw new PipelineException
+	    ("The files associated with frozen node (" + nodeID + ") cannot be removed!");
 	
 	ArrayList<Long> jobIDs = new ArrayList<Long>();
 	ArrayList<JobState> jobStates = new ArrayList<JobState>();
@@ -3361,6 +3385,11 @@ class MasterMgr
 
 	  WorkingBundle bundle = getWorkingBundle(id);
 	  NodeMod mod = bundle.uVersion;
+
+	  /* make sure its not frozen */ 
+	  if(mod.isFrozen()) 
+	    throw new PipelineException
+	      ("The frozen node (" + id + ") cannot be renamed!");
 
 	  /* make sure its an initial version */ 
 	  if(mod.getWorkingID() != null) 
@@ -3580,8 +3609,12 @@ class MasterMgr
 	  ("Only working versions of nodes may have their frame ranges renumbered!\n" + 
 	   "No working version (" + nodeID + ") exists.");
 
-      /* renumber the file sequences */ 
       NodeMod mod = new NodeMod(bundle.uVersion);
+      if(mod.isFrozen()) 
+	throw new PipelineException
+	  ("The frozen node (" + nodeID + ") cannot be renumbered!");
+      
+      /* renumber the file sequences */ 
       ArrayList<File> obsolete = mod.adjustFrameRange(range);
 
       /* write the new working version to disk */ 
@@ -3709,9 +3742,9 @@ class MasterMgr
 			    new LinkedList<String>(), table, timer);
 
       /* check-out the nodes */ 
-      performCheckOut(true, nodeID, req.getVersionID(), req.getMode(), table, 
-		      new LinkedList<String>(), new HashSet<String>(), new HashSet<String>(), 
-		      timer);
+      performCheckOut(true, nodeID, req.getVersionID(), req.getMode(), req.getMethod(), 
+		      table, new LinkedList<String>(), new HashSet<String>(), 
+		      new HashSet<String>(), timer);
 
       return new SuccessRsp(timer);
     }
@@ -3744,6 +3777,9 @@ class MasterMgr
    *   The criteria used to determine whether nodes upstream of the root node of the check-out
    *   should also be checked-out.
    *
+   * @param method
+   *   The method for creating working area files/links from the checked-in files.
+   *
    * @param stable
    *   The current node status indexed by fully resolved node name.
    * 
@@ -3771,6 +3807,7 @@ class MasterMgr
    NodeID nodeID, 
    VersionID vid, 
    CheckOutMode mode,
+   CheckOutMethod method, 
    HashMap<String,NodeStatus> stable,
    LinkedList<String> branch, 
    HashSet<String> seen, 
@@ -3874,6 +3911,17 @@ class MasterMgr
       /* mark having seen this node already */ 
       seen.add(name);
  
+      /* determine whether working files or links should be created */ 
+      boolean isFrozen = false;
+      switch(method) {
+      case FrozenUpstream:
+	isFrozen = !isRoot;
+	break;
+
+      case AllFrozen:
+	isFrozen = true;
+      }
+
       /* see if the check-out should be skipped, 
            and if skipped whether the node should be marked dirty */ 
       if(work != null) {
@@ -3882,7 +3930,8 @@ class MasterMgr
 	  if((details != null) && 
 	     (details.getOverallNodeState() == OverallNodeState.Identical) && 
 	     (details.getOverallQueueState() == OverallQueueState.Finished) && 
-	     work.getWorkingID().equals(vsn.getVersionID())) {
+	     work.getWorkingID().equals(vsn.getVersionID()) && 
+	     (work.isFrozen() == isFrozen)) {
 	    branch.removeLast();
 	    return;
 	  }
@@ -3909,7 +3958,7 @@ class MasterMgr
       for(LinkVersion link : vsn.getSources()) {
 	NodeID lnodeID = new NodeID(nodeID, link.getName());
 
-	performCheckOut(false, lnodeID, link.getVersionID(), mode, stable, 
+	performCheckOut(false, lnodeID, link.getVersionID(), mode, method, stable, 
 			branch, seen, dirty, timer);
 
 	if(dirty.contains(link.getName())) 
@@ -3931,12 +3980,12 @@ class MasterMgr
 	}
 	/* otherwise, check-out the files */
 	else {
-	  pFileMgrClient.checkOut(nodeID, vsn);
+	  pFileMgrClient.checkOut(nodeID, vsn, isFrozen);
 	}
       }
 
       /* create a new working version and write it to disk */ 
-      NodeMod nwork = new NodeMod(vsn, timestamp);
+      NodeMod nwork = new NodeMod(vsn, timestamp, isFrozen);
       writeWorkingVersion(nodeID, nwork);
 
       /* initialize new working version */ 
@@ -4068,7 +4117,12 @@ class MasterMgr
 	    throw new PipelineException
 	      ("Only nodes with working versions can have their files reverted!");
 
-	  writeable = bundle.uVersion.isActionEnabled();
+	  NodeMod mod = bundle.uVersion;
+	  if(mod.isFrozen()) 
+	    throw new PipelineException
+	      ("The files associated with frozen node (" + nodeID + ") cannot be reverted!");
+
+	  writeable = mod.isActionEnabled();
 	}
 	finally {
 	  lock.readLock().unlock();
@@ -4094,7 +4148,7 @@ class MasterMgr
    * modifying the working version properties, links or associated files. <P> 
    * 
    * @param req 
-   *   The revert files request.
+   *   The evolve request.
    *
    * @return
    *   <CODE>SuccessRsp</CODE> if successful or 
@@ -4106,7 +4160,8 @@ class MasterMgr
    NodeEvolveReq req 
   ) 
   {
-    TaskTimer timer = new TaskTimer("MasterMgr.evolve(): " + req.getNodeID());
+    NodeID nodeID = req.getNodeID();
+    TaskTimer timer = new TaskTimer("MasterMgr.evolve(): " + nodeID);
 
     timer.aquire();
     pDatabaseLock.readLock().lock();
@@ -4116,7 +4171,7 @@ class MasterMgr
       /* verify the checked-in revision number */ 
       VersionID vid = req.getVersionID();
       {
-	String name = req.getNodeID().getName();
+	String name = nodeID.getName();
 
 	timer.aquire();
 	ReentrantReadWriteLock lock = getCheckedInLock(name);
@@ -4141,18 +4196,21 @@ class MasterMgr
 
       /* change the checked-in version number for the working version */ 
       timer.aquire();
-      ReentrantReadWriteLock lock = getWorkingLock(req.getNodeID());
+      ReentrantReadWriteLock lock = getWorkingLock(nodeID);
       lock.writeLock().lock();
       try {
 	timer.resume();
 
 	/* set the revision number */ 
-	WorkingBundle bundle = getWorkingBundle(req.getNodeID());
+	WorkingBundle bundle = getWorkingBundle(nodeID);
 	NodeMod mod = new NodeMod(bundle.uVersion);
+	if(mod.isFrozen()) 
+	  throw new PipelineException
+	    ("The frozen node (" + nodeID + ") cannot be evolved!");
 	mod.setWorkingID(vid);
 
 	/* write the working version to disk */ 
-	writeWorkingVersion(req.getNodeID(), mod);
+	writeWorkingVersion(nodeID, mod);
 
 	/* update the bundle */ 
 	bundle.uVersion = mod;
@@ -4487,6 +4545,9 @@ class MasterMgr
 	("Cannot generate jobs for the checked-in node (" + status + ")!");
     
     NodeMod work = details.getWorkingVersion();
+    if(work.isFrozen()) 
+      throw new PipelineException
+	("Cannot generate jobs for the frozen node (" + nodeID + ")!");
 
     /* collect upstream jobs (nodes without an action or with a disabled action) */ 
     if(!work.isActionEnabled()) {
@@ -6358,6 +6419,8 @@ class MasterMgr
       Date[] fileTimeStamps = null;
       switch(versionState) {
       case CheckedIn:
+	/* if checked-in, all files must be CheckedIn, no files can be missing and all 
+	   timestamps must be (null) */ 
 	for(FileSeq fseq : latest.getSequences()) {
 	  FileState fs[] = new FileState[fseq.numFrames()];
 
@@ -6378,28 +6441,40 @@ class MasterMgr
       default:
 	{
 	  /* query the file manager for per-file states */ 
+	  VersionID vid = null;
+	  if(latest != null) 
+	    vid = latest.getVersionID();
+	  
+	  TreeMap<FileSeq, Date[]> stamps = new TreeMap<FileSeq, Date[]>();
+	  
+	  pFileMgrClient.states(nodeID, work, versionState, work.isFrozen(), 
+				vid, fileStates, stamps);
+
+	  /* get the newest of the timestamp for each file sequence index */ 
 	  {
-	    VersionID vid = null;
-	    if(latest != null) 
-	      vid = latest.getVersionID();
-	    
-	    TreeMap<FileSeq, Date[]> stamps = new TreeMap<FileSeq, Date[]>();
-	    
-	    pFileMgrClient.states(nodeID, work, versionState, vid, fileStates, stamps);
-	    
+	    Date stamp = null;
+	    if(work.isFrozen()) 
+	      stamp = work.getTimeStamp();
+
 	    for(FileSeq fseq : stamps.keySet()) {
 	      Date[] ts = stamps.get(fseq);
 	      
 	      if(fileTimeStamps == null) 
 		fileTimeStamps = new Date[ts.length];
-	    
+	      
 	      int wk;
 	      for(wk=0; wk<ts.length; wk++) {
+		/* the newest among the primary/secondary files for the index */ 
 		if((fileTimeStamps[wk] == null) || 
 		   ((ts[wk] != null) && (ts[wk].compareTo(fileTimeStamps[wk]) > 0)))
 		  fileTimeStamps[wk] = ts[wk];
+		
+		/* for frozen nodes, use the node creation timestmp if newer than the files */
+		if((fileTimeStamps[wk] == null) || 
+		   ((stamp != null) && (stamp.compareTo(fileTimeStamps[wk]) > 0)))
+		  fileTimeStamps[wk] = stamp;
 	      }
-	    }	      
+	    }
 	  }
 
 	  /* precompute whether any files are missing */ 
@@ -6408,7 +6483,7 @@ class MasterMgr
 	    
 	    if(anyMissing == null) 
 	      anyMissing = new boolean[fs.length];
-
+	    
 	    int wk;
 	    for(wk=0; wk<anyMissing.length; wk++) {
 	      if(fs[wk] == FileState.Missing) 
@@ -6457,16 +6532,16 @@ class MasterMgr
 	      case Obsolete:
 		anyNeedsCheckOutFs = true;
 		break;
-
+		
 	      case Modified:
 	      case Added:
 		anyModifiedFs = true;
 		break; 
-
+		
 	      case Conflicted:
 		anyConflictedFs = true;	
 		break;
-
+		
 	      case Missing: 
 		anyMissingFs = true;
 	      }
@@ -6479,17 +6554,17 @@ class MasterMgr
 	     (propertyState == PropertyState.NeedsCheckOut) || 
 	     (linkState == LinkState.NeedsCheckOut) || 
 	     anyNeedsCheckOutFs);
-
+	  
 	  boolean anyModified = 
 	    ((propertyState == PropertyState.Modified) || 
 	     (linkState == LinkState.Modified) || 
 	     anyModifiedFs);
-
+	  
 	  boolean anyConflicted = 
 	    ((propertyState == PropertyState.Conflicted) || 
 	     (linkState == LinkState.Conflicted) || 
 	     anyConflictedFs);
-
+	  
 	  if(anyMissingFs) 
 	    overallNodeState = OverallNodeState.Missing;
 	  else if(anyConflicted || (anyNeedsCheckOut && anyModified))
@@ -6634,6 +6709,13 @@ class MasterMgr
 		      
 		      QueueState lqs[] = ldetails.getQueueState();
 		      Date lstamps[] = ldetails.getFileTimeStamps();
+		      
+		      // FIX THIS: 
+		      //   If the FileState of the upstream file is Identical, the 
+		      //   PropertyState is Identical and the upstream working version is 
+		      //   based on the same checked-in version as indicated by the link, 
+		      //   a newer upstream file timestamp should not make the current file 
+		      //   Stale!
 		      
 		      switch(link.getRelationship()) {
 		      case OneToOne:
@@ -8822,6 +8904,11 @@ class MasterMgr
 	  WorkingBundle working = getWorkingBundle(nodeID);
 	  NodeMod work = working.uVersion;
 
+	  if(work.isFrozen()) 
+	    throw new PipelineException
+	      ("Somehow a frozen node (" + name + ") was erroneously " + 
+	       "submitted for check-in!");
+
 	  /* determine the checked-in revision numbers of the upstream nodes */ 
 	  TreeMap<String,VersionID> lvids = new TreeMap<String,VersionID>();
 	  for(NodeStatus lstatus : status.getSources()) {
@@ -8908,7 +8995,7 @@ class MasterMgr
 	  }
 	  
 	  /* create a new working version and write it to disk */ 
-	  NodeMod nwork = new NodeMod(vsn, work.getLastCriticalModification());
+	  NodeMod nwork = new NodeMod(vsn, work.getLastCriticalModification(), false);
 	  writeWorkingVersion(nodeID, nwork);
 
 	  /* update the working bundle */ 

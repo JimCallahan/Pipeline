@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.26 2004/11/16 03:56:36 jim Exp $
+// $Id: FileMgr.java,v 1.27 2004/11/17 13:33:50 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -237,9 +237,8 @@ class FileMgr
 
 	  SubProcessLight proc = 
 	    new SubProcessLight(author, "CreateWorkingArea", "mkdir", args, env, pProdDir);
-	  proc.start();
-	  
 	  try {
+	    proc.start();
 	    proc.join();
 	    if(!proc.wasSuccessful()) 
 	      throw new PipelineException
@@ -344,6 +343,8 @@ class FileMgr
 		  fs[wk] = FileState.Added;
 		else if(work.length() != latest.length()) 
 		  fs[wk] = FileState.Modified;
+		else if(NativeFileSys.realpath(work).equals(NativeFileSys.realpath(latest)))
+		  fs[wk] = FileState.Identical;
 		else {
 		  pCheckSum.refresh(wpath);
 		  if(pCheckSum.compare(wpath, lpath))
@@ -392,7 +393,9 @@ class FileMgr
 		else {
 		  boolean workRefreshed = false;
 		  boolean workEqLatest = false;
-		  if(work.length() == latest.length()) {
+		  if(NativeFileSys.realpath(work).equals(NativeFileSys.realpath(latest)))
+		    workEqLatest = true;
+		  else if(work.length() == latest.length()) {
 		    pCheckSum.refresh(wpath);
 		    workRefreshed = true;
 		    workEqLatest = pCheckSum.compare(wpath, lpath);
@@ -406,7 +409,9 @@ class FileMgr
 		      fs[wk] = FileState.Modified;
 		    else {
 		      boolean workEqBase = false;
-		      if(work.length() == base.length()) {
+		      if(NativeFileSys.realpath(work).equals(NativeFileSys.realpath(base)))
+			workEqBase = true;
+		      else if(work.length() == base.length()) {
 			if(!workRefreshed) 
 			  pCheckSum.refresh(wpath);
 			workEqBase = pCheckSum.compare(wpath, bpath);
@@ -430,7 +435,7 @@ class FileMgr
 	}
 
 	/* lookup the last modification timestamps */ 
-	TreeMap<FileSeq, Date[]> timestamps = new TreeMap<FileSeq, Date[]>();
+	TreeMap<FileSeq, Date[]> timestamps = timestamps = new TreeMap<FileSeq, Date[]>();
 	{
 	  for(FileSeq fseq : states.keySet()) {
 	    Date stamps[] = new Date[fseq.numFrames()];
@@ -641,9 +646,8 @@ class FileMgr
 	    
 	    SubProcessLight proc = 
 	      new SubProcessLight("CheckIn-Copy", "cp", args, env, wdir);
-	    proc.start();
-	    
-	    try {
+	    try {	    
+	      proc.start();
 	      proc.join();
 	      if(!proc.wasSuccessful()) 
 		throw new PipelineException
@@ -688,9 +692,8 @@ class FileMgr
 
 	    SubProcessLight proc = 
 	      new SubProcessLight("CheckIn-CopyCheckSums", "cp", args, env, cwdir);
-	    proc.start();
-	    
 	    try {
+	      proc.start();
 	      proc.join();
 	      if(!proc.wasSuccessful()) 
 		throw new PipelineException
@@ -798,12 +801,12 @@ class FileMgr
 
 	Map<String,String> env = System.getenv();
 
-	/* verify (or create) the working area file, backup and checksum directories */ 
+	/* verify (or create) the working area file and checksum directories */ 
 	File wdir  = null;
 	File cwdir = null;
-	File bwdir = null;
+	File wpath = null;
 	{
-	  File wpath = req.getNodeID().getWorkingParent();
+	  wpath = req.getNodeID().getWorkingParent();
 	  wdir  = new File(pProdDir, wpath.getPath());
 	  cwdir = new File(pProdDir, "checksum/" + wpath);
 
@@ -820,17 +823,6 @@ class FileMgr
 	    }
 	    else {
 	      dirs.add(wdir);
-	    }
-
-	    bwdir = new File(wdir, ".backup");
-	    if(bwdir.exists()) {
-	      if(!bwdir.isDirectory()) 
-		throw new PipelineException
-		  ("Somehow there exists a non-directory (" + bwdir + 
-		   ") in the location of the working backup directory!");
-	    }
-	    else {
-	      dirs.add(bwdir);
 	    }
 	    
 	    if(cwdir.exists()) {
@@ -855,9 +847,8 @@ class FileMgr
 	      SubProcessLight proc = 
 		new SubProcessLight(req.getNodeID().getAuthor(), 
 				    "CheckOut-MakeDirs", "mkdir", args, env, pProdDir);
-	      proc.start();
-	      
 	      try {
+		proc.start();
 		proc.join();
 		if(!proc.wasSuccessful()) 
 		  throw new PipelineException
@@ -878,8 +869,9 @@ class FileMgr
 	VersionID rvid = req.getVersionID();
 	File rdir  = null;
 	File crdir = null;
+	File rpath = null;
 	{
-	  File rpath = req.getNodeID().getCheckedInPath(rvid);
+	  rpath = req.getNodeID().getCheckedInPath(rvid);
 	  rdir  = new File(pProdDir, rpath.getPath());
 	  crdir = new File(pProdDir, "checksum/" + rpath);
 	}
@@ -889,47 +881,50 @@ class FileMgr
 	for(FileSeq fseq : req.getFileSequences()) 
 	  files.addAll(fseq.getFiles());
 	
-	/* move any existing working files which would be overwritten into 
-	    the backup directory */ 
-	{
-	  ArrayList<String> old = new ArrayList<String>();
-	  for(File file : files) {
-	    File work = new File(wdir, file.getPath());
-	    if(work.isFile()) 
-	      old.add(file.getName());
-	  }
-	  
-	  if(!old.isEmpty()) {
-	    ArrayList<String> args = new ArrayList<String>();
-	    args.add("--force");
-	    args.add("--update");
-	    args.add("--target-directory=" + bwdir);
-	    args.addAll(old);
+	/* if frozen, create relative symlinks from the working files to the 
+	   checked-in files */ 
+	if(req.isFrozen()) {
+	  ArrayList<String> args = new ArrayList<String>();
+	  args.add("--symbolic-link");
+	  args.add("--remove-destination");
 
-	    SubProcessLight proc = 
-	      new SubProcessLight(req.getNodeID().getAuthor(), 
-				  "CheckOut-Backup", "mv", args, env, wdir);
+	  {
+	    StringBuffer buf = new StringBuffer();
+	    String comps[] = wpath.getPath().split("/");
+	    int wk;
+	    for(wk=1; wk<comps.length; wk++) 
+	      buf.append("../");
+	    buf.append(rpath.getPath().substring(1));
+	    String path = buf.toString();
+
+	    for(File file : files) 
+	      args.add(path + "/" + file);
+	    args.add(".");
+	  }
+
+	  SubProcessLight proc = 
+	    new SubProcessLight(req.getNodeID().getAuthor(), 
+				"CheckOut-Symlink", "cp", args, env, wdir);
+	  try {
 	    proc.start();
-	    
-	    try {
-	      proc.join();
-	      if(!proc.wasSuccessful()) 
-		throw new PipelineException
-		  ("Unable to backing-up the working files for version (" + 
-		   req.getNodeID() + "):\n\n" + 
-		   "  " + proc.getStdErr());	
-	    }
-	    catch(InterruptedException ex) {
+	    proc.join();
+	    if(!proc.wasSuccessful()) 
 	      throw new PipelineException
-		("Interrupted while backing-up the working files for version (" + 
-		 req.getNodeID() + ")!");
-	    }
+		("Unable to create symbolic links to the repository for the " +
+		 "working version (" + req.getNodeID() + "):\n\n" + 
+		 "  " + proc.getStdErr());	
+	  }
+	  catch(InterruptedException ex) {
+	    throw new PipelineException
+	      ("Interrupted while creating symbolic links to the repository for the " +
+	       "working version (" + req.getNodeID() + ")!");
 	  }
 	}
 
-	/* copy the checked-in files to the working directory */ 
-	{
+	/* otherwise, copy the checked-in files to the working directory */ 
+	else {
 	  ArrayList<String> args = new ArrayList<String>();
+	  args.add("--remove-destination");
 	  args.add("--target-directory=" + wdir);
 	  for(File file : files) 
 	    args.add(file.getName());
@@ -937,9 +932,8 @@ class FileMgr
 	  SubProcessLight proc = 
 	    new SubProcessLight(req.getNodeID().getAuthor(), 
 				"CheckOut-Copy", "cp", args, env, rdir);
-	  proc.start();
-	  
 	  try {
+	    proc.start();
 	    proc.join();
 	    if(!proc.wasSuccessful()) 
 	      throw new PipelineException
@@ -954,19 +948,43 @@ class FileMgr
 	  }
 	}
 
-	/* overwrite the working checksums with the checked-in checksums */ 
-	{
+	/* if frozen, remove the working checksums */ 
+	if(req.isFrozen()) {
 	  ArrayList<String> args = new ArrayList<String>();
 	  args.add("--force");
+	  for(File file : files) 
+	    args.add(file.getName());
+
+	  SubProcessLight proc = 
+	    new SubProcessLight("CheckOut-RemoveCheckSums", "rm", args, env, cwdir);
+	  try {
+	    proc.start();
+	    proc.join();
+	    if(!proc.wasSuccessful()) 
+	      throw new PipelineException
+		("Unable to remove the working checksums for version (" + 
+		 req.getNodeID() + "):\n\n" + 
+		 "  " + proc.getStdErr());	
+	  }
+	  catch(InterruptedException ex) {
+	    throw new PipelineException
+	      ("Interrupted while removing the working checksums for version (" + 
+	       req.getNodeID() + ")!");
+	  }
+	}
+
+	/* otherwise, overwrite the working checksums with the checked-in checksums */ 
+	else {
+	  ArrayList<String> args = new ArrayList<String>();
+	  args.add("--remove-destination");
 	  args.add("--target-directory=" + cwdir);
 	  for(File file : files) 
 	    args.add(file.getName());
 
 	  SubProcessLight proc = 
 	    new SubProcessLight("CheckOut-CopyCheckSums", "cp", args, env, crdir);
-	  proc.start();
-	  
 	  try {
+	    proc.start();
 	    proc.join();
 	    if(!proc.wasSuccessful()) 
 	      throw new PipelineException
@@ -981,8 +999,8 @@ class FileMgr
 	  }
 	}
 
-	/* add write permission to the to working files and checksums */ 
-        {
+	/* if not frozen, add write permission to the working files and checksums */ 
+        if(!req.isFrozen()) {
 	  ArrayList<String> args = new ArrayList<String>();
 	  args.add("u+w");
 	  for(File file : files) 
@@ -992,9 +1010,8 @@ class FileMgr
 	    SubProcessLight proc = 
 	      new SubProcessLight(req.getNodeID().getAuthor(), 
 				  "CheckOut-SetWritable", "chmod", args, env, wdir);
-	    proc.start();
-	    
 	    try {
+	      proc.start();
 	      proc.join();
 	      if(!proc.wasSuccessful()) 
 		throw new PipelineException
@@ -1012,9 +1029,8 @@ class FileMgr
 	  {
 	    SubProcessLight proc = 
 	      new SubProcessLight("CheckOut-SetWritableCheckSums", "chmod", args, env, cwdir);
-	    proc.start();
-	    
 	    try {
+	      proc.start();
 	      proc.join();
 	      if(!proc.wasSuccessful()) 
 		throw new PipelineException
@@ -1074,10 +1090,9 @@ class FileMgr
 	
 	Map<String,String> env = System.getenv();
 
-	/* verify (or create) the working area file, backup and checksum directories */ 
+	/* verify (or create) the working area file and checksum directories */ 
 	File wdir  = null;
 	File cwdir = null;
-	File bwdir = null;
 	{
 	  File wpath = req.getNodeID().getWorkingParent();
 	  wdir  = new File(pProdDir, wpath.getPath());
@@ -1098,17 +1113,6 @@ class FileMgr
 	      dirs.add(wdir);
 	    }
 
-	    bwdir = new File(wdir, ".backup");
-	    if(bwdir.exists()) {
-	      if(!bwdir.isDirectory()) 
-		throw new PipelineException
-		  ("Somehow there exists a non-directory (" + bwdir + 
-		   ") in the location of the working backup directory!");
-	    }
-	    else {
-	      dirs.add(bwdir);
-	    }
-	    
 	    if(cwdir.exists()) {
 	      if(!cwdir.isDirectory()) 
 		throw new PipelineException
@@ -1131,9 +1135,8 @@ class FileMgr
 	      SubProcessLight proc = 
 		new SubProcessLight(req.getNodeID().getAuthor(), 
 				    "Revert-MakeDirs", "mkdir", args, env, pProdDir);
-	      proc.start();
-	      
 	      try {
+		proc.start();
 		proc.join();
 		if(!proc.wasSuccessful()) 
 		  throw new PipelineException
@@ -1149,44 +1152,6 @@ class FileMgr
 	    }
 	  }
 	}
-
-	/* move any existing working files which would be overwritten into 
-	    the backup directory */ 
-	{
-	  ArrayList<String> old = new ArrayList<String>();
-	  for(String file : req.getFiles().keySet()) {
-	    File work = new File(wdir, file);
-	    if(work.isFile()) 
-	      old.add(file);
-	  }
-	  
-	  if(!old.isEmpty()) {
-	    ArrayList<String> args = new ArrayList<String>();
-	    args.add("--force");
-	    args.add("--update");
-	    args.add("--target-directory=" + bwdir);
-	    args.addAll(old);
-
-	    SubProcessLight proc = 
-	      new SubProcessLight(req.getNodeID().getAuthor(), 
-				  "Revert-Backup", "mv", args, env, wdir);
-	    proc.start();
-	    
-	    try {
-	      proc.join();
-	      if(!proc.wasSuccessful()) 
-		throw new PipelineException
-		  ("Unable to back-up the working files for version (" + 
-		   req.getNodeID() + "):\n\n" + 
-		   "  " + proc.getStdErr());	
-	    }
-	    catch(InterruptedException ex) {
-	      throw new PipelineException
-		("Interrupted while backing-up the working files for version (" + 
-		 req.getNodeID() + ")!");
-	    }
-	  }
-	}
 	
 	ArrayList<String> rfiles = new ArrayList<String>();
 	for(String file : req.getFiles().keySet()) 
@@ -1195,6 +1160,7 @@ class FileMgr
 	/* copy the checked-in files to the working directory */ 
 	{
 	  ArrayList<String> args = new ArrayList<String>();
+	  args.add("--remove-destination");
 	  args.add("--target-directory=" + wdir);
 	  args.addAll(rfiles);
 
@@ -1203,9 +1169,8 @@ class FileMgr
 	  SubProcessLight proc = 
 	    new SubProcessLight(req.getNodeID().getAuthor(), 
 				"Revert-Copy", "cp", args, env, rdir);
-	  proc.start();
-	  
 	  try {
+	    proc.start();
 	    proc.join();
 	    if(!proc.wasSuccessful()) 
 	      throw new PipelineException
@@ -1231,9 +1196,8 @@ class FileMgr
 
 	  SubProcessLight proc = 
 	    new SubProcessLight("Revert-CopyCheckSums", "cp", args, env, crdir);
-	  proc.start();
-	  
 	  try {
+	    proc.start();
 	    proc.join();
 	    if(!proc.wasSuccessful()) 
 	      throw new PipelineException
@@ -1258,9 +1222,8 @@ class FileMgr
 	    SubProcessLight proc = 
 	      new SubProcessLight(req.getNodeID().getAuthor(), 
 				  "Revert-SetWritable", "chmod", args, env, wdir);
-	    proc.start();
-	    
 	    try {
+	      proc.start();
 	      proc.join();
 	      if(!proc.wasSuccessful()) 
 		throw new PipelineException
@@ -1278,9 +1241,8 @@ class FileMgr
 	  {
 	    SubProcessLight proc = 
 	      new SubProcessLight("Revert-SetWritableCheckSums", "chmod", args, env, cwdir);
-	    proc.start();
-	    
 	    try {
+	      proc.start();
 	      proc.join();
 	      if(!proc.wasSuccessful()) 
 		throw new PipelineException
@@ -1409,21 +1371,18 @@ class FileMgr
 	/* the new named node identifier */ 
 	NodeID id = new NodeID(req.getNodeID(), req.getNewName());
 
-	/* the old working area file, backup and checksum directories */ 
+	/* the old working area file and checksum directories */ 
 	File owdir  = null;
 	File ocwdir = null;
-	File obwdir = null;
 	{
 	  File wpath = req.getNodeID().getWorkingParent();
 	  owdir  = new File(pProdDir, wpath.getPath());
 	  ocwdir = new File(pProdDir, "checksum/" + wpath);
-	  obwdir = new File(owdir, ".backup");
 	}
 	
-	/* verify (or create) the new working area file, backup and checksum directories */ 
+	/* verify (or create) the new working area file and checksum directories */ 
 	File wdir  = null;
 	File cwdir = null;
-	File bwdir = null;
 	{
 	  File wpath = id.getWorkingParent();
 	  wdir  = new File(pProdDir, wpath.getPath());
@@ -1439,17 +1398,6 @@ class FileMgr
 	    }
 	    else {
 	      dirs.add(wdir);
-	    }
-	    
-	    bwdir = new File(wdir, ".backup");
-	    if(bwdir.exists()) {
-	      if(!bwdir.isDirectory()) 
-		throw new PipelineException
-		  ("Somehow there exists a non-directory (" + bwdir + 
-		   ") in the location of the working backup directory!");
-	    }
-	    else {
-	      dirs.add(bwdir);
 	    }
 	    
 	    if(cwdir.exists()) {
@@ -1474,9 +1422,8 @@ class FileMgr
 	      SubProcessLight proc = 
 		new SubProcessLight(req.getNodeID().getAuthor(), 
 				    "Rename-MakeDirs", "mkdir", args, env, pProdDir);
-	      proc.start();
-	      
 	      try {
+		proc.start();
 		proc.join();
 		if(!proc.wasSuccessful()) 
 		  throw new PipelineException
@@ -1519,47 +1466,6 @@ class FileMgr
 	    }
 	  }
 	}
-	
-	/* move any existing new named working files which would be overwritten into 
-	   the backup directory */ 
-	{
-	  ArrayList<String> old = new ArrayList<String>();
-	  for(File file : pfiles) {
-	    File work = new File(wdir, file.getPath());
-	    if(work.isFile()) 
-	      old.add(file.getName());
-	  }
-	  for(File file : sfiles) {
-	    File work = new File(wdir, file.getPath());
-	    if(work.isFile()) 
-	      old.add(file.getName());
-	  }
-	  
-	  if(!old.isEmpty()) {
-	    ArrayList<String> args = new ArrayList<String>();
-	    args.add("--force");
-	    args.add("--update");
-	    args.add("--target-directory=" + bwdir);
-	    args.addAll(old);
-	    
-	    SubProcessLight proc = 
-	      new SubProcessLight(req.getNodeID().getAuthor(), 
-				  "Rename-Backup", "mv", args, env, wdir);
-	    proc.start();
-	    
-	    try {
-	      proc.join();
-	      if(!proc.wasSuccessful()) 
-		throw new PipelineException
-		  ("Unable to back-up the working files for version (" + id + "):\n\n" + 
-		   "  " + proc.getStdErr());	
-	    }
-	    catch(InterruptedException ex) {
-	      throw new PipelineException
-		("Interrupted while backing-up the working files for version (" + id + ")!");
-	    }
-	  }
-	}
       
 	/* move each primary file */ 
 	{
@@ -1580,9 +1486,8 @@ class FileMgr
 	      SubProcessLight proc = 
 		new SubProcessLight(req.getNodeID().getAuthor(), 
 				    "Rename-Primary", "mv", args, env, wdir);
-	      proc.start();
-	      
 	      try {
+		proc.start();
 		proc.join();
 		if(!proc.wasSuccessful()) 
 		  throw new PipelineException
@@ -1615,9 +1520,8 @@ class FileMgr
 	    SubProcessLight proc = 
 	      new SubProcessLight(req.getNodeID().getAuthor(), 
 				  "Rename-Secondary", "mv", args, env, owdir);
-	    proc.start();
-	    
 	    try {
+	      proc.start();
 	      proc.join();
 	      if(!proc.wasSuccessful()) 
 		throw new PipelineException
@@ -1650,9 +1554,8 @@ class FileMgr
 	      SubProcessLight proc = 
 		new SubProcessLight(req.getNodeID().getAuthor(), 
 				    "Rename-PrimaryCheckSum", "mv", args, env, cwdir);
-	      proc.start();
-	      
 	      try {
+		proc.start();
 		proc.join();
 		if(!proc.wasSuccessful()) 
 		  throw new PipelineException
@@ -1685,9 +1588,8 @@ class FileMgr
 	    SubProcessLight proc = 
 	      new SubProcessLight(req.getNodeID().getAuthor(), 
 				  "Rename-SecondaryCheckSums", "mv", args, env, ocwdir);
-	    proc.start();
-	    
 	    try {
+	      proc.start();
 	      proc.join();
 	      if(!proc.wasSuccessful()) 
 		throw new PipelineException
@@ -2263,9 +2165,8 @@ class FileMgr
 	    SubProcessLight proc = 
 	      new SubProcessLight(id.getAuthor(), 
 				  "Remove-Files", "rm", args, env, wdir);
-	    proc.start();
-	    
 	    try {
+	      proc.start();
 	      proc.join();
 	      if(!proc.wasSuccessful()) 
 		throw new PipelineException
@@ -2297,9 +2198,8 @@ class FileMgr
 	    
 	    SubProcessLight proc = 
 	      new SubProcessLight("Remove-CheckSums", "rm", args, env, cwdir);
-	    proc.start();
-	    
 	    try {
+	      proc.start();
 	      proc.join();
 	      if(!proc.wasSuccessful()) 
 		throw new PipelineException

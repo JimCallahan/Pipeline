@@ -1,4 +1,4 @@
-// $Id: FileCheckOutReq.java,v 1.8 2004/11/03 18:16:31 jim Exp $
+// $Id: FileCheckOutReq.java,v 1.9 2004/11/17 13:33:50 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -40,8 +40,13 @@ class FileCheckOutReq
    *   The primary and secondary file sequences associated with the checked-in version to 
    *   check-out.
    * 
+   * @param isFrozen
+   *   Whether the files associated with the working version should be symlinks to the 
+   *   checked-in files instead of copies.
+   * 
    * @param writeable
-   *   Whether the working area files should be made writable after being checked-out.
+   *   Whether the working area files (if not frozen) should be made writable after being 
+   *   checked-out.
    */
   public
   FileCheckOutReq
@@ -49,7 +54,8 @@ class FileCheckOutReq
    NodeID id, 
    VersionID vid, 
    TreeSet<FileSeq> fseqs, 
-   boolean writeable   
+   boolean isFrozen, 
+   boolean writeable 
   )
   { 
     if(id == null) 
@@ -64,6 +70,7 @@ class FileCheckOutReq
       throw new IllegalArgumentException("The check-out file sequences cannot (null)!");
     pFileSeqs = fseqs;
 
+    pIsFrozen = isFrozen;
     pWritable = writeable;
   }
 
@@ -101,7 +108,18 @@ class FileCheckOutReq
   }
 
   /**
-   * Get whether the working area files should be made writable after being checked-out.
+   * Get whether the files associated with the working version should be symlinks to the 
+   * checked-in files instead of copies.
+   */ 
+  public boolean 
+  isFrozen() 
+  {
+    return pIsFrozen; 
+  }
+
+  /**
+   * Get whether the working area files (if not frozen) should be made writable after 
+   * being checked-out.
    */ 
   public boolean 
   getWritable() 
@@ -138,6 +156,12 @@ class FileCheckOutReq
    * check-out.
    */
   private TreeSet<FileSeq>  pFileSeqs;
+
+  /**
+   * Whether the files associated with the working version should be symlinks to the 
+   * checked-in files instead of copies.
+   */ 
+  private boolean pIsFrozen; 
 
   /**
    * Whether the working area files should be made writable after being checked-out.

@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.18 2004/11/02 20:03:29 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.19 2004/11/17 13:33:51 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -75,6 +75,7 @@ class JNodeFilesPanel
       JMenu sub;
 
       pWorkingPopup   = new JPopupMenu();  
+      pFrozenPopup    = new JPopupMenu();  
       pCheckedInPopup = new JPopupMenu();  
 
       {
@@ -87,17 +88,17 @@ class JNodeFilesPanel
 	pWorkingPopup.addSeparator();
       }
 
-      pEditWithMenus = new JMenu[2];
+      pEditWithMenus = new JMenu[3];
 
-      JPopupMenu menus[] = { pWorkingPopup, pCheckedInPopup };
+      JPopupMenu menus[] = { pWorkingPopup, pFrozenPopup, pCheckedInPopup };
       int wk;
       for(wk=0; wk<menus.length; wk++) {
-	item = new JMenuItem((wk == 1) ? "View" : "Edit");
+	item = new JMenuItem((wk > 0) ? "View" : "Edit");
 	item.setActionCommand("edit");
 	item.addActionListener(this);
 	menus[wk].add(item);
 	
-	pEditWithMenus[wk] = new JMenu((wk == 1) ? "View With" : "Edit With");
+	pEditWithMenus[wk] = new JMenu((wk > 0) ? "View With" : "Edit With");
 	menus[wk].add(pEditWithMenus[wk]);
       }
       
@@ -179,6 +180,12 @@ class JNodeFilesPanel
 
 	panel.add(Box.createHorizontalGlue());
       
+	{
+	  JLabel label = new JLabel(sFrozenIcon);
+	  pFrozenLabel = label;
+	  panel.add(label);	  
+	}
+
 	{
 	  JButton btn = new JButton();		
 	  pApplyButton = btn;
@@ -405,6 +412,16 @@ class JNodeFilesPanel
 	  System.exit(1);
 	} 
       }
+    }
+
+    /* frozen node? */
+    {
+      pIsFrozen = false;
+      if((details != null) && (details.getWorkingVersion() != null))
+	pIsFrozen = details.getWorkingVersion().isFrozen();
+
+      pFrozenLabel.setVisible(pIsFrozen);
+      pApplyButton.setVisible(!pIsFrozen);
     }
 
     /* files */ 
@@ -822,22 +839,31 @@ class JNodeFilesPanel
   }
 
   /**
-   * Update the checked-in file menu.
-   */ 
-  public void 
-  updateCheckedInMenu() 
-  {
-    rebuildEditorSubmenu(1);
-    rebuildComparatorSubmenu();
-  }
-
-  /**
    * Update the working file menu.
    */ 
   public void 
   updateWorkingMenu() 
   {
     rebuildEditorSubmenu(0);
+  }
+
+  /**
+   * Update the frozen file menu.
+   */ 
+  public void 
+  updateFrozenMenu() 
+  {
+    rebuildEditorSubmenu(1);
+  }
+
+  /**
+   * Update the checked-in file menu.
+   */ 
+  public void 
+  updateCheckedInMenu() 
+  {
+    rebuildEditorSubmenu(2);
+    rebuildComparatorSubmenu();
   }
 
   /**
@@ -984,6 +1010,7 @@ class JNodeFilesPanel
 	if((mods & (on1 | off1)) == on1) {
 	  Object source = e.getSource();
 	  boolean hasWorking = false;
+	  boolean checkedInHeader = false;
 	  if(source instanceof JFileLabel) {
 	    JFileLabel label  = (JFileLabel) source;
 	    pTargetFileSeq    = label.getFileSeq();
@@ -1020,6 +1047,7 @@ class JNodeFilesPanel
 			     latest.getVersionID());
 	      pTargetFileSeq   = new FileSeq(path, latest.getPrimarySequence());
 	      pTargetVersionID = latest.getVersionID();
+	      checkedInHeader  = true;
 	    }
 	    else {
 	      return;
@@ -1031,10 +1059,14 @@ class JNodeFilesPanel
 	    return;
 	  }
 
-	  if(pTargetVersionID != null) {
+	  if((pTargetVersionID != null) && !checkedInHeader) {
 	    updateCheckedInMenu();
 	    pCompareWithMenu.setEnabled(hasWorking);
 	    pCheckedInPopup.show(e.getComponent(), e.getX(), e.getY());
+	  }
+	  else if(pIsFrozen || checkedInHeader) {
+	    updateFrozenMenu(); 
+	    pFrozenPopup.show(e.getComponent(), e.getX(), e.getY());
 	  }
 	  else {
 	    updateWorkingMenu();
@@ -1181,8 +1213,10 @@ class JNodeFilesPanel
   private void 
   doApply()
   {
-    String dir = (PackageInfo.sRepoDir + pStatus.getName() + "/");
+    if(pIsFrozen) 
+      return;
 
+    String dir = (PackageInfo.sRepoDir + pStatus.getName() + "/");
     TreeMap<String,VersionID> files = new TreeMap<String,VersionID>();
     for(TreeMap<String,ArrayList<JComponent>> table : pNameComponents.values()) {
       for(ArrayList<JComponent> clist : table.values()) {
@@ -1394,6 +1428,9 @@ class JNodeFilesPanel
   private void 
   doQueueJobs() 
   {
+    if(pIsFrozen) 
+      return;
+
     TreeSet<Integer> indices = null;
     if(pTargetFileIdx != null) {
       indices = new TreeSet<Integer>();
@@ -1411,6 +1448,9 @@ class JNodeFilesPanel
   private void 
   doQueueJobsSpecial() 
   {
+    if(pIsFrozen) 
+      return;
+
     TreeSet<Integer> indices = null;
     if(pTargetFileIdx != null) {
       indices = new TreeSet<Integer>();
@@ -1442,6 +1482,9 @@ class JNodeFilesPanel
   private void 
   doPauseJobs() 
   {
+    if(pIsFrozen) 
+      return;
+
     TreeSet<Long> paused = new TreeSet<Long>();
     {
       NodeDetails details = pStatus.getDetails();
@@ -1482,6 +1525,9 @@ class JNodeFilesPanel
   private void 
   doResumeJobs() 
   {
+    if(pIsFrozen) 
+      return;
+
     TreeSet<Long> resumed = new TreeSet<Long>();
     {
       NodeDetails details = pStatus.getDetails();
@@ -1522,6 +1568,9 @@ class JNodeFilesPanel
   private void 
   doKillJobs() 
   {
+    if(pIsFrozen) 
+      return;
+
     TreeSet<Long> dead = new TreeSet<Long>();
     {
       NodeDetails details = pStatus.getDetails();
@@ -1569,6 +1618,9 @@ class JNodeFilesPanel
   private void 
   doRemoveFiles() 
   {
+    if(pIsFrozen) 
+      return;
+
     TreeSet<Integer> indices = null;
     if(pTargetFileIdx != null) {
       indices = new TreeSet<Integer>();
@@ -1846,7 +1898,7 @@ class JNodeFilesPanel
 		    check.setMaximumSize(size);
 		    check.setPreferredSize(size);
 		    
-		    if(isEnabled) {
+		    if(isEnabled && !pIsFrozen) {
 		      check.addActionListener(parent);
 		      check.setActionCommand("file-check:" + fseq + ":" + fname);
 		      
@@ -2621,6 +2673,8 @@ class JNodeFilesPanel
   private static Icon sFileBarExtendIconSelected = 
     new ImageIcon(LookAndFeelLoader.class.getResource("FileBarExtendIconSelected.png"));
 
+  private static Icon sFrozenIcon = 
+    new ImageIcon(LookAndFeelLoader.class.getResource("FrozenIcon.png"));
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -2641,19 +2695,16 @@ class JNodeFilesPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The working file popup menu.
+   * The popup menus.
    */ 
   private JPopupMenu  pWorkingPopup; 
+  private JPopupMenu  pFrozenPopup; 
+  private JPopupMenu  pCheckedInPopup; 
 
   /**
    * The menu item used to apply changes to the working version of the node.
    */ 
   private JMenuItem  pApplyItem;
-
-  /**
-   * The checked-in file popup menu.
-   */ 
-  private JPopupMenu  pCheckedInPopup; 
 
   
   /**
@@ -2695,6 +2746,12 @@ class JNodeFilesPanel
    * The fully resolved node name field.
    */ 
   private JTextField pNodeNameField;
+
+  /**
+   * An icon which indicates whether the working version is frozen.
+   */
+  private boolean  pIsFrozen; 
+  private JLabel   pFrozenLabel;
 
   /**
    * The button used to apply changes to the working version of the node.

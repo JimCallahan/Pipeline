@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.31 2004/10/21 07:05:32 jim Exp $
+// $Id: NodeMod.java,v 1.32 2004/11/17 13:33:50 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -162,16 +162,21 @@ class NodeMod
    * 
    * @param timestamp
    *   The intial last modification timestamp.
+   * 
+   * @param isFrozen
+   *   Whether the working version is frozen initially.
    */ 
   public 
   NodeMod
   (
    NodeVersion vsn, 
-   Date timestamp
+   Date timestamp, 
+   boolean isFrozen 
   ) 
   {
     super(vsn);
 
+    pIsFrozen  = isFrozen;
     pWorkingID = vsn.getVersionID();
 
     pSources = new TreeMap<String,LinkMod>();
@@ -198,6 +203,7 @@ class NodeMod
   {
     super(mod);
 
+    pIsFrozen  = mod.isFrozen();
     pWorkingID = mod.getWorkingID();
 
     pSources = new TreeMap<String,LinkMod>();
@@ -213,6 +219,19 @@ class NodeMod
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get whether the working version is an unmodifiable copy of a checked-in version who's 
+   * associated files are symlinks to the checked-in files instead of copies.
+   */ 
+  public boolean
+  isFrozen()
+  {
+    return pIsFrozen;
+  }
+  
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -245,13 +264,16 @@ class NodeMod
    VersionID vid
   )
   {
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("Frozen working versions cannot be modified!");
+
     assert(vid != null);
     pWorkingID = vid;
 
     updateLastMod();
   }
   
-
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -322,6 +344,10 @@ class NodeMod
   ) 
     throws PipelineException
   {
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("Frozen working versions cannot be modified!");
+
     if(pWorkingID != null) 
       throw new PipelineException
 	("Only initial working versions can be renamed.\n" +
@@ -420,6 +446,10 @@ class NodeMod
   ) 
     throws PipelineException
   {
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("Frozen working versions cannot be modified!");
+
     FrameRange orange = pPrimarySeq.getFrameRange();
     if(orange == null) 
       throw new IllegalArgumentException
@@ -499,6 +529,10 @@ class NodeMod
   ) 
     throws PipelineException
   {
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("Frozen working versions cannot be modified!");
+
     if(fseq == null)
       throw new IllegalArgumentException
 	("The new secondary file sequence cannot be (null)!");
@@ -539,6 +573,10 @@ class NodeMod
   ) 
     throws PipelineException
   {
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("Frozen working versions cannot be modified!");
+
     if(!pSecondarySeqs.contains(fseq)) 
       throw new PipelineException
 	("The secondary file sequence (" + fseq + ") was not associated with the " + 
@@ -555,6 +593,10 @@ class NodeMod
   public void 
   removeAllSecondarySequences()
   {
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("Frozen working versions cannot be modified!");
+
     if(pSecondarySeqs.isEmpty()) 
       return;
 
@@ -580,6 +622,10 @@ class NodeMod
   ) 
     throws PipelineException
   {
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("Frozen working versions cannot be modified!");
+
     if(toolset == null) 
       throw new IllegalArgumentException
 	("The toolset argument cannot be (null)!");
@@ -606,6 +652,10 @@ class NodeMod
   ) 
     throws PipelineException
   {
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("Frozen working versions cannot be modified!");
+
     pEditor = name;
     updateLastMod();
   }
@@ -629,6 +679,10 @@ class NodeMod
   ) 
     throws PipelineException
   {
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("Frozen working versions cannot be modified!");
+
     if(action != null) {
       pAction          = (BaseAction) action.clone();
       pIsActionEnabled = true;
@@ -662,6 +716,10 @@ class NodeMod
   ) 
     throws PipelineException 
   {
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("Frozen working versions cannot be modified!");
+
     if(enabled && (pAction == null)) 
       throw new PipelineException
 	("No action exists to enable!");
@@ -689,6 +747,10 @@ class NodeMod
   ) 
     throws PipelineException
   {
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("Frozen working versions cannot be modified!");
+
     if(pAction == null) 
       throw new PipelineException
 	("Job requirements cannot be set for working version (" + pName + ") because it " +
@@ -713,6 +775,10 @@ class NodeMod
   ) 
     throws PipelineException
   {
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("Frozen working versions cannot be modified!");
+
     if(pAction == null) 
       throw new PipelineException
 	("The overflow policy cannot be set for working version (" + pName + ") because it " +
@@ -737,6 +803,10 @@ class NodeMod
   ) 
     throws PipelineException
   {
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("Frozen working versions cannot be modified!");
+
     if(pAction == null) 
       throw new PipelineException
 	("The execution method cannot be set for working version (" + pName + ") because " +
@@ -763,6 +833,10 @@ class NodeMod
   ) 
     throws PipelineException
   {
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("Frozen working versions cannot be modified!");
+
     if(pAction == null) 
       throw new PipelineException
 	("The batch size cannot be set for working version (" + pName + ") because it " +
@@ -815,6 +889,10 @@ class NodeMod
   ) 
     throws PipelineException
   {
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("Frozen working versions cannot be modified!");
+
     if(mod == null) 
       throw new IllegalArgumentException
 	("The working version cannot be (null)!");
@@ -1019,6 +1097,10 @@ class NodeMod
   ) 
     throws PipelineException
   {
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("Frozen working versions cannot be modified!");
+
     pSources.put(link.getName(), new LinkMod(link));
     updateLastCriticalMod();
   }
@@ -1039,6 +1121,10 @@ class NodeMod
   ) 
     throws PipelineException
   {
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("Frozen working versions cannot be modified!");
+
     if(name == null) 
       throw new IllegalArgumentException("The upstream node name cannot be (null)!");
 
@@ -1065,6 +1151,10 @@ class NodeMod
   removeAllSources() 
     throws PipelineException
   {
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("Frozen working versions cannot be modified!");
+
     pSources.clear();
 
     if(pAction != null) 
@@ -1168,6 +1258,8 @@ class NodeMod
   {
     super.toGlue(encoder);
 
+    encoder.encode("IsFrozen", pIsFrozen);
+
     if(pWorkingID != null) 
       encoder.encode("WorkingID", pWorkingID);
 
@@ -1188,6 +1280,12 @@ class NodeMod
     throws GlueException
   {
     super.fromGlue(decoder);
+
+    {
+      Boolean tf = (Boolean) decoder.decode("IsFrozen");
+      if(tf != null) 
+	pIsFrozen = tf;
+    }
 
     pWorkingID = (VersionID) decoder.decode("WorkingID");
 
@@ -1239,6 +1337,12 @@ class NodeMod
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether the working version is an unmodifiable copy of a checked-in version who's 
+   * associated files are symlinks to the repository instead of copies.
+   */ 
+  private boolean  pIsFrozen;
 
   /**
    * The revision number of the <CODE>NodeVersion</CODE> upon which this <CODE>NodeMod</CODE> 

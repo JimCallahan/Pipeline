@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.67 2004/11/14 02:01:06 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.68 2004/11/17 13:33:51 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -155,18 +155,28 @@ class JNodeViewerPanel
       JMenuItem item;
       JMenu sub;
       
-      pShortNodePopup = new JPopupMenu();  
-      pShortNodePopup.addPopupMenuListener(this);
+      pUndefinedNodePopup = new JPopupMenu();  
+      pUndefinedNodePopup.addPopupMenuListener(this);
 
-      pMediumNodePopup = new JPopupMenu();  
-      pMediumNodePopup.addPopupMenuListener(this);
+      pLockedNodePopup = new JPopupMenu();  
+      pLockedNodePopup.addPopupMenuListener(this);
+
+      pCheckedInNodePopup = new JPopupMenu();  
+      pCheckedInNodePopup.addPopupMenuListener(this);
+
+      pFrozenNodePopup = new JPopupMenu();  
+      pFrozenNodePopup.addPopupMenuListener(this);
 
       pNodePopup = new JPopupMenu();  
       pNodePopup.addPopupMenuListener(this);
 
-      pEditWithMenus = new JMenu[2];
-       
-      JPopupMenu menus[] = { pShortNodePopup, pMediumNodePopup, pNodePopup };
+      pEditWithMenus = new JMenu[4];
+
+      JPopupMenu menus[] = { 
+	pUndefinedNodePopup, pLockedNodePopup, pCheckedInNodePopup, 
+	pFrozenNodePopup, pNodePopup 
+      };
+
       int wk;
       for(wk=0; wk<menus.length; wk++) {
 	item = new JMenuItem("Update Details");
@@ -199,138 +209,156 @@ class JNodeViewerPanel
 	if(wk > 0) {
 	  menus[wk].addSeparator();
 	  
-	  item = new JMenuItem((wk == 1) ? "View" : "Edit");
+	  item = new JMenuItem((wk < 4) ? "View" : "Edit");
 	  item.setActionCommand("edit");
 	  item.addActionListener(this);
 	  menus[wk].add(item);
 	  
-	  pEditWithMenus[wk-1] = new JMenu((wk == 1) ? "View With" : "Edit With");
+	  pEditWithMenus[wk-1] = new JMenu((wk < 4) ? "View With" : "Edit With");
 	  menus[wk].add(pEditWithMenus[wk-1]);
 	}
+
+	if((wk == 2) || (wk == 3)) {
+	  menus[wk].addSeparator();
+	  
+	  item = new JMenuItem("Check-Out...");
+	  item.setActionCommand("check-out");
+	  item.addActionListener(this);
+	  menus[wk].add(item);
+	}
+
+	if(wk == 3) {
+	  menus[wk].addSeparator();
+	  
+	  item = new JMenuItem("Release");
+	  item.setActionCommand("release");
+	  item.addActionListener(this);
+	  menus[wk].add(item);
+	}
       }
-
-      pNodePopup.addSeparator();
-
-      item = new JMenuItem("Link...");
-      pLinkItem = item;
-      item.setActionCommand("link");
-      item.addActionListener(this);
-      pNodePopup.add(item);
-
-      item = new JMenuItem("Unlink");
-      pUnlinkItem = item;
-      item.setActionCommand("unlink");
-      item.addActionListener(this);
-      pNodePopup.add(item);
+	
+      {
+	pNodePopup.addSeparator();
+	
+	item = new JMenuItem("Link...");
+	pLinkItem = item;
+	item.setActionCommand("link");
+	item.addActionListener(this);
+	pNodePopup.add(item);
+	
+	item = new JMenuItem("Unlink");
+	pUnlinkItem = item;
+	item.setActionCommand("unlink");
+	item.addActionListener(this);
+	pNodePopup.add(item);
+	
+	pNodePopup.addSeparator();
+	
+	item = new JMenuItem("Add Secondary...");
+	item.setActionCommand("add-secondary");
+	item.addActionListener(this);
+	pNodePopup.add(item);
+	
+	sub = new JMenu("Remove Secondary");
+	pRemoveSecondaryMenu = sub;
+	sub.setEnabled(false);
+	pNodePopup.add(sub);
+	
+	pNodePopup.addSeparator();
       
-      pNodePopup.addSeparator();
-      
-      item = new JMenuItem("Add Secondary...");
-      item.setActionCommand("add-secondary");
-      item.addActionListener(this);
-      pNodePopup.add(item);
-      
-      sub = new JMenu("Remove Secondary");
-      pRemoveSecondaryMenu = sub;
-      sub.setEnabled(false);
-      pNodePopup.add(sub);
+	item = new JMenuItem("Queue Jobs");
+	item.setActionCommand("queue-jobs");
+	item.addActionListener(this);
+	pNodePopup.add(item);
 
-      pNodePopup.addSeparator();
-      
-      item = new JMenuItem("Queue Jobs");
-      item.setActionCommand("queue-jobs");
-      item.addActionListener(this);
-      pNodePopup.add(item);
+	item = new JMenuItem("Queue Jobs Special...");
+	item.setActionCommand("queue-jobs-special");
+	item.addActionListener(this);
+	pNodePopup.add(item);
 
-      item = new JMenuItem("Queue Jobs Special...");
-      item.setActionCommand("queue-jobs-special");
-      item.addActionListener(this);
-      pNodePopup.add(item);
+	item = new JMenuItem("Pause Jobs");
+	item.setActionCommand("pause-jobs");
+	item.addActionListener(this);
+	pNodePopup.add(item);
 
-      item = new JMenuItem("Pause Jobs");
-      item.setActionCommand("pause-jobs");
-      item.addActionListener(this);
-      pNodePopup.add(item);
+	item = new JMenuItem("Resume Jobs");
+	item.setActionCommand("resume-jobs");
+	item.addActionListener(this);
+	pNodePopup.add(item);
 
-      item = new JMenuItem("Resume Jobs");
-      item.setActionCommand("resume-jobs");
-      item.addActionListener(this);
-      pNodePopup.add(item);
+	item = new JMenuItem("Kill Jobs");
+	item.setActionCommand("kill-jobs");
+	item.addActionListener(this);
+	pNodePopup.add(item);
 
-      item = new JMenuItem("Kill Jobs");
-      item.setActionCommand("kill-jobs");
-      item.addActionListener(this);
-      pNodePopup.add(item);
+	pNodePopup.addSeparator();
 
-      pNodePopup.addSeparator();
-
-      item = new JMenuItem("Check-In...");
-      pCheckInItem = item;
-      item.setActionCommand("check-in");
-      item.addActionListener(this);
-      pNodePopup.add(item);
+	item = new JMenuItem("Check-In...");
+	item.setActionCommand("check-in");
+	item.addActionListener(this);
+	pNodePopup.add(item);
   
-      item = new JMenuItem("Check-Out...");
-      pCheckOutItem = item;
-      item.setActionCommand("check-out");
-      item.addActionListener(this);
-      pNodePopup.add(item);
+	item = new JMenuItem("Check-Out...");
+	pCheckOutItem = item;
+	item.setActionCommand("check-out");
+	item.addActionListener(this);
+	pNodePopup.add(item);
 
-      item = new JMenuItem("Evolve Version...");
-      pEvolveItem = item;
-      item.setActionCommand("evolve");
-      item.addActionListener(this);
-      pNodePopup.add(item);
+	item = new JMenuItem("Evolve Version...");
+	pEvolveItem = item;
+	item.setActionCommand("evolve");
+	item.addActionListener(this);
+	pNodePopup.add(item);
 
-      pNodePopup.addSeparator();
+	pNodePopup.addSeparator();
       
-      item = new JMenuItem("Clone...");
-      item.setActionCommand("clone");
-      item.addActionListener(this);
-      pNodePopup.add(item);
+	item = new JMenuItem("Clone...");
+	item.setActionCommand("clone");
+	item.addActionListener(this);
+	pNodePopup.add(item);
 
-      item = new JMenuItem("Release");
-      pReleaseItem = item;
-      item.setActionCommand("release");
-      item.addActionListener(this);
-      pNodePopup.add(item);
+	item = new JMenuItem("Release");
+	item.setActionCommand("release");
+	item.addActionListener(this);
+	pNodePopup.add(item);
 
-      item = new JMenuItem("Remove Files");
-      item.setActionCommand("remove-files");
-      item.addActionListener(this);
-      pNodePopup.add(item);
+	item = new JMenuItem("Remove Files");
+	item.setActionCommand("remove-files");
+	item.addActionListener(this);
+	pNodePopup.add(item);
 
-      pNodePopup.addSeparator();
+	pNodePopup.addSeparator();
 
-      item = new JMenuItem("Import...");
-      item.setActionCommand("import");
-      item.addActionListener(this);
-      item.setEnabled(false);  // FOR NOW...
-      pNodePopup.add(item);
+	item = new JMenuItem("Import...");
+	item.setActionCommand("import");
+	item.addActionListener(this);
+	item.setEnabled(false);  // FOR NOW...
+	pNodePopup.add(item);
 
-      item = new JMenuItem("Export...");
-      pExportItem = item;
-      item.setActionCommand("export");
-      item.addActionListener(this);
-      pNodePopup.add(item);
+	item = new JMenuItem("Export...");
+	pExportItem = item;
+	item.setActionCommand("export");
+	item.addActionListener(this);
+	pNodePopup.add(item);
 
-      item = new JMenuItem("Rename...");
-      pRenameItem = item;
-      item.setActionCommand("rename");
-      item.addActionListener(this);
-      pNodePopup.add(item);
+	item = new JMenuItem("Rename...");
+	pRenameItem = item;
+	item.setActionCommand("rename");
+	item.addActionListener(this);
+	pNodePopup.add(item);
 
-      item = new JMenuItem("Renumber...");
-      pRenumberItem = item;
-      item.setActionCommand("renumber");
-      item.addActionListener(this);
-      pNodePopup.add(item);
+	item = new JMenuItem("Renumber...");
+	pRenumberItem = item;
+	item.setActionCommand("renumber");
+	item.addActionListener(this);
+	pNodePopup.add(item);
 
-      item = new JMenuItem("Delete...");
-      pDeleteItem = item;
-      item.setActionCommand("delete");
-      item.addActionListener(this);
-      pNodePopup.add(item);
+	item = new JMenuItem("Delete...");
+	pDeleteItem = item;
+	item.setActionCommand("delete");
+	item.addActionListener(this);
+	pNodePopup.add(item);
+      }
     }
 
     /* link popup menu */ 
@@ -722,12 +750,30 @@ class JNodeViewerPanel
   }
 
   /**
-   * Update the medium node menu.
+   * Update the locked node menu.
    */ 
   public void 
-  updateMediumNodeMenu() 
+  updateLockedNodeMenu() 
   {
     rebuildEditorSubmenu(0);
+  }
+
+  /**
+   * Update the checked-in node menu.
+   */ 
+  public void 
+  updateCheckedInNodeMenu() 
+  {
+    rebuildEditorSubmenu(1);
+  }
+
+  /**
+   * Update the frozen node menu.
+   */ 
+  public void 
+  updateFrozenNodeMenu() 
+  {
+    rebuildEditorSubmenu(2);
   }
 
   /**
@@ -742,29 +788,24 @@ class JNodeViewerPanel
 
     NodeMod mod = details.getWorkingVersion();
 
-    boolean hasWorking   = (mod != null);
     boolean hasCheckedIn = (details.getLatestVersion() != null);
     boolean multiple     = (getSelectedNames().size() >= 2);
-    
 
-    pLinkItem.setEnabled(hasWorking && multiple);
-    pUnlinkItem.setEnabled(hasWorking && multiple);
+    pLinkItem.setEnabled(multiple);
+    pUnlinkItem.setEnabled(multiple);
 
-    pExportItem.setEnabled(hasWorking && multiple);
-    pRenameItem.setEnabled(hasWorking && !hasCheckedIn);
-    pRenumberItem.setEnabled(hasWorking && mod.getPrimarySequence().hasFrameNumbers());
+    pExportItem.setEnabled(multiple);
+    pRenameItem.setEnabled(!hasCheckedIn);
+    pRenumberItem.setEnabled(mod.getPrimarySequence().hasFrameNumbers());
     
-    pCheckInItem.setEnabled(hasWorking);
     pCheckOutItem.setEnabled(hasCheckedIn);
-    pEvolveItem.setEnabled(hasWorking && hasCheckedIn);
-    
-    pReleaseItem.setEnabled(hasWorking);
+    pEvolveItem.setEnabled(hasCheckedIn);
     
     {
       UIMaster master = UIMaster.getInstance();
       try {
 	boolean isPrivileged = master.getMasterMgrClient().isPrivileged(true);
-	pDeleteItem.setEnabled((hasWorking || hasCheckedIn) && isPrivileged);
+	pDeleteItem.setEnabled(isPrivileged);
       }
       catch(PipelineException ex) {
 	master.showErrorDialog(ex);
@@ -773,7 +814,7 @@ class JNodeViewerPanel
 
     pRemoveSecondaryMenu.setEnabled(false);
 
-    rebuildEditorSubmenu(1);
+    rebuildEditorSubmenu(3);
 
     /* rebuild remove secondary items */ 
     if(!pIsLocked) {
@@ -1771,8 +1812,16 @@ class JNodeViewerPanel
 	      NodeDetails details = pPrimary.getNodeStatus().getDetails();
 	      if(details != null) {
 		if(pIsLocked) {
-		  updateMediumNodeMenu();
-		  pMediumNodePopup.show(e.getComponent(), e.getX(), e.getY());
+		  updateLockedNodeMenu();
+		  pLockedNodePopup.show(e.getComponent(), e.getX(), e.getY());
+		}
+		else if(details.getWorkingVersion() == null) {
+		  updateCheckedInNodeMenu();
+		  pCheckedInNodePopup.show(e.getComponent(), e.getX(), e.getY());
+		}
+		else if(details.getWorkingVersion().isFrozen()) {
+		  updateFrozenNodeMenu();
+		  pFrozenNodePopup.show(e.getComponent(), e.getX(), e.getY());
 		}
 		else {
 		  updateNodeMenu();
@@ -1780,26 +1829,29 @@ class JNodeViewerPanel
 		}
 	      }
 	      else {
-		pShortNodePopup.show(e.getComponent(), e.getX(), e.getY());
+		pUndefinedNodePopup.show(e.getComponent(), e.getX(), e.getY());
 	      }
 	    }
 	    else if(under instanceof ViewerLinkRelationship) {
 	      ViewerLinkRelationship lunder = (ViewerLinkRelationship) under;
 	      ViewerNode vunder = lunder.getViewerNode();
 	      NodeDetails details = vunder.getNodeStatus().getDetails();
-	      if((details != null) && (details.getWorkingVersion() != null)) {
-		{
-		  HashMap<NodePath,ViewerNode> changed = new HashMap<NodePath,ViewerNode>();
-		  for(ViewerNode vnode : clearSelection()) 
-		    changed.put(vnode.getNodePath(), vnode);
-		  for(ViewerNode vnode : primarySelect(vunder)) 
-		    changed.put(vnode.getNodePath(), vnode);
-		  for(ViewerNode vnode : changed.values()) 
-		    vnode.update();
+	      if(details != null) {
+		NodeMod mod = details.getWorkingVersion();
+		if((mod != null) && !mod.isFrozen()) {
+		  {
+		    HashMap<NodePath,ViewerNode> changed = new HashMap<NodePath,ViewerNode>();
+		    for(ViewerNode vnode : clearSelection()) 
+		      changed.put(vnode.getNodePath(), vnode);
+		    for(ViewerNode vnode : primarySelect(vunder)) 
+		      changed.put(vnode.getNodePath(), vnode);
+		    for(ViewerNode vnode : changed.values()) 
+		      vnode.update();
+		  }
+		  
+		  pSelectedLink = lunder.getLink();
+		  pLinkPopup.show(e.getComponent(), e.getX(), e.getY());
 		}
-
-		pSelectedLink = lunder.getLink();
-		pLinkPopup.show(e.getComponent(), e.getX(), e.getY());
 	      }
 	      else {
 		Toolkit.getDefaultToolkit().beep();
@@ -2616,30 +2668,32 @@ class JNodeViewerPanel
   {
     if(pPrimary != null) {
       NodeDetails details = pPrimary.getNodeStatus().getDetails();
-      if(details.getWorkingVersion() != null) {
-	
-	TreeSet<String> sources = new TreeSet<String>(); 
-	for(ViewerNode vnode : pSelected.values()) {
-	  NodeDetails sdetails = vnode.getNodeStatus().getDetails();
-	  if((sdetails != null) && (sdetails.getWorkingVersion() != null)) 
-	    sources.add(sdetails.getName());
-	}
-	sources.remove(details.getName());
-	
-	if(!sources.isEmpty()) {  
-	  pCreateLinkDialog.updateLink();
-	  pCreateLinkDialog.setVisible(true);
-	  
-	  if(pCreateLinkDialog.wasConfirmed()) {
-	    LinkPolicy policy    = pCreateLinkDialog.getPolicy();
-	    LinkRelationship rel = pCreateLinkDialog.getRelationship();
-	    Integer offset       = pCreateLinkDialog.getFrameOffset();
-	    
-	    LinkTask task = 
-	      new LinkTask(details.getName(), sources, policy, rel, offset);
-	    task.start();
+      if(details != null) {
+	NodeMod mod = details.getWorkingVersion();
+	if((mod != null) && !mod.isFrozen()) {
+	  TreeSet<String> sources = new TreeSet<String>(); 
+	  for(ViewerNode vnode : pSelected.values()) {
+	    NodeDetails sdetails = vnode.getNodeStatus().getDetails();
+	    if((sdetails != null) && (sdetails.getWorkingVersion() != null)) 
+	      sources.add(sdetails.getName());
 	  }
-    	}
+	  sources.remove(details.getName());
+	  
+	  if(!sources.isEmpty()) {  
+	    pCreateLinkDialog.updateLink();
+	    pCreateLinkDialog.setVisible(true);
+	    
+	    if(pCreateLinkDialog.wasConfirmed()) {
+	      LinkPolicy policy    = pCreateLinkDialog.getPolicy();
+	      LinkRelationship rel = pCreateLinkDialog.getRelationship();
+	      Integer offset       = pCreateLinkDialog.getFrameOffset();
+	      
+	      LinkTask task = 
+		new LinkTask(details.getName(), sources, policy, rel, offset);
+	      task.start();
+	    }
+	  }
+	}
       }
     }
     
@@ -2656,19 +2710,21 @@ class JNodeViewerPanel
   {
     if(pPrimary != null) {
       NodeDetails details = pPrimary.getNodeStatus().getDetails();
-      if(details.getWorkingVersion() != null) {
-	
-	TreeSet<String> sources = new TreeSet<String>(); 
-	for(ViewerNode vnode : pSelected.values()) {
-	  NodeDetails sdetails = vnode.getNodeStatus().getDetails();
-	  if(sdetails.getWorkingVersion() != null) 
-	    sources.add(sdetails.getName());
-	}
-	sources.remove(details.getName());
-	
-	if(!sources.isEmpty()) {    
-	  UnlinkTask task = new UnlinkTask(details.getName(), sources);
-	  task.start();
+      if(details != null) {
+	NodeMod mod = details.getWorkingVersion();
+	if((mod != null) && !mod.isFrozen()) {
+	  TreeSet<String> sources = new TreeSet<String>(); 
+	  for(ViewerNode vnode : pSelected.values()) {
+	    NodeDetails sdetails = vnode.getNodeStatus().getDetails();
+	    if(sdetails.getWorkingVersion() != null) 
+	      sources.add(sdetails.getName());
+	  }
+	  sources.remove(details.getName());
+	  
+	  if(!sources.isEmpty()) {    
+	    UnlinkTask task = new UnlinkTask(details.getName(), sources);
+	    task.start();
+	  }
 	}
       }
     }
@@ -2690,8 +2746,7 @@ class JNodeViewerPanel
       NodeDetails details = pPrimary.getNodeStatus().getDetails();
       if(details != null) {
 	NodeMod mod = details.getWorkingVersion();
-	
-	if(mod != null) {
+	if((mod != null) && !mod.isFrozen()) {
 	  pAddSecondaryDialog.updateNode(pAuthor, pView, mod);
 	  pAddSecondaryDialog.setVisible(true);
 	  
@@ -2722,10 +2777,13 @@ class JNodeViewerPanel
     if(pPrimary != null) {
       NodeDetails details = pPrimary.getNodeStatus().getDetails();
       if(details != null) {
-	FileSeq fseq = pRemoveSecondarySeqs.get(name);
-	if(fseq != null) {
-	  RemoveSecondaryTask task = new RemoveSecondaryTask(details.getName(), fseq);
-	  task.start();
+	NodeMod mod = details.getWorkingVersion();
+	if((mod != null) && !mod.isFrozen()) {
+	  FileSeq fseq = pRemoveSecondarySeqs.get(name);
+	  if(fseq != null) {
+	    RemoveSecondaryTask task = new RemoveSecondaryTask(details.getName(), fseq);
+	    task.start();
+	  }
 	}
       }
     }
@@ -2751,8 +2809,11 @@ class JNodeViewerPanel
 	TreeSet<String> targets = new TreeSet<String>(); 
 	for(ViewerNode vnode : pSelected.values()) {
 	  NodeDetails tdetails = vnode.getNodeStatus().getDetails();
-	  if((tdetails != null) && (tdetails.getWorkingVersion() != null)) 
-	    targets.add(tdetails.getName());
+	  if(tdetails != null) {
+	    NodeMod tmod = tdetails.getWorkingVersion();
+	    if((tmod != null) && !tmod.isFrozen())
+	      targets.add(tdetails.getName());
+	  }
 	}
 	targets.remove(details.getName());
 	
@@ -2788,7 +2849,7 @@ class JNodeViewerPanel
       if(details != null) {
 
 	NodeMod mod = details.getWorkingVersion();
-	if((mod != null) && (details.getLatestVersion() == null)) { 
+	if((mod != null) && !mod.isFrozen() && (details.getLatestVersion() == null)) { 
 	  pRenameDialog.updateNode(mod);
 	  pRenameDialog.setVisible(true);
 	
@@ -2823,7 +2884,7 @@ class JNodeViewerPanel
       if(details != null) {
 
 	NodeMod mod = details.getWorkingVersion();
-	if((mod != null) && (mod.getPrimarySequence().hasFrameNumbers())) {
+	if((mod != null) && !mod.isFrozen() && (mod.getPrimarySequence().hasFrameNumbers())) {
 	  pRenumberDialog.updateNode(mod);
 	  pRenumberDialog.setVisible(true);
 	
@@ -2937,7 +2998,7 @@ class JNodeViewerPanel
       NodeDetails details = status.getDetails();
       if(details != null) {
 	NodeMod mod = details.getWorkingVersion();
-	if(mod != null) {
+	if((mod != null) && !mod.isFrozen()) {
 	  if(confirmed || mod.isActionEnabled()) 
 	    names.add(mod.getName());
 	  else {
@@ -3014,8 +3075,12 @@ class JNodeViewerPanel
       for(ViewerNode vnode : pSelected.values()) {
 	NodeStatus status = vnode.getNodeStatus();
 	if((status != null) && status.getName().equals(name)) {
-	  if(status.getDetails() != null) 
-	    roots.add(name);
+	  NodeDetails details = status.getDetails();
+	  if(details != null) {
+	    NodeMod mod = details.getWorkingVersion();
+	    if((mod != null) && !mod.isFrozen()) 
+	      roots.add(name);
+	  }
 	  break;
 	}
       }
@@ -3042,8 +3107,12 @@ class JNodeViewerPanel
       for(ViewerNode vnode : pSelected.values()) {
 	NodeStatus status = vnode.getNodeStatus();
 	if((status != null) && status.getName().equals(name)) {
-	  if(status.getDetails() != null) 
-	    roots.add(name);
+	  NodeDetails details = status.getDetails();
+	  if(details != null) {
+	    NodeMod mod = details.getWorkingVersion();
+	    if((mod != null) && !mod.isFrozen()) 
+	      roots.add(name);
+	  }
 	  break;
 	}
       }
@@ -3268,7 +3337,8 @@ class JNodeViewerPanel
 	  VersionID vid = pCheckOutDialog.getVersionID();
 	  if(vid != null) {
 	    CheckOutTask task = 
-	      new CheckOutTask(status.getName(), vid, pCheckOutDialog.getMode());
+	      new CheckOutTask(status.getName(), vid, 
+			       pCheckOutDialog.getMode(), pCheckOutDialog.getMethod());
 	    task.start();
 	  }
 	}
@@ -3290,7 +3360,7 @@ class JNodeViewerPanel
       NodeDetails details = status.getDetails();
       if(details != null) {
 	NodeMod work = details.getWorkingVersion();
-	if(work != null) {
+	if((work != null) && !work.isFrozen()) {
 	  pEvolveDialog.updateNameVersions("Evolve Version:  " + status, work.getWorkingID(),
 					   details.getVersionIDs());
 	  pEvolveDialog.setVisible(true);
@@ -3321,7 +3391,8 @@ class JNodeViewerPanel
   {
     if(pPrimary != null) {
       NodeDetails details = pPrimary.getNodeStatus().getDetails();
-      if(details.getWorkingVersion() != null) {
+      NodeMod mod = details.getWorkingVersion();
+      if((mod != null) && !mod.isFrozen()) {
 	if((pSelectedLink != null) && (pSelectedLink instanceof LinkMod)) {
 	  LinkMod link = (LinkMod) pSelectedLink;
 	  pEditLinkDialog.updateLink(link);
@@ -3354,8 +3425,9 @@ class JNodeViewerPanel
   doLinkUnlink()
   {
     if(pPrimary != null) {
-      NodeDetails details = pPrimary.getNodeStatus().getDetails();
-      if(details.getWorkingVersion() != null) {
+      NodeDetails details = pPrimary.getNodeStatus().getDetails(); 
+      NodeMod mod = details.getWorkingVersion();
+      if((mod != null) && !mod.isFrozen()) {
 	if((pSelectedLink != null) && (pSelectedLink instanceof LinkMod)) {
 	  LinkMod link = (LinkMod) pSelectedLink;
 	  
@@ -4459,7 +4531,8 @@ class JNodeViewerPanel
     (
      String name, 
      VersionID vid, 
-     CheckOutMode mode
+     CheckOutMode mode,
+     CheckOutMethod method
     ) 
     {
       super("JNodeViewerPanel:CheckOutTask");
@@ -4467,6 +4540,7 @@ class JNodeViewerPanel
       pName      = name; 
       pVersionID = vid; 
       pMode      = mode; 
+      pMethod    = method; 
     }
 
     public void 
@@ -4475,7 +4549,8 @@ class JNodeViewerPanel
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp("Checking-Out Nodes...")) {
 	try {
-	  master.getMasterMgrClient().checkOut(pAuthor, pView, pName, pVersionID, pMode);
+	  master.getMasterMgrClient().checkOut(pAuthor, pView, pName, pVersionID, 
+					       pMode, pMethod);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -4489,9 +4564,10 @@ class JNodeViewerPanel
       }
     }
 
-    private String        pName; 
-    private VersionID     pVersionID; 
-    private CheckOutMode  pMode; 
+    private String          pName; 
+    private VersionID       pVersionID; 
+    private CheckOutMode    pMode;  
+    private CheckOutMethod  pMethod; 
   }
 
   /** 
@@ -4937,8 +5013,10 @@ class JNodeViewerPanel
   /**
    * The node popup menus.
    */ 
-  private JPopupMenu  pShortNodePopup; 
-  private JPopupMenu  pMediumNodePopup; 
+  private JPopupMenu  pUndefinedNodePopup; 
+  private JPopupMenu  pLockedNodePopup; 
+  private JPopupMenu  pCheckedInNodePopup; 
+  private JPopupMenu  pFrozenNodePopup; 
   private JPopupMenu  pNodePopup; 
   
   /**
@@ -4949,10 +5027,8 @@ class JNodeViewerPanel
   private JMenuItem  pExportItem;
   private JMenuItem  pRenameItem;
   private JMenuItem  pRenumberItem;
-  private JMenuItem  pCheckInItem;
   private JMenuItem  pCheckOutItem;
   private JMenuItem  pEvolveItem;
-  private JMenuItem  pReleaseItem;
   private JMenuItem  pDeleteItem;
 
   /**
