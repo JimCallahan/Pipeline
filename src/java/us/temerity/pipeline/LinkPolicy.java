@@ -1,4 +1,4 @@
-// $Id: LinkPolicy.java,v 1.3 2004/06/28 23:00:16 jim Exp $
+// $Id: LinkPolicy.java,v 1.4 2004/07/14 20:55:43 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -33,7 +33,7 @@ enum LinkPolicy
   NodeStateOnly, 
 
   /**
-   * Both the <CODE>OverallNodeState</CODE> and <CODE>OverallQueueState</CODE> of the 
+   * Both the <CODE>OverallNodeState</CODE> and the per-file <CODE>QueueState</CODE> of the 
    * source node are considered when computing the state of the target node.
    */
   Both;
