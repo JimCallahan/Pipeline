@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.20 2004/07/07 13:25:34 jim Exp $
+// $Id: JNodeBrowserPanel.java,v 1.21 2004/09/26 06:21:29 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -23,7 +23,7 @@ import javax.swing.tree.*;
 public  
 class JNodeBrowserPanel
   extends JTopLevelPanel
-  implements TreeExpansionListener, MouseListener
+  implements TreeExpansionListener, MouseListener, KeyListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -78,6 +78,8 @@ class JNodeBrowserPanel
 	tree.setSelectionModel(null);
 	tree.addTreeExpansionListener(this);
 	tree.addMouseListener(this);
+	tree.setFocusable(true);
+	tree.addKeyListener(this);
       }
 
       {
@@ -230,7 +232,7 @@ class JNodeBrowserPanel
     pSelected.clear();
     pSelected.addAll(names);
 
-    updateNodeTree(getExpandedPaths());
+    updateNodeTree(getExpandedPaths(), null);
   }
   
 
@@ -242,7 +244,22 @@ class JNodeBrowserPanel
   private void 
   updateNodeTree()
   {
-    updateNodeTree(getExpandedPaths());
+    updateNodeTree(getExpandedPaths(), null);
+  }
+
+  /**
+   * Update the node tree componenents based on the currently expanded paths.
+   * 
+   * @param deepExpanded
+   *   If not <CODE>null</CODE>, update and expande all node paths under this path.
+   */ 
+  private void 
+  updateNodeTree
+  (    
+   String deep
+  )
+  {
+    updateNodeTree(getExpandedPaths(), deep);
   }
 
   /**
@@ -250,11 +267,15 @@ class JNodeBrowserPanel
    * 
    * @param expanded
    *   The paths of the expanded tree nodes.
+   * 
+   * @param deep
+   *   If not <CODE>null</CODE>, update and expande all node paths under this path.
    */ 
   private void 
   updateNodeTree
   (
-   TreeSet<String> expanded
+   TreeSet<String> expanded, 
+   String deep
   )
   {
     if(pTree == null) 
@@ -268,8 +289,11 @@ class JNodeBrowserPanel
       if(!master.beginPanelOp()) 
 	return;
       try { 
-	TreeSet<String> paths = new TreeSet<String>(expanded);
-	paths.addAll(pSelected);
+	TreeMap<String,Boolean> paths = new TreeMap<String,Boolean>();
+	for(String path : expanded)
+	  paths.put(path, (deep != null) && path.equals(deep));
+	for(String path : pSelected) 
+	  paths.put(path, false);
 
 	comp = master.getMasterMgrClient().updatePaths(pAuthor, pView, paths); 
       }
@@ -429,13 +453,25 @@ class JNodeBrowserPanel
    * Invoked when the mouse enters a component. 
    */
   public void 
-  mouseEntered(MouseEvent e) {} 
+  mouseEntered
+  (
+   MouseEvent e
+  ) 
+  {
+    pTree.requestFocusInWindow();
+  }
   
   /**
    * Invoked when the mouse exits a component. 
    */ 
   public void 
-  mouseExited(MouseEvent e) {} 
+  mouseExited
+  (
+   MouseEvent e
+  ) 
+  {
+    KeyboardFocusManager.getCurrentKeyboardFocusManager().clearGlobalFocusOwner();
+  }
   
   /**
    * Invoked when a mouse button has been pressed on a component. 
@@ -452,29 +488,47 @@ class JNodeBrowserPanel
       DefaultMutableTreeNode tnode = (DefaultMutableTreeNode) tpath.getLastPathComponent();
       NodeTreeComp comp = (NodeTreeComp) tnode.getUserObject();
 
+      int on1  = (MouseEvent.BUTTON1_DOWN_MASK);
+      
+      int off1 = (MouseEvent.BUTTON2_DOWN_MASK | 
+		  MouseEvent.BUTTON3_DOWN_MASK | 
+		  MouseEvent.SHIFT_DOWN_MASK |
+		  MouseEvent.ALT_DOWN_MASK |
+		  MouseEvent.CTRL_DOWN_MASK);
+      
+      
+      int on2  = (MouseEvent.BUTTON1_DOWN_MASK |
+		  MouseEvent.SHIFT_DOWN_MASK);
+      
+      int off2 = (MouseEvent.BUTTON2_DOWN_MASK | 
+		  MouseEvent.BUTTON3_DOWN_MASK | 
+		  MouseEvent.SHIFT_DOWN_MASK |
+		  MouseEvent.CTRL_DOWN_MASK);
+
       switch(comp.getState()) {
+      case Branch:
+	{
+	  /* BUTTON1: expand/collapse */ 
+	  if((mods & (on1 | off1)) == on1) {
+	    // nothing needed...
+	  }
+	  
+	  /* BUTTON1+SHIFT: deep expand/collapse */ 
+	  else if((mods & (on2 | off2)) == on2) {
+	    updateNodeTree(treePathToNodeName(tpath));
+	  }
+	  
+	  /* UNSUPPORTED */ 
+	  else {
+	    Toolkit.getDefaultToolkit().beep();
+	  }
+	}
+	break;
+
       case Pending:
       case Working:
       case CheckedIn: 
 	{
-	  int on1  = (MouseEvent.BUTTON1_DOWN_MASK);
-	  
-	  int off1 = (MouseEvent.BUTTON2_DOWN_MASK | 
-		      MouseEvent.BUTTON3_DOWN_MASK | 
-		      MouseEvent.SHIFT_DOWN_MASK |
-		      MouseEvent.ALT_DOWN_MASK |
-		      MouseEvent.CTRL_DOWN_MASK);
-
-
-	  int on2  = (MouseEvent.BUTTON1_DOWN_MASK |
-		      MouseEvent.SHIFT_DOWN_MASK);
-	  
-	  int off2 = (MouseEvent.BUTTON2_DOWN_MASK | 
-		      MouseEvent.BUTTON3_DOWN_MASK | 
-		      MouseEvent.SHIFT_DOWN_MASK |
-		      MouseEvent.CTRL_DOWN_MASK);
-	  
-	  
 	  int on3  = (MouseEvent.BUTTON1_DOWN_MASK |
 		      MouseEvent.SHIFT_DOWN_MASK |
 		      MouseEvent.CTRL_DOWN_MASK);
@@ -511,7 +565,6 @@ class JNodeBrowserPanel
 	  /* update any associated node viewer */ 
 	  {
 	    UIMaster master = UIMaster.getInstance();
-	    
 	    if(pGroupID > 0) {
 	      PanelGroup<JNodeViewerPanel> panels = master.getNodeViewerPanels();
 	      JNodeViewerPanel viewer = panels.getPanel(pGroupID);
@@ -537,6 +590,78 @@ class JNodeBrowserPanel
    */ 
   public void 
   mouseReleased(MouseEvent e) {}
+
+
+  /*-- KEY LISTENER METHODS ----------------------------------------------------------------*/
+
+  /**
+   * invoked when a key has been pressed.
+   */   
+  public void 
+  keyPressed
+  (
+   KeyEvent e
+  )
+  {
+    UserPrefs prefs = UserPrefs.getInstance();
+    if((prefs.getNodeBrowserUpdate() != null) &&
+       prefs.getNodeBrowserUpdate().wasPressed(e)) 
+      doUpdate();
+    else {
+      switch(e.getKeyCode()) {
+      case KeyEvent.VK_SHIFT:
+      case KeyEvent.VK_ALT:
+      case KeyEvent.VK_CONTROL:
+	break;
+      
+      default:
+	Toolkit.getDefaultToolkit().beep();
+      }
+    }
+  }
+
+  /**
+   * Invoked when a key has been released.
+   */ 
+  public void 	
+  keyReleased(KeyEvent e) {}
+
+  /**
+   * Invoked when a key has been typed.
+   */ 
+  public void 	
+  keyTyped(KeyEvent e) {} 
+
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C T I O N S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Update the contents of the expanded node tree paths and any selected nodes.
+   */ 
+  private void 
+  doUpdate()
+  {
+    if(pSelected.isEmpty()) {
+      updateNodeTree();
+    }
+    else {      
+      UIMaster master = UIMaster.getInstance();
+      if(pGroupID > 0) {
+	PanelGroup<JNodeViewerPanel> panels = master.getNodeViewerPanels();
+	JNodeViewerPanel viewer = panels.getPanel(pGroupID);
+	if(viewer != null) {
+	  viewer.setRoots(pAuthor, pView, pSelected);
+	  viewer.updateManagerTitlePanel();
+	  return;
+	}
+      }
+
+      updateNodeTree();
+    }
+  }
 
 
 
@@ -577,7 +702,7 @@ class JNodeBrowserPanel
 
     TreeSet<String> expanded = (TreeSet<String>) decoder.decode("ExpandedPaths");
     if(expanded != null) 
-      updateNodeTree(expanded);
+      updateNodeTree(expanded, null);
   }
   
 
