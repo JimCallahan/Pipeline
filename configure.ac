@@ -462,6 +462,20 @@ AC_MSG_RESULT([$QUEUEDIR])
 
 dnl ------------------------------------------------------------------------------------------
 
+AC_MSG_CHECKING([Pipeline User])
+
+AC_SUBST(PIPELINE_USER)
+PIPELINE_USER=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
+                    --lookup PipelineUser`
+
+if test "$PIPELINE_USER" == "null"
+then
+  AC_MSG_ERROR([customer profile was incomplete.])
+fi 
+
+AC_MSG_RESULT([$PIPELINE_USER])
+
+
 AC_MSG_CHECKING([Pipeline User ID])
 
 AC_SUBST(PIPELINE_UID)
@@ -474,6 +488,20 @@ then
 fi 
 
 AC_MSG_RESULT([$PIPELINE_UID])
+
+
+AC_MSG_CHECKING([Pipeline Group])
+
+AC_SUBST(PIPELINE_GROUP)
+PIPELINE_GROUP=`java -classpath $CRYPTO_APP_DIR CryptoApp $CUSTOMER_PROFILE \
+                     --lookup PipelineGroup`
+
+if test "$PIPELINE_GROUP" == "null"
+then
+  AC_MSG_ERROR([customer profile was incomplete.])
+fi 
+
+AC_MSG_RESULT([$PIPELINE_GROUP])
 
 
 AC_MSG_CHECKING([Pipeline Group ID])
