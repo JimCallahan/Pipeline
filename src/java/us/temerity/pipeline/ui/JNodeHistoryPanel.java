@@ -1,4 +1,4 @@
-// $Id: JNodeHistoryPanel.java,v 1.16 2004/12/08 07:37:15 jim Exp $
+// $Id: JNodeHistoryPanel.java,v 1.17 2005/01/01 00:50:52 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -335,6 +335,8 @@ class JNodeHistoryPanel
     if(pStatus != null) 
       details = pStatus.getDetails();
 
+    pEditorPlugins = PluginMgr.getInstance().getEditors();
+
     /* header */ 
     {
       {
@@ -634,11 +636,9 @@ class JNodeHistoryPanel
    int idx
   ) 
   {
-    TreeMap<String,TreeSet<VersionID>> editors = PluginMgr.getInstance().getEditors();
-    
     pEditWithMenus[idx].removeAll();
     
-    for(String editor : editors.keySet()) {
+    for(String editor : pEditorPlugins.keySet()) {
       JMenuItem item = new JMenuItem(editor);
       item.setActionCommand("edit-with:" + editor);
       item.addActionListener(this);
@@ -650,11 +650,11 @@ class JNodeHistoryPanel
     JMenu sub = new JMenu("All Versions");
     pEditWithMenus[idx].add(sub);
 
-    for(String editor : editors.keySet()) {
+    for(String editor : pEditorPlugins.keySet()) {
       JMenu esub = new JMenu(editor);
       sub.add(esub);
       
-      for(VersionID vid : editors.get(editor)) {
+      for(VersionID vid : pEditorPlugins.get(editor)) {
 	JMenuItem item = new JMenuItem(editor + " (v" + vid + ")");
 	item.setActionCommand("edit-with:" + editor + ":" + vid);
 	item.addActionListener(this);
@@ -1361,6 +1361,14 @@ class JNodeHistoryPanel
    * The check-in log messages of the current node.
    */ 
   private TreeMap<VersionID,LogMessage>  pHistory;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Cached names and version numbers of the loaded editor plugins. 
+   */
+  private TreeMap<String,TreeSet<VersionID>>  pEditorPlugins; 
 
 
   /*----------------------------------------------------------------------------------------*/

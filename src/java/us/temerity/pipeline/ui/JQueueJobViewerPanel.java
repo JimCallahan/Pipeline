@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.25 2004/12/31 22:28:54 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.26 2005/01/01 00:50:52 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -79,6 +79,8 @@ class JQueueJobViewerPanel
 
       pSelectedGroups = new TreeMap<Long,ViewerJobGroup>();
       pSelected       = new HashMap<JobPath,ViewerJob>();
+
+      pEditorPlugins = PluginMgr.getInstance().getEditors();
     }
 
     /* panel popup menu */ 
@@ -462,11 +464,9 @@ class JQueueJobViewerPanel
    JMenu menu
   ) 
   {
-    TreeMap<String,TreeSet<VersionID>> editors = PluginMgr.getInstance().getEditors();
-    
     menu.removeAll();
     
-    for(String editor : editors.keySet()) {
+    for(String editor : pEditorPlugins.keySet()) {
       JMenuItem item = new JMenuItem(editor);
       item.setActionCommand("view-with:" + editor);
       item.addActionListener(this);
@@ -478,11 +478,11 @@ class JQueueJobViewerPanel
     JMenu sub = new JMenu("All Versions");
     menu.add(sub);
     
-    for(String editor : editors.keySet()) {
+    for(String editor : pEditorPlugins.keySet()) {
       JMenu esub = new JMenu(editor);
       sub.add(esub);
       
-      for(VersionID vid : editors.get(editor)) {
+      for(VersionID vid : pEditorPlugins.get(editor)) {
 	JMenuItem item = new JMenuItem(editor + " (v" + vid + ")");
 	item.setActionCommand("view-with:" + editor + ":" + vid);
 	item.addActionListener(this);
@@ -530,6 +530,9 @@ class JQueueJobViewerPanel
    boolean updateSubPanels
   )
   {  
+    /* refresh the editor plugins */ 
+    pEditorPlugins = PluginMgr.getInstance().getEditors();
+
     /* get the paths to the currently collapsed jobs */ 
     TreeSet<JobPath> wasCollapsed = new TreeSet<JobPath>();
     for(ViewerJob vjob : pViewerJobs.values()) {
@@ -2622,6 +2625,14 @@ class JQueueJobViewerPanel
    * Does the current user have privileged status?
    */ 
   private boolean  pIsPrivileged;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Cached names and version numbers of the loaded editor plugins. 
+   */
+  private TreeMap<String,TreeSet<VersionID>>  pEditorPlugins; 
 
 
   /*----------------------------------------------------------------------------------------*/

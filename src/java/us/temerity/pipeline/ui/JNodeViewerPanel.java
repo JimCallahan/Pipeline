@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.77 2004/12/31 22:28:54 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.78 2005/01/01 00:50:52 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -82,6 +82,8 @@ class JNodeViewerPanel
       pSelected = new HashMap<NodePath,ViewerNode>();
 
       pRemoveSecondarySeqs = new TreeMap<String,FileSeq>();
+
+      pEditorPlugins = PluginMgr.getInstance().getEditors();
     }
 
     /* panel popup menu */ 
@@ -776,11 +778,9 @@ class JNodeViewerPanel
    int idx
   ) 
   {
-    TreeMap<String,TreeSet<VersionID>> editors = PluginMgr.getInstance().getEditors();
-    
     pEditWithMenus[idx].removeAll();
     
-    for(String editor : editors.keySet()) {
+    for(String editor : pEditorPlugins.keySet()) {
       JMenuItem item = new JMenuItem(editor);
       item.setActionCommand("edit-with:" + editor);
       item.addActionListener(this);
@@ -792,11 +792,11 @@ class JNodeViewerPanel
     JMenu sub = new JMenu("All Versions");
     pEditWithMenus[idx].add(sub);
 
-    for(String editor : editors.keySet()) {
+    for(String editor : pEditorPlugins.keySet()) {
       JMenu esub = new JMenu(editor);
       sub.add(esub);
       
-      for(VersionID vid : editors.get(editor)) {
+      for(VersionID vid : pEditorPlugins.get(editor)) {
 	JMenuItem item = new JMenuItem(editor + " (v" + vid + ")");
 	item.setActionCommand("edit-with:" + editor + ":" + vid);
 	item.addActionListener(this);
@@ -937,6 +937,9 @@ class JNodeViewerPanel
    boolean updateSubPanels
   )
   { 
+    /* refresh the editor plugins */ 
+    pEditorPlugins = PluginMgr.getInstance().getEditors();
+    
     /* compute the center of the current layout if no pinned node is set */ 
     if(pPinnedPath == null) {
       pPinnedPos = null;
@@ -4588,6 +4591,14 @@ class JNodeViewerPanel
    * details, links, files and history panels. 
    */ 
   private String  pLastDetailsName;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Cached names and version numbers of the loaded editor plugins. 
+   */
+  private TreeMap<String,TreeSet<VersionID>>  pEditorPlugins; 
 
 
   /*----------------------------------------------------------------------------------------*/

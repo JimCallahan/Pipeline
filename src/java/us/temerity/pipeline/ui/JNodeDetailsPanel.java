@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.31 2004/12/08 07:37:15 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.32 2005/01/01 00:50:52 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1489,6 +1489,12 @@ class JNodeDetailsPanel
 	pCheckedInVersions.put(latest.getVersionID(), latest);
     }
 
+    {
+      PluginMgr plg = PluginMgr.getInstance();
+      pEditorPlugins = plg.getEditors();
+      pActionPlugins = plg.getActions();
+    }
+
     /* header */ 
     {
       String name = "Blank-Normal";
@@ -1643,7 +1649,7 @@ class JNodeDetailsPanel
 	{
 	  TreeSet<String> editors = new TreeSet<String>();
 	  if(work != null) 
-	    editors.addAll(PluginMgr.getInstance().getEditors().keySet());
+	    editors.addAll(pEditorPlugins.keySet());
 	  editors.add("-");
 	  pWorkingEditorField.setValues(editors);
 	  
@@ -1679,7 +1685,7 @@ class JNodeDetailsPanel
       {
 	TreeSet<String> actions = new TreeSet<String>();
 	if(work != null) 
-	  actions.addAll(PluginMgr.getInstance().getActions().keySet());
+	  actions.addAll(pActionPlugins.keySet());
 	actions.add("-");
 	pWorkingActionField.setValues(actions);
 	
@@ -1797,12 +1803,10 @@ class JNodeDetailsPanel
   {
     pWorkingActionVersionField.removeActionListener(this);
     {
-      TreeMap<String,TreeSet<VersionID>> plgs = PluginMgr.getInstance().getActions();
-
       BaseAction waction = getWorkingAction();
       if(waction != null) {
 	TreeSet<String> vstr = new TreeSet<String>();
-	TreeSet<VersionID> vids = plgs.get(waction.getName());
+	TreeSet<VersionID> vids = pActionPlugins.get(waction.getName());
 	for(VersionID vid : vids)
 	  vstr.add("v" + vid.toString());
 	pWorkingActionVersionField.setValues(vstr);
@@ -3014,11 +3018,9 @@ class JNodeDetailsPanel
    int idx
   ) 
   {
-    TreeMap<String,TreeSet<VersionID>> editors = PluginMgr.getInstance().getEditors();
-    
     pEditWithMenus[idx].removeAll();
     
-    for(String editor : editors.keySet()) {
+    for(String editor : pEditorPlugins.keySet()) {
       JMenuItem item = new JMenuItem(editor);
       item.setActionCommand("edit-with:" + editor);
       item.addActionListener(this);
@@ -3030,11 +3032,11 @@ class JNodeDetailsPanel
     JMenu sub = new JMenu("All Versions");
     pEditWithMenus[idx].add(sub);
 
-    for(String editor : editors.keySet()) {
+    for(String editor : pEditorPlugins.keySet()) {
       JMenu esub = new JMenu(editor);
       sub.add(esub);
       
-      for(VersionID vid : editors.get(editor)) {
+      for(VersionID vid : pEditorPlugins.get(editor)) {
 	JMenuItem item = new JMenuItem(editor + " (v" + vid + ")");
 	item.setActionCommand("edit-with:" + editor + ":" + vid);
 	item.addActionListener(this);
@@ -5097,6 +5099,19 @@ class JNodeDetailsPanel
    * Cached checked-in versions associated with the current node.
    */ 
   private TreeMap<VersionID,NodeVersion>  pCheckedInVersions; 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Cached names and version numbers of the loaded editor plugins. 
+   */
+  private TreeMap<String,TreeSet<VersionID>>  pEditorPlugins; 
+
+  /**
+   * Cached names and version numbers of the loaded action plugins. 
+   */
+  private TreeMap<String,TreeSet<VersionID>>  pActionPlugins; 
 
 
   /*----------------------------------------------------------------------------------------*/

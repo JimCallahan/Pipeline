@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.24 2004/12/08 09:54:17 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.25 2005/01/01 00:50:52 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -380,6 +380,12 @@ class JNodeFilesPanel
     NodeDetails details = null;
     if(pStatus != null) 
       details = pStatus.getDetails();
+
+    {
+      PluginMgr plg = PluginMgr.getInstance();
+      pEditorPlugins     = plg.getEditors();
+      pComparatorPlugins = plg.getComparators();
+    }
 
     /* header */ 
     {
@@ -905,11 +911,9 @@ class JNodeFilesPanel
    int idx
   ) 
   {
-    TreeMap<String,TreeSet<VersionID>> editors = PluginMgr.getInstance().getEditors();
-    
     pEditWithMenus[idx].removeAll();
     
-    for(String editor : editors.keySet()) {
+    for(String editor : pEditorPlugins.keySet()) {
       JMenuItem item = new JMenuItem(editor);
       item.setActionCommand("edit-with:" + editor);
       item.addActionListener(this);
@@ -921,11 +925,11 @@ class JNodeFilesPanel
     JMenu sub = new JMenu("All Versions");
     pEditWithMenus[idx].add(sub);
 
-    for(String editor : editors.keySet()) {
+    for(String editor : pEditorPlugins.keySet()) {
       JMenu esub = new JMenu(editor);
       sub.add(esub);
       
-      for(VersionID vid : editors.get(editor)) {
+      for(VersionID vid : pEditorPlugins.get(editor)) {
 	JMenuItem item = new JMenuItem(editor + " (v" + vid + ")");
 	item.setActionCommand("edit-with:" + editor + ":" + vid);
 	item.addActionListener(this);
@@ -940,11 +944,9 @@ class JNodeFilesPanel
   private void 
   rebuildComparatorSubmenu()
   {
-    TreeMap<String,TreeSet<VersionID>> comparators = PluginMgr.getInstance().getComparators();
-
     pCompareWithMenu.removeAll();
     
-    for(String comparator : comparators.keySet()) {
+    for(String comparator : pComparatorPlugins.keySet()) {
       JMenuItem item = new JMenuItem(comparator);
       item.setActionCommand("compare-with:" + comparator);
       item.addActionListener(this);
@@ -956,11 +958,11 @@ class JNodeFilesPanel
     JMenu sub = new JMenu("All Versions");
     pCompareWithMenu.add(sub);
 
-    for(String comparator : comparators.keySet()) {
+    for(String comparator : pComparatorPlugins.keySet()) {
       JMenu csub = new JMenu(comparator);
       sub.add(csub);
       
-      for(VersionID vid : comparators.get(comparator)) {
+      for(VersionID vid : pComparatorPlugins.get(comparator)) {
 	JMenuItem item = new JMenuItem(comparator + " (v" + vid + ")");
 	item.setActionCommand("compare-with:" + comparator + ":" + vid);
 	item.addActionListener(this);
@@ -2725,6 +2727,19 @@ class JNodeFilesPanel
    * The per-file novelty flags.
    */ 
   private TreeMap<VersionID,TreeMap<FileSeq,boolean[]>>  pNovelty;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Cached names and version numbers of the loaded editor plugins. 
+   */
+  private TreeMap<String,TreeSet<VersionID>>  pEditorPlugins; 
+
+  /**
+   * Cached names and version numbers of the loaded comparator plugins. 
+   */
+  private TreeMap<String,TreeSet<VersionID>>  pComparatorPlugins; 
 
 
   /*----------------------------------------------------------------------------------------*/
