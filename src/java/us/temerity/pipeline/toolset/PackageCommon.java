@@ -1,4 +1,4 @@
-// $Id: PackageCommon.java,v 1.3 2004/05/29 06:37:41 jim Exp $
+// $Id: PackageCommon.java,v 1.4 2004/06/02 21:32:34 jim Exp $
 
 package us.temerity.pipeline.toolset;
 
@@ -153,7 +153,7 @@ class PackageCommon
   }
 
   /**
-   * Get the package environment specific ro the given user and working area.
+   * Get the package environment specific to the given user and working area.
    * 
    * @param author
    *   The user owning the generated environment.
