@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.28 2004/07/07 13:27:18 jim Exp $
+// $Id: UIMaster.java,v 1.29 2004/07/14 21:11:49 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -59,6 +59,7 @@ class UIMaster
     pNodeViewerPanels  = new PanelGroup<JNodeViewerPanel>();
     pNodeDetailsPanels = new PanelGroup<JNodeDetailsPanel>();
     pNodeHistoryPanels = new PanelGroup<JNodeHistoryPanel>();
+    pNodeFilesPanels   = new PanelGroup<JNodeFilesPanel>();
 
     SwingUtilities.invokeLater(new SplashFrameTask(this));
   }
@@ -196,6 +197,15 @@ class UIMaster
   getNodeHistoryPanels() 
   {
     return pNodeHistoryPanels;
+  }
+
+  /**
+   * Get the node files panel group.
+   */ 
+  public PanelGroup<JNodeFilesPanel>
+  getNodeFilesPanels() 
+  {
+    return pNodeFilesPanels;
   }
 
 
@@ -1876,6 +1886,8 @@ class UIMaster
      UIMaster master
     ) 
     {
+      super("UIMaster:SplashFrameTask");
+      
       pMaster = master;
     }
 
@@ -1942,7 +1954,7 @@ class UIMaster
 
 	  /* progress bar */ 
 	  {
-	    JProgressBar bar = new JProgressBar(JProgressBar.HORIZONTAL, 0, 234);
+	    JProgressBar bar = new JProgressBar(JProgressBar.HORIZONTAL, 0, 200);
 	    pSplashProgress = bar;
 
 	    bar.setValue(1);
@@ -2008,6 +2020,8 @@ class UIMaster
      UIMaster master
     ) 
     {
+      super("UIMaster:StartupTask");
+
       pMaster = master;
       pCnt    = 1;
     }
@@ -2068,11 +2082,6 @@ class UIMaster
 	      mgr.verifyTexture(nstate + "-" + qstate + "-" + mode);
 	      mgr.verifyIcon21(nstate + "-" + qstate + "-" + mode);
 	      update();
-	    }
-
-	    {
-	      mgr.verifyIcon21("Missing-" + qstate + "-" + mode);
-	      update();	      
 	    }
 
 	    {
@@ -2145,6 +2154,8 @@ class UIMaster
      int value
     ) 
     {
+      super("UIMaster:UpdateStartupProgress");
+
       pValue = value;
     }
 
@@ -2152,6 +2163,7 @@ class UIMaster
     run() 
     {  
       pSplashProgress.setValue(pValue);
+      // System.out.print("Progress: " + pValue + "\n");
     }
 
     private int pValue;
@@ -2168,7 +2180,9 @@ class UIMaster
     (
      UIMaster master
     ) 
-    {
+    { 
+      super("UIMaster:MainFrameTask");
+
       pMaster = master;
     }
 
@@ -2284,6 +2298,8 @@ class UIMaster
      String msg
     ) 
     {
+      super("UIMaster:BeginOpsTask");
+
       pMsg = msg;
     }
 
@@ -2309,6 +2325,8 @@ class UIMaster
      String msg
     ) 
     {
+      super("UIMaster:EndOpsTask");
+
       pMsg = msg;
     }
 
@@ -2332,6 +2350,12 @@ class UIMaster
   class ShowSaveLayoutDialogTask
     extends Thread
   { 
+    public 
+    ShowSaveLayoutDialogTask() 
+    {
+      super("UIMaster:ShowSaveLayoutDialogTask");
+    }
+
     public void 
     run() 
     {
@@ -2359,6 +2383,12 @@ class UIMaster
   class SaveLayoutTask
     extends Thread
   {
+    public 
+    SaveLayoutTask() 
+    {
+      super("UIMaster:SaveLayoutTask");
+    }
+
     public void 
     run() 
     {
@@ -2394,6 +2424,8 @@ class UIMaster
      String name
     ) 
     {
+      super("UIMaster:RestoreSavedLayoutTask");
+
       pName = name;
     }
 
@@ -2409,6 +2441,7 @@ class UIMaster
 	pNodeViewerPanels.clear();
 	pNodeDetailsPanels.clear();
 	pNodeHistoryPanels.clear();
+	pNodeFilesPanels.clear();
       }
 
       /* restore saved panels */ 
@@ -2444,6 +2477,12 @@ class UIMaster
   class ShowManageLayoutsDialogTask
     extends Thread
   { 
+    public 
+    ShowManageLayoutsDialogTask() 
+    {
+      super("UIMaster:ShowManageLayoutsDialogTask");
+    }
+
     public void 
     run() 
     {
@@ -2467,6 +2506,12 @@ class UIMaster
   class UpdateUserPrefsTask
     extends Thread
   {    
+    public 
+    UpdateUserPrefsTask() 
+    {
+      super("UIMaster:UpdateUserPrefsTask");
+    }
+
     public void 
     run() 
     {
@@ -2493,6 +2538,12 @@ class UIMaster
   class ShowErrorDialogTask
     extends Thread
   { 
+    public 
+    ShowErrorDialogTask() 
+    {
+      super("UIMaster:ShowErrorDialogTask");
+    }
+
     public void 
     run() 
     {
@@ -2507,12 +2558,15 @@ class UIMaster
   class ShowSubprocessFailureDialog
     extends Thread
   { 
+    public 
     ShowSubprocessFailureDialog
     (
      String header, 
      SubProcess proc
     )
     {
+      super("UIMaster:ShowSubprocessFailureDialog");
+
       pHeader = header;
       pProc = proc;
     }
@@ -2639,6 +2693,11 @@ class UIMaster
    * The active node history panels. <P> 
    */ 
   private PanelGroup<JNodeHistoryPanel>  pNodeHistoryPanels;
+
+  /**
+   * The active node files panels. <P> 
+   */ 
+  private PanelGroup<JNodeFilesPanel>  pNodeFilesPanels;
 
 
   /*----------------------------------------------------------------------------------------*/
