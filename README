@@ -1,22 +1,8 @@
 
-Directory Structure:
+The build instructions:
 
-  tools		Programs used as part of the build process.
-  libs 		Shared code packaged into libraries.
-  utils		A collection of small utility programs in one directory.
-  apps		Large complex programs with their own directory structure.
-
-
-
-The haiku build instructions:
-
-  $ tar -zxvf Phoenix-0.1.tgz
-  $ cd Phoenix-0.1
-  $ ./configure --enable-threads --disable-opt
+  $ ./configure
   $ make all
-  $ make check
+  $ make install
 
-
-See "configure --help" for a full list of options.  If you mess around
-with the "configure.in", you should run the "./autogen.sh" just to be
-safe.
+See "configure --help" for a full list of options.
