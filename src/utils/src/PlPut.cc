@@ -1,4 +1,4 @@
-// $Id: PlPut.cc,v 1.7 2003/02/10 16:11:45 jim Exp $
+// $Id: PlPut.cc,v 1.8 2003/02/11 21:46:37 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -59,9 +59,11 @@ class PathPair
 public:
   PathPair
   (
+   bool isLink, 
    char* work,
    char* repo
   ) : 
+    uIsLink(isLink), 
     uWork(strdup(work)),
     uRepo(strdup(repo))
   {
@@ -79,7 +81,8 @@ public:
   }
 
 public:
-  const char* uWork;          /* absolute path to working area file */ 
+  const bool uIsLink;         /* create a symbilic link instead of copying */ 
+  const char* uWork;          /* absolute path to working area (or previous repo) file */ 
   const char* uRepo;          /* absolute path to repository file */ 
 };
 
@@ -113,14 +116,34 @@ usage()
 
 
 
+/* create a single symlink pointing to a previous repository version, 
+     returns false if link failed */ 
+bool
+linkRepo
+(
+ const char* prev,    /* IN: previous repository file (or link) */ 
+ const char* repo     /* IN: repository link */ 
+)
+{
+  if(symlink(prev, repo) != 0)
+    return false;
+
+  char msg[1024];
+  sprintf(msg, "linked: %s to %s", prev, repo);
+  FB::stageMsg(msg);
+
+  return true;
+}
+
+
+
 /* copy a single file to the repository, 
      returns false if copy failed */ 
 bool
 copyFileToRepo
 (
- const char* work,                /* IN: working area file */ 
- const char* repo,                /* IN: repository file */ 
- std::list<const char*>& copied   /* IN/OUT: list of succesfully copied files */ 
+ const char* work,   /* IN: working area file */ 
+ const char* repo    /* IN: repository file */ 
 )
 {
   char msg[1024];
@@ -232,6 +255,7 @@ main
   FB::stageBegin("Reading File List: ");
   {
     FB::stageMsg(flist);
+    int tf;
     char work[1024];
     char repo[1024];
 
@@ -243,12 +267,12 @@ main
     }
 
     while(in) {
-      in >> work >> repo;
+      in >> tf >> work >> repo;
       if(!in)
 	break;
-      pairs.push_back(new PathPair(work, repo));
+      pairs.push_back(new PathPair((bool) tf, work, repo));
 
-      sprintf(msg, "%s to %s", work, repo);
+      sprintf(msg, "%s: %s to %s", (tf ? "link" : "copy"), work, repo);
       FB::stageMsg(msg);
     }
     in.close();
@@ -257,14 +281,14 @@ main
 
 
   /* make sure the working area files DO exist */ 
-  FB::stageBegin("Checking Working Files:");
+  FB::stageBegin("Checking Source Files:");
   {
     Pairs::iterator iter;
     for(iter=pairs.begin(); iter != pairs.end(); iter++) {
       const char* work = (*iter)->uWork;
       FB::stageMsg(work);
       if(access(work, F_OK) != 0) {
-	sprintf(msg, "missing working area file: %s", work);
+	sprintf(msg, "missing source file: %s", work);
 	FB::error(msg);
       }
     }
@@ -273,22 +297,32 @@ main
   
 
   /* make sure the repository files DO NOT already exist */ 
-  FB::stageBegin("Checking Repository Files:");
+  FB::stageBegin("Checking Target Files:");
   {
     std::list<PathPair*>::iterator iter;
     for(iter=pairs.begin(); iter != pairs.end(); iter++) {
       const char* repo = (*iter)->uRepo;
       FB::stageMsg(repo);
       
-      struct stat buf;
-      if(stat(repo, &buf) == 0) {
-	if(S_ISDIR(buf.st_mode)) {
-	  sprintf(msg, "bad path, directory exists with the name: %s", repo);
-	  FB::error(msg);	    
-	}
-	else {
-	  sprintf(msg, "attempted to overwrite repository file: %s", repo);
-	  FB::error(msg);
+      if(access(repo, F_OK) != 0) {
+	struct stat buf;
+	if(stat(repo, &buf) == 0) {
+	  if(S_ISREG(buf.st_mode)) {
+	    sprintf(msg, "attempted to overwrite repository file: %s", repo);
+	    FB::error(msg);
+	  }
+	  else if(S_ISDIR(buf.st_mode)) {
+	    sprintf(msg, "bad path, directory exists with the name: %s", repo);
+	    FB::error(msg);	    
+	  }
+	  else if(S_ISLNK(buf.st_mode)) {
+	    sprintf(msg, "attempted to overwrite repository symlink: %s", repo);
+	    FB::error(msg);	    
+	  }	
+	  else {
+	    sprintf(msg, "somehow the repostory file exists and is NOT a regular file: %s", repo);
+	    FB::error(msg);	    
+	  }
 	}
       }
     }
@@ -384,23 +418,33 @@ main
   /* copy the files... */ 
   FB::stageBegin("Copying Files:");
   bool aborted = false;
-  std::list<const char*> copied;
+  std::list<const char*> created;
   {
     Pairs::iterator iter;
     for(iter=pairs.begin(); iter!=pairs.end() && !aborted; iter++) {      
-      if(!copyFileToRepo((*iter)->uWork, (*iter)->uRepo, copied)) {
-	aborted = true;
-	break;
-      }     
+      if((*iter)->uIsLink) {
+	if(!linkRepo((*iter)->uWork, (*iter)->uRepo)) {
+	  aborted = true;
+	  break;
+	}     
+      }
+      else {
+	if(!copyFileToRepo((*iter)->uWork, (*iter)->uRepo)) {
+	  aborted = true;
+	  break;
+	}     
+      }
+      
+      created.push_back((*iter)->uRepo);
     }
 
     /* a failure occured while copying, 
-         remove any successfully copied files */ 
+         remove any successfully created files */ 
     if(aborted) {
       FB::stageBegin("Copy Failed, Cleaning:");
       {
 	std::list<const char*>::iterator citer;
-	for(citer=copied.begin(); citer!=copied.end() && !aborted; citer++) {
+	for(citer=created.begin(); citer!=created.end() && !aborted; citer++) {
 	  const char* file = *citer;
 	  if(unlink(file) != 0) {
 	    sprintf(msg, "unable to remove: %s", file);

@@ -26,7 +26,7 @@ INCLUDES = \
 
 
 install-data-hook:
-	@CHMOD@ 6550 $(instbindir)/plput
+	@CHMOD@ 6555 $(instbindir)/plput
 	@CHOWN@ pipeline.pipeline $(instbindir)/plput
 # 	@CHMOD@ 6550 $(instbindir)/super-pipeline
 # 	@CHOWN@ root.@HTTPD_GROUP@ $(instbindir)/super-pipeline
