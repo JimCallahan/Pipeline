@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.35 2004/09/01 12:23:35 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.36 2004/09/03 02:00:25 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -3868,7 +3868,7 @@ class JNodeViewerPanel
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp("Pausing Jobs...")) {
 	try {
-	  master.getMasterMgrClient().pauseJobs(pAuthor, pJobIDs);
+	  master.getQueueMgrClient().pauseJobs(pAuthor, pJobIDs);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -3909,7 +3909,7 @@ class JNodeViewerPanel
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp("Resuming Paused Jobs...")) {
 	try {
-	  master.getMasterMgrClient().resumeJobs(pAuthor, pJobIDs);
+	  master.getQueueMgrClient().resumeJobs(pAuthor, pJobIDs);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -3950,7 +3950,7 @@ class JNodeViewerPanel
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp("Killing Jobs...")) {
 	try {
-	  master.getMasterMgrClient().killJobs(pAuthor, pJobIDs);
+	  master.getQueueMgrClient().killJobs(pAuthor, pJobIDs);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
