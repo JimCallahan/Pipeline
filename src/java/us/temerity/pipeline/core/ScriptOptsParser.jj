@@ -483,7 +483,7 @@ TOKEN :
 <NODE_NAME_STATE> 
 TOKEN :
 {
-  <NODE_NAME:           ("/" (["a"-"z","A"-"Z","0"-"9"])+)* 
+  <NODE_NAME:           ("/" (["a"-"z","A"-"Z","0"-"9","-","_"])+)* 
 			("/" ["a"-"z","A"-"Z"] 
 		          (["a"-"z","A"-"Z","0"-"9","_","-"])*)+>  : OPTIONS
 | <MISSING_NODE_NAME:   ["\0"]>                                    : IGNORE_STATE
