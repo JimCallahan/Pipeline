@@ -1,4 +1,4 @@
-// $Id: OverallNodeState.java,v 1.10 2004/07/14 21:01:35 jim Exp $
+// $Id: OverallNodeState.java,v 1.11 2004/10/09 16:56:21 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -158,6 +158,15 @@ enum OverallNodeState
     return sTitles[ordinal()];
   }
 
+  /**
+   * Convert to a one-character symbolic representation.
+   */ 
+  public String
+  toSymbol() 
+  {
+    return sSymbols[ordinal()];
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -173,5 +182,16 @@ enum OverallNodeState
     "Needs Check-Out", 
     "Conflicted", 
     "Missing"
+  };
+
+  private static String sSymbols[] = {
+    "P", 
+    "I", 
+    "=", 
+    "L",
+    "M", 
+    "O",
+    "C",
+    "?"
   };
 }

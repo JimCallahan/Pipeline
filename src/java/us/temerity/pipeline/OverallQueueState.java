@@ -1,4 +1,4 @@
-// $Id: OverallQueueState.java,v 1.10 2004/08/30 01:30:27 jim Exp $
+// $Id: OverallQueueState.java,v 1.11 2004/10/09 16:56:21 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -122,4 +122,28 @@ enum OverallQueueState
     return toString();
   }
 
+  /**
+   * Convert to a one-character symbolic representation.
+   */ 
+  public String
+  toSymbol() 
+  {
+    return sSymbols[ordinal()];
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static String sSymbols[] = {
+    "U", 
+    "F", 
+    "S", 
+    "Q",
+    "P", 
+    "R",
+    "A",
+    "E"
+  };
 }
