@@ -1,4 +1,4 @@
-// $Id: JRestoreDialog.java,v 1.5 2005/04/02 20:57:47 jim Exp $
+// $Id: JRestoreDialog.java,v 1.6 2005/04/03 01:53:18 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -421,6 +421,28 @@ class JRestoreDialog
     updatePanel();
   }
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O M P O N E N T   O V E R R I D E S                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Shows or hides this component.
+   */ 
+  public void 
+  setVisible
+  (
+   boolean isVisible
+  )
+  {
+    if(isVisible) 
+      doUpdate();
+
+    super.setVisible(isVisible);
+  }
+
+    
 
   /*----------------------------------------------------------------------------------------*/
   /*   L I S T E N E R S                                                                    */
