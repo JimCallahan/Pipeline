@@ -1,4 +1,4 @@
-// $Id: TupleNf.java,v 1.4 2004/12/14 14:08:43 jim Exp $
+// $Id: TupleNf.java,v 1.5 2004/12/17 20:07:37 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -385,6 +385,69 @@ class TupleNf
   }
    
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether all components of the given tuple are within the given epsilon of the 
+   * corresponding components of this tuple.
+   * 
+   * @param t
+   *   The tuple to compare
+   * 
+   * @param epsilon
+   *   The maximum difference in values.
+   * 
+   * @throws TupleSizeMismatchException
+   *   If the given tuples are not the same size.
+   */
+  public boolean 
+  equiv
+  (
+   TupleNf t, 
+   float epsilon
+  ) 
+  {
+    if(pComps.length != t.size()) 
+      throw new TupleSizeMismatchException(pComps.length, t.size());
+
+    int i;
+    for(i=0; i<size(); i++) {
+      if(!ExtraMath.equiv(pComps[i], t.pComps[i], epsilon)) 
+	return false;
+    }
+
+    return true;
+  }
+  
+  /**
+   * Whether all components of the given tuple are within the standard epsilon of the
+   * corresponding components of this tuple. <P> 
+   * 
+   * @param t
+   *   The tuple to compare
+   * 
+   * @throws TupleSizeMismatchException
+   *   If the given tuples are not the same size.
+   */
+  public boolean 
+  equiv
+  (
+   TupleNf t
+  ) 
+  {
+    if(pComps.length != t.size()) 
+      throw new TupleSizeMismatchException(pComps.length, t.size());
+
+    int i;
+    for(i=0; i<size(); i++) {
+      if(!ExtraMath.equiv(pComps[i], t.pComps[i])) 
+	return false;
+    }
+
+    return true;
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   C O M P O N E N T   C O M P A R I S O N                                              */
@@ -412,7 +475,7 @@ class TupleNf
     float m = pComps[0]; 
     int i;
     for(i=1; i<pComps.length; i++) 
-      m = Math.min(m, pComps[i]);
+      m = Math.max(m, pComps[i]);
     return m; 
   }
   
@@ -902,8 +965,8 @@ class TupleNf
     buf.append("(");
     int i; 
     for(i=0; i<(pComps.length-1); i++) 
-      buf.append(pComps[i] + ", ");
-    buf.append(pComps[i] + ")");
+      buf.append(String.format("%1$.4f", pComps[i]) + ", ");
+    buf.append(String.format("%1$.4f", pComps[i]) + ")");
 	
     return buf.toString();
   }

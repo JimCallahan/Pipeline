@@ -1,4 +1,4 @@
-// $Id: Color4f.java,v 1.3 2004/12/14 14:08:43 jim Exp $
+// $Id: Color4f.java,v 1.4 2004/12/17 20:07:36 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -288,6 +288,44 @@ class Color4f
     Color4f rtn = new Color4f(this);
     rtn.normalize();
     return rtn;
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O L O R   C O N V E R S I O N                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Convert from an HSVA color representation. 
+   */ 
+  void
+  fromHSV
+  ( 
+   Tuple4f hsva
+  )
+  {
+    Tuple3f hsv = new Tuple3f(hsva.x(), hsva.y(), hsva.z());
+    Color3f rgb = new Color3f();
+    rgb.fromHSV(hsv);
+    
+    pComps[0] = rgb.r();    
+    pComps[1] = rgb.g();    
+    pComps[2] = rgb.b();    
+    pComps[3] = hsva.w();
+  }
+
+  /**
+   * Convert to an HSVA color representation.
+   */ 
+  public Tuple4f
+  toHSV() 
+  {
+    Color3f rgb = new Color3f(pComps[0], pComps[1], pComps[2]);
+    Tuple3f hsv = rgb.toHSV();
+    Tuple4f hsva = new Tuple4f(hsv.x(), hsv.y(), hsv.z(), pComps[3]);
+
+    return hsva;
   }
 
 

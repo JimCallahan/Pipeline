@@ -1,4 +1,4 @@
-// $Id: Color3f.java,v 1.3 2004/12/14 14:08:43 jim Exp $
+// $Id: Color3f.java,v 1.4 2004/12/17 20:07:36 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -259,6 +259,139 @@ class Color3f
     Color3f rtn = new Color3f(this);
     rtn.normalize();
     return rtn;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O L O R   C O N V E R S I O N                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Convert from an HSV color representation. 
+   */ 
+  public void
+  fromHSV
+  ( 
+   Tuple3f hsv
+  )
+  {
+    if(hsv.anyLt(new Tuple3f(0.0f, 0.0f, 0.0f))) 
+      throw new IllegalArgumentException
+	("The HSV color components must be positive!");
+
+    if(hsv.x() > 360.0) 
+      throw new IllegalArgumentException
+	("The Hue component (X) cannot be greater than (360.0)!");
+    
+    if(hsv.y() > 1.0) 
+      throw new IllegalArgumentException
+	("The Saturation component (Y) cannot be greater than (1.0)!");
+
+    if(hsv.z() > 1.0) 
+      throw new IllegalArgumentException
+	("The Value component (Y) cannot be greater than (1.0)!");
+      
+    /* no saturation, R = G = B = Value */ 
+    if(ExtraMath.equiv(hsv.y(), 0.0f)) {
+      set(hsv.z(), hsv.z(), hsv.z());
+    }
+
+    /* has saturation... */ 
+    else {
+      float hue  = hsv.x() / 60.0f;
+      int region = (int) Math.floor((double) hue);
+      float frac = hue - ((float) region);
+
+      float p = hsv.z() * (1.0f - hsv.y());
+      float q = hsv.z() * (1.0f - hsv.y() * frac);
+      float t = hsv.z() * (1.0f - hsv.y() * (1.0f - frac));
+
+      switch(region) {
+      case 0:
+	 pComps[0] = hsv.z();
+	 pComps[1] = t;
+	 pComps[2] = p;
+	 break;
+
+      case 1:
+	 pComps[0] = q;
+	 pComps[1] = hsv.z();
+	 pComps[2] = p;
+	 break;
+
+      case 2:
+	 pComps[0] = p;
+	 pComps[1] = hsv.z();
+	 pComps[2] = t;
+	 break;
+
+      case 3:
+	 pComps[0] = p;
+	 pComps[1] = q;
+	 pComps[2] = hsv.z();
+	 break;
+
+      case 4:
+	 pComps[0] = t;
+	 pComps[1] = p;
+	 pComps[2] = hsv.z();
+	 break;
+
+      default:
+	 pComps[0] = hsv.z();
+	 pComps[1] = p;
+	 pComps[2] = q;
+      }
+    }
+  }
+
+  /**
+   * Convert to an HSV color representation.
+   */ 
+  public Tuple3f
+  toHSV() 
+  {
+    if(anyLt(new Tuple3f(0.0f, 0.0f, 0.0f))) 
+      throw new IllegalArgumentException
+	("The RGB color components must be positive!");
+
+    if(anyGt(new Tuple3f(1.0f, 1.0f, 1.0f))) 
+      throw new IllegalArgumentException
+	("The RGB color components cannot be greater-than one!");
+
+    Tuple3f hsv = new Tuple3f();
+
+    float minC  = minComp();
+    float maxC  = maxComp();
+    float range = maxC - minC;
+    
+    if(ExtraMath.equiv(range, 0.0f)) {
+      hsv.x(0.0f);
+      hsv.y(0.0f);
+      hsv.z(maxC);
+    }
+    else {
+      if(maxC > 0.0f) {
+	hsv.y(range / maxC);      
+	hsv.z(maxC);
+      }
+      else {
+	hsv.set(0.0f, 0.0f, 0.0f);
+      }
+
+      if(ExtraMath.equiv(pComps[0], maxC)) 
+	hsv.x((pComps[1] - pComps[2]) / range);
+      else if(ExtraMath.equiv(pComps[1], maxC)) 
+	hsv.x(2.0f + (pComps[2] - pComps[0]) / range);
+      else 
+	hsv.x(4.0f + (pComps[0] - pComps[1]) / range);
+      
+      hsv.x(hsv.x() * 60.0f); 
+      if(hsv.x() < 0.0f)
+	hsv.x(hsv.x() + 360.0f); 
+    }
+
+    return hsv;
   }
 
 

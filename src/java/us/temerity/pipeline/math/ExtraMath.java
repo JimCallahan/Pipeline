@@ -1,4 +1,4 @@
-// $Id: ExtraMath.java,v 1.1 2004/12/13 09:09:30 jim Exp $
+// $Id: ExtraMath.java,v 1.2 2004/12/17 20:07:36 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -12,6 +12,129 @@ package us.temerity.pipeline.math;
 public 
 class ExtraMath   
 {  										    
+  /*----------------------------------------------------------------------------------------*/
+  /*   E Q U I V A L E N C E                                                                */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Whether the two values are within the given epsilon of each other.
+   */ 
+  public static boolean 
+  equiv
+  (
+   float a, 
+   float b, 
+   float epsilon
+  ) 
+  {
+    return (Math.abs(a-b) < epsilon);
+  }
+
+  /**
+   * Whether the two values are within an epsilon of (0.001f).
+   */ 
+  public static boolean 
+  equiv
+  (
+   float a, 
+   float b
+  ) 
+  {
+    return equiv(a, b, 0.001f);
+  }
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether the two values are within the given epsilon of each other.
+   */ 
+  public static boolean 
+  equiv
+  (
+   double a, 
+   double b, 
+   double epsilon
+  ) 
+  {
+    return (Math.abs(a-b) < epsilon);
+  }
+
+  /**
+   * Whether the two values are within an epsilon of (0.000001).
+   */ 
+  public static boolean 
+  equiv
+  (
+   double a, 
+   double b
+  ) 
+  {
+    return equiv(a, b, 0.000001);
+  }
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether the two values are within the given epsilon of each other.
+   */ 
+  public static boolean 
+  equiv
+  (
+   int a, 
+   int b, 
+   int epsilon
+  ) 
+  {
+    return (Math.abs(a-b) < epsilon);
+  }
+
+  /**
+   * Whether the two values are within an epsilon of (0).
+   */ 
+  public static boolean 
+  equiv
+  (
+   int a, 
+   int b
+  ) 
+  {
+    return (a == b);
+  }
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether the two values are within the given epsilon of each other.
+   */ 
+  public static boolean 
+  equiv
+  (
+   long a, 
+   long b, 
+   long epsilon
+  ) 
+  {
+    return (Math.abs(a-b) < epsilon);
+  }
+
+  /**
+   * Whether the two values are within an epsilon of (0L).
+   */ 
+  public static boolean 
+  equiv
+  (
+   long a, 
+   long b
+  ) 
+  {
+    return (a == b);
+  }
+  
+
+						    
   /*----------------------------------------------------------------------------------------*/
   /*   M I N / M A X                                                                        */
   /*----------------------------------------------------------------------------------------*/
