@@ -19,7 +19,7 @@ frame=0
 for nstate in Pending CheckedIn Identical NeedsCheckOut Modified \
               Conflicted ModifiedLinks Missing Added Obsolete 
 do
-  for qstate in Stale Queued Running Missing Failed Finished Undefined
+  for qstate in Stale Queued Running Missing Failed Finished Paused Undefined
   do
     simg=`printf "%s.%04d.sgi" $src/Normal $frame`
 
@@ -34,7 +34,7 @@ do
   done
 done
 
-frame=70
+frame=96
 for extra in Blank Collapsed
 do 
   simg=`printf "%s.%04d.sgi" $src/Normal $frame`

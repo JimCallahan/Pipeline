@@ -17,7 +17,7 @@ do
                 Conflicted ModifiedLinks Missing Added Obsolete \
                 NeedsCheckOutMicro NeedsCheckOutMajor 
   do
-    for qstate in Stale Queued Running Aborted Failed Finished Undefined
+    for qstate in Stale Queued Running Aborted Failed Finished Paused Undefined
     do
       if [ "$nstate" != "Added" -a "$nstate" != "Obsolete" ] 
       then 
@@ -58,7 +58,7 @@ do
                 Conflicted ModifiedLinks Missing Added Obsolete \
                 NeedsCheckOutMicro NeedsCheckOutMajor 
   do
-    for qstate in Stale Queued Running Aborted Failed Finished Undefined
+    for qstate in Stale Queued Running Aborted Failed Finished Paused Undefined
     do
       simg=`printf "%s.%04d.sgi" $src/$mode $frame`
       dir=`echo $dest/$nstate-$qstate-$mode`
@@ -79,7 +79,7 @@ do
     done
   done
 
-  frame=84
+  frame=96
   for extra in Blank Collapsed
   do 
     simg=`printf "%s.%04d.sgi" $src/$mode $frame`
@@ -114,7 +114,7 @@ do
     frame=$(($frame + 1))
   done
 
-  frame=84
+  frame=96
   for extra in Blank Collapsed
   do 
     simg=`printf "%s.%04d.sgi" $src/$mode $frame`
