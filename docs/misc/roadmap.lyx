@@ -422,6 +422,33 @@ Pipeline should provide an operation which would remove a specific file
  to regenerate it.
  This file deletion operation provides a way work around problems of this
  kind.
+\layout Subsection
+
+Needs Check-Out Symbols
+\layout Standard
+
+Currently, the Needs Check-Out state for a node is represented by a single
+ symbol (upside-down delta).
+ In the future, Pipeline should display a range of symbols which correspond
+ to the level of difference between the latest repository version number
+ and the working version number for a node.
+ This way the user can easily tell the difference between a minor change
+ which can probably be safely ignored in the short term and a major change
+ which should be dealt with immediately.
+\layout Subsection
+
+Modifyable Primary Frame Range
+\layout Standard
+
+The frame range of the primary file sequence associated with a node is currently
+ fixed at the time of node creation.
+ Pipeline should be changed to allow the user to modify this parameter in
+ the future.
+ To help prevent confusion, whenever the frame range is changed, all associated
+ files who's frame numbe are outside the new range should be removed at
+ the time of the frame range change.
+ This will help to keep the filesystem and node information current with
+ each other as the set of files associated with a node evolves.
 \layout Section
 
 Job Queue
@@ -446,8 +473,8 @@ Pipeline
 Job Failure from Output
 \layout Standard
 
-Some programs, noteably Maya, fail to return a non-zero exit status for
- some failure conditions.
+Some programs, notably Maya, fail to return a non-zero exit status for some
+ failure conditions.
  What is needed is a flexible way to parse the output for signs that something
  has gone wrong and possibly even kill the job.
  For example, missing texture files will not cause Maya to fail but the
@@ -457,7 +484,7 @@ Some programs, noteably Maya, fail to return a non-zero exit status for
 \layout Standard
 
 A solution would be to add a method to the regeneration action plugin API
- which would be called after each line of output from the action's suprocess
+ which would be called after each line of output from the action's subprocess
  and return a boolean value for whether processing should continue.
  The default implementation would always return true.
  Actions could provide controls over the output parsing as action parameters.
@@ -502,7 +529,7 @@ Pipeline
 \layout Standard
 
 To support more arbitrarily complex operations and avoid awkward command-line
- syntax, a new Java based API will be provided wich gives access to nearly
+ syntax, a new Java based API will be provided which gives access to nearly
  all 
 \noun on 
 Pipeline
@@ -524,8 +551,9 @@ plui(1)
 \layout Standard
 
 Tools could be written using this API to implement functionality such as
- setting up a commonly used heirachy of nodes, performing a repetitive operation
- on a large number of nodes or communicating with third party software.
+ setting up a commonly used hierarchy of nodes, performing a repetitive
+ operation on a large number of nodes or communicating with third party
+ software.
 \layout Subsection
 
 Editor and Action Plugins
@@ -562,7 +590,7 @@ System Administration
 Backup and Restore
 \layout Standard
 
-Backup of the repsitory files should be more selective than simply backing
+Backup of the repository files should be more selective than simply backing
  up the entire repository directory.
  Once a particular version of a file has been backed up, there is no need
  to process it every backup cycle.
@@ -581,12 +609,12 @@ Pipeline
  database without stopping the database server.
 \layout Standard
 
-Similiarly, there is currently no support for using the database to determine
- which files can safely be offlined or how to locate and restore offlined
+Similarly, there is currently no support for using the database to determine
+ which files can safely be off-lined or how to locate and restore off-lined
  files associated with nodes when needed.
  The database representation of nodes need to be extended to contain information
  which will identify the tape or other permanent storage media which contains
- an offlined set of repository files.
+ an off-lined set of repository files.
  Some additional 
 \noun on 
 Pipeline
@@ -630,7 +658,7 @@ Pipeline
  approach to some common CG tasks.
 \layout Subsection
 
-System Adminstration Manual
+System Administration Manual
 \layout Standard
 
 System administrators need a document which includes information about how
