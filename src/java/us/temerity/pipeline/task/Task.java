@@ -1,4 +1,4 @@
-// $Id: Task.java,v 1.2 2004/10/18 04:00:00 jim Exp $
+// $Id: Task.java,v 1.3 2004/10/22 04:56:11 jim Exp $
 
 package us.temerity.pipeline.task;
 
@@ -108,7 +108,7 @@ class Task
    * @return
    *   The updated current status of the task post event.
    * 
-   * @throw PipelineException
+   * @throws PipelineException
    *   If the event is not valid for the current state of the task.
    */ 
   public TaskStatus
