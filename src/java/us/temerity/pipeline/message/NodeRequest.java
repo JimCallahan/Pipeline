@@ -1,4 +1,4 @@
-// $Id: NodeRequest.java,v 1.3 2004/03/28 00:49:43 jim Exp $
+// $Id: NodeRequest.java,v 1.4 2004/03/29 08:18:53 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -18,6 +18,8 @@ package us.temerity.pipeline.message;
  * 
  * @see NodeGetWorkingReq
  * @see NodeModifyPropertiesReq
+ * @see NodeLinkReq
+ * @see NodeUnlinkReq
  * @see NodeRegisterReq
  */
 public
@@ -34,11 +36,23 @@ enum NodeRequest
   ModifyProperties, 
 
   /**
+   * An instance of {@link NodeLinkReq NodeLinkReq} is next.
+   */
+  Link, 
+
+  /**
+   * An instance of {@link NodeUnlinkReq NodeUnlinkReq} is next.
+   */
+  Unlink, 
+
+  // ...
+
+
+
+  /**
    * An instance of {@link NodeRegisterReq NodeRegisterReq} is next.
    */
   Register, 
-
-
 
   // ...
 

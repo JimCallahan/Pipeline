@@ -1,4 +1,4 @@
-// $Id: NodeModifyPropertiesReq.java,v 1.1 2004/03/28 00:49:56 jim Exp $
+// $Id: NodeModifyPropertiesReq.java,v 1.2 2004/03/29 08:18:53 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -90,7 +90,7 @@ class NodeModifyPropertiesReq
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  // private static final long serialVersionUID = -3527421380050702980L;
+  private static final long serialVersionUID = 6567285083608918222L;
 
   
 
