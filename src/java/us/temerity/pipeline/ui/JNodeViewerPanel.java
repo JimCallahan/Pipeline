@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.11 2004/05/18 00:32:29 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.12 2004/05/19 19:05:40 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -65,11 +65,13 @@ class JNodeViewerPanel
   /**
    * Initialize the common user interface components.
    */ 
-  private void 
+  private synchronized void 
   initUI()
   {  
     /* initialize fields */ 
     {
+      pRoots = new TreeMap<String,NodeStatus>();
+
       pShowDownstream = true;
       pLayoutPolicy   = LayoutPolicy.AutomaticExpand;
 
@@ -117,13 +119,28 @@ class JNodeViewerPanel
       pNodePopup = new JPopupMenu();  
       pNodePopup.addPopupMenuListener(this);
        
-      item = new JMenuItem("Focus");
-      item.setActionCommand("focus");
+      item = new JMenuItem("Make Root");
+      item.setActionCommand("make-root");
       item.addActionListener(this);
       pNodePopup.add(item);  
 
-      item = new JMenuItem("Clear");
-      item.setActionCommand("clear");
+      item = new JMenuItem("Add Root");
+      item.setActionCommand("add-root");
+      item.addActionListener(this);
+      pNodePopup.add(item);  
+
+      item = new JMenuItem("Replace Root");
+      item.setActionCommand("replace-root");
+      item.addActionListener(this);
+      pNodePopup.add(item);  
+
+      item = new JMenuItem("Remove Root");
+      item.setActionCommand("remove-root");
+      item.addActionListener(this);
+      pNodePopup.add(item);  
+
+      item = new JMenuItem("Clear All Roots");
+      item.setActionCommand("clear-all-roots");
       item.addActionListener(this);
       pNodePopup.add(item);  
       
@@ -411,24 +428,27 @@ class JNodeViewerPanel
   /**
    * Set the author and view.
    */ 
-  public void 
+  public synchronized void 
   setAuthorView
   (
    String author, 
    String view 
   ) 
   {
-    super.setAuthorView(author, view);
-    updateNodeStatus();
+    super.setAuthorView(author, view);    
+
+    if(pRoots != null) {
+      TreeSet<String> roots = new TreeSet<String>(pRoots.keySet());
+      pRoots.clear();      
+      setRoots(roots);
+    }
   }
 
 
   /*----------------------------------------------------------------------------------------*/
-
+  
   /**
-   * Set the focus of the viewer to the given node in the working area view. <P> 
-   * 
-   * A <CODE>name</CODE> argument of <CODE>null</CODE> will clear the focus.
+   * Set the root nodes displayed by the viewer. <P> 
    * 
    * @param author 
    *   The name of the user which owns the working version.
@@ -436,40 +456,72 @@ class JNodeViewerPanel
    * @param view 
    *   The name of the user's working area view. 
    * 
-   * @param name 
-   *   The fully resolved node name.
-   */ 
-  public void 
-  setFocus
+   * @param names
+   *   The fully resolved names of the root nodes.
+   */
+  public synchronized void 
+  setRoots
   (
    String author, 
    String view,
-   String name
-  )  
+   TreeSet<String> names
+  )
   {
-    super.setAuthorView(author, view);
-    setFocus(name);
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();
+
+    if(!pAuthor.equals(author) || !pView.equals(view)) {
+      super.setAuthorView(author, view);
+      pRoots.clear();   
+    }
+    
+    setRoots(names);
   }
 
   /**
-   * Set the focus of the viewer to the given node. <P> 
+   * Set the root nodes displayed by the viewer. <P> 
    * 
-   * A <CODE>name</CODE> argument of <CODE>null</CODE> will clear the focus.
-   * 
-   * @param name 
-   *   The fully resolved node name.
-   */ 
-  public void 
-  setFocus
+   * @param names
+   *   The fully resolved names of the root nodes.
+   */
+  public synchronized void 
+  setRoots
   (
-   String name
-  )  
+   TreeSet<String> names
+  )
   {
-    clearSelection();
-    pFocus = name;
-    updateNodeStatus();
-  }
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();
 
+    /* are there any new nodes being added? */ 
+    boolean refresh = false;
+    for(String name : names) {
+      if(!pRoots.containsKey(name)) {
+	refresh = true;
+	break;
+      }
+    }
+    
+    /* complete update */ 
+    if(refresh) {
+      pRoots.clear();
+      for(String name : names) 
+	pRoots.put(name, null);
+    }
+    
+    /* filter out unselected nodes */ 
+    else {
+      TreeMap<String,NodeStatus> roots = new TreeMap<String,NodeStatus>();
+      for(String name : pRoots.keySet()) {
+	if(names.contains(name))
+	  roots.put(name, pRoots.get(name));
+      }
+      pRoots = roots;
+    } 
+    
+    updateNodeBrowserSelection();
+    updateNodeStatus(); 
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -485,6 +537,8 @@ class JNodeViewerPanel
     updateUniverse();
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Update the panel menu.
@@ -585,6 +639,31 @@ class JNodeViewerPanel
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Update the selection in the node browser to be consistent with the root nodes
+   * in the node viewer if they share the same group, author and view.
+   */ 
+  private synchronized void 
+  updateNodeBrowserSelection() 
+  {
+    /* update the associated node viewer */ 
+    UIMaster master = UIMaster.getInstance();
+    if(pGroupID > 0) {
+      JNodeBrowserPanel browser = master.getNodeBrowser(pGroupID);
+      if(browser != null) {
+	if(browser.getAuthor().equals(pAuthor) && browser.getView().equals(pView)) {
+	  TreeSet<String> roots = new TreeSet<String>(pRoots.keySet());
+	  browser.updateSelection(roots);
+	}
+      }
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Update the nodes being viewed.
    */ 
@@ -594,7 +673,7 @@ class JNodeViewerPanel
     if(pNodePool == null) 
       return;
     
-    StatusTask task = new StatusTask();
+    StatusTask task = new StatusTask(this);
     task.start();
   }
 
@@ -606,29 +685,49 @@ class JNodeViewerPanel
   {  
     pLinks.updatePrep();
     pNodePool.updatePrep();
+
+    if(!pRoots.isEmpty()) {
+      double anchorHeight = 0.0;
+      for(String name : pRoots.keySet()) {
+	NodeStatus status = pRoots.get(name);
+	
+	assert(status != null) : ("Missing Status for: " + name);
+	
+	NodePath path = new NodePath(name);
+	Point2d anchor = new Point2d(0.0, anchorHeight);
+	
+	/* layout the upstream nodes */ 
+	double uheight = 0.0;
+	{
+	  TreeSet<String> seen = new TreeSet<String>();
+	  uheight = layoutNodes(true, true, status, path, anchor, seen);
+	}
+	
+	/* layout the downstream nodes */ 
+	double dheight = 0.0;  
+	if(pShowDownstream) {
+	  TreeSet<String> seen = new TreeSet<String>();
+	  dheight = layoutNodes(true, false, status, path, anchor, seen);
+	}
+	
+	/* shift the upstream/downstream nodes so that they line up vertically */ 
+	if(uheight > dheight) {
+	  shiftUpstreamNodes(true, status, path, 
+			     anchorHeight + dheight*0.5, (dheight - uheight)*0.5);
+	}
+	else {
+	  shiftUpstreamNodes(true, status, path, anchorHeight + uheight*0.5, 0.0);
+	  if(pShowDownstream) 
+	    shiftDownstreamNodes(true, status, path, (uheight - dheight)*0.5);
+	}
+	
+	anchorHeight += Math.min(uheight, dheight);
+      }
       
-    if(pStatus != null) {
-      NodePath path = new NodePath(pStatus.getName());
-      Point2d anchor = new Point2d(0.0, 0.0);
-
-      /* layout the upstream nodes */ 
-      {
-	TreeSet<String> seen = new TreeSet<String>();
-	double offset = layoutNodes(true, true, pStatus, path, anchor, seen);
-	shiftUpstreamNodes(true, pStatus, path, -offset*0.5);
-      }
-
-      /* layout the downstream nodes */  
-      if(pShowDownstream) {
-	TreeSet<String> seen = new TreeSet<String>();
-	double offset = layoutNodes(true, false, pStatus, path, anchor, seen);
-	shiftDownstreamNodes(true, pStatus, path, -offset*0.5);
-      }
-
       /* preserve the current layout */ 
       pLayoutPolicy = LayoutPolicy.Preserve;
     }
-    
+  
     pLinks.update();
     pNodePool.update();
   }
@@ -636,8 +735,8 @@ class JNodeViewerPanel
   /**
    * Recursively layout the nodes.
    * 
-   * @param isFocus
-   *   Is this the focus node?
+   * @param isRoot
+   *   Is this the root node?
    * 
    * @param upstream
    *   Whether to traverse the nodes in an upstream direction (or downstream).
@@ -646,7 +745,7 @@ class JNodeViewerPanel
    *   The status of the current node. 
    * 
    * @param path
-   *   The path from the focus node to the current node.
+   *   The path from the root node to the current node.
    * 
    * @param anchor
    *   The upper-left corner of the layout area for the current node.
@@ -660,7 +759,7 @@ class JNodeViewerPanel
   private double
   layoutNodes
   (
-   boolean isFocus, 
+   boolean isRoot, 
    boolean upstream,
    NodeStatus status, 
    NodePath path, 
@@ -671,14 +770,14 @@ class JNodeViewerPanel
     UserPrefs prefs = UserPrefs.getInstance();
 
     ViewerNode vnode = null;
-    if(!isFocus || upstream) 
+    if(!isRoot || upstream) 
       vnode = pNodePool.lookupOrCreateViewerNode(status, path);
     else 
       vnode = pNodePool.getActiveViewerNode(path);
     assert(vnode != null);
 
     if((upstream && status.hasSources()) || 
-       (!upstream && status.hasTargets() && !isFocus)) {
+       (!upstream && status.hasTargets() && !isRoot)) {
       switch(pLayoutPolicy) {
       case Preserve:
 	if(!vnode.isReset()) 
@@ -696,14 +795,14 @@ class JNodeViewerPanel
 	vnode.setCollapsed(true);
       }
     }
-    else if(!isFocus || upstream) {
+    else if(!isRoot || upstream) {
       vnode.setCollapsed(false);
     }
 
     seen.add(status.getName());
 
     double height = 0.0;
-    if(vnode.isCollapsed() && !(isFocus && !upstream)) {
+    if(vnode.isCollapsed() && !(isRoot && !upstream)) {
       height = -prefs.getNodeSpaceY();
     }
     else {      
@@ -753,7 +852,7 @@ class JNodeViewerPanel
       }
     }
 
-    if(!isFocus) {
+    if(!isRoot) {
       double vdist  = 0.5*height;
       double offset = ((path.getNumNodes() % 2) == 0) ? prefs.getNodeOffset() : 0.0;
       vnode.setPosition(new Point2d(anchor.x, anchor.y + vdist + offset*vdist));
@@ -765,24 +864,28 @@ class JNodeViewerPanel
   /**
    * Recursively shift the upstream nodes by the given vertical offset.
    * 
-   * @param isFocus
-   *   Is this the focus node?
+   * @param isRoot
+   *   Is this the root node?
    * 
    * @param status
    *   The status of the current node. 
    * 
    * @param path
-   *   The path from the focus node to the current node.
+   *   The path from the root node to the current node.
+   * 
+   * @param ry
+   *   The vertical position of the root node.
    * 
    * @param offset
-   *   The table containing sets of child paths indexed by parent path.
+   *   The vertical distance to shift all nodes except the root node.
    */ 
   private void
   shiftUpstreamNodes
   (
-   boolean isFocus, 
+   boolean isRoot, 
    NodeStatus status, 
    NodePath path, 
+   double ry, 
    double offset
   ) 
   {
@@ -790,8 +893,8 @@ class JNodeViewerPanel
     if(vnode == null) 
       return;
 
-    if(isFocus) {
-      vnode.setPosition(new Point2d(0.0, 0.0));
+    if(isRoot) {
+      vnode.setPosition(new Point2d(0.0, ry));
     }
     else {
       Point2d pos = vnode.getPosition();
@@ -800,21 +903,21 @@ class JNodeViewerPanel
 
     for(NodeStatus cstatus : status.getSources()) {
       NodePath cpath = new NodePath(path, cstatus.getName());
-      shiftUpstreamNodes(false, cstatus, cpath, offset);
+      shiftUpstreamNodes(false, cstatus, cpath, ry, offset);
     }
   }
 
   /**
    * Recursively shift the downstream nodes by the given vertical offset.
    * 
-   * @param isFocus
-   *   Is this the focus node?
+   * @param isRoot
+   *   Is this the root node?
    * 
    * @param status
    *   The status of the current node. 
    * 
    * @param path
-   *   The path from the focus node to the current node.
+   *   The path from the root node to the current node.
    * 
    * @param offset
    *   The table containing sets of child paths indexed by parent path.
@@ -822,7 +925,7 @@ class JNodeViewerPanel
   private void
   shiftDownstreamNodes
   (
-   boolean isFocus, 
+   boolean isRoot, 
    NodeStatus status, 
    NodePath path, 
    double offset
@@ -832,7 +935,7 @@ class JNodeViewerPanel
     if(vnode == null) 
       return;
 
-    if(!isFocus) {
+    if(!isRoot) {
       Point2d pos = vnode.getPosition();
       vnode.setPosition(new Point2d(pos.x, pos.y+offset));
     }
@@ -859,6 +962,20 @@ class JNodeViewerPanel
   {
     if(pPrimary != null) 
       return pPrimary.getNodeStatus().getName();
+    return null;
+  }
+
+  /**
+   * Get the fully resolved name of root node of the primary node selection.
+   * 
+   * @return 
+   *   The node name or <CODE>null</CODE> if there is no primary selection.
+   */ 
+  public String
+  getPrimarySelectionRootName() 
+  {
+    if(pPrimary != null) 
+      return pPrimary.getNodePath().getRootName();
     return null;
   }
 
@@ -1001,7 +1118,6 @@ class JNodeViewerPanel
   }
 
 
-
   /**
    * Get the user-data of the Java3D object under given mouse position. <P> 
    * 
@@ -1141,8 +1257,6 @@ class JNodeViewerPanel
   {
     int mods = e.getModifiersEx();
     Object under = objectAtMousePos(e.getX(), e.getY());
-
-    System.out.print("Picked: " + under + "\n");
 
     /* mouse press is over a pickable object viewer node */ 
     if(under != null) {
@@ -1549,10 +1663,16 @@ class JNodeViewerPanel
 
     /* node menu events */ 
     String cmd = e.getActionCommand();
-    if(cmd.equals("focus"))
-      doFocus();
-    else if(cmd.equals("clear"))
-      doClear();
+    if(cmd.equals("make-root"))
+      doMakeRoot();
+    else if(cmd.equals("add-root"))
+      doAddRoot();
+    else if(cmd.equals("replace-root"))
+      doReplaceRoot();
+    else if(cmd.equals("remove-root"))
+      doRemoveRoot();
+    else if(cmd.equals("clear-all-roots"))
+      doClearAllRoots();
 
     // ...
     
@@ -1581,22 +1701,72 @@ class JNodeViewerPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Change the focus node to the current primary selection.
+   * Make the current primary selection the only root node.
    */ 
   private void
-  doFocus()
+  doMakeRoot()
   {
-    setFocus(getPrimarySelectionName());
+    String prim = getPrimarySelectionName();
+
+    TreeSet<String> roots = new TreeSet<String>();
+    roots.add(prim);
+
+    setRoots(roots);
   }
 
   /**
-   * Clear the focus node.
+   * Add the current primary selection to the set of root nodes.
    */ 
-  private void
-  doClear()
+  private synchronized void
+  doAddRoot()
   {
-    setFocus(null);
+    String prim = getPrimarySelectionName();
+
+    TreeSet<String> roots = new TreeSet<String>(pRoots.keySet());
+    roots.add(prim);
+
+    setRoots(roots);
   }
+
+  /**
+   * Replace the root node of the current primary selection with the primary selection.
+   */ 
+  private synchronized void
+  doReplaceRoot()
+  {
+    String prim = getPrimarySelectionName();
+    String root = getPrimarySelectionRootName();
+
+    TreeSet<String> roots = new TreeSet<String>(pRoots.keySet());
+    roots.remove(root);
+    roots.add(prim);
+
+    setRoots(roots);
+  }
+  
+  /**
+   * Remove the root node of the current primary selection from the set of roots nodes.
+   */ 
+  private synchronized void
+  doRemoveRoot()
+  {
+    String root = getPrimarySelectionRootName();
+
+    TreeSet<String> roots = new TreeSet<String>(pRoots.keySet());
+    roots.remove(root);
+
+    setRoots(roots);
+  }
+
+  /**
+   * Remove all of the roots nodes.
+   */ 
+  private synchronized void
+  doClearAllRoots()
+  {
+    setRoots(new TreeSet<String>());
+  }
+
   
 
   /*----------------------------------------------------------------------------------------*/
@@ -1660,7 +1830,7 @@ class JNodeViewerPanel
   /*   G L U E A B L E                                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  public void 
+  public synchronized void 
   toGlue
   ( 
    GlueEncoder encoder   
@@ -1669,9 +1839,9 @@ class JNodeViewerPanel
   {
     super.toGlue(encoder);
 
-    /* focus node */ 
-    if(pFocus != null) 
-      encoder.encode("Focus", pFocus);
+    /* root nodes */ 
+    if(!pRoots.isEmpty()) 
+      encoder.encode("Roots", new TreeSet<String>(pRoots.keySet()));
     
     /* camera position */ 
     {
@@ -1690,17 +1860,20 @@ class JNodeViewerPanel
     }
   }
 
-  public void 
+  public synchronized void 
   fromGlue
   (
    GlueDecoder decoder 
   ) 
     throws GlueException
   {
-    /* focus node */     
-    String focus = (String) decoder.decode("Focus");
-    if(focus != null) 
-      pFocus = focus;
+    /* root nodes */     
+    TreeSet<String> roots = (TreeSet<String>) decoder.decode("Roots");
+    if(roots != null) {
+      pRoots = new TreeMap<String,NodeStatus>();
+      for(String name : roots) 
+	pRoots.put(name, null);
+    }
 
     /* camera position */ 
     {
@@ -1761,46 +1934,61 @@ class JNodeViewerPanel
 
   
   /*----------------------------------------------------------------------------------------*/
+
   /** 
-   * Get the status of the focused node.
+   * Get the status of the root nodes.
    */ 
   private
   class StatusTask
     extends Thread
-  { 
+  {
+    public 
+    StatusTask
+    (
+     JNodeViewerPanel viewer
+    ) 
+    {
+      pViewer = viewer;
+    }
+ 
     public void 
     run() 
-    {  
-      pStatus = null;
-      if(pFocus != null) {
+    {
+      synchronized(pViewer) {
 	UIMaster master = UIMaster.getInstance();
-
 	if(master.beginPanelOp("Updating Node Status...")) {
-	  String msg = "Failed!";
 	  try {
-	    pStatus = master.getNodeMgrClient().status(pAuthor, pView, pFocus);
-	    msg = "Done.";
-	  }
-	  catch(PipelineException ex) {
-	    master.showErrorDialog(ex);
+	    TreeSet<String> dead = new TreeSet<String>();
+	    for(String name : pRoots.keySet()) {
+	      if(pRoots.get(name) == null) {
+		try {
+		  System.out.print("Recomputing Status: " + name + " ");
+		  
+		  NodeStatus status = master.getNodeMgrClient().status(pAuthor, pView, name);
+		  pRoots.put(name, status);
+		  
+		  System.out.print("[DONE]\n");
+		}
+		catch(PipelineException ex) {
+		  System.out.print("[undefined]\n");
+		  dead.add(name);
+		}
+	      }
+	    }
+	    
+	    for(String name : dead) 
+	      pRoots.remove(name);
+	    
+	    updateUniverse();
 	  }
 	  finally {
-	    master.endPanelOp(msg);
+	    master.endPanelOp("Done.");
 	  }
 	}
       }
-
-//     try {
-//       StringBuffer buf = new StringBuffer();
-//       printStatusShortHelper(pStatus, 2, buf);
-//       System.out.print("Node Status: \n" + buf.toString() + "\n");
-//     }
-//     catch(Exception ex) {
-//     }
-
-
-      updateUniverse();
     }
+    
+    private JNodeViewerPanel  pViewer;
   }
 
 
@@ -1887,14 +2075,13 @@ class JNodeViewerPanel
   private LayoutPolicy  pLayoutPolicy;
 
   /**
-   * The fully resolved name of the focus node.
+   * The status of the root nodes and all of its upstream/downstream connections indexed
+   * by the fully resolved names of the root nodes. <P> 
+   *
+   * If the status is <CODE>null</CODE> for a given root node, then it will be updated
+   * by the <CODE>StatusTask</CODE> the next time it is run.
    */ 
-  private String  pFocus;
-  
-  /**
-   * The status of the focus node and all of its upstream/downstream connections.
-   */ 
-  private NodeStatus pStatus;
+  private TreeMap<String,NodeStatus>  pRoots;
 
 
   /*----------------------------------------------------------------------------------------*/
