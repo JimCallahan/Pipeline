@@ -1,4 +1,4 @@
-// $Id: Named.java,v 1.5 2004/03/08 04:36:33 jim Exp $
+// $Id: Named.java,v 1.6 2004/03/09 09:42:44 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -15,7 +15,7 @@ import java.util.logging.*;
  */
 public
 class Named
-implements Cloneable, Glueable, Serializable
+  implements Cloneable, Glueable, Serializable
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
