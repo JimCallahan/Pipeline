@@ -18,13 +18,14 @@ instsbin_PROGRAMS = \
 
 plrun_SOURCES = FB.cc PackageInfo.cc PlRun.cc 
 
-plnotify_SOURCES = FB.cc PackageInfo.cc PlNotify.cc
+plnotify_SOURCES = FB.cc PackageInfo.cc NativeArch.cc PlNotify.cc
 
 
 
 EXTRA_DIST = \
   AtomicTypes.hh \
   FB.hh \
+  NativeArch.hh \
   PackageInfo.hh \
   Timer.hh
 
