@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.14 2004/05/16 19:15:18 jim Exp $
+// $Id: UIMaster.java,v 1.15 2004/05/18 00:33:58 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1029,7 +1029,7 @@ class UIMaster
 
 	  /* progress bar */ 
 	  {
-	    JProgressBar bar = new JProgressBar(JProgressBar.HORIZONTAL, 0, 143);
+	    JProgressBar bar = new JProgressBar(JProgressBar.HORIZONTAL, 0, 146);
 	    pSplashProgress = bar;
 
 	    bar.setValue(1);
@@ -1137,6 +1137,11 @@ class UIMaster
 	mgr.verifySimpleTexture("Yellow");
 	mgr.verifySimpleTexture("LightGrey");
 	update();
+
+	for(LinkRelationship rel : LinkRelationship.all()) {
+	  mgr.verifyTexture("LinkRelationship-" + rel);
+	  update();
+	}
       }
       catch(IOException ex) {
 	Logs.tex.severe("Unable to load textures!\n" + 
