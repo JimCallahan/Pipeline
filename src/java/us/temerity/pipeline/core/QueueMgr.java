@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.19 2004/10/25 18:56:46 jim Exp $
+// $Id: QueueMgr.java,v 1.20 2004/10/28 17:06:13 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -797,6 +797,7 @@ class QueueMgr
 	  if(host != null) {
 	    switch(host.getStatus()) {
 	    case Shutdown:
+	    case Hung:
 	      pHosts.remove(hname);
 	      break;
 
@@ -1791,6 +1792,7 @@ class QueueMgr
 
     /* collect system resource usage samples from the enabled hosts */ 
     TreeSet<String> dead = new TreeSet<String>();
+    TreeSet<String> hung = new TreeSet<String>();
     TreeMap<String,ResourceSample> samples = new TreeMap<String,ResourceSample>();
     TreeMap<String,Integer> numProcs = new TreeMap<String,Integer>();
     TreeMap<String,Long> totalMemory = new TreeMap<String,Long>();
@@ -1810,7 +1812,14 @@ class QueueMgr
 	client.disconnect();
       }
       catch(PipelineException ex) {
-	dead.add(hname);
+	Throwable cause = ex.getCause();
+	if(cause instanceof SocketTimeoutException) {
+	  hung.add(hname);
+	  Logs.net.severe(ex.getMessage());
+	  Logs.flush();
+	}
+	else 
+	  dead.add(hname);
       }	    
     }
 
@@ -1830,6 +1839,12 @@ class QueueMgr
 	QueueHost host = pHosts.get(hname);
 	if(host != null) 
 	  host.setStatus(QueueHost.Status.Shutdown);
+      }
+
+      for(String hname : hung) {
+	QueueHost host = pHosts.get(hname);
+	if(host != null) 
+	  host.setStatus(QueueHost.Status.Hung);
       }
 
       for(String hname : samples.keySet()) {
@@ -2328,10 +2343,6 @@ class QueueMgr
 	for(String hostname : pHosts.keySet()) {
 	  QueueHost host = pHosts.get(hostname);
 	  switch(host.getStatus()) {
-	  case Shutdown:
-	  case Disabled:
-	    break;
-	    
 	  case Enabled:
 	    {
 	      String author = job.getActionAgenda().getNodeID().getAuthor();

@@ -1,4 +1,4 @@
-// $Id: QueueHost.java,v 1.4 2004/10/16 23:32:31 jim Exp $
+// $Id: QueueHost.java,v 1.5 2004/10/28 17:06:13 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -543,11 +543,10 @@ class QueueHost
   enum Status 
   {
     /**
-     * No <B>pljobmgr</B>(1) daemon is currently running on the host.  <P> 
-     * 
-     * No jobs will be assigned to this host until the <B>pljobmgr</B>(1) daemon is restarted.
+     * A <B>pljobmgr</B>(1) daemon is currently running on the host and is available to 
+     * run new jobs which meet the selection criteria for the host.
      */ 
-    Shutdown, 
+    Enabled, 
 
     /**
      * A <B>pljobmgr</B>(1) daemon is currently running on the host, but the host has 
@@ -560,10 +559,21 @@ class QueueHost
     Disabled, 
 
     /**
-     * A <B>pljobmgr</B>(1) daemon is currently running on the host and is available to 
-     * run new jobs which meet the selection criteria for the host.
+     * No <B>pljobmgr</B>(1) daemon is currently running on the host.  <P> 
+     * 
+     * No jobs will be assigned to this host until the <B>pljobmgr</B>(1) daemon is restarted.
      */ 
-    Enabled; 
+    Shutdown, 
+
+    /**
+     * A <B>pljobmgr</B>(1) daemon is currently running on the host, but is not responding
+     * to network connections from clients. <P> 
+     * 
+     * This is probably an indication that something has gone wrong with daemon and it 
+     * should be killed and restarted.  No jobs will be assigned to this host while it is
+     * in this state.
+     */ 
+    Hung;
 
     /**
      * Get the list of all possible values.
