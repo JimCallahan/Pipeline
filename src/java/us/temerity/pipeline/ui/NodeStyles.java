@@ -1,4 +1,4 @@
-// $Id: NodeStyles.java,v 1.1 2004/04/20 22:00:51 jim Exp $
+// $Id: NodeStyles.java,v 1.2 2004/07/14 21:11:06 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -30,7 +30,7 @@ class NodeStyles
   ) 
   {
     if(state == null) 
-      return new Color(0.20f, 0.20f, 0.20f);
+      return sQueueStateColors[0];
     return sQueueStateColors[state.ordinal()];
   }
  
@@ -44,7 +44,7 @@ class NodeStyles
   ) 
   {
     if(state == null) 
-      return "dark grey";
+      return sQueueStateColorNames[0];
     return sQueueStateColorNames[state.ordinal()];
   }
  
@@ -58,8 +58,8 @@ class NodeStyles
    * The colors corresponding to specific OverallQueueState values.
    */ 
   private static final Color[] sQueueStateColors = {
+    new Color(0.20f, 0.20f, 0.20f),  /* Undefined */ 
     new Color(0.00f, 0.00f, 0.65f),  /* Finished */ 
-    new Color(0.52f, 0.52f, 0.00f),  /* Missing */ 
     new Color(0.45f, 0.00f, 0.45f),  /* Stale */ 
     new Color(0.00f, 0.49f, 0.49f),  /* Queued */ 
     new Color(0.00f, 0.49f, 0.00f),  /* Running */ 
@@ -70,12 +70,12 @@ class NodeStyles
    * The names of the colors corresponding to specific OverallQueueState values.
    */ 
   private static final String[] sQueueStateColorNames = {
-    "blue",    /* Finished */ 
-    "yellow",  /* Missing */ 
-    "purple",  /* Stale */ 
-    "cyan",    /* Queued */ 
-    "green",   /* Running */ 
-    "red"      /* Failed */ 
+    "dark grey", /* Undefined */ 
+    "blue",      /* Finished */ 
+    "purple",    /* Stale */ 
+    "cyan",      /* Queued */ 
+    "green",     /* Running */ 
+    "red"        /* Failed */ 
   };
 
   
