@@ -1,4 +1,4 @@
-// $Id: VersionID.java,v 1.4 2004/03/08 04:36:06 jim Exp $
+// $Id: VersionID.java,v 1.5 2004/03/11 14:12:33 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -26,7 +26,7 @@ import java.io.*;
  */
 public
 class VersionID 
-  implements Comparable, Cloneable, Serializable
+  implements Comparable, Cloneable, Glueable, Serializable
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -89,51 +89,7 @@ class VersionID
    String str 
   ) 
   {
-    if(str == null) 
-      throw new IllegalArgumentException
-	("The version string cannot be (null)!");
-
-    if(str.length() == 0) 
-      throw new IllegalArgumentException
-	("The version string cannot be empty!");      
-
-    String[] parts = str.split("\\.");
-    if(parts.length != 4)
-      throw new IllegalArgumentException
-	("Found the wrong number (" + parts.length + ") of revision number compoents " + 
-	 "in (" + str + "), should have been (4)!");
-
-    int ids[] = new int[4];
-    
-    int wk;
-    for(wk=0; wk<4; wk++) {
-      if(parts[wk].length() == 0) 
-	throw new IllegalArgumentException
-	  ("Found a missing version number component in (" + str + ")!");
-
-      int num = 0;
-      try {
-	num = Integer.parseInt(parts[wk]);
-      }
-      catch (NumberFormatException e) {
-	throw new IllegalArgumentException
-	  ("Illegal version number component (" + parts[wk] + ") found in (" + str + ")!");
-      }
-
-      if(num < 0) 
-	throw new IllegalArgumentException
-	  ("Negative version number component (" + num + ") found in (" + str + ")!");
-
-      if((wk == 0) && (num < 1)) 
-	throw new IllegalArgumentException
-	  ("The first version number component (" + num + ") must be positive!");
-      
-      ids[wk] = num;
-    }
-
-    pIDs = ids;
-
-    buildCache();
+    fromString(str);
   }
 
   /**
@@ -311,6 +267,35 @@ class VersionID
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   G L U E A B L E                                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  public void 
+  toGlue
+  ( 
+   GlueEncoder encoder  
+  ) 
+    throws GlueException
+  {
+    encoder.encode("RevisionNumber", toString());
+  }
+
+  public void 
+  fromGlue
+  (
+   GlueDecoder decoder  
+  ) 
+    throws GlueException
+  {
+    String vstr = (String) decoder.decode("RevisionNumber");
+    if(vstr == null) 
+      throw new GlueException("The \"Revision\" was missing!");
+    fromString(vstr);
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   P U B L I C   C L A S S E S                                                          */
   /*----------------------------------------------------------------------------------------*/
 
@@ -374,6 +359,65 @@ class VersionID
   /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S                                                                        */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Convertion from the given string representation. 
+   * 
+   * @param str [<B>in</B>]
+   *   The initial version ID encoded as a <CODE>String</CODE>.
+   */ 
+  private void 
+  fromString
+  (
+   String str
+  ) 
+  {
+    if(str == null) 
+      throw new IllegalArgumentException
+	("The version string cannot be (null)!");
+
+    if(str.length() == 0) 
+      throw new IllegalArgumentException
+	("The version string cannot be empty!");      
+
+    String[] parts = str.split("\\.");
+    if(parts.length != 4)
+      throw new IllegalArgumentException
+	("Found the wrong number (" + parts.length + ") of revision number compoents " + 
+	 "in (" + str + "), should have been (4)!");
+
+    int ids[] = new int[4];
+    
+    int wk;
+    for(wk=0; wk<4; wk++) {
+      if(parts[wk].length() == 0) 
+	throw new IllegalArgumentException
+	  ("Found a missing version number component in (" + str + ")!");
+
+      int num = 0;
+      try {
+	num = Integer.parseInt(parts[wk]);
+      }
+      catch (NumberFormatException e) {
+	throw new IllegalArgumentException
+	  ("Illegal version number component (" + parts[wk] + ") found in (" + str + ")!");
+      }
+
+      if(num < 0) 
+	throw new IllegalArgumentException
+	  ("Negative version number component (" + num + ") found in (" + str + ")!");
+
+      if((wk == 0) && (num < 1)) 
+	throw new IllegalArgumentException
+	  ("The first version number component (" + num + ") must be positive!");
+      
+      ids[wk] = num;
+    }
+
+    pIDs = ids;
+
+    buildCache();
+  }
 
   /**
    * Compute the cached string representation and hash code for the file pattern.
