@@ -1,4 +1,4 @@
-// $Id: JSourceParamsDialog.java,v 1.2 2004/06/28 23:37:49 jim Exp $
+// $Id: JSourceParamsDialog.java,v 1.3 2004/09/21 23:55:36 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -167,13 +167,22 @@ class JSourceParamsDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Apply changes and close. 
+   */ 
+  public void 
+  doConfirm() 
+  {
+    pTablePanel.stopEditing();
+    super.doConfirm();
+  }
+
+  /**
    * Add a filename suffix to the table.
    */ 
   public void 
   doAdd()
   {
     pTablePanel.stopEditing();
-
     pTableModel.addRowParams(pTablePanel.getTable().getSelectedRows());
   }
 
@@ -184,7 +193,6 @@ class JSourceParamsDialog
   doRemove() 
   {
     pTablePanel.cancelEditing();
-
     pTableModel.removeRowParams(pTablePanel.getTable().getSelectedRows());
   }
 
