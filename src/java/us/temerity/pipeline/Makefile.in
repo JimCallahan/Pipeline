@@ -231,7 +231,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
     JAVA_SOURCES = $(ENUM_SOURCES) $(filter-out $(ENUM_SOURCES),$(ALL_SOURCES)) \
                    $(patsubst %,core/%.java,$(CORE_PARSERS)) \
-                   PackageInfo.java 
+                   PackageInfo.java ui/UserPrefs.java ui/JUserPrefsDialog.java
 
       BS_SOURCES = $(shell ls $(srcdir)/bootstrap/*.java) \
                    bootstrap/BootStrapLoader.java
@@ -263,7 +263,6 @@ $(ALL_JAR): java-all textures fonts
 	(bdir=`pwd`; cd $(srcdir)/../../..; \
          $(JAR) uvf $$bdir/$(ALL_JAR) \
                     us/temerity/pipeline/laf/*.xml us/temerity/pipeline/laf/*.png)
-
 
 $(API_JAR): java-all textures fonts
 	(cd ../../..; \
@@ -298,6 +297,12 @@ BootStrapFields $(VAULT): java-all
                       --build-vault $$f $(VAULT); \
          $(JAVA) -classpath $(CRYPTO_APP_DIR) CryptoApp $(CUSTOMER_PROFILE) \
                  --build-vault $$f $(VAULT) > BootStrapFields);
+
+ui/UserPrefs.java ui/JUserPrefsDialog.java: ui/prefs/GenUserPrefsApp.class
+	$(JAVA) -cp ui/prefs $(JAVA_RUNTIME_FLAGS) GenUserPrefsApp
+
+ui/prefs/GenUserPrefsApp.class: ui/prefs/GenUserPrefsApp.java
+	$(JAVA_C) $(JAVA_C_FLAGS) -d ui/prefs -classpath ui/prefs $<
 
 java-all: $(JAVA_SOURCES)
 	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(JAVA_SOURCES)
