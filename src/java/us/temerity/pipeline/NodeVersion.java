@@ -1,4 +1,4 @@
-// $Id: NodeVersion.java,v 1.1 2004/02/28 20:05:47 jim Exp $
+// $Id: NodeVersion.java,v 1.2 2004/03/01 21:44:08 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -48,7 +48,6 @@ class NodeVersion
 
     pVersionID = vid;
     pMessage   = new LogMessage(msg);
-    pComments  = new TreeMap<Date,LogMessage>();
   }
 
 
@@ -66,10 +65,8 @@ class NodeVersion
     return new VersionID(pVersionID);
   }
 
-  /** 
-   * Get the 
 
-
+  // Get log message info... 
 
   
   /*----------------------------------------------------------------------------------------*/
@@ -118,37 +115,6 @@ class NodeVersion
   }
 
   
-  /*----------------------------------------------------------------------------------------*/
-  
-  /** 
-   * Get the fully resolved names of the downstream nodes.
-   */
-  public ArrayList<String>
-  getTargetNames() 
-  {
-    return new ArrayList<String>(pTargetVersionIDs.keySet());
-  }
-
-  /** 
-   * Get the revision number of the given downstream node.
-   * 
-   * @param name [<B>in</B>] 
-   *   The fully resolved node name of the downstream node.
-   */
-  public VersionID
-  getTarget
-  (
-   String name
-  ) 
-  {
-    if(name == null) 
-      throw new IllegalArgumentException("The downstream node name cannot be (null)!");
-
-    if(!pTargetVersionIDs.containsKey(name)) 
-      throw new IllegalArgumentException("No downstream node named (" + name + ") exists!");
-
-    return new VersionID(pTargetVersionIDs.get(name));
-  }
   
 
 
@@ -177,24 +143,11 @@ class NodeVersion
    */
   private LogMessage  pMessage;        
 
-  /** 
-   * The change comments associated with this version of the node indexed 
-   * by when the comment was made.
-   */
-  private TreeMap<Date,LogMessage>  pComments;           
-
-
   /**
    * A table of dependency information associated with all nodes upstream of this 
    * node indexed by the fully resolved names of the upstream nodes.
    */ 
   private TreeMap<String,DependVersion>  pSourceVersionDepends;
- 
-  /**
-   * The revision numbers of all downstream node versions which depend upon this node
-   * indexed by the fully resolved names of the downstream nodes.
-   */ 
-  private TreeMap<String,VersionID>  pTargetVersionIDs;
  
 }
 

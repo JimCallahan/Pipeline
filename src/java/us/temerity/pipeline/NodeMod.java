@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.1 2004/02/28 20:05:47 jim Exp $
+// $Id: NodeMod.java,v 1.2 2004/03/01 21:44:08 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -128,7 +128,7 @@ class NodeMod
     for(DependVersion dep : vsn.getSources()) 
       pSourceModDepends.put(dep.getName(), new DependMod(dep));
 
-    pTargetNames = new TreeSet<String>(vsn.getTargetNames());
+    pTargetNames = new TreeSet<String>();
   }
 
 
@@ -159,6 +159,21 @@ class NodeMod
   {
     return pLastMod;
   }
+
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  // rename primary file sequence
+
+  // add and remove secondary file sequences
+
+  // change frame range across all file sequences
+
+
+  // setEditor()
+
+
+  // setAction(), setJobReqs(), setIgnoreOverflow(), setIsSerial(), setBatchSize()
 
 
   
