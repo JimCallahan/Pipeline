@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.33 2004/07/28 19:22:05 jim Exp $
+// $Id: UIMaster.java,v 1.34 2004/08/01 15:40:56 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -2196,6 +2196,7 @@ class UIMaster
 	mgr.verifySimpleTexture("White");
 	mgr.verifySimpleTexture("Yellow");
 	mgr.verifySimpleTexture("LightGrey");
+	mgr.verifySimpleTexture("DarkGrey");
 	update();
 
 	for(LinkRelationship rel : LinkRelationship.all()) {
