@@ -1,4 +1,4 @@
-// $Id: ViewerNode.java,v 1.3 2004/05/08 15:11:56 jim Exp $
+// $Id: ViewerNode.java,v 1.4 2004/05/16 19:16:05 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -42,7 +42,7 @@ class ViewerNode
   public 
   ViewerNode() 
   {
-    /* initialzie state fields */ 
+    /* initialize state fields */ 
     {
       pIsReset     = true;
       pMode        = SelectionMode.Normal;
@@ -77,6 +77,7 @@ class ViewerNode
 	pLabelSwitch = new Switch(0);
 	pLabelSwitch.setCapability(Switch.ALLOW_SWITCH_WRITE);
 	pLabelSwitch.setCapability(Switch.ALLOW_CHILDREN_WRITE);
+	pLabelSwitch.setPickable(false);
 
 	for(SelectionMode mode : SelectionMode.all()) {
 	  BranchGroup group = new BranchGroup();
@@ -134,6 +135,7 @@ class ViewerNode
       {
 	pCollapsedSwitch = new Switch();
 	pCollapsedSwitch.setCapability(Switch.ALLOW_SWITCH_WRITE);
+	pCollapsedSwitch.setPickable(false);
 
 	pXform.addChild(pCollapsedSwitch);
       }
@@ -146,7 +148,7 @@ class ViewerNode
 	pCollapsedSwitch.addChild(pCollapsedXform);
       }
       
-      /* the icon */ 
+      /* the collapsed icon */ 
       try {
 	AppearanceMgr mgr = AppearanceMgr.getInstance();
 	Appearance apr = mgr.getNodeAppearance("Collapsed", SelectionMode.Normal);
@@ -180,7 +182,7 @@ class ViewerNode
 	
 	GeometryArray ga = gi.getGeometryArray();
 	
-	Shape3D shape = new Shape3D(ga, apr);
+	Shape3D shape = new Shape3D(ga, apr); 
 	pCollapsedXform.addChild(shape);
       }
       catch(IOException ex) {
@@ -215,7 +217,7 @@ class ViewerNode
   {
     pIsReset = true;
 
-    System.out.print("ViewerNode.reset(): " + pStatus + " [" + pPath + "]\n");
+//     System.out.print("ViewerNode.reset(): " + pStatus + " [" + pPath + "]\n");
   }
 
 
@@ -434,7 +436,7 @@ class ViewerNode
 	  Transform3D xform = new Transform3D();
 	  xform.setScale(0.35);
 	  
-	  System.out.print("Updating Label = " + pLabelText + "\n");
+// 	  System.out.print("Updating Label = " + pLabelText + "\n");
 	  for(SelectionMode mode : SelectionMode.all()) {
 	    TransformGroup label = 
 	      ViewerLabels.createLabelGeometry(pLabelText, "CharterBTRoman", mode, 0.05, pos);
@@ -455,7 +457,7 @@ class ViewerNode
       
       /* update the node icon appearance */ 
       if(pIconAprNameChanged) {
-	System.out.print("Updating Node Icon = " + pIconAprName + "\n");
+// 	System.out.print("Updating Node Icon = " + pIconAprName + "-" + pMode + "\n");
 
 	AppearanceMgr mgr = AppearanceMgr.getInstance();
 	Appearance apr = mgr.getNodeAppearance(pIconAprName, pMode);
