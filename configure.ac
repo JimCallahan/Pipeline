@@ -555,7 +555,8 @@ dnl ----------------------------------------------------------------------------
 
 AC_MSG_RESULT([Locating C system headers:])
 
-AC_CHECK_HEADERS([math.h errno.h pwd.h dlfcn.h libgen.h time.h dirent.h ctype.h])      
+AC_CHECK_HEADERS([math.h errno.h pwd.h dlfcn.h libgen.h time.h dirent.h ctype.h])
+AC_CHECK_HEADERS([fam.h select.h])      
 AC_CHECK_HEADERS([sys/time.h sys/param.h sys/utsname.h sys/wait.h sys/resource.h])  
 
 AC_MSG_RESULT([ ])
@@ -679,6 +680,7 @@ AC_CONFIG_FILES([
   src/java/docs/plui.html
 
   src/java/testbed/Makefile
+  src/java/testbed/native/Makefile
 
   src/java/pipeline/Makefile
   src/java/pipeline/PackageInfo.java
