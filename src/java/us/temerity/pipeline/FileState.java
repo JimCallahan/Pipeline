@@ -1,4 +1,4 @@
-// $Id: FileState.java,v 1.5 2004/04/15 00:19:45 jim Exp $
+// $Id: FileState.java,v 1.6 2004/06/14 22:39:17 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -104,4 +104,37 @@ enum FileState
    * the working version has not been checked-out.
    */
   Missing;
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O N V E R S I O N                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Convert to a more human friendly string representation.
+   */ 
+  public String
+  toTitle() 
+  {
+    return sTitles[ordinal()];
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static String sTitles[] = {
+    "Pending", 
+    "Checked-In", 
+    "Identical", 
+    "Modified", 
+    "Added", 
+    "Obsolete", 
+    "Needs Check-Out", 
+    "Conflicted", 
+    "Missing"
+  };
 }

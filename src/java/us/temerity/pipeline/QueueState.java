@@ -1,4 +1,4 @@
-// $Id: QueueState.java,v 1.3 2004/04/17 19:49:01 jim Exp $
+// $Id: QueueState.java,v 1.4 2004/06/14 22:39:17 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -80,4 +80,20 @@ enum QueueState
    * no job has been resubmitted for the file since the time of the last job failure.
    */
   Failed;
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O N V E R S I O N                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Convert to a more human friendly string representation.
+   */ 
+  public String
+  toTitle() 
+  {
+    return toString();
+  }
+
 }

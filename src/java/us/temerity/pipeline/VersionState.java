@@ -1,4 +1,4 @@
-// $Id: VersionState.java,v 1.3 2004/04/15 00:19:45 jim Exp $
+// $Id: VersionState.java,v 1.4 2004/06/14 22:39:17 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -50,4 +50,33 @@ enum VersionState
    * latest checked-in version.
    */
   NeedsCheckOut;
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O N V E R S I O N                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Convert to a more human friendly string representation.
+   */ 
+  public String
+  toTitle() 
+  {
+    return sTitles[ordinal()];
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static String sTitles[] = {
+    "Pending", 
+    "Checked-In", 
+    "Identical", 
+    "Needs Check-Out"
+  };
 }
+  

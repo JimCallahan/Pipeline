@@ -1,4 +1,4 @@
-// $Id: OverallNodeState.java,v 1.8 2004/05/29 06:38:06 jim Exp $
+// $Id: OverallNodeState.java,v 1.9 2004/06/14 22:39:17 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -112,6 +112,11 @@ enum OverallNodeState
   Conflicted;
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Get the list of all possible states.
    */ 
@@ -125,4 +130,35 @@ enum OverallNodeState
       all.add(values[wk]);
     return all;
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O N V E R S I O N                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Convert to a more human friendly string representation.
+   */ 
+  public String
+  toTitle() 
+  {
+    return sTitles[ordinal()];
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static String sTitles[] = {
+    "Pending", 
+    "Checked-In", 
+    "Identical", 
+    "Modified Links",
+    "Modified", 
+    "Needs Check-Out", 
+    "Conflicted"
+  };
 }

@@ -1,4 +1,4 @@
-// $Id: LinkState.java,v 1.4 2004/04/17 19:49:01 jim Exp $
+// $Id: LinkState.java,v 1.5 2004/06/14 22:39:17 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -83,4 +83,34 @@ enum LinkState
    * {@link VersionState#NeedsCheckOut NeedsCheckOut}.
    */
   Conflicted;
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O N V E R S I O N                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Convert to a more human friendly string representation.
+   */ 
+  public String
+  toTitle() 
+  {
+    return sTitles[ordinal()];
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static String sTitles[] = {
+    "Pending", 
+    "Checked-In", 
+    "Identical", 
+    "Modified", 
+    "Needs Check-Out", 
+    "Conflicted"
+  };
 }

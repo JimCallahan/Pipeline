@@ -1,4 +1,4 @@
-// $Id: OverallQueueState.java,v 1.4 2004/05/29 06:38:06 jim Exp $
+// $Id: OverallQueueState.java,v 1.5 2004/06/14 22:39:17 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -69,6 +69,11 @@ enum OverallQueueState
   Failed;
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Get the list of all possible states.
    */ 
@@ -82,4 +87,20 @@ enum OverallQueueState
       all.add(values[wk]);
     return all;
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O N V E R S I O N                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Convert to a more human friendly string representation.
+   */ 
+  public String
+  toTitle() 
+  {
+    return toString();
+  }
+
 }
