@@ -1,4 +1,4 @@
-// $Id: BaseMgrClient.java,v 1.13 2005/02/07 19:00:39 jim Exp $
+// $Id: BaseMgrClient.java,v 1.14 2005/02/12 16:29:51 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -85,11 +85,58 @@ class BaseMgrClient
     try {
       InetSocketAddress addr = new InetSocketAddress(pHostname, pPort);
       pChannel = SocketChannel.open(addr);
+
+      {
+	String cinfo = 
+	  ("Pipeline-" + PackageInfo.sVersion + " [" + PackageInfo.sRelease + "]");
+
+	Socket socket = pChannel.socket();
+	socket.setSoTimeout(10000);
+
+	OutputStream out = socket.getOutputStream();
+	ObjectOutput objOut = new ObjectOutputStream(out);
+	objOut.writeObject(cinfo);
+	objOut.flush(); 
+
+	InputStream in  = socket.getInputStream();
+	ObjectInput objIn  = new PluginInputStream(in);
+	Object rsp = objIn.readObject();
+	
+	socket.setSoTimeout(0);
+	
+	String sinfo = "Unknown"; 
+	if(rsp instanceof String) 
+	  sinfo = (String) rsp;
+	
+	if(!sinfo.equals(cinfo)) {
+	  try {
+	    socket.close();
+	  }
+	  catch (IOException ex) {
+	  }
+	  finally {
+	    pChannel = null;
+	  }
+	  
+	  throw new PipelineException 
+	    (getServerDownMessage() + "\n  " + 
+	     "Connection rejected due to a mismatch in Pipeline " + 
+	     "release versions!\n" + 
+	     "  Client = " + cinfo + "\n" +
+	     "  Server = " + sinfo);
+	}
+      }
     }
     catch(IOException ex) {
       throw new PipelineException
 	(getServerDownMessage() + "\n  " + 
 	 ex.getMessage(), ex);
+    }
+    catch(ClassNotFoundException ex) {
+      disconnect();
+      throw new PipelineException
+	("Illegal object encountered on port (" + pPort + "):\n" + 
+	 ex.getMessage());  
     }
     catch(SecurityException ex) {
       throw new PipelineException

@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.34 2005/02/09 18:23:44 jim Exp $
+// $Id: MasterMgrServer.java,v 1.35 2005/02/12 16:29:51 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -263,542 +263,571 @@ class MasterMgrServer
 	   "Connection Opened: " + pSocket.getInetAddress());
 	LogMgr.getInstance().flush();
 
+	boolean first = true;
 	boolean live = true;
 	while(pSocket.isConnected() && live && !pShutdown.get()) {
 	  InputStream in     = pSocket.getInputStream();
-	  ObjectInput objIn  = new PluginInputStream(in);
-	  MasterRequest kind = (MasterRequest) objIn.readObject();
-	  
+	  ObjectInput objIn  = new ObjectInputStream(in);
+	  Object obj         = objIn.readObject();
+
 	  OutputStream out    = pSocket.getOutputStream();
 	  ObjectOutput objOut = new ObjectOutputStream(out);
 	  
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Net, LogMgr.Level.Finer,
-	     "Request [" + pSocket.getInetAddress() + "]: " + kind.name());	  
-	  LogMgr.getInstance().flush();
-
-	  switch(kind) {
-	  /*-- TOOLSETS --------------------------------------------------------------------*/
-	  case GetDefaultToolsetName:
-	    {
-	      objOut.writeObject(pMasterMgr.getDefaultToolsetName());
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case SetDefaultToolsetName:
-	    {
-	      MiscSetDefaultToolsetNameReq req = 
-		(MiscSetDefaultToolsetNameReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.setDefaultToolsetName(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case GetActiveToolsetNames:
-	    {
-	      objOut.writeObject(pMasterMgr.getActiveToolsetNames());
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case SetToolsetActive:
-	    {
-	      MiscSetToolsetActiveReq req = 
-		(MiscSetToolsetActiveReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.setToolsetActive(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case GetToolsetNames:
-	    {
-	      objOut.writeObject(pMasterMgr.getToolsetNames());
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case GetToolset:
-	    {
-	      MiscGetToolsetReq req = (MiscGetToolsetReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.getToolset(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case GetToolsetEnvironment:
-	    {
-	      MiscGetToolsetEnvironmentReq req = 
-		(MiscGetToolsetEnvironmentReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.getToolsetEnvironment(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case CreateToolset:
-	    {
-	      MiscCreateToolsetReq req = (MiscCreateToolsetReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.createToolset(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-
-	  /*-- TOOLSET PACKAGES ------------------------------------------------------------*/
-	  case GetToolsetPackageNames:
-	    {
-	      objOut.writeObject(pMasterMgr.getToolsetPackageNames());
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case GetToolsetPackage:
-	    {
-	      MiscGetToolsetPackageReq req = (MiscGetToolsetPackageReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.getToolsetPackage(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case CreateToolsetPackage:
-	    {
-	      MiscCreateToolsetPackageReq req = 
-		(MiscCreateToolsetPackageReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.createToolsetPackage(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-
-	  /*-- SUFFIX EDITORS --------------------------------------------------------------*/
-	  case GetEditorForSuffix:
-	    {
-	      MiscGetEditorForSuffixReq req = 
-		(MiscGetEditorForSuffixReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.getEditorForSuffix(req));
-	      objOut.flush(); 
-	    }
-	    break;
+	  if(first) {
+	    String sinfo = 
+	      ("Pipeline-" + PackageInfo.sVersion + " [" + PackageInfo.sRelease + "]");
 	    
-	  case GetSuffixEditors:
-	    {
-	      MiscGetSuffixEditorsReq req = 
-		(MiscGetSuffixEditorsReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.getSuffixEditors(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case SetSuffixEditors:
-	    {
-	      MiscSetSuffixEditorsReq req = (MiscSetSuffixEditorsReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.setSuffixEditors(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-
-	  /*-- PLUGIN MENU LAYOUTS ---------------------------------------------------------*/
-	  case GetEditorMenuLayout:
-	    {
-	      objOut.writeObject(pMasterMgr.getEditorMenuLayout());
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case SetEditorMenuLayout:
-	    {
-	      MiscSetPluginMenuLayoutReq req = 
-		(MiscSetPluginMenuLayoutReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.setEditorMenuLayout(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-
-	  case GetComparatorMenuLayout:
-	    {
-	      objOut.writeObject(pMasterMgr.getComparatorMenuLayout());
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case SetComparatorMenuLayout:
-	    {
-	      MiscSetPluginMenuLayoutReq req = 
-		(MiscSetPluginMenuLayoutReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.setComparatorMenuLayout(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-
-	  case GetToolMenuLayout:
-	    {
-	      objOut.writeObject(pMasterMgr.getToolMenuLayout());
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case SetToolMenuLayout:
-	    {
-	      MiscSetPluginMenuLayoutReq req = 
-		(MiscSetPluginMenuLayoutReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.setToolMenuLayout(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-
-	  /*-- PRIVILEGED USER STATUS ------------------------------------------------------*/
-	  case GetPrivilegedUsers:
-	    {
-	      objOut.writeObject(pMasterMgr.getPrivilegedUsers());
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case GrantPrivileges:
-	    {
-	      MiscGrantPrivilegesReq req = (MiscGrantPrivilegesReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.grantPrivileges(req));
-	      objOut.flush(); 
-	    }
-	    break;
+	    objOut.writeObject(sinfo);
+	    objOut.flush(); 
 	    
-	  case RemovePrivileges:
-	    {
-	      MiscRemovePrivilegesReq req = (MiscRemovePrivilegesReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.removePrivileges(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-
-	  /*-- WORKING AREAS ---------------------------------------------------------------*/
-	  case GetWorkingAreas:
-	    {
-	      objOut.writeObject(pMasterMgr.getWorkingAreas());
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case CreateWorkingArea:
-	    {
-	      NodeCreateWorkingAreaReq req = (NodeCreateWorkingAreaReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.createWorkingArea(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-
-	  /*-- NODE PATHS ------------------------------------------------------------------*/
-	  case UpdatePaths:
-	    {
-	      NodeUpdatePathsReq req = (NodeUpdatePathsReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.updatePaths(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-
-	  /*-- WORKING VERSIONS ------------------------------------------------------------*/
-	  case GetWorking:
-	    {
-	      NodeGetWorkingReq req = (NodeGetWorkingReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.getWorkingVersion(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case ModifyProperties:
-	    {
-	      NodeModifyPropertiesReq req = (NodeModifyPropertiesReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.modifyProperties(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case Link:
-	    {
-	      NodeLinkReq req = (NodeLinkReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.link(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case Unlink:
-	    {
-	      NodeUnlinkReq req = (NodeUnlinkReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.unlink(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case AddSecondary:
-	    {
-	      NodeAddSecondaryReq req = (NodeAddSecondaryReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.addSecondary(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case RemoveSecondary:
-	    {
-	      NodeRemoveSecondaryReq req = (NodeRemoveSecondaryReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.removeSecondary(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-
-	  /*-- CHECKED-IN VERSIONS ---------------------------------------------------------*/
-	  case GetCheckedIn:
-	    {
-	      NodeGetCheckedInReq req = (NodeGetCheckedInReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.getCheckedInVersion(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case GetCheckedInVersionIDs:
-	    {
-	      NodeGetCheckedInVersionIDsReq req = 
-		(NodeGetCheckedInVersionIDsReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.getCheckedInVersionIDs(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case GetHistory:
-	    {
-	      NodeGetHistoryReq req = (NodeGetHistoryReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.getHistory(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case GetCheckedInFileNovelty:
-	    {
-	      NodeGetCheckedInFileNoveltyReq req = 
-		(NodeGetCheckedInFileNoveltyReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.getCheckedInFileNovelty(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case GetCheckedInLinks:
-	    {
-	      NodeGetCheckedInLinksReq req = 
-		(NodeGetCheckedInLinksReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.getCheckedInLinks(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
+	    String cinfo = "Unknown"; 
+	    if(obj instanceof String) 
+	      cinfo = (String) obj;
 	    
-	  /*-- NODE STATUS -----------------------------------------------------------------*/
-	  case Status:
-	    {
-	      NodeStatusReq req = (NodeStatusReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.status(req));
-	      objOut.flush(); 
+	    if(!sinfo.equals(cinfo)) {
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Net, LogMgr.Level.Warning,
+		 "Connection from (" + pSocket.getInetAddress() + ") rejected due to a " + 
+		 "mismatch in Pipeline release versions!\n" + 
+		 "  Client = " + cinfo + "\n" +
+		 "  Server = " + sinfo);	      
+	      
+	      live = false;
 	    }
-	    break;
-
-
-	  /*-- REVISION CONTROL ------------------------------------------------------------*/
-	  case Register:
-	    {
-	      NodeRegisterReq req = (NodeRegisterReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.register(req));
-	      objOut.flush(); 
-	    }
-	    break;
-	    
-	  case Release:
-	    {
-	      NodeReleaseReq req = (NodeReleaseReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.release(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case Delete:
-	    {
-	      NodeDeleteReq req = (NodeDeleteReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.delete(req));
-	      objOut.flush(); 
-	    }
-	    break;
-	    
-	  case RemoveFiles: 
-	    {
-	      NodeRemoveFilesReq req = (NodeRemoveFilesReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.removeFiles(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case Rename:
-	    {
-	      NodeRenameReq req = (NodeRenameReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.rename(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case Renumber:
-	    {
-	      NodeRenumberReq req = (NodeRenumberReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.renumber(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case CheckIn:
-	    {
-	      NodeCheckInReq req = (NodeCheckInReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.checkIn(req));
-	      objOut.flush(); 
-	    }
-	    break;
-	    
-	  case CheckOut:
-	    {
-	      NodeCheckOutReq req = (NodeCheckOutReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.checkOut(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case RevertFiles:
-	    {
-	      NodeRevertFilesReq req = (NodeRevertFilesReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.revertFiles(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case Evolve:
-	    {
-	      NodeEvolveReq req = (NodeEvolveReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.evolve(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-
-	  /*-- JOBS ------------------------------------------------------------------------*/
-	  case SubmitJobs: 
-	    {
-	      NodeSubmitJobsReq req = (NodeSubmitJobsReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.submitJobs(req));
-	      objOut.flush(); 
-	    }
-	    break;  
-
-	  case ResubmitJobs: 
-	    {
-	      NodeResubmitJobsReq req = (NodeResubmitJobsReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.resubmitJobs(req));
-	      objOut.flush(); 
-	    }
-	    break;  
-
-	  /*-- ADMINISTRATION --------------------------------------------------------------*/
-	  case BackupDatabase: 
-	    {
-	      MiscBackupDatabaseReq req = (MiscBackupDatabaseReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.backupDatabase(req));
-	      objOut.flush(); 
-	    }
-	    break;  
-
-	  case ArchivalQuery: 
-	    {
-	      MiscArchivalQueryReq req = (MiscArchivalQueryReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.archivalQuery(req));
-	      objOut.flush(); 
-	    }
-	    break;  
-	    
-	  case GetSizes:
-	    {
-	      MiscGetSizesReq req = (MiscGetSizesReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.getSizes(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case Archive: 
-	    {
-	      MiscArchiveReq req = (MiscArchiveReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.archive(req));
-	      objOut.flush(); 
-	    }
-	    break;  
-
-	  case Offline: 
-	    {
-	      MiscOfflineReq req = (MiscOfflineReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.offline(req));
-	      objOut.flush(); 
-	    }
-	    break;    
-
-	  case GetRestoreRequests:
-	    {
-	      objOut.writeObject(pMasterMgr.getRestoreRequests());
-	      objOut.flush(); 
-	    }
-	    break;
-	    
-	  case GetArchiveIndex:
-	    {
-	      objOut.writeObject(pMasterMgr.getArchiveIndex());
-	      objOut.flush(); 
-	    }
-	    break;
-	    
-	  case GetArchive: 
-	    {
-	      MiscGetArchiveReq req = (MiscGetArchiveReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.getArchive(req));
-	      objOut.flush(); 
-	    }
-	    break;    
-
-	  case Restore: 
-	    {
-	      MiscRestoreReq req = (MiscRestoreReq) objIn.readObject();
-	      objOut.writeObject(pMasterMgr.restore(req));
-	      objOut.flush(); 
-	    }
-	    break;    
-
-	  /*-- NETWORK CONNECTION ----------------------------------------------------------*/
-	  case Disconnect:
-	    live = false;
-	    break;
-
-	  case ShutdownOptions:
-	    {
-	      MiscShutdownOptionsReq req = (MiscShutdownOptionsReq) objIn.readObject();
-	      pMasterMgr.setShutdownOptions(req.shutdownJobMgrs(), req.shutdownPluginMgr());
-	    }
-
-	  case Shutdown:
+	      
+	    first = false;
+	  }
+	  else {
+	    MasterRequest kind = (MasterRequest) obj;
+	  
 	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Net, LogMgr.Level.Warning,
-	       "Shutdown Request Received: " + pSocket.getInetAddress());
+	      (LogMgr.Kind.Net, LogMgr.Level.Finer,
+	       "Request [" + pSocket.getInetAddress() + "]: " + kind.name());	  
 	    LogMgr.getInstance().flush();
 
-	    pShutdown.set(true);
-	    break;	    
+	    switch(kind) {
+	    /*-- TOOLSETS ------------------------------------------------------------------*/
+	    case GetDefaultToolsetName:
+	      {
+		objOut.writeObject(pMasterMgr.getDefaultToolsetName());
+		objOut.flush(); 
+	      }
+	      break;
 
-	  default:
-	    assert(false);
+	    case SetDefaultToolsetName:
+	      {
+		MiscSetDefaultToolsetNameReq req = 
+		  (MiscSetDefaultToolsetNameReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.setDefaultToolsetName(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetActiveToolsetNames:
+	      {
+		objOut.writeObject(pMasterMgr.getActiveToolsetNames());
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case SetToolsetActive:
+	      {
+		MiscSetToolsetActiveReq req = 
+		  (MiscSetToolsetActiveReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.setToolsetActive(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetToolsetNames:
+	      {
+		objOut.writeObject(pMasterMgr.getToolsetNames());
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetToolset:
+	      {
+		MiscGetToolsetReq req = (MiscGetToolsetReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getToolset(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetToolsetEnvironment:
+	      {
+		MiscGetToolsetEnvironmentReq req = 
+		  (MiscGetToolsetEnvironmentReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getToolsetEnvironment(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case CreateToolset:
+	      {
+		MiscCreateToolsetReq req = (MiscCreateToolsetReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.createToolset(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+
+	    /*-- TOOLSET PACKAGES ----------------------------------------------------------*/
+	    case GetToolsetPackageNames:
+	      {
+		objOut.writeObject(pMasterMgr.getToolsetPackageNames());
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetToolsetPackage:
+	      {
+		MiscGetToolsetPackageReq req = (MiscGetToolsetPackageReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getToolsetPackage(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case CreateToolsetPackage:
+	      {
+		MiscCreateToolsetPackageReq req = 
+		  (MiscCreateToolsetPackageReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.createToolsetPackage(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+
+	    /*-- SUFFIX EDITORS ------------------------------------------------------------*/
+	    case GetEditorForSuffix:
+	      {
+		MiscGetEditorForSuffixReq req = 
+		  (MiscGetEditorForSuffixReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getEditorForSuffix(req));
+		objOut.flush(); 
+	      }
+	      break;
+	    
+	    case GetSuffixEditors:
+	      {
+		MiscGetSuffixEditorsReq req = 
+		  (MiscGetSuffixEditorsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getSuffixEditors(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case SetSuffixEditors:
+	      {
+		MiscSetSuffixEditorsReq req = (MiscSetSuffixEditorsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.setSuffixEditors(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+
+	    /*-- PLUGIN MENU LAYOUTS -------------------------------------------------------*/
+	    case GetEditorMenuLayout:
+	      {
+		objOut.writeObject(pMasterMgr.getEditorMenuLayout());
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case SetEditorMenuLayout:
+	      {
+		MiscSetPluginMenuLayoutReq req = 
+		  (MiscSetPluginMenuLayoutReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.setEditorMenuLayout(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+
+	    case GetComparatorMenuLayout:
+	      {
+		objOut.writeObject(pMasterMgr.getComparatorMenuLayout());
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case SetComparatorMenuLayout:
+	      {
+		MiscSetPluginMenuLayoutReq req = 
+		  (MiscSetPluginMenuLayoutReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.setComparatorMenuLayout(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+
+	    case GetToolMenuLayout:
+	      {
+		objOut.writeObject(pMasterMgr.getToolMenuLayout());
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case SetToolMenuLayout:
+	      {
+		MiscSetPluginMenuLayoutReq req = 
+		  (MiscSetPluginMenuLayoutReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.setToolMenuLayout(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+
+	    /*-- PRIVILEGED USER STATUS ----------------------------------------------------*/
+	    case GetPrivilegedUsers:
+	      {
+		objOut.writeObject(pMasterMgr.getPrivilegedUsers());
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GrantPrivileges:
+	      {
+		MiscGrantPrivilegesReq req = (MiscGrantPrivilegesReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.grantPrivileges(req));
+		objOut.flush(); 
+	      }
+	      break;
+	    
+	    case RemovePrivileges:
+	      {
+		MiscRemovePrivilegesReq req = (MiscRemovePrivilegesReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.removePrivileges(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+
+	    /*-- WORKING AREAS -------------------------------------------------------------*/
+	    case GetWorkingAreas:
+	      {
+		objOut.writeObject(pMasterMgr.getWorkingAreas());
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case CreateWorkingArea:
+	      {
+		NodeCreateWorkingAreaReq req = (NodeCreateWorkingAreaReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.createWorkingArea(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+
+	    /*-- NODE PATHS ----------------------------------------------------------------*/
+	    case UpdatePaths:
+	      {
+		NodeUpdatePathsReq req = (NodeUpdatePathsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.updatePaths(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+
+	    /*-- WORKING VERSIONS ----------------------------------------------------------*/
+	    case GetWorking:
+	      {
+		NodeGetWorkingReq req = (NodeGetWorkingReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getWorkingVersion(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case ModifyProperties:
+	      {
+		NodeModifyPropertiesReq req = (NodeModifyPropertiesReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.modifyProperties(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case Link:
+	      {
+		NodeLinkReq req = (NodeLinkReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.link(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case Unlink:
+	      {
+		NodeUnlinkReq req = (NodeUnlinkReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.unlink(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case AddSecondary:
+	      {
+		NodeAddSecondaryReq req = (NodeAddSecondaryReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.addSecondary(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case RemoveSecondary:
+	      {
+		NodeRemoveSecondaryReq req = (NodeRemoveSecondaryReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.removeSecondary(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+
+	    /*-- CHECKED-IN VERSIONS -------------------------------------------------------*/
+	    case GetCheckedIn:
+	      {
+		NodeGetCheckedInReq req = (NodeGetCheckedInReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getCheckedInVersion(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetCheckedInVersionIDs:
+	      {
+		NodeGetCheckedInVersionIDsReq req = 
+		  (NodeGetCheckedInVersionIDsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getCheckedInVersionIDs(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetHistory:
+	      {
+		NodeGetHistoryReq req = (NodeGetHistoryReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getHistory(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetCheckedInFileNovelty:
+	      {
+		NodeGetCheckedInFileNoveltyReq req = 
+		  (NodeGetCheckedInFileNoveltyReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getCheckedInFileNovelty(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetCheckedInLinks:
+	      {
+		NodeGetCheckedInLinksReq req = 
+		  (NodeGetCheckedInLinksReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getCheckedInLinks(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    
+	    /*-- NODE STATUS ---------------------------------------------------------------*/
+	    case Status:
+	      {
+		NodeStatusReq req = (NodeStatusReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.status(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+
+	    /*-- REVISION CONTROL ----------------------------------------------------------*/
+	    case Register:
+	      {
+		NodeRegisterReq req = (NodeRegisterReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.register(req));
+		objOut.flush(); 
+	      }
+	      break;
+	    
+	    case Release:
+	      {
+		NodeReleaseReq req = (NodeReleaseReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.release(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case Delete:
+	      {
+		NodeDeleteReq req = (NodeDeleteReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.delete(req));
+		objOut.flush(); 
+	      }
+	      break;
+	    
+	    case RemoveFiles: 
+	      {
+		NodeRemoveFilesReq req = (NodeRemoveFilesReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.removeFiles(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case Rename:
+	      {
+		NodeRenameReq req = (NodeRenameReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.rename(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case Renumber:
+	      {
+		NodeRenumberReq req = (NodeRenumberReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.renumber(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case CheckIn:
+	      {
+		NodeCheckInReq req = (NodeCheckInReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.checkIn(req));
+		objOut.flush(); 
+	      }
+	      break;
+	    
+	    case CheckOut:
+	      {
+		NodeCheckOutReq req = (NodeCheckOutReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.checkOut(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case RevertFiles:
+	      {
+		NodeRevertFilesReq req = (NodeRevertFilesReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.revertFiles(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case Evolve:
+	      {
+		NodeEvolveReq req = (NodeEvolveReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.evolve(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+
+	    /*-- JOBS ----------------------------------------------------------------------*/
+	    case SubmitJobs: 
+	      {
+		NodeSubmitJobsReq req = (NodeSubmitJobsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.submitJobs(req));
+		objOut.flush(); 
+	      }
+	      break;  
+
+	    case ResubmitJobs: 
+	      {
+		NodeResubmitJobsReq req = (NodeResubmitJobsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.resubmitJobs(req));
+		objOut.flush(); 
+	      }
+	      break;  
+
+	    /*-- ADMINISTRATION ------------------------------------------------------------*/
+	    case BackupDatabase: 
+	      {
+		MiscBackupDatabaseReq req = (MiscBackupDatabaseReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.backupDatabase(req));
+		objOut.flush(); 
+	      }
+	      break;  
+
+	    case ArchivalQuery: 
+	      {
+		MiscArchivalQueryReq req = (MiscArchivalQueryReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.archivalQuery(req));
+		objOut.flush(); 
+	      }
+	      break;  
+	    
+	    case GetSizes:
+	      {
+		MiscGetSizesReq req = (MiscGetSizesReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getSizes(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case Archive: 
+	      {
+		MiscArchiveReq req = (MiscArchiveReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.archive(req));
+		objOut.flush(); 
+	      }
+	      break;  
+
+	    case Offline: 
+	      {
+		MiscOfflineReq req = (MiscOfflineReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.offline(req));
+		objOut.flush(); 
+	      }
+	      break;    
+
+	    case GetRestoreRequests:
+	      {
+		objOut.writeObject(pMasterMgr.getRestoreRequests());
+		objOut.flush(); 
+	      }
+	      break;
+	    
+	    case GetArchiveIndex:
+	      {
+		objOut.writeObject(pMasterMgr.getArchiveIndex());
+		objOut.flush(); 
+	      }
+	      break;
+	    
+	    case GetArchive: 
+	      {
+		MiscGetArchiveReq req = (MiscGetArchiveReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getArchive(req));
+		objOut.flush(); 
+	      }
+	      break;    
+
+	    case Restore: 
+	      {
+		MiscRestoreReq req = (MiscRestoreReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.restore(req));
+		objOut.flush(); 
+	      }
+	      break;    
+
+	    /*-- NETWORK CONNECTION --------------------------------------------------------*/
+	    case Disconnect:
+	      live = false;
+	      break;
+
+	    case ShutdownOptions:
+	      {
+		MiscShutdownOptionsReq req = (MiscShutdownOptionsReq) objIn.readObject();
+		pMasterMgr.setShutdownOptions(req.shutdownJobMgrs(), req.shutdownPluginMgr());
+	      }
+
+	    case Shutdown:
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Net, LogMgr.Level.Warning,
+		 "Shutdown Request Received: " + pSocket.getInetAddress());
+	      LogMgr.getInstance().flush();
+
+	      pShutdown.set(true);
+	      break;	    
+
+	    default:
+	      assert(false);
+	    }
 	  }
 	}
       }

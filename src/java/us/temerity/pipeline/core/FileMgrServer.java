@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.22 2005/01/22 01:36:35 jim Exp $
+// $Id: FileMgrServer.java,v 1.23 2005/02/12 16:29:51 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -211,138 +211,167 @@ class FileMgrServer
 	   "Connection Opened: " + pSocket.getInetAddress());
 	LogMgr.getInstance().flush();
 
+	boolean first = true;
 	boolean live = true;
 	while(pSocket.isConnected() && live && !pShutdown.get()) {
 	  InputStream in    = pSocket.getInputStream();
 	  ObjectInput objIn = new ObjectInputStream(in);
-	  FileRequest kind  = (FileRequest) objIn.readObject();
+	  Object obj        = objIn.readObject();
 	  
 	  OutputStream out    = pSocket.getOutputStream();
 	  ObjectOutput objOut = new ObjectOutputStream(out);
-	  
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Net, LogMgr.Level.Finer,
-	     "Request [" + pSocket.getInetAddress() + "]: " + kind.name());	  
-	  LogMgr.getInstance().flush();
 
-	  switch(kind) {
-	  case CreateWorkingArea:
-	    {
-	      FileCreateWorkingAreaReq req = (FileCreateWorkingAreaReq) objIn.readObject();
-	      objOut.writeObject(pFileMgr.createWorkingArea(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case CheckIn:
-	    {
-	      FileCheckInReq req = (FileCheckInReq) objIn.readObject();
-	      objOut.writeObject(pFileMgr.checkIn(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case CheckOut:
-	    {
-	      FileCheckOutReq req = (FileCheckOutReq) objIn.readObject();
-	      objOut.writeObject(pFileMgr.checkOut(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case Revert:
-	    {
-	      FileRevertReq req = (FileRevertReq) objIn.readObject();
-	      objOut.writeObject(pFileMgr.revert(req));
-	      objOut.flush(); 
-	    }
-	    break;
+	  if(first) {
+	    String sinfo = 
+	      ("Pipeline-" + PackageInfo.sVersion + " [" + PackageInfo.sRelease + "]");
 	    
-	  case State:
-	    {
-	      FileStateReq req = (FileStateReq) objIn.readObject();
-	      objOut.writeObject(pFileMgr.states(req));
-	      objOut.flush(); 
-	    }
-	    break;
+	    objOut.writeObject(sinfo);
+	    objOut.flush(); 
 	    
-	  case Remove:
-	    {
-	      FileRemoveReq req = (FileRemoveReq) objIn.readObject();
-	      objOut.writeObject(pFileMgr.remove(req));
-	      objOut.flush(); 
-	    }
-	    break;
+	    String cinfo = "Unknown"; 
+	    if(obj instanceof String) 
+	      cinfo = (String) obj;
 	    
-	  case RemoveAll:
-	    {
-	      FileRemoveAllReq req = (FileRemoveAllReq) objIn.readObject();
-	      objOut.writeObject(pFileMgr.removeAll(req));
-	      objOut.flush(); 
+	    if(!sinfo.equals(cinfo)) {
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Net, LogMgr.Level.Warning,
+		 "Connection from (" + pSocket.getInetAddress() + ") rejected due to a " + 
+		 "mismatch in Pipeline release versions!\n" + 
+		 "  Client = " + cinfo + "\n" +
+		 "  Server = " + sinfo);	      
+	      
+	      live = false;
 	    }
-	    break;
-	    
-	  case Rename:
-	    {
-	      FileRenameReq req = (FileRenameReq) objIn.readObject();
-	      objOut.writeObject(pFileMgr.rename(req));
-	      objOut.flush(); 
-	    }
-	    break;
+	      
+	    first = false;
+	  }
+	  else {
+	    FileRequest kind = (FileRequest) obj;
 
-	  case ChangeMode:
-	    {
-	      FileChangeModeReq req = (FileChangeModeReq) objIn.readObject();
-	      objOut.writeObject(pFileMgr.changeMode(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case DeleteCheckedIn:
-	    {
-	      FileDeleteCheckedInReq req = (FileDeleteCheckedInReq) objIn.readObject();
-	      objOut.writeObject(pFileMgr.deleteCheckedIn(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case Offline:
-	    {
-	      FileOfflineReq req = (FileOfflineReq) objIn.readObject();
-	      objOut.writeObject(pFileMgr.offline(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case GetOfflined:
-	    {
-	      objOut.writeObject(pFileMgr.getOfflined());
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case GetSizes:
-	    {
-	      FileGetSizesReq req = (FileGetSizesReq) objIn.readObject();
-	      objOut.writeObject(pFileMgr.getSizes(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case Disconnect:
-	    live = false;
-	    break;
-
-	  case Shutdown:
 	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Net, LogMgr.Level.Warning,
-	       "Shutdown Request Received: " + pSocket.getInetAddress());
+	      (LogMgr.Kind.Net, LogMgr.Level.Finer,
+	       "Request [" + pSocket.getInetAddress() + "]: " + kind.name());	  
 	    LogMgr.getInstance().flush();
-	    pShutdown.set(true);
-	    break;	    
 
-	  default:
-	    assert(false);
+	    switch(kind) {
+	    case CreateWorkingArea:
+	      {
+		FileCreateWorkingAreaReq req = (FileCreateWorkingAreaReq) objIn.readObject();
+		objOut.writeObject(pFileMgr.createWorkingArea(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case CheckIn:
+	      {
+		FileCheckInReq req = (FileCheckInReq) objIn.readObject();
+		objOut.writeObject(pFileMgr.checkIn(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case CheckOut:
+	      {
+		FileCheckOutReq req = (FileCheckOutReq) objIn.readObject();
+		objOut.writeObject(pFileMgr.checkOut(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case Revert:
+	      {
+		FileRevertReq req = (FileRevertReq) objIn.readObject();
+		objOut.writeObject(pFileMgr.revert(req));
+		objOut.flush(); 
+	      }
+	      break;
+	    
+	    case State:
+	      {
+		FileStateReq req = (FileStateReq) objIn.readObject();
+		objOut.writeObject(pFileMgr.states(req));
+		objOut.flush(); 
+	      }
+	      break;
+	    
+	    case Remove:
+	      {
+		FileRemoveReq req = (FileRemoveReq) objIn.readObject();
+		objOut.writeObject(pFileMgr.remove(req));
+		objOut.flush(); 
+	      }
+	      break;
+	    
+	    case RemoveAll:
+	      {
+		FileRemoveAllReq req = (FileRemoveAllReq) objIn.readObject();
+		objOut.writeObject(pFileMgr.removeAll(req));
+		objOut.flush(); 
+	      }
+	      break;
+	    
+	    case Rename:
+	      {
+		FileRenameReq req = (FileRenameReq) objIn.readObject();
+		objOut.writeObject(pFileMgr.rename(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case ChangeMode:
+	      {
+		FileChangeModeReq req = (FileChangeModeReq) objIn.readObject();
+		objOut.writeObject(pFileMgr.changeMode(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case DeleteCheckedIn:
+	      {
+		FileDeleteCheckedInReq req = (FileDeleteCheckedInReq) objIn.readObject();
+		objOut.writeObject(pFileMgr.deleteCheckedIn(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case Offline:
+	      {
+		FileOfflineReq req = (FileOfflineReq) objIn.readObject();
+		objOut.writeObject(pFileMgr.offline(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetOfflined:
+	      {
+		objOut.writeObject(pFileMgr.getOfflined());
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetSizes:
+	      {
+		FileGetSizesReq req = (FileGetSizesReq) objIn.readObject();
+		objOut.writeObject(pFileMgr.getSizes(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case Disconnect:
+	      live = false;
+	      break;
+
+	    case Shutdown:
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Net, LogMgr.Level.Warning,
+		 "Shutdown Request Received: " + pSocket.getInetAddress());
+	      LogMgr.getInstance().flush();
+	      pShutdown.set(true);
+	      break;	    
+
+	    default:
+	      assert(false);
+	    }
 	  }
 	}
       }

@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.20 2005/01/22 01:36:35 jim Exp $
+// $Id: QueueMgrServer.java,v 1.21 2005/02/12 16:29:51 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -261,308 +261,338 @@ class QueueMgrServer
 	   "Connection Opened: " + pSocket.getInetAddress());
 	LogMgr.getInstance().flush();
 
+	boolean first = true;
 	boolean live = true;
 	while(pSocket.isConnected() && live && !pShutdown.get()) {
-	  InputStream in    = pSocket.getInputStream();
-	  ObjectInput objIn = new PluginInputStream(in);
-	  QueueRequest kind = (QueueRequest) objIn.readObject();
-	  
+	  InputStream in     = pSocket.getInputStream();
+	  ObjectInput objIn  = new ObjectInputStream(in);
+	  Object obj         = objIn.readObject();
+
 	  OutputStream out    = pSocket.getOutputStream();
 	  ObjectOutput objOut = new ObjectOutputStream(out);
 	  
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Net, LogMgr.Level.Finer,
-	     "Request [" + pSocket.getInetAddress() + "]: " + kind.name());	  
-	  LogMgr.getInstance().flush();
+	  if(first) {
+	    String sinfo = 
+	      ("Pipeline-" + PackageInfo.sVersion + " [" + PackageInfo.sRelease + "]");
+	    
+	    objOut.writeObject(sinfo);
+	    objOut.flush(); 
+	    
+	    String cinfo = "Unknown"; 
+	    if(obj instanceof String) 
+	      cinfo = (String) obj;
+	    
+	    if(!sinfo.equals(cinfo)) {
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Net, LogMgr.Level.Warning,
+		 "Connection from (" + pSocket.getInetAddress() + ") rejected due to a " + 
+		 "mismatch in Pipeline release versions!\n" + 
+		 "  Client = " + cinfo + "\n" +
+		 "  Server = " + sinfo);	      
+	      
+	      live = false;
+	    }
+	      
+	    first = false;
+	  }
+	  else {
+	    QueueRequest kind = (QueueRequest) obj;
 	  
-	  switch(kind) {
-	  /*-- PRIVILEGED USER STATUS ------------------------------------------------------*/
-	  case GetPrivilegedUsers:
-	    {
-	      objOut.writeObject(pQueueMgr.getPrivilegedUsers());
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case SetPrivilegedUsers:
-	    {
-	      MiscSetPrivilegedUsersReq req = (MiscSetPrivilegedUsersReq) objIn.readObject();
-	      objOut.writeObject(pQueueMgr.setPrivilegedUsers(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-
-	  /*-- LICENSE KEYS ----------------------------------------------------------------*/
-	  case GetLicenseKeyNames:
-	    {
-	      objOut.writeObject(pQueueMgr.getLicenseKeyNames());
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case GetLicenseKeys:
-	    {
-	      objOut.writeObject(pQueueMgr.getLicenseKeys());
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case AddLicenseKey:
-	    {
-	      QueueAddLicenseKeyReq req = 
-		(QueueAddLicenseKeyReq) objIn.readObject();
-	      objOut.writeObject(pQueueMgr.addLicenseKey(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case RemoveLicenseKey:
-	    {
-	      QueueRemoveLicenseKeyReq req = 
-		(QueueRemoveLicenseKeyReq) objIn.readObject();
-	      objOut.writeObject(pQueueMgr.removeLicenseKey(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case SetTotalLicenses:
-	    {
-	      QueueSetTotalLicensesReq req = 
-		(QueueSetTotalLicensesReq) objIn.readObject();
-	      objOut.writeObject(pQueueMgr.setTotalLicenses(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-
-	  /*-- SELECTION KEYS --------------------------------------------------------------*/
-	  case GetSelectionKeyNames:
-	    {
-	      objOut.writeObject(pQueueMgr.getSelectionKeyNames());
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case GetSelectionKeys:
-	    {
-	      objOut.writeObject(pQueueMgr.getSelectionKeys());
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case AddSelectionKey:
-	    {
-	      QueueAddSelectionKeyReq req = 
-		(QueueAddSelectionKeyReq) objIn.readObject();
-	      objOut.writeObject(pQueueMgr.addSelectionKey(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case RemoveSelectionKey:
-	    {
-	      QueueRemoveSelectionKeyReq req = 
-		(QueueRemoveSelectionKeyReq) objIn.readObject();
-	      objOut.writeObject(pQueueMgr.removeSelectionKey(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-
-	  /*-- JOB MANAGER HOSTS -----------------------------------------------------------*/
-	  case GetHosts:
-	    {
-	      objOut.writeObject(pQueueMgr.getHosts());
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case AddHost:
-	    {
-	      QueueAddHostReq req = (QueueAddHostReq) objIn.readObject();
-	      objOut.writeObject(pQueueMgr.addHost(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case RemoveHosts:
-	    {
-	      QueueRemoveHostsReq req = (QueueRemoveHostsReq) objIn.readObject();
-	      objOut.writeObject(pQueueMgr.removeHosts(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case EditHosts:
-	    {
-	      QueueEditHostsReq req = (QueueEditHostsReq) objIn.readObject();
-	      objOut.writeObject(pQueueMgr.editHosts(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case GetHostResourceSamples:
-	    {
-	      QueueGetHostResourceSamplesReq req = 
-		(QueueGetHostResourceSamplesReq) objIn.readObject();
-	      objOut.writeObject(pQueueMgr.getHostResourceSamples(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-
-	  /*-- JOBS ------------------------------------------------------------------------*/
-	  case GetJobStates:
-	    {
-	      QueueGetJobStatesReq req = (QueueGetJobStatesReq) objIn.readObject();
-	      objOut.writeObject(pQueueMgr.getJobStates(req));
-	      objOut.flush(); 
-	    }
-	    break; 
-
-	  case GetJobStatus:
-	    {
-	      QueueGetJobStatusReq req = (QueueGetJobStatusReq) objIn.readObject();
-	      objOut.writeObject(pQueueMgr.getJobStatus(req));
-	      objOut.flush(); 
-	    }
-	    break;
-	  
-	  case GetRunningJobStatus:
-	    {
-	      objOut.writeObject(pQueueMgr.getRunningJobStatus());
-	      objOut.flush(); 
-	    }
-	    break;
-	  
-	  case GetJob:
-	    {
-	      QueueGetJobReq req = (QueueGetJobReq) objIn.readObject();
-	      objOut.writeObject(pQueueMgr.getJob(req));
-	      objOut.flush(); 
-	    }
-	    break;
-	    
-	  case GetJobInfo:
-	    {
-	      QueueGetJobInfoReq req = (QueueGetJobInfoReq) objIn.readObject();
-	      objOut.writeObject(pQueueMgr.getJobInfo(req));
-	      objOut.flush(); 
-	    }
-	    break;
-	    
-	  case GetRunningJobInfo:
-	    {
-	      objOut.writeObject(pQueueMgr.getRunningJobInfo());
-	      objOut.flush(); 
-	    }
-	    break;
-
-
-	  case SubmitJob:
-	    {
-	      QueueSubmitJobReq req = (QueueSubmitJobReq) objIn.readObject();
-	      objOut.writeObject(pQueueMgr.submitJob(req));
-	      objOut.flush(); 
-	    }
-	    break;
-	    
-	  case KillJobs:
-	    {
-	      QueueKillJobsReq req = (QueueKillJobsReq) objIn.readObject();
-	      objOut.writeObject(pQueueMgr.killJobs(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case PauseJobs:
-	    {
-	      QueuePauseJobsReq req = (QueuePauseJobsReq) objIn.readObject();
-	      objOut.writeObject(pQueueMgr.pauseJobs(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case ResumeJobs:
-	    {
-	      QueueResumeJobsReq req = (QueueResumeJobsReq) objIn.readObject();
-	      objOut.writeObject(pQueueMgr.resumeJobs(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-
-	  case GroupJobs:
-	    {
-	      QueueGroupJobsReq req = (QueueGroupJobsReq) objIn.readObject();
-	      objOut.writeObject(pQueueMgr.groupJobs(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case GetJobGroup:
-	    {
-	      QueueGetJobGroupReq req = (QueueGetJobGroupReq) objIn.readObject();
-	      objOut.writeObject(pQueueMgr.getJobGroup(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case GetJobGroups:
-	    {
-	      objOut.writeObject(pQueueMgr.getJobGroups());
-	      objOut.flush(); 
-	    }
-	    break;
-	    
-	  case DeleteJobGroups:
-	    {
-	      QueueDeleteJobGroupsReq req = (QueueDeleteJobGroupsReq) objIn.readObject();
-	      objOut.writeObject(pQueueMgr.deleteJobGroups(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case DeleteViewJobGroups:
-	    {
-	      QueueDeleteViewJobGroupsReq req = 
-		(QueueDeleteViewJobGroupsReq) objIn.readObject();
-	      objOut.writeObject(pQueueMgr.deleteViewJobGroups(req));
-	      objOut.flush(); 
-	    }
-	    break;
-	    
-	  case DeleteAllJobGroups:
-	    {
-	      objOut.writeObject(pQueueMgr.deleteAllJobGroups());
-	      objOut.flush(); 
-	    }
-	    break;
-	    
-
-
-	  /*-- NETWORK CONNECTION ----------------------------------------------------------*/
-	  case Disconnect:
-	    live = false;
-	    break;
-
-	  case ShutdownOptions:
-	    {
-	      QueueShutdownOptionsReq req = (QueueShutdownOptionsReq) objIn.readObject();
-	      pQueueMgr.setShutdownOptions(req.shutdownJobMgrs());
-	    }
-
-	  case Shutdown:
 	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Net, LogMgr.Level.Warning,
-	       "Shutdown Request Received: " + pSocket.getInetAddress());
+	      (LogMgr.Kind.Net, LogMgr.Level.Finer,
+	       "Request [" + pSocket.getInetAddress() + "]: " + kind.name());	  
 	    LogMgr.getInstance().flush();
-	    pShutdown.set(true);
-	    break;	    
+	  
+	    switch(kind) {
+	    /*-- PRIVILEGED USER STATUS ----------------------------------------------------*/
+	    case GetPrivilegedUsers:
+	      {
+		objOut.writeObject(pQueueMgr.getPrivilegedUsers());
+		objOut.flush(); 
+	      }
+	      break;
 
-	  default:
-	    assert(false);
+	    case SetPrivilegedUsers:
+	      {
+		MiscSetPrivilegedUsersReq req = 
+		  (MiscSetPrivilegedUsersReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.setPrivilegedUsers(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+
+	    /*-- LICENSE KEYS --------------------------------------------------------------*/
+	    case GetLicenseKeyNames:
+	      {
+		objOut.writeObject(pQueueMgr.getLicenseKeyNames());
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetLicenseKeys:
+	      {
+		objOut.writeObject(pQueueMgr.getLicenseKeys());
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case AddLicenseKey:
+	      {
+		QueueAddLicenseKeyReq req = 
+		  (QueueAddLicenseKeyReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.addLicenseKey(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case RemoveLicenseKey:
+	      {
+		QueueRemoveLicenseKeyReq req = 
+		  (QueueRemoveLicenseKeyReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.removeLicenseKey(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case SetTotalLicenses:
+	      {
+		QueueSetTotalLicensesReq req = 
+		  (QueueSetTotalLicensesReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.setTotalLicenses(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+
+	    /*-- SELECTION KEYS ------------------------------------------------------------*/
+	    case GetSelectionKeyNames:
+	      {
+		objOut.writeObject(pQueueMgr.getSelectionKeyNames());
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetSelectionKeys:
+	      {
+		objOut.writeObject(pQueueMgr.getSelectionKeys());
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case AddSelectionKey:
+	      {
+		QueueAddSelectionKeyReq req = 
+		  (QueueAddSelectionKeyReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.addSelectionKey(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case RemoveSelectionKey:
+	      {
+		QueueRemoveSelectionKeyReq req = 
+		  (QueueRemoveSelectionKeyReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.removeSelectionKey(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+
+	    /*-- JOB MANAGER HOSTS ---------------------------------------------------------*/
+	    case GetHosts:
+	      {
+		objOut.writeObject(pQueueMgr.getHosts());
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case AddHost:
+	      {
+		QueueAddHostReq req = (QueueAddHostReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.addHost(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case RemoveHosts:
+	      {
+		QueueRemoveHostsReq req = (QueueRemoveHostsReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.removeHosts(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case EditHosts:
+	      {
+		QueueEditHostsReq req = (QueueEditHostsReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.editHosts(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetHostResourceSamples:
+	      {
+		QueueGetHostResourceSamplesReq req = 
+		  (QueueGetHostResourceSamplesReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.getHostResourceSamples(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+
+	    /*-- JOBS ----------------------------------------------------------------------*/
+	    case GetJobStates:
+	      {
+		QueueGetJobStatesReq req = (QueueGetJobStatesReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.getJobStates(req));
+		objOut.flush(); 
+	      }
+	      break; 
+
+	    case GetJobStatus:
+	      {
+		QueueGetJobStatusReq req = (QueueGetJobStatusReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.getJobStatus(req));
+		objOut.flush(); 
+	      }
+	      break;
+	  
+	    case GetRunningJobStatus:
+	      {
+		objOut.writeObject(pQueueMgr.getRunningJobStatus());
+		objOut.flush(); 
+	      }
+	      break;
+	  
+	    case GetJob:
+	      {
+		QueueGetJobReq req = (QueueGetJobReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.getJob(req));
+		objOut.flush(); 
+	      }
+	      break;
+	    
+	    case GetJobInfo:
+	      {
+		QueueGetJobInfoReq req = (QueueGetJobInfoReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.getJobInfo(req));
+		objOut.flush(); 
+	      }
+	      break;
+	    
+	    case GetRunningJobInfo:
+	      {
+		objOut.writeObject(pQueueMgr.getRunningJobInfo());
+		objOut.flush(); 
+	      }
+	      break;
+
+
+	    case SubmitJob:
+	      {
+		QueueSubmitJobReq req = (QueueSubmitJobReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.submitJob(req));
+		objOut.flush(); 
+	      }
+	      break;
+	    
+	    case KillJobs:
+	      {
+		QueueKillJobsReq req = (QueueKillJobsReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.killJobs(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case PauseJobs:
+	      {
+		QueuePauseJobsReq req = (QueuePauseJobsReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.pauseJobs(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case ResumeJobs:
+	      {
+		QueueResumeJobsReq req = (QueueResumeJobsReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.resumeJobs(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+
+	    case GroupJobs:
+	      {
+		QueueGroupJobsReq req = (QueueGroupJobsReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.groupJobs(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetJobGroup:
+	      {
+		QueueGetJobGroupReq req = (QueueGetJobGroupReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.getJobGroup(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetJobGroups:
+	      {
+		objOut.writeObject(pQueueMgr.getJobGroups());
+		objOut.flush(); 
+	      }
+	      break;
+	    
+	    case DeleteJobGroups:
+	      {
+		QueueDeleteJobGroupsReq req = (QueueDeleteJobGroupsReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.deleteJobGroups(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case DeleteViewJobGroups:
+	      {
+		QueueDeleteViewJobGroupsReq req = 
+		  (QueueDeleteViewJobGroupsReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.deleteViewJobGroups(req));
+		objOut.flush(); 
+	      }
+	      break;
+	    
+	    case DeleteAllJobGroups:
+	      {
+		objOut.writeObject(pQueueMgr.deleteAllJobGroups());
+		objOut.flush(); 
+	      }
+	      break;
+	    
+
+
+	    /*-- NETWORK CONNECTION --------------------------------------------------------*/
+	    case Disconnect:
+	      live = false;
+	      break;
+
+	    case ShutdownOptions:
+	      {
+		QueueShutdownOptionsReq req = (QueueShutdownOptionsReq) objIn.readObject();
+		pQueueMgr.setShutdownOptions(req.shutdownJobMgrs());
+	      }
+
+	    case Shutdown:
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Net, LogMgr.Level.Warning,
+		 "Shutdown Request Received: " + pSocket.getInetAddress());
+	      LogMgr.getInstance().flush();
+	      pShutdown.set(true);
+	      break;	    
+
+	    default:
+	      assert(false);
+	    }
 	  }
 	}
       }

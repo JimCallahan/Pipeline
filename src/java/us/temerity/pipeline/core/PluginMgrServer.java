@@ -1,4 +1,4 @@
-// $Id: PluginMgrServer.java,v 1.2 2005/01/22 01:36:35 jim Exp $
+// $Id: PluginMgrServer.java,v 1.3 2005/02/12 16:29:51 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -206,51 +206,80 @@ class PluginMgrServer
 	   "Connection Opened: " + pSocket.getInetAddress());
 	LogMgr.getInstance().flush();
 
+	boolean first = true;
 	boolean live = true;
 	while(pSocket.isConnected() && live && !pShutdown.get()) {
 	  InputStream in     = pSocket.getInputStream();
 	  ObjectInput objIn  = new ObjectInputStream(in);
-	  PluginRequest kind = (PluginRequest) objIn.readObject();
-	  
+	  Object obj         = objIn.readObject();
+
 	  OutputStream out    = pSocket.getOutputStream();
 	  ObjectOutput objOut = new ObjectOutputStream(out);
 	  
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Net, LogMgr.Level.Finer,
-	     "Request [" + pSocket.getInetAddress() + "]: " + kind.name());	  
-	  LogMgr.getInstance().flush();
-
-	  switch(kind) {
-	  case Update:
-	    {
-	      PluginUpdateReq req = (PluginUpdateReq) objIn.readObject();
-	      objOut.writeObject(pPluginMgr.update(req));
-	      objOut.flush(); 
+	  if(first) {
+	    String sinfo = 
+	      ("Pipeline-" + PackageInfo.sVersion + " [" + PackageInfo.sRelease + "]");
+	    
+	    objOut.writeObject(sinfo);
+	    objOut.flush(); 
+	    
+	    String cinfo = "Unknown"; 
+	    if(obj instanceof String) 
+	      cinfo = (String) obj;
+	    
+	    if(!sinfo.equals(cinfo)) {
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Net, LogMgr.Level.Warning,
+		 "Connection from (" + pSocket.getInetAddress() + ") rejected due to a " + 
+		 "mismatch in Pipeline release versions!\n" + 
+		 "  Client = " + cinfo + "\n" +
+		 "  Server = " + sinfo);	      
+	      
+	      live = false;
 	    }
-	    break;
-
-	  case Install:
-	    {
-	      PluginInstallReq req = (PluginInstallReq) objIn.readObject();
-	      objOut.writeObject(pPluginMgr.install(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case Disconnect:
-	    live = false;
-	    break;
-
-	  case Shutdown:
+	      
+	    first = false;
+	  }
+	  else {
+	    PluginRequest kind = (PluginRequest) obj;
+	      
 	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Net, LogMgr.Level.Warning,
-	       "Shutdown Request Received: " + pSocket.getInetAddress());
+	      (LogMgr.Kind.Net, LogMgr.Level.Finer,
+	       "Request [" + pSocket.getInetAddress() + "]: " + kind.name());	  
 	    LogMgr.getInstance().flush();
-	    pShutdown.set(true);
-	    break;	    
-
-	  default:
-	    assert(false);
+	      
+	    switch(kind) {
+	    case Update:
+	      {
+		PluginUpdateReq req = (PluginUpdateReq) objIn.readObject();
+		objOut.writeObject(pPluginMgr.update(req));
+		objOut.flush(); 
+	      }
+	      break;
+		
+	    case Install:
+	      {
+		PluginInstallReq req = (PluginInstallReq) objIn.readObject();
+		objOut.writeObject(pPluginMgr.install(req));
+		objOut.flush(); 
+	      }
+	      break;
+		
+	    case Disconnect:
+	      live = false;
+	      break;
+		
+	    case Shutdown:
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Net, LogMgr.Level.Warning,
+		 "Shutdown Request Received: " + pSocket.getInetAddress());
+	      LogMgr.getInstance().flush();
+	      pShutdown.set(true);
+	      break;	    
+		
+	    default:
+	      assert(false);
+	    }
 	  }
 	}
       }
