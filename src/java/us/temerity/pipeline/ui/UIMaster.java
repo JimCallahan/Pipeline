@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.13 2004/05/14 02:40:09 jim Exp $
+// $Id: UIMaster.java,v 1.14 2004/05/16 19:15:18 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -667,9 +667,6 @@ class UIMaster
    * @param vmax
    *   The maximum slider value.
    * 
-   * @param value
-   *   The intial slider value.
-   * 
    * @param vwidth
    *   The minimum and preferred width of the value field.
    */ 
@@ -682,13 +679,12 @@ class UIMaster
    JPanel vpanel, 
    int vmin, 
    int vmax,
-   int value,
    int vwidth
   ) 
   {
     tpanel.add(UIMaster.createLabel(title, twidth, JLabel.RIGHT));
 
-    JSlider slider = new JSlider(vmin, vmax, value);
+    JSlider slider = new JSlider(vmin, vmax, vmin);
       
     Dimension size = new Dimension(vwidth, 19);
     slider.setMinimumSize(size);
@@ -726,8 +722,8 @@ class UIMaster
    * @param vmax
    *   The maximum slider value.
    * 
-   * @param value
-   *   The intial slider value.
+   * @param vwidth
+   *   The minimum and preferred width of the value field.
    */ 
   public static JSlider 
   createTitledSlider
@@ -738,14 +734,100 @@ class UIMaster
    JPanel vpanel, 
    double vmin, 
    double vmax,
-   double value,
    int vwidth
   ) 
   {
     return createTitledSlider(tpanel, title, twidth, 
-			      vpanel, (int)(vmin*1000.0), (int)(vmax*1000.0), 
-			      (int)(value*1000), vwidth);
+			      vpanel, (int)(vmin*1000.0), (int)(vmax*1000.0), vwidth);
   }
+
+
+  /**
+   * Create a tree set field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param title
+   *   The title text.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param values
+   *   The initial collection values.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the value field.
+   */ 
+  public static JCollectionField
+  createTitledCollectionField
+  (
+   JPanel tpanel, 
+   String title, 
+   int twidth,
+   JPanel vpanel,
+   Collection<String> values,
+   int vwidth
+  ) 
+  {
+    tpanel.add(UIMaster.createLabel(title, twidth, JLabel.RIGHT));
+
+    JCollectionField field = new JCollectionField(values);
+
+    Dimension size = new Dimension(vwidth, 19);
+    field.setMinimumSize(size);
+    field.setMaximumSize(size);
+
+    vpanel.add(field);
+
+    return field;
+  }
+
+  /**
+   * Create a boolean field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param title
+   *   The title text.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the value field.
+   */ 
+  public static JBooleanField
+  createTitledBooleanField
+  (
+   JPanel tpanel, 
+   String title, 
+   int twidth,
+   JPanel vpanel, 
+   int vwidth
+  ) 
+  {
+    tpanel.add(UIMaster.createLabel(title, twidth, JLabel.RIGHT));
+
+    JBooleanField field = new JBooleanField();
+
+    Dimension size = new Dimension(vwidth, 19);
+    field.setMinimumSize(size);
+    field.setMaximumSize(size);
+
+    vpanel.add(field);
+
+    return field;
+  }
+
 
 
   /**
@@ -1053,7 +1135,7 @@ class UIMaster
 
 	mgr.verifySimpleTexture("White");
 	mgr.verifySimpleTexture("Yellow");
-	mgr.verifySimpleTexture("Grey");
+	mgr.verifySimpleTexture("LightGrey");
 	update();
       }
       catch(IOException ex) {
