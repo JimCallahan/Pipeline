@@ -1,4 +1,4 @@
-// $Id: JTextureLoaderBar.java,v 1.1 2004/12/15 15:36:29 jim Exp $
+// $Id: JTextureLoaderBar.java,v 1.2 2004/12/16 15:41:47 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -44,13 +44,14 @@ class JTextureLoaderBar
 
     {
       pCanvas = canvas;
-      pCanvas.setSize(499, 5);
+      pCanvas.setSize(499, 4);
       pCanvas.addGLEventListener(this);
 
       add(canvas);
     }
 
     pFinishedTask = finished;
+    pFirst = true;
     
     pTextures = new LinkedList<String>();
     pIcon21s  = new LinkedList<String>();
@@ -140,16 +141,16 @@ class JTextureLoaderBar
 	}
       }
 
-      for(SelectionMode mode : SelectionMode.all()) {
+      for(SelectionMode mode : SelectionMode.all()) 
 	pTextures.add("Blank-" + mode);
-	pTextures.add("Collapsed-" + mode);
-      }
+
+      pTextures.add("Collapsed");
 
       for(LinkRelationship rel : LinkRelationship.all())
 	pTextures.add("LinkRelationship-" + rel);
     }
 
-    pInc = 1.0 / ((double) (pTextures.size() + pIcon21s.size() + 20));
+    pInc = 1.0 / ((double) (20 + pTextures.size()*3 + pIcon21s.size()));
   }
 
 
@@ -214,18 +215,9 @@ class JTextureLoaderBar
     try {
       TextureMgr mgr = TextureMgr.getInstance();
 
-      if(pTexIdx < pTextures.size()) {
-	mgr.verifyTexture(gl, pTextures.get(pTexIdx));
-	
-	pTexIdx++;
-	pPercent += pInc;
-	pCanvas.repaint();
-      }
-      else if(pIconIdx < pIcon21s.size()) {
-	mgr.verifyIcon21(pIcon21s.get(pIconIdx));
-
-	pIconIdx++;
-	pPercent += pInc;
+      if(pFirst) {
+	pFirst = false;
+	pPercent += pInc * 5.0;
 	pCanvas.repaint();
       }
       else if(!pFontLoaded) {
@@ -233,7 +225,21 @@ class JTextureLoaderBar
 	mgr.verifyFontTextures(gl, "CharterBTRoman");
 
 	pFontLoaded = true;
-	pPercent = 1.0;
+	pPercent += pInc * 15.0;
+	pCanvas.repaint();
+      }
+      else if(pTexIdx < pTextures.size()) {
+	mgr.verifyTexture(gl, pTextures.get(pTexIdx));
+	
+	pTexIdx++;
+	pPercent += pInc * 3.0;
+	pCanvas.repaint();
+      }
+      else if(pIconIdx < pIcon21s.size()) {
+	mgr.verifyIcon21(pIcon21s.get(pIconIdx));
+
+	pIconIdx++;
+	pPercent += pInc;
 	pCanvas.repaint();
       }
       else {
@@ -299,7 +305,12 @@ class JTextureLoaderBar
    * The thread to start once all textures have been loaded.
    */ 
   private Thread  pFinishedTask; 
-  
+
+
+  /**
+   * Whether this is the first display pass.
+   */ 
+  private boolean  pFirst; 
 
   /**
    * The names of the textures.
