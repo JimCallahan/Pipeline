@@ -1,6 +1,6 @@
 #!/bin/sh
 
 exec java -Djava.util.logging.config.file=@BASEDIR@/pipeline/share/logger.properties \
-          -cp @BASEDIR@/pipeline/share/jar/pipeline.jar:@JDBC_JAR@ \
+          -cp @BASEDIR@/pipeline/share/jar/pipeline.jar:@BASEDIR@/pipeline/share/jar/JGo.jar:@JDBC_JAR@ \
           pipeline/ClientUI "$@"
 
