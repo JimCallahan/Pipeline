@@ -1,5 +1,5 @@
-// $Id: Logs.java,v 1.1 2004/02/12 15:50:12 jim Exp $
-
+// $Id: Logs.java,v 1.2 2004/02/14 22:18:13 jim Exp $
+  
 package us.temerity.pipeline;
 
 import java.io.*; 
@@ -8,32 +8,36 @@ import java.util.logging.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   L O G S                                                                                */
-/*                                                                                          */
-/*     A set of loggers accessable from anywhere via static methods.                        */
 /*------------------------------------------------------------------------------------------*/
 
+/**
+ * A set of static {@link Logger Logger} instances and helpers methods which provide 
+ * logging facilities for all Pipeline programs. 
+ */
 public
 class Logs
 {  
   /*----------------------------------------------------------------------------------------*/
-  /*   I N I T I A L I Z A T I O N                                                          */
+  /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
 
-  /* Initialize loggers and log message handlers. */ 
-  public static void
+  private 
+  Logs()
+  {}
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   O P S                                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Initialize all {@link Logger Logger} instances and message handlers.
+   */
+  public static void 
   init() 
   {
-    assert(arg == null);
-    assert(glu == null);
-    assert(plg == null);
-    assert(tex == null);
-    assert(sum == null);
-
-    assert(sub == null);
-    assert(net == null);
-
-    assert(ops == null);
-    assert(job == null);
+    assert(sHandler == null);
 
     /* init loggers */  
     arg = Logger.getLogger("pipeline.arg");
@@ -62,7 +66,7 @@ class Logs
       ops.setUseParentHandlers(false); 
       job.setUseParentHandlers(false); 
       
-      sHandler = new StreamHandler(System.out, new CleanFormatter());
+      sHandler = new StreamHandler(System.out, new LogFormatter());
 
       arg.addHandler(sHandler);
       glu.addHandler(sHandler);
@@ -79,22 +83,9 @@ class Logs
   }
 
 
-  /* Close down logging facilities. */ 
-  public static void
-  cleanup()
-  {
-    assert(sHandler != null); 
-    sHandler.flush();
-    sHandler.close();
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   O P S                                                                                */
-  /*----------------------------------------------------------------------------------------*/
-
-  /* Flush the output stream. */ 
+  /** 
+   * Flush any cached messages to the output stream. 
+   */ 
   public static void 
   flush() 
   {
@@ -103,13 +94,49 @@ class Logs
   }
 
 
+  /** 
+   * Close down the logging facilities. <P> 
+   * 
+   * Flushes any cached messages and closes down the output stream.
+   */ 
+  public static void
+  cleanup()
+  {
+    assert(sHandler != null); 
+    sHandler.flush();
+    sHandler.close();
+    sHandler = null;
+
+    arg = null;
+    glu = null;
+    plg = null;
+    tex = null;
+    sum = null;
+    net = null;
+    ops = null;
+    job = null;
+  }
+
+
+
   /*----------------------------------------------------------------------------------------*/
   /*   C O M M A N D   L I N E                                                              */
   /*----------------------------------------------------------------------------------------*/
 
-  /* Generate a argument string suitable for use with the --log=... option */ 
+  /** 
+   * Generate a message logging level argument <CODE>String</CODE> suitable for use 
+   * with the (<CODE>--log=...</CODE>) command line option supported by all Pipeline 
+   * programs. 
+   * 
+   * @param logger  [<B>in</B>]
+   *   The {@link Logger Logger} who's message level is used to generate the 
+   *   <CODE>String</CODE>.
+   * 
+   * @see <A HREF="../../../../../man/plui.html"><I>plui(1)</I></A>
+   * @see <A HREF="../../../../../man/pipeline.html"><I>pipeline(1)</I></A>
+   */ 
   public static String
-  levelString
+  getLevelString
   (
    Logger logger
   ) 
@@ -142,27 +169,86 @@ class Logs
   }
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   P U B L I C   S T A T I C   F I E L D S                                              */
+  /*----------------------------------------------------------------------------------------*/
+
+
+  /** 
+   * The {@link Logger Logger} used for messages related to command-line argument parsing.
+   */
+  public static Logger arg;    
+
+  /**
+   * The {@link Logger Logger} used for messages related to Glue parsing.
+   * 
+   * @see GlueDecoder
+   */
+  public static Logger glu;    
+
+  /**
+   * The {@link Logger Logger} used for messages related to locating and loading Java 
+   * plugin classes related to Action, Editor and Tool plug-ins.
+   * 
+   * @see BaseAction 
+   * @see BaseEditor 
+   * @see BaseTool
+   */
+  public static Logger plg;   
+ 
+  /**
+   * The {@link Logger Logger} used for messages related to loading texture images
+   * associated with the graphical interface of 
+   * <A HREF="../../../../../man/plui.html"><I>plui(1)</I></A>
+   */
+  public static Logger tex;   
+
+  /**
+   * The {@link Logger Logger} used for messages related to checksum generation and 
+   * comparison.
+   * 
+   * @see CheckSum
+   */
+  public static Logger sum;    
+
+  /**
+   * The {@link Logger Logger} used for messages related to the launching and monitoring
+   * of OS level subprocesses.
+   * 
+   * @see SubProcess
+   */
+  public static Logger sub;    
+
+  /**
+   * The {@link Logger Logger} used for messages related network activity.
+   */
+  public static Logger net;    
+ 
+  /**
+   * The {@link Logger Logger} used for messages related to the execution of high-level 
+   * Pipeline operations.
+   */
+  public static Logger ops;   
+
+  /**
+   * The {@link Logger Logger} used for messages related to dispatching, executing and 
+   * monitoring Pipeline jobs.
+   * 
+   * @see QueueJob
+   */
+  public static Logger job;  
+
+
+
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
-  /* I/O operations */ 
-  public static Logger arg = null;    /* The logger for the command-line argument parser. */ 
-  public static Logger glu = null;    /* The logger for the GLUE parser. */ 
-  public static Logger plg = null;    /* The logger for plugin loading. */
-  public static Logger tex = null;    /* The logger for texture loading. */
-  public static Logger sum = null;    /* The logger of checksum related activity. */
-
-  /* system activity */ 
-  public static Logger sub = null;    /* The logger for subprocess execution. */
-  public static Logger net = null;    /* The logger for networking activity. */ 
-
-  /* servers */ 
-  public static Logger ops = null;    /* The logger of pipeline operations. */ 
-  public static Logger job = null;    /* The logger of job processing and execution. */ 
-
-
-  protected static StreamHandler sHandler = null;  /* Output handler for all loggers. */   
+  /** 
+   * The output handler for all loggers. 
+   */
+  private static StreamHandler sHandler;  
   
 }
 
