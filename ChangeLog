@@ -1,3 +1,203 @@
+2004-10-16  Jim Callahan  <jim@salamander.nyc.rr.com>
+
+	* src/java/us/temerity/pipeline/ui/JNodeViewerPanel.java:
+	now gets the checked-in revision numbers just before showing the check-out dialog in case a new version has been created since the last update [Bug #85]
+
+2004-10-15  Jim Callahan  <jim@salamander.nyc.rr.com>
+
+	* src/java/us/temerity/pipeline/task/TaskEventType.java, src/java/us/temerity/pipeline/task/AssignEvent.java, src/java/us/temerity/pipeline/task/CreateEvent.java, src/java/us/temerity/pipeline/task/ManageEvent.java, src/java/us/temerity/pipeline/task/TaskEvent.java, src/java/us/temerity/pipeline/task/TaskState.java:
+	obsolete
+
+2004-10-14  Jim Callahan  <jim@salamander.nyc.rr.com>
+
+	* src/java/us/temerity/pipeline/ui/JNodeFilesPanel.java, src/java/us/temerity/pipeline/ui/JQueueJobViewerPanel.java, src/java/us/temerity/pipeline/ui/UIMaster.java:
+	added check for null subprocess [Bug #74]
+
+	* src/java/us/temerity/pipeline/BaseAction.java:
+	added makeTargetDir() method [Bug #73]
+
+	* src/java/us/temerity/pipeline/plugin/v1_1_0/MayaCollateAction.java:
+	updated to support new MEL function arguments in Maya 6
+
+	* src/java/us/temerity/pipeline/plugin/v1_0_0/CompositeAction.java, src/java/us/temerity/pipeline/plugin/v1_0_0/ImfDispEditor.java, src/java/us/temerity/pipeline/plugin/v1_0_0/ImgCvtAction.java, src/java/us/temerity/pipeline/plugin/v1_0_0/MayaMelAction.java, src/java/us/temerity/pipeline/plugin/v1_0_0/MayaReferenceAction.java, src/java/us/temerity/pipeline/plugin/v1_0_0/MayaRenderAction.java, src/java/us/temerity/pipeline/plugin/v1_0_0/PatchAction.java, src/java/us/temerity/pipeline/plugin/v1_0_0/ScriptAction.java, src/java/us/temerity/pipeline/plugin/v1_1_0/MayaReferenceAction.java, src/java/us/temerity/pipeline/plugin/v1_1_0/MayaRenderAction.java:
+	added makeTargetDir() to all prep() methods [Bug #73]
+
+	* src/java/us/temerity/pipeline/plugin/v1_0_0/SwitchAction.java:
+	fixed Switch node behaves incorrectly [Bug #75]
+
+2004-10-13  Jim Callahan  <jim@salamander.nyc.rr.com>
+
+	* docs/javadoc/Makefile.in: added task package
+
+	* docs/misc/scheduling.lyx: latest
+
+	* src/java/us/temerity/pipeline/Makefile.in: added task package
+
+	* src/java/us/temerity/pipeline/ui/JBaseLayoutDialog.java, src/java/us/temerity/pipeline/ui/JLayoutTreeCellRenderer.java, src/java/us/temerity/pipeline/ui/JManageLayoutsDialog.java, src/java/us/temerity/pipeline/ui/JSaveLayoutDialog.java, src/java/us/temerity/pipeline/ui/UIMaster.java:
+	added default layout [Bug #11], improved layout dialogs
+
+	* src/java/us/temerity/pipeline/ui/prefs/GenUserPrefsApp.java, src/java/us/temerity/pipeline/ui/JManagerPanel.java:
+	added preference for function keys for showing main and panel group menus [Bug #47]
+
+	* src/java/us/temerity/pipeline/core/GraphicalApp.java:
+	better error handling of X11 connection failure [Bug #65]
+
+	* src/java/us/temerity/pipeline/plugin/v1_1_0/MayaReferenceAction.java:
+	added PrefixName per-link parameter
+
+	* src/java/us/temerity/pipeline/task/AssignEvent.java, src/java/us/temerity/pipeline/task/ManageEvent.java:
+	added serialVersionUID
+
+	* src/java/us/temerity/pipeline/plugin/v1_0_0/ImfDispEditor.java:
+	implements [Bug #67]
+
+	* src/java/us/temerity/pipeline/ui/JSelectLayoutDialog.java: obsolete
+
+2004-10-12  Jim Callahan  <jim@salamander.nyc.rr.com>
+
+	* src/java/us/temerity/pipeline/ui/JHotKeyField.java:
+	fixed horizontal alignment
+
+	* src/java/us/temerity/pipeline/task/AssignEvent.java, src/java/us/temerity/pipeline/task/CreateEvent.java, src/java/us/temerity/pipeline/task/ManageEvent.java, src/java/us/temerity/pipeline/task/Task.java, src/java/us/temerity/pipeline/task/TaskEvent.java, src/java/us/temerity/pipeline/task/TaskEventType.java, src/java/us/temerity/pipeline/task/TaskState.java, src/java/us/temerity/pipeline/task/TaskStatus.java, src/java/us/temerity/pipeline/task/package.html:
+	initial revision
+
+	* src/java/us/temerity/pipeline/NodeStatus.java: comments
+
+	* src/java/us/temerity/pipeline/LogMessage.java:
+	removed assertion that the log message must be non-null
+
+2004-10-10  Jim Callahan  <jim@salamander.nyc.rr.com>
+
+	* docs/man/plscript.src.html.in:
+	renamed --tree to --upstream, renamed --short to --brief
+
+2004-10-09  Jim Callahan  <jim@salamander.nyc.rr.com>
+
+	* src/java/us/temerity/pipeline/ui/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/prefs/GenUserPrefsApp.java:
+	added a Show Downstream preference which sets whether downstream links are shown initially [Bug #54]
+
+	* src/java/us/temerity/pipeline/ui/JManagerPanel.java:
+	now updates the node status for newly created Node Details, Node Files and Node History panels [Bug #56]
+
+	* src/java/us/temerity/pipeline/ui/JNodeDetailsPanel.java:
+	removed uneeded getNodeName() method
+
+	* src/java/us/temerity/pipeline/ui/JNodeViewerPanel.java:
+	now updates new Node Details, Node Files and Node History panels with the status of the node under the mouse when hotkeys are pressed [Bug #57]
+
+	* src/java/us/temerity/pipeline/ui/JManagerPanel.java:
+	now ignores attempts to change panel type to the current type [Bug #55]
+
+	* src/java/us/temerity/pipeline/ui/JNodeFilesPanel.java:
+	fixed exception when header icon menu is shown and the node status is null [Bug #52]
+
+	* src/java/us/temerity/pipeline/ui/JManagerPanel.java:
+	if only one tab remains, remove the tabbed pane and replace it with the contents of the sole tab when closing panels [Bug #53]
+
+	* src/java/us/temerity/pipeline/ui/prefs/GenUserPrefsApp.java:
+	fixed default hotkey conflict [Bug #58]
+
+	* src/java/us/temerity/pipeline/ui/JNodeViewerPanel.java:
+	Remove All menu item has been removed from the Node menu [Bug #60]
+
+	* configure.ac: v1.8.5
+
+	* docs/man/plscript.src.html.in, src/java/us/temerity/pipeline/core/ScriptApp.java, src/java/us/temerity/pipeline/core/ScriptOptsParser.jj:
+	implemented the checked-in and node commands
+
+	* src/java/us/temerity/pipeline/OverallNodeState.java, src/java/us/temerity/pipeline/OverallQueueState.java:
+	added one-letter symbols for each state for use in --brief status output by plscript(1)
+
+	* src/java/us/temerity/pipeline/MasterMgrClient.java:
+	added getCheckedInVersionIDs
+
+	* src/java/us/temerity/pipeline/FileSeq.java: comments
+
+	* src/java/us/temerity/pipeline/message/NodeGetCheckedInReq.java:
+	now allows (null) vid argument
+
+	* src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/core/MasterMgrServer.java, src/java/us/temerity/pipeline/message/MasterRequest.java, src/java/us/temerity/pipeline/message/NodeGetCheckedInVersionIDsReq.java, src/java/us/temerity/pipeline/message/NodeGetCheckedInVersionIDsRsp.java:
+	added getCheckedInVersionIDs
+
+	* docs/misc/TaskStates.html, docs/misc/scheduling.lyx:
+	latest scheduling ideas
+
+2004-10-05  Jim Callahan  <jim@salamander.nyc.rr.com>
+
+	* config/bootstrap-rhinofx.sh: v1.8.4
+
+	* src/java/us/temerity/pipeline/ResourceSampleBlock.java, src/java/us/temerity/pipeline/core/QueueMgr.java, src/java/us/temerity/pipeline/ui/JJobServerHistoryDialog.java:
+	now automatically deletes resource sample files older than 24-hours [Bug #16], fixed a bug in how resource samples where being loaded
+
+	* plconfig/customers/rhinofx/041005, plconfig/customers/rhinofx/041005.txt:
+	v1.8.4
+
+2004-10-04  Jim Callahan  <jim@salamander.nyc.rr.com>
+
+	* src/java/us/temerity/pipeline/plugin/v1_1_0/MayaRenderAction.java:
+	added support for Maya v6 [Bug #50]
+
+	* src/java/us/temerity/pipeline/ui/JNodeDetailsPanel.java, src/java/us/temerity/pipeline/ui/JNodeFilesPanel.java, src/java/us/temerity/pipeline/ui/JNodeHistoryPanel.java, src/java/us/temerity/pipeline/ui/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/JQueueJobDetailsPanel.java, src/java/us/temerity/pipeline/ui/UIMaster.java, src/java/us/temerity/pipeline/ui/prefs/GenUserPrefsApp.java:
+	added header menu with Edit and queue related operations [Bug #40]
+
+2004-10-03  Jim Callahan  <jim@salamander.nyc.rr.com>
+
+	* docs/man/plscript.src.html.in, src/java/us/temerity/pipeline/MasterMgrClient.java, src/java/us/temerity/pipeline/NodeMod.java, src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/core/MasterMgrServer.java, src/java/us/temerity/pipeline/message/MasterRequest.java, src/java/us/temerity/pipeline/message/NodeEvolveReq.java, src/java/us/temerity/pipeline/ui/JEvolveDialog.java, src/java/us/temerity/pipeline/ui/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/prefs/GenUserPrefsApp.java:
+	added Evolve Version operation [Bug #45]
+
+	* ChangeLog, docs/misc/TODO.txt: latest
+
+	* src/java/us/temerity/pipeline/core/MasterMgr.java:
+	job submisssion now proceeds upstream of nodes without jobs and nodes with active jobs that are finished [Bug #46]
+
+	* src/java/us/temerity/pipeline/ui/ViewerLinks.java:
+	now only shows vertical bar near arrow head when the node has an action and the action is disabled
+
+	* src/java/us/temerity/pipeline/ui/JNodeViewerPanel.java:
+	mouse clicks on the viewer canvas while pressing SHIFT or SHIFT+CTRL now are ignored [Bug #33]
+
+2004-10-02  Jim Callahan  <jim@salamander.nyc.rr.com>
+
+	* src/java/us/temerity/pipeline/ui/JNodeViewerPanel.java:
+	improved layout to minimize visual discontinuity when roots are added/removed [Bug #43]
+
+	* src/java/us/temerity/pipeline/ui/ViewerNodePool.java:
+	added getBounds() and getActiveBounds()
+
+	* src/java/us/temerity/pipeline/ui/JNodeViewerPanel.java:
+	fixed vertical offset bug in node layout [Bug# 34]
+
+	* src/java/us/temerity/pipeline/ui/JNodeViewerPanel.java:
+	added RemoveAllRoots to NodeViewer Menu [Bug #32], Link now removes upstream node roots and Unlink adds upstream node roots [Bug #42]
+
+	* src/java/us/temerity/pipeline/ui/prefs/GenUserPrefsApp.java:
+	added RemoveAllRoots to NodeViewer [Bug #32]
+
+2004-10-01  Jim Callahan  <jim@salamander.nyc.rr.com>
+
+	* src/java/us/temerity/pipeline/ui/JManagerPanel.java, src/java/us/temerity/pipeline/ui/UIMaster.java, src/java/us/temerity/pipeline/ui/prefs/GenUserPrefsApp.java:
+	added new window containing a panel type hotkeys and menus [Bug #39]
+
+	* src/java/us/temerity/pipeline/ui/JManagerPanel.java:
+	now add two tabs in doAddTab() when creating a new tabbed panel [Bug #36]
+
+	* src/java/us/temerity/pipeline/ui/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/JRegisterDialog.java:
+	fixed bug caused by fighting between the register and update tasks [Bug #41]
+
+	* plconfig/CryptoApp.class, plconfig/customers/testing/040929, plconfig/customers/testing/040929.txt, plconfig/plconfig-2.3.1-1.i686.rpm, plconfig/plconfig-2.3.2-1.i686.rpm:
+	plconfig v2.3.2
+
+	* config/bootstrap.sh: 040929 configuration
+
+	* src/java/us/temerity/pipeline/core/QueueMgr.java:
+	increased job garbage collection interval
+
+	* src/java/us/temerity/pipeline/core/MasterMgr.java:
+	fixed staleness propogation bugs [Bug #38]
+
+	* src/java/us/temerity/pipeline/NodeMod.java:
+	changing the Toolset is no longer a critical modification if the node does not have an Action, removing an Action is no longer a critical modification [Bug #38]
+
 2004-10-01  Jim Callahan  <jim@salamander.nyc.rr.com>
 
 	* src/java/us/temerity/pipeline/ui/JManagerPanel.java:
