@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.18 2004/10/28 15:55:23 jim Exp $
+// $Id: BaseAction.java,v 1.19 2004/11/03 18:15:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -891,9 +891,8 @@ class BaseAction
    Object obj
   )
   {
-    if((obj != null) && (getClass() == obj.getClass())) {
+    if((obj != null) && (obj instanceof BaseAction)) {
       BaseAction action = (BaseAction) obj;
-
       if(super.equals(obj) && 
 	 equalSingleParams(action) && 
 	 equalSourceParams(action)) 
