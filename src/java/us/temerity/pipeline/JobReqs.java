@@ -1,4 +1,4 @@
-// $Id: JobReqs.java,v 1.13 2005/03/03 03:56:33 jim Exp $
+// $Id: JobReqs.java,v 1.14 2005/03/04 08:11:37 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -16,7 +16,7 @@ import java.io.*;
  *
  * Pipeline determines assignment of jobs to available hosts using a flexible selection 
  * criteria which selects the best job to run on each available job server slot.  Job servers
- * are considered in descending value of the Order parameter of each server.  <P> 
+ * are considered in ascending value of the dispatch Order parameter of each server.  <P> 
  * 
  * For each available job server slot, all pending jobs in the queue are considered for 
  * execution. Each job maintaines a set of requirements which must be met before the job 
@@ -34,7 +34,7 @@ import java.io.*;
  * the current dispatch cycle and the next slot is considered instead.  As mentioned before,
  * the Order parameter of job servers is used to determine the order in which job servers are
  * considered for dispatch.  If there are fewer jobs in the queue than available server slots
- * the servers with higher Order will always be busier than those of lower Order.  This can 
+ * the servers with lower Order will always be busier than those of higher Order.  This can 
  * be used to prefer servers with faster CPU speeds to reduce per-job execution times. <P> 
  * 
  * The criteria used by the job dispatcher to evaluate whether a server meets the requirements
