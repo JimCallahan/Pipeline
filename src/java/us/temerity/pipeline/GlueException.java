@@ -1,4 +1,4 @@
-// $Id: GlueException.java,v 1.1 2004/02/14 18:48:48 jim Exp $
+// $Id: GlueException.java,v 1.2 2004/02/20 22:50:06 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -100,7 +100,7 @@ class GlueException
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 2514382753062563917L;
+  private static final long serialVersionUID = -3983865623821512704L;
 
 }
   

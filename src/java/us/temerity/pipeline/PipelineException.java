@@ -1,4 +1,4 @@
-// $Id: PipelineException.java,v 1.1 2004/02/14 18:48:48 jim Exp $
+// $Id: PipelineException.java,v 1.2 2004/02/20 22:50:06 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -101,7 +101,7 @@ class PipelineException
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 6274816694291832904L;
+  private static final long serialVersionUID = 3962218832440351208L;
 
 }
   
