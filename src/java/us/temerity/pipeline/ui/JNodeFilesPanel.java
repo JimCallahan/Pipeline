@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.7 2004/09/03 11:02:59 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.8 2004/09/05 06:48:33 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -237,44 +237,6 @@ class JNodeFilesPanel
     updateNodeStatus(null, null);
   }
 
-
-  /**
-   * Create the title/value panels.
-   * 
-   * @return 
-   *   The title panel, value panel and containing box.
-   */   
-  private Component[]
-  createCommonPanels()
-  {
-    Component comps[] = new Component[3];
-    
-    Box body = new Box(BoxLayout.X_AXIS);
-    comps[2] = body;
-    {
-      {
-	JPanel panel = new JPanel();
-	comps[0] = panel;
-	
-	panel.setName("TitlePanel");
-	panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-      
-	body.add(panel);
-      }
-      
-      {
-	JPanel panel = new JPanel();
-	comps[1] = panel;
-	
-	panel.setName("ValuePanel");
-	panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-
-	body.add(panel);
-      }
-    }
-
-    return comps;
-  }
 
 
   /*----------------------------------------------------------------------------------------*/

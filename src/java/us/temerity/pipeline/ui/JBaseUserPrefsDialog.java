@@ -1,4 +1,4 @@
-// $Id: JBaseUserPrefsDialog.java,v 1.5 2004/07/18 21:33:33 jim Exp $
+// $Id: JBaseUserPrefsDialog.java,v 1.6 2004/09/05 06:46:18 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -128,7 +128,7 @@ class JBaseUserPrefsDialog
 	  pCardPanel = cpanel;
 	  
 	  { 
-	    Component comps[] = createCommonPanels();
+	    Component comps[] = UIMaster.createTitledPanels();
 	    JPanel tpanel = (JPanel) comps[0];
 	    JPanel vpanel = (JPanel) comps[1];
 
@@ -207,44 +207,6 @@ class JBaseUserPrefsDialog
     }
 
     model.reload();
-  }
-
-  /**
-   * Create the title/value panels.
-   * 
-   * @return 
-   *   The title panel, value panel and containing box.
-   */   
-  protected Component[]
-  createCommonPanels()
-  { 
-    Component comps[] = new Component[3];
-
-    Box body = new Box(BoxLayout.X_AXIS);
-    comps[2] = body;
-    {
-      {
-	JPanel panel = new JPanel();
-	comps[0] = panel;
-	
-	panel.setName("TitlePanel");
-	panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-      
-	body.add(panel);
-      }
-      
-      {
-	JPanel panel = new JPanel();
-	comps[1] = panel;
-	
-	panel.setName("ValuePanel");
-	panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-
-	body.add(panel);
-      }
-    }
-
-    return comps;
   }
 
 
