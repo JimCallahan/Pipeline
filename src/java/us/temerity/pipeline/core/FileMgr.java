@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.2 2004/03/23 07:40:37 jim Exp $
+// $Id: FileMgr.java,v 1.3 2004/03/25 02:08:45 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -52,12 +52,11 @@ import java.util.concurrent.locks.*;
  *   </DIV> 
  *   
  *   Where (<I>prod-dir</I>) is the root of the production file system hierarchy set by
- *   the <CODE>--with-prod=DIR</CODE> option to <I>configure(1)</I> or as an agument to the 
- *   constructor for this class.  The (<I>author</I>) is the name of the user owning the 
- *   working version of the node.  The (<I>view</I>) is the name of the particular working 
- *   area view of which the working version is a member.  In practice the environmental 
- *   variable <CODE>$WORKING</CODE> is set to contain the full path to this particular 
- *   view. <P> 
+ *   <I>configure(1)</I> or as an agument to the constructor for this class.  The 
+ *   (<I>author</I>) is the name of the user owning the working version of the node.  The 
+ *   (<I>view</I>) is the name of the particular working area view of which the working 
+ *   version is a member.  In practice the environmental variable <CODE>$WORKING</CODE> is 
+ *   set to contain the full path to this particular view. <P> 
  * 
  *   The (<I>fully-resolved-node-path</I>) is all but the last component of the fully  
  *   resolved name of the node.  The last component of this name is the prefix of the files 
@@ -179,10 +178,7 @@ class FileMgr
   }
   
   /** 
-   * Construct a new file manager.
-   * 
-   * The root production directory is set by the <CODE>--with-prod=DIR</CODE> 
-   * option to <I>configure(1)</I>.
+   * Construct a new file manager using the default root production directory.
    */
   public
   FileMgr() 
@@ -199,9 +195,9 @@ class FileMgr
    File dir
   )
   { 
-    pNodeLocks   = new HashMap<String,ReentrantReadWriteLock>();
-    pWorkLocks   = new HashMap<NodeID,Object>();
-    pMakeDirLock = new Object();
+    pCheckedInLocks = new HashMap<String,ReentrantReadWriteLock>();
+    pWorkingLocks   = new HashMap<NodeID,Object>();
+    pMakeDirLock    = new Object();
 
     if(dir == null)
       throw new IllegalArgumentException("The root production directory cannot be (null)!");
@@ -247,11 +243,11 @@ class FileMgr
 
     Date start = new Date();
     long wait = 0;
-    ReentrantReadWriteLock nodeLock = getNodeLock(req.getNodeID().getName());
-    nodeLock.readLock().lock();
+    ReentrantReadWriteLock checkedInLock = getCheckedInLock(req.getNodeID().getName());
+    checkedInLock.readLock().lock();
     try {
-      Object workLock = getWorkLock(req.getNodeID());
-      synchronized(workLock) {
+      Object workingLock = getWorkingLock(req.getNodeID());
+      synchronized(workingLock) {
 	wait  = (new Date()).getTime() - start.getTime();
 	start = new Date();
 
@@ -409,7 +405,7 @@ class FileMgr
 	return new FailureRsp(task, ex.getMessage(), start);
     }
     finally {
-      nodeLock.readLock().unlock();
+      checkedInLock.readLock().unlock();
     }  
   }
 
@@ -444,11 +440,11 @@ class FileMgr
 
     Date start = new Date();
     long wait = 0;
-    ReentrantReadWriteLock nodeLock = getNodeLock(req.getNodeID().getName());
-    nodeLock.writeLock().lock();
+    ReentrantReadWriteLock checkedInLock = getCheckedInLock(req.getNodeID().getName());
+    checkedInLock.writeLock().lock();
     try {
-      Object workLock = getWorkLock(req.getNodeID());
-      synchronized(workLock) {
+      Object workingLock = getWorkingLock(req.getNodeID());
+      synchronized(workingLock) {
 	wait  = (new Date()).getTime() - start.getTime();
 	start = new Date();
 
@@ -718,7 +714,7 @@ class FileMgr
 	return new FailureRsp(task, ex.getMessage(), start);
     }
     finally {
-      nodeLock.writeLock().unlock();
+      checkedInLock.writeLock().unlock();
     }  
   }
 
@@ -753,11 +749,11 @@ class FileMgr
 
     Date start = new Date();
     long wait = 0;
-    ReentrantReadWriteLock nodeLock = getNodeLock(req.getNodeID().getName());
-    nodeLock.readLock().lock();
+    ReentrantReadWriteLock checkedInLock = getCheckedInLock(req.getNodeID().getName());
+    checkedInLock.readLock().lock();
     try {
-      Object workLock = getWorkLock(req.getNodeID());
-      synchronized(workLock) {
+      Object workingLock = getWorkingLock(req.getNodeID());
+      synchronized(workingLock) {
 	wait  = (new Date()).getTime() - start.getTime();
 	start = new Date();
 
@@ -953,7 +949,7 @@ class FileMgr
 	return new FailureRsp(task, ex.getMessage(), start);
     }
     finally {
-      nodeLock.readLock().unlock();
+      checkedInLock.readLock().unlock();
     }  
   }
 
@@ -989,11 +985,11 @@ class FileMgr
 
     Date start = new Date();
     long wait = 0;
-    ReentrantReadWriteLock nodeLock = getNodeLock(req.getNodeID().getName());
-    nodeLock.readLock().lock();
+    ReentrantReadWriteLock checkedInLock = getCheckedInLock(req.getNodeID().getName());
+    checkedInLock.readLock().lock();
     try {
-      Object workLock = getWorkLock(req.getNodeID());
-      synchronized(workLock) {
+      Object workingLock = getWorkingLock(req.getNodeID());
+      synchronized(workingLock) {
 	wait  = (new Date()).getTime() - start.getTime();
 	start = new Date();
 
@@ -1079,7 +1075,7 @@ class FileMgr
 	return new FailureRsp(task, ex.getMessage(), start);
     }
     finally {
-      nodeLock.readLock().unlock();
+      checkedInLock.readLock().unlock();
     }  
   }
 
@@ -1114,11 +1110,11 @@ class FileMgr
 
     Date start = new Date();
     long wait = 0;
-    ReentrantReadWriteLock nodeLock = getNodeLock(req.getNodeID().getName());
-    nodeLock.readLock().lock();
+    ReentrantReadWriteLock checkedInLock = getCheckedInLock(req.getNodeID().getName());
+    checkedInLock.readLock().lock();
     try {
-      Object workLock = getWorkLock(req.getNodeID());
-      synchronized(workLock) {
+      Object workingLock = getWorkingLock(req.getNodeID());
+      synchronized(workingLock) {
 	wait  = (new Date()).getTime() - start.getTime();
 	start = new Date();
 
@@ -1203,7 +1199,7 @@ class FileMgr
 	return new FailureRsp(task, ex.getMessage(), start);
     }
     finally {
-      nodeLock.readLock().unlock();
+      checkedInLock.readLock().unlock();
     }  
   }
 
@@ -1216,27 +1212,21 @@ class FileMgr
   /** 
    * Lookup the node lock (or create one if none already exists). <P> 
    * 
-   * The node lock protects access to both working and checked-in files associated with 
-   * the node.  Threads which wish to modify or add files associated with any checked-in 
-   * version of the node should aquire the WRITE lock.  Threads which wish only to access
-   * the state of checked-in files should aquire the READ lock instread.  Threads which 
-   * no not access or modify any checked-in files do not need to aquire the node lock.
-   * 
    * @param name 
    *   The fully resolved node name
    */
   private ReentrantReadWriteLock
-  getNodeLock
+  getCheckedInLock
   (
    String name
   ) 
   {
-    synchronized(pNodeLocks) {
-      ReentrantReadWriteLock lock = pNodeLocks.get(name);
+    synchronized(pCheckedInLocks) {
+      ReentrantReadWriteLock lock = pCheckedInLocks.get(name);
 
       if(lock == null) { 
 	lock = new ReentrantReadWriteLock();
-	pNodeLocks.put(name, lock);
+	pCheckedInLocks.put(name, lock);
       }
 
       return lock;
@@ -1246,31 +1236,21 @@ class FileMgr
   /** 
    * Lookup the working version lock (or create one if none already exists). <P> 
    * 
-   * The working version lock protects the files associated with working versions from 
-   * being accessed or modified by more than one thread at a time.  Any thread which needs
-   * to access the state or modify any of the files associated with a working version should
-   * protected this access by using this lock as the argument to a <CODE>synchronized</CODE>
-   * block. <P> 
-   * 
-   * If files associated with a checked-in version of the node will also be accessed or 
-   * modified by the thread, then this lock should be uses within the scope of an already 
-   * aquired READ or WRITE node lock.  See {@link #getNodeLock getNodeLock} for details.
-   * 
    * @param id 
    *   The unique working version identifier.
    */
   private Object
-  getWorkLock
+  getWorkingLock
   (
    NodeID id
   ) 
   {
-    synchronized(pWorkLocks) {
-      Object lock = pWorkLocks.get(id);
+    synchronized(pWorkingLocks) {
+      Object lock = pWorkingLocks.get(id);
 
       if(lock == null) { 
 	lock = new Object();
-	pWorkLocks.put(id, lock);
+	pWorkingLocks.put(id, lock);
       }
 
       return lock;
@@ -1291,7 +1271,7 @@ class FileMgr
    * will only access these checked-in file resources.  The per-node write-lock should be 
    * aquired when creating new files, symlinks or checksums.
    */
-  private HashMap<String,ReentrantReadWriteLock>  pNodeLocks;
+  private HashMap<String,ReentrantReadWriteLock>  pCheckedInLocks;
 
   /**
    * The per-working version locks indexed by NodeID. <P> 
@@ -1301,7 +1281,7 @@ class FileMgr
    * <CODE>synchronized()<CODE> statement block wrapping any access or modification of 
    * these file resources.
    */
-  private HashMap<NodeID,Object>  pWorkLocks;
+  private HashMap<NodeID,Object>  pWorkingLocks;
 
   /**
    * The file system directory creation lock.
