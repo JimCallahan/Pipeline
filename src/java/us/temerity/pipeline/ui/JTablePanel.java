@@ -1,4 +1,4 @@
-// $Id: JTablePanel.java,v 1.3 2004/06/28 23:38:05 jim Exp $
+// $Id: JTablePanel.java,v 1.4 2004/08/01 15:37:33 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -107,7 +107,6 @@ class JTablePanel
 	      }
 	    }
 
-
 	    Dimension size = new Dimension(total, 23); 
 	    hbox.setMinimumSize(size);
 	    hbox.setPreferredSize(size);
@@ -137,6 +136,7 @@ class JTablePanel
       JTable table = new JTable(pTableModel);
       pTable = table;
 
+      table.setAutoCreateColumnsFromModel(true);
       table.setColumnSelectionAllowed(false);
       
       table.setShowHorizontalLines(false);
@@ -235,7 +235,15 @@ class JTablePanel
   {
     return pTable;
   }
- 
+
+  /**
+   * Get the header viewport.
+   */ 
+  public JViewport
+  getHeaderViewport() 
+  {
+    return pHeaderViewport;
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
