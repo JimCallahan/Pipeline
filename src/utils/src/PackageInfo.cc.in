@@ -1,4 +1,4 @@
-// $Id: PackageInfo.cc.in,v 1.1 2003/01/25 01:36:22 jim Exp $
+// $Id: PackageInfo.cc.in,v 1.2 2003/02/10 16:11:12 jim Exp $
 
 #include <PackageInfo.hh>
 
@@ -38,11 +38,14 @@ const char* PackageInfo::sMozilla = "@MOZILLA@";
 /* installed location of the toolset-exec program */ 
 const char* PackageInfo::sToolsetExec = "@BASEDIR@/toolset/sbin/toolset-exec";
 
+/* installed location of the java interpreter */ 
+const char* PackageInfo::sJava = "@JAVA@";
+
+/* installed location of the Java Database JAR file */ 
+const char* PackageInfo::sJDBC = "@JDBC_JAR@";
+
 /* installed location of the GNU make program */ 
 const char* PackageInfo::sMake = "@MAKE@";
-
-/* installed location of the md5sum program */ 
-const char* PackageInfo::sMd5sum = "@MD5SUM@";
 
 /* installed location of the diff program */ 
 const char* PackageInfo::sDiff = "@DIFF@";
