@@ -1,4 +1,4 @@
-// $Id: TupleNf.java,v 1.9 2004/12/29 17:26:44 jim Exp $
+// $Id: TupleNf.java,v 1.10 2004/12/29 22:11:42 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -512,6 +512,23 @@ class TupleNf
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Whether ALL components of this tuple are greater-than the given scalar.
+   */ 
+  public boolean
+  allGt
+  (
+   float s
+  ) 
+  {
+    int i;
+    for(i=0; i<pComps.length; i++) {
+      if(pComps[i] <= s)
+	return false;
+    }
+    return true;
+  }
+  
+  /**
    * Whether ALL components of this tuple are greater-than the corresponding components 
    * of the given tuple.
    * 
@@ -530,6 +547,26 @@ class TupleNf
     int i;
     for(i=0; i<pComps.length; i++) {
       if(pComps[i] <= t.pComps[i])
+	return false;
+    }
+    return true;
+  }
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether ALL components of this tuple are greater-than-or-equal the given scalar.
+   */ 
+  public boolean
+  allGe
+  (
+   float s
+  ) 
+  {
+    int i;
+    for(i=0; i<pComps.length; i++) {
+      if(pComps[i] < s)
 	return false;
     }
     return true;
@@ -559,6 +596,26 @@ class TupleNf
     return true;
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether ALL components of this tuple are less-than the given scalar.
+   */ 
+  public boolean
+  allLt
+  (
+   float s
+  ) 
+  {
+    int i;
+    for(i=0; i<pComps.length; i++) {
+      if(pComps[i] >= s)
+	return false;
+    }
+    return true;
+  }
+
   /**
    * Whether ALL components of this tuple are less-than the corresponding components 
    * of the given tuple.
@@ -582,7 +639,27 @@ class TupleNf
     }
     return true;
   }
-  
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether ALL components of this tuple are less-than-or-equal the given scalar.
+   */ 
+  public boolean
+  allLe
+  (
+   float s
+  ) 
+  {
+    int i;
+    for(i=0; i<pComps.length; i++) {
+      if(pComps[i] > s)
+	return false;
+    }
+    return true;
+  }
+
   /**
    * Whether ALL components of this tuple are less-than-or-equal to the corresponding 
    * components of the given tuple.
@@ -611,6 +688,23 @@ class TupleNf
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Whether ANY components of this tuple are greater-than the given scalar.
+   */ 
+  public boolean
+  anyGt
+  (
+   float s
+  ) 
+  {
+    int i;
+    for(i=0; i<pComps.length; i++) {
+      if(pComps[i] > s)
+	return true;
+    }
+    return false;
+  }
+
+  /**
    * Whether ANY components of this tuple are greater-than the corresponding components 
    * of the given tuple.
    * 
@@ -629,6 +723,26 @@ class TupleNf
     int i;
     for(i=0; i<pComps.length; i++) {
       if(pComps[i] > t.pComps[i])
+	return true;
+    }
+    return false;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether ANY components of this tuple are greater-than-or-equal the given scalar.
+   */ 
+  public boolean
+  anyGe
+  (
+   float s
+  ) 
+  {
+    int i;
+    for(i=0; i<pComps.length; i++) {
+      if(pComps[i] >= s)
 	return true;
     }
     return false;
@@ -658,6 +772,26 @@ class TupleNf
     return false;
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether ANY components of this tuple are less-than the given scalar.
+   */ 
+  public boolean
+  anyLt
+  (
+   float s
+  ) 
+  {
+    int i;
+    for(i=0; i<pComps.length; i++) {
+      if(pComps[i] < s)
+	return true;
+    }
+    return false;
+  }
+
   /**
    * Whether ANY components of this tuple are less-than the corresponding components 
    * of the given tuple.
@@ -681,7 +815,27 @@ class TupleNf
     }
     return false;
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Whether ANY components of this tuple are less-than-or-equal the given scalar.
+   */ 
+  public boolean
+  anyLe
+  (
+   float s
+  ) 
+  {
+    int i;
+    for(i=0; i<pComps.length; i++) {
+      if(pComps[i] <= s)
+	return true;
+    }
+    return false;
+  }
+
   /**
    * Whether ANY components of this tuple are less-than-or-equal to the corresponding 
    * components of the given tuple.
