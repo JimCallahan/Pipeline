@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.2 2004/09/08 18:33:09 jim Exp $
+// $Id: PluginMgr.java,v 1.3 2004/09/10 15:40:09 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -442,7 +442,7 @@ class PluginMgr
     }
     catch(LinkageError ex) {
       throw new PipelineException
-	("Unable to link plugin class (" + cname + "):\n\n" + 
+	("Unable to link plugin class (" + cname + "):\n" + 
 	 ex.getMessage());
     }
     catch(ClassNotFoundException ex) {
@@ -451,11 +451,11 @@ class PluginMgr
     }   
     catch (IllegalAccessException ex) {
       throw new PipelineException
-	("Unable to access the constructor for plugin class: " + cname + " (v" + vid + ")!");
+	("Unable to access the constructor for plugin class (" + cname + " v" + vid + ")!");
     }
     catch (InstantiationException ex) { 
       throw new PipelineException
-	("Unable to instantiate the plugin class: " + cname + " (v" + vid + "):\n\n" +
+	("Unable to instantiate the plugin class (" + cname + " v" + vid + "):\n" +
 	 ex.getMessage());
     } 
   }
@@ -511,7 +511,7 @@ class PluginMgr
 	proc.join();
 	if(!proc.wasSuccessful()) 
 	  throw new PipelineException
-	    ("Unable to install plugin class file (" + file + "):\n\n" + 
+	    ("Unable to install plugin class file (" + file + "):\n" + 
 	     proc.getStdErr());
       }
       catch(InterruptedException ex) {
@@ -666,7 +666,7 @@ class PluginMgr
     Plugin plugin = versions.get(pvid);
     if(plugin == null) {
       throw new PipelineException
-	("Unable to find the " + ptype + " plugin: " + name + " (v" + pvid + ")!");
+	("Unable to find the " + ptype + " plugin (" + name + " v" + pvid + ")!");
     }
 
     try {
@@ -674,11 +674,11 @@ class PluginMgr
     }
     catch (IllegalAccessException ex) {
       throw new PipelineException
-	("Unable to access the constructor for plugin class: " + name + " (v" + pvid + ")!");
+	("Unable to access the constructor for plugin class (" + name + " v" + pvid + ")!");
     }
     catch (InstantiationException ex) { 
       throw new PipelineException
-	("Unable to instantiate the plugin class: " + name + " (v" + pvid + "):\n\n" +
+	("Unable to instantiate the plugin class (" + name + " v" + pvid + "):\n\n" +
 	 ex.getMessage());
     }
   }  
@@ -766,7 +766,7 @@ class PluginMgr
 	    throw new PipelineException 
 	      ("The directory containing plugin class files (" + dir + ") does " +
 	       "not conform to the naming convention of \"v#_#_#\" used to denote " +
-		 "the plugin version!  Ignoring class file (" + file + ").\n\n" + 
+	       "the plugin version!  Ignoring class file (" + file + ").\n" + 
 	       ex.getMessage());
 	  }
 	  
@@ -839,12 +839,12 @@ class PluginMgr
 	} 
 	catch(LinkageError ex) {
 	  throw new PipelineException
-	    ("Unable to link plugin class: " + cname + "\n\n" + 
+	    ("Unable to link plugin class (" + cname + "):\n" + 
 	     ex.getMessage());
 	}
 	catch(ClassNotFoundException ex) {
 	  throw new PipelineException
-	    ("Unable to find plugin class: " + cname + "\n\n" +
+	    ("Unable to find plugin class (" + cname + "):\n" +
 	     ex.getMessage());
 	}	  
 
@@ -920,12 +920,17 @@ class PluginMgr
     }
     catch(InstantiationException ex) {
       throw new PipelineException
-	("Unable to intantiate plugin class: " + cls.getName() + "\n\n" +
+	("Unable to intantiate plugin class (" + cls.getName() + "):\n" +
 	 ex.getMessage());
     }
     catch(IllegalAccessException ex) {
       throw new PipelineException
-	("Unable to access plugin class: " + cls.getName() + "\n\n" +
+	("Unable to access plugin class (" + cls.getName() + "):\n" +
+	 ex.getMessage());
+    }
+    catch(Exception ex) {
+      throw new PipelineException
+	("Exception thrown by constructor of plugin class (" + cls.getName() + "):\n" + 
 	 ex.getMessage());
     }
 
