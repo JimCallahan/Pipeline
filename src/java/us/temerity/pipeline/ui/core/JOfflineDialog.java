@@ -1,4 +1,4 @@
-// $Id: JOfflineDialog.java,v 1.3 2005/03/23 20:46:09 jim Exp $
+// $Id: JOfflineDialog.java,v 1.4 2005/04/02 00:34:27 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -498,8 +498,12 @@ class JOfflineDialog
       versions.put(name, new TreeSet<VersionID>(data.get(name).keySet()));
 
     if(!versions.isEmpty()) {
-      OfflineTask task = new OfflineTask(versions); 
-      task.start();
+      JConfirmDialog confirm = new JConfirmDialog("Are you sure?");
+      confirm.setVisible(true);
+      if(confirm.wasConfirmed()) {
+	OfflineTask task = new OfflineTask(versions); 
+	task.start();
+      }
     }
   }
 
