@@ -1,4 +1,4 @@
-// $Id: JArchiveDialog.java,v 1.7 2005/03/23 20:46:09 jim Exp $
+// $Id: JArchiveDialog.java,v 1.8 2005/04/02 01:04:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -875,7 +875,7 @@ class JArchiveDialog
       if(!archives.isEmpty()) {
 	if(pArchiver.isManual()) {
 	    ManualArchiveConfirmTask task = 
-	      new ManualArchiveConfirmTask(0, pPrefix, archives, pArchiver);
+	      new ManualArchiveConfirmTask(null, 0, pPrefix, archives, pArchiver);
 	    SwingUtilities.invokeLater(task);
 	}
 	else {  
@@ -926,6 +926,7 @@ class JArchiveDialog
     public 
     ManualArchiveConfirmTask
     (
+     String lastArchiveName, 
      int idx, 
      String prefix,
      TreeMap<Integer,TreeMap<String,TreeSet<VersionID>>> archives, 
@@ -934,6 +935,8 @@ class JArchiveDialog
     {
       super("JArchiveDialog:ManualArchiveConfirmTask");
       
+      pLastArchiveName = lastArchiveName; 
+
       pIndex    = idx; 
       pPrefix   = prefix; 
       pArchives = archives; 
@@ -943,6 +946,15 @@ class JArchiveDialog
     public void 
     run() 
     {
+      if(pLastArchiveName != null) {
+	JMessageDialog diag = 
+	  new JMessageDialog("Created: " + pLastArchiveName);
+	diag.setVisible(true);
+      }
+
+      if(pArchives.get(pIndex) == null) 
+	return;
+
       JConfirmDialog diag = 
 	new JConfirmDialog("Are you ready to write the next archive volume " + 
 			   "(" + (pIndex+1) + " of " + pArchives.size() + ")?");
@@ -961,6 +973,7 @@ class JArchiveDialog
       }      
     }
 
+    private String                                               pLastArchiveName; 
     private int                                                  pIndex; 
     private String                                               pPrefix;
     private TreeMap<Integer,TreeMap<String,TreeSet<VersionID>>>  pArchives; 
@@ -997,11 +1010,12 @@ class JArchiveDialog
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient client = master.getMasterMgrClient();
       String msg = ("Archiving Volume (" + (pIndex+1) + " of " + pArchives.size() + ")...");
+      String archiveName = null;
       if(master.beginPanelOp(msg)) {
 	TreeMap<String,TreeSet<VersionID>> versions = pArchives.get(pIndex);
 
 	try {
-	  client.archive(pPrefix, versions, pArchiver);
+	  archiveName = client.archive(pPrefix, versions, pArchiver);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog
@@ -1020,12 +1034,9 @@ class JArchiveDialog
 	SwingUtilities.invokeLater(task);      
       }
 
-      int nextIdx = pIndex+1;
-      if(pArchives.get(nextIdx) != null) {
-	ManualArchiveConfirmTask task = 
-	  new ManualArchiveConfirmTask(nextIdx, pPrefix, pArchives, pArchiver);
-	SwingUtilities.invokeLater(task);
-      }	
+      ManualArchiveConfirmTask task = 
+	new ManualArchiveConfirmTask(archiveName, pIndex+1, pPrefix, pArchives, pArchiver);
+      SwingUtilities.invokeLater(task);
     }
 
     private int                                                  pIndex; 
@@ -1034,7 +1045,6 @@ class JArchiveDialog
     private BaseArchiver                                         pArchiver; 
   }
 
-  
   /** 
    * Remove the given entries from the archive table.
    */ 
