@@ -1,4 +1,4 @@
-// $Id: BaseApp.java,v 1.7 2004/09/21 23:50:15 jim Exp $
+// $Id: BaseApp.java,v 1.8 2004/09/23 20:09:06 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -486,7 +486,7 @@ class BaseApp
       return str;
 
     StringBuffer buf = new StringBuffer();
-    String words[] = str.split("\\s");
+    String words[] = str.split("\\p{Blank}");
     int cnt = indent;
     int wk;
     for(wk=0; wk<words.length; wk++) {
