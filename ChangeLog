@@ -1,0 +1,147 @@
+2002-05-28  Jim Callahan  <jim@salamander>
+
+	* config.h.in, configure.in, Core/src/BBoxGn.hh, Core/src/ByteSwap.cc, Core/src/ByteSwap.hh, Core/src/CoordSysGn.cc, Core/src/CoordSysGn.hh, Core/src/DebugIV.cc, Core/src/DebugIV.hh, Core/src/DictGn.hh, Core/src/ExtraMath.hh, Core/src/FB.cc, Core/src/FB.hh, Core/src/FramePattern.hh, Core/src/Frustum.cc, Core/src/Frustum.hh, Core/src/Makefile.am, Core/src/MatrixGn.cc, Core/src/MatrixGn.hh, Core/src/PointGn.hh, Core/src/SearchPath.cc, Core/src/SearchPath.hh, Core/src/SpaceAtomic.cc, Core/src/SpaceAtomic.hh, Core/src/SpaceBase.hh, Core/src/SpaceGn.cc, Core/src/SpaceGn.hh, Core/src/SpaceInterpGn.hh, Core/src/SpaceInterpMethod.hh, Core/src/Timer.hh, Core/src/TypeInfo.cc, Core/src/TypeInfo.hh, Core/src/VecBase.hh, Core/src/VecGn.hh, Core/src/VectorGn.hh, Core/tests/Makefile.am, Core/tests/TestBBoxGn.cc, Core/tests/TestDict.cc, Core/tests/TestFB.cc, Core/tests/TestFrustum.cc, Core/tests/TestFrustumClipping.cc, Core/tests/TestFrustumXforms.cc, Core/tests/TestMatrixGn.cc, Core/tests/TestPointGn.cc, Core/tests/TestSearchPath.cc, Core/tests/TestSpaceGn.cc, Core/tests/TestVecGn.cc, Core/tests/TestVectorGn.cc, README, Thread/src/Condition.hh, Thread/src/Locker.hh, Thread/src/Lock.hh, Thread/src/Makefile.am, Thread/src/Sentinel.hh, Thread/src/SeqCondition.hh, Thread/src/SeqJob.hh, Thread/src/SeqThreadMgr.hh, Thread/src/SmartPtr.hh, Thread/src/Sync.hh, Thread/tests/Makefile.am, Thread/tests/TestSeqThreadMgr.cc, Thread/tests/TestSmartPtr.cc, UI/docs/Freedom.html, UI/src/BoxGn.cc, UI/src/BoxGn.hh, UI/src/Container.cc, UI/src/Container.hh, UI/src/Event.hh, UI/src/Fill.cc, UI/src/Fill.hh, UI/src/Layer.cc, UI/src/Layer.hh, UI/src/Makefile.am, UI/src/Selector.hh, UI/src/SmoothPane.cc, UI/src/SmoothPane.hh, UI/src/SpanGn.cc, UI/src/SpanGn.hh, UI/src/Thing.cc, UI/src/Thing.hh, UI/src/WindowX11.cc, UI/src/WindowX11.hh, UI/src/WinSysX11.cc, UI/src/WinSysX11.hh, UI/tests/Makefile.am, UI/tests/TestBlend.cc, UI/tests/TestGlxWindow.cc, UI/tests/TestLayout.cc, UI/tests/TestViewport2.cc, UI/tests/TestViewport.cc:
+	renamed Freedom to Phoenix
+
+	* .cvsignore: added configure, stamp-h.in
+
+	* Core/.cvsignore, Core/src/.cvsignore, Core/tests/.cvsignore, .cvsignore:
+	initial revision
+
+	* UI/src/Fill.cc, UI/src/BoxGn.cc, UI/src/Container.cc, UI/src/Event.hh, UI/src/Layer.cc, UI/src/Selector.hh, UI/src/SmoothPane.cc, UI/src/SpanGn.cc, UI/src/BoxGn.hh, UI/src/Container.hh, UI/src/Fill.hh, UI/src/Layer.hh, UI/src/Makefile.am, UI/src/SmoothPane.hh, UI/src/SpanGn.hh, UI/src/Thing.cc, UI/src/Thing.hh, UI/tests/Makefile.am, UI/tests/TestLayout.cc:
+	moved lots of code to source files from headers
+
+	* UI/docs/events.txt: initial revision
+
+	* Thread/tests/TestSeqThreadMgr.cc: improved formatting of messages
+
+	* Thread/src/Locker.hh, Thread/src/SeqCondition.hh: initial revision
+
+	* Thread/src/Sync.hh: changed Condition to SeqCondition
+
+	* Thread/src/SmartPtr.hh: fixed threading bug
+
+	* Thread/src/SeqThreadMgr.hh: made Job argument to spawn, non-const
+
+	* Thread/src/Sentinel.hh: changed Condition to SeqCondition
+
+	* Thread/src/Makefile.am: added Locker, SeqCondition
+
+	* Thread/src/Lock.hh: renamed try() to tryLock(), commented messages
+
+	* Thread/src/Condition.hh: now uses Locker<T> class
+
+	* Core/src/Makefile.am: added headers to EXTRA_DIST
+
+	* configure.in:
+	disabled check for SML compiler, disabled Thread and UI modules
+
+	* config.h.in, acconfig.h: added USING_PTHREADS
+
+	* README: basic instructions
+
+	* NEWS: not much
+
+	* Makefile.am: disabled Threads
+
+	* COPYING: stricter copyright
+
+	* AUTHORS: revised message...
+
+2002-04-15  Jim Callahan  <jim@salamander>
+
+	* Thread/.cvsignore, Thread/docs/.cvsignore, Thread/docs/Makefile.am, Thread/Makefile.am, Thread/src/Condition.hh, Thread/src/.cvsignore, Thread/src/Lock.hh, Thread/src/Makefile.am, Thread/src/Sentinel.hh, Thread/src/SeqJob.hh, Thread/src/SeqThreadMgr.hh, Thread/src/SmartPtr.hh, Thread/src/Sync.hh, Thread/tests/.cvsignore, Thread/tests/Makefile.am, Thread/tests/TestSeqThreadMgr.cc, Thread/tests/TestSmartPtr.cc:
+	initial revision
+
+2002-04-07  Jim Callahan  <jim@salamander>
+
+	* UI/src/WindowX11.cc, UI/src/WindowX11.hh, UI/src/WinSysX11.cc, UI/src/WinSysX11.hh:
+	initial revision
+
+	* UI/src/Makefile.am: new Window/WinSys classes
+
+	* UI/src/GlxWindow.hh, UI/src/WindowBase.hh: obsolete
+
+	* UI/tests/TestLayout.cc: new Window/WinSys classes
+
+2002-04-05  Jim Callahan  <jim@salamander>
+
+	* UI/src/SmoothPane.hh: initial revision
+
+	* UI/tests/TestLayout.cc: added lots more stuff
+
+	* UI/tests/Makefile.am, UI/src/WindowBase.hh, UI/src/Thing.cc:
+	renamed WinSys to UI
+
+	* UI/src/SpanGn.hh: renamed draw() to drawDebug() for inivisible Things
+
+	* UI/src/Makefile.am: renamed WinSys to UI
+
+	* UI/src/Layer.hh: initial revision
+
+	* UI/src/GlxWindow.hh: renamed WinSys to UI
+
+	* UI/src/Fill.hh, UI/src/Thing.hh:
+	renamed draw() to drawDebug() for inivisible Things
+
+	* UI/src/Container.hh: initial revision
+
+	* UI/src/CompoundThing.hh, UI/src/BoxGn.hh:
+	renamed CompoundThing to Container
+
+	* configure.in, Makefile.am: renamed WinSys to UI
+
+2002-04-04  Jim Callahan  <jim@salamander>
+
+	* UI/docs/Freedom.html, UI/docs/freedom.txt, UI/docs/layout.txt:
+	various ramblings to be consolidated later...
+
+	* UI/src/BoxGn.hh, UI/src/CompoundThing.hh, UI/src/Fill.hh, UI/src/SpanGn.hh, UI/src/Thing.cc, UI/src/Thing.hh, UI/tests/TestBlend.cc, UI/tests/TestLayout.cc, UI/tests/TestViewport2.cc, UI/tests/TestViewport.cc:
+	initial revision
+
+	* UI/tests/TestGlxWindow.cc: removed clear() and color
+
+	* UI/tests/Makefile.am: temporary mess
+
+	* UI/src/WindowBase.hh: removed clear() and color
+
+	* UI/src/Makefile.am: lots changed...
+
+	* UI/src/GlxWindow.hh: added info(), removed clear() and color
+
+	* Core/src/VecBase.hh: added getp()
+
+	* Core/src/Makefile.am, Core/tests/Makefile.am:
+	name change from Uk to Freedom
+
+2002-03-26  Jim Callahan  <jim@salamander>
+
+	* AUTHORS, autogen.sh, configure.in, COPYING, Core/src/BBoxGn.hh, Core/src/ByteSwap.cc, Core/src/ByteSwap.hh, Core/src/CoordSysGn.cc, Core/src/CoordSysGn.hh, Core/src/DebugIV.cc, Core/src/DebugIV.hh, Core/src/DictGn.hh, Core/src/ExtraMath.hh, Core/src/FB.cc, Core/src/FB.hh, Core/src/FramePattern.hh, Core/src/Frustum.cc, Core/src/Frustum.hh, Core/src/Math.hh, Core/src/MatrixGn.cc, Core/src/MatrixGn.hh, Core/src/PointGn.hh, Core/src/SearchPath.cc, Core/src/SearchPath.hh, Core/src/SpaceAtomic.cc, Core/src/SpaceAtomic.hh, Core/src/SpaceBase.hh, Core/src/SpaceGn.cc, Core/src/SpaceGn.hh, Core/src/SpaceInterpGn.hh, Core/src/SpaceInterpMethod.hh, Core/src/Timer.hh, Core/src/TypeInfo.cc, Core/src/TypeInfo.hh, Core/src/VecBase.hh, Core/src/VecGn.hh, Core/src/VectorGn.hh, Core/tests/TestBBoxGn.cc, Core/tests/TestDict.cc, Core/tests/TestFB.cc, Core/tests/TestFrustum.cc, Core/tests/TestFrustumClipping.cc, Core/tests/TestFrustumXforms.cc, Core/tests/TestMatrixGn.cc, Core/tests/TestPointGn.cc, Core/tests/TestSearchPath.cc, Core/tests/TestSpaceGn.cc, Core/tests/TestVecGn.cc, Core/tests/TestVectorGn.cc, README, UI/src/GlxWindow.hh, UI/src/WindowBase.hh, UI/tests/TestGlxWindow.cc:
+	renamed Uk namespace to Freedom
+
+	* Core/docs/.cvsignore, Core/docs/Makefile.am, UI/.cvsignore, UI/docs/.cvsignore, UI/docs/Makefile.am, UI/Makefile.am, UI/src/.cvsignore, UI/src/GlxWindow.hh, UI/src/Makefile.am, UI/src/WindowBase.hh, UI/tests/.cvsignore, UI/tests/Makefile.am, UI/tests/TestGlxWindow.cc:
+	intial revision
+
+	* configure.in, Core/Makefile.am, Core/tests/Makefile.am, Makefile.am:
+	added WinSys
+
+	* Core/src/BBoxGn.hh, Core/src/ByteSwap.cc, Core/src/ByteSwap.hh, Core/src/CoordSysGn.cc, Core/src/CoordSysGn.hh, Core/src/DebugIV.cc, Core/src/DebugIV.hh, Core/src/DictGn.hh, Core/src/ExtraMath.hh, Core/src/FB.cc, Core/src/FB.hh, Core/src/FramePattern.hh, Core/src/Frustum.cc, Core/src/Frustum.hh, Core/src/Math.hh, Core/src/MatrixGn.cc, Core/src/MatrixGn.hh, Core/src/PointGn.hh, Core/src/SearchPath.cc, Core/src/SearchPath.hh, Core/src/SpaceAtomic.cc, Core/src/SpaceAtomic.hh, Core/src/SpaceBase.hh, Core/src/SpaceGn.cc, Core/src/SpaceGn.hh, Core/src/SpaceInterpGn.hh, Core/src/SpaceInterpMethod.hh, Core/src/Timer.hh, Core/src/TypeInfo.cc, Core/src/TypeInfo.hh, Core/src/VecBase.hh, Core/src/VecGn.hh, Core/src/VectorGn.hh, Core/tests/TestBBoxGn.cc, Core/tests/TestDict.cc, Core/tests/TestFB.cc, Core/tests/TestFrustum.cc, Core/tests/TestFrustumClipping.cc, Core/tests/TestFrustumXforms.cc, Core/tests/TestMatrixGn.cc, Core/tests/TestPointGn.cc, Core/tests/TestSearchPath.cc, Core/tests/TestSpaceGn.cc, Core/tests/TestVecGn.cc, Core/tests/TestVectorGn.cc:
+	added namespace Uk::Core
+
+2002-03-23  Jim Callahan  <jim@salamander>
+
+	* config.h.in, Core/tests/TestFrustumClipping.cc:
+	Gtkmm style build system
+
+	* Core/src/DebugIV.cc, Core/src/DebugIV.hh:
+	added pointSize(), lineWidth()
+
+	* autogen.sh, config.guess, config.sub: intial revision
+
+	* configure.in: Gtkmm style
+
+2002-03-20  Jim Callahan  <jim@salamander>
+
+	* acconfig.h, acinclude.m4, aclocal.m4, AUTHORS, config.h.in, configure.in, COPYING, Core/Makefile.am, Core/src/BBoxGn.hh, Core/src/ByteSwap.cc, Core/src/ByteSwap.hh, Core/src/CoordSysGn.cc, Core/src/CoordSysGn.hh, Core/src/DebugIV.cc, Core/src/DebugIV.hh, Core/src/DictGn.hh, Core/src/ExtraMath.hh, Core/src/FB.cc, Core/src/FB.hh, Core/src/FramePattern.hh, Core/src/Frustum.cc, Core/src/Frustum.hh, Core/src/Makefile.am, Core/src/Math.hh, Core/src/MatrixGn.cc, Core/src/MatrixGn.hh, Core/src/PointGn.hh, Core/src/SearchPath.cc, Core/src/SearchPath.hh, Core/src/SpaceAtomic.cc, Core/src/SpaceAtomic.hh, Core/src/SpaceBase.hh, Core/src/SpaceGn.cc, Core/src/SpaceGn.hh, Core/src/SpaceInterpGn.hh, Core/src/SpaceInterpMethod.hh, Core/src/Timer.hh, Core/src/TypeInfo.cc, Core/src/TypeInfo.hh, Core/src/VecBase.hh, Core/src/VecGn.hh, Core/src/VectorGn.hh, Core/tests/Makefile.am, Core/tests/TestBBoxGn.cc, Core/tests/TestDict.cc, Core/tests/TestFB.cc, Core/tests/TestFrustum.cc, Core/tests/TestFrustumClipping.cc, Core/tests/TestFrustumXforms.cc, Core/tests/TestMatrixGn.cc, Core/tests/TestPointGn.cc, Core/tests/TestSearchPath.cc, Core/tests/TestSpaceGn.cc, Core/tests/TestVecGn.cc, Core/tests/TestVectorGn.cc, INSTALL, install-sh, Makefile.am, missing, mkinstalldirs, NEWS, README:
+	initial revision
+
