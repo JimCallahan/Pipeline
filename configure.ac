@@ -394,13 +394,8 @@ AC_MSG_RESULT([ ])
 
 dnl -- COMMON SUPPORT TOOLS ------------------------------------------------------------------
 
-AC_MSG_RESULT([Locating PPM Image tools:])
-AC_PATH_PROG(PNMCOMP, pnmcomp, $PATH)
-AC_PATH_PROG(PNMSCALE, pnmscale, $PATH)
-AC_PATH_PROG(PPMMAKE, ppmmake, $PATH)
-AC_PATH_PROG(PPMQUANT, ppmquant, $PATH)
-AC_PATH_PROG(PPMTOGIF, ppmtogif, $PATH)
-AC_PATH_PROG(SGITOPNM, sgitopnm, $PATH)
+AC_MSG_RESULT([Locating ImageMagick tools:])
+AC_PATH_PROG(CONVERT, convert, $PATH)
 
 AC_MSG_RESULT([ ])
 
@@ -734,6 +729,9 @@ AC_CONFIG_FILES([
 
   data/icons/Makefile
   data/icons/gen-icons.bash
+  data/icons/install-icons.bash 
+
+  data/splash/Makefile
 
   src/Makefile
 
@@ -764,6 +762,7 @@ AC_CONFIG_FILES([
   src/java/scripts/pljob
   src/java/scripts/pltoolset
   src/java/scripts/plui
+  src/java/scripts/texture-tester
 
   src/java/share/Makefile
 
