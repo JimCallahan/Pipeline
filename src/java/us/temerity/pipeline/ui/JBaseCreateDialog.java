@@ -1,4 +1,4 @@
-// $Id: JBaseCreateDialog.java,v 1.3 2004/06/19 00:30:48 jim Exp $
+// $Id: JBaseCreateDialog.java,v 1.4 2004/06/28 00:13:03 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -17,7 +17,7 @@ import javax.swing.tree.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * 
+ * The common base class of dialogs which create an revision controlled asset.
  */ 
 public 
 class JBaseCreateDialog
@@ -134,7 +134,7 @@ class JBaseCreateDialog
 	UIMaster.addVerticalGlue(tpanel, vpanel);
       }
 
-      super.initUI("X", true, body, confirm, null, null, "Close");
+      super.initUI("X", true, body, confirm, null, null, "Cancel");
       pack();
     }  
 
