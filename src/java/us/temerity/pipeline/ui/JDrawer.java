@@ -1,4 +1,4 @@
-// $Id: JDrawer.java,v 1.2 2004/06/19 00:33:10 jim Exp $
+// $Id: JDrawer.java,v 1.3 2004/08/31 08:14:37 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -170,6 +170,8 @@ class JDrawer
     else {
       pContents = contents;
     }
+
+    pContents.setVisible(isOpen());
     
     add(pContents);
   }
