@@ -1,8 +1,9 @@
-// $Id: JNodeViewerPanel.java,v 1.9 2004/05/13 21:26:40 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.10 2004/05/16 19:13:55 jim Exp $
 
 package us.temerity.pipeline.ui;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.core.*; 
 import us.temerity.pipeline.glue.*; // DEBUG
 
 import java.awt.*;
@@ -28,7 +29,8 @@ import com.sun.j3d.utils.geometry.*;
 public  
 class JNodeViewerPanel
   extends JTopLevelPanel
-  implements ComponentListener
+  implements ComponentListener, MouseListener, MouseMotionListener, PopupMenuListener,
+             ActionListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -65,7 +67,168 @@ class JNodeViewerPanel
    */ 
   private void 
   initUI()
-  {
+  {  
+    /* initialize fields */ 
+    {
+      pShowDownstream = true;
+      pLayoutPolicy   = LayoutPolicy.AutomaticExpand;
+
+      pSelected = new HashMap<NodePath,ViewerNode>();
+
+      pRemoveSecondarySeqs = new TreeMap<String,FileSeq>();
+    }
+  
+    /* panel popup menu */ 
+    {
+      JMenuItem item;
+      
+      pPanelPopup = new JPopupMenu();  
+      pPanelPopup.addPopupMenuListener(this);
+       
+      item = new JMenuItem("Automatic Expand");
+      item.setActionCommand("automatic-expand");
+      item.addActionListener(this);
+      pPanelPopup.add(item);  
+
+      item = new JMenuItem("Expand All");
+      item.setActionCommand("expand-all");
+      item.addActionListener(this);
+      pPanelPopup.add(item);  
+
+      item = new JMenuItem("Collapse All");
+      item.setActionCommand("collapse-all");
+      item.addActionListener(this);
+      pPanelPopup.add(item);  
+
+      pPanelPopup.addSeparator();
+
+      item = new JMenuItem();
+      pDownstreamItem = item;
+      item.setActionCommand("show-hide-downstream");
+      item.addActionListener(this);
+      pPanelPopup.add(item);  
+    }
+
+    /* node popup menu */ 
+    {
+      JMenuItem item;
+      JMenu sub;
+      
+      pNodePopup = new JPopupMenu();  
+      pNodePopup.addPopupMenuListener(this);
+       
+      item = new JMenuItem("Focus");
+      item.setActionCommand("focus");
+      item.addActionListener(this);
+      pNodePopup.add(item);  
+
+      item = new JMenuItem("Clear");
+      item.setActionCommand("clear");
+      item.addActionListener(this);
+      pNodePopup.add(item);  
+      
+      pNodePopup.addSeparator();
+
+      item = new JMenuItem("Edit");
+      item.setActionCommand("edit");
+      item.addActionListener(this);
+      pNodePopup.add(item);
+
+      {
+	sub = new JMenu("Edit With");
+	pNodePopup.add(sub);
+	
+	for(String editor : Plugins.getEditorNames()) {
+	  item = new JMenuItem(editor);
+	  item.setActionCommand("edit-with:" + editor);
+	  item.addActionListener(this);
+	  sub.add(item);
+	}
+      }
+      
+      pNodePopup.addSeparator();
+
+      sub = new JMenu("Link");
+      pLinkMenu = sub;
+      sub.setEnabled(false);
+      pNodePopup.add(sub);
+
+      item = new JMenuItem("Unlink");
+      item.setActionCommand("unlink");
+      item.addActionListener(this);
+      pNodePopup.add(item);
+      
+      pNodePopup.addSeparator();
+      
+      item = new JMenuItem("Add Secondary...");
+      item.setActionCommand("add-secondary");
+      item.addActionListener(this);
+      pNodePopup.add(item);
+      
+      sub = new JMenu("Remove Secondary");
+      pRemoveSecondaryMenu = sub;
+      sub.setEnabled(false);
+      pNodePopup.add(sub);
+
+      pNodePopup.addSeparator();
+      
+      item = new JMenuItem("Make");
+      item.setActionCommand("make");
+      item.addActionListener(this);
+      pNodePopup.add(item);
+      
+      item = new JMenuItem("Make Local");
+      item.setActionCommand("make-local");
+      item.addActionListener(this);
+      pNodePopup.add(item);
+
+      pNodePopup.addSeparator();
+      
+      item = new JMenuItem("Rename...");
+      item.setActionCommand("rename");
+      item.addActionListener(this);
+      pNodePopup.add(item);
+
+      item = new JMenuItem("Import...");
+      item.setActionCommand("import");
+      item.addActionListener(this);
+      pNodePopup.add(item);
+
+      item = new JMenuItem("Clone...");
+      item.setActionCommand("clone");
+      item.addActionListener(this);
+      pNodePopup.add(item);
+
+      pNodePopup.addSeparator();
+      
+      item = new JMenuItem("Check-In...");
+      item.setActionCommand("check-in");
+      item.addActionListener(this);
+      pNodePopup.add(item);
+  
+      item = new JMenuItem("Check-Out...");
+      item.setActionCommand("check-out");
+      item.addActionListener(this);
+      pNodePopup.add(item);
+      
+      pNodePopup.addSeparator();
+
+      item = new JMenuItem("Release");
+      item.setActionCommand("release");
+      item.addActionListener(this);
+      pNodePopup.add(item);
+      
+      item = new JMenuItem("Revoke");
+      item.setActionCommand("revoke");
+      item.addActionListener(this);
+      pNodePopup.add(item);
+
+      item = new JMenuItem("Destroy");
+      item.setActionCommand("destroy");
+      item.addActionListener(this);
+      pNodePopup.add(item);
+    }
+
     /* initialize the panel components */ 
     {
       setLayout(new BorderLayout());
@@ -76,8 +239,8 @@ class JNodeViewerPanel
       {
 	pCanvas = new Canvas3D(SimpleUniverse.getPreferredConfiguration());
 	pCanvas.addComponentListener(this); 
-	//pCanvas.addMouseListener(this); 
-	//pCanvas.addMouseMotionListener(this); 
+	pCanvas.addMouseListener(this); 
+	pCanvas.addMouseMotionListener(this); 
 	
 	add(pCanvas);
       }
@@ -131,13 +294,20 @@ class JNodeViewerPanel
 
       /* rubber band geometry */ 
       {
-	// ...
+	pRubberBand = new RubberBand();
+	pUniverse.addBranchGraph(pRubberBand.getBranchGroup());
       }
 
       /* the node pool */ 
       {
 	pNodePool = new ViewerNodePool();
 	pUniverse.addBranchGraph(pNodePool.getBranchGroup());
+      }
+
+      /* the node links */ 
+      {
+	pLinks = new ViewerLinks();
+	pUniverse.addBranchGraph(pLinks.getBranchGroup());
       }
     }
   }
@@ -207,8 +377,18 @@ class JNodeViewerPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Set the focus of the viewer to the given node in the working area view owned by 
-   * the given author.
+   * Set the focus of the viewer to the given node in the working area view. <P> 
+   * 
+   * A <CODE>name</CODE> argument of <CODE>null</CODE> will clear the focus.
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param name 
+   *   The fully resolved node name.
    */ 
   public void 
   setFocus
@@ -219,9 +399,28 @@ class JNodeViewerPanel
   )  
   {
     super.setAuthorView(author, view);
+    setFocus(name);
+  }
+
+  /**
+   * Set the focus of the viewer to the given node. <P> 
+   * 
+   * A <CODE>name</CODE> argument of <CODE>null</CODE> will clear the focus.
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   */ 
+  public void 
+  setFocus
+  (
+   String name
+  )  
+  {
+    clearSelection();
     pFocus = name;
     updateNodeStatus();
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -236,6 +435,74 @@ class JNodeViewerPanel
   {
     updateUniverse();
   }
+
+
+  /**
+   * Update the node menu.
+   */ 
+  public void 
+  updateNodeMenu() 
+  {
+    UIMaster master = UIMaster.getInstance(); 
+    try {
+      JMenuItem item;
+
+      /* clear existing items */ 
+      {
+	pLinkMenu.removeAll();
+	pLinkMenu.setEnabled(false);
+	
+	pRemoveSecondaryMenu.setEnabled(false);
+	pRemoveSecondaryMenu.removeAll();
+	pRemoveSecondarySeqs.clear();
+      }
+
+      /* rebuild items */ 
+      {
+	for(String catagory : master.getNodeMgrClient().getLinkCatagories().keySet()) {
+	  item = new JMenuItem(catagory);
+	  item.setActionCommand("link:" + catagory);
+	  item.addActionListener(this);
+	  pLinkMenu.add(item);
+	}
+	pLinkMenu.setEnabled(pLinkMenu.getItemCount() > 0);
+	
+	if(pPrimary != null) {
+	  NodeDetails details = pPrimary.getNodeStatus().getDetails();
+	  if(details != null) {
+	    NodeMod mod = details.getWorkingVersion();
+	    if(mod != null) {
+	      for(FileSeq fseq : mod.getSecondarySequences()) {
+		String fname = fseq.toString();
+
+		item = new JMenuItem(fname);
+		item.setActionCommand("remove-secondary:" + fname);
+		item.addActionListener(this);
+		pRemoveSecondaryMenu.add(item);
+	      
+		pRemoveSecondarySeqs.put(fname, fseq);
+	      }
+	    }
+	  }
+	}
+	pRemoveSecondaryMenu.setEnabled(pRemoveSecondaryMenu.getItemCount() > 0);
+      }
+    }
+    catch(PipelineException ex) {
+      master.showErrorDialog(ex);
+    }
+  }
+
+  /**
+   * Update the panel menu.
+   */ 
+  public void 
+  updatePanelMenu() 
+  {
+    pDownstreamItem.setText((pShowDownstream ? "Hide" : "Show") + " Downstream");
+  }
+  
+
 
   /**
    * Update the nodes being viewed.
@@ -257,64 +524,437 @@ class JNodeViewerPanel
   updateUniverse()
   {  
     pNodePool.updatePrep();
+    pLinks.clear();
       
     if(pStatus != null) {
+      NodePath path = new NodePath(pStatus.getName());
+      Point2d anchor = new Point2d(0.0, 0.0);
 
       /* layout the upstream nodes */ 
       {
-	NodePath path = new NodePath(pStatus.getName());
-	HashMap<NodePath,ViewerNode> upstream = new HashMap<NodePath,ViewerNode>();
-	layoutUpstreamNodes(pStatus, path, new Point2d(0.0, 0.0), upstream);
-
-	/* shift the nodes so that the root node is at the origin */ 
-	{
-	  ViewerNode root = upstream.get(path);
-	  double offset = -root.getPosition().y;
-	  for(ViewerNode vnode : upstream.values()) {
-	    Point2d pos = vnode.getPosition();
-	    vnode.setPosition(new Point2d(pos.x, pos.y+offset));
-	  }
-	}
+	TreeSet<String> seen = new TreeSet<String>();
+	double offset = layoutNodes(true, true, pStatus, path, anchor, seen);
+	shiftUpstreamNodes(true, pStatus, path, -offset*0.5);
       }
+
+      /* layout the downstream nodes */  
+      if(pShowDownstream) {
+	TreeSet<String> seen = new TreeSet<String>();
+	double offset = layoutNodes(true, false, pStatus, path, anchor, seen);
+	shiftDownstreamNodes(true, pStatus, path, -offset*0.5);
+      }
+
+      /* preserve the current layout */ 
+      pLayoutPolicy = LayoutPolicy.Preserve;
     }
     
     pNodePool.update();
+    pLinks.update();
   }
   
   /**
-   * Recursively layout the upstream nodes.
+   * Recursively layout the nodes.
+   * 
+   * @param isFocus
+   *   Is this the focus node?
+   * 
+   * @param upstream
+   *   Whether to traverse the nodes in an upstream direction (or downstream).
+   * 
+   * @param status
+   *   The status of the current node. 
+   * 
+   * @param path
+   *   The path from the focus node to the current node.
+   * 
+   * @param anchor
+   *   The upper-left corner of the layout area for the current node.
+   * 
+   * @param seen
+   *   The fully resolved node names of processed nodes.
+   * 
+   * @return 
+   *   The height of the layout area of the viewer node including its children.
    */ 
   private double
-  layoutUpstreamNodes
+  layoutNodes
   (
+   boolean isFocus, 
+   boolean upstream,
    NodeStatus status, 
    NodePath path, 
    Point2d anchor, 
-   HashMap<NodePath,ViewerNode> table
+   TreeSet<String> seen
   ) 
   {
     UserPrefs prefs = UserPrefs.getInstance();
 
-    assert(!table.containsKey(path));
-    ViewerNode vnode = pNodePool.getViewerNode(status, path);
-    table.put(path, vnode);
+    ViewerNode vnode = null;
+    if(!isFocus || upstream) 
+      vnode = pNodePool.lookupOrCreateViewerNode(status, path);
+    else 
+      vnode = pNodePool.getActiveViewerNode(path);
+    assert(vnode != null);
+
+    if((upstream && status.hasSources()) || 
+       (!upstream && status.hasTargets() && !isFocus)) {
+      switch(pLayoutPolicy) {
+      case Preserve:
+	if(!vnode.isReset()) 
+	  break;
+	
+      case AutomaticExpand:
+	vnode.setCollapsed(seen.contains(status.getName()));
+	break;
+	
+      case ExpandAll:
+	vnode.setCollapsed(false);
+	break;
+	
+      case CollapseAll:
+	vnode.setCollapsed(true);
+      }
+    }
+    else if(!isFocus || upstream) {
+      vnode.setCollapsed(false);
+    }
+
+    seen.add(status.getName());
 
     double height = 0.0;
-    if(status.hasSources()) {
-      for(NodeStatus ustatus : status.getSources()) {
-	NodePath upath = new NodePath(path, ustatus.getName());
-	Point2d uanchor = new Point2d(anchor.x + prefs.getNodeSpaceX(), anchor.y + height);
-	height += layoutUpstreamNodes(ustatus, upath, uanchor, table);
-      }      
+    if(vnode.isCollapsed() && !(isFocus && !upstream)) {
+      height = -prefs.getNodeSpaceY();
     }
-    else {
-      height = prefs.getNodeSpaceY();
+    else {      
+      Collection<NodeStatus> children = null;
+      if(upstream && status.hasSources())
+	children = status.getSources();
+      else if(!upstream && status.hasTargets()) 
+	children = status.getTargets();
+
+      if(children != null) {
+	for(NodeStatus cstatus : children) {
+	  NodePath cpath = new NodePath(path, cstatus.getName());
+	  
+	  /* layout the child node */ 
+	  {
+	    double sign = upstream ? 1.0 : -1.0;
+	    Point2d canchor = new Point2d(anchor.x + sign*prefs.getNodeSpaceX(), 
+					  anchor.y + height);
+	    
+	    height += layoutNodes(false, upstream, cstatus, cpath, canchor, seen);
+	  }
+
+	  /* add a link between this node and the child node */ 
+	  {
+	    ViewerNode cvnode = pNodePool.getActiveViewerNode(cpath);
+	    if(upstream) {
+	      LinkCommon link = null;
+	      {
+		NodeDetails details = status.getDetails();
+		if(details.getWorkingVersion() != null) 
+		  link = details.getWorkingVersion().getSource(cstatus.getName());
+		else if(details.getLatestVersion() != null)
+		link = details.getLatestVersion().getSource(cstatus.getName());
+	      }
+	      assert(link != null);	    
+	      
+	      pLinks.addUpstreamLink(vnode, cvnode, link);
+	    }
+	    else {
+	      pLinks.addDownstreamLink(cvnode, vnode);
+	    }				   
+	  }      
+	}
+      }
+      else {
+	height = -prefs.getNodeSpaceY();
+      }
     }
 
-    double offset = ((path.getNumNodes() % 2) == 0) ? prefs.getNodeOffset() : 0.0;
-    vnode.setPosition(new Point2d(anchor.x, anchor.y + 0.5*height + offset));
+    if(!isFocus) {
+      double offset = ((path.getNumNodes() % 2) == 0) ? prefs.getNodeOffset() : 0.0;
+      vnode.setPosition(new Point2d(anchor.x, anchor.y + 0.5*height + offset));
+    }
 
     return height;
+  }
+  
+  /**
+   * Recursively shift the upstream nodes by the given vertical offset.
+   * 
+   * @param isFocus
+   *   Is this the focus node?
+   * 
+   * @param status
+   *   The status of the current node. 
+   * 
+   * @param path
+   *   The path from the focus node to the current node.
+   * 
+   * @param offset
+   *   The table containing sets of child paths indexed by parent path.
+   */ 
+  private void
+  shiftUpstreamNodes
+  (
+   boolean isFocus, 
+   NodeStatus status, 
+   NodePath path, 
+   double offset
+  ) 
+  {
+    ViewerNode vnode = pNodePool.getActiveViewerNode(path);
+    if(vnode == null) 
+      return;
+
+    if(isFocus) {
+      vnode.setPosition(new Point2d(0.0, 0.0));
+    }
+    else {
+      Point2d pos = vnode.getPosition();
+      vnode.setPosition(new Point2d(pos.x, pos.y+offset));
+    }
+
+    for(NodeStatus cstatus : status.getSources()) {
+      NodePath cpath = new NodePath(path, cstatus.getName());
+      shiftUpstreamNodes(false, cstatus, cpath, offset);
+    }
+  }
+
+  /**
+   * Recursively shift the downstream nodes by the given vertical offset.
+   * 
+   * @param isFocus
+   *   Is this the focus node?
+   * 
+   * @param status
+   *   The status of the current node. 
+   * 
+   * @param path
+   *   The path from the focus node to the current node.
+   * 
+   * @param offset
+   *   The table containing sets of child paths indexed by parent path.
+   */ 
+  private void
+  shiftDownstreamNodes
+  (
+   boolean isFocus, 
+   NodeStatus status, 
+   NodePath path, 
+   double offset
+  ) 
+  {
+    ViewerNode vnode = pNodePool.getActiveViewerNode(path);
+    if(vnode == null) 
+      return;
+
+    if(!isFocus) {
+      Point2d pos = vnode.getPosition();
+      vnode.setPosition(new Point2d(pos.x, pos.y+offset));
+    }
+
+    for(NodeStatus cstatus : status.getTargets()) {
+      NodePath cpath = new NodePath(path, cstatus.getName());
+      shiftDownstreamNodes(false, cstatus, cpath, offset);
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S E L E C T I O N                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the fully resolved name of the primary node selection.
+   * 
+   * @return 
+   *   The node name or <CODE>null</CODE> if there is no primary selection.
+   */ 
+  public String
+  getPrimarySelectionName() 
+  {
+    if(pPrimary != null) 
+      return pPrimary.getNodeStatus().getName();
+    return null;
+  }
+
+  /**
+   * Get the fully resolved names of all selected nodes.
+   */ 
+  public TreeSet<String>
+  getSelectedNames() 
+  {
+    TreeSet<String> names = new TreeSet<String>();
+
+    for(ViewerNode vnode : pSelected.values()) 
+      names.add(vnode.getNodeStatus().getName());
+
+    return names;
+  }
+  
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Clear the current selection.
+   * 
+   * @return 
+   *   The previously selected nodes.
+   */ 
+  public ArrayList<ViewerNode>
+  clearSelection()
+  {
+    ArrayList<ViewerNode> changed = new ArrayList<ViewerNode>(pSelected.values());
+
+    for(ViewerNode vnode : pSelected.values()) 
+      vnode.setSelectionMode(SelectionMode.Normal);
+
+    pSelected.clear();
+    pPrimary = null;
+
+    return changed;
+  }
+  
+  /**
+   * Make the given viewer node the primary selection.
+   * 
+   * @return 
+   *   The viewer nodes who's selection state changed.
+   */ 
+  public ArrayList<ViewerNode>
+  primarySelect
+  (
+   ViewerNode vnode
+  ) 
+  {
+    ArrayList<ViewerNode> changed = new ArrayList<ViewerNode>();
+
+    switch(vnode.getSelectionMode()) {
+    case Normal:
+      pSelected.put(vnode.getNodePath(), vnode);
+      
+    case Selected:
+      if(pPrimary != null) {
+	pPrimary.setSelectionMode(SelectionMode.Selected);
+	changed.add(pPrimary);
+      }
+      pPrimary = vnode;
+      vnode.setSelectionMode(SelectionMode.Primary);
+      changed.add(vnode);
+    }
+
+    return changed;
+  }
+
+  /**
+   * Add the given viewer node to the selection.
+   * 
+   * @return 
+   *   The viewer nodes who's selection state changed.
+   */ 
+  public ArrayList<ViewerNode>
+  addSelect
+  (
+   ViewerNode vnode
+  ) 
+  {
+    ArrayList<ViewerNode> changed = new ArrayList<ViewerNode>();
+
+    switch(vnode.getSelectionMode()) {
+    case Primary:
+      if(pPrimary != null) {
+	pPrimary.setSelectionMode(SelectionMode.Selected);
+	changed.add(pPrimary);
+	pPrimary = null;
+      }
+
+    case Normal:
+      vnode.setSelectionMode(SelectionMode.Selected);
+      pSelected.put(vnode.getNodePath(), vnode);
+      changed.add(vnode);
+    }
+
+    return changed;
+  }
+
+  /**
+   * Toggle the selection of the given viewer node.
+   * 
+   * @return 
+   *   The viewer nodes who's selection state changed.
+   */ 
+  public  ArrayList<ViewerNode> 
+  toggleSelect
+  (
+   ViewerNode vnode
+  ) 
+  {
+    ArrayList<ViewerNode> changed = new ArrayList<ViewerNode>();
+
+    switch(vnode.getSelectionMode()) {
+    case Primary:
+      if(pPrimary != null) {
+	pPrimary.setSelectionMode(SelectionMode.Selected);
+	changed.add(pPrimary);
+	pPrimary = null;
+      }
+
+    case Selected:
+      vnode.setSelectionMode(SelectionMode.Normal);
+      pSelected.remove(vnode.getNodePath());
+      break;
+
+    case Normal:
+      vnode.setSelectionMode(SelectionMode.Selected);
+      pSelected.put(vnode.getNodePath(), vnode);      
+    }
+    
+    changed.add(vnode);
+    return changed;
+  }
+
+
+
+  /**
+   * Get the viewer node under given mouse position. <P> 
+   * 
+   * @return
+   *   The picked viewer node or <CODE>null</CODE> if no node was under the mouse position.
+   */ 
+  private ViewerNode 
+  nodeAtMousePos
+  (
+   int x, 
+   int y
+  ) 
+  {
+    PickRay ray = null;
+    {
+      Point3d eyePos = new Point3d();
+      Point3d pos    = new Point3d();
+
+      pCanvas.getCenterEyeInImagePlate(eyePos);
+      pCanvas.getPixelLocationInImagePlate(x, y, pos);
+      
+      Transform3D motion = new Transform3D();
+      pCanvas.getImagePlateToVworld(motion);
+      motion.transform(eyePos);
+      motion.transform(pos);
+      
+      Vector3d dir = new Vector3d(pos);
+      dir.sub(eyePos);
+      
+      ray = new PickRay(eyePos, dir);
+    }
+    
+    SceneGraphPath gpath = pNodePool.getBranchGroup().pickClosest(ray);
+    if(gpath != null) 
+      return ((ViewerNode) gpath.getObject().getUserData());
+    else 
+      return null;
   }
 
 
@@ -416,15 +1056,480 @@ class JNodeViewerPanel
    MouseEvent e
   )
   {
+    int mods = e.getModifiersEx();
+    ViewerNode under = nodeAtMousePos(e.getX(), e.getY());
+
+    /* mouse press is over a specific viewer node */ 
+    if(under != null) {
+      switch(e.getButton()) {
+      case MouseEvent.BUTTON1:
+	{      
+	  int on1  = (MouseEvent.BUTTON1_DOWN_MASK);
+	
+	  int off1 = (MouseEvent.BUTTON2_DOWN_MASK | 
+		      MouseEvent.BUTTON3_DOWN_MASK | 
+		      MouseEvent.SHIFT_DOWN_MASK |
+		      MouseEvent.ALT_DOWN_MASK |
+		      MouseEvent.CTRL_DOWN_MASK);
+	  
+	
+	  int on2  = (MouseEvent.BUTTON1_DOWN_MASK |
+		      MouseEvent.SHIFT_DOWN_MASK);
+	
+	  int off2 = (MouseEvent.BUTTON2_DOWN_MASK | 
+		      MouseEvent.BUTTON3_DOWN_MASK | 
+		      MouseEvent.SHIFT_DOWN_MASK |
+		      MouseEvent.CTRL_DOWN_MASK);
+	  
+	  
+	  int on3  = (MouseEvent.BUTTON1_DOWN_MASK |
+		      MouseEvent.SHIFT_DOWN_MASK |
+		      MouseEvent.CTRL_DOWN_MASK);
+	  
+	  int off3 = (MouseEvent.BUTTON2_DOWN_MASK | 
+		      MouseEvent.BUTTON3_DOWN_MASK | 
+		      MouseEvent.ALT_DOWN_MASK);
+      
+	  HashMap<NodePath,ViewerNode> changed = new HashMap<NodePath,ViewerNode>();
+
+	  /* BUTTON1: replace selection */ 
+	  if((mods & (on1 | off1)) == on1) {
+	    for(ViewerNode vnode : clearSelection()) 
+	      changed.put(vnode.getNodePath(), vnode);
+
+	    for(ViewerNode vnode : addSelect(under))
+	      changed.put(vnode.getNodePath(), vnode);
+	  }
+	  
+	  /* BUTTON1+SHIFT: toggle selection */ 
+	  else if((mods & (on2 | off2)) == on2) {
+	    for(ViewerNode vnode : toggleSelect(under)) 
+	      changed.put(vnode.getNodePath(), vnode);
+	  }
+	  
+	  /* BUTTON1+SHIFT+CTRL: add to the selection */ 
+	  else if((mods & (on3 | off3)) == on3) {
+	    for(ViewerNode vnode : addSelect(under))
+	      changed.put(vnode.getNodePath(), vnode);
+	  }
+
+	  /* update the appearance of all nodes who's selection state changed */ 
+	  for(ViewerNode vnode : changed.values()) 
+	    vnode.update();
+	}
+	break;
+
+      case MouseEvent.BUTTON2:
+	{      
+	  int on1  = (MouseEvent.BUTTON2_DOWN_MASK);
+
+	  int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
+		      MouseEvent.BUTTON3_DOWN_MASK | 
+		      MouseEvent.SHIFT_DOWN_MASK |
+		      MouseEvent.ALT_DOWN_MASK |
+		      MouseEvent.CTRL_DOWN_MASK);
+
+	  /* BUTTON2: expand/collapse a node */ 
+	  if((mods & (on1 | off1)) == on1) {
+	    if(under.getNodeStatus().hasSources()) {
+	      under.setCollapsed(!under.isCollapsed());
+	      updateUniverse();
+	    }
+	  }
+	}
+	break;
+
+      case MouseEvent.BUTTON3:
+	{
+	  int on1  = (MouseEvent.BUTTON3_DOWN_MASK);
+
+	  int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
+		      MouseEvent.BUTTON2_DOWN_MASK | 
+		      MouseEvent.SHIFT_DOWN_MASK |
+		      MouseEvent.ALT_DOWN_MASK |
+		      MouseEvent.CTRL_DOWN_MASK);
+
+	  /* BUTTON3: node popup menu */ 
+	  if((mods & (on1 | off1)) == on1) {
+	    for(ViewerNode vnode : primarySelect(under)) 
+	      vnode.update();
+
+	    updateNodeMenu();
+	    pNodePopup.show(e.getComponent(), e.getX(), e.getY());
+	  }
+	}
+	break;
+      }
+    }
+
+    /* mouse press is over an unused spot on the canvas */ 
+    else {
+      switch(e.getButton()) {
+      case MouseEvent.BUTTON1:
+	{
+	  int on1  = (MouseEvent.BUTTON1_DOWN_MASK);
+
+	  int off1 = (MouseEvent.BUTTON2_DOWN_MASK | 
+		      MouseEvent.BUTTON3_DOWN_MASK | 
+		      MouseEvent.SHIFT_DOWN_MASK |
+		      MouseEvent.ALT_DOWN_MASK |
+		      MouseEvent.CTRL_DOWN_MASK);
 
 
+	  int on2  = (MouseEvent.BUTTON1_DOWN_MASK |
+		      MouseEvent.SHIFT_DOWN_MASK);
+
+	  int off2 = (MouseEvent.BUTTON2_DOWN_MASK | 
+		      MouseEvent.BUTTON3_DOWN_MASK | 
+		      MouseEvent.ALT_DOWN_MASK |
+		      MouseEvent.CTRL_DOWN_MASK);
+
+
+	  int on3  = (MouseEvent.BUTTON1_DOWN_MASK |
+		      MouseEvent.SHIFT_DOWN_MASK |
+		      MouseEvent.CTRL_DOWN_MASK);
+
+	  int off3 = (MouseEvent.BUTTON2_DOWN_MASK | 
+		      MouseEvent.BUTTON3_DOWN_MASK | 
+		      MouseEvent.ALT_DOWN_MASK);
+
+	  /* BUTTON1[+SHIFT[+CTRL]]: begin rubber band drag */ 
+	  if(((mods & (on1 | off1)) == on1) || 
+	     ((mods & (on2 | off2)) == on2) || 
+	     ((mods & (on3 | off3)) == on3)) {
+	    pRubberBand.beginDrag(new Point2d((double) e.getX(), (double) e.getY()));
+	  }
+	}
+	break;
+
+      case MouseEvent.BUTTON3:
+	{
+	  int on1  = (MouseEvent.BUTTON3_DOWN_MASK);
+
+	  int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
+		      MouseEvent.BUTTON2_DOWN_MASK | 
+		      MouseEvent.SHIFT_DOWN_MASK |
+		      MouseEvent.ALT_DOWN_MASK |
+		      MouseEvent.CTRL_DOWN_MASK);
+		  
+	  /* BUTTON3: panel popup menu */ 
+	  if((mods & (on1 | off1)) == on1) {
+	    updatePanelMenu();
+	    pPanelPopup.show(e.getComponent(), e.getX(), e.getY());
+	  }
+	}
+	break;
+      }
+    }
   }
 
   /**
    * Invoked when a mouse button has been released on a component. 
    */ 
   public void 
-  mouseReleased(MouseEvent e) {}
+  mouseReleased
+  (
+   MouseEvent e
+  ) 
+  {    
+    int mods = e.getModifiersEx();
+
+    switch(e.getButton()) {
+    case MouseEvent.BUTTON1:
+      if(pRubberBand.isDragging()) {
+	BoundingBox bbox = pRubberBand.endDrag();
+	if(bbox != null) {
+	  SceneGraphPath gpaths[] = 
+	    pNodePool.getBranchGroup().pickAll(new PickBounds(bbox));
+	  if(gpaths != null) {
+	    int on1  = 0;
+	    
+	    int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
+			MouseEvent.BUTTON2_DOWN_MASK | 
+			MouseEvent.BUTTON3_DOWN_MASK | 
+			MouseEvent.SHIFT_DOWN_MASK |
+			MouseEvent.ALT_DOWN_MASK |
+			MouseEvent.CTRL_DOWN_MASK);
+	    
+	    
+	    int on2  = (MouseEvent.SHIFT_DOWN_MASK);
+	    
+	    int off2 = (MouseEvent.BUTTON1_DOWN_MASK |
+			MouseEvent.BUTTON2_DOWN_MASK | 
+			MouseEvent.BUTTON3_DOWN_MASK | 
+			MouseEvent.SHIFT_DOWN_MASK |
+			MouseEvent.CTRL_DOWN_MASK);
+	    
+	    
+	    int on3  = (MouseEvent.SHIFT_DOWN_MASK |
+			MouseEvent.CTRL_DOWN_MASK);
+	    
+	    int off3 = (MouseEvent.BUTTON1_DOWN_MASK |
+			MouseEvent.BUTTON2_DOWN_MASK | 
+			MouseEvent.BUTTON3_DOWN_MASK | 
+			MouseEvent.ALT_DOWN_MASK);
+	    
+	    HashMap<NodePath,ViewerNode> changed = new HashMap<NodePath,ViewerNode>();
+	    
+	    /* BUTTON1: replace selection */ 
+	    if((mods & (on1 | off1)) == on1) {
+	      for(ViewerNode vnode : clearSelection()) 
+		changed.put(vnode.getNodePath(), vnode);
+	      
+	      int wk; 
+	      for(wk=0; wk<gpaths.length; wk++) {
+ 		ViewerNode svnode = (ViewerNode) gpaths[wk].getObject().getUserData();
+ 		for(ViewerNode vnode : addSelect(svnode))
+ 		  changed.put(vnode.getNodePath(), vnode);
+	      }
+	    }
+	    
+	    /* BUTTON1+SHIFT: toggle selection */ 
+	    else if((mods & (on2 | off2)) == on2) {
+	      int wk; 
+	      for(wk=0; wk<gpaths.length; wk++) {
+ 		ViewerNode svnode = (ViewerNode) gpaths[wk].getObject().getUserData();
+ 		for(ViewerNode vnode : toggleSelect(svnode))
+ 		  changed.put(vnode.getNodePath(), vnode);
+	      }
+	    }
+	    
+	    /* BUTTON1+SHIFT+CTRL: add to selection */ 
+	    else if((mods & (on3 | off3)) == on3) {
+	      int wk; 
+	      for(wk=0; wk<gpaths.length; wk++) {
+ 		ViewerNode svnode = (ViewerNode) gpaths[wk].getObject().getUserData();
+ 		for(ViewerNode vnode : addSelect(svnode))
+ 		  changed.put(vnode.getNodePath(), vnode);
+	      }
+	    }
+	    
+	    /* update the appearance of all nodes who's selection state changed */ 
+	    for(ViewerNode vnode : changed.values()) 
+	      vnode.update();
+	  }
+	}
+      }
+      else {
+	/* clear the selection */ 
+	for(ViewerNode vnode : clearSelection()) 
+	  vnode.update();
+      }
+      break;
+
+    }
+  }
+
+
+  /*-- MOUSE MOTION LISTNER METHODS --------------------------------------------------------*/
+  
+  /**
+   * Invoked when a mouse button is pressed on a component and then dragged. 
+   */ 
+  public void 	
+  mouseDragged
+  (
+   MouseEvent e
+  )
+  {
+    int mods = e.getModifiersEx();
+    if(pRubberBand.isDragging()) {
+      int on1  = (MouseEvent.BUTTON1_DOWN_MASK);
+      
+      int off1 = (MouseEvent.BUTTON2_DOWN_MASK | 
+		  MouseEvent.BUTTON3_DOWN_MASK | 
+		  MouseEvent.SHIFT_DOWN_MASK |
+		  MouseEvent.ALT_DOWN_MASK |
+		  MouseEvent.CTRL_DOWN_MASK);
+
+      
+      int on2  = (MouseEvent.BUTTON1_DOWN_MASK |
+		  MouseEvent.SHIFT_DOWN_MASK);
+      
+      int off2 = (MouseEvent.BUTTON2_DOWN_MASK | 
+		  MouseEvent.BUTTON3_DOWN_MASK | 
+		  MouseEvent.ALT_DOWN_MASK |
+		  MouseEvent.CTRL_DOWN_MASK);
+
+      
+      int on3  = (MouseEvent.BUTTON1_DOWN_MASK |
+		  MouseEvent.SHIFT_DOWN_MASK | 
+		  MouseEvent.CTRL_DOWN_MASK);
+      
+      int off3 = (MouseEvent.BUTTON2_DOWN_MASK | 
+		  MouseEvent.BUTTON3_DOWN_MASK | 
+		  MouseEvent.ALT_DOWN_MASK);
+
+      /* BUTTON1[+SHIFT[+CTRL]]: update rubber band drag */ 
+      if(((mods & (on1 | off1)) == on1) || 
+	 ((mods & (on2 | off2)) == on2) || 
+	 ((mods & (on3 | off3)) == on3)) {
+	pRubberBand.updateDrag(pCanvas, new Point2d((double) e.getX(), (double) e.getY()));
+      }
+      
+      /* end rubber band drag */ 
+      else {
+	pRubberBand.endDrag();
+      }
+    }
+  }
+
+  /**
+   * Invoked when the mouse cursor has been moved onto a component but no buttons have 
+   * been pushed. 
+   */ 
+  public void 	
+  mouseMoved (MouseEvent e) {}
+
+
+  /*-- POPUP MENU LISTNER METHODS ----------------------------------------------------------*/
+
+  /**
+   * This method is called when the popup menu is canceled. 
+   */ 
+  public void 
+  popupMenuCanceled
+  (
+   PopupMenuEvent e
+  )
+  { 
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();
+  }
+   
+  /**
+   * This method is called before the popup menu becomes invisible. 
+   */ 
+  public void
+  popupMenuWillBecomeInvisible(PopupMenuEvent e) {} 
+  
+  /**
+   * This method is called before the popup menu becomes visible. 
+   */ 
+  public void 	
+  popupMenuWillBecomeVisible(PopupMenuEvent e) {} 
+
+
+
+  /*-- ACTION LISTENER METHODS -------------------------------------------------------------*/
+
+  /** 
+   * Invoked when an action occurs. 
+   */ 
+  public void 
+  actionPerformed
+  (
+   ActionEvent e
+  ) 
+  {
+    System.out.print("Action: " + e.getActionCommand() + "\n");
+
+    /* node menu events */ 
+    String cmd = e.getActionCommand();
+    if(cmd.equals("focus"))
+      doFocus();
+    else if(cmd.equals("clear"))
+      doClear();
+
+    // ...
+    
+    /* panel menu events */ 
+    else if(cmd.equals("automatic-expand"))
+      doAutomaticExpand();
+    else if(cmd.equals("expand-all"))
+      doExpandAll();
+    else if(cmd.equals("collapse-all"))
+      doCollapseAll();
+    else if(cmd.equals("show-hide-downstream"))
+      doShowHideDownstream();
+
+    // ...
+
+    else {
+      for(ViewerNode vnode : clearSelection()) 
+	vnode.update();
+    }
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C T I O N S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Change the focus node to the current primary selection.
+   */ 
+  private void
+  doFocus()
+  {
+    setFocus(getPrimarySelectionName());
+  }
+
+  /**
+   * Clear the focus node.
+   */ 
+  private void
+  doClear()
+  {
+    setFocus(null);
+  }
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Change to layout policy to <CODE>AutomaticExpand</CODE> and relayout the nodes.
+   */ 
+  private void
+  doAutomaticExpand()
+  {
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();
+
+    pLayoutPolicy = LayoutPolicy.AutomaticExpand;
+    updateUniverse();
+  }
+
+  /**
+   * Change to layout policy to <CODE>ExpandAll</CODE> and relayout the nodes.
+   */ 
+  private void
+  doExpandAll()
+  {
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();
+
+    pLayoutPolicy = LayoutPolicy.ExpandAll;
+    updateUniverse();
+  }
+
+  /**
+   * Change to layout policy to <CODE>CollapseAll</CODE> and relayout the nodes.
+   */ 
+  private void
+  doCollapseAll()
+  {
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();
+
+    pLayoutPolicy = LayoutPolicy.CollapseAll;
+    updateUniverse();
+  }
+
+  
+  /**
+   * Show/Hide the downstream node tree.
+   */ 
+  private void
+  doShowHideDownstream()
+  {
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();
+
+    pShowDownstream = !pShowDownstream;
+    updateUniverse();
+  }
 
 
 
@@ -503,6 +1608,36 @@ class JNodeViewerPanel
   /*   I N T E R N A L   C L A S S E S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * The expand/collapse policy to use when laying out nodes.
+   */
+  private
+  enum LayoutPolicy
+  {  
+    /**
+     * Preserve the collapse mode of existing nodes and use an AutomaticExpand policy for 
+     * any newly created nodes.
+     */
+    Preserve, 
+
+    /**
+     * Expand all nodes.
+     */ 
+    ExpandAll, 
+
+    /**
+     * Collapse all nodes.
+     */ 
+    CollapseAll, 
+    
+    /**
+     * Expand the first occurance of a node and collapse all subsequence occurances.
+     */
+    AutomaticExpand;
+  }
+
+  
+  /*----------------------------------------------------------------------------------------*/
   /** 
    * Get the status of the focused node.
    */ 
@@ -619,6 +1754,16 @@ class JNodeViewerPanel
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Whether to display the downstream tree of nodes.
+   */ 
+  private boolean  pShowDownstream;
+
+  /**
+   * The expand/collapse policy to use when laying out nodes.
+   */ 
+  private LayoutPolicy  pLayoutPolicy;
+
+  /**
    * The fully resolved name of the focus node.
    */ 
   private String  pFocus;
@@ -628,7 +1773,40 @@ class JNodeViewerPanel
    */ 
   private NodeStatus pStatus;
 
+
+  /**
+   * The panel popup menu.
+   */ 
+  private JPopupMenu  pPanelPopup; 
+
+  /**
+   * The panel popup menu items.
+   */
+  private JMenuItem  pDownstreamItem;
   
+
+  /**
+   * The node popup menu.
+   */ 
+  private JPopupMenu  pNodePopup; 
+  
+  /**
+   * The link node submenu.
+   */ 
+  private JMenu  pLinkMenu;
+  
+  /**
+   * The remove secondary node submenu.
+   */ 
+  private JMenu  pRemoveSecondaryMenu;
+  
+  /** 
+   * The table of secondary file sequences currently displayed in the remove 
+   * secondary node submenu indexed by secondary sequence name.
+   */ 
+  private TreeMap<String,FileSeq>  pRemoveSecondarySeqs;
+  
+
   /**
    * The Java3D scene graph.
    */ 
@@ -643,5 +1821,26 @@ class JNodeViewerPanel
    * The reuseable collection of ViewerNodes.
    */ 
   private ViewerNodePool  pNodePool;
+
+  /**
+   * The links between ViewerNodes.
+   */ 
+  private ViewerLinks  pLinks;
+
+
+  /**
+   * The selection rubber band geometry.
+   */ 
+  private RubberBand  pRubberBand;
+  
+  /**
+   * The set of currently selected nodes indexed by <CODE>NodePath</CODE>.
+   */ 
+  private HashMap<NodePath,ViewerNode>  pSelected;
+
+  /**
+   * The primary selection.
+   */ 
+  private ViewerNode  pPrimary;
 
 }
