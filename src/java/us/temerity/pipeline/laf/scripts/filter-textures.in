@@ -103,7 +103,14 @@ do
   for extra in Blank Collapsed
   do 
     simg=`printf "%s.%04d.sgi" $src/$mode $frame`
-    dir=`echo $dest/$extra-$mode`
+
+    if [ $extra == "Collapsed" ]
+    then 
+      dir=`echo $dest/$extra`
+    else 
+      dir=`echo $dest/$extra-$mode`
+    fi
+
     dimg=$dir/texture.$size.png
 
     if [ ! -d $dir ]
@@ -138,7 +145,13 @@ do
   for extra in Blank Collapsed
   do 
     simg=`printf "%s.%04d.sgi" $src/$mode $frame`
-    dir=`echo $dest/$extra-$mode`
+
+    if [ $extra == "Collapsed" ]
+    then 
+      dir=`echo $dest/$extra`
+    else 
+      dir=`echo $dest/$extra-$mode`
+    fi
 
     if [ ! -d $dir ]
     then 
