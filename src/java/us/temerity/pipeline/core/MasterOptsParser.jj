@@ -1,0 +1,673 @@
+options {
+  STATIC = false;
+}
+
+PARSER_BEGIN(MasterOptsParser)
+
+package us.temerity.pipeline.core;
+
+import us.temerity.pipeline.*;
+
+import java.util.*;
+import java.text.*;
+import java.io.*;
+import java.util.logging.*;
+
+/*------------------------------------------------------------------------------------------*/
+/*   M A S T E R   O P T S   P A R S E R                                                    */
+/*                                                                                          */
+/*    The parser for the plmaster(1) daemon.                                                */
+/*------------------------------------------------------------------------------------------*/
+
+public class 
+MasterOptsParser
+{
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Set the application instance. 
+   */ 
+  public void 
+  setApp
+  (
+   MasterApp app  
+  ) 
+  {
+    if(app == null) 
+      throw new IllegalArgumentException("The application cannot be (null)!");
+    pApp = app;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  private void 
+  init()
+  {
+    pNodeDir     = PackageInfo.sNodeDir;
+    pMasterPort  = PackageInfo.sMasterPort;
+    
+    pProdDir     = PackageInfo.sProdDir;
+    pFileServer  = PackageInfo.sFileServer;
+    pFilePort    = PackageInfo.sFilePort;
+    pControlPort = PackageInfo.sNotifyControlPort;
+    pMonitorPort = PackageInfo.sNotifyMonitorPort;
+  }
+ 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The application instance. 
+   */
+  private MasterApp  pApp;
+
+
+  /**
+   * The root directory of the of the persistent node storage area.
+   */ 
+  private File pNodeDir;
+
+  /**
+   * The network port to monitor for incoming connections.
+   */
+  private int  pMasterPort;
+  
+  
+
+  /**
+   * The root directory of the file repository. 
+   */ 
+  private File pProdDir;
+
+  /*
+   * The name of the host running the <B>plfilemgr</B><A>(1) and <B>plnotify</B><A>(1) 
+   * daemons. 
+   */
+  private String  pFileServer;
+
+  /**
+   * The network port listened to by the <B>plfilemgr</B><A>(1) daemon.
+   */
+  private int  pFilePort;
+
+  /**
+   * The network port listened to by the <B>plnotify</B><A>(1) daemon for 
+   * control connections.
+   */
+  private int  pControlPort;
+
+  /**
+   * The network port listened to by the <B>plnotify</B><A>(1) daemon for 
+   * monitor connections.
+   */
+  private int  pMonitorPort;
+}
+
+
+PARSER_END(MasterOptsParser)
+
+<DEFAULT> 
+TOKEN :
+{       
+  /* information options */ 
+  <HELP:         "--help">         
+| <HTML_HELP:    "--html-help">    
+| <VERSION:      "--version">      
+| <RELEASE_DATE: "--release-date"> 
+| <COPYRIGHT:    "--copyright">    
+| <LICENSE:      "--license">    
+
+  /* global options */	
+| <NODE_DIR:     "--node-dir">      : PATH_SEP
+| <MASTER_PORT:  "--master-port">   : INTEGER_SEP
+
+| <PROD_DIR:             "--prod-dir">             : PATH_SEP
+| <FILE_HOST:            "--file-host">            : HOSTNAME_SEP
+| <FILE_PORT:            "--file-port">            : INTEGER_SEP
+| <NOTIFY_CONTROL_PORT:  "--notify-control-port">  : INTEGER_SEP
+| <NOTIFY_MONITOR_PORT:  "--notify-monitor-port">  : INTEGER_SEP
+
+| <LOG:          "--log">           : LOG_SEP
+
+  /* seperators */ 
+| <WS1: ([" ","\t"])+> 
+
+  /* errors */ 
+| <UNKNOWN_OPTION:  "-" ("-")? (~[" ","\t","="])*>  : IGNORE_STATE
+| <UNKNOWN_COMMAND: ~["-"," ","\t"] (~[" ","\t"])*> : IGNORE_STATE
+}
+
+
+/* common states */ 
+<IGNORE_STATE> 
+TOKEN :
+{
+  <IGNORED: (~[])+>
+}
+
+
+/* integer arguments */ 
+<INTEGER_SEP> 
+TOKEN :
+{
+  <EQ1:                   "=">   : INTEGER_STATE
+| <MISSING_INTEGER_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<INTEGER_STATE> 
+TOKEN :
+{
+  <INTEGER:         (["0"-"9"])+>    : DEFAULT
+| <MISSING_INTEGER: [" ","\t"]>      : IGNORE_STATE
+| <ILLEGAL_INTEGER: (~[" ","\t"])+>  : IGNORE_STATE
+}
+
+
+/* filesystem path arguments */ 
+<PATH_SEP> 
+TOKEN :
+{
+  <EQ2:                "=">   : PATH_STATE
+| <MISSING_PATH_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<PATH_STATE> 
+TOKEN :
+{
+  <PATH_ARG:       ("/")* ("../")* <PATH_ARG_COMP> 
+		     ("/" (".." | (<PATH_ARG_COMP>)+)?)*>      : DEFAULT
+| <#PATH_ARG_COMP: (["a"-"z","A"-"Z","0"-"9","_","-","."])*>
+| <MISSING_PATH:   [" ","\t"]>                                 : IGNORE_STATE
+| <ILLEGAL_PATH:   (~[" ","\t"])+>                             : IGNORE_STATE
+}
+
+
+
+/* hostname arguments */ 
+<HOSTNAME_SEP> 
+TOKEN :
+{
+  <EQ3:                    "=">   : HOSTNAME_STATE
+| <MISSING_HOSTNAME_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<HOSTNAME_STATE> 
+TOKEN :
+{
+  <HOSTNAME:         ((["a"-"z","A"-"Z","0"-"9"])+ 
+		      ("." (["a"-"z","A"-"Z","0"-"9"])+)*)>   : DEFAULT
+| <MISSING_HOSTNAME: [" ","\t"]>                              : IGNORE_STATE
+| <ILLEGAL_HOSTNAME: (~[" ","\t"])+>                          : IGNORE_STATE
+}
+
+
+/* --log arguments */ 
+<LOG_SEP> 
+TOKEN :
+{
+  <EQ4:               "=">   : LOG_STATE
+| <MISSING_LOG_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<LOG_STATE> 
+TOKEN :
+{
+  <LOG_ALL:         "all">       
+| <LOG_ARG: 	    "arg">        
+| <LOG_GLU: 	    "glu">        
+| <LOG_OPS: 	    "ops">     
+| <LOG_NET: 	    "net">      
+| <LOG_PLG: 	    "plg">       
+| <LOG_SUB: 	    "sub">    
+| <COLON:  	    ":">       
+| <SEVERE:  	    "severe">  
+| <WARNING: 	    "warning"> 
+| <INFO:    	    "info">    
+| <FINE:    	    "fine">    
+| <FINER :  	    "finer">   
+| <FINEST:    	    "finest">  
+| <COMMA:  	    ",">       
+| <WS2:             ([" ","\t"])+>                   : DEFAULT
+| <ILLEGAL_LOG_ARG: (~[" ","\t","a"-"z",":",","])+>  : IGNORE_STATE
+}
+
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   T O P   L E V E L                                                                      */
+/*------------------------------------------------------------------------------------------*/
+
+void
+CommandLine() :
+{}
+{
+  (InformationOpts() | Commands()) <EOF>
+  {}
+}
+
+
+void 
+Commands() :
+{
+  init();
+}
+{
+  (GlobalOpts() WS())*
+  { 
+    try {
+      NodeMgrServer server = 
+	new NodeMgrServer(pNodeDir, pMasterPort, 
+			  pProdDir, pFileServer, pFilePort, pControlPort, pMonitorPort);
+      server.start();
+      server.join();
+    }
+    catch (Exception ex) {
+      Logs.net.severe(ex.getMessage());
+    }
+  }
+}
+    
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   I N F O R M A T I O N   O P T I O N S                                                  */
+/*------------------------------------------------------------------------------------------*/
+
+void
+InformationOpts() :
+{}
+{
+  (Help() | HtmlHelp() | Version() | ReleaseDate() | Copyright() | License())
+  {}
+}
+
+void
+Help() : 
+{}
+{
+  <HELP> WS()
+  { 
+    pApp.help(); 
+  }
+}
+
+void
+HtmlHelp() : 
+{}
+{
+  <HTML_HELP> WS()
+  { 
+    pApp.htmlHelp(); 
+  }
+}
+
+void
+Version() :
+{}
+{
+  <VERSION> WS()
+  { 
+    pApp.version(); 
+  }
+}
+
+void
+ReleaseDate() :
+{}
+{
+  <RELEASE_DATE> WS()
+  { 
+    pApp.releaseDate(); 
+  }
+}
+
+void
+Copyright() :
+{}
+{
+  <COPYRIGHT> WS() 
+  { 
+    pApp.copyright(); 
+  }
+}
+
+void
+License() :
+{}
+{
+  <LICENSE> WS() 
+  { 
+    pApp.license(); 
+  }
+}
+
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   G L O B A L   O P T I O N S                                                            */
+/*------------------------------------------------------------------------------------------*/
+
+void
+GlobalOpts() :
+{}
+{
+  (NodeDir() | MasterPort() | 
+   ProdDir() | FileHost() | FilePort() | ControlPort() | MonitorPort() | 
+   Log())
+  {}
+}
+
+
+void
+NodeDir() :
+{
+  Token t;
+}
+{
+  <NODE_DIR> EQ() t=<PATH_ARG>
+  { 
+    pNodeDir = new File(t.image);
+  }
+}
+
+void
+MasterPort() :
+{
+  Token t;
+}
+{
+  <MASTER_PORT> EQ() t=<INTEGER>
+  { 
+    pMasterPort = Integer.parseInt(t.image);
+  }
+}
+
+
+
+void
+ProdDir() :
+{
+  Token t;
+}
+{
+  <PROD_DIR> EQ() t=<PATH_ARG>
+  { 
+    pProdDir = new File(t.image);
+  }
+}
+
+void
+FileHost() :
+{
+  Token t;
+}
+{
+  <FILE_HOST> EQ() t=<PATH_ARG>
+  { 
+    pFileServer = t.image;
+  }
+}
+
+void
+FilePort() :
+{
+  Token t;
+}
+{
+  <FILE_PORT> EQ() t=<INTEGER>
+  { 
+    pFilePort = Integer.parseInt(t.image);
+  }
+}
+
+void
+ControlPort() :
+{
+  Token t;
+}
+{
+  <NOTIFY_CONTROL_PORT> EQ() t=<INTEGER>
+  { 
+    pControlPort = Integer.parseInt(t.image);
+  }
+}
+
+void
+MonitorPort() :
+{
+  Token t;
+}
+{
+  <NOTIFY_MONITOR_PORT> EQ() t=<INTEGER>
+  { 
+    pMonitorPort = Integer.parseInt(t.image);
+  }
+}
+
+
+void Log() : 
+{}
+{
+  (<LOG> EQ() LoggerArg() (<COMMA> LoggerArg())*)
+  {}
+}
+
+void LoggerArg() : 
+{}
+{
+  (LoggerAll() | LoggerPair()) 
+  {}
+}
+
+void LoggerAll() : 
+{
+  Level v;
+}
+{
+  (<LOG_ALL> <COLON> v=LogLevel())
+  {
+    Logs.arg.setLevel(v); 
+    Logs.glu.setLevel(v);
+    Logs.ops.setLevel(v);
+    Logs.net.setLevel(v);
+    Logs.plg.setLevel(v);
+    Logs.sub.setLevel(v);
+  }
+}
+
+void LoggerPair() : 
+{
+  Logger g; 
+  Level v;
+}
+{
+  (g=Logger() <COLON> v=LogLevel())
+  {
+    g.setLevel(v);
+  }
+}
+
+Logger Logger() :
+{
+  Logger g;
+}
+{
+  (g=ArgLogger() | g=GluLogger() | g=OpsLogger() | g=NetLogger() | 
+   g=PlgLogger() | g=SubLogger())
+  {
+    return g;
+  }
+}
+
+Logger ArgLogger() : 
+{}
+{
+  <LOG_ARG>
+  {
+    return Logs.arg;
+  }
+}
+
+Logger GluLogger() : 
+{}
+{
+  <LOG_GLU>
+  {
+    return Logs.glu;
+  }
+}
+
+Logger OpsLogger() : 
+{}
+{
+  <LOG_OPS>
+  {
+    return Logs.ops;
+  }
+}
+
+Logger NetLogger() : 
+{}
+{
+  <LOG_NET>
+  {
+    return Logs.net;
+  }
+}
+
+Logger PlgLogger() : 
+{}
+{
+  <LOG_PLG>
+  {
+    return Logs.plg;
+  }
+}
+
+Logger SubLogger() : 
+{}
+{
+  <LOG_SUB>
+  {
+    return Logs.sub;
+  }
+}
+
+
+Level LogLevel() : 
+{
+  Level v;
+}
+{
+  (v=SevereLevel() | v=WarningLevel() | v=InfoLevel() | 
+   v=FineLevel() | v=FinerLevel() | v=FinestLevel()) 
+  {
+    return v;
+  }
+}
+
+Level SevereLevel() :
+{
+  Level v;
+}
+{
+  <SEVERE> 
+  {
+    return Level.SEVERE;
+  }
+}
+
+Level WarningLevel() :
+{
+  Level v;
+}
+{
+  <WARNING> 
+  {
+    return Level.WARNING;
+  }
+}
+
+Level InfoLevel() :
+{
+  Level v;
+}
+{
+  <INFO> 
+  {
+    return Level.INFO;
+  }
+}
+
+Level FineLevel() :
+{
+  Level v;
+}
+{
+  <FINE> 
+  {
+    return Level.FINE;
+  }
+}
+
+Level FinerLevel() :
+{
+  Level v;
+}
+{
+  <FINER> 
+  {
+    return Level.FINER;
+  }
+}
+
+Level FinestLevel() :
+{
+  Level v;
+}
+{
+  <FINEST> 
+  {
+    return Level.FINEST;
+  }
+}
+
+
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   S H A R E D   T O K E N S                                                              */
+/*------------------------------------------------------------------------------------------*/
+
+Token
+WS() :
+{
+  Token t;
+}
+{
+  (t=<WS1> | t=<WS2>)
+  { 
+    return t; 
+  }
+}
+
+
+Token
+EQ() :
+{
+  Token t;
+}
+{
+  (t=<EQ1> | t=<EQ2> | t=<EQ3> | t=<EQ4>)
+  { 
+    return t; 
+  }
+}

@@ -1,0 +1,538 @@
+options {
+  STATIC = false;
+}
+
+PARSER_BEGIN(GraphicalOptsParser)
+
+package us.temerity.pipeline.core;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.ui.*;
+
+import java.util.*;
+import java.text.*;
+import java.io.*;
+import java.util.logging.*;
+import javax.swing.*;        
+
+/*------------------------------------------------------------------------------------------*/
+/*   G R A P H I C A L   O P T S   P A R S E R                                              */
+/*                                                                                          */
+/*    The parser for the plui(1) graphical client program.                                  */
+/*------------------------------------------------------------------------------------------*/
+
+public class 
+GraphicalOptsParser
+{
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Set the application instance. 
+   */ 
+  public void 
+  setApp
+  (
+   GraphicalApp app  
+  ) 
+  {
+    if(app == null) 
+      throw new IllegalArgumentException("The application cannot be (null)!");
+    pApp = app;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  private void 
+  init()
+  {
+    pMasterServer = PackageInfo.sMasterServer;
+    pMasterPort   = PackageInfo.sMasterPort;
+  }
+ 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The application instance. 
+   */
+  private GraphicalApp  pApp;
+
+
+  /**
+   * The name of the host running the <B>plmaster</B><A>(1) daemon.
+   */ 
+  private String  pMasterServer;
+
+  /**
+   * The network port listened to by the <B>plmaster</B><A>(1) daemon.
+   */
+  private int  pMasterPort;
+
+}
+
+
+PARSER_END(GraphicalOptsParser)
+
+<DEFAULT> 
+TOKEN :
+{       
+  /* information options */ 
+  <HELP:         "--help">         
+| <HTML_HELP:    "--html-help">    
+| <VERSION:      "--version">      
+| <RELEASE_DATE: "--release-date"> 
+| <COPYRIGHT:    "--copyright">    
+| <LICENSE:      "--license">    
+
+  /* global options */	
+| <MASTER_HOST:  "--master-host">   : HOSTNAME_SEP
+| <MASTER_PORT:  "--master-port">   : INTEGER_SEP
+| <LOG:          "--log">           : LOG_SEP
+
+  /* seperators */ 
+| <WS1: ([" ","\t"])+> 
+
+  /* errors */ 
+| <UNKNOWN_OPTION:  "-" ("-")? (~[" ","\t","="])*>  : IGNORE_STATE
+| <UNKNOWN_COMMAND: ~["-"," ","\t"] (~[" ","\t"])*> : IGNORE_STATE
+}
+
+
+/* common states */ 
+<IGNORE_STATE> 
+TOKEN :
+{
+  <IGNORED: (~[])+>
+}
+
+
+/* integer arguments */ 
+<INTEGER_SEP> 
+TOKEN :
+{
+  <EQ1:                   "=">   : INTEGER_STATE
+| <MISSING_INTEGER_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<INTEGER_STATE> 
+TOKEN :
+{
+  <INTEGER:         (["0"-"9"])+>    : DEFAULT
+| <MISSING_INTEGER: [" ","\t"]>      : IGNORE_STATE
+| <ILLEGAL_INTEGER: (~[" ","\t"])+>  : IGNORE_STATE
+}
+
+
+/* hostname arguments */ 
+<HOSTNAME_SEP> 
+TOKEN :
+{
+  <EQ2:                    "=">   : HOSTNAME_STATE
+| <MISSING_HOSTNAME_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<HOSTNAME_STATE> 
+TOKEN :
+{
+  <HOSTNAME:         ((["a"-"z","A"-"Z","0"-"9"])+ 
+		      ("." (["a"-"z","A"-"Z","0"-"9"])+)*)>   : DEFAULT
+| <MISSING_HOSTNAME: [" ","\t"]>                              : IGNORE_STATE
+| <ILLEGAL_HOSTNAME: (~[" ","\t"])+>                          : IGNORE_STATE
+}
+
+
+/* --log arguments */ 
+<LOG_SEP> 
+TOKEN :
+{
+  <EQ3:               "=">   : LOG_STATE
+| <MISSING_LOG_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<LOG_STATE> 
+TOKEN :
+{
+  <LOG_ALL:         "all">       
+| <LOG_ARG: 	    "arg">        
+| <LOG_OPS: 	    "ops">     
+| <LOG_NET: 	    "net">      
+| <LOG_PLG: 	    "plg">       
+| <LOG_SUB: 	    "sub">       
+| <LOG_TEX: 	    "tex">     
+| <COLON:  	    ":">       
+| <SEVERE:  	    "severe">  
+| <WARNING: 	    "warning"> 
+| <INFO:    	    "info">    
+| <FINE:    	    "fine">    
+| <FINER :  	    "finer">   
+| <FINEST:    	    "finest">  
+| <COMMA:  	    ",">       
+| <WS2:             ([" ","\t"])+>                   : DEFAULT
+| <ILLEGAL_LOG_ARG: (~[" ","\t","a"-"z",":",","])+>  : IGNORE_STATE
+}
+
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   T O P   L E V E L                                                                      */
+/*------------------------------------------------------------------------------------------*/
+
+void
+CommandLine() :
+{}
+{
+  (InformationOpts() | Commands()) <EOF>
+  {}
+}
+
+
+void 
+Commands() :
+{
+  init();
+}
+{
+  (GlobalOpts() WS())*
+  {
+    UIMain main = new UIMain(pMasterServer, pMasterPort);
+    SwingUtilities.invokeLater(main);
+  }
+}
+    
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   I N F O R M A T I O N   O P T I O N S                                                  */
+/*------------------------------------------------------------------------------------------*/
+
+void
+InformationOpts() :
+{}
+{
+  (Help() | HtmlHelp() | Version() | ReleaseDate() | Copyright() | License())
+  {}
+}
+
+void
+Help() : 
+{}
+{
+  <HELP> WS()
+  { 
+    pApp.help(); 
+  }
+}
+
+void
+HtmlHelp() : 
+{}
+{
+  <HTML_HELP> WS()
+  { 
+    pApp.htmlHelp(); 
+  }
+}
+
+void
+Version() :
+{}
+{
+  <VERSION> WS()
+  { 
+    pApp.version(); 
+  }
+}
+
+void
+ReleaseDate() :
+{}
+{
+  <RELEASE_DATE> WS()
+  { 
+    pApp.releaseDate(); 
+  }
+}
+
+void
+Copyright() :
+{}
+{
+  <COPYRIGHT> WS() 
+  { 
+    pApp.copyright(); 
+  }
+}
+
+void
+License() :
+{}
+{
+  <LICENSE> WS() 
+  { 
+    pApp.license(); 
+  }
+}
+
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   G L O B A L   O P T I O N S                                                            */
+/*------------------------------------------------------------------------------------------*/
+
+void
+GlobalOpts() :
+{}
+{
+  (MasterHost() | MasterPort() | Log())
+  {}
+}
+
+
+void
+MasterHost() :
+{
+  Token t;
+}
+{
+  <MASTER_HOST> EQ() t=<HOSTNAME>
+  { 
+    pMasterServer = t.image;
+  }
+}
+
+void
+MasterPort() :
+{
+  Token t;
+}
+{
+  <MASTER_PORT> EQ() t=<INTEGER>
+  { 
+    pMasterPort = Integer.parseInt(t.image);
+  }
+}
+
+
+void Log() : 
+{}
+{
+  (<LOG> EQ() LoggerArg() (<COMMA> LoggerArg())*)
+  {}
+}
+
+void LoggerArg() : 
+{}
+{
+  (LoggerAll() | LoggerPair()) 
+  {}
+}
+
+void LoggerAll() : 
+{
+  Level v;
+}
+{
+  (<LOG_ALL> <COLON> v=LogLevel())
+  {
+    Logs.arg.setLevel(v); 
+    Logs.ops.setLevel(v);
+    Logs.net.setLevel(v);
+    Logs.plg.setLevel(v);
+    Logs.sub.setLevel(v);
+    Logs.tex.setLevel(v);
+  }
+}
+
+void LoggerPair() : 
+{
+  Logger g; 
+  Level v;
+}
+{
+  (g=Logger() <COLON> v=LogLevel())
+  {
+    g.setLevel(v);
+  }
+}
+
+Logger Logger() :
+{
+  Logger g;
+}
+{
+  (g=ArgLogger() | g=OpsLogger() | g=NetLogger() | 
+   g=PlgLogger() | g=SubLogger() | g=TexLogger())
+  {
+    return g;
+  }
+}
+
+Logger ArgLogger() : 
+{}
+{
+  <LOG_ARG>
+  {
+    return Logs.arg;
+  }
+}
+
+Logger OpsLogger() : 
+{}
+{
+  <LOG_OPS>
+  {
+    return Logs.ops;
+  }
+}
+
+Logger NetLogger() : 
+{}
+{
+  <LOG_NET>
+  {
+    return Logs.net;
+  }
+}
+
+Logger PlgLogger() : 
+{}
+{
+  <LOG_PLG>
+  {
+    return Logs.plg;
+  }
+}
+
+Logger SubLogger() : 
+{}
+{
+  <LOG_SUB>
+  {
+    return Logs.sub;
+  }
+}
+
+Logger TexLogger() : 
+{}
+{
+  <LOG_TEX>
+  {
+    return Logs.tex;
+  }
+}
+
+
+Level LogLevel() : 
+{
+  Level v;
+}
+{
+  (v=SevereLevel() | v=WarningLevel() | v=InfoLevel() | 
+   v=FineLevel() | v=FinerLevel() | v=FinestLevel()) 
+  {
+    return v;
+  }
+}
+
+Level SevereLevel() :
+{
+  Level v;
+}
+{
+  <SEVERE> 
+  {
+    return Level.SEVERE;
+  }
+}
+
+Level WarningLevel() :
+{
+  Level v;
+}
+{
+  <WARNING> 
+  {
+    return Level.WARNING;
+  }
+}
+
+Level InfoLevel() :
+{
+  Level v;
+}
+{
+  <INFO> 
+  {
+    return Level.INFO;
+  }
+}
+
+Level FineLevel() :
+{
+  Level v;
+}
+{
+  <FINE> 
+  {
+    return Level.FINE;
+  }
+}
+
+Level FinerLevel() :
+{
+  Level v;
+}
+{
+  <FINER> 
+  {
+    return Level.FINER;
+  }
+}
+
+Level FinestLevel() :
+{
+  Level v;
+}
+{
+  <FINEST> 
+  {
+    return Level.FINEST;
+  }
+}
+
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   S H A R E D   T O K E N S                                                              */
+/*------------------------------------------------------------------------------------------*/
+
+Token
+WS() :
+{
+  Token t;
+}
+{
+  (t=<WS1> | t=<WS2>)
+  { 
+    return t; 
+  }
+}
+
+Token
+EQ() :
+{
+  Token t;
+}
+{
+  (t=<EQ1> | t=<EQ2> | t=<EQ3>)
+  { 
+    return t; 
+  }
+}
