@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.65 2004/12/10 10:44:44 jim Exp $
+// $Id: UIMaster.java,v 1.66 2004/12/16 15:43:54 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -13,11 +13,14 @@ import java.io.*;
 import java.util.*;
 import java.util.concurrent.locks.*;
 import java.text.*;
+
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.text.*;
 import javax.swing.plaf.basic.*;
 import javax.swing.plaf.synth.*;
+
+import net.java.games.jogl.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   U I   M A S T E R                                                                      */
@@ -2903,6 +2906,21 @@ class UIMaster
   }
   
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   J O G L   U T I L I T I E S                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Create a new OpenGL rendering canvas shared among all GLCanvas instances.
+   */ 
+  public synchronized GLCanvas
+  createGLCanvas() 
+  {
+    return GLDrawableFactory.getFactory().createGLCanvas(pGLCapabilities, pGLCanvas);
+  }
+
+
   /*----------------------------------------------------------------------------------------*/
   /*   L I S T E N E R S                                                                    */
   /*----------------------------------------------------------------------------------------*/
@@ -3098,6 +3116,47 @@ class UIMaster
     public void 
     run() 
     {  
+      /* make sure user preference exist */ 
+      try {
+	File base = new File(PackageInfo.sHomeDir, PackageInfo.sUser + "/.pipeline");
+	String subdirs[] = { "layouts" };
+	int wk;
+	for(wk=0; wk<subdirs.length; wk++) {
+	  File dir = new File(base, subdirs[wk]);
+	  if(!dir.isDirectory()) {
+	    if(!dir.mkdirs()) {
+	      Logs.ops.severe("Unable to create (" + dir + ")!");
+	      Logs.flush();
+	      System.exit(1);	    
+	    }
+	    NativeFileSys.chmod(0700, dir);
+	  }	  
+	}
+
+	{
+	  File file = new File(base, "preferences");
+	  if(file.isFile()) 	  
+	    UserPrefs.load();
+	}
+      }
+      catch(Exception ex) {	
+	Logs.ops.severe("Unable to initialize the user preferences!\n" + 
+			"  " + ex.getMessage());
+	Logs.flush();
+	System.exit(1);	 
+      }
+
+      /* make sure that the default working area exists */ 
+      try {
+	pMasterMgrClient.createWorkingArea(PackageInfo.sUser, "default");
+      }
+      catch(PipelineException ex) {	
+	Logs.ops.severe("Unable to initialize the default working area!\n" + 
+			"  " + ex.getMessage());
+	Logs.flush();
+	System.exit(1);	 
+      }
+
       /* load the look-and-feel */ 
       {
 	try {
@@ -3157,14 +3216,16 @@ class UIMaster
 	    panel.add(hbox);
 	  }
 
-	  /* progress bar */ 
+	  /* texture loader bar */ 
 	  {
-	    JProgressBar bar = new JProgressBar(JProgressBar.HORIZONTAL, 0, 338);
-	    pSplashProgress = bar;
+	    pGLCapabilities = new GLCapabilities();  
+	    pGLCapabilities.setDoubleBuffered(true);
+    	    pGLCanvas = GLDrawableFactory.getFactory().createGLCanvas(pGLCapabilities);
+            
+	    JTextureLoaderBar loader = 
+ 	      new JTextureLoaderBar(pGLCanvas, new MainFrameTask(pMaster));
 
-	    bar.setValue(1);
-	    
-	    panel.add(bar);
+ 	    panel.add(loader);
 	  }
 
 	  frame.setContentPane(panel);
@@ -3209,232 +3270,9 @@ class UIMaster
 
 	frame.setVisible(true);
       }
-      
-      /* perform application startup tasks */ 
-      StartupTask task = new StartupTask(pMaster);
-      task.start();
     }
 
     private UIMaster  pMaster;
-  }
-
-  /** 
-   * Perform application startup tasks.
-   */ 
-  private
-  class StartupTask
-    extends Thread
-  {
-    StartupTask
-    (
-     UIMaster master
-    ) 
-    {
-      super("UIMaster:StartupTask");
-
-      pMaster = master;
-      pCnt    = 1;
-    }
-
-    public void 
-    run() 
-    {  
-      int i;
-
-      /* make sure user preference exist */ 
-      try {
-	File base = new File(PackageInfo.sHomeDir, PackageInfo.sUser + "/.pipeline");
-	String subdirs[] = { "layouts" };
-	int wk;
-	for(wk=0; wk<subdirs.length; wk++) {
-	  File dir = new File(base, subdirs[wk]);
-	  if(!dir.isDirectory()) {
-	    if(!dir.mkdirs()) {
-	      Logs.ops.severe("Unable to create (" + dir + ")!");
-	      Logs.flush();
-	      System.exit(1);	    
-	    }
-	    NativeFileSys.chmod(0700, dir);
-	  }	  
-	}
-
-	{
-	  File file = new File(base, "preferences");
-	  if(file.isFile()) 	  
-	    UserPrefs.load();
-	}
-      }
-      catch(Exception ex) {	
-	Logs.ops.severe("Unable to initialize the user preferences!\n" + 
-			"  " + ex.getMessage());
-	Logs.flush();
-	System.exit(1);	 
-      }
-
-      /* make sure that the default working area exists */ 
-      try {
-	pMasterMgrClient.createWorkingArea(PackageInfo.sUser, "default");
-      }
-      catch(PipelineException ex) {	
-	Logs.ops.severe("Unable to initialize the default working area!\n" + 
-			"  " + ex.getMessage());
-	Logs.flush();
-	System.exit(1);	 
-      }
-      
-      /* load textures */ 
-      try {
-	TextureMgr mgr = TextureMgr.getInstance();
-
-	for(SelectionMode mode : SelectionMode.all()) {
-	  for(OverallQueueState qstate : OverallQueueState.all()) {
-	    for(OverallNodeState nstate : OverallNodeState.all()) {
-	      mgr.verifyTexture(nstate + "-" + qstate + "-" + mode);
-	      mgr.verifyIcon21(nstate + "-" + qstate + "-" + mode);
-	      update();
-	    }
-
-	    mgr.verifyTexture("NeedsCheckOutMajor-" + qstate + "-" + mode);
-	    mgr.verifyIcon21("NeedsCheckOutMajor-" + qstate + "-" + mode);
-	    update();	      
-
-	    mgr.verifyTexture("NeedsCheckOutMicro-" + qstate + "-" + mode);
-	    mgr.verifyIcon21("NeedsCheckOutMicro-" + qstate + "-" + mode);
-	    update();	      
-
-	    mgr.verifyIcon21("Added-" + qstate + "-" + mode);
-	    update();	      
-
-	    mgr.verifyIcon21("Obsolete-" + qstate + "-" + mode);
-	    update();	      	      
-	  }
-
-	  mgr.verifyTexture("Identical-Finished-Frozen-" + mode);
-	  mgr.verifyIcon21("Identical-Finished-Frozen-" + mode);
-	  update();	      
-
-	  mgr.verifyTexture("Identical-Stale-Frozen-" + mode);
-	  mgr.verifyIcon21("Identical-Stale-Frozen-" + mode);
-	  update();	      
-	  
-	  mgr.verifyTexture("ModifiedLinks-Finished-Frozen-" + mode);
-	  mgr.verifyIcon21("ModifiedLinks-Finished-Frozen-" + mode);
-	  update();	      
-
-	  mgr.verifyTexture("ModifiedLinks-Stale-Frozen-" + mode);
-	  mgr.verifyIcon21("ModifiedLinks-Stale-Frozen-" + mode);
-	  update();	      
-
-	  mgr.verifyTexture("NeedsCheckOutMicro-Finished-Frozen-" + mode);
-	  mgr.verifyIcon21("NeedsCheckOutMicro-Finished-Frozen-" + mode);
-	  update();	      
-
-	  mgr.verifyTexture("NeedsCheckOutMicro-Stale-Frozen-" + mode);
-	  mgr.verifyIcon21("NeedsCheckOutMicro-Stale-Frozen-" + mode);
-	  update();
-
-	  mgr.verifyTexture("NeedsCheckOut-Finished-Frozen-" + mode);
-	  mgr.verifyIcon21("NeedsCheckOut-Finished-Frozen-" + mode);
-	  update();	      
-
-	  mgr.verifyTexture("NeedsCheckOut-Stale-Frozen-" + mode);
-	  mgr.verifyIcon21("NeedsCheckOut-Stale-Frozen-" + mode);
-	  update();
-
-	  mgr.verifyTexture("NeedsCheckOutMajor-Finished-Frozen-" + mode);
-	  mgr.verifyIcon21("NeedsCheckOutMajor-Finished-Frozen-" + mode);
-	  update();	      
-
-	  mgr.verifyTexture("NeedsCheckOutMajor-Stale-Frozen-" + mode);
-	  mgr.verifyIcon21("NeedsCheckOutMajor-Stale-Frozen-" + mode);
-	  update();	      
-	}
-
-	for(SelectionMode mode : SelectionMode.all()) {
-	  mgr.verifyTexture("Blank-" + mode);
-	  update();
-
-	  mgr.verifyTexture("Collapsed-" + mode);
-	  update();
-	}
-
-	{
-	  mgr.registerFont("CharterBTRoman", new CharterBTRomanFontGeometry());
-	  mgr.verifyFontTextures("CharterBTRoman");
-	  pCnt += 10;
-	  SwingUtilities.invokeLater(new UpdateStartupProgress(pCnt));
-	}
-
-	{
-	  mgr.verifySimpleTexture("White");
-	  mgr.verifySimpleTexture("Yellow");
-	  mgr.verifySimpleTexture("Cyan");
-	  mgr.verifySimpleTexture("Purple");
-
-	  mgr.verifySimpleTexture("LightGrey");
-	  mgr.verifySimpleTexture("DarkGrey");
-	  
-	  mgr.verifySimpleTexture("Queued");
-	  mgr.verifySimpleTexture("Paused");
-	  mgr.verifySimpleTexture("Aborted");
-	  mgr.verifySimpleTexture("Running");
-	  mgr.verifySimpleTexture("Finished");
-	  mgr.verifySimpleTexture("Failed");
-
-	  update();
-	}
-
-	for(LinkRelationship rel : LinkRelationship.all()) {
-	  mgr.verifyTexture("LinkRelationship-" + rel);
-	  update();
-	}
-      }
-      catch(IOException ex) {
-	Logs.tex.severe("Unable to load textures!\n" + 
-			"  " + ex.getMessage());
-	Logs.flush();
-	System.exit(1);
-      }
-
-      SwingUtilities.invokeLater(new MainFrameTask(pMaster));
-    }
-
-    private void
-    update()
-    {
-      SwingUtilities.invokeLater(new UpdateStartupProgress(pCnt++));
-    }
-
-    private UIMaster  pMaster;
-    private int       pCnt;
-  }
-
-  /** 
-   * Update the splash frame progress bar.
-   */ 
-  private
-  class UpdateStartupProgress
-    extends Thread
-  {
-    public 
-    UpdateStartupProgress
-    (
-     int value
-    ) 
-    {
-      super("UIMaster:UpdateStartupProgress");
-
-      pValue = value;
-    }
-
-    public void 
-    run() 
-    {  
-      pSplashProgress.setValue(pValue);
-      //System.out.print("Progress = " + pValue + "\n"); 
-    }
-
-    private int pValue;
   }
 
   /** 
@@ -4550,6 +4388,21 @@ class UIMaster
 
   /*----------------------------------------------------------------------------------------*/
 
+  /** 
+   * The OpenGL capabilities used by all GLCanvas instances.
+   */ 
+  private GLCapabilities  pGLCapabilities;
+
+  /**
+   * The template GLCanvas which creates the shared OpenCL context in which textures and 
+   * display lists are initialized.
+   */ 
+  private GLCanvas  pGLCanvas;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+ 
   /**
    * The splash screen frame.
    */ 
