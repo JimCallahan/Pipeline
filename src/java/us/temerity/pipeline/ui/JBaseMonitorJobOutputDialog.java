@@ -1,4 +1,4 @@
-// $Id: JBaseMonitorJobOutputDialog.java,v 1.2 2004/10/28 15:55:24 jim Exp $
+// $Id: JBaseMonitorJobOutputDialog.java,v 1.3 2005/01/03 01:26:58 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -278,7 +278,7 @@ class JBaseMonitorJobOutputDialog
     public 
     JobMonitorPanel() 
     {
-      super(20, 80);
+      super(20, 120);
 
       pLock = new Object();
     }
