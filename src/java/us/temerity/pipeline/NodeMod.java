@@ -1,9 +1,8 @@
-// $Id: NodeMod.java,v 1.15 2004/03/30 22:11:22 jim Exp $
+// $Id: NodeMod.java,v 1.16 2004/04/11 19:30:20 jim Exp $
 
 package us.temerity.pipeline;
 
 import us.temerity.pipeline.glue.*;
-import us.temerity.pipeline.core.*;
 
 import java.io.*;
 import java.util.*;
@@ -603,9 +602,9 @@ class NodeMod
       throw new IllegalArgumentException
 	("The toolset argument cannot be (null)!");
 
-    if(!Toolsets.exists(toolset)) 
-      throw new PipelineException
-	("No valid toolset named (" + toolset + ") exists!");
+//     if(!Toolsets.exists(toolset)) 
+//       throw new PipelineException
+// 	("No valid toolset named (" + toolset + ") exists!");
 
     pToolset = toolset;
 

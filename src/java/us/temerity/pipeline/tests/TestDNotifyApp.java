@@ -1,4 +1,4 @@
-// $Id: TestDNotifyApp.java,v 1.1 2004/04/01 03:10:27 jim Exp $
+// $Id: TestDNotifyApp.java,v 1.2 2004/04/11 19:30:20 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -37,6 +37,7 @@ class TestDNotifyApp
   )
   {
     Logs.init();
+    Logs.net.setLevel(Level.FINE);
     Logs.ops.setLevel(Level.FINEST);
 
     try {
@@ -61,69 +62,87 @@ class TestDNotifyApp
     }
   }
   
-  
   public void 
   run() 
     throws Exception 
   {
-    Watcher w = new Watcher();
-    w.start();
+//     NotifyServer server = new NotifyServer(53148, 53149);
+//     server.start();
 
-    try {
-      Thread.currentThread().sleep(2000);
+    Thread.currentThread().sleep(2000);
+
+    MonitorTask monitor = new MonitorTask();
+    monitor.start();
+
+    NotifyControlClient control = new NotifyControlClient("localhost", 53148);
+    control.monitor(new File("/usr/tmp"));
+//     control.monitor(new File("/home/jim"));
+
+    HashSet<File> dirs = new HashSet<File>();
+    {
+      Random random = new Random((new Date()).getTime());
+
+      File root = new File("/usr/tmp/data/notify");
+      int wk;
+      for(wk=0; wk<300; wk++) {
+	File dir = new File(root, String.valueOf(random.nextInt(1000000)));
+	dir.mkdirs();
+
+	dirs.add(dir);
+
+	try {
+	  control.monitor(dir);
+	}
+	catch(PipelineException ex) {
+	  System.out.print(ex.getMessage() + "\n");
+	  break;
+	}
+      }
     }
-    catch(InterruptedException ex) {
-      assert(false);
-    }
 
-    DNotify dn = w.getDNotify();
-    assert(dn != null); 
+    control.disconnect();
 
-    File cwd = new File(System.getProperty("user.dir") + "/data");
-    dn.monitor(cwd);
-    dn.monitor(new File("/usr/tmp"));
-    dn.monitor(new File("/tmp"));
+//     for(File dir : dirs) {
+//       try {
+// 	control.unmonitor(dir);
+//       }
+//       catch(PipelineException ex) {
+// 	System.out.print(ex.getMessage() + "\n");
+// 	break;
+//       }
+//     }
 
-    w.join();
+
+    monitor.join();
+//     server.join();
   }
 
-
-  public class 
-  Watcher
+  public 
+  class MonitorTask
     extends Thread
   {
-    Watcher()
-    {
-    }
-
-    public DNotify
-    getDNotify() 
-    {
-      return pDNotify;
-    }
+    public
+    MonitorTask() 
+    {}
 
     public void 
     run() 
     {
+      NotifyMonitorClient client = new NotifyMonitorClient("localhost", 53149);
       try {
-	pDNotify = new DNotify();
-
 	while(true) {
-	  Logs.ops.info("Watching...\n");
-	  Logs.flush();
-
-	  File dir = pDNotify.watch(10000);
-	}    
+	  HashSet<File> dirs = client.watch(); 
+	  for(File dir : dirs) {
+	    Logs.ops.info("DIRECTORY MODIFIED: " + dir);
+	    Logs.flush();
+	  }
+	}
       }
-      catch(IOException ex) {
-	Logs.ops.severe("Error: " + ex.getMessage());
-	Logs.flush();
+      catch(PipelineException ex) {
+	Logs.ops.severe("ERROR: " + ex.getMessage());
       }
-    } 
-
-    private DNotify pDNotify;
+    }
   }
-
 }
 
 

@@ -1,4 +1,4 @@
-// $Id: NativeProcess.cc,v 1.7 2004/03/22 03:11:08 jim Exp $
+// $Id: NativeProcess.cc,v 1.8 2004/04/11 19:30:20 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -75,7 +75,7 @@
 /* Write the given string data to the STDIN of the native process. */ 
 extern "C" 
 JNIEXPORT jint 
-JNICALL Java_us_temerity_pipeline_core_NativeProcess_writeToStdIn
+JNICALL Java_us_temerity_pipeline_NativeProcess_writeToStdIn
 (
  JNIEnv *env, 
  jobject obj, 
@@ -128,7 +128,7 @@ JNICALL Java_us_temerity_pipeline_core_NativeProcess_writeToStdIn
 /* Close the STDIN pipe. */ 
 extern "C"  
 JNIEXPORT void 
-JNICALL Java_us_temerity_pipeline_core_NativeProcess_closeStdIn
+JNICALL Java_us_temerity_pipeline_NativeProcess_closeStdIn
 (
  JNIEnv *env, 
  jobject obj
@@ -173,7 +173,7 @@ JNICALL Java_us_temerity_pipeline_core_NativeProcess_closeStdIn
     Returns (null) on EOF.  The size of the String read may be smaller than "size" */ 
 extern "C"  
 JNIEXPORT jstring 
-JNICALL Java_us_temerity_pipeline_core_NativeProcess_readFromStdOut
+JNICALL Java_us_temerity_pipeline_NativeProcess_readFromStdOut
 (
  JNIEnv *env, 
  jobject obj, 
@@ -227,7 +227,7 @@ JNICALL Java_us_temerity_pipeline_core_NativeProcess_readFromStdOut
 /* Close the STDOUT pipe. */ 
 extern "C"  
 JNIEXPORT void 
-JNICALL Java_us_temerity_pipeline_core_NativeProcess_closeStdOut
+JNICALL Java_us_temerity_pipeline_NativeProcess_closeStdOut
 (
  JNIEnv *env, 
  jobject obj
@@ -271,7 +271,7 @@ JNICALL Java_us_temerity_pipeline_core_NativeProcess_closeStdOut
      Returns (null) on EOF.  The size of the String read may be smaller than "size" */ 
 extern "C"  
 JNIEXPORT jstring 
-JNICALL Java_us_temerity_pipeline_core_NativeProcess_readFromStdErr
+JNICALL Java_us_temerity_pipeline_NativeProcess_readFromStdErr
 (
  JNIEnv *env, 
  jobject obj, 
@@ -323,7 +323,7 @@ JNICALL Java_us_temerity_pipeline_core_NativeProcess_readFromStdErr
 /* Close the STDERR pipe. */ 
 extern "C"  
 JNIEXPORT void 
-JNICALL Java_us_temerity_pipeline_core_NativeProcess_closeStdErr
+JNICALL Java_us_temerity_pipeline_NativeProcess_closeStdErr
 (
  JNIEnv *env, 
  jobject obj
@@ -368,7 +368,7 @@ JNICALL Java_us_temerity_pipeline_core_NativeProcess_closeStdErr
      Throws a PError exception on failure (or returns -1). */ 
 extern "C" 
 JNIEXPORT jint
-JNICALL Java_us_temerity_pipeline_core_NativeProcess_execNative
+JNICALL Java_us_temerity_pipeline_NativeProcess_execNative
 (
  JNIEnv *env, 
  jobject obj, 
@@ -755,7 +755,7 @@ JNICALL Java_us_temerity_pipeline_core_NativeProcess_execNative
 /* Resource usage statistics for running native process. 
        Returns whether the collection was successful. */ 
 JNIEXPORT jboolean 
-JNICALL Java_us_temerity_pipeline_core_NativeProcess_collectStatsNative
+JNICALL Java_us_temerity_pipeline_NativeProcess_collectStatsNative
 (
  JNIEnv *env, 
  jobject obj
@@ -875,7 +875,7 @@ JNICALL Java_us_temerity_pipeline_core_NativeProcess_collectStatsNative
 /* Send a signal to a native process. */ 
 extern "C" 
 JNIEXPORT void 
-JNICALL Java_us_temerity_pipeline_core_NativeProcess_signalNative
+JNICALL Java_us_temerity_pipeline_NativeProcess_signalNative
 (
  JNIEnv *env, 
  jobject obj, 
@@ -905,7 +905,7 @@ JNICALL Java_us_temerity_pipeline_core_NativeProcess_signalNative
 /* Change file access permissions. */
 extern "C" 
 JNIEXPORT void 
-JNICALL Java_us_temerity_pipeline_core_NativeProcess_chmodNative
+JNICALL Java_us_temerity_pipeline_NativeProcess_chmodNative
 (
  JNIEnv *env, 
  jclass cls, 

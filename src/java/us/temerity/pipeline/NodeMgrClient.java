@@ -1,8 +1,7 @@
-// $Id: NodeMgrClient.java,v 1.6 2004/03/30 22:10:06 jim Exp $
+// $Id: NodeMgrClient.java,v 1.7 2004/04/11 19:30:20 jim Exp $
 
 package us.temerity.pipeline;
 
-import us.temerity.pipeline.core.*;
 import us.temerity.pipeline.message.*;
 
 import java.io.*;
@@ -233,6 +232,51 @@ class NodeMgrClient
 
     Object obj = performTransaction(NodeRequest.Unlink, req);
     handleSimpleResponse(obj);
+  } 
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   N O D E   S T A T U S                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the current overall status of the given node. <P> 
+   * 
+   * The returned <CODE>NodeStatus</CODE> can be used to access the status of all nodes 
+   * reachable through both upstream and downstream connections from the given node.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the status of the node.
+   */ 
+  public NodeStatus
+  status
+  ( 
+   String view, 
+   String name   
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    NodeID id = new NodeID(PackageInfo.sUser, view, name);
+    NodeStatusReq req = new NodeStatusReq(id);
+
+    Object obj = performTransaction(NodeRequest.Status, req);
+    if(obj instanceof NodeStatusRsp) {
+      NodeStatusRsp rsp = (NodeStatusRsp) obj;
+      return rsp.getNodeStatus();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
   } 
 
 

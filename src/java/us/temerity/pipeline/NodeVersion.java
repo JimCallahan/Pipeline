@@ -1,9 +1,8 @@
-// $Id: NodeVersion.java,v 1.11 2004/03/29 08:15:28 jim Exp $
+// $Id: NodeVersion.java,v 1.12 2004/04/11 19:30:20 jim Exp $
 
 package us.temerity.pipeline;
 
 import us.temerity.pipeline.glue.*;
-import us.temerity.pipeline.core.*;
 
 import java.util.*;
 

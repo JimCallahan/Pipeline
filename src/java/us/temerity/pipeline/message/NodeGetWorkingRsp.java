@@ -1,4 +1,4 @@
-// $Id: NodeGetWorkingRsp.java,v 1.2 2004/03/31 08:34:56 jim Exp $
+// $Id: NodeGetWorkingRsp.java,v 1.3 2004/04/11 19:30:20 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -9,7 +9,7 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   F I L E   S T A T E   R S P                                                            */
+/*   N O D E   G E T   W O R K I N G   R S P                                                */
 /*------------------------------------------------------------------------------------------*/
 
 /**
@@ -86,7 +86,7 @@ class NodeGetWorkingRsp
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID = -7806634912469985967L;
+  private static final long serialVersionUID = 5359955962985974211L;
 
   
 

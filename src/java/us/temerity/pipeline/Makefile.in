@@ -193,7 +193,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
                    PropertyState \
                    QueueState \
                    VersionState \
-                   core/PosixSignal \
+                   PosixSignal \
                    message/FileRequest \
                    message/NodeRequest
 
@@ -215,13 +215,14 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
     GLUE_PARSERS = GlueParser
     CORE_PARSERS = ToolsetEnvParser \
-                   FileMgrOptsParser
+                   FileMgrOptsParser \
+                   NotifyOptsParser
 
 
     JAVA_SOURCES = $(ENUM_SOURCES) $(filter-out $(ENUM_SOURCES),$(ALL_SOURCES)) \
                    $(patsubst %,core/%.java,$(CORE_PARSERS)) \
                    $(patsubst %,glue/%.java,$(GLUE_PARSERS)) \
-                   core/PackageInfo.java 
+                   PackageInfo.java 
 
       BS_SOURCES = $(shell ls $(srcdir)/bootstrap/*.java) \
                    bootstrap/BootStrapLoader.java
@@ -232,18 +233,24 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
                    core/FileMgrOptsParserConstants \
 		   core/FileMgrOptsParser \
 		   core/FileMgrOptsParserTokenManager \
-		   core/PackageInfo \
+		   core/FileMgrServer:HandlerTask \
+		   core/NodeMgr:CheckedInBundle \
+		   core/NodeMgr:WorkingBundle \
+                   core/NotifyOptsParserConstants \
+		   core/NotifyOptsParser \
+		   core/NotifyOptsParserTokenManager \
+                   core/NotifyServer:ControlHandlerTask \
+                   core/NotifyServer:ControlTask \
+                   core/NotifyServer:MonitorHandlerTask \
+                   core/NotifyServer:MonitorTask \
 		   core/ParseException \
 		   core/SimpleCharStream \
 		   core/Token \
 		   core/TokenMgrError \
 		   core/ToolsetEnvParserConstants \
 		   core/ToolsetEnvParser \
-		   core/ToolsetEnvParserTokenManager \
-		   core/FileCleaner:CleanupTask \
-		   core/FileMgrServer:HandlerTask \
-		   core/NodeMgr:CheckedInBundle \
-		   core/NodeMgr:WorkingBundle
+		   core/ToolsetEnvParserTokenManager
+
 
 
 #--------------------------------------------------------------------------------------------#
@@ -359,12 +366,14 @@ clean-vault:
 
 clean-class:
 	rm -f *.class 
+	rm -f bootstrap/*.class
 	rm -f glue/*.class
 	rm -f message/*.class
 	rm -f core/*.class
 	rm -f java-all bootstrap-all
 
 clean-aux:
+	rm -f bootstrap/BootStrapLoader.java
 	rm -f core/ParseException.java core/SimpleCharStream.java 
 	rm -f core/Token.java core/TokenMgrError.java
 	rm -f core/PackageInfo.java

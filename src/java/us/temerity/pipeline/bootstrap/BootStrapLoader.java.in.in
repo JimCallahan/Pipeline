@@ -1,4 +1,4 @@
-// $Id: BootStrapLoader.java.in.in,v 1.2 2004/03/23 02:11:08 jim Exp $
+// $Id: BootStrapLoader.java.in.in,v 1.3 2004/04/11 19:30:20 jim Exp $
 
 package us.temerity.pipeline.bootstrap;
 
@@ -37,7 +37,7 @@ class BootStrapLoader
   {
     super();
     
-    File license = new File("@ROOT_INST_DIR@", "config/pipeline.key");
+    File license = new File("@ROOT_INST_DIR@", "config/temerity-software.key");
     if(!license.isFile()) 
       throw new LicenseException("The license file (" + license + ") was missing!");
 
@@ -165,46 +165,79 @@ class BootStrapLoader
 	  ("Unable to reliably determine the time!");
       }
       
-      /* check the domain name */ 
+      /* check the domain name <OR> IP address */ 
       {
-	String ldomain = (String) profile.get("DomainName");
-	if(ldomain == null)
-	  throw new LicenseException
-	    ("The license file (" + license + ") has been corrupted!");
-	
-	TreeSet<String> domains = new TreeSet<String>();
-	try {	    
-	  Enumeration nets = NetworkInterface.getNetworkInterfaces();  
-	  while(nets.hasMoreElements()) {
-	    NetworkInterface net = (NetworkInterface) nets.nextElement();
-	    Enumeration addrs = net.getInetAddresses();
-	    while(addrs.hasMoreElements()) {
-	      InetAddress addr = (InetAddress) addrs.nextElement();
-	      String ip = addr.getHostAddress();
-	      if(!ip.equals("127.0.0.1")) {
-		String host = addr.getCanonicalHostName();
-		int idx = host.indexOf('.');
-		domains.add(host.substring(idx+1));
+	String ldomain  = (String) profile.get("DomainName");
+	HashSet ipaddrs = (HashSet) profile.get("IPAddrs");
+
+	/* check domain */ 
+	if(ldomain != null) {	
+	  TreeSet<String> domains = new TreeSet<String>();
+	  try {	    
+	    Enumeration nets = NetworkInterface.getNetworkInterfaces();  
+	    while(nets.hasMoreElements()) {
+	      NetworkInterface net = (NetworkInterface) nets.nextElement();
+	      Enumeration addrs = net.getInetAddresses();
+	      while(addrs.hasMoreElements()) {
+		InetAddress addr = (InetAddress) addrs.nextElement();
+		String ip = addr.getHostAddress();
+		if(!ip.equals("127.0.0.1")) {
+		  String host = addr.getCanonicalHostName();
+		  int idx = host.indexOf('.');
+		  domains.add(host.substring(idx+1));
+		}
 	      }
 	    }
 	  }
-	}
-	catch(SocketException ex) {
-	  throw new LicenseException
-	    ("Unable to reliably determine the name of the site!");	  
-	}
-	
-	boolean valid = false;
-	for(String domain : domains) {
-	  if(ldomain.equals(domain)) {
-	    valid = true;
-	    break;
+	  catch(SocketException ex) {
+	    throw new LicenseException
+	      ("Unable to reliably determine the name of the site!");	  
 	  }
+	  
+	  boolean valid = false;
+	  for(String domain : domains) {
+	    if(ldomain.equals(domain)) {
+	      valid = true;
+	      break;
+	    }
+	  }
+	  
+	  if(!valid) 
+	    throw new LicenseException
+	      ("The license is not valid for this site!");
 	}
 	
-	if(!valid) 
+	/* check IP addresses */ 
+	else if(ipaddrs != null) {
+	  boolean valid = false;
+
+	  try {	    
+	    Enumeration nets = NetworkInterface.getNetworkInterfaces();  
+	    while(nets.hasMoreElements()) {
+	      NetworkInterface net = (NetworkInterface) nets.nextElement();
+	      Enumeration addrs = net.getInetAddresses();
+	      while(addrs.hasMoreElements()) {
+		InetAddress addr = (InetAddress) addrs.nextElement();
+		if(ipaddrs.contains(addr)) {
+		  valid = true;
+		  break;
+		}
+	      }
+	    }
+	  }
+	  catch(SocketException ex) {
+	    throw new LicenseException
+	      ("Unable to determine the IP Address of this machine!");	  
+	  }
+	  
+	  if(!valid) 
+	    throw new LicenseException
+	      ("The license is not valid for this machine!");
+	}
+	else {
 	  throw new LicenseException
-	    ("The license is not valid for this site!");
+	    ("The license file (" + license + ") has been corrupted!");
+	}
       }
     }
 
@@ -231,8 +264,16 @@ class BootStrapLoader
 	throw new LicenseException
 	  ("The code vault (" + vault + ") has been corrupted!");
       }
+
+      BigInteger bigA = new BigInteger(checksum);
+      BigInteger bigB = new BigInteger(sCheckSum);
       
-      if(!Arrays.equals(checksum, (new BigInteger(sCheckSum)).toByteArray())) {
+      if((bigA == null) || (bigB == null)) {
+	throw new LicenseException
+	  ("Internal Error!");
+      }
+
+      if(!bigA.equals(bigB)) {
 	throw new LicenseException
 	  ("The code vault (" + vault + ") has been corrupted!");
       }
@@ -273,7 +314,7 @@ class BootStrapLoader
 	    throw new IOException();
 	  idx+=9;
 	  
-	  cname = new String(raw, idx, size);
+	  cname = new String(raw, idx, size); 
 	  idx+=size;
 	}
 	
@@ -289,6 +330,9 @@ class BootStrapLoader
 	  for(wk=0; wk<cbytes.length; wk++, idx++) 
 	    cbytes[wk] = raw[idx];
 	}
+
+// 	System.out.print("Loaded Class: " + cname + " [" + cbytes.length + "]\n");
+// 	System.out.flush();
 
 	pClasses.put(cname, cbytes);
       }
@@ -315,6 +359,11 @@ class BootStrapLoader
     throws ClassNotFoundException
   {
     byte cbytes[] = pClasses.get(cname);
+
+//     System.out.print("Found Class: " + cname + 
+// 		     " [" + ((cbytes != null) ? cbytes.length : -1) + "]\n");
+//     System.out.flush();
+
     if(cbytes == null) 
       throw new ClassNotFoundException(cname);
     

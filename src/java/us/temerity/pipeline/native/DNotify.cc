@@ -1,4 +1,4 @@
-// $Id: DNotify.cc,v 1.1 2004/04/01 03:10:27 jim Exp $
+// $Id: DNotify.cc,v 1.2 2004/04/11 19:30:20 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -95,9 +95,10 @@ JNICALL Java_us_temerity_pipeline_core_DNotify_initNative
     }
   }
 
-  /* determine the maximum number of file descriptors which can be monitored */ 
-  struct rlimit rlim;
+  /* try to raise the maximum number of file descriptors which can be monitored */ 
+  jint maxfiles = 0;
   {
+    struct rlimit rlim;
     if(getrlimit(RLIMIT_NOFILE, &rlim) == -1) {
       sprintf(msg, "Unable to determine the monitored directory limit: %s", 
 	      strerror(errno));
@@ -105,27 +106,10 @@ JNICALL Java_us_temerity_pipeline_core_DNotify_initNative
       return -1;
     }
     
-    printf("Directory Limits: %d (soft)   %d (hard)\n", rlim.rlim_cur, rlim.rlim_max);
-    
-    if(rlim.rlim_cur < rlim.rlim_max) {
-      rlim.rlim_cur = rlim.rlim_max;
-      if(setrlimit(RLIMIT_NOFILE, &rlim) == -1) {
-	sprintf(msg, "Unable to raise the monitored directory limit up to the max: %s", 
-		strerror(errno));
-	env->ThrowNew(IOException, msg);
-	return -1;
-      }
-      
-      if(getrlimit(RLIMIT_NOFILE, &rlim) == -1) {
-	sprintf(msg, "Unable to determine the monitored directory limit: %s", 
-		strerror(errno));
-	env->ThrowNew(IOException, msg);
-	return -1;
-      }
-    }
+    maxfiles = rlim.rlim_cur;
   }
 
-  return (jint) rlim.rlim_cur;
+  return maxfiles;
 }
 
 

@@ -1,4 +1,4 @@
-// $Id: FailureRsp.java,v 1.5 2004/03/31 08:34:56 jim Exp $
+// $Id: FailureRsp.java,v 1.6 2004/04/11 19:30:20 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -65,7 +65,7 @@ class FailureRsp
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID = -7351749431473465787L;
+  private static final long serialVersionUID = 4477761893835848346L;
 
   
 

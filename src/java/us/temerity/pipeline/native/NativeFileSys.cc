@@ -1,4 +1,4 @@
-// $Id: NativeFileSys.cc,v 1.2 2004/03/22 03:11:08 jim Exp $
+// $Id: NativeFileSys.cc,v 1.3 2004/04/11 19:30:20 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -54,7 +54,7 @@
 /* Change file access permissions. */
 extern "C" 
 JNIEXPORT void 
-JNICALL Java_us_temerity_pipeline_core_NativeFileSys_chmodNative
+JNICALL Java_us_temerity_pipeline_NativeFileSys_chmodNative
 (
  JNIEnv *env, 
  jclass cls, 
@@ -89,7 +89,7 @@ JNICALL Java_us_temerity_pipeline_core_NativeFileSys_chmodNative
 /* Create a symbolic link which points to the given file. */
 extern "C" 
 JNIEXPORT void 
-JNICALL Java_us_temerity_pipeline_core_NativeFileSys_symlinkNative
+JNICALL Java_us_temerity_pipeline_NativeFileSys_symlinkNative
 (
  JNIEnv *env, 
  jclass cls, 
@@ -130,7 +130,7 @@ JNICALL Java_us_temerity_pipeline_core_NativeFileSys_symlinkNative
 /* Determine the canonicalized absolute pathname of the given path. */  
 extern "C" 
 JNIEXPORT jstring
-JNICALL Java_us_temerity_pipeline_core_NativeFileSys_realpathNative
+JNICALL Java_us_temerity_pipeline_NativeFileSys_realpathNative
 (
  JNIEnv *env, 
  jclass cls, 
