@@ -1,4 +1,4 @@
-// $Id: JDeleteDialog.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JDeleteDialog.java,v 1.2 2005/02/21 00:13:06 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -72,7 +72,6 @@ class JDeleteDialog
       super.initUI("X", true, body, "Delete", null, null, "Cancel");
 
       pack();
-      setResizable(false);
     }  
   }
 

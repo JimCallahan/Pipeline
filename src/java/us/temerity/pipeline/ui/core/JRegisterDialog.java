@@ -1,4 +1,4 @@
-// $Id: JRegisterDialog.java,v 1.3 2005/02/20 20:51:45 jim Exp $
+// $Id: JRegisterDialog.java,v 1.4 2005/02/21 00:13:06 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -199,7 +199,6 @@ class JRegisterDialog
       super.initUI("Register New Node:", true, body, "Confirm", "Apply", extra, "Close");
 
       pack();
-      setResizable(false);
     }  
 
     doUpdateFrameFields();

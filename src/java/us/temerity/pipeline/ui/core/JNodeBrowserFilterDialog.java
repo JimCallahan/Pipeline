@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserFilterDialog.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JNodeBrowserFilterDialog.java,v 1.2 2005/02/21 00:13:06 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -155,7 +155,6 @@ class JNodeBrowserFilterDialog
       super.initUI("Node Browser Filter:", true, body, "Confirm", "Apply", null, "Close");
 
       pack();
-      setResizable(false);
     }  
   }
 

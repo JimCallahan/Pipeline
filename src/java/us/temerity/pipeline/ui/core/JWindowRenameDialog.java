@@ -1,4 +1,4 @@
-// $Id: JWindowRenameDialog.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JWindowRenameDialog.java,v 1.2 2005/02/21 00:13:06 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -59,8 +59,6 @@ class JWindowRenameDialog
 	  
       super.initUI(null, true, body, "Rename", null, null, "Cancel");
     }  
-
-    setResizable(false);
   }
 
 
