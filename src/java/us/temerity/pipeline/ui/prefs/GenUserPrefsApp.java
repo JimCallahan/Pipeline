@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.33 2004/11/02 23:06:44 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.34 2004/11/03 02:52:42 jim Exp $
 
 import java.io.*; 
 import java.util.*;
@@ -549,7 +549,7 @@ class GenUserPrefsApp
 
 	new ChoicePref
 	("The name of the color to use for stale link lines.", 
-	 "StaleColorName", "Stale Line Color:", colors, "Purple"),
+	 "StaleColorName", "Stale Line Color:", colors, "Yellow"),
 
 	new BooleanPref
 	("Whether to anti-alias link lines.", 
@@ -1126,7 +1126,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.33 2004/11/02 23:06:44 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.34 2004/11/03 02:52:42 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -1379,7 +1379,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.33 2004/11/02 23:06:44 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.34 2004/11/03 02:52:42 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
