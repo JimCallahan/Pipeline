@@ -1,4 +1,4 @@
-// $Id: GlueDecoder.java,v 1.1 2004/03/23 20:40:30 jim Exp $
+// $Id: GlueDecoder.java,v 1.2 2004/03/23 21:02:53 jim Exp $
 
 package us.temerity.pipeline.glue;
 
@@ -11,9 +11,9 @@ import java.io.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Intantiates a set of objects read from a human readable text format called Glue. <P> 
+ * Intantiates a set of objects read from Glue format text files. <P> 
  * 
- * The format is flexible enough to handle adding, removing and renaming of fields.  
+ * The Glue format is flexible enough to handle adding, removing and renaming of fields.  
  * All primitive types and well as most of the classes in java.lang and java.util are 
  * supported natively. All other classes can add Glue support by implementing the 
  * {@link Glueable Glueable} interface.

@@ -1,4 +1,4 @@
-// $Id: GlueParserState.java,v 1.1 2004/03/23 20:40:30 jim Exp $
+// $Id: GlueParserState.java,v 1.2 2004/03/23 21:02:53 jim Exp $
 
 package us.temerity.pipeline.glue;
 
@@ -13,8 +13,7 @@ import java.io.*;
 /** 
  * A helper class used by {@link us.temerity.pipeline.GlueDecoder GlueDecoder} to communicate 
  * with the parser during translation of Glue format text into Objects.
- */
-public
+ */ 
 class GlueParserState
 {     
   /*----------------------------------------------------------------------------------------*/

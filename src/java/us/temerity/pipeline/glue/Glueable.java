@@ -1,4 +1,4 @@
-// $Id: Glueable.java,v 1.1 2004/03/23 20:40:30 jim Exp $
+// $Id: Glueable.java,v 1.2 2004/03/23 21:02:53 jim Exp $
 
 package us.temerity.pipeline.glue;
 
@@ -9,10 +9,10 @@ import java.util.*;
 /*------------------------------------------------------------------------------------------*/
 
 /** 
- * Support for translation between instantiated objects and a human readable text 
- * representation called Glue. The Glue format is designed for maximum forward
- * and backward compatibility between versions of classes which support the 
- * <CODE>Glueable</CODE> interface. <P>
+ * Support for the Glue text format file representation of Objects. <P> 
+ * 
+ * The Glue format is designed for maximum forward and backward compatibility between 
+ * versions of classes which support the <CODE>Glueable</CODE> interface. <P>
  *
  * The primitive types (<CODE>boolean</CODE>, <CODE>byte</CODE>, <CODE>short</CODE>, 
  * <CODE>int</CODE>, <CODE>long</CODE>, <CODE>float</CODE>, <CODE>double</CODE> and 
