@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.8 2004/07/22 00:07:16 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.9 2004/07/24 18:27:38 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -2181,7 +2181,7 @@ class JNodeDetailsPanel
 	  knames.clear();
 	  UIMaster master = UIMaster.getInstance();
 	  try {
-	    knames.addAll(master.getMasterMgrClient().getSelectionKeyNames());
+	    knames.addAll(master.getQueueMgrClient().getSelectionKeyNames());
 	  }
 	  catch(PipelineException ex) {
 	    master.showErrorDialog(ex);
@@ -2198,90 +2198,96 @@ class JNodeDetailsPanel
 	JPanel tpanel = (JPanel) comps[0];
 	JPanel vpanel = (JPanel) comps[1];
     
-	boolean first = true; 
-	for(String kname : knames) {
-	  boolean hasWorkingKey = false;
-	  if(refresh) 
-	    hasWorkingKey = (wjreq != null) && wjreq.getSelectionKeys().contains(kname);
-	  else 
-	    hasWorkingKey = previous.contains(kname);
+	if(knames.isEmpty()) {
+	  tpanel.add(Box.createRigidArea(new Dimension(sTSize-7, 0)));
+	  vpanel.add(Box.createHorizontalGlue());
+	}
+	else {
+	  boolean first = true; 
+	  for(String kname : knames) {
+	    boolean hasWorkingKey = false;
+	    if(refresh) 
+	      hasWorkingKey = (wjreq != null) && wjreq.getSelectionKeys().contains(kname);
+	    else 
+	      hasWorkingKey = previous.contains(kname);
 
-	  boolean hasCheckedInKey = 
-	    (cjreq != null) && cjreq.getSelectionKeys().contains(kname);
+	    boolean hasCheckedInKey = 
+	      (cjreq != null) && cjreq.getSelectionKeys().contains(kname);
 
-	  if(!first) 
-	    UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
-	  first = false;
+	    if(!first) 
+	      UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+	    first = false;
 
-	  Component pcomps[] = new Component[4];
-	
-	  {
-	    JLabel label = 
-	      UIMaster.createFixedLabel(kname + ":", sTSize-7, JLabel.RIGHT);
-	    pcomps[0] = label;
-	    
-	    tpanel.add(label);
-	  }
+	    Component pcomps[] = new Component[4];
 
-	  { 
-	    Box hbox = new Box(BoxLayout.X_AXIS);
-	  
 	    {
-	      JBooleanField field = UIMaster.createBooleanField(sVSize);
-	      pcomps[1] = field;
-	      
-	      if(wjreq != null)
-		field.setValue(hasWorkingKey);
-	      else 
-		field.setValue(null);
+	      JLabel label = 
+		UIMaster.createFixedLabel(kname + ":", sTSize-7, JLabel.RIGHT);
+	      pcomps[0] = label;
 
-	      field.setActionCommand("selection-key-changed:" + kname);
-	      field.addActionListener(this);
-
-	      field.setEnabled(!pIsLocked && (wjreq != null));
-
-	      hbox.add(field);
+	      tpanel.add(label);
 	    }
-	    
-	    hbox.add(Box.createRigidArea(new Dimension(4, 0)));
 
-	    {
-	      JButton btn = new JButton();		 
-	      pcomps[2] = btn;
-	      btn.setName("SmallLeftArrowButton");
-	      
-	      Dimension size = new Dimension(12, 12);
-	      btn.setMinimumSize(size);
-	      btn.setMaximumSize(size);
-	      btn.setPreferredSize(size);
-	      
-	      btn.setActionCommand("set-selection-key:" + kname);
-	      btn.addActionListener(this);
-	      
-	      btn.setEnabled(!pIsLocked && (wjreq != null) && (cjreq != null));
+	    { 
+	      Box hbox = new Box(BoxLayout.X_AXIS);
 
-	      hbox.add(btn);
-	    } 
-	    
-	    hbox.add(Box.createRigidArea(new Dimension(4, 0)));
-	    
-	    {
-	      JTextField field = 
-		UIMaster.createTextField("-", sVSize, JLabel.CENTER);
-	      pcomps[3] = field;
-	      
-	      if(cjreq != null)
-		field.setText(hasCheckedInKey ? "YES" : "no");
+	      {
+		JBooleanField field = UIMaster.createBooleanField(sVSize);
+		pcomps[1] = field;
 
-	      hbox.add(field);
+		if(wjreq != null)
+		  field.setValue(hasWorkingKey);
+		else 
+		  field.setValue(null);
+
+		field.setActionCommand("selection-key-changed:" + kname);
+		field.addActionListener(this);
+
+		field.setEnabled(!pIsLocked && (wjreq != null));
+
+		hbox.add(field);
+	      }
+
+	      hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+
+	      {
+		JButton btn = new JButton();		 
+		pcomps[2] = btn;
+		btn.setName("SmallLeftArrowButton");
+
+		Dimension size = new Dimension(12, 12);
+		btn.setMinimumSize(size);
+		btn.setMaximumSize(size);
+		btn.setPreferredSize(size);
+
+		btn.setActionCommand("set-selection-key:" + kname);
+		btn.addActionListener(this);
+
+		btn.setEnabled(!pIsLocked && (wjreq != null) && (cjreq != null));
+
+		hbox.add(btn);
+	      } 
+
+	      hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+
+	      {
+		JTextField field = 
+		  UIMaster.createTextField("-", sVSize, JLabel.CENTER);
+		pcomps[3] = field;
+
+		if(cjreq != null)
+		  field.setText(hasCheckedInKey ? "YES" : "no");
+
+		hbox.add(field);
+	      }
+
+	      vpanel.add(hbox);
 	    }
-	    
-	    vpanel.add(hbox);
+
+	    pSelectionKeyComponents.put(kname, pcomps);
+
+	    doSelectionKeyChanged(kname);
 	  }
-
-	  pSelectionKeyComponents.put(kname, pcomps);
-
-	  doSelectionKeyChanged(kname);
 	}
 
 	pSelectionKeysBox.add(comps[2]);
@@ -2305,7 +2311,7 @@ class JNodeDetailsPanel
 	  knames.clear();
 	  UIMaster master = UIMaster.getInstance();
 	  try {
-	    knames.addAll(master.getMasterMgrClient().getLicenseKeyNames());
+	    knames.addAll(master.getQueueMgrClient().getLicenseKeyNames());
 	  }
 	  catch(PipelineException ex) {
 	    master.showErrorDialog(ex);
@@ -2321,90 +2327,97 @@ class JNodeDetailsPanel
 	Component comps[] = createCommonPanels();
 	JPanel tpanel = (JPanel) comps[0];
 	JPanel vpanel = (JPanel) comps[1];
-    
-	boolean first = true; 
-	for(String kname : knames) {
-	  boolean hasWorkingKey = false;
-	  if(refresh) 
-	    hasWorkingKey = (wjreq != null) && wjreq.getLicenseKeys().contains(kname);
-	  else 
-	    hasWorkingKey = previous.contains(kname);
 
-	  boolean hasCheckedInKey = (cjreq != null) && cjreq.getLicenseKeys().contains(kname);
-
-	  if(!first) 
-	    UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
-	  first = false;
-
-	  Component pcomps[] = new Component[4];
-	
-	  {
-	    JLabel label = 
-	      UIMaster.createFixedLabel(kname + ":", sTSize-7, JLabel.RIGHT);
-	    pcomps[0] = label;
+	if(knames.isEmpty()) {
+	  tpanel.add(Box.createRigidArea(new Dimension(sTSize-7, 0)));
+	  vpanel.add(Box.createHorizontalGlue());
+	}
+	else {
+	  boolean first = true; 
+	  for(String kname : knames) {
+	    boolean hasWorkingKey = false;
+	    if(refresh) 
+	      hasWorkingKey = (wjreq != null) && wjreq.getLicenseKeys().contains(kname);
+	    else 
+	      hasWorkingKey = previous.contains(kname);
 	    
-	    tpanel.add(label);
-	  }
-
-	  { 
-	    Box hbox = new Box(BoxLayout.X_AXIS);
-	  
+	    boolean hasCheckedInKey = 
+	      (cjreq != null) && cjreq.getLicenseKeys().contains(kname);
+	    
+	    if(!first) 
+	      UIMaster.addVerticalSpacer(tpanel, vpanel, 3);
+	    first = false;
+	    
+	    Component pcomps[] = new Component[4];
+	    
 	    {
-	      JBooleanField field = UIMaster.createBooleanField(sVSize);
-	      pcomps[1] = field;
+	      JLabel label = 
+		UIMaster.createFixedLabel(kname + ":", sTSize-7, JLabel.RIGHT);
+	      pcomps[0] = label;
 	      
-	      if(wjreq != null)
-		field.setValue(hasWorkingKey);
-	      else 
-		field.setValue(null);
-
-	      field.setActionCommand("license-key-changed:" + kname);
-	      field.addActionListener(this);
-
-	      field.setEnabled(!pIsLocked && (wjreq != null));
-
-	      hbox.add(field);
+	      tpanel.add(label);
 	    }
 	    
-	    hbox.add(Box.createRigidArea(new Dimension(4, 0)));
-
-	    {
-	      JButton btn = new JButton();		 
-	      pcomps[2] = btn;
-	      btn.setName("SmallLeftArrowButton");
+	    { 
+	      Box hbox = new Box(BoxLayout.X_AXIS);
 	      
-	      Dimension size = new Dimension(12, 12);
-	      btn.setMinimumSize(size);
-	      btn.setMaximumSize(size);
-	      btn.setPreferredSize(size);
+	      {
+		JBooleanField field = UIMaster.createBooleanField(sVSize);
+		pcomps[1] = field;
+		
+		if(wjreq != null)
+		  field.setValue(hasWorkingKey);
+		else 
+		  field.setValue(null);
+		
+		field.setActionCommand("license-key-changed:" + kname);
+		field.addActionListener(this);
+		
+		field.setEnabled(!pIsLocked && (wjreq != null));
+		
+		hbox.add(field);
+	      }
 	      
-	      btn.setActionCommand("set-license-key:" + kname);
-	      btn.addActionListener(this);
+	      hbox.add(Box.createRigidArea(new Dimension(4, 0)));
 	      
-	      btn.setEnabled(!pIsLocked && (wjreq != null) && (cjreq != null));
-
-	      hbox.add(btn);
-	    } 
-	    
-	    hbox.add(Box.createRigidArea(new Dimension(4, 0)));
-	    
-	    {
-	      JTextField field = 
-		UIMaster.createTextField("-", sVSize, JLabel.CENTER);
-	      pcomps[3] = field;
+	      {
+		JButton btn = new JButton();		 
+		pcomps[2] = btn;
+		btn.setName("SmallLeftArrowButton");
+		
+		Dimension size = new Dimension(12, 12);
+		btn.setMinimumSize(size);
+		btn.setMaximumSize(size);
+		btn.setPreferredSize(size);
+		
+		btn.setActionCommand("set-license-key:" + kname);
+		btn.addActionListener(this);
+		
+		btn.setEnabled(!pIsLocked && (wjreq != null) && (cjreq != null));
+		
+		hbox.add(btn);
+	      } 
 	      
-	      if(cjreq != null)
-		field.setText(hasCheckedInKey ? "YES" : "no");
-
-	      hbox.add(field);
+	      hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+	      
+	      {
+		JTextField field = 
+		  UIMaster.createTextField("-", sVSize, JLabel.CENTER);
+		pcomps[3] = field;
+		
+		if(cjreq != null)
+		  field.setText(hasCheckedInKey ? "YES" : "no");
+		
+		hbox.add(field);
+	      }
+	      
+	      vpanel.add(hbox);
 	    }
 	    
-	    vpanel.add(hbox);
+	    pLicenseKeyComponents.put(kname, pcomps);
+	    
+	    doLicenseKeyChanged(kname);
 	  }
-
-	  pLicenseKeyComponents.put(kname, pcomps);
-
-	  doLicenseKeyChanged(kname);
 	}
 
 	pLicenseKeysBox.add(comps[2]);
