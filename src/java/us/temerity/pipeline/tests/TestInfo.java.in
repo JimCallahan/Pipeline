@@ -1,0 +1,40 @@
+// $Id: TestInfo.java.in,v 1.1 2004/02/20 22:51:42 jim Exp $
+
+import java.io.File;
+
+/*------------------------------------------------------------------------------------------*/
+/*   T E S T   I N F O                                                                      */
+/*------------------------------------------------------------------------------------------*/
+
+/**
+ * Shared tesing information. <P>
+ * 
+ * The static fields of this class are initialized by <I>autoconf(1)</I> during the 
+ * build of this release to contain site specific information.
+ */
+public
+class TestInfo
+{ 
+  /*----------------------------------------------------------------------------------------*/
+  /*   P U B L I C   F I E L D S                                                            */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * The "tests" source directory.
+   */ 
+  public static final String sSrcDir = "@srcdir@";        
+
+  /**
+   * The top level source directory.
+   */ 
+  public static final String sTopSrcDir = "@top_srcdir@";        
+
+  /**
+   * The top level build directory.
+   */ 
+  public static final String sTopBuildDir = "@top_builddir@";        
+
+}
+
+
+
