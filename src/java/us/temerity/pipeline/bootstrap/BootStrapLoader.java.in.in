@@ -1,4 +1,4 @@
-// $Id: BootStrapLoader.java.in.in,v 1.5 2004/08/23 20:18:03 jim Exp $
+// $Id: BootStrapLoader.java.in.in,v 1.6 2004/08/29 09:23:10 jim Exp $
 
 package us.temerity.pipeline.bootstrap;
 
@@ -162,134 +162,7 @@ class BootStrapLoader
       catch(IOException ex) {
 	throw new LicenseException
 	  ("Unable to reliably determine the time!");
-      }
-      
-      /* check the host IDs */ 
-      {
-	TreeMap<String,BigInteger> hostIDs = 
-	  (TreeMap<String,BigInteger>) profile.get("HostIDs");
-	
-	/* determine the hardware ID */ 
-	BigInteger cksum = null;
-	try {
-	  MessageDigest md = MessageDigest.getInstance("MD5");
-	  
-	  /* get the network card MAC addresses */ 
-	  {
-	    FileReader reader = new FileReader("/proc/net/arp");
-	    boolean done = false;
-	    while(true) {
-	      /* read a line */ 
-	      StringBuffer buf = new StringBuffer();
-	      while(true) {
-		int next = reader.read();
-		if(next == -1) {
-		  done = true;
-		  break;
-		}
-		
-		char c = (char) next;
-		if(c == '\n') 
-		  break;
-		
-		buf.append(c);
-	      }
-	      
-	      if(done) 
-		break;
-	      
-	      String addr = null;
-	      
-	      String[] fields = buf.toString().split(" ");
-	      int wk, cnt;
-	      for(wk=0, cnt=0; wk<fields.length; wk++) {
-		if(fields[wk].length() > 0) {
-		  if(cnt == 3) 
-		    addr = fields[wk];
-		  else if((cnt == 5) && (fields[wk].equals("eth0")) && (addr != null))
-		    md.update(addr.getBytes());
-		  
-		  cnt++;
-		}
-	      }
-	    }
-	    
-	    reader.close();
-	  }
-	  
-	  /* get the CPU, PCI amd SCSCI info */ 
-	  {
-	    String[] files = {
-	      "/proc/cpuinfo", 
-	      "/proc/pci", 
-	      "/proc/scsi/scsi"
-	    };
-	    
-	    byte[] buf = new byte[4096];
-	    int wk;
-	    for(wk=0; wk<files.length; wk++) {
-	      try {
-		FileInputStream in = new FileInputStream(files[wk]);
-		
-		while(true) {
-		  int cnt = in.read(buf);
-		  if(cnt == -1) 
-		    break;
-		  
-		  md.update(buf, 0, cnt);
-		}
-		
-		in.close();
-	      }
-	      catch(IOException ex) {
-	      }    
-	    }
-	  }  
-	  
-	  cksum = new BigInteger(md.digest());
-	}
-	catch(Exception ex) {
-	  throw new LicenseException("Unable to determine local host ID.");
-	}      
-	assert(cksum != null);
-
-	/* lookup the names the machine is known by */ 
-	TreeSet<String> hosts = new TreeSet<String>(); 
-	try {
-	  Enumeration nets = NetworkInterface.getNetworkInterfaces();  
-	  while(nets.hasMoreElements()) {
-	    NetworkInterface net = (NetworkInterface) nets.nextElement();
-	    Enumeration addrs = net.getInetAddresses();
-	    while(addrs.hasMoreElements()) {
-	      InetAddress addr = (InetAddress) addrs.nextElement();
-	      String ip = addr.getHostAddress();
-	      if(!ip.equals("127.0.0.1")) {
-		hosts.add(addr.getCanonicalHostName());
-	      }	    
-	    }
-	  }
-	}
-	catch(Exception ex) {
-	  throw new LicenseException("Could not determine the name of this machine!");
-	}
-
-	if(hosts.isEmpty()) 
-	  throw new LicenseException
-	    ("Could not determine the name of this machine!");
-	
-	boolean ok = false; 
-	for(String host : hosts) {
-	  BigInteger big = hostIDs.get(host);
-	  if((big != null) && (big.equals(cksum))) {
-	    ok = true;
-	    break;
-	  }	  
-	}
-
-	if(!ok) 
-	  throw new LicenseException
-	    ("The license is not valid for this machine!");
-      }
+      }      
     }
 
     /* shared I/O byte buffer */ 
@@ -395,6 +268,7 @@ class BootStrapLoader
   }
 
 
+
   /*----------------------------------------------------------------------------------------*/
   /*   C L A S S   L O A D E R   O V E R R I D E S                                          */
   /*----------------------------------------------------------------------------------------*/
@@ -438,4 +312,5 @@ class BootStrapLoader
    * The decrypted raw class bytes indexed by class name. 
    */ 
   private HashMap<String,byte[]>  pClasses;
+
 }
