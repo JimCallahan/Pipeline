@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.4 2004/08/30 07:01:29 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.5 2004/08/30 14:30:25 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1785,7 +1785,7 @@ class JQueueJobViewerPanel
   private void 
   doFrameSelection() 
   {
-    frameJobs(pSelected.values(), false);
+    frameJobs(pSelected.values(), !pSelectedGroups.isEmpty());
   }
 
   /**
