@@ -1,4 +1,4 @@
-// $Id: JBaseUserPrefsDialog.java,v 1.1 2004/05/21 00:13:00 jim Exp $
+// $Id: JBaseUserPrefsDialog.java,v 1.2 2004/05/23 19:57:53 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -202,10 +202,10 @@ class JBaseUserPrefsDialog
   }
 
   /**
-   * Create the title/value panels and package them in a scroll pane.
+   * Create the title/value panels.
    * 
    * @return 
-   *   The title panel, value panel and scroll pane components.
+   *   The title panel, value panel and containing box.
    */   
   protected Component[]
   createCommonPanels()
