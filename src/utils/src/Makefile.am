@@ -1,5 +1,5 @@
 
-instbindir  = @bindir@
+instbindir  = @ROOT_INST_DIR@/bin
 
 instbin_PROGRAMS = \
   pls \
@@ -11,7 +11,7 @@ realpath_SOURCES = FB.cc PackageInfo.cc RealPath.cc
 
 
 
-instsbindir  = @sbindir@
+instsbindir  = @ROOT_INST_DIR@/sbin
 
 instsbin_PROGRAMS = \
   plrun
@@ -30,8 +30,3 @@ EXTRA_DIST = \
 
 INCLUDES = 
 
-
-
-install-data-hook:
-	@CHMOD@ 6550 $(instsbindir)/plrun
-	@CHOWN@ root.pipeline $(instsbindir)/plrun

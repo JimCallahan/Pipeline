@@ -46,6 +46,8 @@ CHMOD = @CHMOD@
 CHOWN = @CHOWN@
 CONVERT = @CONVERT@
 CPPFLAGS = @CPPFLAGS@
+CRYPTO_APP_DIR = @CRYPTO_APP_DIR@
+CUSTOMER_PROFILE = @CUSTOMER_PROFILE@
 CVS = @CVS@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
@@ -78,6 +80,7 @@ JAVA_C = @JAVA_C@
 JAVA_CC = @JAVA_CC@
 JAVA_C_FLAGS = @JAVA_C_FLAGS@
 JAVA_H = @JAVA_H@
+JAVA_HOME = @JAVA_HOME@
 JAVA_INC = @JAVA_INC@
 JAVA_RUNTIME_FLAGS = @JAVA_RUNTIME_FLAGS@
 JNI_LDADD = @JNI_LDADD@
@@ -109,6 +112,8 @@ PRODDIR = @PRODDIR@
 PTHREAD_LIB = @PTHREAD_LIB@
 RANLIB = @RANLIB@
 RELEASE_STAMP = @RELEASE_STAMP@
+ROOT_INST_DIR = @ROOT_INST_DIR@
+RPM_ROOT = @RPM_ROOT@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 SSH = @SSH@
@@ -170,11 +175,11 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
       JAVA_PATHS = -d ../../../.. -classpath ../pipeline.jar
 
-    JAVA_SOURCES = $(shell ls $(srcdir)/*.java) $(patsubst %,%.java,$(PARSERS))
+    JAVA_SOURCES = $(shell ls $(srcdir)/*.java)
     JAVA_CLASSES = $(patsubst $(srcdir)/%.java,%.class,$(JAVA_SOURCES))
 
 
-      PLUGIN_DIR = $(prefix)/jar/us/temerity/pipeline/plugin
+      PLUGIN_DIR = $(ROOT_INST_DIR)/jar/us/temerity/pipeline/plugin
 
 
 #--------------------------------------------------------------------------------------------#
@@ -230,10 +235,14 @@ uninstall-classes: $(JAVA_CLASSES)
 
 #--------------------------------------------------------------------------------------------#
 
-clean: clean-class 
+clean: clean-jar clean-class 
+
+clean-jar:
+	rm -f $(TARGET)
 
 clean-class:
 	rm -f *.class
+	rm -f java-all
 
 
 #--------------------------------------------------------------------------------------------#

@@ -1,4 +1,4 @@
-// $Id: PackageInfo.cc.in,v 1.11 2004/03/10 11:44:39 jim Exp $
+// $Id: PackageInfo.cc.in,v 1.12 2004/03/21 00:57:17 jim Exp $
 
 #include <PackageInfo.hh>
 
@@ -29,10 +29,7 @@ const int PackageInfo::sPipelineGID = @PIPELINE_GID@;
 
 
 /* installed documentation directory */ 
-const char* PackageInfo::sDocsDir = "@datadir@/docs"; 
-
-/* location of the Mozilla web browser */ 
-const char* PackageInfo::sMozilla = "@MOZILLA@";
+const char* PackageInfo::sDocsDir = "@ROOT_INST_DIR@/share/docs"; 
 
 
 /* copyright message */ 

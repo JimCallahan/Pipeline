@@ -1,5 +1,5 @@
 
-dsodir = @libdir@
+dsodir = @ROOT_INST_DIR@/lib
 
 dso_DATA = \
   libNative.so

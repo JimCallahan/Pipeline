@@ -1,16 +1,11 @@
 
-instbindir = @bindir@
+instbindir = @ROOT_INST_DIR@/bin
 
 instbin_SCRIPTS =
 
 
-instsbindir = @sbindir@
+instsbindir = @ROOT_INST_DIR@/sbin
 
 instsbin_SCRIPTS = \
   plfilemgr
 
-
-
-install-data-hook:
-	@CHMOD@ 500 $(instsbindir)/plfilemgr
-	@CHOWN@ pipeline.pipeline $(instsbindir)/plfilemgr

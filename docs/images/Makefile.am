@@ -1,5 +1,5 @@
 
-imagesdir = @datadir@/docs/images
+imagesdir = @ROOT_INST_DIR@/share/docs/images
 
 images_DATA = \
   checkedin-finished.gif \

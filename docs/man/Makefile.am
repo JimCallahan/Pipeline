@@ -1,5 +1,5 @@
 
-htmldir = @datadir@/docs/man
+htmldir = @ROOT_INST_DIR@/share/docs/man
 
 html_DATA = \
   plfilemgr.html \

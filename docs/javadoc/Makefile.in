@@ -46,6 +46,8 @@ CHMOD = @CHMOD@
 CHOWN = @CHOWN@
 CONVERT = @CONVERT@
 CPPFLAGS = @CPPFLAGS@
+CRYPTO_APP_DIR = @CRYPTO_APP_DIR@
+CUSTOMER_PROFILE = @CUSTOMER_PROFILE@
 CVS = @CVS@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
@@ -78,6 +80,7 @@ JAVA_C = @JAVA_C@
 JAVA_CC = @JAVA_CC@
 JAVA_C_FLAGS = @JAVA_C_FLAGS@
 JAVA_H = @JAVA_H@
+JAVA_HOME = @JAVA_HOME@
 JAVA_INC = @JAVA_INC@
 JAVA_RUNTIME_FLAGS = @JAVA_RUNTIME_FLAGS@
 JNI_LDADD = @JNI_LDADD@
@@ -90,6 +93,7 @@ LTLIBOBJS = @LTLIBOBJS@
 MAKE = @MAKE@
 MAKEINFO = @MAKEINFO@
 MOZILLA = @MOZILLA@
+NODEDIR = @NODEDIR@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
@@ -100,12 +104,16 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PIPELINE_GID = @PIPELINE_GID@
 PIPELINE_UID = @PIPELINE_UID@
-PL_PORT = @PL_PORT@
-PL_SERVER = @PL_SERVER@
+PL_FILE_PORT = @PL_FILE_PORT@
+PL_FILE_SERVER = @PL_FILE_SERVER@
+PL_MASTER_PORT = @PL_MASTER_PORT@
+PL_MASTER_SERVER = @PL_MASTER_SERVER@
 PRODDIR = @PRODDIR@
 PTHREAD_LIB = @PTHREAD_LIB@
 RANLIB = @RANLIB@
 RELEASE_STAMP = @RELEASE_STAMP@
+ROOT_INST_DIR = @ROOT_INST_DIR@
+RPM_ROOT = @RPM_ROOT@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 SSH = @SSH@
@@ -200,11 +208,13 @@ docs-all:
 #--------------------------------------------------------------------------------------------#
 
 install: installdirs
-	(docdir=`pwd`; cd $(DESTDIR)$(datadir)/docs; tar -xvf $$docdir/javadoc.tar)
+	(docdir=`pwd`; \
+         cd $(DESTDIR)$(ROOT_INST_DIR)/share/docs; \
+         tar -xvf $$docdir/javadoc.tar)
 
 PHONY: installdirs
 installdirs:
-	$(mkinstalldirs) $(DESTDIR)$(datadir)/docs
+	$(mkinstalldirs) $(DESTDIR)$(ROOT_INST_DIR)/share/docs
 
 
 #--------------------------------------------------------------------------------------------#
@@ -212,7 +222,7 @@ installdirs:
 uninstall: 
 
 uninstall-jar: 
-	rm -f $(DESTDIR)$(datadir)/docs/javadoc
+	rm -f $(DESTDIR)$(ROOT_INST_DIR)/share/docs/javadoc
 
 
 #--------------------------------------------------------------------------------------------#

@@ -1,5 +1,6 @@
 #!/bin/bash
 
 cd `pwd`
-exec java @JAVA_RUNTIME_FLAGS@ -cp @prefix@/jar/testbed.jar \
-          testbed/TestDNotifyApp "$@"
+exec @JAVA_HOME@/bin/java \
+  @JAVA_RUNTIME_FLAGS@ -cp @ROOT_INST_DIR@/jar/testbed.jar \
+  testbed/TestDNotifyApp "$@"
