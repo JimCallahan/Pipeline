@@ -1,4 +1,4 @@
-// $Id: OverallNodeState.java,v 1.4 2004/04/15 00:19:45 jim Exp $
+// $Id: OverallNodeState.java,v 1.5 2004/04/17 19:49:01 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -47,11 +47,11 @@ enum OverallNodeState
    * and individual <CODE>FileState</CODE> of each file associated with the node are all 
    * <CODE>Identical</CODE>. <P> 
    * 
-   * In addition, none of the upstream node dependencies have an <CODE>OverallNodeState</CODE>
-   * equal to <CODE>Modified</CODE>, <CODE>ModifiedDepends</CODE> or <CODE>Conflicted</CODE>.
-   * Furthermore, the working revision numbers of the upstream nodes are identical to the 
-   * revision numbers of the dependencies associated with the checked-in version upon which
-   * this working version is based.
+   * In addition, none of the linked upstream nodes have an <CODE>OverallNodeState</CODE>
+   * equal to <CODE>Modified</CODE>, <CODE>ModifiedLinks</CODE> or <CODE>Conflicted</CODE>.
+   * Furthermore, the working revision numbers of the linked upstream nodes are identical to
+   * the revision numbers of the linked upstream nodes of the checked-in version upon 
+   * which this working version is based.
    */
   Identical, 
 
@@ -61,15 +61,15 @@ enum OverallNodeState
    * 
    * The <CODE>VersionState</CODE>, <CODE>PropertyState</CODE>, <CODE>LinkState</CODE> 
    * and individual <CODE>FileState</CODE> of each file associated with the node are all 
-   * <CODE>Identical</CODE>. However, one or more of the upstream node dependencies have 
+   * <CODE>Identical</CODE>. However, one or more of the linked upstream nodes have 
    * an <CODE>OverallNodeState</CODE> equal to <CODE>Modified</CODE>, 
-   * <CODE>ModifiedDepends</CODE> or <CODE>Conflicted</CODE>. <P> 
-
+   * <CODE>ModifiedLinks</CODE> or <CODE>Conflicted</CODE>. <P> 
+   * 
    * Alternatively, the working revision numbers of the upstream nodes are different than 
    * the revision numbers of the upstream nodes associated with the checked-in version upon 
    * which this working version is based.
    */
-  ModifiedDepends, 
+  ModifiedLinks, 
 
   /**
    * The working version is based on the lastest checked-in version, but is node identical

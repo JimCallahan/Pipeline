@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.8 2004/04/15 17:55:51 jim Exp $
+// $Id: FileMgr.java,v 1.9 2004/04/17 19:49:01 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -374,8 +374,28 @@ class FileMgr
 	  }
 	  break;
 	}
+
+	/* lookup the last modification timestamps */ 
+	TreeMap<FileSeq, Date[]> timestamps = new TreeMap<FileSeq, Date[]>();
+	{
+	  for(FileSeq fseq : states.keySet()) {
+	    Date stamps[] = new Date[fseq.numFrames()];
+
+	    int wk = 0;
+	    for(File file : fseq.getFiles()) {
+	      File work = new File(pProdDir, req.getNodeID().getWorkingParent() + "/" + file);
+	      long when = work.lastModified();
+	      if(when > 0) 
+		stamps[wk] = new Date(when);
+
+	      wk++;
+	    }
+
+	    timestamps.put(fseq, stamps);
+	  }
+	}
 	
-	return new FileStateRsp(timer, req.getNodeID(), states);
+	return new FileStateRsp(timer, req.getNodeID(), states, timestamps);
       }
     }
     catch(PipelineException ex) {

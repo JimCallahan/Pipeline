@@ -1,0 +1,976 @@
+#LyX 1.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 221
+\textclass article
+\language english
+\inputencoding auto
+\fontscheme default
+\graphics default
+\paperfontsize default
+\spacing single 
+\papersize Default
+\paperpackage a4
+\use_geometry 0
+\use_amsmath 0
+\use_natbib 0
+\use_numerical_citations 0
+\paperorientation portrait
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\defskip medskip
+\quotes_language english
+\quotes_times 2
+\papercolumns 2
+\papersides 1
+\paperpagestyle fancy
+
+\layout Title
+
+
+\noun on 
+Pipeline:
+\noun default 
+ Scheduling Extension
+\layout Author
+
+
+\noun on 
+Copyright 
+\begin_inset ERT
+status Open
+
+\layout Standard
+
+\backslash 
+copyright 
+\end_inset 
+
+ \SpecialChar ~
+2004 Temerity Software, Inc.
+\layout Standard
+
+
+\begin_inset LatexCommand \tableofcontents{}
+
+\end_inset 
+
+
+\layout Section
+
+Overview
+\layout Standard
+
+Up to now, the features of 
+\noun on 
+Pipeline
+\noun default 
+ have been oriented around the methodologies of accomplishing a complex
+ task involving the collaboration of many artists and automated procedures.
+ With the exception of change comments and check-in log messages, 
+\noun on 
+Pipeline
+\noun default 
+ has been largely agnostic as to how artist communicate with one another,
+ their supervisors and the production staff.
+ This document proposes an extension to 
+\noun on 
+Pipeline
+\noun default 
+ which would integrate scheduling, the approval process, time sheets and
+ other administrative features with the existing functionality of 
+\noun on 
+Pipeline
+\noun default 
+.
+\layout Section
+
+Tasks
+\layout Standard
+
+The process of managing a production can be thought of as the process of
+ breaking the project down into clearly achievable tasks and assigning these
+ tasks to the available personnel in an order which minimizes the overall
+ time needed to complete the project.
+ There may also be client driven constraints which require certain tasks
+ to be performed in an order needed to meet milestones along the way as
+ well.
+\layout Standard
+
+A Task is somewhat analogous to a 
+\noun on 
+Pipeline
+\noun default 
+ Node in that they both represent a stage in a hierarchical process representabl
+e by a dependency tree who's root represents the completion of the process.
+ However, there isn't a direct one-to-one relationship between Nodes and
+ Tasks.
+ Tasks can be thought of as a more abstract and high level overview which
+ represents the production status of a portion of the overall Node tree.
+ Typically, Tasks are created very early in the planning stages of the productio
+n process.
+ As the production progresses, Nodes are later created to implement the
+ goals of a Task.
+ 
+\layout Standard
+
+Due to these differences, Pipeline will represent Tasks separately from
+ Nodes and provide connections between these two systems where they are
+ related.
+\layout Subsection
+
+Properties
+\layout Itemize
+
+
+\noun on 
+Name
+\noun default 
+: Each Task is given a unique name within the Project (see below).
+ This name should be a short identifier similar to the last component of
+ a Node name.
+ 
+\layout Itemize
+
+
+\noun on 
+Type
+\noun default 
+: To aid in the assignment of a Task to an appropriate artist, Tasks are
+ classified as being one of a predetermined set of Task types.
+ The set of types can be extended by a privileged user of Pipeline.
+ For the CGI process, common types would include: 
+\noun on 
+Design, Research, Texturing, Modeling, Rigging, Animation, Lighting, Compositing
+, Tracking
+\noun default 
+, etc...
+\layout Itemize
+
+
+\noun on 
+Supervisor
+\noun default 
+: The name of the user who has supervisory responsibilities for the Task.
+ This could be a Lead Artist, a Producer or the Director for the Project.
+ The Supervisor has special privileges and responsibilities related to the
+ Task.
+ Initially, the Supervisor is the user who created the Task but this can
+ be changed later.
+\layout Itemize
+
+
+\noun on 
+Owner
+\noun default 
+: The name of the Artist to whom the Task is currently assigned.
+ This does necessarily mean that the artist is currently working on the
+ Task, only that the currently plan is for them to eventually complete the
+ Task.
+\layout Itemize
+
+
+\noun on 
+Start Date
+\noun default 
+: The estimated date and time when work on the Task should have begun.
+ This can be different from when work actually does begin.
+ This information contributes to the process which determines the order
+ Tasks are assigned and acts as a metric for evaluating Project progress.
+\layout Itemize
+
+
+\noun on 
+Completion Date
+\noun default 
+: The estimated date and time when all work on the Task should be complete
+ and approved.
+ Similar to the Start Date, this information is provided for scheduling
+ and information purposes and may not exactly correspond to the actual completio
+n date.
+\layout Subsection
+
+State
+\layout Standard
+
+The currently state of progress in completing the Task.
+ 
+\layout Standard
+
+Must be one of the following symbolic constants:
+\layout Itemize
+
+
+\noun on 
+Unassigned
+\noun default 
+: The initial state of the Task.
+ The Task has no Owner.
+\layout Itemize
+
+
+\noun on 
+Waiting
+\noun default 
+: An Artist has been assigned as the Owner of the Task, but no work has
+ yet begun to complete the Task.
+\layout Itemize
+
+
+\noun on 
+In Progress
+\noun default 
+: The Owner of the Task in actively working on the Task.
+ 
+\layout Itemize
+
+
+\noun on 
+Updated
+\noun default 
+: The Owner of the Task has completed some intermediate step toward the
+ completion of the task which should be brought to the Supervisors attention.
+ However, the Owner is not waiting on the Supervisor's approval and is continuin
+g to actively work on the Task.
+ This is typically caused by a Node check-in related to the Task.
+\layout Itemize
+
+
+\noun on 
+Needs Approval
+\noun default 
+: The Owner of the Task has completed some intermediate step toward the
+ completion of the task which must be approved by the
+\emph on 
+ 
+\emph default 
+Supervisor before work can continue.
+ The Owner will not actively work on the Task until the step is approved
+ or otherwise commented upon by the Supervisor.
+\layout Itemize
+
+
+\noun on 
+Approved
+\noun default 
+: The Supervisor has reviewed and approved the previous intermediate step
+ submitted by the Owner.
+ 
+\layout Itemize
+
+
+\noun on 
+Change
+\noun default 
+ 
+\noun on 
+Required
+\noun default 
+: The Supervisor has reviewed the previous intermediate step submitted by
+ the Owner and has submitted a message giving additional direction concerning
+ the Task.
+ The Owner of the Task should not continue working on the task until they
+ have read the associated message.
+\layout Itemize
+
+
+\noun on 
+Hold
+\noun default 
+: The Supervisor or Owner has decided that all work on this Task should
+ be temporarily suspended until further notice.
+\layout Itemize
+
+
+\noun on 
+Could Be Better
+\noun default 
+: The Supervisor has reviewed the last approval request and has decided
+ that the current state of the Task is good enough to be considered 
+\noun on 
+Finalled
+\noun default 
+.
+ However, there are some remaining issues that could be addressed once all
+ other Tasks reach a 
+\noun on 
+Could Be Better
+\noun default 
+ or 
+\noun on 
+Finalled
+\noun default 
+ state in order to improve the quality of the Project.
+ No work should progress on this Task until further notice.
+\layout Itemize
+
+
+\noun on 
+Finalled
+\noun default 
+: The Supervisor has reviewed the last approval request and has decided
+ that the Task is now complete.
+ Once a Task has been 
+\noun on 
+Finalled
+\noun default 
+, only the Supervisor may change its state.
+\layout Subsection
+
+Dependencies
+\layout Standard
+
+Some Tasks cannot (or should not) be started or actively worked on until
+ other Tasks have already been completed or reached at least some intermediate
+ state of completion.
+ Changes to the State of one Task may have consequences for other Tasks
+ which depend on the results of the Task.
+ For this reason, Warning Events may be generated for the current Task when
+ Events occur in upstream Tasks.
+ See the Task Event section for details on the interaction of Dependencies
+ and Events.
+\layout Subsection
+
+Current Nodes
+\layout Standard
+
+Each task may be associated with a set of 
+\noun on 
+Pipeline
+\noun default 
+ Nodes.
+ Only checked-in versions of Nodes may be associated with a Task.
+ Some of the Task Events described below alter the which Nodes and/or which
+ version of a Node are associated with a Task.
+ The most up-to-date set of checked-in Node versions associated with the
+ Task make up the Current Nodes.
+ 
+\layout Subsection
+
+Event History
+\layout Standard
+
+Each Task maintains a log of the Task Events (see below) which have occurred
+ for the Task.
+ The Event History provides a detailed accounting of the life of a Task
+ from creation to completion including all interaction between the Supervisors
+ and Owners of a Task.
+\layout Section
+
+Task Events
+\layout Standard
+
+Task Events represent the occurrence of a significant change in the Task
+ Properties, State, Dependencies or a change in the Current Nodes associated
+ with a Task.
+ Each Task Event is logged in the Event History for the specific Task which
+ is the target of the Event.
+\layout Standard
+
+In essence, all operations which modify the scheduling system involve generating
+ a Task Event.
+ Some of these events are generated by the interaction of the user with
+ the scheduling user interface and some are generated as a side effect of
+ operations on the Nodes associated with a Task.
+\layout Subsection
+
+Event Properties
+\layout Standard
+
+Task Events have a set of properties associated which differ depending on
+ the kind of event.
+ However, all Task Events contain at least a 
+\noun on 
+Name
+\noun default 
+, 
+\noun on 
+Author
+\noun default 
+ and 
+\noun on 
+TimeStamp
+\noun default 
+ property.
+ 
+\layout Standard
+
+The full set of properties are:
+\layout Itemize
+
+
+\noun on 
+Name: 
+\noun default 
+The symbolic name of type of Event which has occurred.
+\layout Itemize
+
+
+\noun on 
+Author
+\noun default 
+: The name of the user who generated the Task Event.
+ Usually this is either the Owner or Supervisor for the Task.
+\layout Itemize
+
+
+\noun on 
+Time Stamp
+\noun default 
+: When the Task Event was generated.
+\layout Itemize
+
+
+\noun on 
+Message
+\noun default 
+: A text message explaining the reason for the event and/or additional informati
+on or requirements to be associated with the Task.
+\layout Itemize
+
+
+\noun on 
+Node
+\noun default 
+: The fully resolved name and revision number of specific checked-in Node
+ who's association with the Task is being changed.
+\layout Subsection
+
+Event Types
+\layout Standard
+
+The following details meaning and usage of the complete set of Task Events.
+ There are restrictions on who may generate some types of Events.
+ Each of the following Task Events begins with an 
+\noun on 
+Access
+\noun default 
+ section which lists the classes of users which are allowed to generate
+ the Event.
+ The possible values for 
+\noun on 
+Access
+\noun default 
+ are: 
+\layout Itemize
+
+
+\noun on 
+Privileged
+\noun default 
+: Only users with privileged status may generate the Event.
+ Typically, only supervisory and administrative users have privileged status
+ when using 
+\noun on 
+Pipeline
+\noun default 
+.
+\layout Itemize
+
+
+\noun on 
+Supervisor
+\noun default 
+: Only the user who's name matches the Supervisor property of the Task may
+ generate the Event.
+ Note that this user need not have privileged status.
+\layout Itemize
+
+
+\noun on 
+Owner
+\noun default 
+: Only the user who's name matches the Owner property of the Task may generate
+ the Event.
+\layout Itemize
+
+A
+\noun on 
+ny
+\noun default 
+: Any user may generate the Event.
+\layout Subsubsection
+
+Create
+\layout Standard
+
+Access
+\noun on 
+: Privileged
+\layout Standard
+
+This Event causes a new Task to be created.
+ The initial Name, Type and Supervisor properties must be specified for
+ the Task.
+ In addition, an initial 
+\noun on 
+Message
+\noun default 
+ must be given which outlines the requirements for completion of the Task.
+ The new Task will be created with a Task State of 
+\noun on 
+Unassigned
+\noun default 
+.
+\layout Subsubsection
+
+Assign
+\layout Standard
+
+Access
+\noun on 
+: Privileged, Supervisor
+\layout Standard
+
+This Event changes the 
+\noun on 
+Owner
+\noun default 
+ of the Task and sets the Task State to 
+\noun on 
+Waiting
+\noun default 
+.
+ An optional 
+\noun on 
+Message
+\noun default 
+ may be given for this Event to explain the change of assignment.
+\layout Subsubsection
+
+Manage
+\layout Standard
+
+Access: 
+\noun on 
+Privileged, Supervisor
+\layout Standard
+
+This Event changes the Supervisor of the Task.
+ An optional 
+\noun on 
+Message
+\noun default 
+ may be given for this Event to explain the change of supervision.
+ Task State is unchanged by this Event.
+\layout Subsubsection
+
+Begin
+\layout Standard
+
+Access
+\noun on 
+: Owner
+\layout Standard
+
+This Event signals that the Owner of the Task has begun actively working
+ on the Task and changes the Task State to 
+\noun on 
+In Progress
+\noun default 
+.
+ An optional 
+\noun on 
+Message
+\noun default 
+ may be given for this Event to explaining the intended course of action.
+\layout Subsubsection
+
+Associate
+\layout Standard
+
+Access: 
+\noun on 
+Privileged, Supervisor, Owner
+\layout Standard
+
+This Event adds a specific checked-in version of a Node to the Current Nodes
+ for the Task.
+ If another version of the Node is already a member of the Current Nodes,
+ it is replaced by the version specified by the Event.
+ An optional 
+\noun on 
+Message
+\noun default 
+ may be given for this Event to explaining the reason for the association
+ of the Node with the Task.
+ Task State is unchanged by this Event.
+\layout Subsubsection
+
+Disassociate
+\layout Standard
+
+Access: 
+\noun on 
+Privileged, Supervisor, Owner
+\layout Standard
+
+This Event removes a Node from the Current Nodes associated with a Task.
+ An optional 
+\noun on 
+Message
+\noun default 
+ may be given for this Event to explaining the reason for the disassociation
+ of the Node with the Task.
+ Task State is unchanged by this Event.
+\layout Subsubsection
+
+Update
+\layout Standard
+
+Access
+\noun on 
+: Any
+\layout Standard
+
+This Event signals the completion of an intermediate step toward the completion
+ of the Task which should be brought to the attention of the Supervisor
+ of the Task.
+ However, this step does not require the Supervisor's approval.
+ A 
+\noun on 
+Message
+\noun default 
+ must be provided explaining the progress which has been made.
+ This event sets the Task State to 
+\noun on 
+Updated
+\noun default 
+.
+\layout Standard
+
+This Event may be generated manually by the Owner to log progress on a Task
+ which is unrelated to any Node.
+ More commonly, this Event is generated automatically as part of a Node
+ check-in operation for any of the Current Nodes associated with the Task.
+ In this case, the 
+\noun on 
+Message
+\noun default 
+ property of the Event is copied from the check-in log message given during
+ check-in of the Node.
+ The Current Node version is also updated to the newly checked-in version
+ of the Node.
+\layout Standard
+
+Note that it is possible for users other than the Owner to generate this
+ Event.
+ This may be cause for concern if this was not expected by the Owner and
+ Supervisor of the Task.
+ The more liberal access to Any user is allowed so that renegade check-ins
+ for Nodes associated with the Task will be brought to the Owner's and Superviso
+r's attention as soon as possible.
+\layout Subsubsection
+
+Submit
+\layout Standard
+
+Access
+\noun on 
+: Owner
+\layout Standard
+
+This Event signals the completion of an intermediate step toward the completion
+ of the Task which requires the Supervisor's approval.
+ This Event is identical to the Update Event with the exception that it
+ also changes the Task State to 
+\noun on 
+Needs Approval
+\noun default 
+.
+\layout Standard
+
+When a Node is checked-in, if the user performing the check-in is the Owner
+ of a Task associated with the Node, they are given the option of choosing
+ whether an Update Event or Submit Event will be generated.
+ If the user performing the check-in is not the Owner, an Update Event is
+ always generated and no choice is given to the user.
+\layout Subsubsection
+
+Approve
+\layout Standard
+
+Access: 
+\noun on 
+Supervisor
+\layout Standard
+
+This Event signals that the Supervisor has reviewed and approved the intermediat
+e step marked by a previous Update or Submit Event.
+ This Event can only be generated if the current Task State is either 
+\noun on 
+Updated
+\noun default 
+ or 
+\noun on 
+Needs Approval
+\noun default 
+.
+ An optional 
+\noun on 
+Message
+\noun default 
+ may be given for this Event to further elaborate on the approval.
+ This event sets the Task State to 
+\noun on 
+Approved
+\noun default 
+.
+\layout Subsubsection
+
+Change
+\layout Standard
+
+Access: 
+\noun on 
+Supervisor
+\layout Standard
+
+This Event signals that the Supervisor has reviewed the previous intermediate
+ step and has added additional directions and/or requirements which must
+ be satisfied for the Task.
+ This Event can only be generated if the current Task State is one of 
+\noun on 
+Updated, Needs Approval
+\noun default 
+, 
+\noun on 
+Approved
+\noun default 
+ or 
+\noun on 
+Could Be Better
+\noun default 
+.
+ A 
+\noun on 
+Message
+\noun default 
+ must be given which explains the changes required.
+ This event sets the Task State to 
+\noun on 
+Change Required
+\noun default 
+.
+\layout Subsubsection
+
+Hold
+\layout Standard
+
+Access: 
+\noun on 
+Supervisor, Owner
+\layout Standard
+
+This Event signals that work on the Task should be temporarily suspended
+ until further notice.
+ An optional 
+\noun on 
+Message
+\noun default 
+ may be given for this Event to explain the hold.
+ This event sets the Task State to 
+\noun on 
+Hold
+\noun default 
+.
+\layout Subsubsection
+
+Could Be Better
+\layout Standard
+
+Access: 
+\noun on 
+Supervisor
+\layout Standard
+
+This Event signals that the Supervisor has reviewed the previous intermediate
+ step and decided that the current state of the Task is good enough to be
+ considered complete.
+ However, there are some remaining issues which could be addressed once
+ all other Tasks have reached a 
+\noun on 
+Could Be Better
+\noun default 
+ or 
+\noun on 
+Finalled State
+\noun default 
+.
+ A
+\noun on 
+ Message
+\noun default 
+ is required to explain the remaining issues to be addressed.
+ This event sets the Task State to 
+\noun on 
+Could Be Better.
+\layout Subsubsection
+
+Finalled
+\layout Standard
+
+Access: 
+\noun on 
+Supervisor
+\layout Standard
+
+This Event signals that the Supervisor has reviewed the previous intermediate
+ step and has decided that the Task is complete.
+ An optional 
+\noun on 
+Message
+\noun default 
+ may be given for this Event as a final comment.
+ This event sets the Task State to 
+\noun on 
+Finalled
+\noun default 
+.
+\layout Subsubsection
+
+Warning
+\layout Standard
+
+Access: Any
+\layout Standard
+
+This Event signals some change for which the Owner and/or Supervisor of
+ the Task should be made aware.
+ The most common reason this Event is generated is in response to Events
+ occurring for one or more of the upstream Tasks which the current Task
+ depends upon.
+ 
+\layout Section
+
+Projects
+\layout Standard
+
+All Tasks and their associated Events are contained within a Project.
+ A Project represents a logical unit of work which is largely independent.
+ Examples include: a commercial, a film project or a video game.
+ Within a particular Project, a Task must be unique and any specific Node
+ may only be associated with one Task.
+ However, different Projects may have Tasks which share association with
+ a Node.
+ For instance, a model may be used in one Project and then later be reused
+ in another Project.
+ It is even possible that more than one Project active at the same time
+ may share a Node.
+ 
+\layout Section
+
+User Interface
+\layout Standard
+
+The previous sections have concentrated on the mechanics of how Tasks and
+ Event are represented and how they interact behind the scenes.
+ This section describes the design of the interface presented to the user
+ and tries to give some idea of a typical work flow using this system.
+\layout Subsection
+
+Timeline
+\layout Standard
+
+The Timeline is the primary visualization of a Project and its Tasks.
+ Essentially, the Timeline is a graph with time as the horizontal axis and
+ the list of Tasks as the vertical axis.
+ Each Task is represented by a horizontal bar which spanning the period
+ of time that the Task is active.
+ This bar is segmented at Task Events and colored according to the Task
+ State during the interval between Events.
+ 
+\layout Standard
+
+The Tasks may be grouped vertically according to Supervisor
+\emph on 
+ 
+\emph default 
+or Owner into panels which may be collapsed or expanded.
+ Alternatively, the Tasks may be arranged according to Task Dependency relations
+hips into a nested panel structure which allows branches of the Task tree
+ to be collapsed or expanded.
+\layout Subsection
+
+Task Details
+\layout Standard
+
+The Timeline can be used to select a specific Task or an Event for more
+ detail.
+ The Task Details panel provides access to all Task Properties, State, Current
+ Node and Event History information associated with the Task.
+ This information is presented in a form similar to the existing Node Details
+ and History panels.
+ The Timeline and Node Details panels will be linked so that selecting an
+ Event from the Task's bar in the Timeline will cause the Task Details panel
+ to scroll to the corresponding Event details.
+\layout Subsection
+
+Event Generation
+\layout Standard
+
+Task Events can be generated from the Timeline and Task Details panel using
+ a context sensitive popup menu similar to that used to perform Node operations
+ such as check-in and check-out.
+ Only the set of events which are legal for the current user and Task State
+ will be enabled in this popup menu.
+\layout Subsection
+
+Node Interface Changes
+\layout Standard
+
+In order to keep Tasks in sync with the Node side of 
+\noun on 
+Pipeline
+\noun default 
+, some changes will be needed to the user interface related to Nodes.
+ 
+\layout Standard
+
+Whenever a Node has been associated with a Task, the State of the Task and
+ the relationship of its Owner to the current user should be represented
+ whenever a Node is visualized.
+ The most important place for this to occur is in the Node Graph panel.
+ One idea is for some small iconic modifier to be rendered near to the Node's
+ symbol in the graph which would alert the user and provide an anchor for
+ the the Task Event pop-up menu and a way to jump to the task in the Timeline
+ panel.
+ 
+\layout Standard
+
+When a Checked-In operation is performed for a Node which has an associated
+ Task and the current user is the Owner of the Task, an option should be
+ added to the Check-In panel which allows the user to specify whether an
+ Update or Submit Event should be generated.
+ If the current user is not the Owner, an Update Event should be generated
+ automatically.
+ In both cases the log message will be attached to the Event.
+\layout Standard
+
+When an Edit, Make or Make Local operation is performed for a Node which
+ has an associated Task warning messages should be generated if the Task
+ State is 
+\noun on 
+Hold
+\noun default 
+ or 
+\noun on 
+Finalled.
+ 
+\noun default 
+Warnings should also be generated if the current user is not the Owner of
+ the Task and especially if the Task State is 
+\noun on 
+In Progress.
+ 
+\noun default 
+These warning shouldn't stop the user from performing the operation, but
+ hopefully make them think about the consequences before proceeding.
+\layout Subsection
+
+Obsoleted Features
+\layout Standard
+
+The Change Comments feature of Nodes will be made obsolete by Tasks.
+ However, the Node History panel will still contain the check-in log messages
+ associated with a Node.
+\the_end

@@ -181,7 +181,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
 #--------------------------------------------------------------------------------------------#
 
-           TESTS = NodeMgr
+           TESTS = FileMgr
 
 #             TESTS = CheckSum \
 #                     DNotify \

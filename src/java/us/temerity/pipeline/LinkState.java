@@ -1,4 +1,4 @@
-// $Id: LinkState.java,v 1.3 2004/04/15 00:19:45 jim Exp $
+// $Id: LinkState.java,v 1.4 2004/04/17 19:49:01 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -53,10 +53,7 @@ enum LinkState
    * <CODE>NeedsCheckOut</CODE>, it is possible that the working version's upstream node links
    * may have been changed since the time it was checked-out, but these link related
    * changes have resulted in the working version having identical upstream node links as the 
-   * latest checked-in version. <P> 
-   * 
-   * In addition to the conditions above, all upstream nodes linked either directly 
-   * or indirectly to this node also have a <CODE>LinkState</CODE> of <CODE>Identical<CODE>.
+   * latest checked-in version. 
    */
   Identical, 
 
@@ -64,11 +61,7 @@ enum LinkState
    * The working version and latest checked-in version of the node have different 
    * upstream node links, yet these differences are entirely due to changes to the working 
    * version since the time it was checked-out.  The <CODE>VersionState</CODE> must be 
-   * {@link VersionState#Identical Identical}. <P> 
-   * 
-   * Alternatively, the working version and latest checked-in version have identical 
-   * upstream node links, but one or more of the upstream nodes connected either directly or 
-   * indirectly to this node have a <CODE>LinkState</CODE> other than <CODE>Identical<CODE>.
+   * {@link VersionState#Identical Identical}. 
    */
   Modified, 
 

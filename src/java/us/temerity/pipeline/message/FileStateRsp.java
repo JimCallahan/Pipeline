@@ -1,4 +1,4 @@
-// $Id: FileStateRsp.java,v 1.8 2004/04/15 18:31:57 jim Exp $
+// $Id: FileStateRsp.java,v 1.9 2004/04/17 19:49:02 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -25,8 +25,12 @@ class FileStateRsp
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Constructs a new response.
+   * Constructs a new response. <P> 
    * 
+   * The <CODE>timestamps</CODE> argument may contain <CODE>null</CODE> entries for those 
+   * working files which do not exist.
+   * 
+   *   file exists.
    * @param timer 
    *   The timing statistics for a task.
    * 
@@ -36,13 +40,18 @@ class FileStateRsp
    * @param states 
    *   The <CODE>FileState</CODE> of each the primary and secondary file associated with 
    *   the working version indexed by file sequence.
+   * 
+   * @param timestamps
+   *   The last modification timestamp of each the primary and secondary file associated with 
+   *   the working version indexed by file sequence. 
    */
   public
   FileStateRsp
   (
    TaskTimer timer, 
    NodeID id, 
-   TreeMap<FileSeq, FileState[]> states
+   TreeMap<FileSeq, FileState[]> states,
+   TreeMap<FileSeq, Date[]> timestamps
   )
   { 
     super(timer);
@@ -54,6 +63,10 @@ class FileStateRsp
     if(states == null) 
       throw new IllegalArgumentException("The working file states cannot (null)!");
     pStates = states;
+
+    if(timestamps == null) 
+      throw new IllegalArgumentException("The working file timestamps cannot (null)!");
+    pTimeStamps = timestamps;
 
     if(Logs.net.isLoggable(Level.FINEST)) {
       StringBuffer buf = new StringBuffer();
@@ -88,6 +101,18 @@ class FileStateRsp
     return pStates;
   }
 
+  /**
+   * Gets the last modification timestamp of each the primary and secondary file associated 
+   * with the working version indexed by file sequence. <P> 
+   * 
+   * Individual timestamps may be <CODE>null</CODE> if no corresponding working file exists.
+   */
+  public TreeMap<FileSeq, Date[]>
+  getTimeStamps() 
+  {
+    return pTimeStamps;
+  }
+
   
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -111,6 +136,14 @@ class FileStateRsp
    * the working version indexed by file sequence.
    */
   private TreeMap<FileSeq, FileState[]>  pStates; 
+
+  /** 
+   * The last modification timestamp of each the primary and secondary file associated 
+   * with the working version indexed by file sequence. <P> 
+   * 
+   * Individual timestamps may be <CODE>null</CODE> if no corresponding working file exists.
+   */
+  private TreeMap<FileSeq, Date[]>  pTimeStamps; 
 
 }
   

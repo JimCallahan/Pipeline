@@ -1,4 +1,4 @@
-// $Id: QueueState.java,v 1.2 2004/04/15 00:19:45 jim Exp $
+// $Id: QueueState.java,v 1.3 2004/04/17 19:49:01 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -45,10 +45,11 @@ enum QueueState
    * the upstream files or nodes upon which this file depends mean that this file needs to 
    * be regenerated to reflect the changes. <P> 
    * 
-   * This state can be caused by changes to dependencies or node properties of the working 
-   * version of the node owning this file since the time that the file was regenerated.
-   * This state can also be due to any of upstream files upon which this file depends having 
-   * a <CODE>QueueState</CODE> other than <CODE>Finished</CODE> or being newer than this file.
+   * This state can be caused by changes to upstream node links or node properties of the 
+   * working version of the node owning this file since the time that the file was 
+   * regenerated.  This state can also be due to any of upstream files upon which this file 
+   * depends having a <CODE>QueueState</CODE> other than <CODE>Finished</CODE> or being 
+   * newer than this file.
    */
   Stale,
 

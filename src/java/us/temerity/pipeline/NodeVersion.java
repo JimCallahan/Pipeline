@@ -1,4 +1,4 @@
-// $Id: NodeVersion.java,v 1.13 2004/04/15 00:11:54 jim Exp $
+// $Id: NodeVersion.java,v 1.14 2004/04/17 19:49:01 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -182,6 +182,35 @@ class NodeVersion
   }
 
   
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O M P A R I S O N                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Are the node links of this version and the given working version identical?
+   */ 
+  public boolean 
+  identicalLinks
+  ( 
+   NodeMod mod
+  ) 
+  {
+    return pSources.equals(mod.getSources());
+  }
+
+  /**
+   * Are the node links of this version and the given checked-in version identical?
+   */ 
+  public boolean 
+  identicalLinks
+  ( 
+   NodeVersion vsn
+  ) 
+  {
+    return pSources.equals(vsn.getSources());
+  }
+
+
   
   /*----------------------------------------------------------------------------------------*/
   /*   O B J E C T   O V E R R I D E S                                                      */
@@ -202,16 +231,16 @@ class NodeVersion
     if(obj != null) {
       if(obj instanceof NodeVersion) {
 	NodeVersion vsn = (NodeVersion) obj;
-	return (super.equals(obj) && 
+	return (identicalProperties(vsn) && 
+		identicalLinks(vsn) &&
 		(((pVersionID == null) && (vsn.pVersionID == null)) ||  
  		 pVersionID.equals(vsn.pVersionID)) &&        
-		pMessage.equals(vsn.pMessage) && 
-		pSources.equals(vsn.pSources));
+		pMessage.equals(vsn.pMessage));
       }
       else if(obj instanceof NodeMod) {
 	NodeMod mod = (NodeMod) obj;
-	return (super.equals(obj) &&       
-		getSources().equals(mod.getSources()));
+	return (identicalProperties(mod) && 
+		identicalLinks(mod));
       }
     }
     return false;

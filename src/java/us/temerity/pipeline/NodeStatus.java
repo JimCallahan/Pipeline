@@ -1,4 +1,4 @@
-// $Id: NodeStatus.java,v 1.8 2004/04/15 17:54:28 jim Exp $
+// $Id: NodeStatus.java,v 1.9 2004/04/17 19:49:01 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -44,34 +44,6 @@ class NodeStatus
     pTargets = new TreeMap<String,NodeStatus>();
   }
 
-  /**
-   * Construct with detailed status information.
-   * 
-   * @param name 
-   *   The fully resolved node name.
-   */
-  public 
-  NodeStatus
-  (
-   NodeID id, 
-   NodeDetails details
-  ) 
-  {
-    if(id == null) 
-      throw new IllegalArgumentException
-	("The working version ID cannot be (null)!");
-    pNodeID = id;
-
-    if(!details.getName().equals(pNodeID.getName())) 
-      throw new IllegalArgumentException
-	("The node details name (" + details.getName() + ") didn't match the " + 
-	 "node ID name (" + pNodeID.getName() + ")!");      
-    pDetails = details;
-
-    pSources = new TreeMap<String,NodeStatus>();
-    pTargets = new TreeMap<String,NodeStatus>();
-  }
-
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -110,6 +82,26 @@ class NodeStatus
   {
     return pDetails;
   }
+
+  /**
+   * Set the detailed status information for this node.
+   * 
+   * @param details 
+   *   The status details.
+   */
+  public void 
+  setDetails
+  (
+   NodeDetails details
+  ) 
+  {
+    if(!details.getName().equals(pNodeID.getName())) 
+      throw new IllegalArgumentException
+	("The node details name (" + details.getName() + ") didn't match the " + 
+	 "node ID name (" + pNodeID.getName() + ")!");      
+    pDetails = details;
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/

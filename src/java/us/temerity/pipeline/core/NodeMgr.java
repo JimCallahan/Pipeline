@@ -1,4 +1,4 @@
-// $Id: NodeMgr.java,v 1.17 2004/04/15 18:31:23 jim Exp $
+// $Id: NodeMgr.java,v 1.18 2004/04/17 19:49:02 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -831,8 +831,6 @@ class NodeMgr
 	bundle.uVersion = mod;
 
 	/* invalidate states */ 
-	bundle.uOverallNodeState = null;
-	bundle.uPropertyState    = null;	
 	if(critical.compareTo(mod.getLastCriticalModification()) < 0) 
 	  bundle.uQueueStates = null;
       }
@@ -898,10 +896,6 @@ class NodeMgr
       /* update the bundle */ 
       bundle.uVersion = mod;
 
-      /* invalidate states */ 
-      bundle.uOverallNodeState = null;
-      bundle.uLinkState      = null;
-
       /* update the downstream links of the source node */ 
       DownstreamLinks links = getDownstreamLinks(source); 
       links.addWorking(sourceID, targetID.getName());
@@ -964,10 +958,6 @@ class NodeMgr
       
       /* update the bundle */ 
       bundle.uVersion = mod;
-      
-      /* invalidate states */ 
-      bundle.uOverallNodeState = null;
-      bundle.uLinkState      = null;
 
       /* update the downstream links of the source node */ 
       DownstreamLinks links = getDownstreamLinks(source); 
@@ -1018,12 +1008,12 @@ class NodeMgr
 
     TaskTimer timer = new TaskTimer("NodeMgr.status(): " + nodeID);
     try {
-      HashMap<String,NodeStatus> states = new HashMap<String,NodeStatus>();
+      HashMap<String,NodeStatus> table = new HashMap<String,NodeStatus>();
 
-      upstreamStatusHelper(nodeID, states, timer);
-      downstreamStatusHelper(nodeID, states, timer);
+      upstreamStatusHelper(nodeID, new LinkedList<String>(), table, timer);
+      downstreamStatusHelper(nodeID, table, timer);
 
-      NodeStatus root = states.get(nodeID.getName());
+      NodeStatus root = table.get(nodeID.getName());
       if(root == null) 
 	throw new PipelineException("Internal Error!");
 
@@ -1040,7 +1030,7 @@ class NodeMgr
    * @param nodeID
    *   The unique working version identifier.
    * 
-   * @param states
+   * @param table
    *   The previously computed states indexed by node name.
    * 
    * @param timer
@@ -1050,27 +1040,207 @@ class NodeMgr
   upstreamStatusHelper
   (
    NodeID nodeID, 
-   HashMap<String,NodeStatus> states, 
+   LinkedList<String> branch, 
+   HashMap<String,NodeStatus> table, 
    TaskTimer timer
   ) 
     throws PipelineException
   {
+    String name = nodeID.getName();
+
+    /* check for circularity */ 
+    if(branch.contains(name)) {
+      StringBuffer buf = new StringBuffer();
+      buf.append("Link circularity detected: \n" + 
+		 "  ");
+      boolean found = false;
+      for(String bname : branch) {
+	if(bname.equals(name)) 
+	  found = true;
+	if(found) 
+	  buf.append(bname + " -> ");
+      }
+      buf.append(name);
+      throw new PipelineException(buf.toString());
+    }
+
+    /* make sure it hasn't already been processed */ 
+    if(table.containsKey(name)) 
+      return;
+
+    /* push current node onto the stack */ 
+    branch.addLast(name);
     
-    // first compute status for upstream nodes... 
+    /* lookup working and checked-in versions */ 
+    {
+      timer.aquire();
+      ReentrantReadWriteLock workingLock = getWorkingLock(nodeID);
+      workingLock.writeLock().lock();
+      ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
+      checkedInLock.readLock().lock();
+      try {
+	timer.resume();	
+
+	/* lookup versions */ 
+	WorkingBundle working = null;
+	TreeMap<VersionID,CheckedInBundle> checkedIn = null;
+	{
+	  try {
+	    working = getWorkingBundle(nodeID);
+	  }
+	  catch(PipelineException ex) {
+	  }
+	  
+	  try {
+	    checkedIn = getCheckedInBundles(name);
+	  }
+	  catch(PipelineException ex) {
+	  }
+	}
+
+	/* add the status stub */ 
+	NodeStatus status = new NodeStatus(nodeID);
+	table.put(name, status);
+
+	/* extract the working, base checked-in version and latest checked-in versions 
+	     while computing the version state */ 
+	NodeMod work       = null;
+	NodeVersion base   = null;
+	NodeVersion latest = null;
+	VersionState versionState = null;
+	{
+	  if(checkedIn != null) {
+	    if(checkedIn.isEmpty())
+	      throw new PipelineException
+		("Somehow no checked-in versions of node (" + name + ") exist!"); 
+	    CheckedInBundle bundle = checkedIn.get(checkedIn.lastKey());
+	    latest = new NodeVersion(bundle.uVersion);
+	  }
+
+	  if(working != null) {
+	    work = new NodeMod(working.uVersion);
+
+	    VersionID workID = work.getWorkingID();
+	    if(workID != null) {
+	      assert(checkedIn != null);
+	      CheckedInBundle bundle = checkedIn.get(workID);
+	      if(bundle == null) 
+		throw new PipelineException
+		  ("Somehow the checked-in version (" + workID + ") of node (" + name + 
+		   ") used as the basis for working version (" + nodeID + ") did " + 
+		   "not exist!");
+	      base = new NodeVersion(bundle.uVersion);
+
+	      if(base.getVersionID().equals(latest.getVersionID())) 
+		versionState = VersionState.Identical;
+	      else 
+		versionState = VersionState.NeedsCheckOut;
+	    }
+	    else {
+	      assert(checkedIn == null);
+	      versionState = VersionState.Pending;
+	    }
+	  }
+	  else {
+	    assert(checkedIn != null);
+	    versionState = VersionState.CheckedIn;
+	  }
+	}
+	assert(versionState != null);
+
+	/* compute property state */ 
+	PropertyState propertyState = null;
+	switch(versionState) {
+	case Pending:
+	  propertyState = PropertyState.Pending;
+	  break;
+
+	case CheckedIn:
+	  propertyState = PropertyState.CheckedIn;
+	  break;
+
+	case Identical:
+	case NeedsCheckOut:
+	  if(work.identicalProperties(latest)) {
+	    propertyState = PropertyState.Identical;
+	  }
+	  else {
+	    switch(versionState) {
+	    case Identical:
+	      propertyState = PropertyState.Modified;
+	      break;
+
+	    case NeedsCheckOut:
+	      if(work.identicalProperties(base)) 
+		propertyState = PropertyState.NeedsCheckOut;
+	      else 
+		propertyState = PropertyState.Conflicted;
+	      break;
+
+	    default:
+	      assert(false);
+	    }
+	  }
+	}	
+	
+	/* compute link state */
+	LinkState linkState = null;
+	switch(versionState) {
+	case Pending:
+	  linkState = LinkState.Pending;
+	  break;
+
+	case CheckedIn:
+	  linkState = LinkState.CheckedIn;
+	  break;
+
+	case Identical:
+	case NeedsCheckOut:
+	  if(work.identicalLinks(latest)) {
+	    linkState = LinkState.Identical;
+	  }
+	  else {
+	    switch(versionState) {
+	    case Identical:
+	      linkState = LinkState.Modified;
+	      break;
+
+	    case NeedsCheckOut:
+	      if(work.identicalLinks(base)) 
+		linkState = LinkState.NeedsCheckOut;
+	      else 
+		linkState = LinkState.Conflicted;
+	      break;
+
+	    default:
+	      assert(false);
+	    }
+	  }
+	}	
+      
+
+	// process upstream nodes... 
+	
+      
+	
+	// talk to FileMgr to get per-file FileStates and last modification timestamps
+
+	// compute overall node state 
+
+
+	// talk to QueueMgr to get per-file QueueStates  (not yet) 
+	
+	// compute overall queue state 
+
+	
+	// create NodeDetails and add it to the NodeStatus for this node
     
-
-    // if not already cached... 
-
-    //   compute VersionState
-    //   compute PropertyState
-    //   compute LinkState 
-
-    //   talk to FileMgr to get per-file FileStates
-
-    //   talk to QueueMgr to get per-file QueueStates  (not yet) 
-    
-
-    
+      }
+      finally {
+	checkedInLock.readLock().unlock();  
+	workingLock.writeLock().unlock();
+      }
+    }
   } 
   
   /**
@@ -1690,7 +1860,6 @@ class NodeMgr
   { 
     if(id == null) 
       throw new IllegalArgumentException("The working version ID cannot be (null)!");
-      
 
     /* lookup the bundle */ 
     WorkingBundle bundle = null;
@@ -2278,49 +2447,6 @@ class NodeMgr
     public NodeMod  uVersion;
 
 
-    /*--------------------------------------------------------------------------------------*/
-    /* The following are the cached node states for this working version.  States with a    */
-    /* value of (null) have either never been computed or have been invalidated since the   */
-    /* last time they were computed for the associated working version.                     */
-    /*--------------------------------------------------------------------------------------*/
-
-    /** 
-     * The overall revision control state of the working version of the node. <P> 
-     * 
-     * May be <CODE>null</CODE> if invalidated.
-     */
-    public OverallNodeState uOverallNodeState;
-    
-    /** 
-     * The overall file and job queue state of this working version of the node.<P> 
-     * 
-     * May be <CODE>null</CODE> if invalidated.
-     */
-    public OverallQueueState uOverallQueueState;
-
-    /**
-     * The relationship between the revision numbers of this working version and 
-     * the checked-in versions of the node.<P> 
-     * 
-     * May be <CODE>null</CODE> if invalidated.
-     */
-    public VersionState  uVersionState;
-
-    /**
-     * The relationship between the values of the node properties associated with this 
-     * working version and the checked-in versions of the node. <P> 
-     * 
-     * May be <CODE>null</CODE> if invalidated.
-     */
-    public PropertyState  uPropertyState;
-
-    /**
-     * A comparison of the dependency information (upstream node connections) of this 
-     * working version and the latest checked-in version of the node. <P> 
-     * 
-     * May be <CODE>null</CODE> if invalidated.
-     */
-    public LinkState  uLinkState;
     
     /**
      * A table containing the relationship between individual files associated with the 
@@ -2331,6 +2457,19 @@ class NodeMgr
      * invalidated.
      */
     public TreeMap<FileSeq,FileState[]>  uFileStates;
+
+    /**
+     * A table containing the last modification timestamp of individual files associated 
+     * with the working version of this node indexed by working file sequence. <P> 
+     * 
+     * May be <CODE>null</CODE> if invalidated.  If the entry for a file sequence is missing
+     * from this table, then the timestamp for that file sequence has been
+     * invalidated. <P> 
+     * 
+     * If an individual file time stamp is <CODE>null</CODE>, then the file was missing when 
+     * the timestamp was being collected.
+     */
+    public TreeMap<FileSeq,Date[]>  uTimeStamps;
 
     /**
      * The status of individual files associated with the working version of the node 
@@ -2436,9 +2575,9 @@ class NodeMgr
 	      timer.resume();	
 
 	      WorkingBundle bundle = getWorkingBundle(id);
-	      bundle.uOverallNodeState  = null;
-	      bundle.uOverallQueueState = null;
-	      bundle.uFileStates        = null;
+	      bundle.uFileStates  = null;
+	      bundle.uTimeStamps  = null;
+	      bundle.uQueueStates = null;
 	    }
 	    catch(PipelineException ex) {
 	      Logs.net.warning("DirtyTask: " + ex.getMessage());	      

@@ -1,3 +1,816 @@
+2004-04-14  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/tests/TestDNotifyApp.java:
+	updated to be compatible with overhauled DNotify
+
+	* src/java/us/temerity/pipeline/core/DNotify.java:
+	complete overhaul to handle the creation and destruction of monitored directories -- now uses a tree datastructure internally to monitor all parent directories as well as leaf directories
+
+	* docs/man/plnotify.html.in: added --prod option
+
+	* src/java/us/temerity/pipeline/native/DNotify.cc:
+	added missing close() of file descriptor in unmonitorNative()
+
+	* src/java/us/temerity/pipeline/core/NotifyApp.java, src/java/us/temerity/pipeline/core/NotifyOptsParser.jj, src/java/us/temerity/pipeline/core/NotifyServer.java:
+	added --prod option
+
+2004-04-13  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/tests/TestNodeMgrApp.java, src/java/us/temerity/pipeline/core/NodeMgr.java:
+	WorkingBundle cache invalidation by plnotify
+
+	* src/java/us/temerity/pipeline/FileCleaner.java, src/java/us/temerity/pipeline/core/FileMgrServer.java, src/java/us/temerity/pipeline/core/NodeMgrServer.java, src/java/us/temerity/pipeline/core/NotifyServer.java:
+	named all Thread subclasses
+
+2004-04-12  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/tests/TestDNotifyApp.java:
+	external plnotify server test
+
+	* src/java/us/temerity/pipeline/core/FileMgrServer.java, src/java/us/temerity/pipeline/core/NodeMgrServer.java, src/java/us/temerity/pipeline/core/NotifyServer.java:
+	make the shutdown message a warning instead of an info level message
+
+	* src/java/us/temerity/pipeline/core/FileMgrServer.java, src/java/us/temerity/pipeline/core/NodeMgrServer.java:
+	added shutdown messages
+
+	* src/java/us/temerity/pipeline/core/DNotify.java, src/java/us/temerity/pipeline/core/NotifyServer.java:
+	plnotify seems to work
+
+	* docs/legal/license.txt: added BOLD arbitrartion paragraph to 6(c)
+
+	* plconfig/CryptoApp.class, plconfig/plconfig-1.3.4-i686-rpm.bin:
+	latest license agreement changes
+
+	* docs/legal/rhino-license.html: obsolete
+
+	* docs/legal/signature.html: initial revision
+
+	* docs/legal/license.html: added BOLD arbitrartion paragraph to 6(c)
+
+2004-04-11  Jim Callahan  <jim@salamander>
+
+	* plconfig/CryptoApp.class, plconfig/plconfig-1.3.4-i686-rpm.bin:
+	latest
+
+	* config/bootstrap.sh, configure.ac:
+	added --with-customer, automatic inclusion of license in installer program
+
+	* rpm/Makefile.am, rpm/headerA, rpm/headerB.in, rpm/pipeline.spec.in:
+	automatic inclusion of license in installer program
+
+	* rpm/install-header.in, src/java/scripts/pltest-dnotify.in, src/java/scripts/pltest-fam.in:
+	obsolete
+
+	* docs/legal/license.html: fixed typo
+
+	* docs/legal/license.txt, docs/legal/license.html:
+	modified 2(b), 2(c) and 6(c)
+
+	* config/bootstrap.sh: renamed pipeline.profile to customer-profile
+
+	* configure.ac:
+	man pages now build by Makefile not configure, version 1.3.4
+
+	* src/java/us/temerity/pipeline/FileCleaner.java, src/java/us/temerity/pipeline/LogFormatter.java, src/java/us/temerity/pipeline/LogMessage.java, src/java/us/temerity/pipeline/Logs.java, src/java/us/temerity/pipeline/Native.java, src/java/us/temerity/pipeline/NativeFileSys.java, src/java/us/temerity/pipeline/NativeProcess.java, src/java/us/temerity/pipeline/PackageInfo.java.in, src/java/us/temerity/pipeline/PosixSignal.java:
+	moved from us.temerity.pipeline.core package
+
+	* src/java/us/temerity/pipeline/message/NodeStatusReq.java, src/java/us/temerity/pipeline/message/NodeStatusRsp.java, src/java/us/temerity/pipeline/message/NotifyMonitorReq.java, src/java/us/temerity/pipeline/message/NotifyRequest.java, src/java/us/temerity/pipeline/message/NotifyUnmonitorReq.java, src/java/us/temerity/pipeline/message/NotifyWatchReq.java, src/java/us/temerity/pipeline/message/NotifyWatchRsp.java, src/java/us/temerity/pipeline/message/TimedRsp.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/Makefile.in, src/java/us/temerity/pipeline/NodeMgrClient.java, src/java/us/temerity/pipeline/NodeMod.java, src/java/us/temerity/pipeline/NodeStatus.java, src/java/us/temerity/pipeline/NodeVersion.java, src/java/us/temerity/pipeline/SubProcess.java, src/java/us/temerity/pipeline/bootstrap/BootStrapLoader.java.in.in, src/java/us/temerity/pipeline/message/FailureRsp.java, src/java/us/temerity/pipeline/message/NodeGetWorkingRsp.java, src/java/us/temerity/pipeline/message/NodeRequest.java, src/java/us/temerity/pipeline/message/SuccessRsp.java, src/java/us/temerity/pipeline/native/DNotify.cc, src/java/us/temerity/pipeline/native/NativeFileSys.cc, src/java/us/temerity/pipeline/native/NativeFileSys.hh, src/java/us/temerity/pipeline/native/NativeProcess.cc, src/java/us/temerity/pipeline/native/NativeProcess.hh, src/java/us/temerity/pipeline/tests/TestDNotifyApp.java:
+	added status()
+
+	* src/java/us/temerity/pipeline/FileSeq.java: added imports
+
+	* src/java/us/temerity/pipeline/BaseMgrClient.java:
+	extended performTransaction to accept null requests
+
+	* src/java/us/temerity/pipeline/BaseAction.java: added imports
+
+	* src/java/us/temerity/pipeline/core/NotifyApp.java, src/java/us/temerity/pipeline/core/NotifyControlClient.java, src/java/us/temerity/pipeline/core/NotifyMonitorClient.java, src/java/us/temerity/pipeline/core/NotifyOptsParser.jj, src/java/us/temerity/pipeline/core/NotifyServer.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/core/TaskTimer.java:
+	adde serialVersionUID
+
+	* src/java/us/temerity/pipeline/core/NodeMgrServer.java: added status()
+
+	* src/java/us/temerity/pipeline/core/NodeMgr.java: added status() stub
+
+	* src/java/us/temerity/pipeline/core/FileMgrServer.java:
+	removed debugging prints
+
+	* src/java/us/temerity/pipeline/core/FileMgrApp.java, src/java/us/temerity/pipeline/core/FileMgrOptsParser.jj:
+	added --license
+
+	* src/java/us/temerity/pipeline/core/FileMgrClient.java: comments
+
+	* src/java/us/temerity/pipeline/core/DNotify.java:
+	improved limits on the number of monitored directories
+
+	* src/java/us/temerity/pipeline/core/BaseApp.java: added license()
+
+	* src/java/us/temerity/pipeline/core/FileCleaner.java, src/java/us/temerity/pipeline/core/LogFormatter.java, src/java/us/temerity/pipeline/core/LogMessage.java, src/java/us/temerity/pipeline/core/Logs.java, src/java/us/temerity/pipeline/core/Native.java, src/java/us/temerity/pipeline/core/NativeFileSys.java, src/java/us/temerity/pipeline/core/NativeProcess.java, src/java/us/temerity/pipeline/core/PackageInfo.java.in, src/java/us/temerity/pipeline/core/PosixSignal.java:
+	moved to us.temerity.pipeline package
+
+	* plconfig/CryptoApp.class, plconfig/plconfig-1.3.4-i686-rpm.bin:
+	version 1.3.4
+
+	* src/utils/src/Makefile.am, src/utils/src/PackageInfo.cc.in, src/utils/src/PackageInfo.hh, src/utils/src/PlNotify.cc:
+	added plnotify
+
+2004-04-10  Jim Callahan  <jim@salamander>
+
+	* docs/javadoc/Makefile.in, docs/man/Makefile.am, docs/man/plfilemgr.html.in, docs/man/plnotify.html.in, docs/man/pls.html.in, docs/man/realpath.html.in:
+	now imports the copyright and license text
+
+	* docs/legal/copyright.html, docs/legal/license.html, docs/legal/license.txt, docs/legal/rhino-license.html:
+	initial revision
+
+2004-04-09  Jim Callahan  <jim@salamander>
+
+	* plconfig/plconfig-1.3.2-i686-rpm.bin: obsolete
+
+	* src/utils/src/FB.cc, src/utils/src/FB.hh, src/utils/src/Makefile.am, src/utils/src/LockSet.cc, src/utils/src/LockSet.hh, src/utils/src/PlNotify.cc, src/utils/src/TestLocks.cc, src/utils/src/TestPlNotify.cc, src/utils/src/TestPlNotifyControl.cc, src/utils/src/TestPlNotifyMonitor.cc, src/utils/src/TestPlNotifyShutdown.cc, src/utils/src/NotifyConnectTask.hh, src/utils/src/NotifyControlServer.hh, src/utils/src/NotifyControlTask.cc, src/utils/src/NotifyControlTask.hh, src/utils/src/NotifyMgr.cc, src/utils/src/NotifyMgr.hh, src/utils/src/NotifyMonitorServer.hh, src/utils/src/NotifyMonitorTask.hh, src/utils/src/NotifyServerGn.hh, src/utils/src/NotifyTask.cc, src/utils/src/NotifyTask.hh, src/utils/src/PackageInfo.cc.in, src/utils/src/PackageInfo.hh:
+	post-threading dead-end
+
+	* src/utils/src/FB.cc, src/utils/src/FB.hh, src/utils/src/LockSet.cc, src/utils/src/LockSet.hh, src/utils/src/Makefile.am, src/utils/src/Network.hh, src/utils/src/NotifyConnectTask.hh, src/utils/src/NotifyControlServer.hh, src/utils/src/NotifyControlTask.cc, src/utils/src/NotifyControlTask.hh, src/utils/src/NotifyMgr.cc, src/utils/src/NotifyMgr.hh, src/utils/src/NotifyMonitorServer.hh, src/utils/src/NotifyMonitorTask.hh, src/utils/src/NotifyServerGn.hh, src/utils/src/NotifyTask.cc, src/utils/src/PlNotify.cc, src/utils/src/Task.hh, src/utils/src/TestLocks.cc, src/utils/src/TestPlNotifyControl.cc, src/utils/src/TestPlNotifyMonitor.cc, src/utils/src/TestPlNotifyShutdown.cc:
+	broken multithreaded DNotify deadend
+
+2004-04-06  Jim Callahan  <jim@salamander>
+
+	* src/java/scripts/plfilemgr.in: fixed classname bug
+
+	* config/bootstrap.sh: pipeline-040202
+
+	* configure.ac:
+	DNotify related configure vars, threads and semaphore includes, v1.3.2
+
+	* docs/javadoc/Makefile.in, src/java/us/temerity/pipeline/Makefile.in, src/java/us/temerity/pipeline/plugin/Makefile.in, src/java/us/temerity/pipeline/tests/Makefile.in:
+	new configure vars
+
+	* rpm/install-header.in: new license agreement
+
+	* docs/man/plfilemgr.html, docs/man/plfilemgr.html.in, docs/man/plnotify.html.in, docs/man/pls.html, docs/man/pls.html.in, docs/man/realpath.html, docs/man/realpath.html.in:
+	replaced literal version with @VERSION@
+
+	* src/utils/src/FB.cc, src/utils/src/FB.hh, src/utils/src/NotifyControlServer.hh, src/utils/src/NotifyControlTask.hh, src/utils/src/NotifyMgr.cc, src/utils/src/NotifyMgr.hh, src/utils/src/NotifyTask.cc, src/utils/src/PlNotify.cc, src/utils/src/Task.hh, src/utils/src/TestPlNotify.cc:
+	made FB methods thread-safe, updated classes which use FB
+
+	* src/utils/src/Makefile.am, src/utils/src/NotifyMgr.cc, src/utils/src/NotifyMgr.hh, src/utils/src/NotifyTask.cc, src/utils/src/NotifyTask.hh, src/utils/src/PackageInfo.cc.in, src/utils/src/PackageInfo.hh, src/utils/src/PlNotify.cc, src/utils/src/Task.hh:
+	network control server and tasks work, notify manager and tasks work
+
+	* src/utils/src/Network.hh, src/utils/src/NotifyControlServer.hh, src/utils/src/NotifyControlTask.hh, src/utils/src/TestLocks.cc, src/utils/src/TestPlNotify.cc:
+	intial revision
+
+	* src/utils/src/FB.hh:
+	added a sleep() before exit() in error() to allow the error message time to print
+
+	* src/utils/src/Lock.hh, src/utils/src/LockSet.hh:
+	replaced Lock with LockSet
+
+2004-04-05  Jim Callahan  <jim@salamander>
+
+	* src/utils/src/Makefile.am, src/utils/src/NotifyMgr.cc, src/utils/src/NotifyMgr.hh, src/utils/src/NotifyTask.cc, src/utils/src/NotifyTask.hh, src/utils/src/PlNotify.cc:
+	added reporting of modified directories back to NotifyMgr
+
+	* src/utils/src/Makefile.am: added plnotify
+
+	* src/utils/src/Pls.cc, src/utils/src/RealPath.cc:
+	added --stats, --warnings and --license
+
+	* src/utils/src/PackageInfo.cc.in, src/utils/src/PackageInfo.hh:
+	updated comments, new copyright and license text
+
+	* src/utils/src/Lock.hh, src/utils/src/NotifyMgr.hh, src/utils/src/NotifyTask.hh, src/utils/src/PlNotify.cc, src/utils/src/Task.hh:
+	initial revision
+
+	* src/utils/src/CloneTest.cc, src/utils/src/DNotify.cc: obsolete
+
+2004-04-04  Jim Callahan  <jim@salamander>
+
+	* plconfig/CryptoApp.class, plconfig/plconfig-1.3.1-i686-rpm.bin, plconfig/plconfig-1.3.2-i686-rpm.bin:
+	version 1.3.2
+
+2004-04-03  Jim Callahan  <jim@salamander>
+
+	* src/utils/src/CloneTest.cc: initial revision
+
+2004-04-01  Jim Callahan  <jim@salamander>
+
+	* plconfig/CryptoApp.class: version 1.3.1
+
+	* plconfig/plconfig-1.3.1-i686-rpm.bin: initial revision
+
+	* plconfig/plconfig-1.3.0-i686-rpm.bin: replaced by version 1.3.1
+
+	* src/java/us/temerity/pipeline/native/Makefile.am, src/java/us/temerity/pipeline/tests/Makefile.in:
+	added DNotify
+
+	* src/java/us/temerity/pipeline/core/DNotify.java, src/java/us/temerity/pipeline/native/DNotify.cc, src/java/us/temerity/pipeline/native/DNotify.hh, src/java/us/temerity/pipeline/tests/TestDNotifyApp.java:
+	initial revision
+
+2004-03-31  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/core/FileMgr.java, src/java/us/temerity/pipeline/core/NodeMgr.java, src/java/us/temerity/pipeline/message/FailureRsp.java, src/java/us/temerity/pipeline/message/FileRenameReq.java, src/java/us/temerity/pipeline/message/FileStateRsp.java, src/java/us/temerity/pipeline/message/NodeGetWorkingRsp.java, src/java/us/temerity/pipeline/message/SuccessRsp.java:
+	support for the TaskTimer class
+
+	* src/java/us/temerity/pipeline/LinkCommon.java: comments
+
+	* src/java/us/temerity/pipeline/core/TaskTimer.java: initial revision
+
+	* src/java/us/temerity/pipeline/core/NodeMgr.java:
+	moved the unlinking of downstream nodes outside the locks for the target node in revoke() to avoid a potential deadlock condition due to locks being aquired in a downstream direction, rename() fully implemented
+
+	* src/java/us/temerity/pipeline/tests/TestNodeMgrApp.java:
+	added rename() test
+
+	* src/java/us/temerity/pipeline/message/NodeRenameReq.java:
+	added missing pNewName initialization in constructor
+
+	* src/java/us/temerity/pipeline/LinkCommon.java:
+	getFrameOffset() now returns null if the LinkRelationship != OneToOne
+
+2004-03-30  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/tests/TestNodeMgrApp.java:
+	added FileMgrServer start, revoke() tests
+
+	* src/java/us/temerity/pipeline/message/FileRemoveReq.java, src/java/us/temerity/pipeline/message/FileRenameReq.java, src/java/us/temerity/pipeline/message/NodeRenameReq.java, src/java/us/temerity/pipeline/message/NodeRevokeReq.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/message/NodeRegisterReq.java:
+	now throw PipelineException for non-initial or linked working versions
+
+	* src/java/us/temerity/pipeline/message/FileRequest.java, src/java/us/temerity/pipeline/message/NodeRequest.java:
+	added Revoke and Rename requests
+
+	* src/java/us/temerity/pipeline/message/FileCheckInReq.java, src/java/us/temerity/pipeline/message/FileCheckOutReq.java, src/java/us/temerity/pipeline/message/FileFreezeReq.java:
+	comments
+
+	* src/java/us/temerity/pipeline/core/NodeMgrServer.java:
+	added file server hostname and port arguments to constructor, added Revoke and Rename requests
+
+	* src/java/us/temerity/pipeline/core/NodeMgr.java:
+	added FileMgrClient field, modifyProperties() now only invalidates the uPropertyState if there was a critical modification, link() invalidates uDependState not uPropertyState, unlink() and revoke() added, skeleton rename() added
+
+	* src/java/us/temerity/pipeline/core/FileMgrServer.java:
+	added Remove and Rename requests
+
+	* src/java/us/temerity/pipeline/core/FileMgr.java:
+	added remove() and rename()
+
+	* src/java/us/temerity/pipeline/NodeMod.java:
+	converted IllegalArgumentException to PipelineException where the exception might be caused by normal user input instead of bad API usage
+
+	* src/java/us/temerity/pipeline/BaseMgrClient.java: initial revision
+
+	* src/java/us/temerity/pipeline/NodeMgrClient.java, src/java/us/temerity/pipeline/core/FileMgrClient.java:
+	moved common code to BaseMgrClient
+
+	* src/java/us/temerity/pipeline/core/FileMgrClient.java:
+	moved common code into handleSimpleResponse() and handleFailure()
+
+	* src/java/us/temerity/pipeline/NodeMgrClient.java:
+	moved common code into handleSimpleResponse() and handleFailure(), added revoke() and rename()
+
+2004-03-29  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/tests/Makefile.in: NodeMgr test
+
+	* src/java/us/temerity/pipeline/tests/data/animals/amphibians/frog.txt, src/java/us/temerity/pipeline/tests/data/animals/amphibians/salamander.txt, src/java/us/temerity/pipeline/tests/data/animals/birds/eagle.txt, src/java/us/temerity/pipeline/tests/data/animals/birds/sparrow.txt, src/java/us/temerity/pipeline/tests/data/animals/insects/dragonfly.txt, src/java/us/temerity/pipeline/tests/data/animals/insects/fly.txt, src/java/us/temerity/pipeline/tests/data/animals/reptiles/snake.txt:
+	initial revision
+
+	* src/java/us/temerity/pipeline/tests/TestNodeMgrApp.java:
+	added link() tests
+
+	* src/java/us/temerity/pipeline/message/NodeLinkReq.java, src/java/us/temerity/pipeline/message/NodeUnlinkReq.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/message/NodeModifyPropertiesReq.java, src/java/us/temerity/pipeline/message/NodeRequest.java:
+	added serialVersionUID
+
+	* src/java/us/temerity/pipeline/core/DownstreamLinks.java:
+	intial revision
+
+	* src/java/us/temerity/pipeline/core/NodeMgrServer.java:
+	added Link/Unlink requests, added call to NodeMgr.shutdown() when server thread exits
+
+	* src/java/us/temerity/pipeline/core/NodeMgr.java:
+	added lock file, support for DownstreamLinks and locks, link() method fully functional, added read/writeCheckedInVersion() methods, added downstream link rebuilding on startup
+
+	* src/java/us/temerity/pipeline/core/Logs.java:
+	added import of glue package
+
+	* src/java/us/temerity/pipeline/NodeMod.java, src/java/us/temerity/pipeline/NodeVersion.java:
+	fixed bug in getSource() which didn't handle the null case correctly
+
+	* src/java/us/temerity/pipeline/NodeMgrClient.java:
+	added link() and unlink()
+
+	* src/java/us/temerity/pipeline/LinkCatagory.java:
+	made constructors public
+
+2004-03-28  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/tests/TestNodeMgrApp.java:
+	added ModifyProperties request
+
+	* src/java/us/temerity/pipeline/message/NodeModifyPropertiesReq.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/message/NodeRequest.java:
+	added ModifyProperties
+
+	* src/java/us/temerity/pipeline/message/NodeRegisterReq.java:
+	added checks for initial working version and lack of source links
+
+	* src/java/us/temerity/pipeline/core/PackageInfo.java.in:
+	added sServerTimeOut
+
+	* src/java/us/temerity/pipeline/core/NodeMgrServer.java:
+	improved networking messages, proper socket shutdown
+
+	* src/java/us/temerity/pipeline/core/NodeMgr.java:
+	added modifyProperties(), I/O support for working versions
+
+	* src/java/us/temerity/pipeline/core/FileMgrServer.java:
+	improved networking messages, proper socket shutdown
+
+	* src/java/us/temerity/pipeline/core/FileMgrClient.java: comments
+
+	* src/java/us/temerity/pipeline/NodeMod.java, src/java/us/temerity/pipeline/NodeVersion.java:
+	added hasSources()
+
+	* src/java/us/temerity/pipeline/NodeMgrClient.java:
+	added modifyProperties()
+
+2004-03-26  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/message/NodeGetWorkingReq.java, src/java/us/temerity/pipeline/message/NodeGetWorkingRsp.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/message/FileRequest.java, src/java/us/temerity/pipeline/message/FileStateRsp.java, src/java/us/temerity/pipeline/message/NodeRegisterReq.java, src/java/us/temerity/pipeline/message/NodeRequest.java, src/java/us/temerity/pipeline/tests/Makefile.in, src/java/us/temerity/pipeline/tests/TestFileMgrApp.java, src/java/us/temerity/pipeline/tests/TestNodeMgrApp.java:
+	renamed Shutdown to Disconnect, redefined Shutdown to mean halt the serversrc/java/us/temerity/pipeline/message/FileRequest.java src/java/us/temerity/pipeline/message/NodeRequest.java
+
+	* src/java/us/temerity/pipeline/core/NodeMgr.java:
+	adde getWorkingVersion()
+
+	* src/java/us/temerity/pipeline/core/FileMgr.java:
+	now chmod's the checksums to writable is the isEditable flag is set for checkOut() and unfreeze()
+
+	* src/java/us/temerity/pipeline/core/NodeMgrServer.java:
+	added get working version, renamed shutdown() to disconnect(), added new shutdown() which halts the server
+
+	* src/java/us/temerity/pipeline/core/FileMgrClient.java, src/java/us/temerity/pipeline/core/FileMgrServer.java:
+	renamed shutdown() to disconnect(), added new shutdown() which halts the server
+
+	* src/java/us/temerity/pipeline/NodeMgrClient.java:
+	added get working version, renamed shutdown() to disconnect(), added new shutdown() which halts the server
+
+	* src/java/us/temerity/pipeline/tests/Makefile.in: latest
+
+	* src/java/us/temerity/pipeline/tests/TestFileMgrApp.java, src/java/us/temerity/pipeline/message/FileUnfreezeReq.java:
+	added isEditable
+
+	* src/java/us/temerity/pipeline/message/FileCheckOutReq.java: comments
+
+	* src/java/us/temerity/pipeline/core/NodeMgr.java:
+	reorganized to be consistent with the FileMgr classes
+
+	* src/java/us/temerity/pipeline/core/FileMgrServer.java, src/java/us/temerity/pipeline/core/FileMgrClient.java:
+	comments
+
+	* src/java/us/temerity/pipeline/core/FileMgr.java:
+	renamed file generation methods
+
+	* src/java/us/temerity/pipeline/NodeMgrClient.java, src/java/us/temerity/pipeline/core/NodeMgrServer.java, src/java/us/temerity/pipeline/message/NodeRegisterReq.java, src/java/us/temerity/pipeline/message/NodeRequest.java, src/java/us/temerity/pipeline/tests/TestNodeMgrApp.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/NodeID.java:
+	renamed file generation methods
+
+	* src/java/us/temerity/pipeline/Makefile.in:
+	added NodeRequest to the enum list
+
+2004-03-25  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/core/NodeMgr.java:
+	new FileMgr-like locking scheme
+
+	* src/java/us/temerity/pipeline/core/FileMgr.java:
+	comments, renamed locking fields and methods
+
+2004-03-23  Jim Callahan  <jim@salamander>
+
+	* docs/javadoc/Makefile.in: added glue package
+
+	* src/java/us/temerity/pipeline/glue/package.html: initial revision
+
+	* src/java/us/temerity/pipeline/Makefile.in:
+	fixed a bug in the GLUE_SOURCES variable
+
+	* src/java/us/temerity/pipeline/glue/GlueDecoder.java, src/java/us/temerity/pipeline/glue/GlueEncoder.java, src/java/us/temerity/pipeline/glue/GlueParserState.java, src/java/us/temerity/pipeline/glue/Glueable.java:
+	comments
+
+	* rpm/install-header.in: new license agreement
+
+	* plconfig/CryptoApp.class, plconfig/plconfig-1.3.0-i686-rpm.bin:
+	latest
+
+	* src/java/us/temerity/pipeline/BaseAction.java, src/java/us/temerity/pipeline/FilePattern.java, src/java/us/temerity/pipeline/FileSeq.java, src/java/us/temerity/pipeline/FrameRange.java, src/java/us/temerity/pipeline/JobReqs.java, src/java/us/temerity/pipeline/LinkCatagory.java, src/java/us/temerity/pipeline/LinkCommon.java, src/java/us/temerity/pipeline/Makefile.in, src/java/us/temerity/pipeline/Named.java, src/java/us/temerity/pipeline/NodeCommon.java, src/java/us/temerity/pipeline/NodeID.java, src/java/us/temerity/pipeline/NodeMod.java, src/java/us/temerity/pipeline/NodeVersion.java, src/java/us/temerity/pipeline/VersionID.java, src/java/us/temerity/pipeline/core/LogMessage.java, src/java/us/temerity/pipeline/core/Plugins.java, src/java/us/temerity/pipeline/plugin/FCheckEditor.java, src/java/us/temerity/pipeline/tests/GlueableDude.java, src/java/us/temerity/pipeline/tests/GlueableStuff.java, src/java/us/temerity/pipeline/tests/Makefile.in, src/java/us/temerity/pipeline/tests/NodeTest.java, src/java/us/temerity/pipeline/tests/TestFileSeqApp.java, src/java/us/temerity/pipeline/tests/TestGlueApp.java, src/java/us/temerity/pipeline/tests/TestNodeIDApp.java, src/java/us/temerity/pipeline/tests/TestNodeModVersionApp.java, src/java/us/temerity/pipeline/tests/TestPluginsApp.java:
+	moved GLUE related classes into glue subpackage
+
+	* src/java/us/temerity/pipeline/GlueDecoder.java, src/java/us/temerity/pipeline/GlueEncoder.java, src/java/us/temerity/pipeline/GlueException.java, src/java/us/temerity/pipeline/Glueable.java, src/java/us/temerity/pipeline/core/GlueParser.jj, src/java/us/temerity/pipeline/core/GlueParserState.java, src/java/us/temerity/pipeline/glue/GlueDecoder.java, src/java/us/temerity/pipeline/glue/GlueEncoder.java, src/java/us/temerity/pipeline/glue/GlueException.java, src/java/us/temerity/pipeline/glue/GlueParser.jj, src/java/us/temerity/pipeline/glue/GlueParserState.java, src/java/us/temerity/pipeline/glue/Glueable.java, src/java/us/temerity/pipeline/glue/parser/ParseException.java, src/java/us/temerity/pipeline/glue/parser/SimpleCharStream.java, src/java/us/temerity/pipeline/glue/parser/TokenMgrError.java:
+	moved to glue package
+
+	* src/java/us/temerity/pipeline/FileMgrClient.java, src/java/us/temerity/pipeline/core/FileMgrClient.java:
+	moved to core package
+
+	* src/java/us/temerity/pipeline/ActionParam.java, src/java/us/temerity/pipeline/BaseAction.java, src/java/us/temerity/pipeline/BaseEditor.java, src/java/us/temerity/pipeline/Described.java, src/java/us/temerity/pipeline/ExecPath.java, src/java/us/temerity/pipeline/FileMgrClient.java, src/java/us/temerity/pipeline/FilePattern.java, src/java/us/temerity/pipeline/FileSeq.java, src/java/us/temerity/pipeline/FrameRange.java, src/java/us/temerity/pipeline/GlueDecoder.java, src/java/us/temerity/pipeline/GlueEncoder.java, src/java/us/temerity/pipeline/GlueException.java, src/java/us/temerity/pipeline/Glueable.java, src/java/us/temerity/pipeline/JobReqs.java, src/java/us/temerity/pipeline/LinkCatagory.java, src/java/us/temerity/pipeline/LinkCommon.java, src/java/us/temerity/pipeline/LinkMod.java, src/java/us/temerity/pipeline/LinkVersion.java, src/java/us/temerity/pipeline/Named.java, src/java/us/temerity/pipeline/NodeCommon.java, src/java/us/temerity/pipeline/NodeID.java, src/java/us/temerity/pipeline/NodeMod.java, src/java/us/temerity/pipeline/NodeStatus.java, src/java/us/temerity/pipeline/NodeVersion.java, src/java/us/temerity/pipeline/PipelineException.java, src/java/us/temerity/pipeline/SingleEditor.java, src/java/us/temerity/pipeline/SubProcess.java, src/java/us/temerity/pipeline/VersionID.java, src/java/us/temerity/pipeline/bootstrap/BootApp.java, src/java/us/temerity/pipeline/bootstrap/LicenseException.java, src/java/us/temerity/pipeline/bootstrap/Main.java, src/java/us/temerity/pipeline/core/BaseApp.java, src/java/us/temerity/pipeline/core/CheckSum.java, src/java/us/temerity/pipeline/core/FileCleaner.java, src/java/us/temerity/pipeline/core/FileMgr.java, src/java/us/temerity/pipeline/core/FileMgrApp.java, src/java/us/temerity/pipeline/core/FileMgrServer.java, src/java/us/temerity/pipeline/core/GlueParserState.java, src/java/us/temerity/pipeline/core/LogFormatter.java, src/java/us/temerity/pipeline/core/LogMessage.java, src/java/us/temerity/pipeline/core/Logs.java, src/java/us/temerity/pipeline/core/NativeFileSys.java, src/java/us/temerity/pipeline/core/NativeProcess.java, src/java/us/temerity/pipeline/core/NodeMgr.java, src/java/us/temerity/pipeline/core/Plugins.java, src/java/us/temerity/pipeline/core/TestApp.java, src/java/us/temerity/pipeline/core/Toolsets.java, src/java/us/temerity/pipeline/message/FailureRsp.java, src/java/us/temerity/pipeline/message/FileCheckInReq.java, src/java/us/temerity/pipeline/message/FileCheckOutReq.java, src/java/us/temerity/pipeline/message/FileFreezeReq.java, src/java/us/temerity/pipeline/message/FileStateReq.java, src/java/us/temerity/pipeline/message/FileStateRsp.java, src/java/us/temerity/pipeline/message/FileUnfreezeReq.java, src/java/us/temerity/pipeline/message/SuccessRsp.java, src/java/us/temerity/pipeline/plugin/FCheckEditor.java, src/java/us/temerity/pipeline/plugin/ScriptAction.java:
+	remove [IN] parameter notation comments
+
+	* configure.ac: version 1.3.0
+
+	* src/java/us/temerity/pipeline/core/FileMgrApp.java: comments
+
+	* src/java/us/temerity/pipeline/core/BaseApp.java:
+	moved BootApp into bootstrap package
+
+	* src/java/us/temerity/pipeline/bootstrap/package.html, src/java/us/temerity/pipeline/core/package.html, src/java/us/temerity/pipeline/message/package.html, src/java/us/temerity/pipeline/plugin/package.html:
+	latest
+
+	* src/java/us/temerity/pipeline/bootstrap/Main.java: comments
+
+	* src/java/us/temerity/pipeline/package.html: latest
+
+	* src/java/scripts/pltest.in: latest Main class conventions
+
+	* rpm/Makefile.am: added missing clean rules
+
+	* plconfig/CryptoApp.class, plconfig/plconfig-1.3.0-i686-rpm.bin:
+	version 1.3.0
+
+	* config/bootstrap.sh:
+	moved config files into the <root-dir>/config directory
+
+	* plconfig/plconfig-1.2.0-i686-rpm.bin: obsoleted by plconfig-1.3.0
+
+	* src/java/us/temerity/pipeline/bootstrap/BootStrapLoader.java.in.in:
+	now uses BigInteger encoding for the pipeline.key file
+
+2004-03-22  Jim Callahan  <jim@salamander>
+
+	* docs/javadoc/Makefile.in: now checks for updated package.html files
+
+	* src/java/us/temerity/pipeline/BootApp.java, src/java/us/temerity/pipeline/bootstrap/BootApp.java:
+	moved to bootstrap package
+
+	* src/java/us/temerity/pipeline/NodeStatus.java, src/java/us/temerity/pipeline/core/GlueParserState.java, src/java/us/temerity/pipeline/core/Logs.java, src/java/us/temerity/pipeline/core/NativeProcess.java, src/java/us/temerity/pipeline/core/PosixSignal.java, src/java/us/temerity/pipeline/core/TestApp.java, src/java/us/temerity/pipeline/message/FileCheckInReq.java, src/java/us/temerity/pipeline/message/FileCheckOutReq.java, src/java/us/temerity/pipeline/message/FileFreezeReq.java, src/java/us/temerity/pipeline/message/FileUnfreezeReq.java:
+	javadoc imports
+
+	* src/java/scripts/pltest.in: intial revision
+
+	* src/java/scripts/plfilemgr.in: reorganized jar archives
+
+	* src/java/scripts/Makefile.am: added pltest
+
+	* src/java/Makefile.am: removed testbed SUBDIR
+
+	* plconfig/CryptoApp.class, plconfig/plconfig-1.2.0-i686-rpm.bin:
+	latest
+
+	* docs/javadoc/Makefile.in: added us.temerity.pipeline.core package
+
+	* plconfig/CryptoApp.class, plconfig/plconfig-1.2.0-i686-rpm.bin:
+	code vault fully funtional
+
+	* src/java/us/temerity/pipeline/BootApp.java, src/java/us/temerity/pipeline/bootstrap/BootStrapLoader.java.in.in, src/java/us/temerity/pipeline/bootstrap/LicenseException.java, src/java/us/temerity/pipeline/bootstrap/Main.java, src/java/us/temerity/pipeline/bootstrap/TimeService.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/core/BaseApp.java, src/java/us/temerity/pipeline/core/CheckSum.java, src/java/us/temerity/pipeline/core/FileCleaner.java, src/java/us/temerity/pipeline/core/FileMgr.java, src/java/us/temerity/pipeline/core/FileMgrApp.java, src/java/us/temerity/pipeline/core/FileMgrOptsParser.jj, src/java/us/temerity/pipeline/core/FileMgrServer.java, src/java/us/temerity/pipeline/core/GlueParser.jj, src/java/us/temerity/pipeline/core/GlueParserState.java, src/java/us/temerity/pipeline/core/LogFormatter.java, src/java/us/temerity/pipeline/core/LogMessage.java, src/java/us/temerity/pipeline/core/Logs.java, src/java/us/temerity/pipeline/core/Native.java, src/java/us/temerity/pipeline/core/NativeFileSys.java, src/java/us/temerity/pipeline/core/NativeProcess.java, src/java/us/temerity/pipeline/core/NodeMgr.java, src/java/us/temerity/pipeline/core/PackageInfo.java.in, src/java/us/temerity/pipeline/core/Plugins.java, src/java/us/temerity/pipeline/core/PosixSignal.java, src/java/us/temerity/pipeline/core/TestApp.java, src/java/us/temerity/pipeline/core/ToolsetEnvParser.jj, src/java/us/temerity/pipeline/core/Toolsets.java, src/java/us/temerity/pipeline/core/package.html, src/java/us/temerity/pipeline/core/parser/ParseException.java, src/java/us/temerity/pipeline/core/parser/SimpleCharStream.java, src/java/us/temerity/pipeline/core/parser/TokenMgrError.java, src/java/us/temerity/pipeline/BaseAction.java, src/java/us/temerity/pipeline/FileMgrClient.java, src/java/us/temerity/pipeline/FileSeq.java, src/java/us/temerity/pipeline/GlueDecoder.java, src/java/us/temerity/pipeline/Makefile.in, src/java/us/temerity/pipeline/NodeMod.java, src/java/us/temerity/pipeline/NodeVersion.java, src/java/us/temerity/pipeline/SubProcess.java, src/java/us/temerity/pipeline/message/FailureRsp.java, src/java/us/temerity/pipeline/message/FileRequest.java, src/java/us/temerity/pipeline/message/FileStateRsp.java, src/java/us/temerity/pipeline/message/SuccessRsp.java, src/java/us/temerity/pipeline/message/package.html, src/java/us/temerity/pipeline/native/NativeFileSys.cc, src/java/us/temerity/pipeline/native/NativeFileSys.hh, src/java/us/temerity/pipeline/native/NativeProcess.cc, src/java/us/temerity/pipeline/native/NativeProcess.hh, src/java/us/temerity/pipeline/package.html, src/java/us/temerity/pipeline/plugin/Makefile.in, src/java/us/temerity/pipeline/plugin/ScriptAction.java, src/java/us/temerity/pipeline/tests/Makefile.in, src/java/us/temerity/pipeline/tests/TestCheckSumApp.java, src/java/us/temerity/pipeline/tests/TestFileMgrApp.java, src/java/us/temerity/pipeline/tests/TestNativeFileSysApp.java, src/java/us/temerity/pipeline/tests/TestNodeModVersionApp.java, src/java/us/temerity/pipeline/tests/TestPluginsApp.java, src/java/us/temerity/pipeline/tests/TestSubProcessApp.java, src/java/us/temerity/pipeline/tests/TestToolsetsApp.java:
+	split core classes out into the us.temerity.pipeline.core package
+
+	* src/java/us/temerity/pipeline/BaseApp.java, src/java/us/temerity/pipeline/CheckSum.java, src/java/us/temerity/pipeline/FileCleaner.java, src/java/us/temerity/pipeline/FileMgr.java, src/java/us/temerity/pipeline/FileMgrApp.java, src/java/us/temerity/pipeline/FileMgrOptsParser.jj, src/java/us/temerity/pipeline/FileMgrServer.java, src/java/us/temerity/pipeline/GlueParser.jj, src/java/us/temerity/pipeline/GlueParserState.java, src/java/us/temerity/pipeline/LogFormatter.java, src/java/us/temerity/pipeline/LogMessage.java, src/java/us/temerity/pipeline/Logs.java, src/java/us/temerity/pipeline/Native.java, src/java/us/temerity/pipeline/NativeFileSys.java, src/java/us/temerity/pipeline/NativeProcess.java, src/java/us/temerity/pipeline/NodeMgr.java, src/java/us/temerity/pipeline/PackageInfo.java.in, src/java/us/temerity/pipeline/Plugins.java, src/java/us/temerity/pipeline/PosixSignal.java, src/java/us/temerity/pipeline/ToolsetEnvParser.jj, src/java/us/temerity/pipeline/Toolsets.java, src/java/us/temerity/pipeline/parser/ParseException.java, src/java/us/temerity/pipeline/parser/SimpleCharStream.java, src/java/us/temerity/pipeline/parser/TokenMgrError.java:
+	moved to us.temerity.pipeline.core package
+
+	* configure.ac: added BootStrapLoader and pltest
+
+	* data/Makefile.am, rpm/pipeline.spec.in:
+	reorgamized jar and plugin locations
+
+	* plconfig/CryptoApp.class, plconfig/plconfig-1.2.0-i686-rpm.bin:
+	fully operational
+
+2004-03-21  Jim Callahan  <jim@salamander>
+
+	* src/utils/src/HtmlHelp.hh, src/utils/src/Pls.cc, src/utils/src/RealPath.cc:
+	fixed mozilla help browsing
+
+	* src/java/us/temerity/pipeline/FileMgrApp.java: fixed usage message
+
+	* src/utils/src/HtmlHelp.hh, src/java/us/temerity/pipeline/BaseApp.java, src/java/us/temerity/pipeline/SubProcess.java:
+	no longer relies on hardcoded paths to utility programs
+
+	* src/java/scripts/plfilemgr.in, src/java/scripts/pltest-dnotify.in, src/java/scripts/pltest-fam.in, src/java/scripts/plui.in, src/java/us/temerity/pipeline/PackageInfo.java.in, src/utils/src/PackageInfo.cc.in:
+	now fully uses CryptoApp and the customer profile to generate configure params
+
+	* docs/man/pipeline.html.in, docs/manuals/bits.html, docs/manuals/index.html:
+	made link paths relative
+
+	* data/fonts/CharterBTRoman/Makefile.am, data/fonts/UtopiaBold/Makefile.am, data/icons/Makefile.am, data/splash/Makefile.am, docs/images/Makefile.am, docs/javadoc/Makefile.in, docs/man/Makefile.am, docs/manuals/Makefile.am, src/database/scripts/Makefile.am, src/java/scripts/Makefile.am, src/java/share/Makefile.am, src/java/us/temerity/pipeline/Makefile.in, src/java/us/temerity/pipeline/native/Makefile.am, src/java/us/temerity/pipeline/plugin/Makefile.in, src/java/us/temerity/pipeline/tests/Makefile.in, src/utils/src/Makefile.am:
+	now fully uses CryptoApp and the customer profile to generate configure params
+
+	* data/Makefile.am: now packs all the data files into a JAR file
+
+	* config/bootstrap.sh, configure.ac:
+	now fully uses CryptoApp and the customer profile to generate configure params
+
+	* rpm/.cvsignore, rpm/Makefile.am, rpm/install-header.in, rpm/pipeline.spec.in, rpm/rpmmacros.in, rpm/rpmrc.in:
+	initial revision
+
+	* docs/man/pldispatcher.html.in, docs/man/plget.html.in, docs/man/plput.html.in, docs/man/plserver.html.in, docs/misc/pid-workaround.txt, src/java/scripts/pipeline.in, src/java/scripts/pldispatcher.in, src/java/scripts/plserver.in, src/java/scripts/pltest-rwlock.in, src/java/scripts/plui-prof.in, src/java/scripts/texture-tester.in:
+	obsolete
+
+2004-03-20  Jim Callahan  <jim@salamander>
+
+	* plconfig/CryptoApp.class, plconfig/plconfig-1.2.0-i686-rpm.bin:
+	latest
+
+	* plconfig/CryptoApp.class, plconfig/plconfig-1.2.0-i686-rpm.bin:
+	version 1.2.0 of plconfig(1)
+
+	* plconfig/plconfig-1.1.0-i686-rpm.bin:
+	replaced by plconfig/plconfig-1.2.0-i686-rpm.bin
+
+	* plconfig/CryptoApp.class: latest
+
+	* plconfig/plconfig-1.1.0-1.i686.rpm:
+	replaced with plconfig-1.1.0-i686-rpm.bin
+
+	* plconfig/plconfig-1.1.0-i686-rpm.bin: initial revision
+
+2004-03-19  Jim Callahan  <jim@salamander>
+
+	* COPYING: added 2004, removed 2001
+
+	* docs/javadoc/Makefile.in, src/java/us/temerity/pipeline/Makefile.in, src/java/us/temerity/pipeline/plugin/Makefile.in:
+	added DESTDIR to install targets
+
+	* docs/man/plfilemgr.html: removed some Java class links
+
+	* plconfig/CryptoApp.class, plconfig/plconfig-1.1.0-1.i686.rpm:
+	initial revision
+
+	* docs/man/plconfig.html: moved to the plconfig source tree
+
+2004-03-16  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/tests/TestFileMgrApp.java:
+	renamed computeFileStates() to states(), moved refreshCheckSums() internal to checkIn()
+
+	* src/java/us/temerity/pipeline/message/FileRequest.java:
+	obsoleted FileCheckSumReq
+
+	* src/java/us/temerity/pipeline/message/FileCheckSumReq.java: obsolete
+
+	* src/java/us/temerity/pipeline/FileMgr.java, src/java/us/temerity/pipeline/FileMgrClient.java, src/java/us/temerity/pipeline/FileMgrServer.java:
+	renamed computeFileStates() to states(), moved refreshCheckSums() internal to checkIn()
+
+	* src/java/us/temerity/pipeline/message/FileUnfreezeReq.java, src/java/us/temerity/pipeline/tests/TestFileMgrApp.java:
+	added working revision number field
+
+	* src/java/us/temerity/pipeline/FileMgrClient.java, src/java/us/temerity/pipeline/FileMgrServer.java, src/java/us/temerity/pipeline/FileMgr.java:
+	implemented freeze() and unfreeze()
+
+	* src/java/us/temerity/pipeline/NodeCommon.java: added hasAction()
+
+	* src/java/us/temerity/pipeline/FileMgr.java, src/java/us/temerity/pipeline/FileMgrClient.java, src/java/us/temerity/pipeline/FileMgrServer.java, src/java/us/temerity/pipeline/message/FileCheckOutReq.java, src/java/us/temerity/pipeline/tests/TestFileMgrApp.java:
+	check-out implemented
+
+2004-03-15  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/tests/Makefile.in: added FileMgr test
+
+	* src/java/us/temerity/pipeline/Makefile.in:
+	improved compliation of enum classes first
+
+	* src/java/us/temerity/pipeline/tests/TestFileMgrApp.java:
+	checkIn now works
+
+	* src/java/us/temerity/pipeline/tests/TestCheckSumApp.java:
+	removed memory-mapped refresh()
+
+	* src/java/us/temerity/pipeline/message/FileStateReq.java:
+	better argument checking
+
+	* src/java/us/temerity/pipeline/message/FileRequest.java: comments
+
+	* src/java/us/temerity/pipeline/message/FileCheckInReq.java:
+	added per-file FileStates
+
+	* src/java/us/temerity/pipeline/OverflowPolicy.java: comments
+
+	* src/java/us/temerity/pipeline/NodeMod.java:
+	changed argument type of batchSize to Integer from int, validates secondary sequence names
+
+	* src/java/us/temerity/pipeline/NodeID.java:
+	fixed bug in getCheckedInDir()
+
+	* src/java/us/temerity/pipeline/NodeCommon.java:
+	added validatePrefix(), now restricts secondary file sequences to be located in the same directory as the primary sequence
+
+	* src/java/us/temerity/pipeline/FileMgrServer.java, src/java/us/temerity/pipeline/FileMgrClient.java, src/java/us/temerity/pipeline/FileMgr.java:
+	implemented checkIn()
+
+	* src/java/us/temerity/pipeline/CheckSum.java:
+	got rid of memory-mapped checksum generation, creates new MessageDigest for each refresh()
+
+	* docs/man/plconfig.html, docs/misc/comments.html, src/java/us/temerity/pipeline/tests/data/primary.0014.tif, src/java/us/temerity/pipeline/tests/data/selected.0010.tif, src/java/us/temerity/pipeline/tests/data/selected.0032.tif, src/java/us/temerity/pipeline/tests/data/primary.0011.tif, src/java/us/temerity/pipeline/tests/data/primary.0012.tif, src/java/us/temerity/pipeline/tests/data/primary.0013.tif:
+	initial revision
+
+2004-03-13  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/ExecutionMethod.java, src/java/us/temerity/pipeline/LinkCatagory.java, src/java/us/temerity/pipeline/LinkCommon.java, src/java/us/temerity/pipeline/LinkMod.java, src/java/us/temerity/pipeline/LinkPolicy.java, src/java/us/temerity/pipeline/LinkRelationship.java, src/java/us/temerity/pipeline/LinkVersion.java, src/java/us/temerity/pipeline/OverflowPolicy.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/tests/TestFileMgrApp.java:
+	converted from Depend* classes to Link* classes
+
+	* src/java/us/temerity/pipeline/message/FileRequest.java: comments
+
+	* src/java/us/temerity/pipeline/package.html: fixed title of page
+
+	* src/java/us/temerity/pipeline/Plugins.java:
+	new plugin installation path
+
+	* src/java/us/temerity/pipeline/NodeCommon.java, src/java/us/temerity/pipeline/NodeMod.java, src/java/us/temerity/pipeline/NodeVersion.java, src/java/us/temerity/pipeline/tests/TestNodeModVersionApp.java:
+	converted from Depend* classes to Link* classes
+
+	* src/java/us/temerity/pipeline/JobReqs.java: added defaultJobReqs()
+
+	* src/java/us/temerity/pipeline/DependCommon.java, src/java/us/temerity/pipeline/DependMod.java, src/java/us/temerity/pipeline/DependVersion.java:
+	replaced by Link* classes
+
+2004-03-12  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/tests/TestFileMgrApp.java:
+	refreshCheckSums() and computeFileStates() tests working
+
+	* src/java/us/temerity/pipeline/FileMgrServer.java:
+	added Shutdown to FileRequest
+
+	* src/java/us/temerity/pipeline/FileMgrClient.java:
+	made shutdown() public
+
+	* src/java/us/temerity/pipeline/FileMgr.java:
+	added timing information and log messages
+
+	* src/java/us/temerity/pipeline/message/package.html, src/java/us/temerity/pipeline/package.html, src/java/us/temerity/pipeline/plugin/package.html:
+	intial revision
+
+	* src/java/us/temerity/pipeline/message/FailureRsp.java, src/java/us/temerity/pipeline/message/FileRequest.java, src/java/us/temerity/pipeline/message/FileStateRsp.java, src/java/us/temerity/pipeline/message/SuccessRsp.java:
+	added timing information and log messages
+
+	* src/java/us/temerity/pipeline/CheckSum.java:
+	added a second attempt to create the checksum directory to deal with a multiprocessing conflict
+
+	* src/java/us/temerity/pipeline/tests/data/selected.0040.tif, src/java/us/temerity/pipeline/tests/data/selected.0041.tif, src/java/us/temerity/pipeline/tests/data/selected.0042.tif, src/java/us/temerity/pipeline/tests/data/selected.0043.tif, src/java/us/temerity/pipeline/tests/data/selected.0037.tif, src/java/us/temerity/pipeline/tests/data/selected.0038.tif, src/java/us/temerity/pipeline/tests/data/selected.0039.tif, src/java/us/temerity/pipeline/tests/data/selected.0029.tif, src/java/us/temerity/pipeline/tests/data/selected.0030.tif, src/java/us/temerity/pipeline/tests/data/selected.0031.tif, src/java/us/temerity/pipeline/tests/data/selected.0033.tif, src/java/us/temerity/pipeline/tests/data/selected.0034.tif, src/java/us/temerity/pipeline/tests/data/selected.0035.tif, src/java/us/temerity/pipeline/tests/data/selected.0036.tif, src/java/us/temerity/pipeline/tests/data/selected.0008.tif, src/java/us/temerity/pipeline/tests/data/selected.0009.tif, src/java/us/temerity/pipeline/tests/data/selected.0011.tif, src/java/us/temerity/pipeline/tests/data/selected.0012.tif, src/java/us/temerity/pipeline/tests/data/selected.0013.tif, src/java/us/temerity/pipeline/tests/data/selected.0014.tif, src/java/us/temerity/pipeline/tests/data/selected.0015.tif, src/java/us/temerity/pipeline/tests/data/selected.0016.tif, src/java/us/temerity/pipeline/tests/data/selected.0017.tif, src/java/us/temerity/pipeline/tests/data/selected.0018.tif, src/java/us/temerity/pipeline/tests/data/selected.0019.tif, src/java/us/temerity/pipeline/tests/data/selected.0020.tif, src/java/us/temerity/pipeline/tests/data/selected.0021.tif, src/java/us/temerity/pipeline/tests/data/selected.0022.tif, src/java/us/temerity/pipeline/tests/data/selected.0023.tif, src/java/us/temerity/pipeline/tests/data/selected.0024.tif, src/java/us/temerity/pipeline/tests/data/selected.0025.tif, src/java/us/temerity/pipeline/tests/data/selected.0026.tif, src/java/us/temerity/pipeline/tests/data/selected.0027.tif, src/java/us/temerity/pipeline/tests/data/selected.0028.tif, src/java/us/temerity/pipeline/tests/data/primary.0034.tif, src/java/us/temerity/pipeline/tests/data/primary.0035.tif, src/java/us/temerity/pipeline/tests/data/primary.0036.tif, src/java/us/temerity/pipeline/tests/data/primary.0037.tif, src/java/us/temerity/pipeline/tests/data/primary.0038.tif, src/java/us/temerity/pipeline/tests/data/primary.0039.tif, src/java/us/temerity/pipeline/tests/data/primary.0040.tif, src/java/us/temerity/pipeline/tests/data/primary.0041.tif, src/java/us/temerity/pipeline/tests/data/primary.0042.tif, src/java/us/temerity/pipeline/tests/data/primary.0043.tif, src/java/us/temerity/pipeline/tests/data/selected.0000.tif, src/java/us/temerity/pipeline/tests/data/selected.0001.tif, src/java/us/temerity/pipeline/tests/data/selected.0002.tif, src/java/us/temerity/pipeline/tests/data/selected.0003.tif, src/java/us/temerity/pipeline/tests/data/selected.0004.tif, src/java/us/temerity/pipeline/tests/data/selected.0005.tif, src/java/us/temerity/pipeline/tests/data/selected.0006.tif, src/java/us/temerity/pipeline/tests/data/selected.0007.tif, src/java/us/temerity/pipeline/tests/data/primary.0015.tif, src/java/us/temerity/pipeline/tests/data/primary.0016.tif, src/java/us/temerity/pipeline/tests/data/primary.0017.tif, src/java/us/temerity/pipeline/tests/data/primary.0018.tif, src/java/us/temerity/pipeline/tests/data/primary.0019.tif, src/java/us/temerity/pipeline/tests/data/primary.0020.tif, src/java/us/temerity/pipeline/tests/data/primary.0021.tif, src/java/us/temerity/pipeline/tests/data/primary.0022.tif, src/java/us/temerity/pipeline/tests/data/primary.0023.tif, src/java/us/temerity/pipeline/tests/data/primary.0024.tif, src/java/us/temerity/pipeline/tests/data/primary.0025.tif, src/java/us/temerity/pipeline/tests/data/primary.0026.tif, src/java/us/temerity/pipeline/tests/data/primary.0027.tif, src/java/us/temerity/pipeline/tests/data/primary.0028.tif, src/java/us/temerity/pipeline/tests/data/primary.0029.tif, src/java/us/temerity/pipeline/tests/data/primary.0030.tif, src/java/us/temerity/pipeline/tests/data/primary.0031.tif, src/java/us/temerity/pipeline/tests/data/primary.0032.tif, src/java/us/temerity/pipeline/tests/data/primary.0033.tif, src/java/us/temerity/pipeline/tests/data/primary.0005.tif, src/java/us/temerity/pipeline/tests/data/primary.0006.tif, src/java/us/temerity/pipeline/tests/data/primary.0007.tif, src/java/us/temerity/pipeline/tests/data/primary.0008.tif, src/java/us/temerity/pipeline/tests/data/primary.0009.tif, src/java/us/temerity/pipeline/tests/data/primary.0010.tif, src/java/us/temerity/pipeline/tests/data/normal.0041.tif, src/java/us/temerity/pipeline/tests/data/normal.0042.tif, src/java/us/temerity/pipeline/tests/data/normal.0043.tif, src/java/us/temerity/pipeline/tests/data/primary.0000.tif, src/java/us/temerity/pipeline/tests/data/primary.0001.tif, src/java/us/temerity/pipeline/tests/data/primary.0002.tif, src/java/us/temerity/pipeline/tests/data/primary.0003.tif, src/java/us/temerity/pipeline/tests/data/primary.0004.tif, src/java/us/temerity/pipeline/tests/data/normal.0022.tif, src/java/us/temerity/pipeline/tests/data/normal.0023.tif, src/java/us/temerity/pipeline/tests/data/normal.0024.tif, src/java/us/temerity/pipeline/tests/data/normal.0025.tif, src/java/us/temerity/pipeline/tests/data/normal.0026.tif, src/java/us/temerity/pipeline/tests/data/normal.0027.tif, src/java/us/temerity/pipeline/tests/data/normal.0028.tif, src/java/us/temerity/pipeline/tests/data/normal.0029.tif, src/java/us/temerity/pipeline/tests/data/normal.0030.tif, src/java/us/temerity/pipeline/tests/data/normal.0031.tif, src/java/us/temerity/pipeline/tests/data/normal.0032.tif, src/java/us/temerity/pipeline/tests/data/normal.0033.tif, src/java/us/temerity/pipeline/tests/data/normal.0034.tif, src/java/us/temerity/pipeline/tests/data/normal.0035.tif, src/java/us/temerity/pipeline/tests/data/normal.0036.tif, src/java/us/temerity/pipeline/tests/data/normal.0037.tif, src/java/us/temerity/pipeline/tests/data/normal.0038.tif, src/java/us/temerity/pipeline/tests/data/normal.0039.tif, src/java/us/temerity/pipeline/tests/data/normal.0040.tif, src/java/us/temerity/pipeline/tests/data/normal.0000.tif, src/java/us/temerity/pipeline/tests/data/normal.0001.tif, src/java/us/temerity/pipeline/tests/data/normal.0002.tif, src/java/us/temerity/pipeline/tests/data/normal.0003.tif, src/java/us/temerity/pipeline/tests/data/normal.0004.tif, src/java/us/temerity/pipeline/tests/data/normal.0005.tif, src/java/us/temerity/pipeline/tests/data/normal.0006.tif, src/java/us/temerity/pipeline/tests/data/normal.0007.tif, src/java/us/temerity/pipeline/tests/data/normal.0008.tif, src/java/us/temerity/pipeline/tests/data/normal.0009.tif, src/java/us/temerity/pipeline/tests/data/normal.0011.tif, src/java/us/temerity/pipeline/tests/data/normal.0013.tif, src/java/us/temerity/pipeline/tests/data/normal.0015.tif, src/java/us/temerity/pipeline/tests/data/normal.0016.tif, src/java/us/temerity/pipeline/tests/data/normal.0017.tif, src/java/us/temerity/pipeline/tests/data/normal.0018.tif, src/java/us/temerity/pipeline/tests/data/normal.0019.tif, src/java/us/temerity/pipeline/tests/data/normal.0020.tif, src/java/us/temerity/pipeline/tests/data/normal.0021.tif:
+	initial revision
+
+	* src/utils/src/HtmlHelp.hh, src/utils/src/Pls.cc, src/utils/src/RealPath.cc:
+	moved mozilla(1) launching to HtmlHelp class
+
+	* src/utils/src/Makefile.am: moved realpath(1) to user binary directory
+
+	* src/java/us/temerity/pipeline/plugin/Makefile.in:
+	fixed install path to be consistent with new us.temerity.pipeline package name
+
+	* src/java/us/temerity/pipeline/Makefile.in:
+	fixed bug in installdirs target
+
+	* src/java/scripts/plfilemgr.in: fixed bug in CLASSPATH
+
+	* src/java/scripts/Makefile.am:
+	plfilemgr now only runnable by pipeline.pipeline user
+
+	* docs/man/plfilemgr.html, docs/man/pls.html, docs/man/realpath.html:
+	up to date
+
+	* config/bootstrap.sh:
+	changed --prefix/--datadir to remove obsolete "pipeline" subdir
+
+	* docs/man/Makefile.am, docs/man/plfilemgr.html, docs/man/pls.html, docs/man/pls.html.in, docs/man/realpath.html, docs/man/realpath.html.in:
+	updated manual pages
+
+	* src/java/us/temerity/pipeline/tests/Makefile.in:
+	split tests into interactive and non-interactive
+
+	* src/java/us/temerity/pipeline/Makefile.in: added FileMgrOptsParser
+
+	* src/java/us/temerity/pipeline/PackageInfo.java.in: comments
+
+	* src/java/us/temerity/pipeline/Logs.java:
+	loggers now prefixed with us.temerity.pipeine instead of just pipeline
+
+	* src/java/us/temerity/pipeline/LogFormatter.java:
+	now prefixed log messages with the name of the logger
+
+	* src/java/us/temerity/pipeline/FileMgrServer.java, src/java/us/temerity/pipeline/FileMgrClient.java:
+	refreshCheckSums() and computeFileStates() fully implemented, but untested
+
+	* docs/man/plfs.html.in: replaced by plfilemgr.html
+
+	* docs/man/plfilemgr.html, src/java/scripts/plfilemgr.in, src/java/us/temerity/pipeline/BaseApp.java, src/java/us/temerity/pipeline/FileMgrApp.java, src/java/us/temerity/pipeline/FileMgrOptsParser.jj, src/java/us/temerity/pipeline/tests/TestFileMgrApp.java:
+	initial revision
+
+	* src/java/share/logger.properties:
+	updated for us.temerity.pipeline package path
+
+	* docs/man/Makefile.am, src/java/scripts/Makefile.am, configure.ac:
+	removed obsolete scripts and docs
+
+2004-03-11  Jim Callahan  <jim@salamander>
+
+	* src/java/us/temerity/pipeline/tests/NodeTest.java, src/java/us/temerity/pipeline/tests/TestNodeModVersionApp.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/VersionID.java: now is Glueable
+
+	* src/java/us/temerity/pipeline/NodeVersion.java:
+	added missing initialization of pSources, fixed bug in decoding log messages in fromGlue()
+
+	* src/java/us/temerity/pipeline/NodeMod.java:
+	loosened the restrictions on the frame range if there are no primary file sequences for adjustFrameRange(), added removeAllSecondarySequences(), more argument checks in setProperties()
+
+	* src/java/us/temerity/pipeline/JobReqs.java:
+	added missing initialization of pLicenseKeys and pSelectionKeys
+
+	* src/java/us/temerity/pipeline/message/FileRequest.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/tests/TestFileSeqApp.java:
+	added more assertions
+
+	* src/java/us/temerity/pipeline/JobReqs.java:
+	changed licenseKeys and seletionKeys arguments to the constructor to Set from Collection
+
+	* src/java/us/temerity/pipeline/CheckSum.java:
+	additional checks for failure of mkdirs()
+
+	* src/java/us/temerity/pipeline/NodeMod.java:
+	uses validateName() in rename(), fixed a bug in getVersionID() which caused it to fail if (null), added existance check in setToolset()
+
+	* src/java/us/temerity/pipeline/NodeCommon.java:
+	added validateName(), now uses it to check the name during construction
+
+	* src/java/us/temerity/pipeline/SubProcess.java: comments
+
+	* src/java/us/temerity/pipeline/Plugins.java:
+	added check to make sure the plugins have been initialized before trying to load one
+
+	* src/java/us/temerity/pipeline/GlueEncoder.java, src/java/us/temerity/pipeline/GlueParser.jj:
+	now strips on write and adds on read the common class prefixes: java.lang, java.util, us.temerity.pipeline
+
+2004-03-10  Jim Callahan  <jim@salamander>
+
+	* ChangeLog: latest
+
+	* ChangeLog, src/java/us/temerity/pipeline/tests/Makefile.in, src/java/us/temerity/pipeline/tests/TestCheckSumApp.java, src/java/us/temerity/pipeline/tests/TestNodeIDApp.java:
+	updated for new configure optionssrc/java/us/temerity/pipeline/tests/Makefile.in
+
+	* src/java/us/temerity/pipeline/plugin/Makefile.in:
+	updated for new configure options
+
+	* src/java/us/temerity/pipeline/message/FileStateRsp.java: comments
+
+	* src/java/us/temerity/pipeline/message/FileStateReq.java:
+	added VersionState
+
+	* src/java/us/temerity/pipeline/FileMgr.java, src/java/us/temerity/pipeline/FileMgrClient.java, src/java/us/temerity/pipeline/FileMgrServer.java:
+	initial revision
+
+	* src/java/us/temerity/pipeline/NodeMgr.java:
+	moved node file related comments over to FileMgr
+
+	* src/java/us/temerity/pipeline/NodeID.java:
+	replaced getDir() and getBase() with getParent(), getWorkingDir() and getCheckedInDir()
+
+	* src/java/us/temerity/pipeline/FileState.java:
+	added the Obsolete state, comment changes
+
+	* src/java/us/temerity/pipeline/CheckSum.java:
+	the root checksum directory is now derived from the root production directory
+
+	* src/java/us/temerity/pipeline/Makefile.in, src/java/us/temerity/pipeline/PackageInfo.java.in, src/utils/src/PackageInfo.cc.in, src/utils/src/PackageInfo.hh:
+	updated for new configure options
+
+	* docs/man/plfs.html.in, docs/misc/file-state.txt, docs/misc/locking.txt, docs/misc/plfs.txt:
+	initial revision
+
+	* configure.ac:
+	replaced --with-pl-server and --with-pl-port options with --with-master-server, --with-master-port, --with-file-server and --with-file-port options
+
 2004-03-10  Jim Callahan  <jim@salamander>
 
 	* ChangeLog, src/java/us/temerity/pipeline/tests/Makefile.in, src/java/us/temerity/pipeline/tests/TestCheckSumApp.java, src/java/us/temerity/pipeline/tests/TestNodeIDApp.java:

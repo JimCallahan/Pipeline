@@ -1,4 +1,4 @@
-// $Id: TestFileMgrApp.java,v 1.10 2004/03/26 19:13:17 jim Exp $
+// $Id: TestFileMgrApp.java,v 1.11 2004/04/17 19:49:02 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -216,9 +216,10 @@ class TestFileMgrApp
 	      }
 	      
 	      {
-		TreeMap<FileSeq, FileState[]> states = 
-		  client.states(pNodeID, pNodeMod, vstate, lvid);
-		printStates(states);
+		TreeMap<FileSeq, FileState[]> states = new TreeMap<FileSeq, FileState[]>();
+		TreeMap<FileSeq, Date[]> timestamps  = new TreeMap<FileSeq, Date[]>();
+		client.states(pNodeID, pNodeMod, vstate, lvid, states, timestamps);
+		printStates(states, timestamps);
 		
 		client.checkIn(pNodeID, pNodeMod, vid, lvid, states);
 		
@@ -279,9 +280,10 @@ class TestFileMgrApp
 	    pNodeMod = new NodeMod(vsn);
 
 	    {
-	      TreeMap<FileSeq, FileState[]> states = 
-		client.states(pNodeID, pNodeMod, vstate, latest);
-	      printStates(states);
+	      TreeMap<FileSeq, FileState[]> states = new TreeMap<FileSeq, FileState[]>();
+	      TreeMap<FileSeq, Date[]> timestamps  = new TreeMap<FileSeq, Date[]>();
+	      client.states(pNodeID, pNodeMod, vstate, latest, states, timestamps);
+	      printStates(states, timestamps);
 	    }
 
 	    client.freeze(pNodeID, pNodeMod); 
@@ -320,17 +322,20 @@ class TestFileMgrApp
 	    }
 
 	    {
-	      TreeMap<FileSeq, FileState[]> states = 
-		client.states(pNodeID, pNodeMod, vstate, latest);
-	      printStates(states);
+	      TreeMap<FileSeq, FileState[]> states = new TreeMap<FileSeq, FileState[]>();
+	      TreeMap<FileSeq, Date[]> timestamps  = new TreeMap<FileSeq, Date[]>();
+	      client.states(pNodeID, pNodeMod, vstate, latest, states, timestamps);
+	      printStates(states, timestamps);
 	    }
 	  }
 	}
 	else { 
 	  int wk=0;
 	  for(wk=0; wk<count; wk++) {
-	    TreeMap<FileSeq, FileState[]> states = 
-	      client.states(pNodeID, pNodeMod, VersionState.Pending, null); 
+	    TreeMap<FileSeq, FileState[]> states = new TreeMap<FileSeq, FileState[]>();
+	    TreeMap<FileSeq, Date[]> timestamps  = new TreeMap<FileSeq, Date[]>();
+	    client.states(pNodeID, pNodeMod, VersionState.Pending, null, states, timestamps);
+	    printStates(states, timestamps);
 	    
 	    try {
 	      sleep(1000 + random.nextInt(1000));
@@ -352,7 +357,8 @@ class TestFileMgrApp
     private void 
     printStates
     (
-     TreeMap<FileSeq, FileState[]> states
+     TreeMap<FileSeq, FileState[]> states,
+     TreeMap<FileSeq, Date[]> timestamps
     ) 
     {
       if(true) {
@@ -363,10 +369,18 @@ class TestFileMgrApp
 	  buf.append("  " + fseq + ":\n");
 	  
 	  FileState fs[] = states.get(fseq);
+	  Date stamps[]  = timestamps.get(fseq);
+
 	  int wk;
-	  for(wk=0; wk<fs.length; wk++) 
-	    buf.append("    " + fseq.getFrameRange().indexToFrame(wk) + ": " + 
-		       fs[wk].name() + "\n");
+	  for(wk=0; wk<fs.length; wk++) {
+
+	    buf.append("    " + fseq.getFrameRange().indexToFrame(wk) + ":\t");
+
+	    if(stamps[wk] != null) 
+	      buf.append("[" + stamps[wk].getTime() + "] \t");
+
+	    buf.append(fs[wk].name() + "\n");
+	  }
 	}
 	
 	System.out.print(buf.toString());

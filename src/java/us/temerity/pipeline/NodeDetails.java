@@ -1,4 +1,4 @@
-// $Id: NodeDetails.java,v 1.5 2004/04/15 19:45:03 jim Exp $
+// $Id: NodeDetails.java,v 1.6 2004/04/17 19:49:01 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -27,7 +27,7 @@ class NodeDetails
   /**
    * Construct with the given state information. <P> 
    * 
-   * The <CODE>mod</CODE> argument may be <CODE>null</CODE> if the node has not been 
+   * The <CODE>work</CODE> argument may be <CODE>null</CODE> if the node has not been 
    * checked-out. <P> 
    * 
    * The <CODE>base</CODE> argument may be <CODE>null</CODE> if this is an initial working
@@ -39,7 +39,7 @@ class NodeDetails
    * @param name 
    *   The fully resolved node name.
    * 
-   * @param mod
+   * @param work
    *   The working version of the node.
    * 
    * @param base
@@ -73,7 +73,7 @@ class NodeDetails
   NodeDetails
   (
    String name, 
-   NodeMod mod, 
+   NodeMod work, 
    NodeVersion base, 
    NodeVersion latest, 
    OverallNodeState overallNodeState, 
@@ -93,11 +93,11 @@ class NodeDetails
     pTimeStamp = new Date();
 
 
-    if((mod != null) && !mod.getName().equals(pName))
+    if((work != null) && !work.getName().equals(pName))
       throw new IllegalArgumentException
-	("The working version name (" + mod.getName() + ") didn't match the " + 
+	("The working version name (" + work.getName() + ") didn't match the " + 
 	 "details name (" + pName + ")!");
-    pWorkingVersion = mod;
+    pWorkingVersion = work;
 
     if((base != null) && !base.getName().equals(pName))
       throw new IllegalArgumentException

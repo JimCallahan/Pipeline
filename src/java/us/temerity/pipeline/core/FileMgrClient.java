@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.7 2004/04/11 19:19:28 jim Exp $
+// $Id: FileMgrClient.java,v 1.8 2004/04/17 19:49:02 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -78,7 +78,13 @@ class FileMgrClient
    * version of a node. <P> 
    * 
    * The <CODE>latest</CODE> argument may be <CODE>null</CODE> if this is an initial 
-   * working version. 
+   * working version. <P> 
+   * 
+   * The <CODE>states</CODE> and <CODE>timestamps</CODE> arguments should be empty 
+   * tables as they are populated by a successful invocation of this method. <P> 
+   * 
+   * The <CODE>timestamps</CODE> argument may contain <CODE>null</CODE> entries for files
+   * which for which no working version exists.
    * 
    * @param id 
    *   The unique working version identifier.
@@ -93,20 +99,28 @@ class FileMgrClient
    * @param latest 
    *   The revision number of the latest checked-in version.
    * 
-   * @return
-   *   The <CODE>FileState</CODE> of each the primary and secondary file associated with 
-   *   the working version indexed by file sequence.
+   * @param states
+   *   An empty table which will be filled with the <CODE>FileState</CODE> of each the 
+   *   primary and secondary file associated with the working version indexed by file 
+   *   sequence.
+   * 
+   * @param timestamps
+   *   An empty table which will be filled with the last modification timestamps of 
+   *   each primary and secondary file associated with the working version indexed by file 
+   *   sequence.  
    * 
    * @throws PipelineException
    *   If unable to compute the file states.
    */ 
-  public synchronized TreeMap<FileSeq, FileState[]>
+  public synchronized void
   states
   (
    NodeID id, 
    NodeMod mod, 
    VersionState vstate, 
-   VersionID latest
+   VersionID latest, 
+   TreeMap<FileSeq, FileState[]> states, 
+   TreeMap<FileSeq, Date[]> timestamps
   ) 
     throws PipelineException 
   {
@@ -119,11 +133,11 @@ class FileMgrClient
 
     if(obj instanceof FileStateRsp) {
       FileStateRsp rsp = (FileStateRsp) obj;
-      return rsp.getFileStates();
+      states.putAll(rsp.getFileStates());
+      timestamps.putAll(rsp.getTimeStamps());
     }
     else {
       handleFailure(obj);
-      return null;
     }
   }
 

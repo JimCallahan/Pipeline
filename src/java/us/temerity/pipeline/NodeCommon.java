@@ -1,4 +1,4 @@
-// $Id: NodeCommon.java,v 1.9 2004/03/23 20:41:25 jim Exp $
+// $Id: NodeCommon.java,v 1.10 2004/04/17 19:49:01 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -412,6 +412,40 @@ class NodeCommon
   }
 
   
+  
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O M P A R I S O N                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Are the node properties of this version and the given version identical?
+   */ 
+  public boolean 
+  identicalProperties
+  ( 
+   NodeCommon com
+  ) 
+  {
+    return (super.equals(com) && 
+	    pPrimarySeq.equals(com.pPrimarySeq) && 
+	    pSecondarySeqs.equals(com.pSecondarySeqs) && 
+	    pToolset.equals(com.pToolset) && 
+	    (((pEditor == null) && (com.pEditor == null)) || 
+	     pEditor.equals(com.pEditor)) &&
+	    (((pAction == null) && (com.pAction == null)) || 
+	     pAction.equals(com.pAction)) &&
+	    (((pJobReqs == null) && (com.pJobReqs == null)) || 
+	     pJobReqs.equals(com.pJobReqs)) &&
+	    (((pOverflow == null) && (com.pOverflow == null)) || 
+	     pOverflow.equals(com.pOverflow)) &&
+	    (((pExecution == null) && (com.pExecution == null)) || 
+	     pExecution.equals(com.pExecution)) &&
+	    (((pBatchSize == null) && (com.pBatchSize == null)) || 
+	     (pBatchSize.equals(com.pBatchSize))));
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   O B J E C T   O V E R R I D E S                                                      */
@@ -431,22 +465,7 @@ class NodeCommon
   {
     if((obj != null) && (obj instanceof NodeCommon)) {
       NodeCommon com = (NodeCommon) obj;
-      return (super.equals(obj) && 
-	      pPrimarySeq.equals(com.pPrimarySeq) && 
-	      pSecondarySeqs.equals(com.pSecondarySeqs) && 
-	      pToolset.equals(com.pToolset) && 
-	      (((pEditor == null) && (com.pEditor == null)) || 
-	       pEditor.equals(com.pEditor)) &&
-	      (((pAction == null) && (com.pAction == null)) || 
-	       pAction.equals(com.pAction)) &&
-	      (((pJobReqs == null) && (com.pJobReqs == null)) || 
-	       pJobReqs.equals(com.pJobReqs)) &&
-	      (((pOverflow == null) && (com.pOverflow == null)) || 
-	       pOverflow.equals(com.pOverflow)) &&
-	      (((pExecution == null) && (com.pExecution == null)) || 
-	       pExecution.equals(com.pExecution)) &&
-	      (((pBatchSize == null) && (com.pBatchSize == null)) || 
-	       (pBatchSize.equals(com.pBatchSize))));
+      return identicalProperties(com);
     }
     return false;
   }
