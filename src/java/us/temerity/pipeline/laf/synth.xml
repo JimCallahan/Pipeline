@@ -283,6 +283,30 @@
 
 
 
+  <!--  B O O L E A N   F I E L D  -->
+
+  <style id="BooleanField">
+    <imagePainter path="EditableValuePanel.png"
+                  sourceInsets="3 3 3 3"/>
+    <insets top="2" bottom="2" right="2" left="2"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="BooleanField" type="name" key="BooleanField"/>
+
+
+
+  <!--  C O L L E C T I O N   F I E L D  -->
+
+  <style id="CollectionField">
+    <imagePainter path="EditableValuePanel.png"
+                  sourceInsets="3 3 3 3"/>
+    <insets top="2" bottom="2" right="2" left="2"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="CollectionField" type="name" key="CollectionField"/>
+
+
+
   <!--  T E X T   A R E A  -->
 
   <style id="TextArea">
@@ -293,30 +317,6 @@
   </style>
   <bind style="TextArea" type="region" key="TextArea"/>
 
-
-
-  <!--  C O M B O   B O X  -->
-
-  <style id="ComboBox">
-      <imagePainter path="ValueBox.png"
-                    sourceInsets="3 3 3 3"/>
-      <insets top="2" bottom="2" right="2" left="2"/>
-  </style>
-  <bind style="ComboBox" type="region" key="ComboBox"/>
-
-  <style id="ComboBoxArrowButton">
-    <imagePainter path="ComboBoxArrowButton.png"
-                  sourceInsets="0 0 0 0"/>
-  </style>
-  <bind style="ComboBoxArrowButton" type="name" key="ComboBox.arrowButton"/>
-
-  <style id="ComboBoxScrollPane">
-    <imagePainter path="Panel.png"
-                  sourceInsets="5 5 5 5"
-                  paintCenter="false"/>
-    <property key="ScrollPane.viewportBorderInsets" type="insets" value="5 5 5 5"/>
-  </style>
-  <bind style="ComboBoxScrollPane" type="name" key="ComboBox.scrollPane"/>
 
 
   <!--  S L I D E R  --> 
