@@ -1,4 +1,4 @@
-// $Id: SubProcess.java,v 1.10 2004/04/11 19:30:20 jim Exp $
+// $Id: SubProcess.java,v 1.11 2004/04/15 18:31:57 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -646,7 +646,7 @@ class SubProcess
       throw new IllegalStateException("The subprocess thread was already run!");
 
     /* log it... */ 
-    {
+    if(Logs.sub.isLoggable(Level.FINEST)) {
       Logs.sub.fine(getName() + " [command]: \"" + getCommand() + "\"");
       Logs.sub.finer(getName() + " [working directory]: " + getWorkingDir());
       
@@ -697,7 +697,7 @@ class SubProcess
     assert(!stderr.isAlive());
     assert(!stats.isAlive());
     
-    {
+    if(Logs.sub.isLoggable(Level.FINE)) {
       StringBuffer buf = new StringBuffer();
       buf.append(getName() + " [exit]: ");
       

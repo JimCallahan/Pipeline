@@ -1,4 +1,4 @@
-// $Id: NotifyServer.java,v 1.5 2004/04/14 18:41:40 jim Exp $
+// $Id: NotifyServer.java,v 1.6 2004/04/15 18:31:57 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -625,8 +625,6 @@ class NotifyServer
 		dirs = new HashSet<File>(pDirs);
 		pDirs.clear();
 	      }
-
-	      Logs.net.finest("Num Dirs Modified = " + dirs.size());
 
 	      objOut.writeObject(new NotifyWatchRsp(new TaskTimer(), dirs));
 	      objOut.flush(); 

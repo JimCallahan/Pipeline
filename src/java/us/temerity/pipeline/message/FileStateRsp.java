@@ -1,4 +1,4 @@
-// $Id: FileStateRsp.java,v 1.7 2004/03/31 08:34:56 jim Exp $
+// $Id: FileStateRsp.java,v 1.8 2004/04/15 18:31:57 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -7,6 +7,7 @@ import us.temerity.pipeline.core.*;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
 
 /*------------------------------------------------------------------------------------------*/
 /*   F I L E   S T A T E   R S P                                                            */
@@ -54,7 +55,7 @@ class FileStateRsp
       throw new IllegalArgumentException("The working file states cannot (null)!");
     pStates = states;
 
-    {
+    if(Logs.net.isLoggable(Level.FINEST)) {
       StringBuffer buf = new StringBuffer();
       buf.append("FileMgr.computeFileStates(): " + id + " ");
       for(FileSeq fseq : states.keySet()) 

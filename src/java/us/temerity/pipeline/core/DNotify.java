@@ -1,4 +1,4 @@
-// $Id: DNotify.java,v 1.4 2004/04/14 18:43:48 jim Exp $
+// $Id: DNotify.java,v 1.5 2004/04/15 18:31:57 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -7,6 +7,7 @@ import us.temerity.pipeline.*;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.locks.*;
+import java.util.logging.Level;
 
 /*------------------------------------------------------------------------------------------*/
 /*   D N O T I F Y                                                                          */
@@ -418,7 +419,7 @@ class DNotify
   private void 
   logInternals() 
   {
-    if(pRoot == null) 
+    if((pRoot == null) || !Logs.ops.isLoggable(Level.FINEST))
       return;
 
     StringBuffer buf = new StringBuffer();
