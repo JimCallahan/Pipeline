@@ -36,7 +36,9 @@ The core features of Pipeline include:
 
 %defattr(500,pipeline,pipeline)
 @ROOT_INST_DIR@/sbin/plfilemgr
+@ROOT_INST_DIR@/sbin/pljobmgr
 @ROOT_INST_DIR@/sbin/plmaster
+@ROOT_INST_DIR@/sbin/plqueuemgr
 
 %defattr(775,pipeline,pipeline)
 %dir @PRODDIR@/working

@@ -9,4 +9,7 @@ instsbindir = @ROOT_INST_DIR@/sbin
 
 instsbin_SCRIPTS = \
   plfilemgr \
-  plmaster
+  pljobmgr \
+  plmaster \
+  plqueuemgr
+
