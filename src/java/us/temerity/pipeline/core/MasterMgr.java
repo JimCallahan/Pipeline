@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.42 2004/10/03 17:09:42 jim Exp $
+// $Id: MasterMgr.java,v 1.43 2004/10/03 19:42:18 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2032,7 +2032,6 @@ class MasterMgr
    NodeModifyPropertiesReq req
   ) 
   {
-    assert(req != null);
     TaskTimer timer = new TaskTimer("MasterMgr.modifyProperties(): " + req.getNodeID());
 
     timer.aquire();
@@ -3435,6 +3434,7 @@ class MasterMgr
     branch.removeLast();
   }
 
+
   /*----------------------------------------------------------------------------------------*/
 
   /** 
@@ -3461,6 +3461,82 @@ class MasterMgr
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
     }    
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Change the checked-in version upon which the working version is based without 
+   * modifying the working version properties, links or associated files. <P> 
+   * 
+   * @param req 
+   *   The revert files request.
+   *
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to the evolve the node.
+   */ 
+  public Object
+  evolve
+  ( 
+   NodeEvolveReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer("MasterMgr.evolve(): " + req.getNodeID());
+
+    /* verify the checked-in revision number */ 
+    VersionID vid = req.getVersionID();
+    {
+      String name = req.getNodeID().getName();
+
+      timer.aquire();
+      ReentrantReadWriteLock lock = getCheckedInLock(name);
+      lock.readLock().lock();
+      try {
+	timer.resume();	
+	
+	TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
+	if(vid == null) 
+	  vid = checkedIn.lastKey();
+	else if(!checkedIn.containsKey(vid))
+	  throw new PipelineException 
+	    ("No checked-in version (" + vid + ") of node (" + name + ") exists!"); 
+      }
+      catch(PipelineException ex) {
+	return new FailureRsp(timer, ex.getMessage());
+      }
+      finally {
+	lock.readLock().unlock();
+      }  
+    }
+
+    /* change the checked-in version number for the working version */ 
+    timer.aquire();
+    ReentrantReadWriteLock lock = getWorkingLock(req.getNodeID());
+    lock.writeLock().lock();
+    try {
+      timer.resume();
+
+      /* set the revision number */ 
+      WorkingBundle bundle = getWorkingBundle(req.getNodeID());
+      NodeMod mod = new NodeMod(bundle.uVersion);
+      mod.setWorkingID(vid);
+
+      /* write the working version to disk */ 
+      writeWorkingVersion(req.getNodeID(), mod);
+      
+      /* update the bundle */ 
+      bundle.uVersion = mod;
+
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      lock.writeLock().unlock();
+    }  
   }
 
 

@@ -810,6 +810,21 @@ Operations</span></span></a></li>
  style="font-style: italic;">minor</span>.<span
  style="font-style: italic;">micro</span>]</span><span
  style="font-weight: normal;"> [<span style="font-weight: bold;">--keep-newer</span>]</span></li>
+        <li style="font-weight: bold;"><a href="#node_--evolve"><span
+ style="font-weight: bold;">--evolve</span></a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">node-name
+          </span></span><span style="font-weight: normal;">[</span><a
+ href="#--author">--author</a><span style="font-weight: normal;">=<span
+ style="font-style: italic;">user-name</span>]</span> <span
+ style="font-weight: normal;">[</span><a href="#--view">--view</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]</span><span
+ style="font-weight: normal;"> </span><span
+ style="font-weight: normal;">[<a href="#--version"><span
+ style="font-weight: bold;">--version</span></a>=<span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;"></span></li>
       </ul>
     </ul>
     <li style="font-weight: bold;"><a href="#Queue_Operations"><span
@@ -3439,6 +3454,45 @@ newer versions of these upstream nodes will not be replaced.<br>
   <ul>
   </ul>
 </ul>
+<div style="margin-left: 40px;"><span style="font-weight: normal;"><span
+ style="font-weight: bold;"><a name="node_--evolve"></a>node</span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"> </span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--evolve</span>=<span
+ style="font-style: italic;">node-name </span></span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"></span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"><br>
+&nbsp;&nbsp;&nbsp; </span><span style="font-weight: normal;">[</span><a
+ style="font-weight: bold;" href="#--author">--author</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">user-name</span>]</span>
+<span style="font-weight: normal;">[</span><a style="font-weight: bold;"
+ href="#--view">--view</a><span style="font-weight: normal;">=<span
+ style="font-style: italic;">view-name</span>]</span><span
+ style="font-weight: normal;"><br>
+&nbsp;&nbsp;&nbsp; </span><span style="font-weight: normal;">[<a
+ href="#--version"><span style="font-weight: bold;">--version</span></a>=<span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>]<span
+ style="font-weight: bold;"></span><br>
+<br>
+</span>
+<div style="margin-left: 40px;">Change the revision number (<span
+ style="font-weight: normal;"><span style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>) </span>of the checked-in
+version upon which the target working node version
+(<span style="font-style: italic;">node-name</span>) in the working
+area (<span style="font-style: italic;">view-name</span>) owned by the
+user (<span style="font-style: italic;">user-name</span>) is based<span
+ style="font-weight: normal;">.&nbsp; If no <span
+ style="font-weight: bold;">--version</span> option is specified, the
+latest version will be used.&nbsp; <br>
+</span></div>
+<span style="font-weight: normal;"></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span></span></div>
+<span style="font-weight: normal;"></span>
 <h3><span style="font-weight: normal;"><span style="font-weight: bold;"><a
  name="Queue_Operations"></a>Queue
 Operations</span></span></h3>

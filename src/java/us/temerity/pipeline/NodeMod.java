@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.29 2004/10/01 17:07:47 jim Exp $
+// $Id: NodeMod.java,v 1.30 2004/10/03 19:42:18 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -12,9 +12,7 @@ import java.util.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A modifiable working version of a node. <P> 
- * 
- *
+ * A modifiable working version of a node. 
  */
 public
 class NodeMod
@@ -214,8 +212,8 @@ class NodeMod
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The revision number of the <CODE>NodeVersion</CODE> upon which this <CODE>NodeMod</CODE> 
-   * is based.  
+   * Get the revision number of the <CODE>NodeVersion</CODE> upon which this 
+   * <CODE>NodeMod</CODE> is based.  
    * 
    * @return 
    *   The revision number or <CODE>null</CODE> if this is an intial working version.
@@ -226,6 +224,30 @@ class NodeMod
     return pWorkingID;
   }
   
+  /**
+   * Set the revision number of the <CODE>NodeVersion</CODE> upon which this 
+   * <CODE>NodeMod</CODE> is based. <P> 
+   * 
+   * This method should not be called from user code.  Instead, use the 
+   * {@link MasterMgrClient#evolve MasterMgrClient.evolve} method to change the revision
+   * number of the checked-in version this working version is based upon.
+   * 
+   * @param vid
+   *   The revision number of the checked-in version.
+   */ 
+  public void
+  setWorkingID
+  (
+   VersionID vid
+  )
+  {
+    assert(vid != null);
+    pWorkingID = vid;
+
+    updateLastMod();
+  }
+  
+
 
   /*----------------------------------------------------------------------------------------*/
 

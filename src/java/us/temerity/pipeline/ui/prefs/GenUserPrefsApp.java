@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.21 2004/10/02 15:45:39 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.22 2004/10/03 19:42:18 jim Exp $
 
 import java.io.*; 
 import java.util.*;
@@ -65,7 +65,7 @@ class GenUserPrefsApp
 	new HotKeyPref
 	("Quit.", 
 	 "Quit", "Quit:",
-	 false, true, false, 81)  /* ALT+Q */ 
+	 false, false, true, 81)  /* CTRL+Q */ 
       };
 
       pPrefs.put("Panel|Universal|Main|Hot Keys", prefs);
@@ -457,6 +457,10 @@ class GenUserPrefsApp
 	new HotKeyPref
 	("Check-out the current primary selection.",
 	 "NodeCheckOut", "Check-Out:"), 
+
+	new HotKeyPref
+	("Evolve the current primary selection.",
+	 "NodeEvolve", "Evolve Version:"), 
 
 	new BasePref(),
 
@@ -853,7 +857,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.21 2004/10/02 15:45:39 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.22 2004/10/03 19:42:18 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -1106,7 +1110,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.21 2004/10/02 15:45:39 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.22 2004/10/03 19:42:18 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 

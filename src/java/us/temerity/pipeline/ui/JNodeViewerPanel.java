@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.51 2004/10/03 17:06:56 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.52 2004/10/03 19:42:18 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -274,6 +274,12 @@ class JNodeViewerPanel
       item.addActionListener(this);
       pNodePopup.add(item);
 
+      item = new JMenuItem("Evolve Version...");
+      pEvolveItem = item;
+      item.setActionCommand("evolve");
+      item.addActionListener(this);
+      pNodePopup.add(item);
+
       pNodePopup.addSeparator();
       
       item = new JMenuItem("Clone...");
@@ -441,6 +447,7 @@ class JNodeViewerPanel
       pReleaseDialog  = new JReleaseDialog();
       pCheckInDialog  = new JCheckInDialog();
       pCheckOutDialog = new JCheckOutDialog();
+      pEvolveDialog   = new JEvolveDialog();
       
       pCreateLinkDialog = new JCreateLinkDialog();
       pEditLinkDialog   = new JEditLinkDialog();
@@ -735,6 +742,7 @@ class JNodeViewerPanel
     
     pCheckInItem.setEnabled(hasWorking);
     pCheckOutItem.setEnabled(hasCheckedIn);
+    pEvolveItem.setEnabled(hasWorking && hasCheckedIn);
     
     pReleaseItem.setEnabled(hasWorking);
 
@@ -2111,6 +2119,9 @@ class JNodeViewerPanel
       else if((prefs.getNodeCheckOut() != null) &&
 	      prefs.getNodeCheckOut().wasPressed(e))
 	doCheckOut();
+      else if((prefs.getNodeEvolve() != null) &&
+	      prefs.getNodeEvolve().wasPressed(e))
+	doEvolve();
       
       else if((prefs.getNodeClone() != null) &&
 	      prefs.getNodeClone().wasPressed(e))
@@ -2320,6 +2331,8 @@ class JNodeViewerPanel
       doCheckIn();
     else if(cmd.equals("check-out"))
       doCheckOut();
+    else if(cmd.equals("evolve"))
+      doEvolve();
 
     else if(cmd.equals("clone"))
       doClone();
@@ -3118,6 +3131,37 @@ class JNodeViewerPanel
 	    CheckOutTask task = 
 	      new CheckOutTask(status.getName(), vid, pCheckOutDialog.keepNewer());
 	    task.start();
+	  }
+	}
+      }
+    }
+
+    for(ViewerNode vnode : clearSelection()) 
+      vnode.update();
+  }
+
+  /**
+   * Evolve the primary selected node.
+   */ 
+  private void 
+  doEvolve() 
+  {
+    if(pPrimary != null) {
+      NodeStatus status = pPrimary.getNodeStatus();
+      NodeDetails details = status.getDetails();
+      if(details != null) {
+	NodeMod work = details.getWorkingVersion();
+	if(work != null) {
+	  pEvolveDialog.updateNameVersions("Evolve Version:  " + status, work.getWorkingID(),
+					   details.getVersionIDs());
+	  pEvolveDialog.setVisible(true);
+	  
+	  if(pEvolveDialog.wasConfirmed()) {
+	    VersionID vid = pEvolveDialog.getVersionID();
+	    if(vid != null) {
+	      EvolveTask task = new EvolveTask(status.getName(), vid);
+	      task.start();
+	    }
 	  }
 	}
       }
@@ -4481,6 +4525,50 @@ class JNodeViewerPanel
     private boolean    pKeepNewer;
   }
 
+  /** 
+   * Evolve a given node.
+   */ 
+  private
+  class EvolveTask
+    extends Thread
+  {
+    public 
+    EvolveTask
+    (
+     String name, 
+     VersionID vid
+    ) 
+    {
+      super("JNodeViewerPanel:EvolveTask");
+
+      pName      = name; 
+      pVersionID = vid; 
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Evolving Node: " + pName)) {
+	try {
+	  master.getMasterMgrClient().evolve(pAuthor, pView, pName, pVersionID);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+
+	updateRoots();
+      }
+    }
+
+    private String     pName; 
+    private VersionID  pVersionID; 
+  }
+
 
   /** 
    * Get the status of the root nodes.
@@ -4871,6 +4959,7 @@ class JNodeViewerPanel
   private JMenuItem  pRenumberItem;
   private JMenuItem  pCheckInItem;
   private JMenuItem  pCheckOutItem;
+  private JMenuItem  pEvolveItem;
   private JMenuItem  pReleaseItem;
 
   /**
@@ -5020,6 +5109,11 @@ class JNodeViewerPanel
    * The check-out node dialog.
    */ 
   private JCheckOutDialog  pCheckOutDialog;
+
+  /** 
+   * The evolve node dialog.
+   */ 
+  private JEvolveDialog  pEvolveDialog;
 
 
   /**

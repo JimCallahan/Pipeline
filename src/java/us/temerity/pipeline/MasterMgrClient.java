@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.28 2004/09/26 06:23:08 jim Exp $
+// $Id: MasterMgrClient.java,v 1.29 2004/10/03 19:42:18 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -2103,6 +2103,88 @@ class MasterMgrClient
     NodeRevertFilesReq req = new NodeRevertFilesReq(nodeID, files);
     
     Object obj = performTransaction(MasterRequest.RevertFiles, req);
+    handleSimpleResponse(obj);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Change the checked-in version upon which the working version is based without 
+   * modifying the working version properties, links or associated files. <P> 
+   *
+   * This operation can be used to resolve a conflict by changing to the latest checked-in
+   * version. <P> 
+   *
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   * 
+   * @param vid
+   *   The revision number of the checked-in version or <CODE>null</CODE> for the latest
+   *   checked-in version.
+   * 
+   * @throws PipelineException
+   *   If unable to evolve the node. 
+   */ 
+  public synchronized void 
+  evolve
+  ( 
+   String author, 
+   String view, 
+   String name, 
+   VersionID vid
+  )
+    throws PipelineException
+  {
+    evolve(new NodeID(author, view, name), vid);
+  }
+
+  /**
+   * Change the checked-in version upon which the working version is based without 
+   * modifying the working version properties, links or associated files. <P> 
+   *
+   * This operation can be used to resolve a conflict by changing to the latest checked-in
+   * version. <P> 
+   *
+   * If the <CODE>nodeID</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @param nodeID 
+   *   The unique working version identifier. 
+   * 
+   * @param vid
+   *   The revision number of the checked-in version or <CODE>null</CODE> for the latest
+   *   checked-in version.
+   * 
+   * @throws PipelineException
+   *   If unable to revert the files.
+   */ 
+  public synchronized void 
+  evolve
+  ( 
+   NodeID nodeID,
+   VersionID vid
+  )
+    throws PipelineException
+  {
+    if(!PackageInfo.sUser.equals(nodeID.getAuthor()) && !isPrivileged(false))
+      throw new PipelineException
+	("Only privileged users may evolve nodes owned by another user!");
+    
+    verifyConnection();
+
+    NodeEvolveReq req = new NodeEvolveReq(nodeID, vid);
+    
+    Object obj = performTransaction(MasterRequest.Evolve, req);
     handleSimpleResponse(obj);
   }
 

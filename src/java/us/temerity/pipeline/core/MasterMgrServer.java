@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.18 2004/09/03 01:56:08 jim Exp $
+// $Id: MasterMgrServer.java,v 1.19 2004/10/03 19:42:18 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -629,6 +629,14 @@ class MasterMgrServer
 	    {
 	      NodeRevertFilesReq req = (NodeRevertFilesReq) objIn.readObject();
 	      objOut.writeObject(pMasterMgr.revertFiles(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case Evolve:
+	    {
+	      NodeEvolveReq req = (NodeEvolveReq) objIn.readObject();
+	      objOut.writeObject(pMasterMgr.evolve(req));
 	      objOut.flush(); 
 	    }
 	    break;
