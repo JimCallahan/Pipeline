@@ -1,8 +1,9 @@
-// $Id: JDoubleField.java,v 1.1 2004/06/14 22:55:00 jim Exp $
+// $Id: JDoubleField.java,v 1.2 2004/06/22 19:39:21 jim Exp $
 
 package us.temerity.pipeline.ui;
 
 import java.awt.*;
+import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.text.*;
 
@@ -16,6 +17,7 @@ import javax.swing.text.*;
 public 
 class JDoubleField
   extends JTextField 
+  implements ActionListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -28,6 +30,7 @@ class JDoubleField
   JDoubleField() 
   {
     super();
+    addActionListener(this);
   }
 
 
@@ -46,7 +49,7 @@ class JDoubleField
   getValue()
   {
     String text = getText();
-    if((text != null) && (text.length() > 0)) {
+    if((text != null) && (text.length() > 0) && !text.equals("-")) {
       try {
 	return new Double(getText());
       }
@@ -72,7 +75,7 @@ class JDoubleField
     if(value != null) 
       setText(value.toString());
     else 
-      setText("");
+      setText("-");
   }
   
 
@@ -89,6 +92,26 @@ class JDoubleField
   createDefaultModel()
   {
     return new DoubleDocument();
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   L I S T E N E R S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /*-- ACTION LISTENER METHODS -------------------------------------------------------------*/
+
+  /** 
+   * Invoked when an action occurs. 
+   */ 
+  public void 
+  actionPerformed
+  (
+   ActionEvent e
+  ) 
+  {
+    setValue(getValue());
   }
 
 
@@ -160,7 +183,7 @@ class JDoubleField
      String text
     ) 
     {
-      if(text.length() == 0) 
+      if((text.length() == 0) || text.equals("-"))
 	return true;
 
       char cs[] = text.toCharArray();

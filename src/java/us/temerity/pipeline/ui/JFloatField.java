@@ -1,8 +1,9 @@
-// $Id: JFloatField.java,v 1.1 2004/06/19 00:36:29 jim Exp $
+// $Id: JFloatField.java,v 1.2 2004/06/22 19:39:21 jim Exp $
 
 package us.temerity.pipeline.ui;
 
 import java.awt.*;
+import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.text.*;
 
@@ -16,6 +17,7 @@ import javax.swing.text.*;
 public 
 class JFloatField
   extends JTextField 
+  implements ActionListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -28,6 +30,7 @@ class JFloatField
   JFloatField() 
   {
     super();
+    addActionListener(this);
   }
 
 
@@ -46,7 +49,7 @@ class JFloatField
   getValue()
   {
     String text = getText();
-    if((text != null) && (text.length() > 0)) {
+    if((text != null) && (text.length() > 0) && !text.equals("-")) {
       try {
 	return new Float(getText());
       }
@@ -72,7 +75,7 @@ class JFloatField
     if(value != null) 
       setText(value.toString());
     else 
-      setText("");
+      setText("-");
   }
   
 
@@ -89,6 +92,26 @@ class JFloatField
   createDefaultModel()
   {
     return new FloatDocument();
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   L I S T E N E R S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /*-- ACTION LISTENER METHODS -------------------------------------------------------------*/
+
+  /** 
+   * Invoked when an action occurs. 
+   */ 
+  public void 
+  actionPerformed
+  (
+   ActionEvent e
+  ) 
+  {
+    setValue(getValue());
   }
 
 
@@ -160,7 +183,7 @@ class JFloatField
      String text
     ) 
     {
-      if(text.length() == 0) 
+      if((text.length() == 0) || text.equals("-"))
 	return true;
 
       char cs[] = text.toCharArray();
