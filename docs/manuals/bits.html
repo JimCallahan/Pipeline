@@ -29,7 +29,7 @@
 Names and File System Paths</a><br>
 </h3>
 <blockquote> The last argument to all <a
- href="file://@datadir@/docs/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) commands is a name
 which identifies the data/process node. All nodes have a unique name in
 the database which resembles a file system path. For example, a data
@@ -91,7 +91,7 @@ being used, hence the name "working" area. &nbsp;<br>
     <br>
 In order to facilitate the sharing of files with internal references to
 file system paths, the $WORKING environmental variable is defined by <a
- href="file://@datadir@/docs/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) when executing
 process node scripts and launching editors. Users should always use
 this environmental variable (instead of its value) in any file system
@@ -139,7 +139,7 @@ option). Continuing with the example, the "2.5.1" version of the
     </blockquote>
 All files and directories in the repository are read-only and should
 never be directly modified or referenced by an artist. Instead, the <a
- href="file://@datadir@/docs/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) tool should be used
 to perform all changes to the contents of the repository. Due to these
 restrictions, there is no equivalent environmental variable to $WORKING
@@ -147,11 +147,11 @@ defined for the repository path.<br>
   </blockquote>
   <h4><a name="Relative_Names"></a>Relative Names</h4>
   <blockquote> The (<i>name</i>) argument to <a
- href="file://@datadir@/docs/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) commands can always
 be given as a fully qualified node name (i.e. without the $WORKING
 prefix or possible file sequence suffixes). As a convenience, when <a
- href="file://@datadir@/docs/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) is executed within a
 subdirectory of $WORKING, a shorter relative path may be used to refer
 to nodes. For instance, the following would be a valid way of referring
@@ -162,9 +162,9 @@ to the example node:<br>
   </blockquote>
 </blockquote>
 <h3><a name="Editors"></a><a
- href="file://@datadir@/docs/pipeline.html#Contents">Editors</a></h3>
+ href=pipeline.html#Contents">Editors</a></h3>
 <div style="margin-left: 40px;">For each node, <a
- href="file://@datadir@/docs/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) stores the name of
 an appropriate editor for viewing and modifying the data files
 associated with the node. &nbsp;The editor can be set for a node using
@@ -174,13 +174,13 @@ option. &nbsp;<br>
 <br>
 Because of the complexities of file sequences and the arbitrary nature
 of command line options for editor programs, <a
- href="file://@datadir@/docs/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) uses Java based
 plugins for each registered editor to handle the specific calling
 conventions of the editor executables. &nbsp;Most useful editor
 programs
 for the CG industry are already covered by <a
- href="file://@datadir@/docs/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1), but this list can
 be extended by writing a custom Java plugin for your site. &nbsp;See
 the <span style="font-weight: bold;">Pipeline Plugins</span> document
@@ -188,7 +188,7 @@ for a full
 explanation of this mechanism. <br>
 <br>
 The set of editors supported by <a
- href="file://@datadir@/docs/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) without such
 extension are:<br>
 <div style="margin-left: 40px;"><br>
@@ -282,7 +282,7 @@ typesetting system.</div>
 <h3><a name="Actions"></a><a
  href="file:///code/src/pipeline/src/java/docs/pipeline.html.in#Contents">Actions</a></h3>
 <div style="margin-left: 40px;">One of the primary features of <a
- href="file://@datadir@/docs/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) is the ability to
 regenerate the data file(s) associated with a node through execution of
 some process on the local machine or render queue. This process is

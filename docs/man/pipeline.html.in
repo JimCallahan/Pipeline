@@ -88,28 +88,28 @@ Paths</a><br>
   </li>
 </ul>
 <h3><a name="Description"></a><a href="#Contents">Description</a></h3>
-<blockquote>The <a href="file://@datadir@/docs/man/pipeline.html"><span
+<blockquote>The <a href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) tool provides a
 command-line only alternative to the graphical <a
- href="file://@datadir@/docs/man/plui.html"><span style="font-weight: bold;">plui</span></a>(1)
+ href=plui.html"><span style="font-weight: bold;">plui</span></a>(1)
 tool for performing Pipeline queries and commands.&nbsp; The <a
- href="file://@datadir@/docs/man/plui.html"><span style="font-weight: bold;">plui</span></a>(1)
+ href=plui.html"><span style="font-weight: bold;">plui</span></a>(1)
 tool is nicer looking and easier to use, while the <a
- href="file://@datadir@/docs/man/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) tool provides
 command-line only interface suitable for scripting and batch
 execution.&nbsp; <br>
   <br>
 See the <a style="font-weight: bold;"
- href="file://@datadir@/docs/man/user-manual/index.html">Pipeline
+ href=user-manual/index.html">Pipeline
 Manual</a> for information about the shared concepts behind the two
 tools as well as detailed help on using the graphical interface of <a
- href="file://@datadir@/docs/man/plui.html"><span style="font-weight: bold;">plui</span></a>(1).&nbsp;
+ href=plui.html"><span style="font-weight: bold;">plui</span></a>(1).&nbsp;
   <br>
 </blockquote>
 <h3><a name="General_Usage"></a><a href="#Contents">General Usage</a></h3>
 <blockquote>The most common use of <a
- href="file://@datadir@/docs/man/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) is to perform a
 command.&nbsp; All command invocations have a similar pattern of
 arguments
@@ -122,13 +122,13 @@ operate.
 Another way to perform commands is to create a text file (<span
  style="font-style: italic;">batchfile</span>) which contains one or
 more commands and pass this file to <a
- href="file://@datadir@/docs/man/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) using the <a
  href="--batch"><span style="font-weight: bold;">--batch</span></a>
 option.<br>
   <br>
 The (<i>global-options</i>) control fundamental properties
-which apply to all <a href="file://@datadir@/docs/man/pipeline.html"><span
+which apply to all <a href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) commands. These
 options are explained in
 detail in the <a style="font-weight: bold;" href="#Global_Options">Global
@@ -139,7 +139,7 @@ options are detailed in the <a style="font-weight: bold;"
  href="#Command_Details">Command Details</a> section. &nbsp;<br>
   <br>
 The set of (<i>options</i>) shared by more than one <a
- href="file://@datadir@/docs/man/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) operation are
 explained in the <a style="font-weight: bold;" href="#Shared_Options">Shared
 Options</a> section. &nbsp;<br>
@@ -165,7 +165,7 @@ or filesystem.<br>
 <h3><a name="Information_Options"></a><a href="#Contents">Information
 Options</a></h3>
 <blockquote>The following options provide online information about <a
- href="file://@datadir@/docs/man/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) and then immediately
 exit:</blockquote>
 <blockquote><b><a name="--help"></a>--help</b><br>
@@ -218,7 +218,7 @@ port.<br>
  style="font-style: italic;">,logger:level</span>[...]]</div>
 <div style="margin-left: 40px;"><br>
 <div style="margin-left: 40px;">In addition to the normal responses to
-commands, <a href="file://@datadir@/docs/man/pipeline.html"><span
+commands, <a href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) can generate
 detailed output tracing the various stages of execution internal to
 each command.&nbsp; The arguments control the several different types
@@ -245,7 +245,7 @@ command-line options.<br>
  style="font-weight: bold;"><br>
 </span>
 <div style="margin-left: 40px;">Logs the normal output from <a
- href="file://@datadir@/docs/man/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) commands.&nbsp; At
 one of the tracing levels (<span style="font-weight: bold;">fine</span>,
 <span style="font-weight: bold;">finer</span> or <span
@@ -264,7 +264,7 @@ sum</span><span style="font-weight: bold;"><br>
 </span>
 <div style="margin-left: 40px;">Logs the activity of generating and
 comparing the checksum files which <a
- href="file://@datadir@/docs/man/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) uses to optimize
 comparisons of files associated with
 nodes.<br>
@@ -274,7 +274,7 @@ nodes.<br>
 </span>
 <div style="margin-left: 40px;">Logs the creation and execution of
 external operating system level subprocesses by <a
- href="file://@datadir@/docs/man/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1).&nbsp; These
 processes include editors, programs started by regeneration actions and
 various file system related utilities.<br>
@@ -297,7 +297,7 @@ messages and advisory information.<br>
 <span style="font-weight: bold;">info</span><br>
 <div style="margin-left: 40px;">This is the default output level for
 all loggers and is used for normal output from <a
- href="file://@datadir@/docs/man/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1). <br>
 </div>
 <br style="font-weight: bold;">
@@ -310,7 +310,7 @@ increasingly more detailed command tracing messages. <br>
 <br>
 Logging can also be controlled on a system-wide basis by modifying the <a
  href="#logger_properties"><span style="font-weight: bold;">logger.properties</span></a>
-file installed with <a href="file://@datadir@/docs/man/pipeline.html"><span
+file installed with <a href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1).&nbsp; See the Java
 API documention for the class<span style="font-weight: bold;">
 java.util.logging.Logger</span> for more information about the format
@@ -332,23 +332,23 @@ settings from the <a href="#logger_properties"><span
  style="font-style: italic;">batchfile<br>
 </span>
 <div style="margin-left: 40px;"><br>
-When executing multiple <a href="file://@datadir@/docs/man/pipeline.html"><span
+When executing multiple <a href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) commands, it can be
 more efficient to place these commands in a file (<span
  style="font-style: italic;">batchfile</span>) and have all the
 commands executed by a single invocation of <a
- href="file://@datadir@/docs/man/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) using the <a
  href="#--batch"><span style="font-weight: bold;">--batch</span></a>
 option.&nbsp; The reason this is more efficient is that <a
- href="file://@datadir@/docs/man/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) has a considerable
 startup and initialization time.&nbsp; Batch execution avoids doing
 this initialization for each command.<br>
 <br>
 The text file (<span style="font-style: italic;">batchfile</span>)
 passed to <a href="#--batch"><span style="font-weight: bold;">--batch</span></a>
-should contain one <a href="file://@datadir@/docs/man/pipeline.html"><span
+should contain one <a href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) command on each line
 with the following form:<br>
 <br>
@@ -361,14 +361,14 @@ with the following form:<br>
 <br>
 <div style="margin-left: 80px;">The commands will be executed in order
 until the end of the file is reached.&nbsp; If an error occurs, <a
- href="file://@datadir@/docs/man/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) will exit
 immediately and all subsequent commands will therefore be ignored.<br>
 </div>
 <h3><a name="Preference_Commands"></a><a href="#Contents">Preference
 Commands</a></h3>
 <div style="margin-left: 40px;">These commands set per-user defaults
-for <a href="file://@datadir@/docs/man/pipeline.html"><span
+for <a href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) commands which
 operate on nodes.&nbsp; They do not require a target node argument.<br>
 </div>
@@ -398,7 +398,7 @@ and <a href="#modify"><span style="font-weight: bold;">modify</span></a>.
 <br>
 <br>
 In most cases, the artist can leave the choice of editor up
-to&nbsp;<a href="file://@datadir@/docs/man/pipeline.html"><b>pipeline</b></a>(1)
+to&nbsp;<a href=pipeline.html"><b>pipeline</b></a>(1)
 to decide based on node type and file naming suffix. When more control
 is desired, this command can be used to inspect and modify the tables
 used to perform this mapping. The <a href="#editor"><span
@@ -481,10 +481,10 @@ and <a href="#modify"><span style="font-weight: bold;">modify</span></a>.
 <br>
 <br>
 In most cases, the artist can leave the choice of toolset up
-to&nbsp;<a href="file://@datadir@/docs/man/pipeline.html"><b>pipeline</b></a>(1)
+to&nbsp;<a href=pipeline.html"><b>pipeline</b></a>(1)
 to decide. When more control
 is desired, this command can be used to inspect configure the
-default toolset&nbsp;<a href="file://@datadir@/docs/man/pipeline.html"><b>pipeline</b></a>(1)
+default toolset&nbsp;<a href=pipeline.html"><b>pipeline</b></a>(1)
 commands will use if the&nbsp;<a style="font-weight: bold;"
  href="#--toolset">--toolset</a>
 option is not given. The <a style="font-weight: bold;" href="#toolset">toolset</a><span
@@ -556,22 +556,22 @@ convienently by giving the name of a file instead using the format (<span
  style="font-style: italic;">name::filename</span>). &nbsp;The entire
 contents the file will be used as the value for the parameter.<br>
   <br>
-Out of the box, <a href="file://@datadir@/docs/man/pipeline.html"><span
+Out of the box, <a href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) comes with a rich
 set of actions for the most common tasks in
 the CG industry (see <a style="font-weight: bold;"
- href="file://@datadir@/docs/man/user-manual/actions.html">Actions</a>).
+ href=user-manual/actions.html">Actions</a>).
 &nbsp;The set of actions can also extended to support just about
 anything by creating and installing custom Java plugin classes.
 &nbsp;See the <a
- href="file://@datadir@/docs/man/user-manual/index.html#action-plugins.html"><span
+ href=user-manual/index.html#action-plugins.html"><span
  style="font-weight: bold;">Action Plugins</span></a> section of the <a
  style="font-weight: bold;"
- href="file://@datadir@/docs/man/user-manual/index.html">Pipeline
+ href=user-manual/index.html">Pipeline
 Manual</a> for a full explanation of this mechanism.<br>
   <br>
 If no action is specified the special <a style="font-weight: bold;"
- href="file://@datadir@/docs/man/user-manual/actions.html#None">None</a>
+ href=user-manual/actions.html#None">None</a>
 regeneration action is used. &nbsp;This action, as you might guess,
 simply does nothing. &nbsp;This default non-action behavior can be
 restored either by giving "None" as the argument to the <a
@@ -609,12 +609,12 @@ the node. &nbsp;If a dependency already exists with the same
 name
 it will be replaced. Otherwise, the new dependency will be appended to
 the list of existing process dependencies. This option may be given
-multiple times in one <a href="file://@datadir@/docs/man/pipeline.html"><span
+multiple times in one <a href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) command.<br>
     <br>
 Note that no version number is specified for this dependency.
 &nbsp;This is due to the fact that the working version of nodes are
-always used by <a href="file://@datadir@/docs/man/pipeline.html"><span
+always used by <a href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) commands which
 operate on dependencies. However, when nodes are checked-in,
 the specific version of the dependency is recorded so that the correct
@@ -637,7 +637,7 @@ dependency. &nbsp;The
 actual frame numbers and frame step increments of both node and
 dependency are taken into account when mapping file names.
 &nbsp;For example, consider the follow example set of <a
- href="file://@datadir@/docs/man/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) commands: <br>
     <div style="margin-left: 40px;"><br>
 &gt; pipeline add --padding=4 --suffix=sgi --range=10-50x5 foo<br>
@@ -661,12 +661,12 @@ happens, the node (and therefore the entire dependency tree
 downstream of this node) will not be able to execute its regeneration
 action successfully since there is no information about how create the
 missing files. By default,&nbsp; <a
- href="file://@datadir@/docs/man/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) will report an error
 message and abort any <a href="#make"><span style="font-weight: bold;">make</span></a>
 or <a href="#queue"><span style="font-weight: bold;">queue</span></a>
 commands when a frame range overflow occurs. To overcome this problem, <a
- href="file://@datadir@/docs/man/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) can be told to
 ignore dependencies for a given node when the offeset exceeds their
 frame ranges with
@@ -696,7 +696,7 @@ The&nbsp;<a style="font-weight: bold;" href="#--ignore">--ignore</a>
 option specifies that a node should ignore any dependencies which
 overflow their frame ranges during execution of their regeneration
 action (see <a style="font-weight: bold;"
- href="file://@datadir@/docs/man/user-manual/actions.html">Actions</a>).
+ href=user-manual/actions.html">Actions</a>).
 See the <a style="font-weight: bold;" href="#--depend">--depend</a><span
  style="font-weight: bold;"> </span>option
 for
@@ -761,13 +761,13 @@ By default, the batch size is (1).<br>
 editors and regeneration actions are run. Toolsets provide a way to
 insure that all shell environmental variables are set in a consistent
 and repeatable manner whenever <a
- href="file://@datadir@/docs/man/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) needs to execute an
 external process.&nbsp; See the <a
- href="file://@datadir@/docs/man/user-manual/index.html#Toolsets"><span
+ href=user-manual/index.html#Toolsets"><span
  style="font-weight: bold;">Toolsets</span></a> section of the <a
  style="font-weight: bold;"
- href="file://@datadir@/docs/man/user-manual/index.html">Pipeline
+ href=user-manual/index.html">Pipeline
 Manual</a> for a full explanation of how toolsets are created and used.<br>
     <br>
   </blockquote>
@@ -820,7 +820,7 @@ with the node. <span style="font-weight: bold;"><br>
 <div style="margin-left: 40px;"><b><a name="--force"></a>--force</b></div>
 <div style="margin-left: 80px;"><br>
 Override the conservative behavior of <a
- href="file://@datadir@/docs/man/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) and force it to
 perform an operation it would normally refuse to complete for safety
 reasons.&nbsp; The exact behavior depends on the command <a
@@ -898,7 +898,7 @@ of check-out is recorded this version is refered to as the base
 version. When this same node is later checked-in, if
 the latest version in the repository has a higher version
 number than the base version and is different than the working version,
-    <a href="file://@datadir@/docs/man/pipeline.html"><span
+    <a href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) will refuse to
 check-in the node. This situation is called a conflict because two (or
 more) artists have made modications to the same node simultaneously.
@@ -910,7 +910,7 @@ version.<br>
 Because each node maintains a list of dependencies on specific
 revisions of other nodes, all dependencies of a node must be processed
 and possibly checked-in before <a
- href="file://@datadir@/docs/man/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) will allow the
 node to be checked-in.&nbsp; If any of these dependencies cannot be
 checked-in, the entire check-in process will be immediately
@@ -937,7 +937,7 @@ working area. &nbsp;</span><br style="color: rgb(0, 0, 0);">
     <br style="color: rgb(0, 0, 0);">
     <span style="color: rgb(0, 0, 0);">If a working version of the node
 exists and has been modified since it was checked-out, </span><a
- style="color: rgb(0, 0, 0);" href="file://@datadir@/docs/man/pipeline.html"><span
+ style="color: rgb(0, 0, 0);" href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a><span
  style="color: rgb(0, 0, 0);">(1) will refuse to
 check-out the node. This is to prevent the unintended loss of work.
@@ -1587,11 +1587,11 @@ released.&nbsp; The <a href="#--single"><span
 nodes except for the root node from being released.</div>
     <br>
 If the working database properties, dependencies or associated files
-have been modified, <a href="file://@datadir@/docs/man/pipeline.html"><span
+have been modified, <a href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) will refuse to
 release the node in order to prevent<span style="color: rgb(0, 0, 0);">
 the unintended</span> loss of work.&nbsp; If you wish to abandon your
-changes you can force <a href="file://@datadir@/docs/man/pipeline.html"><span
+changes you can force <a href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) to release modified
 nodes
 using the <a href="#--force"><span style="font-weight: bold;">--force</span></a>
@@ -1602,7 +1602,7 @@ the dependencies of the given node which are marked for release (see <a
  href="#--single"><span style="font-weight: bold;">--single</span></a>).&nbsp;
 If any of these nodes are modified and the&nbsp; <a href="#--force"><span
  style="font-weight: bold;">--force</span></a> option was not given, <a
- href="file://@datadir@/docs/man/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) will abort the
 entire release process.&nbsp; Due to the recursive behavior of <a
  href="#release"><span style="font-weight: bold;">release</span></a>,
@@ -1898,7 +1898,7 @@ sections.<br>
 Names and File System Paths</a><br>
 </h3>
 <blockquote> The last argument to all <a
- href="file://@datadir@/docs/man/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) commands is a name
 which identifies the node. All nodes have a unique name in
 the database which resembles a file system path. For example, a node
@@ -1953,7 +1953,7 @@ a different name) should be created by cloning the old node instead (<a
   <blockquote> The file system path most important to users is the
 location of the files assciated with nodes within their per-user
 working area directories. When using <a
- href="file://@datadir@/docs/man/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1), each
 user is assigned a directory with the same name as their user name
 under
@@ -1964,7 +1964,7 @@ being used, hence the name "working" area. &nbsp;<br>
     <br>
 In order to facilitate the sharing of files with internal references to
 file system paths, the $WORKING environmental variable is defined by <a
- href="file://@datadir@/docs/man/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) when executing
 regeneration actions (see <a href="#--action"><span
  style="font-weight: bold;">--action</span></a>) and launching editors
@@ -1975,7 +1975,7 @@ path references to insure that the the paths remain valid when used by
 another user with a different working area directory location. <br>
     <br>
 For example, consider a node created with the following <a
- href="file://@datadir@/docs/man/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) command:<br>
     <div style="margin-left: 40px;"><br>
 &gt; pipeline register --range=1-5x2 --padding=4 --suffix=rib
@@ -2009,7 +2009,7 @@ of the
     </blockquote>
 All files and directories in the repository are read-only and can
 never be directly modified or referenced by an artist. Instead, the <a
- href="file://@datadir@/docs/man/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) tool should be used
 to perform all changes to the contents of the repository. This means
 that because checked-in version can ever be lost or modified any
@@ -2018,11 +2018,11 @@ state.&nbsp; <br>
   </blockquote>
   <h4><a name="Relative_Names"></a>Relative Names</h4>
   <blockquote> The (<i>name</i>) argument to <a
- href="file://@datadir@/docs/man/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) commands can always
 be given as a fully qualified node name (i.e. without the $WORKING
 prefix or possible file sequence suffixes). As a convenience, when <a
- href="file://@datadir@/docs/man/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) is executed within a
 subdirectory of $WORKING, a shorter relative path may be used to refer
 to nodes. For instance, the following would be a valid way of referring
@@ -2034,13 +2034,13 @@ to the example node:<br>
 <h3><a name="See_Also"></a><a href="#Contents">See
 Also</a></h3>
 <div style="margin-left: 80px;"> <a style="font-weight: bold;"
- href="file://@datadir@/docs/man/user-manual/index.html">Pipeline
+ href=user-manual/index.html">Pipeline
 Manual</a>, <a style="font-weight: bold;" href="http://www.pgsql.com/">PostgreSQL</a><br>
 <br>
 </div>
 <div style="margin-left: 80px;"><a
- href="file://@datadir@/docs/man/plui.html"><span style="font-weight: bold;">plui</span></a>(1),
-<a href="file://@datadir@/docs/man/pljob.html"><span
+ href=plui.html"><span style="font-weight: bold;">plui</span></a>(1),
+<a href=pljob.html"><span
  style="font-weight: bold;">pljob</span></a>(1) <br>
 <a href="http://www.cvshome.org/docs/"><b>cvs</b></a>(1),
 <a href="http://www.mozilla.org"><b>mozilla</b></a>(1),&nbsp;<a
@@ -2060,10 +2060,10 @@ Manual</a>, <a style="font-weight: bold;" href="http://www.pgsql.com/">PostgreSQ
  name="logger_properties"></a>@datadir@/logger.properties</span><br>
 <div style="margin-left: 40px;"><br>
 The site configuration for output loggers used by <a
- href="file://@datadir@/docs/man/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1), <a
- href="file://@datadir@/docs/man/plui.html"><span style="font-weight: bold;">plui</span></a>(1)
-and <a href="file://@datadir@/docs/man/pljob.html"><span
+ href=plui.html"><span style="font-weight: bold;">plui</span></a>(1)
+and <a href=pljob.html"><span
  style="font-weight: bold;">pljob</span></a>(1).&nbsp; See the <a
  href="#--log"><span style="font-weight: bold;">--log </span></a>option
 for details about the individual loggers.<br>
@@ -2075,11 +2075,11 @@ for details about the individual loggers.<br>
  href="mailto:jim@polaris.net">jim@polaris.net</a>&gt;<br>
     <br>
     <div style="margin-left: 40px;">Sole designer and author of <a
- href="file://@datadir@/docs/man/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1). &nbsp;<br>
     <br>
     </div>
-Many of the ideas which <a href="file://@datadir@/docs/man/pipeline.html"><span
+Many of the ideas which <a href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) implements have
 existed in other forms for years, but where never integrated into a
 single tool. The&nbsp;<a href="http://www.cvshome.org/docs/"><b>cvs</b></a>(1)
@@ -2087,11 +2087,11 @@ tool was a major influence in the area of revision control and the
 command line interface. The <a
  href="http://www.gnu.org/manual/make/html_chapter/make_toc.html"><b>make</b></a>(1)
 utility inspired much of the thinking about dependency graphs and can
-be used by <a href="file://@datadir@/docs/man/pipeline.html"><span
+be used by <a href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) to evaluate such
 graphs. The <a style="font-weight: bold;" href="http://www.pgsql.com/">PostgreSQL</a>
 database server is used extensively by <a
- href="file://@datadir@/docs/man/pipeline.html"><span
+ href=pipeline.html"><span
  style="font-weight: bold;">pipeline</span></a>(1) to store dependency
 graph data.<br>
   </blockquote>
