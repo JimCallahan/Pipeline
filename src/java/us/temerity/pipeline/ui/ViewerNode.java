@@ -1,4 +1,4 @@
-// $Id: ViewerNode.java,v 1.6 2004/08/26 06:00:32 jim Exp $
+// $Id: ViewerNode.java,v 1.7 2004/08/30 14:30:43 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -448,7 +448,8 @@ class ViewerNode
 	  
 	  for(SelectionMode mode : SelectionMode.all()) {
 	    TransformGroup label = 
-	      ViewerLabels.createLabelGeometry(pLabelText, "CharterBTRoman", mode, 0.05, pos);
+	      ViewerLabels.createLabelGeometry(pLabelText, "CharterBTRoman", mode, 0.05, 
+					       pos, TextAlign.Center);
 	    label.setTransform(xform);
 	    
 	    BranchGroup group = new BranchGroup();

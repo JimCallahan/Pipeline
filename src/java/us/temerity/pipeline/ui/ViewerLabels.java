@@ -1,4 +1,4 @@
-// $Id: ViewerLabels.java,v 1.2 2004/05/11 19:16:33 jim Exp $
+// $Id: ViewerLabels.java,v 1.3 2004/08/30 14:30:43 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -36,8 +36,11 @@ class ViewerLabels
    * @param space
    *   Extra space to add between characters.
    * 
-   * @param center
-   *   The gemerated label will be centered on this postition.
+   * @param pos
+   *   The label position. 
+   *
+   * @param align
+   *   The text alignment with the label position.
    * 
    * @return 
    *   The transform group which contains the label geometry.
@@ -52,7 +55,8 @@ class ViewerLabels
    String font,     
    SelectionMode mode,
    double space,     
-   Point3d center    
+   Point3d pos, 
+   TextAlign align
   ) 
     throws IOException
   {
@@ -82,8 +86,12 @@ class ViewerLabels
 	  Point3d offset = new Point3d(geom.getOrigin(codes[wk]));
 	  offset.add(geom.getExtent(codes[wk]));
 	  offsets[wk] = offset.x + space;
-	  size.x += offsets[wk];
 	}
+	else {
+	  offsets[wk] = space * 4.0;
+	}
+
+	size.x += offsets[wk];
       }
 
       width = size.x;
@@ -92,8 +100,15 @@ class ViewerLabels
     /* build geometry for each printable character */ 
     TransformGroup tg = new TransformGroup();
     {
-      Vector3d pos = new Vector3d(center);
-      pos.x -= width*0.5;
+      Vector3d tpos = new Vector3d(pos);
+      switch(align) {
+      case Center:
+	tpos.x -= width*0.5;
+	break; 
+
+      case Right:
+	tpos.x -= width;
+      }
 
       int wk;
       for(wk=0; wk<aprs.length; wk++) {
@@ -102,19 +117,19 @@ class ViewerLabels
 	  TexCoord2f uvs[] = new TexCoord2f[4];
 	  {
 	    pts[0] = new Point3d(-0.1, -0.3, 0.0);
-	    pts[0].add(pos);
+	    pts[0].add(tpos);
 	    uvs[0] = new TexCoord2f(0.0f, 0.0f);
 	    
 	    pts[1] = new Point3d(1.0, -0.3, 0.0);
-	    pts[1].add(pos);
+	    pts[1].add(tpos);
 	    uvs[1] = new TexCoord2f(1.0f, 0.0f);
 	    
 	    pts[2] = new Point3d(1.0, 0.8, 0.0);
-	    pts[2].add(pos);
+	    pts[2].add(tpos);
 	    uvs[2] = new TexCoord2f(1.0f, 1.0f);
 	    
 	    pts[3] = new Point3d(-0.1, 0.8, 0.0);
-	    pts[3].add(pos);
+	    pts[3].add(tpos);
 	    uvs[3] = new TexCoord2f(0.0f, 1.0f);
 	  }
 
@@ -133,13 +148,13 @@ class ViewerLabels
 	  
 	  Shape3D shape = new Shape3D(ga, aprs[wk]);
 	  tg.addChild(shape);
-
-	  pos.x += offsets[wk];
 	}
+
+	tpos.x += offsets[wk];
       }
     }
 
     return tg;
   }
-  
+
 }
