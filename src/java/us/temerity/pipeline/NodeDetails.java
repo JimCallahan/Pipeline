@@ -1,4 +1,4 @@
-// $Id: NodeDetails.java,v 1.11 2004/07/14 21:00:47 jim Exp $
+// $Id: NodeDetails.java,v 1.12 2004/08/22 21:51:08 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -36,6 +36,9 @@ class NodeDetails
    * The <CODE>latest</CODE> argument may be <CODE>null</CODE> if this is an initial working
    * version. <P> 
    * 
+   * The <CODE>jobIDs</CODE> and <CODE>queueStates</CODE> arguments may contain 
+   * <CODE>null</CODE> members if no queue job exists which generates that particular file.
+   * 
    * @param name 
    *   The fully resolved node name.
    * 
@@ -72,6 +75,9 @@ class NodeDetails
    * @param fileTimeStamps
    *   The oldest last modification timestamps associated with all file sequences. 
    * 
+   * @param jobIDs
+   *   The unique job identifiers associated with all file sequences. 
+   * 
    * @param queueStates
    *   The queue states associated with all file sequences. 
    */
@@ -90,6 +96,7 @@ class NodeDetails
    LinkState linkState, 
    TreeMap<FileSeq,FileState[]> fileStates, 
    Date[] fileTimeStamps, 
+   Long[] jobIDs, 
    QueueState[] queueStates
   ) 
   {
@@ -132,6 +139,7 @@ class NodeDetails
       pFileStates.put(fseq, fileStates.get(fseq).clone());
 
     pFileTimeStamps = fileTimeStamps.clone();
+    pJobIDs         = jobIDs.clone();
     pQueueStates    = queueStates.clone();
   }
 
@@ -304,6 +312,15 @@ class NodeDetails
   }
 
   /**
+   * Get the unique job identifiers associated with the file sequences.
+   */ 
+  public Long[]
+  getJobIDs() 
+  {
+    return pJobIDs; 
+  }
+
+  /**
    * Get the queue states associated with the file sequences.
    */ 
   public QueueState[]
@@ -418,6 +435,12 @@ class NodeDetails
    * The oldest last modification timestamp of each primary/secondary file index.
    */
   private Date[] pFileTimeStamps;
+
+  /** 
+   * The unique job identifiers of the job which generates individual files associated with 
+   * a node. 
+   */   
+  private Long[]  pJobIDs; 
 
   /** 
    * The status of individual files associated with a node with respect to the queue jobs
