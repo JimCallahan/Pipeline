@@ -1,4 +1,4 @@
-// $Id: FileCheckOutReq.java,v 1.5 2004/03/26 04:40:57 jim Exp $
+// $Id: FileCheckOutReq.java,v 1.6 2004/03/30 22:17:17 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -18,9 +18,6 @@ import java.util.*;
  * 
  * Existing working files may be optionally overwritten.  The checksum files corresponding
  * to the checked-out files are also copied to the respective workinve version location.
- * 
- * @see NodeMgr
- * @see CheckSum
  */
 public
 class FileCheckOutReq

@@ -1,4 +1,4 @@
-// $Id: FileFreezeReq.java,v 1.3 2004/03/23 07:40:37 jim Exp $
+// $Id: FileFreezeReq.java,v 1.4 2004/03/30 22:17:17 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -18,9 +18,6 @@ import java.util.*;
  * 
  * The checksum files associated with the working version files will also be replaced by 
  * symlinks to the checked-in checksum files associated with the checked-in version.
- * 
- * @see NodeMgr
- * @see CheckSum
  */
 public
 class FileFreezeReq

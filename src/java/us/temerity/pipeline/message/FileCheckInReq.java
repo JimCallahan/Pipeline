@@ -1,4 +1,4 @@
-// $Id: FileCheckInReq.java,v 1.4 2004/03/23 07:40:37 jim Exp $
+// $Id: FileCheckInReq.java,v 1.5 2004/03/30 22:17:17 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -30,9 +30,6 @@ import java.util.*;
  * as the working files.  If they are identical to the checked-in checksums, a symlink is 
  * created to the latest regular checksum file.  Otherwise the checksum is copied into the 
  * file repository.
- * 
- * @see NodeMgr
- * @see CheckSum
  */
 public
 class FileCheckInReq
