@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.3 2004/07/25 03:06:49 jim Exp $
+// $Id: QueueMgrServer.java,v 1.4 2004/07/28 19:18:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -129,6 +129,12 @@ class QueueMgrServer
 
       server.setSoTimeout(PackageInfo.sServerTimeOut);
 
+      CollectorTask collector = new CollectorTask();
+      collector.start();
+
+      DispatcherTask dispatcher = new DispatcherTask();
+      dispatcher.start();
+
       while(!pShutdown.get()) {
 	try {
 	  Socket socket = server.accept();
@@ -145,6 +151,10 @@ class QueueMgrServer
       try {
 	Logs.net.finer("Shutting Down -- Waiting for tasks to complete...");
 	Logs.flush();
+
+	collector.join();
+	dispatcher.join();
+
 	for(HandlerTask task : pTasks) {
 	  task.join();
 	}
@@ -156,12 +166,14 @@ class QueueMgrServer
     }
     catch (IOException ex) {
       Logs.net.severe("IO problems on port (" + pPort + "):\n" + 
-		      ex.getMessage());
-      Logs.flush();
+		      getFullMessage(ex));
     }
     catch (SecurityException ex) {
       Logs.net.severe("The Security Manager doesn't allow listening to sockets!\n" + 
-		      ex.getMessage());
+		      getFullMessage(ex));
+    }
+    catch (Exception ex) {
+      Logs.net.severe(getFullMessage(ex));
       Logs.flush();
     }
     finally {
@@ -176,8 +188,42 @@ class QueueMgrServer
       pQueueMgr.shutdown();
 
       Logs.net.fine("Server Shutdown.");
-      Logs.flush();
     }
+
+    Logs.flush();
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Generate a string containing both the exception message and stack trace. 
+   * 
+   * @param ex 
+   *   The thrown exception.   
+   */ 
+  private String 
+  getFullMessage
+  (
+   Throwable ex
+  ) 
+  {
+    StringBuffer buf = new StringBuffer();
+     
+    if(ex.getMessage() != null) 
+      buf.append(ex.getMessage() + "\n\n"); 	
+    else if(ex.toString() != null) 
+      buf.append(ex.toString() + "\n\n"); 	
+      
+    buf.append("Stack Trace:\n");
+    StackTraceElement stack[] = ex.getStackTrace();
+    int wk;
+    for(wk=0; wk<stack.length; wk++) 
+      buf.append("  " + stack[wk].toString() + "\n");
+   
+    return (buf.toString());
   }
 
 
@@ -316,6 +362,39 @@ class QueueMgrServer
 	    break;
 
 
+	  /*-- JOB MANAGER HOSTS -----------------------------------------------------------*/
+	  case GetHosts:
+	    {
+	      objOut.writeObject(pQueueMgr.getHosts());
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case AddHost:
+	    {
+	      QueueAddHostReq req = (QueueAddHostReq) objIn.readObject();
+	      objOut.writeObject(pQueueMgr.addHost(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case RemoveHosts:
+	    {
+	      QueueRemoveHostsReq req = (QueueRemoveHostsReq) objIn.readObject();
+	      objOut.writeObject(pQueueMgr.removeHosts(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case EditHosts:
+	    {
+	      QueueEditHostsReq req = (QueueEditHostsReq) objIn.readObject();
+	      objOut.writeObject(pQueueMgr.editHosts(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+
 	  /*-- NETWORK CONNECTION ----------------------------------------------------------*/
 	  case Disconnect:
 	    live = false;
@@ -333,12 +412,27 @@ class QueueMgrServer
 	}
       }
       catch (IOException ex) {
-	Logs.net.severe("IO problems on port (" + pPort + "):\n" + 
-			ex.getMessage());
+	InetAddress addr = pSocket.getInetAddress(); 
+	String host = "?";
+	if(addr != null) 
+	  host = addr.getCanonicalHostName();
+
+	Logs.net.severe("IO problems on connection from " + 
+			"(" + host + ":" + pPort + "):\n" + 
+			getFullMessage(ex));
       }
       catch(ClassNotFoundException ex) {
-	Logs.net.severe("Illegal object encountered on port (" + pPort + "):\n" + 
-			ex.getMessage());	
+	InetAddress addr = pSocket.getInetAddress(); 
+	String host = "?";
+	if(addr != null) 
+	  host = addr.getCanonicalHostName();
+
+	Logs.net.severe("Illegal object encountered on connection from " + 
+			"(" + host + ":" + pPort + "):\n" + 
+			getFullMessage(ex));
+      }
+      catch (Exception ex) {
+	Logs.net.severe(getFullMessage(ex));
       }
       finally {
 	try {
@@ -356,11 +450,69 @@ class QueueMgrServer
 	  }
 	}
       }
+
+
     }
     
     private Socket pSocket;
   }
   
+
+  /**
+   * Collects per-host system resource information.
+   */
+  private 
+  class CollectorTask
+    extends Thread
+  {
+    public 
+    CollectorTask() 
+    {
+      super("QueueMgrServer:CollectorTask");
+    }
+
+    public void 
+    run() 
+    {
+      try {
+	while(!pShutdown.get()) {
+	  pQueueMgr.collector();
+	}
+      }
+      catch (Exception ex) {
+	Logs.net.severe(getFullMessage(ex));	
+	Logs.flush();
+      }
+    }
+  }
+
+  /**
+   * Assigns jobs to available hosts.
+   */
+  private 
+  class DispatcherTask
+    extends Thread
+  {
+    public 
+    DispatcherTask() 
+    {
+      super("QueueMgrServer:DispatcherTask");
+    }
+
+    public void 
+    run() 
+    {
+      try {
+	while(!pShutdown.get()) {
+	  pQueueMgr.dispatcher();
+	}
+      }
+      catch (Exception ex) {
+	Logs.net.severe(getFullMessage(ex));	
+	Logs.flush();
+      }
+    }
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
