@@ -183,7 +183,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
 #--------------------------------------------------------------------------------------------#
 
-           TESTS = NewToolsets
+           TESTS = DNotify
 
 #             TESTS = CheckSum \
 #                     DNotify \

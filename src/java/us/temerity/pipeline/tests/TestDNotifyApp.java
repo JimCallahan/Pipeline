@@ -1,4 +1,4 @@
-// $Id: TestDNotifyApp.java,v 1.4 2004/04/14 18:46:08 jim Exp $
+// $Id: TestDNotifyApp.java,v 1.5 2004/07/14 20:47:16 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -88,6 +88,7 @@ class TestDNotifyApp
       System.out.print(ex.getMessage() + "\n");
     }
 
+    ArrayList<TouchTask> touchTasks = new  ArrayList<TouchTask>();
     HashSet<File> dirs = new HashSet<File>();
     {
       Random random = new Random((new Date()).getTime());
@@ -99,9 +100,11 @@ class TestDNotifyApp
 
 	{
 	  File path = new File(prodDir + dir.getPath());
-	  
-	  if(random.nextBoolean())
-	    path.mkdirs();
+	  path.mkdirs();
+
+	  TouchTask task = new TouchTask(path);
+	  touchTasks.add(task);
+	  task.start();
 	}
 
 	dirs.add(dir);
@@ -120,9 +123,11 @@ class TestDNotifyApp
 
 	  {
 	    File path = new File(prodDir + sdir.getPath());
-	    
-	    if(random.nextBoolean())
-	      path.mkdirs();
+	    path.mkdirs();
+	      
+	    TouchTask task = new TouchTask(path);
+	    touchTasks.add(task);
+	    task.start();
 	  }
 	  
 	  dirs.add(sdir);
@@ -138,6 +143,10 @@ class TestDNotifyApp
       }
     }
 
+    for(TouchTask task : touchTasks) {
+      task.join();
+    }
+    
     for(File dir : dirs) {
       try {
  	control.unmonitor(dir);
@@ -148,7 +157,6 @@ class TestDNotifyApp
       }
     }
 
-    
     Thread.currentThread().sleep(2000);
 
     control.shutdown();
@@ -183,6 +191,41 @@ class TestDNotifyApp
       }
     }
   }
+
+
+  public 
+  class TouchTask 
+    extends Thread
+  {
+    public
+    TouchTask
+    (
+     File path
+    ) 
+    {
+      pPath = path;
+    }
+
+    public void 
+    run() 
+    {
+      try {
+	Logs.ops.finer("Touching files in: " + pPath);
+
+	int wk;
+	for(wk=0; wk<1000; wk++) {
+	  File.createTempFile("dummy", "txt", pPath);
+	  Thread.currentThread().sleep(10);
+	}
+      }
+      catch(Exception ex) {
+	Logs.ops.severe("ERROR: " + ex.getMessage());
+      }
+    }
+
+    private File  pPath;
+  }
+
 }
 
 

@@ -1,4 +1,4 @@
-// $Id: TestNodeModVersionApp.java,v 1.6 2004/05/21 21:17:51 jim Exp $
+// $Id: TestNodeModVersionApp.java,v 1.7 2004/07/14 20:47:16 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
@@ -313,19 +313,27 @@ class TestNodeModVersionApp
     {
       TreeMap<String,VersionID> lvids = new TreeMap<String,VersionID>();
 
+      TreeMap<FileSeq,boolean[]> isNovel = new TreeMap<FileSeq,boolean[]>();
+      isNovel.put(mod4.getPrimarySequence(), new boolean[1]);
+
+      String author = PackageInfo.sUser;
+
       NodeVersion vsn1 = 
 	new NodeVersion(mod4, new VersionID(), 
-			lvids, "Initial revision.");
+			lvids, isNovel, 
+			author, "Initial revision.");
       test(vsn1);
 
       NodeVersion vsn2 = 
 	new NodeVersion(mod5, new VersionID(vsn1.getVersionID(), VersionID.Level.Minor), 
-			lvids, "Changes the job requirements.");
+			lvids, isNovel, 
+			author, "Changes the job requirements.");
       test(vsn2);
 
       NodeVersion vsn3 = 
 	new NodeVersion(mod5, new VersionID(vsn2.getVersionID(), VersionID.Level.Major), 
-			lvids, "Changed the node properties.");
+			lvids, isNovel, 
+			author, "Changed the node properties.");
       test(vsn3);
 
       TreeMap<VersionID,NodeVersion> table = new TreeMap<VersionID,NodeVersion>();

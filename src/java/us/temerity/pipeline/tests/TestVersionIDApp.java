@@ -1,4 +1,4 @@
-// $Id: TestVersionIDApp.java,v 1.3 2004/03/07 02:47:29 jim Exp $
+// $Id: TestVersionIDApp.java,v 1.4 2004/07/14 20:47:16 jim Exp $
 
 import us.temerity.pipeline.*;
 
@@ -105,20 +105,6 @@ class TestVersionIDApp
       }
 
       {
-	VersionID v = new VersionID(vid2, VersionID.Level.Mega);
-	IDs.add(v);
-	vid2 = v;
-	compareIDs(vid, vid2);
-      }
-
-      {
-	VersionID v = new VersionID(vid, VersionID.Level.Mega);
-	IDs.add(v);
-	vid = v;
-	compareIDs(vid, vid2);
-      }
-
-      {
 	VersionID v = new VersionID(vid2, VersionID.Level.Minor);
 	IDs.add(v);
 	vid2 = v;
@@ -136,20 +122,6 @@ class TestVersionIDApp
 	VersionID v = new VersionID(vid2, VersionID.Level.Micro);
 	IDs.add(v);
 	vid2 = v;
-	compareIDs(vid, vid2);
-      }
-
-      {
-	VersionID v = new VersionID(vid2, VersionID.Level.Mega);
-	IDs.add(v);
-	vid2 = v;
-	compareIDs(vid, vid2);
-      }
-
-      {
-	VersionID v = new VersionID(vid, VersionID.Level.Mega);
-	IDs.add(v);
-	vid = v;
 	compareIDs(vid, vid2);
       }
 

@@ -1,4 +1,4 @@
-// $Id: TestNewToolsetsApp.java,v 1.3 2004/05/29 06:38:06 jim Exp $
+// $Id: TestNewToolsetsApp.java,v 1.4 2004/07/14 20:47:16 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -102,15 +102,24 @@ class TestNewToolsetsApp
     if(tset.hasModifiablePackages() || tset.hasConflicts()) {
       System.out.print("Toolset: " + tset.getName() + "\n" + 
 		       "  Packages:\n");
-      for(String name : tset.getPackages()) 
-	System.out.print("    " + name + " [" + tset.getPackageVersionID(name) + "]\n");
+      {
+	int idx;
+	for(idx=0; idx<tset.getNumPackages(); idx++) {
+	  String name = tset.getPackageName(idx);
+	  System.out.print("    " + name + " [" + tset.getPackageVersionID(idx) + "]\n");
+	}
+      }
       
       if(tset.hasConflicts()) {
 	System.out.print("  Conflicts:\n");
-	for(String name : tset.getConflictedNames()) {
+	for(String name : tset.getConflictedEnvNames()) {
 	  System.out.print("    " + name + ": ");
-	  for(String pname : tset.getConflictingPackages(name)) 
-	    System.out.print(pname + " ");
+	  
+	  int idx;
+	  for(idx=0; idx<tset.getNumPackages(); idx++) {
+	    if(tset.isPackageEnvConflicted(idx, name)) 
+	      System.out.print(tset.getPackageName(idx) + " ");
+	  }
 	  System.out.print("\n");
 	}
       }

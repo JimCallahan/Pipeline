@@ -1,4 +1,4 @@
-// $Id: TestFileMgrApp.java,v 1.12 2004/04/20 22:03:23 jim Exp $
+// $Id: TestFileMgrApp.java,v 1.13 2004/07/14 20:47:16 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -221,13 +221,42 @@ class TestFileMgrApp
 		client.states(pNodeID, pNodeMod, vstate, lvid, states, timestamps);
 		printStates(states, timestamps);
 		
-		client.checkIn(pNodeID, pNodeMod, vid, lvid, states);
+		/* build the file novelty table */ 
+		TreeMap<FileSeq,boolean[]> isNovel = new TreeMap<FileSeq,boolean[]>();
+		for(FileSeq fseq : states.keySet()) {
+		  FileState[] fs = states.get(fseq);
+		  boolean flags[] = new boolean[fs.length];
+		  
+		  int wk;
+		  for(wk=0; wk<fs.length; wk++) {
+		    switch(fs[wk]) {
+		    case Pending:
+		    case Modified:
+		    case Added:
+		      flags[wk] = true;
+		      break;
+		      
+		    case Identical:
+		      flags[wk] = false;
+		      break;
+		      
+		    default:
+		      assert(false);
+		    }
+		  }
+
+		  isNovel.put(fseq, flags);
+		}
+
+		client.checkIn(pNodeID, pNodeMod, vid, lvid, isNovel);
 
 		TreeMap<String,VersionID> lvids = new TreeMap<String,VersionID>();
-		NodeVersion vsn = new NodeVersion(pNodeMod, vid, lvids, "Some Message...");
+		NodeVersion vsn = 
+		  new NodeVersion(pNodeMod, vid, lvids, isNovel, 
+				  pNodeID.getAuthor(), "Some Message...");
 		versions.add(vsn);
 		
-		pNodeMod = new NodeMod(vsn);
+		pNodeMod = new NodeMod(vsn, vsn.getTimeStamp());
 	      }
 	      
 	      {
@@ -278,7 +307,7 @@ class TestFileMgrApp
 	      vstate = VersionState.Identical;
 
 	    client.checkOut(pNodeID, vsn);
-	    pNodeMod = new NodeMod(vsn);
+	    pNodeMod = new NodeMod(vsn, vsn.getTimeStamp());
 
 	    {
 	      TreeMap<FileSeq, FileState[]> states = new TreeMap<FileSeq, FileState[]>();

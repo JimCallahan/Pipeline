@@ -1,4 +1,4 @@
-// $Id: TestPluginsApp.java,v 1.8 2004/05/21 21:17:51 jim Exp $
+// $Id: TestPluginsApp.java,v 1.9 2004/07/14 20:47:16 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
@@ -73,13 +73,13 @@ class TestPluginsApp
   {
     {
       BaseEditor emacs = Plugins.newEditor("Emacs");
-      FileSeq fseq = new FileSeq("sometext", null);
+      FileSeq fseq = new FileSeq("sometext", (String) null);
       testEditorHelper(emacs, fseq, env, dir);
     }
   
     {
       BaseEditor emacs = Plugins.newEditor("EmacsClient");
-      FileSeq fseq = new FileSeq("sometext", null);
+      FileSeq fseq = new FileSeq("sometext", (String) null);
       testEditorHelper(emacs, fseq, env, dir);
     }
 
@@ -145,7 +145,7 @@ class TestPluginsApp
 
     {
       BaseEditor gedit = Plugins.newEditor("GEdit");
-      FileSeq fseq = new FileSeq("sometext", null);
+      FileSeq fseq = new FileSeq("sometext", (String) null);
       testEditorHelper(gedit, fseq, env, dir);
     }
     

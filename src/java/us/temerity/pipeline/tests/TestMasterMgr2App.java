@@ -1,4 +1,4 @@
-// $Id: TestMasterMgr2App.java,v 1.2 2004/05/29 06:38:06 jim Exp $
+// $Id: TestMasterMgr2App.java,v 1.3 2004/07/14 20:47:16 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -48,6 +48,7 @@ class TestMasterMgr2App
     throws InterruptedException, PipelineException, GlueException, IOException
   { 
     /* common stuff */ 
+    String author = PackageInfo.sUser;
     Map<String,String> env = System.getenv();
     File cwd = new File(System.getProperty("user.dir") + "/data");
     String user = System.getProperty("user.name");
@@ -162,8 +163,6 @@ class TestMasterMgr2App
 			  TestInfo.sBuildToolset, null);
     }
 
-    LinkCatagory ref = new LinkCatagory("RenderReference", LinkPolicy.None);
-
     /* initialize data files */ 
     {
       File dir = new File(prodDir, "working/" + user + "/default/images");
@@ -225,18 +224,18 @@ class TestMasterMgr2App
       
       MasterMgrClient client = new MasterMgrClient("localhost", 53135);
 
-      printStatus(client.status("default", modA.getName()));
-      printStatus(client.status("default", modB.getName()));
+      printStatus(client.status(author, "default", modA.getName()));
+      printStatus(client.status(author, "default", modB.getName()));
 
-      printStatus(client.status("default", modA.getName()));
-      printStatus(client.status("default", modB.getName()));
+      printStatus(client.status(author, "default", modA.getName()));
+      printStatus(client.status(author, "default", modB.getName()));
 
-      client.link("default", modA.getName(), modB.getName(), 
-		  ref, LinkRelationship.None, null);
-      modA = client.getWorkingVersion("default", modA.getName());
+      client.link(author, "default", modA.getName(), modB.getName(), 
+		  LinkPolicy.None, LinkRelationship.None, null);
+      modA = client.getWorkingVersion(author, "default", modA.getName());
 
-      printStatus(client.status("default", modA.getName()));
-      printStatus(client.status("default", modA.getName()));
+      printStatus(client.status(author, "default", modA.getName()));
+      printStatus(client.status(author, "default", modA.getName()));
 
       /* modify the directory where modA and modB live to see of plnotify(1) notices */ 
       {
@@ -249,18 +248,19 @@ class TestMasterMgr2App
 	}
       }
 
-      printStatus(client.status("default", modA.getName()));
-      printStatus(client.status("default", modB.getName()));
+      printStatus(client.status(author, "default", modA.getName()));
+      printStatus(client.status(author, "default", modB.getName()));
 
-      printStatus(client.status("default", modA.getName()));
-      printStatus(client.status("default", modB.getName()));
+      printStatus(client.status(author, "default", modA.getName()));
+      printStatus(client.status(author, "default", modB.getName()));
 
-      printStatus(client.checkIn("default", modA.getName(), "Initial revision.", null));    
+      printStatus(client.checkIn(author, "default", modA.getName(), 
+				 "Initial revision.", null));    
 
-      printStatus(client.status("default", modA.getName()));
+      printStatus(client.status(author, "default", modA.getName()));
 
-      modA = client.getWorkingVersion("default", modA.getName());
-      modB = client.getWorkingVersion("default", modB.getName());
+      modA = client.getWorkingVersion(author, "default", modA.getName());
+      modB = client.getWorkingVersion(author, "default", modB.getName());
 
       client.disconnect();
     }
@@ -287,11 +287,11 @@ class TestMasterMgr2App
       {
 	MasterMgrClient client = new MasterMgrClient("localhost", 53135);
 
-	client.checkOut("modeling", modA.getName(), null, false);
-	printStatus(client.status("modeling", modA.getName()));
+	client.checkOut(author, "modeling", modA.getName(), null, false);
+	printStatus(client.status(author, "modeling", modA.getName()));
 
-	client.register("default", fly);
-	client.register("default", dragonfly);
+	client.register(author, "default", fly);
+	client.register(author, "default", dragonfly);
 	client.disconnect();
       }
 
@@ -311,15 +311,15 @@ class TestMasterMgr2App
       {
 	MasterMgrClient client = new MasterMgrClient("localhost", 53135);
 
-	printStatus(client.status("default", eagle.getName()));
-	printStatus(client.status("default", eagle.getName()));
+	printStatus(client.status(author, "default", eagle.getName()));
+	printStatus(client.status(author, "default", eagle.getName()));
 
-	client.link("default", eagle.getName(), snake.getName(), 
-		    new LinkCatagory("Eats", LinkPolicy.Both), LinkRelationship.All, null);
+	client.link(author, "default", eagle.getName(), snake.getName(), 
+		    LinkPolicy.Both, LinkRelationship.All, null);
 
 	//client.revoke("default", dragonfly.getName(), true);
 	
-	client.rename("default", sparrow.getName(), "/animals/mammal/bat", true);
+	client.rename(author, "default", sparrow.getName(), "/animals/mammal/bat", true);
 
 	//client.revoke("default", fly.getName(), true);
 
@@ -339,7 +339,7 @@ class TestMasterMgr2App
 	  Thread.currentThread().sleep(2000);
 	}
 
-	printStatus(client.status("default", eagle.getName()));
+	printStatus(client.status(author, "default", eagle.getName()));
 
 	{
 	  File dir = new File(animals, "amphibians");
@@ -348,7 +348,7 @@ class TestMasterMgr2App
 	  Thread.currentThread().sleep(2000);
 	}
 
-	printStatus(client.status("default", eagle.getName()));
+	printStatus(client.status(author, "default", eagle.getName()));
 
 	{
 	  File dir = new File(animals, "reptiles");
@@ -357,7 +357,7 @@ class TestMasterMgr2App
 	  Thread.currentThread().sleep(2000);
 	}
 
-	printStatus(client.status("default", eagle.getName()));
+	printStatus(client.status(author, "default", eagle.getName()));
 
 	{
 	  File dir = new File(animals, "birds");
@@ -367,10 +367,10 @@ class TestMasterMgr2App
 	}
       }
 
-      printStatus(client.status("default", eagle.getName()));
-      printStatus(client.status("default", fly.getName()));
-      printStatus(client.status("default", "/animals/mammal/bat"));
-      printStatus(client.status("default", frog.getName()));
+      printStatus(client.status(author, "default", eagle.getName()));
+      printStatus(client.status(author, "default", fly.getName()));
+      printStatus(client.status(author, "default", "/animals/mammal/bat"));
+      printStatus(client.status(author, "default", frog.getName()));
 
       //client.shutdown();
       client.disconnect();
@@ -503,10 +503,10 @@ class TestMasterMgr2App
       
       {
 	buf.append(indent2 + "FileStates = {\n");
+	Date ts[] = details.getFileTimeStamps();
 	for(FileSeq fseq : details.getFileStateSequences()) {
 	  buf.append(indent2 + "  " + fseq + " = {\n");
 	  FileState fs[] = details.getFileState(fseq);
-	  Date ts[] = details.getFileTimeStamps(fseq);
 	  
 	  int wk = 0;
 	  for(File file : fseq.getFiles()) {
@@ -597,10 +597,12 @@ class TestMasterMgr2App
 	
 	MasterMgrClient client = new MasterMgrClient("localhost", 53135);
 	
-	client.register("default", pNodeMod);
+	String author = PackageInfo.sUser;
+
+	client.register(author, "default", pNodeMod);
 	
 	{
-	  NodeMod mod = client.getWorkingVersion("default", pNodeMod.getName());
+	  NodeMod mod = client.getWorkingVersion(author, "default", pNodeMod.getName());
 	  if(!pNodeMod.equals(mod)) 
 	    throw new PipelineException("Assert Failure!");
 	  pNodeMod = mod;
@@ -608,7 +610,7 @@ class TestMasterMgr2App
 	
 	{
 	  try {
-	    NodeMod mod = client.getWorkingVersion("default", "/images/fooy");
+	    NodeMod mod = client.getWorkingVersion(author, "default", "/images/fooy");
 	  }
 	  catch(PipelineException ex) {
 	    System.out.print("Caught: " + ex.getMessage() + "\n\n");
@@ -626,11 +628,11 @@ class TestMasterMgr2App
 	    FrameRange range2 = new FrameRange(s, e, range.getBy());
 	    
 	    pNodeMod.adjustFrameRange(range2);	    
-	    client.modifyProperties("default", pNodeMod);
+	    client.modifyProperties(author, "default", pNodeMod);
 	  }
 	  
 	  {
-	    NodeMod mod = client.getWorkingVersion("default", pNodeMod.getName());
+	    NodeMod mod = client.getWorkingVersion(author, "default", pNodeMod.getName());
 	    if(!pNodeMod.equals(mod)) 
 	      throw new PipelineException("Assert Failure!");
 	    pNodeMod = mod;
@@ -673,10 +675,12 @@ class TestMasterMgr2App
 	
 	MasterMgrClient client = new MasterMgrClient("localhost", 53135);
 	
+	String author = PackageInfo.sUser;
+		
 	{
 	  int cnt;
 	  for(cnt=0; cnt<10; cnt++) {	
-	    NodeMod mod = client.getWorkingVersion("default", pNodeMod.getName());
+	    NodeMod mod = client.getWorkingVersion(author, "default", pNodeMod.getName());
 	    if(!pNodeMod.equals(mod)) 
 	      throw new PipelineException("Assert Failure!");
 	    pNodeMod = mod;
@@ -727,37 +731,39 @@ class TestMasterMgr2App
      
 	MasterMgrClient client = new MasterMgrClient("localhost", 53135);
 
-	client.register("default", pSalamander);
-	client.register("default", pFrog);
-	client.register("default", pSnake);
+	String author = PackageInfo.sUser;
 
-	client.link("default", pSnake.getName(), pFrog.getName(), 
-		    new LinkCatagory("Eats", LinkPolicy.Both), LinkRelationship.All, null);
+	client.register(author, "default", pSalamander);
+	client.register(author, "default", pFrog);
+	client.register(author, "default", pSnake);
 
-	client.link("default", pFrog.getName(), pDragonfly.getName(), 
-		    new LinkCatagory("Eats", LinkPolicy.Both), LinkRelationship.All, null);
+	client.link(author, "default", pSnake.getName(), pFrog.getName(), 
+		    LinkPolicy.Both, LinkRelationship.All, null);
 
-	client.link("default", pSnake.getName(), pSalamander.getName(), 
-		    new LinkCatagory("Eats", LinkPolicy.Both), LinkRelationship.All, null);
+	client.link(author, "default", pFrog.getName(), pDragonfly.getName(), 
+		    LinkPolicy.Both, LinkRelationship.All, null);
 
-	client.link("default", pFrog.getName(), pFly.getName(), 
-		    new LinkCatagory("Eats", LinkPolicy.Both), LinkRelationship.All, null);
+	client.link(author, "default", pSnake.getName(), pSalamander.getName(), 
+		    LinkPolicy.Both, LinkRelationship.All, null);
+
+	client.link(author, "default", pFrog.getName(), pFly.getName(), 
+		    LinkPolicy.Both, LinkRelationship.All, null);
 	
-	client.link("default", pDragonfly.getName(), pFly.getName(),
-		    new LinkCatagory("Eats", LinkPolicy.Both), LinkRelationship.All, null);
+	client.link(author, "default", pDragonfly.getName(), pFly.getName(),
+		    LinkPolicy.Both, LinkRelationship.All, null);
 
 
-	client.unlink("default", pSnake.getName(), pSalamander.getName()); 
+	client.unlink(author, "default", pSnake.getName(), pSalamander.getName()); 
 
 	try {
-	  client.unlink("default", pSnake.getName(), pSalamander.getName());
+	  client.unlink(author, "default", pSnake.getName(), pSalamander.getName());
 	}
 	catch(PipelineException ex) {
 	  System.out.print("Caught: " + ex.getMessage() + "\n\n");
 	}
 
-	client.link("default", pSnake.getName(), pSalamander.getName(), 
-		    new LinkCatagory("Eats", LinkPolicy.Both), LinkRelationship.All, null);
+	client.link(author, "default", pSnake.getName(), pSalamander.getName(), 
+		    LinkPolicy.Both, LinkRelationship.All, null);
 
 	client.disconnect();
       }
@@ -805,29 +811,31 @@ class TestMasterMgr2App
     
 	MasterMgrClient client = new MasterMgrClient("localhost", 53135);
 
-	client.register("default", pSparrow);
-	client.register("default", pEagle);
+	String author = PackageInfo.sUser;
 
-	client.link("default", pEagle.getName(), pSparrow.getName(), 
-		    new LinkCatagory("Eats", LinkPolicy.Both), LinkRelationship.All, null);
+	client.register(author, "default", pSparrow);
+	client.register(author, "default", pEagle);
 
-	client.link("default", pSparrow.getName(), pDragonfly.getName(), 
-		    new LinkCatagory("Eats", LinkPolicy.Both), LinkRelationship.All, null);
+	client.link(author, "default", pEagle.getName(), pSparrow.getName(), 
+		    LinkPolicy.Both, LinkRelationship.All, null);
 
-	client.link("default", pSparrow.getName(), pFly.getName(), 
-		    new LinkCatagory("Eats", LinkPolicy.Both), LinkRelationship.All, null);
+	client.link(author, "default", pSparrow.getName(), pDragonfly.getName(), 
+		    LinkPolicy.Both, LinkRelationship.All, null);
+
+	client.link(author, "default", pSparrow.getName(), pFly.getName(), 
+		    LinkPolicy.Both, LinkRelationship.All, null);
 
 	try {
-	  client.link("default", pFly.getName(), pFly.getName(), 
-		      new LinkCatagory("Eats", LinkPolicy.Both), LinkRelationship.All, null);
+	  client.link(author, "default", pFly.getName(), pFly.getName(), 
+		      LinkPolicy.Both, LinkRelationship.All, null);
 	} 
 	catch(PipelineException ex) {
 	  System.out.print("Caught: " + ex.getMessage() + "\n\n");
 	}
 
 	try {
-	  client.link("default", pFly.getName(), pEagle.getName(), 
-		      new LinkCatagory("Eats", LinkPolicy.Both), LinkRelationship.All, null);
+	  client.link(author, "default", pFly.getName(), pEagle.getName(), 
+		      LinkPolicy.Both, LinkRelationship.All, null);
 	} 
 	catch(PipelineException ex) {
 	  System.out.print("Caught: " + ex.getMessage() + "\n\n");
