@@ -174,16 +174,26 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
       JAVA_PATHS = -d ../../.. -classpath "../../..:$(srcdir)/../../.."
 
-     ALL_SOURCES = $(shell ls *.java $(srcdir)/*.java $(srcdir)/message/*.java) \
-                   $(patsubst %,%.java,$(PARSERS))
+     ALL_SOURCES = $(shell ls $(srcdir)/*.java $(srcdir)/message/*.java)
 
-    # 
-    # This hack is here to workaround a bug in the Java compiler which requires that enum 
-    # classes are compiled BEFORE any classes which use the enum class!
-    #
-    JAVA_SOURCES = \
-      $(filter %State.java %PosixSignal.java %FileRequest.java,$(ALL_SOURCES)) \
-      $(filter-out %State.java %PosixSignal.java %FileRequest.java,$(ALL_SOURCES))
+           ENUMS = DependState \
+                   ExecutionMethod \
+                   FileState \
+                   LinkPolicy \
+                   LinkRelationship \
+                   OverallNodeState \
+                   OverallQueueState \
+                   OverflowPolicy \
+                   PosixSignal \
+                   PropertyState \
+                   QueueState \
+                   VersionState \
+                   message/FileRequest
+
+    ENUM_SOURCES = $(patsubst %,$(srcdir)/%.java,$(ENUMS))
+
+    JAVA_SOURCES = $(ENUM_SOURCES) $(filter-out $(ENUM_SOURCES),$(ALL_SOURCES)) \
+                   PackageInfo.java $(patsubst %,%.java,$(PARSERS))
 
 
 #--------------------------------------------------------------------------------------------#
