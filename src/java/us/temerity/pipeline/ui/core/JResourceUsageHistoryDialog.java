@@ -1,4 +1,4 @@
-// $Id: JResourceUsageHistoryDialog.java,v 1.6 2005/01/31 23:02:33 jim Exp $
+// $Id: JResourceUsageHistoryDialog.java,v 1.7 2005/02/01 14:52:17 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -50,23 +50,26 @@ class JResourceUsageHistoryDialog
 
     /* initialize fields */ 
     {
+      UserPrefs prefs = UserPrefs.getInstance();
+      pShowFullLoadBar = prefs.getShowFullLoadBar();
+      pShowJobSlotsBar = prefs.getShowJobSlotsBar();
+
       pSamples = new TreeMap<String,ResourceSampleBlock>();
 
+      pRefreshGraphBars = true; 
       pRefreshLabels    = true;
       pRefreshTimeScale = true;
       pRefreshGraph     = true;
 
-      pLoadDLs   = new TreeMap<String,Integer>();
-      pLoadSpans = new TreeMap<String,Vector2d>();
+      pIntegerLabelDLs = new TreeMap<Integer,Integer>();
+      pDoubleLabelDLs  = new TreeMap<String,Integer>();
 
-      pMemDLs   = new TreeMap<String,Integer>();
-      pMemSpans = new TreeMap<String,Vector2d>();
+      pGraphSpans = new TreeMap<String,Vector2d>();
 
-      pDiskDLs   = new TreeMap<String,Integer>();
-      pDiskSpans = new TreeMap<String,Vector2d>();
-
-      pJobDLs   = new TreeMap<String,Integer>();
-      pJobSpans = new TreeMap<String,Vector2d>();
+      pLoadDLs = new TreeMap<String,Integer>();
+      pMemDLs  = new TreeMap<String,Integer>();
+      pDiskDLs = new TreeMap<String,Integer>();
+      pJobDLs  = new TreeMap<String,Integer>();
 
       pTranslate = new Point2d();
 
@@ -76,6 +79,69 @@ class JResourceUsageHistoryDialog
 
       pBorder = new Vector2d(200.0, 56.0);
     }
+
+    
+    /* popup menu */ 
+    {
+      JMenuItem item;
+      
+      pPopup = new JPopupMenu();  
+
+      item = new JMenuItem("Update");
+      pUpdateItem = item;
+      item.setActionCommand("update");
+      item.addActionListener(this);
+      pPopup.add(item);  
+      
+      pPopup.addSeparator();
+      
+      item = new JMenuItem("Frame All");
+      pFrameAllItem = item;
+      item.setActionCommand("frame-all");
+      item.addActionListener(this);
+      pPopup.add(item);  
+      
+      pPopup.addSeparator();
+
+      item = new JMenuItem();
+      pShowHideLoadItem = item;
+      item.setActionCommand("show-hide-load");
+      item.addActionListener(this);
+      pPopup.add(item);  
+
+      item = new JMenuItem();
+      pShowHideMemItem = item;
+      item.setActionCommand("show-hide-mem");
+      item.addActionListener(this);
+      pPopup.add(item);  
+
+      item = new JMenuItem();
+      pShowHideDiskItem = item;
+      item.setActionCommand("show-hide-disk");
+      item.addActionListener(this);
+      pPopup.add(item);  
+
+      item = new JMenuItem();
+      pShowHideJobItem = item;
+      item.setActionCommand("show-hide-job");
+      item.addActionListener(this);
+      pPopup.add(item);  
+      
+      pPopup.addSeparator();
+
+      item = new JMenuItem();
+      pShowHideFullLoadBarItem = item;
+      item.setActionCommand("show-hide-load-bar");
+      item.addActionListener(this);
+      pPopup.add(item);  
+      
+      item = new JMenuItem();
+      pShowHideJobSlotsBarItem = item;
+      item.setActionCommand("show-hide-slots-bar");
+      item.addActionListener(this);
+      pPopup.add(item);  
+    }
+
 
     /* initialize the dialog components */     
     {
@@ -241,11 +307,19 @@ class JResourceUsageHistoryDialog
    Vector2d scale
   ) 
   {
+    Vector2d oscale = pScale;
     pScale = scale;
     pScale.clamp(pMinScale, pMaxScale);
 
-    pRefreshLabels    = true;
-    pRefreshTimeScale = true;
+    if(!ExtraMath.equiv(oscale.y(), pScale.y())) {
+      pBorderResized    = true;
+      pRefreshGraphBars = true;
+      pRefreshLabels    = true;
+    }
+
+    if(!ExtraMath.equiv(oscale.x(), pScale.x())) {
+      pRefreshTimeScale = true;
+    }
   }
 
   
@@ -278,6 +352,101 @@ class JResourceUsageHistoryDialog
   updateUserPrefs() 
   {
     doRefresh();
+    updateMenuToolTips();
+  }
+
+  /**
+   * Update the menu item tool tips.
+   */ 
+  private void 
+  updateMenuToolTips() 
+  {
+    UserPrefs prefs = UserPrefs.getInstance();
+
+    updateMenuToolTip
+      (pUpdateItem, prefs.getUpdate(), 
+       "Update the resource usage history graphs.");
+
+    updateMenuToolTip
+      (pFrameAllItem, prefs.getFrameAll(), 
+       "Move the camera to frame all resource usage history graphs.");
+
+    updateMenuToolTip
+      (pShowHideLoadItem, prefs.getToggleSystemLoad(), 
+       "Toggle the display of the system load graphs.");
+    updateMenuToolTip
+      (pShowHideMemItem, prefs.getToggleFreeMemory(), 
+       "Toggle the display of the free memory graphs.");
+    updateMenuToolTip
+      (pShowHideDiskItem, prefs.getToggleFreeDisk(), 
+       "Toggle the display of the free temporary disk space graphs.");
+    updateMenuToolTip
+      (pShowHideJobItem, prefs.getToggleJobCount(), 
+       "Toggle the display of the job count graphs.");
+
+    updateMenuToolTip
+      (pShowHideFullLoadBarItem, prefs.getToggleFullLoadBar(), 
+       "Toggle the display of the full load bar.");
+    updateMenuToolTip
+      (pShowHideJobSlotsBarItem, prefs.getToggleJobSlotsBar(), 
+       "Toggle the display of the job slots level bar.");
+  }
+
+  /**
+   * Update the tool tip for the given menu item.
+   */   
+  protected void 
+  updateMenuToolTip
+  (
+   JMenuItem item, 
+   HotKey key,
+   String desc
+  ) 
+  {
+    String text = null;
+    if(UserPrefs.getInstance().getShowMenuToolTips()) {
+      if(desc != null) {
+	if(key != null) 
+	  text = (desc + "<P>Hot Key = " + key);
+	else 
+	  text = desc;
+      }
+      else {
+	text = ("Hot Key = " + key);
+      }
+    }
+    
+    if(text != null) 
+      item.setToolTipText(UIFactory.formatToolTip(text));
+    else 
+      item.setToolTipText(null);
+  }
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Update the popup menu.
+   */ 
+  public void 
+  updatePopupMenu() 
+  {
+    pShowHideLoadItem.setText
+      ((pLoadButton.isSelected() ? "Hide" : "Show") + " System Load (CPU)");
+
+    pShowHideMemItem.setText
+      ((pMemButton.isSelected() ? "Hide" : "Show") + " Free Memory (MEM)");
+
+    pShowHideDiskItem.setText
+      ((pDiskButton.isSelected() ? "Hide" : "Show") + " Free Disk (DISK)");
+
+    pShowHideJobItem.setText
+      ((pJobButton.isSelected() ? "Hide" : "Show") + " Job Count (JOB)");
+
+    pShowHideFullLoadBarItem.setText
+      ((pShowFullLoadBar ? "Hide" : "Show") + " Full Load Bar");
+
+    pShowHideJobSlotsBarItem.setText
+      ((pShowJobSlotsBar ? "Hide" : "Show") + " Job Slots Bar");
   }
 
 
@@ -305,7 +474,6 @@ class JResourceUsageHistoryDialog
     gl.glLoadIdentity();
     gl.glOrtho(bl.x(), tr.x(), bl.y(), tr.y(), -1.0, 1.0);
   }
-
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -360,7 +528,11 @@ class JResourceUsageHistoryDialog
 	  double x = mgr.getTextWidth("CharterBTRoman", hname, 0.05) * sHostnameSize;
 	  bx = Math.max(bx, x);
 	}
-	pBorder.x(bx + 20.0 + sLabelTickWidth);
+
+	pShowGraphBrackets = (((sGraphBorder*2.0 + sGraphGap) * pScale.y()) >= 10.0);
+	double lx = pShowGraphBrackets ? 0.0 : -31.0;
+
+	pBorder.x(bx + 20.0 + sLabelTickWidth + lx);
 
 	resizeViewport(gl, pCanvas.getWidth(), pCanvas.getHeight());      
 
@@ -449,18 +621,13 @@ class JResourceUsageHistoryDialog
       oldDLs.addAll(pMemDLs.values());
       oldDLs.addAll(pDiskDLs.values());
       oldDLs.addAll(pJobDLs.values());
-      
+
+      pGraphSpans.clear();      
+
       pLoadDLs.clear();
-      pLoadSpans.clear();
-      
       pMemDLs.clear();
-      pMemSpans.clear();
-      
       pDiskDLs.clear();
-      pDiskSpans.clear();
-      
       pJobDLs.clear();
-      pJobSpans.clear();
       
       if(!pSamples.isEmpty()) {
 	pMinTime = null;
@@ -479,11 +646,11 @@ class JResourceUsageHistoryDialog
 	    double offset = ((double) (first.getTime() - pMinTime.getTime())) / 60000.0;
 	    double range  = ((double) (last.getTime() - first.getTime())) / 60000.0;
 
+	    Vector2d span = new Vector2d(offset, range+1.0);
+	    pGraphSpans.put(hname, span);
+
 	    /* system load graphs */ 
 	    if(block.getNumSamples() > 0) {
-	      Vector2d span = new Vector2d(offset, range+1.0);
-	      pLoadSpans.put(hname, span);
-		
 	      Integer dl = null;
 	      if(oldDLs.isEmpty()) 
 		dl = UIMaster.getInstance().getDisplayList(gl);
@@ -543,10 +710,8 @@ class JResourceUsageHistoryDialog
 		}
 		gl.glEnd();
 
-		/* number of procs level */ 
-		{
-		  // MOVE THIS TO GRAPH LABEL SECITON...
-
+		/* full load bar */ 
+		if(pShowFullLoadBar) {
 		  double procs = (double) block.getNumProcessors();
 		  double v = procs / maxLoad; 
 		  if(v <= 1.0) {
@@ -567,9 +732,6 @@ class JResourceUsageHistoryDialog
 	      
 	    /* free memory */ 
 	    if(pMemButton.isSelected()) {
-	      Vector2d span = new Vector2d(offset, range+1.0);
-	      pMemSpans.put(hname, span);
-		
 	      Integer dl = null;
 	      if(oldDLs.isEmpty()) 
 		dl = UIMaster.getInstance().getDisplayList(gl);
@@ -617,9 +779,6 @@ class JResourceUsageHistoryDialog
 
 	    /* free temporary disk space */ 
 	    if(pDiskButton.isSelected()) {
-	      Vector2d span = new Vector2d(offset, range+1.0);
-	      pDiskSpans.put(hname, span);
-		
 	      Integer dl = null;
 	      if(oldDLs.isEmpty()) 
 		dl = UIMaster.getInstance().getDisplayList(gl);
@@ -667,9 +826,6 @@ class JResourceUsageHistoryDialog
 	
 	    /* job count */ 
 	    if(pJobButton.isSelected()) {
-	      Vector2d span = new Vector2d(offset, range+1.0);
-	      pJobSpans.put(hname, span);
-		
 	      Integer dl = null;
 	      if(oldDLs.isEmpty()) 
 		dl = UIMaster.getInstance().getDisplayList(gl);
@@ -713,9 +869,7 @@ class JResourceUsageHistoryDialog
 		gl.glEnd();
 
 		/* job slots level */ 
-		{
-		  // MOVE THIS TO GRAPH LABEL SECITON...
-
+		if(pShowJobSlotsBar) {
 		  double slots = (double) block.getJobSlots();
 		  double v = slots / totalJobs; 
 		  if(v <= 1.0) {
@@ -750,77 +904,27 @@ class JResourceUsageHistoryDialog
       pBBox = null;
       double dy = 0.0;
       for(String hname : pSamples.keySet()) {
+	if(pLoadButton.isSelected() && growGraphBBox(hname, pLoadDLs, dy)) 
+	  dy -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
 
-	/* system load */ 
-	if(pLoadButton.isSelected()) {
-	  Integer dl = pLoadDLs.get(hname);
-	  Vector2d span = pLoadSpans.get(hname);
-	  if((dl != null) && (span != null)) {
-	    BBox2d bbox = new BBox2d(new Point2d(span.x(),          dy+0.0-sGraphBorder), 
-				     new Point2d(span.x()+span.y(), dy+1.0+sGraphBorder));
-	    if(pBBox == null) 
-	      pBBox = bbox;
-	    else 
-	      pBBox.grow(bbox);	
-	    
-	    dy -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
-	  }	  
-	}
+	if(pMemButton.isSelected() && growGraphBBox(hname, pMemDLs, dy)) 
+	  dy -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
 
-	/* free memory */ 
-	if(pMemButton.isSelected()) {
-	  Integer dl = pMemDLs.get(hname);
-	  Vector2d span = pMemSpans.get(hname);
-	  if((dl != null) && (span != null)) {
-	    BBox2d bbox = new BBox2d(new Point2d(span.x(),          dy+0.0-sGraphBorder), 
-				     new Point2d(span.x()+span.y(), dy+1.0+sGraphBorder));
-	    if(pBBox == null) 
-	      pBBox = bbox;
-	    else 
-	      pBBox.grow(bbox);	
-	    
-	    dy -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
-	  }
-	}
+	if(pDiskButton.isSelected() && growGraphBBox(hname, pDiskDLs, dy)) 
+	  dy -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
 
-	/* free temporary disk space */ 
-	if(pDiskButton.isSelected()) {
-	  Integer dl = pDiskDLs.get(hname);
-	  Vector2d span = pDiskSpans.get(hname);
-	  if((dl != null) && (span != null)) {
-	    BBox2d bbox = new BBox2d(new Point2d(span.x(),          dy+0.0-sGraphBorder), 
-				     new Point2d(span.x()+span.y(), dy+1.0+sGraphBorder));
-	    if(pBBox == null) 
-	      pBBox = bbox;
-	    else 
-	      pBBox.grow(bbox);	
-	    
-	    dy -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
-	  }
-	}
-	
-	/* job count */ 
-	if(pJobButton.isSelected()) {
-	  Integer dl = pJobDLs.get(hname);
-	  Vector2d span = pJobSpans.get(hname);
-	  if((dl != null) && (span != null)) {
-	    BBox2d bbox = new BBox2d(new Point2d(span.x(),          dy+0.0-sGraphBorder), 
-				     new Point2d(span.x()+span.y(), dy+1.0+sGraphBorder));
-	    if(pBBox == null) 
-	      pBBox = bbox;
-	    else 
-	      pBBox.grow(bbox);	
-	    
-	    dy -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
-	  }
-	}
+	if(pJobButton.isSelected() && growGraphBBox(hname, pJobDLs, dy)) 
+	  dy -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
 
 	/* time range */ 
 	if(pLoadButton.isSelected() || pMemButton.isSelected()  || 
 	   pDiskButton.isSelected() || pJobButton.isSelected()) {
+
 	  ResourceSampleBlock block = pSamples.get(hname);
+
 	  if((startStamp == null) || (block.getStartTimeStamp().compareTo(startStamp) < 0)) 
 	    startStamp = block.getStartTimeStamp();
+
 	  if((endStamp == null) || (block.getEndTimeStamp().compareTo(endStamp) > 0)) 
 	    endStamp = block.getEndTimeStamp();
 	}
@@ -851,8 +955,102 @@ class JResourceUsageHistoryDialog
       }
     }
 
+    /* render graph bars */ 
+    gl.glPushMatrix();
+    {
+      gl.glTranslated(0.0, pTranslate.y(), 0.0);
+
+      /* build graph bars display list */ 
+      if(pRefreshGraphBars) {
+
+	if(pGraphBarsDL == null) 
+	  pGraphBarsDL = UIMaster.getInstance().getDisplayList(gl);
+	    
+	gl.glNewList(pGraphBarsDL, GL.GL_COMPILE_AND_EXECUTE);
+	{		
+	  gl.glPushMatrix();
+	  {
+	    Point2d center = pBBox.getCenter();
+	    gl.glScaled(1.0, pScale.y(), 1.0);
+	    gl.glTranslated(1.0, -center.y(), 0.0);
+
+	    gl.glColor3d(0.8, 0.8, 0.8);
+
+	    double top = 1.0;
+	    for(String hname : pSamples.keySet()) {
+	      ResourceSampleBlock block = pSamples.get(hname);
+
+	      if(pLoadButton.isSelected() && renderGraphBars(gl, top)) {
+		if(pShowFullLoadBar) {
+		  double v = (((double) block.getNumProcessors()) / 
+			      ((double) prefs.getSystemLoadRange()));
+		  if((v > 0.0) && (v < 1.0)) {
+		    Color3d color = prefs.getFullLoadColor();
+		    color.mult(0.8);
+		    gl.glColor3d(color.r(), color.g(), color.b());
+		    
+		    gl.glBegin(gl.GL_LINES);
+		    {	
+		      gl.glVertex2d(-pGraphArea.x(), top-1.0+v);
+		      gl.glVertex2d( pGraphArea.x(), top-1.0+v);
+		    }
+		    gl.glEnd();
+		    
+		    gl.glColor3d(0.8, 0.8, 0.8);
+		  }
+		}
+
+		top -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
+	      }
+	      
+	      if(pMemButton.isSelected() && renderGraphBars(gl, top))
+		top -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
+	      
+	      if(pDiskButton.isSelected() && renderGraphBars(gl, top))
+		top -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
+	      
+	      if(pJobButton.isSelected() && renderGraphBars(gl, top)) {
+		if(pShowJobSlotsBar) {
+		  double v = (((double) block.getJobSlots()) / 
+			      ((double) prefs.getJobCountRange()));
+		  if((v > 0.0) && (v < 1.0)) {
+		    Color3d color = prefs.getJobSlotsColor();
+		    color.mult(0.8);
+		    gl.glColor3d(color.r(), color.g(), color.b());
+		    
+		    gl.glBegin(gl.GL_LINES);
+		    {	
+		      gl.glVertex2d(-pGraphArea.x(), top-1.0+v);
+		      gl.glVertex2d( pGraphArea.x(), top-1.0+v);
+		    }
+		    gl.glEnd();
+		    
+		    gl.glColor3d(0.8, 0.8, 0.8);
+		  }
+		}
+
+		top -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
+	      }
+	      
+	      top -= sGraphGap*2.0; 
+	    }
+	  }
+	  gl.glPopMatrix();
+	}
+	gl.glEndList();
+	    
+	pRefreshGraphBars = false;
+      }
+      else {
+	gl.glCallList(pGraphBarsDL);
+      }
+    }
+    gl.glPopMatrix();
+    
+
     /* render the graph geometry */ 
     if(pBBox != null) {
+
       gl.glPushMatrix();
       {
 	gl.glTranslated(pTranslate.x(), pTranslate.y(), 0.0);
@@ -863,70 +1061,17 @@ class JResourceUsageHistoryDialog
 	
 	double dy = 0.0;
 	for(String hname : pSamples.keySet()) {
+	  if(pLoadButton.isSelected() && renderGraph(gl, hname, pLoadDLs, dy)) 
+	    dy -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
 
-	  /* system load */ 
-	  if(pLoadButton.isSelected()) {
-	    Integer dl = pLoadDLs.get(hname);
-	    Vector2d span = pLoadSpans.get(hname);
-	    if((dl != null) && (span != null)) {
-	      gl.glPushMatrix();
-	      {
-		gl.glTranslated(span.x(), dy, 0.0);
-		gl.glCallList(dl);
-	      }
-	      gl.glPopMatrix();
-	    
-	      dy -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
-	    }
-	  }
-	  
-	  /* free memory */ 
-	  if(pMemButton.isSelected()) {
-	    Integer dl = pMemDLs.get(hname);
-	    Vector2d span = pMemSpans.get(hname);
-	    if((dl != null) && (span != null)) {
-	      gl.glPushMatrix();
-	      {
-		gl.glTranslated(span.x(), dy, 0.0);
-		gl.glCallList(dl);
-	      }
-	      gl.glPopMatrix();
-	    
-	      dy -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
-	    }	    
-	  }
-	  
-	  /* free temporary disk space */ 
-	  if(pDiskButton.isSelected()) {
-	    Integer dl = pDiskDLs.get(hname);
-	    Vector2d span = pDiskSpans.get(hname);
-	    if((dl != null) && (span != null)) {
-	      gl.glPushMatrix();
-	      {
-		gl.glTranslated(span.x(), dy, 0.0);
-		gl.glCallList(dl);
-	      }
-	      gl.glPopMatrix();
-	    
-	      dy -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
-	    }	    
-	  }
-	  
-	  /* job count */ 
-	  if(pJobButton.isSelected()) {
-	    Integer dl = pJobDLs.get(hname);
-	    Vector2d span = pJobSpans.get(hname);
-	    if((dl != null) && (span != null)) {
-	      gl.glPushMatrix();
-	      {
-		gl.glTranslated(span.x(), dy, 0.0);
-		gl.glCallList(dl);
-	      }
-	      gl.glPopMatrix();
-	    
-	      dy -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
-	    }	    
-	  }
+	  if(pMemButton.isSelected() && renderGraph(gl, hname, pMemDLs, dy))
+	    dy -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
+
+	  if(pDiskButton.isSelected() && renderGraph(gl, hname, pDiskDLs, dy))
+	    dy -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
+
+	  if(pJobButton.isSelected() && renderGraph(gl, hname, pJobDLs, dy))
+	    dy -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
 
 	  dy -= sGraphGap*2.0; 
 	}
@@ -1373,12 +1518,87 @@ class JResourceUsageHistoryDialog
 	    catch(IOException ex) {
 	      UIMaster.getInstance().showErrorDialog(ex);
 	    }
-	    
+
+	    /* build graph tick label display lists */ 
+	    try {
+	      pIntegerLabelDLs.clear();
+	      pDoubleLabelDLs.clear();
+
+	      if(pShowGraphBrackets) {
+		{
+		  int v = 0;
+		  int dl = mgr.getTextDL(gl, "CharterBTRoman", String.valueOf(v), 
+					 GeometryMgr.TextAlignment.Center, 0.05);
+		  pIntegerLabelDLs.put(v, dl);
+		}
+
+		{
+		  int v = prefs.getSystemLoadRange();
+		  int dl = mgr.getTextDL(gl, "CharterBTRoman", String.valueOf(v), 
+					 GeometryMgr.TextAlignment.Center, 0.05);
+		  pIntegerLabelDLs.put(v, dl);
+		}
+
+		{
+		  int v = prefs.getJobCountRange();
+		  int dl = mgr.getTextDL(gl, "CharterBTRoman", String.valueOf(v), 
+					 GeometryMgr.TextAlignment.Center, 0.05);
+		  pIntegerLabelDLs.put(v, dl);
+		}
+		
+		{
+		  String text = "0.0";
+		  int dl = mgr.getTextDL(gl, "CharterBTRoman", text, 
+					 GeometryMgr.TextAlignment.Center, 0.05);
+		  pDoubleLabelDLs.put(text, dl);
+		}
+		
+		for(String hname : pSamples.keySet()) {
+		  ResourceSampleBlock block = pSamples.get(hname);
+		  
+		  {
+		    int v = block.getNumProcessors();
+		    int dl = mgr.getTextDL(gl, "CharterBTRoman", String.valueOf(v), 
+					   GeometryMgr.TextAlignment.Center, 0.05);
+		    pIntegerLabelDLs.put(v, dl);
+		  }
+
+		  {
+		    int v = block.getJobSlots();
+		    int dl = mgr.getTextDL(gl, "CharterBTRoman", String.valueOf(v), 
+					   GeometryMgr.TextAlignment.Center, 0.05);
+		    pIntegerLabelDLs.put(v, dl);
+		  }	
+
+		  {
+		    double v = ((double) block.getTotalMemory()) / 1073741824.0;
+		    String text = String.format("%1$.1f", v);
+		    int dl = mgr.getTextDL(gl, "CharterBTRoman", text, 
+					   GeometryMgr.TextAlignment.Center, 0.05);
+		    pDoubleLabelDLs.put(text, dl);
+		  }
+		  
+		  {
+		    double v = ((double) block.getTotalDisk()) / 1073741824.0;
+		    String text = String.format("%1$.1f", v);
+		    int dl = mgr.getTextDL(gl, "CharterBTRoman", text, 
+					   GeometryMgr.TextAlignment.Center, 0.05);
+		    pDoubleLabelDLs.put(text, dl);
+		  }
+		}
+	      }
+	    }
+	    catch(IOException ex) {
+	      UIMaster.getInstance().showErrorDialog(ex);
+	    }
+
 	    if(pLabelsDL == null) 
 	      pLabelsDL = UIMaster.getInstance().getDisplayList(gl);
 	    
 	    gl.glNewList(pLabelsDL, GL.GL_COMPILE_AND_EXECUTE);
-	    {
+	    {		
+	      double lx = pShowGraphBrackets ? 0 : 31.0; 
+
 	      gl.glColor3d(1.0, 1.0, 1.0);
 	      
 	      gl.glPushMatrix();
@@ -1414,7 +1634,7 @@ class JResourceUsageHistoryDialog
 		      gl.glPushMatrix();
 		      {
 			double y = ExtraMath.lerp(top, btm, 0.5);
-			gl.glTranslated(-10.0-sLabelTickWidth, y, 0.0);
+			gl.glTranslated(-10.0-sLabelTickWidth+lx, y, 0.0);
 			gl.glScaled(sHostnameSize, sHostnameSize/pScale.y(), 1.0);
 			gl.glTranslated(0.0, -0.28, 0.0);
 			gl.glCallList(labelDLs.get(hname));
@@ -1423,21 +1643,21 @@ class JResourceUsageHistoryDialog
 
 		      gl.glBegin(gl.GL_LINES);
 		      {
-			gl.glVertex2d(10.0-sLabelTickWidth, top);
-			gl.glVertex2d(    -sLabelTickWidth, top);
+			gl.glVertex2d(10.0-sLabelTickWidth+lx, top);
+			gl.glVertex2d(    -sLabelTickWidth+lx, top);
 
-			gl.glVertex2d(-sLabelTickWidth, top);
-			gl.glVertex2d(-sLabelTickWidth, btm);
+			gl.glVertex2d(-sLabelTickWidth+lx, top);
+			gl.glVertex2d(-sLabelTickWidth+lx, btm);
 
-			gl.glVertex2d(10.0-sLabelTickWidth, btm);
-			gl.glVertex2d(    -sLabelTickWidth, btm);
+			gl.glVertex2d(10.0-sLabelTickWidth+lx, btm);
+			gl.glVertex2d(    -sLabelTickWidth+lx, btm);
 		      }
 		      gl.glEnd();
 
 		      gl.glBegin(gl.GL_POINTS);
 		      {
-			gl.glVertex2d(-sLabelTickWidth, top);
-			gl.glVertex2d(-sLabelTickWidth, btm);
+			gl.glVertex2d(-sLabelTickWidth+lx, top);
+			gl.glVertex2d(-sLabelTickWidth+lx, btm);
 		      }
 		      gl.glEnd();		    
 		    }
@@ -1454,51 +1674,34 @@ class JResourceUsageHistoryDialog
 		{
 		  double top = 1.0;
 		  for(String hname : pSamples.keySet()) {
+		    ResourceSampleBlock block = pSamples.get(hname);
+
 		    if(pLoadButton.isSelected()) {
-		      gl.glPushMatrix();
-		      {
-			gl.glTranslated(31.0-sLabelTickWidth, top-0.5, 0.0);
-			gl.glScaled(32.0, 32.0/pScale.y(), 1.0);
-			gl.glCallList(cpuDL);
-		      }
-		      gl.glPopMatrix();
+		      renderGraphLabel(gl, cpuDL, top, lx);
+		      renderGraphTickLabels
+			(gl, block.getNumProcessors(), prefs.getFullLoadColor(), 
+			 pShowFullLoadBar, prefs.getSystemLoadRange(), top);
 
 		      top -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
 		    }
 		  
 		    if(pMemButton.isSelected()) {
-		      gl.glPushMatrix();
-		      {
-			gl.glTranslated(31.0-sLabelTickWidth, top-0.5, 0.0);
-			gl.glScaled(32.0, 32.0/pScale.y(), 1.0);
-			gl.glCallList(memDL);
-		      }
-		      gl.glPopMatrix();
-
+		      renderGraphLabel(gl, memDL, top, lx);
+		      renderGraphTickLabels(gl, (double) block.getTotalMemory(), top);
 		      top -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
 		    }
 		  
 		    if(pDiskButton.isSelected()) {
-		      gl.glPushMatrix();
-		      {
-			gl.glTranslated(31.0-sLabelTickWidth, top-0.5, 0.0);
-			gl.glScaled(32.0, 32.0/pScale.y(), 1.0);
-			gl.glCallList(diskDL);
-		      }
-		      gl.glPopMatrix();
-
+		      renderGraphLabel(gl, diskDL, top, lx);
+		      renderGraphTickLabels(gl, (double) block.getTotalDisk(), top);
 		      top -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
 		    }
 		  
 		    if(pJobButton.isSelected()) {
-		      gl.glPushMatrix();
-		      {
-			gl.glTranslated(31.0-sLabelTickWidth, top-0.5, 0.0);
-			gl.glScaled(32.0, 32.0/pScale.y(), 1.0);
-			gl.glCallList(jobDL);
-		      }
-		      gl.glPopMatrix();
-
+		      renderGraphLabel(gl, jobDL, top, lx);
+		      renderGraphTickLabels
+			(gl, block.getJobSlots(), prefs.getJobSlotsColor(), 
+			 pShowJobSlotsBar, prefs.getJobCountRange(), top);
 		      top -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
 		    }
 
@@ -1535,7 +1738,268 @@ class JResourceUsageHistoryDialog
     }
   }
 
-   
+  /**
+   * Grow the bounding box to include the given geometry.
+   */ 
+  private boolean 
+  growGraphBBox
+  (
+   String hname, 
+   TreeMap<String,Integer> dls,
+   double dy
+  ) 
+  {  
+    Integer dl = dls.get(hname);
+    Vector2d span = pGraphSpans.get(hname);
+    if((dl != null) && (span != null)) {
+      BBox2d bbox = new BBox2d(new Point2d(span.x(),          dy+0.0-sGraphBorder), 
+			       new Point2d(span.x()+span.y(), dy+1.0+sGraphBorder));
+      if(pBBox == null) 
+	pBBox = bbox;
+      else 
+	pBBox.grow(bbox);	
+
+      return true;
+    }
+    
+    return false;
+  }
+
+  /**
+   * Render the graph geometry. 
+   */ 
+  private boolean 
+  renderGraph
+  (
+   GL gl, 
+   String hname, 
+   TreeMap<String,Integer> dls,
+   double dy
+  ) 
+  {
+    Integer dl = dls.get(hname);
+    Vector2d span = pGraphSpans.get(hname);
+    if((dl != null) && (span != null)) {
+      gl.glPushMatrix();
+      {
+	gl.glTranslated(span.x(), dy, 0.0);
+	gl.glCallList(dl);
+      }
+      gl.glPopMatrix();
+
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Render the graph bars. 
+   */ 
+  private boolean 
+  renderGraphBars
+  (
+   GL gl, 
+   double top
+  ) 
+  {
+    gl.glBegin(gl.GL_LINES);
+    {	
+      gl.glVertex2d(-pGraphArea.x(), top);
+      gl.glVertex2d( pGraphArea.x(), top);
+
+      gl.glVertex2d(-pGraphArea.x(), top-1.0);
+      gl.glVertex2d( pGraphArea.x(), top-1.0);
+    }
+    gl.glEnd();
+
+    return true;
+  }
+
+  /**
+   * Render the graph label and bracket.
+   */ 
+  private void 
+  renderGraphLabel
+  (
+   GL gl, 
+   int dl, 
+   double top, 
+   double lx
+  ) 
+  {
+    gl.glPushMatrix();
+    {
+      gl.glTranslated(26.0-sLabelTickWidth+lx, top-0.5, 0.0);
+      gl.glScaled(32.0, 32.0/pScale.y(), 1.0);
+      gl.glCallList(dl);
+    }
+    gl.glPopMatrix();
+    
+    gl.glBegin(gl.GL_LINES);
+    {
+      {
+	gl.glVertex2d(52.0-sLabelTickWidth+lx, top);
+	gl.glVertex2d(46.0-sLabelTickWidth+lx, top);
+	
+	gl.glVertex2d(46.0-sLabelTickWidth+lx, top);
+	gl.glVertex2d(46.0-sLabelTickWidth+lx, top-1.0);
+	
+	gl.glVertex2d(52.0-sLabelTickWidth+lx, top-1.0);
+	gl.glVertex2d(46.0-sLabelTickWidth+lx, top-1.0);
+      }
+
+      {
+	gl.glVertex2d( 0.0, top);
+	gl.glVertex2d(-8.0, top);
+	
+	gl.glVertex2d( 0.0, top-1.0);
+	gl.glVertex2d(-8.0, top-1.0);
+      }
+    }
+    gl.glEnd();    
+      
+    gl.glBegin(gl.GL_POINTS);
+    {
+      gl.glVertex2d(46.0-sLabelTickWidth+lx, top);
+      gl.glVertex2d(46.0-sLabelTickWidth+lx, top-1.0);
+    }
+    gl.glEnd();
+  }
+  
+  /**
+   * Render the graph label and bracket.
+   */ 
+  private void 
+  renderGraphTickLabels
+  (
+   GL gl, 
+   int level, 
+   Color3d lcolor, 
+   boolean drawBar, 
+   int range, 
+   double top
+  ) 
+  {
+    double x = ExtraMath.lerp(-33.0, -8.0, 0.5);
+    double y = ((double) level) / ((double) range);
+    
+    if(pShowGraphBrackets) {
+      double s = 12.0;
+      double sy = y * pScale.y();
+      double sp = s*1.5;
+
+      {
+	Integer dl = pIntegerLabelDLs.get(range);
+	if(dl != null) {
+	  gl.glPushMatrix();
+	  {
+	    gl.glColor3d(1.0, 1.0, 1.0);
+
+	    gl.glTranslated(x, top, 0.0);
+	    gl.glScaled(s, s/pScale.y(), 1.0);
+	    gl.glTranslated(0.0, -0.35, 0.0);
+	    gl.glCallList(dl);
+	  }
+	  gl.glPopMatrix();
+	}
+      }
+
+      {
+	Integer dl = pIntegerLabelDLs.get(0);
+	if(dl != null) {
+	  gl.glPushMatrix();
+	  {
+	    gl.glColor3d(1.0, 1.0, 1.0);
+
+	    gl.glTranslated(x, top-1.0, 0.0);
+	    gl.glScaled(s, s/pScale.y(), 1.0);
+	    gl.glTranslated(0.0, -0.35, 0.0);
+	    gl.glCallList(dl);
+	  }
+	  gl.glPopMatrix();
+	}
+      }
+
+      if(drawBar && ((y*pScale.y()) > sp) && (((1.0-y)*pScale.y()) > sp)) {
+	Integer dl = pIntegerLabelDLs.get(level);
+	if(dl != null) {
+	  gl.glPushMatrix();
+	  {
+	    gl.glColor3d(lcolor.r(), lcolor.g(), lcolor.b());
+	  
+	    gl.glTranslated(x, top-1.0+y, 0.0);
+	    gl.glScaled(s, s/pScale.y(), 1.0);
+	    gl.glTranslated(0.0, -0.35, 0.0);
+	    gl.glCallList(dl);
+	  }
+	  gl.glPopMatrix();
+	}
+      }
+    }
+
+    if(drawBar) {
+      gl.glBegin(gl.GL_LINES);
+      {
+	gl.glColor3d(lcolor.r(), lcolor.g(), lcolor.b());
+	
+	gl.glVertex2d( 0.0, top-1.0+y);
+	gl.glVertex2d(-6.0, top-1.0+y);
+      }
+      gl.glEnd();    
+    }
+  }
+
+  /**
+   * Render the graph label and bracket.
+   */ 
+  private void 
+  renderGraphTickLabels
+  (
+   GL gl, 
+   double range, 
+   double top
+  ) 
+  {
+    double x = ExtraMath.lerp(-33.0, -8.0, 0.5);
+    double s = 12.0;
+
+    if(pShowGraphBrackets) {
+      {
+	String text = String.format("%1$.1f", range / 1073741824.0);
+	Integer dl = pDoubleLabelDLs.get(text);
+	if(dl != null) {
+	  gl.glPushMatrix();
+	  {
+	    gl.glColor3d(1.0, 1.0, 1.0);
+	    
+	    gl.glTranslated(x, top, 0.0);
+	    gl.glScaled(s, s/pScale.y(), 1.0);
+	    gl.glTranslated(0.0, -0.35, 0.0);
+	    gl.glCallList(dl);
+	  }
+	  gl.glPopMatrix();
+	}
+      }
+      
+      {
+	Integer dl = pDoubleLabelDLs.get("0.0");
+	if(dl != null) {
+	  gl.glPushMatrix();
+	  {
+	    gl.glColor3d(1.0, 1.0, 1.0);
+	    
+	    gl.glTranslated(x, top-1.0, 0.0);
+	    gl.glScaled(s, s/pScale.y(), 1.0);
+	    gl.glTranslated(0.0, -0.35, 0.0);
+	    gl.glCallList(dl);
+	  }
+	  gl.glPopMatrix();
+	}
+      }
+    }
+  }
+	
   /**
    * Called by the drawable during the first repaint after the component has been resized.
    */ 
@@ -1553,6 +2017,7 @@ class JResourceUsageHistoryDialog
     resizeViewport(gl, width, height);
 
     pRefreshLabels    = true;
+    pRefreshGraphBars = true; 
     pRefreshTimeScale = true;    
   }
  
@@ -1623,7 +2088,6 @@ class JResourceUsageHistoryDialog
       pMousePos = new Point2d(p.getX(), p.getY());
     }   
 
-    /* <BUTTON2+ALT>: pan start */ 
     {
       int on1  = (MouseEvent.BUTTON2_DOWN_MASK |
 		  MouseEvent.ALT_DOWN_MASK);
@@ -1632,26 +2096,41 @@ class JResourceUsageHistoryDialog
 		  MouseEvent.BUTTON3_DOWN_MASK | 
 		  MouseEvent.SHIFT_DOWN_MASK |
 		  MouseEvent.CTRL_DOWN_MASK);
+
       
+      int on2  = (MouseEvent.BUTTON1_DOWN_MASK |
+		  MouseEvent.BUTTON2_DOWN_MASK | 
+		  MouseEvent.ALT_DOWN_MASK);
+      
+      int off2 = (MouseEvent.BUTTON3_DOWN_MASK | 
+		  MouseEvent.SHIFT_DOWN_MASK |
+		  MouseEvent.CTRL_DOWN_MASK);
+
+
+      int on3  = (MouseEvent.BUTTON3_DOWN_MASK);
+      
+      int off3 = (MouseEvent.BUTTON1_DOWN_MASK | 
+		  MouseEvent.BUTTON2_DOWN_MASK | 
+		  MouseEvent.SHIFT_DOWN_MASK |
+		  MouseEvent.ALT_DOWN_MASK |
+		  MouseEvent.CTRL_DOWN_MASK);
+
+      /* <BUTTON2+ALT>: pan start */ 
       if((mods & (on1 | off1)) == on1) {
 	pCanvas.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
 	pDragStart = new Point2d(pMousePos);
       }
-    }
-	
-    /* <BUTTON1+BUTTON2+ALT>: zoom start */ 
-    {
-      int on1  = (MouseEvent.BUTTON1_DOWN_MASK |
-		  MouseEvent.BUTTON2_DOWN_MASK | 
-		  MouseEvent.ALT_DOWN_MASK);
-      
-      int off1 = (MouseEvent.BUTTON3_DOWN_MASK | 
-		  MouseEvent.SHIFT_DOWN_MASK |
-		  MouseEvent.CTRL_DOWN_MASK);
-      
-      if((mods & (on1 | off1)) == on1) {
+
+      /* <BUTTON1+BUTTON2+ALT>: zoom start */ 
+      else if((mods & (on2 | off2)) == on2) {
 	pCanvas.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
 	pDragStart = new Point2d(pMousePos);
+      }
+
+      /* BUTTON3: popup menu */ 
+      else if((mods & (on3 | off3)) == on3) {
+	updatePopupMenu();
+	pPopup.show(e.getComponent(), e.getX(), e.getY());
       }
     }
   }
@@ -1772,10 +2251,31 @@ class JResourceUsageHistoryDialog
     UserPrefs prefs = UserPrefs.getInstance();
     if((prefs.getUpdate() != null) &&
        prefs.getUpdate().wasPressed(e))
-      doUpdate(); 
+      doUpdate();
+
     else if((prefs.getFrameAll() != null) &&
        prefs.getFrameAll().wasPressed(e))
       doFrameAll();
+
+    else if((prefs.getToggleSystemLoad() != null) &&
+       prefs.getToggleSystemLoad().wasPressed(e))
+      pLoadButton.doClick();
+    else if((prefs.getToggleFreeMemory() != null) &&
+       prefs.getToggleFreeMemory().wasPressed(e))
+      pMemButton.doClick();
+    else if((prefs.getToggleFreeDisk() != null) &&
+       prefs.getToggleFreeDisk().wasPressed(e))
+      pDiskButton.doClick();
+    else if((prefs.getToggleJobCount() != null) &&
+       prefs.getToggleJobCount().wasPressed(e))
+      pJobButton.doClick();
+
+    else if((prefs.getToggleFullLoadBar() != null) &&
+       prefs.getToggleFullLoadBar().wasPressed(e))
+      doToggleLoadBar();
+    else if((prefs.getToggleJobSlotsBar() != null) &&
+       prefs.getToggleJobSlotsBar().wasPressed(e))
+      doToggleSlotsBar();
 
     else {
       switch(e.getKeyCode()) {
@@ -1818,8 +2318,22 @@ class JResourceUsageHistoryDialog
     String cmd = e.getActionCommand();
     if(cmd.equals("update")) 
       doUpdate();
-    if(cmd.equals("refresh")) 
+    else if(cmd.equals("refresh")) 
       doRefresh();
+    else if(cmd.equals("frame-all")) 
+      doFrameAll();
+    else if(cmd.equals("show-hide-load")) 
+      pLoadButton.doClick();
+    else if(cmd.equals("show-hide-mem")) 
+      pMemButton.doClick();
+    else if(cmd.equals("show-hide-disk")) 
+      pDiskButton.doClick();
+    else if(cmd.equals("show-hide-job")) 
+      pJobButton.doClick();
+    else if(cmd.equals("show-hide-load-bar")) 
+      doToggleLoadBar();
+    else if(cmd.equals("show-hide-slots-bar")) 
+      doToggleSlotsBar();
     else {
       pCanvas.repaint();
     }
@@ -1850,6 +2364,7 @@ class JResourceUsageHistoryDialog
   private void 
   doRefresh() 
   { 
+    pRefreshGraphBars = true; 
     pRefreshLabels    = true;
     pRefreshTimeScale = true;
     pRefreshGraph     = true;
@@ -1877,6 +2392,28 @@ class JResourceUsageHistoryDialog
     }
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Toggle the display of the full load bars.
+   */ 
+  private void 
+  doToggleLoadBar()
+  {
+    pShowFullLoadBar = !pShowFullLoadBar;
+    doRefresh();
+  }
+
+  /**
+   * Toggle the display of the job slots bars.
+   */ 
+  private void 
+  doToggleSlotsBar()
+  {
+    pShowJobSlotsBar = !pShowJobSlotsBar;
+    doRefresh();
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1974,7 +2511,7 @@ class JResourceUsageHistoryDialog
   /**
    * The horizontal size of graph label and tick mark geometry.
    */ 
-  private static final double sLabelTickWidth = 90.0;
+  private static final double sLabelTickWidth = 85.0;
  
 
   /**
@@ -2017,6 +2554,36 @@ class JResourceUsageHistoryDialog
    */ 
   private JToggleButton  pJobButton; 
 
+  /**
+   * Whether to display the full load bars.
+   */ 
+  private boolean pShowFullLoadBar; 
+
+  /**
+   * Whether to display the job slots bars.
+   */ 
+  private boolean pShowJobSlotsBar; 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The popup menu.
+   */ 
+  private JPopupMenu  pPopup;
+
+  /**
+   * The popup menu items.
+   */ 
+  private JMenuItem  pUpdateItem;
+  private JMenuItem  pFrameAllItem;
+  private JMenuItem  pShowHideLoadItem;
+  private JMenuItem  pShowHideMemItem;
+  private JMenuItem  pShowHideDiskItem;
+  private JMenuItem  pShowHideJobItem;
+  private JMenuItem  pShowHideFullLoadBarItem;
+  private JMenuItem  pShowHideJobSlotsBarItem;
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -2038,6 +2605,20 @@ class JResourceUsageHistoryDialog
    */ 
   private Integer  pLabelsDL;
 
+  /**
+   * Whether to render the graph brackets and tick labels.
+   */ 
+  private boolean  pShowGraphBrackets; 
+
+  /**
+   * The OpenGL display list handles for integer graph tick labels indexed by value.
+   */ 
+  private TreeMap<Integer,Integer>  pIntegerLabelDLs; 
+
+  /**
+   * The OpenGL display list handles for double graph tick labels indexed by value.
+   */ 
+  private TreeMap<String,Integer>  pDoubleLabelDLs; 
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -2072,9 +2653,28 @@ class JResourceUsageHistoryDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Whether the OpenGL display lists for graph bars geometry needs to be rebuilt.
+   */ 
+  private boolean  pRefreshGraphBars;
+
+  /**
+   * The OpenGL display list handle for graph bars geometry.
+   */ 
+  private Integer  pGraphBarsDL;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Whether the OpenGL display lists for graph geometry needs to be rebuilt.
    */ 
   private boolean  pRefreshGraph;
+
+
+  /**
+   * The world space horizontal bounds of the graph geometry indexed by hostname.
+   */ 
+  private TreeMap<String,Vector2d>  pGraphSpans; 
 
 
   /**
@@ -2083,21 +2683,9 @@ class JResourceUsageHistoryDialog
   private TreeMap<String,Integer>  pLoadDLs; 
 
   /**
-   * The world space horizontal bounds of the system load graph geometry indexed by hostname.
-   */ 
-  private TreeMap<String,Vector2d> pLoadSpans; 
-
-
-  /**
    * The OpenGL display list handles for the free memory graph geometry indexed by hostname.
    */ 
   private TreeMap<String,Integer>  pMemDLs; 
-
-  /**
-   * The world space horizontal bounds of the free memory graph geometry indexed by hostname.
-   */ 
-  private TreeMap<String,Vector2d> pMemSpans; 
-
 
   /**
    * The OpenGL display list handles for the free disk graph geometry indexed by hostname.
@@ -2105,20 +2693,9 @@ class JResourceUsageHistoryDialog
   private TreeMap<String,Integer>  pDiskDLs; 
 
   /**
-   * The world space horizontal bounds of the free disk graph geometry indexed by hostname.
-   */ 
-  private TreeMap<String,Vector2d> pDiskSpans; 
-
-
-  /**
    * The OpenGL display list handles for the job count graph geometry indexed by hostname.
    */ 
   private TreeMap<String,Integer>  pJobDLs; 
-
-  /**
-   * The world space horizontal bounds of the job count graph geometry indexed by hostname.
-   */ 
-  private TreeMap<String,Vector2d> pJobSpans; 
 
 
 
