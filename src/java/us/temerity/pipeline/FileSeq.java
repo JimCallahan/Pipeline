@@ -1,4 +1,4 @@
-// $Id: FileSeq.java,v 1.17 2005/01/22 06:10:09 jim Exp $
+// $Id: FileSeq.java,v 1.18 2005/03/28 04:16:13 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -245,6 +245,19 @@ class FileSeq
   {
     return ((pFrameRange == null) || (pFrameRange.isSingle()));
   }
+
+  /**
+   * Whether the file sequence contains the given file.
+   */ 
+  public boolean 
+  contains
+  (
+   File file
+  ) 
+  {
+    return getFiles().contains(file);
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -568,6 +581,149 @@ class FileSeq
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   M E T H O D S                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Constructs the minimum set of file sequences which include all of the given files.
+   * 
+   * @param files
+   *   The files which define the file sequences created.
+   * 
+   * @param ignoreInvalid
+   *   Whether to ignore files which do not conform to the file naming conventions.
+   * 
+   * @return 
+   *   The generated file sequences.
+   * 
+   * @throws PipelineException 
+   *   If invalid or conflicting files are given.
+   */ 
+  public static TreeSet<FileSeq>
+  collate
+  (
+   Set<File> files, 
+   boolean ignoreInvalid
+  ) 
+    throws PipelineException
+  {
+    TreeSet<FileSeq> fseqs = new TreeSet<FileSeq>();
+
+    /* sort the files in to file sequence fragments */ 
+    TreeMap<String,Fragment> ufrags = new TreeMap<String,Fragment>();
+    TreeMap<String,Fragment> pfrags = new TreeMap<String,Fragment>();
+    for(File file : files) {
+      try {
+	String prefix = null;
+	Integer frame = null;
+	String suffix = null;
+
+	String comps[] = file.getName().split("\\.", -1);
+	switch(comps.length) {
+	case 1:
+	  prefix = comps[0];
+	  break;
+
+	case 2: 
+	  prefix = comps[0];
+	  try {
+	    frame = new Integer(comps[1]);
+	  }
+	  catch(NumberFormatException ex) {
+	    suffix = comps[1];
+	  }
+	  break;	    
+	  
+	case 3: 
+	  prefix = comps[0];
+	  try {
+	    frame = new Integer(comps[1]);
+	  }
+	  catch(NumberFormatException ex) {
+	    throw new PipelineException 
+	      ("The frame number component (" + comps[1] + ") of file (" + file + ") " + 
+	       "was not valid!");
+	  }
+	  suffix = comps[2];
+	  break;
+
+	default:
+	  throw new PipelineException 
+	    ("The file (" + file + ") did not conform to the (prefix[.frame][.suffix]) " + 
+	     "file naming convention required for file sequences!");
+	}
+	
+	if(frame != null) {
+	  boolean isPadded = (comps[1].startsWith("0") && (comps[1].length() > 1));
+	  int digits = comps[1].length();
+	  String key = (prefix + "|" + suffix + "|" + digits);
+	  
+	  Fragment frag = null;
+	  if(isPadded) {
+	    frag = pfrags.get(key);
+	    if(frag == null) {
+	      frag = new Fragment(prefix, suffix, digits);
+	      pfrags.put(key, frag);
+	    }
+	  }
+	  else {
+	    frag = ufrags.get(key);
+	    if(frag == null) {
+	      frag = new Fragment(prefix, suffix, digits);
+	      ufrags.put(key, frag);
+	    }		    
+	  }
+	  
+	  frag.uFrames.add(frame);
+	}
+	else {
+	  FileSeq fseq = new FileSeq(prefix, suffix);
+	  fseqs.add(fseq);
+	}
+      }
+      catch(PipelineException ex) {
+	if(!ignoreInvalid) 
+	  throw ex;	  
+      }
+    }
+
+    /* merge any unpadded fragments with padded fragments which have the same 
+       number of digits */ 
+    for(String key : pfrags.keySet()) {
+      Fragment pfrag = pfrags.get(key);
+      Fragment ufrag = ufrags.get(key);
+      
+      if(ufrag != null) {
+	pfrag.uFrames.addAll(ufrag.uFrames);
+	ufrags.remove(key);
+      }
+    }
+
+    /* merge unpadded fragments which have the same prefix|suffix */ 
+    TreeMap<String,Fragment> mfrags = new TreeMap<String,Fragment>();
+    for(Fragment ufrag : ufrags.values()) {
+      String key = (ufrag.uPrefix + "|" + ufrag.uSuffix);
+      Fragment mfrag = mfrags.get(key);
+      if(mfrag == null) {
+	mfrag = new Fragment(ufrag.uPrefix, ufrag.uSuffix, 0);
+	mfrags.put(key, mfrag);
+      }
+      mfrag.uFrames.addAll(ufrag.uFrames);
+    }
+
+    /* build file sequences from the fragments */     
+    for(Fragment frag : pfrags.values())  
+      fseqs.add(frag.toFileSeq());
+
+    for(Fragment frag : mfrags.values()) 
+      fseqs.add(frag.toFileSeq());
+
+    return fseqs;
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S                                                                        */
   /*----------------------------------------------------------------------------------------*/
 
@@ -590,6 +746,83 @@ class FileSeq
     pHashCode = pStringRep.hashCode();    
   }
 
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L   C L A S S E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static
+  class Fragment
+  {
+    public 
+    Fragment
+    (
+     String prefix, 
+     String suffix, 
+     int digits
+    ) 
+    {
+      uPrefix = prefix; 
+      uSuffix = suffix;
+      uDigits = digits; 
+
+      uFrames = new TreeSet<Integer>();
+    }
+
+    public FileSeq
+    toFileSeq() 
+    {
+      FilePattern fpat = new FilePattern(uPrefix, uDigits, uSuffix);
+
+      FrameRange frange = null;
+      {
+	int startFrame = uFrames.first();
+	int endFrame   = uFrames.last();
+	if(endFrame == startFrame) {
+	  frange = new FrameRange(startFrame);
+	}
+	else {
+	  int minInc = endFrame - startFrame;
+	  {
+	    int prev = startFrame;
+	    for(Integer frame : uFrames) {
+	      if(frame != startFrame) 
+		minInc = Math.min(minInc, frame - prev);
+	      prev = frame;
+	    }
+	  }
+
+	  int byFrame;
+	  for(byFrame=minInc; byFrame>1; byFrame--) {
+	    boolean done = true;
+	    for(Integer frame : uFrames) {
+	      if(frame != startFrame) {
+		if(((frame - startFrame) % byFrame) != 0) {
+		  done = false;
+		  break;
+		}
+	      }
+	    }
+	    
+	    if(done) 
+	      break;
+	  }
+
+	  frange = new FrameRange(startFrame, endFrame, byFrame);
+	}
+      }
+      
+      return new FileSeq(fpat, frange);
+    }
+
+
+    public String  uPrefix; 
+    public String  uSuffix; 
+    public int     uDigits; 
+
+    public TreeSet<Integer>  uFrames;
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
