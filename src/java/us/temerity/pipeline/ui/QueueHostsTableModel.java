@@ -1,12 +1,10 @@
-// $Id: QueueHostsTableModel.java,v 1.2 2004/08/01 15:39:26 jim Exp $
+// $Id: QueueHostsTableModel.java,v 1.3 2004/08/23 04:29:11 jim Exp $
 
 package us.temerity.pipeline.ui;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
 
-// // import java.awt.*;
-// import java.awt.event.*;
 import java.text.*;
 import java.util.*;
 import javax.swing.*;
