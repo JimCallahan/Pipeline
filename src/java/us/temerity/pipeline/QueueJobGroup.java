@@ -1,4 +1,4 @@
-// $Id: QueueJobGroup.java,v 1.5 2004/08/26 05:55:41 jim Exp $
+// $Id: QueueJobGroup.java,v 1.6 2004/08/26 06:44:08 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -221,7 +221,10 @@ class QueueJobGroup
     encoder.encode("NodeID", pNodeID);
     encoder.encode("RootPattern", pRootPattern);
     encoder.encode("RootIDs", pRootIDs);
-    encoder.encode("ExternalIDs", pExternalIDs);
+
+    if(!pExternalIDs.isEmpty())
+      encoder.encode("ExternalIDs", pExternalIDs);
+
     encoder.encode("JobIDs", pJobIDs);
   }
 
