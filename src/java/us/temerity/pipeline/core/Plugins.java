@@ -1,4 +1,4 @@
-// $Id: Plugins.java,v 1.3 2004/03/23 20:41:25 jim Exp $
+// $Id: Plugins.java,v 1.4 2004/05/16 19:05:50 jim Exp $
   
 package us.temerity.pipeline.core;
 
@@ -108,6 +108,30 @@ class Plugins
       }
     }
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the names of the loaded editor plugins.
+   */ 
+  public static synchronized TreeSet<String>
+  getEditorNames() 
+  {
+    return new TreeSet<String>(sEditors.keySet());
+  }
+  
+  /**
+   * Get the names of the loaded action plugins.
+   */ 
+  public static synchronized TreeSet<String>
+  getActionNames() 
+  {
+    return new TreeSet<String>(sActions.keySet());
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/
