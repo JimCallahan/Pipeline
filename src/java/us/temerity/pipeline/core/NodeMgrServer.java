@@ -1,4 +1,4 @@
-// $Id: NodeMgrServer.java,v 1.9 2004/04/13 20:44:39 jim Exp $
+// $Id: NodeMgrServer.java,v 1.10 2004/04/20 21:55:28 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -335,6 +335,14 @@ class NodeMgrServer
 	    {
 	      NodeRenameReq req = (NodeRenameReq) objIn.readObject();
 	      objOut.writeObject(pNodeMgr.rename(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case CheckIn:
+	    {
+	      NodeCheckInReq req = (NodeCheckInReq) objIn.readObject();
+	      objOut.writeObject(pNodeMgr.checkIn(req));
 	      objOut.flush(); 
 	    }
 	    break;

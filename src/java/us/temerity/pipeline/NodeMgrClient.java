@@ -1,4 +1,4 @@
-// $Id: NodeMgrClient.java,v 1.9 2004/04/15 17:56:16 jim Exp $
+// $Id: NodeMgrClient.java,v 1.10 2004/04/20 21:55:28 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -416,10 +416,62 @@ class NodeMgrClient
     handleSimpleResponse(obj);
   } 
 
+  /** 
+   * Check-In the given working version and all upstream working versions. <P> 
+   * 
+   * The check-in operation proceeds in a depth-first manner checking-in the most upstream
+   * nodes first.  It is possible for the check-in to fail after already succeeding for 
+   * some set of upstream nodes.  The check-in operation aborts at the first failure of a
+   * particular node. <P> 
+   * 
+   * The returned <CODE>NodeStatus</CODE> instance can be used access the status of all 
+   * nodes (both upstream and downstream) linked to the given node.  The status information 
+   * for the upstream nodes will also include detailed state and version information which is 
+   * accessable by calling the {@link NodeStatus#getDetails NodeStatus.getDetails} method.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   * 
+   * @param msg 
+   *   The check-in message text.
+   * 
+   * @param level  
+   *   The revision number component level to increment.
+   * 
+   * @return 
+   *   The post check-in status of tree of nodes linked to the given node.
+   * 
+   * @throws PipelineException
+   *   If unable to check-in the node.
+   */ 
+  public NodeStatus
+  checkIn
+  ( 
+   String view, 
+   String name, 
+   String msg, 
+   VersionID.Level level   
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
 
+    NodeID id = new NodeID(PackageInfo.sUser, view, name);
+    NodeCheckInReq req = new NodeCheckInReq(id, msg, level);
 
-  // ...
-
+    Object obj = performTransaction(NodeRequest.CheckIn, req);
+    if(obj instanceof NodeStatusRsp) {
+      NodeStatusRsp rsp = (NodeStatusRsp) obj;
+      return rsp.getNodeStatus();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  } 
 
 
 }
