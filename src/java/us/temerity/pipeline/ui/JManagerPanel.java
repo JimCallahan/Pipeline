@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.40 2004/09/28 09:26:34 jim Exp $
+// $Id: JManagerPanel.java,v 1.41 2004/10/01 22:14:42 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1455,7 +1455,7 @@ class JManagerPanel
       tab.addTab(mgr);
     }
     
-    /* create a new tabbed panel with the contents of this panel as its only tab */ 
+    /* create a new tabbed panel with the contents of this panel as its first tab */
     else {
       Component comp = removeContents();
       if(comp != null) {
@@ -1464,6 +1464,13 @@ class JManagerPanel
 
 	JTabbedPanel tab = new JTabbedPanel();
 	tab.addTab(mgr);
+
+	{
+	  JManagerPanel smgr = new JManagerPanel();
+	  smgr.setContents(new JEmptyPanel(pTopLevelPanel));
+	  tab.addTab(smgr);
+	  tab.setSelectedIndex(1);
+	}
 
 	setContents(tab);
       }
