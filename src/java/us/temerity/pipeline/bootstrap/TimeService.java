@@ -1,4 +1,4 @@
-// $Id: TimeService.java,v 1.4 2004/12/29 17:29:06 jim Exp $
+// $Id: TimeService.java,v 1.5 2005/01/12 13:07:15 jim Exp $
 
 package us.temerity.pipeline.bootstrap;
 
@@ -197,43 +197,39 @@ class TimeService
    * The IP addresses of some trusted NTP servers.
    */
   private static final String[] sNtpServers = {
-    "216.218.192.202",
-    "216.218.254.202",
-    "63.192.96.2",
-    "63.192.96.3",
-    "204.74.68.55",
-    "204.87.183.6",
-    "216.27.190.202",
-    "130.126.24.53",
-    "140.221.9.20",
-    "130.126.24.44",
-    "140.221.9.6",
-    "199.240.130.1",
-    "199.240.130.12",
-    "216.204.156.2",
-    "128.101.101.101",
-    "134.84.84.84",
-    "152.2.21.1",
-    "64.35.195.62",
-    "65.211.109.1",
-    "65.211.109.11",
-    "131.216.1.101",
-    "131.216.22.15",
-    "131.216.22.17",
-    "209.51.161.238",
-    "66.250.131.180",
-    "128.59.59.177",
-    "128.59.16.20",
-    "128.118.25.3",
-    "128.182.58.100",
-    "146.186.218.60",
-    "209.144.20.76",
-    "128.249.1.10",
-    "198.82.162.213",
-    "198.82.161.227"
+    "dewey.lib.ci.phoenix.az.us",
+    "clock.develooper.com",
+    "clock.fmt.he.net",
+    "clock.sjc.he.net",
+    "hydrogen.cert.ucr.edu",
+    "ntp1.linuxmedialabs.com",
+    "louie.udel.edu",
+    "ntp-1.cso.uiuc.edu",
+    "ntp-2.cso.uiuc.edu",
+    "gilbreth.ecn.purdue.edu",
+    "harbor.ecn.purdue.edu",
+    "ntp1.kansas.net",
+    "ntp2.kansas.net",
+    "ntp.ourconcord.net",
+    "time.johnstalker.ca",
+    "clock1.unc.edu",
+    "ntp.uhfradio.com",
+    "clock.nyc.he.net",
+    "reva.sixgirls.org",
+    "sundial.columbia.edu",
+    "timex.cs.columbia.edu",
+    "ntp-1.ece.cmu.edu",
+    "ntp-2.ece.cmu.edu",
+    "chrono.cis.sac.accd.edu",
+    "ntppub.tamu.edu",
+    "sundial.cis.sac.accd.edu",
+    "ticker.cis.sac.accd.edu",
+    "ntp-4.vt.edu",
+    "ntp-1.vt.edu",
+    "ntp-3.vt.edu",
+    "ntp-2.vt.edu",
+    "ntp1.cs.wisc.edu",
+    "ntp3.cs.wisc.edu"
   };
 
-
 }
-
-
