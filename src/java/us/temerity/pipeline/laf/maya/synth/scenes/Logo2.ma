@@ -1,6 +1,6 @@
 //Maya ASCII 5.0 scene
-//Name: Logo.ma
-//Last modified: Mon, Jul 19, 2004 07:31:27 PM
+//Name: Logo2.ma
+//Last modified: Tue, Jul 20, 2004 06:08:10 AM
 requires maya "5.0";
 currentUnit -l centimeter -a degree -t film;
 fileInfo "application" "maya";
@@ -28,6 +28,7 @@ createNode transform -s -n "persp";
 	setAttr ".r" -type "double3" -27.92184662526083 45.000000000000007 9.3056427591871977e-15 ;
 createNode camera -s -n "perspShape" -p "persp";
 	setAttr -k off ".v" no;
+	setAttr ".rnd" no;
 	setAttr ".coi" 766.65702892492925;
 	setAttr ".imn" -type "string" "persp";
 	setAttr ".den" -type "string" "persp_depth";
@@ -49,12 +50,12 @@ createNode camera -s -n "topShape" -p "top";
 	setAttr ".o" yes;
 createNode transform -s -n "front";
 	setAttr ".v" no;
-	setAttr ".t" -type "double3" 0 0 100.11600828542953 ;
+	setAttr ".t" -type "double3" 2.2204460492503131e-16 0.024999999999999467 
+		100.11609467072553 ;
 createNode camera -s -n "frontShape" -p "front";
 	setAttr -k off ".v" no;
-	setAttr ".rnd" no;
 	setAttr ".coi" 100;
-	setAttr ".ow" 5.9168206646587391;
+	setAttr ".ow" 4.6862014395834306;
 	setAttr ".imn" -type "string" "front";
 	setAttr ".den" -type "string" "front_depth";
 	setAttr ".man" -type "string" "front_mask";
@@ -106,6 +107,54 @@ createNode transform -n "curve1" -p "group9";
 	setAttr ".t" -type "double3" -2 -2 0 ;
 	setAttr ".s" -type "double3" 1.0092213619469037 1.1563994560932824 9.9999999999999998e-13 ;
 createNode nurbsCurve -n "curveShape1" -p "curve1";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 8 0 no 3
+		13 0 0 0 0.125 0.25 0.375 0.5 0.625 0.75 0.875 1 1 1
+		11
+		0 0 0
+		0.20941607678402752 0.042612999011611447 0
+		0.6284249381291529 0.13399136205091322 0
+		1.2466950817028284 0.29644643224634787 0
+		1.8543924307105566 0.4981513985993069 0
+		2.4258398297553163 0.76584475010964403 0
+		2.8710987967322508 1.3024635355037955 0
+		2.7773547168666677 2.0522085370807188 0
+		2.0939128133295806 2.2672814793115967 0
+		1.6953561567716933 2.0716483841566737 0
+		1.500000000000002 2.0000000000000013 0
+		;
+createNode transform -n "curve7" -p "group9";
+	setAttr ".t" -type "double3" -2 -2 0 ;
+	setAttr ".s" -type "double3" 1.0092213619469037 1.1563994560932824 9.9999999999999998e-13 ;
+createNode nurbsCurve -n "curveShape7" -p "curve7";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 1 0 no 3
+		6 0 0 0 0.90008806200000002 0.90008806200000002 0.90008806200000002
+		4
+		1.5 2 0
+		2.3848908516622664 2.8148311031025615 0
+		3.3095920663279466 2.5898773356942137 0
+		3.9613540982483553 2.1791285796566289 0
+		;
+createNode transform -n "curve3detachedCurve7" -p "group9";
+	setAttr ".t" -type "double3" -2 -2 0 ;
+	setAttr ".s" -type "double3" 0.88841848405607016 0.88841848405607016 9.9999999999999998e-13 ;
+createNode nurbsCurve -n "curve3detachedCurveShape7" -p "curve3detachedCurve7";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		1 2 0 no 3
+		3 2.3696806559999999 3 4
+		3
+		4.5 2.8364370480000005 0
+		4.5 0 0
+		0 0 0
+		;
+createNode transform -n "curve8" -p "group9";
+	setAttr ".t" -type "double3" -2 -2 0 ;
+	setAttr ".s" -type "double3" 1.0092213619469037 1.1563994560932824 9.9999999999999998e-13 ;
+createNode nurbsCurve -n "curveShape8" -p "curve8";
 	setAttr -k off ".v";
 	setAttr ".cc" -type "nurbsCurve" 
 		3 8 0 no 3
@@ -195,6 +244,77 @@ createNode nurbsCurve -n "curve3detachedCurveShape6" -p "curve3detachedCurve6";
 		0 0.11560109161500001 0
 		0 4.5 0
 		;
+createNode transform -n "pasted__offsetNurbsCurve3" -p "group10";
+	setAttr ".s" -type "double3" 1 1 9.9999999999999998e-13 ;
+	setAttr ".it" no;
+createNode nurbsCurve -n "pasted__offsetNurbsCurveShape3" -p "pasted__offsetNurbsCurve3";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 1 0 no 3
+		6 0 0 0 0.87457439250000002 0.87457439250000002 0.87457439250000002
+		4
+		-0.88615424530414044 -0.064648258206637443 0
+		0.091522825591361434 1.4261490197575775 0
+		1.3150699675950281 1.1159316198252125 0
+		1.9978831782159456 0.64262750585816153 0
+		;
+createNode transform -n "curve3detachedCurve6detachedCurve4" -p "group10";
+	setAttr ".t" -type "double3" -2 -2 0 ;
+	setAttr ".s" -type "double3" 0.88841848405607016 0.88841848405607016 9.9999999999999998e-13 ;
+createNode nurbsCurve -n "curve3detachedCurve6detachedCurveShape4" -p "curve3detachedCurve6detachedCurve4";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		1 1 0 no 3
+		2 2 2.3389933150000002
+		2
+		4.5 4.5 0
+		4.5 2.9745300824999994 0
+		;
+createNode transform -n "pasted__offsetNurbsCurve4" -p "group10";
+	setAttr ".s" -type "double3" 1 1 9.9999999999999998e-13 ;
+	setAttr ".it" no;
+createNode nurbsCurve -n "pasted__offsetNurbsCurveShape4" -p "pasted__offsetNurbsCurve4";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 8 0 no 3
+		13 0 0 0 0.125 0.25 0.375 0.5 0.625 0.75 0.875 1 1 1
+		11
+		-2 -1.9000000000000001 0
+		-1.812850700911945 -1.8539388952845981 0
+		-1.3911637764650566 -1.7478329428590653 0
+		-0.77476469960531846 -1.5632172841680496 0
+		-0.16632914420351805 -1.3304283056983701 0
+		0.38364918391213415 -1.0353161199556129 0
+		0.79307224574971225 -0.4602041712320874 0
+		0.70194415523659892 0.3089420343997335 0
+		0.1343758459765213 0.49994311159674226 0
+		-0.42107656516575975 0.29122027586145072 0
+		-0.88096350815712765 -0.061650316884164003 0
+		;
+createNode transform -n "curve3detachedCurve6detachedCurve5" -p "group10";
+	setAttr ".t" -type "double3" -2 -2 0 ;
+	setAttr ".s" -type "double3" 0.88841848405607016 0.88841848405607016 9.9999999999999998e-13 ;
+createNode nurbsCurve -n "curve3detachedCurve6detachedCurveShape5" -p "curve3detachedCurve6detachedCurve5";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		1 1 0 no 3
+		2 1 2
+		2
+		0 4.5 0
+		4.5 4.5 0
+		;
+createNode transform -n "curve3detachedCurve8" -p "group10";
+	setAttr ".t" -type "double3" -2 -2 0 ;
+	setAttr ".s" -type "double3" 0.88841848405607016 0.88841848405607016 9.9999999999999998e-13 ;
+createNode nurbsCurve -n "curve3detachedCurveShape8" -p "curve3detachedCurve8";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		1 1 0 no 3
+		2 0.025689131470000001 1
+		2
+		0 0.11560109161500001 0
+		0 4.5 0
+		;
 createNode transform -n "nurbsPlane1";
 	setAttr ".s" -type "double3" 4 4 4 ;
 createNode nurbsSurface -n "nurbsPlaneShape1" -p "nurbsPlane1";
@@ -212,63 +332,64 @@ createNode nurbsSurface -n "nurbsPlaneShape1" -p "nurbsPlane1";
 createNode curveVarGroup -n "projectionCurve1" -p "nurbsPlaneShape1";
 	setAttr ".mc" 1;
 	setAttr ".ds" 15;
-createNode transform -n "projectionCurve1_1" -p "projectionCurve1";
-createNode nurbsCurve -n "projectionCurve1_Shape1" -p "projectionCurve1_1";
+createNode transform -n "projectionCurve1_1" -p "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve1";
+createNode nurbsCurve -n "projectionCurve1_Shape1" -p "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve1|projectionCurve1_1";
 	setAttr -k off ".v";
 	setAttr ".tw" yes;
 createNode curveVarGroup -n "projectionCurve2" -p "nurbsPlaneShape1";
 	setAttr ".mc" 1;
 	setAttr ".ds" 4;
-createNode transform -n "projectionCurve2_1" -p "projectionCurve2";
-createNode nurbsCurve -n "projectionCurve2_Shape1" -p "projectionCurve2_1";
+createNode transform -n "projectionCurve2_1" -p "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve2";
+createNode nurbsCurve -n "projectionCurve2_Shape1" -p "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve2|projectionCurve2_1";
 	setAttr -k off ".v";
 	setAttr ".tw" yes;
 createNode curveVarGroup -n "projectionCurve3" -p "nurbsPlaneShape1";
 	setAttr ".mc" 1;
 	setAttr ".ds" 15;
-createNode transform -n "projectionCurve3_1" -p "projectionCurve3";
-createNode nurbsCurve -n "projectionCurve3_Shape1" -p "projectionCurve3_1";
+createNode transform -n "projectionCurve3_1" -p "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve3";
+createNode nurbsCurve -n "projectionCurve3_Shape1" -p "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve3|projectionCurve3_1";
 	setAttr -k off ".v";
 	setAttr ".tw" yes;
 createNode curveVarGroup -n "projectionCurve4" -p "nurbsPlaneShape1";
 	setAttr ".mc" 1;
 	setAttr ".ds" 15;
-createNode transform -n "projectionCurve4_1" -p "projectionCurve4";
+createNode transform -n "projectionCurve4_1" -p "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve4";
 	setAttr ".v" no;
-createNode nurbsCurve -n "projectionCurve4_Shape1" -p "projectionCurve4_1";
+createNode nurbsCurve -n "projectionCurve4_Shape1" -p "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve4|projectionCurve4_1";
 	setAttr -k off ".v";
 	setAttr ".tw" yes;
 createNode curveVarGroup -n "projectionCurve5" -p "nurbsPlaneShape1";
 	setAttr ".mc" 1;
 	setAttr ".ds" 4;
-createNode transform -n "projectionCurve5_1" -p "projectionCurve5";
-createNode nurbsCurve -n "projectionCurve5_Shape1" -p "projectionCurve5_1";
+createNode transform -n "projectionCurve5_1" -p "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve5";
+createNode nurbsCurve -n "projectionCurve5_Shape1" -p "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve5|projectionCurve5_1";
 	setAttr -k off ".v";
 	setAttr ".tw" yes;
 createNode curveVarGroup -n "projectionCurve6" -p "nurbsPlaneShape1";
 	setAttr ".mc" 1;
 	setAttr ".ds" 15;
-createNode transform -n "projectionCurve6_1" -p "projectionCurve6";
+createNode transform -n "projectionCurve6_1" -p "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve6";
 	setAttr ".v" no;
-createNode nurbsCurve -n "projectionCurve6_Shape1" -p "projectionCurve6_1";
+createNode nurbsCurve -n "projectionCurve6_Shape1" -p "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve6|projectionCurve6_1";
 	setAttr -k off ".v";
 	setAttr ".tw" yes;
 createNode curveVarGroup -n "projectionCurve7" -p "nurbsPlaneShape1";
 	setAttr ".mc" 1;
 	setAttr ".ds" 4;
-createNode transform -n "projectionCurve7_1" -p "projectionCurve7";
-createNode nurbsCurve -n "projectionCurve7_Shape1" -p "projectionCurve7_1";
+createNode transform -n "projectionCurve7_1" -p "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve7";
+createNode nurbsCurve -n "projectionCurve7_Shape1" -p "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve7|projectionCurve7_1";
 	setAttr -k off ".v";
 	setAttr ".tw" yes;
 createNode curveVarGroup -n "projectionCurve8" -p "nurbsPlaneShape1";
 	setAttr ".mc" 1;
 	setAttr ".ds" 4;
-createNode transform -n "projectionCurve8_1" -p "projectionCurve8";
-createNode nurbsCurve -n "projectionCurve8_Shape1" -p "projectionCurve8_1";
+createNode transform -n "projectionCurve8_1" -p "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve8";
+createNode nurbsCurve -n "projectionCurve8_Shape1" -p "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve8|projectionCurve8_1";
 	setAttr -k off ".v";
 	setAttr ".tw" yes;
 createNode nurbsSurface -n "nurbsPlane1trimmedSurfaceShape1" -p "nurbsPlane1";
 	setAttr -k off ".v";
+	setAttr ".io" yes;
 	setAttr ".vir" yes;
 	setAttr ".vif" yes;
 	setAttr ".tw" yes;
@@ -276,6 +397,56 @@ createNode nurbsSurface -n "nurbsPlane1trimmedSurfaceShape1" -p "nurbsPlane1";
 	setAttr ".dvv" 3;
 	setAttr ".cpr" 15;
 	setAttr ".cps" 4;
+createNode curveVarGroup -n "projectionCurve17" -p "nurbsPlane1trimmedSurfaceShape1";
+	setAttr ".mc" 1;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve17_1" -p "|nurbsPlane1|nurbsPlane1trimmedSurfaceShape1->|projectionCurve17";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve17_Shape1" -p "|nurbsPlane1|nurbsPlane1trimmedSurfaceShape1->|projectionCurve17|projectionCurve17_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode curveVarGroup -n "projectionCurve19" -p "nurbsPlane1trimmedSurfaceShape1";
+	setAttr ".mc" 1;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve19_1" -p "|nurbsPlane1|nurbsPlane1trimmedSurfaceShape1->|projectionCurve19";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve19_Shape1" -p "|nurbsPlane1|nurbsPlane1trimmedSurfaceShape1->|projectionCurve19|projectionCurve19_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode nurbsSurface -n "nurbsPlane1trimmedSurfaceShape2" -p "nurbsPlane1";
+	setAttr -k off ".v";
+	setAttr ".io" yes;
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".tw" yes;
+	setAttr ".dvu" 3;
+	setAttr ".dvv" 3;
+	setAttr ".cpr" 15;
+	setAttr ".cps" 4;
+createNode curveVarGroup -n "projectionCurve21" -p "nurbsPlane1trimmedSurfaceShape2";
+	setAttr ".mc" 1;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve21_1" -p "|nurbsPlane1|nurbsPlane1trimmedSurfaceShape2->|projectionCurve21";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve21_Shape1" -p "|nurbsPlane1|nurbsPlane1trimmedSurfaceShape2->|projectionCurve21|projectionCurve21_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode curveVarGroup -n "projectionCurve22" -p "nurbsPlane1trimmedSurfaceShape2";
+	setAttr ".mc" 1;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve22_1" -p "|nurbsPlane1|nurbsPlane1trimmedSurfaceShape2->|projectionCurve22";
+createNode nurbsCurve -n "projectionCurve22_Shape1" -p "|nurbsPlane1|nurbsPlane1trimmedSurfaceShape2->|projectionCurve22|projectionCurve22_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode nurbsSurface -n "nurbsPlane1trimmedSurfaceShape3" -p "nurbsPlane1";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".tw" yes;
+	setAttr ".dvu" 0;
+	setAttr ".dvv" 0;
+	setAttr ".cpr" 4;
+	setAttr ".cps" 1;
 createNode transform -n "nurbsPlane2";
 	setAttr ".s" -type "double3" 4 4 4 ;
 createNode nurbsSurface -n "nurbsPlaneShape2" -p "nurbsPlane2";
@@ -350,6 +521,7 @@ createNode nurbsCurve -n "projectionCurve16_Shape1" -p "projectionCurve16_1";
 	setAttr ".tw" yes;
 createNode nurbsSurface -n "nurbsPlane2trimmedSurfaceShape1" -p "nurbsPlane2";
 	setAttr -k off ".v";
+	setAttr ".io" yes;
 	setAttr ".vir" yes;
 	setAttr ".vif" yes;
 	setAttr ".tw" yes;
@@ -357,13 +529,288 @@ createNode nurbsSurface -n "nurbsPlane2trimmedSurfaceShape1" -p "nurbsPlane2";
 	setAttr ".dvv" 3;
 	setAttr ".cpr" 15;
 	setAttr ".cps" 4;
+createNode curveVarGroup -n "projectionCurve18" -p "nurbsPlane2trimmedSurfaceShape1";
+	setAttr ".mc" 1;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve18_1" -p "projectionCurve18";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve18_Shape1" -p "projectionCurve18_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode curveVarGroup -n "projectionCurve20" -p "nurbsPlane2trimmedSurfaceShape1";
+	setAttr ".mc" 1;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve20_1" -p "projectionCurve20";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve20_Shape1" -p "projectionCurve20_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode nurbsSurface -n "nurbsPlane2trimmedSurfaceShape2" -p "nurbsPlane2";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".tw" yes;
+	setAttr ".dvu" 3;
+	setAttr ".dvv" 3;
+	setAttr ".cpr" 15;
+	setAttr ".cps" 4;
+	setAttr ".ues" yes;
+	setAttr ".esr" 0.999;
+	setAttr ".nufa" 4;
+	setAttr ".nvfa" 4;
+	setAttr ".cvto" 0;
+createNode transform -n "curve4";
+createNode nurbsCurve -n "curveShape3" -p "curve4";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 1 0 no 3
+		6 0 0 0 1 1 1
+		4
+		-0.049999999999999885 2.0999999999999952 0
+		-0.049999999999999725 0.7166666666666659 0
+		-0.049999999999999718 -0.66666666666666896 0
+		-0.049999999999999906 -2.0499999999999963 0
+		;
+createNode transform -n "curve5";
+createNode nurbsCurve -n "curveShape4" -p "curve5";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 1 0 no 3
+		6 0 0 0 1 1 1
+		4
+		0.049999999999999885 2.0999999999999952 0
+		0.049999999999999725 0.7166666666666659 0
+		0.049999999999999718 -0.66666666666666896 0
+		0.049999999999999906 -2.0499999999999963 0
+		;
+createNode transform -n "group12";
+	setAttr ".t" -type "double3" 0 -0.1 0 ;
+createNode transform -n "curve6" -p "group12";
+createNode nurbsCurve -n "curveShape5" -p "curve6";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 1 0 no 3
+		6 0 0 0 1 1 1
+		4
+		-2.0499999999999954 1.5999999999999963 0
+		-0.6833333333333329 1.5999999999999912 0
+		0.68333333333333535 1.599999999999991 0
+		2.0499999999999963 1.599999999999997 0
+		;
+createNode transform -n "group11" -p "group12";
+	setAttr ".t" -type "double3" -4.4408920985006262e-16 -0.099999999999993872 
+		0 ;
+	setAttr ".rp" -type "double3" 4.4408920985006262e-16 1.5999999999999939 
+		0 ;
+	setAttr ".sp" -type "double3" 4.4408920985006262e-16 1.5999999999999939 
+		0 ;
+createNode transform -n "pasted__curve6" -p "group11";
+createNode nurbsCurve -n "pasted__curveShape5" -p "pasted__curve6";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 1 0 no 3
+		6 0 0 0 1 1 1
+		4
+		-2.0499999999999954 1.5999999999999963 0
+		-0.6833333333333329 1.5999999999999912 0
+		0.68333333333333535 1.599999999999991 0
+		2.0499999999999963 1.599999999999997 0
+		;
+createNode transform -n "pasted__curve7" -p "group11";
+createNode nurbsCurve -n "pasted__curveShape7" -p "pasted__curve7";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 1 0 no 3
+		6 0 0 0 1 1 1
+		4
+		-2.0499999999999954 1.5999999999999963 0
+		-0.6833333333333329 1.5999999999999912 0
+		0.68333333333333535 1.599999999999991 0
+		2.0499999999999963 1.599999999999997 0
+		;
+createNode transform -n "curve11" -p "group12";
+createNode nurbsCurve -n "curveShape11" -p "curve11";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 1 0 no 3
+		6 0 0 0 1 1 1
+		4
+		-2.0499999999999954 1.5999999999999963 0
+		-0.6833333333333329 1.5999999999999912 0
+		0.68333333333333535 1.599999999999991 0
+		2.0499999999999963 1.599999999999997 0
+		;
+createNode transform -n "curve9";
+createNode nurbsCurve -n "curveShape9" -p "curve9";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 1 0 no 3
+		6 0 0 0 1 1 1
+		4
+		-0.049999999999999885 2.0999999999999952 0
+		-0.049999999999999725 0.7166666666666659 0
+		-0.049999999999999718 -0.66666666666666896 0
+		-0.049999999999999906 -2.0499999999999963 0
+		;
+createNode transform -n "curve10";
+createNode nurbsCurve -n "curveShape10" -p "curve10";
+	setAttr -k off ".v";
+	setAttr ".cc" -type "nurbsCurve" 
+		3 1 0 no 3
+		6 0 0 0 1 1 1
+		4
+		0.049999999999999885 2.0999999999999952 0
+		0.049999999999999725 0.7166666666666659 0
+		0.049999999999999718 -0.66666666666666896 0
+		0.049999999999999906 -2.0499999999999963 0
+		;
+createNode transform -n "group13";
+createNode transform -n "nurbsPlane3" -p "group13";
+	setAttr ".s" -type "double3" 4 4 4 ;
+createNode nurbsSurface -n "nurbsPlaneShape3" -p "nurbsPlane3";
+	setAttr -k off ".v";
+	setAttr ".io" yes;
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".tw" yes;
+	setAttr ".dvu" 0;
+	setAttr ".dvv" 0;
+	setAttr ".cpr" 4;
+	setAttr ".cps" 1;
+	setAttr ".nufa" 4.5;
+	setAttr ".nvfa" 4.5;
+createNode curveVarGroup -n "projectionCurve1" -p "nurbsPlaneShape3";
+	setAttr ".mc" 1;
+	setAttr ".ds" 15;
+createNode transform -n "projectionCurve1_1" -p "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve1";
+createNode nurbsCurve -n "projectionCurve1_Shape1" -p "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve1|projectionCurve1_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode curveVarGroup -n "projectionCurve2" -p "nurbsPlaneShape3";
+	setAttr ".mc" 1;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve2_1" -p "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve2";
+createNode nurbsCurve -n "projectionCurve2_Shape1" -p "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve2|projectionCurve2_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode curveVarGroup -n "projectionCurve3" -p "nurbsPlaneShape3";
+	setAttr ".mc" 1;
+	setAttr ".ds" 15;
+createNode transform -n "projectionCurve3_1" -p "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve3";
+createNode nurbsCurve -n "projectionCurve3_Shape1" -p "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve3|projectionCurve3_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode curveVarGroup -n "projectionCurve4" -p "nurbsPlaneShape3";
+	setAttr ".mc" 1;
+	setAttr ".ds" 15;
+createNode transform -n "projectionCurve4_1" -p "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve4";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve4_Shape1" -p "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve4|projectionCurve4_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode curveVarGroup -n "projectionCurve5" -p "nurbsPlaneShape3";
+	setAttr ".mc" 1;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve5_1" -p "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve5";
+createNode nurbsCurve -n "projectionCurve5_Shape1" -p "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve5|projectionCurve5_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode curveVarGroup -n "projectionCurve6" -p "nurbsPlaneShape3";
+	setAttr ".mc" 1;
+	setAttr ".ds" 15;
+createNode transform -n "projectionCurve6_1" -p "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve6";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve6_Shape1" -p "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve6|projectionCurve6_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode curveVarGroup -n "projectionCurve7" -p "nurbsPlaneShape3";
+	setAttr ".mc" 1;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve7_1" -p "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve7";
+createNode nurbsCurve -n "projectionCurve7_Shape1" -p "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve7|projectionCurve7_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode curveVarGroup -n "projectionCurve8" -p "nurbsPlaneShape3";
+	setAttr ".mc" 1;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve8_1" -p "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve8";
+createNode nurbsCurve -n "projectionCurve8_Shape1" -p "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve8|projectionCurve8_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode nurbsSurface -n "nurbsPlane3trimmedSurfaceShape" -p "nurbsPlane3";
+	setAttr -k off ".v";
+	setAttr ".io" yes;
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".tw" yes;
+	setAttr ".dvu" 3;
+	setAttr ".dvv" 3;
+	setAttr ".cpr" 15;
+	setAttr ".cps" 4;
+createNode curveVarGroup -n "projectionCurve17" -p "nurbsPlane3trimmedSurfaceShape";
+	setAttr ".mc" 1;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve17_1" -p "|group13|nurbsPlane3|nurbsPlane3trimmedSurfaceShape->|projectionCurve17";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve17_Shape1" -p "|group13|nurbsPlane3|nurbsPlane3trimmedSurfaceShape->|projectionCurve17|projectionCurve17_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode curveVarGroup -n "projectionCurve19" -p "nurbsPlane3trimmedSurfaceShape";
+	setAttr ".mc" 1;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve19_1" -p "|group13|nurbsPlane3|nurbsPlane3trimmedSurfaceShape->|projectionCurve19";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve19_Shape1" -p "|group13|nurbsPlane3|nurbsPlane3trimmedSurfaceShape->|projectionCurve19|projectionCurve19_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode nurbsSurface -n "nurbsPlane3trimmedSurfaceShape1" -p "nurbsPlane3";
+	setAttr -k off ".v";
+	setAttr ".io" yes;
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".tw" yes;
+	setAttr ".dvu" 3;
+	setAttr ".dvv" 3;
+	setAttr ".cpr" 15;
+	setAttr ".cps" 4;
+createNode curveVarGroup -n "projectionCurve21" -p "nurbsPlane3trimmedSurfaceShape1";
+	setAttr ".mc" 1;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve21_1" -p "|group13|nurbsPlane3|nurbsPlane3trimmedSurfaceShape1->|projectionCurve21";
+createNode nurbsCurve -n "projectionCurve21_Shape1" -p "|group13|nurbsPlane3|nurbsPlane3trimmedSurfaceShape1->|projectionCurve21|projectionCurve21_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode curveVarGroup -n "projectionCurve22" -p "nurbsPlane3trimmedSurfaceShape1";
+	setAttr ".mc" 1;
+	setAttr ".ds" 4;
+createNode transform -n "projectionCurve22_1" -p "|group13|nurbsPlane3|nurbsPlane3trimmedSurfaceShape1->|projectionCurve22";
+	setAttr ".v" no;
+createNode nurbsCurve -n "projectionCurve22_Shape1" -p "|group13|nurbsPlane3|nurbsPlane3trimmedSurfaceShape1->|projectionCurve22|projectionCurve22_1";
+	setAttr -k off ".v";
+	setAttr ".tw" yes;
+createNode nurbsSurface -n "nurbsPlane3trimmedSurfaceShape2" -p "nurbsPlane3";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".tw" yes;
+	setAttr ".dvu" 0;
+	setAttr ".dvv" 0;
+	setAttr ".cpr" 4;
+	setAttr ".cps" 1;
+	setAttr ".ues" yes;
+	setAttr ".esr" 0.999;
+	setAttr ".nufa" 4;
+	setAttr ".nvfa" 4;
+	setAttr ".cvto" 0;
 createNode materialInfo -n "materialInfo1";
 createNode shadingEngine -n "surfaceShader1SG";
 	setAttr ".ihi" 0;
 	setAttr ".ro" yes;
 createNode surfaceShader -n "surfaceShader1";
-	setAttr ".oc" -type "float3" 0.5 0.5 0.5 ;
+	setAttr ".oc" -type "float3" 0.84313726 0.84313726 0 ;
 createNode lightLinker -n "lightLinker1";
+	setAttr ".ihi" 0;
+	setAttr -s 5 ".lnk";
 createNode displayLayerManager -n "layerManager";
 createNode displayLayer -n "defaultLayer";
 createNode renderLayerManager -n "renderLayerManager";
@@ -934,9 +1381,6 @@ createNode script -n "uiConfigurationScriptNode";
 		+ "\t\t\tpanel -e -l $label $panelName;\n"
 		+ "\t\t}\n"
 		+ "\t}\n"
-		+ "\tif ($useSceneConfig) {\n"
-		+ "\t\toutlinerPanel -e -to $panelName;\n"
-		+ "\t}\n"
 		+ "\t$panelName = `sceneUIReplacement -getNextScriptedPanel \"graphEditor\" \"Graph Editor\"`;\n"
 		+ "\tif (\"\" == $panelName) {\n"
 		+ "\t\tif ($useSceneConfig) {\n"
@@ -1317,9 +1761,6 @@ createNode script -n "uiConfigurationScriptNode";
 		+ "\t\t\tpanel -e -l $label $panelName;\n"
 		+ "\t\t}\n"
 		+ "\t}\n"
-		+ "\tif ($useSceneConfig) {\n"
-		+ "\t\tscriptedPanel -e -to $panelName;\n"
-		+ "\t}\n"
 		+ "\t$panelName = `sceneUIReplacement -getNextPanel \"blendShapePanel\" \"Blend Shape\"`;\n"
 		+ "\tif (\"\" == $panelName) {\n"
 		+ "\t\tif ($useSceneConfig) {\n"
@@ -1484,14 +1925,88 @@ createNode surfaceShader -n "surfaceShader2";
 	setAttr ".oc" -type "float3" 0 0.49000001 0.49000001 ;
 createNode shadingEngine -n "surfaceShader2SG";
 	setAttr ".ihi" 0;
+	setAttr -s 2 ".dsm";
 	setAttr ".ro" yes;
 createNode materialInfo -n "materialInfo2";
 createNode surfaceShader -n "surfaceShader3";
 	setAttr ".oc" -type "float3" 0.5 0.5 0.5 ;
 createNode shadingEngine -n "surfaceShader3SG";
 	setAttr ".ihi" 0;
+	setAttr -s 4 ".dsm";
 	setAttr ".ro" yes;
 createNode materialInfo -n "materialInfo3";
+createNode projectCurve -n "projectCurve17";
+	setAttr ".d" -type "double3" 0 0 -1 ;
+createNode projectCurve -n "projectCurve18";
+	setAttr ".d" -type "double3" 0 0 -1 ;
+createNode projectCurve -n "projectCurve19";
+	setAttr ".d" -type "double3" 0 0 -1 ;
+createNode projectCurve -n "projectCurve20";
+	setAttr ".d" -type "double3" 0 0 -1 ;
+createNode trim -n "trim3";
+	setAttr -s 2 ".ic";
+	setAttr -s 4 ".lu[0:3]"  0.37026862466729249 0.64310574392370812 0.4037045461447944 
+		0.57355902725050412;
+	setAttr -s 4 ".lv[0:3]"  0.84171511750006944 0.85241461237287008 0.37093734309684262 
+		0.39099889598334375;
+createNode projectCurve -n "projectCurve21";
+	setAttr ".d" -type "double3" 0 0 -1 ;
+createNode projectCurve -n "projectCurve22";
+	setAttr ".d" -type "double3" 0 0 -1 ;
+createNode trim -n "trim6";
+	setAttr -s 2 ".ic";
+	setAttr -s 4 ".lu[0:3]"  0.47245903313083887 0.49470366021746903 0.6080453315636325 
+		0.41208075960998541;
+	setAttr -s 4 ".lv[0:3]"  0.62859544897646602 0.6434252003675528 0.68473665067129463 
+		0.047057340854562042;
+createNode makeNurbPlane -n "makeNurbPlane3";
+	setAttr ".ax" -type "double3" 0 0 1 ;
+	setAttr ".u" 6;
+	setAttr ".v" 6;
+createNode projectCurve -n "projectCurve23";
+	setAttr ".d" -type "double3" 0 0 -1 ;
+createNode projectCurve -n "projectCurve24";
+	setAttr ".d" -type "double3" 0 0 -1 ;
+createNode projectCurve -n "projectCurve25";
+	setAttr ".d" -type "double3" 0 0 -1 ;
+createNode projectCurve -n "projectCurve26";
+	setAttr ".d" -type "double3" 0 0 -1 ;
+createNode projectCurve -n "projectCurve27";
+	setAttr ".d" -type "double3" 0 0 -1 ;
+createNode projectCurve -n "projectCurve28";
+	setAttr ".d" -type "double3" 0 0 -1 ;
+createNode projectCurve -n "projectCurve29";
+	setAttr ".d" -type "double3" 0 0 -1 ;
+createNode projectCurve -n "projectCurve30";
+	setAttr ".d" -type "double3" 0 0 -1 ;
+createNode trim -n "trim7";
+	setAttr -s 8 ".ic";
+	setAttr ".lu[0]"  0.26205708367282288;
+	setAttr ".lv[0]"  0.74253126979698736;
+createNode projectCurve -n "projectCurve31";
+	setAttr ".d" -type "double3" 0 0 -1 ;
+createNode projectCurve -n "projectCurve32";
+	setAttr ".d" -type "double3" 0 0 -1 ;
+createNode trim -n "trim8";
+	setAttr -s 2 ".ic";
+	setAttr -s 4 ".lu[0:3]"  0.37026862466729249 0.64310574392370812 0.4037045461447944 
+		0.57355902725050412;
+	setAttr -s 4 ".lv[0:3]"  0.84171511750006944 0.85241461237287008 0.37093734309684262 
+		0.39099889598334375;
+createNode projectCurve -n "projectCurve33";
+	setAttr ".d" -type "double3" 0 0 -1 ;
+createNode projectCurve -n "projectCurve34";
+	setAttr ".d" -type "double3" 0 0 -1 ;
+createNode trim -n "trim9";
+	setAttr -s 2 ".ic";
+	setAttr -s 2 ".lu[0:1]"  0.42479197508805983 0.65889019347593014;
+	setAttr -s 2 ".lv[0:1]"  0.92307194088518962 0.91883486905916478;
+createNode trim -n "trim10";
+	setAttr -s 2 ".ic";
+	setAttr -s 4 ".lu[0:3]"  0.44068099443565284 0.59109704425953324 0.41843636734902268 
+		0.60910459952013873;
+	setAttr -s 4 ".lv[0:3]"  0.75782613967022239 0.80443392975649508 0.48453500689162277 
+		0.4358086808923376;
 select -ne :time1;
 	setAttr ".o" 0;
 select -ne :renderPartition;
@@ -1510,37 +2025,77 @@ select -ne :initialParticleSE;
 select -ne :defaultRenderGlobals;
 	addAttr -ci true -sn "currentRenderer" -ln "currentRenderer" -dt "string";
 	setAttr ".outf" 5;
-	setAttr ".top" 511;
-	setAttr ".rght" 511;
+	setAttr ".top" 798;
+	setAttr ".rght" 798;
 	setAttr ".currentRenderer" -type "string" "mayaSoftware";
 select -ne :defaultRenderQuality;
 	setAttr ".eaa" 0;
+	setAttr ".ufil" yes;
+	setAttr ".pft" 4;
+	setAttr ".pfwx" 3;
+	setAttr ".pfwy" 3;
 select -ne :defaultResolution;
-	setAttr ".w" 512;
-	setAttr ".h" 512;
+	setAttr ".w" 800;
+	setAttr ".h" 800;
 	setAttr ".dar" 1;
 	setAttr ".ldar" yes;
+select -ne :hardwareRenderGlobals;
+	setAttr ".fn" -type "string" "default-%4n";
 select -ne :defaultHardwareRenderGlobals;
 	setAttr ".fn" -type "string" "im";
 	setAttr ".res" -type "string" "ntsc_4d 646 485 1.333";
 connectAttr "makeNurbPlane1.os" "nurbsPlaneShape1.cr";
-connectAttr "projectCurve1.oc" "projectionCurve1.cr";
-connectAttr "projectionCurve1.l[0]" "projectionCurve1_Shape1.cr";
-connectAttr "projectCurve2.oc" "projectionCurve2.cr";
-connectAttr "projectionCurve2.l[0]" "projectionCurve2_Shape1.cr";
-connectAttr "projectCurve3.oc" "projectionCurve3.cr";
-connectAttr "projectionCurve3.l[0]" "projectionCurve3_Shape1.cr";
-connectAttr "projectCurve4.oc" "projectionCurve4.cr";
-connectAttr "projectionCurve4.l[0]" "projectionCurve4_Shape1.cr";
-connectAttr "projectCurve5.oc" "projectionCurve5.cr";
-connectAttr "projectionCurve5.l[0]" "projectionCurve5_Shape1.cr";
-connectAttr "projectCurve6.oc" "projectionCurve6.cr";
-connectAttr "projectionCurve6.l[0]" "projectionCurve6_Shape1.cr";
-connectAttr "projectCurve7.oc" "projectionCurve7.cr";
-connectAttr "projectionCurve7.l[0]" "projectionCurve7_Shape1.cr";
-connectAttr "projectCurve8.oc" "projectionCurve8.cr";
-connectAttr "projectionCurve8.l[0]" "projectionCurve8_Shape1.cr";
+connectAttr "projectCurve1.oc" "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve1.cr"
+		;
+connectAttr "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve1.l[0]" "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve1|projectionCurve1_1|projectionCurve1_Shape1.cr"
+		;
+connectAttr "projectCurve2.oc" "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve2.cr"
+		;
+connectAttr "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve2.l[0]" "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve2|projectionCurve2_1|projectionCurve2_Shape1.cr"
+		;
+connectAttr "projectCurve3.oc" "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve3.cr"
+		;
+connectAttr "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve3.l[0]" "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve3|projectionCurve3_1|projectionCurve3_Shape1.cr"
+		;
+connectAttr "projectCurve4.oc" "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve4.cr"
+		;
+connectAttr "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve4.l[0]" "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve4|projectionCurve4_1|projectionCurve4_Shape1.cr"
+		;
+connectAttr "projectCurve5.oc" "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve5.cr"
+		;
+connectAttr "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve5.l[0]" "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve5|projectionCurve5_1|projectionCurve5_Shape1.cr"
+		;
+connectAttr "projectCurve6.oc" "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve6.cr"
+		;
+connectAttr "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve6.l[0]" "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve6|projectionCurve6_1|projectionCurve6_Shape1.cr"
+		;
+connectAttr "projectCurve7.oc" "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve7.cr"
+		;
+connectAttr "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve7.l[0]" "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve7|projectionCurve7_1|projectionCurve7_Shape1.cr"
+		;
+connectAttr "projectCurve8.oc" "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve8.cr"
+		;
+connectAttr "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve8.l[0]" "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve8|projectionCurve8_1|projectionCurve8_Shape1.cr"
+		;
 connectAttr "trim1.os" "nurbsPlane1trimmedSurfaceShape1.cr";
+connectAttr "projectCurve17.oc" "|nurbsPlane1|nurbsPlane1trimmedSurfaceShape1->|projectionCurve17.cr"
+		;
+connectAttr "|nurbsPlane1|nurbsPlane1trimmedSurfaceShape1->|projectionCurve17.l[0]" "|nurbsPlane1|nurbsPlane1trimmedSurfaceShape1->|projectionCurve17|projectionCurve17_1|projectionCurve17_Shape1.cr"
+		;
+connectAttr "projectCurve19.oc" "|nurbsPlane1|nurbsPlane1trimmedSurfaceShape1->|projectionCurve19.cr"
+		;
+connectAttr "|nurbsPlane1|nurbsPlane1trimmedSurfaceShape1->|projectionCurve19.l[0]" "|nurbsPlane1|nurbsPlane1trimmedSurfaceShape1->|projectionCurve19|projectionCurve19_1|projectionCurve19_Shape1.cr"
+		;
+connectAttr "trim3.os" "nurbsPlane1trimmedSurfaceShape2.cr";
+connectAttr "projectCurve21.oc" "|nurbsPlane1|nurbsPlane1trimmedSurfaceShape2->|projectionCurve21.cr"
+		;
+connectAttr "|nurbsPlane1|nurbsPlane1trimmedSurfaceShape2->|projectionCurve21.l[0]" "|nurbsPlane1|nurbsPlane1trimmedSurfaceShape2->|projectionCurve21|projectionCurve21_1|projectionCurve21_Shape1.cr"
+		;
+connectAttr "projectCurve22.oc" "|nurbsPlane1|nurbsPlane1trimmedSurfaceShape2->|projectionCurve22.cr"
+		;
+connectAttr "|nurbsPlane1|nurbsPlane1trimmedSurfaceShape2->|projectionCurve22.l[0]" "|nurbsPlane1|nurbsPlane1trimmedSurfaceShape2->|projectionCurve22|projectionCurve22_1|projectionCurve22_Shape1.cr"
+		;
+connectAttr "trim9.os" "nurbsPlane1trimmedSurfaceShape3.cr";
 connectAttr "makeNurbPlane2.os" "nurbsPlaneShape2.cr";
 connectAttr "projectCurve9.oc" "projectionCurve9.cr";
 connectAttr "projectionCurve9.l[0]" "projectionCurve9_Shape1.cr";
@@ -1559,8 +2114,67 @@ connectAttr "projectionCurve15.l[0]" "projectionCurve15_Shape1.cr";
 connectAttr "projectCurve16.oc" "projectionCurve16.cr";
 connectAttr "projectionCurve16.l[0]" "projectionCurve16_Shape1.cr";
 connectAttr "trim2.os" "nurbsPlane2trimmedSurfaceShape1.cr";
+connectAttr "projectCurve18.oc" "projectionCurve18.cr";
+connectAttr "projectionCurve18.l[0]" "projectionCurve18_Shape1.cr";
+connectAttr "projectCurve20.oc" "projectionCurve20.cr";
+connectAttr "projectionCurve20.l[0]" "projectionCurve20_Shape1.cr";
+connectAttr "trim6.os" "nurbsPlane2trimmedSurfaceShape2.cr";
+connectAttr "makeNurbPlane3.os" "nurbsPlaneShape3.cr";
+connectAttr "projectCurve23.oc" "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve1.cr"
+		;
+connectAttr "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve1.l[0]" "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve1|projectionCurve1_1|projectionCurve1_Shape1.cr"
+		;
+connectAttr "projectCurve24.oc" "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve2.cr"
+		;
+connectAttr "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve2.l[0]" "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve2|projectionCurve2_1|projectionCurve2_Shape1.cr"
+		;
+connectAttr "projectCurve25.oc" "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve3.cr"
+		;
+connectAttr "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve3.l[0]" "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve3|projectionCurve3_1|projectionCurve3_Shape1.cr"
+		;
+connectAttr "projectCurve26.oc" "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve4.cr"
+		;
+connectAttr "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve4.l[0]" "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve4|projectionCurve4_1|projectionCurve4_Shape1.cr"
+		;
+connectAttr "projectCurve27.oc" "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve5.cr"
+		;
+connectAttr "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve5.l[0]" "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve5|projectionCurve5_1|projectionCurve5_Shape1.cr"
+		;
+connectAttr "projectCurve28.oc" "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve6.cr"
+		;
+connectAttr "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve6.l[0]" "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve6|projectionCurve6_1|projectionCurve6_Shape1.cr"
+		;
+connectAttr "projectCurve29.oc" "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve7.cr"
+		;
+connectAttr "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve7.l[0]" "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve7|projectionCurve7_1|projectionCurve7_Shape1.cr"
+		;
+connectAttr "projectCurve30.oc" "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve8.cr"
+		;
+connectAttr "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve8.l[0]" "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve8|projectionCurve8_1|projectionCurve8_Shape1.cr"
+		;
+connectAttr "trim7.os" "nurbsPlane3trimmedSurfaceShape.cr";
+connectAttr "projectCurve31.oc" "|group13|nurbsPlane3|nurbsPlane3trimmedSurfaceShape->|projectionCurve17.cr"
+		;
+connectAttr "|group13|nurbsPlane3|nurbsPlane3trimmedSurfaceShape->|projectionCurve17.l[0]" "|group13|nurbsPlane3|nurbsPlane3trimmedSurfaceShape->|projectionCurve17|projectionCurve17_1|projectionCurve17_Shape1.cr"
+		;
+connectAttr "projectCurve32.oc" "|group13|nurbsPlane3|nurbsPlane3trimmedSurfaceShape->|projectionCurve19.cr"
+		;
+connectAttr "|group13|nurbsPlane3|nurbsPlane3trimmedSurfaceShape->|projectionCurve19.l[0]" "|group13|nurbsPlane3|nurbsPlane3trimmedSurfaceShape->|projectionCurve19|projectionCurve19_1|projectionCurve19_Shape1.cr"
+		;
+connectAttr "trim8.os" "nurbsPlane3trimmedSurfaceShape1.cr";
+connectAttr "projectCurve33.oc" "|group13|nurbsPlane3|nurbsPlane3trimmedSurfaceShape1->|projectionCurve21.cr"
+		;
+connectAttr "|group13|nurbsPlane3|nurbsPlane3trimmedSurfaceShape1->|projectionCurve21.l[0]" "|group13|nurbsPlane3|nurbsPlane3trimmedSurfaceShape1->|projectionCurve21|projectionCurve21_1|projectionCurve21_Shape1.cr"
+		;
+connectAttr "projectCurve34.oc" "|group13|nurbsPlane3|nurbsPlane3trimmedSurfaceShape1->|projectionCurve22.cr"
+		;
+connectAttr "|group13|nurbsPlane3|nurbsPlane3trimmedSurfaceShape1->|projectionCurve22.l[0]" "|group13|nurbsPlane3|nurbsPlane3trimmedSurfaceShape1->|projectionCurve22|projectionCurve22_1|projectionCurve22_Shape1.cr"
+		;
+connectAttr "trim10.os" "nurbsPlane3trimmedSurfaceShape2.cr";
 connectAttr "surfaceShader1SG.msg" "materialInfo1.sg";
 connectAttr "surfaceShader1.oc" "surfaceShader1SG.ss";
+connectAttr "nurbsPlane1trimmedSurfaceShape3.iog" "surfaceShader1SG.dsm"
+		 -na;
 connectAttr ":defaultLightSet.msg" "lightLinker1.lnk[0].llnk";
 connectAttr ":initialShadingGroup.msg" "lightLinker1.lnk[0].olnk";
 connectAttr ":defaultLightSet.msg" "lightLinker1.lnk[1].llnk";
@@ -1609,14 +2223,22 @@ connectAttr "curve3detachedCurve6detachedCurveShape2.ws" "projectCurve15.ic"
 connectAttr "nurbsPlaneShape2.ws" "projectCurve15.is";
 connectAttr "curve3detachedCurveShape6.ws" "projectCurve16.ic";
 connectAttr "nurbsPlaneShape2.ws" "projectCurve16.is";
-connectAttr "projectionCurve1_Shape1.ws" "trim1.ic[0]";
-connectAttr "projectionCurve2_Shape1.ws" "trim1.ic[1]";
-connectAttr "projectionCurve3_Shape1.ws" "trim1.ic[2]";
-connectAttr "projectionCurve4_Shape1.ws" "trim1.ic[3]";
-connectAttr "projectionCurve5_Shape1.ws" "trim1.ic[4]";
-connectAttr "projectionCurve6_Shape1.ws" "trim1.ic[5]";
-connectAttr "projectionCurve7_Shape1.ws" "trim1.ic[6]";
-connectAttr "projectionCurve8_Shape1.ws" "trim1.ic[7]";
+connectAttr "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve1|projectionCurve1_1|projectionCurve1_Shape1.ws" "trim1.ic[0]"
+		;
+connectAttr "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve2|projectionCurve2_1|projectionCurve2_Shape1.ws" "trim1.ic[1]"
+		;
+connectAttr "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve3|projectionCurve3_1|projectionCurve3_Shape1.ws" "trim1.ic[2]"
+		;
+connectAttr "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve4|projectionCurve4_1|projectionCurve4_Shape1.ws" "trim1.ic[3]"
+		;
+connectAttr "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve5|projectionCurve5_1|projectionCurve5_Shape1.ws" "trim1.ic[4]"
+		;
+connectAttr "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve6|projectionCurve6_1|projectionCurve6_Shape1.ws" "trim1.ic[5]"
+		;
+connectAttr "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve7|projectionCurve7_1|projectionCurve7_Shape1.ws" "trim1.ic[6]"
+		;
+connectAttr "|nurbsPlane1|nurbsPlaneShape1->|projectionCurve8|projectionCurve8_1|projectionCurve8_Shape1.ws" "trim1.ic[7]"
+		;
 connectAttr "nurbsPlaneShape1.l" "trim1.is";
 connectAttr "projectionCurve9_Shape1.ws" "trim2.ic[0]";
 connectAttr "projectionCurve10_Shape1.ws" "trim2.ic[1]";
@@ -1630,11 +2252,97 @@ connectAttr "nurbsPlaneShape2.l" "trim2.is";
 connectAttr "surfaceShader2.oc" "surfaceShader2SG.ss";
 connectAttr "nurbsPlane2trimmedSurfaceShape1.iog" "surfaceShader2SG.dsm"
 		 -na;
+connectAttr "nurbsPlane2trimmedSurfaceShape2.iog" "surfaceShader2SG.dsm"
+		 -na;
 connectAttr "surfaceShader2SG.msg" "materialInfo2.sg";
 connectAttr "surfaceShader3.oc" "surfaceShader3SG.ss";
 connectAttr "nurbsPlane1trimmedSurfaceShape1.iog" "surfaceShader3SG.dsm"
 		 -na;
+connectAttr "nurbsPlane1trimmedSurfaceShape2.iog" "surfaceShader3SG.dsm"
+		 -na;
+connectAttr "nurbsPlane3trimmedSurfaceShape1.iog" "surfaceShader3SG.dsm"
+		 -na;
+connectAttr "nurbsPlane3trimmedSurfaceShape2.iog" "surfaceShader3SG.dsm"
+		 -na;
 connectAttr "surfaceShader3SG.msg" "materialInfo3.sg";
+connectAttr "curveShape3.ws" "projectCurve17.ic";
+connectAttr "nurbsPlane1trimmedSurfaceShape1.ws" "projectCurve17.is";
+connectAttr "curveShape3.ws" "projectCurve18.ic";
+connectAttr "nurbsPlane2trimmedSurfaceShape1.ws" "projectCurve18.is";
+connectAttr "curveShape4.ws" "projectCurve19.ic";
+connectAttr "nurbsPlane1trimmedSurfaceShape1.ws" "projectCurve19.is";
+connectAttr "curveShape4.ws" "projectCurve20.ic";
+connectAttr "nurbsPlane2trimmedSurfaceShape1.ws" "projectCurve20.is";
+connectAttr "|nurbsPlane1|nurbsPlane1trimmedSurfaceShape1->|projectionCurve17|projectionCurve17_1|projectionCurve17_Shape1.ws" "trim3.ic[0]"
+		;
+connectAttr "|nurbsPlane1|nurbsPlane1trimmedSurfaceShape1->|projectionCurve19|projectionCurve19_1|projectionCurve19_Shape1.ws" "trim3.ic[1]"
+		;
+connectAttr "nurbsPlane1trimmedSurfaceShape1.l" "trim3.is";
+connectAttr "curveShape5.ws" "projectCurve21.ic";
+connectAttr "nurbsPlane1trimmedSurfaceShape2.ws" "projectCurve21.is";
+connectAttr "pasted__curveShape5.ws" "projectCurve22.ic";
+connectAttr "nurbsPlane1trimmedSurfaceShape2.ws" "projectCurve22.is";
+connectAttr "projectionCurve18_Shape1.ws" "trim6.ic[0]";
+connectAttr "projectionCurve20_Shape1.ws" "trim6.ic[1]";
+connectAttr "nurbsPlane2trimmedSurfaceShape1.l" "trim6.is";
+connectAttr "curveShape7.ws" "projectCurve23.ic";
+connectAttr "nurbsPlaneShape3.ws" "projectCurve23.is";
+connectAttr "curve3detachedCurveShape7.ws" "projectCurve24.ic";
+connectAttr "nurbsPlaneShape3.ws" "projectCurve24.is";
+connectAttr "curveShape8.ws" "projectCurve25.ic";
+connectAttr "nurbsPlaneShape3.ws" "projectCurve25.is";
+connectAttr "pasted__offsetNurbsCurveShape3.ws" "projectCurve26.ic";
+connectAttr "nurbsPlaneShape3.ws" "projectCurve26.is";
+connectAttr "curve3detachedCurve6detachedCurveShape4.ws" "projectCurve27.ic"
+		;
+connectAttr "nurbsPlaneShape3.ws" "projectCurve27.is";
+connectAttr "pasted__offsetNurbsCurveShape4.ws" "projectCurve28.ic";
+connectAttr "nurbsPlaneShape3.ws" "projectCurve28.is";
+connectAttr "curve3detachedCurve6detachedCurveShape5.ws" "projectCurve29.ic"
+		;
+connectAttr "nurbsPlaneShape3.ws" "projectCurve29.is";
+connectAttr "curve3detachedCurveShape8.ws" "projectCurve30.ic";
+connectAttr "nurbsPlaneShape3.ws" "projectCurve30.is";
+connectAttr "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve1|projectionCurve1_1|projectionCurve1_Shape1.ws" "trim7.ic[0]"
+		;
+connectAttr "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve2|projectionCurve2_1|projectionCurve2_Shape1.ws" "trim7.ic[1]"
+		;
+connectAttr "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve3|projectionCurve3_1|projectionCurve3_Shape1.ws" "trim7.ic[2]"
+		;
+connectAttr "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve4|projectionCurve4_1|projectionCurve4_Shape1.ws" "trim7.ic[3]"
+		;
+connectAttr "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve5|projectionCurve5_1|projectionCurve5_Shape1.ws" "trim7.ic[4]"
+		;
+connectAttr "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve6|projectionCurve6_1|projectionCurve6_Shape1.ws" "trim7.ic[5]"
+		;
+connectAttr "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve7|projectionCurve7_1|projectionCurve7_Shape1.ws" "trim7.ic[6]"
+		;
+connectAttr "|group13|nurbsPlane3|nurbsPlaneShape3->|projectionCurve8|projectionCurve8_1|projectionCurve8_Shape1.ws" "trim7.ic[7]"
+		;
+connectAttr "nurbsPlaneShape3.l" "trim7.is";
+connectAttr "curveShape9.ws" "projectCurve31.ic";
+connectAttr "nurbsPlane3trimmedSurfaceShape.ws" "projectCurve31.is";
+connectAttr "curveShape10.ws" "projectCurve32.ic";
+connectAttr "nurbsPlane3trimmedSurfaceShape.ws" "projectCurve32.is";
+connectAttr "|group13|nurbsPlane3|nurbsPlane3trimmedSurfaceShape->|projectionCurve17|projectionCurve17_1|projectionCurve17_Shape1.ws" "trim8.ic[0]"
+		;
+connectAttr "|group13|nurbsPlane3|nurbsPlane3trimmedSurfaceShape->|projectionCurve19|projectionCurve19_1|projectionCurve19_Shape1.ws" "trim8.ic[1]"
+		;
+connectAttr "nurbsPlane3trimmedSurfaceShape.l" "trim8.is";
+connectAttr "curveShape11.ws" "projectCurve33.ic";
+connectAttr "nurbsPlane3trimmedSurfaceShape1.ws" "projectCurve33.is";
+connectAttr "pasted__curveShape7.ws" "projectCurve34.ic";
+connectAttr "nurbsPlane3trimmedSurfaceShape1.ws" "projectCurve34.is";
+connectAttr "|nurbsPlane1|nurbsPlane1trimmedSurfaceShape2->|projectionCurve21|projectionCurve21_1|projectionCurve21_Shape1.ws" "trim9.ic[0]"
+		;
+connectAttr "|nurbsPlane1|nurbsPlane1trimmedSurfaceShape2->|projectionCurve22|projectionCurve22_1|projectionCurve22_Shape1.ws" "trim9.ic[1]"
+		;
+connectAttr "nurbsPlane1trimmedSurfaceShape2.l" "trim9.is";
+connectAttr "|group13|nurbsPlane3|nurbsPlane3trimmedSurfaceShape1->|projectionCurve21|projectionCurve21_1|projectionCurve21_Shape1.ws" "trim10.ic[0]"
+		;
+connectAttr "|group13|nurbsPlane3|nurbsPlane3trimmedSurfaceShape1->|projectionCurve22|projectionCurve22_1|projectionCurve22_Shape1.ws" "trim10.ic[1]"
+		;
+connectAttr "nurbsPlane3trimmedSurfaceShape1.l" "trim10.is";
 connectAttr "surfaceShader1SG.pa" ":renderPartition.st" -na;
 connectAttr "surfaceShader2SG.pa" ":renderPartition.st" -na;
 connectAttr "surfaceShader3SG.pa" ":renderPartition.st" -na;
@@ -1644,4 +2352,4 @@ connectAttr "surfaceShader3.msg" ":defaultShaderList1.s" -na;
 connectAttr "lightLinker1.msg" ":lightList1.ln" -na;
 connectAttr "nurbsPlaneShape1.iog" ":initialShadingGroup.dsm" -na;
 connectAttr "nurbsPlaneShape2.iog" ":initialShadingGroup.dsm" -na;
-// End of Logo.ma
+// End of Logo2.ma
