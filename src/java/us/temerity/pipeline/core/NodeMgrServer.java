@@ -1,4 +1,4 @@
-// $Id: NodeMgrServer.java,v 1.4 2004/03/29 08:18:11 jim Exp $
+// $Id: NodeMgrServer.java,v 1.5 2004/03/30 22:16:50 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -43,15 +43,23 @@ class NodeMgrServer
    * 
    * @param port 
    *   The network port to monitor for incoming connections.
+   * 
+   * @param fileHostname 
+   *   The name of the host running the <B>plfilemgr</B><A>(1).
+   * 
+   * @param filePort 
+   *   The network port listened to by <B>plfilemgr</B><A>(1).
    */
   public
   NodeMgrServer
   (
    File dir, 
-   int port
+   int port, 
+   String fileHostname, 
+   int filePort
   )
   { 
-    init(dir, port);
+    init(dir, port, fileHostname, filePort);
   }
   
   /** 
@@ -64,20 +72,38 @@ class NodeMgrServer
   public
   NodeMgrServer() 
   { 
-    init(PackageInfo.sNodeDir, PackageInfo.sMasterPort);
+    init(PackageInfo.sNodeDir, PackageInfo.sMasterPort, 
+	 PackageInfo.sFileServer, PackageInfo.sFilePort);
   }
 
 
   /*-- CONSTRUCTION HELPERS ----------------------------------------------------------------*/
 
+  /**
+   * Initialize a new instance.
+   * 
+   * @param dir 
+   *   The root node directory.
+   * 
+   * @param port 
+   *   The network port to monitor for incoming connections.
+   * 
+   * @param fileHostname 
+   *   The name of the host running the <B>plfilemgr</B><A>(1).
+   * 
+   * @param filePort 
+   *   The network port listened to by <B>plfilemgr</B><A>(1).
+   */
   private synchronized void 
   init
   (
    File dir, 
-   int port
+   int port, 
+   String fileHostname, 
+   int filePort
   )
   { 
-    pNodeMgr = new NodeMgr(dir);
+    pNodeMgr = new NodeMgr(dir, fileHostname, filePort);
 
     if(port < 0) 
       throw new IllegalArgumentException("Illegal port number (" + port + ")!");
@@ -242,6 +268,22 @@ class NodeMgrServer
 	    {
 	      NodeRegisterReq req = (NodeRegisterReq) objIn.readObject();
 	      objOut.writeObject(pNodeMgr.register(req));
+	      objOut.flush(); 
+	    }
+	    break;
+	    
+	  case Revoke:
+	    {
+	      NodeRevokeReq req = (NodeRevokeReq) objIn.readObject();
+	      objOut.writeObject(pNodeMgr.revoke(req));
+	      objOut.flush(); 
+	    }
+	    break;
+	    
+	  case Rename:
+	    {
+	      NodeRenameReq req = (NodeRenameReq) objIn.readObject();
+	      objOut.writeObject(pNodeMgr.rename(req));
 	      objOut.flush(); 
 	    }
 	    break;
