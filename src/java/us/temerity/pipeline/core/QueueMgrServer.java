@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.10 2004/08/30 01:39:23 jim Exp $
+// $Id: QueueMgrServer.java,v 1.11 2004/09/03 01:57:25 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -438,33 +438,11 @@ class QueueMgrServer
 	    }
 	    break;
 
-	  case GetJobGroup:
-	    {
-	      QueueGetJobGroupReq req = (QueueGetJobGroupReq) objIn.readObject();
-	      objOut.writeObject(pQueueMgr.getJobGroup(req));
-	      objOut.flush(); 
-	    }
-	    break;
-
-	  case GetJobGroups:
-	    {
-	      objOut.writeObject(pQueueMgr.getJobGroups());
-	      objOut.flush(); 
-	    }
-	    break;
 
 	  case SubmitJob:
 	    {
 	      QueueSubmitJobReq req = (QueueSubmitJobReq) objIn.readObject();
 	      objOut.writeObject(pQueueMgr.submitJob(req));
-	      objOut.flush(); 
-	    }
-	    break;
-	    
-	  case GroupJobs:
-	    {
-	      QueueGroupJobsReq req = (QueueGroupJobsReq) objIn.readObject();
-	      objOut.writeObject(pQueueMgr.groupJobs(req));
 	      objOut.flush(); 
 	    }
 	    break;
@@ -492,6 +470,56 @@ class QueueMgrServer
 	      objOut.flush(); 
 	    }
 	    break;
+
+
+	  case GroupJobs:
+	    {
+	      QueueGroupJobsReq req = (QueueGroupJobsReq) objIn.readObject();
+	      objOut.writeObject(pQueueMgr.groupJobs(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case GetJobGroup:
+	    {
+	      QueueGetJobGroupReq req = (QueueGetJobGroupReq) objIn.readObject();
+	      objOut.writeObject(pQueueMgr.getJobGroup(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case GetJobGroups:
+	    {
+	      objOut.writeObject(pQueueMgr.getJobGroups());
+	      objOut.flush(); 
+	    }
+	    break;
+	    
+	  case DeleteJobGroups:
+	    {
+	      QueueDeleteJobGroupsReq req = (QueueDeleteJobGroupsReq) objIn.readObject();
+	      objOut.writeObject(pQueueMgr.deleteJobGroups(req));
+	      objOut.flush(); 
+	    }
+	    break;
+
+	  case DeleteViewJobGroups:
+	    {
+	      QueueDeleteViewJobGroupsReq req = 
+		(QueueDeleteViewJobGroupsReq) objIn.readObject();
+	      objOut.writeObject(pQueueMgr.deleteViewJobGroups(req));
+	      objOut.flush(); 
+	    }
+	    break;
+	    
+	  case DeleteAllJobGroups:
+	    {
+	      objOut.writeObject(pQueueMgr.deleteAllJobGroups());
+	      objOut.flush(); 
+	    }
+	    break;
+	    
+
 
 	  /*-- NETWORK CONNECTION ----------------------------------------------------------*/
 	  case Disconnect:
