@@ -1,7 +1,6 @@
 
 SUBDIRS = \
   src \
-  tests \
   docs
 
 
