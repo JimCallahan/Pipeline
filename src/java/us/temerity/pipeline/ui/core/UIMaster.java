@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.5 2005/01/07 15:47:48 jim Exp $
+// $Id: UIMaster.java,v 1.6 2005/01/08 05:31:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -68,6 +68,12 @@ class UIMaster
    * 
    * @param restoreSelections
    *   Whether the restored layout should include node and/or job group selections.
+   * 
+   * @param debugGL
+   *   Whether to check all OpenGL calls for errors.
+   * 
+   * @param traceGL
+   *   Whether to print all OpenGL calls to STDOUT.
    */ 
   private 
   UIMaster
@@ -79,7 +85,9 @@ class UIMaster
    int jobPort, 
    String layout, 
    boolean restoreLayout,
-   boolean restoreSelections
+   boolean restoreSelections, 
+   boolean debugGL, 
+   boolean traceGL
   ) 
   {
     pMasterMgrClient = new MasterMgrClient(masterHost, masterPort);
@@ -105,6 +113,9 @@ class UIMaster
     pIsRestoring        = new AtomicBoolean();
 
     pCollapsedNodePaths = new HashSet<String>();
+
+    pDebugGL = debugGL;
+    pTraceGL = traceGL;
 
     SwingUtilities.invokeLater(new SplashFrameTask(this));
   }
@@ -142,6 +153,12 @@ class UIMaster
    * 
    * @param restoreSelections
    *   Whether the restored layout should include node and/or job group selections.
+   * 
+   * @param debugGL
+   *   Whether to check all OpenGL calls for errors.
+   * 
+   * @param traceGL
+   *   Whether to print all OpenGL calls to STDOUT.
    */ 
   public static void 
   init
@@ -153,13 +170,16 @@ class UIMaster
    int jobPort, 
    String layout,
    boolean restoreLayout,
-   boolean restoreSelections
+   boolean restoreSelections,
+   boolean debugGL, 
+   boolean traceGL
   ) 
   {
     assert(sMaster == null);
     sMaster = new UIMaster(masterHost, masterPort, 
 			   queueHost, queuePort, jobPort, 
-			   layout, restoreLayout, restoreSelections);
+			   layout, restoreLayout, restoreSelections, 
+			   debugGL, traceGL);
   }
 
 
@@ -449,6 +469,27 @@ class UIMaster
     synchronized(pCollapsedNodePaths) {
       return pCollapsedNodePaths.contains(path);
     }    
+  }
+  
+
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Whether to check all OpenGL calls for errors.
+   */ 
+  public boolean 
+  getDebugGL() 
+  {
+    return pDebugGL;
+  }
+
+  /**
+   * Whether to print all OpenGL calls to STDOUT.
+   */ 
+  public boolean 
+  getTraceGL() 
+  {
+    return pTraceGL;
   }
   
 
@@ -1138,35 +1179,6 @@ class UIMaster
 	  frame.setContentPane(panel);
 	}
 
-	{
-	  Box hbox = new Box(BoxLayout.X_AXIS);
-
-	  hbox.add(Box.createHorizontalGlue());
-
-	  {
-	    Box vbox = new Box(BoxLayout.Y_AXIS);
-	    
-	    vbox.add(Box.createVerticalGlue());
-
-	    {
-	      JLabel label = new JLabel("version " + PackageInfo.sVersion);
-	      label.setForeground(Color.cyan);
-	      label.setOpaque(false);
-	    
-	      vbox.add(label);
-	    }
-
-	    vbox.add(Box.createRigidArea(new Dimension(0, 26)));
-
-	    hbox.add(vbox);
-	  }
-
-	  hbox.add(Box.createRigidArea(new Dimension(19, 0)));
-	  
-	  frame.setGlassPane(hbox);
-	  frame.getGlassPane().setVisible(true);
-	}
-	
 	frame.pack();
 
 	{
@@ -2533,6 +2545,19 @@ class UIMaster
    */ 
   private HashSet<String>  pCollapsedNodePaths;
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether to check all OpenGL calls for errors.
+   */ 
+  private boolean pDebugGL;
+
+  /**
+   * Whether to print all OpenGL calls to STDOUT.
+   */ 
+  private boolean pTraceGL;
+  
 
   /*----------------------------------------------------------------------------------------*/
 
