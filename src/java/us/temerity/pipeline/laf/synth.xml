@@ -381,6 +381,17 @@
 
 
    
+  <!--  T I T L E   V A L U E   P A N E L   -->
+ 
+  <style id="TitleValuePanel">
+    <imagePainter path="FrameIn.png"
+                  sourceInsets="3 3 3 3"/>
+    <insets top="3" bottom="3" right="3" left="3"/>
+  </style>
+  <bind style="TitleValuePanel" type="name" key="TitleValuePanel"/>
+
+
+   
   <!--  C A R D   P A N E L   -->
  
   <style id="CardPanel">
@@ -668,6 +679,13 @@
     <insets top="21" bottom="15" right="15" left="15"/>
   </style>
   <bind style="DialogButtonPanel" type="name" key="DialogButtonPanel"/>
+
+  <style id="DialogButtonPanel2">
+    <imagePainter path="DialogButtonPanel2.png"	
+                  sourceInsets="0 0 0 0"/>
+    <insets top="15" bottom="15" right="15" left="15"/>
+  </style>
+  <bind style="DialogButtonPanel2" type="name" key="DialogButtonPanel2"/>
 
 
 
