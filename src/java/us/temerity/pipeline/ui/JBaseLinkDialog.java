@@ -1,4 +1,4 @@
-// $Id: JBaseLinkDialog.java,v 1.2 2004/07/07 13:24:15 jim Exp $
+// $Id: JBaseLinkDialog.java,v 1.3 2004/07/14 21:04:54 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -198,12 +198,14 @@ class JBaseLinkDialog
   {
     LinkRelationship rel = getRelationship();
     if(rel == LinkRelationship.OneToOne) {
+      pOffsetField.setEnabled(true);
       Integer offset = pOffsetField.getValue();
       if(offset == null) 
 	pOffsetField.setValue(0);
     }
     else {
       pOffsetField.setValue(null);
+      pOffsetField.setEnabled(false);
     }
   }
 
