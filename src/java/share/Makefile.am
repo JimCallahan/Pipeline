@@ -11,6 +11,14 @@ editor_DATA = \
   pipeline
 
 
+etcdir = @NODEDIR@/etc
+
+etc_DATA = \
+  comparator-menu-layout \
+  editor-menu-layout \
+  tool-menu-layout
+
+
 install-data-hook:
 	@if [ "@PIPELINE_USER@" != "pipeline" ]; \
         then \

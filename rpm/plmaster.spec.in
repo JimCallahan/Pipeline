@@ -29,9 +29,15 @@ The plmaster(1) program is distributed in the main Pipeline RPM:
 %defattr(644,@PIPELINE_USER@,@PIPELINE_GROUP@)
 %config @NODEDIR@/etc/suffix-editors/@PIPELINE_USER@
 
+%config @NODEDIR@/etc/comparator-menu-layout 
+%config @NODEDIR@/etc/editor-menu-layout     
+%config @NODEDIR@/etc/tool-menu-layout       
+
 %changelog
 * @RPM_DATE@ Jim Callahan <jim@salamander>
 Latest build.
+
+
 
 
 
