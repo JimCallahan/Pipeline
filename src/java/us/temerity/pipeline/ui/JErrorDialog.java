@@ -1,8 +1,10 @@
-// $Id: JErrorDialog.java,v 1.1 2004/05/08 23:40:57 jim Exp $
+// $Id: JErrorDialog.java,v 1.2 2004/05/11 19:11:50 jim Exp $
 
 package us.temerity.pipeline.ui;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.glue.GlueException;
+import us.temerity.pipeline.core.GlueLockException;
 
 import java.awt.*;
 import java.util.*;
@@ -91,6 +93,11 @@ class JErrorDialog
   {
     if(ex instanceof PipelineException) {
       pHeaderLabel.setText("Error:");
+      pMessageArea.setText(ex.getMessage());
+    }
+    else if((ex instanceof GlueException) || 
+	    (ex instanceof GlueLockException)) {
+      pHeaderLabel.setText("Glue Error:");
       pMessageArea.setText(ex.getMessage());
     }
     else if(ex instanceof IOException) {
