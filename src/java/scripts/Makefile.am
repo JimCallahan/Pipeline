@@ -2,8 +2,9 @@
 instbindir = @ROOT_INST_DIR@/bin
 
 instbin_SCRIPTS = \
-  plui \
-  plplugin
+  plplugin \
+  plscript \
+  plui
 
 
 instsbindir = @ROOT_INST_DIR@/sbin

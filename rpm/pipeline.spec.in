@@ -29,9 +29,10 @@ The core features of Pipeline include:
 
 %defattr(555,root,root)
 @ROOT_INST_DIR@/bin/pls
-@ROOT_INST_DIR@/bin/realpath
-@ROOT_INST_DIR@/bin/plui
 @ROOT_INST_DIR@/bin/plplugin
+@ROOT_INST_DIR@/bin/plscript
+@ROOT_INST_DIR@/bin/plui
+@ROOT_INST_DIR@/bin/realpath
 
 %defattr(4550,root,@PIPELINE_GROUP@)
 @ROOT_INST_DIR@/sbin/plrun
