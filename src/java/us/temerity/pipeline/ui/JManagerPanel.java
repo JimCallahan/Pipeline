@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.28 2004/07/14 21:06:12 jim Exp $
+// $Id: JManagerPanel.java,v 1.29 2004/07/18 21:34:08 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -237,6 +237,7 @@ class JManagerPanel
 	sub.add(item);  
 
 	sub.addSeparator();
+	sub.addSeparator();
 
 	item = new JMenuItem("Shutdown Server...");
 	pShutdownServerItem = item;
@@ -293,6 +294,7 @@ class JManagerPanel
 	sub.add(item);  
       }
       
+      pPopup.addSeparator();
       pPopup.addSeparator();
       
       item = new JMenuItem("Quit...");
