@@ -1,4 +1,4 @@
-// $Id: DownstreamLinks.java,v 1.8 2004/12/08 09:56:23 jim Exp $
+// $Id: DownstreamLinks.java,v 1.9 2005/01/03 00:05:31 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -40,9 +40,8 @@ class DownstreamLinks
   public
   DownstreamLinks() 
   {
-    pWorkingLinks        = new TreeMap<NodeID,TreeSet<String>>();
-    pCheckedInLinks      = new TreeMap<VersionID,TreeMap<String,VersionID>>();
-    pAssocCheckedInLinks = new TreeMap<String,VersionID>();
+    pWorkingLinks   = new TreeMap<NodeID,TreeSet<String>>();
+    pCheckedInLinks = new TreeMap<VersionID,TreeMap<String,VersionID>>();
   }
 
   /**
@@ -61,9 +60,8 @@ class DownstreamLinks
       throw new IllegalArgumentException("The node name cannot be (null)!");
     pName = name;
 
-    pWorkingLinks        = new TreeMap<NodeID,TreeSet<String>>();
-    pCheckedInLinks      = new TreeMap<VersionID,TreeMap<String,VersionID>>();
-    pAssocCheckedInLinks = new TreeMap<String,VersionID>();
+    pWorkingLinks   = new TreeMap<NodeID,TreeSet<String>>();
+    pCheckedInLinks = new TreeMap<VersionID,TreeMap<String,VersionID>>();
   }
 
   
@@ -83,9 +81,7 @@ class DownstreamLinks
   public boolean 
   hasLinks() 
   {
-    return !(pCheckedInLinks.isEmpty() && 
-	     pAssocCheckedInLinks.isEmpty() && 
-	     pWorkingLinks.isEmpty());
+    return !(pCheckedInLinks.isEmpty() && pWorkingLinks.isEmpty());
   }
 
 
@@ -256,8 +252,7 @@ class DownstreamLinks
    * links, an empty <CODE>TreeMap</CODE> will be returned.
    * 
    * @param vid 
-   *   The revision number of the checked-in node version or <CODE>null</CODE> for 
-   *   Association links.
+   *   The revision number of the checked-in node version.
    * 
    * @return
    *   The table of revision numbers indexed by the names of the downstream nodes.
@@ -268,21 +263,19 @@ class DownstreamLinks
    VersionID vid 
   ) 
   {
-    TreeMap<String,VersionID> links = null;
-    if((vid != null) && pCheckedInLinks.containsKey(vid)) {
-      links = pCheckedInLinks.get(vid);
+    if(vid == null) 
+      throw new IllegalArgumentException
+	("The revision number cannot be (null)!");
+    
+    if(pCheckedInLinks.containsKey(vid)) {
+      TreeMap<String,VersionID> links = pCheckedInLinks.get(vid);
       if(links != null)
 	return new TreeMap<String,VersionID>(links);
-      else if(!pAssocCheckedInLinks.isEmpty())
-	return pAssocCheckedInLinks;
       else 
 	return new TreeMap<String,VersionID>();
     }
 
-    if(!pAssocCheckedInLinks.isEmpty())
-      return pAssocCheckedInLinks;
-    else
-      return null;
+    return null;
   }
   
   /**  
@@ -299,9 +292,10 @@ class DownstreamLinks
   public TreeMap<String,VersionID>
   getLatestCheckedIn() 
   {
-    VersionID vid = null;
-    if(!pCheckedInLinks.isEmpty()) 
-      vid = pCheckedInLinks.lastKey();
+    if(pCheckedInLinks.isEmpty()) 
+      return null;
+
+    VersionID vid = pCheckedInLinks.lastKey();
     return getCheckedIn(vid);
   }
   
@@ -310,8 +304,7 @@ class DownstreamLinks
    * empty set of downstream links for the version.
    * 
    * @param vid 
-   *   The revision number of the checked-in node version or <CODE>null</CODE> for 
-   *   Association links.
+   *   The revision number of the checked-in node version.
    */ 
   public void 
   createCheckedIn
@@ -319,11 +312,9 @@ class DownstreamLinks
    VersionID vid
   ) 
   { 
-    if(vid != null) {
-      TreeMap<String,VersionID> links = pCheckedInLinks.get(vid);
-      if(links == null) 
-	pCheckedInLinks.put(vid, null);
-    }
+    TreeMap<String,VersionID> links = pCheckedInLinks.get(vid);
+    if(links == null) 
+      pCheckedInLinks.put(vid, null);
   }
 
   /** 
@@ -331,8 +322,7 @@ class DownstreamLinks
    * link to the checked-in version with the given revision number.
    * 
    * @param vid 
-   *   The revision number of the checked-in node version or <CODE>null</CODE> for 
-   *   Association links.
+   *   The revision number of the checked-in node version.
    * 
    * @param name 
    *   The fully resolved name of the downstream node.
@@ -348,6 +338,10 @@ class DownstreamLinks
    VersionID dvid 
   ) 
   {
+    if(vid == null) 
+      throw new IllegalArgumentException
+	("The revision number cannot be (null)!");
+
     if(name == null) 
       throw new IllegalArgumentException
 	("The downstream node name cannot be (null)!");
@@ -356,20 +350,47 @@ class DownstreamLinks
       throw new IllegalArgumentException
 	("The downstream revision number cannot be (null)!");
 
-    TreeMap<String,VersionID> links = null;
-    if(vid == null) 
-      links = pAssocCheckedInLinks;
-    else {
-      links = pCheckedInLinks.get(vid);
-      if(links == null) {
-	links = new TreeMap<String,VersionID>();
-	pCheckedInLinks.put(vid, links);
-      }
+    TreeMap<String,VersionID> links = pCheckedInLinks.get(vid);
+    if(links == null) {
+      links = new TreeMap<String,VersionID>();
+      pCheckedInLinks.put(vid, links);
     }
-
     links.put(name, dvid);
   }
 
+  /**
+   * Delete the name and revision of a checked-in version of a node connected by a downstream 
+   * link to the checked-in version with the given revision number. <P> 
+   * 
+   * @param vid 
+   *   The revision number of the checked-in node version.
+   * 
+   * @param name 
+   *   The fully resolved name of the downstream node.
+   */ 
+  public void 
+  deleteCheckedIn
+  (
+   VersionID vid,
+   String name
+  ) 
+  {
+    if(vid == null) 
+      throw new IllegalArgumentException
+	("The revision number cannot be (null)!");
+
+    if(name == null) 
+      throw new IllegalArgumentException
+	("The downstream node name cannot be (null)!");
+    
+    TreeMap<String,VersionID> links = pCheckedInLinks.get(vid);
+    if(links != null) {
+      links.remove(name);
+      if(links.isEmpty())
+	pCheckedInLinks.put(vid, null);
+    }
+  }
+  
 
   
   /*----------------------------------------------------------------------------------------*/
@@ -390,9 +411,6 @@ class DownstreamLinks
 
     if(!pCheckedInLinks.isEmpty())
       encoder.encode("CheckedInLinks", pCheckedInLinks);
-
-    if(!pAssocCheckedInLinks.isEmpty())
-      encoder.encode("AssocCheckedInLinks", pAssocCheckedInLinks);
   }
 
   public void 
@@ -416,11 +434,6 @@ class DownstreamLinks
       (TreeMap<VersionID,TreeMap<String,VersionID>>) decoder.decode("CheckedInLinks");
     if(checkedIn != null) 
       pCheckedInLinks = checkedIn;
-
-    TreeMap<String,VersionID> assoc = 
-      (TreeMap<String,VersionID>) decoder.decode("AssocCheckedInLinks");
-    if(assoc != null) 
-      pAssocCheckedInLinks = assoc;
   }
 
 
@@ -440,16 +453,10 @@ class DownstreamLinks
   private TreeMap<NodeID,TreeSet<String>>  pWorkingLinks;
 
   /** 
-   * The revision numbers of the checked-in nodes downstream of a Dependency/Reference 
-   * link indexed by revision number and downstream node name.
+   * The revision numbers of the checked-in nodes downstream indexed by revision number and
+   * downstream node name.
    */
   private TreeMap<VersionID,TreeMap<String,VersionID>>  pCheckedInLinks;
-
-  /** 
-   * The revision numbers of the checked-in nodes downstream of an Association link 
-   * indexed by the downstream node name.
-   */
-  private TreeMap<String,VersionID>  pAssocCheckedInLinks;
   
 }
 

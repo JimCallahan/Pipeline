@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.32 2004/11/17 13:33:50 jim Exp $
+// $Id: NodeMod.java,v 1.33 2005/01/03 00:05:31 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1305,14 +1305,6 @@ class NodeMod
 
     {
       Long stamp = (Long) decoder.decode("TimeStamp");
-
-      /* TEMPORARY WORKAROUND: 
-       *   to prevent working versions created before Pipeline-1.8.8 which don't have a 
-       *   TimeStamp from generating an error when loaded */ 
-      if(stamp == null) 
-	stamp = 0L;
-      /* TEMPORARY WORKAROUND */ 
-
       if(stamp == null) 
  	throw new GlueException("The \"TimeStamp\" was missing!");
       pTimeStamp = new Date(stamp);

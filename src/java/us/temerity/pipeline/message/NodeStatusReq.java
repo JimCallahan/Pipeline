@@ -1,4 +1,4 @@
-// $Id: NodeStatusReq.java,v 1.4 2004/11/03 23:41:12 jim Exp $
+// $Id: NodeStatusReq.java,v 1.5 2005/01/03 00:05:31 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -30,24 +30,17 @@ class NodeStatusReq
    * 
    * @param id 
    *   The unique working version identifier.
-   * 
-   * @param skipAssoc
-   *   Whether to skip computing the status of all nodes on the upstream side of an 
-   *   Association link.
    */
   public
   NodeStatusReq
   (
-   NodeID id,
-   boolean skipAssoc      
+   NodeID id
   )
   { 
     if(id == null) 
       throw new IllegalArgumentException
 	("The working version ID cannot be (null)!");
     pNodeID = id;
-
-    pSkipAssoc = skipAssoc; 
   }
 
 
@@ -65,15 +58,6 @@ class NodeStatusReq
     return pNodeID;
   }
 
-  /**
-   * Whether to skip computing the status of all nodes on the upstream side of an 
-   * Association link.
-   */
-  public boolean 
-  skipAssociations() 
-  {
-    return pSkipAssoc;
-  }
   
 
   /*----------------------------------------------------------------------------------------*/
@@ -92,12 +76,6 @@ class NodeStatusReq
    * The unique working version identifier.
    */ 
   private NodeID  pNodeID;
-
-  /**
-   * Whether to skip computing the status of all nodes on the upstream side of an 
-   * Association link.
-   */
-  private boolean  pSkipAssoc;
   
 }
   

@@ -356,7 +356,6 @@ TOKEN :
 | <MIN_DISK:        "--min-disk">        : BYTE_SIZE_SEP
 | <LICENSE_KEY2:    "--license-key">     : KEY_TOGGLE_SEP
 | <SELECTION_KEY2:  "--selection-key">   : KEY_TOGGLE_SEP
-| <ASSOC:           "--assoc">           : LINK_PARAM_SEP
 | <REF:             "--ref">             : LINK_PARAM_SEP
 | <DEPEND:          "--depend">          : LINK_PARAM_SEP
 | <SOURCE:          "--source">          : LINK_PARAM_SEP
@@ -3175,7 +3174,7 @@ WorkingLink()
   {
     if(pLinkSourceName == null) 
       throw new PipelineException
-        ("No link source node was specified with a --assoc, --ref or --depend option!");
+        ("No link source node was specified with a --ref or --depend option!");
 
     pMasterMgrClient.link(pAuthor, pView, name, 
 			  pLinkSourceName, pLinkPolicy, pLinkRelationship, pLinkFrameOffset);
@@ -3190,28 +3189,8 @@ WorkingLinkOpts()
   throws PipelineException : 
 {}
 {
-  (Author() | View() | Assoc() | Ref() | Depend()) 
+  (Author() | View() | Ref() | Depend()) 
   {}
-}
-
-void
-Assoc()
-  throws PipelineException : 
-{
-  String sname = null;
-}
-{
-  <ASSOC> EQ() sname=LinkName() AE() 
-  {
-    if(pLinkSourceName != null) 
-      throw new PipelineException
-        ("The --assoc, --ref and --depend options are mutually exclusive!");
-
-    pLinkSourceName   = sname;
-    pLinkPolicy       = LinkPolicy.Association; 
-    pLinkRelationship = LinkRelationship.None;
-    pLinkFrameOffset  = null;
-  }
 }
 
 void
@@ -3228,7 +3207,7 @@ Ref()
   {
     if(pLinkSourceName != null) 
       throw new PipelineException
-        ("The --assoc, --ref and --depend options are mutually exclusive!");
+        ("The --ref and --depend options are mutually exclusive!");
 
     pLinkSourceName = sname;
     pLinkPolicy     = LinkPolicy.Reference; 
@@ -3249,7 +3228,7 @@ Depend()
   {
     if(pLinkSourceName != null) 
       throw new PipelineException
-        ("The --assoc, --ref and --depend options are mutually exclusive!");
+        ("The --ref and --depend options are mutually exclusive!");
 
     pLinkSourceName = sname;
     pLinkPolicy     = LinkPolicy.Dependency;

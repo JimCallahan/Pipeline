@@ -477,9 +477,7 @@ Node Versions</a></li>
           <span style="font-weight: normal;">[</span><a href="#--view">--view</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]</span><span
  style="font-weight: normal;"> </span><span
- style="font-weight: normal;"><span style="font-weight: bold;">--assoc</span>=<span
- style="font-style: italic;">node-name</span> | <span
- style="font-weight: bold;">--ref</span>=<span
+ style="font-weight: normal;"><span style="font-weight: bold;">--ref</span>=<span
  style="font-style: italic;">node-name</span>[,all|<span
  style="font-style: italic;">offset</span>] | </span><span
  style="font-weight: normal;"><span style="font-weight: bold;">--depend</span>=<span
@@ -2614,8 +2612,7 @@ owned by the user (<span style="font-style: italic;">user-name</span>).<br>
  style="font-style: italic;">view-name</span>]</span><span
  style="font-weight: normal;"> </span><span
  style="font-weight: normal;"><span style="font-weight: bold;"><br>
-&nbsp;&nbsp;&nbsp; --assoc</span>=<span style="font-style: italic;">node-name</span>
-| <span style="font-weight: bold;">--ref</span>=<span
+&nbsp;&nbsp;&nbsp; </span><span style="font-weight: bold;">--ref</span>=<span
  style="font-style: italic;">node-name</span>[,all|<span
  style="font-style: italic;">offset</span>] | </span><span
  style="font-weight: normal;"><span style="font-weight: bold;">--depend</span>=<span
@@ -2629,24 +2626,6 @@ more upstream nodes to the target working node version (<span
  style="font-style: italic;">view-name</span>) owned by the user (<span
  style="font-style: italic;">user-name</span>).&nbsp; There are three
 types of links which can be created with the following options:<br>
-<br>
-<span style="font-weight: normal;"><span style="font-weight: bold;">
---assoc</span>=<span style="font-style: italic;">node-name<br>
-<br>
-</span></span>
-<div style="margin-left: 40px;">Creates an Association link from the
-given source node (node-name) to the target node. <br>
-<br>
-This kind of link represents a loose association of the source node
-with the targe node. The link has no affect on the target node in terms
-of its overall node or queue state. In other words, changes to the
-source node will not require regeneration of the target node or cause
-the target node to become modified.<br>
-<br>
-If the target node has an Action plugin the source node and its
-associated files will be omitted from list of sources passed to the
-action during job preparation. <br>
-</div>
 <span style="font-weight: normal;"><span style="font-style: italic;"><br>
 </span><span style="font-weight: bold;">--ref</span>=<span
  style="font-style: italic;">node-name</span>[,all|<span

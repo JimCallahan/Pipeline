@@ -1,4 +1,4 @@
-// $Id: TestMasterMgrApp.java,v 1.6 2004/12/29 17:30:32 jim Exp $
+// $Id: TestMasterMgrApp.java,v 1.7 2005/01/03 00:05:31 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -248,7 +248,7 @@ class TestMasterMgrApp
       printStatus(client.status(author, "default", modB.getName(), false));
 
       client.link(author, "default", modA.getName(), modB.getName(), 
-		  LinkPolicy.Association, LinkRelationship.None, null);
+		  LinkPolicy.Dependency, LinkRelationship.All, null);
       modA = client.getWorkingVersion(author, "default", modA.getName());
 
       printStatus(client.status(author, "default", modA.getName(), false));

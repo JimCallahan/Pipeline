@@ -1,4 +1,4 @@
-// $Id: LinkPolicy.java,v 1.7 2004/09/10 15:39:52 jim Exp $
+// $Id: LinkPolicy.java,v 1.8 2005/01/03 00:05:31 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -19,20 +19,6 @@ import java.util.*;
 public
 enum LinkPolicy
 {  
-  /** 
-   * This kind of link represents a loose association of the source node with the target
-   * node. <P> 
-   * 
-   * The link has no affect on the target node in terms of <CODE>OverallNodeState</CODE> or 
-   * <CODE>OverallQueueState</CODE>.  In other words, changes to the source node will not 
-   * cause the target node to become <CODE>Stale</CODE> or <CODE>ModifiedLinks</CODE>.
-   *
-   * If the target node has a regeneration action (see {@link BaseAction BaseAction}), the 
-   * source node and its associated files will be omitted from the 
-   * {@link ActionAgenda ActionAgenda} passed to the action during job preparation. 
-   */
-  Association,
-
   /**
    * This kind of link represents an indirect relationship between the target node on the 
    * source node. <P> 

@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.45 2004/12/31 08:56:53 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.46 2005/01/03 00:05:31 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -644,11 +644,7 @@ class GenUserPrefsApp
       BasePref prefs[] = {
 	new BooleanPref
 	("Whether to initially show downstream links.",
-	 "ShowDownstream", "Show Downstream:", false), 
-	
-	new BooleanPref
-	("Whether to initially show nodes upstream of an association link.",
-	 "ShowAssociations", "Show Associations:", false), 
+	 "ShowDownstream", "Show Downstream:", false)
       };
 
       pPrefs.put("Panel|Node Viewer|Appearance", prefs);
@@ -701,11 +697,6 @@ class GenUserPrefsApp
 	("Show/hide nodes downstream of the focus node.",
 	 "NodeViewerShowHideDownstreamNodes", "Show/Hide Downstream:", 
 	 false, false, false, 68),  /* D */
-
-	new HotKeyPref
-	("Show/hide nodes upstream of an association link.",
-	 "NodeViewerShowHideAssociationsNodes", "Show/Hide Associations:", 
-	 false, false, false, 65),  /* A */
 
 	new BasePref(),
 
@@ -1111,7 +1102,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.45 2004/12/31 08:56:53 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.46 2005/01/03 00:05:31 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 
@@ -1365,7 +1356,7 @@ class GenUserPrefsApp
     StringBuffer buf = new StringBuffer();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.45 2004/12/31 08:56:53 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.46 2005/01/03 00:05:31 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui;\n" + 
        "\n" + 

@@ -1,4 +1,4 @@
-// $Id: LinkRelationship.java,v 1.4 2004/06/28 23:00:16 jim Exp $
+// $Id: LinkRelationship.java,v 1.5 2005/01/03 00:05:31 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -18,11 +18,6 @@ import java.util.*;
 public
 enum LinkRelationship
 {  
-  /** 
-   * There are no relationships between files associated with source and target nodes.
-   */
-  None,
-
   /**
    * There is a one-to-one relationship between files associated with the target and 
    * source nodes. <P> 
@@ -95,7 +90,6 @@ enum LinkRelationship
   /*----------------------------------------------------------------------------------------*/
 
   private static String sTitles[] = {
-    "None", 
     "1:1", 
     "All"
   };

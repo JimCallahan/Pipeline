@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.24 2004/12/07 04:55:16 jim Exp $
+// $Id: ScriptApp.java,v 1.25 2005/01/03 00:05:31 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -767,15 +767,8 @@ class ScriptApp
 	buf.append
 	  ("\n" +
 	   "Source Node       : " + sname + "\n" +
-	   "Link Policy       : " + link.getPolicy());
-
-	switch(link.getPolicy()) {
-	case Reference:
-	case Dependency:
-	  buf.append
-	    ("\n" + 
-	     "Link Relationship : " + link.getRelationship());
-	}
+	   "Link Policy       : " + link.getPolicy() + "\n" + 
+	   "Link Relationship : " + link.getRelationship());
 	
 	switch(link.getRelationship()) {
 	case OneToOne:
@@ -1806,15 +1799,8 @@ class ScriptApp
 	  buf.append
 	    ("\n" +
 	     "Source Node       : " + sname + " (v" + link.getVersionID() + ")\n" +
-	     "Link Policy       : " + link.getPolicy());
-	  
-	  switch(link.getPolicy()) {
-	  case Reference:
-	  case Dependency:
-	    buf.append
-	      ("\n" + 
-	       "Link Relationship : " + link.getRelationship());
-	  }
+	     "Link Policy       : " + link.getPolicy() + "\n" + 
+	     "Link Relationship : " + link.getRelationship());
 	  
 	  switch(link.getRelationship()) {
 	  case OneToOne:
@@ -1943,7 +1929,7 @@ class ScriptApp
     NodeStatus root = null;
     TreeMap<String,NodeStatus> table = new TreeMap<String,NodeStatus>();
     {
-      root = mclient.status(nodeID, false);
+      root = mclient.status(nodeID);
       if(printUpstream) 
 	unpackStatus(root, table); 
       else 
@@ -2332,12 +2318,7 @@ class ScriptApp
 	      if(link != null) {
 		mname = sname;
 		mp = link.getPolicy().toTitle();
-
-		switch(link.getPolicy()) {
-		case Reference:
-		case Dependency:
-		  mr = link.getRelationship().toTitle();
-		}
+		mr = link.getRelationship().toTitle();
 		
 		switch(link.getRelationship()) {
 		case OneToOne:
@@ -2355,12 +2336,7 @@ class ScriptApp
 	      if(link != null) {
 		vname = (sname + " (v" + link.getVersionID() + ")");
 		vp = link.getPolicy().toTitle();
-
-		switch(link.getPolicy()) {
-		case Reference:
-		case Dependency:
-		  vr = link.getRelationship().toTitle();
-		}
+		vr = link.getRelationship().toTitle();
 		
 		switch(link.getRelationship()) {
 		case OneToOne:
@@ -2372,12 +2348,8 @@ class ScriptApp
 	    buf.append
 	      ("\n" +
 	       "Source Node       : " + pad(mname, ' ', 30) + " : " + vname + "\n" +
-	       "Link Policy       : " + pad(mp, ' ', 30) + " : " + vp);
-	  
-	    if(!mr.equals("-") || !vr.equals("-")) 
-	      buf.append
-		("\n" + 
-		 "Link Relationship : " + pad(mr, ' ', 30) + " : " + vr);
+	       "Link Policy       : " + pad(mp, ' ', 30) + " : " + vp + "\n" + 
+	       "Link Relationship : " + pad(mr, ' ', 30) + " : " + vr);
 	    
 	    if(!mo.equals("-") || !vo.equals("-")) 
 	      buf.append

@@ -1,4 +1,4 @@
-// $Id: LinkVersion.java,v 1.6 2005/01/01 08:41:51 jim Exp $
+// $Id: LinkVersion.java,v 1.7 2005/01/03 00:05:31 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -34,8 +34,7 @@ class LinkVersion
    * 
    * @param vid 
    *   The the revision number of the upstream node version upon which the downstream 
-   *   node depends or <CODE>null</CODE> if the link policy is 
-   *   {@link LinkPolicy#Association Association}.
+   *   node depends.
    */ 
   public 
   LinkVersion
@@ -46,18 +45,10 @@ class LinkVersion
   {
     super(link);
 
-    switch(link.getPolicy()) {
-    case Dependency:
-    case Reference:
-      if(vid == null) 
-	throw new IllegalArgumentException
-	  ("The node version ID cannot be (null) unless the link policy is (Association)!");
-      pVersionID = vid;
-      break;
-
-    case Association:
-      pVersionID = null;
-    }
+    if(vid == null) 
+      throw new IllegalArgumentException
+	("The node version ID cannot be (null)!");
+    pVersionID = vid;
   }
 
   /**
@@ -82,8 +73,7 @@ class LinkVersion
   
   /**
    * Get the revision number of the specific <CODE>NodeVersion</CODE> of the upstream node 
-   * upon which the downstream node depends or <CODE>null</CODE> if the link policy is 
-   * {@link LinkPolicy#Association Association}.
+   * upon which the downstream node depends.
    */ 
   public VersionID
   getVersionID()
@@ -112,16 +102,8 @@ class LinkVersion
     if(obj != null) {
       if(obj instanceof LinkVersion) {
 	LinkVersion vsn = (LinkVersion) obj;
-	if(super.equals(obj)) {
-	  switch(vsn.getPolicy()) {
-	  case Association:
-	    return true;
-
-	  case Dependency:
-	  case Reference:
-	    return pVersionID.equals(vsn.pVersionID);
-	  }
-	}
+	if(super.equals(obj)) 
+	  return pVersionID.equals(vsn.pVersionID);
 	return false; 
       }
       else if(obj instanceof LinkMod) {
@@ -146,11 +128,7 @@ class LinkVersion
   {
     super.toGlue(encoder);
 
-    switch(pPolicy) {
-    case Dependency:
-    case Reference:
-      encoder.encode("VersionID", pVersionID);
-    }
+    encoder.encode("VersionID", pVersionID);
   }
 
   public void 
@@ -162,15 +140,11 @@ class LinkVersion
   {
     super.fromGlue(decoder);
 
-    switch(pPolicy) {
-    case Dependency:
-    case Reference:
-      {
-	VersionID vid = (VersionID) decoder.decode("VersionID");
-	if(vid == null) 
-	  throw new GlueException("The \"VersionID\" was missing!");
-	pVersionID = vid;
-      }
+    {
+      VersionID vid = (VersionID) decoder.decode("VersionID");
+      if(vid == null) 
+	throw new GlueException("The \"VersionID\" was missing!");
+      pVersionID = vid;
     }
   }
 
@@ -190,8 +164,7 @@ class LinkVersion
 
   /**
    * The revision number of the specific <CODE>NodeVersion</CODE> of the upstream node 
-   * upon which the downstream node depends or <CODE>null</CODE> if the link policy is 
-   * {@link LinkPolicy#Association Association}.
+   * upon which the downstream node depends.
    */ 
   private VersionID  pVersionID;  
 

@@ -1,4 +1,4 @@
-// $Id: JBaseLinkDialog.java,v 1.5 2004/09/09 17:08:01 jim Exp $
+// $Id: JBaseLinkDialog.java,v 1.6 2005/01/03 00:05:31 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -124,9 +124,7 @@ class JBaseLinkDialog
   public LinkRelationship
   getRelationship() 
   {
-    if(pRelationshipField.getSelected().equals("-")) 
-      return LinkRelationship.None;
-    else if(pRelationshipField.getSelected().equals("1:1")) 
+    if(pRelationshipField.getSelected().equals("1:1")) 
       return LinkRelationship.OneToOne;
     else if(pRelationshipField.getSelected().equals("All")) 
       return LinkRelationship.All;
@@ -164,10 +162,6 @@ class JBaseLinkDialog
     pPolicyField.setSelectedIndex(policy.ordinal());
 
     switch(rel) {
-    case None:
-      pRelationshipField.setSelected("-");
-      break;
-      
     case OneToOne:
       pRelationshipField.setSelected("1:1");
       break;
@@ -220,33 +214,17 @@ class JBaseLinkDialog
   {
     LinkRelationship rel = getRelationship();
     
-    ArrayList<String> values = new ArrayList<String>();
-    switch(getPolicy()) {
-    case Association:
-      values.add("-");
+    pRelationshipField.removeActionListener(this);
+    {
+      ArrayList<String> values = new ArrayList<String>();
+      values.add(LinkRelationship.All.toTitle());
+      values.add(LinkRelationship.OneToOne.toTitle());
       pRelationshipField.setValues(values);
-      pRelationshipField.setEnabled(false);
-      break;
-
-    default:
-      pRelationshipField.removeActionListener(this);
-      {
-	values.add(LinkRelationship.All.toTitle());
-	values.add(LinkRelationship.OneToOne.toTitle());
-	pRelationshipField.setValues(values);
-	pRelationshipField.setEnabled(true);
-      }
-      pRelationshipField.addActionListener(this);
-
-      switch(rel) {
-      case None:
-	pRelationshipField.setSelected("All");
-	break;
-
-      default:
-	pRelationshipField.setSelected(rel.toTitle());
-      }
+      pRelationshipField.setEnabled(true);
     }
+    pRelationshipField.addActionListener(this);
+    
+    pRelationshipField.setSelected(rel.toTitle());
   }
 
   /**

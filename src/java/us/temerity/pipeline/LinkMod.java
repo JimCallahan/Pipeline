@@ -1,4 +1,4 @@
-// $Id: LinkMod.java,v 1.6 2004/09/09 17:05:46 jim Exp $
+// $Id: LinkMod.java,v 1.7 2005/01/03 00:05:31 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -99,18 +99,6 @@ class LinkMod
     if(policy == null) 
       throw new IllegalArgumentException("The policy cannot be (null)!");
     pPolicy = policy;
-
-    switch(pPolicy) {
-    case Association:
-      setRelationship(LinkRelationship.None);
-      break;
-
-    default:
-      switch(pRelationship) {
-      case None:
-	setRelationship(LinkRelationship.All);
-      }
-    }
   }
 
   /**
@@ -125,30 +113,9 @@ class LinkMod
   {
     if(relationship == null) 
       throw new IllegalArgumentException("The link relationship cannot be (null)!");
-
-    switch(relationship) {
-    case None:
-      switch(pPolicy) {
-      case Reference:
-      case Dependency:
-	throw new IllegalArgumentException
-	  ("The link relationship cannot be (None) when the link policy is " + 
-	   "(" + pPolicy.toTitle() + ")!");
-      }
-      break;
-
-    default:
-      switch(pPolicy) {
-      case Association:
-	throw new IllegalArgumentException
-	  ("The link relationship must be (None) when the link policy is (None)!");
-      }
-    }
-
     pRelationship = relationship;
 
     switch(pRelationship) {
-    case None: 
     case All:
       pFrameOffset = null;
       break;
@@ -174,11 +141,9 @@ class LinkMod
   ) 
   {
     switch(pRelationship) {
-    case None: 
     case All: 
       throw new IllegalArgumentException
-	("The frame index offset has no meaning for links with a (" + pRelationship.name() +
-	 ") relationship!");
+	("The frame index offset has no meaning for links with an (All) relationship!");
     }
     
     pFrameOffset = offset;

@@ -1,4 +1,4 @@
-// $Id: ViewerLinks.java,v 1.11 2004/12/30 01:54:08 jim Exp $
+// $Id: ViewerLinks.java,v 1.12 2005/01/03 00:05:31 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -354,20 +354,6 @@ class ViewerLinks
 		if(prefs.getDrawLinkPolicy()) {
 		  double s = prefs.getLinkPolicySize();
 		  switch(link.getLink().getPolicy()) {
-		  case Association:
-		    {
-		      Point2d a = new Point2d(spos.x()-s*0.75, spos.y()-s);
-		      Point2d b = new Point2d(spos.x()-s*0.75, spos.y()+s);
-
-		      if(link.isStale()) 
-			gl.glColor3d(stale.r(), stale.g(), stale.b());
-		      else 
-			gl.glColor3d(color.r(), color.g(), color.b());
-
-		      gl.glVertex2d(a.x(), a.y());
-		      gl.glVertex2d(b.x(), b.y());
-		    }
-		  
 		  case Reference:
 		    {
 		      Point2d a = new Point2d(spos.x(), spos.y()-s);

@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.40 2004/12/07 04:55:12 jim Exp $
+// $Id: MasterMgrClient.java,v 1.41 2005/01/03 00:05:31 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1686,10 +1686,6 @@ class MasterMgrClient
    * @param name 
    *   The fully resolved node name.
    * 
-   * @param skipAssoc
-   *   Whether to skip computing the status of all nodes on the upstream side of an 
-   *   Association link.
-   * 
    * @throws PipelineException
    *   If unable to determine the status of the node.
    */ 
@@ -1698,12 +1694,11 @@ class MasterMgrClient
   ( 
    String author, 
    String view, 
-   String name,
-   boolean skipAssoc   
+   String name
   ) 
     throws PipelineException
   {
-    return status(new NodeID(author, view, name), skipAssoc);
+    return status(new NodeID(author, view, name));
   } 
 
   /** 
@@ -1718,24 +1713,19 @@ class MasterMgrClient
    * @param nodeID 
    *   The unique working version identifier. 
    * 
-   * @param skipAssoc
-   *   Whether to skip computing the status of all nodes on the upstream side of an 
-   *   Association link.
-   * 
    * @throws PipelineException
    *   If unable to determine the status of the node.
    */ 
   public synchronized NodeStatus
   status
   ( 
-   NodeID nodeID,
-   boolean skipAssoc   
+   NodeID nodeID  
   ) 
     throws PipelineException
   {
     verifyConnection();
  
-    NodeStatusReq req = new NodeStatusReq(nodeID, skipAssoc);
+    NodeStatusReq req = new NodeStatusReq(nodeID);
 
     Object obj = performTransaction(MasterRequest.Status, req);
     if(obj instanceof NodeStatusRsp) {
