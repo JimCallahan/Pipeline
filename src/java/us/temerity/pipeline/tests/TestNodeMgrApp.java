@@ -1,4 +1,4 @@
-// $Id: TestNodeMgrApp.java,v 1.14 2004/05/04 11:03:16 jim Exp $
+// $Id: TestNodeMgrApp.java,v 1.15 2004/05/05 20:58:14 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -676,14 +676,12 @@ class TestNodeMgrApp
 
     buf.append(istr + "[" + comp.getName() + "]\n");
 
-    if(comp.isLeaf()) {
-      buf.append(istr + "  CheckedIn = " + comp.isCheckedIn() + "\n" + 
-		 istr + "    Working = " + comp.isWorking() + "\n" + 
-		 istr + "      Local = " + comp.isLocal() + "\n");
+    if(comp.getState() != NodeTreeComp.State.Branch) {
+      buf.append(istr + "  " + comp.getState() + "\n");
     }
     else {
-      for(NodeTreeCommon child : comp.values()) 
-	printNodePathHelper((NodeTreeComp) child, level+1, buf);
+      for(NodeTreeComp child : comp.values()) 
+	printNodePathHelper(child, level+1, buf);
     }
   }
 
