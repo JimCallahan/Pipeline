@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.27 2004/07/07 13:24:36 jim Exp $
+// $Id: JManagerPanel.java,v 1.28 2004/07/14 21:06:12 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -95,7 +95,6 @@ class JManagerPanel
 	item = new JMenuItem("Node Files");
 	item.setActionCommand("node-files");
 	item.addActionListener(this);
-	item.setEnabled(false); // FOR NOW 
 	sub.add(item);  
 
 	item = new JMenuItem("Node History");
@@ -617,6 +616,8 @@ class JManagerPanel
 
     // ...
 
+    else if(cmd.equals("node-files"))
+      doNodeFilesPanel();
     else if(cmd.equals("node-history"))
       doNodeHistoryPanel();
 
@@ -723,6 +724,17 @@ class JManagerPanel
   {
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
     setContents(new JNodeDetailsPanel(dead));
+    dead.setGroupID(0);
+  }
+
+  /**
+   * Change the contents of this panel to a JNodeFilesPanel. 
+   */ 
+  private void 
+  doNodeFilesPanel()
+  {
+    JTopLevelPanel dead = (JTopLevelPanel) removeContents();
+    setContents(new JNodeFilesPanel(dead));
     dead.setGroupID(0);
   }
 
