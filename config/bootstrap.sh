@@ -12,7 +12,7 @@ pushd i686-pc-linux-gnu-dbg
     --with-compiler=GNU \
     --disable-opt \
     --with-base=/base \
-    --with-plserver=localhost
+    --with-plserver=linuxserv1
 popd
 
 pushd i686-pc-linux-gnu-opt
@@ -20,7 +20,7 @@ pushd i686-pc-linux-gnu-opt
     --with-compiler=GNU \
     --enable-opt \
     --with-base=/base \
-    --with-plserver=localhost
+    --with-plserver=linuxserv1
 popd
 
 pushd i686-pc-linux-gnu-prof
@@ -29,5 +29,5 @@ pushd i686-pc-linux-gnu-prof
     --disable-opt \
     --enable-prof \
     --with-base=/base \
-    --with-plserver=localhost
+    --with-plserver=linuxserv1
 popd
