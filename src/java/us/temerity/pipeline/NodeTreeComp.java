@@ -1,4 +1,4 @@
-// $Id: NodeTreeComp.java,v 1.4 2004/10/24 03:52:03 jim Exp $
+// $Id: NodeTreeComp.java,v 1.5 2004/10/24 04:31:04 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -151,21 +151,20 @@ class NodeTreeComp
     WorkingOtherCheckedInSome, 
 
     /**
-     * This is a leaf node path component.  No working version of the node exists in the 
-     * current working area.  However, one or more checked-in versions of the node do
-     * exist.
+     * This is a leaf node path component.  No working version of the node exists in any 
+     * working area.  However, one or more checked-in versions of the node do exist.
      */ 
     WorkingNoneCheckedInSome, 
 
     /**
      * This is a leaf node path component. A working version of the the node 
-     * exists in the current working area.  No checked-in versions of the exist.
+     * exists in the current working area.  No checked-in versions of the node exist.
      */ 
     WorkingCurrentCheckedInNone, 
 
     /**
      * This is a leaf node path component.  One or more working versions of the the node 
-     * exist but not in the current working area.  No checked-in versions of the exist. 
+     * exist but not in the current working area.  No checked-in versions of the node exist. 
      */ 
     WorkingOtherCheckedInNone;
   }

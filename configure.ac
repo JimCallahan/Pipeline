@@ -790,9 +790,9 @@ then
   PLQUEUEMGR_DEBUG_OPTS=${java_debug_opts}"43005"
   PLJOBMGR_DEBUG_OPTS=${java_debug_opts}"43006"
   PLUI_DEBUG_OPTS=
+dnl PLUI_DEBUG_OPTS=${java_debug_opts}"43007"
   PLSCRIPT_DEBUG_OPTS=
-dnl  PLUI_DEBUG_OPTS=${java_debug_opts}"43007"
-dnl  PLSCRIPT_DEBUG_OPTS=${java_debug_opts}"43008"
+dnl PLSCRIPT_DEBUG_OPTS=${java_debug_opts}"43008"
   AC_MSG_RESULT([yes])
 else 
   AC_MSG_RESULT([no])
@@ -1051,7 +1051,8 @@ AC_CONFIG_FILES([
   docs/Makefile 
   docs/images/Makefile
   docs/images/node-icons/Makefile
-  docs/javadoc/Makefile
+  docs/images/browser-icons/Makefile
+
   docs/man/Makefile
   docs/man/plfilemgr.src.html
   docs/man/pljobmgr.src.html
