@@ -1,4 +1,4 @@
-// $Id: BaseMgrClient.java,v 1.7 2004/10/18 02:34:06 jim Exp $
+// $Id: BaseMgrClient.java,v 1.8 2004/10/28 17:04:43 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -82,14 +82,17 @@ class BaseMgrClient
       return;
 
     try {
-      pSocket = new Socket(pHostname, pPort);
+      pSocket = new Socket();
+
+      InetSocketAddress addr = new InetSocketAddress(pHostname, pPort);
+      pSocket.connect(addr, 15000);
     }
-    catch (IOException ex) {
+    catch(IOException ex) {
       throw new PipelineException
 	(getServerDownMessage() + "\n\n" + 
-	 ex.getMessage());
+	 ex.getMessage(), ex);
     }
-    catch (SecurityException ex) {
+    catch(SecurityException ex) {
       throw new PipelineException
 	("The Security Manager doesn't allow socket connections!\n" + 
 	 ex.getMessage());
@@ -166,6 +169,47 @@ class BaseMgrClient
    * @param req 
    *   The request data or <CODE>null</CODE> if there is no request.
    * 
+   * @param timeout
+   *   The maximum amount of time this operation will block (in milliseconds) before 
+   *   failing.
+   * 
+   * @return
+   *   The response from the server instance.
+   * 
+   * @throws PipelineException
+   *   If unable to complete the transaction.
+   */
+  protected synchronized Object
+  performTransaction
+  (
+   Object kind, 
+   Object req, 
+   int timeout
+  ) 
+    throws PipelineException 
+  {
+    try {
+      pSocket.setSoTimeout(timeout);
+      Object rsp = performTransaction(kind, req);
+      pSocket.setSoTimeout(0);
+
+      return rsp;
+    }
+    catch(SocketException ex) {
+      throw new PipelineException
+	("Unable to set SO_TIMEOUT for socket!");
+    }
+  }
+
+  /**
+   * Send the given request to the server instance and wait for the response.
+   * 
+   * @param kind 
+   *   The kind of request being sent.
+   * 
+   * @param req 
+   *   The request data or <CODE>null</CODE> if there is no request.
+   * 
    * @return
    *   The response from the server instance.
    * 
@@ -196,7 +240,7 @@ class BaseMgrClient
       disconnect();
       throw new PipelineException
 	("IO problems on port (" + pPort + "):\n" + 
-	 ex.getMessage());
+	 ex.getMessage(), ex);
     }
     catch(ClassNotFoundException ex) {
       disconnect();
@@ -222,6 +266,9 @@ class BaseMgrClient
     if(!(obj instanceof SuccessRsp))
       handleFailure(obj);
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Handle non-successful responses.
