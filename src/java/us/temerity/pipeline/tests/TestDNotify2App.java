@@ -1,4 +1,4 @@
-// $Id: TestDNotify2App.java,v 1.1 2004/04/24 22:47:25 jim Exp $
+// $Id: TestDNotify2App.java,v 1.2 2004/04/27 02:19:39 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -14,14 +14,14 @@ import java.io.*;
 /*------------------------------------------------------------------------------------------*/
 
 public
-class TestDNotifyApp
+class TestDNotify2App
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
 
   public
-  TestDNotifyApp()
+  TestDNotify2App()
   {}
 
 
@@ -41,7 +41,7 @@ class TestDNotifyApp
     Logs.ops.setLevel(Level.FINEST);
 
     try {
-      TestDNotifyApp app = new TestDNotifyApp();
+      TestDNotify2App app = new TestDNotify2App();
       app.run();
     }
     catch(Exception ex) {

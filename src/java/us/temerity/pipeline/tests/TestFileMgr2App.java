@@ -1,4 +1,4 @@
-// $Id: TestFileMgr2App.java,v 1.1 2004/04/24 22:47:25 jim Exp $
+// $Id: TestFileMgr2App.java,v 1.2 2004/04/27 02:19:39 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -13,7 +13,7 @@ import java.util.logging.*;
 /*------------------------------------------------------------------------------------------*/
 
 public 
-class TestFileMgrApp
+class TestFileMgr2App
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   M A I N                                                                              */
@@ -31,7 +31,7 @@ class TestFileMgrApp
     //Logs.sum.setLevel(Level.FINER);
 
     try {
-      TestFileMgrApp app = new TestFileMgrApp();
+      TestFileMgr2App app = new TestFileMgr2App();
       app.run();
     } 
     catch (Exception ex) {
