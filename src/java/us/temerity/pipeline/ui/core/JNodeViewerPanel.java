@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.18 2005/02/22 18:19:10 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.19 2005/02/23 06:51:49 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3050,13 +3050,11 @@ class JNodeViewerPanel
   {
     pReleaseViewDialog.setVisible(true);
     if(pReleaseViewDialog.wasConfirmed()) {
-      
-      // ...
-
-//       ReleaseTask task = 
-// 	new ReleaseTask(pAuthor, pView, pReleaseViewDialog.getNames(), 
-// 			pReleaseViewDialog.removeFiles(), pReleaseViewDialog.removeArea());
-//       task.start();
+      ReleaseViewTask task = 
+	new ReleaseViewTask(pAuthor, pView, pReleaseViewDialog.getPattern(), 
+			    pReleaseViewDialog.removeFiles(), 
+			    pReleaseViewDialog.removeWorkingArea());
+      task.start();
     }
  
     clearSelection();
@@ -4245,6 +4243,119 @@ class JNodeViewerPanel
   }
 
   /** 
+   * Release the matching nodes in the given view.
+   */ 
+  private
+  class ReleaseViewTask
+    extends Thread
+  {
+    public 
+    ReleaseViewTask
+    (
+     String author, 
+     String view, 
+     String pattern, 
+     boolean removeFiles,
+     boolean removeArea
+    ) 
+    {
+      super("JNodeViewerPanel:ReleaseViewTask");
+
+      pAuthor      = author; 
+      pView        = view; 
+      pPattern     = pattern; 
+      pRemoveFiles = removeFiles;
+      pRemoveArea  = removeArea;
+    }
+
+    public void 
+    run() 
+    {
+      TreeSet<String> names = null;
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp("Finding Working Versions...")) {
+	MasterMgrClient client = master.getMasterMgrClient();
+	try {
+	  names = client.getWorkingNames(pAuthor, pView, pPattern);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp("Done.");
+	}
+      }
+    
+      ReleaseViewConfirmTask task =
+	new ReleaseViewConfirmTask(pAuthor, pView, names, pRemoveFiles, pRemoveArea);
+      SwingUtilities.invokeLater(task);
+    }
+
+    private String   pAuthor; 
+    private String   pView; 
+    private String   pPattern;
+    private boolean  pRemoveFiles; 
+    private boolean  pRemoveArea; 
+  }
+
+  /** 
+   * Release a given node.
+   */ 
+  private
+  class ReleaseViewConfirmTask
+    extends Thread
+  {
+    public 
+    ReleaseViewConfirmTask
+    (
+     String author, 
+     String view, 
+     TreeSet<String> names, 
+     boolean removeFiles,
+     boolean removeArea
+    ) 
+    {
+      super("JNodeViewerPanel:ReleaseViewConfirmTask");
+
+      pAuthor      = author; 
+      pView        = view; 
+      pNames       = names; 
+      pRemoveFiles = removeFiles;
+      pRemoveArea  = removeArea;
+    }
+
+    public void 
+    run() 
+    {
+      boolean wasConfirmed = false;
+      if(pNames.isEmpty()) {
+	JConfirmDialog confirm = new JConfirmDialog("Are you sure?");
+	confirm.setVisible(true);
+	wasConfirmed = confirm.wasConfirmed();
+      }
+      else {
+	JConfirmListDialog confirm = 
+	  new JConfirmListDialog("Are you sure?", "Nodes to Release:", pNames);
+	confirm.setVisible(true);
+	wasConfirmed = confirm.wasConfirmed();
+      }
+      
+      if(wasConfirmed) {
+	ReleaseTask task =
+	  new ReleaseTask(pAuthor, pView, pNames, pRemoveFiles, pRemoveArea);
+	task.start();
+      }      
+    }
+
+    private String           pAuthor; 
+    private String           pView; 
+    private TreeSet<String>  pNames; 
+    private boolean          pRemoveFiles; 
+    private boolean          pRemoveArea; 
+  }
+
+  /** 
    * Release a given node.
    */ 
   private
@@ -4282,7 +4393,7 @@ class JNodeViewerPanel
 	    client.release(pAuthor, pView, name, pRemoveFiles);
 	  }
 
-	  if(pRemoveArea)
+	  if(pRemoveArea) 
 	    client.removeWorkingArea(pAuthor, pView);
 	}
 	catch(PipelineException ex) {

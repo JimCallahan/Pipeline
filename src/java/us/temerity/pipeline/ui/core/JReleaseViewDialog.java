@@ -1,4 +1,4 @@
-// $Id: JReleaseViewDialog.java,v 1.1 2005/02/22 18:20:03 jim Exp $
+// $Id: JReleaseViewDialog.java,v 1.2 2005/02/23 06:51:49 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -83,9 +83,9 @@ class JReleaseViewDialog
 	
 	UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 
-	pRemoveDirectoryField = 
+	pRemoveWorkingAreaField = 
 	  UIFactory.createTitledBooleanField
-	  (tpanel, "Remove Directory:", sTSize, 
+	  (tpanel, "Remove Working Area:", sTSize, 
 	   vpanel, sVSize, 
 	   "Whether to recursively remove the entire working area directory and all " +
 	   "files contained in the directory for the current view.");
@@ -98,9 +98,6 @@ class JReleaseViewDialog
       super.initUI("Release View:", true, body, "Release", null, null, "Cancel");
       pack();
     }  
-
-    // TEMPORARY
-    pConfirmButton.setEnabled(false);
   }
 
 
@@ -137,9 +134,9 @@ class JReleaseViewDialog
    * Whether to remove the entire working area directory. 
    */
   public boolean
-  removeDirectory() 
+  removeWorkingArea() 
   {
-    return pRemoveFilesField.getValue();
+    return pRemoveWorkingAreaField.getValue();
   }
 
 
@@ -183,12 +180,10 @@ class JReleaseViewDialog
     if(pMethodField.getSelectedIndex() == 0) {
       pPatternField.setText(null);
       pPatternField.setEnabled(false);
-      pRemoveDirectoryField.setEnabled(true);
     }
     else {
       pPatternField.setEnabled(true);
       pPatternField.setText(".*");
-      pRemoveDirectoryField.setEnabled(false);
     }
   }
 
@@ -225,8 +220,8 @@ class JReleaseViewDialog
   private JBooleanField  pRemoveFilesField;
 
   /**
-   * Whether to remove the files associated with the released nodes.
+   * Whether to recursively remove the entire working area directory. 
    */ 
-  private JBooleanField  pRemoveDirectoryField;
+  private JBooleanField  pRemoveWorkingAreaField;
 
 }
