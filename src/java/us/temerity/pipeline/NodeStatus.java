@@ -1,4 +1,4 @@
-// $Id: NodeStatus.java,v 1.14 2004/10/30 17:38:22 jim Exp $
+// $Id: NodeStatus.java,v 1.15 2004/11/05 18:15:54 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -289,6 +289,24 @@ class NodeStatus
   ) 
   {
     pStaleLinks.add(name);
+  }
+
+  /** 
+   * Unmark the given node as source of propagated staleness.
+   * 
+   * This method is used to initialize instances of this class and should not
+   * be called directly by the user.
+   * 
+   * @param name  
+   *   The fully resolved name of the upstream node.
+   */ 
+  public void 
+  removeStaleLink
+  (
+   String name
+  ) 
+  {
+    pStaleLinks.remove(name);
   }
 
 
