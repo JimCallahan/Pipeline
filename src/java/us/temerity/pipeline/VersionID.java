@@ -1,4 +1,4 @@
-// $Id: VersionID.java,v 1.1 2004/02/28 19:59:47 jim Exp $
+// $Id: VersionID.java,v 1.2 2004/03/01 21:43:29 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -12,9 +12,19 @@ import java.io.*;
 /**
  * A unique identifier for a specific revision of a Pipeline node. <P> 
  * 
- * Revision numbers are composed of dot seperated lists of positive integer values and
- * must contain at least one value.  Examples of valid version IDs include: "1.2", "3.1.5" 
- * and "4".
+ * Revision numbers are composed of four dot seperated non-negative integer valued 
+ * components: <BR> 
+ * 
+ * <DIV style="margin-left: 40px;">
+ *   <I>Massive</I>.<I>Major</I>.<I>Minor</I>.<I>Trivial</I> <BR>
+ * </DIV> <BR> 
+ * 
+ * The component numbers are arranged left-to-right from most-to-least imporant.  The intial
+ * revision number of a node is always (1.0.0.0).  The importance of subsequent revisions
+ * can be determined by which component have been inremented as compared to the previous 
+ * revision.
+ * 
+ * @see IncMethod
  */
 public
 class VersionID 
@@ -24,6 +34,9 @@ class VersionID
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Construct an initial revision number (1.0.0.0).
+   */ 
   public 
   VersionID() 
   {}
@@ -44,7 +57,7 @@ class VersionID
   }
 
   /**
-   * Copy constructor 
+   * Copy constructor.
    */ 
   public
   VersionID
@@ -52,11 +65,7 @@ class VersionID
    VersionID vid  
   ) 
   {
-    pIDs = new int[vid.pIDs.length];
-    
-    int wk;
-    for(wk=0; wk<vid.pIDs.length; wk++)
-      pIDs[wk] = vid.pIDs[wk];
+    pIDs = vid.pIDs.clone();
   }
 
     
@@ -66,157 +75,91 @@ class VersionID
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Get the complete set of version level numbers.
+   * Get the set of revision number components.
    */ 
   public int[]
   getVersionNumbers() 
   {
-    return pIDs;
+    return pIDs.clone();
   }
+
   
 
-      
   /*----------------------------------------------------------------------------------------*/
-  /*   R E L A T I V E   I N C R E M E N T I N G                                            */
+  /*   I N C R E M E N T I N G                                                              */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Increment the most minor level of version. <P> 
+   * Increment the fourth component of the revision number. <P> 
    * 
-   * For example: "1.5.2" -> "1.5.3" 
-   */ 
-  public void
+   * Examples include: 
+   * <DIV style="margin-left: 40px;">
+   *    1.0.0.0 to 1.0.0.1 <BR>
+   *    1.3.2.5 to 1.3.2.6 <BR>
+   *    2.4.0.2 to 2.4.0.3 <BR>
+   * </DIV>
+   */
+  public void 
+  incTrivial() 
+  {
+    pIDs[3]++;
+  }
+
+  /**
+   * Increment the third component of the revision number. <P> 
+   * 
+   * Examples include: 
+   * <DIV style="margin-left: 40px;">
+   *    1.0.0.0 to 1.0.1.0 <BR>
+   *    1.3.2.5 to 1.3.3.0 <BR>
+   *    2.4.0.2 to 2.4.1.0 <BR>
+   * </DIV>
+   */
+  public void 
   incMinor() 
   {
-    pIDs[pIDs.length-1]++;
+    pIDs[2]++;
+    pIDs[3] = 0;
   }
-
 
   /**
-   * Extend the levels of version one sublevel. <P> 
+   * Increment the second component of the revision number. <P> 
    * 
-   * For example: "1.5.2" -> "1.5.2.1" 
-   */ 
-  public void
-  addMinor() 
+   * Examples include: 
+   * <DIV style="margin-left: 40px;">
+   *    1.0.0.0 to 1.1.0.0 <BR>
+   *    1.3.2.5 to 1.4.0.0 <BR>
+   *    2.4.0.2 to 2.5.0.0 <BR>
+   * </DIV>
+   */
+  public void 
+  incMajor() 
   {
-    int[] ids = new int[pIDs.length+1];
-
-    int wk;
-    for(wk=0; wk<pIDs.length; wk++)
-      ids[wk] = pIDs[wk];
-    ids[wk] = 1;
-
-    pIDs = ids;
+    pIDs[1]++;
+    pIDs[2] = 0;
+    pIDs[3] = 0;
   }
+
+  /**
+   * Increment the first component of the revision number. <P> 
+   * 
+   * Examples include: 
+   * <DIV style="margin-left: 40px;">
+   *    1.0.0.0 to 2.0.0.0 <BR>
+   *    1.3.2.5 to 2.0.0.0 <BR>
+   *    2.4.0.2 to 3.0.0.0 <BR>
+   * </DIV>
+   */
+  public void 
+  incMassive() 
+  {
+    pIDs[0]++;
+    pIDs[1] = 0;
+    pIDs[2] = 0;
+    pIDs[3] = 0;
+  }
+
   
-
-  /**
-   * Increment the lowest major level of version. <P> 
-   * 
-   * For example: "1.5.2" -> "1.6" 
-   */ 
-  public void
-  incMajor()
-  {
-    if(pIDs.length < 2) {
-      incMinor();
-      return;
-    }
-      
-    int[] ids = new int[pIDs.length-1];
-    
-    int wk;
-    for(wk=0; wk<ids.length; wk++)
-      ids[wk] = pIDs[wk];
-    pIDs = ids;
-
-    pIDs[pIDs.length-1]++;
-  }
-
-     
-  /*----------------------------------------------------------------------------------------*/
-  /*   A B S O L U T E   I N C R E M E N T I N G                                            */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Increment the fourth level of version numbers. 
-   */
-  public void 
-  trivial() 
-  {
-    int[] ids = new int[4];
-
-    int wk;
-    for(wk=0; (wk<pIDs.length) && (wk<4); wk++)
-      ids[wk] = pIDs[wk];
-
-    for(; wk<3; wk++)
-      ids[wk] = 1;
-
-    ids[3]++;
-
-    pIDs = ids;
-  }
-
-  /**
-   * Increment the third level of version numbers. 
-   */
-  public void 
-  minor() 
-  {
-    int[] ids = new int[3];
-
-    int wk;
-    for(wk=0; (wk<pIDs.length) && (wk<3); wk++)
-      ids[wk] = pIDs[wk];
-
-    for(; wk<2; wk++)
-      ids[wk] = 1;
-
-    ids[2]++;
-
-    pIDs = ids;
-  }
-
-  /**
-   * Increment the second level of version numbers. 
-   */
-  public void 
-  major() 
-  {
-    int[] ids = new int[2];
-
-    int wk;
-    for(wk=0; (wk<pIDs.length) && (wk<2); wk++)
-      ids[wk] = pIDs[wk];
-
-    for(; wk<1; wk++)
-      ids[wk] = 1;
-
-    ids[1]++;
-
-    pIDs = ids;
-  }
-
-  /**
-   * Increment the first level of version numbers. 
-   */
-  public void 
-  massive() 
-  {
-    int[] ids = new int[1];
-
-    int wk;
-    for(wk=0; (wk<pIDs.length) && (wk<1); wk++)
-      ids[wk] = pIDs[wk];
-
-    ids[0]++;
-
-    pIDs = ids;
-  }
-
-
 
   /*----------------------------------------------------------------------------------------*/
   /*   O B J E C T   O V E R R I D E S                                                      */
@@ -236,7 +179,7 @@ class VersionID
   {
     if((obj != null) && (obj instanceof VersionID)) {
       VersionID vid = (VersionID) obj;
-      return (Arrays.equals(pIDs, vid.getVersionNumbers()));
+      return (Arrays.equals(pIDs, vid.pIDs));
     }
     return false;
   }
@@ -259,9 +202,9 @@ class VersionID
     StringBuffer buf = new StringBuffer();
 
     int wk;
-    for(wk=0; wk<pIDs.length; wk++) {
+    for(wk=0; wk<4; wk++) {
       buf.append(pIDs[wk]);
-      if(wk != (pIDs.length-1)) 
+      if(wk < 3) 
 	buf.append(".");
     }
 
@@ -286,14 +229,15 @@ class VersionID
 	("The version string cannot be empty!");      
 
     String[] parts = str.split("\\.");
-    if(parts.length == 0)
+    if(parts.length != 4)
       throw new IllegalArgumentException
-	("No version numbers found in (" + str + ")!");
+	("Found the wrong number (" + parts.length + ") of revision number compoents " + 
+	 "in (" + str + "), should have been (4)!");
 
-    int ids[] = new int[parts.length];
+    int ids[] = new int[4];
     
     int wk;
-    for(wk=0; wk<parts.length; wk++) {
+    for(wk=0; wk<4; wk++) {
       if(parts[wk].length() == 0) 
 	throw new IllegalArgumentException
 	  ("Found a missing version number component in (" + str + ")!");
@@ -304,13 +248,17 @@ class VersionID
       }
       catch (NumberFormatException e) {
 	throw new IllegalArgumentException
-	  ("Illegal version number (" + parts[wk] + ") found in (" + str + ")!");
+	  ("Illegal version number component (" + parts[wk] + ") found in (" + str + ")!");
       }
 
-      if(num < 1) 
+      if(num < 0) 
 	throw new IllegalArgumentException
-	  ("Non-positive version number (" + num + ") found in (" + str + ")!");
+	  ("Negative version number component(" + num + ") found in (" + str + ")!");
 
+      if((wk == 0) && (num < 1)) 
+	throw new IllegalArgumentException
+	  ("The first version number component (" + num + ") must be positive!");
+      
       ids[wk] = num;
     }
 
@@ -358,7 +306,7 @@ class VersionID
   )
   {
     int wk;
-    for(wk=0; wk<pIDs.length && wk<vid.pIDs.length; wk++)
+    for(wk=0; wk<4; wk++)
       if(pIDs[wk] != vid.pIDs[wk])
  	return (pIDs[wk] - vid.pIDs[wk]);
     
@@ -396,9 +344,9 @@ class VersionID
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * The version level numbers. 
+   * The revision number components.
    */
-  private int[] pIDs;  
+  private int[] pIDs = { 1, 0, 0, 0 };
   
 }
 

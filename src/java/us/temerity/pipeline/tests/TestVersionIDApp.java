@@ -1,4 +1,4 @@
-// $Id: TestVersionIDApp.java,v 1.1 2004/02/28 19:59:47 jim Exp $
+// $Id: TestVersionIDApp.java,v 1.2 2004/03/01 21:43:48 jim Exp $
 
 import us.temerity.pipeline.*;
 
@@ -37,16 +37,9 @@ class TestVersionIDApp
   run() 
   {
     {
-      VersionID vid = new VersionID("1");
+      VersionID vid = new VersionID();
       System.out.print("First Version: " + vid + "\n");
       
-      incMinorID(vid);
-      addMinorID(vid);
-      addMinorID(vid);
-      incMinorID(vid);
-      incMinorID(vid);
-      incMajorID(vid);
-    
       System.out.print("-----------------------------------\n" + 
 		       "Copy...\n");
 
@@ -54,6 +47,46 @@ class TestVersionIDApp
 
       VersionID vid2 = new VersionID(vid);
       System.out.print("  " + vid + " == " + vid2 + "\n");
+      
+      vid2.incTrivial();
+      IDs.add(new VersionID(vid2));
+      compareIDs(vid, vid2);
+      
+      vid2.incTrivial();
+      IDs.add(new VersionID(vid2));
+      compareIDs(vid, vid2);
+      
+      vid.incMinor();
+      IDs.add(new VersionID(vid));
+      compareIDs(vid, vid2);
+      
+      vid.incTrivial();
+      IDs.add(new VersionID(vid));
+      compareIDs(vid, vid2);
+      
+      vid2.incMajor();
+      IDs.add(new VersionID(vid2));
+      compareIDs(vid, vid2);
+
+      vid.incMajor();
+      IDs.add(new VersionID(vid));
+      compareIDs(vid, vid2);
+      
+      vid2.incTrivial();
+      IDs.add(new VersionID(vid2));
+      compareIDs(vid, vid2);
+      
+      vid.incMinor();
+      IDs.add(new VersionID(vid));
+      compareIDs(vid, vid2);
+      
+      vid2.incMassive();
+      IDs.add(new VersionID(vid2));
+      compareIDs(vid, vid2);
+
+      vid.incMassive();
+      IDs.add(new VersionID(vid));
+      compareIDs(vid, vid2);
       
       vid2.incMinor();
       IDs.add(new VersionID(vid2));
@@ -63,66 +96,7 @@ class TestVersionIDApp
       IDs.add(new VersionID(vid));
       compareIDs(vid, vid2);
       
-      vid2.addMinor();
-      IDs.add(new VersionID(vid2));
-      compareIDs(vid, vid2);
-      
-      vid.addMinor();
-      IDs.add(new VersionID(vid));
-      compareIDs(vid, vid2);
-      
-      vid.incMinor();
-      IDs.add(new VersionID(vid));
-      compareIDs(vid, vid2);
-      
-      vid2.addMinor();
-      IDs.add(new VersionID(vid2));
-      vid2.addMinor();
-      IDs.add(new VersionID(vid2));
-      compareIDs(vid, vid2);
-      
-      
-      vid2.trivial();
-      IDs.add(new VersionID(vid2));
-      compareIDs(vid, vid2);
-      
-      vid2.trivial();
-      IDs.add(new VersionID(vid2));
-      compareIDs(vid, vid2);
-      
-      vid2.minor();
-      IDs.add(new VersionID(vid2));
-      compareIDs(vid, vid2);
-      
-      vid2.trivial();
-      IDs.add(new VersionID(vid2));
-      compareIDs(vid, vid2);
-      
-      vid2.major();
-      IDs.add(new VersionID(vid2));
-      compareIDs(vid, vid2);
-      
-      vid2.trivial();
-      IDs.add(new VersionID(vid2));
-      compareIDs(vid, vid2);
-      
-      vid2.minor();
-      IDs.add(new VersionID(vid2));
-      compareIDs(vid, vid2);
-      
-      vid2.massive();
-      IDs.add(new VersionID(vid2));
-      compareIDs(vid, vid2);
-      
-      vid2.minor();
-      IDs.add(new VersionID(vid2));
-      compareIDs(vid, vid2);
-      
-      vid2.minor();
-      IDs.add(new VersionID(vid2));
-      compareIDs(vid, vid2);
-      
-      vid2.trivial();
+      vid2.incTrivial();
       IDs.add(new VersionID(vid2));
       compareIDs(vid, vid2);
 
@@ -135,15 +109,16 @@ class TestVersionIDApp
     {    
       System.out.print("-----------------------------------\n" + 
 		       "Bad String Reps...\n");
-      tryVersionID("0.1");
+      tryVersionID("2.1.2");
+      tryVersionID("2.1.2.6.7");
+      tryVersionID("0.1.2.3");
       tryVersionID(null);
       tryVersionID("5");
       tryVersionID("1.2.b.5");
       tryVersionID("");
-      tryVersionID("1..2");
+      tryVersionID("4.1..2");
       tryVersionID("asd");
-      tryVersionID("3.2.1");
-      tryVersionID("5.-6.14");
+      tryVersionID("5.-6.14.9");
     }
   }
 
@@ -171,46 +146,6 @@ class TestVersionIDApp
 
     System.out.print("  Good VersionID: " + vid + "\n");
   }
-
-
-  protected void 
-  incMinorID
-  (
-   VersionID vid
-  ) 
-  {
-    System.out.print("-----------------------------------\n" + 
-		     "Test incMinor()...\n");
-    vid.incMinor();
-    testConvert(vid);
-  }
-
-
-  protected void 
-  addMinorID
-  (
-   VersionID vid
-  ) 
-  {
-    System.out.print("-----------------------------------\n" + 
-		     "Test addMinor()...\n");
-    vid.addMinor();
-    testConvert(vid);
-  }
-
-
-  protected void 
-  incMajorID
-  (
-   VersionID vid
-  ) 
-  {
-    System.out.print("-----------------------------------\n" + 
-		     "Test incMajor()...\n");
-    vid.incMajor();
-    testConvert(vid);
-  }
-
 
   protected void
   compareIDs
