@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.12 2004/03/23 20:41:25 jim Exp $
+// $Id: NodeMod.java,v 1.13 2004/03/28 00:45:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -883,7 +883,7 @@ class NodeMod
 
     {
       OverflowPolicy overflow = mod.getOverflowPolicy();
-      if(!pOverflow.equals(overflow)) {
+      if(!(((pOverflow == null) && (overflow == null)) || pOverflow.equals(overflow))) {
 	pOverflow = overflow;
 	modified = true;
       }
@@ -891,15 +891,15 @@ class NodeMod
 
     {
       ExecutionMethod execution = mod.getExecutionMethod();
-      if(!pExecution.equals(execution)) {
+      if(!(((pExecution == null) && (execution == null)) || pExecution.equals(execution))) {
 	pExecution = execution;
 	modified = true;
       }
     }
 
     {
-      int size = mod.getBatchSize();
-      if(pBatchSize != size) {
+      Integer size = mod.getBatchSize();
+      if(!(((pBatchSize == null) && (size == null)) || pBatchSize.equals(size))) {
 	pBatchSize = size;
 	modified = true;
       }
@@ -916,6 +916,15 @@ class NodeMod
   
   
   /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Does this version have links to upstream nodes.
+   */
+  public boolean 
+  hasSources() 
+  {
+    return (!pSources.isEmpty());
+  }
 
   /** 
    * Get the fully resolved names of the upstream nodes.

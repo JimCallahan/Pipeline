@@ -1,4 +1,4 @@
-// $Id: NodeVersion.java,v 1.9 2004/03/23 20:41:25 jim Exp $
+// $Id: NodeVersion.java,v 1.10 2004/03/28 00:45:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -125,6 +125,15 @@ class NodeVersion
 
   
   /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Does this version have links to upstream nodes.
+   */
+  public boolean 
+  hasSources() 
+  {
+    return (!pSources.isEmpty());
+  }
 
   /** 
    * Get the fully resolved names of the upstream nodes.
