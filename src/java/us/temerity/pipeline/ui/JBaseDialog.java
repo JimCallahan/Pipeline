@@ -1,4 +1,4 @@
-// $Id: JBaseDialog.java,v 1.1 2004/05/02 12:13:34 jim Exp $
+// $Id: JBaseDialog.java,v 1.2 2004/05/03 04:28:25 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -23,7 +23,10 @@ class JBaseDialog
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Construct a new dialog owned by the main application frame.
+   * Construct a new dialog owned by the main application frame. <P> 
+   * 
+   * The button title arguments <CODE>confirm</CODE>, <CODE>apply</CODE> and 
+   * <CODE>cancel</CODE> may be <CODE>null</CODE> to omit the button(s) from the dialog. 
    * 
    * @param title
    *   The title of the dialog.
@@ -35,15 +38,17 @@ class JBaseDialog
   JBaseDialog
   (
    String title,    
-   boolean modal    
+   boolean modal
   ) 
   {
     super(UIMaster.getInstance().getFrame(), title, modal);
-    initUI(title, modal);
   }
 
   /**
-   * Construct a new dialog owned by another dialog.
+   * Construct a new dialog owned by another dialog. <P> 
+   * 
+   * The button title arguments <CODE>confirm</CODE>, <CODE>apply</CODE> and 
+   * <CODE>cancel</CODE> may be <CODE>null</CODE> to omit the button(s) from the dialog. 
    * 
    * @param owner
    *   The parent dialog.
@@ -59,30 +64,48 @@ class JBaseDialog
   (
    Dialog owner,        
    String title,  
-   boolean modal  
+   boolean modal
   ) 
   {
     super(owner, title, modal);
-    initUI(title, modal);
   }
 
 
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Initialize the common user interface components.
+   * Initialize the common user interface components. <P> 
+   * 
+   * The button title arguments <CODE>confirm</CODE>, <CODE>apply</CODE> and 
+   * <CODE>cancel</CODE> may be <CODE>null</CODE> to omit the button(s) from the dialog. 
    * 
    * @param title
    *   The title of the dialog.
    * 
    * @param modal
    *   Is the dialog modal?
+   * 
+   * @param body
+   *   The component containing the body of the dialog.
+   * 
+   * @param confirm
+   *   The title of the confirm button.
+   * 
+   * @param apply
+   *   The title of the apply button.
+   * 
+   * @param cancel
+   *   The title of the cancel button.
    */ 
-  private void 
+  protected void 
   initUI
   (
    String title,  
-   boolean modal
+   boolean modal, 
+   JComponent body, 
+   String confirm, 
+   String apply, 
+   String cancel
   ) 
   {
     String prefix = modal ? "Modal" : "";
@@ -107,14 +130,8 @@ class JBaseDialog
       root.add(panel);
     }	  
     
-
-    // ...
-    
-    
-    root.add(Box.createVerticalGlue());
-
-    // ...
-    
+    if(body != null) 
+      root.add(body);
 
     {
       JPanel panel = new JPanel();
@@ -125,25 +142,47 @@ class JBaseDialog
       panel.add(Box.createHorizontalGlue());
       panel.add(Box.createRigidArea(new Dimension(20, 0)));
 
-      {
-	JButton btn = new JButton("Confirm");
+      if(confirm != null) {
+	JButton btn = new JButton(confirm);
+	pConfirmButton = btn;
 	btn.setName("RaisedConfirmButton");
-
+	
 	Dimension size = new Dimension(108, 31);
 	btn.setMinimumSize(size);
 	btn.setMaximumSize(size);
 	btn.setPreferredSize(size);
-
+	
 	btn.setActionCommand("confirm");
 	btn.addActionListener(this);
-
+	
 	panel.add(btn);	  
       }
 	
-      panel.add(Box.createRigidArea(new Dimension(40, 0)));
+      if((confirm != null) && (apply != null))
+	panel.add(Box.createRigidArea(new Dimension(20, 0)));
      
-      {
+      if(apply != null) {
+	JButton btn = new JButton(apply);
+	pApplyButton = btn;
+	btn.setName("RaisedButton");
+	
+	Dimension size = new Dimension(108, 31);
+	btn.setMinimumSize(size);
+	btn.setMaximumSize(size);
+	btn.setPreferredSize(size);
+	
+	btn.setActionCommand("apply");
+	btn.addActionListener(this);
+	
+	panel.add(btn);	  
+      }
+      
+      if(((confirm != null) || (apply != null)) && (cancel != null))
+	panel.add(Box.createRigidArea(new Dimension(40, 0)));
+     
+      if(cancel != null) {
 	JButton btn = new JButton("Cancel");
+	pCancelButton = btn;
 	btn.setName("RaisedCancelButton");
 
 	Dimension size = new Dimension(108, 31);
@@ -166,6 +205,7 @@ class JBaseDialog
     setContentPane(root);
 
     pack();
+    setLocationRelativeTo(getOwner());
   }
 
 
@@ -183,13 +223,6 @@ class JBaseDialog
     return pConfirmed;
   }
 
-
-   
-  /*----------------------------------------------------------------------------------------*/
-  /*   U S E R   I N T E R F A C E                                                          */
-  /*----------------------------------------------------------------------------------------*/
-
-  // ...
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -211,7 +244,6 @@ class JBaseDialog
     super.setVisible(tf);
   }
     
-
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -271,14 +303,12 @@ class JBaseDialog
 
 
 
-
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
   private static final long serialVersionUID = -5264874588692597213L;
 
-  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -288,8 +318,12 @@ class JBaseDialog
   /**
    * The state of the dialog upon closing.
    */
-  protected boolean pConfirmed;
-
+  protected boolean  pConfirmed;
   
-  
+  /**
+   * The footer buttons.
+   */ 
+  protected JButton  pConfirmButton;
+  protected JButton  pApplyButton;
+  protected JButton  pCancelButton;
 }

@@ -92,6 +92,28 @@
 
   <!--  R A I S E D    B U T T O N  -->
 
+  <style id="RaisedButton">
+    <state>
+      <imagePainter path="RaisedButton.png"
+                    method="buttonBackground"
+                    sourceInsets="23 21 4 4"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="RaisedButtonPressed.png"
+                    method="buttonBackground"	
+                    sourceInsets="23 21 4 4"/>
+    </state>
+    <state value="DISABLED">
+      <color value="#e5e5e5" type="TEXT_FOREGROUND"/>
+      <imagePainter path="RaisedButtonDisabled.png"
+                    method="buttonBackground"	
+                    sourceInsets="23 21 4 4"/>
+    </state>
+    <insets top="8" bottom="8" right="0" left="30"/> 
+    <property key="Button.textShiftOffset" type="integer" value="1"/>  
+  </style>
+  <bind style="RaisedButton" type="name" key="RaisedButton"/>
+
   <style id="RaisedConfirmButton">
     <state>
       <imagePainter path="RaisedConfirmButton.png"
@@ -99,7 +121,6 @@
                     sourceInsets="23 21 4 4"/>
     </state>
     <state value="PRESSED">
-      <color value="#ffff00" type="TEXT_FOREGROUND"/>
       <imagePainter path="RaisedConfirmButtonPressed.png"
                     method="buttonBackground"	
                     sourceInsets="23 21 4 4"/>
@@ -122,7 +143,6 @@
                     sourceInsets="23 21 4 4"/>
     </state>
     <state value="PRESSED">
-      <color value="#ffff00" type="TEXT_FOREGROUND"/>
       <imagePainter path="RaisedCancelButtonPressed.png"
                     method="buttonBackground"	
                     sourceInsets="23 21 4 4"/>
@@ -178,6 +198,22 @@
 
 
    
+  <!--  S C R O L L   P A N E  -->
+
+  <style id="ScrollPane">
+    <imagePainter path="FrameIn.png"
+                  sourceInsets="3 3 3 3"/>
+    <insets top="3" bottom="3" right="3" left="3"/>
+  </style>
+  <bind style="ScrollPane" type="region" key="ScrollPane"/>
+
+  <style id="ScrollPaneTitle">
+    <font name="Lucida Sans Bold" size="14"/>
+  </style>
+  <bind style="ScrollPaneTitle" type="name" key="ScrollPaneTitle"/>
+
+
+
   <!--  S C R O L L   B A R  -->
 
   <style id="ScrollBar">
@@ -418,7 +454,7 @@
   <bind style="ModalDialogHeader" type="name" key="ModalDialogHeader"/>
 
   <style id="ModalDialogHeaderLabel">
-    <font name="Lucida Sans Demibold" size="14"/>
+    <font name="Lucida Sans Demibold" size="16"/>
   </style>
   <bind style="ModalDialogHeaderLabel" type="name" key="ModalDialogHeaderLabel"/>
 

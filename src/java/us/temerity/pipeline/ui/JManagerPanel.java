@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.8 2004/05/02 12:15:16 jim Exp $
+// $Id: JManagerPanel.java,v 1.9 2004/05/03 04:28:25 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -245,15 +245,15 @@ class JManagerPanel
       panel.add(Box.createRigidArea(new Dimension(4, 0)));
 
       {
-	JToggleButton btn = new JToggleButton();
-	btn.setName("LockedLight");
-
+	JLabel label = new JLabel(sLockedLightIcon);
+	pLockedLight = label;
+	
 	Dimension size = new Dimension(16, 19);
-	btn.setMinimumSize(size);
-	btn.setMaximumSize(size);
-	btn.setPreferredSize(size);
-
-	panel.add(btn);
+	label.setMinimumSize(size);
+	label.setMaximumSize(size);
+	label.setPreferredSize(size);
+	
+	panel.add(label);
       }
 
       panel.add(Box.createRigidArea(new Dimension(16, 0)));
@@ -281,6 +281,82 @@ class JManagerPanel
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Is the contents of the panel read-only.
+   */ 
+  public boolean
+  isLocked() 
+  {
+    return pIsLocked;
+  }
+
+  /**
+   * Change the locked state of the panel.
+   */ 
+  public void 
+  setLocked
+  ( 
+   boolean tf
+  ) 
+  {
+    pIsLocked = tf;
+    pLockedLight.setIcon(pIsLocked ? sLockedLightOnIcon : sLockedLightIcon);
+  }
+
+
+  /** 
+   * Get the name of user which owns the working area view.
+   */ 
+  public String
+  getAuthor() 
+  {
+    return pAuthor; 
+  }
+
+  /** 
+   * Get the name of the working area view.
+   */
+  public String
+  getView()
+  {
+    return pView;
+  }
+
+  /**
+   * Copy the author and view from the given manager panel.
+   */ 
+  public void 
+  setAuthorView
+  (
+   JManagerPanel mgr
+  ) 
+  {
+    setAuthorView(mgr.getAuthor(), mgr.getView());
+  }
+
+  /**
+   * Set the author and view.
+   */ 
+  public void 
+  setAuthorView
+  (
+   String author, 
+   String view 
+  ) 
+  {
+    if((author != null) && (view != null)) {
+      pAuthor = author;
+      pView   = view;
+      
+      pOwnerViewField.setText(pAuthor + " | " + pView);
+      
+      setLocked(!pAuthor.equals(PackageInfo.sUser));
+    }
+  }
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -332,6 +408,7 @@ class JManagerPanel
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Show the popup menu.
@@ -359,11 +436,8 @@ class JManagerPanel
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
 
-  /*----------------------------------------------------------------------------------------*/
-  /*   U S E R   I N T E R F A C E                                                          */
-  /*----------------------------------------------------------------------------------------*/
-  
   /**
    * Disable new client/server operations until the current operation is complete.
    */ 
@@ -441,12 +515,14 @@ class JManagerPanel
     {
       left = new JManagerPanel();
       left.setContents(new JEmptyPanel());
+      left.setAuthorView(this);
     }
 
     JManagerPanel right = null;
     {    
       right = new JManagerPanel();
       right.setContents(removeContents());
+      right.setAuthorView(this);
     }
 
     setContents(new JSplitPanel(JSplitPane.HORIZONTAL_SPLIT, left, right));
@@ -462,12 +538,14 @@ class JManagerPanel
     {
       left = new JManagerPanel();
       left.setContents(removeContents());
+      left.setAuthorView(this);
     }
 
     JManagerPanel right = null;
     {    
       right = new JManagerPanel();
       right.setContents(new JEmptyPanel());
+      right.setAuthorView(this);
     }
 
     setContents(new JSplitPanel(JSplitPane.HORIZONTAL_SPLIT, left, right));
@@ -483,12 +561,14 @@ class JManagerPanel
     {
       above = new JManagerPanel();
       above.setContents(new JEmptyPanel());
+      above.setAuthorView(this);
     }
 
     JManagerPanel below = null;
     {    
       below = new JManagerPanel();
       below.setContents(removeContents());
+      below.setAuthorView(this);
     }
 
     setContents(new JSplitPanel(JSplitPane.VERTICAL_SPLIT, above, below));
@@ -504,12 +584,14 @@ class JManagerPanel
     {
       above = new JManagerPanel();
       above.setContents(removeContents());
+      above.setAuthorView(this);
     }
 
     JManagerPanel below = null;
     {    
       below = new JManagerPanel();
       below.setContents(new JEmptyPanel());
+      below.setAuthorView(this);
     }
 
     setContents(new JSplitPanel(JSplitPane.VERTICAL_SPLIT, above, below));
@@ -529,10 +611,13 @@ class JManagerPanel
 
     /* if the parent is already a tabbed pane, simply add another tab */ 
     if(parent instanceof JTabbedPane) {
+      JTabbedPane tab = (JTabbedPane) parent;
+      JManagerPanel select = (JManagerPanel) tab.getSelectedComponent();
+
       JManagerPanel mgr = new JManagerPanel();
       mgr.setContents(new JEmptyPanel());
+      mgr.setAuthorView(select);
 
-      JTabbedPane tab = (JTabbedPane) parent;
       tab.addTab(null, sTabIcon, mgr);
     }
     
@@ -542,6 +627,7 @@ class JManagerPanel
       if(comp != null) {
 	JManagerPanel mgr = new JManagerPanel();
 	mgr.setContents(comp);
+	mgr.setAuthorView(this);
 
 	JTabbedPane tab = new JTabbedPane();
 	tab.addTab(null, sTabIcon, mgr);
@@ -598,6 +684,7 @@ class JManagerPanel
       JManagerPanel liveMgr = (JManagerPanel) live;
       JManagerPanel grandpa = (JManagerPanel) sparent;
       grandpa.setContents(liveMgr.removeContents());
+      grandpa.setAuthorView(liveMgr);
 
       UIMaster.getInstance().removeManager(liveMgr);
       UIMaster.getInstance().removeManager(this);
@@ -612,6 +699,7 @@ class JManagerPanel
       if(tab.getTabCount() == 0) {
 	JManagerPanel grandpa = (JManagerPanel) tab.getParent();
 	grandpa.setContents(new JEmptyPanel());
+	grandpa.setAuthorView(this);
       }
 
       UIMaster.getInstance().removeManager(this);
@@ -637,6 +725,17 @@ class JManagerPanel
     TreeMap<String,TreeSet<String>> working = null;
     try {
       working = master.getWorkingAreas(); 
+      
+      // DEBUG 
+      {
+	TreeSet<String> views = new TreeSet<String>();
+	views.add("default");
+	views.add("texturing");
+	views.add("modeling");
+	views.add("animation");
+	working.put("joe", views);
+      }
+      // DEBUG 
     }
     catch(PipelineException ex) {
       master.showErrorDialog(ex);
@@ -646,12 +745,8 @@ class JManagerPanel
     JOwnerViewDialog dialog = new JOwnerViewDialog(pAuthor, pView, working);
     dialog.setVisible(true);
     
-    if(dialog.wasConfirmed()) {
-      pAuthor = dialog.getAuthor();
-      pView   = dialog.getView();
-
-      pOwnerViewField.setText(pAuthor + " | " + pView);
-    }
+    if(dialog.wasConfirmed())
+      setAuthorView(dialog.getAuthor(), dialog.getView());
   }
 
 
@@ -664,6 +759,14 @@ class JManagerPanel
 
   static private Icon sTabIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("TabIcon.png"));
+
+
+  private static Icon sLockedLightIcon = 
+    new ImageIcon(LookAndFeelLoader.class.getResource("LockedLightIcon.png"));
+
+  private static Icon sLockedLightOnIcon = 
+    new ImageIcon(LookAndFeelLoader.class.getResource("LockedLightOnIcon.png"));
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -719,5 +822,16 @@ class JManagerPanel
    * The name of the working area view associated with this panel.
    */
   private String  pView;
+
+
+  /**
+   * The light indicating that the contents of the panel is read-only.
+   */ 
+  private JLabel  pLockedLight;
+  
+  /**
+   * Whether the contents of the panel is read-only.
+   */   
+  private boolean  pIsLocked;
 
 }
