@@ -1,4 +1,4 @@
-// $Id: JBaseUserPrefsDialog.java,v 1.3 2004/05/29 06:38:06 jim Exp $
+// $Id: JBaseUserPrefsDialog.java,v 1.4 2004/06/28 00:13:32 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -83,7 +83,7 @@ class JBaseUserPrefsDialog
 	    scroll.setHorizontalScrollBarPolicy
 	      (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 	    scroll.setVerticalScrollBarPolicy
-	      (ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+	      (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 	    
 	    panel.add(scroll);
 	  }
@@ -113,6 +113,10 @@ class JBaseUserPrefsDialog
 	  
 	  hbox.add(Box.createHorizontalGlue());
 
+	  Dimension size = new Dimension(410, hbox.getPreferredSize().height);
+	  hbox.setMinimumSize(size);
+	  hbox.setMaximumSize(size);
+	  
 	  panel.add(hbox);
 	}
 
@@ -123,8 +127,6 @@ class JBaseUserPrefsDialog
 	  JPanel cpanel = new JPanel(layout);
 	  pCardPanel = cpanel;
 	  
-	  cpanel.setName("CardPanel");
-	
 	  { 
 	    Component comps[] = createCommonPanels();
 	    JPanel tpanel = (JPanel) comps[0];
@@ -143,8 +145,20 @@ class JBaseUserPrefsDialog
 	  Dimension size = new Dimension(395, 286);
  	  cpanel.setMinimumSize(size);
  	  cpanel.setPreferredSize(size);
+	}
 
-	  panel.add(cpanel);
+	{
+	  JScrollPane scroll = new JScrollPane(pCardPanel);
+	  
+	  scroll.setMinimumSize(new Dimension(410, 120));
+	  scroll.setMaximumSize(new Dimension(410, Integer.MAX_VALUE));
+
+	  scroll.setHorizontalScrollBarPolicy
+	    (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+	  scroll.setVerticalScrollBarPolicy
+	    (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+
+	  panel.add(scroll);
 	}
 
 	body.add(panel);
@@ -153,8 +167,6 @@ class JBaseUserPrefsDialog
       String extra[][] = { { "Reset", "reset" } };
       super.initUI("User Preferences:", false, body, "Confirm", "Apply", extra, "Cancel");
     }  
-
-    setResizable(false);
   }
 
   /**
