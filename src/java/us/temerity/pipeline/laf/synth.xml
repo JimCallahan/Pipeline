@@ -3,7 +3,12 @@
     <state>
       <color value="#ffffff" type="FOREGROUND"/>
       <color value="#7f7f7f" type="BACKGROUND"/>
-      <color value="#ffff00" type="TEXT_FOREGROUND"/>
+      <color value="#ffffff" type="TEXT_FOREGROUND"/>
+      <color value="#7f7f7f" type="TEXT_BACKGROUND"/>
+    </state>
+    <state value="SELECTED">
+       <color value="#ffff00" type="TEXT_FOREGROUND"/>
+       <color value="#666666" type="TEXT_BACKGROUND"/>
     </state>
     <font name="Lucida Sans Bold" size="12"/>
     <property key="ScrollBar.thumbHeight" type="integer" value="16"/>
@@ -192,13 +197,12 @@
     <state>
       <imagePainter path="MenuItem.png"
                     sourceInsets="4 8 4 0"/>
-      <insets top="4" bottom="4" right="0" left="8"/>
     </state>
     <state value="SELECTED">
       <imagePainter path="MenuItemSelected.png"
                     sourceInsets="4 8 4 0"/>
-      <insets top="4" bottom="4" right="0" left="8"/>
     </state>
+    <insets top="4" bottom="4" right="0" left="8"/>
   </style>
   <bind style="Menu" type="region" key="Menu"/>
 
@@ -206,13 +210,17 @@
     <state>
       <imagePainter path="MenuItem.png"
                     sourceInsets="4 8 4 0"/>
-      <insets top="4" bottom="4" right="0" left="8"/>
     </state>
     <state value="MOUSE_OVER">
       <imagePainter path="MenuItemSelected.png"
                     sourceInsets="4 8 4 0"/>
-      <insets top="4" bottom="4" right="0" left="8"/>
     </state>
+    <state value="DISABLED">
+      <imagePainter path="MenuItemDisabled.png"
+                    sourceInsets="4 8 4 0"/>
+      <color value="#e5e5e5" type="TEXT_FOREGROUND"/>
+    </state>    
+    <insets top="4" bottom="4" right="0" left="8"/>
   </style>
   <bind style="MenuItem" type="region" key="MenuItem"/>
 
