@@ -136,6 +136,30 @@
 
 
 
+  <!--  V I E W S   B U T T O N  -->
+
+  <style id="ViewsButton"> 
+    <state>
+      <imagePainter path="AllViewsButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state> 
+    <state value="PRESSED">
+      <imagePainter path="AllViewsButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="SELECTED">
+      <imagePainter path="SingleViewButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="PRESSED and SELECTED">
+      <imagePainter path="SingleViewButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="ViewsButton" type="name" key="ViewsButton"/>
+
+
+
   <!--  F R O Z E N   B U T T O N  -->
 
   <style id="FrozenButton"> 
@@ -945,6 +969,13 @@
   <bind style="PurpleTableHeaderButton" type="name" key="PurpleTableHeaderButton"/>
 
 
+  <style id="JobStatesTableCellRenderer">
+    <imagePainter path="EditableValuePanel.png"
+                  sourceInsets="3 3 3 3"/>
+    <insets top="1" bottom="1" right="1" left="1"/>
+  </style>
+  <bind style="JobStatesTableCellRenderer" type="name" key="JobStatesTableCellRenderer"/>
+
   <style id="SimpleTableCellRenderer">
     <imagePainter path="ValuePanel.png"
                   method="labelBackground"
@@ -1324,6 +1355,15 @@
     <insets top="20" bottom="20" right="20" left="20"/>
   </style>
   <bind style="MainDialogPanel" type="name" key="MainDialogPanel"/>
+
+
+
+  <!--  M A I N   P A N E L  -->
+
+  <style id="MainPanel">
+    <insets top="5" bottom="5" right="5" left="5"/>
+  </style>
+  <bind style="MainPanel" type="name" key="MainPanel"/>
 
 
 
