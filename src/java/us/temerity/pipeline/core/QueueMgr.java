@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.33 2005/02/17 01:07:07 jim Exp $
+// $Id: QueueMgr.java,v 1.34 2005/02/17 20:14:34 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3756,21 +3756,42 @@ class QueueMgr
     run() 
     {
       /* wait for the job to finish and collect the results */ 
-      JobMgrControlClient client = null;
       QueueJobResults results = null;
-      try {
-	client = new JobMgrControlClient(pHostname, pJobPort);	
-	results = client.jobWait(pJobID);
-      }
-      catch (Exception ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	   ex.getMessage()); 
-	LogMgr.getInstance().flush();
-      }
-      finally {
-	if(client != null)
+      boolean done = false;
+      while(!done) {
+	JobMgrControlClient client = new JobMgrControlClient(pHostname, pJobPort);	
+	try {
+	  results = client.jobWait(pJobID);
+	  done = true;
+	}
+	catch(PipelineException ex) {
+	  Throwable cause = ex.getCause();
+	  if(cause instanceof SocketTimeoutException) {
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Net, LogMgr.Level.Warning,
+	       "Partial results for job (" + pJobID + "), retrieved from " + 
+	       "(" + pHostname + ") before the connection timed-out.\n" + 
+	       "Reconnecting...");
+	    LogMgr.getInstance().flush();
+	  }
+	  else {
+	    done = true;
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	       ex.getMessage()); 
+	    LogMgr.getInstance().flush();	    
+	  }
+	}
+	catch(Exception ex) {
+	  done = true;
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	     ex.getMessage()); 
+	  LogMgr.getInstance().flush();
+	}
+	finally {
 	  client.disconnect();
+	}
       }
 
       /* update job information */ 
@@ -3788,7 +3809,7 @@ class QueueMgr
 	}	
       }
       
-      /* release any help license keys */ 
+      /* release any license keys */ 
       {
 	TreeSet<String> aquiredLicenseKeys = new TreeSet<String>();
 	synchronized(pJobs) {

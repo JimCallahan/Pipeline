@@ -1,4 +1,4 @@
-// $Id: BaseMgrClient.java,v 1.15 2005/02/16 00:41:38 jim Exp $
+// $Id: BaseMgrClient.java,v 1.16 2005/02/17 20:14:34 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -287,6 +287,34 @@ class BaseMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Send the given request to the server instance and wait for the response. <P> 
+   * 
+   * The socket timeout is set to 5-minutes. 
+   * 
+   * @param kind 
+   *   The kind of request being sent.
+   * 
+   * @param req 
+   *   The request data or <CODE>null</CODE> if there is no request.
+   * 
+   * @return
+   *   The response from the server instance.
+   * 
+   * @throws PipelineException
+   *   If unable to complete the transaction.
+   */
+  protected synchronized Object
+  performTransaction
+  (
+   Object kind, 
+   Object req
+  ) 
+    throws PipelineException 
+  {
+    return performTransaction(kind, req, 300000);
+  }
+
+  /**
    * Send the given request to the server instance and wait for the response.
    * 
    * @param kind 
@@ -351,15 +379,22 @@ class BaseMgrClient
   }
 
   /**
-   * Send the given request to the server instance and wait for the response. <P> 
-   * 
-   * The socket timeout is set to 5-minutes. 
+   * Send the given request to the server instance and wait for the response which may
+   * take a long time.  <P> 
    * 
    * @param kind 
    *   The kind of request being sent.
    * 
    * @param req 
    *   The request data or <CODE>null</CODE> if there is no request.
+   * 
+   * @param reqTimeout
+   *   The maximum amount of time this operation will block (in milliseconds) while
+   *   attempting to send the request before failing.
+   * 
+   * @param rspTimeout
+   *   The maximum amount of time this operation will block (in milliseconds) while
+   *   attempting to recieve the response before retrying.
    * 
    * @return
    *   The response from the server instance.
@@ -368,14 +403,70 @@ class BaseMgrClient
    *   If unable to complete the transaction.
    */
   protected synchronized Object
-  performTransaction
+  performLongTransaction
   (
    Object kind, 
-   Object req
+   Object req, 
+   int reqTimeout, 
+   int rspTimeout
   ) 
     throws PipelineException 
   {
-    return performTransaction(kind, req, 300000);
+    try {
+      pSocket.setSoTimeout(reqTimeout);
+
+      OutputStream out = pSocket.getOutputStream();
+      ObjectOutput objOut = new ObjectOutputStream(out);
+      objOut.writeObject(kind);
+      if(req != null) 
+	objOut.writeObject(req);
+      objOut.flush(); 
+
+      pSocket.setSoTimeout(rspTimeout);
+
+      InputStream in  = pSocket.getInputStream();
+      ObjectInput objIn  = new PluginInputStream(in);
+      
+      Object rsp = null;
+      while(rsp == null) {
+	try {
+	  rsp = objIn.readObject();
+	}
+	catch(SocketTimeoutException ex) {
+	  if(ex.bytesTransferred > 0) 
+	    throw ex;
+
+	  // DEBUG
+	  else {
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Net, LogMgr.Level.Warning,
+	       "Still waiting...");
+	    LogMgr.getInstance().flush();
+	  }
+	  // DEBUG
+	}
+      }
+
+      pSocket.setSoTimeout(0);
+
+      return rsp; 
+    }
+    catch(SocketException ex) {
+      throw new PipelineException
+	("Unable to set SO_TIMEOUT for socket!");
+    }
+    catch(IOException ex) {
+      disconnect();
+      throw new PipelineException
+	("IO problems on port (" + pPort + "):\n" + 
+	 ex.getMessage(), ex);
+    }
+    catch(ClassNotFoundException ex) {
+      disconnect();
+      throw new PipelineException
+	("Illegal object encountered on port (" + pPort + "):\n" + 
+	 ex.getMessage());  
+    }
   }
 
   /**
