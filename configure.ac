@@ -113,6 +113,22 @@ fi
 AC_MSG_RESULT([$PRODDIR])
 
 
+AC_MSG_CHECKING([Root Node Storage Directory])
+
+AC_ARG_WITH([node], 
+            [  --with-node=DIR         Root of the persistent node storage area.])
+
+AC_SUBST(NODEDIR)
+NODEDIR=/base/node
+
+if test "$with_node" 
+then
+  NODEDIR=$with_node
+fi
+
+AC_MSG_RESULT([$NODEDIR])
+
+
 
 AC_MSG_CHECKING([Installed Toolsets Directory])
 
