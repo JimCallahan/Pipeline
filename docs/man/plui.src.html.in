@@ -26,8 +26,8 @@ various Pipeline daemon processes to perform Pipeline node operations
 and queries.&nbsp; <br>
   <br>
 The functionality of <span style="font-weight: bold;">plui</span>(1)
-is also available in a scripting format using the <a
- href="plui.html"><span style="font-weight: bold;">pipeline</span></a>(1)
+is also available in a scripting format using the <a href="plui.html"><span
+ style="font-weight: bold;">pipeline</span></a>(1)
 command-line only client program.&nbsp; Custom user tools may also
 access the full functionality of <span style="font-weight: bold;">plui</span>(1)
 using the <a href="../javadoc/index.html"><span
@@ -39,15 +39,15 @@ shared concepts behind these tools as well as detailed help on using
 the graphical interface of <a href="plui.html"><span
  style="font-weight: bold;">plui</span></a>(1).&nbsp; <br>
   <br>
-All properties, except for the <a
- href="#Global_Options"
+All properties, except for the <a href="#Global_Options"
  style="font-weight: bold;">Global
 Options</a> detailed below, are configurable by the Preferences
 panel once the graphical user interface started.&nbsp; <br>
 </blockquote>
 <h3><a name="Information_Options"></a>Information
 Options</h3>
-<blockquote>The following options provide online information about <span style="font-weight: bold;">plui</span>(1)
+<blockquote>The following options provide online information about <span
+ style="font-weight: bold;">plui</span>(1)
 and then immediately
 exit:</blockquote>
 <blockquote><b><a name="--help"></a>--help</b><br>
@@ -186,7 +186,7 @@ detailed
 output on the command line tracing the various stages of internal
 execution.&nbsp; <br>
 <br>
-The arguments control the several different
+The following arguments control the several different
 types of logging information (<span style="font-style: italic;">logger</span>)
 and different amounts of information (<span style="font-style: italic;">level</span>)
 of each type to generate.&nbsp; Several loggers can be modified in one
@@ -303,16 +303,18 @@ Java API</span></a><span style="font-weight: bold;"></span></div>
 <blockquote>
   <blockquote> </blockquote>
   <span style="font-weight: bold;">Pipeline Programs</span><br>
-  <div style="margin-left: 40px;"><a href="pipeline.html"><span
- style="font-weight: bold;">pipeline</span></a>(1), <a
+  <div style="margin-left: 40px;"><a href="plscript.html"><span
+ style="font-weight: bold;">plscript</span></a>(1), <a
  href="plmaster.html"><span style="font-weight: bold;">plmaster</span></a>(1),
+  <a href="plfilemgr.html"><span style="font-weight: bold;">plfilemgr</span></a>(1),
+  <a href="plnotify.html"><span style="font-weight: bold;">plnotify</span></a>(1),
   <a href="plqueuemgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1),
   <a href="pljobmgr.html"><span style="font-weight: bold;">pljobmgr</span></a>(1),
-  <span style="text-decoration: underline;"><span
- style="font-weight: bold;"></span></span><a href="pljobmgr.html"><span
- style="font-weight: bold;"></span></a><a
+  <a href="plplugin.html"><span style="font-weight: bold;">plplugin</span></a>(1),
+  <a
  href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1)<br>
+ style="font-weight: bold;">plconfig</span></a>(1)<a
+ href="pipeline.html"><span style="font-weight: bold;"></span></a><br>
   <br>
   </div>
   <span style="font-weight: bold;">Other Software</span><br>

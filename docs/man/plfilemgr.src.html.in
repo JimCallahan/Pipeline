@@ -194,20 +194,38 @@ java.util.logging.Logger</span> for more information about the format
 of this file.&nbsp; Settings from the <a href="#--log"><span
  style="font-weight: bold;">--log</span></a> option will override
 settings from the <span style="font-weight: bold;">logger.properties</span>
-file.</div>
+file.<br>
+</div>
+</div>
+<h3><a name="See_Also"></a>See Also</h3>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">Documentation</span>
+<br>
+</div>
+<div style="margin-left: 80px;"><a href="../manuals/index.html"
+ style="font-weight: bold;">Pipeline
+Manual</a><span style="font-weight: bold;">, </span><a
+ href="../javadoc/index.html"><span style="font-weight: bold;">Pipeline
+Java API</span></a><br>
+<br>
 </div>
 <div style="margin-left: 40px;">
 <span style="font-weight: bold;">Pipeline Programs</span><br>
-<div style="margin-left: 40px;"><a href="plmaster.html"><span
- style="font-weight: bold;">plmaster</span></a>(1), <a
- href="plnotify.html"><span style="font-weight: bold;">plnotify</span></a>(1),
+<div style="margin-left: 40px;"><a href="plui.html"><span
+ style="font-weight: bold;">plui</span></a>(1), <a href="plscript.html"><span
+ style="font-weight: bold;">plscript</span></a>(1), <a
+ href="plmaster.html"><span style="font-weight: bold;">plmaster</span></a>(1),
+<a href="plnotify.html"><span style="font-weight: bold;">plnotify</span></a>(1),
+<a href="plqueuemgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1),
+<a href="pljobmgr.html"><span style="font-weight: bold;">pljobmgr</span></a>(1),
+<a href="plplugin.html"><span style="font-weight: bold;">plplugin</span></a>(1),
 <a
- href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
- style="font-weight: bold;">plconfig</span></a>(1)<br>
+ href="../../../../../../../usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
+ style="font-weight: bold;">plconfig</span></a>(1)<a
+ href="plnotify.html"><span style="font-weight: bold;"></span></a><br>
 <br>
 </div>
 <span style="font-weight: bold;">Other Software</span><br>
-<div style="margin-left: 40px;"><a href="http://www.mozilla.org"><b>mozilla</b></a>(1)<span
+<div style="margin-left: 40px;"><a href="http://www.mozilla.org/"><b>mozilla</b></a>(1)<span
  style="font-weight: bold;"></span><br>
 </div>
 </div>
