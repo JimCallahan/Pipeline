@@ -1,5 +1,5 @@
 Summary: The Pipeline production visualization/automation system.
-Name: pipeline-@DOMAIN@
+Name: pipeline-@CUSTOMER@
 Version: @VERSION@
 Release: 1
 URL: http://us.temerity/pipeline
@@ -30,8 +30,9 @@ The core features of Pipeline include:
 @ROOT_INST_DIR@/bin/realpath
 @ROOT_INST_DIR@/bin/pltest
 
-%defattr(6550,root,pipeline)
+%defattr(4550,root,pipeline)
 @ROOT_INST_DIR@/sbin/plrun
+@ROOT_INST_DIR@/sbin/plnotify
 
 %defattr(500,pipeline,pipeline)
 @ROOT_INST_DIR@/sbin/plfilemgr

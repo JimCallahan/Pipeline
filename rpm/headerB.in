@@ -1,0 +1,66 @@
+
+For inquiries please contact:
+
+  Temerity Software, Inc.
+  475 Central Avenue, Suite 300
+  St. Petersburg, Florida  33701
+
+  http://www.temerity.us
+
+EOF
+
+agreed=0
+while [ $agreed != 1 ] 
+do
+  echo
+  echo "Do you agree to the above license terms? [yes/no] "
+
+  read reply leftover
+  case "$reply" in
+    ("yes" | "Yes" | "YES")
+      agreed=1;;
+    ("no" | "No" | "NO") 
+      echo "If you don't agree to the license you can't install this sofware.";
+      exit 1;;
+  esac
+done
+
+if [ ! -w `pwd` ] 
+then
+    echo "You do not have write permission for (`pwd`)!"
+    echo 
+    echo "Pipeline installation failed."
+    exit 1
+fi
+
+rpm=pipeline-@CUSTOMER@-@VERSION@-1.i686.rpm
+
+if [ -x /usr/bin/md5sum ]
+then
+  echo "Unpacking..."
+  tail +@HEADER_LENGTH@ $0 > $rpm
+
+  echo -n "Verifying Software Integrity... "
+  if echo "@CHECKSUM@" | /usr/bin/md5sum --check --status - 
+  then 
+    echo "OK"
+  else 
+    echo "CORRUPTED"
+    echo 
+    echo "Installation failed."
+    exit 1
+  fi
+else
+  echo "Unable to locate (/usr/bin/md5sum) needed to verify software integrity."
+  echo 
+  echo "Installation failed."
+  exit 1
+fi
+
+echo "Install the RPM now? [yes/no]"
+read reply leftover
+case "$reply" in
+  ("yes" | "Yes" | "YES")
+    rpm -Uvh $rpm;;
+esac
+exit 0
