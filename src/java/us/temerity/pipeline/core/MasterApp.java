@@ -1,4 +1,4 @@
-// $Id: MasterApp.java,v 1.6 2004/08/29 09:23:37 jim Exp $
+// $Id: MasterApp.java,v 1.7 2004/09/19 04:50:59 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -117,6 +117,56 @@ class MasterApp
       "\n" +  
       "Use \"plmaster --html-help\" to browse the full documentation.\n");
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Generate an explanitory message for the non-literal token.
+   */ 
+  protected String
+  tokenExplain
+  (
+   int kind,
+   boolean printLiteral
+  ) 
+  {
+    switch(kind) {
+    case MasterOptsParserConstants.EOF:
+      return "EOF";
+
+    case MasterOptsParserConstants.UNKNOWN_OPTION:
+      return "an unknown option";
+
+    case MasterOptsParserConstants.UNKNOWN_COMMAND:
+      return "an unknown command";
+
+    case MasterOptsParserConstants.INTEGER:
+      return "a port number";
+
+    case MasterOptsParserConstants.PATH_ARG:
+      return "an file system path";
+      
+    case MasterOptsParserConstants.HOSTNAME:
+      return "a hostname";
+      
+    default: 
+      if(printLiteral) {
+	String img = MasterOptsParserConstants.tokenImage[kind];
+	if(img.startsWith("<") && img.endsWith(">")) 
+	  return null;
+	else 
+	  return img;
+      }
+      else {
+	return null;
+      }
+    }      
+  }
+
 }
 
 

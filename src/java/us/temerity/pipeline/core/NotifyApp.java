@@ -1,4 +1,4 @@
-// $Id: NotifyApp.java,v 1.7 2004/09/01 12:22:33 jim Exp $
+// $Id: NotifyApp.java,v 1.8 2004/09/19 04:50:59 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -117,6 +117,53 @@ class NotifyApp
       "\n" +  
       "Use \"plnotify --html-help\" to browse the full documentation.\n");
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Generate an explanitory message for the non-literal token.
+   */ 
+  protected String
+  tokenExplain
+  (
+   int kind,
+   boolean printLiteral
+  ) 
+  {
+    switch(kind) {
+    case NotifyOptsParserConstants.EOF:
+      return "EOF";
+
+    case NotifyOptsParserConstants.UNKNOWN_OPTION:
+      return "an unknown option";
+
+    case NotifyOptsParserConstants.UNKNOWN_COMMAND:
+      return "an unknown command";
+
+    case NotifyOptsParserConstants.INTEGER:
+      return "a port number";
+
+    case NotifyOptsParserConstants.PATH_ARG:
+      return "an file system path";
+      
+    default: 
+      if(printLiteral) {
+	String img = NotifyOptsParserConstants.tokenImage[kind];
+	if(img.startsWith("<") && img.endsWith(">")) 
+	  return null;
+	else 
+	  return img;
+      }
+      else {
+	return null;
+      }
+    }      
+  }
+
 }
 
 

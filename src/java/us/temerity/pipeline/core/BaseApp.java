@@ -1,4 +1,4 @@
-// $Id: BaseApp.java,v 1.5 2004/05/08 15:03:46 jim Exp $
+// $Id: BaseApp.java,v 1.6 2004/09/19 04:50:59 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -172,7 +172,9 @@ class BaseApp
   
   /**
    * Concatentates the command-line arguments into a single <CODE>String</CODE> suitable 
-   * for parsing by the command-line parser of the application subclass.
+   * for parsing by the command-line parser of the application subclass. <P> 
+   * 
+   * Arguments are seperated by (\0) characters.
    * 
    * @param args 
    *   The command-line arguments.
@@ -186,31 +188,43 @@ class BaseApp
     StringBuffer buf = new StringBuffer();
     
     int wk;
-    for(wk=0; wk<args.length; wk++) {
-      char chars[] = args[wk].toCharArray();
-      
-      int eqIdx = -1;
-      boolean hasWs = false;
-      
-      int ck;
-      for(ck=0; ck<chars.length; ck++) {
-	if(chars[ck] == '=')
-	  eqIdx = ck+1;
-	else if((chars[ck] == ' ') || (chars[ck] == '\t')) {
-	  hasWs = true;
-	  break;
-	}
-      }
-      
-      if(hasWs && (eqIdx != -1) && (eqIdx < args[wk].length()))
-	buf.append(args[wk].substring(0, eqIdx) + 
-		   "\"" + args[wk].substring(eqIdx) + "\" ");
-      else 
-	buf.append(args[wk] + " ");
-    }
+    for(wk=0; wk<args.length; wk++) 
+      buf.append(args[wk] + "\0");
     
     pPackedArgs = buf.toString();
   }
+
+  /**
+   * Reads the given file containing command-line arguments and generates lines of input
+   * suitable for parsing by the command-line parser of the application subclass. <P> 
+   * 
+   * The whitespace in the file is replaced by (\0) characters to seperate 
+   * command-line arguments.  Each command-line of input from the file in converted into 
+   * one of the Strings returned by this method.  Command lines in the file may continue
+   * over multiple lines by escaping the newline with (\) characters.
+   * 
+   * @param file
+   *   The arguments file.
+   */
+  public ArrayList<String>
+  packageFile
+  (
+   File file
+  )
+    throws PipelineException
+  {
+    try {
+      BatchParser parser = new BatchParser(new FileReader(file));
+      return (ArrayList<String>) parser.Contents();
+    }
+    catch(Exception ex) {
+      throw new PipelineException(ex);
+    }    
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /** 
    * Generate a string containing both the exception message and stack trace. 
@@ -251,45 +265,48 @@ class BaseApp
   ) 
   {
     StringBuffer buf = new StringBuffer();
-    buf.append("Illegal Args: ");
-
     try {
       /* build a non-duplicate set of expected token strings */ 
       TreeSet expected = new TreeSet();
       {
 	int wk;
 	for(wk=0; wk<ex.expectedTokenSequences.length; wk++) {
-	  String str = ex.tokenImage[ex.expectedTokenSequences[wk][0]];
-	  if(!str.equals("\"\\n\"") && !str.equals("<NL1>"))
+	  int kind = ex.expectedTokenSequences[wk][0];
+	  String explain = tokenExplain(kind, true);
+	  if(explain != null) 
+	    expected.add(explain);
+	  else {
+	    String str = ex.tokenImage[kind];
 	    expected.add(ex.tokenImage[ex.expectedTokenSequences[wk][0]]);
+	  }
 	}
       }
-
       
       /* message header */ 
       Token tok = ex.currentToken.next;
       String next = ex.tokenImage[tok.kind];
       if(next.length() > 0) {
-	
-	char[] ary = next.toCharArray();
-	boolean hasKind  = (ary.length>0 && ary[0] == '<' && ary[ary.length-1] == '>');
-	
 	String value = toASCII(tok.image);
-	boolean hasValue = (value.length() > 0);
+	boolean hasValue = (value.length() > 0);	
+	String explain = tokenExplain(tok.kind, false);
+
+	if(hasValue || (explain != null)) {
+	  buf.append("Found ");
+	  
+	  if(explain != null)
+	    buf.append(explain + ", ");
 	
-	if(hasKind || hasValue) 
-	  buf.append("found ");
-	
-	if(hasKind) 
-	  buf.append(next + ", ");
-	
-	if(hasValue)
-	  buf.append("\"" + value + "\", ");
+	  if(hasValue)
+	    buf.append("\"" + value + "\" ");
+
+	  buf.append("s");
+	}
+	else {
+	  buf.append("S");
+	}
+
+	buf.append("tarting at character (" + ex.currentToken.next.beginColumn + ").\n");
       }
-      
-      buf.append("starting at arg " + ex.currentToken.next.beginLine + 
-		 ", character " + ex.currentToken.next.beginColumn + ".\n");
-      
 
       /* expected token list */ 
       Iterator iter = expected.iterator();
@@ -316,6 +333,19 @@ class BaseApp
 
     /* log the message */ 
     Logs.arg.severe(buf.toString());
+  }
+
+  /**
+   * Generate an explanitory message for the non-literal token.
+   */ 
+  protected String
+  tokenExplain
+  (
+   int kind,
+   boolean printLiteral
+  ) 
+  {
+    return null;
   }
  
   /**
@@ -372,6 +402,106 @@ class BaseApp
     return (buf.toString());
   }
 
+
+  /**
+   * Generate a string consisting the the given string repeated N number of times.
+   */ 
+  public String
+  repeat
+  (
+   String str,
+   int size
+  ) 
+  {
+    StringBuffer buf = new StringBuffer();
+    int wk;
+    for(wk=0; wk<size; wk++) 
+      buf.append(str);
+    return buf.toString();
+  }
+
+  /**
+   * Generate a horizontal bar.
+   */ 
+  public String
+  bar
+  (
+   int size
+  ) 
+  {
+    return repeat("-", size);
+  }
+
+  /**
+   * Generate a horizontal title bar.
+   */ 
+  public String
+  tbar
+  (
+   int size
+  ) 
+  {
+    return repeat("=", size);
+  }
+
+  /**
+   * Pad the given string with spaces so that it is at least N characters long.
+   */ 
+  public String
+  pad
+  (
+   String str,
+   int size
+  ) 
+  {
+    return (str + repeat(" ", Math.max(0, size - str.length())));
+  }
+
+  /**
+   * Line wrap the given String at word boundries.
+   */ 
+  public String
+  wordWrap
+  (
+   String str,
+   int indent, 
+   int size
+  ) 
+  {
+    if(str.length() + indent < size) 
+      return str;
+
+    StringBuffer buf = new StringBuffer();
+    String words[] = str.split("\\s");
+    int cnt = indent;
+    int wk;
+    for(wk=0; wk<words.length; wk++) {
+      int ws = words[wk].length();
+      if(ws > 0) {
+	if((size - cnt - ws) > 0) {
+	  buf.append(words[wk]);
+	  cnt += ws;
+	}
+	else {
+	  buf.append("\n" + repeat(" ", indent) + words[wk]);
+	  cnt = indent + ws;
+	}
+
+	if(wk < (words.length-1)) {
+	  if((size - cnt) > 0) {
+	    buf.append(" ");
+	    cnt++;
+	  }
+	  else {
+	    buf.append("\n" + repeat(" ", indent));
+	    cnt = indent;
+	  }
+	}
+      }
+    }
+
+    return buf.toString();
+  }
 
 
   /*----------------------------------------------------------------------------------------*/

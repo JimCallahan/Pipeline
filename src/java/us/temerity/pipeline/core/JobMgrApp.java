@@ -1,4 +1,4 @@
-// $Id: JobMgrApp.java,v 1.2 2004/07/24 18:17:59 jim Exp $
+// $Id: JobMgrApp.java,v 1.3 2004/09/19 04:50:59 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -112,6 +112,49 @@ class JobMgrApp
       "\n" +  
       "Use \"pljobmgr --html-help\" to browse the full documentation.\n");
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Generate an explanitory message for the non-literal token.
+   */ 
+  protected String
+  tokenExplain
+  (
+   int kind,
+   boolean printLiteral
+  ) 
+  {
+    switch(kind) {
+    case JobMgrOptsParserConstants.EOF:
+      return "EOF";
+
+    case JobMgrOptsParserConstants.UNKNOWN_OPTION:
+      return "an unknown option";
+
+    case JobMgrOptsParserConstants.UNKNOWN_COMMAND:
+      return "an unknown command";
+
+    case JobMgrOptsParserConstants.INTEGER:
+      return "a port number";
+
+    default: 
+      if(printLiteral) {
+	String img = JobMgrOptsParserConstants.tokenImage[kind];
+	if(img.startsWith("<") && img.endsWith(">")) 
+	  return null;
+	else 
+	  return img;
+      }
+      else {
+	return null;
+      }
+    }      
+  }
+
 }
 
 

@@ -1,4 +1,4 @@
-// $Id: QueueMgrApp.java,v 1.3 2004/08/29 09:23:49 jim Exp $
+// $Id: QueueMgrApp.java,v 1.4 2004/09/19 04:50:59 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -112,6 +112,53 @@ class QueueMgrApp
       "\n" +  
       "Use \"plqueuemgr --html-help\" to browse the full documentation.\n");
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Generate an explanitory message for the non-literal token.
+   */ 
+  protected String
+  tokenExplain
+  (
+   int kind,
+   boolean printLiteral
+  ) 
+  {
+    switch(kind) {
+    case QueueMgrOptsParserConstants.EOF:
+      return "EOF";
+
+    case QueueMgrOptsParserConstants.UNKNOWN_OPTION:
+      return "an unknown option";
+
+    case QueueMgrOptsParserConstants.UNKNOWN_COMMAND:
+      return "an unknown command";
+
+    case QueueMgrOptsParserConstants.INTEGER:
+      return "a port number";
+
+    case QueueMgrOptsParserConstants.PATH_ARG:
+      return "an file system path";
+      
+    default: 
+      if(printLiteral) {
+	String img = QueueMgrOptsParserConstants.tokenImage[kind];
+	if(img.startsWith("<") && img.endsWith(">")) 
+	  return null;
+	else 
+	  return img;
+      }
+      else {
+	return null;
+      }
+    }      
+  }
+
 }
 
 

@@ -1,4 +1,4 @@
-// $Id: FileMgrApp.java,v 1.9 2004/08/29 09:22:06 jim Exp $
+// $Id: FileMgrApp.java,v 1.10 2004/09/19 04:50:59 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -114,6 +114,56 @@ class FileMgrApp
       "\n" +  
       "Use \"plfilemgr --html-help\" to browse the full documentation.\n");
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Generate an explanitory message for the non-literal token.
+   */ 
+  protected String
+  tokenExplain
+  (
+   int kind,
+   boolean printLiteral
+  ) 
+  {
+    switch(kind) {
+    case FileMgrOptsParserConstants.EOF:
+      return "EOF";
+
+    case FileMgrOptsParserConstants.UNKNOWN_OPTION:
+      return "an unknown option";
+
+    case FileMgrOptsParserConstants.UNKNOWN_COMMAND:
+      return "an unknown command";
+
+    case FileMgrOptsParserConstants.INTEGER:
+      return "a port number";
+
+    case FileMgrOptsParserConstants.PATH_ARG:
+      return "an file system path";
+      
+    case FileMgrOptsParserConstants.HOSTNAME:
+      return "a hostname";
+      
+    default: 
+      if(printLiteral) { 
+	String img = FileMgrOptsParserConstants.tokenImage[kind];
+	if(img.startsWith("<") && img.endsWith(">")) 
+	  return null;
+	else 
+	  return img;
+      }
+      else {
+	return null;
+      }
+    }      
+  }
+
 }
 
 

@@ -1,4 +1,4 @@
-// $Id: PluginApp.java,v 1.1 2004/09/08 19:22:36 jim Exp $
+// $Id: PluginApp.java,v 1.2 2004/09/19 04:50:59 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -114,6 +114,50 @@ class PluginApp
       "\n" +  
       "Use \"plplugin --html-help\" to browse the full documentation.\n");
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Generate an explanitory message for the non-literal token.
+   */ 
+  protected String
+  tokenExplain
+  (
+   int kind,
+   boolean printLiteral
+  ) 
+  {
+    switch(kind) {
+    case PluginOptsParserConstants.EOF:
+      return "EOF";
+
+    case PluginOptsParserConstants.UNKNOWN_OPTION:
+      return "an unknown option";
+
+    case PluginOptsParserConstants.UNKNOWN_COMMAND:
+      return "an unknown command";
+
+    case PluginOptsParserConstants.CLASS_FILE:
+      return "a Java class file";
+
+    default: 
+      if(printLiteral) {
+	String img = PluginOptsParserConstants.tokenImage[kind];
+	if(img.startsWith("<") && img.endsWith(">")) 
+	  return null;
+	else 
+	  return img;
+      }
+      else {
+	return null;
+      }
+    }      
+  }
+
 }
 
 

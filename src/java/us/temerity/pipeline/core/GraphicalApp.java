@@ -1,4 +1,4 @@
-// $Id: GraphicalApp.java,v 1.2 2004/07/24 18:20:39 jim Exp $
+// $Id: GraphicalApp.java,v 1.3 2004/09/19 04:50:59 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -100,6 +100,53 @@ class GraphicalApp
       "\n" +  
       "Use \"plui --html-help\" to browse the full documentation.\n");
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Generate an explanitory message for the non-literal token.
+   */ 
+  protected String
+  tokenExplain
+  (
+   int kind,
+   boolean printLiteral
+  ) 
+  {
+    switch(kind) {
+    case GraphicalOptsParserConstants.EOF:
+      return "EOF";
+
+    case GraphicalOptsParserConstants.UNKNOWN_OPTION:
+      return "an unknown option";
+
+    case GraphicalOptsParserConstants.UNKNOWN_COMMAND:
+      return "an unknown command";
+
+    case GraphicalOptsParserConstants.INTEGER:
+      return "a port number";
+
+    case GraphicalOptsParserConstants.HOSTNAME:
+      return "a hostname";
+      
+    default: 
+      if(printLiteral) {
+	String img = GraphicalOptsParserConstants.tokenImage[kind];
+	if(img.startsWith("<") && img.endsWith(">")) 
+	  return null;
+	else 
+	  return img;
+      }
+      else {
+	return null;
+      }
+    }      
+  }
+
 }
 
 

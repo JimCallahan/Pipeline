@@ -120,11 +120,11 @@ TOKEN :
 | <#CLASS_COMP:  (["a"-"z","A"-"Z","0"-"9","_","-","."])*>
 
   /* seperators */ 
-| <WS1: ([" ","\t"])+>
+| <AE1: (["\0"])+>
 
   /* errors */ 
-| <UNKNOWN_OPTION:  "-" ("-")? (~[" ","\t","="])*>  : IGNORE_STATE
-| <UNKNOWN_COMMAND: ~["-"," ","\t"] (~[" ","\t"])*> : IGNORE_STATE
+| <UNKNOWN_OPTION:  "-" ("-")? (~["\0","="])*>  : IGNORE_STATE
+| <UNKNOWN_COMMAND: ~["-","\0"] (~["\0"])*>     : IGNORE_STATE
 }
 
 
@@ -160,8 +160,8 @@ TOKEN :
 | <FINER :  	    "finer">   
 | <FINEST:    	    "finest">  
 | <COMMA:  	    ",">       
-| <WS2:             ([" ","\t"])+>                   : DEFAULT
-| <ILLEGAL_LOG_ARG: (~[" ","\t","a"-"z",":",","])+>  : IGNORE_STATE
+| <AE2:             (["\0"])+>                   : DEFAULT
+| <ILLEGAL_LOG_ARG: (~["\0","a"-"z",":",","])+>  : IGNORE_STATE
 }
 
 
@@ -187,10 +187,10 @@ Commands()
   init();
 }
 {
-  (GlobalOpts() WS())* 
+  (GlobalOpts() AE())* 
   ((List()) | 
-   (Inspect() (ClassFile() WS())+) | 
-   ((Force())? Install() (ClassFile() WS())+))
+   (Inspect() (ClassFile() AE())+) | 
+   ((Force())? Install() (ClassFile() AE())+))
   { 
     try {
       PluginMgr.init();
@@ -234,7 +234,7 @@ void
 List() :
 {}
 {
-  <LIST> WS() 
+  <LIST> AE() 
   { 
     pList = true;
   }
@@ -244,7 +244,7 @@ void
 Inspect() :
 {}
 {
-  <INSPECT> WS() 
+  <INSPECT> AE() 
   { 
     pInspect = true;
   }
@@ -254,7 +254,7 @@ void
 Force() :
 {}
 {
-  <FORCE> WS() 
+  <FORCE> AE() 
   { 
     pForce = true; 
   }
@@ -264,7 +264,7 @@ void
 Install() :
 {}
 {
-  <INSTALL> WS() 
+  <INSTALL> AE() 
   { 
     pInstall = true; 
   }
@@ -303,7 +303,7 @@ void
 Help() : 
 {}
 {
-  <HELP> WS()
+  <HELP> AE()
   { 
     pApp.help(); 
   }
@@ -313,7 +313,7 @@ void
 HtmlHelp() : 
 {}
 {
-  <HTML_HELP> WS()
+  <HTML_HELP> AE()
   { 
     pApp.htmlHelp(); 
   }
@@ -323,7 +323,7 @@ void
 Version() :
 {}
 {
-  <VERSION> WS()
+  <VERSION> AE()
   { 
     pApp.version(); 
   }
@@ -333,7 +333,7 @@ void
 ReleaseDate() :
 {}
 {
-  <RELEASE_DATE> WS()
+  <RELEASE_DATE> AE()
   { 
     pApp.releaseDate(); 
   }
@@ -343,7 +343,7 @@ void
 Copyright() :
 {}
 {
-  <COPYRIGHT> WS() 
+  <COPYRIGHT> AE() 
   { 
     pApp.copyright(); 
   }
@@ -353,7 +353,7 @@ void
 License() :
 {}
 {
-  <LICENSE> WS() 
+  <LICENSE> AE() 
   { 
     pApp.license(); 
   }
@@ -548,12 +548,12 @@ Level FinestLevel() :
 /*------------------------------------------------------------------------------------------*/
 
 Token
-WS() :
+AE() :
 {
   Token t;
 }
 {
-  (t=<WS1> | t=<WS2>)
+  (t=<AE1> | t=<AE2>)
   { 
     return t; 
   }
