@@ -1,4 +1,4 @@
-// $Id: RubberBand.java,v 1.1 2004/05/16 19:21:38 jim Exp $
+// $Id: RubberBand.java,v 1.2 2004/05/21 00:16:11 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -154,11 +154,11 @@ class RubberBand
     canvas.getPixelLocationInImagePlate(pStartPos, startPos);
     canvas.getPixelLocationInImagePlate(pEndPos, endPos);
     
-    Transform3D motion = new Transform3D();
-    canvas.getImagePlateToVworld(motion);
-    motion.transform(eyePos);
-    motion.transform(startPos);
-    motion.transform(endPos);
+    Transform3D xform = new Transform3D();
+    canvas.getImagePlateToVworld(xform);
+    xform.transform(eyePos);
+    xform.transform(startPos);
+    xform.transform(endPos);
 
     /* update the geometry */ 
     {
